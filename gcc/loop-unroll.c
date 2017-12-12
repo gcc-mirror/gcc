@@ -2037,12 +2037,14 @@ apply_opt_in_copies (struct opt_info *opt_info,
       FOR_BB_INSNS_SAFE (bb, insn, next)
         {
 	  if (!INSN_P (insn)
-	      || (DEBUG_INSN_P (insn)
+	      || (DEBUG_BIND_INSN_P (insn)
+		  && INSN_VAR_LOCATION_DECL (insn)
 		  && TREE_CODE (INSN_VAR_LOCATION_DECL (insn)) == LABEL_DECL))
             continue;
 
 	  while (!INSN_P (orig_insn)
-		 || (DEBUG_INSN_P (orig_insn)
+		 || (DEBUG_BIND_INSN_P (orig_insn)
+		     && INSN_VAR_LOCATION_DECL (orig_insn)
 		     && (TREE_CODE (INSN_VAR_LOCATION_DECL (orig_insn))
 			 == LABEL_DECL)))
             orig_insn = NEXT_INSN (orig_insn);

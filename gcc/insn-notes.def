@@ -68,6 +68,9 @@ INSN_NOTE (VAR_LOCATION)
 /* The values passed to callee.  */
 INSN_NOTE (CALL_ARG_LOCATION)
 
+/* The beginning of a statement.  */
+INSN_NOTE (BEGIN_STMT)
+
 /* Record the struct for the following basic block.  Uses
    NOTE_BASIC_BLOCK.  FIXME: Redundant with the basic block pointer
    now included in every insn.  NOTE: If there's no CFG anymore, in other words,

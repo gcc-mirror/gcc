@@ -815,8 +815,13 @@ struct GTY(()) rtvec_def {
 /* Predicate yielding nonzero iff X is an insn that is not a debug insn.  */
 #define NONDEBUG_INSN_P(X) (INSN_P (X) && !DEBUG_INSN_P (X))
 
+/* Nonzero if DEBUG_MARKER_INSN_P may possibly hold.  */
+#define MAY_HAVE_DEBUG_MARKER_INSNS 0 /* debug_nonbind_markers_p */
+/* Nonzero if DEBUG_BIND_INSN_P may possibly hold.  */
+#define MAY_HAVE_DEBUG_BIND_INSNS flag_var_tracking_assignments
 /* Nonzero if DEBUG_INSN_P may possibly hold.  */
-#define MAY_HAVE_DEBUG_INSNS (flag_var_tracking_assignments)
+#define MAY_HAVE_DEBUG_INSNS					\
+  (MAY_HAVE_DEBUG_MARKER_INSNS || MAY_HAVE_DEBUG_BIND_INSNS)
 
 /* Predicate yielding nonzero iff X is a real insn.  */
 #define INSN_P(X) \
@@ -1604,6 +1609,7 @@ extern const char * const reg_note_name[];
 #define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 3, NOTE)
 #define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 3, NOTE)
 #define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 3, NOTE)
+#define NOTE_MARKER_LOCATION(INSN) XCUINT (INSN, 3, NOTE)
 #define NOTE_CFI(INSN)		XCCFI (INSN, 3, NOTE)
 #define NOTE_LABEL_NUMBER(INSN)	XCINT (INSN, 3, NOTE)
 
@@ -1614,6 +1620,12 @@ extern const char * const reg_note_name[];
 /* Nonzero if INSN is a note marking the beginning of a basic block.  */
 #define NOTE_INSN_BASIC_BLOCK_P(INSN) \
   (NOTE_P (INSN) && NOTE_KIND (INSN) == NOTE_INSN_BASIC_BLOCK)
+
+/* Nonzero if INSN is a debug nonbind marker note,
+   for which NOTE_MARKER_LOCATION can be used.  */
+#define NOTE_MARKER_P(INSN)				\
+  (NOTE_P (INSN) &&					\
+   (NOTE_KIND (INSN) == NOTE_INSN_BEGIN_STMT))
 
 /* Variable declaration and the location of a variable.  */
 #define PAT_VAR_LOCATION_DECL(PAT) (XCTREE ((PAT), 0, VAR_LOCATION))
@@ -1634,8 +1646,39 @@ extern const char * const reg_note_name[];
 #define NOTE_VAR_LOCATION_STATUS(NOTE) \
   PAT_VAR_LOCATION_STATUS (NOTE_VAR_LOCATION (NOTE))
 
+/* Evaluate to TRUE if INSN is a debug insn that denotes a variable
+   location/value tracking annotation.  */
+#define DEBUG_BIND_INSN_P(INSN)			\
+  (DEBUG_INSN_P (INSN)				\
+   && (GET_CODE (PATTERN (INSN))		\
+       == VAR_LOCATION))
+/* Evaluate to TRUE if INSN is a debug insn that denotes a program
+   source location marker.  */
+#define DEBUG_MARKER_INSN_P(INSN)		\
+  (DEBUG_INSN_P (INSN)				\
+   && (GET_CODE (PATTERN (INSN))		\
+       != VAR_LOCATION))
+/* Evaluate to the marker kind.  */
+#define INSN_DEBUG_MARKER_KIND(INSN)		  \
+  (GET_CODE (PATTERN (INSN)) == DEBUG_MARKER	  \
+   ? (GET_MODE (PATTERN (INSN)) == VOIDmode	  \
+      ? NOTE_INSN_BEGIN_STMT			  \
+      : (enum insn_note)-1) 			  \
+   : (enum insn_note)-1)
+/* Create patterns for debug markers.  These and the above abstract
+   the representation, so that it's easier to get rid of the abuse of
+   the mode to hold the marker kind.  Other marker types are
+   envisioned, so a single bit flag won't do; maybe separate RTL codes
+   wouldn't be a problem.  */
+#define GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT() \
+  gen_rtx_DEBUG_MARKER (VOIDmode)
+
 /* The VAR_LOCATION rtx in a DEBUG_INSN.  */
-#define INSN_VAR_LOCATION(INSN) PATTERN (INSN)
+#define INSN_VAR_LOCATION(INSN) \
+  (RTL_FLAG_CHECK1 ("INSN_VAR_LOCATION", PATTERN (INSN), VAR_LOCATION))
+/* A pointer to the VAR_LOCATION rtx in a DEBUG_INSN.  */
+#define INSN_VAR_LOCATION_PTR(INSN) \
+  (&PATTERN (INSN))
 
 /* Accessors for a tree-expanded var location debug insn.  */
 #define INSN_VAR_LOCATION_DECL(INSN) \

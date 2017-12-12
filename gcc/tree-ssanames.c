@@ -562,7 +562,7 @@ release_ssa_name_fn (struct function *fn, tree var)
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
       use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	insert_debug_temp_for_var_def (NULL, var);
 
       if (flag_checking)

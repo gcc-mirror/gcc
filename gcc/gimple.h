@@ -197,13 +197,12 @@ enum gf_mask {
     GF_PREDICT_TAKEN		= 1 << 15
 };
 
-/* Currently, there are only two types of gimple debug stmt.  Others are
-   envisioned, for example, to enable the generation of is_stmt notes
-   in line number information, to mark sequence points, etc.  This
-   subcode is to be used to tell them apart.  */
+/* This subcode tells apart different kinds of stmts that are not used
+   for codegen, but rather to retain debug information.  */
 enum gimple_debug_subcode {
   GIMPLE_DEBUG_BIND = 0,
-  GIMPLE_DEBUG_SOURCE_BIND = 1
+  GIMPLE_DEBUG_SOURCE_BIND = 1,
+  GIMPLE_DEBUG_BEGIN_STMT = 2
 };
 
 /* Masks for selecting a pass local flag (PLF) to work on.  These
@@ -4755,6 +4754,28 @@ gimple_debug_source_bind_set_value (gimple *dbg, tree value)
   GIMPLE_CHECK (dbg, GIMPLE_DEBUG);
   gcc_gimple_checking_assert (gimple_debug_source_bind_p (dbg));
   gimple_set_op (dbg, 1, value);
+}
+
+/* Return true if S is a GIMPLE_DEBUG BEGIN_STMT statement.  */
+
+static inline bool
+gimple_debug_begin_stmt_p (const gimple *s)
+{
+  if (is_gimple_debug (s))
+    return s->subcode == GIMPLE_DEBUG_BEGIN_STMT;
+
+  return false;
+}
+
+/* Return true if S is a GIMPLE_DEBUG non-binding marker statement.  */
+
+static inline bool
+gimple_debug_nonbind_marker_p (const gimple *s)
+{
+  if (is_gimple_debug (s))
+    return s->subcode == GIMPLE_DEBUG_BEGIN_STMT;
+
+  return false;
 }
 
 /* Return the line number for EXPR, or return -1 if we have no line

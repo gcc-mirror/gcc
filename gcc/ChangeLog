@@ -1,5 +1,100 @@
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
+	* gimple.h (enum gimple_debug_subcode): Add
+	GIMPLE_DEBUG_BEGIN_STMT.
+	(gimple_debug_begin_stmt_p): New.
+	(gimple_debug_nonbind_marker_p): New.
+	* tree.h (MAY_HAVE_DEBUG_MARKER_STMTS): New.
+	(MAY_HAVE_DEBUG_BIND_STMTS): Renamed from....
+	(MAY_HAVE_DEBUG_STMTS): ... this.  Check both.
+	* insn-notes.def (BEGIN_STMT): New.
+	* rtl.h (MAY_HAVE_DEBUG_MARKER_INSNS): New.
+	(MAY_HAVE_DEBUG_BIND_INSNS): Renamed from....
+	(MAY_HAVE_DEBUG_INSNS): ... this.  Check both.
+	(NOTE_MARKER_LOCATION, NOTE_MARKER_P): New.
+	(DEBUG_BIND_INSN_P, DEBUG_MARKER_INSN_P): New.
+	(INSN_DEBUG_MARKER_KIND): New.
+	(GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT): New.
+	(INSN_VAR_LOCATION): Check for VAR_LOCATION.
+	(INSN_VAR_LOCATION_PTR): New.
+	* cfgexpand.c (expand_debug_locations): Handle debug bind insns
+	only.
+	(expand_gimple_basic_block): Likewise.  Emit debug temps for TER
+	deps only if debug bind insns are enabled.
+	(pass_expand::execute): Avoid deep TER and expand
+	debug locations for debug bind insns only.
+	* cgraph.c (cgraph_edge::redirect_call_stmt_to_callee): Narrow
+	debug stmts special handling down to debug bind stmts.
+	* combine.c (try_combine): Narrow debug insns special handling
+	down to debug bind insns.
+	* cse.c (delete_trivially_dead_insns): Handle debug bindings.
+	Narrow debug insns preexisting special handling down to debug
+	bind insns.
+	* dce.c (rest_of_handle_ud_dce): Narrow debug insns special
+	handling down to debug bind insns.
+	* function.c (instantiate_virtual_regs): Skip debug markers,
+	adjust handling of debug binds.
+	* gimple-ssa-backprop.c (backprop::prepare_change): Try debug
+	temp insertion iff MAY_HAVE_DEBUG_BIND_STMTS.
+	* haifa-sched.c (schedule_insn): Narrow special handling of debug
+	insns to debug bind insns.
+	* ipa-param-manipulation.c (ipa_modify_call_arguments): Narrow
+	special handling of debug stmts to debug bind stmts.
+	* ipa-split.c (split_function): Likewise.
+	* ira.c (combine_and_move_insns): Adjust debug bind insns only.
+	* loop-unroll.c (apply_opt_in_copies): Adjust tests on bind
+	debug insns.
+	* reg-stack.c (convert_regs_1): Use DEBUG_BIND_INSN_P.
+	* regrename.c (build_def_use): Likewise.
+	* regcprop.c (copyprop_hardreg_forward_1): Likewise.
+	(pass_cprop_hardreg): Narrow special casing of debug insns to
+	debug bind insns.
+	* regstat.c (regstat_init_n_sets_and_refs): Likewise.
+	* reload1.c (reload): Likewise.
+	* sese.c (sese_insert_phis_for_liveouts): Narrow special
+	casing of debug stmts to debug bind stmts.
+	* shrink-wrap.c (move_insn_for_shrink_wrap): Likewise.
+	* ssa-iterators.h (num_imm_uses): Likewise.
+	* tree-cfg.c (gimple_merge_blocks): Narrow special casing of
+	debug stmts to debug bind stmts.
+	* tree-inline.c	(tree_function_versioning): Narrow special casing
+	of debug stmts to debug bind stmts.
+	* tree-loop-distribution.c (generate_loops_for_partition):
+	Narrow special casing of debug stmts to debug bind stmts.
+	* tree-sra.c (analyze_access_subtree): Narrow special casing
+	of debug stmts to debug bind stmts.
+	* tree-ssa-dce.c (remove_dead_stmt): Narrow special casing of debug
+	stmts to debug bind stmts.
+	* tree-ssa-loop-ivopt.c (remove_unused_ivs): Narrow special
+	casing of debug stmts to debug bind stmts.
+	* tree-ssa-reassoc.c (reassoc_remove_stmt): Likewise.
+	* tree-ssa-tail-merge.c (tail_merge_optimize): Narrow special
+	casing of debug stmts to debug bind stmts.
+	* tree-ssa-threadedge.c (propagate_threaded_block_debug_info):
+	Likewise.
+	* tree-ssa.c (flush_pending_stmts): Narrow special casing of
+	debug stmts to debug bind stmts.
+	(gimple_replace_ssa_lhs): Likewise.
+	(insert_debug_temp_for_var_def): Likewise.
+	(insert_debug_temps_for_defs): Likewise.
+	(reset_debug_uses): Likewise.
+	* tree-ssanames.c (release_ssa_name_fn): Likewise.
+	* tree-vect-loop-manip.c (adjust_debug_stmts_now): Likewise.
+	(adjust_debug_stmts): Likewise.
+	(adjust_phi_and_debug_stmts): Likewise.
+	(vect_do_peeling): Likewise.
+	* tree-vect-loop.c (vect_transform_loop): Likewise.
+	* valtrack.c (propagate_for_debug): Use BIND_DEBUG_INSN_P.
+	* var-tracking.c (adjust_mems): Narrow special casing of debug
+	insns to debug bind insns.
+	(dv_onepart_p, dataflow_set_clar_at_call, use_type): Likewise.
+	(compute_bb_dataflow, vt_find_locations): Likewise.
+	(vt_expand_loc, emit_notes_for_changes): Likewise.
+	(vt_init_cfa_base): Likewise.
+	(vt_emit_notes): Likewise.
+	(vt_initialize): Likewise.
+	(vt_finalize): Likewise.
+
 	* emit-rtl.c (next_nondebug_insn, prev_nondebug_insn): Reorder.
 	(next_nonnote_nondebug_insn, prev_nonnote_nondebug_insn): Reorder.
 	(next_nonnote_nondebug_insn_bb): New.

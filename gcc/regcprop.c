@@ -752,7 +752,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       next = NEXT_INSN (insn);
       if (!NONDEBUG_INSN_P (insn))
 	{
-	  if (DEBUG_INSN_P (insn))
+	  if (DEBUG_BIND_INSN_P (insn))
 	    {
 	      rtx loc = INSN_VAR_LOCATION_LOC (insn);
 	      if (!VAR_LOC_UNKNOWN_P (loc))
@@ -1296,7 +1296,7 @@ pass_cprop_hardreg::execute (function *fun)
       copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       FOR_EACH_BB_FN (bb, fun)
 	if (bitmap_bit_p (visited, bb->index)

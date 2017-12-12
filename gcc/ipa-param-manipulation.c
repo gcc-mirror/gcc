@@ -402,7 +402,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	    }
 	  vargs.quick_push (expr);
 	}
-      if (adj->op != IPA_PARM_OP_COPY && MAY_HAVE_DEBUG_STMTS)
+      if (adj->op != IPA_PARM_OP_COPY && MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  unsigned int ix;
 	  tree ddecl = NULL_TREE, origin = DECL_ORIGIN (adj->base), arg;

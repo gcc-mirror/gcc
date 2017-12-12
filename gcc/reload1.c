@@ -1112,7 +1112,7 @@ reload (rtx_insn *first, int global)
       /* We don't want complex addressing modes in debug insns
 	 if simpler ones will do, so delegitimize equivalences
 	 in debug insns.  */
-      if (MAY_HAVE_DEBUG_INSNS && reg_renumber[i] < 0)
+      if (MAY_HAVE_DEBUG_BIND_INSNS && reg_renumber[i] < 0)
 	{
 	  rtx reg = regno_reg_rtx[i];
 	  rtx equiv = 0;
@@ -1140,7 +1140,7 @@ reload (rtx_insn *first, int global)
 	      while (next && DF_REF_INSN (next) == insn)
 		next = DF_REF_NEXT_REG (next);
 
-	      if (DEBUG_INSN_P (insn))
+	      if (DEBUG_BIND_INSN_P (insn))
 		{
 		  if (!equiv)
 		    {
