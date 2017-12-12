@@ -464,27 +464,6 @@ vect_loop_vectorized_call (struct loop *loop)
   return NULL;
 }
 
-/* Fold loop internal call G like IFN_LOOP_VECTORIZED/IFN_LOOP_DIST_ALIAS
-   to VALUE and update any immediate uses of it's LHS.  */
-
-static void
-fold_loop_internal_call (gimple *g, tree value)
-{
-  tree lhs = gimple_call_lhs (g);
-  use_operand_p use_p;
-  imm_use_iterator iter;
-  gimple *use_stmt;
-  gimple_stmt_iterator gsi = gsi_for_stmt (g);
-
-  update_call_from_tree (&gsi, value);
-  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-    {
-      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-	SET_USE (use_p, value);
-      update_stmt (use_stmt);
-    }
-}
-
 /* If LOOP has been versioned during loop distribution, return the gurading
    internal call.  */
 

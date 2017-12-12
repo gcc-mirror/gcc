@@ -1,5 +1,8 @@
 2017-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83359
+	* gcc.dg/graphite/pr83359.c: New test.
+
 	PR tree-optimization/80631
 	* gcc.dg/vect/pr80631-1.c: New test.
 	* gcc.dg/vect/pr80631-2.c: New test.
