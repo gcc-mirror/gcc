@@ -1847,7 +1847,7 @@ case_label_p (const vec<tree> *cases, tree label)
   return false;
 }
 
-/* Find the last statement in a scope STMT.  */
+/* Find the last nondebug statement in a scope STMT.  */
 
 static gimple *
 last_stmt_in_scope (gimple *stmt)
@@ -1860,26 +1860,29 @@ last_stmt_in_scope (gimple *stmt)
     case GIMPLE_BIND:
       {
 	gbind *bind = as_a <gbind *> (stmt);
-	stmt = gimple_seq_last_stmt (gimple_bind_body (bind));
+	stmt = gimple_seq_last_nondebug_stmt (gimple_bind_body (bind));
 	return last_stmt_in_scope (stmt);
       }
 
     case GIMPLE_TRY:
       {
 	gtry *try_stmt = as_a <gtry *> (stmt);
-	stmt = gimple_seq_last_stmt (gimple_try_eval (try_stmt));
+	stmt = gimple_seq_last_nondebug_stmt (gimple_try_eval (try_stmt));
 	gimple *last_eval = last_stmt_in_scope (stmt);
 	if (gimple_stmt_may_fallthru (last_eval)
 	    && (last_eval == NULL
 		|| !gimple_call_internal_p (last_eval, IFN_FALLTHROUGH))
 	    && gimple_try_kind (try_stmt) == GIMPLE_TRY_FINALLY)
 	  {
-	    stmt = gimple_seq_last_stmt (gimple_try_cleanup (try_stmt));
+	    stmt = gimple_seq_last_nondebug_stmt (gimple_try_cleanup (try_stmt));
 	    return last_stmt_in_scope (stmt);
 	  }
 	else
 	  return last_eval;
       }
+
+    case GIMPLE_DEBUG:
+      gcc_unreachable ();
 
     default:
       return stmt;
@@ -2005,7 +2008,7 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	}
       else if (gimple_call_internal_p (gsi_stmt (*gsi_p), IFN_ASAN_MARK))
 	;
-      else
+      else if (!is_gimple_debug (gsi_stmt (*gsi_p)))
 	prev = gsi_stmt (*gsi_p);
       gsi_next (gsi_p);
     }
@@ -2042,7 +2045,7 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
 	     && gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
 	     && (l = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi))))
 	     && !case_label_p (&gimplify_ctxp->case_labels, l))
-	gsi_next (&gsi);
+	gsi_next_nondebug (&gsi);
       if (gsi_end_p (gsi) || gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
 	return false;
     }
@@ -2055,7 +2058,7 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
   while (!gsi_end_p (gsi)
 	 && (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
 	     || gimple_code (gsi_stmt (gsi)) == GIMPLE_PREDICT))
-    gsi_next (&gsi);
+    gsi_next_nondebug (&gsi);
 
   /* { ... something; default:; } */
   if (gsi_end_p (gsi)
@@ -2102,7 +2105,7 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	/* Found a label.  Skip all immediately following labels.  */
 	while (!gsi_end_p (*gsi_p)
 	       && gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_LABEL)
-	  gsi_next (gsi_p);
+	  gsi_next_nondebug (gsi_p);
 
 	/* There might be no more statements.  */
 	if (gsi_end_p (*gsi_p))
@@ -2245,8 +2248,8 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 		}
 	      else if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
 		;
-	      else
-		/* Something other is not expected.  */
+	      else if (!is_gimple_debug (stmt))
+		/* Anything else is not expected.  */
 		break;
 	      gsi_next (&gsi2);
 	    }

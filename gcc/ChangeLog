@@ -1,5 +1,88 @@
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
+	* cfgcleanup.c (delete_unreachable_blocks): Use alternate
+	block removal order if MAY_HAVE_DEBUG_BIND_INSNS.
+	* cfgexpand.c (label_rtx_for_bb): Skip debug insns.
+	* cfgrtl.c (try_redirect_by_replacing_jump): Skip debug insns.
+	(rtl_tidy_fallthru_edge): Likewise.
+	(rtl_verify_fallthru): Likewise.
+	(rtl_verify_bb_layout): Likewise.
+	(skip_insns_after_block): Likewise.
+	(duplicate_insn_chain): Use DEBUG_BIND_INSN_P.
+	* dwarf2out.c: Include print-rtl.h.
+	(dwarf2out_next_real_insn): New.
+	(dwarf2out_var_location): Call it.  Disregard begin stmt markers.
+	Dump debug binds in asm comments.
+	* gimple-iterator.c (gimple_find_edge_insert_loc): Skip debug stmts.
+	* gimple-iterator.h (gsi_start_bb_nondebug): Remove; adjust
+	callers to use gsi_start_nondebug_bb instead.
+	(gsi_after_labels): Skip gimple debug stmts.
+	(gsi_start_nondebug): New.
+	* gimple-loop-interchange.c (find_deps_in_bb_for_stmt): Adjust.
+	(proper_loop_form_for_interchange): Adjust.
+	* gimple-low.c (gimple_seq_may_fallthru): Take last nondebug stmt.
+	* gimple.h (gimple_seq_last_nondebug_stmt): New.
+	* gimplify.c (last_stmt_in_scope): Skip debug stmts.
+	(collect_fallthrough_labels): Likewise.
+	(should_warn_for_implicit_fallthrough): Likewise.
+	(warn_implicit_fallthrough_r): Likewise.
+	(expand_FALLTHROUGH_r): Likewise.
+	* graphite-isl-ast-to-gimple.c (gsi_insert_earliest): Adjust.
+	(graphite_copy_stmts_from_block): Skip nonbind markers.
+	* haifa-sched.c (sched_extend_bb): Skip debug insns.
+	* ipa-icf-gimple.c (func_checker::compare_bb): Adjust.
+	* jump.c (clean_barriers): Skip debug insns.
+	* omp-expand.c (expand_parallel_call): Skip debug insns.
+	(expand_task_call): Likewise.
+	(remove_exit_barrier): Likewise.
+	(expand_omp_taskreg): Likewise.
+	(expand_omp_for_init_counts): Likewise.
+	(expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_simd): Likewise.
+	(expand_omp_taskloop_for_outer): Likewise.
+	(expand_omp_taskloop_for_inner): Likewise.
+	(expand_oacc_for): Likewise.
+	(expand_omp_sections): Likewise.
+	(expand_omp_single): Likewise.
+	(expand_omp_synch): Likewise.
+	(expand_omp_atomic_load): Likewise.
+	(expand_omp_atomic_store): Likewise.
+	(expand_omp_atomic_fetch_op): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+	(expand_omp_atomic_mutex): Likewise.
+	(expand_omp_target): Likewise.
+	(grid_expand_omp_for_loop): Likewise.
+	(grid_expand_target_grid_body): Likewise.
+	(build_omp_regions_1): Likewise.
+	* omp-low.c (check_combined_parallel): Skip debug stmts.
+	* postreload.c (fixup_debug_insns): Skip nonbind debug insns.
+	* regcprop.c (find_oldest_value_reg): Ensure REGNO is not a pseudo.
+	* sese.c (sese_trivially_empty_bb_p): Call is_gimple_debug in
+	test.
+	* tree-cfg.c (make_blobs_1): Skip debug stmts.
+	(make_edges): Likewise.
+	(cleanup_dead_labels): Likewise.
+	(gimple_can_merge_blocks_p): Likewise.
+	(stmt_starts_bb_p): Likewise.
+	(gimple_block_label): Likewise.
+	(gimple_redirect_edge_and_branch): Likewise.
+	* tree-cfgcleanup.c (remove_forwarder_block): Rearrange skipping
+	of debug stmts.
+	(execute_cleanup_cfg_post_optimizing): Dump enumerated decls with
+	TDF_SLIM.
+	* tree-pretty-print (print_declaration): Omit initializer in slim
+	dumps.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Mark begin stmt
+	markers.
+	(eliminate_unnecessary_stmts): Stabilize block removal order.
+	* tree-ssa-tail-merge.c (find_duplicate): Skip debug stmts.
+	* var-tracking.c (get_first_insn): New.
+	(vt_emit_notes): Call it.
+	(vt_initialize): Walk any insns before the first BB.
+	(delete_debug_insns): Likewise.
+
 	* gimple.h (enum gimple_debug_subcode): Add
 	GIMPLE_DEBUG_BEGIN_STMT.
 	(gimple_debug_begin_stmt_p): New.

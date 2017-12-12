@@ -2327,6 +2327,9 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
     {
       glabel *lab_stmt;
 
+      if (is_gimple_debug (gsi_stmt (gsi)))
+	continue;
+
       lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
       if (!lab_stmt)
 	break;
@@ -5454,7 +5457,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
   gimple *stmt = NULL;
-  rtx_note *note;
+  rtx_note *note = NULL;
   rtx_insn *last;
   edge e;
   edge_iterator ei;
@@ -5495,18 +5498,26 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	}
     }
 
-  gsi = gsi_start (stmts);
+  gsi = gsi_start_nondebug (stmts);
   if (!gsi_end_p (gsi))
     {
       stmt = gsi_stmt (gsi);
       if (gimple_code (stmt) != GIMPLE_LABEL)
 	stmt = NULL;
     }
+  gsi = gsi_start (stmts);
 
+  gimple *label_stmt = stmt;
   rtx_code_label **elt = lab_rtx_for_bb->get (bb);
 
-  if (stmt || elt)
+  if (stmt)
+    /* We'll get to it in the loop below, and get back to
+       emit_label_and_note then.  */
+    ;
+  else if (stmt || elt)
     {
+    emit_label_and_note:
+      gcc_checking_assert (!note);
       last = get_last_insn ();
 
       if (stmt)
@@ -5521,6 +5532,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       BB_HEAD (bb) = NEXT_INSN (last);
       if (NOTE_P (BB_HEAD (bb)))
 	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
+      gcc_assert (LABEL_P (BB_HEAD (bb)));
       note = emit_note_after (NOTE_INSN_BASIC_BLOCK, BB_HEAD (bb));
 
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
@@ -5528,13 +5540,17 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   else
     BB_HEAD (bb) = note = emit_note (NOTE_INSN_BASIC_BLOCK);
 
-  NOTE_BASIC_BLOCK (note) = bb;
+  if (note)
+    NOTE_BASIC_BLOCK (note) = bb;
 
   for (; !gsi_end_p (gsi); gsi_next (&gsi))
     {
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
+
+      if (stmt == label_stmt)
+	goto emit_label_and_note;
 
       /* If this statement is a non-debug one, and we generate debug
 	 insns, then this one might be the last real use of a TERed

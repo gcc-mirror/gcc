@@ -475,6 +475,7 @@ find_bb_boundaries (basic_block bb)
 	  if (debug_insn && code != CODE_LABEL && code != BARRIER)
 	    prev = PREV_INSN (debug_insn);
 	  fallthru = split_block (bb, prev);
+
 	  if (flow_transfer_insn)
 	    {
 	      BB_END (bb) = flow_transfer_insn;

@@ -256,7 +256,8 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	 easily locate the debug temp bind stmt for a use thereof,
 	 would could refrain from marking all debug temps here, and
 	 mark them only if they're used.  */
-      if (!gimple_debug_bind_p (stmt)
+      if (gimple_debug_nonbind_marker_p (stmt)
+	  || !gimple_debug_bind_p (stmt)
 	  || gimple_debug_bind_has_value_p (stmt)
 	  || TREE_CODE (gimple_debug_bind_get_var (stmt)) != DEBUG_EXPR_DECL)
 	mark_stmt_necessary (stmt, false);
@@ -1442,8 +1443,7 @@ eliminate_unnecessary_stmts (void)
 		     dominate others.  Walking backwards, this should
 		     be the common case.  ??? Do we need to recompute
 		     dominators because of cfg_altered?  */
-		  if (!MAY_HAVE_DEBUG_STMTS
-		      || !first_dom_son (CDI_DOMINATORS, bb))
+		  if (!first_dom_son (CDI_DOMINATORS, bb))
 		    delete_basic_block (bb);
 		  else
 		    {

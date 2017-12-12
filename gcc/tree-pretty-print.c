@@ -3325,7 +3325,10 @@ print_declaration (pretty_printer *pp, tree t, int spc, dump_flags_t flags)
 	  pp_space (pp);
 	  pp_equal (pp);
 	  pp_space (pp);
-	  dump_generic_node (pp, DECL_INITIAL (t), spc, flags, false);
+	  if (!(flags & TDF_SLIM))
+	    dump_generic_node (pp, DECL_INITIAL (t), spc, flags, false);
+	  else
+	    pp_string (pp, "<<< omitted >>>");
 	}
     }
 

@@ -428,6 +428,8 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
   machine_mode mode = GET_MODE (reg);
   unsigned int i;
 
+  gcc_assert (regno < FIRST_PSEUDO_REGISTER);
+
   /* If we are accessing REG in some mode other that what we set it in,
      make sure that the replacement is valid.  In particular, consider
 	(set (reg:DI r11) (...))

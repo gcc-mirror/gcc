@@ -4600,6 +4600,22 @@ is_gimple_debug (const gimple *gs)
   return gimple_code (gs) == GIMPLE_DEBUG;
 }
 
+
+/* Return the last nondebug statement in GIMPLE sequence S.  */
+
+static inline gimple *
+gimple_seq_last_nondebug_stmt (gimple_seq s)
+{
+  gimple_seq_node n;
+  for (n = gimple_seq_last (s);
+       n && is_gimple_debug (n);
+       n = n->prev)
+    if (n->prev == s)
+      return NULL;
+  return n;
+}
+
+
 /* Return true if S is a GIMPLE_DEBUG BIND statement.  */
 
 static inline bool

@@ -542,33 +542,19 @@ remove_forwarder_block (basic_block bb)
     {
       tree decl;
       label = gsi_stmt (gsi);
-      if (is_gimple_debug (label))
-	break;
-      decl = gimple_label_label (as_a <glabel *> (label));
-      if (EH_LANDING_PAD_NR (decl) != 0
-	  || DECL_NONLOCAL (decl)
-	  || FORCED_LABEL (decl)
-	  || !DECL_ARTIFICIAL (decl))
+      if (is_gimple_debug (label)
+	  ? can_move_debug_stmts
+	  : ((decl = gimple_label_label (as_a <glabel *> (label))),
+	     EH_LANDING_PAD_NR (decl) != 0
+	     || DECL_NONLOCAL (decl)
+	     || FORCED_LABEL (decl)
+	     || !DECL_ARTIFICIAL (decl)))
 	{
 	  gsi_remove (&gsi, false);
 	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
 	}
       else
 	gsi_next (&gsi);
-    }
-
-  /* Move debug statements if the destination has a single predecessor.  */
-  if (can_move_debug_stmts)
-    {
-      gsi_to = gsi_after_labels (dest);
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
-	{
-	  gimple *debug = gsi_stmt (gsi);
-	  if (!is_gimple_debug (debug))
-	    break;
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, debug, GSI_SAME_STMT);
-	}
     }
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
@@ -1309,7 +1295,8 @@ execute_cleanup_cfg_post_optimizing (void)
 
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  fprintf (final_output, "\n");
-	  dump_enumerated_decls (final_output, dump_flags | TDF_NOUID);
+	  dump_enumerated_decls (final_output,
+				 dump_flags | TDF_SLIM | TDF_NOUID);
 	  flag_dump_noaddr = save_noaddr;
 	  flag_dump_unnumbered = save_unnumbered;
 	  if (fclose (final_output))
