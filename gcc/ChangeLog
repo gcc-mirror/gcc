@@ -1,3 +1,8 @@
+2017-12-12  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c (PTA_SKYLAKE_AVX512): Add PTA_CLWB.
+	(PTA_CANNONLAKE): Remove PTA_CLWB.
+
 2017-12-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/83332
@@ -59,9 +64,11 @@
 2017-12-12  Julia Koval  <julia.koval@intel.com>
 
 	* config.gcc: Add vaesintrin.h.
-	* config/i386/i386-builtin-types.def (V64QI_FTYPE_V64QI_V64QI): New type.
+	* config/i386/i386-builtin-types.def (V64QI_FTYPE_V64QI_V64QI):
+	New type.
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesdec_v16qi,
-	__builtin_ia32_vaesdec_v32qi, __builtin_ia32_vaesdec_v64qi): New builtins.
+	__builtin_ia32_vaesdec_v32qi, __builtin_ia32_vaesdec_v64qi):
+	New builtins.
 	* config/i386/i386.c (ix86_expand_args_builtin): Handle new type.
 	* config/i386/immintrin.h: Include vaesintrin.h.
 	* config/i386/sse.md (vaesdec_<mode>): New pattern.
@@ -82,7 +89,7 @@
 	* config/i386/i386.opt: Add -mvaes.
 	* doc/invoke.texi: Ditto.
 
-2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+2017-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* debug.h (gcc_debug_hooks): Add inline_entry.
 	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Likewise.
@@ -413,7 +420,7 @@
 	ALTIVEC_BUILTIN_VEC_SLL): Add expansions.
 	* doc/extend.texi: Add documentation for the added builtins.
 
-2017-12-11  Alexandre Oliva <aoliva@redhat.com>
+2017-12-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/80693
 	PR rtl-optimization/81019
