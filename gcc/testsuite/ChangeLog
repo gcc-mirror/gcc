@@ -1,3 +1,8 @@
+2017-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83385
+	* gcc.dg/graphite/pr83385.c: New testcase.
+
 2017-12-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c/82679

@@ -1608,26 +1608,7 @@ gather_bbs::after_dom_children (basic_block bb)
 /* Compute sth like an execution order, dominator order with first executing
    edges that stay inside the current loop, delaying processing exit edges.  */
 
-static vec<unsigned> order;
-
-static void
-get_order (scop_p scop, basic_block bb, vec<unsigned> *order, unsigned *dfs_num)
-{
-  if (! bb_in_sese_p (bb, scop->scop_info->region))
-    return;
-
-  (*order)[bb->index] = (*dfs_num)++;
-  for (basic_block son = first_dom_son (CDI_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    if (flow_bb_inside_loop_p (bb->loop_father, son))
-      get_order (scop, son, order, dfs_num);
-  for (basic_block son = first_dom_son (CDI_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    if (! flow_bb_inside_loop_p (bb->loop_father, son))
-      get_order (scop, son, order, dfs_num);
-}
+static int *bb_to_rpo;
 
 /* Helper for qsort, sorting after order above.  */
 
@@ -1636,9 +1617,11 @@ cmp_pbbs (const void *pa, const void *pb)
 {
   poly_bb_p bb1 = *((const poly_bb_p *)pa);
   poly_bb_p bb2 = *((const poly_bb_p *)pb);
-  if (order[bb1->black_box->bb->index] < order[bb2->black_box->bb->index])
+  if (bb_to_rpo[bb1->black_box->bb->index]
+      < bb_to_rpo[bb2->black_box->bb->index])
     return -1;
-  else if (order[bb1->black_box->bb->index] > order[bb2->black_box->bb->index])
+  else if (bb_to_rpo[bb1->black_box->bb->index]
+	   > bb_to_rpo[bb2->black_box->bb->index])
     return 1;
   else
     return 0;
@@ -1662,7 +1645,7 @@ build_scops (vec<scop_p> *scops)
   /* Domwalk needs a bb to RPO mapping.  Compute it once here.  */
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
   int postorder_num = pre_and_rev_post_order_compute (NULL, postorder, true);
-  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
   for (int i = 0; i < postorder_num; ++i)
     bb_to_rpo[postorder[i]] = i;
   free (postorder);
@@ -1676,16 +1659,8 @@ build_scops (vec<scop_p> *scops)
       /* Record all basic blocks and their conditions in REGION.  */
       gather_bbs (CDI_DOMINATORS, scop, bb_to_rpo).walk (s->entry->dest);
 
-      /* domwalk does not fulfil our code-generations constraints on the
-         order of pbb which is to produce sth like execution order, delaying
-	 exection of loop exit edges.  So compute such order and sort after
-	 that.  */
-      order.create (last_basic_block_for_fn (cfun));
-      order.quick_grow (last_basic_block_for_fn (cfun));
-      unsigned dfs_num = 0;
-      get_order (scop, s->entry->dest, &order, &dfs_num);
+      /* Sort pbbs after execution order for initial schedule generation.  */
       scop->pbbs.qsort (cmp_pbbs);
-      order.release ();
 
       if (! build_alias_set (scop))
 	{
@@ -1732,6 +1707,7 @@ build_scops (vec<scop_p> *scops)
     }
 
   free (bb_to_rpo);
+  bb_to_rpo = NULL;
   DEBUG_PRINT (dp << "number of SCoPs: " << (scops ? scops->length () : 0););
 }
 

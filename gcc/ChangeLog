@@ -1,3 +1,11 @@
+2017-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83385
+	* graphite-scop-detection.c (get_order, order): Remove.
+	(bb_to_rpo): New global.
+	(cmp_pbbs): Adjust.
+	(build_scops): Sort pbbs in RPO order.
+
 2017-12-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* combine.c (simplify_set): Do not transform subregs to zero_extends
