@@ -6963,6 +6963,8 @@ check_combined_parallel (gimple_stmt_iterator *gsi_p,
     {
     WALK_SUBSTMTS;
 
+    case GIMPLE_DEBUG:
+      break;
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_SECTIONS:
       *info = *info == 0 ? 1 : -1;

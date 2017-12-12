@@ -123,7 +123,7 @@ cleanup_barriers (void)
     {
       if (BARRIER_P (insn))
 	{
-	  rtx_insn *prev = prev_nonnote_insn (insn);
+	  rtx_insn *prev = prev_nonnote_nondebug_insn (insn);
 	  if (!prev)
 	    continue;
 

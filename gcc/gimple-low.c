@@ -645,7 +645,7 @@ gimple_stmt_may_fallthru (gimple *stmt)
 bool
 gimple_seq_may_fallthru (gimple_seq seq)
 {
-  return gimple_stmt_may_fallthru (gimple_seq_last_stmt (seq));
+  return gimple_stmt_may_fallthru (gimple_seq_last_nondebug_stmt (seq));
 }
 
 

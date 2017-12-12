@@ -9479,6 +9479,24 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
     }
 }
 
+/* Return BB's head, unless BB is the block that succeeds ENTRY_BLOCK,
+   in which case it searches back from BB's head for the very first
+   insn.  Use [get_first_insn (bb), BB_HEAD (bb->next_bb)[ as a range
+   to iterate over all insns of a function while iterating over its
+   BBs.  */
+
+static rtx_insn *
+get_first_insn (basic_block bb)
+{
+  rtx_insn *insn = BB_HEAD (bb);
+
+  if (bb->prev_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    while (rtx_insn *prev = PREV_INSN (insn))
+      insn = prev;
+
+  return insn;
+}
+
 /* Emit notes for the whole function.  */
 
 static void
@@ -9507,7 +9525,8 @@ vt_emit_notes (void)
     {
       /* Emit the notes for changes of variable locations between two
 	 subsequent basic blocks.  */
-      emit_notes_for_differences (BB_HEAD (bb), &cur, &VTI (bb)->in);
+      emit_notes_for_differences (get_first_insn (bb),
+				  &cur, &VTI (bb)->in);
 
       if (MAY_HAVE_DEBUG_BIND_INSNS)
 	local_get_addr_cache = new hash_map<rtx, rtx>;
@@ -10103,11 +10122,34 @@ vt_initialize (void)
 	{
 	  HOST_WIDE_INT offset = VTI (bb)->out.stack_adjust;
 	  VTI (bb)->out.stack_adjust = VTI (bb)->in.stack_adjust;
-	  for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
-	       insn = NEXT_INSN (insn))
+
+	  /* If we are walking the first basic block, walk any HEADER
+	     insns that might be before it too.  Unfortunately,
+	     BB_HEADER and BB_FOOTER are not set while we run this
+	     pass.  */
+	  insn = get_first_insn (bb);
+	  for (rtx_insn *next;
+	       insn != BB_HEAD (bb->next_bb)
+		 ? next = NEXT_INSN (insn), true : false;
+	       insn = next)
 	    {
 	      if (INSN_P (insn))
 		{
+		  basic_block save_bb = BLOCK_FOR_INSN (insn);
+		  if (!BLOCK_FOR_INSN (insn))
+		    {
+		      BLOCK_FOR_INSN (insn) = bb;
+		      gcc_assert (DEBUG_INSN_P (insn));
+		      /* Reset debug insns between basic blocks.
+			 Their location is not reliable, because they
+			 were probably not maintained up to date.  */
+		      if (DEBUG_BIND_INSN_P (insn))
+			INSN_VAR_LOCATION_LOC (insn)
+			  = gen_rtx_UNKNOWN_VAR_LOC ();
+		    }
+		  else
+		    gcc_assert (BLOCK_FOR_INSN (insn) == bb);
+
 		  if (!frame_pointer_needed)
 		    {
 		      insn_stack_adjust_offset_pre_post (insn, &pre, &post);
@@ -10175,6 +10217,7 @@ vt_initialize (void)
 			    }
 			}
 		    }
+		  BLOCK_FOR_INSN (insn) = save_bb;
 		}
 	    }
 	  gcc_assert (offset == VTI (bb)->out.stack_adjust);
@@ -10215,7 +10258,10 @@ delete_debug_insns (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      FOR_BB_INSNS_SAFE (bb, insn, next)
+      for (insn = get_first_insn (bb);
+	   insn != BB_HEAD (bb->next_bb)
+	     ? next = NEXT_INSN (insn), true : false;
+	   insn = next)
 	if (DEBUG_INSN_P (insn))
 	  {
 	    tree decl = INSN_VAR_LOCATION_DECL (insn);

@@ -739,9 +739,13 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
       if (gsi_end_p (*gsi))
 	return true;
 
-      /* Make sure we insert after any leading labels.  */
+      /* Make sure we insert after any leading labels.  We have to
+	 skip debug stmts before or among them, though.  We didn't
+	 have to skip debug stmts after the last label, but it
+	 shouldn't hurt if we do.  */
       tmp = gsi_stmt (*gsi);
-      while (gimple_code (tmp) == GIMPLE_LABEL)
+      while (gimple_code (tmp) == GIMPLE_LABEL
+	     || is_gimple_debug (tmp))
 	{
 	  gsi_next (gsi);
 	  if (gsi_end_p (*gsi))
@@ -776,7 +780,21 @@ gimple_find_edge_insert_loc (edge e, gimple_stmt_iterator *gsi,
 	return true;
 
       tmp = gsi_stmt (*gsi);
-      if (!stmt_ends_bb_p (tmp))
+      if (is_gimple_debug (tmp))
+	{
+	  gimple_stmt_iterator si = *gsi;
+	  gsi_prev_nondebug (&si);
+	  if (!gsi_end_p (si))
+	    tmp = gsi_stmt (si);
+	  /* If we don't have a BB-ending nondebug stmt, we want to
+	     insert after the trailing debug stmts.  Otherwise, we may
+	     insert before the BB-ending nondebug stmt, or split the
+	     edge.  */
+	  if (!stmt_ends_bb_p (tmp))
+	    return true;
+	  *gsi = si;
+	}
+      else if (!stmt_ends_bb_p (tmp))
 	return true;
 
       switch (gimple_code (tmp))

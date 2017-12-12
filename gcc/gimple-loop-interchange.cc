@@ -827,7 +827,7 @@ find_deps_in_bb_for_stmt (gimple_seq *stmts, basic_block bb, gimple *consumer)
 	}
       gimple_set_plf (stmt, GF_PLF_1, true);
     }
-  for (gsi = gsi_start_bb_nondebug (bb);
+  for (gsi = gsi_start_nondebug_bb (bb);
        !gsi_end_p (gsi) && (stmt = gsi_stmt (gsi)) != consumer;)
     {
       /* Move dep stmts to sequence STMTS.  */
@@ -1749,7 +1749,7 @@ proper_loop_form_for_interchange (struct loop *loop, struct loop **min_outer)
 	  || dominated_by_p (CDI_DOMINATORS, exit->src, bb))
 	continue;
 
-      for (gimple_stmt_iterator gsi = gsi_start_bb_nondebug (bb);
+      for (gimple_stmt_iterator gsi = gsi_start_nondebug_bb (bb);
 	   !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
 	if (gimple_vuse (gsi_stmt (gsi)))
 	  {
