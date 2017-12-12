@@ -1,3 +1,17 @@
+2017-12-12  Julia Koval  <julia.koval@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_VAES_SET,
+	OPTION_MASK_ISA_VAES_UNSET): New.
+	(ix86_handle_option): Handle -mvaes.
+	* config/i386/cpuid.h: Define bit_VAES.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect -mvaes.
+	* config/i386/i386-c.c (__VAES__): New.
+	* config/i386/i386.c (ix86_target_string): Add -mvaes.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	* config/i386/i386.h (TARGET_VAES, TARGET_VAES_P): New.
+	* config/i386/i386.opt: Add -mvaes.
+	* doc/invoke.texi: Ditto.
+
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
 	* debug.h (gcc_debug_hooks): Add inline_entry.
