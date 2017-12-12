@@ -1,5 +1,10 @@
 2017-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/83363
+	PR rtl-optimization/83364
+	* gcc.dg/pr83363.c: New test.
+	* gcc.dg/pr83364.c: New test.
+
 	PR tree-optimization/83359
 	* gcc.dg/graphite/pr83359.c: New test.
 
