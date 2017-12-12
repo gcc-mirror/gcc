@@ -1,3 +1,9 @@
+2017-12-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi (MAXLOC): Remove double description
+	of return value.
+	(MINLOC): Likewise.
+
 2017-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* intrinsic.texi (MAXLOC): Update documentation for

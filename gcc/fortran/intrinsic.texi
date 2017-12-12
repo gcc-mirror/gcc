@@ -9994,9 +9994,7 @@ that of the first such element in array element order.  If the array has
 zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
-result value for that row is zero. If the optional argument @var{KIND}
-is present, the result is an integer of kind @var{KIND}, otherwise it is of
-default kind.
+result value for that row is zero.
 
 @item @emph{Standard}:
 Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
@@ -10030,8 +10028,9 @@ equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
 is an array with a rank one less than the rank of @var{ARRAY}, and a
 size corresponding to the size of @var{ARRAY} with the @var{DIM}
 dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
-of one, the result is a scalar.  In all cases, the result is of default
-@code{INTEGER} type.
+of one, the result is a scalar.   If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it
+is of default kind.
 
 @item @emph{See also}:
 @ref{MAX}, @ref{MAXVAL}
@@ -10347,9 +10346,7 @@ that of the first such element in array element order.  If the array has
 zero size, or all of the elements of @var{MASK} are @code{.FALSE.}, then
 the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
-result value for that row is zero. If the optional argument @var{KIND}
-is present, the result is an integer of kind @var{KIND}, otherwise it is of
-default kind.
+result value for that row is zero.
 
 @item @emph{Standard}:
 Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
@@ -10383,8 +10380,9 @@ equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
 is an array with a rank one less than the rank of @var{ARRAY}, and a
 size corresponding to the size of @var{ARRAY} with the @var{DIM}
 dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
-of one, the result is a scalar.  In all cases, the result is of default
-@code{INTEGER} type.
+of one, the result is a scalar.  If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it
+is of default kind.
 
 @item @emph{See also}:
 @ref{MIN}, @ref{MINVAL}
