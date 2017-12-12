@@ -1,3 +1,10 @@
+2017-12-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/83332
+	* config/rs6000/vector.md (vcondv2dfv2di): New define_expand.
+	(vcondv2div2df): Likewise.
+	(vconduv2dfv2di): Likewise.
+
 2017-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.def (BUILT_IN_NEXTAFTER, BUILT_IN_NEXTAFTERF,
