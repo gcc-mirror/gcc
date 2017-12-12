@@ -1536,6 +1536,10 @@ process_options (void)
     warning_at (UNKNOWN_LOCATION, 0,
 		"var-tracking-assignments changes selective scheduling");
 
+  if (debug_nonbind_markers_p == AUTODETECT_VALUE)
+    debug_nonbind_markers_p = optimize && debug_info_level >= DINFO_LEVEL_NORMAL
+      && (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG);
+
   if (flag_tree_cselim == AUTODETECT_VALUE)
     {
       if (HAVE_conditional_move)
