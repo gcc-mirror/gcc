@@ -1,5 +1,8 @@
 2017-12-12  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (value_dependent_init_p): Check the type of a CONSTRUCTOR.
+	(type_dependent_init_p): Remove.
+
 	PR c++/82115 - ICE with variable initialized with its own address.
 	* cp-tree.h (struct lang_decl_base): Add dependent_init_p.
 	(DECL_DEPENDENT_INIT_P, SET_DECL_DEPENDENT_INIT_P): New.
