@@ -7375,6 +7375,47 @@ gather_ssa_name_hash_map_from (tree const &from, tree const &, void *data)
   return true;
 }
 
+/* Return LOOP_DIST_ALIAS call if present in BB.  */
+
+static gimple *
+find_loop_dist_alias (basic_block bb)
+{
+  gimple *g = last_stmt (bb);
+  if (g == NULL || gimple_code (g) != GIMPLE_COND)
+    return NULL;
+
+  gimple_stmt_iterator gsi = gsi_for_stmt (g);
+  gsi_prev (&gsi);
+  if (gsi_end_p (gsi))
+    return NULL;
+
+  g = gsi_stmt (gsi);
+  if (gimple_call_internal_p (g, IFN_LOOP_DIST_ALIAS))
+    return g;
+  return NULL;
+}
+
+/* Fold loop internal call G like IFN_LOOP_VECTORIZED/IFN_LOOP_DIST_ALIAS
+   to VALUE and update any immediate uses of it's LHS.  */
+
+void
+fold_loop_internal_call (gimple *g, tree value)
+{
+  tree lhs = gimple_call_lhs (g);
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  gimple *use_stmt;
+  gimple_stmt_iterator gsi = gsi_for_stmt (g);
+
+  update_call_from_tree (&gsi, value);
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	SET_USE (use_p, value);
+      update_stmt (use_stmt);
+    }
+}
+
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
    EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
    single basic block in the original CFG and the new basic block is
@@ -7548,7 +7589,6 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 	  }
     }
 
-
   /* Adjust the number of blocks in the tree root of the outlined part.  */
   get_loop (dest_cfun, 0)->num_nodes = bbs.length () + 2;
 
@@ -7559,18 +7599,76 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   /* Fix up orig_loop_num.  If the block referenced in it has been moved
      to dest_cfun, update orig_loop_num field, otherwise clear it.  */
   struct loop *dloop;
+  signed char *moved_orig_loop_num = NULL;
   FOR_EACH_LOOP_FN (dest_cfun, dloop, 0)
     if (dloop->orig_loop_num)
       {
+	if (moved_orig_loop_num == NULL)
+	  moved_orig_loop_num
+	    = XCNEWVEC (signed char, vec_safe_length (larray));
 	if ((*larray)[dloop->orig_loop_num] != NULL
 	    && get_loop (saved_cfun, dloop->orig_loop_num) == NULL)
-	  dloop->orig_loop_num = (*larray)[dloop->orig_loop_num]->num;
+	  {
+	    if (moved_orig_loop_num[dloop->orig_loop_num] >= 0
+		&& moved_orig_loop_num[dloop->orig_loop_num] < 2)
+	      moved_orig_loop_num[dloop->orig_loop_num]++;
+	    dloop->orig_loop_num = (*larray)[dloop->orig_loop_num]->num;
+	  }
 	else
-	  dloop->orig_loop_num = 0;
+	  {
+	    moved_orig_loop_num[dloop->orig_loop_num] = -1;
+	    dloop->orig_loop_num = 0;
+	  }
       }
-  ggc_free (larray);
-
   pop_cfun ();
+
+  if (moved_orig_loop_num)
+    {
+      FOR_EACH_VEC_ELT (bbs, i, bb)
+	{
+	  gimple *g = find_loop_dist_alias (bb);
+	  if (g == NULL)
+	    continue;
+
+	  int orig_loop_num = tree_to_shwi (gimple_call_arg (g, 0));
+	  gcc_assert (orig_loop_num
+		      && (unsigned) orig_loop_num < vec_safe_length (larray));
+	  if (moved_orig_loop_num[orig_loop_num] == 2)
+	    {
+	      /* If we have moved both loops with this orig_loop_num into
+		 dest_cfun and the LOOP_DIST_ALIAS call is being moved there
+		 too, update the first argument.  */
+	      gcc_assert ((*larray)[dloop->orig_loop_num] != NULL
+			  && (get_loop (saved_cfun, dloop->orig_loop_num)
+			      == NULL));
+	      tree t = build_int_cst (integer_type_node,
+				      (*larray)[dloop->orig_loop_num]->num);
+	      gimple_call_set_arg (g, 0, t);
+	      update_stmt (g);
+	      /* Make sure the following loop will not update it.  */
+	      moved_orig_loop_num[orig_loop_num] = 0;
+	    }
+	  else
+	    /* Otherwise at least one of the loops stayed in saved_cfun.
+	       Remove the LOOP_DIST_ALIAS call.  */
+	    fold_loop_internal_call (g, gimple_call_arg (g, 1));
+	}
+      FOR_EACH_BB_FN (bb, saved_cfun)
+	{
+	  gimple *g = find_loop_dist_alias (bb);
+	  if (g == NULL)
+	    continue;
+	  int orig_loop_num = tree_to_shwi (gimple_call_arg (g, 0));
+	  gcc_assert (orig_loop_num
+		      && (unsigned) orig_loop_num < vec_safe_length (larray));
+	  if (moved_orig_loop_num[orig_loop_num])
+	    /* LOOP_DIST_ALIAS call remained in saved_cfun, if at least one
+	       of the corresponding loops was moved, remove it.  */
+	    fold_loop_internal_call (g, gimple_call_arg (g, 1));
+	}
+      XDELETEVEC (moved_orig_loop_num);
+    }
+  ggc_free (larray);
 
   /* Move blocks from BBS into DEST_CFUN.  */
   gcc_assert (bbs.length () >= 2);

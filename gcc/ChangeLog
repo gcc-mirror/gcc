@@ -1,5 +1,14 @@
 2017-12-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83359
+	* tree-cfg.h (fold_loop_internal_call): Declare.
+	* tree-vectorizer.c (fold_loop_internal_call): Moved to ...
+	* tree-cfg.c (fold_loop_internal_call): ... here.  No longer static.
+	(find_loop_dist_alias): New function.
+	(move_sese_region_to_fn): If any dloop->orig_loop_num value is
+	updated, also adjust any corresponding LOOP_DIST_ALIAS internal
+	calls.
+
 	PR tree-optimization/80631
 	* tree-vect-loop.c (get_initial_def_for_reduction): Fix comment typo.
 	(vect_create_epilog_for_reduction): Add INDUC_VAL and INDUC_CODE
