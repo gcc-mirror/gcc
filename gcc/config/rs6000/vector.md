@@ -455,6 +455,42 @@
     FAIL;
 }")
 
+(define_expand "vcondv2dfv2di"
+  [(set (match_operand:V2DF 0 "vfloat_operand")
+	(if_then_else:V2DF
+	 (match_operator 3 "comparison_operator"
+			 [(match_operand:V2DI 4 "vint_operand")
+			  (match_operand:V2DI 5 "vint_operand")])
+	 (match_operand:V2DF 1 "vfloat_operand")
+	 (match_operand:V2DF 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V2DFmode)
+   && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V2DImode)"
+{
+  if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
+				    operands[3], operands[4], operands[5]))
+    DONE;
+  else
+    FAIL;
+})
+
+(define_expand "vcondv2div2df"
+  [(set (match_operand:V2DI 0 "vint_operand")
+	(if_then_else:V2DI
+	 (match_operator 3 "comparison_operator"
+			 [(match_operand:V2DF 4 "vfloat_operand")
+			  (match_operand:V2DF 5 "vfloat_operand")])
+	 (match_operand:V2DI 1 "vint_operand")
+	 (match_operand:V2DI 2 "vint_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V2DFmode)
+   && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V2DImode)"
+{
+  if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
+				    operands[3], operands[4], operands[5]))
+    DONE;
+  else
+    FAIL;
+})
+
 (define_expand "vcondu<mode><mode>"
   [(set (match_operand:VEC_I 0 "vint_operand")
 	(if_then_else:VEC_I
@@ -491,6 +527,24 @@
   else
     FAIL;
 }")
+
+(define_expand "vconduv2dfv2di"
+  [(set (match_operand:V2DF 0 "vfloat_operand")
+	(if_then_else:V2DF
+	 (match_operator 3 "comparison_operator"
+			 [(match_operand:V2DI 4 "vint_operand")
+			  (match_operand:V2DI 5 "vint_operand")])
+	 (match_operand:V2DF 1 "vfloat_operand")
+	 (match_operand:V2DF 2 "vfloat_operand")))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (V2DFmode)
+   && VECTOR_UNIT_ALTIVEC_OR_VSX_P (V2DImode)"
+{
+  if (rs6000_emit_vector_cond_expr (operands[0], operands[1], operands[2],
+				    operands[3], operands[4], operands[5]))
+    DONE;
+  else
+    FAIL;
+})
 
 (define_expand "vector_eq<mode>"
   [(set (match_operand:VEC_C 0 "vlogical_operand" "")
