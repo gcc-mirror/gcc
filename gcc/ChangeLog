@@ -1,3 +1,10 @@
+2017-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_NEXTAFTER, BUILT_IN_NEXTAFTERF,
+	BUILT_IN_NEXTAFTERL, BUILT_IN_NEXTTOWARD, BUILT_IN_NEXTTOWARDF,
+	BUILT_IN_NEXTTOWARDL): Use ATTR_MATHFN_ERRNO instead of
+	ATTR_MATHFN_FPROUNDING_ERRNO.
+
 2017-12-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83385
