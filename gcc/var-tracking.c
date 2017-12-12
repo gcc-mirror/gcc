@@ -9926,6 +9926,36 @@ vt_init_cfa_base (void)
   cselib_preserve_cfa_base_value (val, REGNO (cfa_base_rtx));
 }
 
+/* Reemit INSN, a MARKER_DEBUG_INSN, as a note.  */
+
+static rtx_insn *
+reemit_marker_as_note (rtx_insn *insn, basic_block *bb)
+{
+  gcc_checking_assert (DEBUG_MARKER_INSN_P (insn));
+
+  enum insn_note kind = INSN_DEBUG_MARKER_KIND (insn);
+
+  switch (kind)
+    {
+    case NOTE_INSN_BEGIN_STMT:
+      {
+	rtx_insn *note = NULL;
+	if (cfun->debug_nonbind_markers)
+	  {
+	    note = emit_note_before (kind, insn);
+	    NOTE_MARKER_LOCATION (note) = INSN_LOCATION (insn);
+	    if (bb)
+	      BLOCK_FOR_INSN (note) = *bb;
+	  }
+	delete_insn (insn);
+	return note;
+      }
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Allocate and initialize the data structures for variable tracking
    and parse the RTL to get the micro operations.  */
 
@@ -10169,6 +10199,12 @@ vt_initialize (void)
 
 		  cselib_hook_called = false;
 		  adjust_insn (bb, insn);
+		  if (DEBUG_MARKER_INSN_P (insn))
+		    {
+		      insn = reemit_marker_as_note (insn, &save_bb);
+		      continue;
+		    }
+
 		  if (MAY_HAVE_DEBUG_BIND_INSNS)
 		    {
 		      if (CALL_P (insn))
@@ -10245,10 +10281,11 @@ vt_initialize (void)
 
 static int debug_label_num = 1;
 
-/* Get rid of all debug insns from the insn stream.  */
+/* Remove from the insn stream all debug insns used for variable
+   tracking at assignments.  */
 
 static void
-delete_debug_insns (void)
+delete_vta_debug_insns (void)
 {
   basic_block bb;
   rtx_insn *insn, *next;
@@ -10264,6 +10301,12 @@ delete_debug_insns (void)
 	   insn = next)
 	if (DEBUG_INSN_P (insn))
 	  {
+	    if (DEBUG_MARKER_INSN_P (insn))
+	      {
+		insn = reemit_marker_as_note (insn, NULL);
+		continue;
+	      }
+
 	    tree decl = INSN_VAR_LOCATION_DECL (insn);
 	    if (TREE_CODE (decl) == LABEL_DECL
 		&& DECL_NAME (decl)
@@ -10289,10 +10332,13 @@ delete_debug_insns (void)
    handled as well..  */
 
 static void
-vt_debug_insns_local (bool skipped ATTRIBUTE_UNUSED)
+vt_debug_insns_local (bool skipped)
 {
-  /* ??? Just skip it all for now.  */
-  delete_debug_insns ();
+  /* ??? Just skip it all for now.  If we skipped the global pass,
+     arrange for stmt markers to be dropped as well.  */
+  if (skipped)
+    cfun->debug_nonbind_markers = 0;
+  delete_vta_debug_insns ();
 }
 
 /* Free the data structures needed for variable tracking.  */
@@ -10357,14 +10403,20 @@ variable_tracking_main_1 (void)
 {
   bool success;
 
-  if (flag_var_tracking_assignments < 0
+  /* We won't be called as a separate pass if flag_var_tracking is not
+     set, but final may call us to turn debug markers into notes.  */
+  if ((!flag_var_tracking && MAY_HAVE_DEBUG_INSNS)
+      || flag_var_tracking_assignments < 0
       /* Var-tracking right now assumes the IR doesn't contain
 	 any pseudos at this point.  */
       || targetm.no_register_allocation)
     {
-      delete_debug_insns ();
+      delete_vta_debug_insns ();
       return 0;
     }
+
+  if (!flag_var_tracking)
+    return 0;
 
   if (n_basic_blocks_for_fn (cfun) > 500 &&
       n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun) >= 20)
@@ -10387,7 +10439,9 @@ variable_tracking_main_1 (void)
     {
       vt_finalize ();
 
-      delete_debug_insns ();
+      cfun->debug_nonbind_markers = 0;
+
+      delete_vta_debug_insns ();
 
       /* This is later restored by our caller.  */
       flag_var_tracking_assignments = 0;

@@ -3448,6 +3448,25 @@ Stands for the value bound to the @code{DEBUG_EXPR_DECL} @var{decl},
 that points back to it, within value expressions in
 @code{VAR_LOCATION} nodes.
 
+@findex debug_implicit_ptr
+@item (debug_implicit_ptr:@var{mode} @var{decl})
+Stands for the location of a @var{decl} that is no longer addressable.
+
+@findex entry_value
+@item (entry_value:@var{mode} @var{decl})
+Stands for the value a @var{decl} had at the entry point of the
+containing function.
+
+@findex debug_parameter_ref
+@item (debug_parameter_ref:@var{mode} @var{decl})
+Refers to a parameter that was completely optimized out.
+
+@findex debug_marker
+@item (debug_marker:@var{mode})
+Marks a program location.  With @code{VOIDmode}, it stands for the
+beginning of a statement, a recommended inspection point logically after
+all prior side effects, and before any subsequent side effects.
+
 @end table
 
 @node Insns
@@ -3724,6 +3743,12 @@ can be computed by evaluating the RTL expression from that static
 point in the program up to the next such note for the same user
 variable.
 
+@findex NOTE_INSN_BEGIN_STMT
+@item NOTE_INSN_BEGIN_STMT
+This note is used to generate @code{is_stmt} markers in line number
+debuggign information.  It indicates the beginning of a user
+statement.
+
 @end table
 
 These codes are printed symbolically when they appear in debugging dumps.
@@ -3741,15 +3766,25 @@ binds a user variable tree to an RTL representation of the
 it stands for the value bound to the corresponding
 @code{DEBUG_EXPR_DECL}.
 
-Throughout optimization passes, binding information is kept in
-pseudo-instruction form, so that, unlike notes, it gets the same
-treatment and adjustments that regular instructions would.  It is the
-variable tracking pass that turns these pseudo-instructions into var
-location notes, analyzing control flow, value equivalences and changes
-to registers and memory referenced in value expressions, propagating
-the values of debug temporaries and determining expressions that can
-be used to compute the value of each user variable at as many points
-(ranges, actually) in the program as possible.
+@code{GIMPLE_DEBUG_BEGIN_STMT} is expanded to RTL as a @code{DEBUG_INSN}
+with a @code{VOIDmode} @code{DEBUG_MARKER} @code{PATTERN}.  These
+@code{DEBUG_INSN}s, that do not carry @code{VAR_LOCATION} information,
+just @code{DEBUG_MARKER}s, can be detected by testing
+@code{DEBUG_MARKER_INSN_P}, whereas those that do can be recognized as
+@code{DEBUG_BIND_INSN_P}.
+
+Throughout optimization passes, @code{DEBUG_INSN}s are not reordered
+with respect to each other, particularly during scheduling.  Binding
+information is kept in pseudo-instruction form, so that, unlike notes,
+it gets the same treatment and adjustments that regular instructions
+would.  It is the variable tracking pass that turns these
+pseudo-instructions into @code{NOTE_INSN_VAR_LOCATION} and
+@code{NOTE_INSN_BEGIN_STMT} notes,
+analyzing control flow, value equivalences and changes to registers and
+memory referenced in value expressions, propagating the values of debug
+temporaries and determining expressions that can be used to compute the
+value of each user variable at as many points (ranges, actually) in the
+program as possible.
 
 Unlike @code{NOTE_INSN_VAR_LOCATION}, the value expression in an
 @code{INSN_VAR_LOCATION} denotes a value at that specific point in the

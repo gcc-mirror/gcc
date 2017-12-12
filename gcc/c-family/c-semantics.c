@@ -76,6 +76,27 @@ pop_stmt_list (tree t)
 	  free_stmt_list (t);
 	  t = u;
 	}
+      /* If the statement list contained a debug begin stmt and a
+	 statement list, move the debug begin stmt into the statement
+	 list and return it.  */
+      else if (!tsi_end_p (i)
+	       && TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+	{
+	  u = tsi_stmt (i);
+	  tsi_next (&i);
+	  if (tsi_one_before_end_p (i)
+	      && TREE_CODE (tsi_stmt (i)) == STATEMENT_LIST)
+	    {
+	      tree l = tsi_stmt (i);
+	      tsi_prev (&i);
+	      tsi_delink (&i);
+	      tsi_delink (&i);
+	      i = tsi_start (l);
+	      free_stmt_list (t);
+	      t = l;
+	      tsi_link_before (&i, u, TSI_SAME_STMT);
+	    }
+	}
     }
 
   return t;

@@ -976,6 +976,15 @@ DEFPARAM (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE,
 	  "Max. size of loc list for which reverse ops should be added.",
 	  50, 0, 0)
 
+/* Set a threshold to discard debug markers (e.g. debug begin stmt
+   markers) when expanding a function to RTL, or inlining it into
+   another function.  */
+
+DEFPARAM (PARAM_MAX_DEBUG_MARKER_COUNT,
+	  "max-debug-marker-count",
+	  "Max. count of debug markers to expand or inline.",
+	  100000, 0, 0)
+
 /* Set minimum insn uid for non-debug insns.  */
 
 DEFPARAM (PARAM_MIN_NONDEBUG_INSN_UID,

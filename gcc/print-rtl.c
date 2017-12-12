@@ -258,6 +258,16 @@ rtx_writer::print_rtx_operand_code_0 (const_rtx in_rtx ATTRIBUTE_UNUSED,
 	  fputc ('\t', m_outfile);
 	  break;
 
+	case NOTE_INSN_BEGIN_STMT:
+#ifndef GENERATOR_FILE
+	  {
+	    expanded_location xloc
+	      = expand_location (NOTE_MARKER_LOCATION (in_rtx));
+	    fprintf (m_outfile, " %s:%i", xloc.file, xloc.line);
+	  }
+#endif
+	  break;
+
 	default:
 	  break;
 	}
@@ -1808,6 +1818,20 @@ print_insn (pretty_printer *pp, const rtx_insn *x, int verbose)
 
     case DEBUG_INSN:
       {
+	if (DEBUG_MARKER_INSN_P (x))
+	  {
+	    switch (INSN_DEBUG_MARKER_KIND (x))
+	      {
+	      case NOTE_INSN_BEGIN_STMT:
+		pp_string (pp, "debug begin stmt marker");
+		break;
+
+	      default:
+		gcc_unreachable ();
+	      }
+	    break;
+	  }
+
 	const char *name = "?";
 	char idbuf[32];
 

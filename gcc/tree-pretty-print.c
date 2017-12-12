@@ -3230,6 +3230,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_block_node (pp, node, spc, flags);
       break;
 
+    case DEBUG_BEGIN_STMT:
+      pp_string (pp, "# DEBUG BEGIN STMT");
+      break;
+
     default:
       NIY;
     }

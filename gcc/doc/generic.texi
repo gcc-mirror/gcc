@@ -2006,6 +2006,11 @@ case 2 ... 5:
 The first value will be @code{CASE_LOW}, while the second will be
 @code{CASE_HIGH}.
 
+@item DEBUG_BEGIN_STMT
+
+Marks the beginning of a source statement, for purposes of debug
+information generation.
+
 @end table
 
 

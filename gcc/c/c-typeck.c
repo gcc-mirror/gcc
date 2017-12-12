@@ -10710,6 +10710,10 @@ c_finish_stmt_expr (location_t loc, tree body)
 	}
       else
 	i = tsi_last (last);
+      if (TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+	do
+	  tsi_prev (&i);
+	while (TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT);
       last_p = tsi_stmt_ptr (i);
       last = *last_p;
     }
@@ -10729,7 +10733,9 @@ c_finish_stmt_expr (location_t loc, tree body)
 
   /* In the case that the BIND_EXPR is not necessary, return the
      expression out from inside it.  */
-  if (last == BIND_EXPR_BODY (body)
+  if ((last == BIND_EXPR_BODY (body)
+       /* Skip nested debug stmts.  */
+       || last == expr_first (BIND_EXPR_BODY (body)))
       && BIND_EXPR_VARS (body) == NULL)
     {
       /* Even if this looks constant, do not allow it in a constant

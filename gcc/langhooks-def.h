@@ -132,6 +132,7 @@ extern int lhd_type_dwarf_attribute (const_tree, int);
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP	false
 #define LANG_HOOKS_DEEP_UNSHARING	false
 #define LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS	false
+#define LANG_HOOKS_EMITS_BEGIN_STMT	false
 #define LANG_HOOKS_RUN_LANG_SELFTESTS   lhd_do_nothing
 #define LANG_HOOKS_GET_SUBSTRING_LOCATION lhd_get_substring_location
 
@@ -346,6 +347,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_EH_USE_CXA_END_CLEANUP, \
   LANG_HOOKS_DEEP_UNSHARING, \
   LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS, \
+  LANG_HOOKS_EMITS_BEGIN_STMT, \
   LANG_HOOKS_RUN_LANG_SELFTESTS, \
   LANG_HOOKS_GET_SUBSTRING_LOCATION \
 }

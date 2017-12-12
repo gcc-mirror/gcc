@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LANG_HOOKS_BUILTIN_FUNCTION c_builtin_function
 #undef  LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE
 #define LANG_HOOKS_BUILTIN_FUNCTION_EXT_SCOPE c_builtin_function_ext_scope
+#undef LANG_HOOKS_EMITS_BEGIN_STMT
+#define LANG_HOOKS_EMITS_BEGIN_STMT true
 
 /* Attribute hooks.  */
 #undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE

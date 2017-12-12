@@ -1649,6 +1649,19 @@ c_parser_external_declaration (c_parser *parser)
 static void c_finish_omp_declare_simd (c_parser *, tree, tree, vec<c_token>);
 static void c_finish_oacc_routine (struct oacc_routine_data *, tree, bool);
 
+/* Build and add a DEBUG_BEGIN_STMT statement with location LOC.  */
+
+static void
+add_debug_begin_stmt (location_t loc)
+{
+  if (!MAY_HAVE_DEBUG_MARKER_STMTS)
+    return;
+
+  tree stmt = build0 (DEBUG_BEGIN_STMT, void_type_node);
+  SET_EXPR_LOCATION (stmt, loc);
+  add_stmt (stmt);
+}
+
 /* Parse a declaration or function definition (C90 6.5, 6.7.1, C99
    6.7, 6.9.1, C11 6.7, 6.9.1).  If FNDEF_OK is true, a function definition
    is accepted; otherwise (old-style parameter declarations) only other
@@ -1748,6 +1761,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
   tree all_prefix_attrs;
   bool diagnosed_no_specs = false;
   location_t here = c_parser_peek_token (parser)->location;
+
+  add_debug_begin_stmt (c_parser_peek_token (parser)->location);
 
   if (static_assert_ok
       && c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT))
@@ -4911,6 +4926,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
   location_t label_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
+      add_debug_begin_stmt (c_parser_peek_token (parser)->location);
       c_parser_consume_token (parser);
       return;
     }
@@ -5365,6 +5381,10 @@ c_parser_statement_after_labels (c_parser *parser, bool *if_p,
   parser->in_if_block = false;
   if (if_p != NULL)
     *if_p = false;
+
+  if (c_parser_peek_token (parser)->type != CPP_OPEN_BRACE)
+    add_debug_begin_stmt (loc);
+
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_OPEN_BRACE:

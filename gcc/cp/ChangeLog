@@ -1,3 +1,20 @@
+2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+
+	* constexpr.c (check_constexpr_ctor_body_1): Skip begin stmt
+	markers.
+	(constexpr_fn_retval): Likewise.
+	(potential_constant_expression_1): Likewise.
+	(cxx_eval_statement_list): Check that a begin stmt marker is
+	not used as the value of a statement list.
+	(cxx_eval_constant_expression): Return begin stmt markers
+	unchanged.
+	* cp-array-notation.c (stmt_location): New.
+	(cp_expand_cond_array_notations): Use it.
+	* cp-objcp-common.h (LANG_HOOKS_EMITS_BEGIN_STMT): Redefine as true.
+	* parser.c (add_debug_begin_stmt): New.
+	(cp_parser_statement): Call it.
+	* pt.c (tsubst_copy): Handle begin stmt markers.
+
 2017-12-07  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81544

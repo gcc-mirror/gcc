@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "except.h"
 #include "debug.h"
+#include "params.h"
 #include "value-prof.h"
 #include "cfgloop.h"
 #include "builtins.h"
@@ -1355,7 +1356,9 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
   gimple_seq stmts = NULL;
 
   if (is_gimple_debug (stmt)
-      && !opt_for_fn (id->dst_fn, flag_var_tracking_assignments))
+      && (gimple_debug_nonbind_marker_p (stmt)
+	  ? !DECL_STRUCT_FUNCTION (id->dst_fn)->debug_nonbind_markers
+	  : !opt_for_fn (id->dst_fn, flag_var_tracking_assignments)))
     return stmts;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
@@ -1638,6 +1641,20 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
 	}
+      if (gimple_debug_nonbind_marker_p (stmt))
+	{
+	  /* If the inlined function has too many debug markers,
+	     don't copy them.  */
+	  if (id->src_cfun->debug_marker_count
+	      > PARAM_VALUE (PARAM_MAX_DEBUG_MARKER_COUNT))
+	    return stmts;
+
+	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
+	  id->debug_stmts.safe_push (copy);
+	  gimple_seq_add_stmt (&stmts, copy);
+	  return stmts;
+	}
+      gcc_checking_assert (!is_gimple_debug (stmt));
 
       /* Create a new deep copy of the statement.  */
       copy = gimple_copy (stmt);
@@ -1733,7 +1750,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       gimple_set_block (copy, *n);
     }
 
-  if (gimple_debug_bind_p (copy) || gimple_debug_source_bind_p (copy))
+  if (gimple_debug_bind_p (copy) || gimple_debug_source_bind_p (copy)
+      || gimple_debug_nonbind_marker_p (copy))
     {
       gimple_seq_add_stmt (&stmts, copy);
       return stmts;
@@ -2555,6 +2573,8 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 	      value = gimple_debug_source_bind_get_value (stmt);
 	      new_stmt = gimple_build_debug_source_bind (var, value, stmt);
 	    }
+	  else if (gimple_debug_nonbind_marker_p (stmt))
+	    new_stmt = as_a <gdebug *> (gimple_copy (stmt));
 	  else
 	    gcc_unreachable ();
 	  gsi_insert_before (&dsi, new_stmt, GSI_SAME_STMT);
@@ -2825,6 +2845,9 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
       gimple_set_block (stmt, n ? *n : id->block);
     }
 
+  if (gimple_debug_nonbind_marker_p (stmt))
+    return;
+
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));
   wi.info = id;
@@ -2833,8 +2856,10 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
 
   if (gimple_debug_source_bind_p (stmt))
     t = gimple_debug_source_bind_get_var (stmt);
-  else
+  else if (gimple_debug_bind_p (stmt))
     t = gimple_debug_bind_get_var (stmt);
+  else
+    gcc_unreachable ();
 
   if (TREE_CODE (t) == PARM_DECL && id->debug_map
       && (n = id->debug_map->get (t)))

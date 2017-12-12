@@ -1,3 +1,12 @@
+2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+
+	* c-objc-common.h (LANG_HOOKS_EMITS_BEGIN_STMT): Redefine as true.
+	* c-parser.c (add_debug_begin_stmt): New.
+	(c_parser_declaration_or_fndef): Call it.
+	(c_parser_compound_statement_nostart): Likewise.
+	(c_parser_statement_after_labels): Likewise.
+	* c-typeck (c_finish_stmt_expr): Skip begin stmts markers.
+
 2017-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (build_compound_literal): Add parameter alignas_align

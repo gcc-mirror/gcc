@@ -1363,6 +1363,13 @@ dump_gimple_debug (pretty_printer *buffer, gdebug *gs, int spc,
 			 gimple_debug_source_bind_get_value (gs));
       break;
 
+    case GIMPLE_DEBUG_BEGIN_STMT:
+      if (flags & TDF_RAW)
+	dump_gimple_fmt (buffer, spc, flags, "%G BEGIN_STMT", gs);
+      else
+	dump_gimple_fmt (buffer, spc, flags, "# DEBUG BEGIN_STMT");
+      break;
+
     default:
       gcc_unreachable ();
     }
