@@ -961,10 +961,6 @@ case "${target}" in
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss"
-    # this is not caught below because this stanza matches earlier
-    case $target in
-      or1k*-*-*) noconfigdirs="$noconfigdirs gdb" ;;
-    esac
     ;;
     # The tpf target doesn't support gdb yet.
   *-*-tpf*)
@@ -1169,9 +1165,6 @@ case "${target}" in
     ;;
   nvptx*-*-*)
     noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
-    ;;
-  or1k*-*-*)
-    noconfigdirs="$noconfigdirs gdb"
     ;;
   sh-*-*)
     case "${target}" in
