@@ -1,3 +1,10 @@
+2017-12-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81889
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_signedness): Use
+	range info from the non-wrapping IV instead of just the range
+	of the type.
+
 2017-12-12  Julia Koval  <julia.koval@intel.com>
 
 	* config.gcc: Add vaesintrin.h.
