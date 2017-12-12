@@ -1,3 +1,18 @@
+2017-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80631
+	* tree-vect-loop.c (get_initial_def_for_reduction): Fix comment typo.
+	(vect_create_epilog_for_reduction): Add INDUC_VAL and INDUC_CODE
+	arguments, for INTEGER_INDUC_COND_REDUCTION use INDUC_VAL instead of
+	hardcoding zero as the value if COND_EXPR is never true.  For
+	INTEGER_INDUC_COND_REDUCTION don't emit the final COND_EXPR if
+	INDUC_VAL is equal to INITIAL_DEF, and use INDUC_CODE instead of
+	hardcoding MAX_EXPR as the reduction operation.
+	(is_nonwrapping_integer_induction): Allow negative step.
+	(vectorizable_reduction): Compute INDUC_VAL and INDUC_CODE for
+	vect_create_epilog_for_reduction, if no value is suitable, don't
+	use INTEGER_INDUC_COND_REDUCTION for now.  Formatting fixes.
+
 2017-12-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81889
