@@ -459,14 +459,14 @@ expand_block_compare (rtx operands[])
 	  rtx src1_reg = copy_addr_to_reg (XEXP (src1, 0));
 	  src1 = replace_equiv_address (src1, src1_reg);
 	}
-      set_mem_size (src1, cmp_bytes);
+      set_mem_size (src1, load_mode_size);
 
       if (!REG_P (XEXP (src2, 0)))
 	{
 	  rtx src2_reg = copy_addr_to_reg (XEXP (src2, 0));
 	  src2 = replace_equiv_address (src2, src2_reg);
 	}
-      set_mem_size (src2, cmp_bytes);
+      set_mem_size (src2, load_mode_size);
 
       do_load_for_compare (tmp_reg_src1, src1, load_mode);
       do_load_for_compare (tmp_reg_src2, src2, load_mode);
@@ -937,14 +937,14 @@ expand_strn_compare (rtx operands[], int no_length)
 	  rtx src1_reg = copy_addr_to_reg (XEXP (src1, 0));
 	  src1 = replace_equiv_address (src1, src1_reg);
 	}
-      set_mem_size (src1, cmp_bytes);
+      set_mem_size (src1, load_mode_size);
 
       if (!REG_P (XEXP (src2, 0)))
 	{
 	  rtx src2_reg = copy_addr_to_reg (XEXP (src2, 0));
 	  src2 = replace_equiv_address (src2, src2_reg);
 	}
-      set_mem_size (src2, cmp_bytes);
+      set_mem_size (src2, load_mode_size);
 
       do_load_for_compare (tmp_reg_src1, src1, load_mode);
       do_load_for_compare (tmp_reg_src2, src2, load_mode);
@@ -1096,14 +1096,14 @@ expand_strn_compare (rtx operands[], int no_length)
 	  rtx src1_reg = copy_addr_to_reg (XEXP (src1, 0));
 	  src1 = replace_equiv_address (src1, src1_reg);
 	}
-      set_mem_size (src1, cmp_bytes);
+      set_mem_size (src1, load_mode_size);
 
       if (!REG_P (XEXP (src2, 0)))
 	{
 	  rtx src2_reg = copy_addr_to_reg (XEXP (src2, 0));
 	  src2 = replace_equiv_address (src2, src2_reg);
 	}
-      set_mem_size (src2, cmp_bytes);
+      set_mem_size (src2, load_mode_size);
 
       /* Construct call to strcmp/strncmp to compare the rest of the string.  */
       if (no_length)
