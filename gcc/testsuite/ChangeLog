@@ -1,3 +1,12 @@
+2017-12-12  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/83298
+	PR tree-optimization/83362
+	PR tree-optimization/83383
+	* gcc.c-torture/execute/pr83298.c: New test.
+	* gcc.c-torture/execute/pr83362.c New test.
+	* gcc.c-torture/execute/pr83383.c New test.
+
 2017-12-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gcc-dg.exp (process-message): Avoid additional whitespace in

@@ -134,7 +134,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
-      evrp_range_analyzer.record_ranges_from_stmt (stmt);
+      evrp_range_analyzer.record_ranges_from_stmt (stmt, false);
 
       if (gcond *cond = dyn_cast <gcond *> (stmt))
 	{

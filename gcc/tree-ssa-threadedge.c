@@ -37,6 +37,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-dom.h"
 #include "gimple-fold.h"
 #include "cfganal.h"
+#include "alloc-pool.h"
+#include "vr-values.h"
+#include "gimple-ssa-evrp-analyze.h"
 
 /* To avoid code explosion due to jump threading, we limit the
    number of statements we are going to copy.  This variable
@@ -114,17 +117,16 @@ potentially_threadable_block (basic_block bb)
 }
 
 /* Record temporary equivalences created by PHIs at the target of the
-   edge E.  Record unwind information for the equivalences onto STACK.
+   edge E.  Record unwind information for the equivalences into
+   CONST_AND_COPIES and EVRP_RANGE_DATA.
 
    If a PHI which prevents threading is encountered, then return FALSE
-   indicating we should not thread this edge, else return TRUE.
-
-   If SRC_MAP/DST_MAP exist, then mark the source and destination SSA_NAMEs
-   of any equivalences recorded.  We use this to make invalidation after
-   traversing back edges less painful.  */
+   indicating we should not thread this edge, else return TRUE.  */
 
 static bool
-record_temporary_equivalences_from_phis (edge e, const_and_copies *const_and_copies)
+record_temporary_equivalences_from_phis (edge e,
+    const_and_copies *const_and_copies,
+    evrp_range_analyzer *evrp_range_analyzer)
 {
   gphi_iterator gsi;
 
@@ -152,6 +154,14 @@ record_temporary_equivalences_from_phis (edge e, const_and_copies *const_and_cop
 	stmt_count++;
 
       const_and_copies->record_const_or_copy (dst, src);
+
+      /* Also update the value range associated with DST, using
+	 the range from SRC.  */
+      if (evrp_range_analyzer && TREE_CODE (src) == SSA_NAME)
+	{
+	  value_range *vr = evrp_range_analyzer->get_value_range (src);
+	  evrp_range_analyzer->push_value_range (dst, vr);
+	}
     }
   return true;
 }
@@ -191,6 +201,7 @@ static gimple *
 record_temporary_equivalences_from_stmts_at_dest (edge e,
     const_and_copies *const_and_copies,
     avail_exprs_stack *avail_exprs_stack,
+    evrp_range_analyzer *evrp_range_analyzer,
     pfn_simplify simplify)
 {
   gimple *stmt = NULL;
@@ -234,6 +245,11 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       stmt_count++;
       if (stmt_count > max_stmt_count)
 	return NULL;
+
+      /* These are temporary ranges, do nto reflect them back into
+	 the global range data.  */
+      if (evrp_range_analyzer)
+	evrp_range_analyzer->record_ranges_from_stmt (stmt, true);
 
       /* If this is not a statement that sets an SSA_NAME to a new
 	 value, then do not try to simplify this statement as it will
@@ -981,6 +997,7 @@ thread_through_normal_block (edge e,
 			     gcond *dummy_cond,
 			     const_and_copies *const_and_copies,
 			     avail_exprs_stack *avail_exprs_stack,
+			     evrp_range_analyzer *evrp_range_analyzer,
 			     pfn_simplify simplify,
 			     vec<jump_thread_edge *> *path,
 			     bitmap visited)
@@ -992,7 +1009,8 @@ thread_through_normal_block (edge e,
      Note that if we found a PHI that made the block non-threadable, then
      we need to bubble that up to our caller in the same manner we do
      when we prematurely stop processing statements below.  */
-  if (!record_temporary_equivalences_from_phis (e, const_and_copies))
+  if (!record_temporary_equivalences_from_phis (e, const_and_copies,
+					        evrp_range_analyzer))
     return -1;
 
   /* Now walk each statement recording any context sensitive
@@ -1000,6 +1018,7 @@ thread_through_normal_block (edge e,
   gimple *stmt
     = record_temporary_equivalences_from_stmts_at_dest (e, const_and_copies,
 							avail_exprs_stack,
+							evrp_range_analyzer,
 							simplify);
 
   /* There's two reasons STMT might be null, and distinguishing
@@ -1114,12 +1133,15 @@ thread_across_edge (gcond *dummy_cond,
 		    edge e,
 		    class const_and_copies *const_and_copies,
 		    class avail_exprs_stack *avail_exprs_stack,
+		    class evrp_range_analyzer *evrp_range_analyzer,
 		    pfn_simplify simplify)
 {
   bitmap visited = BITMAP_ALLOC (NULL);
 
   const_and_copies->push_marker ();
   avail_exprs_stack->push_marker ();
+  if (evrp_range_analyzer)
+    evrp_range_analyzer->push_marker ();
 
   stmt_count = 0;
 
@@ -1133,6 +1155,7 @@ thread_across_edge (gcond *dummy_cond,
     threaded = thread_through_normal_block (e, dummy_cond,
 					    const_and_copies,
 					    avail_exprs_stack,
+					    evrp_range_analyzer,
 					    simplify, path,
 					    visited);
   else
@@ -1144,6 +1167,8 @@ thread_across_edge (gcond *dummy_cond,
 					   e->dest);
       const_and_copies->pop_to_marker ();
       avail_exprs_stack->pop_to_marker ();
+      if (evrp_range_analyzer)
+	evrp_range_analyzer->pop_to_marker ();
       BITMAP_FREE (visited);
       register_jump_thread (path);
       return;
@@ -1169,6 +1194,8 @@ thread_across_edge (gcond *dummy_cond,
 	  BITMAP_FREE (visited);
 	  const_and_copies->pop_to_marker ();
           avail_exprs_stack->pop_to_marker ();
+	  if (evrp_range_analyzer)
+	    evrp_range_analyzer->pop_to_marker ();
 	  return;
 	}
     }
@@ -1196,6 +1223,8 @@ thread_across_edge (gcond *dummy_cond,
 	{
 	  const_and_copies->pop_to_marker ();
           avail_exprs_stack->pop_to_marker ();
+	  if (evrp_range_analyzer)
+	    evrp_range_analyzer->pop_to_marker ();
 	  BITMAP_FREE (visited);
 	  return;
 	}
@@ -1211,6 +1240,8 @@ thread_across_edge (gcond *dummy_cond,
 	   for each of E->dest's successors.  */
 	const_and_copies->push_marker ();
 	avail_exprs_stack->push_marker ();
+	if (evrp_range_analyzer)
+	  evrp_range_analyzer->push_marker ();
 
 	/* Avoid threading to any block we have already visited.  */
 	bitmap_clear (visited);
@@ -1238,6 +1269,7 @@ thread_across_edge (gcond *dummy_cond,
 	  found = thread_through_normal_block (path->last ()->e, dummy_cond,
 					       const_and_copies,
 					       avail_exprs_stack,
+					       evrp_range_analyzer,
 					       simplify, path,
 					       visited) > 0;
 
@@ -1253,12 +1285,16 @@ thread_across_edge (gcond *dummy_cond,
 	  delete_jump_thread_path (path);
 
 	/* And unwind the equivalence table.  */
+	if (evrp_range_analyzer)
+	  evrp_range_analyzer->pop_to_marker ();
 	avail_exprs_stack->pop_to_marker ();
 	const_and_copies->pop_to_marker ();
       }
     BITMAP_FREE (visited);
   }
 
+  if (evrp_range_analyzer)
+    evrp_range_analyzer->pop_to_marker ();
   const_and_copies->pop_to_marker ();
   avail_exprs_stack->pop_to_marker ();
 }
@@ -1280,6 +1316,7 @@ void
 thread_outgoing_edges (basic_block bb, gcond *dummy_cond,
 		       class const_and_copies *const_and_copies,
 		       class avail_exprs_stack *avail_exprs_stack,
+		       class evrp_range_analyzer *evrp_range_analyzer,
 		       tree (*simplify) (gimple *, gimple *,
 					 class avail_exprs_stack *,
 					 basic_block))
@@ -1297,7 +1334,7 @@ thread_outgoing_edges (basic_block bb, gcond *dummy_cond,
     {
       thread_across_edge (dummy_cond, single_succ_edge (bb),
 			  const_and_copies, avail_exprs_stack,
-			  simplify);
+			  evrp_range_analyzer, simplify);
     }
   else if ((last = last_stmt (bb))
 	   && gimple_code (last) == GIMPLE_COND
@@ -1313,11 +1350,13 @@ thread_outgoing_edges (basic_block bb, gcond *dummy_cond,
 	 more than one predecessor and more than one successor.  */
       if (potentially_threadable_block (true_edge->dest))
 	thread_across_edge (dummy_cond, true_edge,
-			    const_and_copies, avail_exprs_stack, simplify);
+			    const_and_copies, avail_exprs_stack,
+			    evrp_range_analyzer, simplify);
 
       /* Similarly for the ELSE arm.  */
       if (potentially_threadable_block (false_edge->dest))
 	thread_across_edge (dummy_cond, false_edge,
-			    const_and_copies, avail_exprs_stack, simplify);
+			    const_and_copies, avail_exprs_stack,
+			    evrp_range_analyzer, simplify);
     }
 }

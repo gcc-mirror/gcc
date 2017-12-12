@@ -56,10 +56,20 @@ evrp_range_analyzer::evrp_range_analyzer () : stack (10)
   vr_values = new class vr_values;
 }
 
+/* Push an unwinding marker onto the unwinding stack.  */
+
+void
+evrp_range_analyzer::push_marker ()
+{
+  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
+}
+
+/* Analyze ranges as we enter basic block BB.  */
+
 void
 evrp_range_analyzer::enter (basic_block bb)
 {
-  stack.safe_push (std::make_pair (NULL_TREE, (value_range *)NULL));
+  push_marker ();
   record_ranges_from_incoming_edge (bb);
   record_ranges_from_phis (bb);
   bb->flags |= BB_VISITED;
@@ -259,8 +269,13 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
     }
 }
 
+/* Record ranges from STMT into our VR_VALUES class.  If TEMPORARY is
+   true, then this is a temporary equivalence and should be recorded
+   into the unwind table.  Othewise record the equivalence into the
+   global table.  */
+
 void
-evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
+evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 {
   tree output = NULL_TREE;
 
@@ -273,10 +288,36 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
       vr_values->extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
       if (output)
 	{
-	  vr_values->update_value_range (output, &vr);
+	  /* Set the SSA with the value range.  There are two cases to
+	     consider.  First (the the most common) is we are processing
+	     STMT in a context where its resulting range globally holds
+	     and thus it can be reflected into the global ranges and need
+	     not be unwound as we leave scope.
 
-	  /* Set the SSA with the value range.  */
-	  set_ssa_range_info (output, &vr);
+	     The second case occurs if we are processing a statement in
+	     a context where the resulting range must not be reflected
+	     into the global tables and must be unwound as we leave
+	     the current context.  This happens in jump threading for
+	     example.  */
+	  if (!temporary)
+	    {
+	      /* Case one.  We can just update the underlying range
+		 information as well as the global information.  */
+	      vr_values->update_value_range (output, &vr);
+	      set_ssa_range_info (output, &vr);
+	    }
+	  else
+	    {
+	      /* We're going to need to unwind this range.  We can
+		 not use VR as that's a stack object.  We have to allocate
+		 a new range and push the old range onto the stack.  We
+		 also have to be very careful about sharing the underlying
+		 bitmaps.  Ugh.  */
+	      value_range *new_vr = vr_values->allocate_value_range ();
+	      *new_vr = vr;
+	      new_vr->equiv = NULL;
+	      push_value_range (output, new_vr);
+	    }
 	}
       else
 	vr_values->set_defs_to_varying (stmt);
@@ -333,16 +374,25 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt)
     }
 }
 
-/* Restore/pop VRs valid only for BB when we leave BB.  */
+/* Unwind recorded ranges to their most recent state.  */
 
 void
-evrp_range_analyzer::leave (basic_block bb ATTRIBUTE_UNUSED)
+evrp_range_analyzer::pop_to_marker (void)
 {
   gcc_checking_assert (!stack.is_empty ());
   while (stack.last ().first != NULL_TREE)
     pop_value_range (stack.last ().first);
   stack.pop ();
 }
+
+/* Restore/pop VRs valid only for BB when we leave BB.  */
+
+void
+evrp_range_analyzer::leave (basic_block bb ATTRIBUTE_UNUSED)
+{
+  pop_to_marker ();
+}
+
 
 /* Push the Value Range of VAR to the stack and update it with new VR.  */
 

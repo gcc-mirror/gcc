@@ -1433,7 +1433,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   edge taken_edge = NULL;
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      evrp_range_analyzer.record_ranges_from_stmt (gsi_stmt (gsi));
+      evrp_range_analyzer.record_ranges_from_stmt (gsi_stmt (gsi), false);
       taken_edge = this->optimize_stmt (bb, gsi);
     }
 
@@ -1456,6 +1456,7 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
   x_vr_values = evrp_range_analyzer.get_vr_values ();
   thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
 			 m_avail_exprs_stack,
+			 &evrp_range_analyzer,
 			 simplify_stmt_for_jump_threading);
   x_vr_values = NULL;
 
