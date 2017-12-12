@@ -84,6 +84,9 @@ main ()
 #ifdef AVX512VNNI
       && (ecx & bit_AVX512VNNI)
 #endif
+#ifdef VAES
+      && (ecx & bit_VAES)
+#endif
       && avx512f_os_support ())
     {
       DO_TEST ();
