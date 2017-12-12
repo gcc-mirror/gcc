@@ -1,3 +1,12 @@
+2017-12-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82050
+	* selftest-run-tests.c (selftest::run_tests): Move start/finish code
+	to...
+	* selftest.c (selftest::test_runner::test_runner): New ctor.
+	(selftest::test_runner::~test_runner): New dtor.
+	* selftest.h (class selftest::test_runner): New class.
+
 2017-12-11  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/altivec.h (vec_extract_fp32_from_shorth,

@@ -82,6 +82,8 @@ set plugin_test_list [list \
     { must_tail_call_plugin.c \
 	  must-tail-call-1.c \
 	  must-tail-call-2.c } \
+    { expensive_selftests_plugin.c \
+	  expensive-selftests-1.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

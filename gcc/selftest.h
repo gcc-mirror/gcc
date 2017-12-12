@@ -168,6 +168,20 @@ extern char *locate_file (const char *path);
 
 extern const char *path_to_selftest_files;
 
+/* selftest::test_runner is an implementation detail of selftest::run_tests,
+   exposed here to allow plugins to run their own suites of tests.  */
+
+class test_runner
+{
+ public:
+  test_runner (const char *name);
+  ~test_runner ();
+
+ private:
+  const char *m_name;
+  long m_start_time;
+};
+
 /* Declarations for specific families of tests (by source file), in
    alphabetical order.  */
 extern void attribute_c_tests ();

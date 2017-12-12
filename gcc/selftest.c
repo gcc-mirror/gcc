@@ -213,6 +213,28 @@ locate_file (const char *name)
   return concat (path_to_selftest_files, "/", name, NULL);
 }
 
+/* selftest::test_runner's ctor.  */
+
+test_runner::test_runner (const char *name)
+: m_name (name),
+  m_start_time (get_run_time ())
+{
+}
+
+/* selftest::test_runner's dtor.  Print a summary line to stderr.  */
+
+test_runner::~test_runner ()
+{
+  /* Finished running tests.  */
+  long finish_time = get_run_time ();
+  long elapsed_time = finish_time - m_start_time;
+
+  fprintf (stderr,
+	   "%s: %i pass(es) in %ld.%06ld seconds\n",
+	   m_name, num_passes,
+	   elapsed_time / 1000000, elapsed_time % 1000000);
+}
+
 /* Selftests for libiberty.  */
 
 /* Verify that xstrndup generates EXPECTED when called on SRC and N.  */
