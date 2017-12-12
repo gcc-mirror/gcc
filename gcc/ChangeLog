@@ -1,5 +1,12 @@
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
+	* debug.h (gcc_debug_hooks): Add inline_entry.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Likewise.
+	* debug.c (do_nothing_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* dwarf2out.c (dwarf2_debug_hooks): Likewise.
+	(dwarf2_lineno_debug_hooks): Likewise.
+
 	* common.opt (gstatement-frontiers): New, setting
 	debug_nonbind_markers_p.
 	* rtl.h (MAY_HAVE_DEBUG_MARKER_INSNS): Activate.

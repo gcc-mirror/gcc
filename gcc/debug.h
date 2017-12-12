@@ -176,6 +176,9 @@ struct gcc_debug_hooks
   /* Called from final_scan_insn for any NOTE_INSN_VAR_LOCATION note.  */
   void (* var_location) (rtx_insn *);
 
+  /* Called from final_scan_insn for any NOTE_INSN_INLINE_ENTRY note.  */
+  void (* inline_entry) (tree block);
+
   /* Called from finalize_size_functions for size functions so that their body
      can be encoded in the debug info to describe the layout of variable-length
      structures.  */
