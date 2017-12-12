@@ -1,5 +1,9 @@
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
+	* cfgbuild.c (find_bb_boundaries): Don't purge dead edges if,
+	without debug insns, we wouldn't, but clean up debug insns
+	after a control flow insn nevertheless.
+
 	* cfgcleanup.c (delete_unreachable_blocks): Use alternate
 	block removal order if MAY_HAVE_DEBUG_BIND_INSNS.
 	* cfgexpand.c (label_rtx_for_bb): Skip debug insns.
