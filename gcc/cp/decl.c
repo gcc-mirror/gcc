@@ -2120,6 +2120,8 @@ next_arg:;
 	  DECL_INITIALIZED_P (newdecl) |= DECL_INITIALIZED_P (olddecl);
 	  DECL_NONTRIVIALLY_INITIALIZED_P (newdecl)
 	    |= DECL_NONTRIVIALLY_INITIALIZED_P (olddecl);
+	  if (DECL_DEPENDENT_INIT_P (olddecl))
+	    SET_DECL_DEPENDENT_INIT_P (newdecl, true);
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (newdecl)
 	    |= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (olddecl);
           if (DECL_CLASS_SCOPE_P (olddecl))
@@ -6910,14 +6912,18 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 then it can be used in future constant expressions, so its value
 	 must be available. */
 
+      bool dep_init = false;
+
       if (!VAR_P (decl) || type_dependent_p)
 	/* We can't do anything if the decl has dependent type.  */;
+      else if (!init && is_concept_var (decl))
+        error ("variable concept has no initializer");
       else if (init
 	       && init_const_expr_p
 	       && TREE_CODE (type) != REFERENCE_TYPE
 	       && decl_maybe_constant_var_p (decl)
-	       && !type_dependent_init_p (init)
-	       && !value_dependent_init_p (init))
+	       && !(dep_init = (type_dependent_init_p (init)
+				|| value_dependent_init_p (init))))
 	{
 	  /* This variable seems to be a non-dependent constant, so process
 	     its initializer.  If check_initializer returns non-null the
@@ -6929,8 +6935,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    init = NULL_TREE;
 	  release_tree_vector (cleanups);
 	}
-      else if (!init && is_concept_var (decl))
-        error ("variable concept has no initializer");
       else if (!DECL_PRETTY_FUNCTION_P (decl))
 	{
 	  /* Deduce array size even if the initializer is dependent.  */
@@ -6944,6 +6948,11 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       if (init)
 	DECL_INITIAL (decl) = init;
+      if (dep_init)
+	{
+	  retrofit_lang_decl (decl);
+	  SET_DECL_DEPENDENT_INIT_P (decl, true);
+	}
       return;
     }
 

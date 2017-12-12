@@ -2449,7 +2449,8 @@ struct GTY(()) lang_decl_base {
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
-  /* 2 spare bits */
+  unsigned dependent_init_p : 1;	   /* var */
+  /* 1 spare bit */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -3878,6 +3879,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SET_DECL_VAR_DECLARED_INLINE_P(NODE) \
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.var_declared_inline_p \
    = true)
+
+/* True if NODE is a constant variable with a value-dependent initializer.  */
+#define DECL_DEPENDENT_INIT_P(NODE)				\
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))			\
+   && DECL_LANG_SPECIFIC (NODE)->u.base.dependent_init_p)
+#define SET_DECL_DEPENDENT_INIT_P(NODE, X) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.dependent_init_p = (X))
 
 /* Nonzero if NODE is an artificial VAR_DECL for a C++17 structured binding
    declaration or one of VAR_DECLs for the user identifiers in it.  */
@@ -6542,7 +6550,7 @@ extern bool type_dependent_object_expression_p	(tree);
 extern bool any_type_dependent_arguments_p      (const vec<tree, va_gc> *);
 extern bool any_type_dependent_elements_p       (const_tree);
 extern bool type_dependent_expression_p_push	(tree);
-extern bool value_dependent_expression_p	(tree, bool = false);
+extern bool value_dependent_expression_p	(tree);
 extern bool instantiation_dependent_expression_p (tree);
 extern bool instantiation_dependent_uneval_expression_p (tree);
 extern bool any_value_dependent_elements_p      (const_tree);

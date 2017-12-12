@@ -1,3 +1,13 @@
+2017-12-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82115 - ICE with variable initialized with its own address.
+	* cp-tree.h (struct lang_decl_base): Add dependent_init_p.
+	(DECL_DEPENDENT_INIT_P, SET_DECL_DEPENDENT_INIT_P): New.
+	* decl.c (cp_finish_decl): Set it.
+	(duplicate_decls): Copy it.
+	* pt.c (tsubst_decl): Clear it.
+	(value_dependent_expression_p): Revert earlier change.  Check it.
+
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
 	* constexpr.c (check_constexpr_ctor_body_1): Skip begin stmt

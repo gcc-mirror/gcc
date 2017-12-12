@@ -13135,6 +13135,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
 	if (VAR_P (r))
 	  {
+	    if (DECL_LANG_SPECIFIC (r))
+	      SET_DECL_DEPENDENT_INIT_P (r, false);
+
 	    SET_DECL_MODE (r, VOIDmode);
 
 	    /* Possibly limit visibility based on template args.  */
@@ -23922,7 +23925,7 @@ instantiation_dependent_scope_ref_p (tree t)
    can be tested for value dependence.  */
 
 bool
-value_dependent_expression_p (tree expression, bool lval /* = false */)
+value_dependent_expression_p (tree expression)
 {
   if (!processing_template_decl || expression == NULL_TREE)
     return false;
@@ -23956,28 +23959,19 @@ value_dependent_expression_p (tree expression, bool lval /* = false */)
       /* A non-type template parm.  */
       if (DECL_TEMPLATE_PARM_P (expression))
 	return true;
-      gcc_checking_assert (!lval);
       return value_dependent_expression_p (DECL_INITIAL (expression));
 
     case VAR_DECL:
        /* A constant with literal type and is initialized
-	  with an expression that is value-dependent.
-
-          Note that a non-dependent parenthesized initializer will have
-          already been replaced with its constant value, so if we see
-          a TREE_LIST it must be dependent.  */
-      if (!lval
-	  && DECL_INITIAL (expression)
-	  && decl_constant_var_p (expression)
-	  && (TREE_CODE (DECL_INITIAL (expression)) == TREE_LIST
-	      /* cp_finish_decl doesn't fold reference initializers.  */
-	      || TREE_CODE (TREE_TYPE (expression)) == REFERENCE_TYPE
-	      || value_dependent_expression_p (DECL_INITIAL (expression))))
+	  with an expression that is value-dependent.  */
+      if (DECL_DEPENDENT_INIT_P (expression)
+	  /* FIXME cp_finish_decl doesn't fold reference initializers.  */
+	  || TREE_CODE (TREE_TYPE (expression)) == REFERENCE_TYPE)
 	return true;
       if (DECL_HAS_VALUE_EXPR_P (expression))
 	{
 	  tree value_expr = DECL_VALUE_EXPR (expression);
-	  if (value_dependent_expression_p (value_expr, lval))
+	  if (value_dependent_expression_p (value_expr))
 	    return true;
 	}
       return false;
@@ -24013,7 +24007,7 @@ value_dependent_expression_p (tree expression, bool lval /* = false */)
 	if (TREE_CODE (expression) == TREE_LIST)
 	  return any_value_dependent_elements_p (expression);
 
-	return value_dependent_expression_p (expression, lval);
+	return value_dependent_expression_p (expression);
       }
 
     case SIZEOF_EXPR:
@@ -24047,7 +24041,7 @@ value_dependent_expression_p (tree expression, bool lval /* = false */)
       return instantiation_dependent_scope_ref_p (expression);
 
     case COMPONENT_REF:
-      return (value_dependent_expression_p (TREE_OPERAND (expression, 0), lval)
+      return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
 	      || value_dependent_expression_p (TREE_OPERAND (expression, 1)));
 
     case NONTYPE_ARGUMENT_PACK:
@@ -24095,7 +24089,7 @@ value_dependent_expression_p (tree expression, bool lval /* = false */)
     case ADDR_EXPR:
       {
 	tree op = TREE_OPERAND (expression, 0);
-	return (value_dependent_expression_p (op, true)
+	return (value_dependent_expression_p (op)
 		|| has_value_dependent_address (op));
       }
 
