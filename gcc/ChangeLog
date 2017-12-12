@@ -1,5 +1,13 @@
 2017-12-12  Alexandre Oliva <aoliva@redhat.com>
 
+	* common.opt (gstatement-frontiers): New, setting
+	debug_nonbind_markers_p.
+	* rtl.h (MAY_HAVE_DEBUG_MARKER_INSNS): Activate.
+	* toplev.c (process_options): Autodetect value for debug statement
+	frontiers option.
+	* tree.h (MAY_HAVE_DEBUG_MARKER_STMTS): Activate.
+	* doc/invoke.texi (gstatement-frontiers, gno-statement-frontiers): New.
+
 	* cfgexpand.c (expand_gimple_basic_block): Handle begin stmt
 	markers.  Integrate source bind into debug stmt expand loop.
 	(pass_expand::execute): Check debug marker limit.  Avoid deep

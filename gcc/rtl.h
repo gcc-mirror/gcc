@@ -816,7 +816,7 @@ struct GTY(()) rtvec_def {
 #define NONDEBUG_INSN_P(X) (INSN_P (X) && !DEBUG_INSN_P (X))
 
 /* Nonzero if DEBUG_MARKER_INSN_P may possibly hold.  */
-#define MAY_HAVE_DEBUG_MARKER_INSNS 0 /* debug_nonbind_markers_p */
+#define MAY_HAVE_DEBUG_MARKER_INSNS debug_nonbind_markers_p
 /* Nonzero if DEBUG_BIND_INSN_P may possibly hold.  */
 #define MAY_HAVE_DEBUG_BIND_INSNS flag_var_tracking_assignments
 /* Nonzero if DEBUG_INSN_P may possibly hold.  */

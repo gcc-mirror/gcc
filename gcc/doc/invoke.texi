@@ -346,6 +346,7 @@ Objective-C and Objective-C++ Dialects}.
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
 -gcolumn-info  -gno-column-info @gol
+-gstatement-frontiers  -gno-statement-frontiers @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
@@ -7145,6 +7146,17 @@ Allow using extensions of later DWARF standard version than selected with
 Emit location column information into DWARF debugging information, rather
 than just file and line.
 This option is enabled by default.
+
+@item -gstatement-frontiers
+@item -gno-statement-frontiers
+@opindex gstatement-frontiers
+@opindex gno-statement-frontiers
+This option causes GCC to create markers in the internal representation
+at the beginning of statements, and to keep them roughly in place
+throughout compilation, using them to guide the output of @code{is_stmt}
+markers in the line number table.  This is enabled by default when
+compiling with optimization (@option{-Os}, @option{-O}, @option{-O2},
+@dots{}), and outputting DWARF 2 debug information at the normal level.
 
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz

@@ -1124,7 +1124,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   ((int)TREE_INT_CST_LOW (VL_EXP_CHECK (NODE)->exp.operands[0]))
 
 /* Nonzero if gimple_debug_nonbind_marker_p() may possibly hold.  */
-#define MAY_HAVE_DEBUG_MARKER_STMTS 0 /* debug_nonbind_markers_p */
+#define MAY_HAVE_DEBUG_MARKER_STMTS debug_nonbind_markers_p
 /* Nonzero if gimple_debug_bind_p() (and thus
    gimple_debug_source_bind_p()) may possibly hold.  */
 #define MAY_HAVE_DEBUG_BIND_STMTS flag_var_tracking_assignments

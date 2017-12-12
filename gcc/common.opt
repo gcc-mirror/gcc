@@ -2936,6 +2936,10 @@ gstabs+
 Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
 
+gstatement-frontiers
+Common Driver Var(debug_nonbind_markers_p) Init(2)
+Emit progressive recommended breakpoint locations.
+
 gstrict-dwarf
 Common Driver Report Var(dwarf_strict) Init(0)
 Don't emit DWARF additions beyond selected version.
