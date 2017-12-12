@@ -6644,38 +6644,6 @@ initialize_artificial_var (tree decl, vec<constructor_elt, va_gc> *v)
 }
 
 /* INIT is the initializer for a variable, as represented by the
-   parser.  Returns true iff INIT is type-dependent.  */
-
-static bool
-type_dependent_init_p (tree init)
-{
-  if (TREE_CODE (init) == TREE_LIST)
-    /* A parenthesized initializer, e.g.: int i (3, 2); ? */
-    return any_type_dependent_elements_p (init);
-  else if (TREE_CODE (init) == CONSTRUCTOR)
-  /* A brace-enclosed initializer, e.g.: int i = { 3 }; ? */
-    {
-      if (dependent_type_p (TREE_TYPE (init)))
-	return true;
-
-      vec<constructor_elt, va_gc> *elts;
-      size_t nelts;
-      size_t i;
-
-      elts = CONSTRUCTOR_ELTS (init);
-      nelts = vec_safe_length (elts);
-      for (i = 0; i < nelts; ++i)
-	if (type_dependent_init_p ((*elts)[i].value))
-	  return true;
-    }
-  else
-    /* It must be a simple expression, e.g., int i = 3;  */
-    return type_dependent_expression_p (init);
-
-  return false;
-}
-
-/* INIT is the initializer for a variable, as represented by the
    parser.  Returns true iff INIT is value-dependent.  */
 
 static bool
@@ -6687,6 +6655,9 @@ value_dependent_init_p (tree init)
   else if (TREE_CODE (init) == CONSTRUCTOR)
   /* A brace-enclosed initializer, e.g.: int i = { 3 }; ? */
     {
+      if (dependent_type_p (TREE_TYPE (init)))
+	return true;
+
       vec<constructor_elt, va_gc> *elts;
       size_t nelts;
       size_t i;
@@ -6922,8 +6893,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	       && init_const_expr_p
 	       && TREE_CODE (type) != REFERENCE_TYPE
 	       && decl_maybe_constant_var_p (decl)
-	       && !(dep_init = (type_dependent_init_p (init)
-				|| value_dependent_init_p (init))))
+	       && !(dep_init = value_dependent_init_p (init)))
 	{
 	  /* This variable seems to be a non-dependent constant, so process
 	     its initializer.  If check_initializer returns non-null the
