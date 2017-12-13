@@ -1,3 +1,8 @@
+2017-12-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/83393
+	* gcc.dg/pr83393.c: New testcase.
+
 2017-12-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/15272

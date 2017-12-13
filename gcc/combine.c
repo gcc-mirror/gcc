@@ -13880,7 +13880,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 
       /* If we do not know where the register died, it may still die between
 	 FROM_LUID and TO_INSN.  If so, find it.  This is PR83304.  */
-      if (!where_dead)
+      if (!where_dead || DF_INSN_LUID (where_dead) >= DF_INSN_LUID (to_insn))
 	{
 	  rtx_insn *insn = prev_real_insn (to_insn);
 	  while (insn
