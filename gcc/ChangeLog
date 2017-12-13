@@ -1,3 +1,11 @@
+2017-12-13  Alexandre Oliva <aoliva@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/83396
+	PR debug/83391
+	* tree-cfgcleanup.c (remove_forwarder_block): Keep after
+	labels debug stmts that can only appear after labels.
+
 2017-12-13  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/82398
