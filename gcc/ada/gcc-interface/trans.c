@@ -8718,12 +8718,12 @@ process_freeze_entity (Node_Id gnat_node)
   const Entity_Kind kind = Ekind (gnat_entity);
   tree gnu_old, gnu_new;
 
-  /* If this is a package, we need to generate code for the package.  */
+  /* If this is a package, generate code for the package body, if any.  */
   if (kind == E_Package)
     {
-      insert_code_for
-	(Parent (Corresponding_Body
-		 (Parent (Declaration_Node (gnat_entity)))));
+      const Node_Id gnat_decl = Parent (Declaration_Node (gnat_entity));
+      if (Present (Corresponding_Body (gnat_decl)))
+	insert_code_for (Parent (Corresponding_Body (gnat_decl)));
       return;
     }
 
