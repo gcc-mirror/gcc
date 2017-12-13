@@ -1,5 +1,9 @@
 2017-12-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Initialize locus.
+
+2017-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (process_freeze_entity): Be prepared for a
 	package without body.
 
