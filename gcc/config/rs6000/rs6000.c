@@ -388,6 +388,7 @@ static const struct
   { "ebb",		PPC_FEATURE2_HAS_EBB,		1 },
   { "htm",		PPC_FEATURE2_HAS_HTM,		1 },
   { "htm-nosc",		PPC_FEATURE2_HTM_NOSC,		1 },
+  { "htm-no-suspend",	PPC_FEATURE2_HTM_NO_SUSPEND,	1 },
   { "isel",		PPC_FEATURE2_HAS_ISEL,		1 },
   { "tar",		PPC_FEATURE2_HAS_TAR,		1 },
   { "vcrypto",		PPC_FEATURE2_HAS_VEC_CRYPTO,	1 },
