@@ -1,3 +1,9 @@
+2017-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/15272
+	* pt.c (tsubst_baselink): Don't repeat the lookup for
+	non-dependent baselinks.
+
 2017-12-12  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (value_dependent_init_p): Check the type of a CONSTRUCTOR.

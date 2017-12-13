@@ -14411,19 +14411,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 }
 
 /* tsubst a BASELINK.  OBJECT_TYPE, if non-NULL, is the type of the
-   expression on the left-hand side of the "." or "->" operator.  A
-   baselink indicates a function from a base class.  Both the
-   BASELINK_ACCESS_BINFO and the base class referenced may indicate
-   bases of the template class, rather than the instantiated class.
-   In addition, lookups that were not ambiguous before may be
-   ambiguous now.  Therefore, we perform the lookup again.  */
+   expression on the left-hand side of the "." or "->" operator.  We
+   only do the lookup if we had a dependent BASELINK.  Otherwise we
+   adjust it onto the instantiated heirarchy.  */
 
 static tree
 tsubst_baselink (tree baselink, tree object_type,
 		 tree args, tsubst_flags_t complain, tree in_decl)
 {
-  bool qualified = BASELINK_QUALIFIED_P (baselink);
-
+  bool qualified_p = BASELINK_QUALIFIED_P (baselink);
   tree qualifying_scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (baselink));
   qualifying_scope = tsubst (qualifying_scope, args, complain, in_decl);
 
@@ -14443,24 +14439,43 @@ tsubst_baselink (tree baselink, tree object_type,
 					      complain, in_decl);
     }
 
-  tree name = OVL_NAME (fns);
-  if (IDENTIFIER_CONV_OP_P (name))
-    name = make_conv_op_name (optype);
+  tree binfo_type = BINFO_TYPE (BASELINK_BINFO (baselink));
+  binfo_type = tsubst (binfo_type, args, complain, in_decl);
+  bool dependent_p = binfo_type != BINFO_TYPE (BASELINK_BINFO (baselink));
 
-  baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
-  if (!baselink)
+  if (dependent_p)
     {
-      if ((complain & tf_error) && constructor_name_p (name, qualifying_scope))
-	error ("cannot call constructor %<%T::%D%> directly",
-	       qualifying_scope, name);
-      return error_mark_node;
+      tree name = OVL_NAME (fns);
+      if (IDENTIFIER_CONV_OP_P (name))
+	name = make_conv_op_name (optype);
+
+      if (name == complete_dtor_identifier)
+	/* Treat as-if non-dependent below.  */
+	dependent_p = false;
+
+      baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
+      if (!baselink)
+	{
+	  if ((complain & tf_error)
+	      && constructor_name_p (name, qualifying_scope))
+	    error ("cannot call constructor %<%T::%D%> directly",
+		   qualifying_scope, name);
+	  return error_mark_node;
+	}
+
+      if (BASELINK_P (baselink))
+	fns = BASELINK_FUNCTIONS (baselink);
+    }
+  else
+    {
+      gcc_assert (optype == BASELINK_OPTYPE (baselink));
+      /* We're going to overwrite pieces below, make a duplicate.  */
+      baselink = copy_node (baselink);
     }
 
   /* If lookup found a single function, mark it as used at this point.
-     (If it lookup found multiple functions the one selected later by
+     (If lookup found multiple functions the one selected later by
      overload resolution will be marked as used at that point.)  */
-  if (BASELINK_P (baselink))
-    fns = BASELINK_FUNCTIONS (baselink);
   if (!template_id_p && !really_overloaded_fn (fns)
       && !mark_used (OVL_FIRST (fns), complain) && !(complain & tf_error))
     return error_mark_node;
@@ -14470,8 +14485,7 @@ tsubst_baselink (tree baselink, tree object_type,
       /* Add back the template arguments, if present.  */
       if (template_id_p)
 	BASELINK_FUNCTIONS (baselink)
-	  = build2 (TEMPLATE_ID_EXPR, unknown_type_node,
-		    BASELINK_FUNCTIONS (baselink), template_args);
+	  = build2 (TEMPLATE_ID_EXPR, unknown_type_node, fns, template_args);
 
       /* Update the conversion operator type.  */
       BASELINK_OPTYPE (baselink) = optype;
@@ -14480,12 +14494,12 @@ tsubst_baselink (tree baselink, tree object_type,
   if (!object_type)
     object_type = current_class_type;
 
-  if (qualified || name == complete_dtor_identifier)
+  if (qualified_p || !dependent_p)
     {
       baselink = adjust_result_of_qualified_name_lookup (baselink,
 							 qualifying_scope,
 							 object_type);
-      if (!qualified)
+      if (!qualified_p)
 	/* We need to call adjust_result_of_qualified_name_lookup in case the
 	   destructor names a base class, but we unset BASELINK_QUALIFIED_P
 	   so that we still get virtual function binding.  */
