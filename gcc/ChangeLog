@@ -1,3 +1,9 @@
+2017-12-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/83393
+	* combine.c (move_deaths): If reg_stat points to a too new insn in
+	last_death, do not use it: find the proper insn instead.
+
 2017-12-12  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/83298
