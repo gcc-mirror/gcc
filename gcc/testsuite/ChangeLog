@@ -1,3 +1,7 @@
+2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/cpu-builtin-1.c (htm-no-suspend): Add test.
+
 2017-12-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81061
