@@ -1,3 +1,9 @@
+2017-12-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81061
+	* typeck.c (cp_build_modify_expr): Upon cxx_readonly_error
+	immediately return error_mark_node.
+
 2017-12-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/15272

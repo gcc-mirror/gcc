@@ -1,3 +1,8 @@
+2017-12-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81061
+	* g++.dg/other/const5.C: New.
+
 2017-12-13  Alexandre Oliva  <aoliva@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
