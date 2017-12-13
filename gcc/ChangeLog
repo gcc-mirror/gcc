@@ -1,3 +1,9 @@
+2017-12-13  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/82398
+	* sel-sched.c (sel_rank_for_schedule): Fix check for zero
+	EXPR_USEFULNESS in priority comparison.
+
 2017-12-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/83393

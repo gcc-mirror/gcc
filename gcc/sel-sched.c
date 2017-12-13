@@ -3397,7 +3397,7 @@ sel_rank_for_schedule (const void *x, const void *y)
     return 1;
 
   /* Prefer an expr with greater priority.  */
-  if (EXPR_USEFULNESS (tmp) != 0 && EXPR_USEFULNESS (tmp2) != 0)
+  if (EXPR_USEFULNESS (tmp) != 0 || EXPR_USEFULNESS (tmp2) != 0)
     {
       int p2 = EXPR_PRIORITY (tmp2) + EXPR_PRIORITY_ADJ (tmp2),
           p1 = EXPR_PRIORITY (tmp) + EXPR_PRIORITY_ADJ (tmp);
