@@ -4541,8 +4541,9 @@ rest_of_handle_final (void)
 {
   const char *fnname = get_fnname_from_decl (current_function_decl);
 
-  /* Turn debug markers into notes.  */
-  if (!MAY_HAVE_DEBUG_BIND_INSNS && MAY_HAVE_DEBUG_MARKER_INSNS)
+  /* Turn debug markers into notes if the var-tracking pass has not
+     been invoked.  */
+  if (!flag_var_tracking && MAY_HAVE_DEBUG_MARKER_INSNS)
     variable_tracking_main ();
 
   assemble_start_function (current_function_decl, fnname);
