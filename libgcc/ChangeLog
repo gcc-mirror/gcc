@@ -1,3 +1,9 @@
+2017-12-12  Kito Cheng <kito.cheng@gmail.com>
+
+	* config/riscv/t-elf: Use multi3.c instead of multi3.S.
+	* config/riscv/multi3.c: New file.
+	* config/riscv/multi3.S: Remove.
+
 2017-12-08  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/div.S: Use FUNC_* macros.
