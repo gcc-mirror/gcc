@@ -1206,7 +1206,6 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
 			unsigned required_align,
 			HOST_WIDE_INT *pstack_usage_size)
 {
-  unsigned extra = 0;
   rtx size = *psize;
 
   /* Ensure the size is in the proper mode.  */
@@ -1242,16 +1241,16 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
      example), so we must preventively align the value.  We leave space
      in SIZE for the hole that might result from the alignment operation.  */
 
-  /* Since the stack is presumed to be aligned before this allocation,
-     we only need to increase the size of the allocation if the required
-     alignment is more than the stack alignment.  */
-  if (required_align > STACK_BOUNDARY)
+  unsigned known_align = REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM);
+  if (known_align == 0)
+    known_align = BITS_PER_UNIT;
+  if (required_align > known_align)
     {
-      extra = (required_align - STACK_BOUNDARY) / BITS_PER_UNIT;
+      unsigned extra = (required_align - known_align) / BITS_PER_UNIT;
       size = plus_constant (Pmode, size, extra);
       size = force_operand (size, NULL_RTX);
-      if (size_align > STACK_BOUNDARY)
-	size_align = STACK_BOUNDARY;
+      if (size_align > known_align)
+	size_align = known_align;
 
       if (flag_stack_usage_info && pstack_usage_size)
 	*pstack_usage_size += extra;
