@@ -8037,8 +8037,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
     {
       if (complain & tf_error)
 	cxx_readonly_error (lhs, lv_assign);
-      else
-	return error_mark_node;
+      return error_mark_node;
     }
 
   /* If storing into a structure or union member, it may have been given a
