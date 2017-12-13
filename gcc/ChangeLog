@@ -1,3 +1,8 @@
+2017-12-13  Alexandre Oliva <aoliva@redhat.com>
+
+	PR bootstrap/83396
+	* reload1.c (eliminate_regs_in_insn): Skip debug markers.
+
 2017-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-cfg.c (verify_gimple_in_cfg): Verify no non-label stmts

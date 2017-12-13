@@ -3202,7 +3202,7 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
 		  || GET_CODE (PATTERN (insn)) == USE
 		  || GET_CODE (PATTERN (insn)) == CLOBBER
 		  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
-      if (DEBUG_INSN_P (insn))
+      if (DEBUG_BIND_INSN_P (insn))
 	INSN_VAR_LOCATION_LOC (insn)
 	  = eliminate_regs (INSN_VAR_LOCATION_LOC (insn), VOIDmode, insn);
       return 0;
