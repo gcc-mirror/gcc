@@ -536,9 +536,14 @@ remove_forwarder_block (basic_block bb)
      defined labels and labels with an EH landing pad number to the
      new block, so that the redirection of the abnormal edges works,
      jump targets end up in a sane place and debug information for
-     labels is retained.  */
+     labels is retained.
+
+     While at that, move any debug stmts that appear before or in between
+     labels, but not those that can only appear after labels.  */
   gsi_to = gsi_start_bb (dest);
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+  gsi = gsi_start_bb (bb);
+  gimple_stmt_iterator gsie = gsi_after_labels (bb);
+  while (gsi_stmt (gsi) != gsi_stmt (gsie))
     {
       tree decl;
       label = gsi_stmt (gsi);
@@ -555,6 +560,21 @@ remove_forwarder_block (basic_block bb)
 	}
       else
 	gsi_next (&gsi);
+    }
+
+  /* Move debug statements if the destination has a single predecessor.  */
+  if (can_move_debug_stmts && !gsi_end_p (gsi))
+    {
+      gcc_assert (gsi_stmt (gsi) == gsi_stmt (gsie));
+      gimple_stmt_iterator gsie_to = gsi_after_labels (dest);
+      do
+	{
+	  gimple *debug = gsi_stmt (gsi);
+	  gcc_assert (is_gimple_debug (debug));
+	  gsi_remove (&gsi, false);
+	  gsi_insert_before (&gsie_to, debug, GSI_SAME_STMT);
+	}
+      while (!gsi_end_p (gsi));
     }
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
