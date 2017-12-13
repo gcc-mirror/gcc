@@ -1,3 +1,15 @@
+2017-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+            Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	PR middle-end/78468
+	* emit-rtl.c (init_emit): Remove ??? comment.
+	* explow.c (get_dynamic_stack_size): Take known alignment of stack
+	pointer + STACK_DYNAMIC_OFFSET into account in lieu of STACK_BOUNDARY.
+	* config/sparc/sparc.h (INIT_EXPANDERS): In 32-bit mode, lower the
+	alignment of 3 virtual registers to BITS_PER_WORD.
+
+	* config/sparc/sparc.c (sparc_compute_frame_size): Simplify.
+
 2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/ppc-auxv.h (PPC_FEATURE2_HTM_NO_SUSPEND): New define.
