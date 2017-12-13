@@ -492,31 +492,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __is, complex<_Tp>& __x)
     {
-      _Tp __re_x, __im_x;
+      bool __fail = true;
       _CharT __ch;
-      __is >> __ch;
-      if (__ch == '(')
+      if (__is >> __ch)
 	{
-	  __is >> __re_x >> __ch;
-	  if (__ch == ',')
+	  if (_Traits::eq(__ch, __is.widen('(')))
 	    {
-	      __is >> __im_x >> __ch;
-	      if (__ch == ')')
-		__x = complex<_Tp>(__re_x, __im_x);
-	      else
-		__is.setstate(ios_base::failbit);
+	      _Tp __u;
+	      if (__is >> __u >> __ch)
+		{
+		  const _CharT __rparen = __is.widen(')');
+		  if (_Traits::eq(__ch, __rparen))
+		    {
+		      __x = __u;
+		      __fail = false;
+		    }
+		  else if (_Traits::eq(__ch, __is.widen(',')))
+		    {
+		      _Tp __v;
+		      if (__is >> __v >> __ch)
+			{
+			  if (_Traits::eq(__ch, __rparen))
+			    {
+			      __x = complex<_Tp>(__u, __v);
+			      __fail = false;
+			    }
+			  else
+			    __is.putback(__ch);
+			}
+		    }
+		  else
+		    __is.putback(__ch);
+		}
 	    }
-	  else if (__ch == ')')
-	    __x = __re_x;
 	  else
-	    __is.setstate(ios_base::failbit);
+	    {
+	      __is.putback(__ch);
+	      _Tp __u;
+	      if (__is >> __u)
+		{
+		  __x = __u;
+		  __fail = false;
+		}
+	    }
 	}
-      else
-	{
-	  __is.putback(__ch);
-	  __is >> __re_x;
-	  __x = __re_x;
-	}
+      if (__fail)
+	__is.setstate(ios_base::failbit);
       return __is;
     }
 

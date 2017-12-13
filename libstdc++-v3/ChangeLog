@@ -1,3 +1,12 @@
+2017-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59568
+	* include/std/complex (operator>>): Implement proposed resolution to
+	LWG 2714. Use putback if and only if a character has been successfully
+	extracted but isn't a delimiter. Use ctype::widen and traits::eq when
+	testing if extracted characters match delimiters.
+	* testsuite/26_numerics/complex/dr2714.cc: New test.
+
 2017-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83395
