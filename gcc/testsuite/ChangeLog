@@ -1,3 +1,8 @@
+2017-12-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/15272
+	* g++.dg/template/pr71826.C: Adjust for 15272 fix.
+
 2017-12-12  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/83298
