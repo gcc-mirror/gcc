@@ -5380,6 +5380,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	  err |= err2;
 	}
 
+      bool label_allowed = true;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -5395,6 +5396,19 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	      error ("gimple_bb (stmt) is set to a wrong basic block");
 	      err2 = true;
 	    }
+
+	  /* Labels may be preceded only by debug markers, not debug bind
+	     or source bind or any other statements.  */
+	  if (gimple_code (stmt) == GIMPLE_LABEL)
+	    {
+	      if (!label_allowed)
+		{
+		  error ("gimple label in the middle of a basic block");
+		  err2 = true;
+		}
+	    }
+	  else if (!gimple_debug_begin_stmt_p (stmt))
+	    label_allowed = false;
 
 	  err2 |= verify_gimple_stmt (stmt);
 	  err2 |= verify_location (&blocks, gimple_location (stmt));

@@ -1,5 +1,9 @@
 2017-12-13  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-cfg.c (verify_gimple_in_cfg): Verify no non-label stmts
+	with the exception of debug begin stmt markers appear before
+	labels.
+
 	PR bootstrap/83396
 	* final.c (rest_of_handle_final): Call variable_tracking_main only
 	if !flag_var_tracking.
