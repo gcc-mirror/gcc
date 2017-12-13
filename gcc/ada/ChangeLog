@@ -1,3 +1,9 @@
+2017-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Robustify test for types
+	descendant of System.Address.
+	(gnat_to_gnu_subprog_type): Likewise.
+
 2017-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (gnat_internal_attribute_table): Add
