@@ -10424,8 +10424,8 @@ variable_tracking_main_1 (void)
   if (!flag_var_tracking)
     return 0;
 
-  if (n_basic_blocks_for_fn (cfun) > 500 &&
-      n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun) >= 20)
+  if (n_basic_blocks_for_fn (cfun) > 500
+      && n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun) >= 20)
     {
       vt_debug_insns_local (true);
       return 0;
