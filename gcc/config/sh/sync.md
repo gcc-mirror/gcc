@@ -294,7 +294,7 @@
   /* FIXME: Sometimes the 'expected value' operand is not propagated as
      immediate value.  See PR 64974.  */
   set_of_reg op2 = sh_find_set_of_reg (operands[2], curr_insn,
-				       prev_nonnote_insn_bb);
+				       prev_nonnote_nondebug_insn_bb);
   if (op2.set_src != NULL && satisfies_constraint_I08 (op2.set_src))
     {
       rtx* r = &XVECEXP (XEXP (XVECEXP (PATTERN (curr_insn), 0, 0), 1), 0, 1);

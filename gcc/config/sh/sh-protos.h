@@ -120,10 +120,10 @@ struct set_of_reg
   rtx set_src;
 };
 
-/* Given a reg rtx and a start insn, try to find the insn that sets the
-   specified reg by using the specified insn stepping function, such as 
-   'prev_nonnote_insn_bb'.  When the insn is found, try to extract the rtx
-   of the reg set.  */
+/* Given a reg rtx and a start insn, try to find the insn that sets
+   the specified reg by using the specified insn stepping function,
+   such as 'prev_nonnote_nondebug_insn_bb'.  When the insn is found,
+   try to extract the rtx of the reg set.  */
 template <typename F> inline set_of_reg
 sh_find_set_of_reg (rtx reg, rtx_insn* insn, F stepfunc,
 		    bool ignore_reg_reg_copies = false)

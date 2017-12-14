@@ -11896,8 +11896,8 @@ sh_is_logical_t_store_expr (rtx op, rtx_insn* insn)
 
       else
 	{
-	  set_of_reg op_set = sh_find_set_of_reg (ops[i], insn,
-						  prev_nonnote_insn_bb);
+	  set_of_reg op_set = sh_find_set_of_reg
+	    (ops[i], insn, prev_nonnote_nondebug_insn_bb);
 	  if (op_set.set_src == NULL_RTX)
 	    continue;
 
@@ -11929,7 +11929,8 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx_insn* insn)
   if (GET_MODE (extended_op) != SImode)
     return NULL_RTX;
 
-  set_of_reg s = sh_find_set_of_reg (extended_op, insn, prev_nonnote_insn_bb);
+  set_of_reg s = sh_find_set_of_reg (extended_op, insn,
+				     prev_nonnote_nondebug_insn_bb);
   if (s.set_src == NULL_RTX)
     return NULL_RTX;
 
@@ -11965,10 +11966,10 @@ sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn, rtx operands[])
   if (!can_create_pseudo_p ())
     return false;
 
-  set_of_reg t_before_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
-						 prev_nonnote_insn_bb);
-  set_of_reg t_after_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
-						next_nonnote_insn_bb);
+  set_of_reg t_before_negc = sh_find_set_of_reg
+    (get_t_reg_rtx (), curr_insn, prev_nonnote_nondebug_insn_bb);
+  set_of_reg t_after_negc = sh_find_set_of_reg
+    (get_t_reg_rtx (), curr_insn, next_nonnote_nondebug_insn_bb);
 
   if (t_before_negc.set_rtx != NULL_RTX && t_after_negc.set_rtx != NULL_RTX
       && rtx_equal_p (t_before_negc.set_rtx, t_after_negc.set_rtx)
@@ -12009,8 +12010,8 @@ sh_find_extending_set_of_reg (rtx reg, rtx_insn* curr_insn)
      Also try to look through the first extension that we hit.  There are some
      cases, where a zero_extend is followed an (implicit) sign_extend, and it
      fails to see the sign_extend.  */
-  sh_extending_set_of_reg result =
-	sh_find_set_of_reg (reg, curr_insn, prev_nonnote_insn_bb, true);
+  sh_extending_set_of_reg result = sh_find_set_of_reg
+    (reg, curr_insn, prev_nonnote_nondebug_insn_bb, true);
 
   if (result.set_src != NULL)
     {
