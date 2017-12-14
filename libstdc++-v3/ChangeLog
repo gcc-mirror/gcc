@@ -1,3 +1,10 @@
+2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/complex/dr2714.cc: Move to ...
+	* testsuite/26_numerics/complex/inserters_extractors/char/dr2714.cc:
+	... Here. Remove duplicate header and dg-options. Check first invalid
+	character gets putback. Remove wchar_t test.
+
 2017-12-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59568
