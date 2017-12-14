@@ -6805,7 +6805,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	{
 	  const unsigned int type_align = TYPE_ALIGN (gnu_field_type);
 
-	  if (TYPE_ALIGN (gnu_record_type) < type_align)
+	  if (TYPE_ALIGN (gnu_record_type)
+	      && TYPE_ALIGN (gnu_record_type) < type_align)
 	    TYPE_ALIGN (gnu_record_type) = type_align;
 
 	  /* If the position is not a multiple of the alignment of the type,

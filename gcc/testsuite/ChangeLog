@@ -1,3 +1,7 @@
+2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/alignment13.adb: New test.
+
 2017-12-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c++/83301
