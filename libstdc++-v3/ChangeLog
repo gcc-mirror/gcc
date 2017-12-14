@@ -1,5 +1,9 @@
 2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83279
+	* src/filesystem/std-ops.cc (do_copy_file): Handle sendfile not
+	copying entire file.
+
 	PR libstdc++/68519
 	* include/std/condition_variable (condition_variable::wait_for):
 	Convert duration to native clock's duration before addition.
