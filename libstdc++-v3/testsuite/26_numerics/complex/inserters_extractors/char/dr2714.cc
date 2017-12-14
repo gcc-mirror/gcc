@@ -15,11 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++98" }
-
 #include <complex>
 #include <sstream>
-#include <complex>
 #include <testsuite_hooks.h>
 
 void
@@ -37,16 +34,6 @@ test01()
 void
 test02()
 {
-  std::wistringstream in(L" ( 2.0 , 0.5 ) ");
-  std::complex<double> c;
-  in >> c;
-  VERIFY( in.good() );
-  VERIFY( c.real() == 2.0 && c.imag() == 0.5 );
-}
-
-void
-test03()
-{
   std::istringstream in;
   std::complex<double> c(-1, -1);
   const std::complex<double> c0 = c;
@@ -55,6 +42,7 @@ test03()
   in >> c;
   VERIFY( in.fail() );
   in.clear();
+  VERIFY( in.get() == 'a' );
 
   in.str(" ( ) ");
   in >> c;
@@ -71,11 +59,10 @@ test03()
   in.str("(b)");
   in >> c;
   VERIFY( in.fail() );
-
   in.clear();
   VERIFY( in.get() == 'b' );
-  in.str("( c)");
 
+  in.str("( c)");
   in >> c;
   VERIFY( in.fail() );
   in.clear();
@@ -121,7 +108,7 @@ test03()
 }
 
 void
-test04()
+test03()
 {
   // PR libstdc++/59568
   std::istringstream in;
@@ -164,5 +151,4 @@ main()
   test01();
   test02();
   test03();
-  test04();
 }
