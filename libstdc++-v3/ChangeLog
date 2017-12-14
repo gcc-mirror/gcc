@@ -1,3 +1,12 @@
+2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59568
+	* include/std/complex (operator>>): Only use putback if a character
+	was successfully extracted and only set the value if a number was
+	successfully extracted.
+	* testsuite/26_numerics/complex/inserters_extractors/char/59568.cc:
+	New test.
+
 2017-12-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83395
