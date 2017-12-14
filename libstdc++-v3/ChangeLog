@@ -1,5 +1,11 @@
 2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83427
+	* include/bits/refwrap.h (_Weak_result_type_impl)
+	(_Reference_wrapper_base): Deduce noexcept for function types.
+	* testsuite/20_util/bind/83427.cc: New test.
+	* testsuite/20_util/reference_wrapper/83427.cc: New test.
+
 	PR libstdc++/59568
 	* include/std/complex (operator>>): Only use putback if a character
 	was successfully extracted and only set the value if a number was
