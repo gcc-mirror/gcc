@@ -1,5 +1,16 @@
 2017-12-14  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/83326
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Add
+	may_be_zero parameter and handle it by not marking the first
+	peeled copy as not exiting the loop.
+	(try_peel_loop): Likewise.
+	(canonicalize_loop_induction_variables): Use number_of_iterations_exit
+	to handle the case of constant or zero iterations and perform
+	loop header copying on-the-fly.
+
+2017-12-14  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/83418
 	* vr-values.c (vr_values::extract_range_for_var_from_comparison_expr):
 	Instead of asserting we don't get unfolded comparisons deal with

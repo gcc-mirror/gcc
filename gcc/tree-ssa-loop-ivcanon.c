@@ -681,7 +681,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
 
 static bool
 try_unroll_loop_completely (struct loop *loop,
-			    edge exit, tree niter,
+			    edge exit, tree niter, bool may_be_zero,
 			    enum unroll_level ul,
 			    HOST_WIDE_INT maxiter,
 			    location_t locus, bool allow_peel)
@@ -893,6 +893,8 @@ try_unroll_loop_completely (struct loop *loop,
 	  exit = NULL;
 	  bitmap_clear (wont_exit);
 	}
+      if (may_be_zero)
+	bitmap_clear_bit (wont_exit, 1);
 
       if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 						 n_unroll, wont_exit,
@@ -977,7 +979,7 @@ estimated_peeled_sequence_size (struct loop_size *size,
 
 static bool
 try_peel_loop (struct loop *loop,
-	       edge exit, tree niter,
+	       edge exit, tree niter, bool may_be_zero,
 	       HOST_WIDE_INT maxiter)
 {
   HOST_WIDE_INT npeel;
@@ -1080,6 +1082,8 @@ try_peel_loop (struct loop *loop,
       exit = NULL;
       bitmap_clear (wont_exit);
     }
+  if (may_be_zero)
+    bitmap_clear_bit (wont_exit, 1);
   if (!gimple_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 					     npeel, wont_exit,
 					     exit, &edges_to_remove,
@@ -1152,13 +1156,35 @@ canonicalize_loop_induction_variables (struct loop *loop,
   HOST_WIDE_INT maxiter;
   bool modified = false;
   location_t locus = UNKNOWN_LOCATION;
+  struct tree_niter_desc niter_desc;
+  bool may_be_zero = false;
 
-  niter = number_of_latch_executions (loop);
+  /* For unrolling allow conditional constant or zero iterations, thus
+     perform loop-header copying on-the-fly.  */
   exit = single_exit (loop);
+  niter = chrec_dont_know;
+  if (exit && number_of_iterations_exit (loop, exit, &niter_desc, false))
+    {
+      niter = niter_desc.niter;
+      may_be_zero
+	= niter_desc.may_be_zero && !integer_zerop (niter_desc.may_be_zero);
+    }
   if (TREE_CODE (niter) == INTEGER_CST)
     locus = gimple_location (last_stmt (exit->src));
   else
     {
+      /* For non-constant niter fold may_be_zero into niter again.  */
+      if (may_be_zero)
+	{
+	  if (COMPARISON_CLASS_P (niter_desc.may_be_zero))
+	    niter = fold_build3 (COND_EXPR, TREE_TYPE (niter),
+				 niter_desc.may_be_zero,
+				 build_int_cst (TREE_TYPE (niter), 0), niter);
+	  else
+	    niter = chrec_dont_know;
+	  may_be_zero = false;
+	}
+
       /* If the loop has more than one exit, try checking all of them
 	 for # of iterations determinable through scev.  */
       if (!exit)
@@ -1213,17 +1239,31 @@ canonicalize_loop_induction_variables (struct loop *loop,
      populates the loop bounds.  */
   modified |= remove_redundant_iv_tests (loop);
 
-  if (try_unroll_loop_completely (loop, exit, niter, ul, maxiter, locus,
-				  allow_peel))
+  if (try_unroll_loop_completely (loop, exit, niter, may_be_zero, ul,
+				  maxiter, locus, allow_peel))
     return true;
 
   if (create_iv
       && niter && !chrec_contains_undetermined (niter)
       && exit && just_once_each_iteration_p (loop, exit->src))
-    create_canonical_iv (loop, exit, niter);
+    {
+      tree iv_niter = niter;
+      if (may_be_zero)
+	{
+	  if (COMPARISON_CLASS_P (niter_desc.may_be_zero))
+	    iv_niter = fold_build3 (COND_EXPR, TREE_TYPE (iv_niter),
+				    niter_desc.may_be_zero,
+				    build_int_cst (TREE_TYPE (iv_niter), 0),
+				    iv_niter);
+	  else
+	    iv_niter = NULL_TREE;
+	}
+      if (iv_niter)
+	create_canonical_iv (loop, exit, iv_niter);
+    }
 
   if (ul == UL_ALL)
-    modified |= try_peel_loop (loop, exit, niter, maxiter);
+    modified |= try_peel_loop (loop, exit, niter, may_be_zero, maxiter);
 
   return modified;
 }
