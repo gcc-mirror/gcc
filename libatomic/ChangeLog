@@ -1,3 +1,16 @@
+2017-12-14  Steve Ellcey  <sellcey@cavium.com>
+
+	* Makefile.am (IFUNC_OPTIONS): Change aarch64
+	option from -march=armv8.1-a to -march=armv8-a+lse.
+	* configure.ac (*aarch64*): Check to see if
+	compiler understands -march=armv8-a+lse option.
+	* configure.tgt (*aarch64*): Only set try_ifunc
+	if compiler understands -march=armv8-a+lse option.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2017-12-04  Steve Ellcey  <sellcey@cavium.com>
 
 	* Makefile.am (ARCH_AARCH64_LINUX): Add IFUNC_OPTIONS and

@@ -44,7 +44,9 @@ case "${target_cpu}" in
 	ARCH=aarch64
 	case "${target}" in
 	    aarch64*-*-linux*)
-		try_ifunc=yes
+		if test -n "$enable_aarch64_lse"; then
+		    try_ifunc=yes
+		fi
 		;;
 	esac
 	;;
