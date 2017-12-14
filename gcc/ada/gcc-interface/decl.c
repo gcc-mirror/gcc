@@ -713,48 +713,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* If an alignment is specified, use it if valid.  Note that exceptions
-	   are objects but don't have an alignment.  We must do this before we
-	   validate the size, since the alignment can affect the size.  */
-	if (kind != E_Exception && Known_Alignment (gnat_entity))
-	  {
-	    gcc_assert (Present (Alignment (gnat_entity)));
+	   are objects but don't have an alignment and there is also no point in
+	   setting it for an address clause, since the final type of the object
+	   will be a reference type.  */
+	if (Known_Alignment (gnat_entity)
+	    && kind != E_Exception
+	    && No (Address_Clause (gnat_entity)))
+	  align = validate_alignment (Alignment (gnat_entity), gnat_entity,
+				      TYPE_ALIGN (gnu_type));
 
-	    align = validate_alignment (Alignment (gnat_entity), gnat_entity,
-					TYPE_ALIGN (gnu_type));
-
-	    /* No point in changing the type if there is an address clause
-	       as the final type of the object will be a reference type.  */
-	    if (Present (Address_Clause (gnat_entity)))
-	      align = 0;
-	    else
-	      {
-		tree orig_type = gnu_type;
-
-		gnu_type
-		  = maybe_pad_type (gnu_type, NULL_TREE, align, gnat_entity,
-				    false, false, definition, true);
-
-		/* If a padding record was made, declare it now since it will
-		   never be declared otherwise.  This is necessary to ensure
-		   that its subtrees are properly marked.  */
-		if (gnu_type != orig_type && !DECL_P (TYPE_NAME (gnu_type)))
-		  create_type_decl (TYPE_NAME (gnu_type), gnu_type, true,
-				    debug_info_p, gnat_entity);
-	      }
-	  }
-
-	/* If we are defining the object, see if it has a Size and validate it
-	   if so.  If we are not defining the object and a Size clause applies,
-	   simply retrieve the value.  We don't want to ignore the clause and
-	   it is expected to have been validated already.  Then get the new
-	   type, if any.  */
-	if (definition)
-	  gnu_size = validate_size (Esize (gnat_entity), gnu_type,
-				    gnat_entity, VAR_DECL, false,
-				    Has_Size_Clause (gnat_entity));
-	else if (Has_Size_Clause (gnat_entity))
-	  gnu_size = UI_To_gnu (Esize (gnat_entity), bitsizetype);
-
+	/* Likewise, if a size is specified, use it if valid.  */
+	if (Known_Esize (gnat_entity) && No (Address_Clause (gnat_entity)))
+	  gnu_size
+	    = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
+			     VAR_DECL, false, Has_Size_Clause (gnat_entity));
 	if (gnu_size)
 	  {
 	    gnu_type
@@ -4580,15 +4552,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  gnu_type = change_qualified_type (gnu_type, quals);
 	}
 
-      if (!gnu_decl)
-	gnu_decl = create_type_decl (gnu_entity_name, gnu_type,
-				     artificial_p, debug_info_p,
-				     gnat_entity);
-      else
+      /* If we already made a decl, just set the type, otherwise create it.  */
+      if (gnu_decl)
 	{
 	  TREE_TYPE (gnu_decl) = gnu_type;
 	  TYPE_STUB_DECL (gnu_type) = gnu_decl;
 	}
+      else
+	gnu_decl = create_type_decl (gnu_entity_name, gnu_type, artificial_p,
+				     debug_info_p, gnat_entity);
     }
 
   /* If we got a type that is not dummy, back-annotate the alignment of the

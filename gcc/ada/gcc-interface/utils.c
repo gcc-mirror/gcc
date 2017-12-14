@@ -1224,14 +1224,12 @@ pad_type_hasher::equal (pad_type_hash *t1, pad_type_hash *t2)
     && TYPE_REVERSE_STORAGE_ORDER (type1) == TYPE_REVERSE_STORAGE_ORDER (type2);
 }
 
-/* Look up the padded TYPE in the hash table and return its canonical version
-   if it exists; otherwise, insert it into the hash table.  */
+/* Compute the hash value for the padded TYPE.  */
 
-static tree
-lookup_and_insert_pad_type (tree type)
+static hashval_t
+hash_pad_type (tree type)
 {
   hashval_t hashcode;
-  struct pad_type_hash in, *h;
 
   hashcode
     = iterative_hash_object (TYPE_HASH (TREE_TYPE (TYPE_FIELDS (type))), 0);
@@ -1239,17 +1237,31 @@ lookup_and_insert_pad_type (tree type)
   hashcode = iterative_hash_hashval_t (TYPE_ALIGN (type), hashcode);
   hashcode = iterative_hash_expr (TYPE_ADA_SIZE (type), hashcode);
 
+  return hashcode;
+}
+
+/* Look up the padded TYPE in the hash table and return its canonical version
+   if it exists; otherwise, insert it into the hash table.  */
+
+static tree
+canonicalize_pad_type (tree type)
+{
+  const hashval_t hashcode = hash_pad_type (type);
+  struct pad_type_hash in, *h, **slot;
+
   in.hash = hashcode;
   in.type = type;
-  h = pad_type_hash_table->find_with_hash (&in, hashcode);
-  if (h)
-    return h->type;
+  slot = pad_type_hash_table->find_slot_with_hash (&in, hashcode, INSERT);
+  h = *slot;
+  if (!h)
+    {
+      h = ggc_alloc<pad_type_hash> ();
+      h->hash = hashcode;
+      h->type = type;
+      *slot = h;
+    }
 
-  h = ggc_alloc<pad_type_hash> ();
-  h->hash = hashcode;
-  h->type = type;
-  *pad_type_hash_table->find_slot_with_hash (h, hashcode, INSERT) = h;
-  return NULL_TREE;
+  return h->type;
 }
 
 /* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
@@ -1380,27 +1392,28 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   /* We will output additional debug info manually below.  */
   finish_record_type (record, field, 1, false);
 
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-    SET_TYPE_DEBUG_TYPE (record, type);
-
   /* Set the RM size if requested.  */
   if (set_rm_size)
     {
-      tree canonical_pad_type;
-
       SET_TYPE_ADA_SIZE (record, size ? size : orig_size);
 
       /* If the padded type is complete and has constant size, we canonicalize
 	 it by means of the hash table.  This is consistent with the language
 	 semantics and ensures that gigi and the middle-end have a common view
 	 of these padded types.  */
-      if (TREE_CONSTANT (TYPE_SIZE (record))
-	  && (canonical_pad_type = lookup_and_insert_pad_type (record)))
+      if (TREE_CONSTANT (TYPE_SIZE (record)))
 	{
-	  record = canonical_pad_type;
-	  goto built;
+	  tree canonical = canonicalize_pad_type (record);
+	  if (canonical != record)
+	    {
+	      record = canonical;
+	      goto built;
+	    }
 	}
     }
+
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    SET_TYPE_DEBUG_TYPE (record, type);
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
@@ -1520,13 +1533,31 @@ built:
   return record;
 }
 
+/* Return true if padded TYPE was built with an RM size.  */
+
+bool
+pad_type_has_rm_size (tree type)
+{
+  /* This is required for the lookup.  */
+  if (!TREE_CONSTANT (TYPE_SIZE (type)))
+    return false;
+
+  const hashval_t hashcode = hash_pad_type (type);
+  struct pad_type_hash in, *h;
+
+  in.hash = hashcode;
+  in.type = type;
+  h = pad_type_hash_table->find_with_hash (&in, hashcode);
+
+  /* The types built with an RM size are the canonicalized ones.  */
+  return h && h->type == type;
+}
+
 /* Return a copy of the padded TYPE but with reverse storage order.  */
 
 tree
 set_reverse_storage_order_on_pad_type (tree type)
 {
-  tree field, canonical_pad_type;
-
   if (flag_checking)
     {
       /* If the inner type is not scalar then the function does nothing.  */
@@ -1538,13 +1569,12 @@ set_reverse_storage_order_on_pad_type (tree type)
   /* This is required for the canonicalization.  */
   gcc_assert (TREE_CONSTANT (TYPE_SIZE (type)));
 
-  field = copy_node (TYPE_FIELDS (type));
+  tree field = copy_node (TYPE_FIELDS (type));
   type = copy_type (type);
   DECL_CONTEXT (field) = type;
   TYPE_FIELDS (type) = field;
   TYPE_REVERSE_STORAGE_ORDER (type) = 1;
-  canonical_pad_type = lookup_and_insert_pad_type (type);
-  return canonical_pad_type ? canonical_pad_type : type;
+  return canonicalize_pad_type (type);
 }
 
 /* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.

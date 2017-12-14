@@ -1850,7 +1850,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 This is in keeping with the object case of gnat_to_gnu_entity.  */
       else if ((TREE_CODE (gnu_prefix) != TYPE_DECL
 		&& !(TYPE_IS_PADDING_P (gnu_type)
-		     && TREE_CODE (gnu_expr) == COMPONENT_REF))
+		     && TREE_CODE (gnu_expr) == COMPONENT_REF
+		     && pad_type_has_rm_size (gnu_type)))
 	       || attribute == Attr_Object_Size
 	       || attribute == Attr_Max_Size_In_Storage_Elements)
 	{
