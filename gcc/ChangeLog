@@ -1,3 +1,8 @@
+2017-12-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-cores.def (cortex-a55, cortex-a75,
+	cortex-a75.cortex-a55): Specify AARCH64_FL_F16 in the arch features.
+
 2017-12-14  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
