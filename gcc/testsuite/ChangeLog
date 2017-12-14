@@ -1,3 +1,8 @@
+2017-12-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/83312
+	* gcc.dg/pr83312.c: New test case.
+
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/alignment13.adb: New test.
