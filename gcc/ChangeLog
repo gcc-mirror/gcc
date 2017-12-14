@@ -1,3 +1,37 @@
+2017-12-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* poly-int.h: New file.
+	* poly-int-types.h: Likewise.
+	* coretypes.h: Include them.
+	(POLY_INT_CONVERSION): Define.
+	* target.def (estimated_poly_value): New hook.
+	* doc/tm.texi.in (TARGET_ESTIMATED_POLY_VALUE): New hook.
+	* doc/tm.texi: Regenerate.
+	* doc/poly-int.texi: New file.
+	* doc/gccint.texi: Include it.
+	* doc/rtl.texi: Describe restrictions on subreg modes.
+	* Makefile.in (TEXI_GCCINT_FILES): Add poly-int.texi.
+	* genmodes.c (NUM_POLY_INT_COEFFS): Provide a default definition.
+	(emit_insn_modes_h): Emit a definition of NUM_POLY_INT_COEFFS.
+	* targhooks.h (default_estimated_poly_value): Declare.
+	* targhooks.c (default_estimated_poly_value): New function.
+	* target.h (estimated_poly_value): Likewise.
+	* wide-int.h (WI_UNARY_RESULT): Use wi::binary_traits.
+	(wi::unary_traits): Delete.
+	(wi::binary_traits::signed_shift_result_type): Define for
+	offset_int << HOST_WIDE_INT, etc.
+	(generic_wide_int::operator <<=): Define for all types and use
+	wi::lshift instead of <<.
+	(wi::hwi_with_prec): Add a default constructor.
+	(wi::ints_for): New class.
+	(operator <<): Define for all wide-int types.
+	(operator /): New function.
+	(operator %): Likewise.
+	* selftest.h (ASSERT_KNOWN_EQ, ASSERT_KNOWN_EQ_AT, ASSERT_MAYBE_NE)
+	(ASSERT_MAYBE_NE_AT): New macros.
+
 2017-12-13  Eric Botcazou  <ebotcazou@adacore.com>
             Dominik Vogt  <vogt@linux.vnet.ibm.com>
 

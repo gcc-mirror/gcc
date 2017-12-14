@@ -1,3 +1,18 @@
+2017-12-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/plugin/poly-int-tests.h,
+	gcc.dg/plugin/poly-int-test-1.c,
+	gcc.dg/plugin/poly-int-01_plugin.c,
+	gcc.dg/plugin/poly-int-02_plugin.c,
+	gcc.dg/plugin/poly-int-03_plugin.c,
+	gcc.dg/plugin/poly-int-04_plugin.c,
+	gcc.dg/plugin/poly-int-05_plugin.c,
+	gcc.dg/plugin/poly-int-06_plugin.c,
+	gcc.dg/plugin/poly-int-07_plugin.c: New tests.
+	* gcc.dg/plugin/plugin.exp: Run them.
+
 2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/cpu-builtin-1.c (htm-no-suspend): Add test.

@@ -3784,6 +3784,14 @@ candidate as a replacement for the if-convertible sequence described in\n\
 bool, (rtx_insn *seq, struct noce_if_info *if_info),
 default_noce_conversion_profitable_p)
 
+DEFHOOK
+(estimated_poly_value,
+ "Return an estimate of the runtime value of @var{val}, for use in\n\
+things like cost calculations or profiling frequencies.  The default\n\
+implementation returns the lowest possible value of @var{val}.",
+ HOST_WIDE_INT, (poly_int64 val),
+ default_estimated_poly_value)
+
 /* Permit speculative instructions in delay slots during delayed-branch 
    scheduling.  */
 DEFHOOK
