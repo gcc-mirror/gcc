@@ -1,3 +1,8 @@
+2017-12-14  Tom de Vries  <tom@codesourcery.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other attributes):
+	Add item for weak_undefined.
+
 2017-12-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/67842
