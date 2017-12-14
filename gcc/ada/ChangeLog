@@ -1,5 +1,10 @@
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Set DECL_DISREGARD_INLINE_LIMITS
+	to 0 on the callee if the call is recursive.
+
+2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_field): Do not set the alignment
 	of the enclosing record type if it is not already set.
 

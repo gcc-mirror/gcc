@@ -4306,10 +4306,16 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       return call_expr;
     }
 
-  /* For a call to a nested function, check the inlining status.  */
-  if (TREE_CODE (gnu_subprog) == FUNCTION_DECL
-      && decl_function_context (gnu_subprog))
-    check_inlining_for_nested_subprog (gnu_subprog);
+  if (TREE_CODE (gnu_subprog) == FUNCTION_DECL)
+    {
+      /* For a call to a nested function, check the inlining status.  */
+      if (decl_function_context (gnu_subprog))
+	check_inlining_for_nested_subprog (gnu_subprog);
+
+      /* For a recursive call, avoid explosion due to recursive inlining.  */
+      if (gnu_subprog == current_function_decl)
+	DECL_DISREGARD_INLINE_LIMITS (gnu_subprog) = 0;
+    }
 
   /* The only way we can be making a call via an access type is if Name is an
      explicit dereference.  In that case, get the list of formal args from the
