@@ -566,7 +566,11 @@ get_unit (st_parameter_dt *dtp, int do_create)
      is not allowed, such units must be created with
      OPEN(NEWUNIT=...).  */
   if (dtp->common.unit < 0)
-    return get_gfc_unit (dtp->common.unit, 0);
+    {
+      if (dtp->common.unit > NEWUNIT_START) /* Reserved units.  */
+	return NULL;
+      return get_gfc_unit (dtp->common.unit, 0);
+    }
 
   return get_gfc_unit (dtp->common.unit, do_create);
 }
@@ -701,6 +705,9 @@ init_units (void)
 
       __gthread_mutex_unlock (&u->lock);
     }
+  /* The default internal units.  */
+  u = insert_unit (GFC_INTERNAL_UNIT);
+  u = insert_unit (GFC_INTERNAL_UNIT4);
 }
 
 
