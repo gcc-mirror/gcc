@@ -145,10 +145,38 @@ test03()
   in.clear();
 }
 
+void
+test04()
+{
+  // Test noskipws handling
+  std::istringstream in;
+  const char* bad_inputs[] = {
+    " 1", " (2)", "( 2)", "(2 )", "(2 ,3)", "(2,3 )", 0
+  };
+  const std::complex<double> c0(-1, -1);
+  std::complex<double> c;
+  for (int i = 0; bad_inputs[i]; ++i)
+  {
+    c = c0;
+    in.clear();
+    in.str(bad_inputs[i]);
+    in >> std::noskipws >> c;
+    VERIFY( in.fail() );
+    VERIFY( c == c0 );
+
+    in.clear();
+    in.str(bad_inputs[i]);
+    in >> std::skipws >> c;
+    VERIFY( !in.fail() );
+    VERIFY( c != c0 );
+  }
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }
