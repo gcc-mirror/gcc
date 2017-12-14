@@ -1,5 +1,8 @@
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/83396
+	* gcc.dg/pr83396.c: New test.
+
 	PR tree-optimization/83198
 	* gcc.dg/pr83198.c: New test.
 	* gcc.dg/tree-ssa/pr83198.c: New test.

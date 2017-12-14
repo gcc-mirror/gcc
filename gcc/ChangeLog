@@ -1,5 +1,11 @@
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/83396
+	* var-tracking.c (vt_initialize): Ignore non-DEBUG_INSNs outside of
+	basic blocks.  Assert debug bind insns don't appear outside of bbs,
+	don't reset them.  Assert insns without BLOCK_FOR_INSN are outside of
+	bb.  Simplify.
+
 	PR tree-optimization/83198
 	* gimple-ssa-sprintf.c (format_floating): Set type solely based on
 	dir.modifier, regardless of TREE_TYPE (arg).  Assume non-REAL_CST

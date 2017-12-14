@@ -10157,25 +10157,31 @@ vt_initialize (void)
 	     insns that might be before it too.  Unfortunately,
 	     BB_HEADER and BB_FOOTER are not set while we run this
 	     pass.  */
-	  insn = get_first_insn (bb);
-	  for (rtx_insn *next;
-	       insn != BB_HEAD (bb->next_bb)
-		 ? next = NEXT_INSN (insn), true : false;
+	  rtx_insn *next;
+	  bool outside_bb = true;
+	  for (insn = get_first_insn (bb); insn != BB_HEAD (bb->next_bb);
 	       insn = next)
 	    {
+	      if (insn == BB_HEAD (bb))
+		outside_bb = false;
+	      else if (insn == NEXT_INSN (BB_END (bb)))
+		outside_bb = true;
+	      next = NEXT_INSN (insn);
 	      if (INSN_P (insn))
 		{
+		  if (outside_bb)
+		    {
+		      /* Ignore non-debug insns outside of basic blocks.  */
+		      if (!DEBUG_INSN_P (insn))
+			continue;
+		      /* Debug binds shouldn't appear outside of bbs.  */
+		      gcc_assert (!DEBUG_BIND_INSN_P (insn));
+		    }
 		  basic_block save_bb = BLOCK_FOR_INSN (insn);
 		  if (!BLOCK_FOR_INSN (insn))
 		    {
+		      gcc_assert (outside_bb);
 		      BLOCK_FOR_INSN (insn) = bb;
-		      gcc_assert (DEBUG_INSN_P (insn));
-		      /* Reset debug insns between basic blocks.
-			 Their location is not reliable, because they
-			 were probably not maintained up to date.  */
-		      if (DEBUG_BIND_INSN_P (insn))
-			INSN_VAR_LOCATION_LOC (insn)
-			  = gen_rtx_UNKNOWN_VAR_LOC ();
 		    }
 		  else
 		    gcc_assert (BLOCK_FOR_INSN (insn) == bb);
