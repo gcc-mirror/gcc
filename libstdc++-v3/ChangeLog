@@ -1,5 +1,10 @@
 2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/68519
+	* include/std/condition_variable (condition_variable::wait_for):
+	Convert duration to native clock's duration before addition.
+	* testsuite/30_threads/condition_variable/members/68519.cc: New test.
+
 	PR libstdc++/83427
 	* include/bits/refwrap.h (_Maybe_unary_or_binary_function): Move here
 	from <bits/std_function.h>.
