@@ -1,3 +1,7 @@
+2017-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (variable_tracking_main_1): Formatting fix.
+
 2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* doc/invoke.texi: Document -Wcast-function-type.
