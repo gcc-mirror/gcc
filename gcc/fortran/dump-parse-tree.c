@@ -82,12 +82,25 @@ static inline void
 code_indent (int level, gfc_st_label *label)
 {
   int i;
+  static int oldindent;
+  fputc ('\n', dumpfile);
 
   if (label != NULL)
-    fprintf (dumpfile, "%-5d ", label->value);
+    fprintf (dumpfile, "Label: %-5d\n", label->value);
 
-  for (i = 0; i < (2 * level - (label ? 6 : 0)); i++)
-    fputc (' ', dumpfile);
+  while (level > oldindent)
+    {
+      ++oldindent;
+      for (i = 0; i < 2 * oldindent; i++) fputc (' ', dumpfile);
+      fputs("INDENT: \n", dumpfile);
+    }
+  while (level < oldindent)
+    {
+      --oldindent;
+      for (i = 0; i < 2 * oldindent; i++) fputc (' ', dumpfile);
+      fputs("UNINDENT: \n", dumpfile);
+    }
+  for (i = 0; i < 2 * level; i++) fputc (' ', dumpfile);
 }
 
 
@@ -97,7 +110,6 @@ code_indent (int level, gfc_st_label *label)
 static inline void
 show_indent (void)
 {
-  fputc ('\n', dumpfile);
   code_indent (show_level, NULL);
 }
 
@@ -161,7 +173,7 @@ show_actual_arglist (gfc_actual_arglist *a)
       if (a->expr != NULL)
 	show_expr (a->expr);
       else
-	fputs ("(arg not-present)", dumpfile);
+	fputs ("(arg_not_present)", dumpfile);
 
       fputc (')', dumpfile);
       if (a->next != NULL)
@@ -323,7 +335,11 @@ show_constructor (gfc_constructor_base base)
   for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
     {
       if (c->iterator == NULL)
+	{
 	show_expr (c->expr);
+	fputc (':', dumpfile);
+	mpz_out_str (dumpfile, 10, c->repeat);
+	}
       else
 	{
 	  fputc ('(', dumpfile);
@@ -407,9 +423,9 @@ show_expr (gfc_expr *p)
       break;
 
     case EXPR_ARRAY:
-      fputs ("(/ ", dumpfile);
+      fputs ("(@ ", dumpfile);
       show_constructor (p->value.constructor);
-      fputs (" /)", dumpfile);
+      fputs (" @)", dumpfile);
 
       show_ref (p->ref);
       break;
@@ -422,7 +438,7 @@ show_expr (gfc_expr *p)
       switch (p->ts.type)
 	{
 	case BT_INTEGER:
-	  mpz_out_str (stdout, 10, p->value.integer);
+	  mpz_out_str (dumpfile, 10, p->value.integer);
 
 	  if (p->ts.kind != gfc_default_integer_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
@@ -436,7 +452,7 @@ show_expr (gfc_expr *p)
 	  break;
 
 	case BT_REAL:
-	  mpfr_out_str (stdout, 10, 0, p->value.real, GFC_RND_MODE);
+	  mpfr_out_str (dumpfile, 10, 0, p->value.real, GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_real_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
 	  break;
@@ -449,14 +465,14 @@ show_expr (gfc_expr *p)
 	case BT_COMPLEX:
 	  fputs ("(complex ", dumpfile);
 
-	  mpfr_out_str (stdout, 10, 0, mpc_realref (p->value.complex),
+	  mpfr_out_str (dumpfile, 10, 0, mpc_realref (p->value.complex),
 			GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
 
 	  fputc (' ', dumpfile);
 
-	  mpfr_out_str (stdout, 10, 0, mpc_imagref (p->value.complex),
+	  mpfr_out_str (dumpfile, 10, 0, mpc_imagref (p->value.complex),
 			GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind)
 	    fprintf (dumpfile, "_%d", p->ts.kind);
@@ -495,7 +511,7 @@ show_expr (gfc_expr *p)
 
     case EXPR_VARIABLE:
       if (p->symtree->n.sym->ns && p->symtree->n.sym->ns->proc_name)
-	fprintf (dumpfile, "%s:", p->symtree->n.sym->ns->proc_name->name);
+	fprintf (dumpfile, "%s~", p->symtree->n.sym->ns->proc_name->name);
       fprintf (dumpfile, "%s", p->symtree->n.sym->name);
       show_ref (p->ref);
       break;
@@ -620,6 +636,26 @@ show_expr (gfc_expr *p)
     }
 }
 
+static const char *nodash(const char *str)
+{
+  int len = strlen(str);
+  static char *nodashstr;
+  char *noptr;
+  if (nodashstr) free(nodashstr);
+  nodashstr = (char *)xmalloc(len+1);
+  noptr = nodashstr;
+  while (*str)
+    {
+      switch(*str)
+	{
+	case '-': *noptr++ = '_'; str++; break;
+	default: *noptr++ = *str++; break;
+	}
+    }
+  *noptr = 0;
+  return nodashstr;
+}
+
 /* Show symbol attributes.  The flavor and intent are followed by
    whatever single bit attributes are present.  */
 
@@ -627,13 +663,13 @@ static void
 show_attr (symbol_attribute *attr, const char * module)
 {
   if (attr->flavor != FL_UNKNOWN)
-    fprintf (dumpfile, "(%s ", gfc_code2string (flavors, attr->flavor));
+    fprintf (dumpfile, "(%s ", nodash(gfc_code2string (flavors, attr->flavor)));
   if (attr->access != ACCESS_UNKNOWN)
     fprintf (dumpfile, "%s ", gfc_code2string (access_types, attr->access));
   if (attr->proc != PROC_UNKNOWN)
-    fprintf (dumpfile, "%s ", gfc_code2string (procedures, attr->proc));
+    fprintf (dumpfile, "%s ", nodash(gfc_code2string (procedures, attr->proc)));
   if (attr->save != SAVE_NONE)
-    fprintf (dumpfile, "%s", gfc_code2string (save_status, attr->save));
+    fprintf (dumpfile, "%s", nodash(gfc_code2string (save_status, attr->save)));
 
   if (attr->artificial)
     fputs (" ARTIFICIAL", dumpfile);
@@ -669,7 +705,7 @@ show_attr (symbol_attribute *attr, const char * module)
     {
       fputs (" DUMMY", dumpfile);
       if (attr->intent != INTENT_UNKNOWN)
-	fprintf (dumpfile, "(%s)", gfc_intent_string (attr->intent));
+	fprintf (dumpfile, "(%s)", nodash(gfc_intent_string (attr->intent)));
     }
 
   if (attr->result)
@@ -683,15 +719,15 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" DATA", dumpfile);
   if (attr->use_assoc)
     {
-      fputs (" USE-ASSOC", dumpfile);
+      fputs (" USE_ASSOC", dumpfile);
       if (module != NULL)
 	fprintf (dumpfile, "(%s)", module);
     }
 
   if (attr->in_namelist)
-    fputs (" IN-NAMELIST", dumpfile);
+    fputs (" IN_NAMELIST", dumpfile);
   if (attr->in_common)
-    fputs (" IN-COMMON", dumpfile);
+    fputs (" IN_COMMON", dumpfile);
 
   if (attr->abstract)
     fputs (" ABSTRACT", dumpfile);
@@ -700,7 +736,7 @@ show_attr (symbol_attribute *attr, const char * module)
   if (attr->subroutine)
     fputs (" SUBROUTINE", dumpfile);
   if (attr->implicit_type)
-    fputs (" IMPLICIT-TYPE", dumpfile);
+    fputs (" IMPLICIT_TYPE", dumpfile);
 
   if (attr->sequence)
     fputs (" SEQUENCE", dumpfile);
@@ -737,7 +773,7 @@ show_components (gfc_symbol *sym)
       fputc (' ', dumpfile);
       show_array_spec (c->as);
       if (c->attr.access)
-	fprintf (dumpfile, " %s", gfc_code2string (access_types, c->attr.access));
+	fprintf (dumpfile, " %s", nodash(gfc_code2string (access_types, c->attr.access)));
       fputc (')', dumpfile);
       if (c->next != NULL)
 	fputc (' ', dumpfile);
@@ -805,7 +841,7 @@ show_f2k_derived (gfc_namespace* f2k)
   int op;
 
   show_indent ();
-  fputs ("Procedure bindings:", dumpfile);
+  fputs ("Procedure_bindings: ", dumpfile);
   ++show_level;
 
   /* Finalizer bindings.  */
@@ -821,7 +857,7 @@ show_f2k_derived (gfc_namespace* f2k)
   --show_level;
 
   show_indent ();
-  fputs ("Operator bindings:", dumpfile);
+  fputs ("Operator_bindings: ", dumpfile);
   ++show_level;
 
   /* User-defined operators.  */
@@ -852,7 +888,7 @@ show_symbol (gfc_symbol *sym)
   if (sym == NULL)
     return;
 
-  fprintf (dumpfile, "|| symbol: '%s' ", sym->name);
+  fprintf (dumpfile, "|| Symbol: '%s' ", sym->name);
   len = strlen (sym->name);
   for (i=len; i<12; i++)
     fputc(' ', dumpfile);
@@ -860,31 +896,56 @@ show_symbol (gfc_symbol *sym)
   ++show_level;
 
   show_indent ();
-  fputs ("type spec : ", dumpfile);
+  fputs ("Type_spec: ", dumpfile);
   show_typespec (&sym->ts);
 
   show_indent ();
-  fputs ("attributes: ", dumpfile);
+  fputs ("Attributes: ", dumpfile);
   show_attr (&sym->attr, sym->module);
+
+  /* We don't know the order of variables in the common statement from the above yet */
+  if (sym->attr.in_common)
+    {
+    gfc_common_head *t = sym->common_block;
+    gfc_symbol *nxt = sym->common_next;
+    int links = 1;
+    while (nxt)
+      {
+	++links;
+	nxt = nxt->common_next;
+      }
+    if (t && (links == t->refs))
+      {
+	show_indent ();
+	fprintf (dumpfile, "Common: ('%s'", sym->name);
+	nxt = sym->common_next;
+	while (nxt)
+	  {
+	    fprintf(dumpfile, ",'%s'", nxt->name);
+	    nxt = nxt->common_next;
+	  }
+	fputc(')', dumpfile);
+      }
+    }
 
   if (sym->value)
     {
       show_indent ();
-      fputs ("value: ", dumpfile);
+      fputs ("Value: ", dumpfile);
       show_expr (sym->value);
     }
 
   if (sym->as)
     {
       show_indent ();
-      fputs ("Array spec:", dumpfile);
+      fputs ("Array_spec: ", dumpfile);
       show_array_spec (sym->as);
     }
 
   if (sym->generic)
     {
       show_indent ();
-      fputs ("Generic interfaces:", dumpfile);
+      fputs ("Generic_interfaces: ", dumpfile);
       for (intr = sym->generic; intr; intr = intr->next)
 	fprintf (dumpfile, " %s", intr->sym->name);
     }
@@ -892,13 +953,13 @@ show_symbol (gfc_symbol *sym)
   if (sym->result)
     {
       show_indent ();
-      fprintf (dumpfile, "result: %s", sym->result->name);
+      fprintf (dumpfile, "Result: %s", sym->result->name);
     }
 
   if (sym->components)
     {
       show_indent ();
-      fputs ("components: ", dumpfile);
+      fputs ("Components: ", dumpfile);
       show_components (sym);
     }
 
@@ -913,7 +974,7 @@ show_symbol (gfc_symbol *sym)
   if (sym->formal)
     {
       show_indent ();
-      fputs ("Formal arglist:", dumpfile);
+      fputs ("Formal_arglist: ", dumpfile);
 
       for (formal = sym->formal; formal; formal = formal->next)
 	{
@@ -929,7 +990,7 @@ show_symbol (gfc_symbol *sym)
       && !sym->attr.entry)
     {
       show_indent ();
-      fputs ("Formal namespace", dumpfile);
+      fputs ("Formal_namespace: ", dumpfile);
       show_namespace (sym->formal_ns);
     }
   --show_level;
@@ -984,7 +1045,7 @@ show_common (gfc_symtree *st)
   gfc_symbol *s;
 
   show_indent ();
-  fprintf (dumpfile, "common: /%s/ ", st->name);
+  fprintf (dumpfile, "Common: /%s/ ", st->name);
 
   s = st->n.common->head;
   while (s)
@@ -1008,7 +1069,7 @@ show_symtree (gfc_symtree *st)
   show_indent ();
 
   len = strlen(st->name);
-  fprintf (dumpfile, "symtree: '%s'", st->name);
+  fprintf (dumpfile, "Symtree: '%s'", st->name);
 
   for (i=len; i<12; i++)
     fputc(' ', dumpfile);
@@ -1017,7 +1078,7 @@ show_symtree (gfc_symtree *st)
     fputs( " Ambiguous", dumpfile);
 
   if (st->n.sym->ns != gfc_current_ns)
-    fprintf (dumpfile, "|| symbol: '%s' from namespace '%s'", st->n.sym->name,
+    fprintf (dumpfile, "|| Symbol: '%s' From_namespace: '%s'", st->n.sym->name,
 	     st->n.sym->ns->proc_name->name);
   else
     show_symbol (st->n.sym);
@@ -1941,13 +2002,14 @@ show_code_node (int level, gfc_code *c)
       d = d->block;
       for (; d; d = d->block)
 	{
+	  fputc ('\n', dumpfile);
 	  code_indent (level, 0);
 
 	  if (d->expr1 == NULL)
 	    fputs ("ELSE", dumpfile);
 	  else
 	    {
-	      fputs ("ELSE IF ", dumpfile);
+	      fputs ("ELSEIF ", dumpfile);
 	      show_expr (d->expr1);
 	    }
 
@@ -2079,7 +2141,7 @@ show_code_node (int level, gfc_code *c)
 	}
       fputc ('\n', dumpfile);
 
-      show_code (level + 1, c->block->next);
+      show_code (level, c->block->next);
 
       code_indent (level, 0);
       fputs ("END FORALL", dumpfile);
@@ -2109,11 +2171,12 @@ show_code_node (int level, gfc_code *c)
       show_code (level + 1, c->block->next);
       --show_level;
 
-      if (c->label1)
-	break;
-
       show_indent ();
-      fputs ("END DO", dumpfile);
+      if (c->label1)
+	fprintf (dumpfile, "ENDDO %-5d\n", c->label1->value);
+      else
+	fputs ("END DO", dumpfile);
+
       break;
 
     case EXEC_DO_CONCURRENT:
@@ -2456,7 +2519,7 @@ show_code_node (int level, gfc_code *c)
 	}
       if (i->formatted)
 	{
-	  fputs (" FORMATTED", dumpfile);
+	  fputs (" FORMATTED=", dumpfile);
 	  show_expr (i->formatted);
 	}
       if (i->unformatted)
@@ -2592,7 +2655,29 @@ show_code_node (int level, gfc_code *c)
 	}
 
       if (dt->format_label != NULL)
-	fprintf (dumpfile, " FMT=%d", dt->format_label->value);
+	{
+	  gfc_expr *p = dt->format_label->format;
+	  fprintf (dumpfile, " FMT=%d ", dt->format_label->value);
+	  if ( p != NULL )
+	  {
+	    if ((p->expr_type == EXPR_CONSTANT) && (p->ts.type = BT_CHARACTER))
+	      {
+		int i, length = p->value.character.length;
+		const gfc_char_t *c = p->value.character.string;
+		fputc ('{', dumpfile);
+		for (i = 0; i < length; i++)
+		  {
+		    if (c[i] == '\'')
+		      fputs ("''", dumpfile);
+		    else
+		      fputs (gfc_print_wide_char (c[i]), dumpfile);
+		  }
+		fputc ('}', dumpfile);
+	      }
+	    else
+	      show_expr(p);
+	  }
+	}
       if (dt->namelist)
 	fprintf (dumpfile, " NML=%s", dt->namelist->name);
 
@@ -2774,6 +2859,42 @@ show_equiv (gfc_equiv *eq)
     }
 }
 
+static void show_data(gfc_data *data)
+{
+  gfc_data_variable *var;
+  gfc_data_value *value;
+  if (data->next) show_data(data->next);
+  fprintf(dumpfile, "\n  DATA ");
+  for (var = data->var; var; var = var->next)
+    {
+      gfc_expr *expr = var->expr;
+      gfc_iterator iter = var->iter;
+      show_expr(expr);
+      if (iter.var)
+	{
+	  show_expr(iter.var);
+	  show_expr(iter.start);
+	  show_expr(iter.end);
+	  show_expr(iter.step);
+	  fputs("*", dumpfile);
+	}
+      fputs(var->next ? ", " : "/", dumpfile);
+    }
+  for (value = data->value; value; value = value->next)
+    {
+      mpz_t *repeat = &(value->repeat);
+      gfc_expr *expr = value->expr;
+      gmp_fprintf(dumpfile, "%Zd", repeat);
+      fputc('*', dumpfile);
+      show_expr(expr);
+      fputs(value->next ? ", " : "/", dumpfile);
+    }
+  /*
+  locus where = data->where;
+  gfc_char_t *nextc = where.nextc;
+  gfc_linebuf *lb = where.lb;
+  */
+}
 
 /* Show a freakin' whole namespace.  */
 
@@ -2813,7 +2934,7 @@ show_namespace (gfc_namespace *ns)
   if (ns->proc_name != NULL)
     {
       show_indent ();
-      fprintf (dumpfile, "procedure name = %s", ns->proc_name->name);
+      fprintf (dumpfile, "Procedure_name: %s", ns->proc_name->name);
     }
 
   ++show_level;
@@ -2830,7 +2951,7 @@ show_namespace (gfc_namespace *ns)
 	continue;
 
       show_indent ();
-      fprintf (dumpfile, "Operator interfaces for %s:",
+      fprintf (dumpfile, "Operator_interfaces_for %s:",
 	       gfc_op2string ((gfc_intrinsic_op) op));
 
       for (; intr; intr = intr->next)
@@ -2840,7 +2961,7 @@ show_namespace (gfc_namespace *ns)
   if (ns->uop_root != NULL)
     {
       show_indent ();
-      fputs ("User operators:\n", dumpfile);
+      fputs ("User_operators: \n", dumpfile);
       gfc_traverse_user_op (ns, show_uop);
     }
 
@@ -2861,9 +2982,11 @@ show_namespace (gfc_namespace *ns)
 
   fputc ('\n', dumpfile);
   show_indent ();
-  fputs ("code:", dumpfile);
+  fputs ("Code: ", dumpfile);
   show_code (show_level, ns->code);
   --show_level;
+
+  if (ns->data) show_data(ns->data);
 
   for (ns = ns->contained; ns; ns = ns->sibling)
     {
@@ -2885,5 +3008,6 @@ gfc_dump_parse_tree (gfc_namespace *ns, FILE *file)
 {
   dumpfile = file;
   show_namespace (ns);
+  code_indent (0, NULL);
 }
 
