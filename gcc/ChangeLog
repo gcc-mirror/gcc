@@ -1,3 +1,21 @@
+2017-12-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/83312
+	* domwalk.h (dom_walker::dom_walker): Fix typo in comment.
+	* tree-cfg.c (find_taken_edge): Update to handle NULL_TREE for
+	"val" param, and to cope with arbitrary basic blocks.
+	(find_taken_edge_cond_expr): Add "cond_stmt" param and use it to
+	handle NULL_TREE for "val", dropping "bb" param.
+	(find_taken_edge_switch_expr): Make "switch_stmt" param const and
+	drop "bb" param.  Handle NULL_TREE for "val".
+	(find_case_label_for_value): Make "switch_stmt" param const.
+	* tree-vrp.c (class check_array_bounds_dom_walker): New subclass
+	of dom_walker.
+	(vrp_prop::check_all_array_refs): Reimplement as...
+	(check_array_bounds_dom_walker::before_dom_children): ...this new
+	vfunc.  Replace linear search through BB block list, excluding
+	those with non-executable in-edges via dominator walk.
+
 2017-12-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.opt (mverbose-cost-dump): New option.

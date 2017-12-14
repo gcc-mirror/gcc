@@ -170,9 +170,9 @@ static void gimple_merge_blocks (basic_block, basic_block);
 static bool gimple_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
-static edge find_taken_edge_cond_expr (basic_block, tree);
-static edge find_taken_edge_switch_expr (gswitch *, basic_block, tree);
-static tree find_case_label_for_value (gswitch *, tree);
+static edge find_taken_edge_cond_expr (const gcond *, tree);
+static edge find_taken_edge_switch_expr (const gswitch *, tree);
+static tree find_case_label_for_value (const gswitch *, tree);
 static void lower_phi_internal_fn ();
 
 void
@@ -2278,9 +2278,12 @@ remove_bb (basic_block bb)
 }
 
 
-/* Given a basic block BB ending with COND_EXPR or SWITCH_EXPR, and a
-   predicate VAL, return the edge that will be taken out of the block.
-   If VAL does not match a unique edge, NULL is returned.  */
+/* Given a basic block BB and a value VAL for use in the final statement
+   of the block (if a GIMPLE_COND, GIMPLE_SWITCH, or computed goto), return
+   the edge that will be taken out of the block.
+   If VAL is NULL_TREE, then the current value of the final statement's
+   predicate or index is used.
+   If the value does not match a unique edge, NULL is returned.  */
 
 edge
 find_taken_edge (basic_block bb, tree val)
@@ -2289,13 +2292,15 @@ find_taken_edge (basic_block bb, tree val)
 
   stmt = last_stmt (bb);
 
-  gcc_assert (is_ctrl_stmt (stmt));
+  /* Handle ENTRY and EXIT.  */
+  if (!stmt)
+    return NULL;
 
   if (gimple_code (stmt) == GIMPLE_COND)
-    return find_taken_edge_cond_expr (bb, val);
+    return find_taken_edge_cond_expr (as_a <gcond *> (stmt), val);
 
   if (gimple_code (stmt) == GIMPLE_SWITCH)
-    return find_taken_edge_switch_expr (as_a <gswitch *> (stmt), bb, val);
+    return find_taken_edge_switch_expr (as_a <gswitch *> (stmt), val);
 
   if (computed_goto_p (stmt))
     {
@@ -2309,10 +2314,10 @@ find_taken_edge (basic_block bb, tree val)
 	  && (TREE_CODE (val) == ADDR_EXPR || TREE_CODE (val) == LABEL_EXPR)
 	  && TREE_CODE (TREE_OPERAND (val, 0)) == LABEL_DECL)
 	return find_taken_edge_computed_goto (bb, TREE_OPERAND (val, 0));
-      return NULL;
     }
 
-  gcc_unreachable ();
+  /* Otherwise we only know the taken successor edge if it's unique.  */
+  return single_succ_p (bb) ? single_succ_edge (bb) : NULL;
 }
 
 /* Given a constant value VAL and the entry block BB to a GOTO_EXPR
@@ -2335,31 +2340,44 @@ find_taken_edge_computed_goto (basic_block bb, tree val)
   return e;
 }
 
-/* Given a constant value VAL and the entry block BB to a COND_EXPR
-   statement, determine which of the two edges will be taken out of the
-   block.  Return NULL if either edge may be taken.  */
+/* Given COND_STMT and a constant value VAL for use as the predicate,
+   determine which of the two edges will be taken out of
+   the statement's block.  Return NULL if either edge may be taken.
+   If VAL is NULL_TREE, then the current value of COND_STMT's predicate
+   is used.  */
 
 static edge
-find_taken_edge_cond_expr (basic_block bb, tree val)
+find_taken_edge_cond_expr (const gcond *cond_stmt, tree val)
 {
   edge true_edge, false_edge;
 
-  if (val == NULL
-      || TREE_CODE (val) != INTEGER_CST)
+  if (val == NULL_TREE)
+    {
+      /* Use the current value of the predicate.  */
+      if (gimple_cond_true_p (cond_stmt))
+	val = integer_one_node;
+      else if (gimple_cond_false_p (cond_stmt))
+	val = integer_zero_node;
+      else
+	return NULL;
+    }
+  else if (TREE_CODE (val) != INTEGER_CST)
     return NULL;
 
-  extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
+  extract_true_false_edges_from_block (gimple_bb (cond_stmt),
+				       &true_edge, &false_edge);
 
   return (integer_zerop (val) ? false_edge : true_edge);
 }
 
-/* Given an INTEGER_CST VAL and the entry block BB to a SWITCH_EXPR
-   statement, determine which edge will be taken out of the block.  Return
-   NULL if any edge may be taken.  */
+/* Given SWITCH_STMT and an INTEGER_CST VAL for use as the index, determine
+   which edge will be taken out of the statement's block.  Return NULL if any
+   edge may be taken.
+   If VAL is NULL_TREE, then the current value of SWITCH_STMT's index
+   is used.  */
 
 static edge
-find_taken_edge_switch_expr (gswitch *switch_stmt, basic_block bb,
-			     tree val)
+find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val)
 {
   basic_block dest_bb;
   edge e;
@@ -2367,13 +2385,18 @@ find_taken_edge_switch_expr (gswitch *switch_stmt, basic_block bb,
 
   if (gimple_switch_num_labels (switch_stmt) == 1)
     taken_case = gimple_switch_default_label (switch_stmt);
-  else if (! val || TREE_CODE (val) != INTEGER_CST)
-    return NULL;
   else
-    taken_case = find_case_label_for_value (switch_stmt, val);
+    {
+      if (val == NULL_TREE)
+	val = gimple_switch_index (switch_stmt);
+      if (TREE_CODE (val) != INTEGER_CST)
+	return NULL;
+      else
+	taken_case = find_case_label_for_value (switch_stmt, val);
+    }
   dest_bb = label_to_block (CASE_LABEL (taken_case));
 
-  e = find_edge (bb, dest_bb);
+  e = find_edge (gimple_bb (switch_stmt), dest_bb);
   gcc_assert (e);
   return e;
 }
@@ -2384,7 +2407,7 @@ find_taken_edge_switch_expr (gswitch *switch_stmt, basic_block bb,
    sorted: We can do a binary search for a case matching VAL.  */
 
 static tree
-find_case_label_for_value (gswitch *switch_stmt, tree val)
+find_case_label_for_value (const gswitch *switch_stmt, tree val)
 {
   size_t low, high, n = gimple_switch_num_labels (switch_stmt);
   tree default_case = gimple_switch_default_label (switch_stmt);
