@@ -1,3 +1,10 @@
+2017-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83418
+	* vr-values.c (vr_values::extract_range_for_var_from_comparison_expr):
+	Instead of asserting we don't get unfolded comparisons deal with
+	them.
+
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/83396
