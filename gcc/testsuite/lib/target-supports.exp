@@ -328,6 +328,15 @@ proc check_weak_available { } {
     }
 }
 
+# return 1 if weak undefined symbols are supported.
+
+proc check_effective_target_weak_undefined { } {
+    return [check_runtime weak_undefined {
+	extern void foo () __attribute__((weak));
+	int main (void) { if (foo) return 1; return 0; }
+    } ""]
+}
+
 ###############################
 # proc check_weak_override_available { }
 ###############################
