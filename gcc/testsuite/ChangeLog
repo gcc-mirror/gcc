@@ -1,3 +1,8 @@
+2017-12-14  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/81228
+	* gcc.dg/pr81228.c: New.
+
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79650

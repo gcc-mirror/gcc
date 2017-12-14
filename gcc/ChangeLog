@@ -1,3 +1,12 @@
+2017-12-14  Sudakshina Das  <sudi.das@arm.com>
+	    Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/81228
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Move LTGT
+	to CCFPEmode.
+	* config/aarch64/aarch64-simd.md (vec_cmp<mode><v_int_equiv>): Add
+	LTGT.
+
 2017-12-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-cores.def (cortex-a55, cortex-a75,

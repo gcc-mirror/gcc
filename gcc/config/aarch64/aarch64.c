@@ -4962,13 +4962,13 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 	case UNGT:
 	case UNGE:
 	case UNEQ:
-	case LTGT:
 	  return CCFPmode;
 
 	case LT:
 	case LE:
 	case GT:
 	case GE:
+	case LTGT:
 	  return CCFPEmode;
 
 	default:
