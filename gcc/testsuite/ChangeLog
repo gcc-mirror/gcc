@@ -1,3 +1,10 @@
+2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/cpu-builtin-1.c (htm-no-suspend): Add test.
+
 2017-12-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
