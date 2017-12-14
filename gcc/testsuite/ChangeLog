@@ -1,3 +1,9 @@
+2017-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83198
+	* gcc.dg/pr83198.c: New test.
+	* gcc.dg/tree-ssa/pr83198.c: New test.
+
 2017-12-14  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/81228

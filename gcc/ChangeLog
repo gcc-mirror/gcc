@@ -1,3 +1,10 @@
+2017-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83198
+	* gimple-ssa-sprintf.c (format_floating): Set type solely based on
+	dir.modifier, regardless of TREE_TYPE (arg).  Assume non-REAL_CST
+	value if arg is a REAL_CST with incompatible type.
+
 2017-12-14  Sudakshina Das  <sudi.das@arm.com>
 	    Bin Cheng  <bin.cheng@arm.com>
 
