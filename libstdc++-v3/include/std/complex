@@ -493,7 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>>(basic_istream<_CharT, _Traits>& __is, complex<_Tp>& __x)
     {
       _Tp __re_x, __im_x;
-      _CharT __ch;
+      _CharT __ch = _CharT();
       __is >> __ch;
       if (__ch == '(') 
 	{
@@ -511,11 +511,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else
 	    __is.setstate(ios_base::failbit);
 	}
-      else 
+      else if (__is)
 	{
 	  __is.putback(__ch);
-	  __is >> __re_x;
-	  __x = __re_x;
+	  if (__is >> __re_x)
+	    __x = __re_x;
+	  else
+	    __is.setstate(ios_base::failbit);
 	}
       return __is;
     }
