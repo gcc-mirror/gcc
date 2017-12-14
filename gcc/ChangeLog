@@ -1,3 +1,11 @@
+2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/ppc-auxv.h (PPC_FEATURE2_HTM_NO_SUSPEND): New define.
+	* config/rs6000/rs6000.c (cpu_supports_info): Use it.
+
 2017-12-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
