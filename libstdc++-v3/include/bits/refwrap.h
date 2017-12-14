@@ -64,12 +64,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// Retrieve the result type for a function type.
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes...)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res(_ArgTypes...) _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes......)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res(_ArgTypes......) _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
   template<typename _Res, typename... _ArgTypes>
@@ -106,50 +106,65 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef _Res result_type; };
 
   /// Retrieve the result type for a function pointer.
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(*)(_ArgTypes...)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res(*)(_ArgTypes...) _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(*)(_ArgTypes......)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res(*)(_ArgTypes......)
+				  _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
   /// Retrieve result type for a member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)
+				  _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......)>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......)
+				  _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
   /// Retrieve result type for a const member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) const>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) const
+				  _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) const>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) const
+				  _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
   /// Retrieve result type for a volatile member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) volatile>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) volatile
+				  _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) volatile>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) volatile
+				  _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
   /// Retrieve result type for a const volatile member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)
-				  const volatile>
+				  const volatile _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
+  template<typename _Res, typename _Class, typename... _ArgTypes
+	   _GLIBCXX_NOEXCEPT_PARM>
     struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......)
-				  const volatile>
+				  const volatile _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
   /**
@@ -201,8 +216,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // - a function type (unary)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res(_T1)>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(_T1) _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<_T1, _Res>
     { };
 
@@ -222,8 +237,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // - a function type (binary)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res(_T1, _T2)>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(_T1, _T2) _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<_T1, _T2, _Res>
     { };
 
@@ -243,62 +258,62 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // - a function pointer type (unary)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res(*)(_T1)>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(*)(_T1) _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<_T1, _Res>
     { };
 
   // - a function pointer type (binary)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res(*)(_T1, _T2)>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(*)(_T1, _T2) _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<_T1, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, no qualifiers)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)()>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)() _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<_T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, no qualifiers)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2)>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<_T1*, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, const)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)() const>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)() const _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<const _T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, const)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<const _T1*, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, volatile)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)() volatile>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)() volatile _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<volatile _T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, volatile)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) volatile>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) volatile _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<volatile _T1*, _T2, _Res>
     { };
 
   // - a pointer to member function type (unary, const volatile)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)() const volatile>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)() const volatile _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<const volatile _T1*, _Res>
     { };
 
   // - a pointer to member function type (binary, const volatile)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const volatile>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const volatile _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<const volatile _T1*, _T2, _Res>
     { };
 
