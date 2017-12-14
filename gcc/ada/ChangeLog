@@ -1,5 +1,9 @@
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/Makefile.in: Generalize support for symbolic traces.
+
+2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/misc.c (default_pass_by_ref): Minor tweak.
 
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
@@ -315,7 +319,7 @@
 	* usage.adb (Usage): Add output for switches -gnatH and -gnatJ.
 	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update the
 	documentation to include the legacy and relaxed elaboration models.
-	* gnat_ugn.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
 
 2017-12-05  Arnaud Charlet  <charlet@adacore.com>
 

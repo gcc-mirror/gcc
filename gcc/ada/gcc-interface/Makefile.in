@@ -951,9 +951,12 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   s-taspri.ads<libgnarl/s-taspri__solaris.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__solaris.adb \
   g-soliop.ads<libgnat/g-soliop__solaris.ads \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-solaris-sparc.ads
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   EH_MECHANISM=-gcc
   THREADSLIB = -lposix4 -lthread
@@ -980,6 +983,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   s-taspri.ads<libgnarl/s-taspri__solaris.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__solaris.adb \
   g-soliop.ads<libgnat/g-soliop__solaris.ads \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   system.ads<libgnat/system-solaris-x86.ads
 
@@ -1002,6 +1006,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS += g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   EH_MECHANISM=-gcc
   THREADSLIB = -lposix4 -lthread
@@ -1072,6 +1077,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
   system.ads<libgnat/system-freebsd.ads
@@ -1079,6 +1085,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS += g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   EH_MECHANISM=-gcc
   THREADSLIB = -lpthread
@@ -1178,6 +1185,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
   system.ads<libgnat/system-freebsd.ads
@@ -1185,6 +1193,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   GNATLIB_SHARED = gnatlib-shared-dual
 
   EXTRA_GNATRTL_NONTASKING_OBJS += g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   EH_MECHANISM=-gcc
   THREADSLIB= -lpthread
@@ -1206,6 +1215,7 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
   system.ads<libgnat/system-freebsd.ads
@@ -1213,6 +1223,7 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
   GNATLIB_SHARED = gnatlib-shared-dual
 
   EXTRA_GNATRTL_NONTASKING_OBJS += g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   EH_MECHANISM=-gcc
   THREADSLIB= -lpthread
@@ -1333,6 +1344,7 @@ ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-aix.ads
@@ -1345,6 +1357,8 @@ ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
   else
     TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
   endif
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   THREADSLIB = -lpthreads
   EH_MECHANISM=-gcc
@@ -1439,6 +1453,7 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   a-exetim.ads<libgnarl/a-exetim__mingw.ads \
   a-intnam.ads<libgnarl/a-intnam__mingw.ads \
   g-sercom.adb<libgnat/g-sercom__mingw.adb \
+  $(TRASYM_DWARF_MINGW_PAIRS) \
   s-tsmona.adb<libgnat/s-tsmona__mingw.adb \
   s-interr.adb<libgnarl/s-interr__sigaction.adb \
   s-intman.adb<libgnarl/s-intman__mingw.adb \
@@ -1467,6 +1482,7 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
 
   EXTRA_GNATRTL_NONTASKING_OBJS += \
     s-win32.o s-winext.o g-regist.o g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_MINGW_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS = a-exetim.o
   EXTRA_LIBGNAT_SRCS+=mingw32.h
   MISCLIB = -lws2_32
@@ -1528,6 +1544,8 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   g-sercom.adb<libgnat/g-sercom__linux.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
+  s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-ppc.ads
@@ -1544,11 +1562,13 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
 
   EH_MECHANISM=-gcc
   THREADSLIB = -lpthread -lrt
   GNATLIB_SHARED = gnatlib-shared-dual
+  MISCLIB = -ldl
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1753,17 +1773,20 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   g-sercom.adb<libgnat/g-sercom__linux.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
+  s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-ia64.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
-  MISCLIB=
   THREADSLIB=-lpthread -lrt
   GNATLIB_SHARED=gnatlib-shared-dual
+  MISCLIB = -ldl
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -1780,9 +1803,12 @@ ifeq ($(strip $(filter-out ia64% hp hpux%,$(target_cpu) $(target_vendor) $(targe
   s-taprop.adb<libgnarl/s-taprop__posix.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-hpux-ia64.ads
+
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
 
   MISCLIB=
   EH_MECHANISM=-gcc
