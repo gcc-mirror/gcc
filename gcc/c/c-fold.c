@@ -434,6 +434,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       goto unary;
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
       op0_lval = lval;
       /* FALLTHRU */
     case INDIRECT_REF:
@@ -441,7 +442,6 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case FLOAT_EXPR:
     CASE_CONVERT:
     case ADDR_SPACE_CONVERT_EXPR:
-    case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
