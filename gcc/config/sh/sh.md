@@ -848,7 +848,7 @@
   /* FIXME: Maybe also search the predecessor basic blocks to catch
      more cases.  */
   set_of_reg op = sh_find_set_of_reg (operands[0], curr_insn,
-				      prev_nonnote_insn_bb);
+				      prev_nonnote_nondebug_insn_bb);
 
   if (op.set_src != NULL && GET_CODE (op.set_src) == AND
       && !sh_insn_operands_modified_between_p (op.insn, op.insn, curr_insn))
@@ -939,7 +939,7 @@
   if (dump_file)
     fprintf (dump_file, "cmpgesi_t: trying to optimize for const_int 0\n");
 
-  rtx_insn* i = next_nonnote_insn_bb (curr_insn);
+  rtx_insn* i = next_nonnote_nondebug_insn_bb (curr_insn);
 
   if (dump_file)
     {
@@ -3094,7 +3094,7 @@
 	  && ! sh_dynamicalize_shift_p (shift_count))
 	{
 	  if (prev_set_t_insn == NULL)
-	    prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+	    prev_set_t_insn = prev_nonnote_nondebug_insn_bb (curr_insn);
 
 	  /* Skip the nott insn, which was probably inserted by the splitter
 	     of *rotcr_neg_t.  Don't use one of the recog functions
@@ -3106,7 +3106,8 @@
 	      if (GET_CODE (pat) == SET
 		  && t_reg_operand (XEXP (pat, 0), SImode)
 		  && negt_reg_operand (XEXP (pat, 1), SImode))
-	      prev_set_t_insn = prev_nonnote_insn_bb (prev_set_t_insn);
+		prev_set_t_insn = prev_nonnote_nondebug_insn_bb
+		  (prev_set_t_insn);
 	    }
 
 	  if (! (prev_set_t_insn != NULL_RTX
@@ -3194,7 +3195,7 @@
       if (sh_ashlsi_clobbers_t_reg_p (shift_count)
 	  && ! sh_dynamicalize_shift_p (shift_count))
 	{
-	  prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+	  prev_set_t_insn = prev_nonnote_nondebug_insn_bb (curr_insn);
 
 	  /* Skip the nott insn, which was probably inserted by the splitter
 	     of *rotcl_neg_t.  Don't use one of the recog functions
@@ -3206,7 +3207,8 @@
 	      if (GET_CODE (pat) == SET
 		  && t_reg_operand (XEXP (pat, 0), SImode)
 		  && negt_reg_operand (XEXP (pat, 1), SImode))
-	      prev_set_t_insn = prev_nonnote_insn_bb (prev_set_t_insn);
+		prev_set_t_insn = prev_nonnote_nondebug_insn_bb
+		  (prev_set_t_insn);
 	    }
 
 	  if (! (prev_set_t_insn != NULL_RTX
@@ -4423,7 +4425,7 @@
    When we're here, the not:SI pattern obviously has been matched already
    and we only have to see whether the following insn is the left shift.  */
 
-  rtx_insn *i = next_nonnote_insn_bb (curr_insn);
+  rtx_insn *i = next_nonnote_nondebug_insn_bb (curr_insn);
   if (i == NULL_RTX || !NONJUMP_INSN_P (i))
     FAIL;
 
@@ -10751,8 +10753,8 @@
 {
   rtx t_reg = get_t_reg_rtx ();
 
-  for (rtx_insn* i = prev_nonnote_insn_bb (curr_insn); i != NULL;
-       i = prev_nonnote_insn_bb (i))
+  for (rtx_insn* i = prev_nonnote_nondebug_insn_bb (curr_insn); i != NULL;
+       i = prev_nonnote_nondebug_insn_bb (i))
     {
       if (!INSN_P (i) || DEBUG_INSN_P (i))
 	continue;

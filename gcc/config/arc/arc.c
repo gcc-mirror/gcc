@@ -7499,7 +7499,7 @@ hwloop_optimize (hwloop_info loop)
                  && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
         entry_after = NEXT_INSN (entry_after);
 #endif
-      entry_after = next_nonnote_insn_bb (entry_after);
+      entry_after = next_nonnote_nondebug_insn_bb (entry_after);
 
       gcc_assert (entry_after);
       emit_insn_before (seq, entry_after);

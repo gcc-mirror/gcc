@@ -1,3 +1,13 @@
+2017-12-14  Alexandre Oliva <aoliva@redhat.com>
+
+	PR bootstrap/83396
+	* config/arc/arc.c (hwloop_optimize): Skip debug insns.
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Adjust.
+	* config/sh/sh.c: Skip debug insns besides notes.
+	* config/sh/sh.md: Likewise.
+	* config/sh/sh_treg_combine.cc: Likewise.
+	* config/sh/sync.md: Likewise.
+
 2017-12-14  Tom de Vries  <tom@codesourcery.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Other attributes):
