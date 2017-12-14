@@ -1,3 +1,10 @@
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* doc/invoke.texi: Document -Wcast-function-type.
+	* recog.h (stored_funcptr): Change signature.
+	* tree-dump.c (dump_node): Avoid warning.
+	* typed-splay-tree.h (typed_splay_tree): Avoid warning.
+
 2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle_end/79538

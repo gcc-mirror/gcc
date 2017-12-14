@@ -299,7 +299,7 @@ scan_translation_unit_directives_only (cpp_reader *pfile)
   struct _cpp_dir_only_callbacks cb;
 
   cb.print_lines = print_lines_directives_only;
-  cb.maybe_print_line = (void (*) (source_location)) maybe_print_line;
+  cb.maybe_print_line = maybe_print_line;
 
   _cpp_preprocess_dir_only (pfile, &cb);
 }

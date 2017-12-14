@@ -384,6 +384,10 @@ Wc++17-compat
 C++ ObjC++ Var(warn_cxx17_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017.
 
+Wcast-function-type
+C ObjC C++ ObjC++ Var(warn_cast_function_type) Warning EnabledBy(Wextra)
+Warn about casts between incompatible function types.
+
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
 Warn about casts which discard qualifiers.

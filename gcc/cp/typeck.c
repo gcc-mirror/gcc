@@ -1173,6 +1173,59 @@ comp_template_parms_position (tree t1, tree t2)
   return true;
 }
 
+/* Heuristic check if two parameter types can be considered ABI-equivalent.  */
+
+static bool
+cxx_safe_arg_type_equiv_p (tree t1, tree t2)
+{
+  t1 = TYPE_MAIN_VARIANT (t1);
+  t2 = TYPE_MAIN_VARIANT (t2);
+
+  if (TREE_CODE (t1) == POINTER_TYPE
+      && TREE_CODE (t2) == POINTER_TYPE)
+    return true;
+
+  /* The signedness of the parameter matters only when an integral
+     type smaller than int is promoted to int, otherwise only the
+     precision of the parameter matters.
+     This check should make sure that the callee does not see
+     undefined values in argument registers.  */
+  if (INTEGRAL_TYPE_P (t1)
+      && INTEGRAL_TYPE_P (t2)
+      && TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+      && (TYPE_UNSIGNED (t1) == TYPE_UNSIGNED (t2)
+	  || !targetm.calls.promote_prototypes (NULL_TREE)
+	  || TYPE_PRECISION (t1) >= TYPE_PRECISION (integer_type_node)))
+    return true;
+
+  return same_type_p (t1, t2);
+}
+
+/* Check if a type cast between two function types can be considered safe.  */
+
+static bool
+cxx_safe_function_type_cast_p (tree t1, tree t2)
+{
+  if (TREE_TYPE (t1) == void_type_node &&
+      TYPE_ARG_TYPES (t1) == void_list_node)
+    return true;
+
+  if (TREE_TYPE (t2) == void_type_node &&
+      TYPE_ARG_TYPES (t2) == void_list_node)
+    return true;
+
+  if (!cxx_safe_arg_type_equiv_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+    return false;
+
+  for (t1 = TYPE_ARG_TYPES (t1), t2 = TYPE_ARG_TYPES (t2);
+       t1 && t2;
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+    if (!cxx_safe_arg_type_equiv_p (TREE_VALUE (t1), TREE_VALUE (t2)))
+      return false;
+
+  return true;
+}
+
 /* Subroutine in comptypes.  */
 
 static bool
@@ -7326,9 +7379,27 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	   && same_type_p (type, intype))
     /* DR 799 */
     return rvalue (expr);
-  else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
-	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
-    return build_nop (type, expr);
+  else if (TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
+    {
+      if ((complain & tf_warning)
+	  && !cxx_safe_function_type_cast_p (TREE_TYPE (type),
+					     TREE_TYPE (intype)))
+	warning (OPT_Wcast_function_type,
+		 "cast between incompatible function types"
+		 " from %qH to %qI", intype, type);
+      return build_nop (type, expr);
+    }
+  else if (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype))
+    {
+      if ((complain & tf_warning)
+	  && !cxx_safe_function_type_cast_p
+		(TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE_RAW (type)),
+		 TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE_RAW (intype))))
+	warning (OPT_Wcast_function_type,
+		 "cast between incompatible pointer to member types"
+		 " from %qH to %qI", intype, type);
+      return build_nop (type, expr);
+    }
   else if ((TYPE_PTRDATAMEM_P (type) && TYPE_PTRDATAMEM_P (intype))
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
     {

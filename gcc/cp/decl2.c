@@ -3558,7 +3558,8 @@ start_static_storage_duration_function (unsigned count)
       priority_info_map = splay_tree_new (splay_tree_compare_ints,
 					  /*delete_key_fn=*/0,
 					  /*delete_value_fn=*/
-					  (splay_tree_delete_value_fn) &free);
+					  (splay_tree_delete_value_fn)
+					  (void (*) (void)) free);
 
       /* We always need to generate functions for the
 	 DEFAULT_INIT_PRIORITY so enter it now.  That way when we walk

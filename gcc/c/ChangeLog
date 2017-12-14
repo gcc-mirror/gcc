@@ -1,3 +1,9 @@
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-typeck.c (c_safe_arg_type_equiv_p,
+	c_safe_function_type_cast_p): New function.
+	(build_c_cast): Implement -Wcast-function-type.
+
 2017-12-14  Richard Biener  <rguenther@suse.de>
 
 	PR c/83415

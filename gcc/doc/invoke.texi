@@ -267,7 +267,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  @gol
--Wcast-align  -Wcast-align=strict  -Wcast-qual  @gol
+-Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
 -Wchar-subscripts  -Wchkp  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wclobbered  -Wcomment  -Wconditionally-supported @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wdangling-else  -Wdate-time @gol
@@ -3904,6 +3904,7 @@ This enables some extra warning flags that are not enabled by
 name is still supported, but the newer name is more descriptive.)
 
 @gccoptlist{-Wclobbered  @gol
+-Wcast-function-type  @gol
 -Wempty-body  @gol
 -Wignored-qualifiers @gol
 -Wimplicit-fallthrough=3 @gol
@@ -6040,6 +6041,21 @@ two- or four-byte boundaries.
 Warn whenever a pointer is cast such that the required alignment of the
 target is increased.  For example, warn if a @code{char *} is cast to
 an @code{int *} regardless of the target machine.
+
+@item -Wcast-function-type
+@opindex Wcast-function-type
+@opindex Wno-cast-function-type
+Warn when a function pointer is cast to an incompatible function pointer.
+In a cast involving function types with a variable argument list only
+the types of initial arguments that are provided are considered.
+Any parameter of pointer-type matches any other pointer-type.  Any benign
+differences in integral types are ignored, like @code{int} vs. @code{long}
+on ILP32 targets.  Likewise type qualifiers are ignored.  The function
+type @code{void (*) (void)} is special and matches everything, which can
+be used to suppress this warning.
+In a cast involving pointer to member types this warning warns whenever
+the type cast is changing the pointer to member type.
+This warning is enabled by @option{-Wextra}.
 
 @item -Wwrite-strings
 @opindex Wwrite-strings
