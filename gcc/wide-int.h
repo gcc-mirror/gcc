@@ -293,7 +293,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The type of result produced by a unary operation on type T.  */
 #define WI_UNARY_RESULT(T) \
-  typename wi::unary_traits <T>::result_type
+  typename wi::binary_traits <T, T>::result_type
 
 /* Define a variable RESULT to hold the result of a binary operation on
    X and Y, which have types T1 and T2 respectively.  Define VAL to
@@ -390,11 +390,6 @@ namespace wi
 	    enum precision_type P2 = int_traits <T2>::precision_type>
   struct binary_traits;
 
-  /* The result of a unary operation on T is the same as the result of
-     a binary operation on two values of type T.  */
-  template <typename T>
-  struct unary_traits : public binary_traits <T, T> {};
-
   /* Specify the result type for each supported combination of binary
      inputs.  Note that CONST_PRECISION and VAR_PRECISION cannot be
      mixed, in order to give stronger type checking.  When both inputs
@@ -423,6 +418,7 @@ namespace wi
 			       <int_traits <T2>::precision> > result_type;
     typedef result_type operator_result;
     typedef bool predicate_result;
+    typedef result_type signed_shift_result_type;
     typedef bool signed_predicate_result;
   };
 
@@ -727,7 +723,7 @@ public:
   ASSIGNMENT_OPERATOR (operator +=, add)
   ASSIGNMENT_OPERATOR (operator -=, sub)
   ASSIGNMENT_OPERATOR (operator *=, mul)
-  SHIFT_ASSIGNMENT_OPERATOR (operator <<=, <<)
+  ASSIGNMENT_OPERATOR (operator <<=, lshift)
   SHIFT_ASSIGNMENT_OPERATOR (operator >>=, >>)
   INCDEC_OPERATOR (operator ++, 1)
   INCDEC_OPERATOR (operator --, -1)
@@ -1513,6 +1509,7 @@ namespace wi
      and precision PRECISION.  */
   struct hwi_with_prec
   {
+    hwi_with_prec () {}
     hwi_with_prec (HOST_WIDE_INT, unsigned int, signop);
     HOST_WIDE_INT val;
     unsigned int precision;
@@ -1578,6 +1575,30 @@ inline wi::hwi_with_prec
 wi::two (unsigned int precision)
 {
   return wi::shwi (2, precision);
+}
+
+namespace wi
+{
+  /* ints_for<T>::zero (X) returns a zero that, when asssigned to a T,
+     gives that T the same precision as X.  */
+  template<typename T, precision_type = int_traits<T>::precision_type>
+  struct ints_for
+  {
+    static int zero (const T &) { return 0; }
+  };
+
+  template<typename T>
+  struct ints_for<T, VAR_PRECISION>
+  {
+    static hwi_with_prec zero (const T &);
+  };
+}
+
+template<typename T>
+inline wi::hwi_with_prec
+wi::ints_for<T, wi::VAR_PRECISION>::zero (const T &x)
+{
+  return wi::zero (wi::get_precision (x));
 }
 
 namespace wi
@@ -3152,6 +3173,14 @@ SIGNED_BINARY_PREDICATE (operator >=, ges_p)
     return wi::F (x, y); \
   }
 
+#define SHIFT_OPERATOR(OP, F) \
+  template<typename T1, typename T2> \
+  WI_BINARY_OPERATOR_RESULT (T1, T1) \
+  OP (const T1 &x, const T2 &y) \
+  { \
+    return wi::F (x, y); \
+  }
+
 UNARY_OPERATOR (operator ~, bit_not)
 UNARY_OPERATOR (operator -, neg)
 BINARY_PREDICATE (operator ==, eq_p)
@@ -3162,23 +3191,32 @@ BINARY_OPERATOR (operator ^, bit_xor)
 BINARY_OPERATOR (operator +, add)
 BINARY_OPERATOR (operator -, sub)
 BINARY_OPERATOR (operator *, mul)
+SHIFT_OPERATOR (operator <<, lshift)
 
 #undef UNARY_OPERATOR
 #undef BINARY_PREDICATE
 #undef BINARY_OPERATOR
-
-template <typename T1, typename T2>
-inline WI_SIGNED_SHIFT_RESULT (T1, T2)
-operator << (const T1 &x, const T2 &y)
-{
-  return wi::lshift (x, y);
-}
+#undef SHIFT_OPERATOR
 
 template <typename T1, typename T2>
 inline WI_SIGNED_SHIFT_RESULT (T1, T2)
 operator >> (const T1 &x, const T2 &y)
 {
   return wi::arshift (x, y);
+}
+
+template <typename T1, typename T2>
+inline WI_SIGNED_SHIFT_RESULT (T1, T2)
+operator / (const T1 &x, const T2 &y)
+{
+  return wi::sdiv_trunc (x, y);
+}
+
+template <typename T1, typename T2>
+inline WI_SIGNED_SHIFT_RESULT (T1, T2)
+operator % (const T1 &x, const T2 &y)
+{
+  return wi::smod_trunc (x, y);
 }
 
 template<typename T>

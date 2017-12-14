@@ -781,6 +781,10 @@ create_modes (void)
 #endif
 }
 
+#ifndef NUM_POLY_INT_COEFFS
+#define NUM_POLY_INT_COEFFS 1
+#endif
+
 /* Processing.  */
 
 /* Sort a list of modes into the order needed for the WIDER field:
@@ -1245,6 +1249,8 @@ enum machine_mode\n{");
       n_int_n_ents ++;
 
   printf ("#define NUM_INT_N_ENTS %d\n", n_int_n_ents);
+
+  printf ("#define NUM_POLY_INT_COEFFS %d\n", NUM_POLY_INT_COEFFS);
 
   puts ("\
 \n\

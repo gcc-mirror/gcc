@@ -396,6 +396,21 @@ typedef unsigned char uchar;
 #include "signop.h"
 #include "wide-int.h" 
 #include "wide-int-print.h"
+
+/* On targets that don't need polynomial offsets, target-specific code
+   should be able to treat poly_int like a normal constant, with a
+   conversion operator going from the former to the latter.  We also
+   allow this for gencondmd.c for all targets, so that we can treat
+   machine_modes as enums without causing build failures.  */
+#if (defined (IN_TARGET_CODE) \
+     && (defined (USE_ENUM_MODES) || NUM_POLY_INT_COEFFS == 1))
+#define POLY_INT_CONVERSION 1
+#else
+#define POLY_INT_CONVERSION 0
+#endif
+
+#include "poly-int.h"
+#include "poly-int-types.h"
 #include "insn-modes-inline.h"
 #include "machmode.h"
 #include "double-int.h"

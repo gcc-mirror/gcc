@@ -281,6 +281,25 @@ extern int num_passes;
     ::selftest::fail ((LOC), desc_);			       \
   SELFTEST_END_STMT
 
+/* Evaluate EXPECTED and ACTUAL and compare them with known_eq, calling
+   ::selftest::pass if they are always equal,
+   ::selftest::fail if they might be non-equal.  */
+
+#define ASSERT_KNOWN_EQ(EXPECTED, ACTUAL) \
+  ASSERT_KNOWN_EQ_AT ((SELFTEST_LOCATION), (EXPECTED), (ACTUAL))
+
+/* Like ASSERT_KNOWN_EQ, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_KNOWN_EQ_AT(LOC, EXPECTED, ACTUAL)			\
+  SELFTEST_BEGIN_STMT							\
+  const char *desc = "ASSERT_KNOWN_EQ (" #EXPECTED ", " #ACTUAL ")";	\
+  if (known_eq (EXPECTED, ACTUAL))					\
+    ::selftest::pass ((LOC), desc);					\
+  else									\
+    ::selftest::fail ((LOC), desc);					\
+  SELFTEST_END_STMT
+
 /* Evaluate EXPECTED and ACTUAL and compare them with !=, calling
    ::selftest::pass if they are non-equal,
    ::selftest::fail if they are equal.  */
@@ -292,6 +311,25 @@ extern int num_passes;
     ::selftest::pass (SELFTEST_LOCATION, desc_);	       \
   else							       \
     ::selftest::fail (SELFTEST_LOCATION, desc_);	       \
+  SELFTEST_END_STMT
+
+/* Evaluate EXPECTED and ACTUAL and compare them with maybe_ne, calling
+   ::selftest::pass if they might be non-equal,
+   ::selftest::fail if they are known to be equal.  */
+
+#define ASSERT_MAYBE_NE(EXPECTED, ACTUAL) \
+  ASSERT_MAYBE_NE_AT ((SELFTEST_LOCATION), (EXPECTED), (ACTUAL))
+
+/* Like ASSERT_MAYBE_NE, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_MAYBE_NE_AT(LOC, EXPECTED, ACTUAL)			\
+  SELFTEST_BEGIN_STMT							\
+  const char *desc = "ASSERT_MAYBE_NE (" #EXPECTED ", " #ACTUAL ")";	\
+  if (maybe_ne (EXPECTED, ACTUAL))					\
+    ::selftest::pass ((LOC), desc);					\
+  else									\
+    ::selftest::fail ((LOC), desc);					\
   SELFTEST_END_STMT
 
 /* Evaluate EXPECTED and ACTUAL and compare them with strcmp, calling

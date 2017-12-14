@@ -2067,6 +2067,15 @@ TARGET_CAN_CHANGE_MODE_CLASS (@var{m2}, @var{m1}, @var{class})
 
 must be false for every class @var{class} that includes @var{reg}.
 
+GCC must be able to determine at compile time whether a subreg is
+paradoxical, whether it occupies a whole number of blocks, or whether
+it is a lowpart of a block.  This means that certain combinations of
+variable-sized mode are not permitted.  For example, if @var{m2}
+holds @var{n} @code{SI} values, where @var{n} is greater than zero,
+it is not possible to form a @code{DI} @code{subreg} of it; such a
+@code{subreg} would be paradoxical when @var{n} is 1 but not when
+@var{n} is greater than 1.
+
 @findex SUBREG_REG
 @findex SUBREG_BYTE
 The first operand of a @code{subreg} expression is customarily accessed
