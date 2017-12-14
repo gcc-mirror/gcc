@@ -382,48 +382,71 @@ fs::do_copy_file(const char* from, const char* to,
       return false;
     }
 
+  ssize_t n = 0;
+  size_t count = from_st->st_size;
 #ifdef _GLIBCXX_USE_SENDFILE
-  off_t offset = 0;
-  const auto n = ::sendfile(out.fd, in.fd, &offset, from_st->st_size);
-  if (n < 0 && (errno == ENOSYS || errno == EINVAL))
+  n = ::sendfile(out.fd, in.fd, nullptr, count);
+  if (n < 0 && errno != ENOSYS && errno != EINVAL)
     {
-#endif // _GLIBCXX_USE_SENDFILE
-      __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-      __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-      if (sbin.is_open())
-	in.fd = -1;
-      if (sbout.is_open())
-	out.fd = -1;
-      if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
-	{
-	  ec = std::make_error_code(std::errc::io_error);
-	  return false;
-	}
-      if (!sbout.close() || !sbin.close())
+      ec.assign(errno, std::generic_category());
+      return false;
+    }
+  if ((size_t)n == count)
+    {
+      if (!out.close() || !in.close())
 	{
 	  ec.assign(errno, std::generic_category());
 	  return false;
 	}
-
       ec.clear();
       return true;
-
-#ifdef _GLIBCXX_USE_SENDFILE
     }
-  if (n != from_st->st_size)
+  else if (n > 0)
+    count -= n;
+#endif // _GLIBCXX_USE_SENDFILE
+
+  __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
+  __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
+
+  if (sbin.is_open())
+    in.fd = -1;
+  if (sbout.is_open())
+    out.fd = -1;
+
+  const std::streampos errpos(std::streamoff(-1));
+
+  if (n < 0)
+    {
+      auto p1 = sbin.pubseekoff(0, std::ios_base::beg, std::ios_base::in);
+      auto p2 = sbout.pubseekoff(0, std::ios_base::beg, std::ios_base::out);
+      if (p1 == errpos || p2 == errpos)
+	{
+	  ec = std::make_error_code(std::errc::io_error);
+	  return false;
+	}
+    }
+  else if (n > 0)
+    {
+      auto p = sbout.pubseekoff(n, std::ios_base::beg, std::ios_base::out);
+      if (p == errpos)
+	{
+	  ec = std::make_error_code(std::errc::io_error);
+	  return false;
+	}
+    }
+
+  if (count && !(std::ostream(&sbout) << &sbin))
+    {
+      ec = std::make_error_code(std::errc::io_error);
+      return false;
+    }
+  if (!sbout.close() || !sbin.close())
     {
       ec.assign(errno, std::generic_category());
       return false;
     }
-  if (!out.close() || !in.close())
-    {
-      ec.assign(errno, std::generic_category());
-      return false;
-    }
-
   ec.clear();
   return true;
-#endif // _GLIBCXX_USE_SENDFILE
 }
 #endif // NEED_DO_COPY_FILE
 #endif // _GLIBCXX_HAVE_SYS_STAT_H
