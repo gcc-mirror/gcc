@@ -1,3 +1,11 @@
+2017-12-14  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-10-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* gcc.target/powerpc/pr80210-2.c: New test.
+
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/alignment13.adb: New test.

@@ -1,3 +1,20 @@
+2017-12-14  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-10-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Rewrite
+	function to not use the have_cpu variable.  Do not set cpu_index,
+	rs6000_cpu_index or rs6000_tune_index if we end up using TARGET_DEFAULT
+	or the default cpu.
+	(rs6000_valid_attribute_p): Remove duplicate initializations of
+	old_optimize and func_optimize.
+	(rs6000_pragma_target_parse): Call rs6000_activate_target_options ().
+	(rs6000_activate_target_options): Make global.
+	* config/rs6000/rs6000-protos.h (rs6000_activate_target_options): Add
+	prototype.
+
 2017-12-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
