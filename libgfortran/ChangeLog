@@ -1,3 +1,20 @@
+2017-12-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78549
+	* io/inquire.c (inquire_via_unit): Adjust test for existence for
+	pre-connected internal units.
+	* io/transfer.c (finalize_transfer): When done with a transfer
+	to internal units, free the format buffer and close the stream.
+	(st_read_done): Delete freeing the stream, now handled using
+	sclose in finalize_transfer. (st_write_done): Likewise.
+	* io/unit.c (get_unit): Return NULL for special reserved unit
+	numbers, signifying not accessible to the user.
+	(init_units): Insert the two special internal units into the
+	unit treap. This makes these unit structures available without
+	further allocations for later use by internal unit I/O. These
+	units are automatically deleted by normal program termination.
+	* io/unix.c (mem_close): Add a guard check to protect from double free.
+
 2017-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36313
