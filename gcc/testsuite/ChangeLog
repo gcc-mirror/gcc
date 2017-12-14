@@ -1,3 +1,8 @@
+2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle_end/79538
+	* gcc.dg/pr79538.c: New test.
+
 2017-12-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/83312

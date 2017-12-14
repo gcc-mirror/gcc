@@ -1,3 +1,9 @@
+2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle_end/79538
+	* gimple-fold.c (get_range_strlen): Add the handling of non-member 
+	array.
+
 2017-12-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/83312

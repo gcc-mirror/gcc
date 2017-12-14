@@ -1340,6 +1340,19 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		 the array could have zero length.  */
 	      *minlen = ssize_int (0);
 	    }
+
+	  if (VAR_P (arg) 
+	      && TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+	    {
+	      val = TYPE_SIZE_UNIT (TREE_TYPE (arg));
+	      if (!val || TREE_CODE (val) != INTEGER_CST || integer_zerop (val))
+		return false;
+	      val = wide_int_to_tree (TREE_TYPE (val), 
+				      wi::sub(wi::to_wide (val), 1));
+	      /* Set the minimum size to zero since the string in
+		 the array could have zero length.  */
+	      *minlen = ssize_int (0);
+	    }
 	}
 
       if (!val)
