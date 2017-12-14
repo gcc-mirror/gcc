@@ -1,5 +1,26 @@
 2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83427
+	* include/bits/refwrap.h (_Maybe_unary_or_binary_function): Move here
+	from <bits/std_function.h>.
+	(_Mem_fn_traits_base, _Mem_fn_traits): Move here, from <functional>.
+	(_Weak_result_type_impl, _Reference_wrapper_base): Deduce noexcept
+	for function types. Remove partial specializations for member
+	functions.
+	(_Weak_result_type_impl): Remove unused partial specializations for
+	non-referenceable function types and for references to functions.
+	(_Weak_result_type_memfun, _Reference_wrapper_base_memfun): New
+	helpers to handle member functions via _Mem_fn_traits.
+	(_Weak_result_type, reference_wrapper): Derive from new helpers.
+	* include/bits/std_function.h (_Maybe_unary_or_binary_function): Move
+	to <bits/refwrap.h>.
+	* include/std/functional (_Pack, _AllConvertible, _NotSame): Remove.
+	(_Mem_fn_traits_base, _Mem_fn_traits): Move to <bits/refwrap.h>.
+	* testsuite/20_util/bind/83427.cc: New test.
+	* testsuite/20_util/bind/refqual.cc: Add noexcept to functions and
+	check for weak result types.
+	* testsuite/20_util/reference_wrapper/83427.cc: New test.
+
 	* testsuite/26_numerics/complex/inserters_extractors/char/dr2714.cc:
 	Add tests using noskipws.
 

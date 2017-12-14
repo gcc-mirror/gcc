@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,33 +15,17 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target c++11 } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 #include <functional>
-#include <testsuite_hooks.h>
 
-struct X
-{
-  int f() const& noexcept { return 0; }
-  int g(int i, ...)& noexcept { return i; }
-};
+// PR libstdc++/83427
 
-void
-test01()
-{
-  X x;
-  auto b = std::bind(&X::f, &x);
-  VERIFY( b() == 0 );
-  auto bb = std::bind(&X::g, &x, 1, 2);
-  VERIFY( bb() == 1 );
+int f() noexcept { return 0; }
+auto b = std::bind(f);
+static_assert(std::is_same_v<decltype(b)::result_type, int>);
 
-  // Check for weak result types:
-  using T1 = decltype(b)::result_type;
-  using T2 = decltype(bb)::result_type;
-}
-
-int
-main()
-{
-  test01();
-}
+struct X { long f() const & noexcept { return 0L; } };
+auto b2 = std::bind(&X::f, X{});
+static_assert(std::is_same_v<decltype(b2)::result_type, long>);
