@@ -1,5 +1,8 @@
 2017-12-14  Alexandre Oliva <aoliva@redhat.com>
 
+	* config/i386/i386.c (rest_of_insert_endbranch): Use call loc
+	for its nop_endbr.
+
 	PR bootstrap/83396
 	* config/arc/arc.c (hwloop_optimize): Skip debug insns.
 	* config/sh/sh-protos.h (sh_find_set_of_reg): Adjust.

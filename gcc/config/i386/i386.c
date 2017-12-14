@@ -2609,21 +2609,25 @@ rest_of_insert_endbranch (void)
 	{
 	  if (INSN_P (insn) && GET_CODE (insn) == CALL_INSN)
 	    {
-	      rtx_insn *next_insn = insn;
+	      if (find_reg_note (insn, REG_SETJMP, NULL) == NULL)
+		continue;
+	      /* Generate ENDBRANCH after CALL, which can return more than
+		 twice, setjmp-like functions.  */
 
+	      /* Skip notes and debug insns that must be next to the
+		 call insn.  ??? This might skip a lot more than
+		 that...  ??? Skipping barriers and emitting code
+		 after them surely looks like a mistake; we probably
+		 won't ever hit it, for we'll hit BB_END first.  */
+	      rtx_insn *next_insn = insn;
 	      while ((next_insn != BB_END (bb))
 		      && (DEBUG_INSN_P (NEXT_INSN (next_insn))
 			  || NOTE_P (NEXT_INSN (next_insn))
 			  || BARRIER_P (NEXT_INSN (next_insn))))
 		next_insn = NEXT_INSN (next_insn);
 
-	      /* Generate ENDBRANCH after CALL, which can return more than
-		 twice, setjmp-like functions.  */
-	      if (find_reg_note (insn, REG_SETJMP, NULL) != NULL)
-		{
-		  cet_eb = gen_nop_endbr ();
-		  emit_insn_after (cet_eb, next_insn);
-		}
+	      cet_eb = gen_nop_endbr ();
+	      emit_insn_after_setloc (cet_eb, next_insn, INSN_LOCATION (insn));
 	      continue;
 	    }
 
