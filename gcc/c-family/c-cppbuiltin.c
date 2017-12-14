@@ -1613,7 +1613,7 @@ builtin_define_with_hex_fp_value (const char *macro,
 				  const char *fp_cast)
 {
   REAL_VALUE_TYPE real;
-  char dec_str[64], buf1[256], buf2[256];
+  char dec_str[64], buf[256], buf1[128], buf2[64];
 
   /* This is very expensive, so if possible expand them lazily.  */
   if (lazy_hex_fp_value_count < 12
@@ -1656,11 +1656,11 @@ builtin_define_with_hex_fp_value (const char *macro,
 
   /* Assemble the macro in the following fashion
      macro = fp_cast [dec_str fp_suffix] */
-  sprintf (buf1, "%s%s", dec_str, fp_suffix);
-  sprintf (buf2, fp_cast, buf1);
-  sprintf (buf1, "%s=%s", macro, buf2);
+  sprintf (buf2, "%s%s", dec_str, fp_suffix);
+  sprintf (buf1, fp_cast, buf2);
+  sprintf (buf, "%s=%s", macro, buf1);
 
-  cpp_define (parse_in, buf1);
+  cpp_define (parse_in, buf);
 }
 
 /* Return a string constant for the suffix for a value of type TYPE
