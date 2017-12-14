@@ -1,3 +1,9 @@
+2017-12-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (analyze_increments):
+	Distinguish replacement costs for constant strides from those for
+	unknown strides.
+
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* var-tracking.c (variable_tracking_main_1): Formatting fix.
