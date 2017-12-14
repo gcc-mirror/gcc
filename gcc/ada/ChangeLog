@@ -1,5 +1,10 @@
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_field): Do not set the alignment
+	of the enclosing record type if it is not already set.
+
+2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (pad_type_has_rm_size): Declare.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Do not build
 	a padding type for the alignment before validating the size.
