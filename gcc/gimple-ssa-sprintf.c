@@ -1885,6 +1885,8 @@ static fmtresult
 format_floating (const directive &dir, tree arg)
 {
   HOST_WIDE_INT prec[] = { dir.prec[0], dir.prec[1] };
+  tree type = (dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
+	       ? long_double_type_node : double_type_node);
 
   /* For an indeterminate precision the lower bound must be assumed
      to be zero.  */
@@ -1892,10 +1894,6 @@ format_floating (const directive &dir, tree arg)
     {
       /* Get the number of fractional decimal digits needed to represent
 	 the argument without a loss of accuracy.  */
-      tree type = arg ? TREE_TYPE (arg) :
-	(dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
-	 ? long_double_type_node : double_type_node);
-
       unsigned fmtprec
 	= REAL_MODE_FORMAT (TYPE_MODE (type))->p;
 
@@ -1946,7 +1944,9 @@ format_floating (const directive &dir, tree arg)
 	}
     }
 
-  if (!arg || TREE_CODE (arg) != REAL_CST)
+  if (!arg
+      || TREE_CODE (arg) != REAL_CST
+      || !useless_type_conversion_p (type, TREE_TYPE (arg)))
     return format_floating (dir, prec);
 
   /* The minimum and maximum number of bytes produced by the directive.  */
