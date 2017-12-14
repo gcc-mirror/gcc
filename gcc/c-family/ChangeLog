@@ -1,3 +1,9 @@
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c.opt (Wcast-function-type): New warning option.
+	* c-lex.c (get_fileinfo): Avoid warning.
+	* c-ppoutput.c (scan_translation_unit_directives_only): Remove cast.
+
 2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR middle_end/79538 

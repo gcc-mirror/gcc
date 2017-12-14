@@ -1,3 +1,7 @@
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* internal.h (maybe_print_line): Change signature.
+	
 2017-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79228

@@ -709,7 +709,7 @@ struct _cpp_dir_only_callbacks
 {
   /* Called to print a block of lines. */
   void (*print_lines) (int, const void *, size_t);
-  void (*maybe_print_line) (source_location);
+  bool (*maybe_print_line) (source_location);
 };
 
 extern void _cpp_preprocess_dir_only (cpp_reader *,

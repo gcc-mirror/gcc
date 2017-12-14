@@ -1,3 +1,10 @@
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl2.c (start_static_storage_duration_function): Avoid warning.
+	* typeck.c (cxx_safe_arg_type_equiv_p,
+	cxx_safe_function_type_cast_p): New function.
+	(build_reinterpret_cast_1): Implement -Wcast-function-type.
+
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79650
