@@ -2867,7 +2867,6 @@ package body Sem_Prag is
 
          procedure Analyze_Input_Item (Input : Node_Id) is
             Input_Id : Entity_Id;
-            Input_OK : Boolean := True;
 
          begin
             --  Null input list
@@ -2908,6 +2907,8 @@ package body Sem_Prag is
                                                  E_In_Parameter,
                                                  E_In_Out_Parameter,
                                                  E_Out_Parameter,
+                                                 E_Protected_Type,
+                                                 E_Task_Type,
                                                  E_Variable)
                   then
                      --  The input cannot denote states or objects declared
@@ -2933,11 +2934,11 @@ package body Sem_Prag is
                            null;
 
                         else
-                           Input_OK := False;
                            Error_Msg_Name_1 := Chars (Pack_Id);
                            SPARK_Msg_NE
                              ("input item & cannot denote a visible object or "
                               & "state of package %", Input, Input_Id);
+                           return;
                         end if;
                      end if;
 
@@ -2945,26 +2946,25 @@ package body Sem_Prag is
                      --  (SPARK RM 7.1.5(5)).
 
                      if Contains (Inputs_Seen, Input_Id) then
-                        Input_OK := False;
                         SPARK_Msg_N ("duplicate input item", Input);
+                        return;
                      end if;
 
-                     --  Input is legal, add it to the list of processed inputs
+                     --  At this point it is known that the input is legal. Add
+                     --  it to the list of processed inputs.
 
-                     if Input_OK then
-                        Append_New_Elmt (Input_Id, Inputs_Seen);
+                     Append_New_Elmt (Input_Id, Inputs_Seen);
 
-                        if Ekind (Input_Id) = E_Abstract_State then
-                           Append_New_Elmt (Input_Id, States_Seen);
-                        end if;
+                     if Ekind (Input_Id) = E_Abstract_State then
+                        Append_New_Elmt (Input_Id, States_Seen);
+                     end if;
 
-                        if Ekind_In (Input_Id, E_Abstract_State,
-                                               E_Constant,
-                                               E_Variable)
-                          and then Present (Encapsulating_State (Input_Id))
-                        then
-                           Append_New_Elmt (Input_Id, Constits_Seen);
-                        end if;
+                     if Ekind_In (Input_Id, E_Abstract_State,
+                                            E_Constant,
+                                            E_Variable)
+                       and then Present (Encapsulating_State (Input_Id))
+                     then
+                        Append_New_Elmt (Input_Id, Constits_Seen);
                      end if;
 
                   --  The input references something that is not a state or an

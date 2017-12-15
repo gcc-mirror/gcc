@@ -1,3 +1,19 @@
+2017-12-15  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/aliasing4.adb: New testcase.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/incomplete6.adb, gnat.dg/incomplete6.ads: New testcase.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/initializes.ads, gnat.dg/initializes.adb: New testcase.
+
+2017-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/component_size.adb: New testcase.
+
 2017-12-15  Richard Biener  <rguenther@suse.de>
 
 	PR lto/83388

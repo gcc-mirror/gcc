@@ -15816,17 +15816,30 @@ package body Sem_Util is
 
    begin
       Expr := N;
-      Par  := Parent (N);
+      Par  := N;
 
       --  A postcondition whose expression is a short-circuit is broken down
       --  into individual aspects for better exception reporting. The original
       --  short-circuit expression is rewritten as the second operand, and an
       --  occurrence of 'Old in that operand is potentially unevaluated.
-      --  See Sem_ch13.adb for details of this transformation.
+      --  See sem_ch13.adb for details of this transformation. The reference
+      --  to 'Old may appear within an expression, so we must look for the
+      --  enclosing pragma argument in the tree that contains the reference.
 
-      if Nkind (Original_Node (Par)) = N_And_Then then
-         return True;
-      end if;
+      while Present (Par)
+        and then Nkind (Par) /= N_Pragma_Argument_Association
+      loop
+         if Nkind (Original_Node (Par)) = N_And_Then then
+            return True;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      --  Other cases; 'Old appears within other expression (not the top-level
+      --  conjunct in a postcondition) with a potentially unevaluated operand.
+
+      Par := Parent (Expr);
 
       while not Nkind_In (Par, N_If_Expression,
                                N_Case_Expression,

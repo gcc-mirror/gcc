@@ -1,3 +1,62 @@
+2017-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Use Component_Size of
+	the innermost array instead of Esize of its component type to exclude
+	inappropriate array types, including packed array types.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Input_Item): Allow concurrent types to appear
+	within the input list of Initializes. Remove the uses of Input_OK.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In): Do not replace a membership test on a
+	scalar type with a validity test when the membership appears in a
+	predicate expression, to prevent a spurious error when predicate is
+	specified static.
+	* sem_ch13.adb (Build_Predicate_Functions): Add warning if a static
+	predicate, after constant-folding, reduces to True and is this
+	redundant.
+	* par-ch4.adb: Typo fixes and minor reformattings.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Ensure_Prior_Elaboration_Static): Mark the generated
+	with clause as being implicit for an instantiation in order to
+	circumvent an issue with 'W' and 'Z' line encodings in ALI files.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Detect further cases of
+	misuse of 'Old that appear within an expression that is potentially
+	unevaluated, when the prefix of the attribute does not statically
+	designate an object (e.g. a function call).
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Conformking_Types): Two incomplete types are conforming
+	when one of them is used as a generic actual, but only within an
+	instantiation.
+	* einfo.ads: Clarify use of flag Used_As_Generic_Actual.
+
+2017-12-15  Justin Squirek  <squirek@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Modify check for aliased view on
+	prefix to use the prefix's original node to avoid looking at expanded
+	conversions for certain array types.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): Add warning on a membership
+	operation on a scalar type for which there is a user-defined equality
+	operator.
+
+2017-12-15  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Add Ghost assertion
+	policy.
+
 2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Initialization_Item): Remove the specialized
