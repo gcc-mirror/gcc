@@ -4262,7 +4262,7 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
       case BIT_XOR_EXPR:
       case MULT_EXPR:
       case BIT_AND_EXPR:
-        /* ADJUSMENT_DEF is NULL when called from
+        /* ADJUSTMENT_DEF is NULL when called from
            vect_create_epilog_for_reduction to vectorize double reduction.  */
         if (adjustment_def)
 	  *adjustment_def = init_val;
@@ -4358,6 +4358,9 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
      first one in this group is STMT.
    INDUCTION_INDEX is the index of the loop for condition reductions.
      Otherwise it is undefined.
+   INDUC_VAL is for INTEGER_INDUC_COND_REDUCTION the value to use for the case
+     when the COND_EXPR is never true in the loop.  It needs to
+     be smaller than any value of the IV in the loop.
 
    This function:
    1. Creates the reduction def-use cycles: sets the arguments for 
@@ -4403,7 +4406,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 				  int ncopies, enum tree_code reduc_code,
 				  vec<gimple *> reduction_phis,
                                   int reduc_index, bool double_reduc, 
-				  slp_tree slp_node, tree induction_index)
+				  slp_tree slp_node, tree induction_index,
+				  tree induc_val)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info prev_phi_info;
@@ -4488,6 +4492,15 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gimple *def_stmt = SSA_NAME_DEF_STMT (reduction_op);
       initial_def = PHI_ARG_DEF_FROM_EDGE (def_stmt,
 					   loop_preheader_edge (loop));
+      /* Optimize: if initial_def is for REDUC_MAX smaller than the base
+	 and we can't use zero for induc_val, use initial_def.  Similarly
+	 for REDUC_MIN and initial_def larger than the base.  */
+      if (TREE_CODE (initial_def) == INTEGER_CST
+	  && (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+	      == INTEGER_INDUC_COND_REDUCTION)
+	  && !integer_zerop (induc_val)
+	  && tree_int_cst_lt (initial_def, induc_val))
+	induc_val = initial_def;
       vect_is_simple_use (initial_def, loop_vinfo, &def_stmt, &initial_def_dt);
       vec_initial_def = get_initial_def_for_reduction (stmt, initial_def,
 						       &adjustment_def);
@@ -4528,9 +4541,10 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	      gcc_assert (i == 0);
 
 	      tree vec_init_def_type = TREE_TYPE (vec_init_def);
-	      tree zero_vec = build_zero_cst (vec_init_def_type);
+	      tree induc_val_vec
+		= build_vector_from_val (vec_init_def_type, induc_val);
 
-	      add_phi_arg (as_a <gphi *> (phi), zero_vec,
+	      add_phi_arg (as_a <gphi *> (phi), induc_val_vec,
 			   loop_preheader_edge (loop), UNKNOWN_LOCATION);
 	    }
 	  else
@@ -4879,14 +4893,16 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       gimple_assign_set_lhs (epilog_stmt, new_temp);
       gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 
-      if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-	  == INTEGER_INDUC_COND_REDUCTION)
+      if ((STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+	   == INTEGER_INDUC_COND_REDUCTION)
+	  && !operand_equal_p (initial_def, induc_val, 0))
 	{
-	  /* Earlier we set the initial value to be zero.  Check the result
-	     and if it is zero then replace with the original initial
-	     value.  */
-	  tree zero = build_zero_cst (scalar_type);
-	  tree zcompare = build2 (EQ_EXPR, boolean_type_node, new_temp, zero);
+	  /* Earlier we set the initial value to be a vector if induc_val
+	     values.  Check the result and if it is induc_val then replace
+	     with the original initial value, unless induc_val is
+	     the same as initial_def already.  */
+	  tree zcompare = build2 (EQ_EXPR, boolean_type_node, new_temp,
+				  induc_val);
 
 	  tmp = make_ssa_name (new_scalar_dest);
 	  epilog_stmt = gimple_build_assign (tmp, COND_EXPR, zcompare,
@@ -5001,7 +5017,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
               else
                 vec_temp = gimple_assign_lhs (new_phi);
               tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
-                            bitsize_zero_node);
+				 bitsize_zero_node);
               epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
               new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
               gimple_assign_set_lhs (epilog_stmt, new_temp);
@@ -5485,6 +5501,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   gimple *def_stmt;
   enum vect_def_type dt, cond_reduc_dt = vect_unknown_def_type;
   gphi *new_phi = NULL;
+  gimple *cond_reduc_def_stmt = NULL;
   tree scalar_type;
   bool is_simple_use;
   gimple *orig_stmt;
@@ -5672,9 +5689,13 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      cond_reduc_dt = dt;
 	      cond_reduc_val = ops[i];
 	    }
-	  if (dt == vect_induction_def && def_stmt != NULL
+	  if (dt == vect_induction_def
+	      && def_stmt != NULL
 	      && is_nonwrapping_integer_induction (def_stmt, loop))
-	    cond_reduc_dt = dt;
+	    {
+	      cond_reduc_dt = dt;
+	      cond_reduc_def_stmt = def_stmt;
+	    }
 	}
     }
 
@@ -5713,12 +5734,28 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     {
       if (cond_reduc_dt == vect_induction_def)
 	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "condition expression based on "
-			     "integer induction.\n");
-	  STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-	    = INTEGER_INDUC_COND_REDUCTION;
+	  stmt_vec_info cond_stmt_vinfo = vinfo_for_stmt (cond_reduc_def_stmt);
+	  tree base
+	    = STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (cond_stmt_vinfo);
+
+	  gcc_assert (TREE_CODE (base) == INTEGER_CST);
+	  cond_reduc_val = NULL_TREE;
+	  /* Find a suitable value below base; punt if base is the minimum
+	     value of the type for now.  */
+	  if (tree_int_cst_sgn (base) == 1)
+	    cond_reduc_val = build_int_cst (TREE_TYPE (base), 0);
+	  else if (tree_int_cst_lt (TYPE_MIN_VALUE (TREE_TYPE (base)), base))
+	    cond_reduc_val
+	      = int_const_binop (MINUS_EXPR, base, integer_one_node);
+	  if (cond_reduc_val)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "condition expression based on "
+				 "integer induction.\n");
+	      STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
+		= INTEGER_INDUC_COND_REDUCTION;
+	    }
 	}
 
       /* Loop peeling modifies initial value of reduction PHI, which
@@ -5915,7 +5952,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  gcc_assert (orig_code == MAX_EXPR || orig_code == MIN_EXPR);
 	}
       else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
-		 == INTEGER_INDUC_COND_REDUCTION)
+	       == INTEGER_INDUC_COND_REDUCTION)
 	orig_code = MAX_EXPR;
     }
 
@@ -6382,7 +6419,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
   vect_create_epilog_for_reduction (vect_defs, stmt, epilog_copies,
                                     epilog_reduc_code, phis, reduc_index,
-				    double_reduc, slp_node, cond_name);
+				    double_reduc, slp_node, cond_name,
+				    cond_reduc_val);
 
   return true;
 }
