@@ -1,5 +1,8 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81197
+	* g++.dg/cpp1z/decomp34.C: New test.
+
 	PR c++/80135
 	PR c++/81922
 	* g++.dg/warn/Wplacement-new-size-1.C (fBx1): Initialize nested

@@ -1,5 +1,16 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81197
+	* cp-tree.h (cp_maybe_mangle_decomp): Declare.
+	* decl.c (cp_maybe_mangle_decomp): New function.
+	(cp_finish_decomp): Don't SET_DECL_ASSEMBLER_NAME here.
+	* parser.c (cp_convert_range_for,
+	cp_parser_decomposition_declaration): Call cp_maybe_mangle_decomp.
+	* pt.c (tsubst_expr): Likewise.
+	* mangle.c (find_decomp_unqualified_name): New function.
+	(write_unqualified_name): Handle DECL_DECOMPOSITION_P
+	where DECL_ASSEMBLER_NAME is already set.
+
 	PR c++/80135
 	PR c++/81922
 	* typeck2.c (digest_init_r): Change nested argument type from bool to

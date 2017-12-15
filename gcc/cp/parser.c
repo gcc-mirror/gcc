@@ -11940,6 +11940,9 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 				     tf_warning_or_error);
   finish_for_expr (expression, statement);
 
+  if (VAR_P (range_decl) && DECL_DECOMPOSITION_P (range_decl))
+    cp_maybe_mangle_decomp (range_decl, decomp_first_name, decomp_cnt);
+
   /* The declaration is initialized with *__begin inside the loop body.  */
   cp_finish_decl (range_decl,
 		  build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
@@ -13283,6 +13286,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
       if (decl != error_mark_node)
 	{
+	  cp_maybe_mangle_decomp (decl, prev, v.length ());
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
 			  is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT);
 	  cp_finish_decomp (decl, prev, v.length ());
