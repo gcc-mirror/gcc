@@ -1,3 +1,8 @@
+2017-12-15  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/36550
+	* gcc.dg/tree-ssa/pr36550.c: New test.
+
 2017-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-optimization/81165
