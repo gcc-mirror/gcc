@@ -1,6 +1,15 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/80631
+	* gcc.target/i386/avx2-pr80631.c: New test.
+
 	Backported from mainline
+	2017-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80631
+	* gcc.dg/vect/pr80631-1.c: New test.
+	* gcc.dg/vect/pr80631-2.c: New test.
+
 	2017-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81906

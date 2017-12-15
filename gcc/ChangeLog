@@ -1,6 +1,19 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80631
+	* tree-vect-loop.c (get_initial_def_for_reduction): Fix comment typo.
+	(vect_create_epilog_for_reduction): Add INDUC_VAL argument, for
+	INTEGER_INDUC_COND_REDUCTION use INDUC_VAL instead of
+	hardcoding zero as the value if COND_EXPR is never true.  For
+	INTEGER_INDUC_COND_REDUCTION don't emit the final COND_EXPR if
+	INDUC_VAL is equal to INITIAL_DEF.
+	(vectorizable_reduction): Compute INDUC_VAL for
+	vect_create_epilog_for_reduction, if no value is suitable, don't
+	use INTEGER_INDUC_COND_REDUCTION for now.  Formatting fixes.
+
 	2017-12-08  Joseph Myers  <joseph@codesourcery.com>
 		    Alexander Monakov  <amonakov@ispras.ru>
 		    Jakub Jelinek  <jakub@redhat.com>
