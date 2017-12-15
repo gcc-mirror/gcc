@@ -1,3 +1,17 @@
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/expr_func_main.adb, gnat.dg/expr_func_pkg.ads,
+	gnat.dg/expr_func_pkg.adb: New testcase.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/abe_pkg.adb, gnat.dg/abe_pkg.ads: New testcase.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/subp_inst.adb, gnat.dg/subp_inst_pkg.adb,
+	gnat.dg/subp_inst_pkg.ads: New testcase.
+
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512f-aesenclast-2.c: New test.

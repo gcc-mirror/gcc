@@ -4200,13 +4200,11 @@ package body Exp_Ch7 is
    ----------------------------
 
    procedure Expand_Cleanup_Actions (N : Node_Id) is
-      pragma Assert
-        (Nkind_In (N,
-                   N_Extended_Return_Statement,
-                   N_Block_Statement,
-                   N_Subprogram_Body,
-                   N_Task_Body,
-                   N_Entry_Body));
+      pragma Assert (Nkind_In (N, N_Block_Statement,
+                                  N_Entry_Body,
+                                  N_Extended_Return_Statement,
+                                  N_Subprogram_Body,
+                                  N_Task_Body));
 
       Scop : constant Entity_Id := Current_Scope;
 
@@ -4311,11 +4309,13 @@ package body Exp_Ch7 is
       end if;
 
       --  If an extended return statement contains something like
+      --
       --     X := F (...);
+      --
       --  where F is a build-in-place function call returning a controlled
-      --  type, then a temporary object will be implicitly declared as part of
-      --  the statement list, and this will need cleanup. In such cases, we
-      --  transform:
+      --  type, then a temporary object will be implicitly declared as part
+      --  of the statement list, and this will need cleanup. In such cases,
+      --  we transform:
       --
       --    return Result : T := ... do
       --       <statements> -- possibly with handlers
@@ -4336,14 +4336,15 @@ package body Exp_Ch7 is
       if Nkind (N) = N_Extended_Return_Statement then
          declare
             Block : constant Node_Id :=
-              Make_Block_Statement (Sloc (N),
-               Declarations => Empty_List,
-               Handled_Statement_Sequence =>
-                 Handled_Statement_Sequence (N));
+                      Make_Block_Statement (Sloc (N),
+                        Declarations               => Empty_List,
+                        Handled_Statement_Sequence =>
+                          Handled_Statement_Sequence (N));
          begin
-            Set_Handled_Statement_Sequence
-              (N, Make_Handled_Sequence_Of_Statements (Sloc (N),
-                    Statements => New_List (Block)));
+            Set_Handled_Statement_Sequence (N,
+              Make_Handled_Sequence_Of_Statements (Sloc (N),
+                Statements => New_List (Block)));
+
             Analyze (Block);
          end;
 

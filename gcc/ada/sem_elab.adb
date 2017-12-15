@@ -405,11 +405,19 @@ package body Sem_Elab is
    --           actual subprograms through generic formal subprograms. As a
    --           result, the calls are not recorded or processed.
    --
-   --  -gnatdL  ignore activations and calls to instances for elaboration
+   --  -gnatd_i ignore activations and calls to instances for elaboration
    --
    --           The ABE mechanism ignores calls and task activations when they
    --           target a subprogram or task type defined an external instance.
    --           As a result, the calls and task activations are not processed.
+   --
+   --  -gnatdL  ignore external calls from instances for elaboration
+   --
+   --           The ABE mechanism does not generate N_Call_Marker nodes for
+   --           calls which occur in expanded instances, do not invoke generic
+   --           actual subprograms through formal subprograms, and the target
+   --           is external to the instance. As a result, the calls are not
+   --           recorded or processed.
    --
    --  -gnatd.o conservative elaboration order for indirect calls
    --
@@ -488,6 +496,7 @@ package body Sem_Elab is
    --              -gnatd_a
    --              -gnatd_e
    --              -gnatd.G
+   --              -gnatd_i
    --              -gnatdL
    --              -gnatd_p
    --              -gnatd.U
@@ -1781,6 +1790,13 @@ package body Sem_Elab is
    -----------------------
 
    procedure Build_Call_Marker (N : Node_Id) is
+      function In_External_Context
+        (Call         : Node_Id;
+         Target_Attrs : Target_Attributes) return Boolean;
+      pragma Inline (In_External_Context);
+      --  Determine whether a target described by attributes Target_Attrs is
+      --  external to call Call which must reside within an instance.
+
       function In_Premature_Context (Call : Node_Id) return Boolean;
       --  Determine whether call Call appears within a premature context
 
@@ -1797,6 +1813,55 @@ package body Sem_Elab is
       pragma Inline (Is_Generic_Formal_Subp);
       --  Determine whether subprogram Subp_Id denotes a generic formal
       --  subprogram which appears in the "prologue" of an instantiation.
+
+      -------------------------
+      -- In_External_Context --
+      -------------------------
+
+      function In_External_Context
+        (Call         : Node_Id;
+         Target_Attrs : Target_Attributes) return Boolean
+      is
+         Inst      : Node_Id;
+         Inst_Body : Node_Id;
+         Inst_Decl : Node_Id;
+
+      begin
+         --  Performance note: parent traversal
+
+         Inst := Find_Enclosing_Instance (Call);
+
+         --  The call appears within an instance
+
+         if Present (Inst) then
+
+            --  The call comes from the main unit and the target does not
+
+            if In_Extended_Main_Code_Unit (Call)
+              and then not In_Extended_Main_Code_Unit (Target_Attrs.Spec_Decl)
+            then
+               return True;
+
+            --  Otherwise the target declaration must not appear within the
+            --  instance spec or body.
+
+            else
+               Extract_Instance_Attributes
+                 (Exp_Inst  => Inst,
+                  Inst_Decl => Inst_Decl,
+                  Inst_Body => Inst_Body);
+
+               --  Performance note: parent traversal
+
+               return not In_Subtree
+                            (N     => Target_Attrs.Spec_Decl,
+                             Root1 => Inst_Decl,
+                             Root2 => Inst_Body);
+            end if;
+         end if;
+
+         return False;
+      end In_External_Context;
 
       --------------------------
       -- In_Premature_Context --
@@ -1987,11 +2052,28 @@ package body Sem_Elab is
         (Target_Id => Target_Id,
          Attrs     => Target_Attrs);
 
+      --  Nothing to do when the call appears within the expanded spec or
+      --  body of an instantiated generic, the call does not invoke a generic
+      --  formal subprogram, the target is external to the instance, and switch
+      --  -gnatdL (ignore external calls from instances for elaboration) is in
+      --  effect.
+
+      if Debug_Flag_LL
+        and then not Is_Generic_Formal_Subp (Entity (Call_Nam))
+
+        --  Performance note: parent traversal
+
+        and then In_External_Context
+                   (Call         => N,
+                    Target_Attrs => Target_Attrs)
+      then
+         return;
+
       --  Nothing to do when the call invokes an assertion pragma procedure
       --  and switch -gnatd_p (ignore assertion pragmas for elaboration) is
       --  in effect.
 
-      if Debug_Flag_Underscore_P
+      elsif Debug_Flag_Underscore_P
         and then Is_Assertion_Pragma_Target (Target_Id)
       then
          return;
@@ -8611,10 +8693,10 @@ package body Sem_Elab is
       end if;
 
       --  Nothing to do when the call activates a task whose type is defined
-      --  within an instance and switch -gnatdL (ignore activations and calls
+      --  within an instance and switch -gnatd_i (ignore activations and calls
       --  to instances for elaboration) is in effect.
 
-      if Debug_Flag_LL
+      if Debug_Flag_Underscore_I
         and then In_External_Instance
                    (N           => Call,
                     Target_Decl => Task_Attrs.Task_Decl)
@@ -8980,10 +9062,10 @@ package body Sem_Elab is
       end if;
 
       --  Nothing to do when the call invokes a target defined within an
-      --  instance and switch -gnatdL (ignore activations and calls to
+      --  instance and switch -gnatd_i (ignore activations and calls to
       --  instances for elaboration) is in effect.
 
-      if Debug_Flag_LL
+      if Debug_Flag_Underscore_I
         and then In_External_Instance
                    (N           => Call,
                     Target_Decl => Target_Attrs.Spec_Decl)

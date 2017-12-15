@@ -153,7 +153,7 @@ package body Debug is
    --  d_f
    --  d_g
    --  d_h
-   --  d_i
+   --  d_i  Ignore activations and calls to instances for elaboration
    --  d_j
    --  d_k
    --  d_l
@@ -479,8 +479,8 @@ package body Debug is
    --       error messages are target dependent and irrelevant.
 
    --  dL   The compiler ignores calls in instances and invoke subprograms
-   --       which are external to the instance for the static elaboration
-   --       model. This switch is orthogonal to d.G.
+   --       which are external to the instance for both the static and dynamic
+   --       elaboration models.
 
    --  dM   Assume all variables have been modified, and ignore current value
    --       indications. This debug flag disconnects the tracking of constant
@@ -734,8 +734,7 @@ package body Debug is
    --  d.G  Previously the compiler ignored calls via generic formal parameters
    --       when doing the analysis for the static elaboration model. This is
    --       now fixed, but we provide this debug flag to revert to the previous
-   --       situation of ignoring such calls to aid in transition. This switch
-   --       is orthogonal to dL.
+   --       situation of ignoring such calls to aid in transition.
 
    --  d.H  Sets ASIS_GNSA_Mode to True. This signals the front end to suppress
    --       the call to gigi in ASIS_Mode.
@@ -831,6 +830,10 @@ package body Debug is
    --  d_e  The compiler ignores simple entry calls, asynchronous transfer of
    --       control, conditional entry calls, timed entry calls, and requeue
    --       statements in both the static and dynamic elaboration models.
+
+   --  d_i  The compiler ignores calls and task activations when they target a
+   --       subprogram or task type defined in an external instance for both
+   --       the static and dynamic elaboration models.
 
    --  d_p  The compiler ignores calls to subprograms which verify the run-time
    --       semantics of invariants and postconditions in both the static and

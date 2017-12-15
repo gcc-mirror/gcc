@@ -302,6 +302,16 @@ package body Exp_Unst is
          return;
       end if;
 
+      --  If the main unit is a package body then we need to examine the spec
+      --  to determine whether the main unit is generic (the scope stack is not
+      --  present when this is called on the main unit).
+
+      if Ekind (Cunit_Entity (Main_Unit)) = E_Package_Body
+        and then Is_Generic_Unit (Spec_Entity (Cunit_Entity (Main_Unit)))
+      then
+         return;
+      end if;
+
       --  At least for now, do not unnest anything but main source unit
 
       if not In_Extended_Main_Source_Unit (Subp_Body) then
@@ -553,8 +563,8 @@ package body Exp_Unst is
                Ent := Entity (Name (N));
 
                --  We are only interested in calls to subprograms nested
-               --  within Subp. Calls to Subp itself or to subprograms that
-               --  are outside the nested structure do not affect us.
+               --  within Subp. Calls to Subp itself or to subprograms
+               --  that are outside the nested structure do not affect us.
 
                if Scope_Within (Ent, Subp) then
 
@@ -1653,7 +1663,6 @@ package body Exp_Unst is
             if Present (STT.ARECnF)
               and then Nkind (CTJ.N) /= N_Attribute_Reference
             then
-
                --  CTJ.N is a call to a subprogram which may require a pointer
                --  to an activation record. The subprogram containing the call
                --  is CTJ.From and the subprogram being called is CTJ.To, so we
