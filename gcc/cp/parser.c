@@ -37253,7 +37253,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
       initializer-clause[opt] new-line
    #pragma omp declare target new-line  */
 
-static void
+static bool
 cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 		       enum pragma_context context)
 {
@@ -37267,7 +37267,7 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_parser_omp_declare_simd (parser, pragma_tok,
 				      context);
-	  return;
+	  return true;
 	}
       cp_ensure_no_omp_declare_simd (parser);
       if (strcmp (p, "reduction") == 0)
@@ -37275,23 +37275,24 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_parser_omp_declare_reduction (parser, pragma_tok,
 					   context);
-	  return;
+	  return false;
 	}
       if (!flag_openmp)  /* flag_openmp_simd  */
 	{
 	  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-	  return;
+	  return false;
 	}
       if (strcmp (p, "target") == 0)
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_parser_omp_declare_target (parser, pragma_tok);
-	  return;
+	  return false;
 	}
     }
   cp_parser_error (parser, "expected %<simd%> or %<reduction%> "
 			   "or %<target%>");
   cp_parser_require_pragma_eol (parser, pragma_tok);
+  return false;
 }
 
 /* OpenMP 4.5:
@@ -38211,8 +38212,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       return false;
 
     case PRAGMA_OMP_DECLARE:
-      cp_parser_omp_declare (parser, pragma_tok, context);
-      return false;
+      return cp_parser_omp_declare (parser, pragma_tok, context);
 
     case PRAGMA_OACC_DECLARE:
       cp_parser_oacc_declare (parser, pragma_tok);
