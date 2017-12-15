@@ -6823,13 +6823,14 @@ get_atomic_generic_size (location_t loc, tree function,
       tree p = (*params)[x];
       if (TREE_CODE (p) == INTEGER_CST)
         {
-	  int i = tree_to_uhwi (p);
-	  if (i < 0 || (memmodel_base (i) >= MEMMODEL_LAST))
-	    {
-	      warning_at (loc, OPT_Winvalid_memory_model,
-			  "invalid memory model argument %d of %qE", x + 1,
-			  function);
-	    }
+	  /* memmodel_base masks the low 16 bits, thus ignore any bits above
+	     it by using TREE_INT_CST_LOW instead of tree_to_*hwi.  Those high
+	     bits will be checked later during expansion in target specific
+	     way.  */
+	  if (memmodel_base (TREE_INT_CST_LOW (p)) >= MEMMODEL_LAST)
+	    warning_at (loc, OPT_Winvalid_memory_model,
+			"invalid memory model argument %d of %qE", x + 1,
+			function);
 	}
       else
 	if (!INTEGRAL_TYPE_P (TREE_TYPE (p)))
