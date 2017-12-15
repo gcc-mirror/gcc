@@ -90,6 +90,10 @@ along with GCC; see the file COPYING3.  If not see
    innermost two loops.  */
 #define INNER_STRIDE_RATIO  ((OUTER_STRIDE_RATIO) + 1)
 
+/* Comparison ratio of stmt cost between inner/outer loops.  Loops won't
+   be interchanged if outer loop has too many stmts.  */
+#define STMT_COST_RATIO     (3)
+
 /* Vector of strides that DR accesses in each level loop of a loop nest.  */
 #define DR_ACCESS_STRIDE(dr) ((vec<tree> *) dr->aux)
 
@@ -181,7 +185,6 @@ struct loop_cand
   bool analyze_carried_vars (loop_cand *);
   bool analyze_lcssa_phis (void);
   bool can_interchange_p (loop_cand *);
-  bool supported_operations (basic_block, loop_cand *, int *);
   void undo_simple_reduction (reduction_p, bitmap);
 
   /* The loop itself.  */
@@ -199,13 +202,17 @@ struct loop_cand
   edge m_exit;
   /* Basic blocks of this loop.  */
   basic_block *m_bbs;
+  /* Number of stmts of this loop.  Inner loops' stmts are not included.  */
+  int m_num_stmts;
+  /* Number of constant initialized simple reduction.  */
+  int m_const_init_reduc;
 };
 
 /* Constructor.  */
 
 loop_cand::loop_cand (struct loop *loop, struct loop *outer)
-  : m_loop (loop), m_outer (outer),
-    m_exit (single_exit (loop)), m_bbs (get_loop_body (loop))
+  : m_loop (loop), m_outer (outer), m_exit (single_exit (loop)),
+    m_bbs (get_loop_body (loop)), m_num_stmts (0), m_const_init_reduc (0)
 {
     m_inductions.create (3);
     m_reductions.create (3);
@@ -282,75 +289,6 @@ loop_cand::find_reduction_by_stmt (gimple *stmt)
   return NULL;
 }
 
-/* Return true if all stmts in BB can be supported by loop interchange,
-   otherwise return false.  ILOOP is not NULL if this loop_cand is the
-   outer loop in loop nest.  Add the number of supported statements to
-   NUM_STMTS.  */
-
-bool
-loop_cand::supported_operations (basic_block bb, loop_cand *iloop,
-				 int *num_stmts)
-{
-  int bb_num_stmts = 0;
-  gphi_iterator psi;
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      if (is_gimple_debug (stmt))
-	continue;
-
-      if (gimple_has_side_effects (stmt))
-	return false;
-
-      bb_num_stmts++;
-      if (gcall *call = dyn_cast <gcall *> (stmt))
-	{
-	  /* In basic block of outer loop, the call should be cheap since
-	     it will be moved to inner loop.  */
-	  if (iloop != NULL
-	      && !gimple_inexpensive_call_p (call))
-	    return false;
-	  continue;
-	}
-
-      if (!iloop || !gimple_vuse (stmt))
-	continue;
-
-      /* Support stmt accessing memory in outer loop only if it is for inner
-	 loop's reduction.  */
-      if (iloop->find_reduction_by_stmt (stmt))
-	continue;
-
-      tree lhs;
-      /* Support loop invariant memory reference if it's only used once by
-	 inner loop.  */
-      /* ???  How's this checking for invariantness?  */
-      if (gimple_assign_single_p (stmt)
-	  && (lhs = gimple_assign_lhs (stmt)) != NULL_TREE
-	  && TREE_CODE (lhs) == SSA_NAME
-	  && single_use_in_loop (lhs, iloop->m_loop))
-	continue;
-
-      return false;
-    }
-  *num_stmts += bb_num_stmts;
-
-  /* Allow PHI nodes in any basic block of inner loop, PHI nodes in outer
-     loop's header, or PHI nodes in dest bb of inner loop's exit edge.  */
-  if (!iloop || bb == m_loop->header
-      || bb == iloop->m_exit->dest)
-    return true;
-
-  /* Don't allow any other PHI nodes.  */
-  for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-    if (!virtual_operand_p (PHI_RESULT (psi.phi ())))
-      return false;
-
-  return true;
-}
-
 /* Return true if current loop_cand be interchanged.  ILOOP is not NULL if
    current loop_cand is outer loop in loop nest.  */
 
@@ -375,23 +313,72 @@ loop_cand::can_interchange_p (loop_cand *iloop)
   if (m_lcssa_nodes.length () > allowed_reduction_num)
     return false;
 
-  int num_stmts = 0;
-  /* Check basic blocks other than loop header/exit.  */
+  /* Check if basic block has any unsupported operation.  Note basic blocks
+     of inner loops are not checked here.  */
   for (unsigned i = 0; i < m_loop->num_nodes; i++)
     {
       basic_block bb = m_bbs[i];
+      gphi_iterator psi;
+      gimple_stmt_iterator gsi;
 
       /* Skip basic blocks of inner loops.  */
       if (bb->loop_father != m_loop)
+       continue;
+
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (is_gimple_debug (stmt))
+	    continue;
+
+	  if (gimple_has_side_effects (stmt))
+	    return false;
+
+	  m_num_stmts++;
+	  if (gcall *call = dyn_cast <gcall *> (stmt))
+	    {
+	      /* In basic block of outer loop, the call should be cheap since
+		 it will be moved to inner loop.  */
+	      if (iloop != NULL
+		  && !gimple_inexpensive_call_p (call))
+		return false;
+	      continue;
+	    }
+
+	  if (!iloop || !gimple_vuse (stmt))
+	    continue;
+
+	  /* Support stmt accessing memory in outer loop only if it is for
+	     inner loop's reduction.  */
+	  if (iloop->find_reduction_by_stmt (stmt))
+	    continue;
+
+	  tree lhs;
+	  /* Support loop invariant memory reference if it's only used once by
+	     inner loop.  */
+	  /* ???  How's this checking for invariantness?  */
+	  if (gimple_assign_single_p (stmt)
+	      && (lhs = gimple_assign_lhs (stmt)) != NULL_TREE
+	      && TREE_CODE (lhs) == SSA_NAME
+	      && single_use_in_loop (lhs, iloop->m_loop))
+	    continue;
+
+	  return false;
+	}
+      /* Check if loop has too many stmts.  */
+      if (m_num_stmts > MAX_NUM_STMT)
+	return false;
+
+      /* Allow PHI nodes in any basic block of inner loop, PHI nodes in outer
+	 loop's header, or PHI nodes in dest bb of inner loop's exit edge.  */
+      if (!iloop || bb == m_loop->header
+	  || bb == iloop->m_exit->dest)
 	continue;
 
-      /* Check if basic block has any unsupported operation.  */
-      if (!supported_operations (bb, iloop, &num_stmts))
-	return false;
-
-      /* Check if loop has too many stmts.  */
-      if (num_stmts > MAX_NUM_STMT)
-	return false;
+      /* Don't allow any other PHI nodes.  */
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+	if (!virtual_operand_p (PHI_RESULT (psi.phi ())))
+	  return false;
     }
 
   return true;
@@ -440,7 +427,9 @@ loop_cand::classify_simple_reduction (reduction_p re)
 
       re->init_ref = gimple_assign_rhs1 (producer);
     }
-  else if (!CONSTANT_CLASS_P (re->init))
+  else if (CONSTANT_CLASS_P (re->init))
+    m_const_init_reduc++;
+  else
     return;
 
   /* Check how reduction variable is used.  */
@@ -1446,6 +1435,7 @@ dump_access_strides (vec<data_reference_p> datarefs)
 static bool
 should_interchange_loops (unsigned i_idx, unsigned o_idx,
 			  vec<data_reference_p> datarefs,
+			  unsigned i_stmt_cost, unsigned o_stmt_cost,
 			  bool innermost_loops_p, bool dump_info_p = true)
 {
   unsigned HOST_WIDE_INT ratio;
@@ -1541,9 +1531,19 @@ should_interchange_loops (unsigned i_idx, unsigned o_idx,
 	       num_resolved_not_ok_drs);
       fprintf (dump_file, "Variable strides we cannot decide: %d\n",
 	       num_unresolved_drs);
+      fprintf (dump_file, "Stmt cost of inner loop: %d\n", i_stmt_cost);
+      fprintf (dump_file, "Stmt cost of outer loop: %d\n", o_stmt_cost);
     }
 
   if (num_unresolved_drs != 0 || num_resolved_not_ok_drs != 0)
+    return false;
+
+  /* Stmts of outer loop will be moved to inner loop.  If there are two many
+     such stmts, it could make inner loop costly.  Here we compare stmt cost
+     between outer and inner loops.  */
+  if (i_stmt_cost && o_stmt_cost
+      && num_old_inv_drs + o_stmt_cost > num_new_inv_drs
+      && o_stmt_cost * STMT_COST_RATIO > i_stmt_cost)
     return false;
 
   /* We use different stride comparison ratio for interchanging innermost
@@ -1599,8 +1599,25 @@ tree_loop_interchange::interchange (vec<data_reference_p> datarefs,
 	  || !oloop.can_interchange_p (&iloop))
 	break;
 
+      /* Outer loop's stmts will be moved to inner loop during interchange.
+	 If there are many of them, it may make inner loop very costly.  We
+	 need to check number of outer loop's stmts in profit cost model of
+	 interchange.  */
+      int stmt_cost = oloop.m_num_stmts;
+      /* Count out the exit checking stmt of outer loop.  */
+      stmt_cost --;
+      /* Count out IV's increasing stmt, IVOPTs takes care if it.  */
+      stmt_cost -= oloop.m_inductions.length ();
+      /* Count in the additional load and cond_expr stmts caused by inner
+	 loop's constant initialized reduction.  */
+      stmt_cost += iloop.m_const_init_reduc * 2;
+      if (stmt_cost < 0)
+	stmt_cost = 0;
+
       /* Check profitability for loop interchange.  */
       if (should_interchange_loops (i_idx, o_idx, datarefs,
+				    (unsigned) iloop.m_num_stmts,
+				    (unsigned) stmt_cost,
 				    iloop.m_loop->inner == NULL))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1793,7 +1810,7 @@ should_interchange_loop_nest (struct loop *loop_nest, struct loop *innermost,
   /* Check if any two adjacent loops should be interchanged.  */
   for (struct loop *loop = innermost;
        loop != loop_nest; loop = loop_outer (loop), idx--)
-    if (should_interchange_loops (idx, idx - 1, datarefs,
+    if (should_interchange_loops (idx, idx - 1, datarefs, 0, 0,
 				  loop == innermost, false))
       return true;
 
