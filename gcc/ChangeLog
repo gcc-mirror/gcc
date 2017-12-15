@@ -1,4 +1,19 @@
 2017-12-15  Richard Biener  <rguenther@suse.de>
+ 
+	Backport from mainline
+	2017-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82102
+	* tree-ssa-pre.c (eliminate): Check if lhs is NULL.
+
+	2017-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82128
+	* gimple-fold.c (gimple_fold_call): Update SSA name in-place to
+	default-def to avoid breaking iterator update with the weird
+	interaction with cgraph_update_edges_for_call_stmt_node.
+
+2017-12-15  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
 	2017-11-24  Richard Biener  <rguenther@suse.de>

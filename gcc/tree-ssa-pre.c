@@ -4803,7 +4803,8 @@ eliminate (bool do_pre)
       else
 	lhs = gimple_get_lhs (stmt);
 
-      if (inserted_exprs
+      if (lhs
+	  && inserted_exprs
 	  && TREE_CODE (lhs) == SSA_NAME)
 	bitmap_clear_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
 
