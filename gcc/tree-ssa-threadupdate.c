@@ -1737,6 +1737,31 @@ phi_args_equal_on_edges (edge e1, edge e2)
   return true;
 }
 
+/* Return the number of non-debug statements and non-virtual PHIs in a
+   block.  */
+
+static unsigned int
+count_stmts_and_phis_in_block (basic_block bb)
+{
+  unsigned int num_stmts = 0;
+
+  gphi_iterator gpi;
+  for (gpi = gsi_start_phis (bb); !gsi_end_p (gpi); gsi_next (&gpi))
+    if (!virtual_operand_p (PHI_RESULT (gpi.phi ())))
+      num_stmts++;
+
+  gimple_stmt_iterator gsi;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (!is_gimple_debug (stmt))
+        num_stmts++;
+    }
+
+  return num_stmts;
+}
+
+
 /* Walk through the registered jump threads and convert them into a
    form convenient for this pass.
 
@@ -1856,28 +1881,51 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	}
     }
 
-  /* If optimizing for size, only thread through block if we don't have
-     to duplicate it or it's an otherwise empty redirection block.  */
+  /* When optimizing for size, prune all thread paths where statement
+     duplication is necessary.
+
+     We walk the jump thread path looking for copied blocks.  There's
+     two types of copied blocks.
+
+       EDGE_COPY_SRC_JOINER_BLOCK is always copied and thus we will
+       cancel the jump threading request when optimizing for size.
+
+       EDGE_COPY_SRC_BLOCK which is copied, but some of its statements
+       will be killed by threading.  If threading does not kill all of
+       its statements, then we should cancel the jump threading request
+       when optimizing for size.  */
   if (optimize_function_for_size_p (cfun))
     {
       EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
 	{
-	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
-	  if (EDGE_COUNT (bb->preds) > 1
-	      && !redirection_block_p (bb))
-	    {
-	      FOR_EACH_EDGE (e, ei, bb->preds)
-		{
-		  if (e->aux)
-		    {
-		      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-		      delete_jump_thread_path (path);
-		      e->aux = NULL;
-		    }
-		}
-	    }
-	  else
-	    bitmap_set_bit (threaded_blocks, i);
+	  FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (cfun, i)->preds)
+	    if (e->aux)
+	      {
+		vec<jump_thread_edge *> *path = THREAD_PATH (e);
+
+		unsigned int j;
+		for (j = 1; j < path->length (); j++)
+		  {
+		    bb = (*path)[j]->e->src;
+		    if (redirection_block_p (bb))
+		      ;
+		    else if ((*path)[j]->type == EDGE_COPY_SRC_JOINER_BLOCK
+			     || ((*path)[j]->type == EDGE_COPY_SRC_BLOCK
+			         && (count_stmts_and_phis_in_block (bb)
+				     != estimate_threading_killed_stmts (bb))))
+		      break;
+		  }
+
+		if (j != path->length ())
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      dump_jump_thread_path (dump_file, *path, 0);
+		    delete_jump_thread_path (path);
+		    e->aux = NULL;
+		  }
+		else
+		  bitmap_set_bit (threaded_blocks, i);
+	      }
 	}
     }
   else
