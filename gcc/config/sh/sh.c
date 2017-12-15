@@ -329,25 +329,25 @@ static bool sh_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  { "interrupt_handler", 0, 0, true,  false, false,
-    sh_handle_interrupt_handler_attribute, false, NULL },
-  { "sp_switch",         1, 1, true,  false, false,
-     sh_handle_sp_switch_attribute, false, NULL },
-  { "trap_exit",         1, 1, true,  false, false,
-    sh_handle_trap_exit_attribute, false, NULL },
-  { "renesas",           0, 0, false, true, false,
-    sh_handle_renesas_attribute, false, NULL },
-  { "trapa_handler",     0, 0, true,  false, false,
-    sh_handle_interrupt_handler_attribute, false, NULL },
-  { "nosave_low_regs",   0, 0, true,  false, false,
-    sh_handle_interrupt_handler_attribute, false, NULL },
-  { "resbank",           0, 0, true,  false, false,
-    sh_handle_resbank_handler_attribute, false, NULL },
-  { "function_vector",   1, 1, true,  false, false,
-    sh2a_handle_function_vector_handler_attribute, false, NULL },
-  { NULL,                0, 0, false, false, false, NULL, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt_handler", 0, 0, true,  false, false, false,
+    sh_handle_interrupt_handler_attribute, NULL },
+  { "sp_switch",         1, 1, true,  false, false, false,
+     sh_handle_sp_switch_attribute, NULL },
+  { "trap_exit",         1, 1, true,  false, false, false,
+    sh_handle_trap_exit_attribute, NULL },
+  { "renesas",           0, 0, false, true, false, false,
+    sh_handle_renesas_attribute, NULL },
+  { "trapa_handler",     0, 0, true,  false, false, false,
+    sh_handle_interrupt_handler_attribute, NULL },
+  { "nosave_low_regs",   0, 0, true,  false, false, false,
+    sh_handle_interrupt_handler_attribute, NULL },
+  { "resbank",           0, 0, true,  false, false, false,
+    sh_handle_resbank_handler_attribute, NULL },
+  { "function_vector",   1, 1, true,  false, false, false,
+    sh2a_handle_function_vector_handler_attribute, NULL },
+  { NULL,                0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Initialize the GCC target structure.  */

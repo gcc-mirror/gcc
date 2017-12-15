@@ -3000,14 +3000,15 @@ current_function_special_page_vector (rtx x)
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32c_attribute_table
 static const struct attribute_spec m32c_attribute_table[] = {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  {"interrupt", 0, 0, false, false, false, interrupt_handler, false, NULL},
-  {"bank_switch", 0, 0, false, false, false, interrupt_handler, false, NULL},
-  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler, false, NULL},
-  {"function_vector", 1, 1, true,  false, false, function_vector_handler,
-   false, NULL},
-  {0, 0, 0, 0, 0, 0, 0, false, NULL}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, false, false, false, false, interrupt_handler, NULL },
+  { "bank_switch", 0, 0, false, false, false, false, interrupt_handler, NULL },
+  { "fast_interrupt", 0, 0, false, false, false, false,
+    interrupt_handler, NULL },
+  { "function_vector", 1, 1, true,  false, false, false,
+    function_vector_handler, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES

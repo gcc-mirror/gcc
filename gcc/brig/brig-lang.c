@@ -447,19 +447,19 @@ brig_localize_identifier (const char *ident)
 /* Table of machine-independent attributes supported in GIMPLE.  */
 const struct attribute_spec brig_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  { "leaf",		      0, 0, true,  false, false,
-			      handle_leaf_attribute, false, NULL },
-  { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute, false, NULL },
-  { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute, false, NULL },
-  { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute, false, NULL },
-  { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute, false, NULL },
-  { NULL,                     0, 0, false, false, false, NULL, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "leaf",		      0, 0, true,  false, false, false,
+			      handle_leaf_attribute, NULL },
+  { "const",                  0, 0, true,  false, false, false,
+			      handle_const_attribute, NULL },
+  { "pure",                   0, 0, true,  false, false, false,
+			      handle_pure_attribute, NULL },
+  { "nothrow",                0, 0, true,  false, false, false,
+			      handle_nothrow_attribute, NULL },
+  { "returns_twice",          0, 0, true,  false, false, false,
+			      handle_returns_twice_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Attribute handlers.  */

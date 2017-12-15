@@ -9871,34 +9871,33 @@ avr_eval_addr_attrib (rtx x)
 
 
 /* AVR attributes.  */
-static const struct attribute_spec
-avr_attribute_table[] =
+static const struct attribute_spec avr_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  { "progmem",   0, 0, false, false, false,  avr_handle_progmem_attribute,
-    false, NULL },
-  { "signal",    0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false, NULL },
-  { "interrupt", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false, NULL },
-  { "no_gccisr", 0, 0, true,  false, false,  avr_handle_fndecl_attribute,
-    false, NULL },
-  { "naked",     0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false, NULL },
-  { "OS_task",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false, NULL },
-  { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
-    false, NULL },
-  { "io",        0, 1, true, false, false,  avr_handle_addr_attribute,
-    false, NULL },
-  { "io_low",    0, 1, true, false, false,  avr_handle_addr_attribute,
-    false, NULL },
-  { "address",   1, 1, true, false, false,  avr_handle_addr_attribute,
-    false, NULL },
-  { "absdata",   0, 0, true, false, false,  avr_handle_absdata_attribute,
-    false, NULL },
-  { NULL,        0, 0, false, false, false, NULL, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "progmem",   0, 0, false, false, false, false,
+    avr_handle_progmem_attribute, NULL },
+  { "signal",    0, 0, true,  false, false, false,
+    avr_handle_fndecl_attribute, NULL },
+  { "interrupt", 0, 0, true,  false, false, false,
+    avr_handle_fndecl_attribute, NULL },
+  { "no_gccisr", 0, 0, true,  false, false, false,
+    avr_handle_fndecl_attribute, NULL },
+  { "naked",     0, 0, false, true,  true,  false,
+    avr_handle_fntype_attribute, NULL },
+  { "OS_task",   0, 0, false, true,  true,  false,
+    avr_handle_fntype_attribute, NULL },
+  { "OS_main",   0, 0, false, true,  true,  false,
+    avr_handle_fntype_attribute, NULL },
+  { "io",        0, 1, true, false, false,  false,
+    avr_handle_addr_attribute, NULL },
+  { "io_low",    0, 1, true, false, false,  false,
+    avr_handle_addr_attribute, NULL },
+  { "address",   1, 1, true, false, false,  false,
+    avr_handle_addr_attribute, NULL },
+  { "absdata",   0, 0, true, false, false,  false,
+    avr_handle_absdata_attribute, NULL },
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 

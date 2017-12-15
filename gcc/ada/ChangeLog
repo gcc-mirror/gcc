@@ -1,3 +1,8 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Swap
+	affects_type_identity and handler fields, adjust comments.
+
 2017-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Use Component_Size of

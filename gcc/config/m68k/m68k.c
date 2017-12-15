@@ -347,15 +347,15 @@ static bool m68k_modes_tieable_p (machine_mode, machine_mode);
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  { "interrupt", 0, 0, true,  false, false, m68k_handle_fndecl_attribute,
-    false },
-  { "interrupt_handler", 0, 0, true,  false, false,
-    m68k_handle_fndecl_attribute, false, NULL },
-  { "interrupt_thread", 0, 0, true,  false, false,
-    m68k_handle_fndecl_attribute, false, NULL },
-  { NULL, 0, 0, false, false, false, NULL, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true,  false, false, false,
+    m68k_handle_fndecl_attribute, NULL },
+  { "interrupt_handler", 0, 0, true,  false, false, false,
+    m68k_handle_fndecl_attribute, NULL },
+  { "interrupt_thread", 0, 0, true,  false, false, false,
+    m68k_handle_fndecl_attribute, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -1,3 +1,8 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (cxx_attribute_table, std_attribute_table): Swap
+	affects_type_identity and handler fields, adjust comments.
+
 2017-12-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/59930
@@ -300,8 +305,6 @@
 	INTEGER_CST, ensure that both op1 and op2 are non-NULL and fall
 	through into normal folding, otherwise just rebuild x if any op
 	changed.
-
-	* g++.dg/warn/pr81675.C: New test.
 
 2017-11-14  Boris Kolpackov  <boris@codesynthesis.com>
 

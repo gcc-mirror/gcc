@@ -322,25 +322,25 @@ static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
   /* Function calls made to this symbol must be done indirectly, because
      it may lie outside of the 26 bit addressing range of a normal function
      call.  */
-  { "long_call",    0, 0, false, true,  true,  NULL, false, NULL },
+  { "long_call",    0, 0, false, true,  true,  false, NULL, NULL },
   /* Whereas these functions are always known to reside within the 26 bit
      addressing range.  */
-  { "short_call",   0, 0, false, true,  true,  NULL, false, NULL },
+  { "short_call",   0, 0, false, true,  true,  false, NULL, NULL },
   /* Specify the procedure call conventions for a function.  */
-  { "pcs",          1, 1, false, true,  true,  arm_handle_pcs_attribute,
-    false, NULL },
+  { "pcs",          1, 1, false, true,  true,  false, arm_handle_pcs_attribute,
+    NULL },
   /* Interrupt Service Routines have special prologue and epilogue requirements.  */
-  { "isr",          0, 1, false, false, false, arm_handle_isr_attribute,
-    false, NULL },
-  { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute,
-    false, NULL },
-  { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute,
-    false, NULL },
+  { "isr",          0, 1, false, false, false, false, arm_handle_isr_attribute,
+    NULL },
+  { "interrupt",    0, 1, false, false, false, false, arm_handle_isr_attribute,
+    NULL },
+  { "naked",        0, 0, true,  false, false, false,
+    arm_handle_fndecl_attribute, NULL },
 #ifdef ARM_PE
   /* ARM/PE has three new attributes:
      interfacearm - ?
@@ -351,24 +351,24 @@ static const struct attribute_spec arm_attribute_table[] =
      them with spaces.  We do NOT support this.  Instead, use __declspec
      multiple times.
   */
-  { "dllimport",    0, 0, true,  false, false, NULL, false, NULL },
-  { "dllexport",    0, 0, true,  false, false, NULL, false, NULL },
-  { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute,
-    false, NULL },
+  { "dllimport",    0, 0, true,  false, false, false, NULL, NULL },
+  { "dllexport",    0, 0, true,  false, false, false, NULL, NULL },
+  { "interfacearm", 0, 0, true,  false, false, false,
+    arm_handle_fndecl_attribute, NULL },
 #elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport",    0, 0, false, false, false, handle_dll_attribute, false,
+  { "dllimport",    0, 0, false, false, false, false, handle_dll_attribute,
     NULL },
-  { "dllexport",    0, 0, false, false, false, handle_dll_attribute, false,
+  { "dllexport",    0, 0, false, false, false, false, handle_dll_attribute,
     NULL },
-  { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute,
-    false, NULL },
+  { "notshared",    0, 0, false, true, false, false,
+    arm_handle_notshared_attribute, NULL },
 #endif
   /* ARMv8-M Security Extensions support.  */
-  { "cmse_nonsecure_entry", 0, 0, true, false, false,
-    arm_handle_cmse_nonsecure_entry, false, NULL },
-  { "cmse_nonsecure_call", 0, 0, true, false, false,
-    arm_handle_cmse_nonsecure_call, true, NULL },
-  { NULL, 0, 0, false, false, false, NULL, false, NULL }
+  { "cmse_nonsecure_entry", 0, 0, true, false, false, false,
+    arm_handle_cmse_nonsecure_entry, NULL },
+  { "cmse_nonsecure_call", 0, 0, true, false, false, true,
+    arm_handle_cmse_nonsecure_call, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Initialize the GCC target structure.  */

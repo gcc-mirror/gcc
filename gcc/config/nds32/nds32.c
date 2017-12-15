@@ -83,34 +83,34 @@ static const char * const nds32_intrinsic_register_names[] =
 static const struct attribute_spec nds32_attribute_table[] =
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
-	       function_type_required, handler, affects_type_identity,
-	       exclusions } */
+	       function_type_required, affects_type_identity, handler,
+	       exclude } */
 
   /* The interrupt vid: [0-63]+ (actual vector number starts from 9 to 72).  */
-  { "interrupt",    1, 64, false, false, false, NULL, false, NULL },
+  { "interrupt",    1, 64, false, false, false, false, NULL, NULL },
   /* The exception vid: [1-8]+  (actual vector number starts from 1 to 8).  */
-  { "exception",    1,  8, false, false, false, NULL, false, NULL },
+  { "exception",    1,  8, false, false, false, false, NULL, NULL },
   /* Argument is user's interrupt numbers.  The vector number is always 0.  */
-  { "reset",        1,  1, false, false, false, NULL, false, NULL },
+  { "reset",        1,  1, false, false, false, false, NULL, NULL },
 
   /* The attributes describing isr nested type.  */
-  { "nested",       0,  0, false, false, false, NULL, false, NULL },
-  { "not_nested",   0,  0, false, false, false, NULL, false, NULL },
-  { "nested_ready", 0,  0, false, false, false, NULL, false, NULL },
+  { "nested",       0,  0, false, false, false, false, NULL, NULL },
+  { "not_nested",   0,  0, false, false, false, false, NULL, NULL },
+  { "nested_ready", 0,  0, false, false, false, false, NULL, NULL },
 
   /* The attributes describing isr register save scheme.  */
-  { "save_all",     0,  0, false, false, false, NULL, false, NULL },
-  { "partial_save", 0,  0, false, false, false, NULL, false, NULL },
+  { "save_all",     0,  0, false, false, false, false, NULL, NULL },
+  { "partial_save", 0,  0, false, false, false, false, NULL, NULL },
 
   /* The attributes used by reset attribute.  */
-  { "nmi",          1,  1, false, false, false, NULL, false, NULL },
-  { "warm",         1,  1, false, false, false, NULL, false, NULL },
+  { "nmi",          1,  1, false, false, false, false, NULL, NULL },
+  { "warm",         1,  1, false, false, false, false, NULL, NULL },
 
   /* The attribute telling no prologue/epilogue.  */
-  { "naked",        0,  0, false, false, false, NULL, false, NULL },
+  { "naked",        0,  0, false, false, false, false, NULL, NULL },
 
   /* The last attribute spec is set to be NULL.  */
-  { NULL,           0,  0, false, false, false, NULL, false, NULL }
+  { NULL,           0,  0, false, false, false, false, NULL, NULL }
 };
 
 
