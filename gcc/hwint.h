@@ -14,6 +14,7 @@
 #define HOST_BITS_PER_SHORT (CHAR_BIT * SIZEOF_SHORT)
 #define HOST_BITS_PER_INT   (CHAR_BIT * SIZEOF_INT)
 #define HOST_BITS_PER_LONG  (CHAR_BIT * SIZEOF_LONG)
+#define HOST_BITS_PER_PTR   (CHAR_BIT * SIZEOF_VOID_P)
 
 /* The string that should be inserted into a printf style format to
    indicate a "long" operand.  */
