@@ -1,5 +1,12 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/83205
+	* g++.dg/cpp1z/decomp3.C: Adjust for structured binding count
+	mismatch diagnostics split into error and warning with plural
+	forms.
+	* g++.dg/cpp1z/decomp10.C: Likewise.
+	* g++.dg/cpp1z/decomp32.C: New test.
+
 	PR c++/81197
 	* g++.dg/cpp1z/decomp34.C: New test.
 
