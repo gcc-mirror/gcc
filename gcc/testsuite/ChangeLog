@@ -1,5 +1,8 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83269
+	* gcc.c-torture/execute/pr83269.c: New test.
+
 	PR sanitizer/81281
 	* gcc.dg/pr81281-3.c: New test.
 

@@ -9098,8 +9098,8 @@ expr_not_equal_to (tree t, const wide_int &w)
    return NULL_TREE.  */
 
 tree
-fold_binary_loc (location_t loc,
-	     enum tree_code code, tree type, tree op0, tree op1)
+fold_binary_loc (location_t loc, enum tree_code code, tree type,
+		 tree op0, tree op1)
 {
   enum tree_code_class kind = TREE_CODE_CLASS (code);
   tree arg0, arg1, tem;
@@ -9769,10 +9769,17 @@ fold_binary_loc (location_t loc,
 
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && negate_expr_p (op1))
-	return fold_build2_loc (loc, MINUS_EXPR, type,
-				negate_expr (op1),
-				fold_convert_loc (loc, type,
+	  && negate_expr_p (op1)
+	  /* If arg0 is e.g. unsigned int and type is int, then this could
+	     introduce UB, because if A is INT_MIN at runtime, the original
+	     expression can be well defined while the latter is not.
+	     See PR83269.  */
+	  && !(ANY_INTEGRAL_TYPE_P (type)
+	       && TYPE_OVERFLOW_UNDEFINED (type)
+	       && ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	       && !TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))))
+	return fold_build2_loc (loc, MINUS_EXPR, type, negate_expr (op1),
+			        fold_convert_loc (loc, type,
 						  TREE_OPERAND (arg0, 0)));
 
       /* Fold __complex__ ( x, 0 ) - __complex__ ( 0, y ) to
