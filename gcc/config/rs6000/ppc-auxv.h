@@ -91,6 +91,7 @@
 #define PPC_FEATURE2_HAS_IEEE128    0x00400000
 #define PPC_FEATURE2_DARN           0x00200000
 #define PPC_FEATURE2_SCV            0x00100000
+#define PPC_FEATURE2_HTM_NO_SUSPEND 0x00080000
 
 
 /* Thread Control Block (TCB) offsets of the AT_PLATFORM, AT_HWCAP and
