@@ -1,3 +1,13 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82781
+	* constexpr.c (cxx_eval_vector_conditional_expression): New function.
+	(cxx_eval_constant_expression) <case VEC_COND_EXPR>: Use it instead
+	of cxx_eval_conditional_expression.
+
 2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82085
