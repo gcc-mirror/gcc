@@ -4310,20 +4310,6 @@ package body Exp_Ch7 is
          return;
       end if;
 
-      --  If we are generating expanded code for debugging purposes, use the
-      --  Sloc of the point of insertion for the cleanup code. The Sloc will be
-      --  updated subsequently to reference the proper line in .dg files. If we
-      --  are not debugging generated code, use No_Location instead, so that
-      --  no debug information is generated for the cleanup code. This makes
-      --  the behavior of the NEXT command in GDB monotonic, and makes the
-      --  placement of breakpoints more accurate.
-
-      if Debug_Generated_Code then
-         Loc := Sloc (Scop);
-      else
-         Loc := No_Location;
-      end if;
-
       --  If an extended return statement contains something like
       --     X := F (...);
       --  where F is a build-in-place function call returning a controlled
@@ -4350,13 +4336,13 @@ package body Exp_Ch7 is
       if Nkind (N) = N_Extended_Return_Statement then
          declare
             Block : constant Node_Id :=
-              Make_Block_Statement (Loc,
+              Make_Block_Statement (Sloc (N),
                Declarations => Empty_List,
                Handled_Statement_Sequence =>
                  Handled_Statement_Sequence (N));
          begin
             Set_Handled_Statement_Sequence
-              (N, Make_Handled_Sequence_Of_Statements (Loc,
+              (N, Make_Handled_Sequence_Of_Statements (Sloc (N),
                     Statements => New_List (Block)));
             Analyze (Block);
          end;
@@ -4380,6 +4366,20 @@ package body Exp_Ch7 is
          Old_Poll  : Boolean;
 
       begin
+         --  If we are generating expanded code for debugging purposes, use the
+         --  Sloc of the point of insertion for the cleanup code. The Sloc will
+         --  be updated subsequently to reference the proper line in .dg files.
+         --  If we are not debugging generated code, use No_Location instead,
+         --  so that no debug information is generated for the cleanup code.
+         --  This makes the behavior of the NEXT command in GDB monotonic, and
+         --  makes the placement of breakpoints more accurate.
+
+         if Debug_Generated_Code then
+            Loc := Sloc (Scop);
+         else
+            Loc := No_Location;
+         end if;
+
          --  Set polling off. The finalization and cleanup code is executed
          --  with aborts deferred.
 

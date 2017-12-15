@@ -8274,7 +8274,7 @@ package body Exp_Attr is
    --  Start of processing for Is_Inline_Floating_Point_Attribute
 
    begin
-      --  Machine and Model can be expanded by the GCC and AAMP back ends only
+      --  Machine and Model can be expanded by the GCC back end only
 
       if Id = Attribute_Machine or else Id = Attribute_Model then
          return Is_GCC_Target;
