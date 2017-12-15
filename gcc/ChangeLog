@@ -1,3 +1,11 @@
+2017-12-15  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386-builtin.def (__builtin_ia32_vaesdeclast_v16qi,
+	__builtin_ia32_vaesdeclast_v32qi, __builtin_ia32_vaesdeclast_v64qi): New.
+	* config/i386/sse.md (vaesdeclast_<mode>): New pattern.
+	* config/i386/vaesintrin.h (_mm256_aesdeclast_epi128,
+	_mm512_aesdeclast_epi128, _mm_aesdeclast_epi128): New intrinsics.
+
 2017-12-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (analyze_increments):
