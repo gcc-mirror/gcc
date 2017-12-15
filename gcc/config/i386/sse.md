@@ -175,6 +175,7 @@
 
   ;; For VAES support
   UNSPEC_VAESDEC
+  UNSPEC_VAESDECLAST
 ])
 
 (define_c_enum "unspecv" [
@@ -20464,4 +20465,14 @@
 	  UNSPEC_VAESDEC))]
   "TARGET_VAES"
   "vaesdec\t{%2, %1, %0|%0, %1, %2}"
+)
+
+(define_insn "vaesdeclast_<mode>"
+  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
+	  (unspec:VI1_AVX512VL_F
+	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "v")]
+	  UNSPEC_VAESDECLAST))]
+  "TARGET_VAES"
+  "vaesdeclast\t{%2, %1, %0|%0, %1, %2}"
 )
