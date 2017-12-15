@@ -1,3 +1,54 @@
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprograms): Nothing to do if the main unit is
+	a generic package body. Unnesting is only an issue when generating
+	code, and if the main unit is generic then nested instance bodies have
+	not been created and analyzed, and unnesting will crash in the absence
+	of those bodies,
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* inline.adb (Add_Inlined_Body): Do not add a function which is
+	completed by an expression function defined in the same context as the
+	initial declaration because the completing body is not in a package
+	body.
+	(Is_Non_Loading_Expression_Function): New routine.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* debug.adb: Move the functionality of -gnatdL to -gnatd_i. Restore
+	the behavior of -gnatdL from before revision 255412.
+	* sem_elab.adb: Update the section of compiler switches.
+	(Build_Call_Marker): Do not create a marker for a call which originates
+	from an expanded spec or body of an instantiated gener, does not invoke
+	a generic formal subprogram, the target is external to the instance,
+	and -gnatdL is in effect.
+	(In_External_Context): New routine.
+	(Process_Conditional_ABE_Activation_Impl): Update the uses of -gnatdL
+	and associated flag.
+	(Process_Conditional_ABE_Call): Update the uses of -gnatdL and
+	associated flag.
+	* switch-c.adb (Scan_Front_End_Switches): Switch -gnatJ now sets switch
+	-gnatd_i.
+	* exp_unst.adb: Minor typo fixes and edits.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Possible_Freeze): Do not set Delayed_Freeze on an
+	subprogram instantiation, now that the enclosing wrapper package
+	carries an explicit freeze node. THis prevents freeze nodes for the
+	subprogram for appearing in the wrong scope. This is relevant when the
+	generic subprogram has a private or incomplete formal type and the
+	instance appears within a package that declares the actual type for the
+	instantiation, and that type has itself a delayed freeze.
+
+2017-12-15  Patrick Bernardi  <bernardi@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Removed references to
+	the environment variable GNAT_STACK_LIMIT from the Stack Overflow
+	Checking section as it is no longer used by any of our supported
+	targets.
+
 2017-12-15  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Expand_N_Extended_Return_Statement): If the
