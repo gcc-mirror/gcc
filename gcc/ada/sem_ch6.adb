@@ -366,13 +366,13 @@ package body Sem_Ch6 is
 
             procedure Check_And_Freeze_Type (Typ : Entity_Id) is
             begin
-               --  Skip Itypes created by the preanalysis, and itypes
-               --  whose scope is another type (i.e. component subtypes
-               --  that depend on a discriminant),
+               --  Skip Itypes created by the preanalysis, and itypes whose
+               --  scope is another type (i.e. component subtypes that depend
+               --  on a discriminant),
 
                if Is_Itype (Typ)
                  and then (Scope_Within_Or_Same (Scope (Typ), Def_Id)
-                   or else Is_Type (Scope (Typ)))
+                            or else Is_Type (Scope (Typ)))
                then
                   return;
                end if;
@@ -5825,12 +5825,10 @@ package body Sem_Ch6 is
    ------------------------------
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id) is
-      F : Entity_Id;
-
       procedure Possible_Freeze (T : Entity_Id);
-      --  T is the type of either a formal parameter or of the return type.
-      --  If T is not yet frozen and needs a delayed freeze, then the
-      --  subprogram itself must be delayed.
+      --  T is the type of either a formal parameter or of the return type. If
+      --  T is not yet frozen and needs a delayed freeze, then the subprogram
+      --  itself must be delayed.
 
       ---------------------
       -- Possible_Freeze --
@@ -5838,12 +5836,13 @@ package body Sem_Ch6 is
 
       procedure Possible_Freeze (T : Entity_Id) is
          Scop : constant Entity_Id := Scope (Designator);
+
       begin
-         --  If the subprogram appears within a package instance (which
-         --  may be the wrapper package of a subprogram instance) the
-         --  freeze node for that package will freeze the subprogram at
-         --  the proper place, so do not emit a freeze node for the
-         --  subprogram, given that it may appear in the wrong scope.
+         --  If the subprogram appears within a package instance (which may be
+         --  the wrapper package of a subprogram instance) the freeze node for
+         --  that package will freeze the subprogram at the proper place, so
+         --  do not emit a freeze node for the subprogram, given that it may
+         --  appear in the wrong scope.
 
          if Ekind (Scop) = E_Package
            and then not Comes_From_Source (Scop)
@@ -5860,8 +5859,11 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Designator);
          end if;
-
       end Possible_Freeze;
+
+      --  Local variables
+
+      F : Entity_Id;
 
    --  Start of processing for Check_Delayed_Subprogram
 
@@ -5872,8 +5874,8 @@ package body Sem_Ch6 is
       Possible_Freeze (Etype (Designator));
       Possible_Freeze (Base_Type (Etype (Designator))); -- needed ???
 
-      --  Need delayed freeze if any of the formal types themselves need
-      --  a delayed freeze and are not yet frozen.
+      --  Need delayed freeze if any of the formal types themselves need a
+      --  delayed freeze and are not yet frozen.
 
       F := First_Formal (Designator);
       while Present (F) loop
@@ -5882,17 +5884,19 @@ package body Sem_Ch6 is
          Next_Formal (F);
       end loop;
 
-      --  Mark functions that return by reference. Note that it cannot be
-      --  done for delayed_freeze subprograms because the underlying
-      --  returned type may not be known yet (for private types)
+      --  Mark functions that return by reference. Note that it cannot be done
+      --  for delayed_freeze subprograms because the underlying returned type
+      --  may not be known yet (for private types).
 
       if not Has_Delayed_Freeze (Designator) and then Expander_Active then
          declare
             Typ  : constant Entity_Id := Etype (Designator);
             Utyp : constant Entity_Id := Underlying_Type (Typ);
+
          begin
             if Is_Limited_View (Typ) then
                Set_Returns_By_Ref (Designator);
+
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
             end if;

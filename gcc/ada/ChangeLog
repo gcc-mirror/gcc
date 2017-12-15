@@ -1,3 +1,43 @@
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Initialization_Item): Remove the specialized
+	processing for a null initialization item. Such an item is always
+	illegal.
+
+2017-12-15  Bob Duff  <duff@adacore.com>
+
+	* types.ads, types.h, libgnat/a-except.adb, exp_ch11.adb
+	(PE_Build_In_Place_Mismatch): New reason code for raising when the
+	BIPalloc formal parameter is incorrect. This can happen if a compiler
+	bug causes a mismatch of build-in-place between caller and callee.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Use
+	PE_Build_In_Place_Mismatch.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.ads, exp_ch4.adb (Expand_N_Reduction_Expression): New
+	procedure.
+	* exp_util.adb (Insert_Actions): Handle N_Reduction_Expression.
+	* expander.adb (Expand): Call Expand_N_Reduction_Expression
+	* par-ch4.adb (P_Reduction_Expression): New procedure.
+	(P_Iterated_Component_Assoc_Or_Reduction): New precedure, extension of
+	P_Iterated_Component_Association.
+	(OK_Reduction_Expression_Parameter): New procedure.
+	(P_Aggregate_Or_Paren_Expr): Improve error message for malformed delta
+	aggregate.
+	* sem.adb (Analyze): Call Analyze_Reduction_Expression and
+	Analyze_Reduction_Expression_Parameter
+	* sinfo.ads, sinfo.adb: New node kinds N_Reduction_Expression and
+	N_Reduction_Expression_Parameter.
+	* sem_ch4.ads, sem_ch4.adb (Analyze_Reduction_Expression,
+	Analyze_Reduction_Expression_Parameter): New procedures.
+	* sem_res.adb (Resolve): Handle Reduction_Expression and
+	Reduction_Expression_Parameter
+	* sem_spark.adb: Dummy entries for Reduction_Expression and
+	Reduction_Expression_Parameter
+	* sprint.adb (Sprint_Node_Actual): Print Reduction_Expression,
+	Reduction_Expression_Parameter
+
 2017-12-15  Bob Duff  <duff@adacore.com>
 
 	* einfo.ads: Comment fix.

@@ -4730,7 +4730,7 @@ package Sinfo is
       --  since the expander converts case expressions into case statements.
 
       ---------------------------------
-      -- 4.5.9 Quantified Expression --
+      -- 4.5.8 Quantified Expression --
       ---------------------------------
 
       --  QUANTIFIED_EXPRESSION ::=
@@ -4748,6 +4748,31 @@ package Sinfo is
       --  Loop_Parameter_Specification (Node4)
       --  Condition (Node1)
       --  All_Present (Flag15)
+
+      --------------------------------
+      -- 4.5.9 Reduction Expression --
+      --------------------------------
+
+      --  REDUCTION_EXPRESSION ::=
+      --    for LOOP_PARAMETER_SPECIFICATION => COMBINER_FUNCTION_CALL
+      --    for ITERATOR_SPECIFIATION => COMBINER_FUNCTION_CALL
+
+      --  At most one of (Iterator_Specification, Loop_Parameter_Specification)
+      --  is present at a time, in which case the other one is empty.
+
+      --  N_Reduction_Expression
+      --  Sloc points to FOR
+      --  Iterator_Specification (Node2)
+      --  Expression (Node3)
+      --  Loop_Parameter_Specification (Node4)
+      --  plus fields for expression
+
+      --  COMBINER_FUNCTION_CALL => FUNCTION_CALL
+
+      --  A Combiner_Function_Call is either a function call (including an
+      --  operator) with one reduction expression parameter, appearing either
+      --  as a left operand or as the first actual in the parameter list. In
+      --  a reduction expression this is represented as an expression.
 
       --------------------------
       -- 4.6  Type Conversion --
@@ -5608,7 +5633,18 @@ package Sinfo is
       -- 6.4  Actual Parameter --
       ---------------------------
 
-      --  EXPLICIT_ACTUAL_PARAMETER ::= EXPRESSION | variable_NAME
+      --  EXPLICIT_ACTUAL_PARAMETER ::=
+      --    EXPRESSION | variable_NAME | REDUCTION_EXPRESSION_PARAMETER
+
+      ------------------------------------------
+      -- 6.4.6 Reduction_Expression_Parameter --
+      ------------------------------------------
+
+      --  REDUCTION_EXPRESSION_PARAMETER ::= <> | < EXPRESSION >
+
+      --  N_Reduction_Expression_Parameter
+      --  Expression (Node3) (Set to Empty if no expression present)
+      --  plus fields for expression
 
       ---------------------------
       -- 6.5  Return Statement --
@@ -8732,6 +8768,8 @@ package Sinfo is
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,
+      N_Reduction_Expression,
+      N_Reduction_Expression_Parameter,
       N_Aggregate,
       N_Allocator,
       N_Case_Expression,
@@ -12121,6 +12159,20 @@ package Sinfo is
         3 => False,   --  unused
         4 => True,    --  Loop_Parameter_Specification (Node4)
         5 => False),  --  Etype (Node5-Sem)
+
+     N_Reduction_Expression =>
+       (1 => False,   --  unused
+        2 => True,    --  Iterator_Specification (Node2)
+        3 => True,    --  Expression (Node3)
+        4 => True,    --  Loop_Parameter_Specification (Node4)
+        5 => False),  --  Etype (Node5-Sem)
+
+     N_Reduction_Expression_Parameter =>
+       (1 => False,    --  unused
+        2 => False,    --  unused
+        3 => True,     --  Expression (Node3)
+        4 => False,    --  unused
+        5 => False),   --  Etype (Node5-Sem)
 
      N_Allocator =>
        (1 => False,   --  Storage_Pool (Node1-Sem)

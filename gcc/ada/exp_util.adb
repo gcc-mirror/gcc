@@ -7330,6 +7330,8 @@ package body Exp_Util is
                | N_Real_Literal
                | N_Real_Range_Specification
                | N_Record_Definition
+               | N_Reduction_Expression
+               | N_Reduction_Expression_Parameter
                | N_Reference
                | N_SCIL_Dispatch_Table_Tag_Init
                | N_SCIL_Dispatching_Call

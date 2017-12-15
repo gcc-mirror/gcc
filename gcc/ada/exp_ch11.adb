@@ -2126,6 +2126,8 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("PE_All_Guards_Closed");
          when PE_Bad_Predicated_Generic_Type =>
             Add_Str_To_Name_Buffer ("PE_Bad_Predicated_Generic_Type");
+         when PE_Build_In_Place_Mismatch =>
+            Add_Str_To_Name_Buffer ("PE_Build_In_Place_Mismatch");
          when PE_Current_Task_In_Entry_Body =>
             Add_Str_To_Name_Buffer ("PE_Current_Task_In_Entry_Body");
          when PE_Duplicated_Entry_Address =>

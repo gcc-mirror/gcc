@@ -4343,6 +4343,79 @@ package body Sem_Ch4 is
       Check_Function_Writable_Actuals (N);
    end Analyze_Range;
 
+   -----------------------------------
+   -- Analyze_Reduction_Expression --
+   -----------------------------------
+
+   procedure Analyze_Reduction_Expression (N : Node_Id) is
+      Expr    : constant Node_Id := Expression (N);
+      QE_Scop : Entity_Id;
+
+   begin
+      QE_Scop := New_Internal_Entity (E_Loop, Current_Scope, Sloc (N), 'L');
+      Set_Etype  (QE_Scop, Standard_Void_Type);
+      Set_Scope  (QE_Scop, Current_Scope);
+      Set_Parent (QE_Scop, N);
+
+      Push_Scope (QE_Scop);
+
+      --  All constituents are preanalyzed and resolved to avoid untimely
+      --  generation of various temporaries and types. Full analysis and
+      --  expansion is carried out when the reduction expression is
+      --  transformed into an expression with actions.
+
+      if Present (Iterator_Specification (N)) then
+         Preanalyze (Iterator_Specification (N));
+
+      else pragma Assert (Present (Loop_Parameter_Specification (N)));
+         declare
+            Loop_Par : constant Node_Id := Loop_Parameter_Specification (N);
+
+         begin
+            Preanalyze (Loop_Par);
+
+            if Nkind (Discrete_Subtype_Definition (Loop_Par)) = N_Function_Call
+              and then Parent (Loop_Par) /= N
+            then
+               --  The parser cannot distinguish between a loop specification
+               --  and an iterator specification. If after pre-analysis the
+               --  proper form has been recognized, rewrite the expression to
+               --  reflect the right kind. This is needed for proper ASIS
+               --  navigation. If expansion is enabled, the transformation is
+               --  performed when the expression is rewritten as a loop.
+
+               Set_Iterator_Specification (N,
+                 New_Copy_Tree (Iterator_Specification (Parent (Loop_Par))));
+
+               Set_Defining_Identifier (Iterator_Specification (N),
+                 Relocate_Node (Defining_Identifier (Loop_Par)));
+               Set_Name (Iterator_Specification (N),
+                 Relocate_Node (Discrete_Subtype_Definition (Loop_Par)));
+               Set_Comes_From_Source (Iterator_Specification (N),
+                 Comes_From_Source (Loop_Parameter_Specification (N)));
+               Set_Loop_Parameter_Specification (N, Empty);
+            end if;
+         end;
+      end if;
+
+      Preanalyze (Expr);
+      End_Scope;
+
+      Set_Etype (N, Etype (Expr));
+   end Analyze_Reduction_Expression;
+
+   --------------------------------------------
+   -- Analyze_Reduction_Expression_Parameter --
+   --------------------------------------------
+
+   procedure Analyze_Reduction_Expression_Parameter (N : Node_Id) is
+      Expr : constant Node_Id := Expression (N);
+
+   begin
+      Analyze (Expr);
+      Set_Etype (N, Etype (Expr));
+   end Analyze_Reduction_Expression_Parameter;
+
    -----------------------
    -- Analyze_Reference --
    -----------------------

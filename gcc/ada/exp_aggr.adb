@@ -5543,20 +5543,20 @@ package body Exp_Aggr is
                then
                   return False;
 
-               --  For an assignment statement we require static matching
-               --  of bounds. Ditto for an allocator whose qualified
-               --  expression is a constrained type. If the expression in
-               --  the allocator is an unconstrained array, we accept an
-               --  upper bound that is not static, to allow for non-static
-               --  expressions of the base type. Clearly there are further
-               --  possibilities (with diminishing returns) for safely
-               --  building arrays in place here.
+               --  For an assignment statement we require static matching of
+               --  bounds. Ditto for an allocator whose qualified expression
+               --  is a constrained type. If the expression in the allocator
+               --  is an unconstrained array, we accept an upper bound that
+               --  is not static, to allow for non-static expressions of the
+               --  base type. Clearly there are further possibilities (with
+               --  diminishing returns) for safely building arrays in place
+               --  here.
 
                elsif Nkind (Parent (N)) = N_Assignment_Statement
                  or else Is_Constrained (Etype (Parent (N)))
                then
                   if not Compile_Time_Known_Value (Aggr_Hi)
-                   or else Expr_Value (Aggr_Hi) /= Expr_Value (Obj_Hi)
+                    or else Expr_Value (Aggr_Hi) /= Expr_Value (Obj_Hi)
                   then
                      return False;
                   end if;

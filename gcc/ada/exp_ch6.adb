@@ -5362,12 +5362,11 @@ package body Exp_Ch6 is
                                   Alloc_Expr => Pool_Allocator)))),
 
                          --  Raise Program_Error if it's none of the above;
-                         --  this is a compiler bug. ???PE_All_Guards_Closed
-                         --  is bogus; we should have a new code.
+                         --  this is a compiler bug.
 
                          Else_Statements => New_List (
                            Make_Raise_Program_Error (Loc,
-                             Reason => PE_All_Guards_Closed)));
+                             Reason => PE_Build_In_Place_Mismatch)));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the
