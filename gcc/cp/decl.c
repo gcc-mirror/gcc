@@ -7339,6 +7339,25 @@ lookup_decomp_type (tree v)
   return *decomp_type_table->get (v);
 }
 
+/* Mangle a decomposition declaration if needed.  Arguments like
+   in cp_finish_decomp.  */
+
+void
+cp_maybe_mangle_decomp (tree decl, tree first, unsigned int count)
+{
+  if (!processing_template_decl
+      && !error_operand_p (decl)
+      && DECL_NAMESPACE_SCOPE_P (decl))
+    {
+      auto_vec<tree, 16> v;
+      v.safe_grow (count);
+      tree d = first;
+      for (unsigned int i = 0; i < count; i++, d = DECL_CHAIN (d))
+	v[count - i - 1] = d;
+      SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
+    }
+}
+
 /* Finish a decomposition declaration.  DECL is the underlying declaration
    "e", FIRST is the head of a chain of decls for the individual identifiers
    chained through DECL_CHAIN in reverse order and COUNT is the number of
@@ -7612,8 +7631,6 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	  }
     }
-  else if (DECL_NAMESPACE_SCOPE_P (decl))
-    SET_DECL_ASSEMBLER_NAME (decl, mangle_decomp (decl, v));
 }
 
 /* Returns a declaration for a VAR_DECL as if:

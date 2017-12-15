@@ -16135,19 +16135,23 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    if (VAR_P (decl))
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
 				    (pattern_decl));
-		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
 		    if (VAR_P (decl)
 			&& DECL_DECOMPOSITION_P (decl)
 			&& TREE_TYPE (pattern_decl) != error_mark_node)
 		      {
 			unsigned int cnt;
 			tree first;
-			decl = tsubst_decomp_names (decl, pattern_decl, args,
-						    complain, in_decl, &first,
-						    &cnt);
-			if (decl != error_mark_node)
-			  cp_finish_decomp (decl, first, cnt);
+			tree ndecl
+			  = tsubst_decomp_names (decl, pattern_decl, args,
+						 complain, in_decl, &first, &cnt);
+			if (ndecl != error_mark_node)
+			  cp_maybe_mangle_decomp (ndecl, first, cnt);
+			cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+			if (ndecl != error_mark_node)
+			  cp_finish_decomp (ndecl, first, cnt);
 		      }
+		    else
+		      cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
 		  }
 	      }
 	  }
