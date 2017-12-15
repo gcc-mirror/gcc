@@ -4673,7 +4673,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 			  == void_type_node))
 		    gimple_call_set_fntype (call_stmt, TREE_TYPE (fn));
 		  maybe_remove_unused_call_args (cfun, call_stmt);
-		  gimple_set_modified (stmt, true);
+		  modified = true;
 		}
 	    }
 	}

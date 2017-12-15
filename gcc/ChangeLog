@@ -1,3 +1,10 @@
+2017-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/83439
+	* tree-ssa-pre.c (eliminate_dom_walker::before_dom_children):
+	Adjust remaining gimple_set_modified to use the modified
+	variable instead.
+
 2017-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/66488
