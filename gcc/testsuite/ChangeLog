@@ -1,6 +1,11 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/81553
+	* gcc.c-torture/compile/pr81553.c: New test.
+
 	2017-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83014
