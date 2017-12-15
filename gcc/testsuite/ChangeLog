@@ -2,7 +2,7 @@
 
 	Backported from mainline
 	2017-11-24  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR sanitizer/83014
 	* gcc.dg/ubsan/pr83014.c: New test.
 
@@ -338,8 +338,8 @@
 2017-10-24  Qing Zhao <qing.zhao@oracle.com>
 	    Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
-        PR middle-end/80295
-        * gcc.target/aarch64/pr80295.c: New test.
+	PR middle-end/80295
+	* gcc.target/aarch64/pr80295.c: New test.
 
 2017-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
