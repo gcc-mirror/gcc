@@ -1,3 +1,10 @@
+2017-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/59930
+	* g++.dg/cpp0x/temp_default4.C: Adjust diagnostic.
+	* g++.old-deja/g++.pt/friend23.C: Likewise.
+	* g++.old-deja/g++.pt/friend24.C: Delete.
+
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83269

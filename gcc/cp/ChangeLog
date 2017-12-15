@@ -1,3 +1,15 @@
+2017-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/59930
+	* decl.c (xref_tag_1): Correct comments about template friends and
+	default args.
+	* friend.c (make_friend_class): Move comments concerning
+	self-friendliness to code dealing with such.
+	* pt.c (check_default_tmpl_args): Deal with template friend
+	classes too.
+	(push_template_decl_real): Check default args for non-function
+	template friends.
+
 2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* decl2.c (start_static_storage_duration_function): Avoid warning.
