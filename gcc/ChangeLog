@@ -1,3 +1,11 @@
+2017-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/83388
+	* internal-fn.def (IFN_NOP): Add.
+	* internal-fn.c (expand_NOP): Do nothing.
+	* lto-streamer-in.c (input_function): Instead of removing
+	sanitizer calls replace them with IFN_NOP calls.
+
 2017-12-15  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
