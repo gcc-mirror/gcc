@@ -177,6 +177,7 @@
   UNSPEC_VAESDEC
   UNSPEC_VAESDECLAST
   UNSPEC_VAESENC
+  UNSPEC_VAESENCLAST
 ])
 
 (define_c_enum "unspecv" [
@@ -20486,4 +20487,14 @@
 	  UNSPEC_VAESENC))]
   "TARGET_VAES"
   "vaesenc\t{%2, %1, %0|%0, %1, %2}"
+)
+
+(define_insn "vaesenclast_<mode>"
+  [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=v")
+	  (unspec:VI1_AVX512VL_F
+	  [(match_operand:VI1_AVX512VL_F 1 "register_operand" "v")
+	   (match_operand:VI1_AVX512VL_F 2 "vector_operand" "vm")]
+	  UNSPEC_VAESENCLAST))]
+  "TARGET_VAES"
+  "vaesenclast\t{%2, %1, %0|%0, %1, %2}"
 )
