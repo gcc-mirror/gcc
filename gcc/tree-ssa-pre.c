@@ -4566,6 +4566,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
       /* If we didn't replace the whole stmt (or propagate the result
          into all uses), replace all uses on this stmt with their
 	 leaders.  */
+      bool modified = false;
       use_operand_p use_p;
       ssa_op_iter iter;
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
@@ -4587,7 +4588,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  || !bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (sprime))))
 	    {
 	      propagate_value (use_p, sprime);
-	      gimple_set_modified (stmt, true);
+	      modified = true;
 	      if (TREE_CODE (sprime) == SSA_NAME
 		  && !is_gimple_debug (stmt))
 		gimple_set_plf (SSA_NAME_DEF_STMT (sprime),
@@ -4595,8 +4596,34 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	    }
 	}
 
+      /* Fold the stmt if modified, this canonicalizes MEM_REFs we propagated
+         into which is a requirement for the IPA devirt machinery.  */
+      gimple *old_stmt = stmt;
+      if (modified)
+	{
+	  /* If a formerly non-invariant ADDR_EXPR is turned into an
+	     invariant one it was on a separate stmt.  */
+	  if (gimple_assign_single_p (stmt)
+	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
+	  if (is_gimple_call (stmt))
+	    {
+	      /* ???  Only fold calls inplace for now, this may create new
+		 SSA names which in turn will confuse free_scc_vn SSA name
+		 release code.  */
+	      fold_stmt_inplace (&gsi);
+	    }
+	  else
+	    {
+	      fold_stmt (&gsi);
+	      stmt = gsi_stmt (gsi);
+	    }
+	}
+
       /* Visit indirect calls and turn them into direct calls if
-	 possible using the devirtualization machinery.  */
+	 possible using the devirtualization machinery.  Do this before
+	 checking for required EH/abnormal/noreturn cleanup as devird
+	 may expose more of those.  */
       if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
 	  tree fn = gimple_call_fn (call_stmt);
@@ -4605,24 +4632,21 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	      && virtual_method_call_p (fn))
 	    {
 	      tree otr_type = obj_type_ref_class (fn);
+	      unsigned HOST_WIDE_INT otr_tok
+		= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (fn));
 	      tree instance;
-	      ipa_polymorphic_call_context context (current_function_decl, fn, stmt, &instance);
+	      ipa_polymorphic_call_context context (current_function_decl,
+						    fn, stmt, &instance);
+	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn),
+					otr_type, stmt);
 	      bool final;
-
-	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn), otr_type, stmt);
-
-	      vec <cgraph_node *>targets
+	      vec <cgraph_node *> targets
 		= possible_polymorphic_call_targets (obj_type_ref_class (fn),
-						     tree_to_uhwi
-						       (OBJ_TYPE_REF_TOKEN (fn)),
-						     context,
-						     &final);
+						     otr_tok, context, &final);
 	      if (dump_file)
 		dump_possible_polymorphic_call_targets (dump_file, 
 							obj_type_ref_class (fn),
-							tree_to_uhwi
-							  (OBJ_TYPE_REF_TOKEN (fn)),
-							context);
+							otr_tok, context);
 	      if (final && targets.length () <= 1 && dbg_cnt (devirt))
 		{
 		  tree fn;
@@ -4632,7 +4656,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 		  if (dump_enabled_p ())
 		    {
-		      location_t loc = gimple_location_safe (stmt);
+		      location_t loc = gimple_location (stmt);
 		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 				       "converting indirect call to "
 				       "function %s\n",
@@ -4654,38 +4678,22 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	    }
 	}
 
-      if (gimple_modified_p (stmt))
+      if (modified)
 	{
-	  /* If a formerly non-invariant ADDR_EXPR is turned into an
-	     invariant one it was on a separate stmt.  */
-	  if (gimple_assign_single_p (stmt)
-	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
-	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
-	  gimple *old_stmt = stmt;
-	  if (is_gimple_call (stmt))
-	    {
-	      /* ???  Only fold calls inplace for now, this may create new
-		 SSA names which in turn will confuse free_scc_vn SSA name
-		 release code.  */
-	      fold_stmt_inplace (&gsi);
-	      /* When changing a call into a noreturn call, cfg cleanup
-		 is needed to fix up the noreturn call.  */
-	      if (!was_noreturn && gimple_call_noreturn_p (stmt))
-		el_to_fixup.safe_push  (stmt);
-	    }
-	  else
-	    {
-	      fold_stmt (&gsi);
-	      stmt = gsi_stmt (gsi);
-	      if ((gimple_code (stmt) == GIMPLE_COND
-		   && (gimple_cond_true_p (as_a <gcond *> (stmt))
-		       || gimple_cond_false_p (as_a <gcond *> (stmt))))
-		  || (gimple_code (stmt) == GIMPLE_SWITCH
-		      && TREE_CODE (gimple_switch_index (
-				      as_a <gswitch *> (stmt)))
-		         == INTEGER_CST))
-		el_todo |= TODO_cleanup_cfg;
-	    }
+	  /* When changing a call into a noreturn call, cfg cleanup
+	     is needed to fix up the noreturn call.  */
+	  if (!was_noreturn
+	      && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
+	    el_to_fixup.safe_push  (stmt);
+	  /* When changing a condition or switch into one we know what
+	     edge will be executed, schedule a cfg cleanup.  */
+	  if ((gimple_code (stmt) == GIMPLE_COND
+	       && (gimple_cond_true_p (as_a <gcond *> (stmt))
+		   || gimple_cond_false_p (as_a <gcond *> (stmt))))
+	      || (gimple_code (stmt) == GIMPLE_SWITCH
+		  && TREE_CODE (gimple_switch_index
+				  (as_a <gswitch *> (stmt))) == INTEGER_CST))
+	    el_todo |= TODO_cleanup_cfg;
 	  /* If we removed EH side-effects from the statement, clean
 	     its EH information.  */
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt))
