@@ -1,5 +1,24 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80135
+	PR c++/81922
+	* g++.dg/warn/Wplacement-new-size-1.C (fBx1): Initialize nested
+	flexible array member only with {}.  Add dg-warning.
+	(fBx2, fBx3): Remove.
+	* g++.dg/warn/Wplacement-new-size-2.C (fBx1): Initialize nested
+	flexible array member only with {}.  Add dg-warning.
+	(fBx2, fBx3): Remove.
+	* g++.dg/warn/Wplacement-new-size-6.C: New test.
+	* g++.dg/ext/flexary13.C (main): Remove test for initialization
+	of nested flexible array member with non-empty initializer.
+	* g++.dg/ext/flexary25.C: New test.
+	* g++.dg/ext/flexary26.C: New test.
+	* g++.dg/ext/flexary27.C: New test.
+	* g++.dg/parse/pr43765.C: Expect diagnostics about initialization
+	of nested flexible array member with non-empty initializer.  Expect
+	C++2A diagnostics about mixing of designated and non-designated
+	initializers.
+
 	PR c++/83217
 	* g++.dg/cpp1z/decomp33.C: New test.
 

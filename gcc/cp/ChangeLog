@@ -1,5 +1,26 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80135
+	PR c++/81922
+	* typeck2.c (digest_init_r): Change nested argument type from bool to
+	int.  Use code instead of TREE_CODE (type) where possible.  If
+	nested == 2, diagnose initialization of flexible array member with
+	STRING_CST.  Pass nested to process_init_constructor.  Formatting fix.
+	(digest_init, digest_init_flags): Adjust digest_init_r caller.
+	(massage_init_elt): Add nested argument.  Pass 2 instead of 1 to
+	digest_init_r's nested argument if nested is non-zero.
+	(process_init_constructor_array): Add nested argument.  If nested == 2,
+	diagnose initialization of flexible array member with non-empty
+	braced enclosed list.  Pass nested to massage_init_elt.
+	(process_init_constructor_record, process_init_constructor_union): Add
+	nested argument, pass it to massage_init_elt.
+	(process_init_constructor): Add nested argument, pass it to
+	process_init_constructor_{array,record,union}.
+	* init.c (find_field_init): Renamed to ...
+	(find_flexarray_init): ... this.  Return NULL_TREE if init is
+	error_mark_node.  Don't look through nested CONSTRUCTORs.
+	(warn_placement_new_too_small): Adjust caller.
+
 	PR c++/83217
 	* decl.c (cp_finish_decomp): If decl's type is REFERENCE_TYPE,
 	call complete_type (TREE_TYPE (type)).
