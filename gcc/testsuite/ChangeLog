@@ -1,5 +1,8 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/80631
+	* gcc.target/i386/avx2-pr80631.c: New test.
+
 	* g++.dg/plugin/attribute_plugin.c (user_attr): Swap
 	affects_type_identity and handler fields, add NULL for exclude.
 
