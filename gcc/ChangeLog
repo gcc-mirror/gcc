@@ -1,5 +1,13 @@
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
+	* config/i386/i386-builtin.def (__builtin_ia32_vaesenclast_v16qi,
+	__builtin_ia32_vaesenclast_v32qi, __builtin_ia32_vaesenclast_v64qi): New.
+	* config/i386/sse.md (vaesenclast_<mode>): New pattern.
+	* config/i386/vaesintrin.h (_mm256_aesenclast_epi128,
+	_mm512_aesenclast_epi128, _mm_aesenclast_epi128): New intrinsics.
+
+2017-12-15  Julia Koval  <julia.koval@intel.com>
+
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesenc_v16qi,
 	__builtin_ia32_vaesenc_v32qi, __builtin_ia32_vaesenc_v64qi): New.
 	* config/i386/sse.md (vaesenc_<mode>): New pattern.

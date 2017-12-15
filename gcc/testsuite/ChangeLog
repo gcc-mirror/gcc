@@ -1,5 +1,11 @@
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
+	* gcc.target/i386/avx512f-aesenclast-2.c: New test.
+	* gcc.target/i386/avx512vl-aesenclast-2.c: Ditto.
+	* gcc.target/i386/avx512fvl-vaes-1.c: Handle new intrinsics.
+
+2017-12-15  Julia Koval  <julia.koval@intel.com>
+
 	* gcc.target/i386/avx512f-aesenc-2.c: New test.
 	* gcc.target/i386/avx512vl-aesenc-2.c: Ditto.
 	* gcc.target/i386/avx512fvl-vaes-1.c: Handle new intrinsics.
