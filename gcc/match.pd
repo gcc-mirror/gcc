@@ -1784,8 +1784,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
   /* (T)(P + A) - (T)P -> (T) A */
   (simplify
-   (minus (convert (plus:c @0 @1))
-    (convert @0))
+   (minus (convert (plus:c @@0 @1))
+    (convert? @0))
    (if (element_precision (type) <= element_precision (TREE_TYPE (@1))
 	/* For integer types, if A has a smaller type
 	   than T the result depends on the possible
@@ -1794,8 +1794,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   However, if an overflow in P + A would cause
 	   undefined behavior, we can assume that there
 	   is no overflow.  */
-	|| (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	    && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
+	|| (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	    && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@1))))
     (convert @1)))
   (simplify
    (minus (convert (pointer_plus @@0 @1))
@@ -1818,8 +1818,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
   /* (T)P - (T)(P + A) -> -(T) A */
   (simplify
-   (minus (convert @0)
-    (convert (plus:c @0 @1)))
+   (minus (convert? @0)
+    (convert (plus:c @@0 @1)))
    (if (INTEGRAL_TYPE_P (type)
 	&& TYPE_OVERFLOW_UNDEFINED (type)
 	&& element_precision (type) <= element_precision (TREE_TYPE (@1)))
@@ -1833,8 +1833,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    However, if an overflow in P + A would cause
 	    undefined behavior, we can assume that there
 	    is no overflow.  */
-	 || (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	     && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
+	 || (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	     && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@1))))
      (negate (convert @1)))))
   (simplify
    (minus (convert @0)
@@ -1862,23 +1862,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
   /* (T)(P + A) - (T)(P + B) -> (T)A - (T)B */
   (simplify
-   (minus (convert (plus:c @0 @1))
+   (minus (convert (plus:c @@0 @1))
     (convert (plus:c @0 @2)))
    (if (INTEGRAL_TYPE_P (type)
 	&& TYPE_OVERFLOW_UNDEFINED (type)
-	&& element_precision (type) <= element_precision (TREE_TYPE (@1)))
+	&& element_precision (type) <= element_precision (TREE_TYPE (@1))
+	&& element_precision (type) <= element_precision (TREE_TYPE (@2)))
     (with { tree utype = unsigned_type_for (type); }
      (convert (minus (convert:utype @1) (convert:utype @2))))
-    (if (element_precision (type) <= element_precision (TREE_TYPE (@1))
-	 /* For integer types, if A has a smaller type
-	    than T the result depends on the possible
-	    overflow in P + A.
-	    E.g. T=size_t, A=(unsigned)429497295, P>0.
-	    However, if an overflow in P + A would cause
-	    undefined behavior, we can assume that there
-	    is no overflow.  */
-	 || (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	     && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))))
+    (if (((element_precision (type) <= element_precision (TREE_TYPE (@1)))
+	  == (element_precision (type) <= element_precision (TREE_TYPE (@2))))
+	 && (element_precision (type) <= element_precision (TREE_TYPE (@1))
+	     /* For integer types, if A has a smaller type
+		than T the result depends on the possible
+		overflow in P + A.
+		E.g. T=size_t, A=(unsigned)429497295, P>0.
+		However, if an overflow in P + A would cause
+		undefined behavior, we can assume that there
+		is no overflow.  */
+	     || (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+		 && INTEGRAL_TYPE_P (TREE_TYPE (@2))
+		 && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@1))
+		 && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@2)))))
      (minus (convert @1) (convert @2)))))
   (simplify
    (minus (convert (pointer_plus @@0 @1))

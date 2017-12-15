@@ -1,3 +1,8 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81281
+	* gcc.dg/pr81281-3.c: New test.
+
 2017-12-15  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/aliasing4.adb: New testcase.

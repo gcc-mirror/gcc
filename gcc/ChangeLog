@@ -1,3 +1,15 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81281
+	* match.pd ((T)(P + A) - (T)P -> (T) A): Use @@0 instead of @0 and
+	convert? on @0 instead of convert.  Check type of @1, not @0.
+	((T)P - (T)(P + A) -> -(T) A): Use @@0 instead of @0 and
+	convert? on @0 instead of convert.  Check type of @1, not @0.
+	((T)(P + A) - (T)(P + B) -> (T)A - (T)B): Use @@0 instead of @0,
+	only optimize if either both @1 and @2 types are narrower
+	precision, or both are wider or equal precision, and in the former
+	case only if both have undefined overflow.
+
 2017-12-15  Richard Biener  <rguenther@suse.de>
 
 	PR lto/83388
