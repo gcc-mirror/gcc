@@ -649,7 +649,7 @@ package Einfo is
 --       Defined in E_Record_Subtype and E_Class_Wide_Subtype entities.
 --       Each such entity can either have a Discriminant_Constraint, in
 --       which case it represents a distinct type from the base type (and
---       will have a list of components and discrimants in the list headed by
+--       will have a list of components and discriminants in the list headed by
 --       First_Entity) or else no such constraint, in which case it will be a
 --       copy of the base type.
 --

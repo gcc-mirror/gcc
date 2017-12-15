@@ -1,3 +1,7 @@
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/expr_func2.ads, gnat.dg/expr_func2.adb: New testcase.
+
 2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/dflt_init_cond.adb, gnat.dg/dflt_init_cond_pkg.ads: New
