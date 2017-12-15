@@ -1445,7 +1445,7 @@ package Opt is
    --  GNAT.Exception_Traces is with'ed. Used to inhibit transformation of
    --  local raise statements into gotos in the presence of either package.
 
-   Sprint_Line_Limit : Nat := 72; -- ????????????????
+   Sprint_Line_Limit : Nat := 72;
    --  GNAT
    --  Limit values for chopping long lines in Cprint/Sprint output, can be
    --  reset by use of NNN parameter with -gnatG or -gnatD switches.
