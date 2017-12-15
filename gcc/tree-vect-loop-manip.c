@@ -643,6 +643,8 @@ create_lcssa_for_virtual_phi (struct loop *loop)
 	    gimple *stmt;
 	    use_operand_p use_p;
 
+	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_vop)
+	      = SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vop);
 	    add_phi_arg (new_phi, vop, exit_e, UNKNOWN_LOCATION);
 	    gimple_phi_set_result (new_phi, new_vop);
 	    FOR_EACH_IMM_USE_STMT (stmt, imm_iter, vop)

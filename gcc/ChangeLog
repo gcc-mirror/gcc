@@ -1,3 +1,29 @@
+2017-12-15  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82402
+	* tree-vect-loop-manip.c (create_lcssa_for_virtual_phi): Properly
+	set SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
+	2017-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82697
+	* tree-ssa-phiopt.c (cond_store_replacement): Use alias-set
+	zero for conditional load and unconditional store.
+
+	2017-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82765
+	* varasm.c (decode_addr_const): Make offset HOST_WIDE_INT.
+	Truncate ARRAY_REF index and element size.
+
+	2017-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82902
+	* tree-ssa-phiprop.c (propagate_with_phi): Test proper type.
+
 2017-12-14  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline
