@@ -1,3 +1,19 @@
+2017-12-15  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* dse.c (store_info, read_info_type): Replace begin and end with
+	offset and width.
+	(print_range): New function.
+	(set_all_positions_unneeded, any_positions_needed_p)
+	(check_mem_read_rtx, scan_stores, scan_reads, dse_step5): Update
+	accordingly.
+	(record_store): Likewise.  Optimize the case in which all positions
+	are unneeded.
+	(get_stored_val): Replace read_begin and read_end with read_offset
+	and read_width.
+	(replace_read): Update call accordingly.
+
 2017-12-15  Bin Cheng  <bin.cheng@arm.com>
 
 	* gimple-loop-interchange.cc (STMT_COST_RATIO): New macro.
