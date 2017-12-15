@@ -1,5 +1,10 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83269
+	* fold-const.c (fold_binary_loc): Perform (-A) - B -> (-B) - A
+	subtraction in arg0's type if type is signed and arg0 is unsigned.
+	Formatting fix.
+
 	PR sanitizer/81281
 	* match.pd ((T)(P + A) - (T)P -> (T) A): Use @@0 instead of @0 and
 	convert? on @0 instead of convert.  Check type of @1, not @0.
