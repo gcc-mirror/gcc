@@ -1,3 +1,10 @@
+2017-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/66488
+	* ggc-page.c (HOST_BITS_PER_PTR): Do not define here...
+	* hwint.h (HOST_BITS_PER_PTR): ...but here instead.
+	* config/i386/xm-mingw32.h (HOST_BITS_PER_PTR): Delete.
+
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesenclast_v16qi,
