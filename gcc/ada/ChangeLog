@@ -1,3 +1,8 @@
+2017-12-15  Bob Duff  <duff@adacore.com>
+
+	* types.ads, exp_ch6.adb, libgnat/s-regexp.ads, opt.ads: Partly revert
+	r255414, committed by mistake.
+
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in: Generalize support for symbolic traces.

@@ -5370,10 +5370,6 @@ package body Exp_Ch6 is
                         Rewrite (Name (Init_Assignment),
                           Make_Explicit_Dereference (Loc,
                             Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
-                        pragma Assert
-                          (Assignment_OK
-                             (Original_Node (Name (Init_Assignment))));
-                        Set_Assignment_OK (Name (Init_Assignment));
 
                         Set_Etype (Name (Init_Assignment), Etype (Ret_Obj_Id));
 
@@ -7314,7 +7310,7 @@ package body Exp_Ch6 is
             begin
                --  ???For now, enable build-in-place for a very narrow set of
                --  controlled types. Change "if True" to "if False" to
-               --  experiment with more controlled types. Eventually, we might
+               --  experiment more controlled types. Eventually, we would
                --  like to enable build-in-place for all tagged types, all
                --  types that need finalization, and all caller-unknown-size
                --  types.
