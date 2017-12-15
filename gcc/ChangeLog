@@ -10320,7 +10320,7 @@
 	* combine.c (combine_instructions): Don't combine in unreachable
 	basic blocks.
 
-2017-08-18  Peter Bergner  <bergner@vnet.ibm.com>
+2017-10-02  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/80210
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Rewrite
