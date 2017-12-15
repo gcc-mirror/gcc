@@ -1,3 +1,46 @@
+2017-12-15  Patrick Bernardi  <bernardi@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Update section "Dynamic
+	Stack Usage Analysis" to include more details about GNAT_STACK_LIMIT.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Add_Own_DIC): Ensure that the expression of the pragma
+	is available (Is_Verifiable_DIC_Pragma): Moved from Sem_Util.
+	* sem_util.adb (Has_Full_Default_Initialization):
+	Has_Fully_Default_Initializing_DIC_Pragma is now used to determine
+	whether a type has full default initialization due to pragma
+	Default_Initial_Condition.
+	(Has_Fully_Default_Initializing_DIC_Pragma): New routine.
+	(Is_Verifiable_DIC_Pragma): Moved to Exp_Util.
+	* sem_util.ads (Has_Fully_Default_Initializing_DIC_Pragma): New
+	routine.
+	(Is_Verifiable_DIC_Pragma): Moved to Exp_Util.
+	* sem_warn.adb (Is_OK_Fully_Initialized):
+	Has_Fully_Default_Initializing_DIC_Pragma is now used to determine
+	whether a type has full default initialization due to pragma
+	Default_Initial_Condition.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Match_Constituent): Do not quietly accept constants as
+	suitable constituents.
+	* exp_util.adb: Minor reformatting.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (In_Place_Assign_OK): Extend the predicate to recognize
+	an array aggregate in an allocator, when the designated type is
+	unconstrained and the upper bound of the aggregate belongs to the base
+	type of the index.
+
+2017-12-15  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement,
+	Expand_Simple_Function_Return): Assert that the b-i-p-ness of the
+	caller and callee match.  Otherwise, we would need some substantial
+	changes to allow b-i-p calls non-b-i-p, and vice versa.
+
 2017-12-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Unnest_Subprograms): Nothing to do if the main unit is

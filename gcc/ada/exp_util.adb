@@ -165,6 +165,10 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
+   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
+   --  an assertion expression that should be verified at run time.
+
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
       E : Node_Id) return Entity_Id;
@@ -1500,6 +1504,7 @@ package body Exp_Util is
       --  Start of processing for Add_Own_DIC
 
       begin
+         pragma Assert (Present (DIC_Expr));
          Expr := New_Copy_Tree (DIC_Expr);
 
          --  Perform the following substitution:
@@ -1733,8 +1738,6 @@ package body Exp_Util is
          --  Produce an empty completing body in the following cases:
          --    * Assertions are disabled
          --    * The DIC Assertion_Policy is Ignore
-         --    * Pragma DIC appears without an argument
-         --    * Pragma DIC appears with argument "null"
 
          if No (Stmts) then
             Stmts := New_List (Make_Null_Statement (Loc));
@@ -8714,6 +8717,21 @@ package body Exp_Util is
           and then Present (Full_Typ)
           and then Is_Itype (Full_Typ);
    end Is_Untagged_Private_Derivation;
+
+   ------------------------------
+   -- Is_Verifiable_DIC_Pragma --
+   ------------------------------
+
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean is
+      Args : constant List_Id := Pragma_Argument_Associations (Prag);
+
+   begin
+      --  To qualify as verifiable, a DIC pragma must have a non-null argument
+
+      return
+        Present (Args)
+          and then Nkind (Get_Pragma_Arg (First (Args))) /= N_Null;
+   end Is_Verifiable_DIC_Pragma;
 
    ---------------------------
    -- Is_Volatile_Reference --

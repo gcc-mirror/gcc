@@ -4751,6 +4751,17 @@ package body Exp_Ch6 is
 
       if Nkind (Ret_Obj_Decl) = N_Object_Declaration then
          Exp := Expression (Ret_Obj_Decl);
+
+         --  Assert that if F says "return R : T := G(...) do..."
+         --  then F and G are both b-i-p, or neither b-i-p.
+
+         if Nkind (Exp) = N_Function_Call then
+            pragma Assert (Ekind (Current_Scope) = E_Function);
+            pragma Assert
+              (Is_Build_In_Place_Function (Current_Scope) =
+               Is_Build_In_Place_Function_Call (Exp));
+            null;
+         end if;
       else
          Exp := Empty;
       end if;
@@ -6446,6 +6457,17 @@ package body Exp_Ch6 is
          end if;
       end if;
 
+      --  Assert that if F says "return G(...);"
+      --  then F and G are both b-i-p, or neither b-i-p.
+
+      if Nkind (Exp) = N_Function_Call then
+         pragma Assert (Ekind (Scope_Id) = E_Function);
+         pragma Assert
+           (Is_Build_In_Place_Function (Scope_Id) =
+            Is_Build_In_Place_Function_Call (Exp));
+         null;
+      end if;
+
       --  For the case of a simple return that does not come from an
       --  extended return, in the case of build-in-place, we rewrite
       --  "return <expression>;" to be:
@@ -7094,8 +7116,6 @@ package body Exp_Ch6 is
 
                         return Empty;
                      end Associated_Expr;
-
-                  --  Start of processing for Expand_Simple_Function_Return
 
                   begin
                      if not Positionals_Exhausted then

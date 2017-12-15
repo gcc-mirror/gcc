@@ -27327,25 +27327,14 @@ package body Sem_Prag is
                      end loop;
                   end if;
 
-                  --  Constants are part of the hidden state of a package, but
-                  --  the compiler cannot determine whether they have variable
-                  --  input (SPARK RM 7.1.1(2)) and cannot classify them as a
-                  --  hidden state. Accept the constant quietly even if it is
-                  --  a visible state or lacks a Part_Of indicator.
+                  --  At this point it is known that the constituent is not
+                  --  part of the package hidden state and cannot be used in
+                  --  a refinement (SPARK RM 7.2.2(9)).
 
-                  if Ekind (Constit_Id) = E_Constant then
-                     Collect_Constituent;
-
-                  --  If we get here, then the constituent is not a hidden
-                  --  state of the related package and may not be used in a
-                  --  refinement (SPARK RM 7.2.2(9)).
-
-                  else
-                     Error_Msg_Name_1 := Chars (Spec_Id);
-                     SPARK_Msg_NE
-                       ("cannot use & in refinement, constituent is not a "
-                        & "hidden state of package %", Constit, Constit_Id);
-                  end if;
+                  Error_Msg_Name_1 := Chars (Spec_Id);
+                  SPARK_Msg_NE
+                    ("cannot use & in refinement, constituent is not a hidden "
+                     & "state of package %", Constit, Constit_Id);
                end if;
             end Match_Constituent;
 

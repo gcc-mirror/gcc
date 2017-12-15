@@ -10384,19 +10384,16 @@ package body Sem_Util is
 
    function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean is
       Comp : Entity_Id;
-      Prag : Node_Id;
 
    begin
-      --  A type subject to pragma Default_Initial_Condition is fully default
-      --  initialized when the pragma appears with a non-null argument. Since
-      --  any type may act as the full view of a private type, this check must
-      --  be performed prior to the specialized tests below.
+      --  A type subject to pragma Default_Initial_Condition may be fully
+      --  default initialized depending on inheritance and the argument of
+      --  the pragma. Since any type may act as the full view of a private
+      --  type, this check must be performed prior to the specialized tests
+      --  below.
 
-      if Has_DIC (Typ) then
-         Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
-         pragma Assert (Present (Prag));
-
-         return Is_Verifiable_DIC_Pragma (Prag);
+      if Has_Fully_Default_Initializing_DIC_Pragma (Typ) then
+         return True;
       end if;
 
       --  A scalar type is fully default initialized if it is subject to aspect
@@ -10462,6 +10459,47 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Full_Default_Initialization;
+
+   -----------------------------------------------
+   -- Has_Fully_Default_Initializing_DIC_Pragma --
+   -----------------------------------------------
+
+   function Has_Fully_Default_Initializing_DIC_Pragma
+     (Typ : Entity_Id) return Boolean
+   is
+      Args : List_Id;
+      Prag : Node_Id;
+
+   begin
+      --  A type that inherits pragma Default_Initial_Condition from a parent
+      --  type is automatically fully default initialized.
+
+      if Has_Inherited_DIC (Typ) then
+         return True;
+
+      --  Otherwise the type is fully default initialized only when the pragma
+      --  appears without an argument, or the argument is non-null.
+
+      elsif Has_Own_DIC (Typ) then
+         Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+         pragma Assert (Present (Prag));
+         Args := Pragma_Argument_Associations (Prag);
+
+         --  The pragma appears without an argument in which case it defaults
+         --  to True.
+
+         if No (Args) then
+            return True;
+
+         --  The pragma appears with a non-null expression
+
+         elsif Nkind (Get_Pragma_Arg (First (Args))) /= N_Null then
+            return True;
+         end if;
+      end if;
+
+      return False;
+   end Has_Fully_Default_Initializing_DIC_Pragma;
 
    --------------------
    -- Has_Infinities --
@@ -17017,21 +17055,6 @@ package body Sem_Util is
          end case;
       end if;
    end Is_Variable;
-
-   ------------------------------
-   -- Is_Verifiable_DIC_Pragma --
-   ------------------------------
-
-   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean is
-      Args : constant List_Id := Pragma_Argument_Associations (Prag);
-
-   begin
-      --  To qualify as verifiable, a DIC pragma must have a non-null argument
-
-      return
-        Present (Args)
-          and then Nkind (Get_Pragma_Arg (First (Args))) /= N_Null;
-   end Is_Verifiable_DIC_Pragma;
 
    ---------------------------
    -- Is_Visibly_Controlled --
