@@ -1,3 +1,19 @@
+2017-12-15  Bin Cheng  <bin.cheng@arm.com>
+
+	* gimple-loop-interchange.cc (STMT_COST_RATIO): New macro.
+	(loop_cand::m_num_stmts, loop_cand::m_const_init_reduc): New members.
+	(loop_cand::loop_cand): Initialize above members.
+	(loop_cand::supported_operations): Delete.
+	(loop_cand::can_interchange_p): Inline above function.
+	(loop_cand::classify_simple_reduction): Record number of constant
+	initialized simple reductions.
+	(should_interchange_loops): New parameters.  Check stmt cost of loops
+	to be interchange.
+	(tree_loop_interchange::interchange): Prepare stmt cost of outer loop.
+	Update call to should_interchange_loops.
+	(should_interchange_loop_nest): Update call to
+	should_interchange_loops.
+
 2017-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/66488
