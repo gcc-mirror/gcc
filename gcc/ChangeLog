@@ -1,4 +1,14 @@
-2017-12-12  Jeff Law  <law@redhat.com>
+2017-12-15  Alexandre Oliva <aoliva@redhat.com>
+
+	PR tree-optimization/81165
+	* tree-ssa-threadupdate.c (uses_in_bb): New.
+	(estimate_threading_killed_stmts): New.
+	* tree-ssa-threadupdate.h (estimate_threading_killed_stmts): Prototype.
+	* tree-ssa-threadedge.c 
+	(record_temporary_equivalences_from_stmts_at_dest): Expand limit
+	when its hit.
+
+2017-12-15  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/83410
 	* tree-ssa-threadupdate.c (thread_block_1): Avoid certain jump
