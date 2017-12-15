@@ -1,6 +1,15 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81675
+	* cp-gimplify.c (cp_fold) <case COND_EXPR>: Don't return immediately
+	for VOID_TYPE_P COND_EXPRs, instead fold the operands and if op0 is
+	INTEGER_CST, ensure that both op1 and op2 are non-NULL and fall
+	through into normal folding, otherwise just rebuild x if any op
+	changed.
+
 	2017-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_declare): Change return type to bool from
