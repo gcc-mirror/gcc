@@ -1290,6 +1290,9 @@ package Sem_Util is
    --  in pragma Refined_State. This function does not take into account the
    --  visible refinement region of abstract state Id.
 
+   function Has_Non_Null_Statements (L : List_Id) return Boolean;
+   --  Return True if L has non-null statements
+
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
    --  Initialize primitive (and, in Ada 2012, whether that primitive is

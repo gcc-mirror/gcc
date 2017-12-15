@@ -586,18 +586,20 @@ package body Exp_Unst is
                         | Attribute_Unchecked_Access
                         | Attribute_Unrestricted_Access
                      =>
-                        Ent := Entity (Prefix (N));
+                        if Nkind (Prefix (N)) in N_Has_Entity then
+                           Ent := Entity (Prefix (N));
 
-                        --  We are only interested in calls to subprograms
-                        --  nested within Subp.
+                           --  We are only interested in calls to subprograms
+                           --  nested within Subp.
 
-                        if Scope_Within (Ent, Subp) then
-                           if Is_Imported (Ent) then
-                              null;
+                           if Scope_Within (Ent, Subp) then
+                              if Is_Imported (Ent) then
+                                 null;
 
-                           elsif Is_Subprogram (Ent) then
-                              Append_Unique_Call
-                                ((N, Current_Subprogram, Ent));
+                              elsif Is_Subprogram (Ent) then
+                                 Append_Unique_Call
+                                   ((N, Current_Subprogram, Ent));
+                              end if;
                            end if;
                         end if;
 

@@ -10619,6 +10619,30 @@ package body Sem_Util is
           and then Nkind (Node (First_Elmt (Constits))) /= N_Null;
    end Has_Non_Null_Refinement;
 
+   -----------------------------
+   -- Has_Non_Null_Statements --
+   -----------------------------
+
+   function Has_Non_Null_Statements (L : List_Id) return Boolean is
+      Node : Node_Id;
+
+   begin
+      if Is_Non_Empty_List (L) then
+         Node := First (L);
+
+         loop
+            if Nkind (Node) /= N_Null_Statement then
+               return True;
+            end if;
+
+            Next (Node);
+            exit when Node = Empty;
+         end loop;
+      end if;
+
+      return False;
+   end Has_Non_Null_Statements;
+
    ----------------------------------
    -- Has_Non_Trivial_Precondition --
    ----------------------------------

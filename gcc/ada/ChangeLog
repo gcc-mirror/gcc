@@ -1,5 +1,31 @@
 2017-12-15  Bob Duff  <duff@adacore.com>
 
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): If the
+	Init_Assignment is rewritten, we need to set Assignment_OK on the new
+	node.  Otherwise, we will get spurious errors when initializing via
+	assignment statement.
+
+2017-12-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Visit_Node): Refine handling of 'Access to ignore non
+	relevant nodes.
+	(Has_Non_Null_Statements): Moved to sem_util for later reuse.
+
+2017-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Is_Inline_Floating_Point_Attribute): Fix comment.
+	* libgnat/s-fatgen.adb (Model): Use Machine attribute.
+	(Truncation): Likewise.
+
+2017-12-15  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb (Expand_Cleanup_Actions): Make sure the block and handled
+	statement sequence generated for certain extended return statements
+	have a Sloc that is not No_Location. Otherwise, the back end doesn't
+	set any location and ends up reading uninitialized variables.
+
+2017-12-15  Bob Duff  <duff@adacore.com>
+
 	* types.ads, exp_ch6.adb, libgnat/s-regexp.ads, opt.ads: Partly revert
 	r255414, committed by mistake.
 
