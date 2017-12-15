@@ -1,5 +1,13 @@
 2017-12-15  Patrick Bernardi  <bernardi@adacore.com>
 
+	* gnat_ugn.texi: Regenerate.
+
+2017-12-15  Bob Duff  <duff@adacore.com>
+
+	* gnatvsn.ads: Minor comment fixes.
+
+2017-12-15  Patrick Bernardi  <bernardi@adacore.com>
+
 	* doc/gnat_ugn/gnat_and_program_execution.rst: Update section "Dynamic
 	Stack Usage Analysis" to include more details about GNAT_STACK_LIMIT.
 
