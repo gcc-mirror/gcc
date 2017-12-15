@@ -419,6 +419,7 @@ Syntax::
                         Assume               |
                         Contract_Cases       |
                         Debug                |
+                        Ghost                |
                         Invariant            |
                         Invariant'Class      |
                         Loop_Invariant       |

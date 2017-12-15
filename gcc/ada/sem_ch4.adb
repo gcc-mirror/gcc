@@ -4155,7 +4155,7 @@ package body Sem_Ch4 is
               and then Parent (Loop_Par) /= N
             then
                --  The parser cannot distinguish between a loop specification
-               --  and an iterator specification. If after pre-analysis the
+               --  and an iterator specification. If after preanalysis the
                --  proper form has been recognized, rewrite the expression to
                --  reflect the right kind. This is needed for proper ASIS
                --  navigation. If expansion is enabled, the transformation is
@@ -4378,7 +4378,7 @@ package body Sem_Ch4 is
               and then Parent (Loop_Par) /= N
             then
                --  The parser cannot distinguish between a loop specification
-               --  and an iterator specification. If after pre-analysis the
+               --  and an iterator specification. If after preanalysis the
                --  proper form has been recognized, rewrite the expression to
                --  reflect the right kind. This is needed for proper ASIS
                --  navigation. If expansion is enabled, the transformation is

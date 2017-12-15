@@ -645,8 +645,8 @@ package body Ch4 is
          --      case of a name which can be extended in the normal manner.
          --      This case is handled by LP_State_Name or LP_State_Expr.
 
-         --      (Ada2020) : the expression can be a reduction_expression_
-         --      psarameter, i.e. a box or  < Simple_Expression >
+         --      (Ada 2020): the expression can be a reduction_expression_
+         --      parameter, i.e. a box or < Simple_Expression >.
 
          --      Note: if and case expressions (without an extra level of
          --      parentheses) are permitted in this context).
@@ -679,7 +679,7 @@ package body Ch4 is
          end if;
 
          --  Here we have an expression after all, which may be a reduction
-         --  expression with a binary operator
+         --  expression with a binary operator.
 
          if Token = Tok_Less then
             Scan; -- past <
@@ -2894,7 +2894,7 @@ package body Ch4 is
                Node1 := P_Name;
                return Node1;
 
-            --  Ada2020: reduction expression parameter
+            --  Ada 2020: reduction expression parameter
 
             when Tok_Less =>
                Scan; -- past <

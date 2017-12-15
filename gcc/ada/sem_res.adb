@@ -9086,6 +9086,21 @@ package body Sem_Res is
                end loop;
             end;
          end if;
+
+         --  RM 4.5.2 (28.1/3) specifies that for types other than records or
+         --  limited types, evaluation of a membership test uses the predefined
+         --  equality for the type. This may be confusing to users, and the
+         --  following warning appears useful for the most common case.
+
+         if Is_Scalar_Type (Ltyp)
+           and then Present (Get_User_Defined_Eq (Ltyp))
+         then
+            Error_Msg_NE
+              ("membership test on& uses predefined equality?", N, Ltyp);
+            Error_Msg_N
+              ("\even if user-defined equality exists (RM 4.5.2 (28.1/3)?", N);
+         end if;
+
       end Resolve_Set_Membership;
 
    --  Start of processing for Resolve_Membership_Op

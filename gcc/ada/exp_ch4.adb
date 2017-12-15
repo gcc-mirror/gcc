@@ -6015,10 +6015,20 @@ package body Exp_Ch4 is
               --  have a test in the generic that makes sense with some types
               --  and not with other types.
 
-              and then not In_Instance
+              --  Similarly, do not rewrite membership as a validity check if
+              --  within the predicate function for the type.
+
             then
-               Substitute_Valid_Check;
-               goto Leave;
+               if In_Instance
+                 or else (Ekind (Current_Scope) = E_Function
+                           and then Is_Predicate_Function (Current_Scope))
+               then
+                  null;
+
+               else
+                  Substitute_Valid_Check;
+                  goto Leave;
+               end if;
             end if;
 
             --  If we have an explicit range, do a bit of optimization based on

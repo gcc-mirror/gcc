@@ -11919,6 +11919,12 @@ package body Sem_Ch13 is
       then
          return True;
 
+      elsif Is_Entity_Name (Expr)
+        and then Entity (Expr) = Standard_True
+      then
+         Error_Msg_N ("predicate is redundant (always True)?", Expr);
+         return True;
+
       --  That's an exhaustive list of tests, all other cases are not
       --  predicate-static, so we return False.
 
