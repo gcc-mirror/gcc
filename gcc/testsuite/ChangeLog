@@ -1,6 +1,12 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80819
+	* gcc.target/i386/pr80819-1.c: New test.
+	* gcc.target/i386/pr80819-2.c: New test.
+
 	2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81888

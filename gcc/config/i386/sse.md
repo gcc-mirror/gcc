@@ -13852,7 +13852,7 @@
 	  (match_operand:DI 1 "nonimmediate_operand"
 	  "  0, 0,x ,Yv,r ,vm,?!*Yn,0,Yv,0,0,v")
 	  (match_operand:DI 2 "vector_move_operand"
-	  "*rm,rm,rm,rm,C ,C ,C ,x,Yv,x,m,m")))]
+	  " rm,rm,rm,rm,C ,C ,C ,x,Yv,x,m,m")))]
   "TARGET_SSE"
   "@
    pinsrq\t{$1, %2, %0|%0, %2, 1}
