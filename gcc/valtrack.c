@@ -171,10 +171,13 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
 	if (REG_P (*iter) && ++cnt > 1)
 	  {
 	    rtx dval = make_debug_expr_from_rtl (old_rtx);
+	    rtx to = pair->to;
+	    if (volatile_insn_p (to))
+	      to = gen_rtx_UNKNOWN_VAR_LOC ();
 	    /* Emit a debug bind insn.  */
 	    rtx bind
 	      = gen_rtx_VAR_LOCATION (GET_MODE (old_rtx),
-				      DEBUG_EXPR_TREE_DECL (dval), pair->to,
+				      DEBUG_EXPR_TREE_DECL (dval), to,
 				      VAR_INIT_STATUS_INITIALIZED);
 	    rtx_insn *bind_insn = emit_debug_insn_before (bind, pair->insn);
 	    df_insn_rescan (bind_insn);
@@ -217,6 +220,8 @@ propagate_for_debug (rtx_insn *insn, rtx_insn *last, rtx dest, rtx src,
 					 dest, propagate_for_debug_subst, &p);
 	  if (loc == INSN_VAR_LOCATION_LOC (insn))
 	    continue;
+	  if (volatile_insn_p (loc))
+	    loc = gen_rtx_UNKNOWN_VAR_LOC ();
 	  INSN_VAR_LOCATION_LOC (insn) = loc;
 	  df_insn_rescan (insn);
 	}
@@ -660,6 +665,12 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 		}
 	      return 0;
 	    }
+	  /* Asm in DEBUG_INSN is never useful, we can't emit debug info for
+	     that.  And for volatile_insn_p, it is actually harmful
+	     - DEBUG_INSNs shouldn't have any side-effects.  */
+	  else if (GET_CODE (src) == ASM_OPERANDS
+		   || volatile_insn_p (src))
+	    set = NULL_RTX;
 	}
 
       /* ??? Should we try to extract it from a PARALLEL?  */
