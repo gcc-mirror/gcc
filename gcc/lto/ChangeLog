@@ -1,3 +1,8 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-lang.c (lto_attribute_table, lto_format_attribute_table): Swap
+	affects_type_identity and handler fields, adjust comments.
+
 2017-12-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lto.c (compare_tree_sccs_1): Compare the new VECTOR_CST flags.

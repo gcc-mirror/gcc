@@ -1,5 +1,54 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-core.h (struct attribute_spec): Swap affects_type_identity and
+	handler fields.
+	* config/alpha/alpha.c (vms_attribute_table): Swap
+	affects_type_identity and handler fields, adjust comments.
+	* config/mips/mips.c (mips_attribute_table): Likewise.
+	* config/visium/visium.c (visium_attribute_table): Likewise.
+	* config/epiphany/epiphany.c (epiphany_attribute_table): Likewise.
+	* config/microblaze/microblaze.c (microblaze_attribute_table):
+	Likewise.
+	* config/spu/spu.c (spu_attribute_table): Likewise.
+	* config/mcore/mcore.c (mcore_attribute_table): Likewise.
+	* config/arc/arc.c (arc_attribute_table): Likewise.
+	* config/m68k/m68k.c (m68k_attribute_table): Likewise.
+	* config/v850/v850.c (v850_handle_interrupt_attribute,
+	v850_handle_data_area_attribute): Formatting fixes.
+	(v850_attribute_table): Swap affects_type_identity and handler
+	fields, adjust comments.
+	* config/m32r/m32r.c (m32r_attribute_table): Likewise.
+	* config/arm/arm.c (arm_attribute_table): Likewise.
+	* config/avr/avr.c (avr_attribute_table): Likewise.
+	* config/s390/s390.c (s390_attribute_table): Likewise.
+	* config/sh/sh.c (sh_attribute_table): Likewise.
+	* config/i386/i386.c (ix86_handle_cconv_attribute,
+	ix86_handle_callee_pop_aggregate_return): Formatting fixes.
+	(ix86_attribute_table): Swap affects_type_identity and handler
+	fields, adjust comments.
+	* config/i386/cygming.h (SUBTARGET_ATTRIBUTE_TABLE): Likewise.
+	* config/sparc/sparc.c (sparc_attribute_table): Likewise.
+	* config/m32c/m32c.c (m32c_attribute_table): Likewise.
+	* config/sol2.h (SOLARIS_ATTRIBUTE_TABLE): Likewise.
+	* config/ia64/ia64.c (ia64_attribute_table): Likewise.
+	* config/msp430/msp430.c (msp430_attribute_table): Likewise.
+	* config/rx/rx.c (rx_attribute_table): Likewise.
+	* config/cr16/cr16.c (cr16_attribute_table): Likewise.
+	* config/h8300/h8300.c (h8300_attribute_table): Likewise.
+	* config/nvptx/nvptx.c (nvptx_attribute_table): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_attribute_table): Likewise.
+	* config/darwin.h (SUBTARGET_ATTRIBUTE_TABLE): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_attribute_table): Likewise.
+	* config/bfin/bfin.c (bfin_attribute_table): Likewise.
+	* config/rs6000/rs6000.c (rs6000_attribute_table): Likewise.
+	* config/rl78/rl78.c (rl78_attribute_table): Likewise.
+	* config/nds32/nds32.c (nds32_attribute_table): Likewise.
+	* doc/plugins.texi (user_attr): Likewise.  Add NULL for
+	exclude.
+	* attribs.c (empty_attribute_table): Swap affects_type_identity and
+	handler fields.
+	(register_scoped_attributes, decl_attributes): Formatting fixes.
+
 	PR tree-optimization/83269
 	* fold-const.c (fold_binary_loc): Perform (-A) - B -> (-B) - A
 	subtraction in arg0's type if type is signed and arg0 is unsigned.

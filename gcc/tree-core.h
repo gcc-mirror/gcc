@@ -1929,6 +1929,8 @@ struct attribute_spec {
      and from a function return type (which is not itself a function
      pointer type) to the function type.  */
   bool function_type_required;
+  /* Specifies if attribute affects type's identity.  */
+  bool affects_type_identity;
   /* Function to handle this attribute.  NODE points to the node to which
      the attribute is to be applied.  If a DECL, it should be modified in
      place; if a TYPE, a copy should be created.  NAME is the name of the
@@ -1945,8 +1947,6 @@ struct attribute_spec {
      by the rest of this structure.  */
   tree (*handler) (tree *node, tree name, tree args,
 		   int flags, bool *no_add_attrs);
-  /* Specifies if attribute affects type's identity.  */
-  bool affects_type_identity;
 
   /* Specifies the name of an attribute that's mutually exclusive with
      this one, and whether the relationship applies to the function,

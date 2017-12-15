@@ -145,11 +145,11 @@ static inline bool current_function_has_lr_slot (void);
    interrupt -- specifies this function is an interrupt handler.   */
 static const struct attribute_spec visium_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  {"interrupt", 0, 0, true, false, false, visium_handle_interrupt_attr, false,
-   NULL},
-  {NULL, 0, 0, false, false, false, NULL, false, NULL},
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true, false, false, false, visium_handle_interrupt_attr,
+    NULL},
+  { NULL, 0, 0, false, false, false, false, NULL, NULL },
 };
 
 static struct machine_function *visium_init_machine_status (void);

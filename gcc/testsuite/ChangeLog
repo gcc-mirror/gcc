@@ -1,3 +1,8 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/plugin/attribute_plugin.c (user_attr): Swap
+	affects_type_identity and handler fields, add NULL for exclude.
+
 2017-12-14  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/59930

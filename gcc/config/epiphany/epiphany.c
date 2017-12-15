@@ -460,14 +460,16 @@ epiphany_init_reg_tables (void)
 
 static const struct attribute_spec epiphany_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  { "interrupt",  0, 9, true,  false, false, epiphany_handle_interrupt_attribute, true, NULL },
-  { "forwarder_section", 1, 1, true, false, false, epiphany_handle_forwarder_attribute, false, NULL },
-  { "long_call",  0, 0, false, true, true, NULL, false, NULL },
-  { "short_call", 0, 0, false, true, true, NULL, false, NULL },
-  { "disinterrupt", 0, 0, false, true, true, NULL, true, NULL },
-  { NULL,         0, 0, false, false, false, NULL, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt",  0, 9, true,  false, false, true,
+    epiphany_handle_interrupt_attribute, NULL },
+  { "forwarder_section", 1, 1, true, false, false, false,
+    epiphany_handle_forwarder_attribute, NULL },
+  { "long_call",  0, 0, false, true, true, false, NULL, NULL },
+  { "short_call", 0, 0, false, true, true, false, NULL, NULL },
+  { "disinterrupt", 0, 0, false, true, true, true, NULL, NULL },
+  { NULL,         0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Handle an "interrupt" attribute; arguments as in

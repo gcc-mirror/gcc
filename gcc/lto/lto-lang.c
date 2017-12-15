@@ -92,47 +92,47 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
 /* Table of machine-independent attributes supported in GIMPLE.  */
 const struct attribute_spec lto_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       do_diagnostic, exclusions } */
-  { "noreturn",               0, 0, true,  false, false,
-			      handle_noreturn_attribute, false,
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "noreturn",               0, 0, true,  false, false, false,
+			      handle_noreturn_attribute,
 			      attr_noreturn_exclusions },
-  { "leaf",		      0, 0, true,  false, false,
-			      handle_leaf_attribute, false, NULL },
+  { "leaf",		      0, 0, true,  false, false, false,
+			      handle_leaf_attribute, NULL },
   /* The same comments as for noreturn attributes apply to const ones.  */
-  { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute, false,
+  { "const",                  0, 0, true,  false, false, false,
+			      handle_const_attribute,
 			      attr_const_pure_exclusions },
-  { "malloc",                 0, 0, true,  false, false,
-			      handle_malloc_attribute, false, NULL },
-  { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute, false,
+  { "malloc",                 0, 0, true,  false, false, false,
+			      handle_malloc_attribute, NULL },
+  { "pure",                   0, 0, true,  false, false, false,
+			      handle_pure_attribute,
 			      attr_const_pure_exclusions },
-  { "no vops",                0, 0, true,  false, false,
-			      handle_novops_attribute, false, NULL },
-  { "nonnull",                0, -1, false, true, true,
-			      handle_nonnull_attribute, false, NULL },
-  { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute, false, NULL },
-  { "patchable_function_entry", 1, 2, true, false, false,
+  { "no vops",                0, 0, true,  false, false, false,
+			      handle_novops_attribute, NULL },
+  { "nonnull",                0, -1, false, true, true, false,
+			      handle_nonnull_attribute, NULL },
+  { "nothrow",                0, 0, true,  false, false, false,
+			      handle_nothrow_attribute, NULL },
+  { "patchable_function_entry", 1, 2, true, false, false, false,
 			      handle_patchable_function_entry_attribute,
-			      false, NULL },
-  { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute, false,
+			      NULL },
+  { "returns_twice",          0, 0, true,  false, false, false,
+			      handle_returns_twice_attribute,
 			      attr_returns_twice_exclusions },
-  { "sentinel",               0, 1, false, true, true,
-			      handle_sentinel_attribute, false, NULL },
-  { "type generic",           0, 0, false, true, true,
-			      handle_type_generic_attribute, false, NULL },
-  { "fn spec",	 	      1, 1, false, true, true,
-			      handle_fnspec_attribute, false, NULL },
-  { "transaction_pure",	      0, 0, false, true, true,
-			      handle_transaction_pure_attribute, false, NULL },
+  { "sentinel",               0, 1, false, true, true, false,
+			      handle_sentinel_attribute, NULL },
+  { "type generic",           0, 0, false, true, true, false,
+			      handle_type_generic_attribute, NULL },
+  { "fn spec",	 	      1, 1, false, true, true, false,
+			      handle_fnspec_attribute, NULL },
+  { "transaction_pure",	      0, 0, false, true, true, false,
+			      handle_transaction_pure_attribute, NULL },
   /* For internal use only.  The leading '*' both prevents its usage in
      source code and signals that it may be overridden by machine tables.  */
-  { "*tm regparm",            0, 0, false, true, true,
-			      ignore_attribute, false, NULL },
-  { NULL,                     0, 0, false, false, false, NULL, false, NULL }
+  { "*tm regparm",            0, 0, false, true, true, false,
+			      ignore_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Give the specifications for the format attributes, used by C and all
@@ -140,13 +140,13 @@ const struct attribute_spec lto_attribute_table[] =
 
 const struct attribute_spec lto_format_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity, exclusions } */
-  { "format",                 3, 3, false, true,  true,
-			      handle_format_attribute, false, NULL },
-  { "format_arg",             1, 1, false, true,  true,
-			      handle_format_arg_attribute, false, NULL },
-  { NULL,                     0, 0, false, false, false, NULL, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "format",                 3, 3, false, true,  true, false,
+			      handle_format_attribute, NULL },
+  { "format_arg",             1, 1, false, true,  true, false,
+			      handle_format_arg_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 enum built_in_attribute

@@ -96,7 +96,7 @@ static bool attributes_initialized = false;
 
 static const struct attribute_spec empty_attribute_table[] =
 {
-  { NULL, 0, 0, false, false, false, NULL, false, NULL }
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Return base name of the attribute.  Ie '__attr__' is turned into 'attr'.
@@ -118,9 +118,9 @@ extract_attribute_substring (struct substring *str)
    namespace.  The function returns the namespace into which the
    attributes have been registered.  */
 
-scoped_attributes*
-register_scoped_attributes (const struct attribute_spec * attributes,
-			    const char* ns)
+scoped_attributes *
+register_scoped_attributes (const struct attribute_spec *attributes,
+			    const char *ns)
 {
   scoped_attributes *result = NULL;
 
@@ -535,8 +535,8 @@ decl_attributes (tree *node, tree attributes, int flags,
       tree name = get_attribute_name (a);
       tree args = TREE_VALUE (a);
       tree *anode = node;
-      const struct attribute_spec *spec =
-	lookup_scoped_attribute_spec (ns, name);
+      const struct attribute_spec *spec
+	= lookup_scoped_attribute_spec (ns, name);
       int fn_ptr_quals = 0;
       tree fn_ptr_tmp = NULL_TREE;
 

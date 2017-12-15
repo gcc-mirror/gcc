@@ -2189,15 +2189,15 @@ static tree xstormy16_handle_below100_attribute
 
 static const struct attribute_spec xstormy16_attribute_table[] =
 {
-  /* name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity, exclusions.  */
-  { "interrupt", 0, 0, false, true,  true,
-    xstormy16_handle_interrupt_attribute , false, NULL },
-  { "BELOW100",  0, 0, false, false, false,
-    xstormy16_handle_below100_attribute, false, NULL },
-  { "below100",  0, 0, false, false, false,
-    xstormy16_handle_below100_attribute, false, NULL },
-  { NULL,        0, 0, false, false, false, NULL, false, NULL }
+  /* name, min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude.  */
+  { "interrupt", 0, 0, false, true,  true, false,
+    xstormy16_handle_interrupt_attribute, NULL },
+  { "BELOW100",  0, 0, false, false, false, false,
+    xstormy16_handle_below100_attribute, NULL },
+  { "below100",  0, 0, false, false, false, false,
+    xstormy16_handle_below100_attribute, NULL },
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Handle an "interrupt" attribute;

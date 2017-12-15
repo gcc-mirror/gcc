@@ -89,15 +89,15 @@ gfc_handle_omp_declare_target_attribute (tree *, tree, tree, int, bool *)
 /* Table of valid Fortran attributes.  */
 static const struct attribute_spec gfc_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "omp declare target", 0, 0, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false, NULL },
-  { "omp declare target link", 0, 0, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false, NULL },
-  { "oacc function", 0, -1, true,  false, false,
-    gfc_handle_omp_declare_target_attribute, false, NULL },
-  { NULL,		  0, 0, false, false, false, NULL, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "omp declare target", 0, 0, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { "omp declare target link", 0, 0, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { "oacc function", 0, -1, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
+  { NULL,		  0, 0, false, false, false, false, NULL, NULL }
 };
 
 #undef LANG_HOOKS_NAME
