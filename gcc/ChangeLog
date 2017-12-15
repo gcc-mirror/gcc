@@ -1,5 +1,10 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83269
+	* fold-const.c (fold_binary_loc): Perform (-A) - B -> (-B) - A
+	subtraction in arg0's type if type is signed and arg0 is unsigned.
+	Formatting fix.
+
 	Backported from mainline
 	2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
