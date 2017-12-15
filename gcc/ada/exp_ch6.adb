@@ -5356,7 +5356,7 @@ package body Exp_Ch6 is
 
                          Else_Statements => New_List (
                            Make_Raise_Program_Error (Loc,
-                              Reason => PE_All_Guards_Closed)));
+                             Reason => PE_All_Guards_Closed)));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the

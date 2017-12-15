@@ -10701,8 +10701,8 @@ package body Exp_Util is
               and then not Is_Empty_List (Then_Statements (N))
               and then not Are_Wrapped (Then_Statements (N))
               and then Requires_Cleanup_Actions
-                         (Then_Statements (N),
-                          Lib_Level => False,
+                         (L                 => Then_Statements (N),
+                          Lib_Level         => False,
                           Nested_Constructs => False)
             then
                Block := Wrap_Statements_In_Block (Then_Statements (N));
@@ -10720,8 +10720,8 @@ package body Exp_Util is
               and then not Is_Empty_List (Else_Statements (N))
               and then not Are_Wrapped (Else_Statements (N))
               and then Requires_Cleanup_Actions
-                         (Else_Statements (N),
-                          Lib_Level => False,
+                         (L                 => Else_Statements (N),
+                          Lib_Level         => False,
                           Nested_Constructs => False)
             then
                Block := Wrap_Statements_In_Block (Else_Statements (N));
@@ -10742,8 +10742,8 @@ package body Exp_Util is
             if not Is_Empty_List (Statements (N))
               and then not Are_Wrapped (Statements (N))
               and then Requires_Cleanup_Actions
-                         (Statements (N),
-                          Lib_Level => False,
+                         (L                 => Statements (N),
+                          Lib_Level         => False,
                           Nested_Constructs => False)
             then
                if Nkind (N) = N_Loop_Statement
@@ -11822,14 +11822,18 @@ package body Exp_Util is
             | N_Task_Body
          =>
             return
-              Requires_Cleanup_Actions
-                (Declarations (N), At_Lib_Level, Nested_Constructs => True)
-                or else
-                  (Present (Handled_Statement_Sequence (N))
-                    and then
-                      Requires_Cleanup_Actions
-                        (Statements (Handled_Statement_Sequence (N)),
-                         At_Lib_Level, Nested_Constructs => True));
+                Requires_Cleanup_Actions
+                  (L                 => Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True)
+              or else
+                (Present (Handled_Statement_Sequence (N))
+                  and then
+                    Requires_Cleanup_Actions
+                      (L                 =>
+                         Statements (Handled_Statement_Sequence (N)),
+                       Lib_Level         => At_Lib_Level,
+                       Nested_Constructs => True));
 
          --  Extended return statements are the same as the above, except that
          --  there is no Declarations field. We do not want to clean up the
@@ -11837,20 +11841,24 @@ package body Exp_Util is
 
          when N_Extended_Return_Statement =>
             return
-               Present (Handled_Statement_Sequence (N))
-               and then Requires_Cleanup_Actions
-                          (Statements (Handled_Statement_Sequence (N)),
-                           At_Lib_Level, Nested_Constructs => True);
+              Present (Handled_Statement_Sequence (N))
+                and then Requires_Cleanup_Actions
+                           (L                 =>
+                              Statements (Handled_Statement_Sequence (N)),
+                            Lib_Level         => At_Lib_Level,
+                            Nested_Constructs => True);
 
          when N_Package_Specification =>
             return
-              Requires_Cleanup_Actions
-                (Visible_Declarations (N), At_Lib_Level,
-                 Nested_Constructs => True)
-                  or else
-              Requires_Cleanup_Actions
-                (Private_Declarations (N), At_Lib_Level,
-                 Nested_Constructs => True);
+                Requires_Cleanup_Actions
+                  (L                 => Visible_Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True)
+              or else
+                Requires_Cleanup_Actions
+                  (L                 => Private_Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True);
 
          when others =>
             raise Program_Error;

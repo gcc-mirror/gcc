@@ -6819,7 +6819,7 @@ package body Checks is
 
       if Nkind (N) /= N_Attribute_Reference
         and then (not Is_Entity_Name (N)
-                    or else Treat_As_Volatile (Entity (N)))
+                   or else Treat_As_Volatile (Entity (N)))
       then
          Force_Evaluation (N, Mode => Strict);
       end if;

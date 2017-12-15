@@ -542,8 +542,8 @@ package Rtsfind is
 
      RE_Null,
 
-     RO_CA_Time,                         -- Ada.Calendar
      RO_CA_Clock_Time,                   -- Ada.Calendar
+     RO_CA_Time,                         -- Ada.Calendar
 
      RO_CA_Delay_For,                    -- Ada.Calendar.Delays
      RO_CA_Delay_Until,                  -- Ada.Calendar.Delays
@@ -1780,8 +1780,8 @@ package Rtsfind is
 
      RE_Null                             => RTU_Null,
 
-     RO_CA_Time                          => Ada_Calendar,
      RO_CA_Clock_Time                    => Ada_Calendar,
+     RO_CA_Time                          => Ada_Calendar,
 
      RO_CA_Delay_For                     => Ada_Calendar_Delays,
      RO_CA_Delay_Until                   => Ada_Calendar_Delays,

@@ -5834,8 +5834,21 @@ package body Sem_Ch6 is
       ---------------------
 
       procedure Possible_Freeze (T : Entity_Id) is
+         Scop : constant Entity_Id := Scope (Designator);
       begin
-         if Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
+         --  If the subprogram appears within a package instance (which
+         --  may be the wrapper package of a subprogram instance) the
+         --  freeze node for that package will freeze the subprogram at
+         --  the proper place, so do not emit a freeze node for the
+         --  subprogram, given that it may appear in the wrong scope.
+
+         if Ekind (Scop) = E_Package
+           and then not Comes_From_Source (Scop)
+           and then Is_Generic_Instance (Scop)
+         then
+            null;
+
+         elsif Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
             Set_Has_Delayed_Freeze (Designator);
 
          elsif Is_Access_Type (T)
