@@ -1333,6 +1333,31 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 
 	  if (i != path->length ())
 	    continue;
+
+	  /* Loop parallelization can be confused by the result of
+	     threading through the loop exit test back into the loop.
+	     However, theading those jumps seems to help other codes.
+
+	     I have been unable to find anything related to the shape of
+	     the CFG, the contents of the affected blocks, etc which would
+	     allow a more sensible test than what we're using below which
+	     merely avoids the optimization when parallelizing loops.  */
+	  if (flag_tree_parallelize_loops > 1)
+	    {
+	      for (i = 1; i < path->length (); i++)
+	        if (bb->loop_father == e2->src->loop_father
+		    && loop_exits_from_bb_p (bb->loop_father,
+					     (*path)[i]->e->src)
+		    && !loop_exit_edge_p (bb->loop_father, e2))
+		  break;
+
+	      if (i != path->length ())
+		{
+		  delete_jump_thread_path (path);
+		  e->aux = NULL;
+		  continue;
+		}
+	    }
 	}
 
       /* Insert the outgoing edge into the hash table if it is not
