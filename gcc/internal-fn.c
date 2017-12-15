@@ -2722,6 +2722,14 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
 	       target, VOIDmode, EXPAND_NORMAL);
 }
 
+/* Expand a NOP.  */
+
+static void
+expand_NOP (internal_fn, gcall *)
+{
+  /* Nothing.  But it shouldn't really prevail.  */
+}
+
 /* Expand a call to FN using the operands in STMT.  FN has a single
    output operand and NARGS input operands.  */
 

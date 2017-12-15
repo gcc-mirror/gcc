@@ -1,3 +1,8 @@
+2017-12-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/83388
+	* gcc.dg/lto/pr83388_0.c: New testcase.
+
 2017-12-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/expr_func2.ads, gnat.dg/expr_func2.adb: New testcase.
