@@ -38,7 +38,7 @@ package body System.Version_Control is
    ------------------------
 
    function Get_Version_String
-     (V    : System.Unsigned_Types.Unsigned)
+     (V : System.Unsigned_Types.Unsigned)
       return Version_String
    is
       S : Version_String;

@@ -1,3 +1,35 @@
+2017-12-15  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Comment fix.
+
+2017-12-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* s-vercon.adb: Minor style fixes.
+
+2017-12-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Freeze_Expr_Types): Do not emit a freeze node for an
+	itype that is the type of a discriminant-dependent component.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): The context-specific portion of the
+	analysis is now directed to several specialized routines.
+	(Check_Part_Of_Abstract_State): New routine.
+	(Check_Part_Of_Concurrent_Type): New routine. Reimplement the checks
+	involving the item, the single concurrent type, and their respective
+	contexts.
+	* sem_res.adb (Resolve_Entity_Name): Potential constituents of a single
+	concurrent type are now recorded regardless of the SPARK mode.
+	* sem_util.adb (Check_Part_Of_Reference): Split some of the tests in
+	individual predicates.  A Part_Of reference is legal when it appears
+	within the statement list of the object's immediately enclosing
+	package.
+	(Is_Enclosing_Package_Body): New routine.
+	(Is_Internal_Declaration_Or_Body): New routine.
+	(Is_Single_Declaration_Or_Body): New routine.
+	(Is_Single_Task_Pragma): New routine.
+
 2017-12-15  Patrick Bernardi  <bernardi@adacore.com>
 
 	* gnat_ugn.texi: Regenerate.

@@ -366,10 +366,13 @@ package body Sem_Ch6 is
 
             procedure Check_And_Freeze_Type (Typ : Entity_Id) is
             begin
-               --  Skip Itypes created by the preanalysis
+               --  Skip Itypes created by the preanalysis, and itypes
+               --  whose scope is another type (i.e. component subtypes
+               --  that depend on a discriminant),
 
                if Is_Itype (Typ)
-                 and then Scope_Within_Or_Same (Scope (Typ), Def_Id)
+                 and then (Scope_Within_Or_Same (Scope (Typ), Def_Id)
+                   or else Is_Type (Scope (Typ)))
                then
                   return;
                end if;

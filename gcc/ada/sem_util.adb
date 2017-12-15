@@ -3281,72 +3281,200 @@ package body Sem_Util is
    -----------------------------
 
    procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id) is
+      function Is_Enclosing_Package_Body
+        (Body_Decl : Node_Id;
+         Obj_Id    : Entity_Id) return Boolean;
+      pragma Inline (Is_Enclosing_Package_Body);
+      --  Determine whether package body Body_Decl or its corresponding spec
+      --  immediately encloses the declaration of object Obj_Id.
+
+      function Is_Internal_Declaration_Or_Body
+        (Decl : Node_Id) return Boolean;
+      pragma Inline (Is_Internal_Declaration_Or_Body);
+      --  Determine whether declaration or body denoted by Decl is internal
+
+      function Is_Single_Declaration_Or_Body
+        (Decl     : Node_Id;
+         Conc_Typ : Entity_Id) return Boolean;
+      pragma Inline (Is_Single_Declaration_Or_Body);
+      --  Determine whether protected/task declaration or body denoted by Decl
+      --  belongs to single concurrent type Conc_Typ.
+
+      function Is_Single_Task_Pragma
+        (Prag     : Node_Id;
+         Task_Typ : Entity_Id) return Boolean;
+      pragma Inline (Is_Single_Task_Pragma);
+      --  Determine whether pragma Prag belongs to single task type Task_Typ
+
+      -------------------------------
+      -- Is_Enclosing_Package_Body --
+      -------------------------------
+
+      function Is_Enclosing_Package_Body
+        (Body_Decl : Node_Id;
+         Obj_Id    : Entity_Id) return Boolean
+      is
+         Obj_Context : Node_Id;
+
+      begin
+         --  Find the context of the object declaration
+
+         Obj_Context := Parent (Declaration_Node (Obj_Id));
+
+         if Nkind (Obj_Context) = N_Package_Specification then
+            Obj_Context := Parent (Obj_Context);
+         end if;
+
+         --  The object appears immediately within the package body
+
+         if Obj_Context = Body_Decl then
+            return True;
+
+         --  The object appears immediately within the corresponding spec
+
+         elsif Nkind (Obj_Context) = N_Package_Declaration
+           and then Unit_Declaration_Node (Corresponding_Spec (Body_Decl)) =
+                      Obj_Context
+         then
+            return True;
+         end if;
+
+         return False;
+      end Is_Enclosing_Package_Body;
+
+      -------------------------------------
+      -- Is_Internal_Declaration_Or_Body --
+      -------------------------------------
+
+      function Is_Internal_Declaration_Or_Body
+        (Decl : Node_Id) return Boolean
+      is
+      begin
+         if Comes_From_Source (Decl) then
+            return False;
+
+         --  A body generated for an expression function which has not been
+         --  inserted into the tree yet (In_Spec_Expression is True) is not
+         --  considered internal.
+
+         elsif Nkind (Decl) = N_Subprogram_Body
+           and then Was_Expression_Function (Decl)
+           and then not In_Spec_Expression
+         then
+            return False;
+         end if;
+
+         return True;
+      end Is_Internal_Declaration_Or_Body;
+
+      -----------------------------------
+      -- Is_Single_Declaration_Or_Body --
+      -----------------------------------
+
+      function Is_Single_Declaration_Or_Body
+        (Decl     : Node_Id;
+         Conc_Typ : Entity_Id) return Boolean
+      is
+         Spec_Id : constant Entity_Id := Unique_Defining_Entity (Decl);
+
+      begin
+         return
+           Present (Anonymous_Object (Spec_Id))
+             and then Anonymous_Object (Spec_Id) = Conc_Typ;
+      end Is_Single_Declaration_Or_Body;
+
+      ---------------------------
+      -- Is_Single_Task_Pragma --
+      ---------------------------
+
+      function Is_Single_Task_Pragma
+        (Prag     : Node_Id;
+         Task_Typ : Entity_Id) return Boolean
+      is
+         Decl : constant Node_Id := Find_Related_Declaration_Or_Body (Prag);
+
+      begin
+         --  To qualify, the pragma must be associated with single task type
+         --  Task_Typ.
+
+         return
+           Is_Single_Task_Object (Task_Typ)
+             and then Nkind (Decl) = N_Object_Declaration
+             and then Defining_Entity (Decl) = Task_Typ;
+      end Is_Single_Task_Pragma;
+
+      --  Local variables
+
       Conc_Obj : constant Entity_Id := Encapsulating_State (Var_Id);
-      Decl     : Node_Id;
-      OK_Use   : Boolean := False;
       Par      : Node_Id;
       Prag_Nam : Name_Id;
-      Spec_Id  : Entity_Id;
+      Prev     : Node_Id;
+
+   --  Start of processing for Check_Part_Of_Reference
 
    begin
+      --  Nothing to do when the variable was recorded, but did not become a
+      --  constituent of a single concurrent type.
+
+      if No (Conc_Obj) then
+         return;
+      end if;
+
       --  Traverse the parent chain looking for a suitable context for the
       --  reference to the concurrent constituent.
 
-      Par := Parent (Ref);
+      Prev := Ref;
+      Par  := Parent (Prev);
       while Present (Par) loop
          if Nkind (Par) = N_Pragma then
             Prag_Nam := Pragma_Name (Par);
 
             --  A concurrent constituent is allowed to appear in pragmas
             --  Initial_Condition and Initializes as this is part of the
-            --  elaboration checks for the constituent (SPARK RM 9.3).
+            --  elaboration checks for the constituent (SPARK RM 9(3)).
 
             if Nam_In (Prag_Nam, Name_Initial_Condition, Name_Initializes) then
-               OK_Use := True;
-               exit;
+               return;
 
             --  When the reference appears within pragma Depends or Global,
             --  check whether the pragma applies to a single task type. Note
-            --  that the pragma is not encapsulated by the type definition,
+            --  that the pragma may not encapsulated by the type definition,
             --  but this is still a valid context.
 
-            elsif Nam_In (Prag_Nam, Name_Depends, Name_Global) then
-               Decl := Find_Related_Declaration_Or_Body (Par);
-
-               if Nkind (Decl) = N_Object_Declaration
-                 and then Defining_Entity (Decl) = Conc_Obj
-               then
-                  OK_Use := True;
-                  exit;
-               end if;
+            elsif Nam_In (Prag_Nam, Name_Depends, Name_Global)
+              and then Is_Single_Task_Pragma (Par, Conc_Obj)
+            then
+               return;
             end if;
 
-         --  The reference appears somewhere in the definition of the single
-         --  protected/task type (SPARK RM 9.3).
+         --  The reference appears somewhere in the definition of a single
+         --  concurrent type (SPARK RM 9(3)).
 
          elsif Nkind_In (Par, N_Single_Protected_Declaration,
                               N_Single_Task_Declaration)
            and then Defining_Entity (Par) = Conc_Obj
          then
-            OK_Use := True;
-            exit;
+            return;
 
-         --  The reference appears within the expanded declaration or the body
-         --  of the single protected/task type (SPARK RM 9.3).
+         --  The reference appears within the declaration or body of a single
+         --  concurrent type (SPARK RM 9(3)).
 
          elsif Nkind_In (Par, N_Protected_Body,
                               N_Protected_Type_Declaration,
                               N_Task_Body,
                               N_Task_Type_Declaration)
+           and then Is_Single_Declaration_Or_Body (Par, Conc_Obj)
          then
-            Spec_Id := Unique_Defining_Entity (Par);
+            return;
 
-            if Present (Anonymous_Object (Spec_Id))
-              and then Anonymous_Object (Spec_Id) = Conc_Obj
-            then
-               OK_Use := True;
-               exit;
-            end if;
+         --  The reference appears within the statement list of the object's
+         --  immediately enclosing package (SPARK RM 9(3)).
+
+         elsif Nkind (Par) = N_Package_Body
+           and then Nkind (Prev) = N_Handled_Sequence_Of_Statements
+           and then Is_Enclosing_Package_Body (Par, Var_Id)
+         then
+            return;
 
          --  The reference has been relocated within an internally generated
          --  package or subprogram. Assume that the reference is legal as the
@@ -3357,25 +3485,9 @@ package body Sem_Util is
                               N_Package_Declaration,
                               N_Subprogram_Body,
                               N_Subprogram_Declaration)
-           and then not Comes_From_Source (Par)
+           and then Is_Internal_Declaration_Or_Body (Par)
          then
-            --  Continue to examine the context if the reference appears in a
-            --  subprogram body which was previously an expression function,
-            --  unless this is during preanalysis (when In_Spec_Expression is
-            --  True), as the body may not yet be inserted in the tree.
-
-            if Nkind (Par) = N_Subprogram_Body
-              and then Was_Expression_Function (Par)
-              and then not In_Spec_Expression
-            then
-               null;
-
-            --  Otherwise the reference is legal
-
-            else
-               OK_Use := True;
-               exit;
-            end if;
+            return;
 
          --  The reference has been relocated to an inlined body for GNATprove.
          --  Assume that the reference is legal as the real check was already
@@ -3385,30 +3497,27 @@ package body Sem_Util is
            and then Nkind (Par) = N_Subprogram_Body
            and then Chars (Defining_Entity (Par)) = Name_uParent
          then
-            OK_Use := True;
-            exit;
+            return;
          end if;
 
-         Par := Parent (Par);
+         Prev := Par;
+         Par  := Parent (Prev);
       end loop;
 
-      --  The reference is illegal as it appears outside the definition or
-      --  body of the single protected/task type.
+      --  At this point it is known that the reference does not appear within a
+      --  legal context.
 
-      if not OK_Use then
+      Error_Msg_NE
+        ("reference to variable & cannot appear in this context", Ref, Var_Id);
+      Error_Msg_Name_1 := Chars (Var_Id);
+
+      if Is_Single_Protected_Object (Conc_Obj) then
          Error_Msg_NE
-           ("reference to variable & cannot appear in this context",
-            Ref, Var_Id);
-         Error_Msg_Name_1 := Chars (Var_Id);
+           ("\% is constituent of single protected type &", Ref, Conc_Obj);
 
-         if Is_Single_Protected_Object (Conc_Obj) then
-            Error_Msg_NE
-              ("\% is constituent of single protected type &", Ref, Conc_Obj);
-
-         else
-            Error_Msg_NE
-              ("\% is constituent of single task type &", Ref, Conc_Obj);
-         end if;
+      else
+         Error_Msg_NE
+           ("\% is constituent of single task type &", Ref, Conc_Obj);
       end if;
    end Check_Part_Of_Reference;
 
@@ -22127,7 +22236,7 @@ package body Sem_Util is
    begin
       --  The variable is a constituent of a single protected/task type. Such
       --  a variable acts as a component of the type and must appear within a
-      --  specific region (SPARK RM 9.3). Instead of recording the reference,
+      --  specific region (SPARK RM 9(3)). Instead of recording the reference,
       --  verify its legality now.
 
       if Present (Encap) and then Is_Single_Concurrent_Object (Encap) then

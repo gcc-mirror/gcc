@@ -3168,11 +3168,347 @@ package body Sem_Prag is
       Encap_Id : out Entity_Id;
       Legal    : out Boolean)
    is
-      Encap_Typ   : Entity_Id;
-      Item_Decl   : Node_Id;
-      Pack_Id     : Entity_Id;
-      Placement   : State_Space_Kind;
-      Parent_Unit : Entity_Id;
+      procedure Check_Part_Of_Abstract_State;
+      pragma Inline (Check_Part_Of_Abstract_State);
+      --  Verify the legality of indicator Part_Of when the encapsulator is an
+      --  abstract state.
+
+      procedure Check_Part_Of_Concurrent_Type;
+      pragma Inline (Check_Part_Of_Concurrent_Type);
+      --  Verify the legality of indicator Part_Of when the encapsulator is a
+      --  single concurrent type.
+
+      ----------------------------------
+      -- Check_Part_Of_Abstract_State --
+      ----------------------------------
+
+      procedure Check_Part_Of_Abstract_State is
+         Pack_Id     : Entity_Id;
+         Placement   : State_Space_Kind;
+         Parent_Unit : Entity_Id;
+
+      begin
+         --  Determine where the object, package instantiation or state lives
+         --  with respect to the enclosing packages or package bodies.
+
+         Find_Placement_In_State_Space
+           (Item_Id   => Item_Id,
+            Placement => Placement,
+            Pack_Id   => Pack_Id);
+
+         --  The item appears in a non-package construct with a declarative
+         --  part (subprogram, block, etc). As such, the item is not allowed
+         --  to be a part of an encapsulating state because the item is not
+         --  visible.
+
+         if Placement = Not_In_Package then
+            SPARK_Msg_N
+              ("indicator Part_Of cannot appear in this context "
+               & "(SPARK RM 7.2.6(5))", Indic);
+
+            Error_Msg_Name_1 := Chars (Scope (Encap_Id));
+            SPARK_Msg_NE
+              ("\& is not part of the hidden state of package %",
+               Indic, Item_Id);
+            return;
+
+         --  The item appears in the visible state space of some package. In
+         --  general this scenario does not warrant Part_Of except when the
+         --  package is a private child unit and the encapsulating state is
+         --  declared in a parent unit or a public descendant of that parent
+         --  unit.
+
+         elsif Placement = Visible_State_Space then
+            if Is_Child_Unit (Pack_Id)
+              and then Is_Private_Descendant (Pack_Id)
+            then
+               --  A variable or state abstraction which is part of the visible
+               --  state of a private child unit or its public descendants must
+               --  have its Part_Of indicator specified. The Part_Of indicator
+               --  must denote a state declared by either the parent unit of
+               --  the private unit or by a public descendant of that parent
+               --  unit.
+
+               --  Find the nearest private ancestor (which can be the current
+               --  unit itself).
+
+               Parent_Unit := Pack_Id;
+               while Present (Parent_Unit) loop
+                  exit when
+                    Private_Present
+                      (Parent (Unit_Declaration_Node (Parent_Unit)));
+                  Parent_Unit := Scope (Parent_Unit);
+               end loop;
+
+               Parent_Unit := Scope (Parent_Unit);
+
+               if not Is_Child_Or_Sibling (Pack_Id, Scope (Encap_Id)) then
+                  SPARK_Msg_NE
+                    ("indicator Part_Of must denote abstract state of & or of "
+                     & "its public descendant (SPARK RM 7.2.6(3))",
+                     Indic, Parent_Unit);
+                  return;
+
+               elsif Scope (Encap_Id) = Parent_Unit
+                 or else
+                   (Is_Ancestor_Package (Parent_Unit, Scope (Encap_Id))
+                     and then not Is_Private_Descendant (Scope (Encap_Id)))
+               then
+                  null;
+
+               else
+                  SPARK_Msg_NE
+                    ("indicator Part_Of must denote abstract state of & or of "
+                     & "its public descendant (SPARK RM 7.2.6(3))",
+                     Indic, Parent_Unit);
+                  return;
+               end if;
+
+            --  Indicator Part_Of is not needed when the related package is not
+            --  a private child unit or a public descendant thereof.
+
+            else
+               SPARK_Msg_N
+                 ("indicator Part_Of cannot appear in this context "
+                  & "(SPARK RM 7.2.6(5))", Indic);
+
+               Error_Msg_Name_1 := Chars (Pack_Id);
+               SPARK_Msg_NE
+                 ("\& is declared in the visible part of package %",
+                  Indic, Item_Id);
+               return;
+            end if;
+
+         --  When the item appears in the private state space of a package, the
+         --  encapsulating state must be declared in the same package.
+
+         elsif Placement = Private_State_Space then
+            if Scope (Encap_Id) /= Pack_Id then
+               SPARK_Msg_NE
+                 ("indicator Part_Of must denote an abstract state of "
+                  & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
+
+               Error_Msg_Name_1 := Chars (Pack_Id);
+               SPARK_Msg_NE
+                 ("\& is declared in the private part of package %",
+                  Indic, Item_Id);
+               return;
+            end if;
+
+         --  Items declared in the body state space of a package do not need
+         --  Part_Of indicators as the refinement has already been seen.
+
+         else
+            SPARK_Msg_N
+              ("indicator Part_Of cannot appear in this context "
+               & "(SPARK RM 7.2.6(5))", Indic);
+
+            if Scope (Encap_Id) = Pack_Id then
+               Error_Msg_Name_1 := Chars (Pack_Id);
+               SPARK_Msg_NE
+                 ("\& is declared in the body of package %", Indic, Item_Id);
+            end if;
+
+            return;
+         end if;
+
+         --  At this point it is known that the Part_Of indicator is legal
+
+         Legal := True;
+      end Check_Part_Of_Abstract_State;
+
+      -----------------------------------
+      -- Check_Part_Of_Concurrent_Type --
+      -----------------------------------
+
+      procedure Check_Part_Of_Concurrent_Type is
+         function In_Proper_Order
+           (First  : Node_Id;
+            Second : Node_Id) return Boolean;
+         pragma Inline (In_Proper_Order);
+         --  Determine whether node First precedes node Second
+
+         procedure Placement_Error;
+         pragma Inline (Placement_Error);
+         --  Emit an error concerning the illegal placement of the item with
+         --  respect to the single concurrent type.
+
+         ---------------------
+         -- In_Proper_Order --
+         ---------------------
+
+         function In_Proper_Order
+           (First  : Node_Id;
+            Second : Node_Id) return Boolean
+         is
+            N : Node_Id;
+
+         begin
+            if List_Containing (First) = List_Containing (Second) then
+               N := First;
+               while Present (N) loop
+                  if N = Second then
+                     return True;
+                  end if;
+
+                  Next (N);
+               end loop;
+            end if;
+
+            return False;
+         end In_Proper_Order;
+
+         ---------------------
+         -- Placement_Error --
+         ---------------------
+
+         procedure Placement_Error is
+         begin
+            SPARK_Msg_N
+              ("indicator Part_Of must denote a previously declared single "
+               & "protected type or single task type", Encap);
+         end Placement_Error;
+
+         --  Local variables
+
+         Conc_Typ      : constant Entity_Id := Etype (Encap_Id);
+         Encap_Decl    : constant Node_Id   := Declaration_Node (Encap_Id);
+         Encap_Context : constant Node_Id   := Parent (Encap_Decl);
+
+         Item_Context : Node_Id;
+         Item_Decl    : Node_Id;
+         Prv_Decls    : List_Id;
+         Vis_Decls    : List_Id;
+
+      --  Start of processing for Check_Part_Of_Concurrent_Type
+
+      begin
+         --  Only abstract states and variables can act as constituents of an
+         --  encapsulating single concurrent type.
+
+         if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
+            null;
+
+         --  The constituent is a constant
+
+         elsif Ekind (Item_Id) = E_Constant then
+            Error_Msg_Name_1 := Chars (Encap_Id);
+            SPARK_Msg_NE
+              (Fix_Msg (Conc_Typ, "constant & cannot act as constituent of "
+               & "single protected type %"), Indic, Item_Id);
+            return;
+
+         --  The constituent is a package instantiation
+
+         else
+            Error_Msg_Name_1 := Chars (Encap_Id);
+            SPARK_Msg_NE
+              (Fix_Msg (Conc_Typ, "package instantiation & cannot act as "
+               & "constituent of single protected type %"), Indic, Item_Id);
+            return;
+         end if;
+
+         --  When the item denotes an abstract state of a nested package, use
+         --  the declaration of the package to detect proper placement.
+
+         --    package Pack is
+         --       task T;
+         --       package Nested
+         --         with Abstract_State => (State with Part_Of => T)
+
+         if Ekind (Item_Id) = E_Abstract_State then
+            Item_Decl := Unit_Declaration_Node (Scope (Item_Id));
+         else
+            Item_Decl := Declaration_Node (Item_Id);
+         end if;
+
+         Item_Context := Parent (Item_Decl);
+
+         --  The item and the single concurrent type must appear in the same
+         --  declarative region, with the item following the declaration of
+         --  the single concurrent type (SPARK RM 9(3)).
+
+         if Item_Context = Encap_Context then
+            if Nkind_In (Item_Context, N_Package_Specification,
+                                       N_Protected_Definition,
+                                       N_Task_Definition)
+            then
+               Prv_Decls := Private_Declarations (Item_Context);
+               Vis_Decls := Visible_Declarations (Item_Context);
+
+               --  The placement is OK when the single concurrent type appears
+               --  within the visible declarations and the item in the private
+               --  declarations.
+               --
+               --    package Pack is
+               --       protected PO ...
+               --    private
+               --       Constit : ... with Part_Of => PO;
+               --    end Pack;
+
+               if List_Containing (Encap_Decl) = Vis_Decls
+                 and then List_Containing (Item_Decl) = Prv_Decls
+               then
+                  null;
+
+               --  The placement is illegal when the item appears within the
+               --  visible declarations and the single concurrent type is in
+               --  the private declarations.
+               --
+               --    package Pack is
+               --       Constit : ... with Part_Of => PO;
+               --    private
+               --       protected PO ...
+               --    end Pack;
+
+               elsif List_Containing (Item_Decl) = Vis_Decls
+                 and then List_Containing (Encap_Decl) = Prv_Decls
+               then
+                  Placement_Error;
+                  return;
+
+               --  Otherwise both the item and the single concurrent type are
+               --  in the same list. Ensure that the declaration of the single
+               --  concurrent type precedes that of the item.
+
+               elsif not In_Proper_Order
+                           (First  => Encap_Decl,
+                            Second => Item_Decl)
+               then
+                  Placement_Error;
+                  return;
+               end if;
+
+            --  Otherwise both the item and the single concurrent type are
+            --  in the same list. Ensure that the declaration of the single
+            --  concurrent type precedes that of the item.
+
+            elsif not In_Proper_Order
+                        (First  => Encap_Decl,
+                         Second => Item_Decl)
+            then
+               Placement_Error;
+               return;
+            end if;
+
+         --  Otherwise the item and the single concurrent type reside within
+         --  unrelated regions.
+
+         else
+            Error_Msg_Name_1 := Chars (Encap_Id);
+            SPARK_Msg_NE
+              (Fix_Msg (Conc_Typ, "constituent & must be declared "
+               & "immediately within the same region as single protected "
+               & "type %"), Indic, Item_Id);
+            return;
+         end if;
+
+         --  At this point it is known that the Part_Of indicator is legal
+
+         Legal := True;
+      end Check_Part_Of_Concurrent_Type;
+
+   --  Start of processing for Analyze_Part_Of
 
    begin
       --  Assume that the indicator is illegal
@@ -3232,230 +3568,13 @@ package body Sem_Prag is
       --  The encapsulator is an abstract state
 
       if Ekind (Encap_Id) = E_Abstract_State then
-
-         --  Determine where the object, package instantiation or state lives
-         --  with respect to the enclosing packages or package bodies.
-
-         Find_Placement_In_State_Space
-           (Item_Id   => Item_Id,
-            Placement => Placement,
-            Pack_Id   => Pack_Id);
-
-         --  The item appears in a non-package construct with a declarative
-         --  part (subprogram, block, etc). As such, the item is not allowed
-         --  to be a part of an encapsulating state because the item is not
-         --  visible.
-
-         if Placement = Not_In_Package then
-            SPARK_Msg_N
-              ("indicator Part_Of cannot appear in this context "
-               & "(SPARK RM 7.2.6(5))", Indic);
-            Error_Msg_Name_1 := Chars (Scope (Encap_Id));
-            SPARK_Msg_NE
-              ("\& is not part of the hidden state of package %",
-               Indic, Item_Id);
-            return;
-
-         --  The item appears in the visible state space of some package. In
-         --  general this scenario does not warrant Part_Of except when the
-         --  package is a private child unit and the encapsulating state is
-         --  declared in a parent unit or a public descendant of that parent
-         --  unit.
-
-         elsif Placement = Visible_State_Space then
-            if Is_Child_Unit (Pack_Id)
-              and then Is_Private_Descendant (Pack_Id)
-            then
-               --  A variable or state abstraction which is part of the visible
-               --  state of a private child unit (or one of its public
-               --  descendants) must have its Part_Of indicator specified. The
-               --  Part_Of indicator must denote a state abstraction declared
-               --  by either the parent unit of the private unit or by a public
-               --  descendant of that parent unit.
-
-               --  Find nearest private ancestor (which can be the current unit
-               --  itself).
-
-               Parent_Unit := Pack_Id;
-               while Present (Parent_Unit) loop
-                  exit when
-                    Private_Present
-                      (Parent (Unit_Declaration_Node (Parent_Unit)));
-                  Parent_Unit := Scope (Parent_Unit);
-               end loop;
-
-               Parent_Unit := Scope (Parent_Unit);
-
-               if not Is_Child_Or_Sibling (Pack_Id, Scope (Encap_Id)) then
-                  SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state of & "
-                     & "or of its public descendant (SPARK RM 7.2.6(3))",
-                     Indic, Parent_Unit);
-                  return;
-
-               elsif Scope (Encap_Id) = Parent_Unit
-                 or else
-                   (Is_Ancestor_Package (Parent_Unit, Scope (Encap_Id))
-                     and then not Is_Private_Descendant (Scope (Encap_Id)))
-               then
-                  null;
-
-               else
-                  SPARK_Msg_NE
-                    ("indicator Part_Of must denote abstract state of & "
-                     & "or of its public descendant (SPARK RM 7.2.6(3))",
-                     Indic, Parent_Unit);
-                  return;
-               end if;
-
-            --  Indicator Part_Of is not needed when the related package is not
-            --  a private child unit or a public descendant thereof.
-
-            else
-               SPARK_Msg_N
-                 ("indicator Part_Of cannot appear in this context "
-                  & "(SPARK RM 7.2.6(5))", Indic);
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the visible part of package %",
-                  Indic, Item_Id);
-               return;
-            end if;
-
-         --  When the item appears in the private state space of a package, the
-         --  encapsulating state must be declared in the same package.
-
-         elsif Placement = Private_State_Space then
-            if Scope (Encap_Id) /= Pack_Id then
-               SPARK_Msg_NE
-                 ("indicator Part_Of must denote an abstract state of "
-                  & "package & (SPARK RM 7.2.6(2))", Indic, Pack_Id);
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the private part of package %",
-                  Indic, Item_Id);
-               return;
-            end if;
-
-         --  Items declared in the body state space of a package do not need
-         --  Part_Of indicators as the refinement has already been seen.
-
-         else
-            SPARK_Msg_N
-              ("indicator Part_Of cannot appear in this context "
-               & "(SPARK RM 7.2.6(5))", Indic);
-
-            if Scope (Encap_Id) = Pack_Id then
-               Error_Msg_Name_1 := Chars (Pack_Id);
-               SPARK_Msg_NE
-                 ("\& is declared in the body of package %", Indic, Item_Id);
-            end if;
-
-            return;
-         end if;
+         Check_Part_Of_Abstract_State;
 
       --  The encapsulator is a single concurrent type
 
       else
-         Encap_Typ := Etype (Encap_Id);
-
-         --  Only abstract states and variables can act as constituents of an
-         --  encapsulating single concurrent type.
-
-         if Ekind_In (Item_Id, E_Abstract_State, E_Variable) then
-            null;
-
-         --  The constituent is a constant
-
-         elsif Ekind (Item_Id) = E_Constant then
-            Error_Msg_Name_1 := Chars (Encap_Id);
-            SPARK_Msg_NE
-              (Fix_Msg (Encap_Typ, "constant & cannot act as constituent of "
-               & "single protected type %"), Indic, Item_Id);
-            return;
-
-         --  The constituent is a package instantiation
-
-         else
-            Error_Msg_Name_1 := Chars (Encap_Id);
-            SPARK_Msg_NE
-              (Fix_Msg (Encap_Typ, "package instantiation & cannot act as "
-               & "constituent of single protected type %"), Indic, Item_Id);
-            return;
-         end if;
-
-         --  When the item denotes an abstract state of a nested package, use
-         --  the declaration of the package to detect proper placement.
-
-         --    package Pack is
-         --       task T;
-         --       package Nested
-         --         with Abstract_State => (State with Part_Of => T)
-
-         if Ekind (Item_Id) = E_Abstract_State then
-            Item_Decl := Unit_Declaration_Node (Scope (Item_Id));
-         else
-            Item_Decl := Declaration_Node (Item_Id);
-         end if;
-
-         --  Both the item and its encapsulating single concurrent type must
-         --  appear in the same declarative region (SPARK RM 9.3). Note that
-         --  privacy is ignored.
-
-         if Parent (Item_Decl) /= Parent (Declaration_Node (Encap_Id)) then
-            Error_Msg_Name_1 := Chars (Encap_Id);
-            SPARK_Msg_NE
-              (Fix_Msg (Encap_Typ, "constituent & must be declared "
-               & "immediately within the same region as single protected "
-               & "type %"), Indic, Item_Id);
-            return;
-         end if;
-
-         --  The declaration of the item should follow the declaration of its
-         --  encapsulating single concurrent type and must appear in the same
-         --  declarative region (SPARK RM 9.3).
-
-         declare
-            N : Node_Id;
-
-         begin
-            N := Next (Declaration_Node (Encap_Id));
-            while Present (N) loop
-               exit when N = Item_Decl;
-               Next (N);
-            end loop;
-
-            --  The single concurrent type might be in the visible part of a
-            --  package, and the declaration of the item in the private part
-            --  of the same package.
-
-            if No (N) then
-               declare
-                  Pack : constant Node_Id :=
-                           Parent (Declaration_Node (Encap_Id));
-               begin
-                  if Nkind (Pack) = N_Package_Specification
-                    and then not In_Private_Part (Encap_Id)
-                  then
-                     N := First (Private_Declarations (Pack));
-                     while Present (N) loop
-                        exit when N = Item_Decl;
-                        Next (N);
-                     end loop;
-                  end if;
-               end;
-            end if;
-
-            if No (N) then
-               SPARK_Msg_N
-                 ("indicator Part_Of must denote a previously declared "
-                  & "single protected type or single task type", Encap);
-               return;
-            end if;
-         end;
+         Check_Part_Of_Concurrent_Type;
       end if;
-
-      Legal := True;
    end Analyze_Part_Of;
 
    ----------------------------------
