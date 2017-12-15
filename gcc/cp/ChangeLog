@@ -3,6 +3,11 @@
 	Backported from mainline
 	2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81888
+	* parser.c (cp_parser_decomposition_declaration): Reject just
+	BRACE_ENCLOSED_INITIALIZER_P initializers with nelts != 1 rather
+	than all such CONSTRUCTORs, and only if is_direct_init is true.
+
 	PR c++/81675
 	* cp-gimplify.c (cp_fold) <case COND_EXPR>: Don't return immediately
 	for VOID_TYPE_P COND_EXPRs, instead fold the operands and if op0 is
