@@ -7404,7 +7404,9 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       dexp = convert_from_reference (dexp);
-      type = TREE_TYPE (type);
+      type = complete_type (TREE_TYPE (type));
+      if (type == error_mark_node)
+	goto error_out;
     }
 
   tree eltype = NULL_TREE;

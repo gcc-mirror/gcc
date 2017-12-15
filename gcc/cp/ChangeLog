@@ -1,5 +1,9 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/83217
+	* decl.c (cp_finish_decomp): If decl's type is REFERENCE_TYPE,
+	call complete_type (TREE_TYPE (type)).
+
 	* tree.c (cxx_attribute_table, std_attribute_table): Swap
 	affects_type_identity and handler fields, adjust comments.
 

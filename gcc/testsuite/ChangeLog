@@ -1,5 +1,8 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/83217
+	* g++.dg/cpp1z/decomp33.C: New test.
+
 	PR tree-optimization/80631
 	* gcc.target/i386/avx2-pr80631.c: New test.
 
