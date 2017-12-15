@@ -2752,10 +2752,6 @@ package body Sem_Prag is
       --  A list of all initialization items processed so far. This list is
       --  used to detect duplicate items.
 
-      Non_Null_Seen : Boolean := False;
-      Null_Seen     : Boolean := False;
-      --  Flags used to check the legality of a null initialization list
-
       States_And_Objs : Elist_Id := No_Elist;
       --  A list of all abstract states and objects declared in the visible
       --  declarations of the related package. This list is used to detect the
@@ -2785,91 +2781,67 @@ package body Sem_Prag is
          Item_Id : Entity_Id;
 
       begin
-         --  Null initialization list
+         Analyze       (Item);
+         Resolve_State (Item);
 
-         if Nkind (Item) = N_Null then
-            if Null_Seen then
-               SPARK_Msg_N ("multiple null initializations not allowed", Item);
+         if Is_Entity_Name (Item) then
+            Item_Id := Entity_Of (Item);
 
-            elsif Non_Null_Seen then
-               SPARK_Msg_N
-                 ("cannot mix null and non-null initialization items", Item);
-            else
-               Null_Seen := True;
-            end if;
+            if Present (Item_Id)
+              and then Ekind_In (Item_Id, E_Abstract_State,
+                                          E_Constant,
+                                          E_Variable)
+            then
+               --  When the initialization item is undefined, it appears as
+               --  Any_Id. Do not continue with the analysis of the item.
 
-         --  Initialization item
+               if Item_Id = Any_Id then
+                  null;
 
-         else
-            Non_Null_Seen := True;
+               --  The state or variable must be declared in the visible
+               --  declarations of the package (SPARK RM 7.1.5(7)).
 
-            if Null_Seen then
-               SPARK_Msg_N
-                 ("cannot mix null and non-null initialization items", Item);
-            end if;
+               elsif not Contains (States_And_Objs, Item_Id) then
+                  Error_Msg_Name_1 := Chars (Pack_Id);
+                  SPARK_Msg_NE
+                    ("initialization item & must appear in the visible "
+                     & "declarations of package %", Item, Item_Id);
 
-            Analyze       (Item);
-            Resolve_State (Item);
+               --  Detect a duplicate use of the same initialization item
+               --  (SPARK RM 7.1.5(5)).
 
-            if Is_Entity_Name (Item) then
-               Item_Id := Entity_Of (Item);
+               elsif Contains (Items_Seen, Item_Id) then
+                  SPARK_Msg_N ("duplicate initialization item", Item);
 
-               if Present (Item_Id)
-                 and then Ekind_In (Item_Id, E_Abstract_State,
-                                             E_Constant,
-                                             E_Variable)
-               then
-                  --  When the initialization item is undefined, it appears as
-                  --  Any_Id. Do not continue with the analysis of the item.
-
-                  if Item_Id = Any_Id then
-                     null;
-
-                  --  The state or variable must be declared in the visible
-                  --  declarations of the package (SPARK RM 7.1.5(7)).
-
-                  elsif not Contains (States_And_Objs, Item_Id) then
-                     Error_Msg_Name_1 := Chars (Pack_Id);
-                     SPARK_Msg_NE
-                       ("initialization item & must appear in the visible "
-                        & "declarations of package %", Item, Item_Id);
-
-                  --  Detect a duplicate use of the same initialization item
-                  --  (SPARK RM 7.1.5(5)).
-
-                  elsif Contains (Items_Seen, Item_Id) then
-                     SPARK_Msg_N ("duplicate initialization item", Item);
-
-                  --  The item is legal, add it to the list of processed states
-                  --  and variables.
-
-                  else
-                     Append_New_Elmt (Item_Id, Items_Seen);
-
-                     if Ekind (Item_Id) = E_Abstract_State then
-                        Append_New_Elmt (Item_Id, States_Seen);
-                     end if;
-
-                     if Present (Encapsulating_State (Item_Id)) then
-                        Append_New_Elmt (Item_Id, Constits_Seen);
-                     end if;
-                  end if;
-
-               --  The item references something that is not a state or object
-               --  (SPARK RM 7.1.5(3)).
+               --  The item is legal, add it to the list of processed states
+               --  and variables.
 
                else
-                  SPARK_Msg_N
-                    ("initialization item must denote object or state", Item);
+                  Append_New_Elmt (Item_Id, Items_Seen);
+
+                  if Ekind (Item_Id) = E_Abstract_State then
+                     Append_New_Elmt (Item_Id, States_Seen);
+                  end if;
+
+                  if Present (Encapsulating_State (Item_Id)) then
+                     Append_New_Elmt (Item_Id, Constits_Seen);
+                  end if;
                end if;
 
-            --  Some form of illegal construct masquerading as a name
-            --  (SPARK RM 7.1.5(3)). This is a syntax error, always report.
+            --  The item references something that is not a state or object
+            --  (SPARK RM 7.1.5(3)).
 
             else
-               Error_Msg_N
+               SPARK_Msg_N
                  ("initialization item must denote object or state", Item);
             end if;
+
+         --  Some form of illegal construct masquerading as a name
+         --  (SPARK RM 7.1.5(3)). This is a syntax error, always report.
+
+         else
+            Error_Msg_N
+              ("initialization item must denote object or state", Item);
          end if;
       end Analyze_Initialization_Item;
 

@@ -2997,6 +2997,13 @@ package body Sem_Res is
             when N_Real_Literal =>
                Resolve_Real_Literal              (N, Ctx_Type);
 
+            when N_Reduction_Expression =>
+               null;
+               --  Resolve (Expression (N),              Ctx_Type);
+
+            when N_Reduction_Expression_Parameter =>
+               null;
+
             when N_Reference =>
                Resolve_Reference                 (N, Ctx_Type);
 

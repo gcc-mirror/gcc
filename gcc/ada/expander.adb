@@ -435,6 +435,9 @@ package body Expander is
                when N_Record_Representation_Clause =>
                   Expand_N_Record_Representation_Clause (N);
 
+               when N_Reduction_Expression =>
+                  Expand_N_Reduction_Expression (N);
+
                when N_Requeue_Statement =>
                   Expand_N_Requeue_Statement (N);
 
