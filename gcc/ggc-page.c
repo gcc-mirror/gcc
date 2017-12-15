@@ -91,11 +91,6 @@ along with GCC; see the file COPYING3.  If not see
      4: Object marks as well.  */
 #define GGC_DEBUG_LEVEL (0)
 
-#ifndef HOST_BITS_PER_PTR
-#define HOST_BITS_PER_PTR  HOST_BITS_PER_LONG
-#endif
-
-
 /* A two-level tree is used to look up the page-entry for a given
    pointer.  Two chunks of the pointer's bits are extracted to index
    the first and second levels of the tree, as follows:
