@@ -1,5 +1,10 @@
 2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/dflt_init_cond.adb, gnat.dg/dflt_init_cond_pkg.ads: New
+	testcase.
+
+2017-12-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/expr_func_main.adb, gnat.dg/expr_func_pkg.ads,
 	gnat.dg/expr_func_pkg.adb: New testcase.
 
