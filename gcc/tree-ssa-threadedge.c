@@ -244,7 +244,22 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
 	 expansion, then do not thread through this block.  */
       stmt_count++;
       if (stmt_count > max_stmt_count)
-	return NULL;
+	{
+	  /* If any of the stmts in the PATH's dests are going to be
+	     killed due to threading, grow the max count
+	     accordingly.  */
+	  if (max_stmt_count
+	      == PARAM_VALUE (PARAM_MAX_JUMP_THREAD_DUPLICATION_STMTS))
+	    {
+	      max_stmt_count += estimate_threading_killed_stmts (e->dest);
+	      if (dump_file)
+		fprintf (dump_file, "threading bb %i up to %i stmts\n",
+			 e->dest->index, max_stmt_count);
+	    }
+	  /* If we're still past the limit, we're done.  */
+	  if (stmt_count > max_stmt_count)
+	    return NULL;
+	}
 
       /* These are temporary ranges, do nto reflect them back into
 	 the global range data.  */

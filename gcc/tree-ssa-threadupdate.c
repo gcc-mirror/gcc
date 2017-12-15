@@ -2431,3 +2431,139 @@ register_jump_thread (vec<jump_thread_edge *> *path)
 
   paths.safe_push (path);
 }
+
+/* Return how many uses of T there are within BB, as long as there
+   aren't any uses outside BB.  If there are any uses outside BB,
+   return -1 if there's at most one use within BB, or -2 if there is
+   more than one use within BB.  */
+
+static int
+uses_in_bb (tree t, basic_block bb)
+{
+  int uses = 0;
+  bool outside_bb = false;
+
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, iter, t)
+    {
+      if (is_gimple_debug (USE_STMT (use_p)))
+	continue;
+
+      if (gimple_bb (USE_STMT (use_p)) != bb)
+	outside_bb = true;
+      else
+	uses++;
+
+      if (outside_bb && uses > 1)
+	return -2;
+    }
+
+  if (outside_bb)
+    return -1;
+
+  return uses;
+}
+
+/* Starting from the final control flow stmt in BB, assuming it will
+   be removed, follow uses in to-be-removed stmts back to their defs
+   and count how many defs are to become dead and be removed as
+   well.  */
+
+unsigned int
+estimate_threading_killed_stmts (basic_block bb)
+{
+  int killed_stmts = 0;
+  hash_map<tree, int> ssa_remaining_uses;
+  auto_vec<gimple *, 4> dead_worklist;
+
+  /* If the block has only two predecessors, threading will turn phi
+     dsts into either src, so count them as dead stmts.  */
+  bool drop_all_phis = EDGE_COUNT (bb->preds) == 2;
+
+  if (drop_all_phis)
+    for (gphi_iterator gsi = gsi_start_phis (bb);
+	 !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gphi *phi = gsi.phi ();
+	tree dst = gimple_phi_result (phi);
+
+	/* We don't count virtual PHIs as stmts in
+	   record_temporary_equivalences_from_phis.  */
+	if (virtual_operand_p (dst))
+	  continue;
+
+	killed_stmts++;
+      }
+
+  if (gsi_end_p (gsi_last_bb (bb)))
+    return killed_stmts;
+
+  gimple *stmt = gsi_stmt (gsi_last_bb (bb));
+  if (gimple_code (stmt) != GIMPLE_COND
+      && gimple_code (stmt) != GIMPLE_GOTO
+      && gimple_code (stmt) != GIMPLE_SWITCH)
+    return killed_stmts;
+
+  /* The control statement is always dead.  */
+  killed_stmts++;
+  dead_worklist.quick_push (stmt);
+  while (!dead_worklist.is_empty ())
+    {
+      stmt = dead_worklist.pop ();
+
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	{
+	  tree t = USE_FROM_PTR (use_p);
+	  gimple *def = SSA_NAME_DEF_STMT (t);
+
+	  if (gimple_bb (def) == bb
+	      && (gimple_code (def) != GIMPLE_PHI
+		  || !drop_all_phis)
+	      && !gimple_has_side_effects (def))
+	    {
+	      int *usesp = ssa_remaining_uses.get (t);
+	      int uses;
+
+	      if (usesp)
+		uses = *usesp;
+	      else
+		uses = uses_in_bb (t, bb);
+
+	      gcc_assert (uses);
+
+	      /* Don't bother recording the expected use count if we
+		 won't find any further uses within BB.  */
+	      if (!usesp && (uses < -1 || uses > 1))
+		{
+		  usesp = &ssa_remaining_uses.get_or_insert (t);
+		  *usesp = uses;
+		}
+
+	      if (uses < 0)
+		continue;
+
+	      --uses;
+	      if (usesp)
+		*usesp = uses;
+
+	      if (!uses)
+		{
+		  killed_stmts++;
+		  if (usesp)
+		    ssa_remaining_uses.remove (t);
+		  if (gimple_code (def) != GIMPLE_PHI)
+		    dead_worklist.safe_push (def);
+		}
+	    }
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "threading bb %i kills %i stmts\n",
+	     bb->index, killed_stmts);
+
+  return killed_stmts;
+}
