@@ -1,5 +1,11 @@
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/83205
+	* decl.c (cp_finish_decomp): Handle the case when tsize is not
+	error_mark_node, but doesn't fit into uhwi.  Split up count != eltscnt
+	and !tree_fits_uhwi_p (tsize) error_at calls into error_n and inform_n
+	to handle plural forms properly.
+
 	PR c++/81197
 	* cp-tree.h (cp_maybe_mangle_decomp): Declare.
 	* decl.c (cp_maybe_mangle_decomp): New function.
