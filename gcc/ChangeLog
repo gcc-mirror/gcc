@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Avoid repeated
+	checks for MEM_REF.
+
+2017-12-16  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/generic.texi (VEC_SERIES_EXPR): Document.
 	* doc/md.texi (vec_series@var{m}): Document.
 	* tree.def (VEC_SERIES_EXPR): New tree code.
