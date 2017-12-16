@@ -1541,9 +1541,11 @@ struct processor_costs skylake_cost = {
    COSTS_N_INSNS (4),			/*				 DI */
    COSTS_N_INSNS (4)},			/*			      other */
   0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (8),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (8),			/*			    HI */
-   COSTS_N_INSNS (11),			/*			    SI */
+  /* Expanding div/mod currently doesn't consider parallelism. So the cost
+     model is not realistic. We compensate by increasing the latencies a bit.  */
+  {COSTS_N_INSNS (11),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (11),			/*			    HI */
+   COSTS_N_INSNS (14),			/*			    SI */
    COSTS_N_INSNS (76),			/*			    DI */
    COSTS_N_INSNS (76)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
@@ -2342,11 +2344,11 @@ struct processor_costs core_cost = {
    COSTS_N_INSNS (4),			/*				 DI */
    COSTS_N_INSNS (4)},			/*			      other */
   0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (8),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (8),			/*			    HI */
-   /* 8-11 */
-   COSTS_N_INSNS (11),			/*			    SI */
-   /* 24-81 */
+  /* Expanding div/mod currently doesn't consider parallelism. So the cost
+     model is not realistic. We compensate by increasing the latencies a bit.  */
+  {COSTS_N_INSNS (11),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (11),			/*			    HI */
+   COSTS_N_INSNS (14),			/*			    SI */
    COSTS_N_INSNS (81),			/*			    DI */
    COSTS_N_INSNS (81)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
