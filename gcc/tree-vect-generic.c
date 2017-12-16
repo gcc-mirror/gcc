@@ -1595,7 +1595,8 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (rhs_class == GIMPLE_BINARY_RHS)
     rhs2 = gimple_assign_rhs2 (stmt);
 
-  if (TREE_CODE (type) != VECTOR_TYPE)
+  if (!VECTOR_TYPE_P (type)
+      || !VECTOR_TYPE_P (TREE_TYPE (rhs1)))
     return;
 
   /* If the vector operation is operating on all same vector elements

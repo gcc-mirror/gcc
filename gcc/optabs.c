@@ -5712,6 +5712,27 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   return ops[0].value;
 }
 
+/* Generate VEC_SERIES_EXPR <OP0, OP1>, returning a value of mode VMODE.
+   Use TARGET for the result if nonnull and convenient.  */
+
+rtx
+expand_vec_series_expr (machine_mode vmode, rtx op0, rtx op1, rtx target)
+{
+  struct expand_operand ops[3];
+  enum insn_code icode;
+  machine_mode emode = GET_MODE_INNER (vmode);
+
+  icode = direct_optab_handler (vec_series_optab, vmode);
+  gcc_assert (icode != CODE_FOR_nothing);
+
+  create_output_operand (&ops[0], target, vmode);
+  create_input_operand (&ops[1], op0, emode);
+  create_input_operand (&ops[2], op1, emode);
+
+  expand_insn (icode, 3, ops);
+  return ops[0].value;
+}
+
 /* Generate insns for a vector comparison into a mask.  */
 
 rtx

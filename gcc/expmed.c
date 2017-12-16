@@ -5255,6 +5255,13 @@ make_tree (tree type, rtx x)
 	    tree elt_tree = make_tree (TREE_TYPE (type), XEXP (op, 0));
 	    return build_vector_from_val (type, elt_tree);
 	  }
+	if (GET_CODE (op) == VEC_SERIES)
+	  {
+	    tree itype = TREE_TYPE (type);
+	    tree base_tree = make_tree (itype, XEXP (op, 0));
+	    tree step_tree = make_tree (itype, XEXP (op, 1));
+	    return build_vec_series (type, base_tree, step_tree);
+	  }
 	return make_tree (type, op);
       }
 

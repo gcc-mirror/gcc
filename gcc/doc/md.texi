@@ -4899,6 +4899,19 @@ vectors go through the @code{mov@var{m}} pattern instead.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{vec_series@var{m}} instruction pattern
+@item @samp{vec_series@var{m}}
+Initialize vector output operand 0 so that element @var{i} is equal to
+operand 1 plus @var{i} times operand 2.  In other words, create a linear
+series whose base value is operand 1 and whose step is operand 2.
+
+The vector output has mode @var{m} and the scalar inputs have the mode
+appropriate for one element of @var{m}.  This pattern is not used for
+floating-point vectors, in order to avoid having to specify the
+rounding behavior for @var{i} > 1.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for

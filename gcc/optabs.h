@@ -316,6 +316,9 @@ extern rtx expand_vec_cmp_expr (tree, tree, rtx);
 /* Generate code for VEC_COND_EXPR.  */
 extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
 
+/* Generate code for VEC_SERIES_EXPR.  */
+extern rtx expand_vec_series_expr (machine_mode, rtx, rtx, rtx);
+
 /* Generate code for MULT_HIGHPART_EXPR.  */
 extern rtx expand_mult_highpart (machine_mode, rtx, rtx, rtx, bool);
 

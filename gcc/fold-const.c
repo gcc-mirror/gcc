@@ -1526,6 +1526,12 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
      result as argument put those cases that need it here.  */
   switch (code)
     {
+    case VEC_SERIES_EXPR:
+      if (CONSTANT_CLASS_P (arg1)
+	  && CONSTANT_CLASS_P (arg2))
+	return build_vec_series (type, arg1, arg2);
+      return NULL_TREE;
+
     case COMPLEX_EXPR:
       if ((TREE_CODE (arg1) == REAL_CST
 	   && TREE_CODE (arg2) == REAL_CST)

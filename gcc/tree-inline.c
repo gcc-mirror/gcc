@@ -3929,6 +3929,7 @@ estimate_operator_cost (enum tree_code code, eni_weights *weights,
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_DUPLICATE_EXPR:
+    case VEC_SERIES_EXPR:
 
       return 1;
 

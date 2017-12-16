@@ -366,3 +366,4 @@ OPTAB_D (get_thread_pointer_optab, "get_thread_pointer$I$a")
 OPTAB_D (set_thread_pointer_optab, "set_thread_pointer$I$a")
 
 OPTAB_DC (vec_duplicate_optab, "vec_duplicate$a", VEC_DUPLICATE)
+OPTAB_DC (vec_series_optab, "vec_series$a", VEC_SERIES)

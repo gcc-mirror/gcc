@@ -1,4 +1,28 @@
 2017-12-16  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/generic.texi (VEC_SERIES_EXPR): Document.
+	* doc/md.texi (vec_series@var{m}): Document.
+	* tree.def (VEC_SERIES_EXPR): New tree code.
+	* tree.h (build_vec_series): Declare.
+	* tree.c (build_vec_series): New function.
+	* cfgexpand.c (expand_debug_expr): Handle VEC_SERIES_EXPR.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* gimple-pretty-print.c (dump_binary_rhs): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* expr.c (expand_expr_real_2): Likewise.
+	* optabs-tree.c (optab_for_tree_code): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* fold-const.c (const_binop): Fold VEC_SERIES_EXPRs of constants.
+	* expmed.c (make_tree): Handle VEC_SERIES.
+	* optabs.def (vec_series_optab): New optab.
+	* optabs.h (expand_vec_series_expr): Declare.
+	* optabs.c (expand_vec_series_expr): New function.
+	* tree-vect-generic.c (expand_vector_operations_1): Check that
+	the operands also have vector type.
+
+2017-12-16  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hawyard@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

@@ -9590,6 +9590,10 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       gcc_assert (target);
       return target;
 
+    case VEC_SERIES_EXPR:
+      expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, modifier);
+      return expand_vec_series_expr (mode, op0, op1, target);
+
     case BIT_INSERT_EXPR:
       {
 	unsigned bitpos = tree_to_uhwi (treeop2);
