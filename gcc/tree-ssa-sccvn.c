@@ -2348,19 +2348,19 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       copy_size = tree_to_uhwi (gimple_call_arg (def_stmt, 2));
 
       /* The bases of the destination and the references have to agree.  */
-      if ((TREE_CODE (base) != MEM_REF
-	   && !DECL_P (base))
-	  || (TREE_CODE (base) == MEM_REF
-	      && (TREE_OPERAND (base, 0) != lhs
-		  || !tree_fits_uhwi_p (TREE_OPERAND (base, 1))))
-	  || (DECL_P (base)
-	      && (TREE_CODE (lhs) != ADDR_EXPR
-		  || TREE_OPERAND (lhs, 0) != base)))
-	return (void *)-1;
-
       at = offset / BITS_PER_UNIT;
       if (TREE_CODE (base) == MEM_REF)
-	at += tree_to_uhwi (TREE_OPERAND (base, 1));
+	{
+	  if (TREE_OPERAND (base, 0) != lhs
+	      || !tree_fits_uhwi_p (TREE_OPERAND (base, 1)))
+	    return (void *) -1;
+	  at += tree_to_uhwi (TREE_OPERAND (base, 1));
+	}
+      else if (!DECL_P (base)
+	       || TREE_CODE (lhs) != ADDR_EXPR
+	       || TREE_OPERAND (lhs, 0) != base)
+	return (void *)-1;
+
       /* If the access is completely outside of the memcpy destination
 	 area there is no aliasing.  */
       if (lhs_offset >= at + maxsize / BITS_PER_UNIT
