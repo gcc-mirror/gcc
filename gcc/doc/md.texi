@@ -4888,6 +4888,17 @@ and operand 1 is parallel containing values for individual fields.  The
 the vector mode @var{m}, or a vector mode with the same element mode and
 smaller number of elements.
 
+@cindex @code{vec_duplicate@var{m}} instruction pattern
+@item @samp{vec_duplicate@var{m}}
+Initialize vector output operand 0 so that each element has the value given
+by scalar input operand 1.  The vector has mode @var{m} and the scalar has
+the mode appropriate for one element of @var{m}.
+
+This pattern only handles duplicates of non-constant inputs.  Constant
+vectors go through the @code{mov@var{m}} pattern instead.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for

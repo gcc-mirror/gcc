@@ -537,6 +537,9 @@ DEFTREECODE (TARGET_EXPR, "target_expr", tcc_expression, 4)
    1 and 2 are NULL.  The operands are then taken from the cfg edges. */
 DEFTREECODE (COND_EXPR, "cond_expr", tcc_expression, 3)
 
+/* Represents a vector in which every element is equal to operand 0.  */
+DEFTREECODE (VEC_DUPLICATE_EXPR, "vec_duplicate_expr", tcc_unary, 1)
+
 /* Vector conditional expression. It is like COND_EXPR, but with
    vector operands.
 

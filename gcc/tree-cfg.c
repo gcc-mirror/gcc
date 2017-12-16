@@ -3880,6 +3880,17 @@ verify_gimple_assign_unary (gassign *stmt)
     case CONJ_EXPR:
       break;
 
+    case VEC_DUPLICATE_EXPR:
+      if (TREE_CODE (lhs_type) != VECTOR_TYPE
+	  || !useless_type_conversion_p (TREE_TYPE (lhs_type), rhs1_type))
+	{
+	  error ("vec_duplicate should be from a scalar to a like vector");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      return false;
+
     default:
       gcc_unreachable ();
     }

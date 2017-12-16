@@ -1,3 +1,31 @@
+2017-12-16  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hawyard@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/generic.texi (VEC_DUPLICATE_EXPR): Document.
+	(VEC_COND_EXPR): Add missing @tindex.
+	* doc/md.texi (vec_duplicate@var{m}): Document.
+	* tree.def (VEC_DUPLICATE_EXPR): New tree codes.
+	* tree.c (build_vector_from_val): Add stubbed-out handling of
+	variable-length vectors, using VEC_DUPLICATE_EXPR.
+	(uniform_vector_p): Handle VEC_DUPLICATE_EXPR.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* tree-cfg.c (verify_gimple_assign_unary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-vect-generic.c (ssa_uniform_vector_p): Likewise.
+	* fold-const.c (const_unop): Fold VEC_DUPLICATE_EXPRs of a constant.
+	(test_vec_duplicate_folding): New function.
+	(fold_const_c_tests): Call it.
+	* optabs.def (vec_duplicate_optab): New optab.
+	* optabs-tree.c (optab_for_tree_code): Handle VEC_DUPLICATE_EXPR.
+	* optabs.h (expand_vector_broadcast): Declare.
+	* optabs.c (expand_vector_broadcast): Make non-static.  Try using
+	vec_duplicate_optab.
+	* expr.c (store_constructor): Try using vec_duplicate_optab for
+	uniform vectors.
+	(expand_expr_real_2): Handle VEC_DUPLICATE_EXPR.
+
 2017-12-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR target/83358

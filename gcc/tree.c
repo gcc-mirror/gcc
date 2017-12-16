@@ -1785,6 +1785,8 @@ build_vector_from_val (tree vectype, tree sc)
       v.quick_push (sc);
       return v.build ();
     }
+  else if (0)
+    return fold_build1 (VEC_DUPLICATE_EXPR, vectype, sc);
   else
     {
       vec<constructor_elt, va_gc> *v;
@@ -10468,7 +10470,10 @@ uniform_vector_p (const_tree vec)
 
   gcc_assert (VECTOR_TYPE_P (TREE_TYPE (vec)));
 
-  if (TREE_CODE (vec) == VECTOR_CST)
+  if (TREE_CODE (vec) == VEC_DUPLICATE_EXPR)
+    return TREE_OPERAND (vec, 0);
+
+  else if (TREE_CODE (vec) == VECTOR_CST)
     {
       if (VECTOR_CST_NPATTERNS (vec) == 1 && VECTOR_CST_DUPLICATE_P (vec))
 	return VECTOR_CST_ENCODED_ELT (vec, 0);

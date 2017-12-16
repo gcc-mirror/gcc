@@ -1770,6 +1770,11 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	return elts.build ();
       }
 
+    case VEC_DUPLICATE_EXPR:
+      if (CONSTANT_CLASS_P (arg0))
+	return build_vector_from_val (type, arg0);
+      return NULL_TREE;
+
     default:
       break;
     }
@@ -14477,6 +14482,22 @@ test_vector_folding ()
   ASSERT_FALSE (integer_nonzerop (fold_build2 (NE_EXPR, res_type, one, one)));
 }
 
+/* Verify folding of VEC_DUPLICATE_EXPRs.  */
+
+static void
+test_vec_duplicate_folding ()
+{
+  scalar_int_mode int_mode = SCALAR_INT_TYPE_MODE (ssizetype);
+  machine_mode vec_mode = targetm.vectorize.preferred_simd_mode (int_mode);
+  /* This will be 1 if VEC_MODE isn't a vector mode.  */
+  unsigned int nunits = GET_MODE_NUNITS (vec_mode);
+
+  tree type = build_vector_type (ssizetype, nunits);
+  tree dup5_expr = fold_unary (VEC_DUPLICATE_EXPR, type, ssize_int (5));
+  tree dup5_cst = build_vector_from_val (type, ssize_int (5));
+  ASSERT_TRUE (operand_equal_p (dup5_expr, dup5_cst, 0));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -14484,6 +14505,7 @@ fold_const_c_tests ()
 {
   test_arithmetic_folding ();
   test_vector_folding ();
+  test_vec_duplicate_folding ();
 }
 
 } // namespace selftest
