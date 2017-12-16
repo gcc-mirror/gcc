@@ -977,7 +977,7 @@ default_libcall_value (machine_mode mode ATTRIBUTE_UNUSED,
 		       const_rtx fun ATTRIBUTE_UNUSED)
 {
 #ifdef LIBCALL_VALUE
-  return LIBCALL_VALUE (mode);
+  return LIBCALL_VALUE (MACRO_MODE (mode));
 #else
   gcc_unreachable ();
 #endif
@@ -1107,11 +1107,13 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
     }
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
   if (in_p)
-    rclass = SECONDARY_INPUT_RELOAD_CLASS (reload_class, reload_mode, x);
+    rclass = SECONDARY_INPUT_RELOAD_CLASS (reload_class,
+					   MACRO_MODE (reload_mode), x);
 #endif
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
   if (! in_p)
-    rclass = SECONDARY_OUTPUT_RELOAD_CLASS (reload_class, reload_mode, x);
+    rclass = SECONDARY_OUTPUT_RELOAD_CLASS (reload_class,
+					    MACRO_MODE (reload_mode), x);
 #endif
   if (rclass != NO_REGS)
     {
@@ -1639,7 +1641,7 @@ default_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #ifndef MEMORY_MOVE_COST
     return (4 + memory_move_secondary_cost (mode, (enum reg_class) rclass, in));
 #else
-    return MEMORY_MOVE_COST (mode, (enum reg_class) rclass, in);
+    return MEMORY_MOVE_COST (MACRO_MODE (mode), (enum reg_class) rclass, in);
 #endif
 }
 
@@ -1654,7 +1656,8 @@ default_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #ifndef REGISTER_MOVE_COST
   return 2;
 #else
-  return REGISTER_MOVE_COST (mode, (enum reg_class) from, (enum reg_class) to);
+  return REGISTER_MOVE_COST (MACRO_MODE (mode),
+			     (enum reg_class) from, (enum reg_class) to);
 #endif
 }
 
@@ -1843,7 +1846,8 @@ default_class_max_nregs (reg_class_t rclass ATTRIBUTE_UNUSED,
 			 machine_mode mode ATTRIBUTE_UNUSED)
 {
 #ifdef CLASS_MAX_NREGS
-  return (unsigned char) CLASS_MAX_NREGS ((enum reg_class) rclass, mode);
+  return (unsigned char) CLASS_MAX_NREGS ((enum reg_class) rclass,
+					  MACRO_MODE (mode));
 #else
   return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
 #endif
