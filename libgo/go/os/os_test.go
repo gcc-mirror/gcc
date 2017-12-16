@@ -1440,7 +1440,7 @@ func TestOpenNoName(t *testing.T) {
 	}
 }
 
-func runBinHostname(t *testing.T) string {
+func runBinHostname(t *testing.T, argv []string) string {
 	// Run /bin/hostname and collect output.
 	r, w, err := Pipe()
 	if err != nil {
@@ -1448,7 +1448,7 @@ func runBinHostname(t *testing.T) string {
 	}
 	defer r.Close()
 	const path = "/bin/hostname"
-	p, err := StartProcess(path, []string{"hostname"}, &ProcAttr{Files: []*File{nil, w, Stderr}})
+	p, err := StartProcess(path, argv, &ProcAttr{Files: []*File{nil, w, Stderr}})
 	if err != nil {
 		if _, err := Stat(path); IsNotExist(err) {
 			t.Skipf("skipping test; test requires %s but it does not exist", path)
@@ -1514,7 +1514,13 @@ func TestHostname(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-	want := runBinHostname(t)
+
+	var want string
+	if runtime.GOOS == "aix" {
+		want = runBinHostname(t, []string{"hostname", "-s"})
+	} else {
+		want = runBinHostname(t, []string{"hostname"})
+	}
 	if hostname != want {
 		i := strings.Index(hostname, ".")
 		if i < 0 || hostname[0:i] != want {
