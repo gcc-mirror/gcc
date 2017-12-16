@@ -202,6 +202,9 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case VEC_DUPLICATE_EXPR:
       return vec_duplicate_optab;
 
+    case VEC_SERIES_EXPR:
+      return vec_series_optab;
+
     default:
       break;
     }

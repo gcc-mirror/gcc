@@ -1769,6 +1769,7 @@ a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @node Vectors
 @subsection Vectors
 @tindex VEC_DUPLICATE_EXPR
+@tindex VEC_SERIES_EXPR
 @tindex VEC_LSHIFT_EXPR
 @tindex VEC_RSHIFT_EXPR
 @tindex VEC_WIDEN_MULT_HI_EXPR
@@ -1787,6 +1788,14 @@ a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @item VEC_DUPLICATE_EXPR
 This node has a single operand and represents a vector in which every
 element is equal to that operand.
+
+@item VEC_SERIES_EXPR
+This node represents a vector formed from a scalar base and step,
+given as the first and second operands respectively.  Element @var{i}
+of the result is equal to @samp{@var{base} + @var{i}*@var{step}}.
+
+This node is restricted to integral types, in order to avoid
+specifying the rounding behavior for floating-point types.
 
 @item VEC_LSHIFT_EXPR
 @itemx VEC_RSHIFT_EXPR

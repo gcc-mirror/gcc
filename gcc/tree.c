@@ -1797,6 +1797,30 @@ build_vector_from_val (tree vectype, tree sc)
     }
 }
 
+/* Build a vector series of type TYPE in which element I has the value
+   BASE + I * STEP.  The result is a constant if BASE and STEP are constant
+   and a VEC_SERIES_EXPR otherwise.  */
+
+tree
+build_vec_series (tree type, tree base, tree step)
+{
+  if (integer_zerop (step))
+    return build_vector_from_val (type, base);
+  if (TREE_CODE (base) == INTEGER_CST && TREE_CODE (step) == INTEGER_CST)
+    {
+      tree_vector_builder builder (type, 1, 3);
+      tree elt1 = wide_int_to_tree (TREE_TYPE (base),
+				    wi::to_wide (base) + wi::to_wide (step));
+      tree elt2 = wide_int_to_tree (TREE_TYPE (base),
+				    wi::to_wide (elt1) + wi::to_wide (step));
+      builder.quick_push (base);
+      builder.quick_push (elt1);
+      builder.quick_push (elt2);
+      return builder.build ();
+    }
+  return build2 (VEC_SERIES_EXPR, type, base, step);
+}
+
 /* Something has messed with the elements of CONSTRUCTOR C after it was built;
    calculate TREE_CONSTANT and TREE_SIDE_EFFECTS.  */
 

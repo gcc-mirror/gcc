@@ -540,6 +540,16 @@ DEFTREECODE (COND_EXPR, "cond_expr", tcc_expression, 3)
 /* Represents a vector in which every element is equal to operand 0.  */
 DEFTREECODE (VEC_DUPLICATE_EXPR, "vec_duplicate_expr", tcc_unary, 1)
 
+/* Vector series created from a start (base) value and a step.
+
+   A = VEC_SERIES_EXPR (B, C)
+
+   means
+
+   for (i = 0; i < N; i++)
+     A[i] = B + C * i;  */
+DEFTREECODE (VEC_SERIES_EXPR, "vec_series_expr", tcc_binary, 2)
+
 /* Vector conditional expression. It is like COND_EXPR, but with
    vector operands.
 
