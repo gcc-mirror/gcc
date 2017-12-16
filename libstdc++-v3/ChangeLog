@@ -1,3 +1,9 @@
+2017-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83239
+	* include/bits/vector.tcc (vector::_M_default_append): Assert
+        invariant to generate better code.
+
 2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83279
