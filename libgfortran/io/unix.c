@@ -959,8 +959,8 @@ mem_flush (unix_stream *s __attribute__ ((unused)))
 static int
 mem_close (unix_stream *s)
 {
-  free (s);
-
+  if (s)
+    free (s);
   return 0;
 }
 
