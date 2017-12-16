@@ -1,3 +1,9 @@
+2017-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78918
+	* c-common.c (check_function_restrict): Avoid checking built-ins.
+	* c.opt (-Wrestrict): Include in -Wall.
+
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.c (c_common_attribute_table,

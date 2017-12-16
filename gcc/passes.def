@@ -332,6 +332,7 @@ along with GCC; see the file COPYING3.  If not see
 	 run the full propagators, run a specialized pass which
 	 only examines PHIs to discover const/copy propagation
 	 opportunities.  */
+      NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce);
