@@ -141,7 +141,7 @@ shift_cost (bool speed_p, struct cost_rtxes *rtxes, enum rtx_code code,
   PUT_CODE (rtxes->shift, code);
   PUT_MODE (rtxes->shift, mode);
   PUT_MODE (rtxes->source, mode);
-  XEXP (rtxes->shift, 1) = gen_int_shift_amount (mode, op1);
+  XEXP (rtxes->shift, 1) = GEN_INT (op1);
   return set_src_cost (rtxes->shift, mode, speed_p);
 }
 

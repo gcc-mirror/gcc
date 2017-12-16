@@ -431,9 +431,8 @@ expand_superword_shift (optab binoptab, rtx outof_input, rtx superword_op1,
       if (binoptab != ashr_optab)
 	emit_move_insn (outof_target, CONST0_RTX (word_mode));
       else
-	if (!force_expand_binop (word_mode, binoptab, outof_input,
-				 gen_int_shift_amount (word_mode,
-						       BITS_PER_WORD - 1),
+	if (!force_expand_binop (word_mode, binoptab,
+				 outof_input, GEN_INT (BITS_PER_WORD - 1),
 				 outof_target, unsignedp, methods))
 	  return false;
     }
@@ -790,8 +789,7 @@ expand_doubleword_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
 {
   int low = (WORDS_BIG_ENDIAN ? 1 : 0);
   int high = (WORDS_BIG_ENDIAN ? 0 : 1);
-  rtx wordm1 = (umulp ? NULL_RTX
-		: gen_int_shift_amount (word_mode, BITS_PER_WORD - 1));
+  rtx wordm1 = umulp ? NULL_RTX : GEN_INT (BITS_PER_WORD - 1);
   rtx product, adjust, product_high, temp;
 
   rtx op0_high = operand_subword_force (op0, high, mode);
@@ -1192,7 +1190,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       unsigned int bits = GET_MODE_PRECISION (int_mode);
 
       if (CONST_INT_P (op1))
-	newop1 = gen_int_shift_amount (int_mode, bits - INTVAL (op1));
+        newop1 = GEN_INT (bits - INTVAL (op1));
       else if (targetm.shift_truncation_mask (int_mode) == bits - 1)
         newop1 = negate_rtx (GET_MODE (op1), op1);
       else
@@ -1414,7 +1412,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       /* Apply the truncation to constant shifts.  */
       if (double_shift_mask > 0 && CONST_INT_P (op1))
-	op1 = gen_int_mode (INTVAL (op1) & double_shift_mask, op1_mode);
+	op1 = GEN_INT (INTVAL (op1) & double_shift_mask);
 
       if (op1 == CONST0_RTX (op1_mode))
 	return op0;
@@ -1524,7 +1522,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       else
 	{
 	  rtx into_temp1, into_temp2, outof_temp1, outof_temp2;
-	  HOST_WIDE_INT first_shift_count, second_shift_count;
+	  rtx first_shift_count, second_shift_count;
 	  optab reverse_unsigned_shift, unsigned_shift;
 
 	  reverse_unsigned_shift = (left_shift ^ (shift_count < BITS_PER_WORD)
@@ -1535,24 +1533,20 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
 	  if (shift_count > BITS_PER_WORD)
 	    {
-	      first_shift_count = shift_count - BITS_PER_WORD;
-	      second_shift_count = 2 * BITS_PER_WORD - shift_count;
+	      first_shift_count = GEN_INT (shift_count - BITS_PER_WORD);
+	      second_shift_count = GEN_INT (2 * BITS_PER_WORD - shift_count);
 	    }
 	  else
 	    {
-	      first_shift_count = BITS_PER_WORD - shift_count;
-	      second_shift_count = shift_count;
+	      first_shift_count = GEN_INT (BITS_PER_WORD - shift_count);
+	      second_shift_count = GEN_INT (shift_count);
 	    }
-	  rtx first_shift_count_rtx
-	    = gen_int_shift_amount (word_mode, first_shift_count);
-	  rtx second_shift_count_rtx
-	    = gen_int_shift_amount (word_mode, second_shift_count);
 
 	  into_temp1 = expand_binop (word_mode, unsigned_shift,
-				     outof_input, first_shift_count_rtx,
+				     outof_input, first_shift_count,
 				     NULL_RTX, unsignedp, next_methods);
 	  into_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
-				     into_input, second_shift_count_rtx,
+				     into_input, second_shift_count,
 				     NULL_RTX, unsignedp, next_methods);
 
 	  if (into_temp1 != 0 && into_temp2 != 0)
@@ -1565,10 +1559,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	    emit_move_insn (into_target, inter);
 
 	  outof_temp1 = expand_binop (word_mode, unsigned_shift,
-				      into_input, first_shift_count_rtx,
+				      into_input, first_shift_count,
 				      NULL_RTX, unsignedp, next_methods);
 	  outof_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
-				      outof_input, second_shift_count_rtx,
+				      outof_input, second_shift_count,
 				      NULL_RTX, unsignedp, next_methods);
 
 	  if (inter != 0 && outof_temp1 != 0 && outof_temp2 != 0)
@@ -2808,29 +2802,25 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 
 	  if (optab_handler (rotl_optab, mode) != CODE_FOR_nothing)
 	    {
-	      temp = expand_binop (mode, rotl_optab, op0,
-				   gen_int_shift_amount (mode, 8),
-				   target, unsignedp, OPTAB_DIRECT);
+	      temp = expand_binop (mode, rotl_optab, op0, GEN_INT (8), target,
+				   unsignedp, OPTAB_DIRECT);
 	      if (temp)
 		return temp;
 	     }
 
 	  if (optab_handler (rotr_optab, mode) != CODE_FOR_nothing)
 	    {
-	      temp = expand_binop (mode, rotr_optab, op0,
-				   gen_int_shift_amount (mode, 8),
-				   target, unsignedp, OPTAB_DIRECT);
+	      temp = expand_binop (mode, rotr_optab, op0, GEN_INT (8), target,
+				   unsignedp, OPTAB_DIRECT);
 	      if (temp)
 		return temp;
 	    }
 
 	  last = get_last_insn ();
 
-	  temp1 = expand_binop (mode, ashl_optab, op0,
-				gen_int_shift_amount (mode, 8), NULL_RTX,
+	  temp1 = expand_binop (mode, ashl_optab, op0, GEN_INT (8), NULL_RTX,
 			        unsignedp, OPTAB_WIDEN);
-	  temp2 = expand_binop (mode, lshr_optab, op0,
-				gen_int_shift_amount (mode, 8), NULL_RTX,
+	  temp2 = expand_binop (mode, lshr_optab, op0, GEN_INT (8), NULL_RTX,
 			        unsignedp, OPTAB_WIDEN);
 	  if (temp1 && temp2)
 	    {
@@ -5412,7 +5402,7 @@ shift_amt_for_vec_perm_mask (rtx sel)
 	return NULL_RTX;
     }
 
-  return gen_int_shift_amount (GET_MODE (sel), first * bitsize);
+  return GEN_INT (first * bitsize);
 }
 
 /* A subroutine of expand_vec_perm for expanding one vec_perm insn.  */
@@ -5582,8 +5572,7 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 				   NULL, 0, OPTAB_DIRECT);
       else
 	sel = expand_simple_binop (selmode, ASHIFT, sel,
-				   gen_int_shift_amount (selmode,
-							 exact_log2 (u)),
+				   GEN_INT (exact_log2 (u)),
 				   NULL, 0, OPTAB_DIRECT);
       gcc_assert (sel != NULL);
 
