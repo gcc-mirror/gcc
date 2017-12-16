@@ -5069,6 +5069,7 @@ expand_debug_expr (tree exp)
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_PERM_EXPR:
+    case VEC_DUPLICATE_EXPR:
       return NULL;
 
     /* Misc codes.  */

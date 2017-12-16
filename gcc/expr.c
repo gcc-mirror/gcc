@@ -6598,7 +6598,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	constructor_elt *ce;
 	int i;
 	int need_to_clear;
-	int icode = CODE_FOR_nothing;
+	insn_code icode = CODE_FOR_nothing;
+	tree elt;
 	tree elttype = TREE_TYPE (type);
 	int elt_size = tree_to_uhwi (TYPE_SIZE (elttype));
 	machine_mode eltmode = TYPE_MODE (elttype);
@@ -6608,13 +6609,30 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	unsigned n_elts;
 	alias_set_type alias;
 	bool vec_vec_init_p = false;
+	machine_mode mode = GET_MODE (target);
 
 	gcc_assert (eltmode != BLKmode);
 
-	n_elts = TYPE_VECTOR_SUBPARTS (type);
-	if (REG_P (target) && VECTOR_MODE_P (GET_MODE (target)))
+	/* Try using vec_duplicate_optab for uniform vectors.  */
+	if (!TREE_SIDE_EFFECTS (exp)
+	    && VECTOR_MODE_P (mode)
+	    && eltmode == GET_MODE_INNER (mode)
+	    && ((icode = optab_handler (vec_duplicate_optab, mode))
+		!= CODE_FOR_nothing)
+	    && (elt = uniform_vector_p (exp)))
 	  {
-	    machine_mode mode = GET_MODE (target);
+	    struct expand_operand ops[2];
+	    create_output_operand (&ops[0], target, mode);
+	    create_input_operand (&ops[1], expand_normal (elt), eltmode);
+	    expand_insn (icode, 2, ops);
+	    if (!rtx_equal_p (target, ops[0].value))
+	      emit_move_insn (target, ops[0].value);
+	    break;
+	  }
+
+	n_elts = TYPE_VECTOR_SUBPARTS (type);
+	if (REG_P (target) && VECTOR_MODE_P (mode))
+	  {
 	    machine_mode emode = eltmode;
 
 	    if (CONSTRUCTOR_NELTS (exp)
@@ -6626,7 +6644,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 			    == n_elts);
 		emode = TYPE_MODE (etype);
 	      }
-	    icode = (int) convert_optab_handler (vec_init_optab, mode, emode);
+	    icode = convert_optab_handler (vec_init_optab, mode, emode);
 	    if (icode != CODE_FOR_nothing)
 	      {
 		unsigned int i, n = n_elts;
@@ -6674,7 +6692,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	if (need_to_clear && size > 0 && !vector)
 	  {
 	    if (REG_P (target))
-	      emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
+	      emit_move_insn (target, CONST0_RTX (mode));
 	    else
 	      clear_storage (target, GEN_INT (size), BLOCK_OP_NORMAL);
 	    cleared = 1;
@@ -6682,7 +6700,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 
 	/* Inform later passes that the old value is dead.  */
 	if (!cleared && !vector && REG_P (target))
-	  emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
+	  emit_move_insn (target, CONST0_RTX (mode));
 
         if (MEM_P (target))
 	  alias = MEM_ALIAS_SET (target);
@@ -6733,8 +6751,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 
 	if (vector)
 	  emit_insn (GEN_FCN (icode) (target,
-				      gen_rtx_PARALLEL (GET_MODE (target),
-							vector)));
+				      gen_rtx_PARALLEL (mode, vector)));
 	break;
       }
 
@@ -9565,6 +9582,12 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 
     case VEC_COND_EXPR:
       target = expand_vec_cond_expr (type, treeop0, treeop1, treeop2, target);
+      return target;
+
+    case VEC_DUPLICATE_EXPR:
+      op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
+      target = expand_vector_broadcast (mode, op0);
+      gcc_assert (target);
       return target;
 
     case BIT_INSERT_EXPR:

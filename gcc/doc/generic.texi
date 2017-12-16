@@ -1768,6 +1768,7 @@ a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 
 @node Vectors
 @subsection Vectors
+@tindex VEC_DUPLICATE_EXPR
 @tindex VEC_LSHIFT_EXPR
 @tindex VEC_RSHIFT_EXPR
 @tindex VEC_WIDEN_MULT_HI_EXPR
@@ -1779,9 +1780,14 @@ a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @tindex VEC_PACK_TRUNC_EXPR
 @tindex VEC_PACK_SAT_EXPR
 @tindex VEC_PACK_FIX_TRUNC_EXPR
+@tindex VEC_COND_EXPR
 @tindex SAD_EXPR
 
 @table @code
+@item VEC_DUPLICATE_EXPR
+This node has a single operand and represents a vector in which every
+element is equal to that operand.
+
 @item VEC_LSHIFT_EXPR
 @itemx VEC_RSHIFT_EXPR
 These nodes represent whole vector left and right shifts, respectively.
