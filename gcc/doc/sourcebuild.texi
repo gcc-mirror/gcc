@@ -822,6 +822,17 @@ manual needs to be installed as info for this to work, or to be a
 chapter of this manual.
 @end itemize
 
+GCC uses the macro @code{IN_TARGET_CODE} to distinguish between
+machine-specific @file{.c} and @file{.cc} files and
+machine-independent @file{.c} and @file{.cc} files.  Machine-specific
+files should use the directive:
+
+@example
+#define IN_TARGET_CODE 1
+@end example
+
+before including @code{config.h}.
+
 If the back end is added to the official GCC source repository, the
 following are also necessary:
 
