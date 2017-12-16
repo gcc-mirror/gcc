@@ -5072,6 +5072,7 @@ write_header (FILE *outf)
   fprintf (outf, "/* Generated automatically by the program `genattrtab'\n"
 	         "   from the machine description file `md'.  */\n\n");
 
+  fprintf (outf, "#define IN_TARGET_CODE 1\n");
   fprintf (outf, "#include \"config.h\"\n");
   fprintf (outf, "#include \"system.h\"\n");
   fprintf (outf, "#include \"coretypes.h\"\n");

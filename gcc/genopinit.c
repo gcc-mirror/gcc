@@ -246,6 +246,7 @@ main (int argc, const char **argv)
 	   "#endif\n");
 
   fprintf (s_file,
+	   "#define IN_TARGET_CODE 1\n"
 	   "#include \"config.h\"\n"
 	   "#include \"system.h\"\n"
 	   "#include \"coretypes.h\"\n"

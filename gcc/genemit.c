@@ -764,6 +764,7 @@ main (int argc, const char **argv)
   printf ("/* Generated automatically by the program `genemit'\n\
 from the machine description file `md'.  */\n\n");
 
+  printf ("#define IN_TARGET_CODE 1\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"coretypes.h\"\n");

@@ -22,6 +22,8 @@
 
  * Re-enable memory-to-memory copies and fix up reload.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

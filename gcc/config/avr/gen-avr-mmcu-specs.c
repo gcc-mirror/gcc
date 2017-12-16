@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 
 #define IN_GEN_AVR_MMCU_TEXI

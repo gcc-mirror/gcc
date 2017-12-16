@@ -9641,6 +9641,7 @@ main (int argc, const char **argv)
 	{
 	  puts ("/* Generated automatically by the program `genautomata'\n"
 		"   from the machine description file `md'.  */\n\n"
+		"#define IN_TARGET_CODE 1\n"
 		"#include \"config.h\"\n"
 		"#include \"system.h\"\n"
 		"#include \"coretypes.h\"\n"
