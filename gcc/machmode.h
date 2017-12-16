@@ -685,6 +685,17 @@ fixed_size_mode::includes_p (machine_mode)
   return true;
 }
 
+/* Wrapper for mode arguments to target macros, so that if a target
+   doesn't need polynomial-sized modes, its header file can continue
+   to treat everything as fixed_size_mode.  This should go away once
+   macros are moved to target hooks.  It shouldn't be used in other
+   contexts.  */
+#if NUM_POLY_INT_COEFFS == 1
+#define MACRO_MODE(MODE) (as_a <fixed_size_mode> (MODE))
+#else
+#define MACRO_MODE(MODE) (MODE)
+#endif
+
 extern opt_machine_mode mode_for_size (unsigned int, enum mode_class, int);
 
 /* Return the machine mode to use for a MODE_INT of SIZE bits, if one

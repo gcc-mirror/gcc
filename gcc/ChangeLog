@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (MACRO_MODE): New macro.
+	* addresses.h (base_reg_class, ok_for_base_p_1): Use it.
+	* targhooks.c (default_libcall_value, default_secondary_reload)
+	(default_memory_move_cost, default_register_move_cost)
+	(default_class_max_nregs): Likewise.
+
+2017-12-16  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/sourcebuild.texi: Document IN_TARGET_CODE.
 	* genattrtab.c (write_header): Define IN_TARGET_CODE to 1 in the
 	target C file.
