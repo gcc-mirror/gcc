@@ -1,6 +1,14 @@
 2017-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
+	PR libgfortran/81937
+	* io/list_read.c (next_char_internal): Don't attempt to read
+	from the internal unit stream if no bytes are left. Decrement
+	bytes_left in the right place.
+
+2017-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
 	PR libgfortran/78549
 	* io/inquire.c (inquire_via_unit): Adjust test for existence for
 	pre-connected internal units.
