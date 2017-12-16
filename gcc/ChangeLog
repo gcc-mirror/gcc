@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (mode_for_size, int_mode_for_size, float_mode_for_size)
+	(smallest_mode_for_size, smallest_int_mode_for_size): Take the mode
+	size as a poly_uint64.
+	(mode_for_vector, mode_for_int_vector): Take the number of vector
+	elements as a poly_uint64.
+	* stor-layout.c (mode_for_size, smallest_mode_for_size): Take the mode
+	size as a poly_uint64.
+	(mode_for_vector, mode_for_int_vector): Take the number of vector
+	elements as a poly_uint64.
+
+2017-12-16  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (MACRO_MODE): New macro.
 	* addresses.h (base_reg_class, ok_for_base_p_1): Use it.
 	* targhooks.c (default_libcall_value, default_secondary_reload)
