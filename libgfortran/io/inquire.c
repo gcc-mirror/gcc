@@ -47,7 +47,10 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit *u)
     generate_error (&iqp->common, LIBERROR_INQUIRE_INTERNAL_UNIT, NULL);
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
-    *iqp->exist = (u != NULL) || (iqp->common.unit >= 0);
+    *iqp->exist = (u != NULL &&
+		   iqp->common.unit != GFC_INTERNAL_UNIT &&
+		   iqp->common.unit != GFC_INTERNAL_UNIT4)
+		|| (iqp->common.unit >= 0);
 
   if ((cf & IOPARM_INQUIRE_HAS_OPENED) != 0)
     *iqp->opened = (u != NULL);
