@@ -696,14 +696,14 @@ fixed_size_mode::includes_p (machine_mode)
 #define MACRO_MODE(MODE) (MODE)
 #endif
 
-extern opt_machine_mode mode_for_size (unsigned int, enum mode_class, int);
+extern opt_machine_mode mode_for_size (poly_uint64, enum mode_class, int);
 
 /* Return the machine mode to use for a MODE_INT of SIZE bits, if one
    exists.  If LIMIT is nonzero, modes wider than MAX_FIXED_MODE_SIZE
    will not be used.  */
 
 inline opt_scalar_int_mode
-int_mode_for_size (unsigned int size, int limit)
+int_mode_for_size (poly_uint64 size, int limit)
 {
   return dyn_cast <scalar_int_mode> (mode_for_size (size, MODE_INT, limit));
 }
@@ -712,7 +712,7 @@ int_mode_for_size (unsigned int size, int limit)
    exists.  */
 
 inline opt_scalar_float_mode
-float_mode_for_size (unsigned int size)
+float_mode_for_size (poly_uint64 size)
 {
   return dyn_cast <scalar_float_mode> (mode_for_size (size, MODE_FLOAT, 0));
 }
@@ -726,21 +726,21 @@ decimal_float_mode_for_size (unsigned int size)
     (mode_for_size (size, MODE_DECIMAL_FLOAT, 0));
 }
 
-extern machine_mode smallest_mode_for_size (unsigned int, enum mode_class);
+extern machine_mode smallest_mode_for_size (poly_uint64, enum mode_class);
 
 /* Find the narrowest integer mode that contains at least SIZE bits.
    Such a mode must exist.  */
 
 inline scalar_int_mode
-smallest_int_mode_for_size (unsigned int size)
+smallest_int_mode_for_size (poly_uint64 size)
 {
   return as_a <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
 }
 
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
-extern opt_machine_mode mode_for_vector (scalar_mode, unsigned);
-extern opt_machine_mode mode_for_int_vector (unsigned int, unsigned int);
+extern opt_machine_mode mode_for_vector (scalar_mode, poly_uint64);
+extern opt_machine_mode mode_for_int_vector (unsigned int, poly_uint64);
 
 /* Return the integer vector equivalent of MODE, if one exists.  In other
    words, return the mode for an integer vector that has the same number
