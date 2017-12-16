@@ -3868,6 +3868,7 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wparentheses  @gol
 -Wpointer-sign  @gol
 -Wreorder   @gol
+-Wrestrict   @gol
 -Wreturn-type  @gol
 -Wsequence-point  @gol
 -Wsign-compare @r{(only in C++)}  @gol
@@ -6711,11 +6712,25 @@ reduce the padding and so make the structure smaller.
 Warn if anything is declared more than once in the same scope, even in
 cases where multiple declaration is valid and changes nothing.
 
-@item -Wrestrict
+@item -Wno-restrict
 @opindex Wrestrict
 @opindex Wno-restrict
-Warn when an argument passed to a restrict-qualified parameter
-aliases with another argument.
+Warn when an object referenced by a @code{restrict}-qualified parameter
+(or, in C++, a @code{__restrict}-qualified parameter) is aliased by another
+argument, or when copies between such objects overlap.  For example,
+the call to the @code{strcpy} function below attempts to truncate the string
+by replacing its initial characters with the last four.  However, because
+the call writes the terminating NUL into @code{a[4]}, the copies overlap and
+the call is diagnosed.
+
+@smallexample
+struct foo
+@{
+  char a[] = "abcd1234";
+  strcpy (a, a + 4);
+@};
+@end smallexample
+The @option{-Wrestrict} is included in @option{-Wall}.
 
 @item -Wnested-externs @r{(C and Objective-C only)}
 @opindex Wnested-externs

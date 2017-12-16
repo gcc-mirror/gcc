@@ -1,3 +1,46 @@
+2017-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78918
+	* Makefile.in (OBJS): Add gimple-ssa-warn-restrict.o.
+	* builtins.c (check_sizes): Rename...
+	(check_access): ...to this.  Rename function arguments for clarity.
+	(check_memop_sizes): Adjust names.
+	(expand_builtin_memchr, expand_builtin_memcpy): Same.
+	(expand_builtin_memmove, expand_builtin_mempcpy): Same.
+	(expand_builtin_strcat, expand_builtin_stpncpy): Same.
+	(check_strncat_sizes, expand_builtin_strncat): Same.
+	(expand_builtin_strncpy, expand_builtin_memset): Same.
+	(expand_builtin_bzero, expand_builtin_memcmp): Same.
+	(expand_builtin_memory_chk, maybe_emit_chk_warning): Same.
+	(maybe_emit_sprintf_chk_warning): Same.
+	(expand_builtin_strcpy): Adjust.
+	(expand_builtin_stpcpy): Same.
+	(expand_builtin_with_bounds): Detect out-of-bounds accesses
+	in pointer-checking forms of memcpy, memmove, and mempcpy.
+	(gcall_to_tree_minimal, max_object_size): Define new functions.
+	* builtins.h (max_object_size): Declare.
+	* calls.c (alloc_max_size): Call max_object_size instead of
+	hardcoding ssizetype limit.
+	(get_size_range): Handle new argument.
+	* calls.h (get_size_range): Add a new argument.
+	* cfgexpand.c (expand_call_stmt): Propagate no-warning bit.
+	* doc/invoke.texi (-Wrestrict): Adjust, add example.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Detect overlapping
+	operations.
+	(gimple_fold_builtin_memory_chk): Same.
+	(gimple_fold_builtin_stxcpy_chk): New function.
+	* gimple-ssa-warn-restrict.c: New source.
+	* gimple-ssa-warn-restrict.h: New header.
+	* gimple.c (gimple_build_call_from_tree): Propagate location.
+	* passes.def (pass_warn_restrict): Add new pass.
+	* tree-pass.h (make_pass_warn_restrict): Declare.
+	* tree-ssa-strlen.c (handle_builtin_strcpy): Detect overlapping
+	operations.
+	(handle_builtin_strcat): Same.
+	(strlen_optimize_stmt): Rename...
+	(strlen_check_and_optimize_stmt): ...to this.  Handle strncat,
+	stpncpy, strncpy, and their checking forms.
+
 2017-12-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR rtl-optimization/82849

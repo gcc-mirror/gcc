@@ -1,5 +1,34 @@
 2017-12-16  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/78918
+	* c-c++-common/Warray-bounds.c: New test.
+	* c-c++-common/Warray-bounds-2.c: New test.
+	* c-c++-common/Warray-bounds-3.c: New test.
+	* c-c++-common/Warray-bounds-4.c: New test.
+	* c-c++-common/Warray-bounds-5.c: New test.
+	* c-c++-common/Wrestrict-2.c: New test.
+	* c-c++-common/Wrestrict.c: New test.
+	* c-c++-common/Wrestrict.s: New test.
+	* c-c++-common/Wsizeof-pointer-memaccess1.c: Adjust
+	* c-c++-common/Wsizeof-pointer-memaccess2.c: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Same.
+	* gcc.dg/range.h: New header.
+	* gcc.dg/memcpy-6.c: New test.
+	* gcc.dg/pr69172.c: Adjust.
+	* gcc.dg/pr79223.c: Same.
+	* gcc.dg/pr81345.c: Adjust.
+	* gcc.dg/Wobjsize-1.c: Same.
+	* gcc.dg/Wrestrict-2.c: New test.
+	* gcc.dg/Wrestrict.c: New test.
+	* gcc.dg/Wsizeof-pointer-memaccess1.c: Adjust.
+	* gcc.dg/builtin-stpncpy.c: Same.
+	* gcc.dg/builtin-stringop-chk-1.c: Same.
+	* gcc.target/i386/chkp-stropt-17.c: New test.
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: Adjust.
+
+2017-12-16  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/83239
 	* g++.dg/pr83239.C: New test case.
 
