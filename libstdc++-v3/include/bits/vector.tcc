@@ -582,8 +582,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     {
       if (__n != 0)
 	{
-	  if (size_type(this->_M_impl._M_end_of_storage
-			- this->_M_impl._M_finish) >= __n)
+	  size_type __size = size();
+	  size_type __navail = size_type(this->_M_impl._M_end_of_storage
+					 - this->_M_impl._M_finish);
+
+	  if (__size > max_size() || __navail > max_size() - __size)
+	    __builtin_unreachable();
+
+	  if (__navail >= __n)
 	    {
 	      _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 	      this->_M_impl._M_finish =
@@ -595,7 +601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    {
 	      const size_type __len =
 		_M_check_len(__n, "vector::_M_default_append");
-	      const size_type __old_size = this->size();
+	      const size_type __old_size = __size;
 	      pointer __new_start(this->_M_allocate(__len));
 	      pointer __new_finish(__new_start);
 	      __try
