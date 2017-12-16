@@ -1,3 +1,9 @@
+2017-12-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+        PR target/83358
+	* gcc.target/i386/pr83358-1.c: New test.
+	* gcc.target/i386/pr83358-2.c: New test.
+
 2017-12-15  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/36550
