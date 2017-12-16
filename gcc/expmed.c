@@ -223,7 +223,8 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
 	  PUT_MODE (all->zext, wider_mode);
 	  PUT_MODE (all->wide_mult, wider_mode);
 	  PUT_MODE (all->wide_lshr, wider_mode);
-	  XEXP (all->wide_lshr, 1) = GEN_INT (mode_bitsize);
+	  XEXP (all->wide_lshr, 1)
+	    = gen_int_shift_amount (wider_mode, mode_bitsize);
 
 	  set_mul_widen_cost (speed, wider_mode,
 			      set_src_cost (all->wide_mult, wider_mode, speed));
@@ -910,12 +911,14 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	     to make sure that for big-endian machines the higher order
 	     bits are used.  */
 	  if (new_bitsize < BITS_PER_WORD && BYTES_BIG_ENDIAN && !backwards)
-	    value_word = simplify_expand_binop (word_mode, lshr_optab,
-						value_word,
-						GEN_INT (BITS_PER_WORD
-							 - new_bitsize),
-						NULL_RTX, true,
-						OPTAB_LIB_WIDEN);
+	    {
+	      int shift = BITS_PER_WORD - new_bitsize;
+	      rtx shift_rtx = gen_int_shift_amount (word_mode, shift);
+	      value_word = simplify_expand_binop (word_mode, lshr_optab,
+						  value_word, shift_rtx,
+						  NULL_RTX, true,
+						  OPTAB_LIB_WIDEN);
+	    }
 
 	  if (!store_bit_field_1 (op0, new_bitsize,
 				  bitnum + bit_offset,
@@ -2366,8 +2369,9 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
       if (CONST_INT_P (op1)
 	  && ((unsigned HOST_WIDE_INT) INTVAL (op1) >=
 	      (unsigned HOST_WIDE_INT) GET_MODE_BITSIZE (scalar_mode)))
-	op1 = GEN_INT ((unsigned HOST_WIDE_INT) INTVAL (op1)
-		       % GET_MODE_BITSIZE (scalar_mode));
+	op1 = gen_int_shift_amount (mode,
+				    (unsigned HOST_WIDE_INT) INTVAL (op1)
+				    % GET_MODE_BITSIZE (scalar_mode));
       else if (GET_CODE (op1) == SUBREG
 	       && subreg_lowpart_p (op1)
 	       && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (op1)))
@@ -2384,7 +2388,8 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
       && IN_RANGE (INTVAL (op1), GET_MODE_BITSIZE (scalar_mode) / 2 + left,
 		   GET_MODE_BITSIZE (scalar_mode) - 1))
     {
-      op1 = GEN_INT (GET_MODE_BITSIZE (scalar_mode) - INTVAL (op1));
+      op1 = gen_int_shift_amount (mode, (GET_MODE_BITSIZE (scalar_mode)
+					 - INTVAL (op1)));
       left = !left;
       code = left ? LROTATE_EXPR : RROTATE_EXPR;
     }
@@ -2464,8 +2469,8 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
 	      if (op1 == const0_rtx)
 		return shifted;
 	      else if (CONST_INT_P (op1))
-		other_amount = GEN_INT (GET_MODE_BITSIZE (scalar_mode)
-					- INTVAL (op1));
+		other_amount = gen_int_shift_amount
+		  (mode, GET_MODE_BITSIZE (scalar_mode) - INTVAL (op1));
 	      else
 		{
 		  other_amount
@@ -2538,8 +2543,9 @@ rtx
 expand_shift (enum tree_code code, machine_mode mode, rtx shifted,
 	      int amount, rtx target, int unsignedp)
 {
-  return expand_shift_1 (code, mode,
-			 shifted, GEN_INT (amount), target, unsignedp);
+  return expand_shift_1 (code, mode, shifted,
+			 gen_int_shift_amount (mode, amount),
+			 target, unsignedp);
 }
 
 /* Likewise, but return 0 if that cannot be done.  */
@@ -3857,7 +3863,7 @@ expand_smod_pow2 (scalar_int_mode mode, rtx op0, HOST_WIDE_INT d)
 	{
 	  HOST_WIDE_INT masklow = (HOST_WIDE_INT_1 << logd) - 1;
 	  signmask = force_reg (mode, signmask);
-	  shift = GEN_INT (GET_MODE_BITSIZE (mode) - logd);
+	  shift = gen_int_shift_amount (mode, GET_MODE_BITSIZE (mode) - logd);
 
 	  /* Use the rtx_cost of a LSHIFTRT instruction to determine
 	     which instruction sequence to use.  If logical right shifts

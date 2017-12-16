@@ -2,6 +2,29 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* emit-rtl.h (gen_int_shift_amount): Declare.
+	* emit-rtl.c (gen_int_shift_amount): New function.
+	* asan.c (asan_emit_stack_protection): Use gen_int_shift_amount
+	instead of GEN_INT.
+	* calls.c (shift_return_value): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* dse.c (find_shift_sequence): Likewise.
+	* expmed.c (init_expmed_one_mode, store_bit_field_1, expand_shift_1)
+	(expand_shift, expand_smod_pow2): Likewise.
+	* lower-subreg.c (shift_cost): Likewise.
+	* optabs.c (expand_superword_shift, expand_doubleword_mult)
+	(expand_unop, expand_binop, shift_amt_for_vec_perm_mask)
+	(expand_vec_perm_var): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_binary_operation_1): Likewise.
+	* combine.c (try_combine, find_split_point, force_int_to_mode)
+	(simplify_shift_const_1, simplify_shift_const): Likewise.
+	(change_zero_ext): Likewise.  Use simplify_gen_binary.
+
+2017-12-16  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (MACRO_MODE): New macro.
 	* addresses.h (base_reg_class, ok_for_base_p_1): Use it.
 	* targhooks.c (default_libcall_value, default_secondary_reload)
