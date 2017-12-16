@@ -1386,7 +1386,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   TREE_ASM_WRITTEN (id) = 1;
   emit_move_insn (mem, expand_normal (build_fold_addr_expr (decl)));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
-			      gen_int_shift_amount (Pmode, ASAN_SHADOW_SHIFT),
+			      GEN_INT (ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   shadow_base
     = plus_constant (Pmode, shadow_base,

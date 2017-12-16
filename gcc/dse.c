@@ -1642,9 +1642,8 @@ find_shift_sequence (int access_size,
 				     store_mode, byte);
 	  if (ret && CONSTANT_P (ret))
 	    {
-	      rtx shift_rtx = gen_int_shift_amount (new_mode, shift);
 	      ret = simplify_const_binary_operation (LSHIFTRT, new_mode,
-						     ret, shift_rtx);
+						     ret, GEN_INT (shift));
 	      if (ret && CONSTANT_P (ret))
 		{
 		  byte = subreg_lowpart_offset (read_mode, new_mode);
@@ -1680,8 +1679,7 @@ find_shift_sequence (int access_size,
 	 of one dsp where the cost of these two was not the same.  But
 	 this really is a rare case anyway.  */
       target = expand_binop (new_mode, lshr_optab, new_reg,
-			     gen_int_shift_amount (new_mode, shift),
-			     new_reg, 1, OPTAB_DIRECT);
+			     GEN_INT (shift), new_reg, 1, OPTAB_DIRECT);
 
       shift_seq = get_insns ();
       end_sequence ();
