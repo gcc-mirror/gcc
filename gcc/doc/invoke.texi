@@ -2947,7 +2947,7 @@ might bypass the class non-trivial or deleted constructor or copy assignment,
 violate const-correctness or encapsulation, or corrupt the virtual table.
 Modifying the representation of such objects may violate invariants maintained
 by member functions of the class.  For example, the call to @code{memset}
-below is undefined becase it modifies a non-trivial class object and is,
+below is undefined because it modifies a non-trivial class object and is,
 therefore, diagnosed.  The safe way to either initialize or clear the storage
 of objects of such types is by using the appropriate constructor or assignment
 operator, if one is available.
@@ -9832,7 +9832,7 @@ of the loop on both branches (modified according to result of the condition).
 
 @item -floop-unroll-and-jam
 @opindex floop-unroll-and-jam
-Apply unroll and jam transoformations on feasible loops.  In a loop
+Apply unroll and jam transformations on feasible loops.  In a loop
 nest this unrolls the outer loop by some factor and fuses the resulting
 multiple inner loops.
 
@@ -15648,7 +15648,7 @@ Permissible names are:
 @samp{iwmmxt} and @samp{iwmmxt2}.
 
 Additionally, the following architectures, which lack support for the
-Thumb exection state, are recognized but support is deprecated:
+Thumb execution state, are recognized but support is deprecated:
 @samp{armv2}, @samp{armv2a}, @samp{armv3}, @samp{armv3m},
 @samp{armv4}, @samp{armv5} and @samp{armv5e}.
 
@@ -15816,7 +15816,7 @@ The ARMv8-A Advanced SIMD and floating-point instructions.
 @item +crypto
 The cryptographic instructions.
 @item +nocrypto
-Disable the cryptographic isntructions.
+Disable the cryptographic instructions.
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @end table
@@ -15831,7 +15831,7 @@ The cryptographic instructions.  This also enables the Advanced SIMD and
 floating-point instructions.
 
 @item +nocrypto
-Disable the cryptographic isntructions.
+Disable the cryptographic instructions.
 
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
@@ -15924,7 +15924,7 @@ The ARMv8-A Advanced SIMD and floating-point instructions.
 @item +crypto
 The cryptographic instructions.
 @item +nocrypto
-Disable the cryptographic isntructions.
+Disable the cryptographic instructions.
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @end table
