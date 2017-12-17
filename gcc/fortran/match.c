@@ -2985,7 +2985,7 @@ gfc_match_stopcode (gfc_statement st)
     {
       if (st == ST_ERROR_STOP)
 	{
-	  if (!gfc_notify_std (GFC_STD_F2015, "%s statement at %C in PURE "
+	  if (!gfc_notify_std (GFC_STD_F2018, "%s statement at %C in PURE "
 			       "procedure", gfc_ascii_statement (st)))
 	    goto cleanup;
 	}

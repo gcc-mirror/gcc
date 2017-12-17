@@ -2355,7 +2355,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (formal->attr.codimension)
     {
       /* F2008, 12.5.2.8 + Corrig 2 (IR F08/0048).  */
-      /* F2015, 12.5.2.8.  */
+      /* F2018, 12.5.2.8.  */
       if (formal->attr.dimension
 	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
 	  && actual_attr.dimension
