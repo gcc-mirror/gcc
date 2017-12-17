@@ -1,3 +1,7 @@
+2017-12-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Fix some typos.
+
 2017-12-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78918
