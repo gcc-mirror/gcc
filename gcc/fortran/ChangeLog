@@ -1,3 +1,21 @@
+2017-12-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* decl.c (gfc_match_implicit_none): Use GFC_STD_F2018 instead of
+	GFC_STD_F2015.
+	* error.c (gfc_notify_std): Add GFC_STD_F2018{_DEL,_OBS} to
+	switch.
+	* gfortran.texi: Document -std=f2018.
+	* interface.c (compare_parameter): Fix comment.
+	* invoke.texi: Document -std=f2018.
+	* lang.opt: Add -std=f2018 argumnet.
+	* libgfortran.h (GFC_STD_F2015): Rename to GFC_STD_F0218, use
+	separate flag bit.
+	(GFC_STD_F2018_DEL): New macro.
+	(GFC_STD_F2018_OBS): Likewise.
+	* match.c (gfc_match_stopcode): Use GFC_STD_F2018.
+	* options.c (set_default_std_flags): Add F2018 flags to defaults.
+	(gfc_handle_option): Set options for -std=f2018.
+
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* f95-lang.c (gfc_attribute_table): Swap affects_type_identity

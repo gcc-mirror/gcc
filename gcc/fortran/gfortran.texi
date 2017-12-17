@@ -180,7 +180,7 @@ Part I: Invoking GNU Fortran
 * Runtime::              Influencing runtime behavior with environment variables.
 
 Part II: Language Reference
-* Fortran 2003 and 2008 status::  Fortran 2003 and 2008 features supported by GNU Fortran.
+* Fortran standards status::      Fortran 2003, 2008 and 2018 features supported by GNU Fortran.
 * Compiler Characteristics::      User-visible implementation details.
 * Extensions::                    Language extensions implemented by GNU Fortran.
 * Mixed-Language Programming::    Interoperability with C
@@ -243,16 +243,15 @@ or alternative to, the Unix @command{f95} command;
 @section About GNU Fortran
 
 The GNU Fortran compiler supports the Fortran 77, 90 and 95 standards
-completely, parts of the Fortran 2003 and Fortran 2008 standards, and
+completely, parts of the Fortran 2003, 2008 and 2018 standards, and
 several vendor extensions.  The development goal is to provide the
 following features:
 
 @itemize @bullet
 @item
-Read a user's program,
-stored in a file and containing instructions written
-in Fortran 77, Fortran 90, Fortran 95, Fortran 2003 or Fortran 2008.
-This file contains @dfn{source code}.
+Read a user's program, stored in a file and containing instructions
+written in Fortran 77, Fortran 90, Fortran 95, Fortran 2003, Fortran
+2008 or Fortran 2018.  This file contains @dfn{source code}.
 
 @item
 Translate the user's program into instructions a computer
@@ -504,10 +503,11 @@ G77 can be compiled with GNU Fortran, although there are a few minor known
 regressions.
 
 The primary work remaining to be done on GNU Fortran falls into three
-categories: bug fixing (primarily regarding the treatment of invalid code
-and providing useful error messages), improving the compiler optimizations
-and the performance of compiled code, and extending the compiler to support
-future standards---in particular, Fortran 2003 and Fortran 2008.
+categories: bug fixing (primarily regarding the treatment of invalid
+code and providing useful error messages), improving the compiler
+optimizations and the performance of compiled code, and extending the
+compiler to support future standards---in particular, Fortran 2003,
+Fortran 2008 and Fortran 2018.
 
 
 @c ---------------------------------------------------------------------
@@ -527,13 +527,14 @@ ISO/IEC 1539:1997 (Fortran 95).  As such, it can also compile essentially all
 standard-compliant Fortran 90 and Fortran 77 programs.   It also supports
 the ISO/IEC TR-15581 enhancements to allocatable arrays.
 
-GNU Fortran also have a partial support for ISO/IEC 1539-1:2004 (Fortran
-2003), ISO/IEC 1539-1:2010 (Fortran 2008), the Technical Specification
-@code{Further Interoperability of Fortran with C} (ISO/IEC TS 29113:2012).
-Full support of those standards and future Fortran standards is planned.
-The current status of the support is can be found in the
-@ref{Fortran 2003 status}, @ref{Fortran 2008 status}, @ref{TS 29113 status}
-and @ref{TS 18508 status} sections of the documentation.
+GNU Fortran also have a partial support for ISO/IEC 1539-1:2004
+(Fortran 2003), ISO/IEC 1539-1:2010 (Fortran 2008), the Technical
+Specification @code{Further Interoperability of Fortran with C}
+(ISO/IEC TS 29113:2012).  Full support of those standards and future
+Fortran standards is planned.  The current status of the support is
+can be found in the @ref{Fortran 2003 status}, @ref{Fortran 2008
+status}, @ref{TS 29113 status}, @ref{TS 18508 status} and @ref{Fortran
+2018 status} sections of the documentation.
 
 Additionally, the GNU Fortran compilers supports the OpenMP specification
 (version 4.0 and most of the features of the 4.5 version,
@@ -783,17 +784,18 @@ compile option was used.
 @end tex
 
 @c ---------------------------------------------------------------------
-@c Fortran 2003 and 2008 Status
+@c Fortran standards status
 @c ---------------------------------------------------------------------
 
-@node Fortran 2003 and 2008 status
-@chapter Fortran 2003 and 2008 Status
+@node Fortran standards status
+@chapter Fortran standards status
 
 @menu
 * Fortran 2003 status::
 * Fortran 2008 status::
 * TS 29113 status::
 * TS 18508 status::
+* Fortran 2018 status::
 @end menu
 
 @node Fortran 2003 status
@@ -1145,6 +1147,27 @@ polymorphic components.
 @end itemize
 
 
+@node Fortran 2018 status
+@section Status of Fortran 2018 support
+
+So far very little work has been done to support Fortran 2018.
+
+@itemize
+@item ERROR STOP in a PURE procedure
+An @code{ERROR STOP} statement is permitted in a @code{PURE}
+procedure.
+
+@item IMPLICIT NONE with a spec-list
+Support the @code{IMPLICIT NONE} statement with an
+@code{implicit-none-spec-list}.
+
+@item Behavior of INQUIRE with the RECL= specifier
+
+The behavior of the @code{INQUIRE} statement with the @code{RECL=}
+specifier now conforms to Fortran 2018.
+
+@end itemize
+
 @c ---------------------------------------------------------------------
 @c Compiler Characteristics
 @c ---------------------------------------------------------------------
@@ -1482,18 +1505,19 @@ extensions.
 @section Extensions implemented in GNU Fortran
 @cindex extensions, implemented
 
-GNU Fortran implements a number of extensions over standard
-Fortran.  This chapter contains information on their syntax and
-meaning.  There are currently two categories of GNU Fortran
-extensions, those that provide functionality beyond that provided
-by any standard, and those that are supported by GNU Fortran
-purely for backward compatibility with legacy compilers.  By default,
-@option{-std=gnu} allows the compiler to accept both types of
-extensions, but to warn about the use of the latter.  Specifying
-either @option{-std=f95}, @option{-std=f2003} or @option{-std=f2008}
-disables both types of extensions, and @option{-std=legacy} allows both
-without warning.  The special compile flag @option{-fdec} enables additional
-compatibility extensions along with those enabled by @option{-std=legacy}.
+GNU Fortran implements a number of extensions over standard Fortran.
+This chapter contains information on their syntax and meaning.  There
+are currently two categories of GNU Fortran extensions, those that
+provide functionality beyond that provided by any standard, and those
+that are supported by GNU Fortran purely for backward compatibility
+with legacy compilers.  By default, @option{-std=gnu} allows the
+compiler to accept both types of extensions, but to warn about the use
+of the latter.  Specifying either @option{-std=f95},
+@option{-std=f2003}, @option{-std=f2008}, or @option{-std=f2018}
+disables both types of extensions, and @option{-std=legacy} allows
+both without warning.  The special compile flag @option{-fdec} enables
+additional compatibility extensions along with those enabled by
+@option{-std=legacy}.
 
 @menu
 * Old-style kind specifications::
@@ -3602,15 +3626,17 @@ used.
 @item @emph{option flag list}:
 @multitable @columnfractions .15 .70
 @item @var{option}[0] @tab Allowed standard; can give run-time errors
-if e.g. an input-output edit descriptor is invalid in a given standard.
-Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
-@code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4), @code{GFC_STD_F95}
-(8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU} (32),
-@code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
-@code{GFC_STD_F2008_OBS} (256) and GFC_STD_F2008_TS (512). Default:
-@code{GFC_STD_F95_OBS | GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003
-| GFC_STD_F2008 | GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77
-| GFC_STD_GNU | GFC_STD_LEGACY}.
+if e.g. an input-output edit descriptor is invalid in a given
+standard.  Possible values are (bitwise or-ed) @code{GFC_STD_F77} (1),
+@code{GFC_STD_F95_OBS} (2), @code{GFC_STD_F95_DEL} (4),
+@code{GFC_STD_F95} (8), @code{GFC_STD_F2003} (16), @code{GFC_STD_GNU}
+(32), @code{GFC_STD_LEGACY} (64), @code{GFC_STD_F2008} (128),
+@code{GFC_STD_F2008_OBS} (256), @code{GFC_STD_F2008_TS} (512),
+@code{GFC_STD_F2018} (1024), @code{GFC_STD_F2018_OBS} (2048), and
+@code{GFC_STD=F2018_DEL} (4096). Default: @code{GFC_STD_F95_OBS |
+GFC_STD_F95_DEL | GFC_STD_F95 | GFC_STD_F2003 | GFC_STD_F2008 |
+GFC_STD_F2008_TS | GFC_STD_F2008_OBS | GFC_STD_F77 | GFC_STD_F2018 |
+GFC_STD_F2018_OBS | GFC_STD_F2018_DEL | GFC_STD_GNU | GFC_STD_LEGACY}.
 @item @var{option}[1] @tab Standard-warning flag; prints a warning to
 standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 @item @var{option}[2] @tab If non zero, enable pedantic checking.

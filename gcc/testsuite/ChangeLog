@@ -1,4 +1,12 @@
-2017-12-17  Markus Trippelsdorf  <markus@trippelsdorf.de> 
+2017-12-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/error_stop_3.f90: Update -std= option, fix comments.
+	* gfortran.dg/error_stop_4.f90: Update error message.
+	* gfortran.dg/implicit_14.f90: Likewise.
+	* gfortran.dg/spellcheck-procedure_2.f90: Don't warn for F2018
+	features.
+
+2017-12-17  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* gcc.target/i386/wmul-3.c: New test.
 
