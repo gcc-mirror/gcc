@@ -1,3 +1,8 @@
+2017-12-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/guality/guality.h (guality_check): Cast %lli arguments
+	inf fprintf statements to long long int.
+
 2017-12-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gfortran.dg/error_stop_3.f90: Update -std= option, fix comments.
@@ -51,7 +56,7 @@
 
 2017-12-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
-        PR target/83358
+	PR target/83358
 	* gcc.target/i386/pr83358-1.c: New test.
 	* gcc.target/i386/pr83358-2.c: New test.
 
@@ -395,17 +400,17 @@
 	vec_cts, vec_ctu.
 	* gcc.target/powerpc/builtins-3-runnable.c (test_result_sp): Fix printf
 	conversion character.
- 	* gcc.target/powerpc/fold-vec-minmax-char.c (test1_min, test2_min,
+	* gcc.target/powerpc/fold-vec-minmax-char.c (test1_min, test2_min,
 	test4_min, test1_max, test2_max): Add tests for vec_max and vec_min.
- 	* gcc.target/powerpc/fold-vec-minmax-int.c (test4_min, test5_min,
+	* gcc.target/powerpc/fold-vec-minmax-int.c (test4_min, test5_min,
 	test7_min, test8_min): Add tests for vec_min.
- 	* gcc.target/powerpc/fold-vec-minmax-longlong.c (test7_max, test8_max,
+	* gcc.target/powerpc/fold-vec-minmax-longlong.c (test7_max, test8_max,
 	test9_max, test10_max): Add tests for and vec_max.
- 	* gcc.target/powerpc/fold-vec-minmax-short.c (test4_min, test5_min,
+	* gcc.target/powerpc/fold-vec-minmax-short.c (test4_min, test5_min,
 	tes7_min, test8_min): Add tests for and vec_min.
- 	* gcc.target/powerpc/p8vector-builtin-8.c (foo): Add test for vec_adds,
+	* gcc.target/powerpc/p8vector-builtin-8.c (foo): Add test for vec_adds,
 	vec_subs, vec_sum2s, vec_sum4s.
- 	* gcc.target/powerpc/vsx-splats-p8.c: New file to test vec_splats.
+	* gcc.target/powerpc/vsx-splats-p8.c: New file to test vec_splats.
 	* gcc.target/vsx-vector-5.c (arg1_tests_d, arg1_tests_d): Add
 	tests for vec_ceil, vec_floor, vec_nearbyint, vec_sqrt.
 	* gcc.target/vsx-vector-7.c (foo): Add tests for vec_sel.
@@ -423,7 +428,7 @@
 	ALTIVEC_BUILTIN_VEC_SLL): Add expansions.
 	* doc/extend.texi: Add documentation for the added builtins.
 
-2017-12-11  Alexandre Oliva <aoliva@redhat.com>
+2017-12-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/80693
 	PR rtl-optimization/81019
