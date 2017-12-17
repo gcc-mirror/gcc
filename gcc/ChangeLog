@@ -1,3 +1,8 @@
+2017-12-17  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	* x86-tune-costs.h (skylake_cost, core_cost): Decrease r64 multiply
+	latencies.
+
 2017-12-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Fix some typos.

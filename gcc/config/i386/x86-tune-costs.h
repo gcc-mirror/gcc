@@ -1538,8 +1538,8 @@ struct processor_costs skylake_cost = {
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
    COSTS_N_INSNS (4),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (4)},			/*			      other */
+   COSTS_N_INSNS (3),			/*				 DI */
+   COSTS_N_INSNS (3)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   /* Expanding div/mod currently doesn't consider parallelism. So the cost
      model is not realistic. We compensate by increasing the latencies a bit.  */
@@ -2341,8 +2341,9 @@ struct processor_costs core_cost = {
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
    COSTS_N_INSNS (4),			/*				 HI */
    COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (4)},			/*			      other */
+   /* Here we tune for Sandybridge or newer.  */
+   COSTS_N_INSNS (3),			/*				 DI */
+   COSTS_N_INSNS (3)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   /* Expanding div/mod currently doesn't consider parallelism. So the cost
      model is not realistic. We compensate by increasing the latencies a bit.  */
