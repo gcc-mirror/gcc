@@ -1,3 +1,7 @@
+2017-12-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_som_asm_init_sections): Fix comment.
+
 2017-12-17  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	* x86-tune-costs.h (skylake_cost, core_cost): Decrease r64 multiply
