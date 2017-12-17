@@ -15335,6 +15335,7 @@ Enable the use of indexed loads.  This can be problematic because some
 optimizers then assume that indexed stores exist, which is not
 the case.
 
+@item -mlra
 @opindex mlra
 Enable Local Register Allocation.  This is still experimental for ARC,
 so by default the compiler uses standard reload
