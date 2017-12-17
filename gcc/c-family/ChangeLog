@@ -1,3 +1,8 @@
+2017-12-17  Martin Sebor  <msebor@redhat.com>
+
+	* c-attribs.c (common_handle_aligned_attribute): Avoid issuing
+	an error for attribute warn_if_not_aligned.
+
 2017-12-16  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/78918
