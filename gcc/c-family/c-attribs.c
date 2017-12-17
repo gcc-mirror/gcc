@@ -1879,14 +1879,17 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       curalign /= BITS_PER_UNIT;
       bitalign /= BITS_PER_UNIT;
 
+      bool diagd = true;
       if (DECL_USER_ALIGN (decl) || DECL_USER_ALIGN (last_decl))
-	warning (OPT_Wattributes,
-		 "ignoring attribute %<%E (%u)%> because it conflicts with "
-		 "attribute %<%E (%u)%>", name, bitalign, name, curalign);
-      else
+	diagd = warning (OPT_Wattributes,
+			  "ignoring attribute %<%E (%u)%> because it conflicts "
+			  "with attribute %<%E (%u)%>",
+			  name, bitalign, name, curalign);
+      else if (!warn_if_not_aligned_p)
+	/* Do not error out for attribute warn_if_not_aligned.  */
 	error ("alignment for %q+D must be at least %d", decl, curalign);
 
-      if (note)
+      if (diagd && note)
 	inform (DECL_SOURCE_LOCATION (last_decl), "previous declaration here");
 
       *no_add_attrs = true;
