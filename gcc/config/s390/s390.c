@@ -15357,16 +15357,11 @@ s390_option_override (void)
 	    {
 	      int val1;
 	      int val2;
-	      char s[256];
-	      char *t;
+	      char *s = strtok (ASTRDUP (opt->arg), ",");
+	      char *t = strtok (NULL, "\0");
 
-	      strncpy (s, opt->arg, 256);
-	      s[255] = 0;
-	      t = strchr (s, ',');
 	      if (t != NULL)
 		{
-		  *t = 0;
-		  t++;
 		  val1 = integral_argument (s);
 		  val2 = integral_argument (t);
 		}
