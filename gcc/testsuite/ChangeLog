@@ -1,3 +1,8 @@
+2017-12-18  Jeff Law  <law@redhat.com>
+
+	PR middle-end/83460
+	* g++.dg/pr79095-4.C: Remove compromised test.
+
 2017-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83300
