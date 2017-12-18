@@ -123,8 +123,11 @@ void test_memcpy_bounds_anti_range (char *d, const char *s, size_t n)
      (yet).  */
   T (char, 9, a, a + SAR ( 1,  6), 3);   /* { dg-warning "forming offset \\\[9, 0] is out of the bounds \\\[0, 9] of object " "memcpy" { xfail *-*-* } } */
 
-  T (char, 9, a, a + SAR ( 2,  6), 3);   /* { dg-warning "forming offset 10 is out of the bounds \\\[0, 9] of object " "memcpy" } */
-  T (char, 9, a, a + SAR ( 3,  6), 3);   /* { dg-warning "forming offset 10 is out of the bounds \\\[0, 9] of object " "memcpy" } */
+  /* The range of offsets is the union of [0, 1] and [7, PTRDIFF_MAX]
+     of which the first subrange is valid and thus no warming for memcpy
+     is issued.  Similarly for the next test.  */
+  T (char, 9, a, a + SAR ( 2,  6), 3);
+  T (char, 9, a, a + SAR ( 3,  6), 3);
 
   T (char, 9, a, a + SAR (-1,  7), 3);   /* { dg-warning "forming offset \\\[10, 11] is out of the bounds \\\[0, 9] of object " "memcpy" } */
   T (char, 9, a, a + SAR (-2,  8), 3);   /* { dg-warning "forming offset \\\[10, 12] is out of the bounds \\\[0, 9] of object " "memcpy" } */

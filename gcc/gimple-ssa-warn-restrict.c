@@ -413,7 +413,9 @@ builtin_memref::offset_out_of_bounds (int strict, offset_int ooboff[2]) const
 
   if (DECL_P (base) && TREE_CODE (TREE_TYPE (base)) == ARRAY_TYPE)
     {
-      if (offrng[1] < offrng[0])
+      /* Check for offset in an anti-range with a negative lower bound.
+	 For such a range, consider only the non-negative subrange.  */
+      if (offrng[1] < offrng[0] && offrng[1] < 0)
   	offrng[1] = maxobjsize;
     }
 
