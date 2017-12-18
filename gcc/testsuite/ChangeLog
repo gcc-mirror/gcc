@@ -1,3 +1,8 @@
+2017-12-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83116
+	* g++.dg/cpp1y/constexpr-83116.C: New test.
+
 2017-12-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/83424
