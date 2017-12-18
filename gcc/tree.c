@@ -12644,6 +12644,7 @@ array_at_struct_end_p (tree ref)
   if (TREE_CODE (ref) == STRING_CST)
     return false;
 
+  tree ref_to_array = ref;
   while (handled_component_p (ref))
     {
       /* If the reference chain contains a component reference to a
@@ -12682,35 +12683,43 @@ array_at_struct_end_p (tree ref)
   /* The array now is at struct end.  Treat flexible arrays as
      always subject to extend, even into just padding constrained by
      an underlying decl.  */
-  if (! TYPE_SIZE (atype))
+  if (! TYPE_SIZE (atype)
+      || ! TYPE_DOMAIN (atype)
+      || ! TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
     return true;
-
-  tree size = NULL;
 
   if (TREE_CODE (ref) == MEM_REF
       && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR)
-    {
-      size = TYPE_SIZE (TREE_TYPE (ref));
-      ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
-    }
+    ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
 
   /* If the reference is based on a declared entity, the size of the array
      is constrained by its given domain.  (Do not trust commons PR/69368).  */
   if (DECL_P (ref)
-      /* Be sure the size of MEM_REF target match.  For example:
-
-	   char buf[10];
-	   struct foo *str = (struct foo *)&buf;
-
-	   str->trailin_array[2] = 1;
-
-	 is valid because BUF allocate enough space.  */
-
-      && (!size || (DECL_SIZE (ref) != NULL
-		    && operand_equal_p (DECL_SIZE (ref), size, 0)))
       && !(flag_unconstrained_commons
-	   && VAR_P (ref) && DECL_COMMON (ref)))
-    return false;
+	   && VAR_P (ref) && DECL_COMMON (ref))
+      && DECL_SIZE_UNIT (ref)
+      && TREE_CODE (DECL_SIZE_UNIT (ref)) == INTEGER_CST)
+    {
+      /* Check whether the array domain covers all of the available
+         padding.  */
+      HOST_WIDE_INT offset;
+      if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (atype))) != INTEGER_CST
+	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST
+          || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST)
+	return true;
+      if (! get_addr_base_and_unit_offset (ref_to_array, &offset))
+	return true;
+
+      /* If at least one extra element fits it is a flexarray.  */
+      if (wi::les_p ((wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
+		      - wi::to_offset (TYPE_MIN_VALUE (TYPE_DOMAIN (atype)))
+		      + 2)
+		     * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (atype))),
+		     wi::to_offset (DECL_SIZE_UNIT (ref)) - offset))
+	return true;
+
+      return false;
+    }
 
   return true;
 }
