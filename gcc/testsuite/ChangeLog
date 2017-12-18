@@ -1,3 +1,11 @@
+2017-12-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/83373
+	PR tree-optimization/78450
+	* gcc.dg/pr83373.c: New test.
+	* gcc.dg/strlenopt-36.c: New test.
+	* gcc.dg/strlenopt-37.c: New test.
+
 2017-12-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/83116

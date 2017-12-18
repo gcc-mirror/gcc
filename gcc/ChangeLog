@@ -1,3 +1,10 @@
+2017-12-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/83373
+	PR tree-optimization/78450
+	* tree-ssa-strlen.c (maybe_set_strlen_range): New function.
+	(handle_builtin_strlen): Call it.
+
 2017-12-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/83424
