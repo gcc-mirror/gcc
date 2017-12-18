@@ -1,5 +1,13 @@
 2017-12-18  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81877
+	* tree-ssa-loop-im.c (ref_indep_loop_p): Remove safelen parameters.
+	(outermost_indep_loop): Adjust.
+	(ref_indep_loop_p_1): Likewise.  Remove safelen handling again.
+	(can_sm_ref_p): Adjust.
+
+2017-12-18  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/77291
 	* tree.c (array_at_struct_end_p): Return true if the underlying
 	object has space for at least one element in excess of what
