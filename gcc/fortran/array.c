@@ -238,25 +238,13 @@ coarray:
 	  ar->team = tmp;
 	  team_just_seen = true;
 	}
-      
-      if (ar->team && !team_just_seen)
-	{
-	  gfc_error ("TEAM= attribute in %C misplaced");
-	  return MATCH_ERROR;
-	}
-      
-      if (gfc_match (" , team = %e", &tmp) == MATCH_YES && ar->stat == NULL)
-	{
-	  ar->team = tmp;
-	  team_just_seen = true;
-	}
 
       if (ar->team && !team_just_seen)
 	{
 	  gfc_error ("TEAM= attribute in %C misplaced");
 	  return MATCH_ERROR;
 	}
-      
+
       if (gfc_match (" , stat = %e",&tmp) == MATCH_YES && ar->stat == NULL)
 	{
 	  ar->stat = tmp;
