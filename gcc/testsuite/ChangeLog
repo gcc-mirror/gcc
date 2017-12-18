@@ -1,3 +1,7 @@
+2017-12-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tls-1.c: New test.
+
 2017-12-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81877

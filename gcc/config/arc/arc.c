@@ -5999,12 +5999,6 @@ arc_return_addr_rtx (int count, ATTRIBUTE_UNUSED rtx frame)
 bool
 arc_legitimate_constant_p (machine_mode mode, rtx x)
 {
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x))
-    return false;
-
-  if (!flag_pic && mode != Pmode)
-    return true;
-
   switch (GET_CODE (x))
     {
     case CONST:
