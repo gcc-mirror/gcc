@@ -1,5 +1,10 @@
 2017-12-18  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (maddsidi4, maddsidi4_split): Update pattern.
+	(umaddsidi4, umaddsidi_split): Likewise.
+
+2017-12-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_legitimate_constant_p): Always check all
 	constants.
 

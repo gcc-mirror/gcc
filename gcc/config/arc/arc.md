@@ -6155,13 +6155,25 @@
   [(set_attr "length" "0")])
 
 ;; MAC and DMPY instructions
-(define_insn_and_split "maddsidi4"
+(define_expand "maddsidi4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "extend_operand"   "")
+   (match_operand:DI 3 "register_operand" "")]
+  "TARGET_PLUS_DMPY"
+  "{
+   emit_insn (gen_maddsidi4_split (operands[0], operands[1], operands[2], operands[3]));
+   DONE;
+  }")
+
+(define_insn_and_split "maddsidi4_split"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI
 	 (mult:DI
 	  (sign_extend:DI (match_operand:SI 1 "register_operand" "%r"))
 	  (sign_extend:DI (match_operand:SI 2 "extend_operand" "ri")))
-	 (match_operand:DI 3 "register_operand" "r")))]
+	 (match_operand:DI 3 "register_operand" "r")))
+   (clobber (reg:DI ARCV2_ACC))]
   "TARGET_PLUS_DMPY"
   "#"
   "TARGET_PLUS_DMPY && reload_completed"
@@ -6243,13 +6255,25 @@
    (set_attr "predicable" "no")
    (set_attr "cond" "nocond")])
 
-(define_insn_and_split "umaddsidi4"
+(define_expand "umaddsidi4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "extend_operand"   "")
+   (match_operand:DI 3 "register_operand" "")]
+  "TARGET_PLUS_DMPY"
+  "{
+   emit_insn (gen_umaddsidi4_split (operands[0], operands[1], operands[2], operands[3]));
+   DONE;
+  }")
+
+(define_insn_and_split "umaddsidi4_split"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI
 	 (mult:DI
 	  (zero_extend:DI (match_operand:SI 1 "register_operand" "%r"))
 	  (zero_extend:DI (match_operand:SI 2 "extend_operand" "ri")))
-	 (match_operand:DI 3 "register_operand" "r")))]
+	 (match_operand:DI 3 "register_operand" "r")))
+   (clobber (reg:DI ARCV2_ACC))]
   "TARGET_PLUS_DMPY"
   "#"
   "TARGET_PLUS_DMPY && reload_completed"
