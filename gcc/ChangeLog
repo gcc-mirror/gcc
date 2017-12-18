@@ -1,3 +1,10 @@
+2017-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77291
+	* tree.c (array_at_struct_end_p): Return true if the underlying
+	object has space for at least one element in excess of what
+	the array domain specifies.
+
 2017-12-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/extend.texi (x86 Function Attributes): Reformat nocf_check

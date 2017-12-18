@@ -1,3 +1,8 @@
+2017-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/77291
+	* gcc.dg/Warray-bounds-26.c: New testcase.
+
 2017-12-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/guality/guality.h (guality_check): Cast %lli arguments
