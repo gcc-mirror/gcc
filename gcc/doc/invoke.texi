@@ -598,7 +598,8 @@ Objective-C and Objective-C++ Dialects}.
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
--march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  -moverride=@var{string}}
+-march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
+-moverride=@var{string}  -mverbose-cost-dump}
 
 @emph{Adapteva Epiphany Options}
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs @gol
@@ -648,7 +649,7 @@ Objective-C and Objective-C++ Dialects}.
 -mpic-register=@var{reg} @gol
 -mnop-fun-dllimport @gol
 -mpoke-function-name @gol
--mthumb  -marm @gol
+-mthumb  -marm  -mflip-thumb @gol
 -mtpcs-frame  -mtpcs-leaf-frame @gol
 -mcaller-super-interworking  -mcallee-super-interworking @gol
 -mtp=@var{name}  -mtls-dialect=@var{dialect} @gol
@@ -659,6 +660,7 @@ Objective-C and Objective-C++ Dialects}.
 -mslow-flash-data @gol
 -masm-syntax-unified @gol
 -mrestrict-it @gol
+-mverbose-cost-dump @gol
 -mpure-code @gol
 -mcmse}
 
@@ -14556,6 +14558,11 @@ across releases.
 
 This option is only intended to be useful when developing GCC.
 
+@item -mverbose-cost-dump
+@opindex mverbose-cost-dump
+Enable verbose cost model dumping in the debug dump files.  This option is
+provided for use in debugging the compiler.
+
 @item -mpc-relative-literal-loads
 @itemx -mno-pc-relative-literal-loads
 @opindex mpc-relative-literal-loads
@@ -16237,6 +16244,12 @@ You can also override the ARM and Thumb mode for each function
 by using the @code{target("thumb")} and @code{target("arm")} function attributes
 (@pxref{ARM Function Attributes}) or pragmas (@pxref{Function Specific Option Pragmas}).
 
+@item -mflip-thumb 
+@opindex mflip-thumb
+Switch ARM/Thumb modes on alternating functions.
+This option is provided for regression testing of mixed Thumb/ARM code
+generation, and is not intended for ordinary use in compiling code.
+
 @item -mtpcs-frame
 @opindex mtpcs-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call
@@ -16350,6 +16363,11 @@ Print CPU tuning information as comment in assembler file.  This is
 an option used only for regression testing of the compiler and not
 intended for ordinary use in compiling code.  This option is disabled
 by default.
+
+@item -mverbose-cost-dump
+@opindex mverbose-cost-dump
+Enable verbose cost model dumping in the debug dump files.  This option is
+provided for use in debugging the compiler.
 
 @item -mpure-code
 @opindex mpure-code

@@ -1,3 +1,11 @@
+2017-12-17  Sandra Loosemore  <sandra@codesourcery.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (Option Summary): Add -mverbose-cost-dump
+	to AArch64 and ARM lists, plus missing -mflip-thumb for ARM.
+	(AArch64 Options): Document -mverbose-cost-dump.
+	(ARM Options): Likewise, plus -mflip-thumb.
+
 2017-12-17  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/83446
