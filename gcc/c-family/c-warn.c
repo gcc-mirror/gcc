@@ -180,6 +180,9 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   tree low0, low1, low, high0, high1, high, lhs, rhs, tem;
   bool strict_overflow_p = false;
 
+  if (!warn_logical_op)
+    return;
+
   if (code != TRUTH_ANDIF_EXPR
       && code != TRUTH_AND_EXPR
       && code != TRUTH_ORIF_EXPR

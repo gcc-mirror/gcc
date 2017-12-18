@@ -1,3 +1,8 @@
+2017-12-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-warn.c (warn_logical_operator): Return early if -Wlogical-op is
+	not in effect.
+
 2017-12-17  Martin Sebor  <msebor@redhat.com>
 
 	* c-attribs.c (common_handle_aligned_attribute): Avoid issuing
