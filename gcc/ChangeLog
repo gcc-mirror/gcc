@@ -1,4 +1,12 @@
 2017-12-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (x86 Function Attributes): Reformat nocf_check
+	example	to avoid overfull hbox.
+	* doc/invoke.texi (Option Summary): Add missing @gol.
+	(C++ Dialect Options): Reformat -Wnoexcept-type example to avoid 
+	overfull hbox.
+	
+2017-12-17  Sandra Loosemore  <sandra@codesourcery.com>
 	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/invoke.texi (Option Summary): Add -mverbose-cost-dump

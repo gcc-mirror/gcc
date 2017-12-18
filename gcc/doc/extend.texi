@@ -5765,21 +5765,27 @@ int foo (void) __attribute__(nocf_check);
 void (*foo1)(void) __attribute__(nocf_check);
 void (*foo2)(void);
 
+/* foo's address is assumed to be valid.  */
 int
-foo (void) /* The function's address is assumed to be valid.  */
+foo (void) 
 
-  /* This call site is not checked for control-flow validity.  */
+  /* This call site is not checked for control-flow 
+     validity.  */
   (*foo1)();
 
-  foo1 = foo2; /* A warning is printed about attribute mismatch.  */
-  /* This call site is still not checked for control-flow validity.  */
+  /* A warning is issued about attribute mismatch.  */
+  foo1 = foo2; 
+
+  /* This call site is still not checked.  */
   (*foo1)();
 
-  /* This call site is checked for control-flow validity.  */
+  /* This call site is checked.  */
   (*foo2)();
 
-  foo2 = foo1; /* A warning is printed about attribute mismatch.  */
-  /* This call site is still checked for control-flow validity.  */
+  /* A warning is issued about attribute mismatch.  */
+  foo2 = foo1; 
+
+  /* This call site is still checked.  */
   (*foo2)();
 
   return 0;
