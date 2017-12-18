@@ -1244,7 +1244,7 @@ splice_template_attributes (tree *attr_p, tree decl)
    DECL_P.  */
 
 static void
-save_template_attributes (tree *attr_p, tree *decl_p)
+save_template_attributes (tree *attr_p, tree *decl_p, int flags)
 {
   tree *q;
 
@@ -1265,7 +1265,20 @@ save_template_attributes (tree *attr_p, tree *decl_p)
   /* Merge the late attributes at the beginning with the attribute
      list.  */
   late_attrs = merge_attributes (late_attrs, *q);
-  *q = late_attrs;
+  if (*q != late_attrs
+      && !DECL_P (*decl_p)
+      && !(flags & ATTR_FLAG_TYPE_IN_PLACE))
+    {
+      if (!dependent_type_p (*decl_p))
+	*decl_p = cp_build_type_attribute_variant (*decl_p, late_attrs);
+      else
+	{
+	  *decl_p = build_variant_type_copy (*decl_p);
+	  TYPE_ATTRIBUTES (*decl_p) = late_attrs;
+	}
+    }
+  else
+    *q = late_attrs;
 
   if (!DECL_P (*decl_p) && *decl_p == TYPE_MAIN_VARIANT (*decl_p))
     {
@@ -1466,7 +1479,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
       if (check_for_bare_parameter_packs (attributes))
 	return;
 
-      save_template_attributes (&attributes, decl);
+      save_template_attributes (&attributes, decl, flags);
     }
 
   cp_check_const_attributes (attributes);
