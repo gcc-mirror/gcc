@@ -1,3 +1,8 @@
+2017-12-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_legitimate_constant_p): Always check all
+	constants.
+
 2017-12-18  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/83420
