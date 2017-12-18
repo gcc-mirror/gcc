@@ -549,7 +549,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdisable-tree-@var{pass-name}=@var{range-list} @gol
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links @gol
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
--fdump-final-insns@r{[}=@var{file}@r{]}
+-fdump-final-insns@r{[}=@var{file}@r{]} @gol
 -fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline @gol
 -fdump-lang-all @gol
 -fdump-lang-@var{switch} @gol
@@ -2935,11 +2935,17 @@ Warn if the C++17 feature making @code{noexcept} part of a function
 type changes the mangled name of a symbol relative to C++14.  Enabled
 by @option{-Wabi} and @option{-Wc++17-compat}.
 
+As an example:
+
 @smallexample
 template <class T> void f(T t) @{ t(); @};
 void g() noexcept;
-void h() @{ f(g); @} // in C++14 calls f<void(*)()>, in C++17 calls f<void(*)()noexcept>
+void h() @{ f(g); @} 
 @end smallexample
+
+@noindent
+In C++14, @code{f} calls calls @code{f<void(*)()>}, but in
+C++17 it calls @code{f<void(*)()noexcept>}.
 
 @item -Wclass-memaccess @r{(C++ and Objective-C++ only)}
 @opindex Wclass-memaccess
