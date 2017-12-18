@@ -1,3 +1,8 @@
+2017-12-18  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/83463
+	* gcc.dg/pr83463.c: New test.
+
 2017-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/59930

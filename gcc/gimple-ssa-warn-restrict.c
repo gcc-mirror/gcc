@@ -287,13 +287,15 @@ builtin_memref::builtin_memref (tree expr, tree size)
 		  else
 		    {
 		      gimple *stmt = SSA_NAME_DEF_STMT (offset);
+		      tree type;
 		      if (is_gimple_assign (stmt)
-			  && gimple_assign_rhs_code (stmt) == NOP_EXPR)
+			  && gimple_assign_rhs_code (stmt) == NOP_EXPR
+			  && (type = TREE_TYPE (gimple_assign_rhs1 (stmt)))
+			  && INTEGRAL_TYPE_P (type))
 			{
 			  /* Use the bounds of the type of the NOP_EXPR operand
 			     even if it's signed.  The result doesn't trigger
 			     warnings but makes their output more readable.  */
-			  tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
 			  offrange[0] = wi::to_offset (TYPE_MIN_VALUE (type));
 			  offrange[1] = wi::to_offset (TYPE_MAX_VALUE (type));
 			}
