@@ -1,3 +1,10 @@
+2017-12-17  Martin Sebor  <msebor@redhat.com>
+
+	PR bootstrap/83446
+	* gimple-ssa-warn-restrict.c
+	(builtin_memref::offset_out_of_bounds): Correct the handling of
+	anti-ranges.
+
 2017-12-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (ARC Options): Add missing -mlra entry.
