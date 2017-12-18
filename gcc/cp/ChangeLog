@@ -1,3 +1,10 @@
+2017-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83300
+	* decl2.c (save_template_attributes): Add flags argument, if
+	not ATTR_FLAG_TYPE_IN_PLACE, *decl_p is a type and we want to
+	modify TYPE_ATTRIBUTES, add them on type attribute variant.
+
 2017-12-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/59930
