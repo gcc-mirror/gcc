@@ -1,3 +1,10 @@
+2017-12-18  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/83463
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref):
+	Check if TYPE is INTEGRAL_TYPE_P before accessing its min/max
+	values.
+
 2017-12-18  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (maddsidi4, maddsidi4_split): Update pattern.
