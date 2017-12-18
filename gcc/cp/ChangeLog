@@ -1,3 +1,9 @@
+2017-12-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83116
+	* constexpr.c (cxx_eval_call_expression): Only look into
+	constexpr_call_table if ctx->strict.
+
 2017-12-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83300
