@@ -711,6 +711,15 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
     done:;
       if (scope == global_namespace)
 	break;
+
+      /* If looking for hidden names, we only look in the innermost
+	 namespace scope.  [namespace.memdef]/3 If a friend
+	 declaration in a non-local class first declares a class,
+	 function, class template or function template the friend is a
+	 member of the innermost enclosing namespace.  See also
+	 [basic.lookup.unqual]/7 */
+      if (flags & LOOKUP_HIDDEN)
+	break;
     }
 
   vec_safe_truncate (queue, length);
