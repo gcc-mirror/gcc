@@ -1,3 +1,16 @@
+2017-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/80761
+	* include/debug/map.h
+	(std::__debug::map<>::insert_return_type): Define using
+	_Node_insert_return.
+	* include/debug/set.h (std::__debug::set<>::insert_return_type):
+	Likewise.
+	* include/debug/unordered_map:
+	(std::__debug::unordered_map<>::insert_return_type): Likewise.
+	* include/debug/unordered_set:
+	(std::__debug::unordered_set<>::insert_return_type): Likewise.
+
 2017-12-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/68430
