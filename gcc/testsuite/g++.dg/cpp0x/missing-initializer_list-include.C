@@ -24,5 +24,6 @@ void test (int i)
 +#include <initializer_list>
  /* This is padding (to avoid the generated patch containing DejaGnu
     directives).  */
+ 
 { dg-end-multiline-output "" }
 #endif

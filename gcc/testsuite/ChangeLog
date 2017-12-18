@@ -1,3 +1,22 @@
+2017-12-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/83336
+	* g++.dg/cpp0x/missing-initializer_list-include.C: Update for
+	changes to prune.exp's handling of dg-regexp.
+	* g++.dg/plugin/diagnostic-test-inlining-1.C: New test case.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add it, via
+	gcc.dg's plugin/diagnostic_plugin_test_inlining.c.
+	* gcc.dg/plugin/diagnostic-test-inlining-1.c: New test case.
+	* gcc.dg/plugin/diagnostic-test-inlining-2.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-inlining-3.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-inlining-4.c: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.c: New test
+	plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add them.
+	* lib/prune.exp (prune_gcc_output): Move call to handle-dg-regexps
+	to before the various text stripping regsup invocations,
+	in particular, to before the stripping of "inlined from".
+
 2017-12-18  Jeff Law  <law@redhat.com>
 
 	PR middle-end/83460
