@@ -1152,6 +1152,44 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
   update_stmt (last.stmt);
 }
 
+/* For an LHS that is an SSA_NAME and for strlen() argument SRC, set
+   LHS range info to [0, N] if SRC refers to a character array A[N]
+   with unknown length bounded by N.  */
+
+static void
+maybe_set_strlen_range (tree lhs, tree src)
+{
+  if (TREE_CODE (lhs) != SSA_NAME)
+    return;
+
+  if (TREE_CODE (src) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (src);
+      if (is_gimple_assign (def)
+	  && gimple_assign_rhs_code (def) == ADDR_EXPR)
+	src = gimple_assign_rhs1 (def);
+    }
+
+  if (TREE_CODE (src) != ADDR_EXPR)
+    return;
+
+  /* The last array member of a struct can be bigger than its size
+     suggests if it's treated as a poor-man's flexible array member.  */
+  src = TREE_OPERAND (src, 0);
+  if (TREE_CODE (TREE_TYPE (src)) != ARRAY_TYPE
+      || array_at_struct_end_p (src))
+    return;
+
+  tree type = TREE_TYPE (src);
+  if (tree dom = TYPE_DOMAIN (type))
+    if (tree maxval = TYPE_MAX_VALUE (dom))
+      {
+	wide_int max = wi::to_wide (maxval);
+	wide_int min = wi::zero (max.get_precision ());
+	set_range_info (lhs, VR_RANGE, min, max);
+      }
+}
+
 /* Handle a strlen call.  If strlen of the argument is known, replace
    the strlen call with the known value, otherwise remember that strlen
    of the argument is stored in the lhs SSA_NAME.  */
@@ -1261,6 +1299,10 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
       strinfo *si = new_strinfo (src, idx, lhs, true);
       set_strinfo (idx, si);
       find_equal_ptrs (src, idx);
+
+      /* For SRC that is an array of N elements, set LHS's range
+	 to [0, N].  */
+      maybe_set_strlen_range (lhs, src);
 
       if (strlen_to_stridx)
 	{
