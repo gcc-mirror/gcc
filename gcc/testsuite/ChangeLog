@@ -1,3 +1,8 @@
+2017-12-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/83424
+	* gcc.dg/pr83424.c: New testcase.
+
 2017-12-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/83336
