@@ -1,3 +1,9 @@
+2017-12-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/59930
+	* g++.dg/parse/pr81247-c.C: Adjust.
+	* g++.dg/template/pr59930-[123].C: New.
+
 2017-12-18  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/tumaddsidi4.c: New test.

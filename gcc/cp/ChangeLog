@@ -1,3 +1,12 @@
+2017-12-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/59930
+	* name-lookup.c (name_lookup::search_unqualified): Don't search
+	parent namespace when looking for hidden things.
+	* pt.c (tsubst_friend_class): Always push to friend scope, drop
+	unneeded self-friend check. Inject new hidden friend into correct
+	scope.
+
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83205
