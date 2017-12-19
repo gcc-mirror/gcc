@@ -11334,9 +11334,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       save_expr = *expr_p;
 
       /* Die, die, die, my darling.  */
-      if (save_expr == error_mark_node
-	  || (TREE_TYPE (save_expr)
-	      && TREE_TYPE (save_expr) == error_mark_node))
+      if (error_operand_p (save_expr))
 	{
 	  ret = GS_ERROR;
 	  break;
