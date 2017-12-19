@@ -1,3 +1,8 @@
+2017-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79490
+	* g++.dg/other/fsyntax-only2.C: New.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83444
