@@ -5308,7 +5308,7 @@ grok_reference_init (tree decl, tree type, tree init, int flags)
    initializer.  If it does, an error is issued.  Returns true if CE
    is valid, i.e., does not have a designated initializer.  */
 
-static bool
+bool
 check_array_designated_initializer (constructor_elt *ce,
 				    unsigned HOST_WIDE_INT index)
 {

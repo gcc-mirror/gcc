@@ -6212,6 +6212,8 @@ extern bool require_deduced_type		(tree, tsubst_flags_t = tf_warning_or_error);
 
 extern tree finish_case_label			(location_t, tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
+extern bool check_array_designated_initializer  (constructor_elt *,
+						 unsigned HOST_WIDE_INT);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
