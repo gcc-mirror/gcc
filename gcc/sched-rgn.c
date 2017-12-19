@@ -3258,10 +3258,10 @@ sched_rgn_init (bool single_blocks_p)
 	free_dominance_info (CDI_DOMINATORS);
     }
 
-  gcc_assert (0 < nr_regions && nr_regions <= n_basic_blocks_for_fn (cfun));
+  gcc_assert (nr_regions > 0 && nr_regions <= n_basic_blocks_for_fn (cfun));
 
-  RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1) +
-			     RGN_NR_BLOCKS (nr_regions - 1));
+  RGN_BLOCKS (nr_regions) = (RGN_BLOCKS (nr_regions - 1)
+			     + RGN_NR_BLOCKS (nr_regions - 1));
   nr_regions_initial = nr_regions;
 }
 

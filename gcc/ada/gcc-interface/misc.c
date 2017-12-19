@@ -953,7 +953,7 @@ gnat_get_array_descr_info (const_tree const_type,
      structure.  */
   for (i = (convention_fortran_p ? info->ndimensions - 1 : 0),
        dimen = first_dimen;
-       0 <= i && i < info->ndimensions;
+       i >= 0 && i < info->ndimensions;
        i += (convention_fortran_p ? -1 : 1),
        dimen = TREE_TYPE (dimen))
     {
@@ -1146,8 +1146,8 @@ default_pass_by_ref (tree gnu_type)
 
   if (AGGREGATE_TYPE_P (gnu_type)
       && (!valid_constant_size_p (TYPE_SIZE_UNIT (gnu_type))
-	  || 0 < compare_tree_int (TYPE_SIZE_UNIT (gnu_type),
-				   TYPE_ALIGN (gnu_type))))
+	  || compare_tree_int (TYPE_SIZE_UNIT (gnu_type),
+			       TYPE_ALIGN (gnu_type)) > 0))
     return true;
 
   if (pass_by_reference (NULL, TYPE_MODE (gnu_type), gnu_type, true))

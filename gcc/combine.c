@@ -5083,9 +5083,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	     is known to be on, this can be converted into a NEG of a shift.  */
 	  if (STORE_FLAG_VALUE == -1 && XEXP (SET_SRC (x), 1) == const0_rtx
 	      && GET_MODE (SET_SRC (x)) == GET_MODE (XEXP (SET_SRC (x), 0))
-	      && 1 <= (pos = exact_log2
-		       (nonzero_bits (XEXP (SET_SRC (x), 0),
-				      GET_MODE (XEXP (SET_SRC (x), 0))))))
+	      && ((pos = exact_log2 (nonzero_bits (XEXP (SET_SRC (x), 0),
+						   GET_MODE (XEXP (SET_SRC (x),
+							     0))))) >= 1))
 	    {
 	      machine_mode mode = GET_MODE (XEXP (SET_SRC (x), 0));
 
@@ -6680,7 +6680,7 @@ simplify_if_then_else (rtx x)
       && XEXP (cond, 1) == const0_rtx
       && false_rtx == const0_rtx
       && CONST_INT_P (true_rtx)
-      && ((1 == nonzero_bits (XEXP (cond, 0), int_mode)
+      && ((nonzero_bits (XEXP (cond, 0), int_mode) == 1
 	   && (i = exact_log2 (UINTVAL (true_rtx))) >= 0)
 	  || ((num_sign_bit_copies (XEXP (cond, 0), int_mode)
 	       == GET_MODE_PRECISION (int_mode))
@@ -8637,9 +8637,9 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
   if (GET_CODE (x) == SUBREG
       && subreg_lowpart_p (x)
       && (partial_subreg_p (x)
-	  || (0 == (mask
-		    & GET_MODE_MASK (GET_MODE (x))
-		    & ~GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))))))
+	  || (mask
+	      & GET_MODE_MASK (GET_MODE (x))
+	      & ~GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))) == 0))
     return force_to_mode (SUBREG_REG (x), mode, mask, next_select);
 
   scalar_int_mode int_mode, xmode;
@@ -9328,8 +9328,8 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
   /* If X is a SUBREG, we can narrow both the true and false values
      if the inner expression, if there is a condition.  */
   else if (code == SUBREG
-	   && 0 != (cond0 = if_then_else_cond (SUBREG_REG (x),
-					       &true0, &false0)))
+	   && (cond0 = if_then_else_cond (SUBREG_REG (x), &true0,
+					  &false0)) != 0)
     {
       true0 = simplify_gen_subreg (mode, true0,
 				   GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
@@ -10928,8 +10928,8 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		 shift_unit_mode wider than result_mode.  */
 	      && !(code == ASHIFTRT && GET_CODE (varop) == XOR
 		   && int_result_mode != shift_unit_mode
-		   && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
-					      shift_unit_mode))
+		   && trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
+					  shift_unit_mode) < 0)
 	      && (new_rtx = simplify_const_binary_operation
 		  (code, int_result_mode,
 		   gen_int_mode (INTVAL (XEXP (varop, 1)), int_result_mode),
@@ -10949,10 +10949,10 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	     (ashiftrt (xor)) where we've widened the shift and the constant
 	     changes the sign bit.  */
 	  if (CONST_INT_P (XEXP (varop, 1))
-	     && !(code == ASHIFTRT && GET_CODE (varop) == XOR
-		  && int_result_mode != shift_unit_mode
-		  && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
-					     shift_unit_mode)))
+	      && !(code == ASHIFTRT && GET_CODE (varop) == XOR
+		   && int_result_mode != shift_unit_mode
+		   && trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
+					  shift_unit_mode) < 0))
 	    {
 	      rtx lhs = simplify_shift_const (NULL_RTX, code, shift_unit_mode,
 					      XEXP (varop, 0), count);
@@ -11061,10 +11061,10 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  else if ((code == ASHIFTRT || code == LSHIFTRT)
 		   && count < HOST_BITS_PER_WIDE_INT
 		   && HWI_COMPUTABLE_MODE_P (int_result_mode)
-		   && 0 == (nonzero_bits (XEXP (varop, 0), int_result_mode)
-			    >> count)
-		   && 0 == (nonzero_bits (XEXP (varop, 0), int_result_mode)
-			    & nonzero_bits (XEXP (varop, 1), int_result_mode)))
+		   && (nonzero_bits (XEXP (varop, 0), int_result_mode)
+		       >> count) == 0
+		   && (nonzero_bits (XEXP (varop, 0), int_result_mode)
+		       & nonzero_bits (XEXP (varop, 1), int_result_mode)) == 0)
 	    {
 	      varop = XEXP (varop, 1);
 	      continue;
@@ -12000,10 +12000,10 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && HWI_COMPUTABLE_MODE_P (GET_MODE (SUBREG_REG (inner_op0)))
 	      && (GET_MODE (SUBREG_REG (inner_op0))
 		  == GET_MODE (SUBREG_REG (inner_op1)))
-	      && (0 == ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
-					     GET_MODE (SUBREG_REG (inner_op0)))))
-	      && (0 == ((~c1) & nonzero_bits (SUBREG_REG (inner_op1),
-					     GET_MODE (SUBREG_REG (inner_op1))))))
+	      && ((~c0) & nonzero_bits (SUBREG_REG (inner_op0),
+					GET_MODE (SUBREG_REG (inner_op0)))) == 0
+	      && ((~c1) & nonzero_bits (SUBREG_REG (inner_op1),
+					GET_MODE (SUBREG_REG (inner_op1)))) == 0)
 	    {
 	      op0 = SUBREG_REG (inner_op0);
 	      op1 = SUBREG_REG (inner_op1);
@@ -12339,8 +12339,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		   && (equality_comparison_p || unsigned_comparison_p)
 		   /* (A - C1) zero-extends if it is positive and sign-extends
 		      if it is negative, C2 both zero- and sign-extends.  */
-		   && ((0 == (nonzero_bits (a, inner_mode)
-			      & ~GET_MODE_MASK (mode))
+		   && (((nonzero_bits (a, inner_mode)
+			 & ~GET_MODE_MASK (mode)) == 0
 			&& const_op >= 0)
 		       /* (A - C1) sign-extends if it is positive and 1-extends
 			  if it is negative, C2 both sign- and 1-extends.  */
@@ -12408,8 +12408,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     this for equality comparisons due to pathological cases involving
 	     overflows.  */
 	  if (equality_comparison_p
-	      && 0 != (tem = simplify_binary_operation (MINUS, mode,
-							op1, XEXP (op0, 1))))
+	      && (tem = simplify_binary_operation (MINUS, mode,
+						   op1, XEXP (op0, 1))) != 0)
 	    {
 	      op0 = XEXP (op0, 0);
 	      op1 = tem;
@@ -12437,8 +12437,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     this for equality comparisons due to pathological cases involving
 	     overflows.  */
 	  if (equality_comparison_p
-	      && 0 != (tem = simplify_binary_operation (PLUS, mode,
-							XEXP (op0, 1), op1)))
+	      && (tem = simplify_binary_operation (PLUS, mode,
+						   XEXP (op0, 1), op1)) != 0)
 	    {
 	      op0 = XEXP (op0, 0);
 	      op1 = tem;
@@ -12446,8 +12446,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    }
 
 	  if (equality_comparison_p
-	      && 0 != (tem = simplify_binary_operation (MINUS, mode,
-							XEXP (op0, 0), op1)))
+	      && (tem = simplify_binary_operation (MINUS, mode,
+						   XEXP (op0, 0), op1)) != 0)
 	    {
 	      op0 = XEXP (op0, 1);
 	      op1 = tem;
@@ -12471,8 +12471,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  /* (eq (xor A B) C) -> (eq A (xor B C)).  This is a simplification
 	     if C is zero or B is a constant.  */
 	  if (equality_comparison_p
-	      && 0 != (tem = simplify_binary_operation (XOR, mode,
-							XEXP (op0, 1), op1)))
+	      && (tem = simplify_binary_operation (XOR, mode,
+						   XEXP (op0, 1), op1)) != 0)
 	    {
 	      op0 = XEXP (op0, 0);
 	      op1 = tem;

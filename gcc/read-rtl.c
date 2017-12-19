@@ -1229,7 +1229,7 @@ static int
 parse_reg_note_name (const char *string)
 {
   for (int i = 0; i < REG_NOTE_MAX; i++)
-    if (0 == strcmp (string, GET_REG_NOTE_NAME (i)))
+    if (strcmp (string, GET_REG_NOTE_NAME (i)) == 0)
       return i;
   fatal_with_file_and_line ("unrecognized REG_NOTE name: `%s'", string);
 }

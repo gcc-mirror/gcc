@@ -1,3 +1,17 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-playback.c (get_type, playback::compile_to_file::copy_file,
+	playback::context::acquire_mutex): Replace Yoda conditions with
+	typical order conditions.
+	* libgccjit.c (gcc_jit_context_new_struct_type,
+	gcc_jit_struct_set_fields, gcc_jit_context_new_union_type,
+	gcc_jit_context_new_function, gcc_jit_timer_pop): Likewise.
+	* jit-builtins.c (matches_builtin): Likewise.
+	* jit-recording.c (recording::compound_type::set_fields,
+	recording::fields::write_reproducer, recording::rvalue::set_scope,
+	recording::function::validate): Likewise.
+	* jit-logging.c (logger::decref): Likewise.
+
 2017-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* jit-recording.c

@@ -7838,7 +7838,7 @@ convert_template_argument (tree parm,
 	  if (innertype
 	      && TREE_CODE (innertype) == REFERENCE_TYPE
 	      && TREE_CODE (TREE_TYPE (innertype)) == FUNCTION_TYPE
-              && 0 < TREE_OPERAND_LENGTH (inner)
+	      && TREE_OPERAND_LENGTH (inner) > 0
               && reject_gcc_builtin (TREE_OPERAND (inner, 0)))
               return error_mark_node;
         }

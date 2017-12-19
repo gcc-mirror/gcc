@@ -1117,7 +1117,7 @@ dump_location_info (FILE *stream)
 	  expanded_location exploc
 	    = linemap_expand_location (line_table, map, loc);
 
-	  if (0 == exploc.column)
+	  if (exploc.column == 0)
 	    {
 	      /* Beginning of a new source line: draw the line.  */
 

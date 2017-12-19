@@ -7003,7 +7003,7 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
   /* Special case: TRANSPOSE which needs no temporary.  */
   while (expr->expr_type == EXPR_FUNCTION && expr->value.function.isym
-      && NULL != (arg = gfc_get_noncopying_intrinsic_argument (expr)))
+	 && (arg = gfc_get_noncopying_intrinsic_argument (expr)) != NULL)
     {
       /* This is a call to transpose which has already been handled by the
 	 scalarizer, so that we just need to get its argument's descriptor.  */

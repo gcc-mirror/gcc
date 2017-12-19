@@ -5409,10 +5409,10 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
   if ((lhs == 0 || rhs == 0 || operand_equal_p (lhs, rhs, 0))
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
-      && 0 != (tem = (build_range_check (loc, type,
-					 lhs != 0 ? lhs
-					 : rhs != 0 ? rhs : integer_zero_node,
-					 in_p, low, high))))
+      && (tem = (build_range_check (loc, type,
+				    lhs != 0 ? lhs
+				    : rhs != 0 ? rhs : integer_zero_node,
+				    in_p, low, high))) != 0)
     {
       if (strict_overflow_p)
 	fold_overflow_warning (warnmsg, WARN_STRICT_OVERFLOW_COMPARISON);
@@ -5442,12 +5442,12 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
 	{
 	  tree common = save_expr (lhs);
 
-	  if (0 != (lhs = build_range_check (loc, type, common,
-					     or_op ? ! in0_p : in0_p,
-					     low0, high0))
-	      && (0 != (rhs = build_range_check (loc, type, common,
-						 or_op ? ! in1_p : in1_p,
-						 low1, high1))))
+	  if ((lhs = build_range_check (loc, type, common,
+					or_op ? ! in0_p : in0_p,
+					low0, high0)) != 0
+	      && (rhs = build_range_check (loc, type, common,
+					   or_op ? ! in1_p : in1_p,
+					   low1, high1)) != 0)
 	    {
 	      if (strict_overflow_p)
 		fold_overflow_warning (warnmsg,
@@ -6146,10 +6146,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       if ((t2 = fold_convert (TREE_TYPE (op0), c)) != 0
 	  && TREE_CODE (t2) == INTEGER_CST
 	  && !TREE_OVERFLOW (t2)
-	  && (0 != (t1 = extract_muldiv (op0, t2, code,
-					 code == MULT_EXPR
-					 ? ctype : NULL_TREE,
-					 strict_overflow_p))))
+	  && (t1 = extract_muldiv (op0, t2, code,
+				   code == MULT_EXPR ? ctype : NULL_TREE,
+				   strict_overflow_p)) != 0)
 	return t1;
       break;
 
@@ -6217,10 +6216,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	     so check for it explicitly here.  */
 	  && wi::gtu_p (TYPE_PRECISION (TREE_TYPE (size_one_node)),
 			wi::to_wide (op1))
-	  && 0 != (t1 = fold_convert (ctype,
-				      const_binop (LSHIFT_EXPR,
-						   size_one_node,
-						   op1)))
+	  && (t1 = fold_convert (ctype,
+				 const_binop (LSHIFT_EXPR, size_one_node,
+					      op1))) != 0
 	  && !TREE_OVERFLOW (t1))
 	return extract_muldiv (build2 (tcode == LSHIFT_EXPR
 				       ? MULT_EXPR : FLOOR_DIV_EXPR,
@@ -8040,7 +8038,7 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
     }
 
   /* See if we can build a range comparison.  */
-  if (0 != (tem = fold_range_test (loc, code, type, op0, op1)))
+  if ((tem = fold_range_test (loc, code, type, op0, op1)) != 0)
     return tem;
 
   if ((code == TRUTH_ANDIF_EXPR && TREE_CODE (arg0) == TRUTH_ORIF_EXPR)
@@ -8063,8 +8061,8 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
      lhs is another similar operation, try to merge its rhs with our
      rhs.  Then try to merge our lhs and rhs.  */
   if (TREE_CODE (arg0) == code
-      && 0 != (tem = fold_truth_andor_1 (loc, code, type,
-					 TREE_OPERAND (arg0, 1), arg1)))
+      && (tem = fold_truth_andor_1 (loc, code, type,
+				    TREE_OPERAND (arg0, 1), arg1)) != 0)
     return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0), tem);
 
   if ((tem = fold_truth_andor_1 (loc, code, type, arg0, arg1)) != 0)
@@ -9526,8 +9524,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 		STRIP_NOPS (tree110);
 		STRIP_NOPS (tree111);
 		if (TREE_CODE (tree110) == INTEGER_CST
-		    && 0 == compare_tree_int (tree110,
-					      element_precision (rtype))
+		    && compare_tree_int (tree110,
+					 element_precision (rtype)) == 0
 		    && operand_equal_p (tree01, tree111, 0))
 		  {
 		    tem = build2_loc (loc, (code0 == LSHIFT_EXPR
@@ -9548,8 +9546,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 		STRIP_NOPS (tree111);
 		if (TREE_CODE (tree110) == NEGATE_EXPR
 		    && TREE_CODE (tree111) == INTEGER_CST
-		    && 0 == compare_tree_int (tree111,
-					      element_precision (rtype) - 1)
+		    && compare_tree_int (tree111,
+					 element_precision (rtype) - 1) == 0
 		    && operand_equal_p (tree01, TREE_OPERAND (tree110, 0), 0))
 		  {
 		    tem = build2_loc (loc, (code0 == LSHIFT_EXPR
@@ -9657,12 +9655,12 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	  /* Only do something if we found more than two objects.  Otherwise,
 	     nothing has changed and we risk infinite recursion.  */
 	  if (ok
-	      && (2 < ((var0 != 0) + (var1 != 0)
-		       + (minus_var0 != 0) + (minus_var1 != 0)
-		       + (con0 != 0) + (con1 != 0)
-		       + (minus_con0 != 0) + (minus_con1 != 0)
-		       + (lit0 != 0) + (lit1 != 0)
-		       + (minus_lit0 != 0) + (minus_lit1 != 0))))
+	      && ((var0 != 0) + (var1 != 0)
+		  + (minus_var0 != 0) + (minus_var1 != 0)
+		  + (con0 != 0) + (con1 != 0)
+		  + (minus_con0 != 0) + (minus_con1 != 0)
+		  + (lit0 != 0) + (lit1 != 0)
+		  + (minus_lit0 != 0) + (minus_lit1 != 0)) > 2)
 	    {
 	      var0 = associate_trees (loc, var0, var1, code, atype);
 	      minus_var0 = associate_trees (loc, minus_var0, minus_var1,
@@ -9876,8 +9874,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
 	  strict_overflow_p = false;
 	  if (TREE_CODE (arg1) == INTEGER_CST
-	      && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
-					     &strict_overflow_p)))
+	      && (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
+					&strict_overflow_p)) != 0)
 	    {
 	      if (strict_overflow_p)
 		fold_overflow_warning (("assuming signed overflow does not "
@@ -10310,8 +10308,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
       strict_overflow_p = false;
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
-					 &strict_overflow_p)))
+	  && (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
+				    &strict_overflow_p)) != 0)
 	{
 	  if (strict_overflow_p)
 	    fold_overflow_warning (("assuming signed overflow does not occur "
@@ -10328,8 +10326,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
     case TRUNC_MOD_EXPR:
       strict_overflow_p = false;
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
-					 &strict_overflow_p)))
+	  && (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
+				    &strict_overflow_p)) != 0)
 	{
 	  if (strict_overflow_p)
 	    fold_overflow_warning (("assuming signed overflow does not occur "
@@ -10982,7 +10980,7 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (arg0) == ABS_EXPR
 	  && ! TREE_SIDE_EFFECTS (arg0)
-	  && (0 != (tem = negate_expr (arg1)))
+	  && (tem = negate_expr (arg1)) != 0
 	  && TREE_CODE (tem) == INTEGER_CST
 	  && !TREE_OVERFLOW (tem))
 	return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
@@ -12491,10 +12489,9 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	     so check for it explicitly here.  */
 	  if (wi::gtu_p (TYPE_PRECISION (TREE_TYPE (size_one_node)),
 			 wi::to_wide (op1))
-	      && 0 != (t1 = fold_convert (type,
-					  const_binop (LSHIFT_EXPR,
-						       size_one_node,
-						       op1)))
+	      && (t1 = fold_convert (type,
+				     const_binop (LSHIFT_EXPR, size_one_node,
+						  op1))) != 0
 	      && !TREE_OVERFLOW (t1))
 	    return multiple_of_p (type, t1, bottom);
 	}

@@ -59,7 +59,7 @@ avr_devicespecs_file (int argc, const char **argv)
       return X_NODEVLIB;
 
     case 1:
-      if (0 == strcmp ("device-specs", argv[0]))
+      if (strcmp ("device-specs", argv[0]) == 0)
         {
           /* FIXME:  This means "device-specs%s" from avr.h:DRIVER_SELF_SPECS
              has not been resolved to a path.  That case can occur when the
@@ -81,7 +81,7 @@ avr_devicespecs_file (int argc, const char **argv)
       // Allow specifying the same MCU more than once.
 
       for (int i = 2; i < argc; i++)
-        if (0 != strcmp (mmcu, argv[i]))
+	if (strcmp (mmcu, argv[i]) != 0)
           {
             error ("specified option %qs more than once", "-mmcu");
             return X_NODEVLIB;

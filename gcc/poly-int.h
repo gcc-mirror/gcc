@@ -1288,7 +1288,7 @@ maybe_ne (const Ca &a, const poly_int_pod<N, Cb> &b)
 {
   if (N >= 2)
     for (unsigned int i = 1; i < N; i++)
-      if (0 != b.coeffs[i])
+      if (b.coeffs[i] != 0)
 	return true;
   return a != b.coeffs[0];
 }
@@ -1337,7 +1337,7 @@ maybe_le (const Ca &a, const poly_int_pod<N, Cb> &b)
 {
   if (N >= 2)
     for (unsigned int i = 1; i < N; i++)
-      if (0 < b.coeffs[i])
+      if (b.coeffs[i] > 0)
 	return true;
   return a <= b.coeffs[0];
 }
@@ -1379,7 +1379,7 @@ maybe_lt (const Ca &a, const poly_int_pod<N, Cb> &b)
 {
   if (N >= 2)
     for (unsigned int i = 1; i < N; i++)
-      if (0 < b.coeffs[i])
+      if (b.coeffs[i] > 0)
 	return true;
   return a < b.coeffs[0];
 }

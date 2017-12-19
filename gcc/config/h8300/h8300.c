@@ -1267,7 +1267,7 @@ h8300_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 	    *total = 0;
 	    return true;
 	  }
-	if (-4 <= n && n <= 4)
+	if (n >= -4 && n <= 4)
 	  {
 	    switch ((int) n)
 	      {
@@ -4171,7 +4171,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    }
 	}
-      else if ((8 <= count && count <= 13)
+      else if ((count >= 8 && count <= 13)
 	       || (TARGET_H8300S && count == 14))
 	{
 	  info->remainder = count - 8;
@@ -4251,7 +4251,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
       gcc_unreachable ();
 
     case SIshift:
-      if (TARGET_H8300 && 8 <= count && count <= 9)
+      if (TARGET_H8300 && count >= 8 && count <= 9)
 	{
 	  info->remainder = count - 8;
 
@@ -4314,9 +4314,9 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      gcc_unreachable ();
 	    }
 	}
-      else if ((TARGET_H8300 && 16 <= count && count <= 20)
-	       || (TARGET_H8300H && 16 <= count && count <= 19)
-	       || (TARGET_H8300S && 16 <= count && count <= 21))
+      else if ((TARGET_H8300 && count >= 16 && count <= 20)
+	       || (TARGET_H8300H && count >= 16 && count <= 19)
+	       || (TARGET_H8300S && count >= 16 && count <= 21))
 	{
 	  info->remainder = count - 16;
 
@@ -4353,7 +4353,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    }
 	}
-      else if (TARGET_H8300 && 24 <= count && count <= 28)
+      else if (TARGET_H8300 && count >= 24 && count <= 28)
 	{
 	  info->remainder = count - 24;
 
@@ -4377,7 +4377,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	    }
 	}
       else if ((TARGET_H8300H && count == 24)
-	       || (TARGET_H8300S && 24 <= count && count <= 25))
+	       || (TARGET_H8300S && count >= 24 && count <= 25))
 	{
 	  info->remainder = count - 24;
 

@@ -3523,8 +3523,7 @@ output_reg_adjust (rtx reg, int n)
 {
   const char *s;
 
-  gcc_assert (GET_MODE (reg) == SImode
-	      && -12 <= n && n != 0 && n <= 12);
+  gcc_assert (GET_MODE (reg) == SImode && n >= -12 && n != 0 && n <= 12);
 
   switch (n)
     {
@@ -3566,8 +3565,7 @@ emit_reg_adjust (rtx reg1, int n)
 {
   rtx reg2;
 
-  gcc_assert (GET_MODE (reg1) == SImode
-	      && -12 <= n && n != 0 && n <= 12);
+  gcc_assert (GET_MODE (reg1) == SImode && n >= -12 && n != 0 && n <= 12);
 
   reg1 = copy_rtx (reg1);
   reg2 = copy_rtx (reg1);

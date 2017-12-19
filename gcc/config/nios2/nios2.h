@@ -221,7 +221,7 @@ enum reg_class
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 #define CDX_REG_P(REGNO)						\
-  ((REGNO) == 16 || (REGNO) == 17 || (2 <= (REGNO) && (REGNO) <= 7))
+  ((REGNO) == 16 || (REGNO) == 17 || ((REGNO) >= 2 && (REGNO) <= 7))
 
 /* Tests for various kinds of constants used in the Nios II port.  */
 

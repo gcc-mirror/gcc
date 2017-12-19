@@ -1,3 +1,86 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* read-rtl.c (parse_reg_note_name): Replace Yoda conditions with
+	typical order conditions.
+	* sel-sched.c (extract_new_fences_from): Likewise.
+	* config/visium/constraints.md (J, K, L): Likewise.
+	* config/visium/predicates.md (const_shift_operand): Likewise.
+	* config/visium/visium.c (visium_legitimize_address,
+	visium_legitimize_reload_address): Likewise.
+	* config/m68k/m68k.c (output_reg_adjust, emit_reg_adjust): Likewise.
+	* config/arm/arm.c (arm_block_move_unaligned_straight): Likewise.
+	* config/avr/constraints.md (Y01, Ym1, Y02, Ym2): Likewise.
+	* config/avr/avr-log.c (avr_vdump, avr_log_set_avr_log,
+	SET_DUMP_DETAIL): Likewise.
+	* config/avr/predicates.md (const_8_16_24_operand): Likewise.
+	* config/avr/avr.c (STR_PREFIX_P, avr_popcount_each_byte,
+	avr_is_casesi_sequence, avr_casei_sequence_check_operands,
+	avr_set_core_architecture, avr_set_current_function,
+	avr_legitimize_reload_address, avr_asm_len, avr_print_operand,
+	output_movqi, output_movsisf, avr_out_plus, avr_out_bitop,
+	avr_out_fract, avr_adjust_insn_length, avr_encode_section_info,
+	avr_2word_insn_p, output_reload_in_const, avr_has_nibble_0xf,
+	avr_map_decompose, avr_fold_builtin): Likewise.
+	* config/avr/driver-avr.c (avr_devicespecs_file): Likewise.
+	* config/avr/gen-avr-mmcu-specs.c (str_prefix_p, print_mcu): Likewise.
+	* config/i386/i386.c (ix86_parse_stringop_strategy_string): Likewise.
+	* config/m32c/m32c-pragma.c (m32c_pragma_memregs): Likewise.
+	* config/m32c/m32c.c (m32c_conditional_register_usage,
+	m32c_address_cost): Likewise.
+	* config/m32c/predicates.md (shiftcount_operand,
+	longshiftcount_operand): Likewise.
+	* config/iq2000/iq2000.c (iq2000_expand_prologue): Likewise.
+	* config/nios2/nios2.c (nios2_handle_custom_fpu_insn_option,
+	can_use_cdx_ldstw): Likewise.
+	* config/nios2/nios2.h (CDX_REG_P): Likewise.
+	* config/cr16/cr16.h (RETURN_ADDR_RTX, REGNO_MODE_OK_FOR_BASE_P):
+	Likewise.
+	* config/cr16/cr16.md (*mov<mode>_double): Likewise.
+	* config/cr16/cr16.c (cr16_create_dwarf_for_multi_push): Likewise.
+	* config/h8300/h8300.c (h8300_rtx_costs, get_shift_alg): Likewise.
+	* config/vax/constraints.md (U06, U08, U16, CN6, S08, S16): Likewise.
+	* config/vax/vax.c (adjacent_operands_p): Likewise.
+	* config/ft32/constraints.md (L, b, KA): Likewise.
+	* config/ft32/ft32.c (ft32_load_immediate, ft32_expand_prologue):
+	Likewise.
+	* cfgexpand.c (expand_stack_alignment): Likewise.
+	* gcse.c (insert_expr_in_table): Likewise.
+	* print-rtl.c (rtx_writer::print_rtx_operand_codes_E_and_V): Likewise.
+	* cgraphunit.c (cgraph_node::expand): Likewise.
+	* ira-build.c (setup_min_max_allocno_live_range_point): Likewise.
+	* emit-rtl.c (add_insn): Likewise.
+	* input.c (dump_location_info): Likewise.
+	* passes.c (NEXT_PASS): Likewise.
+	* read-rtl-function.c (parse_note_insn_name,
+	function_reader::read_rtx_operand_r, function_reader::parse_mem_expr):
+	Likewise.
+	* sched-rgn.c (sched_rgn_init): Likewise.
+	* diagnostic-show-locus.c (layout::show_ruler): Likewise.
+	* combine.c (find_split_point, simplify_if_then_else, force_to_mode,
+	if_then_else_cond, simplify_shift_const_1, simplify_comparison): Likewise.
+	* explow.c (eliminate_constant_term): Likewise.
+	* final.c (leaf_renumber_regs_insn): Likewise.
+	* cfgrtl.c (print_rtl_with_bb): Likewise.
+	* genhooks.c (emit_init_macros): Likewise.
+	* poly-int.h (maybe_ne, maybe_le, maybe_lt): Likewise.
+	* tree-data-ref.c (conflict_fn): Likewise.
+	* selftest.c (assert_streq): Likewise.
+	* expr.c (store_constructor_field, expand_expr_real_1): Likewise.
+	* fold-const.c (fold_range_test, extract_muldiv_1, fold_truth_andor,
+	fold_binary_loc, multiple_of_p): Likewise.
+	* reload.c (push_reload, find_equiv_reg): Likewise.
+	* et-forest.c (et_nca, et_below): Likewise.
+	* dbxout.c (dbxout_symbol_location): Likewise.
+	* reorg.c (relax_delay_slots): Likewise.
+	* dojump.c (do_compare_rtx_and_jump): Likewise.
+	* gengtype-parse.c (type): Likewise.
+	* simplify-rtx.c (simplify_gen_ternary, simplify_gen_relational,
+	simplify_const_relational_operation): Likewise.
+	* reload1.c (do_output_reload): Likewise.
+	* dumpfile.c (get_dump_file_info_by_switch): Likewise.
+	* gengtype.c (type_for_name): Likewise.
+	* gimple-ssa-sprintf.c (format_directive): Likewise.
+
 2017-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/82975

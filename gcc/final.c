@@ -4513,11 +4513,9 @@ leaf_renumber_regs_insn (rtx in_rtx)
 	break;
 
       case 'E':
-	if (NULL != XVEC (in_rtx, i))
-	  {
-	    for (j = 0; j < XVECLEN (in_rtx, i); j++)
-	      leaf_renumber_regs_insn (XVECEXP (in_rtx, i, j));
-	  }
+	if (XVEC (in_rtx, i) != NULL)
+	  for (j = 0; j < XVECLEN (in_rtx, i); j++)
+	    leaf_renumber_regs_insn (XVECEXP (in_rtx, i, j));
 	break;
 
       case 'S':

@@ -5485,7 +5485,7 @@ get_std_name_hint (const char *name)
   const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
   for (size_t i = 0; i < num_hints; i++)
     {
-      if (0 == strcmp (name, hints[i].name))
+      if (strcmp (name, hints[i].name) == 0)
 	return hints[i].header;
     }
   return NULL;

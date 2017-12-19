@@ -13987,7 +13987,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
   HOST_WIDE_INT src_autoinc, dst_autoinc;
   rtx mem, addr;
   
-  gcc_assert (1 <= interleave_factor && interleave_factor <= 4);
+  gcc_assert (interleave_factor >= 1 && interleave_factor <= 4);
   
   /* Use hard registers if we have aligned source or destination so we can use
      load/store multiple with contiguous registers.  */

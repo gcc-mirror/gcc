@@ -214,7 +214,7 @@ commonparms (tree p1, tree p2)
 	}
       else
 	{
-	  if (1 != simple_cst_equal (TREE_PURPOSE (p1), TREE_PURPOSE (p2)))
+	  if (simple_cst_equal (TREE_PURPOSE (p1), TREE_PURPOSE (p2)) != 1)
 	    any_change = 1;
 	  TREE_PURPOSE (n) = TREE_PURPOSE (p2);
 	}

@@ -3160,8 +3160,8 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
       if (next_range_str)
         *next_range_str++ = '\0';
 
-      if (3 != sscanf (curr_range_str, "%20[^:]:%d:%10s",
-                       alg_name, &maxs, align))
+      if (sscanf (curr_range_str, "%20[^:]:%d:%10s", alg_name, &maxs,
+		  align) != 3)
         {
 	  error ("wrong argument %qs to option %qs", curr_range_str, opt);
           return;

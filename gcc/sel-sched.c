@@ -672,7 +672,7 @@ extract_new_fences_from (flist_t old_fences, flist_tail_t new_fences,
     {
       int seqno = INSN_SEQNO (succ);
 
-      if (0 < seqno && seqno <= orig_max_seqno
+      if (seqno > 0 && seqno <= orig_max_seqno
           && (pipelining_p || INSN_SCHED_TIMES (succ) <= 0))
         {
           bool b = (in_same_ebb_p (insn, succ)

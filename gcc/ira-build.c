@@ -2756,8 +2756,8 @@ setup_min_max_allocno_live_range_point (void)
 #ifdef ENABLE_IRA_CHECKING
   FOR_EACH_OBJECT (obj, oi)
     {
-      if ((0 <= OBJECT_MIN (obj) && OBJECT_MIN (obj) <= ira_max_point)
-	  && (0 <= OBJECT_MAX (obj) && OBJECT_MAX (obj) <= ira_max_point))
+      if ((OBJECT_MIN (obj) >= 0 && OBJECT_MIN (obj) <= ira_max_point)
+	  && (OBJECT_MAX (obj) >= 0 && OBJECT_MAX (obj) <= ira_max_point))
 	continue;
       gcc_unreachable ();
     }

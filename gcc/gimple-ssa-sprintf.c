@@ -2854,7 +2854,7 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   if (!warned
       /* Only warn at level 2.  */
-      && 1 < warn_level
+      && warn_level > 1
       && (!minunder4k
 	  || (!maxunder4k && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
@@ -2902,7 +2902,7 @@ format_directive (const sprintf_dom_walker::call_info &info,
       /* Warn for the likely output size at level 1.  */
       && (likelyximax
 	  /* But only warn for the maximum at level 2.  */
-	  || (1 < warn_level
+	  || (warn_level > 1
 	      && maxximax
 	      && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {

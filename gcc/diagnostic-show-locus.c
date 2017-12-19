@@ -1866,7 +1866,7 @@ layout::show_ruler (int max_column) const
     {
       pp_space (m_pp);
       for (int column = 1 + m_x_offset; column <= max_column; column++)
-	if (0 == column % 10)
+	if (column % 10 == 0)
 	  pp_character (m_pp, '0' + (column / 100) % 10);
 	else
 	  pp_space (m_pp);
@@ -1876,7 +1876,7 @@ layout::show_ruler (int max_column) const
   /* Tens.  */
   pp_space (m_pp);
   for (int column = 1 + m_x_offset; column <= max_column; column++)
-    if (0 == column % 10)
+    if (column % 10 == 0)
       pp_character (m_pp, '0' + (column / 10) % 10);
     else
       pp_space (m_pp);

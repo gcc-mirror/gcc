@@ -265,12 +265,12 @@ ft32_load_immediate (rtx dst, int32_t i)
 {
   char pattern[100];
 
-  if ((-524288 <= i) && (i <= 524287))
+  if (i >= -524288 && i <= 524287)
     {
       sprintf (pattern, "ldk.l  %%0,%d", i);
       output_asm_insn (pattern, &dst);
     }
-  else if ((-536870912 <= i) && (i <= 536870911))
+  else if (i >= -536870912 && i <= 536870911)
     {
       ft32_load_immediate (dst, i >> 10);
       sprintf (pattern, "ldl.l  %%0,%%0,%d", i & 1023);
@@ -283,7 +283,7 @@ ft32_load_immediate (rtx dst, int32_t i)
       for (rd = 1; rd < 32; rd++)
         {
           u = ((u >> 31) & 1) | (u << 1);
-          if ((-524288 <= (int32_t) u) && ((int32_t) u <= 524287))
+	  if ((int32_t) u >= -524288 && (int32_t) u <= 524287)
             {
               ft32_load_immediate (dst, (int32_t) u);
               sprintf (pattern, "ror.l  %%0,%%0,%d", rd);
@@ -496,7 +496,7 @@ ft32_expand_prologue (void)
 	}
     }
 
-  if (65536 <= cfun->machine->size_for_adjusting_sp)
+  if (cfun->machine->size_for_adjusting_sp >= 65536)
     {
       error ("stack frame must be smaller than 64K");
       return;

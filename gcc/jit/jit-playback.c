@@ -211,10 +211,9 @@ playback::context::
 get_type (enum gcc_jit_types type_)
 {
   tree type_node = get_tree_node_for_type (type_);
-  if (NULL == type_node)
+  if (type_node == NULL)
     {
-      add_error (NULL,
-		 "unrecognized (enum gcc_jit_types) value: %i", type_);
+      add_error (NULL, "unrecognized (enum gcc_jit_types) value: %i", type_);
       return NULL;
     }
 
@@ -2049,7 +2048,7 @@ playback::compile_to_file::copy_file (const char *src_path,
   /* Use stat on the filedescriptor to get the mode,
      so that we can copy it over (in particular, the
      "executable" bits).  */
-  if (-1 == fstat (fileno (f_in), &stat_buf))
+  if (fstat (fileno (f_in), &stat_buf) == -1)
     {
       add_error (NULL,
 		 "unable to fstat %s: %s",
@@ -2113,7 +2112,7 @@ playback::compile_to_file::copy_file (const char *src_path,
 
   /* Set the permissions of the copy to those of the original file,
      in particular the "executable" bits.  */
-  if (-1 == fchmod (fileno (f_out), stat_buf.st_mode))
+  if (fchmod (fileno (f_out), stat_buf.st_mode) == -1)
     add_error (NULL,
 	       "error setting mode of %s: %s",
 	       dst_path,
@@ -2139,7 +2138,7 @@ playback::context::acquire_mutex ()
   /* Acquire the big GCC mutex. */
   JIT_LOG_SCOPE (get_logger ());
   pthread_mutex_lock (&jit_mutex);
-  gcc_assert (NULL == active_playback_ctxt);
+  gcc_assert (active_playback_ctxt == NULL);
   active_playback_ctxt = this;
 }
 

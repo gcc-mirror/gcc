@@ -1136,7 +1136,7 @@ insert_expr_in_table (rtx x, machine_mode mode, rtx_insn *insn,
   cur_expr = table->table[hash];
   found = 0;
 
-  while (cur_expr && 0 == (found = expr_equiv_p (cur_expr->expr, x)))
+  while (cur_expr && (found = expr_equiv_p (cur_expr->expr, x)) == 0)
     {
       /* If the expression isn't found, save a pointer to the end of
 	 the list.  */
