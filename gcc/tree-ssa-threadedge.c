@@ -156,11 +156,37 @@ record_temporary_equivalences_from_phis (edge e,
       const_and_copies->record_const_or_copy (dst, src);
 
       /* Also update the value range associated with DST, using
-	 the range from SRC.  */
-      if (evrp_range_analyzer && TREE_CODE (src) == SSA_NAME)
+	 the range from SRC.
+
+	 Note that even if SRC is a constant we need to set a suitable
+	 output range so that VR_UNDEFINED ranges do not leak through.  */
+      if (evrp_range_analyzer)
 	{
-	  value_range *vr = evrp_range_analyzer->get_value_range (src);
-	  evrp_range_analyzer->push_value_range (dst, vr);
+	  /* Get an empty new VR we can pass to update_value_range and save
+	     away in the VR stack.  */
+	  vr_values *vr_values = evrp_range_analyzer->get_vr_values ();
+	  value_range *new_vr = vr_values->allocate_value_range ();
+	  memset (new_vr, 0, sizeof (value_range));
+
+	  /* There are three cases to consider:
+
+	       First if SRC is an SSA_NAME, then we can copy the value
+	       range from SRC into NEW_VR.
+
+	       Second if SRC is an INTEGER_CST, then we can just wet
+	       NEW_VR to a singleton range.
+
+	       Otherwise set NEW_VR to varying.  This may be overly
+	       conservative.  */
+	  if (TREE_CODE (src) == SSA_NAME)
+	    copy_value_range (new_vr, vr_values->get_value_range (src));
+	  else if (TREE_CODE (src) == INTEGER_CST)
+	    set_value_range_to_value (new_vr, src,  NULL);
+	  else
+	    set_value_range_to_varying (new_vr);
+
+	  /* This is a temporary range for DST, so push it.  */
+	  evrp_range_analyzer->push_value_range (dst, new_vr);
 	}
     }
   return true;
