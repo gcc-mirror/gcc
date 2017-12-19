@@ -311,6 +311,7 @@ legitimate_scaled_address_p (machine_mode mode, rtx op, bool strict)
     case 4:
       if (INTVAL (XEXP (XEXP (op, 0), 1)) != 4)
 	return false;
+      /*  Fall through. */
     default:
       return false;
     }
@@ -2746,8 +2747,6 @@ arc_compute_frame_size (void)
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
   unsigned int reg_size, reg_offset;
   unsigned int gmask;
-  enum arc_function_type fn_type;
-  int interrupt_p;
   struct arc_frame_info *frame_info;
   int size;
 
@@ -3796,7 +3795,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 
     case 'c':
       if (GET_CODE (x) == CONST_INT)
-        fprintf (file, "%d", INTVAL (x) );
+        fprintf (file, "%ld", INTVAL (x) );
       else
         output_operand_lossage ("invalid operands to %%c code");
 
@@ -10087,6 +10086,7 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
       case TYPE_BRANCH:
 	if (get_attr_length (u.r) != 2)
 	  break;
+      /*  Fall through. */
       case TYPE_BRCC:
       case TYPE_BRCC_NO_DELAY_SLOT:
 	return false;
