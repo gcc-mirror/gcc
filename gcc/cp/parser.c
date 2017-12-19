@@ -22101,8 +22101,10 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 
 	  if (!cp_parser_parse_definitely (parser))
 	    designator = NULL_TREE;
-	  else if (non_const)
-	    require_potential_rvalue_constant_expression (designator);
+	  else if (non_const
+		   && (!require_potential_rvalue_constant_expression
+		       (designator)))
+	    designator = NULL_TREE;
 	  if (designator)
 	    /* Warn the user that they are using an extension.  */
 	    pedwarn (loc, OPT_Wpedantic,

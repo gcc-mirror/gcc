@@ -1305,17 +1305,10 @@ process_init_constructor_array (tree type, tree init, int nested,
 
   FOR_EACH_VEC_SAFE_ELT (v, i, ce)
     {
-      if (ce->index)
-	{
-	  gcc_assert (TREE_CODE (ce->index) == INTEGER_CST);
-	  if (compare_tree_int (ce->index, i) != 0)
-	    {
-	      ce->value = error_mark_node;
-	      sorry ("non-trivial designated initializers not supported");
-	    }
-	}
-      else
+      if (!ce->index)
 	ce->index = size_int (i);
+      else if (!check_array_designated_initializer (ce, i))
+	ce->index = error_mark_node;
       gcc_assert (ce->value);
       ce->value
 	= massage_init_elt (TREE_TYPE (type), ce->value, nested, complain);
