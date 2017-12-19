@@ -1,3 +1,9 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82975
+	* gcc.dg/pr82975.c: Only add -mtune=cortex-a57 on arm*/aarch64*
+	targets.
+
 2017-12-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/82231
