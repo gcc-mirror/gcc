@@ -1620,7 +1620,8 @@ enum arm_auto_incmodes
    has been allocated, which happens in reginfo.c during register
    allocation.  */
 #define TEST_REGNO(R, TEST, VALUE) \
-  ((R TEST VALUE) || ((unsigned) reg_renumber[R] TEST VALUE))
+  ((R TEST VALUE)	\
+    || (reg_renumber && ((unsigned) reg_renumber[R] TEST VALUE)))
 
 /* Don't allow the pc to be used.  */
 #define ARM_REGNO_OK_FOR_BASE_P(REGNO)			\
