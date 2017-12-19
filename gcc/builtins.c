@@ -3278,8 +3278,12 @@ check_access (tree exp, tree, tree, tree dstwrite,
 /* Helper to compute the size of the object referenced by the DEST
    expression which must have pointer type, using Object Size type
    OSTYPE (only the least significant 2 bits are used).  Return
-   the size of the object if successful or NULL when the size cannot
-   be determined.  */
+   an estimate of the size of the object if successful or NULL when
+   the size cannot be determined.  When the referenced object involves
+   a non-constant offset in some range the returned value represents
+   the largest size given the smallest non-negative offset in the
+   range.  The function is intended for diagnostics and should not
+   be used to influence code generation or optimization.  */
 
 tree
 compute_objsize (tree dest, int ostype)
@@ -3292,23 +3296,56 @@ compute_objsize (tree dest, int ostype)
   if (compute_builtin_object_size (dest, ostype, &size))
     return build_int_cst (sizetype, size);
 
-  /* Unless computing the largest size (for memcpy and other raw memory
-     functions), try to determine the size of the object from its type.  */
-  if (!ostype)
-    return NULL_TREE;
-
   if (TREE_CODE (dest) == SSA_NAME)
     {
       gimple *stmt = SSA_NAME_DEF_STMT (dest);
       if (!is_gimple_assign (stmt))
 	return NULL_TREE;
 
-      tree_code code = gimple_assign_rhs_code (stmt);
-      if (code != ADDR_EXPR && code != POINTER_PLUS_EXPR)
-	return NULL_TREE;
-
       dest = gimple_assign_rhs1 (stmt);
+
+      tree_code code = gimple_assign_rhs_code (stmt);
+      if (code == POINTER_PLUS_EXPR)
+	{
+	  /* compute_builtin_object_size fails for addresses with
+	     non-constant offsets.  Try to determine the range of
+	     such an offset here and use it to adjus the constant
+	     size.  */
+	  tree off = gimple_assign_rhs2 (stmt);
+	  if (TREE_CODE (off) == SSA_NAME
+	      && INTEGRAL_TYPE_P (TREE_TYPE (off)))
+	    {
+	      wide_int min, max;
+	      enum value_range_type rng = get_range_info (off, &min, &max);
+
+	      if (rng == VR_RANGE)
+		{
+		  if (tree size = compute_objsize (dest, ostype))
+		    {
+		      wide_int wisiz = wi::to_wide (size);
+
+		      /* Ignore negative offsets for now.  For others,
+			 use the lower bound as the most optimistic
+			 estimate of the (remaining)size.  */
+		      if (wi::sign_mask (min))
+			;
+		      else if (wi::ltu_p (min, wisiz))
+			return wide_int_to_tree (TREE_TYPE (size),
+						 wi::sub (wisiz, min));
+		      else
+			return size_zero_node;
+		    }
+		}
+	    }
+	}
+      else if (code != ADDR_EXPR)
+	return NULL_TREE;
     }
+
+  /* Unless computing the largest size (for memcpy and other raw memory
+     functions), try to determine the size of the object from its type.  */
+  if (!ostype)
+    return NULL_TREE;
 
   if (TREE_CODE (dest) != ADDR_EXPR)
     return NULL_TREE;
@@ -3470,6 +3507,19 @@ expand_builtin_mempcpy (tree exp, rtx target)
   tree dest = CALL_EXPR_ARG (exp, 0);
   tree src = CALL_EXPR_ARG (exp, 1);
   tree len = CALL_EXPR_ARG (exp, 2);
+
+  /* Policy does not generally allow using compute_objsize (which
+     is used internally by check_memop_size) to change code generation
+     or drive optimization decisions.
+
+     In this instance it is safe because the code we generate has
+     the same semantics regardless of the return value of
+     check_memop_sizes.   Exactly the same amount of data is copied
+     and the return value is exactly the same in both cases.
+
+     Furthermore, check_memop_size always uses mode 0 for the call to
+     compute_objsize, so the imprecise nature of compute_objsize is
+     avoided.  */
 
   /* Avoid expanding mempcpy into memcpy when the call is determined
      to overflow the buffer.  This also prevents the same overflow
