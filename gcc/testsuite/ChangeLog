@@ -1,3 +1,9 @@
+2017-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/switch-case-1.c: Scan IPA profile dump
+	file instead of expand in order to not mix it with expanded
+	tree decision tree for the switch statement.
+
 2017-12-19  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/83482
