@@ -7218,7 +7218,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
       bool seen_empty_type = false;
       FOREACH_FUNCTION_ARGS (fntype, argtype, iter)
 	{
-	  if (VOID_TYPE_P (argtype))
+	  if (argtype == error_mark_node || VOID_TYPE_P (argtype))
 	    break;
 	  if (TYPE_EMPTY_P (argtype))
 	    seen_empty_type = true;
