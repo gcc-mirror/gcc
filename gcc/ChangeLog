@@ -1,5 +1,9 @@
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83444
+	* tree-ssa-strlen.c (strlen_check_and_optimize_stmt): Optimize
+	character loads.
+
 	PR ipa/82801
 	PR ipa/83346
 	* ipa-inline.c (flatten_remove_node_hook): New function.
