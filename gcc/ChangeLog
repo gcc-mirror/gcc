@@ -1,3 +1,10 @@
+2017-12-19  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (overriderregs): New variable.
+	(arc_override_options): Track fixed/call saved/call options.
+	(arc_conditional_register_usage): Check against overrideregs
+	variable whenever we change register properties.
+
 2017-12-19  Nathan Sidwell  <nathan@acm.org>
 
 	* opts.c (finish_options): Don't prefix dump_base_name if it

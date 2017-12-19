@@ -73,6 +73,9 @@ along with GCC; see the file COPYING3.  If not see
 static char arc_cpu_name[10] = "";
 static const char *arc_cpu_string = arc_cpu_name;
 
+/* Track which regs are set fixed/call saved/call used from commnad line.  */
+HARD_REG_SET overrideregs;
+
 /* Maximum size of a loop.  */
 #define ARC_MAX_LOOP_LENGTH 4095
 
@@ -1099,6 +1102,30 @@ arc_override_options (void)
 	  }
       }
 
+  CLEAR_HARD_REG_SET (overrideregs);
+  if (common_deferred_options)
+    {
+      vec<cl_deferred_option> v =
+	*((vec<cl_deferred_option> *) common_deferred_options);
+      int reg, nregs, j;
+
+      FOR_EACH_VEC_ELT (v, i, opt)
+	{
+	  switch (opt->opt_index)
+	    {
+	    case OPT_ffixed_:
+	    case OPT_fcall_used_:
+	    case OPT_fcall_saved_:
+	      if ((reg = decode_reg_name_and_count (opt->arg, &nregs)) >= 0)
+		for (j = reg;  j < reg + nregs; j++)
+		  SET_HARD_REG_BIT (overrideregs, j);
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
+
   /* Set cpu flags accordingly to architecture/selected cpu.  The cpu
      specific flags are set in arc-common.c.  The architecture forces
      the default hardware configurations in, regardless what command
@@ -1628,14 +1655,20 @@ arc_conditional_register_usage (void)
       /* For ARCv2 the core register set is changed.  */
       strcpy (rname29, "ilink");
       strcpy (rname30, "r30");
-      call_used_regs[30] = 1;
-      fixed_regs[30] = 0;
 
-      arc_regno_reg_class[30] = WRITABLE_CORE_REGS;
-      SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], 30);
-      SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], 30);
-      SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], 30);
-      SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], 30);
+      if (!TEST_HARD_REG_BIT (overrideregs, 30))
+	{
+	  /* No user interference.  Set the r30 to be used by the
+	     compiler.  */
+	  call_used_regs[30] = 1;
+	  fixed_regs[30] = 0;
+
+	  arc_regno_reg_class[30] = WRITABLE_CORE_REGS;
+	  SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], 30);
+	  SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], 30);
+	  SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], 30);
+	  SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], 30);
+	}
    }
 
   if (TARGET_MUL64_SET)
@@ -1877,11 +1910,14 @@ arc_conditional_register_usage (void)
     SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCL_REGNO);
     SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCH_REGNO);
 
-     /* Allow the compiler to freely use them.  */
-    fixed_regs[ACCL_REGNO] = 0;
-    fixed_regs[ACCH_REGNO] = 0;
+    /* Allow the compiler to freely use them.  */
+    if (!TEST_HARD_REG_BIT (overrideregs, ACCL_REGNO))
+      fixed_regs[ACCL_REGNO] = 0;
+    if (!TEST_HARD_REG_BIT (overrideregs, ACCH_REGNO))
+      fixed_regs[ACCH_REGNO] = 0;
 
-    arc_hard_regno_modes[ACC_REG_FIRST] = D_MODES;
+    if (!fixed_regs[ACCH_REGNO] && !fixed_regs[ACCL_REGNO])
+      arc_hard_regno_modes[ACC_REG_FIRST] = D_MODES;
   }
 }
 
