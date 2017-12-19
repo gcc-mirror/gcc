@@ -1,5 +1,13 @@
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/82801
+	PR ipa/83346
+	* ipa-inline.c (flatten_remove_node_hook): New function.
+	(ipa_inline): Keep only nodes with flatten attribute at the end of
+	the array in the order from ipa_reverse_postorder, only walk that
+	portion of array for flattening, if there is more than one such
+	node, temporarily register a removal hook and ignore removed nodes.
+
 	PR tree-optimization/80631
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Compare
 	induc_code against MAX_EXPR or MIN_EXPR instead of reduc_fn against
