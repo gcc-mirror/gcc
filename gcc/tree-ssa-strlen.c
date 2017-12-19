@@ -3146,6 +3146,64 @@ strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi)
 	else if (code == EQ_EXPR || code == NE_EXPR)
 	  fold_strstr_to_strncmp (gimple_assign_rhs1 (stmt),
 				  gimple_assign_rhs2 (stmt), stmt);
+	else if (gimple_assign_load_p (stmt)
+		 && TREE_CODE (TREE_TYPE (lhs)) == INTEGER_TYPE
+		 && TYPE_MODE (TREE_TYPE (lhs)) == TYPE_MODE (char_type_node)
+		 && (TYPE_PRECISION (TREE_TYPE (lhs))
+		     == TYPE_PRECISION (char_type_node))
+		 && !gimple_has_volatile_ops (stmt))
+	  {
+	    tree off = integer_zero_node;
+	    unsigned HOST_WIDE_INT coff = 0;
+	    int idx = -1;
+	    tree rhs1 = gimple_assign_rhs1 (stmt);
+	    if (code == MEM_REF)
+	      {
+		idx = get_stridx (TREE_OPERAND (rhs1, 0));
+		off = TREE_OPERAND (rhs1, 1);
+	      }
+	    else
+	      idx = get_addr_stridx (rhs1, NULL_TREE, &coff);
+	    if (idx > 0)
+	      {
+		strinfo *si = get_strinfo (idx);
+		if (si
+		    && si->nonzero_chars
+		    && TREE_CODE (si->nonzero_chars) == INTEGER_CST)
+		  {
+		    widest_int w1 = wi::to_widest (si->nonzero_chars);
+		    widest_int w2 = wi::to_widest (off) + coff;
+		    if (w1 == w2
+			&& si->full_string_p)
+		      {
+			/* Reading the final '\0' character.  */
+			tree zero = build_int_cst (TREE_TYPE (lhs), 0);
+			gimple_set_vuse (stmt, NULL_TREE);
+			gimple_assign_set_rhs_from_tree (gsi, zero);
+			update_stmt (gsi_stmt (*gsi));
+		      }
+		    else if (w1 > w2)
+		      {
+			/* Reading a character before the final '\0'
+			   character.  Just set the value range to ~[0, 0]
+			   if we don't have anything better.  */
+			wide_int min, max;
+			tree type = TREE_TYPE (lhs);
+			enum value_range_type vr
+			  = get_range_info (lhs, &min, &max);
+			if (vr == VR_VARYING
+			    || (vr == VR_RANGE
+				&& min == wi::min_value (TYPE_PRECISION (type),
+							 TYPE_SIGN (type))
+				&& max == wi::max_value (TYPE_PRECISION (type),
+							 TYPE_SIGN (type))))
+			  set_range_info (lhs, VR_ANTI_RANGE,
+					  wi::zero (TYPE_PRECISION (type)),
+					  wi::zero (TYPE_PRECISION (type)));
+		      }
+		  }
+	      }
+	  }
 
 	if (strlen_to_stridx)
 	  {
