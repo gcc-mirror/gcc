@@ -1032,6 +1032,7 @@ sparc_do_work_around_errata (void)
 	 floating-point operation or a floating-point branch.  */
       if (sparc_fix_gr712rc
 	  && jump
+	  && jump_to_label_p (jump)
 	  && get_attr_branch_type (jump) == BRANCH_TYPE_ICC)
 	{
 	  rtx_insn *target = next_active_insn (JUMP_LABEL_AS_INSN (jump));
@@ -1051,7 +1052,7 @@ sparc_do_work_around_errata (void)
 	  && mem_ref (SET_SRC (set))
 	  && REG_P (SET_DEST (set)))
 	{
-	  if (jump)
+	  if (jump && jump_to_label_p (jump))
 	    {
 	      rtx_insn *target = next_active_insn (JUMP_LABEL_AS_INSN (jump));
 	      if (target && atomic_insn_for_leon3_p (target))
