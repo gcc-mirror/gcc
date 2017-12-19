@@ -1,7 +1,7 @@
 /* Exercise that -Warray-bounds is issued for out-of-bounds offsets
    in calls to built-in functions.
    { dg-do compile }
-   { dg-options "-O2 -Warray-bounds -ftrack-macro-expansion=0" }  */
+   { dg-options "-O2 -Wno-stringop-overflow -Warray-bounds -ftrack-macro-expansion=0" }  */
 
 #include "../gcc.dg/range.h"
 

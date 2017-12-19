@@ -1,3 +1,8 @@
+2017-12-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77608
+	* builtins.c (compute_objsize): Handle non-constant offsets.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83444
@@ -190,6 +195,7 @@
 	* tree-ssa-dom.c (record_equivalences_from_phis): Fix handling
 	of degenerates resulting from ignoring an edge.
 
+>>>>>>> .r255835
 2017-12-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/83373

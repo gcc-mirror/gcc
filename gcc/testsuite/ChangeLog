@@ -1,3 +1,9 @@
+2017-12-19  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/77608
+	* gcc.dg/Wstringop-overflow.c: New test.
+	* gcc/testsuite/c-c++-common/Warray-bounds-3.c: Adjust.
+
 2017-12-19  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/83422
@@ -57,6 +63,7 @@
 	PR ipa/83346
 	* g++.dg/ipa/pr82801.C: New test.
 
+>>>>>>> .r255835
 2017-12-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/83373
