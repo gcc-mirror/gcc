@@ -10338,12 +10338,9 @@ delete_vta_debug_insns (void)
    handled as well..  */
 
 static void
-vt_debug_insns_local (bool skipped)
+vt_debug_insns_local (bool skipped ATTRIBUTE_UNUSED)
 {
-  /* ??? Just skip it all for now.  If we skipped the global pass,
-     arrange for stmt markers to be dropped as well.  */
-  if (skipped)
-    cfun->debug_nonbind_markers = 0;
+  /* ??? Just skip it all for now.  */
   delete_vta_debug_insns ();
 }
 
@@ -10444,8 +10441,6 @@ variable_tracking_main_1 (void)
   if (!success && flag_var_tracking_assignments > 0)
     {
       vt_finalize ();
-
-      cfun->debug_nonbind_markers = 0;
 
       delete_vta_debug_insns ();
 

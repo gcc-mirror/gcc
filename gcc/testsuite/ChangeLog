@@ -1,3 +1,8 @@
+2017-12-19  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/83422
+	* gcc.dg/pr83422.c: New.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/83454
