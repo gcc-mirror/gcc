@@ -1,3 +1,9 @@
+2017-12-18  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/83477
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis): For
+	a non-virtual PHI, always push a new range.
+
 2017-12-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/77608
@@ -195,7 +201,6 @@
 	* tree-ssa-dom.c (record_equivalences_from_phis): Fix handling
 	of degenerates resulting from ignoring an edge.
 
->>>>>>> .r255835
 2017-12-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/83373
