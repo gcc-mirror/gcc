@@ -1,6 +1,6 @@
 /* PR tree-optimization/79472 */
 /* { dg-options "-O2 -fdump-tree-switchconv" } */
-/* { dg-do compile } */
+/* { dg-do compile { target nonpic } } */
 
 void
 frobulate (unsigned int v)
