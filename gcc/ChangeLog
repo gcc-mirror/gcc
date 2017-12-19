@@ -1,3 +1,8 @@
+2017-12-19  Nathan Sidwell  <nathan@acm.org>
+
+	* opts.c (finish_options): Don't prefix dump_base_name if it
+	already contains directories.
+
 2017-12-19  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/82675
