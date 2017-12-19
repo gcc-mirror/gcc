@@ -1,3 +1,8 @@
+2017-12-19  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/66205
+	* bindgen.adb (Gen_AdaFinal): Revert previous change.
+
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (gnat_internal_attribute_table): Swap
