@@ -1,5 +1,8 @@
 2017-12-18  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-dom.c (record_equivalences_from_phis): Do not
+	record symbolic equivalences from backedges in the CFG.
+
 	Revert
 	2017-11-19  Jeff Law  <law@redhat.com>
 

@@ -1126,6 +1126,12 @@ record_equivalences_from_phis (basic_block bb)
 
 	  t = dom_valueize (t);
 
+	  /* If T is an SSA_NAME and its associated edge is a backedge,
+	     then quit as we can not utilize this equivalence.  */
+	  if (TREE_CODE (t) == SSA_NAME
+	      && (gimple_phi_arg_edge (phi, i)->flags & EDGE_DFS_BACK))
+	    break;
+
 	  /* If we have not processed an alternative yet, then set
 	     RHS to this alternative.  */
 	  if (rhs == NULL)
