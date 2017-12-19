@@ -1112,7 +1112,7 @@ reload (rtx_insn *first, int global)
       /* We don't want complex addressing modes in debug insns
 	 if simpler ones will do, so delegitimize equivalences
 	 in debug insns.  */
-      if (MAY_HAVE_DEBUG_INSNS && reg_renumber[i] < 0)
+      if (MAY_HAVE_DEBUG_BIND_INSNS && reg_renumber[i] < 0)
 	{
 	  rtx reg = regno_reg_rtx[i];
 	  rtx equiv = 0;
@@ -1140,7 +1140,7 @@ reload (rtx_insn *first, int global)
 	      while (next && DF_REF_INSN (next) == insn)
 		next = DF_REF_NEXT_REG (next);
 
-	      if (DEBUG_INSN_P (insn))
+	      if (DEBUG_BIND_INSN_P (insn))
 		{
 		  if (!equiv)
 		    {
@@ -3202,7 +3202,7 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
 		  || GET_CODE (PATTERN (insn)) == USE
 		  || GET_CODE (PATTERN (insn)) == CLOBBER
 		  || GET_CODE (PATTERN (insn)) == ASM_INPUT);
-      if (DEBUG_INSN_P (insn))
+      if (DEBUG_BIND_INSN_P (insn))
 	INSN_VAR_LOCATION_LOC (insn)
 	  = eliminate_regs (INSN_VAR_LOCATION_LOC (insn), VOIDmode, insn);
       return 0;
@@ -7345,12 +7345,12 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 
 	      /* Adjust any debug insns between temp and insn.  */
 	      while ((temp = NEXT_INSN (temp)) != insn)
-		if (DEBUG_INSN_P (temp))
+		if (DEBUG_BIND_INSN_P (temp))
 		  INSN_VAR_LOCATION_LOC (temp)
 		    = simplify_replace_rtx (INSN_VAR_LOCATION_LOC (temp),
 					    old, reloadreg);
 		else
-		  gcc_assert (NOTE_P (temp));
+		  gcc_assert (DEBUG_INSN_P (temp) || NOTE_P (temp));
 	    }
 	  else
 	    {
@@ -8006,8 +8006,8 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
   /* Likewise for a SUBREG of an operand that dies.  */
   else if (GET_CODE (old) == SUBREG
 	   && REG_P (SUBREG_REG (old))
-	   && 0 != (note = find_reg_note (insn, REG_UNUSED,
-					  SUBREG_REG (old))))
+	   && (note = find_reg_note (insn, REG_UNUSED,
+				     SUBREG_REG (old))) != 0)
     {
       XEXP (note, 0) = gen_lowpart_common (GET_MODE (old), reg_rtx);
       return;

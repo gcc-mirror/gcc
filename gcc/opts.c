@@ -527,6 +527,7 @@ static const struct default_options default_options_table[] =
     /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_floop_interchange, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
     /* Inlining of functions reducing size is a good idea with -Os
@@ -535,6 +536,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_floop_unroll_and_jam, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_slp_vectorize, NULL, 1 },
@@ -698,19 +700,27 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   enum unwind_info_type ui_except;
 
   if (opts->x_dump_base_name
-      && ! IS_ABSOLUTE_PATH (opts->x_dump_base_name)
       && ! opts->x_dump_base_name_prefixed)
     {
-      /* First try to make OPTS->X_DUMP_BASE_NAME relative to the
-	 OPTS->X_DUMP_DIR_NAME directory.  Then try to make
-	 OPTS->X_DUMP_BASE_NAME relative to the OPTS->X_AUX_BASE_NAME
-	 directory, typically the directory to contain the object
-	 file.  */
-      if (opts->x_dump_dir_name)
+      const char *sep = opts->x_dump_base_name;
+
+      for (; *sep; sep++)
+	if (IS_DIR_SEPARATOR (*sep))
+	  break;
+
+      if (*sep)
+	/* If dump_base_path contains subdirectories, don't prepend
+	   anything.  */;
+      else if (opts->x_dump_dir_name)
+	/* We have a DUMP_DIR_NAME, prepend that.  */
 	opts->x_dump_base_name = opts_concat (opts->x_dump_dir_name,
 					      opts->x_dump_base_name, NULL);
       else if (opts->x_aux_base_name
 	       && strcmp (opts->x_aux_base_name, HOST_BIT_BUCKET) != 0)
+	/* AUX_BASE_NAME is set and is not the bit bucket.  If it
+	   contains a directory component, prepend those directories.
+	   Typically this places things in the same directory as the
+	   object file.  */
 	{
 	  const char *aux_base;
 
@@ -729,7 +739,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	      opts->x_dump_base_name = new_dump_base_name;
 	    }
 	}
-	opts->x_dump_base_name_prefixed = true;
+
+      /* It is definitely prefixed now.  */
+      opts->x_dump_base_name_prefixed = true;
     }
 
   /* Handle related options for unit-at-a-time, toplevel-reorder, and
@@ -952,6 +964,19 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   /* The -gsplit-dwarf option requires -ggnu-pubnames.  */
   if (opts->x_dwarf_split_debug_info)
     opts->x_debug_generate_pub_sections = 2;
+
+  if ((opts->x_flag_sanitize
+       & (SANITIZE_USER_ADDRESS | SANITIZE_KERNEL_ADDRESS)) == 0)
+    {
+      if (opts->x_flag_sanitize & SANITIZE_POINTER_COMPARE)
+	error_at (loc,
+		  "%<-fsanitize=pointer-compare%> must be combined with "
+		  "%<-fsanitize=address%> or %<-fsanitize=kernel-address%>");
+      if (opts->x_flag_sanitize & SANITIZE_POINTER_SUBTRACT)
+	error_at (loc,
+		  "%<-fsanitize=pointer-subtract%> must be combined with "
+		  "%<-fsanitize=address%> or %<-fsanitize=kernel-address%>");
+    }
 
   /* Userspace and kernel ASan conflict with each other.  */
   if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS)
@@ -1497,6 +1522,8 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   SANITIZER_OPT (address, (SANITIZE_ADDRESS | SANITIZE_USER_ADDRESS), true),
   SANITIZER_OPT (kernel-address, (SANITIZE_ADDRESS | SANITIZE_KERNEL_ADDRESS),
 		 true),
+  SANITIZER_OPT (pointer-compare, SANITIZE_POINTER_COMPARE, true),
+  SANITIZER_OPT (pointer-subtract, SANITIZE_POINTER_SUBTRACT, true),
   SANITIZER_OPT (thread, SANITIZE_THREAD, false),
   SANITIZER_OPT (leak, SANITIZE_LEAK, false),
   SANITIZER_OPT (shift, SANITIZE_SHIFT, true),

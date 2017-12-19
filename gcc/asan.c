@@ -1605,7 +1605,7 @@ is_odr_indicator (tree decl)
    ASAN_RED_ZONE_SIZE bytes.  */
 
 bool
-asan_protect_global (tree decl)
+asan_protect_global (tree decl, bool ignore_decl_rtl_set_p)
 {
   if (!ASAN_GLOBALS)
     return false;
@@ -1627,7 +1627,13 @@ asan_protect_global (tree decl)
       || DECL_THREAD_LOCAL_P (decl)
       /* Externs will be protected elsewhere.  */
       || DECL_EXTERNAL (decl)
-      || !DECL_RTL_SET_P (decl)
+      /* PR sanitizer/81697: For architectures that use section anchors first
+	 call to asan_protect_global may occur before DECL_RTL (decl) is set.
+	 We should ignore DECL_RTL_SET_P then, because otherwise the first call
+	 to asan_protect_global will return FALSE and the following calls on the
+	 same decl after setting DECL_RTL (decl) will return TRUE and we'll end
+	 up with inconsistency at runtime.  */
+      || (!DECL_RTL_SET_P (decl) && !ignore_decl_rtl_set_p)
       /* Comdat vars pose an ABI problem, we can't know if
 	 the var that is selected by the linker will have
 	 padding or not.  */
@@ -1651,14 +1657,18 @@ asan_protect_global (tree decl)
       || is_odr_indicator (decl))
     return false;
 
-  rtl = DECL_RTL (decl);
-  if (!MEM_P (rtl) || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF)
-    return false;
-  symbol = XEXP (rtl, 0);
+  if (!ignore_decl_rtl_set_p || DECL_RTL_SET_P (decl))
+    {
 
-  if (CONSTANT_POOL_ADDRESS_P (symbol)
-      || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
-    return false;
+      rtl = DECL_RTL (decl);
+      if (!MEM_P (rtl) || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF)
+	return false;
+      symbol = XEXP (rtl, 0);
+
+      if (CONSTANT_POOL_ADDRESS_P (symbol)
+	  || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
+	return false;
+    }
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return false;

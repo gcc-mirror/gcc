@@ -1,3 +1,210 @@
+2017-11-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/80761
+	* include/debug/map.h
+	(std::__debug::map<>::insert_return_type): Define using
+	_Node_insert_return.
+	* include/debug/set.h (std::__debug::set<>::insert_return_type):
+	Likewise.
+	* include/debug/unordered_map:
+	(std::__debug::unordered_map<>::insert_return_type): Likewise.
+	* include/debug/unordered_set:
+	(std::__debug::unordered_set<>::insert_return_type): Likewise.
+
+2017-12-18  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/68430
+	* testsuite/20_util/is_constructible/68430.cc: New.
+
+2017-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83239
+	* include/bits/vector.tcc (vector::_M_default_append): Assert
+        invariant to generate better code.
+
+2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83279
+	* src/filesystem/std-ops.cc (do_copy_file): Handle sendfile not
+	copying entire file.
+
+	PR libstdc++/68519
+	* include/std/condition_variable (condition_variable::wait_for):
+	Convert duration to native clock's duration before addition.
+	* testsuite/30_threads/condition_variable/members/68519.cc: New test.
+
+	PR libstdc++/83427
+	* include/bits/refwrap.h (_Maybe_unary_or_binary_function): Move here
+	from <bits/std_function.h>.
+	(_Mem_fn_traits_base, _Mem_fn_traits): Move here, from <functional>.
+	(_Weak_result_type_impl, _Reference_wrapper_base): Deduce noexcept
+	for function types. Remove partial specializations for member
+	functions.
+	(_Weak_result_type_impl): Remove unused partial specializations for
+	non-referenceable function types and for references to functions.
+	(_Weak_result_type_memfun, _Reference_wrapper_base_memfun): New
+	helpers to handle member functions via _Mem_fn_traits.
+	(_Weak_result_type, reference_wrapper): Derive from new helpers.
+	* include/bits/std_function.h (_Maybe_unary_or_binary_function): Move
+	to <bits/refwrap.h>.
+	* include/std/functional (_Pack, _AllConvertible, _NotSame): Remove.
+	(_Mem_fn_traits_base, _Mem_fn_traits): Move to <bits/refwrap.h>.
+	* testsuite/20_util/bind/83427.cc: New test.
+	* testsuite/20_util/bind/refqual.cc: Add noexcept to functions and
+	check for weak result types.
+	* testsuite/20_util/reference_wrapper/83427.cc: New test.
+
+	* testsuite/26_numerics/complex/inserters_extractors/char/dr2714.cc:
+	Add tests using noskipws.
+
+	* testsuite/26_numerics/complex/dr2714.cc: Move to ...
+	* testsuite/26_numerics/complex/inserters_extractors/char/dr2714.cc:
+	... Here. Remove duplicate header and dg-options. Check first invalid
+	character gets putback. Remove wchar_t test.
+
+2017-12-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59568
+	* include/std/complex (operator>>): Implement proposed resolution to
+	LWG 2714. Use putback if and only if a character has been successfully
+	extracted but isn't a delimiter. Use ctype::widen and traits::eq when
+	testing if extracted characters match delimiters.
+	* testsuite/26_numerics/complex/dr2714.cc: New test.
+
+2017-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83395
+	* include/std/type_traits (__is_invocable_impl): Remove partial
+	specialization for INVOKE<void> and restore is_void<R> check in
+	primary template.
+	(__is_nt_invocable_impl): Likewise.
+	* testsuite/20_util/is_invocable/83395.cc: New test.
+	* testsuite/20_util/is_nothrow_invocable/83395.cc: New test.
+
+2017-12-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR libstdc++/83120
+	* testsuite/ext/special_functions/hyperg/check_value.cc: Add
+	-ffp-contract=off. Add -ffloat-store for m68* and ia32.
+	* testsuite/tr1/5_numerical_facilities/special_functions/17_hyperg/check_value.cc: Same.
+
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* include/ext/mt_allocator.h (_M_destroy_thread_key): Remove
+	attribute const.
+
+2017-12-05  Jason Merrill  <jason@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h (copy, copy_file): Remove noexcept.
+	(permissions): Add noexcept.
+	* include/bits/fs_ops.h (permissions): Add noexcept.
+	* libsupc++/eh_throw.cc (__cxa_init_primary_exception): Add
+	_GLIBCXX_NOTHROW.
+
+2017-12-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.tcc: Use C-style comment to work around
+	PR preprocessor/61638.
+	(__INSERT_REGEX_MATCHER): Replace GNU extension with __VA_ARGS__.
+
+	* config/io/basic_file_stdio.h (__basic_file): Remove name of unused
+	parameter.
+	* include/bits/boost_concept_check.h: Add pragmas to disable
+	-Wunused-local-typedef warnings.
+	* include/bits/codecvt.h (codecvt_byname<char16_t, char, mbstate_t>)
+	(codecvt_byname<char32_t, char, mbstate_t>): Remove name of unused
+	parameter.
+	* include/bits/locale_facets_nonio.tcc (time_get::do_get_weekday)
+	(time_get::do_get_monthname, time_get::do_get_year): Remove unused
+	variables.
+	* include/std/bitset (_Base_bitset<0>::_M_getword): Remove name of
+	unused parameter.
+	* include/std/streambuf (_IsUnused): Define.
+	(basic_streambuf::imbue, basic_streambuf::pbackfail)
+	(basic_streambuf::overflow): Add macro to unused parameters.
+	* testsuite/24_iterators/operations/prev_neg.cc: Adjust dg-error.
+
+2017-12-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/string_view (basic_string_view::_S_compare):
+	Use value-init so narrowing conversions are not ill-formed.
+	* include/std/string_view (basic_string_view::_S_compare): Likewise.
+
+	* include/bits/basic_string.h (operator""s): Add pragmas to disable
+	-Wliteral-suffix warnings.
+	* include/experimental/string_view (operator""sv): Likewise.
+	* include/std/chrono (operator""h, operator""min, operator""s)
+	(operator""ms, operator""us, operator""ns): Likewise.
+	* include/std/complex (operator""if, operator""i, operator""il):
+	Likewise.
+	* include/std/string_view (operator""sv): Likewise.
+	* testsuite/20_util/duration/literals/range.cc: Adjust dg-error.
+
+	* include/bits/locale_facets_nonio.tcc (money_get::_M_extract): Add
+	fallthrough comment.
+
+	* include/bits/node_handle.h (_Node_handle_common::operator=)
+	(_Node_handle_common::_M_swap): Add braces around debug assertions.
+
+	* include/ext/ropeimpl.h (rope::_S_dump): Use const char*.
+
+	* libsupc++/nested_exception.h (__throw_with_nested_impl): Add
+	noreturn attribute.
+
+	* include/bits/regex_executor.tcc (_Executor::_M_rep_once_more):
+	Remove semi-colon after function body.
+	* include/bits/uniform_int_dist.h (_Power_of_2): Likewise.
+
+	* include/tr1/modified_bessel_func.tcc (__airy): Use value-init not
+	list-init.
+
+	* include/std/type_traits (integral_constant): Make member functions
+	noexcept (LWG 2346).
+	* include/std/utility (integer_sequence): Likewise.
+
+2017-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65927
+	* include/bits/locale_facets_nonio.h (__timepunct::_M_am_pm_format):
+	Remove statement with no effect.
+
+2017-11-30  Glen Joseph Fernandes  <glenjofe@gmail.com>
+
+	* include/bits/ptr_traits.h (__to_address, to_address): Move static
+	assertion.
+	* testsuite/20_util/to_address/1_neg.cc: New test.
+
+2017-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83226
+	* include/bits/node_handle.h (_Node_handle::__pointer): Avoid forming
+	pointer-to-reference types.
+	* testsuite/23_containers/map/modifiers/insert/83226.cc: New test.
+
+2017-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
+
+2017-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/20_util/duration/literals/range.cc: Update expected
+	line of a static_assert failure.
+
+2017-11-28  Glen Joseph Fernandes  <glenjofe@gmail.com>
+
+	* include/bits/ptr_traits.h (to_address): Implement to_address.
+	* testsuite/20_util/to_address/1.cc: New test.
+
+2017-11-27  Stephan Bergmann  <sbergman@redhat.com>
+
+	* include/std/string_view (basic_string_view::find_first_of): Add
+	missing noexcept.
+
+	* include/bits/unordered_map.h (unordered_map): Fix deduction guide.
+	* include/debug/unordered_map (unordered_map): Likewise.
+
 2017-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/new (launder): Add nodiscard attribute.

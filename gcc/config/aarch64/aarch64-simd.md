@@ -2484,7 +2484,7 @@
   bit\\t%0.8b, %2.8b, %1.8b
   bif\\t%0.8b, %3.8b, %1.8b
   #"
-  "&& GP_REGNUM_P (REGNO (operands[0]))"
+  "&& REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
   [(match_dup 1) (match_dup 1) (match_dup 2) (match_dup 3)]
 {
   /* Split back to individual operations.  If we're before reload, and
@@ -2526,7 +2526,7 @@
   bit\\t%0.8b, %3.8b, %1.8b
   bif\\t%0.8b, %2.8b, %1.8b
   #"
-  "&& GP_REGNUM_P (REGNO (operands[0]))"
+  "&& REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
   [(match_dup 0) (match_dup 1) (match_dup 2) (match_dup 3)]
 {
   /* Split back to individual operations.  If we're before reload, and
@@ -2759,6 +2759,7 @@
     case UNEQ:
     case ORDERED:
     case UNORDERED:
+    case LTGT:
       break;
     default:
       gcc_unreachable ();
@@ -2811,6 +2812,15 @@
       emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
       emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
       emit_insn (gen_one_cmpl<v_int_equiv>2 (operands[0], operands[0]));
+      break;
+
+    case LTGT:
+      /* LTGT is not guranteed to not generate a FP exception.  So let's
+	 go the faster way : ((a > b) || (b > a)).  */
+      emit_insn (gen_aarch64_cmgt<mode> (operands[0],
+					 operands[2], operands[3]));
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
+      emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
       break;
 
     case UNORDERED:
@@ -3047,8 +3057,8 @@
 	   (match_operand:VDC 2 "register_operand" "w, r")))]
   "TARGET_SIMD"
   "@
-   stp\\t%d1, %d2, %0
-   stp\\t%x1, %x2, %0"
+   stp\\t%d1, %d2, %y0
+   stp\\t%x1, %x2, %y0"
   [(set_attr "type" "neon_stp, store_16")]
 )
 
@@ -4453,7 +4463,7 @@
      (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (COMPARISONS:DI
@@ -4516,7 +4526,7 @@
     (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (UCOMPARISONS:DI
@@ -4587,7 +4597,7 @@
     (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (ne:DI

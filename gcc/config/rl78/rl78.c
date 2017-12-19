@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -857,17 +859,17 @@ rl78_handle_saddr_attribute (tree * node,
 /* Table of RL78-specific attributes.  */
 const struct attribute_spec rl78_attribute_table[] =
 {
-  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity.  */
-  { "interrupt",      0, 0, true, false, false, rl78_handle_func_attribute,
-    false },
-  { "brk_interrupt",  0, 0, true, false, false, rl78_handle_func_attribute,
-    false },
-  { "naked",          0, 0, true, false, false, rl78_handle_naked_attribute,
-    false },
-  { "saddr",          0, 0, true, false, false, rl78_handle_saddr_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
+  /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude.  */
+  { "interrupt",      0, 0, true, false, false, false,
+    rl78_handle_func_attribute, NULL },
+  { "brk_interrupt",  0, 0, true, false, false, false,
+    rl78_handle_func_attribute, NULL },
+  { "naked",          0, 0, true, false, false, false,
+    rl78_handle_naked_attribute, NULL },
+  { "saddr",          0, 0, true, false, false, false,
+    rl78_handle_saddr_attribute, NULL },
+  { NULL,             0, 0, false, false, false, false, NULL, NULL }
 };
 
 

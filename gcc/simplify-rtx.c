@@ -400,8 +400,8 @@ simplify_gen_ternary (enum rtx_code code, machine_mode mode,
   rtx tem;
 
   /* If this simplifies, use it.  */
-  if (0 != (tem = simplify_ternary_operation (code, mode, op0_mode,
-					      op0, op1, op2)))
+  if ((tem = simplify_ternary_operation (code, mode, op0_mode,
+					 op0, op1, op2)) != 0)
     return tem;
 
   return gen_rtx_fmt_eee (code, mode, op0, op1, op2);
@@ -416,8 +416,8 @@ simplify_gen_relational (enum rtx_code code, machine_mode mode,
 {
   rtx tem;
 
-  if (0 != (tem = simplify_relational_operation (code, mode, cmp_mode,
-						 op0, op1)))
+  if ((tem = simplify_relational_operation (code, mode, cmp_mode,
+					    op0, op1)) != 0)
     return tem;
 
   return gen_rtx_fmt_ee (code, mode, op0, op1);
@@ -5148,7 +5148,7 @@ simplify_const_relational_operation (enum rtx_code code,
       && (code == EQ || code == NE)
       && ! ((REG_P (op0) || CONST_INT_P (trueop0))
 	    && (REG_P (op1) || CONST_INT_P (trueop1)))
-      && 0 != (tem = simplify_binary_operation (MINUS, mode, op0, op1))
+      && (tem = simplify_binary_operation (MINUS, mode, op0, op1)) != 0
       /* We cannot do this if tem is a nonzero address.  */
       && ! nonzero_address_p (tem))
     return simplify_const_relational_operation (signed_condition (code),

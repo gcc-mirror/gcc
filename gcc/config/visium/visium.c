@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -145,10 +147,11 @@ static inline bool current_function_has_lr_slot (void);
    interrupt -- specifies this function is an interrupt handler.   */
 static const struct attribute_spec visium_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  {"interrupt", 0, 0, true, false, false, visium_handle_interrupt_attr, false},
-  {NULL, 0, 0, false, false, false, NULL, false}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true, false, false, false, visium_handle_interrupt_attr,
+    NULL},
+  { NULL, 0, 0, false, false, false, false, NULL, NULL },
 };
 
 static struct machine_function *visium_init_machine_status (void);
@@ -1919,7 +1922,7 @@ visium_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && 0x80 < size + offset - offset_base)
 	offset_base = offset & ~0x3f;
       if (offset_base != 0 && offset_base != offset && (offset & mask1) == 0)
 	{
@@ -1965,7 +1968,7 @@ visium_legitimize_reload_address (rtx x, machine_mode mode, int opnum,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (4 < size && 0x80 < size + offset - offset_base)
+      if (size > 4 && 0x80 < size + offset - offset_base)
 	offset_base = offset & ~0x3f;
 
       if (offset_base && (offset & mask1) == 0)

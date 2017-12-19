@@ -85,7 +85,6 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
 * Pointer Bounds Checker builtins:: Built-in functions for Pointer Bounds Checker.
-* Cilk Plus Builtins::  Built-in functions for the Cilk Plus language extension.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
@@ -898,6 +897,10 @@ conforming C library (such as the GNU C Library), and want to construct complex
 constants of floating type, you should include @code{<complex.h>} and
 use the macros @code{I} or @code{_Complex_I} instead.
 
+The ISO C++14 library also defines the @samp{i} suffix, so C++14 code
+that includes the @samp{<complex>} header cannot use @samp{i} for the
+GNU extension.  The @samp{j} suffix still has the GNU meaning.
+
 @cindex @code{__real__} keyword
 @cindex @code{__imag__} keyword
 To extract the real part of a complex-valued expression @var{exp}, write
@@ -1045,7 +1048,7 @@ expressions are automatically promoted to @code{float}.
 
 The ARM target provides hardware support for conversions between
 @code{__fp16} and @code{float} values
-as an extension to VFP and NEON (Advanced SIMD), and from ARMv8 provides
+as an extension to VFP and NEON (Advanced SIMD), and from ARMv8-A provides
 hardware support for conversions between @code{__fp16} and @code{double}
 values.  GCC generates code using these hardware instructions if you
 compile with options to select an FPU that provides them;
@@ -2490,9 +2493,14 @@ are automatically detected and this attribute is ignored.
 @cindex @code{const} function attribute
 @cindex functions that have no side effects
 Many functions do not examine any values except their arguments, and
-have no effects except the return value.  Basically this is just slightly
-more strict class than the @code{pure} attribute below, since function is not
-allowed to read global memory.
+have no effects except to return a value.  Calls to such functions lend
+themselves to optimization such as common subexpression elimination.
+The @code{const} attribute imposes greater restrictions on a function's
+definition than the similar @code{pure} attribute below because it prohibits
+the function from reading global variables.  Consequently, the presence of
+the attribute on a function declarations allows GCC to emit more efficient
+code for some calls to the function.  Decorating the same function with
+both the @code{const} and the @code{pure} attribute is diagnnosed.
 
 @cindex pointer arguments
 Note that a function that has pointer arguments and examines the data
@@ -3187,7 +3195,7 @@ to prevent recursion.
 @cindex functions that have no side effects
 Many functions have no effects except the return value and their
 return value depends only on the parameters and/or global variables.
-Such a function can be subject
+Calls to such functions can be subject
 to common subexpression elimination and loop optimization just as an
 arithmetic operator would be.  These functions should be declared
 with the attribute @code{pure}.  For example,
@@ -3204,6 +3212,11 @@ Some common examples of pure functions are @code{strlen} or @code{memcmp}.
 Interesting non-pure functions are functions with infinite loops or those
 depending on volatile memory or other system resource, that may change between
 two consecutive calls (such as @code{feof} in a multithreading environment).
+
+The @code{pure} attribute imposes similar but looser restrictions on
+a function's defintion than the @code{const} attribute: it allows the
+function to read global variables.  Decorating the same function with
+both the @code{pure} and the @code{const} attribute is diagnosed.
 
 @item returns_nonnull
 @cindex @code{returns_nonnull} function attribute
@@ -3294,9 +3307,6 @@ The optional argument @var{mask} may have the value
 @code{notinbranch} or @code{inbranch},
 and instructs the compiler to generate non-masked or masked
 clones correspondingly. By default, all clones are generated.
-
-The attribute should not be used together with Cilk Plus @code{vector}
-attribute on the same function.
 
 If the attribute is specified and @code{#pragma omp declare simd} is
 present on a declaration and the @option{-fopenmp} or @option{-fopenmp-simd}
@@ -5755,21 +5765,27 @@ int foo (void) __attribute__(nocf_check);
 void (*foo1)(void) __attribute__(nocf_check);
 void (*foo2)(void);
 
+/* foo's address is assumed to be valid.  */
 int
-foo (void) /* The function's address is assumed to be valid.  */
+foo (void) 
 
-  /* This call site is not checked for control-flow validity.  */
+  /* This call site is not checked for control-flow 
+     validity.  */
   (*foo1)();
 
-  foo1 = foo2; /* A warning is printed about attribute mismatch.  */
-  /* This call site is still not checked for control-flow validity.  */
+  /* A warning is issued about attribute mismatch.  */
+  foo1 = foo2; 
+
+  /* This call site is still not checked.  */
   (*foo1)();
 
-  /* This call site is checked for control-flow validity.  */
+  /* This call site is checked.  */
   (*foo2)();
 
-  foo2 = foo1; /* A warning is printed about attribute mismatch.  */
-  /* This call site is still checked for control-flow validity.  */
+  /* A warning is issued about attribute mismatch.  */
+  foo2 = foo1; 
+
+  /* This call site is still checked.  */
   (*foo2)();
 
   return 0;
@@ -10934,32 +10950,6 @@ with the pointer @var{q}.  With Pointer Bounds Checker off,
 the built-in function returns -1.
 
 @end deftypefn
-
-@node Cilk Plus Builtins
-@section Cilk Plus C/C++ Language Extension Built-in Functions
-
-GCC provides support for the following built-in reduction functions if Cilk Plus
-is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
-
-@itemize @bullet
-@item @code{__sec_implicit_index}
-@item @code{__sec_reduce}
-@item @code{__sec_reduce_add}
-@item @code{__sec_reduce_all_nonzero}
-@item @code{__sec_reduce_all_zero}
-@item @code{__sec_reduce_any_nonzero}
-@item @code{__sec_reduce_any_zero}
-@item @code{__sec_reduce_max}
-@item @code{__sec_reduce_min}
-@item @code{__sec_reduce_max_ind}
-@item @code{__sec_reduce_min_ind}
-@item @code{__sec_reduce_mul}
-@item @code{__sec_reduce_mutating}
-@end itemize
-
-Further details and examples about these built-in functions are described 
-in the Cilk Plus language manual which can be found at 
-@uref{https://www.cilkplus.org}.
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
@@ -16404,6 +16394,8 @@ vector unsigned char vec_vaddubs (vector unsigned char,
 vector float vec_and (vector float, vector float);
 vector float vec_and (vector float, vector bool int);
 vector float vec_and (vector bool int, vector float);
+vector bool long long vec_and (vector bool long long int,
+                               vector bool long long);
 vector bool int vec_and (vector bool int, vector bool int);
 vector signed int vec_and (vector bool int, vector signed int);
 vector signed int vec_and (vector signed int, vector bool int);
@@ -17398,6 +17390,13 @@ vector unsigned char vec_sld (vector unsigned char,
 vector bool char vec_sld (vector bool char,
                           vector bool char,
                           const int);
+vector bool long long int vec_sld (vector bool long long int,
+                                   vector bool long long int, const int);
+vector long long int vec_sld (vector long long int,
+                              vector  long long int, const int);
+vector unsigned long long int vec_sld (vector unsigned long long int,
+                                       vector unsigned long long int,
+                                       const int);
 
 vector signed char vec_sldw (vector signed char,
                              vector signed char,
@@ -17454,6 +17453,10 @@ vector unsigned short vec_sll (vector unsigned short,
                                vector unsigned short);
 vector unsigned short vec_sll (vector unsigned short,
                                vector unsigned char);
+vector long long int vec_sll (vector long long int,
+                              vector unsigned char);
+vector unsigned long long int vec_sll (vector unsigned long long int,
+                                       vector unsigned char);
 vector bool short vec_sll (vector bool short, vector unsigned int);
 vector bool short vec_sll (vector bool short, vector unsigned short);
 vector bool short vec_sll (vector bool short, vector unsigned char);
@@ -17610,6 +17613,10 @@ vector unsigned short vec_srl (vector unsigned short,
                                vector unsigned short);
 vector unsigned short vec_srl (vector unsigned short,
                                vector unsigned char);
+vector long long int vec_srl (vector long long int,
+                              vector unsigned char);
+vector unsigned long long int vec_srl (vector unsigned long long int,
+                                       vector unsigned char);
 vector bool short vec_srl (vector bool short, vector unsigned int);
 vector bool short vec_srl (vector bool short, vector unsigned short);
 vector bool short vec_srl (vector bool short, vector unsigned char);
@@ -17641,6 +17648,14 @@ vector unsigned short vec_sro (vector unsigned short,
                                vector signed char);
 vector unsigned short vec_sro (vector unsigned short,
                                vector unsigned char);
+vector long long int vec_sro (vector long long int,
+                              vector char);
+vector long long int vec_sro (vector long long int,
+                              vector unsigned char);
+vector unsigned long long int vec_sro (vector unsigned long long int,
+                                       vector char);
+vector unsigned long long int vec_sro (vector unsigned long long int,
+                                       vector unsigned char);
 vector pixel vec_sro (vector pixel, vector signed char);
 vector pixel vec_sro (vector pixel, vector unsigned char);
 vector signed char vec_sro (vector signed char, vector signed char);
@@ -17910,6 +17925,7 @@ vector bool short vec_unpackh (vector bool char);
 vector signed int vec_unpackh (vector signed short);
 vector bool int vec_unpackh (vector bool short);
 vector unsigned int vec_unpackh (vector pixel);
+vector double vec_unpackh (vector float);
 
 vector bool int vec_vupkhsh (vector bool short);
 vector signed int vec_vupkhsh (vector signed short);
@@ -17924,6 +17940,7 @@ vector bool short vec_unpackl (vector bool char);
 vector unsigned int vec_unpackl (vector pixel);
 vector signed int vec_unpackl (vector signed short);
 vector bool int vec_unpackl (vector bool short);
+vector double vec_unpackl (vector float);
 
 vector unsigned int vec_vupklpx (vector pixel);
 
@@ -18672,9 +18689,18 @@ vector int vec_packs (vector long long, vector long long);
 vector unsigned int vec_packs (vector unsigned long long,
                                vector unsigned long long);
 
+test_vsi_packsu_vssi_vssi (vector signed short x,
+
+vector unsigned char vec_packsu (vector signed short, vector signed short )
+vector unsigned char vec_packsu (vector unsigned short, vector unsigned short )
+vector unsigned short int vec_packsu (vector signed int, vector signed int);
+vector unsigned short int vec_packsu (vector unsigned int,
+                                      vector unsigned int);
 vector unsigned int vec_packsu (vector long long, vector long long);
 vector unsigned int vec_packsu (vector unsigned long long,
                                 vector unsigned long long);
+vector unsigned int vec_packsu (vector signed long long,
+                                vector signed long long);
 
 vector unsigned char vec_popcnt (vector signed char);
 vector unsigned char vec_popcnt (vector unsigned char);
@@ -18903,9 +18929,21 @@ vector unsigned long long vec_bperm (vector unsigned long long,
                                      vector unsigned char);
 
 vector bool char vec_cmpne (vector bool char, vector bool char);
-vector bool short vec_cmpne (vector bool short, vector bool short);
+vector bool char vec_cmpne (vector signed char, vector signed char);
+vector bool char vec_cmpne (vector unsigned char, vector unsigned char);
 vector bool int vec_cmpne (vector bool int, vector bool int);
+vector bool int vec_cmpne (vector signed int, vector signed int);
+vector bool int vec_cmpne (vector unsigned int, vector unsigned int);
 vector bool long long vec_cmpne (vector bool long long, vector bool long long);
+vector bool long long vec_cmpne (vector signed long long,
+                                 vector signed long long);
+vector bool long long vec_cmpne (vector unsigned long long,
+                                 vector unsigned long long);
+vector bool short vec_cmpne (vector bool short, vector bool short);
+vector bool short vec_cmpne (vector signed short, vector signed short);
+vector bool short vec_cmpne (vector unsigned short, vector unsigned short);
+vector bool long long vec_cmpne (vector double, vector double);
+vector bool int vec_cmpne (vector float, vector float);
 
 vector float vec_extract_fp32_from_shorth (vector unsigned short);
 vector float vec_extract_fp32_from_shortl (vector unsigned short);

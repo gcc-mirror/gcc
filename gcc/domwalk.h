@@ -32,7 +32,7 @@ class dom_walker
 public:
   static const edge STOP;
 
-  /* Use SKIP_UNREACHBLE_BLOCKS = true when your client can discover
+  /* Use SKIP_UNREACHABLE_BLOCKS = true when your client can discover
      that some edges are not executable.
 
      If a client can discover that a COND, SWITCH or GOTO has a static

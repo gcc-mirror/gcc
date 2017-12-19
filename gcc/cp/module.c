@@ -2597,7 +2597,8 @@ cpms_out::start (tree_code code, tree t)
       w.str (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
       break;
     case VECTOR_CST:
-      w.u (VECTOR_CST_NELTS (t));
+      w.u (VECTOR_CST_LOG2_NPATTERNS (t));
+      w.u (VECTOR_CST_NELTS_PER_PATTERN (t));
       break;
     case INTEGER_CST:
       w.u (TREE_INT_CST_NUNITS (t));
@@ -2615,7 +2616,8 @@ tree
 cpms_in::start (tree_code code)
 {
   tree t = NULL_TREE;
-  
+
+  // FIXME: should we checksum the numbers we use to allocate with?
   switch (code)
     {
     default:
@@ -2644,7 +2646,7 @@ cpms_in::start (tree_code code)
       t = make_tree_vec (r.u ());
       break;
     case VECTOR_CST:
-      t = make_vector (r.u ());
+      t = make_vector (r.u (), r.u ());
       break;
     case INTEGER_CST:
       {

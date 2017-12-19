@@ -6725,6 +6725,12 @@ delay slot branches filled using the basic filler is often still desirable
 as the delay slot can hide a pipeline bubble.
 @end deftypefn
 
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val})
+Return an estimate of the runtime value of @var{val}, for use in
+things like cost calculations or profiling frequencies.  The default
+implementation returns the lowest possible value of @var{val}.
+@end deftypefn
+
 @node Scheduling
 @section Adjusting the Instruction Scheduler
 
@@ -9591,8 +9597,8 @@ A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{DWARF_DEBUG}, @code{DWARF2_DEBUG},
-@code{XCOFF_DEBUG}, @code{VMS_DEBUG}, and @code{VMS_AND_DWARF2_DEBUG}.
+@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two

@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "md5.h"
 #include "tree-pretty-print.h"
+#include "print-rtl.h"
 #include "debug.h"
 #include "common/common-target.h"
 #include "langhooks.h"
@@ -963,9 +964,15 @@ dwarf2out_do_cfi_startproc (bool second)
 {
   int enc;
   rtx ref;
-  rtx personality = get_personality_function (current_function_decl);
 
   fprintf (asm_out_file, "\t.cfi_startproc\n");
+
+  /* .cfi_personality and .cfi_lsda are only relevant to DWARF2
+     eh unwinders.  */
+  if (targetm_common.except_unwind_info (&global_options) != UI_DWARF2)
+    return;
+
+  rtx personality = get_personality_function (current_function_decl);
 
   if (personality)
     {
@@ -2746,6 +2753,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_rtx_code_label,	/* label */
   debug_nothing_int,		/* handle_pch */
   dwarf2out_var_location,
+  debug_nothing_tree,		/* inline_entry */
   dwarf2out_size_function,	/* size_function */
   dwarf2out_switch_text_section,
   dwarf2out_set_name,
@@ -2786,6 +2794,7 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
   debug_nothing_rtx_code_label,	         /* label */
   debug_nothing_int,		         /* handle_pch */
   debug_nothing_rtx_insn,	         /* var_location */
+  debug_nothing_tree,	         	 /* inline_entry */
   debug_nothing_tree,			 /* size_function */
   debug_nothing_void,                    /* switch_text_section */
   debug_nothing_tree_tree,		 /* set_name */
@@ -26204,6 +26213,22 @@ static bool maybe_at_text_label_p = true;
 /* One above highest N where .LVLN label might be equal to .Ltext0 label.  */
 static unsigned int first_loclabel_num_not_at_text_label;
 
+/* Look ahead for a real insn, or for a begin stmt marker.  */
+
+static rtx_insn *
+dwarf2out_next_real_insn (rtx_insn *loc_note)
+{
+  rtx_insn *next_real = NEXT_INSN (loc_note);
+
+  while (next_real)
+    if (INSN_P (next_real))
+      break;
+    else
+      next_real = NEXT_INSN (next_real);
+
+  return next_real;
+}
+
 /* Called by the final INSN scan whenever we see a var location.  We
    use it to drop labels in the right places, and throw the location in
    our lookup table.  */
@@ -26252,7 +26277,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 		  loc_note = NULL;
 		  var_loc_p = false;
 
-		  next_real = next_real_insn (call_insn);
+		  next_real = dwarf2out_next_real_insn (call_insn);
 		  next_note = NULL;
 		  cached_next_real_insn = NULL;
 		  goto create_label;
@@ -26282,11 +26307,12 @@ dwarf2out_var_location (rtx_insn *loc_note)
       || next_note->deleted ()
       || ! NOTE_P (next_note)
       || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
+	  && NOTE_KIND (next_note) != NOTE_INSN_BEGIN_STMT
 	  && NOTE_KIND (next_note) != NOTE_INSN_CALL_ARG_LOCATION))
     next_note = NULL;
 
   if (! next_real)
-    next_real = next_real_insn (loc_note);
+    next_real = dwarf2out_next_real_insn (loc_note);
 
   if (next_note)
     {
@@ -26443,6 +26469,22 @@ create_label:
 	  last_postcall_label = ggc_strdup (loclabel);
 	}
       newloc->label = last_postcall_label;
+    }
+
+  if (var_loc_p && flag_debug_asm)
+    {
+      const char *name = NULL, *sep = " => ", *patstr = NULL;
+      if (decl && DECL_NAME (decl))
+	name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      if (NOTE_VAR_LOCATION_LOC (loc_note))
+	patstr = str_pattern_slim (NOTE_VAR_LOCATION_LOC (loc_note));
+      else
+	{
+	  sep = " ";
+	  patstr = "RESET";
+	}
+      fprintf (asm_out_file, "\t%s DEBUG %s%s%s\n", ASM_COMMENT_START,
+	       name, sep, patstr);
     }
 
   last_var_location_insn = next_real;

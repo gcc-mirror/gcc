@@ -1,3 +1,8 @@
+2017-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-next-runtime-abi-01.c (generate_dispatch_table): Use ; instead
+	of ;;.
+
 2017-11-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117

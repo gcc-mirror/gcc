@@ -1240,6 +1240,7 @@ loop:
 	default:
 	  gfc_internal_error ("gfc_match(): Bad match code %c", c);
 	}
+      /* FALLTHRU */
 
     default:
 
@@ -2984,7 +2985,7 @@ gfc_match_stopcode (gfc_statement st)
     {
       if (st == ST_ERROR_STOP)
 	{
-	  if (!gfc_notify_std (GFC_STD_F2015, "%s statement at %C in PURE "
+	  if (!gfc_notify_std (GFC_STD_F2018, "%s statement at %C in PURE "
 			       "procedure", gfc_ascii_statement (st)))
 	    goto cleanup;
 	}
@@ -3959,9 +3960,9 @@ gfc_match_allocate (void)
   gfc_typespec ts;
   gfc_symbol *sym;
   match m;
-  locus old_locus, deferred_locus;
+  locus old_locus, deferred_locus, assumed_locus;
   bool saw_stat, saw_errmsg, saw_source, saw_mold, saw_deferred, b1, b2, b3;
-  bool saw_unlimited = false;
+  bool saw_unlimited = false, saw_assumed = false;
 
   head = tail = NULL;
   stat = errmsg = source = mold = tmp = NULL;
@@ -3992,6 +3993,9 @@ gfc_match_allocate (void)
     }
   else
     {
+      /* Needed for the F2008:C631 check below. */
+      assumed_locus = gfc_current_locus;
+
       if (gfc_match (" :: ") == MATCH_YES)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2003, "typespec in ALLOCATE at %L",
@@ -4006,15 +4010,19 @@ gfc_match_allocate (void)
 	    }
 
 	  if (ts.type == BT_CHARACTER)
-	    ts.u.cl->length_from_typespec = true;
+	    {
+	      if (!ts.u.cl->length)
+		saw_assumed = true;
+	      else
+		ts.u.cl->length_from_typespec = true;
+	    }
 
-	  /* TODO understand why this error does not appear but, instead,
-	     the derived type is caught as a variable in primary.c.  */
-	  if (gfc_spec_list_type (type_param_spec_list, NULL) != SPEC_EXPLICIT)
+	  if (type_param_spec_list
+	      && gfc_spec_list_type (type_param_spec_list, NULL)
+		 == SPEC_DEFERRED)
 	    {
 	      gfc_error ("The type parameter spec list in the type-spec at "
-			 "%L cannot contain ASSUMED or DEFERRED parameters",
-			 &old_locus);
+			 "%L cannot contain DEFERRED parameters", &old_locus);
 	      goto cleanup;
 	    }
 	}
@@ -4053,6 +4061,19 @@ gfc_match_allocate (void)
 
       if (impure)
 	gfc_unset_implicit_pure (NULL);
+
+      /* F2008:C631 (R626) A type-param-value in a type-spec shall be an
+	 asterisk if and only if each allocate-object is a dummy argument
+	 for which the corresponding type parameter is assumed.  */
+      if (saw_assumed
+	  && (tail->expr->ts.deferred
+	      || tail->expr->ts.u.cl->length
+	      || tail->expr->symtree->n.sym->attr.dummy == 0))
+	{
+	  gfc_error ("Incompatible allocate-object at %C for CHARACTER "
+		     "type-spec at %L", &assumed_locus);
+	  goto cleanup;
+	}
 
       if (tail->expr->ts.deferred)
 	{

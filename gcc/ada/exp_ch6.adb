@@ -650,9 +650,7 @@ package body Exp_Ch6 is
      (Func : Entity_Id;
       Kind : BIP_Formal_Kind) return Entity_Id
    is
-      Formal_Name  : constant Name_Id :=
-                       New_External_Name
-                         (Chars (Func), BIP_Formal_Suffix (Kind));
+      Formal_Suffix : constant String := BIP_Formal_Suffix (Kind);
       Extra_Formal : Entity_Id := Extra_Formals (Func);
 
    begin
@@ -669,9 +667,21 @@ package body Exp_Ch6 is
          Extra_Formal := Extra_Formals (Func);
       end if;
 
+      --  We search for a formal with a matching suffix. We can't search
+      --  for the full name, because of the code at the end of Sem_Ch6.-
+      --  Create_Extra_Formals, which copies the Extra_Formals over to
+      --  the Alias of an instance, which will cause the formals to have
+      --  "incorrect" names.
+
       loop
          pragma Assert (Present (Extra_Formal));
-         exit when Chars (Extra_Formal) = Formal_Name;
+         declare
+            Name : constant String := Get_Name_String (Chars (Extra_Formal));
+         begin
+            exit when Name'Length >= Formal_Suffix'Length
+              and then Formal_Suffix =
+                Name (Name'Last - Formal_Suffix'Length + 1 .. Name'Last);
+         end;
 
          Next_Formal_With_Extras (Extra_Formal);
       end loop;
@@ -4741,6 +4751,17 @@ package body Exp_Ch6 is
 
       if Nkind (Ret_Obj_Decl) = N_Object_Declaration then
          Exp := Expression (Ret_Obj_Decl);
+
+         --  Assert that if F says "return R : T := G(...) do..."
+         --  then F and G are both b-i-p, or neither b-i-p.
+
+         if Nkind (Exp) = N_Function_Call then
+            pragma Assert (Ekind (Current_Scope) = E_Function);
+            pragma Assert
+              (Is_Build_In_Place_Function (Current_Scope) =
+               Is_Build_In_Place_Function_Call (Exp));
+            null;
+         end if;
       else
          Exp := Empty;
       end if;
@@ -5341,12 +5362,11 @@ package body Exp_Ch6 is
                                   Alloc_Expr => Pool_Allocator)))),
 
                          --  Raise Program_Error if it's none of the above;
-                         --  this is a compiler bug. ???PE_All_Guards_Closed
-                         --  is bogus; we should have a new code.
+                         --  this is a compiler bug.
 
                          Else_Statements => New_List (
                            Make_Raise_Program_Error (Loc,
-                              Reason => PE_All_Guards_Closed)));
+                             Reason => PE_Build_In_Place_Mismatch)));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the
@@ -5360,6 +5380,10 @@ package body Exp_Ch6 is
                         Rewrite (Name (Init_Assignment),
                           Make_Explicit_Dereference (Loc,
                             Prefix => New_Occurrence_Of (Alloc_Obj_Id, Loc)));
+                        pragma Assert
+                          (Assignment_OK
+                             (Original_Node (Name (Init_Assignment))));
+                        Set_Assignment_OK (Name (Init_Assignment));
 
                         Set_Etype (Name (Init_Assignment), Etype (Ret_Obj_Id));
 
@@ -6432,6 +6456,17 @@ package body Exp_Ch6 is
          end if;
       end if;
 
+      --  Assert that if F says "return G(...);"
+      --  then F and G are both b-i-p, or neither b-i-p.
+
+      if Nkind (Exp) = N_Function_Call then
+         pragma Assert (Ekind (Scope_Id) = E_Function);
+         pragma Assert
+           (Is_Build_In_Place_Function (Scope_Id) =
+            Is_Build_In_Place_Function_Call (Exp));
+         null;
+      end if;
+
       --  For the case of a simple return that does not come from an
       --  extended return, in the case of build-in-place, we rewrite
       --  "return <expression>;" to be:
@@ -7081,8 +7116,6 @@ package body Exp_Ch6 is
                         return Empty;
                      end Associated_Expr;
 
-                  --  Start of processing for Expand_Simple_Function_Return
-
                   begin
                      if not Positionals_Exhausted then
                         Disc_Exp := First (Expressions (Discrim_Source));
@@ -7300,7 +7333,7 @@ package body Exp_Ch6 is
             begin
                --  ???For now, enable build-in-place for a very narrow set of
                --  controlled types. Change "if True" to "if False" to
-               --  experiment more controlled types. Eventually, we would
+               --  experiment with more controlled types. Eventually, we might
                --  like to enable build-in-place for all tagged types, all
                --  types that need finalization, and all caller-unknown-size
                --  types.

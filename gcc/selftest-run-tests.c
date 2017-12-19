@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "langhooks.h"
 #include "options.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* This function needed to be split out from selftest.c as it references
    tests from the whole source tree, and so is within
@@ -46,7 +48,7 @@ selftest::run_tests ()
      option-handling.  */
   path_to_selftest_files = flag_self_test;
 
-  long start_time = get_run_time ();
+  test_runner r ("-fself-test");
 
   /* Run all the tests, in hand-coded order of (approximate) dependencies:
      run the tests for lowest-level code first.  */
@@ -85,6 +87,7 @@ selftest::run_tests ()
   spellcheck_c_tests ();
   spellcheck_tree_c_tests ();
   tree_cfg_c_tests ();
+  attribute_c_tests ();
 
   /* This one relies on most of the above.  */
   function_tests_c_tests ();
@@ -106,14 +109,7 @@ selftest::run_tests ()
      failed to be finalized can be detected by valgrind.  */
   forcibly_ggc_collect ();
 
-  /* Finished running tests.  */
-  long finish_time = get_run_time ();
-  long elapsed_time = finish_time - start_time;
-
-  fprintf (stderr,
-	   "-fself-test: %i pass(es) in %ld.%06ld seconds\n",
-	   num_passes,
-	   elapsed_time / 1000000, elapsed_time % 1000000);
+  /* Finished running tests; the test_runner dtor will print a summary.  */
 }
 
 #endif /* #if CHECKING_P */

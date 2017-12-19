@@ -1809,7 +1809,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  || !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
       && (flag_coarray != GFC_FCOARRAY_LIB
-	  || !sym->attr.codimension || sym->attr.allocatable))
+	  || !sym->attr.codimension || sym->attr.allocatable)
+      && !(sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+      && !(sym->ts.type == BT_CLASS
+	   && CLASS_DATA (sym)->ts.u.derived->attr.pdt_type))
     {
       /* Add static initializer. For procedures, it is only needed if
 	 SAVE is specified otherwise they need to be reinitialized
@@ -4004,6 +4007,10 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 
   gcc_assert (block);
 
+  /* Initialization of PDTs is done elsewhere.  */
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+    return;
+
   gcc_assert (!sym->attr.allocatable);
   gfc_set_sym_referenced (sym);
   e = gfc_lval_expr_from_sym (sym);
@@ -5758,8 +5765,7 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
   tmp = gfc_finish_block (&block);
   /* The first argument selects the entry point.  */
   val = DECL_ARGUMENTS (current_function_decl);
-  tmp = fold_build3_loc (input_location, SWITCH_EXPR, NULL_TREE,
-			 val, tmp, NULL_TREE);
+  tmp = fold_build2_loc (input_location, SWITCH_EXPR, NULL_TREE, val, tmp);
   return tmp;
 }
 

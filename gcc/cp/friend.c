@@ -283,21 +283,18 @@ make_friend_class (tree type, tree friend_type, bool complain)
     return;
 
   if (friend_depth)
-    /* If the TYPE is a template then it makes sense for it to be
-       friends with itself; this means that each instantiation is
-       friends with all other instantiations.  */
     {
+      /* [temp.friend] Friend declarations shall not declare partial
+	 specializations.  */
       if (CLASS_TYPE_P (friend_type)
 	  && CLASSTYPE_TEMPLATE_SPECIALIZATION (friend_type)
 	  && uses_template_parms (friend_type))
 	{
-	  /* [temp.friend]
-	     Friend declarations shall not declare partial
-	     specializations.  */
 	  error ("partial specialization %qT declared %<friend%>",
 		 friend_type);
 	  return;
 	}
+
       if (TYPE_TEMPLATE_INFO (friend_type)
 	  && !PRIMARY_TEMPLATE_P (TYPE_TI_TEMPLATE (friend_type)))
 	{
@@ -311,7 +308,11 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	  return;
 	}
     }
-  else if (same_type_p (type, friend_type))
+
+  /* It makes sense for a template class to be friends with itself,
+     that means the instantiations can be friendly.  Other cases are
+     not so meaningful.  */
+  if (!friend_depth && same_type_p (type, friend_type))
     {
       if (complain)
 	warning (0, "class %qT is implicitly friends with itself",

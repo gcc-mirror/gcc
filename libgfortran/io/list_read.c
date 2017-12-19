@@ -266,15 +266,19 @@ next_char_internal (st_parameter_dt *dtp)
     }
 
   /* Get the next character and handle end-of-record conditions.  */
-
-  if (is_char4_unit(dtp)) /* Check for kind=4 internal unit.  */
-   length = sread (dtp->u.p.current_unit->s, &c, 1);
+  if (likely (dtp->u.p.current_unit->bytes_left > 0))
+    {
+      if (unlikely (is_char4_unit(dtp))) /* Check for kind=4 internal unit.  */
+       length = sread (dtp->u.p.current_unit->s, &c, 1);
+      else
+       {
+	 char cc;
+	 length = sread (dtp->u.p.current_unit->s, &cc, 1);
+	 c = cc;
+       }
+    }
   else
-   {
-     char cc;
-     length = sread (dtp->u.p.current_unit->s, &cc, 1);
-     c = cc;
-   }
+    length = 0;
 
   if (unlikely (length < 0))
     {
@@ -290,7 +294,6 @@ next_char_internal (st_parameter_dt *dtp)
 	  generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 	  return '\0';
 	}
-      dtp->u.p.current_unit->bytes_left--;
     }
   else
     {
@@ -302,6 +305,7 @@ next_char_internal (st_parameter_dt *dtp)
 	  dtp->u.p.at_eof = 1;
 	}
     }
+  dtp->u.p.current_unit->bytes_left--;
 
 done:
   dtp->u.p.at_eol = (c == '\n' || c == EOF);
@@ -2099,8 +2103,6 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
   int c, i, m;
   int err = 0;
 
-  dtp->u.p.namelist_mode = 0;
-
   /* Set the next_char and push_char worker functions.  */
   set_workers (dtp);
 
@@ -3546,7 +3548,6 @@ namelist_read (st_parameter_dt *dtp)
      name.  */
   namelist_info *prev_nl = NULL;
 
-  dtp->u.p.namelist_mode = 1;
   dtp->u.p.input_complete = 0;
   dtp->u.p.expanded_read = 0;
 

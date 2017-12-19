@@ -69,7 +69,7 @@ internal_proto(old_locale_lock);
 
 #define is_array_io(dtp) ((dtp)->internal_unit_desc)
 
-#define is_internal_unit(dtp) ((dtp)->u.p.current_unit->internal_unit_kind)
+#define is_internal_unit(dtp) ((dtp)->u.p.unit_is_internal)
 
 #define is_stream_io(dtp) ((dtp)->u.p.current_unit->flags.access == ACCESS_STREAM)
 
@@ -734,6 +734,11 @@ gfc_saved_unit;
 /* Maximum file offset, computed at library initialization time.  */
 extern gfc_offset max_offset;
 internal_proto(max_offset);
+
+/* Default RECL for sequential access if not given in OPEN statement,
+   computed at library initialization time.  */
+extern gfc_offset default_recl;
+internal_proto(default_recl);
 
 /* Unit tree root.  */
 extern gfc_unit *unit_root;

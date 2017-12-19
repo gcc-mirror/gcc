@@ -761,24 +761,18 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 
 	case VECTOR_CST:
 	  {
-	    /* Big enough for 2 UINT_MAX plus the string below.  */
+	    /* Big enough for UINT_MAX plus the string below.  */
 	    char buf[32];
-	    unsigned i;
 
-	    for (i = 0; i < VECTOR_CST_NELTS (node); ++i)
+	    fprintf (file, " npatterns:%u nelts-per-pattern:%u",
+		     VECTOR_CST_NPATTERNS (node),
+		     VECTOR_CST_NELTS_PER_PATTERN (node));
+	    unsigned int count = vector_cst_encoded_nelts (node);
+	    for (unsigned int i = 0; i < count; ++i)
 	      {
-		unsigned j;
-		/* Coalesce the output of identical consecutive elements.  */
-		for (j = i + 1; j < VECTOR_CST_NELTS (node); j++)
-		  if (VECTOR_CST_ELT (node, j) != VECTOR_CST_ELT (node, i))
-		    break;
-		j--;
-		if (i == j)
-		  sprintf (buf, "elt:%u: ", i);
-		else
-		  sprintf (buf, "elt:%u...%u: ", i, j);
-		print_node (file, buf, VECTOR_CST_ELT (node, i), indent + 4);
-		i = j;
+		sprintf (buf, "elt:%u: ", i);
+		print_node (file, buf, VECTOR_CST_ENCODED_ELT (node, i),
+			    indent + 4);
 	      }
 	  }
 	  break;

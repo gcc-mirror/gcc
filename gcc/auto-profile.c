@@ -477,7 +477,7 @@ string_table::get_index_by_decl (tree decl) const
   ret = get_index (lang_hooks.dwarf_name (decl, 0));
   if (ret != -1)
     return ret;
-  if (DECL_ABSTRACT_ORIGIN (decl))
+  if (DECL_ABSTRACT_ORIGIN (decl) && DECL_ABSTRACT_ORIGIN (decl) != decl)
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
 
   return -1;

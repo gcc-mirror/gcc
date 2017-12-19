@@ -911,9 +911,18 @@ grokfield (const cp_declarator *declarator,
 	{
 	  if (init == ridpointers[(int)RID_DELETE])
 	    {
-	      DECL_DELETED_FN (value) = 1;
-	      DECL_DECLARED_INLINE_P (value) = 1;
-	      DECL_INITIAL (value) = error_mark_node;
+	      if (friendp && decl_defined_p (value))
+		{
+		  error ("redefinition of %q#D", value);
+		  inform (DECL_SOURCE_LOCATION (value),
+			  "%q#D previously defined here", value);
+		}
+	      else
+		{
+		  DECL_DELETED_FN (value) = 1;
+		  DECL_DECLARED_INLINE_P (value) = 1;
+		  DECL_INITIAL (value) = error_mark_node;
+		}
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {
@@ -1235,7 +1244,7 @@ splice_template_attributes (tree *attr_p, tree decl)
    DECL_P.  */
 
 static void
-save_template_attributes (tree *attr_p, tree *decl_p)
+save_template_attributes (tree *attr_p, tree *decl_p, int flags)
 {
   tree *q;
 
@@ -1256,7 +1265,20 @@ save_template_attributes (tree *attr_p, tree *decl_p)
   /* Merge the late attributes at the beginning with the attribute
      list.  */
   late_attrs = merge_attributes (late_attrs, *q);
-  *q = late_attrs;
+  if (*q != late_attrs
+      && !DECL_P (*decl_p)
+      && !(flags & ATTR_FLAG_TYPE_IN_PLACE))
+    {
+      if (!dependent_type_p (*decl_p))
+	*decl_p = cp_build_type_attribute_variant (*decl_p, late_attrs);
+      else
+	{
+	  *decl_p = build_variant_type_copy (*decl_p);
+	  TYPE_ATTRIBUTES (*decl_p) = late_attrs;
+	}
+    }
+  else
+    *q = late_attrs;
 
   if (!DECL_P (*decl_p) && *decl_p == TYPE_MAIN_VARIANT (*decl_p))
     {
@@ -1457,7 +1479,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
       if (check_for_bare_parameter_packs (attributes))
 	return;
 
-      save_template_attributes (&attributes, decl);
+      save_template_attributes (&attributes, decl, flags);
     }
 
   cp_check_const_attributes (attributes);
@@ -1473,7 +1495,31 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 		       attributes, flags);
     }
   else
-    decl_attributes (decl, attributes, flags);
+    {
+      tree last_decl = (DECL_P (*decl) && DECL_NAME (*decl)
+			? lookup_name (DECL_NAME (*decl)) : NULL_TREE);
+
+      if (last_decl && TREE_CODE (last_decl) == OVERLOAD)
+	for (ovl_iterator iter (last_decl, true); ; ++iter)
+	  {
+	    if (!iter)
+	      {
+		last_decl = NULL_TREE;
+		break;
+	      }
+
+	    if (TREE_CODE (*iter) == OVERLOAD)
+	      continue;
+
+	    if (decls_match (*decl, *iter, /*record_decls=*/false))
+	      {
+		last_decl = *iter;
+		break;
+	      }
+	  }
+
+      decl_attributes (decl, attributes, flags, last_decl);
+    }
 
   if (TREE_CODE (*decl) == TYPE_DECL)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
@@ -3521,7 +3567,8 @@ start_static_storage_duration_function (unsigned count)
       priority_info_map = splay_tree_new (splay_tree_compare_ints,
 					  /*delete_key_fn=*/0,
 					  /*delete_value_fn=*/
-					  (splay_tree_delete_value_fn) &free);
+					  (splay_tree_delete_value_fn)
+					  (void (*) (void)) free);
 
       /* We always need to generate functions for the
 	 DEFAULT_INIT_PRIORITY so enter it now.  That way when we walk

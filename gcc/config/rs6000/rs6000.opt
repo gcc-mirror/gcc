@@ -40,6 +40,10 @@ HOST_WIDE_INT x_rs6000_isa_flags_explicit
 TargetVariable
 enum processor_type rs6000_cpu = PROCESSOR_PPC603
 
+;; Current tuning
+TargetVariable
+enum processor_type rs6000_tune = PROCESSOR_PPC603
+
 ;; Always emit branch hint bits.
 TargetVariable
 unsigned char rs6000_always_hint

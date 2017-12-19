@@ -26,11 +26,6 @@ along with this program; see the file COPYING3.  If not see
 #include "internal.h"
 #include "hashtab.h"
 
-/* Do not track column numbers higher than this one.  As a result, the
-   range of column_bits is [12, 18] (or 0 if column numbers are
-   disabled).  */
-const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
-
 /* Highest possible source location encoded within an ordinary or
    macro map.  */
 const source_location LINE_MAP_MAX_SOURCE_LOCATION = 0x70000000;
@@ -2348,6 +2343,14 @@ rich_location::maybe_add_fixit (source_location start,
     }
   /* ...and on the same line.  */
   if (exploc_start.line != exploc_next_loc.line)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
+  /* The columns must be in the correct order.  This can fail if the
+     endpoints straddle the boundary for which the linemap can represent
+     columns (PR c/82050).  */
+  if (exploc_start.column > exploc_next_loc.column)
     {
       stop_supporting_fixits ();
       return;

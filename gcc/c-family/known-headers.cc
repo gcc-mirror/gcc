@@ -117,7 +117,7 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
   };
   const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
   for (size_t i = 0; i < num_hints; i++)
-    if (0 == strcmp (name, hints[i].name))
+    if (strcmp (name, hints[i].name) == 0)
       return hints[i].header[lib];
   return NULL;
 }

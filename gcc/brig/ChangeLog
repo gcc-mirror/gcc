@@ -1,3 +1,18 @@
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* brig-lang.c (brig_attribute_table): Swap affects_type_identity
+	and handler fields, adjust comments.
+
+2017-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* brig-lang.c (brig_attribute_table): Fix up comment.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* brigfrontend/brig-branch-inst-handler.cc
+	(brig_branch_inst_handler::operator): Build SWITCH_EXPR using build2
+	instead of build3.
+
 2017-11-17  Henry Linjamäki  <henry.linjamaki@parmance.com>
 
 	* brigfrontend/brig-util.cc: Fix sprintf format string type mismatch

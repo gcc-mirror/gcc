@@ -720,6 +720,32 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
     ub = integer_zero_node;
 
   edge last_e = single_succ_edge (split_edge (next_e));
+
+  /* Compensate for the fact that we emit a do { } while loop from
+     a for ISL AST.
+     ???  We often miss constraints on niter because the SESE region
+     doesn't cover loop header copies.  Ideally we'd add constraints
+     for all relevant dominating conditions.  */
+  if (TREE_CODE (lb) == INTEGER_CST && TREE_CODE (ub) == INTEGER_CST
+      && tree_int_cst_compare (lb, ub) <= 0)
+    ;
+  else
+    {
+      tree one = build_one_cst (POINTER_TYPE_P (type) ? sizetype : type);
+      /* Adding +1 and using LT_EXPR helps with loop latches that have a
+	 loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this
+	 becomes 2^k-1 due to integer overflow, and the condition lb <= ub
+	 is true, even if we do not want this.  However lb < ub + 1 is false,
+	 as expected.  */
+      tree ub_one = fold_build2 (POINTER_TYPE_P (type)
+				 ? POINTER_PLUS_EXPR : PLUS_EXPR,
+				 type, ub, one);
+      create_empty_if_region_on_edge (next_e,
+				      fold_build2 (LT_EXPR, boolean_type_node,
+						   lb, ub_one));
+      next_e = get_true_edge_from_guard_bb (next_e->dest);
+    }
+
   translate_isl_ast_for_loop (context_loop, node, next_e,
 			      type, lb, ub, ip);
   return last_e;
@@ -1007,7 +1033,7 @@ gsi_insert_earliest (gimple_seq seq)
   FOR_EACH_VEC_ELT (stmts, i, use_stmt)
     {
       gcc_assert (gimple_code (use_stmt) != GIMPLE_PHI);
-      gimple_stmt_iterator gsi_def_stmt = gsi_start_bb_nondebug (begin_bb);
+      gimple_stmt_iterator gsi_def_stmt = gsi_start_nondebug_bb (begin_bb);
 
       use_operand_p use_p;
       ssa_op_iter op_iter;
@@ -1039,7 +1065,7 @@ gsi_insert_earliest (gimple_seq seq)
       else if (gimple_code (gsi_stmt (gsi_def_stmt)) == GIMPLE_PHI)
 	{
 	  gimple_stmt_iterator bsi
-	    = gsi_start_bb_nondebug (gsi_bb (gsi_def_stmt));
+	    = gsi_start_nondebug_bb (gsi_bb (gsi_def_stmt));
 	  /* Insert right after the PHI statements.  */
 	  gsi_insert_before (&bsi, use_stmt, GSI_NEW_STMT);
 	}
@@ -1111,8 +1137,10 @@ should_copy_to_new_region (gimple *stmt, sese_info_p region)
   if (is_gimple_assign (stmt)
       && (lhs = gimple_assign_lhs (stmt))
       && TREE_CODE (lhs) == SSA_NAME
-      && is_gimple_reg (lhs)
-      && scev_analyzable_p (lhs, region->region))
+      && scev_analyzable_p (lhs, region->region)
+      /* But to code-generate liveouts - liveout PHI generation is
+         in generic sese.c code that cannot do code generation.  */
+      && ! bitmap_bit_p (region->liveout, SSA_NAME_VERSION (lhs)))
     return false;
 
   return true;
@@ -1146,7 +1174,8 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	{
 	  if (gimple_debug_bind_p (copy))
 	    gimple_debug_bind_reset_value (copy);
-	  else if (gimple_debug_source_bind_p (copy))
+	  else if (gimple_debug_source_bind_p (copy)
+		   || gimple_debug_nonbind_marker_p (copy))
 	    ;
 	  else
 	    gcc_unreachable ();

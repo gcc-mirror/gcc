@@ -823,9 +823,6 @@ struct GTY(()) cgraph_simd_clone {
      otherwise false.  */
   unsigned int inbranch : 1;
 
-  /* True if this is a Cilk Plus variant.  */
-  unsigned int cilk_elemental : 1;
-
   /* Doubly linked list of SIMD clones.  */
   cgraph_node *prev_clone, *next_clone;
 

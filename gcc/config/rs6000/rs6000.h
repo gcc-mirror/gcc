@@ -391,9 +391,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_SIMPLE_FPU   0
 #define TARGET_XILINX_FPU   0
 
-/* Recast the processor type to the cpu attribute.  */
-#define rs6000_cpu_attr ((enum attr_cpu)rs6000_cpu)
-
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
 #define PROCESSOR_POWERPC   PROCESSOR_PPC604

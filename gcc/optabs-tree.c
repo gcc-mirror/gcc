@@ -199,6 +199,12 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ?
 	vec_pack_ufix_trunc_optab : vec_pack_sfix_trunc_optab;
 
+    case VEC_DUPLICATE_EXPR:
+      return vec_duplicate_optab;
+
+    case VEC_SERIES_EXPR:
+      return vec_series_optab;
+
     default:
       break;
     }

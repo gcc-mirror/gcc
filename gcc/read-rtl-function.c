@@ -321,7 +321,7 @@ static int
 parse_note_insn_name (const char *string)
 {
   for (int i = 0; i < NOTE_INSN_MAX; i++)
-    if (0 == strcmp (string, GET_NOTE_INSN_NAME (i)))
+    if (strcmp (string, GET_NOTE_INSN_NAME (i)) == 0)
       return i;
   fatal_with_file_and_line ("unrecognized NOTE_INSN name: `%s'", string);
 }
@@ -1079,7 +1079,7 @@ function_reader::read_rtx_operand_r (rtx x)
 	 "orig:%i", ORIGINAL_REGNO (rtx).
 	 Consume it, we don't set ORIGINAL_REGNO, since we can
 	 get that from the 2nd copy later.  */
-      if (0 == strncmp (desc, "orig:", 5))
+      if (strncmp (desc, "orig:", 5) == 0)
 	{
 	  expect_original_regno = true;
 	  desc_start += 5;
@@ -1312,7 +1312,7 @@ function_reader::parse_mem_expr (const char *desc)
 {
   tree fndecl = cfun->decl;
 
-  if (0 == strcmp (desc, "<retval>"))
+  if (strcmp (desc, "<retval>") == 0)
     return DECL_RESULT (fndecl);
 
   tree param = find_param_by_name (fndecl, desc);

@@ -28,6 +28,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -70,6 +72,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
 static char arc_cpu_name[10] = "";
 static const char *arc_cpu_string = arc_cpu_name;
+
+/* Track which regs are set fixed/call saved/call used from commnad line.  */
+HARD_REG_SET overrideregs;
 
 /* Maximum size of a loop.  */
 #define ARC_MAX_LOOP_LENGTH 4095
@@ -217,23 +222,25 @@ static tree arc_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
    machine specific supported attributes.  */
 const struct attribute_spec arc_attribute_table[] =
 {
- /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-      affects_type_identity } */
-  { "interrupt", 1, 1, true, false, false, arc_handle_interrupt_attribute, true },
+ /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+      affects_type_identity, handler, exclude } */
+  { "interrupt", 1, 1, true, false, false, true,
+    arc_handle_interrupt_attribute, NULL },
   /* Function calls made to this symbol must be done indirectly, because
      it may lie outside of the 21/25 bit addressing range of a normal function
      call.  */
-  { "long_call",    0, 0, false, true,  true,  NULL, false },
+  { "long_call",    0, 0, false, true,  true,  false, NULL, NULL },
   /* Whereas these functions are always known to reside within the 25 bit
      addressing range of unconditionalized bl.  */
-  { "medium_call",   0, 0, false, true,  true,  NULL, false },
+  { "medium_call",   0, 0, false, true,  true, false, NULL, NULL },
   /* And these functions are always known to reside within the 21 bit
      addressing range of blcc.  */
-  { "short_call",   0, 0, false, true,  true,  NULL, false },
+  { "short_call",   0, 0, false, true,  true,  false, NULL, NULL },
   /* Function which are not having the prologue and epilogue generated
      by the compiler.  */
-  { "naked", 0, 0, true, false, false, arc_handle_fndecl_attribute, false },
-  { NULL, 0, 0, false, false, false, NULL, false }
+  { "naked", 0, 0, true, false, false,  false, arc_handle_fndecl_attribute,
+    NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 static int arc_comp_type_attributes (const_tree, const_tree);
 static void arc_file_start (void);
@@ -304,6 +311,7 @@ legitimate_scaled_address_p (machine_mode mode, rtx op, bool strict)
     case 4:
       if (INTVAL (XEXP (XEXP (op, 0), 1)) != 4)
 	return false;
+      /*  Fall through. */
     default:
       return false;
     }
@@ -1095,6 +1103,30 @@ arc_override_options (void)
 	  }
       }
 
+  CLEAR_HARD_REG_SET (overrideregs);
+  if (common_deferred_options)
+    {
+      vec<cl_deferred_option> v =
+	*((vec<cl_deferred_option> *) common_deferred_options);
+      int reg, nregs, j;
+
+      FOR_EACH_VEC_ELT (v, i, opt)
+	{
+	  switch (opt->opt_index)
+	    {
+	    case OPT_ffixed_:
+	    case OPT_fcall_used_:
+	    case OPT_fcall_saved_:
+	      if ((reg = decode_reg_name_and_count (opt->arg, &nregs)) >= 0)
+		for (j = reg;  j < reg + nregs; j++)
+		  SET_HARD_REG_BIT (overrideregs, j);
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
+
   /* Set cpu flags accordingly to architecture/selected cpu.  The cpu
      specific flags are set in arc-common.c.  The architecture forces
      the default hardware configurations in, regardless what command
@@ -1624,14 +1656,20 @@ arc_conditional_register_usage (void)
       /* For ARCv2 the core register set is changed.  */
       strcpy (rname29, "ilink");
       strcpy (rname30, "r30");
-      call_used_regs[30] = 1;
-      fixed_regs[30] = 0;
 
-      arc_regno_reg_class[30] = WRITABLE_CORE_REGS;
-      SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], 30);
-      SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], 30);
-      SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], 30);
-      SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], 30);
+      if (!TEST_HARD_REG_BIT (overrideregs, 30))
+	{
+	  /* No user interference.  Set the r30 to be used by the
+	     compiler.  */
+	  call_used_regs[30] = 1;
+	  fixed_regs[30] = 0;
+
+	  arc_regno_reg_class[30] = WRITABLE_CORE_REGS;
+	  SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], 30);
+	  SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], 30);
+	  SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], 30);
+	  SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], 30);
+	}
    }
 
   if (TARGET_MUL64_SET)
@@ -1873,11 +1911,14 @@ arc_conditional_register_usage (void)
     SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCL_REGNO);
     SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCH_REGNO);
 
-     /* Allow the compiler to freely use them.  */
-    fixed_regs[ACCL_REGNO] = 0;
-    fixed_regs[ACCH_REGNO] = 0;
+    /* Allow the compiler to freely use them.  */
+    if (!TEST_HARD_REG_BIT (overrideregs, ACCL_REGNO))
+      fixed_regs[ACCL_REGNO] = 0;
+    if (!TEST_HARD_REG_BIT (overrideregs, ACCH_REGNO))
+      fixed_regs[ACCH_REGNO] = 0;
 
-    arc_hard_regno_modes[ACC_REG_FIRST] = D_MODES;
+    if (!fixed_regs[ACCH_REGNO] && !fixed_regs[ACCL_REGNO])
+      arc_hard_regno_modes[ACC_REG_FIRST] = D_MODES;
   }
 }
 
@@ -2706,8 +2747,6 @@ arc_compute_frame_size (void)
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
   unsigned int reg_size, reg_offset;
   unsigned int gmask;
-  enum arc_function_type fn_type;
-  int interrupt_p;
   struct arc_frame_info *frame_info;
   int size;
 
@@ -3756,7 +3795,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 
     case 'c':
       if (GET_CODE (x) == CONST_INT)
-        fprintf (file, "%d", INTVAL (x) );
+        fprintf (file, "%ld", INTVAL (x) );
       else
         output_operand_lossage ("invalid operands to %%c code");
 
@@ -5995,12 +6034,6 @@ arc_return_addr_rtx (int count, ATTRIBUTE_UNUSED rtx frame)
 bool
 arc_legitimate_constant_p (machine_mode mode, rtx x)
 {
-  if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (x))
-    return false;
-
-  if (!flag_pic && mode != Pmode)
-    return true;
-
   switch (GET_CODE (x))
     {
     case CONST:
@@ -7408,6 +7441,12 @@ hwloop_optimize (hwloop_info loop)
 		 loop->loop_no);
       last_insn = emit_insn_after (gen_nopv (), last_insn);
     }
+
+  /* SAVE_NOTE is used by haifa scheduler.  However, we are after it
+     and we can use it to indicate the last ZOL instruction cannot be
+     part of a delay slot.  */
+  add_reg_note (last_insn, REG_SAVE_NOTE, GEN_INT (2));
+
   loop->last_insn = last_insn;
 
   /* Get the loop iteration register.  */
@@ -7491,7 +7530,7 @@ hwloop_optimize (hwloop_info loop)
                  && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
         entry_after = NEXT_INSN (entry_after);
 #endif
-      entry_after = next_nonnote_insn_bb (entry_after);
+      entry_after = next_nonnote_nondebug_insn_bb (entry_after);
 
       gcc_assert (entry_after);
       emit_insn_before (seq, entry_after);
@@ -7501,6 +7540,9 @@ hwloop_optimize (hwloop_info loop)
   /* Insert the loop end label before the last instruction of the
      loop.  */
   emit_label_after (end_label, loop->last_insn);
+  /* Make sure we mark the begining and end label as used.  */
+  LABEL_NUSES (loop->end_label)++;
+  LABEL_NUSES (loop->start_label)++;
 
   return true;
 }
@@ -10044,6 +10086,7 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
       case TYPE_BRANCH:
 	if (get_attr_length (u.r) != 2)
 	  break;
+      /*  Fall through. */
       case TYPE_BRCC:
       case TYPE_BRCC_NO_DELAY_SLOT:
 	return false;
@@ -10805,11 +10848,23 @@ arc_use_anchors_for_symbol_p (const_rtx symbol)
   return default_use_anchors_for_symbol_p (symbol);
 }
 
+/* Return true if SUBST can't safely replace its equivalent during RA.  */
+static bool
+arc_cannot_substitute_mem_equiv_p (rtx)
+{
+  /* If SUBST is mem[base+index], the address may not fit ISA,
+     thus return true.  */
+  return true;
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P
+#define TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P arc_cannot_substitute_mem_equiv_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

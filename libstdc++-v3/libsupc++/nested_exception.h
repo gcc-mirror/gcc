@@ -92,6 +92,7 @@ namespace std
   // Throw an exception of unspecified type that is publicly derived from
   // both remove_reference_t<_Tp> and nested_exception.
   template<typename _Tp>
+    [[noreturn]]
     inline void
     __throw_with_nested_impl(_Tp&& __t, true_type)
     {
@@ -100,6 +101,7 @@ namespace std
     }
 
   template<typename _Tp>
+    [[noreturn]]
     inline void
     __throw_with_nested_impl(_Tp&& __t, false_type)
     { throw std::forward<_Tp>(__t); }

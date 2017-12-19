@@ -137,7 +137,7 @@ enum debug_info_levels debug_info_level = DINFO_LEVEL_NONE
 
 ; Nonzero means use GNU-only extensions in the generated symbolic
 ; debugging information.  Currently, this only has an effect when
-; write_symbols is set to DBX_DEBUG, XCOFF_DEBUG, or DWARF_DEBUG.
+; write_symbols is set to DBX_DEBUG or XCOFF_DEBUG.
 Variable
 bool use_gnu_debug_info_extensions
 
@@ -1504,16 +1504,16 @@ Common Alias(floop-nest-optimize)
 Enable loop nest transforms.  Same as -floop-nest-optimize.
 
 floop-interchange
-Common Alias(floop-nest-optimize)
-Enable loop nest transforms.  Same as -floop-nest-optimize.
+Common Report Var(flag_loop_interchange) Optimization
+Enable loop interchange on trees.
 
 floop-block
 Common Alias(floop-nest-optimize)
 Enable loop nest transforms.  Same as -floop-nest-optimize.
 
 floop-unroll-and-jam
-Common Alias(floop-nest-optimize)
-Enable loop nest transforms.  Same as -floop-nest-optimize.
+Common Report Var(flag_unroll_jam) Optimization
+Perform unroll-and-jam on loops.
 
 fgnu-tm
 Common Report Var(flag_tm)
@@ -2935,6 +2935,10 @@ Generate debug information in STABS format.
 gstabs+
 Common Driver JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format.
+
+gstatement-frontiers
+Common Driver Var(debug_nonbind_markers_p) Init(2)
+Emit progressive recommended breakpoint locations.
 
 gstrict-dwarf
 Common Driver Report Var(dwarf_strict) Init(0)

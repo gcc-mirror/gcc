@@ -536,19 +536,24 @@ remove_forwarder_block (basic_block bb)
      defined labels and labels with an EH landing pad number to the
      new block, so that the redirection of the abnormal edges works,
      jump targets end up in a sane place and debug information for
-     labels is retained.  */
+     labels is retained.
+
+     While at that, move any debug stmts that appear before or in between
+     labels, but not those that can only appear after labels.  */
   gsi_to = gsi_start_bb (dest);
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+  gsi = gsi_start_bb (bb);
+  gimple_stmt_iterator gsie = gsi_after_labels (bb);
+  while (gsi_stmt (gsi) != gsi_stmt (gsie))
     {
       tree decl;
       label = gsi_stmt (gsi);
-      if (is_gimple_debug (label))
-	break;
-      decl = gimple_label_label (as_a <glabel *> (label));
-      if (EH_LANDING_PAD_NR (decl) != 0
-	  || DECL_NONLOCAL (decl)
-	  || FORCED_LABEL (decl)
-	  || !DECL_ARTIFICIAL (decl))
+      if (is_gimple_debug (label)
+	  ? can_move_debug_stmts
+	  : ((decl = gimple_label_label (as_a <glabel *> (label))),
+	     EH_LANDING_PAD_NR (decl) != 0
+	     || DECL_NONLOCAL (decl)
+	     || FORCED_LABEL (decl)
+	     || !DECL_ARTIFICIAL (decl)))
 	{
 	  gsi_remove (&gsi, false);
 	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
@@ -558,17 +563,18 @@ remove_forwarder_block (basic_block bb)
     }
 
   /* Move debug statements if the destination has a single predecessor.  */
-  if (can_move_debug_stmts)
+  if (can_move_debug_stmts && !gsi_end_p (gsi))
     {
-      gsi_to = gsi_after_labels (dest);
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
+      gcc_assert (gsi_stmt (gsi) == gsi_stmt (gsie));
+      gimple_stmt_iterator gsie_to = gsi_after_labels (dest);
+      do
 	{
 	  gimple *debug = gsi_stmt (gsi);
-	  if (!is_gimple_debug (debug))
-	    break;
+	  gcc_assert (is_gimple_debug (debug));
 	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, debug, GSI_SAME_STMT);
+	  gsi_insert_before (&gsie_to, debug, GSI_SAME_STMT);
 	}
+      while (!gsi_end_p (gsi));
     }
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
@@ -1309,7 +1315,8 @@ execute_cleanup_cfg_post_optimizing (void)
 
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  fprintf (final_output, "\n");
-	  dump_enumerated_decls (final_output, dump_flags | TDF_NOUID);
+	  dump_enumerated_decls (final_output,
+				 dump_flags | TDF_SLIM | TDF_NOUID);
 	  flag_dump_noaddr = save_noaddr;
 	  flag_dump_unnumbered = save_unnumbered;
 	  if (fclose (final_output))

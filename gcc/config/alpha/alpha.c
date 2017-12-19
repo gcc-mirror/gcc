@@ -19,6 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -7505,10 +7507,11 @@ common_object_handler (tree *node, tree name ATTRIBUTE_UNUSED,
 
 static const struct attribute_spec vms_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { COMMON_OBJECT,   0, 1, true,  false, false, common_object_handler, false },
-  { NULL,            0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { COMMON_OBJECT,   0, 1, true,  false, false, false, common_object_handler,
+    NULL },
+  { NULL,            0, 0, false, false, false, false, NULL, NULL }
 };
 
 void

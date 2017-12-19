@@ -927,7 +927,7 @@ RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params-enum.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
-	gtm-builtins.def sanitizer.def cilkplus.def cilk-builtins.def \
+	gtm-builtins.def sanitizer.def \
 	hsa-builtins.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
@@ -1199,9 +1199,8 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-lex.o c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
-  c-family/c-cilkplus.o \
-  c-family/array-notation-common.o c-family/cilk.o c-family/c-ubsan.o \
-  c-family/c-attribs.o c-family/c-warn.o c-family/known-headers.o
+  c-family/c-ubsan.o c-family/known-headers.o \
+  c-family/c-attribs.o c-family/c-warn.o c-family/c-spellcheck.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make
@@ -1250,7 +1249,6 @@ OBJS = \
 	cgraphbuild.o \
 	cgraphunit.o \
 	cgraphclones.o \
-	cilk-common.o \
 	combine.o \
 	combine-stack-adj.o \
 	compare-elim.o \
@@ -1308,6 +1306,8 @@ OBJS = \
 	gimple-iterator.o \
 	gimple-fold.o \
 	gimple-laddress.o \
+	gimple-loop-interchange.o \
+	gimple-loop-jam.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
 	gimple-ssa-backprop.o \
@@ -1320,6 +1320,7 @@ OBJS = \
 	gimple-ssa-strength-reduction.o \
 	gimple-ssa-sprintf.o \
 	gimple-ssa-warn-alloca.o \
+	gimple-ssa-warn-restrict.o \
 	gimple-streamer-in.o \
 	gimple-streamer-out.o \
 	gimple-walk.o \
@@ -1578,6 +1579,7 @@ OBJS = \
 	tree-vect-loop-manip.o \
 	tree-vect-slp.o \
 	tree-vectorizer.o \
+	tree-vector-builder.o \
 	tree-vrp.o \
 	tree.o \
 	typed-splay-tree.o \
@@ -1918,9 +1920,12 @@ rest.cross: specs
 # Specify -o /dev/null so the output of -S is discarded. More importantly
 # It does not try to create a file with the name "null.s" on POSIX and
 # "nul.s" on Windows. Because on Windows "nul" is a reserved file name.
+# Beware that /dev/null is not available to mingw tools, so directly use
+# "nul" instead of "/dev/null" if we're building on a mingw machine.
 # Specify the path to gcc/testsuite/selftests within the srcdir
 # as an argument to -fself-test.
-SELFTEST_FLAGS = -nostdinc /dev/null -S -o /dev/null \
+DEVNULL=$(if $(findstring mingw,$(build)),nul,/dev/null)
+SELFTEST_FLAGS = -nostdinc $(DEVNULL) -S -o $(DEVNULL) \
 	-fself-test=$(srcdir)/testsuite/selftests
 
 C_SELFTEST_FLAGS = -xc $(SELFTEST_FLAGS)
@@ -2512,8 +2517,8 @@ s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
 GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
-  $(srcdir)/wide-int.h $(srcdir)/alias.h $(srcdir)/cilk.h \
-  $(srcdir)/cilk-common.c $(srcdir)/coverage.c  $(srcdir)/rtl.h \
+  $(srcdir)/wide-int.h $(srcdir)/alias.h \
+  $(srcdir)/coverage.c  $(srcdir)/rtl.h \
   $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
   $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
@@ -3162,7 +3167,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
 	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
-	 match-and-simplify.texi
+	 match-and-simplify.texi poly-int.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi
@@ -4150,7 +4155,8 @@ TAGS: lang.tags
 	    incs="$$incs --include $$dir/TAGS.sub";	\
 	  fi;						\
 	done;						\
-	etags -o TAGS.sub c-family/*.h c-family/*.c *.h *.c *.cc \
+	etags -o TAGS.sub c-family/*.h c-family/*.c c-family/*.cc \
+	      *.h *.c *.cc \
 	      ../include/*.h ../libiberty/*.c \
 	      ../libcpp/*.c ../libcpp/include/*.h \
 	      --language=none --regex="/\(char\|unsigned int\|int\|bool\|void\|HOST_WIDE_INT\|enum [A-Za-z_0-9]+\) [*]?\([A-Za-z_0-9]+\)/\2/" common.opt	\

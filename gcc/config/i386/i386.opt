@@ -741,6 +741,10 @@ mavx512vbmi2
 Target Report Mask(ISA_AVX512VBMI2) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation.
 
+mavx512vnni
+Target Report Mask(ISA_AVX512VNNI) Var(ix86_isa_flags2) Save
+Support AVX512VNNI built-in functions and code generation.
+
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation.
@@ -780,6 +784,10 @@ Support RDPID built-in functions and code generation.
 mgfni
 Target Report Mask(ISA_GFNI) Var(ix86_isa_flags) Save
 Support GFNI built-in functions and code generation.
+
+mvaes
+Target Report Mask(ISA_VAES) Var(ix86_isa_flags2) Save
+Support VAES built-in functions and code generation.
 
 mbmi
 Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save

@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2027,7 +2029,7 @@ adjacent_operands_p (rtx lo, rtx hi, machine_mode mode)
   if (REG_P (lo))
     return mode == SImode && REGNO (lo) + 1 == REGNO (hi);
   if (CONST_INT_P (lo))
-    return INTVAL (hi) == 0 && 0 <= INTVAL (lo) && INTVAL (lo) < 64;
+    return INTVAL (hi) == 0 && UINTVAL (lo) < 64;
   if (CONST_INT_P (lo))
     return mode != SImode;
 

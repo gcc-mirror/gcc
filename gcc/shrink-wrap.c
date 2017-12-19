@@ -309,10 +309,10 @@ move_insn_for_shrink_wrap (basic_block bb, rtx_insn *insn,
      move it as far as we can.  */
   do
     {
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	{
 	  FOR_BB_INSNS_REVERSE (bb, dinsn)
-	    if (DEBUG_INSN_P (dinsn))
+	    if (DEBUG_BIND_INSN_P (dinsn))
 	      {
 		df_ref use;
 		FOR_EACH_INSN_USE (use, dinsn)

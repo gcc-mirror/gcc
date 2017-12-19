@@ -50,15 +50,20 @@ package body Module_Name is
    -- Get --
    ---------
 
-   function Get (Addr : access System.Address) return String is
+   function Get (Addr : System.Address;
+                 Load_Addr : access System.Address)
+     return String
+   is
       Res     : DWORD;
       hModule : aliased HANDLE;
       Path    : String (1 .. 1_024);
 
    begin
+      Load_Addr.all := System.Null_Address;
+
       if GetModuleHandleEx
            (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
-            Addr.all,
+            Addr,
             hModule'Access) = Win32.TRUE
       then
          Res := GetModuleFileName (hModule, Path'Address, Path'Length);

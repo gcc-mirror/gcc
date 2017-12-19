@@ -4229,6 +4229,16 @@ package body Sem_Ch8 is
          Error_Msg_N
            ("a library unit can only rename another library unit", N);
       end if;
+
+      --  We suppress elaboration warnings for the resulting entity, since
+      --  clearly they are not needed, and more particularly, in the case
+      --  of a generic formal subprogram, the resulting entity can appear
+      --  after the instantiation itself, and thus look like a bogus case
+      --  of access before elaboration.
+
+      if Legacy_Elaboration_Checks then
+         Set_Suppress_Elaboration_Warnings (New_S);
+      end if;
    end Attribute_Renaming;
 
    ----------------------

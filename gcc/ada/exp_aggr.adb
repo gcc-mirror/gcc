@@ -1533,7 +1533,14 @@ package body Exp_Aggr is
             --  the analysis of non-array aggregates now in order to get the
             --  value of Expansion_Delayed flag for the inner aggregate ???
 
-            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ) then
+            --  In the case of an iterated component association, the analysis
+            --  of the generated loop will analyze the expression in the
+            --  proper context, in which the loop parameter is visible.
+
+            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ)
+              and then
+                Nkind (Parent (Expr_Q)) /= N_Iterated_Component_Association
+            then
                Analyze_And_Resolve (Expr_Q, Comp_Typ);
             end if;
 
@@ -4888,14 +4895,14 @@ package body Exp_Aggr is
 
       --    1. N consists of a single OTHERS choice, possibly recursively
 
-      --    2. The array type is not packed
+      --    2. The array type has no null ranges (the purpose of this is to
+      --       avoid a bogus warning for an out-of-range value).
 
       --    3. The array type has no atomic components
 
-      --    4. The array type has no null ranges (the purpose of this is to
-      --       avoid a bogus warning for an out-of-range value).
+      --    4. The component type is elementary
 
-      --    5. The component type is elementary
+      --    5. The component size is a multiple of Storage_Unit
 
       --    6. The component size is Storage_Unit or the value is of the form
       --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
@@ -4911,6 +4918,7 @@ package body Exp_Aggr is
          Expr      : Node_Id := N;
          Low       : Node_Id;
          High      : Node_Id;
+         Csiz      : Uint;
          Remainder : Uint;
          Value     : Uint;
          Nunits    : Nat;
@@ -4923,14 +4931,6 @@ package body Exp_Aggr is
             if Nkind (Expr) /= N_Aggregate
               or else not Is_Others_Aggregate (Expr)
             then
-               return False;
-            end if;
-
-            if Present (Packed_Array_Impl_Type (Ctyp)) then
-               return False;
-            end if;
-
-            if Has_Atomic_Components (Ctyp) then
                return False;
             end if;
 
@@ -4957,6 +4957,11 @@ package body Exp_Aggr is
                Expr := Expression (First (Component_Associations (Expr)));
             end loop;
 
+            if Has_Atomic_Components (Ctyp) then
+               return False;
+            end if;
+
+            Csiz := Component_Size (Ctyp);
             Ctyp := Component_Type (Ctyp);
 
             if Is_Atomic_Or_VFA (Ctyp) then
@@ -4971,20 +4976,19 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         --  All elementary types are supported
-
-         if not Is_Elementary_Type (Ctyp) then
-            return False;
-         end if;
-
-         --  However access types need to be dealt with specially
+         --  Access types need to be dealt with specially
 
          if Is_Access_Type (Ctyp) then
+
+            --  Component_Size is not set by Layout_Type if the component
+            --  type is an access type ???
+
+            Csiz := Esize (Ctyp);
 
             --  Fat pointers are rejected as they are not really elementary
             --  for the backend.
 
-            if Esize (Ctyp) /= System_Address_Size then
+            if Csiz /= System_Address_Size then
                return False;
             end if;
 
@@ -4995,15 +4999,26 @@ package body Exp_Aggr is
             if Nkind (Expr) /= N_Null and then not Is_Entity_Name (Expr) then
                return False;
             end if;
+
+         --  Scalar types are OK if their size is a multiple of Storage_Unit
+
+         elsif Is_Scalar_Type (Ctyp) then
+
+            if Csiz mod System_Storage_Unit /= 0 then
+               return False;
+            end if;
+
+         --  Composite types are rejected
+
+         else
+            return False;
          end if;
 
          --  The expression needs to be analyzed if True is returned
 
          Analyze_And_Resolve (Expr, Ctyp);
 
-         --  The back end uses the Esize as the precision of the type
-
-         Nunits := UI_To_Int (Esize (Ctyp)) / System_Storage_Unit;
+         Nunits := UI_To_Int (Csiz) / System_Storage_Unit;
 
          if Nunits = 1 then
             return True;
@@ -5366,6 +5381,10 @@ package body Exp_Aggr is
             Expr : Node_Id;
 
          begin
+            if Nkind (Parent (Aggr)) = N_Iterated_Component_Association then
+               return False;
+            end if;
+
             if Present (Expressions (Aggr)) then
                Expr := First (Expressions (Aggr));
                while Present (Expr) loop
@@ -5526,13 +5545,29 @@ package body Exp_Aggr is
                Get_Index_Bounds (Obj_In, Obj_Lo, Obj_Hi);
 
                if not Compile_Time_Known_Value (Aggr_Lo)
-                 or else not Compile_Time_Known_Value (Aggr_Hi)
                  or else not Compile_Time_Known_Value (Obj_Lo)
                  or else not Compile_Time_Known_Value (Obj_Hi)
                  or else Expr_Value (Aggr_Lo) /= Expr_Value (Obj_Lo)
-                 or else Expr_Value (Aggr_Hi) /= Expr_Value (Obj_Hi)
                then
                   return False;
+
+               --  For an assignment statement we require static matching of
+               --  bounds. Ditto for an allocator whose qualified expression
+               --  is a constrained type. If the expression in the allocator
+               --  is an unconstrained array, we accept an upper bound that
+               --  is not static, to allow for non-static expressions of the
+               --  base type. Clearly there are further possibilities (with
+               --  diminishing returns) for safely building arrays in place
+               --  here.
+
+               elsif Nkind (Parent (N)) = N_Assignment_Statement
+                 or else Is_Constrained (Etype (Parent (N)))
+               then
+                  if not Compile_Time_Known_Value (Aggr_Hi)
+                    or else Expr_Value (Aggr_Hi) /= Expr_Value (Obj_Hi)
+                  then
+                     return False;
+                  end if;
                end if;
 
                Next_Index (Aggr_In);

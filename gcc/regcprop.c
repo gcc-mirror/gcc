@@ -428,6 +428,8 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
   machine_mode mode = GET_MODE (reg);
   unsigned int i;
 
+  gcc_assert (regno < FIRST_PSEUDO_REGISTER);
+
   /* If we are accessing REG in some mode other that what we set it in,
      make sure that the replacement is valid.  In particular, consider
 	(set (reg:DI r11) (...))
@@ -752,7 +754,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       next = NEXT_INSN (insn);
       if (!NONDEBUG_INSN_P (insn))
 	{
-	  if (DEBUG_INSN_P (insn))
+	  if (DEBUG_BIND_INSN_P (insn))
 	    {
 	      rtx loc = INSN_VAR_LOCATION_LOC (insn);
 	      if (!VAR_LOC_UNKNOWN_P (loc))
@@ -1296,7 +1298,7 @@ pass_cprop_hardreg::execute (function *fun)
       copyprop_hardreg_forward_1 (bb, all_vd + bb->index);
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       FOR_EACH_BB_FN (bb, fun)
 	if (bitmap_bit_p (visited, bb->index)

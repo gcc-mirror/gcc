@@ -212,29 +212,28 @@ gsi_stmt (gimple_stmt_iterator i)
   return i.ptr;
 }
 
-/* Return a new iterator pointing to the first non-debug statement
-   in basic block BB.  */
-
-static inline gimple_stmt_iterator
-gsi_start_bb_nondebug (basic_block bb)
-{
-  gimple_stmt_iterator gsi = gsi_start_bb (bb);
-  while (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
-    gsi_next (&gsi);
-
-  return gsi;
-}
-
-/* Return a block statement iterator that points to the first non-label
-   statement in block BB.  */
+/* Return a block statement iterator that points to the first
+   non-label statement in block BB.  Skip debug stmts only if they
+   precede labels.  */
 
 static inline gimple_stmt_iterator
 gsi_after_labels (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_start_bb (bb);
 
-  while (!gsi_end_p (gsi) && gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
-    gsi_next (&gsi);
+  for (gimple_stmt_iterator gskip = gsi;
+       !gsi_end_p (gskip); )
+    {
+      if (is_gimple_debug (gsi_stmt (gskip)))
+	gsi_next (&gskip);
+      else if (gimple_code (gsi_stmt (gskip)) == GIMPLE_LABEL)
+	{
+	  gsi_next (&gskip);
+	  gsi = gskip;
+	}
+      else
+	break;
+    }
 
   return gsi;
 }
@@ -261,6 +260,19 @@ gsi_prev_nondebug (gimple_stmt_iterator *i)
       gsi_prev (i);
     }
   while (!gsi_end_p (*i) && is_gimple_debug (gsi_stmt (*i)));
+}
+
+/* Return a new iterator pointing to the first non-debug statement in
+   SEQ.  */
+
+static inline gimple_stmt_iterator
+gsi_start_nondebug (gimple_seq seq)
+{
+  gimple_stmt_iterator gsi = gsi_start (seq);
+  if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
+    gsi_next_nondebug (&gsi);
+
+  return gsi;
 }
 
 /* Return a new iterator pointing to the first non-debug statement in

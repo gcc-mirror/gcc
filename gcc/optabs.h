@@ -181,6 +181,7 @@ extern rtx simplify_expand_binop (machine_mode mode, optab binoptab,
 				  enum optab_methods methods);
 extern bool force_expand_binop (machine_mode, optab, rtx, rtx, rtx, int,
 				enum optab_methods);
+extern rtx expand_vector_broadcast (machine_mode, rtx);
 
 /* Generate code for a simple binary or unary operation.  "Simple" in
    this case means "can be unambiguously described by a (mode, code)
@@ -314,6 +315,9 @@ extern rtx expand_vec_cmp_expr (tree, tree, rtx);
 
 /* Generate code for VEC_COND_EXPR.  */
 extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
+
+/* Generate code for VEC_SERIES_EXPR.  */
+extern rtx expand_vec_series_expr (machine_mode, rtx, rtx, rtx);
 
 /* Generate code for MULT_HIGHPART_EXPR.  */
 extern rtx expand_mult_highpart (machine_mode, rtx, rtx, rtx, bool);

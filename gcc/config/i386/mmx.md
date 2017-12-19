@@ -112,7 +112,7 @@
 	return "movdq2q\t{%1, %0|%0, %1}";
 
     case TYPE_SSELOG1:
-      return standard_sse_constant_opcode (insn, operands[1]);
+      return standard_sse_constant_opcode (insn, operands);
 
     case TYPE_SSEMOV:
       switch (get_attr_mode (insn))

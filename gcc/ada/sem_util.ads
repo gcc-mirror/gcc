@@ -480,13 +480,6 @@ package Sem_Util is
    --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is
    --  False).
 
-   function Contains_Refined_State (Prag : Node_Id) return Boolean;
-   --  Determine whether pragma Prag contains a reference to the entity of an
-   --  abstract state with a visible refinement. Prag must denote one of the
-   --  following pragmas:
-   --    Depends
-   --    Global
-
    function Copy_Component_List
      (R_Typ : Entity_Id;
       Loc   : Source_Ptr) return List_Id;
@@ -1245,8 +1238,14 @@ package Sem_Util is
    --      either include a default expression or have a type which defines
    --      full default initialization. In the case of type extensions, the
    --      parent type defines full default initialization.
-   --   * A task type
-   --   * A private type whose Default_Initial_Condition is non-null
+   --    * A task type
+   --    * A private type with pragma Default_Initial_Condition that provides
+   --      full default initialization.
+
+   function Has_Fully_Default_Initializing_DIC_Pragma
+     (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ has a suitable Default_Initial_Condition
+   --  pragma which provides the full default initialization of the type.
 
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
@@ -1296,6 +1295,9 @@ package Sem_Util is
    --  Determine whether abstract state Id has a null refinement as expressed
    --  in pragma Refined_State. This function does not take into account the
    --  visible refinement region of abstract state Id.
+
+   function Has_Non_Null_Statements (L : List_Id) return Boolean;
+   --  Return True if L has non-null statements
 
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
@@ -1983,10 +1985,6 @@ package Sem_Util is
    --  Use_Original_Node is used to perform the test on Original_Node (N). By
    --  default is True since this routine is commonly invoked as part of the
    --  semantic analysis and it must not be disturbed by the rewriten nodes.
-
-   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
-   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
-   --  an assertion expression which should be verified at runtime.
 
    function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
    --  Check whether T is derived from a visibly controlled type. This is true

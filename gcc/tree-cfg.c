@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "selftest.h"
 #include "opts.h"
+#include "asan.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -169,9 +170,9 @@ static void gimple_merge_blocks (basic_block, basic_block);
 static bool gimple_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
-static edge find_taken_edge_cond_expr (basic_block, tree);
-static edge find_taken_edge_switch_expr (gswitch *, basic_block, tree);
-static tree find_case_label_for_value (gswitch *, tree);
+static edge find_taken_edge_cond_expr (const gcond *, tree);
+static edge find_taken_edge_switch_expr (const gswitch *, tree);
+static tree find_case_label_for_value (const gswitch *, tree);
 static void lower_phi_internal_fn ();
 
 void
@@ -469,7 +470,12 @@ computed_goto_p (gimple *t)
 bool
 gimple_seq_unreachable_p (gimple_seq stmts)
 {
-  if (stmts == NULL)
+  if (stmts == NULL
+      /* Return false if -fsanitize=unreachable, we don't want to
+	 optimize away those calls, but rather turn them into
+	 __ubsan_handle_builtin_unreachable () or __builtin_trap ()
+	 later.  */
+      || sanitize_flags_p (SANITIZE_UNREACHABLE))
     return false;
 
   gimple_stmt_iterator gsi = gsi_last (stmts);
@@ -555,14 +561,22 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
 {
   gimple_stmt_iterator i = gsi_start (seq);
   gimple *stmt = NULL;
+  gimple *prev_stmt = NULL;
   bool start_new_block = true;
   bool first_stmt_of_seq = true;
 
   while (!gsi_end_p (i))
     {
-      gimple *prev_stmt;
-
-      prev_stmt = stmt;
+      /* PREV_STMT should only be set to a debug stmt if the debug
+	 stmt is before nondebug stmts.  Once stmt reaches a nondebug
+	 nonlabel, prev_stmt will be set to it, so that
+	 stmt_starts_bb_p will know to start a new block if a label is
+	 found.  However, if stmt was a label after debug stmts only,
+	 keep the label in prev_stmt even if we find further debug
+	 stmts, for there may be other labels after them, and they
+	 should land in the same block.  */
+      if (!prev_stmt || !stmt || !is_gimple_debug (stmt))
+	prev_stmt = stmt;
       stmt = gsi_stmt (i);
 
       if (stmt && is_gimple_call (stmt))
@@ -577,6 +591,7 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
 	    gsi_split_seq_before (&i, &seq);
 	  bb = create_basic_block (seq, bb);
 	  start_new_block = false;
+	  prev_stmt = NULL;
 	}
 
       /* Now add STMT to BB and create the subgraphs for special statement
@@ -990,7 +1005,11 @@ make_edges (void)
 	      tree target;
 
 	      if (!label_stmt)
-		break;
+		{
+		  if (is_gimple_debug (gsi_stmt (gsi)))
+		    continue;
+		  break;
+		}
 
 	      target = gimple_label_label (label_stmt);
 
@@ -1500,6 +1519,9 @@ cleanup_dead_labels (void)
 
       for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
 	{
+	  if (is_gimple_debug (gsi_stmt (i)))
+	    continue;
+
 	  tree label;
 	  glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (i));
 
@@ -1660,6 +1682,12 @@ cleanup_dead_labels (void)
 
       for (i = gsi_start_bb (bb); !gsi_end_p (i); )
 	{
+	  if (is_gimple_debug (gsi_stmt (i)))
+	    {
+	      gsi_next (&i);
+	      continue;
+	    }
+
 	  tree label;
 	  glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (i));
 
@@ -1744,7 +1772,14 @@ group_case_labels_stmt (gswitch *stmt)
 
       /* Discard cases that have an unreachable destination block.  */
       if (EDGE_COUNT (base_bb->succs) == 0
-	  && gimple_seq_unreachable_p (bb_seq (base_bb)))
+	  && gimple_seq_unreachable_p (bb_seq (base_bb))
+	  /* Don't optimize this if __builtin_unreachable () is the
+	     implicitly added one by the C++ FE too early, before
+	     -Wreturn-type can be diagnosed.  We'll optimize it later
+	     during switchconv pass or any other cfg cleanup.  */
+	  && (gimple_in_ssa_p (cfun)
+	      || (LOCATION_LOCUS (gimple_location (last_stmt (base_bb)))
+		  != BUILTINS_LOCATION)))
 	{
 	  edge base_edge = find_edge (gimple_bb (stmt), base_bb);
 	  if (base_edge != NULL)
@@ -1828,6 +1863,8 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
        gsi_next (&gsi))
     {
       tree lab;
+      if (is_gimple_debug (gsi_stmt (gsi)))
+	continue;
       glabel *label_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
       if (!label_stmt)
 	break;
@@ -2059,7 +2096,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	      gsi_insert_before (&dest_gsi, stmt, GSI_NEW_STMT);
 	    }
 	  /* Other user labels keep around in a form of a debug stmt.  */
-	  else if (!DECL_ARTIFICIAL (label) && MAY_HAVE_DEBUG_STMTS)
+	  else if (!DECL_ARTIFICIAL (label) && MAY_HAVE_DEBUG_BIND_STMTS)
 	    {
 	      gimple *dbg = gimple_build_debug_bind (label,
 						     integer_zero_node,
@@ -2241,9 +2278,12 @@ remove_bb (basic_block bb)
 }
 
 
-/* Given a basic block BB ending with COND_EXPR or SWITCH_EXPR, and a
-   predicate VAL, return the edge that will be taken out of the block.
-   If VAL does not match a unique edge, NULL is returned.  */
+/* Given a basic block BB and a value VAL for use in the final statement
+   of the block (if a GIMPLE_COND, GIMPLE_SWITCH, or computed goto), return
+   the edge that will be taken out of the block.
+   If VAL is NULL_TREE, then the current value of the final statement's
+   predicate or index is used.
+   If the value does not match a unique edge, NULL is returned.  */
 
 edge
 find_taken_edge (basic_block bb, tree val)
@@ -2252,13 +2292,15 @@ find_taken_edge (basic_block bb, tree val)
 
   stmt = last_stmt (bb);
 
-  gcc_assert (is_ctrl_stmt (stmt));
+  /* Handle ENTRY and EXIT.  */
+  if (!stmt)
+    return NULL;
 
   if (gimple_code (stmt) == GIMPLE_COND)
-    return find_taken_edge_cond_expr (bb, val);
+    return find_taken_edge_cond_expr (as_a <gcond *> (stmt), val);
 
   if (gimple_code (stmt) == GIMPLE_SWITCH)
-    return find_taken_edge_switch_expr (as_a <gswitch *> (stmt), bb, val);
+    return find_taken_edge_switch_expr (as_a <gswitch *> (stmt), val);
 
   if (computed_goto_p (stmt))
     {
@@ -2272,10 +2314,10 @@ find_taken_edge (basic_block bb, tree val)
 	  && (TREE_CODE (val) == ADDR_EXPR || TREE_CODE (val) == LABEL_EXPR)
 	  && TREE_CODE (TREE_OPERAND (val, 0)) == LABEL_DECL)
 	return find_taken_edge_computed_goto (bb, TREE_OPERAND (val, 0));
-      return NULL;
     }
 
-  gcc_unreachable ();
+  /* Otherwise we only know the taken successor edge if it's unique.  */
+  return single_succ_p (bb) ? single_succ_edge (bb) : NULL;
 }
 
 /* Given a constant value VAL and the entry block BB to a GOTO_EXPR
@@ -2298,31 +2340,44 @@ find_taken_edge_computed_goto (basic_block bb, tree val)
   return e;
 }
 
-/* Given a constant value VAL and the entry block BB to a COND_EXPR
-   statement, determine which of the two edges will be taken out of the
-   block.  Return NULL if either edge may be taken.  */
+/* Given COND_STMT and a constant value VAL for use as the predicate,
+   determine which of the two edges will be taken out of
+   the statement's block.  Return NULL if either edge may be taken.
+   If VAL is NULL_TREE, then the current value of COND_STMT's predicate
+   is used.  */
 
 static edge
-find_taken_edge_cond_expr (basic_block bb, tree val)
+find_taken_edge_cond_expr (const gcond *cond_stmt, tree val)
 {
   edge true_edge, false_edge;
 
-  if (val == NULL
-      || TREE_CODE (val) != INTEGER_CST)
+  if (val == NULL_TREE)
+    {
+      /* Use the current value of the predicate.  */
+      if (gimple_cond_true_p (cond_stmt))
+	val = integer_one_node;
+      else if (gimple_cond_false_p (cond_stmt))
+	val = integer_zero_node;
+      else
+	return NULL;
+    }
+  else if (TREE_CODE (val) != INTEGER_CST)
     return NULL;
 
-  extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
+  extract_true_false_edges_from_block (gimple_bb (cond_stmt),
+				       &true_edge, &false_edge);
 
   return (integer_zerop (val) ? false_edge : true_edge);
 }
 
-/* Given an INTEGER_CST VAL and the entry block BB to a SWITCH_EXPR
-   statement, determine which edge will be taken out of the block.  Return
-   NULL if any edge may be taken.  */
+/* Given SWITCH_STMT and an INTEGER_CST VAL for use as the index, determine
+   which edge will be taken out of the statement's block.  Return NULL if any
+   edge may be taken.
+   If VAL is NULL_TREE, then the current value of SWITCH_STMT's index
+   is used.  */
 
 static edge
-find_taken_edge_switch_expr (gswitch *switch_stmt, basic_block bb,
-			     tree val)
+find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val)
 {
   basic_block dest_bb;
   edge e;
@@ -2330,13 +2385,18 @@ find_taken_edge_switch_expr (gswitch *switch_stmt, basic_block bb,
 
   if (gimple_switch_num_labels (switch_stmt) == 1)
     taken_case = gimple_switch_default_label (switch_stmt);
-  else if (! val || TREE_CODE (val) != INTEGER_CST)
-    return NULL;
   else
-    taken_case = find_case_label_for_value (switch_stmt, val);
+    {
+      if (val == NULL_TREE)
+	val = gimple_switch_index (switch_stmt);
+      if (TREE_CODE (val) != INTEGER_CST)
+	return NULL;
+      else
+	taken_case = find_case_label_for_value (switch_stmt, val);
+    }
   dest_bb = label_to_block (CASE_LABEL (taken_case));
 
-  e = find_edge (bb, dest_bb);
+  e = find_edge (gimple_bb (switch_stmt), dest_bb);
   gcc_assert (e);
   return e;
 }
@@ -2347,7 +2407,7 @@ find_taken_edge_switch_expr (gswitch *switch_stmt, basic_block bb,
    sorted: We can do a binary search for a case matching VAL.  */
 
 static tree
-find_case_label_for_value (gswitch *switch_stmt, tree val)
+find_case_label_for_value (const gswitch *switch_stmt, tree val)
 {
   size_t low, high, n = gimple_switch_num_labels (switch_stmt);
   tree default_case = gimple_switch_default_label (switch_stmt);
@@ -2627,6 +2687,13 @@ static inline bool
 stmt_starts_bb_p (gimple *stmt, gimple *prev_stmt)
 {
   if (stmt == NULL)
+    return false;
+
+  /* PREV_STMT is only set to a debug stmt if the debug stmt is before
+     any nondebug stmts in the block.  We don't want to start another
+     block in this case: the debug stmt will already have started the
+     one STMT would start if we weren't outputting debug stmts.  */
+  if (prev_stmt && is_gimple_debug (prev_stmt))
     return false;
 
   /* Labels start a new basic block only if the preceding statement
@@ -3813,6 +3880,17 @@ verify_gimple_assign_unary (gassign *stmt)
     case CONJ_EXPR:
       break;
 
+    case VEC_DUPLICATE_EXPR:
+      if (TREE_CODE (lhs_type) != VECTOR_TYPE
+	  || !useless_type_conversion_p (TREE_TYPE (lhs_type), rhs1_type))
+	{
+	  error ("vec_duplicate should be from a scalar to a like vector");
+	  debug_generic_expr (lhs_type);
+	  debug_generic_expr (rhs1_type);
+	  return true;
+	}
+      return false;
+
     default:
       gcc_unreachable ();
     }
@@ -3994,7 +4072,9 @@ verify_gimple_assign_binary (gassign *stmt)
       {
 	if (!POINTER_TYPE_P (rhs1_type)
 	    || !POINTER_TYPE_P (rhs2_type)
-	    || !types_compatible_p (rhs1_type, rhs2_type)
+	    /* Because we special-case pointers to void we allow difference
+	       of arbitrary pointers with the same mode.  */
+	    || TYPE_MODE (rhs1_type) != TYPE_MODE (rhs2_type)
 	    || TREE_CODE (lhs_type) != INTEGER_TYPE
 	    || TYPE_UNSIGNED (lhs_type)
 	    || TYPE_PRECISION (lhs_type) != TYPE_PRECISION (rhs1_type))
@@ -4136,6 +4216,23 @@ verify_gimple_assign_binary (gassign *stmt)
     case BIT_AND_EXPR:
       /* Continue with generic binary expression handling.  */
       break;
+
+    case VEC_SERIES_EXPR:
+      if (!useless_type_conversion_p (rhs1_type, rhs2_type))
+	{
+	  error ("type mismatch in series expression");
+	  debug_generic_expr (rhs1_type);
+	  debug_generic_expr (rhs2_type);
+	  return true;
+	}
+      if (TREE_CODE (lhs_type) != VECTOR_TYPE
+	  || !useless_type_conversion_p (TREE_TYPE (lhs_type), rhs1_type))
+	{
+	  error ("vector type expected in series expression");
+	  debug_generic_expr (lhs_type);
+	  return true;
+	}
+      return false;
 
     default:
       gcc_unreachable ();
@@ -5334,6 +5431,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	  err |= err2;
 	}
 
+      bool label_allowed = true;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
@@ -5349,6 +5447,19 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	      error ("gimple_bb (stmt) is set to a wrong basic block");
 	      err2 = true;
 	    }
+
+	  /* Labels may be preceded only by debug markers, not debug bind
+	     or source bind or any other statements.  */
+	  if (gimple_code (stmt) == GIMPLE_LABEL)
+	    {
+	      if (!label_allowed)
+		{
+		  error ("gimple label in the middle of a basic block");
+		  err2 = true;
+		}
+	    }
+	  else if (!gimple_debug_begin_stmt_p (stmt))
+	    label_allowed = false;
 
 	  err2 |= verify_gimple_stmt (stmt);
 	  err2 |= verify_location (&blocks, gimple_location (stmt));
@@ -5473,6 +5584,10 @@ gimple_verify_flow_info (void)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  tree label;
+
+	  if (is_gimple_debug (gsi_stmt (gsi)))
+	    continue;
+
 	  gimple *prev_stmt = stmt;
 
 	  stmt = gsi_stmt (gsi);
@@ -5542,7 +5657,7 @@ gimple_verify_flow_info (void)
 	    }
 	}
 
-      gsi = gsi_last_bb (bb);
+      gsi = gsi_last_nondebug_bb (bb);
       if (gsi_end_p (gsi))
 	continue;
 
@@ -5797,8 +5912,10 @@ gimple_block_label (basic_block bb)
   tree label;
   glabel *stmt;
 
-  for (i = s; !gsi_end_p (i); first = false, gsi_next (&i))
+  for (i = s; !gsi_end_p (i); gsi_next (&i))
     {
+      if (is_gimple_debug (gsi_stmt (i)))
+	continue;
       stmt = dyn_cast <glabel *> (gsi_stmt (i));
       if (!stmt)
 	break;
@@ -5809,6 +5926,7 @@ gimple_block_label (basic_block bb)
 	    gsi_move_before (&i, &s);
 	  return label;
 	}
+      first = false;
     }
 
   label = create_artificial_label (UNKNOWN_LOCATION);
@@ -5884,7 +6002,7 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
 	return ret;
     }
 
-  gsi = gsi_last_bb (bb);
+  gsi = gsi_last_nondebug_bb (bb);
   stmt = gsi_end_p (gsi) ? NULL : gsi_stmt (gsi);
 
   switch (stmt ? gimple_code (stmt) : GIMPLE_ERROR_MARK)
@@ -7322,6 +7440,47 @@ gather_ssa_name_hash_map_from (tree const &from, tree const &, void *data)
   return true;
 }
 
+/* Return LOOP_DIST_ALIAS call if present in BB.  */
+
+static gimple *
+find_loop_dist_alias (basic_block bb)
+{
+  gimple *g = last_stmt (bb);
+  if (g == NULL || gimple_code (g) != GIMPLE_COND)
+    return NULL;
+
+  gimple_stmt_iterator gsi = gsi_for_stmt (g);
+  gsi_prev (&gsi);
+  if (gsi_end_p (gsi))
+    return NULL;
+
+  g = gsi_stmt (gsi);
+  if (gimple_call_internal_p (g, IFN_LOOP_DIST_ALIAS))
+    return g;
+  return NULL;
+}
+
+/* Fold loop internal call G like IFN_LOOP_VECTORIZED/IFN_LOOP_DIST_ALIAS
+   to VALUE and update any immediate uses of it's LHS.  */
+
+void
+fold_loop_internal_call (gimple *g, tree value)
+{
+  tree lhs = gimple_call_lhs (g);
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  gimple *use_stmt;
+  gimple_stmt_iterator gsi = gsi_for_stmt (g);
+
+  update_call_from_tree (&gsi, value);
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	SET_USE (use_p, value);
+      update_stmt (use_stmt);
+    }
+}
+
 /* Move a single-entry, single-exit region delimited by ENTRY_BB and
    EXIT_BB to function DEST_CFUN.  The whole region is replaced by a
    single basic block in the original CFG and the new basic block is
@@ -7455,6 +7614,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   loops->state = LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
   set_loops_for_fn (dest_cfun, loops);
 
+  vec<loop_p, va_gc> *larray = get_loops (saved_cfun)->copy ();
+
   /* Move the outlined loop tree part.  */
   num_nodes = bbs.length ();
   FOR_EACH_VEC_ELT (bbs, i, bb)
@@ -7493,7 +7654,6 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 	  }
     }
 
-
   /* Adjust the number of blocks in the tree root of the outlined part.  */
   get_loop (dest_cfun, 0)->num_nodes = bbs.length () + 2;
 
@@ -7501,7 +7661,79 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   loop->aux = current_loops->tree_root;
   loop0->aux = current_loops->tree_root;
 
+  /* Fix up orig_loop_num.  If the block referenced in it has been moved
+     to dest_cfun, update orig_loop_num field, otherwise clear it.  */
+  struct loop *dloop;
+  signed char *moved_orig_loop_num = NULL;
+  FOR_EACH_LOOP_FN (dest_cfun, dloop, 0)
+    if (dloop->orig_loop_num)
+      {
+	if (moved_orig_loop_num == NULL)
+	  moved_orig_loop_num
+	    = XCNEWVEC (signed char, vec_safe_length (larray));
+	if ((*larray)[dloop->orig_loop_num] != NULL
+	    && get_loop (saved_cfun, dloop->orig_loop_num) == NULL)
+	  {
+	    if (moved_orig_loop_num[dloop->orig_loop_num] >= 0
+		&& moved_orig_loop_num[dloop->orig_loop_num] < 2)
+	      moved_orig_loop_num[dloop->orig_loop_num]++;
+	    dloop->orig_loop_num = (*larray)[dloop->orig_loop_num]->num;
+	  }
+	else
+	  {
+	    moved_orig_loop_num[dloop->orig_loop_num] = -1;
+	    dloop->orig_loop_num = 0;
+	  }
+      }
   pop_cfun ();
+
+  if (moved_orig_loop_num)
+    {
+      FOR_EACH_VEC_ELT (bbs, i, bb)
+	{
+	  gimple *g = find_loop_dist_alias (bb);
+	  if (g == NULL)
+	    continue;
+
+	  int orig_loop_num = tree_to_shwi (gimple_call_arg (g, 0));
+	  gcc_assert (orig_loop_num
+		      && (unsigned) orig_loop_num < vec_safe_length (larray));
+	  if (moved_orig_loop_num[orig_loop_num] == 2)
+	    {
+	      /* If we have moved both loops with this orig_loop_num into
+		 dest_cfun and the LOOP_DIST_ALIAS call is being moved there
+		 too, update the first argument.  */
+	      gcc_assert ((*larray)[dloop->orig_loop_num] != NULL
+			  && (get_loop (saved_cfun, dloop->orig_loop_num)
+			      == NULL));
+	      tree t = build_int_cst (integer_type_node,
+				      (*larray)[dloop->orig_loop_num]->num);
+	      gimple_call_set_arg (g, 0, t);
+	      update_stmt (g);
+	      /* Make sure the following loop will not update it.  */
+	      moved_orig_loop_num[orig_loop_num] = 0;
+	    }
+	  else
+	    /* Otherwise at least one of the loops stayed in saved_cfun.
+	       Remove the LOOP_DIST_ALIAS call.  */
+	    fold_loop_internal_call (g, gimple_call_arg (g, 1));
+	}
+      FOR_EACH_BB_FN (bb, saved_cfun)
+	{
+	  gimple *g = find_loop_dist_alias (bb);
+	  if (g == NULL)
+	    continue;
+	  int orig_loop_num = tree_to_shwi (gimple_call_arg (g, 0));
+	  gcc_assert (orig_loop_num
+		      && (unsigned) orig_loop_num < vec_safe_length (larray));
+	  if (moved_orig_loop_num[orig_loop_num])
+	    /* LOOP_DIST_ALIAS call remained in saved_cfun, if at least one
+	       of the corresponding loops was moved, remove it.  */
+	    fold_loop_internal_call (g, gimple_call_arg (g, 1));
+	}
+      XDELETEVEC (moved_orig_loop_num);
+    }
+  ggc_free (larray);
 
   /* Move blocks from BBS into DEST_CFUN.  */
   gcc_assert (bbs.length () >= 2);
@@ -9138,10 +9370,13 @@ pass_warn_function_return::execute (function *fun)
 	  if (EDGE_COUNT (bb->succs) == 0)
 	    {
 	      gimple *last = last_stmt (bb);
+	      const enum built_in_function ubsan_missing_ret
+		= BUILT_IN_UBSAN_HANDLE_MISSING_RETURN;
 	      if (last
-		  && (LOCATION_LOCUS (gimple_location (last))
-		      == BUILTINS_LOCATION)
-		  && gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE))
+		  && ((LOCATION_LOCUS (gimple_location (last))
+		       == BUILTINS_LOCATION
+		       && gimple_call_builtin_p (last, BUILT_IN_UNREACHABLE))
+		      || gimple_call_builtin_p (last, ubsan_missing_ret)))
 		{
 		  gimple_stmt_iterator gsi = gsi_for_stmt (last);
 		  gsi_prev_nondebug (&gsi);

@@ -826,7 +826,7 @@ generate_loops_for_partition (struct loop *loop, partition *partition,
   /* Remove stmts not in the PARTITION bitmap.  */
   bbs = get_loop_body_in_dom_order (loop);
 
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     for (i = 0; i < loop->num_nodes; i++)
       {
 	basic_block bb = bbs[i];
@@ -944,13 +944,16 @@ const_with_all_bytes_same (tree val)
 	    return 0;
 	  break;
 	case VECTOR_CST:
-	  unsigned int j;
-	  for (j = 0; j < VECTOR_CST_NELTS (val); ++j)
-	    if (const_with_all_bytes_same (VECTOR_CST_ELT (val, j)))
-	      break;
-	  if (j == VECTOR_CST_NELTS (val))
-	    return 0;
-	  break;
+	  {
+	    unsigned int count = vector_cst_encoded_nelts (val);
+	    unsigned int j;
+	    for (j = 0; j < count; ++j)
+	      if (const_with_all_bytes_same (VECTOR_CST_ENCODED_ELT (val, j)))
+		break;
+	    if (j == count)
+	      return 0;
+	    break;
+	  }
 	default:
 	  break;
 	}

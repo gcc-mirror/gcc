@@ -273,11 +273,13 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_loop_split);
+	  NEXT_PASS (pass_loop_jam);
 	  /* All unswitching, final value replacement and splitting can expose
 	     empty loops.  Remove them now.  */
 	  NEXT_PASS (pass_cd_dce);
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_loop_distribution);
+	  NEXT_PASS (pass_linterchange);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);
 	  PUSH_INSERT_PASSES_WITHIN (pass_graphite)
@@ -330,6 +332,7 @@ along with GCC; see the file COPYING3.  If not see
 	 run the full propagators, run a specialized pass which
 	 only examines PHIs to discover const/copy propagation
 	 opportunities.  */
+      NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce);

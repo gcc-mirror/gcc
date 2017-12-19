@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -51,7 +53,7 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
 	  if (type != CPP_EOF)
 	    warning (0, "junk at end of #pragma GCC memregs [0..16]");
 
-	  if (0 <= i && i <= 16)
+	  if (i >= 0 && i <= 16)
 	    {
 	      if (!ok_to_change_target_memregs)
 		{

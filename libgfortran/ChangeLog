@@ -1,3 +1,94 @@
+2017-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/81937
+	* io/list_read.c (next_char_internal): Don't attempt to read
+	from the internal unit stream if no bytes are left. Decrement
+	bytes_left in the right place.
+
+2017-12-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78549
+	* io/inquire.c (inquire_via_unit): Adjust test for existence for
+	pre-connected internal units.
+	* io/transfer.c (finalize_transfer): When done with a transfer
+	to internal units, free the format buffer and close the stream.
+	(st_read_done): Delete freeing the stream, now handled using
+	sclose in finalize_transfer. (st_write_done): Likewise.
+	* io/unit.c (get_unit): Return NULL for special reserved unit
+	numbers, signifying not accessible to the user.
+	(init_units): Insert the two special internal units into the
+	unit treap. This makes these unit structures available without
+	further allocations for later use by internal unit I/O. These
+	units are automatically deleted by normal program termination.
+	* io/unix.c (mem_close): Add a guard check to protect from double free.
+
+2017-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* Makefile.am: Add new files for character-valued
+	maxval and minval.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add new functions.
+	* m4/iforeach-s2.m4: New file.
+	* m4/ifunction-s2.m4: New file.
+	* m4/iparm.m4: Add intitval for minval and maxval.
+	* m4/maxval0s.m4: New file.
+	* m4/maxval1s.m4: New file.
+	* m4/minval0s.m4: New file.
+	* m4/minval1s.m4: New file.
+        * generated/maxval0_s1.c: New file.
+        * generated/maxval0_s4.c: New file.
+        * generated/maxval1_s1.c: New file.
+        * generated/maxval1_s4.c: New file.
+        * generated/minval0_s1.c: New file.
+        * generated/minval0_s4.c: New file.
+        * generated/minval1_s1.c: New file.
+        * generated/minval1_s4.c: New file.
+
+2017-12-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR libgfortran/83191
+	* io/transfer.c (list_formatted_read_scalar): Do not set
+	namelist_mode bit here. (namelist_read): Likewise.
+	(data_transfer_init): Clear the mode bit here.
+	(finalize_transfer): Do set the mode bit just before any calls
+	to namelist_read or namelist_write. It can now be referred to
+	in complex_write.
+	* io/write.c (write_complex): Suppress the leading blanks when
+	namelist_mode bit is not set to 1.
+
+2017-12-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/83225
+	* io/io.h (is_internal_unit): Use the unit_is_internal bit.
+	* io/transfer.c (data_transfer_init): Set the bit to true for
+	internal units. Use that bit for checks for internal unit
+	initializations.
+	* io/unit.c (insert_unit): As a precaution, set the
+	internal_unit_kind to zero when a unit structure is first created.
+
+2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* io/inquire.c (inquire_via_unit): Set recl to -1 for unconnected
+	units.
+	* io/io.h (default_recl): New variable.
+	* io/open.c (new_unit): Set recl to default_recl for sequential,
+	-2 for stream access.
+	* io/transfer.c (read_block_form): Test against default_recl
+	instead of DEFAULT_RECL.
+	(write_block): Likewise.
+	* io/unit.c (init_units): Calculate max_offset, default_recl.
+	* libgfortran.h (DEFAULT_RECL): Remove.
+	* runtime/environ.c: Remove GFORTRAN_DEFAULT_RECL.
+
+2017-11-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/83168
+	* io/write.c (select_string): Bump size by one to avoid
+	overrun.
+
 2017-11-24  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/36313

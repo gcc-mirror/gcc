@@ -4888,6 +4888,30 @@ and operand 1 is parallel containing values for individual fields.  The
 the vector mode @var{m}, or a vector mode with the same element mode and
 smaller number of elements.
 
+@cindex @code{vec_duplicate@var{m}} instruction pattern
+@item @samp{vec_duplicate@var{m}}
+Initialize vector output operand 0 so that each element has the value given
+by scalar input operand 1.  The vector has mode @var{m} and the scalar has
+the mode appropriate for one element of @var{m}.
+
+This pattern only handles duplicates of non-constant inputs.  Constant
+vectors go through the @code{mov@var{m}} pattern instead.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_series@var{m}} instruction pattern
+@item @samp{vec_series@var{m}}
+Initialize vector output operand 0 so that element @var{i} is equal to
+operand 1 plus @var{i} times operand 2.  In other words, create a linear
+series whose base value is operand 1 and whose step is operand 2.
+
+The vector output has mode @var{m} and the scalar inputs have the mode
+appropriate for one element of @var{m}.  This pattern is not used for
+floating-point vectors, in order to avoid having to specify the
+rounding behavior for @var{i} > 1.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for
@@ -7890,7 +7914,7 @@ are not valid.
 
 The splitter is allowed to split jump instructions into sequence of
 jumps or create new jumps in while splitting non-jump instructions.  As
-the central flowgraph and branch prediction information needs to be updated,
+the control flow graph and branch prediction information needs to be updated,
 several restriction apply.
 
 Splitting of jump instruction into sequence that over by another jump

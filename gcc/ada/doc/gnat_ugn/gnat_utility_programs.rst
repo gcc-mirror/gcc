@@ -588,8 +588,8 @@ The following switches are available for ``gnatxref``:
 :switch:`--ext={extension}`
   Specify an alternate ali file extension. The default is ``ali`` and other
   extensions (e.g. ``gli`` for C/C++ sources) may be specified via this switch.
-  Note that if this switch overrides the default, which means that only the
-  new extension will be considered.
+  Note that if this switch overrides the default, only the new extension will
+  be considered.
 
 
 .. index:: --RTS (gnatxref)
@@ -776,9 +776,8 @@ The following switches are available:
 
 :switch:`--ext={extension}`
   Specify an alternate ali file extension. The default is ``ali`` and other
-  extensions (e.g. ``gli`` for C/C++ sources when using :switch:`-fdump-xref`)
-  may be specified via this switch. Note that if this switch overrides the
-  default, which means that only the new extension will be considered.
+  extensions may be specified via this switch. Note that if this switch
+  overrides the default, only the new extension will be considered.
 
 
 .. index:: --RTS (gnatfind)
@@ -1400,6 +1399,11 @@ Alternatively, you may run the script using the following command line:
          Text file ``file`` may contain empty lines that are ignored.
          Each nonempty line should contain the name of an existing file.
          Several such switches may be specified simultaneously.
+
+     :switch:`--ignore={filename}`
+        Do not process the sources listed in a specified file. This option cannot
+        be used in incremental mode.
+
 
      :switch:`-q`
          Quiet
@@ -2754,6 +2758,12 @@ Alternatively, you may run the script using the following command line:
     Several such switches may be specified simultaneously.
 
 
+  .. index:: --ignore (gnatmetric)
+
+  :switch:`--ignore={filename}`
+    Do not process the sources listed in a specified file.
+
+
   .. index:: -j (gnatmetric)
 
   :switch:`-j{n}`
@@ -3465,6 +3475,13 @@ Alternatively, you may run the script using the following command line:
      Text file ``file`` may contain empty lines that are ignored.
      Each nonempty line should contain the name of an existing file.
      Several such switches may be specified simultaneously.
+
+
+  .. index:: --ignore (gnatpp)
+
+  :switch:`--ignore={filename}`
+    Do not process the sources listed in a specified file. This option cannot
+    be used in incremental mode.
 
 
    .. index:: -j (gnatpp)
@@ -4294,6 +4311,11 @@ Alternatively, you may run the script using the following command line:
     Text file ``file`` may contain empty lines that are ignored.
     Each nonempty line should contain the name of an existing file.
     Several such switches may be specified simultaneously.
+
+    .. index:: --ignore (gnattest)
+
+  :switch:`--ignore={filename}`
+    Do not process the sources listed in a specified file.
 
     .. index:: --RTS (gnattest)
 

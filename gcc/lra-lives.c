@@ -928,7 +928,18 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       for (reg = curr_static_id->hard_regs; reg != NULL; reg = reg->next)
 	if (reg->type == OP_OUT
 	    && reg_early_clobber_p (reg, n_alt) && ! reg->subreg_p)
-	  make_hard_regno_dead (reg->regno);
+	  {
+	    struct lra_insn_reg *reg2;
+	    
+	    /* We can have early clobbered non-operand hard reg and
+	       the same hard reg as an insn input.  Don't make hard
+	       reg dead before the insns.  */
+	    for (reg2 = curr_id->regs; reg2 != NULL; reg2 = reg2->next)
+	      if (reg2->type != OP_OUT && reg2->regno == reg->regno)
+		break;
+	    if (reg2 == NULL)
+	      make_hard_regno_dead (reg->regno);
+	  }
 
       if (need_curr_point_incr)
 	next_program_point (curr_point, freq);

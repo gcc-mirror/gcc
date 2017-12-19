@@ -167,7 +167,10 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       /* Except for variables which we can optimize to its initializer.  */
       if (VAR_P (expr) && !lval && (optimize || in_init))
 	{
-	  ret = decl_constant_value (expr);
+	  if (in_init)
+	    ret = decl_constant_value_1 (expr);
+	  else
+	    ret = decl_constant_value (expr);
 	  /* Avoid unwanted tree sharing between the initializer and current
 	     function's body where the tree can be modified e.g. by the
 	     gimplifier.  */
@@ -431,6 +434,7 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       goto unary;
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case VIEW_CONVERT_EXPR:
       op0_lval = lval;
       /* FALLTHRU */
     case INDIRECT_REF:
@@ -438,7 +442,6 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     case FLOAT_EXPR:
     CASE_CONVERT:
     case ADDR_SPACE_CONVERT_EXPR:
-    case VIEW_CONVERT_EXPR:
     case NON_LVALUE_EXPR:
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:

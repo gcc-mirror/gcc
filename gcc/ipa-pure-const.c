@@ -332,7 +332,7 @@ check_decl (funct_state local,
     {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)
-        fprintf (dump_file, "    Volatile operand is not const/pure");
+        fprintf (dump_file, "    Volatile operand is not const/pure\n");
       return;
     }
 
@@ -446,7 +446,7 @@ state_from_flags (enum pure_const_state_e *state, bool *looping,
     {
       *looping = true;
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " looping");
+	fprintf (dump_file, " looping\n");
     }
   if (flags & ECF_CONST)
     {

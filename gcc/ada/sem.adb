@@ -515,6 +515,12 @@ package body Sem is
          when N_Record_Representation_Clause =>
             Analyze_Record_Representation_Clause (N);
 
+         when N_Reduction_Expression =>
+            Analyze_Reduction_Expression (N);
+
+         when N_Reduction_Expression_Parameter =>
+            Analyze_Reduction_Expression_Parameter (N);
+
          when N_Reference =>
             Analyze_Reference (N);
 

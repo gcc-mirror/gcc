@@ -79,7 +79,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
-#include "cilk.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
 #include "stringpool.h"
@@ -444,15 +443,16 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       && !e->call_stmt_cannot_inline_p
       && ((clause_ptr && info->conds) || known_vals_ptr || known_contexts_ptr))
     {
-      struct ipa_node_params *parms_info;
+      struct ipa_node_params *caller_parms_info, *callee_pi;
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
       struct ipa_call_summary *es = ipa_call_summaries->get (e);
       int i, count = ipa_get_cs_argument_count (args);
 
       if (e->caller->global.inlined_to)
-	parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
+	caller_parms_info = IPA_NODE_REF (e->caller->global.inlined_to);
       else
-	parms_info = IPA_NODE_REF (e->caller);
+	caller_parms_info = IPA_NODE_REF (e->caller);
+      callee_pi = IPA_NODE_REF (e->callee);
 
       if (count && (info->conds || known_vals_ptr))
 	known_vals.safe_grow_cleared (count);
@@ -464,7 +464,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
       for (i = 0; i < count; i++)
 	{
 	  struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, i);
-	  tree cst = ipa_value_from_jfunc (parms_info, jf);
+	  tree cst = ipa_value_from_jfunc (caller_parms_info, jf,
+					   ipa_get_type (callee_pi, i));
 
 	  if (!cst && e->call_stmt
 	      && i < (int)gimple_call_num_args (e->call_stmt))
@@ -483,8 +484,8 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 	    known_vals[i] = error_mark_node;
 
 	  if (known_contexts_ptr)
-	    (*known_contexts_ptr)[i] = ipa_context_from_jfunc (parms_info, e,
-							       i, jf);
+	    (*known_contexts_ptr)[i]
+	      = ipa_context_from_jfunc (caller_parms_info, e, i, jf);
 	  /* TODO: When IPA-CP starts propagating and merging aggregate jump
 	     functions, use its knowledge of the caller too, just like the
 	     scalar case above.  */
@@ -891,8 +892,6 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	fprintf (f, " always_inline");
       if (s->inlinable)
 	fprintf (f, " inlinable");
-      if (s->contains_cilk_spawn)
-	fprintf (f, " contains_cilk_spawn");
       if (s->fp_expressions)
 	fprintf (f, " fp_expression");
       fprintf (f, "\n  global time:     %f\n", s->time.to_double ());
@@ -2439,8 +2438,6 @@ compute_fn_summary (struct cgraph_node *node, bool early)
        else
 	 info->inlinable = tree_inlinable_function_p (node->decl);
 
-       info->contains_cilk_spawn = fn_contains_cilk_spawn_p (cfun);
-
        /* Type attributes can use parameter indices to describe them.  */
        if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
 	 node->local.can_change_signature = false;
@@ -3263,7 +3260,6 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 
       bp = streamer_read_bitpack (&ib);
       info->inlinable = bp_unpack_value (&bp, 1);
-      info->contains_cilk_spawn = bp_unpack_value (&bp, 1);
       info->fp_expressions = bp_unpack_value (&bp, 1);
 
       count2 = streamer_read_uhwi (&ib);
@@ -3417,7 +3413,7 @@ ipa_fn_summary_write (void)
 	  info->time.stream_out (ob);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, info->inlinable, 1);
-	  bp_pack_value (&bp, info->contains_cilk_spawn, 1);
+	  bp_pack_value (&bp, false, 1);
 	  bp_pack_value (&bp, info->fp_expressions, 1);
 	  streamer_write_bitpack (&bp);
 	  streamer_write_uhwi (ob, vec_safe_length (info->conds));

@@ -1126,46 +1126,55 @@ input_function (tree fn_decl, struct data_in *data_in,
 	     Similarly remove all IFN_*SAN_* internal calls   */
 	  if (!flag_wpa)
 	    {
-	      if (!MAY_HAVE_DEBUG_STMTS && is_gimple_debug (stmt))
+	      if (is_gimple_debug (stmt)
+		  && (gimple_debug_nonbind_marker_p (stmt)
+		      ? !MAY_HAVE_DEBUG_MARKER_STMTS
+		      : !MAY_HAVE_DEBUG_BIND_STMTS))
 		remove = true;
 	      if (is_gimple_call (stmt)
 		  && gimple_call_internal_p (stmt))
 		{
+		  bool replace = false;
 		  switch (gimple_call_internal_fn (stmt))
 		    {
 		    case IFN_UBSAN_NULL:
 		      if ((flag_sanitize
 			  & (SANITIZE_NULL | SANITIZE_ALIGNMENT)) == 0)
-			remove = true;
+			replace = true;
 		      break;
 		    case IFN_UBSAN_BOUNDS:
 		      if ((flag_sanitize & SANITIZE_BOUNDS) == 0)
-			remove = true;
+			replace = true;
 		      break;
 		    case IFN_UBSAN_VPTR:
 		      if ((flag_sanitize & SANITIZE_VPTR) == 0)
-			remove = true;
+			replace = true;
 		      break;
 		    case IFN_UBSAN_OBJECT_SIZE:
 		      if ((flag_sanitize & SANITIZE_OBJECT_SIZE) == 0)
-			remove = true;
+			replace = true;
 		      break;
 		    case IFN_UBSAN_PTR:
 		      if ((flag_sanitize & SANITIZE_POINTER_OVERFLOW) == 0)
-			remove = true;
+			replace = true;
 		      break;
 		    case IFN_ASAN_MARK:
 		      if ((flag_sanitize & SANITIZE_ADDRESS) == 0)
-			remove = true;
+			replace = true;
 		      break;
 		    case IFN_TSAN_FUNC_EXIT:
 		      if ((flag_sanitize & SANITIZE_THREAD) == 0)
-			remove = true;
+			replace = true;
 		      break;
 		    default:
 		      break;
 		    }
-		  gcc_assert (!remove || gimple_call_lhs (stmt) == NULL_TREE);
+		  if (replace)
+		    {
+		      gimple_call_set_internal_fn (as_a <gcall *> (stmt),
+						   IFN_NOP);
+		      update_stmt (stmt);
+		    }
 		}
 	    }
 	  if (remove)
@@ -1180,6 +1189,13 @@ input_function (tree fn_decl, struct data_in *data_in,
 	    {
 	      gsi_next (&bsi);
 	      stmts[gimple_uid (stmt)] = stmt;
+
+	      /* Remember that the input function has begin stmt
+		 markers, so that we know to expect them when emitting
+		 debug info.  */
+	      if (!cfun->debug_nonbind_markers
+		  && gimple_debug_nonbind_marker_p (stmt))
+		cfun->debug_nonbind_markers = true;
 	    }
 	}
     }

@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -9794,7 +9796,7 @@ som_output_comdat_data_section_asm_op (const void *data)
   output_section_asm_op (data);
 }
 
-/* Implement TARGET_ASM_INITIALIZE_SECTIONS  */
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
 
 static void
 pa_som_asm_init_sections (void)
@@ -10544,9 +10546,16 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
       if (!TARGET_DISABLE_INDEXING
 	  && GET_CODE (index) == MULT
-	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
+	  /* Only accept base operands with the REG_POINTER flag prior to
+	     reload on targets with non-equivalent space registers.  */
+	  && (TARGET_NO_SPACE_REGS
+	      || (base == XEXP (x, 1)
+		  && (reload_completed
+		      || (reload_in_progress && HARD_REGISTER_P (base))
+		      || REG_POINTER (base))))
 	  && REG_P (XEXP (index, 0))
 	  && GET_MODE (XEXP (index, 0)) == Pmode
+	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
 	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (XEXP (index, 0))
 		     : REG_OK_FOR_INDEX_P (XEXP (index, 0)))
 	  && GET_CODE (XEXP (index, 1)) == CONST_INT

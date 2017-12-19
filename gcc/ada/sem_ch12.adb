@@ -4611,6 +4611,19 @@ package body Sem_Ch12 is
             Analyze (Act_Decl);
             Set_Unit (Parent (N), N);
             Set_Body_Required (Parent (N), False);
+
+            --  We never need elaboration checks on instantiations, since by
+            --  definition, the body instantiation is elaborated at the same
+            --  time as the spec instantiation.
+
+            if Legacy_Elaboration_Checks then
+               Set_Kill_Elaboration_Checks       (Act_Decl_Id);
+               Set_Suppress_Elaboration_Warnings (Act_Decl_Id);
+            end if;
+         end if;
+
+         if Legacy_Elaboration_Checks then
+            Check_Elab_Instantiation (N);
          end if;
 
          --  Save the scenario for later examination by the ABE Processing
@@ -5300,9 +5313,17 @@ package body Sem_Ch12 is
          Set_Is_Eliminated (Anon_Id, Is_Eliminated (Act_Decl_Id));
 
          if Nkind (Parent (N)) = N_Compilation_Unit then
-            Set_Kill_Elaboration_Checks       (Act_Decl_Id);
-            Set_Is_Compilation_Unit (Anon_Id);
 
+            --  In compilation unit case, kill elaboration checks on the
+            --  instantiation, since they are never needed - the body is
+            --  instantiated at the same point as the spec.
+
+            if Legacy_Elaboration_Checks then
+               Set_Kill_Elaboration_Checks       (Act_Decl_Id);
+               Set_Suppress_Elaboration_Warnings (Act_Decl_Id);
+            end if;
+
+            Set_Is_Compilation_Unit (Anon_Id);
             Set_Cunit_Entity (Current_Sem_Unit, Pack_Id);
          end if;
 
@@ -5650,6 +5671,12 @@ package body Sem_Ch12 is
          if SPARK_Mode /= On then
             Set_Ignore_SPARK_Mode_Pragmas (Act_Decl_Id);
             Set_Ignore_SPARK_Mode_Pragmas (Anon_Id);
+         end if;
+
+         if Legacy_Elaboration_Checks
+           and then not Is_Intrinsic_Subprogram (Gen_Unit)
+         then
+            Check_Elab_Instantiation (N);
          end if;
 
          --  Save the scenario for later examination by the ABE Processing

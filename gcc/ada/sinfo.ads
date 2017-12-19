@@ -1844,11 +1844,24 @@ package Sinfo is
    --    finalization actions in initialization contexts.
 
    --  Is_Known_Guaranteed_ABE (Flag18-Sem)
-   --    Present in call markers and instantiations. Set when the elaboration
-   --    or evaluation of the scenario results in a guaranteed ABE. The flag
-   --    is used to suppress the instantiation of generic bodies because gigi
-   --    cannot handle certain forms of premature instantiation, as well as to
-   --    prevent the reexamination of the node by the ABE Processing phase.
+   --    NOTE: this flag is shared between the legacy ABE mechanism and the
+   --    default ABE mechanism.
+   --
+   --    Present in the following nodes:
+   --
+   --      call marker
+   --      formal package declaration
+   --      function call
+   --      function instantiation
+   --      package instantiation
+   --      procedure call statement
+   --      procedure instantiation
+   --
+   --    Set when the elaboration or evaluation of the scenario results in
+   --    a guaranteed ABE. The flag is used to suppress the instantiation of
+   --    generic bodies because gigi cannot handle certain forms of premature
+   --    instantiation, as well as to prevent the reexamination of the node by
+   --    the ABE Processing phase.
 
    --  Is_Machine_Number (Flag11-Sem)
    --    This flag is set in an N_Real_Literal node to indicate that the value
@@ -2116,6 +2129,16 @@ package Sinfo is
    --    used for a tagged assignment. This is used in init procs and aggregate
    --    expansions where the generated assignments are initializations, not
    --    real assignments.
+
+   --  No_Elaboration_Check (Flag4-Sem)
+   --    NOTE: this flag is relevant only for the legacy ABE mechanism and
+   --    should not be used outside of that context.
+   --
+   --    Present in N_Function_Call and N_Procedure_Call_Statement. Indicates
+   --    that no elaboration check is needed on the call, because it appears in
+   --    the context of a local Suppress pragma. This is used on calls within
+   --    task bodies, where the actual elaboration checks are applied after
+   --    analysis, when the local scope stack is not present
 
    --  No_Entities_Ref_In_Spec (Flag8-Sem)
    --    Present in N_With_Clause nodes. Set if the with clause is on the
@@ -4707,7 +4730,7 @@ package Sinfo is
       --  since the expander converts case expressions into case statements.
 
       ---------------------------------
-      -- 4.5.9 Quantified Expression --
+      -- 4.5.8 Quantified Expression --
       ---------------------------------
 
       --  QUANTIFIED_EXPRESSION ::=
@@ -4725,6 +4748,31 @@ package Sinfo is
       --  Loop_Parameter_Specification (Node4)
       --  Condition (Node1)
       --  All_Present (Flag15)
+
+      --------------------------------
+      -- 4.5.9 Reduction Expression --
+      --------------------------------
+
+      --  REDUCTION_EXPRESSION ::=
+      --    for LOOP_PARAMETER_SPECIFICATION => COMBINER_FUNCTION_CALL
+      --    for ITERATOR_SPECIFIATION => COMBINER_FUNCTION_CALL
+
+      --  At most one of (Iterator_Specification, Loop_Parameter_Specification)
+      --  is present at a time, in which case the other one is empty.
+
+      --  N_Reduction_Expression
+      --  Sloc points to FOR
+      --  Iterator_Specification (Node2)
+      --  Expression (Node3)
+      --  Loop_Parameter_Specification (Node4)
+      --  plus fields for expression
+
+      --  COMBINER_FUNCTION_CALL => FUNCTION_CALL
+
+      --  A Combiner_Function_Call is either a function call (including an
+      --  operator) with one reduction expression parameter, appearing either
+      --  as a left operand or as the first actual in the parameter list. In
+      --  a reduction expression this is represented as an expression.
 
       --------------------------
       -- 4.6  Type Conversion --
@@ -5515,7 +5563,9 @@ package Sinfo is
       --  Is_Elaboration_Checks_OK_Node (Flag1-Sem)
       --  Is_SPARK_Mode_On_Node (Flag2-Sem)
       --  Is_Elaboration_Warnings_OK_Node (Flag3-Sem)
+      --  No_Elaboration_Check (Flag4-Sem)
       --  Do_Tag_Check (Flag13-Sem)
+      --  Is_Known_Guaranteed_ABE (Flag18-Sem)
       --  plus fields for expression
 
       --  If any IN parameter requires a range check, then the corresponding
@@ -5546,9 +5596,11 @@ package Sinfo is
       --  Is_Elaboration_Checks_OK_Node (Flag1-Sem)
       --  Is_SPARK_Mode_On_Node (Flag2-Sem)
       --  Is_Elaboration_Warnings_OK_Node (Flag3-Sem)
+      --  No_Elaboration_Check (Flag4-Sem)
       --  Is_Expanded_Build_In_Place_Call (Flag11-Sem)
       --  Do_Tag_Check (Flag13-Sem)
       --  No_Side_Effect_Removal (Flag17-Sem)
+      --  Is_Known_Guaranteed_ABE (Flag18-Sem)
       --  plus fields for expression
 
       --------------------------------
@@ -5581,7 +5633,18 @@ package Sinfo is
       -- 6.4  Actual Parameter --
       ---------------------------
 
-      --  EXPLICIT_ACTUAL_PARAMETER ::= EXPRESSION | variable_NAME
+      --  EXPLICIT_ACTUAL_PARAMETER ::=
+      --    EXPRESSION | variable_NAME | REDUCTION_EXPRESSION_PARAMETER
+
+      ------------------------------------------
+      -- 6.4.6 Reduction_Expression_Parameter --
+      ------------------------------------------
+
+      --  REDUCTION_EXPRESSION_PARAMETER ::= <> | < EXPRESSION >
+
+      --  N_Reduction_Expression_Parameter
+      --  Expression (Node3) (Set to Empty if no expression present)
+      --  plus fields for expression
 
       ---------------------------
       -- 6.5  Return Statement --
@@ -7422,6 +7485,7 @@ package Sinfo is
       --   empty generic actual part)
       --  Box_Present (Flag15)
       --  Instance_Spec (Node5-Sem)
+      --  Is_Known_Guaranteed_ABE (Flag18-Sem)
 
       --------------------------------------
       -- 12.7  Formal Package Actual Part --
@@ -8704,6 +8768,8 @@ package Sinfo is
       N_Null,
       N_Qualified_Expression,
       N_Quantified_Expression,
+      N_Reduction_Expression,
+      N_Reduction_Expression_Parameter,
       N_Aggregate,
       N_Allocator,
       N_Case_Expression,
@@ -9940,6 +10006,9 @@ package Sinfo is
    function No_Ctrl_Actions
      (N : Node_Id) return Boolean;    -- Flag7
 
+   function No_Elaboration_Check
+     (N : Node_Id) return Boolean;    -- Flag4
+
    function No_Entities_Ref_In_Spec
      (N : Node_Id) return Boolean;    -- Flag8
 
@@ -11038,6 +11107,9 @@ package Sinfo is
    procedure Set_No_Ctrl_Actions
      (N : Node_Id; Val : Boolean := True);    -- Flag7
 
+   procedure Set_No_Elaboration_Check
+     (N : Node_Id; Val : Boolean := True);    -- Flag4
+
    procedure Set_No_Entities_Ref_In_Spec
      (N : Node_Id; Val : Boolean := True);    -- Flag8
 
@@ -12087,6 +12159,20 @@ package Sinfo is
         3 => False,   --  unused
         4 => True,    --  Loop_Parameter_Specification (Node4)
         5 => False),  --  Etype (Node5-Sem)
+
+     N_Reduction_Expression =>
+       (1 => False,   --  unused
+        2 => True,    --  Iterator_Specification (Node2)
+        3 => True,    --  Expression (Node3)
+        4 => True,    --  Loop_Parameter_Specification (Node4)
+        5 => False),  --  Etype (Node5-Sem)
+
+     N_Reduction_Expression_Parameter =>
+       (1 => False,    --  unused
+        2 => False,    --  unused
+        3 => True,     --  Expression (Node3)
+        4 => False,    --  unused
+        5 => False),   --  Etype (Node5-Sem)
 
      N_Allocator =>
        (1 => False,   --  Storage_Pool (Node1-Sem)
@@ -13444,6 +13530,7 @@ package Sinfo is
    pragma Inline (Next_Rep_Item);
    pragma Inline (Next_Use_Clause);
    pragma Inline (No_Ctrl_Actions);
+   pragma Inline (No_Elaboration_Check);
    pragma Inline (No_Entities_Ref_In_Spec);
    pragma Inline (No_Initialization);
    pragma Inline (No_Minimize_Eliminate);
@@ -13806,6 +13893,7 @@ package Sinfo is
    pragma Inline (Set_Next_Rep_Item);
    pragma Inline (Set_Next_Use_Clause);
    pragma Inline (Set_No_Ctrl_Actions);
+   pragma Inline (Set_No_Elaboration_Check);
    pragma Inline (Set_No_Entities_Ref_In_Spec);
    pragma Inline (Set_No_Initialization);
    pragma Inline (Set_No_Minimize_Eliminate);

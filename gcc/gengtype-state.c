@@ -2206,7 +2206,7 @@ read_state_pair (pair_p *current)
 	  next_state_tokens (1);
 	  read_state_type (&((*current)->type));
 	  read_state_fileloc (&((*current)->line));
-	  read_state_options (&((*current)->opt));;
+	  read_state_options (&((*current)->opt));
 	  t0 = peek_state_token (0);
 	  if (state_token_kind (t0) == STOK_RIGHTPAR)
 	    {

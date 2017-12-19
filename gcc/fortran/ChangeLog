@@ -1,3 +1,203 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* scanner.c (preprocessor_line): Replace Yoda conditions with typical
+	order conditions.
+	* dependency.c (check_section_vs_section): Likewise.
+	* trans-array.c (gfc_conv_expr_descriptor): Likewise.
+
+2017-12-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* decl.c (gfc_match_implicit_none): Use GFC_STD_F2018 instead of
+	GFC_STD_F2015.
+	* error.c (gfc_notify_std): Add GFC_STD_F2018{_DEL,_OBS} to
+	switch.
+	* gfortran.texi: Document -std=f2018.
+	* interface.c (compare_parameter): Fix comment.
+	* invoke.texi: Document -std=f2018.
+	* lang.opt: Add -std=f2018 argumnet.
+	* libgfortran.h (GFC_STD_F2015): Rename to GFC_STD_F0218, use
+	separate flag bit.
+	(GFC_STD_F2018_DEL): New macro.
+	(GFC_STD_F2018_OBS): Likewise.
+	* match.c (gfc_match_stopcode): Use GFC_STD_F2018.
+	* options.c (set_default_std_flags): Add F2018 flags to defaults.
+	(gfc_handle_option): Set options for -std=f2018.
+
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* f95-lang.c (gfc_attribute_table): Swap affects_type_identity
+	and handler fields, adjust comments.
+
+2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle_end/79538
+	* class.c (gfc_build_class_symbol): Replace call to
+	sprintf with xasprintf to avoid format-overflow warning.
+	(generate_finalization_wrapper): Likewise.
+	(gfc_find_derived_vtab): Likewise.
+	(find_intrinsic_vtab): Likewise.
+
+2017-12-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi (MAXLOC): Remove double description
+	of return value.
+	(MINLOC): Likewise.
+
+2017-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi (MAXLOC): Update documentation for
+	character arrays and KIND argument.
+	(MINLOC): Likewise.
+
+2017-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45689
+	* simplify.c (min_max_choose): Add prototype.
+	(gfc_count): Format correctly.
+	(simplify_transformation): Pass array argument to init_result_expr.
+	(gfc_simplify_minval_maxval): Remove.
+	(gfc_min): New function.
+	(gfc_simplify_minval): Call simplify_transformation.
+	(gfc_max): New function.
+	(gfc_simplify_maxval): Call simplify_transformation.
+
+2017-12-10  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/53478
+	* gfortran.h (gfc_find_case_gsymbol): New prototype.
+	* symbol.c (gfc_find_case_gsymbol): New procedure, case
+	insensistive version of gfc_find_gsymbol.
+	* resolve.c (resolve_common_blocks): Use it.
+	Replace %s with %qs where needed.
+
+2017-12-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82934
+	PR fortran/83318
+	* match.c (gfc_match_allocate): Enforce F2008:C631.
+
+2017-12-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83316
+	* arith.c (gfc_character2character): New function.
+	* arith.h: Add prototype.
+	* simplify.c (gfc_convert_constant): Handle character type.
+
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	* f95-lang.c (gfc_attribute_table): Initialize new member of struct
+	attribute_spec.
+
+2017-12-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/36313
+	* check.c (gfc_check_minval_maxval): Use
+	int_orLreal_or_char_check_f2003 for array argument.
+	* iresolve.c (gfc_resolve_maxval): Insert number in
+	function name for character arguments.
+	(gfc_resolve_minval): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxloc):
+	Fix comment.
+	(gfc_conv_intrinsic_minmaxval): Resort arguments and call library
+	function if dealing with a character function.
+
+2017-12-01  Qing Zhao  <qing.zhao@oracle.com>
+
+	* decl.c (gfc_get_pdt_instance): Adjust the call to sprintf
+	to avoid the same buffer being both source and destination.
+
+2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83224
+	* frontend-passes.c (create_var): Also handle
+	character arrays, handling deferred lenghts.
+
+2017-12-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82605
+	* resolve.c (get_pdt_constructor): Initialize 'cons' to NULL.
+	(resolve_pdt): Correct typo in prior comment. Emit an error if
+	any parameters are deferred and the object is neither pointer
+	nor allocatable.
+
+	PR fortran/82606
+	* decl.c (gfc_get_pdt_instance): Continue if the parameter sym
+	is not present or has no name. Select the parameter by name
+	of component, rather than component order. Remove all the other
+	manipulations of 'tail' when building the pdt instance.
+	(gfc_match_formal_arglist): Emit and error if a star is picked
+	up in a PDT decl parameter list.
+
+	PR fortran/82622
+	* trans-array.c (set_loop_bounds): If a GFC_SS_COMPONENT has an
+	info->end, use it rather than falling through to
+	gcc_unreachable.
+	(structure_alloc_comps): Check that param->name is non-null
+	before comparing with the component name.
+	* trans-decl.c (gfc_get_symbol_decl): Do not use the static
+	initializer for PDT symbols.
+	(gfc_init_default_dt): Do nothing for PDT symbols.
+	* trans-io.c (transfer_array_component): Parameterized array
+	components use the descriptor ubound since the shape is not
+	available.
+
+	PR fortran/82719
+	PR fortran/82720
+	* trans-expr.c (gfc_conv_component_ref): Do not use the charlen
+	backend_decl of pdt strings. Use the hidden component instead.
+	* trans-io.c (transfer_expr): Do not do IO on "hidden" string
+	lengths. Use the hidden string length for pdt string transfers
+	by adding it to the se structure. When finished nullify the
+	se string length.
+
+	PR fortran/82866
+	* decl.c (gfc_match_formal_arglist): If a name is not found or
+	star is found, while reading a type parameter list, emit an
+	immediate error.
+	(gfc_match_derived_decl): On reading a PDT parameter list, on
+	failure to match call gfc_error_recovery.
+
+	PR fortran/82978
+	* decl.c (build_struct): Character kind defaults to 1, so use
+	kind_expr whatever is the set value.
+	(gfc_get_pdt_instance): Ditto.
+	* trans-array.c (structure_alloc_comps): Copy the expression
+	for the PDT string length before parameter substitution. Use
+	this expression for evaluation and free it after use.
+
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/79153
+	* match.c (gfc_match): Add FALLTHRU comment to avoid
+	-Wimplicit-fallthrough warning.
+
+2017-12-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83224
+	* frontend-passes.c (realloc_string_callback): Handle
+	case for which the RHS is an array expression.
+
+2017-11-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* gfortran.texi: Remove mentions of GFORTRAN_DEFAULT_RECL.
+
+2017-11-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83021
+	* resolve.c (resolve_component): Only escape for use assciated
+	vtypes if the current namespace has no proc_name and is most
+	particularly block data.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (gfc_trans_entry_master_switch): Build SWITCH_EXPR
+	using fold_build2_loc instead of fold_build3_loc.
+	* trans-io.c (io_result): Likewise.
+	* trans-stmt.c (gfc_trans_integer_select, gfc_trans_character_select):
+	Likewise.
+
 2017-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/81304

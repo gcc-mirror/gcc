@@ -1850,7 +1850,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 This is in keeping with the object case of gnat_to_gnu_entity.  */
       else if ((TREE_CODE (gnu_prefix) != TYPE_DECL
 		&& !(TYPE_IS_PADDING_P (gnu_type)
-		     && TREE_CODE (gnu_expr) == COMPONENT_REF))
+		     && TREE_CODE (gnu_expr) == COMPONENT_REF
+		     && pad_type_has_rm_size (gnu_type)))
 	       || attribute == Attr_Object_Size
 	       || attribute == Attr_Max_Size_In_Storage_Elements)
 	{
@@ -2625,8 +2626,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
   /* Now emit a definition of the label the cases branch to, if any.  */
   if (may_fallthru)
     add_stmt (build1 (LABEL_EXPR, void_type_node, gnu_label));
-  gnu_result
-    = build3 (SWITCH_EXPR, gnu_type, gnu_expr, end_stmt_group (), NULL_TREE);
+  gnu_result = build2 (SWITCH_EXPR, gnu_type, gnu_expr, end_stmt_group ());
 
   return gnu_result;
 }
@@ -3190,7 +3190,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
 	  /* Note that loop unswitching can only be applied a small number of
 	     times to a given loop (PARAM_MAX_UNSWITCH_LEVEL default to 3).  */
-	  if (0 < n_remaining_checks && n_remaining_checks <= 3
+	  if (n_remaining_checks > 0 && n_remaining_checks <= 3
 	      && optimize > 1 && !optimize_size)
 	    FOR_EACH_VEC_ELT (*gnu_loop_info->checks, i, rci)
 	      if (rci->invariant_cond != boolean_false_node)
@@ -3774,7 +3774,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     }
 
   /* Set the line number in the decl to correspond to that of the body.  */
-  Sloc_to_locus (Sloc (gnat_node), &locus);
+  if (!Sloc_to_locus (Sloc (gnat_node), &locus))
+    locus = input_location;
   DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
 
   /* If the body comes from an expression function, arrange it to be inlined
@@ -4305,10 +4306,16 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       return call_expr;
     }
 
-  /* For a call to a nested function, check the inlining status.  */
-  if (TREE_CODE (gnu_subprog) == FUNCTION_DECL
-      && decl_function_context (gnu_subprog))
-    check_inlining_for_nested_subprog (gnu_subprog);
+  if (TREE_CODE (gnu_subprog) == FUNCTION_DECL)
+    {
+      /* For a call to a nested function, check the inlining status.  */
+      if (decl_function_context (gnu_subprog))
+	check_inlining_for_nested_subprog (gnu_subprog);
+
+      /* For a recursive call, avoid explosion due to recursive inlining.  */
+      if (gnu_subprog == current_function_decl)
+	DECL_DISREGARD_INLINE_LIMITS (gnu_subprog) = 0;
+    }
 
   /* The only way we can be making a call via an access type is if Name is an
      explicit dereference.  In that case, get the list of formal args from the
@@ -8719,12 +8726,12 @@ process_freeze_entity (Node_Id gnat_node)
   const Entity_Kind kind = Ekind (gnat_entity);
   tree gnu_old, gnu_new;
 
-  /* If this is a package, we need to generate code for the package.  */
+  /* If this is a package, generate code for the package body, if any.  */
   if (kind == E_Package)
     {
-      insert_code_for
-	(Parent (Corresponding_Body
-		 (Parent (Declaration_Node (gnat_entity)))));
+      const Node_Id gnat_decl = Parent (Declaration_Node (gnat_entity));
+      if (Present (Corresponding_Body (gnat_decl)))
+	insert_code_for (Parent (Corresponding_Body (gnat_decl)));
       return;
     }
 

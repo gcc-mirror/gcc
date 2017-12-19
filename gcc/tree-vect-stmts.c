@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "builtins.h"
 #include "internal-fn.h"
+#include "tree-vector-builder.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -2520,10 +2521,10 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
       return true;
     }
 
-  auto_vec<tree, 32> telts (num_bytes);
+  tree_vector_builder telts (char_vectype, num_bytes, 1);
   for (unsigned i = 0; i < num_bytes; ++i)
     telts.quick_push (build_int_cst (char_type_node, elts[i]));
-  tree bswap_vconst = build_vector (char_vectype, telts);
+  tree bswap_vconst = telts.build ();
 
   /* Transform.  */
   vec<tree> vec_oprnds = vNULL;
@@ -2941,11 +2942,11 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  if (gimple_call_internal_p (stmt)
 	      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
 	    {
-	      auto_vec<tree, 32> v (nunits_out);
-	      for (int k = 0; k < nunits_out; ++k)
+	      tree_vector_builder v (vectype_out, 1, 3);
+	      for (int k = 0; k < 3; ++k)
 		v.quick_push (build_int_cst (unsigned_type_node,
 					     j * nunits_out + k));
-	      tree cst = build_vector (vectype_out, v);
+	      tree cst = v.build ();
 	      tree new_var
 		= vect_get_new_ssa_name (vectype_out, vect_simple_var, "cst_");
 	      gimple *init_stmt = gimple_build_assign (new_var, cst);
@@ -5225,7 +5226,7 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  enum tree_code code;
+  enum tree_code code, orig_code;
   machine_mode vec_mode;
   tree new_temp;
   int op_type;
@@ -5263,7 +5264,7 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
     return false;
 
-  code = gimple_assign_rhs_code (stmt);
+  orig_code = code = gimple_assign_rhs_code (stmt);
 
   /* For pointer addition and subtraction, we should use the normal
      plus and minus for the vector operation.  */
@@ -5454,6 +5455,14 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
+  /* POINTER_DIFF_EXPR has pointer arguments which are vectorized as
+     vectors with unsigned elements, but the result is signed.  So, we
+     need to compute the MINUS_EXPR into vectype temporary and
+     VIEW_CONVERT_EXPR it into the final vectype_out result.  */
+  tree vec_cvt_dest = NULL_TREE;
+  if (orig_code == POINTER_DIFF_EXPR)
+    vec_cvt_dest = vect_create_destination_var (scalar_dest, vectype_out);
+
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
      more than one vector stmt - i.e - we need to "unroll" the
@@ -5545,6 +5554,15 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  if (vec_cvt_dest)
+	    {
+	      new_temp = build1 (VIEW_CONVERT_EXPR, vectype_out, new_temp);
+	      new_stmt = gimple_build_assign (vec_cvt_dest, VIEW_CONVERT_EXPR,
+					      new_temp);
+	      new_temp = make_ssa_name (vec_cvt_dest, new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	    }
           if (slp_node)
 	    SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
         }
@@ -6507,7 +6525,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 tree
 vect_gen_perm_mask_any (tree vectype, vec_perm_indices sel)
 {
-  tree mask_elt_type, mask_type, mask_vec;
+  tree mask_elt_type, mask_type;
 
   unsigned int nunits = sel.length ();
   gcc_checking_assert (nunits == TYPE_VECTOR_SUBPARTS (vectype));
@@ -6516,12 +6534,10 @@ vect_gen_perm_mask_any (tree vectype, vec_perm_indices sel)
     (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
-  auto_vec<tree, 32> mask_elts (nunits);
+  tree_vector_builder mask_elts (mask_type, nunits, 1);
   for (unsigned int i = 0; i < nunits; ++i)
     mask_elts.quick_push (build_int_cst (mask_elt_type, sel[i]));
-  mask_vec = build_vector (mask_type, mask_elts);
-
-  return mask_vec;
+  return mask_elts.build ();
 }
 
 /* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_p,
@@ -7792,7 +7808,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 static bool
 vect_is_simple_cond (tree cond, vec_info *vinfo,
-		     tree *comp_vectype, enum vect_def_type *dts)
+		     tree *comp_vectype, enum vect_def_type *dts,
+		     tree vectype)
 {
   tree lhs, rhs;
   tree vectype1 = NULL_TREE, vectype2 = NULL_TREE;
@@ -7845,6 +7862,20 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
     return false;
 
   *comp_vectype = vectype1 ? vectype1 : vectype2;
+  /* Invariant comparison.  */
+  if (! *comp_vectype)
+    {
+      tree scalar_type = TREE_TYPE (lhs);
+      /* If we can widen the comparison to match vectype do so.  */
+      if (INTEGRAL_TYPE_P (scalar_type)
+	  && tree_int_cst_lt (TYPE_SIZE (scalar_type),
+			      TYPE_SIZE (TREE_TYPE (vectype))))
+	scalar_type = build_nonstandard_integer_type
+	  (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype))),
+	   TYPE_UNSIGNED (scalar_type));
+      *comp_vectype = get_vectype_for_scalar_type (scalar_type);
+    }
+
   return true;
 }
 
@@ -7942,7 +7973,7 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   else_clause = gimple_assign_rhs3 (stmt);
 
   if (!vect_is_simple_cond (cond_expr, stmt_info->vinfo,
-			    &comp_vectype, &dts[0])
+			    &comp_vectype, &dts[0], vectype)
       || !comp_vectype)
     return false;
 

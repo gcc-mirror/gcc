@@ -777,7 +777,7 @@ rest_of_handle_ud_dce (void)
     }
   worklist.release ();
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     reset_unmarked_insns_debug_uses ();
 
   /* Before any insns are deleted, we must remove the chains since

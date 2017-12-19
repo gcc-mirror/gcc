@@ -233,7 +233,7 @@ along with GCC; see the file COPYING3.  If not see
   1, 1									\
 }
 
-/* a0-a7, t0-a6, fa0-fa7, and ft0-ft11 are volatile across calls.
+/* a0-a7, t0-t6, fa0-fa7, and ft0-ft11 are volatile across calls.
    The call RTLs themselves clobber ra.  */
 
 #define CALL_USED_REGISTERS						\

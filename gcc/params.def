@@ -790,6 +790,20 @@ DEFPARAM (PARAM_L2_CACHE_SIZE,
 	  "The size of L2 cache.",
 	  512, 0, 0)
 
+/* Maximum number of statements in loop nest for loop interchange.  */
+
+DEFPARAM (PARAM_LOOP_INTERCHANGE_MAX_NUM_STMTS,
+	  "loop-interchange-max-num-stmts",
+	  "The maximum number of stmts in loop nest for loop interchange.",
+	  64, 0, 0)
+
+/* Minimum stride ratio for loop interchange to be profitiable.  */
+
+DEFPARAM (PARAM_LOOP_INTERCHANGE_STRIDE_RATIO,
+	  "loop-interchange-stride-ratio",
+	  "The minimum stride ratio for loop interchange to be profitable",
+	  2, 0, 0)
+
 /* Whether we should use canonical types rather than deep "structural"
    type checking.  Setting this value to 1 (the default) improves
    compilation performance in the C++ and Objective-C++ front end;
@@ -961,6 +975,15 @@ DEFPARAM (PARAM_MAX_VARTRACK_REVERSE_OP_SIZE,
 	  "max-vartrack-reverse-op-size",
 	  "Max. size of loc list for which reverse ops should be added.",
 	  50, 0, 0)
+
+/* Set a threshold to discard debug markers (e.g. debug begin stmt
+   markers) when expanding a function to RTL, or inlining it into
+   another function.  */
+
+DEFPARAM (PARAM_MAX_DEBUG_MARKER_COUNT,
+	  "max-debug-marker-count",
+	  "Max. count of debug markers to expand or inline.",
+	  100000, 0, 0)
 
 /* Set minimum insn uid for non-debug insns.  */
 
@@ -1292,6 +1315,16 @@ DEFPARAM (PARAM_VECT_EPILOGUES_NOMASK,
 	  "vect-epilogues-nomask",
 	  "Enable loop epilogue vectorization using smaller vector size.",
 	  0, 0, 1)
+
+DEFPARAM(PARAM_UNROLL_JAM_MIN_PERCENT,
+	 "unroll-jam-min-percent",
+	 "Minimum percentage of memrefs that must go away for unroll-and-jam to be considered profitable.",
+	 1, 0, 100)
+
+DEFPARAM(PARAM_UNROLL_JAM_MAX_UNROLL,
+	 "unroll-jam-max-unroll",
+	 "Maximum unroll factor for the unroll-and-jam transformation.",
+	 4, 0, 0)
 
 /*
 

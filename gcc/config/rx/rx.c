@@ -22,6 +22,8 @@
 
  * Re-enable memory-to-memory copies and fix up reload.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2731,17 +2733,17 @@ rx_handle_vector_attribute (tree * node,
 /* Table of RX specific attributes.  */
 const struct attribute_spec rx_attribute_table[] =
 {
-  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-     affects_type_identity.  */
-  { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute,
-    false },
-  { "interrupt",      0, -1, true, false, false, rx_handle_func_attribute,
-    false },
-  { "naked",          0, 0, true, false, false, rx_handle_func_attribute,
-    false },
-  { "vector",         1, -1, true, false, false, rx_handle_vector_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
+  /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
+     affects_type_identity, handler, exclude.  */
+  { "fast_interrupt", 0, 0, true, false, false, false,
+    rx_handle_func_attribute, NULL },
+  { "interrupt",      0, -1, true, false, false, false,
+    rx_handle_func_attribute, NULL },
+  { "naked",          0, 0, true, false, false, false,
+    rx_handle_func_attribute, NULL },
+  { "vector",         1, -1, true, false, false, false,
+    rx_handle_vector_attribute, NULL },
+  { NULL,             0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */

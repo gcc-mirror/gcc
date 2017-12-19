@@ -2401,7 +2401,8 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   /* Allocatable deferred char arrays are to be handled by the gfc_deferred_
      strlen () conditional below.  */
   if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer
-      && !(c->attr.allocatable && c->ts.deferred))
+      && !(c->attr.allocatable && c->ts.deferred)
+      && !c->attr.pdt_string)
     {
       tmp = c->ts.u.cl->backend_decl;
       /* Components must always be constant length.  */

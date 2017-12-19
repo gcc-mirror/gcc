@@ -2666,8 +2666,7 @@ gfc_trans_integer_select (gfc_code * code)
     }
 
   tmp = gfc_finish_block (&body);
-  tmp = fold_build3_loc (input_location, SWITCH_EXPR, NULL_TREE,
-			 se.expr, tmp, NULL_TREE);
+  tmp = fold_build2_loc (input_location, SWITCH_EXPR, NULL_TREE, se.expr, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   tmp = build1_v (LABEL_EXPR, end_label);
@@ -2952,8 +2951,8 @@ gfc_trans_character_select (gfc_code *code)
 	  gfc_add_block_to_block (&block, &expr1se.post);
 
 	  tmp = gfc_finish_block (&body);
-	  tmp = fold_build3_loc (input_location, SWITCH_EXPR, NULL_TREE,
-				 case_num, tmp, NULL_TREE);
+	  tmp = fold_build2_loc (input_location, SWITCH_EXPR, NULL_TREE,
+				 case_num, tmp);
 	  gfc_add_expr_to_block (&block, tmp);
 
 	  tmp = build1_v (LABEL_EXPR, end_label);
@@ -3099,8 +3098,8 @@ gfc_trans_character_select (gfc_code *code)
   gfc_add_block_to_block (&block, &expr1se.post);
 
   tmp = gfc_finish_block (&body);
-  tmp = fold_build3_loc (input_location, SWITCH_EXPR, NULL_TREE,
-			 case_num, tmp, NULL_TREE);
+  tmp = fold_build2_loc (input_location, SWITCH_EXPR, NULL_TREE,
+			 case_num, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
   tmp = build1_v (LABEL_EXPR, end_label);

@@ -147,6 +147,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-vector-builder.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -465,11 +466,14 @@ valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
   else if (VECTOR_FLOAT_TYPE_P (type)
 	   && !HONOR_NANS (type))
     {
-      for (unsigned i = 0; i < VECTOR_CST_NELTS (old_val.value); ++i)
+      unsigned int count
+	= tree_vector_builder::binary_encoded_nelts (old_val.value,
+						     new_val.value);
+      for (unsigned int i = 0; i < count; ++i)
 	if (!REAL_VALUE_ISNAN
-	       (TREE_REAL_CST (VECTOR_CST_ELT (old_val.value, i)))
-	    && !operand_equal_p (VECTOR_CST_ELT (old_val.value, i),
-				 VECTOR_CST_ELT (new_val.value, i), 0))
+	       (TREE_REAL_CST (VECTOR_CST_ENCODED_ELT (old_val.value, i)))
+	    && !operand_equal_p (VECTOR_CST_ENCODED_ELT (old_val.value, i),
+				 VECTOR_CST_ENCODED_ELT (new_val.value, i), 0))
 	  return false;
       return true;
     }
@@ -989,7 +993,7 @@ ccp_finalize (bool nonzero_p)
 
   free (const_val);
   const_val = NULL;
-  return something_changed;;
+  return something_changed;
 }
 
 

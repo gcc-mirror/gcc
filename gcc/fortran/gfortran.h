@@ -3035,6 +3035,7 @@ void gfc_free_dt_list (void);
 
 gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
+gfc_gsymbol *gfc_find_case_gsymbol (gfc_gsymbol *, const char *);
 
 gfc_typebound_proc* gfc_get_typebound_proc (gfc_typebound_proc*);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);

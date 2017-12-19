@@ -463,6 +463,7 @@ check_constexpr_ctor_body_1 (tree last, tree list)
 
     case USING_STMT:
     case STATIC_ASSERT:
+    case DEBUG_BEGIN_STMT:
       return true;
 
     default:
@@ -702,6 +703,7 @@ constexpr_fn_retval (tree body)
       return constexpr_fn_retval (BIND_EXPR_BODY (body));
 
     case USING_STMT:
+    case DEBUG_BEGIN_STMT:
       return NULL_TREE;
 
     case CALL_EXPR:
@@ -1602,7 +1604,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   tree result = NULL_TREE;
 
   constexpr_call *entry = NULL;
-  if (depth_ok && !non_constant_args)
+  if (depth_ok && !non_constant_args && ctx->strict)
     {
       new_call.hash = iterative_hash_template_arg
 	(new_call.bindings, constexpr_fundef_hasher::hash (new_call.fundef));
@@ -3872,6 +3874,14 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       if (returns (jump_target) || breaks (jump_target))
 	break;
     }
+  /* Make sure we don't use the "result" of a debug-only marker.  That
+     would be wrong.  We should be using the result of the previous
+     statement, or NULL if there isn't one.  In practice, this should
+     never happen: the statement after the marker should override the
+     result of the marker, so its value shouldn't survive in R.  Now,
+     should that ever change, we'll need some fixing here to stop
+     markers from modifying the generated executable code.  */
+  gcc_checking_assert (!r || TREE_CODE (r) != DEBUG_BEGIN_STMT);
   return r;
 }
 
@@ -4096,6 +4106,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  *non_constant_p = true;
 	}
       break;
+
+    case DEBUG_BEGIN_STMT:
+      /* ??? It might be nice to retain this information somehow, so
+	 as to be able to step into a constexpr function call.  */
+      /* Fall through.  */
 
     case FUNCTION_DECL:
     case TEMPLATE_DECL:
@@ -5203,6 +5218,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CONTINUE_STMT:
     case REQUIRES_EXPR:
     case STATIC_ASSERT:
+    case DEBUG_BEGIN_STMT:
       return true;
 
     case PARM_DECL:
@@ -5540,6 +5556,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return RECUR (STMT_EXPR_STMT (t), rval);
 
     case LAMBDA_EXPR:
+      if (cxx_dialect >= cxx17)
+	/* In C++17 lambdas can be constexpr, don't give up yet.  */
+	return true;
+      else if (flags & tf_error)
+	error_at (loc, "lambda-expression is not a constant expression "
+		  "before C++17");
+      return false;
+
     case DYNAMIC_CAST_EXPR:
     case PSEUDO_DTOR_EXPR:
     case NEW_EXPR:
@@ -5579,8 +5603,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OACC_ENTER_DATA:
     case OACC_EXIT_DATA:
     case OACC_UPDATE:
-    case CILK_SIMD:
-    case CILK_FOR:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case OBJ_TYPE_REF:
@@ -5864,11 +5886,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	if (!RECUR (TREE_OPERAND (t, i), want_rval))
 	  return false;
       return true;
-
-    case CILK_SYNC_STMT:
-    case CILK_SPAWN_STMT:
-    case ARRAY_NOTATION_REF:
-      return false;
 
     case FMA_EXPR:
     case VEC_PERM_EXPR:

@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1429,6 +1431,8 @@ riscv_extend_cost (rtx op, bool unsigned_p)
 
 /* Implement TARGET_RTX_COSTS.  */
 
+#define SINGLE_SHIFT_COST 1
+
 static bool
 riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UNUSED,
 		 int *total, bool speed)
@@ -1489,10 +1493,21 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       *total = riscv_binary_cost (x, 1, 2);
       return false;
 
+    case ZERO_EXTRACT:
+      /* This is an SImode shift.  */
+      if (outer_code == SET && (INTVAL (XEXP (x, 2)) > 0)
+	  && (INTVAL (XEXP (x, 1)) + INTVAL (XEXP (x, 2)) == 32))
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      return false;
+
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
-      *total = riscv_binary_cost (x, 1, CONSTANT_P (XEXP (x, 1)) ? 4 : 9);
+      *total = riscv_binary_cost (x, SINGLE_SHIFT_COST,
+				  CONSTANT_P (XEXP (x, 1)) ? 4 : 9);
       return false;
 
     case ABS:
@@ -1504,6 +1519,14 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return true;
 
     case LT:
+      /* This is an SImode shift.  */
+      if (outer_code == SET && GET_MODE (x) == DImode
+	  && GET_MODE (XEXP (x, 0)) == SImode)
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      /* Fall through.  */
     case LTU:
     case LE:
     case LEU:
@@ -1601,8 +1624,15 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	*total = COSTS_N_INSNS (1);
       return false;
 
-    case SIGN_EXTEND:
     case ZERO_EXTEND:
+      /* This is an SImode shift.  */
+      if (GET_CODE (XEXP (x, 0)) == LSHIFTRT)
+	{
+	  *total = COSTS_N_INSNS (SINGLE_SHIFT_COST);
+	  return true;
+	}
+      /* Fall through.  */
+    case SIGN_EXTEND:
       *total = riscv_extend_cost (XEXP (x, 0), GET_CODE (x) == ZERO_EXTEND);
       return false;
 
@@ -3014,6 +3044,22 @@ riscv_in_small_data_p (const_tree x)
   return riscv_size_ok_for_small_data_p (int_size_in_bytes (TREE_TYPE (x)));
 }
 
+/* Switch to the appropriate section for output of DECL.  */
+
+static section *
+riscv_select_section (tree decl, int reloc,
+		      unsigned HOST_WIDE_INT align)
+{
+  switch (categorize_decl_for_section (decl, reloc))
+    {
+    case SECCAT_SRODATA:
+      return get_named_section (decl, ".srodata", reloc);
+
+    default:
+      return default_elf_select_section (decl, reloc, align);
+    }
+}
+
 /* Return a section for X, handling small data. */
 
 static section *
@@ -3308,7 +3354,7 @@ riscv_for_each_saved_reg (HOST_WIDE_INT sp_offset, riscv_save_restore_fn fn)
 
   /* Save the link register and s-registers. */
   offset = cfun->machine->frame.gp_sp_offset - sp_offset;
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST-1; regno++)
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
 	riscv_save_restore_reg (word_mode, regno, offset, fn);
@@ -3396,7 +3442,7 @@ riscv_adjust_libcall_cfi_prologue ()
   int saved_size = cfun->machine->frame.save_libcall_adjustment;
   int offset;
 
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST-1; regno++)
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
 	/* The save order is ra, s0, s1, s2 to s11.  */
@@ -3524,7 +3570,7 @@ riscv_adjust_libcall_cfi_epilogue ()
   dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx,
 			  dwarf);
 
-  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST-1; regno++)
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
 	reg = gen_rtx_REG (SImode, regno);
@@ -4291,6 +4337,12 @@ riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P riscv_in_small_data_p
+
+#undef TARGET_HAVE_SRODATA_SECTION
+#define TARGET_HAVE_SRODATA_SECTION true
+
+#undef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION riscv_select_section
 
 #undef TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION  riscv_elf_select_rtx_section

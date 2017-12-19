@@ -165,6 +165,10 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
+   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
+   --  an assertion expression that should be verified at run time.
+
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
       E : Node_Id) return Entity_Id;
@@ -1500,6 +1504,7 @@ package body Exp_Util is
       --  Start of processing for Add_Own_DIC
 
       begin
+         pragma Assert (Present (DIC_Expr));
          Expr := New_Copy_Tree (DIC_Expr);
 
          --  Perform the following substitution:
@@ -1733,8 +1738,6 @@ package body Exp_Util is
          --  Produce an empty completing body in the following cases:
          --    * Assertions are disabled
          --    * The DIC Assertion_Policy is Ignore
-         --    * Pragma DIC appears without an argument
-         --    * Pragma DIC appears with argument "null"
 
          if No (Stmts) then
             Stmts := New_List (Make_Null_Statement (Loc));
@@ -7327,6 +7330,8 @@ package body Exp_Util is
                | N_Real_Literal
                | N_Real_Range_Specification
                | N_Record_Definition
+               | N_Reduction_Expression
+               | N_Reduction_Expression_Parameter
                | N_Reference
                | N_SCIL_Dispatch_Table_Tag_Init
                | N_SCIL_Dispatching_Call
@@ -8714,6 +8719,21 @@ package body Exp_Util is
           and then Present (Full_Typ)
           and then Is_Itype (Full_Typ);
    end Is_Untagged_Private_Derivation;
+
+   ------------------------------
+   -- Is_Verifiable_DIC_Pragma --
+   ------------------------------
+
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean is
+      Args : constant List_Id := Pragma_Argument_Associations (Prag);
+
+   begin
+      --  To qualify as verifiable, a DIC pragma must have a non-null argument
+
+      return
+        Present (Args)
+          and then Nkind (Get_Pragma_Arg (First (Args))) /= N_Null;
+   end Is_Verifiable_DIC_Pragma;
 
    ---------------------------
    -- Is_Volatile_Reference --
@@ -10701,7 +10721,9 @@ package body Exp_Util is
               and then not Is_Empty_List (Then_Statements (N))
               and then not Are_Wrapped (Then_Statements (N))
               and then Requires_Cleanup_Actions
-                         (Then_Statements (N), False, False)
+                         (L                 => Then_Statements (N),
+                          Lib_Level         => False,
+                          Nested_Constructs => False)
             then
                Block := Wrap_Statements_In_Block (Then_Statements (N));
                Set_Then_Statements (N, New_List (Block));
@@ -10718,7 +10740,9 @@ package body Exp_Util is
               and then not Is_Empty_List (Else_Statements (N))
               and then not Are_Wrapped (Else_Statements (N))
               and then Requires_Cleanup_Actions
-                         (Else_Statements (N), False, False)
+                         (L                 => Else_Statements (N),
+                          Lib_Level         => False,
+                          Nested_Constructs => False)
             then
                Block := Wrap_Statements_In_Block (Else_Statements (N));
                Set_Else_Statements (N, New_List (Block));
@@ -10737,7 +10761,10 @@ package body Exp_Util is
          =>
             if not Is_Empty_List (Statements (N))
               and then not Are_Wrapped (Statements (N))
-              and then Requires_Cleanup_Actions (Statements (N), False, False)
+              and then Requires_Cleanup_Actions
+                         (L                 => Statements (N),
+                          Lib_Level         => False,
+                          Nested_Constructs => False)
             then
                if Nkind (N) = N_Loop_Statement
                  and then Present (Identifier (N))
@@ -11815,24 +11842,46 @@ package body Exp_Util is
             | N_Task_Body
          =>
             return
-              Requires_Cleanup_Actions (Declarations (N), At_Lib_Level, True)
-                or else
-                  (Present (Handled_Statement_Sequence (N))
-                    and then
-                      Requires_Cleanup_Actions
-                        (Statements (Handled_Statement_Sequence (N)),
-                         At_Lib_Level, True));
+                Requires_Cleanup_Actions
+                  (L                 => Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True)
+              or else
+                (Present (Handled_Statement_Sequence (N))
+                  and then
+                    Requires_Cleanup_Actions
+                      (L                 =>
+                         Statements (Handled_Statement_Sequence (N)),
+                       Lib_Level         => At_Lib_Level,
+                       Nested_Constructs => True));
+
+         --  Extended return statements are the same as the above, except that
+         --  there is no Declarations field. We do not want to clean up the
+         --  Return_Object_Declarations.
+
+         when N_Extended_Return_Statement =>
+            return
+              Present (Handled_Statement_Sequence (N))
+                and then Requires_Cleanup_Actions
+                           (L                 =>
+                              Statements (Handled_Statement_Sequence (N)),
+                            Lib_Level         => At_Lib_Level,
+                            Nested_Constructs => True);
 
          when N_Package_Specification =>
             return
-              Requires_Cleanup_Actions
-                (Visible_Declarations (N), At_Lib_Level, True)
-                  or else
-              Requires_Cleanup_Actions
-                (Private_Declarations (N), At_Lib_Level, True);
+                Requires_Cleanup_Actions
+                  (L                 => Visible_Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True)
+              or else
+                Requires_Cleanup_Actions
+                  (L                 => Private_Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True);
 
          when others =>
-            return False;
+            raise Program_Error;
       end case;
    end Requires_Cleanup_Actions;
 

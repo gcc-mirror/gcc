@@ -33,6 +33,12 @@ typedef __complex float KCtype __attribute__ ((mode (KC)));
 #define isinf __builtin_isinf
 #define isfinite __builtin_isfinite
 
+#if defined(FLOAT128_HW_INSNS) && !defined(__divkc3)
+#define __divkc3 __divkc3_sw
+#endif
+
+extern KCtype __divkc3 (KFtype, KFtype, KFtype, KFtype);
+
 KCtype
 __divkc3 (KFtype a, KFtype b, KFtype c, KFtype d)
 {

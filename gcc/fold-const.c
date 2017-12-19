@@ -81,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-vector-builder.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -409,10 +410,10 @@ negate_expr_p (tree t)
 	if (FLOAT_TYPE_P (TREE_TYPE (type)) || TYPE_OVERFLOW_WRAPS (type))
 	  return true;
 
-	int count = VECTOR_CST_NELTS (t), i;
-
-	for (i = 0; i < count; i++)
-	  if (!negate_expr_p (VECTOR_CST_ELT (t, i)))
+	/* Steps don't prevent negation.  */
+	unsigned int count = vector_cst_encoded_nelts (t);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (!negate_expr_p (VECTOR_CST_ENCODED_ELT (t, i)))
 	    return false;
 
 	return true;
@@ -565,10 +566,10 @@ fold_negate_expr_1 (location_t loc, tree t)
 
     case VECTOR_CST:
       {
-	int count = VECTOR_CST_NELTS (t), i;
-
-	auto_vec<tree, 32> elts (count);
-	for (i = 0; i < count; i++)
+	tree_vector_builder elts;
+	elts.new_unary_operation (type, t, true);
+	unsigned int count = elts.encoded_nelts ();
+	for (unsigned int i = 0; i < count; ++i)
 	  {
 	    tree elt = fold_negate_expr (loc, VECTOR_CST_ELT (t, i));
 	    if (elt == NULL_TREE)
@@ -576,7 +577,7 @@ fold_negate_expr_1 (location_t loc, tree t)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     case COMPLEX_EXPR:
@@ -1120,6 +1121,27 @@ int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2)
   return int_const_binop_1 (code, arg1, arg2, 1);
 }
 
+/* Return true if binary operation OP distributes over addition in operand
+   OPNO, with the other operand being held constant.  OPNO counts from 1.  */
+
+static bool
+distributes_over_addition_p (tree_code op, int opno)
+{
+  switch (op)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+      return true;
+
+    case LSHIFT_EXPR:
+      return opno == 1;
+
+    default:
+      return false;
+    }
+}
+
 /* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
    constant.  We assume ARG1 and ARG2 have the same data type, or at least
    are the same kind of constant and the same machine mode.  Return zero if
@@ -1413,13 +1435,40 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
     }
 
   if (TREE_CODE (arg1) == VECTOR_CST
-      && TREE_CODE (arg2) == VECTOR_CST)
+      && TREE_CODE (arg2) == VECTOR_CST
+      && (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1))
+	  == TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg2))))
     {
       tree type = TREE_TYPE (arg1);
-      int count = VECTOR_CST_NELTS (arg1), i;
+      bool step_ok_p;
+      if (VECTOR_CST_STEPPED_P (arg1)
+	  && VECTOR_CST_STEPPED_P (arg2))
+	/* We can operate directly on the encoding if:
 
-      auto_vec<tree, 32> elts (count);
-      for (i = 0; i < count; i++)
+	      a3 - a2 == a2 - a1 && b3 - b2 == b2 - b1
+	    implies
+	      (a3 op b3) - (a2 op b2) == (a2 op b2) - (a1 op b1)
+
+	   Addition and subtraction are the supported operators
+	   for which this is true.  */
+	step_ok_p = (code == PLUS_EXPR || code == MINUS_EXPR);
+      else if (VECTOR_CST_STEPPED_P (arg1))
+	/* We can operate directly on stepped encodings if:
+
+	     a3 - a2 == a2 - a1
+	   implies:
+	     (a3 op c) - (a2 op c) == (a2 op c) - (a1 op c)
+
+	   which is true if (x -> x op c) distributes over addition.  */
+	step_ok_p = distributes_over_addition_p (code, 1);
+      else
+	/* Similarly in reverse.  */
+	step_ok_p = distributes_over_addition_p (code, 2);
+      tree_vector_builder elts;
+      if (!elts.new_binary_operation (type, arg1, arg2, step_ok_p))
+	return NULL_TREE;
+      unsigned int count = elts.encoded_nelts ();
+      for (unsigned int i = 0; i < count; ++i)
 	{
 	  tree elem1 = VECTOR_CST_ELT (arg1, i);
 	  tree elem2 = VECTOR_CST_ELT (arg2, i);
@@ -1433,7 +1482,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	  elts.quick_push (elt);
 	}
 
-      return build_vector (type, elts);
+      return elts.build ();
     }
 
   /* Shifts allow a scalar offset for a vector.  */
@@ -1441,10 +1490,12 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       && TREE_CODE (arg2) == INTEGER_CST)
     {
       tree type = TREE_TYPE (arg1);
-      int count = VECTOR_CST_NELTS (arg1), i;
-
-      auto_vec<tree, 32> elts (count);
-      for (i = 0; i < count; i++)
+      bool step_ok_p = distributes_over_addition_p (code, 1);
+      tree_vector_builder elts;
+      if (!elts.new_unary_operation (type, arg1, step_ok_p))
+	return NULL_TREE;
+      unsigned int count = elts.encoded_nelts ();
+      for (unsigned int i = 0; i < count; ++i)
 	{
 	  tree elem1 = VECTOR_CST_ELT (arg1, i);
 
@@ -1457,7 +1508,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
 	  elts.quick_push (elt);
 	}
 
-      return build_vector (type, elts);
+      return elts.build ();
     }
   return NULL_TREE;
 }
@@ -1475,6 +1526,12 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
      result as argument put those cases that need it here.  */
   switch (code)
     {
+    case VEC_SERIES_EXPR:
+      if (CONSTANT_CLASS_P (arg1)
+	  && CONSTANT_CLASS_P (arg2))
+	return build_vec_series (type, arg1, arg2);
+      return NULL_TREE;
+
     case COMPLEX_EXPR:
       if ((TREE_CODE (arg1) == REAL_CST
 	   && TREE_CODE (arg2) == REAL_CST)
@@ -1507,7 +1564,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	gcc_assert (in_nelts == VECTOR_CST_NELTS (arg2)
 		    && out_nelts == TYPE_VECTOR_SUBPARTS (type));
 
-	auto_vec<tree, 32> elts (out_nelts);
+	tree_vector_builder elts (type, out_nelts, 1);
 	for (i = 0; i < out_nelts; i++)
 	  {
 	    tree elt = (i < in_nelts
@@ -1521,7 +1578,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     case VEC_WIDEN_MULT_LO_EXPR:
@@ -1548,7 +1605,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	else /* if (code == VEC_WIDEN_MULT_ODD_EXPR) */
 	  scale = 1, ofs = 1;
 
-	auto_vec<tree, 32> elts (out_nelts);
+	tree_vector_builder elts (type, out_nelts, 1);
 	for (out = 0; out < out_nelts; out++)
 	  {
 	    unsigned int in = (out << scale) + ofs;
@@ -1565,7 +1622,7 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     default:;
@@ -1648,10 +1705,12 @@ const_unop (enum tree_code code, tree type, tree arg0)
       else if (TREE_CODE (arg0) == VECTOR_CST)
 	{
 	  tree elem;
-	  unsigned count = VECTOR_CST_NELTS (arg0), i;
 
-	  auto_vec<tree, 32> elements (count);
-	  for (i = 0; i < count; i++)
+	  /* This can cope with stepped encodings because ~x == -1 - x.  */
+	  tree_vector_builder elements;
+	  elements.new_unary_operation (type, arg0, true);
+	  unsigned int i, count = elements.encoded_nelts ();
+	  for (i = 0; i < count; ++i)
 	    {
 	      elem = VECTOR_CST_ELT (arg0, i);
 	      elem = const_unop (BIT_NOT_EXPR, TREE_TYPE (type), elem);
@@ -1660,7 +1719,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	      elements.quick_push (elem);
 	    }
 	  if (i == count)
-	    return build_vector (type, elements);
+	    return elements.build ();
 	}
       break;
 
@@ -1704,7 +1763,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	else
 	  subcode = FLOAT_EXPR;
 
-	auto_vec<tree, 32> elts (out_nelts);
+	tree_vector_builder elts (type, out_nelts, 1);
 	for (i = 0; i < out_nelts; i++)
 	  {
 	    tree elt = fold_convert_const (subcode, TREE_TYPE (type),
@@ -1714,8 +1773,13 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	    elts.quick_push (elt);
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
+
+    case VEC_DUPLICATE_EXPR:
+      if (CONSTANT_CLASS_P (arg0))
+	return build_vector_from_val (type, arg0);
+      return NULL_TREE;
 
     default:
       break;
@@ -2134,10 +2198,19 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       if (TREE_CODE (arg1) == VECTOR_CST
 	  && TYPE_VECTOR_SUBPARTS (type) == VECTOR_CST_NELTS (arg1))
 	{
-	  int len = VECTOR_CST_NELTS (arg1);
 	  tree elttype = TREE_TYPE (type);
-	  auto_vec<tree, 32> v (len);
-	  for (int i = 0; i < len; ++i)
+	  tree arg1_elttype = TREE_TYPE (TREE_TYPE (arg1));
+	  /* We can't handle steps directly when extending, since the
+	     values need to wrap at the original precision first.  */
+	  bool step_ok_p
+	    = (INTEGRAL_TYPE_P (elttype)
+	       && INTEGRAL_TYPE_P (arg1_elttype)
+	       && TYPE_PRECISION (elttype) <= TYPE_PRECISION (arg1_elttype));
+	  tree_vector_builder v;
+	  if (!v.new_unary_operation (type, arg1, step_ok_p))
+	    return NULL_TREE;
+	  unsigned int len = v.encoded_nelts ();
+	  for (unsigned int i = 0; i < len; ++i)
 	    {
 	      tree elt = VECTOR_CST_ELT (arg1, i);
 	      tree cvt = fold_convert_const (code, elttype, elt);
@@ -2145,7 +2218,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 		return NULL_TREE;
 	      v.quick_push (cvt);
 	    }
-	  return build_vector (type, v);
+	  return v.build ();
 	}
     }
   return NULL_TREE;
@@ -2919,17 +2992,19 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
       case VECTOR_CST:
 	{
-	  unsigned i;
-
-	  if (VECTOR_CST_NELTS (arg0) != VECTOR_CST_NELTS (arg1))
+	  if (VECTOR_CST_LOG2_NPATTERNS (arg0)
+	      != VECTOR_CST_LOG2_NPATTERNS (arg1))
 	    return 0;
 
-	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
-	    {
-	      if (!operand_equal_p (VECTOR_CST_ELT (arg0, i),
-				    VECTOR_CST_ELT (arg1, i), flags))
-		return 0;
-	    }
+	  if (VECTOR_CST_NELTS_PER_PATTERN (arg0)
+	      != VECTOR_CST_NELTS_PER_PATTERN (arg1))
+	    return 0;
+
+	  unsigned int count = vector_cst_encoded_nelts (arg0);
+	  for (unsigned int i = 0; i < count; ++i)
+	    if (!operand_equal_p (VECTOR_CST_ENCODED_ELT (arg0, i),
+				  VECTOR_CST_ENCODED_ELT (arg1, i), flags))
+	      return 0;
 	  return 1;
 	}
 
@@ -5334,10 +5409,10 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
   if ((lhs == 0 || rhs == 0 || operand_equal_p (lhs, rhs, 0))
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
-      && 0 != (tem = (build_range_check (loc, type,
-					 lhs != 0 ? lhs
-					 : rhs != 0 ? rhs : integer_zero_node,
-					 in_p, low, high))))
+      && (tem = (build_range_check (loc, type,
+				    lhs != 0 ? lhs
+				    : rhs != 0 ? rhs : integer_zero_node,
+				    in_p, low, high))) != 0)
     {
       if (strict_overflow_p)
 	fold_overflow_warning (warnmsg, WARN_STRICT_OVERFLOW_COMPARISON);
@@ -5367,12 +5442,12 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
 	{
 	  tree common = save_expr (lhs);
 
-	  if (0 != (lhs = build_range_check (loc, type, common,
-					     or_op ? ! in0_p : in0_p,
-					     low0, high0))
-	      && (0 != (rhs = build_range_check (loc, type, common,
-						 or_op ? ! in1_p : in1_p,
-						 low1, high1))))
+	  if ((lhs = build_range_check (loc, type, common,
+					or_op ? ! in0_p : in0_p,
+					low0, high0)) != 0
+	      && (rhs = build_range_check (loc, type, common,
+					   or_op ? ! in1_p : in1_p,
+					   low1, high1)) != 0)
 	    {
 	      if (strict_overflow_p)
 		fold_overflow_warning (warnmsg,
@@ -6071,10 +6146,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
       if ((t2 = fold_convert (TREE_TYPE (op0), c)) != 0
 	  && TREE_CODE (t2) == INTEGER_CST
 	  && !TREE_OVERFLOW (t2)
-	  && (0 != (t1 = extract_muldiv (op0, t2, code,
-					 code == MULT_EXPR
-					 ? ctype : NULL_TREE,
-					 strict_overflow_p))))
+	  && (t1 = extract_muldiv (op0, t2, code,
+				   code == MULT_EXPR ? ctype : NULL_TREE,
+				   strict_overflow_p)) != 0)
 	return t1;
       break;
 
@@ -6142,10 +6216,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	     so check for it explicitly here.  */
 	  && wi::gtu_p (TYPE_PRECISION (TREE_TYPE (size_one_node)),
 			wi::to_wide (op1))
-	  && 0 != (t1 = fold_convert (ctype,
-				      const_binop (LSHIFT_EXPR,
-						   size_one_node,
-						   op1)))
+	  && (t1 = fold_convert (ctype,
+				 const_binop (LSHIFT_EXPR, size_one_node,
+					      op1))) != 0
 	  && !TREE_OVERFLOW (t1))
 	return extract_muldiv (build2 (tcode == LSHIFT_EXPR
 				       ? MULT_EXPR : FLOOR_DIV_EXPR,
@@ -7377,7 +7450,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, int len)
   if (size * count > len)
     return NULL_TREE;
 
-  auto_vec<tree, 32> elements (count);
+  tree_vector_builder elements (type, count, 1);
   for (i = 0; i < count; ++i)
     {
       elem = native_interpret_expr (etype, ptr+(i*size), size);
@@ -7385,7 +7458,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, int len)
 	return NULL_TREE;
       elements.quick_push (elem);
     }
-  return build_vector (type, elements);
+  return elements.build ();
 }
 
 
@@ -7965,7 +8038,7 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
     }
 
   /* See if we can build a range comparison.  */
-  if (0 != (tem = fold_range_test (loc, code, type, op0, op1)))
+  if ((tem = fold_range_test (loc, code, type, op0, op1)) != 0)
     return tem;
 
   if ((code == TRUTH_ANDIF_EXPR && TREE_CODE (arg0) == TRUTH_ORIF_EXPR)
@@ -7988,8 +8061,8 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
      lhs is another similar operation, try to merge its rhs with our
      rhs.  Then try to merge our lhs and rhs.  */
   if (TREE_CODE (arg0) == code
-      && 0 != (tem = fold_truth_andor_1 (loc, code, type,
-					 TREE_OPERAND (arg0, 1), arg1)))
+      && (tem = fold_truth_andor_1 (loc, code, type,
+				    TREE_OPERAND (arg0, 1), arg1)) != 0)
     return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0), tem);
 
   if ((tem = fold_truth_andor_1 (loc, code, type, arg0, arg1)) != 0)
@@ -8755,7 +8828,7 @@ fold_vec_perm (tree type, tree arg0, tree arg1, vec_perm_indices sel)
       || !vec_cst_ctor_to_array (arg1, nelts, in_elts + nelts))
     return NULL_TREE;
 
-  auto_vec<tree, 32> out_elts (nelts);
+  tree_vector_builder out_elts (type, nelts, 1);
   for (i = 0; i < nelts; i++)
     {
       if (!CONSTANT_CLASS_P (in_elts[sel[i]]))
@@ -8772,7 +8845,7 @@ fold_vec_perm (tree type, tree arg0, tree arg1, vec_perm_indices sel)
       return build_constructor (type, v);
     }
   else
-    return build_vector (type, out_elts);
+    return out_elts.build ();
 }
 
 /* Try to fold a pointer difference of type TYPE two address expressions of
@@ -8831,7 +8904,6 @@ exact_inverse (tree type, tree cst)
   REAL_VALUE_TYPE r;
   tree unit_type;
   machine_mode mode;
-  unsigned vec_nelts, i;
 
   switch (TREE_CODE (cst))
     {
@@ -8845,12 +8917,14 @@ exact_inverse (tree type, tree cst)
 
     case VECTOR_CST:
       {
-	vec_nelts = VECTOR_CST_NELTS (cst);
 	unit_type = TREE_TYPE (type);
 	mode = TYPE_MODE (unit_type);
 
-	auto_vec<tree, 32> elts (vec_nelts);
-	for (i = 0; i < vec_nelts; i++)
+	tree_vector_builder elts;
+	if (!elts.new_unary_operation (type, cst, false))
+	  return NULL_TREE;
+	unsigned int count = elts.encoded_nelts ();
+	for (unsigned int i = 0; i < count; ++i)
 	  {
 	    r = TREE_REAL_CST (VECTOR_CST_ELT (cst, i));
 	    if (!exact_real_inverse (mode, &r))
@@ -8858,7 +8932,7 @@ exact_inverse (tree type, tree cst)
 	    elts.quick_push (build_real (unit_type, r));
 	  }
 
-	return build_vector (type, elts);
+	return elts.build ();
       }
 
     default:
@@ -9033,8 +9107,8 @@ expr_not_equal_to (tree t, const wide_int &w)
    return NULL_TREE.  */
 
 tree
-fold_binary_loc (location_t loc,
-	     enum tree_code code, tree type, tree op0, tree op1)
+fold_binary_loc (location_t loc, enum tree_code code, tree type,
+		 tree op0, tree op1)
 {
   enum tree_code_class kind = TREE_CODE_CLASS (code);
   tree arg0, arg1, tem;
@@ -9450,8 +9524,8 @@ fold_binary_loc (location_t loc,
 		STRIP_NOPS (tree110);
 		STRIP_NOPS (tree111);
 		if (TREE_CODE (tree110) == INTEGER_CST
-		    && 0 == compare_tree_int (tree110,
-					      element_precision (rtype))
+		    && compare_tree_int (tree110,
+					 element_precision (rtype)) == 0
 		    && operand_equal_p (tree01, tree111, 0))
 		  {
 		    tem = build2_loc (loc, (code0 == LSHIFT_EXPR
@@ -9472,8 +9546,8 @@ fold_binary_loc (location_t loc,
 		STRIP_NOPS (tree111);
 		if (TREE_CODE (tree110) == NEGATE_EXPR
 		    && TREE_CODE (tree111) == INTEGER_CST
-		    && 0 == compare_tree_int (tree111,
-					      element_precision (rtype) - 1)
+		    && compare_tree_int (tree111,
+					 element_precision (rtype) - 1) == 0
 		    && operand_equal_p (tree01, TREE_OPERAND (tree110, 0), 0))
 		  {
 		    tem = build2_loc (loc, (code0 == LSHIFT_EXPR
@@ -9581,12 +9655,12 @@ fold_binary_loc (location_t loc,
 	  /* Only do something if we found more than two objects.  Otherwise,
 	     nothing has changed and we risk infinite recursion.  */
 	  if (ok
-	      && (2 < ((var0 != 0) + (var1 != 0)
-		       + (minus_var0 != 0) + (minus_var1 != 0)
-		       + (con0 != 0) + (con1 != 0)
-		       + (minus_con0 != 0) + (minus_con1 != 0)
-		       + (lit0 != 0) + (lit1 != 0)
-		       + (minus_lit0 != 0) + (minus_lit1 != 0))))
+	      && ((var0 != 0) + (var1 != 0)
+		  + (minus_var0 != 0) + (minus_var1 != 0)
+		  + (con0 != 0) + (con1 != 0)
+		  + (minus_con0 != 0) + (minus_con1 != 0)
+		  + (lit0 != 0) + (lit1 != 0)
+		  + (minus_lit0 != 0) + (minus_lit1 != 0)) > 2)
 	    {
 	      var0 = associate_trees (loc, var0, var1, code, atype);
 	      minus_var0 = associate_trees (loc, minus_var0, minus_var1,
@@ -9704,10 +9778,17 @@ fold_binary_loc (location_t loc,
 
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && negate_expr_p (op1))
-	return fold_build2_loc (loc, MINUS_EXPR, type,
-				negate_expr (op1),
-				fold_convert_loc (loc, type,
+	  && negate_expr_p (op1)
+	  /* If arg0 is e.g. unsigned int and type is int, then this could
+	     introduce UB, because if A is INT_MIN at runtime, the original
+	     expression can be well defined while the latter is not.
+	     See PR83269.  */
+	  && !(ANY_INTEGRAL_TYPE_P (type)
+	       && TYPE_OVERFLOW_UNDEFINED (type)
+	       && ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+	       && !TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))))
+	return fold_build2_loc (loc, MINUS_EXPR, type, negate_expr (op1),
+			        fold_convert_loc (loc, type,
 						  TREE_OPERAND (arg0, 0)));
 
       /* Fold __complex__ ( x, 0 ) - __complex__ ( 0, y ) to
@@ -9793,8 +9874,8 @@ fold_binary_loc (location_t loc,
 
 	  strict_overflow_p = false;
 	  if (TREE_CODE (arg1) == INTEGER_CST
-	      && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
-					     &strict_overflow_p)))
+	      && (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
+					&strict_overflow_p)) != 0)
 	    {
 	      if (strict_overflow_p)
 		fold_overflow_warning (("assuming signed overflow does not "
@@ -10227,8 +10308,8 @@ fold_binary_loc (location_t loc,
 
       strict_overflow_p = false;
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
-					 &strict_overflow_p)))
+	  && (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
+				    &strict_overflow_p)) != 0)
 	{
 	  if (strict_overflow_p)
 	    fold_overflow_warning (("assuming signed overflow does not occur "
@@ -10245,8 +10326,8 @@ fold_binary_loc (location_t loc,
     case TRUNC_MOD_EXPR:
       strict_overflow_p = false;
       if (TREE_CODE (arg1) == INTEGER_CST
-	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
-					 &strict_overflow_p)))
+	  && (tem = extract_muldiv (op0, arg1, code, NULL_TREE,
+				    &strict_overflow_p)) != 0)
 	{
 	  if (strict_overflow_p)
 	    fold_overflow_warning (("assuming signed overflow does not occur "
@@ -10899,7 +10980,7 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (arg0) == ABS_EXPR
 	  && ! TREE_SIDE_EFFECTS (arg0)
-	  && (0 != (tem = negate_expr (arg1)))
+	  && (tem = negate_expr (arg1)) != 0
 	  && TREE_CODE (tem) == INTEGER_CST
 	  && !TREE_OVERFLOW (tem))
 	return fold_build2_loc (loc, TRUTH_ANDIF_EXPR, type,
@@ -11426,10 +11507,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		  if (n == 1)
 		    return VECTOR_CST_ELT (arg0, idx);
 
-		  auto_vec<tree, 32> vals (n);
+		  tree_vector_builder vals (type, n, 1);
 		  for (unsigned i = 0; i < n; ++i)
 		    vals.quick_push (VECTOR_CST_ELT (arg0, idx + i));
-		  return build_vector (type, vals);
+		  return vals.build ();
 		}
 	    }
 	}
@@ -11565,10 +11646,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  if (need_mask_canon && arg2 == op2)
 	    {
 	      tree eltype = TREE_TYPE (TREE_TYPE (arg2));
-	      auto_vec<tree, 32> tsel (nelts);
+	      tree_vector_builder tsel (TREE_TYPE (arg2), nelts, 1);
 	      for (i = 0; i < nelts; i++)
 		tsel.quick_push (build_int_cst (eltype, sel[i]));
-	      op2 = build_vector (TREE_TYPE (arg2), tsel);
+	      op2 = tsel.build ();
 	      changed = true;
 	    }
 
@@ -11608,12 +11689,11 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      else
 		{
 		  unsigned int nelts = VECTOR_CST_NELTS (arg0);
-		  auto_vec<tree, 32> elts (nelts);
+		  tree_vector_builder elts (type, nelts, 1);
 		  elts.quick_grow (nelts);
-		  memcpy (&elts[0], VECTOR_CST_ELTS (arg0),
-			  sizeof (tree) * nelts);
-		  elts[k] = arg1;
-		  return build_vector (type, elts);
+		  for (unsigned int i = 0; i < nelts; ++i)
+		    elts[i] = (i == k ? arg1 : VECTOR_CST_ELT (arg0, i));
+		  return elts.build ();
 		}
 	    }
 	}
@@ -11930,8 +12010,9 @@ fold_checksum_tree (const_tree expr, struct md5_ctx *ctx,
 	  fold_checksum_tree (TREE_IMAGPART (expr), ctx, ht);
 	  break;
 	case VECTOR_CST:
-	  for (i = 0; i < (int) VECTOR_CST_NELTS (expr); ++i)
-	    fold_checksum_tree (VECTOR_CST_ELT (expr, i), ctx, ht);
+	  len = vector_cst_encoded_nelts (expr);
+	  for (i = 0; i < len; ++i)
+	    fold_checksum_tree (VECTOR_CST_ENCODED_ELT (expr, i), ctx, ht);
 	  break;
 	default:
 	  break;
@@ -12408,10 +12489,9 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	     so check for it explicitly here.  */
 	  if (wi::gtu_p (TYPE_PRECISION (TREE_TYPE (size_one_node)),
 			 wi::to_wide (op1))
-	      && 0 != (t1 = fold_convert (type,
-					  const_binop (LSHIFT_EXPR,
-						       size_one_node,
-						       op1)))
+	      && (t1 = fold_convert (type,
+				     const_binop (LSHIFT_EXPR, size_one_node,
+						  op1))) != 0
 	      && !TREE_OVERFLOW (t1))
 	    return multiple_of_p (type, t1, bottom);
 	}
@@ -13735,11 +13815,10 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 	  return constant_boolean_node (true, type);
 	}
-      unsigned count = VECTOR_CST_NELTS (op0);
-      gcc_assert (VECTOR_CST_NELTS (op1) == count
-		  && TYPE_VECTOR_SUBPARTS (type) == count);
-
-      auto_vec<tree, 32> elts (count);
+      tree_vector_builder elts;
+      if (!elts.new_binary_operation (type, op0, op1, false))
+	return NULL_TREE;
+      unsigned int count = elts.encoded_nelts ();
       for (unsigned i = 0; i < count; i++)
 	{
 	  tree elem_type = TREE_TYPE (type);
@@ -13756,7 +13835,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 					  integer_zerop (tem) ? 0 : -1));
 	}
 
-      return build_vector (type, elts);
+      return elts.build ();
     }
 
   /* From here on we only handle LT, LE, GT, GE, EQ and NE.
@@ -14406,6 +14485,22 @@ test_vector_folding ()
   ASSERT_FALSE (integer_nonzerop (fold_build2 (NE_EXPR, res_type, one, one)));
 }
 
+/* Verify folding of VEC_DUPLICATE_EXPRs.  */
+
+static void
+test_vec_duplicate_folding ()
+{
+  scalar_int_mode int_mode = SCALAR_INT_TYPE_MODE (ssizetype);
+  machine_mode vec_mode = targetm.vectorize.preferred_simd_mode (int_mode);
+  /* This will be 1 if VEC_MODE isn't a vector mode.  */
+  unsigned int nunits = GET_MODE_NUNITS (vec_mode);
+
+  tree type = build_vector_type (ssizetype, nunits);
+  tree dup5_expr = fold_unary (VEC_DUPLICATE_EXPR, type, ssize_int (5));
+  tree dup5_cst = build_vector_from_val (type, ssize_int (5));
+  ASSERT_TRUE (operand_equal_p (dup5_expr, dup5_cst, 0));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -14413,6 +14508,7 @@ fold_const_c_tests ()
 {
   test_arithmetic_folding ();
   test_vector_folding ();
+  test_vec_duplicate_folding ();
 }
 
 } // namespace selftest

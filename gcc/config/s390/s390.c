@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1178,10 +1180,12 @@ s390_handle_vectorbool_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
 }
 
 static const struct attribute_spec s390_attribute_table[] = {
-  { "hotpatch", 2, 2, true, false, false, s390_handle_hotpatch_attribute, false },
-  { "s390_vector_bool", 0, 0, false, true, false, s390_handle_vectorbool_attribute, true },
+  { "hotpatch", 2, 2, true, false, false, false,
+    s390_handle_hotpatch_attribute, NULL },
+  { "s390_vector_bool", 0, 0, false, true, false, true,
+    s390_handle_vectorbool_attribute, NULL },
   /* End element.  */
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Return the alignment for LABEL.  We default to the -falign-labels
@@ -15353,16 +15357,11 @@ s390_option_override (void)
 	    {
 	      int val1;
 	      int val2;
-	      char s[256];
-	      char *t;
+	      char *s = strtok (ASTRDUP (opt->arg), ",");
+	      char *t = strtok (NULL, "\0");
 
-	      strncpy (s, opt->arg, 256);
-	      s[255] = 0;
-	      t = strchr (s, ',');
 	      if (t != NULL)
 		{
-		  *t = 0;
-		  t++;
 		  val1 = integral_argument (s);
 		  val2 = integral_argument (t);
 		}

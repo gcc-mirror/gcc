@@ -1876,7 +1876,7 @@ build_def_use (basic_block bb)
 	    if (REG_NOTE_KIND (note) == REG_CFA_RESTORE)
 	      scan_rtx (insn, &XEXP (note, 0), NO_REGS, mark_all_read, OP_IN);
 	}
-      else if (DEBUG_INSN_P (insn)
+      else if (DEBUG_BIND_INSN_P (insn)
 	       && !VAR_LOC_UNKNOWN_P (INSN_VAR_LOCATION_LOC (insn)))
 	{
 	  scan_rtx (insn, &INSN_VAR_LOCATION_LOC (insn),

@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -4905,30 +4907,31 @@ bfin_handle_l2_attribute (tree *node, tree ARG_UNUSED (name),
 /* Table of valid machine attributes.  */
 static const struct attribute_spec bfin_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt_handler", 0, 0, false, true,  true, handle_int_attribute,
-    false },
-  { "exception_handler", 0, 0, false, true,  true, handle_int_attribute,
-    false },
-  { "nmi_handler", 0, 0, false, true,  true, handle_int_attribute, false },
-  { "nesting", 0, 0, false, true,  true, NULL, false },
-  { "kspisusp", 0, 0, false, true,  true, NULL, false },
-  { "saveall", 0, 0, false, true,  true, NULL, false },
-  { "longcall",  0, 0, false, true,  true,  bfin_handle_longcall_attribute,
-    false },
-  { "shortcall", 0, 0, false, true,  true,  bfin_handle_longcall_attribute,
-    false },
-  { "l1_text", 0, 0, true, false, false,  bfin_handle_l1_text_attribute,
-    false },
-  { "l1_data", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
-    false },
-  { "l1_data_A", 0, 0, true, false, false, bfin_handle_l1_data_attribute,
-    false },
-  { "l1_data_B", 0, 0, true, false, false,  bfin_handle_l1_data_attribute,
-    false },
-  { "l2", 0, 0, true, false, false,  bfin_handle_l2_attribute, false },
-  { NULL, 0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt_handler", 0, 0, false, true,  true, false,
+    handle_int_attribute, NULL },
+  { "exception_handler", 0, 0, false, true,  true, false,
+    handle_int_attribute, NULL },
+  { "nmi_handler", 0, 0, false, true,  true, false, handle_int_attribute,
+    NULL },
+  { "nesting", 0, 0, false, true,  true, false, NULL, NULL },
+  { "kspisusp", 0, 0, false, true,  true, false, NULL, NULL },
+  { "saveall", 0, 0, false, true,  true, false, NULL, NULL },
+  { "longcall",  0, 0, false, true,  true, false,
+    bfin_handle_longcall_attribute, NULL },
+  { "shortcall", 0, 0, false, true,  true, false,
+    bfin_handle_longcall_attribute, NULL },
+  { "l1_text", 0, 0, true, false, false, false,
+    bfin_handle_l1_text_attribute, NULL },
+  { "l1_data", 0, 0, true, false, false, false,
+    bfin_handle_l1_data_attribute, NULL },
+  { "l1_data_A", 0, 0, true, false, false, false,
+    bfin_handle_l1_data_attribute, NULL },
+  { "l1_data_B", 0, 0, true, false, false, false,
+    bfin_handle_l1_data_attribute, NULL },
+  { "l2", 0, 0, true, false, false, false, bfin_handle_l2_attribute, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Implementation of TARGET_ASM_INTEGER.  When using FD-PIC, we need to

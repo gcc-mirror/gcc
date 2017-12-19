@@ -342,7 +342,8 @@ void rescan_loop_exit (edge, bool, bool);
 void sort_sibling_loops (function *);
 
 /* Loop data structure manipulation/querying.  */
-extern void flow_loop_tree_node_add (struct loop *, struct loop *);
+extern void flow_loop_tree_node_add (struct loop *, struct loop *,
+				     struct loop * = NULL);
 extern void flow_loop_tree_node_remove (struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
 extern bool flow_bb_inside_loop_p (const struct loop *, const_basic_block);
@@ -766,7 +767,7 @@ loop_iterator::~loop_iterator ()
        (LOOP) = li.next ())
 
 #define FOR_EACH_LOOP_FN(FN, LOOP, FLAGS) \
-  for (loop_iterator li(fn, &(LOOP), FLAGS); \
+  for (loop_iterator li(FN, &(LOOP), FLAGS); \
        (LOOP); \
        (LOOP) = li.next ())
 

@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "toplev.h"
 #include "gimplify.h"
-#include "cp-cilkplus.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -921,7 +920,7 @@ nonlambda_method_basetype (void)
     return NULL_TREE;
 
   type = current_class_type;
-  if (!LAMBDA_TYPE_P (type))
+  if (!type || !LAMBDA_TYPE_P (type))
     return type;
 
   /* Find the nearest enclosing non-lambda function.  */

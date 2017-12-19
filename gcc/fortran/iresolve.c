@@ -1823,9 +1823,14 @@ gfc_resolve_maxval (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   else
     name = "maxval";
 
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+  if (array->ts.type != BT_CHARACTER)
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s_%c%d"), name,
+			gfc_type_letter (array->ts.type), array->ts.kind);
+  else
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s%d_%c%d"), name, f->rank != 0,
+			gfc_type_letter (array->ts.type), array->ts.kind);     
 }
 
 
@@ -2023,9 +2028,14 @@ gfc_resolve_minval (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   else
     name = "minval";
 
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+  if (array->ts.type != BT_CHARACTER)
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s_%c%d"), name,
+			gfc_type_letter (array->ts.type), array->ts.kind);
+  else
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s%d_%c%d"), name, f->rank != 0,
+			gfc_type_letter (array->ts.type), array->ts.kind);     
 }
 
 

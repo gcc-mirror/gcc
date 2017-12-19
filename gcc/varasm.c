@@ -3007,13 +3007,11 @@ const_hash_1 (const tree exp)
 
     case VECTOR_CST:
       {
-	unsigned i;
-
-	hi = 7 + VECTOR_CST_NELTS (exp);
-
-	for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
-	  hi = hi * 563 + const_hash_1 (VECTOR_CST_ELT (exp, i));
-
+	hi = 7 + VECTOR_CST_NPATTERNS (exp);
+	hi = hi * 563 + VECTOR_CST_NELTS_PER_PATTERN (exp);
+	unsigned int count = vector_cst_encoded_nelts (exp);
+	for (unsigned int i = 0; i < count; ++i)
+	  hi = hi * 563 + const_hash_1 (VECTOR_CST_ENCODED_ELT (exp, i));
 	return hi;
       }
 
@@ -3118,10 +3116,16 @@ compare_constant (const tree t1, const tree t2)
       return tree_int_cst_equal (t1, t2);
 
     case REAL_CST:
-      /* Real constants are the same only if the same width of type.  */
+      /* Real constants are the same only if the same width of type.  In
+	 addition to the same width, we need to check whether the modes are the
+	 same.  There might be two floating point modes that are the same size
+	 but have different representations, such as the PowerPC that has 2
+	 different 128-bit floating point types (IBM extended double and IEEE
+	 128-bit floating point).  */
       if (TYPE_PRECISION (TREE_TYPE (t1)) != TYPE_PRECISION (TREE_TYPE (t2)))
 	return 0;
-
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+	return 0;
       return real_identical (&TREE_REAL_CST (t1), &TREE_REAL_CST (t2));
 
     case FIXED_CST:
@@ -3145,14 +3149,18 @@ compare_constant (const tree t1, const tree t2)
 
     case VECTOR_CST:
       {
-	unsigned i;
-
-        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
+	if (VECTOR_CST_NPATTERNS (t1)
+	    != VECTOR_CST_NPATTERNS (t2))
 	  return 0;
 
-	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
-	  if (!compare_constant (VECTOR_CST_ELT (t1, i),
-				 VECTOR_CST_ELT (t2, i)))
+	if (VECTOR_CST_NELTS_PER_PATTERN (t1)
+	    != VECTOR_CST_NELTS_PER_PATTERN (t2))
+	  return 0;
+
+	unsigned int count = vector_cst_encoded_nelts (t1);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (!compare_constant (VECTOR_CST_ENCODED_ELT (t1, i),
+				 VECTOR_CST_ENCODED_ELT (t2, i)))
 	    return 0;
 
 	return 1;
@@ -6524,6 +6532,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
     }
   else if (VAR_P (decl))
     {
+      tree d = CONST_CAST_TREE (decl);
       if (bss_initializer_p (decl))
 	ret = SECCAT_BSS;
       else if (! TREE_READONLY (decl)
@@ -6544,7 +6553,17 @@ categorize_decl_for_section (const_tree decl, int reloc)
 	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
       else if (reloc || flag_merge_constants < 2
 	       || ((flag_sanitize & SANITIZE_ADDRESS)
-		   && asan_protect_global (CONST_CAST_TREE (decl))))
+		   /* PR 81697: for architectures that use section anchors we
+		      need to ignore DECL_RTL_SET_P (decl) for string constants
+		      inside this asan_protect_global call because otherwise
+		      we'll wrongly put them into SECCAT_RODATA_MERGE_CONST
+		      section, set DECL_RTL (decl) later on and add DECL to
+		      protected globals via successive asan_protect_global
+		      calls.  In this scenario we'll end up with wrong
+		      alignment of these strings at runtime and possible ASan
+		      false positives.  */
+		   && asan_protect_global (d, use_object_blocks_p ()
+					      && use_blocks_for_decl_p (d))))
 	/* C and C++ don't allow different variables to share the same
 	   location.  -fmerge-all-constants allows even that (at the
 	   expense of not conforming).  */

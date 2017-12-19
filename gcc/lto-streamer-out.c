@@ -747,8 +747,9 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     {
-      for (unsigned i = 0; i < VECTOR_CST_NELTS (expr); ++i)
-	DFS_follow_tree_edge (VECTOR_CST_ELT (expr, i));
+      unsigned int count = vector_cst_encoded_nelts (expr);
+      for (unsigned int i = 0; i < count; ++i)
+	DFS_follow_tree_edge (VECTOR_CST_ENCODED_ELT (expr, i));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
@@ -1195,8 +1196,11 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
-    for (unsigned i = 0; i < VECTOR_CST_NELTS (t); ++i)
-      visit (VECTOR_CST_ELT (t, i));
+    {
+      unsigned int count = vector_cst_encoded_nelts (t);
+      for (unsigned int i = 0; i < count; ++i)
+	visit (VECTOR_CST_ENCODED_ELT (t, i));
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {

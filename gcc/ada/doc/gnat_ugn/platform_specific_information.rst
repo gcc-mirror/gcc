@@ -231,8 +231,8 @@ This section describes topics that are specific to GNU/Linux platforms.
 
 .. _Required_packages_on_GNU_Linux:
 
-Required Packages on GNU/Linux:
--------------------------------
+Required Packages on GNU/Linux
+------------------------------
 
 GNAT requires the C library developer's package to be installed.
 The name of of that package depends on your GNU/Linux distribution:
@@ -241,10 +241,10 @@ The name of of that package depends on your GNU/Linux distribution:
 * Debian, Ubuntu: ``libc6-dev`` (normally installed by default).
 
 If using the 32-bit version of GNAT on a 64-bit version of GNU/Linux,
-you'll need the 32-bit version of that package instead:
+you'll need the 32-bit version of the glibc and glibc-devel packages:
 
-* RedHat, SUSE: ``glibc-devel.i686``;
-* Debian, Ubuntu: ``libc6-dev:i386``.
+* RedHat, SUSE: ``glibc.i686``, ``glibc-devel.i686``
+* Debian, Ubuntu: ``libc6:i386``, ``libc6-dev:i386``
 
 Other GNU/Linux distributions might be choosing a different name
 for that package.

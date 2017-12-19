@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "builtins.h"
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
@@ -1194,7 +1195,7 @@ alloc_max_size (void)
 {
   if (!alloc_object_size_limit)
     {
-      alloc_object_size_limit = TYPE_MAX_VALUE (ssizetype);
+      alloc_object_size_limit = max_object_size ();
 
       if (warn_alloc_size_limit)
 	{
@@ -1245,7 +1246,8 @@ alloc_max_size (void)
 		{
 		  widest_int w = wi::mul (limit, unit);
 		  if (w < wi::to_widest (alloc_object_size_limit))
-		    alloc_object_size_limit = wide_int_to_tree (ssizetype, w);
+		    alloc_object_size_limit
+		      = wide_int_to_tree (ptrdiff_type_node, w);
 		}
 	    }
 	}
@@ -1254,13 +1256,17 @@ alloc_max_size (void)
 }
 
 /* Return true when EXP's range can be determined and set RANGE[] to it
-   after adjusting it if necessary to make EXP a valid size argument to
-   an allocation function declared with attribute alloc_size (whose
-   argument may be signed), or to a string manipulation function like
-   memset.  */
+   after adjusting it if necessary to make EXP a represents a valid size
+   of object, or a valid size argument to an allocation function declared
+   with attribute alloc_size (whose argument may be signed), or to a string
+   manipulation function like memset.  When ALLOW_ZERO is true, allow
+   returning a range of [0, 0] for a size in an anti-range [1, N] where
+   N > PTRDIFF_MAX.  A zero range is a (nearly) invalid argument to
+   allocation functions like malloc but it is a valid argument to
+   functions like memset.  */
 
 bool
-get_size_range (tree exp, tree range[2])
+get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
 {
   if (tree_fits_uhwi_p (exp))
     {
@@ -1269,20 +1275,33 @@ get_size_range (tree exp, tree range[2])
       return true;
     }
 
+  tree exptype = TREE_TYPE (exp);
+  bool integral = INTEGRAL_TYPE_P (exptype);
+
   wide_int min, max;
-  enum value_range_type range_type
-    = ((TREE_CODE (exp) == SSA_NAME && INTEGRAL_TYPE_P (TREE_TYPE (exp)))
-       ? get_range_info (exp, &min, &max) : VR_VARYING);
+  enum value_range_type range_type;
+
+  if (TREE_CODE (exp) == SSA_NAME && integral)
+    range_type = get_range_info (exp, &min, &max);
+  else
+    range_type = VR_VARYING;
 
   if (range_type == VR_VARYING)
     {
-      /* No range information available.  */
+      if (integral)
+	{
+	  /* Use the full range of the type of the expression when
+	     no value range information is available.  */
+	  range[0] = TYPE_MIN_VALUE (exptype);
+	  range[1] = TYPE_MAX_VALUE (exptype);
+	  return true;
+	}
+
       range[0] = NULL_TREE;
       range[1] = NULL_TREE;
       return false;
     }
 
-  tree exptype = TREE_TYPE (exp);
   unsigned expprec = TYPE_PRECISION (exptype);
 
   bool signed_p = !TYPE_UNSIGNED (exptype);
@@ -1320,11 +1339,16 @@ get_size_range (tree exp, tree range[2])
 	{
 	  /* EXP is unsigned and not in the range [1, MAX].  That means
 	     it's either zero or greater than MAX.  Even though 0 would
-	     normally be detected by -Walloc-zero set the range to
-	     [MAX, TYPE_MAX] so that when MAX is greater than the limit
-	     the whole range is diagnosed.  */
-	  min = max + 1;
-	  max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+	     normally be detected by -Walloc-zero, unless ALLOW_ZERO
+	     is true, set the range to [MAX, TYPE_MAX] so that when MAX
+	     is greater than the limit the whole range is diagnosed.  */
+	  if (allow_zero)
+	    min = max = wi::zero (expprec);
+	  else
+	    {
+	      min = max + 1;
+	      max = wi::to_wide (TYPE_MAX_VALUE (exptype));
+	    }
 	}
       else
 	{

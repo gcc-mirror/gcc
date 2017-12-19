@@ -254,6 +254,10 @@ mvectorize-with-neon-double
 Target Report RejectNegative Mask(NEON_VECTORIZE_DOUBLE)
 Use Neon double-word (rather than quad-word) registers for vectorization.
 
+mverbose-cost-dump
+Common Undocumented Var(arm_verbose_cost) Init(0)
+Enable more verbose RTX cost dumps during debug.  For GCC developers use only.
+
 mword-relocations
 Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
 Only generate absolute relocations on word sized values.

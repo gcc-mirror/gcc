@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-ubsan.h"
-#include "cilk.h"
 #include "gomp-constants.h"
 #include "spellcheck-tree.h"
 #include "gcc-rich-location.h"
@@ -96,7 +95,7 @@ static tree lookup_field (tree, tree);
 static int convert_arguments (location_t, vec<location_t>, tree,
 			      vec<tree, va_gc> *, vec<tree, va_gc> *, tree,
 			      tree);
-static tree pointer_diff (location_t, tree, tree);
+static tree pointer_diff (location_t, tree, tree, tree *);
 static tree convert_for_assignment (location_t, location_t, tree, tree, tree,
 				    enum impl_conv, bool, tree, tree, int);
 static tree valid_compound_expr_initializer (tree, tree);
@@ -1178,9 +1177,9 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
 
 	/* Target types must match incl. qualifiers.  */
 	if (TREE_TYPE (t1) != TREE_TYPE (t2)
-	    && 0 == (val = comptypes_internal (TREE_TYPE (t1), TREE_TYPE (t2),
-					       enum_and_int_p,
-					       different_types_p)))
+	    && (val = comptypes_internal (TREE_TYPE (t1), TREE_TYPE (t2),
+					  enum_and_int_p,
+					  different_types_p)) == 0)
 	  return 0;
 
 	if (different_types_p != NULL
@@ -1663,8 +1662,8 @@ function_types_compatible_p (const_tree f1, const_tree f2,
 	 compare that with the other type's arglist.
 	 If they don't match, ask for a warning (but no error).  */
       if (TYPE_ACTUAL_ARG_TYPES (f1)
-	  && 1 != type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1),
-					   enum_and_int_p, different_types_p))
+	  && type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1),
+				      enum_and_int_p, different_types_p) != 1)
 	val = 2;
       return val;
     }
@@ -1673,8 +1672,8 @@ function_types_compatible_p (const_tree f1, const_tree f2,
       if (!self_promoting_args_p (args1))
 	return 0;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
-	  && 1 != type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
-					   enum_and_int_p, different_types_p))
+	  && type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
+				      enum_and_int_p, different_types_p) != 1)
 	val = 2;
       return val;
     }
@@ -1833,13 +1832,10 @@ c_size_in_bytes (const_tree type)
 /* Return either DECL or its known constant value (if it has one).  */
 
 tree
-decl_constant_value (tree decl)
+decl_constant_value_1 (tree decl)
 {
-  if (/* Don't change a variable array bound or initial value to a constant
-	 in a place where a variable is invalid.  Note that DECL_INITIAL
-	 isn't valid for a PARM_DECL.  */
-      current_function_decl != NULL_TREE
-      && TREE_CODE (decl) != PARM_DECL
+  if (/* Note that DECL_INITIAL isn't valid for a PARM_DECL.  */
+      TREE_CODE (decl) != PARM_DECL
       && !TREE_THIS_VOLATILE (decl)
       && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != NULL_TREE
@@ -1852,6 +1848,17 @@ decl_constant_value (tree decl)
       && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
     return DECL_INITIAL (decl);
   return decl;
+}
+
+/* Return either DECL or its known constant value (if it has one).
+   Like the above, but always return decl outside of functions.  */
+
+tree
+decl_constant_value (tree decl)
+{
+  /* Don't change a variable array bound or initial value to a constant
+     in a place where a variable is invalid.  */
+  return current_function_decl ? decl_constant_value_1 (decl) : decl;
 }
 
 /* Convert the array expression EXP to a pointer.  */
@@ -2114,8 +2121,8 @@ perform_integral_promotions (tree exp)
       && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1))
       /* If it's thinner than an int, promote it like a
 	 c_promoting_integer_type_p, otherwise leave it alone.  */
-      && 0 > compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
-			       TYPE_PRECISION (integer_type_node)))
+      && compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
+			   TYPE_PRECISION (integer_type_node)) < 0)
     return convert (integer_type_node, exp);
 
   if (c_promoting_integer_type_p (type))
@@ -2593,17 +2600,6 @@ build_array_ref (location_t loc, tree array, tree index)
       || TREE_TYPE (index) == error_mark_node)
     return error_mark_node;
 
-  if (flag_cilkplus && contains_array_notation_expr (index))
-    {
-      size_t rank = 0;
-      if (!find_rank (loc, index, index, true, &rank))
-	return error_mark_node;
-      if (rank > 1)
-	{
-	  error_at (loc, "rank of the array's index is greater than 1");
-	  return error_mark_node;
-	}
-    }
   if (TREE_CODE (TREE_TYPE (array)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (array)) != POINTER_TYPE
       /* Allow vector[index] but not index[vector].  */
@@ -3033,10 +3029,6 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 	 often rewritten and don't match the original parameter list.  */
       if (name && !strncmp (IDENTIFIER_POINTER (name), "__atomic_", 9))
         origtypes = NULL;
-
-      if (flag_cilkplus
-	  && is_cilkplus_reduce_builtin (function))
-	origtypes = NULL;
     }
   if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
     function = function_to_pointer_conversion (loc, function);
@@ -3261,8 +3253,6 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  break;
 	}
     }
-  if (flag_cilkplus && fundecl && is_cilkplus_reduce_builtin (fundecl))
-    return vec_safe_length (values);
 
   /* Scan the given expressions and types, producing individual
      converted arguments.  */
@@ -3778,10 +3768,11 @@ parser_build_binary_op (location_t location, enum tree_code code,
 }
 
 /* Return a tree for the difference of pointers OP0 and OP1.
-   The resulting tree has type ptrdiff_t.  */
+   The resulting tree has type ptrdiff_t.  If POINTER_SUBTRACT sanitization is
+   enabled, assign to INSTRUMENT_EXPR call to libsanitizer.  */
 
 static tree
-pointer_diff (location_t loc, tree op0, tree op1)
+pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
 {
   tree restype = ptrdiff_type_node;
   tree result, inttype;
@@ -3825,6 +3816,17 @@ pointer_diff (location_t loc, tree op0, tree op1)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer to a function used in subtraction");
 
+  if (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
+    {
+      gcc_assert (current_function_decl != NULL_TREE);
+
+      op0 = save_expr (op0);
+      op1 = save_expr (op1);
+
+      tree tt = builtin_decl_explicit (BUILT_IN_ASAN_POINTER_SUBTRACT);
+      *instrument_expr = build_call_expr_loc (loc, tt, 2, op0, op1);
+    }
+
   /* First do the subtraction, then build the divide operator
      and only convert at the very end.
      Do not do default conversions in case restype is a short type.  */
@@ -3835,8 +3837,8 @@ pointer_diff (location_t loc, tree op0, tree op1)
      space, cast the pointers to some larger integer type and do the
      computations in that type.  */
   if (TYPE_PRECISION (inttype) > TYPE_PRECISION (TREE_TYPE (op0)))
-       op0 = build_binary_op (loc, MINUS_EXPR, convert (inttype, op0),
-			      convert (inttype, op1), false);
+    op0 = build_binary_op (loc, MINUS_EXPR, convert (inttype, op0),
+			   convert (inttype, op1), false);
   else
     op0 = build2_loc (loc, POINTER_DIFF_EXPR, inttype, op0, op1);
 
@@ -4733,7 +4735,6 @@ lvalue_p (const_tree ref)
 
     case INDIRECT_REF:
     case ARRAY_REF:
-    case ARRAY_NOTATION_REF:
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
@@ -5301,14 +5302,6 @@ build_compound_expr (location_t loc, tree expr1, tree expr2)
   tree eptype = NULL_TREE;
   tree ret;
 
-  if (flag_cilkplus
-      && (TREE_CODE (expr1) == CILK_SPAWN_STMT
-	  || TREE_CODE (expr2) == CILK_SPAWN_STMT))
-    {
-      error_at (loc,
-		"spawned function call cannot be part of a comma expression");
-      return error_mark_node;
-    }
   expr1_int_operands = EXPR_INT_CONST_OPERANDS (expr1);
   if (expr1_int_operands)
     expr1 = remove_c_maybe_const_expr (expr1);
@@ -5477,6 +5470,59 @@ handle_warn_cast_qual (location_t loc, tree type, tree otype)
 	is_const = TYPE_READONLY (in_type);
     }
   while (TREE_CODE (in_type) == POINTER_TYPE);
+}
+
+/* Heuristic check if two parameter types can be considered ABI-equivalent.  */
+
+static bool
+c_safe_arg_type_equiv_p (tree t1, tree t2)
+{
+  t1 = TYPE_MAIN_VARIANT (t1);
+  t2 = TYPE_MAIN_VARIANT (t2);
+
+  if (TREE_CODE (t1) == POINTER_TYPE
+      && TREE_CODE (t2) == POINTER_TYPE)
+    return true;
+
+  /* The signedness of the parameter matters only when an integral
+     type smaller than int is promoted to int, otherwise only the
+     precision of the parameter matters.
+     This check should make sure that the callee does not see
+     undefined values in argument registers.  */
+  if (INTEGRAL_TYPE_P (t1)
+      && INTEGRAL_TYPE_P (t2)
+      && TYPE_PRECISION (t1) == TYPE_PRECISION (t2)
+      && (TYPE_UNSIGNED (t1) == TYPE_UNSIGNED (t2)
+	  || !targetm.calls.promote_prototypes (NULL_TREE)
+	  || TYPE_PRECISION (t1) >= TYPE_PRECISION (integer_type_node)))
+    return true;
+
+  return comptypes (t1, t2);
+}
+
+/* Check if a type cast between two function types can be considered safe.  */
+
+static bool
+c_safe_function_type_cast_p (tree t1, tree t2)
+{
+  if (TREE_TYPE (t1) == void_type_node &&
+      TYPE_ARG_TYPES (t1) == void_list_node)
+    return true;
+
+  if (TREE_TYPE (t2) == void_type_node &&
+      TYPE_ARG_TYPES (t2) == void_list_node)
+    return true;
+
+  if (!c_safe_arg_type_equiv_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+    return false;
+
+  for (t1 = TYPE_ARG_TYPES (t1), t2 = TYPE_ARG_TYPES (t2);
+       t1 && t2;
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+    if (!c_safe_arg_type_equiv_p (TREE_VALUE (t1), TREE_VALUE (t2)))
+      return false;
+
+  return true;
 }
 
 /* Build an expression representing a cast to type TYPE of expression EXPR.
@@ -5671,6 +5717,16 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && !null_pointer_constant_p (value))
 	pedwarn (loc, OPT_Wpedantic, "ISO C forbids "
 		 "conversion of object pointer to function pointer type");
+
+      if (TREE_CODE (type) == POINTER_TYPE
+	  && TREE_CODE (otype) == POINTER_TYPE
+	  && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
+	  && TREE_CODE (TREE_TYPE (otype)) == FUNCTION_TYPE
+	  && !c_safe_function_type_cast_p (TREE_TYPE (type),
+					   TREE_TYPE (otype)))
+	warning_at (loc, OPT_Wcast_function_type,
+		    "cast between incompatible function types"
+		    " from %qT to %qT", otype, type);
 
       ovalue = value;
       value = convert (type, value);
@@ -7370,15 +7426,14 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	      /* Subtract the size of a single (possibly wide) character
 		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
-	      if (0 > compare_tree_int (TYPE_SIZE_UNIT (type),
-					(len
-					 - (TYPE_PRECISION (typ1)
-					    / BITS_PER_UNIT))))
+	      if (compare_tree_int (TYPE_SIZE_UNIT (type),
+				    (len - (TYPE_PRECISION (typ1)
+					    / BITS_PER_UNIT))) < 0)
 		pedwarn_init (init_loc, 0,
 			      ("initializer-string for array of chars "
 			       "is too long"));
 	      else if (warn_cxx_compat
-		       && 0 > compare_tree_int (TYPE_SIZE_UNIT (type), len))
+		       && compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
 		warning_at (init_loc, OPT_Wc___compat,
 			    ("initializer-string for array chars "
 			     "is too long for C++"));
@@ -10051,7 +10106,6 @@ c_finish_return (location_t loc, tree retval, tree origtype)
   tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl)), ret_stmt;
   bool no_warning = false;
   bool npc = false;
-  size_t rank = 0;
 
   /* Use the expansion point to handle cases such as returning NULL
      in a function returning void.  */
@@ -10061,25 +10115,6 @@ c_finish_return (location_t loc, tree retval, tree origtype)
     warning_at (xloc, 0,
 		"function declared %<noreturn%> has a %<return%> statement");
 
-  if (flag_cilkplus && contains_array_notation_expr (retval))
-    {
-      /* Array notations are allowed in a return statement if it is inside a
-	 built-in array notation reduction function.  */
-      if (!find_rank (loc, retval, retval, false, &rank))
-	return error_mark_node;
-      if (rank >= 1)
-	{
-	  error_at (loc, "array notation expression cannot be used as a "
-		    "return value");
-	  return error_mark_node;
-	}
-    }
-  if (flag_cilkplus && retval && contains_cilk_spawn_stmt (retval))
-    {
-      error_at (loc, "use of %<_Cilk_spawn%> in a return statement is not "
-		"allowed");
-      return error_mark_node;
-    }
   if (retval)
     {
       tree semantic_type = NULL_TREE;
@@ -10330,7 +10365,7 @@ c_start_case (location_t switch_loc,
 
   /* Add this new SWITCH_EXPR to the stack.  */
   cs = XNEW (struct c_switch);
-  cs->switch_expr = build3 (SWITCH_EXPR, orig_type, exp, NULL_TREE, NULL_TREE);
+  cs->switch_expr = build2 (SWITCH_EXPR, orig_type, exp, NULL_TREE);
   SET_EXPR_LOCATION (cs->switch_expr, switch_loc);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
@@ -10407,6 +10442,8 @@ c_finish_case (tree body, tree type)
 			type ? type : TREE_TYPE (cs->switch_expr),
 			SWITCH_COND (cs->switch_expr),
 			cs->bool_cond_p, cs->outside_range_p);
+  if (c_switch_covers_all_cases_p (cs->cases, TREE_TYPE (cs->switch_expr)))
+    SWITCH_ALL_CASES_P (cs->switch_expr) = 1;
 
   /* Pop the stack.  */
   c_switch_stack = cs->next;
@@ -10425,35 +10462,6 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
 {
   tree stmt;
 
-  /* If the condition has array notations, then the rank of the then_block and
-     else_block must be either 0 or be equal to the rank of the condition.  If
-     the condition does not have array notations then break them up as it is
-     broken up in a normal expression.  */
-  if (flag_cilkplus && contains_array_notation_expr (cond))
-    {
-      size_t then_rank = 0, cond_rank = 0, else_rank = 0;
-      if (!find_rank (if_locus, cond, cond, true, &cond_rank))
-	return;
-      if (then_block
-	  && !find_rank (if_locus, then_block, then_block, true, &then_rank))
-	return;
-      if (else_block
-	  && !find_rank (if_locus, else_block, else_block, true, &else_rank)) 
-	return;
-      if (cond_rank != then_rank && then_rank != 0)
-	{
-	  error_at (if_locus, "rank-mismatch between if-statement%'s condition"
-		    " and the then-block");
-	  return;
-	}
-      else if (cond_rank != else_rank && else_rank != 0)
-	{
-	  error_at (if_locus, "rank-mismatch between if-statement%'s condition"
-		    " and the else-block");
-	  return;
-	}
-    }
-
   stmt = build3 (COND_EXPR, void_type_node, cond, then_block, else_block);
   SET_EXPR_LOCATION (stmt, if_locus);
   add_stmt (stmt);
@@ -10471,9 +10479,6 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
 {
   tree entry = NULL, exit = NULL, t;
 
-  /* In theory could forbid cilk spawn for loop increment expression,
-     but it should work just fine.  */
-  
   /* If the condition is zero don't generate a loop construct.  */
   if (cond && integer_zerop (cond))
     {
@@ -10767,6 +10772,10 @@ c_finish_stmt_expr (location_t loc, tree body)
 	}
       else
 	i = tsi_last (last);
+      if (TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+	do
+	  tsi_prev (&i);
+	while (TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT);
       last_p = tsi_stmt_ptr (i);
       last = *last_p;
     }
@@ -10786,7 +10795,9 @@ c_finish_stmt_expr (location_t loc, tree body)
 
   /* In the case that the BIND_EXPR is not necessary, return the
      expression out from inside it.  */
-  if (last == BIND_EXPR_BODY (body)
+  if ((last == BIND_EXPR_BODY (body)
+       /* Skip nested debug stmts.  */
+       || last == expr_first (BIND_EXPR_BODY (body)))
       && BIND_EXPR_VARS (body) == NULL)
     {
       /* Even if this looks constant, do not allow it in a constant
@@ -11037,18 +11048,9 @@ build_binary_op (location_t location, enum tree_code code,
       op1 = default_conversion (op1);
     }
 
-  /* When Cilk Plus is enabled and there are array notations inside op0, then
-     we check to see if there are builtin array notation functions.  If
-     so, then we take on the type of the array notation inside it.  */
-  if (flag_cilkplus && contains_array_notation_expr (op0)) 
-    orig_type0 = type0 = find_correct_array_notation_type (op0);
-  else
-    orig_type0 = type0 = TREE_TYPE (op0);
+  orig_type0 = type0 = TREE_TYPE (op0);
 
-  if (flag_cilkplus && contains_array_notation_expr (op1))
-    orig_type1 = type1 = find_correct_array_notation_type (op1);
-  else 
-    orig_type1 = type1 = TREE_TYPE (op1);
+  orig_type1 = type1 = TREE_TYPE (op1);
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -11191,7 +11193,7 @@ build_binary_op (location_t location, enum tree_code code,
       if (code0 == POINTER_TYPE && code1 == POINTER_TYPE
 	  && comp_target_types (location, type0, type1))
 	{
-	  ret = pointer_diff (location, op0, op1);
+	  ret = pointer_diff (location, op0, op1, &instrument_expr);
 	  goto return_build_binary_op;
 	}
       /* Handle pointer minus int.  Just like pointer plus int.  */
@@ -11741,6 +11743,17 @@ build_binary_op (location_t location, enum tree_code code,
 	  result_type = type1;
 	  pedwarn (location, 0, "comparison between pointer and integer");
 	}
+
+      if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
+	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
+	{
+	  op0 = save_expr (op0);
+	  op1 = save_expr (op1);
+
+	  tree tt = builtin_decl_explicit (BUILT_IN_ASAN_POINTER_COMPARE);
+	  instrument_expr = build_call_expr_loc (location, tt, 2, op0, op1);
+	}
+
       if ((TREE_CODE (TREE_TYPE (orig_op0)) == BOOLEAN_TYPE
 	   || truth_value_p (TREE_CODE (orig_op0)))
 	  ^ (TREE_CODE (TREE_TYPE (orig_op1)) == BOOLEAN_TYPE
@@ -13292,38 +13305,21 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"clause on %<simd%> or %<for%> constructs");
 	      OMP_CLAUSE_LINEAR_KIND (c) = OMP_CLAUSE_LINEAR_DEFAULT;
 	    }
-	  if (ort & C_ORT_CILK)
+	  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+	      && TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
 	    {
-	      if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-		  && !SCALAR_FLOAT_TYPE_P (TREE_TYPE (t))
-		  && TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
-		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "linear clause applied to non-integral, "
-			    "non-floating, non-pointer variable with type %qT",
-			    TREE_TYPE (t));
-		  remove = true;
-		  break;
-		}
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"linear clause applied to non-integral non-pointer "
+			"variable with type %qT", TREE_TYPE (t));
+	      remove = true;
+	      break;
 	    }
-	  else
+	  if (TYPE_ATOMIC (TREE_TYPE (t)))
 	    {
-	      if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-		  && TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE)
-		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "linear clause applied to non-integral non-pointer "
-			    "variable with type %qT", TREE_TYPE (t));
-		  remove = true;
-		  break;
-		}
-	      if (TYPE_ATOMIC (TREE_TYPE (t)))
-		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%<_Atomic%> %qD in %<linear%> clause", t);
-		  remove = true;
-		  break;
-		}
+	      error_at (OMP_CLAUSE_LOCATION (c),
+		    "%<_Atomic%> %qD in %<linear%> clause", t);
+	      remove = true;
+	      break;
 	    }
 	  if (ort == C_ORT_OMP_DECLARE_SIMD)
 	    {
@@ -13855,7 +13851,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_HINT:
 	case OMP_CLAUSE_DEFAULTMAP:
-	case OMP_CLAUSE__CILK_FOR_COUNT_:
 	case OMP_CLAUSE_NUM_GANGS:
 	case OMP_CLAUSE_NUM_WORKERS:
 	case OMP_CLAUSE_VECTOR_LENGTH:
@@ -14405,28 +14400,6 @@ c_tree_equal (tree t1, tree t2)
     }
   /* We can get here with --disable-checking.  */
   return false;
-}
-
-/* Inserts "cleanup" functions after the function-body of FNDECL.  FNDECL is a 
-   spawn-helper and BODY is the newly created body for FNDECL.  */
-
-void
-cilk_install_body_with_frame_cleanup (tree fndecl, tree body, void *w)
-{
-  tree list = alloc_stmt_list ();
-  tree frame = make_cilk_frame (fndecl);
-  tree dtor = create_cilk_function_exit (frame, false, true);
-  add_local_decl (cfun, frame);
-  
-  DECL_SAVED_TREE (fndecl) = list;
-
-  tree body_list = alloc_stmt_list ();
-  cilk_outline (fndecl, &body, (struct wrapper_data *) w);
-  body = fold_build_cleanup_point_expr (void_type_node, body);
-
-  append_to_statement_list (body, &body_list);
-  append_to_statement_list (build_stmt (EXPR_LOCATION (body), TRY_FINALLY_EXPR,
-				       	body_list, dtor), &list);
 }
 
 /* Returns true when the function declaration FNDECL is implicit,

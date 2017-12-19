@@ -1255,6 +1255,9 @@ extern tree vect_create_addr_base_for_vector_ref (gimple *, gimple_seq *,
 /* FORNOW: Used in tree-parloops.c.  */
 extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *,
 					    bool *, bool);
+/* Used in gimple-loop-interchange.c.  */
+extern bool check_reduction_path (location_t, loop_p, gphi *, tree,
+				  enum tree_code);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);

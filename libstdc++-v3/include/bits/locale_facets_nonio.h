@@ -236,9 +236,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__dt[1] = _M_data->_M_date_time_era_format;
       }
 
+#if !_GLIBCXX_INLINE_VERSION
       void
-      _M_am_pm_format(const _CharT* __ampm) const
-      { __ampm = _M_data->_M_am_pm_format; }
+      _M_am_pm_format(const _CharT*) const
+      { /* Kept for ABI compatibility, see PR65927 */ }
+#endif
 
       void
       _M_am_pm(const _CharT** __ampm) const

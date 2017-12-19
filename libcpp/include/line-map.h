@@ -280,6 +280,11 @@ enum lc_reason
    worked example in libcpp/location-example.txt.  */
 typedef unsigned int source_location;
 
+/* Do not track column numbers higher than this one.  As a result, the
+   range of column_bits is [12, 18] (or 0 if column numbers are
+   disabled).  */
+const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
+
 /* Do not pack ranges if locations get higher than this.
    If you change this, update:
      gcc.dg/plugin/location-overflow-test-*.c.  */

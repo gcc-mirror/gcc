@@ -2762,6 +2762,7 @@ chkp_compute_bounds_for_assignment (tree node, gimple *assign)
     case FLOAT_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case POINTER_DIFF_EXPR:
       /* No valid bounds may be produced by these exprs.  */
       bounds = chkp_get_invalid_op_bounds ();
       break;

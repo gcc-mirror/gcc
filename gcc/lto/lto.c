@@ -1065,6 +1065,12 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 			TREE_FIXED_CST_PTR (t1), TREE_FIXED_CST_PTR (t2)))
       return false;
 
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    {
+      compare_values (VECTOR_CST_LOG2_NPATTERNS);
+      compare_values (VECTOR_CST_NELTS_PER_PATTERN);
+    }
+
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
       compare_values (DECL_MODE);
@@ -1281,11 +1287,12 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
     {
-      unsigned i;
       /* Note that the number of elements for EXPR has already been emitted
 	 in EXPR's header (see streamer_write_tree_header).  */
-      for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
-	compare_tree_edges (VECTOR_CST_ELT (t1, i), VECTOR_CST_ELT (t2, i));
+      unsigned int count = vector_cst_encoded_nelts (t1);
+      for (unsigned int i = 0; i < count; ++i)
+	compare_tree_edges (VECTOR_CST_ENCODED_ELT (t1, i),
+			    VECTOR_CST_ENCODED_ELT (t2, i));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
@@ -1989,7 +1996,7 @@ create_subid_section_table (struct lto_section_slot *ls, splay_tree file_ids,
       file_data = ggc_alloc<lto_file_decl_data> ();
       memset(file_data, 0, sizeof (struct lto_file_decl_data));
       file_data->id = id;
-      file_data->section_hash_table = lto_obj_create_section_hash_table ();;
+      file_data->section_hash_table = lto_obj_create_section_hash_table ();
       lto_splay_tree_insert (file_ids, id, file_data);
 
       /* Maintain list in linker order */

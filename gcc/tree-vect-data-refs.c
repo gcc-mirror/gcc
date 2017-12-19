@@ -2841,10 +2841,6 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  if (data_ref_compare_tree (DR_STEP (dra), DR_STEP (drb)) != 0)
 	    break;
 
-	  /* Do not place the same access in the interleaving chain twice.  */
-	  if (tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb)) == 0)
-	    break;
-
 	  /* Check the types are compatible.
 	     ???  We don't distinguish this during sorting.  */
 	  if (!types_compatible_p (TREE_TYPE (DR_REF (dra)),
@@ -2854,7 +2850,25 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  /* Sorting has ensured that DR_INIT (dra) <= DR_INIT (drb).  */
 	  HOST_WIDE_INT init_a = TREE_INT_CST_LOW (DR_INIT (dra));
 	  HOST_WIDE_INT init_b = TREE_INT_CST_LOW (DR_INIT (drb));
-	  gcc_assert (init_a <= init_b);
+	  HOST_WIDE_INT init_prev
+	    = TREE_INT_CST_LOW (DR_INIT (datarefs_copy[i-1]));
+	  gcc_assert (init_a <= init_b
+		      && init_a <= init_prev
+		      && init_prev <= init_b);
+
+	  /* Do not place the same access in the interleaving chain twice.  */
+	  if (init_b == init_prev)
+	    {
+	      gcc_assert (gimple_uid (DR_STMT (datarefs_copy[i-1]))
+			  < gimple_uid (DR_STMT (drb)));
+	      /* ???  For now we simply "drop" the later reference which is
+	         otherwise the same rather than finishing off this group.
+		 In the end we'd want to re-process duplicates forming
+		 multiple groups from the refs, likely by just collecting
+		 all candidates (including duplicates and split points
+		 below) in a vector and then process them together.  */
+	      continue;
+	    }
 
 	  /* If init_b == init_a + the size of the type * k, we have an
 	     interleaving, and DRA is accessed before DRB.  */
@@ -2866,10 +2880,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  /* If we have a store, the accesses are adjacent.  This splits
 	     groups into chunks we support (we don't support vectorization
 	     of stores with gaps).  */
-	  if (!DR_IS_READ (dra)
-	      && (init_b - (HOST_WIDE_INT) TREE_INT_CST_LOW
-					     (DR_INIT (datarefs_copy[i-1]))
-		  != type_size_a))
+	  if (!DR_IS_READ (dra) && init_b - init_prev != type_size_a)
 	    break;
 
 	  /* If the step (if not zero or non-constant) is greater than the

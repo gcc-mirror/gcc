@@ -44,6 +44,69 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /**
+   * Derives from @c unary_function or @c binary_function, or perhaps
+   * nothing, depending on the number of arguments provided. The
+   * primary template is the basis case, which derives nothing.
+   */
+  template<typename _Res, typename... _ArgTypes>
+    struct _Maybe_unary_or_binary_function { };
+
+  /// Derives from @c unary_function, as appropriate.
+  template<typename _Res, typename _T1>
+    struct _Maybe_unary_or_binary_function<_Res, _T1>
+    : std::unary_function<_T1, _Res> { };
+
+  /// Derives from @c binary_function, as appropriate.
+  template<typename _Res, typename _T1, typename _T2>
+    struct _Maybe_unary_or_binary_function<_Res, _T1, _T2>
+    : std::binary_function<_T1, _T2, _Res> { };
+
+  template<typename _Signature>
+    struct _Mem_fn_traits;
+
+  template<typename _Res, typename _Class, typename... _ArgTypes>
+    struct _Mem_fn_traits_base
+    {
+      using __result_type = _Res;
+      using __maybe_type
+	= _Maybe_unary_or_binary_function<_Res, _Class*, _ArgTypes...>;
+      using __arity = integral_constant<size_t, sizeof...(_ArgTypes)>;
+    };
+
+#define _GLIBCXX_MEM_FN_TRAITS2(_CV, _REF, _LVAL, _RVAL)		\
+  template<typename _Res, typename _Class, typename... _ArgTypes>	\
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes...) _CV _REF>	\
+    : _Mem_fn_traits_base<_Res, _CV _Class, _ArgTypes...>		\
+    {									\
+      using __vararg = false_type;					\
+    };									\
+  template<typename _Res, typename _Class, typename... _ArgTypes>	\
+    struct _Mem_fn_traits<_Res (_Class::*)(_ArgTypes... ...) _CV _REF>	\
+    : _Mem_fn_traits_base<_Res, _CV _Class, _ArgTypes...>		\
+    {									\
+      using __vararg = true_type;					\
+    };
+
+#define _GLIBCXX_MEM_FN_TRAITS(_REF, _LVAL, _RVAL)		\
+  _GLIBCXX_MEM_FN_TRAITS2(		, _REF, _LVAL, _RVAL)	\
+  _GLIBCXX_MEM_FN_TRAITS2(const		, _REF, _LVAL, _RVAL)	\
+  _GLIBCXX_MEM_FN_TRAITS2(volatile	, _REF, _LVAL, _RVAL)	\
+  _GLIBCXX_MEM_FN_TRAITS2(const volatile, _REF, _LVAL, _RVAL)
+
+_GLIBCXX_MEM_FN_TRAITS( , true_type, true_type)
+_GLIBCXX_MEM_FN_TRAITS(&, true_type, false_type)
+_GLIBCXX_MEM_FN_TRAITS(&&, false_type, true_type)
+
+#if __cplusplus > 201402L
+_GLIBCXX_MEM_FN_TRAITS(noexcept, true_type, true_type)
+_GLIBCXX_MEM_FN_TRAITS(& noexcept, true_type, false_type)
+_GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
+#endif
+
+#undef _GLIBCXX_MEM_FN_TRAITS
+#undef _GLIBCXX_MEM_FN_TRAITS2
+
   /// If we have found a result_type, extract it.
   template<typename _Functor, typename = __void_t<>>
     struct _Maybe_get_result_type
@@ -64,101 +127,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// Retrieve the result type for a function type.
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes...)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res(_ArgTypes...) _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes......)>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes...) const>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes......) const>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes...) volatile>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes......) volatile>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes...) const volatile>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(_ArgTypes......) const volatile>
-    { typedef _Res result_type; };
-
-  /// Retrieve the result type for a function reference.
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(&)(_ArgTypes...)>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(&)(_ArgTypes......)>
+  /// Retrieve the result type for a varargs function type.
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res(_ArgTypes......) _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
   /// Retrieve the result type for a function pointer.
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(*)(_ArgTypes...)>
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct _Weak_result_type_impl<_Res(*)(_ArgTypes...) _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  template<typename _Res, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res(*)(_ArgTypes......)>
+  /// Retrieve the result type for a varargs function pointer.
+  template<typename _Res, typename... _ArgTypes _GLIBCXX_NOEXCEPT_PARM>
+    struct
+    _Weak_result_type_impl<_Res(*)(_ArgTypes......) _GLIBCXX_NOEXCEPT_QUAL>
     { typedef _Res result_type; };
 
-  /// Retrieve result type for a member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)>
-    { typedef _Res result_type; };
+  // Let _Weak_result_type_impl perform the real work.
+  template<typename _Functor,
+	   bool = is_member_function_pointer<_Functor>::value>
+    struct _Weak_result_type_memfun
+    : _Weak_result_type_impl<_Functor>
+    { };
 
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......)>
-    { typedef _Res result_type; };
+  // A pointer to member function has a weak result type.
+  template<typename _MemFunPtr>
+    struct _Weak_result_type_memfun<_MemFunPtr, true>
+    {
+      using result_type = typename _Mem_fn_traits<_MemFunPtr>::__result_type;
+    };
 
-  /// Retrieve result type for a const member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) const>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) const>
-    { typedef _Res result_type; };
-
-  /// Retrieve result type for a volatile member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...) volatile>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......) volatile>
-    { typedef _Res result_type; };
-
-  /// Retrieve result type for a const volatile member function pointer.
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes...)
-				  const volatile>
-    { typedef _Res result_type; };
-
-  template<typename _Res, typename _Class, typename... _ArgTypes>
-    struct _Weak_result_type_impl<_Res (_Class::*)(_ArgTypes......)
-				  const volatile>
-    { typedef _Res result_type; };
+  // A pointer to data member doesn't have a weak result type.
+  template<typename _Func, typename _Class>
+    struct _Weak_result_type_memfun<_Func _Class::*, false>
+    { };
 
   /**
    *  Strip top-level cv-qualifiers from the function object and let
-   *  _Weak_result_type_impl perform the real work.
+   *  _Weak_result_type_memfun perform the real work.
   */
   template<typename _Functor>
     struct _Weak_result_type
-    : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
+    : _Weak_result_type_memfun<typename remove_cv<_Functor>::type>
     { };
 
   // Detect nested argument_type.
@@ -201,8 +215,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // - a function type (unary)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res(_T1)>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(_T1) _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<_T1, _Res>
     { };
 
@@ -222,8 +236,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // - a function type (binary)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res(_T1, _T2)>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(_T1, _T2) _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<_T1, _T2, _Res>
     { };
 
@@ -243,64 +257,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // - a function pointer type (unary)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res(*)(_T1)>
+  template<typename _Res, typename _T1 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(*)(_T1) _GLIBCXX_NOEXCEPT_QUAL>
     : unary_function<_T1, _Res>
     { };
 
   // - a function pointer type (binary)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res(*)(_T1, _T2)>
+  template<typename _Res, typename _T1, typename _T2 _GLIBCXX_NOEXCEPT_PARM>
+    struct _Reference_wrapper_base<_Res(*)(_T1, _T2) _GLIBCXX_NOEXCEPT_QUAL>
     : binary_function<_T1, _T2, _Res>
     { };
 
-  // - a pointer to member function type (unary, no qualifiers)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)()>
-    : unary_function<_T1*, _Res>
+  template<typename _Tp, bool = is_member_function_pointer<_Tp>::value>
+    struct _Reference_wrapper_base_memfun
+    : _Reference_wrapper_base<_Tp>
     { };
 
-  // - a pointer to member function type (binary, no qualifiers)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2)>
-    : binary_function<_T1*, _T2, _Res>
-    { };
-
-  // - a pointer to member function type (unary, const)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)() const>
-    : unary_function<const _T1*, _Res>
-    { };
-
-  // - a pointer to member function type (binary, const)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const>
-    : binary_function<const _T1*, _T2, _Res>
-    { };
-
-  // - a pointer to member function type (unary, volatile)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)() volatile>
-    : unary_function<volatile _T1*, _Res>
-    { };
-
-  // - a pointer to member function type (binary, volatile)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) volatile>
-    : binary_function<volatile _T1*, _T2, _Res>
-    { };
-
-  // - a pointer to member function type (unary, const volatile)
-  template<typename _Res, typename _T1>
-    struct _Reference_wrapper_base<_Res (_T1::*)() const volatile>
-    : unary_function<const volatile _T1*, _Res>
-    { };
-
-  // - a pointer to member function type (binary, const volatile)
-  template<typename _Res, typename _T1, typename _T2>
-    struct _Reference_wrapper_base<_Res (_T1::*)(_T2) const volatile>
-    : binary_function<const volatile _T1*, _T2, _Res>
-    { };
+  template<typename _MemFunPtr>
+    struct _Reference_wrapper_base_memfun<_MemFunPtr, true>
+    : _Mem_fn_traits<_MemFunPtr>::__maybe_type
+    {
+      using result_type = typename _Mem_fn_traits<_MemFunPtr>::__result_type;
+    };
 
   /**
    *  @brief Primary class template for reference_wrapper.
@@ -309,7 +287,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     class reference_wrapper
-    : public _Reference_wrapper_base<typename remove_cv<_Tp>::type>
+    : public _Reference_wrapper_base_memfun<typename remove_cv<_Tp>::type>
     {
       _Tp* _M_data;
 

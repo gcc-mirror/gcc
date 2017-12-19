@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -347,15 +349,15 @@ static bool m68k_modes_tieable_p (machine_mode, machine_mode);
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt", 0, 0, true,  false, false, m68k_handle_fndecl_attribute,
-    false },
-  { "interrupt_handler", 0, 0, true,  false, false,
-    m68k_handle_fndecl_attribute, false },
-  { "interrupt_thread", 0, 0, true,  false, false,
-    m68k_handle_fndecl_attribute, false },
-  { NULL,                0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true,  false, false, false,
+    m68k_handle_fndecl_attribute, NULL },
+  { "interrupt_handler", 0, 0, true,  false, false, false,
+    m68k_handle_fndecl_attribute, NULL },
+  { "interrupt_thread", 0, 0, true,  false, false, false,
+    m68k_handle_fndecl_attribute, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -3521,8 +3523,7 @@ output_reg_adjust (rtx reg, int n)
 {
   const char *s;
 
-  gcc_assert (GET_MODE (reg) == SImode
-	      && -12 <= n && n != 0 && n <= 12);
+  gcc_assert (GET_MODE (reg) == SImode && n >= -12 && n != 0 && n <= 12);
 
   switch (n)
     {
@@ -3564,8 +3565,7 @@ emit_reg_adjust (rtx reg1, int n)
 {
   rtx reg2;
 
-  gcc_assert (GET_MODE (reg1) == SImode
-	      && -12 <= n && n != 0 && n <= 12);
+  gcc_assert (GET_MODE (reg1) == SImode && n >= -12 && n != 0 && n <= 12);
 
   reg1 = copy_rtx (reg1);
   reg2 = copy_rtx (reg1);

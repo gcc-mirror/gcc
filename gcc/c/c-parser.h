@@ -187,6 +187,6 @@ c_parser_declarator (c_parser *parser, bool type_seen_p, c_dtr_syn kind,
 		     bool *seen_id);
 extern void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
 				bool, bool, bool, enum c_lookahead_kind);
-extern struct c_type_name *c_parser_type_name (c_parser *);
+extern struct c_type_name *c_parser_type_name (c_parser *, bool = false);
 
 #endif

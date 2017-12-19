@@ -31,6 +31,12 @@ typedef __complex float KCtype __attribute__ ((mode (KC)));
 #define isnan __builtin_isnan
 #define isinf __builtin_isinf
 
+#if defined(FLOAT128_HW_INSNS) && !defined(__mulkc3)
+#define __mulkc3 __mulkc3_sw
+#endif
+
+extern KCtype __mulkc3 (KFtype, KFtype, KFtype, KFtype);
+
 KCtype
 __mulkc3 (KFtype a, KFtype b, KFtype c, KFtype d)
 {

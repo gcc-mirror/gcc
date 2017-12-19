@@ -1524,6 +1524,49 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+;; Non-canonical, but can be formed by ree when combine is not successful at
+;; producing one of the two canonical patterns below.
+(define_insn "*lshrsi3_zero_extend_1"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(zero_extend:DI
+	 (lshiftrt:SI (match_operand:SI     1 "register_operand" " r")
+		      (match_operand:SI     2 "const_int_operand"))))]
+  "TARGET_64BIT && (INTVAL (operands[2]) & 0x1f) > 0"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+
+  return "srliw\t%0,%1,%2";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Canonical form for a zero-extend of a logical right shift.
+(define_insn "*lshrsi3_zero_extend_2"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(zero_extract:DI (match_operand:DI  1 "register_operand" " r")
+			 (match_operand     2 "const_int_operand")
+			 (match_operand     3 "const_int_operand")))]
+  "(TARGET_64BIT && (INTVAL (operands[3]) > 0)
+    && (INTVAL (operands[2]) + INTVAL (operands[3]) == 32))"
+{
+  return "srliw\t%0,%1,%3";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Canonical form for a zero-extend of a logical right shift when the
+;; shift count is 31.
+(define_insn "*lshrsi3_zero_extend_3"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(lt:DI (match_operand:SI            1 "register_operand" " r")
+	       (const_int 0)))]
+  "TARGET_64BIT"
+{
+  return "srliw\t%0,%1,31";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
 ;;
 ;;  ....................
 ;;

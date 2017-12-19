@@ -17,6 +17,8 @@
    <http://www.gnu.org/licenses/>.
 */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

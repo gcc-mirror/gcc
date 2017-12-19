@@ -17,6 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1980,10 +1982,10 @@ iq2000_expand_prologue (void)
 	{
 	  if (next_arg == 0
 	      && DECL_NAME (cur_arg)
-	      && ((0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
-				"__builtin_va_alist"))
-		  || (0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
-				   "va_alist"))))
+	      && (strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
+			  "__builtin_va_alist") == 0
+		  || strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
+			     "va_alist") == 0))
 	    {
 	      last_arg_is_vararg_marker = 1;
 	      break;

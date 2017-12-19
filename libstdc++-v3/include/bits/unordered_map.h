@@ -1193,7 +1193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     -> unordered_map<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
 
   template<typename _Key, typename _Tp, typename _Allocator,
-	   _RequireAllocator<_Allocator>>
+	   typename = _RequireAllocator<_Allocator>>
     unordered_map(initializer_list<pair<_Key, _Tp>>, _Allocator)
     -> unordered_map<_Key, _Tp, hash<_Key>, equal_to<_Key>, _Allocator>;
 

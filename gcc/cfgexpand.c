@@ -2327,6 +2327,9 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
     {
       glabel *lab_stmt;
 
+      if (is_gimple_debug (gsi_stmt (gsi)))
+	continue;
+
       lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
       if (!lab_stmt)
 	break;
@@ -2635,6 +2638,9 @@ expand_call_stmt (gcall *stmt)
 
   if (gimple_call_nothrow_p (stmt))
     TREE_NOTHROW (exp) = 1;
+
+  if (gimple_no_warning_p (stmt))
+    TREE_NO_WARNING (exp) = 1;
 
   CALL_EXPR_TAILCALL (exp) = gimple_call_tail_p (stmt);
   CALL_EXPR_MUST_TAIL_CALL (exp) = gimple_call_must_tail_p (stmt);
@@ -5066,6 +5072,8 @@ expand_debug_expr (tree exp)
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_PERM_EXPR:
+    case VEC_DUPLICATE_EXPR:
+    case VEC_SERIES_EXPR:
       return NULL;
 
     /* Misc codes.  */
@@ -5307,7 +5315,7 @@ expand_debug_locations (void)
   flag_strict_aliasing = 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (DEBUG_INSN_P (insn))
+    if (DEBUG_BIND_INSN_P (insn))
       {
 	tree value = (tree)INSN_VAR_LOCATION_LOC (insn);
 	rtx val;
@@ -5454,7 +5462,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   gimple_stmt_iterator gsi;
   gimple_seq stmts;
   gimple *stmt = NULL;
-  rtx_note *note;
+  rtx_note *note = NULL;
   rtx_insn *last;
   edge e;
   edge_iterator ei;
@@ -5495,24 +5503,28 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	}
     }
 
-  gsi = gsi_start (stmts);
+  gsi = gsi_start_nondebug (stmts);
   if (!gsi_end_p (gsi))
     {
       stmt = gsi_stmt (gsi);
       if (gimple_code (stmt) != GIMPLE_LABEL)
 	stmt = NULL;
     }
+  gsi = gsi_start (stmts);
 
+  gimple *label_stmt = stmt;
   rtx_code_label **elt = lab_rtx_for_bb->get (bb);
 
   if (stmt || elt)
     {
+      gcc_checking_assert (!note);
       last = get_last_insn ();
 
       if (stmt)
 	{
 	  expand_gimple_stmt (stmt);
-	  gsi_next (&gsi);
+	  if (gsi_stmt (gsi) == stmt)
+	    gsi_next (&gsi);
 	}
 
       if (elt)
@@ -5521,6 +5533,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       BB_HEAD (bb) = NEXT_INSN (last);
       if (NOTE_P (BB_HEAD (bb)))
 	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
+      gcc_assert (LABEL_P (BB_HEAD (bb)));
       note = emit_note_after (NOTE_INSN_BASIC_BLOCK, BB_HEAD (bb));
 
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
@@ -5528,13 +5541,17 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   else
     BB_HEAD (bb) = note = emit_note (NOTE_INSN_BASIC_BLOCK);
 
-  NOTE_BASIC_BLOCK (note) = bb;
+  if (note)
+    NOTE_BASIC_BLOCK (note) = bb;
 
   for (; !gsi_end_p (gsi); gsi_next (&gsi))
     {
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
+
+      if (stmt == label_stmt)
+	continue;
 
       /* If this statement is a non-debug one, and we generate debug
 	 insns, then this one might be the last real use of a TERed
@@ -5560,7 +5577,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	   a_2 = ...
            #DEBUG ... => #D1
 	 */
-      if (MAY_HAVE_DEBUG_INSNS
+      if (MAY_HAVE_DEBUG_BIND_INSNS
 	  && SA.values
 	  && !is_gimple_debug (stmt))
 	{
@@ -5641,39 +5658,68 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	  if (new_bb)
 	    return new_bb;
 	}
-      else if (gimple_debug_bind_p (stmt))
+      else if (is_gimple_debug (stmt))
 	{
 	  location_t sloc = curr_insn_location ();
 	  gimple_stmt_iterator nsi = gsi;
 
 	  for (;;)
 	    {
-	      tree var = gimple_debug_bind_get_var (stmt);
-	      tree value;
-	      rtx val;
+	      tree var;
+	      tree value = NULL_TREE;
+	      rtx val = NULL_RTX;
 	      machine_mode mode;
 
-	      if (TREE_CODE (var) != DEBUG_EXPR_DECL
-		  && TREE_CODE (var) != LABEL_DECL
-		  && !target_for_debug_bind (var))
-		goto delink_debug_stmt;
+	      if (!gimple_debug_nonbind_marker_p (stmt))
+		{
+		  if (gimple_debug_bind_p (stmt))
+		    {
+		      var = gimple_debug_bind_get_var (stmt);
 
-	      if (gimple_debug_bind_has_value_p (stmt))
-		value = gimple_debug_bind_get_value (stmt);
+		      if (TREE_CODE (var) != DEBUG_EXPR_DECL
+			  && TREE_CODE (var) != LABEL_DECL
+			  && !target_for_debug_bind (var))
+			goto delink_debug_stmt;
+
+		      if (DECL_P (var))
+			mode = DECL_MODE (var);
+		      else
+			mode = TYPE_MODE (TREE_TYPE (var));
+
+		      if (gimple_debug_bind_has_value_p (stmt))
+			value = gimple_debug_bind_get_value (stmt);
+
+		      val = gen_rtx_VAR_LOCATION
+			(mode, var, (rtx)value, VAR_INIT_STATUS_INITIALIZED);
+		    }
+		  else if (gimple_debug_source_bind_p (stmt))
+		    {
+		      var = gimple_debug_source_bind_get_var (stmt);
+
+		      value = gimple_debug_source_bind_get_value (stmt);
+
+		      mode = DECL_MODE (var);
+
+		      val = gen_rtx_VAR_LOCATION (mode, var, (rtx)value,
+						  VAR_INIT_STATUS_UNINITIALIZED);
+		    }
+		  else
+		    gcc_unreachable ();
+		}
+	      /* If this function was first compiled with markers
+		 enabled, but they're now disable (e.g. LTO), drop
+		 them on the floor.  */
+	      else if (gimple_debug_nonbind_marker_p (stmt)
+		       && !MAY_HAVE_DEBUG_MARKER_INSNS)
+		goto delink_debug_stmt;
+	      else if (gimple_debug_begin_stmt_p (stmt))
+		val = GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT ();
 	      else
-		value = NULL_TREE;
+		gcc_unreachable ();
 
 	      last = get_last_insn ();
 
 	      set_curr_insn_location (gimple_location (stmt));
-
-	      if (DECL_P (var))
-		mode = DECL_MODE (var);
-	      else
-		mode = TYPE_MODE (TREE_TYPE (var));
-
-	      val = gen_rtx_VAR_LOCATION
-		(mode, var, (rtx)value, VAR_INIT_STATUS_INITIALIZED);
 
 	      emit_debug_insn (val);
 
@@ -5681,9 +5727,14 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 		{
 		  /* We can't dump the insn with a TREE where an RTX
 		     is expected.  */
-		  PAT_VAR_LOCATION_LOC (val) = const0_rtx;
+		  if (GET_CODE (val) == VAR_LOCATION)
+		    {
+		      gcc_checking_assert (PAT_VAR_LOCATION_LOC (val) == (rtx)value);
+		      PAT_VAR_LOCATION_LOC (val) = const0_rtx;
+		    }
 		  maybe_dump_rtl_for_gimple_stmt (stmt, last);
-		  PAT_VAR_LOCATION_LOC (val) = (rtx)value;
+		  if (GET_CODE (val) == VAR_LOCATION)
+		    PAT_VAR_LOCATION_LOC (val) = (rtx)value;
 		}
 
 	    delink_debug_stmt:
@@ -5699,38 +5750,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	      if (gsi_end_p (nsi))
 		break;
 	      stmt = gsi_stmt (nsi);
-	      if (!gimple_debug_bind_p (stmt))
+	      if (!is_gimple_debug (stmt))
 		break;
-	    }
-
-	  set_curr_insn_location (sloc);
-	}
-      else if (gimple_debug_source_bind_p (stmt))
-	{
-	  location_t sloc = curr_insn_location ();
-	  tree var = gimple_debug_source_bind_get_var (stmt);
-	  tree value = gimple_debug_source_bind_get_value (stmt);
-	  rtx val;
-	  machine_mode mode;
-
-	  last = get_last_insn ();
-
-	  set_curr_insn_location (gimple_location (stmt));
-
-	  mode = DECL_MODE (var);
-
-	  val = gen_rtx_VAR_LOCATION (mode, var, (rtx)value,
-				      VAR_INIT_STATUS_UNINITIALIZED);
-
-	  emit_debug_insn (val);
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      /* We can't dump the insn with a TREE where an RTX
-		 is expected.  */
-	      PAT_VAR_LOCATION_LOC (val) = const0_rtx;
-	      maybe_dump_rtl_for_gimple_stmt (stmt, last);
-	      PAT_VAR_LOCATION_LOC (val) = (rtx)value;
 	    }
 
 	  set_curr_insn_location (sloc);
@@ -6077,7 +6098,7 @@ expand_stack_alignment (void)
   gcc_assert ((stack_realign_drap != 0) == (drap_rtx != NULL));
 
   /* Do nothing if NULL is returned, which means DRAP is not needed.  */
-  if (NULL != drap_rtx)
+  if (drap_rtx != NULL)
     {
       crtl->args.internal_arg_pointer = drap_rtx;
 
@@ -6181,7 +6202,7 @@ pass_expand::execute (function *fun)
   timevar_pop (TV_OUT_OF_SSA);
   SA.partition_to_pseudo = XCNEWVEC (rtx, SA.map->num_partitions);
 
-  if (MAY_HAVE_DEBUG_STMTS && flag_tree_ter)
+  if (MAY_HAVE_DEBUG_BIND_STMTS && flag_tree_ter)
     {
       gimple_stmt_iterator gsi;
       FOR_EACH_BB_FN (bb, cfun)
@@ -6367,12 +6388,17 @@ pass_expand::execute (function *fun)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR_FOR_FN (fun)->succs)
     e->flags &= ~EDGE_EXECUTABLE;
 
+  /* If the function has too many markers, drop them while expanding.  */
+  if (cfun->debug_marker_count
+      >= PARAM_VALUE (PARAM_MAX_DEBUG_MARKER_COUNT))
+    cfun->debug_nonbind_markers = false;
+
   lab_rtx_for_bb = new hash_map<basic_block, rtx_code_label *>;
   FOR_BB_BETWEEN (bb, init_block->next_bb, EXIT_BLOCK_PTR_FOR_FN (fun),
 		  next_bb)
     bb = expand_gimple_basic_block (bb, var_ret_seq != NULL_RTX);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     expand_debug_locations ();
 
   if (deep_ter_debug_map)

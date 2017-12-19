@@ -121,7 +121,7 @@ dump_insn_rtx_1 (rtx insn, int flags)
   int all;
 
   /* flags == -1 also means dumping all.  */
-  all = (flags & 1);;
+  all = (flags & 1);
   if (all)
     flags |= DUMP_INSN_RTX_ALL;
 

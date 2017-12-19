@@ -1,7 +1,7 @@
 /* { dg-do run { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-O2 -mvsx -mcpu=power8" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=power8" } } */
 
 #include <altivec.h> // vector
 
@@ -139,7 +139,7 @@ void test_result_sp(int check, vector float vec_result,
 		if (vec_result[i] != vec_expected[i]) {
 #ifdef DEBUG
 			printf("Test_result_sp: ");
-			printf("vec_result[%d] (%lld) != vec_expected[%d] (%lld)\n",
+			printf("vec_result[%d] (%f) != vec_expected[%d] (%f)\n",
 			       i, vec_result[i], i, vec_expected[i]);
 #else
 			abort();
@@ -153,7 +153,7 @@ void test_result_dp(vector double vec_result, vector double vec_expected)
 	if (vec_result[0] != vec_expected[0]) {
 #ifdef DEBUG
 		printf("Test_result_dp: ");
-		printf("vec_result[0] (%lld) != vec_expected[0] (%lld)\n",
+		printf("vec_result[0] (%f) != vec_expected[0] (%f)\n",
 		       vec_result[0], vec_expected[0]);
 #else
 		abort();

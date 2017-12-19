@@ -2057,7 +2057,7 @@ preprocessor_line (gfc_char_t *c)
       c++;
       i = wide_atoi (c);
 
-      if (1 <= i && i <= 4)
+      if (i >= 1 && i <= 4)
 	flag[i] = true;
     }
 

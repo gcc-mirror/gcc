@@ -220,7 +220,7 @@ flush_pending_stmts (edge e)
 void
 gimple_replace_ssa_lhs (gimple *stmt, tree nlhs)
 {
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     {
       tree lhs = gimple_get_lhs (stmt);
 
@@ -242,7 +242,7 @@ gimple_replace_ssa_lhs (gimple *stmt, tree nlhs)
 tree
 target_for_debug_bind (tree var)
 {
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return NULL_TREE;
 
   if (TREE_CODE (var) == SSA_NAME)
@@ -307,7 +307,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
   int usecount = 0;
   tree value = NULL;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   /* If this name has already been registered for replacement, do nothing
@@ -495,7 +495,7 @@ insert_debug_temps_for_defs (gimple_stmt_iterator *gsi)
   ssa_op_iter op_iter;
   def_operand_p def_p;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   stmt = gsi_stmt (*gsi);
@@ -521,7 +521,7 @@ reset_debug_uses (gimple *stmt)
   imm_use_iterator imm_iter;
   gimple *use_stmt;
 
-  if (!MAY_HAVE_DEBUG_STMTS)
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
     return;
 
   FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, op_iter, SSA_OP_DEF)

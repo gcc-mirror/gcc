@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -1533,22 +1535,22 @@ static const char alt_reg_names[][8] =
 
 static const struct attribute_spec rs6000_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "altivec",   1, 1, false, true,  false, rs6000_handle_altivec_attribute,
-    false },
-  { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
-  { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
-  { "ms_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
-  { "gcc_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "altivec",   1, 1, false, true,  false, false,
+    rs6000_handle_altivec_attribute, NULL },
+  { "longcall",  0, 0, false, true,  true,  false,
+    rs6000_handle_longcall_attribute, NULL },
+  { "shortcall", 0, 0, false, true,  true,  false,
+    rs6000_handle_longcall_attribute, NULL },
+  { "ms_struct", 0, 0, false, false, false, false,
+    rs6000_handle_struct_attribute, NULL },
+  { "gcc_struct", 0, 0, false, false, false, false,
+    rs6000_handle_struct_attribute, NULL },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 #ifndef TARGET_PROFILE_KERNEL

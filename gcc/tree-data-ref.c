@@ -2665,7 +2665,7 @@ conflict_fn (unsigned n, ...)
   conflict_function *ret = XCNEW (conflict_function);
   va_list ap;
 
-  gcc_assert (0 < n && n <= MAX_DIM);
+  gcc_assert (n > 0 && n <= MAX_DIM);
   va_start (ap, n);
 
   ret->n = n;

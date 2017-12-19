@@ -54,7 +54,7 @@ regstat_init_n_sets_and_refs (void)
 
   regstat_n_sets_and_refs = XNEWVEC (struct regstat_n_sets_and_refs_t, max_regno);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     for (i = 0; i < max_regno; i++)
       {
 	int use_count;

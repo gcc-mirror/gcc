@@ -143,8 +143,6 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->sched_modifiers = 0;
   fd->chunk_size = NULL_TREE;
   fd->simd_schedule = false;
-  if (gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_CILKFOR)
-    fd->sched_kind = OMP_CLAUSE_SCHEDULE_CILKFOR;
   collapse_iter = NULL;
   collapse_count = NULL;
 
@@ -252,9 +250,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 
       loop->cond_code = gimple_omp_for_cond (for_stmt, i);
       loop->n2 = gimple_omp_for_final (for_stmt, i);
-      gcc_assert (loop->cond_code != NE_EXPR
-		  || gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_CILKSIMD
-		  || gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_CILKFOR);
+      gcc_assert (loop->cond_code != NE_EXPR);
       omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2);
 
       t = gimple_omp_for_incr (for_stmt, i);

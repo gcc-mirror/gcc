@@ -4218,6 +4218,8 @@ write_header (void)
 /* Generated automatically by the program `genrecog' from the target\n\
    machine description file.  */\n\
 \n\
+#define IN_TARGET_CODE 1\n\
+\n\
 #include \"config.h\"\n\
 #include \"system.h\"\n\
 #include \"coretypes.h\"\n\

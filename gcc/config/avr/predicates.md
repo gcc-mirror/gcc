@@ -221,7 +221,7 @@
 ;; 8 or 16 or 24.
 (define_predicate "const_8_16_24_operand"
   (and (match_code "const_int")
-       (match_test "8 == INTVAL(op) || 16 == INTVAL(op) || 24 == INTVAL(op)")))
+       (match_test "INTVAL(op) == 8 || INTVAL(op) == 16 || INTVAL(op) == 24")))
 
 ;; Unsigned CONST_INT that fits in 8 bits, i.e. 0..255.
 (define_predicate "u8_operand"

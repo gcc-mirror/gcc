@@ -165,7 +165,6 @@ lvalue_kind (const_tree ref)
     case INDIRECT_REF:
     case ARROW_EXPR:
     case ARRAY_REF:
-    case ARRAY_NOTATION_REF:
     case PARM_DECL:
     case RESULT_DECL:
     case PLACEHOLDER_EXPR:
@@ -3276,6 +3275,13 @@ build_min (enum tree_code code, tree tt, ...)
     }
 
   va_end (p);
+
+  if (code == CAST_EXPR)
+    /* The single operand is a TREE_LIST, which we have to check.  */
+    for (tree v = TREE_OPERAND (t, 0); v; v = TREE_CHAIN (v))
+      if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
+	lookup_keep (TREE_VALUE (v), true);
+
   return t;
 }
 
@@ -4368,25 +4374,25 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
 /* Table of valid C++ attributes.  */
 const struct attribute_spec cxx_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "init_priority",  1, 1, true,  false, false,
-    handle_init_priority_attribute, false },
-  { "abi_tag", 1, -1, false, false, false,
-    handle_abi_tag_attribute, true },
-  { NULL,	      0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "init_priority",  1, 1, true,  false, false, false,
+    handle_init_priority_attribute, NULL },
+  { "abi_tag", 1, -1, false, false, false, true,
+    handle_abi_tag_attribute, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Table of C++ standard attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "maybe_unused", 0, 0, false, false, false,
-    handle_unused_attribute, false },
-  { "nodiscard", 0, 0, false, false, false,
-    handle_nodiscard_attribute, false },
-  { NULL,	      0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "maybe_unused", 0, 0, false, false, false, false,
+    handle_unused_attribute, NULL },
+  { "nodiscard", 0, 0, false, false, false, false,
+    handle_nodiscard_attribute, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Handle an "init_priority" attribute; arguments as in

@@ -1125,7 +1125,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
       if (tem == NULL_RTX)
 	tem = gen_rtx_raw_SUBREG (GET_MODE (loc), addr, SUBREG_BYTE (loc));
     finish_subreg:
-      if (MAY_HAVE_DEBUG_INSNS
+      if (MAY_HAVE_DEBUG_BIND_INSNS
 	  && GET_CODE (tem) == SUBREG
 	  && (GET_CODE (SUBREG_REG (tem)) == PLUS
 	      || GET_CODE (SUBREG_REG (tem)) == MINUS
@@ -1337,7 +1337,7 @@ dv_onepart_p (decl_or_value dv)
 {
   tree decl;
 
-  if (!MAY_HAVE_DEBUG_INSNS)
+  if (!MAY_HAVE_DEBUG_BIND_INSNS)
     return NOT_ONEPART;
 
   if (dv_is_value_p (dv))
@@ -4861,7 +4861,7 @@ dataflow_set_clear_at_call (dataflow_set *set, rtx_insn *call_insn)
   EXECUTE_IF_SET_IN_HARD_REG_SET (invalidated_regs, 0, r, hrsi)
     var_regno_delete (set, r);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       set->traversed_vars = set->vars;
       shared_hash_htab (set->vars)
@@ -5535,7 +5535,7 @@ use_type (rtx loc, struct count_use_info *cui, machine_mode *modep)
 		  variable names such as VALUEs (never happens) or
 		  DEBUG_EXPRs (only happens in the presence of debug
 		  insns).  */
-	       && (!MAY_HAVE_DEBUG_INSNS
+	       && (!MAY_HAVE_DEBUG_BIND_INSNS
 		   || !rtx_debug_expr_p (XEXP (loc, 0))))
 	return MO_USE;
       else
@@ -6700,7 +6700,7 @@ compute_bb_dataflow (basic_block bb)
   dataflow_set_copy (&old_out, out);
   dataflow_set_copy (out, in);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     local_get_addr_cache = new hash_map<rtx, rtx>;
 
   FOR_EACH_VEC_ELT (VTI (bb)->mos, i, mo)
@@ -6982,7 +6982,7 @@ compute_bb_dataflow (basic_block bb)
 	}
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       delete local_get_addr_cache;
       local_get_addr_cache = NULL;
@@ -7069,7 +7069,7 @@ vt_find_locations (void)
 	      else
 		oldinsz = oldoutsz = 0;
 
-	      if (MAY_HAVE_DEBUG_INSNS)
+	      if (MAY_HAVE_DEBUG_BIND_INSNS)
 		{
 		  dataflow_set *in = &VTI (bb)->in, *first_out = NULL;
 		  bool first = true, adjust = false;
@@ -7130,7 +7130,7 @@ vt_find_locations (void)
 
 	      if (htabmax && htabsz > htabmax)
 		{
-		  if (MAY_HAVE_DEBUG_INSNS)
+		  if (MAY_HAVE_DEBUG_BIND_INSNS)
 		    inform (DECL_SOURCE_LOCATION (cfun->decl),
 			    "variable tracking size limit exceeded with "
 			    "-fvar-tracking-assignments, retrying without");
@@ -7190,7 +7190,7 @@ vt_find_locations (void)
 	}
     }
 
-  if (success && MAY_HAVE_DEBUG_INSNS)
+  if (success && MAY_HAVE_DEBUG_BIND_INSNS)
     FOR_EACH_BB_FN (bb, cfun)
       gcc_assert (VTI (bb)->flooded);
 
@@ -8579,7 +8579,7 @@ vt_expand_loc (rtx loc, variable_table_type *vars)
   struct expand_loc_callback_data data;
   rtx result;
 
-  if (!MAY_HAVE_DEBUG_INSNS)
+  if (!MAY_HAVE_DEBUG_BIND_INSNS)
     return loc;
 
   INIT_ELCD (data, vars);
@@ -9014,7 +9014,7 @@ emit_notes_for_changes (rtx_insn *insn, enum emit_note_where where,
   if (!changed_variables->elements ())
     return;
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     process_changed_values (htab);
 
   data.insn = insn;
@@ -9479,6 +9479,24 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
     }
 }
 
+/* Return BB's head, unless BB is the block that succeeds ENTRY_BLOCK,
+   in which case it searches back from BB's head for the very first
+   insn.  Use [get_first_insn (bb), BB_HEAD (bb->next_bb)[ as a range
+   to iterate over all insns of a function while iterating over its
+   BBs.  */
+
+static rtx_insn *
+get_first_insn (basic_block bb)
+{
+  rtx_insn *insn = BB_HEAD (bb);
+
+  if (bb->prev_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    while (rtx_insn *prev = PREV_INSN (insn))
+      insn = prev;
+
+  return insn;
+}
+
 /* Emit notes for the whole function.  */
 
 static void
@@ -9498,10 +9516,8 @@ vt_emit_notes (void)
      delete_variable_part).  */
   emit_notes = true;
 
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      dropped_values = new variable_table_type (cselib_get_next_uid () * 2);
-    }
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
+    dropped_values = new variable_table_type (cselib_get_next_uid () * 2);
 
   dataflow_set_init (&cur);
 
@@ -9509,15 +9525,16 @@ vt_emit_notes (void)
     {
       /* Emit the notes for changes of variable locations between two
 	 subsequent basic blocks.  */
-      emit_notes_for_differences (BB_HEAD (bb), &cur, &VTI (bb)->in);
+      emit_notes_for_differences (get_first_insn (bb),
+				  &cur, &VTI (bb)->in);
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	local_get_addr_cache = new hash_map<rtx, rtx>;
 
       /* Emit the notes for the changes in the basic block itself.  */
       emit_notes_in_bb (bb, &cur);
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	delete local_get_addr_cache;
       local_get_addr_cache = NULL;
 
@@ -9533,7 +9550,7 @@ vt_emit_notes (void)
 
   dataflow_set_destroy (&cur);
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     delete dropped_values;
   dropped_values = NULL;
 
@@ -9893,7 +9910,7 @@ vt_init_cfa_base (void)
       cfa_base_rtx = NULL_RTX;
       return;
     }
-  if (!MAY_HAVE_DEBUG_INSNS)
+  if (!MAY_HAVE_DEBUG_BIND_INSNS)
     return;
 
   /* Tell alias analysis that cfa_base_rtx should share
@@ -9907,6 +9924,36 @@ vt_init_cfa_base (void)
 				 VOIDmode, get_insns ());
   preserve_value (val);
   cselib_preserve_cfa_base_value (val, REGNO (cfa_base_rtx));
+}
+
+/* Reemit INSN, a MARKER_DEBUG_INSN, as a note.  */
+
+static rtx_insn *
+reemit_marker_as_note (rtx_insn *insn, basic_block *bb)
+{
+  gcc_checking_assert (DEBUG_MARKER_INSN_P (insn));
+
+  enum insn_note kind = INSN_DEBUG_MARKER_KIND (insn);
+
+  switch (kind)
+    {
+    case NOTE_INSN_BEGIN_STMT:
+      {
+	rtx_insn *note = NULL;
+	if (cfun->debug_nonbind_markers)
+	  {
+	    note = emit_note_before (kind, insn);
+	    NOTE_MARKER_LOCATION (note) = INSN_LOCATION (insn);
+	    if (bb)
+	      BLOCK_FOR_INSN (note) = *bb;
+	  }
+	delete_insn (insn);
+	return note;
+      }
+
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Allocate and initialize the data structures for variable tracking
@@ -9935,7 +9982,7 @@ vt_initialize (void)
       VTI (bb)->permp = NULL;
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       cselib_init (CSELIB_RECORD_MEMORY | CSELIB_PRESERVE_CONSTANTS);
       scratch_regs = BITMAP_ALLOC (NULL);
@@ -9948,7 +9995,7 @@ vt_initialize (void)
       global_get_addr_cache = NULL;
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       rtx reg, expr;
       int ofst;
@@ -10078,7 +10125,7 @@ vt_initialize (void)
       HOST_WIDE_INT pre, post = 0;
       basic_block first_bb, last_bb;
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	{
 	  cselib_record_sets_hook = add_with_sets;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -10105,11 +10152,40 @@ vt_initialize (void)
 	{
 	  HOST_WIDE_INT offset = VTI (bb)->out.stack_adjust;
 	  VTI (bb)->out.stack_adjust = VTI (bb)->in.stack_adjust;
-	  for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
-	       insn = NEXT_INSN (insn))
+
+	  /* If we are walking the first basic block, walk any HEADER
+	     insns that might be before it too.  Unfortunately,
+	     BB_HEADER and BB_FOOTER are not set while we run this
+	     pass.  */
+	  rtx_insn *next;
+	  bool outside_bb = true;
+	  for (insn = get_first_insn (bb); insn != BB_HEAD (bb->next_bb);
+	       insn = next)
 	    {
+	      if (insn == BB_HEAD (bb))
+		outside_bb = false;
+	      else if (insn == NEXT_INSN (BB_END (bb)))
+		outside_bb = true;
+	      next = NEXT_INSN (insn);
 	      if (INSN_P (insn))
 		{
+		  if (outside_bb)
+		    {
+		      /* Ignore non-debug insns outside of basic blocks.  */
+		      if (!DEBUG_INSN_P (insn))
+			continue;
+		      /* Debug binds shouldn't appear outside of bbs.  */
+		      gcc_assert (!DEBUG_BIND_INSN_P (insn));
+		    }
+		  basic_block save_bb = BLOCK_FOR_INSN (insn);
+		  if (!BLOCK_FOR_INSN (insn))
+		    {
+		      gcc_assert (outside_bb);
+		      BLOCK_FOR_INSN (insn) = bb;
+		    }
+		  else
+		    gcc_assert (BLOCK_FOR_INSN (insn) == bb);
+
 		  if (!frame_pointer_needed)
 		    {
 		      insn_stack_adjust_offset_pre_post (insn, &pre, &post);
@@ -10129,7 +10205,13 @@ vt_initialize (void)
 
 		  cselib_hook_called = false;
 		  adjust_insn (bb, insn);
-		  if (MAY_HAVE_DEBUG_INSNS)
+		  if (DEBUG_MARKER_INSN_P (insn))
+		    {
+		      insn = reemit_marker_as_note (insn, &save_bb);
+		      continue;
+		    }
+
+		  if (MAY_HAVE_DEBUG_BIND_INSNS)
 		    {
 		      if (CALL_P (insn))
 			prepare_call_arguments (bb, insn);
@@ -10164,7 +10246,7 @@ vt_initialize (void)
 		      vt_init_cfa_base ();
 		      hard_frame_pointer_adjustment = fp_cfa_offset;
 		      /* Disassociate sp from fp now.  */
-		      if (MAY_HAVE_DEBUG_INSNS)
+		      if (MAY_HAVE_DEBUG_BIND_INSNS)
 			{
 			  cselib_val *v;
 			  cselib_invalidate_rtx (stack_pointer_rtx);
@@ -10177,6 +10259,7 @@ vt_initialize (void)
 			    }
 			}
 		    }
+		  BLOCK_FOR_INSN (insn) = save_bb;
 		}
 	    }
 	  gcc_assert (offset == VTI (bb)->out.stack_adjust);
@@ -10184,7 +10267,7 @@ vt_initialize (void)
 
       bb = last_bb;
 
-      if (MAY_HAVE_DEBUG_INSNS)
+      if (MAY_HAVE_DEBUG_BIND_INSNS)
 	{
 	  cselib_preserve_only_values ();
 	  cselib_reset_table (cselib_get_next_uid ());
@@ -10204,10 +10287,11 @@ vt_initialize (void)
 
 static int debug_label_num = 1;
 
-/* Get rid of all debug insns from the insn stream.  */
+/* Remove from the insn stream all debug insns used for variable
+   tracking at assignments.  */
 
 static void
-delete_debug_insns (void)
+delete_vta_debug_insns (void)
 {
   basic_block bb;
   rtx_insn *insn, *next;
@@ -10217,9 +10301,18 @@ delete_debug_insns (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      FOR_BB_INSNS_SAFE (bb, insn, next)
+      for (insn = get_first_insn (bb);
+	   insn != BB_HEAD (bb->next_bb)
+	     ? next = NEXT_INSN (insn), true : false;
+	   insn = next)
 	if (DEBUG_INSN_P (insn))
 	  {
+	    if (DEBUG_MARKER_INSN_P (insn))
+	      {
+		insn = reemit_marker_as_note (insn, NULL);
+		continue;
+	      }
+
 	    tree decl = INSN_VAR_LOCATION_DECL (insn);
 	    if (TREE_CODE (decl) == LABEL_DECL
 		&& DECL_NAME (decl)
@@ -10248,7 +10341,7 @@ static void
 vt_debug_insns_local (bool skipped ATTRIBUTE_UNUSED)
 {
   /* ??? Just skip it all for now.  */
-  delete_debug_insns ();
+  delete_vta_debug_insns ();
 }
 
 /* Free the data structures needed for variable tracking.  */
@@ -10283,7 +10376,7 @@ vt_finalize (void)
   location_chain_pool.release ();
   shared_hash_pool.release ();
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       if (global_get_addr_cache)
 	delete global_get_addr_cache;
@@ -10313,17 +10406,23 @@ variable_tracking_main_1 (void)
 {
   bool success;
 
-  if (flag_var_tracking_assignments < 0
+  /* We won't be called as a separate pass if flag_var_tracking is not
+     set, but final may call us to turn debug markers into notes.  */
+  if ((!flag_var_tracking && MAY_HAVE_DEBUG_INSNS)
+      || flag_var_tracking_assignments < 0
       /* Var-tracking right now assumes the IR doesn't contain
 	 any pseudos at this point.  */
       || targetm.no_register_allocation)
     {
-      delete_debug_insns ();
+      delete_vta_debug_insns ();
       return 0;
     }
 
-  if (n_basic_blocks_for_fn (cfun) > 500 &&
-      n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun) >= 20)
+  if (!flag_var_tracking)
+    return 0;
+
+  if (n_basic_blocks_for_fn (cfun) > 500
+      && n_edges_for_fn (cfun) / n_basic_blocks_for_fn (cfun) >= 20)
     {
       vt_debug_insns_local (true);
       return 0;
@@ -10343,7 +10442,7 @@ variable_tracking_main_1 (void)
     {
       vt_finalize ();
 
-      delete_debug_insns ();
+      delete_vta_debug_insns ();
 
       /* This is later restored by our caller.  */
       flag_var_tracking_assignments = 0;

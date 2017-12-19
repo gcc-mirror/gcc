@@ -8514,7 +8514,7 @@ package body Sem_Ch3 is
          Parent_Base := Base_Type (Parent_Type);
       end if;
 
-      --  AI05-0115 : if this is a derivation from a private type in some
+      --  AI05-0115: if this is a derivation from a private type in some
       --  other scope that may lead to invisible components for the derived
       --  type, mark it accordingly.
 
@@ -21339,10 +21339,10 @@ package body Sem_Ch3 is
       if Nkind (S) /= N_Subtype_Indication then
          Find_Type (S);
 
-         --  No way to proceed if the subtype indication is malformed.
-         --  This will happen for example when the subtype indication in
-         --  an object declaration is missing altogether and the expression
-         --  is analyzed as if it were that indication.
+         --  No way to proceed if the subtype indication is malformed. This
+         --  will happen for example when the subtype indication in an object
+         --  declaration is missing altogether and the expression is analyzed
+         --  as if it were that indication.
 
          if not Is_Entity_Name (S) then
             return Any_Type;

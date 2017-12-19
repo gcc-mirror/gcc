@@ -39,10 +39,10 @@ package System.Version_Control is
    pragma Pure;
 
    subtype Version_String is String (1 .. 8);
-   --  Eight character string returned by Get_version_String;
+   --  Eight character string returned by Get_version_String
 
    function Get_Version_String
-     (V    : System.Unsigned_Types.Unsigned)
+     (V : System.Unsigned_Types.Unsigned)
       return Version_String;
    --  The version information in the executable file is stored as unsigned
    --  integers. This routine converts the unsigned integer into an eight

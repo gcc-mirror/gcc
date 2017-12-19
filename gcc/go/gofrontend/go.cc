@@ -41,6 +41,7 @@ go_create_gogo(const struct go_create_gogo_args* args)
   if (args->c_header != NULL)
     ::gogo->set_c_header(args->c_header);
   ::gogo->set_debug_escape_level(args->debug_escape_level);
+  ::gogo->set_nil_check_size_threshold(args->nil_check_size_threshold);
 }
 
 // Parse the input files.

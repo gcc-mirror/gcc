@@ -532,6 +532,9 @@ struct lang_hooks
      instead of trampolines.  */
   bool custom_function_descriptors;
 
+  /* True if this language emits begin stmt notes.  */
+  bool emits_begin_stmt;
+
   /* Run all lang-specific selftests.  */
   void (*run_lang_selftests) (void);
 

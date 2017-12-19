@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -388,6 +390,7 @@ static const struct
   { "ebb",		PPC_FEATURE2_HAS_EBB,		1 },
   { "htm",		PPC_FEATURE2_HAS_HTM,		1 },
   { "htm-nosc",		PPC_FEATURE2_HTM_NOSC,		1 },
+  { "htm-no-suspend",	PPC_FEATURE2_HTM_NO_SUSPEND,	1 },
   { "isel",		PPC_FEATURE2_HAS_ISEL,		1 },
   { "tar",		PPC_FEATURE2_HAS_TAR,		1 },
   { "vcrypto",		PPC_FEATURE2_HAS_VEC_CRYPTO,	1 },
@@ -1517,22 +1520,22 @@ static const char alt_reg_names[][8] =
 
 static const struct attribute_spec rs6000_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "altivec",   1, 1, false, true,  false, rs6000_handle_altivec_attribute,
-    false },
-  { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
-  { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
-  { "ms_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
-  { "gcc_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "altivec",   1, 1, false, true,  false, false,
+    rs6000_handle_altivec_attribute, NULL },
+  { "longcall",  0, 0, false, true,  true,  false,
+    rs6000_handle_longcall_attribute, NULL },
+  { "shortcall", 0, 0, false, true,  true,  false,
+    rs6000_handle_longcall_attribute, NULL },
+  { "ms_struct", 0, 0, false, false, false, false,
+    rs6000_handle_struct_attribute, NULL },
+  { "gcc_struct", 0, 0, false, false, false, false,
+    rs6000_handle_struct_attribute, NULL },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 #ifndef TARGET_PROFILE_KERNEL
@@ -4184,8 +4187,13 @@ rs6000_option_override_internal (bool global_init_p)
 	  }
     }
 
+  if (cpu_index >= 0)
+    rs6000_cpu = processor_target_table[cpu_index].processor;
+  else
+    rs6000_cpu = TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT;
+
   gcc_assert (tune_index >= 0);
-  rs6000_cpu = processor_target_table[tune_index].processor;
+  rs6000_tune = processor_target_table[tune_index].processor;
 
   if (rs6000_cpu == PROCESSOR_PPCE300C2 || rs6000_cpu == PROCESSOR_PPCE300C3
       || rs6000_cpu == PROCESSOR_PPCE500MC || rs6000_cpu == PROCESSOR_PPCE500MC64
@@ -4674,10 +4682,10 @@ rs6000_option_override_internal (bool global_init_p)
   /* E500mc does "better" if we inline more aggressively.  Respect the
      user's opinion, though.  */
   if (rs6000_block_move_inline_limit == 0
-      && (rs6000_cpu == PROCESSOR_PPCE500MC
-	  || rs6000_cpu == PROCESSOR_PPCE500MC64
-	  || rs6000_cpu == PROCESSOR_PPCE5500
-	  || rs6000_cpu == PROCESSOR_PPCE6500))
+      && (rs6000_tune == PROCESSOR_PPCE500MC
+	  || rs6000_tune == PROCESSOR_PPCE500MC64
+	  || rs6000_tune == PROCESSOR_PPCE5500
+	  || rs6000_tune == PROCESSOR_PPCE6500))
     rs6000_block_move_inline_limit = 128;
 
   /* store_one_arg depends on expand_block_move to handle at least the
@@ -4835,29 +4843,29 @@ rs6000_option_override_internal (bool global_init_p)
 	       "point");
     }
 
-  rs6000_always_hint = (rs6000_cpu != PROCESSOR_POWER4
-			&& rs6000_cpu != PROCESSOR_POWER5
-			&& rs6000_cpu != PROCESSOR_POWER6
-			&& rs6000_cpu != PROCESSOR_POWER7
-			&& rs6000_cpu != PROCESSOR_POWER8
-			&& rs6000_cpu != PROCESSOR_POWER9
-			&& rs6000_cpu != PROCESSOR_PPCA2
-			&& rs6000_cpu != PROCESSOR_CELL
-			&& rs6000_cpu != PROCESSOR_PPC476);
-  rs6000_sched_groups = (rs6000_cpu == PROCESSOR_POWER4
-			 || rs6000_cpu == PROCESSOR_POWER5
-			 || rs6000_cpu == PROCESSOR_POWER7
-			 || rs6000_cpu == PROCESSOR_POWER8);
-  rs6000_align_branch_targets = (rs6000_cpu == PROCESSOR_POWER4
-				 || rs6000_cpu == PROCESSOR_POWER5
-				 || rs6000_cpu == PROCESSOR_POWER6
-				 || rs6000_cpu == PROCESSOR_POWER7
-				 || rs6000_cpu == PROCESSOR_POWER8
-				 || rs6000_cpu == PROCESSOR_POWER9
-				 || rs6000_cpu == PROCESSOR_PPCE500MC
-				 || rs6000_cpu == PROCESSOR_PPCE500MC64
-				 || rs6000_cpu == PROCESSOR_PPCE5500
-				 || rs6000_cpu == PROCESSOR_PPCE6500);
+  rs6000_always_hint = (rs6000_tune != PROCESSOR_POWER4
+			&& rs6000_tune != PROCESSOR_POWER5
+			&& rs6000_tune != PROCESSOR_POWER6
+			&& rs6000_tune != PROCESSOR_POWER7
+			&& rs6000_tune != PROCESSOR_POWER8
+			&& rs6000_tune != PROCESSOR_POWER9
+			&& rs6000_tune != PROCESSOR_PPCA2
+			&& rs6000_tune != PROCESSOR_CELL
+			&& rs6000_tune != PROCESSOR_PPC476);
+  rs6000_sched_groups = (rs6000_tune == PROCESSOR_POWER4
+			 || rs6000_tune == PROCESSOR_POWER5
+			 || rs6000_tune == PROCESSOR_POWER7
+			 || rs6000_tune == PROCESSOR_POWER8);
+  rs6000_align_branch_targets = (rs6000_tune == PROCESSOR_POWER4
+				 || rs6000_tune == PROCESSOR_POWER5
+				 || rs6000_tune == PROCESSOR_POWER6
+				 || rs6000_tune == PROCESSOR_POWER7
+				 || rs6000_tune == PROCESSOR_POWER8
+				 || rs6000_tune == PROCESSOR_POWER9
+				 || rs6000_tune == PROCESSOR_PPCE500MC
+				 || rs6000_tune == PROCESSOR_PPCE500MC64
+				 || rs6000_tune == PROCESSOR_PPCE5500
+				 || rs6000_tune == PROCESSOR_PPCE6500);
 
   /* Allow debug switches to override the above settings.  These are set to -1
      in rs6000.opt to indicate the user hasn't directly set the switch.  */
@@ -4997,8 +5005,8 @@ rs6000_option_override_internal (bool global_init_p)
 	{
 	  /* Cell wants to be aligned 8byte for dual issue.  Titan wants to be
 	     aligned 8byte to avoid misprediction by the branch predictor.  */
-	  if (rs6000_cpu == PROCESSOR_TITAN
-	      || rs6000_cpu == PROCESSOR_CELL)
+	  if (rs6000_tune == PROCESSOR_TITAN
+	      || rs6000_tune == PROCESSOR_CELL)
 	    {
 	      if (align_functions <= 0)
 		align_functions = 8;
@@ -5042,7 +5050,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (optimize_size)
     rs6000_cost = TARGET_POWERPC64 ? &size64_cost : &size32_cost;
   else
-    switch (rs6000_cpu)
+    switch (rs6000_tune)
       {
       case PROCESSOR_RS64A:
 	rs6000_cost = &rs64a_cost;
@@ -5217,7 +5225,7 @@ rs6000_option_override_internal (bool global_init_p)
      DERAT mispredict penalty.  However the LVE and STVE altivec instructions
      need indexed accesses and the type used is the scalar type of the element
      being loaded or stored.  */
-    TARGET_AVOID_XFORM = (rs6000_cpu == PROCESSOR_POWER6 && TARGET_CMPB
+    TARGET_AVOID_XFORM = (rs6000_tune == PROCESSOR_POWER6 && TARGET_CMPB
 			  && !TARGET_ALTIVEC);
 
   /* Set the -mrecip options.  */
@@ -5286,7 +5294,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* If not explicitly specified via option, decide whether to generate the
      extra blr's required to preserve the link stack on some cpus (eg, 476).  */
   if (TARGET_LINK_STACK == -1)
-    SET_TARGET_LINK_STACK (rs6000_cpu == PROCESSOR_PPC476 && flag_pic);
+    SET_TARGET_LINK_STACK (rs6000_tune == PROCESSOR_PPC476 && flag_pic);
 
   return ret;
 }
@@ -5329,12 +5337,12 @@ rs6000_loop_align (rtx label)
 
   /* Align small loops to 32 bytes to fit in an icache sector, otherwise return default. */
   if (ninsns > 4 && ninsns <= 8
-      && (rs6000_cpu == PROCESSOR_POWER4
-	  || rs6000_cpu == PROCESSOR_POWER5
-	  || rs6000_cpu == PROCESSOR_POWER6
-	  || rs6000_cpu == PROCESSOR_POWER7
-	  || rs6000_cpu == PROCESSOR_POWER8
-	  || rs6000_cpu == PROCESSOR_POWER9))
+      && (rs6000_tune == PROCESSOR_POWER4
+	  || rs6000_tune == PROCESSOR_POWER5
+	  || rs6000_tune == PROCESSOR_POWER6
+	  || rs6000_tune == PROCESSOR_POWER7
+	  || rs6000_tune == PROCESSOR_POWER8
+	  || rs6000_tune == PROCESSOR_POWER9))
     return 5;
   else
     return align_loops_log;
@@ -9987,7 +9995,7 @@ static int
 rs6000_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
                             machine_mode mode)
 {
-  switch (rs6000_cpu)
+  switch (rs6000_tune)
     {
     case PROCESSOR_POWER8:
     case PROCESSOR_POWER9:
@@ -16615,6 +16623,28 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_CMPLE_U2DI:
       fold_compare_helper (gsi, LE_EXPR, stmt);
       return true;
+
+    /* flavors of vec_splat_[us]{8,16,32}.  */
+    case ALTIVEC_BUILTIN_VSPLTISB:
+    case ALTIVEC_BUILTIN_VSPLTISH:
+    case ALTIVEC_BUILTIN_VSPLTISW:
+      {
+	 arg0 = gimple_call_arg (stmt, 0);
+	 lhs = gimple_call_lhs (stmt);
+	 /* Only fold the vec_splat_*() if arg0 is constant.  */
+	 if (TREE_CODE (arg0) != INTEGER_CST)
+	   return false;
+	 gimple_seq stmts = NULL;
+	 location_t loc = gimple_location (stmt);
+	 tree splat_value = gimple_convert (&stmts, loc,
+					    TREE_TYPE (TREE_TYPE (lhs)), arg0);
+	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	 tree splat_tree = build_vector_from_val (TREE_TYPE (lhs), splat_value);
+	 g = gimple_build_assign (lhs, splat_tree);
+	 gimple_set_location (g, gimple_location (stmt));
+	 gsi_replace (gsi, g, true);
+	 return true;
+      }
 
     default:
       if (TARGET_DEBUG_BUILTIN)
@@ -28249,9 +28279,9 @@ rs6000_emit_epilogue (int sibcall)
   using_load_multiple = strategy & REST_MULTIPLE;
   restoring_FPRs_inline = sibcall || (strategy & REST_INLINE_FPRS);
   restoring_GPRs_inline = sibcall || (strategy & REST_INLINE_GPRS);
-  using_mtcr_multiple = (rs6000_cpu == PROCESSOR_PPC601
-			 || rs6000_cpu == PROCESSOR_PPC603
-			 || rs6000_cpu == PROCESSOR_PPC750
+  using_mtcr_multiple = (rs6000_tune == PROCESSOR_PPC601
+			 || rs6000_tune == PROCESSOR_PPC603
+			 || rs6000_tune == PROCESSOR_PPC750
 			 || optimize_size);
   /* Restore via the backchain when we have a large frame, since this
      is more efficient than an addis, addi pair.  The second condition
@@ -30544,7 +30574,7 @@ rs6000_variable_issue_1 (rtx_insn *insn, int more)
       return cached_can_issue_more;
     }
 
-  if (rs6000_cpu_attr == CPU_CELL && is_nonpipeline_insn (insn))
+  if (rs6000_tune == PROCESSOR_CELL && is_nonpipeline_insn (insn))
     return 0;
 
   cached_can_issue_more = more - 1;
@@ -30580,7 +30610,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	   some cycles later.  */
 
 	/* Separate a load from a narrower, dependent store.  */
-	if ((rs6000_sched_groups || rs6000_cpu_attr == CPU_POWER9)
+	if ((rs6000_sched_groups || rs6000_tune == PROCESSOR_POWER9)
 	    && GET_CODE (PATTERN (insn)) == SET
 	    && GET_CODE (PATTERN (dep_insn)) == SET
 	    && GET_CODE (XEXP (PATTERN (insn), 1)) == MEM
@@ -30603,22 +30633,22 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
           case TYPE_BRANCH:
             /* Leave some extra cycles between a compare and its
                dependent branch, to inhibit expensive mispredicts.  */
-            if ((rs6000_cpu_attr == CPU_PPC603
-                 || rs6000_cpu_attr == CPU_PPC604
-                 || rs6000_cpu_attr == CPU_PPC604E
-                 || rs6000_cpu_attr == CPU_PPC620
-                 || rs6000_cpu_attr == CPU_PPC630
-                 || rs6000_cpu_attr == CPU_PPC750
-                 || rs6000_cpu_attr == CPU_PPC7400
-                 || rs6000_cpu_attr == CPU_PPC7450
-                 || rs6000_cpu_attr == CPU_PPCE5500
-                 || rs6000_cpu_attr == CPU_PPCE6500
-                 || rs6000_cpu_attr == CPU_POWER4
-                 || rs6000_cpu_attr == CPU_POWER5
-		 || rs6000_cpu_attr == CPU_POWER7
-		 || rs6000_cpu_attr == CPU_POWER8
-		 || rs6000_cpu_attr == CPU_POWER9
-                 || rs6000_cpu_attr == CPU_CELL)
+            if ((rs6000_tune == PROCESSOR_PPC603
+                 || rs6000_tune == PROCESSOR_PPC604
+                 || rs6000_tune == PROCESSOR_PPC604e
+                 || rs6000_tune == PROCESSOR_PPC620
+                 || rs6000_tune == PROCESSOR_PPC630
+                 || rs6000_tune == PROCESSOR_PPC750
+                 || rs6000_tune == PROCESSOR_PPC7400
+                 || rs6000_tune == PROCESSOR_PPC7450
+                 || rs6000_tune == PROCESSOR_PPCE5500
+                 || rs6000_tune == PROCESSOR_PPCE6500
+                 || rs6000_tune == PROCESSOR_POWER4
+                 || rs6000_tune == PROCESSOR_POWER5
+		 || rs6000_tune == PROCESSOR_POWER7
+		 || rs6000_tune == PROCESSOR_POWER8
+		 || rs6000_tune == PROCESSOR_POWER9
+                 || rs6000_tune == PROCESSOR_CELL)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
 
@@ -30648,7 +30678,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 
           case TYPE_STORE:
           case TYPE_FPSTORE:
-            if ((rs6000_cpu == PROCESSOR_POWER6)
+            if ((rs6000_tune == PROCESSOR_POWER6)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
               {
@@ -30716,7 +30746,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 	    break;
 
           case TYPE_LOAD:
-            if ((rs6000_cpu == PROCESSOR_POWER6)
+            if ((rs6000_tune == PROCESSOR_POWER6)
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0))
               {
@@ -30779,7 +30809,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
             break;
 
           case TYPE_FPLOAD:
-            if ((rs6000_cpu == PROCESSOR_POWER6)
+            if ((rs6000_tune == PROCESSOR_POWER6)
                 && get_attr_update (insn) == UPDATE_NO
                 && recog_memoized (dep_insn)
                 && (INSN_CODE (dep_insn) >= 0)
@@ -30797,7 +30827,7 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
     case REG_DEP_OUTPUT:
       /* Output dependency; DEP_INSN writes a register that INSN writes some
 	 cycles later.  */
-      if ((rs6000_cpu == PROCESSOR_POWER6)
+      if ((rs6000_tune == PROCESSOR_POWER6)
           && recog_memoized (dep_insn)
           && (INSN_CODE (dep_insn) >= 0))
         {
@@ -30876,11 +30906,11 @@ is_microcoded_insn (rtx_insn *insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  if (rs6000_cpu_attr == CPU_CELL)
+  if (rs6000_tune == PROCESSOR_CELL)
     return get_attr_cell_micro (insn) == CELL_MICRO_ALWAYS;
 
   if (rs6000_sched_groups
-      && (rs6000_cpu == PROCESSOR_POWER4 || rs6000_cpu == PROCESSOR_POWER5))
+      && (rs6000_tune == PROCESSOR_POWER4 || rs6000_tune == PROCESSOR_POWER5))
     {
       enum attr_type type = get_attr_type (insn);
       if ((type == TYPE_LOAD
@@ -30908,7 +30938,7 @@ is_cracked_insn (rtx_insn *insn)
     return false;
 
   if (rs6000_sched_groups
-      && (rs6000_cpu == PROCESSOR_POWER4 || rs6000_cpu == PROCESSOR_POWER5))
+      && (rs6000_tune == PROCESSOR_POWER4 || rs6000_tune == PROCESSOR_POWER5))
     {
       enum attr_type type = get_attr_type (insn);
       if ((type == TYPE_LOAD
@@ -31076,8 +31106,8 @@ rs6000_adjust_priority (rtx_insn *insn ATTRIBUTE_UNUSED, int priority)
   if (GET_CODE (PATTERN (insn)) == USE)
     return priority;
 
-  switch (rs6000_cpu_attr) {
-  case CPU_PPC750:
+  switch (rs6000_tune) {
+  case PROCESSOR_PPC750:
     switch (get_attr_type (insn))
       {
       default:
@@ -31114,7 +31144,7 @@ rs6000_adjust_priority (rtx_insn *insn ATTRIBUTE_UNUSED, int priority)
 	return (priority + 1);
     }
 
-  if (rs6000_cpu == PROCESSOR_POWER6
+  if (rs6000_tune == PROCESSOR_POWER6
       && ((load_store_pendulum == -2 && is_load_insn (insn, &load_mem))
           || (load_store_pendulum == 2 && is_store_insn (insn, &str_mem))))
     /* Attach highest priority to insn if the scheduler has just issued two
@@ -31163,40 +31193,40 @@ rs6000_issue_rate (void)
   if (!reload_completed && !flag_sched_pressure)
     return 1;
 
-  switch (rs6000_cpu_attr) {
-  case CPU_RS64A:
-  case CPU_PPC601: /* ? */
-  case CPU_PPC7450:
+  switch (rs6000_tune) {
+  case PROCESSOR_RS64A:
+  case PROCESSOR_PPC601: /* ? */
+  case PROCESSOR_PPC7450:
     return 3;
-  case CPU_PPC440:
-  case CPU_PPC603:
-  case CPU_PPC750:
-  case CPU_PPC7400:
-  case CPU_PPC8540:
-  case CPU_PPC8548:
-  case CPU_CELL:
-  case CPU_PPCE300C2:
-  case CPU_PPCE300C3:
-  case CPU_PPCE500MC:
-  case CPU_PPCE500MC64:
-  case CPU_PPCE5500:
-  case CPU_PPCE6500:
-  case CPU_TITAN:
+  case PROCESSOR_PPC440:
+  case PROCESSOR_PPC603:
+  case PROCESSOR_PPC750:
+  case PROCESSOR_PPC7400:
+  case PROCESSOR_PPC8540:
+  case PROCESSOR_PPC8548:
+  case PROCESSOR_CELL:
+  case PROCESSOR_PPCE300C2:
+  case PROCESSOR_PPCE300C3:
+  case PROCESSOR_PPCE500MC:
+  case PROCESSOR_PPCE500MC64:
+  case PROCESSOR_PPCE5500:
+  case PROCESSOR_PPCE6500:
+  case PROCESSOR_TITAN:
     return 2;
-  case CPU_PPC476:
-  case CPU_PPC604:
-  case CPU_PPC604E:
-  case CPU_PPC620:
-  case CPU_PPC630:
+  case PROCESSOR_PPC476:
+  case PROCESSOR_PPC604:
+  case PROCESSOR_PPC604e:
+  case PROCESSOR_PPC620:
+  case PROCESSOR_PPC630:
     return 4;
-  case CPU_POWER4:
-  case CPU_POWER5:
-  case CPU_POWER6:
-  case CPU_POWER7:
+  case PROCESSOR_POWER4:
+  case PROCESSOR_POWER5:
+  case PROCESSOR_POWER6:
+  case PROCESSOR_POWER7:
     return 5;
-  case CPU_POWER8:
+  case PROCESSOR_POWER8:
     return 7;
-  case CPU_POWER9:
+  case PROCESSOR_POWER9:
     return 6;
   default:
     return 1;
@@ -31209,13 +31239,13 @@ rs6000_issue_rate (void)
 static int
 rs6000_use_sched_lookahead (void)
 {
-  switch (rs6000_cpu_attr)
+  switch (rs6000_tune)
     {
-    case CPU_PPC8540:
-    case CPU_PPC8548:
+    case PROCESSOR_PPC8540:
+    case PROCESSOR_PPC8548:
       return 4;
 
-    case CPU_CELL:
+    case PROCESSOR_CELL:
       return (reload_completed ? 8 : 0);
 
     default:
@@ -31231,7 +31261,7 @@ rs6000_use_sched_lookahead_guard (rtx_insn *insn, int ready_index)
   if (ready_index == 0)
     return 0;
 
-  if (rs6000_cpu_attr != CPU_CELL)
+  if (rs6000_tune != PROCESSOR_CELL)
     return 0;
 
   gcc_assert (insn != NULL_RTX && INSN_P (insn));
@@ -31622,7 +31652,7 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
 
   /* Reorder the ready list, if the second to last ready insn
      is a nonepipeline insn.  */
-  if (rs6000_cpu_attr == CPU_CELL && n_ready > 1)
+  if (rs6000_tune == PROCESSOR_CELL && n_ready > 1)
   {
     if (is_nonpipeline_insn (ready[n_ready - 1])
         && (recog_memoized (ready[n_ready - 2]) > 0))
@@ -31630,7 +31660,7 @@ rs6000_sched_reorder (FILE *dump ATTRIBUTE_UNUSED, int sched_verbose,
       std::swap (ready[n_ready - 1], ready[n_ready - 2]);
   }
 
-  if (rs6000_cpu == PROCESSOR_POWER6)
+  if (rs6000_tune == PROCESSOR_POWER6)
     load_store_pendulum = 0;
 
   return rs6000_issue_rate ();
@@ -31685,7 +31715,7 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
              of the machine.  Those instructions are currently unaccounted
              for to help minimize compile time overhead of this code.
    */
-  if (rs6000_cpu == PROCESSOR_POWER6 && last_scheduled_insn)
+  if (rs6000_tune == PROCESSOR_POWER6 && last_scheduled_insn)
     {
       int pos;
       int i;
@@ -31839,7 +31869,7 @@ rs6000_sched_reorder2 (FILE *dump, int sched_verbose, rtx_insn **ready,
     }
 
   /* Do Power9 dependent reordering if necessary.  */
-  if (rs6000_cpu == PROCESSOR_POWER9 && last_scheduled_insn
+  if (rs6000_tune == PROCESSOR_POWER9 && last_scheduled_insn
       && recog_memoized (last_scheduled_insn) >= 0)
     return power9_sched_reorder2 (ready, *pn_ready - 1);
 
@@ -31894,7 +31924,7 @@ insn_must_be_first_in_group (rtx_insn *insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  switch (rs6000_cpu)
+  switch (rs6000_tune)
     {
     case PROCESSOR_POWER5:
       if (is_cracked_insn (insn))
@@ -32071,7 +32101,7 @@ insn_must_be_last_in_group (rtx_insn *insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  switch (rs6000_cpu) {
+  switch (rs6000_tune) {
   case PROCESSOR_POWER4:
   case PROCESSOR_POWER5:
     if (is_microcoded_insn (insn))
@@ -32259,8 +32289,8 @@ force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
 	can_issue_more--;
 
       /* Do we have a special group ending nop? */
-      if (rs6000_cpu_attr == CPU_POWER6 || rs6000_cpu_attr == CPU_POWER7
-	  || rs6000_cpu_attr == CPU_POWER8)
+      if (rs6000_tune == PROCESSOR_POWER6 || rs6000_tune == PROCESSOR_POWER7
+	  || rs6000_tune == PROCESSOR_POWER8)
 	{
 	  nop = gen_group_ending_nop ();
 	  emit_insn_before (nop, next_insn);
@@ -34889,14 +34919,16 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
+      /* FALLTHRU */
+
+    case GT:
+    case LT:
+    case UNORDERED:
       if (outer_code == SET)
 	{
 	  if (XEXP (x, 1) == const0_rtx)
 	    {
-	      if (TARGET_ISEL && !TARGET_MFCRF)
-		*total = COSTS_N_INSNS (8);
-	      else
-		*total = COSTS_N_INSNS (2);
+	      *total = COSTS_N_INSNS (2);
 	      return true;
 	    }
 	  else
@@ -34904,19 +34936,6 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	      *total = COSTS_N_INSNS (3);
 	      return false;
 	    }
-	}
-      /* FALLTHRU */
-
-    case GT:
-    case LT:
-    case UNORDERED:
-      if (outer_code == SET && (XEXP (x, 1) == const0_rtx))
-	{
-	  if (TARGET_ISEL && !TARGET_MFCRF)
-	    *total = COSTS_N_INSNS (8);
-	  else
-	    *total = COSTS_N_INSNS (2);
-	  return true;
 	}
       /* CC COMPARE.  */
       if (outer_code == COMPARE)
@@ -35088,10 +35107,10 @@ rs6000_register_move_cost (machine_mode mode,
 
       /* For those processors that have slow LR/CTR moves, make them more
          expensive than memory in order to bias spills to memory .*/
-      else if ((rs6000_cpu == PROCESSOR_POWER6
-		|| rs6000_cpu == PROCESSOR_POWER7
-		|| rs6000_cpu == PROCESSOR_POWER8
-		|| rs6000_cpu == PROCESSOR_POWER9)
+      else if ((rs6000_tune == PROCESSOR_POWER6
+		|| rs6000_tune == PROCESSOR_POWER7
+		|| rs6000_tune == PROCESSOR_POWER8
+		|| rs6000_tune == PROCESSOR_POWER9)
 	       && reg_classes_intersect_p (rclass, LINK_OR_CTR_REGS))
         ret = 6 * hard_regno_nregs (0, mode);
 
@@ -37897,7 +37916,8 @@ rs6000_address_for_fpconvert (rtx x)
 
   gcc_assert (MEM_P (x));
   addr = XEXP (x, 0);
-  if (! legitimate_indirect_address_p (addr, reload_completed)
+  if (can_create_pseudo_p ()
+      && ! legitimate_indirect_address_p (addr, reload_completed)
       && ! legitimate_indexed_address_p (addr, reload_completed))
     {
       if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
@@ -38640,16 +38660,10 @@ expand_fusion_gpr_load (rtx *operands)
    sequence.  */
 
 void
-emit_fusion_addis (rtx target, rtx addis_value, const char *comment,
-		   const char *mode_name)
+emit_fusion_addis (rtx target, rtx addis_value)
 {
   rtx fuse_ops[10];
-  char insn_template[80];
   const char *addis_str = NULL;
-  const char *comment_str = ASM_COMMENT_START;
-
-  if (*comment_str == ' ')
-    comment_str++;
 
   /* Emit the addis instruction.  */
   fuse_ops[0] = target;
@@ -38729,9 +38743,7 @@ emit_fusion_addis (rtx target, rtx addis_value, const char *comment,
   if (!addis_str)
     fatal_insn ("Could not generate addis value for fusion", addis_value);
 
-  sprintf (insn_template, "%s\t\t%s %s, type %s", addis_str, comment_str,
-	   comment, mode_name);
-  output_asm_insn (insn_template, fuse_ops);
+  output_asm_insn (addis_str, fuse_ops);
 }
 
 /* Emit a D-form load or store instruction that is the second instruction
@@ -38864,7 +38876,6 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   rtx addr;
   rtx load_offset;
   const char *load_str = NULL;
-  const char *mode_name = NULL;
   machine_mode mode;
 
   if (GET_CODE (mem) == ZERO_EXTEND)
@@ -38880,25 +38891,21 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   switch (mode)
     {
     case E_QImode:
-      mode_name = "char";
       load_str = "lbz";
       break;
 
     case E_HImode:
-      mode_name = "short";
       load_str = "lhz";
       break;
 
     case E_SImode:
     case E_SFmode:
-      mode_name = (mode == SFmode) ? "float" : "int";
       load_str = "lwz";
       break;
 
     case E_DImode:
     case E_DFmode:
       gcc_assert (TARGET_POWERPC64);
-      mode_name = (mode == DFmode) ? "double" : "long";
       load_str = "ld";
       break;
 
@@ -38907,7 +38914,7 @@ emit_fusion_gpr_load (rtx target, rtx mem)
     }
 
   /* Emit the addis instruction.  */
-  emit_fusion_addis (target, addis_value, "gpr load fusion", mode_name);
+  emit_fusion_addis (target, addis_value);
 
   /* Emit the D-form load instruction.  */
   emit_fusion_load_store (target, target, load_offset, load_str);
@@ -39176,7 +39183,7 @@ emit_fusion_p9_load (rtx reg, rtx mem, rtx tmp_reg)
   fusion_split_address (addr, &hi, &lo);
 
   /* Emit the addis instruction.  */
-  emit_fusion_addis (tmp_reg, hi, "power9 load fusion", GET_MODE_NAME (mode));
+  emit_fusion_addis (tmp_reg, hi);
 
   /* Emit the D-form load instruction.  */
   emit_fusion_load_store (reg, tmp_reg, lo, load_string);
@@ -39263,7 +39270,7 @@ emit_fusion_p9_store (rtx mem, rtx reg, rtx tmp_reg)
   fusion_split_address (addr, &hi, &lo);
 
   /* Emit the addis instruction.  */
-  emit_fusion_addis (tmp_reg, hi, "power9 store fusion", GET_MODE_NAME (mode));
+  emit_fusion_addis (tmp_reg, hi);
 
   /* Emit the D-form load instruction.  */
   emit_fusion_load_store (reg, tmp_reg, lo, store_string);

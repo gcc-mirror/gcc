@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -515,7 +517,7 @@ m32c_conditional_register_usage (void)
 {
   int i;
 
-  if (0 <= target_memregs && target_memregs <= 16)
+  if (target_memregs >= 0 && target_memregs <= 16)
     {
       /* The command line option is bytes, but our "registers" are
 	 16-bit words.  */
@@ -2306,9 +2308,9 @@ m32c_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
       i = INTVAL (addr);
       if (i == 0)
 	return COSTS_N_INSNS(1);
-      if (0 < i && i <= 255)
+      if (i > 0 && i <= 255)
 	return COSTS_N_INSNS(2);
-      if (0 < i && i <= 65535)
+      if (i > 0 && i <= 65535)
 	return COSTS_N_INSNS(3);
       return COSTS_N_INSNS(4);
     case SYMBOL_REF:
@@ -2321,9 +2323,9 @@ m32c_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 	  i = INTVAL (XEXP (addr, 1));
 	  if (i == 0)
 	    return COSTS_N_INSNS(1);
-	  if (0 < i && i <= 255)
+	  if (i > 0 && i <= 255)
 	    return COSTS_N_INSNS(2);
-	  if (0 < i && i <= 65535)
+	  if (i > 0 && i <= 65535)
 	    return COSTS_N_INSNS(3);
 	}
       return COSTS_N_INSNS(4);
@@ -3000,12 +3002,15 @@ current_function_special_page_vector (rtx x)
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32c_attribute_table
 static const struct attribute_spec m32c_attribute_table[] = {
-  {"interrupt", 0, 0, false, false, false, interrupt_handler, false},
-  {"bank_switch", 0, 0, false, false, false, interrupt_handler, false},
-  {"fast_interrupt", 0, 0, false, false, false, interrupt_handler, false},
-  {"function_vector", 1, 1, true,  false, false, function_vector_handler,
-   false},
-  {0, 0, 0, 0, 0, 0, 0, false}
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, false, false, false, false, interrupt_handler, NULL },
+  { "bank_switch", 0, 0, false, false, false, false, interrupt_handler, NULL },
+  { "fast_interrupt", 0, 0, false, false, false, false,
+    interrupt_handler, NULL },
+  { "function_vector", 1, 1, true,  false, false, false,
+    function_vector_handler, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES

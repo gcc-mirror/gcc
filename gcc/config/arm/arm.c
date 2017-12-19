@@ -20,7 +20,10 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
+#define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -321,25 +324,25 @@ static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
   /* Function calls made to this symbol must be done indirectly, because
      it may lie outside of the 26 bit addressing range of a normal function
      call.  */
-  { "long_call",    0, 0, false, true,  true,  NULL, false },
+  { "long_call",    0, 0, false, true,  true,  false, NULL, NULL },
   /* Whereas these functions are always known to reside within the 26 bit
      addressing range.  */
-  { "short_call",   0, 0, false, true,  true,  NULL, false },
+  { "short_call",   0, 0, false, true,  true,  false, NULL, NULL },
   /* Specify the procedure call conventions for a function.  */
-  { "pcs",          1, 1, false, true,  true,  arm_handle_pcs_attribute,
-    false },
+  { "pcs",          1, 1, false, true,  true,  false, arm_handle_pcs_attribute,
+    NULL },
   /* Interrupt Service Routines have special prologue and epilogue requirements.  */
-  { "isr",          0, 1, false, false, false, arm_handle_isr_attribute,
-    false },
-  { "interrupt",    0, 1, false, false, false, arm_handle_isr_attribute,
-    false },
-  { "naked",        0, 0, true,  false, false, arm_handle_fndecl_attribute,
-    false },
+  { "isr",          0, 1, false, false, false, false, arm_handle_isr_attribute,
+    NULL },
+  { "interrupt",    0, 1, false, false, false, false, arm_handle_isr_attribute,
+    NULL },
+  { "naked",        0, 0, true,  false, false, false,
+    arm_handle_fndecl_attribute, NULL },
 #ifdef ARM_PE
   /* ARM/PE has three new attributes:
      interfacearm - ?
@@ -350,22 +353,24 @@ static const struct attribute_spec arm_attribute_table[] =
      them with spaces.  We do NOT support this.  Instead, use __declspec
      multiple times.
   */
-  { "dllimport",    0, 0, true,  false, false, NULL, false },
-  { "dllexport",    0, 0, true,  false, false, NULL, false },
-  { "interfacearm", 0, 0, true,  false, false, arm_handle_fndecl_attribute,
-    false },
+  { "dllimport",    0, 0, true,  false, false, false, NULL, NULL },
+  { "dllexport",    0, 0, true,  false, false, false, NULL, NULL },
+  { "interfacearm", 0, 0, true,  false, false, false,
+    arm_handle_fndecl_attribute, NULL },
 #elif TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport",    0, 0, false, false, false, handle_dll_attribute, false },
-  { "dllexport",    0, 0, false, false, false, handle_dll_attribute, false },
-  { "notshared",    0, 0, false, true, false, arm_handle_notshared_attribute,
-    false },
+  { "dllimport",    0, 0, false, false, false, false, handle_dll_attribute,
+    NULL },
+  { "dllexport",    0, 0, false, false, false, false, handle_dll_attribute,
+    NULL },
+  { "notshared",    0, 0, false, true, false, false,
+    arm_handle_notshared_attribute, NULL },
 #endif
   /* ARMv8-M Security Extensions support.  */
-  { "cmse_nonsecure_entry", 0, 0, true, false, false,
-    arm_handle_cmse_nonsecure_entry, false },
-  { "cmse_nonsecure_call", 0, 0, true, false, false,
-    arm_handle_cmse_nonsecure_call, true },
-  { NULL,           0, 0, false, false, false, NULL, false }
+  { "cmse_nonsecure_entry", 0, 0, true, false, false, false,
+    arm_handle_cmse_nonsecure_entry, NULL },
+  { "cmse_nonsecure_call", 0, 0, true, false, false, true,
+    arm_handle_cmse_nonsecure_call, NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Initialize the GCC target structure.  */
@@ -11065,7 +11070,7 @@ arm_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
 				current_tune->insn_extra_cost,
 				total, speed);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_file && arm_verbose_cost)
     {
       print_rtl_single (dump_file, x);
       fprintf (dump_file, "\n%s cost: %d (%s)\n", speed ? "Hot" : "Cold",
@@ -13982,7 +13987,7 @@ arm_block_move_unaligned_straight (rtx dstbase, rtx srcbase,
   HOST_WIDE_INT src_autoinc, dst_autoinc;
   rtx mem, addr;
   
-  gcc_assert (1 <= interleave_factor && interleave_factor <= 4);
+  gcc_assert (interleave_factor >= 1 && interleave_factor <= 4);
   
   /* Use hard registers if we have aligned source or destination so we can use
      load/store multiple with contiguous registers.  */
@@ -30956,9 +30961,57 @@ arm_identify_fpu_from_isa (sbitmap isa)
   gcc_unreachable ();
 }
 
+/* The last .arch and .fpu assembly strings that we printed.  */
+static std::string arm_last_printed_arch_string;
+static std::string arm_last_printed_fpu_string;
+
+/* Implement ASM_DECLARE_FUNCTION_NAME.  Output the ISA features used
+   by the function fndecl.  */
 void
 arm_declare_function_name (FILE *stream, const char *name, tree decl)
 {
+  tree target_parts = DECL_FUNCTION_SPECIFIC_TARGET (decl);
+
+  struct cl_target_option *targ_options;
+  if (target_parts)
+    targ_options = TREE_TARGET_OPTION (target_parts);
+  else
+    targ_options = TREE_TARGET_OPTION (target_option_current_node);
+  gcc_assert (targ_options);
+
+  /* Only update the assembler .arch string if it is distinct from the last
+     such string we printed.  */
+  std::string arch_to_print = targ_options->x_arm_arch_string;
+  if (arch_to_print != arm_last_printed_arch_string)
+    {
+      std::string arch_name
+	= arch_to_print.substr (0, arch_to_print.find ("+"));
+      asm_fprintf (asm_out_file, "\t.arch %s\n", arch_name.c_str ());
+      const arch_option *arch
+	= arm_parse_arch_option_name (all_architectures, "-march",
+				      targ_options->x_arm_arch_string);
+      auto_sbitmap opt_bits (isa_num_bits);
+
+      gcc_assert (arch);
+      if (arch->common.extensions)
+	{
+	  for (const struct cpu_arch_extension *opt = arch->common.extensions;
+	       opt->name != NULL;
+	       opt++)
+	    {
+	      if (!opt->remove)
+		{
+		  arm_initialize_isa (opt_bits, opt->isa_bits);
+		  if (bitmap_subset_p (opt_bits, arm_active_target.isa)
+		      && !bitmap_subset_p (opt_bits, isa_all_fpubits))
+		    asm_fprintf (asm_out_file, "\t.arch_extension %s\n",
+				 opt->name);
+		}
+	     }
+	}
+
+      arm_last_printed_arch_string = arch_to_print;
+    }
 
   fprintf (stream, "\t.syntax unified\n");
 
@@ -30976,10 +31029,15 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
   else
     fprintf (stream, "\t.arm\n");
 
-  asm_fprintf (asm_out_file, "\t.fpu %s\n",
-	       (TARGET_SOFT_FLOAT
-		? "softvfp"
-		: arm_identify_fpu_from_isa (arm_active_target.isa)));
+  std::string fpu_to_print
+    = TARGET_SOFT_FLOAT
+	? "softvfp" : arm_identify_fpu_from_isa (arm_active_target.isa);
+
+  if (fpu_to_print != arm_last_printed_arch_string)
+    {
+      asm_fprintf (asm_out_file, "\t.fpu %s\n", fpu_to_print.c_str ());
+      arm_last_printed_fpu_string = fpu_to_print;
+    }
 
   if (TARGET_POKE_FUNCTION_NAME)
     arm_poke_function_name (stream, (const char *) name);

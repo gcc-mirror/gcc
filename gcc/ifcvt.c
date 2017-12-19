@@ -1287,7 +1287,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
   HOST_WIDE_INT itrue, ifalse, diff, tmp;
   int normalize;
   bool can_reverse;
-  machine_mode mode = GET_MODE (if_info->x);;
+  machine_mode mode = GET_MODE (if_info->x);
   rtx common = NULL_RTX;
 
   rtx a = if_info->a;
@@ -5445,6 +5445,10 @@ if_convert (bool after_combine)
 
   if (optimize == 1)
     df_remove_problem (df_live);
+
+  /* Some non-cold blocks may now be only reachable from cold blocks.
+     Fix that up.  */
+  fixup_partitions ();
 
   checking_verify_flow_info ();
 }

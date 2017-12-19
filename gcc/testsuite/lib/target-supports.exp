@@ -328,6 +328,15 @@ proc check_weak_available { } {
     }
 }
 
+# return 1 if weak undefined symbols are supported.
+
+proc check_effective_target_weak_undefined { } {
+    return [check_runtime weak_undefined {
+	extern void foo () __attribute__((weak));
+	int main (void) { if (foo) return 1; return 0; }
+    } ""]
+}
+
 ###############################
 # proc check_weak_override_available { }
 ###############################
@@ -1064,7 +1073,11 @@ proc check_effective_target_static {} {
 # Return 1 if the target supports -fstack-protector
 proc check_effective_target_fstack_protector {} {
     return [check_runtime fstack_protector {
-	int main (void) { return 0; }
+	#include <string.h>
+	int main (int argc, char *argv[]) {
+	  char buf[64];
+	  return !strcpy (buf, strrchr (argv[0], '/'));
+	}
     } "-fstack-protector"]
 }
 
@@ -1391,20 +1404,6 @@ proc check_iconv_available { test_what } {
     }] $libiconv]
 }
 
-# Return true if Cilk Library is supported on the target.
-proc check_effective_target_cilkplus_runtime { } {
-  return [ check_no_compiler_messages_nocache cilkplus_runtime executable {
-	#ifdef __cplusplus
-	extern "C" 
-	#endif
-	   int __cilkrts_set_param (const char *, const char *);
-	    int main (void) { 
-		int x = __cilkrts_set_param ("nworkers", "0");
-		return x; 
-	    }
-	} "-fcilkplus -lcilkrts" ]
-}
-
 # Return true if the atomic library is supported on the target.
 proc check_effective_target_libatomic_available { } {
     return [check_no_compiler_messages libatomic_available executable {
@@ -1559,29 +1558,6 @@ proc check_effective_target_rdynamic { } {
   return [check_no_compiler_messages rdynamic executable {
      int main() { return 0; }
   } "-rdynamic"]
-}
-
-# Return 1 if cilk-plus is supported by the target, 0 otherwise.
- 
-proc check_effective_target_cilkplus { } {
-    # Skip cilk-plus tests on int16 and size16 targets for now.
-    # The cilk-plus tests are not generic enough to cover these
-    # cases and would throw hundreds of FAILs.
-    if { [check_effective_target_int16]
-	 || ![check_effective_target_size32plus] } {
-	return 0;
-    }
-
-    # Skip AVR, its RAM is too small and too many tests would fail.
-    if { [istarget avr-*-*] } {
-	return 0;
-    }
-
-    if { ! [check_effective_target_pthread] } {
-	return 0;
-    }
-
-    return 1
 }
 
 proc check_linker_plugin_available { } {
@@ -1887,6 +1863,20 @@ proc check_effective_target_avx512f_runtime { } {
 	return 1
     }
     return 0
+}
+
+# Return 1 if bmi2 instructions can be compiled.
+proc check_effective_target_bmi2 { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+        return 0
+    }
+    return [check_no_compiler_messages bmi2 object {
+	unsigned int
+	_bzhi_u32 (unsigned int __X, unsigned int __Y)
+	{
+	    return __builtin_ia32_bzhi_si (__X, __Y);
+	}
+    } "-mbmi2" ]
 }
 
 # Return 1 if the target supports executing MIPS Paired-Single instructions,

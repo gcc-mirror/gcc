@@ -1637,7 +1637,7 @@ void, (rtx_insn *insn, int max_pri, int *fusion_pri, int *pri), NULL)
 
 HOOK_VECTOR_END (sched)
 
-/* Functions relating to OpenMP and Cilk Plus SIMD clones.  */
+/* Functions relating to OpenMP SIMD and __attribute__((simd)) clones.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_SIMD_CLONE_"
 HOOK_VECTOR (TARGET_SIMD_CLONE, simd_clone)
@@ -3783,6 +3783,14 @@ candidate as a replacement for the if-convertible sequence described in\n\
 @code{if_info}.",
 bool, (rtx_insn *seq, struct noce_if_info *if_info),
 default_noce_conversion_profitable_p)
+
+DEFHOOK
+(estimated_poly_value,
+ "Return an estimate of the runtime value of @var{val}, for use in\n\
+things like cost calculations or profiling frequencies.  The default\n\
+implementation returns the lowest possible value of @var{val}.",
+ HOST_WIDE_INT, (poly_int64 val),
+ default_estimated_poly_value)
 
 /* Permit speculative instructions in delay slots during delayed-branch 
    scheduling.  */

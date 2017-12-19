@@ -6962,10 +6962,17 @@ insn_live_p (rtx_insn *insn, int *counts)
     {
       rtx_insn *next;
 
+      if (DEBUG_MARKER_INSN_P (insn))
+	return true;
+
       for (next = NEXT_INSN (insn); next; next = NEXT_INSN (next))
 	if (NOTE_P (next))
 	  continue;
 	else if (!DEBUG_INSN_P (next))
+	  return true;
+	/* If we find an inspection point, such as a debug begin stmt,
+	   we want to keep the earlier debug insn.  */
+	else if (DEBUG_MARKER_INSN_P (next))
 	  return true;
 	else if (INSN_VAR_LOCATION_DECL (insn) == INSN_VAR_LOCATION_DECL (next))
 	  return false;
@@ -7049,11 +7056,11 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 
   timevar_push (TV_DELETE_TRIVIALLY_DEAD);
   /* First count the number of times each register is used.  */
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       counts = XCNEWVEC (int, nreg * 3);
       for (insn = insns; insn; insn = NEXT_INSN (insn))
-	if (DEBUG_INSN_P (insn))
+	if (DEBUG_BIND_INSN_P (insn))
 	  count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
 			   NULL_RTX, 1);
 	else if (INSN_P (insn))
@@ -7111,12 +7118,15 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
       if (! live_insn && dbg_cnt (delete_trivial_dead))
 	{
 	  if (DEBUG_INSN_P (insn))
-	    count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
-			     NULL_RTX, -1);
+	    {
+	      if (DEBUG_BIND_INSN_P (insn))
+		count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
+				 NULL_RTX, -1);
+	    }
 	  else
 	    {
 	      rtx set;
-	      if (MAY_HAVE_DEBUG_INSNS
+	      if (MAY_HAVE_DEBUG_BIND_INSNS
 		  && (set = single_set (insn)) != NULL_RTX
 		  && is_dead_reg (SET_DEST (set), counts)
 		  /* Used at least once in some DEBUG_INSN.  */
@@ -7156,10 +7166,10 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	}
     }
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     {
       for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-	if (DEBUG_INSN_P (insn))
+	if (DEBUG_BIND_INSN_P (insn))
 	  {
 	    /* If this debug insn references a dead register that wasn't replaced
 	       with an DEBUG_EXPR, reset the DEBUG_INSN.  */

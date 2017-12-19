@@ -1056,7 +1056,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 			       common_root->n.common->binding_label);
       if (gsym && gsym->type != GSYM_COMMON)
 	{
-	  gfc_error ("COMMON block at %L with binding label %s uses the same "
+	  gfc_error ("COMMON block at %L with binding label %qs uses the same "
 		     "global identifier as entity at %L",
 		     &common_root->n.common->where,
 		     common_root->n.common->binding_label, &gsym->where);
@@ -1174,7 +1174,7 @@ static bool
 get_pdt_constructor (gfc_expr *expr, gfc_constructor **constr,
 		     gfc_symbol *derived)
 {
-  gfc_constructor *cons;
+  gfc_constructor *cons = NULL;
   gfc_component *comp;
   bool t = true;
 
@@ -11542,7 +11542,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       || sym->attr.flavor == FL_DERIVED || !sym->binding_label)
     return;
 
-  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
+  gsym = gfc_find_case_gsymbol (gfc_gsym_root, sym->binding_label);
 
   if (sym->module)
     module = sym->module;
@@ -11578,7 +11578,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 
   if (sym->attr.flavor == FL_VARIABLE && gsym->type != GSYM_UNKNOWN)
     {
-      gfc_error ("Variable %s with binding label %s at %L uses the same global "
+      gfc_error ("Variable %qs with binding label %qs at %L uses the same global "
 		 "identifier as entity at %L", sym->name,
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       /* Clear the binding label to prevent checking multiple times.  */
@@ -11591,8 +11591,8 @@ gfc_verify_binding_labels (gfc_symbol *sym)
     {
       /* This can only happen if the variable is defined in a module - if it
 	 isn't the same module, reject it.  */
-      gfc_error ("Variable %s from module %s with binding label %s at %L uses "
-		   "the same global identifier as entity at %L from module %s",
+      gfc_error ("Variable %qs from module %qs with binding label %qs at %L "
+		 "uses the same global identifier as entity at %L from module %qs",
 		 sym->name, module, sym->binding_label,
 		 &sym->declared_at, &gsym->where, gsym->mod_name);
       sym->binding_label = NULL;
@@ -11608,7 +11608,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       /* Print an error if the procedure is defined multiple times; we have to
 	 exclude references to the same procedure via module association or
 	 multiple checks for the same procedure.  */
-      gfc_error ("Procedure %s with binding label %s at %L uses the same "
+      gfc_error ("Procedure %qs with binding label %qs at %L uses the same "
 		 "global identifier as entity at %L", sym->name,
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       sym->binding_label = NULL;
@@ -13502,7 +13502,11 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   if (c->attr.artificial)
     return true;
 
-  if (sym->attr.vtype && sym->attr.use_assoc)
+  /* Do not allow vtype components to be resolved in nameless namespaces
+     such as block data because the procedure pointers will cause ICEs
+     and vtables are not needed in these contexts.  */
+  if (sym->attr.vtype && sym->attr.use_assoc
+      && sym->ns->proc_name == NULL)
     return true;
 
   /* F2008, C442.  */
@@ -14006,6 +14010,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
     {
       for (f = sym->formal; f; f = f->next)
 	{
+	  if (!f->sym)
+	    continue;
 	  c = gfc_find_component (sym, f->sym->name, true, true, NULL);
 	  if (c == NULL)
 	    {
@@ -14279,7 +14285,7 @@ resolve_fl_parameter (gfc_symbol *sym)
 }
 
 
-/* Called by resolve_symbol to chack PDTs.  */
+/* Called by resolve_symbol to check PDTs.  */
 
 static void
 resolve_pdt (gfc_symbol* sym)
@@ -14289,11 +14295,18 @@ resolve_pdt (gfc_symbol* sym)
   gfc_component *c;
   bool const_len_exprs = true;
   bool assumed_len_exprs = false;
+  symbol_attribute *attr;
 
   if (sym->ts.type == BT_DERIVED)
-    derived = sym->ts.u.derived;
+    {
+      derived = sym->ts.u.derived;
+      attr = &(sym->attr);
+    }
   else if (sym->ts.type == BT_CLASS)
-    derived = CLASS_DATA (sym)->ts.u.derived;
+    {
+      derived = CLASS_DATA (sym)->ts.u.derived;
+      attr = &(CLASS_DATA (sym)->attr);
+    }
   else
     gcc_unreachable ();
 
@@ -14311,6 +14324,14 @@ resolve_pdt (gfc_symbol* sym)
 	const_len_exprs = false;
       else if (param->spec_type == SPEC_ASSUMED)
 	assumed_len_exprs = true;
+
+      if (param->spec_type == SPEC_DEFERRED
+	  && !attr->allocatable && !attr->pointer)
+	gfc_error ("The object %qs at %L has a deferred LEN "
+		   "parameter %qs and is neither allocatable "
+		   "nor a pointer", sym->name, &sym->declared_at,
+		   param->name);
+
     }
 
   if (!const_len_exprs

@@ -170,7 +170,7 @@
 
 namespace {
 
-struct
+struct bswap_stat
 {
   /* Number of hand-written 16-bit nop / bswaps found.  */
   int found_16bit;
@@ -2384,6 +2384,9 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
       this_n.type = type;
       if (!this_n.base_addr)
 	this_n.range = try_size / BITS_PER_UNIT;
+      else
+	/* Update vuse in case it has changed by output_merged_stores.  */
+	this_n.vuse = gimple_vuse (info->ins_stmt);
       unsigned int bitpos = info->bitpos - infof->bitpos;
       if (!do_shift_rotate (LSHIFT_EXPR, &this_n,
 			    BYTES_BIG_ENDIAN
@@ -3341,10 +3344,16 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 	 we've checked the aliasing already in try_coalesce_bswap and
 	 we want to sink the need load into seq.  So need to use new_vuse
 	 on the load.  */
-      if (n->base_addr && n->vuse == NULL)
+      if (n->base_addr)
 	{
-	  n->vuse = new_vuse;
-	  ins_stmt = NULL;
+	  if (n->vuse == NULL)
+	    {
+	      n->vuse = new_vuse;
+	      ins_stmt = NULL;
+	    }
+	  else
+	    /* Update vuse in case it has changed by output_merged_stores.  */
+	    n->vuse = gimple_vuse (ins_stmt);
 	}
       bswap_res = bswap_replace (gsi_start (seq), ins_stmt, fndecl,
 				 bswap_type, load_type, n, bswap);

@@ -21,6 +21,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -595,29 +597,29 @@ static tree mips_handle_use_shadow_register_set_attr (tree *, tree, tree, int,
 
 /* The value of TARGET_ATTRIBUTE_TABLE.  */
 static const struct attribute_spec mips_attribute_table[] = {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       om_diagnostic } */
-  { "long_call",   0, 0, false, true,  true,  NULL, false },
-  { "short_call",  0, 0, false, true,  true,  NULL, false },
-  { "far",     	   0, 0, false, true,  true,  NULL, false },
-  { "near",        0, 0, false, true,  true,  NULL, false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "long_call",   0, 0, false, true,  true,  false, NULL, NULL },
+  { "short_call",  0, 0, false, true,  true,  false, NULL, NULL },
+  { "far",     	   0, 0, false, true,  true,  false, NULL, NULL },
+  { "near",        0, 0, false, true,  true,  false, NULL, NULL },
   /* We would really like to treat "mips16" and "nomips16" as type
      attributes, but GCC doesn't provide the hooks we need to support
      the right conversion rules.  As declaration attributes, they affect
      code generation but don't carry other semantics.  */
-  { "mips16", 	   0, 0, true,  false, false, NULL, false },
-  { "nomips16",    0, 0, true,  false, false, NULL, false },
-  { "micromips",   0, 0, true,  false, false, NULL, false },
-  { "nomicromips", 0, 0, true,  false, false, NULL, false },
-  { "nocompression", 0, 0, true,  false, false, NULL, false },
+  { "mips16", 	   0, 0, true,  false, false, false, NULL, NULL },
+  { "nomips16",    0, 0, true,  false, false, false, NULL, NULL },
+  { "micromips",   0, 0, true,  false, false, false, NULL, NULL },
+  { "nomicromips", 0, 0, true,  false, false, false, NULL, NULL },
+  { "nocompression", 0, 0, true,  false, false, false, NULL, NULL },
   /* Allow functions to be specified as interrupt handlers */
-  { "interrupt",   0, 1, false, true,  true, mips_handle_interrupt_attr,
-    false },
-  { "use_shadow_register_set",	0, 1, false, true,  true,
-    mips_handle_use_shadow_register_set_attr, false },
-  { "keep_interrupts_masked",	0, 0, false, true,  true, NULL, false },
-  { "use_debug_exception_return", 0, 0, false, true,  true, NULL, false },
-  { NULL,	   0, 0, false, false, false, NULL, false }
+  { "interrupt",   0, 1, false, true,  true, false, mips_handle_interrupt_attr,
+    NULL },
+  { "use_shadow_register_set",	0, 1, false, true,  true, false,
+    mips_handle_use_shadow_register_set_attr, NULL },
+  { "keep_interrupts_masked",	0, 0, false, true,  true, false, NULL, NULL },
+  { "use_debug_exception_return", 0, 0, false, true, true, false, NULL, NULL },
+  { NULL,	   0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* A table describing all the processors GCC knows about; see

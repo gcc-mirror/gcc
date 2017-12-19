@@ -55,6 +55,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     check_divide_overflow_(true),
     compiling_runtime_(false),
     debug_escape_level_(0),
+    nil_check_size_threshold_(4096),
     verify_types_(),
     interface_types_(),
     specific_type_functions_(),
@@ -710,7 +711,7 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
 
       Bfunction* pfunc = this->backend()->function(fntype, user_name, init_name,
                                                    true, true, true, false,
-                                                   false, unknown_loc);
+                                                   false, false, unknown_loc);
       Bexpression* pfunc_code =
           this->backend()->function_code_expression(pfunc, unknown_loc);
       Bexpression* pfunc_call =
@@ -5434,8 +5435,8 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       this->fndecl_ =
           gogo->backend()->function(functype, no->get_id(gogo), asm_name,
                                     is_visible, false, is_inlinable,
-                                    disable_split_stack, in_unique_section,
-				    this->location());
+                                    disable_split_stack, false,
+				    in_unique_section, this->location());
     }
   return this->fndecl_;
 }
@@ -5447,6 +5448,8 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 {
   if (this->fndecl_ == NULL)
     {
+      bool does_not_return = false;
+
       // Let Go code use an asm declaration to pick up a builtin
       // function.
       if (!this->asm_name_.empty())
@@ -5458,6 +5461,10 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 	      this->fndecl_ = builtin_decl;
 	      return this->fndecl_;
 	    }
+
+	  if (this->asm_name_ == "runtime.gopanic"
+	      || this->asm_name_ == "__go_runtime_error")
+	    does_not_return = true;
 	}
 
       std::string asm_name;
@@ -5474,8 +5481,8 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
       Btype* functype = this->fntype_->get_backend_fntype(gogo);
       this->fndecl_ =
           gogo->backend()->function(functype, no->get_id(gogo), asm_name,
-                                    true, true, true, false, false,
-                                    this->location());
+                                    true, true, true, false, does_not_return,
+				    false, this->location());
     }
 
   return this->fndecl_;
@@ -5567,7 +5574,10 @@ Function::build(Gogo* gogo, Named_object* named_function)
               vars.push_back(bvar);
 	      Expression* parm_ref =
                   Expression::make_var_reference(parm_no, loc);
-	      parm_ref = Expression::make_unary(OPERATOR_MULT, parm_ref, loc);
+              parm_ref =
+                  Expression::make_dereference(parm_ref,
+                                               Expression::NIL_CHECK_DEFAULT,
+                                               loc);
 	      if ((*p)->var_value()->is_in_heap())
 		parm_ref = Expression::make_heap_expression(parm_ref, loc);
               var_inits.push_back(parm_ref->get_backend(&context));

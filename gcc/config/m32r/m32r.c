@@ -17,6 +17,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -110,12 +112,12 @@ static HOST_WIDE_INT m32r_starting_frame_offset (void);
 
 static const struct attribute_spec m32r_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt", 0, 0, true,  false, false, NULL, false },
-  { "model",     1, 1, true,  false, false, m32r_handle_model_attribute,
-    false },
-  { NULL,        0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt", 0, 0, true,  false, false, false, NULL, NULL },
+  { "model",     1, 1, true,  false, false, false, m32r_handle_model_attribute,
+    NULL },
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Initialize the GCC target structure.  */

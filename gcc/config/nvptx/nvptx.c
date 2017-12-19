@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include <sstream>
 #include "system.h"
@@ -4457,11 +4459,13 @@ nvptx_handle_shared_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 /* Table of valid machine attributes.  */
 static const struct attribute_spec nvptx_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "kernel", 0, 0, true, false,  false, nvptx_handle_kernel_attribute, false },
-  { "shared", 0, 0, true, false,  false, nvptx_handle_shared_attribute, false },
-  { NULL, 0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "kernel", 0, 0, true, false,  false, false, nvptx_handle_kernel_attribute,
+    NULL },
+  { "shared", 0, 0, true, false,  false, false, nvptx_handle_shared_attribute,
+    NULL },
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Limit vector alignments to BIGGEST_ALIGNMENT.  */

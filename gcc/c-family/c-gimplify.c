@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "langhooks.h"
 #include "dumpfile.h"
-#include "cilk.h"
 #include "c-ubsan.h"
 
 /*  The gimplification pass converts the language-dependent trees
@@ -276,25 +275,6 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	  }
 	break;
       }
-
-    case CILK_SPAWN_STMT:
-      gcc_assert(fn_contains_cilk_spawn_p (cfun)
-		 && cilk_detect_spawn_and_unwrap (expr_p));
-
-      if (!seen_error ())
-        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
-      return GS_ERROR;
-
-    case MODIFY_EXPR:
-    case INIT_EXPR:
-    case CALL_EXPR:
-      if (fn_contains_cilk_spawn_p (cfun)
-	  && cilk_detect_spawn_and_unwrap (expr_p)
-	  /* If an error is found, the spawn wrapper is removed and the
-	     original expression (MODIFY/INIT/CALL_EXPR) is processes as
-	     it is supposed to be.  */
-	  && !seen_error ())
-        return (enum gimplify_status) gimplify_cilk_spawn (expr_p);
 
     default:;
     }

@@ -52,7 +52,9 @@ package Exp_Util is
 
    --    For an expression occurring in a declaration (declarations always
    --    appear in lists), the actions are similarly inserted into the list
-   --    just before the associated declaration.
+   --    just before the associated declaration. ???Declarations do not always
+   --    appear in lists; in particular, a library unit declaration does not
+   --    appear in a list, and Insert_Action will crash in that case.
 
    --  The following special cases arise:
 

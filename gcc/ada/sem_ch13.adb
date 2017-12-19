@@ -2389,6 +2389,10 @@ package body Sem_Ch13 is
                   elsif Is_Incomplete_Type (E) then
                      Error_Msg_N
                        ("predicate cannot apply to incomplete view", Aspect);
+
+                  elsif Is_Generic_Type (E) then
+                     Error_Msg_N
+                       ("predicate cannot apply to formal type", Aspect);
                      goto Continue;
                   end if;
 
@@ -11913,6 +11917,12 @@ package body Sem_Ch13 is
         and then Is_Predicate_Function (Entity (Name (Expr)))
         and then Is_Scalar_Type (Etype (First_Entity (Entity (Name (Expr)))))
       then
+         return True;
+
+      elsif Is_Entity_Name (Expr)
+        and then Entity (Expr) = Standard_True
+      then
+         Error_Msg_N ("predicate is redundant (always True)?", Expr);
          return True;
 
       --  That's an exhaustive list of tests, all other cases are not

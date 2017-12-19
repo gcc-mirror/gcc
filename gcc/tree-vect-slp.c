@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "gimple-walk.h"
 #include "dbgcnt.h"
+#include "tree-vector-builder.h"
 
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
@@ -961,7 +962,8 @@ bst_traits::equal (value_type existing, value_type candidate)
   return true;
 }
 
-static hash_set <vec <gimple *>, bst_traits> *bst_fail;
+typedef hash_set <vec <gimple *>, bst_traits> scalar_stmts_set_t;
+static scalar_stmts_set_t *bst_fail;
 
 static slp_tree
 vect_build_slp_tree_2 (vec_info *vinfo,
@@ -1674,7 +1676,8 @@ static void
 vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 			 stmt_vector_for_cost *prologue_cost_vec,
 			 stmt_vector_for_cost *body_cost_vec,
-			 unsigned ncopies_for_cost)
+			 unsigned ncopies_for_cost,
+			 scalar_stmts_set_t* visited)
 {
   unsigned i, j;
   slp_tree child;
@@ -1682,11 +1685,18 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
   stmt_vec_info stmt_info;
   tree lhs;
 
+  /* If we already costed the exact same set of scalar stmts we're done.
+     We share the generated vector stmts for those.  */
+  if (visited->contains (SLP_TREE_SCALAR_STMTS (node)))
+    return;
+
+  visited->add (SLP_TREE_SCALAR_STMTS (node).copy ());
+
   /* Recurse down the SLP tree.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
       vect_analyze_slp_cost_1 (instance, child, prologue_cost_vec,
-			       body_cost_vec, ncopies_for_cost);
+			       body_cost_vec, ncopies_for_cost, visited);
 
   /* Look at the first scalar stmt to determine the cost.  */
   stmt = SLP_TREE_SCALAR_STMTS (node)[0];
@@ -1871,9 +1881,11 @@ vect_analyze_slp_cost (slp_instance instance, void *data)
 
   prologue_cost_vec.create (10);
   body_cost_vec.create (10);
+  scalar_stmts_set_t *visited = new scalar_stmts_set_t ();
   vect_analyze_slp_cost_1 (instance, SLP_INSTANCE_TREE (instance),
 			   &prologue_cost_vec, &body_cost_vec,
-			   ncopies_for_cost);
+			   ncopies_for_cost, visited);
+  delete visited;
 
   /* Record the prologue costs, which were delayed until we were
      sure that SLP was successful.  */
@@ -2037,7 +2049,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
   /* Build the tree for the SLP instance.  */
   bool *matches = XALLOCAVEC (bool, group_size);
   unsigned npermutes = 0;
-  bst_fail = new hash_set <vec <gimple *>, bst_traits> ();
+  bst_fail = new scalar_stmts_set_t ();
   node = vect_build_slp_tree (vinfo, scalar_stmts, group_size,
 				   &max_nunits, &loads, matches, &npermutes,
 			      NULL, max_tree_size);
@@ -3211,7 +3223,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   number_of_places_left_in_vector = nunits;
   constant_p = true;
-  auto_vec<tree, 32> elts (nunits);
+  tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
   bool place_after_defs = false;
   for (j = 0; j < number_of_copies; j++)
@@ -3329,7 +3341,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
           if (number_of_places_left_in_vector == 0)
             {
 	      if (constant_p)
-		vec_cst = build_vector (vector_type, elts);
+		vec_cst = elts.build ();
 	      else
 		{
 		  vec<constructor_elt, va_gc> *v;
@@ -3360,6 +3372,8 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	      place_after_defs = false;
               number_of_places_left_in_vector = nunits;
 	      constant_p = true;
+	      elts.new_vector (vector_type, nunits, 1);
+	      elts.quick_grow (nunits);
             }
         }
     }
@@ -3656,11 +3670,11 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 		  
 		  if (! noop_p)
 		    {
-		      auto_vec<tree, 32> mask_elts (nunits);
+		      tree_vector_builder mask_elts (mask_type, nunits, 1);
 		      for (int l = 0; l < nunits; ++l)
 			mask_elts.quick_push (build_int_cst (mask_element_type,
 							     mask[l]));
-		      mask_vec = build_vector (mask_type, mask_elts);
+		      mask_vec = mask_elts.build ();
 		    }
 
 		  if (second_vec_index == -1)
@@ -3702,12 +3716,15 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   return true;
 }
 
-
+typedef hash_map <vec <gimple *>, slp_tree,
+		  simple_hashmap_traits <bst_traits, slp_tree> >
+  scalar_stmts_to_slp_tree_map_t;
 
 /* Vectorize SLP instance tree in postorder.  */
 
 static bool
-vect_schedule_slp_instance (slp_tree node, slp_instance instance)
+vect_schedule_slp_instance (slp_tree node, slp_instance instance,
+			    scalar_stmts_to_slp_tree_map_t *bst_map)
 {
   gimple *stmt;
   bool grouped_store, is_store;
@@ -3721,8 +3738,19 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance)
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     return false;
 
+  /* See if we have already vectorized the same set of stmts and reuse their
+     vectorized stmts.  */
+  slp_tree &leader
+    = bst_map->get_or_insert (SLP_TREE_SCALAR_STMTS (node).copy ());
+  if (leader)
+    {
+      SLP_TREE_VEC_STMTS (node).safe_splice (SLP_TREE_VEC_STMTS (leader));
+      return false;
+    }
+
+  leader = node;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_schedule_slp_instance (child, instance);
+    vect_schedule_slp_instance (child, instance, bst_map);
 
   /* Push SLP node def-type to stmts.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
@@ -3798,7 +3826,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance)
 	  for (j = 0; j < v0.length (); ++j)
 	    {
 	      unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
-	      auto_vec<tree, 32> melts (nunits);
+	      tree_vector_builder melts (mvectype, nunits, 1);
 	      for (l = 0; l < nunits; ++l)
 		{
 		  if (k >= group_size)
@@ -3806,7 +3834,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance)
 		  tree t = build_int_cst (meltype, mask[k++] * nunits + l);
 		  melts.quick_push (t);
 		}
-	      tmask = build_vector (mvectype, melts);
+	      tmask = melts.build ();
 
 	      /* ???  Not all targets support a VEC_PERM_EXPR with a
 	         constant mask that would translate to a vec_merge RTX
@@ -3894,8 +3922,11 @@ vect_schedule_slp (vec_info *vinfo)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* Schedule the tree of INSTANCE.  */
+      scalar_stmts_to_slp_tree_map_t *bst_map
+	= new scalar_stmts_to_slp_tree_map_t ();
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
-                                             instance);
+                                             instance, bst_map);
+      delete bst_map;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.\n");

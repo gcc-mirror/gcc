@@ -688,7 +688,7 @@ const pass_data pass_data_cse_reciprocals =
   GIMPLE_PASS, /* type */
   "recip", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
+  TV_TREE_RECIP, /* tv_id */
   PROP_ssa, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
@@ -1902,7 +1902,7 @@ const pass_data pass_data_cse_sincos =
   GIMPLE_PASS, /* type */
   "sincos", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
+  TV_TREE_SINCOS, /* tv_id */
   PROP_ssa, /* properties_required */
   PROP_gimple_opt_math, /* properties_provided */
   0, /* properties_destroyed */
@@ -3243,7 +3243,7 @@ const pass_data pass_data_optimize_widening_mul =
   GIMPLE_PASS, /* type */
   "widening_mul", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_NONE, /* tv_id */
+  TV_TREE_WIDEN_MUL, /* tv_id */
   PROP_ssa, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */

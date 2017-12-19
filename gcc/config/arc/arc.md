@@ -471,6 +471,8 @@
 	     (symbol_ref "(arc_hazard (prev_active_insn (insn), insn)
 			   + arc_hazard (insn, next_active_insn (insn)))"))
 	 (const_string "false")
+	 (match_test "find_reg_note (insn, REG_SAVE_NOTE, GEN_INT (2))")
+	 (const_string "false")
 	 (eq_attr "iscompact" "maybe") (const_string "true")
 	 ]
 
@@ -497,6 +499,8 @@
 (define_attr "cond_delay_insn" "no,yes"
   (cond [(eq_attr "cond" "!canuse") (const_string "no")
 	 (eq_attr "type" "call,branch,uncond_branch,jump,brcc")
+	 (const_string "no")
+	 (match_test "find_reg_note (insn, REG_SAVE_NOTE, GEN_INT (2))")
 	 (const_string "no")
 	 (eq_attr "length" "2,4") (const_string "yes")]
 	(const_string "no")))
@@ -4297,6 +4301,13 @@
 ; use it for lack of inter-procedural branch shortening.
 ; Link-time relaxation would help...
 
+(define_insn "trap"
+  [(trap_if (const_int 1) (const_int 0))]
+  "!TARGET_ARC600_FAMILY"
+  "trap_s\\t5"
+  [(set_attr "type" "misc")
+   (set_attr "length" "2")])
+
 (define_insn "nop"
   [(const_int 0)]
   ""
@@ -6144,13 +6155,25 @@
   [(set_attr "length" "0")])
 
 ;; MAC and DMPY instructions
-(define_insn_and_split "maddsidi4"
+(define_expand "maddsidi4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "extend_operand"   "")
+   (match_operand:DI 3 "register_operand" "")]
+  "TARGET_PLUS_DMPY"
+  "{
+   emit_insn (gen_maddsidi4_split (operands[0], operands[1], operands[2], operands[3]));
+   DONE;
+  }")
+
+(define_insn_and_split "maddsidi4_split"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI
 	 (mult:DI
 	  (sign_extend:DI (match_operand:SI 1 "register_operand" "%r"))
 	  (sign_extend:DI (match_operand:SI 2 "extend_operand" "ri")))
-	 (match_operand:DI 3 "register_operand" "r")))]
+	 (match_operand:DI 3 "register_operand" "r")))
+   (clobber (reg:DI ARCV2_ACC))]
   "TARGET_PLUS_DMPY"
   "#"
   "TARGET_PLUS_DMPY && reload_completed"
@@ -6232,13 +6255,25 @@
    (set_attr "predicable" "no")
    (set_attr "cond" "nocond")])
 
-(define_insn_and_split "umaddsidi4"
+(define_expand "umaddsidi4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand:SI 2 "extend_operand"   "")
+   (match_operand:DI 3 "register_operand" "")]
+  "TARGET_PLUS_DMPY"
+  "{
+   emit_insn (gen_umaddsidi4_split (operands[0], operands[1], operands[2], operands[3]));
+   DONE;
+  }")
+
+(define_insn_and_split "umaddsidi4_split"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI
 	 (mult:DI
 	  (zero_extend:DI (match_operand:SI 1 "register_operand" "%r"))
 	  (zero_extend:DI (match_operand:SI 2 "extend_operand" "ri")))
-	 (match_operand:DI 3 "register_operand" "r")))]
+	 (match_operand:DI 3 "register_operand" "r")))
+   (clobber (reg:DI ARCV2_ACC))]
   "TARGET_PLUS_DMPY"
   "#"
   "TARGET_PLUS_DMPY && reload_completed"

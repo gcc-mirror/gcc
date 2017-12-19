@@ -1,4 +1,4 @@
-! { dg-options "-O2 -floop-interchange" }
+! { dg-options "-O2 -floop-nest-optimize" }
 
 SUBROUTINE EFGRDM(NCF,NFRG,G,RTRMS,GM,IOPT,K1)
   IMPLICIT DOUBLE PRECISION (A-H,O-Z)

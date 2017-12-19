@@ -3037,13 +3037,13 @@ delete_unreachable_blocks (void)
 
   find_unreachable_blocks ();
 
-  /* When we're in GIMPLE mode and there may be debug insns, we should
-     delete blocks in reverse dominator order, so as to get a chance
-     to substitute all released DEFs into debug stmts.  If we don't
-     have dominators information, walking blocks backward gets us a
-     better chance of retaining most debug information than
+  /* When we're in GIMPLE mode and there may be debug bind insns, we
+     should delete blocks in reverse dominator order, so as to get a
+     chance to substitute all released DEFs into debug bind stmts.  If
+     we don't have dominators information, walking blocks backward
+     gets us a better chance of retaining most debug information than
      otherwise.  */
-  if (MAY_HAVE_DEBUG_INSNS && current_ir_type () == IR_GIMPLE
+  if (MAY_HAVE_DEBUG_BIND_INSNS && current_ir_type () == IR_GIMPLE
       && dom_info_available_p (CDI_DOMINATORS))
     {
       for (b = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;

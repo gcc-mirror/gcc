@@ -1,3 +1,16 @@
+2017-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/83281
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-flt.c (main): Use
+	j suffix instead of i.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-cplx-dbl.c (main):
+	Likewise.
+
+2017-12-01  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c: Add missing
+	call to acc_wait (1).
+
 2017-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/81304

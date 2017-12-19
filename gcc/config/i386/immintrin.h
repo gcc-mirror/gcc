@@ -78,6 +78,10 @@
 
 #include <avx512vbmi2vlintrin.h>
 
+#include <avx512vnniintrin.h>
+
+#include <avx512vnnivlintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>
@@ -97,6 +101,8 @@
 #include <cetintrin.h>
 
 #include <gfniintrin.h>
+
+#include <vaesintrin.h>
 
 #ifndef __RDRND__
 #pragma GCC push_options

@@ -430,6 +430,14 @@
    (symbol_ref "(sparc_fix_b2bst != 0
 		 ? FIX_B2BST_TRUE : FIX_B2BST_FALSE)"))
 
+(define_attr "fix_lost_divsqrt" "false,true"
+   (symbol_ref "(sparc_fix_lost_divsqrt != 0
+		 ? FIX_LOST_DIVSQRT_TRUE : FIX_LOST_DIVSQRT_FALSE)"))
+
+(define_attr "fix_gr712rc" "false,true"
+   (symbol_ref "(sparc_fix_gr712rc != 0
+		 ? FIX_GR712RC_TRUE : FIX_GR712RC_FALSE)"))
+
 ;; Length (in # of insns).
 ;; Beware that setting a length greater or equal to 3 for conditional branches
 ;; has a side-effect (see output_cbranch and output_v9branch).
@@ -577,6 +585,9 @@
 (define_attr "in_branch_delay" "false,true"
   (cond [(eq_attr "type" "uncond_branch,branch,cbcond,uncond_cbcond,call,sibcall,call_no_delay_slot,multi")
 	   (const_string "false")
+	 (and (eq_attr "fix_lost_divsqrt" "true")
+	      (eq_attr "type" "fpdivs,fpsqrts,fpdivd,fpsqrtd"))
+	   (const_string "false")
 	 (and (eq_attr "fix_b2bst" "true") (eq_attr "type" "store,fpstore"))
 	   (const_string "false")
 	 (and (eq_attr "fix_ut699" "true") (eq_attr "type" "load,sload"))
@@ -590,6 +601,15 @@
 	   (const_string "true")
 	] (const_string "false")))
 
+(define_attr "in_integer_branch_annul_delay" "false,true"
+  (cond [(and (eq_attr "fix_gr712rc" "true")
+	      (eq_attr "type" "fp,fpcmp,fpmove,fpcmove,fpmul,
+			       fpdivs,fpsqrts,fpdivd,fpsqrtd"))
+	   (const_string "false")
+	 (eq_attr "in_branch_delay" "true")
+	   (const_string "true")
+	] (const_string "false")))
+
 (define_delay (eq_attr "type" "call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
@@ -599,8 +619,14 @@
 (define_delay (eq_attr "type" "return")
   [(eq_attr "in_return_delay" "true") (nil) (nil)])
 
-(define_delay (eq_attr "type" "branch")
+(define_delay (and (eq_attr "type" "branch")
+	      (not (eq_attr "branch_type" "icc")))
   [(eq_attr "in_branch_delay" "true") (nil) (eq_attr "in_branch_delay" "true")])
+
+(define_delay (and (eq_attr "type" "branch")
+	      (eq_attr "branch_type" "icc"))
+  [(eq_attr "in_branch_delay" "true") (nil)
+  (eq_attr "in_integer_branch_annul_delay" "true")])
 
 (define_delay (eq_attr "type" "uncond_branch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
