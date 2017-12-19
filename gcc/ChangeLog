@@ -1,3 +1,9 @@
+2017-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83490
+	* config/i386/i386.c (init_cumulative_args): Don't check TYPE_EMPTY_P
+	on an error node.						     
+
 2017-12-19  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (overriderregs): New variable.
