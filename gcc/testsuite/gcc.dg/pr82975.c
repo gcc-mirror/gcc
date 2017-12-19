@@ -1,6 +1,7 @@
 /* PR target/82975.  */
 /* { dg-do compile } */
-/* { dg-options "-mtune=cortex-a57 -fno-sched-pressure -O2" } */
+/* { dg-options "-fno-sched-pressure -O2" } */
+/* { dg-additional-options "-mtune=cortex-a57" { target arm*-*-* aarch64*-*-* } } */
 
 typedef __SIZE_TYPE__ size_t;
 
