@@ -1,3 +1,8 @@
+2017-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/83482
+	* g++.dg/torture/pr83482.C: New test.
+
 2017-12-19  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/83329
