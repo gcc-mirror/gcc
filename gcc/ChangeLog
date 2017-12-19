@@ -1,3 +1,9 @@
+2017-12-19  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/83387
+	* config/rs6000/t-rtems (MULTILIB_REQUIRED): Remove 64-bit soft-float
+	multilib.
+
 2017-12-19  Daniel Cederman  <cederman@gaisler.com>
 
 	* config/sparc/sparc.c (sparc_do_work_around_errata): Make sure
