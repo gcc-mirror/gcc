@@ -210,8 +210,8 @@ eliminate_constant_term (rtx x, rtx *constptr)
 
   /* First handle constants appearing at this level explicitly.  */
   if (CONST_INT_P (XEXP (x, 1))
-      && 0 != (tem = simplify_binary_operation (PLUS, GET_MODE (x), *constptr,
-						XEXP (x, 1)))
+      && (tem = simplify_binary_operation (PLUS, GET_MODE (x), *constptr,
+					   XEXP (x, 1))) != 0
       && CONST_INT_P (tem))
     {
       *constptr = tem;
@@ -222,8 +222,8 @@ eliminate_constant_term (rtx x, rtx *constptr)
   x0 = eliminate_constant_term (XEXP (x, 0), &tem);
   x1 = eliminate_constant_term (XEXP (x, 1), &tem);
   if ((x1 != XEXP (x, 1) || x0 != XEXP (x, 0))
-      && 0 != (tem = simplify_binary_operation (PLUS, GET_MODE (x),
-						*constptr, tem))
+      && (tem = simplify_binary_operation (PLUS, GET_MODE (x),
+					   *constptr, tem)) != 0
       && CONST_INT_P (tem))
     {
       *constptr = tem;

@@ -1177,9 +1177,9 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
 
 	/* Target types must match incl. qualifiers.  */
 	if (TREE_TYPE (t1) != TREE_TYPE (t2)
-	    && 0 == (val = comptypes_internal (TREE_TYPE (t1), TREE_TYPE (t2),
-					       enum_and_int_p,
-					       different_types_p)))
+	    && (val = comptypes_internal (TREE_TYPE (t1), TREE_TYPE (t2),
+					  enum_and_int_p,
+					  different_types_p)) == 0)
 	  return 0;
 
 	if (different_types_p != NULL
@@ -1662,8 +1662,8 @@ function_types_compatible_p (const_tree f1, const_tree f2,
 	 compare that with the other type's arglist.
 	 If they don't match, ask for a warning (but no error).  */
       if (TYPE_ACTUAL_ARG_TYPES (f1)
-	  && 1 != type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1),
-					   enum_and_int_p, different_types_p))
+	  && type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1),
+				      enum_and_int_p, different_types_p) != 1)
 	val = 2;
       return val;
     }
@@ -1672,8 +1672,8 @@ function_types_compatible_p (const_tree f1, const_tree f2,
       if (!self_promoting_args_p (args1))
 	return 0;
       if (TYPE_ACTUAL_ARG_TYPES (f2)
-	  && 1 != type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
-					   enum_and_int_p, different_types_p))
+	  && type_lists_compatible_p (args1, TYPE_ACTUAL_ARG_TYPES (f2),
+				      enum_and_int_p, different_types_p) != 1)
 	val = 2;
       return val;
     }
@@ -2121,8 +2121,8 @@ perform_integral_promotions (tree exp)
       && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1))
       /* If it's thinner than an int, promote it like a
 	 c_promoting_integer_type_p, otherwise leave it alone.  */
-      && 0 > compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
-			       TYPE_PRECISION (integer_type_node)))
+      && compare_tree_int (DECL_SIZE (TREE_OPERAND (exp, 1)),
+			   TYPE_PRECISION (integer_type_node)) < 0)
     return convert (integer_type_node, exp);
 
   if (c_promoting_integer_type_p (type))
@@ -7426,15 +7426,14 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 	      /* Subtract the size of a single (possibly wide) character
 		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
-	      if (0 > compare_tree_int (TYPE_SIZE_UNIT (type),
-					(len
-					 - (TYPE_PRECISION (typ1)
-					    / BITS_PER_UNIT))))
+	      if (compare_tree_int (TYPE_SIZE_UNIT (type),
+				    (len - (TYPE_PRECISION (typ1)
+					    / BITS_PER_UNIT))) < 0)
 		pedwarn_init (init_loc, 0,
 			      ("initializer-string for array of chars "
 			       "is too long"));
 	      else if (warn_cxx_compat
-		       && 0 > compare_tree_int (TYPE_SIZE_UNIT (type), len))
+		       && compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
 		warning_at (init_loc, OPT_Wc___compat,
 			    ("initializer-string for array chars "
 			     "is too long for C++"));

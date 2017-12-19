@@ -1,3 +1,8 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* known-headers.cc (get_stdlib_header_for_name): Replace Yoda
+	conditions with typical order conditions.
+
 2017-12-18  Marek Polacek  <polacek@redhat.com>
 
 	* c-warn.c (warn_logical_operator): Return early if -Wlogical-op is

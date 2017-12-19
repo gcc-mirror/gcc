@@ -1221,7 +1221,7 @@ __gnat_tmp_name (char *tmp_filename)
 
       /* Fill up the name buffer from the last position.  */
       seed++;
-      for (t = seed; 0 <= --index; t >>= 3)
+      for (t = seed; --index >= 0; t >>= 3)
         *--pos = '0' + (t & 07);
 
       /* Check to see if its unique, if not bump the seed and try again.  */

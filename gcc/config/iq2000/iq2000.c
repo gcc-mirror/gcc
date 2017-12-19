@@ -1982,10 +1982,10 @@ iq2000_expand_prologue (void)
 	{
 	  if (next_arg == 0
 	      && DECL_NAME (cur_arg)
-	      && ((0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
-				"__builtin_va_alist"))
-		  || (0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
-				   "va_alist"))))
+	      && (strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
+			  "__builtin_va_alist") == 0
+		  || strcmp (IDENTIFIER_POINTER (DECL_NAME (cur_arg)),
+			     "va_alist") == 0))
 	    {
 	      last_arg_is_vararg_marker = 1;
 	      break;

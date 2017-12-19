@@ -2155,8 +2155,8 @@ cgraph_node::expand (void)
 
       if (ret_type && TYPE_SIZE_UNIT (ret_type)
 	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
-	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-				   larger_than_size))
+	  && compare_tree_int (TYPE_SIZE_UNIT (ret_type),
+			       larger_than_size) > 0)
 	{
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));

@@ -346,7 +346,7 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
       m_sawclose = 0;
     }
   fputs (" [", m_outfile);
-  if (NULL != XVEC (in_rtx, idx))
+  if (XVEC (in_rtx, idx) != NULL)
     {
       m_indent += 2;
       if (XVECLEN (in_rtx, idx))

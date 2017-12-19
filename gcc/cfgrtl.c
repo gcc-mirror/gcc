@@ -2194,7 +2194,7 @@ print_rtl_with_bb (FILE *outf, const rtx_insn *rtx_first, dump_flags_t flags)
 	    }
 	}
 
-      for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
+      for (tmp_rtx = rtx_first; tmp_rtx != NULL; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
 	  if (flags & TDF_BLOCKS)
 	    {

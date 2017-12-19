@@ -1859,10 +1859,10 @@ cr16_create_dwarf_for_multi_push (rtx insn)
 
   for (i = current_frame_info.last_reg_to_save; i >= 0;)
     {
-      if (!current_frame_info.save_regs[i] || 0 == i || split_here)
+      if (!current_frame_info.save_regs[i] || i == 0 || split_here)
 	{
 	  /* This block of regs is pushed in one instruction.  */
-	  if (0 == i && current_frame_info.save_regs[i])
+	  if (i == 0 && current_frame_info.save_regs[i])
 	    from = 0;
 
 	  for (j = to; j >= from; --j)

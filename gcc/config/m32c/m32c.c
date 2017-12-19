@@ -517,7 +517,7 @@ m32c_conditional_register_usage (void)
 {
   int i;
 
-  if (0 <= target_memregs && target_memregs <= 16)
+  if (target_memregs >= 0 && target_memregs <= 16)
     {
       /* The command line option is bytes, but our "registers" are
 	 16-bit words.  */
@@ -2308,9 +2308,9 @@ m32c_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
       i = INTVAL (addr);
       if (i == 0)
 	return COSTS_N_INSNS(1);
-      if (0 < i && i <= 255)
+      if (i > 0 && i <= 255)
 	return COSTS_N_INSNS(2);
-      if (0 < i && i <= 65535)
+      if (i > 0 && i <= 65535)
 	return COSTS_N_INSNS(3);
       return COSTS_N_INSNS(4);
     case SYMBOL_REF:
@@ -2323,9 +2323,9 @@ m32c_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 	  i = INTVAL (XEXP (addr, 1));
 	  if (i == 0)
 	    return COSTS_N_INSNS(1);
-	  if (0 < i && i <= 255)
+	  if (i > 0 && i <= 255)
 	    return COSTS_N_INSNS(2);
-	  if (0 < i && i <= 65535)
+	  if (i > 0 && i <= 65535)
 	    return COSTS_N_INSNS(3);
 	}
       return COSTS_N_INSNS(4);

@@ -251,7 +251,7 @@ gcc::dump_manager::
 get_dump_file_info_by_switch (const char *swtch) const
 {
   for (unsigned i = 0; i < m_extra_dump_files_in_use; i++)
-    if (0 == strcmp (m_extra_dump_files[i].swtch, swtch))
+    if (strcmp (m_extra_dump_files[i].swtch, swtch) == 0)
       return &m_extra_dump_files[i];
 
   /* Not found.  */

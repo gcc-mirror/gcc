@@ -1,3 +1,10 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* scanner.c (preprocessor_line): Replace Yoda conditions with typical
+	order conditions.
+	* dependency.c (check_section_vs_section): Likewise.
+	* trans-array.c (gfc_conv_expr_descriptor): Likewise.
+
 2017-12-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* decl.c (gfc_match_implicit_none): Use GFC_STD_F2018 instead of

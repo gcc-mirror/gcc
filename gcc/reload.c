@@ -1532,8 +1532,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	 value for the incoming operand (same as outgoing one).  */
       if (rld[i].reg_rtx == out
 	  && (REG_P (in) || CONSTANT_P (in))
-	  && 0 != find_equiv_reg (in, this_insn, NO_REGS, REGNO (out),
-				  static_reload_reg_p, i, inmode))
+	  && find_equiv_reg (in, this_insn, NO_REGS, REGNO (out),
+			     static_reload_reg_p, i, inmode) != 0)
 	rld[i].in = out;
     }
 
@@ -6750,9 +6750,8 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 			      && CONST_DOUBLE_AS_FLOAT_P (XEXP (tem, 0))
 			      && SCALAR_FLOAT_MODE_P (GET_MODE (XEXP (tem, 0)))
 			      && CONST_INT_P (goal)
-			      && 0 != (goaltry
-				       = operand_subword (XEXP (tem, 0), 0, 0,
-							  VOIDmode))
+			      && (goaltry = operand_subword (XEXP (tem, 0), 0,
+							     0, VOIDmode)) != 0
 			      && rtx_equal_p (goal, goaltry)
 			      && (valtry
 				  = operand_subword (SET_DEST (pat), 0, 0,
@@ -6764,8 +6763,8 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 		      && CONST_DOUBLE_AS_FLOAT_P (XEXP (tem, 0))
 		      && SCALAR_FLOAT_MODE_P (GET_MODE (XEXP (tem, 0)))
 		      && CONST_INT_P (goal)
-		      && 0 != (goaltry = operand_subword (XEXP (tem, 0), 1, 0,
-							  VOIDmode))
+		      && (goaltry = operand_subword (XEXP (tem, 0), 1, 0,
+						     VOIDmode)) != 0
 		      && rtx_equal_p (goal, goaltry)
 		      && (valtry
 			  = operand_subword (SET_DEST (pat), 1, 0, VOIDmode))

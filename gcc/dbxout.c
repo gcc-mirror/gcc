@@ -3043,7 +3043,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	  int offs;
 	  letter = 'G';
 	  code = N_GSYM;
-	  if (NULL != dbxout_common_check (decl, &offs))
+	  if (dbxout_common_check (decl, &offs) != NULL)
 	    {
 	      letter = 'V';
 	      addr = 0;
@@ -3097,7 +3097,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 	    {
 	      int offs;
 	      code = N_LCSYM;
-	      if (NULL != dbxout_common_check (decl, &offs))
+	      if (dbxout_common_check (decl, &offs) != NULL)
 	        {
 		  addr = 0;
 		  number = offs;
@@ -3196,7 +3196,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
       int offs;
       code = N_LCSYM;
       letter = 'V';
-      if (NULL == dbxout_common_check (decl, &offs))
+      if (dbxout_common_check (decl, &offs) == NULL)
         addr = XEXP (XEXP (home, 0), 0);
       else
         {

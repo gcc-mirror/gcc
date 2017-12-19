@@ -1,3 +1,10 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (comptypes_internal, function_types_compatible_p,
+	perform_integral_promotions, digest_init): Replace Yoda conditions
+	with typical order conditions.
+	* c-decl.c (check_bitfield_type_and_width): Likewise.
+
 2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-typeck.c (c_safe_arg_type_equiv_p,

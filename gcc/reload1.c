@@ -8006,8 +8006,8 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
   /* Likewise for a SUBREG of an operand that dies.  */
   else if (GET_CODE (old) == SUBREG
 	   && REG_P (SUBREG_REG (old))
-	   && 0 != (note = find_reg_note (insn, REG_UNUSED,
-					  SUBREG_REG (old))))
+	   && (note = find_reg_note (insn, REG_UNUSED,
+				     SUBREG_REG (old))) != 0)
     {
       XEXP (note, 0) = gen_lowpart_common (GET_MODE (old), reg_rtx);
       return;

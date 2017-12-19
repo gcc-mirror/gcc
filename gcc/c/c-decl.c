@@ -5473,7 +5473,7 @@ check_bitfield_type_and_width (location_t loc, tree *type, tree *width,
 
   max_width = TYPE_PRECISION (*type);
 
-  if (0 < compare_tree_int (*width, max_width))
+  if (compare_tree_int (*width, max_width) > 0)
     {
       error_at (loc, "width of %qs exceeds its type", name);
       w = max_width;

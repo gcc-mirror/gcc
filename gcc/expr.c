@@ -6123,8 +6123,8 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
 	target
 	  = adjust_address (target,
 			    GET_MODE (target) == BLKmode
-			    || 0 != (bitpos
-				     % GET_MODE_ALIGNMENT (GET_MODE (target)))
+			    || (bitpos
+				% GET_MODE_ALIGNMENT (GET_MODE (target))) != 0
 			    ? BLKmode : VOIDmode, bitpos / BITS_PER_UNIT);
 
 
@@ -10704,8 +10704,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    || (bitsize >= 0
 		&& TYPE_SIZE (TREE_TYPE (exp))
 		&& TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST
-		&& 0 != compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)),
-					  bitsize)))
+		&& compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)),
+				     bitsize) != 0))
 	  {
 	    machine_mode ext_mode = mode;
 

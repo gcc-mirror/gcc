@@ -3205,7 +3205,7 @@ relax_delay_slots (rtx_insn *first)
 	  && (other = prev_active_insn (insn)) != 0
 	  && any_condjump_p (other)
 	  && no_labels_between_p (other, insn)
-	  && 0 > mostly_true_jump (other))
+	  && mostly_true_jump (other) < 0)
 	{
 	  rtx other_target = JUMP_LABEL (other);
 	  target_label = JUMP_LABEL (insn);

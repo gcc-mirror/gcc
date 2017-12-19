@@ -592,7 +592,7 @@ gcc_jit_context_new_struct_type (gcc_jit_context *ctxt,
     {
       RETURN_NULL_IF_FAIL (fields[i], ctxt, loc, "NULL field ptr");
       RETURN_NULL_IF_FAIL_PRINTF2 (
-	NULL == fields[i]->get_container (),
+	fields[i]->get_container () == NULL,
 	ctxt, loc,
 	"%s is already a field of %s",
 	fields[i]->get_debug_string (),
@@ -657,7 +657,7 @@ gcc_jit_struct_set_fields (gcc_jit_struct *struct_type,
   JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_IF_FAIL_PRINTF1 (
-    NULL == struct_type->get_fields (), ctxt, loc,
+    struct_type->get_fields () == NULL, ctxt, loc,
     "%s already has had fields set",
     struct_type->get_debug_string ());
   if (num_fields)
@@ -671,7 +671,7 @@ gcc_jit_struct_set_fields (gcc_jit_struct *struct_type,
 	struct_type->get_debug_string (),
 	i);
       RETURN_IF_FAIL_PRINTF2 (
-	NULL == fields[i]->get_container (),
+	fields[i]->get_container () == NULL,
 	ctxt, loc,
 	"%s is already a field of %s",
 	fields[i]->get_debug_string (),
@@ -706,7 +706,7 @@ gcc_jit_context_new_union_type (gcc_jit_context *ctxt,
     {
       RETURN_NULL_IF_FAIL (fields[i], ctxt, loc, "NULL field ptr");
       RETURN_NULL_IF_FAIL_PRINTF2 (
-	NULL == fields[i]->get_container (),
+	fields[i]->get_container () == NULL,
 	ctxt, loc,
 	"%s is already a field of %s",
 	fields[i]->get_debug_string (),
@@ -880,7 +880,7 @@ gcc_jit_context_new_function (gcc_jit_context *ctxt,
 	ctxt, loc,
 	"NULL parameter %i creating function %s", i, name);
       RETURN_NULL_IF_FAIL_PRINTF5 (
-	(NULL == params[i]->get_scope ()),
+	params[i]->get_scope () == NULL,
 	ctxt, loc,
 	"parameter %i \"%s\""
 	" (type: %s)"
@@ -2925,7 +2925,7 @@ gcc_jit_timer_pop (gcc_jit_timer *timer,
 	 item_name);
 
       RETURN_IF_FAIL_PRINTF2
-	(0 == strcmp (item_name, top_item_name), NULL, NULL,
+	(strcmp (item_name, top_item_name) == 0, NULL, NULL,
 	 "mismatching item_name:"
 	 " top of timing stack: \"%s\","
 	 " attempting to pop: \"%s\"",

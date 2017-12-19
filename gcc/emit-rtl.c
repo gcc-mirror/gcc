@@ -4047,7 +4047,7 @@ add_insn (rtx_insn *insn)
 {
   rtx_insn *prev = get_last_insn ();
   link_insn_into_chain (insn, prev, NULL);
-  if (NULL == get_insns ())
+  if (get_insns () == NULL)
     set_first_insn (insn);
   set_last_insn (insn);
 }

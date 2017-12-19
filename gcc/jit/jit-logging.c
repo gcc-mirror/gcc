@@ -79,7 +79,7 @@ logger::decref (const char *reason)
   if (m_log_refcount_changes)
     log ("%s: reason: %s refcount now %i",
 	 __PRETTY_FUNCTION__, reason, m_refcount);
-  if (0 == m_refcount)
+  if (m_refcount == 0)
     delete this;
 }
 

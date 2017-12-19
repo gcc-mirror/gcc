@@ -3190,7 +3190,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
 	  /* Note that loop unswitching can only be applied a small number of
 	     times to a given loop (PARAM_MAX_UNSWITCH_LEVEL default to 3).  */
-	  if (0 < n_remaining_checks && n_remaining_checks <= 3
+	  if (n_remaining_checks > 0 && n_remaining_checks <= 3
 	      && optimize > 1 && !optimize_size)
 	    FOR_EACH_VEC_ELT (*gnu_loop_info->checks, i, rci)
 	      if (rci->invariant_cond != boolean_false_node)

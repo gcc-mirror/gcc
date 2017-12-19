@@ -323,7 +323,7 @@ emit_init_macros (const char *docname)
 		}
 	      continue;
 	    }
-	  if (0 == print_nest)
+	  if (print_nest == 0)
 	    {
 	      /* Output default definitions of target hooks.  */
 	      printf ("#ifndef %s\n#define %s %s\n#endif\n",

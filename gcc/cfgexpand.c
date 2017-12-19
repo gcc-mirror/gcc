@@ -6102,7 +6102,7 @@ expand_stack_alignment (void)
   gcc_assert ((stack_realign_drap != 0) == (drap_rtx != NULL));
 
   /* Do nothing if NULL is returned, which means DRAP is not needed.  */
-  if (NULL != drap_rtx)
+  if (drap_rtx != NULL)
     {
       crtl->args.internal_arg_pointer = drap_rtx;
 

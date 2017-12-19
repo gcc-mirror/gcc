@@ -1330,7 +1330,7 @@ nios2_handle_custom_fpu_insn_option (int fpu_insn_index)
 {
   int param = N2FPU_N (fpu_insn_index);
 
-  if (0 <= param && param <= 255)
+  if (param >= 0 && param <= 255)
     nios2_register_custom_code (param, CCS_FPU, fpu_insn_index);
 
   /* Valid values are 0-255, but also allow -1 so that the
@@ -5131,7 +5131,7 @@ static bool
 can_use_cdx_ldstw (int regno, int basereg, int offset)
 {
   if (CDX_REG_P (regno) && CDX_REG_P (basereg)
-      && (offset & 0x3) == 0 && 0 <= offset && offset < 0x40)
+      && (offset & 0x3) == 0 && offset >= 0 && offset < 0x40)
     return true;
   else if (basereg == SP_REGNO
 	   && offset >= 0 && offset < 0x80 && (offset & 0x3) == 0)

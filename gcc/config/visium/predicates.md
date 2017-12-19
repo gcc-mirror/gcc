@@ -25,7 +25,7 @@
 ;; Return true if OP is a constant in the range 1 .. 31.
 (define_predicate "const_shift_operand"
   (and (match_code "const_int")
-       (match_test "1 <= INTVAL (op) && INTVAL (op) <= 31")))
+       (match_test "INTVAL (op) >= 1 && INTVAL (op) <= 31")))
 
 ;; Return true if OP is either a register or the constant 0.
 (define_predicate "reg_or_0_operand"
