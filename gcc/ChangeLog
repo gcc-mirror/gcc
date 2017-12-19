@@ -1,4 +1,10 @@
-2017-12-18  Jakub Jelinek  <jakub@redhat.com>
+2017-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82975
+	* config/arm/arm.h (TEST_REGNO): Check reg_renumber is set before
+	accessing it.  Adjust comment.
+
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/81914
 	* predict.c (zero_one_minusone): New function.
