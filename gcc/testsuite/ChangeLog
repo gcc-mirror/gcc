@@ -1,3 +1,10 @@
+2017-12-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83394
+	* g++.dg/Wattributes-3.C: New test.
+	* g++.dg/Wattributes-4.C: New test.
+	* g++.dg/Wattributes-5.C: New test.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82975
