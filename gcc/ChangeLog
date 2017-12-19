@@ -1,3 +1,10 @@
+2017-12-19  Alexandre Oliva <aoliva@redhat.com>
+
+	PR bootstrap/83396
+	* cfgexpand.c (expand_gimple_basic_block): Expand label first,
+	even if there are markers before it.
+	* cfgrtl.c (rtl_verify_bb_layout): Reject DEBUG_INSNs outside BBs.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* read-rtl.c (parse_reg_note_name): Replace Yoda conditions with
