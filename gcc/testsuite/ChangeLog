@@ -5,6 +5,9 @@
 
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83444
+	* gcc.dg/strlenopt-38.c: New test.
+
 	PR testsuite/83454
 	* gcc.dg/tree-ssa/cswtch-4.c: Require nonpic effective target.
 	* gcc.dg/tree-ssa/cswtch-5.c: Likewise.
