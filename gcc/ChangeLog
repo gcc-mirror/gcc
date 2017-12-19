@@ -1,3 +1,8 @@
+2017-12-19  Daniel Cederman  <cederman@gaisler.com>
+
+	* config/sparc/sparc.c (sparc_do_work_around_errata): Make sure
+	the jump is to a label.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83444
