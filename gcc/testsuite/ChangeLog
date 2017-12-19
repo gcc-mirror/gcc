@@ -1,6 +1,6 @@
 2017-12-19  Marek Polacek  <polacek@redhat.com>
 
-	PR c++/83490
+	PR c++/83489
 	* g++.dg/abi/pr83490.C: New test.
 
 2017-12-19  H.J. Lu  <hongjiu.lu@intel.com>

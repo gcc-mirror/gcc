@@ -1,4 +1,4 @@
-// PR c++/83490
+// PR c++/83489
 // { dg-options "-Wabi" }
 
 struct A
