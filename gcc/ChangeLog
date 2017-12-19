@@ -1,6 +1,6 @@
 2017-12-19  Marek Polacek  <polacek@redhat.com>
 
-	PR c++/83490
+	PR c++/83489
 	* config/i386/i386.c (init_cumulative_args): Don't check TYPE_EMPTY_P
 	on an error node.						     
 
