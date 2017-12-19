@@ -1,4 +1,4 @@
-2017-11-20  François Dumont  <fdumont@gcc.gnu.org>
+2017-12-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/80761
 	* include/debug/map.h
