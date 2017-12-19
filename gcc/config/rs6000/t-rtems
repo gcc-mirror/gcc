@@ -78,4 +78,3 @@ MULTILIB_REQUIRED += mcpu=860
 MULTILIB_REQUIRED += mcpu=e6500/m32
 MULTILIB_REQUIRED += mcpu=e6500/m32/msoft-float/mno-altivec
 MULTILIB_REQUIRED += mcpu=e6500/m64
-MULTILIB_REQUIRED += mcpu=e6500/m64/msoft-float/mno-altivec
