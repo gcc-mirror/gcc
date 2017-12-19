@@ -1,3 +1,8 @@
+2017-12-19  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/83329
+	* gcc.dg/tree-ssa/pr83329.c: New test
+
 2017-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79490
