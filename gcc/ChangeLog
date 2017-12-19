@@ -1,3 +1,10 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/80631
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Compare
+	induc_code against MAX_EXPR or MIN_EXPR instead of reduc_fn against
+	IFN_REDUC_MAX or IFN_REDUC_MIN.
+
 2017-12-18  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_equivalences_from_phis): Do not

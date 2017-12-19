@@ -4432,9 +4432,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	  && (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info)
 	      == INTEGER_INDUC_COND_REDUCTION)
 	  && !integer_zerop (induc_val)
-	  && ((reduc_fn == IFN_REDUC_MAX
+	  && ((induc_code == MAX_EXPR
 	       && tree_int_cst_lt (initial_def, induc_val))
-	      || (reduc_fn == IFN_REDUC_MIN
+	      || (induc_code == MIN_EXPR
 		  && tree_int_cst_lt (induc_val, initial_def))))
 	induc_val = initial_def;
       vect_is_simple_use (initial_def, loop_vinfo, &def_stmt, &initial_def_dt);
