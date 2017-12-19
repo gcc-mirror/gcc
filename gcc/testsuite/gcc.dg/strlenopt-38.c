@@ -36,3 +36,14 @@ baz (void)
   if (s.b[0] != 0)
     abort ();
 }
+
+void
+boo (void)
+{
+  struct S s;
+  strcpy (s.b, "012");
+  strcpy (s.c, "");
+  strcpy (s.b, s.c);
+  if (strlen (s.b) != 0)
+    abort ();
+}

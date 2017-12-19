@@ -1,3 +1,10 @@
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83444
+	* tree-ssa-strlen.c (strlen_check_and_optimize_stmt): For the
+	character load case, if get_stridx on MEM_REF's operand doesn't
+	look usable, retry with get_addr_stridx.
+
 2017-12-19  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/83422

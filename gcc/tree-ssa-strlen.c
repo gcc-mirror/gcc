@@ -3155,14 +3155,27 @@ strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi)
 	  {
 	    tree off = integer_zero_node;
 	    unsigned HOST_WIDE_INT coff = 0;
-	    int idx = -1;
+	    int idx = 0;
 	    tree rhs1 = gimple_assign_rhs1 (stmt);
 	    if (code == MEM_REF)
 	      {
 		idx = get_stridx (TREE_OPERAND (rhs1, 0));
-		off = TREE_OPERAND (rhs1, 1);
+		if (idx > 0)
+		  {
+		    strinfo *si = get_strinfo (idx);
+		    if (si
+			&& si->nonzero_chars
+			&& TREE_CODE (si->nonzero_chars) == INTEGER_CST
+			&& (wi::to_widest (si->nonzero_chars)
+			    >= wi::to_widest (off)))
+		      off = TREE_OPERAND (rhs1, 1);
+		    else
+		      /* This case is not useful.  See if get_addr_stridx
+			 returns something usable.  */
+		      idx = 0;
+		  }
 	      }
-	    else
+	    if (idx <= 0)
 	      idx = get_addr_stridx (rhs1, NULL_TREE, &coff);
 	    if (idx > 0)
 	      {
