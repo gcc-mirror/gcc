@@ -5515,20 +5515,16 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   gimple *label_stmt = stmt;
   rtx_code_label **elt = lab_rtx_for_bb->get (bb);
 
-  if (stmt)
-    /* We'll get to it in the loop below, and get back to
-       emit_label_and_note then.  */
-    ;
-  else if (stmt || elt)
+  if (stmt || elt)
     {
-    emit_label_and_note:
       gcc_checking_assert (!note);
       last = get_last_insn ();
 
       if (stmt)
 	{
 	  expand_gimple_stmt (stmt);
-	  gsi_next (&gsi);
+	  if (gsi_stmt (gsi) == stmt)
+	    gsi_next (&gsi);
 	}
 
       if (elt)
@@ -5555,7 +5551,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       stmt = gsi_stmt (gsi);
 
       if (stmt == label_stmt)
-	goto emit_label_and_note;
+	continue;
 
       /* If this statement is a non-debug one, and we generate debug
 	 insns, then this one might be the last real use of a TERed

@@ -2954,7 +2954,6 @@ rtl_verify_bb_layout (void)
 	    {
 	    case BARRIER:
 	    case NOTE:
-	    case DEBUG_INSN:
 	      break;
 
 	    case CODE_LABEL:
