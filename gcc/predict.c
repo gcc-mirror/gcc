@@ -2639,6 +2639,64 @@ return_prediction (tree val, enum prediction *prediction)
   return PRED_NO_PREDICTION;
 }
 
+/* Return zero if phi result could have values other than -1, 0 or 1,
+   otherwise return a bitmask, with bits 0, 1 and 2 set if -1, 0 and 1
+   values are used or likely.  */
+
+static int
+zero_one_minusone (gphi *phi, int limit)
+{
+  int phi_num_args = gimple_phi_num_args (phi);
+  int ret = 0;
+  for (int i = 0; i < phi_num_args; i++)
+    {
+      tree t = PHI_ARG_DEF (phi, i);
+      if (TREE_CODE (t) != INTEGER_CST)
+	continue;
+      wide_int w = wi::to_wide (t);
+      if (w == -1)
+	ret |= 1;
+      else if (w == 0)
+	ret |= 2;
+      else if (w == 1)
+	ret |= 4;
+      else
+	return 0;
+    }
+  for (int i = 0; i < phi_num_args; i++)
+    {
+      tree t = PHI_ARG_DEF (phi, i);
+      if (TREE_CODE (t) == INTEGER_CST)
+	continue;
+      if (TREE_CODE (t) != SSA_NAME)
+	return 0;
+      gimple *g = SSA_NAME_DEF_STMT (t);
+      if (gimple_code (g) == GIMPLE_PHI && limit > 0)
+	if (int r = zero_one_minusone (as_a <gphi *> (g), limit - 1))
+	  {
+	    ret |= r;
+	    continue;
+	  }
+      if (!is_gimple_assign (g))
+	return 0;
+      if (gimple_assign_cast_p (g))
+	{
+	  tree rhs1 = gimple_assign_rhs1 (g);
+	  if (TREE_CODE (rhs1) != SSA_NAME
+	      || !INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	      || TYPE_PRECISION (TREE_TYPE (rhs1)) != 1
+	      || !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+	    return 0;
+	  ret |= (2 | 4);
+	  continue;
+	}
+      if (TREE_CODE_CLASS (gimple_assign_rhs_code (g)) != tcc_comparison)
+	return 0;
+      ret |= (2 | 4);
+    }
+  return ret;
+}
+
 /* Find the basic block with return expression and look up for possible
    return value trying to apply RETURN_PREDICTION heuristics.  */
 static void
@@ -2675,6 +2733,19 @@ apply_return_prediction (void)
   phi = as_a <gphi *> (SSA_NAME_DEF_STMT (return_val));
   phi_num_args = gimple_phi_num_args (phi);
   pred = return_prediction (PHI_ARG_DEF (phi, 0), &direction);
+
+  /* Avoid the case where the function returns -1, 0 and 1 values and
+     nothing else.  Those could be qsort etc. comparison functions
+     where the negative return isn't less probable than positive.
+     For this require that the function returns at least -1 or 1
+     or -1 and a boolean value or comparison result, so that functions
+     returning just -1 and 0 are treated as if -1 represents error value.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (return_val))
+      && !TYPE_UNSIGNED (TREE_TYPE (return_val))
+      && TYPE_PRECISION (TREE_TYPE (return_val)) > 1)
+    if (int r = zero_one_minusone (phi, 3))
+      if ((r & (1 | 4)) == (1 | 4))
+	return;
 
   /* Avoid the degenerate case where all return values form the function
      belongs to same category (ie they are all positive constants)

@@ -1,3 +1,11 @@
+2017-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81914
+	* predict.c (zero_one_minusone): New function.
+	(apply_return_prediction): Avoid return prediction for functions
+	returning only -1, 0 and 1 values, unless they only return -1 and 0
+	or 0 and 1.
+
 2017-12-19  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (legitimate_scaled_address_p): Clean
