@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* ira.c (get_subreg_tracking_sizes): New function.
+	(init_live_subregs): Take an integer size rather than a register.
+	(build_insn_chain): Use get_subreg_tracking_sizes.  Update calls
+	to init_live_subregs.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (store_constructor_field): Change bitsize from a
 	unsigned HOST_WIDE_INT to a poly_uint64 and bitpos from a
 	HOST_WIDE_INT to a poly_int64.
