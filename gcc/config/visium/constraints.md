@@ -48,17 +48,17 @@
 (define_constraint "J"
   "Integer constant in the range 0 .. 65535 (16-bit immediate)"
   (and (match_code "const_int")
-       (match_test "ival >= 0 && ival <= 65535")))
+       (match_test "IN_RANGE (ival, 0, 65535)")))
 
 (define_constraint "K"
   "Integer constant in the range 1 .. 31 (5-bit immediate)"
   (and (match_code "const_int")
-       (match_test "ival >= 1 && ival <= 31")))
+       (match_test "IN_RANGE (ival, 1, 31)")))
 
 (define_constraint "L"
   "Integer constant in the range -65535 .. -1 (16-bit negative immediate)"
   (and (match_code "const_int")
-       (match_test "ival >= -65535 && ival <= -1")))
+       (match_test "IN_RANGE (ival, -65535, -1)")))
 
 (define_constraint "M"
   "Integer constant -1"
