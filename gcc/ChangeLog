@@ -2,6 +2,31 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* dse.c (store_info): Change offset and width from HOST_WIDE_INT
+	to poly_int64.  Update commentary for positions_needed.large.
+	(read_info_type): Change offset and width from HOST_WIDE_INT
+	to poly_int64.
+	(set_usage_bits): Likewise.
+	(canon_address): Return the offset as a poly_int64 rather than
+	a HOST_WIDE_INT.  Use strip_offset_and_add.
+	(set_all_positions_unneeded, any_positions_needed_p): Use
+	positions_needed.large to track stores with non-constant widths.
+	(all_positions_needed_p): Likewise.  Take the offset and width
+	as poly_int64s rather than ints.  Assert that rhs is nonnull.
+	(record_store): Cope with non-constant offsets and widths.
+	Nullify the rhs of an earlier store if we can't tell which bytes
+	of it are needed.
+	(find_shift_sequence): Take the access_size and shift as poly_int64s
+	rather than ints.
+	(get_stored_val): Take the read_offset and read_width as poly_int64s
+	rather than HOST_WIDE_INTs.
+	(check_mem_read_rtx, scan_stores, scan_reads, dse_step5): Handle
+	non-constant offsets and widths.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* inchash.h (inchash::hash::add_poly_int): New function.
 	* tree-ssa-alias.h (ao_ref::offset, ao_ref::size, ao_ref::max_size):
 	Use poly_int64 rather than HOST_WIDE_INT.
