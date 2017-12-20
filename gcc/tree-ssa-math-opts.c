@@ -544,29 +544,32 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
   int square_recip_count = 0;
   int sqrt_recip_count = 0;
 
-  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (def)) && is_gimple_reg (def));
+  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (def)) && is_gimple_reg (def)
+	      && TREE_CODE (def) == SSA_NAME);
   threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
 
-  /* If this is a square (x * x), we should check whether there are any
-     enough divisions by x on it's own to warrant waiting for that pass.  */
-  if (TREE_CODE (def) == SSA_NAME)
-    {
-      gimple *def_stmt = SSA_NAME_DEF_STMT (def);
+  /* If DEF is a square (x * x), count the number of divisions by x.
+     If there are more divisions by x than by (DEF * DEF), prefer to optimize
+     the reciprocal of x instead of DEF.  This improves cases like:
+       def = x * x
+       t0 = a / def
+       t1 = b / def
+       t2 = c / x
+     Reciprocal optimization of x results in 1 division rather than 2 or 3.  */
+  gimple *def_stmt = SSA_NAME_DEF_STMT (def);
 
-      if (is_gimple_assign (def_stmt)
-	  && gimple_assign_rhs_code (def_stmt) == MULT_EXPR
-	  && gimple_assign_rhs1 (def_stmt) == gimple_assign_rhs2 (def_stmt))
+  if (is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == MULT_EXPR
+      && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
+      && gimple_assign_rhs1 (def_stmt) == gimple_assign_rhs2 (def_stmt))
+    {
+      tree op0 = gimple_assign_rhs1 (def_stmt);
+
+      FOR_EACH_IMM_USE_FAST (use_p, use_iter, op0)
 	{
-	  /* This statement is a square of something.  We should take this
-	     in to account, as it may be more profitable to not extract
-	     the reciprocal here.  */
-	  tree op0 = gimple_assign_rhs1 (def_stmt);
-	  FOR_EACH_IMM_USE_FAST (use_p, use_iter, op0)
-	    {
-	      gimple *use_stmt = USE_STMT (use_p);
-	      if (is_division_by (use_stmt, op0))
-		sqrt_recip_count ++;
-	    }
+	  gimple *use_stmt = USE_STMT (use_p);
+	  if (is_division_by (use_stmt, op0))
+	    sqrt_recip_count++;
 	}
     }
 
@@ -587,26 +590,23 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 	      gimple *square_use_stmt = USE_STMT (square_use_p);
 	      if (is_division_by (square_use_stmt, square_def))
 		{
-		  /* Halve the relative importance as this is called twice
-		     for each division by a square.  */
+		  /* This is executed twice for each division by a square.  */
 		  register_division_in (gimple_bb (square_use_stmt), 1);
-		  square_recip_count ++;
+		  square_recip_count++;
 		}
 	    }
 	}
     }
 
-  /* Square reciprocals will have been counted twice.  */
+  /* Square reciprocals were counted twice above.  */
   square_recip_count /= 2;
 
+  /* If it is more profitable to optimize 1 / x, don't optimize 1 / (x * x).  */
   if (sqrt_recip_count > square_recip_count)
-    /* It will be more profitable to extract a 1 / x expression later,
-       so it is not worth attempting to extract 1 / (x * x) now.  */
     return;
 
   /* Do the expensive part only if we can hope to optimize something.  */
-  if (count + square_recip_count >= threshold
-      && count >= 1)
+  if (count + square_recip_count >= threshold && count >= 1)
     {
       gimple *use_stmt;
       for (occ = occ_head; occ; occ = occ->next)
@@ -623,8 +623,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, use_iter)
 		replace_reciprocal (use_p);
 	    }
-	  else if (square_recip_count > 0
-		   && is_square_of (use_stmt, def))
+	  else if (square_recip_count > 0 && is_square_of (use_stmt, def))
 	    {
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, use_iter)
 		{
