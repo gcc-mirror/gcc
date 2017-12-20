@@ -10801,7 +10801,7 @@ nevertheless truncate the shift count, you may get better code
 by overriding it.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_TRULY_NOOP_TRUNCATION (unsigned int @var{outprec}, unsigned int @var{inprec})
+@deftypefn {Target Hook} bool TARGET_TRULY_NOOP_TRUNCATION (poly_uint64 @var{outprec}, poly_uint64 @var{inprec})
 This hook returns true if it is safe to ``convert'' a value of
 @var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is
 smaller than @var{inprec}) by merely operating on it as if it had only

@@ -7185,7 +7185,7 @@ spu_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
 /* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
 
 static bool
-spu_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+spu_truly_noop_truncation (poly_uint64 outprec, poly_uint64 inprec)
 {
   return inprec <= 32 && outprec <= inprec;
 }

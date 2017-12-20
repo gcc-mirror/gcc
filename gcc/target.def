@@ -3154,8 +3154,8 @@ is correct for most machines.\n\
 If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,\n\
 suboptimal code can result if this hook returns true for the corresponding\n\
 mode sizes.  Making this hook return false in such cases may improve things.",
- bool, (unsigned int outprec, unsigned int inprec),
- hook_bool_uint_uint_true)
+ bool, (poly_uint64 outprec, poly_uint64 inprec),
+ hook_bool_puint64_puint64_true)
 
 /* If the representation of integral MODE is such that values are
    always sign-extended to a wider mode MODE_REP then return

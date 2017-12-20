@@ -133,9 +133,9 @@ hook_bool_mode_uhwi_false (machine_mode, unsigned HOST_WIDE_INT)
   return false;
 }
 
-/* Generic hook that takes (unsigned int, unsigned int) and returns true.  */
+/* Generic hook that takes (poly_uint64, poly_uint64) and returns true.  */
 bool
-hook_bool_uint_uint_true (unsigned int, unsigned int)
+hook_bool_puint64_puint64_true (poly_uint64, poly_uint64)
 {
   return true;
 }
