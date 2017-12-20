@@ -1188,7 +1188,7 @@ lra_update_insn_recog_data (rtx_insn *insn)
   int n;
   unsigned int uid = INSN_UID (insn);
   struct lra_static_insn_data *insn_static_data;
-  HOST_WIDE_INT sp_offset = 0;
+  poly_int64 sp_offset = 0;
 
   check_and_expand_insn_recog_data (uid);
   if ((data = lra_insn_recog_data[uid]) != NULL
@@ -1831,8 +1831,8 @@ static void
 setup_sp_offset (rtx_insn *from, rtx_insn *last)
 {
   rtx_insn *before = next_nonnote_nondebug_insn_bb (last);
-  HOST_WIDE_INT offset = (before == NULL_RTX || ! INSN_P (before)
-			  ? 0 : lra_get_insn_recog_data (before)->sp_offset);
+  poly_int64 offset = (before == NULL_RTX || ! INSN_P (before)
+		       ? 0 : lra_get_insn_recog_data (before)->sp_offset);
 
   for (rtx_insn *insn = from; insn != NEXT_INSN (last); insn = NEXT_INSN (insn))
     lra_get_insn_recog_data (insn)->sp_offset = offset;

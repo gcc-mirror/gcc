@@ -485,7 +485,8 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   int hr, conflict_hr, nregs;
   machine_mode biggest_mode;
   unsigned int k, conflict_regno;
-  int offset, val, biggest_nregs, nregs_diff;
+  poly_int64 offset;
+  int val, biggest_nregs, nregs_diff;
   enum reg_class rclass;
   bitmap_iterator bi;
   bool *rclass_intersect_p;
@@ -1147,7 +1148,8 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 {
   int p, i, j, n, regno, hard_regno;
   unsigned int k, conflict_regno;
-  int val, offset;
+  poly_int64 offset;
+  int val;
   HARD_REG_SET conflict_set;
   machine_mode mode;
   lra_live_range_t r;

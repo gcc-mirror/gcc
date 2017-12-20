@@ -106,7 +106,7 @@ struct lra_reg
      they do not conflict.  */
   int val;
   /* Offset from relative eliminate register to pesudo reg.  */
-  int offset;
+  poly_int64 offset;
   /* These members are set up in lra-lives.c and updated in
      lra-coalesce.c.  */
   /* The biggest size mode in which each pseudo reg is referred in
@@ -213,7 +213,7 @@ struct lra_insn_recog_data
      insn.  */
   int used_insn_alternative;
   /* SP offset before the insn relative to one at the func start.  */
-  HOST_WIDE_INT sp_offset;
+  poly_int64 sp_offset;
   /* The insn itself.  */
   rtx_insn *insn;
   /* Common data for insns with the same ICODE.  Asm insns (their
@@ -406,8 +406,8 @@ extern bool lra_remat (void);
 extern void lra_debug_elim_table (void);
 extern int lra_get_elimination_hard_regno (int);
 extern rtx lra_eliminate_regs_1 (rtx_insn *, rtx, machine_mode,
-				 bool, bool, HOST_WIDE_INT, bool);
-extern void eliminate_regs_in_insn (rtx_insn *insn, bool, bool, HOST_WIDE_INT);
+				 bool, bool, poly_int64, bool);
+extern void eliminate_regs_in_insn (rtx_insn *insn, bool, bool, poly_int64);
 extern void lra_eliminate (bool, bool);
 
 extern void lra_eliminate_reg_if_possible (rtx *);
@@ -493,7 +493,7 @@ lra_get_insn_recog_data (rtx_insn *insn)
 
 /* Update offset from pseudos with VAL by INCR.  */
 static inline void
-lra_update_reg_val_offset (int val, int incr)
+lra_update_reg_val_offset (int val, poly_int64 incr)
 {
   int i;
 
@@ -506,10 +506,10 @@ lra_update_reg_val_offset (int val, int incr)
 
 /* Return true if register content is equal to VAL with OFFSET.  */
 static inline bool
-lra_reg_val_equal_p (int regno, int val, int offset)
+lra_reg_val_equal_p (int regno, int val, poly_int64 offset)
 {
   if (lra_reg_info[regno].val == val
-      && lra_reg_info[regno].offset == offset)
+      && known_eq (lra_reg_info[regno].offset, offset))
     return true;
 
   return false;

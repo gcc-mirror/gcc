@@ -3084,7 +3084,8 @@ static bool
 equiv_address_substitution (struct address_info *ad)
 {
   rtx base_reg, new_base_reg, index_reg, new_index_reg, *base_term, *index_term;
-  HOST_WIDE_INT disp, scale;
+  poly_int64 disp;
+  HOST_WIDE_INT scale;
   bool change_p;
 
   base_term = strip_subreg (ad->base_term);
@@ -3115,6 +3116,7 @@ equiv_address_substitution (struct address_info *ad)
     }
   if (base_reg != new_base_reg)
     {
+      poly_int64 offset;
       if (REG_P (new_base_reg))
 	{
 	  *base_term = new_base_reg;
@@ -3122,10 +3124,10 @@ equiv_address_substitution (struct address_info *ad)
 	}
       else if (GET_CODE (new_base_reg) == PLUS
 	       && REG_P (XEXP (new_base_reg, 0))
-	       && CONST_INT_P (XEXP (new_base_reg, 1))
+	       && poly_int_rtx_p (XEXP (new_base_reg, 1), &offset)
 	       && can_add_disp_p (ad))
 	{
-	  disp += INTVAL (XEXP (new_base_reg, 1));
+	  disp += offset;
 	  *base_term = XEXP (new_base_reg, 0);
 	  change_p = true;
 	}
@@ -3134,6 +3136,7 @@ equiv_address_substitution (struct address_info *ad)
     }
   if (index_reg != new_index_reg)
     {
+      poly_int64 offset;
       if (REG_P (new_index_reg))
 	{
 	  *index_term = new_index_reg;
@@ -3141,16 +3144,16 @@ equiv_address_substitution (struct address_info *ad)
 	}
       else if (GET_CODE (new_index_reg) == PLUS
 	       && REG_P (XEXP (new_index_reg, 0))
-	       && CONST_INT_P (XEXP (new_index_reg, 1))
+	       && poly_int_rtx_p (XEXP (new_index_reg, 1), &offset)
 	       && can_add_disp_p (ad)
 	       && (scale = get_index_scale (ad)))
 	{
-	  disp += INTVAL (XEXP (new_index_reg, 1)) * scale;
+	  disp += offset * scale;
 	  *index_term = XEXP (new_index_reg, 0);
 	  change_p = true;
 	}
     }
-  if (disp != 0)
+  if (maybe_ne (disp, 0))
     {
       if (ad->disp != NULL)
 	*ad->disp = plus_constant (GET_MODE (*ad->inner), *ad->disp, disp);
@@ -3630,9 +3633,10 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
 	 register.  */
       if (plus_p)
 	{
-	  if (CONST_INT_P (inc))
+	  poly_int64 offset;
+	  if (poly_int_rtx_p (inc, &offset))
 	    emit_insn (gen_add2_insn (result,
-				      gen_int_mode (-INTVAL (inc),
+				      gen_int_mode (-offset,
 						    GET_MODE (result))));
 	  else
 	    emit_insn (gen_sub2_insn (result, inc));
@@ -4000,10 +4004,13 @@ curr_insn_transform (bool check_only_p)
       if (INSN_CODE (curr_insn) >= 0
           && (p = get_insn_name (INSN_CODE (curr_insn))) != NULL)
         fprintf (lra_dump_file, " {%s}", p);
-      if (curr_id->sp_offset != 0)
-        fprintf (lra_dump_file, " (sp_off=%" HOST_WIDE_INT_PRINT "d)",
-		 curr_id->sp_offset);
-       fprintf (lra_dump_file, "\n");
+      if (maybe_ne (curr_id->sp_offset, 0))
+	{
+	  fprintf (lra_dump_file, " (sp_off=");
+	  print_dec (curr_id->sp_offset, lra_dump_file);
+	  fprintf (lra_dump_file, ")");
+	}
+      fprintf (lra_dump_file, "\n");
     }
 
   /* Right now, for any pair of operands I and J that are required to
