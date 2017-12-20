@@ -1135,23 +1135,13 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 {
   tree ptr1;
   tree ptrtype1, dbase2;
-  HOST_WIDE_INT offset1p = offset1, offset2p = offset2;
-  HOST_WIDE_INT doffset1, doffset2;
 
   gcc_checking_assert ((TREE_CODE (base1) == MEM_REF
 			|| TREE_CODE (base1) == TARGET_MEM_REF)
 		       && DECL_P (base2));
 
   ptr1 = TREE_OPERAND (base1, 0);
-
-  /* The offset embedded in MEM_REFs can be negative.  Bias them
-     so that the resulting offset adjustment is positive.  */
-  offset_int moff = mem_ref_offset (base1);
-  moff <<= LOG2_BITS_PER_UNIT;
-  if (wi::neg_p (moff))
-    offset2p += (-moff).to_short_addr ();
-  else
-    offset1p += moff.to_short_addr ();
+  offset_int moff = mem_ref_offset (base1) << LOG2_BITS_PER_UNIT;
 
   /* If only one reference is based on a variable, they cannot alias if
      the pointer access is beyond the extent of the variable access.
@@ -1160,7 +1150,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
      ???  IVOPTs creates bases that do not honor this restriction,
      so do not apply this optimization for TARGET_MEM_REFs.  */
   if (TREE_CODE (base1) != TARGET_MEM_REF
-      && !ranges_overlap_p (MAX (0, offset1p), -1, offset2p, max_size2))
+      && !ranges_maybe_overlap_p (offset1 + moff, -1, offset2, max_size2))
     return false;
   /* They also cannot alias if the pointer may not point to the decl.  */
   if (!ptr_deref_may_alias_decl_p (ptr1, base2))
@@ -1213,18 +1203,11 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   dbase2 = ref2;
   while (handled_component_p (dbase2))
     dbase2 = TREE_OPERAND (dbase2, 0);
-  doffset1 = offset1;
-  doffset2 = offset2;
+  HOST_WIDE_INT doffset1 = offset1;
+  offset_int doffset2 = offset2;
   if (TREE_CODE (dbase2) == MEM_REF
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
-    {
-      offset_int moff = mem_ref_offset (dbase2);
-      moff <<= LOG2_BITS_PER_UNIT;
-      if (wi::neg_p (moff))
-	doffset1 -= (-moff).to_short_addr ();
-      else
-	doffset2 -= moff.to_short_addr ();
-    }
+    doffset2 -= mem_ref_offset (dbase2) << LOG2_BITS_PER_UNIT;
 
   /* If either reference is view-converted, give up now.  */
   if (same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) != 1
@@ -1241,7 +1224,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if ((TREE_CODE (base1) != TARGET_MEM_REF
        || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
       && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (dbase2)) == 1)
-    return ranges_overlap_p (doffset1, max_size1, doffset2, max_size2);
+    return ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2);
 
   if (ref1 && ref2
       && nonoverlapping_component_refs_p (ref1, ref2))
@@ -1313,22 +1296,10 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 		      && operand_equal_p (TMR_INDEX2 (base1),
 					  TMR_INDEX2 (base2), 0))))))
     {
-      offset_int moff;
-      /* The offset embedded in MEM_REFs can be negative.  Bias them
-	 so that the resulting offset adjustment is positive.  */
-      moff = mem_ref_offset (base1);
-      moff <<= LOG2_BITS_PER_UNIT;
-      if (wi::neg_p (moff))
-	offset2 += (-moff).to_short_addr ();
-      else
-	offset1 += moff.to_shwi ();
-      moff = mem_ref_offset (base2);
-      moff <<= LOG2_BITS_PER_UNIT;
-      if (wi::neg_p (moff))
-	offset1 += (-moff).to_short_addr ();
-      else
-	offset2 += moff.to_short_addr ();
-      return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+      offset_int moff1 = mem_ref_offset (base1) << LOG2_BITS_PER_UNIT;
+      offset_int moff2 = mem_ref_offset (base2) << LOG2_BITS_PER_UNIT;
+      return ranges_maybe_overlap_p (offset1 + moff1, max_size1,
+				     offset2 + moff2, max_size2);
     }
   if (!ptr_derefs_may_alias_p (ptr1, ptr2))
     return false;
