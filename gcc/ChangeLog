@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* ipa-param-manipulation.h (ipa_parm_adjustment::offset): Change from
+	HOST_WIDE_INT to poly_int64_pod.
+	* ipa-param-manipulation.c (ipa_modify_call_arguments): Track
+	polynomail parameter offsets.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gengtype.c (main): Handle poly_int64_pod.
 	* dwarf2out.h (dw_cfi_oprnd_cfa_loc): New dw_cfi_oprnd_type.
 	(dw_cfi_oprnd::dw_cfi_cfa_loc): New field.

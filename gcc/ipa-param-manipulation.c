@@ -293,15 +293,14 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	     simply taking the address of a reference inside the original
 	     aggregate.  */
 
-	  gcc_checking_assert (adj->offset % BITS_PER_UNIT == 0);
+	  poly_int64 byte_offset = exact_div (adj->offset, BITS_PER_UNIT);
 	  base = gimple_call_arg (stmt, adj->base_index);
 	  loc = DECL_P (base) ? DECL_SOURCE_LOCATION (base)
 			      : EXPR_LOCATION (base);
 
 	  if (TREE_CODE (base) != ADDR_EXPR
 	      && POINTER_TYPE_P (TREE_TYPE (base)))
-	    off = build_int_cst (adj->alias_ptr_type,
-				 adj->offset / BITS_PER_UNIT);
+	    off = build_int_cst (adj->alias_ptr_type, byte_offset);
 	  else
 	    {
 	      HOST_WIDE_INT base_offset;
@@ -321,8 +320,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	      if (!base)
 		{
 		  base = build_fold_addr_expr (prev_base);
-		  off = build_int_cst (adj->alias_ptr_type,
-				       adj->offset / BITS_PER_UNIT);
+		  off = build_int_cst (adj->alias_ptr_type, byte_offset);
 		}
 	      else if (TREE_CODE (base) == MEM_REF)
 		{
@@ -332,8 +330,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 		      deref_align = TYPE_ALIGN (TREE_TYPE (base));
 		    }
 		  off = build_int_cst (adj->alias_ptr_type,
-				       base_offset
-				       + adj->offset / BITS_PER_UNIT);
+				       base_offset + byte_offset);
 		  off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1),
 					 off);
 		  base = TREE_OPERAND (base, 0);
@@ -341,8 +338,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	      else
 		{
 		  off = build_int_cst (adj->alias_ptr_type,
-				       base_offset
-				       + adj->offset / BITS_PER_UNIT);
+				       base_offset + byte_offset);
 		  base = build_fold_addr_expr (base);
 		}
 	    }
@@ -655,7 +651,7 @@ ipa_get_adjustment_candidate (tree **expr, bool *convert,
       struct ipa_parm_adjustment *adj = &adjustments[i];
 
       if (adj->base == base
-	  && (adj->offset == offset || adj->op == IPA_PARM_OP_REMOVE))
+	  && (known_eq (adj->offset, offset) || adj->op == IPA_PARM_OP_REMOVE))
 	{
 	  cand = adj;
 	  break;
@@ -756,7 +752,10 @@ ipa_dump_param_adjustments (FILE *file, ipa_parm_adjustment_vec adjustments,
       else if (adj->op == IPA_PARM_OP_REMOVE)
 	fprintf (file, ", remove_param");
       else
-	fprintf (file, ", offset %li", (long) adj->offset);
+	{
+	  fprintf (file, ", offset ");
+	  print_dec (adj->offset, file);
+	}
       if (adj->by_ref)
 	fprintf (file, ", by_ref");
       print_node_brief (file, ", type: ", adj->type, 0);
