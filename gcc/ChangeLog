@@ -2,6 +2,41 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lra-int.h (lra_reg): Change offset from int to poly_int64.
+	(lra_insn_recog_data): Change sp_offset from HOST_WIDE_INT
+	to poly_int64.
+	(lra_eliminate_regs_1, eliminate_regs_in_insn): Change
+	update_sp_offset from a HOST_WIDE_INT to a poly_int64.
+	(lra_update_reg_val_offset, lra_reg_val_equal_p): Take the
+	offset as a poly_int64 rather than an int.
+	* lra-assigns.c (find_hard_regno_for_1): Handle poly_int64 offsets.
+	(setup_live_pseudos_and_spill_after_risky_transforms): Likewise.
+	* lra-constraints.c (equiv_address_substitution): Track offsets
+	as poly_int64s.
+	(emit_inc): Check poly_int_rtx_p instead of CONST_INT_P.
+	(curr_insn_transform): Handle the new form of sp_offset.
+	* lra-eliminations.c (lra_elim_table): Change previous_offset
+	and offset from HOST_WIDE_INT to poly_int64.
+	(print_elim_table, update_reg_eliminate): Update accordingly.
+	(self_elim_offsets): Change from HOST_WIDE_INT to poly_int64_pod.
+	(get_elimination): Update accordingly.
+	(form_sum): Check poly_int_rtx_p instead of CONST_INT_P.
+	(lra_eliminate_regs_1, eliminate_regs_in_insn): Change
+	update_sp_offset from a HOST_WIDE_INT to a poly_int64.  Handle
+	poly_int64 offsets generally.
+	(curr_sp_change): Change from HOST_WIDE_INT to poly_int64.
+	(mark_not_eliminable, init_elimination): Update accordingly.
+	(remove_reg_equal_offset_note): Return a bool and pass the new
+	offset back by pointer as a poly_int64.
+	* lra-remat.c (change_sp_offset): Take sp_offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	(do_remat): Track offsets poly_int64s.
+	* lra.c (lra_update_insn_recog_data, setup_sp_offset): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (mem_attrs): Add a default constructor.  Change size and
 	offset from HOST_WIDE_INT to poly_int64.
 	* emit-rtl.h (set_mem_offset, set_mem_size, adjust_address_1)
