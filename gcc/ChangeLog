@@ -1,3 +1,9 @@
+2017-12-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/83105
+	* config.gcc (arm*-*-linux*): When configured with --with-float=hard
+	or --with-float=softfp, set the default CPU to arm10e.
+
 2017-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/constraints.md (J, K, L): Use IN_RANGE macro.
