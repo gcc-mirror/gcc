@@ -6527,19 +6527,24 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
   return build_zero_cst (type);
 }
 
-/* CTOR is value initializing memory, fold reference of type TYPE and size SIZE
-   to the memory at bit OFFSET.  */
+/* CTOR is value initializing memory, fold reference of type TYPE and
+   size POLY_SIZE to the memory at bit POLY_OFFSET.  */
 
 tree
-fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
-		     unsigned HOST_WIDE_INT size, tree from_decl)
+fold_ctor_reference (tree type, tree ctor, poly_uint64 poly_offset,
+		     poly_uint64 poly_size, tree from_decl)
 {
   tree ret;
 
   /* We found the field with exact match.  */
   if (useless_type_conversion_p (type, TREE_TYPE (ctor))
-      && !offset)
+      && known_eq (poly_offset, 0U))
     return canonicalize_constructor_val (unshare_expr (ctor), from_decl);
+
+  /* The remaining optimizations need a constant size and offset.  */
+  unsigned HOST_WIDE_INT size, offset;
+  if (!poly_size.is_constant (&size) || !poly_offset.is_constant (&offset))
+    return NULL_TREE;
 
   /* We are at the end of walk, see if we can view convert the
      result.  */

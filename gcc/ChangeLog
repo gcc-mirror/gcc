@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gimple-fold.h (fold_ctor_reference): Take the offset and size
+	as poly_uint64 rather than unsigned HOST_WIDE_INT.
+	* gimple-fold.c (fold_ctor_reference): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (dwarf_poly_indeterminate_value): New hook.
 	* targhooks.h (default_dwarf_poly_indeterminate_value): Declare.
 	* targhooks.c (default_dwarf_poly_indeterminate_value): New function.
