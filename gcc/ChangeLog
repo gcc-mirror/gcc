@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* builtins.c (get_object_alignment_2): Track polynomial offsets
+	and sizes.  Update the alignment handling.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (get_inner_reference): Add a version that returns the
 	offset and size as poly_int64_pods rather than HOST_WIDE_INTs.
 	* cfgexpand.c (expand_debug_expr): Track polynomial offsets.  Simply
