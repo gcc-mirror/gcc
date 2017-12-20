@@ -473,6 +473,27 @@ dump_printf_loc (dump_flags_t dump_kind, source_location loc,
     }
 }
 
+/* Output VALUE in decimal to appropriate dump streams.  */
+
+template<unsigned int N, typename C>
+void
+dump_dec (int dump_kind, const poly_int<N, C> &value)
+{
+  STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
+  signop sgn = poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED;
+  if (dump_file && (dump_kind & pflags))
+    print_dec (value, dump_file, sgn);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_dec (value, alt_dump_file, sgn);
+}
+
+template void dump_dec (int, const poly_uint16 &);
+template void dump_dec (int, const poly_int64 &);
+template void dump_dec (int, const poly_uint64 &);
+template void dump_dec (int, const poly_offset_int &);
+template void dump_dec (int, const poly_widest_int &);
+
 /* Start a dump for PHASE. Store user-supplied dump flags in
    *FLAG_PTR.  Return the number of streams opened.  Set globals
    DUMP_FILE, and ALT_DUMP_FILE to point to the opened streams, and

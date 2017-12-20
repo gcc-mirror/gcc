@@ -328,8 +328,6 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
       pp_string (PP, pp_buffer (PP)->digit_buffer);		\
     }								\
   while (0)
-#define pp_wide_integer(PP, I) \
-   pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
 #define pp_identifier(PP, ID)  pp_string (PP, (pp_translate_identifiers (PP) \
@@ -403,5 +401,16 @@ pp_set_verbatim_wrapping_ (pretty_printer *pp)
 extern const char *identifier_to_locale (const char *);
 extern void *(*identifier_to_locale_alloc) (size_t);
 extern void (*identifier_to_locale_free) (void *);
+
+/* Print I to PP in decimal.  */
+
+inline void
+pp_wide_integer (pretty_printer *pp, HOST_WIDE_INT i)
+{
+  pp_scalar (pp, HOST_WIDE_INT_PRINT_DEC, i);
+}
+
+template<unsigned int N, typename T>
+void pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &);
 
 #endif /* GCC_PRETTY_PRINT_H */
