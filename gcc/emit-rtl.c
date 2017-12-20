@@ -1705,7 +1705,8 @@ subreg_lowpart_p (const_rtx x)
  */
 
 rtx
-operand_subword (rtx op, unsigned int offset, int validate_address, machine_mode mode)
+operand_subword (rtx op, poly_uint64 offset, int validate_address,
+		 machine_mode mode)
 {
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -1714,12 +1715,12 @@ operand_subword (rtx op, unsigned int offset, int validate_address, machine_mode
 
   /* If OP is narrower than a word, fail.  */
   if (mode != BLKmode
-      && (GET_MODE_SIZE (mode) < UNITS_PER_WORD))
+      && maybe_lt (GET_MODE_SIZE (mode), UNITS_PER_WORD))
     return 0;
 
   /* If we want a word outside OP, return zero.  */
   if (mode != BLKmode
-      && (offset + 1) * UNITS_PER_WORD > GET_MODE_SIZE (mode))
+      && maybe_gt ((offset + 1) * UNITS_PER_WORD, GET_MODE_SIZE (mode)))
     return const0_rtx;
 
   /* Form a new MEM at the requested address.  */
@@ -1753,7 +1754,7 @@ operand_subword (rtx op, unsigned int offset, int validate_address, machine_mode
    MODE is the mode of OP, in case it is CONST_INT.  */
 
 rtx
-operand_subword_force (rtx op, unsigned int offset, machine_mode mode)
+operand_subword_force (rtx op, poly_uint64 offset, machine_mode mode)
 {
   rtx result = operand_subword (op, offset, 1, mode);
 
