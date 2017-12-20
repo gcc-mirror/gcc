@@ -2544,6 +2544,8 @@ terminate the stack backtrace.  New ports should avoid this.
 
 @hook TARGET_DWARF_HANDLE_FRAME_UNSPEC
 
+@hook TARGET_DWARF_POLY_INDETERMINATE_VALUE
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack

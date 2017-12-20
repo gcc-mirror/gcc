@@ -4136,6 +4136,21 @@ the CFI label attached to the insn, @var{pattern} is the pattern of\n\
 the insn and @var{index} is @code{UNSPEC_INDEX} or @code{UNSPECV_INDEX}.",
  void, (const char *label, rtx pattern, int index), NULL)
 
+DEFHOOK
+(dwarf_poly_indeterminate_value,
+ "Express the value of @code{poly_int} indeterminate @var{i} as a DWARF\n\
+expression, with @var{i} counting from 1.  Return the number of a DWARF\n\
+register @var{R} and set @samp{*@var{factor}} and @samp{*@var{offset}} such\n\
+that the value of the indeterminate is:\n\
+@smallexample\n\
+value_of(@var{R}) / @var{factor} - @var{offset}\n\
+@end smallexample\n\
+\n\
+A target only needs to define this hook if it sets\n\
+@samp{NUM_POLY_INT_COEFFS} to a value greater than 1.",
+ unsigned int, (unsigned int i, unsigned int *factor, int *offset),
+ default_dwarf_poly_indeterminate_value)
+
 /* ??? Documenting this hook requires a GFDL license grant.  */
 DEFHOOK_UNDOC
 (stdarg_optimize_hook,

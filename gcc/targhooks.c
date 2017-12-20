@@ -1874,6 +1874,15 @@ default_debug_unwind_info (void)
   return UI_NONE;
 }
 
+/* Targets that set NUM_POLY_INT_COEFFS to something greater than 1
+   must define this hook.  */
+
+unsigned int
+default_dwarf_poly_indeterminate_value (unsigned int, unsigned int *, int *)
+{
+  gcc_unreachable ();
+}
+
 /* Determine the correct mode for a Dwarf frame register that represents
    register REGNO.  */
 

@@ -1319,7 +1319,7 @@ typedef struct GTY(()) dw_loc_list_struct {
   bool force;
 } dw_loc_list_node;
 
-static dw_loc_descr_ref int_loc_descriptor (HOST_WIDE_INT);
+static dw_loc_descr_ref int_loc_descriptor (poly_int64);
 static dw_loc_descr_ref uint_loc_descriptor (unsigned HOST_WIDE_INT);
 
 /* Convert a DWARF stack opcode into its string name.  */
@@ -1354,19 +1354,6 @@ new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
   descr->dw_loc_oprnd2.v.val_unsigned = oprnd2;
 
   return descr;
-}
-
-/* Return a pointer to a newly allocated location description for
-   REG and OFFSET.  */
-
-static inline dw_loc_descr_ref
-new_reg_loc_descr (unsigned int reg,  unsigned HOST_WIDE_INT offset)
-{
-  if (reg <= 31)
-    return new_loc_descr ((enum dwarf_location_atom) (DW_OP_breg0 + reg),
-			  offset, 0);
-  else
-    return new_loc_descr (DW_OP_bregx, reg, offset);
 }
 
 /* Add a location description term to a location description expression.  */
@@ -1501,22 +1488,30 @@ loc_descr_equal_p (dw_loc_descr_ref a, dw_loc_descr_ref b)
 }
 
 
-/* Add a constant OFFSET to a location expression.  */
+/* Add a constant POLY_OFFSET to a location expression.  */
 
 static void
-loc_descr_plus_const (dw_loc_descr_ref *list_head, HOST_WIDE_INT offset)
+loc_descr_plus_const (dw_loc_descr_ref *list_head, poly_int64 poly_offset)
 {
   dw_loc_descr_ref loc;
   HOST_WIDE_INT *p;
 
   gcc_assert (*list_head != NULL);
 
-  if (!offset)
+  if (known_eq (poly_offset, 0))
     return;
 
   /* Find the end of the chain.  */
   for (loc = *list_head; loc->dw_loc_next != NULL; loc = loc->dw_loc_next)
     ;
+
+  HOST_WIDE_INT offset;
+  if (!poly_offset.is_constant (&offset))
+    {
+      loc->dw_loc_next = int_loc_descriptor (poly_offset);
+      add_loc_descr (&loc->dw_loc_next, new_loc_descr (DW_OP_plus, 0, 0));
+      return;
+    }
 
   p = NULL;
   if (loc->dw_loc_opc == DW_OP_fbreg
@@ -1543,10 +1538,33 @@ loc_descr_plus_const (dw_loc_descr_ref *list_head, HOST_WIDE_INT offset)
     }
 }
 
+/* Return a pointer to a newly allocated location description for
+   REG and OFFSET.  */
+
+static inline dw_loc_descr_ref
+new_reg_loc_descr (unsigned int reg, poly_int64 offset)
+{
+  HOST_WIDE_INT const_offset;
+  if (offset.is_constant (&const_offset))
+    {
+      if (reg <= 31)
+	return new_loc_descr ((enum dwarf_location_atom) (DW_OP_breg0 + reg),
+			      const_offset, 0);
+      else
+	return new_loc_descr (DW_OP_bregx, reg, const_offset);
+    }
+  else
+    {
+      dw_loc_descr_ref ret = new_reg_loc_descr (reg, 0);
+      loc_descr_plus_const (&ret, offset);
+      return ret;
+    }
+}
+
 /* Add a constant OFFSET to a location list.  */
 
 static void
-loc_list_plus_const (dw_loc_list_ref list_head, HOST_WIDE_INT offset)
+loc_list_plus_const (dw_loc_list_ref list_head, poly_int64 offset)
 {
   dw_loc_list_ref d;
   for (d = list_head; d != NULL; d = d->dw_loc_next)
@@ -2626,7 +2644,7 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
    expression.  */
 
 struct dw_loc_descr_node *
-build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
+build_cfa_loc (dw_cfa_location *cfa, poly_int64 offset)
 {
   struct dw_loc_descr_node *head, *tmp;
 
@@ -2639,11 +2657,7 @@ build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
       head->dw_loc_oprnd1.val_entry = NULL;
       tmp = new_loc_descr (DW_OP_deref, 0, 0);
       add_loc_descr (&head, tmp);
-      if (offset != 0)
-	{
-	  tmp = new_loc_descr (DW_OP_plus_uconst, offset, 0);
-	  add_loc_descr (&head, tmp);
-	}
+      loc_descr_plus_const (&head, offset);
     }
   else
     head = new_reg_loc_descr (cfa->reg, offset);
@@ -2657,7 +2671,7 @@ build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
 
 struct dw_loc_descr_node *
 build_cfa_aligned_loc (dw_cfa_location *cfa,
-		       HOST_WIDE_INT offset, HOST_WIDE_INT alignment)
+		       poly_int64 offset, HOST_WIDE_INT alignment)
 {
   struct dw_loc_descr_node *head;
   unsigned int dwarf_fp
@@ -3345,7 +3359,7 @@ static GTY(()) vec<tree, va_gc> *generic_type_instances;
 
 /* Offset from the "steady-state frame pointer" to the frame base,
    within the current function.  */
-static HOST_WIDE_INT frame_pointer_fb_offset;
+static poly_int64 frame_pointer_fb_offset;
 static bool frame_pointer_fb_offset_valid;
 
 static vec<dw_die_ref> base_types;
@@ -3519,7 +3533,7 @@ static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int,
 						enum var_init_status);
 static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx,
 						     enum var_init_status);
-static dw_loc_descr_ref based_loc_descr (rtx, HOST_WIDE_INT,
+static dw_loc_descr_ref based_loc_descr (rtx, poly_int64,
 					 enum var_init_status);
 static int is_based_loc (const_rtx);
 static bool resolve_one_addr (rtx *);
@@ -13222,12 +13236,57 @@ int_shift_loc_descriptor (HOST_WIDE_INT i, int shift)
   return ret;
 }
 
-/* Return a location descriptor that designates a constant.  */
+/* Return a location descriptor that designates constant POLY_I.  */
 
 static dw_loc_descr_ref
-int_loc_descriptor (HOST_WIDE_INT i)
+int_loc_descriptor (poly_int64 poly_i)
 {
   enum dwarf_location_atom op;
+
+  HOST_WIDE_INT i;
+  if (!poly_i.is_constant (&i))
+    {
+      /* Create location descriptions for the non-constant part and
+	 add any constant offset at the end.  */
+      dw_loc_descr_ref ret = NULL;
+      HOST_WIDE_INT constant = poly_i.coeffs[0];
+      for (unsigned int j = 1; j < NUM_POLY_INT_COEFFS; ++j)
+	{
+	  HOST_WIDE_INT coeff = poly_i.coeffs[j];
+	  if (coeff != 0)
+	    {
+	      dw_loc_descr_ref start = ret;
+	      unsigned int factor;
+	      int bias;
+	      unsigned int regno = targetm.dwarf_poly_indeterminate_value
+		(j, &factor, &bias);
+
+	      /* Add COEFF * ((REGNO / FACTOR) - BIAS) to the value:
+		 add COEFF * (REGNO / FACTOR) now and subtract
+		 COEFF * BIAS from the final constant part.  */
+	      constant -= coeff * bias;
+	      add_loc_descr (&ret, new_reg_loc_descr (regno, 0));
+	      if (coeff % factor == 0)
+		coeff /= factor;
+	      else
+		{
+		  int amount = exact_log2 (factor);
+		  gcc_assert (amount >= 0);
+		  add_loc_descr (&ret, int_loc_descriptor (amount));
+		  add_loc_descr (&ret, new_loc_descr (DW_OP_shr, 0, 0));
+		}
+	      if (coeff != 1)
+		{
+		  add_loc_descr (&ret, int_loc_descriptor (coeff));
+		  add_loc_descr (&ret, new_loc_descr (DW_OP_mul, 0, 0));
+		}
+	      if (start)
+		add_loc_descr (&ret, new_loc_descr (DW_OP_plus, 0, 0));
+	    }
+	}
+      loc_descr_plus_const (&ret, constant);
+      return ret;
+    }
 
   /* Pick the smallest representation of a constant, rather than just
      defaulting to the LEB encoding.  */
@@ -13594,7 +13653,7 @@ address_of_int_loc_descriptor (int size, HOST_WIDE_INT i)
 /* Return a location descriptor that designates a base+offset location.  */
 
 static dw_loc_descr_ref
-based_loc_descr (rtx reg, HOST_WIDE_INT offset,
+based_loc_descr (rtx reg, poly_int64 offset,
 		 enum var_init_status initialized)
 {
   unsigned int regno;
@@ -13613,11 +13672,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 
       if (elim != reg)
 	{
-	  if (GET_CODE (elim) == PLUS)
-	    {
-	      offset += INTVAL (XEXP (elim, 1));
-	      elim = XEXP (elim, 0);
-	    }
+	  elim = strip_offset_and_add (elim, &offset);
 	  gcc_assert ((SUPPORTS_STACK_ALIGNMENT
 		       && (elim == hard_frame_pointer_rtx
 			   || elim == stack_pointer_rtx))
@@ -13641,7 +13696,15 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 
 	  gcc_assert (frame_pointer_fb_offset_valid);
 	  offset += frame_pointer_fb_offset;
-	  return new_loc_descr (DW_OP_fbreg, offset, 0);
+	  HOST_WIDE_INT const_offset;
+	  if (offset.is_constant (&const_offset))
+	    return new_loc_descr (DW_OP_fbreg, const_offset, 0);
+	  else
+	    {
+	      dw_loc_descr_ref ret = new_loc_descr (DW_OP_fbreg, 0, 0);
+	      loc_descr_plus_const (&ret, offset);
+	      return ret;
+	    }
 	}
     }
 
@@ -13656,8 +13719,10 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 #endif
   regno = DWARF_FRAME_REGNUM (regno);
 
+  HOST_WIDE_INT const_offset;
   if (!optimize && fde
-      && (fde->drap_reg == regno || fde->vdrap_reg == regno))
+      && (fde->drap_reg == regno || fde->vdrap_reg == regno)
+      && offset.is_constant (&const_offset))
     {
       /* Use cfa+offset to represent the location of arguments passed
 	 on the stack when drap is used to align stack.
@@ -13665,14 +13730,10 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 	 is supposed to track where the arguments live and the register
 	 used as vdrap or drap in some spot might be used for something
 	 else in other part of the routine.  */
-      return new_loc_descr (DW_OP_fbreg, offset, 0);
+      return new_loc_descr (DW_OP_fbreg, const_offset, 0);
     }
 
-  if (regno <= 31)
-    result = new_loc_descr ((enum dwarf_location_atom) (DW_OP_breg0 + regno),
-			    offset, 0);
-  else
-    result = new_loc_descr (DW_OP_bregx, regno, offset);
+  result = new_reg_loc_descr (regno, offset);
 
   if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
     add_loc_descr (&result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
@@ -14680,6 +14741,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
   enum dwarf_location_atom op;
   dw_loc_descr_ref op0, op1;
   rtx inner = NULL_RTX;
+  poly_int64 offset;
 
   if (mode == VOIDmode)
     mode = GET_MODE (rtl);
@@ -15382,6 +15444,10 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc<wide_int> ();
 	  *mem_loc_result->dw_loc_oprnd2.v.val_wide = rtx_mode_t (rtl, mode);
 	}
+      break;
+
+    case CONST_POLY_INT:
+      mem_loc_result = int_loc_descriptor (rtx_to_poly_int64 (rtl));
       break;
 
     case EQ:
@@ -19709,7 +19775,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
    before the latter is negated.  */
 
 static void
-compute_frame_pointer_to_fb_displacement (HOST_WIDE_INT offset)
+compute_frame_pointer_to_fb_displacement (poly_int64 offset)
 {
   rtx reg, elim;
 
@@ -19724,11 +19790,7 @@ compute_frame_pointer_to_fb_displacement (HOST_WIDE_INT offset)
   elim = (ira_use_lra_p
 	  ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
 	  : eliminate_regs (reg, VOIDmode, NULL_RTX));
-  if (GET_CODE (elim) == PLUS)
-    {
-      offset += INTVAL (XEXP (elim, 1));
-      elim = XEXP (elim, 0);
-    }
+  elim = strip_offset_and_add (elim, &offset);
 
   frame_pointer_fb_offset = -offset;
 

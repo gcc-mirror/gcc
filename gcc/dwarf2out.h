@@ -267,9 +267,9 @@ struct GTY(()) dw_discr_list_node {
 
 /* Interface from dwarf2out.c to dwarf2cfi.c.  */
 extern struct dw_loc_descr_node *build_cfa_loc
-  (dw_cfa_location *, HOST_WIDE_INT);
+  (dw_cfa_location *, poly_int64);
 extern struct dw_loc_descr_node *build_cfa_aligned_loc
-  (dw_cfa_location *, HOST_WIDE_INT offset, HOST_WIDE_INT alignment);
+  (dw_cfa_location *, poly_int64, HOST_WIDE_INT);
 extern struct dw_loc_descr_node *mem_loc_descriptor
   (rtx, machine_mode mode, machine_mode mem_mode,
    enum var_init_status);

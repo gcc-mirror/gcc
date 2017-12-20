@@ -1,4 +1,31 @@
 2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (dwarf_poly_indeterminate_value): New hook.
+	* targhooks.h (default_dwarf_poly_indeterminate_value): Declare.
+	* targhooks.c (default_dwarf_poly_indeterminate_value): New function.
+	* doc/tm.texi.in (TARGET_DWARF_POLY_INDETERMINATE_VALUE): Document.
+	* doc/tm.texi: Regenerate.
+	* dwarf2out.h (build_cfa_loc, build_cfa_aligned_loc): Take the
+	offset as a poly_int64.
+	* dwarf2out.c (new_reg_loc_descr): Move later in file.  Take the
+	offset as a poly_int64.
+	(loc_descr_plus_const, loc_list_plus_const, build_cfa_aligned_loc):
+	Take the offset as a poly_int64.
+	(build_cfa_loc): Likewise.  Use loc_descr_plus_const.
+	(frame_pointer_fb_offset): Change to a poly_int64.
+	(int_loc_descriptor): Take the offset as a poly_int64.  Use
+	targetm.dwarf_poly_indeterminate_value for polynomial offsets.
+	(based_loc_descr): Take the offset as a poly_int64.
+	Use strip_offset_and_add to handle (plus X (const)).
+	Use new_reg_loc_descr instead of an open-coded version of the
+	previous implementation.
+	(mem_loc_descriptor): Handle CONST_POLY_INT.
+	(compute_frame_pointer_to_fb_displacement): Take the offset as a
+	poly_int64.  Use strip_offset_and_add to handle (plus X (const)).
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
             Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
