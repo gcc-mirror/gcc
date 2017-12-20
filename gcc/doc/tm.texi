@@ -3130,6 +3130,19 @@ the CFI label attached to the insn, @var{pattern} is the pattern of
 the insn and @var{index} is @code{UNSPEC_INDEX} or @code{UNSPECV_INDEX}.
 @end deftypefn
 
+@deftypefn {Target Hook} {unsigned int} TARGET_DWARF_POLY_INDETERMINATE_VALUE (unsigned int @var{i}, unsigned int *@var{factor}, int *@var{offset})
+Express the value of @code{poly_int} indeterminate @var{i} as a DWARF
+expression, with @var{i} counting from 1.  Return the number of a DWARF
+register @var{R} and set @samp{*@var{factor}} and @samp{*@var{offset}} such
+that the value of the indeterminate is:
+@smallexample
+value_of(@var{R}) / @var{factor} - @var{offset}
+@end smallexample
+
+A target only needs to define this hook if it sets
+@samp{NUM_POLY_INT_COEFFS} to a value greater than 1.
+@end deftypefn
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack
