@@ -50,14 +50,12 @@ struct target_expmed *this_target_expmed = &default_target_expmed;
 static bool store_integral_bit_field (rtx, opt_scalar_int_mode,
 				      unsigned HOST_WIDE_INT,
 				      unsigned HOST_WIDE_INT,
-				      unsigned HOST_WIDE_INT,
-				      unsigned HOST_WIDE_INT,
+				      poly_uint64, poly_uint64,
 				      machine_mode, rtx, bool, bool);
 static void store_fixed_bit_field (rtx, opt_scalar_int_mode,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
-				   unsigned HOST_WIDE_INT,
-				   unsigned HOST_WIDE_INT,
+				   poly_uint64, poly_uint64,
 				   rtx, scalar_int_mode, bool);
 static void store_fixed_bit_field_1 (rtx, scalar_int_mode,
 				     unsigned HOST_WIDE_INT,
@@ -66,8 +64,7 @@ static void store_fixed_bit_field_1 (rtx, scalar_int_mode,
 static void store_split_bit_field (rtx, opt_scalar_int_mode,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
-				   unsigned HOST_WIDE_INT,
-				   unsigned HOST_WIDE_INT,
+				   poly_uint64, poly_uint64,
 				   rtx, scalar_int_mode, bool);
 static rtx extract_integral_bit_field (rtx, opt_scalar_int_mode,
 				       unsigned HOST_WIDE_INT,
@@ -472,8 +469,8 @@ static rtx
 adjust_bit_field_mem_for_reg (enum extraction_pattern pattern,
 			      rtx op0, HOST_WIDE_INT bitsize,
 			      HOST_WIDE_INT bitnum,
-			      unsigned HOST_WIDE_INT bitregion_start,
-			      unsigned HOST_WIDE_INT bitregion_end,
+			      poly_uint64 bitregion_start,
+			      poly_uint64 bitregion_end,
 			      machine_mode fieldmode,
 			      unsigned HOST_WIDE_INT *new_bitnum)
 {
@@ -537,8 +534,8 @@ static bool
 strict_volatile_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
 			    unsigned HOST_WIDE_INT bitnum,
 			    scalar_int_mode fieldmode,
-			    unsigned HOST_WIDE_INT bitregion_start,
-			    unsigned HOST_WIDE_INT bitregion_end)
+			    poly_uint64 bitregion_start,
+			    poly_uint64 bitregion_end)
 {
   unsigned HOST_WIDE_INT modesize = GET_MODE_BITSIZE (fieldmode);
 
@@ -565,9 +562,10 @@ strict_volatile_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
     return false;
 
   /* Check for cases where the C++ memory model applies.  */
-  if (bitregion_end != 0
-      && (bitnum - bitnum % modesize < bitregion_start
-	  || bitnum - bitnum % modesize + modesize - 1 > bitregion_end))
+  if (maybe_ne (bitregion_end, 0U)
+      && (maybe_lt (bitnum - bitnum % modesize, bitregion_start)
+	  || maybe_gt (bitnum - bitnum % modesize + modesize - 1,
+		       bitregion_end)))
     return false;
 
   return true;
@@ -731,8 +729,7 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
 
 static bool
 store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
-		   unsigned HOST_WIDE_INT bitregion_start,
-		   unsigned HOST_WIDE_INT bitregion_end,
+		   poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 		   machine_mode fieldmode,
 		   rtx value, bool reverse, bool fallback_p)
 {
@@ -859,8 +856,8 @@ static bool
 store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 			  unsigned HOST_WIDE_INT bitsize,
 			  unsigned HOST_WIDE_INT bitnum,
-			  unsigned HOST_WIDE_INT bitregion_start,
-			  unsigned HOST_WIDE_INT bitregion_end,
+			  poly_uint64 bitregion_start,
+			  poly_uint64 bitregion_end,
 			  machine_mode fieldmode,
 			  rtx value, bool reverse, bool fallback_p)
 {
@@ -1086,8 +1083,7 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 
 void
 store_bit_field (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
-		 unsigned HOST_WIDE_INT bitregion_start,
-		 unsigned HOST_WIDE_INT bitregion_end,
+		 poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 		 machine_mode fieldmode,
 		 rtx value, bool reverse)
 {
@@ -1134,15 +1130,12 @@ store_bit_field (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   /* Under the C++0x memory model, we must not touch bits outside the
      bit region.  Adjust the address to start at the beginning of the
      bit region.  */
-  if (MEM_P (str_rtx) && bitregion_start > 0)
+  if (MEM_P (str_rtx) && maybe_ne (bitregion_start, 0U))
     {
       scalar_int_mode best_mode;
       machine_mode addr_mode = VOIDmode;
-      HOST_WIDE_INT offset;
 
-      gcc_assert ((bitregion_start % BITS_PER_UNIT) == 0);
-
-      offset = bitregion_start / BITS_PER_UNIT;
+      poly_uint64 offset = exact_div (bitregion_start, BITS_PER_UNIT);
       bitnum -= bitregion_start;
       poly_int64 size = bits_to_bytes_round_up (bitnum + bitsize);
       bitregion_end -= bitregion_start;
@@ -1175,8 +1168,7 @@ static void
 store_fixed_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 		       unsigned HOST_WIDE_INT bitsize,
 		       unsigned HOST_WIDE_INT bitnum,
-		       unsigned HOST_WIDE_INT bitregion_start,
-		       unsigned HOST_WIDE_INT bitregion_end,
+		       poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 		       rtx value, scalar_int_mode value_mode, bool reverse)
 {
   /* There is a case not handled here:
@@ -1331,8 +1323,7 @@ static void
 store_split_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 		       unsigned HOST_WIDE_INT bitsize,
 		       unsigned HOST_WIDE_INT bitpos,
-		       unsigned HOST_WIDE_INT bitregion_start,
-		       unsigned HOST_WIDE_INT bitregion_end,
+		       poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 		       rtx value, scalar_int_mode value_mode, bool reverse)
 {
   unsigned int unit, total_bits, bitsdone = 0;
@@ -1380,9 +1371,9 @@ store_split_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	 UNIT close to the end of the region as needed.  If op0 is a REG
 	 or SUBREG of REG, don't do this, as there can't be data races
 	 on a register and we can expand shorter code in some cases.  */
-      if (bitregion_end
+      if (maybe_ne (bitregion_end, 0U)
 	  && unit > BITS_PER_UNIT
-	  && bitpos + bitsdone - thispos + unit > bitregion_end + 1
+	  && maybe_gt (bitpos + bitsdone - thispos + unit, bitregion_end + 1)
 	  && !REG_P (op0)
 	  && (GET_CODE (op0) != SUBREG || !REG_P (SUBREG_REG (op0))))
 	{

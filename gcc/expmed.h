@@ -719,8 +719,7 @@ extern rtx expand_divmod (int, enum tree_code, machine_mode, rtx, rtx,
 #endif
 
 extern void store_bit_field (rtx, poly_uint64, poly_uint64,
-			     unsigned HOST_WIDE_INT,
-			     unsigned HOST_WIDE_INT,
+			     poly_uint64, poly_uint64,
 			     machine_mode, rtx, bool);
 extern rtx extract_bit_field (rtx, poly_uint64, poly_uint64, int, rtx,
 			      machine_mode, machine_mode, bool, rtx *);

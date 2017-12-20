@@ -2751,15 +2751,15 @@ fixup_unsigned_type (tree type)
 
 bit_field_mode_iterator
 ::bit_field_mode_iterator (HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
-			   HOST_WIDE_INT bitregion_start,
-			   HOST_WIDE_INT bitregion_end,
+			   poly_int64 bitregion_start,
+			   poly_int64 bitregion_end,
 			   unsigned int align, bool volatilep)
 : m_mode (NARROWEST_INT_MODE), m_bitsize (bitsize),
   m_bitpos (bitpos), m_bitregion_start (bitregion_start),
   m_bitregion_end (bitregion_end), m_align (align),
   m_volatilep (volatilep), m_count (0)
 {
-  if (!m_bitregion_end)
+  if (known_eq (m_bitregion_end, 0))
     {
       /* We can assume that any aligned chunk of ALIGN bits that overlaps
 	 the bitfield is mapped and won't trap, provided that ALIGN isn't
@@ -2769,8 +2769,8 @@ bit_field_mode_iterator
 	= MIN (align, MAX (BIGGEST_ALIGNMENT, BITS_PER_WORD));
       if (bitsize <= 0)
 	bitsize = 1;
-      m_bitregion_end = bitpos + bitsize + units - 1;
-      m_bitregion_end -= m_bitregion_end % units + 1;
+      HOST_WIDE_INT end = bitpos + bitsize + units - 1;
+      m_bitregion_end = end - end % units - 1;
     }
 }
 
@@ -2807,10 +2807,11 @@ bit_field_mode_iterator::next_mode (scalar_int_mode *out_mode)
 
       /* Stop if the mode goes outside the bitregion.  */
       HOST_WIDE_INT start = m_bitpos - substart;
-      if (m_bitregion_start && start < m_bitregion_start)
+      if (maybe_ne (m_bitregion_start, 0)
+	  && maybe_lt (start, m_bitregion_start))
 	break;
       HOST_WIDE_INT end = start + unit;
-      if (end > m_bitregion_end + 1)
+      if (maybe_gt (end, m_bitregion_end + 1))
 	break;
 
       /* Stop if the mode requires too much alignment.  */
@@ -2866,8 +2867,7 @@ bit_field_mode_iterator::prefer_smaller_modes ()
 
 bool
 get_best_mode (int bitsize, int bitpos,
-	       unsigned HOST_WIDE_INT bitregion_start,
-	       unsigned HOST_WIDE_INT bitregion_end,
+	       poly_uint64 bitregion_start, poly_uint64 bitregion_end,
 	       unsigned int align,
 	       unsigned HOST_WIDE_INT largest_mode_bitsize, bool volatilep,
 	       scalar_int_mode *best_mode)
