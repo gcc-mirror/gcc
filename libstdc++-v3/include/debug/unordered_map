@@ -312,19 +312,20 @@ namespace __debug
       insert(const value_type& __obj)
       {
 	size_type __bucket_count = this->bucket_count();
-	std::pair<_Base_iterator, bool> __res = _Base::insert(__obj);
+	auto __res = _Base::insert(__obj);
 	_M_check_rehashed(__bucket_count);
-	return std::make_pair(iterator(__res.first, this), __res.second);
+	return { iterator(__res.first, this), __res.second };
       }
 
-      iterator
-      insert(const_iterator __hint, const value_type& __obj)
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      std::pair<iterator, bool>
+      insert(value_type&& __x)
       {
-	__glibcxx_check_insert(__hint);
 	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __it = _Base::insert(__hint.base(), __obj);
+	auto __res = _Base::insert(std::move(__x));
 	_M_check_rehashed(__bucket_count);
-	return iterator(__it, this);
+	return { iterator(__res.first, this), __res.second };
       }
 
       template<typename _Pair, typename = typename
@@ -339,6 +340,28 @@ namespace __debug
 	  _M_check_rehashed(__bucket_count);
 	  return std::make_pair(iterator(__res.first, this), __res.second);
 	}
+
+      iterator
+      insert(const_iterator __hint, const value_type& __obj)
+      {
+	__glibcxx_check_insert(__hint);
+	size_type __bucket_count = this->bucket_count();
+	_Base_iterator __it = _Base::insert(__hint.base(), __obj);
+	_M_check_rehashed(__bucket_count);
+	return iterator(__it, this);
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(const_iterator __hint, value_type&& __x)
+      {
+	__glibcxx_check_insert(__hint);
+	size_type __bucket_count = this->bucket_count();
+	auto __it = _Base::insert(__hint.base(), std::move(__x));
+	_M_check_rehashed(__bucket_count);
+	return iterator(__it, this);
+      }
 
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
@@ -977,12 +1000,35 @@ namespace __debug
 	return iterator(__it, this);
       }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(value_type&& __x)
+      {
+	size_type __bucket_count = this->bucket_count();
+	auto __it = _Base::insert(std::move(__x));
+	_M_check_rehashed(__bucket_count);
+	return { __it, this };
+      }
+
       iterator
       insert(const_iterator __hint, const value_type& __obj)
       {
 	__glibcxx_check_insert(__hint);
 	size_type __bucket_count = this->bucket_count();
 	_Base_iterator __it = _Base::insert(__hint.base(), __obj);
+	_M_check_rehashed(__bucket_count);
+	return iterator(__it, this);
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(const_iterator __hint, value_type&& __x)
+      {
+	__glibcxx_check_insert(__hint);
+	size_type __bucket_count = this->bucket_count();
+	auto __it = _Base::insert(__hint.base(), std::move(__x));
 	_M_check_rehashed(__bucket_count);
 	return iterator(__it, this);
       }
