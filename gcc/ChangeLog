@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gimple-ssa-store-merging.c (symbolic_number::bytepos): Change from
+	HOST_WIDE_INT to poly_int64_pod.
+	(perform_symbolic_merge): Update accordingly.
+	(bswap_replace): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-affine.h (aff_tree::offset): Change from widest_int
 	to poly_widest_int.
 	(wide_int_ext_for_comb): Delete.
