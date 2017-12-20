@@ -2013,10 +2013,6 @@ execute (function *)
     if (has_function_state (node))
       free (get_function_state (node));
   funct_state_vec.release ();
-
-  /* In WPA we use inline summaries for partitioning process.  */
-  if (!flag_wpa)
-    ipa_free_fn_summary ();
   return remove_p ? TODO_remove_functions : 0;
 }
 

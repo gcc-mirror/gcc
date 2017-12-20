@@ -1,3 +1,11 @@
+2017-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/83506
+	* gcc.dg/pr83506.c: New test.
+	* gcc.dg/ipa/ctor-empty-1.c: Use -fdump-ipa-free-fnsummary1 instead
+	of -fdump-ipa-free-fnsummary and scan in free-fnsummary1 instead of
+	free-fnsummary dump.
+
 2017-12-20  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/83483
@@ -4364,7 +4372,7 @@
 	* g++.dg/pr82725.C: Move to ...
 	* g++.dg/cpp0x/pr82725.C: ... here.  Add c++11 target directive.
 
-2017-10-30  Steven G. Kargl   <kargl@gcc.gnu.org>
+2017-10-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/dtio_13.f90: Remove TODO comment and dg-error test.
 
