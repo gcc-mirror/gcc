@@ -2,6 +2,21 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs.h (expand_operand): Add an int_value field.
+	(create_expand_operand): Add an int_value parameter and use it
+	to initialize the new expand_operand field.
+	(create_integer_operand): Replace with a declaration of a function
+	that accepts poly_int64s.  Move the implementation to...
+	* optabs.c (create_integer_operand): ...here.
+	(maybe_legitimize_operand): For EXPAND_INTEGER, check whether
+	the mode preserves the value of int_value, instead of calling
+	const_int_operand on the rtx.  Use gen_int_mode to generate
+	the new rtx.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* dumpfile.h (dump_dec): Declare.
 	* dumpfile.c (dump_dec): New function.
 	* pretty-print.h (pp_wide_integer): Turn into a function and

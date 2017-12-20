@@ -60,6 +60,9 @@ struct expand_operand {
 
   /* The value of the operand.  */
   rtx value;
+
+  /* The value of an EXPAND_INTEGER operand.  */
+  poly_int64 int_value;
 };
 
 /* Initialize OP with the given fields.  Initialise the other fields
@@ -69,13 +72,14 @@ static inline void
 create_expand_operand (struct expand_operand *op,
 		       enum expand_operand_type type,
 		       rtx value, machine_mode mode,
-		       bool unsigned_p)
+		       bool unsigned_p, poly_int64 int_value = 0)
 {
   op->type = type;
   op->unsigned_p = unsigned_p;
   op->unused = 0;
   op->mode = mode;
   op->value = value;
+  op->int_value = int_value;
 }
 
 /* Make OP describe an operand that must use rtx X, even if X is volatile.  */
@@ -142,18 +146,7 @@ create_address_operand (struct expand_operand *op, rtx value)
   create_expand_operand (op, EXPAND_ADDRESS, value, Pmode, false);
 }
 
-/* Make OP describe an input operand that has value INTVAL and that has
-   no inherent mode.  This function should only be used for operands that
-   are always expand-time constants.  The backend may request that INTVAL
-   be copied into a different kind of rtx, but it must specify the mode
-   of that rtx if so.  */
-
-static inline void
-create_integer_operand (struct expand_operand *op, HOST_WIDE_INT intval)
-{
-  create_expand_operand (op, EXPAND_INTEGER, GEN_INT (intval), VOIDmode, false);
-}
-
+extern void create_integer_operand (struct expand_operand *, poly_int64);
 
 /* Passed to expand_simple_binop and expand_binop to say which options
    to try to use if the requested operation can't be open-coded on the
