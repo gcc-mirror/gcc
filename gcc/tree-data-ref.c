@@ -1235,6 +1235,10 @@ data_ref_compare_tree (tree t1, tree t2)
       break;
 
     default:
+      if (POLY_INT_CST_P (t1))
+	return compare_sizes_for_sort (wi::to_poly_widest (t1),
+				       wi::to_poly_widest (t2));
+
       tclass = TREE_CODE_CLASS (code);
 
       /* For decls, compare their UIDs.  */

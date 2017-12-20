@@ -10101,6 +10101,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				      copy_rtx (XEXP (temp, 0)));
       return temp;
 
+    case POLY_INT_CST:
+      return immed_wide_int_const (poly_int_cst_value (exp), mode);
+
     case SAVE_EXPR:
       {
 	tree val = treeop0;
@@ -11816,7 +11819,8 @@ const_vector_from_tree (tree exp)
 	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
-	RTVEC_ELT (v, i) = immed_wide_int_const (wi::to_wide (elt), inner);
+	RTVEC_ELT (v, i) = immed_wide_int_const (wi::to_poly_wide (elt),
+						 inner);
     }
 
   return gen_rtx_CONST_VECTOR (mode, v);

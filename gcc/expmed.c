@@ -5278,6 +5278,9 @@ make_tree (tree type, rtx x)
       /* fall through.  */
 
     default:
+      if (CONST_POLY_INT_P (x))
+	return wide_int_to_tree (t, const_poly_int_value (x));
+
       t = build_decl (RTL_LOCATION (x), VAR_DECL, NULL_TREE, type);
 
       /* If TYPE is a POINTER_TYPE, we might need to convert X from

@@ -1734,6 +1734,18 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	pp_string (pp, "(OVF)");
       break;
 
+    case POLY_INT_CST:
+      pp_string (pp, "POLY_INT_CST [");
+      dump_generic_node (pp, POLY_INT_CST_COEFF (node, 0), spc, flags, false);
+      for (unsigned int i = 1; i < NUM_POLY_INT_COEFFS; ++i)
+	{
+	  pp_string (pp, ", ");
+	  dump_generic_node (pp, POLY_INT_CST_COEFF (node, i),
+			     spc, flags, false);
+	}
+      pp_string (pp, "]");
+      break;
+
     case REAL_CST:
       /* Code copied from print_node.  */
       {

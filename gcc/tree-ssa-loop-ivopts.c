@@ -1127,6 +1127,8 @@ determine_base_object (tree expr)
       gcc_unreachable ();
 
     default:
+      if (POLY_INT_CST_P (expr))
+	return NULL_TREE;
       return fold_convert (ptr_type_node, expr);
     }
 }
@@ -2165,6 +2167,12 @@ constant_multiple_of (tree top, tree bot, widest_int *mul)
       return res == 0;
 
     default:
+      if (POLY_INT_CST_P (top)
+	  && POLY_INT_CST_P (bot)
+	  && constant_multiple_p (wi::to_poly_widest (top),
+				  wi::to_poly_widest (bot), mul))
+	return true;
+
       return false;
     }
 }
@@ -2964,7 +2972,8 @@ get_loop_invariant_expr (struct ivopts_data *data, tree inv_expr)
 {
   STRIP_NOPS (inv_expr);
 
-  if (TREE_CODE (inv_expr) == INTEGER_CST || TREE_CODE (inv_expr) == SSA_NAME)
+  if (poly_int_tree_p (inv_expr)
+      || TREE_CODE (inv_expr) == SSA_NAME)
     return NULL;
 
   /* Don't strip constant part away as we used to.  */
@@ -3061,7 +3070,7 @@ add_candidate_1 (struct ivopts_data *data,
       cand->incremented_at = incremented_at;
       data->vcands.safe_push (cand);
 
-      if (TREE_CODE (step) != INTEGER_CST)
+      if (!poly_int_tree_p (step))
 	{
 	  find_inv_vars (data, &step, &cand->inv_vars);
 
@@ -3797,7 +3806,7 @@ get_computation_aff_1 (struct loop *loop, gimple *at, struct iv_use *use,
   if (TYPE_PRECISION (utype) < TYPE_PRECISION (ctype))
     {
       if (cand->orig_iv != NULL && CONVERT_EXPR_P (cbase)
-	  && (CONVERT_EXPR_P (cstep) || TREE_CODE (cstep) == INTEGER_CST))
+	  && (CONVERT_EXPR_P (cstep) || poly_int_tree_p (cstep)))
 	{
 	  tree inner_base, inner_step, inner_type;
 	  inner_base = TREE_OPERAND (cbase, 0);
@@ -4055,7 +4064,7 @@ force_expr_to_var_cost (tree expr, bool speed)
 
   if (is_gimple_min_invariant (expr))
     {
-      if (TREE_CODE (expr) == INTEGER_CST)
+      if (poly_int_tree_p (expr))
 	return comp_cost (integer_cost [speed], 0);
 
       if (TREE_CODE (expr) == ADDR_EXPR)

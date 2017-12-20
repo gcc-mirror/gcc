@@ -203,7 +203,8 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 
   if (addr->offset && !integer_zerop (addr->offset))
     {
-      offset_int dc = offset_int::from (wi::to_wide (addr->offset), SIGNED);
+      poly_offset_int dc
+	= poly_offset_int::from (wi::to_poly_wide (addr->offset), SIGNED);
       off = immed_wide_int_const (dc, pointer_mode);
     }
   else

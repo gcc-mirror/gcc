@@ -1258,7 +1258,7 @@ slsr_process_mul (gimple *gs, tree rhs1, tree rhs2, bool speed)
       c2 = create_mul_ssa_cand (gs, rhs2, rhs1, speed);
       c->next_interp = c2->cand_num;
     }
-  else
+  else if (TREE_CODE (rhs2) == INTEGER_CST)
     {
       /* Record an interpretation for the multiply-immediate.  */
       c = create_mul_imm_cand (gs, rhs1, rhs2, speed);
@@ -1499,7 +1499,7 @@ slsr_process_add (gimple *gs, tree rhs1, tree rhs2, bool speed)
 	    add_cand_for_stmt (gs, c2);
 	}
     }
-  else
+  else if (TREE_CODE (rhs2) == INTEGER_CST)
     {
       /* Record an interpretation for the add-immediate.  */
       widest_int index = wi::to_widest (rhs2);

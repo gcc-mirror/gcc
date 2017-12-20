@@ -799,6 +799,18 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  }
 	  break;
 
+	case POLY_INT_CST:
+	  {
+	    char buf[10];
+	    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	      {
+		snprintf (buf, sizeof (buf), "elt%u: ", i);
+		print_node (file, buf, POLY_INT_CST_COEFF (node, i),
+			    indent + 4);
+	      }
+	  }
+	  break;
+
 	case IDENTIFIER_NODE:
 	  lang_hooks.print_identifier (file, node, indent);
 	  break;

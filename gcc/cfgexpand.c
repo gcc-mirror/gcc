@@ -4264,6 +4264,9 @@ expand_debug_expr (tree exp)
       op0 = expand_expr (exp, NULL_RTX, mode, EXPAND_INITIALIZER);
       return op0;
 
+    case POLY_INT_CST:
+      return immed_wide_int_const (poly_int_cst_value (exp), mode);
+
     case COMPLEX_CST:
       gcc_assert (COMPLEX_MODE_P (mode));
       op0 = expand_debug_expr (TREE_REALPART (exp));
