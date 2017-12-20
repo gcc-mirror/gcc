@@ -2446,7 +2446,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
     {
       machine_mode outer = GET_MODE (dst);
       machine_mode inner;
-      HOST_WIDE_INT bytepos;
+      poly_int64 bytepos;
       bool done = false;
       rtx temp;
 
@@ -2461,7 +2461,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	{
 	  inner = GET_MODE (tmps[start]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (INTVAL (XEXP (XVECEXP (src, 0, start), 1)) == bytepos)
+	  if (known_eq (INTVAL (XEXP (XVECEXP (src, 0, start), 1)), bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[start],
 					  inner, 0);
@@ -2480,7 +2480,8 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	{
 	  inner = GET_MODE (tmps[finish - 1]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (INTVAL (XEXP (XVECEXP (src, 0, finish - 1), 1)) == bytepos)
+	  if (known_eq (INTVAL (XEXP (XVECEXP (src, 0, finish - 1), 1)),
+			bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[finish - 1],
 					  inner, 0);
@@ -3545,9 +3546,9 @@ undefined_operand_subword_p (const_rtx op, int i)
   if (GET_CODE (op) != SUBREG)
     return false;
   machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
-  HOST_WIDE_INT offset = i * UNITS_PER_WORD + subreg_memory_offset (op);
-  return (offset >= GET_MODE_SIZE (innermostmode)
-	  || offset <= -UNITS_PER_WORD);
+  poly_int64 offset = i * UNITS_PER_WORD + subreg_memory_offset (op);
+  return (known_ge (offset, GET_MODE_SIZE (innermostmode))
+	  || known_le (offset, -UNITS_PER_WORD));
 }
 
 /* A subroutine of emit_move_insn_1.  Generate a move from Y into X.
@@ -9247,8 +9248,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 			>= GET_MODE_BITSIZE (word_mode)))
 		  {
 		    rtx_insn *seq, *seq_old;
-		    unsigned int high_off = subreg_highpart_offset (word_mode,
-								    int_mode);
+		    poly_uint64 high_off = subreg_highpart_offset (word_mode,
+								   int_mode);
 		    bool extend_unsigned
 		      = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def)));
 		    rtx low = lowpart_subreg (word_mode, op0, int_mode);

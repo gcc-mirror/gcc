@@ -786,6 +786,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 	    return false;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return false;
+	  break;
+
 	case 'e':
 	  val = operands_match_p (XEXP (x, i), XEXP (y, i), -1);
 	  if (val == 0)
@@ -974,7 +979,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	      if (REG_P (subreg_reg)
 		  && (int) REGNO (subreg_reg) < lra_new_regno_start
 		  && GET_MODE (subreg_reg) == outmode
-		  && SUBREG_BYTE (in_rtx) == SUBREG_BYTE (new_in_reg)
+		  && known_eq (SUBREG_BYTE (in_rtx), SUBREG_BYTE (new_in_reg))
 		  && find_regno_note (curr_insn, REG_DEAD, REGNO (subreg_reg))
 		  && (! early_clobber_p
 		      || check_conflict_input_operands (REGNO (subreg_reg),
@@ -4205,7 +4210,7 @@ curr_insn_transform (bool check_only_p)
 	{
 	  machine_mode mode;
 	  rtx reg, *loc;
-	  int hard_regno, byte;
+	  int hard_regno;
 	  enum op_type type = curr_static_id->operand[i].type;
 
 	  loc = curr_id->operand_loc[i];
@@ -4213,7 +4218,7 @@ curr_insn_transform (bool check_only_p)
 	  if (GET_CODE (*loc) == SUBREG)
 	    {
 	      reg = SUBREG_REG (*loc);
-	      byte = SUBREG_BYTE (*loc);
+	      poly_int64 byte = SUBREG_BYTE (*loc);
 	      if (REG_P (reg)
 		  /* Strict_low_part requires reloading the register and not
 		     just the subreg.  Likewise for a strict subreg no wider

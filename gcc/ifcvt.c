@@ -894,7 +894,7 @@ noce_emit_move_insn (rtx x, rtx y)
 {
   machine_mode outmode;
   rtx outer, inner;
-  int bitpos;
+  poly_int64 bitpos;
 
   if (GET_CODE (x) != STRICT_LOW_PART)
     {
@@ -1724,12 +1724,12 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
     {
       rtx reg_vtrue = SUBREG_REG (vtrue);
       rtx reg_vfalse = SUBREG_REG (vfalse);
-      unsigned int byte_vtrue = SUBREG_BYTE (vtrue);
-      unsigned int byte_vfalse = SUBREG_BYTE (vfalse);
+      poly_uint64 byte_vtrue = SUBREG_BYTE (vtrue);
+      poly_uint64 byte_vfalse = SUBREG_BYTE (vfalse);
       rtx promoted_target;
 
       if (GET_MODE (reg_vtrue) != GET_MODE (reg_vfalse)
-	  || byte_vtrue != byte_vfalse
+	  || maybe_ne (byte_vtrue, byte_vfalse)
 	  || (SUBREG_PROMOTED_VAR_P (vtrue)
 	      != SUBREG_PROMOTED_VAR_P (vfalse))
 	  || (SUBREG_PROMOTED_GET (vtrue)

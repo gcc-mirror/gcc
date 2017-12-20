@@ -394,7 +394,7 @@ DEF_RTL_EXPR(SCRATCH, "scratch", "", RTX_OBJ)
 
 /* A reference to a part of another value.  The first operand is the
    complete value and the second is the byte offset of the selected part.   */
-DEF_RTL_EXPR(SUBREG, "subreg", "ei", RTX_EXTRA)
+DEF_RTL_EXPR(SUBREG, "subreg", "ep", RTX_EXTRA)
 
 /* This one-argument rtx is used for move instructions
    that are guaranteed to alter only the low part of a destination.

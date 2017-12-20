@@ -3522,6 +3522,12 @@ loc_cmp (rtx x, rtx y)
 	else
 	  return 1;
 
+      case 'p':
+	r = compare_sizes_for_sort (SUBREG_BYTE (x), SUBREG_BYTE (y));
+	if (r != 0)
+	  return r;
+	break;
+
       case 'V':
       case 'E':
 	/* Compare the vector length first.  */
@@ -5369,7 +5375,7 @@ track_loc_p (rtx loc, tree expr, poly_int64 offset, bool store_reg_p,
 static rtx
 var_lowpart (machine_mode mode, rtx loc)
 {
-  unsigned int offset, reg_offset, regno;
+  unsigned int regno;
 
   if (GET_MODE (loc) == mode)
     return loc;
@@ -5377,12 +5383,12 @@ var_lowpart (machine_mode mode, rtx loc)
   if (!REG_P (loc) && !MEM_P (loc))
     return NULL;
 
-  offset = byte_lowpart_offset (mode, GET_MODE (loc));
+  poly_uint64 offset = byte_lowpart_offset (mode, GET_MODE (loc));
 
   if (MEM_P (loc))
     return adjust_address_nv (loc, mode, offset);
 
-  reg_offset = subreg_lowpart_offset (mode, GET_MODE (loc));
+  poly_uint64 reg_offset = subreg_lowpart_offset (mode, GET_MODE (loc));
   regno = REGNO (loc) + subreg_regno_offset (REGNO (loc), GET_MODE (loc),
 					     reg_offset, mode);
   return gen_rtx_REG_offset (loc, mode, regno, offset);

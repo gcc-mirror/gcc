@@ -987,6 +987,11 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode, int depth)
 	    return 0;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return 0;
+	  break;
+
 	case 'V':
 	case 'E':
 	  /* Two vectors must have the same length.  */
@@ -1276,6 +1281,10 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 
 	case 'i':
 	  hash += XINT (x, i);
+	  break;
+
+	case 'p':
+	  hash += constant_lower_bound (SUBREG_BYTE (x));
 	  break;
 
 	case '0':

@@ -2140,12 +2140,12 @@ alter_reg (int i, int from_reg, bool dont_share_p)
     {
       rtx x = NULL_RTX;
       machine_mode mode = GET_MODE (regno_reg_rtx[i]);
-      unsigned int inherent_size = PSEUDO_REGNO_BYTES (i);
+      unsigned HOST_WIDE_INT inherent_size = PSEUDO_REGNO_BYTES (i);
       unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
       machine_mode wider_mode = wider_subreg_mode (mode, reg_max_ref_mode[i]);
-      unsigned int total_size = GET_MODE_SIZE (wider_mode);
+      unsigned HOST_WIDE_INT total_size = GET_MODE_SIZE (wider_mode);
       unsigned int min_align = GET_MODE_BITSIZE (reg_max_ref_mode[i]);
-      int adjust = 0;
+      poly_int64 adjust = 0;
 
       something_was_spilled = true;
 
@@ -2185,7 +2185,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 	  if (BYTES_BIG_ENDIAN)
 	    {
 	      adjust = inherent_size - total_size;
-	      if (adjust)
+	      if (maybe_ne (adjust, 0))
 		{
 		  unsigned int total_bits = total_size * BITS_PER_UNIT;
 		  machine_mode mem_mode
@@ -2237,7 +2237,7 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 	  if (BYTES_BIG_ENDIAN)
 	    {
 	      adjust = GET_MODE_SIZE (mode) - total_size;
-	      if (adjust)
+	      if (maybe_ne (adjust, 0))
 		{
 		  unsigned int total_bits = total_size * BITS_PER_UNIT;
 		  machine_mode mem_mode
@@ -6347,12 +6347,12 @@ replaced_subreg (rtx x)
    SUBREG is non-NULL if the pseudo is a subreg whose reg is a pseudo,
    otherwise it is NULL.  */
 
-static int
+static poly_int64
 compute_reload_subreg_offset (machine_mode outermode,
 			      rtx subreg,
 			      machine_mode innermode)
 {
-  int outer_offset;
+  poly_int64 outer_offset;
   machine_mode middlemode;
 
   if (!subreg)
@@ -6506,7 +6506,7 @@ choose_reload_regs (struct insn_chain *chain)
 
 	  if (inheritance)
 	    {
-	      int byte = 0;
+	      poly_int64 byte = 0;
 	      int regno = -1;
 	      machine_mode mode = VOIDmode;
 	      rtx subreg = NULL_RTX;
@@ -6556,8 +6556,9 @@ choose_reload_regs (struct insn_chain *chain)
 
 	      if (regno >= 0
 		  && reg_last_reload_reg[regno] != 0
-		  && (GET_MODE_SIZE (GET_MODE (reg_last_reload_reg[regno]))
-		      >= GET_MODE_SIZE (mode) + byte)
+		  && (known_ge
+		      (GET_MODE_SIZE (GET_MODE (reg_last_reload_reg[regno])),
+		       GET_MODE_SIZE (mode) + byte))
 		  /* Verify that the register it's in can be used in
 		     mode MODE.  */
 		  && (REG_CAN_CHANGE_MODE_P

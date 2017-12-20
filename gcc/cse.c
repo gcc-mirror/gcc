@@ -561,7 +561,7 @@ static struct table_elt *insert (rtx, struct table_elt *, unsigned,
 static void merge_equiv_classes (struct table_elt *, struct table_elt *);
 static void invalidate (rtx, machine_mode);
 static void remove_invalid_refs (unsigned int);
-static void remove_invalid_subreg_refs (unsigned int, unsigned int,
+static void remove_invalid_subreg_refs (unsigned int, poly_uint64,
 					machine_mode);
 static void rehash_using_reg (rtx);
 static void invalidate_memory (void);
@@ -1994,12 +1994,11 @@ remove_invalid_refs (unsigned int regno)
 /* Likewise for a subreg with subreg_reg REGNO, subreg_byte OFFSET,
    and mode MODE.  */
 static void
-remove_invalid_subreg_refs (unsigned int regno, unsigned int offset,
+remove_invalid_subreg_refs (unsigned int regno, poly_uint64 offset,
 			    machine_mode mode)
 {
   unsigned int i;
   struct table_elt *p, *next;
-  unsigned int end = offset + (GET_MODE_SIZE (mode) - 1);
 
   for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
@@ -2011,9 +2010,9 @@ remove_invalid_subreg_refs (unsigned int regno, unsigned int offset,
 	    && (GET_CODE (exp) != SUBREG
 		|| !REG_P (SUBREG_REG (exp))
 		|| REGNO (SUBREG_REG (exp)) != regno
-		|| (((SUBREG_BYTE (exp)
-		      + (GET_MODE_SIZE (GET_MODE (exp)) - 1)) >= offset)
-		    && SUBREG_BYTE (exp) <= end))
+		|| ranges_maybe_overlap_p (SUBREG_BYTE (exp),
+					   GET_MODE_SIZE (GET_MODE (exp)),
+					   offset, GET_MODE_SIZE (mode)))
 	    && refers_to_regno_p (regno, p->exp))
 	  remove_from_table (p, i);
       }
@@ -2307,7 +2306,8 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	  {
 	    hash += (((unsigned int) SUBREG << 7)
 		     + REGNO (SUBREG_REG (x))
-		     + (SUBREG_BYTE (x) / UNITS_PER_WORD));
+		     + (constant_lower_bound (SUBREG_BYTE (x))
+			/ UNITS_PER_WORD));
 	    return hash;
 	  }
 	break;
@@ -2524,6 +2524,10 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 
 	case 'i':
 	  hash += (unsigned int) XINT (x, i);
+	  break;
+
+	case 'p':
+	  hash += constant_lower_bound (SUBREG_BYTE (x));
 	  break;
 
 	case '0': case 't':
@@ -2773,6 +2777,11 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 
 	case 'w':
 	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	  break;
+
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
 	    return 0;
 	  break;
 
@@ -3801,8 +3810,9 @@ equiv_constant (rtx x)
       if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode)
 	  && GET_MODE_SIZE (word_mode) < GET_MODE_SIZE (imode))
 	{
-	  int byte = SUBREG_BYTE (x) - subreg_lowpart_offset (mode, word_mode);
-	  if (byte >= 0 && (byte % UNITS_PER_WORD) == 0)
+	  poly_int64 byte = (SUBREG_BYTE (x)
+			     - subreg_lowpart_offset (mode, word_mode));
+	  if (known_ge (byte, 0) && multiple_p (byte, UNITS_PER_WORD))
 	    {
 	      rtx y = gen_rtx_SUBREG (word_mode, SUBREG_REG (x), byte);
 	      new_rtx = lookup_as_function (y, CONST_INT);
@@ -6002,7 +6012,7 @@ cse_insn (rtx_insn *insn)
 		  new_src = elt->exp;
 		else
 		  {
-		    unsigned int byte
+		    poly_uint64 byte
 		      = subreg_lowpart_offset (new_mode, GET_MODE (dest));
 		    new_src = simplify_gen_subreg (new_mode, elt->exp,
 					           GET_MODE (dest), byte);

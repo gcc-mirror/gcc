@@ -919,7 +919,7 @@ process_single_reg_class_operands (bool in_p, int freq)
 		    (subreg:YMODE (reg:XMODE XREGNO) OFFSET).  */
 	      machine_mode ymode, xmode;
 	      int xregno, yregno;
-	      HOST_WIDE_INT offset;
+	      poly_int64 offset;
 
 	      xmode = recog_data.operand_mode[i];
 	      xregno = ira_class_singleton[cl][xmode];

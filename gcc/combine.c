@@ -5857,7 +5857,7 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 
       /* See if this can be moved to simplify_subreg.  */
       if (CONSTANT_P (SUBREG_REG (x))
-	  && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x)
+	  && known_eq (subreg_lowpart_offset (mode, op0_mode), SUBREG_BYTE (x))
 	     /* Don't call gen_lowpart if the inner mode
 		is VOIDmode and we cannot simplify it, as SUBREG without
 		inner mode is invalid.  */
@@ -5881,8 +5881,8 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	    && is_a <scalar_int_mode> (op0_mode, &int_op0_mode)
 	    && (GET_MODE_PRECISION (int_mode)
 		< GET_MODE_PRECISION (int_op0_mode))
-	    && (subreg_lowpart_offset (int_mode, int_op0_mode)
-		== SUBREG_BYTE (x))
+	    && known_eq (subreg_lowpart_offset (int_mode, int_op0_mode),
+			 SUBREG_BYTE (x))
 	    && HWI_COMPUTABLE_MODE_P (int_op0_mode)
 	    && (nonzero_bits (SUBREG_REG (x), int_op0_mode)
 		& GET_MODE_MASK (int_mode)) == 0)
@@ -7357,7 +7357,8 @@ expand_field_assignment (const_rtx x)
 	{
 	  inner = SUBREG_REG (XEXP (SET_DEST (x), 0));
 	  len = GET_MODE_PRECISION (GET_MODE (XEXP (SET_DEST (x), 0)));
-	  pos = GEN_INT (subreg_lsb (XEXP (SET_DEST (x), 0)));
+	  pos = gen_int_mode (subreg_lsb (XEXP (SET_DEST (x), 0)),
+			      MAX_MODE_INT);
 	}
       else if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
 	       && CONST_INT_P (XEXP (SET_DEST (x), 1)))
@@ -7606,7 +7607,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		 return a new hard register.  */
 	      if (pos || in_dest)
 		{
-		  unsigned int offset
+		  poly_uint64 offset
 		    = subreg_offset_from_lsb (tmode, inner_mode, pos);
 
 		  /* Avoid creating invalid subregs, for example when
@@ -11663,7 +11664,7 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
       if (paradoxical_subreg_p (omode, imode))
 	return gen_rtx_SUBREG (omode, x, 0);
 
-      HOST_WIDE_INT offset = byte_lowpart_offset (omode, imode);
+      poly_int64 offset = byte_lowpart_offset (omode, imode);
       return adjust_address_nv (x, omode, offset);
     }
 

@@ -555,7 +555,7 @@ debug_lowpart_subreg (machine_mode outer_mode, rtx expr,
 {
   if (inner_mode == VOIDmode)
     inner_mode = GET_MODE (expr);
-  int offset = subreg_lowpart_offset (outer_mode, inner_mode);
+  poly_int64 offset = subreg_lowpart_offset (outer_mode, inner_mode);
   rtx ret = simplify_gen_subreg (outer_mode, expr, inner_mode, offset);
   if (ret)
     return ret;

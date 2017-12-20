@@ -1263,7 +1263,7 @@ forward_propagate_and_simplify (df_ref use, rtx_insn *def_insn, rtx def_set)
   reg = DF_REF_REG (use);
   if (GET_CODE (reg) == SUBREG && GET_CODE (SET_DEST (def_set)) == SUBREG)
     {
-      if (SUBREG_BYTE (SET_DEST (def_set)) != SUBREG_BYTE (reg))
+      if (maybe_ne (SUBREG_BYTE (SET_DEST (def_set)), SUBREG_BYTE (reg)))
 	return false;
     }
   /* Check if the def had a subreg, but the use has the whole reg.  */

@@ -3251,7 +3251,7 @@ alter_subreg (rtx *xp, bool final_p)
      We are required to.  */
   if (MEM_P (y))
     {
-      int offset = SUBREG_BYTE (x);
+      poly_int64 offset = SUBREG_BYTE (x);
 
       /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
 	 contains 0 instead of the proper offset.  See simplify_subreg.  */
@@ -3274,7 +3274,7 @@ alter_subreg (rtx *xp, bool final_p)
 	{
 	  /* Simplify_subreg can't handle some REG cases, but we have to.  */
 	  unsigned int regno;
-	  HOST_WIDE_INT offset;
+	  poly_int64 offset;
 
 	  regno = subreg_regno (x);
 	  if (subreg_lowpart_p (x))
@@ -4523,6 +4523,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
       case '0':
       case 'i':
       case 'w':
+      case 'p':
       case 'n':
       case 'u':
 	break;

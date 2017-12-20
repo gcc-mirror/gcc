@@ -789,7 +789,7 @@ simplify_truncation (machine_mode mode, rtx op,
       && (INTVAL (XEXP (op, 1)) & (precision - 1)) == 0
       && UINTVAL (XEXP (op, 1)) < op_precision)
     {
-      int byte = subreg_lowpart_offset (mode, op_mode);
+      poly_int64 byte = subreg_lowpart_offset (mode, op_mode);
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
       return simplify_gen_subreg (mode, XEXP (op, 0), op_mode,
 				  (WORDS_BIG_ENDIAN
@@ -815,7 +815,7 @@ simplify_truncation (machine_mode mode, rtx op,
       && (GET_MODE_SIZE (int_mode) >= UNITS_PER_WORD
 	  || WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN))
     {
-      int byte = subreg_lowpart_offset (int_mode, int_op_mode);
+      poly_int64 byte = subreg_lowpart_offset (int_mode, int_op_mode);
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
       return adjust_address_nv (XEXP (op, 0), int_mode,
 				(WORDS_BIG_ENDIAN
@@ -2825,7 +2825,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
           && GET_CODE (SUBREG_REG (opleft)) == ASHIFT
           && GET_CODE (opright) == LSHIFTRT
           && GET_CODE (XEXP (opright, 0)) == SUBREG
-          && SUBREG_BYTE (opleft) == SUBREG_BYTE (XEXP (opright, 0))
+	  && known_eq (SUBREG_BYTE (opleft), SUBREG_BYTE (XEXP (opright, 0)))
 	  && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
           && rtx_equal_p (XEXP (SUBREG_REG (opleft), 0),
                           SUBREG_REG (XEXP (opright, 0)))
@@ -6236,7 +6236,7 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
    Return 0 if no simplifications are possible.  */
 rtx
 simplify_subreg (machine_mode outermode, rtx op,
-		 machine_mode innermode, unsigned int byte)
+		 machine_mode innermode, poly_uint64 byte)
 {
   /* Little bit of sanity checking.  */
   gcc_assert (innermode != VOIDmode);
@@ -6247,16 +6247,16 @@ simplify_subreg (machine_mode outermode, rtx op,
   gcc_assert (GET_MODE (op) == innermode
 	      || GET_MODE (op) == VOIDmode);
 
-  if ((byte % GET_MODE_SIZE (outermode)) != 0)
+  if (!multiple_p (byte, GET_MODE_SIZE (outermode)))
     return NULL_RTX;
 
-  if (byte >= GET_MODE_SIZE (innermode))
+  if (maybe_ge (byte, GET_MODE_SIZE (innermode)))
     return NULL_RTX;
 
-  if (outermode == innermode && !byte)
+  if (outermode == innermode && known_eq (byte, 0U))
     return op;
 
-  if (byte % GET_MODE_UNIT_SIZE (innermode) == 0)
+  if (multiple_p (byte, GET_MODE_UNIT_SIZE (innermode)))
     {
       rtx elt;
 
@@ -6277,12 +6277,15 @@ simplify_subreg (machine_mode outermode, rtx op,
     {
       /* simplify_immed_subreg deconstructs OP into bytes and constructs
 	 the result from bytes, so it only works if the sizes of the modes
-	 are known at compile time.  Cases that apply to general modes
-	 should be handled here before calling simplify_immed_subreg.  */
+	 and the value of the offset are known at compile time.  Cases that
+	 that apply to general modes and offsets should be handled here
+	 before calling simplify_immed_subreg.  */
       fixed_size_mode fs_outermode, fs_innermode;
+      unsigned HOST_WIDE_INT cbyte;
       if (is_a <fixed_size_mode> (outermode, &fs_outermode)
-	  && is_a <fixed_size_mode> (innermode, &fs_innermode))
-	return simplify_immed_subreg (fs_outermode, op, fs_innermode, byte);
+	  && is_a <fixed_size_mode> (innermode, &fs_innermode)
+	  && byte.is_constant (&cbyte))
+	return simplify_immed_subreg (fs_outermode, op, fs_innermode, cbyte);
 
       return NULL_RTX;
     }
@@ -6295,32 +6298,33 @@ simplify_subreg (machine_mode outermode, rtx op,
       rtx newx;
 
       if (outermode == innermostmode
-	  && byte == 0 && SUBREG_BYTE (op) == 0)
+	  && known_eq (byte, 0U)
+	  && known_eq (SUBREG_BYTE (op), 0))
 	return SUBREG_REG (op);
 
       /* Work out the memory offset of the final OUTERMODE value relative
 	 to the inner value of OP.  */
-      HOST_WIDE_INT mem_offset = subreg_memory_offset (outermode,
-						       innermode, byte);
-      HOST_WIDE_INT op_mem_offset = subreg_memory_offset (op);
-      HOST_WIDE_INT final_offset = mem_offset + op_mem_offset;
+      poly_int64 mem_offset = subreg_memory_offset (outermode,
+						    innermode, byte);
+      poly_int64 op_mem_offset = subreg_memory_offset (op);
+      poly_int64 final_offset = mem_offset + op_mem_offset;
 
       /* See whether resulting subreg will be paradoxical.  */
       if (!paradoxical_subreg_p (outermode, innermostmode))
 	{
 	  /* In nonparadoxical subregs we can't handle negative offsets.  */
-	  if (final_offset < 0)
+	  if (maybe_lt (final_offset, 0))
 	    return NULL_RTX;
 	  /* Bail out in case resulting subreg would be incorrect.  */
-	  if (final_offset % GET_MODE_SIZE (outermode)
-	      || (unsigned) final_offset >= GET_MODE_SIZE (innermostmode))
+	  if (!multiple_p (final_offset, GET_MODE_SIZE (outermode))
+	      || maybe_ge (final_offset, GET_MODE_SIZE (innermostmode)))
 	    return NULL_RTX;
 	}
       else
 	{
-	  HOST_WIDE_INT required_offset
-	    = subreg_memory_offset (outermode, innermostmode, 0);
-	  if (final_offset != required_offset)
+	  poly_int64 required_offset = subreg_memory_offset (outermode,
+							     innermostmode, 0);
+	  if (maybe_ne (final_offset, required_offset))
 	    return NULL_RTX;
 	  /* Paradoxical subregs always have byte offset 0.  */
 	  final_offset = 0;
@@ -6373,7 +6377,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 	     The information is used only by alias analysis that can not
 	     grog partial register anyway.  */
 
-	  if (subreg_lowpart_offset (outermode, innermode) == byte)
+	  if (known_eq (subreg_lowpart_offset (outermode, innermode), byte))
 	    ORIGINAL_REGNO (x) = ORIGINAL_REGNO (op);
 	  return x;
 	}
@@ -6398,25 +6402,28 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (GET_CODE (op) == CONCAT
       || GET_CODE (op) == VEC_CONCAT)
     {
-      unsigned int part_size, final_offset;
+      unsigned int part_size;
+      poly_uint64 final_offset;
       rtx part, res;
 
       machine_mode part_mode = GET_MODE (XEXP (op, 0));
       if (part_mode == VOIDmode)
 	part_mode = GET_MODE_INNER (GET_MODE (op));
       part_size = GET_MODE_SIZE (part_mode);
-      if (byte < part_size)
+      if (known_lt (byte, part_size))
 	{
 	  part = XEXP (op, 0);
 	  final_offset = byte;
 	}
-      else
+      else if (known_ge (byte, part_size))
 	{
 	  part = XEXP (op, 1);
 	  final_offset = byte - part_size;
 	}
+      else
+	return NULL_RTX;
 
-      if (final_offset + GET_MODE_SIZE (outermode) > part_size)
+      if (maybe_gt (final_offset + GET_MODE_SIZE (outermode), part_size))
 	return NULL_RTX;
 
       part_mode = GET_MODE (part);
@@ -6434,15 +6441,15 @@ simplify_subreg (machine_mode outermode, rtx op,
      it extracts higher bits that the ZERO_EXTEND's source bits.  */
   if (GET_CODE (op) == ZERO_EXTEND && SCALAR_INT_MODE_P (innermode))
     {
-      unsigned int bitpos = subreg_lsb_1 (outermode, innermode, byte);
-      if (bitpos >= GET_MODE_PRECISION (GET_MODE (XEXP (op, 0))))
+      poly_uint64 bitpos = subreg_lsb_1 (outermode, innermode, byte);
+      if (known_ge (bitpos, GET_MODE_PRECISION (GET_MODE (XEXP (op, 0)))))
 	return CONST0_RTX (outermode);
     }
 
   scalar_int_mode int_outermode, int_innermode;
   if (is_a <scalar_int_mode> (outermode, &int_outermode)
       && is_a <scalar_int_mode> (innermode, &int_innermode)
-      && byte == subreg_lowpart_offset (int_outermode, int_innermode))
+      && known_eq (byte, subreg_lowpart_offset (int_outermode, int_innermode)))
     {
       /* Handle polynomial integers.  The upper bits of a paradoxical
 	 subreg are undefined, so this is safe regardless of whether
@@ -6472,7 +6479,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 
 rtx
 simplify_gen_subreg (machine_mode outermode, rtx op,
-		     machine_mode innermode, unsigned int byte)
+		     machine_mode innermode, poly_uint64 byte)
 {
   rtx newx;
 
@@ -6668,7 +6675,7 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 						duplicate, last_par));
 
   /* Test a scalar subreg of a VEC_DUPLICATE.  */
-  unsigned int offset = subreg_lowpart_offset (inner_mode, mode);
+  poly_uint64 offset = subreg_lowpart_offset (inner_mode, mode);
   ASSERT_RTX_EQ (scalar_reg,
 		 simplify_gen_subreg (inner_mode, duplicate,
 				      mode, offset));
@@ -6688,7 +6695,7 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 						duplicate, vec_par));
 
       /* Test a vector subreg of a VEC_DUPLICATE.  */
-      unsigned int offset = subreg_lowpart_offset (narrower_mode, mode);
+      poly_uint64 offset = subreg_lowpart_offset (narrower_mode, mode);
       ASSERT_RTX_EQ (narrower_duplicate,
 		     simplify_gen_subreg (narrower_mode, duplicate,
 					  mode, offset));
@@ -6801,7 +6808,7 @@ simplify_const_poly_int_tests<N>::run ()
   rtx x10 = gen_int_mode (poly_int64 (-31, -24), HImode);
   rtx two = GEN_INT (2);
   rtx six = GEN_INT (6);
-  HOST_WIDE_INT offset = subreg_lowpart_offset (QImode, HImode);
+  poly_uint64 offset = subreg_lowpart_offset (QImode, HImode);
 
   /* These tests only try limited operation combinations.  Fuller arithmetic
      testing is done directly on poly_ints.  */

@@ -2,6 +2,143 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/rtl.texi: Update documentation of SUBREG_BYTE.  Document the
+	'p' format code.  Use INT_LIST rather than SUBREG as the example of
+	a code with an XINT and an XEXP.  Remove the implication that
+	accessing an rtx field using XINT is expected to work.
+	* rtl.def (SUBREG): Change format from "ei" to "ep".
+	* rtl.h (rtunion::rt_subreg): New field.
+	(XCSUBREG): New macro.
+	(SUBREG_BYTE): Use it.
+	(subreg_shape): Change offset from an unsigned int to a poly_uint16.
+	Update constructor accordingly.
+	(subreg_shape::operator ==): Update accordingly.
+	(subreg_shape::unique_id): Return an unsigned HOST_WIDE_INT rather
+	than an unsigned int.
+	(subreg_lsb, subreg_lowpart_offset, subreg_highpart_offset): Return
+	a poly_uint64 rather than an unsigned int.
+	(subreg_lsb_1): Likewise.  Take the offset as a poly_uint64 rather
+	than an unsigned int.
+	(subreg_size_offset_from_lsb, subreg_size_lowpart_offset)
+	(subreg_size_highpart_offset): Return a poly_uint64 rather than
+	an unsigned int.  Take the sizes as poly_uint64s.
+	(subreg_offset_from_lsb): Return a poly_uint64 rather than
+	an unsigned int.  Take the shift as a poly_uint64 rather than
+	an unsigned int.
+	(subreg_regno_offset, subreg_offset_representable_p): Take the offset
+	as a poly_uint64 rather than an unsigned int.
+	(simplify_subreg_regno): Likewise.
+	(byte_lowpart_offset): Return the memory offset as a poly_int64
+	rather than an int.
+	(subreg_memory_offset): Likewise.  Take the subreg offset as a
+	poly_uint64 rather than an unsigned int.
+	(simplify_subreg, simplify_gen_subreg, subreg_get_info)
+	(gen_rtx_SUBREG, validate_subreg): Take the subreg offset as a
+	poly_uint64 rather than an unsigned int.
+	* rtl.c (rtx_format): Describe 'p' in comment.
+	(copy_rtx, rtx_equal_p_cb, rtx_equal_p): Handle 'p'.
+	* emit-rtl.c (validate_subreg, gen_rtx_SUBREG): Take the subreg
+	offset as a poly_uint64 rather than an unsigned int.
+	(byte_lowpart_offset): Return the memory offset as a poly_int64
+	rather than an int.
+	(subreg_memory_offset): Likewise.  Take the subreg offset as a
+	poly_uint64 rather than an unsigned int.
+	(subreg_size_lowpart_offset, subreg_size_highpart_offset): Take the
+	mode sizes as poly_uint64s rather than unsigned ints.  Return a
+	poly_uint64 rather than an unsigned int.
+	(subreg_lowpart_p): Treat subreg offsets as poly_ints.
+	(copy_insn_1): Handle 'p'.
+	* rtlanal.c (set_noop_p): Treat subregs offsets as poly_uint64s.
+	(subreg_lsb_1): Take the subreg offset as a poly_uint64 rather than
+	an unsigned int.  Return the shift in the same way.
+	(subreg_lsb): Return the shift as a poly_uint64 rather than an
+	unsigned int.
+	(subreg_size_offset_from_lsb): Take the sizes and shift as
+	poly_uint64s rather than unsigned ints.  Return the offset as
+	a poly_uint64.
+	(subreg_get_info, subreg_regno_offset, subreg_offset_representable_p)
+	(simplify_subreg_regno): Take the offset as a poly_uint64 rather than
+	an unsigned int.
+	* rtlhash.c (add_rtx): Handle 'p'.
+	* genemit.c (gen_exp): Likewise.
+	* gengenrtl.c (type_from_format, gendef): Likewise.
+	* gensupport.c (subst_pattern_match, get_alternatives_number)
+	(collect_insn_data, alter_predicate_for_insn, alter_constraints)
+	(subst_dup): Likewise.
+	* gengtype.c (adjust_field_rtx_def): Likewise.
+	* genrecog.c (find_operand, find_matching_operand, validate_pattern)
+	(match_pattern_2): Likewise.
+	(rtx_test::SUBREG_FIELD): New rtx_test::kind_enum.
+	(rtx_test::subreg_field): New function.
+	(operator ==, safe_to_hoist_p, transition_parameter_type)
+	(print_nonbool_test, print_test): Handle SUBREG_FIELD.
+	* genattrtab.c (attr_rtx_1): Say that 'p' is deliberately not handled.
+	* genpeep.c (match_rtx): Likewise.
+	* print-rtl.c (print_poly_int): Include if GENERATOR_FILE too.
+	(rtx_writer::print_rtx_operand): Handle 'p'.
+	(print_value): Handle SUBREG.
+	* read-rtl.c (apply_int_iterator): Likewise.
+	(rtx_reader::read_rtx_operand): Handle 'p'.
+	* alias.c (rtx_equal_for_memref_p): Likewise.
+	* cselib.c (rtx_equal_for_cselib_1, cselib_hash_rtx): Likewise.
+	* caller-save.c (replace_reg_with_saved_mem): Treat subreg offsets
+	as poly_ints.
+	* calls.c (expand_call): Likewise.
+	* combine.c (combine_simplify_rtx, expand_field_assignment): Likewise.
+	(make_extraction, gen_lowpart_for_combine): Likewise.
+	* loop-invariant.c (hash_invariant_expr_1, invariant_expr_equal_p):
+	Likewise.
+	* cse.c (remove_invalid_subreg_refs): Take the offset as a poly_uint64
+	rather than an unsigned int.  Treat subreg offsets as poly_ints.
+	(exp_equiv_p): Handle 'p'.
+	(hash_rtx_cb): Likewise.  Treat subreg offsets as poly_ints.
+	(equiv_constant, cse_insn): Treat subreg offsets as poly_ints.
+	* dse.c (find_shift_sequence): Likewise.
+	* dwarf2out.c (rtl_for_decl_location): Likewise.
+	* expmed.c (extract_low_bits): Likewise.
+	* expr.c (emit_group_store, undefined_operand_subword_p): Likewise.
+	(expand_expr_real_2): Likewise.
+	* final.c (alter_subreg): Likewise.
+	(leaf_renumber_regs_insn): Handle 'p'.
+	* function.c (assign_parm_find_stack_rtl, assign_parm_setup_stack):
+	Treat subreg offsets as poly_ints.
+	* fwprop.c (forward_propagate_and_simplify): Likewise.
+	* ifcvt.c (noce_emit_move_insn, noce_emit_cmove): Likewise.
+	* ira.c (get_subreg_tracking_sizes): Likewise.
+	* ira-conflicts.c (go_through_subreg): Likewise.
+	* ira-lives.c (process_single_reg_class_operands): Likewise.
+	* jump.c (rtx_renumbered_equal_p): Likewise.  Handle 'p'.
+	* lower-subreg.c (simplify_subreg_concatn): Take the subreg offset
+	as a poly_uint64 rather than an unsigned int.
+	(simplify_gen_subreg_concatn, resolve_simple_move): Treat
+	subreg offsets as poly_ints.
+	* lra-constraints.c (operands_match_p): Handle 'p'.
+	(match_reload, curr_insn_transform): Treat subreg offsets as poly_ints.
+	* lra-spills.c (assign_mem_slot): Likewise.
+	* postreload.c (move2add_valid_value_p): Likewise.
+	* recog.c (general_operand, indirect_operand): Likewise.
+	* regcprop.c (copy_value, maybe_mode_change): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* reginfo.c (simplifiable_subregs_hasher::hash, simplifiable_subregs)
+	(record_subregs_of_mode): Likewise.
+	* rtlhooks.c (gen_lowpart_general, gen_lowpart_if_possible): Likewise.
+	* reload.c (operands_match_p): Handle 'p'.
+	(find_reloads_subreg_address): Treat subreg offsets as poly_ints.
+	* reload1.c (alter_reg, choose_reload_regs): Likewise.
+	(compute_reload_subreg_offset): Likewise, and return an poly_int64.
+	* simplify-rtx.c (simplify_truncation, simplify_binary_operation_1):
+	(test_vector_ops_duplicate): Treat subreg offsets as poly_ints.
+	(simplify_const_poly_int_tests<N>::run): Likewise.
+	(simplify_subreg, simplify_gen_subreg): Take the subreg offset as
+	a poly_uint64 rather than an unsigned int.
+	* valtrack.c (debug_lowpart_subreg): Likewise.
+	* var-tracking.c (var_lowpart): Likewise.
+	(loc_cmp): Handle 'p'.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* ira.c (get_subreg_tracking_sizes): New function.
 	(init_live_subregs): Take an integer size rather than a register.
 	(build_insn_chain): Use get_subreg_tracking_sizes.  Update calls

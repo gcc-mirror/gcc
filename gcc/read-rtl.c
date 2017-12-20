@@ -222,7 +222,10 @@ find_int (const char *name)
 static void
 apply_int_iterator (rtx x, unsigned int index, int value)
 {
-  XINT (x, index) = value;
+  if (GET_CODE (x) == SUBREG)
+    SUBREG_BYTE (x) = value;
+  else
+    XINT (x, index) = value;
 }
 
 #ifdef GENERATOR_FILE
@@ -1608,6 +1611,7 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 
     case 'i':
     case 'n':
+    case 'p':
       /* Can be an iterator or an integer constant.  */
       read_name (&name);
       record_potential_iterator_use (&ints, return_rtx, idx, name.string);
