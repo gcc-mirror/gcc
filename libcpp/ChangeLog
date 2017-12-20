@@ -1,3 +1,10 @@
+2017-12-20  Michael Weiser  <michael.weiser@gmx.de>
+
+	PR preprocessor/83492
+	* lex.c (search_line_fast) [__ARM_NEON && __ARM_64BIT_STATE]:
+	Fix selection of big-endian shift parameters by using
+	__ARM_BIG_ENDIAN.
+
 2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* internal.h (maybe_print_line): Change signature.
