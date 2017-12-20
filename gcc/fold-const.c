@@ -8325,48 +8325,50 @@ maybe_canonicalize_comparison (location_t loc, enum tree_code code, tree type,
    expressions like &p->x which can not wrap.  */
 
 static bool
-pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
+pointer_may_wrap_p (tree base, tree offset, poly_int64 bitpos)
 {
   if (!POINTER_TYPE_P (TREE_TYPE (base)))
     return true;
 
-  if (bitpos < 0)
+  if (maybe_lt (bitpos, 0))
     return true;
 
-  wide_int wi_offset;
+  poly_wide_int wi_offset;
   int precision = TYPE_PRECISION (TREE_TYPE (base));
   if (offset == NULL_TREE)
     wi_offset = wi::zero (precision);
-  else if (TREE_CODE (offset) != INTEGER_CST || TREE_OVERFLOW (offset))
+  else if (!poly_int_tree_p (offset) || TREE_OVERFLOW (offset))
     return true;
   else
-    wi_offset = wi::to_wide (offset);
+    wi_offset = wi::to_poly_wide (offset);
 
   bool overflow;
-  wide_int units = wi::shwi (bitpos / BITS_PER_UNIT, precision);
-  wide_int total = wi::add (wi_offset, units, UNSIGNED, &overflow);
+  poly_wide_int units = wi::shwi (bits_to_bytes_round_down (bitpos),
+				  precision);
+  poly_wide_int total = wi::add (wi_offset, units, UNSIGNED, &overflow);
   if (overflow)
     return true;
 
-  if (!wi::fits_uhwi_p (total))
+  poly_uint64 total_hwi, size;
+  if (!total.to_uhwi (&total_hwi)
+      || !poly_int_tree_p (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (base))),
+			   &size)
+      || known_eq (size, 0U))
     return true;
 
-  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (TREE_TYPE (base)));
-  if (size <= 0)
-    return true;
+  if (known_le (total_hwi, size))
+    return false;
 
   /* We can do slightly better for SIZE if we have an ADDR_EXPR of an
      array.  */
-  if (TREE_CODE (base) == ADDR_EXPR)
-    {
-      HOST_WIDE_INT base_size;
+  if (TREE_CODE (base) == ADDR_EXPR
+      && poly_int_tree_p (TYPE_SIZE_UNIT (TREE_TYPE (TREE_OPERAND (base, 0))),
+			  &size)
+      && maybe_ne (size, 0U)
+      && known_le (total_hwi, size))
+    return false;
 
-      base_size = int_size_in_bytes (TREE_TYPE (TREE_OPERAND (base, 0)));
-      if (base_size > 0 && size < base_size)
-	size = base_size;
-    }
-
-  return total.to_uhwi () > (unsigned HOST_WIDE_INT) size;
+  return true;
 }
 
 /* Return a positive integer when the symbol DECL is known to have

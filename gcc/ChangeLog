@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* fold-const.c (pointer_may_wrap_p): Take the offset as a
+	HOST_WIDE_INT rather than a poly_int64.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gimple-ssa-store-merging.c (symbolic_number::bytepos): Change from
 	HOST_WIDE_INT to poly_int64_pod.
 	(perform_symbolic_merge): Update accordingly.
