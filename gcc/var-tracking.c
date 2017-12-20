@@ -9511,24 +9511,6 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
     }
 }
 
-/* Return BB's head, unless BB is the block that succeeds ENTRY_BLOCK,
-   in which case it searches back from BB's head for the very first
-   insn.  Use [get_first_insn (bb), BB_HEAD (bb->next_bb)[ as a range
-   to iterate over all insns of a function while iterating over its
-   BBs.  */
-
-static rtx_insn *
-get_first_insn (basic_block bb)
-{
-  rtx_insn *insn = BB_HEAD (bb);
-
-  if (bb->prev_bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    while (rtx_insn *prev = PREV_INSN (insn))
-      insn = prev;
-
-  return insn;
-}
-
 /* Emit notes for the whole function.  */
 
 static void
@@ -9557,8 +9539,7 @@ vt_emit_notes (void)
     {
       /* Emit the notes for changes of variable locations between two
 	 subsequent basic blocks.  */
-      emit_notes_for_differences (get_first_insn (bb),
-				  &cur, &VTI (bb)->in);
+      emit_notes_for_differences (BB_HEAD (bb), &cur, &VTI (bb)->in);
 
       if (MAY_HAVE_DEBUG_BIND_INSNS)
 	local_get_addr_cache = new hash_map<rtx, rtx>;
@@ -9966,7 +9947,7 @@ vt_init_cfa_base (void)
 /* Reemit INSN, a MARKER_DEBUG_INSN, as a note.  */
 
 static rtx_insn *
-reemit_marker_as_note (rtx_insn *insn, basic_block *bb)
+reemit_marker_as_note (rtx_insn *insn)
 {
   gcc_checking_assert (DEBUG_MARKER_INSN_P (insn));
 
@@ -9981,8 +9962,6 @@ reemit_marker_as_note (rtx_insn *insn, basic_block *bb)
 	  {
 	    note = emit_note_before (kind, insn);
 	    NOTE_MARKER_LOCATION (note) = INSN_LOCATION (insn);
-	    if (bb)
-	      BLOCK_FOR_INSN (note) = *bb;
 	  }
 	delete_insn (insn);
 	return note;
@@ -10190,39 +10169,11 @@ vt_initialize (void)
 	  HOST_WIDE_INT offset = VTI (bb)->out.stack_adjust;
 	  VTI (bb)->out.stack_adjust = VTI (bb)->in.stack_adjust;
 
-	  /* If we are walking the first basic block, walk any HEADER
-	     insns that might be before it too.  Unfortunately,
-	     BB_HEADER and BB_FOOTER are not set while we run this
-	     pass.  */
 	  rtx_insn *next;
-	  bool outside_bb = true;
-	  for (insn = get_first_insn (bb); insn != BB_HEAD (bb->next_bb);
-	       insn = next)
+	  FOR_BB_INSNS_SAFE (bb, insn, next)
 	    {
-	      if (insn == BB_HEAD (bb))
-		outside_bb = false;
-	      else if (insn == NEXT_INSN (BB_END (bb)))
-		outside_bb = true;
-	      next = NEXT_INSN (insn);
 	      if (INSN_P (insn))
 		{
-		  if (outside_bb)
-		    {
-		      /* Ignore non-debug insns outside of basic blocks.  */
-		      if (!DEBUG_INSN_P (insn))
-			continue;
-		      /* Debug binds shouldn't appear outside of bbs.  */
-		      gcc_assert (!DEBUG_BIND_INSN_P (insn));
-		    }
-		  basic_block save_bb = BLOCK_FOR_INSN (insn);
-		  if (!BLOCK_FOR_INSN (insn))
-		    {
-		      gcc_assert (outside_bb);
-		      BLOCK_FOR_INSN (insn) = bb;
-		    }
-		  else
-		    gcc_assert (BLOCK_FOR_INSN (insn) == bb);
-
 		  if (!frame_pointer_needed)
 		    {
 		      insn_stack_adjust_offset_pre_post (insn, &pre, &post);
@@ -10244,7 +10195,7 @@ vt_initialize (void)
 		  adjust_insn (bb, insn);
 		  if (DEBUG_MARKER_INSN_P (insn))
 		    {
-		      insn = reemit_marker_as_note (insn, &save_bb);
+		      reemit_marker_as_note (insn);
 		      continue;
 		    }
 
@@ -10296,7 +10247,6 @@ vt_initialize (void)
 			    }
 			}
 		    }
-		  BLOCK_FOR_INSN (insn) = save_bb;
 		}
 	    }
 	  gcc_assert (offset == VTI (bb)->out.stack_adjust);
@@ -10338,15 +10288,12 @@ delete_vta_debug_insns (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      for (insn = get_first_insn (bb);
-	   insn != BB_HEAD (bb->next_bb)
-	     ? next = NEXT_INSN (insn), true : false;
-	   insn = next)
+      FOR_BB_INSNS_SAFE (bb, insn, next)
 	if (DEBUG_INSN_P (insn))
 	  {
 	    if (DEBUG_MARKER_INSN_P (insn))
 	      {
-		insn = reemit_marker_as_note (insn, NULL);
+		reemit_marker_as_note (insn);
 		continue;
 	      }
 

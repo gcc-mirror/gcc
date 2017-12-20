@@ -1,3 +1,26 @@
+2017-12-20  Alexandre Oliva <aoliva@redhat.com>
+
+	PR bootstrap/83396
+	* cfgexpand.c (label_rtx_for_bb): Revert SFN changes that
+	allowed debug stmts before labels.
+	(expand_gimple_basic_block): Likewise.
+	* gimple-iterator.c (gimple_find_edge_insert_loc): Likewise.
+	* gimple-iterator.h (gsi_after_labels): Likewise.
+	* tree-cfgcleanup (remove_forwarder_block): Likewise, but
+	rename reused variable, and simplify using gsi_move_before.
+	* tree-ssa-tail-merge.c (find_duplicate): Likewise.
+	* tree-cfg.c (make_edges, cleanup_dead_labels): Likewise.
+	(gimple_can_merge_blocks_p, verify_gimple_in_cfg): Likewise.
+	(gimple_verify_flow_info, gimple_block_label): Likewise.
+	(make_blocks): Move debug markers after adjacent labels.
+	* cfgrtl.c (skip_insns_after_block): Revert SFN changes that
+	allowed debug insns outside blocks.
+	* df-scan.c (df_insn_delete): Likewise.
+	* lra-constraints.c (update_ebb_live_info): Likewise.
+	* var-tracking.c (get_first_insn, vt_emit_notes): Likewise.
+	(vt_initialize, delete_vta_debug_insns): Likewise.
+	(reemit_marker_as_note): Drop BB parm.  Adjust callers.
+
 2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

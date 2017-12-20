@@ -1295,14 +1295,14 @@ find_duplicate (same_succ *same_succ, basic_block bb1, basic_block bb2)
       tree label = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi1)));
       if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
 	return;
-      gsi_prev_nondebug (&gsi1);
+      gsi_prev (&gsi1);
     }
   while (!gsi_end_p (gsi2) && gimple_code (gsi_stmt (gsi2)) == GIMPLE_LABEL)
     {
       tree label = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi2)));
       if (DECL_NONLOCAL (label) || FORCED_LABEL (label))
 	return;
-      gsi_prev_nondebug (&gsi2);
+      gsi_prev (&gsi2);
     }
   if (!(gsi_end_p (gsi1) && gsi_end_p (gsi2)))
     return;

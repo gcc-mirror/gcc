@@ -5820,13 +5820,6 @@ update_ebb_live_info (rtx_insn *head, rtx_insn *tail)
       if (NOTE_P (curr_insn) && NOTE_KIND (curr_insn) != NOTE_INSN_BASIC_BLOCK)
 	continue;
       curr_bb = BLOCK_FOR_INSN (curr_insn);
-      if (!curr_bb)
-	{
-	  gcc_assert (DEBUG_INSN_P (curr_insn));
-	  if (DEBUG_MARKER_INSN_P (curr_insn))
-	    continue;
-	  curr_bb = prev_bb;
-	}
       if (curr_bb != prev_bb)
 	{
 	  if (prev_bb != NULL)
