@@ -2,6 +2,49 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-dfa.h (get_ref_base_and_extent): Return the base, size and
+	max_size as poly_int64_pods rather than HOST_WIDE_INTs.
+	(get_ref_base_and_extent_hwi): Declare.
+	* tree-dfa.c (get_ref_base_and_extent): Return the base, size and
+	max_size as poly_int64_pods rather than HOST_WIDE_INTs.
+	(get_ref_base_and_extent_hwi): New function.
+	* cfgexpand.c (expand_debug_expr): Update call to
+	get_ref_base_and_extent.
+	* dwarf2out.c (add_var_loc_to_decl): Likewise.
+	* gimple-fold.c (get_base_constructor): Return the offset as a
+	poly_int64_pod rather than a HOST_WIDE_INT.
+	(fold_const_aggregate_ref_1): Track polynomial sizes and offsets.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::set_by_invariant)
+	(extr_type_from_vtbl_ptr_store): Track polynomial offsets.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context)
+	(check_stmt_for_type_change): Use get_ref_base_and_extent_hwi
+	rather than get_ref_base_and_extent.
+	(ipa_polymorphic_call_context::get_dynamic_type): Likewise.
+	* ipa-prop.c (ipa_load_from_parm_agg, compute_complex_assign_jump_func)
+	(get_ancestor_addr_info, determine_locally_known_aggregate_parts):
+	Likewise.
+	* ipa-param-manipulation.c (ipa_get_adjustment_candidate): Update
+	call to get_ref_base_and_extent.
+	* tree-sra.c (create_access, get_access_for_expr): Likewise.
+	* tree-ssa-alias.c (ao_ref_base, aliasing_component_refs_p)
+	(stmt_kills_ref_p): Likewise.
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1): Likewise.
+	* tree-ssa-scopedtables.c (avail_expr_hash, equal_mem_array_ref_p):
+	Likewise.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Likewise.
+	Use get_ref_base_and_extent_hwi rather than get_ref_base_and_extent
+	when calling native_encode_expr.
+	* tree-ssa-structalias.c (get_constraint_for_component_ref): Update
+	call to get_ref_base_and_extent.
+	(do_structure_copy): Use get_ref_base_and_extent_hwi rather than
+	get_ref_base_and_extent.
+	* var-tracking.c (track_expr_p): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* ipa-param-manipulation.h (ipa_parm_adjustment::offset): Change from
 	HOST_WIDE_INT to poly_int64_pod.
 	* ipa-param-manipulation.c (ipa_modify_call_arguments): Track

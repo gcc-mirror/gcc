@@ -5920,17 +5920,15 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
 	  || (TREE_CODE (realdecl) == MEM_REF
 	      && TREE_CODE (TREE_OPERAND (realdecl, 0)) == ADDR_EXPR))
 	{
-	  HOST_WIDE_INT maxsize;
 	  bool reverse;
-	  tree innerdecl
-	    = get_ref_base_and_extent (realdecl, &bitpos, &bitsize, &maxsize,
-				       &reverse);
-	  if (!DECL_P (innerdecl)
+	  tree innerdecl = get_ref_base_and_extent_hwi (realdecl, &bitpos,
+							&bitsize, &reverse);
+	  if (!innerdecl
+	      || !DECL_P (innerdecl)
 	      || DECL_IGNORED_P (innerdecl)
 	      || TREE_STATIC (innerdecl)
-	      || bitsize <= 0
-	      || bitpos + bitsize > 256
-	      || bitsize != maxsize)
+	      || bitsize == 0
+	      || bitpos + bitsize > 256)
 	    return NULL;
 	  decl = innerdecl;
 	}

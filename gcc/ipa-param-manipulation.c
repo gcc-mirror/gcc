@@ -627,11 +627,11 @@ ipa_get_adjustment_candidate (tree **expr, bool *convert,
 	*convert = true;
     }
 
-  HOST_WIDE_INT offset, size, max_size;
+  poly_int64 offset, size, max_size;
   bool reverse;
   tree base
     = get_ref_base_and_extent (**expr, &offset, &size, &max_size, &reverse);
-  if (!base || size == -1 || max_size == -1)
+  if (!base || !known_size_p (size) || !known_size_p (max_size))
     return NULL;
 
   if (TREE_CODE (base) == MEM_REF)

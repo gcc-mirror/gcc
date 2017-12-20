@@ -5208,20 +5208,20 @@ track_expr_p (tree expr, bool need_rtl)
 	      || (TREE_CODE (realdecl) == MEM_REF
 		  && TREE_CODE (TREE_OPERAND (realdecl, 0)) == ADDR_EXPR))
 	    {
-	      HOST_WIDE_INT bitsize, bitpos, maxsize;
+	      HOST_WIDE_INT bitsize, bitpos;
 	      bool reverse;
 	      tree innerdecl
-		= get_ref_base_and_extent (realdecl, &bitpos, &bitsize,
-					   &maxsize, &reverse);
-	      if (!DECL_P (innerdecl)
+		= get_ref_base_and_extent_hwi (realdecl, &bitpos,
+					       &bitsize, &reverse);
+	      if (!innerdecl
+		  || !DECL_P (innerdecl)
 		  || DECL_IGNORED_P (innerdecl)
 		  /* Do not track declarations for parts of tracked record
 		     parameters since we want to track them as a whole.  */
 		  || tracked_record_parameter_p (innerdecl)
 		  || TREE_STATIC (innerdecl)
-		  || bitsize <= 0
-		  || bitpos + bitsize > 256
-		  || bitsize != maxsize)
+		  || bitsize == 0
+		  || bitpos + bitsize > 256)
 		return 0;
 	      else
 		realdecl = expr;

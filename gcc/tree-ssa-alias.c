@@ -635,15 +635,11 @@ tree
 ao_ref_base (ao_ref *ref)
 {
   bool reverse;
-  HOST_WIDE_INT offset, size, max_size;
 
   if (ref->base)
     return ref->base;
-  ref->base = get_ref_base_and_extent (ref->ref, &offset, &size,
-				       &max_size, &reverse);
-  ref->offset = offset;
-  ref->size = size;
-  ref->max_size = max_size;
+  ref->base = get_ref_base_and_extent (ref->ref, &ref->offset, &ref->size,
+				       &ref->max_size, &reverse);
   return ref->base;
 }
 
@@ -823,7 +819,7 @@ aliasing_component_refs_p (tree ref1,
     return true;
   else if (same_p == 1)
     {
-      HOST_WIDE_INT offadj, sztmp, msztmp;
+      poly_int64 offadj, sztmp, msztmp;
       bool reverse;
       get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
       offset2 -= offadj;
@@ -842,7 +838,7 @@ aliasing_component_refs_p (tree ref1,
     return true;
   else if (same_p == 1)
     {
-      HOST_WIDE_INT offadj, sztmp, msztmp;
+      poly_int64 offadj, sztmp, msztmp;
       bool reverse;
       get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
       offset1 -= offadj;
@@ -2448,15 +2444,12 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	 the access properly.  */
       if (!ref->max_size_known_p ())
 	return false;
-      HOST_WIDE_INT size, max_size, const_offset;
-      poly_int64 ref_offset = ref->offset;
+      poly_int64 size, offset, max_size, ref_offset = ref->offset;
       bool reverse;
-      tree base
-	= get_ref_base_and_extent (lhs, &const_offset, &size, &max_size,
-				   &reverse);
+      tree base = get_ref_base_and_extent (lhs, &offset, &size, &max_size,
+					   &reverse);
       /* We can get MEM[symbol: sZ, index: D.8862_1] here,
 	 so base == ref->base does not always hold.  */
-      poly_int64 offset = const_offset;
       if (base != ref->base)
 	{
 	  /* Try using points-to info.  */
@@ -2488,7 +2481,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	}
       /* For a must-alias check we need to be able to constrain
 	 the access properly.  */
-      if (size == max_size
+      if (known_eq (size, max_size)
 	  && known_subrange_p (ref_offset, ref->max_size, offset, size))
 	return true;
     }
