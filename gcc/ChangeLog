@@ -1,3 +1,28 @@
+2017-12-20  Julia Koval  <julia.koval@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_VPCLMULQDQ_SET,
+	OPTION_MASK_ISA_VPCLMULQDQ_UNSET): New.
+	(ix86_handle_option): Handle -mvpclmulqdq, move cx6 to flags2.
+	* config.gcc: Include vpclmulqdqintrin.h.
+	* config/i386/cpuid.h: Handle bit_VPCLMULQDQ.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle
+	-mvpclmulqdq.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpclmulqdq_v2di,
+	__builtin_ia32_vpclmulqdq_v4di, __builtin_ia32_vpclmulqdq_v8di): New.
+	* config/i386/i386-c.c (__VPCLMULQDQ__): New.
+	* config/i386/i386.c (isa2_opts): Add -mcx16.
+	(isa_opts): Add -mpclmulqdq, remove -mcx16.
+	(ix86_option_override_internal): Move mcx16 to flags2.
+	(ix86_valid_target_attribute_inner_p): Add vpclmulqdq.
+	(ix86_expand_builtin): Handle OPTION_MASK_ISA_VPCLMULQDQ.
+	* config/i386/i386.h (TARGET_VPCLMULQDQ, TARGET_VPCLMULQDQ_P): New.
+	* config/i386/i386.opt: Add mvpclmulqdq, move mcx16 to flags2.
+	* config/i386/immintrin.h: Include vpclmulqdqintrin.h.
+	* config/i386/sse.md (vpclmulqdq_<mode>): New pattern.
+	* config/i386/vpclmulqdqintrin.h (_mm512_clmulepi64_epi128,
+	_mm_clmulepi64_epi128, _mm256_clmulepi64_epi128): New intrinsics.
+	* doc/invoke.texi: Add -mvpclmulqdq.
+
 2017-12-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/83423

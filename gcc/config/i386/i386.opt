@@ -789,6 +789,10 @@ mvaes
 Target Report Mask(ISA_VAES) Var(ix86_isa_flags2) Save
 Support VAES built-in functions and code generation.
 
+mvpclmulqdq
+Target Report Mask(ISA_VPCLMULQDQ) Var(ix86_isa_flags) Save
+Support VPCLMULQDQ built-in functions and code generation.
+
 mbmi
 Target Report Mask(ISA_BMI) Var(ix86_isa_flags) Save
 Support BMI built-in functions and code generation.
@@ -854,7 +858,7 @@ Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save
 Support TBM built-in functions and code generation.
 
 mcx16
-Target Report Mask(ISA_CX16) Var(ix86_isa_flags) Save
+Target Report Mask(ISA_CX16) Var(ix86_isa_flags2) Save
 Support code generation of cmpxchg16b instruction.
 
 msahf

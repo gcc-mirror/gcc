@@ -87,6 +87,9 @@ main ()
 #ifdef VAES
       && (ecx & bit_VAES)
 #endif
+#ifdef VPCLMULQDQ
+      && (ecx & bit_VPCLMULQDQ)
+#endif
       && avx512f_os_support ())
     {
       DO_TEST ();

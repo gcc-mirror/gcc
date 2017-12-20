@@ -486,6 +486,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     }
   if (isa_flag2 & OPTION_MASK_ISA_VAES)
     def_or_undef (parse_in, "__VAES__");
+  if (isa_flag & OPTION_MASK_ISA_VPCLMULQDQ)
+    def_or_undef (parse_in, "__VPCLMULQDQ__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

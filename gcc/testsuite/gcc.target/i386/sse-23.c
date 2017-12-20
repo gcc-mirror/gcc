@@ -633,7 +633,6 @@
 #define __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v32qi_mask(A, B, 1, D, E) 
 #define __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, C, D, E) __builtin_ia32_vgf2p8affineqb_v64qi_mask(A, B, 1, D, E) 
 
-
 /* avx512vbmi2intrin.h */
 #define __builtin_ia32_vpshrd_v32hi(A, B, C) __builtin_ia32_vpshrd_v32hi(A, B, 1)
 #define __builtin_ia32_vpshrd_v32hi_mask(A, B, C, D, E)  __builtin_ia32_vpshrd_v32hi_mask(A, B, 1, D, E)
@@ -672,6 +671,11 @@
 #define __builtin_ia32_vpshld_v2di(A, B, C) __builtin_ia32_vpshld_v2di(A, B, 1)
 #define __builtin_ia32_vpshld_v2di_mask(A, B, C, D, E)  __builtin_ia32_vpshld_v2di_mask(A, B, 1, D, E)
 
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,avx512vbmi2")
+/* vpclmulqdqintrin.h */
+#define __builtin_ia32_vpclmulqdq_v4di(A, B, C)  __builtin_ia32_vpclmulqdq_v4di(A, B, 1) 
+#define __builtin_ia32_vpclmulqdq_v2di(A, B, C)  __builtin_ia32_vpclmulqdq_v2di(A, B, 1) 
+#define __builtin_ia32_vpclmulqdq_v8di(A, B, C)  __builtin_ia32_vpclmulqdq_v8di(A, B, 1) 
+
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,avx512f,avx512er,avx512cd,avx512pf,sha,prefetchwt1,xsavec,xsaves,clflushopt,avx512bw,avx512dq,avx512vl,avx512vbmi,avx512ifma,avx5124fmaps,avx5124vnniw,avx512vpopcntdq,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,avx512vbmi2,vpclmulqdq")
 
 #include <x86intrin.h>
