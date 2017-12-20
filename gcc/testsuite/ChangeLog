@@ -1,5 +1,10 @@
 2017-12-20  Martin Sebor  <msebor@redhat.com>
 
+	PR testsuite/83483
+	* gcc.dg/memcpy-6.c: Skip for targets other than x86.
+
+2017-12-20  Martin Sebor  <msebor@redhat.com>
+
 	PR testsuite/83131
 	* c-c++-common/attr-nonstring-4.c: New test.
 
