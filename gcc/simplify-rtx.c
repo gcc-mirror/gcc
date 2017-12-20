@@ -1165,7 +1165,8 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  if (STORE_FLAG_VALUE == 1)
 	    {
 	      temp = simplify_gen_binary (ASHIFTRT, inner, XEXP (op, 0),
-					  GEN_INT (isize - 1));
+					  gen_int_shift_amount (inner,
+								isize - 1));
 	      if (int_mode == inner)
 		return temp;
 	      if (GET_MODE_PRECISION (int_mode) > isize)
@@ -1175,7 +1176,8 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  else if (STORE_FLAG_VALUE == -1)
 	    {
 	      temp = simplify_gen_binary (LSHIFTRT, inner, XEXP (op, 0),
-					  GEN_INT (isize - 1));
+					  gen_int_shift_amount (inner,
+								isize - 1));
 	      if (int_mode == inner)
 		return temp;
 	      if (GET_MODE_PRECISION (int_mode) > isize)
@@ -2672,7 +2674,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  val = wi::exact_log2 (rtx_mode_t (trueop1, mode));
 	  if (val >= 0)
-	    return simplify_gen_binary (ASHIFT, mode, op0, GEN_INT (val));
+	    return simplify_gen_binary (ASHIFT, mode, op0,
+					gen_int_shift_amount (mode, val));
 	}
 
       /* x*2 is x+x and x*(-1) is -x */
@@ -3296,7 +3299,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
       /* Convert divide by power of two into shift.  */
       if (CONST_INT_P (trueop1)
 	  && (val = exact_log2 (UINTVAL (trueop1))) > 0)
-	return simplify_gen_binary (LSHIFTRT, mode, op0, GEN_INT (val));
+	return simplify_gen_binary (LSHIFTRT, mode, op0,
+				    gen_int_shift_amount (mode, val));
       break;
 
     case DIV:
@@ -3416,10 +3420,12 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && IN_RANGE (INTVAL (trueop1),
 		       GET_MODE_UNIT_PRECISION (mode) / 2 + (code == ROTATE),
 		       GET_MODE_UNIT_PRECISION (mode) - 1))
-	return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
-				    mode, op0,
-				    GEN_INT (GET_MODE_UNIT_PRECISION (mode)
-					     - INTVAL (trueop1)));
+	{
+	  int new_amount = GET_MODE_UNIT_PRECISION (mode) - INTVAL (trueop1);
+	  rtx new_amount_rtx = gen_int_shift_amount (mode, new_amount);
+	  return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
+				      mode, op0, new_amount_rtx);
+	}
 #endif
       /* FALLTHRU */
     case ASHIFTRT:
@@ -3460,8 +3466,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      == GET_MODE_BITSIZE (inner_mode) - GET_MODE_BITSIZE (int_mode))
 	  && subreg_lowpart_p (op0))
 	{
-	  rtx tmp = GEN_INT (INTVAL (XEXP (SUBREG_REG (op0), 1))
-			     + INTVAL (op1));
+	  rtx tmp = gen_int_shift_amount
+	    (inner_mode, INTVAL (XEXP (SUBREG_REG (op0), 1)) + INTVAL (op1));
 	  tmp = simplify_gen_binary (code, inner_mode,
 				     XEXP (SUBREG_REG (op0), 0),
 				     tmp);
@@ -3472,7 +3478,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	{
 	  val = INTVAL (op1) & (GET_MODE_UNIT_PRECISION (mode) - 1);
 	  if (val != INTVAL (op1))
-	    return simplify_gen_binary (code, mode, op0, GEN_INT (val));
+	    return simplify_gen_binary (code, mode, op0,
+					gen_int_shift_amount (mode, val));
 	}
       break;
 

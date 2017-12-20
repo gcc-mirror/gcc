@@ -3804,8 +3804,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      && INTVAL (XEXP (*split, 1)) > 0
 	      && (i = exact_log2 (UINTVAL (XEXP (*split, 1)))) >= 0)
 	    {
+	      rtx i_rtx = gen_int_shift_amount (split_mode, i);
 	      SUBST (*split, gen_rtx_ASHIFT (split_mode,
-					     XEXP (*split, 0), GEN_INT (i)));
+					     XEXP (*split, 0), i_rtx));
 	      /* Update split_code because we may not have a multiply
 		 anymore.  */
 	      split_code = GET_CODE (*split);
@@ -3819,8 +3820,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	      && (i = exact_log2 (UINTVAL (XEXP (XEXP (*split, 0), 1)))) >= 0)
 	    {
 	      rtx nsplit = XEXP (*split, 0);
+	      rtx i_rtx = gen_int_shift_amount (GET_MODE (nsplit), i);
 	      SUBST (XEXP (*split, 0), gen_rtx_ASHIFT (GET_MODE (nsplit),
-					     XEXP (nsplit, 0), GEN_INT (i)));
+						       XEXP (nsplit, 0),
+						       i_rtx));
 	      /* Update split_code because we may not have a multiply
 		 anymore.  */
 	      split_code = GET_CODE (*split);
@@ -5088,12 +5091,12 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 							     0))))) >= 1))
 	    {
 	      machine_mode mode = GET_MODE (XEXP (SET_SRC (x), 0));
-
+	      rtx pos_rtx = gen_int_shift_amount (mode, pos);
 	      SUBST (SET_SRC (x),
 		     gen_rtx_NEG (mode,
 				  gen_rtx_LSHIFTRT (mode,
 						    XEXP (SET_SRC (x), 0),
-						    GEN_INT (pos))));
+						    pos_rtx)));
 
 	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
@@ -5151,11 +5154,11 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	    {
 	      unsigned HOST_WIDE_INT mask
 		= (HOST_WIDE_INT_1U << len) - 1;
+	      rtx pos_rtx = gen_int_shift_amount (mode, pos);
 	      SUBST (SET_SRC (x),
 		     gen_rtx_AND (mode,
 				  gen_rtx_LSHIFTRT
-				  (mode, gen_lowpart (mode, inner),
-				   GEN_INT (pos)),
+				  (mode, gen_lowpart (mode, inner), pos_rtx),
 				  gen_int_mode (mask, mode)));
 
 	      split = find_split_point (&SET_SRC (x), insn, true);
@@ -5164,14 +5167,15 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	    }
 	  else
 	    {
+	      int left_bits = GET_MODE_PRECISION (mode) - len - pos;
+	      int right_bits = GET_MODE_PRECISION (mode) - len;
 	      SUBST (SET_SRC (x),
 		     gen_rtx_fmt_ee
 		     (unsignedp ? LSHIFTRT : ASHIFTRT, mode,
 		      gen_rtx_ASHIFT (mode,
 				      gen_lowpart (mode, inner),
-				      GEN_INT (GET_MODE_PRECISION (mode)
-					       - len - pos)),
-		      GEN_INT (GET_MODE_PRECISION (mode) - len)));
+				      gen_int_shift_amount (mode, left_bits)),
+		      gen_int_shift_amount (mode, right_bits)));
 
 	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
@@ -8952,10 +8956,11 @@ force_int_to_mode (rtx x, scalar_int_mode mode, scalar_int_mode xmode,
 	  /* Must be more sign bit copies than the mask needs.  */
 	  && ((int) num_sign_bit_copies (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
 	      >= exact_log2 (mask + 1)))
-	x = simplify_gen_binary (LSHIFTRT, xmode, XEXP (x, 0),
-				 GEN_INT (GET_MODE_PRECISION (xmode)
-					  - exact_log2 (mask + 1)));
-
+	{
+	  int nbits = GET_MODE_PRECISION (xmode) - exact_log2 (mask + 1);
+	  x = simplify_gen_binary (LSHIFTRT, xmode, XEXP (x, 0),
+				   gen_int_shift_amount (xmode, nbits));
+	}
       goto shiftrt;
 
     case ASHIFTRT:
@@ -10448,7 +10453,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 {
   enum rtx_code orig_code = code;
   rtx orig_varop = varop;
-  int count;
+  int count, log2;
   machine_mode mode = result_mode;
   machine_mode shift_mode;
   scalar_int_mode tmode, inner_mode, int_mode, int_varop_mode, int_result_mode;
@@ -10651,13 +10656,11 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	     is cheaper.  But it is still better on those machines to
 	     merge two shifts into one.  */
 	  if (CONST_INT_P (XEXP (varop, 1))
-	      && exact_log2 (UINTVAL (XEXP (varop, 1))) >= 0)
+	      && (log2 = exact_log2 (UINTVAL (XEXP (varop, 1)))) >= 0)
 	    {
-	      varop
-		= simplify_gen_binary (ASHIFT, GET_MODE (varop),
-				       XEXP (varop, 0),
-				       GEN_INT (exact_log2 (
-						UINTVAL (XEXP (varop, 1)))));
+	      rtx log2_rtx = gen_int_shift_amount (GET_MODE (varop), log2);
+	      varop = simplify_gen_binary (ASHIFT, GET_MODE (varop),
+					   XEXP (varop, 0), log2_rtx);
 	      continue;
 	    }
 	  break;
@@ -10665,13 +10668,11 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	case UDIV:
 	  /* Similar, for when divides are cheaper.  */
 	  if (CONST_INT_P (XEXP (varop, 1))
-	      && exact_log2 (UINTVAL (XEXP (varop, 1))) >= 0)
+	      && (log2 = exact_log2 (UINTVAL (XEXP (varop, 1)))) >= 0)
 	    {
-	      varop
-		= simplify_gen_binary (LSHIFTRT, GET_MODE (varop),
-				       XEXP (varop, 0),
-				       GEN_INT (exact_log2 (
-						UINTVAL (XEXP (varop, 1)))));
+	      rtx log2_rtx = gen_int_shift_amount (GET_MODE (varop), log2);
+	      varop = simplify_gen_binary (LSHIFTRT, GET_MODE (varop),
+					   XEXP (varop, 0), log2_rtx);
 	      continue;
 	    }
 	  break;
@@ -10806,10 +10807,10 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 
 	      mask_rtx = gen_int_mode (nonzero_bits (varop, int_varop_mode),
 				       int_result_mode);
-
+	      rtx count_rtx = gen_int_shift_amount (int_result_mode, count);
 	      mask_rtx
 		= simplify_const_binary_operation (code, int_result_mode,
-						   mask_rtx, GEN_INT (count));
+						   mask_rtx, count_rtx);
 
 	      /* Give up if we can't compute an outer operation to use.  */
 	      if (mask_rtx == 0
@@ -10865,9 +10866,10 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      if (code == ASHIFTRT && int_mode != int_result_mode)
 		break;
 
+	      rtx count_rtx = gen_int_shift_amount (int_result_mode, count);
 	      rtx new_rtx = simplify_const_binary_operation (code, int_mode,
 							     XEXP (varop, 0),
-							     GEN_INT (count));
+							     count_rtx);
 	      varop = gen_rtx_fmt_ee (code, int_mode, new_rtx, XEXP (varop, 1));
 	      count = 0;
 	      continue;
@@ -10933,7 +10935,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      && (new_rtx = simplify_const_binary_operation
 		  (code, int_result_mode,
 		   gen_int_mode (INTVAL (XEXP (varop, 1)), int_result_mode),
-		   GEN_INT (count))) != 0
+		   gen_int_shift_amount (int_result_mode, count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, GET_CODE (varop),
 				  INTVAL (new_rtx), int_result_mode,
@@ -11076,7 +11078,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      && (new_rtx = simplify_const_binary_operation
 		  (ASHIFT, int_result_mode,
 		   gen_int_mode (INTVAL (XEXP (varop, 1)), int_result_mode),
-		   GEN_INT (count))) != 0
+		   gen_int_shift_amount (int_result_mode, count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, PLUS,
 				  INTVAL (new_rtx), int_result_mode,
@@ -11097,7 +11099,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      && (new_rtx = simplify_const_binary_operation
 		  (code, int_result_mode,
 		   gen_int_mode (INTVAL (XEXP (varop, 1)), int_result_mode),
-		   GEN_INT (count))) != 0
+		   gen_int_shift_amount (int_result_mode, count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
 				  INTVAL (new_rtx), int_result_mode,
@@ -11152,12 +11154,12 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		      - GET_MODE_UNIT_PRECISION (GET_MODE (varop)))))
 	    {
 	      rtx varop_inner = XEXP (varop, 0);
-
-	      varop_inner
-		= gen_rtx_LSHIFTRT (GET_MODE (varop_inner),
-				    XEXP (varop_inner, 0),
-				    GEN_INT
-				    (count + INTVAL (XEXP (varop_inner, 1))));
+	      int new_count = count + INTVAL (XEXP (varop_inner, 1));
+	      rtx new_count_rtx = gen_int_shift_amount (GET_MODE (varop_inner),
+							new_count);
+	      varop_inner = gen_rtx_LSHIFTRT (GET_MODE (varop_inner),
+					      XEXP (varop_inner, 0),
+					      new_count_rtx);
 	      varop = gen_rtx_TRUNCATE (GET_MODE (varop), varop_inner);
 	      count = 0;
 	      continue;
@@ -11209,7 +11211,8 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
     x = NULL_RTX;
 
   if (x == NULL_RTX)
-    x = simplify_gen_binary (code, shift_mode, varop, GEN_INT (count));
+    x = simplify_gen_binary (code, shift_mode, varop,
+			     gen_int_shift_amount (shift_mode, count));
 
   /* If we were doing an LSHIFTRT in a wider mode than it was originally,
      turn off all the bits that the shift would have turned off.  */
@@ -11271,7 +11274,8 @@ simplify_shift_const (rtx x, enum rtx_code code, machine_mode result_mode,
     return tem;
 
   if (!x)
-    x = simplify_gen_binary (code, GET_MODE (varop), varop, GEN_INT (count));
+    x = simplify_gen_binary (code, GET_MODE (varop), varop,
+			     gen_int_shift_amount (GET_MODE (varop), count));
   if (GET_MODE (x) != result_mode)
     x = gen_lowpart (result_mode, x);
   return x;
@@ -11462,8 +11466,9 @@ change_zero_ext (rtx pat)
 	  if (BITS_BIG_ENDIAN)
 	    start = GET_MODE_PRECISION (inner_mode) - size - start;
 
-	  if (start)
-	    x = gen_rtx_LSHIFTRT (inner_mode, XEXP (x, 0), GEN_INT (start));
+	  if (start != 0)
+	    x = gen_rtx_LSHIFTRT (inner_mode, XEXP (x, 0),
+				  gen_int_shift_amount (inner_mode, start));
 	  else
 	    x = XEXP (x, 0);
 	  if (mode != inner_mode)

@@ -2938,15 +2938,17 @@ shift_return_value (machine_mode mode, bool left_p, rtx value)
   HOST_WIDE_INT shift;
 
   gcc_assert (REG_P (value) && HARD_REGISTER_P (value));
-  shift = GET_MODE_BITSIZE (GET_MODE (value)) - GET_MODE_BITSIZE (mode);
+  machine_mode value_mode = GET_MODE (value);
+  shift = GET_MODE_BITSIZE (value_mode) - GET_MODE_BITSIZE (mode);
   if (shift == 0)
     return false;
 
   /* Use ashr rather than lshr for right shifts.  This is for the benefit
      of the MIPS port, which requires SImode values to be sign-extended
      when stored in 64-bit registers.  */
-  if (!force_expand_binop (GET_MODE (value), left_p ? ashl_optab : ashr_optab,
-			   value, GEN_INT (shift), value, 1, OPTAB_WIDEN))
+  if (!force_expand_binop (value_mode, left_p ? ashl_optab : ashr_optab,
+			   value, gen_int_shift_amount (value_mode, shift),
+			   value, 1, OPTAB_WIDEN))
     gcc_unreachable ();
   return true;
 }
