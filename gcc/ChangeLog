@@ -2,6 +2,100 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/generic.texi (POLY_INT_CST): Document.
+	* tree.def (POLY_INT_CST): New tree code.
+	* treestruct.def (TS_POLY_INT_CST): New tree layout.
+	* tree-core.h (tree_poly_int_cst): New struct.
+	(tree_node): Add a poly_int_cst field.
+	* tree.h (POLY_INT_CST_P, POLY_INT_CST_COEFF): New macros.
+	(wide_int_to_tree, force_fit_type): Take a poly_wide_int_ref
+	instead of a wide_int_ref.
+	(build_int_cst, build_int_cst_type): Take a poly_int64 instead
+	of a HOST_WIDE_INT.
+	(build_int_cstu, build_array_type_nelts): Take a poly_uint64
+	instead of an unsigned HOST_WIDE_INT.
+	(build_poly_int_cst, tree_fits_poly_int64_p, tree_fits_poly_uint64_p)
+	(ptrdiff_tree_p): Declare.
+	(tree_to_poly_int64, tree_to_poly_uint64): Likewise.  Provide
+	extern inline implementations if the target doesn't use POLY_INT_CST.
+	(poly_int_tree_p): New function.
+	(wi::unextended_tree): New class.
+	(wi::int_traits <unextended_tree>): New override.
+	(wi::extended_tree): Add a default constructor.
+	(wi::extended_tree::get_tree): New function.
+	(wi::widest_extended_tree, wi::offset_extended_tree): New typedefs.
+	(wi::tree_to_widest_ref, wi::tree_to_offset_ref): Use them.
+	(wi::tree_to_poly_widest_ref, wi::tree_to_poly_offset_ref)
+	(wi::tree_to_poly_wide_ref): New typedefs.
+	(wi::ints_for): Provide overloads for extended_tree and
+	unextended_tree.
+	(poly_int_cst_value, wi::to_poly_widest, wi::to_poly_offset)
+	(wi::to_wide): New functions.
+	(wi::fits_to_boolean_p, wi::fits_to_tree_p): Handle poly_ints.
+	* tree.c (poly_int_cst_hasher): New struct.
+	(poly_int_cst_hash_table): New variable.
+	(tree_node_structure_for_code, tree_code_size, simple_cst_equal)
+	(valid_constant_size_p, add_expr, drop_tree_overflow): Handle
+	POLY_INT_CST.
+	(initialize_tree_contains_struct): Handle TS_POLY_INT_CST.
+	(init_ttree): Initialize poly_int_cst_hash_table.
+	(build_int_cst, build_int_cst_type, build_invariant_address): Take
+	a poly_int64 instead of a HOST_WIDE_INT.
+	(build_int_cstu, build_array_type_nelts): Take a poly_uint64
+	instead of an unsigned HOST_WIDE_INT.
+	(wide_int_to_tree): Rename to...
+	(wide_int_to_tree_1): ...this.
+	(build_new_poly_int_cst, build_poly_int_cst): New functions.
+	(force_fit_type): Take a poly_wide_int_ref instead of a wide_int_ref.
+	(wide_int_to_tree): New function that takes a poly_wide_int_ref.
+	(ptrdiff_tree_p, tree_to_poly_int64, tree_to_poly_uint64)
+	(tree_fits_poly_int64_p, tree_fits_poly_uint64_p): New functions.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body, hash_tree): Handle
+	TS_POLY_INT_CST.
+	* tree-streamer-in.c (lto_input_ts_poly_tree_pointers): Likewise.
+	(streamer_read_tree_body): Likewise.
+	* tree-streamer-out.c (write_ts_poly_tree_pointers): Likewise.
+	(streamer_write_tree_body): Likewise.
+	* tree-streamer.c (streamer_check_handled_ts_structures): Likewise.
+	* asan.c (asan_protect_global): Require the size to be an INTEGER_CST.
+	* cfgexpand.c (expand_debug_expr): Handle POLY_INT_CST.
+	* expr.c (expand_expr_real_1, const_vector_from_tree): Likewise.
+	* gimple-expr.h (is_gimple_constant): Likewise.
+	* gimplify.c (maybe_with_size_expr): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* tree-data-ref.c (data_ref_compare_tree): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Likewise.
+	* tree-vrp.c (compare_values_warnv): Likewise.
+	* tree-ssa-loop-ivopts.c (determine_base_object, constant_multiple_of)
+	(get_loop_invariant_expr, add_candidate_1, get_computation_aff_1)
+	(force_expr_to_var_cost): Likewise.
+	* tree-ssa-loop.c (for_each_index): Likewise.
+	* fold-const.h (build_invariant_address, size_int_kind): Take a
+	poly_int64 instead of a HOST_WIDE_INT.
+	* fold-const.c (fold_negate_expr_1, const_binop, const_unop)
+	(fold_convert_const, multiple_of_p, fold_negate_const): Handle
+	POLY_INT_CST.
+	(size_binop_loc): Likewise.  Allow int_const_binop_1 to fail.
+	(int_const_binop_2): New function, split out from...
+	(int_const_binop_1): ...here.  Handle POLY_INT_CST.
+	(size_int_kind): Take a poly_int64 instead of a HOST_WIDE_INT.
+	* expmed.c (make_tree): Handle CONST_POLY_INT_P.
+	* gimple-ssa-strength-reduction.c (slsr_process_add)
+	(slsr_process_mul): Check for INTEGER_CSTs before using them
+	as candidates.
+	* stor-layout.c (bits_from_bytes): New function.
+	(bit_from_pos): Use it.
+	(layout_type): Likewise.  For vectors, multiply the TYPE_SIZE_UNIT
+	by BITS_PER_UNIT to get the TYPE_SIZE.
+	* tree-cfg.c (verify_expr, verify_types_in_gimple_reference): Allow
+	MEM_REF and TARGET_MEM_REF offsets to be a POLY_INT_CST.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/rtl.texi (const_poly_int): Document.  Also document the
 	rtl sharing behavior.
 	* gengenrtl.c (excluded_rtx): Return true for CONST_POLY_INT.

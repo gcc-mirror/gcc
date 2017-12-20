@@ -55,6 +55,7 @@ streamer_check_handled_ts_structures (void)
   handled_p[TS_TYPED] = true;
   handled_p[TS_COMMON] = true;
   handled_p[TS_INT_CST] = true;
+  handled_p[TS_POLY_INT_CST] = true;
   handled_p[TS_REAL_CST] = true;
   handled_p[TS_FIXED_CST] = true;
   handled_p[TS_VECTOR] = true;

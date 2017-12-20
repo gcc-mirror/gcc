@@ -291,6 +291,9 @@ DEFTREECODE (VOID_CST, "void_cst", tcc_constant, 0)
    some circumstances.  */
 DEFTREECODE (INTEGER_CST, "integer_cst", tcc_constant, 0)
 
+/* Contents are given by POLY_INT_CST_COEFF.  */
+DEFTREECODE (POLY_INT_CST, "poly_int_cst", tcc_constant, 0)
+
 /* Contents are in TREE_REAL_CST field.  */
 DEFTREECODE (REAL_CST, "real_cst", tcc_constant, 0)
 

@@ -3124,7 +3124,7 @@ maybe_with_size_expr (tree *expr_p)
 
   /* If the size isn't known or is a constant, we have nothing to do.  */
   size = TYPE_SIZE_UNIT (type);
-  if (!size || TREE_CODE (size) == INTEGER_CST)
+  if (!size || poly_int_tree_p (size))
     return;
 
   /* Otherwise, make a WITH_SIZE_EXPR.  */

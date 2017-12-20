@@ -752,6 +752,10 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	DFS_follow_tree_edge (VECTOR_CST_ENCODED_ELT (expr, i));
     }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_POLY_INT_CST))
+    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+      DFS_follow_tree_edge (POLY_INT_CST_COEFF (expr, i));
+
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {
       DFS_follow_tree_edge (TREE_REALPART (expr));
@@ -1201,6 +1205,10 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       for (unsigned int i = 0; i < count; ++i)
 	visit (VECTOR_CST_ENCODED_ELT (t, i));
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_POLY_INT_CST))
+    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+      visit (POLY_INT_CST_COEFF (t, i));
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {

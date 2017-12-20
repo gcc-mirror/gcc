@@ -1037,6 +1037,7 @@ As this example indicates, the operands are zero-indexed.
 @tindex COMPLEX_CST
 @tindex VECTOR_CST
 @tindex STRING_CST
+@tindex POLY_INT_CST
 @findex TREE_STRING_LENGTH
 @findex TREE_STRING_POINTER
 
@@ -1174,6 +1175,16 @@ of the @code{STRING_CST}.
 
 FIXME: The formats of string constants are not well-defined when the
 target system bytes are not the same width as host system bytes.
+
+@item POLY_INT_CST
+These nodes represent invariants that depend on some target-specific
+runtime parameters.  They consist of @code{NUM_POLY_INT_COEFFS}
+coefficients, with the first coefficient being the constant term and
+the others being multipliers that are applied to the runtime parameters.
+
+@code{POLY_INT_CST_ELT (@var{x}, @var{i})} references coefficient number
+@var{i} of @code{POLY_INT_CST} node @var{x}.  Each coefficient is an
+@code{INTEGER_CST}.
 
 @end table
 

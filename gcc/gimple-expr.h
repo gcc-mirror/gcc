@@ -130,6 +130,7 @@ is_gimple_constant (const_tree t)
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
+    case POLY_INT_CST:
     case REAL_CST:
     case FIXED_CST:
     case COMPLEX_CST:

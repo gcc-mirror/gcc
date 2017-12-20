@@ -2753,7 +2753,7 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
     return cmp;
 
   /* Then sort after DR_INIT.  In case of identical DRs sort after stmt UID.  */
-  cmp = tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb));
+  cmp = data_ref_compare_tree (DR_INIT (dra), DR_INIT (drb));
   if (cmp == 0)
     return gimple_uid (DR_STMT (dra)) < gimple_uid (DR_STMT (drb)) ? -1 : 1;
   return cmp;

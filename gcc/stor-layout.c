@@ -841,6 +841,28 @@ start_record_layout (tree t)
   return rli;
 }
 
+/* Fold sizetype value X to bitsizetype, given that X represents a type
+   size or offset.  */
+
+static tree
+bits_from_bytes (tree x)
+{
+  if (POLY_INT_CST_P (x))
+    /* The runtime calculation isn't allowed to overflow sizetype;
+       increasing the runtime values must always increase the size
+       or offset of the object.  This means that the object imposes
+       a maximum value on the runtime parameters, but we don't record
+       what that is.  */
+    return build_poly_int_cst
+      (bitsizetype,
+       poly_wide_int::from (poly_int_cst_value (x),
+			    TYPE_PRECISION (bitsizetype),
+			    TYPE_SIGN (TREE_TYPE (x))));
+  x = fold_convert (bitsizetype, x);
+  gcc_checking_assert (x);
+  return x;
+}
+
 /* Return the combined bit position for the byte offset OFFSET and the
    bit position BITPOS.
 
@@ -854,8 +876,7 @@ tree
 bit_from_pos (tree offset, tree bitpos)
 {
   return size_binop (PLUS_EXPR, bitpos,
-		     size_binop (MULT_EXPR,
-				 fold_convert (bitsizetype, offset),
+		     size_binop (MULT_EXPR, bits_from_bytes (offset),
 				 bitsize_unit_node));
 }
 
@@ -2272,9 +2293,10 @@ layout_type (tree type)
 	  TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
 						   TYPE_SIZE_UNIT (innertype),
 						   size_int (nunits));
-	TYPE_SIZE (type) = int_const_binop (MULT_EXPR,
-					    TYPE_SIZE (innertype),
-					    bitsize_int (nunits));
+	TYPE_SIZE (type) = int_const_binop
+	  (MULT_EXPR,
+	   bits_from_bytes (TYPE_SIZE_UNIT (type)),
+	   bitsize_int (BITS_PER_UNIT));
 
 	/* For vector types, we do not default to the mode's alignment.
 	   Instead, query a target hook, defaulting to natural alignment.
@@ -2387,8 +2409,7 @@ layout_type (tree type)
 	      length = size_zero_node;
 
 	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size,
-					   fold_convert (bitsizetype,
-							 length));
+					   bits_from_bytes (length));
 
 	    /* If we know the size of the element, calculate the total size
 	       directly, rather than do some division thing below.  This

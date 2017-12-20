@@ -731,7 +731,24 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
       if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
 	return -2;
 
-      return tree_int_cst_compare (val1, val2);
+      if (TREE_CODE (val1) == INTEGER_CST
+	  && TREE_CODE (val2) == INTEGER_CST)
+	return tree_int_cst_compare (val1, val2);
+
+      if (poly_int_tree_p (val1) && poly_int_tree_p (val2))
+	{
+	  if (known_eq (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return 0;
+	  if (known_lt (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return -1;
+	  if (known_gt (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return 1;
+	}
+
+      return -2;
     }
   else
     {
