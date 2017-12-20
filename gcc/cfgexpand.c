@@ -4899,7 +4899,7 @@ expand_debug_expr (tree exp)
 
 	  if (handled_component_p (TREE_OPERAND (exp, 0)))
 	    {
-	      HOST_WIDE_INT bitoffset, bitsize, maxsize;
+	      poly_int64 bitoffset, bitsize, maxsize, byteoffset;
 	      bool reverse;
 	      tree decl
 		= get_ref_base_and_extent (TREE_OPERAND (exp, 0), &bitoffset,
@@ -4909,12 +4909,12 @@ expand_debug_expr (tree exp)
 		   || TREE_CODE (decl) == RESULT_DECL)
 		  && (!TREE_ADDRESSABLE (decl)
 		      || target_for_debug_bind (decl))
-		  && (bitoffset % BITS_PER_UNIT) == 0
-		  && bitsize > 0
-		  && bitsize == maxsize)
+		  && multiple_p (bitoffset, BITS_PER_UNIT, &byteoffset)
+		  && known_gt (bitsize, 0)
+		  && known_eq (bitsize, maxsize))
 		{
 		  rtx base = gen_rtx_DEBUG_IMPLICIT_PTR (mode, decl);
-		  return plus_constant (mode, base, bitoffset / BITS_PER_UNIT);
+		  return plus_constant (mode, base, byteoffset);
 		}
 	    }
 

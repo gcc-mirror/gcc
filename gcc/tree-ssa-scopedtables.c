@@ -480,13 +480,13 @@ avail_expr_hash (class expr_hash_elt *p)
 	     Dealing with both MEM_REF and ARRAY_REF allows us not to care
 	     about equivalence with other statements not considered here.  */
 	  bool reverse;
-	  HOST_WIDE_INT offset, size, max_size;
+	  poly_int64 offset, size, max_size;
 	  tree base = get_ref_base_and_extent (t, &offset, &size, &max_size,
 					       &reverse);
 	  /* Strictly, we could try to normalize variable-sized accesses too,
 	    but here we just deal with the common case.  */
-	  if (size != -1
-	      && size == max_size)
+	  if (known_size_p (max_size)
+	      && known_eq (size, max_size))
 	    {
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
@@ -520,26 +520,26 @@ equal_mem_array_ref_p (tree t0, tree t1)
   if (!types_compatible_p (TREE_TYPE (t0), TREE_TYPE (t1)))
     return false;
   bool rev0;
-  HOST_WIDE_INT off0, sz0, max0;
+  poly_int64 off0, sz0, max0;
   tree base0 = get_ref_base_and_extent (t0, &off0, &sz0, &max0, &rev0);
-  if (sz0 == -1
-      || sz0 != max0)
+  if (!known_size_p (max0)
+      || maybe_ne (sz0, max0))
     return false;
 
   bool rev1;
-  HOST_WIDE_INT off1, sz1, max1;
+  poly_int64 off1, sz1, max1;
   tree base1 = get_ref_base_and_extent (t1, &off1, &sz1, &max1, &rev1);
-  if (sz1 == -1
-      || sz1 != max1)
+  if (!known_size_p (max1)
+      || maybe_ne (sz1, max1))
     return false;
 
   if (rev0 != rev1)
     return false;
 
   /* Types were compatible, so this is a sanity check.  */
-  gcc_assert (sz0 == sz1);
+  gcc_assert (known_eq (sz0, sz1));
 
-  return (off0 == off1) && operand_equal_p (base0, base1, 0);
+  return known_eq (off0, off1) && operand_equal_p (base0, base1, 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are

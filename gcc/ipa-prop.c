@@ -1071,12 +1071,11 @@ ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 			bool *by_ref_p, bool *guaranteed_unmodified)
 {
   int index;
-  HOST_WIDE_INT size, max_size;
+  HOST_WIDE_INT size;
   bool reverse;
-  tree base
-    = get_ref_base_and_extent (op, offset_p, &size, &max_size, &reverse);
+  tree base = get_ref_base_and_extent_hwi (op, offset_p, &size, &reverse);
 
-  if (max_size == -1 || max_size != size || *offset_p < 0)
+  if (!base)
     return false;
 
   if (DECL_P (base))
@@ -1204,7 +1203,7 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 				  gcall *call, gimple *stmt, tree name,
 				  tree param_type)
 {
-  HOST_WIDE_INT offset, size, max_size;
+  HOST_WIDE_INT offset, size;
   tree op1, tc_ssa, base, ssa;
   bool reverse;
   int index;
@@ -1267,11 +1266,8 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
   op1 = TREE_OPERAND (op1, 0);
   if (TREE_CODE (TREE_TYPE (op1)) != RECORD_TYPE)
     return;
-  base = get_ref_base_and_extent (op1, &offset, &size, &max_size, &reverse);
-  if (TREE_CODE (base) != MEM_REF
-      /* If this is a varying address, punt.  */
-      || max_size == -1
-      || max_size != size)
+  base = get_ref_base_and_extent_hwi (op1, &offset, &size, &reverse);
+  if (!base || TREE_CODE (base) != MEM_REF)
     return;
   offset += mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
   ssa = TREE_OPERAND (base, 0);
@@ -1301,7 +1297,7 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
 static tree
 get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
 {
-  HOST_WIDE_INT size, max_size;
+  HOST_WIDE_INT size;
   tree expr, parm, obj;
   bool reverse;
 
@@ -1313,13 +1309,9 @@ get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
     return NULL_TREE;
   expr = TREE_OPERAND (expr, 0);
   obj = expr;
-  expr = get_ref_base_and_extent (expr, offset, &size, &max_size, &reverse);
+  expr = get_ref_base_and_extent_hwi (expr, offset, &size, &reverse);
 
-  if (TREE_CODE (expr) != MEM_REF
-      /* If this is a varying address, punt.  */
-      || max_size == -1
-      || max_size != size
-      || *offset < 0)
+  if (!expr || TREE_CODE (expr) != MEM_REF)
     return NULL_TREE;
   parm = TREE_OPERAND (expr, 0);
   if (TREE_CODE (parm) != SSA_NAME
@@ -1581,15 +1573,12 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
 	}
       else if (TREE_CODE (arg) == ADDR_EXPR)
 	{
-	  HOST_WIDE_INT arg_max_size;
 	  bool reverse;
 
 	  arg = TREE_OPERAND (arg, 0);
-	  arg_base = get_ref_base_and_extent (arg, &arg_offset, &arg_size,
-					      &arg_max_size, &reverse);
-	  if (arg_max_size == -1
-	      || arg_max_size != arg_size
-	      || arg_offset < 0)
+	  arg_base = get_ref_base_and_extent_hwi (arg, &arg_offset,
+						  &arg_size, &reverse);
+	  if (!arg_base)
 	    return;
 	  if (DECL_P (arg_base))
 	    {
@@ -1604,18 +1593,15 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
     }
   else
     {
-      HOST_WIDE_INT arg_max_size;
       bool reverse;
 
       gcc_checking_assert (AGGREGATE_TYPE_P (TREE_TYPE (arg)));
 
       by_ref = false;
       check_ref = false;
-      arg_base = get_ref_base_and_extent (arg, &arg_offset, &arg_size,
-					  &arg_max_size, &reverse);
-      if (arg_max_size == -1
-	  || arg_max_size != arg_size
-	  || arg_offset < 0)
+      arg_base = get_ref_base_and_extent_hwi (arg, &arg_offset,
+					      &arg_size, &reverse);
+      if (!arg_base)
 	return;
 
       ao_ref_init (&r, arg);
@@ -1631,7 +1617,7 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
     {
       struct ipa_known_agg_contents_list *n, **p;
       gimple *stmt = gsi_stmt (gsi);
-      HOST_WIDE_INT lhs_offset, lhs_size, lhs_max_size;
+      HOST_WIDE_INT lhs_offset, lhs_size;
       tree lhs, rhs, lhs_base;
       bool reverse;
 
@@ -1647,10 +1633,9 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
 	  || contains_bitfld_component_ref_p (lhs))
 	break;
 
-      lhs_base = get_ref_base_and_extent (lhs, &lhs_offset, &lhs_size,
-					  &lhs_max_size, &reverse);
-      if (lhs_max_size == -1
-	  || lhs_max_size != lhs_size)
+      lhs_base = get_ref_base_and_extent_hwi (lhs, &lhs_offset,
+					      &lhs_size, &reverse);
+      if (!lhs_base)
 	break;
 
       if (check_ref)
