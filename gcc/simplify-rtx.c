@@ -289,7 +289,7 @@ delegitimize_mem_from_attrs (rtx x)
     {
       tree decl = MEM_EXPR (x);
       machine_mode mode = GET_MODE (x);
-      HOST_WIDE_INT offset = 0;
+      poly_int64 offset = 0;
 
       switch (TREE_CODE (decl))
 	{
@@ -346,6 +346,7 @@ delegitimize_mem_from_attrs (rtx x)
 	  if (MEM_P (newx))
 	    {
 	      rtx n = XEXP (newx, 0), o = XEXP (x, 0);
+	      poly_int64 n_offset, o_offset;
 
 	      /* Avoid creating a new MEM needlessly if we already had
 		 the same address.  We do if there's no OFFSET and the
@@ -353,21 +354,14 @@ delegitimize_mem_from_attrs (rtx x)
 		 form (plus NEWX OFFSET), or the NEWX is of the form
 		 (plus Y (const_int Z)) and X is that with the offset
 		 added: (plus Y (const_int Z+OFFSET)).  */
-	      if (!((offset == 0
-		     || (GET_CODE (o) == PLUS
-			 && GET_CODE (XEXP (o, 1)) == CONST_INT
-			 && (offset == INTVAL (XEXP (o, 1))
-			     || (GET_CODE (n) == PLUS
-				 && GET_CODE (XEXP (n, 1)) == CONST_INT
-				 && (INTVAL (XEXP (n, 1)) + offset
-				     == INTVAL (XEXP (o, 1)))
-				 && (n = XEXP (n, 0))))
-			 && (o = XEXP (o, 0))))
+	      n = strip_offset (n, &n_offset);
+	      o = strip_offset (o, &o_offset);
+	      if (!(known_eq (o_offset, n_offset + offset)
 		    && rtx_equal_p (o, n)))
 		x = adjust_address_nv (newx, mode, offset);
 	    }
 	  else if (GET_MODE (x) == GET_MODE (newx)
-		   && offset == 0)
+		   && known_eq (offset, 0))
 	    x = newx;
 	}
     }
