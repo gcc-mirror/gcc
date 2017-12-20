@@ -1,8 +1,14 @@
+2017-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/constraints.md (J, K, L): Use IN_RANGE macro.
+	* config/visium/predicates.md (const_shift_operand): Likewise.
+	* config/visium/visium.c (visium_legitimize_address): Fix oversight.
+	(visium_legitimize_reload_address): Likewise.
+
 2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/82975
-	* config/arm/arm.h (TEST_REGNO): Adjust comment as expected in
-	r255830.
+	* config/arm/arm.h (TEST_REGNO): Adjust comment as expected in r255830.
 
 2017-12-20  Jakub Jelinek  <jakub@redhat.com>
 
