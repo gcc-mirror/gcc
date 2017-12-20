@@ -1,3 +1,8 @@
+2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h (__VEXT): Check
+	__ARM_BIG_ENDIAN instead of __AARCH64EB__.
+
 2017-12-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/80761
