@@ -4822,9 +4822,9 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	{
 	  tree maxbound = TYPE_MAX_VALUE (ptrdiff_type_node);
 	  tree arg = TREE_OPERAND (ref, 0);
-	  HOST_WIDE_INT off;
+	  poly_int64 off;
 
-	  if (get_addr_base_and_unit_offset (arg, &off) && off > 0)
+	  if (get_addr_base_and_unit_offset (arg, &off) && known_gt (off, 0))
 	    maxbound = wide_int_to_tree (sizetype,
 					 wi::sub (wi::to_wide (maxbound),
 						  off));

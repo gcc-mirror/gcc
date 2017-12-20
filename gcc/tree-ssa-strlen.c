@@ -241,8 +241,9 @@ get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out)
   if (!decl_to_stridxlist_htab)
     return 0;
 
-  base = get_addr_base_and_unit_offset (exp, &off);
-  if (base == NULL || !DECL_P (base))
+  poly_int64 poff;
+  base = get_addr_base_and_unit_offset (exp, &poff);
+  if (base == NULL || !DECL_P (base) || !poff.is_constant (&off))
     return 0;
 
   list = decl_to_stridxlist_htab->get (base);
@@ -382,8 +383,9 @@ addr_stridxptr (tree exp)
 {
   HOST_WIDE_INT off;
 
-  tree base = get_addr_base_and_unit_offset (exp, &off);
-  if (base == NULL_TREE || !DECL_P (base))
+  poly_int64 poff;
+  tree base = get_addr_base_and_unit_offset (exp, &poff);
+  if (base == NULL_TREE || !DECL_P (base) || !poff.is_constant (&off))
     return NULL;
 
   if (!decl_to_stridxlist_htab)
@@ -1869,13 +1871,13 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
       if (TREE_CODE (ref) == ARRAY_REF)
 	ref = TREE_OPERAND (ref, 0);
 
-      HOST_WIDE_INT dstoff;
+      poly_int64 dstoff;
       tree dstbase = get_addr_base_and_unit_offset (ref, &dstoff);
 
-      HOST_WIDE_INT lhsoff;
+      poly_int64 lhsoff;
       tree lhsbase = get_addr_base_and_unit_offset (lhs, &lhsoff);
       if (lhsbase
-	  && dstoff == lhsoff
+	  && known_eq (dstoff, lhsoff)
 	  && operand_equal_p (dstbase, lhsbase, 0))
 	return false;
     }

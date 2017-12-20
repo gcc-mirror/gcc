@@ -33,9 +33,9 @@ extern tree get_ref_base_and_extent (tree, poly_int64_pod *, poly_int64_pod *,
 				     poly_int64_pod *, bool *);
 extern tree get_ref_base_and_extent_hwi (tree, HOST_WIDE_INT *,
 					 HOST_WIDE_INT *, bool *);
-extern tree get_addr_base_and_unit_offset_1 (tree, HOST_WIDE_INT *,
+extern tree get_addr_base_and_unit_offset_1 (tree, poly_int64_pod *,
 					     tree (*) (tree));
-extern tree get_addr_base_and_unit_offset (tree, HOST_WIDE_INT *);
+extern tree get_addr_base_and_unit_offset (tree, poly_int64_pod *);
 extern bool stmt_references_abnormal_ssa_name (gimple *);
 extern void replace_abnormal_ssa_names (gimple *);
 extern void dump_enumerated_decls (FILE *, dump_flags_t);

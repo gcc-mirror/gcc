@@ -1061,7 +1061,7 @@ maybe_fold_tmr (tree ref)
   else if (addr.symbol
 	   && handled_component_p (TREE_OPERAND (addr.symbol, 0)))
     {
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
       addr.symbol = build_fold_addr_expr
 		      (get_addr_base_and_unit_offset
 		         (TREE_OPERAND (addr.symbol, 0), &offset));

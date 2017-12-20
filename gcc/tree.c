@@ -4827,7 +4827,7 @@ build5 (enum tree_code code, tree tt, tree arg0, tree arg1,
 tree
 build_simple_mem_ref_loc (location_t loc, tree ptr)
 {
-  HOST_WIDE_INT offset = 0;
+  poly_int64 offset = 0;
   tree ptype = TREE_TYPE (ptr);
   tree tem;
   /* For convenience allow addresses that collapse to a simple base
@@ -12919,7 +12919,7 @@ array_at_struct_end_p (tree ref)
     {
       /* Check whether the array domain covers all of the available
          padding.  */
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
       if (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (atype))) != INTEGER_CST
 	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST
           || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (atype))) != INTEGER_CST)
@@ -12928,11 +12928,11 @@ array_at_struct_end_p (tree ref)
 	return true;
 
       /* If at least one extra element fits it is a flexarray.  */
-      if (wi::les_p ((wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
-		      - wi::to_offset (TYPE_MIN_VALUE (TYPE_DOMAIN (atype)))
-		      + 2)
-		     * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (atype))),
-		     wi::to_offset (DECL_SIZE_UNIT (ref)) - offset))
+      if (known_le ((wi::to_offset (TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
+		     - wi::to_offset (TYPE_MIN_VALUE (TYPE_DOMAIN (atype)))
+		     + 2)
+		    * wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (atype))),
+		    wi::to_offset (DECL_SIZE_UNIT (ref)) - offset))
 	return true;
 
       return false;

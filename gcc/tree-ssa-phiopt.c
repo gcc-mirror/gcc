@@ -689,12 +689,12 @@ jump_function_from_stmt (tree *arg, gimple *stmt)
     {
       /* For arg = &p->i transform it to p, if possible.  */
       tree rhs1 = gimple_assign_rhs1 (stmt);
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
       tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (rhs1, 0),
 						&offset);
       if (tem
 	  && TREE_CODE (tem) == MEM_REF
-	  && (mem_ref_offset (tem) + offset) == 0)
+	  && known_eq (mem_ref_offset (tem) + offset, 0))
 	{
 	  *arg = TREE_OPERAND (tem, 0);
 	  return true;
