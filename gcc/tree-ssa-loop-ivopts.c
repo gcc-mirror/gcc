@@ -4229,7 +4229,7 @@ struct ainc_cost_data
 };
 
 static comp_cost
-get_address_cost_ainc (HOST_WIDE_INT ainc_step, HOST_WIDE_INT ainc_offset,
+get_address_cost_ainc (poly_int64 ainc_step, poly_int64 ainc_offset,
 		       machine_mode addr_mode, machine_mode mem_mode,
 		       addr_space_t as, bool speed)
 {
@@ -4303,13 +4303,13 @@ get_address_cost_ainc (HOST_WIDE_INT ainc_step, HOST_WIDE_INT ainc_offset,
     }
 
   HOST_WIDE_INT msize = GET_MODE_SIZE (mem_mode);
-  if (ainc_offset == 0 && msize == ainc_step)
+  if (known_eq (ainc_offset, 0) && known_eq (msize, ainc_step))
     return comp_cost (data->costs[AINC_POST_INC], 0);
-  if (ainc_offset == 0 && msize == -ainc_step)
+  if (known_eq (ainc_offset, 0) && known_eq (msize, -ainc_step))
     return comp_cost (data->costs[AINC_POST_DEC], 0);
-  if (ainc_offset == msize && msize == ainc_step)
+  if (known_eq (ainc_offset, msize) && known_eq (msize, ainc_step))
     return comp_cost (data->costs[AINC_PRE_INC], 0);
-  if (ainc_offset == -msize && msize == -ainc_step)
+  if (known_eq (ainc_offset, -msize) && known_eq (msize, -ainc_step))
     return comp_cost (data->costs[AINC_PRE_DEC], 0);
 
   return infinite_cost;
@@ -4359,7 +4359,7 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 	}
       if (ok_with_ratio_p || ok_without_ratio_p)
 	{
-	  if (aff_inv->offset != 0)
+	  if (maybe_ne (aff_inv->offset, 0))
 	    {
 	      parts.offset = wide_int_to_tree (sizetype, aff_inv->offset);
 	      /* Addressing mode "base + index [<< scale] + offset".  */
@@ -4392,10 +4392,12 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
     }
   else
     {
-      if (can_autoinc && ratio == 1 && cst_and_fits_in_hwi (cand->iv->step))
+      poly_int64 ainc_step;
+      if (can_autoinc
+	  && ratio == 1
+	  && ptrdiff_tree_p (cand->iv->step, &ainc_step))
 	{
-	  HOST_WIDE_INT ainc_step = int_cst_value (cand->iv->step);
-	  HOST_WIDE_INT ainc_offset = (aff_inv->offset).to_shwi ();
+	  poly_int64 ainc_offset = (aff_inv->offset).force_shwi ();
 
 	  if (stmt_after_increment (data->current_loop, cand, use->stmt))
 	    ainc_offset += ainc_step;
@@ -4955,7 +4957,7 @@ iv_elimination_compare_lt (struct ivopts_data *data,
   aff_combination_scale (&tmpa, -1);
   aff_combination_add (&tmpb, &tmpa);
   aff_combination_add (&tmpb, &nit);
-  if (tmpb.n != 0 || tmpb.offset != 1)
+  if (tmpb.n != 0 || maybe_ne (tmpb.offset, 1))
     return false;
 
   /* Finally, check that CAND->IV->BASE - CAND->IV->STEP * A does not
@@ -6852,7 +6854,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
   unshare_aff_combination (&aff_var);
   /* Prefer CSE opportunity than loop invariant by adding offset at last
      so that iv_uses have different offsets can be CSEed.  */
-  widest_int offset = aff_inv.offset;
+  poly_widest_int offset = aff_inv.offset;
   aff_inv.offset = 0;
 
   gimple_seq stmt_list = NULL, seq = NULL;

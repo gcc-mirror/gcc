@@ -2,6 +2,44 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-affine.h (aff_tree::offset): Change from widest_int
+	to poly_widest_int.
+	(wide_int_ext_for_comb): Delete.
+	(aff_combination_const, aff_comb_cannot_overlap_p): Take the
+	constants as poly_widest_int rather than widest_int.
+	(aff_combination_constant_multiple_p): Return the multiplier
+	as a poly_widest_int.
+	(aff_combination_zero_p, aff_combination_singleton_var_p): Handle
+	polynomial offsets.
+	* tree-affine.c (wide_int_ext_for_comb): Make original widest_int
+	version static and add an overload for poly_widest_int.
+	(aff_combination_const, aff_combination_add_cst)
+	(wide_int_constant_multiple_p, aff_comb_cannot_overlap_p): Take
+	the constants as poly_widest_int rather than widest_int.
+	(tree_to_aff_combination): Generalize INTEGER_CST case to
+	poly_int_tree_p.
+	(aff_combination_to_tree): Track offsets as poly_widest_ints.
+	(aff_combination_add_product, aff_combination_mult): Handle
+	polynomial offsets.
+	(aff_combination_constant_multiple_p): Return the multiplier
+	as a poly_widest_int.
+	* tree-predcom.c (determine_offset): Return the offset as a
+	poly_widest_int.
+	(split_data_refs_to_components, suitable_component_p): Update
+	accordingly.
+	(valid_initializer_p): Update call to
+	aff_combination_constant_multiple_p.
+	* tree-ssa-address.c (addr_to_parts): Handle polynomial offsets.
+	* tree-ssa-loop-ivopts.c (get_address_cost_ainc): Take the step
+	as a poly_int64 rather than a HOST_WIDE_INT.
+	(get_address_cost): Handle polynomial offsets.
+	(iv_elimination_compare_lt): Likewise.
+	(rewrite_use_nonlinear_expr): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-dfa.h (get_addr_base_and_unit_offset_1): Return the offset
 	as a poly_int64_pod rather than a HOST_WIDE_INT.
 	(get_addr_base_and_unit_offset): Likewise.
