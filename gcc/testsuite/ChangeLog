@@ -1,3 +1,9 @@
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/plugin/poly-int-tests.h (test_nonpoly_multiple_p): New
+	function.
+	(test_nonpoly_type): Call it.
+
 2017-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83490

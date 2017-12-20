@@ -1,3 +1,7 @@
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* poly-int.h (multiple_p): Fix handling of two non-poly_ints.
+
 2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/invoke.texi (ARM Options): Document accepted extension options

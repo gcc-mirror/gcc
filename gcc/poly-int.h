@@ -2027,7 +2027,7 @@ template<typename Ca, typename Cb>
 inline typename if_nonpoly2<Ca, Cb, bool>::type
 multiple_p (Ca a, Cb b)
 {
-  return a % b != 0;
+  return a % b == 0;
 }
 
 /* Return true if A is a (polynomial) multiple of B.  */
