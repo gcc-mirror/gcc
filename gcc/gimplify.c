@@ -1500,8 +1500,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
     return GS_ERROR;
 
   if (!ret_expr
-      || TREE_CODE (ret_expr) == RESULT_DECL
-      || ret_expr == error_mark_node)
+      || TREE_CODE (ret_expr) == RESULT_DECL)
     {
       maybe_add_early_return_predict_stmt (pre_p);
       greturn *ret = gimple_build_return (ret_expr);
