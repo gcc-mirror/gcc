@@ -927,7 +927,7 @@ debug_aff (aff_tree *val)
    which REF refers.  */
 
 tree
-get_inner_reference_aff (tree ref, aff_tree *addr, widest_int *size)
+get_inner_reference_aff (tree ref, aff_tree *addr, poly_widest_int *size)
 {
   HOST_WIDE_INT bitsize, bitpos;
   tree toff;
