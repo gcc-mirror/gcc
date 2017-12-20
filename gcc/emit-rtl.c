@@ -148,6 +148,16 @@ struct const_wide_int_hasher : ggc_cache_ptr_hash<rtx_def>
 
 static GTY ((cache)) hash_table<const_wide_int_hasher> *const_wide_int_htab;
 
+struct const_poly_int_hasher : ggc_cache_ptr_hash<rtx_def>
+{
+  typedef std::pair<machine_mode, poly_wide_int_ref> compare_type;
+
+  static hashval_t hash (rtx x);
+  static bool equal (rtx x, const compare_type &y);
+};
+
+static GTY ((cache)) hash_table<const_poly_int_hasher> *const_poly_int_htab;
+
 /* A hash table storing register attribute structures.  */
 struct reg_attr_hasher : ggc_cache_ptr_hash<reg_attrs>
 {
@@ -247,6 +257,31 @@ const_wide_int_hasher::equal (rtx x, rtx y)
   return true;
 }
 #endif
+
+/* Returns a hash code for CONST_POLY_INT X.  */
+
+hashval_t
+const_poly_int_hasher::hash (rtx x)
+{
+  inchash::hash h;
+  h.add_int (GET_MODE (x));
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+  return h.end ();
+}
+
+/* Returns nonzero if CONST_POLY_INT X is an rtx representation of Y.  */
+
+bool
+const_poly_int_hasher::equal (rtx x, const compare_type &y)
+{
+  if (GET_MODE (x) != y.first)
+    return false;
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    if (CONST_POLY_INT_COEFFS (x)[i] != y.second.coeffs[i])
+      return false;
+  return true;
+}
 
 /* Returns a hash code for X (which is really a CONST_DOUBLE).  */
 hashval_t
@@ -489,9 +524,13 @@ gen_rtx_CONST_INT (machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
 }
 
 rtx
-gen_int_mode (HOST_WIDE_INT c, machine_mode mode)
+gen_int_mode (poly_int64 c, machine_mode mode)
 {
-  return GEN_INT (trunc_int_for_mode (c, mode));
+  c = trunc_int_for_mode (c, mode);
+  if (c.is_constant ())
+    return GEN_INT (c.coeffs[0]);
+  unsigned int prec = GET_MODE_PRECISION (as_a <scalar_mode> (mode));
+  return immed_wide_int_const (poly_wide_int::from (c, prec, SIGNED), mode);
 }
 
 /* CONST_DOUBLEs might be created from pairs of integers, or from
@@ -595,8 +634,8 @@ lookup_const_wide_int (rtx wint)
    a CONST_DOUBLE (if !TARGET_SUPPORTS_WIDE_INT) or a CONST_WIDE_INT
    (if TARGET_SUPPORTS_WIDE_INT).  */
 
-rtx
-immed_wide_int_const (const wide_int_ref &v, machine_mode mode)
+static rtx
+immed_wide_int_const_1 (const wide_int_ref &v, machine_mode mode)
 {
   unsigned int len = v.get_len ();
   /* Not scalar_int_mode because we also allow pointer bound modes.  */
@@ -682,6 +721,53 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, machine_mode mode)
   return lookup_const_double (value);
 }
 #endif
+
+/* Return an rtx representation of C in mode MODE.  */
+
+rtx
+immed_wide_int_const (const poly_wide_int_ref &c, machine_mode mode)
+{
+  if (c.is_constant ())
+    return immed_wide_int_const_1 (c.coeffs[0], mode);
+
+  /* Not scalar_int_mode because we also allow pointer bound modes.  */
+  unsigned int prec = GET_MODE_PRECISION (as_a <scalar_mode> (mode));
+
+  /* Allow truncation but not extension since we do not know if the
+     number is signed or unsigned.  */
+  gcc_assert (prec <= c.coeffs[0].get_precision ());
+  poly_wide_int newc = poly_wide_int::from (c, prec, SIGNED);
+
+  /* See whether we already have an rtx for this constant.  */
+  inchash::hash h;
+  h.add_int (mode);
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    h.add_wide_int (newc.coeffs[i]);
+  const_poly_int_hasher::compare_type typed_value (mode, newc);
+  rtx *slot = const_poly_int_htab->find_slot_with_hash (typed_value,
+							h.end (), INSERT);
+  rtx x = *slot;
+  if (x)
+    return x;
+
+  /* Create a new rtx.  There's a choice to be made here between installing
+     the actual mode of the rtx or leaving it as VOIDmode (for consistency
+     with CONST_INT).  In practice the handling of the codes is different
+     enough that we get no benefit from using VOIDmode, and various places
+     assume that VOIDmode implies CONST_INT.  Using the real mode seems like
+     the right long-term direction anyway.  */
+  typedef trailing_wide_ints<NUM_POLY_INT_COEFFS> twi;
+  size_t extra_size = twi::extra_size (prec);
+  x = rtx_alloc_v (CONST_POLY_INT,
+		   sizeof (struct const_poly_int_def) + extra_size);
+  PUT_MODE (x, mode);
+  CONST_POLY_INT_COEFFS (x).set_precision (prec);
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    CONST_POLY_INT_COEFFS (x)[i] = newc.coeffs[i];
+
+  *slot = x;
+  return x;
+}
 
 rtx
 gen_rtx_REG (machine_mode mode, unsigned int regno)
@@ -1486,7 +1572,8 @@ gen_lowpart_common (machine_mode mode, rtx x)
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
 	   || GET_CODE (x) == CONCAT || const_vec_p (x)
-	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x))
+	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x)
+	   || CONST_POLY_INT_P (x))
     return lowpart_subreg (mode, x, innermode);
 
   /* Otherwise, we can't do this.  */
@@ -6031,6 +6118,9 @@ init_emit_once (void)
 #endif
   const_double_htab = hash_table<const_double_hasher>::create_ggc (37);
 
+  if (NUM_POLY_INT_COEFFS > 1)
+    const_poly_int_htab = hash_table<const_poly_int_hasher>::create_ggc (37);
+
   const_fixed_htab = hash_table<const_fixed_hasher>::create_ggc (37);
 
   reg_attrs_htab = hash_table<reg_attr_hasher>::create_ggc (37);
@@ -6422,7 +6512,7 @@ need_atomic_barrier_p (enum memmodel model, bool pre)
    by VALUE bits.  */
 
 rtx
-gen_int_shift_amount (machine_mode, HOST_WIDE_INT value)
+gen_int_shift_amount (machine_mode, poly_int64 value)
 {
   /* Use a 64-bit mode, to avoid any truncation.
 

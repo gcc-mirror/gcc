@@ -55,6 +55,10 @@ add_rtx (const_rtx x, hash &hstate)
       for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
 	hstate.add_object (CONST_WIDE_INT_ELT (x, i));
       return;
+    case CONST_POLY_INT:
+      for (i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	hstate.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+      break;
     case SYMBOL_REF:
       if (XSTR (x, 0))
 	hstate.add (XSTR (x, 0), strlen (XSTR (x, 0)) + 1);

@@ -915,6 +915,28 @@ split_const (rtx x, rtx *base_out, rtx *offset_out)
   *base_out = x;
   *offset_out = const0_rtx;
 }
+
+/* Express integer value X as some value Y plus a polynomial offset,
+   where Y is either const0_rtx, X or something within X (as opposed
+   to a new rtx).  Return the Y and store the offset in *OFFSET_OUT.  */
+
+rtx
+strip_offset (rtx x, poly_int64_pod *offset_out)
+{
+  rtx base = const0_rtx;
+  rtx test = x;
+  if (GET_CODE (test) == CONST)
+    test = XEXP (test, 0);
+  if (GET_CODE (test) == PLUS)
+    {
+      base = XEXP (test, 0);
+      test = XEXP (test, 1);
+    }
+  if (poly_int_rtx_p (test, offset_out))
+    return base;
+  *offset_out = 0;
+  return x;
+}
 
 /* Return the number of places FIND appears within X.  If COUNT_DEST is
    zero, we do not count occurrences inside the destination of a SET.  */
@@ -3406,13 +3428,15 @@ commutative_operand_precedence (rtx op)
 
   /* Constants always become the second operand.  Prefer "nice" constants.  */
   if (code == CONST_INT)
-    return -8;
+    return -10;
   if (code == CONST_WIDE_INT)
-    return -7;
+    return -9;
+  if (code == CONST_POLY_INT)
+    return -8;
   if (code == CONST_DOUBLE)
-    return -7;
+    return -8;
   if (code == CONST_FIXED)
-    return -7;
+    return -8;
   op = avoid_constant_pool_reference (op);
   code = GET_CODE (op);
 
@@ -3420,13 +3444,15 @@ commutative_operand_precedence (rtx op)
     {
     case RTX_CONST_OBJ:
       if (code == CONST_INT)
-        return -6;
+	return -7;
       if (code == CONST_WIDE_INT)
-        return -6;
+	return -6;
+      if (code == CONST_POLY_INT)
+	return -5;
       if (code == CONST_DOUBLE)
-        return -5;
+	return -5;
       if (code == CONST_FIXED)
-        return -5;
+	return -5;
       return -4;
 
     case RTX_EXTRA:

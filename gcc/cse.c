@@ -2323,6 +2323,15 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
 
+    case CONST_POLY_INT:
+      {
+	inchash::hash h;
+	h.add_int (hash);
+	for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	  h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+	return h.end ();
+      }
+
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
@@ -3781,6 +3790,8 @@ equiv_constant (rtx x)
       /* See if we previously assigned a constant value to this SUBREG.  */
       if ((new_rtx = lookup_as_function (x, CONST_INT)) != 0
 	  || (new_rtx = lookup_as_function (x, CONST_WIDE_INT)) != 0
+	  || (NUM_POLY_INT_COEFFS > 1
+	      && (new_rtx = lookup_as_function (x, CONST_POLY_INT)) != 0)
           || (new_rtx = lookup_as_function (x, CONST_DOUBLE)) != 0
           || (new_rtx = lookup_as_function (x, CONST_FIXED)) != 0)
         return new_rtx;

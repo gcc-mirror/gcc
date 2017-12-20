@@ -1128,6 +1128,15 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
 
+    case CONST_POLY_INT:
+      {
+	inchash::hash h;
+	h.add_int (hash);
+	for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	  h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+	return h.end ();
+      }
+
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
