@@ -6418,6 +6418,22 @@ need_atomic_barrier_p (enum memmodel model, bool pre)
     }
 }
 
+/* Return a constant shift amount for shifting a value of mode MODE
+   by VALUE bits.  */
+
+rtx
+gen_int_shift_amount (machine_mode, HOST_WIDE_INT value)
+{
+  /* Use a 64-bit mode, to avoid any truncation.
+
+     ??? Perhaps this should be automatically derived from the .md files
+     instead, or perhaps have a target hook.  */
+  scalar_int_mode shift_mode = (BITS_PER_UNIT == 8
+				? DImode
+				: int_mode_for_size (64, 0).require ());
+  return gen_int_mode (value, shift_mode);
+}
+
 /* Initialize fields of rtl_data related to stack alignment.  */
 
 void
