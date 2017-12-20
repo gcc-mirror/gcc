@@ -693,7 +693,7 @@ addr_to_parts (tree type, aff_tree *addr, tree iv_cand, tree base_hint,
   parts->index = NULL_TREE;
   parts->step = NULL_TREE;
 
-  if (addr->offset != 0)
+  if (maybe_ne (addr->offset, 0))
     parts->offset = wide_int_to_tree (sizetype, addr->offset);
   else
     parts->offset = NULL_TREE;
