@@ -878,7 +878,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label)
 
   /* Mark the static chain as clobbered here so life information
      doesn't get messed up for it.  */
-  chain = targetm.calls.static_chain (current_function_decl, true);
+  chain = rtx_for_static_chain (current_function_decl, true);
   if (chain && REG_P (chain))
     emit_clobber (chain);
 
