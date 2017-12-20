@@ -2,6 +2,36 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* inchash.h (inchash::hash::add_poly_int): New function.
+	* tree-ssa-alias.h (ao_ref::offset, ao_ref::size, ao_ref::max_size):
+	Use poly_int64 rather than HOST_WIDE_INT.
+	(ao_ref::max_size_known_p): New function.
+	* tree-ssa-sccvn.h (vn_reference_op_struct::off): Use poly_int64_pod
+	rather than HOST_WIDE_INT.
+	* tree-ssa-alias.c (ao_ref_base): Apply get_ref_base_and_extent
+	to temporaries until its interface is adjusted to match.
+	(ao_ref_init_from_ptr_and_size): Handle polynomial offsets and sizes.
+	(aliasing_component_refs_p, decl_refs_may_alias_p)
+	(indirect_ref_may_alias_decl_p, indirect_refs_may_alias_p): Take
+	the offsets and max_sizes as poly_int64s instead of HOST_WIDE_INTs.
+	(refs_may_alias_p_1, stmt_kills_ref_p): Adjust for changes to
+	ao_ref fields.
+	* alias.c (ao_ref_from_mem): Likewise.
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1): Likewise.
+	* tree-ssa-dse.c (valid_ao_ref_for_dse, normalize_ref)
+	(clear_bytes_written_by, setup_live_bytes_from_ref, compute_trims)
+	(maybe_trim_complex_store, maybe_trim_constructor_store)
+	(live_bytes_read, dse_classify_store): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_compute_hash, vn_reference_eq):
+	(copy_reference_ops_from_ref, ao_ref_init_from_vn_reference)
+	(fully_constant_vn_reference_p, valueize_refs_1): Likewise.
+	(vn_reference_lookup_3): Likewise.
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p)
 	(indirect_refs_may_alias_p): Use ranges_may_overlap_p
 	instead of ranges_overlap_p.
