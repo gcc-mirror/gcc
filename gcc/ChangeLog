@@ -1,8 +1,12 @@
+2017-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* gimplify.c (gimplify_return_expr): Remove dead error_mark_node check.
+
 2017-12-20  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/83131
 	* builtins.c (expand_builtin_strlen): Use get_callee_fndecl.
-	(expand_builtin_strcmp): Call maybe_warn_nonstring_arg.	
+	(expand_builtin_strcmp): Call maybe_warn_nonstring_arg.
 	(expand_builtin_strncmp): Same.
 
 2017-12-20  Alexandre Oliva <aoliva@redhat.com>
