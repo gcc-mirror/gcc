@@ -1,3 +1,9 @@
+2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82975
+	* config/arm/arm.h (TEST_REGNO): Adjust comment as expected in
+	r255830.
+
 2017-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83490
