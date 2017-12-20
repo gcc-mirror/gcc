@@ -4470,7 +4470,7 @@ expand_debug_expr (tree exp)
     case VIEW_CONVERT_EXPR:
       {
 	machine_mode mode1;
-	HOST_WIDE_INT bitsize, bitpos;
+	poly_int64 bitsize, bitpos;
 	tree offset;
 	int reversep, volatilep = 0;
 	tree tem
@@ -4478,7 +4478,7 @@ expand_debug_expr (tree exp)
 				 &unsignedp, &reversep, &volatilep);
 	rtx orig_op0;
 
-	if (bitsize == 0)
+	if (known_eq (bitsize, 0))
 	  return NULL;
 
 	orig_op0 = op0 = expand_debug_expr (tem);
@@ -4521,19 +4521,14 @@ expand_debug_expr (tree exp)
 	    if (mode1 == VOIDmode)
 	      /* Bitfield.  */
 	      mode1 = smallest_int_mode_for_size (bitsize);
-	    if (bitpos >= BITS_PER_UNIT)
+	    poly_int64 bytepos = bits_to_bytes_round_down (bitpos);
+	    if (maybe_ne (bytepos, 0))
 	      {
-		op0 = adjust_address_nv (op0, mode1, bitpos / BITS_PER_UNIT);
-		bitpos %= BITS_PER_UNIT;
+		op0 = adjust_address_nv (op0, mode1, bytepos);
+		bitpos = num_trailing_bits (bitpos);
 	      }
-	    else if (bitpos < 0)
-	      {
-		HOST_WIDE_INT units
-		  = (-bitpos + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
-		op0 = adjust_address_nv (op0, mode1, -units);
-		bitpos += units * BITS_PER_UNIT;
-	      }
-	    else if (bitpos == 0 && bitsize == GET_MODE_BITSIZE (mode))
+	    else if (known_eq (bitpos, 0)
+		     && known_eq (bitsize, GET_MODE_BITSIZE (mode)))
 	      op0 = adjust_address_nv (op0, mode, 0);
 	    else if (GET_MODE (op0) != mode1)
 	      op0 = adjust_address_nv (op0, mode1, 0);
@@ -4544,17 +4539,18 @@ expand_debug_expr (tree exp)
 	    set_mem_attributes (op0, exp, 0);
 	  }
 
-	if (bitpos == 0 && mode == GET_MODE (op0))
+	if (known_eq (bitpos, 0) && mode == GET_MODE (op0))
 	  return op0;
 
-        if (bitpos < 0)
+	if (maybe_lt (bitpos, 0))
           return NULL;
 
 	if (GET_MODE (op0) == BLKmode)
 	  return NULL;
 
-	if ((bitpos % BITS_PER_UNIT) == 0
-	    && bitsize == GET_MODE_BITSIZE (mode1))
+	poly_int64 bytepos;
+	if (multiple_p (bitpos, BITS_PER_UNIT, &bytepos)
+	    && known_eq (bitsize, GET_MODE_BITSIZE (mode1)))
 	  {
 	    machine_mode opmode = GET_MODE (op0);
 
@@ -4567,12 +4563,11 @@ expand_debug_expr (tree exp)
 	       debug stmts).  The gen_subreg below would rightfully
 	       crash, and the address doesn't really exist, so just
 	       drop it.  */
-	    if (bitpos >= GET_MODE_BITSIZE (opmode))
+	    if (known_ge (bitpos, GET_MODE_BITSIZE (opmode)))
 	      return NULL;
 
-	    if ((bitpos % GET_MODE_BITSIZE (mode)) == 0)
-	      return simplify_gen_subreg (mode, op0, opmode,
-					  bitpos / BITS_PER_UNIT);
+	    if (multiple_p (bitpos, GET_MODE_BITSIZE (mode)))
+	      return simplify_gen_subreg (mode, op0, opmode, bytepos);
 	  }
 
 	return simplify_gen_ternary (SCALAR_INT_MODE_P (GET_MODE (op0))
@@ -4582,7 +4577,8 @@ expand_debug_expr (tree exp)
 				     GET_MODE (op0) != VOIDmode
 				     ? GET_MODE (op0)
 				     : TYPE_MODE (TREE_TYPE (tem)),
-				     op0, GEN_INT (bitsize), GEN_INT (bitpos));
+				     op0, gen_int_mode (bitsize, word_mode),
+				     gen_int_mode (bitpos, word_mode));
       }
 
     case ABS_EXPR:

@@ -5638,6 +5638,17 @@ extern bool complete_ctor_at_level_p (const_tree, HOST_WIDE_INT, const_tree);
    the access position and size.  */
 extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				 tree *, machine_mode *, int *, int *, int *);
+/* Temporary.  */
+inline tree
+get_inner_reference (tree exp, poly_int64_pod *pbitsize,
+		     poly_int64_pod *pbitpos, tree *poffset,
+		     machine_mode *pmode, int *punsignedp,
+		     int *preversep, int *pvolatilep)
+{
+  return get_inner_reference (exp, &pbitsize->coeffs[0], &pbitpos->coeffs[0],
+			      poffset, pmode, punsignedp, preversep,
+			      pvolatilep);
+}
 
 extern tree build_personality_function (const char *);
 
