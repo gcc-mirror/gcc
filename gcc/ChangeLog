@@ -2,6 +2,23 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expmed.h (store_bit_field): Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.
+	* expmed.c (simple_mem_bitfield_p): Likewise.  Add a parameter
+	that returns the byte size.
+	(store_bit_field_1): Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.  Update call
+	to simple_mem_bitfield_p.  Split the part that can only handle
+	constant bitsize and bitnum out into...
+	(store_integral_bit_field): ...this new function.
+	(store_bit_field): Take bitsize and bitnum as poly_uint64s rather
+	than unsigned HOST_WIDE_INTs.
+	(extract_bit_field_1): Update call to simple_mem_bitfield_p.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lra-int.h (lra_reg): Change offset from int to poly_int64.
 	(lra_insn_recog_data): Change sp_offset from HOST_WIDE_INT
 	to poly_int64.
