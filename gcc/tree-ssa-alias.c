@@ -2320,14 +2320,14 @@ stmt_may_clobber_ref_p (gimple *stmt, tree ref)
    address.  */
 
 static bool
-same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
-			 HOST_WIDE_INT max_size1,
-			 tree base2, HOST_WIDE_INT offset2, HOST_WIDE_INT size2,
-			 HOST_WIDE_INT max_size2)
+same_addr_size_stores_p (tree base1, poly_int64 offset1, poly_int64 size1,
+			 poly_int64 max_size1,
+			 tree base2, poly_int64 offset2, poly_int64 size2,
+			 poly_int64 max_size2)
 {
   /* Offsets need to be 0.  */
-  if (offset1 != 0
-      || offset2 != 0)
+  if (maybe_ne (offset1, 0)
+      || maybe_ne (offset2, 0))
     return false;
 
   bool base1_obj_p = SSA_VAR_P (base1);
@@ -2346,17 +2346,19 @@ same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
   tree memref = base1_memref_p ? base1 : base2;
 
   /* Sizes need to be valid.  */
-  if (max_size1 == -1 || max_size2 == -1
-      || size1 == -1 || size2 == -1)
+  if (!known_size_p (max_size1)
+      || !known_size_p (max_size2)
+      || !known_size_p (size1)
+      || !known_size_p (size2))
     return false;
 
   /* Max_size needs to match size.  */
-  if (max_size1 != size1
-      || max_size2 != size2)
+  if (maybe_ne (max_size1, size1)
+      || maybe_ne (max_size2, size2))
     return false;
 
   /* Sizes need to match.  */
-  if (size1 != size2)
+  if (maybe_ne (size1, size2))
     return false;
 
 
@@ -2384,10 +2386,9 @@ same_addr_size_stores_p (tree base1, HOST_WIDE_INT offset1, HOST_WIDE_INT size1,
 
   /* Check that the object size is the same as the store size.  That ensures us
      that ptr points to the start of obj.  */
-  if (!tree_fits_shwi_p (DECL_SIZE (obj)))
-    return false;
-  HOST_WIDE_INT obj_size = tree_to_shwi (DECL_SIZE (obj));
-  return obj_size == size1;
+  return (DECL_SIZE (obj)
+	  && poly_int_tree_p (DECL_SIZE (obj))
+	  && known_eq (wi::to_poly_offset (DECL_SIZE (obj)), size1));
 }
 
 /* If STMT kills the memory reference REF return true, otherwise
