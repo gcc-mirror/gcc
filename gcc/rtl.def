@@ -348,6 +348,9 @@ DEF_RTL_EXPR(CONST_INT, "const_int", "w", RTX_CONST_OBJ)
 /* numeric integer constant */
 DEF_RTL_EXPR(CONST_WIDE_INT, "const_wide_int", "", RTX_CONST_OBJ)
 
+/* An rtx representation of a poly_wide_int.  */
+DEF_RTL_EXPR(CONST_POLY_INT, "const_poly_int", "", RTX_CONST_OBJ)
+
 /* fixed-point constant */
 DEF_RTL_EXPR(CONST_FIXED, "const_fixed", "www", RTX_CONST_OBJ)
 

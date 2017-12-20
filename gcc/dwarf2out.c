@@ -13781,6 +13781,16 @@ const_ok_for_output_1 (rtx rtl)
       return false;
     }
 
+  if (CONST_POLY_INT_P (rtl))
+    return false;
+
+  if (targetm.const_not_ok_for_debug_p (rtl))
+    {
+      expansion_failed (NULL_TREE, rtl,
+			"Expression rejected for debug by the backend.\n");
+      return false;
+    }
+
   /* FIXME: Refer to PR60655. It is possible for simplification
      of rtl expressions in var tracking to produce such expressions.
      We should really identify / validate expressions

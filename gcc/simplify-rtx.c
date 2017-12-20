@@ -2038,6 +2038,26 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	}
     }
 
+  /* Handle polynomial integers.  */
+  else if (CONST_POLY_INT_P (op))
+    {
+      poly_wide_int result;
+      switch (code)
+	{
+	case NEG:
+	  result = -const_poly_int_value (op);
+	  break;
+
+	case NOT:
+	  result = ~const_poly_int_value (op);
+	  break;
+
+	default:
+	  return NULL_RTX;
+	}
+      return immed_wide_int_const (result, mode);
+    }
+
   return NULL_RTX;
 }
 
@@ -2218,6 +2238,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
   rtx tem, reversed, opleft, opright, elt0, elt1;
   HOST_WIDE_INT val;
   scalar_int_mode int_mode, inner_mode;
+  poly_int64 offset;
 
   /* Even if we can't compute a constant result,
      there are some cases worth simplifying.  */
@@ -2529,6 +2550,12 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  if (tem)
 	    return simplify_gen_binary (MINUS, mode, tem, XEXP (op0, 0));
 	}
+
+      if ((GET_CODE (op0) == CONST
+	   || GET_CODE (op0) == SYMBOL_REF
+	   || GET_CODE (op0) == LABEL_REF)
+	  && poly_int_rtx_p (op1, &offset))
+	return plus_constant (mode, op0, trunc_int_for_mode (-offset, mode));
 
       /* Don't let a relocatable value get a negative coeff.  */
       if (CONST_INT_P (op1) && GET_MODE (op0) != VOIDmode)
@@ -4321,6 +4348,57 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	      }
 	    break;
 	  }
+	default:
+	  return NULL_RTX;
+	}
+      return immed_wide_int_const (result, int_mode);
+    }
+
+  /* Handle polynomial integers.  */
+  if (NUM_POLY_INT_COEFFS > 1
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && poly_int_rtx_p (op0)
+      && poly_int_rtx_p (op1))
+    {
+      poly_wide_int result;
+      switch (code)
+	{
+	case PLUS:
+	  result = wi::to_poly_wide (op0, mode) + wi::to_poly_wide (op1, mode);
+	  break;
+
+	case MINUS:
+	  result = wi::to_poly_wide (op0, mode) - wi::to_poly_wide (op1, mode);
+	  break;
+
+	case MULT:
+	  if (CONST_SCALAR_INT_P (op1))
+	    result = wi::to_poly_wide (op0, mode) * rtx_mode_t (op1, mode);
+	  else
+	    return NULL_RTX;
+	  break;
+
+	case ASHIFT:
+	  if (CONST_SCALAR_INT_P (op1))
+	    {
+	      wide_int shift = rtx_mode_t (op1, mode);
+	      if (SHIFT_COUNT_TRUNCATED)
+		shift = wi::umod_trunc (shift, GET_MODE_PRECISION (int_mode));
+	      else if (wi::geu_p (shift, GET_MODE_PRECISION (int_mode)))
+		return NULL_RTX;
+	      result = wi::to_poly_wide (op0, mode) << shift;
+	    }
+	  else
+	    return NULL_RTX;
+	  break;
+
+	case IOR:
+	  if (!CONST_SCALAR_INT_P (op1)
+	      || !can_ior_p (wi::to_poly_wide (op0, mode),
+			     rtx_mode_t (op1, mode), &result))
+	    return NULL_RTX;
+	  break;
+
 	default:
 	  return NULL_RTX;
 	}
@@ -6370,13 +6448,27 @@ simplify_subreg (machine_mode outermode, rtx op,
   scalar_int_mode int_outermode, int_innermode;
   if (is_a <scalar_int_mode> (outermode, &int_outermode)
       && is_a <scalar_int_mode> (innermode, &int_innermode)
-      && (GET_MODE_PRECISION (int_outermode)
-	  < GET_MODE_PRECISION (int_innermode))
       && byte == subreg_lowpart_offset (int_outermode, int_innermode))
     {
-      rtx tem = simplify_truncation (int_outermode, op, int_innermode);
-      if (tem)
-	return tem;
+      /* Handle polynomial integers.  The upper bits of a paradoxical
+	 subreg are undefined, so this is safe regardless of whether
+	 we're truncating or extending.  */
+      if (CONST_POLY_INT_P (op))
+	{
+	  poly_wide_int val
+	    = poly_wide_int::from (const_poly_int_value (op),
+				   GET_MODE_PRECISION (int_outermode),
+				   SIGNED);
+	  return immed_wide_int_const (val, int_outermode);
+	}
+
+      if (GET_MODE_PRECISION (int_outermode)
+	  < GET_MODE_PRECISION (int_innermode))
+	{
+	  rtx tem = simplify_truncation (int_outermode, op, int_innermode);
+	  if (tem)
+	    return tem;
+	}
     }
 
   return NULL_RTX;
@@ -6685,12 +6777,60 @@ test_vector_ops ()
     }
 }
 
+template<unsigned int N>
+struct simplify_const_poly_int_tests
+{
+  static void run ();
+};
+
+template<>
+struct simplify_const_poly_int_tests<1>
+{
+  static void run () {}
+};
+
+/* Test various CONST_POLY_INT properties.  */
+
+template<unsigned int N>
+void
+simplify_const_poly_int_tests<N>::run ()
+{
+  rtx x1 = gen_int_mode (poly_int64 (1, 1), QImode);
+  rtx x2 = gen_int_mode (poly_int64 (-80, 127), QImode);
+  rtx x3 = gen_int_mode (poly_int64 (-79, -128), QImode);
+  rtx x4 = gen_int_mode (poly_int64 (5, 4), QImode);
+  rtx x5 = gen_int_mode (poly_int64 (30, 24), QImode);
+  rtx x6 = gen_int_mode (poly_int64 (20, 16), QImode);
+  rtx x7 = gen_int_mode (poly_int64 (7, 4), QImode);
+  rtx x8 = gen_int_mode (poly_int64 (30, 24), HImode);
+  rtx x9 = gen_int_mode (poly_int64 (-30, -24), HImode);
+  rtx x10 = gen_int_mode (poly_int64 (-31, -24), HImode);
+  rtx two = GEN_INT (2);
+  rtx six = GEN_INT (6);
+  HOST_WIDE_INT offset = subreg_lowpart_offset (QImode, HImode);
+
+  /* These tests only try limited operation combinations.  Fuller arithmetic
+     testing is done directly on poly_ints.  */
+  ASSERT_EQ (simplify_unary_operation (NEG, HImode, x8, HImode), x9);
+  ASSERT_EQ (simplify_unary_operation (NOT, HImode, x8, HImode), x10);
+  ASSERT_EQ (simplify_unary_operation (TRUNCATE, QImode, x8, HImode), x5);
+  ASSERT_EQ (simplify_binary_operation (PLUS, QImode, x1, x2), x3);
+  ASSERT_EQ (simplify_binary_operation (MINUS, QImode, x3, x1), x2);
+  ASSERT_EQ (simplify_binary_operation (MULT, QImode, x4, six), x5);
+  ASSERT_EQ (simplify_binary_operation (MULT, QImode, six, x4), x5);
+  ASSERT_EQ (simplify_binary_operation (ASHIFT, QImode, x4, two), x6);
+  ASSERT_EQ (simplify_binary_operation (IOR, QImode, x4, two), x7);
+  ASSERT_EQ (simplify_subreg (HImode, x5, QImode, 0), x8);
+  ASSERT_EQ (simplify_subreg (QImode, x8, HImode, offset), x5);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 simplify_rtx_c_tests ()
 {
   test_vector_ops ();
+  simplify_const_poly_int_tests<NUM_POLY_INT_COEFFS>::run ();
 }
 
 } // namespace selftest

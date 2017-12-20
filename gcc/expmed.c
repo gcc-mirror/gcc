@@ -2541,7 +2541,7 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
 
 rtx
 expand_shift (enum tree_code code, machine_mode mode, rtx shifted,
-	      int amount, rtx target, int unsignedp)
+	      poly_int64 amount, rtx target, int unsignedp)
 {
   return expand_shift_1 (code, mode, shifted,
 			 gen_int_shift_amount (mode, amount),

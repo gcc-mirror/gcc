@@ -77,13 +77,23 @@ trunc_int_for_mode (HOST_WIDE_INT c, machine_mode mode)
   return c;
 }
 
+/* Likewise for polynomial values, using the sign-extended representation
+   for each individual coefficient.  */
+
+poly_int64
+trunc_int_for_mode (poly_int64 x, machine_mode mode)
+{
+  for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    x.coeffs[i] = trunc_int_for_mode (x.coeffs[i], mode);
+  return x;
+}
+
 /* Return an rtx for the sum of X and the integer C, given that X has
    mode MODE.  INPLACE is true if X can be modified inplace or false
    if it must be treated as immutable.  */
 
 rtx
-plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
-	       bool inplace)
+plus_constant (machine_mode mode, rtx x, poly_int64 c, bool inplace)
 {
   RTX_CODE code;
   rtx y;
@@ -92,7 +102,7 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
 
   gcc_assert (GET_MODE (x) == VOIDmode || GET_MODE (x) == mode);
 
-  if (c == 0)
+  if (known_eq (c, 0))
     return x;
 
  restart:
@@ -180,10 +190,12 @@ plus_constant (machine_mode mode, rtx x, HOST_WIDE_INT c,
       break;
 
     default:
+      if (CONST_POLY_INT_P (x))
+	return immed_wide_int_const (const_poly_int_value (x) + c, mode);
       break;
     }
 
-  if (c != 0)
+  if (maybe_ne (c, 0))
     x = gen_rtx_PLUS (mode, x, gen_int_mode (c, mode));
 
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)

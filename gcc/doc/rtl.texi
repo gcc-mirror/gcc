@@ -1633,6 +1633,15 @@ is accessed with the macro @code{CONST_FIXED_VALUE}.  The high part of
 data is accessed with @code{CONST_FIXED_VALUE_HIGH}; the low part is
 accessed with @code{CONST_FIXED_VALUE_LOW}.
 
+@findex const_poly_int
+@item (const_poly_int:@var{m} [@var{c0} @var{c1} @dots{}])
+Represents a @code{poly_int}-style polynomial integer with coefficients
+@var{c0}, @var{c1}, @dots{}.  The coefficients are @code{wide_int}-based
+integers rather than rtxes.  @code{CONST_POLY_INT_COEFFS} gives the
+values of individual coefficients (which is mostly only useful in
+low-level routines) and @code{const_poly_int_value} gives the full
+@code{poly_int} value.
+
 @findex const_vector
 @item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
 Represents a vector constant.  The square brackets stand for the vector
@@ -4235,6 +4244,11 @@ referring to it.
 @cindex @code{const_int}, RTL sharing
 @item
 All @code{const_int} expressions with equal values are shared.
+
+@cindex @code{const_poly_int}, RTL sharing
+@item
+All @code{const_poly_int} expressions with equal modes and values
+are shared.
 
 @cindex @code{pc}, RTL sharing
 @item

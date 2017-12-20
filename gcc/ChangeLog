@@ -2,6 +2,78 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/rtl.texi (const_poly_int): Document.  Also document the
+	rtl sharing behavior.
+	* gengenrtl.c (excluded_rtx): Return true for CONST_POLY_INT.
+	* rtl.h (const_poly_int_def): New struct.
+	(rtx_def::u): Add a cpi field.
+	(CASE_CONST_UNIQUE, CASE_CONST_ANY): Add CONST_POLY_INT.
+	(CONST_POLY_INT_P, CONST_POLY_INT_COEFFS): New macros.
+	(wi::rtx_to_poly_wide_ref): New typedef
+	(const_poly_int_value, wi::to_poly_wide, rtx_to_poly_int64)
+	(poly_int_rtx_p): New functions.
+	(trunc_int_for_mode): Declare a poly_int64 version.
+	(plus_constant): Take a poly_int64 instead of a HOST_WIDE_INT.
+	(immed_wide_int_const): Take a poly_wide_int_ref rather than
+	a wide_int_ref.
+	(strip_offset): Declare.
+	(strip_offset_and_add): New function.
+	* rtl.def (CONST_POLY_INT): New rtx code.
+	* rtl.c (rtx_size): Handle CONST_POLY_INT.
+	(shared_const_p): Use poly_int_rtx_p.
+	* emit-rtl.h (gen_int_mode): Take a poly_int64 instead of a
+	HOST_WIDE_INT.
+	(gen_int_shift_amount): Likewise.
+	* emit-rtl.c (const_poly_int_hasher): New class.
+	(const_poly_int_htab): New variable.
+	(init_emit_once): Initialize it when NUM_POLY_INT_COEFFS > 1.
+	(const_poly_int_hasher::hash): New function.
+	(const_poly_int_hasher::equal): Likewise.
+	(gen_int_mode): Take a poly_int64 instead of a HOST_WIDE_INT.
+	(immed_wide_int_const): Rename to...
+	(immed_wide_int_const_1): ...this and make static.
+	(immed_wide_int_const): New function, taking a poly_wide_int_ref
+	instead of a wide_int_ref.
+	(gen_int_shift_amount): Take a poly_int64 instead of a HOST_WIDE_INT.
+	(gen_lowpart_common): Handle CONST_POLY_INT.
+	* cse.c (hash_rtx_cb, equiv_constant): Likewise.
+	* cselib.c (cselib_hash_rtx): Likewise.
+	* dwarf2out.c (const_ok_for_output_1): Likewise.
+	* expr.c (convert_modes): Likewise.
+	* print-rtl.c (rtx_writer::print_rtx, print_value): Likewise.
+	* rtlhash.c (add_rtx): Likewise.
+	* explow.c (trunc_int_for_mode): Add a poly_int64 version.
+	(plus_constant): Take a poly_int64 instead of a HOST_WIDE_INT.
+	Handle existing CONST_POLY_INT rtxes.
+	* expmed.h (expand_shift): Take a poly_int64 instead of a
+	HOST_WIDE_INT.
+	* expmed.c (expand_shift): Likewise.
+	* rtlanal.c (strip_offset): New function.
+	(commutative_operand_precedence): Give CONST_POLY_INT the same
+	precedence as CONST_DOUBLE and put CONST_WIDE_INT between that
+	and CONST_INT.
+	* rtl-tests.c (const_poly_int_tests): New struct.
+	(rtl_tests_c_tests): Use it.
+	* simplify-rtx.c (simplify_const_unary_operation): Handle
+	CONST_POLY_INT.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_binary_operation_1): Fold additions of symbolic constants
+	and CONST_POLY_INTs.
+	(simplify_subreg): Handle extensions and truncations of
+	CONST_POLY_INTs.
+	(simplify_const_poly_int_tests): New struct.
+	(simplify_rtx_c_tests): Use it.
+	* wide-int.h (storage_ref): Add default constructor.
+	(wide_int_ref_storage): Likewise.
+	(trailing_wide_ints): Use GTY((user)).
+	(trailing_wide_ints::operator[]): Add a const version.
+	(trailing_wide_ints::get_precision): New function.
+	(trailing_wide_ints::extra_size): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* emit-rtl.h (gen_int_shift_amount): Declare.
 	* emit-rtl.c (gen_int_shift_amount): New function.
 	* asan.c (asan_emit_stack_protection): Use gen_int_shift_amount
