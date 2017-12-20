@@ -1,3 +1,8 @@
+2017-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83490
+	* calls.c (compute_argument_addresses): Ignore TYPE_EMPTY_P arguments.
+
 2017-12-20  Julia Koval  <julia.koval@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_VPCLMULQDQ_SET,
