@@ -1,4 +1,20 @@
 2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (truly_noop_truncation): Take poly_uint64s instead of
+	unsigned ints.  Change default to hook_bool_puint64_puint64_true.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_bool_uint_uint_true): Delete.
+	(hook_bool_puint64_puint64_true): Declare.
+	* hooks.c (hook_bool_uint_uint_true): Delete.
+	(hook_bool_puint64_puint64_true): New function.
+	* config/mips/mips.c (mips_truly_noop_truncation): Take poly_uint64s
+	instead of unsigned ints.
+	* config/spu/spu.c (spu_truly_noop_truncation): Likewise.
+	* config/tilegx/tilegx.c (tilegx_truly_noop_truncation): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

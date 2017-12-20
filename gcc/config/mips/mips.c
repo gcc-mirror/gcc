@@ -22322,7 +22322,7 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
 
 static bool
-mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+mips_truly_noop_truncation (poly_uint64 outprec, poly_uint64 inprec)
 {
   return !TARGET_64BIT || inprec <= 32 || outprec > 32;
 }
