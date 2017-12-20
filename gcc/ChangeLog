@@ -2,6 +2,29 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* poly-int-types.h (round_down_to_byte_boundary): New macro.
+	(round_up_to_byte_boundary): Likewise.
+	* expr.h (get_bit_range): Add temporary shim.
+	* gimple-ssa-store-merging.c (store_operand_info): Change the
+	bitsize, bitpos, bitregion_start and bitregion_end fields from
+	unsigned HOST_WIDE_INT to poly_uint64.
+	(merged_store_group): Likewise load_align_base.
+	(compatible_load_p, compatible_load_p): Update accordingly.
+	(imm_store_chain_info::coalesce_immediate_stores): Likewise.
+	(split_group, imm_store_chain_info::output_merged_store): Likewise.
+	(mem_valid_for_store_merging): Return the bitsize, bitpos,
+	bitregion_start and bitregion_end as poly_uint64s rather than
+	unsigned HOST_WIDE_INTs.  Track polynomial offsets internally.
+	(handled_load): Take the bitsize, bitpos,
+	bitregion_start and bitregion_end as poly_uint64s rather than
+	unsigned HOST_WIDE_INTs.
+	(pass_store_merging::process_store): Update call to
+	mem_valid_for_store_merging.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* builtins.c (get_object_alignment_2): Track polynomial offsets
 	and sizes.  Update the alignment handling.
 

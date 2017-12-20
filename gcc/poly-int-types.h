@@ -60,6 +60,18 @@ typedef poly_int<NUM_POLY_INT_COEFFS, widest_int> poly_widest_int;
    of bytes in size.  */
 #define num_trailing_bits(X) force_get_misalignment (X, BITS_PER_UNIT)
 
+/* Round bit quantity X down to the nearest byte boundary.
+
+   This is safe because non-constant mode sizes must be a whole number
+   of bytes in size.  */
+#define round_down_to_byte_boundary(X) force_align_down (X, BITS_PER_UNIT)
+
+/* Round bit quantity X up the nearest byte boundary.
+
+   This is safe because non-constant mode sizes must be a whole number
+   of bytes in size.  */
+#define round_up_to_byte_boundary(X) force_align_up (X, BITS_PER_UNIT)
+
 /* Return the size of an element in a vector of size SIZE, given that
    the vector has NELTS elements.  The return value is in the same units
    as SIZE (either bits or bytes).

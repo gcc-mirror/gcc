@@ -1321,10 +1321,10 @@ struct store_operand_info
 {
   tree val;
   tree base_addr;
-  unsigned HOST_WIDE_INT bitsize;
-  unsigned HOST_WIDE_INT bitpos;
-  unsigned HOST_WIDE_INT bitregion_start;
-  unsigned HOST_WIDE_INT bitregion_end;
+  poly_uint64 bitsize;
+  poly_uint64 bitpos;
+  poly_uint64 bitregion_start;
+  poly_uint64 bitregion_end;
   gimple *stmt;
   bool bit_not_p;
   store_operand_info ();
@@ -1414,7 +1414,7 @@ struct merged_store_group
   /* The size of the allocated memory for val and mask.  */
   unsigned HOST_WIDE_INT buf_size;
   unsigned HOST_WIDE_INT align_base;
-  unsigned HOST_WIDE_INT load_align_base[2];
+  poly_uint64 load_align_base[2];
 
   unsigned int align;
   unsigned int load_align[2];
@@ -2198,8 +2198,8 @@ compatible_load_p (merged_store_group *merged_store,
 {
   store_immediate_info *infof = merged_store->stores[0];
   if (!info->ops[idx].base_addr
-      || (info->ops[idx].bitpos - infof->ops[idx].bitpos
-	  != info->bitpos - infof->bitpos)
+      || maybe_ne (info->ops[idx].bitpos - infof->ops[idx].bitpos,
+		   info->bitpos - infof->bitpos)
       || !operand_equal_p (info->ops[idx].base_addr,
 			   infof->ops[idx].base_addr, 0))
     return false;
@@ -2229,7 +2229,7 @@ compatible_load_p (merged_store_group *merged_store,
      the construction of the immediate chain info guarantees no intervening
      stores, so no further checks are needed.  Example:
      _1 = s.a; _2 = _1 & -7; s.a = _2; _3 = s.b; _4 = _3 & -7; s.b = _4;  */
-  if (info->ops[idx].bitpos == info->bitpos
+  if (known_eq (info->ops[idx].bitpos, info->bitpos)
       && operand_equal_p (info->ops[idx].base_addr, base_addr, 0))
     return true;
 
@@ -2624,8 +2624,8 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	      && infof->ops[1].base_addr
 	      && info->ops[0].base_addr
 	      && info->ops[1].base_addr
-	      && (info->ops[1].bitpos - infof->ops[0].bitpos
-		  == info->bitpos - infof->bitpos)
+	      && known_eq (info->ops[1].bitpos - infof->ops[0].bitpos,
+			   info->bitpos - infof->bitpos)
 	      && operand_equal_p (info->ops[1].base_addr,
 				  infof->ops[0].base_addr, 0))
 	    {
@@ -3031,11 +3031,12 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	  for (int i = 0; i < 2; ++i)
 	    if (group->load_align[i])
 	      {
-		align_bitpos = try_bitpos - group->stores[0]->bitpos;
-		align_bitpos += group->stores[0]->ops[i].bitpos;
-		align_bitpos -= group->load_align_base[i];
-		align_bitpos &= (group_load_align - 1);
-		if (align_bitpos)
+		align_bitpos
+		  = known_alignment (try_bitpos
+				     - group->stores[0]->bitpos
+				     + group->stores[0]->ops[i].bitpos
+				     - group->load_align_base[i]);
+		if (align_bitpos & (group_load_align - 1))
 		  {
 		    unsigned HOST_WIDE_INT a = least_bit_hwi (align_bitpos);
 		    load_align = MIN (load_align, a);
@@ -3491,10 +3492,10 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 
 		  unsigned HOST_WIDE_INT load_align = group->load_align[j];
 		  unsigned HOST_WIDE_INT align_bitpos
-		    = (try_pos * BITS_PER_UNIT
-		       - split_store->orig_stores[0]->bitpos
-		       + op.bitpos) & (load_align - 1);
-		  if (align_bitpos)
+		    = known_alignment (try_pos * BITS_PER_UNIT
+				       - split_store->orig_stores[0]->bitpos
+				       + op.bitpos);
+		  if (align_bitpos & (load_align - 1))
 		    load_align = least_bit_hwi (align_bitpos);
 
 		  tree load_int_type
@@ -3502,10 +3503,11 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		  load_int_type
 		    = build_aligned_type (load_int_type, load_align);
 
-		  unsigned HOST_WIDE_INT load_pos
-		    = (try_pos * BITS_PER_UNIT
-		       - split_store->orig_stores[0]->bitpos
-		       + op.bitpos) / BITS_PER_UNIT;
+		  poly_uint64 load_pos
+		    = exact_div (try_pos * BITS_PER_UNIT
+				 - split_store->orig_stores[0]->bitpos
+				 + op.bitpos,
+				 BITS_PER_UNIT);
 		  ops[j] = fold_build2 (MEM_REF, load_int_type, load_addr[j],
 					build_int_cst (offset_type, load_pos));
 		  if (TREE_CODE (ops[j]) == MEM_REF)
@@ -3811,30 +3813,28 @@ rhs_valid_for_store_merging_p (tree rhs)
    case.  */
 
 static tree
-mem_valid_for_store_merging (tree mem, unsigned HOST_WIDE_INT *pbitsize,
-			     unsigned HOST_WIDE_INT *pbitpos,
-			     unsigned HOST_WIDE_INT *pbitregion_start,
-			     unsigned HOST_WIDE_INT *pbitregion_end)
+mem_valid_for_store_merging (tree mem, poly_uint64 *pbitsize,
+			     poly_uint64 *pbitpos,
+			     poly_uint64 *pbitregion_start,
+			     poly_uint64 *pbitregion_end)
 {
-  HOST_WIDE_INT bitsize;
-  HOST_WIDE_INT bitpos;
-  unsigned HOST_WIDE_INT bitregion_start = 0;
-  unsigned HOST_WIDE_INT bitregion_end = 0;
+  poly_int64 bitsize, bitpos;
+  poly_uint64 bitregion_start = 0, bitregion_end = 0;
   machine_mode mode;
   int unsignedp = 0, reversep = 0, volatilep = 0;
   tree offset;
   tree base_addr = get_inner_reference (mem, &bitsize, &bitpos, &offset, &mode,
 					&unsignedp, &reversep, &volatilep);
   *pbitsize = bitsize;
-  if (bitsize == 0)
+  if (known_eq (bitsize, 0))
     return NULL_TREE;
 
   if (TREE_CODE (mem) == COMPONENT_REF
       && DECL_BIT_FIELD_TYPE (TREE_OPERAND (mem, 1)))
     {
       get_bit_range (&bitregion_start, &bitregion_end, mem, &bitpos, &offset);
-      if (bitregion_end)
-	++bitregion_end;
+      if (maybe_ne (bitregion_end, 0U))
+	bitregion_end += 1;
     }
 
   if (reversep)
@@ -3850,24 +3850,20 @@ mem_valid_for_store_merging (tree mem, unsigned HOST_WIDE_INT *pbitsize,
      PR 23684 and this way we can catch more chains.  */
   else if (TREE_CODE (base_addr) == MEM_REF)
     {
-      offset_int bit_off, byte_off = mem_ref_offset (base_addr);
-      bit_off = byte_off << LOG2_BITS_PER_UNIT;
+      poly_offset_int byte_off = mem_ref_offset (base_addr);
+      poly_offset_int bit_off = byte_off << LOG2_BITS_PER_UNIT;
       bit_off += bitpos;
-      if (!wi::neg_p (bit_off) && wi::fits_shwi_p (bit_off))
+      if (known_ge (bit_off, 0) && bit_off.to_shwi (&bitpos))
 	{
-	  bitpos = bit_off.to_shwi ();
-	  if (bitregion_end)
+	  if (maybe_ne (bitregion_end, 0U))
 	    {
 	      bit_off = byte_off << LOG2_BITS_PER_UNIT;
 	      bit_off += bitregion_start;
-	      if (wi::fits_uhwi_p (bit_off))
+	      if (bit_off.to_uhwi (&bitregion_start))
 		{
-		  bitregion_start = bit_off.to_uhwi ();
 		  bit_off = byte_off << LOG2_BITS_PER_UNIT;
 		  bit_off += bitregion_end;
-		  if (wi::fits_uhwi_p (bit_off))
-		    bitregion_end = bit_off.to_uhwi ();
-		  else
+		  if (!bit_off.to_uhwi (&bitregion_end))
 		    bitregion_end = 0;
 		}
 	      else
@@ -3882,15 +3878,15 @@ mem_valid_for_store_merging (tree mem, unsigned HOST_WIDE_INT *pbitsize,
      address now.  */
   else
     {
-      if (bitpos < 0)
+      if (maybe_lt (bitpos, 0))
 	return NULL_TREE;
       base_addr = build_fold_addr_expr (base_addr);
     }
 
-  if (!bitregion_end)
+  if (known_eq (bitregion_end, 0U))
     {
-      bitregion_start = ROUND_DOWN (bitpos, BITS_PER_UNIT);
-      bitregion_end = ROUND_UP (bitpos + bitsize, BITS_PER_UNIT);
+      bitregion_start = round_down_to_byte_boundary (bitpos);
+      bitregion_end = round_up_to_byte_boundary (bitpos + bitsize);
     }
 
   if (offset != NULL_TREE)
@@ -3922,9 +3918,8 @@ mem_valid_for_store_merging (tree mem, unsigned HOST_WIDE_INT *pbitsize,
 
 static bool
 handled_load (gimple *stmt, store_operand_info *op,
-	      unsigned HOST_WIDE_INT bitsize, unsigned HOST_WIDE_INT bitpos,
-	      unsigned HOST_WIDE_INT bitregion_start,
-	      unsigned HOST_WIDE_INT bitregion_end)
+	      poly_uint64 bitsize, poly_uint64 bitpos,
+	      poly_uint64 bitregion_start, poly_uint64 bitregion_end)
 {
   if (!is_gimple_assign (stmt))
     return false;
@@ -3956,10 +3951,12 @@ handled_load (gimple *stmt, store_operand_info *op,
 				       &op->bitregion_start,
 				       &op->bitregion_end);
       if (op->base_addr != NULL_TREE
-	  && op->bitsize == bitsize
-	  && ((op->bitpos - bitpos) % BITS_PER_UNIT) == 0
-	  && op->bitpos - op->bitregion_start >= bitpos - bitregion_start
-	  && op->bitregion_end - op->bitpos >= bitregion_end - bitpos)
+	  && known_eq (op->bitsize, bitsize)
+	  && multiple_p (op->bitpos - bitpos, BITS_PER_UNIT)
+	  && known_ge (op->bitpos - op->bitregion_start,
+		       bitpos - bitregion_start)
+	  && known_ge (op->bitregion_end - op->bitpos,
+		       bitregion_end - bitpos))
 	{
 	  op->stmt = stmt;
 	  op->val = mem;
@@ -3978,18 +3975,18 @@ pass_store_merging::process_store (gimple *stmt)
 {
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
-  unsigned HOST_WIDE_INT bitsize, bitpos;
-  unsigned HOST_WIDE_INT bitregion_start;
-  unsigned HOST_WIDE_INT bitregion_end;
+  poly_uint64 bitsize, bitpos;
+  poly_uint64 bitregion_start, bitregion_end;
   tree base_addr
     = mem_valid_for_store_merging (lhs, &bitsize, &bitpos,
 				   &bitregion_start, &bitregion_end);
-  if (bitsize == 0)
+  if (known_eq (bitsize, 0U))
     return;
 
   bool invalid = (base_addr == NULL_TREE
-		  || ((bitsize > MAX_BITSIZE_MODE_ANY_INT)
-		       && (TREE_CODE (rhs) != INTEGER_CST)));
+		  || (maybe_gt (bitsize,
+				(unsigned int) MAX_BITSIZE_MODE_ANY_INT)
+		      && (TREE_CODE (rhs) != INTEGER_CST)));
   enum tree_code rhs_code = ERROR_MARK;
   bool bit_not_p = false;
   struct symbolic_number n;
@@ -4058,9 +4055,11 @@ pass_store_merging::process_store (gimple *stmt)
 	    invalid = true;
 	    break;
 	  }
-      if ((bitsize % BITS_PER_UNIT) == 0
-	  && (bitpos % BITS_PER_UNIT) == 0
-	  && bitsize <= 64
+      unsigned HOST_WIDE_INT const_bitsize;
+      if (bitsize.is_constant (&const_bitsize)
+	  && multiple_p (const_bitsize, BITS_PER_UNIT)
+	  && multiple_p (bitpos, BITS_PER_UNIT)
+	  && const_bitsize <= 64
 	  && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
 	{
 	  ins_stmt = find_bswap_or_nop_1 (def_stmt, &n, 12);
@@ -4068,7 +4067,8 @@ pass_store_merging::process_store (gimple *stmt)
 	    {
 	      uint64_t nn = n.n;
 	      for (unsigned HOST_WIDE_INT i = 0;
-		   i < bitsize; i += BITS_PER_UNIT, nn >>= BITS_PER_MARKER)
+		   i < const_bitsize;
+		   i += BITS_PER_UNIT, nn >>= BITS_PER_MARKER)
 		if ((nn & MARKER_MASK) == 0
 		    || (nn & MARKER_MASK) == MARKER_BYTE_UNKNOWN)
 		  {
@@ -4089,7 +4089,13 @@ pass_store_merging::process_store (gimple *stmt)
 	}
     }
 
-  if (invalid)
+  unsigned HOST_WIDE_INT const_bitsize, const_bitpos;
+  unsigned HOST_WIDE_INT const_bitregion_start, const_bitregion_end;
+  if (invalid
+      || !bitsize.is_constant (&const_bitsize)
+      || !bitpos.is_constant (&const_bitpos)
+      || !bitregion_start.is_constant (&const_bitregion_start)
+      || !bitregion_end.is_constant (&const_bitregion_end))
     {
       terminate_all_aliasing_chains (NULL, stmt);
       return;
@@ -4106,9 +4112,10 @@ pass_store_merging::process_store (gimple *stmt)
   if (chain_info)
     {
       unsigned int ord = (*chain_info)->m_store_info.length ();
-      info = new store_immediate_info (bitsize, bitpos, bitregion_start,
-				       bitregion_end, stmt, ord, rhs_code,
-				       n, ins_stmt,
+      info = new store_immediate_info (const_bitsize, const_bitpos,
+				       const_bitregion_start,
+				       const_bitregion_end,
+				       stmt, ord, rhs_code, n, ins_stmt,
 				       bit_not_p, ops[0], ops[1]);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -4135,9 +4142,10 @@ pass_store_merging::process_store (gimple *stmt)
   /* Start a new chain.  */
   struct imm_store_chain_info *new_chain
     = new imm_store_chain_info (m_stores_head, base_addr);
-  info = new store_immediate_info (bitsize, bitpos, bitregion_start,
-				   bitregion_end, stmt, 0, rhs_code,
-				   n, ins_stmt,
+  info = new store_immediate_info (const_bitsize, const_bitpos,
+				   const_bitregion_start,
+				   const_bitregion_end,
+				   stmt, 0, rhs_code, n, ins_stmt,
 				   bit_not_p, ops[0], ops[1]);
   new_chain->m_store_info.safe_push (info);
   m_stores.put (base_addr, new_chain);
