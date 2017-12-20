@@ -444,7 +444,7 @@ remove_forwarder_block (basic_block bb)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
-  gimple *label;
+  gimple *stmt;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
   bool can_move_debug_stmts;
@@ -457,9 +457,9 @@ remove_forwarder_block (basic_block bb)
 
   /* If the destination block consists of a nonlocal label or is a
      EH landing pad, do not merge it.  */
-  label = first_stmt (dest);
-  if (label)
-    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+  stmt = first_stmt (dest);
+  if (stmt)
+    if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
       if (DECL_NONLOCAL (gimple_label_label (label_stmt))
 	  || EH_LANDING_PAD_NR (gimple_label_label (label_stmt)) != 0)
 	return false;
@@ -536,28 +536,23 @@ remove_forwarder_block (basic_block bb)
      defined labels and labels with an EH landing pad number to the
      new block, so that the redirection of the abnormal edges works,
      jump targets end up in a sane place and debug information for
-     labels is retained.
-
-     While at that, move any debug stmts that appear before or in between
-     labels, but not those that can only appear after labels.  */
+     labels is retained.  */
   gsi_to = gsi_start_bb (dest);
-  gsi = gsi_start_bb (bb);
-  gimple_stmt_iterator gsie = gsi_after_labels (bb);
-  while (gsi_stmt (gsi) != gsi_stmt (gsie))
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      tree decl;
-      label = gsi_stmt (gsi);
-      if (is_gimple_debug (label)
-	  ? can_move_debug_stmts
-	  : ((decl = gimple_label_label (as_a <glabel *> (label))),
-	     EH_LANDING_PAD_NR (decl) != 0
-	     || DECL_NONLOCAL (decl)
-	     || FORCED_LABEL (decl)
-	     || !DECL_ARTIFICIAL (decl)))
-	{
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
-	}
+      stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	break;
+
+      /* Forwarder blocks can only contain labels and debug stmts, and
+	 labels must come first, so if we get to this point, we know
+	 we're looking at a label.  */
+      tree decl = gimple_label_label (as_a <glabel *> (stmt));
+      if (EH_LANDING_PAD_NR (decl) != 0
+	  || DECL_NONLOCAL (decl)
+	  || FORCED_LABEL (decl)
+	  || !DECL_ARTIFICIAL (decl))
+	gsi_move_before (&gsi, &gsi_to);
       else
 	gsi_next (&gsi);
     }
@@ -565,14 +560,12 @@ remove_forwarder_block (basic_block bb)
   /* Move debug statements if the destination has a single predecessor.  */
   if (can_move_debug_stmts && !gsi_end_p (gsi))
     {
-      gcc_assert (gsi_stmt (gsi) == gsi_stmt (gsie));
-      gimple_stmt_iterator gsie_to = gsi_after_labels (dest);
+      gsi_to = gsi_after_labels (dest);
       do
 	{
 	  gimple *debug = gsi_stmt (gsi);
 	  gcc_assert (is_gimple_debug (debug));
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsie_to, debug, GSI_SAME_STMT);
+	  gsi_move_before (&gsi, &gsi_to);
 	}
       while (!gsi_end_p (gsi));
     }

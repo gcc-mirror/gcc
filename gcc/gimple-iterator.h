@@ -213,24 +213,17 @@ gsi_stmt (gimple_stmt_iterator i)
 }
 
 /* Return a block statement iterator that points to the first
-   non-label statement in block BB.  Skip debug stmts only if they
-   precede labels.  */
+   non-label statement in block BB.  */
 
 static inline gimple_stmt_iterator
 gsi_after_labels (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_start_bb (bb);
 
-  for (gimple_stmt_iterator gskip = gsi;
-       !gsi_end_p (gskip); )
+  for (; !gsi_end_p (gsi); )
     {
-      if (is_gimple_debug (gsi_stmt (gskip)))
-	gsi_next (&gskip);
-      else if (gimple_code (gsi_stmt (gskip)) == GIMPLE_LABEL)
-	{
-	  gsi_next (&gskip);
-	  gsi = gskip;
-	}
+      if (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
+	gsi_next (&gsi);
       else
 	break;
     }

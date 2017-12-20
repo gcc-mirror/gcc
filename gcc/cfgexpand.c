@@ -2327,9 +2327,6 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
     {
       glabel *lab_stmt;
 
-      if (is_gimple_debug (gsi_stmt (gsi)))
-	continue;
-
       lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
       if (!lab_stmt)
 	break;
@@ -5502,16 +5499,14 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	}
     }
 
-  gsi = gsi_start_nondebug (stmts);
+  gsi = gsi_start (stmts);
   if (!gsi_end_p (gsi))
     {
       stmt = gsi_stmt (gsi);
       if (gimple_code (stmt) != GIMPLE_LABEL)
 	stmt = NULL;
     }
-  gsi = gsi_start (stmts);
 
-  gimple *label_stmt = stmt;
   rtx_code_label **elt = lab_rtx_for_bb->get (bb);
 
   if (stmt || elt)
@@ -5522,8 +5517,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       if (stmt)
 	{
 	  expand_gimple_stmt (stmt);
-	  if (gsi_stmt (gsi) == stmt)
-	    gsi_next (&gsi);
+	  gsi_next (&gsi);
 	}
 
       if (elt)
@@ -5548,9 +5542,6 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
-
-      if (stmt == label_stmt)
-	continue;
 
       /* If this statement is a non-debug one, and we generate debug
 	 insns, then this one might be the last real use of a TERed
