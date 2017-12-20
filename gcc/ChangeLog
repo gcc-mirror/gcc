@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p)
+	(indirect_refs_may_alias_p): Use ranges_may_overlap_p
+	instead of ranges_overlap_p.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-ssa-alias.c (same_addr_size_stores_p): Take the offsets and
 	sizes as poly_int64s rather than HOST_WIDE_INTs.
 
