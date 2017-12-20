@@ -3556,7 +3556,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (convert1?@2 addr@0) (convert2? addr@1))
   (with
    {
-     HOST_WIDE_INT off0, off1;
+     poly_int64 off0, off1;
      tree base0 = get_addr_base_and_unit_offset (TREE_OPERAND (@0, 0), &off0);
      tree base1 = get_addr_base_and_unit_offset (TREE_OPERAND (@1, 0), &off1);
      if (base0 && TREE_CODE (base0) == MEM_REF)
@@ -3595,23 +3595,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      }
      (if (equal == 1)
       (switch
-       (if (cmp == EQ_EXPR)
-	{ constant_boolean_node (off0 == off1, type); })
-       (if (cmp == NE_EXPR)
-	{ constant_boolean_node (off0 != off1, type); })
-       (if (cmp == LT_EXPR)
-	{ constant_boolean_node (off0 < off1, type); })
-       (if (cmp == LE_EXPR)
-	{ constant_boolean_node (off0 <= off1, type); })
-       (if (cmp == GE_EXPR)
-	{ constant_boolean_node (off0 >= off1, type); })
-       (if (cmp == GT_EXPR)
-	{ constant_boolean_node (off0 > off1, type); }))
+       (if (cmp == EQ_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
+	{ constant_boolean_node (known_eq (off0, off1), type); })
+       (if (cmp == NE_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
+	{ constant_boolean_node (known_ne (off0, off1), type); })
+       (if (cmp == LT_EXPR && (known_lt (off0, off1) || known_ge (off0, off1)))
+	{ constant_boolean_node (known_lt (off0, off1), type); })
+       (if (cmp == LE_EXPR && (known_le (off0, off1) || known_gt (off0, off1)))
+	{ constant_boolean_node (known_le (off0, off1), type); })
+       (if (cmp == GE_EXPR && (known_ge (off0, off1) || known_lt (off0, off1)))
+	{ constant_boolean_node (known_ge (off0, off1), type); })
+       (if (cmp == GT_EXPR && (known_gt (off0, off1) || known_le (off0, off1)))
+	{ constant_boolean_node (known_gt (off0, off1), type); }))
       (if (equal == 0
 	   && DECL_P (base0) && DECL_P (base1)
 	   /* If we compare this as integers require equal offset.  */
 	   && (!INTEGRAL_TYPE_P (TREE_TYPE (@2))
-	       || off0 == off1))
+	       || known_eq (off0, off1)))
        (switch
 	(if (cmp == EQ_EXPR)
 	 { constant_boolean_node (false, type); })

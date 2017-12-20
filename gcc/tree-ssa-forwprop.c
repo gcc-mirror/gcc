@@ -759,12 +759,12 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && TREE_OPERAND (lhs, 0) == name)
     {
       tree def_rhs_base;
-      HOST_WIDE_INT def_rhs_offset;
+      poly_int64 def_rhs_offset;
       /* If the address is invariant we can always fold it.  */
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  offset_int off = mem_ref_offset (lhs);
+	  poly_offset_int off = mem_ref_offset (lhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
@@ -851,11 +851,11 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && TREE_OPERAND (rhs, 0) == name)
     {
       tree def_rhs_base;
-      HOST_WIDE_INT def_rhs_offset;
+      poly_int64 def_rhs_offset;
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  offset_int off = mem_ref_offset (rhs);
+	  poly_offset_int off = mem_ref_offset (rhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
@@ -1170,12 +1170,12 @@ constant_pointer_difference (tree p1, tree p2)
 	  if (TREE_CODE (p) == ADDR_EXPR)
 	    {
 	      tree q = TREE_OPERAND (p, 0);
-	      HOST_WIDE_INT offset;
+	      poly_int64 offset;
 	      tree base = get_addr_base_and_unit_offset (q, &offset);
 	      if (base)
 		{
 		  q = base;
-		  if (offset)
+		  if (maybe_ne (offset, 0))
 		    off = size_binop (PLUS_EXPR, off, size_int (offset));
 		}
 	      if (TREE_CODE (q) == MEM_REF

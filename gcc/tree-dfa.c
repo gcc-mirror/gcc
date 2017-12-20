@@ -706,10 +706,10 @@ get_ref_base_and_extent_hwi (tree exp, HOST_WIDE_INT *poffset,
    its argument or a constant if the argument is known to be constant.  */
 
 tree
-get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
+get_addr_base_and_unit_offset_1 (tree exp, poly_int64_pod *poffset,
 				 tree (*valueize) (tree))
 {
-  HOST_WIDE_INT byte_offset = 0;
+  poly_int64 byte_offset = 0;
 
   /* Compute cumulative byte-offset for nested component-refs and array-refs,
      and find the ultimate containing object.  */
@@ -719,10 +719,13 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	{
 	case BIT_FIELD_REF:
 	  {
-	    HOST_WIDE_INT this_off = TREE_INT_CST_LOW (TREE_OPERAND (exp, 2));
-	    if (this_off % BITS_PER_UNIT)
+	    poly_int64 this_byte_offset;
+	    poly_uint64 this_bit_offset;
+	    if (!poly_int_tree_p (TREE_OPERAND (exp, 2), &this_bit_offset)
+		|| !multiple_p (this_bit_offset, BITS_PER_UNIT,
+				&this_byte_offset))
 	      return NULL_TREE;
-	    byte_offset += this_off / BITS_PER_UNIT;
+	    byte_offset += this_byte_offset;
 	  }
 	  break;
 
@@ -730,15 +733,14 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	  {
 	    tree field = TREE_OPERAND (exp, 1);
 	    tree this_offset = component_ref_field_offset (exp);
-	    HOST_WIDE_INT hthis_offset;
+	    poly_int64 hthis_offset;
 
 	    if (!this_offset
-		|| TREE_CODE (this_offset) != INTEGER_CST
+		|| !poly_int_tree_p (this_offset, &hthis_offset)
 		|| (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field))
 		    % BITS_PER_UNIT))
 	      return NULL_TREE;
 
-	    hthis_offset = TREE_INT_CST_LOW (this_offset);
 	    hthis_offset += (TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field))
 			     / BITS_PER_UNIT);
 	    byte_offset += hthis_offset;
@@ -756,17 +758,18 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 	      index = (*valueize) (index);
 
 	    /* If the resulting bit-offset is constant, track it.  */
-	    if (TREE_CODE (index) == INTEGER_CST
+	    if (poly_int_tree_p (index)
 		&& (low_bound = array_ref_low_bound (exp),
-		    TREE_CODE (low_bound) == INTEGER_CST)
+		    poly_int_tree_p (low_bound))
 		&& (unit_size = array_ref_element_size (exp),
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
-		offset_int woffset
-		  = wi::sext (wi::to_offset (index) - wi::to_offset (low_bound),
+		poly_offset_int woffset
+		  = wi::sext (wi::to_poly_offset (index)
+			      - wi::to_poly_offset (low_bound),
 			      TYPE_PRECISION (TREE_TYPE (index)));
 		woffset *= wi::to_offset (unit_size);
-		byte_offset += woffset.to_shwi ();
+		byte_offset += woffset.force_shwi ();
 	      }
 	    else
 	      return NULL_TREE;
@@ -843,7 +846,7 @@ done:
    is not BITS_PER_UNIT-aligned.  */
 
 tree
-get_addr_base_and_unit_offset (tree exp, HOST_WIDE_INT *poffset)
+get_addr_base_and_unit_offset (tree exp, poly_int64_pod *poffset)
 {
   return get_addr_base_and_unit_offset_1 (exp, poffset, NULL);
 }

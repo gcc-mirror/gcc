@@ -2,6 +2,46 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-dfa.h (get_addr_base_and_unit_offset_1): Return the offset
+	as a poly_int64_pod rather than a HOST_WIDE_INT.
+	(get_addr_base_and_unit_offset): Likewise.
+	* tree-dfa.c (get_addr_base_and_unit_offset_1): Likewise.
+	(get_addr_base_and_unit_offset): Likewise.
+	* doc/match-and-simplify.texi: Change off from HOST_WIDE_INT
+	to poly_int64 in example.
+	* fold-const.c (fold_binary_loc): Update call to
+	get_addr_base_and_unit_offset.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Likewise.
+	(maybe_canonicalize_mem_ref_addr): Likewise.
+	(gimple_fold_stmt_to_constant_1): Likewise.
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref):
+	Likewise.
+	* ipa-param-manipulation.c (ipa_modify_call_arguments): Likewise.
+	* match.pd: Likewise.
+	* omp-low.c (lower_omp_target): Likewise.
+	* tree-sra.c (build_ref_for_offset): Likewise.
+	(build_debug_ref_for_model): Likewise.
+	* tree-ssa-address.c (maybe_fold_tmr): Likewise.
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Likewise.
+	* tree-ssa-ccp.c (optimize_memcpy): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	(constant_pointer_difference): Likewise.
+	* tree-ssa-loop-niter.c (expand_simple_operations): Likewise.
+	* tree-ssa-phiopt.c (jump_function_from_stmt): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Likewise.
+	(vn_reference_maybe_forwprop_address, vn_reference_lookup_3): Likewise.
+	(set_ssa_val_to): Likewise.
+	* tree-ssa-strlen.c (get_addr_stridx, addr_stridxptr)
+	(maybe_diag_stxncpy_trunc): Likewise.
+	* tree-vrp.c (vrp_prop::check_array_ref): Likewise.
+	* tree.c (build_simple_mem_ref_loc): Likewise.
+	(array_at_struct_end_p): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-dfa.h (get_ref_base_and_extent): Return the base, size and
 	max_size as poly_int64_pods rather than HOST_WIDE_INTs.
 	(get_ref_base_and_extent_hwi): Declare.

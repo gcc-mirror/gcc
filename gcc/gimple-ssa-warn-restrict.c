@@ -311,17 +311,18 @@ builtin_memref::builtin_memref (tree expr, tree size)
 
   if (TREE_CODE (expr) == ADDR_EXPR)
     {
-      HOST_WIDE_INT off;
+      poly_int64 off;
       tree oper = TREE_OPERAND (expr, 0);
 
       /* Determine the base object or pointer of the reference
 	 and its constant offset from the beginning of the base.  */
       base = get_addr_base_and_unit_offset (oper, &off);
 
-      if (base)
+      HOST_WIDE_INT const_off;
+      if (base && off.is_constant (&const_off))
 	{
-	  offrange[0] += off;
-	  offrange[1] += off;
+	  offrange[0] += const_off;
+	  offrange[1] += const_off;
 
 	  /* Stash the reference for offset validation.  */
 	  ref = oper;
@@ -333,7 +334,7 @@ builtin_memref::builtin_memref (tree expr, tree size)
 	      tree field = TREE_OPERAND (ref, 1);
 	      tree fldoff = DECL_FIELD_OFFSET (field);
 	      if (TREE_CODE (fldoff) == INTEGER_CST)
-		refoff = off + wi::to_offset (fldoff);
+		refoff = const_off + wi::to_offset (fldoff);
 	    }
 	}
       else

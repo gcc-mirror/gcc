@@ -1713,7 +1713,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
   tree prev_base = base;
   tree off;
   tree mem_ref;
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   unsigned HOST_WIDE_INT misalign;
   unsigned int align;
 
@@ -1821,7 +1821,7 @@ static tree
 build_debug_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 			   struct access *model)
 {
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   tree off;
 
   if (TREE_CODE (model->expr) == COMPONENT_REF

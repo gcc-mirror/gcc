@@ -9358,7 +9358,7 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	  && handled_component_p (TREE_OPERAND (arg0, 0)))
 	{
 	  tree base;
-	  HOST_WIDE_INT coffset;
+	  poly_int64 coffset;
 	  base = get_addr_base_and_unit_offset (TREE_OPERAND (arg0, 0),
 						&coffset);
 	  if (!base)

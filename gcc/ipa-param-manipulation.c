@@ -303,7 +303,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 	    off = build_int_cst (adj->alias_ptr_type, byte_offset);
 	  else
 	    {
-	      HOST_WIDE_INT base_offset;
+	      poly_int64 base_offset;
 	      tree prev_base;
 	      bool addrof;
 

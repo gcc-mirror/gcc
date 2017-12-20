@@ -865,8 +865,8 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	      && TREE_CODE (dest) == ADDR_EXPR)
 	    {
 	      tree src_base, dest_base, fn;
-	      HOST_WIDE_INT src_offset = 0, dest_offset = 0;
-	      HOST_WIDE_INT maxsize;
+	      poly_int64 src_offset = 0, dest_offset = 0;
+	      poly_uint64 maxsize;
 
 	      srcvar = TREE_OPERAND (src, 0);
 	      src_base = get_addr_base_and_unit_offset (srcvar, &src_offset);
@@ -877,16 +877,14 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 							 &dest_offset);
 	      if (dest_base == NULL)
 		dest_base = destvar;
-	      if (tree_fits_uhwi_p (len))
-		maxsize = tree_to_uhwi (len);
-	      else
+	      if (!poly_int_tree_p (len, &maxsize))
 		maxsize = -1;
 	      if (SSA_VAR_P (src_base)
 		  && SSA_VAR_P (dest_base))
 		{
 		  if (operand_equal_p (src_base, dest_base, 0)
-		      && ranges_overlap_p (src_offset, maxsize,
-					   dest_offset, maxsize))
+		      && ranges_maybe_overlap_p (src_offset, maxsize,
+						 dest_offset, maxsize))
 		    return false;
 		}
 	      else if (TREE_CODE (src_base) == MEM_REF
@@ -895,17 +893,12 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return false;
-		  offset_int off = mem_ref_offset (src_base) + src_offset;
-		  if (!wi::fits_shwi_p (off))
-		    return false;
-		  src_offset = off.to_shwi ();
-
-		  off = mem_ref_offset (dest_base) + dest_offset;
-		  if (!wi::fits_shwi_p (off))
-		    return false;
-		  dest_offset = off.to_shwi ();
-		  if (ranges_overlap_p (src_offset, maxsize,
-					dest_offset, maxsize))
+		  poly_offset_int full_src_offset
+		    = mem_ref_offset (src_base) + src_offset;
+		  poly_offset_int full_dest_offset
+		    = mem_ref_offset (dest_base) + dest_offset;
+		  if (ranges_maybe_overlap_p (full_src_offset, maxsize,
+					      full_dest_offset, maxsize))
 		    return false;
 		}
 	      else
@@ -4479,7 +4472,7 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 	      || handled_component_p (TREE_OPERAND (addr, 0))))
 	{
 	  tree base;
-	  HOST_WIDE_INT coffset;
+	  poly_int64 coffset;
 	  base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
 						&coffset);
 	  if (!base)
@@ -6065,7 +6058,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 	      else if (TREE_CODE (rhs) == ADDR_EXPR
 		       && !is_gimple_min_invariant (rhs))
 		{
-		  HOST_WIDE_INT offset = 0;
+		  poly_int64 offset = 0;
 		  tree base;
 		  base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (rhs, 0),
 							  &offset,
