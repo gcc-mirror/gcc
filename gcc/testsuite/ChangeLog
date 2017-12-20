@@ -1,3 +1,8 @@
+2017-12-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83436
+	* gfortran.dg/internal_readwrite_4.f90: New test.
+
 2017-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/83506
