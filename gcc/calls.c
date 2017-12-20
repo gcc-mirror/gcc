@@ -2460,6 +2460,17 @@ rtx_for_function_call (tree fndecl, tree addr)
   return funexp;
 }
 
+/* Return the static chain for this function, if any.  */
+
+rtx
+rtx_for_static_chain (const_tree fndecl_or_type, bool incoming_p)
+{
+  if (DECL_P (fndecl_or_type) && !DECL_STATIC_CHAIN (fndecl_or_type))
+    return NULL;
+
+  return targetm.calls.static_chain (fndecl_or_type, incoming_p);
+}
+
 /* Internal state for internal_arg_pointer_based_exp and its helpers.  */
 static struct
 {
