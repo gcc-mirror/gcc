@@ -3293,6 +3293,12 @@ extern rtx simplify_subreg (machine_mode, rtx, machine_mode,
 			    unsigned int);
 extern rtx simplify_gen_subreg (machine_mode, rtx, machine_mode,
 				unsigned int);
+inline rtx
+simplify_gen_subreg (machine_mode omode, rtx x, machine_mode imode,
+		     poly_uint64 offset)
+{
+  return simplify_gen_subreg (omode, x, imode, offset.to_constant ());
+}
 extern rtx lowpart_subreg (machine_mode, rtx, machine_mode);
 extern rtx simplify_replace_fn_rtx (rtx, const_rtx,
 				    rtx (*fn) (rtx, const_rtx, void *), void *);

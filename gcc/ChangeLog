@@ -2,6 +2,28 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (simplify_gen_subreg): Add a temporary overload that
+	accepts poly_uint64 offsets.
+	* expmed.h (extract_bit_field): Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.
+	* expmed.c (lowpart_bit_field_p): Likewise.
+	(extract_bit_field_as_subreg): New function, split out from...
+	(extract_bit_field_1): ...here.  Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.  For vector
+	extractions, check that BITSIZE matches the size of the extracted
+	value and that BITNUM is an exact multiple of that size.
+	If all else fails, try forcing the value into memory if
+	BITNUM is variable, and adjusting the address so that the
+	offset is constant.  Split the part that can only handle constant
+	bitsize and bitnum out into...
+	(extract_integral_bit_field): ...this new function.
+	(extract_bit_field): Take bitsize and bitnum as poly_uint64s
+	rather than unsigned HOST_WIDE_INTs.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expmed.h (store_bit_field): Take bitsize and bitnum as
 	poly_uint64s rather than unsigned HOST_WIDE_INTs.
 	* expmed.c (simple_mem_bitfield_p): Likewise.  Add a parameter
