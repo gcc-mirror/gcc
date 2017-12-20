@@ -244,6 +244,12 @@ namespace __debug
       { return iterator(_Base::insert(__x), this); }
 
 #if __cplusplus >= 201103L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(value_type&& __x)
+      { return { _Base::insert(std::move(__x)), this }; }
+
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>
@@ -270,6 +276,15 @@ namespace __debug
       }
 
 #if __cplusplus >= 201103L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2354. Unnecessary copying when inserting into maps with braced-init
+      iterator
+      insert(const_iterator __position, value_type&& __x)
+      {
+	__glibcxx_check_insert(__position);
+	return { _Base::insert(__position.base(), std::move(__x)), this };
+      }
+
       template<typename _Pair, typename = typename
 	       std::enable_if<std::is_constructible<value_type,
 						    _Pair&&>::value>::type>

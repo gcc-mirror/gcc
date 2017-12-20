@@ -1,3 +1,21 @@
+2017-12-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/82522
+	* include/debug/map.h (map::insert(value_type&&))
+	(map::insert(const_iterator, value_type&&)): Add overload for rvalues.
+	* include/debug/multimap.h (multimap::insert(value_type&&))
+	(multimap::insert(const_iterator, value_type&&)): Likewise.
+	* include/debug/unordered_map (unordered_map::insert(value_type&&))
+	(unordered_map::insert(const_iterator, value_type&&))
+	(unordered_multimap::insert(value_type&&))
+	(unordered_multimap::insert(const_iterator, value_type&&)): Likewise.
+	* testsuite/23_containers/map/modifiers/insert/dr2354.cc (test02): New.
+	* testsuite/23_containers/multimap/modifiers/insert/dr2354.cc (test02):
+	New.
+	* testsuite/23_containers/unordered_map/insert/dr2354.cc (test02): New.
+	* testsuite/23_containers/unordered_multimap/insert/dr2354.cc (test02):
+	New.
+
 2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/cpu/aarch64/opt/ext/opt_random.h (__VEXT): Check
