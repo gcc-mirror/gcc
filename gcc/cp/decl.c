@@ -9119,6 +9119,8 @@ grokvardecl (tree type,
 				|| volatilep
 				|| inlinep));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
+
+      decl_set_module (decl);
     }
   /* Not at top level, only `static' makes a static definition.  */
   else

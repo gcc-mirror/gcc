@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* MODULE_STAMP is a #define passed in from the Make file.  When
+/* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
    indicates experimentalness of the module system.
 
@@ -1215,17 +1215,24 @@ dump_nested_name (tree t, FILE *d)
       t = DECL_NAME (t);
     }
 
-  if (t && TREE_CODE (t) == IDENTIFIER_NODE)
-    {
-      fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), d);
-      return true;
-    }
+  if (t)
+    switch (TREE_CODE (t))
+      {
+      case IDENTIFIER_NODE:
+	fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), d);
+	return true;
 
-  if (t && TREE_CODE (t) == STRING_CST)
-    {
-      fwrite (TREE_STRING_POINTER (t), 1, TREE_STRING_LENGTH (t) - 1, d);
-      return true;
-    }
+      case STRING_CST:
+	fwrite (TREE_STRING_POINTER (t), 1, TREE_STRING_LENGTH (t) - 1, d);
+	return true;
+
+      case INTEGER_CST:
+	print_hex (wi::to_wide (t), d);
+	return true;
+
+      default:
+	break;
+      }
 
   return false;
 }
@@ -1463,6 +1470,7 @@ private:
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
   void define_function (tree, tree);
+  void define_var (tree, tree);
   void define_class (tree, tree);
   void define_enum (tree, tree);
   void ident_imported_decl (tree ctx, unsigned mod, tree decl);
@@ -1572,6 +1580,7 @@ private:
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
   tree define_function (tree, tree);
+  tree define_var (tree, tree);
   tree define_class (tree, tree);
   tree define_enum (tree, tree);
   tree ident_imported_decl (tree ctx, unsigned mod, tree name);
@@ -2165,6 +2174,27 @@ cpms_in::define_function (tree decl, tree maybe_template)
   return decl;
 }
 
+/* Stream a variable definition.  */
+
+void
+cpms_out::define_var (tree decl, tree)
+{
+  tree_node (DECL_INITIAL (decl));
+}
+
+tree
+cpms_in::define_var (tree decl, tree)
+{
+  tree init = tree_node ();
+
+  if (r.error ())
+    return NULL;
+
+  DECL_INITIAL (decl) = init;
+
+  return decl;
+}
+
 /* A chained set of decls.  */
 
 void
@@ -2408,7 +2438,7 @@ cpms_in::define_class (tree type, tree maybe_template)
 /* Stream an enum definition.  */
 
 void
-cpms_out::define_enum (tree type, tree maybe_template)
+cpms_out::define_enum (tree type, tree)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
@@ -2418,7 +2448,7 @@ cpms_out::define_enum (tree type, tree maybe_template)
 }
 
 tree
-cpms_in::define_enum (tree type, tree maybe_template)
+cpms_in::define_enum (tree type, tree)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
@@ -2498,6 +2528,15 @@ cpms_out::maybe_tag_definition (tree t)
       else if (!DECL_DECLARED_INLINE_P (t))
 	return;
       break;
+
+    case VAR_DECL:
+      if (!DECL_INITIAL (t))
+	/* Nothing to define.  */
+	return;
+
+      if (!TREE_CONSTANT (t))
+	return;
+      break;
     }
 
   tag_definition (t, maybe_template);
@@ -2522,9 +2561,15 @@ cpms_out::tag_definition (tree t, tree maybe_template)
     default:
       // FIXME:Other things
       gcc_unreachable ();
+
     case FUNCTION_DECL:
       define_function (t, maybe_template);
       break;
+
+    case VAR_DECL:
+      define_var (t, maybe_template);
+      break;
+
     case TYPE_DECL:
       if (DECL_IMPLICIT_TYPEDEF_P (t))
 	{
@@ -2569,6 +2614,10 @@ cpms_in::tag_definition ()
 
     case FUNCTION_DECL:
       t = define_function (t, maybe_template);
+      break;
+
+    case VAR_DECL:
+      t = define_var (t, maybe_template);
       break;
 
     case TYPE_DECL:
@@ -2868,7 +2917,7 @@ cpms_out::core_bools (tree t)
   WB (t->base.asm_written_flag);
   WB (t->base.nowarning_flag);
   // visited is zero
-  WB (t->base.used_flag);
+  WB (t->base.used_flag); // FIXME: should we be dumping this?
   WB (t->base.nothrow_flag);
   WB (t->base.static_flag);
   WB (t->base.public_flag);
@@ -2945,7 +2994,10 @@ cpms_out::core_bools (tree t)
       WB (t->decl_common.lang_flag_7);
       WB (t->decl_common.lang_flag_8);
       WB (t->decl_common.decl_flag_0);
-      WB (t->decl_common.decl_flag_1);
+      /* static variables become external.  */
+      WB (t->decl_common.decl_flag_1
+	  || (code == VAR_DECL && TREE_STATIC (t)
+	      && !DECL_WEAK (t) && !DECL_VTABLE_OR_VTT_P (t)));
       WB (t->decl_common.decl_flag_2);
       WB (t->decl_common.decl_flag_3);
       WB (t->decl_common.gimple_reg_flag);
@@ -3154,7 +3206,10 @@ cpms_out::lang_decl_bools (tree t)
   WB (lang->u.base.language == lang_cplusplus);
   WB ((lang->u.base.use_template >> 0) & 1);
   WB ((lang->u.base.use_template >> 1) & 1);
-  WB (lang->u.base.not_really_extern);
+  /* Vars stop being not really extern */
+  WB (lang->u.base.not_really_extern
+      && (TREE_CODE (t) != VAR_DECL
+	  || DECL_VTABLE_OR_VTT_P (t) || DECL_WEAK (t)));
   WB (lang->u.base.initialized_in_class);
   WB (lang->u.base.repo_available_p);
   WB (lang->u.base.threadprivate_or_deleted_p);
@@ -4977,6 +5032,7 @@ module_exporting_level ()
 void
 decl_set_module (tree decl)
 {
+  // FIXME: check ill-formed linkage
   if (export_depth)
     DECL_MODULE_EXPORT_P (decl) = true;
 
