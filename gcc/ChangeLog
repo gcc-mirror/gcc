@@ -2,6 +2,31 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expmed.h (store_bit_field): Change bitregion_start and
+	bitregion_end from unsigned HOST_WIDE_INT to poly_uint64.
+	* expmed.c (adjust_bit_field_mem_for_reg, strict_volatile_bitfield_p)
+	(store_bit_field_1, store_integral_bit_field, store_bit_field)
+	(store_fixed_bit_field, store_split_bit_field): Likewise.
+	* expr.c (store_constructor_field, store_field): Likewise.
+	(optimize_bitfield_assignment_op): Likewise.  Make the same change
+	to bitsize and bitpos.
+	* machmode.h (bit_field_mode_iterator): Change m_bitregion_start
+	and m_bitregion_end from HOST_WIDE_INT to poly_int64.  Make the
+	same change in the constructor arguments.
+	(get_best_mode): Change bitregion_start and bitregion_end from
+	unsigned HOST_WIDE_INT to poly_uint64.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Change bitregion_start and bitregion_end from HOST_WIDE_INT to
+	poly_int64.
+	(bit_field_mode_iterator::next_mode): Update for new types
+	of m_bitregion_start and m_bitregion_end.
+	(get_best_mode): Change bitregion_start and bitregion_end from
+	unsigned HOST_WIDE_INT to poly_uint64.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (simplify_gen_subreg): Add a temporary overload that
 	accepts poly_uint64 offsets.
 	* expmed.h (extract_bit_field): Take bitsize and bitnum as
