@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (get_inner_reference): Add a version that returns the
+	offset and size as poly_int64_pods rather than HOST_WIDE_INTs.
+	* cfgexpand.c (expand_debug_expr): Track polynomial offsets.  Simply
+	the case in which bitpos is not associated with the first byte.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-affine.h (get_inner_reference_aff): Return the size as a
 	poly_widest_int.
 	* tree-affine.c (get_inner_reference_aff): Likewise.
