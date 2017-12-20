@@ -457,16 +457,17 @@ get_initial_register_offset (int from, int to)
    references on strict alignment machines.  */
 
 static int
-rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
+rtx_addr_can_trap_p_1 (const_rtx x, poly_int64 offset, poly_int64 size,
 		       machine_mode mode, bool unaligned_mems)
 {
   enum rtx_code code = GET_CODE (x);
+  gcc_checking_assert (mode == BLKmode || known_size_p (size));
 
   /* The offset must be a multiple of the mode size if we are considering
      unaligned memory references on strict alignment machines.  */
-  if (STRICT_ALIGNMENT && unaligned_mems && GET_MODE_SIZE (mode) != 0)
+  if (STRICT_ALIGNMENT && unaligned_mems && mode != BLKmode)
     {
-      HOST_WIDE_INT actual_offset = offset;
+      poly_int64 actual_offset = offset;
 
 #ifdef SPARC_STACK_BOUNDARY_HACK
       /* ??? The SPARC port may claim a STACK_BOUNDARY higher than
@@ -477,7 +478,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	actual_offset -= STACK_POINTER_OFFSET;
 #endif
 
-      if (actual_offset % GET_MODE_SIZE (mode) != 0)
+      if (!multiple_p (actual_offset, GET_MODE_SIZE (mode)))
 	return 1;
     }
 
@@ -489,14 +490,12 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
       if (!CONSTANT_POOL_ADDRESS_P (x) && !SYMBOL_REF_FUNCTION_P (x))
 	{
 	  tree decl;
-	  HOST_WIDE_INT decl_size;
+	  poly_int64 decl_size;
 
-	  if (offset < 0)
+	  if (maybe_lt (offset, 0))
 	    return 1;
-	  if (size == 0)
-	    size = GET_MODE_SIZE (mode);
-	  if (size == 0)
-	    return offset != 0;
+	  if (!known_size_p (size))
+	    return maybe_ne (offset, 0);
 
 	  /* If the size of the access or of the symbol is unknown,
 	     assume the worst.  */
@@ -507,9 +506,10 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	  if (!decl)
 	    decl_size = -1;
 	  else if (DECL_P (decl) && DECL_SIZE_UNIT (decl))
-	    decl_size = (tree_fits_shwi_p (DECL_SIZE_UNIT (decl))
-			 ? tree_to_shwi (DECL_SIZE_UNIT (decl))
-			 : -1);
+	    {
+	      if (!poly_int_tree_p (DECL_SIZE_UNIT (decl), &decl_size))
+		decl_size = -1;
+	    }
 	  else if (TREE_CODE (decl) == STRING_CST)
 	    decl_size = TREE_STRING_LENGTH (decl);
 	  else if (TYPE_SIZE_UNIT (TREE_TYPE (decl)))
@@ -517,7 +517,9 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	  else
 	    decl_size = -1;
 
-	  return (decl_size <= 0 ? offset != 0 : offset + size > decl_size);
+	  return (!known_size_p (decl_size) || known_eq (decl_size, 0)
+		  ? maybe_ne (offset, 0)
+		  : maybe_gt (offset + size, decl_size));
         }
 
       return 0;
@@ -534,17 +536,14 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	 || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
 	{
 #ifdef RED_ZONE_SIZE
-	  HOST_WIDE_INT red_zone_size = RED_ZONE_SIZE;
+	  poly_int64 red_zone_size = RED_ZONE_SIZE;
 #else
-	  HOST_WIDE_INT red_zone_size = 0;
+	  poly_int64 red_zone_size = 0;
 #endif
-	  HOST_WIDE_INT stack_boundary = PREFERRED_STACK_BOUNDARY
-					 / BITS_PER_UNIT;
-	  HOST_WIDE_INT low_bound, high_bound;
+	  poly_int64 stack_boundary = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+	  poly_int64 low_bound, high_bound;
 
-	  if (size == 0)
-	    size = GET_MODE_SIZE (mode);
-	  if (size == 0)
+	  if (!known_size_p (size))
 	    return 1;
 
 	  if (x == frame_pointer_rtx)
@@ -562,10 +561,10 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	    }
 	  else if (x == hard_frame_pointer_rtx)
 	    {
-	      HOST_WIDE_INT sp_offset
+	      poly_int64 sp_offset
 		= get_initial_register_offset (STACK_POINTER_REGNUM,
 					       HARD_FRAME_POINTER_REGNUM);
-	      HOST_WIDE_INT ap_offset
+	      poly_int64 ap_offset
 		= get_initial_register_offset (ARG_POINTER_REGNUM,
 					       HARD_FRAME_POINTER_REGNUM);
 
@@ -589,7 +588,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 	    }
 	  else if (x == stack_pointer_rtx)
 	    {
-	      HOST_WIDE_INT ap_offset
+	      poly_int64 ap_offset
 		= get_initial_register_offset (ARG_POINTER_REGNUM,
 					       STACK_POINTER_REGNUM);
 
@@ -629,7 +628,8 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 #endif
 	    }
 
-	  if (offset >= low_bound && offset <= high_bound - size)
+	  if (known_ge (offset, low_bound)
+	      && known_le (offset, high_bound - size))
 	    return 0;
 	  return 1;
 	}
@@ -649,7 +649,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
       if (XEXP (x, 0) == pic_offset_table_rtx
 	  && GET_CODE (XEXP (x, 1)) == CONST
 	  && GET_CODE (XEXP (XEXP (x, 1), 0)) == UNSPEC
-	  && offset == 0)
+	  && known_eq (offset, 0))
 	return 0;
 
       /* - or it is an address that can't trap plus a constant integer.  */
@@ -686,7 +686,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, HOST_WIDE_INT offset, HOST_WIDE_INT size,
 int
 rtx_addr_can_trap_p (const_rtx x)
 {
-  return rtx_addr_can_trap_p_1 (x, 0, 0, VOIDmode, false);
+  return rtx_addr_can_trap_p_1 (x, 0, -1, BLKmode, false);
 }
 
 /* Return true if X contains a MEM subrtx.  */
@@ -2796,7 +2796,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
 	  code_changed
 	  || !MEM_NOTRAP_P (x))
 	{
-	  HOST_WIDE_INT size = MEM_SIZE_KNOWN_P (x) ? MEM_SIZE (x) : 0;
+	  HOST_WIDE_INT size = MEM_SIZE_KNOWN_P (x) ? MEM_SIZE (x) : -1;
 	  return rtx_addr_can_trap_p_1 (XEXP (x, 0), 0, size,
 					GET_MODE (x), code_changed);
 	}

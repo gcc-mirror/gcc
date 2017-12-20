@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtlanal.c (rtx_addr_can_trap_p_1): Take the offset and size
+	as poly_int64s rather than HOST_WIDE_INTs.  Use a size of -1
+	rather than 0 to represent an unknown size.  Assert that the size
+	is known when the mode isn't BLKmode.
+	(may_trap_p_1): Use -1 for unknown sizes.
+	(rtx_addr_can_trap_p): Likewise.  Pass BLKmode rather than VOIDmode.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* dse.c (store_info): Change offset and width from HOST_WIDE_INT
 	to poly_int64.  Update commentary for positions_needed.large.
 	(read_info_type): Change offset and width from HOST_WIDE_INT
