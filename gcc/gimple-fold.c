@@ -3721,15 +3721,23 @@ fold_internal_goacc_dim (const gimple *call)
 {
   int axis = oacc_get_ifn_dim_arg (call);
   int size = oacc_get_fn_dim_size (current_function_decl, axis);
-  bool is_pos = gimple_call_internal_fn (call) == IFN_GOACC_DIM_POS;
   tree result = NULL_TREE;
+  tree type = TREE_TYPE (gimple_call_lhs (call));
 
-  /* If the size is 1, or we only want the size and it is not dynamic,
-     we know the answer.  */
-  if (size == 1 || (!is_pos && size))
+  switch (gimple_call_internal_fn (call))
     {
-      tree type = TREE_TYPE (gimple_call_lhs (call));
-      result = build_int_cst (type, size - is_pos);
+    case IFN_GOACC_DIM_POS:
+      /* If the size is 1, we know the answer.  */
+      if (size == 1)
+	result = build_int_cst (type, 0);
+      break;
+    case IFN_GOACC_DIM_SIZE:
+      /* If the size is not dynamic, we know the answer.  */
+      if (size)
+	result = build_int_cst (type, size);
+      break;
+    default:
+      break;
     }
 
   return result;

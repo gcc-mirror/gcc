@@ -1,3 +1,7 @@
+2017-12-20  Tom de Vries  <tom@codesourcery.com>
+
+	* gimple-fold.c (fold_internal_goacc_dim): Simplify.
+
 2017-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/83506
