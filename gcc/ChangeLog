@@ -2,6 +2,29 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gengtype.c (main): Handle poly_int64_pod.
+	* dwarf2out.h (dw_cfi_oprnd_cfa_loc): New dw_cfi_oprnd_type.
+	(dw_cfi_oprnd::dw_cfi_cfa_loc): New field.
+	(dw_cfa_location::offset, dw_cfa_location::base_offset): Change
+	from HOST_WIDE_INT to poly_int64_pod.
+	* dwarf2cfi.c (queued_reg_save::cfa_offset): Likewise.
+	(copy_cfa): New function.
+	(lookup_cfa_1): Use the cached dw_cfi_cfa_loc, if it exists.
+	(cfi_oprnd_equal_p): Handle dw_cfi_oprnd_cfa_loc.
+	(cfa_equal_p, dwarf2out_frame_debug_adjust_cfa)
+	(dwarf2out_frame_debug_cfa_offset, dwarf2out_frame_debug_expr)
+	(initial_return_save): Treat offsets as poly_ints.
+	(def_cfa_0): Likewise.  Cache the CFA in dw_cfi_cfa_loc if either
+	offset is nonconstant.
+	(reg_save): Take the offset as a poly_int64.  Fall back to
+	DW_CFA_expression for nonconstant offsets.
+	(queue_reg_save): Take the offset as a poly_int64.
+	* dwarf2out.c (dw_cfi_oprnd2_desc): Handle DW_CFA_def_cfa_expression.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (operand_subword, operand_subword_force): Take the offset
 	as a poly_uint64 an unsigned int.
 	* emit-rtl.c (operand_subword, operand_subword_force): Likewise.
