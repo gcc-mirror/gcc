@@ -1,3 +1,8 @@
+2017-12-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/83491
+	* gcc.dg/pr83491.c: Add new test.
+
 2017-12-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83436

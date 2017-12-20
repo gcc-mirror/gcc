@@ -1,3 +1,9 @@
+2017-12-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/83491
+	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Check for SSA_NAME
+	before walking uses.  Improve coding style and comments.
+
 2017-12-20  Tom de Vries  <tom@codesourcery.com>
 
 	* gimple-fold.c (fold_internal_goacc_dim): Simplify.
