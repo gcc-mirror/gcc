@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (store_constructor_field): Change bitsize from a
+	unsigned HOST_WIDE_INT to a poly_uint64 and bitpos from a
+	HOST_WIDE_INT to a poly_int64.
+	(store_constructor): Change size from a HOST_WIDE_INT to
+	a poly_int64.
+	(store_field): Likewise bitsize and bitpos.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expmed.h (store_bit_field): Change bitregion_start and
 	bitregion_end from unsigned HOST_WIDE_INT to poly_uint64.
 	* expmed.c (adjust_bit_field_mem_for_reg, strict_volatile_bitfield_p)
