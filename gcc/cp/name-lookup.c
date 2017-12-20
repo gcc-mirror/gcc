@@ -3621,7 +3621,7 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 	}
       else if (!iter.using_p () && !is_ns)
 	{
-	  gcc_assert (!TREE_CHAIN (decl));
+	  gcc_assert (!DECL_CHAIN (decl));
 	  export_tail = iter.export_tail (export_tail);
 	  add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
 	}

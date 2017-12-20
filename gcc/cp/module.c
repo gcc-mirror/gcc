@@ -61,6 +61,7 @@ struct GTY(()) module_state {
   unsigned crc;		/* CRC we saw reading it in. */
   const char *filename;	/* Filename */
   location_t loc;	/* Its location.  */
+  bool crc_known : 1;
 
  public:
   module_state ();
@@ -68,7 +69,8 @@ struct GTY(()) module_state {
  public:
   void freeze (const module_state *);
   void set_index (unsigned index);
-  void set_name (tree name, hashval_t, unsigned crc);
+  void set_name (tree name, hashval_t);
+  bool set_crc (unsigned crc_);
   void set_location (const char *filename);
   void push_location (const char *filename);
   void pop_location () const;
@@ -134,6 +136,7 @@ module_state::module_state ()
     name (NULL_TREE), name_parts (NULL), direct_import (0), mod (~0u),
     crc (0), filename (NULL), loc (UNKNOWN_LOCATION)
 {
+  crc_known = false;
 }
 
 void module_state::freeze (const module_state *other)
@@ -156,11 +159,10 @@ module_state::set_index (unsigned index)
    already been checked for well-formedness.  */
 
 void
-module_state::set_name (tree name_, hashval_t hash_, unsigned crc_)
+module_state::set_name (tree name_, hashval_t hash_)
 {
   name = name_;
   name_hash = hash_;
-  crc = crc_;
 
   size_t len;
   const char *ptr;
@@ -250,6 +252,24 @@ module_state::set_name (tree name_, hashval_t hash_, unsigned crc_)
   while (dot);
 
   XDELETEVEC (buffer);
+}
+
+/* Set the CRC, return false on mismatch.  */
+
+bool
+module_state::set_crc (unsigned crc_)
+{
+  if (!crc_known)
+    {
+      crc = crc_;
+      crc_known = true;
+    }
+  if (crc_ != crc)
+    {
+      error ("module %qE CRC mismatch", name);
+      return false;
+    }
+  return true;
 }
 
 void
@@ -377,9 +397,9 @@ public:
 
 
 public:
-  unsigned get_crc ()
+  unsigned get_crc () const
   {
-    return crc + !crc;
+    return crc;
   }
 
 public:
@@ -474,6 +494,7 @@ private:
   void flush ();
 public:
   void seek (unsigned);
+  unsigned tell ();
 
 public:
   void raw (unsigned);
@@ -998,6 +1019,13 @@ cpm_writer::seek (unsigned loc)
   fseek (stream, long (loc), SEEK_SET);
 }
 
+unsigned
+cpm_writer::tell ()
+{
+  flush ();
+  return unsigned (ftell (stream));
+}
+
 size_t
 cpm_writer::reserve (size_t want)
 {
@@ -1385,6 +1413,8 @@ class cpms_out : public cpm_stream {
   typedef simple_hashmap_traits<non_null, unsigned> traits;
   hash_map<void *,unsigned,traits> tree_map; /* trees to ids  */
 
+  unsigned crc_tell;
+
   /* Tree instrumentation. */
   unsigned unique;
   unsigned refs;
@@ -1434,6 +1464,7 @@ private:
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
   void define_function (tree, tree);
   void define_class (tree, tree);
+  void define_enum (tree, tree);
   void ident_imported_decl (tree ctx, unsigned mod, tree decl);
 
 public:
@@ -1444,6 +1475,7 @@ public:
 cpms_out::cpms_out (FILE *s, module_state *state)
   :cpm_stream (state), w (s, state->filename)
 {
+  crc_tell = ~0;
   unique = refs = nulls = 0;
   records = 0;
   dump () && dump ("Writing module %I", state->name);
@@ -1541,6 +1573,7 @@ private:
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
   tree define_function (tree, tree);
   tree define_class (tree, tree);
+  tree define_enum (tree, tree);
   tree ident_imported_decl (tree ctx, unsigned mod, tree name);
 
 public:
@@ -1578,7 +1611,7 @@ cpms_in::insert (tree t)
 }
 
 static unsigned do_module_import (location_t, tree, import_kind,
-				  unsigned crc, cpms_in * = NULL);
+				  cpms_in * = NULL, unsigned = 0);
 
 /* File header
    buf:ident
@@ -1591,15 +1624,17 @@ void
 cpms_out::header (tree name)
 {
   char const *id = ident ();
-  w.buf (id, strlen (id));
-
   int v = version ();
+
   gcc_assert (v < 0); /* Not ready for prime-time.  */
+  dump () && dump ("Writing \"%s\" version=%V", id, v);
+
+  w.buf (id, strlen (id));
   w.raw (unsigned (v));
 
+  /* Reserve space for the CRC.  */
+  crc_tell = w.tell ();
   w.raw (0);
-
-  dump () && dump ("Writing \"%s\" version=%V", id, v);
 
   w.module_name (name);
 }
@@ -1652,19 +1687,15 @@ cpms_in::header ()
   dump () && dump  ("Expecting %V found %V", ver, v);
 
   unsigned crc = r.raw ();
-  dump () && dump ("Readinging CRC=%x", crc);
-  if (state->crc && state->crc != crc)
-    {
-      error ("module %qE CRC mismatch", state->name);
-      return false;
-    }
-  else
-    state->crc = crc;
+  dump () && dump ("Reading CRC=%x", crc);
+  if (!state->set_crc (crc))
+    return false;
 
   /* Check module name.  */
   tree name = r.module_name ();
   if (!name)
     return false;
+
   if (!module_state_hash::equal (state, name))
     {
       error ("module %qE found, expected module %qE", name, state->name);
@@ -1680,10 +1711,14 @@ cpms_out::tag_eof ()
   tag (rt_eof);
   w.checkpoint ();
 
-  w.seek (strlen (ident ()) + sizeof (unsigned));
   unsigned crc = w.get_crc ();
-  w.raw (crc);
   dump () && dump ("Writing eof, CRC=%x", crc);
+
+  instrument ();
+
+  /* Rewind and write checksum in slot we saved for it.  */
+  w.seek (crc_tell);
+  w.raw (crc);
 }
 
 int
@@ -1951,7 +1986,7 @@ cpms_in::tag_import ()
 		   direct == 2 ? "export " : direct ? "" : "indirect ", imp);
   int imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
 				 direct ? ik_direct : ik_indirect,
-				 crc, this);
+				 this, crc);
   if (imp_ix != GLOBAL_MODULE_INDEX)
     {
       remap_vec[ix] = imp_ix;
@@ -2225,6 +2260,8 @@ cpms_in::tree_pair_vec ()
 void
 cpms_out::define_class (tree type, tree maybe_template)
 {
+  gcc_assert (TYPE_MAIN_VARIANT (type) == type);
+
   chained_decls (TYPE_FIELDS (type));
   tree_node (TYPE_VFIELD (type));
   tree_node (TYPE_BINFO (type));
@@ -2368,6 +2405,59 @@ cpms_in::define_class (tree type, tree maybe_template)
   return type;
 }
 
+/* Stream an enum definition.  */
+
+void
+cpms_out::define_enum (tree type, tree maybe_template)
+{
+  gcc_assert (TYPE_MAIN_VARIANT (type) == type);
+
+  tree_node (TYPE_VALUES (type));
+  tree_node (TYPE_MIN_VALUE (type));
+  tree_node (TYPE_MAX_VALUE (type));
+}
+
+tree
+cpms_in::define_enum (tree type, tree maybe_template)
+{
+  gcc_assert (TYPE_MAIN_VARIANT (type) == type);
+
+  tree values = tree_node ();
+  tree min = tree_node ();
+  tree max = tree_node ();
+
+  if (r.error ())
+    return NULL_TREE;
+
+  TYPE_VALUES (type) = values;
+  TYPE_MIN_VALUE (type) = min;
+  TYPE_MAX_VALUE (type) = max;
+
+  if (!ENUM_IS_SCOPED (type))
+    {
+      /* Inject the members into the containing scope.  */
+      tree ctx = CP_DECL_CONTEXT (TYPE_NAME (type));
+      unsigned mod_ix = DECL_MODULE_INDEX (TYPE_NAME (type));
+
+      if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	for (; values; values = TREE_CHAIN (values))
+	  {
+	    tree cst = TREE_VALUE (values);
+
+	    // FIXME: mark the CST as exported so lookup will find
+	    // it.  It'd probably better for this cst's context to be
+	    // the ENUM itself, even though it needs to be in the
+	    // containing scope.
+	    DECL_MODULE_EXPORT_P (cst) = true;
+	    push_module_binding (ctx, DECL_NAME (cst), mod_ix, cst, NULL);
+	  }
+      else
+	insert_late_enum_def_bindings (ctx, type);
+    }
+
+  return type;
+}
+
 /* Write out DECL's definition, if importers need it.  */
 
 void
@@ -2389,7 +2479,10 @@ cpms_out::maybe_tag_definition (tree t)
     case TYPE_DECL:
       if (!DECL_IMPLICIT_TYPEDEF_P (t))
 	return;
-      else if (!TYPE_FIELDS (TREE_TYPE (t)))
+
+      if (TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE
+	  ? !TYPE_VALUES (TREE_TYPE (t))
+	  : !TYPE_FIELDS (TREE_TYPE (t)))
 	return;
       break;
 
@@ -2438,13 +2531,17 @@ cpms_out::tag_definition (tree t, tree maybe_template)
 	  t = TREE_TYPE (t);
 	  goto again;
 	}
-      
+
       // FIXME:Actual typedefs
       gcc_unreachable ();
 
     case RECORD_TYPE:
     case UNION_TYPE:
       define_class (t, maybe_template);
+      break;
+
+    case ENUMERAL_TYPE:
+      define_enum (t, maybe_template);
       break;
     }
 }
@@ -2487,6 +2584,10 @@ cpms_in::tag_definition ()
     case RECORD_TYPE:
     case UNION_TYPE:
       t = define_class (t, maybe_template);
+      break;
+
+    case ENUMERAL_TYPE:
+      t = define_enum (t, maybe_template);
       break;
     }
 
@@ -3457,7 +3558,7 @@ cpms_out::core_vals (tree t)
     {
       /* Records and unions hold FIELDS, VFIELD & BINFO on these
 	 things.  */
-      if (!RECORD_OR_UNION_CODE_P (code))
+      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
 	{
 	  /* Don't write the cached values vector.  */
 	  if (!TYPE_CACHED_VALUES_P (t))
@@ -3834,7 +3935,7 @@ cpms_in::core_vals (tree t)
     {
       /* Records and unions hold FIELDS, VFIELD & BINFO on these
 	 things.  */
-      if (!RECORD_OR_UNION_CODE_P (code))
+      if (!RECORD_OR_UNION_CODE_P (code) && code != ENUMERAL_TYPE)
 	{
 	  if (!TYPE_CACHED_VALUES_P (t))
 	    RT (t->type_non_common.values);
@@ -5207,7 +5308,7 @@ make_module_file (char *&name, size_t name_len)
 
 unsigned
 do_module_import (location_t loc, tree name, import_kind kind,
-		  unsigned crc, cpms_in *from)
+		  cpms_in *from, unsigned crc)
 {
   if (!module_hash)
     {
@@ -5270,7 +5371,9 @@ do_module_import (location_t loc, tree name, import_kind kind,
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
 
-      state->set_name (name, hash, crc);
+      state->set_name (name, hash);
+      if (from)
+	state->set_crc (crc);
 
       *slot = state;
 
@@ -5357,8 +5460,7 @@ void
 import_module (const cp_expr &name, tree)
 {
   gcc_assert (global_namespace == current_scope ());
-  unsigned index = do_module_import (name.get_location (),
-				     *name, ik_direct, 0, 0);
+  unsigned index = do_module_import (name.get_location (), *name, ik_direct);
   if (index != GLOBAL_MODULE_INDEX)
     this_module->do_import (index, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
@@ -5391,8 +5493,7 @@ declare_module (const cp_expr &name, bool inter, tree)
     }
 
   unsigned index = do_module_import
-    (name.get_location (), *name,
-     inter ? ik_interface : ik_implementation, 0, 0);
+    (name.get_location (), *name, inter ? ik_interface : ik_implementation);
   if (index != GLOBAL_MODULE_INDEX)
     {
       gcc_assert (index == THIS_MODULE_INDEX);
@@ -5428,7 +5529,6 @@ write_module (FILE *stream, module_state *state)
     error ("failed to write module %qE (%qs): %s",
 	   state->name, state->filename,
 	   e >= 0 ? xstrerror (errno) : "Bad file data");
-  out.instrument ();
 }
 
 /* Convert the module search path.  */

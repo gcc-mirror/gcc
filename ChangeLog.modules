@@ -1,3 +1,24 @@
+2017-12-20  Nathan Sidwell  <nathan@acm.org>
+
+	Enumerations!
+	gcc/cp/
+	* module.c (module_state::set_name): Don't deal with crc.
+	(module_state::set_crc): New.
+	(cpm_serial::get_crc): Don't obscure zero.
+	(cpm_writer::tell): New.
+	(cpms_out::crc_tell): New.
+	(cpms_{in,out}::define_enum): New.
+	(cpms_out::header): Save crc location.
+	(cpms_in::header): Use set_crc.
+	(cpms_out::tag_eof): Adjust.
+	(cpms_out::maybe_tag_definition): Deal with enums.
+	(cpms_{in,out}::tag_definition): Deal with enums.
+	(cpms_{in,out}::core_vals): Do not write enum bits.
+	(do_module_import): Use set_crc.
+	* name-lookup.c (push_module_binding): Fix assert.
+	gcc/testsuite/
+	* g++.dg/modules/enum-1_[ab].C: New.
+
 2017-12-19  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r255836.
