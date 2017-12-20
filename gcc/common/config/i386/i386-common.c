@@ -143,6 +143,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_IBT_SET OPTION_MASK_ISA_IBT
 #define OPTION_MASK_ISA_SHSTK_SET OPTION_MASK_ISA_SHSTK
 #define OPTION_MASK_ISA_VAES_SET OPTION_MASK_ISA_VAES
+#define OPTION_MASK_ISA_VPCLMULQDQ_SET OPTION_MASK_ISA_VPCLMULQDQ
 
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
@@ -214,6 +215,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_IBT_UNSET OPTION_MASK_ISA_IBT
 #define OPTION_MASK_ISA_SHSTK_UNSET OPTION_MASK_ISA_SHSTK
 #define OPTION_MASK_ISA_VAES_UNSET OPTION_MASK_ISA_VAES
+#define OPTION_MASK_ISA_VPCLMULQDQ_UNSET OPTION_MASK_ISA_VPCLMULQDQ
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -554,6 +556,19 @@ ix86_handle_option (struct gcc_options *opts,
 	}
       return true;
 
+    case OPT_mvpclmulqdq:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_VPCLMULQDQ_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_VPCLMULQDQ_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_VPCLMULQDQ_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_VPCLMULQDQ_UNSET;
+	}
+      return true;
+
     case OPT_mavx5124fmaps:
       if (value)
 	{
@@ -889,13 +904,13 @@ ix86_handle_option (struct gcc_options *opts,
     case OPT_mcx16:
       if (value)
 	{
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CX16_SET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_SET;
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CX16_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_CX16_SET;
 	}
       else
 	{
-	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_CX16_UNSET;
-	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_CX16_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_CX16_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_CX16_UNSET;
 	}
       return true;
 

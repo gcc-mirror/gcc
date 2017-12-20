@@ -470,6 +470,19 @@ proc check_effective_target_avx512vaes { } {
     } "-mvaes" ]
 }
 
+# Return 1 if vpclmulqdq instructions can be compiled.
+proc check_effective_target_vpclmulqdq { } {
+    return [check_no_compiler_messages vpclmulqdq object {
+        typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+
+        __v4di
+        _mm256_clmulepi64_epi128 (__v4di __A, __v4di __B)
+        {
+            return (__v4di) __builtin_ia32_vpclmulqdq_v4di (__A, __B, 0);
+        }
+    } "-mvpclmulqdq -mavx512vl" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

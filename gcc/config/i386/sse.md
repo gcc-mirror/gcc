@@ -178,6 +178,9 @@
   UNSPEC_VAESDECLAST
   UNSPEC_VAESENC
   UNSPEC_VAESENCLAST
+
+  ;; For VPCLMULQDQ support
+  UNSPEC_VPCLMULQDQ
 ])
 
 (define_c_enum "unspecv" [
@@ -339,6 +342,9 @@
 
 (define_mode_iterator VI8
   [(V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") V2DI])
+
+(define_mode_iterator VI8_FVL
+  [(V8DI "TARGET_AVX512F") V4DI (V2DI "TARGET_AVX512VL")])
 
 (define_mode_iterator VI8_AVX512VL
   [V8DI (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
@@ -20498,3 +20504,13 @@
   "TARGET_VAES"
   "vaesenclast\t{%2, %1, %0|%0, %1, %2}"
 )
+
+(define_insn "vpclmulqdq_<mode>"
+  [(set (match_operand:VI8_FVL 0 "register_operand" "=v")
+	(unspec:VI8_FVL [(match_operand:VI8_FVL 1 "register_operand" "v")
+		      (match_operand:VI8_FVL 2 "vector_operand" "vm")
+		      (match_operand:SI 3 "const_0_to_255_operand" "n")]
+		     UNSPEC_VPCLMULQDQ))]
+  "TARGET_VPCLMULQDQ"
+  "vpclmulqdq\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "mode" "DI")])
