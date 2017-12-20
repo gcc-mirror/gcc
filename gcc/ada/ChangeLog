@@ -1,9 +1,16 @@
+2017-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Use IN_RANGE macro.
+	* gcc-interface/misc.c (gnat_get_array_descr_info): Likewise.
+	(default_pass_by_ref): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Likewise.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Replace Yoda
 	conditions with typical order conditions.
-	* gcc-interface/misc.c (gnat_get_array_descr_info,
-	default_pass_by_ref): Likewise.
+	* gcc-interface/misc.c (gnat_get_array_descr_info): Likewise.
+	(default_pass_by_ref): Likewise.
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Likewise.
 	* adaint.c (__gnat_tmp_name): Likewise.
 
