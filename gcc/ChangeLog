@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* dumpfile.h (dump_dec): Declare.
+	* dumpfile.c (dump_dec): New function.
+	* pretty-print.h (pp_wide_integer): Turn into a function and
+	declare a poly_int version.
+	* pretty-print.c (pp_wide_integer): New function for poly_ints.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/generic.texi (POLY_INT_CST): Document.
 	* tree.def (POLY_INT_CST): New tree code.
 	* treestruct.def (TS_POLY_INT_CST): New tree layout.
