@@ -395,8 +395,9 @@ struct variable
 static inline HOST_WIDE_INT
 int_mem_offset (const_rtx mem)
 {
-  if (MEM_OFFSET_KNOWN_P (mem))
-    return MEM_OFFSET (mem);
+  HOST_WIDE_INT offset;
+  if (MEM_OFFSET_KNOWN_P (mem) && MEM_OFFSET (mem).is_constant (&offset))
+    return offset;
   return 0;
 }
 
@@ -5256,7 +5257,7 @@ track_expr_p (tree expr, bool need_rtl)
 	  && !tracked_record_parameter_p (realdecl))
 	return 0;
       if (MEM_SIZE_KNOWN_P (decl_rtl)
-	  && MEM_SIZE (decl_rtl) > MAX_VAR_PARTS)
+	  && maybe_gt (MEM_SIZE (decl_rtl), MAX_VAR_PARTS))
 	return 0;
     }
 

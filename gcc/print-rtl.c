@@ -894,10 +894,16 @@ rtx_writer::print_rtx (const_rtx in_rtx)
 	fputc (' ', m_outfile);
 
       if (MEM_OFFSET_KNOWN_P (in_rtx))
-	fprintf (m_outfile, "+" HOST_WIDE_INT_PRINT_DEC, MEM_OFFSET (in_rtx));
+	{
+	  fprintf (m_outfile, "+");
+	  print_poly_int (m_outfile, MEM_OFFSET (in_rtx));
+	}
 
       if (MEM_SIZE_KNOWN_P (in_rtx))
-	fprintf (m_outfile, " S" HOST_WIDE_INT_PRINT_DEC, MEM_SIZE (in_rtx));
+	{
+	  fprintf (m_outfile, " S");
+	  print_poly_int (m_outfile, MEM_SIZE (in_rtx));
+	}
 
       if (MEM_ALIGN (in_rtx) != 1)
 	fprintf (m_outfile, " A%u", MEM_ALIGN (in_rtx));

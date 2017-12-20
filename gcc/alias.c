@@ -330,7 +330,7 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   /* If MEM_OFFSET/MEM_SIZE get us outside of ref->offset/ref->max_size
      drop ref->ref.  */
-  if (MEM_OFFSET (mem) < 0
+  if (maybe_lt (MEM_OFFSET (mem), 0)
       || (ref->max_size_known_p ()
 	  && maybe_gt ((MEM_OFFSET (mem) + MEM_SIZE (mem)) * BITS_PER_UNIT,
 		       ref->max_size)))
@@ -2331,12 +2331,15 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
    absolute value of the sizes as the actual sizes.  */
 
 static inline bool
-offset_overlap_p (HOST_WIDE_INT c, int xsize, int ysize)
+offset_overlap_p (poly_int64 c, poly_int64 xsize, poly_int64 ysize)
 {
-  return (xsize == 0 || ysize == 0
-	  || (c >= 0
-	      ? (abs (xsize) > c)
-	      : (abs (ysize) > -c)));
+  if (known_eq (xsize, 0) || known_eq (ysize, 0))
+    return true;
+
+  if (maybe_ge (c, 0))
+    return maybe_gt (maybe_lt (xsize, 0) ? -xsize : xsize, c);
+  else
+    return maybe_gt (maybe_lt (ysize, 0) ? -ysize : ysize, -c);
 }
 
 /* Return one if X and Y (memory addresses) reference the
@@ -2667,7 +2670,7 @@ decl_for_component_ref (tree x)
 
 static void
 adjust_offset_for_component_ref (tree x, bool *known_p,
-				 HOST_WIDE_INT *offset)
+				 poly_int64 *offset)
 {
   if (!*known_p)
     return;
@@ -2708,8 +2711,8 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   rtx rtlx, rtly;
   rtx basex, basey;
   bool moffsetx_known_p, moffsety_known_p;
-  HOST_WIDE_INT moffsetx = 0, moffsety = 0;
-  HOST_WIDE_INT offsetx = 0, offsety = 0, sizex, sizey;
+  poly_int64 moffsetx = 0, moffsety = 0;
+  poly_int64 offsetx = 0, offsety = 0, sizex, sizey;
 
   /* Unless both have exprs, we can't tell anything.  */
   if (exprx == 0 || expry == 0)
@@ -2811,12 +2814,10 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
      we can avoid overlap is if we can deduce that they are nonoverlapping
      pieces of that decl, which is very rare.  */
   basex = MEM_P (rtlx) ? XEXP (rtlx, 0) : rtlx;
-  if (GET_CODE (basex) == PLUS && CONST_INT_P (XEXP (basex, 1)))
-    offsetx = INTVAL (XEXP (basex, 1)), basex = XEXP (basex, 0);
+  basex = strip_offset_and_add (basex, &offsetx);
 
   basey = MEM_P (rtly) ? XEXP (rtly, 0) : rtly;
-  if (GET_CODE (basey) == PLUS && CONST_INT_P (XEXP (basey, 1)))
-    offsety = INTVAL (XEXP (basey, 1)), basey = XEXP (basey, 0);
+  basey = strip_offset_and_add (basey, &offsety);
 
   /* If the bases are different, we know they do not overlap if both
      are constants or if one is a constant and the other a pointer into the
@@ -2837,10 +2838,10 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
      declarations are necessarily different
     (i.e. compare_base_decls (exprx, expry) == -1)  */
 
-  sizex = (!MEM_P (rtlx) ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
+  sizex = (!MEM_P (rtlx) ? poly_int64 (GET_MODE_SIZE (GET_MODE (rtlx)))
 	   : MEM_SIZE_KNOWN_P (rtlx) ? MEM_SIZE (rtlx)
 	   : -1);
-  sizey = (!MEM_P (rtly) ? (int) GET_MODE_SIZE (GET_MODE (rtly))
+  sizey = (!MEM_P (rtly) ? poly_int64 (GET_MODE_SIZE (GET_MODE (rtly)))
 	   : MEM_SIZE_KNOWN_P (rtly) ? MEM_SIZE (rtly)
 	   : -1);
 
@@ -2859,16 +2860,7 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
   if (MEM_SIZE_KNOWN_P (y) && moffsety_known_p)
     sizey = MEM_SIZE (y);
 
-  /* Put the values of the memref with the lower offset in X's values.  */
-  if (offsetx > offsety)
-    {
-      std::swap (offsetx, offsety);
-      std::swap (sizex, sizey);
-    }
-
-  /* If we don't know the size of the lower-offset value, we can't tell
-     if they conflict.  Otherwise, we do the test.  */
-  return sizex >= 0 && offsety >= offsetx + sizex;
+  return !ranges_maybe_overlap_p (offsetx, sizex, offsety, sizey);
 }
 
 /* Helper for true_dependence and canon_true_dependence.

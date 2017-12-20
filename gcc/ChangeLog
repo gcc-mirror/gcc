@@ -2,6 +2,43 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (mem_attrs): Add a default constructor.  Change size and
+	offset from HOST_WIDE_INT to poly_int64.
+	* emit-rtl.h (set_mem_offset, set_mem_size, adjust_address_1)
+	(adjust_automodify_address_1, set_mem_attributes_minus_bitpos)
+	(widen_memory_access): Take the sizes and offsets as poly_int64s
+	rather than HOST_WIDE_INTs.
+	* alias.c (ao_ref_from_mem): Handle the new form of MEM_OFFSET.
+	(offset_overlap_p): Take poly_int64s rather than HOST_WIDE_INTs
+	and ints.
+	(adjust_offset_for_component_ref): Change the offset from a
+	HOST_WIDE_INT to a poly_int64.
+	(nonoverlapping_memrefs_p): Track polynomial offsets and sizes.
+	* cfgcleanup.c (merge_memattrs): Update after mem_attrs changes.
+	* dce.c (find_call_stack_args): Likewise.
+	* dse.c (record_store): Likewise.
+	* dwarf2out.c (tls_mem_loc_descriptor, dw_sra_loc_expr): Likewise.
+	* print-rtl.c (rtx_writer::print_rtx): Likewise.
+	* read-rtl-function.c (test_loading_mem): Likewise.
+	* rtlanal.c (may_trap_p_1): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* var-tracking.c (int_mem_offset, track_expr_p): Likewise.
+	* emit-rtl.c (mem_attrs_eq_p, get_mem_align_offset): Likewise.
+	(mem_attrs::mem_attrs): New function.
+	(set_mem_attributes_minus_bitpos): Change bitpos from a
+	HOST_WIDE_INT to poly_int64.
+	(set_mem_alias_set, set_mem_addr_space, set_mem_align, set_mem_expr)
+	(clear_mem_offset, clear_mem_size, change_address)
+	(get_spill_slot_decl, set_mem_attrs_for_spill): Directly
+	initialize mem_attrs.
+	(set_mem_offset, set_mem_size, adjust_address_1)
+	(adjust_automodify_address_1, offset_address, widen_memory_access):
+	Likewise.  Take poly_int64s rather than HOST_WIDE_INT.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtlanal.c (rtx_addr_can_trap_p_1): Take the offset and size
 	as poly_int64s rather than HOST_WIDE_INTs.  Use a size of -1
 	rather than 0 to represent an unknown size.  Assert that the size

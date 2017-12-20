@@ -1365,6 +1365,7 @@ record_store (rtx body, bb_info_t bb_info)
   /* At this point we know mem is a mem. */
   if (GET_MODE (mem) == BLKmode)
     {
+      HOST_WIDE_INT const_size;
       if (GET_CODE (XEXP (mem, 0)) == SCRATCH)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1376,8 +1377,11 @@ record_store (rtx body, bb_info_t bb_info)
       /* Handle (set (mem:BLK (addr) [... S36 ...]) (const_int 0))
 	 as memset (addr, 0, 36);  */
       else if (!MEM_SIZE_KNOWN_P (mem)
-	       || MEM_SIZE (mem) <= 0
-	       || MEM_SIZE (mem) > MAX_OFFSET
+	       || maybe_le (MEM_SIZE (mem), 0)
+	       /* This is a limit on the bitmap size, which is only relevant
+		  for constant-sized MEMs.  */
+	       || (MEM_SIZE (mem).is_constant (&const_size)
+		   && const_size > MAX_OFFSET)
 	       || GET_CODE (body) != SET
 	       || !CONST_INT_P (SET_SRC (body)))
 	{

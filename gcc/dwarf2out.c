@@ -13774,7 +13774,7 @@ tls_mem_loc_descriptor (rtx mem)
   if (loc_result == NULL)
     return NULL;
 
-  if (MEM_OFFSET (mem))
+  if (maybe_ne (MEM_OFFSET (mem), 0))
     loc_descr_plus_const (&loc_result, MEM_OFFSET (mem));
 
   return loc_result;
@@ -16377,8 +16377,10 @@ dw_sra_loc_expr (tree decl, rtx loc)
 	     adjustment.  */
 	  if (MEM_P (varloc))
 	    {
-	      unsigned HOST_WIDE_INT memsize
-		= MEM_SIZE (varloc) * BITS_PER_UNIT;
+	      unsigned HOST_WIDE_INT memsize;
+	      if (!poly_uint64 (MEM_SIZE (varloc)).is_constant (&memsize))
+		goto discard_descr;
+	      memsize *= BITS_PER_UNIT;
 	      if (memsize != bitsize)
 		{
 		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
