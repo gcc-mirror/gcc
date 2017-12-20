@@ -953,7 +953,7 @@ gnat_get_array_descr_info (const_tree const_type,
      structure.  */
   for (i = (convention_fortran_p ? info->ndimensions - 1 : 0),
        dimen = first_dimen;
-       i >= 0 && i < info->ndimensions;
+       IN_RANGE (i, 0, info->ndimensions - 1);
        i += (convention_fortran_p ? -1 : 1),
        dimen = TREE_TYPE (dimen))
     {
