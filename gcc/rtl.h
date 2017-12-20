@@ -187,7 +187,7 @@ struct GTY(()) mem_attrs
 
 struct GTY((for_user)) reg_attrs {
   tree decl;			/* decl corresponding to REG.  */
-  HOST_WIDE_INT offset;		/* Offset from start of DECL.  */
+  poly_int64 offset;		/* Offset from start of DECL.  */
 };
 
 /* Common union for an element of an rtx.  */
@@ -3023,7 +3023,7 @@ subreg_promoted_mode (rtx x)
 extern rtvec gen_rtvec_v (int, rtx *);
 extern rtvec gen_rtvec_v (int, rtx_insn **);
 extern rtx gen_reg_rtx (machine_mode);
-extern rtx gen_rtx_REG_offset (rtx, machine_mode, unsigned int, int);
+extern rtx gen_rtx_REG_offset (rtx, machine_mode, unsigned int, poly_int64);
 extern rtx gen_reg_rtx_offset (rtx, machine_mode, int);
 extern rtx gen_reg_rtx_and_attrs (rtx);
 extern rtx_code_label *gen_label_rtx (void);

@@ -2,6 +2,33 @@
             Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (reg_attrs::offset): Change from HOST_WIDE_INT to poly_int64.
+	(gen_rtx_REG_offset): Take the offset as a poly_int64.
+	* inchash.h (inchash::hash::add_poly_hwi): New function.
+	* gengtype.c (main): Register poly_int64.
+	* emit-rtl.c (reg_attr_hasher::hash): Use inchash.  Treat the
+	offset as a poly_int.
+	(reg_attr_hasher::equal): Use must_eq to compare offsets.
+	(get_reg_attrs, update_reg_offset, gen_rtx_REG_offset): Take the
+	offset as a poly_int64.
+	(set_reg_attrs_from_value): Treat the offset as a poly_int64.
+	* print-rtl.c (print_poly_int): New function.
+	(rtx_writer::print_rtx_operand_code_r): Treat REG_OFFSET as
+	a poly_int.
+	* var-tracking.c (track_offset_p, get_tracked_reg_offset): New
+	functions.
+	(var_reg_set, var_reg_delete_and_set, var_reg_delete): Use them.
+	(same_variable_part_p, track_loc_p): Take the offset as a poly_int64.
+	(vt_get_decl_and_offset): Return the offset as a poly_int64.
+	Enforce track_offset_p for parts of a PARALLEL.
+	(vt_add_function_parameter): Use const_offset for the final
+	offset to track.  Use get_tracked_reg_offset for the parts
+	of a PARALLEL.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (truly_noop_truncation): Take poly_uint64s instead of
 	unsigned ints.  Change default to hook_bool_puint64_puint64_true.
 	* doc/tm.texi: Regenerate.
