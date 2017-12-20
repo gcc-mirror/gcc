@@ -1,3 +1,8 @@
+2017-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83490
+	* g++.dg/abi/empty29.C: New test.
+
 2017-12-20  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/82404

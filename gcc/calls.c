@@ -2365,6 +2365,9 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	      && args[i].partial == 0)
 	    continue;
 
+	  if (TYPE_EMPTY_P (TREE_TYPE (args[i].tree_value)))
+	    continue;
+
 	  /* Pointer Bounds are never passed on the stack.  */
 	  if (POINTER_BOUNDS_P (args[i].tree_value))
 	    continue;
