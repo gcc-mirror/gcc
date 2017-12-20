@@ -388,7 +388,7 @@ find_operand (rtx pattern, int n, rtx stop)
 	      return r;
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -439,7 +439,7 @@ find_matching_operand (rtx pattern, int n)
 	      return r;
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -797,7 +797,7 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	    validate_pattern (XVECEXP (pattern, i, j), info, NULL_RTX, 0);
 	  break;
 
-	case 'i': case 'r': case 'w': case '0': case 's':
+	case 'r': case 'p': case 'i': case 'w': case '0': case 's':
 	  break;
 
 	default:
@@ -1119,6 +1119,9 @@ struct rtx_test
     /* Check REGNO (X) == LABEL.  */
     REGNO_FIELD,
 
+    /* Check known_eq (SUBREG_BYTE (X), LABEL).  */
+    SUBREG_FIELD,
+
     /* Check XINT (X, u.opno) == LABEL.  */
     INT_FIELD,
 
@@ -1199,6 +1202,7 @@ struct rtx_test
   static rtx_test code (position *);
   static rtx_test mode (position *);
   static rtx_test regno_field (position *);
+  static rtx_test subreg_field (position *);
   static rtx_test int_field (position *, int);
   static rtx_test wide_int_field (position *, int);
   static rtx_test veclen (position *);
@@ -1240,6 +1244,13 @@ rtx_test
 rtx_test::regno_field (position *pos)
 {
   rtx_test res (pos, rtx_test::REGNO_FIELD);
+  return res;
+}
+
+rtx_test
+rtx_test::subreg_field (position *pos)
+{
+  rtx_test res (pos, rtx_test::SUBREG_FIELD);
   return res;
 }
 
@@ -1364,6 +1375,7 @@ operator == (const rtx_test &a, const rtx_test &b)
     case rtx_test::CODE:
     case rtx_test::MODE:
     case rtx_test::REGNO_FIELD:
+    case rtx_test::SUBREG_FIELD:
     case rtx_test::VECLEN:
     case rtx_test::HAVE_NUM_CLOBBERS:
       return true;
@@ -1821,6 +1833,7 @@ safe_to_hoist_p (decision *d, const rtx_test &test, known_conditions *kc)
       gcc_unreachable ();
 
     case rtx_test::REGNO_FIELD:
+    case rtx_test::SUBREG_FIELD:
     case rtx_test::INT_FIELD:
     case rtx_test::WIDE_INT_FIELD:
     case rtx_test::VECLEN:
@@ -2028,6 +2041,7 @@ transition_parameter_type (rtx_test::kind_enum kind)
       return parameter::MODE;
 
     case rtx_test::REGNO_FIELD:
+    case rtx_test::SUBREG_FIELD:
       return parameter::UINT;
 
     case rtx_test::INT_FIELD:
@@ -4039,6 +4053,14 @@ match_pattern_2 (state *s, md_rtx_info *info, position *pos, rtx pattern)
 				      XWINT (pattern, 0), false);
 		    break;
 
+		  case 'p':
+		    /* We don't have a way of parsing polynomial offsets yet,
+		       and hopefully never will.  */
+		    s = add_decision (s, rtx_test::subreg_field (pos),
+				      SUBREG_BYTE (pattern).to_constant (),
+				      false);
+		    break;
+
 		  case '0':
 		    break;
 
@@ -4571,6 +4593,12 @@ print_nonbool_test (output_state *os, const rtx_test &test)
       printf (")");
       break;
 
+    case rtx_test::SUBREG_FIELD:
+      printf ("SUBREG_BYTE (");
+      print_test_rtx (os, test);
+      printf (")");
+      break;
+
     case rtx_test::WIDE_INT_FIELD:
       printf ("XWINT (");
       print_test_rtx (os, test);
@@ -4651,6 +4679,14 @@ print_test (output_state *os, const rtx_test &test, bool is_param,
       print_nonbool_test (os, test);
       printf (" %s ", invert_p ? "!=" : "==");
       print_label_value (test, is_param, value);
+      break;
+
+    case rtx_test::SUBREG_FIELD:
+      printf ("%s (", invert_p ? "maybe_ne" : "known_eq");
+      print_nonbool_test (os, test);
+      printf (", ");
+      print_label_value (test, is_param, value);
+      printf (")");
       break;
 
     case rtx_test::SAVED_CONST_INT:

@@ -4315,8 +4315,8 @@ expand_call (tree exp, rtx target, int ignore)
 					 funtype, 1);
 	  gcc_assert (GET_MODE (target) == pmode);
 
-	  unsigned int offset = subreg_lowpart_offset (TYPE_MODE (type),
-						       GET_MODE (target));
+	  poly_uint64 offset = subreg_lowpart_offset (TYPE_MODE (type),
+						      GET_MODE (target));
 	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
 	  SUBREG_PROMOTED_VAR_P (target) = 1;
 	  SUBREG_PROMOTED_SET (target, unsignedp);

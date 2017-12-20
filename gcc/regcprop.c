@@ -345,7 +345,8 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
      We can't properly represent the latter case in our tables, so don't
      record anything then.  */
   else if (sn < hard_regno_nregs (sr, vd->e[sr].mode)
-	   && subreg_lowpart_offset (GET_MODE (dest), vd->e[sr].mode) != 0)
+	   && maybe_ne (subreg_lowpart_offset (GET_MODE (dest),
+					       vd->e[sr].mode), 0U))
     return;
 
   /* If SRC had been assigned a mode narrower than the copy, we can't
@@ -407,7 +408,7 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
       int use_nregs = hard_regno_nregs (copy_regno, new_mode);
       int copy_offset
 	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
-      unsigned int offset
+      poly_uint64 offset
 	= subreg_size_lowpart_offset (GET_MODE_SIZE (new_mode) + copy_offset,
 				      GET_MODE_SIZE (orig_mode));
       regno += subreg_regno_offset (regno, orig_mode, offset, new_mode);
@@ -868,7 +869,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      /* And likewise, if we are narrowing on big endian the transformation
 		 is also invalid.  */
 	      if (REG_NREGS (src) < hard_regno_nregs (regno, vd->e[regno].mode)
-		  && subreg_lowpart_offset (mode, vd->e[regno].mode) != 0)
+		  && maybe_ne (subreg_lowpart_offset (mode,
+						      vd->e[regno].mode), 0U))
 		goto no_move_special_case;
 	    }
 

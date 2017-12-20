@@ -70,7 +70,7 @@ gen_lowpart_general (machine_mode mode, rtx x)
 	  && !reload_completed)
 	return gen_lowpart_general (mode, force_reg (xmode, x));
 
-      HOST_WIDE_INT offset = byte_lowpart_offset (mode, GET_MODE (x));
+      poly_int64 offset = byte_lowpart_offset (mode, GET_MODE (x));
       return adjust_address (x, mode, offset);
     }
 }
@@ -115,7 +115,7 @@ gen_lowpart_if_possible (machine_mode mode, rtx x)
   else if (MEM_P (x))
     {
       /* This is the only other case we handle.  */
-      HOST_WIDE_INT offset = byte_lowpart_offset (mode, GET_MODE (x));
+      poly_int64 offset = byte_lowpart_offset (mode, GET_MODE (x));
       rtx new_rtx = adjust_address_nv (x, mode, offset);
       if (! memory_address_addr_space_p (mode, XEXP (new_rtx, 0),
 					 MEM_ADDR_SPACE (x)))

@@ -198,6 +198,7 @@ union rtunion
 {
   int rt_int;
   unsigned int rt_uint;
+  poly_uint16_pod rt_subreg;
   const char *rt_str;
   rtx rt_rtx;
   rtvec rt_rtvec;
@@ -1335,6 +1336,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 
 #define XCINT(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_int)
 #define XCUINT(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_uint)
+#define XCSUBREG(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_subreg)
 #define XCSTR(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_str)
 #define XCEXP(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtx)
 #define XCVEC(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtvec)
@@ -1963,7 +1965,7 @@ set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
    SUBREG_BYTE extracts the byte-number.  */
 
 #define SUBREG_REG(RTX) XCEXP (RTX, 0, SUBREG)
-#define SUBREG_BYTE(RTX) XCUINT (RTX, 1, SUBREG)
+#define SUBREG_BYTE(RTX) XCSUBREG (RTX, 1, SUBREG)
 
 /* in rtlanal.c */
 /* Return the right cost to give to an operation
@@ -2036,19 +2038,19 @@ costs_add_n_insns (struct full_rtx_costs *c, int n)
    offset     == the SUBREG_BYTE
    outer_mode == the mode of the SUBREG itself.  */
 struct subreg_shape {
-  subreg_shape (machine_mode, unsigned int, machine_mode);
+  subreg_shape (machine_mode, poly_uint16, machine_mode);
   bool operator == (const subreg_shape &) const;
   bool operator != (const subreg_shape &) const;
-  unsigned int unique_id () const;
+  unsigned HOST_WIDE_INT unique_id () const;
 
   machine_mode inner_mode;
-  unsigned int offset;
+  poly_uint16 offset;
   machine_mode outer_mode;
 };
 
 inline
 subreg_shape::subreg_shape (machine_mode inner_mode_in,
-			    unsigned int offset_in,
+			    poly_uint16 offset_in,
 			    machine_mode outer_mode_in)
   : inner_mode (inner_mode_in), offset (offset_in), outer_mode (outer_mode_in)
 {}
@@ -2057,7 +2059,7 @@ inline bool
 subreg_shape::operator == (const subreg_shape &other) const
 {
   return (inner_mode == other.inner_mode
-	  && offset == other.offset
+	  && known_eq (offset, other.offset)
 	  && outer_mode == other.outer_mode);
 }
 
@@ -2072,11 +2074,16 @@ subreg_shape::operator != (const subreg_shape &other) const
    current mode is anywhere near being 65536 bytes in size, so the
    id comfortably fits in an int.  */
 
-inline unsigned int
+inline unsigned HOST_WIDE_INT
 subreg_shape::unique_id () const
 {
-  STATIC_ASSERT (MAX_MACHINE_MODE <= 256);
-  return (int) inner_mode + ((int) outer_mode << 8) + (offset << 16);
+  { STATIC_ASSERT (MAX_MACHINE_MODE <= 256); }
+  { STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 3); }
+  { STATIC_ASSERT (sizeof (offset.coeffs[0]) <= 2); }
+  int res = (int) inner_mode + ((int) outer_mode << 8);
+  for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+    res += (HOST_WIDE_INT) offset.coeffs[i] << ((1 + i) * 16);
+  return res;
 }
 
 /* Return the shape of a SUBREG rtx.  */
@@ -2330,11 +2337,10 @@ extern int rtx_cost (rtx, machine_mode, enum rtx_code, int, bool);
 extern int address_cost (rtx, machine_mode, addr_space_t, bool);
 extern void get_full_rtx_cost (rtx, machine_mode, enum rtx_code, int,
 			       struct full_rtx_costs *);
-extern unsigned int subreg_lsb (const_rtx);
-extern unsigned int subreg_lsb_1 (machine_mode, machine_mode,
-				  unsigned int);
-extern unsigned int subreg_size_offset_from_lsb (unsigned int, unsigned int,
-						 unsigned int);
+extern poly_uint64 subreg_lsb (const_rtx);
+extern poly_uint64 subreg_lsb_1 (machine_mode, machine_mode, poly_uint64);
+extern poly_uint64 subreg_size_offset_from_lsb (poly_uint64, poly_uint64,
+						poly_uint64);
 extern bool read_modify_subreg_p (const_rtx);
 
 /* Return the subreg byte offset for a subreg whose outer mode is
@@ -2343,22 +2349,22 @@ extern bool read_modify_subreg_p (const_rtx);
    the inner value.  This is the inverse of subreg_lsb_1 (which converts
    byte offsets to bit shifts).  */
 
-inline unsigned int
+inline poly_uint64
 subreg_offset_from_lsb (machine_mode outer_mode,
 			machine_mode inner_mode,
-			unsigned int lsb_shift)
+			poly_uint64 lsb_shift)
 {
   return subreg_size_offset_from_lsb (GET_MODE_SIZE (outer_mode),
 				      GET_MODE_SIZE (inner_mode), lsb_shift);
 }
 
-extern unsigned int subreg_regno_offset	(unsigned int, machine_mode,
-					 unsigned int, machine_mode);
+extern unsigned int subreg_regno_offset (unsigned int, machine_mode,
+					 poly_uint64, machine_mode);
 extern bool subreg_offset_representable_p (unsigned int, machine_mode,
-					   unsigned int, machine_mode);
+					   poly_uint64, machine_mode);
 extern unsigned int subreg_regno (const_rtx);
 extern int simplify_subreg_regno (unsigned int, machine_mode,
-				  unsigned int, machine_mode);
+				  poly_uint64, machine_mode);
 extern unsigned int subreg_nregs (const_rtx);
 extern unsigned int subreg_nregs_with_regno (unsigned int, const_rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (const_rtx, machine_mode);
@@ -3042,7 +3048,7 @@ extern rtx operand_subword (rtx, unsigned int, int, machine_mode);
 /* In emit-rtl.c */
 extern rtx operand_subword_force (rtx, unsigned int, machine_mode);
 extern int subreg_lowpart_p (const_rtx);
-extern unsigned int subreg_size_lowpart_offset (unsigned int, unsigned int);
+extern poly_uint64 subreg_size_lowpart_offset (poly_uint64, poly_uint64);
 
 /* Return true if a subreg of mode OUTERMODE would only access part of
    an inner register with mode INNERMODE.  The other bits of the inner
@@ -3089,7 +3095,7 @@ paradoxical_subreg_p (const_rtx x)
 
 /* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
 
-inline unsigned int
+inline poly_uint64
 subreg_lowpart_offset (machine_mode outermode, machine_mode innermode)
 {
   return subreg_size_lowpart_offset (GET_MODE_SIZE (outermode),
@@ -3124,20 +3130,21 @@ wider_subreg_mode (const_rtx x)
   return wider_subreg_mode (GET_MODE (x), GET_MODE (SUBREG_REG (x)));
 }
 
-extern unsigned int subreg_size_highpart_offset (unsigned int, unsigned int);
+extern poly_uint64 subreg_size_highpart_offset (poly_uint64, poly_uint64);
 
 /* Return the SUBREG_BYTE for an OUTERMODE highpart of an INNERMODE value.  */
 
-inline unsigned int
+inline poly_uint64
 subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
 {
   return subreg_size_highpart_offset (GET_MODE_SIZE (outermode),
 				      GET_MODE_SIZE (innermode));
 }
 
-extern int byte_lowpart_offset (machine_mode, machine_mode);
-extern int subreg_memory_offset (machine_mode, machine_mode, unsigned int);
-extern int subreg_memory_offset (const_rtx);
+extern poly_int64 byte_lowpart_offset (machine_mode, machine_mode);
+extern poly_int64 subreg_memory_offset (machine_mode, machine_mode,
+					poly_uint64);
+extern poly_int64 subreg_memory_offset (const_rtx);
 extern rtx make_safe_from (rtx, rtx);
 extern rtx convert_memory_address_addr_space_1 (scalar_int_mode, rtx,
 						addr_space_t, bool, bool);
@@ -3289,16 +3296,8 @@ extern rtx simplify_gen_ternary (enum rtx_code, machine_mode,
 				 machine_mode, rtx, rtx, rtx);
 extern rtx simplify_gen_relational (enum rtx_code, machine_mode,
 				    machine_mode, rtx, rtx);
-extern rtx simplify_subreg (machine_mode, rtx, machine_mode,
-			    unsigned int);
-extern rtx simplify_gen_subreg (machine_mode, rtx, machine_mode,
-				unsigned int);
-inline rtx
-simplify_gen_subreg (machine_mode omode, rtx x, machine_mode imode,
-		     poly_uint64 offset)
-{
-  return simplify_gen_subreg (omode, x, imode, offset.to_constant ());
-}
+extern rtx simplify_subreg (machine_mode, rtx, machine_mode, poly_uint64);
+extern rtx simplify_gen_subreg (machine_mode, rtx, machine_mode, poly_uint64);
 extern rtx lowpart_subreg (machine_mode, rtx, machine_mode);
 extern rtx simplify_replace_fn_rtx (rtx, const_rtx,
 				    rtx (*fn) (rtx, const_rtx, void *), void *);
@@ -3484,7 +3483,7 @@ struct subreg_info
 };
 
 extern void subreg_get_info (unsigned int, machine_mode,
-			     unsigned int, machine_mode,
+			     poly_uint64, machine_mode,
 			     struct subreg_info *);
 
 /* lists.c */
@@ -3722,7 +3721,7 @@ extern rtx gen_rtx_CONST_VECTOR (machine_mode, rtvec);
 extern void set_mode_and_regno (rtx, machine_mode, unsigned int);
 extern rtx gen_raw_REG (machine_mode, unsigned int);
 extern rtx gen_rtx_REG (machine_mode, unsigned int);
-extern rtx gen_rtx_SUBREG (machine_mode, rtx, int);
+extern rtx gen_rtx_SUBREG (machine_mode, rtx, poly_uint64);
 extern rtx gen_rtx_MEM (machine_mode, rtx);
 extern rtx gen_rtx_VAR_LOCATION (machine_mode, tree, rtx,
 				 enum var_init_status);
@@ -3939,7 +3938,7 @@ extern rtx gen_const_mem (machine_mode, rtx);
 extern rtx gen_frame_mem (machine_mode, rtx);
 extern rtx gen_tmp_stack_mem (machine_mode, rtx);
 extern bool validate_subreg (machine_mode, machine_mode,
-			     const_rtx, unsigned int);
+			     const_rtx, poly_uint64);
 
 /* In combine.c  */
 extern unsigned int extended_count (const_rtx, machine_mode, int);

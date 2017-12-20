@@ -1724,7 +1724,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 				  && REG_P (SUBREG_REG (y)))))
     {
       int reg_x = -1, reg_y = -1;
-      int byte_x = 0, byte_y = 0;
+      poly_int64 byte_x = 0, byte_y = 0;
       struct subreg_info info;
 
       if (GET_MODE (x) != GET_MODE (y))
@@ -1781,7 +1781,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 	    reg_y = reg_renumber[reg_y];
 	}
 
-      return reg_x >= 0 && reg_x == reg_y && byte_x == byte_y;
+      return reg_x >= 0 && reg_x == reg_y && known_eq (byte_x, byte_y);
     }
 
   /* Now we have disposed of all the cases
@@ -1871,6 +1871,11 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 		break;
 	      return 0;
 	    }
+	  break;
+
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return 0;
 	  break;
 
 	case 't':

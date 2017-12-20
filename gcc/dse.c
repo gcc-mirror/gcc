@@ -1709,7 +1709,7 @@ find_shift_sequence (poly_int64 access_size,
 	 e.g. at -Os, even when no actual shift will be needed.  */
       if (store_info->const_rhs)
 	{
-	  unsigned int byte = subreg_lowpart_offset (new_mode, store_mode);
+	  poly_uint64 byte = subreg_lowpart_offset (new_mode, store_mode);
 	  rtx ret = simplify_subreg (new_mode, store_info->const_rhs,
 				     store_mode, byte);
 	  if (ret && CONSTANT_P (ret))

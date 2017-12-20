@@ -87,6 +87,9 @@ add_rtx (const_rtx x, hash &hstate)
       case 'i':
 	hstate.add_int (XINT (x, i));
 	break;
+      case 'p':
+	hstate.add_poly_int (SUBREG_BYTE (x));
+	break;
       case 'V':
       case 'E':
 	j = XVECLEN (x, i);

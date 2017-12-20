@@ -54,6 +54,9 @@ type_from_format (int c)
     case 'w':
       return "HOST_WIDE_INT ";
 
+    case 'p':
+      return "poly_uint16 ";
+
     case 's':
       return "const char *";
 
@@ -256,10 +259,12 @@ gendef (const char *format)
   puts ("  PUT_MODE_RAW (rt, mode);");
 
   for (p = format, i = j = 0; *p ; ++p, ++i)
-    if (*p != '0')
-      printf ("  %s (rt, %d) = arg%d;\n", accessor_from_format (*p), i, j++);
-    else
+    if (*p == '0')
       printf ("  X0EXP (rt, %d) = NULL_RTX;\n", i);
+    else if (*p == 'p')
+      printf ("  SUBREG_BYTE (rt) = arg%d;\n", j++);
+    else
+      printf ("  %s (rt, %d) = arg%d;\n", accessor_from_format (*p), i, j++);
 
   puts ("\n  return rt;\n}\n");
   printf ("#define gen_rtx_fmt_%s(c, m", format);

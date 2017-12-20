@@ -109,10 +109,10 @@ and what kinds of objects they are.  In RTL, unlike Lisp, you cannot tell
 by looking at an operand what kind of object it is.  Instead, you must know
 from its context---from the expression code of the containing expression.
 For example, in an expression of code @code{subreg}, the first operand is
-to be regarded as an expression and the second operand as an integer.  In
-an expression of code @code{plus}, there are two operands, both of which
-are to be regarded as expressions.  In a @code{symbol_ref} expression,
-there is one operand, which is to be regarded as a string.
+to be regarded as an expression and the second operand as a polynomial
+integer.  In an expression of code @code{plus}, there are two operands,
+both of which are to be regarded as expressions.  In a @code{symbol_ref}
+expression, there is one operand, which is to be regarded as a string.
 
 Expressions are written as parentheses containing the name of the
 expression type, its flags and machine mode if any, and then the operands
@@ -209,7 +209,7 @@ chain, such as @code{NOTE}, @code{BARRIER}, and @code{CODE_LABEL}.
 For each expression code, @file{rtl.def} specifies the number of
 contained objects and their kinds using a sequence of characters
 called the @dfn{format} of the expression code.  For example,
-the format of @code{subreg} is @samp{ei}.
+the format of @code{subreg} is @samp{ep}.
 
 @cindex RTL format characters
 These are the most commonly used format characters:
@@ -257,6 +257,9 @@ An omitted vector is effectively the same as a vector of no elements.
 
 @item B
 @samp{B} indicates a pointer to basic block structure.
+
+@item p
+A polynomial integer.  At present this is used only for @code{SUBREG_BYTE}.
 
 @item 0
 @samp{0} means a slot whose contents do not fit any normal category.
@@ -340,16 +343,13 @@ stored in the operand.  You would do this based on the expression code of
 the containing expression.  That is also how you would know how many
 operands there are.
 
-For example, if @var{x} is a @code{subreg} expression, you know that it has
-two operands which can be correctly accessed as @code{XEXP (@var{x}, 0)}
-and @code{XINT (@var{x}, 1)}.  If you did @code{XINT (@var{x}, 0)}, you
-would get the address of the expression operand but cast as an integer;
-that might occasionally be useful, but it would be cleaner to write
-@code{(int) XEXP (@var{x}, 0)}.  @code{XEXP (@var{x}, 1)} would also
-compile without error, and would return the second, integer operand cast as
-an expression pointer, which would probably result in a crash when
-accessed.  Nothing stops you from writing @code{XEXP (@var{x}, 28)} either,
-but this will access memory past the end of the expression with
+For example, if @var{x} is an @code{int_list} expression, you know that it has
+two operands which can be correctly accessed as @code{XINT (@var{x}, 0)}
+and @code{XEXP (@var{x}, 1)}.  Incorrect accesses like
+@code{XEXP (@var{x}, 0)} and @code{XINT (@var{x}, 1)} would compile,
+but would trigger an internal compiler error when rtl checking is enabled.
+Nothing stops you from writing @code{XEXP (@var{x}, 28)} either, but
+this will access memory past the end of the expression with
 unpredictable results.
 
 Access to operands which are vectors is more complicated.  You can use the
@@ -2019,6 +2019,13 @@ on a @code{BYTES_BIG_ENDIAN}, @samp{UNITS_PER_WORD == 4} target is the same as
 
 on a little-endian, @samp{UNITS_PER_WORD == 4} target.  Both
 @code{subreg}s access the lower two bytes of register @var{x}.
+
+Note that the byte offset is a polynomial integer; it may not be a
+compile-time constant on targets with variable-sized modes.  However,
+the restrictions above mean that there are only a certain set of
+acceptable offsets for a given combination of @var{m1} and @var{m2}.
+The compiler can always tell which blocks a valid subreg occupies, and
+whether the subreg is a lowpart of a block.
 
 @end table
 

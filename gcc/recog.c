@@ -1006,7 +1006,8 @@ general_operand (rtx op, machine_mode mode)
 	 might be called from cleanup_subreg_operands.
 
 	 ??? This is a kludge.  */
-      if (!reload_completed && SUBREG_BYTE (op) != 0
+      if (!reload_completed
+	  && maybe_ne (SUBREG_BYTE (op), 0)
 	  && MEM_P (sub))
 	return 0;
 
@@ -1368,9 +1369,6 @@ indirect_operand (rtx op, machine_mode mode)
   if (! reload_completed
       && GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))
     {
-      int offset = SUBREG_BYTE (op);
-      rtx inner = SUBREG_REG (op);
-
       if (mode != VOIDmode && GET_MODE (op) != mode)
 	return 0;
 
@@ -1378,12 +1376,10 @@ indirect_operand (rtx op, machine_mode mode)
 	 address is if OFFSET is zero and the address already is an operand
 	 or if the address is (plus Y (const_int -OFFSET)) and Y is an
 	 operand.  */
-
-      return ((offset == 0 && general_operand (XEXP (inner, 0), Pmode))
-	      || (GET_CODE (XEXP (inner, 0)) == PLUS
-		  && CONST_INT_P (XEXP (XEXP (inner, 0), 1))
-		  && INTVAL (XEXP (XEXP (inner, 0), 1)) == -offset
-		  && general_operand (XEXP (XEXP (inner, 0), 0), Pmode)));
+      poly_int64 offset;
+      rtx addr = strip_offset (XEXP (SUBREG_REG (op), 0), &offset);
+      return (known_eq (offset + SUBREG_BYTE (op), 0)
+	      && general_operand (addr, Pmode));
     }
 
   return (MEM_P (op)
