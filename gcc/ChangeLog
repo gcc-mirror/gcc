@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (operand_subword, operand_subword_force): Take the offset
+	as a poly_uint64 an unsigned int.
+	* emit-rtl.c (operand_subword, operand_subword_force): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/rtl.texi: Update documentation of SUBREG_BYTE.  Document the
 	'p' format code.  Use INT_LIST rather than SUBREG as the example of
 	a code with an XINT and an XEXP.  Remove the implication that
