@@ -57,6 +57,14 @@ class hash
     val = iterative_hash_hashval_t (v, val);
   }
 
+  /* Add polynomial value V, treating each element as an unsigned int.  */
+  template<unsigned int N, typename T>
+  void add_poly_int (const poly_int_pod<N, T> &v)
+  {
+    for (unsigned int i = 0; i < N; ++i)
+      add_int (v.coeffs[i]);
+  }
+
   /* Add HOST_WIDE_INT value V.  */
   void add_hwi (HOST_WIDE_INT v)
   {

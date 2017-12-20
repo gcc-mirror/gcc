@@ -128,13 +128,12 @@ static bool
 valid_ao_ref_for_dse (ao_ref *ref)
 {
   return (ao_ref_base (ref)
-	  && ref->max_size != -1
-	  && ref->size != 0
-	  && ref->max_size == ref->size
-	  && ref->offset >= 0
-	  && (ref->offset % BITS_PER_UNIT) == 0
-	  && (ref->size % BITS_PER_UNIT) == 0
-	  && (ref->size != -1));
+	  && known_size_p (ref->max_size)
+	  && maybe_ne (ref->size, 0)
+	  && known_eq (ref->max_size, ref->size)
+	  && known_ge (ref->offset, 0)
+	  && multiple_p (ref->offset, BITS_PER_UNIT)
+	  && multiple_p (ref->size, BITS_PER_UNIT));
 }
 
 /* Try to normalize COPY (an ao_ref) relative to REF.  Essentially when we are
@@ -144,25 +143,31 @@ valid_ao_ref_for_dse (ao_ref *ref)
 static bool
 normalize_ref (ao_ref *copy, ao_ref *ref)
 {
+  if (!ordered_p (copy->offset, ref->offset))
+    return false;
+
   /* If COPY starts before REF, then reset the beginning of
      COPY to match REF and decrease the size of COPY by the
      number of bytes removed from COPY.  */
-  if (copy->offset < ref->offset)
+  if (maybe_lt (copy->offset, ref->offset))
     {
-      HOST_WIDE_INT diff = ref->offset - copy->offset;
-      if (copy->size <= diff)
+      poly_int64 diff = ref->offset - copy->offset;
+      if (maybe_le (copy->size, diff))
 	return false;
       copy->size -= diff;
       copy->offset = ref->offset;
     }
 
-  HOST_WIDE_INT diff = copy->offset - ref->offset;
-  if (ref->size <= diff)
+  poly_int64 diff = copy->offset - ref->offset;
+  if (maybe_le (ref->size, diff))
     return false;
 
   /* If COPY extends beyond REF, chop off its size appropriately.  */
-  HOST_WIDE_INT limit = ref->size - diff;
-  if (copy->size > limit)
+  poly_int64 limit = ref->size - diff;
+  if (!ordered_p (limit, copy->size))
+    return false;
+
+  if (maybe_gt (copy->size, limit))
     copy->size = limit;
   return true;
 }
@@ -183,15 +188,15 @@ clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
 
   /* Verify we have the same base memory address, the write
      has a known size and overlaps with REF.  */
+  HOST_WIDE_INT start, size;
   if (valid_ao_ref_for_dse (&write)
       && operand_equal_p (write.base, ref->base, OEP_ADDRESS_OF)
-      && write.size == write.max_size
-      && normalize_ref (&write, ref))
-    {
-      HOST_WIDE_INT start = write.offset - ref->offset;
-      bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
-			  write.size / BITS_PER_UNIT);
-    }
+      && known_eq (write.size, write.max_size)
+      && normalize_ref (&write, ref)
+      && (write.offset - ref->offset).is_constant (&start)
+      && write.size.is_constant (&size))
+    bitmap_clear_range (live_bytes, start / BITS_PER_UNIT,
+			size / BITS_PER_UNIT);
 }
 
 /* REF is a memory write.  Extract relevant information from it and
@@ -201,12 +206,14 @@ clear_bytes_written_by (sbitmap live_bytes, gimple *stmt, ao_ref *ref)
 static bool
 setup_live_bytes_from_ref (ao_ref *ref, sbitmap live_bytes)
 {
+  HOST_WIDE_INT const_size;
   if (valid_ao_ref_for_dse (ref)
-      && (ref->size / BITS_PER_UNIT
+      && ref->size.is_constant (&const_size)
+      && (const_size / BITS_PER_UNIT
 	  <= PARAM_VALUE (PARAM_DSE_MAX_OBJECT_SIZE)))
     {
       bitmap_clear (live_bytes);
-      bitmap_set_range (live_bytes, 0, ref->size / BITS_PER_UNIT);
+      bitmap_set_range (live_bytes, 0, const_size / BITS_PER_UNIT);
       return true;
     }
   return false;
@@ -231,9 +238,15 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
      the REF to compute the trims.  */
 
   /* Now identify how much, if any of the tail we can chop off.  */
-  int last_orig = (ref->size / BITS_PER_UNIT) - 1;
-  int last_live = bitmap_last_set_bit (live);
-  *trim_tail = (last_orig - last_live) & ~0x1;
+  HOST_WIDE_INT const_size;
+  if (ref->size.is_constant (&const_size))
+    {
+      int last_orig = (const_size / BITS_PER_UNIT) - 1;
+      int last_live = bitmap_last_set_bit (live);
+      *trim_tail = (last_orig - last_live) & ~0x1;
+    }
+  else
+    *trim_tail = 0;
 
   /* Identify how much, if any of the head we can chop off.  */
   int first_orig = 0;
@@ -267,7 +280,7 @@ maybe_trim_complex_store (ao_ref *ref, sbitmap live, gimple *stmt)
      least half the size of the object to ensure we're trimming
      the entire real or imaginary half.  By writing things this
      way we avoid more O(n) bitmap operations.  */
-  if (trim_tail * 2 >= ref->size / BITS_PER_UNIT)
+  if (known_ge (trim_tail * 2 * BITS_PER_UNIT, ref->size))
     {
       /* TREE_REALPART is live */
       tree x = TREE_REALPART (gimple_assign_rhs1 (stmt));
@@ -276,7 +289,7 @@ maybe_trim_complex_store (ao_ref *ref, sbitmap live, gimple *stmt)
       gimple_assign_set_lhs (stmt, y);
       gimple_assign_set_rhs1 (stmt, x);
     }
-  else if (trim_head * 2 >= ref->size / BITS_PER_UNIT)
+  else if (known_ge (trim_head * 2 * BITS_PER_UNIT, ref->size))
     {
       /* TREE_IMAGPART is live */
       tree x = TREE_IMAGPART (gimple_assign_rhs1 (stmt));
@@ -326,7 +339,8 @@ maybe_trim_constructor_store (ao_ref *ref, sbitmap live, gimple *stmt)
 	return;
 
       /* The number of bytes for the new constructor.  */
-      int count = (ref->size / BITS_PER_UNIT) - head_trim - tail_trim;
+      poly_int64 ref_bytes = exact_div (ref->size, BITS_PER_UNIT);
+      poly_int64 count = ref_bytes - head_trim - tail_trim;
 
       /* And the new type for the CONSTRUCTOR.  Essentially it's just
 	 a char array large enough to cover the non-trimmed parts of
@@ -483,15 +497,15 @@ live_bytes_read (ao_ref use_ref, ao_ref *ref, sbitmap live)
 {
   /* We have already verified that USE_REF and REF hit the same object.
      Now verify that there's actually an overlap between USE_REF and REF.  */
-  if (normalize_ref (&use_ref, ref))
+  HOST_WIDE_INT start, size;
+  if (normalize_ref (&use_ref, ref)
+      && (use_ref.offset - ref->offset).is_constant (&start)
+      && use_ref.size.is_constant (&size))
     {
-      HOST_WIDE_INT start = use_ref.offset - ref->offset;
-      HOST_WIDE_INT size = use_ref.size;
-
       /* If USE_REF covers all of REF, then it will hit one or more
 	 live bytes.   This avoids useless iteration over the bitmap
 	 below.  */
-      if (start == 0 && size == ref->size)
+      if (start == 0 && known_eq (size, ref->size))
 	return true;
 
       /* Now check if any of the remaining bits in use_ref are set in LIVE.  */
@@ -593,7 +607,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 		      ao_ref_init (&use_ref, gimple_assign_rhs1 (use_stmt));
 		      if (valid_ao_ref_for_dse (&use_ref)
 			  && use_ref.base == ref->base
-			  && use_ref.size == use_ref.max_size
+			  && known_eq (use_ref.size, use_ref.max_size)
 			  && !live_bytes_read (use_ref, ref, live_bytes))
 			{
 			  /* If this statement has a VDEF, then it is the

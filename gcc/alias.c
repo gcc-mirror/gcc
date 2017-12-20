@@ -331,9 +331,9 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   /* If MEM_OFFSET/MEM_SIZE get us outside of ref->offset/ref->max_size
      drop ref->ref.  */
   if (MEM_OFFSET (mem) < 0
-      || (ref->max_size != -1
-	  && ((MEM_OFFSET (mem) + MEM_SIZE (mem)) * BITS_PER_UNIT
-	      > ref->max_size)))
+      || (ref->max_size_known_p ()
+	  && maybe_gt ((MEM_OFFSET (mem) + MEM_SIZE (mem)) * BITS_PER_UNIT,
+		       ref->max_size)))
     ref->ref = NULL_TREE;
 
   /* Refine size and offset we got from analyzing MEM_EXPR by using
@@ -344,19 +344,18 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 
   /* The MEM may extend into adjacent fields, so adjust max_size if
      necessary.  */
-  if (ref->max_size != -1
-      && ref->size > ref->max_size)
-    ref->max_size = ref->size;
+  if (ref->max_size_known_p ())
+    ref->max_size = upper_bound (ref->max_size, ref->size);
 
-  /* If MEM_OFFSET and MEM_SIZE get us outside of the base object of
+  /* If MEM_OFFSET and MEM_SIZE might get us outside of the base object of
      the MEM_EXPR punt.  This happens for STRICT_ALIGNMENT targets a lot.  */
   if (MEM_EXPR (mem) != get_spill_slot_decl (false)
-      && (ref->offset < 0
+      && (maybe_lt (ref->offset, 0)
 	  || (DECL_P (ref->base)
 	      && (DECL_SIZE (ref->base) == NULL_TREE
-		  || TREE_CODE (DECL_SIZE (ref->base)) != INTEGER_CST
-		  || wi::ltu_p (wi::to_offset (DECL_SIZE (ref->base)),
-				ref->offset + ref->size)))))
+		  || !poly_int_tree_p (DECL_SIZE (ref->base))
+		  || maybe_lt (wi::to_poly_offset (DECL_SIZE (ref->base)),
+			       ref->offset + ref->size)))))
     return false;
 
   return true;
