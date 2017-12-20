@@ -144,7 +144,7 @@ along with GCC; see the file COPYING3.  If not see
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_tree_profile)
       NEXT_PASS (pass_feedback_split_functions);
   POP_INSERT_PASSES ()
-  NEXT_PASS (pass_ipa_free_fn_summary);
+  NEXT_PASS (pass_ipa_free_fn_summary, true /* small_p */);
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_tm);
   NEXT_PASS (pass_ipa_lower_emutls);
@@ -161,6 +161,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_fn_summary);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
+  NEXT_PASS (pass_ipa_free_fn_summary, false /* small_p */);
   NEXT_PASS (pass_ipa_reference);
   /* This pass needs to be scheduled after any IP code duplication.   */
   NEXT_PASS (pass_ipa_single_use);

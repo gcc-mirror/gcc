@@ -1,3 +1,21 @@
+2017-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/83506
+	* ipa-fnsummary.c (pass_data_ipa_free_fn_summary): Use 0 for
+	todo_flags_finish.
+	(pass_ipa_free_fn_summary): Add small_p private data member,
+	initialize to false in the ctor.
+	(pass_ipa_free_fn_summary::clone,
+	pass_ipa_free_fn_summary::set_pass_param,
+	pass_ipa_free_fn_summary::gate): New methods.
+	(pass_ipa_free_fn_summary::execute): Return TODO_remove_functions
+	| TODO_dump_symtab if small_p.
+	* passes.def: Add true parm for the existing pass_ipa_free_fn_summary
+	entry and add another instance of the pass with false parm after
+	ipa-pure-const.
+	* ipa-pure-const.c (pass_ipa_pure_const): Don't call
+	ipa_free_fn_summary here.
+
 2017-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* gimplify.c (gimplify_return_expr): Remove dead error_mark_node check.
@@ -3102,7 +3120,7 @@
 	* config/xtensa/xtensa.h (FRAME_GROWS_DOWNWARD): Set to 1 if
 	ASAN is enabled.
 
-2017-12-05  Richard Biener   <rguenther@suse.de>
+2017-12-05  Richard Biener  <rguenther@suse.de>
 
 	* timevar.def (TV_TREE_RECIP, TV_TREE_SINCOS, TV_TREE_WIDEN_MUL): Add.
 	* tree-ssa-math-opts.c (pass_data_cse_reciprocal): Use TV_TREE_RECIP.

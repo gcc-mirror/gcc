@@ -3538,26 +3538,36 @@ const pass_data pass_data_ipa_free_fn_summary =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  /* Early optimizations may make function unreachable.  We can not
-     remove unreachable functions as part of the ealry opts pass because
-     TODOs are run before subpasses.  Do it here.  */
-  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_ipa_free_fn_summary : public simple_ipa_opt_pass
 {
 public:
   pass_ipa_free_fn_summary (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_free_fn_summary, ctxt),
+      small_p (false)
   {}
 
   /* opt_pass methods: */
+  opt_pass *clone () { return new pass_ipa_free_fn_summary (m_ctxt); }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      small_p = param;
+    }
+  virtual bool gate (function *) { return small_p || !flag_wpa; }
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();
-      return 0;
+      /* Early optimizations may make function unreachable.  We can not
+	 remove unreachable functions as part of the early opts pass because
+	 TODOs are run before subpasses.  Do it here.  */
+      return small_p ? TODO_remove_functions | TODO_dump_symtab : 0;
     }
 
+private:
+  bool small_p;
 }; // class pass_ipa_free_fn_summary
 
 } // anon namespace
