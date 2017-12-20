@@ -63,6 +63,14 @@ class hash
     val = iterative_hash_host_wide_int (v, val);
   }
 
+  /* Add polynomial value V, treating each element as a HOST_WIDE_INT.  */
+  template<unsigned int N, typename T>
+  void add_poly_hwi (const poly_int_pod<N, T> &v)
+  {
+    for (unsigned int i = 0; i < N; ++i)
+      add_hwi (v.coeffs[i]);
+  }
+
   /* Add wide_int-based value V.  */
   template<typename T>
   void add_wide_int (const generic_wide_int<T> &x)

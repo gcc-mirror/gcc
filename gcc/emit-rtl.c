@@ -196,7 +196,6 @@ static rtx lookup_const_wide_int (rtx);
 #endif
 static rtx lookup_const_double (rtx);
 static rtx lookup_const_fixed (rtx);
-static reg_attrs *get_reg_attrs (tree, int);
 static rtx gen_const_vector (machine_mode, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
 
@@ -393,7 +392,10 @@ reg_attr_hasher::hash (reg_attrs *x)
 {
   const reg_attrs *const p = x;
 
-  return ((p->offset * 1000) ^ (intptr_t) p->decl);
+  inchash::hash h;
+  h.add_ptr (p->decl);
+  h.add_poly_hwi (p->offset);
+  return h.end ();
 }
 
 /* Returns nonzero if the value represented by X  is the same as that given by
@@ -405,19 +407,19 @@ reg_attr_hasher::equal (reg_attrs *x, reg_attrs *y)
   const reg_attrs *const p = x;
   const reg_attrs *const q = y;
 
-  return (p->decl == q->decl && p->offset == q->offset);
+  return (p->decl == q->decl && known_eq (p->offset, q->offset));
 }
 /* Allocate a new reg_attrs structure and insert it into the hash table if
    one identical to it is not already in the table.  We are doing this for
    MEM of mode MODE.  */
 
 static reg_attrs *
-get_reg_attrs (tree decl, int offset)
+get_reg_attrs (tree decl, poly_int64 offset)
 {
   reg_attrs attrs;
 
   /* If everything is the default, we can just return zero.  */
-  if (decl == 0 && offset == 0)
+  if (decl == 0 && known_eq (offset, 0))
     return 0;
 
   attrs.decl = decl;
@@ -1218,10 +1220,10 @@ reg_is_parm_p (rtx reg)
    to the REG_OFFSET.  */
 
 static void
-update_reg_offset (rtx new_rtx, rtx reg, int offset)
+update_reg_offset (rtx new_rtx, rtx reg, poly_int64 offset)
 {
   REG_ATTRS (new_rtx) = get_reg_attrs (REG_EXPR (reg),
-				   REG_OFFSET (reg) + offset);
+				       REG_OFFSET (reg) + offset);
 }
 
 /* Generate a register with same attributes as REG, but with OFFSET
@@ -1229,7 +1231,7 @@ update_reg_offset (rtx new_rtx, rtx reg, int offset)
 
 rtx
 gen_rtx_REG_offset (rtx reg, machine_mode mode, unsigned int regno,
-		    int offset)
+		    poly_int64 offset)
 {
   rtx new_rtx = gen_rtx_REG (mode, regno);
 
@@ -1265,7 +1267,7 @@ adjust_reg_mode (rtx reg, machine_mode mode)
 void
 set_reg_attrs_from_value (rtx reg, rtx x)
 {
-  int offset;
+  poly_int64 offset;
   bool can_be_reg_pointer = true;
 
   /* Don't call mark_reg_pointer for incompatible pointer sign

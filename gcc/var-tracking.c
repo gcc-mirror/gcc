@@ -673,7 +673,6 @@ static bool dataflow_set_different (dataflow_set *, dataflow_set *);
 static void dataflow_set_destroy (dataflow_set *);
 
 static bool track_expr_p (tree, bool);
-static bool same_variable_part_p (rtx, tree, HOST_WIDE_INT);
 static void add_uses_1 (rtx *, void *);
 static void add_stores (rtx, const_rtx, void *);
 static bool compute_bb_dataflow (basic_block);
@@ -704,7 +703,6 @@ static void delete_variable_part (dataflow_set *, rtx,
 static void emit_notes_in_bb (basic_block, dataflow_set *);
 static void vt_emit_notes (void);
 
-static bool vt_get_decl_and_offset (rtx, tree *, HOST_WIDE_INT *);
 static void vt_add_function_parameters (void);
 static bool vt_initialize (void);
 static void vt_finalize (void);
@@ -1850,6 +1848,32 @@ var_reg_decl_set (dataflow_set *set, rtx loc, enum var_init_status initialized,
   set_variable_part (set, loc, dv, offset, initialized, set_src, iopt);
 }
 
+/* Return true if we should track a location that is OFFSET bytes from
+   a variable.  Store the constant offset in *OFFSET_OUT if so.  */
+
+static bool
+track_offset_p (poly_int64 offset, HOST_WIDE_INT *offset_out)
+{
+  HOST_WIDE_INT const_offset;
+  if (!offset.is_constant (&const_offset)
+      || !IN_RANGE (const_offset, 0, MAX_VAR_PARTS - 1))
+    return false;
+  *offset_out = const_offset;
+  return true;
+}
+
+/* Return the offset of a register that track_offset_p says we
+   should track.  */
+
+static HOST_WIDE_INT
+get_tracked_reg_offset (rtx loc)
+{
+  HOST_WIDE_INT offset;
+  if (!track_offset_p (REG_OFFSET (loc), &offset))
+    gcc_unreachable ();
+  return offset;
+}
+
 /* Set the register to contain REG_EXPR (LOC), REG_OFFSET (LOC).  */
 
 static void
@@ -1857,7 +1881,7 @@ var_reg_set (dataflow_set *set, rtx loc, enum var_init_status initialized,
 	     rtx set_src)
 {
   tree decl = REG_EXPR (loc);
-  HOST_WIDE_INT offset = REG_OFFSET (loc);
+  HOST_WIDE_INT offset = get_tracked_reg_offset (loc);
 
   var_reg_decl_set (set, loc, initialized,
 		    dv_from_decl (decl), offset, set_src, INSERT);
@@ -1903,7 +1927,7 @@ var_reg_delete_and_set (dataflow_set *set, rtx loc, bool modify,
 			enum var_init_status initialized, rtx set_src)
 {
   tree decl = REG_EXPR (loc);
-  HOST_WIDE_INT offset = REG_OFFSET (loc);
+  HOST_WIDE_INT offset = get_tracked_reg_offset (loc);
   attrs *node, *next;
   attrs **nextp;
 
@@ -1944,10 +1968,10 @@ var_reg_delete (dataflow_set *set, rtx loc, bool clobber)
   attrs **nextp = &set->regs[REGNO (loc)];
   attrs *node, *next;
 
-  if (clobber)
+  HOST_WIDE_INT offset;
+  if (clobber && track_offset_p (REG_OFFSET (loc), &offset))
     {
       tree decl = REG_EXPR (loc);
-      HOST_WIDE_INT offset = REG_OFFSET (loc);
 
       decl = var_debug_decl (decl);
 
@@ -5245,10 +5269,10 @@ track_expr_p (tree expr, bool need_rtl)
    EXPR+OFFSET.  */
 
 static bool
-same_variable_part_p (rtx loc, tree expr, HOST_WIDE_INT offset)
+same_variable_part_p (rtx loc, tree expr, poly_int64 offset)
 {
   tree expr2;
-  HOST_WIDE_INT offset2;
+  poly_int64 offset2;
 
   if (! DECL_P (expr))
     return false;
@@ -5272,7 +5296,7 @@ same_variable_part_p (rtx loc, tree expr, HOST_WIDE_INT offset)
   expr = var_debug_decl (expr);
   expr2 = var_debug_decl (expr2);
 
-  return (expr == expr2 && offset == offset2);
+  return (expr == expr2 && known_eq (offset, offset2));
 }
 
 /* LOC is a REG or MEM that we would like to track if possible.
@@ -5286,7 +5310,7 @@ same_variable_part_p (rtx loc, tree expr, HOST_WIDE_INT offset)
    from EXPR in *OFFSET_OUT (if nonnull).  */
 
 static bool
-track_loc_p (rtx loc, tree expr, HOST_WIDE_INT offset, bool store_reg_p,
+track_loc_p (rtx loc, tree expr, poly_int64 offset, bool store_reg_p,
 	     machine_mode *mode_out, HOST_WIDE_INT *offset_out)
 {
   machine_mode mode;
@@ -5320,19 +5344,20 @@ track_loc_p (rtx loc, tree expr, HOST_WIDE_INT offset, bool store_reg_p,
        || (store_reg_p
 	   && !COMPLEX_MODE_P (DECL_MODE (expr))
 	   && hard_regno_nregs (REGNO (loc), DECL_MODE (expr)) == 1))
-      && offset + byte_lowpart_offset (DECL_MODE (expr), mode) == 0)
+      && known_eq (offset + byte_lowpart_offset (DECL_MODE (expr), mode), 0))
     {
       mode = DECL_MODE (expr);
       offset = 0;
     }
 
-  if (offset < 0 || offset >= MAX_VAR_PARTS)
+  HOST_WIDE_INT const_offset;
+  if (!track_offset_p (offset, &const_offset))
     return false;
 
   if (mode_out)
     *mode_out = mode;
   if (offset_out)
-    *offset_out = offset;
+    *offset_out = const_offset;
   return true;
 }
 
@@ -9561,7 +9586,7 @@ vt_emit_notes (void)
    assign declaration to *DECLP and offset to *OFFSETP, and return true.  */
 
 static bool
-vt_get_decl_and_offset (rtx rtl, tree *declp, HOST_WIDE_INT *offsetp)
+vt_get_decl_and_offset (rtx rtl, tree *declp, poly_int64 *offsetp)
 {
   if (REG_P (rtl))
     {
@@ -9587,8 +9612,10 @@ vt_get_decl_and_offset (rtx rtl, tree *declp, HOST_WIDE_INT *offsetp)
 	    decl = REG_EXPR (reg);
 	  if (REG_EXPR (reg) != decl)
 	    break;
-	  if (REG_OFFSET (reg) < offset)
-	    offset = REG_OFFSET (reg);
+	  HOST_WIDE_INT this_offset;
+	  if (!track_offset_p (REG_OFFSET (reg), &this_offset))
+	    break;
+	  offset = MIN (offset, this_offset);
 	}
 
       if (i == len)
@@ -9632,7 +9659,7 @@ vt_add_function_parameter (tree parm)
   rtx incoming = DECL_INCOMING_RTL (parm);
   tree decl;
   machine_mode mode;
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
   dataflow_set *out;
   decl_or_value dv;
 
@@ -9755,7 +9782,8 @@ vt_add_function_parameter (tree parm)
       offset = 0;
     }
 
-  if (!track_loc_p (incoming, parm, offset, false, &mode, &offset))
+  HOST_WIDE_INT const_offset;
+  if (!track_loc_p (incoming, parm, offset, false, &mode, &const_offset))
     return;
 
   out = &VTI (ENTRY_BLOCK_PTR_FOR_FN (cfun))->out;
@@ -9776,7 +9804,7 @@ vt_add_function_parameter (tree parm)
 	 arguments passed by invisible reference aren't dealt with
 	 above: incoming-rtl will have Pmode rather than the
 	 expected mode for the type.  */
-      if (offset)
+      if (const_offset)
 	return;
 
       lowpart = var_lowpart (mode, incoming);
@@ -9791,7 +9819,7 @@ vt_add_function_parameter (tree parm)
       if (val)
 	{
 	  preserve_value (val);
-	  set_variable_part (out, val->val_rtx, dv, offset,
+	  set_variable_part (out, val->val_rtx, dv, const_offset,
 			     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
 	  dv = dv_from_value (val->val_rtx);
 	}
@@ -9812,9 +9840,9 @@ vt_add_function_parameter (tree parm)
     {
       incoming = var_lowpart (mode, incoming);
       gcc_assert (REGNO (incoming) < FIRST_PSEUDO_REGISTER);
-      attrs_list_insert (&out->regs[REGNO (incoming)], dv, offset,
+      attrs_list_insert (&out->regs[REGNO (incoming)], dv, const_offset,
 			 incoming);
-      set_variable_part (out, incoming, dv, offset,
+      set_variable_part (out, incoming, dv, const_offset,
 			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
       if (dv_is_value_p (dv))
 	{
@@ -9845,17 +9873,19 @@ vt_add_function_parameter (tree parm)
       for (i = 0; i < XVECLEN (incoming, 0); i++)
 	{
 	  rtx reg = XEXP (XVECEXP (incoming, 0, i), 0);
-	  offset = REG_OFFSET (reg);
+	  /* vt_get_decl_and_offset has already checked that the offset
+	     is a valid variable part.  */
+	  const_offset = get_tracked_reg_offset (reg);
 	  gcc_assert (REGNO (reg) < FIRST_PSEUDO_REGISTER);
-	  attrs_list_insert (&out->regs[REGNO (reg)], dv, offset, reg);
-	  set_variable_part (out, reg, dv, offset,
+	  attrs_list_insert (&out->regs[REGNO (reg)], dv, const_offset, reg);
+	  set_variable_part (out, reg, dv, const_offset,
 			     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
 	}
     }
   else if (MEM_P (incoming))
     {
       incoming = var_lowpart (mode, incoming);
-      set_variable_part (out, incoming, dv, offset,
+      set_variable_part (out, incoming, dv, const_offset,
 			 VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
     }
 }
