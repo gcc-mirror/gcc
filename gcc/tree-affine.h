@@ -80,7 +80,7 @@ bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *,
 void aff_combination_expand (aff_tree *, hash_map<tree, name_expansion *> **);
 void tree_to_aff_combination_expand (tree, tree, aff_tree *,
 				     hash_map<tree, name_expansion *> **);
-tree get_inner_reference_aff (tree, aff_tree *, widest_int *);
+tree get_inner_reference_aff (tree, aff_tree *, poly_widest_int *);
 void free_affine_expand_cache (hash_map<tree, name_expansion *> **);
 bool aff_comb_cannot_overlap_p (aff_tree *, const poly_widest_int &,
 				const poly_widest_int &);

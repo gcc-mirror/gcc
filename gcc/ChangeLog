@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-affine.h (get_inner_reference_aff): Return the size as a
+	poly_widest_int.
+	* tree-affine.c (get_inner_reference_aff): Likewise.
+	* tree-data-ref.c (dr_may_alias_p): Update accordingly.
+	* tree-ssa-loop-im.c (mem_refs_may_alias_p): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* fold-const.c (pointer_may_wrap_p): Take the offset as a
 	HOST_WIDE_INT rather than a poly_int64.
 

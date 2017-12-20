@@ -1581,7 +1581,7 @@ mem_refs_may_alias_p (im_mem_ref *mem1, im_mem_ref *mem2,
   /* Perform BASE + OFFSET analysis -- if MEM1 and MEM2 are based on the same
      object and their offset differ in such a way that the locations cannot
      overlap, then they cannot alias.  */
-  widest_int size1, size2;
+  poly_widest_int size1, size2;
   aff_tree off1, off2;
 
   /* Perform basic offset and type-based disambiguation.  */
