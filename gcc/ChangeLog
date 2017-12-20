@@ -1,3 +1,8 @@
+2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (ARM Options): Document accepted extension options
+	for -march=armv8.3-a.
+
 2017-12-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/83105

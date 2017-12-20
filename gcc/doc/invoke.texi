@@ -15853,6 +15853,7 @@ Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @end table
 
 @item armv8.2-a
+@itemx armv8.3-a
 @table @samp
 @item +fp16
 The half-precision floating-point data processing instructions.
