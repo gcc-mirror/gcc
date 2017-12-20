@@ -206,7 +206,7 @@ static dw_cfa_location *cur_cfa;
 struct queued_reg_save {
   rtx reg;
   rtx saved_reg;
-  HOST_WIDE_INT cfa_offset;
+  poly_int64_pod cfa_offset;
 };
 
 
@@ -434,6 +434,16 @@ copy_cfi_row (dw_cfi_row *src)
   return dst;
 }
 
+/* Return a copy of an existing CFA location.  */
+
+static dw_cfa_location *
+copy_cfa (dw_cfa_location *src)
+{
+  dw_cfa_location *dst = ggc_alloc<dw_cfa_location> ();
+  *dst = *src;
+  return dst;
+}
+
 /* Generate a new label for the CFI info to refer to.  */
 
 static char *
@@ -629,7 +639,10 @@ lookup_cfa_1 (dw_cfi_ref cfi, dw_cfa_location *loc, dw_cfa_location *remember)
       loc->offset = cfi->dw_cfi_oprnd2.dw_cfi_offset;
       break;
     case DW_CFA_def_cfa_expression:
-      get_cfa_from_loc_descr (loc, cfi->dw_cfi_oprnd1.dw_cfi_loc);
+      if (cfi->dw_cfi_oprnd2.dw_cfi_cfa_loc)
+	*loc = *cfi->dw_cfi_oprnd2.dw_cfi_cfa_loc;
+      else
+	get_cfa_from_loc_descr (loc, cfi->dw_cfi_oprnd1.dw_cfi_loc);
       break;
 
     case DW_CFA_remember_state:
@@ -654,10 +667,10 @@ bool
 cfa_equal_p (const dw_cfa_location *loc1, const dw_cfa_location *loc2)
 {
   return (loc1->reg == loc2->reg
-	  && loc1->offset == loc2->offset
+	  && known_eq (loc1->offset, loc2->offset)
 	  && loc1->indirect == loc2->indirect
 	  && (loc1->indirect == 0
-	      || loc1->base_offset == loc2->base_offset));
+	      || known_eq (loc1->base_offset, loc2->base_offset)));
 }
 
 /* Determine if two CFI operands are identical.  */
@@ -678,6 +691,8 @@ cfi_oprnd_equal_p (enum dw_cfi_oprnd_type t, dw_cfi_oprnd *a, dw_cfi_oprnd *b)
 	      || strcmp (a->dw_cfi_addr, b->dw_cfi_addr) == 0);
     case dw_cfi_oprnd_loc:
       return loc_descr_equal_p (a->dw_cfi_loc, b->dw_cfi_loc);
+    case dw_cfi_oprnd_cfa_loc:
+      return cfa_equal_p (a->dw_cfi_cfa_loc, b->dw_cfi_cfa_loc);
     }
   gcc_unreachable ();
 }
@@ -758,42 +773,50 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
 
   cfi = new_cfi ();
 
-  if (new_cfa->reg == old_cfa->reg && !new_cfa->indirect && !old_cfa->indirect)
+  HOST_WIDE_INT const_offset;
+  if (new_cfa->reg == old_cfa->reg
+      && !new_cfa->indirect
+      && !old_cfa->indirect
+      && new_cfa->offset.is_constant (&const_offset))
     {
       /* Construct a "DW_CFA_def_cfa_offset <offset>" instruction, indicating
 	 the CFA register did not change but the offset did.  The data
 	 factoring for DW_CFA_def_cfa_offset_sf happens in output_cfi, or
 	 in the assembler via the .cfi_def_cfa_offset directive.  */
-      if (new_cfa->offset < 0)
+      if (const_offset < 0)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
-      cfi->dw_cfi_oprnd1.dw_cfi_offset = new_cfa->offset;
+      cfi->dw_cfi_oprnd1.dw_cfi_offset = const_offset;
     }
-  else if (new_cfa->offset == old_cfa->offset
+  else if (new_cfa->offset.is_constant ()
+	   && known_eq (new_cfa->offset, old_cfa->offset)
 	   && old_cfa->reg != INVALID_REGNUM
 	   && !new_cfa->indirect
 	   && !old_cfa->indirect)
     {
       /* Construct a "DW_CFA_def_cfa_register <register>" instruction,
 	 indicating the CFA register has changed to <register> but the
-	 offset has not changed.  */
+	 offset has not changed.  This requires the old CFA to have
+	 been set as a register plus offset rather than a general
+	 DW_CFA_def_cfa_expression.  */
       cfi->dw_cfi_opc = DW_CFA_def_cfa_register;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg;
     }
-  else if (new_cfa->indirect == 0)
+  else if (new_cfa->indirect == 0
+	   && new_cfa->offset.is_constant (&const_offset))
     {
       /* Construct a "DW_CFA_def_cfa <register> <offset>" instruction,
 	 indicating the CFA register has changed to <register> with
 	 the specified offset.  The data factoring for DW_CFA_def_cfa_sf
 	 happens in output_cfi, or in the assembler via the .cfi_def_cfa
 	 directive.  */
-      if (new_cfa->offset < 0)
+      if (const_offset < 0)
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa;
       cfi->dw_cfi_oprnd1.dw_cfi_reg_num = new_cfa->reg;
-      cfi->dw_cfi_oprnd2.dw_cfi_offset = new_cfa->offset;
+      cfi->dw_cfi_oprnd2.dw_cfi_offset = const_offset;
     }
   else
     {
@@ -805,6 +828,13 @@ def_cfa_0 (dw_cfa_location *old_cfa, dw_cfa_location *new_cfa)
       cfi->dw_cfi_opc = DW_CFA_def_cfa_expression;
       loc_list = build_cfa_loc (new_cfa, 0);
       cfi->dw_cfi_oprnd1.dw_cfi_loc = loc_list;
+      if (!new_cfa->offset.is_constant ()
+	  || !new_cfa->base_offset.is_constant ())
+	/* It's hard to reconstruct the CFA location for a polynomial
+	   expression, so just cache it instead.  */
+	cfi->dw_cfi_oprnd2.dw_cfi_cfa_loc = copy_cfa (new_cfa);
+      else
+	cfi->dw_cfi_oprnd2.dw_cfi_cfa_loc = NULL;
     }
 
   return cfi;
@@ -836,33 +866,42 @@ def_cfa_1 (dw_cfa_location *new_cfa)
    otherwise it is saved in SREG.  */
 
 static void
-reg_save (unsigned int reg, unsigned int sreg, HOST_WIDE_INT offset)
+reg_save (unsigned int reg, unsigned int sreg, poly_int64 offset)
 {
   dw_fde_ref fde = cfun ? cfun->fde : NULL;
   dw_cfi_ref cfi = new_cfi ();
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
 
-  /* When stack is aligned, store REG using DW_CFA_expression with FP.  */
-  if (fde
-      && fde->stack_realign
-      && sreg == INVALID_REGNUM)
+  if (sreg == INVALID_REGNUM)
     {
-      cfi->dw_cfi_opc = DW_CFA_expression;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
-      cfi->dw_cfi_oprnd2.dw_cfi_loc
-	= build_cfa_aligned_loc (&cur_row->cfa, offset,
-				 fde->stack_realignment);
-    }
-  else if (sreg == INVALID_REGNUM)
-    {
-      if (need_data_align_sf_opcode (offset))
-	cfi->dw_cfi_opc = DW_CFA_offset_extended_sf;
-      else if (reg & ~0x3f)
-	cfi->dw_cfi_opc = DW_CFA_offset_extended;
+      HOST_WIDE_INT const_offset;
+      /* When stack is aligned, store REG using DW_CFA_expression with FP.  */
+      if (fde && fde->stack_realign)
+	{
+	  cfi->dw_cfi_opc = DW_CFA_expression;
+	  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
+	  cfi->dw_cfi_oprnd2.dw_cfi_loc
+	    = build_cfa_aligned_loc (&cur_row->cfa, offset,
+				     fde->stack_realignment);
+	}
+      else if (offset.is_constant (&const_offset))
+	{
+	  if (need_data_align_sf_opcode (const_offset))
+	    cfi->dw_cfi_opc = DW_CFA_offset_extended_sf;
+	  else if (reg & ~0x3f)
+	    cfi->dw_cfi_opc = DW_CFA_offset_extended;
+	  else
+	    cfi->dw_cfi_opc = DW_CFA_offset;
+	  cfi->dw_cfi_oprnd2.dw_cfi_offset = const_offset;
+	}
       else
-	cfi->dw_cfi_opc = DW_CFA_offset;
-      cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
+	{
+	  cfi->dw_cfi_opc = DW_CFA_expression;
+	  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
+	  cfi->dw_cfi_oprnd2.dw_cfi_loc
+	    = build_cfa_loc (&cur_row->cfa, offset);
+	}
     }
   else if (sreg == reg)
     {
@@ -995,7 +1034,7 @@ record_reg_saved_in_reg (rtx dest, rtx src)
    SREG, or if SREG is NULL then it is saved at OFFSET to the CFA.  */
 
 static void
-queue_reg_save (rtx reg, rtx sreg, HOST_WIDE_INT offset)
+queue_reg_save (rtx reg, rtx sreg, poly_int64 offset)
 {
   queued_reg_save *q;
   queued_reg_save e = {reg, sreg, offset};
@@ -1097,20 +1136,11 @@ dwarf2out_frame_debug_def_cfa (rtx pat)
 {
   memset (cur_cfa, 0, sizeof (*cur_cfa));
 
-  if (GET_CODE (pat) == PLUS)
-    {
-      cur_cfa->offset = INTVAL (XEXP (pat, 1));
-      pat = XEXP (pat, 0);
-    }
+  pat = strip_offset (pat, &cur_cfa->offset);
   if (MEM_P (pat))
     {
       cur_cfa->indirect = 1;
-      pat = XEXP (pat, 0);
-      if (GET_CODE (pat) == PLUS)
-	{
-	  cur_cfa->base_offset = INTVAL (XEXP (pat, 1));
-	  pat = XEXP (pat, 0);
-	}
+      pat = strip_offset (XEXP (pat, 0), &cur_cfa->base_offset);
     }
   /* ??? If this fails, we could be calling into the _loc functions to
      define a full expression.  So far no port does that.  */
@@ -1133,7 +1163,7 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
     {
     case PLUS:
       gcc_assert (dwf_regno (XEXP (src, 0)) == cur_cfa->reg);
-      cur_cfa->offset -= INTVAL (XEXP (src, 1));
+      cur_cfa->offset -= rtx_to_poly_int64 (XEXP (src, 1));
       break;
 
     case REG:
@@ -1152,7 +1182,7 @@ dwarf2out_frame_debug_adjust_cfa (rtx pat)
 static void
 dwarf2out_frame_debug_cfa_offset (rtx set)
 {
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
   rtx src, addr, span;
   unsigned int sregno;
 
@@ -1170,7 +1200,7 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
       break;
     case PLUS:
       gcc_assert (dwf_regno (XEXP (addr, 0)) == cur_cfa->reg);
-      offset = INTVAL (XEXP (addr, 1)) - cur_cfa->offset;
+      offset = rtx_to_poly_int64 (XEXP (addr, 1)) - cur_cfa->offset;
       break;
     default:
       gcc_unreachable ();
@@ -1195,7 +1225,7 @@ dwarf2out_frame_debug_cfa_offset (rtx set)
     {
       /* We have a PARALLEL describing where the contents of SRC live.
    	 Adjust the offset for each piece of the PARALLEL.  */
-      HOST_WIDE_INT span_offset = offset;
+      poly_int64 span_offset = offset;
 
       gcc_assert (GET_CODE (span) == PARALLEL);
 
@@ -1535,7 +1565,7 @@ static void
 dwarf2out_frame_debug_expr (rtx expr)
 {
   rtx src, dest, span;
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
   dw_fde_ref fde;
 
   /* If RTX_FRAME_RELATED_P is set on a PARALLEL, process each member of
@@ -1639,19 +1669,14 @@ dwarf2out_frame_debug_expr (rtx expr)
 	    {
 	      /* Rule 2 */
 	      /* Adjusting SP.  */
-	      switch (GET_CODE (XEXP (src, 1)))
+	      if (REG_P (XEXP (src, 1)))
 		{
-		case CONST_INT:
-		  offset = INTVAL (XEXP (src, 1));
-		  break;
-		case REG:
 		  gcc_assert (dwf_regno (XEXP (src, 1))
 			      == cur_trace->cfa_temp.reg);
 		  offset = cur_trace->cfa_temp.offset;
-		  break;
-		default:
-		  gcc_unreachable ();
 		}
+	      else if (!poly_int_rtx_p (XEXP (src, 1), &offset))
+		gcc_unreachable ();
 
 	      if (XEXP (src, 0) == hard_frame_pointer_rtx)
 		{
@@ -1680,9 +1705,8 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      gcc_assert (frame_pointer_needed);
 
 	      gcc_assert (REG_P (XEXP (src, 0))
-			  && dwf_regno (XEXP (src, 0)) == cur_cfa->reg
-			  && CONST_INT_P (XEXP (src, 1)));
-	      offset = INTVAL (XEXP (src, 1));
+			  && dwf_regno (XEXP (src, 0)) == cur_cfa->reg);
+	      offset = rtx_to_poly_int64 (XEXP (src, 1));
 	      if (GET_CODE (src) != MINUS)
 		offset = -offset;
 	      cur_cfa->offset += offset;
@@ -1695,11 +1719,11 @@ dwarf2out_frame_debug_expr (rtx expr)
 	      /* Rule 4 */
 	      if (REG_P (XEXP (src, 0))
 		  && dwf_regno (XEXP (src, 0)) == cur_cfa->reg
-		  && CONST_INT_P (XEXP (src, 1)))
+		  && poly_int_rtx_p (XEXP (src, 1), &offset))
 		{
 		  /* Setting a temporary CFA register that will be copied
 		     into the FP later on.  */
-		  offset = - INTVAL (XEXP (src, 1));
+		  offset = -offset;
 		  cur_cfa->offset += offset;
 		  cur_cfa->reg = dwf_regno (dest);
 		  /* Or used to save regs to the stack.  */
@@ -1722,11 +1746,9 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	      /* Rule 9 */
 	      else if (GET_CODE (src) == LO_SUM
-		       && CONST_INT_P (XEXP (src, 1)))
-		{
-		  cur_trace->cfa_temp.reg = dwf_regno (dest);
-		  cur_trace->cfa_temp.offset = INTVAL (XEXP (src, 1));
-		}
+		       && poly_int_rtx_p (XEXP (src, 1),
+					  &cur_trace->cfa_temp.offset))
+		cur_trace->cfa_temp.reg = dwf_regno (dest);
 	      else
 		gcc_unreachable ();
 	    }
@@ -1734,8 +1756,9 @@ dwarf2out_frame_debug_expr (rtx expr)
 
 	  /* Rule 6 */
 	case CONST_INT:
+	case POLY_INT_CST:
 	  cur_trace->cfa_temp.reg = dwf_regno (dest);
-	  cur_trace->cfa_temp.offset = INTVAL (src);
+	  cur_trace->cfa_temp.offset = rtx_to_poly_int64 (src);
 	  break;
 
 	  /* Rule 7 */
@@ -1745,7 +1768,11 @@ dwarf2out_frame_debug_expr (rtx expr)
 		      && CONST_INT_P (XEXP (src, 1)));
 
 	  cur_trace->cfa_temp.reg = dwf_regno (dest);
-	  cur_trace->cfa_temp.offset |= INTVAL (XEXP (src, 1));
+	  if (!can_ior_p (cur_trace->cfa_temp.offset, INTVAL (XEXP (src, 1)),
+			  &cur_trace->cfa_temp.offset))
+	    /* The target shouldn't generate this kind of CFI note if we
+	       can't represent it.  */
+	    gcc_unreachable ();
 	  break;
 
 	  /* Skip over HIGH, assuming it will be followed by a LO_SUM,
@@ -1800,9 +1827,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	case PRE_MODIFY:
 	case POST_MODIFY:
 	  /* We can't handle variable size modifications.  */
-	  gcc_assert (GET_CODE (XEXP (XEXP (XEXP (dest, 0), 1), 1))
-		      == CONST_INT);
-	  offset = -INTVAL (XEXP (XEXP (XEXP (dest, 0), 1), 1));
+	  offset = -rtx_to_poly_int64 (XEXP (XEXP (XEXP (dest, 0), 1), 1));
 
 	  gcc_assert (REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM
 		      && cur_trace->cfa_store.reg == dw_stack_pointer_regnum);
@@ -1860,9 +1885,8 @@ dwarf2out_frame_debug_expr (rtx expr)
 	  {
 	    unsigned int regno;
 
-	    gcc_assert (CONST_INT_P (XEXP (XEXP (dest, 0), 1))
-			&& REG_P (XEXP (XEXP (dest, 0), 0)));
-	    offset = INTVAL (XEXP (XEXP (dest, 0), 1));
+	    gcc_assert (REG_P (XEXP (XEXP (dest, 0), 0)));
+	    offset = rtx_to_poly_int64 (XEXP (XEXP (dest, 0), 1));
 	    if (GET_CODE (XEXP (dest, 0)) == MINUS)
 	      offset = -offset;
 
@@ -1923,7 +1947,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	{
 	  /* We're storing the current CFA reg into the stack.  */
 
-	  if (cur_cfa->offset == 0)
+	  if (known_eq (cur_cfa->offset, 0))
 	    {
               /* Rule 19 */
               /* If stack is aligned, putting CFA reg into stack means
@@ -1981,7 +2005,7 @@ dwarf2out_frame_debug_expr (rtx expr)
 	{
 	  /* We have a PARALLEL describing where the contents of SRC live.
 	     Queue register saves for each piece of the PARALLEL.  */
-	  HOST_WIDE_INT span_offset = offset;
+	  poly_int64 span_offset = offset;
 
 	  gcc_assert (GET_CODE (span) == PARALLEL);
 
@@ -2884,7 +2908,7 @@ static void
 initial_return_save (rtx rtl)
 {
   unsigned int reg = INVALID_REGNUM;
-  HOST_WIDE_INT offset = 0;
+  poly_int64 offset = 0;
 
   switch (GET_CODE (rtl))
     {
@@ -2905,12 +2929,12 @@ initial_return_save (rtx rtl)
 
 	case PLUS:
 	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
-	  offset = INTVAL (XEXP (rtl, 1));
+	  offset = rtx_to_poly_int64 (XEXP (rtl, 1));
 	  break;
 
 	case MINUS:
 	  gcc_assert (REGNO (XEXP (rtl, 0)) == STACK_POINTER_REGNUM);
-	  offset = -INTVAL (XEXP (rtl, 1));
+	  offset = -rtx_to_poly_int64 (XEXP (rtl, 1));
 	  break;
 
 	default:

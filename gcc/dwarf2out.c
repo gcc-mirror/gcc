@@ -573,6 +573,9 @@ dw_cfi_oprnd2_desc (enum dwarf_call_frame_info cfi)
     case DW_CFA_val_expression:
       return dw_cfi_oprnd_loc;
 
+    case DW_CFA_def_cfa_expression:
+      return dw_cfi_oprnd_cfa_loc;
+
     default:
       return dw_cfi_oprnd_unused;
     }
