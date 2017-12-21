@@ -4784,6 +4784,24 @@ poly_int_tree_p (const_tree t)
   return (TREE_CODE (t) == INTEGER_CST || POLY_INT_CST_P (t));
 }
 
+/* Return the bit size of BIT_FIELD_REF T, in cases where it is known
+   to be a poly_uint64.  (This is always true at the gimple level.)  */
+
+inline poly_uint64
+bit_field_size (const_tree t)
+{
+  return tree_to_poly_uint64 (TREE_OPERAND (t, 1));
+}
+
+/* Return the starting bit offset of BIT_FIELD_REF T, in cases where it is
+   known to be a poly_uint64.  (This is always true at the gimple level.)  */
+
+inline poly_uint64
+bit_field_offset (const_tree t)
+{
+  return tree_to_poly_uint64 (TREE_OPERAND (t, 2));
+}
+
 extern tree strip_float_extensions (tree);
 extern int really_constant_p (const_tree);
 extern bool ptrdiff_tree_p (const_tree, poly_int64_pod *);

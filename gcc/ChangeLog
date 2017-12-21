@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (bit_field_size, bit_field_offset): New functions.
+	* hsa-gen.c (gen_hsa_addr): Use them.
+	* tree-ssa-forwprop.c (simplify_bitfield_ref): Likewise.
+	(simplify_vector_constructor): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	* tree-cfg.c (verify_expr): Require the sizes and offsets of a
+	BIT_FIELD_REF to be poly_uint64s rather than uhwis.
+	* fold-const.c (fold_ternary_loc): Protect tree_to_uhwi with
+	tree_fits_uhwi_p.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.h (emit_group_load, emit_group_load_into_temps)
 	(emit_group_store): Take the size as a poly_int64 rather than an int.
 	* expr.c (emit_group_load_1, emit_group_load): Likewise.

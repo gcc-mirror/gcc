@@ -1781,7 +1781,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   gimple *def_stmt;
   tree op, op0, op1, op2;
   tree elem_type;
-  unsigned idx, n, size;
+  unsigned idx, size;
   enum tree_code code;
 
   op = gimple_assign_rhs1 (stmt);
@@ -1816,12 +1816,11 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
     return false;
 
   size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
-  n = TREE_INT_CST_LOW (op1) / size;
-  if (n != 1)
+  if (maybe_ne (bit_field_size (op), size))
     return false;
-  idx = TREE_INT_CST_LOW (op2) / size;
 
-  if (code == VEC_PERM_EXPR)
+  if (code == VEC_PERM_EXPR
+      && constant_multiple_p (bit_field_offset (op), size, &idx))
     {
       tree p, m, tem;
       unsigned nelts;
@@ -2074,9 +2073,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	    return false;
 	  orig = ref;
 	}
-      if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
+      unsigned int elt;
+      if (maybe_ne (bit_field_size (op1), elem_size)
+	  || !constant_multiple_p (bit_field_offset (op1), elem_size, &elt))
 	return false;
-      unsigned int elt = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
       if (elt != i)
 	maybe_ident = false;
       sel.quick_push (elt);

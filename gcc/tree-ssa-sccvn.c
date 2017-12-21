@@ -779,12 +779,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  /* Record bits, position and storage order.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  temp.op1 = TREE_OPERAND (ref, 2);
-	  if (tree_fits_shwi_p (TREE_OPERAND (ref, 2)))
-	    {
-	      HOST_WIDE_INT off = tree_to_shwi (TREE_OPERAND (ref, 2));
-	      if (off % BITS_PER_UNIT == 0)
-		temp.off = off / BITS_PER_UNIT;
-	    }
+	  if (!multiple_p (bit_field_offset (ref), BITS_PER_UNIT, &temp.off))
+	    temp.off = -1;
 	  temp.reverse = REF_REVERSE_STORAGE_ORDER (ref);
 	  break;
 	case COMPONENT_REF:

@@ -11632,7 +11632,9 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
          fold (nearly) all BIT_FIELD_REFs.  */
       if (CONSTANT_CLASS_P (arg0)
 	  && can_native_interpret_type_p (type)
-	  && BITS_PER_UNIT == 8)
+	  && BITS_PER_UNIT == 8
+	  && tree_fits_uhwi_p (op1)
+	  && tree_fits_uhwi_p (op2))
 	{
 	  unsigned HOST_WIDE_INT bitpos = tree_to_uhwi (op2);
 	  unsigned HOST_WIDE_INT bitsize = tree_to_uhwi (op1);
