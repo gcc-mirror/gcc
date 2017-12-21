@@ -1,3 +1,8 @@
+2017-12-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* common/config/arm/arm-common.c (compare_opt_names): Add function
+	comment.  Use strcmp instead of manual loop.
+
 2017-12-21  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/83509
