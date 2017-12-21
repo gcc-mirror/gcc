@@ -1,5 +1,9 @@
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83487
+	* config/i386/i386.c (ix86_function_arg_boundary): Return
+	PARM_BOUNDARY for TYPE_EMPTY_P types.
+
 	PR c/83448
 	* gimple-ssa-sprintf.c (maybe_warn): Don't call set_caret_index
 	if navail is >= dir.len.

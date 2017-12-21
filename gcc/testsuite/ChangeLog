@@ -1,5 +1,22 @@
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83487
+	* gcc.c-torture/compile/pr83487.c: New test.
+	* gcc.dg/compat/pr83487-1.h: New file.
+	* gcc.dg/compat/pr83487-1_main.c: New test.
+	* gcc.dg/compat/pr83487-1_x.c: New file.
+	* gcc.dg/compat/pr83487-1_y.c: New file.
+	* gcc.dg/compat/pr83487-2_main.c: New test.
+	* gcc.dg/compat/pr83487-2_x.c: New file.
+	* gcc.dg/compat/pr83487-2_y.c: New file.
+	* g++.dg/abi/pr83487.C: New test.
+	* g++.dg/compat/abi/pr83487-1_main.C: New test.
+	* g++.dg/compat/abi/pr83487-1_x.C: New file.
+	* g++.dg/compat/abi/pr83487-1_y.C: New file.
+	* g++.dg/compat/abi/pr83487-2_main.C: New test.
+	* g++.dg/compat/abi/pr83487-2_x.C: New file.
+	* g++.dg/compat/abi/pr83487-2_y.C: New file.
+
 	PR c/83448
 	* gcc.c-torture/compile/pr83448.c: New test.
 	* gcc.dg/tree-ssa/builtin-snprintf-warn-4.c: New test.
