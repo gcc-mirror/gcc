@@ -389,22 +389,23 @@ align_base (HOST_WIDE_INT base, unsigned HOST_WIDE_INT align, bool align_up)
 /* Allocate SIZE bytes at byte alignment ALIGN from the stack frame.
    Return the frame offset.  */
 
-static HOST_WIDE_INT
+static poly_int64
 alloc_stack_frame_space (HOST_WIDE_INT size, unsigned HOST_WIDE_INT align)
 {
-  HOST_WIDE_INT offset, new_frame_offset;
+  poly_int64 offset, new_frame_offset;
 
   if (FRAME_GROWS_DOWNWARD)
     {
       new_frame_offset
-	= align_base (frame_offset - frame_phase - size,
-		      align, false) + frame_phase;
+	= aligned_lower_bound (frame_offset - frame_phase - size,
+			       align) + frame_phase;
       offset = new_frame_offset;
     }
   else
     {
       new_frame_offset
-	= align_base (frame_offset - frame_phase, align, true) + frame_phase;
+	= aligned_upper_bound (frame_offset - frame_phase,
+			       align) + frame_phase;
       offset = new_frame_offset;
       new_frame_offset += size;
     }
@@ -980,13 +981,13 @@ dump_stack_var_partition (void)
 
 static void
 expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
-			 HOST_WIDE_INT offset)
+			 poly_int64 offset)
 {
   unsigned align;
   rtx x;
 
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
-  gcc_assert (offset == trunc_int_for_mode (offset, Pmode));
+  gcc_assert (known_eq (offset, trunc_int_for_mode (offset, Pmode)));
 
   x = plus_constant (Pmode, base, offset);
   x = gen_rtx_MEM (TREE_CODE (decl) == SSA_NAME
@@ -1000,7 +1001,7 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
 	 important, we'll simply use the alignment that is already set.  */
       if (base == virtual_stack_vars_rtx)
 	offset -= frame_phase;
-      align = least_bit_hwi (offset);
+      align = known_alignment (offset);
       align *= BITS_PER_UNIT;
       if (align == 0 || align > base_align)
 	align = base_align;
@@ -1094,7 +1095,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
     {
       rtx base;
       unsigned base_align, alignb;
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
 
       i = stack_vars_sorted[si];
 
@@ -1119,13 +1120,16 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
 	  base = virtual_stack_vars_rtx;
-	  if ((asan_sanitize_stack_p ())
-	      && pred)
+	  /* ASAN description strings don't yet have a syntax for expressing
+	     polynomial offsets.  */
+	  HOST_WIDE_INT prev_offset;
+	  if (asan_sanitize_stack_p ()
+	      && pred
+	      && frame_offset.is_constant (&prev_offset))
 	    {
-	      HOST_WIDE_INT prev_offset
-		= align_base (frame_offset,
-			      MAX (alignb, ASAN_RED_ZONE_SIZE),
-			      !FRAME_GROWS_DOWNWARD);
+	      prev_offset = align_base (prev_offset,
+					MAX (alignb, ASAN_RED_ZONE_SIZE),
+					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
 	      offset
 		= alloc_stack_frame_space (stack_vars[i].size
@@ -1133,7 +1137,10 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 					   MAX (alignb, ASAN_RED_ZONE_SIZE));
 
 	      data->asan_vec.safe_push (prev_offset);
-	      data->asan_vec.safe_push (offset + stack_vars[i].size);
+	      /* Allocating a constant amount of space from a constant
+		 starting offset must give a constant result.  */
+	      data->asan_vec.safe_push ((offset + stack_vars[i].size)
+					.to_constant ());
 	      /* Find best representative of the partition.
 		 Prefer those with DECL_NAME, even better
 		 satisfying asan_protect_stack_decl predicate.  */
@@ -1179,7 +1186,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	     space.  */
 	  if (large_size > 0 && ! large_allocation_done)
 	    {
-	      HOST_WIDE_INT loffset;
+	      poly_int64 loffset;
 	      rtx large_allocsize;
 
 	      large_allocsize = GEN_INT (large_size);
@@ -1282,7 +1289,8 @@ set_parm_rtl (tree parm, rtx x)
 static void
 expand_one_stack_var_1 (tree var)
 {
-  HOST_WIDE_INT size, offset;
+  HOST_WIDE_INT size;
+  poly_int64 offset;
   unsigned byte_align;
 
   if (TREE_CODE (var) == SSA_NAME)
@@ -2218,9 +2226,12 @@ expand_used_vars (void)
 	   in addition to phase 1 and 2.  */
 	expand_stack_vars (asan_decl_phase_3, &data);
 
-      if (!data.asan_vec.is_empty ())
+      /* ASAN description strings don't yet have a syntax for expressing
+	 polynomial offsets.  */
+      HOST_WIDE_INT prev_offset;
+      if (!data.asan_vec.is_empty ()
+	  && frame_offset.is_constant (&prev_offset))
 	{
-	  HOST_WIDE_INT prev_offset = frame_offset;
 	  HOST_WIDE_INT offset, sz, redzonesz;
 	  redzonesz = ASAN_RED_ZONE_SIZE;
 	  sz = data.asan_vec[0] - prev_offset;
@@ -2229,8 +2240,10 @@ expand_used_vars (void)
 	      && sz + ASAN_RED_ZONE_SIZE >= (int) data.asan_alignb)
 	    redzonesz = ((sz + ASAN_RED_ZONE_SIZE + data.asan_alignb - 1)
 			 & ~(data.asan_alignb - HOST_WIDE_INT_1)) - sz;
-	  offset
-	    = alloc_stack_frame_space (redzonesz, ASAN_RED_ZONE_SIZE);
+	  /* Allocating a constant amount of space from a constant
+	     starting offset must give a constant result.  */
+	  offset = (alloc_stack_frame_space (redzonesz, ASAN_RED_ZONE_SIZE)
+		    .to_constant ());
 	  data.asan_vec.safe_push (prev_offset);
 	  data.asan_vec.safe_push (offset);
 	  /* Leave space for alignment if STRICT_ALIGNMENT.  */
@@ -2275,9 +2288,10 @@ expand_used_vars (void)
   if (STACK_ALIGNMENT_NEEDED)
     {
       HOST_WIDE_INT align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-      if (!FRAME_GROWS_DOWNWARD)
-	frame_offset += align - 1;
-      frame_offset &= -align;
+      if (FRAME_GROWS_DOWNWARD)
+	frame_offset = aligned_lower_bound (frame_offset, align);
+      else
+	frame_offset = aligned_upper_bound (frame_offset, align);
     }
 
   return var_end_seq;

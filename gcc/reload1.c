@@ -887,7 +887,7 @@ reload (rtx_insn *first, int global)
   for (;;)
     {
       int something_changed;
-      HOST_WIDE_INT starting_frame_size;
+      poly_int64 starting_frame_size;
 
       starting_frame_size = get_frame_size ();
       something_was_spilled = false;
@@ -955,7 +955,7 @@ reload (rtx_insn *first, int global)
       if (caller_save_needed)
 	setup_save_areas ();
 
-      if (starting_frame_size && crtl->stack_alignment_needed)
+      if (maybe_ne (starting_frame_size, 0) && crtl->stack_alignment_needed)
 	{
 	  /* If we have a stack frame, we must align it now.  The
 	     stack size may be a part of the offset computation for
@@ -968,7 +968,8 @@ reload (rtx_insn *first, int global)
 	  assign_stack_local (BLKmode, 0, crtl->stack_alignment_needed);
 	}
       /* If we allocated another stack slot, redo elimination bookkeeping.  */
-      if (something_was_spilled || starting_frame_size != get_frame_size ())
+      if (something_was_spilled
+	  || maybe_ne (starting_frame_size, get_frame_size ()))
 	{
 	  if (update_eliminables_and_spill ())
 	    finish_spills (0);
@@ -994,7 +995,8 @@ reload (rtx_insn *first, int global)
 
       /* If we allocated any new memory locations, make another pass
 	 since it might have changed elimination offsets.  */
-      if (something_was_spilled || starting_frame_size != get_frame_size ())
+      if (something_was_spilled
+	  || maybe_ne (starting_frame_size, get_frame_size ()))
 	something_changed = 1;
 
       /* Even if the frame size remained the same, we might still have
@@ -1043,11 +1045,11 @@ reload (rtx_insn *first, int global)
   if (insns_need_reload != 0 || something_needs_elimination
       || something_needs_operands_changed)
     {
-      HOST_WIDE_INT old_frame_size = get_frame_size ();
+      poly_int64 old_frame_size = get_frame_size ();
 
       reload_as_needed (global);
 
-      gcc_assert (old_frame_size == get_frame_size ());
+      gcc_assert (known_eq (old_frame_size, get_frame_size ()));
 
       gcc_assert (verify_initial_elim_offsets ());
     }

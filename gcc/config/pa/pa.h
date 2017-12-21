@@ -691,7 +691,7 @@ void hppa_profile_hook (int label_no);
 extern int may_call_alloca;
 
 #define EXIT_IGNORE_STACK	\
- (get_frame_size () != 0	\
+ (maybe_ne (get_frame_size (), 0)	\
   || cfun->calls_alloca || crtl->outgoing_args_size)
 
 /* Length in units of the trampoline for entering a nested function.  */

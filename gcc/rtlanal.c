@@ -344,7 +344,7 @@ rtx_varies_p (const_rtx x, bool for_alias)
    FROM and TO for the current function, as it was at the start
    of the routine.  */
 
-static HOST_WIDE_INT
+static poly_int64
 get_initial_register_offset (int from, int to)
 {
   static const struct elim_table_t
@@ -352,7 +352,7 @@ get_initial_register_offset (int from, int to)
     const int from;
     const int to;
   } table[] = ELIMINABLE_REGS;
-  HOST_WIDE_INT offset1, offset2;
+  poly_int64 offset1, offset2;
   unsigned int i, j;
 
   if (to == from)

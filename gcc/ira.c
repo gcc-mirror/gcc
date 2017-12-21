@@ -5553,13 +5553,13 @@ do_reload (void)
      function's frame size is larger than we expect.  */
   if (flag_stack_check == GENERIC_STACK_CHECK)
     {
-      HOST_WIDE_INT size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
+      poly_int64 size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
 
       for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (df_regs_ever_live_p (i) && !fixed_regs[i] && call_used_regs[i])
 	  size += UNITS_PER_WORD;
 
-      if (size > STACK_CHECK_MAX_FRAME_SIZE)
+      if (constant_lower_bound (size) > STACK_CHECK_MAX_FRAME_SIZE)
 	warning (0, "frame size too large for reliable stack checking");
     }
 

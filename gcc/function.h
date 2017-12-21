@@ -187,8 +187,8 @@ struct GTY(()) frame_space
 {
   struct frame_space *next;
 
-  HOST_WIDE_INT start;
-  HOST_WIDE_INT length;
+  poly_int64 start;
+  poly_int64 length;
 };
 
 struct GTY(()) stack_usage
@@ -575,19 +575,19 @@ extern void free_after_compilation (struct function *);
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */
-extern HOST_WIDE_INT get_frame_size (void);
+extern poly_int64 get_frame_size (void);
 
 /* Issue an error message and return TRUE if frame OFFSET overflows in
    the signed target pointer arithmetics for function FUNC.  Otherwise
    return FALSE.  */
-extern bool frame_offset_overflow (HOST_WIDE_INT, tree);
+extern bool frame_offset_overflow (poly_int64, tree);
 
 extern unsigned int spill_slot_alignment (machine_mode);
 
-extern rtx assign_stack_local_1 (machine_mode, HOST_WIDE_INT, int, int);
-extern rtx assign_stack_local (machine_mode, HOST_WIDE_INT, int);
-extern rtx assign_stack_temp_for_type (machine_mode, HOST_WIDE_INT, tree);
-extern rtx assign_stack_temp (machine_mode, HOST_WIDE_INT);
+extern rtx assign_stack_local_1 (machine_mode, poly_int64, int, int);
+extern rtx assign_stack_local (machine_mode, poly_int64, int);
+extern rtx assign_stack_temp_for_type (machine_mode, poly_int64, tree);
+extern rtx assign_stack_temp (machine_mode, poly_int64);
 extern rtx assign_temp (tree, int, int);
 extern void update_temp_slot_address (rtx, rtx);
 extern void preserve_temp_slots (rtx);
