@@ -8426,7 +8426,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  || TREE_CODE (arg1) == POINTER_PLUS_EXPR))
     {
       tree base0, base1, offset0 = NULL_TREE, offset1 = NULL_TREE;
-      HOST_WIDE_INT bitsize, bitpos0 = 0, bitpos1 = 0;
+      poly_int64 bitsize, bitpos0 = 0, bitpos1 = 0;
       machine_mode mode;
       int volatilep, reversep, unsignedp;
       bool indirect_base0 = false, indirect_base1 = false;
@@ -8467,17 +8467,14 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  else
 	    offset0 = size_binop (PLUS_EXPR, offset0,
 				  TREE_OPERAND (arg0, 1));
-	  if (TREE_CODE (offset0) == INTEGER_CST)
+	  if (poly_int_tree_p (offset0))
 	    {
-	      offset_int tem = wi::sext (wi::to_offset (offset0),
-					 TYPE_PRECISION (sizetype));
+	      poly_offset_int tem = wi::sext (wi::to_poly_offset (offset0),
+					      TYPE_PRECISION (sizetype));
 	      tem <<= LOG2_BITS_PER_UNIT;
 	      tem += bitpos0;
-	      if (wi::fits_shwi_p (tem))
-		{
-		  bitpos0 = tem.to_shwi ();
-		  offset0 = NULL_TREE;
-		}
+	      if (tem.to_shwi (&bitpos0))
+		offset0 = NULL_TREE;
 	    }
 	}
 
@@ -8513,17 +8510,14 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  else
 	    offset1 = size_binop (PLUS_EXPR, offset1,
 				  TREE_OPERAND (arg1, 1));
-	  if (TREE_CODE (offset1) == INTEGER_CST)
+	  if (poly_int_tree_p (offset1))
 	    {
-	      offset_int tem = wi::sext (wi::to_offset (offset1),
-					 TYPE_PRECISION (sizetype));
+	      poly_offset_int tem = wi::sext (wi::to_poly_offset (offset1),
+					      TYPE_PRECISION (sizetype));
 	      tem <<= LOG2_BITS_PER_UNIT;
 	      tem += bitpos1;
-	      if (wi::fits_shwi_p (tem))
-		{
-		  bitpos1 = tem.to_shwi ();
-		  offset1 = NULL_TREE;
-		}
+	      if (tem.to_shwi (&bitpos1))
+		offset1 = NULL_TREE;
 	    }
 	}
 
@@ -8539,7 +8533,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		  && operand_equal_p (offset0, offset1, 0)))
 	    {
 	      if (!equality_code
-		  && bitpos0 != bitpos1
+		  && maybe_ne (bitpos0, bitpos1)
 		  && (pointer_may_wrap_p (base0, offset0, bitpos0)
 		      || pointer_may_wrap_p (base1, offset1, bitpos1)))
 		fold_overflow_warning (("assuming pointer wraparound does not "
@@ -8550,17 +8544,41 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	      switch (code)
 		{
 		case EQ_EXPR:
-		  return constant_boolean_node (bitpos0 == bitpos1, type);
+		  if (known_eq (bitpos0, bitpos1))
+		    return boolean_true_node;
+		  if (known_ne (bitpos0, bitpos1))
+		    return boolean_false_node;
+		  break;
 		case NE_EXPR:
-		  return constant_boolean_node (bitpos0 != bitpos1, type);
+		  if (known_ne (bitpos0, bitpos1))
+		    return boolean_true_node;
+		  if (known_eq (bitpos0, bitpos1))
+		    return boolean_false_node;
+		  break;
 		case LT_EXPR:
-		  return constant_boolean_node (bitpos0 < bitpos1, type);
+		  if (known_lt (bitpos0, bitpos1))
+		    return boolean_true_node;
+		  if (known_ge (bitpos0, bitpos1))
+		    return boolean_false_node;
+		  break;
 		case LE_EXPR:
-		  return constant_boolean_node (bitpos0 <= bitpos1, type);
+		  if (known_le (bitpos0, bitpos1))
+		    return boolean_true_node;
+		  if (known_gt (bitpos0, bitpos1))
+		    return boolean_false_node;
+		  break;
 		case GE_EXPR:
-		  return constant_boolean_node (bitpos0 >= bitpos1, type);
+		  if (known_ge (bitpos0, bitpos1))
+		    return boolean_true_node;
+		  if (known_lt (bitpos0, bitpos1))
+		    return boolean_false_node;
+		  break;
 		case GT_EXPR:
-		  return constant_boolean_node (bitpos0 > bitpos1, type);
+		  if (known_gt (bitpos0, bitpos1))
+		    return boolean_true_node;
+		  if (known_le (bitpos0, bitpos1))
+		    return boolean_false_node;
+		  break;
 		default:;
 		}
 	    }
@@ -8571,7 +8589,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	     because pointer arithmetic is restricted to retain within an
 	     object and overflow on pointer differences is undefined as of
 	     6.5.6/8 and /9 with respect to the signed ptrdiff_t.  */
-	  else if (bitpos0 == bitpos1)
+	  else if (known_eq (bitpos0, bitpos1))
 	    {
 	      /* By converting to signed sizetype we cover middle-end pointer
 	         arithmetic which operates on unsigned pointer types of size
@@ -8600,7 +8618,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	}
       /* For equal offsets we can simplify to a comparison of the
 	 base addresses.  */
-      else if (bitpos0 == bitpos1
+      else if (known_eq (bitpos0, bitpos1)
 	       && (indirect_base0
 		   ? base0 != TREE_OPERAND (arg0, 0) : base0 != arg0)
 	       && (indirect_base1
@@ -8629,7 +8647,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		    eliminated.  When ptr is null, although the -> expression
 		    is strictly speaking invalid, GCC retains it as a matter
 		    of QoI.  See PR c/44555. */
-		 && (offset0 == NULL_TREE && bitpos0 != 0))
+		 && (offset0 == NULL_TREE && known_ne (bitpos0, 0)))
 		|| CONSTANT_CLASS_P (base0))
 	       && indirect_base0
 	       /* The caller guarantees that when one of the arguments is
