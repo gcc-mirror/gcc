@@ -1,3 +1,9 @@
+2017-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83448
+	* gcc.c-torture/compile/pr83448.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-4.c: New test.
+
 2017-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/atomic9.adb: New test.

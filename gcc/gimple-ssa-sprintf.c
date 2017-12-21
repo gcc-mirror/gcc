@@ -2466,7 +2466,8 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
 	  /* For plain character directives (i.e., the format string itself)
 	     but not others, point the caret at the first character that's
 	     past the end of the destination.  */
-	  dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+	  if (navail < dir.len)
+	    dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
 	}
 
       if (*dir.beg == '\0')
@@ -2594,7 +2595,8 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
       /* For plain character directives (i.e., the format string itself)
 	 but not others, point the caret at the first character that's
 	 past the end of the destination.  */
-      dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+      if (navail < dir.len)
+	dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
     }
 
   if (*dir.beg == '\0')
