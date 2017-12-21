@@ -1,3 +1,9 @@
+2017-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83448
+	* gimple-ssa-sprintf.c (maybe_warn): Don't call set_caret_index
+	if navail is >= dir.len.
+
 2017-12-21  Steve Ellcey  <sellcey@cavium.com>
 
 	* config/aarch64/t-aarch64-linux (MULTILIB_OSDIRNAMES): Fix
