@@ -548,8 +548,12 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 
   /* Create the conversion stmt and insert it.  */
   if (convert_code == VIEW_CONVERT_EXPR)
-    temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
-  new_stmt = gimple_build_assign (result, convert_code, temp);
+    {
+      temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
+      new_stmt = gimple_build_assign (result, temp);
+    }
+  else
+    new_stmt = gimple_build_assign (result, convert_code, temp);
   gsi = gsi_after_labels (gimple_bb (phi));
   gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
 
