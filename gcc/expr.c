@@ -3867,19 +3867,19 @@ compress_float_constant (rtx x, rtx y)
    otherwise, the padding comes at high addresses.  */
 
 rtx
-push_block (rtx size, int extra, int below)
+push_block (rtx size, poly_int64 extra, int below)
 {
   rtx temp;
 
   size = convert_modes (Pmode, ptr_mode, size, 1);
   if (CONSTANT_P (size))
     anti_adjust_stack (plus_constant (Pmode, size, extra));
-  else if (REG_P (size) && extra == 0)
+  else if (REG_P (size) && known_eq (extra, 0))
     anti_adjust_stack (size);
   else
     {
       temp = copy_to_mode_reg (Pmode, size);
-      if (extra != 0)
+      if (maybe_ne (extra, 0))
 	temp = expand_binop (Pmode, add_optab, temp,
 			     gen_int_mode (extra, Pmode),
 			     temp, 0, OPTAB_LIB_WIDEN);
@@ -3889,7 +3889,7 @@ push_block (rtx size, int extra, int below)
   if (STACK_GROWS_DOWNWARD)
     {
       temp = virtual_outgoing_args_rtx;
-      if (extra != 0 && below)
+      if (maybe_ne (extra, 0) && below)
 	temp = plus_constant (Pmode, temp, extra);
     }
   else
@@ -3897,7 +3897,7 @@ push_block (rtx size, int extra, int below)
       if (CONST_INT_P (size))
 	temp = plus_constant (Pmode, virtual_outgoing_args_rtx,
 			      -INTVAL (size) - (below ? 0 : extra));
-      else if (extra != 0 && !below)
+      else if (maybe_ne (extra, 0) && !below)
 	temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
 			     negate_rtx (Pmode, plus_constant (Pmode, size,
 							       extra)));
@@ -4274,7 +4274,7 @@ memory_load_overlap (rtx x, rtx y, HOST_WIDE_INT size)
 
 bool
 emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
-		unsigned int align, int partial, rtx reg, int extra,
+		unsigned int align, int partial, rtx reg, poly_int64 extra,
 		rtx args_addr, rtx args_so_far, int reg_parm_stack_space,
 		rtx alignment_pad, bool sibcall_p)
 {
@@ -4362,9 +4362,11 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	  /* Push padding now if padding above and stack grows down,
 	     or if padding below and stack grows up.
 	     But if space already allocated, this has already been done.  */
-	  if (extra && args_addr == 0
-	      && where_pad != PAD_NONE && where_pad != stack_direction)
-	    anti_adjust_stack (GEN_INT (extra));
+	  if (maybe_ne (extra, 0)
+	      && args_addr == 0
+	      && where_pad != PAD_NONE
+	      && where_pad != stack_direction)
+	    anti_adjust_stack (gen_int_mode (extra, Pmode));
 
 	  move_by_pieces (NULL, xinner, INTVAL (size) - used, align, 0);
 	}
@@ -4485,9 +4487,11 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       /* Push padding now if padding above and stack grows down,
 	 or if padding below and stack grows up.
 	 But if space already allocated, this has already been done.  */
-      if (extra && args_addr == 0
-	  && where_pad != PAD_NONE && where_pad != stack_direction)
-	anti_adjust_stack (GEN_INT (extra));
+      if (maybe_ne (extra, 0)
+	  && args_addr == 0
+	  && where_pad != PAD_NONE
+	  && where_pad != stack_direction)
+	anti_adjust_stack (gen_int_mode (extra, Pmode));
 
       /* If we make space by pushing it, we might as well push
 	 the real data.  Otherwise, we can leave OFFSET nonzero
@@ -4536,9 +4540,11 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       /* Push padding now if padding above and stack grows down,
 	 or if padding below and stack grows up.
 	 But if space already allocated, this has already been done.  */
-      if (extra && args_addr == 0
-	  && where_pad != PAD_NONE && where_pad != stack_direction)
-	anti_adjust_stack (GEN_INT (extra));
+      if (maybe_ne (extra, 0)
+	  && args_addr == 0
+	  && where_pad != PAD_NONE
+	  && where_pad != stack_direction)
+	anti_adjust_stack (gen_int_mode (extra, Pmode));
 
 #ifdef PUSH_ROUNDING
       if (args_addr == 0 && PUSH_ARGS)
@@ -4583,8 +4589,8 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	}
     }
 
-  if (extra && args_addr == 0 && where_pad == stack_direction)
-    anti_adjust_stack (GEN_INT (extra));
+  if (maybe_ne (extra, 0) && args_addr == 0 && where_pad == stack_direction)
+    anti_adjust_stack (gen_int_mode (extra, Pmode));
 
   if (alignment_pad && args_addr == 0)
     anti_adjust_stack (alignment_pad);

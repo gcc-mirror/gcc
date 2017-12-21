@@ -233,11 +233,11 @@ extern rtx emit_move_resolve_push (machine_mode, rtx);
 
 /* Push a block of length SIZE (perhaps variable)
    and return an rtx to address the beginning of the block.  */
-extern rtx push_block (rtx, int, int);
+extern rtx push_block (rtx, poly_int64, int);
 
 /* Generate code to push something onto the stack, given its mode and type.  */
 extern bool emit_push_insn (rtx, machine_mode, tree, rtx, unsigned int,
-			    int, rtx, int, rtx, rtx, int, rtx, bool);
+			    int, rtx, poly_int64, rtx, rtx, int, rtx, bool);
 
 /* Extract the accessible bit-range from a COMPONENT_REF.  */
 extern void get_bit_range (poly_uint64_pod *, poly_uint64_pod *, tree,

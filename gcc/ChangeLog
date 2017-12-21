@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.h (push_block, emit_push_insn): Change the "extra" parameter
+	from HOST_WIDE_INT to poly_int64.
+	* expr.c (push_block, emit_push_insn): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* function.h (frame_space): Change start and length from HOST_WIDE_INT
 	to poly_int64.
 	(get_frame_size): Return the size as a poly_int64 rather than a
