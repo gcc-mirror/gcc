@@ -2154,7 +2154,8 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 
 void
 vect_loop_versioning (loop_vec_info loop_vinfo,
-		      unsigned int th, bool check_profitability)
+		      unsigned int th, bool check_profitability,
+		      poly_uint64 versioning_threshold)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *nloop;
   struct loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
@@ -2179,6 +2180,17 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),
 					    th - 1));
+  if (maybe_ne (versioning_threshold, 0U))
+    {
+      tree expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
+			       build_int_cst (TREE_TYPE (scalar_loop_iters),
+					      versioning_threshold - 1));
+      if (cond_expr)
+	cond_expr = fold_build2 (BIT_AND_EXPR, boolean_type_node,
+				 expr, cond_expr);
+      else
+	cond_expr = expr;
+    }
 
   if (version_niter)
     vect_create_cond_for_niters_checks (loop_vinfo, &cond_expr);

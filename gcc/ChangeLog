@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (_loop_vec_info): Add a versioning_threshold
+	field.
+	(LOOP_VINFO_VERSIONING_THRESHOLD): New macro
+	(vect_loop_versioning): Take the loop versioning threshold as a
+	separate parameter.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	versioning_threshold.
+	(vect_analyze_loop_2): Compute the loop versioning threshold
+	whenever loop versioning is needed, and store it in the new
+	field rather than combining it with the cost model threshold.
+	(vect_transform_loop): Update call to vect_loop_versioning.
+	Try to combine the loop versioning and cost thresholds here.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-ssa-loop-ivopts.h (strip_offset): Return the offset as
 	poly_uint64_pod rather than an unsigned HOST_WIDE_INT.
 	* tree-loop-distribution.c (classify_builtin_st): Update accordingly.
