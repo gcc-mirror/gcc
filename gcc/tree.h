@@ -4856,7 +4856,7 @@ extern void tree_set_block (tree, tree);
 extern location_t *block_nonartificial_location (tree);
 extern location_t tree_nonartificial_location (tree);
 extern tree block_ultimate_origin (const_tree);
-extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
+extern tree get_binfo_at_offset (tree, poly_int64, tree);
 extern bool virtual_method_call_p (const_tree);
 extern tree obj_type_ref_class (const_tree ref);
 extern bool types_same_for_odr (const_tree type1, const_tree type2,

@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (get_binfo_at_offset): Take the offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	* tree.c (get_binfo_at_offset): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* ipa-prop.h (build_ref_for_offset): Take the offset as a poly_int64
 	rather than a HOST_WIDE_INT.
 	* tree-sra.c (build_ref_for_offset): Likewise.
