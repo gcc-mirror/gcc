@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* reload.h (reload::inc): Change from an int to a poly_int64_pod.
+	* reload.c (combine_reloads, debug_reload_to_stream): Likewise.
+	(decomposition): Change start and end from HOST_WIDE_INT
+	to poly_int64_pod.
+	(decompose, immune_p): Update accordingly.
+	(find_inc_amount): Return a poly_int64 rather than an int.
+	* reload1.c (inc_for_reload): Take the inc_amount as a poly_int64
+	rather than an int.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (get_inner_reference): Return the bitsize and bitpos
 	as poly_int64_pods rather than HOST_WIDE_INT.
 	* fold-const.h (ptr_difference_const): Return the pointer difference

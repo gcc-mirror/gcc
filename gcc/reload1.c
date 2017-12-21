@@ -398,7 +398,7 @@ static void emit_reload_insns (struct insn_chain *);
 static void delete_output_reload (rtx_insn *, int, int, rtx);
 static void delete_address_reloads (rtx_insn *, rtx_insn *);
 static void delete_address_reloads_1 (rtx_insn *, rtx, rtx_insn *);
-static void inc_for_reload (rtx, rtx, rtx, int);
+static void inc_for_reload (rtx, rtx, rtx, poly_int64);
 static void add_auto_inc_notes (rtx_insn *, rtx);
 static void substitute (rtx *, const_rtx, rtx);
 static bool gen_reload_chain_without_interm_reg_p (int, int);
@@ -9075,7 +9075,7 @@ delete_address_reloads_1 (rtx_insn *dead_insn, rtx x, rtx_insn *current_insn)
    This cannot be deduced from VALUE.  */
 
 static void
-inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
+inc_for_reload (rtx reloadreg, rtx in, rtx value, poly_int64 inc_amount)
 {
   /* REG or MEM to be copied and incremented.  */
   rtx incloc = find_replacement (&XEXP (value, 0));
@@ -9105,7 +9105,7 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
       if (GET_CODE (value) == PRE_DEC || GET_CODE (value) == POST_DEC)
 	inc_amount = -inc_amount;
 
-      inc = GEN_INT (inc_amount);
+      inc = gen_int_mode (inc_amount, Pmode);
     }
 
   /* If this is post-increment, first copy the location to the reload reg.  */
