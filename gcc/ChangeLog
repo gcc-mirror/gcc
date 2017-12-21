@@ -1,3 +1,8 @@
+2017-12-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Call
+	update_stmt_if_modified.
+
 2017-12-20  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/83491
