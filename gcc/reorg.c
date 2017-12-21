@@ -3612,9 +3612,14 @@ make_return_insns (rtx_insn *first)
 
 	  delete_related_insns (insn);
 	  for (i = 1; i < XVECLEN (pat, 0); i++)
-	    prev = emit_insn_after (PATTERN (XVECEXP (pat, 0, i)), prev);
+	    {
+	      rtx_insn *in_seq_insn = as_a<rtx_insn *> (XVECEXP (pat, 0, i));
+	      prev = emit_insn_after_setloc (PATTERN (in_seq_insn), prev,
+					     INSN_LOCATION (in_seq_insn));
+	    }
 
-	  insn = emit_jump_insn_after (PATTERN (jump_insn), prev);
+	  insn = emit_jump_insn_after_setloc (PATTERN (jump_insn), prev,
+					      INSN_LOCATION (jump_insn));
 	  emit_barrier_after (insn);
 
 	  if (slots)
