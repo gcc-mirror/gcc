@@ -2,6 +2,21 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* cfgexpand.c (stack_var::size): Change from a HOST_WIDE_INT
+	to a poly_uint64.
+	(add_stack_var, stack_var_cmp, partition_stack_vars)
+	(dump_stack_var_partition): Update accordingly.
+	(alloc_stack_frame_space): Take the size as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(expand_stack_vars, expand_one_stack_var_1): Handle polynomial sizes.
+	(defer_stack_allocation, estimated_stack_frame_size): Likewise.
+	(account_stack_vars, expand_one_var): Likewise.  Return a poly_uint64
+	rather than a HOST_WIDE_INT.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (return_pops_args): Treat both the input and output
 	sizes as poly_int64s rather than HOST_WIDE_INTS.
 	* targhooks.h (default_return_pops_args): Update accordingly.
