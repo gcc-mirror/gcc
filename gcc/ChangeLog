@@ -2,6 +2,51 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (get_inner_reference): Return the bitsize and bitpos
+	as poly_int64_pods rather than HOST_WIDE_INT.
+	* fold-const.h (ptr_difference_const): Return the pointer difference
+	as a poly_int64_pod rather than a HOST_WIDE_INT.
+	* expr.c (get_inner_reference): Return the bitsize and bitpos
+	as poly_int64_pods rather than HOST_WIDE_INT.
+	(expand_expr_addr_expr_1, expand_expr_real_1): Track polynomial
+	offsets and sizes.
+	* fold-const.c (make_bit_field_ref): Take the bitpos as a poly_int64
+	rather than a HOST_WIDE_INT.  Update call to get_inner_reference.
+	(optimize_bit_field_compare): Update call to get_inner_reference.
+	(decode_field_reference): Likewise.
+	(fold_unary_loc): Track polynomial offsets and sizes.
+	(split_address_to_core_and_offset): Return the bitpos as a
+	poly_int64_pod rather than a HOST_WIDE_INT.
+	(ptr_difference_const): Likewise for the pointer difference.
+	* asan.c (instrument_derefs): Track polynomial offsets and sizes.
+	* config/mips/mips.c (r10k_safe_mem_expr_p): Likewise.
+	* dbxout.c (dbxout_expand_expr): Likewise.
+	* dwarf2out.c (loc_list_for_address_of_addr_expr_of_indirect_ref)
+	(loc_list_from_tree_1, fortran_common): Likewise.
+	* gimple-laddress.c (pass_laddress::execute): Likewise.
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_load): Likewise.
+	* gimplify.c (gimplify_scan_omp_clauses): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* tree-affine.c (tree_to_aff_combination): Likewise.
+	(get_inner_reference_aff): Likewise.
+	* tree-data-ref.c (split_constant_offset_1): Likewise.
+	(dr_analyze_innermost): Likewise.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Likewise.
+	* tree-sra.c (ipa_sra_check_caller): Likewise.
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Likewise.
+	* ubsan.c (maybe_instrument_pointer_overflow): Likewise.
+	(instrument_bool_enum_load, instrument_object_size): Likewise.
+	* gimple-ssa-strength-reduction.c (slsr_process_ref): Update call
+	to get_inner_reference.
+	* hsa-gen.c (gen_hsa_addr): Likewise.
+	* sanopt.c (maybe_optimize_ubsan_ptr_ifn): Likewise.
+	* tsan.c (instrument_expr): Likewise.
+	* match.pd: Update call to ptr_difference_const.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* fold-const.c (fold_comparison): Track sizes and offsets as
 	poly_int64s rather than HOST_WIDE_INTs when folding address
 	comparisons.

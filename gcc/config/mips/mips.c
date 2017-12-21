@@ -17613,7 +17613,7 @@ r10k_safe_address_p (rtx x, rtx_insn *insn)
 static bool
 r10k_safe_mem_expr_p (tree expr, unsigned HOST_WIDE_INT offset)
 {
-  HOST_WIDE_INT bitoffset, bitsize;
+  poly_int64 bitoffset, bitsize;
   tree inner, var_offset;
   machine_mode mode;
   int unsigned_p, reverse_p, volatile_p;

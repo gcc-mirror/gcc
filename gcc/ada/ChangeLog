@@ -1,3 +1,11 @@
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu): Track polynomial
+	offsets and sizes.
+	* gcc-interface/utils2.c (build_unary_op): Likewise.
+
 2017-12-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Use IN_RANGE macro.

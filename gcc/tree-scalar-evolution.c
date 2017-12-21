@@ -1731,7 +1731,7 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
 	  || handled_component_p (TREE_OPERAND (rhs1, 0)))
         {
 	  machine_mode mode;
-	  HOST_WIDE_INT bitsize, bitpos;
+	  poly_int64 bitsize, bitpos;
 	  int unsignedp, reversep;
 	  int volatilep = 0;
 	  tree base, offset;
@@ -1770,11 +1770,9 @@ interpret_rhs_expr (struct loop *loop, gimple *at_stmt,
 	      res = chrec_fold_plus (type, res, chrec2);
 	    }
 
-	  if (bitpos != 0)
+	  if (maybe_ne (bitpos, 0))
 	    {
-	      gcc_assert ((bitpos % BITS_PER_UNIT) == 0);
-
-	      unitpos = size_int (bitpos / BITS_PER_UNIT);
+	      unitpos = size_int (exact_div (bitpos, BITS_PER_UNIT));
 	      chrec3 = analyze_scalar_evolution (loop, unitpos);
 	      chrec3 = chrec_convert (TREE_TYPE (unitpos), chrec3, at_stmt);
 	      chrec3 = instantiate_parameters (loop, chrec3);
