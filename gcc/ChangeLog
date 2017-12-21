@@ -1,9 +1,19 @@
-2017-12-21  Alexandre Oliva <aoliva@redhat.com>
+2017-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
-	* reorg.c (make_return_insns): Reemit each insn with its own
-	location.
+	PR target/83467
+	* config/i386/i386.md (*ashl<mode>3_mask): Add operand
+	constraints to operand 2.
+	(*ashl<mode>3_mask_1): Ditto.
+	(*<shift_insn><mode>3_mask): Ditto.
+	(*<shift_insn><mode>3_mask_1): Ditto.
+	(*<rotate_insn><mode>3_mask): Ditto.
+	(*<rotate_insn><mode>3_mask_1): Ditto.
 
-2017-12-21  Alexandre Oliva <aoliva@redhat.com>
+2017-12-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reorg.c (make_return_insns): Reemit each insn with its own location.
+
+2017-12-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/83419
 	* c-family/c-semantics.c (pop_stmt_list): Propagate side
@@ -631,7 +641,7 @@
 	(expand_builtin_strcmp): Call maybe_warn_nonstring_arg.
 	(expand_builtin_strncmp): Same.
 
-2017-12-20  Alexandre Oliva <aoliva@redhat.com>
+2017-12-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR bootstrap/83396
 	* cfgexpand.c (label_rtx_for_bb): Revert SFN changes that
@@ -1290,7 +1300,7 @@
 	poly_int64.  Use strip_offset_and_add to handle (plus X (const)).
 
 2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
-            Alan Hayward  <alan.hayward@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
 	* rtl.h (reg_attrs::offset): Change from HOST_WIDE_INT to poly_int64.
@@ -1317,7 +1327,7 @@
 	of a PARALLEL.
 
 2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
-            Alan Hayward  <alan.hayward@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
 	* target.def (truly_noop_truncation): Take poly_uint64s instead of
@@ -1606,7 +1616,8 @@
 2017-12-20  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/83423
-	* config/i386/i386.c (ix86_static_chain): Move DECL_STATIC_CHAIN test ...
+	* config/i386/i386.c (ix86_static_chain): Move
+	DECL_STATIC_CHAIN test ...
 	* calls.c (rtx_for_static_chain): ... here.  New function.
 	* calls.h (rtx_for_static_chain): Declare.
 	* builtins.c (expand_builtin_setjmp_receiver): Use rtx_for_static_chain
@@ -1642,7 +1653,7 @@
 	character load case, if get_stridx on MEM_REF's operand doesn't
 	look usable, retry with get_addr_stridx.
 
-2017-12-19  Alexandre Oliva <aoliva@redhat.com>
+2017-12-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/83422
 	* var-tracking.c (vt_debug_insns_local): Do not drop markers.
@@ -1712,7 +1723,8 @@
 	* sched-rgn.c (sched_rgn_init): Likewise.
 	* diagnostic-show-locus.c (layout::show_ruler): Likewise.
 	* combine.c (find_split_point, simplify_if_then_else, force_to_mode,
-	if_then_else_cond, simplify_shift_const_1, simplify_comparison): Likewise.
+	if_then_else_cond, simplify_shift_const_1, simplify_comparison):
+	Likewise.
 	* explow.c (eliminate_constant_term): Likewise.
 	* final.c (leaf_renumber_regs_insn): Likewise.
 	* cfgrtl.c (print_rtl_with_bb): Likewise.
@@ -1762,7 +1774,7 @@
 
 	PR c++/83489
 	* config/i386/i386.c (init_cumulative_args): Don't check TYPE_EMPTY_P
-	on an error node.						     
+	on an error node.
 
 2017-12-19  Claudiu Zissulescu  <claziss@synopsys.com>
 
@@ -1881,9 +1893,9 @@
 	* doc/extend.texi (x86 Function Attributes): Reformat nocf_check
 	example	to avoid overfull hbox.
 	* doc/invoke.texi (Option Summary): Add missing @gol.
-	(C++ Dialect Options): Reformat -Wnoexcept-type example to avoid 
+	(C++ Dialect Options): Reformat -Wnoexcept-type example to avoid
 	overfull hbox.
-	
+
 2017-12-17  Sandra Loosemore  <sandra@codesourcery.com>
 	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -2211,13 +2223,13 @@
 	optimizing for size.  Don't pessimize blocks which will be
 	copied, but all the statements will be dead.
 
-2017-12-15  Alexandre Oliva <aoliva@redhat.com>
+2017-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-optimization/81165
 	* tree-ssa-threadupdate.c (uses_in_bb): New.
 	(estimate_threading_killed_stmts): New.
 	* tree-ssa-threadupdate.h (estimate_threading_killed_stmts): Prototype.
-	* tree-ssa-threadedge.c 
+	* tree-ssa-threadedge.c
 	(record_temporary_equivalences_from_stmts_at_dest): Expand limit
 	when its hit.
 
@@ -2343,7 +2355,8 @@
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesenclast_v16qi,
-	__builtin_ia32_vaesenclast_v32qi, __builtin_ia32_vaesenclast_v64qi): New.
+	__builtin_ia32_vaesenclast_v32qi, __builtin_ia32_vaesenclast_v64qi):
+	New.
 	* config/i386/sse.md (vaesenclast_<mode>): New pattern.
 	* config/i386/vaesintrin.h (_mm256_aesenclast_epi128,
 	_mm512_aesenclast_epi128, _mm_aesenclast_epi128): New intrinsics.
@@ -2359,7 +2372,8 @@
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesdeclast_v16qi,
-	__builtin_ia32_vaesdeclast_v32qi, __builtin_ia32_vaesdeclast_v64qi): New.
+	__builtin_ia32_vaesdeclast_v32qi, __builtin_ia32_vaesdeclast_v64qi):
+	New.
 	* config/i386/sse.md (vaesdeclast_<mode>): New pattern.
 	* config/i386/vaesintrin.h (_mm256_aesdeclast_epi128,
 	_mm512_aesdeclast_epi128, _mm_aesdeclast_epi128): New intrinsics.
@@ -2415,7 +2429,7 @@
 	PR bootstrap/83396
 	* reload1.c (emit_input_reload_insns): Skip debug markers.
 
-2017-12-14  Alexandre Oliva <aoliva@redhat.com>
+2017-12-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.c (rest_of_insert_endbranch): Use call loc
 	for its nop_endbr.
@@ -2453,8 +2467,7 @@
 
 	PR tree-optimization/83418
 	* vr-values.c (vr_values::extract_range_for_var_from_comparison_expr):
-	Instead of asserting we don't get unfolded comparisons deal with
-	them.
+	Instead of asserting we don't get unfolded comparisons deal with them.
 
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2518,7 +2531,7 @@
 	(ASSERT_MAYBE_NE_AT): New macros.
 
 2017-12-13  Eric Botcazou  <ebotcazou@adacore.com>
-            Dominik Vogt  <vogt@linux.vnet.ibm.com>
+	    Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR middle-end/78468
 	* emit-rtl.c (init_emit): Remove ??? comment.
@@ -2534,7 +2547,7 @@
 	* config/rs6000/ppc-auxv.h (PPC_FEATURE2_HTM_NO_SUSPEND): New define.
 	* config/rs6000/rs6000.c (cpu_supports_info): Use it.
 
-2017-12-13  Alexandre Oliva <aoliva@redhat.com>
+2017-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR bootstrap/83396
 	* reload1.c (eliminate_regs_in_insn): Skip debug markers.
