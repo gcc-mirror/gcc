@@ -1112,6 +1112,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in)
     num_iters_unchanged (NULL_TREE),
     num_iters_assumptions (NULL_TREE),
     th (0),
+    versioning_threshold (0),
     vectorization_factor (0),
     max_vectorization_factor (0),
     unaligned_dr (NULL),
@@ -2176,11 +2177,9 @@ start_over:
      enough for both peeled prolog loop and vector loop.  This check
      can be merged along with threshold check of loop versioning, so
      increase threshold for this case if necessary.  */
-  if (LOOP_REQUIRES_VERSIONING (loop_vinfo)
-      && (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-	  || LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo)))
+  if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
-      unsigned niters_th;
+      poly_uint64 niters_th;
 
       /* Niters for peeled prolog loop.  */
       if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
@@ -2197,9 +2196,8 @@ start_over:
       niters_th += LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       /* One additional iteration because of peeling for gap.  */
       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-	niters_th++;
-      if (LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) < niters_th)
-	LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = niters_th;
+	niters_th += 1;
+      LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo) = niters_th;
     }
 
   gcc_assert (vectorization_factor
@@ -2302,6 +2300,7 @@ again:
   LOOP_VINFO_PEELING_FOR_NITER (loop_vinfo) = false;
   LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = false;
   LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo) = 0;
+  LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo) = 0;
 
   goto start_over;
 }
@@ -7380,7 +7379,17 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
-      vect_loop_versioning (loop_vinfo, th, check_profitability);
+      poly_uint64 versioning_threshold
+	= LOOP_VINFO_VERSIONING_THRESHOLD (loop_vinfo);
+      if (check_profitability
+	  && ordered_p (poly_uint64 (th), versioning_threshold))
+	{
+	  versioning_threshold = ordered_max (poly_uint64 (th),
+					      versioning_threshold);
+	  check_profitability = false;
+	}
+      vect_loop_versioning (loop_vinfo, th, check_profitability,
+			    versioning_threshold);
       check_profitability = false;
     }
 

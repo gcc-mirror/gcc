@@ -238,6 +238,12 @@ typedef struct _loop_vec_info : public vec_info {
      PARAM_MIN_VECT_LOOP_BOUND.  */
   unsigned int th;
 
+  /* When applying loop versioning, the vector form should only be used
+     if the number of scalar iterations is >= this value, on top of all
+     the other requirements.  Ignored when loop versioning is not being
+     used.  */
+  poly_uint64 versioning_threshold;
+
   /* Unrolling factor  */
   int vectorization_factor;
 
@@ -357,6 +363,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
 #define LOOP_VINFO_NITERS_ASSUMPTIONS(L)   (L)->num_iters_assumptions
 #define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
+#define LOOP_VINFO_VERSIONING_THRESHOLD(L) (L)->versioning_threshold
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor
@@ -1142,7 +1149,8 @@ extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
 						     struct loop *, edge);
-extern void vect_loop_versioning (loop_vec_info, unsigned int, bool);
+extern void vect_loop_versioning (loop_vec_info, unsigned int, bool,
+				  poly_uint64);
 extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
 				     tree *, int, bool, bool);
 extern source_location find_loop_location (struct loop *);
