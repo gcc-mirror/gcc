@@ -1,5 +1,10 @@
 2017-12-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/driver-arm.c (arm_cpu_table): Specify dotprod
+	support for Cortex-A55 and Cortex-A75.
+
+2017-12-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* common/config/arm/arm-common.c (compare_opt_names): Add function
 	comment.  Use strcmp instead of manual loop.
 
