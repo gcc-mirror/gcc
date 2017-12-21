@@ -1,3 +1,9 @@
+2017-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83467
+	* gcc.target/i386/pr83467-1.c: New test.
+	* gcc.target/i386/pr83467-2.c: Ditto.
+
 2017-12-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
@@ -145,7 +151,7 @@
 	* gcc.target/arm/armv8_2-fp16-move-2.c: Remove dg-add-options.
 
 2017-12-15  Richard Biener  <rguenther@suse.de>
- 
+
 	Backport from mainline
 	2017-09-05  Richard Biener  <rguenther@suse.de>
 
@@ -1144,8 +1150,8 @@
 
 	2017-06-21  Marc Glisse  <marc.glisse@inria.fr>
 
- 	* gcc.dg/tree-ssa/addadd.c: Un-XFAIL.
- 	* gcc.dg/tree-ssa/addadd-2.c: New file.
+	* gcc.dg/tree-ssa/addadd.c: Un-XFAIL.
+	* gcc.dg/tree-ssa/addadd-2.c: New file.
 
 2016-07-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
