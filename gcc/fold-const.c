@@ -4076,12 +4076,13 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
    }
 
   /* Honor the C++ memory model and mimic what RTL expansion does.  */
-  unsigned HOST_WIDE_INT bitstart = 0;
-  unsigned HOST_WIDE_INT bitend = 0;
+  poly_uint64 bitstart = 0;
+  poly_uint64 bitend = 0;
   if (TREE_CODE (lhs) == COMPONENT_REF)
     {
-      get_bit_range (&bitstart, &bitend, lhs, &lbitpos, &offset);
-      if (offset != NULL_TREE)
+      poly_int64 plbitpos;
+      get_bit_range (&bitstart, &bitend, lhs, &plbitpos, &offset);
+      if (!plbitpos.is_constant (&lbitpos) || offset != NULL_TREE)
 	return 0;
     }
 

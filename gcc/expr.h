@@ -240,17 +240,8 @@ extern bool emit_push_insn (rtx, machine_mode, tree, rtx, unsigned int,
 			    int, rtx, int, rtx, rtx, int, rtx, bool);
 
 /* Extract the accessible bit-range from a COMPONENT_REF.  */
-extern void get_bit_range (unsigned HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
-			   tree, HOST_WIDE_INT *, tree *);
-
-/* Temporary.  */
-inline void
-get_bit_range (poly_uint64_pod *bitstart, poly_uint64_pod *bitend, tree exp,
-	       poly_int64_pod *bitpos, tree *offset)
-{
-  get_bit_range (&bitstart->coeffs[0], &bitend->coeffs[0], exp,
-		 &bitpos->coeffs[0], offset);
-}
+extern void get_bit_range (poly_uint64_pod *, poly_uint64_pod *, tree,
+			   poly_int64_pod *, tree *);
 
 /* Expand an assignment that stores the value of FROM into TO.  */
 extern void expand_assignment (tree, tree, bool);
