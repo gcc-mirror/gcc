@@ -1,3 +1,11 @@
+2017-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83521
+	* tree-ssa-phiopt.c (factor_out_conditional_conversion): Use
+	gimple_build_assign without code on result of
+	fold_build1 (VIEW_CONVERT_EXPR, ...), as it might not create
+	a VIEW_CONVERT_EXPR.
+
 2017-12-21  Andrew Pinski  <apinski@cavium.com>
 	    Steve Ellcey  <sellcey@cavium.com>
 
