@@ -12107,9 +12107,51 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 	    maxv = matches[i][1];
 	  }
 
-      /* Create a duplicate of the most common element.  */
-      rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
-      aarch64_emit_move (target, gen_vec_duplicate (mode, x));
+      /* Create a duplicate of the most common element, unless all elements
+	 are equally useless to us, in which case just immediately set the
+	 vector register using the first element.  */
+
+      if (maxv == 1)
+	{
+	  /* For vectors of two 64-bit elements, we can do even better.  */
+	  if (n_elts == 2
+	      && (inner_mode == E_DImode
+		  || inner_mode == E_DFmode))
+
+	    {
+	      rtx x0 = XVECEXP (vals, 0, 0);
+	      rtx x1 = XVECEXP (vals, 0, 1);
+	      /* Combine can pick up this case, but handling it directly
+		 here leaves clearer RTL.
+
+		 This is load_pair_lanes<mode>, and also gives us a clean-up
+		 for store_pair_lanes<mode>.  */
+	      if (memory_operand (x0, inner_mode)
+		  && memory_operand (x1, inner_mode)
+		  && !STRICT_ALIGNMENT
+		  && rtx_equal_p (XEXP (x1, 0),
+				  plus_constant (Pmode,
+						 XEXP (x0, 0),
+						 GET_MODE_SIZE (inner_mode))))
+		{
+		  rtx t;
+		  if (inner_mode == DFmode)
+		    t = gen_load_pair_lanesdf (target, x0, x1);
+		  else
+		    t = gen_load_pair_lanesdi (target, x0, x1);
+		  emit_insn (t);
+		  return;
+		}
+	    }
+	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
+	  aarch64_emit_move (target, lowpart_subreg (mode, x, inner_mode));
+	  maxelement = 0;
+	}
+      else
+	{
+	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
+	  aarch64_emit_move (target, gen_vec_duplicate (mode, x));
+	}
 
       /* Insert the rest.  */
       for (int i = 0; i < n_elts; i++)
