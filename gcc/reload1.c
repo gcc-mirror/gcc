@@ -4649,7 +4649,7 @@ reload_as_needed (int live_known)
 		{
 		  remove_note (insn, p);
 		  fixup_args_size_notes (prev, PREV_INSN (next),
-					 INTVAL (XEXP (p, 0)));
+					 get_args_size (p));
 		}
 
 	      /* If this was an ASM, make sure that all the reload insns

@@ -937,6 +937,15 @@ strip_offset (rtx x, poly_int64_pod *offset_out)
   *offset_out = 0;
   return x;
 }
+
+/* Return the argument size in REG_ARGS_SIZE note X.  */
+
+poly_int64
+get_args_size (const_rtx x)
+{
+  gcc_checking_assert (REG_NOTE_KIND (x) == REG_ARGS_SIZE);
+  return rtx_to_poly_int64 (XEXP (x, 0));
+}
 
 /* Return the number of places FIND appears within X.  If COUNT_DEST is
    zero, we do not count occurrences inside the destination of a SET.  */
@@ -2360,6 +2369,15 @@ add_int_reg_note (rtx_insn *insn, enum reg_note kind, int datum)
   gcc_checking_assert (int_reg_note_p (kind));
   REG_NOTES (insn) = gen_rtx_INT_LIST ((machine_mode) kind,
 				       datum, REG_NOTES (insn));
+}
+
+/* Add a REG_ARGS_SIZE note to INSN with value VALUE.  */
+
+void
+add_args_size_note (rtx_insn *insn, poly_int64 value)
+{
+  gcc_checking_assert (!find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX));
+  add_reg_note (insn, REG_ARGS_SIZE, gen_int_mode (value, Pmode));
 }
 
 /* Add a register note like NOTE to INSN.  */

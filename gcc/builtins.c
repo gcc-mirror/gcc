@@ -5179,7 +5179,7 @@ expand_builtin_trap (void)
 	 REG_ARGS_SIZE note to prevent crossjumping of calls with
 	 different args sizes.  */
       if (!ACCUMULATE_OUTGOING_ARGS)
-	add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+	add_args_size_note (insn, stack_pointer_delta);
     }
   else
     {

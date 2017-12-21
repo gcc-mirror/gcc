@@ -498,7 +498,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
       rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
       stack_pointer_delta -= n_popped;
 
-      add_reg_note (call_insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+      add_args_size_note (call_insn, stack_pointer_delta);
 
       /* If popup is needed, stack realign must use DRAP  */
       if (SUPPORTS_STACK_ALIGNMENT)
@@ -508,7 +508,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
      REG_ARGS_SIZE note to prevent crossjumping of calls with different
      args sizes.  */
   else if (!ACCUMULATE_OUTGOING_ARGS && (ecf_flags & ECF_NORETURN) != 0)
-    add_reg_note (call_insn, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+    add_args_size_note (call_insn, stack_pointer_delta);
 
   if (!ACCUMULATE_OUTGOING_ARGS)
     {

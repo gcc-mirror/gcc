@@ -3924,7 +3924,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  break;
 
 	case REG_ARGS_SIZE:
-	  fixup_args_size_notes (NULL, insn_last, INTVAL (XEXP (note, 0)));
+	  fixup_args_size_notes (NULL, insn_last, get_args_size (note));
 	  break;
 
 	case REG_CALL_DECL:

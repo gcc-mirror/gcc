@@ -2,6 +2,39 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (get_args_size, add_args_size_note): New functions.
+	(find_args_size_adjust): Return a poly_int64 rather than a
+	HOST_WIDE_INT.
+	(fixup_args_size_notes): Likewise.  Make the same change to the
+	end_args_size parameter.
+	* rtlanal.c (get_args_size, add_args_size_note): New functions.
+	* builtins.c (expand_builtin_trap): Use add_args_size_note.
+	* calls.c (emit_call_1): Likewise.
+	* explow.c (adjust_stack_1): Likewise.
+	* cfgcleanup.c (old_insns_match_p): Update use of
+	find_args_size_adjust.
+	* combine.c (distribute_notes): Track polynomial arg sizes.
+	* dwarf2cfi.c (dw_trace_info): Change beg_true_args_size,
+	end_true_args_size, beg_delay_args_size and end_delay_args_size
+	from HOST_WIDE_INT to poly_int64.
+	(add_cfi_args_size): Take the args_size as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(notice_args_size, notice_eh_throw, maybe_record_trace_start)
+	(maybe_record_trace_start_abnormal, scan_trace, connect_traces): Track
+	polynomial arg sizes.
+	* emit-rtl.c (try_split): Use get_args_size.
+	* recog.c (peep2_attempt): Likewise.
+	* reload1.c (reload_as_needed): Likewise.
+	* expr.c (find_args_size_adjust): Return the adjustment as a
+	poly_int64 rather than a HOST_WIDE_INT.
+	(fixup_args_size_notes): Change end_args_size from a HOST_WIDE_INT
+	to a poly_int64 and change the return type in the same way.
+	(emit_single_push_insn): Track polynomial arg sizes.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.h (push_block, emit_push_insn): Change the "extra" parameter
 	from HOST_WIDE_INT to poly_int64.
 	* expr.c (push_block, emit_push_insn): Likewise.
