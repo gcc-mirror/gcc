@@ -1,5 +1,10 @@
 2017-12-21  Alexandre Oliva <aoliva@redhat.com>
 
+	* reorg.c (make_return_insns): Reemit each insn with its own
+	location.
+
+2017-12-21  Alexandre Oliva <aoliva@redhat.com>
+
 	PR debug/83419
 	* c-family/c-semantics.c (pop_stmt_list): Propagate side
 	effects from single nondebug stmt to container list.
