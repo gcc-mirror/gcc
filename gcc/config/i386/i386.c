@@ -8973,6 +8973,8 @@ ix86_function_arg_boundary (machine_mode mode, const_tree type)
 	 the main variant type.  */
       type = TYPE_MAIN_VARIANT (type);
       align = TYPE_ALIGN (type);
+      if (TYPE_EMPTY_P (type))
+	return PARM_BOUNDARY;
     }
   else
     align = GET_MODE_ALIGNMENT (mode);
