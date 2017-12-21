@@ -1534,6 +1534,9 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 					       ENTRY_BLOCK_PTR_FOR_FN (cfun));
 	  bb->count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
 
+	  /* Make sure new block ends up in correct hot/cold section.  */
+	  BB_COPY_PARTITION (bb, e->dest);
+
 	  /* Change the existing edge's source to be the new block, and add
 	     a new edge from the entry block to the new block.  */
 	  e->src = bb;
