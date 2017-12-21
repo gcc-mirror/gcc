@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* reload1.c (elim_table): Change initial_offset, offset and
+	previous_offset from HOST_WIDE_INT to poly_int64_pod.
+	(offsets_at): Change the target array's element type from
+	HOST_WIDE_INT to poly_int64_pod.
+	(set_label_offsets, eliminate_regs_1, eliminate_regs_in_insn)
+	(elimination_costs_in_insn, update_eliminable_offsets)
+	(verify_initial_elim_offsets, set_offsets_for_label)
+	(init_eliminable_invariants): Update after above changes.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* reload.h (reload::inc): Change from an int to a poly_int64_pod.
 	* reload.c (combine_reloads, debug_reload_to_stream): Likewise.
 	(decomposition): Change start and end from HOST_WIDE_INT
