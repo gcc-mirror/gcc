@@ -261,13 +261,13 @@ struct elim_table
 {
   int from;			/* Register number to be eliminated.  */
   int to;			/* Register number used as replacement.  */
-  HOST_WIDE_INT initial_offset;	/* Initial difference between values.  */
+  poly_int64_pod initial_offset; /* Initial difference between values.  */
   int can_eliminate;		/* Nonzero if this elimination can be done.  */
   int can_eliminate_previous;	/* Value returned by TARGET_CAN_ELIMINATE
 				   target hook in previous scan over insns
 				   made by reload.  */
-  HOST_WIDE_INT offset;		/* Current offset between the two regs.  */
-  HOST_WIDE_INT previous_offset;/* Offset at end of previous insn.  */
+  poly_int64_pod offset;	/* Current offset between the two regs.  */
+  poly_int64_pod previous_offset; /* Offset at end of previous insn.  */
   int ref_outside_mem;		/* "to" has been referenced outside a MEM.  */
   rtx from_rtx;			/* REG rtx for the register to be eliminated.
 				   We cannot simply compare the number since
@@ -313,7 +313,7 @@ static int num_eliminable_invariants;
 
 static int first_label_num;
 static char *offsets_known_at;
-static HOST_WIDE_INT (*offsets_at)[NUM_ELIMINABLE_REGS];
+static poly_int64_pod (*offsets_at)[NUM_ELIMINABLE_REGS];
 
 vec<reg_equivs_t, va_gc> *reg_equivs;
 
@@ -2351,9 +2351,9 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
 	   where the offsets disagree.  */
 
 	for (i = 0; i < NUM_ELIMINABLE_REGS; i++)
-	  if (offsets_at[CODE_LABEL_NUMBER (x) - first_label_num][i]
-	      != (initial_p ? reg_eliminate[i].initial_offset
-		  : reg_eliminate[i].offset))
+	  if (maybe_ne (offsets_at[CODE_LABEL_NUMBER (x) - first_label_num][i],
+			(initial_p ? reg_eliminate[i].initial_offset
+			 : reg_eliminate[i].offset)))
 	    reg_eliminate[i].can_eliminate = 0;
 
       return;
@@ -2436,7 +2436,7 @@ set_label_offsets (rtx x, rtx_insn *insn, int initial_p)
       /* If we reach here, all eliminations must be at their initial
 	 offset because we are doing a jump to a variable address.  */
       for (p = reg_eliminate; p < &reg_eliminate[NUM_ELIMINABLE_REGS]; p++)
-	if (p->offset != p->initial_offset)
+	if (maybe_ne (p->offset, p->initial_offset))
 	  p->can_eliminate = 0;
       break;
 
@@ -2593,8 +2593,9 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 		   We special-case the commonest situation in
 		   eliminate_regs_in_insn, so just replace a PLUS with a
 		   PLUS here, unless inside a MEM.  */
-		if (mem_mode != 0 && CONST_INT_P (XEXP (x, 1))
-		    && INTVAL (XEXP (x, 1)) == - ep->previous_offset)
+		if (mem_mode != 0
+		    && CONST_INT_P (XEXP (x, 1))
+		    && known_eq (INTVAL (XEXP (x, 1)), -ep->previous_offset))
 		  return ep->to_rtx;
 		else
 		  return gen_rtx_PLUS (Pmode, ep->to_rtx,
@@ -3344,7 +3345,7 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
   if (plus_cst_src)
     {
       rtx reg = XEXP (plus_cst_src, 0);
-      HOST_WIDE_INT offset = INTVAL (XEXP (plus_cst_src, 1));
+      poly_int64 offset = INTVAL (XEXP (plus_cst_src, 1));
 
       if (GET_CODE (reg) == SUBREG)
 	reg = SUBREG_REG (reg);
@@ -3364,7 +3365,7 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
 	       increase the cost of the insn by replacing a simple REG
 	       with (plus (reg sp) CST).  So try only when we already
 	       had a PLUS before.  */
-	    if (offset == 0 || plus_src)
+	    if (known_eq (offset, 0) || plus_src)
 	      {
 		rtx new_src = plus_constant (GET_MODE (to_rtx),
 					     to_rtx, offset);
@@ -3562,12 +3563,12 @@ eliminate_regs_in_insn (rtx_insn *insn, int replace)
 
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
-      if (ep->previous_offset != ep->offset && ep->ref_outside_mem)
+      if (maybe_ne (ep->previous_offset, ep->offset) && ep->ref_outside_mem)
 	ep->can_eliminate = 0;
 
       ep->ref_outside_mem = 0;
 
-      if (ep->previous_offset != ep->offset)
+      if (maybe_ne (ep->previous_offset, ep->offset))
 	val = 1;
     }
 
@@ -3733,7 +3734,7 @@ elimination_costs_in_insn (rtx_insn *insn)
 
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
-      if (ep->previous_offset != ep->offset && ep->ref_outside_mem)
+      if (maybe_ne (ep->previous_offset, ep->offset) && ep->ref_outside_mem)
 	ep->can_eliminate = 0;
 
       ep->ref_outside_mem = 0;
@@ -3758,7 +3759,7 @@ update_eliminable_offsets (void)
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       ep->previous_offset = ep->offset;
-      if (ep->can_eliminate && ep->offset != ep->initial_offset)
+      if (ep->can_eliminate && maybe_ne (ep->offset, ep->initial_offset))
 	num_not_at_initial_offset++;
     }
 }
@@ -3812,7 +3813,7 @@ mark_not_eliminable (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
 static bool
 verify_initial_elim_offsets (void)
 {
-  HOST_WIDE_INT t;
+  poly_int64 t;
   struct elim_table *ep;
 
   if (!num_eliminable)
@@ -3822,7 +3823,7 @@ verify_initial_elim_offsets (void)
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
       INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, t);
-      if (t != ep->initial_offset)
+      if (maybe_ne (t, ep->initial_offset))
 	return false;
     }
 
@@ -3893,7 +3894,7 @@ set_offsets_for_label (rtx_insn *insn)
     {
       ep->offset = ep->previous_offset
 		 = offsets_at[label_nr - first_label_num][i];
-      if (ep->can_eliminate && ep->offset != ep->initial_offset)
+      if (ep->can_eliminate && maybe_ne (ep->offset, ep->initial_offset))
 	num_not_at_initial_offset++;
     }
 }
@@ -4095,7 +4096,8 @@ init_eliminable_invariants (rtx_insn *first, bool do_subregs)
 
   /* Allocate the tables used to store offset information at labels.  */
   offsets_known_at = XNEWVEC (char, num_labels);
-  offsets_at = (HOST_WIDE_INT (*)[NUM_ELIMINABLE_REGS]) xmalloc (num_labels * NUM_ELIMINABLE_REGS * sizeof (HOST_WIDE_INT));
+  offsets_at = (poly_int64_pod (*)[NUM_ELIMINABLE_REGS])
+    xmalloc (num_labels * NUM_ELIMINABLE_REGS * sizeof (poly_int64));
 
 /* Look for REG_EQUIV notes; record what each pseudo is equivalent
    to.  If DO_SUBREGS is true, also find all paradoxical subregs and
