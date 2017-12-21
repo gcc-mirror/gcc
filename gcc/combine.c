@@ -6967,12 +6967,13 @@ simplify_set (rtx x)
   /* If we have (set FOO (subreg:M (mem:N BAR) 0)) with M wider than N, this
      would require a paradoxical subreg.  Replace the subreg with a
      zero_extend to avoid the reload that would otherwise be required.
-     Don't do this for vector modes, as the transformation is incorrect.  */
+     Don't do this unless we have a scalar integer mode, otherwise the
+     transformation is incorrect.  */
 
   enum rtx_code extend_op;
   if (paradoxical_subreg_p (src)
       && MEM_P (SUBREG_REG (src))
-      && !VECTOR_MODE_P (GET_MODE (src))
+      && SCALAR_INT_MODE_P (GET_MODE (src))
       && (extend_op = load_extend_op (GET_MODE (SUBREG_REG (src)))) != UNKNOWN)
     {
       SUBST (SET_SRC (x),
