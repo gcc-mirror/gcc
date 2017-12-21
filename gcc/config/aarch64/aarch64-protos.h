@@ -111,6 +111,19 @@ enum aarch64_symbol_type
   SYMBOL_FORCE_TO_MEM
 };
 
+/* Classifies the type of an address query.
+
+   ADDR_QUERY_M
+      Query what is valid for an "m" constraint and a memory_operand
+      (the rules are the same for both).
+
+   ADDR_QUERY_LDP_STP
+      Query what is valid for a load/store pair.  */
+enum aarch64_addr_query_type {
+  ADDR_QUERY_M,
+  ADDR_QUERY_LDP_STP
+};
+
 /* A set of tuning parameters contains references to size and time
    cost models and vectors for address cost calculations, register
    move costs and memory move costs.  */
@@ -440,7 +453,8 @@ bool aarch64_float_const_representable_p (rtx);
 
 #if defined (RTX_CODE)
 
-bool aarch64_legitimate_address_p (machine_mode, rtx, RTX_CODE, bool);
+bool aarch64_legitimate_address_p (machine_mode, rtx, bool,
+				   aarch64_addr_query_type = ADDR_QUERY_M);
 machine_mode aarch64_select_cc_mode (RTX_CODE, rtx, rtx);
 rtx aarch64_gen_compare_reg (RTX_CODE, rtx, rtx);
 rtx aarch64_load_tp (rtx);

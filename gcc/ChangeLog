@@ -1,3 +1,23 @@
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_addr_query_type): New enum.
+	(aarch64_legitimate_address_p): Use it instead of an rtx code,
+	as an optional final parameter.
+	* config/aarch64/aarch64.c (aarch64_classify_address): Likewise.
+	(aarch64_legitimate_address_p): Likewise.
+	(aarch64_print_address_internal): Take an aarch64_addr_query_type
+	instead of an rtx code.
+	(aarch64_address_valid_for_prefetch_p): Update calls accordingly.
+	(aarch64_legitimate_address_hook_p): Likewise.
+	(aarch64_print_ldpstp_address): Likewise.
+	(aarch64_print_operand_address): Likewise.
+	(aarch64_address_cost): Likewise.
+	* config/aarch64/constraints.md (Uml, Umq, Ump, Utq): Likewise.
+	* config/aarch64/predicates.md (aarch64_mem_pair_operand): Likewise.
+	(aarch64_mem_pair_lanes_operand): Likewise.
+
 2017-12-20  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Call
