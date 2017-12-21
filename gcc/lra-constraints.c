@@ -3534,7 +3534,7 @@ process_address (int nop, bool check_only_p,
 
    Return pseudo containing the result.	 */
 static rtx
-emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
+emit_inc (enum reg_class new_rclass, rtx in, rtx value, poly_int64 inc_amount)
 {
   /* REG or MEM to be copied and incremented.  */
   rtx incloc = XEXP (value, 0);
@@ -3562,7 +3562,7 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
       if (GET_CODE (value) == PRE_DEC || GET_CODE (value) == POST_DEC)
 	inc_amount = -inc_amount;
 
-      inc = GEN_INT (inc_amount);
+      inc = gen_int_mode (inc_amount, GET_MODE (value));
     }
 
   if (! post && REG_P (incloc))
