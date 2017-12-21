@@ -5861,11 +5861,11 @@ init_emit (void)
 #endif
 }
 
-/* Return true if X is a valid element for a duplicated vector constant
-   of the given mode.  */
+/* Return true if X is a valid element for a CONST_VECTOR of the given
+  mode.  */
 
 bool
-valid_for_const_vec_duplicate_p (machine_mode, rtx x)
+valid_for_const_vector_p (machine_mode, rtx x)
 {
   return (CONST_SCALAR_INT_P (x)
 	  || CONST_DOUBLE_AS_FLOAT_P (x)
@@ -5907,7 +5907,7 @@ gen_const_vec_duplicate (machine_mode mode, rtx elt)
 rtx
 gen_vec_duplicate (machine_mode mode, rtx x)
 {
-  if (valid_for_const_vec_duplicate_p (mode, x))
+  if (valid_for_const_vector_p (mode, x))
     return gen_const_vec_duplicate (mode, x);
   return gen_rtx_VEC_DUPLICATE (mode, x);
 }
