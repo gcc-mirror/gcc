@@ -5,6 +5,11 @@ class A
 {
   void foo ()
   {
-    [=] { return foo; };  // { dg-error "invalid use of member function" }
+    [=] { return foo; };  // { dg-error "cannot convert" }
+  }
+  void bar () const;
+  void bar ()
+  {
+    [=] { return bar; };  // { dg-error "unable to deduce" }
   }
 };

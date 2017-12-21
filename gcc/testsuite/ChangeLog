@@ -1,3 +1,9 @@
+2017-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83406
+	* g++.dg/cpp0x/lambda/lambda-ice15.C: Adjust error.
+	* g++.dg/cpp1y/pr83406.C: New.
+
 2017-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83467
