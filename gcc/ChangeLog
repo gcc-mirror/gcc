@@ -1,3 +1,8 @@
+2017-12-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* combine.c (simplify_set): Do not transform subregs to zero_extends
+	if the destination is not a scalar int mode.
+
 2017-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/82872
