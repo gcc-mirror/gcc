@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Treat drb->init as a poly_int.  Fail if its misalignment wrt
+	vector_alignment isn't known.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (_loop_vec_info): Add a versioning_threshold
 	field.
 	(LOOP_VINFO_VERSIONING_THRESHOLD): New macro
