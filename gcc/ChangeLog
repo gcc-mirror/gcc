@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* function.c (in_arg_offset, var_offset, dynamic_offset)
+	(out_arg_offset, cfa_offset): Change from int to poly_int64.
+	(instantiate_new_reg): Return the new offset as a poly_int64_pod
+	rather than a HOST_WIDE_INT.
+	(instantiate_virtual_regs_in_rtx): Track polynomial offsets.
+	(instantiate_virtual_regs_in_insn): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (get_args_size, add_args_size_note): New functions.
 	(find_args_size_adjust): Return a poly_int64 rather than a
 	HOST_WIDE_INT.
