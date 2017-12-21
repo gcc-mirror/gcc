@@ -723,7 +723,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				      TYPE_ALIGN (gnu_type));
 
 	/* Likewise, if a size is specified, use it if valid.  */
-	if (Known_Esize (gnat_entity) && No (Address_Clause (gnat_entity)))
+	if (Known_Esize (gnat_entity))
 	  gnu_size
 	    = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
 			     VAR_DECL, false, Has_Size_Clause (gnat_entity));
