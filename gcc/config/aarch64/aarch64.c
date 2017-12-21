@@ -4437,21 +4437,21 @@ virt_or_elim_regno_p (unsigned regno)
 	  || regno == ARG_POINTER_REGNUM);
 }
 
-/* Return true if X is a valid address for machine mode MODE.  If it is,
-   fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
-   effect.  OUTER_CODE is PARALLEL for a load/store pair.  */
+/* Return true if X is a valid address of type TYPE for machine mode MODE.
+   If it is, fill in INFO appropriately.  STRICT_P is true if
+   REG_OK_STRICT is in effect.  */
 
 static bool
 aarch64_classify_address (struct aarch64_address_info *info,
-			  rtx x, machine_mode mode,
-			  RTX_CODE outer_code, bool strict_p)
+			  rtx x, machine_mode mode, bool strict_p,
+			  aarch64_addr_query_type type = ADDR_QUERY_M)
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
 
   /* On BE, we use load/store pair for all large int mode load/stores.
      TI/TFmode may also use a load/store pair.  */
-  bool load_store_pair_p = (outer_code == PARALLEL
+  bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
 			    || mode == TImode
 			    || mode == TFmode
 			    || (BYTES_BIG_ENDIAN
@@ -4683,7 +4683,7 @@ aarch64_address_valid_for_prefetch_p (rtx x, bool strict_p)
   struct aarch64_address_info addr;
 
   /* PRFM accepts the same addresses as DImode...  */
-  bool res = aarch64_classify_address (&addr, x, DImode, MEM, strict_p);
+  bool res = aarch64_classify_address (&addr, x, DImode, strict_p);
   if (!res)
     return false;
 
@@ -4719,19 +4719,18 @@ aarch64_legitimate_address_hook_p (machine_mode mode, rtx x, bool strict_p)
 {
   struct aarch64_address_info addr;
 
-  return aarch64_classify_address (&addr, x, mode, MEM, strict_p);
+  return aarch64_classify_address (&addr, x, mode, strict_p);
 }
 
-/* Return TRUE if X is a legitimate address for accessing memory in
-   mode MODE.  OUTER_CODE will be PARALLEL if this is a load/store
-   pair operation.  */
+/* Return TRUE if X is a legitimate address of type TYPE for accessing
+   memory in mode MODE.  STRICT_P is true if REG_OK_STRICT is in effect.  */
 bool
-aarch64_legitimate_address_p (machine_mode mode, rtx x,
-			      RTX_CODE outer_code, bool strict_p)
+aarch64_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+			      aarch64_addr_query_type type)
 {
   struct aarch64_address_info addr;
 
-  return aarch64_classify_address (&addr, x, mode, outer_code, strict_p);
+  return aarch64_classify_address (&addr, x, mode, strict_p, type);
 }
 
 /* Split an out-of-range address displacement into a base and offset.
@@ -5630,14 +5629,15 @@ aarch64_print_operand (FILE *f, rtx x, int code)
    'op' is the context required by aarch64_classify_address.  It can either be
    MEM for a normal memory access or PARALLEL for LDP/STP.  */
 static bool
-aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
+aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
+				aarch64_addr_query_type type)
 {
   struct aarch64_address_info addr;
 
   /* Check all addresses are Pmode - including ILP32.  */
   gcc_assert (GET_MODE (x) == Pmode);
 
-  if (aarch64_classify_address (&addr, x, mode, op, true))
+  if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
       {
       case ADDRESS_REG_IMM:
@@ -5725,14 +5725,14 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 static bool
 aarch64_print_ldpstp_address (FILE *f, machine_mode mode, rtx x)
 {
-  return aarch64_print_address_internal (f, mode, x, PARALLEL);
+  return aarch64_print_address_internal (f, mode, x, ADDR_QUERY_LDP_STP);
 }
 
 /* Print address 'x' of a memory access with mode 'mode'.  */
 static void
 aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
 {
-  if (!aarch64_print_address_internal (f, mode, x, MEM))
+  if (!aarch64_print_address_internal (f, mode, x, ADDR_QUERY_M))
     output_addr_const (f, x);
 }
 
@@ -6561,7 +6561,7 @@ aarch64_address_cost (rtx x,
   int cost = 0;
   info.shift = 0;
 
-  if (!aarch64_classify_address (&info, x, mode, c, false))
+  if (!aarch64_classify_address (&info, x, mode, false))
     {
       if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF)
 	{
