@@ -374,35 +374,31 @@ find_bswap_or_nop_load (gimple *stmt, tree ref, struct symbolic_number *n)
     return false;
   else if (TREE_CODE (base_addr) == MEM_REF)
     {
-      offset_int bit_offset = 0;
+      poly_offset_int bit_offset = 0;
       tree off = TREE_OPERAND (base_addr, 1);
 
       if (!integer_zerop (off))
 	{
-	  offset_int boff, coff = mem_ref_offset (base_addr);
-	  boff = coff << LOG2_BITS_PER_UNIT;
+	  poly_offset_int boff = mem_ref_offset (base_addr);
+	  boff <<= LOG2_BITS_PER_UNIT;
 	  bit_offset += boff;
 	}
 
       base_addr = TREE_OPERAND (base_addr, 0);
 
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
-      if (wi::neg_p (bit_offset))
+      if (maybe_lt (bit_offset, 0))
 	{
-	  offset_int mask = wi::mask <offset_int> (LOG2_BITS_PER_UNIT, false);
-	  offset_int tem = wi::bit_and_not (bit_offset, mask);
-	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
-	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
-	  bit_offset -= tem;
-	  tem >>= LOG2_BITS_PER_UNIT;
+	  tree byte_offset = wide_int_to_tree
+	    (sizetype, bits_to_bytes_round_down (bit_offset));
+	  bit_offset = num_trailing_bits (bit_offset);
 	  if (offset)
-	    offset = size_binop (PLUS_EXPR, offset,
-				    wide_int_to_tree (sizetype, tem));
+	    offset = size_binop (PLUS_EXPR, offset, byte_offset);
 	  else
-	    offset = wide_int_to_tree (sizetype, tem);
+	    offset = byte_offset;
 	}
 
-      bitpos += bit_offset.to_shwi ();
+      bitpos += bit_offset.force_shwi ();
     }
   else
     base_addr = build_fold_addr_expr (base_addr);

@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gimple-ssa-stor-merging.c (find_bswap_or_nop_load): Track polynomial
+	offsets for MEM_REFs.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-ssanames.h (adjust_ptr_info_misalignment): Take the increment
 	as a poly_uint64 rather than an unsigned int.
 	* tree-ssanames.c (adjust_ptr_info_misalignment): Likewise.
