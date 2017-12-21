@@ -2,6 +2,95 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (return_pops_args): Treat both the input and output
+	sizes as poly_int64s rather than HOST_WIDE_INTS.
+	* targhooks.h (default_return_pops_args): Update accordingly.
+	* targhooks.c (default_return_pops_args): Likewise.
+	* doc/tm.texi: Regenerate.
+	* emit-rtl.h (incoming_args): Change pops_args, size and
+	outgoing_args_size from int to poly_int64_pod.
+	* function.h (expr_status): Change x_pending_stack_adjust and
+	x_stack_pointer_delta from int to poly_int64.
+	(args_size::constant): Change from HOST_WIDE_INT to poly_int64.
+	(ARGS_SIZE_RTX): Update accordingly.
+	* calls.c (highest_outgoing_arg_in_use): Change from int to
+	unsigned int.
+	(stack_usage_watermark, stored_args_watermark): New variables.
+	(stack_region_maybe_used_p, mark_stack_region_used): New functions.
+	(emit_call_1): Change the stack_size and rounded_stack_size
+	parameters from HOST_WIDE_INT to poly_int64.  Track n_popped
+	as a poly_int64.
+	(save_fixed_argument_area): Check stack_usage_watermark.
+	(initialize_argument_information): Change old_pending_adj from
+	a HOST_WIDE_INT * to a poly_int64_pod *.
+	(compute_argument_block_size): Return the size as a poly_int64
+	rather than an int.
+	(finalize_must_preallocate): Track polynomial argument sizes.
+	(compute_argument_addresses): Likewise.
+	(internal_arg_pointer_based_exp): Track polynomial offsets.
+	(mem_overlaps_already_clobbered_arg_p): Rename to...
+	(mem_might_overlap_already_clobbered_arg_p): ...this and take the
+	size as a poly_uint64 rather than an unsigned HOST_WIDE_INT.
+	Check stored_args_used_watermark.
+	(load_register_parameters): Update accordingly.
+	(check_sibcall_argument_overlap_1): Likewise.
+	(combine_pending_stack_adjustment_and_call): Take the unadjusted
+	args size as a poly_int64 rather than an int.  Return a bool
+	indicating whether the optimization was possible and return
+	the new adjustment by reference.
+	(check_sibcall_argument_overlap): Track polynomail argument sizes.
+	Update stored_args_watermark.
+	(can_implement_as_sibling_call_p): Handle polynomial argument sizes.
+	(expand_call): Likewise.  Maintain stack_usage_watermark and
+	stored_args_watermark.  Update calls to
+	combine_pending_stack_adjustment_and_call.
+	(emit_library_call_value_1): Handle polynomial argument sizes.
+	Call stack_region_maybe_used_p and mark_stack_region_used.
+	Maintain stack_usage_watermark.
+	(store_one_arg): Likewise.  Update call to
+	mem_overlaps_already_clobbered_arg_p.
+	* config/arm/arm.c (arm_output_function_prologue): Add a cast to
+	HOST_WIDE_INT.
+	* config/avr/avr.c (avr_outgoing_args_size): Likewise.
+	* config/microblaze/microblaze.c (microblaze_function_prologue):
+	Likewise.
+	* config/cr16/cr16.c (cr16_return_pops_args): Update for new
+	TARGET_RETURN_POPS_ARGS interface.
+	(cr16_compute_frame, cr16_initial_elimination_offset): Add casts
+	to HOST_WIDE_INT.
+	* config/ft32/ft32.c (ft32_compute_frame): Likewise.
+	* config/i386/i386.c (ix86_return_pops_args): Update for new
+	TARGET_RETURN_POPS_ARGS interface.
+	(ix86_expand_split_stack_prologue): Add a cast to HOST_WIDE_INT.
+	* config/moxie/moxie.c (moxie_compute_frame): Likewise.
+	* config/m68k/m68k.c (m68k_return_pops_args): Update for new
+	TARGET_RETURN_POPS_ARGS interface.
+	* config/vax/vax.c (vax_return_pops_args): Likewise.
+	* config/pa/pa.h (STACK_POINTER_OFFSET): Add a cast to poly_int64.
+	(EXIT_IGNORE_STACK): Update reference to crtl->outgoing_args_size.
+	* config/arm/arm.h (CALLER_INTERWORKING_SLOT_SIZE): Likewise.
+	* config/powerpcspe/aix.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/powerpcspe/darwin.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/powerpcspe/powerpcspe.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/rs6000/aix.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/rs6000/darwin.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/rs6000/rs6000.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* dojump.h (saved_pending_stack_adjust): Change x_pending_stack_adjust
+	and x_stack_pointer_delta from int to poly_int64.
+	* dojump.c (do_pending_stack_adjust): Update accordingly.
+	* explow.c (allocate_dynamic_stack_space): Handle polynomial
+	stack_pointer_deltas.
+	* function.c (STACK_DYNAMIC_OFFSET): Add a cast to poly_int64.
+	(pad_to_arg_alignment): Track polynomial offsets.
+	(assign_parm_find_stack_rtl): Likewise.
+	(assign_parms, locate_and_pad_parm): Handle polynomial argument sizes.
+	* toplev.c (output_stack_usage): Update reference to
+	current_function_pushed_stack_size.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* function.c (in_arg_offset, var_offset, dynamic_offset)
 	(out_arg_offset, cfa_offset): Change from int to poly_int64.
 	(instantiate_new_reg): Return the new offset as a poly_int64_pod

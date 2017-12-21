@@ -5055,7 +5055,7 @@ arguments pop them but other functions (such as @code{printf}) pop\n\
 nothing (the caller pops all).  When this convention is in use,\n\
 @var{funtype} is examined to determine whether a function takes a fixed\n\
 number of arguments.",
- int, (tree fundecl, tree funtype, int size),
+ poly_int64, (tree fundecl, tree funtype, poly_int64 size),
  default_return_pops_args)
 
 /* Return a mode wide enough to copy any function value that might be

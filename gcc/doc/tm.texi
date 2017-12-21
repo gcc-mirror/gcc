@@ -3819,7 +3819,7 @@ suppresses this behavior and causes the parameter to be passed on the
 stack in its natural location.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_RETURN_POPS_ARGS (tree @var{fundecl}, tree @var{funtype}, int @var{size})
+@deftypefn {Target Hook} poly_int64 TARGET_RETURN_POPS_ARGS (tree @var{fundecl}, tree @var{funtype}, poly_int64 @var{size})
 This target hook returns the number of bytes of its own arguments that
 a function pops on returning, or 0 if the function pops no arguments
 and the caller must therefore pop them all after the function returns.

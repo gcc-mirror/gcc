@@ -1475,8 +1475,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 
  /* We ought to be called always on the toplevel and stack ought to be aligned
     properly.  */
-  gcc_assert (!(stack_pointer_delta
-		% (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)));
+  gcc_assert (multiple_p (stack_pointer_delta,
+			  PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT));
 
   /* If needed, check that we have the required amount of stack.  Take into
      account what has already been checked.  */
@@ -1506,7 +1506,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     }
   else
     {
-      int saved_stack_pointer_delta;
+      poly_int64 saved_stack_pointer_delta;
 
       if (!STACK_GROWS_DOWNWARD)
 	emit_move_insn (target, virtual_stack_dynamic_rtx);

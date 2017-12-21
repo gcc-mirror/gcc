@@ -253,10 +253,8 @@ cr16_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
-static int
-cr16_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-                       tree funtype ATTRIBUTE_UNUSED, 
-		       int size ATTRIBUTE_UNUSED)
+static poly_int64
+cr16_return_pops_args (tree, tree, poly_int64)
 {
   return 0;
 }
@@ -433,9 +431,10 @@ cr16_compute_frame (void)
     padding_locals = stack_alignment - padding_locals;
 
   current_frame_info.var_size += padding_locals;
-  current_frame_info.total_size = current_frame_info.var_size 
-			          + (ACCUMULATE_OUTGOING_ARGS
-			             ? crtl->outgoing_args_size : 0);
+  current_frame_info.total_size
+    = (current_frame_info.var_size
+       + (ACCUMULATE_OUTGOING_ARGS
+	  ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0));
 }
 
 /* Implements the macro INITIAL_ELIMINATION_OFFSET, return the OFFSET.  */
@@ -449,12 +448,14 @@ cr16_initial_elimination_offset (int from, int to)
   cr16_compute_frame ();
 
   if (((from) == FRAME_POINTER_REGNUM) && ((to) == STACK_POINTER_REGNUM))
-    return (ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0);
+    return (ACCUMULATE_OUTGOING_ARGS
+	    ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0);
   else if (((from) == ARG_POINTER_REGNUM) && ((to) == FRAME_POINTER_REGNUM))
     return (current_frame_info.reg_size + current_frame_info.var_size);
   else if (((from) == ARG_POINTER_REGNUM) && ((to) == STACK_POINTER_REGNUM))
     return (current_frame_info.reg_size + current_frame_info.var_size 
-	    + (ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0));
+	    + (ACCUMULATE_OUTGOING_ARGS
+	       ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0));
   else
     gcc_unreachable ();
 }

@@ -956,19 +956,32 @@ output_stack_usage (void)
   stack_usage_kind = STATIC;
 
   /* Add the maximum amount of space pushed onto the stack.  */
-  if (current_function_pushed_stack_size > 0)
+  if (maybe_ne (current_function_pushed_stack_size, 0))
     {
-      stack_usage += current_function_pushed_stack_size;
-      stack_usage_kind = DYNAMIC_BOUNDED;
+      HOST_WIDE_INT extra;
+      if (current_function_pushed_stack_size.is_constant (&extra))
+	{
+	  stack_usage += extra;
+	  stack_usage_kind = DYNAMIC_BOUNDED;
+	}
+      else
+	{
+	  extra = constant_lower_bound (current_function_pushed_stack_size);
+	  stack_usage += extra;
+	  stack_usage_kind = DYNAMIC;
+	}
     }
 
   /* Now on to the tricky part: dynamic stack allocation.  */
   if (current_function_allocates_dynamic_stack_space)
     {
-      if (current_function_has_unbounded_dynamic_stack_size)
-	stack_usage_kind = DYNAMIC;
-      else
-	stack_usage_kind = DYNAMIC_BOUNDED;
+      if (stack_usage_kind != DYNAMIC)
+	{
+	  if (current_function_has_unbounded_dynamic_stack_size)
+	    stack_usage_kind = DYNAMIC;
+	  else
+	    stack_usage_kind = DYNAMIC_BOUNDED;
+	}
 
       /* Add the size even in the unbounded case, this can't hurt.  */
       stack_usage += current_function_dynamic_stack_size;

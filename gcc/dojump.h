@@ -40,10 +40,10 @@ extern void do_pending_stack_adjust (void);
 struct saved_pending_stack_adjust
 {
   /* Saved value of pending_stack_adjust.  */
-  int x_pending_stack_adjust;
+  poly_int64 x_pending_stack_adjust;
 
   /* Saved value of stack_pointer_delta.  */
-  int x_stack_pointer_delta;
+  poly_int64 x_stack_pointer_delta;
 };
 
 /* Remember pending_stack_adjust/stack_pointer_delta.
