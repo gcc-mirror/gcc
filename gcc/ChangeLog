@@ -2,6 +2,28 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-ssa-loop-ivopts.h (strip_offset): Return the offset as
+	poly_uint64_pod rather than an unsigned HOST_WIDE_INT.
+	* tree-loop-distribution.c (classify_builtin_st): Update accordingly.
+	* tree-ssa-loop-ivopts.c (iv_use::addr_offset): Change from
+	an unsigned HOST_WIDE_INT to a poly_uint64_pod.
+	(group_compare_offset): Update accordingly.
+	(split_small_address_groups_p): Likewise.
+	(record_use): Take addr_offset as a poly_uint64 rather than
+	an unsigned HOST_WIDE_INT.
+	(strip_offset): Return the offset as a poly_uint64 rather than
+	an unsigned HOST_WIDE_INT.
+	(record_group_use, split_address_groups): Track polynomial offsets.
+	(add_iv_candidate_for_use): Likewise.
+	(addr_offset_valid_p): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(strip_offset_1): Return the offset as a poly_int64 rather than
+	a HOST_WIDE_INT.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (get_binfo_at_offset): Take the offset as a poly_int64
 	rather than a HOST_WIDE_INT.
 	* tree.c (get_binfo_at_offset): Likewise.

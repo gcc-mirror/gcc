@@ -1513,10 +1513,16 @@ classify_builtin_st (loop_p loop, partition *partition, data_reference_p dr)
   if (!compute_access_range (loop, dr, &base, &size))
     return;
 
+  poly_uint64 base_offset;
+  unsigned HOST_WIDE_INT const_base_offset;
+  tree base_base = strip_offset (base, &base_offset);
+  if (!base_offset.is_constant (&const_base_offset))
+    return;
+
   struct builtin_info *builtin;
   builtin = alloc_builtin (dr, NULL, base, NULL_TREE, size);
-  builtin->dst_base_base = strip_offset (builtin->dst_base,
-					 &builtin->dst_base_offset);
+  builtin->dst_base_base = base_base;
+  builtin->dst_base_offset = const_base_offset;
   partition->builtin = builtin;
   partition->kind = PKIND_MEMSET;
 }

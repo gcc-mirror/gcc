@@ -367,7 +367,7 @@ struct iv_use
   tree *op_p;		/* The place where it occurs.  */
 
   tree addr_base;	/* Base address with const offset stripped.  */
-  unsigned HOST_WIDE_INT addr_offset;
+  poly_uint64_pod addr_offset;
 			/* Const offset stripped from base address.  */
 };
 
@@ -1508,7 +1508,7 @@ find_induction_variables (struct ivopts_data *data)
 static struct iv_use *
 record_use (struct iv_group *group, tree *use_p, struct iv *iv,
 	    gimple *stmt, enum use_type type, tree addr_base,
-	    unsigned HOST_WIDE_INT addr_offset)
+	    poly_uint64 addr_offset)
 {
   struct iv_use *use = XCNEW (struct iv_use);
 
@@ -1577,7 +1577,7 @@ record_group_use (struct ivopts_data *data, tree *use_p,
 {
   tree addr_base = NULL;
   struct iv_group *group = NULL;
-  unsigned HOST_WIDE_INT addr_offset = 0;
+  poly_uint64 addr_offset = 0;
 
   /* Record non address type use in a new group.  */
   if (type == USE_ADDRESS && iv->base_object)
@@ -2511,7 +2511,7 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
 static GTY (()) vec<rtx, va_gc> *addr_list;
 
 static bool
-addr_offset_valid_p (struct iv_use *use, HOST_WIDE_INT offset)
+addr_offset_valid_p (struct iv_use *use, poly_int64 offset)
 {
   rtx reg, addr;
   unsigned list_index;
@@ -2545,10 +2545,7 @@ group_compare_offset (const void *a, const void *b)
   const struct iv_use *const *u1 = (const struct iv_use *const *) a;
   const struct iv_use *const *u2 = (const struct iv_use *const *) b;
 
-  if ((*u1)->addr_offset != (*u2)->addr_offset)
-    return (*u1)->addr_offset < (*u2)->addr_offset ? -1 : 1;
-  else
-    return 0;
+  return compare_sizes_for_sort ((*u1)->addr_offset, (*u2)->addr_offset);
 }
 
 /* Check if small groups should be split.  Return true if no group
@@ -2579,7 +2576,8 @@ split_small_address_groups_p (struct ivopts_data *data)
       gcc_assert (group->type == USE_ADDRESS);
       if (group->vuses.length () == 2)
 	{
-	  if (group->vuses[0]->addr_offset > group->vuses[1]->addr_offset)
+	  if (compare_sizes_for_sort (group->vuses[0]->addr_offset,
+				      group->vuses[1]->addr_offset) > 0)
 	    std::swap (group->vuses[0], group->vuses[1]);
 	}
       else
@@ -2591,7 +2589,7 @@ split_small_address_groups_p (struct ivopts_data *data)
       distinct = 1;
       for (pre = group->vuses[0], j = 1; j < group->vuses.length (); j++)
 	{
-	  if (group->vuses[j]->addr_offset != pre->addr_offset)
+	  if (maybe_ne (group->vuses[j]->addr_offset, pre->addr_offset))
 	    {
 	      pre = group->vuses[j];
 	      distinct++;
@@ -2632,13 +2630,13 @@ split_address_groups (struct ivopts_data *data)
       for (j = 1; j < group->vuses.length ();)
 	{
 	  struct iv_use *next = group->vuses[j];
-	  HOST_WIDE_INT offset = next->addr_offset - use->addr_offset;
+	  poly_int64 offset = next->addr_offset - use->addr_offset;
 
 	  /* Split group if aksed to, or the offset against the first
 	     use can't fit in offset part of addressing mode.  IV uses
 	     having the same offset are still kept in one group.  */
-	  if (offset != 0 &&
-	      (split_p || !addr_offset_valid_p (use, offset)))
+	  if (maybe_ne (offset, 0)
+	      && (split_p || !addr_offset_valid_p (use, offset)))
 	    {
 	      if (!new_group)
 		new_group = record_group (data, group->type);
@@ -2699,12 +2697,13 @@ find_interesting_uses (struct ivopts_data *data)
 
 static tree
 strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
-		HOST_WIDE_INT *offset)
+		poly_int64 *offset)
 {
   tree op0 = NULL_TREE, op1 = NULL_TREE, tmp, step;
   enum tree_code code;
   tree type, orig_type = TREE_TYPE (expr);
-  HOST_WIDE_INT off0, off1, st;
+  poly_int64 off0, off1;
+  HOST_WIDE_INT st;
   tree orig_expr = expr;
 
   STRIP_NOPS (expr);
@@ -2715,14 +2714,6 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 
   switch (code)
     {
-    case INTEGER_CST:
-      if (!cst_and_fits_in_hwi (expr)
-	  || integer_zerop (expr))
-	return orig_expr;
-
-      *offset = int_cst_value (expr);
-      return build_int_cst (orig_type, 0);
-
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -2840,6 +2831,8 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       break;
 
     default:
+      if (ptrdiff_tree_p (expr, offset) && maybe_ne (*offset, 0))
+	return build_int_cst (orig_type, 0);
       return orig_expr;
     }
 
@@ -2869,9 +2862,9 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 /* Strips constant offsets from EXPR and stores them to OFFSET.  */
 
 tree
-strip_offset (tree expr, unsigned HOST_WIDE_INT *offset)
+strip_offset (tree expr, poly_uint64_pod *offset)
 {
-  HOST_WIDE_INT off;
+  poly_int64 off;
   tree core = strip_offset_1 (expr, false, false, &off);
   *offset = off;
   return core;
@@ -3398,7 +3391,7 @@ add_iv_candidate_derived_from_uses (struct ivopts_data *data)
 static void
 add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
 {
-  unsigned HOST_WIDE_INT offset;
+  poly_uint64 offset;
   tree base;
   tree basetype;
   struct iv *iv = use->iv;
@@ -3417,7 +3410,7 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
   /* Record common candidate with constant offset stripped in base.
      Like the use itself, we also add candidate directly for it.  */
   base = strip_offset (iv->base, &offset);
-  if (offset || base != iv->base)
+  if (maybe_ne (offset, 0U) || base != iv->base)
     {
       record_common_cand (data, base, iv->step, use);
       add_candidate (data, base, iv->step, false, use);
@@ -3436,7 +3429,7 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
       record_common_cand (data, base, step, use);
       /* Also record common candidate with offset stripped.  */
       base = strip_offset (base, &offset);
-      if (offset)
+      if (maybe_ne (offset, 0U))
 	record_common_cand (data, base, step, use);
     }
 
