@@ -798,8 +798,8 @@ get_addr_base_and_unit_offset_1 (tree exp, poly_int64_pod *poffset,
 	      {
 		if (!integer_zerop (TREE_OPERAND (exp, 1)))
 		  {
-		    offset_int off = mem_ref_offset (exp);
-		    byte_offset += off.to_short_addr ();
+		    poly_offset_int off = mem_ref_offset (exp);
+		    byte_offset += off.force_shwi ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }
@@ -820,8 +820,8 @@ get_addr_base_and_unit_offset_1 (tree exp, poly_int64_pod *poffset,
 		  return NULL_TREE;
 		if (!integer_zerop (TMR_OFFSET (exp)))
 		  {
-		    offset_int off = mem_ref_offset (exp);
-		    byte_offset += off.to_short_addr ();
+		    poly_offset_int off = mem_ref_offset (exp);
+		    byte_offset += off.force_shwi ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }

@@ -349,10 +349,15 @@ builtin_memref::builtin_memref (tree expr, tree size)
 
   if (TREE_CODE (base) == MEM_REF)
     {
-      offset_int off = mem_ref_offset (base);
-      refoff += off;
-      offrange[0] += off;
-      offrange[1] += off;
+      offset_int off;
+      if (mem_ref_offset (base).is_constant (&off))
+	{
+	  refoff += off;
+	  offrange[0] += off;
+	  offrange[1] += off;
+	}
+      else
+	size = NULL_TREE;
       base = TREE_OPERAND (base, 0);
     }
 

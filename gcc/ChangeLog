@@ -2,6 +2,40 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* fold-const.h (mem_ref_offset): Return a poly_offset_int rather
+	than an offset_int.
+	* tree.c (mem_ref_offset): Likewise.
+	(build_simple_mem_ref_loc): Treat MEM_REF offsets as poly_ints.
+	* builtins.c (get_object_alignment_2): Likewise.
+	* expr.c (get_inner_reference, expand_expr_real_1): Likewise.
+	* gimple-fold.c (get_base_constructor): Likewise.
+	* gimple-ssa-strength-reduction.c (restructure_reference): Likewise.
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref):
+	Likewise.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Likewise.
+	* ipa-prop.c (compute_complex_assign_jump_func): Likewise.
+	(get_ancestor_addr_info): Likewise.
+	* ipa-param-manipulation.c (ipa_get_adjustment_candidate): Likewise.
+	* match.pd: Likewise.
+	* tree-data-ref.c (dr_analyze_innermost): Likewise.
+	* tree-dfa.c (get_addr_base_and_unit_offset_1): Likewise.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+	* tree-object-size.c (addr_object_size): Likewise.
+	* tree-ssa-address.c (copy_ref_info): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Likewise.
+	(indirect_refs_may_alias_p): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	* tree-ssa.c (maybe_rewrite_mem_ref_base): Likewise.
+	(non_rewritable_mem_ref_base): Likewise.
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Likewise.
+	* tree-vrp.c (vrp_prop::check_array_ref): Likewise.
+	* varasm.c (decode_addr_const): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gimple-ssa-stor-merging.c (find_bswap_or_nop_load): Track polynomial
 	offsets for MEM_REFs.
 

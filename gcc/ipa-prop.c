@@ -1267,9 +1267,12 @@ compute_complex_assign_jump_func (struct ipa_func_body_info *fbi,
   if (TREE_CODE (TREE_TYPE (op1)) != RECORD_TYPE)
     return;
   base = get_ref_base_and_extent_hwi (op1, &offset, &size, &reverse);
-  if (!base || TREE_CODE (base) != MEM_REF)
+  offset_int mem_offset;
+  if (!base
+      || TREE_CODE (base) != MEM_REF
+      || !mem_ref_offset (base).is_constant (&mem_offset))
     return;
-  offset += mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+  offset += mem_offset.to_short_addr () * BITS_PER_UNIT;
   ssa = TREE_OPERAND (base, 0);
   if (TREE_CODE (ssa) != SSA_NAME
       || !SSA_NAME_IS_DEFAULT_DEF (ssa)
@@ -1311,7 +1314,10 @@ get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
   obj = expr;
   expr = get_ref_base_and_extent_hwi (expr, offset, &size, &reverse);
 
-  if (!expr || TREE_CODE (expr) != MEM_REF)
+  offset_int mem_offset;
+  if (!expr
+      || TREE_CODE (expr) != MEM_REF
+      || !mem_ref_offset (expr).is_constant (&mem_offset))
     return NULL_TREE;
   parm = TREE_OPERAND (expr, 0);
   if (TREE_CODE (parm) != SSA_NAME
@@ -1319,7 +1325,7 @@ get_ancestor_addr_info (gimple *assign, tree *obj_p, HOST_WIDE_INT *offset)
       || TREE_CODE (SSA_NAME_VAR (parm)) != PARM_DECL)
     return NULL_TREE;
 
-  *offset += mem_ref_offset (expr).to_short_addr () * BITS_PER_UNIT;
+  *offset += mem_offset.to_short_addr () * BITS_PER_UNIT;
   *obj_p = obj;
   return expr;
 }

@@ -970,17 +970,19 @@ restructure_reference (tree *pbase, tree *poffset, widest_int *pindex,
   widest_int index = *pindex;
   tree mult_op0, t1, t2, type;
   widest_int c1, c2, c3, c4, c5;
+  offset_int mem_offset;
 
   if (!base
       || !offset
       || TREE_CODE (base) != MEM_REF
+      || !mem_ref_offset (base).is_constant (&mem_offset)
       || TREE_CODE (offset) != MULT_EXPR
       || TREE_CODE (TREE_OPERAND (offset, 1)) != INTEGER_CST
       || wi::umod_floor (index, BITS_PER_UNIT) != 0)
     return false;
 
   t1 = TREE_OPERAND (base, 0);
-  c1 = widest_int::from (mem_ref_offset (base), SIGNED);
+  c1 = widest_int::from (mem_offset, SIGNED);
   type = TREE_TYPE (TREE_OPERAND (base, 1));
 
   mult_op0 = TREE_OPERAND (offset, 0);

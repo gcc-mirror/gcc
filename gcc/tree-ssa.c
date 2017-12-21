@@ -1379,10 +1379,10 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
 	}
       else if (DECL_SIZE (sym)
 	       && TREE_CODE (DECL_SIZE (sym)) == INTEGER_CST
-	       && mem_ref_offset (*tp) >= 0
-	       && wi::leu_p (mem_ref_offset (*tp)
-			     + wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp))),
-			     wi::to_offset (DECL_SIZE_UNIT (sym)))
+	       && (known_subrange_p
+		   (mem_ref_offset (*tp),
+		    wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (*tp))),
+		    0, wi::to_offset (DECL_SIZE_UNIT (sym))))
 	       && (! INTEGRAL_TYPE_P (TREE_TYPE (*tp)) 
 		   || (wi::to_offset (TYPE_SIZE (TREE_TYPE (*tp)))
 		       == TYPE_PRECISION (TREE_TYPE (*tp))))
@@ -1433,9 +1433,8 @@ non_rewritable_mem_ref_base (tree ref)
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
-	  && wi::fits_uhwi_p (mem_ref_offset (base))
-	  && wi::gtu_p (wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
-			mem_ref_offset (base))
+	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
+		       mem_ref_offset (base))
 	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
 			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
 	return NULL_TREE;
@@ -1445,11 +1444,10 @@ non_rewritable_mem_ref_base (tree ref)
 	return NULL_TREE;
       /* For integral typed extracts we can use a BIT_FIELD_REF.  */
       if (DECL_SIZE (decl)
-	  && TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST
-	  && mem_ref_offset (base) >= 0
-	  && wi::leu_p (mem_ref_offset (base)
-			+ wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (base))),
-			wi::to_offset (DECL_SIZE_UNIT (decl)))
+	  && (known_subrange_p
+	      (mem_ref_offset (base),
+	       wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (base))),
+	       0, wi::to_poly_offset (DECL_SIZE_UNIT (decl))))
 	  /* ???  We can't handle bitfield precision extracts without
 	     either using an alternate type for the BIT_FIELD_REF and
 	     then doing a conversion or possibly adjusting the offset
