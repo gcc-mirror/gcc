@@ -4494,8 +4494,8 @@ ira_reassign_pseudos (int *spilled_pseudo_regs, int num,
    TOTAL_SIZE.  In the case of failure to find a slot which can be
    used for REGNO, the function returns NULL.  */
 rtx
-ira_reuse_stack_slot (int regno, unsigned int inherent_size,
-		      unsigned int total_size)
+ira_reuse_stack_slot (int regno, poly_uint64 inherent_size,
+		      poly_uint64 total_size)
 {
   unsigned int i;
   int slot_num, best_slot_num;
@@ -4508,8 +4508,8 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
 
   ira_assert (! ira_use_lra_p);
 
-  ira_assert (inherent_size == PSEUDO_REGNO_BYTES (regno)
-	      && inherent_size <= total_size
+  ira_assert (known_eq (inherent_size, PSEUDO_REGNO_BYTES (regno))
+	      && known_le (inherent_size, total_size)
 	      && ALLOCNO_HARD_REGNO (allocno) < 0);
   if (! flag_ira_share_spill_slots)
     return NULL_RTX;
@@ -4532,8 +4532,8 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
 	  slot = &ira_spilled_reg_stack_slots[slot_num];
 	  if (slot->mem == NULL_RTX)
 	    continue;
-	  if (slot->width < total_size
-	      || GET_MODE_SIZE (GET_MODE (slot->mem)) < inherent_size)
+	  if (maybe_lt (slot->width, total_size)
+	      || maybe_lt (GET_MODE_SIZE (GET_MODE (slot->mem)), inherent_size))
 	    continue;
 
 	  EXECUTE_IF_SET_IN_BITMAP (&slot->spilled_regs,
@@ -4585,7 +4585,7 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
     }
   if (x != NULL_RTX)
     {
-      ira_assert (slot->width >= total_size);
+      ira_assert (known_ge (slot->width, total_size));
 #ifdef ENABLE_IRA_CHECKING
       EXECUTE_IF_SET_IN_BITMAP (&slot->spilled_regs,
 				FIRST_PSEUDO_REGISTER, i, bi)
@@ -4614,7 +4614,7 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
    TOTAL_SIZE was allocated for REGNO.  We store this info for
    subsequent ira_reuse_stack_slot calls.  */
 void
-ira_mark_new_stack_slot (rtx x, int regno, unsigned int total_size)
+ira_mark_new_stack_slot (rtx x, int regno, poly_uint64 total_size)
 {
   struct ira_spilled_reg_stack_slot *slot;
   int slot_num;
@@ -4622,7 +4622,7 @@ ira_mark_new_stack_slot (rtx x, int regno, unsigned int total_size)
 
   ira_assert (! ira_use_lra_p);
 
-  ira_assert (PSEUDO_REGNO_BYTES (regno) <= total_size);
+  ira_assert (known_le (PSEUDO_REGNO_BYTES (regno), total_size));
   allocno = ira_regno_allocno_map[regno];
   slot_num = -ALLOCNO_HARD_REGNO (allocno) - 2;
   if (slot_num == -1)

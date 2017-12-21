@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* ira-int.h (ira_spilled_reg_stack_slot::width): Change from
+	an unsigned int to a poly_uint64.
+	* ira.h (ira_reuse_stack_slot, ira_mark_new_stack_slot): Take the
+	sizes as poly_uint64s rather than unsigned ints.
+	* ira-color.c (ira_reuse_stack_slot, ira_mark_new_stack_slot):
+	Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lra-constraints.c (emit_inc): Change inc_amount from an int
 	to a poly_int64.
 
