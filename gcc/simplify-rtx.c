@@ -1768,7 +1768,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  rtx x = simplify_unary_operation (code, GET_MODE_INNER (mode),
 					    CONST_VECTOR_ELT (op, i),
 					    GET_MODE_INNER (opmode));
-	  if (!x)
+	  if (!x || !valid_for_const_vector_p (mode, x))
 	    return 0;
 	  RTVEC_ELT (v, i) = x;
 	}
@@ -4030,7 +4030,7 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	  rtx x = simplify_binary_operation (code, GET_MODE_INNER (mode),
 					     CONST_VECTOR_ELT (op0, i),
 					     CONST_VECTOR_ELT (op1, i));
-	  if (!x)
+	  if (!x || !valid_for_const_vector_p (mode, x))
 	    return 0;
 	  RTVEC_ELT (v, i) = x;
 	}
@@ -4041,11 +4041,11 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
   if (VECTOR_MODE_P (mode)
       && code == VEC_CONCAT
       && (CONST_SCALAR_INT_P (op0)
-	  || GET_CODE (op0) == CONST_FIXED
+	  || CONST_FIXED_P (op0)
 	  || CONST_DOUBLE_AS_FLOAT_P (op0))
       && (CONST_SCALAR_INT_P (op1)
 	  || CONST_DOUBLE_AS_FLOAT_P (op1)
-	  || GET_CODE (op1) == CONST_FIXED))
+	  || CONST_FIXED_P (op1)))
     {
       unsigned n_elts = GET_MODE_NUNITS (mode);
       rtvec v = rtvec_alloc (n_elts);
@@ -6268,7 +6268,7 @@ simplify_subreg (machine_mode outermode, rtx op,
 
   if (CONST_SCALAR_INT_P (op)
       || CONST_DOUBLE_AS_FLOAT_P (op)
-      || GET_CODE (op) == CONST_FIXED
+      || CONST_FIXED_P (op)
       || GET_CODE (op) == CONST_VECTOR)
     {
       /* simplify_immed_subreg deconstructs OP into bytes and constructs

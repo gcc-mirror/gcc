@@ -1,5 +1,20 @@
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/82973
+	* emit-rtl.h (valid_for_const_vec_duplicate_p): Rename to ...
+	(valid_for_const_vector_p): ... this.
+	* emit-rtl.c (valid_for_const_vec_duplicate_p): Rename to ...
+	(valid_for_const_vector_p): ... this.  Adjust function comment.
+	(gen_vec_duplicate): Adjust caller.
+	* optabs.c (expand_vector_broadcast): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Don't optimize into
+	CONST_VECTOR if some element isn't simplified valid_for_const_vector_p
+	constant.
+	(simplify_const_binary_operation): Likewise.  Use CONST_FIXED_P macro
+	instead of GET_CODE == CONST_FIXED.
+	(simplify_subreg): Use CONST_FIXED_P macro instead of
+	GET_CODE == CONST_FIXED.
+
 	PR target/83488
 	* config/i386/i386.c (ix86_target_string): Move -mavx512vbmi2 and
 	-mshstk entries from isa_opts2 to isa_opts and -mhle, -mmovbe,
