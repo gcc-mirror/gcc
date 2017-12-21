@@ -3580,6 +3580,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENACC_200)
     {
       if (!DLSYM_OPT (openacc.exec, openacc_exec)
+	  || !DLSYM_OPT (openacc.exec_params, openacc_exec_params)
 	  || !DLSYM_OPT (openacc.create_thread_data,
 			 openacc_create_thread_data)
 	  || !DLSYM_OPT (openacc.destroy_thread_data,
@@ -3592,6 +3593,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
 	  || !DLSYM_OPT (openacc.async.queue_callback,
 			 openacc_async_queue_callback)
 	  || !DLSYM_OPT (openacc.async.exec, openacc_async_exec)
+	  || !DLSYM_OPT (openacc.async.exec_params, openacc_async_exec_params)
 	  || !DLSYM_OPT (openacc.async.dev2host, openacc_async_dev2host)
 	  || !DLSYM_OPT (openacc.async.host2dev, openacc_async_host2dev))
 	{

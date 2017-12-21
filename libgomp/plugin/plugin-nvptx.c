@@ -696,12 +696,11 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 static void
 nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
 	    unsigned *dims, void *targ_mem_desc,
-	    CUdeviceptr dp, CUstream stream)
+	    void **kargs, CUstream stream)
 {
   struct targ_fn_descriptor *targ_fn = (struct targ_fn_descriptor *) fn;
   CUfunction function;
   int i;
-  void *kargs[1];
   struct nvptx_thread *nvthd = nvptx_thread ();
   int warp_size = nvthd->ptx_dev->warp_size;
 
@@ -904,7 +903,6 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   // num_gangs		nctaid.x
   // num_workers	ntid.y
   // vector length	ntid.x
-  kargs[0] = &dp;
   CUDA_CALL_ASSERT (cuLaunchKernel, function,
 		    dims[GOMP_DIM_GANG], 1, 1,
 		    dims[GOMP_DIM_VECTOR], dims[GOMP_DIM_WORKER], 1,
@@ -1243,32 +1241,46 @@ GOMP_OFFLOAD_free (int ord, void *ptr)
 	  && nvptx_free (ptr, ptx_devices[ord]));
 }
 
-void
-GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
-			   void **hostaddrs, void **devaddrs,
-			   unsigned *dims, void *targ_mem_desc)
+static void
+openacc_exec_internal (void (*fn) (void *), int params, size_t mapnum,
+		       void **hostaddrs, void **devaddrs,
+		       unsigned *dims, void *targ_mem_desc)
 {
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
-  void **hp = NULL;
+  void **hp = alloca (mapnum * sizeof (void *));
   CUdeviceptr dp = 0;
 
   if (mapnum > 0)
     {
-      hp = alloca (mapnum * sizeof (void *));
-      for (int i = 0; i < mapnum; i++)
-	hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
-      CUDA_CALL_ASSERT (cuMemAlloc, &dp, mapnum * sizeof (void *));
+      if (params)
+	{
+	  for (int i = 0; i < mapnum; i++)
+	    hp[i] = (devaddrs[i] ? &devaddrs[i] : &hostaddrs[i]);
+	}
+      else
+	{
+	  for (int i = 0; i < mapnum; i++)
+	    hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
+	  CUDA_CALL_ASSERT (cuMemAlloc, &dp, mapnum * sizeof (void *));
+	}
     }
 
   /* Copy the (device) pointers to arguments to the device (dp and hp might in
      fact have the same value on a unified-memory system).  */
-  if (mapnum > 0)
+  if (!params && mapnum > 0)
     CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, (void *) hp,
 		      mapnum * sizeof (void *));
 
-  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
-	      dp, NULL);
+  if (params)
+    nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
+		hp, NULL);
+  else
+    {
+      void *kargs[1] = { &dp };
+      nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
+		  kargs, NULL);
+    }
 
   CUresult r = CUDA_CALL_NOCHECK (cuStreamSynchronize, NULL);
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1277,7 +1289,27 @@ GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
 		       maybe_abort_msg);
   else if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuStreamSynchronize error: %s", cuda_error (r));
-  CUDA_CALL_ASSERT (cuMemFree, dp);
+
+  if (!params)
+    CUDA_CALL_ASSERT (cuMemFree, dp);
+}
+
+void
+GOMP_OFFLOAD_openacc_exec_params (void (*fn) (void *), size_t mapnum,
+			   void **hostaddrs, void **devaddrs,
+			   unsigned *dims, void *targ_mem_desc)
+{
+  openacc_exec_internal (fn, 1, mapnum, hostaddrs, devaddrs, dims,
+			 targ_mem_desc);
+}
+
+void
+GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
+			   void **hostaddrs, void **devaddrs,
+			   unsigned *dims, void *targ_mem_desc)
+{
+  openacc_exec_internal (fn, 0, mapnum, hostaddrs, devaddrs, dims,
+			 targ_mem_desc);
 }
 
 static void
@@ -1288,11 +1320,11 @@ cuda_free_argmem (void *ptr)
   free (block);
 }
 
-void
-GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
-				 void **hostaddrs, void **devaddrs,
-				 unsigned *dims, void *targ_mem_desc,
-				 struct goacc_asyncqueue *aq)
+static void
+openacc_async_exec_internal (void (*fn) (void *), int params, size_t mapnum,
+			     void **hostaddrs, void **devaddrs,
+			     unsigned *dims, void *targ_mem_desc,
+			     struct goacc_asyncqueue *aq)
 {
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
@@ -1302,16 +1334,25 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
 
   if (mapnum > 0)
     {
-      block = (void **) GOMP_PLUGIN_malloc ((mapnum + 2) * sizeof (void *));
-      hp = block + 2;
-      for (int i = 0; i < mapnum; i++)
-	hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
-      CUDA_CALL_ASSERT (cuMemAlloc, &dp, mapnum * sizeof (void *));
+      if (params)
+	{
+	  hp = alloca (sizeof (void *) * mapnum);
+	  for (int i = 0; i < mapnum; i++)
+	    hp[i] = (devaddrs[i] ? &devaddrs[i] : &hostaddrs[i]);
+	}
+      else
+	{
+	  block = (void **) GOMP_PLUGIN_malloc ((mapnum + 2) * sizeof (void *));
+	  hp = block + 2;
+	  for (int i = 0; i < mapnum; i++)
+	    hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
+	  CUDA_CALL_ASSERT (cuMemAlloc, &dp, mapnum * sizeof (void *));
+	}
     }
 
   /* Copy the (device) pointers to arguments to the device (dp and hp might in
      fact have the same value on a unified-memory system).  */
-  if (mapnum > 0)
+  if (!params && mapnum > 0)
     {
       CUDA_CALL_ASSERT (cuMemcpyHtoDAsync, dp, (void *) hp,
 			mapnum * sizeof (void *), aq->cuda_stream);
@@ -1321,11 +1362,39 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
 	(struct nvptx_thread *) GOMP_PLUGIN_acc_thread ();
       block[1] = (void *) nvthd->ptx_dev;
     }
-  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
-	      dp, aq->cuda_stream);
 
-  if (mapnum > 0)
+  if (params)
+    nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
+		hp, aq->cuda_stream);
+  else
+    {
+      void *kargs[1] = { &dp };
+      nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
+		  kargs, aq->cuda_stream);
+    }
+
+  if (!params && mapnum > 0)
     GOMP_OFFLOAD_openacc_async_queue_callback (aq, cuda_free_argmem, block);
+}
+
+void
+GOMP_OFFLOAD_openacc_async_exec_params (void (*fn) (void *), size_t mapnum,
+				 void **hostaddrs, void **devaddrs,
+				 unsigned *dims, void *targ_mem_desc,
+				 struct goacc_asyncqueue *aq)
+{
+  openacc_async_exec_internal (fn, 1, mapnum, hostaddrs, devaddrs, dims,
+			       targ_mem_desc, aq);
+}
+
+void
+GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
+				 void **hostaddrs, void **devaddrs,
+				 unsigned *dims, void *targ_mem_desc,
+				 struct goacc_asyncqueue *aq)
+{
+  openacc_async_exec_internal (fn, 0, mapnum, hostaddrs, devaddrs, dims,
+			       targ_mem_desc, aq);
 }
 
 void *

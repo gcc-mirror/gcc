@@ -5432,6 +5432,10 @@ nvptx_expand_cmp_swap (tree exp, rtx target,
 			 NULL_RTX, mode, EXPAND_NORMAL);
   rtx pat;
 
+  /* 'mem' might be a PARM_DECL.  If so, convert it to a register.  */
+  if (!REG_P (mem))
+    mem = copy_to_mode_reg (GET_MODE (mem), mem);
+
   mem = gen_rtx_MEM (mode, mem);
   if (!REG_P (cmp))
     cmp = copy_to_mode_reg (mode, cmp);

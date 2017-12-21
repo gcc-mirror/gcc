@@ -795,10 +795,18 @@ case "${target}" in
   ft32-*-*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  nvptx-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   *-*-lynxos*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
 esac
+
+libgomp_deps="target-libffi"
+if echo " ${noconfigdirs} " | grep " target-libffi " > /dev/null 2>&1 ; then
+   libgomp_deps=""
+fi
 
 # Disable the go frontend on systems where it is known to not work. Please keep
 # this in sync with contrib/config-list.mk.
@@ -2178,6 +2186,15 @@ esac
 # $build_configdirs and $target_configdirs.
 # If we have the source for $noconfigdirs entries, add them to $notsupp.
 
+# libgomp depends on libffi.  Remove it from nonsupp if necessary.
+if ! (echo " $noconfigdirs " | grep " target-libgomp " >/dev/null 2>&1); then
+  if echo " $noconfigdirs " | grep " target-libffi " >/dev/null 2>&1; then
+    if test "x${libgomp_deps}" != x; then
+      noconfigdirs=`echo " $noconfigdirs " | sed -e "s/ target-libffi / /"`
+    fi
+  fi
+fi
+
 notsupp=""
 for dir in . $skipdirs $noconfigdirs ; do
   dirname=`echo $dir | sed -e s/target-//g -e s/build-//g`
@@ -2695,6 +2712,9 @@ bootstrap_fixincludes=no
 
 # If we are building libgomp, bootstrap it.
 if echo " ${target_configdirs} " | grep " libgomp " > /dev/null 2>&1 ; then
+   if echo " ${target_configdirs} " | grep " libffi " > /dev/null 2>&1 ; then
+     bootstrap_target_libs=${bootstrap_target_libs}target-libffi,
+   fi
   bootstrap_target_libs=${bootstrap_target_libs}target-libgomp,
 fi
 

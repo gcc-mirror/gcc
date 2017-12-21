@@ -975,6 +975,7 @@ typedef struct acc_dispatch_t
 {
   /* Execute.  */
   __typeof (GOMP_OFFLOAD_openacc_exec) *exec_func;
+  __typeof (GOMP_OFFLOAD_openacc_exec_params) *exec_params_func;
 
   /* Create/destroy TLS data.  */
   __typeof (GOMP_OFFLOAD_openacc_create_thread_data) *create_thread_data_func;
@@ -998,6 +999,7 @@ typedef struct acc_dispatch_t
     __typeof (GOMP_OFFLOAD_openacc_async_queue_callback) *queue_callback_func;
 
     __typeof (GOMP_OFFLOAD_openacc_async_exec) *exec_func;
+    __typeof (GOMP_OFFLOAD_openacc_async_exec_params) *exec_params_func;
     __typeof (GOMP_OFFLOAD_openacc_async_dev2host) *dev2host_func;
     __typeof (GOMP_OFFLOAD_openacc_async_host2dev) *host2dev_func;
   } async;

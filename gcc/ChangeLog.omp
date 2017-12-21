@@ -1,3 +1,8 @@
+2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* omp-low.c (install_parm_decl): Don't extract identifiers from
+	artifical decls.
+
 2018-12-21  Gergö Barany  <gergo@codesourcery.com>
 
 	* omp-expand.c (expand_omp_target): Handle if_present flag on

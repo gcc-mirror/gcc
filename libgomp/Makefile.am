@@ -14,9 +14,16 @@ search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir) \
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
+LIBFFI = @LIBFFI@
+LIBFFIINCS = @LIBFFIINCS@
+
+if USE_LIBFFI
+libgomp_la_LIBADD = $(LIBFFI)
+endif
+
 vpath % $(strip $(search_path))
 
-AM_CPPFLAGS = $(addprefix -I, $(search_path))
+AM_CPPFLAGS = $(addprefix -I, $(search_path)) $(LIBFFIINCS)
 AM_CFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 

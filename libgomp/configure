@@ -681,6 +681,10 @@ PLUGIN_NVPTX_CPPFLAGS
 PLUGIN_NVPTX
 CUDA_DRIVER_LIB
 CUDA_DRIVER_INCLUDE
+USE_LIBFFI_FALSE
+USE_LIBFFI_TRUE
+LIBFFIINCS
+LIBFFI
 libtool_VERSION
 ac_ct_FC
 FCFLAGS
@@ -2702,7 +2706,6 @@ else
   GENINSRC_TRUE='#'
   GENINSRC_FALSE=
 fi
-
 
 
 # -------
@@ -11393,7 +11396,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11396 "configure"
+#line 11399 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11499,7 +11502,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11502 "configure"
+#line 11505 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15374,9 +15377,31 @@ $as_echo "#define LIBGOMP_OFFLOADED_ONLY 1" >>confdefs.h
 
 fi
 
+# Prepare libffi when necessary.
+
+LIBFFI=
+LIBFFIINCS=
+if test -d ../libffi; then
+
+$as_echo "#define USE_LIBFFI 1" >>confdefs.h
+
+   LIBFFI=../libffi/libffi_convenience.la
+   LIBFFIINCS='-I$(top_srcdir)/../libffi/include -I../libffi/include'
+fi
+
+
+ if test -d ../libffi; then
+  USE_LIBFFI_TRUE=
+  USE_LIBFFI_FALSE='#'
+else
+  USE_LIBFFI_TRUE='#'
+  USE_LIBFFI_FALSE=
+fi
+
+
 # Plugins for offload execution, configure.ac fragment.  -*- mode: autoconf -*-
 #
-# Copyright (C) 2014-2018 Free Software Foundation, Inc.
+# Copyright (C) 2014-2019 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -15824,8 +15849,7 @@ for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-eval as_val=\$$as_ac_var
-   if test "x$as_val" = x""yes; then :
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
@@ -17407,6 +17431,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_LIBFFI_TRUE}" && test -z "${USE_LIBFFI_FALSE}"; then
+  as_fn_error $? "conditional \"USE_LIBFFI\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PLUGIN_NVPTX_TRUE}" && test -z "${PLUGIN_NVPTX_FALSE}"; then

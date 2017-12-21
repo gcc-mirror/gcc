@@ -507,7 +507,9 @@ GOACC_2.0.1 {
 GOACC_2.0.GOMP_4_BRANCH {
   global:
 	GOMP_set_offload_targets;
+	GOACC_parallel_keyed_v2;
 } GOACC_2.0.1;
+
 
 GOMP_PLUGIN_1.0 {
   global:

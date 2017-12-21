@@ -210,5 +210,8 @@
 /* Define to 1 if the target use emutls for thread-local storage. */
 #undef USE_EMUTLS
 
+/* Define to 1 if the target requires libffi to call the offloaded funtions. */
+#undef USE_LIBFFI
+
 /* Version number of package */
 #undef VERSION

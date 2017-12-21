@@ -1,3 +1,43 @@
+2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* Makefile.am: Add libffi build dependency.
+	* configure.ac: Likewise.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* libgomp-plugin.h: Define GOMP_OFFLOAD_openacc_exec_params and
+	GOMP_OFFLOAD_openacc_async_exec_params.
+	* libgomp.h (acc_dispatch_t): Use them here.
+	* libgomp.map (GOACC_parallel_keyed_v2): Declare.
+	* libgomp_g.h (GOACC_parallel_keyed_v2): Likewise.
+	* oacc-host.c (host_openacc_exec_params): New function.
+	(host_openacc_async_exec_params): Likewise.
+	* oacc-parallel.c (goacc_call_host_fn): Likewise.
+	(GOACC_parallel_keyed_internal): Likewise.
+	(GOACC_parallel_keyed): Wrapper for GOACC_parallel_keyed_internal.
+	(GOACC_parallel_keyed_v2): Likewise.
+	* plugin/plugin-nvptx.c (nvptx_exec): Replace CUDeviceptr dp parameter
+	with void **kargs.
+	(openacc_exec_internal): New function.
+	(GOMP_OFFLOAD_openacc_exec_params): New function.
+	(GOMP_OFFLOAD_openacc_exec): Update to call openacc_exec_internal.
+	(openacc_async_exec_internal): New function.
+	(GOMP_OFFLOAD_openacc_async_exec_params): New function.
+	(GOMP_OFFLOAD_openacc_async_exec): Update call to
+	openacc_async_exec_internal.
+	* target.c (gomp_load_plugin_for_device): Handle
+	openacc_exec_params and openacc_async_exec_params.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libgomp.oacc-c-c++-common/combined-directives-1.c:
+	Xfail on offloaded targets.
+
+	* Makefile.def: Bootstrap module libffi. Add libffi dependency
+	to all-target-libgomp.
+	* Makefile.in: Regenerate.
+	* configure.ac: Add libffi to bootstrap_target_libs when libgomp
+	is bootstrapped.
+	* configure: Regenerate.
+
 2018-12-21  Gergö Barany  <gergo@codesourcery.com>
 
 	* libgomp.h (enum gomp_map_vars_kind): Add
