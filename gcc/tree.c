@@ -4840,7 +4840,7 @@ build_simple_mem_ref_loc (location_t loc, tree ptr)
       gcc_assert (ptr);
       if (TREE_CODE (ptr) == MEM_REF)
 	{
-	  offset += mem_ref_offset (ptr).to_short_addr ();
+	  offset += mem_ref_offset (ptr).force_shwi ();
 	  ptr = TREE_OPERAND (ptr, 0);
 	}
       else
@@ -4855,10 +4855,11 @@ build_simple_mem_ref_loc (location_t loc, tree ptr)
 
 /* Return the constant offset of a MEM_REF or TARGET_MEM_REF tree T.  */
 
-offset_int
+poly_offset_int
 mem_ref_offset (const_tree t)
 {
-  return offset_int::from (wi::to_wide (TREE_OPERAND (t, 1)), SIGNED);
+  return poly_offset_int::from (wi::to_poly_wide (TREE_OPERAND (t, 1)),
+				SIGNED);
 }
 
 /* Return an invariant ADDR_EXPR of type TYPE taking the address of BASE

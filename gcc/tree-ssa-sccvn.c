@@ -766,11 +766,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	case MEM_REF:
 	  /* The base address gets its own vn_reference_op_s structure.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
-	    {
-	      offset_int off = mem_ref_offset (ref);
-	      if (wi::fits_shwi_p (off))
-		temp.off = off.to_shwi ();
-	    }
+	  if (!mem_ref_offset (ref).to_shwi (&temp.off))
+	    temp.off = -1;
 	  temp.clique = MR_DEPENDENCE_CLIQUE (ref);
 	  temp.base = MR_DEPENDENCE_BASE (ref);
 	  temp.reverse = REF_REVERSE_STORAGE_ORDER (ref);

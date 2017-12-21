@@ -820,16 +820,16 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
     }
 
   /* Calculate the alignment and misalignment for the inner reference.  */
-  unsigned int HOST_WIDE_INT base_misalignment;
-  unsigned int base_alignment;
-  get_object_alignment_1 (base, &base_alignment, &base_misalignment);
+  unsigned int HOST_WIDE_INT bit_base_misalignment;
+  unsigned int bit_base_alignment;
+  get_object_alignment_1 (base, &bit_base_alignment, &bit_base_misalignment);
 
   /* There are no bitfield references remaining in BASE, so the values
      we got back must be whole bytes.  */
-  gcc_assert (base_alignment % BITS_PER_UNIT == 0
-	      && base_misalignment % BITS_PER_UNIT == 0);
-  base_alignment /= BITS_PER_UNIT;
-  base_misalignment /= BITS_PER_UNIT;
+  gcc_assert (bit_base_alignment % BITS_PER_UNIT == 0
+	      && bit_base_misalignment % BITS_PER_UNIT == 0);
+  unsigned int base_alignment = bit_base_alignment / BITS_PER_UNIT;
+  poly_int64 base_misalignment = bit_base_misalignment / BITS_PER_UNIT;
 
   if (TREE_CODE (base) == MEM_REF)
     {
@@ -837,8 +837,8 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
 	{
 	  /* Subtract MOFF from the base and add it to POFFSET instead.
 	     Adjust the misalignment to reflect the amount we subtracted.  */
-	  offset_int moff = mem_ref_offset (base);
-	  base_misalignment -= moff.to_short_addr ();
+	  poly_offset_int moff = mem_ref_offset (base);
+	  base_misalignment -= moff.force_shwi ();
 	  tree mofft = wide_int_to_tree (sizetype, moff);
 	  if (!poffset)
 	    poffset = mofft;
@@ -925,8 +925,14 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
   drb->offset = fold_convert (ssizetype, offset_iv.base);
   drb->init = init;
   drb->step = step;
-  drb->base_alignment = base_alignment;
-  drb->base_misalignment = base_misalignment & (base_alignment - 1);
+  if (known_misalignment (base_misalignment, base_alignment,
+			  &drb->base_misalignment))
+    drb->base_alignment = base_alignment;
+  else
+    {
+      drb->base_alignment = known_alignment (base_misalignment);
+      drb->base_misalignment = 0;
+    }
   drb->offset_alignment = highest_pow2_factor (offset_iv.base);
   drb->step_alignment = highest_pow2_factor (step);
 

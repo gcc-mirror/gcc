@@ -114,7 +114,7 @@ extern tree fold_indirect_ref_loc (location_t, tree);
 extern tree build_simple_mem_ref_loc (location_t, tree);
 #define build_simple_mem_ref(T)\
 	build_simple_mem_ref_loc (UNKNOWN_LOCATION, T)
-extern offset_int mem_ref_offset (const_tree);
+extern poly_offset_int mem_ref_offset (const_tree);
 extern tree build_invariant_address (tree, tree, poly_int64);
 extern tree constant_boolean_node (bool, tree);
 extern tree div_if_zero_remainder (const_tree, const_tree);

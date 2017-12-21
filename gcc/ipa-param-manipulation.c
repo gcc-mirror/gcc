@@ -636,7 +636,7 @@ ipa_get_adjustment_candidate (tree **expr, bool *convert,
 
   if (TREE_CODE (base) == MEM_REF)
     {
-      offset += mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+      offset += mem_ref_offset (base).force_shwi () * BITS_PER_UNIT;
       base = TREE_OPERAND (base, 0);
     }
 

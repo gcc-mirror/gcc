@@ -917,9 +917,11 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	    {
 	      /* We found dereference of a pointer.  Type of the pointer
 		 and MEM_REF is meaningless, but we can look futher.  */
-	      if (TREE_CODE (base) == MEM_REF)
+	      offset_int mem_offset;
+	      if (TREE_CODE (base) == MEM_REF
+		  && mem_ref_offset (base).is_constant (&mem_offset))
 		{
-		  offset_int o = mem_ref_offset (base) * BITS_PER_UNIT;
+		  offset_int o = mem_offset * BITS_PER_UNIT;
 		  o += offset;
 		  o += offset2;
 		  if (!wi::fits_shwi_p (o))

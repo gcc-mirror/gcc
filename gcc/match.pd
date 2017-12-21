@@ -3561,12 +3561,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      tree base1 = get_addr_base_and_unit_offset (TREE_OPERAND (@1, 0), &off1);
      if (base0 && TREE_CODE (base0) == MEM_REF)
        {
-	 off0 += mem_ref_offset (base0).to_short_addr ();
+	 off0 += mem_ref_offset (base0).force_shwi ();
          base0 = TREE_OPERAND (base0, 0);
        }
      if (base1 && TREE_CODE (base1) == MEM_REF)
        {
-         off1 += mem_ref_offset (base1).to_short_addr ();
+	 off1 += mem_ref_offset (base1).force_shwi ();
          base1 = TREE_OPERAND (base1, 0);
        }
    }

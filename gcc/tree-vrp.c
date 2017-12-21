@@ -4952,7 +4952,9 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
 	  || TREE_CODE (el_sz) != INTEGER_CST)
 	return;
 
-      idx = mem_ref_offset (t);
+      if (!mem_ref_offset (t).is_constant (&idx))
+	return;
+
       idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
       if (idx < 0)
 	{
@@ -5265,7 +5267,6 @@ remove_range_assertions (void)
 	  }
       }
 }
-
 
 /* Return true if STMT is interesting for VRP.  */
 

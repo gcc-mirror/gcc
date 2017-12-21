@@ -6346,7 +6346,7 @@ get_base_constructor (tree base, poly_int64_pod *bit_offset,
 	{
 	  if (!tree_fits_shwi_p (TREE_OPERAND (base, 1)))
 	    return NULL_TREE;
-	  *bit_offset += (mem_ref_offset (base).to_short_addr ()
+	  *bit_offset += (mem_ref_offset (base).force_shwi ()
 			  * BITS_PER_UNIT);
 	}
 

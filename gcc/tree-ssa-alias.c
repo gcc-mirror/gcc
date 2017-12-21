@@ -1139,7 +1139,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 		       && DECL_P (base2));
 
   ptr1 = TREE_OPERAND (base1, 0);
-  offset_int moff = mem_ref_offset (base1) << LOG2_BITS_PER_UNIT;
+  poly_offset_int moff = mem_ref_offset (base1) << LOG2_BITS_PER_UNIT;
 
   /* If only one reference is based on a variable, they cannot alias if
      the pointer access is beyond the extent of the variable access.
@@ -1295,8 +1295,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 		      && operand_equal_p (TMR_INDEX2 (base1),
 					  TMR_INDEX2 (base2), 0))))))
     {
-      offset_int moff1 = mem_ref_offset (base1) << LOG2_BITS_PER_UNIT;
-      offset_int moff2 = mem_ref_offset (base2) << LOG2_BITS_PER_UNIT;
+      poly_offset_int moff1 = mem_ref_offset (base1) << LOG2_BITS_PER_UNIT;
+      poly_offset_int moff2 = mem_ref_offset (base2) << LOG2_BITS_PER_UNIT;
       return ranges_maybe_overlap_p (offset1 + moff1, max_size1,
 				     offset2 + moff2, max_size2);
     }
