@@ -27,7 +27,6 @@ LIBGOMP_ENABLE(generated-files-in-srcdir, no, ,
 AC_MSG_RESULT($enable_generated_files_in_srcdir)
 AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
 
-
 # -------
 # -------
 
@@ -220,6 +219,19 @@ if test x$libgomp_offloaded_only = xyes; then
   AC_DEFINE(LIBGOMP_OFFLOADED_ONLY, 1,
             [Define to 1 if building libgomp for an accelerator-only target.])
 fi
+
+# Prepare libffi when necessary.
+
+LIBFFI=
+LIBFFIINCS=
+if test -d ../libffi; then
+   AC_DEFINE(USE_LIBFFI, 1, [Define if we're to use libffi.])
+   LIBFFI=../libffi/libffi_convenience.la
+   LIBFFIINCS='-I$(top_srcdir)/../libffi/include -I../libffi/include'
+fi
+AC_SUBST(LIBFFI)
+AC_SUBST(LIBFFIINCS)
+AM_CONDITIONAL([USE_LIBFFI], [test -d ../libffi])
 
 m4_include([plugin/configfrag.ac])
 

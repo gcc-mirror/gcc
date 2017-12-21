@@ -30,6 +30,9 @@
 #include "libgomp.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
+#if USE_LIBFFI
+# include "ffi.h"
+#endif
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>  /* For PRIu64.  */
 #endif
@@ -258,20 +261,48 @@ handle_ftn_pointers (size_t mapnum, void **hostaddrs, size_t *sizes,
     }
 }
 
+static void
+goacc_call_host_fn (void (*fn) (void *), size_t mapnum, void **hostaddrs,
+		    int params)
+{
+#ifdef USE_LIBFFI
+  ffi_cif cif;
+  ffi_type *arg_types[mapnum];
+  void *arg_values[mapnum];
+  ffi_arg result;
+  int i;
+
+  if (params)
+    {
+      for (i = 0; i < mapnum; i++)
+	{
+	  arg_types[i] = &ffi_type_pointer;
+	  arg_values[i] = &hostaddrs[i];
+	}
+
+      if (ffi_prep_cif (&cif, FFI_DEFAULT_ABI, mapnum,
+			&ffi_type_void, arg_types) == FFI_OK)
+	ffi_call (&cif, FFI_FN (fn), &result, arg_values);
+      else
+	abort ();
+    }
+  else
+#endif
+  fn (hostaddrs);
+}
 
 /* Launch a possibly offloaded function with FLAGS.  FN is the host fn
    address.  MAPNUM, HOSTADDRS, SIZES & KINDS  describe the memory
    blocks to be copied to/from the device.  Varadic arguments are
    keyed optional parameters terminated with a zero.  */
 
-void
-GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
-		      size_t mapnum, void **hostaddrs, size_t *sizes,
-		      unsigned short *kinds, ...)
+static void
+GOACC_parallel_keyed_internal (int flags_m, int params, void (*fn) (void *),
+			       size_t mapnum, void **hostaddrs, size_t *sizes,
+			       unsigned short *kinds, va_list *ap)
 {
   int flags = GOACC_FLAGS_UNMARSHAL (flags_m);
 
-  va_list ap;
   struct goacc_thread *thr;
   struct gomp_device_descr *acc_dev;
   struct target_mem_desc *tgt;
@@ -358,13 +389,13 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
       prof_info.device_type = acc_device_host;
       api_info.device_type = prof_info.device_type;
       goacc_save_and_set_bind (acc_device_host);
-      fn (hostaddrs);
+      goacc_call_host_fn (fn, mapnum, hostaddrs, params);
       goacc_restore_bind ();
       goto out_prof;
     }
   else if (acc_device_type (acc_dev->type) == acc_device_host)
     {
-      fn (hostaddrs);
+      goacc_call_host_fn (fn, mapnum, hostaddrs, params);
       goto out_prof;
     }
 
@@ -372,9 +403,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   for (i = 0; i != GOMP_DIM_MAX; i++)
     dims[i] = 0;
 
-  va_start (ap, kinds);
   /* TODO: This will need amending when device_type is implemented.  */
-  while ((tag = va_arg (ap, unsigned)) != 0)
+  while ((tag = va_arg (*ap, unsigned)) != 0)
     {
       if (GOMP_LAUNCH_DEVICE (tag))
 	gomp_fatal ("device_type '%d' offload parameters, libgomp is too old",
@@ -388,7 +418,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 
 	    for (i = 0; i != GOMP_DIM_MAX; i++)
 	      if (mask & GOMP_DIM_MASK (i))
-		dims[i] = va_arg (ap, unsigned);
+		dims[i] = va_arg (*ap, unsigned);
 	  }
 	  break;
 
@@ -398,7 +428,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 	    async = GOMP_LAUNCH_OP (tag);
 
 	    if (async == GOMP_LAUNCH_OP_MAX)
-	      async = va_arg (ap, unsigned);
+	      async = va_arg (*ap, unsigned);
 
 	    if (profiling_p)
 	      {
@@ -412,7 +442,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 	case GOMP_LAUNCH_WAIT:
 	  {
 	    unsigned num_waits = GOMP_LAUNCH_OP (tag);
-	    goacc_wait (async, num_waits, &ap);
+	    goacc_wait (async, num_waits, ap);
 	    break;
 	  }
 
@@ -428,7 +458,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
     }
 
   if (mapnum > 0 && GOMP_MAP_NONCONTIG_ARRAY_P (kinds[0] & 0xff))
-    nca_info = goacc_process_noncontiguous_arrays (mapnum, hostaddrs, kinds, &ap);
+    nca_info = goacc_process_noncontiguous_arrays (mapnum, hostaddrs, kinds, ap);
 
   va_end (ap);
 
@@ -493,11 +523,23 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
     devaddrs[i] = (void *) gomp_map_val (tgt, hostaddrs, i);
 
   if (aq == NULL)
-    acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs, dims,
-				tgt);
+    {
+      if (params)
+	acc_dev->openacc.exec_params_func (tgt_fn, mapnum, hostaddrs, devaddrs,
+					   dims, tgt);
+      else
+	acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs,
+				    dims, tgt);
+    }
   else
-    acc_dev->openacc.async.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs,
-				      dims, tgt, aq);
+    {
+      if (params)
+	acc_dev->openacc.async.exec_params_func (tgt_fn, mapnum, hostaddrs,
+						 devaddrs, dims, tgt, aq);
+      else
+	acc_dev->openacc.async.exec_func (tgt_fn, mapnum, hostaddrs,
+					  devaddrs, dims, tgt, aq);
+    }
 
   if (profiling_p)
     {
@@ -540,6 +582,30 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   gomp_rc_check (acc_dev, thr->mapped_data);
   gomp_mutex_unlock (&acc_dev->lock);
 #endif
+}
+
+void
+GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
+		      size_t mapnum, void **hostaddrs, size_t *sizes,
+		      unsigned short *kinds, ...)
+{
+  va_list ap;
+  va_start (ap, kinds);
+  GOACC_parallel_keyed_internal (flags_m, 0, fn, mapnum, hostaddrs, sizes,
+				 kinds, &ap);
+  va_end (ap);
+}
+
+void
+GOACC_parallel_keyed_v2 (int flags_m, int args, void (*fn) (void *),
+			 size_t mapnum, void **hostaddrs, size_t *sizes,
+			 unsigned short *kinds, ...)
+{
+  va_list ap;
+  va_start (ap, kinds);
+  GOACC_parallel_keyed_internal (flags_m, args, fn, mapnum, hostaddrs, sizes,
+				 kinds, &ap);
+  va_end (ap);
 }
 
 /* Legacy entry point (GCC 5).  Only provide host fallback execution.  */

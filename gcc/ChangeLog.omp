@@ -1,3 +1,8 @@
+2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* omp-low.c (install_parm_decl): Don't extract identifiers from
+	artifical decls.
+
 2018-12-11  Julian Brown  <julian@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

@@ -1,6 +1,11 @@
 /* This test exercises combined directives.  */
 
+/* This test falls back to host execution because struct alias
+   analysis is deactivated on OpenACC parallel regions.  Consequently,
+   parloops can no longer disambiguate arrays a and b.  */
+
 /* { dg-do run } */
+/* { dg-xfail-if "n/a" { openacc_nvidia_accel_selected } { "-O2" } { "" } } */
 
 #include <stdlib.h>
 

@@ -1,3 +1,7 @@
+2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* c-c++-common/goacc/large_array.c: New test.
+
 2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

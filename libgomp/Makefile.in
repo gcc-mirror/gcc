@@ -221,7 +221,6 @@ libgomp_plugin_nvptx_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(libgomp_plugin_nvptx_la_LDFLAGS) $(LDFLAGS) -o $@
 @PLUGIN_NVPTX_TRUE@am_libgomp_plugin_nvptx_la_rpath = -rpath \
 @PLUGIN_NVPTX_TRUE@	$(toolexeclibdir)
-libgomp_la_LIBADD =
 @USE_FORTRAN_TRUE@am__objects_1 = openacc.lo
 am_libgomp_la_OBJECTS = alloc.lo atomic.lo barrier.lo critical.lo \
 	env.lo error.lo icv.lo icv-device.lo iter.lo iter_ull.lo \
@@ -406,6 +405,8 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBFFI = @LIBFFI@
+LIBFFIINCS = @LIBFFIINCS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -543,7 +544,8 @@ search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir) \
 
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
-AM_CPPFLAGS = $(addprefix -I, $(search_path))
+libgomp_la_LIBADD = $(LIBFFI)
+AM_CPPFLAGS = $(addprefix -I, $(search_path)) $(LIBFFIINCS)
 AM_CFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 toolexeclib_LTLIBRARIES = libgomp.la $(am__append_1) $(am__append_2) \

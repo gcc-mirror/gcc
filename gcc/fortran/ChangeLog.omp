@@ -1,3 +1,8 @@
+2017-12-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* types.def: (BF_FN_VOID_INT_INT_OMPFN_SIZE_PTR_PTR_PTR_VAR):
+	Define.
+
 2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
             Nathan Sidwell  <nathan@acm.org>
             Julian Brown  <julian@codesourcery.com>

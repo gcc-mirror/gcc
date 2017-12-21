@@ -157,6 +157,30 @@ host_openacc_async_exec (void (*fn) (void *),
   fn (hostaddrs);
 }
 
+static void
+host_openacc_exec_params (void (*fn) (void *),
+			  size_t mapnum __attribute__ ((unused)),
+			  void **hostaddrs,
+			  void **devaddrs __attribute__ ((unused)),
+			  unsigned *dims __attribute__ ((unused)),
+			  void *targ_mem_desc __attribute__ ((unused)))
+{
+  fn (hostaddrs);
+}
+
+static void
+host_openacc_async_exec_params (void (*fn) (void *),
+				size_t mapnum __attribute__ ((unused)),
+				void **hostaddrs,
+				void **devaddrs __attribute__ ((unused)),
+				unsigned *dims __attribute__ ((unused)),
+				void *targ_mem_desc __attribute__ ((unused)),
+				struct goacc_asyncqueue *aq __attribute__ ((unused)))
+{
+  fn (hostaddrs);
+}
+
+
 static int
 host_openacc_async_test (struct goacc_asyncqueue *aq __attribute__ ((unused)))
 {
@@ -288,6 +312,7 @@ static struct gomp_device_descr host_dispatch =
 
     .openacc = {
       .exec_func = host_openacc_exec,
+      .exec_params_func = host_openacc_exec_params,
 
       .create_thread_data_func = host_openacc_create_thread_data,
       .destroy_thread_data_func = host_openacc_destroy_thread_data,
@@ -300,6 +325,7 @@ static struct gomp_device_descr host_dispatch =
 	.serialize_func = host_openacc_async_serialize,
 	.queue_callback_func = host_openacc_async_queue_callback,
 	.exec_func = host_openacc_async_exec,
+	.exec_params_func = host_openacc_async_exec_params,
 	.dev2host_func = host_openacc_async_dev2host,
 	.host2dev_func = host_openacc_async_host2dev,
       },

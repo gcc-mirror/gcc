@@ -4779,6 +4779,7 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
       case BUILT_IN_GOMP_PARALLEL:
       case BUILT_IN_GOACC_PARALLEL:
 	{
+	  bool oacc_parallel = false;
 	  if (in_ipa_mode)
 	    {
 	      unsigned int fnpos, argpos;
@@ -4792,12 +4793,16 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 		case BUILT_IN_GOACC_PARALLEL:
 		  /* __builtin_GOACC_parallel (flags_m, fn, mapnum, hostaddrs,
 					       sizes, kinds, ...).  */
-		  fnpos = 1;
-		  argpos = 3;
+		  fnpos = 2;
+		  argpos = 4;
+		  oacc_parallel = gimple_call_arg (t, 1) == integer_one_node;
 		  break;
 		default:
 		  gcc_unreachable ();
 		}
+
+	      if (oacc_parallel)
+		break;
 
 	      tree fnarg = gimple_call_arg (t, fnpos);
 	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
@@ -5362,6 +5367,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	      unsigned int fnpos, argpos;
 	      unsigned int implicit_use_args[2];
 	      unsigned int num_implicit_use_args = 0;
+	      bool oacc_parallel = false;
 	      switch (DECL_FUNCTION_CODE (decl))
 		{
 		case BUILT_IN_GOMP_PARALLEL:
@@ -5372,14 +5378,18 @@ find_func_clobbers (struct function *fn, gimple *origt)
 		case BUILT_IN_GOACC_PARALLEL:
 		  /* __builtin_GOACC_parallel (flags_m, fn, mapnum, hostaddrs,
 					       sizes, kinds, ...).  */
-		  fnpos = 1;
-		  argpos = 3;
-		  implicit_use_args[num_implicit_use_args++] = 4;
+		  fnpos = 2;
+		  argpos = 4;
 		  implicit_use_args[num_implicit_use_args++] = 5;
+		  implicit_use_args[num_implicit_use_args++] = 6;
+		  oacc_parallel = gimple_call_arg (t, 1) == integer_one_node;
 		  break;
 		default:
 		  gcc_unreachable ();
 		}
+
+	      if (oacc_parallel)
+		break;
 
 	      tree fnarg = gimple_call_arg (t, fnpos);
 	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
@@ -8380,7 +8390,7 @@ ipa_pta_execute (void)
 		if (gimple_call_builtin_p (stmt, BUILT_IN_GOMP_PARALLEL))
 		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
 		else if (gimple_call_builtin_p (stmt, BUILT_IN_GOACC_PARALLEL))
-		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
+		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 2), 0);
 
 		if (called_decl != NULL_TREE
 		    && !fndecl_maybe_in_other_partition (called_decl))

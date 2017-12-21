@@ -1230,7 +1230,9 @@ all-target: maybe-all-target-libphobos
 all-target: maybe-all-target-libtermcap
 all-target: maybe-all-target-winsup
 all-target: maybe-all-target-libgloss
+@if target-libffi-no-bootstrap
 all-target: maybe-all-target-libffi
+@endif target-libffi-no-bootstrap
 all-target: maybe-all-target-zlib
 all-target: maybe-all-target-rda
 all-target: maybe-all-target-libada
@@ -51472,7 +51474,6 @@ configure-target-libffi: stage_current
 @if target-libffi
 maybe-configure-target-libffi: configure-target-libffi
 configure-target-libffi: 
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	echo "Checking multilib configuration for libffi..."; \
@@ -51510,6 +51511,412 @@ configure-target-libffi:
 
 
 
+.PHONY: configure-stage1-target-libffi maybe-configure-stage1-target-libffi
+maybe-configure-stage1-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stage1-target-libffi: configure-stage1-target-libffi
+configure-stage1-target-libffi:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	   \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stage2-target-libffi maybe-configure-stage2-target-libffi
+maybe-configure-stage2-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stage2-target-libffi: configure-stage2-target-libffi
+configure-stage2-target-libffi:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stage3-target-libffi maybe-configure-stage3-target-libffi
+maybe-configure-stage3-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stage3-target-libffi: configure-stage3-target-libffi
+configure-stage3-target-libffi:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stage4-target-libffi maybe-configure-stage4-target-libffi
+maybe-configure-stage4-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stage4-target-libffi: configure-stage4-target-libffi
+configure-stage4-target-libffi:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stageprofile-target-libffi maybe-configure-stageprofile-target-libffi
+maybe-configure-stageprofile-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stageprofile-target-libffi: configure-stageprofile-target-libffi
+configure-stageprofile-target-libffi:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stagetrain-target-libffi maybe-configure-stagetrain-target-libffi
+maybe-configure-stagetrain-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stagetrain-target-libffi: configure-stagetrain-target-libffi
+configure-stagetrain-target-libffi:
+	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEtrain_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage train in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEtrain_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stagefeedback-target-libffi maybe-configure-stagefeedback-target-libffi
+maybe-configure-stagefeedback-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stagefeedback-target-libffi: configure-stagefeedback-target-libffi
+configure-stagefeedback-target-libffi:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stageautoprofile-target-libffi maybe-configure-stageautoprofile-target-libffi
+maybe-configure-stageautoprofile-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stageautoprofile-target-libffi: configure-stageautoprofile-target-libffi
+configure-stageautoprofile-target-libffi:
+	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage autoprofile in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEautoprofile_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+.PHONY: configure-stageautofeedback-target-libffi maybe-configure-stageautofeedback-target-libffi
+maybe-configure-stageautofeedback-target-libffi:
+@if target-libffi-bootstrap
+maybe-configure-stageautofeedback-target-libffi: configure-stageautofeedback-target-libffi
+configure-stageautofeedback-target-libffi:
+	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
+	echo "Checking multilib configuration for libffi..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libffi/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libffi/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libffi/Makefile; \
+	    mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libffi/multilib.tmp $(TARGET_SUBDIR)/libffi/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libffi/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;  \
+	echo Configuring stage autofeedback in $(TARGET_SUBDIR)/libffi; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libffi; \
+	cd $(TARGET_SUBDIR)/libffi || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libffi/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libffi; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEautofeedback_CONFIGURE_FLAGS)
+@endif target-libffi-bootstrap
+
+
+
 
 
 .PHONY: all-target-libffi maybe-all-target-libffi
@@ -51521,7 +51928,6 @@ all-target-libffi: stage_current
 TARGET-target-libffi=all
 maybe-all-target-libffi: all-target-libffi
 all-target-libffi: configure-target-libffi
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(NORMAL_TARGET_EXPORTS)  \
@@ -51529,6 +51935,387 @@ all-target-libffi: configure-target-libffi
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
 		$(TARGET-target-libffi))
 @endif target-libffi
+
+
+
+.PHONY: all-stage1-target-libffi maybe-all-stage1-target-libffi
+.PHONY: clean-stage1-target-libffi maybe-clean-stage1-target-libffi
+maybe-all-stage1-target-libffi:
+maybe-clean-stage1-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stage1-target-libffi: all-stage1-target-libffi
+all-stage1: all-stage1-target-libffi
+TARGET-stage1-target-libffi = $(TARGET-target-libffi)
+all-stage1-target-libffi: configure-stage1-target-libffi
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)  \
+		  \
+		TFLAGS="$(STAGE1_TFLAGS)"  \
+		$(TARGET-stage1-target-libffi)
+
+maybe-clean-stage1-target-libffi: clean-stage1-target-libffi
+clean-stage1: clean-stage1-target-libffi
+clean-stage1-target-libffi:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage1-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)  \
+	  clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stage2-target-libffi maybe-all-stage2-target-libffi
+.PHONY: clean-stage2-target-libffi maybe-clean-stage2-target-libffi
+maybe-all-stage2-target-libffi:
+maybe-clean-stage2-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stage2-target-libffi: all-stage2-target-libffi
+all-stage2: all-stage2-target-libffi
+TARGET-stage2-target-libffi = $(TARGET-target-libffi)
+all-stage2-target-libffi: configure-stage2-target-libffi
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE2_TFLAGS)"  \
+		$(TARGET-stage2-target-libffi)
+
+maybe-clean-stage2-target-libffi: clean-stage2-target-libffi
+clean-stage2: clean-stage2-target-libffi
+clean-stage2-target-libffi:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage2-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stage3-target-libffi maybe-all-stage3-target-libffi
+.PHONY: clean-stage3-target-libffi maybe-clean-stage3-target-libffi
+maybe-all-stage3-target-libffi:
+maybe-clean-stage3-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stage3-target-libffi: all-stage3-target-libffi
+all-stage3: all-stage3-target-libffi
+TARGET-stage3-target-libffi = $(TARGET-target-libffi)
+all-stage3-target-libffi: configure-stage3-target-libffi
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE3_TFLAGS)"  \
+		$(TARGET-stage3-target-libffi)
+
+maybe-clean-stage3-target-libffi: clean-stage3-target-libffi
+clean-stage3: clean-stage3-target-libffi
+clean-stage3-target-libffi:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage3-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stage4-target-libffi maybe-all-stage4-target-libffi
+.PHONY: clean-stage4-target-libffi maybe-clean-stage4-target-libffi
+maybe-all-stage4-target-libffi:
+maybe-clean-stage4-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stage4-target-libffi: all-stage4-target-libffi
+all-stage4: all-stage4-target-libffi
+TARGET-stage4-target-libffi = $(TARGET-target-libffi)
+all-stage4-target-libffi: configure-stage4-target-libffi
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGE4_TFLAGS)"  \
+		$(TARGET-stage4-target-libffi)
+
+maybe-clean-stage4-target-libffi: clean-stage4-target-libffi
+clean-stage4: clean-stage4-target-libffi
+clean-stage4-target-libffi:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stage4-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stageprofile-target-libffi maybe-all-stageprofile-target-libffi
+.PHONY: clean-stageprofile-target-libffi maybe-clean-stageprofile-target-libffi
+maybe-all-stageprofile-target-libffi:
+maybe-clean-stageprofile-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stageprofile-target-libffi: all-stageprofile-target-libffi
+all-stageprofile: all-stageprofile-target-libffi
+TARGET-stageprofile-target-libffi = $(TARGET-target-libffi)
+all-stageprofile-target-libffi: configure-stageprofile-target-libffi
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEprofile_TFLAGS)"  \
+		$(TARGET-stageprofile-target-libffi)
+
+maybe-clean-stageprofile-target-libffi: clean-stageprofile-target-libffi
+clean-stageprofile: clean-stageprofile-target-libffi
+clean-stageprofile-target-libffi:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stageprofile-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stagetrain-target-libffi maybe-all-stagetrain-target-libffi
+.PHONY: clean-stagetrain-target-libffi maybe-clean-stagetrain-target-libffi
+maybe-all-stagetrain-target-libffi:
+maybe-clean-stagetrain-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stagetrain-target-libffi: all-stagetrain-target-libffi
+all-stagetrain: all-stagetrain-target-libffi
+TARGET-stagetrain-target-libffi = $(TARGET-target-libffi)
+all-stagetrain-target-libffi: configure-stagetrain-target-libffi
+	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEtrain_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEtrain_TFLAGS)"  \
+		$(TARGET-stagetrain-target-libffi)
+
+maybe-clean-stagetrain-target-libffi: clean-stagetrain-target-libffi
+clean-stagetrain: clean-stagetrain-target-libffi
+clean-stagetrain-target-libffi:
+	@if [ $(current_stage) = stagetrain ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stagetrain-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stagetrain-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stagefeedback-target-libffi maybe-all-stagefeedback-target-libffi
+.PHONY: clean-stagefeedback-target-libffi maybe-clean-stagefeedback-target-libffi
+maybe-all-stagefeedback-target-libffi:
+maybe-clean-stagefeedback-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stagefeedback-target-libffi: all-stagefeedback-target-libffi
+all-stagefeedback: all-stagefeedback-target-libffi
+TARGET-stagefeedback-target-libffi = $(TARGET-target-libffi)
+all-stagefeedback-target-libffi: configure-stagefeedback-target-libffi
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEfeedback_TFLAGS)"  \
+		$(TARGET-stagefeedback-target-libffi)
+
+maybe-clean-stagefeedback-target-libffi: clean-stagefeedback-target-libffi
+clean-stagefeedback: clean-stagefeedback-target-libffi
+clean-stagefeedback-target-libffi:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stagefeedback-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stageautoprofile-target-libffi maybe-all-stageautoprofile-target-libffi
+.PHONY: clean-stageautoprofile-target-libffi maybe-clean-stageautoprofile-target-libffi
+maybe-all-stageautoprofile-target-libffi:
+maybe-clean-stageautoprofile-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stageautoprofile-target-libffi: all-stageautoprofile-target-libffi
+all-stageautoprofile: all-stageautoprofile-target-libffi
+TARGET-stageautoprofile-target-libffi = $(TARGET-target-libffi)
+all-stageautoprofile-target-libffi: configure-stageautoprofile-target-libffi
+	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEautoprofile_TFLAGS)"  \
+		$(TARGET-stageautoprofile-target-libffi)
+
+maybe-clean-stageautoprofile-target-libffi: clean-stageautoprofile-target-libffi
+clean-stageautoprofile: clean-stageautoprofile-target-libffi
+clean-stageautoprofile-target-libffi:
+	@if [ $(current_stage) = stageautoprofile ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stageautoprofile-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stageautoprofile-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
+
+.PHONY: all-stageautofeedback-target-libffi maybe-all-stageautofeedback-target-libffi
+.PHONY: clean-stageautofeedback-target-libffi maybe-clean-stageautofeedback-target-libffi
+maybe-all-stageautofeedback-target-libffi:
+maybe-clean-stageautofeedback-target-libffi:
+@if target-libffi-bootstrap
+maybe-all-stageautofeedback-target-libffi: all-stageautofeedback-target-libffi
+all-stageautofeedback: all-stageautofeedback-target-libffi
+TARGET-stageautofeedback-target-libffi = $(TARGET-target-libffi)
+all-stageautofeedback-target-libffi: configure-stageautofeedback-target-libffi
+	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
+	$(NORMAL_TARGET_EXPORTS) \
+	  \
+	cd $(TARGET_SUBDIR)/libffi && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_TARGET_FLAGS)   \
+		TFLAGS="$(STAGEautofeedback_TFLAGS)" PERF_DATA=perf.data \
+		$(TARGET-stageautofeedback-target-libffi)
+
+maybe-clean-stageautofeedback-target-libffi: clean-stageautofeedback-target-libffi
+clean-stageautofeedback: clean-stageautofeedback-target-libffi
+clean-stageautofeedback-target-libffi:
+	@if [ $(current_stage) = stageautofeedback ]; then \
+	  [ -f $(TARGET_SUBDIR)/libffi/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stageautofeedback-libffi/Makefile ] || exit 0; \
+	  $(MAKE) stageautofeedback-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libffi && \
+	$(MAKE) $(EXTRA_TARGET_FLAGS)   clean
+@endif target-libffi-bootstrap
+
 
 
 
@@ -58855,7 +59642,15 @@ configure-target-libphobos: stage_last
 configure-target-libtermcap: stage_last
 configure-target-winsup: stage_last
 configure-target-libgloss: stage_last
-configure-target-libffi: stage_last
+configure-stage1-target-libffi: maybe-all-stage1-gcc
+configure-stage2-target-libffi: maybe-all-stage2-gcc
+configure-stage3-target-libffi: maybe-all-stage3-gcc
+configure-stage4-target-libffi: maybe-all-stage4-gcc
+configure-stageprofile-target-libffi: maybe-all-stageprofile-gcc
+configure-stagetrain-target-libffi: maybe-all-stagetrain-gcc
+configure-stagefeedback-target-libffi: maybe-all-stagefeedback-gcc
+configure-stageautoprofile-target-libffi: maybe-all-stageautoprofile-gcc
+configure-stageautofeedback-target-libffi: maybe-all-stageautofeedback-gcc
 configure-target-zlib: stage_last
 configure-target-rda: stage_last
 configure-target-libada: stage_last
@@ -59967,10 +60762,28 @@ all-flex: maybe-all-build-texinfo
 all-m4: maybe-all-build-texinfo
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
-configure-target-libgo: maybe-configure-target-libffi
 all-target-libgo: maybe-all-target-libbacktrace
-all-target-libgo: maybe-all-target-libffi
 all-target-libgo: maybe-all-target-libatomic
+all-target-libgomp: maybe-all-target-libffi
+all-stage1-target-libgomp: maybe-all-stage1-target-libffi
+all-stage2-target-libgomp: maybe-all-stage2-target-libffi
+all-stage3-target-libgomp: maybe-all-stage3-target-libffi
+all-stage4-target-libgomp: maybe-all-stage4-target-libffi
+all-stageprofile-target-libgomp: maybe-all-stageprofile-target-libffi
+all-stagetrain-target-libgomp: maybe-all-stagetrain-target-libffi
+all-stagefeedback-target-libgomp: maybe-all-stagefeedback-target-libffi
+all-stageautoprofile-target-libgomp: maybe-all-stageautoprofile-target-libffi
+all-stageautofeedback-target-libgomp: maybe-all-stageautofeedback-target-libffi
+configure-target-libgomp: maybe-configure-target-libffi
+configure-stage1-target-libgomp: maybe-configure-stage1-target-libffi
+configure-stage2-target-libgomp: maybe-configure-stage2-target-libffi
+configure-stage3-target-libgomp: maybe-configure-stage3-target-libffi
+configure-stage4-target-libgomp: maybe-configure-stage4-target-libffi
+configure-stageprofile-target-libgomp: maybe-configure-stageprofile-target-libffi
+configure-stagetrain-target-libgomp: maybe-configure-stagetrain-target-libffi
+configure-stagefeedback-target-libgomp: maybe-configure-stagefeedback-target-libffi
+configure-stageautoprofile-target-libgomp: maybe-configure-stageautoprofile-target-libffi
+configure-stageautofeedback-target-libgomp: maybe-configure-stageautofeedback-target-libffi
 configure-target-libphobos: maybe-configure-target-libbacktrace
 configure-target-libphobos: maybe-configure-target-zlib
 all-target-libphobos: maybe-all-target-libbacktrace
@@ -60021,6 +60834,7 @@ install-target-libgfortran: maybe-install-target-libquadmath
 install-target-libgfortran: maybe-install-target-libgcc
 install-target-libphobos: maybe-install-target-libatomic
 install-target-libsanitizer: maybe-install-target-libstdc++-v3
+install-target-libgomp: maybe-install-target-libffi
 install-target-libsanitizer: maybe-install-target-libgcc
 install-target-libvtv: maybe-install-target-libstdc++-v3
 install-target-libvtv: maybe-install-target-libgcc
@@ -60086,7 +60900,9 @@ all-fastjar: maybe-all-libiberty
 all-bison: maybe-all-intl
 all-flex: maybe-all-intl
 all-m4: maybe-all-intl
+configure-target-libgo: maybe-configure-target-libffi
 configure-target-libgo: maybe-all-target-libstdc++-v3
+all-target-libgo: maybe-all-target-libffi
 configure-target-liboffloadmic: maybe-configure-target-libgomp
 all-target-liboffloadmic: maybe-all-target-libgomp
 configure-target-newlib: maybe-all-binutils
@@ -60126,6 +60942,15 @@ configure-stagetrain-target-libvtv: maybe-all-stagetrain-target-libgcc
 configure-stagefeedback-target-libvtv: maybe-all-stagefeedback-target-libgcc
 configure-stageautoprofile-target-libvtv: maybe-all-stageautoprofile-target-libgcc
 configure-stageautofeedback-target-libvtv: maybe-all-stageautofeedback-target-libgcc
+configure-stage1-target-libffi: maybe-all-stage1-target-libgcc
+configure-stage2-target-libffi: maybe-all-stage2-target-libgcc
+configure-stage3-target-libffi: maybe-all-stage3-target-libgcc
+configure-stage4-target-libffi: maybe-all-stage4-target-libgcc
+configure-stageprofile-target-libffi: maybe-all-stageprofile-target-libgcc
+configure-stagetrain-target-libffi: maybe-all-stagetrain-target-libgcc
+configure-stagefeedback-target-libffi: maybe-all-stagefeedback-target-libgcc
+configure-stageautoprofile-target-libffi: maybe-all-stageautoprofile-target-libgcc
+configure-stageautofeedback-target-libffi: maybe-all-stageautofeedback-target-libgcc
 configure-stage1-target-libgomp: maybe-all-stage1-target-libgcc
 configure-stage2-target-libgomp: maybe-all-stage2-target-libgcc
 configure-stage3-target-libgomp: maybe-all-stage3-target-libgcc
