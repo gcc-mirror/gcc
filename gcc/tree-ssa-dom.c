@@ -2012,6 +2012,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 		 undefined behavior that get diagnosed if they're left in the
 		 IL because we've attached range information to new
 		 SSA_NAMES.  */
+	      update_stmt_if_modified (stmt);
 	      edge taken_edge = NULL;
 	      evrp_range_analyzer.vrp_visit_cond_stmt (as_a <gcond *> (stmt),
 						       &taken_edge);
