@@ -2872,30 +2872,33 @@ assemble_real (REAL_VALUE_TYPE d, scalar_float_mode mode, unsigned int align,
 
 struct addr_const {
   rtx base;
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
 };
 
 static void
 decode_addr_const (tree exp, struct addr_const *value)
 {
   tree target = TREE_OPERAND (exp, 0);
-  HOST_WIDE_INT offset = 0;
+  poly_int64 offset = 0;
   rtx x;
 
   while (1)
     {
+      poly_int64 bytepos;
       if (TREE_CODE (target) == COMPONENT_REF
-	  && tree_fits_shwi_p (byte_position (TREE_OPERAND (target, 1))))
+	  && poly_int_tree_p (byte_position (TREE_OPERAND (target, 1)),
+			      &bytepos))
 	{
-	  offset += int_byte_position (TREE_OPERAND (target, 1));
+	  offset += bytepos;
 	  target = TREE_OPERAND (target, 0);
 	}
       else if (TREE_CODE (target) == ARRAY_REF
 	       || TREE_CODE (target) == ARRAY_RANGE_REF)
 	{
 	  /* Truncate big offset.  */
-	  offset += (TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (target)))
-		     * TREE_INT_CST_LOW (TREE_OPERAND (target, 1)));
+	  offset
+	    += (TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (target)))
+		* wi::to_poly_widest (TREE_OPERAND (target, 1)).force_shwi ());
 	  target = TREE_OPERAND (target, 0);
 	}
       else if (TREE_CODE (target) == MEM_REF
@@ -3040,14 +3043,14 @@ const_hash_1 (const tree exp)
 	  case SYMBOL_REF:
 	    /* Don't hash the address of the SYMBOL_REF;
 	       only use the offset and the symbol name.  */
-	    hi = value.offset;
+	    hi = value.offset.coeffs[0];
 	    p = XSTR (value.base, 0);
 	    for (i = 0; p[i] != 0; i++)
 	      hi = ((hi * 613) + (unsigned) (p[i]));
 	    break;
 
 	  case LABEL_REF:
-	    hi = (value.offset
+	    hi = (value.offset.coeffs[0]
 		  + CODE_LABEL_NUMBER (label_ref_label (value.base)) * 13);
 	    break;
 
@@ -3233,7 +3236,7 @@ compare_constant (const tree t1, const tree t2)
 	decode_addr_const (t1, &value1);
 	decode_addr_const (t2, &value2);
 
-	if (value1.offset != value2.offset)
+	if (maybe_ne (value1.offset, value2.offset))
 	  return 0;
 
 	code = GET_CODE (value1.base);
