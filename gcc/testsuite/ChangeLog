@@ -1,4 +1,10 @@
-2017-12-21  Alexandre Oliva <aoliva@redhat.com>
+2017-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83467
+	* gcc.target/i386/pr83467-1.c: New test.
+	* gcc.target/i386/pr83467-2.c: Ditto.
+
+2017-12-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/83419
 	* gcc.dg/pr83419.c: New.
@@ -111,7 +117,7 @@
 	* gcc.dg/Wstringop-overflow.c: New test.
 	* gcc/testsuite/c-c++-common/Warray-bounds-3.c: Adjust.
 
-2017-12-19  Alexandre Oliva <aoliva@redhat.com>
+2017-12-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/83422
 	* gcc.dg/pr83422.c: New.
