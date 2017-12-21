@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* fold-const.c (fold_comparison): Track sizes and offsets as
+	poly_int64s rather than HOST_WIDE_INTs when folding address
+	comparisons.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.h (get_bit_range): Return the bitstart and bitend as
 	poly_uint64s rather than unsigned HOST_WIDE_INTs.  Return the bitpos
 	as a poly_int64 rather than a HOST_WIDE_INT.
