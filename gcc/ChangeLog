@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lra-constraints.c (emit_inc): Change inc_amount from an int
+	to a poly_int64.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* cfgexpand.c (stack_var::size): Change from a HOST_WIDE_INT
 	to a poly_uint64.
 	(add_stack_var, stack_var_cmp, partition_stack_vars)
