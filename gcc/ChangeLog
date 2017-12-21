@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-data-ref.h (prune_runtime_alias_test_list): Take the
+	factor as a poly_uint64 rather than an unsigned HOST_WIDE_INT.
+	* tree-data-ref.c (prune_runtime_alias_test_list): Likewise.
+	Track polynomial offsets.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
 	Treat drb->init as a poly_int.  Fail if its misalignment wrt
 	vector_alignment isn't known.
