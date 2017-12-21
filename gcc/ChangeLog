@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.h (emit_group_load, emit_group_load_into_temps)
+	(emit_group_store): Take the size as a poly_int64 rather than an int.
+	* expr.c (emit_group_load_1, emit_group_load): Likewise.
+	(emit_group_load_into_temp, emit_group_store): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* ira-int.h (ira_spilled_reg_stack_slot::width): Change from
 	an unsigned int to a poly_uint64.
 	* ira.h (ira_reuse_stack_slot, ira_mark_new_stack_slot): Take the

@@ -128,10 +128,10 @@ extern rtx gen_group_rtx (rtx);
 
 /* Load a BLKmode value into non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_load (rtx, rtx, tree, int);
+extern void emit_group_load (rtx, rtx, tree, poly_int64);
 
 /* Similarly, but load into new temporaries.  */
-extern rtx emit_group_load_into_temps (rtx, rtx, tree, int);
+extern rtx emit_group_load_into_temps (rtx, rtx, tree, poly_int64);
 
 /* Move a non-consecutive group of registers represented by a PARALLEL into
    a non-consecutive group of registers represented by a PARALLEL.  */
@@ -142,7 +142,7 @@ extern rtx emit_group_move_into_temps (rtx);
 
 /* Store a BLKmode value from non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_store (rtx, rtx, tree, int);
+extern void emit_group_store (rtx, rtx, tree, poly_int64);
 
 extern rtx maybe_emit_group_store (rtx, tree);
 
