@@ -1574,7 +1574,7 @@ compute_register_save_size (long * p_reg_saved)
   -------------------------- ---- ------------------   V */
 
 int
-compute_frame_size (int size, long * p_reg_saved)
+compute_frame_size (poly_int64 size, long * p_reg_saved)
 {
   return (size
 	  + compute_register_save_size (p_reg_saved)

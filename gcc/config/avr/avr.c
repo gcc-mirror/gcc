@@ -2044,7 +2044,7 @@ avr_asm_function_end_prologue (FILE *file)
              avr_outgoing_args_size());
 
   fprintf (file, "/* frame size = " HOST_WIDE_INT_PRINT_DEC " */\n",
-           get_frame_size());
+           (HOST_WIDE_INT) get_frame_size());
 
   if (!cfun->machine->gasisr.yes)
     {

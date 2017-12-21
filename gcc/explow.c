@@ -1587,7 +1587,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
    of memory.  */
 
 rtx
-get_dynamic_stack_base (HOST_WIDE_INT offset, unsigned required_align)
+get_dynamic_stack_base (poly_int64 offset, unsigned required_align)
 {
   rtx target;
 

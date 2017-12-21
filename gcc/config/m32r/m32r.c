@@ -1555,7 +1555,7 @@ static struct m32r_frame_info zero_frame_info;
    SIZE is the size needed for local variables.  */
 
 unsigned int
-m32r_compute_frame_size (int size)	/* # of var. bytes allocated.  */
+m32r_compute_frame_size (poly_int64 size)   /* # of var. bytes allocated.  */
 {
   unsigned int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;

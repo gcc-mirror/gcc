@@ -218,7 +218,7 @@ free_after_compilation (struct function *f)
    This size counts from zero.  It is not rounded to PREFERRED_STACK_BOUNDARY;
    the caller may have to do that.  */
 
-HOST_WIDE_INT
+poly_int64
 get_frame_size (void)
 {
   if (FRAME_GROWS_DOWNWARD)
@@ -232,20 +232,22 @@ get_frame_size (void)
    return FALSE.  */
 
 bool
-frame_offset_overflow (HOST_WIDE_INT offset, tree func)
+frame_offset_overflow (poly_int64 offset, tree func)
 {
-  unsigned HOST_WIDE_INT size = FRAME_GROWS_DOWNWARD ? -offset : offset;
+  poly_uint64 size = FRAME_GROWS_DOWNWARD ? -offset : offset;
+  unsigned HOST_WIDE_INT limit
+    = ((HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (Pmode) - 1))
+       /* Leave room for the fixed part of the frame.  */
+       - 64 * UNITS_PER_WORD);
 
-  if (size > (HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (Pmode) - 1))
-	       /* Leave room for the fixed part of the frame.  */
-	       - 64 * UNITS_PER_WORD)
+  if (!coeffs_in_range_p (size, 0U, limit))
     {
       error_at (DECL_SOURCE_LOCATION (func),
 		"total size of local objects too large");
-      return TRUE;
+      return true;
     }
 
-  return FALSE;
+  return false;
 }
 
 /* Return the minimum spill slot alignment for a register of mode MODE.  */
@@ -284,11 +286,11 @@ get_stack_local_alignment (tree type, machine_mode mode)
    given a start/length pair that lies at the end of the frame.  */
 
 static bool
-try_fit_stack_local (HOST_WIDE_INT start, HOST_WIDE_INT length,
-		     HOST_WIDE_INT size, unsigned int alignment,
-		     HOST_WIDE_INT *poffset)
+try_fit_stack_local (poly_int64 start, poly_int64 length,
+		     poly_int64 size, unsigned int alignment,
+		     poly_int64_pod *poffset)
 {
-  HOST_WIDE_INT this_frame_offset;
+  poly_int64 this_frame_offset;
   int frame_off, frame_alignment, frame_phase;
 
   /* Calculate how many bytes the start of local variables is off from
@@ -299,33 +301,31 @@ try_fit_stack_local (HOST_WIDE_INT start, HOST_WIDE_INT length,
 
   /* Round the frame offset to the specified alignment.  */
 
-  /*  We must be careful here, since FRAME_OFFSET might be negative and
-      division with a negative dividend isn't as well defined as we might
-      like.  So we instead assume that ALIGNMENT is a power of two and
-      use logical operations which are unambiguous.  */
   if (FRAME_GROWS_DOWNWARD)
     this_frame_offset
-      = (FLOOR_ROUND (start + length - size - frame_phase,
-		      (unsigned HOST_WIDE_INT) alignment)
+      = (aligned_lower_bound (start + length - size - frame_phase, alignment)
 	 + frame_phase);
   else
     this_frame_offset
-      = (CEIL_ROUND (start - frame_phase,
-		     (unsigned HOST_WIDE_INT) alignment)
-	 + frame_phase);
+      = aligned_upper_bound (start - frame_phase, alignment) + frame_phase;
 
   /* See if it fits.  If this space is at the edge of the frame,
      consider extending the frame to make it fit.  Our caller relies on
      this when allocating a new slot.  */
-  if (frame_offset == start && this_frame_offset < frame_offset)
-    frame_offset = this_frame_offset;
-  else if (this_frame_offset < start)
-    return false;
-  else if (start + length == frame_offset
-	   && this_frame_offset + size > start + length)
-    frame_offset = this_frame_offset + size;
-  else if (this_frame_offset + size > start + length)
-    return false;
+  if (maybe_lt (this_frame_offset, start))
+    {
+      if (known_eq (frame_offset, start))
+	frame_offset = this_frame_offset;
+      else
+	return false;
+    }
+  else if (maybe_gt (this_frame_offset + size, start + length))
+    {
+      if (known_eq (frame_offset, start + length))
+	frame_offset = this_frame_offset + size;
+      else
+	return false;
+    }
 
   *poffset = this_frame_offset;
   return true;
@@ -336,7 +336,7 @@ try_fit_stack_local (HOST_WIDE_INT start, HOST_WIDE_INT length,
    function's frame_space_list.  */
 
 static void
-add_frame_space (HOST_WIDE_INT start, HOST_WIDE_INT end)
+add_frame_space (poly_int64 start, poly_int64 end)
 {
   struct frame_space *space = ggc_alloc<frame_space> ();
   space->next = crtl->frame_space_list;
@@ -363,12 +363,12 @@ add_frame_space (HOST_WIDE_INT start, HOST_WIDE_INT end)
    We do not round to stack_boundary here.  */
 
 rtx
-assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
+assign_stack_local_1 (machine_mode mode, poly_int64 size,
 		      int align, int kind)
 {
   rtx x, addr;
-  int bigend_correction = 0;
-  HOST_WIDE_INT slot_offset = 0, old_frame_offset;
+  poly_int64 bigend_correction = 0;
+  poly_int64 slot_offset = 0, old_frame_offset;
   unsigned int alignment, alignment_in_bits;
 
   if (align == 0)
@@ -379,7 +379,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
   else if (align == -1)
     {
       alignment = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
-      size = CEIL_ROUND (size, alignment);
+      size = aligned_upper_bound (size, alignment);
     }
   else if (align == -2)
     alignment = 1; /* BITS_PER_UNIT / BITS_PER_UNIT */
@@ -415,7 +415,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
 		     requested size is 0 or the estimated stack
 		     alignment >= mode alignment.  */
 		  gcc_assert ((kind & ASLK_REDUCE_ALIGN)
-		              || size == 0
+			      || known_eq (size, 0)
 			      || (crtl->stack_alignment_estimated
 				  >= GET_MODE_ALIGNMENT (mode)));
 		  alignment_in_bits = crtl->stack_alignment_estimated;
@@ -430,7 +430,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
   if (crtl->max_used_stack_slot_alignment < alignment_in_bits)
     crtl->max_used_stack_slot_alignment = alignment_in_bits;
 
-  if (mode != BLKmode || size != 0)
+  if (mode != BLKmode || maybe_ne (size, 0))
     {
       if (kind & ASLK_RECORD_PAD)
 	{
@@ -443,9 +443,9 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
 					alignment, &slot_offset))
 		continue;
 	      *psp = space->next;
-	      if (slot_offset > space->start)
+	      if (known_gt (slot_offset, space->start))
 		add_frame_space (space->start, slot_offset);
-	      if (slot_offset + size < space->start + space->length)
+	      if (known_lt (slot_offset + size, space->start + space->length))
 		add_frame_space (slot_offset + size,
 				 space->start + space->length);
 	      goto found_space;
@@ -467,9 +467,9 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
 
       if (kind & ASLK_RECORD_PAD)
 	{
-	  if (slot_offset > frame_offset)
+	  if (known_gt (slot_offset, frame_offset))
 	    add_frame_space (frame_offset, slot_offset);
-	  if (slot_offset + size < old_frame_offset)
+	  if (known_lt (slot_offset + size, old_frame_offset))
 	    add_frame_space (slot_offset + size, old_frame_offset);
 	}
     }
@@ -480,9 +480,9 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
 
       if (kind & ASLK_RECORD_PAD)
 	{
-	  if (slot_offset > old_frame_offset)
+	  if (known_gt (slot_offset, old_frame_offset))
 	    add_frame_space (old_frame_offset, slot_offset);
-	  if (slot_offset + size < frame_offset)
+	  if (known_lt (slot_offset + size, frame_offset))
 	    add_frame_space (slot_offset + size, frame_offset);
 	}
     }
@@ -490,8 +490,17 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
  found_space:
   /* On a big-endian machine, if we are allocating more space than we will use,
      use the least significant bytes of those that are allocated.  */
-  if (BYTES_BIG_ENDIAN && mode != BLKmode && GET_MODE_SIZE (mode) < size)
-    bigend_correction = size - GET_MODE_SIZE (mode);
+  if (mode != BLKmode)
+    {
+      /* The slot size can sometimes be smaller than the mode size;
+	 e.g. the rs6000 port allocates slots with a vector mode
+	 that have the size of only one element.  However, the slot
+	 size must always be ordered wrt to the mode size, in the
+	 same way as for a subreg.  */
+      gcc_checking_assert (ordered_p (GET_MODE_SIZE (mode), size));
+      if (BYTES_BIG_ENDIAN && maybe_lt (GET_MODE_SIZE (mode), size))
+	bigend_correction = size - GET_MODE_SIZE (mode);
+    }
 
   /* If we have already instantiated virtual registers, return the actual
      address relative to the frame pointer.  */
@@ -521,7 +530,7 @@ assign_stack_local_1 (machine_mode mode, HOST_WIDE_INT size,
 /* Wrap up assign_stack_local_1 with last parameter as false.  */
 
 rtx
-assign_stack_local (machine_mode mode, HOST_WIDE_INT size, int align)
+assign_stack_local (machine_mode mode, poly_int64 size, int align)
 {
   return assign_stack_local_1 (mode, size, align, ASLK_RECORD_PAD);
 }
@@ -548,7 +557,7 @@ struct GTY(()) temp_slot {
   /* The rtx to used to reference the slot.  */
   rtx slot;
   /* The size, in units, of the slot.  */
-  HOST_WIDE_INT size;
+  poly_int64 size;
   /* The type of the object in the slot, or zero if it doesn't correspond
      to a type.  We use this to determine whether a slot can be reused.
      It can be reused if objects of the type of the new slot will always
@@ -562,10 +571,10 @@ struct GTY(()) temp_slot {
   int level;
   /* The offset of the slot from the frame_pointer, including extra space
      for alignment.  This info is for combine_temp_slots.  */
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   /* The size of the slot, including extra space for alignment.  This
      info is for combine_temp_slots.  */
-  HOST_WIDE_INT full_size;
+  poly_int64 full_size;
 };
 
 /* Entry for the below hash table.  */
@@ -743,18 +752,14 @@ find_temp_slot_from_address (rtx x)
     return p;
 
   /* Last resort: Address is a virtual stack var address.  */
-  if (GET_CODE (x) == PLUS
-      && XEXP (x, 0) == virtual_stack_vars_rtx
-      && CONST_INT_P (XEXP (x, 1)))
+  poly_int64 offset;
+  if (strip_offset (x, &offset) == virtual_stack_vars_rtx)
     {
       int i;
       for (i = max_slot_level (); i >= 0; i--)
 	for (p = *temp_slots_at_level (i); p; p = p->next)
-	  {
-	    if (INTVAL (XEXP (x, 1)) >= p->base_offset
-		&& INTVAL (XEXP (x, 1)) < p->base_offset + p->full_size)
-	      return p;
-	  }
+	  if (known_in_range_p (offset, p->base_offset, p->full_size))
+	    return p;
     }
 
   return NULL;
@@ -771,16 +776,13 @@ find_temp_slot_from_address (rtx x)
    TYPE is the type that will be used for the stack slot.  */
 
 rtx
-assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
-			    tree type)
+assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
 {
   unsigned int align;
   struct temp_slot *p, *best_p = 0, *selected = NULL, **pp;
   rtx slot;
 
-  /* If SIZE is -1 it means that somebody tried to allocate a temporary
-     of a variable size.  */
-  gcc_assert (size != -1);
+  gcc_assert (known_size_p (size));
 
   align = get_stack_local_alignment (type, mode);
 
@@ -795,13 +797,16 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
     {
       for (p = avail_temp_slots; p; p = p->next)
 	{
-	  if (p->align >= align && p->size >= size
+	  if (p->align >= align
+	      && known_ge (p->size, size)
 	      && GET_MODE (p->slot) == mode
 	      && objects_must_conflict_p (p->type, type)
-	      && (best_p == 0 || best_p->size > p->size
-		  || (best_p->size == p->size && best_p->align > p->align)))
+	      && (best_p == 0
+		  || (known_eq (best_p->size, p->size)
+		      ? best_p->align > p->align
+		      : known_ge (best_p->size, p->size))))
 	    {
-	      if (p->align == align && p->size == size)
+	      if (p->align == align && known_eq (p->size, size))
 		{
 		  selected = p;
 		  cut_slot_from_list (selected, &avail_temp_slots);
@@ -825,9 +830,9 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
       if (GET_MODE (best_p->slot) == BLKmode)
 	{
 	  int alignment = best_p->align / BITS_PER_UNIT;
-	  HOST_WIDE_INT rounded_size = CEIL_ROUND (size, alignment);
+	  poly_int64 rounded_size = aligned_upper_bound (size, alignment);
 
-	  if (best_p->size - rounded_size >= alignment)
+	  if (known_ge (best_p->size - rounded_size, alignment))
 	    {
 	      p = ggc_alloc<temp_slot> ();
 	      p->in_use = 0;
@@ -850,7 +855,7 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
   /* If we still didn't find one, make a new temporary.  */
   if (selected == 0)
     {
-      HOST_WIDE_INT frame_offset_old = frame_offset;
+      poly_int64 frame_offset_old = frame_offset;
 
       p = ggc_alloc<temp_slot> ();
 
@@ -864,9 +869,9 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
       gcc_assert (mode != BLKmode || align == BIGGEST_ALIGNMENT);
       p->slot = assign_stack_local_1 (mode,
 				      (mode == BLKmode
-				       ? CEIL_ROUND (size,
-						     (int) align
-						     / BITS_PER_UNIT)
+				       ? aligned_upper_bound (size,
+							      (int) align
+							      / BITS_PER_UNIT)
 				       : size),
 				      align, 0);
 
@@ -931,7 +936,7 @@ assign_stack_temp_for_type (machine_mode mode, HOST_WIDE_INT size,
    reuse.  First two arguments are same as in preceding function.  */
 
 rtx
-assign_stack_temp (machine_mode mode, HOST_WIDE_INT size)
+assign_stack_temp (machine_mode mode, poly_int64 size)
 {
   return assign_stack_temp_for_type (mode, size, NULL_TREE);
 }
@@ -1050,14 +1055,14 @@ combine_temp_slots (void)
 	  if (GET_MODE (q->slot) != BLKmode)
 	    continue;
 
-	  if (p->base_offset + p->full_size == q->base_offset)
+	  if (known_eq (p->base_offset + p->full_size, q->base_offset))
 	    {
 	      /* Q comes after P; combine Q into P.  */
 	      p->size += q->size;
 	      p->full_size += q->full_size;
 	      delete_q = 1;
 	    }
-	  else if (q->base_offset + q->full_size == p->base_offset)
+	  else if (known_eq (q->base_offset + q->full_size, p->base_offset))
 	    {
 	      /* P comes after Q; combine P into Q.  */
 	      q->size += p->size;

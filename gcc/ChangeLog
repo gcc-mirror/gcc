@@ -2,6 +2,63 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* function.h (frame_space): Change start and length from HOST_WIDE_INT
+	to poly_int64.
+	(get_frame_size): Return the size as a poly_int64 rather than a
+	HOST_WIDE_INT.
+	(frame_offset_overflow): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(assign_stack_local_1, assign_stack_local, assign_stack_temp_for_type)
+	(assign_stack_temp): Likewise for the size.
+	* function.c (get_frame_size): Return a poly_int64 rather than
+	a HOST_WIDE_INT.
+	(frame_offset_overflow): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(try_fit_stack_local): Take the start, length and size as poly_int64s
+	rather than HOST_WIDE_INTs.  Return the offset as a poly_int64_pod
+	rather than a HOST_WIDE_INT.
+	(add_frame_space): Take the start and end as poly_int64s rather than
+	HOST_WIDE_INTs.
+	(assign_stack_local_1, assign_stack_local, assign_stack_temp_for_type)
+	(assign_stack_temp): Likewise for the size.
+	(temp_slot): Change size, base_offset and full_size from HOST_WIDE_INT
+	to poly_int64.
+	(find_temp_slot_from_address): Handle polynomial offsets.
+	(combine_temp_slots): Likewise.
+	* emit-rtl.h (rtl_data::x_frame_offset): Change from HOST_WIDE_INT
+	to poly_int64.
+	* cfgexpand.c (alloc_stack_frame_space): Return the offset as a
+	poly_int64 rather than a HOST_WIDE_INT.
+	(expand_one_stack_var_at): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(expand_stack_vars, expand_one_stack_var_1, expand_used_vars): Handle
+	polynomial frame offsets.
+	* config/m32r/m32r-protos.h (m32r_compute_frame_size): Take the size
+	as a poly_int64 rather than an int.
+	* config/m32r/m32r.c (m32r_compute_frame_size): Likewise.
+	* config/v850/v850-protos.h (compute_frame_size): Likewise.
+	* config/v850/v850.c (compute_frame_size): Likewise.
+	* config/xtensa/xtensa-protos.h (compute_frame_size): Likewise.
+	* config/xtensa/xtensa.c (compute_frame_size): Likewise.
+	* config/pa/pa-protos.h (pa_compute_frame_size): Likewise.
+	* config/pa/pa.c (pa_compute_frame_size): Likewise.
+	* explow.h (get_dynamic_stack_base): Take the offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	* explow.c (get_dynamic_stack_base): Likewise.
+	* final.c (final_start_function): Use the constant lower bound
+	of the frame size for -Wframe-larger-than.
+	* ira.c (do_reload): Adjust for new get_frame_size return type.
+	* lra.c (lra): Likewise.
+	* reload1.c (reload): Likewise.
+	* config/avr/avr.c (avr_asm_function_end_prologue): Likewise.
+	* config/pa/pa.h (EXIT_IGNORE_STACK): Likewise.
+	* rtlanal.c (get_initial_register_offset): Return the offset as
+	a poly_int64 rather than a HOST_WIDE_INT.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* reload1.c (elim_table): Change initial_offset, offset and
 	previous_offset from HOST_WIDE_INT to poly_int64_pod.
 	(offsets_at): Change the target array's element type from

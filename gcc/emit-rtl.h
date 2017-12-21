@@ -126,7 +126,7 @@ struct GTY(()) rtl_data {
   /* Offset to end of allocated area of stack frame.
      If stack grows down, this is the address of the last stack slot allocated.
      If stack grows up, this is the address for the next slot.  */
-  HOST_WIDE_INT x_frame_offset;
+  poly_int64_pod x_frame_offset;
 
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
   rtx_insn *x_parm_birth_insn;
