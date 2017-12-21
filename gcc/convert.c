@@ -671,7 +671,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      if (integer_zerop (expr))
+      if (integer_zerop (expr) && !TREE_OVERFLOW (expr))
 	return build_int_cst (type, 0);
 
       /* Convert to an unsigned integer of the correct width first, and from
