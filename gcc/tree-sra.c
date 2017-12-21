@@ -1706,7 +1706,7 @@ make_fancy_name (tree expr)
    of handling bitfields.  */
 
 tree
-build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
+build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 		      bool reverse, tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)
 {
@@ -1724,7 +1724,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 				     TYPE_QUALS (exp_type)
 				     | ENCODE_QUAL_ADDR_SPACE (as));
 
-  gcc_checking_assert (offset % BITS_PER_UNIT == 0);
+  poly_int64 byte_offset = exact_div (offset, BITS_PER_UNIT);
   get_object_alignment_1 (base, &align, &misalign);
   base = get_addr_base_and_unit_offset (base, &base_offset);
 
@@ -1746,27 +1746,26 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       else
 	gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 
-      off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   offset / BITS_PER_UNIT);
+      off = build_int_cst (reference_alias_ptr_type (prev_base), byte_offset);
       base = tmp;
     }
   else if (TREE_CODE (base) == MEM_REF)
     {
       off = build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1), off);
       base = unshare_expr (TREE_OPERAND (base, 0));
     }
   else
     {
       off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       base = build_fold_addr_expr (unshare_expr (base));
     }
 
-  misalign = (misalign + offset) & (align - 1);
-  if (misalign != 0)
-    align = least_bit_hwi (misalign);
+  unsigned int align_bound = known_alignment (misalign + offset);
+  if (align_bound != 0)
+    align = MIN (align, align_bound);
   if (align != TYPE_ALIGN (exp_type))
     exp_type = build_aligned_type (exp_type, align);
 
