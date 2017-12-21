@@ -1,5 +1,14 @@
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/80747
+	PR rtl-optimization/83512
+	* cfgrtl.c (force_nonfallthru_and_redirect): When splitting
+	succ edge from ENTRY, copy partition from e->dest to the newly
+	created bb.
+	* bb-reorder.c (reorder_basic_blocks_simple): If last_tail is
+	ENTRY, use BB_PARTITION of its successor block as current_partition.
+	Don't copy partition when splitting succ edge from ENTRY.
+
 	PR tree-optimization/83523
 	* tree-ssa-math-opts.c (is_widening_mult_p): Return false if
 	for INTEGER_TYPE TYPE_OVERFLOW_TRAPS.
