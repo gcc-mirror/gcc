@@ -1,3 +1,9 @@
+2017-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83406
+	* parser.c (cp_parser_lambda_body): Remove obsolete
+	single-return-statement handling.
+
 2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

@@ -10578,98 +10578,42 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
   bool nested = (current_function_decl != NULL_TREE);
   bool local_variables_forbidden_p = parser->local_variables_forbidden_p;
   bool in_function_body = parser->in_function_body;
+
   if (nested)
     push_function_context ();
   else
     /* Still increment function_depth so that we don't GC in the
        middle of an expression.  */
     ++function_depth;
+
   vec<tree> omp_privatization_save;
   save_omp_privatization_clauses (omp_privatization_save);
   /* Clear this in case we're in the middle of a default argument.  */
   parser->local_variables_forbidden_p = false;
   parser->in_function_body = true;
 
-  /* Finish the function call operator
-     - class_specifier
-     + late_parsing_for_member
-     + function_definition_after_declarator
-     + ctor_initializer_opt_and_function_body  */
   {
     local_specialization_stack s (lss_copy);
-
     tree fco = lambda_function (lambda_expr);
     tree body = start_lambda_function (fco, lambda_expr);
-    bool done = false;
-    tree compound_stmt;
-
     matching_braces braces;
-    if (!braces.require_open (parser))
-      goto out;
 
-    compound_stmt = begin_compound_stmt (0);
-
-    /* 5.1.1.4 of the standard says:
-         If a lambda-expression does not include a trailing-return-type, it
-         is as if the trailing-return-type denotes the following type:
-	  * if the compound-statement is of the form
-               { return attribute-specifier [opt] expression ; }
-             the type of the returned expression after lvalue-to-rvalue
-             conversion (_conv.lval_ 4.1), array-to-pointer conversion
-             (_conv.array_ 4.2), and function-to-pointer conversion
-             (_conv.func_ 4.3);
-          * otherwise, void.  */
-
-    /* In a lambda that has neither a lambda-return-type-clause
-       nor a deducible form, errors should be reported for return statements
-       in the body.  Since we used void as the placeholder return type, parsing
-       the body as usual will give such desired behavior.  */
-    if (is_auto (TREE_TYPE (TREE_TYPE (fco)))
-        && cp_lexer_peek_nth_token (parser->lexer, 1)->keyword == RID_RETURN
-        && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SEMICOLON)
+    if (braces.require_open (parser))
       {
-	tree expr = NULL_TREE;
-	cp_id_kind idk = CP_ID_KIND_NONE;
+	tree compound_stmt = begin_compound_stmt (0);
 
-	/* Parse tentatively in case there's more after the initial return
-	   statement.  */
-	cp_parser_parse_tentatively (parser);
+	/* Originally C++11 required us to peek for 'return expr'; and
+	   process it specially here to deduce the return type.  N3638
+	   removed the need for that.  */
 
-	cp_parser_require_keyword (parser, RID_RETURN, RT_RETURN);
-
-	expr = cp_parser_expression (parser, &idk);
-
-	cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	braces.require_close (parser);
-
-	if (cp_parser_parse_definitely (parser))
-	  {
-	    if (!processing_template_decl)
-	      {
-		tree type = lambda_return_type (expr);
-		apply_deduced_return_type (fco, type);
-		if (type == error_mark_node)
-		  expr = error_mark_node;
-	      }
-
-	    /* Will get error here if type not deduced yet.  */
-	    finish_return_stmt (expr);
-
-	    done = true;
-	  }
-      }
-
-    if (!done)
-      {
 	while (cp_lexer_next_token_is_keyword (parser->lexer, RID_LABEL))
 	  cp_parser_label_declaration (parser);
 	cp_parser_statement_seq_opt (parser, NULL_TREE);
 	braces.require_close (parser);
+
+	finish_compound_stmt (compound_stmt);
       }
 
-    finish_compound_stmt (compound_stmt);
-
-  out:
     finish_lambda_function (body);
   }
 
