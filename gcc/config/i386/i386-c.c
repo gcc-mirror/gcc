@@ -394,7 +394,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVX512IFMA__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX5124VNNIW)
     def_or_undef (parse_in, "__AVX5124VNNIW__");
-  if (isa_flag2 & OPTION_MASK_ISA_AVX512VBMI2)
+  if (isa_flag & OPTION_MASK_ISA_AVX512VBMI2)
     def_or_undef (parse_in, "__AVX512VBMI2__");
   if (isa_flag2 & OPTION_MASK_ISA_AVX512VNNI)
     def_or_undef (parse_in, "__AVX512VNNI__");
@@ -454,7 +454,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__SSE2_MATH__");
   if (isa_flag & OPTION_MASK_ISA_CLFLUSHOPT)
     def_or_undef (parse_in, "__CLFLUSHOPT__");
-  if (isa_flag & OPTION_MASK_ISA_CLZERO)
+  if (isa_flag2 & OPTION_MASK_ISA_CLZERO)
     def_or_undef (parse_in, "__CLZERO__");
   if (isa_flag & OPTION_MASK_ISA_XSAVEC)
     def_or_undef (parse_in, "__XSAVEC__");
@@ -464,7 +464,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__MPX__");
   if (isa_flag & OPTION_MASK_ISA_CLWB)
     def_or_undef (parse_in, "__CLWB__");
-  if (isa_flag & OPTION_MASK_ISA_MWAITX)
+  if (isa_flag2 & OPTION_MASK_ISA_MWAITX)
     def_or_undef (parse_in, "__MWAITX__");
   if (isa_flag & OPTION_MASK_ISA_PKU)
     def_or_undef (parse_in, "__PKU__");
@@ -478,7 +478,7 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       if (flag_cf_protection != CF_NONE)
 	def_or_undef (parse_in, "__CET__");
     }
-  if (isa_flag2 & OPTION_MASK_ISA_SHSTK)
+  if (isa_flag & OPTION_MASK_ISA_SHSTK)
     {
       def_or_undef (parse_in, "__SHSTK__");
       if (flag_cf_protection != CF_NONE)

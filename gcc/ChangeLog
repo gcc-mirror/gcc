@@ -1,3 +1,37 @@
+2017-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83488
+	* config/i386/i386.c (ix86_target_string): Move -mavx512vbmi2 and
+	-mshstk entries from isa_opts2 to isa_opts and -mhle, -mmovbe,
+	-mclzero and -mmwaitx entries from isa_opts to isa_opts2.
+	(ix86_option_override_internal): Adjust for
+	OPTION_MASK_ISA_{HLE,MOVBE,CLZERO,MWAITX} moving to ix86_isa_flags2
+	and OPTION_MASK_ISA_SHSTK moving to ix86_isa_flags.
+	(BDESC_VERIFYS): Remove SPECIAL_ARGS2 related checks.
+	(ix86_init_mmx_sse_builtins): Remove bdesc_special_args2 handling.
+	Use def_builtin2 instead of def_builtin for OPTION_MASK_ISA_MWAITX
+	and OPTION_MASK_ISA_CLZERO builtins.  Use def_builtin instead of
+	def_builtin2 for CET builtins.
+	(ix86_expand_builtin): Remove bdesc_special_args2 handling.  Fix
+	up formatting in IX86_BUILTIN_RDPID code.
+	* config/i386/i386-builtin.def: Move VBMI2 builtins from SPECIAL_ARGS2
+	section to SPECIAL_ARGS and from ARGS2 section to ARGS.
+	* config/i386/i386.opt (mavx512vbmi2, mshstk): Move from
+	ix86_isa_flags2 to ix86_isa_flags.
+	(mhle, mmovbe, mclzero, mmwaitx): Move from ix86_isa_flags to
+	ix86_isa_flags2.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Check for
+	OPTION_MASK_ISA_{CLZERO,MWAITX} in isa_flag2 instead of isa_flag.
+	Check for OPTION_MASK_ISA_{SHSTK,AVX512VBMI2} in isa_flag instead
+	of isa_flag2.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VBMI2_SET):
+	Or in OPTION_MASK_ISA_AVX512F_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET): Or in
+	OPTION_MASK_ISA_AVX512VBMI2_UNSET.
+	(ix86_handle_option): Adjust for
+	OPTION_MASK_ISA_{SHSTK,AVX512VBMI2}_*SET being in ix86_isa_flags
+	and OPTION_MASK_ISA_{MOVBE,MWAITX,CLZERO}_*SET in ix86_isa_flags2.
+
 2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

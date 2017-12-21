@@ -2753,21 +2753,24 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
   {
     { "-mcx16",		OPTION_MASK_ISA_CX16 },
     { "-mmpx",		OPTION_MASK_ISA_MPX },
-    { "-mavx512vbmi2",	OPTION_MASK_ISA_AVX512VBMI2 },
-    { "-mavx512vnni", OPTION_MASK_ISA_AVX512VNNI },
+    { "-mavx512vnni",	OPTION_MASK_ISA_AVX512VNNI },
     { "-mvaes",		OPTION_MASK_ISA_VAES },
     { "-mrdpid",	OPTION_MASK_ISA_RDPID },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
     { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
-    { "-mibt",	OPTION_MASK_ISA_IBT },
-    { "-mshstk",	OPTION_MASK_ISA_SHSTK }
+    { "-mibt",		OPTION_MASK_ISA_IBT },
+    { "-mhle",		OPTION_MASK_ISA_HLE },
+    { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
+    { "-mclzero",	OPTION_MASK_ISA_CLZERO },
+    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX }
   };
   static struct ix86_target_opts isa_opts[] =
   {
     { "-mvpclmulqdq",	OPTION_MASK_ISA_VPCLMULQDQ },
     { "-mgfni",		OPTION_MASK_ISA_GFNI },
+    { "-mavx512vbmi2",	OPTION_MASK_ISA_AVX512VBMI2 },
     { "-mavx512vbmi",	OPTION_MASK_ISA_AVX512VBMI },
     { "-mavx512ifma",	OPTION_MASK_ISA_AVX512IFMA },
     { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
@@ -2814,17 +2817,14 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
     { "-msahf",		OPTION_MASK_ISA_SAHF },
-    { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mcrc32",	OPTION_MASK_ISA_CRC32 },
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
-    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
-    { "-mclzero",	OPTION_MASK_ISA_CLZERO },
     { "-mpku",		OPTION_MASK_ISA_PKU },
     { "-mlwp",		OPTION_MASK_ISA_LWP },
-    { "-mhle",		OPTION_MASK_ISA_HLE },
     { "-mfxsr",		OPTION_MASK_ISA_FXSR },
-    { "-mclwb",		OPTION_MASK_ISA_CLWB }
+    { "-mclwb",		OPTION_MASK_ISA_CLWB },
+    { "-mshstk",	OPTION_MASK_ISA_SHSTK }
   };
 
   /* Flag options.  */
@@ -4009,8 +4009,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_SAHF))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SAHF;
 	if (processor_alias_table[i].flags & PTA_MOVBE
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVBE))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVBE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MOVBE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVBE;
 	if (processor_alias_table[i].flags & PTA_AES
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
 	  ix86_isa_flags |= OPTION_MASK_ISA_AES;
@@ -4033,8 +4033,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_RTM))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_RTM;
 	if (processor_alias_table[i].flags & PTA_HLE
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_HLE))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_HLE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_HLE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_HLE;
 	if (processor_alias_table[i].flags & PTA_PRFCHW
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PRFCHW))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PRFCHW;
@@ -4075,8 +4075,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLFLUSHOPT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLFLUSHOPT;
 	if (processor_alias_table[i].flags & PTA_CLZERO
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLZERO))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLZERO;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CLZERO))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CLZERO;
 	if (processor_alias_table[i].flags & PTA_XSAVEC
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEC))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVEC;
@@ -4118,8 +4118,8 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 	if (processor_alias_table[i].flags & PTA_MWAITX
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MWAITX))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MWAITX;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MWAITX))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MWAITX;
 	if (processor_alias_table[i].flags & PTA_PKU
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
@@ -4869,7 +4869,7 @@ ix86_option_override_internal (bool main_args_p,
   if (opts->x_flag_cf_protection != CF_NONE)
     {
       if (!(TARGET_IBT_P (opts->x_ix86_isa_flags2)
-	    || TARGET_SHSTK_P (opts->x_ix86_isa_flags2)))
+	    || TARGET_SHSTK_P (opts->x_ix86_isa_flags)))
 	{
 	  if (flag_cf_protection == CF_FULL)
 	    {
@@ -30196,10 +30196,8 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ROUND_ARGS_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
-	       IX86_BUILTIN__BDESC_ARGS2_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
-	       IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST, 1);
+	       IX86_BUILTIN__BDESC_ARGS2_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_CONST_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
@@ -30270,21 +30268,6 @@ ix86_init_mmx_sse_builtins (void)
 		 IX86_BUILTIN__BDESC_ARGS2_FIRST,
 		 ARRAY_SIZE (bdesc_args2) - 1);
   
-  for (i = 0, d = bdesc_special_args2;
-       i < ARRAY_SIZE (bdesc_special_args2);
-       i++, d++)
-    {
-      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST, i);
-       if (d->name == 0)
-	 continue;
-
-	ftype = (enum ix86_builtin_func_type) d->flag;
-	def_builtin2 (d->mask, d->name, ftype, d->code);
-    }
-  BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST,
-		 IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
-		 ARRAY_SIZE (bdesc_special_args2) - 1);
-
   /* Add all builtins with rounding.  */
   for (i = 0, d = bdesc_round_args;
        i < ARRAY_SIZE (bdesc_round_args);
@@ -30873,14 +30856,14 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLWB);
 
   /* MONITORX and MWAITX.  */
-  def_builtin (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_monitorx",
-	       VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITORX);
-  def_builtin (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
-	       VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
+  def_builtin2 (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_monitorx",
+		VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITORX);
+  def_builtin2 (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
+		VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
 
   /* CLZERO.  */
-  def_builtin (OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
-               VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
+  def_builtin2 (OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
+		VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
 
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
@@ -30904,7 +30887,7 @@ ix86_init_mmx_sse_builtins (void)
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
-      def_builtin2 (d->mask, d->name, ftype, d->code);
+      def_builtin (d->mask, d->name, ftype, d->code);
     }
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_LAST,
 		 IX86_BUILTIN__BDESC_CET_FIRST,
@@ -30919,7 +30902,7 @@ ix86_init_mmx_sse_builtins (void)
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
-      def_builtin2 (d->mask, d->name, ftype, d->code);
+      def_builtin (d->mask, d->name, ftype, d->code);
     }
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_LAST,
 		 IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
@@ -37497,20 +37480,12 @@ s4fma_expand:
 		}
 	      return target;
 	    }
-	    case IX86_BUILTIN_RDPID:
-	      return ix86_expand_special_args_builtin (bdesc_args2 + i, exp,
+	  case IX86_BUILTIN_RDPID:
+	    return ix86_expand_special_args_builtin (bdesc_args2 + i, exp,
 						     target);
 	  default:
 	    return ix86_expand_args_builtin (bdesc_args2 + i, exp, target);
 	  }
-    }
-
-  if (fcode >= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST
-      && fcode <= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST)
-    {
-      i = fcode - IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST;
-      return ix86_expand_special_args_builtin (bdesc_special_args2 + i, exp,
-					       target);
     }
 
   if (fcode >= IX86_BUILTIN__BDESC_COMI_FIRST
