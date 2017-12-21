@@ -1,3 +1,8 @@
+2017-12-21  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/83419
+	* gcc.dg/pr83419.c: New.
+
 2017-12-21  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vect-slp-dup.c: New.

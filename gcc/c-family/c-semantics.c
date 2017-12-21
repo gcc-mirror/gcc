@@ -96,6 +96,15 @@ pop_stmt_list (tree t)
 	      t = l;
 	      tsi_link_before (&i, u, TSI_SAME_STMT);
 	    }
+	  while (!tsi_end_p (i)
+		 && TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
+	    tsi_next (&i);
+	  /* If there's only one nondebug stmt in the list, we'd have
+	     extracted the stmt and dropped the list, and we'd take
+	     TREE_SIDE_EFFECTS from that statement, so keep the list's
+	     TREE_SIDE_EFFECTS in sync.  */
+	  if (tsi_one_before_end_p (i))
+	    TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (tsi_stmt (i));
 	}
     }
 
