@@ -1,5 +1,6 @@
 2017-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/83535
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Always take
 	into account the Esize if it is known.
 
