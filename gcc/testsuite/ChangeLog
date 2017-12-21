@@ -1,3 +1,7 @@
+2017-12-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vect-slp-dup.c: New.
+
 2017-12-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/pr82872.c: New test.

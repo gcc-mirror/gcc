@@ -1,5 +1,13 @@
 2017-12-21  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Modify code
+	generation for cases where splatting a value is not useful.
+	* simplify-rtx.c (simplify_ternary_operation): Simplify vec_merge
+	across a vec_duplicate and a paradoxical subreg forming a vector
+	mode to a vec_concat.
+
+2017-12-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* combine.c (simplify_set): Do not transform subregs to zero_extends
 	if the destination is not a scalar int mode.
 
