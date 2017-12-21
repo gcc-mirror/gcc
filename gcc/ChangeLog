@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* varasm.c (addr_const::offset): Change from HOST_WIDE_INT
+	to poly_int64.
+	(decode_addr_const): Update accordingly.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (bit_field_size, bit_field_offset): New functions.
 	* hsa-gen.c (gen_hsa_addr): Use them.
 	* tree-ssa-forwprop.c (simplify_bitfield_ref): Likewise.
