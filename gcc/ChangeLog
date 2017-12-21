@@ -1,3 +1,9 @@
+2017-12-21  Andrew Pinski  <apinski@cavium.com>
+	    Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/t-aarch64-linux (MULTILIB_OSDIRNAMES): Handle
+	multi-arch for ilp32.
+
 2017-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83467
