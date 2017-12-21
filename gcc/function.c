@@ -1367,11 +1367,11 @@ initial_value_entry (int i, rtx *hreg, rtx *preg)
    routines.  They contain the offsets of the virtual registers from their
    respective hard registers.  */
 
-static int in_arg_offset;
-static int var_offset;
-static int dynamic_offset;
-static int out_arg_offset;
-static int cfa_offset;
+static poly_int64 in_arg_offset;
+static poly_int64 var_offset;
+static poly_int64 dynamic_offset;
+static poly_int64 out_arg_offset;
+static poly_int64 cfa_offset;
 
 /* In most machines, the stack pointer register is equivalent to the bottom
    of the stack.  */
@@ -1418,10 +1418,10 @@ static int cfa_offset;
    offset indirectly through the pointer.  Otherwise, return 0.  */
 
 static rtx
-instantiate_new_reg (rtx x, HOST_WIDE_INT *poffset)
+instantiate_new_reg (rtx x, poly_int64_pod *poffset)
 {
   rtx new_rtx;
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
 
   if (x == virtual_incoming_args_rtx)
     {
@@ -1480,7 +1480,7 @@ instantiate_virtual_regs_in_rtx (rtx *loc)
       if (rtx x = *loc)
 	{
 	  rtx new_rtx;
-	  HOST_WIDE_INT offset;
+	  poly_int64 offset;
 	  switch (GET_CODE (x))
 	    {
 	    case REG:
@@ -1533,7 +1533,7 @@ safe_insn_predicate (int code, int operand, rtx x)
 static void
 instantiate_virtual_regs_in_insn (rtx_insn *insn)
 {
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
   int insn_code, i;
   bool any_change = false;
   rtx set, new_rtx, x;
@@ -1572,7 +1572,8 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	 to the generic case is avoiding a new pseudo and eliminating a
 	 move insn in the initial rtl stream.  */
       new_rtx = instantiate_new_reg (SET_SRC (set), &offset);
-      if (new_rtx && offset != 0
+      if (new_rtx
+	  && maybe_ne (offset, 0)
 	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) > LAST_VIRTUAL_REGISTER)
 	{
@@ -1598,17 +1599,18 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 
       /* Handle a plus involving a virtual register by determining if the
 	 operands remain valid if they're modified in place.  */
+      poly_int64 delta;
       if (GET_CODE (SET_SRC (set)) == PLUS
 	  && recog_data.n_operands >= 3
 	  && recog_data.operand_loc[1] == &XEXP (SET_SRC (set), 0)
 	  && recog_data.operand_loc[2] == &XEXP (SET_SRC (set), 1)
-	  && CONST_INT_P (recog_data.operand[2])
+	  && poly_int_rtx_p (recog_data.operand[2], &delta)
 	  && (new_rtx = instantiate_new_reg (recog_data.operand[1], &offset)))
 	{
-	  offset += INTVAL (recog_data.operand[2]);
+	  offset += delta;
 
 	  /* If the sum is zero, then replace with a plain move.  */
-	  if (offset == 0
+	  if (known_eq (offset, 0)
 	      && REG_P (SET_DEST (set))
 	      && REGNO (SET_DEST (set)) > LAST_VIRTUAL_REGISTER)
 	    {
@@ -1686,7 +1688,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	  new_rtx = instantiate_new_reg (x, &offset);
 	  if (new_rtx == NULL)
 	    continue;
-	  if (offset == 0)
+	  if (known_eq (offset, 0))
 	    x = new_rtx;
 	  else
 	    {
@@ -1711,7 +1713,7 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	  new_rtx = instantiate_new_reg (SUBREG_REG (x), &offset);
 	  if (new_rtx == NULL)
 	    continue;
-	  if (offset != 0)
+	  if (maybe_ne (offset, 0))
 	    {
 	      start_sequence ();
 	      new_rtx = expand_simple_binop
