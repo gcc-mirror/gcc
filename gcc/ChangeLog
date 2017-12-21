@@ -1,3 +1,8 @@
+2017-12-21  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/t-aarch64-linux (MULTILIB_OSDIRNAMES): Fix
+	triplet for ilp32.
+
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/80747
