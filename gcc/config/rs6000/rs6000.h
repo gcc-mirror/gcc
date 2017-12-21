@@ -1565,7 +1565,8 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
    This value must be a multiple of STACK_BOUNDARY (hard coded in
    `emit-rtl.c').  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  RS6000_ALIGN (crtl->outgoing_args_size + STACK_POINTER_OFFSET,	\
+  RS6000_ALIGN (crtl->outgoing_args_size.to_constant ()			\
+		+ STACK_POINTER_OFFSET,					\
 		(TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)
 
 /* If we generate an insn to push BYTES bytes,

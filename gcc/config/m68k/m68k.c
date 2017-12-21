@@ -178,7 +178,7 @@ static bool m68k_return_in_memory (const_tree, const_tree);
 #endif
 static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void m68k_trampoline_init (rtx, tree, rtx);
-static int m68k_return_pops_args (tree, tree, int);
+static poly_int64 m68k_return_pops_args (tree, tree, poly_int64);
 static rtx m68k_delegitimize_address (rtx);
 static void m68k_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
@@ -6531,14 +6531,14 @@ m68k_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
    standard Unix calling sequences.  If the option is not selected,
    the caller must always pop the args.  */
 
-static int
-m68k_return_pops_args (tree fundecl, tree funtype, int size)
+static poly_int64
+m68k_return_pops_args (tree fundecl, tree funtype, poly_int64 size)
 {
   return ((TARGET_RTD
 	   && (!fundecl
 	       || TREE_CODE (fundecl) != IDENTIFIER_NODE)
 	   && (!stdarg_p (funtype)))
-	  ? size : 0);
+	  ? (HOST_WIDE_INT) size : 0);
 }
 
 /* Make sure everything's fine if we *don't* have a given processor.

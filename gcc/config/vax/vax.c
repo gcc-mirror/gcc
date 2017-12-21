@@ -62,7 +62,7 @@ static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
-static int vax_return_pops_args (tree, tree, int);
+static poly_int64 vax_return_pops_args (tree, tree, poly_int64);
 static bool vax_mode_dependent_address_p (const_rtx, addr_space_t);
 static HOST_WIDE_INT vax_starting_frame_offset (void);
 
@@ -2140,11 +2140,11 @@ vax_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
    On the VAX, the RET insn pops a maximum of 255 args for any function.  */
 
-static int
+static poly_int64
 vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-		      tree funtype ATTRIBUTE_UNUSED, int size)
+		      tree funtype ATTRIBUTE_UNUSED, poly_int64 size)
 {
-  return size > 255 * 4 ? 0 : size;
+  return size > 255 * 4 ? 0 : (HOST_WIDE_INT) size;
 }
 
 /* Define where to put the arguments to a function.

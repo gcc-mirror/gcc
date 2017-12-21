@@ -535,7 +535,7 @@ extern rtx hppa_pic_save_rtx (void);
    marker, although the runtime documentation only describes a 16
    byte marker.  For compatibility, we allocate 48 bytes.  */
 #define STACK_POINTER_OFFSET \
-  (TARGET_64BIT ? -(crtl->outgoing_args_size + 48): -32)
+  (TARGET_64BIT ? -(crtl->outgoing_args_size + 48) : poly_int64 (-32))
 
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
   (TARGET_64BIT				\
@@ -692,7 +692,7 @@ extern int may_call_alloca;
 
 #define EXIT_IGNORE_STACK	\
  (maybe_ne (get_frame_size (), 0)	\
-  || cfun->calls_alloca || crtl->outgoing_args_size)
+  || cfun->calls_alloca || maybe_ne (crtl->outgoing_args_size, 0))
 
 /* Length in units of the trampoline for entering a nested function.  */
 

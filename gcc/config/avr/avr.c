@@ -1151,7 +1151,8 @@ avr_accumulate_outgoing_args (void)
 static inline int
 avr_outgoing_args_size (void)
 {
-  return ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0;
+  return (ACCUMULATE_OUTGOING_ARGS
+	  ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0);
 }
 
 

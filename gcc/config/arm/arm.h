@@ -1254,7 +1254,7 @@ enum reg_class
    couldn't convert a direct call into an indirect one.  */
 #define CALLER_INTERWORKING_SLOT_SIZE			\
   (TARGET_CALLER_INTERWORKING				\
-   && crtl->outgoing_args_size != 0		\
+   && maybe_ne (crtl->outgoing_args_size, 0)		\
    ? UNITS_PER_WORD : 0)
 
 /* If we generate an insn to push BYTES bytes,

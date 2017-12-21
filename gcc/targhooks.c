@@ -1045,10 +1045,8 @@ default_trampoline_init (rtx ARG_UNUSED (m_tramp), tree ARG_UNUSED (t_func),
   sorry ("nested function trampolines not supported on this target");
 }
 
-int
-default_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-			  tree funtype ATTRIBUTE_UNUSED,
-			  int size ATTRIBUTE_UNUSED)
+poly_int64
+default_return_pops_args (tree, tree, poly_int64)
 {
   return 0;
 }
