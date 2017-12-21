@@ -116,14 +116,14 @@ arm_rewrite_mcpu (int argc, const char **argv)
   return arm_rewrite_selected_cpu (argv[argc - 1]);
 }
 
+/* Comparator for arm_rewrite_selected_arch.  Compare the two arch extension
+   strings FIRST and SECOND and return TRUE if FIRST is less than SECOND
+   alphabetically.  */
+
 static bool
 compare_opt_names (const char *first, const char *second)
 {
-  for (int i = 0; ; i++)
-    if (first[i] == 0
-	|| first[i] < second[i])
-      return true;
-  return false;
+  return strcmp (first, second) <= 0;
 }
 
 /* Rewrite the architecture string for passing to the assembler.
