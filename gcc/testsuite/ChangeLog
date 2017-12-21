@@ -1,5 +1,8 @@
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83523
+	* g++.dg/tree-ssa/pr83523.C: New test.
+
 	PR tree-optimization/83521
 	* gcc.dg/pr83521.c: New test.
 
