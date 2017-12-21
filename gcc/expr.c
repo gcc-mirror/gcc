@@ -3941,9 +3941,9 @@ mem_autoinc_base (rtx mem)
 
    The return value is the amount of adjustment that can be trivially
    verified, via immediate operand or auto-inc.  If the adjustment
-   cannot be trivially extracted, the return value is INT_MIN.  */
+   cannot be trivially extracted, the return value is HOST_WIDE_INT_MIN.  */
 
-HOST_WIDE_INT
+poly_int64
 find_args_size_adjust (rtx_insn *insn)
 {
   rtx dest, set, pat;
@@ -4066,22 +4066,21 @@ find_args_size_adjust (rtx_insn *insn)
     }
 }
 
-int
-fixup_args_size_notes (rtx_insn *prev, rtx_insn *last, int end_args_size)
+poly_int64
+fixup_args_size_notes (rtx_insn *prev, rtx_insn *last,
+		       poly_int64 end_args_size)
 {
-  int args_size = end_args_size;
+  poly_int64 args_size = end_args_size;
   bool saw_unknown = false;
   rtx_insn *insn;
 
   for (insn = last; insn != prev; insn = PREV_INSN (insn))
     {
-      HOST_WIDE_INT this_delta;
-
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      this_delta = find_args_size_adjust (insn);
-      if (this_delta == 0)
+      poly_int64 this_delta = find_args_size_adjust (insn);
+      if (known_eq (this_delta, 0))
 	{
 	  if (!CALL_P (insn)
 	      || ACCUMULATE_OUTGOING_ARGS
@@ -4090,15 +4089,15 @@ fixup_args_size_notes (rtx_insn *prev, rtx_insn *last, int end_args_size)
 	}
 
       gcc_assert (!saw_unknown);
-      if (this_delta == HOST_WIDE_INT_MIN)
+      if (known_eq (this_delta, HOST_WIDE_INT_MIN))
 	saw_unknown = true;
 
-      add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (args_size));
+      add_args_size_note (insn, args_size);
       if (STACK_GROWS_DOWNWARD)
-	this_delta = -(unsigned HOST_WIDE_INT) this_delta;
+	this_delta = -poly_uint64 (this_delta);
 
       if (saw_unknown)
-	args_size = INT_MIN;
+	args_size = HOST_WIDE_INT_MIN;
       else
 	args_size -= this_delta;
     }
@@ -4198,7 +4197,7 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
 static void
 emit_single_push_insn (machine_mode mode, rtx x, tree type)
 {
-  int delta, old_delta = stack_pointer_delta;
+  poly_int64 delta, old_delta = stack_pointer_delta;
   rtx_insn *prev = get_last_insn ();
   rtx_insn *last;
 
@@ -4209,12 +4208,13 @@ emit_single_push_insn (machine_mode mode, rtx x, tree type)
   /* Notice the common case where we emitted exactly one insn.  */
   if (PREV_INSN (last) == prev)
     {
-      add_reg_note (last, REG_ARGS_SIZE, GEN_INT (stack_pointer_delta));
+      add_args_size_note (last, stack_pointer_delta);
       return;
     }
 
   delta = fixup_args_size_notes (prev, last, stack_pointer_delta);
-  gcc_assert (delta == INT_MIN || delta == old_delta);
+  gcc_assert (known_eq (delta, HOST_WIDE_INT_MIN)
+	      || known_eq (delta, old_delta));
 }
 #endif
 

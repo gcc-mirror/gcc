@@ -3355,6 +3355,7 @@ extern rtx get_related_value (const_rtx);
 extern bool offset_within_block_p (const_rtx, HOST_WIDE_INT);
 extern void split_const (rtx, rtx *, rtx *);
 extern rtx strip_offset (rtx, poly_int64_pod *);
+extern poly_int64 get_args_size (const_rtx);
 extern bool unsigned_reg_p (rtx);
 extern int reg_mentioned_p (const_rtx, const_rtx);
 extern int count_occurrences (const_rtx, const_rtx, int);
@@ -3390,6 +3391,7 @@ extern int find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
 extern rtx alloc_reg_note (enum reg_note, rtx, rtx);
 extern void add_reg_note (rtx, enum reg_note, rtx);
 extern void add_int_reg_note (rtx_insn *, enum reg_note, int);
+extern void add_args_size_note (rtx_insn *, poly_int64);
 extern void add_shallow_copy_of_reg_note (rtx_insn *, rtx);
 extern rtx duplicate_reg_note (rtx);
 extern void remove_note (rtx_insn *, const_rtx);
@@ -3979,8 +3981,8 @@ extern void emit_jump (rtx);
 /* In expr.c */
 extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
-extern HOST_WIDE_INT find_args_size_adjust (rtx_insn *);
-extern int fixup_args_size_notes (rtx_insn *, rtx_insn *, int);
+extern poly_int64 find_args_size_adjust (rtx_insn *);
+extern poly_int64 fixup_args_size_notes (rtx_insn *, rtx_insn *, poly_int64);
 
 /* In expmed.c */
 extern void init_expmed (void);

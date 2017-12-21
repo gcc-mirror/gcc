@@ -3466,7 +3466,7 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
 
   /* Re-insert the ARGS_SIZE notes.  */
   if (as_note)
-    fixup_args_size_notes (before_try, last, INTVAL (XEXP (as_note, 0)));
+    fixup_args_size_notes (before_try, last, get_args_size (as_note));
 
   /* If we generated a jump instruction, it won't have
      JUMP_LABEL set.  Recompute after we're done.  */

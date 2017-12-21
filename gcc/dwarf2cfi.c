@@ -102,8 +102,8 @@ struct dw_trace_info
      while scanning insns.  However, the args_size value is irrelevant at
      any point except can_throw_internal_p insns.  Therefore the "delay"
      sizes the values that must actually be emitted for this trace.  */
-  HOST_WIDE_INT beg_true_args_size, end_true_args_size;
-  HOST_WIDE_INT beg_delay_args_size, end_delay_args_size;
+  poly_int64_pod beg_true_args_size, end_true_args_size;
+  poly_int64_pod beg_delay_args_size, end_delay_args_size;
 
   /* The first EH insn in the trace, where beg_delay_args_size must be set.  */
   rtx_insn *eh_head;
@@ -475,16 +475,19 @@ add_cfi (dw_cfi_ref cfi)
 }
 
 static void
-add_cfi_args_size (HOST_WIDE_INT size)
+add_cfi_args_size (poly_int64 size)
 {
+  /* We don't yet have a representation for polynomial sizes.  */
+  HOST_WIDE_INT const_size = size.to_constant ();
+
   dw_cfi_ref cfi = new_cfi ();
 
   /* While we can occasionally have args_size < 0 internally, this state
      should not persist at a point we actually need an opcode.  */
-  gcc_assert (size >= 0);
+  gcc_assert (const_size >= 0);
 
   cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
-  cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
+  cfi->dw_cfi_oprnd1.dw_cfi_offset = const_size;
 
   add_cfi (cfi);
 }
@@ -927,16 +930,16 @@ reg_save (unsigned int reg, unsigned int sreg, poly_int64 offset)
 static void
 notice_args_size (rtx_insn *insn)
 {
-  HOST_WIDE_INT args_size, delta;
+  poly_int64 args_size, delta;
   rtx note;
 
   note = find_reg_note (insn, REG_ARGS_SIZE, NULL);
   if (note == NULL)
     return;
 
-  args_size = INTVAL (XEXP (note, 0));
+  args_size = get_args_size (note);
   delta = args_size - cur_trace->end_true_args_size;
-  if (delta == 0)
+  if (known_eq (delta, 0))
     return;
 
   cur_trace->end_true_args_size = args_size;
@@ -962,16 +965,14 @@ notice_args_size (rtx_insn *insn)
 static void
 notice_eh_throw (rtx_insn *insn)
 {
-  HOST_WIDE_INT args_size;
-
-  args_size = cur_trace->end_true_args_size;
+  poly_int64 args_size = cur_trace->end_true_args_size;
   if (cur_trace->eh_head == NULL)
     {
       cur_trace->eh_head = insn;
       cur_trace->beg_delay_args_size = args_size;
       cur_trace->end_delay_args_size = args_size;
     }
-  else if (cur_trace->end_delay_args_size != args_size)
+  else if (maybe_ne (cur_trace->end_delay_args_size, args_size))
     {
       cur_trace->end_delay_args_size = args_size;
 
@@ -2292,7 +2293,6 @@ static void
 maybe_record_trace_start (rtx_insn *start, rtx_insn *origin)
 {
   dw_trace_info *ti;
-  HOST_WIDE_INT args_size;
 
   ti = get_trace_info (start);
   gcc_assert (ti != NULL);
@@ -2305,7 +2305,7 @@ maybe_record_trace_start (rtx_insn *start, rtx_insn *origin)
 	       (origin ? INSN_UID (origin) : 0));
     }
 
-  args_size = cur_trace->end_true_args_size;
+  poly_int64 args_size = cur_trace->end_true_args_size;
   if (ti->beg_row == NULL)
     {
       /* This is the first time we've encountered this trace.  Propagate
@@ -2345,7 +2345,7 @@ maybe_record_trace_start (rtx_insn *start, rtx_insn *origin)
 #endif
 
       /* The args_size is allowed to conflict if it isn't actually used.  */
-      if (ti->beg_true_args_size != args_size)
+      if (maybe_ne (ti->beg_true_args_size, args_size))
 	ti->args_size_undefined = true;
     }
 }
@@ -2356,11 +2356,11 @@ maybe_record_trace_start (rtx_insn *start, rtx_insn *origin)
 static void
 maybe_record_trace_start_abnormal (rtx_insn *start, rtx_insn *origin)
 {
-  HOST_WIDE_INT save_args_size, delta;
+  poly_int64 save_args_size, delta;
   dw_cfa_location save_cfa;
 
   save_args_size = cur_trace->end_true_args_size;
-  if (save_args_size == 0)
+  if (known_eq (save_args_size, 0))
     {
       maybe_record_trace_start (start, origin);
       return;
@@ -2552,7 +2552,6 @@ scan_trace (dw_trace_info *trace)
 
 	      if (INSN_FROM_TARGET_P (elt))
 		{
-		  HOST_WIDE_INT restore_args_size;
 		  cfi_vec save_row_reg_save;
 
 		  /* If ELT is an instruction from target of an annulled
@@ -2560,7 +2559,7 @@ scan_trace (dw_trace_info *trace)
 		     the args_size and CFA along the current path
 		     shouldn't change.  */
 		  add_cfi_insn = NULL;
-		  restore_args_size = cur_trace->end_true_args_size;
+		  poly_int64 restore_args_size = cur_trace->end_true_args_size;
 		  cur_cfa = &cur_row->cfa;
 		  save_row_reg_save = vec_safe_copy (cur_row->reg_save);
 
@@ -2802,7 +2801,7 @@ connect_traces (void)
   /* Connect args_size between traces that have can_throw_internal insns.  */
   if (cfun->eh->lp_array)
     {
-      HOST_WIDE_INT prev_args_size = 0;
+      poly_int64 prev_args_size = 0;
 
       for (i = 0; i < n; ++i)
 	{
@@ -2814,7 +2813,7 @@ connect_traces (void)
 	    continue;
 	  gcc_assert (!ti->args_size_undefined);
 
-	  if (ti->beg_delay_args_size != prev_args_size)
+	  if (maybe_ne (ti->beg_delay_args_size, prev_args_size))
 	    {
 	      /* ??? Search back to previous CFI note.  */
 	      add_cfi_insn = PREV_INSN (ti->eh_head);
