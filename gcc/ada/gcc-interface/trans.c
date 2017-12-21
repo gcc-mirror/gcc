@@ -2187,8 +2187,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Last_Bit:
     case Attr_Bit:
       {
-	HOST_WIDE_INT bitsize;
-	HOST_WIDE_INT bitpos;
+	poly_int64 bitsize;
+	poly_int64 bitpos;
 	tree gnu_offset;
 	tree gnu_field_bitpos;
 	tree gnu_field_offset;
@@ -2255,11 +2255,11 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
 	  case Attr_First_Bit:
 	  case Attr_Bit:
-	    gnu_result = size_int (bitpos % BITS_PER_UNIT);
+	    gnu_result = size_int (num_trailing_bits (bitpos));
 	    break;
 
 	  case Attr_Last_Bit:
-	    gnu_result = bitsize_int (bitpos % BITS_PER_UNIT);
+	    gnu_result = bitsize_int (num_trailing_bits (bitpos));
 	    gnu_result = size_binop (PLUS_EXPR, gnu_result,
 				     TYPE_SIZE (TREE_TYPE (gnu_prefix)));
 	    /* ??? Avoid a large unsigned result that will overflow when

@@ -267,7 +267,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
   aff_tree tmp;
   enum tree_code code;
   tree cst, core, toffset;
-  HOST_WIDE_INT bitpos, bitsize;
+  poly_int64 bitpos, bitsize, bytepos;
   machine_mode mode;
   int unsignedp, reversep, volatilep;
 
@@ -324,12 +324,13 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       core = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize, &bitpos,
 				  &toffset, &mode, &unsignedp, &reversep,
 				  &volatilep);
-      if (bitpos % BITS_PER_UNIT != 0)
+      if (!multiple_p (bitpos, BITS_PER_UNIT, &bytepos))
 	break;
-      aff_combination_const (comb, type, bitpos / BITS_PER_UNIT);
+      aff_combination_const (comb, type, bytepos);
       if (TREE_CODE (core) == MEM_REF)
 	{
-	  aff_combination_add_cst (comb, wi::to_widest (TREE_OPERAND (core, 1)));
+	  tree mem_offset = TREE_OPERAND (core, 1);
+	  aff_combination_add_cst (comb, wi::to_poly_widest (mem_offset));
 	  core = TREE_OPERAND (core, 0);
 	}
       else
@@ -929,7 +930,7 @@ debug_aff (aff_tree *val)
 tree
 get_inner_reference_aff (tree ref, aff_tree *addr, poly_widest_int *size)
 {
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree toff;
   machine_mode mode;
   int uns, rev, vol;
@@ -948,10 +949,10 @@ get_inner_reference_aff (tree ref, aff_tree *addr, poly_widest_int *size)
       aff_combination_add (addr, &tmp);
     }
 
-  aff_combination_const (&tmp, sizetype, bitpos / BITS_PER_UNIT);
+  aff_combination_const (&tmp, sizetype, bits_to_bytes_round_down (bitpos));
   aff_combination_add (addr, &tmp);
 
-  *size = (bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
+  *size = bits_to_bytes_round_up (bitsize);
 
   return base;
 }

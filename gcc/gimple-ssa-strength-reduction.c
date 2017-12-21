@@ -1031,7 +1031,7 @@ static void
 slsr_process_ref (gimple *gs)
 {
   tree ref_expr, base, offset, type;
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   machine_mode mode;
   int unsignedp, reversep, volatilep;
   slsr_cand_t c;
@@ -1049,9 +1049,10 @@ slsr_process_ref (gimple *gs)
 
   base = get_inner_reference (ref_expr, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &reversep, &volatilep);
-  if (reversep)
+  HOST_WIDE_INT cbitpos;
+  if (reversep || !bitpos.is_constant (&cbitpos))
     return;
-  widest_int index = bitpos;
+  widest_int index = cbitpos;
 
   if (!restructure_reference (&base, &offset, &index, &type))
     return;

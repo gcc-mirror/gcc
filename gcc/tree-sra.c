@@ -5399,12 +5399,12 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	      continue;
 
 	  tree offset;
-	  HOST_WIDE_INT bitsize, bitpos;
+	  poly_int64 bitsize, bitpos;
 	  machine_mode mode;
 	  int unsignedp, reversep, volatilep = 0;
 	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
 			       &unsignedp, &reversep, &volatilep);
-	  if (bitpos % BITS_PER_UNIT)
+	  if (!multiple_p (bitpos, BITS_PER_UNIT))
 	    {
 	      iscc->bad_arg_alignment = true;
 	      return true;
