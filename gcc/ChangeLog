@@ -1,3 +1,55 @@
+2017-12-22  Julia Koval  <julia.koval@intel.com>
+	Sebastian Peryt <sebastian.peryt@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512BITALG_SET,
+	OPTION_MASK_ISA_AVX512BITALG_UNSET): New.
+	(ix86_handle_option): Handle -mavx512bitalg, fix 4VNNIW formatting.
+	* config.gcc: Add avx512vpopcntdqvlintrin.h and avx512bitalgintrin.h.
+	* config/i386/avx512bitalgintrin.h (_mm512_popcnt_epi8, _mm512_popcnt_epi16,
+	_mm512_mask_popcnt_epi8, _mm512_maskz_popcnt_epi8, _mm512_mask_popcnt_epi16,
+	_mm512_maskz_popcnt_epi16, _mm512_bitshuffle_epi64_mask, _mm256_popcnt_epi8,
+	_mm512_mask_bitshuffle_epi64_mask, _mm256_mask_popcnt_epi8, _mm_popcnt_epi8,
+	_mm256_maskz_popcnt_epi8, _mm_bitshuffle_epi64_mask, _mm256_popcnt_epi16,
+	_mm_mask_bitshuffle_epi64_mask, _mm256_bitshuffle_epi64_mask,
+	_mm256_mask_bitshuffle_epi64_mask, _mm_popcnt_epi16, _mm_maskz_popcnt_epi8,
+	_mm256_mask_popcnt_epi16, _mm256_maskz_popcnt_epi16, _mm_mask_popcnt_epi8,
+	_mm_mask_popcnt_epi16, _mm_maskz_popcnt_epi16): New intrinsics.
+	* config/i386/avx512vpopcntdqvlintrin.h (_mm_popcnt_epi32, _mm_popcnt_epi64,
+	_mm_mask_popcnt_epi32, _mm_maskz_popcnt_epi32, _mm256_popcnt_epi32,
+	_mm256_mask_popcnt_epi32, _mm256_maskz_popcnt_epi32, _mm_mask_popcnt_epi64,
+	_mm_maskz_popcnt_epi64, _mm256_popcnt_epi64, _mm256_mask_popcnt_epi64,
+	_mm256_maskz_popcnt_epi64): New intrinsics.
+	* config/i386/cpuid.h (bit_AVX512BITALG): New bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect -mavx512bitalg.
+	* config/i386/i386-builtin-types.def (V64QI_FTYPE_V64QI, V64QI_FTYPE_V64QI,
+	V4DI_FTYPE_V4DI, UHI_FTYPE_V2DI_V2DI_UHI, USI_FTYPE_V4DI_V4DI_USI,
+	V4SI_FTYPE_V4SI_V4SI_UHI, V8SI_FTYPE_V8SI_V8SI_UHI): New types.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpopcountq_v4di,
+	__builtin_ia32_vpopcountq_v4di_mask, __builtin_ia32_vpopcountq_v2di,
+	__builtin_ia32_vpopcountq_v2di_mask, __builtin_ia32_vpopcountd_v4si,
+	__builtin_ia32_vpopcountd_v4si_mask, __builtin_ia32_vpopcountd_v8si,
+	__builtin_ia32_vpopcountd_v8si_mask, __builtin_ia32_vpopcountb_v64qi,
+	__builtin_ia32_vpopcountb_v64qi_mask, __builtin_ia32_vpopcountb_v32qi,
+	__builtin_ia32_vpopcountb_v32qi_mask, __builtin_ia32_vpopcountb_v16qi,
+	__builtin_ia32_vpopcountb_v16qi_mask, __builtin_ia32_vpopcountw_v32hi,
+	__builtin_ia32_vpopcountw_v32hi_mask, __builtin_ia32_vpopcountw_v16hi,
+	__builtin_ia32_vpopcountw_v16hi_mask, __builtin_ia32_vpopcountw_v8hi,
+	__builtin_ia32_vpopcountw_v8hi_mask, __builtin_ia32_vpshufbitqmb128_mask,
+	__builtin_ia32_vpshufbitqmb256_mask,
+	__builtin_ia32_vpshufbitqmb512_mask): New builtins.
+	* config/i386/i386-c.c (__AVX512BITALG__): New.
+	* config/i386/i386.c (isa2_opts): Add -mavx512bitalg.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_expand_args_builtin): Handle new types.
+	* config/i386/i386.h (TARGET_AVX512BITALG, TARGET_AVX512BITALG_P): New.
+	* config/i386/i386.opt: Add -mavx512bitalg.
+	* config/i386/immintrin.h: Add avx512vpopcntdqvlintrin.h and
+	avx512bitalgintrin.h.
+	* config/i386/sse.md (VI48_AVX512VLBW): New iterator.
+	(vpopcount<mode><mask_name>): Add more types.
+	(avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>): New.
+	* doc/invoke.texi: Add -mavx512bitalg and -mavx512vpopcntdq.
+
 2017-12-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VNNI_SET):

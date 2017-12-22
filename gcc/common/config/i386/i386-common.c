@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_AVX512VNNI_SET \
   (OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512F_SET)
 #define OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET OPTION_MASK_ISA_AVX512VPOPCNTDQ
+#define OPTION_MASK_ISA_AVX512BITALG_SET OPTION_MASK_ISA_AVX512BITALG
 #define OPTION_MASK_ISA_RTM_SET OPTION_MASK_ISA_RTM
 #define OPTION_MASK_ISA_PRFCHW_SET OPTION_MASK_ISA_PRFCHW
 #define OPTION_MASK_ISA_RDSEED_SET OPTION_MASK_ISA_RDSEED
@@ -201,6 +202,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_AVX512VBMI2_UNSET OPTION_MASK_ISA_AVX512VBMI2
 #define OPTION_MASK_ISA_AVX512VNNI_UNSET OPTION_MASK_ISA_AVX512VNNI
 #define OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET OPTION_MASK_ISA_AVX512VPOPCNTDQ
+#define OPTION_MASK_ISA_AVX512BITALG_UNSET OPTION_MASK_ISA_AVX512BITALG
 #define OPTION_MASK_ISA_RTM_UNSET OPTION_MASK_ISA_RTM
 #define OPTION_MASK_ISA_PRFCHW_UNSET OPTION_MASK_ISA_PRFCHW
 #define OPTION_MASK_ISA_RDSEED_UNSET OPTION_MASK_ISA_RDSEED
@@ -444,11 +446,17 @@ ix86_handle_option (struct gcc_options *opts,
 
 	  /* Turn off additional isa flags.  */
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX5124FMAPS_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX5124FMAPS_UNSET;
+	  opts->x_ix86_isa_flags2_explicit
+		|= OPTION_MASK_ISA_AVX5124FMAPS_UNSET;
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX5124VNNIW_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX5124VNNIW_UNSET;
+	  opts->x_ix86_isa_flags2_explicit
+		|= OPTION_MASK_ISA_AVX5124VNNIW_UNSET;
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
-	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
+	  opts->x_ix86_isa_flags2_explicit
+		|= OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX512BITALG_UNSET;
+	  opts->x_ix86_isa_flags2_explicit
+		|= OPTION_MASK_ISA_AVX512BITALG_UNSET;
 	}
       return true;
 
@@ -640,6 +648,22 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET;
+	}
+      return true;
+
+    case OPT_mavx512bitalg:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512BITALG_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_AVX512BITALG_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512F_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512F_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX512BITALG_UNSET;
+	  opts->x_ix86_isa_flags2_explicit
+		|= OPTION_MASK_ISA_AVX512BITALG_UNSET;
 	}
       return true;
 
