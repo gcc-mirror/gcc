@@ -10871,6 +10871,14 @@ Array_index_expression::do_is_addressable() const
   return this->array_->is_addressable();
 }
 
+void
+Array_index_expression::do_address_taken(bool escapes)
+{
+  // In &x[0], if x is a slice, then x's address is not taken.
+  if (!this->array_->type()->is_slice_type())
+    this->array_->address_taken(escapes);
+}
+
 // Get the backend representation for an array index.
 
 Bexpression*
