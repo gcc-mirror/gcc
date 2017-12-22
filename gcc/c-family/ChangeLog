@@ -1875,7 +1875,7 @@
 
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
-	* c-family/c-cppbuiltin.c (c_cpp_builtins): Check _FloatN and
+	* c-cppbuiltin.c (c_cpp_builtins): Check _FloatN and
 	_FloatNx types for suffixes for built-in functions.
 
 2016-08-19  Joseph Myers  <joseph@codesourcery.com>
@@ -2231,7 +2231,7 @@
 2016-06-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71392
-	* gcc/c-family/c-common.c (handle_nonnull_attribute): Accept
+	* c-common.c (handle_nonnull_attribute): Accept
 	the nonnull attribute in type-generic builtins.
 
 2016-06-09  Martin Sebor  <msebor@redhat.com>

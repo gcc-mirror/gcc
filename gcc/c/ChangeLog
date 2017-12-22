@@ -1,5 +1,10 @@
 2017-12-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/83550
+	* c-decl.c (finish_struct): Set DECL_SOURCE_LOCATION on
+	TYPE_STUB_DECL and call rest_of_type_compilation before processing
+	incomplete vars rather than after it.
+
 	PR debug/83547
 	* c-typeck.c (c_finish_stmt_expr): Ignore !TREE_SIDE_EFFECTS as
 	indicator of ({ }), instead skip all trailing DEBUG_BEGIN_STMTs first,

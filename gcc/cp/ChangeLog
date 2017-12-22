@@ -5471,10 +5471,10 @@
 2017-01-27  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/64382
-	* cp/parser.c (parsing_default_capturing_generic_lambda_in_template):
+	* parser.c (parsing_default_capturing_generic_lambda_in_template):
 	New function.
-	* cp/cp-tree.h: Declare it.
-	* cp/semantics.c (finish_id_expression): Resolve names within a default
+	* cp-tree.h: Declare it.
+	* semantics.c (finish_id_expression): Resolve names within a default
 	capturing generic lambda defined within a template prior to
 	instantiation to allow for captures to be added to the closure type.
 
