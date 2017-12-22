@@ -827,10 +827,6 @@ class Gogo
   static std::string
   nested_function_name();
 
-  // Return the index of a nested function name.
-  static int
-  nested_function_num(const std::string&);
-
   // Return the name to use for a sink funciton.
   std::string
   sink_function_name();

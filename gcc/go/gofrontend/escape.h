@@ -193,6 +193,10 @@ class Node
   Location
   location() const;
 
+  // Return the location where the node's underlying object is defined.
+  Location
+  definition_location() const;
+
   // Return this node's AST formatted string.
   std::string
   ast_format(Gogo*) const;

@@ -53,6 +53,38 @@ Node::location() const
     return Linemap::unknown_location();
 }
 
+// A helper for reporting; return the location where the underlying
+// object is defined.
+
+Location
+Node::definition_location() const
+{
+  if (this->object() != NULL && !this->object()->is_sink())
+    {
+      Named_object* no = this->object();
+      if (no->is_variable() || no->is_result_variable())
+        return no->location();
+    }
+  else if (this->expr() != NULL)
+    {
+      Var_expression* ve = this->expr()->var_expression();
+      if (ve != NULL)
+        {
+          Named_object* no = ve->named_object();
+          if (no->is_variable() || no->is_result_variable())
+            return no->location();
+        }
+      Enclosed_var_expression* eve = this->expr()->enclosed_var_expression();
+      if (eve != NULL)
+        {
+          Named_object* no = eve->variable();
+          if (no->is_variable() || no->is_result_variable())
+            return no->location();
+        }
+    }
+  return this->location();
+}
+
 // To match the cmd/gc debug output, strip away the packed prefixes on functions
 // and variable/expressions.
 
@@ -133,7 +165,10 @@ Node::ast_format(Gogo* gogo) const
       Ast_dump_context::dump_to_stream(s, &ss);
     }
 
-  return strip_packed_prefix(gogo, ss.str());
+  std::string s = strip_packed_prefix(gogo, ss.str());
+
+  // trim trailing space
+  return s.substr(0, s.find_last_not_of(' ') + 1);
 }
 
 // A helper for debugging; return this node's detailed format string.
@@ -563,25 +598,44 @@ debug_function_name(Named_object* fn)
   if (fn == NULL)
     return "<S>";
 
-  if (!fn->is_function()
-      || fn->func_value()->enclosing() == NULL)
+  if (!fn->is_function())
     return Gogo::unpack_hidden_name(fn->name());
+  if (fn->func_value()->enclosing() == NULL)
+    {
+      std::string fnname = Gogo::unpack_hidden_name(fn->name());
+      if (fn->func_value()->is_method())
+        {
+          // Methods in gc compiler are named "T.m" or "(*T).m" where
+          // T is the receiver type. Add the receiver here.
+          Type* rt = fn->func_value()->type()->receiver()->type();
+          switch (rt->classification())
+            {
+              case Type::TYPE_NAMED:
+                fnname = rt->named_type()->name() + "." + fnname;
+                break;
 
-  // Closures are named ".$nested#" where # starts from 0 to distinguish
-  // between closures.  The cmd/gc closures are named in the format
-  // "enclosing.func#" where # starts from 1.  If this is a closure, format
-  // its name to match cmd/gc.
+              case Type::TYPE_POINTER:
+                {
+                  Named_type* nt = rt->points_to()->named_type();
+                  if (nt != NULL)
+                    fnname = "(*" + nt->name() + ")." + fnname;
+                  break;
+                }
+
+              default:
+                break;
+            }
+        }
+      return fnname;
+    }
+
+  // Closures are named ".$nested#" where # is a global counter. Add outer
+  // function name for better distinguishing. This is also closer to what
+  // gc compiler prints, "outer.func#".
   Named_object* enclosing = fn->func_value()->enclosing();
-
-  // Extract #.
   std::string name = Gogo::unpack_hidden_name(fn->name());
-  int closure_num = Gogo::nested_function_num(fn->name());
-  closure_num++;
-
-  name = Gogo::unpack_hidden_name(enclosing->name());
-  char buf[200];
-  snprintf(buf, sizeof buf, "%s.func%d", name.c_str(), closure_num);
-  return buf;
+  std::string outer_name = Gogo::unpack_hidden_name(enclosing->name());
+  return outer_name + "." + name;
 }
 
 // Return the name of the current function.
@@ -740,7 +794,7 @@ Gogo::analyze_escape()
 	       ++n)
 	    {
 	      Node::Escape_state* state = (*n)->state(context, NULL);
-	      if (((*n)->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+	      if ((*n)->encoding() == Node::ESCAPE_NONE)
 		go_inform((*n)->location(), "%s %s does not escape",
 			  strip_packed_prefix(this, debug_function_name(state->fn)).c_str(),
 			  (*n)->ast_format(this).c_str());
@@ -2315,9 +2369,10 @@ Gogo::assign_connectivity(Escape_context* context, Named_object* fn)
       if (fn->package() != NULL)
 	param_node->set_encoding(Node::ESCAPE_HEAP);
       else
-	param_node->set_encoding(Node::ESCAPE_NONE);
-
-      // TODO(cmang): Track this node in no_escape list.
+        {
+          param_node->set_encoding(Node::ESCAPE_NONE);
+          context->track(param_node);
+        }
     }
 
   Escape_analysis_loop el;
@@ -2452,13 +2507,13 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
       if (debug_level != 0)
 	{
 	  if (debug_level == 1)
-	    go_inform(src->location(),
+	    go_inform(src->definition_location(),
 		      "leaking param: %s to result %s level=%d",
 		      src->ast_format(gogo).c_str(),
 		      dst->ast_format(gogo).c_str(),
 		      level.value());
 	  else
-	    go_inform(src->location(),
+	    go_inform(src->definition_location(),
 		      "leaking param: %s to result %s level={%d %d}",
 		      src->ast_format(gogo).c_str(),
 		      dst->ast_format(gogo).c_str(),
@@ -2500,7 +2555,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 			   Node::ESCAPE_NONE);
       src->set_encoding(enc);
       if (debug_level != 0)
-	go_inform(src->location(), "mark escaped content: %s",
+	go_inform(src->definition_location(), "mark escaped content: %s",
 		  src->ast_format(gogo).c_str());
     }
 
@@ -2510,6 +2565,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
   bool src_leaks = (level.value() <= 0
 		    && level.suffix_value() <= 0
 		    && dst_state->loop_depth < mod_loop_depth);
+  // old src encoding, used to prevent duplicate error messages
+  int osrcesc = src->encoding();
 
   if (src_is_param
       && (src_leaks || dst_state->loop_depth < 0)
@@ -2521,14 +2578,15 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 	    Node::max_encoding((src->encoding() | ESCAPE_CONTENT_ESCAPES),
 			       Node::ESCAPE_NONE);
 	  src->set_encoding(enc);
-	  if (debug_level != 0)
-	    go_inform(src->location(), "leaking param content: %s",
+	  if (debug_level != 0 && osrcesc != src->encoding())
+	    go_inform(src->definition_location(), "leaking param content: %s",
 		      src->ast_format(gogo).c_str());
 	}
       else
 	{
 	  if (debug_level != 0)
-	    go_inform(src->location(), "leaking param");
+	    go_inform(src->definition_location(), "leaking param: %s",
+                      src->ast_format(gogo).c_str());
 	  src->set_encoding(Node::ESCAPE_SCOPE);
 	}
     }
@@ -2563,10 +2621,12 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 	  if (src_leaks)
 	    {
 	      src->set_encoding(Node::ESCAPE_HEAP);
-	      if (debug_level != 0)
+	      if (debug_level != 0 && osrcesc != src->encoding())
 		{
-		  go_inform(underlying->location(), "moved to heap: %s",
-                            underlying_node->ast_format(gogo).c_str());
+                  if (underlying->var_expression() != NULL)
+                    go_inform(underlying_node->definition_location(),
+                              "moved to heap: %s",
+                              underlying_node->ast_format(gogo).c_str());
 
 		  if (debug_level > 1)
 		    go_inform(src->location(),
@@ -2606,7 +2666,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 	  if (src_leaks)
 	    {
 	      src->set_encoding(Node::ESCAPE_HEAP);
-	      if (debug_level != 0)
+	      if (debug_level != 0 && osrcesc != src->encoding())
 		go_inform(src->location(), "%s escapes to heap",
 			  src->ast_format(gogo).c_str());
 	      extra_loop_depth = mod_loop_depth;
@@ -2652,7 +2712,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 		      if (src_leaks)
 			{
 			  src->set_encoding(Node::ESCAPE_HEAP);
-			  if (debug_level != 0)
+			  if (debug_level != 0 && osrcesc != src->encoding())
 			    go_inform(src->location(), "%s escapes to heap",
 				      src->ast_format(gogo).c_str());
 			  extra_loop_depth = mod_loop_depth;
@@ -2680,7 +2740,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 	{
 	  // Calls to Runtime::NEW get lowered into an allocation expression.
 	  src->set_encoding(Node::ESCAPE_HEAP);
-	  if (debug_level != 0)
+	  if (debug_level != 0 && osrcesc != src->encoding())
 	    go_inform(src->location(), "%s escapes to heap",
                       src->ast_format(gogo).c_str());
 	}
