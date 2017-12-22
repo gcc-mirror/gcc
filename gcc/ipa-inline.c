@@ -2358,6 +2358,19 @@ dump_inline_stats (void)
 	       (int) reason[i][2], (int) reason[i][1], reason[i][0]);
 }
 
+/* Called when node is removed.  */
+
+static void
+flatten_remove_node_hook (struct cgraph_node *node, void *data)
+{
+  if (lookup_attribute ("flatten", DECL_ATTRIBUTES (node->decl)) == NULL)
+    return;
+
+  hash_set<struct cgraph_node *> *removed
+    = (hash_set<struct cgraph_node *> *) data;
+  removed->add (node);
+}
+
 /* Decide on the inlining.  We do so in the topological order to avoid
    expenses on updating data structures.  */
 
@@ -2367,7 +2380,7 @@ ipa_inline (void)
   struct cgraph_node *node;
   int nnodes;
   struct cgraph_node **order;
-  int i;
+  int i, j;
   int cold;
   bool remove_functions = false;
 
@@ -2408,26 +2421,56 @@ ipa_inline (void)
   if (dump_file)
     fprintf (dump_file, "\nFlattening functions:\n");
 
-  /* In the first pass handle functions to be flattened.  Do this with
-     a priority so none of our later choices will make this impossible.  */
-  for (i = nnodes - 1; i >= 0; i--)
+  /* First shrink order array, so that it only contains nodes with
+     flatten attribute.  */
+  for (i = nnodes - 1, j = i; i >= 0; i--)
     {
       node = order[i];
+      if (lookup_attribute ("flatten",
+			    DECL_ATTRIBUTES (node->decl)) != NULL)
+	order[j--] = order[i];
+    }
+
+  /* After the above loop, order[j + 1] ... order[nnodes - 1] contain
+     nodes with flatten attribute.  If there is more than one such
+     node, we need to register a node removal hook, as flatten_function
+     could remove other nodes with flatten attribute.  See PR82801.  */
+  struct cgraph_node_hook_list *node_removal_hook_holder = NULL;
+  hash_set<struct cgraph_node *> *flatten_removed_nodes = NULL;
+  if (j < nnodes - 2)
+    {
+      flatten_removed_nodes = new hash_set<struct cgraph_node *>;
+      node_removal_hook_holder
+	= symtab->add_cgraph_removal_hook (&flatten_remove_node_hook,
+					   flatten_removed_nodes);
+    }
+
+  /* In the first pass handle functions to be flattened.  Do this with
+     a priority so none of our later choices will make this impossible.  */
+  for (i = nnodes - 1; i > j; i--)
+    {
+      node = order[i];
+      if (flatten_removed_nodes
+	  && flatten_removed_nodes->contains (node))
+	continue;
 
       /* Handle nodes to be flattened.
 	 Ideally when processing callees we stop inlining at the
 	 entry of cycles, possibly cloning that entry point and
 	 try to flatten itself turning it into a self-recursive
 	 function.  */
-      if (lookup_attribute ("flatten",
-			    DECL_ATTRIBUTES (node->decl)) != NULL)
-	{
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Flattening %s\n", node->name ());
-	  flatten_function (node, false);
-	}
+      if (dump_file)
+	fprintf (dump_file, "Flattening %s\n", node->name ());
+      flatten_function (node, false);
     }
+
+  if (j < nnodes - 2)
+    {
+      symtab->remove_cgraph_removal_hook (node_removal_hook_holder);
+      delete flatten_removed_nodes;
+    }
+  free (order);
+
   if (dump_file)
     dump_overall_stats ();
 
@@ -2439,7 +2482,6 @@ ipa_inline (void)
      inline functions and virtual functions so we really know what is called
      once.  */
   symtab->remove_unreachable_nodes (dump_file);
-  free (order);
 
   /* Inline functions with a property that after inlining into all callers the
      code size will shrink because the out-of-line copy is eliminated. 

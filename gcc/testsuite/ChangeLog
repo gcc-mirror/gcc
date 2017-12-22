@@ -1,3 +1,12 @@
+2017-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/82801
+	PR ipa/83346
+	* g++.dg/ipa/pr82801.C: New test.
+
 2017-12-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83467
