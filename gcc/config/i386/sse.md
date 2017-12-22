@@ -181,6 +181,9 @@
 
   ;; For VPCLMULQDQ support
   UNSPEC_VPCLMULQDQ
+
+  ;; For AVX512BITALG support
+  UNSPEC_VPSHUFBIT
 ])
 
 (define_c_enum "unspecv" [
@@ -500,6 +503,10 @@
    V8SF V4DF
    (V4SI "TARGET_AVX2") (V2DI "TARGET_AVX2")
    (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")])
+
+(define_mode_iterator VI48_AVX512VLBW
+  [(V8DI "TARGET_AVX512BW") (V4DI  "TARGET_AVX512VL")
+	(V2DI  "TARGET_AVX512VL")])
 
 (define_mode_attr avx512
   [(V16QI "avx512vl") (V32QI "avx512vl") (V64QI "avx512bw")
@@ -20023,9 +20030,9 @@
     (set_attr ("mode") ("TI"))])
 
 (define_insn "vpopcount<mode><mask_name>"
-  [(set (match_operand:VI48_512 0 "register_operand" "=v")
-	(popcount:VI48_512
-          (match_operand:VI48_512 1 "nonimmediate_operand" "vm")))]
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
+	(popcount:VI48_AVX512VL
+	  (match_operand:VI48_AVX512VL 1 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512VPOPCNTDQ"
   "vpopcnt<ssemodesuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}")
 
@@ -20065,6 +20072,13 @@
     ])]
   "TARGET_SSE && TARGET_64BIT"
   "jmp\t%P1")
+
+(define_insn "vpopcount<mode><mask_name>"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
+	(popcount:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 1 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX512BITALG"
+  "vpopcnt<ssemodesuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}")
 
 (define_insn "vgf2p8affineinvqb_<mode><mask_name>"
   [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,x,v")
@@ -20514,3 +20528,14 @@
   "TARGET_VPCLMULQDQ"
   "vpclmulqdq\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "mode" "DI")])
+
+(define_insn "avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
+	(unspec:<avx512fmaskmode>
+	  [(match_operand:VI48_AVX512VLBW 1 "register_operand" "v")
+	   (match_operand:VI48_AVX512VLBW 2 "nonimmediate_operand" "vm")]
+	UNSPEC_VPSHUFBIT))]
+  "TARGET_AVX512BITALG"
+  "vpshufbitqmb\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])

@@ -483,6 +483,19 @@ proc check_effective_target_vpclmulqdq { } {
     } "-mvpclmulqdq -mavx512vl" ]
 }
 
+# Return 1 if avx512_bitalg instructions can be compiled.
+proc check_effective_target_avx512bitalg { } {
+    return [check_no_compiler_messages avx512bitalg object {
+        typedef int __v32hi __attribute__ ((__vector_size__ (64)));
+
+        __v32hi
+        _mm512_popcnt_epi16 (__v32hi __A)
+        {
+            return (__v32hi) __builtin_ia32_vpopcountd_v32hi ((__v32hi) __A);
+        }
+    } "-mavx512bitalg" ]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {

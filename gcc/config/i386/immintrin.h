@@ -82,6 +82,10 @@
 
 #include <avx512vnnivlintrin.h>
 
+#include <avx512vpopcntdqvlintrin.h>
+
+#include <avx512bitalgintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>

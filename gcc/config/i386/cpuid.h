@@ -103,6 +103,7 @@
 #define bit_VAES	(1 << 9)
 #define bit_AVX512VNNI	(1 << 11)
 #define bit_VPCLMULQDQ	(1 << 10)
+#define bit_AVX512BITALG	(1 << 12)
 #define bit_AVX512VPOPCNTDQ	(1 << 14)
 #define bit_RDPID	(1 << 22)
 
