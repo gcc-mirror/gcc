@@ -1,5 +1,10 @@
 2017-12-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/83547
+	* tree-iterator.c (alloc_stmt_list): Start with cleared
+	TREE_SIDE_EFFECTS regardless whether a new STATEMENT_LIST is allocated
+	or old one reused.
+
 	PR target/83488
 	* config/i386/avx512vnniintrin.h: Don't check for __AVX512F__ nor
 	enable avx512f explicitly in #pragma GCC target.
