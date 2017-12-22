@@ -1,3 +1,9 @@
+2017-12-22  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/83527
+	PR debug/83419
+	* gcc.dg/pr83527.c: New.
+
 2017-12-21  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/83462
