@@ -3,6 +3,10 @@
 	Backported from mainline
 	2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/83448
+	* gcc.c-torture/compile/pr83448.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-4.c: New test.
+
 	PR rtl-optimization/80747
 	PR rtl-optimization/83512
 	* gcc.dg/pr80747.c: New test.
