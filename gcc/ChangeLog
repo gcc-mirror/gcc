@@ -3,6 +3,10 @@
 	Backported from mainline
 	2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/83448
+	* gimple-ssa-sprintf.c (maybe_warn): Don't call set_caret_index
+	if navail is >= dir.len.
+
 	PR rtl-optimization/80747
 	PR rtl-optimization/83512
 	* cfgrtl.c (force_nonfallthru_and_redirect): When splitting
