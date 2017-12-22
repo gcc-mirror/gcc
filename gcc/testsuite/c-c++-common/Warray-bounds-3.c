@@ -359,7 +359,7 @@ void test_strcpy_bounds_memarray_range (void)
   TM (a5, "0",    ma.a5 + i, ma.a5);
   TM (a5, "01",   ma.a5 + i, ma.a5);
   TM (a5, "012",  ma.a5 + i, ma.a5);
-  TM (a5, "0123", ma.a5 + i, ma.a5);     /* { dg-warning "offset 10 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char\\\[5]. at offset 4" "strcpy" { xfail *-*-* } } */
+  TM (a5, "0123", ma.a5 + i, ma.a5);     /* { dg-warning "offset 10 from the object at .ma. is out of the bounds of referenced subobject .\(MA::\)?a5. with type .char ?\\\[5]. at offset 4" "strcpy" { xfail *-*-* } } */
 
   TM (a11, "0",       ma.a5, ma.a11);
   TM (a11, "01",      ma.a5, ma.a11);
