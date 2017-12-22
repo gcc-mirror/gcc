@@ -1,10 +1,16 @@
+2017-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83488
+	* gcc.target/i386/pr83488-2.c: New test.
+	* gcc.target/i386/pr83488-3.c: New test.
+
 2017-12-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/82027
 	* g++.dg/lto/pr82027_0.C: New test.
 
 2017-12-22  Julia Koval  <julia.koval@intel.com>
-	Sebastian Peryt <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* g++.dg/other/i386-2.C: Add new options.
 	* g++.dg/other/i386-3.C: Ditto.

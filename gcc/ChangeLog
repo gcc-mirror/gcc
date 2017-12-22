@@ -1,3 +1,26 @@
+2017-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83488
+	* config/i386/avx512vnniintrin.h: Don't check for __AVX512F__ nor
+	enable avx512f explicitly in #pragma GCC target.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpdpbusd_v8si,
+	__builtin_ia32_vpdpbusd_v8si_mask, __builtin_ia32_vpdpbusd_v8si_maskz,
+	__builtin_ia32_vpdpbusd_v4si, __builtin_ia32_vpdpbusd_v4si_mask,
+	__builtin_ia32_vpdpbusd_v4si_maskz, __builtin_ia32_vpdpbusds_v8si,
+	__builtin_ia32_vpdpbusds_v8si_mask,
+	__builtin_ia32_vpdpbusds_v8si_maskz, __builtin_ia32_vpdpbusds_v4si,
+	__builtin_ia32_vpdpbusds_v4si_mask,
+	__builtin_ia32_vpdpbusds_v4si_maskz, __builtin_ia32_vpdpwssd_v8si,
+	__builtin_ia32_vpdpwssd_v8si_mask, __builtin_ia32_vpdpwssd_v8si_maskz,
+	__builtin_ia32_vpdpwssd_v4si, __builtin_ia32_vpdpwssd_v4si_mask,
+	__builtin_ia32_vpdpwssd_v4si_maskz, __builtin_ia32_vpdpwssds_v8si,
+	__builtin_ia32_vpdpwssds_v8si_mask,
+	__builtin_ia32_vpdpwssds_v8si_maskz, __builtin_ia32_vpdpwssds_v4si,
+	__builtin_ia32_vpdpwssds_v4si_mask,
+	__builtin_ia32_vpdpwssds_v4si_maskz): Use
+	OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL instead of
+	just OPTION_MASK_ISA_AVX512VNNI.
+
 2017-12-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/82027
@@ -5,7 +28,7 @@
 	clones.
 
 2017-12-22  Julia Koval  <julia.koval@intel.com>
-	Sebastian Peryt <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512BITALG_SET,
 	OPTION_MASK_ISA_AVX512BITALG_UNSET): New.
