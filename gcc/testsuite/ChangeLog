@@ -1,3 +1,8 @@
+2017-12-21  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/83462
+	* c-c++-common/Warray-bounds-3.c: Adjust dg-warning grep pattern.
+
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83487
