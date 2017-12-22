@@ -2350,6 +2350,7 @@ gfc_case;
 typedef struct
 {
   gfc_expr *var, *start, *end, *step;
+  unsigned short unroll;
 }
 gfc_iterator;
 
@@ -2724,6 +2725,7 @@ gfc_finalizer;
 /* decl.c */
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);
+extern int directive_unroll;
 
 /* Handling Parameterized Derived Types  */
 bool gfc_insert_kind_parameter_exprs (gfc_expr *);

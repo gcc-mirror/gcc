@@ -1063,6 +1063,7 @@ decode_gcc_attribute (void)
   old_locus = gfc_current_locus;
 
   match ("attributes", gfc_match_gcc_attributes, ST_ATTR_DECL);
+  match ("unroll", gfc_match_gcc_unroll, ST_NONE);
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
@@ -4635,7 +4636,14 @@ parse_do_block (void)
   s.ext.end_do_label = new_st.label1;
 
   if (new_st.ext.iterator != NULL)
-    stree = new_st.ext.iterator->var->symtree;
+    {
+      stree = new_st.ext.iterator->var->symtree;
+      if (directive_unroll != -1)
+	{
+	  new_st.ext.iterator->unroll = directive_unroll;
+	  directive_unroll = -1;
+	}
+    }
   else
     stree = NULL;
 
@@ -5392,6 +5400,9 @@ parse_executable (gfc_statement st)
 	default:
 	  return st;
 	}
+
+      if (directive_unroll != -1)
+	gfc_error ("%<GCC unroll%> directive does not commence a loop at %C");
 
       st = next_statement ();
     }

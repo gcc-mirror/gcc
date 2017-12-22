@@ -1,3 +1,42 @@
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* constexpr.c (cxx_eval_constant_expression) <ANNOTATE_EXPR>: Remove
+	assertion on 2nd operand.
+	(potential_constant_expression_1): Likewise.
+	* cp-tree.def (RANGE_FOR_STMT): Take a 5th operand.
+	* cp-tree.h (RANGE_FOR_UNROLL): New macro.
+	(cp_convert_range_for): Adjust prototype.
+	(finish_while_stmt_cond): Likewise.
+	(finish_do_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	* init.c (build_vec_init): Adjut call to finish_for_cond.
+	* parser.c (cp_parser_statement): Adjust call to
+	cp_parser_iteration_statement.
+	(cp_parser_for): Add unroll parameter and pass it in calls to
+	cp_parser_range_for and cp_parser_c_for.
+	(cp_parser_c_for): Add unroll parameter and pass it in call to
+	finish_for_cond.
+	(cp_parser_range_for): Add unroll parameter, set in on RANGE_FOR_STMT
+	and pass it in call to cp_convert_range_for.
+	(cp_convert_range_for): Add unroll parameter and pass it in call to
+	finish_for_cond.
+	(cp_parser_iteration_statement): Add unroll parameter and pass it in
+	calls to finish_while_stmt_cond, finish_do_stmt and cp_parser_for.
+	(cp_parser_pragma_ivdep): New static function.
+	(cp_parser_pragma_unroll): Likewise.
+	(cp_parser_pragma) <PRAGMA_IVDEP>: Add support for pragma Unroll.
+	<PRAGMA_UNROLL>: New case.
+	* pt.c (tsubst_expr) <FOR_STMT>: Adjust call to finish_for_cond.
+	<RANGE_FOR_STMT>: Pass unrolling factor to cp_convert_range_for.
+	<WHILE_STMT>: Adjust call to finish_while_stmt_cond.
+	<DO_STMT>: Adjust call to finish_do_stmt.
+	* semantics.c (finish_while_stmt_cond): Add unroll parameter and
+	build ANNOTATE_EXPR if present.
+	(finish_do_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	(begin_range_for_stmt): Build RANGE_FOR_STMT with 5th operand.
+
 2017-12-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83406

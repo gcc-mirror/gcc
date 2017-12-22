@@ -1,3 +1,20 @@
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/unroll-1.c: New test.
+	* c-c++-common/unroll-2.c: Likewise.
+	* c-c++-common/unroll-3.c: Likewise.
+	* c-c++-common/unroll-4.c: Likewise.
+	* c-c++-common/unroll-5.c: Likewise.
+	* g++.dg/ext/unroll-1.C: Likewise.
+	* g++.dg/ext/unroll-2.C: Likewise.
+	* g++.dg/ext/unroll-3.C: Likewise.
+	* gfortran.dg/directive_unroll_1.f90: Likewise.
+	* gfortran.dg/directive_unroll_2.f90: Likewise.
+	* gfortran.dg/directive_unroll_3.f90: Likewise.
+	* gfortran.dg/directive_unroll_4.f90: Likewise.
+	* gfortran.dg/directive_unroll_5.f90: Likewise.
+
 2017-12-22  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/83527

@@ -16127,7 +16127,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       RECUR (FOR_INIT_STMT (t));
       finish_init_stmt (stmt);
       tmp = RECUR (FOR_COND (t));
-      finish_for_cond (tmp, stmt, false);
+      finish_for_cond (tmp, stmt, false, 0);
       tmp = RECUR (FOR_EXPR (t));
       finish_for_expr (tmp, stmt);
       {
@@ -16146,6 +16146,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
         decl = tsubst (decl, args, complain, in_decl);
         maybe_push_decl (decl);
         expr = RECUR (RANGE_FOR_EXPR (t));
+	const unsigned short unroll
+	  = RANGE_FOR_UNROLL (t) ? tree_to_uhwi (RANGE_FOR_UNROLL (t)) : 0;
 	if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
 	  {
 	    unsigned int cnt;
@@ -16153,11 +16155,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    decl = tsubst_decomp_names (decl, RANGE_FOR_DECL (t), args,
 					complain, in_decl, &first, &cnt);
 	    stmt = cp_convert_range_for (stmt, decl, expr, first, cnt,
-					 RANGE_FOR_IVDEP (t));
+					 RANGE_FOR_IVDEP (t), unroll);
 	  }
 	else
 	  stmt = cp_convert_range_for (stmt, decl, expr, NULL_TREE, 0,
-				       RANGE_FOR_IVDEP (t));
+				       RANGE_FOR_IVDEP (t), unroll);
 	bool prev = note_iteration_stmt_body_start ();
         RECUR (RANGE_FOR_BODY (t));
 	note_iteration_stmt_body_end (prev);
@@ -16168,7 +16170,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case WHILE_STMT:
       stmt = begin_while_stmt ();
       tmp = RECUR (WHILE_COND (t));
-      finish_while_stmt_cond (tmp, stmt, false);
+      finish_while_stmt_cond (tmp, stmt, false, 0);
       {
 	bool prev = note_iteration_stmt_body_start ();
 	RECUR (WHILE_BODY (t));
@@ -16186,7 +16188,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       }
       finish_do_body (stmt);
       tmp = RECUR (DO_COND (t));
-      finish_do_stmt (tmp, stmt, false);
+      finish_do_stmt (tmp, stmt, false, 0);
       break;
 
     case IF_STMT:

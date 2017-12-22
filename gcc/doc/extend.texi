@@ -22381,9 +22381,7 @@ function.  The parenthesis around the options is optional.
 
 The @code{#pragma GCC target} pragma is presently implemented for
 x86, ARM, AArch64, PowerPC, S/390, and Nios II targets only.
-@end table
 
-@table @code
 @item #pragma GCC optimize (@var{"string"}...)
 @cindex pragma GCC optimize
 
@@ -22394,9 +22392,7 @@ if @code{attribute((optimize("STRING")))} was specified for that
 function.  The parenthesis around the options is optional.
 @xref{Function Attributes}, for more information about the
 @code{optimize} attribute and the attribute syntax.
-@end table
 
-@table @code
 @item #pragma GCC push_options
 @itemx #pragma GCC pop_options
 @cindex pragma GCC push_options
@@ -22407,15 +22403,14 @@ options.  It is intended for include files where you temporarily want
 to switch to using a different @samp{#pragma GCC target} or
 @samp{#pragma GCC optimize} and then to pop back to the previous
 options.
-@end table
 
-@table @code
 @item #pragma GCC reset_options
 @cindex pragma GCC reset_options
 
 This pragma clears the current @code{#pragma GCC target} and
 @code{#pragma GCC optimize} to use the default switches as specified
 on the command line.
+
 @end table
 
 @node Loop-Specific Pragmas
@@ -22424,7 +22419,6 @@ on the command line.
 @table @code
 @item #pragma GCC ivdep
 @cindex pragma GCC ivdep
-@end table
 
 With this pragma, the programmer asserts that there are no loop-carried
 dependencies which would prevent consecutive iterations of
@@ -22459,6 +22453,16 @@ void ignore_vec_dep (int *a, int k, int c, int m)
 @}
 @end smallexample
 
+@item #pragma GCC unroll @var{n}
+@cindex pragma GCC unroll @var{n}
+
+You can use this pragma to control how many times a loop should be unrolled.
+It must be placed immediately before a @code{for}, @code{while} or @code{do}
+loop or a @code{#pragma GCC ivdep}, and applies only to the loop that follows.
+@var{n} is an integer constant expression specifying the unrolling factor.
+The values of @math{0} and @math{1} block any unrolling of the loop.
+
+@end table
 
 @node Unnamed Fields
 @section Unnamed Structure and Union Fields

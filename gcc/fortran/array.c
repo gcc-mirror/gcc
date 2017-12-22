@@ -2123,6 +2123,7 @@ gfc_copy_iterator (gfc_iterator *src)
   dest->start = gfc_copy_expr (src->start);
   dest->end = gfc_copy_expr (src->end);
   dest->step = gfc_copy_expr (src->step);
+  dest->unroll = src->unroll;
 
   return dest;
 }

@@ -1,3 +1,8 @@
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/extend.texi (Loop-Specific Pragmas): Document pragma GCC unroll.
+
 2017-12-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83487
