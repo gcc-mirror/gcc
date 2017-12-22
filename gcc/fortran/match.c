@@ -2540,8 +2540,8 @@ gfc_match_do (void)
 
   old_loc = gfc_current_locus;
 
+  memset (&iter, '\0', sizeof (gfc_iterator));
   label = NULL;
-  iter.var = iter.start = iter.end = iter.step = NULL;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)

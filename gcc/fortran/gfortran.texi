@@ -3447,6 +3447,14 @@ as this requires the new array descriptor.
 @node GNU Fortran Compiler Directives
 @section GNU Fortran Compiler Directives
 
+@menu
+* ATTRIBUTES directive::
+* UNROLL directive::
+@end menu
+
+@node ATTRIBUTES directive
+@subsection ATTRIBUTES directive
+
 The Fortran standard describes how a conforming program shall
 behave; however, the exact implementation is not standardized.  In order
 to allow the user to choose specific implementation details, compiler
@@ -3518,6 +3526,19 @@ start in the first column.
 For procedures, the compiler directives shall be placed into the body
 of the procedure; for variables and procedure pointers, they shall be in
 the same declaration part as the variable or procedure pointer.
+
+
+@node UNROLL directive
+@subsection UNROLL directive
+
+The syntax of the directive is
+
+@code{!GCC$ unroll N}
+
+You can use this directive to control how many times a loop should be unrolled.
+It must be placed immediately before a @code{DO} loop and applies only to the
+loop that follows.  N is an integer constant specifying the unrolling factor.
+The values of 0 and 1 block any unrolling of the loop.
 
 
 

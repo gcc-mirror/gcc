@@ -1,3 +1,9 @@
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-pragma.c (init_pragma): Register pragma GCC unroll.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_UNROLL.
+
 2017-12-22  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/83527

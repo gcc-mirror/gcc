@@ -1,3 +1,22 @@
+2017-12-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* array.c (gfc_copy_iterator): Copy unroll field.
+	* decl.c (directive_unroll): New global variable.
+	(gfc_match_gcc_unroll): New function.
+	* gfortran.h (gfc_iterator]): Add unroll field.
+	(directive_unroll): Declare:
+	* match.c (gfc_match_do): Use memset to initialize the iterator.
+	* match.h (gfc_match_gcc_unroll): New prototype.
+	* parse.c (decode_gcc_attribute): Match "unroll".
+	(parse_do_block): Set iterator's unroll.
+	(parse_executable): Diagnose misplaced unroll directive.
+	* trans-stmt.c (gfc_trans_simple_do) Annotate loop condition with
+	annot_expr_unroll_kind.
+	(gfc_trans_do): Likewise.
+	* gfortran.texi (GNU Fortran Compiler Directives): Split section into
+	subections 'ATTRIBUTES directive' and 'UNROLL directive'.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* scanner.c (preprocessor_line): Replace Yoda conditions with typical

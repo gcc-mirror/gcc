@@ -1,3 +1,16 @@
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-parser.c (c_parser_while_statement): Add unroll parameter and
+	build ANNOTATE_EXPR if present.  Add 3rd operand to ANNOTATE_EXPR.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_statement_after_labels): Adjust calls to above.
+	(c_parse_pragma_ivdep): New static function.
+	(c_parser_pragma_unroll): Likewise.
+	(c_parser_pragma) <PRAGMA_IVDEP>: Add support for pragma Unroll.
+	<PRAGMA_UNROLL>: New case.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (comptypes_internal, function_types_compatible_p,
