@@ -1,3 +1,20 @@
+2017-12-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VNNI_SET):
+	Or in OPTION_MASK_ISA_AVX512F_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET): Or in
+	OPTION_MASK_ISA_AVX512VNNI_UNSET.
+	(ix86_handle_option): Adjust for
+	OPTION_MASK_ISA_AVX512VNNI_*SET being in ix86_isa_flags.
+	* config/i386/i386-builtin.def: Move VNNI builtins from ARGS2
+	section to ARGS.
+	* config/i386/i386-c.c: Check for OPTION_MASK_ISA_AVX512VNNI in
+	isa_flag instead of isa_flag2.
+	* config/i386/i386.c (ix86_target_string): Move -mavx512vnni from
+	isa_opts2 to isa_opts.
+	* config/i386/i386.opt (mavx512vnni): Move from ix86_isa_flags2
+	to ix86_isa_flags.
+
 2017-12-22  Mike Stump  <mikestump@comcast.net>
             Eric Botcazou  <ebotcazou@adacore.com>
 
