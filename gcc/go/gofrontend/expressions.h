@@ -2896,8 +2896,7 @@ class Array_index_expression : public Expression
   do_is_addressable() const;
 
   void
-  do_address_taken(bool escapes)
-  { this->array_->address_taken(escapes); }
+  do_address_taken(bool escapes);
 
   void
   do_issue_nil_check()
