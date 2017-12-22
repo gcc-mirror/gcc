@@ -1,3 +1,9 @@
+2017-12-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/82027
+	* lto-cgraph.c (output_cgraph_opt_summary_p): Also check former
+	clones.
+
 2017-12-22  Julia Koval  <julia.koval@intel.com>
 	Sebastian Peryt <sebastian.peryt@intel.com>
 
