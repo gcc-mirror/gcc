@@ -1577,6 +1577,11 @@ class Function_declaration
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
 
+  // Return the pragmas for this function.
+  unsigned int
+  pragmas() const
+  { return this->pragmas_; }
+
   // Set the pragmas for this function.
   void
   set_pragmas(unsigned int pragmas)
