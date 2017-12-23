@@ -11218,22 +11218,48 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
     } /* switch (code) */
 }
 
+/* Used by contains_label_[p1].  */
+
+struct contains_label_data
+{
+  hash_set<tree> *pset;
+  bool inside_switch_p;
+};
+
 /* Callback for walk_tree, looking for LABEL_EXPR.  Return *TP if it is
-   a LABEL_EXPR; otherwise return NULL_TREE.  Do not check the subtrees
-   of GOTO_EXPR.  */
+   a LABEL_EXPR or CASE_LABEL_EXPR not inside of another SWITCH_EXPR; otherwise
+   return NULL_TREE.  Do not check the subtrees of GOTO_EXPR.  */
 
 static tree
-contains_label_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+contains_label_1 (tree *tp, int *walk_subtrees, void *data)
 {
+  contains_label_data *d = (contains_label_data *) data;
   switch (TREE_CODE (*tp))
     {
     case LABEL_EXPR:
       return *tp;
 
+    case CASE_LABEL_EXPR:
+      if (!d->inside_switch_p)
+	return *tp;
+      return NULL_TREE;
+
+    case SWITCH_EXPR:
+      if (!d->inside_switch_p)
+	{
+	  if (walk_tree (&SWITCH_COND (*tp), contains_label_1, data, d->pset))
+	    return *tp;
+	  d->inside_switch_p = true;
+	  if (walk_tree (&SWITCH_BODY (*tp), contains_label_1, data, d->pset))
+	    return *tp;
+	  d->inside_switch_p = false;
+	  *walk_subtrees = 0;
+	}
+      return NULL_TREE;
+
     case GOTO_EXPR:
       *walk_subtrees = 0;
-
-      /* fall through */
+      return NULL_TREE;
 
     default:
       return NULL_TREE;
@@ -11246,8 +11272,9 @@ contains_label_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 static bool
 contains_label_p (tree st)
 {
-  return
-   (walk_tree_without_duplicates (&st, contains_label_1 , NULL) != NULL_TREE);
+  hash_set<tree> pset;
+  contains_label_data data = { &pset, false };
+  return walk_tree (&st, contains_label_1, &data, &pset) != NULL_TREE;
 }
 
 /* Fold a ternary expression of code CODE and type TYPE with operands

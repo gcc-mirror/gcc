@@ -1,3 +1,13 @@
+2017-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83553
+	* fold-const.c (struct contains_label_data): New type.
+	(contains_label_1): Return non-NULL even for CASE_LABEL_EXPR, unless
+	inside of a SWITCH_BODY seen during the walk.
+	(contains_label_p): Use walk_tree instead of
+	walk_tree_without_duplicates, prepare data for contains_label_1 and
+	provide own pset.
+
 2017-12-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83547
