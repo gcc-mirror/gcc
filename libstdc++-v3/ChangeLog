@@ -1,3 +1,13 @@
+2017-12-24  Michele Pezzutti <mpezz@tiscali.it>
+
+	PR libstdc++/83237
+	* include/bits/random.tcc (poisson_distribution<>::operator()):
+	Fix __x = 1 case - see updated Errata of Devroye's treatise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	values.cc: Add test.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
 2017-12-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83450
