@@ -38,6 +38,7 @@ foo (void*)
     {
       pthread_exit (0);
     }
+  return 0; // See libstdc++/83450
 }
 
 // c++/18185
