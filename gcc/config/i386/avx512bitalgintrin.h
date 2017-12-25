@@ -143,23 +143,6 @@ _mm256_maskz_popcnt_epi8 (__mmask32 __U, __m256i __A)
 						 _mm256_setzero_si256 (),
 						(__mmask32) __U);
 }
-extern __inline __mmask16
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_bitshuffle_epi64_mask (__m128i __A, __m128i __B)
-{
-  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v2di) __A,
-						 (__v2di) __B,
-						 (__mmask16) -1);
-}
-
-extern __inline __mmask16
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_bitshuffle_epi64_mask (__mmask16 __M, __m128i __A, __m128i __B)
-{
-  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v2di) __A,
-						 (__v2di) __B,
-						 (__mmask16) __M);
-}
 
 extern __inline __mmask32
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -190,6 +173,24 @@ _mm256_mask_bitshuffle_epi64_mask (__mmask32 __M, __m256i __A, __m256i __B)
 #pragma GCC target("avx512bitalg,avx512vl")
 #define __DISABLE_AVX512BITALGVL__
 #endif /* __AVX512VLBW__ */
+
+extern __inline __mmask16
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_bitshuffle_epi64_mask (__m128i __A, __m128i __B)
+{
+  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v2di) __A,
+						 (__v2di) __B,
+						 (__mmask16) -1);
+}
+
+extern __inline __mmask16
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_bitshuffle_epi64_mask (__mmask16 __M, __m128i __A, __m128i __B)
+{
+  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v2di) __A,
+						 (__v2di) __B,
+						 (__mmask16) __M);
+}
 
 extern __inline __m256i
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
