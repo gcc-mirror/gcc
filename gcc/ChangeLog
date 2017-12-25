@@ -1,3 +1,120 @@
+2017-12-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83488
+	* config/i386/i386.opt (-mavx512vpopcntdq, -mmavx512bitalg): Move from
+	ix86_isa_flags2 to ix86_isa_flags.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Test
+	OPTION_MASK_ISA_AVX512BITALG and OPTION_MASK_ISA_AVX512VPOPCNTDQ in
+	isa_flags rather than isa_flags2.
+	* config/i386/i386.c (ix86_target_string): Move -mavx512vpopcntdq
+	and -mavx512bitalg from isa2_opts to isa_opts.
+	(ix86_option_override_internal): Test OPTION_MASK_ISA_AVX512VPOPCNTDQ
+	in x_ix86_isa_flags_explicit rather than x_ix86_isa_flags2_explicit
+	and set it in x_ix86_isa_flags rather than x_ix86_isa_flags2.
+	Formatting fixes.
+	(def_builtin): Treat OPTION_MASK_ISA_AVX512BW or
+	OPTION_MASK_ISA_AVX512F ored with another option similarly to
+	OPTION_MASK_ISA_AVX512VL.  Even for OPTION_MASK_ISA_AVX512VL don't
+	clear it if mask is just OPTION_MASK_ISA_AVX512VL itself.
+	(ix86_expand_builtin): Don't handle OPTION_MASK_ISA_GFNI and
+	OPTION_MASK_ISA_VPCLMULQDQ specially, instead handle
+	OPTION_MASK_ISA_AVX512BW and OPTION_MASK_ISA_AVX512F that way.
+	* config/i386/i386-builtin.def: Move AVX512VPOPCNTDQ and AVX512BITALG
+	builtins from bdesc_args2 to bdesc_args section.
+	(__builtin_ia32_compressstoreuqi512_mask,
+	__builtin_ia32_compressstoreuhi512_mask,
+	__builtin_ia32_compressstoreuqi256_mask,
+	__builtin_ia32_expandloadqi512_mask,
+	__builtin_ia32_expandloadqi512_maskz,
+	__builtin_ia32_expandloadhi512_mask,
+	__builtin_ia32_expandloadhi512_maskz,
+	__builtin_ia32_compressqi512_mask, __builtin_ia32_compresshi512_mask,
+	__builtin_ia32_compressqi256_mask, __builtin_ia32_expandqi512_mask,
+	__builtin_ia32_expandqi512_maskz, __builtin_ia32_expandhi512_mask,
+	__builtin_ia32_expandhi512_maskz, __builtin_ia32_expandqi256_mask,
+	__builtin_ia32_expandqi256_maskz, __builtin_ia32_vpshrd_v32hi_mask,
+	__builtin_ia32_vpshld_v32hi_mask, __builtin_ia32_vpshrdv_v32hi_mask,
+	__builtin_ia32_vpshrdv_v32hi_maskz, __builtin_ia32_vpshldv_v32hi_mask,
+	__builtin_ia32_vpshldv_v32hi_maskz,
+	__builtin_ia32_vpopcountb_v64qi_mask,
+	__builtin_ia32_vpopcountw_v32hi_mask,
+	__builtin_ia32_vpshufbitqmb512_mask,
+	__builtin_ia32_vpshufbitqmb256_mask): Add
+	" | OPTION_MASK_ISA_AVX512BW".
+	(__builtin_ia32_expandloadqi256_mask,
+	__builtin_ia32_expandloadqi256_maskz,
+	__builtin_ia32_vpopcountb_v32qi_mask): Add
+	" | OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_AVX512BW".
+	(__builtin_ia32_expandloadhi256_mask,
+	__builtin_ia32_expandloadhi256_maskz,
+	__builtin_ia32_expandloadqi128_mask,
+	__builtin_ia32_expandloadqi128_maskz,
+	__builtin_ia32_expandloadhi128_mask,
+	__builtin_ia32_expandloadhi128_maskz,
+	__builtin_ia32_vpshrd_v16hi, __builtin_ia32_vpshrd_v16hi_mask,
+	__builtin_ia32_vpshrd_v8hi, __builtin_ia32_vpshrd_v8hi_mask,
+	__builtin_ia32_vpshrd_v8si, __builtin_ia32_vpshrd_v8si_mask,
+	__builtin_ia32_vpshrd_v4si, __builtin_ia32_vpshrd_v4si_mask,
+	__builtin_ia32_vpshrd_v4di, __builtin_ia32_vpshrd_v4di_mask,
+	__builtin_ia32_vpshrd_v2di, __builtin_ia32_vpshrd_v2di_mask,
+	__builtin_ia32_vpshld_v16hi, __builtin_ia32_vpshld_v16hi_mask,
+	__builtin_ia32_vpshld_v8hi, __builtin_ia32_vpshld_v8hi_mask,
+	__builtin_ia32_vpshld_v8si, __builtin_ia32_vpshld_v8si_mask,
+	__builtin_ia32_vpshld_v4si, __builtin_ia32_vpshld_v4si_mask,
+	__builtin_ia32_vpshld_v4di, __builtin_ia32_vpshld_v4di_mask,
+	__builtin_ia32_vpshld_v2di, __builtin_ia32_vpshld_v2di_mask,
+	__builtin_ia32_vpshrdv_v16hi, __builtin_ia32_vpshrdv_v16hi_mask,
+	__builtin_ia32_vpshrdv_v16hi_maskz, __builtin_ia32_vpshrdv_v8hi,
+	__builtin_ia32_vpshrdv_v8hi_mask, __builtin_ia32_vpshrdv_v8hi_maskz,
+	__builtin_ia32_vpshrdv_v8si, __builtin_ia32_vpshrdv_v8si_mask,
+	__builtin_ia32_vpshrdv_v8si_maskz, __builtin_ia32_vpshrdv_v4si,
+	__builtin_ia32_vpshrdv_v4si_mask, __builtin_ia32_vpshrdv_v4si_maskz,
+	__builtin_ia32_vpshrdv_v4di, __builtin_ia32_vpshrdv_v4di_mask,
+	__builtin_ia32_vpshrdv_v4di_maskz, __builtin_ia32_vpshrdv_v2di,
+	__builtin_ia32_vpshrdv_v2di_mask, __builtin_ia32_vpshrdv_v2di_maskz,
+	__builtin_ia32_vpshldv_v16hi, __builtin_ia32_vpshldv_v16hi_mask,
+	__builtin_ia32_vpshldv_v16hi_maskz, __builtin_ia32_vpshldv_v8hi,
+	__builtin_ia32_vpshldv_v8hi_mask, __builtin_ia32_vpshldv_v8hi_maskz,
+	__builtin_ia32_vpshldv_v8si, __builtin_ia32_vpshldv_v8si_mask,
+	__builtin_ia32_vpshldv_v8si_maskz, __builtin_ia32_vpshldv_v4si,
+	__builtin_ia32_vpshldv_v4si_mask, __builtin_ia32_vpshldv_v4si_maskz,
+	__builtin_ia32_vpshldv_v4di, __builtin_ia32_vpshldv_v4di_mask,
+	__builtin_ia32_vpshldv_v4di_maskz, __builtin_ia32_vpshldv_v2di,
+	__builtin_ia32_vpshldv_v2di_mask, __builtin_ia32_vpshldv_v2di_maskz,
+	__builtin_ia32_vpopcountb_v32qi, __builtin_ia32_vpopcountb_v16qi,
+	__builtin_ia32_vpopcountb_v16qi_mask, __builtin_ia32_vpopcountw_v16hi,
+	__builtin_ia32_vpopcountw_v16hi_mask, __builtin_ia32_vpopcountw_v8hi,
+	__builtin_ia32_vpopcountw_v8hi_mask): Add
+	" | OPTION_MASK_ISA_AVX512VL".
+	* config/i386/avx512vbmi2intrin.h (_mm512_shrdi_epi16,
+	_mm512_shrdi_epi32, _mm512_mask_shrdi_epi32, _mm512_maskz_shrdi_epi32,
+	_mm512_shrdi_epi64, _mm512_mask_shrdi_epi64, _mm512_maskz_shrdi_epi64,
+	_mm512_shldi_epi16, _mm512_shldi_epi32, _mm512_mask_shldi_epi32,
+	_mm512_maskz_shldi_epi32, _mm512_shldi_epi64, _mm512_mask_shldi_epi64,
+	_mm512_maskz_shldi_epi64, _mm512_shrdv_epi16, _mm512_shrdv_epi32,
+	_mm512_mask_shrdv_epi32, _mm512_maskz_shrdv_epi32, _mm512_shrdv_epi64,
+	_mm512_mask_shrdv_epi64, _mm512_maskz_shrdv_epi64, _mm512_shldv_epi16,
+	_mm512_shldv_epi32, _mm512_mask_shldv_epi32, _mm512_maskz_shldv_epi32,
+	_mm512_shldv_epi64, _mm512_mask_shldv_epi64,
+	_mm512_maskz_shldv_epi64): Don't require avx512bw for these intrinsics.
+	* config/i386/avx512bitalgintrin.h (_mm_bitshuffle_epi64_mask,
+	_mm_mask_bitshuffle_epi64_mask): Likewise.
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET,
+	OPTION_MASK_ISA_AVX512BITALG_SET): Or in OPTION_MASK_ISA_AVX512F_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET): Or in
+	OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET and
+	OPTION_MASK_ISA_AVX512BITALG_UNSET.
+	(OPTION_MASK_ISA2_AVX512F_UNSET,
+	OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET): Define.
+	(ix86_handle_option): For -mno-general-regs-only, clear from
+	ix86_isa_flags2 OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET rather than
+	just OPTION_MASK_ISA_MPX.  For -mno-sse{,2,3,4,4.1,4.2,avx,avx2} and
+	-mno-ssse3 clear OPTION_MASK_ISA2_AVX512F_UNSET bits from
+	ix86_isa_flags2.  For -mno-avx512f likewise, instead of masking
+	individually listed ISAs.  For -m{,no-}avx512{vpopcntdq,bitalg} adjust
+	for moving from ix86_isa_flags2 to ix86_isa_flags.
+
 2017-12-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83553

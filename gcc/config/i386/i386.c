@@ -2758,16 +2758,16 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
-    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
     { "-mibt",		OPTION_MASK_ISA_IBT },
     { "-mhle",		OPTION_MASK_ISA_HLE },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mclzero",	OPTION_MASK_ISA_CLZERO },
-    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
-    { "-mavx512bitalg", OPTION_MASK_ISA_AVX512BITALG }
+    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX }
   };
   static struct ix86_target_opts isa_opts[] =
   {
+    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
+    { "-mavx512bitalg", OPTION_MASK_ISA_AVX512BITALG },
     { "-mvpclmulqdq",	OPTION_MASK_ISA_VPCLMULQDQ },
     { "-mgfni",		OPTION_MASK_ISA_GFNI },
     { "-mavx512vnni",	OPTION_MASK_ISA_AVX512VNNI },
@@ -4104,14 +4104,17 @@ ix86_option_override_internal (bool main_args_p,
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512IFMA;
 
 	if (processor_alias_table[i].flags & PTA_AVX5124VNNIW
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX5124VNNIW))
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA_AVX5124VNNIW))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124VNNIW;
 	if (processor_alias_table[i].flags & PTA_AVX5124FMAPS
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX5124FMAPS))
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA_AVX5124FMAPS))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124FMAPS;
 	if (processor_alias_table[i].flags & PTA_AVX512VPOPCNTDQ
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
+	    && !(opts->x_ix86_isa_flags_explicit
+		 & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
 	if (processor_alias_table[i].flags & PTA_SGX
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_SGX))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX;
@@ -29795,13 +29798,21 @@ def_builtin (HOST_WIDE_INT mask, const char *name,
     {
       ix86_builtins_isa[(int) code].isa = mask;
 
-      /* OPTION_MASK_ISA_AVX512VL has special meaning. Despite of generic case,
-	 where any bit set means that built-in is enable, this bit must be *and-ed*
-	 with another one. E.g.: OPTION_MASK_ISA_AVX512DQ | OPTION_MASK_ISA_AVX512VL
-	 means that *both* cpuid bits must be set for the built-in to be available.
-	 Handle this here.  */
-      if (mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
+      /* OPTION_MASK_ISA_AVX512{F,VL,BW} have special meaning. Despite of
+	 generic case, where any bit set means that built-in is enable, this
+	 bit must be *and-ed* with another one. E.g.:
+	 OPTION_MASK_ISA_AVX512DQ | OPTION_MASK_ISA_AVX512VL
+	 means that *both* cpuid bits must be set for the built-in to
+	 be available. Handle this here.  */
+      if ((mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
+	  && mask != OPTION_MASK_ISA_AVX512VL)
 	mask &= ~OPTION_MASK_ISA_AVX512VL;
+      if ((mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512BW)
+	  && mask != OPTION_MASK_ISA_AVX512BW)
+	mask &= ~OPTION_MASK_ISA_AVX512BW;
+      if ((mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512F)
+	  && mask != OPTION_MASK_ISA_AVX512F)
+	mask &= ~OPTION_MASK_ISA_AVX512F;
 
       mask &= ~OPTION_MASK_ISA_64BIT;
       if (mask == 0
@@ -35364,25 +35375,28 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
      Originally the builtin was not created if it wasn't applicable to the
      current ISA based on the command line switches.  With function specific
      options, we need to check in the context of the function making the call
-     whether it is supported.  Treat AVX512VL and MMX specially.  For other flags,
-     if isa includes more than one ISA bit, treat those are requiring any
-     of them.  For AVX512VL, require both AVX512VL and the non-AVX512VL
-     ISAs.  Likewise for MMX, require both MMX and the non-MMX ISAs.
+     whether it is supported.  Treat AVX512{VL,BW,F} and MMX specially.  For
+     other flags, if isa includes more than one ISA bit, treat those are
+     requiring any of them.  For AVX512VL, require both AVX512VL and the
+     non-AVX512VL ISAs.  Likewise for MMX, require both MMX and the non-MMX
+     ISAs.  Similarly for AVX512F and AVX512BW.
      Similarly for 64BIT, but we shouldn't be building such builtins
      at all, -m64 is a whole TU option.  */
   if (((ix86_builtins_isa[fcode].isa
 	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
-	    | OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_GFNI
-	    | OPTION_MASK_ISA_VPCLMULQDQ))
+	    | OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_AVX512BW
+	    | OPTION_MASK_ISA_AVX512F))
        && !(ix86_builtins_isa[fcode].isa
 	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
-		| OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_GFNI
-		| OPTION_MASK_ISA_VPCLMULQDQ)
+		| OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_AVX512BW
+		| OPTION_MASK_ISA_AVX512F)
 	    & ix86_isa_flags))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL))
-      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_GFNI)
-	  && !(ix86_isa_flags & OPTION_MASK_ISA_GFNI))
+      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512BW)
+	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512BW))
+      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512F)
+	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512F))
       || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_MMX)
 	  && !(ix86_isa_flags & OPTION_MASK_ISA_MMX))
       || (ix86_builtins_isa[fcode].isa2
