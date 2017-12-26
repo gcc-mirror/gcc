@@ -1,3 +1,10 @@
+2017-12-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83540
+	* frontend-passes.c (create_var): If an array to be created
+	has unknown size and -fno-realloc-lhs is in effect,
+	return NULL.
+
 2017-12-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
             Eric Botcazou  <ebotcazou@adacore.com>
 
