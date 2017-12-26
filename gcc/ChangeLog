@@ -1,3 +1,9 @@
+2017-12-26  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/83513
+	* sel-sched.c (sel_rank_for_schedule): Order by non-zero usefulness
+	before priority comparison.
+
 2017-12-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83488
