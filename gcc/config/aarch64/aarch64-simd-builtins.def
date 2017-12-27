@@ -86,6 +86,10 @@
   VAR1 (SETREGP, set_qregoi, 0, v2di)
   VAR1 (SETREGP, set_qregci, 0, v2di)
   VAR1 (SETREGP, set_qregxi, 0, v2di)
+  /* Implemented by aarch64_ld1x2<VQ:mode>. */
+  BUILTIN_VQ (LOADSTRUCT, ld1x2, 0)
+  /* Implemented by aarch64_ld1x2<VDC:mode>. */
+  BUILTIN_VDC (LOADSTRUCT, ld1x2, 0)
   /* Implemented by aarch64_ld<VSTRUCT:nregs><VDC:mode>.  */
   BUILTIN_VDC (LOADSTRUCT, ld2, 0)
   BUILTIN_VDC (LOADSTRUCT, ld3, 0)
