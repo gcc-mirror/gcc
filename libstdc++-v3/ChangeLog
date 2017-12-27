@@ -1,3 +1,12 @@
+2017-12-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83538
+	* doc/xml/manual/intro.xml: Document LWG 2306 change.
+	* include/bits/regex.h (match_results::reference): Change to
+	non-const reference.
+	* testsuite/28_regex/match_results/typedefs.cc: Check types are
+	correct.
+
 2017-12-24  Michele Pezzutti <mpezz@tiscali.it>
 
 	PR libstdc++/83237

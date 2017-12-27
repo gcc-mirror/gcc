@@ -968,6 +968,12 @@ requirements of the license of GCC.
     <code>constexpr</code> to <code>addressof</code> for C++17 and later.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2306"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2306">2306</link>:
+	<emphasis><code>match_results::reference</code> should be <code>value_type&amp;</code>, not <code>const value_type&amp;</code></emphasis>
+    </term>
+    <listitem><para>Change typedef.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2313"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2313">2313</link>:
 	<emphasis><code>tuple_size</code> should always derive from <code>integral_constant&lt;size_t, N&gt;</code></emphasis>
     </term>

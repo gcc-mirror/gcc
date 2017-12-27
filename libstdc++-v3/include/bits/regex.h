@@ -1541,7 +1541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       //@{
       typedef sub_match<_Bi_iter>			   value_type;
       typedef const value_type&				   const_reference;
-      typedef const_reference				   reference;
+      typedef value_type&				   reference;
       typedef typename _Base_type::const_iterator	   const_iterator;
       typedef const_iterator				   iterator;
       typedef typename __iter_traits::difference_type	   difference_type;
