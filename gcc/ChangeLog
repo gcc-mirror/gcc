@@ -1,3 +1,9 @@
+2017-12-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/83552
+	* tree-ssa-strlen.c (fold_strstr_to_strncmp): Assign result
+	of get_string_lenth to a SSA_NAME if not a GIMPLE value.
+
 2017-12-27  Tom de Vries  <tom@codesourcery.com>
 
 	* config/nvptx/nvptx.c (nvptx_option_override): Disable
