@@ -1,5 +1,12 @@
 2017-12-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83600
+	* include/bits/regex.h (match_results::end()): Return valid iterator
+	when not ready.
+	* testsuite/28_regex/match_results/ctors/char/default.cc: Check that
+	unready objects are empty and have equal begin and end iterators.
+	* testsuite/28_regex/match_results/ctors/wchar_t/default.cc: Likewise.
+
 	PR libstdc++/83598
 	* include/bits/regex.h (basic_regex): Don't modify flags passed to
 	constructors.
