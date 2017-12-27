@@ -30,6 +30,8 @@ void test01()
   std::cmatch cm;
   VERIFY( cm.size() == 0 );
   VERIFY( !cm.ready() );
+  VERIFY( cm.empty() );
+  VERIFY( cm.begin() == cm.end() ); // PR libstdc++/83600
 }
 
 void test02()
@@ -37,6 +39,8 @@ void test02()
   std::smatch sm;
   VERIFY( sm.size() == 0 );
   VERIFY( !sm.ready() );
+  VERIFY( sm.empty() );
+  VERIFY( sm.begin() == sm.end() ); // PR libstdc++/83600
 }
 
 int

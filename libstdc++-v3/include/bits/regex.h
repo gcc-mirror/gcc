@@ -1749,7 +1749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_iterator
       end() const
-      { return _Base_type::end() - 3; }
+      { return _Base_type::end() - (empty() ? 0 : 3); }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
