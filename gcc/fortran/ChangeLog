@@ -1,3 +1,9 @@
+2017_12_27  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/83092
+	* expr.c (gfc_apply_init): Check that typespec has character type
+	before using character length field.
+
 2017-12-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83540
