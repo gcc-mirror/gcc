@@ -1,3 +1,8 @@
+2017_12_27  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/83092
+	* gfortran.dg/init_char_with_nonchar_ctr.f90: New test.
+
 2017-12-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vld1x2.c: New test.
