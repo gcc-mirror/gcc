@@ -1,5 +1,10 @@
 2017-12-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83598
+	* include/bits/regex.h (basic_regex): Don't modify flags passed to
+	constructors.
+	* testsuite/28_regex/basic_regex/ctors/83598.cc: New test.
+
 	PR libstdc++/83538
 	* doc/xml/manual/intro.xml: Document LWG 2306 change.
 	* include/bits/regex.h (match_results::reference): Change to
