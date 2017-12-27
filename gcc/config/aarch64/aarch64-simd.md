@@ -5296,6 +5296,33 @@
   DONE;
 })
 
+(define_expand "aarch64_ld1x2<VQ:mode>"
+ [(match_operand:OI 0 "register_operand" "=w")
+  (match_operand:DI 1 "register_operand" "r")
+  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  machine_mode mode = OImode;
+  rtx mem = gen_rtx_MEM (mode, operands[1]);
+
+  emit_insn (gen_aarch64_simd_ld1<VQ:mode>_x2 (operands[0], mem));
+  DONE;
+})
+
+(define_expand "aarch64_ld1x2<VDC:mode>"
+ [(match_operand:OI 0 "register_operand" "=w")
+  (match_operand:DI 1 "register_operand" "r")
+  (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  machine_mode mode = OImode;
+  rtx mem = gen_rtx_MEM (mode, operands[1]);
+
+  emit_insn (gen_aarch64_simd_ld1<VDC:mode>_x2 (operands[0], mem));
+  DONE;
+})
+
+
 (define_expand "aarch64_ld<VSTRUCT:nregs>_lane<VALLDIF:mode>"
   [(match_operand:VSTRUCT 0 "register_operand" "=w")
 	(match_operand:DI 1 "register_operand" "w")
@@ -5691,6 +5718,27 @@
   "ld1r\\t{%0.<Vtype>}, %1"
   [(set_attr "type" "neon_load1_all_lanes")]
 )
+
+(define_insn "aarch64_simd_ld1<mode>_x2"
+  [(set (match_operand:OI 0 "register_operand" "=w")
+	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD1))]
+  "TARGET_SIMD"
+  "ld1\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
+  [(set_attr "type" "neon_load1_2reg<q>")]
+)
+
+(define_insn "aarch64_simd_ld1<mode>_x2"
+  [(set (match_operand:OI 0 "register_operand" "=w")
+	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD1))]
+  "TARGET_SIMD"
+  "ld1\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
+  [(set_attr "type" "neon_load1_2reg<q>")]
+)
+
 
 (define_insn "aarch64_frecpe<mode>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")

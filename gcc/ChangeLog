@@ -1,3 +1,38 @@
+2017-12-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/aarch64-simd.md (aarch64_ld1x2<VQ:mode>): New.
+	(aarch64_ld1x2<VDC:mode>): Likewise.
+	(aarch64_simd_ld1<mode>_x2): Likewise.
+	(aarch64_simd_ld1<mode>_x2): Likewise.
+	* config/aarch64/arm_neon.h (vld1_u8_x2): New.
+	(vld1_s8_x2): Likewise.
+	(vld1_u16_x2): Likewise.
+	(vld1_s16_x2): Likewise.
+	(vld1_u32_x2): Likewise.
+	(vld1_s32_x2): Likewise.
+	(vld1_u64_x2): Likewise.
+	(vld1_s64_x2): Likewise.
+	(vld1_f16_x2): Likewise.
+	(vld1_f32_x2): Likewise.
+	(vld1_f64_x2): Likewise.
+	(vld1_p8_x2): Likewise.
+	(vld1_p16_x2): Likewise.
+	(vld1_p64_x2): Likewise.
+	(vld1q_u8_x2): Likewise.
+	(vld1q_s8_x2): Likewise.
+	(vld1q_u16_x2): Likewise.
+	(vld1q_s16_x2): Likewise.
+	(vld1q_u32_x2): Likewise.
+	(vld1q_s32_x2): Likewise.
+	(vld1q_u64_x2): Likewise.
+	(vld1q_s64_x2): Likewise.
+	(vld1q_f16_x2): Likewise.
+	(vld1q_f32_x2): Likewise.
+	(vld1q_f64_x2): Likewise.
+	(vld1q_p8_x2): Likewise.
+	(vld1q_p16_x2): Likewise.
+	(vld1q_p64_x2): Likewise.
+
 2017-12-27  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/83552
