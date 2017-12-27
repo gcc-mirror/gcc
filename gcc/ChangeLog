@@ -1,3 +1,8 @@
+2017-12-27  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_option_override): Disable
+	-gstatement-frontiers.
+
 2017-12-26  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/83513
