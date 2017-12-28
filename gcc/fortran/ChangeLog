@@ -1,3 +1,9 @@
+2017-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/83548
+	* match.c (gfc_match_type_spec): Check for LOGICAL conflict in
+	type-spec versus LOGICAL intrinsic subprogram.
+
 2017-12-28  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/83344
