@@ -10076,6 +10076,28 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	  gfc_trans_runtime_check (true, false, cond, &loop.pre,
 				   &expr1->where, msg);
 	}
+
+      /* Deallocate the lhs parameterized components if required.  */ 
+      if (dealloc && expr2->expr_type == EXPR_FUNCTION)
+	{
+	  if (expr1->ts.type == BT_DERIVED
+	      && expr1->ts.u.derived
+	      && expr1->ts.u.derived->attr.pdt_type)
+	    {
+	      tmp = gfc_deallocate_pdt_comp (expr1->ts.u.derived, lse.expr,
+					     expr1->rank);
+	      gfc_add_expr_to_block (&lse.pre, tmp);
+	    }
+	  else if (expr1->ts.type == BT_CLASS
+		   && CLASS_DATA (expr1)->ts.u.derived
+		   && CLASS_DATA (expr1)->ts.u.derived->attr.pdt_type)
+	    {
+	      tmp = gfc_class_data_get (lse.expr);
+	      tmp = gfc_deallocate_pdt_comp (CLASS_DATA (expr1)->ts.u.derived,
+					     tmp, expr1->rank);
+	      gfc_add_expr_to_block (&lse.pre, tmp);
+	    }
+	}
     }
 
   /* Assignments of scalar derived types with allocatable components

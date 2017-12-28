@@ -1,3 +1,11 @@
+2017-12-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83567
+	* trans-expr.c (gfc_trans_assignment_1): Free parameterized
+	components of the lhs if dealloc is set.
+	*trans-decl.c (gfc_trans_deferred_vars): Do not free the
+	parameterized components of function results on leaving scope.
+
 2017_12_27  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/83092

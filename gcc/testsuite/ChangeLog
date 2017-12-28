@@ -1,3 +1,8 @@
+2017-12-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83567
+	* gfortran.dg/pdt_26.f90 : New test.
+
 2017_12_27  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/83092
