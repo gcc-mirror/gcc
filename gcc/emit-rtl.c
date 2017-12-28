@@ -5949,7 +5949,8 @@ const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
 rtx
 gen_const_vec_series (machine_mode mode, rtx base, rtx step)
 {
-  gcc_assert (CONSTANT_P (base) && CONSTANT_P (step));
+  gcc_assert (valid_for_const_vector_p (mode, base)
+	      && valid_for_const_vector_p (mode, step));
 
   int nunits = GET_MODE_NUNITS (mode);
   rtvec v = rtvec_alloc (nunits);
@@ -5970,7 +5971,8 @@ gen_vec_series (machine_mode mode, rtx base, rtx step)
 {
   if (step == const0_rtx)
     return gen_vec_duplicate (mode, base);
-  if (CONSTANT_P (base) && CONSTANT_P (step))
+  if (valid_for_const_vector_p (mode, base)
+      && valid_for_const_vector_p (mode, step))
     return gen_const_vec_series (mode, base, step);
   return gen_rtx_VEC_SERIES (mode, base, step);
 }

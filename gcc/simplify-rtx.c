@@ -3590,7 +3590,8 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
     case VEC_SERIES:
       if (op1 == CONST0_RTX (GET_MODE_INNER (mode)))
 	return gen_vec_duplicate (mode, op0);
-      if (CONSTANT_P (op0) && CONSTANT_P (op1))
+      if (valid_for_const_vector_p (mode, op0)
+	  && valid_for_const_vector_p (mode, op1))
 	return gen_const_vec_series (mode, op0, op1);
       return 0;
 

@@ -1,3 +1,10 @@
+2017-12-28  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* emit-rtl.c (gen_const_vec_series): Use valid_for_const_vector_p
+	instead of CONSTANT_P.
+	(gen_vec_series): Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+
 2017-12-28  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.md (ashrdi3_const1, lshrdi3_const1): Add
