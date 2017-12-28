@@ -1,3 +1,9 @@
+2017-12-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/83344
+	* resolve.c (resolve_assoc_var): Don't set the constant value
+	unless the target is a constant expression.
+
 2017-12-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83567

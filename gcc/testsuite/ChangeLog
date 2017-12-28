@@ -1,9 +1,14 @@
+2017-12-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/83344
+	* gfortran.dg/associate_22.f90: Comment out part of test.
+
 2017-12-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83567
 	* gfortran.dg/pdt_26.f90 : New test.
 
-2017_12_27  Louis Krupp  <louis.krupp@zoho.com>
+2017-12-27  Louis Krupp  <louis.krupp@zoho.com>
 
 	PR fortran/83092
 	* gfortran.dg/init_char_with_nonchar_ctr.f90: New test.
