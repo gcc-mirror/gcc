@@ -2102,27 +2102,31 @@ gfc_match_type_spec (gfc_typespec *ts)
       return m;
     }
 
-  if (gfc_match ("logical") == MATCH_YES)
-    {
-      ts->type = BT_LOGICAL;
-      ts->kind = gfc_default_logical_kind;
-      goto kind_selector;
-    }
-
   /* REAL is a real pain because it can be a type, intrinsic subprogram,
      or list item in a type-list of an OpenMP reduction clause.  Need to
      differentiate REAL([KIND]=scalar-int-initialization-expr) from
-     REAL(A,[KIND]) and REAL(KIND,A).  */
+     REAL(A,[KIND]) and REAL(KIND,A).  Logically, when this code was
+     written the use of LOGICAL as a type-spec or intrinsic subprogram 
+     was overlooked.  */
 
   m = gfc_match (" %n", name);
-  if (m == MATCH_YES && strcmp (name, "real") == 0)
+  if (m == MATCH_YES
+      && (strcmp (name, "real") == 0 || strcmp (name, "logical") == 0))
     {
       char c;
       gfc_expr *e;
       locus where;
 
-      ts->type = BT_REAL;
-      ts->kind = gfc_default_real_kind;
+      if (*name == 'r')
+	{
+	  ts->type = BT_REAL;
+	  ts->kind = gfc_default_real_kind;
+	}
+      else
+	{
+	  ts->type = BT_LOGICAL;
+	  ts->kind = gfc_default_logical_kind;
+	}
 
       gfc_gobble_whitespace ();
 
@@ -2154,7 +2158,7 @@ gfc_match_type_spec (gfc_typespec *ts)
 	  c = gfc_next_char ();
 	  if (c == '=')
 	    {
-	      if (strcmp(name, "a") == 0)
+	      if (strcmp(name, "a") == 0 || strcmp(name, "l") == 0)
 		return MATCH_NO;
 	      else if (strcmp(name, "kind") == 0)
 		goto found;
@@ -2194,7 +2198,7 @@ found:
 
 	  gfc_next_char (); /* Burn the ')'. */
 	  ts->kind = (int) mpz_get_si (e->value.integer);
-	  if (gfc_validate_kind (BT_REAL, ts->kind , true) == -1)
+	  if (gfc_validate_kind (ts->type, ts->kind , true) == -1)
 	    {
 	      gfc_error ("Invalid type-spec at %C");
 	      return MATCH_ERROR;

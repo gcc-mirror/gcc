@@ -1,3 +1,8 @@
+2017-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/83548
+	* gfortran.dg/array_constructor_type_22.f03: New test.
+
 2017-12-28  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/83344
