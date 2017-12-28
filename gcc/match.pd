@@ -199,21 +199,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Transform X * copysign (1.0, X) into abs(X). */
 (simplify
- (mult:c @0 (COPYSIGN real_onep @0))
+ (mult:c @0 (COPYSIGN_ALL real_onep @0))
  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
   (abs @0)))
 
 /* Transform X * copysign (1.0, -X) into -abs(X). */
 (simplify
- (mult:c @0 (COPYSIGN real_onep (negate @0)))
+ (mult:c @0 (COPYSIGN_ALL real_onep (negate @0)))
  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
   (negate (abs @0))))
 
 /* Transform copysign (CST, X) into copysign (ABS(CST), X). */
 (simplify
- (COPYSIGN REAL_CST@0 @1)
+ (COPYSIGN_ALL REAL_CST@0 @1)
  (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@0)))
-  (COPYSIGN (negate @0) @1)))
+  (COPYSIGN_ALL (negate @0) @1)))
 
 /* X * 1, X / 1 -> X.  */
 (for op (mult trunc_div ceil_div floor_div round_div exact_div)
@@ -542,7 +542,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (hypots @0 (op @1))
    (hypots @0 @1)))
  /* copysign(-x, y) and copysign(abs(x), y) -> copysign(x, y).  */
- (for copysigns (COPYSIGN)
+ (for copysigns (COPYSIGN_ALL)
   (simplify
    (copysigns (op @0) @1)
    (copysigns @0 @1))))
@@ -587,7 +587,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (hypots @0 @1)))
 
 /* copysign(x, CST) -> [-]abs (x).  */
-(for copysigns (COPYSIGN)
+(for copysigns (COPYSIGN_ALL)
  (simplify
   (copysigns @0 REAL_CST@1)
   (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
@@ -595,13 +595,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (abs @0))))
 
 /* copysign(copysign(x, y), z) -> copysign(x, z).  */
-(for copysigns (COPYSIGN)
+(for copysigns (COPYSIGN_ALL)
  (simplify
   (copysigns (copysigns @0 @1) @2)
   (copysigns @0 @2)))
 
 /* copysign(x,y)*copysign(x,y) -> x*x.  */
-(for copysigns (COPYSIGN)
+(for copysigns (COPYSIGN_ALL)
  (simplify
   (mult (copysigns@2 @0 @1) @2)
   (mult @0 @0)))
@@ -1914,7 +1914,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
 
-(for minmax (min max FMIN FMIN_FN FMAX FMAX_FN)
+(for minmax (min max FMIN_ALL FMAX_ALL)
  (simplify
   (minmax @0 @0)
   @0))
@@ -1992,7 +1992,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
    (minmax @1 (convert @2)))))
 
-(for minmax (FMIN FMIN_FN FMAX FMAX_FN)
+(for minmax (FMIN_ALL FMAX_ALL)
  /* If either argument is NaN, return the other one.  Avoid the
     transformation if we get (and honor) a signalling NaN.  */
  (simplify
@@ -2007,20 +2007,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    worry about it either.  */
 (if (flag_finite_math_only)
  (simplify
-  (FMIN @0 @1)
+  (FMIN_ALL @0 @1)
   (min @0 @1))
  (simplify
-  (FMIN_FN @0 @1)
-  (min @0 @1))
- (simplify
-  (FMAX @0 @1)
-  (max @0 @1))
- (simplify
-  (FMAX_FN @0 @1)
+  (FMAX_ALL @0 @1)
   (max @0 @1)))
 /* min (-A, -B) -> -max (A, B)  */
-(for minmax (min max FMIN FMIN_FN FMAX FMAX_FN)
-     maxmin (max min FMAX FMAX_FN FMIN FMAX_FN)
+(for minmax (min max FMIN_ALL FMAX_ALL)
+     maxmin (max min FMAX_ALL FMIN_ALL)
  (simplify
   (minmax (negate:s@2 @0) (negate:s@3 @1))
   (if (FLOAT_TYPE_P (TREE_TYPE (@0))
@@ -3814,7 +3808,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (if (flag_unsafe_math_optimizations)
  /* Simplify sqrt(x) * sqrt(x) -> x.  */
  (simplify
-  (mult (SQRT@1 @0) @1)
+  (mult (SQRT_ALL@1 @0) @1)
   (if (!HONOR_SNANS (type))
    @0))
 
@@ -3967,12 +3961,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (abs @0))
 
 /* trunc(trunc(x)) -> trunc(x), etc.  */
-(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT RINT)
+(for fns (TRUNC_ALL FLOOR_ALL CEIL_ALL ROUND_ALL NEARBYINT_ALL RINT_ALL)
  (simplify
   (fns (fns @0))
   (fns @0)))
 /* f(x) -> x if x is integer valued and f does nothing for such values.  */
-(for fns (TRUNC FLOOR CEIL ROUND NEARBYINT RINT)
+(for fns (TRUNC_ALL FLOOR_ALL CEIL_ALL ROUND_ALL NEARBYINT_ALL RINT_ALL)
  (simplify
   (fns integer_valued_real_p@0)
   @0))
@@ -3989,12 +3983,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 (simplify
  /* copysign(x,x) -> x.  */
- (COPYSIGN @0 @0)
+ (COPYSIGN_ALL @0 @0)
  @0)
 
 (simplify
  /* copysign(x,y) -> fabs(x) if y is nonnegative.  */
- (COPYSIGN @0 tree_expr_nonnegative_p@1)
+ (COPYSIGN_ALL @0 tree_expr_nonnegative_p@1)
  (abs @0))
 
 (for scale (LDEXP SCALBN SCALBLN)
@@ -4145,8 +4139,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 (if (canonicalize_math_p ())
  /* floor(x) -> trunc(x) if x is nonnegative.  */
- (for floors (FLOOR)
-      truncs (TRUNC)
+ (for floors (FLOOR_ALL)
+      truncs (TRUNC_ALL)
   (simplify
    (floors tree_expr_nonnegative_p@0)
    (truncs @0))))

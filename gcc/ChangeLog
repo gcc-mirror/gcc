@@ -1,3 +1,41 @@
+2017-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* builtins.def: (_Float<N> and _Float<N>X BUILT_IN_CEIL): Add
+	_Float<N> and _Float<N>X variants for rounding built-in
+	functions.
+	(_Float<N> and _Float<N>X BUILT_IN_FLOOR): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_NEARBYINT): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_RINT): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_ROUND): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_TRUNC): Likewise.
+	* builtins.c (mathfn_built_in_2): Likewise.
+	* internal-fn.def (CEIL): Likewise.
+	(FLOOR): Likewise.
+	(NEARBYINT): Likewise.
+	(RINT): Likewise.
+	(ROUND): Likewise.
+	(TRUNC): Likewise.
+	* convert.c (convert_to_integer_1): Likewise.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Likewise.
+	(integer_valued_real_call_p): Likewise.
+	* fold-const-call.c (fold_const_call_ss): Likewise.
+	* gencfn-macros.c (print_case_cfn): Change CFN and operator
+	printers to take a const char * suffix instead of a bool.
+	(print_define_operator_list): Likewise.
+	(fltall_suffixes): New list of suffixes, that include the
+	traditional suffixes as well as all of the _Float<N> and
+	_Float<N>X suffixes.
+	(main): For _Float<N> and _Float<N>X functions, emit both
+	<name>_FN and <name>_ALL variants.  The <macro>_FN variant only
+	has the _Float<N> and _Float<N>X case names or operators.  The
+	<name>_ALL variant has both the traditional and the
+	_Float<N>/_Float<N>X case names or operators.
+	* match.pd (COPYSIGN optimizations): Provide optimizations for
+	_Float<N> and _Float<N>X types where possible.
+	(MIN/MAX optimizations): Likewise.
+	(sqrt optimizations): Likewise.
+	(rounding optimizations): Likewise.
+
 2017-12-28  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/powerpcspe/powerpcspe.md (ieee_128bit_negative_zero): Use

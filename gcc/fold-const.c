@@ -13004,9 +13004,11 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_ATANH:
     CASE_CFN_CBRT:
     CASE_CFN_CEIL:
+    CASE_CFN_CEIL_FN:
     CASE_CFN_ERF:
     CASE_CFN_EXPM1:
     CASE_CFN_FLOOR:
+    CASE_CFN_FLOOR_FN:
     CASE_CFN_FMOD:
     CASE_CFN_FREXP:
     CASE_CFN_ICEIL:
@@ -13024,8 +13026,11 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_LROUND:
     CASE_CFN_MODF:
     CASE_CFN_NEARBYINT:
+    CASE_CFN_NEARBYINT_FN:
     CASE_CFN_RINT:
+    CASE_CFN_RINT_FN:
     CASE_CFN_ROUND:
+    CASE_CFN_ROUND_FN:
     CASE_CFN_SCALB:
     CASE_CFN_SCALBLN:
     CASE_CFN_SCALBN:
@@ -13034,6 +13039,7 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_SINH:
     CASE_CFN_TANH:
     CASE_CFN_TRUNC:
+    CASE_CFN_TRUNC_FN:
       /* True if the 1st argument is nonnegative.  */
       return RECURSE (arg0);
 
@@ -13539,11 +13545,17 @@ integer_valued_real_call_p (combined_fn fn, tree arg0, tree arg1, int depth)
   switch (fn)
     {
     CASE_CFN_CEIL:
+    CASE_CFN_CEIL_FN:
     CASE_CFN_FLOOR:
+    CASE_CFN_FLOOR_FN:
     CASE_CFN_NEARBYINT:
+    CASE_CFN_NEARBYINT_FN:
     CASE_CFN_RINT:
+    CASE_CFN_RINT_FN:
     CASE_CFN_ROUND:
+    CASE_CFN_ROUND_FN:
     CASE_CFN_TRUNC:
+    CASE_CFN_TRUNC_FN:
       return true;
 
     CASE_CFN_FMIN:
