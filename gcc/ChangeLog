@@ -1,3 +1,8 @@
+2017-12-28  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md (ashrdi3_const1, lshrdi3_const1): Add
+	CC_STATUS_INIT.
+
 2017-12-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/aarch64/aarch64-simd.md (aarch64_ld1x2<VQ:mode>): New.
