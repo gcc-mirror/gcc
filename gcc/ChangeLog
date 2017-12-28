@@ -1,5 +1,11 @@
 2017-12-28  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/powerpcspe/powerpcspe.md (ieee_128bit_negative_zero): Use
+	gen_int_mode rather than GEN_INT.
+	* config/rs6000/rs6000.md (ieee_128bit_negative_zero): Likewise.
+
+2017-12-28  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* emit-rtl.c (gen_const_vec_series): Use valid_for_const_vector_p
 	instead of CONSTANT_P.
 	(gen_vec_series): Likewise.

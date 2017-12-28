@@ -8113,7 +8113,7 @@
     RTVEC_ELT (v, i) = const0_rtx;
 
   high = (BYTES_BIG_ENDIAN) ? 0 : 15;
-  RTVEC_ELT (v, high) = GEN_INT (0x80);
+  RTVEC_ELT (v, high) = gen_int_mode (0x80, QImode);
 
   rs6000_expand_vector_init (operands[0], gen_rtx_PARALLEL (V16QImode, v));
   DONE;
