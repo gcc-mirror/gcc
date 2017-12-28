@@ -1,3 +1,8 @@
+2017-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-decl.c (header_for_builtin_fn): Add integer rounding _Float<N>
+	and _Float<N>X built-in functions.
+
 2017-12-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83550
