@@ -870,8 +870,11 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 	  goto done;
 	}
 
-      memset4 (p4, ' ', nblank);
-      p4 += nblank;
+      if (!dtp->u.p.namelist_mode)
+	{
+	  memset4 (p4, ' ', nblank);
+	  p4 += nblank;
+	}
 
       switch (sign)
 	{
@@ -890,6 +893,12 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
 
       memcpy4 (p4, q, digits);
       return;
+
+      if (dtp->u.p.namelist_mode)
+	{
+	  p4 += digits;
+	  memset4 (p4, ' ', nblank);
+	}
     }
 
   if (nblank < 0)
@@ -898,8 +907,11 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
       goto done;
     }
 
-  memset (p, ' ', nblank);
-  p += nblank;
+  if (!dtp->u.p.namelist_mode)
+    {
+      memset (p, ' ', nblank);
+      p += nblank;
+    }
 
   switch (sign)
     {
@@ -917,6 +929,12 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
   p += nzero;
 
   memcpy (p, q, digits);
+
+  if (dtp->u.p.namelist_mode)
+    {
+      p += digits;
+      memset (p, ' ', nblank);
+    }
 
  done:
   return;
@@ -1300,17 +1318,12 @@ write_logical (st_parameter_dt *dtp, const char *source, int length)
 /* Write a list-directed integer value.  */
 
 static void
-write_integer (st_parameter_dt *dtp, const char *source, int length)
+write_integer (st_parameter_dt *dtp, const char *source, int kind)
 {
-  char *p;
-  const char *q;
-  int digits;
   int width;
-  char itoa_buf[GFC_ITOA_BUF_SIZE];
+  fnode f;
 
-  q = gfc_itoa (extract_int (source, length), itoa_buf, sizeof (itoa_buf));
-
-  switch (length)
+  switch (kind)
     {
     case 1:
       width = 4;
@@ -1332,41 +1345,9 @@ write_integer (st_parameter_dt *dtp, const char *source, int length)
       width = 0;
       break;
     }
-
-  digits = strlen (q);
-
-  if (width < digits)
-    width = digits;
-  p = write_block (dtp, width);
-  if (p == NULL)
-    return;
-
-  if (unlikely (is_char4_unit (dtp)))
-    {
-      gfc_char4_t *p4 = (gfc_char4_t *) p;
-      if (dtp->u.p.no_leading_blank)
-	{
-	  memcpy4 (p4, q, digits);
-	  memset4 (p4 + digits, ' ', width - digits);
-	}
-      else
-	{
-	  memset4 (p4, ' ', width - digits);
-	  memcpy4 (p4 + width - digits, q, digits);
-	}
-      return;
-    }
-
-  if (dtp->u.p.no_leading_blank)
-    {
-      memcpy (p, q, digits);
-      memset (p + digits, ' ', width - digits);
-    }
-  else
-    {
-      memset (p, ' ', width - digits);
-      memcpy (p + width - digits, q, digits);
-    }
+  f.u.integer.w = width;
+  f.u.integer.m = -1;
+  write_decimal (dtp, &f, source, kind, (void *) gfc_itoa);
 }
 
 
@@ -2254,7 +2235,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 		  dtp->u.p.current_unit->child_dtio++;
 		  if (obj->type == BT_DERIVED)
 		    {
-		      // build a class container
+		      /* Build a class container.  */
 		      gfc_class list_obj;
 		      list_obj.data = p;
 		      list_obj.vptr = obj->vtable;
