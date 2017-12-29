@@ -1,5 +1,11 @@
 2017-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libgfortran/83613
+	* io/unit.c (init_units): Don't forget to unlock the unit locks
+	after being inserted.
+
+2017-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libgfortran/83560
 	* io/write.c (write_integer): Modify to use write_decimal.
 	For namelist mode, suppress leading blanks and emit them as

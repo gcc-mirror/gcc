@@ -707,7 +707,9 @@ init_units (void)
     }
   /* The default internal units.  */
   u = insert_unit (GFC_INTERNAL_UNIT);
+  __gthread_mutex_unlock (&u->lock);
   u = insert_unit (GFC_INTERNAL_UNIT4);
+  __gthread_mutex_unlock (&u->lock);
 }
 
 
