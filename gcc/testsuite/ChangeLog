@@ -1,6 +1,6 @@
 2017-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
-	* g++.old-deja/g++.ext/namedret1.C (f): Return a value.
+	* g++.old-deja/g++.ext/namedret2.C (f): Return a value.
 
 2017-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
