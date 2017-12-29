@@ -1,6 +1,10 @@
+2017-12-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.old-deja/g++.ext/namedret1.C (f): Return a value.
+
 2017-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	PR Fortran/83548
+	PR fortran/83548
 	* gfortran.dg/array_constructor_type_22.f03: New test.
 
 2017-12-28  Janne Blomqvist  <jb@gcc.gnu.org>
@@ -88,7 +92,7 @@
 	* gcc.target/i386/avx512vpopcntdq-vpopcntq.c: Ditto.
 
 2017-12-22  Mike Stump  <mikestump@comcast.net>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/unroll-1.c: New test.
 	* c-c++-common/unroll-2.c: Likewise.
@@ -278,7 +282,7 @@
 
 	PR middle-end/77608
 	* gcc.dg/Wstringop-overflow.c: New test.
-	* gcc/testsuite/c-c++-common/Warray-bounds-3.c: Adjust.
+	* c-c++-common/Warray-bounds-3.c: Adjust.
 
 2017-12-19  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -471,7 +475,7 @@
 2017-12-16  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	PR testsuite/82767
-	 * gcc.target/i386/pr71321.c: Test with -mtune=generic
+	* gcc.target/i386/pr71321.c: Test with -mtune=generic
 
 2017-12-15  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
@@ -1794,15 +1798,15 @@
 2017-11-27  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/83109
-	* testsuite/gcc.target/i386/cet-sjlj-1.c: Fix test.
-	* testsuite/gcc.target/i386/cet-sjlj-4.c: Likewise.
+	* gcc.target/i386/cet-sjlj-1.c: Fix test.
+	* gcc.target/i386/cet-sjlj-4.c: Likewise.
 
 2017-11-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/81248
 	* g++.dg/ipa/pr81248.C: New test.
 	* gcc.dg/tree-ssa/ssa-pre-31.c: Disable IPA-SRA.
-	* gcc/testsuite/gcc.dg/ipa/ipcp-cstagg-2.c: Likewise.
+	* gcc.dg/ipa/ipcp-cstagg-2.c: Likewise.
 
 2017-11-27  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1905,7 +1909,7 @@
 
 2017-11-23  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* testsuite/gcc.dg/pr64277.c: Adjust scan.
+	* gcc.dg/pr64277.c: Adjust scan.
 	* gcc.dg/tree-prof/unroll-1.c: Use detailed dump and adjust scan.
 	* gcc.dg/tree-ssa/cunroll-1.c: Adjust scan.
 	* gcc.dg/tree-ssa/cunroll-12.c: Likewise.
@@ -7194,7 +7198,7 @@
 2017-09-15  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR tree-optimization/71026
-	* gcc/testsuire/gcc.dg/fold-div-1.c: Use -O1.
+	* gcc.dg/fold-div-1.c: Use -O1.
 
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
@@ -9163,8 +9167,8 @@
 
 2017-08-06  Tom de Vries  <tom@codesourcery.com>
 
-	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memmove):  Fix return
-	type.  Add missing return.
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memmove):
+	Fix return type.  Add missing return.
 
 2017-08-06  Tom de Vries  <tom@codesourcery.com>
 
@@ -9775,9 +9779,8 @@
 
 2017-07-26  Richard Biener  <rguenther@suse.de>
 
-	* gcc/testsuite/gcc.dg/pr70920-2.c: Adjust for transform already
-	happening in ccp1.
-	* gcc/testsuite/gcc.dg/pr70920-4.c: Likewise.
+	* gcc.dg/pr70920-2.c: Adjust for transform already happening in ccp1.
+	* gcc.dg/pr70920-4.c: Likewise.
 
 2017-07-26  Wilco Dijkstra  <wdijkstr@arm.com>
 
