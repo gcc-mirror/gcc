@@ -10078,7 +10078,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	}
 
       /* Deallocate the lhs parameterized components if required.  */ 
-      if (dealloc && expr2->expr_type == EXPR_FUNCTION)
+      if (dealloc && expr2->expr_type == EXPR_FUNCTION
+	  && !expr1->symtree->n.sym->attr.associate_var)
 	{
 	  if (expr1->ts.type == BT_DERIVED
 	      && expr1->ts.u.derived
