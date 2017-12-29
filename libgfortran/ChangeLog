@@ -1,3 +1,11 @@
+2017-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/83560
+	* io/write.c (write_integer): Modify to use write_decimal.
+	For namelist mode, suppress leading blanks and emit them as
+	trailing blanks. Change parameter from len to kind for better
+	readability. (nml_write_obj): Fix comment style.
+
 2017-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/81937
