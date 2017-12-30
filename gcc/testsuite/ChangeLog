@@ -1,7 +1,7 @@
 2017-12-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/83612
-	* c-c++-common/ubsan/object-size-9.c (t): Add alignment attribute.
+	* gcc.dg/ubsan/object-size-9.c (t): Add alignment attribute.
 
 2017-12-28  Uros Bizjak  <ubizjak@gmail.com>
 
