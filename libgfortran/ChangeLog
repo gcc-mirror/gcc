@@ -1,3 +1,10 @@
+2017-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/83613
+	* io/unit.c (init_units): Don't forget to unlock the unit locks
+	after being inserted.
+
 2017-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
