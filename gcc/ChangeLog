@@ -1,3 +1,20 @@
+2017-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (vgf2p8affineinvqb_<mode><mask_name>,
+	vgf2p8affineqb_<mode><mask_name>, vgf2p8mulb_<mode><mask_name>,
+	vpshrd_<mode><mask_name>, vpshld_<mode><mask_name>,
+	vpshrdv_<mode>, vpshrdv_<mode>_mask, vpshrdv_<mode>_maskz,
+	vpshrdv_<mode>_maskz_1, vpshldv_<mode>, vpshldv_<mode>_mask,
+	vpshldv_<mode>_maskz, vpshldv_<mode>_maskz_1, vpdpbusd_<mode>,
+	vpdpbusd_<mode>_mask, vpdpbusd_<mode>_maskz, vpdpbusd_<mode>_maskz_1,
+	vpdpbusds_<mode>, vpdpbusds_<mode>_mask, vpdpbusds_<mode>_maskz,
+	vpdpbusds_<mode>_maskz_1, vpdpwssd_<mode>, vpdpwssd_<mode>_mask,
+	vpdpwssd_<mode>_maskz, vpdpwssd_<mode>_maskz_1, vpdpwssds_<mode>,
+	vpdpwssds_<mode>_mask, vpdpwssds_<mode>_maskz,
+	vpdpwssds_<mode>_maskz_1, vaesdec_<mode>, vaesdeclast_<mode>,
+	vaesenc_<mode>, vpclmulqdq_<mode>,
+	avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>): Formatting fixes.
+
 2017-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* builtins.def: (_Float<N> and _Float<N>X BUILT_IN_CEIL): Add
