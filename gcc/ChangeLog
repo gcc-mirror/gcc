@@ -1,3 +1,13 @@
+2017-12-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/83046
+	* omp-expand.c (expand_omp_target): If in_lto_p, mark offload_funcs with
+	DECL_PRESERVE_P.
+	* lto-streamer-out.c (prune_offload_funcs): New function.  Remove
+	offload_funcs entries that no longer have a corresponding cgraph_node.
+	Mark the remaining ones as DECL_PRESERVE_P.
+	(output_lto): Call prune_offload_funcs.
+
 2017-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/sse.md (vgf2p8affineinvqb_<mode><mask_name>,
