@@ -7058,7 +7058,11 @@ expand_omp_target (struct omp_region *region)
 
       /* Add the new function to the offload table.  */
       if (ENABLE_OFFLOADING)
-	vec_safe_push (offload_funcs, child_fn);
+	{
+	  if (in_lto_p)
+	    DECL_PRESERVE_P (child_fn) = 1;
+	  vec_safe_push (offload_funcs, child_fn);
+	}
 
       bool need_asm = DECL_ASSEMBLER_NAME_SET_P (current_function_decl)
 		      && !DECL_ASSEMBLER_NAME_SET_P (child_fn);

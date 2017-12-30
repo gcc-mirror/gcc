@@ -1,3 +1,9 @@
+2017-12-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/83046
+	* testsuite/libgomp.oacc-c-c++-common/pr83046.c: New test.
+	* testsuite/libgomp.c-c++-common/pr83046.c: New test.
+
 2017-12-27  Tom de Vries  <tom@codesourcery.com>
 
 	PR c++/83046
