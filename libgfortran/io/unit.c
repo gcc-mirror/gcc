@@ -689,7 +689,9 @@ init_units (void)
     }
   /* The default internal units.  */
   u = insert_unit (GFC_INTERNAL_UNIT);
+  __gthread_mutex_unlock (&u->lock);
   u = insert_unit (GFC_INTERNAL_UNIT4);
+  __gthread_mutex_unlock (&u->lock);
 
   /* Calculate the maximum file offset in a portable manner.
      max will be the largest signed number for the type gfc_offset.
