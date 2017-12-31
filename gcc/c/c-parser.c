@@ -4582,7 +4582,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
   c_token *next_tok = c_parser_peek_token (parser);
   if (next_tok->type != CPP_CLOSE_BRACE)
     {
-      ret.value = error_mark_node;
+      ret.set_error ();
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       braces.skip_until_found_close (parser);
@@ -4649,7 +4649,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	      else
 		{
 		  struct c_expr init;
-		  init.value = error_mark_node;
+		  init.set_error ();
 		  init.original_code = ERROR_MARK;
 		  init.original_type = NULL;
 		  c_parser_error (parser, "expected identifier");
@@ -4785,7 +4785,7 @@ c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 	      else
 		{
 		  struct c_expr init;
-		  init.value = error_mark_node;
+		  init.set_error ();
 		  init.original_code = ERROR_MARK;
 		  init.original_type = NULL;
 		  c_parser_error (parser, "expected %<=%>");
@@ -6693,7 +6693,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
   if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
     {
       c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
-      ret.value = error_mark_node;
+      ret.set_error ();
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       return ret;
@@ -7071,7 +7071,7 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       parens.skip_until_found_close (parser);
       if (type_name == NULL)
 	{
-	  ret.value = error_mark_node;
+	  ret.set_error ();
 	  ret.original_code = ERROR_MARK;
 	  ret.original_type = NULL;
 	  return ret;
@@ -7297,7 +7297,7 @@ c_parser_sizeof_expression (c_parser *parser)
 	  struct c_expr ret;
 	  c_inhibit_evaluation_warnings--;
 	  in_sizeof--;
-	  ret.value = error_mark_node;
+	  ret.set_error ();
 	  ret.original_code = ERROR_MARK;
 	  ret.original_type = NULL;
 	  return ret;
@@ -7383,7 +7383,7 @@ c_parser_alignof_expression (c_parser *parser)
 	  struct c_expr ret;
 	  c_inhibit_evaluation_warnings--;
 	  in_alignof--;
-	  ret.value = error_mark_node;
+	  ret.set_error ();
 	  ret.original_code = ERROR_MARK;
 	  ret.original_type = NULL;
 	  return ret;
@@ -7838,7 +7838,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  && !targetm.fixed_point_supported_p ())
 	{
 	  error_at (loc, "fixed-point types not supported for this target");
-	  expr.value = error_mark_node;
+	  expr.set_error ();
 	}
       break;
     case CPP_CHAR:
@@ -17748,7 +17748,7 @@ c_parser_omp_declare_reduction (c_parser *parser, enum pragma_context context)
       struct c_expr initializer;
       tree omp_priv = NULL_TREE, omp_orig = NULL_TREE;
       bool bad = false;
-      initializer.value = error_mark_node;
+      initializer.set_error ();
       if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
 	bad = true;
       else if (c_parser_next_token_is (parser, CPP_NAME)
@@ -18305,7 +18305,7 @@ c_parser_transaction_expression (c_parser *parser, enum rid keyword)
   else
     {
      error:
-      ret.value = error_mark_node;
+      ret.set_error ();
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
     }
