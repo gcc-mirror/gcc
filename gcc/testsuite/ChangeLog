@@ -1,5 +1,8 @@
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/83595
+	* gcc.dg/pr83595.c: New test.
+
 	PR middle-end/83608
 	* g++.dg/opt/pr83608.C: New test.
 

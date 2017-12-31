@@ -1,3 +1,13 @@
+2018-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83595
+	* c-parser.c (c_parser_braced_init, c_parser_initelt,
+	c_parser_conditional_expression, c_parser_cast_expression,
+	c_parser_sizeof_expression, c_parser_alignof_expression,
+	c_parser_postfix_expression, c_parser_omp_declare_reduction,
+	c_parser_transaction_expression): Use set_error () method instead
+	of setting value member to error_mark_node.
+
 2017-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* c-decl.c (header_for_builtin_fn): Add integer rounding _Float<N>
