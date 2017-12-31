@@ -1,3 +1,10 @@
+2018-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83623
+	* expmed.c (expand_shift_1): For 2-byte rotates by BITS_PER_UNIT,
+	check for bswap in mode rather than HImode and use that in expand_unop
+	too.
+
 2017-12-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83536
