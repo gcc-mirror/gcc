@@ -44747,7 +44747,7 @@ static const struct attribute_spec ix86_attribute_table[] =
   { "dllexport", 0, 0, false, false, false, false, handle_dll_attribute,
     NULL },
   { "shared",    0, 0, true,  false, false, false,
-    ix86_handle_shared_attribute, false, NULL },
+    ix86_handle_shared_attribute, NULL },
 #endif
   { "ms_struct", 0, 0, false, false,  false, false,
     ix86_handle_struct_attribute, NULL },
