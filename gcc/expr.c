@@ -5638,8 +5638,21 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
   if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode
       && TREE_CODE (exp) != ERROR_MARK
       && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
-    temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
-			  temp, TYPE_UNSIGNED (TREE_TYPE (exp)));
+    {
+      if (GET_MODE_CLASS (GET_MODE (target))
+	  != GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp)))
+	  && GET_MODE_BITSIZE (GET_MODE (target))
+	     == GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (exp))))
+	{
+	  rtx t = simplify_gen_subreg (GET_MODE (target), temp,
+				       TYPE_MODE (TREE_TYPE (exp)), 0);
+	  if (t)
+	    temp = t;
+	}
+      if (GET_MODE (temp) == VOIDmode)
+	temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
+			      temp, TYPE_UNSIGNED (TREE_TYPE (exp)));
+    }
 
   /* If value was not generated in the target, store it there.
      Convert the value to TARGET's type first if necessary and emit the
