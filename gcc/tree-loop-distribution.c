@@ -3103,7 +3103,7 @@ pass_loop_distribution::execute (function *fun)
 
   checking_verify_loop_structure ();
 
-  return 0;
+  return changed ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace
