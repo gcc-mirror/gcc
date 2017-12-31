@@ -1,3 +1,11 @@
+2018-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/i386.exp
+	(check_effective_target_avx512vpopcntdqvl): New proc.
+	* gcc.target/i386/avx512vpopcntdqvl-vpopcntd-1.c: Use
+	avx512vpopcntdqvl effective target rather than avx512vpopcntdq.
+	* gcc.target/i386/avx512vpopcntdqvl-vpopcntq-1.c: Likewise.
+
 2017-12-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR testsuite/83612

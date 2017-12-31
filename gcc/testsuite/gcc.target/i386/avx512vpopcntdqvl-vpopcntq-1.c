@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx512vl -mavx512vpopcntdq" } */
 /* { dg-require-effective-target avx512vl } */
-/* { dg-require-effective-target avx512vpopcntdq } */
+/* { dg-require-effective-target avx512vpopcntdqvl } */
 
 #define AVX512VL
 #define AVX512F_LEN 256
