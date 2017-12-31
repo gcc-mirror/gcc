@@ -5158,7 +5158,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 					   from_mode, 0);
 		  rtx from_imag
 		    = simplify_gen_subreg (to_mode, XEXP (result, 1),
-					   from_mode, 1);
+					   from_mode, 0);
+		  if (!from_real || !from_imag)
+		    goto concat_store_slow;
 		  emit_move_insn (XEXP (to_rtx, 0), from_real);
 		  emit_move_insn (XEXP (to_rtx, 1), from_imag);
 		}
@@ -5167,14 +5169,35 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  rtx from_rtx
 		    = simplify_gen_subreg (GET_MODE (to_rtx), result,
 					   TYPE_MODE (TREE_TYPE (from)), 0);
-		  emit_move_insn (XEXP (to_rtx, 0),
-				  read_complex_part (from_rtx, false));
-		  emit_move_insn (XEXP (to_rtx, 1),
-				  read_complex_part (from_rtx, true));
+		  if (from_rtx)
+		    {
+		      emit_move_insn (XEXP (to_rtx, 0),
+				      read_complex_part (from_rtx, false));
+		      emit_move_insn (XEXP (to_rtx, 1),
+				      read_complex_part (from_rtx, true));
+		    }
+		  else
+		    {
+		      machine_mode to_mode
+			= GET_MODE_INNER (GET_MODE (to_rtx));
+		      rtx from_real
+			= simplify_gen_subreg (to_mode, result,
+					       TYPE_MODE (TREE_TYPE (from)),
+					       0);
+		      rtx from_imag
+			= simplify_gen_subreg (to_mode, result,
+					       TYPE_MODE (TREE_TYPE (from)),
+					       GET_MODE_SIZE (to_mode));
+		      if (!from_real || !from_imag)
+			goto concat_store_slow;
+		      emit_move_insn (XEXP (to_rtx, 0), from_real);
+		      emit_move_insn (XEXP (to_rtx, 1), from_imag);
+		    }
 		}
 	    }
 	  else
 	    {
+	    concat_store_slow:;
 	      rtx temp = assign_stack_temp (GET_MODE (to_rtx),
 					    GET_MODE_SIZE (GET_MODE (to_rtx)));
 	      write_complex_part (temp, XEXP (to_rtx, 0), false);
