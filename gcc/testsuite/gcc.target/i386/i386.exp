@@ -410,6 +410,19 @@ proc check_effective_target_avx512vpopcntdq { } {
     } "-mavx512vpopcntdq" ]
 }
 
+# Return 1 if 128 or 256-bit avx512_vpopcntdq instructions can be compiled.
+proc check_effective_target_avx512vpopcntdqvl { } {
+    return [check_no_compiler_messages avx512vpopcntdqvl object {
+        typedef int __v8si __attribute__ ((__vector_size__ (32)));
+
+        __v8si
+        _mm256_popcnt_epi32 (__v8si __A)
+        {
+            return (__v8si) __builtin_ia32_vpopcountd_v8si ((__v8si) __A);
+        }
+    } "-mavx512vpopcntdq -mavx512vl" ]
+}
+
 # Return 1 if gfni instructions can be compiled.
 proc check_effective_target_gfni { } {
     return [check_no_compiler_messages gfni object {
