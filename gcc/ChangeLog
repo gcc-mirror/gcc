@@ -1,5 +1,9 @@
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83581
+	* tree-loop-distribution.c (pass_loop_distribution::execute): Return
+	TODO_cleanup_cfg if any changes have been made.
+
 	PR middle-end/83608
 	* expr.c (store_expr_with_bounds): Use simplify_gen_subreg instead of
 	convert_modes if target mode has the right side, but different mode
