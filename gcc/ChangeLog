@@ -1,3 +1,9 @@
+2017-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83536
+	* config/i386/i386.c (ix86_attribute_table): Remove excess
+	initializer for "shared" attribute.
+
 2017-12-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/83046
