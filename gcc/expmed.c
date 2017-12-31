@@ -2490,9 +2490,8 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
       && CONST_INT_P (op1)
       && INTVAL (op1) == BITS_PER_UNIT
       && GET_MODE_SIZE (scalar_mode) == 2
-      && optab_handler (bswap_optab, HImode) != CODE_FOR_nothing)
-    return expand_unop (HImode, bswap_optab, shifted, NULL_RTX,
-				  unsignedp);
+      && optab_handler (bswap_optab, mode) != CODE_FOR_nothing)
+    return expand_unop (mode, bswap_optab, shifted, NULL_RTX, unsignedp);
 
   if (op1 == const0_rtx)
     return shifted;
