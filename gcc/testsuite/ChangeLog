@@ -1,5 +1,9 @@
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83609
+	* gcc.dg/pr83609.c: New test.
+	* g++.dg/opt/pr83609.C: New test.
+
 	PR middle-end/83623
 	* gcc.dg/pr83623.c: New test.
 
