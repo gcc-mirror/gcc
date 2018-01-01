@@ -1,5 +1,10 @@
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83608
+	* expr.c (store_expr_with_bounds): Use simplify_gen_subreg instead of
+	convert_modes if target mode has the right side, but different mode
+	class.
+
 	PR middle-end/83609
 	* expr.c (expand_assignment): Fix up a typo in simplify_gen_subreg
 	last argument when extracting from CONCAT.  If either from_real or
