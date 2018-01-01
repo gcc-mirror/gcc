@@ -1,5 +1,13 @@
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83609
+	* expr.c (expand_assignment): Fix up a typo in simplify_gen_subreg
+	last argument when extracting from CONCAT.  If either from_real or
+	from_imag is NULL, use expansion through memory.  If result is not
+	a CONCAT and simplify_gen_subreg fails, try to simplify_gen_subreg
+	the parts directly to inner mode, if even that fails, use expansion
+	through memory.
+
 	PR middle-end/83623
 	* expmed.c (expand_shift_1): For 2-byte rotates by BITS_PER_UNIT,
 	check for bswap in mode rather than HImode and use that in expand_unop
