@@ -870,7 +870,7 @@ typedef struct
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1,
 	   event_comp:1, defined_assign_comp:1, unlimited_polymorphic:1,
-	   has_dtio_procs:1;
+	   has_dtio_procs:1, caf_token:1;
 
   /* This is a temporary selector for SELECT TYPE or an associate
      variable for SELECT_TYPE or ASSOCIATE.  */
