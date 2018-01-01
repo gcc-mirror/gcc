@@ -37,10 +37,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 7.1.0\n"
+"Project-Id-Version: gcc 7.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-08-04 22:17+0000\n"
-"PO-Revision-Date: 2017-07-26 08:25+0200\n"
+"PO-Revision-Date: 2017-12-30 09:45+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -10257,10 +10257,8 @@ msgid "Use UltraSPARC Visual Instruction Set version 4.0 extensions."
 msgstr "Usa las extensiones del Conjunto de Instrucciones Visuales de UltraSPARC versión 4.0."
 
 #: config/sparc/sparc.opt:86
-#, fuzzy
-#| msgid "Use vector and scalar instructions added in ISA 2.07."
 msgid "Use additional VIS instructions introduced in OSA2017."
-msgstr "Usa las instrucciones de vectores y escalares añadidas en ISA 2.07."
+msgstr "Usa las instrucciones adicionales de VIS introducidas en OSA2017."
 
 #: config/sparc/sparc.opt:90
 msgid "Use UltraSPARC Compare-and-Branch extensions."
@@ -10341,16 +10339,12 @@ msgid "Enable workarounds for the errata of the UT699 processor."
 msgstr "Activa evitar el error único del procesador UT699."
 
 #: config/sparc/sparc.opt:246
-#, fuzzy
-#| msgid "Enable workarounds for the errata of the UT699 processor."
 msgid "Enable workarounds for the errata of the UT699E/UT700 processor."
-msgstr "Activa evitar el error único del procesador UT699."
+msgstr "Activa evitar el error único del procesador UT699E/UT700."
 
 #: config/sparc/sparc.opt:250
-#, fuzzy
-#| msgid "Enable workarounds for the errata of the UT699 processor."
 msgid "Enable workarounds for the errata of the GR712RC processor."
-msgstr "Activa evitar el error único del procesador UT699."
+msgstr "Activa evitar el error único del procesador GR712RC."
 
 #: config/sparc/sparc.opt:283
 msgid "Specify the memory model in effect for the program."
@@ -14700,8 +14694,6 @@ msgid "Detect paths that trigger erroneous or undefined behavior due to derefere
 msgstr "Detecta rutas que disparan comportamiento erróneo o indefinido debido a desreferencia de puntero nulo.  Aisla esas rutas del flujo de control principal y convierte la sentencia con comportamiento erróneo o indefinido en una trampa."
 
 #: common.opt:2495
-#, fuzzy
-#| msgid "Detect paths that trigger erroneous or undefined behavior due a null value being used in a way forbidden by a returns_nonnull or nonnull attribute.  Isolate those paths from the main control flow and turn the statement with erroneous or undefined behavior into a trap."
 msgid "Detect paths that trigger erroneous or undefined behavior due to a null value being used in a way forbidden by a returns_nonnull or nonnull attribute.  Isolate those paths from the main control flow and turn the statement with erroneous or undefined behavior into a trap."
 msgstr "Detecta rutas que disparan comportamiento erróneo o indefinido debido a un uso indebido de un valor nuloen un atributo returns_nonnull o nonnull.  Aisla esas rutas del flujo de control principal y convierte la sentencia con comportamiento erróneo o indefinido en una trampa."
 
@@ -17454,10 +17446,9 @@ msgid "input file %qs is the same as output file"
 msgstr "el fichero de entrada %qs es el mismo que el de salida"
 
 #: gcc.c:4476
-#, fuzzy, gcc-internal-format
-#| msgid "output file not specified"
+#, gcc-internal-format
 msgid "output filename may not be empty"
-msgstr "no se ha especificado el fichero de salida"
+msgstr "el nombre fichero del salida puede no estar vacío"
 
 #: gcc.c:4501
 #, gcc-internal-format
@@ -18757,8 +18748,7 @@ msgid "types have different parameter counts"
 msgstr "tipos con número de parámetros diferentes"
 
 #: ipa-devirt.c:1229
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT itself violate the C++ One Definition Rule"
+#, gcc-internal-format
 msgid "type %qT itself violates the C++ One Definition Rule"
 msgstr "el propio tipo %qT viola la regla de una sola definición de C++"
 
@@ -18858,8 +18848,7 @@ msgid "a field of same name but different type is defined in another translation
 msgstr "hay un campo con el mismo nombre pero distinto tipo definido en otra unidad de traducción"
 
 #: ipa-devirt.c:1576
-#, fuzzy, gcc-internal-format
-#| msgid "fields has different layout in another translation unit"
+#, gcc-internal-format
 msgid "fields have different layout in another translation unit"
 msgstr "los campos tienen distinta disposición en otra unidad de translación"
 
@@ -19676,16 +19665,14 @@ msgid "-fsanitize-address-use-after-scope requires -fstack-reuse=none option"
 msgstr "-fsanitize-address-use-after-scope requiere -fstack-reuse=none option"
 
 #: opts.c:1012
-#, fuzzy, gcc-internal-format
-#| msgid "transactional memory is not supported with non-call exceptions"
+#, gcc-internal-format
 msgid "transactional memory is not supported with %<-fsanitize=address%>"
-msgstr "la memoria transaccional no se admite con excepciones que no son llamada"
+msgstr "la memoria transaccional no se admite con %<-fsanitize=address%>"
 
 #: opts.c:1015
-#, fuzzy, gcc-internal-format
-#| msgid "transactional memory is not supported with non-call exceptions"
+#, gcc-internal-format
 msgid "transactional memory is not supported with %<-fsanitize=kernel-address%>"
-msgstr "la memoria transaccional no se admite con excepciones que no son llamada"
+msgstr "la memoria transaccional no se admite con %<-fsanitize=kernel-address%>"
 
 #: opts.c:1417
 #, gcc-internal-format
