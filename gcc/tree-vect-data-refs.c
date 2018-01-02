@@ -4579,14 +4579,13 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
   if (VECTOR_MODE_P (mode))
     {
       unsigned int i, nelt = GET_MODE_NUNITS (mode);
-      vec_perm_builder sel (nelt, nelt, 1);
-      sel.quick_grow (nelt);
-
       if (count == 3)
 	{
 	  unsigned int j0 = 0, j1 = 0, j2 = 0;
 	  unsigned int i, j;
 
+	  vec_perm_builder sel (nelt, nelt, 1);
+	  sel.quick_grow (nelt);
 	  vec_perm_indices indices;
 	  for (j = 0; j < 3; j++)
 	    {
@@ -4636,7 +4635,10 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	  /* If length is not equal to 3 then only power of 2 is supported.  */
 	  gcc_assert (pow2p_hwi (count));
 
-	  for (i = 0; i < nelt / 2; i++)
+	  /* The encoding has 2 interleaved stepped patterns.  */
+	  vec_perm_builder sel (nelt, 2, 3);
+	  sel.quick_grow (6);
+	  for (i = 0; i < 3; i++)
 	    {
 	      sel[i * 2] = i;
 	      sel[i * 2 + 1] = i + nelt;
@@ -4644,7 +4646,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	  vec_perm_indices indices (sel, 2, nelt);
 	  if (can_vec_perm_const_p (mode, indices))
 	    {
-	      for (i = 0; i < nelt; i++)
+	      for (i = 0; i < 6; i++)
 		sel[i] += nelt / 2;
 	      indices.new_vector (sel, 2, nelt);
 	      if (can_vec_perm_const_p (mode, indices))
@@ -4749,9 +4751,6 @@ vect_permute_store_chain (vec<tree> dr_chain,
   unsigned int i, n, log_length = exact_log2 (length);
   unsigned int j, nelt = TYPE_VECTOR_SUBPARTS (vectype);
 
-  vec_perm_builder sel (nelt, nelt, 1);
-  sel.quick_grow (nelt);
-
   result_chain->quick_grow (length);
   memcpy (result_chain->address (), dr_chain.address (),
 	  length * sizeof (tree));
@@ -4760,6 +4759,8 @@ vect_permute_store_chain (vec<tree> dr_chain,
     {
       unsigned int j0 = 0, j1 = 0, j2 = 0;
 
+      vec_perm_builder sel (nelt, nelt, 1);
+      sel.quick_grow (nelt);
       vec_perm_indices indices;
       for (j = 0; j < 3; j++)
         {
@@ -4821,7 +4822,10 @@ vect_permute_store_chain (vec<tree> dr_chain,
       /* If length is not equal to 3 then only power of 2 is supported.  */
       gcc_assert (pow2p_hwi (length));
 
-      for (i = 0, n = nelt / 2; i < n; i++)
+      /* The encoding has 2 interleaved stepped patterns.  */
+      vec_perm_builder sel (nelt, 2, 3);
+      sel.quick_grow (6);
+      for (i = 0; i < 3; i++)
 	{
 	  sel[i * 2] = i;
 	  sel[i * 2 + 1] = i + nelt;
@@ -4829,7 +4833,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
 	vec_perm_indices indices (sel, 2, nelt);
 	perm_mask_high = vect_gen_perm_mask_checked (vectype, indices);
 
-	for (i = 0; i < nelt; i++)
+	for (i = 0; i < 6; i++)
 	  sel[i] += nelt / 2;
 	indices.new_vector (sel, 2, nelt);
 	perm_mask_low = vect_gen_perm_mask_checked (vectype, indices);
@@ -5177,11 +5181,11 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
   if (VECTOR_MODE_P (mode))
     {
       unsigned int i, j, nelt = GET_MODE_NUNITS (mode);
-      vec_perm_builder sel (nelt, nelt, 1);
-      sel.quick_grow (nelt);
 
       if (count == 3)
 	{
+	  vec_perm_builder sel (nelt, nelt, 1);
+	  sel.quick_grow (nelt);
 	  vec_perm_indices indices;
 	  unsigned int k;
 	  for (k = 0; k < 3; k++)
@@ -5222,12 +5226,15 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 	  /* If length is not equal to 3 then only power of 2 is supported.  */
 	  gcc_assert (pow2p_hwi (count));
 
-	  for (i = 0; i < nelt; i++)
+	  /* The encoding has a single stepped pattern.  */
+	  vec_perm_builder sel (nelt, 1, 3);
+	  sel.quick_grow (3);
+	  for (i = 0; i < 3; i++)
 	    sel[i] = i * 2;
 	  vec_perm_indices indices (sel, 2, nelt);
 	  if (can_vec_perm_const_p (mode, indices))
 	    {
-	      for (i = 0; i < nelt; i++)
+	      for (i = 0; i < 3; i++)
 		sel[i] = i * 2 + 1;
 	      indices.new_vector (sel, 2, nelt);
 	      if (can_vec_perm_const_p (mode, indices))
@@ -5345,9 +5352,6 @@ vect_permute_load_chain (vec<tree> dr_chain,
   unsigned int i, j, log_length = exact_log2 (length);
   unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
 
-  vec_perm_builder sel (nelt, nelt, 1);
-  sel.quick_grow (nelt);
-
   result_chain->quick_grow (length);
   memcpy (result_chain->address (), dr_chain.address (),
 	  length * sizeof (tree));
@@ -5356,6 +5360,8 @@ vect_permute_load_chain (vec<tree> dr_chain,
     {
       unsigned int k;
 
+      vec_perm_builder sel (nelt, nelt, 1);
+      sel.quick_grow (nelt);
       vec_perm_indices indices;
       for (k = 0; k < 3; k++)
 	{
@@ -5403,12 +5409,15 @@ vect_permute_load_chain (vec<tree> dr_chain,
       /* If length is not equal to 3 then only power of 2 is supported.  */
       gcc_assert (pow2p_hwi (length));
 
-      for (i = 0; i < nelt; ++i)
+      /* The encoding has a single stepped pattern.  */
+      vec_perm_builder sel (nelt, 1, 3);
+      sel.quick_grow (3);
+      for (i = 0; i < 3; ++i)
 	sel[i] = i * 2;
       vec_perm_indices indices (sel, 2, nelt);
       perm_mask_even = vect_gen_perm_mask_checked (vectype, indices);
 
-      for (i = 0; i < nelt; ++i)
+      for (i = 0; i < 3; ++i)
 	sel[i] = i * 2 + 1;
       indices.new_vector (sel, 2, nelt);
       perm_mask_odd = vect_gen_perm_mask_checked (vectype, indices);

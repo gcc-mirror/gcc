@@ -1717,8 +1717,9 @@ perm_mask_for_reverse (tree vectype)
 
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
-  vec_perm_builder sel (nunits, nunits, 1);
-  for (i = 0; i < nunits; ++i)
+  /* The encoding has a single stepped pattern.  */
+  vec_perm_builder sel (nunits, 1, 3);
+  for (i = 0; i < 3; ++i)
     sel.quick_push (nunits - 1 - i);
 
   vec_perm_indices indices (sel, 1, nunits);
@@ -2504,8 +2505,9 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
   unsigned int num_bytes = TYPE_VECTOR_SUBPARTS (char_vectype);
   unsigned word_bytes = num_bytes / nunits;
 
-  vec_perm_builder elts (num_bytes, num_bytes, 1);
-  for (unsigned i = 0; i < nunits; ++i)
+  /* The encoding uses one stepped pattern for each byte in the word.  */
+  vec_perm_builder elts (num_bytes, word_bytes, 3);
+  for (unsigned i = 0; i < 3; ++i)
     for (unsigned j = 0; j < word_bytes; ++j)
       elts.quick_push ((i + 1) * word_bytes - j - 1);
 
