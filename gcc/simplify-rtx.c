@@ -5991,13 +5991,11 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
   if (GET_CODE (op) == CONST_VECTOR)
     {
       num_elem = CONST_VECTOR_NUNITS (op);
-      elems = &CONST_VECTOR_ELT (op, 0);
       elem_bitsize = GET_MODE_UNIT_BITSIZE (innermode);
     }
   else
     {
       num_elem = 1;
-      elems = &op;
       elem_bitsize = max_bitsize;
     }
   /* If this asserts, it is too complicated; reducing value_bit may help.  */
@@ -6008,7 +6006,9 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
   for (elem = 0; elem < num_elem; elem++)
     {
       unsigned char * vp;
-      rtx el = elems[elem];
+      rtx el = (GET_CODE (op) == CONST_VECTOR
+		? CONST_VECTOR_ELT (op, elem)
+		: op);
 
       /* Vectors are kept in target memory order.  (This is probably
 	 a mistake.)  */

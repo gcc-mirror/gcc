@@ -5862,6 +5862,62 @@ init_emit (void)
 #endif
 }
 
+/* Return the value of element I of CONST_VECTOR X as a wide_int.  */
+
+wide_int
+const_vector_int_elt (const_rtx x, unsigned int i)
+{
+  /* First handle elements that are directly encoded.  */
+  machine_mode elt_mode = GET_MODE_INNER (GET_MODE (x));
+  if (i < (unsigned int) XVECLEN (x, 0))
+    return rtx_mode_t (CONST_VECTOR_ENCODED_ELT (x, i), elt_mode);
+
+  /* Identify the pattern that contains element I and work out the index of
+     the last encoded element for that pattern.  */
+  unsigned int encoded_nelts = const_vector_encoded_nelts (x);
+  unsigned int npatterns = CONST_VECTOR_NPATTERNS (x);
+  unsigned int count = i / npatterns;
+  unsigned int pattern = i % npatterns;
+  unsigned int final_i = encoded_nelts - npatterns + pattern;
+
+  /* If there are no steps, the final encoded value is the right one.  */
+  if (!CONST_VECTOR_STEPPED_P (x))
+    return rtx_mode_t (CONST_VECTOR_ENCODED_ELT (x, final_i), elt_mode);
+
+  /* Otherwise work out the value from the last two encoded elements.  */
+  rtx v1 = CONST_VECTOR_ENCODED_ELT (x, final_i - npatterns);
+  rtx v2 = CONST_VECTOR_ENCODED_ELT (x, final_i);
+  wide_int diff = wi::sub (rtx_mode_t (v2, elt_mode),
+			   rtx_mode_t (v1, elt_mode));
+  return wi::add (rtx_mode_t (v2, elt_mode), (count - 2) * diff);
+}
+
+/* Return the value of element I of CONST_VECTOR X.  */
+
+rtx
+const_vector_elt (const_rtx x, unsigned int i)
+{
+  /* First handle elements that are directly encoded.  */
+  if (i < (unsigned int) XVECLEN (x, 0))
+    return CONST_VECTOR_ENCODED_ELT (x, i);
+
+  /* If there are no steps, the final encoded value is the right one.  */
+  if (!CONST_VECTOR_STEPPED_P (x))
+    {
+      /* Identify the pattern that contains element I and work out the index of
+	 the last encoded element for that pattern.  */
+      unsigned int encoded_nelts = const_vector_encoded_nelts (x);
+      unsigned int npatterns = CONST_VECTOR_NPATTERNS (x);
+      unsigned int pattern = i % npatterns;
+      unsigned int final_i = encoded_nelts - npatterns + pattern;
+      return CONST_VECTOR_ENCODED_ELT (x, final_i);
+    }
+
+  /* Otherwise work out the value from the last two encoded elements.  */
+  return immed_wide_int_const (const_vector_int_elt (x, i),
+			       GET_MODE_INNER (GET_MODE (x)));
+}
+
 /* Return true if X is a valid element for a CONST_VECTOR of the given
   mode.  */
 
