@@ -5623,7 +5623,8 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   /* As a special case to aid several targets, lower the element-based
      permutation to a byte-based permutation and try again.  */
   machine_mode qimode;
-  if (!qimode_for_vec_perm (mode).exists (&qimode))
+  if (!qimode_for_vec_perm (mode).exists (&qimode)
+      || GET_MODE_NUNITS (qimode) > GET_MODE_MASK (QImode) + 1)
     return NULL_RTX;
   icode = direct_optab_handler (vec_perm_optab, qimode);
   if (icode == CODE_FOR_nothing)

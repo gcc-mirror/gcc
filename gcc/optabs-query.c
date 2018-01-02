@@ -390,7 +390,8 @@ can_vec_perm_var_p (machine_mode mode)
 
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
   machine_mode qimode;
-  if (!qimode_for_vec_perm (mode).exists (&qimode))
+  if (!qimode_for_vec_perm (mode).exists (&qimode)
+      || GET_MODE_NUNITS (qimode) > GET_MODE_MASK (QImode) + 1)
     return false;
 
   if (direct_optab_handler (vec_perm_optab, qimode) == CODE_FOR_nothing)
