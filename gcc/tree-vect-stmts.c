@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "internal-fn.h"
 #include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"

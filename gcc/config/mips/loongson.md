@@ -784,19 +784,6 @@
   "punpcklwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VWHB 0 "register_operand" "")
-   (match_operand:VWHB 1 "register_operand" "")
-   (match_operand:VWHB 2 "register_operand" "")
-   (match_operand:VWHB 3 "" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
-{
-  if (mips_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<V_stretch_half> 0 "register_operand" "")
    (match_operand:VHB 1 "register_operand" "")]

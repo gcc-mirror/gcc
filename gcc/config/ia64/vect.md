@@ -1549,19 +1549,6 @@
   DONE;
 })
 
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VEC 0 "register_operand" "")
-   (match_operand:VEC 1 "register_operand" "")
-   (match_operand:VEC 2 "register_operand" "")
-   (match_operand:<vecint> 3 "" "")]
-  ""
-{
-  if (ia64_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 ;; Missing operations
 ;; fprcpa
 ;; fpsqrta

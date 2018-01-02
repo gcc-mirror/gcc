@@ -175,6 +175,7 @@ enum insn_code can_float_p (machine_mode, machine_mode, int);
 enum insn_code can_fix_p (machine_mode, machine_mode, int, bool *);
 bool can_conditionally_move_p (machine_mode mode);
 opt_machine_mode qimode_for_vec_perm (machine_mode);
+bool selector_fits_mode_p (machine_mode, const vec_perm_indices &);
 bool can_vec_perm_var_p (machine_mode);
 bool can_vec_perm_const_p (machine_mode, const vec_perm_indices &,
 			   bool = true);

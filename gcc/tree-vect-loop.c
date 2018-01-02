@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-if-conv.h"
 #include "internal-fn.h"
 #include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 /* Loop Vectorization Pass.
 

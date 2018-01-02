@@ -511,19 +511,6 @@
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
-(define_expand "vec_perm_constv2si"
-  [(match_operand:V2SI 0 "gpc_reg_operand" "")
-   (match_operand:V2SI 1 "gpc_reg_operand" "")
-   (match_operand:V2SI 2 "gpc_reg_operand" "")
-   (match_operand:V2SI 3 "" "")]
-  "TARGET_SPE"
-{
-  if (rs6000_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_expand "spe_evmergehi"
   [(match_operand:V2SI 0 "register_operand" "")
    (match_operand:V2SI 1 "register_operand" "")

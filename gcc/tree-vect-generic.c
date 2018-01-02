@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "tree-cfg.h"
 #include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 
 static void expand_vector_operations_1 (gimple_stmt_iterator *);

@@ -62,7 +62,6 @@ extern const char *get_bundle_name (int);
 extern const char *output_probe_stack_range (rtx, rtx);
 
 extern void ia64_expand_vec_perm_even_odd (rtx, rtx, rtx, int);
-extern bool ia64_expand_vec_perm_const (rtx op[4]);
 extern void ia64_expand_vec_setv2sf (rtx op[3]);
 #endif /* RTX_CODE */
 

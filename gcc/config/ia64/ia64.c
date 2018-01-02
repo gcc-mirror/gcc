@@ -335,7 +335,8 @@ static fixed_size_mode ia64_get_reg_raw_mode (int regno);
 static section * ia64_hpux_function_section (tree, enum node_frequency,
 					     bool, bool);
 
-static bool ia64_vectorize_vec_perm_const_ok (machine_mode, vec_perm_indices);
+static bool ia64_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
+					   const vec_perm_indices &);
 
 static unsigned int ia64_hard_regno_nregs (unsigned int, machine_mode);
 static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
@@ -654,8 +655,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_DELAY_VARTRACK
 #define TARGET_DELAY_VARTRACK true
 
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK ia64_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST ia64_vectorize_vec_perm_const
 
 #undef TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P
 #define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P ia64_attribute_takes_identifier_p
@@ -11743,32 +11744,31 @@ ia64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-bool
-ia64_expand_vec_perm_const (rtx operands[4])
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
+
+static bool
+ia64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+			       rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   unsigned char perm[MAX_VECT_LEN];
-  int i, nelt, which;
-  rtx sel;
+  unsigned int i, nelt, which;
 
-  d.target = operands[0];
-  d.op0 = operands[1];
-  d.op1 = operands[2];
-  sel = operands[3];
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
 
-  d.vmode = GET_MODE (d.target);
+  d.vmode = vmode;
   gcc_assert (VECTOR_MODE_P (d.vmode));
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = false;
+  d.testing_p = !target;
 
-  gcc_assert (GET_CODE (sel) == CONST_VECTOR);
-  gcc_assert (XVECLEN (sel, 0) == nelt);
+  gcc_assert (sel.length () == nelt);
   gcc_checking_assert (sizeof (d.perm) == sizeof (perm));
 
   for (i = which = 0; i < nelt; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
+      unsigned int ei = sel[i] & (2 * nelt - 1);
 
       which |= (ei < nelt ? 1 : 2);
       d.perm[i] = ei;
@@ -11781,7 +11781,7 @@ ia64_expand_vec_perm_const (rtx operands[4])
       gcc_unreachable();
 
     case 3:
-      if (!rtx_equal_p (d.op0, d.op1))
+      if (d.testing_p || !rtx_equal_p (d.op0, d.op1))
 	{
 	  d.one_operand_p = false;
 	  break;
@@ -11809,6 +11809,22 @@ ia64_expand_vec_perm_const (rtx operands[4])
       break;
     }
 
+  if (d.testing_p)
+    {
+      /* We have to go through the motions and see if we can
+	 figure out how to generate the requested permutation.  */
+      d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+      d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+      if (!d.one_operand_p)
+	d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+      start_sequence ();
+      bool ret = ia64_expand_vec_perm_const_1 (&d);
+      end_sequence ();
+
+      return ret;
+    }
+
   if (ia64_expand_vec_perm_const_1 (&d))
     return true;
 
@@ -11823,51 +11839,6 @@ ia64_expand_vec_perm_const (rtx operands[4])
     }
 
   return false;
-}
-
-/* Implement targetm.vectorize.vec_perm_const_ok.  */
-
-static bool
-ia64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
-{
-  struct expand_vec_perm_d d;
-  unsigned int i, nelt, which;
-  bool ret;
-
-  d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = true;
-
-  /* Extract the values from the vector CST into the permutation
-     array in D.  */
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned char e = sel[i];
-      d.perm[i] = e;
-      gcc_assert (e < 2 * nelt);
-      which |= (e < nelt ? 1 : 2);
-    }
-
-  /* For all elements from second vector, fold the elements to first.  */
-  if (which == 2)
-    for (i = 0; i < nelt; ++i)
-      d.perm[i] -= nelt;
-
-  /* Check whether the mask can be applied to the vector type.  */
-  d.one_operand_p = (which != 3);
-
-  /* Otherwise we have to go through the motions and see if we can
-     figure out how to generate the requested permutation.  */
-  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
-  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
-  if (!d.one_operand_p)
-    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
-
-  start_sequence ();
-  ret = ia64_expand_vec_perm_const_1 (&d);
-  end_sequence ();
-
-  return ret;
 }
 
 void

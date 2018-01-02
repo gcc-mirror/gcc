@@ -290,7 +290,8 @@ static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
 static int arm_cortex_m7_branch_cost (bool, bool);
 
-static bool arm_vectorize_vec_perm_const_ok (machine_mode, vec_perm_indices);
+static bool arm_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
+					  const vec_perm_indices &);
 
 static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 
@@ -736,9 +737,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_PREFERRED_RENAME_CLASS \
   arm_preferred_rename_class
 
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
-  arm_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST arm_vectorize_vec_perm_const
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
@@ -29383,28 +29383,31 @@ arm_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-/* Expand a vec_perm_const pattern.  */
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
-bool
-arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
+static bool
+arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
+			      const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   int i, nelt, which;
+
+  if (!VALID_NEON_DREG_MODE (vmode) && !VALID_NEON_QREG_MODE (vmode))
+    return false;
 
   d.target = target;
   d.op0 = op0;
   d.op1 = op1;
 
-  d.vmode = GET_MODE (target);
+  d.vmode = vmode;
   gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.testing_p = false;
+  d.testing_p = !target;
 
   nelt = GET_MODE_NUNITS (d.vmode);
   d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
+      int ei = sel[i] & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
       d.perm.quick_push (ei);
     }
@@ -29416,7 +29419,7 @@ arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 
     case 3:
       d.one_vector_p = false;
-      if (!rtx_equal_p (op0, op1))
+      if (d.testing_p || !rtx_equal_p (op0, op1))
 	break;
 
       /* The elements of PERM do not suggest that only the first operand
@@ -29437,38 +29440,8 @@ arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
       break;
     }
 
-  return arm_expand_vec_perm_const_1 (&d);
-}
-
-/* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
-
-static bool
-arm_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
-{
-  struct expand_vec_perm_d d;
-  unsigned int i, nelt, which;
-  bool ret;
-
-  d.vmode = vmode;
-  d.testing_p = true;
-  d.perm.safe_splice (sel);
-
-  /* Categorize the set of elements in the selector.  */
-  nelt = GET_MODE_NUNITS (d.vmode);
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned int e = d.perm[i];
-      gcc_assert (e < 2 * nelt);
-      which |= (e < nelt ? 1 : 2);
-    }
-
-  /* For all elements from second vector, fold the elements to first.  */
-  if (which == 2)
-    for (i = 0; i < nelt; ++i)
-      d.perm[i] -= nelt;
-
-  /* Check whether the mask can be applied to the vector type.  */
-  d.one_vector_p = (which != 3);
+  if (d.testing_p)
+    return arm_expand_vec_perm_const_1 (&d);
 
   d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
   d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
@@ -29476,7 +29449,7 @@ arm_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
     d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
 
   start_sequence ();
-  ret = arm_expand_vec_perm_const_1 (&d);
+  bool ret = arm_expand_vec_perm_const_1 (&d);
   end_sequence ();
 
   return ret;

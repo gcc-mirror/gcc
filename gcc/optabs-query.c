@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "rtl.h"
 #include "recog.h"
+#include "vec-perm-indices.h"
 
 struct target_optabs default_target_optabs;
 struct target_optabs *this_fn_optabs = &default_target_optabs;
@@ -361,6 +362,17 @@ qimode_for_vec_perm (machine_mode mode)
   return opt_machine_mode ();
 }
 
+/* Return true if selector SEL can be represented in the integer
+   equivalent of vector mode MODE.  */
+
+bool
+selector_fits_mode_p (machine_mode mode, const vec_perm_indices &sel)
+{
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (GET_MODE_INNER (mode));
+  return (mask == HOST_WIDE_INT_M1U
+	  || sel.all_in_range_p (0, mask + 1));
+}
+
 /* Return true if VEC_PERM_EXPRs with variable selector operands can be
    expanded using SIMD extensions of the CPU.  MODE is the mode of the
    vectors being permuted.  */
@@ -415,7 +427,7 @@ can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
     return false;
 
   /* It's probably cheaper to test for the variable case first.  */
-  if (allow_variable_p)
+  if (allow_variable_p && selector_fits_mode_p (mode, sel))
     {
       if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
 	return true;
@@ -424,20 +436,28 @@ can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
 	 related computing the QImode selector, since that happens at
 	 compile time.  */
       machine_mode qimode;
-      if (qimode_for_vec_perm (mode).exists (&qimode)
-	  && direct_optab_handler (vec_perm_optab, qimode) != CODE_FOR_nothing)
-	return true;
+      if (qimode_for_vec_perm (mode).exists (&qimode))
+	{
+	  vec_perm_indices qimode_indices;
+	  qimode_indices.new_expanded_vector (sel, GET_MODE_UNIT_SIZE (mode));
+	  if (selector_fits_mode_p (qimode, qimode_indices)
+	      && (direct_optab_handler (vec_perm_optab, qimode)
+		  != CODE_FOR_nothing))
+	    return true;
+	}
     }
 
-  if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing)
+  if (targetm.vectorize.vec_perm_const != NULL)
     {
-      if (targetm.vectorize.vec_perm_const_ok == NULL
-	  || targetm.vectorize.vec_perm_const_ok (mode, sel))
+      if (targetm.vectorize.vec_perm_const (mode, NULL_RTX, NULL_RTX,
+					    NULL_RTX, sel))
 	return true;
 
       /* ??? For completeness, we ought to check the QImode version of
 	 vec_perm_const_optab.  But all users of this implicit lowering
-	 feature implement the variable vec_perm_optab.  */
+	 feature implement the variable vec_perm_optab, and the ia64
+	 port specifically doesn't want us to lower V2SF operations
+	 into integer operations.  */
     }
 
   return false;

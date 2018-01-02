@@ -4996,20 +4996,8 @@ where @var{q} is a vector of @code{QImode} of the same width as @var{m},
 the middle-end will lower the mode @var{m} @code{VEC_PERM_EXPR} to
 mode @var{q}.
 
-@cindex @code{vec_perm_const@var{m}} instruction pattern
-@item @samp{vec_perm_const@var{m}}
-Like @samp{vec_perm} except that the permutation is a compile-time
-constant.  That is, operand 3, the @dfn{selector}, is a @code{CONST_VECTOR}.
-
-Some targets cannot perform a permutation with a variable selector,
-but can efficiently perform a constant permutation.  Further, the
-target hook @code{vec_perm_ok} is queried to determine if the 
-specific constant permutation is available efficiently; the named
-pattern is never expanded without @code{vec_perm_ok} returning true.
-
-There is no need for a target to supply both @samp{vec_perm@var{m}}
-and @samp{vec_perm_const@var{m}} if the former can trivially implement
-the operation with, say, the vector constant loaded into a register.
+See also @code{TARGET_VECTORIZER_VEC_PERM_CONST}, which performs
+the analogous operation for constant selectors.
 
 @cindex @code{push@var{m}1} instruction pattern
 @item @samp{push@var{m}1}

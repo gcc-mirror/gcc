@@ -558,19 +558,6 @@
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "<MODE>")])
 
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:MSA 0 "register_operand")
-   (match_operand:MSA 1 "register_operand")
-   (match_operand:MSA 2 "register_operand")
-   (match_operand:<VIMODE> 3 "")]
-  "ISA_HAS_MSA"
-{
-  if (mips_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_expand "abs<mode>2"
   [(match_operand:IMSA 0 "register_operand" "=f")
    (abs:IMSA (match_operand:IMSA 1 "register_operand" "f"))]

@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-cfg.h"
 #include "tree-hash-traits.h"
+#include "vec-perm-indices.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */

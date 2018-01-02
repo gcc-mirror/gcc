@@ -9515,28 +9515,24 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
       goto binop;
 
     case VEC_PERM_EXPR:
-      expand_operands (treeop0, treeop1, target, &op0, &op1, EXPAND_NORMAL);
-      op2 = expand_normal (treeop2);
-
-      /* Careful here: if the target doesn't support integral vector modes,
-	 a constant selection vector could wind up smooshed into a normal
-	 integral constant.  */
-      if (CONSTANT_P (op2) && !VECTOR_MODE_P (GET_MODE (op2)))
-	{
-	  tree sel_type = TREE_TYPE (treeop2);
-	  machine_mode vmode
-	    = mode_for_vector (SCALAR_TYPE_MODE (TREE_TYPE (sel_type)),
-			       TYPE_VECTOR_SUBPARTS (sel_type)).require ();
-	  gcc_assert (GET_MODE_CLASS (vmode) == MODE_VECTOR_INT);
-	  op2 = simplify_subreg (vmode, op2, TYPE_MODE (sel_type), 0);
-	  gcc_assert (op2 && GET_CODE (op2) == CONST_VECTOR);
-	}
-      else
-        gcc_assert (GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT);
-
-      temp = expand_vec_perm (mode, op0, op1, op2, target);
-      gcc_assert (temp);
-      return temp;
+      {
+	expand_operands (treeop0, treeop1, target, &op0, &op1, EXPAND_NORMAL);
+	vec_perm_builder sel;
+	if (TREE_CODE (treeop2) == VECTOR_CST
+	    && tree_to_vec_perm_builder (&sel, treeop2))
+	  {
+	    machine_mode sel_mode = TYPE_MODE (TREE_TYPE (treeop2));
+	    temp = expand_vec_perm_const (mode, op0, op1, sel,
+					  sel_mode, target);
+	  }
+	else
+	  {
+	    op2 = expand_normal (treeop2);
+	    temp = expand_vec_perm_var (mode, op0, op1, op2, target);
+	  }
+	gcc_assert (temp);
+	return temp;
+      }
 
     case DOT_PROD_EXPR:
       {

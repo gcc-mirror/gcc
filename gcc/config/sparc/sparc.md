@@ -9327,28 +9327,6 @@ visl")
    (set_attr "subtype" "other")
    (set_attr "fptype" "double")])
 
-;; The rtl expanders will happily convert constant permutations on other
-;; modes down to V8QI.  Rely on this to avoid the complexity of the byte
-;; order of the permutation.
-(define_expand "vec_perm_constv8qi"
-  [(match_operand:V8QI 0 "register_operand" "")
-   (match_operand:V8QI 1 "register_operand" "")
-   (match_operand:V8QI 2 "register_operand" "")
-   (match_operand:V8QI 3 "" "")]
-  "TARGET_VIS2"
-{
-  unsigned int i, mask;
-  rtx sel = operands[3];
-
-  for (i = mask = 0; i < 8; ++i)
-    mask |= (INTVAL (XVECEXP (sel, 0, i)) & 0xf) << (28 - i*4);
-  sel = force_reg (SImode, gen_int_mode (mask, SImode));
-
-  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, const0_rtx));
-  emit_insn (gen_bshufflev8qi_vis (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
 ;; Unlike constant permutation, we can vastly simplify the compression of
 ;; the 64-bit selector input to the 32-bit %gsr value by knowing what the
 ;; width of the input is.
