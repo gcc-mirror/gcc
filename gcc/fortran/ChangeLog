@@ -1,3 +1,21 @@
+2017-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45689
+	* intrinsic.c (add_function): Add gfc_simplify_maxloc and
+	gfc_simplify_minloc to maxloc and minloc, respectively.
+	* intrinsic.h: Add prototypes for gfc_simplify_minloc
+	and gfc_simplify_maxloc.
+	* simplify.c (min_max_chose): Adjust prototype.  Modify function
+	to have a return value which indicates if the extremum was found.
+	(is_constant_array_expr): Fix typo in comment.
+	(simplify_minmaxloc_to_scalar): New function.
+	(simplify_minmaxloc_nodim): New function.
+	(new_array): New function.
+	(simplify_minmaxloc_to_array): New function.
+	(gfc_simplify_minmaxloc): New function.
+	(simplify_minloc): New function.
+	(simplify_maxloc): New function.
+
 2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45689
