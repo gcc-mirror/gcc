@@ -1,5 +1,135 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* Makefile.in (OBJS): Add vec-perm-indices.o.
+	* vec-perm-indices.h: New file.
+	* vec-perm-indices.c: Likewise.
+	* target.h (vec_perm_indices): Replace with a forward class
+	declaration.
+	(auto_vec_perm_indices): Move to vec-perm-indices.h.
+	* optabs.h: Include vec-perm-indices.h.
+	(expand_vec_perm): Delete.
+	(selector_fits_mode_p, expand_vec_perm_var): Declare.
+	(expand_vec_perm_const): Declare.
+	* target.def (vec_perm_const_ok): Replace with...
+	(vec_perm_const): ...this new hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_VEC_PERM_CONST_OK): Replace with...
+	(TARGET_VECTORIZE_VEC_PERM_CONST): ...this new hook.
+	* doc/tm.texi: Regenerate.
+	* optabs.def (vec_perm_const): Delete.
+	* doc/md.texi (vec_perm_const): Likewise.
+	(vec_perm): Refer to TARGET_VECTORIZE_VEC_PERM_CONST.
+	* expr.c (expand_expr_real_2): Use expand_vec_perm_const rather than
+	expand_vec_perm for constant permutation vectors.  Assert that
+	the mode of variable permutation vectors is the integer equivalent
+	of the mode that is being permuted.
+	* optabs-query.h (selector_fits_mode_p): Declare.
+	* optabs-query.c: Include vec-perm-indices.h.
+	(selector_fits_mode_p): New function.
+	(can_vec_perm_const_p): Check whether targetm.vectorize.vec_perm_const
+	is defined, instead of checking whether the vec_perm_const_optab
+	exists.  Use targetm.vectorize.vec_perm_const instead of
+	targetm.vectorize.vec_perm_const_ok.  Check whether the indices
+	fit in the vector mode before using a variable permute.
+	* optabs.c (shift_amt_for_vec_perm_mask): Take a mode and a
+	vec_perm_indices instead of an rtx.
+	(expand_vec_perm): Replace with...
+	(expand_vec_perm_const): ...this new function.  Take the selector
+	as a vec_perm_indices rather than an rtx.  Also take the mode of
+	the selector.  Update call to shift_amt_for_vec_perm_mask.
+	Use targetm.vectorize.vec_perm_const instead of vec_perm_const_optab.
+	Use vec_perm_indices::new_expanded_vector to expand the original
+	selector into bytes.  Check whether the indices fit in the vector
+	mode before using a variable permute.
+	(expand_vec_perm_var): Make global.
+	(expand_mult_highpart): Use expand_vec_perm_const.
+	* fold-const.c: Includes vec-perm-indices.h.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-vect-data-refs.c: Likewise.
+	* tree-vect-generic.c: Likewise.
+	* tree-vect-loop.c: Likewise.
+	* tree-vect-slp.c: Likewise.
+	* tree-vect-stmts.c: Likewise.
+	* config/aarch64/aarch64-protos.h (aarch64_expand_vec_perm_const):
+	Delete.
+	* config/aarch64/aarch64-simd.md (vec_perm_const<mode>): Delete.
+	* config/aarch64/aarch64.c (aarch64_expand_vec_perm_const)
+	(aarch64_vectorize_vec_perm_const_ok): Fuse into...
+	(aarch64_vectorize_vec_perm_const): ...this new function.
+	(TARGET_VECTORIZE_VEC_PERM_CONST_OK): Delete.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): Redefine.
+	* config/arm/arm-protos.h (arm_expand_vec_perm_const): Delete.
+	* config/arm/vec-common.md (vec_perm_const<mode>): Delete.
+	* config/arm/arm.c (TARGET_VECTORIZE_VEC_PERM_CONST_OK): Delete.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): Redefine.
+	(arm_expand_vec_perm_const, arm_vectorize_vec_perm_const_ok): Merge
+	into...
+	(arm_vectorize_vec_perm_const): ...this new function.  Explicitly
+	check for NEON modes.
+	* config/i386/i386-protos.h (ix86_expand_vec_perm_const): Delete.
+	* config/i386/sse.md (VEC_PERM_CONST, vec_perm_const<mode>): Delete.
+	* config/i386/i386.c (ix86_expand_vec_perm_const_1): Update comment.
+	(ix86_expand_vec_perm_const, ix86_vectorize_vec_perm_const_ok): Merge
+	into...
+	(ix86_vectorize_vec_perm_const): ...this new function.  Incorporate
+	the old VEC_PERM_CONST conditions.
+	* config/ia64/ia64-protos.h (ia64_expand_vec_perm_const): Delete.
+	* config/ia64/vect.md (vec_perm_const<mode>): Delete.
+	* config/ia64/ia64.c (ia64_expand_vec_perm_const)
+	(ia64_vectorize_vec_perm_const_ok): Merge into...
+	(ia64_vectorize_vec_perm_const): ...this new function.
+	* config/mips/loongson.md (vec_perm_const<mode>): Delete.
+	* config/mips/mips-msa.md (vec_perm_const<mode>): Delete.
+	* config/mips/mips-ps-3d.md (vec_perm_constv2sf): Delete.
+	* config/mips/mips-protos.h (mips_expand_vec_perm_const): Delete.
+	* config/mips/mips.c (mips_expand_vec_perm_const)
+	(mips_vectorize_vec_perm_const_ok): Merge into...
+	(mips_vectorize_vec_perm_const): ...this new function.
+	* config/powerpcspe/altivec.md (vec_perm_constv16qi): Delete.
+	* config/powerpcspe/paired.md (vec_perm_constv2sf): Delete.
+	* config/powerpcspe/spe.md (vec_perm_constv2si): Delete.
+	* config/powerpcspe/vsx.md (vec_perm_const<mode>): Delete.
+	* config/powerpcspe/powerpcspe-protos.h (altivec_expand_vec_perm_const)
+	(rs6000_expand_vec_perm_const): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_VECTORIZE_VEC_PERM_CONST_OK):
+	Delete.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): Redefine.
+	(altivec_expand_vec_perm_const_le): Take each operand individually.
+	Operate on constant selectors rather than rtxes.
+	(altivec_expand_vec_perm_const): Likewise.  Update call to
+	altivec_expand_vec_perm_const_le.
+	(rs6000_expand_vec_perm_const): Delete.
+	(rs6000_vectorize_vec_perm_const_ok): Delete.
+	(rs6000_vectorize_vec_perm_const): New function.
+	(rs6000_do_expand_vec_perm): Take a vec_perm_builder instead of
+	an element count and rtx array.
+	(rs6000_expand_extract_even): Update call accordingly.
+	(rs6000_expand_interleave): Likewise.
+	* config/rs6000/altivec.md (vec_perm_constv16qi): Delete.
+	* config/rs6000/paired.md (vec_perm_constv2sf): Delete.
+	* config/rs6000/vsx.md (vec_perm_const<mode>): Delete.
+	* config/rs6000/rs6000-protos.h (altivec_expand_vec_perm_const)
+	(rs6000_expand_vec_perm_const): Delete.
+	* config/rs6000/rs6000.c (TARGET_VECTORIZE_VEC_PERM_CONST_OK): Delete.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): Redefine.
+	(altivec_expand_vec_perm_const_le): Take each operand individually.
+	Operate on constant selectors rather than rtxes.
+	(altivec_expand_vec_perm_const): Likewise.  Update call to
+	altivec_expand_vec_perm_const_le.
+	(rs6000_expand_vec_perm_const): Delete.
+	(rs6000_vectorize_vec_perm_const_ok): Delete.
+	(rs6000_vectorize_vec_perm_const): New function.  Remove stray
+	reference to the SPE evmerge intructions.
+	(rs6000_do_expand_vec_perm): Take a vec_perm_builder instead of
+	an element count and rtx array.
+	(rs6000_expand_extract_even): Update call accordingly.
+	(rs6000_expand_interleave): Likewise.
+	* config/sparc/sparc.md (vec_perm_constv8qi): Delete in favor of...
+	* config/sparc/sparc.c (sparc_vectorize_vec_perm_const): ...this
+	new function.
+	(TARGET_VECTORIZE_VEC_PERM_CONST): Redefine.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs.c (expand_vec_perm_1): Assert that SEL has an integer
 	vector mode and that that mode matches the mode of the data
 	being permuted.

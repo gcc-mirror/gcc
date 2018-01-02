@@ -143,8 +143,6 @@ static void aarch64_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_override_options_after_change (void);
 static bool aarch64_vector_mode_supported_p (machine_mode);
-static bool aarch64_vectorize_vec_perm_const_ok (machine_mode,
-						 vec_perm_indices);
 static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 const_tree type,
@@ -13670,29 +13668,27 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-/* Expand a vec_perm_const pattern with the operands given by TARGET,
-   OP0, OP1 and SEL.  NELT is the number of elements in the vector.  */
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
-bool
-aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel,
-			       unsigned int nelt)
+static bool
+aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+				  rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, which;
 
+  d.vmode = vmode;
   d.target = target;
   d.op0 = op0;
   d.op1 = op1;
+  d.testing_p = !target;
 
-  d.vmode = GET_MODE (target);
-  gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.testing_p = false;
-
+  /* Calculate whether all elements are in one vector.  */
+  unsigned int nelt = sel.length ();
   d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      unsigned int ei = INTVAL (e) & (2 * nelt - 1);
+      unsigned int ei = sel[i] & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
       d.perm.quick_push (ei);
     }
@@ -13704,7 +13700,7 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel,
 
     case 3:
       d.one_vector_p = false;
-      if (!rtx_equal_p (op0, op1))
+      if (d.testing_p || !rtx_equal_p (op0, op1))
 	break;
 
       /* The elements of PERM do not suggest that only the first operand
@@ -13725,37 +13721,8 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel,
       break;
     }
 
-  return aarch64_expand_vec_perm_const_1 (&d);
-}
-
-static bool
-aarch64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
-{
-  struct expand_vec_perm_d d;
-  unsigned int i, nelt, which;
-  bool ret;
-
-  d.vmode = vmode;
-  d.testing_p = true;
-  d.perm.safe_splice (sel);
-
-  /* Calculate whether all elements are in one vector.  */
-  nelt = sel.length ();
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned int e = d.perm[i];
-      gcc_assert (e < 2 * nelt);
-      which |= (e < nelt ? 1 : 2);
-    }
-
-  /* If all elements are from the second vector, reindex as if from the
-     first vector.  */
-  if (which == 2)
-    for (i = 0; i < nelt; ++i)
-      d.perm[i] -= nelt;
-
-  /* Check whether the mask can be applied to a single vector.  */
-  d.one_vector_p = (which != 3);
+  if (!d.testing_p)
+    return aarch64_expand_vec_perm_const_1 (&d);
 
   d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
   d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
@@ -13763,7 +13730,7 @@ aarch64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
     d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
 
   start_sequence ();
-  ret = aarch64_expand_vec_perm_const_1 (&d);
+  bool ret = aarch64_expand_vec_perm_const_1 (&d);
   end_sequence ();
 
   return ret;
@@ -15515,9 +15482,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 /* vec_perm support.  */
 
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
-  aarch64_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST \
+  aarch64_vectorize_vec_perm_const
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS aarch64_init_libfuncs

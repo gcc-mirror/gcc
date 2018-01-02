@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "dbgcnt.h"
 #include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */

@@ -164,19 +164,6 @@
   [(set_attr "type" "fmove")
    (set_attr "mode" "SF")])
 
-(define_expand "vec_perm_constv2sf"
-  [(match_operand:V2SF 0 "register_operand" "")
-   (match_operand:V2SF 1 "register_operand" "")
-   (match_operand:V2SF 2 "register_operand" "")
-   (match_operand:V2SI 3 "" "")]
-  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
-{
-  if (mips_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 ;; Expanders for builtins.  The instruction:
 ;;
 ;;     P[UL][UL].PS <result>, <a>, <b>

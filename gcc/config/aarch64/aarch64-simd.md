@@ -5385,20 +5385,6 @@
 
 ;; vec_perm support
 
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VALL_F16 0 "register_operand")
-   (match_operand:VALL_F16 1 "register_operand")
-   (match_operand:VALL_F16 2 "register_operand")
-   (match_operand:<V_INT_EQUIV> 3)]
-  "TARGET_SIMD"
-{
-  if (aarch64_expand_vec_perm_const (operands[0], operands[1],
-				     operands[2], operands[3], <nunits>))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_expand "vec_perm<mode>"
   [(match_operand:VB 0 "register_operand")
    (match_operand:VB 1 "register_operand")

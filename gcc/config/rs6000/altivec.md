@@ -2198,19 +2198,6 @@
   }
 })
 
-(define_expand "vec_perm_constv16qi"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:V16QI 2 "register_operand" "")
-   (match_operand:V16QI 3 "" "")]
-  "TARGET_ALTIVEC"
-{
-  if (altivec_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_insn "*altivec_vpermr_<mode>_internal"
   [(set (match_operand:VM 0 "register_operand" "=v,?wo")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")

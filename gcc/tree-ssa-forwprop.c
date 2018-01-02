@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "optabs-tree.h"
 #include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized

@@ -1841,12 +1841,27 @@ DEFHOOK
  bool, (const_tree type, bool is_packed),
  default_builtin_vector_alignment_reachable)
 
-/* Return true if a vector created for vec_perm_const is valid.
-   A NULL indicates that all constants are valid permutations.  */
 DEFHOOK
-(vec_perm_const_ok,
- "Return true if a vector created for @code{vec_perm_const} is valid.",
- bool, (machine_mode, vec_perm_indices),
+(vec_perm_const,
+ "This hook is used to test whether the target can permute up to two\n\
+vectors of mode @var{mode} using the permutation vector @code{sel}, and\n\
+also to emit such a permutation.  In the former case @var{in0}, @var{in1}\n\
+and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are\n\
+the source vectors and @var{out} is the destination vector; all three are\n\
+registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if\n\
+@var{sel} describes a permutation on one vector instead of two.\n\
+\n\
+Return true if the operation is possible, emitting instructions for it\n\
+if rtxes are provided.\n\
+\n\
+@cindex @code{vec_perm@var{m}} instruction pattern\n\
+If the hook returns false for a mode with multibyte elements, GCC will\n\
+try the equivalent byte operation.  If that also fails, it will try forcing\n\
+the selector into a register and using the @var{vec_perm@var{mode}}\n\
+instruction pattern.  There is no need for the hook to handle these two\n\
+implementation approaches itself.",
+ bool, (machine_mode mode, rtx output, rtx in0, rtx in1,
+	const vec_perm_indices &sel),
  NULL)
 
 /* Return true if the target supports misaligned store/load of a

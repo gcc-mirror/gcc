@@ -688,6 +688,8 @@ static bool sparc_modes_tieable_p (machine_mode, machine_mode);
 static bool sparc_can_change_mode_class (machine_mode, machine_mode,
 					 reg_class_t);
 static HOST_WIDE_INT sparc_constant_alignment (const_tree, HOST_WIDE_INT);
+static bool sparc_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
+					    const vec_perm_indices &);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -931,6 +933,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT sparc_constant_alignment
+
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST sparc_vectorize_vec_perm_const
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -12811,6 +12816,32 @@ sparc_expand_vec_perm_bmask (machine_mode vmode, rtx sel)
 
   /* Always perform the final addition/merge within the bmask insn.  */
   emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, t_1));
+}
+
+/* Implement TARGET_VEC_PERM_CONST.  */
+
+static bool
+sparc_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+				rtx op1, const vec_perm_indices &sel)
+{
+  /* All permutes are supported.  */
+  if (!target)
+    return true;
+
+  /* Force target-independent code to convert constant permutations on other
+     modes down to V8QI.  Rely on this to avoid the complexity of the byte
+     order of the permutation.  */
+  if (vmode != V8QImode)
+    return false;
+
+  unsigned int i, mask;
+  for (i = mask = 0; i < 8; ++i)
+    mask |= (sel[i] & 0xf) << (28 - i*4);
+  rtx mask_rtx = force_reg (SImode, gen_int_mode (mask, SImode));
+
+  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), mask_rtx, const0_rtx));
+  emit_insn (gen_bshufflev8qi_vis (target, op0, op1));
+  return true;
 }
 
 /* Implement TARGET_FRAME_POINTER_REQUIRED.  */

@@ -1585,6 +1585,7 @@ OBJS = \
 	var-tracking.o \
 	varasm.o \
 	varpool.o \
+	vec-perm-indices.o \
 	vmsdbgout.o \
 	vr-values.o \
 	vtable-verify.o \

@@ -21379,34 +21379,32 @@ mips_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   return false;
 }
 
-/* Expand a vec_perm_const pattern.  */
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
-bool
-mips_expand_vec_perm_const (rtx operands[4])
+static bool
+mips_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+			       rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   int i, nelt, which;
   unsigned char orig_perm[MAX_VECT_LEN];
-  rtx sel;
   bool ok;
 
-  d.target = operands[0];
-  d.op0 = operands[1];
-  d.op1 = operands[2];
-  sel = operands[3];
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
 
-  d.vmode = GET_MODE (d.target);
-  gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = false;
+  d.vmode = vmode;
+  gcc_assert (VECTOR_MODE_P (vmode));
+  d.nelt = nelt = GET_MODE_NUNITS (vmode);
+  d.testing_p = !target;
 
   /* This is overly conservative, but ensures we don't get an
      uninitialized warning on ORIG_PERM.  */
   memset (orig_perm, 0, MAX_VECT_LEN);
   for (i = which = 0; i < nelt; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
+      int ei = sel[i] & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
       orig_perm[i] = ei;
     }
@@ -21419,7 +21417,7 @@ mips_expand_vec_perm_const (rtx operands[4])
 
     case 3:
       d.one_vector_p = false;
-      if (!rtx_equal_p (d.op0, d.op1))
+      if (d.testing_p || !rtx_equal_p (d.op0, d.op1))
 	break;
       /* FALLTHRU */
 
@@ -21436,6 +21434,19 @@ mips_expand_vec_perm_const (rtx operands[4])
       break;
     }
 
+  if (d.testing_p)
+    {
+      d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+      d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+      if (!d.one_vector_p)
+	d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+      start_sequence ();
+      ok = mips_expand_vec_perm_const_1 (&d);
+      end_sequence ();
+      return ok;
+    }
+
   ok = mips_expand_vec_perm_const_1 (&d);
 
   /* If we were given a two-vector permutation which just happened to
@@ -21447,8 +21458,8 @@ mips_expand_vec_perm_const (rtx operands[4])
      the original permutation.  */
   if (!ok && which == 3)
     {
-      d.op0 = operands[1];
-      d.op1 = operands[2];
+      d.op0 = op0;
+      d.op1 = op1;
       d.one_vector_p = false;
       memcpy (d.perm, orig_perm, MAX_VECT_LEN);
       ok = mips_expand_vec_perm_const_1 (&d);
@@ -21466,48 +21477,6 @@ mips_sched_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
   if (MSA_SUPPORTED_MODE_P (mode))
     return 2;
   return 1;
-}
-
-/* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
-
-static bool
-mips_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
-{
-  struct expand_vec_perm_d d;
-  unsigned int i, nelt, which;
-  bool ret;
-
-  d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = true;
-
-  /* Categorize the set of elements in the selector.  */
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned char e = sel[i];
-      d.perm[i] = e;
-      gcc_assert (e < 2 * nelt);
-      which |= (e < nelt ? 1 : 2);
-    }
-
-  /* For all elements from second vector, fold the elements to first.  */
-  if (which == 2)
-    for (i = 0; i < nelt; ++i)
-      d.perm[i] -= nelt;
-
-  /* Check whether the mask can be applied to the vector type.  */
-  d.one_vector_p = (which != 3);
-
-  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
-  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
-  if (!d.one_vector_p)
-    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
-
-  start_sequence ();
-  ret = mips_expand_vec_perm_const_1 (&d);
-  end_sequence ();
-
-  return ret;
 }
 
 /* Expand an integral vector unpack operation.  */
@@ -22591,8 +22560,8 @@ mips_starting_frame_offset (void)
 #undef TARGET_PREPARE_PCH_SAVE
 #define TARGET_PREPARE_PCH_SAVE mips_prepare_pch_save
 
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK mips_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST mips_vectorize_vec_perm_const
 
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH mips_sched_reassociation_width

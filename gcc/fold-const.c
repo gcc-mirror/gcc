@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
