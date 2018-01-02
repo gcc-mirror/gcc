@@ -1,6 +1,13 @@
 2018-01-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/81616
+	* config/i386/x86-tune-costs.h: Increase cost of integer load costs
+	for generic 4->6.
+
+2018-01-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	Generic tuning.
 	* x86-tune-costs.h (generic_cost): Reduce cost of FDIV 20->17,
 	cost of sqrt 20->14, DIVSS 18->13, DIVSD 32->17, SQRtSS 30->14
 	and SQRTsD 58->18, cond_not_taken_branch_cost. 2->1. Increase

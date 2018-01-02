@@ -2259,8 +2259,8 @@ struct processor_costs generic_cost = {
 
   /* All move costs are relative to integer->integer move times 2 and thus
      they are latency*2. */
-  4,				     /* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
+  6,				     /* cost for loading QImode using movzbl */
+  {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
   {6, 6, 6},				/* cost of storing integer registers */
