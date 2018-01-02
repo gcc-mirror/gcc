@@ -1,4 +1,21 @@
+2018-01-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/testsuite/
+	* g++.dg/modules/tdef-1_[ab].C: New.
+
 2017-12-20  Nathan Sidwell  <nathan@acm.org>
+
+	Variables!
+	gcc/cp/
+	* decl.c (grokvardecl): Set exporting.
+	* module.c (dump_nested_name): Dump integer values.
+	(cpms_{in,out}::define_var): New.
+	(cpms_{in,out}::tag_definition): Deal with vars.
+	(cpms_out::maybe_tag_definition): Likewise.
+	(cpms_out::core_bools): Externalize static vars.
+	(cpms_out::lang_decl_bools): Likewise for not-really-extern.
+	gcc/testsuite/
+	* g++.dg/modules/var-1_[ab].C: New.
 
 	Enumerations!
 	gcc/cp/
