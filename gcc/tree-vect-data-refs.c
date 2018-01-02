@@ -4579,7 +4579,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
   if (VECTOR_MODE_P (mode))
     {
       unsigned int i, nelt = GET_MODE_NUNITS (mode);
-      auto_vec_perm_indices sel (nelt);
+      vec_perm_builder sel (nelt, nelt, 1);
       sel.quick_grow (nelt);
 
       if (count == 3)
@@ -4587,6 +4587,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	  unsigned int j0 = 0, j1 = 0, j2 = 0;
 	  unsigned int i, j;
 
+	  vec_perm_indices indices;
 	  for (j = 0; j < 3; j++)
 	    {
 	      int nelt0 = ((3 - j) * nelt) % 3;
@@ -4601,7 +4602,8 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 		  if (3 * i + nelt2 < nelt)
 		    sel[3 * i + nelt2] = 0;
 		}
-	      if (!can_vec_perm_const_p (mode, sel))
+	      indices.new_vector (sel, 2, nelt);
+	      if (!can_vec_perm_const_p (mode, indices))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf (MSG_MISSED_OPTIMIZATION,
@@ -4618,7 +4620,8 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 		  if (3 * i + nelt2 < nelt)
 		    sel[3 * i + nelt2] = nelt + j2++;
 		}
-	      if (!can_vec_perm_const_p (mode, sel))
+	      indices.new_vector (sel, 2, nelt);
+	      if (!can_vec_perm_const_p (mode, indices))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf (MSG_MISSED_OPTIMIZATION,
@@ -4638,11 +4641,13 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	      sel[i * 2] = i;
 	      sel[i * 2 + 1] = i + nelt;
 	    }
-	  if (can_vec_perm_const_p (mode, sel))
+	  vec_perm_indices indices (sel, 2, nelt);
+	  if (can_vec_perm_const_p (mode, indices))
 	    {
 	      for (i = 0; i < nelt; i++)
 		sel[i] += nelt / 2;
-	      if (can_vec_perm_const_p (mode, sel))
+	      indices.new_vector (sel, 2, nelt);
+	      if (can_vec_perm_const_p (mode, indices))
 		return true;
 	    }
 	}
@@ -4744,7 +4749,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
   unsigned int i, n, log_length = exact_log2 (length);
   unsigned int j, nelt = TYPE_VECTOR_SUBPARTS (vectype);
 
-  auto_vec_perm_indices sel (nelt);
+  vec_perm_builder sel (nelt, nelt, 1);
   sel.quick_grow (nelt);
 
   result_chain->quick_grow (length);
@@ -4755,6 +4760,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
     {
       unsigned int j0 = 0, j1 = 0, j2 = 0;
 
+      vec_perm_indices indices;
       for (j = 0; j < 3; j++)
         {
 	  int nelt0 = ((3 - j) * nelt) % 3;
@@ -4770,7 +4776,8 @@ vect_permute_store_chain (vec<tree> dr_chain,
 	      if (3 * i + nelt2 < nelt)
 		sel[3 * i + nelt2] = 0;
 	    }
-	  perm3_mask_low = vect_gen_perm_mask_checked (vectype, sel);
+	  indices.new_vector (sel, 2, nelt);
+	  perm3_mask_low = vect_gen_perm_mask_checked (vectype, indices);
 
 	  for (i = 0; i < nelt; i++)
 	    {
@@ -4781,7 +4788,8 @@ vect_permute_store_chain (vec<tree> dr_chain,
 	      if (3 * i + nelt2 < nelt)
 		sel[3 * i + nelt2] = nelt + j2++;
 	    }
-	  perm3_mask_high = vect_gen_perm_mask_checked (vectype, sel);
+	  indices.new_vector (sel, 2, nelt);
+	  perm3_mask_high = vect_gen_perm_mask_checked (vectype, indices);
 
 	  vect1 = dr_chain[0];
 	  vect2 = dr_chain[1];
@@ -4818,11 +4826,13 @@ vect_permute_store_chain (vec<tree> dr_chain,
 	  sel[i * 2] = i;
 	  sel[i * 2 + 1] = i + nelt;
 	}
-	perm_mask_high = vect_gen_perm_mask_checked (vectype, sel);
+	vec_perm_indices indices (sel, 2, nelt);
+	perm_mask_high = vect_gen_perm_mask_checked (vectype, indices);
 
 	for (i = 0; i < nelt; i++)
 	  sel[i] += nelt / 2;
-	perm_mask_low = vect_gen_perm_mask_checked (vectype, sel);
+	indices.new_vector (sel, 2, nelt);
+	perm_mask_low = vect_gen_perm_mask_checked (vectype, indices);
 
 	for (i = 0, n = log_length; i < n; i++)
 	  {
@@ -5167,11 +5177,12 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
   if (VECTOR_MODE_P (mode))
     {
       unsigned int i, j, nelt = GET_MODE_NUNITS (mode);
-      auto_vec_perm_indices sel (nelt);
+      vec_perm_builder sel (nelt, nelt, 1);
       sel.quick_grow (nelt);
 
       if (count == 3)
 	{
+	  vec_perm_indices indices;
 	  unsigned int k;
 	  for (k = 0; k < 3; k++)
 	    {
@@ -5180,7 +5191,8 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 		  sel[i] = 3 * i + k;
 		else
 		  sel[i] = 0;
-	      if (!can_vec_perm_const_p (mode, sel))
+	      indices.new_vector (sel, 2, nelt);
+	      if (!can_vec_perm_const_p (mode, indices))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5193,7 +5205,8 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 		  sel[i] = i;
 		else
 		  sel[i] = nelt + ((nelt + k) % 3) + 3 * (j++);
-	      if (!can_vec_perm_const_p (mode, sel))
+	      indices.new_vector (sel, 2, nelt);
+	      if (!can_vec_perm_const_p (mode, indices))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5208,13 +5221,16 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 	{
 	  /* If length is not equal to 3 then only power of 2 is supported.  */
 	  gcc_assert (pow2p_hwi (count));
+
 	  for (i = 0; i < nelt; i++)
 	    sel[i] = i * 2;
-	  if (can_vec_perm_const_p (mode, sel))
+	  vec_perm_indices indices (sel, 2, nelt);
+	  if (can_vec_perm_const_p (mode, indices))
 	    {
 	      for (i = 0; i < nelt; i++)
 		sel[i] = i * 2 + 1;
-	      if (can_vec_perm_const_p (mode, sel))
+	      indices.new_vector (sel, 2, nelt);
+	      if (can_vec_perm_const_p (mode, indices))
 		return true;
 	    }
         }
@@ -5329,7 +5345,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
   unsigned int i, j, log_length = exact_log2 (length);
   unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
 
-  auto_vec_perm_indices sel (nelt);
+  vec_perm_builder sel (nelt, nelt, 1);
   sel.quick_grow (nelt);
 
   result_chain->quick_grow (length);
@@ -5340,6 +5356,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
     {
       unsigned int k;
 
+      vec_perm_indices indices;
       for (k = 0; k < 3; k++)
 	{
 	  for (i = 0; i < nelt; i++)
@@ -5347,15 +5364,16 @@ vect_permute_load_chain (vec<tree> dr_chain,
 	      sel[i] = 3 * i + k;
 	    else
 	      sel[i] = 0;
-	  perm3_mask_low = vect_gen_perm_mask_checked (vectype, sel);
+	  indices.new_vector (sel, 2, nelt);
+	  perm3_mask_low = vect_gen_perm_mask_checked (vectype, indices);
 
 	  for (i = 0, j = 0; i < nelt; i++)
 	    if (3 * i + k < 2 * nelt)
 	      sel[i] = i;
 	    else
 	      sel[i] = nelt + ((nelt + k) % 3) + 3 * (j++);
-
-	  perm3_mask_high = vect_gen_perm_mask_checked (vectype, sel);
+	  indices.new_vector (sel, 2, nelt);
+	  perm3_mask_high = vect_gen_perm_mask_checked (vectype, indices);
 
 	  first_vect = dr_chain[0];
 	  second_vect = dr_chain[1];
@@ -5387,11 +5405,13 @@ vect_permute_load_chain (vec<tree> dr_chain,
 
       for (i = 0; i < nelt; ++i)
 	sel[i] = i * 2;
-      perm_mask_even = vect_gen_perm_mask_checked (vectype, sel);
+      vec_perm_indices indices (sel, 2, nelt);
+      perm_mask_even = vect_gen_perm_mask_checked (vectype, indices);
 
       for (i = 0; i < nelt; ++i)
 	sel[i] = i * 2 + 1;
-      perm_mask_odd = vect_gen_perm_mask_checked (vectype, sel);
+      indices.new_vector (sel, 2, nelt);
+      perm_mask_odd = vect_gen_perm_mask_checked (vectype, indices);
 
       for (i = 0; i < log_length; i++)
 	{
@@ -5527,7 +5547,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
 
-  auto_vec_perm_indices sel (nelt);
+  vec_perm_builder sel (nelt, nelt, 1);
   sel.quick_grow (nelt);
 
   result_chain->quick_grow (length);
@@ -5541,7 +5561,8 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	sel[i] = i * 2;
       for (i = 0; i < nelt / 2; ++i)
 	sel[nelt / 2 + i] = i * 2 + 1;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      vec_perm_indices indices (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5549,13 +5570,14 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 			      supported by target\n");
 	  return false;
 	}
-      perm2_mask1 = vect_gen_perm_mask_checked (vectype, sel);
+      perm2_mask1 = vect_gen_perm_mask_checked (vectype, indices);
 
       for (i = 0; i < nelt / 2; ++i)
 	sel[i] = i * 2 + 1;
       for (i = 0; i < nelt / 2; ++i)
 	sel[nelt / 2 + i] = i * 2;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5563,20 +5585,21 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 			      supported by target\n");
 	  return false;
 	}
-      perm2_mask2 = vect_gen_perm_mask_checked (vectype, sel);
+      perm2_mask2 = vect_gen_perm_mask_checked (vectype, indices);
 
       /* Generating permutation constant to shift all elements.
 	 For vector length 8 it is {4 5 6 7 8 9 10 11}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = nelt / 2 + i;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "shift permutation is not supported by target\n");
 	  return false;
 	}
-      shift1_mask = vect_gen_perm_mask_checked (vectype, sel);
+      shift1_mask = vect_gen_perm_mask_checked (vectype, indices);
 
       /* Generating permutation constant to select vector from 2.
 	 For vector length 8 it is {0 1 2 3 12 13 14 15}.  */
@@ -5584,14 +5607,15 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	sel[i] = i;
       for (i = nelt / 2; i < nelt; i++)
 	sel[i] = nelt + i;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "select is not supported by target\n");
 	  return false;
 	}
-      select_mask = vect_gen_perm_mask_checked (vectype, sel);
+      select_mask = vect_gen_perm_mask_checked (vectype, indices);
 
       for (i = 0; i < log_length; i++)
 	{
@@ -5647,7 +5671,8 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	  sel[i] = 3 * k + (l % 3);
 	  k++;
 	}
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      vec_perm_indices indices (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5655,59 +5680,63 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 			      supported by target\n");
 	  return false;
 	}
-      perm3_mask = vect_gen_perm_mask_checked (vectype, sel);
+      perm3_mask = vect_gen_perm_mask_checked (vectype, indices);
 
       /* Generating permutation constant to shift all elements.
 	 For vector length 8 it is {6 7 8 9 10 11 12 13}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = 2 * (nelt / 3) + (nelt % 3) + i;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "shift permutation is not supported by target\n");
 	  return false;
 	}
-      shift1_mask = vect_gen_perm_mask_checked (vectype, sel);
+      shift1_mask = vect_gen_perm_mask_checked (vectype, indices);
 
       /* Generating permutation constant to shift all elements.
 	 For vector length 8 it is {5 6 7 8 9 10 11 12}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = 2 * (nelt / 3) + 1 + i;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "shift permutation is not supported by target\n");
 	  return false;
 	}
-      shift2_mask = vect_gen_perm_mask_checked (vectype, sel);
+      shift2_mask = vect_gen_perm_mask_checked (vectype, indices);
 
       /* Generating permutation constant to shift all elements.
 	 For vector length 8 it is {3 4 5 6 7 8 9 10}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = (nelt / 3) + (nelt % 3) / 2 + i;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "shift permutation is not supported by target\n");
 	  return false;
 	}
-      shift3_mask = vect_gen_perm_mask_checked (vectype, sel);
+      shift3_mask = vect_gen_perm_mask_checked (vectype, indices);
 
       /* Generating permutation constant to shift all elements.
 	 For vector length 8 it is {5 6 7 8 9 10 11 12}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = 2 * (nelt / 3) + (nelt % 3) / 2 + i;
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "shift permutation is not supported by target\n");
 	  return false;
 	}
-      shift4_mask = vect_gen_perm_mask_checked (vectype, sel);
+      shift4_mask = vect_gen_perm_mask_checked (vectype, indices);
 
       for (k = 0; k < 3; k++)
 	{

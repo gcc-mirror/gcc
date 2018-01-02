@@ -5476,6 +5476,11 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
   rtx_insn *last = get_last_insn ();
 
   bool single_arg_p = rtx_equal_p (v0, v1);
+  /* Always specify two input vectors here and leave the target to handle
+     cases in which the inputs are equal.  Not all backends can cope with
+     the single-input representation when testing for a double-input
+     target instruction.  */
+  vec_perm_indices indices (sel, 2, GET_MODE_NUNITS (mode));
 
   /* See if this can be handled with a vec_shr.  We only do this if the
      second vector is all zeroes.  */
@@ -5488,7 +5493,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       && (shift_code != CODE_FOR_nothing
 	  || shift_code_qi != CODE_FOR_nothing))
     {
-      rtx shift_amt = shift_amt_for_vec_perm_mask (mode, sel);
+      rtx shift_amt = shift_amt_for_vec_perm_mask (mode, indices);
       if (shift_amt)
 	{
 	  struct expand_operand ops[3];
@@ -5520,7 +5525,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       else
 	v1 = force_reg (mode, v1);
 
-      if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, sel))
+      if (targetm.vectorize.vec_perm_const (mode, target, v0, v1, indices))
 	return target;
     }
 
@@ -5529,7 +5534,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
   rtx target_qi = NULL_RTX, v0_qi = NULL_RTX, v1_qi = NULL_RTX;
   if (qimode != VOIDmode)
     {
-      qimode_indices.new_expanded_vector (sel, GET_MODE_UNIT_SIZE (mode));
+      qimode_indices.new_expanded_vector (indices, GET_MODE_UNIT_SIZE (mode));
       target_qi = gen_reg_rtx (qimode);
       v0_qi = gen_lowpart (qimode, v0);
       v1_qi = gen_lowpart (qimode, v1);
@@ -5556,7 +5561,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
      REQUIRED_SEL_MODE is OK.  */
   if (sel_mode != required_sel_mode)
     {
-      if (!selector_fits_mode_p (required_sel_mode, sel))
+      if (!selector_fits_mode_p (required_sel_mode, indices))
 	{
 	  delete_insns_since (last);
 	  return NULL_RTX;
@@ -5567,7 +5572,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
   insn_code icode = direct_optab_handler (vec_perm_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      rtx sel_rtx = vec_perm_indices_to_rtx (sel_mode, sel);
+      rtx sel_rtx = vec_perm_indices_to_rtx (sel_mode, indices);
       rtx tmp = expand_vec_perm_1 (icode, target, v0, v1, sel_rtx);
       if (tmp)
 	return tmp;
@@ -5642,7 +5647,7 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   gcc_assert (sel != NULL);
 
   /* Broadcast the low byte each element into each of its bytes.  */
-  vec_perm_builder const_sel (w);
+  vec_perm_builder const_sel (w, w, 1);
   for (i = 0; i < w; ++i)
     {
       int this_e = i / u * u;
@@ -5890,7 +5895,7 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
   expand_insn (optab_handler (tab2, mode), 3, eops);
   m2 = gen_lowpart (mode, eops[0].value);
 
-  auto_vec_perm_indices sel (nunits);
+  vec_perm_builder sel (nunits, nunits, 1);
   if (method == 2)
     {
       for (i = 0; i < nunits; ++i)

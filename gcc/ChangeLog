@@ -1,5 +1,74 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* int-vector-builder.h: New file.
+	* vec-perm-indices.h: Include int-vector-builder.h.
+	(vec_perm_indices): Redefine as an int_vector_builder.
+	(auto_vec_perm_indices): Delete.
+	(vec_perm_builder): Redefine as a stand-alone class.
+	(vec_perm_indices::vec_perm_indices): New function.
+	(vec_perm_indices::clamp): Likewise.
+	* vec-perm-indices.c: Include fold-const.h and tree-vector-builder.h.
+	(vec_perm_indices::new_vector): New function.
+	(vec_perm_indices::new_expanded_vector): Update for new
+	vec_perm_indices class.
+	(vec_perm_indices::rotate_inputs): New function.
+	(vec_perm_indices::all_in_range_p): Operate directly on the
+	encoded form, without computing elided elements.
+	(tree_to_vec_perm_builder): Operate directly on the VECTOR_CST
+	encoding.  Update for new vec_perm_indices class.
+	* optabs.c (expand_vec_perm_const): Create a vec_perm_indices for
+	the given vec_perm_builder.
+	(expand_vec_perm_var): Update vec_perm_builder constructor.
+	(expand_mult_highpart): Use vec_perm_builder instead of
+	auto_vec_perm_indices.
+	* optabs-query.c (can_mult_highpart_p): Use vec_perm_builder and
+	vec_perm_indices instead of auto_vec_perm_indices.  Use a single
+	or double series encoding as appropriate.
+	* fold-const.c (fold_ternary_loc): Use vec_perm_builder and
+	vec_perm_indices instead of auto_vec_perm_indices.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	* tree-vect-data-refs.c (vect_grouped_store_supported): Likewise.
+	(vect_permute_store_chain): Likewise.
+	(vect_grouped_load_supported): Likewise.
+	(vect_permute_load_chain): Likewise.
+	(vect_shift_permute_load_chain): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Likewise.
+	(vect_transform_slp_perm_load): Likewise.
+	(vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c (perm_mask_for_reverse): Likewise.
+	(vectorizable_mask_load_store): Likewise.
+	(vectorizable_bswap): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* tree-vect-generic.c (lower_vec_perm): Use vec_perm_builder and
+	vec_perm_indices instead of auto_vec_perm_indices.  Use
+	tree_to_vec_perm_builder to read the vector from a tree.
+	* tree-vect-loop.c (calc_vec_perm_mask_for_shift): Take a
+	vec_perm_builder instead of a vec_perm_indices.
+	(have_whole_vector_shift): Use vec_perm_builder and
+	vec_perm_indices instead of auto_vec_perm_indices.  Leave the
+	truncation to calc_vec_perm_mask_for_shift.
+	(vect_create_epilog_for_reduction): Likewise.
+	* config/aarch64/aarch64.c (expand_vec_perm_d::perm): Change
+	from auto_vec_perm_indices to vec_perm_indices.
+	(aarch64_expand_vec_perm_const_1): Use rotate_inputs on d.perm
+	instead of changing individual elements.
+	(aarch64_vectorize_vec_perm_const): Use new_vector to install
+	the vector in d.perm.
+	* config/arm/arm.c (expand_vec_perm_d::perm): Change
+	from auto_vec_perm_indices to vec_perm_indices.
+	(arm_expand_vec_perm_const_1): Use rotate_inputs on d.perm
+	instead of changing individual elements.
+	(arm_vectorize_vec_perm_const): Use new_vector to install
+	the vector in d.perm.
+	* config/powerpcspe/powerpcspe.c (rs6000_expand_extract_even):
+	Update vec_perm_builder constructor.
+	(rs6000_expand_interleave): Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_extract_even): Likewise.
+	(rs6000_expand_interleave): Likewise.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs-query.c (can_vec_perm_var_p): Check whether lowering
 	to qimode could truncate the indices.
 	* optabs.c (expand_vec_perm_var): Likewise.

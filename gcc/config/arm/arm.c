@@ -28854,7 +28854,7 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 struct expand_vec_perm_d
 {
   rtx target, op0, op1;
-  auto_vec_perm_indices perm;
+  vec_perm_indices perm;
   machine_mode vmode;
   bool one_vector_p;
   bool testing_p;
@@ -29362,9 +29362,7 @@ arm_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   unsigned int nelt = d->perm.length ();
   if (d->perm[0] >= nelt)
     {
-      for (unsigned int i = 0; i < nelt; ++i)
-	d->perm[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
-
+      d->perm.rotate_inputs (1);
       std::swap (d->op0, d->op1);
     }
 
@@ -29404,12 +29402,10 @@ arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
   d.testing_p = !target;
 
   nelt = GET_MODE_NUNITS (d.vmode);
-  d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
       int ei = sel[i] & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
-      d.perm.quick_push (ei);
     }
 
   switch (which)
@@ -29428,8 +29424,6 @@ arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
 	 input vector.  */
       /* FALLTHRU */
     case 2:
-      for (i = 0; i < nelt; ++i)
-        d.perm[i] &= nelt - 1;
       d.op0 = op1;
       d.one_vector_p = true;
       break;
@@ -29439,6 +29433,8 @@ arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
       d.one_vector_p = true;
       break;
     }
+
+  d.perm.new_vector (sel.encoding (), d.one_vector_p ? 1 : 2, nelt);
 
   if (d.testing_p)
     return arm_expand_vec_perm_const_1 (&d);

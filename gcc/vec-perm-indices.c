@@ -22,10 +22,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "vec-perm-indices.h"
 #include "tree.h"
+#include "fold-const.h"
+#include "tree-vector-builder.h"
 #include "backend.h"
 #include "rtl.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
+
+/* Switch to a new permutation vector that selects between NINPUTS vector
+   inputs that have NELTS_PER_INPUT elements each.  Take the elements of the
+   new permutation vector from ELEMENTS, clamping each one to be in range.  */
+
+void
+vec_perm_indices::new_vector (const vec_perm_builder &elements,
+			      unsigned int ninputs,
+			      unsigned int nelts_per_input)
+{
+  m_ninputs = ninputs;
+  m_nelts_per_input = nelts_per_input;
+  /* Expand the encoding and clamp each element.  E.g. { 0, 2, 4, ... }
+     might wrap halfway if there is only one vector input.  */
+  unsigned int full_nelts = elements.full_nelts ();
+  m_encoding.new_vector (full_nelts, full_nelts, 1);
+  for (unsigned int i = 0; i < full_nelts; ++i)
+    m_encoding.quick_push (clamp (elements.elt (i)));
+  m_encoding.finalize ();
+}
 
 /* Switch to a new permutation vector that selects the same input elements
    as ORIG, but with each element split into FACTOR pieces.  For example,
@@ -36,14 +58,31 @@ void
 vec_perm_indices::new_expanded_vector (const vec_perm_indices &orig,
 				       unsigned int factor)
 {
-  truncate (0);
-  reserve (orig.length () * factor);
-  for (unsigned int i = 0; i < orig.length (); ++i)
+  m_ninputs = orig.m_ninputs;
+  m_nelts_per_input = orig.m_nelts_per_input * factor;
+  m_encoding.new_vector (orig.m_encoding.full_nelts () * factor,
+			 orig.m_encoding.npatterns () * factor,
+			 orig.m_encoding.nelts_per_pattern ());
+  unsigned int encoded_nelts = orig.m_encoding.encoded_nelts ();
+  for (unsigned int i = 0; i < encoded_nelts; ++i)
     {
-      element_type base = orig[i] * factor;
+      element_type base = orig.m_encoding[i] * factor;
       for (unsigned int j = 0; j < factor; ++j)
-	quick_push (base + j);
+	m_encoding.quick_push (base + j);
     }
+  m_encoding.finalize ();
+}
+
+/* Rotate the inputs of the permutation right by DELTA inputs.  This changes
+   the values of the permutation vector but it doesn't change the way that
+   the elements are encoded.  */
+
+void
+vec_perm_indices::rotate_inputs (int delta)
+{
+  element_type element_delta = delta * m_nelts_per_input;
+  for (unsigned int i = 0; i < m_encoding.length (); ++i)
+    m_encoding[i] = clamp (m_encoding[i] + element_delta);
 }
 
 /* Return true if all elements of the permutation vector are in the range
@@ -52,9 +91,44 @@ vec_perm_indices::new_expanded_vector (const vec_perm_indices &orig,
 bool
 vec_perm_indices::all_in_range_p (element_type start, element_type size) const
 {
-  for (unsigned int i = 0; i < length (); ++i)
-    if ((*this)[i] < start || ((*this)[i] - start) >= size)
+  /* Check the first two elements of each pattern.  */
+  unsigned int npatterns = m_encoding.npatterns ();
+  unsigned int nelts_per_pattern = m_encoding.nelts_per_pattern ();
+  unsigned int base_nelts = npatterns * MIN (nelts_per_pattern, 2);
+  for (unsigned int i = 0; i < base_nelts; ++i)
+    if (m_encoding[i] < start || (m_encoding[i] - start) >= size)
       return false;
+
+  /* For stepped encodings, check the full range of the series.  */
+  if (nelts_per_pattern == 3)
+    {
+      element_type limit = input_nelts ();
+
+      /* The number of elements in each pattern beyond the first two
+	 that we checked above.  */
+      unsigned int step_nelts = (m_encoding.full_nelts () / npatterns) - 2;
+      for (unsigned int i = 0; i < npatterns; ++i)
+	{
+	  /* BASE1 has been checked but BASE2 hasn't.   */
+	  element_type base1 = m_encoding[i + npatterns];
+	  element_type base2 = m_encoding[i + base_nelts];
+
+	  /* The step to add to get from BASE1 to each subsequent value.  */
+	  element_type step = clamp (base2 - base1);
+
+	  /* STEP has no inherent sign, so a value near LIMIT can
+	     act as a negative step.  The series is in range if it
+	     is in range according to one of the two interpretations.
+
+	     Since we're dealing with clamped values, ELEMENT_TYPE is
+	     wide enough for overflow not to be a problem.  */
+	  element_type headroom_down = base1 - start;
+	  element_type headroom_up = size - headroom_down - 1;
+	  if (headroom_up < step * step_nelts
+	      && headroom_down < (limit - step) * step_nelts)
+	    return false;
+	}
+    }
   return true;
 }
 
@@ -65,15 +139,16 @@ vec_perm_indices::all_in_range_p (element_type start, element_type size) const
 bool
 tree_to_vec_perm_builder (vec_perm_builder *builder, tree cst)
 {
-  unsigned int nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (cst));
-  for (unsigned int i = 0; i < nelts; ++i)
-    if (!tree_fits_shwi_p (vector_cst_elt (cst, i)))
+  unsigned int encoded_nelts = vector_cst_encoded_nelts (cst);
+  for (unsigned int i = 0; i < encoded_nelts; ++i)
+    if (!tree_fits_shwi_p (VECTOR_CST_ENCODED_ELT (cst, i)))
       return false;
 
-  builder->reserve (nelts);
-  for (unsigned int i = 0; i < nelts; ++i)
-    builder->quick_push (tree_to_shwi (vector_cst_elt (cst, i))
-			 & (2 * nelts - 1));
+  builder->new_vector (TYPE_VECTOR_SUBPARTS (TREE_TYPE (cst)),
+		       VECTOR_CST_NPATTERNS (cst),
+		       VECTOR_CST_NELTS_PER_PATTERN (cst));
+  for (unsigned int i = 0; i < encoded_nelts; ++i)
+    builder->quick_push (tree_to_shwi (VECTOR_CST_ENCODED_ELT (cst, i)));
   return true;
 }
 
