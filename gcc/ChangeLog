@@ -1,3 +1,10 @@
+2018-01-02  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+        * config/rs6000/rs6000-string.c (expand_block_move): Allow the use of
+        unaligned VSX load/store on P8/P9.
+        (expand_block_clear): Allow the use of unaligned VSX
+	load/store on P8/P9.
+
 2018-01-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-p8swap.c (swap_feeds_both_load_and_store):
