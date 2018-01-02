@@ -1,3 +1,8 @@
+2018-01-02  Nathan Sidwell  <nathan@acm.org>
+
+	* constexpr.c (cxx_bind_parameters_in_call): Remove unneeded local
+	lval var.
+
 2017-12-22  Mike Stump  <mikestump@comcast.net>
             Eric Botcazou  <ebotcazou@adacore.com>
 
