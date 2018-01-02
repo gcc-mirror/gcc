@@ -1,3 +1,9 @@
+2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from 7-branch
+	PR fortran/83650
+	* gfortran.dg/simplify_cshift_1.f90: Correct condition.
+
 2017-12-14  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline

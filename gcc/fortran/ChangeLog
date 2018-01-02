@@ -1,3 +1,10 @@
+2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from 7-branch
+	PR fortran/83650
+	* simplify.c (gfc_simplify_cshift): Correct contition for
+	negative shifts.
+
 2017-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
