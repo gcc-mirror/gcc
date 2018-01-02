@@ -2529,10 +2529,7 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
       return true;
     }
 
-  tree_vector_builder telts (char_vectype, num_bytes, 1);
-  for (unsigned i = 0; i < num_bytes; ++i)
-    telts.quick_push (build_int_cst (char_type_node, elts[i]));
-  tree bswap_vconst = telts.build ();
+  tree bswap_vconst = vec_perm_indices_to_tree (char_vectype, indices);
 
   /* Transform.  */
   vec<tree> vec_oprnds = vNULL;
@@ -6538,17 +6535,10 @@ vect_gen_perm_mask_any (tree vectype, const vec_perm_indices &sel)
 {
   tree mask_elt_type, mask_type;
 
-  unsigned int nunits = sel.length ();
-  gcc_checking_assert (nunits == TYPE_VECTOR_SUBPARTS (vectype));
-
   mask_elt_type = lang_hooks.types.type_for_mode
     (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
-
-  tree_vector_builder mask_elts (mask_type, nunits, 1);
-  for (unsigned int i = 0; i < nunits; ++i)
-    mask_elts.quick_push (build_int_cst (mask_elt_type, sel[i]));
-  return mask_elts.build ();
+  return vec_perm_indices_to_tree (mask_type, sel);
 }
 
 /* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_const_p,

@@ -1,5 +1,14 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* vec-perm-indices.h (vec_perm_indices_to_tree): Declare.
+	* vec-perm-indices.c (vec_perm_indices_to_tree): New function.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Use it.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Likewise.
+	* tree-vect-stmts.c (vectorizable_bswap): Likewise.
+	(vect_gen_perm_mask_any): Likewise.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* int-vector-builder.h: New file.
 	* vec-perm-indices.h: Include int-vector-builder.h.
 	(vec_perm_indices): Redefine as an int_vector_builder.

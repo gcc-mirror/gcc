@@ -2119,10 +2119,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  || GET_MODE_SIZE (TYPE_MODE (mask_type))
 	     != GET_MODE_SIZE (TYPE_MODE (type)))
 	return false;
-      tree_vector_builder mask_elts (mask_type, nelts, 1);
-      for (i = 0; i < nelts; i++)
-	mask_elts.quick_push (build_int_cst (TREE_TYPE (mask_type), sel[i]));
-      op2 = mask_elts.build ();
+      op2 = vec_perm_indices_to_tree (mask_type, indices);
       if (conv_code == ERROR_MARK)
 	gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);
       else

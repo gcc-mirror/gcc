@@ -152,6 +152,20 @@ tree_to_vec_perm_builder (vec_perm_builder *builder, tree cst)
   return true;
 }
 
+/* Return a VECTOR_CST of type TYPE for the permutation vector in INDICES.  */
+
+tree
+vec_perm_indices_to_tree (tree type, const vec_perm_indices &indices)
+{
+  gcc_assert (TYPE_VECTOR_SUBPARTS (type) == indices.length ());
+  tree_vector_builder sel (type, indices.encoding ().npatterns (),
+			   indices.encoding ().nelts_per_pattern ());
+  unsigned int encoded_nelts = sel.encoded_nelts ();
+  for (unsigned int i = 0; i < encoded_nelts; i++)
+    sel.quick_push (build_int_cst (TREE_TYPE (type), indices[i]));
+  return sel.build ();
+}
+
 /* Return a CONST_VECTOR of mode MODE that contains the elements of
    INDICES.  */
 

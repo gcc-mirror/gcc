@@ -3675,13 +3675,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 		  tree mask_vec = NULL_TREE;
 		  
 		  if (! noop_p)
-		    {
-		      tree_vector_builder mask_elts (mask_type, nunits, 1);
-		      for (int l = 0; l < nunits; ++l)
-			mask_elts.quick_push (build_int_cst (mask_element_type,
-							     mask[l]));
-		      mask_vec = mask_elts.build ();
-		    }
+		    mask_vec = vec_perm_indices_to_tree (mask_type, indices);
 
 		  if (second_vec_index == -1)
 		    second_vec_index = first_vec_index;
