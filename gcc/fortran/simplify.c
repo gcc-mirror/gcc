@@ -1950,92 +1950,212 @@ gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
     simplify_transformation_to_array (result, mask, dim, mask, gfc_count, NULL);
 }
 
+/* Simplification routine for cshift. This works by copying the array
+   expressions into a one-dimensional array, shuffling the values into another
+   one-dimensional array and creating the new array expression from this.  The
+   shuffling part is basically taken from the library routine.  */
 
 gfc_expr *
 gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
 {
-  gfc_expr *a, *result;
-  int dm;
+  gfc_expr *result;
+  int which;
+  gfc_expr **arrayvec, **resultvec;
+  gfc_expr **rptr, **sptr;
+  mpz_t size;
+  size_t arraysize, shiftsize, i;
+  gfc_constructor *array_ctor, *shift_ctor;
+  ssize_t *shiftvec, *hptr;
+  ssize_t shift_val, len;
+  ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+    hs_ex[GFC_MAX_DIMENSIONS],
+    hstride[GFC_MAX_DIMENSIONS], sstride[GFC_MAX_DIMENSIONS],
+    a_extent[GFC_MAX_DIMENSIONS], a_stride[GFC_MAX_DIMENSIONS],
+    h_extent[GFC_MAX_DIMENSIONS],
+    ss_ex[GFC_MAX_DIMENSIONS];
+  ssize_t rsoffset;
+  int d, n;
+  bool continue_loop;
+  gfc_expr **src, **dest;
 
-  /* DIM is only useful for rank > 1, but deal with it here as one can
-     set DIM = 1 for rank = 1.  */
+  if (!is_constant_array_expr (array))
+    return NULL;
+
+  if (shift->rank > 0)
+    gfc_simplify_expr (shift, 1);
+
+  if (!gfc_is_constant_expr (shift))
+    return NULL;
+
+  /* Make dim zero-based.  */
   if (dim)
     {
       if (!gfc_is_constant_expr (dim))
 	return NULL;
-      dm = mpz_get_si (dim->value.integer);
+      which = mpz_get_si (dim->value.integer) - 1;
     }
   else
-    dm = 1;
+    which = 0;
 
-  /* Copy array into 'a', simplify it, and then test for a constant array.  */
-  a = gfc_copy_expr (array);
-  gfc_simplify_expr (a, 0);
-  if (!is_constant_array_expr (a))
+  gfc_array_size (array, &size);
+  arraysize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  result = gfc_get_array_expr (array->ts.type, array->ts.kind, &array->where);
+  result->shape = gfc_copy_shape (array->shape, array->rank);
+  result->rank = array->rank;
+  result->ts.u.derived = array->ts.u.derived;
+
+  if (arraysize == 0)
+    return result;
+
+  arrayvec = XCNEWVEC (gfc_expr *, arraysize);
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  for (i = 0; i < arraysize; i++)
     {
-      gfc_free_expr (a);
-      return NULL;
+      arrayvec[i] = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
     }
 
-  if (a->rank == 1)
+  resultvec = XCNEWVEC (gfc_expr *, arraysize);
+
+  extent[0] = 1;
+  count[0] = 0;
+
+  for (d=0; d < array->rank; d++)
     {
-      gfc_constructor *ca, *cr;
-      mpz_t size;
-      int i, j, shft, sz;
+      a_extent[d] = mpz_get_si (array->shape[d]);
+      a_stride[d] = d == 0 ? 1 : a_stride[d-1] * a_extent[d-1];
+    }
 
-      if (!gfc_is_constant_expr (shift))
-	{
-	  gfc_free_expr (a);
-	  return NULL;
-	}
-
-      shft = mpz_get_si (shift->value.integer);
-
-      /*  Case (i):  If ARRAY has rank one, element i of the result is
-	  ARRAY (1 + MODULO (i + SHIFT - 1, SIZE (ARRAY))).  */
-
-      mpz_init (size);
-      gfc_array_size (a, &size);
-      sz = mpz_get_si (size);
+  if (shift->rank > 0)
+    {
+      gfc_array_size (shift, &size);
+      shiftsize = mpz_get_ui (size);
       mpz_clear (size);
-
-      /* Adjust shft to deal with right or left shifts. */
-      shft = shft < 0 ? 1 - shft : shft;
-
-      /* Special case: Shift to the original order!  */
-      if (sz == 0 || shft % sz == 0)
-	return a;
-
-      result = gfc_copy_expr (a);
-      cr = gfc_constructor_first (result->value.constructor);
-      for (i = 0; i < sz; i++, cr = gfc_constructor_next (cr))
+      shiftvec = XCNEWVEC (ssize_t, shiftsize);
+      shift_ctor = gfc_constructor_first (shift->value.constructor);
+      for (d = 0; d < shift->rank; d++)
 	{
-	  j = (i + shft) % sz;
-	  ca = gfc_constructor_first (a->value.constructor);
-	  while (j-- > 0)
-	    ca = gfc_constructor_next (ca);
-	  cr->expr = gfc_copy_expr (ca->expr);
+	  h_extent[d] = mpz_get_si (shift->shape[d]);
+	  hstride[d] = d == 0 ? 1 : hstride[d-1] * h_extent[d-1];
 	}
+    }
+  else
+    shiftvec = NULL;
+  
+  /* Shut up compiler */
+  len = 1;
+  rsoffset = 1;
 
-      gfc_free_expr (a);
-      return result;
+  n = 0;
+  for (d=0; d < array->rank; d++)
+    {
+      if (d == which)
+	{
+	  rsoffset = a_stride[d];
+	  len = a_extent[d];
+	}
+      else
+	{
+	  count[n] = 0;
+	  extent[n] = a_extent[d];
+	  sstride[n] = a_stride[d];
+	  ss_ex[n] = sstride[n] * extent[n];
+	  if (shiftvec)
+	    hs_ex[n] = hstride[n] * extent[n];
+	  n++;
+	}
+    }
+
+  if (shiftvec)
+    {
+      for (i = 0; i < shiftsize; i++)
+	{
+	  ssize_t val;
+	  val = mpz_get_si (shift_ctor->expr->value.integer);
+	  val = val % len;
+	  if (val < 0)
+	    val += len;
+	  shiftvec[i] = val;
+	  shift_ctor = gfc_constructor_next (shift_ctor);
+	}
+      shift_val = 0;
     }
   else
     {
-      /* FIXME: Deal with rank > 1 arrays.  For now, don't leak memory.  */
-
-      /* GCC bootstrap is too stupid to realize that the above code for dm
-	 is correct.  First, dim can be specified for a rank 1 array.  It is
-	 not needed in this nor used here.  Second, the code is simply waiting
-	 for someone to implement rank > 1 simplification.   For now, add a
-	 pessimization to the code that has a zero valid reason to be here.  */
-      if (dm > array->rank)
-	gcc_unreachable ();
-
-      gfc_free_expr (a);
+      shift_val = mpz_get_si (shift->value.integer);
+      shift_val = shift_val % len;
+      if (shift_val < 0)
+	shift_val += len;
     }
 
-  return NULL;
+  continue_loop = true;
+  d = array->rank;
+  rptr = resultvec;
+  sptr = arrayvec;
+  hptr = shiftvec;
+
+  while (continue_loop)
+    {
+      ssize_t sh;
+      if (shiftvec)
+	sh = *hptr;
+      else
+	sh = shift_val;
+
+      src = &sptr[sh * rsoffset];
+      dest = rptr;
+      for (n = 0; n < len - sh; n++)
+	{
+	  *dest = *src;
+	  dest += rsoffset;
+	  src += rsoffset;
+	}
+      src = sptr;
+      for ( n = 0; n < sh; n++)
+	{
+	  *dest = *src;
+	  dest += rsoffset;
+	  src += rsoffset;
+	}
+      rptr += sstride[0];
+      sptr += sstride[0];
+      if (shiftvec)
+	hptr += hstride[0];
+      count[0]++;
+      n = 0;
+      while (count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  rptr -= ss_ex[n];
+	  sptr -= ss_ex[n];
+	  if (shiftvec)
+	    hptr -= hs_ex[n];
+	  n++;
+	  if (n >= d - 1)
+	    {
+	      continue_loop = false;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      rptr += sstride[n];
+	      sptr += sstride[n];
+	      if (shiftvec)
+		hptr += hstride[n];
+	    }
+	}
+    }
+
+  for (i = 0; i < arraysize; i++)
+    {
+      gfc_constructor_append_expr (&result->value.constructor,
+				   gfc_copy_expr (resultvec[i]),
+				   NULL);
+    }
+  return result;
 }
 
 
