@@ -1,6 +1,7 @@
-2018-01-02  Richard Biener  <rguenther@suse.de>
+2018-01-02  Marek Polacek  <polacek@redhat.com>
 
-	* ipa-inline.c (big_speedup_p): Fix expression.
+	PR c++/81860
+	* g++.dg/cpp0x/inh-ctor30.C: New test.
 
 2018-01-01  Paul Thomas  <pault@gcc.gnu.org>
 

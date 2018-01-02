@@ -1,3 +1,7 @@
+2018-01-02  Richard Biener  <rguenther@suse.de>
+
+	* ipa-inline.c (big_speedup_p): Fix expression.
+
 2018-01-02  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/81616
