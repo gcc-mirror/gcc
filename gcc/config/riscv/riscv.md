@@ -1429,7 +1429,13 @@
    (match_operand 1 "pmode_register_operand")]
   ""
 {
+#ifdef ICACHE_FLUSH_FUNC
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, ICACHE_FLUSH_FUNC),
+		     LCT_NORMAL, VOIDmode, 3, operands[0], Pmode,
+		     operands[1], Pmode, const0_rtx, Pmode);
+#else
   emit_insn (gen_fence_i ());
+#endif
   DONE;
 })
 

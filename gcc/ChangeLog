@@ -1,3 +1,8 @@
+2018-01-02  Andrew Waterman  <andrew@sifive.com>
+
+	* config/riscv/linux.h (ICACHE_FLUSH_FUNC): New.
+	* config/riscv/riscv.md (clear_cache): Use it.
+
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83608
