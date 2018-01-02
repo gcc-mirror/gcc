@@ -2293,10 +2293,10 @@ struct processor_costs generic_cost = {
   3,					/* Branch cost */
   COSTS_N_INSNS (3),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (5),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (17),			/* cost of FDIV instruction.  */
   COSTS_N_INSNS (1),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (1),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FSQRT instruction.  */
+  COSTS_N_INSNS (14),			/* cost of FSQRT instruction.  */
 
   COSTS_N_INSNS (1),			/* cost of cheap SSE instruction.  */
   COSTS_N_INSNS (3),			/* cost of ADDSS/SD SUBSS/SD insns.  */
@@ -2304,15 +2304,15 @@ struct processor_costs generic_cost = {
   COSTS_N_INSNS (5),			/* cost of MULSD instruction.  */
   COSTS_N_INSNS (5),			/* cost of FMA SS instruction.  */
   COSTS_N_INSNS (5),			/* cost of FMA SD instruction.  */
-  COSTS_N_INSNS (18),			/* cost of DIVSS instruction.  */
-  COSTS_N_INSNS (32),			/* cost of DIVSD instruction.  */
-  COSTS_N_INSNS (30),			/* cost of SQRTSS instruction.  */
-  COSTS_N_INSNS (58),			/* cost of SQRTSD instruction.  */
+  COSTS_N_INSNS (13),			/* cost of DIVSS instruction.  */
+  COSTS_N_INSNS (17),			/* cost of DIVSD instruction.  */
+  COSTS_N_INSNS (14),			/* cost of SQRTSS instruction.  */
+  COSTS_N_INSNS (18),			/* cost of SQRTSD instruction.  */
   1, 4, 3, 3,				/* reassoc int, fp, vec_int, vec_fp.  */
   generic_memcpy,
   generic_memset,
-  COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
-  COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
+  COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
 };
 
 /* core_cost should produce code tuned for Core familly of CPUs.  */
