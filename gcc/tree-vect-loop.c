@@ -3715,8 +3715,10 @@ static void
 calc_vec_perm_mask_for_shift (unsigned int offset, unsigned int nelt,
 			      vec_perm_builder *sel)
 {
-  sel->new_vector (nelt, nelt, 1);
-  for (unsigned int i = 0; i < nelt; i++)
+  /* The encoding is a single stepped pattern.  Any wrap-around is handled
+     by vec_perm_indices.  */
+  sel->new_vector (nelt, 1, 3);
+  for (unsigned int i = 0; i < 3; i++)
     sel->quick_push (i + offset);
 }
 

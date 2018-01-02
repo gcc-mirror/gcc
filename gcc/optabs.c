@@ -5646,15 +5646,14 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 			       NULL, 0, OPTAB_DIRECT);
   gcc_assert (sel != NULL);
 
-  /* Broadcast the low byte each element into each of its bytes.  */
-  vec_perm_builder const_sel (w, w, 1);
-  for (i = 0; i < w; ++i)
-    {
-      int this_e = i / u * u;
-      if (BYTES_BIG_ENDIAN)
-	this_e += u - 1;
-      const_sel.quick_push (this_e);
-    }
+  /* Broadcast the low byte each element into each of its bytes.
+     The encoding has U interleaved stepped patterns, one for each
+     byte of an element.  */
+  vec_perm_builder const_sel (w, u, 3);
+  unsigned int low_byte_in_u = BYTES_BIG_ENDIAN ? u - 1 : 0;
+  for (i = 0; i < 3; ++i)
+    for (unsigned int j = 0; j < u; ++j)
+      const_sel.quick_push (i * u + low_byte_in_u);
   sel = gen_lowpart (qimode, sel);
   sel = expand_vec_perm_const (qimode, sel, sel, const_sel, qimode, NULL);
   gcc_assert (sel != NULL);
@@ -5895,16 +5894,20 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
   expand_insn (optab_handler (tab2, mode), 3, eops);
   m2 = gen_lowpart (mode, eops[0].value);
 
-  vec_perm_builder sel (nunits, nunits, 1);
+  vec_perm_builder sel;
   if (method == 2)
     {
-      for (i = 0; i < nunits; ++i)
+      /* The encoding has 2 interleaved stepped patterns.  */
+      sel.new_vector (nunits, 2, 3);
+      for (i = 0; i < 6; ++i)
 	sel.quick_push (!BYTES_BIG_ENDIAN + (i & ~1)
 			+ ((i & 1) ? nunits : 0));
     }
   else
     {
-      for (i = 0; i < nunits; ++i)
+      /* The encoding has a single interleaved stepped pattern.  */
+      sel.new_vector (nunits, 1, 3);
+      for (i = 0; i < 3; ++i)
 	sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
     }
 

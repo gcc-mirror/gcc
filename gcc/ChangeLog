@@ -1,5 +1,20 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* optabs.c (expand_vec_perm_var): Use an explicit encoding for
+	the broadcast of the low byte.
+	(expand_mult_highpart): Use an explicit encoding for the permutes.
+	* optabs-query.c (can_mult_highpart_p): Likewise.
+	* tree-vect-loop.c (calc_vec_perm_mask_for_shift): Likewise.
+	* tree-vect-stmts.c (perm_mask_for_reverse): Likewise.
+	(vectorizable_bswap): Likewise.
+	* tree-vect-data-refs.c (vect_grouped_store_supported): Use an
+	explicit encoding for the power-of-2 permutes.
+	(vect_permute_store_chain): Likewise.
+	(vect_grouped_load_supported): Likewise.
+	(vect_permute_load_chain): Likewise.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* vec-perm-indices.h (vec_perm_indices_to_tree): Declare.
 	* vec-perm-indices.c (vec_perm_indices_to_tree): New function.
 	* tree-ssa-forwprop.c (simplify_vector_constructor): Use it.
