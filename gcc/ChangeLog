@@ -1,3 +1,10 @@
+2018-01-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-p8swap.c (swap_feeds_both_load_and_store):
+	New function.
+	(rs6000_analyze_swaps): Mark a web unoptimizable if it contains a
+	swap associated with both a load and a store.
+
 2018-01-02  Andrew Waterman  <andrew@sifive.com>
 
 	* config/riscv/linux.h (ICACHE_FLUSH_FUNC): New.
