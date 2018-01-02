@@ -4090,6 +4090,14 @@ fixup_args_size_notes (rtx_insn *prev, rtx_insn *last,
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
+      /* We might have existing REG_ARGS_SIZE notes, e.g. when pushing
+	 a call argument containing a TLS address that itself requires
+	 a call to __tls_get_addr.  The handling of stack_pointer_delta
+	 in emit_single_push_insn is supposed to ensure that any such
+	 notes are already correct.  */
+      rtx note = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
+      gcc_assert (!note || known_eq (args_size, get_args_size (note)));
+
       poly_int64 this_delta = find_args_size_adjust (insn);
       if (known_eq (this_delta, 0))
 	{
@@ -4103,7 +4111,8 @@ fixup_args_size_notes (rtx_insn *prev, rtx_insn *last,
       if (known_eq (this_delta, HOST_WIDE_INT_MIN))
 	saw_unknown = true;
 
-      add_args_size_note (insn, args_size);
+      if (!note)
+	add_args_size_note (insn, args_size);
       if (STACK_GROWS_DOWNWARD)
 	this_delta = -poly_uint64 (this_delta);
 
@@ -4127,7 +4136,6 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
   rtx dest;
   enum insn_code icode;
 
-  stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
   /* If there is push pattern, use it.  Otherwise try old way of throwing
      MEM representing push operation to move expander.  */
   icode = optab_handler (push_optab, mode);
@@ -4213,6 +4221,14 @@ emit_single_push_insn (machine_mode mode, rtx x, tree type)
   rtx_insn *last;
 
   emit_single_push_insn_1 (mode, x, type);
+
+  /* Adjust stack_pointer_delta to describe the situation after the push
+     we just performed.  Note that we must do this after the push rather
+     than before the push in case calculating X needs pushes and pops of
+     its own (e.g. if calling __tls_get_addr).  The REG_ARGS_SIZE notes
+     for such pushes and pops must not include the effect of the future
+     push of X.  */
+  stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
 
   last = get_last_insn ();
 

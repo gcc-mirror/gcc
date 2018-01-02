@@ -1,5 +1,12 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* expr.c (fixup_args_size_notes): Check that any existing
+	REG_ARGS_SIZE notes are correct, and don't try to re-add them.
+	(emit_single_push_insn_1): Move stack_pointer_delta adjustment to...
+	(emit_single_push_insn): ...here.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* rtl.h (CONST_VECTOR_ELT): Redefine to const_vector_elt.
 	(const_vector_encoded_nelts): New function.
 	(CONST_VECTOR_NUNITS): Redefine to use GET_MODE_NUNITS.
