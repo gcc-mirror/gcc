@@ -369,7 +369,7 @@ qimode_for_vec_perm (machine_mode mode)
    zeroes; this case is not dealt with here.  */
 
 bool
-can_vec_perm_p (machine_mode mode, bool variable, vec_perm_indices *sel)
+can_vec_perm_p (machine_mode mode, bool variable, const vec_perm_indices *sel)
 {
   machine_mode qimode;
 

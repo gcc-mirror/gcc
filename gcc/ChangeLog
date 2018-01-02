@@ -1,5 +1,16 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* optabs-query.h (can_vec_perm_p): Take a const vec_perm_indices *.
+	* optabs-query.c (can_vec_perm_p): Likewise.
+	* fold-const.c (fold_vec_perm): Take a const vec_perm_indices &
+	instead of vec_perm_indices.
+	* tree-vectorizer.h (vect_gen_perm_mask_any): Likewise,
+	(vect_gen_perm_mask_checked): Likewise,
+	* tree-vect-stmts.c (vect_gen_perm_mask_any): Likewise,
+	(vect_gen_perm_mask_checked): Likewise,
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs-query.h (qimode_for_vec_perm): Declare.
 	* optabs-query.c (can_vec_perm_p): Split out qimode search to...
 	(qimode_for_vec_perm): ...this new function.
