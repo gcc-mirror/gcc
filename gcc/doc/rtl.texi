@@ -1644,18 +1644,92 @@ low-level routines) and @code{const_poly_int_value} gives the full
 
 @findex const_vector
 @item (const_vector:@var{m} [@var{x0} @var{x1} @dots{}])
-Represents a vector constant.  The square brackets stand for the vector
-containing the constant elements.  @var{x0}, @var{x1} and so on are
-the @code{const_int}, @code{const_wide_int}, @code{const_double} or
-@code{const_fixed} elements.
+Represents a vector constant.  The values in square brackets are
+elements of the vector, which are always @code{const_int},
+@code{const_wide_int}, @code{const_double} or @code{const_fixed}
+expressions.
 
-The number of units in a @code{const_vector} is obtained with the macro
-@code{CONST_VECTOR_NUNITS} as in @code{CONST_VECTOR_NUNITS (@var{v})}.
+Each vector constant @var{v} is treated as a specific instance of an
+arbitrary-length sequence that itself contains
+@samp{CONST_VECTOR_NPATTERNS (@var{v})} interleaved patterns.  Each
+pattern has the form:
 
-Individual elements in a vector constant are accessed with the macro
-@code{CONST_VECTOR_ELT} as in @code{CONST_VECTOR_ELT (@var{v}, @var{n})}
-where @var{v} is the vector constant and @var{n} is the element
-desired.
+@smallexample
+@{ @var{base0}, @var{base1}, @var{base1} + @var{step}, @var{base1} + @var{step} * 2, @dots{} @}
+@end smallexample
+
+The first three elements in each pattern are enough to determine the
+values of the other elements.  However, if all @var{step}s are zero,
+only the first two elements are needed.  If in addition each @var{base1}
+is equal to the corresponding @var{base0}, only the first element in
+each pattern is needed.  The number of determining elements per pattern
+is given by @samp{CONST_VECTOR_NELTS_PER_PATTERN (@var{v})}.
+
+For example, the constant:
+
+@smallexample
+@{ 0, 1, 2, 6, 3, 8, 4, 10, 5, 12, 6, 14, 7, 16, 8, 18 @}
+@end smallexample
+
+is interpreted as an interleaving of the sequences:
+
+@smallexample
+@{ 0, 2, 3, 4, 5, 6, 7, 8 @}
+@{ 1, 6, 8, 10, 12, 14, 16, 18 @}
+@end smallexample
+
+where the sequences are represented by the following patterns:
+
+@smallexample
+@var{base0} == 0, @var{base1} == 2, @var{step} == 1
+@var{base0} == 1, @var{base1} == 6, @var{step} == 2
+@end smallexample
+
+In this case:
+
+@smallexample
+CONST_VECTOR_NPATTERNS (@var{v}) == 2
+CONST_VECTOR_NELTS_PER_PATTERN (@var{v}) == 3
+@end smallexample
+
+Thus the first 6 elements (@samp{@{ 0, 1, 2, 6, 3, 8 @}}) are enough
+to determine the whole sequence; we refer to them as the ``encoded''
+elements.  They are the only elements present in the square brackets
+for variable-length @code{const_vector}s (i.e. for
+@code{const_vector}s whose mode @var{m} has a variable number of
+elements).  However, as a convenience to code that needs to handle
+both @code{const_vector}s and @code{parallel}s, all elements are
+present in the square brackets for fixed-length @code{const_vector}s;
+the encoding scheme simply reduces the amount of work involved in
+processing constants that follow a regular pattern.
+
+Sometimes this scheme can create two possible encodings of the same
+vector.  For example @{ 0, 1 @} could be seen as two patterns with
+one element each or one pattern with two elements (@var{base0} and
+@var{base1}).  The canonical encoding is always the one with the
+fewest patterns or (if both encodings have the same number of
+petterns) the one with the fewest encoded elements.
+
+@samp{const_vector_encoding_nelts (@var{v})} gives the total number of
+encoded elements in @var{v}, which is 6 in the example above.
+@code{CONST_VECTOR_ENCODED_ELT (@var{v}, @var{i})} accesses the value
+of encoded element @var{i}.
+
+@samp{CONST_VECTOR_DUPLICATE_P (@var{v})} is true if @var{v} simply contains
+repeated instances of @samp{CONST_VECTOR_NPATTERNS (@var{v})} values.  This is
+a shorthand for testing @samp{CONST_VECTOR_NELTS_PER_PATTERN (@var{v}) == 1}.
+
+@samp{CONST_VECTOR_STEPPED_P (@var{v})} is true if at least one
+pattern in @var{v} has a nonzero step.  This is a shorthand for
+testing @samp{CONST_VECTOR_NELTS_PER_PATTERN (@var{v}) == 3}.
+
+@code{CONST_VECTOR_NUNITS (@var{v})} gives the total number of elements
+in @var{v}; it is a shorthand for getting the number of units in
+@samp{GET_MODE (@var{v})}.
+
+The utility function @code{const_vector_elt} gives the value of an
+arbitrary element as an @code{rtx}.  @code{const_vector_int_elt} gives
+the same value as a @code{wide_int}.
 
 @findex const_string
 @item (const_string @var{str})

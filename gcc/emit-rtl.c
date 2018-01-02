@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "opts.h"
 #include "predict.h"
+#include "rtx-vector-builder.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -5872,33 +5873,15 @@ valid_for_const_vector_p (machine_mode, rtx x)
 	  || CONST_FIXED_P (x));
 }
 
-/* Like gen_const_vec_duplicate, but ignore const_tiny_rtx.  */
-
-static rtx
-gen_const_vec_duplicate_1 (machine_mode mode, rtx el)
-{
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  for (int i = 0; i < nunits; ++i)
-    RTVEC_ELT (v, i) = el;
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
-}
-
 /* Generate a vector constant of mode MODE in which every element has
    value ELT.  */
 
 rtx
 gen_const_vec_duplicate (machine_mode mode, rtx elt)
 {
-  scalar_mode inner_mode = GET_MODE_INNER (mode);
-  if (elt == CONST0_RTX (inner_mode))
-    return CONST0_RTX (mode);
-  else if (elt == CONST1_RTX (inner_mode))
-    return CONST1_RTX (mode);
-  else if (elt == CONSTM1_RTX (inner_mode))
-    return CONSTM1_RTX (mode);
-
-  return gen_const_vec_duplicate_1 (mode, elt);
+  rtx_vector_builder builder (mode, 1, 1);
+  builder.quick_push (elt);
+  return builder.build ();
 }
 
 /* Return a vector rtx of mode MODE in which every element has value X.
@@ -5912,28 +5895,44 @@ gen_vec_duplicate (machine_mode mode, rtx x)
   return gen_rtx_VEC_DUPLICATE (mode, x);
 }
 
-/* A subroutine of const_vec_series_p that handles the case in which
-   X is known to be an integer CONST_VECTOR.  */
+/* A subroutine of const_vec_series_p that handles the case in which:
+
+     (GET_CODE (X) == CONST_VECTOR
+      && CONST_VECTOR_NPATTERNS (X) == 1
+      && !CONST_VECTOR_DUPLICATE_P (X))
+
+   is known to hold.  */
 
 bool
 const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
 {
-  unsigned int nelts = CONST_VECTOR_NUNITS (x);
-  if (nelts < 2)
+  /* Stepped sequences are only defined for integers, to avoid specifying
+     rounding behavior.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_INT)
     return false;
 
+  /* A non-duplicated vector with two elements can always be seen as a
+     series with a nonzero step.  Longer vectors must have a stepped
+     encoding.  */
+  if (CONST_VECTOR_NUNITS (x) != 2
+      && !CONST_VECTOR_STEPPED_P (x))
+    return false;
+
+  /* Calculate the step between the first and second elements.  */
   scalar_mode inner = GET_MODE_INNER (GET_MODE (x));
   rtx base = CONST_VECTOR_ELT (x, 0);
   rtx step = simplify_binary_operation (MINUS, inner,
-					CONST_VECTOR_ELT (x, 1), base);
+					CONST_VECTOR_ENCODED_ELT (x, 1), base);
   if (rtx_equal_p (step, CONST0_RTX (inner)))
     return false;
 
-  for (unsigned int i = 2; i < nelts; ++i)
+  /* If we have a stepped encoding, check that the step between the
+     second and third elements is the same as STEP.  */
+  if (CONST_VECTOR_STEPPED_P (x))
     {
       rtx diff = simplify_binary_operation (MINUS, inner,
-					    CONST_VECTOR_ELT (x, i),
-					    CONST_VECTOR_ELT (x, i - 1));
+					    CONST_VECTOR_ENCODED_ELT (x, 2),
+					    CONST_VECTOR_ENCODED_ELT (x, 1));
       if (!rtx_equal_p (step, diff))
 	return false;
     }
@@ -5952,14 +5951,12 @@ gen_const_vec_series (machine_mode mode, rtx base, rtx step)
   gcc_assert (valid_for_const_vector_p (mode, base)
 	      && valid_for_const_vector_p (mode, step));
 
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  scalar_mode inner_mode = GET_MODE_INNER (mode);
-  RTVEC_ELT (v, 0) = base;
-  for (int i = 1; i < nunits; ++i)
-    RTVEC_ELT (v, i) = simplify_gen_binary (PLUS, inner_mode,
-					    RTVEC_ELT (v, i - 1), step);
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
+  rtx_vector_builder builder (mode, 1, 3);
+  builder.quick_push (base);
+  for (int i = 1; i < 3; ++i)
+    builder.quick_push (simplify_gen_binary (PLUS, GET_MODE_INNER (mode),
+					     builder[i - 1], step));
+  return builder.build ();
 }
 
 /* Generate a vector of mode MODE in which element I has the value
@@ -5990,7 +5987,7 @@ gen_const_vector (machine_mode mode, int constant)
   rtx el = const_tiny_rtx[constant][(int) inner];
   gcc_assert (el);
 
-  return gen_const_vec_duplicate_1 (mode, el);
+  return gen_const_vec_duplicate (mode, el);
 }
 
 /* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
@@ -6005,7 +6002,11 @@ gen_rtx_CONST_VECTOR (machine_mode mode, rtvec v)
   if (rtvec_all_equal_p (v))
     return gen_const_vec_duplicate (mode, RTVEC_ELT (v, 0));
 
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
+  unsigned int nunits = GET_NUM_ELEM (v);
+  rtx_vector_builder builder (mode, nunits, 1);
+  for (unsigned int i = 0; i < nunits; ++i)
+    builder.quick_push (RTVEC_ELT (v, i));
+  return builder.build (v);
 }
 
 /* Initialise global register information required by all functions.  */

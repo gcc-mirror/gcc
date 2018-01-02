@@ -418,6 +418,19 @@ struct GTY((desc("0"), tag("0"),
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
     unsigned int num_elem;
+
+    /* Information about a CONST_VECTOR.  */
+    struct
+    {
+      /* The value of CONST_VECTOR_NPATTERNS.  */
+      unsigned int npatterns : 16;
+
+      /* The value of CONST_VECTOR_NELTS_PER_PATTERN.  */
+      unsigned int nelts_per_pattern : 8;
+
+      /* For future expansion.  */
+      unsigned int unused : 8;
+    } const_vector;
   } GTY ((skip)) u2;
 
   /* The first element of the operands of this rtx.
@@ -1958,6 +1971,23 @@ set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
 /* For a CONST_VECTOR, return element #n.  */
 #define CONST_VECTOR_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
 
+/* See rtl.texi for a description of these macros.  */
+#define CONST_VECTOR_NPATTERNS(RTX) \
+ (RTL_FLAG_CHECK1 ("CONST_VECTOR_NPATTERNS", (RTX), CONST_VECTOR) \
+  ->u2.const_vector.npatterns)
+
+#define CONST_VECTOR_NELTS_PER_PATTERN(RTX) \
+ (RTL_FLAG_CHECK1 ("CONST_VECTOR_NELTS_PER_PATTERN", (RTX), CONST_VECTOR) \
+  ->u2.const_vector.nelts_per_pattern)
+
+#define CONST_VECTOR_DUPLICATE_P(RTX) \
+  (CONST_VECTOR_NELTS_PER_PATTERN (RTX) == 1)
+
+#define CONST_VECTOR_STEPPED_P(RTX) \
+  (CONST_VECTOR_NELTS_PER_PATTERN (RTX) == 3)
+
+#define CONST_VECTOR_ENCODED_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
+
 /* For a CONST_VECTOR, return the number of elements in a vector.  */
 #define CONST_VECTOR_NUNITS(RTX) XCVECLEN (RTX, 0, CONST_VECTOR)
 
@@ -2910,7 +2940,9 @@ const_vec_p (const_rtx x)
 inline bool
 const_vec_duplicate_p (const_rtx x)
 {
-  return ((GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
+  return ((GET_CODE (x) == CONST_VECTOR
+	   && CONST_VECTOR_NPATTERNS (x) == 1
+	   && CONST_VECTOR_DUPLICATE_P (x))
 	  || (GET_CODE (x) == CONST
 	      && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE));
 }
@@ -2922,9 +2954,11 @@ template <typename T>
 inline bool
 const_vec_duplicate_p (T x, T *elt)
 {
-  if (GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
+  if (GET_CODE (x) == CONST_VECTOR
+      && CONST_VECTOR_NPATTERNS (x) == 1
+      && CONST_VECTOR_DUPLICATE_P (x))
     {
-      *elt = CONST_VECTOR_ELT (x, 0);
+      *elt = CONST_VECTOR_ENCODED_ELT (x, 0);
       return true;
     }
   if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
@@ -2957,8 +2991,10 @@ template <typename T>
 inline T
 unwrap_const_vec_duplicate (T x)
 {
-  if (GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
-    return CONST_VECTOR_ELT (x, 0);
+  if (GET_CODE (x) == CONST_VECTOR
+      && CONST_VECTOR_NPATTERNS (x) == 1
+      && CONST_VECTOR_DUPLICATE_P (x))
+    return CONST_VECTOR_ENCODED_ELT (x, 0);
   if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
     return XEXP (XEXP (x, 0), 0);
   return x;
@@ -2967,8 +3003,8 @@ unwrap_const_vec_duplicate (T x)
 /* In emit-rtl.c.  */
 extern bool const_vec_series_p_1 (const_rtx, rtx *, rtx *);
 
-/* Return true if X is a constant vector that contains a linear series
-   of the form:
+/* Return true if X is an integer constant vector that contains a linear
+   series of the form:
 
    { B, B + S, B + 2 * S, B + 3 * S, ... }
 
@@ -2978,7 +3014,8 @@ inline bool
 const_vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
 {
   if (GET_CODE (x) == CONST_VECTOR
-      && GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
+      && CONST_VECTOR_NPATTERNS (x) == 1
+      && !CONST_VECTOR_DUPLICATE_P (x))
     return const_vec_series_p_1 (x, base_out, step_out);
   if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_SERIES)
     {
