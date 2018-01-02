@@ -1,3 +1,10 @@
+2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45689
+	PR fortran/83650
+	* simplify.c (gfc_simplify_cshift): Re-implement to allow full
+	range of arguments.
+
 2018-01-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83076
