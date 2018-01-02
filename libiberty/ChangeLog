@@ -1,3 +1,13 @@
+2017-01-02  Richard Biener  <rguenther@suse.de>
+
+	PR lto/83452
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Do not use UNDEF locals for removed symbols but instead just
+	define them in the first prevailing section and with no name.
+	Use the same gnu_lto_v1 name for all removed globals we promote to
+	WEAK UNDEFs so hpux can use a stub to provide this symbol.  Clear
+	sh_info and sh_link in removed sections.
+
 2017-10-30  Richard Biener  <rguenther@suse.de>
 
 	PR lto/82757
