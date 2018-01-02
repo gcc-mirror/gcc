@@ -22,10 +22,6 @@ along with GCC; see the file COPYING3.  If not see
    increasing effectiveness of other optimizations.  The optimization can
    serve as an example of use for the dataflow module.
 
-   We don't split registers with REG_USERVAR set unless -fmessy-debugging
-   is specified, because debugging information about such split variables
-   is almost unusable.
-
    TODO
     - We may use profile information and ignore infrequent use for the
       purpose of web unifying, inserting the compensation code later to

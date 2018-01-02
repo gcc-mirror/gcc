@@ -1,3 +1,7 @@
+2018-01-02  Artyom Skrobov  <tyomitch@gmail.com>
+
+	* web.c: Remove out-of-date comment.
+
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* expr.c (fixup_args_size_notes): Check that any existing
