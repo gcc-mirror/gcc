@@ -345,6 +345,22 @@ can_conditionally_move_p (machine_mode mode)
   return direct_optab_handler (movcc_optab, mode) != CODE_FOR_nothing;
 }
 
+/* If a target doesn't implement a permute on a vector with multibyte
+   elements, we can try to do the same permute on byte elements.
+   If this makes sense for vector mode MODE then return the appropriate
+   byte vector mode.  */
+
+opt_machine_mode
+qimode_for_vec_perm (machine_mode mode)
+{
+  machine_mode qimode;
+  if (GET_MODE_INNER (mode) != QImode
+      && mode_for_vector (QImode, GET_MODE_SIZE (mode)).exists (&qimode)
+      && VECTOR_MODE_P (qimode))
+    return qimode;
+  return opt_machine_mode ();
+}
+
 /* Return true if VEC_PERM_EXPR of arbitrary input vectors can be
    expanded using SIMD extensions of the CPU.  SEL may be NULL, which
    stands for an unknown constant.  Note that additional permutations
@@ -375,9 +391,7 @@ can_vec_perm_p (machine_mode mode, bool variable, vec_perm_indices *sel)
     return true;
 
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
-  if (GET_MODE_INNER (mode) == QImode
-      || !mode_for_vector (QImode, GET_MODE_SIZE (mode)).exists (&qimode)
-      || !VECTOR_MODE_P (qimode))
+  if (!qimode_for_vec_perm (mode).exists (&qimode))
     return false;
 
   /* ??? For completeness, we ought to check the QImode version of
