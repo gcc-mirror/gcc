@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "rtl-chkp.h"
 #include "ccmp.h"
+#include "rtx-vector-builder.h"
 
 
 /* If this is nonzero, we do not bother generating VOLATILE
@@ -11797,32 +11798,25 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
 static rtx
 const_vector_mask_from_tree (tree exp)
 {
-  rtvec v;
-  unsigned i, units;
-  tree elt;
-  machine_mode inner, mode;
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  machine_mode inner = GET_MODE_INNER (mode);
 
-  mode = TYPE_MODE (TREE_TYPE (exp));
-  units = VECTOR_CST_NELTS (exp);
-  inner = GET_MODE_INNER (mode);
-
-  v = rtvec_alloc (units);
-
-  for (i = 0; i < units; ++i)
+  rtx_vector_builder builder (mode, VECTOR_CST_NPATTERNS (exp),
+			      VECTOR_CST_NELTS_PER_PATTERN (exp));
+  unsigned int count = builder.encoded_nelts ();
+  for (unsigned int i = 0; i < count; ++i)
     {
-      elt = VECTOR_CST_ELT (exp, i);
-
+      tree elt = VECTOR_CST_ELT (exp, i);
       gcc_assert (TREE_CODE (elt) == INTEGER_CST);
       if (integer_zerop (elt))
-	RTVEC_ELT (v, i) = CONST0_RTX (inner);
+	builder.quick_push (CONST0_RTX (inner));
       else if (integer_onep (elt)
 	       || integer_minus_onep (elt))
-	RTVEC_ELT (v, i) = CONSTM1_RTX (inner);
+	builder.quick_push (CONSTM1_RTX (inner));
       else
 	gcc_unreachable ();
     }
-
-  return gen_rtx_CONST_VECTOR (mode, v);
+  return builder.build ();
 }
 
 /* EXP is a VECTOR_CST in which each element is either all-zeros or all-ones.
@@ -11852,12 +11846,7 @@ const_scalar_mask_from_tree (scalar_int_mode mode, tree exp)
 static rtx
 const_vector_from_tree (tree exp)
 {
-  rtvec v;
-  unsigned i, units;
-  tree elt;
-  machine_mode inner, mode;
-
-  mode = TYPE_MODE (TREE_TYPE (exp));
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 
   if (initializer_zerop (exp))
     return CONST0_RTX (mode);
@@ -11865,27 +11854,25 @@ const_vector_from_tree (tree exp)
   if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (exp)))
     return const_vector_mask_from_tree (exp);
 
-  units = VECTOR_CST_NELTS (exp);
-  inner = GET_MODE_INNER (mode);
+  machine_mode inner = GET_MODE_INNER (mode);
 
-  v = rtvec_alloc (units);
-
-  for (i = 0; i < units; ++i)
+  rtx_vector_builder builder (mode, VECTOR_CST_NPATTERNS (exp),
+			      VECTOR_CST_NELTS_PER_PATTERN (exp));
+  unsigned int count = builder.encoded_nelts ();
+  for (unsigned int i = 0; i < count; ++i)
     {
-      elt = VECTOR_CST_ELT (exp, i);
-
+      tree elt = VECTOR_CST_ELT (exp, i);
       if (TREE_CODE (elt) == REAL_CST)
-	RTVEC_ELT (v, i) = const_double_from_real_value (TREE_REAL_CST (elt),
-							 inner);
+	builder.quick_push (const_double_from_real_value (TREE_REAL_CST (elt),
+							  inner));
       else if (TREE_CODE (elt) == FIXED_CST)
-	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
-							 inner);
+	builder.quick_push (CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
+							  inner));
       else
-	RTVEC_ELT (v, i) = immed_wide_int_const (wi::to_poly_wide (elt),
-						 inner);
+	builder.quick_push (immed_wide_int_const (wi::to_poly_wide (elt),
+						  inner));
     }
-
-  return gen_rtx_CONST_VECTOR (mode, v);
+  return builder.build ();
 }
 
 /* Build a decl for a personality function given a language prefix.  */

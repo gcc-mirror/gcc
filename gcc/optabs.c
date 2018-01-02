@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "emit-rtl.h"
 #include "recog.h"
 #include "diagnostic-core.h"
+#include "rtx-vector-builder.h"
 
 /* Include insn-config.h before expr.h so that HAVE_conditional_move
    is properly defined.  */
@@ -5609,7 +5610,6 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   enum insn_code icode;
   unsigned int i, w, u;
   rtx tmp, sel_qi;
-  rtvec vec;
 
   w = GET_MODE_SIZE (mode);
   u = GET_MODE_UNIT_SIZE (mode);
@@ -5661,10 +5661,10 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   /* Add the byte offset to each byte element.  */
   /* Note that the definition of the indicies here is memory ordering,
      so there should be no difference between big and little endian.  */
-  vec = rtvec_alloc (w);
-  for (i = 0; i < w; ++i)
-    RTVEC_ELT (vec, i) = GEN_INT (i % u);
-  tmp = gen_rtx_CONST_VECTOR (qimode, vec);
+  rtx_vector_builder byte_indices (qimode, u, 1);
+  for (i = 0; i < u; ++i)
+    byte_indices.quick_push (GEN_INT (i));
+  tmp = byte_indices.build ();
   sel_qi = expand_simple_binop (qimode, PLUS, sel, tmp,
 				sel, 0, OPTAB_DIRECT);
   gcc_assert (sel_qi != NULL);
