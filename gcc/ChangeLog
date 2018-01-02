@@ -3043,6 +3043,12 @@
 	* combine.c (move_deaths): If reg_stat points to a too new insn in
 	last_death, do not use it: find the proper insn instead.
 
+2017-12-12  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/82190
+	* config/rs6000/rs6000-string.c (expand_block_compare,
+	expand_strn_compare): Fix set_mem_size() calls.
+
 2017-12-12  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/83298
