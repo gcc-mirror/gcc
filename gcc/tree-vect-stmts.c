@@ -6535,11 +6535,12 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 tree
 vect_gen_perm_mask_any (tree vectype, const vec_perm_indices &sel)
 {
-  tree mask_elt_type, mask_type;
+  tree mask_type;
 
-  mask_elt_type = lang_hooks.types.type_for_mode
-    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
-  mask_type = get_vectype_for_scalar_type (mask_elt_type);
+  unsigned int nunits = sel.length ();
+  gcc_assert (nunits == TYPE_VECTOR_SUBPARTS (vectype));
+
+  mask_type = build_vector_type (ssizetype, nunits);
   return vec_perm_indices_to_tree (mask_type, sel);
 }
 
