@@ -1320,15 +1320,20 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	  && indices[0]
 	  && indices[0] < elements)
 	{
-	  for (i = 1; i < elements; ++i)
+	  bool ok_p = indices.series_p (0, 1, indices[0], 1);
+	  if (!ok_p)
 	    {
-	      unsigned int expected = i + indices[0];
-	      /* Indices into the second vector are all equivalent.  */
-	      if (MIN (elements, (unsigned) indices[i])
-		  != MIN (elements, expected))
- 		break;
+	      for (i = 1; i < elements; ++i)
+		{
+		  unsigned int expected = i + indices[0];
+		  /* Indices into the second vector are all equivalent.  */
+		  if (MIN (elements, (unsigned) indices[i])
+		      != MIN (elements, expected))
+		    break;
+		}
+	      ok_p = i == elements;
 	    }
-	  if (i == elements)
+	  if (ok_p)
 	    {
 	      gimple_assign_set_rhs3 (stmt, mask);
 	      update_stmt (stmt);
