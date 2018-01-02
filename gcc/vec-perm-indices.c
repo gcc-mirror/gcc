@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "emit-rtl.h"
 #include "selftest.h"
+#include "rtx-vector-builder.h"
 
 /* Switch to a new permutation vector that selects between NINPUTS vector
    inputs that have NELTS_PER_INPUT elements each.  Take the elements of the
@@ -223,11 +224,12 @@ vec_perm_indices_to_rtx (machine_mode mode, const vec_perm_indices &indices)
 {
   gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	      && GET_MODE_NUNITS (mode) == indices.length ());
-  unsigned int nelts = indices.length ();
-  rtvec v = rtvec_alloc (nelts);
-  for (unsigned int i = 0; i < nelts; ++i)
-    RTVEC_ELT (v, i) = gen_int_mode (indices[i], GET_MODE_INNER (mode));
-  return gen_rtx_CONST_VECTOR (mode, v);
+  rtx_vector_builder sel (mode, indices.encoding ().npatterns (),
+			  indices.encoding ().nelts_per_pattern ());
+  unsigned int encoded_nelts = sel.encoded_nelts ();
+  for (unsigned int i = 0; i < encoded_nelts; i++)
+    sel.quick_push (gen_int_mode (indices[i], GET_MODE_INNER (mode)));
+  return sel.build ();
 }
 
 #if CHECKING_P

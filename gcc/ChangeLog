@@ -1,5 +1,18 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* expr.c: Include rtx-vector-builder.h.
+	(const_vector_mask_from_tree): Use rtx_vector_builder and operate
+	directly on the tree encoding.
+	(const_vector_from_tree): Likewise.
+	* optabs.c: Include rtx-vector-builder.h.
+	(expand_vec_perm_var): Use rtx_vector_builder and create a repeating
+	sequence of "u" values.
+	* vec-perm-indices.c: Include rtx-vector-builder.h.
+	(vec_perm_indices_to_rtx): Use rtx_vector_builder and operate
+	directly on the vec_perm_indices encoding.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* doc/rtl.texi (const_vector): Describe new encoding scheme.
 	* Makefile.in (OBJS): Add rtx-vector-builder.o.
 	* rtx-vector-builder.h: New file.
