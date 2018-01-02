@@ -2804,6 +2804,11 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
       {
 	constructor_elt *ce;
 	vec<constructor_elt,va_gc> *v = CONSTRUCTOR_ELTS (*t);
+	if (d->pset->add (*t))
+	  {
+	    *walk_subtrees = false;
+	    return NULL_TREE;
+	  }
 	for (unsigned i = 0; vec_safe_iterate (v, i, &ce); ++i)
 	  {
 	    tree *valp = &ce->value;
@@ -2823,7 +2828,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 		  valp = &TARGET_EXPR_INITIAL (*valp);
 	      }
 	    d->obj = subob;
-	    cp_walk_tree (valp, replace_placeholders_r, data_, d->pset);
+	    cp_walk_tree (valp, replace_placeholders_r, data_, NULL);
 	    d->obj = obj;
 	  }
 	*walk_subtrees = false;
@@ -2831,6 +2836,8 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
       }
 
     default:
+      if (d->pset->add (*t))
+	*walk_subtrees = false;
       break;
     }
 
@@ -2859,7 +2866,7 @@ replace_placeholders (tree exp, tree obj, bool *seen_p)
   replace_placeholders_t data = { obj, false, &pset };
   if (TREE_CODE (exp) == TARGET_EXPR)
     tp = &TARGET_EXPR_INITIAL (exp);
-  cp_walk_tree (tp, replace_placeholders_r, &data, &pset);
+  cp_walk_tree (tp, replace_placeholders_r, &data, NULL);
   if (seen_p)
     *seen_p = data.seen;
   return exp;
