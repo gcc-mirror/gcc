@@ -691,7 +691,7 @@ big_speedup_p (struct cgraph_edge *e)
   sreal time = compute_uninlined_call_time (e, unspec_time);
   sreal inlined_time = compute_inlined_call_time (e, spec_time);
 
-  if (time - inlined_time * 100
+  if ((time - inlined_time) * 100
       > (sreal) (time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP)))
     return true;
   return false;
