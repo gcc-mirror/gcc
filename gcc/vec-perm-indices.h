@@ -88,6 +88,7 @@ private:
 };
 
 bool tree_to_vec_perm_builder (vec_perm_builder *, tree);
+tree vec_perm_indices_to_tree (tree, const vec_perm_indices &);
 rtx vec_perm_indices_to_rtx (machine_mode, const vec_perm_indices &);
 
 inline
