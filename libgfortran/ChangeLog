@@ -1,3 +1,10 @@
+2018-01-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libgfortran/83649
+	* io/unix.c (MAX_CHUNK): New define.
+	(raw_read): For reads larger than MAX_CHUNK, loop.
+	(raw_write): Write no more than MAX_CHUNK bytes per iteration.
+
 2017-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/83613
