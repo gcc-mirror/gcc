@@ -1,3 +1,9 @@
+2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83650
+	* simplify.c (gfc_simplify_cshift): Correct contition for
+	negative shifts.
+
 2017-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR Fortran/83548

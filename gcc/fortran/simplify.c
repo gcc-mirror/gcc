@@ -1991,7 +1991,9 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
       mpz_clear (size);
 
       /* Adjust shft to deal with right or left shifts. */
-      shft = shft < 0 ? 1 - shft : shft;
+      shft = shft % sz;
+      if (shft < 0)
+	shft += sz;
 
       /* Special case: Shift to the original order!  */
       if (sz == 0 || shft % sz == 0)
