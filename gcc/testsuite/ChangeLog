@@ -1,3 +1,7 @@
+2018-01-02  Richard Biener  <rguenther@suse.de>
+
+	* ipa-inline.c (big_speedup_p): Fix expression.
+
 2018-01-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83076
