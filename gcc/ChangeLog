@@ -1,3 +1,8 @@
+2018-01-02  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* rtlanal.c (canonicalize_condition): Return 0 if final rtx
+	does not have a conditional at the top.
+
 2018-01-02  Richard Biener  <rguenther@suse.de>
 
 	* ipa-inline.c (big_speedup_p): Fix expression.
