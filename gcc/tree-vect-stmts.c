@@ -6523,7 +6523,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
    vect_gen_perm_mask_checked.  */
 
 tree
-vect_gen_perm_mask_any (tree vectype, vec_perm_indices sel)
+vect_gen_perm_mask_any (tree vectype, const vec_perm_indices &sel)
 {
   tree mask_elt_type, mask_type;
 
@@ -6544,7 +6544,7 @@ vect_gen_perm_mask_any (tree vectype, vec_perm_indices sel)
    i.e. that the target supports the pattern _for arbitrary input vectors_.  */
 
 tree
-vect_gen_perm_mask_checked (tree vectype, vec_perm_indices sel)
+vect_gen_perm_mask_checked (tree vectype, const vec_perm_indices &sel)
 {
   gcc_assert (can_vec_perm_p (TYPE_MODE (vectype), false, &sel));
   return vect_gen_perm_mask_any (vectype, sel);

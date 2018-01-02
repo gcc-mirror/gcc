@@ -8923,7 +8923,7 @@ vec_cst_ctor_to_array (tree arg, unsigned int nelts, tree *elts)
    NULL_TREE otherwise.  */
 
 static tree
-fold_vec_perm (tree type, tree arg0, tree arg1, vec_perm_indices sel)
+fold_vec_perm (tree type, tree arg0, tree arg1, const vec_perm_indices &sel)
 {
   unsigned int i;
   bool need_ctor = false;
