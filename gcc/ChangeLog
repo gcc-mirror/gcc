@@ -1,5 +1,16 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* optabs.c (expand_vec_perm_1): Assert that SEL has an integer
+	vector mode and that that mode matches the mode of the data
+	being permuted.
+	(expand_vec_perm): Split handling of non-CONST_VECTOR selectors
+	out into expand_vec_perm_var.  Do all CONST_VECTOR handling here,
+	directly using expand_vec_perm_1 when forcing selectors into
+	registers.
+	(expand_vec_perm_var): New function, split out from expand_vec_perm.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs-query.h (can_vec_perm_p): Delete.
 	(can_vec_perm_var_p, can_vec_perm_const_p): Declare.
 	* optabs-query.c (can_vec_perm_p): Split into...
