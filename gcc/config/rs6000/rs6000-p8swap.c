@@ -36,6 +36,7 @@
 #include "expr.h"
 #include "output.h"
 #include "tree-pass.h"
+#include "rtx-vector-builder.h"
 
 /* Analyze vector computations and remove unnecessary doubleword
    swaps (xxswapdi instructions).  This pass is performed only
@@ -931,23 +932,24 @@ mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
     }
 }
 
-/* OP is either a CONST_VECTOR or an expression containing one.
+/* *OP_PTR is either a CONST_VECTOR or an expression containing one.
    Swap the first half of the vector with the second in the first
    case.  Recurse to find it in the second.  */
 static void
-swap_const_vector_halves (rtx op)
+swap_const_vector_halves (rtx *op_ptr)
 {
   int i;
+  rtx op = *op_ptr;
   enum rtx_code code = GET_CODE (op);
   if (GET_CODE (op) == CONST_VECTOR)
     {
-      int half_units = GET_MODE_NUNITS (GET_MODE (op)) / 2;
-      for (i = 0; i < half_units; ++i)
-	{
-	  rtx temp = CONST_VECTOR_ELT (op, i);
-	  CONST_VECTOR_ELT (op, i) = CONST_VECTOR_ELT (op, i + half_units);
-	  CONST_VECTOR_ELT (op, i + half_units) = temp;
-	}
+      int units = GET_MODE_NUNITS (GET_MODE (op));
+      rtx_vector_builder builder (GET_MODE (op), units, 1);
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i + units / 2));
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i));
+      *op_ptr = builder.build ();
     }
   else
     {
@@ -955,10 +957,10 @@ swap_const_vector_halves (rtx op)
       const char *fmt = GET_RTX_FORMAT (code);
       for (i = 0; i < GET_RTX_LENGTH (code); ++i)
 	if (fmt[i] == 'e' || fmt[i] == 'u')
-	  swap_const_vector_halves (XEXP (op, i));
+	  swap_const_vector_halves (&XEXP (op, i));
 	else if (fmt[i] == 'E')
 	  for (j = 0; j < XVECLEN (op, i); ++j)
-	    swap_const_vector_halves (XVECEXP (op, i, j));
+	    swap_const_vector_halves (&XVECEXP (op, i, j));
     }
 }
 
@@ -1251,8 +1253,7 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
       {
 	/* A CONST_VECTOR will only show up somewhere in the RHS of a SET.  */
 	gcc_assert (GET_CODE (body) == SET);
-	rtx rhs = SET_SRC (body);
-	swap_const_vector_halves (rhs);
+	swap_const_vector_halves (&SET_SRC (body));
 	if (dump_file)
 	  fprintf (dump_file, "Swapping constant halves in insn %d\n", i);
 	break;

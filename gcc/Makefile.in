@@ -1453,6 +1453,7 @@ OBJS = \
 	rtlhash.o \
 	rtlanal.o \
 	rtlhooks.o \
+	rtx-vector-builder.o \
 	run-rtl-passes.o \
 	sched-deps.o \
 	sched-ebb.o \

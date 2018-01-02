@@ -1,5 +1,38 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* doc/rtl.texi (const_vector): Describe new encoding scheme.
+	* Makefile.in (OBJS): Add rtx-vector-builder.o.
+	* rtx-vector-builder.h: New file.
+	* rtx-vector-builder.c: Likewise.
+	* rtl.h (rtx_def::u2): Add a const_vector field.
+	(CONST_VECTOR_NPATTERNS): New macro.
+	(CONST_VECTOR_NELTS_PER_PATTERN): Likewise.
+	(CONST_VECTOR_DUPLICATE_P): Likewise.
+	(CONST_VECTOR_STEPPED_P): Likewise.
+	(CONST_VECTOR_ENCODED_ELT): Likewise.
+	(const_vec_duplicate_p): Check for a duplicated vector encoding.
+	(unwrap_const_vec_duplicate): Likewise.
+	(const_vec_series_p): Check for a non-duplicated vector encoding.
+	Say that the function only returns true for integer vectors.
+	* emit-rtl.c: Include rtx-vector-builder.h.
+	(gen_const_vec_duplicate_1): Delete.
+	(gen_const_vector): Call gen_const_vec_duplicate instead of
+	gen_const_vec_duplicate_1.
+	(const_vec_series_p_1): Operate directly on the CONST_VECTOR encoding.
+	(gen_const_vec_duplicate): Use rtx_vector_builder.
+	(gen_const_vec_series): Likewise.
+	(gen_rtx_CONST_VECTOR): Likewise.
+	* config/powerpcspe/powerpcspe.c: Include rtx-vector-builder.h.
+	(swap_const_vector_halves): Take an rtx pointer rather than rtx.
+	Build a new vector rather than modifying a CONST_VECTOR in-place.
+	(handle_special_swappables): Update call accordingly.
+	* config/rs6000/rs6000-p8swap.c: Include rtx-vector-builder.h.
+	(swap_const_vector_halves): Take an rtx pointer rather than rtx.
+	Build a new vector rather than modifying a CONST_VECTOR in-place.
+	(handle_special_swappables): Update call accordingly.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* simplify-rtx.c (simplify_const_binary_operation): Use
 	CONST_VECTOR_ELT instead of XVECEXP.
 
