@@ -73,7 +73,7 @@ expand_block_clear (rtx operands[])
      When optimize_size, avoid any significant code bloat; calling
      memset is about 4 instructions, so allow for one instruction to
      load zero and three to do clearing.  */
-  if (TARGET_ALTIVEC && align >= 128)
+  if (TARGET_ALTIVEC && (align >= 128 || TARGET_EFFICIENT_UNALIGNED_VSX))
     clear_step = 16;
   else if (TARGET_POWERPC64 && (align >= 64 || !STRICT_ALIGNMENT))
     clear_step = 8;
@@ -90,7 +90,7 @@ expand_block_clear (rtx operands[])
       machine_mode mode = BLKmode;
       rtx dest;
 
-      if (bytes >= 16 && TARGET_ALTIVEC && align >= 128)
+      if (bytes >= 16 && TARGET_ALTIVEC && (align >= 128 || TARGET_EFFICIENT_UNALIGNED_VSX))
 	{
 	  clear_bytes = 16;
 	  mode = V4SImode;
@@ -1260,7 +1260,7 @@ expand_block_move (rtx operands[])
 
       /* Altivec first, since it will be faster than a string move
 	 when it applies, and usually not significantly larger.  */
-      if (TARGET_ALTIVEC && bytes >= 16 && align >= 128)
+      if (TARGET_ALTIVEC && bytes >= 16 && (TARGET_EFFICIENT_UNALIGNED_VSX || align >= 128))
 	{
 	  move_bytes = 16;
 	  mode = V4SImode;
