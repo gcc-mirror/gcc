@@ -5693,7 +5693,11 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
   if (CC0_P (op0))
     return 0;
 
-  return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
+  /* We promised to return a comparison.  */
+  rtx ret = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
+  if (COMPARISON_P (ret))
+    return ret;
+  return 0;
 }
 
 /* Given a jump insn JUMP, return the condition that will cause it to branch
