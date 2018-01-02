@@ -1,5 +1,11 @@
 2018-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	Typedefs!
+	gcc/cp/
+	* decl.c (grokdeclarator): Set typedef's module/export.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-2_[abc].C: New.
+
 	gcc/testsuite/
 	* g++.dg/modules/tdef-1_[ab].C: New.
 

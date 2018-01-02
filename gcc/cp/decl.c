@@ -4923,12 +4923,13 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
   return type;
 }
 
-/* Process a DECLARATOR for a function-scope variable declaration,
-   namespace-scope variable declaration, or function declaration.
-   (Function definitions go through start_function; class member
-   declarations appearing in the body of the class go through
-   grokfield.)  The DECL corresponding to the DECLARATOR is returned.
-   If an error occurs, the error_mark_node is returned instead.
+/* Process a DECLARATOR for a function-scope typedef or variable
+   declaration, namespace-scope typdef, variable declaration, or
+   function declaration.  (Function definitions go through
+   start_function; class member declarations appearing in the body of
+   the class go through grokfield.)  The DECL corresponding to the
+   DECLARATOR is returned.  If an error occurs, the error_mark_node is
+   returned instead.
    
    DECLSPECS are the decl-specifiers for the declaration.  INITIALIZED is
    SD_INITIALIZED if an explicit initializer is present, or SD_DEFAULTED
@@ -11627,7 +11628,10 @@ grokdeclarator (const cp_declarator *declarator,
       if (decl_context != FIELD)
 	{
 	  if (!current_function_decl)
-	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+	    {
+	      DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
+	      decl_set_module (decl);
+	    }
 	  else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (current_function_decl)
 		   || (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P
 		       (current_function_decl)))
