@@ -1,3 +1,10 @@
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* optabs-query.h (qimode_for_vec_perm): Declare.
+	* optabs-query.c (can_vec_perm_p): Split out qimode search to...
+	(qimode_for_vec_perm): ...this new function.
+	* optabs.c (expand_vec_perm): Use qimode_for_vec_perm.
+
 2018-01-02  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* rtlanal.c (canonicalize_condition): Return 0 if final rtx
