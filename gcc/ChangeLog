@@ -1,5 +1,13 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-cfg.c (verify_gimple_assign_ternary): Allow the size of
+	the selector elements to be different from the data elements
+	if the selector is a VECTOR_CST.
+	* tree-vect-stmts.c (vect_gen_perm_mask_any): Use a vector of
+	ssizetype for the selector.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs.c (shift_amt_for_vec_perm_mask): Try using series_p
 	before testing each element individually.
 	* tree-vect-generic.c (lower_vec_perm): Likewise.
