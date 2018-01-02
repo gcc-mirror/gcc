@@ -1,5 +1,11 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* optabs-query.c (can_vec_perm_var_p): Check whether lowering
+	to qimode could truncate the indices.
+	* optabs.c (expand_vec_perm_var): Likewise.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* Makefile.in (OBJS): Add vec-perm-indices.o.
 	* vec-perm-indices.h: New file.
 	* vec-perm-indices.c: Likewise.
