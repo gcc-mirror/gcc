@@ -4071,9 +4071,9 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	  gcc_assert (op0_n_elts + op1_n_elts == n_elts);
 
 	  for (i = 0; i < op0_n_elts; ++i)
-	    RTVEC_ELT (v, i) = XVECEXP (op0, 0, i);
+	    RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op0, i);
 	  for (i = 0; i < op1_n_elts; ++i)
-	    RTVEC_ELT (v, op0_n_elts+i) = XVECEXP (op1, 0, i);
+	    RTVEC_ELT (v, op0_n_elts+i) = CONST_VECTOR_ELT (op1, i);
 	}
 
       return gen_rtx_CONST_VECTOR (mode, v);
