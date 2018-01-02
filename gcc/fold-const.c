@@ -11373,7 +11373,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	    {
 	      unsigned int nelts = VECTOR_CST_NELTS (arg0), i;
 	      gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
-	      auto_vec_perm_indices sel (nelts);
+	      vec_perm_builder sel (nelts, nelts, 1);
 	      for (i = 0; i < nelts; i++)
 		{
 		  tree val = VECTOR_CST_ELT (arg0, i);
@@ -11384,7 +11384,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		  else /* Currently unreachable.  */
 		    return NULL_TREE;
 		}
-	      tree t = fold_vec_perm (type, arg1, arg2, sel);
+	      tree t = fold_vec_perm (type, arg1, arg2,
+				      vec_perm_indices (sel, 2, nelts));
 	      if (t != NULL_TREE)
 		return t;
 	    }
@@ -11716,8 +11717,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  mask2 = 2 * nelts - 1;
 	  mask = single_arg ? (nelts - 1) : mask2;
 	  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
-	  auto_vec_perm_indices sel (nelts);
-	  auto_vec_perm_indices sel2 (nelts);
+	  vec_perm_builder sel (nelts, nelts, 1);
+	  vec_perm_builder sel2 (nelts, nelts, 1);
 	  for (i = 0; i < nelts; i++)
 	    {
 	      tree val = VECTOR_CST_ELT (arg2, i);
@@ -11762,12 +11763,13 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      need_mask_canon = true;
 	    }
 
+	  vec_perm_indices indices (sel, 2, nelts);
 	  if ((TREE_CODE (op0) == VECTOR_CST
 	       || TREE_CODE (op0) == CONSTRUCTOR)
 	      && (TREE_CODE (op1) == VECTOR_CST
 		  || TREE_CODE (op1) == CONSTRUCTOR))
 	    {
-	      tree t = fold_vec_perm (type, op0, op1, sel);
+	      tree t = fold_vec_perm (type, op0, op1, indices);
 	      if (t != NULL_TREE)
 		return t;
 	    }
@@ -11779,11 +11781,14 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	     argument permutation while still allowing an equivalent
 	     2-argument version.  */
 	  if (need_mask_canon && arg2 == op2
-	      && !can_vec_perm_const_p (TYPE_MODE (type), sel, false)
-	      && can_vec_perm_const_p (TYPE_MODE (type), sel2, false))
+	      && !can_vec_perm_const_p (TYPE_MODE (type), indices, false)
+	      && can_vec_perm_const_p (TYPE_MODE (type),
+				       vec_perm_indices (sel2, 2, nelts),
+				       false))
 	    {
 	      need_mask_canon = need_mask_canon2;
-	      sel = sel2;
+	      sel.truncate (0);
+	      sel.splice (sel2);
 	    }
 
 	  if (need_mask_canon && arg2 == op2)

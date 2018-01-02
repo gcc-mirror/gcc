@@ -1299,15 +1299,13 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	mask = gimple_assign_rhs1 (def_stmt);
     }
 
-  if (TREE_CODE (mask) == VECTOR_CST)
+  vec_perm_builder sel_int;
+
+  if (TREE_CODE (mask) == VECTOR_CST
+      && tree_to_vec_perm_builder (&sel_int, mask))
     {
-      auto_vec_perm_indices sel_int (elements);
-
-      for (i = 0; i < elements; ++i)
-	sel_int.quick_push (TREE_INT_CST_LOW (VECTOR_CST_ELT (mask, i))
-			    & (2 * elements - 1));
-
-      if (can_vec_perm_const_p (TYPE_MODE (vect_type), sel_int))
+      vec_perm_indices indices (sel_int, 2, elements);
+      if (can_vec_perm_const_p (TYPE_MODE (vect_type), indices))
 	{
 	  gimple_assign_set_rhs3 (stmt, mask);
 	  update_stmt (stmt);
@@ -1319,14 +1317,14 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	  != CODE_FOR_nothing
 	  && TREE_CODE (vec1) == VECTOR_CST
 	  && initializer_zerop (vec1)
-	  && sel_int[0]
-	  && sel_int[0] < elements)
+	  && indices[0]
+	  && indices[0] < elements)
 	{
 	  for (i = 1; i < elements; ++i)
 	    {
-	      unsigned int expected = i + sel_int[0];
+	      unsigned int expected = i + indices[0];
 	      /* Indices into the second vector are all equivalent.  */
-	      if (MIN (elements, (unsigned) sel_int[i])
+	      if (MIN (elements, (unsigned) indices[i])
 		  != MIN (elements, expected))
  		break;
 	    }

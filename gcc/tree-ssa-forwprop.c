@@ -2018,7 +2018,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
 
-  auto_vec_perm_indices sel (nelts);
+  vec_perm_builder sel (nelts, nelts, 1);
   orig = NULL;
   conv_code = ERROR_MARK;
   maybe_ident = true;
@@ -2109,7 +2109,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     {
       tree mask_type;
 
-      if (!can_vec_perm_const_p (TYPE_MODE (type), sel))
+      vec_perm_indices indices (sel, 1, nelts);
+      if (!can_vec_perm_const_p (TYPE_MODE (type), indices))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),

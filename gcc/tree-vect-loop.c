@@ -3713,12 +3713,11 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
    vector elements (not bits) for a vector with NELT elements.  */
 static void
 calc_vec_perm_mask_for_shift (unsigned int offset, unsigned int nelt,
-			      vec_perm_indices *sel)
+			      vec_perm_builder *sel)
 {
-  unsigned int i;
-
-  for (i = 0; i < nelt; i++)
-    sel->quick_push ((i + offset) & (2 * nelt - 1));
+  sel->new_vector (nelt, nelt, 1);
+  for (unsigned int i = 0; i < nelt; i++)
+    sel->quick_push (i + offset);
 }
 
 /* Checks whether the target supports whole-vector shifts for vectors of mode
@@ -3731,13 +3730,13 @@ have_whole_vector_shift (machine_mode mode)
     return true;
 
   unsigned int i, nelt = GET_MODE_NUNITS (mode);
-  auto_vec_perm_indices sel (nelt);
-
+  vec_perm_builder sel;
+  vec_perm_indices indices;
   for (i = nelt/2; i >= 1; i/=2)
     {
-      sel.truncate (0);
       calc_vec_perm_mask_for_shift (i, nelt, &sel);
-      if (!can_vec_perm_const_p (mode, sel, false))
+      indices.new_vector (sel, 2, nelt);
+      if (!can_vec_perm_const_p (mode, indices, false))
 	return false;
     }
   return true;
@@ -5055,7 +5054,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       if (reduce_with_shift && !slp_reduc)
         {
           int nelements = vec_size_in_bits / element_bitsize;
-          auto_vec_perm_indices sel (nelements);
+	  vec_perm_builder sel;
+	  vec_perm_indices indices;
 
           int elt_offset;
 
@@ -5079,9 +5079,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
                elt_offset >= 1;
                elt_offset /= 2)
             {
-	      sel.truncate (0);
 	      calc_vec_perm_mask_for_shift (elt_offset, nelements, &sel);
-	      tree mask = vect_gen_perm_mask_any (vectype, sel);
+	      indices.new_vector (sel, 2, nelements);
+	      tree mask = vect_gen_perm_mask_any (vectype, indices);
 	      epilog_stmt = gimple_build_assign (vec_dest, VEC_PERM_EXPR,
 						 new_temp, zero_vec, mask);
               new_name = make_ssa_name (vec_dest, epilog_stmt);

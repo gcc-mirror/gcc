@@ -894,7 +894,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
     {
       unsigned int count = TYPE_VECTOR_SUBPARTS (vectype);
-      auto_vec_perm_indices sel (count);
+      vec_perm_builder sel (count, count, 1);
       for (i = 0; i < count; ++i)
 	{
 	  unsigned int elt = i;
@@ -902,7 +902,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    elt += count;
 	  sel.quick_push (elt);
 	}
-      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+      vec_perm_indices indices (sel, 2, count);
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
 	{
 	  for (i = 0; i < group_size; ++i)
 	    if (gimple_assign_rhs_code (stmts[i]) == alt_stmt_code)
@@ -3570,8 +3571,9 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
     (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  auto_vec_perm_indices mask (nunits);
+  vec_perm_builder mask (nunits, nunits, 1);
   mask.quick_grow (nunits);
+  vec_perm_indices indices;
 
   /* Initialize the vect stmts of NODE to properly insert the generated
      stmts later.  */
@@ -3644,10 +3646,10 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 	    noop_p = false;
 	  mask[index++] = mask_element;
 
-	  if (index == nunits)
+	  if (index == nunits && !noop_p)
 	    {
-	      if (! noop_p
-		  && ! can_vec_perm_const_p (mode, mask))
+	      indices.new_vector (mask, 2, nunits);
+	      if (!can_vec_perm_const_p (mode, indices))
 		{
 		  if (dump_enabled_p ())
 		    {
@@ -3655,16 +3657,19 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 				       vect_location, 
 				       "unsupported vect permute { ");
 		      for (i = 0; i < nunits; ++i)
-			dump_printf (MSG_MISSED_OPTIMIZATION, "%d ", mask[i]);
+			dump_printf (MSG_MISSED_OPTIMIZATION,
+				     HOST_WIDE_INT_PRINT_DEC " ", mask[i]);
 		      dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
 		    }
 		  gcc_assert (analyze_only);
 		  return false;
 		}
 
-	      if (! noop_p)
-		++*n_perms;
+	      ++*n_perms;
+	    }
 
+	  if (index == nunits)
+	    {
 	      if (!analyze_only)
 		{
 		  tree mask_vec = NULL_TREE;
@@ -3797,7 +3802,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       enum tree_code code0 = gimple_assign_rhs_code (stmt);
       enum tree_code ocode = ERROR_MARK;
       gimple *ostmt;
-      auto_vec_perm_indices mask (group_size);
+      vec_perm_builder mask (group_size, group_size, 1);
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, ostmt)
 	if (gimple_assign_rhs_code (ostmt) != code0)
 	  {

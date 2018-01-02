@@ -1717,13 +1717,14 @@ perm_mask_for_reverse (tree vectype)
 
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
-  auto_vec_perm_indices sel (nunits);
+  vec_perm_builder sel (nunits, nunits, 1);
   for (i = 0; i < nunits; ++i)
     sel.quick_push (nunits - 1 - i);
 
-  if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
+  vec_perm_indices indices (sel, 1, nunits);
+  if (!can_vec_perm_const_p (TYPE_MODE (vectype), indices))
     return NULL_TREE;
-  return vect_gen_perm_mask_checked (vectype, sel);
+  return vect_gen_perm_mask_checked (vectype, indices);
 }
 
 /* A subroutine of get_load_store_type, with a subset of the same
@@ -2185,27 +2186,32 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	{
 	  modifier = WIDEN;
 
-	  auto_vec_perm_indices sel (gather_off_nunits);
+	  vec_perm_builder sel (gather_off_nunits, gather_off_nunits, 1);
 	  for (i = 0; i < gather_off_nunits; ++i)
 	    sel.quick_push (i | nunits);
 
-	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype, sel);
+	  vec_perm_indices indices (sel, 1, gather_off_nunits);
+	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype,
+						  indices);
 	}
       else if (nunits == gather_off_nunits * 2)
 	{
 	  modifier = NARROW;
 
-	  auto_vec_perm_indices sel (nunits);
+	  vec_perm_builder sel (nunits, nunits, 1);
 	  sel.quick_grow (nunits);
 	  for (i = 0; i < nunits; ++i)
 	    sel[i] = i < gather_off_nunits
 		     ? i : i + nunits - gather_off_nunits;
+	  vec_perm_indices indices (sel, 2, nunits);
+	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 
-	  perm_mask = vect_gen_perm_mask_checked (vectype, sel);
 	  ncopies *= 2;
+
 	  for (i = 0; i < nunits; ++i)
 	    sel[i] = i | gather_off_nunits;
-	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, sel);
+	  indices.new_vector (sel, 2, gather_off_nunits);
+	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, indices);
 	}
       else
 	gcc_unreachable ();
@@ -2498,12 +2504,13 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
   unsigned int num_bytes = TYPE_VECTOR_SUBPARTS (char_vectype);
   unsigned word_bytes = num_bytes / nunits;
 
-  auto_vec_perm_indices elts (num_bytes);
+  vec_perm_builder elts (num_bytes, num_bytes, 1);
   for (unsigned i = 0; i < nunits; ++i)
     for (unsigned j = 0; j < word_bytes; ++j)
       elts.quick_push ((i + 1) * word_bytes - j - 1);
 
-  if (!can_vec_perm_const_p (TYPE_MODE (char_vectype), elts))
+  vec_perm_indices indices (elts, 1, num_bytes);
+  if (!can_vec_perm_const_p (TYPE_MODE (char_vectype), indices))
     return false;
 
   if (! vec_stmt)
@@ -5826,22 +5833,25 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	{
 	  modifier = WIDEN;
 
-	  auto_vec_perm_indices sel (scatter_off_nunits);
+	  vec_perm_builder sel (scatter_off_nunits, scatter_off_nunits, 1);
 	  for (i = 0; i < (unsigned int) scatter_off_nunits; ++i)
 	    sel.quick_push (i | nunits);
 
-	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype, sel);
+	  vec_perm_indices indices (sel, 1, scatter_off_nunits);
+	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype,
+						  indices);
 	  gcc_assert (perm_mask != NULL_TREE);
 	}
       else if (nunits == (unsigned int) scatter_off_nunits * 2)
 	{
 	  modifier = NARROW;
 
-	  auto_vec_perm_indices sel (nunits);
+	  vec_perm_builder sel (nunits, nunits, 1);
 	  for (i = 0; i < (unsigned int) nunits; ++i)
 	    sel.quick_push (i | scatter_off_nunits);
 
-	  perm_mask = vect_gen_perm_mask_checked (vectype, sel);
+	  vec_perm_indices indices (sel, 2, nunits);
+	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 	  gcc_assert (perm_mask != NULL_TREE);
 	  ncopies *= 2;
 	}
@@ -6862,22 +6872,25 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	{
 	  modifier = WIDEN;
 
-	  auto_vec_perm_indices sel (gather_off_nunits);
+	  vec_perm_builder sel (gather_off_nunits, gather_off_nunits, 1);
 	  for (i = 0; i < gather_off_nunits; ++i)
 	    sel.quick_push (i | nunits);
 
-	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype, sel);
+	  vec_perm_indices indices (sel, 1, gather_off_nunits);
+	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype,
+						  indices);
 	}
       else if (nunits == gather_off_nunits * 2)
 	{
 	  modifier = NARROW;
 
-	  auto_vec_perm_indices sel (nunits);
+	  vec_perm_builder sel (nunits, nunits, 1);
 	  for (i = 0; i < nunits; ++i)
 	    sel.quick_push (i < gather_off_nunits
 			    ? i : i + nunits - gather_off_nunits);
 
-	  perm_mask = vect_gen_perm_mask_checked (vectype, sel);
+	  vec_perm_indices indices (sel, 2, nunits);
+	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 	  ncopies *= 2;
 	}
       else

@@ -38782,7 +38782,7 @@ rs6000_expand_extract_even (rtx target, rtx op0, rtx op1)
 {
   machine_mode vmode = GET_MODE (target);
   unsigned i, nelt = GET_MODE_NUNITS (vmode);
-  vec_perm_builder perm (nelt);
+  vec_perm_builder perm (nelt, nelt, 1);
 
   for (i = 0; i < nelt; i++)
     perm.quick_push (i * 2);
@@ -38797,7 +38797,7 @@ rs6000_expand_interleave (rtx target, rtx op0, rtx op1, bool highp)
 {
   machine_mode vmode = GET_MODE (target);
   unsigned i, high, nelt = GET_MODE_NUNITS (vmode);
-  vec_perm_builder perm (nelt);
+  vec_perm_builder perm (nelt, nelt, 1);
 
   high = (highp ? 0 : nelt / 2);
   for (i = 0; i < nelt / 2; i++)

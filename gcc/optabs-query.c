@@ -516,12 +516,13 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
       op = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
       if (optab_handler (op, mode) != CODE_FOR_nothing)
 	{
-	  auto_vec_perm_indices sel (nunits);
+	  vec_perm_builder sel (nunits, nunits, 1);
 	  for (i = 0; i < nunits; ++i)
 	    sel.quick_push (!BYTES_BIG_ENDIAN
 			    + (i & ~1)
 			    + ((i & 1) ? nunits : 0));
-	  if (can_vec_perm_const_p (mode, sel))
+	  vec_perm_indices indices (sel, 2, nunits);
+	  if (can_vec_perm_const_p (mode, indices))
 	    return 2;
 	}
     }
@@ -532,10 +533,11 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
       op = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
       if (optab_handler (op, mode) != CODE_FOR_nothing)
 	{
-	  auto_vec_perm_indices sel (nunits);
+	  vec_perm_builder sel (nunits, nunits, 1);
 	  for (i = 0; i < nunits; ++i)
 	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
-	  if (can_vec_perm_const_p (mode, sel))
+	  vec_perm_indices indices (sel, 2, nunits);
+	  if (can_vec_perm_const_p (mode, indices))
 	    return 3;
 	}
     }
