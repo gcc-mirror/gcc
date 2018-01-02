@@ -5395,20 +5395,20 @@ vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
 static rtx
 shift_amt_for_vec_perm_mask (machine_mode mode, const vec_perm_indices &sel)
 {
-  unsigned int i, first, nelt = GET_MODE_NUNITS (mode);
+  unsigned int nelt = GET_MODE_NUNITS (mode);
   unsigned int bitsize = GET_MODE_UNIT_BITSIZE (mode);
-
-  first = sel[0];
+  unsigned int first = sel[0];
   if (first >= nelt)
     return NULL_RTX;
-  for (i = 1; i < nelt; i++)
-    {
-      int idx = sel[i];
-      unsigned int expected = i + first;
-      /* Indices into the second vector are all equivalent.  */
-      if (idx < 0 || (MIN (nelt, (unsigned) idx) != MIN (nelt, expected)))
-	return NULL_RTX;
-    }
+
+  if (!sel.series_p (0, 1, first, 1))
+    for (unsigned int i = 1; i < nelt; i++)
+      {
+	unsigned int expected = i + first;
+	/* Indices into the second vector are all equivalent.  */
+	if (MIN (nelt, sel[i]) != MIN (nelt, expected))
+	  return NULL_RTX;
+      }
 
   return gen_int_shift_amount (mode, first * bitsize);
 }

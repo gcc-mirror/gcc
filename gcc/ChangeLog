@@ -1,5 +1,11 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* optabs.c (shift_amt_for_vec_perm_mask): Try using series_p
+	before testing each element individually.
+	* tree-vect-generic.c (lower_vec_perm): Likewise.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* selftest.h (selftest::vec_perm_indices_c_tests): Declare.
 	* selftest-run-tests.c (selftest::run_tests): Call it.
 	* vector-builder.h (vector_builder::operator ==): New function.
