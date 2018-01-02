@@ -361,58 +361,86 @@ qimode_for_vec_perm (machine_mode mode)
   return opt_machine_mode ();
 }
 
-/* Return true if VEC_PERM_EXPR of arbitrary input vectors can be
-   expanded using SIMD extensions of the CPU.  SEL may be NULL, which
-   stands for an unknown constant.  Note that additional permutations
-   representing whole-vector shifts may also be handled via the vec_shr
-   optab, but only where the second input vector is entirely constant
-   zeroes; this case is not dealt with here.  */
+/* Return true if VEC_PERM_EXPRs with variable selector operands can be
+   expanded using SIMD extensions of the CPU.  MODE is the mode of the
+   vectors being permuted.  */
 
 bool
-can_vec_perm_p (machine_mode mode, bool variable, const vec_perm_indices *sel)
+can_vec_perm_var_p (machine_mode mode)
 {
-  machine_mode qimode;
-
   /* If the target doesn't implement a vector mode for the vector type,
      then no operations are supported.  */
   if (!VECTOR_MODE_P (mode))
     return false;
 
-  if (!variable)
-    {
-      if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
-	  && (sel == NULL
-	      || targetm.vectorize.vec_perm_const_ok == NULL
-	      || targetm.vectorize.vec_perm_const_ok (mode, *sel)))
-	return true;
-    }
-
   if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
     return true;
 
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
+  machine_mode qimode;
   if (!qimode_for_vec_perm (mode).exists (&qimode))
     return false;
 
-  /* ??? For completeness, we ought to check the QImode version of
-      vec_perm_const_optab.  But all users of this implicit lowering
-      feature implement the variable vec_perm_optab.  */
   if (direct_optab_handler (vec_perm_optab, qimode) == CODE_FOR_nothing)
     return false;
 
   /* In order to support the lowering of variable permutations,
      we need to support shifts and adds.  */
-  if (variable)
-    {
-      if (GET_MODE_UNIT_SIZE (mode) > 2
-	  && optab_handler (ashl_optab, mode) == CODE_FOR_nothing
-	  && optab_handler (vashl_optab, mode) == CODE_FOR_nothing)
-	return false;
-      if (optab_handler (add_optab, qimode) == CODE_FOR_nothing)
-	return false;
-    }
+  if (GET_MODE_UNIT_SIZE (mode) > 2
+      && optab_handler (ashl_optab, mode) == CODE_FOR_nothing
+      && optab_handler (vashl_optab, mode) == CODE_FOR_nothing)
+    return false;
+  if (optab_handler (add_optab, qimode) == CODE_FOR_nothing)
+    return false;
 
   return true;
+}
+
+/* Return true if the target directly supports VEC_PERM_EXPRs on vectors
+   of mode MODE using the selector SEL.  ALLOW_VARIABLE_P is true if it
+   is acceptable to force the selector into a register and use a variable
+   permute (if the target supports that).
+
+   Note that additional permutations representing whole-vector shifts may
+   also be handled via the vec_shr optab, but only where the second input
+   vector is entirely constant zeroes; this case is not dealt with here.  */
+
+bool
+can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
+		      bool allow_variable_p)
+{
+  /* If the target doesn't implement a vector mode for the vector type,
+     then no operations are supported.  */
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  /* It's probably cheaper to test for the variable case first.  */
+  if (allow_variable_p)
+    {
+      if (direct_optab_handler (vec_perm_optab, mode) != CODE_FOR_nothing)
+	return true;
+
+      /* Unlike can_vec_perm_var_p, we don't need to test for optabs
+	 related computing the QImode selector, since that happens at
+	 compile time.  */
+      machine_mode qimode;
+      if (qimode_for_vec_perm (mode).exists (&qimode)
+	  && direct_optab_handler (vec_perm_optab, qimode) != CODE_FOR_nothing)
+	return true;
+    }
+
+  if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing)
+    {
+      if (targetm.vectorize.vec_perm_const_ok == NULL
+	  || targetm.vectorize.vec_perm_const_ok (mode, sel))
+	return true;
+
+      /* ??? For completeness, we ought to check the QImode version of
+	 vec_perm_const_optab.  But all users of this implicit lowering
+	 feature implement the variable vec_perm_optab.  */
+    }
+
+  return false;
 }
 
 /* Find a widening optab even if it doesn't widen as much as we want.
@@ -472,7 +500,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 	    sel.quick_push (!BYTES_BIG_ENDIAN
 			    + (i & ~1)
 			    + ((i & 1) ? nunits : 0));
-	  if (can_vec_perm_p (mode, false, &sel))
+	  if (can_vec_perm_const_p (mode, sel))
 	    return 2;
 	}
     }
@@ -486,7 +514,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 	  auto_vec_perm_indices sel (nunits);
 	  for (i = 0; i < nunits; ++i)
 	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
-	  if (can_vec_perm_p (mode, false, &sel))
+	  if (can_vec_perm_const_p (mode, sel))
 	    return 3;
 	}
     }

@@ -1,5 +1,32 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* optabs-query.h (can_vec_perm_p): Delete.
+	(can_vec_perm_var_p, can_vec_perm_const_p): Declare.
+	* optabs-query.c (can_vec_perm_p): Split into...
+	(can_vec_perm_var_p, can_vec_perm_const_p): ...these two functions.
+	(can_mult_highpart_p): Use can_vec_perm_const_p to test whether a
+	particular selector is valid.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	* tree-vect-data-refs.c (vect_grouped_store_supported): Likewise.
+	(vect_grouped_load_supported): Likewise.
+	(vect_shift_permute_load_chain): Likewise.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Likewise.
+	(vect_transform_slp_perm_load): Likewise.
+	* tree-vect-stmts.c (perm_mask_for_reverse): Likewise.
+	(vectorizable_bswap): Likewise.
+	(vect_gen_perm_mask_checked): Likewise.
+	* fold-const.c (fold_ternary_loc): Likewise.  Don't take
+	implementations of variable permutation vectors into account
+	when deciding which selector to use.
+	* tree-vect-loop.c (have_whole_vector_shift): Don't check whether
+	vec_perm_const_optab is supported; instead use can_vec_perm_const_p
+	with a false third argument.
+	* tree-vect-generic.c (lower_vec_perm): Use can_vec_perm_const_p
+	to test whether the constant selector is valid and can_vec_perm_var_p
+	to test whether a variable selector is valid.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs-query.h (can_vec_perm_p): Take a const vec_perm_indices *.
 	* optabs-query.c (can_vec_perm_p): Likewise.
 	* fold-const.c (fold_vec_perm): Take a const vec_perm_indices &
