@@ -3,6 +3,9 @@
 	PR c++/81860
 	* g++.dg/cpp0x/inh-ctor30.C: New test.
 
+	PR c++/83644
+	* g++.dg/cpp1z/pr83644.C: New test.
+
 2018-01-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83076
