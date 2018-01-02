@@ -1969,7 +1969,7 @@ set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
   ((HOST_WIDE_INT) (CONST_FIXED_VALUE (r)->data.low))
 
 /* For a CONST_VECTOR, return element #n.  */
-#define CONST_VECTOR_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
+#define CONST_VECTOR_ELT(RTX, N) const_vector_elt (RTX, N)
 
 /* See rtl.texi for a description of these macros.  */
 #define CONST_VECTOR_NPATTERNS(RTX) \
@@ -1988,8 +1988,16 @@ set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
 
 #define CONST_VECTOR_ENCODED_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
 
+/* Return the number of elements encoded directly in a CONST_VECTOR.  */
+
+inline unsigned int
+const_vector_encoded_nelts (const_rtx x)
+{
+  return CONST_VECTOR_NPATTERNS (x) * CONST_VECTOR_NELTS_PER_PATTERN (x);
+}
+
 /* For a CONST_VECTOR, return the number of elements in a vector.  */
-#define CONST_VECTOR_NUNITS(RTX) XCVECLEN (RTX, 0, CONST_VECTOR)
+#define CONST_VECTOR_NUNITS(RTX) GET_MODE_NUNITS (GET_MODE (RTX))
 
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
    SUBREG_BYTE extracts the byte-number.  */
@@ -3001,6 +3009,8 @@ unwrap_const_vec_duplicate (T x)
 }
 
 /* In emit-rtl.c.  */
+extern wide_int const_vector_int_elt (const_rtx, unsigned int);
+extern rtx const_vector_elt (const_rtx, unsigned int);
 extern bool const_vec_series_p_1 (const_rtx, rtx *, rtx *);
 
 /* Return true if X is an integer constant vector that contains a linear

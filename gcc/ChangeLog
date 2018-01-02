@@ -1,5 +1,16 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* rtl.h (CONST_VECTOR_ELT): Redefine to const_vector_elt.
+	(const_vector_encoded_nelts): New function.
+	(CONST_VECTOR_NUNITS): Redefine to use GET_MODE_NUNITS.
+	(const_vector_int_elt, const_vector_elt): Declare.
+	* emit-rtl.c (const_vector_int_elt_1): New function.
+	(const_vector_elt): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Avoid taking the address
+	of CONST_VECTOR_ELT.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* expr.c: Include rtx-vector-builder.h.
 	(const_vector_mask_from_tree): Use rtx_vector_builder and operate
 	directly on the tree encoding.
