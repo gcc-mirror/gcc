@@ -901,7 +901,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    elt += count;
 	  sel.quick_push (elt);
 	}
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  for (i = 0; i < group_size; ++i)
 	    if (gimple_assign_rhs_code (stmts[i]) == alt_stmt_code)
@@ -3646,7 +3646,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 	  if (index == nunits)
 	    {
 	      if (! noop_p
-		  && ! can_vec_perm_p (mode, false, &mask))
+		  && ! can_vec_perm_const_p (mode, mask))
 		{
 		  if (dump_enabled_p ())
 		    {

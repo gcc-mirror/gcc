@@ -3729,9 +3729,6 @@ have_whole_vector_shift (machine_mode mode)
   if (optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
     return true;
 
-  if (direct_optab_handler (vec_perm_const_optab, mode) == CODE_FOR_nothing)
-    return false;
-
   unsigned int i, nelt = GET_MODE_NUNITS (mode);
   auto_vec_perm_indices sel (nelt);
 
@@ -3739,7 +3736,7 @@ have_whole_vector_shift (machine_mode mode)
     {
       sel.truncate (0);
       calc_vec_perm_mask_for_shift (i, nelt, &sel);
-      if (!can_vec_perm_p (mode, false, &sel))
+      if (!can_vec_perm_const_p (mode, sel, false))
 	return false;
     }
   return true;

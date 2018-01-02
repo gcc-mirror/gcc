@@ -4600,11 +4600,11 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 		  if (3 * i + nelt2 < nelt)
 		    sel[3 * i + nelt2] = 0;
 		}
-	      if (!can_vec_perm_p (mode, false, &sel))
+	      if (!can_vec_perm_const_p (mode, sel))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf (MSG_MISSED_OPTIMIZATION,
-				 "permutaion op not supported by target.\n");
+				 "permutation op not supported by target.\n");
 		  return false;
 		}
 
@@ -4617,11 +4617,11 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 		  if (3 * i + nelt2 < nelt)
 		    sel[3 * i + nelt2] = nelt + j2++;
 		}
-	      if (!can_vec_perm_p (mode, false, &sel))
+	      if (!can_vec_perm_const_p (mode, sel))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf (MSG_MISSED_OPTIMIZATION,
-				 "permutaion op not supported by target.\n");
+				 "permutation op not supported by target.\n");
 		  return false;
 		}
 	    }
@@ -4637,11 +4637,11 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	      sel[i * 2] = i;
 	      sel[i * 2 + 1] = i + nelt;
 	    }
-	  if (can_vec_perm_p (mode, false, &sel))
+	  if (can_vec_perm_const_p (mode, sel))
 	    {
 	      for (i = 0; i < nelt; i++)
 		sel[i] += nelt / 2;
-	      if (can_vec_perm_p (mode, false, &sel))
+	      if (can_vec_perm_const_p (mode, sel))
 		return true;
 	    }
 	}
@@ -5179,7 +5179,7 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 		  sel[i] = 3 * i + k;
 		else
 		  sel[i] = 0;
-	      if (!can_vec_perm_p (mode, false, &sel))
+	      if (!can_vec_perm_const_p (mode, sel))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5192,7 +5192,7 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 		  sel[i] = i;
 		else
 		  sel[i] = nelt + ((nelt + k) % 3) + 3 * (j++);
-	      if (!can_vec_perm_p (mode, false, &sel))
+	      if (!can_vec_perm_const_p (mode, sel))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5209,11 +5209,11 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 	  gcc_assert (pow2p_hwi (count));
 	  for (i = 0; i < nelt; i++)
 	    sel[i] = i * 2;
-	  if (can_vec_perm_p (mode, false, &sel))
+	  if (can_vec_perm_const_p (mode, sel))
 	    {
 	      for (i = 0; i < nelt; i++)
 		sel[i] = i * 2 + 1;
-	      if (can_vec_perm_p (mode, false, &sel))
+	      if (can_vec_perm_const_p (mode, sel))
 		return true;
 	    }
         }
@@ -5540,7 +5540,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	sel[i] = i * 2;
       for (i = 0; i < nelt / 2; ++i)
 	sel[nelt / 2 + i] = i * 2 + 1;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5554,7 +5554,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	sel[i] = i * 2 + 1;
       for (i = 0; i < nelt / 2; ++i)
 	sel[nelt / 2 + i] = i * 2;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5568,7 +5568,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	 For vector length 8 it is {4 5 6 7 8 9 10 11}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = nelt / 2 + i;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5583,7 +5583,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	sel[i] = i;
       for (i = nelt / 2; i < nelt; i++)
 	sel[i] = nelt + i;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5646,7 +5646,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	  sel[i] = 3 * k + (l % 3);
 	  k++;
 	}
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5660,7 +5660,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	 For vector length 8 it is {6 7 8 9 10 11 12 13}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = 2 * (nelt / 3) + (nelt % 3) + i;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5673,7 +5673,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	 For vector length 8 it is {5 6 7 8 9 10 11 12}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = 2 * (nelt / 3) + 1 + i;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5686,7 +5686,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	 For vector length 8 it is {3 4 5 6 7 8 9 10}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = (nelt / 3) + (nelt % 3) / 2 + i;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5699,7 +5699,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	 For vector length 8 it is {5 6 7 8 9 10 11 12}.  */
       for (i = 0; i < nelt; i++)
 	sel[i] = 2 * (nelt / 3) + (nelt % 3) / 2 + i;
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

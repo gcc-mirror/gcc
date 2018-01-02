@@ -11778,8 +11778,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	     argument permutation while still allowing an equivalent
 	     2-argument version.  */
 	  if (need_mask_canon && arg2 == op2
-	      && !can_vec_perm_p (TYPE_MODE (type), false, &sel)
-	      && can_vec_perm_p (TYPE_MODE (type), false, &sel2))
+	      && !can_vec_perm_const_p (TYPE_MODE (type), sel, false)
+	      && can_vec_perm_const_p (TYPE_MODE (type), sel2, false))
 	    {
 	      need_mask_canon = need_mask_canon2;
 	      sel = sel2;

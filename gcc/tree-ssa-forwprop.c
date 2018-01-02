@@ -2108,7 +2108,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     {
       tree mask_type;
 
-      if (!can_vec_perm_p (TYPE_MODE (type), false, &sel))
+      if (!can_vec_perm_const_p (TYPE_MODE (type), sel))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),

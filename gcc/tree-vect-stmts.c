@@ -1720,7 +1720,7 @@ perm_mask_for_reverse (tree vectype)
   for (i = 0; i < nunits; ++i)
     sel.quick_push (nunits - 1 - i);
 
-  if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
+  if (!can_vec_perm_const_p (TYPE_MODE (vectype), sel))
     return NULL_TREE;
   return vect_gen_perm_mask_checked (vectype, sel);
 }
@@ -2502,7 +2502,7 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
     for (unsigned j = 0; j < word_bytes; ++j)
       elts.quick_push ((i + 1) * word_bytes - j - 1);
 
-  if (! can_vec_perm_p (TYPE_MODE (char_vectype), false, &elts))
+  if (!can_vec_perm_const_p (TYPE_MODE (char_vectype), elts))
     return false;
 
   if (! vec_stmt)
@@ -6519,7 +6519,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 /* Given a vector type VECTYPE, turns permutation SEL into the equivalent
    VECTOR_CST mask.  No checks are made that the target platform supports the
-   mask, so callers may wish to test can_vec_perm_p separately, or use
+   mask, so callers may wish to test can_vec_perm_const_p separately, or use
    vect_gen_perm_mask_checked.  */
 
 tree
@@ -6540,13 +6540,13 @@ vect_gen_perm_mask_any (tree vectype, const vec_perm_indices &sel)
   return mask_elts.build ();
 }
 
-/* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_p,
+/* Checked version of vect_gen_perm_mask_any.  Asserts can_vec_perm_const_p,
    i.e. that the target supports the pattern _for arbitrary input vectors_.  */
 
 tree
 vect_gen_perm_mask_checked (tree vectype, const vec_perm_indices &sel)
 {
-  gcc_assert (can_vec_perm_p (TYPE_MODE (vectype), false, &sel));
+  gcc_assert (can_vec_perm_const_p (TYPE_MODE (vectype), sel));
   return vect_gen_perm_mask_any (vectype, sel);
 }
 
