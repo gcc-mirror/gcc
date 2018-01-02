@@ -1,3 +1,45 @@
+2018-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83595
+	* c-parser.c (c_parser_braced_init, c_parser_initelt,
+	c_parser_conditional_expression, c_parser_cast_expression,
+	c_parser_sizeof_expression, c_parser_alignof_expression,
+	c_parser_postfix_expression, c_parser_omp_declare_reduction,
+	c_parser_transaction_expression): Use set_error () method instead
+	of setting value member to error_mark_node.
+
+2017-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-decl.c (header_for_builtin_fn): Add integer rounding _Float<N>
+	and _Float<N>X built-in functions.
+
+2017-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83550
+	* c-decl.c (finish_struct): Set DECL_SOURCE_LOCATION on
+	TYPE_STUB_DECL and call rest_of_type_compilation before processing
+	incomplete vars rather than after it.
+
+	PR debug/83547
+	* c-typeck.c (c_finish_stmt_expr): Ignore !TREE_SIDE_EFFECTS as
+	indicator of ({ }), instead skip all trailing DEBUG_BEGIN_STMTs first,
+	and consider empty ones if there are no other stmts.  For
+	-Wunused-value walk all statements before the one only followed by
+	DEBUG_BEGIN_STMTs.
+
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-parser.c (c_parser_while_statement): Add unroll parameter and
+	build ANNOTATE_EXPR if present.  Add 3rd operand to ANNOTATE_EXPR.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.
+	(c_parser_statement_after_labels): Adjust calls to above.
+	(c_parse_pragma_ivdep): New static function.
+	(c_parser_pragma_unroll): Likewise.
+	(c_parser_pragma) <PRAGMA_IVDEP>: Add support for pragma Unroll.
+	<PRAGMA_UNROLL>: New case.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (comptypes_internal, function_types_compatible_p,

@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "dumpfile.h"
+#include "calls.h"
 
 
 /* The set of hard registers in eliminables[i].from. */
@@ -945,7 +946,7 @@ df_insn_delete (rtx_insn *insn)
      In any case, we expect BB to be non-NULL at least up to register
      allocation, so disallow a non-NULL BB up to there.  Not perfect
      but better than nothing...  */
-  gcc_checking_assert (bb != NULL || DEBUG_INSN_P (insn) || reload_completed);
+  gcc_checking_assert (bb != NULL || reload_completed);
 
   df_grow_bb_info (df_scan);
   df_grow_reg_info ();
@@ -3518,7 +3519,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
 
   /* If the function has an incoming STATIC_CHAIN, it has to show up
      in the entry def set.  */
-  r = targetm.calls.static_chain (current_function_decl, true);
+  r = rtx_for_static_chain (current_function_decl, true);
   if (r && REG_P (r))
     bitmap_set_bit (entry_block_defs, REGNO (r));
 

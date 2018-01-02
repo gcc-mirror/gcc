@@ -1,3 +1,72 @@
+2018-01-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83076
+	* resolve.c (resolve_fl_derived0): Add caf_token fields for
+	allocatable and pointer scalars, when -fcoarray selected.
+	* trans-types.c (gfc_copy_dt_decls_ifequal): Copy the token
+	field as well as the backend_decl.
+	(gfc_get_derived_type): Flag GFC_FCOARRAY_LIB for module
+	derived types that are not vtypes. Components with caf_token
+	attribute are pvoid types. For a component requiring it, find
+	the caf_token field and have the component token field point to
+	its backend_decl.
+
+	PR fortran/83319
+	*trans-types.c (gfc_get_array_descriptor_base): Add the token
+	field to the descriptor even when codimen not set.
+
+2017-12-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/83548
+	* match.c (gfc_match_type_spec): Check for LOGICAL conflict in
+	type-spec versus LOGICAL intrinsic subprogram.
+
+2017-12-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/83344
+	* resolve.c (resolve_assoc_var): Don't set the constant value
+	unless the target is a constant expression.
+
+2017-12-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83567
+	* trans-expr.c (gfc_trans_assignment_1): Free parameterized
+	components of the lhs if dealloc is set.
+	*trans-decl.c (gfc_trans_deferred_vars): Do not free the
+	parameterized components of function results on leaving scope.
+
+2017_12_27  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/83092
+	* expr.c (gfc_apply_init): Check that typespec has character type
+	before using character length field.
+
+2017-12-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83540
+	* frontend-passes.c (create_var): If an array to be created
+	has unknown size and -fno-realloc-lhs is in effect,
+	return NULL.
+
+2017-12-22  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* array.c (gfc_copy_iterator): Copy unroll field.
+	* decl.c (directive_unroll): New global variable.
+	(gfc_match_gcc_unroll): New function.
+	* gfortran.h (gfc_iterator]): Add unroll field.
+	(directive_unroll): Declare:
+	* match.c (gfc_match_do): Use memset to initialize the iterator.
+	* match.h (gfc_match_gcc_unroll): New prototype.
+	* parse.c (decode_gcc_attribute): Match "unroll".
+	(parse_do_block): Set iterator's unroll.
+	(parse_executable): Diagnose misplaced unroll directive.
+	* trans-stmt.c (gfc_trans_simple_do) Annotate loop condition with
+	annot_expr_unroll_kind.
+	(gfc_trans_do): Likewise.
+	* gfortran.texi (GNU Fortran Compiler Directives): Split section into
+	subections 'ATTRIBUTES directive' and 'UNROLL directive'.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* scanner.c (preprocessor_line): Replace Yoda conditions with typical

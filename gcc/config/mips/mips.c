@@ -17613,7 +17613,7 @@ r10k_safe_address_p (rtx x, rtx_insn *insn)
 static bool
 r10k_safe_mem_expr_p (tree expr, unsigned HOST_WIDE_INT offset)
 {
-  HOST_WIDE_INT bitoffset, bitsize;
+  poly_int64 bitoffset, bitsize;
   tree inner, var_offset;
   machine_mode mode;
   int unsigned_p, reverse_p, volatile_p;
@@ -22322,7 +22322,7 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
 
 static bool
-mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+mips_truly_noop_truncation (poly_uint64 outprec, poly_uint64 inprec)
 {
   return !TARGET_64BIT || inprec <= 32 || outprec > 32;
 }

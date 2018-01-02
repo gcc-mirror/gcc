@@ -2466,7 +2466,8 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
 	  /* For plain character directives (i.e., the format string itself)
 	     but not others, point the caret at the first character that's
 	     past the end of the destination.  */
-	  dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+	  if (navail < dir.len)
+	    dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
 	}
 
       if (*dir.beg == '\0')
@@ -2594,7 +2595,8 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
       /* For plain character directives (i.e., the format string itself)
 	 but not others, point the caret at the first character that's
 	 past the end of the destination.  */
-      dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+      if (navail < dir.len)
+	dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
     }
 
   if (*dir.beg == '\0')
@@ -2933,13 +2935,15 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   if (warned && fmtres.range.min < fmtres.range.likely
       && fmtres.range.likely < fmtres.range.max)
-    {
-      inform (info.fmtloc,
-	      (1 == fmtres.range.likely
-	       ? G_("assuming directive output of %wu byte")
-	       : G_("assuming directive output of %wu bytes")),
+    /* Some languages have special plural rules even for large values,
+       but it is periodic with period of 10, 100, 1000 etc.  */
+    inform_n (info.fmtloc,
+	      fmtres.range.likely > INT_MAX
+	      ? (fmtres.range.likely % 1000000) + 1000000
+	      : fmtres.range.likely,
+	      "assuming directive output of %wu byte",
+	      "assuming directive output of %wu bytes",
 	      fmtres.range.likely);
-    }
 
   if (warned && fmtres.argmin)
     {

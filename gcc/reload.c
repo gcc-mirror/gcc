@@ -168,8 +168,8 @@ struct decomposition
   int reg_flag;		/* Nonzero if referencing a register.  */
   int safe;		/* Nonzero if this can't conflict with anything.  */
   rtx base;		/* Base address for MEM.  */
-  HOST_WIDE_INT start;	/* Starting offset or register number.  */
-  HOST_WIDE_INT end;	/* Ending offset or register number.  */
+  poly_int64_pod start;	/* Starting offset or register number.  */
+  poly_int64_pod end;	/* Ending offset or register number.  */
 };
 
 /* Save MEMs needed to copy from one class of registers to another.  One MEM
@@ -278,7 +278,7 @@ static void find_reloads_address_part (rtx, rtx *, enum reg_class,
 static rtx find_reloads_subreg_address (rtx, int, enum reload_type,
 					int, rtx_insn *, int *);
 static void copy_replacements_1 (rtx *, rtx *, int);
-static int find_inc_amount (rtx, rtx);
+static poly_int64 find_inc_amount (rtx, rtx);
 static int refers_to_mem_for_reload_p (rtx);
 static int refers_to_regno_for_reload_p (unsigned int, unsigned int,
 					 rtx, rtx *);
@@ -1772,7 +1772,7 @@ combine_reloads (void)
 	&& (ira_reg_class_max_nregs [(int)rld[i].rclass][(int) rld[i].inmode]
 	    == ira_reg_class_max_nregs [(int) rld[output_reload].rclass]
 				       [(int) rld[output_reload].outmode])
-	&& rld[i].inc == 0
+	&& known_eq (rld[i].inc, 0)
 	&& rld[i].reg_rtx == 0
 	/* Don't combine two reloads with different secondary
 	   memory locations.  */
@@ -2307,6 +2307,11 @@ operands_match_p (rtx x, rtx y)
 	    return 0;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return 0;
+	  break;
+
 	case 'e':
 	  val = operands_match_p (XEXP (x, i), XEXP (y, i));
 	  if (val == 0)
@@ -2355,7 +2360,7 @@ static struct decomposition
 decompose (rtx x)
 {
   struct decomposition val;
-  int all_const = 0;
+  int all_const = 0, regno;
 
   memset (&val, 0, sizeof (val));
 
@@ -2453,29 +2458,33 @@ decompose (rtx x)
 
     case REG:
       val.reg_flag = 1;
-      val.start = true_regnum (x);
-      if (val.start < 0 || val.start >= FIRST_PSEUDO_REGISTER)
+      regno = true_regnum (x);
+      if (regno < 0 || regno >= FIRST_PSEUDO_REGISTER)
 	{
 	  /* A pseudo with no hard reg.  */
 	  val.start = REGNO (x);
 	  val.end = val.start + 1;
 	}
       else
-	/* A hard reg.  */
-	val.end = end_hard_regno (GET_MODE (x), val.start);
+	{
+	  /* A hard reg.  */
+	  val.start = regno;
+	  val.end = end_hard_regno (GET_MODE (x), regno);
+	}
       break;
 
     case SUBREG:
       if (!REG_P (SUBREG_REG (x)))
 	/* This could be more precise, but it's good enough.  */
 	return decompose (SUBREG_REG (x));
-      val.reg_flag = 1;
-      val.start = true_regnum (x);
-      if (val.start < 0 || val.start >= FIRST_PSEUDO_REGISTER)
+      regno = true_regnum (x);
+      if (regno < 0 || regno >= FIRST_PSEUDO_REGISTER)
 	return decompose (SUBREG_REG (x));
-      else
-	/* A hard reg.  */
-	val.end = val.start + subreg_nregs (x);
+
+      /* A hard reg.  */
+      val.reg_flag = 1;
+      val.start = regno;
+      val.end = regno + subreg_nregs (x);
       break;
 
     case SCRATCH:
@@ -2500,7 +2509,11 @@ immune_p (rtx x, rtx y, struct decomposition ydata)
   struct decomposition xdata;
 
   if (ydata.reg_flag)
-    return !refers_to_regno_for_reload_p (ydata.start, ydata.end, x, (rtx*) 0);
+    /* In this case the decomposition structure contains register
+       numbers rather than byte offsets.  */
+    return !refers_to_regno_for_reload_p (ydata.start.to_constant (),
+					  ydata.end.to_constant (),
+					  x, (rtx *) 0);
   if (ydata.safe)
     return 1;
 
@@ -2531,7 +2544,7 @@ immune_p (rtx x, rtx y, struct decomposition ydata)
       return 0;
     }
 
-  return (xdata.start >= ydata.end || ydata.start >= xdata.end);
+  return known_ge (xdata.start, ydata.end) || known_ge (ydata.start, xdata.end);
 }
 
 /* Similar, but calls decompose.  */
@@ -6095,7 +6108,7 @@ find_reloads_subreg_address (rtx x, int opnum, enum reload_type type,
   int regno = REGNO (SUBREG_REG (x));
   int reloaded = 0;
   rtx tem, orig;
-  int offset;
+  poly_int64 offset;
 
   gcc_assert (reg_equiv_memory_loc (regno) != 0);
 
@@ -6142,7 +6155,7 @@ find_reloads_subreg_address (rtx x, int opnum, enum reload_type type,
 				   XEXP (tem, 0), &XEXP (tem, 0),
 				   opnum, type, ind_levels, insn);
   /* ??? Do we need to handle nonzero offsets somehow?  */
-  if (!offset && !rtx_equal_p (tem, orig))
+  if (known_eq (offset, 0) && !rtx_equal_p (tem, orig))
     push_reg_equiv_alt_mem (regno, tem);
 
   /* For some processors an address may be valid in the original mode but
@@ -7057,7 +7070,7 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
    within X, and return the amount INCED is incremented or decremented by.
    The value is always positive.  */
 
-static int
+static poly_int64
 find_inc_amount (rtx x, rtx inced)
 {
   enum rtx_code code = GET_CODE (x);
@@ -7090,8 +7103,8 @@ find_inc_amount (rtx x, rtx inced)
     {
       if (fmt[i] == 'e')
 	{
-	  int tem = find_inc_amount (XEXP (x, i), inced);
-	  if (tem != 0)
+	  poly_int64 tem = find_inc_amount (XEXP (x, i), inced);
+	  if (maybe_ne (tem, 0))
 	    return tem;
 	}
       if (fmt[i] == 'E')
@@ -7099,8 +7112,8 @@ find_inc_amount (rtx x, rtx inced)
 	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    {
-	      int tem = find_inc_amount (XVECEXP (x, i, j), inced);
-	      if (tem != 0)
+	      poly_int64 tem = find_inc_amount (XVECEXP (x, i, j), inced);
+	      if (maybe_ne (tem, 0))
 		return tem;
 	    }
 	}
@@ -7261,8 +7274,11 @@ debug_reload_to_stream (FILE *f)
       if (rld[r].nongroup)
 	fprintf (f, ", nongroup");
 
-      if (rld[r].inc != 0)
-	fprintf (f, ", inc by %d", rld[r].inc);
+      if (maybe_ne (rld[r].inc, 0))
+	{
+	  fprintf (f, ", inc by ");
+	  print_dec (rld[r].inc, f, SIGNED);
+	}
 
       if (rld[r].nocombine)
 	fprintf (f, ", can't combine");

@@ -970,17 +970,19 @@ restructure_reference (tree *pbase, tree *poffset, widest_int *pindex,
   widest_int index = *pindex;
   tree mult_op0, t1, t2, type;
   widest_int c1, c2, c3, c4, c5;
+  offset_int mem_offset;
 
   if (!base
       || !offset
       || TREE_CODE (base) != MEM_REF
+      || !mem_ref_offset (base).is_constant (&mem_offset)
       || TREE_CODE (offset) != MULT_EXPR
       || TREE_CODE (TREE_OPERAND (offset, 1)) != INTEGER_CST
       || wi::umod_floor (index, BITS_PER_UNIT) != 0)
     return false;
 
   t1 = TREE_OPERAND (base, 0);
-  c1 = widest_int::from (mem_ref_offset (base), SIGNED);
+  c1 = widest_int::from (mem_offset, SIGNED);
   type = TREE_TYPE (TREE_OPERAND (base, 1));
 
   mult_op0 = TREE_OPERAND (offset, 0);
@@ -1031,7 +1033,7 @@ static void
 slsr_process_ref (gimple *gs)
 {
   tree ref_expr, base, offset, type;
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   machine_mode mode;
   int unsignedp, reversep, volatilep;
   slsr_cand_t c;
@@ -1049,9 +1051,10 @@ slsr_process_ref (gimple *gs)
 
   base = get_inner_reference (ref_expr, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &reversep, &volatilep);
-  if (reversep)
+  HOST_WIDE_INT cbitpos;
+  if (reversep || !bitpos.is_constant (&cbitpos))
     return;
-  widest_int index = bitpos;
+  widest_int index = cbitpos;
 
   if (!restructure_reference (&base, &offset, &index, &type))
     return;
@@ -1258,7 +1261,7 @@ slsr_process_mul (gimple *gs, tree rhs1, tree rhs2, bool speed)
       c2 = create_mul_ssa_cand (gs, rhs2, rhs1, speed);
       c->next_interp = c2->cand_num;
     }
-  else
+  else if (TREE_CODE (rhs2) == INTEGER_CST)
     {
       /* Record an interpretation for the multiply-immediate.  */
       c = create_mul_imm_cand (gs, rhs1, rhs2, speed);
@@ -1499,7 +1502,7 @@ slsr_process_add (gimple *gs, tree rhs1, tree rhs2, bool speed)
 	    add_cand_for_stmt (gs, c2);
 	}
     }
-  else
+  else if (TREE_CODE (rhs2) == INTEGER_CST)
     {
       /* Record an interpretation for the add-immediate.  */
       widest_int index = wi::to_widest (rhs2);

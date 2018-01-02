@@ -795,6 +795,30 @@ pp_clear_state (pretty_printer *pp)
   pp_indentation (pp) = 0;
 }
 
+/* Print X to PP in decimal.  */
+template<unsigned int N, typename T>
+void
+pp_wide_integer (pretty_printer *pp, const poly_int_pod<N, T> &x)
+{
+  if (x.is_constant ())
+    pp_wide_integer (pp, x.coeffs[0]);
+  else
+    {
+      pp_left_bracket (pp);
+      for (unsigned int i = 0; i < N; ++i)
+	{
+	  if (i != 0)
+	    pp_comma (pp);
+	  pp_wide_integer (pp, x.coeffs[i]);
+	}
+      pp_right_bracket (pp);
+    }
+}
+
+template void pp_wide_integer (pretty_printer *, const poly_uint16_pod &);
+template void pp_wide_integer (pretty_printer *, const poly_int64_pod &);
+template void pp_wide_integer (pretty_printer *, const poly_uint64_pod &);
+
 /* Flush the formatted text of PRETTY-PRINTER onto the attached stream.  */
 void
 pp_write_text_to_stream (pretty_printer *pp)

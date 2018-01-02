@@ -1,3 +1,2102 @@
+2018-01-02  Richard Biener  <rguenther@suse.de>
+
+	* ipa-inline.c (big_speedup_p): Fix expression.
+
+2018-01-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	* config/i386/x86-tune-costs.h: Increase cost of integer load costs
+	for generic 4->6.
+
+2018-01-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	Generic tuning.
+	* x86-tune-costs.h (generic_cost): Reduce cost of FDIV 20->17,
+	cost of sqrt 20->14, DIVSS 18->13, DIVSD 32->17, SQRtSS 30->14
+	and SQRTsD 58->18, cond_not_taken_branch_cost. 2->1. Increase
+	cond_taken_branch_cost 3->4.
+
+2018-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83581
+	* tree-loop-distribution.c (pass_loop_distribution::execute): Return
+	TODO_cleanup_cfg if any changes have been made.
+
+	PR middle-end/83608
+	* expr.c (store_expr_with_bounds): Use simplify_gen_subreg instead of
+	convert_modes if target mode has the right side, but different mode
+	class.
+
+	PR middle-end/83609
+	* expr.c (expand_assignment): Fix up a typo in simplify_gen_subreg
+	last argument when extracting from CONCAT.  If either from_real or
+	from_imag is NULL, use expansion through memory.  If result is not
+	a CONCAT and simplify_gen_subreg fails, try to simplify_gen_subreg
+	the parts directly to inner mode, if even that fails, use expansion
+	through memory.
+
+	PR middle-end/83623
+	* expmed.c (expand_shift_1): For 2-byte rotates by BITS_PER_UNIT,
+	check for bswap in mode rather than HImode and use that in expand_unop
+	too.
+
+2017-12-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83536
+	* config/i386/i386.c (ix86_attribute_table): Remove excess
+	initializer for "shared" attribute.
+
+2017-12-30  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/83046
+	* omp-expand.c (expand_omp_target): If in_lto_p, mark offload_funcs with
+	DECL_PRESERVE_P.
+	* lto-streamer-out.c (prune_offload_funcs): New function.  Remove
+	offload_funcs entries that no longer have a corresponding cgraph_node.
+	Mark the remaining ones as DECL_PRESERVE_P.
+	(output_lto): Call prune_offload_funcs.
+
+2017-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (vgf2p8affineinvqb_<mode><mask_name>,
+	vgf2p8affineqb_<mode><mask_name>, vgf2p8mulb_<mode><mask_name>,
+	vpshrd_<mode><mask_name>, vpshld_<mode><mask_name>,
+	vpshrdv_<mode>, vpshrdv_<mode>_mask, vpshrdv_<mode>_maskz,
+	vpshrdv_<mode>_maskz_1, vpshldv_<mode>, vpshldv_<mode>_mask,
+	vpshldv_<mode>_maskz, vpshldv_<mode>_maskz_1, vpdpbusd_<mode>,
+	vpdpbusd_<mode>_mask, vpdpbusd_<mode>_maskz, vpdpbusd_<mode>_maskz_1,
+	vpdpbusds_<mode>, vpdpbusds_<mode>_mask, vpdpbusds_<mode>_maskz,
+	vpdpbusds_<mode>_maskz_1, vpdpwssd_<mode>, vpdpwssd_<mode>_mask,
+	vpdpwssd_<mode>_maskz, vpdpwssd_<mode>_maskz_1, vpdpwssds_<mode>,
+	vpdpwssds_<mode>_mask, vpdpwssds_<mode>_maskz,
+	vpdpwssds_<mode>_maskz_1, vaesdec_<mode>, vaesdeclast_<mode>,
+	vaesenc_<mode>, vpclmulqdq_<mode>,
+	avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>): Formatting fixes.
+
+2017-12-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* builtins.def: (_Float<N> and _Float<N>X BUILT_IN_CEIL): Add
+	_Float<N> and _Float<N>X variants for rounding built-in
+	functions.
+	(_Float<N> and _Float<N>X BUILT_IN_FLOOR): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_NEARBYINT): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_RINT): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_ROUND): Likewise.
+	(_Float<N> and _Float<N>X BUILT_IN_TRUNC): Likewise.
+	* builtins.c (mathfn_built_in_2): Likewise.
+	* internal-fn.def (CEIL): Likewise.
+	(FLOOR): Likewise.
+	(NEARBYINT): Likewise.
+	(RINT): Likewise.
+	(ROUND): Likewise.
+	(TRUNC): Likewise.
+	* convert.c (convert_to_integer_1): Likewise.
+	* fold-const.c (tree_call_nonnegative_warnv_p): Likewise.
+	(integer_valued_real_call_p): Likewise.
+	* fold-const-call.c (fold_const_call_ss): Likewise.
+	* gencfn-macros.c (print_case_cfn): Change CFN and operator
+	printers to take a const char * suffix instead of a bool.
+	(print_define_operator_list): Likewise.
+	(fltall_suffixes): New list of suffixes, that include the
+	traditional suffixes as well as all of the _Float<N> and
+	_Float<N>X suffixes.
+	(main): For _Float<N> and _Float<N>X functions, emit both
+	<name>_FN and <name>_ALL variants.  The <macro>_FN variant only
+	has the _Float<N> and _Float<N>X case names or operators.  The
+	<name>_ALL variant has both the traditional and the
+	_Float<N>/_Float<N>X case names or operators.
+	* match.pd (COPYSIGN optimizations): Provide optimizations for
+	_Float<N> and _Float<N>X types where possible.
+	(MIN/MAX optimizations): Likewise.
+	(sqrt optimizations): Likewise.
+	(rounding optimizations): Likewise.
+
+2017-12-28  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/powerpcspe/powerpcspe.md (ieee_128bit_negative_zero): Use
+	gen_int_mode rather than GEN_INT.
+	* config/rs6000/rs6000.md (ieee_128bit_negative_zero): Likewise.
+
+2017-12-28  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* emit-rtl.c (gen_const_vec_series): Use valid_for_const_vector_p
+	instead of CONSTANT_P.
+	(gen_vec_series): Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+
+2017-12-28  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md (ashrdi3_const1, lshrdi3_const1): Add
+	CC_STATUS_INIT.
+
+2017-12-27  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/aarch64-simd.md (aarch64_ld1x2<VQ:mode>): New.
+	(aarch64_ld1x2<VDC:mode>): Likewise.
+	(aarch64_simd_ld1<mode>_x2): Likewise.
+	(aarch64_simd_ld1<mode>_x2): Likewise.
+	* config/aarch64/arm_neon.h (vld1_u8_x2): New.
+	(vld1_s8_x2): Likewise.
+	(vld1_u16_x2): Likewise.
+	(vld1_s16_x2): Likewise.
+	(vld1_u32_x2): Likewise.
+	(vld1_s32_x2): Likewise.
+	(vld1_u64_x2): Likewise.
+	(vld1_s64_x2): Likewise.
+	(vld1_f16_x2): Likewise.
+	(vld1_f32_x2): Likewise.
+	(vld1_f64_x2): Likewise.
+	(vld1_p8_x2): Likewise.
+	(vld1_p16_x2): Likewise.
+	(vld1_p64_x2): Likewise.
+	(vld1q_u8_x2): Likewise.
+	(vld1q_s8_x2): Likewise.
+	(vld1q_u16_x2): Likewise.
+	(vld1q_s16_x2): Likewise.
+	(vld1q_u32_x2): Likewise.
+	(vld1q_s32_x2): Likewise.
+	(vld1q_u64_x2): Likewise.
+	(vld1q_s64_x2): Likewise.
+	(vld1q_f16_x2): Likewise.
+	(vld1q_f32_x2): Likewise.
+	(vld1q_f64_x2): Likewise.
+	(vld1q_p8_x2): Likewise.
+	(vld1q_p16_x2): Likewise.
+	(vld1q_p64_x2): Likewise.
+
+2017-12-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/83552
+	* tree-ssa-strlen.c (fold_strstr_to_strncmp): Assign result
+	of get_string_lenth to a SSA_NAME if not a GIMPLE value.
+
+2017-12-27  Tom de Vries  <tom@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_option_override): Disable
+	-gstatement-frontiers.
+
+2017-12-26  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/83513
+	* sel-sched.c (sel_rank_for_schedule): Order by non-zero usefulness
+	before priority comparison.
+
+2017-12-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83488
+	* config/i386/i386.opt (-mavx512vpopcntdq, -mmavx512bitalg): Move from
+	ix86_isa_flags2 to ix86_isa_flags.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Test
+	OPTION_MASK_ISA_AVX512BITALG and OPTION_MASK_ISA_AVX512VPOPCNTDQ in
+	isa_flags rather than isa_flags2.
+	* config/i386/i386.c (ix86_target_string): Move -mavx512vpopcntdq
+	and -mavx512bitalg from isa2_opts to isa_opts.
+	(ix86_option_override_internal): Test OPTION_MASK_ISA_AVX512VPOPCNTDQ
+	in x_ix86_isa_flags_explicit rather than x_ix86_isa_flags2_explicit
+	and set it in x_ix86_isa_flags rather than x_ix86_isa_flags2.
+	Formatting fixes.
+	(def_builtin): Treat OPTION_MASK_ISA_AVX512BW or
+	OPTION_MASK_ISA_AVX512F ored with another option similarly to
+	OPTION_MASK_ISA_AVX512VL.  Even for OPTION_MASK_ISA_AVX512VL don't
+	clear it if mask is just OPTION_MASK_ISA_AVX512VL itself.
+	(ix86_expand_builtin): Don't handle OPTION_MASK_ISA_GFNI and
+	OPTION_MASK_ISA_VPCLMULQDQ specially, instead handle
+	OPTION_MASK_ISA_AVX512BW and OPTION_MASK_ISA_AVX512F that way.
+	* config/i386/i386-builtin.def: Move AVX512VPOPCNTDQ and AVX512BITALG
+	builtins from bdesc_args2 to bdesc_args section.
+	(__builtin_ia32_compressstoreuqi512_mask,
+	__builtin_ia32_compressstoreuhi512_mask,
+	__builtin_ia32_compressstoreuqi256_mask,
+	__builtin_ia32_expandloadqi512_mask,
+	__builtin_ia32_expandloadqi512_maskz,
+	__builtin_ia32_expandloadhi512_mask,
+	__builtin_ia32_expandloadhi512_maskz,
+	__builtin_ia32_compressqi512_mask, __builtin_ia32_compresshi512_mask,
+	__builtin_ia32_compressqi256_mask, __builtin_ia32_expandqi512_mask,
+	__builtin_ia32_expandqi512_maskz, __builtin_ia32_expandhi512_mask,
+	__builtin_ia32_expandhi512_maskz, __builtin_ia32_expandqi256_mask,
+	__builtin_ia32_expandqi256_maskz, __builtin_ia32_vpshrd_v32hi_mask,
+	__builtin_ia32_vpshld_v32hi_mask, __builtin_ia32_vpshrdv_v32hi_mask,
+	__builtin_ia32_vpshrdv_v32hi_maskz, __builtin_ia32_vpshldv_v32hi_mask,
+	__builtin_ia32_vpshldv_v32hi_maskz,
+	__builtin_ia32_vpopcountb_v64qi_mask,
+	__builtin_ia32_vpopcountw_v32hi_mask,
+	__builtin_ia32_vpshufbitqmb512_mask,
+	__builtin_ia32_vpshufbitqmb256_mask): Add
+	" | OPTION_MASK_ISA_AVX512BW".
+	(__builtin_ia32_expandloadqi256_mask,
+	__builtin_ia32_expandloadqi256_maskz,
+	__builtin_ia32_vpopcountb_v32qi_mask): Add
+	" | OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_AVX512BW".
+	(__builtin_ia32_expandloadhi256_mask,
+	__builtin_ia32_expandloadhi256_maskz,
+	__builtin_ia32_expandloadqi128_mask,
+	__builtin_ia32_expandloadqi128_maskz,
+	__builtin_ia32_expandloadhi128_mask,
+	__builtin_ia32_expandloadhi128_maskz,
+	__builtin_ia32_vpshrd_v16hi, __builtin_ia32_vpshrd_v16hi_mask,
+	__builtin_ia32_vpshrd_v8hi, __builtin_ia32_vpshrd_v8hi_mask,
+	__builtin_ia32_vpshrd_v8si, __builtin_ia32_vpshrd_v8si_mask,
+	__builtin_ia32_vpshrd_v4si, __builtin_ia32_vpshrd_v4si_mask,
+	__builtin_ia32_vpshrd_v4di, __builtin_ia32_vpshrd_v4di_mask,
+	__builtin_ia32_vpshrd_v2di, __builtin_ia32_vpshrd_v2di_mask,
+	__builtin_ia32_vpshld_v16hi, __builtin_ia32_vpshld_v16hi_mask,
+	__builtin_ia32_vpshld_v8hi, __builtin_ia32_vpshld_v8hi_mask,
+	__builtin_ia32_vpshld_v8si, __builtin_ia32_vpshld_v8si_mask,
+	__builtin_ia32_vpshld_v4si, __builtin_ia32_vpshld_v4si_mask,
+	__builtin_ia32_vpshld_v4di, __builtin_ia32_vpshld_v4di_mask,
+	__builtin_ia32_vpshld_v2di, __builtin_ia32_vpshld_v2di_mask,
+	__builtin_ia32_vpshrdv_v16hi, __builtin_ia32_vpshrdv_v16hi_mask,
+	__builtin_ia32_vpshrdv_v16hi_maskz, __builtin_ia32_vpshrdv_v8hi,
+	__builtin_ia32_vpshrdv_v8hi_mask, __builtin_ia32_vpshrdv_v8hi_maskz,
+	__builtin_ia32_vpshrdv_v8si, __builtin_ia32_vpshrdv_v8si_mask,
+	__builtin_ia32_vpshrdv_v8si_maskz, __builtin_ia32_vpshrdv_v4si,
+	__builtin_ia32_vpshrdv_v4si_mask, __builtin_ia32_vpshrdv_v4si_maskz,
+	__builtin_ia32_vpshrdv_v4di, __builtin_ia32_vpshrdv_v4di_mask,
+	__builtin_ia32_vpshrdv_v4di_maskz, __builtin_ia32_vpshrdv_v2di,
+	__builtin_ia32_vpshrdv_v2di_mask, __builtin_ia32_vpshrdv_v2di_maskz,
+	__builtin_ia32_vpshldv_v16hi, __builtin_ia32_vpshldv_v16hi_mask,
+	__builtin_ia32_vpshldv_v16hi_maskz, __builtin_ia32_vpshldv_v8hi,
+	__builtin_ia32_vpshldv_v8hi_mask, __builtin_ia32_vpshldv_v8hi_maskz,
+	__builtin_ia32_vpshldv_v8si, __builtin_ia32_vpshldv_v8si_mask,
+	__builtin_ia32_vpshldv_v8si_maskz, __builtin_ia32_vpshldv_v4si,
+	__builtin_ia32_vpshldv_v4si_mask, __builtin_ia32_vpshldv_v4si_maskz,
+	__builtin_ia32_vpshldv_v4di, __builtin_ia32_vpshldv_v4di_mask,
+	__builtin_ia32_vpshldv_v4di_maskz, __builtin_ia32_vpshldv_v2di,
+	__builtin_ia32_vpshldv_v2di_mask, __builtin_ia32_vpshldv_v2di_maskz,
+	__builtin_ia32_vpopcountb_v32qi, __builtin_ia32_vpopcountb_v16qi,
+	__builtin_ia32_vpopcountb_v16qi_mask, __builtin_ia32_vpopcountw_v16hi,
+	__builtin_ia32_vpopcountw_v16hi_mask, __builtin_ia32_vpopcountw_v8hi,
+	__builtin_ia32_vpopcountw_v8hi_mask): Add
+	" | OPTION_MASK_ISA_AVX512VL".
+	* config/i386/avx512vbmi2intrin.h (_mm512_shrdi_epi16,
+	_mm512_shrdi_epi32, _mm512_mask_shrdi_epi32, _mm512_maskz_shrdi_epi32,
+	_mm512_shrdi_epi64, _mm512_mask_shrdi_epi64, _mm512_maskz_shrdi_epi64,
+	_mm512_shldi_epi16, _mm512_shldi_epi32, _mm512_mask_shldi_epi32,
+	_mm512_maskz_shldi_epi32, _mm512_shldi_epi64, _mm512_mask_shldi_epi64,
+	_mm512_maskz_shldi_epi64, _mm512_shrdv_epi16, _mm512_shrdv_epi32,
+	_mm512_mask_shrdv_epi32, _mm512_maskz_shrdv_epi32, _mm512_shrdv_epi64,
+	_mm512_mask_shrdv_epi64, _mm512_maskz_shrdv_epi64, _mm512_shldv_epi16,
+	_mm512_shldv_epi32, _mm512_mask_shldv_epi32, _mm512_maskz_shldv_epi32,
+	_mm512_shldv_epi64, _mm512_mask_shldv_epi64,
+	_mm512_maskz_shldv_epi64): Don't require avx512bw for these intrinsics.
+	* config/i386/avx512bitalgintrin.h (_mm_bitshuffle_epi64_mask,
+	_mm_mask_bitshuffle_epi64_mask): Likewise.
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX512VPOPCNTDQ_SET,
+	OPTION_MASK_ISA_AVX512BITALG_SET): Or in OPTION_MASK_ISA_AVX512F_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET): Or in
+	OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET and
+	OPTION_MASK_ISA_AVX512BITALG_UNSET.
+	(OPTION_MASK_ISA2_AVX512F_UNSET,
+	OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET): Define.
+	(ix86_handle_option): For -mno-general-regs-only, clear from
+	ix86_isa_flags2 OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET rather than
+	just OPTION_MASK_ISA_MPX.  For -mno-sse{,2,3,4,4.1,4.2,avx,avx2} and
+	-mno-ssse3 clear OPTION_MASK_ISA2_AVX512F_UNSET bits from
+	ix86_isa_flags2.  For -mno-avx512f likewise, instead of masking
+	individually listed ISAs.  For -m{,no-}avx512{vpopcntdq,bitalg} adjust
+	for moving from ix86_isa_flags2 to ix86_isa_flags.
+
+2017-12-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83553
+	* fold-const.c (struct contains_label_data): New type.
+	(contains_label_1): Return non-NULL even for CASE_LABEL_EXPR, unless
+	inside of a SWITCH_BODY seen during the walk.
+	(contains_label_p): Use walk_tree instead of
+	walk_tree_without_duplicates, prepare data for contains_label_1 and
+	provide own pset.
+
+2017-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83547
+	* tree-iterator.c (alloc_stmt_list): Start with cleared
+	TREE_SIDE_EFFECTS regardless whether a new STATEMENT_LIST is allocated
+	or old one reused.
+
+	PR target/83488
+	* config/i386/avx512vnniintrin.h: Don't check for __AVX512F__ nor
+	enable avx512f explicitly in #pragma GCC target.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpdpbusd_v8si,
+	__builtin_ia32_vpdpbusd_v8si_mask, __builtin_ia32_vpdpbusd_v8si_maskz,
+	__builtin_ia32_vpdpbusd_v4si, __builtin_ia32_vpdpbusd_v4si_mask,
+	__builtin_ia32_vpdpbusd_v4si_maskz, __builtin_ia32_vpdpbusds_v8si,
+	__builtin_ia32_vpdpbusds_v8si_mask,
+	__builtin_ia32_vpdpbusds_v8si_maskz, __builtin_ia32_vpdpbusds_v4si,
+	__builtin_ia32_vpdpbusds_v4si_mask,
+	__builtin_ia32_vpdpbusds_v4si_maskz, __builtin_ia32_vpdpwssd_v8si,
+	__builtin_ia32_vpdpwssd_v8si_mask, __builtin_ia32_vpdpwssd_v8si_maskz,
+	__builtin_ia32_vpdpwssd_v4si, __builtin_ia32_vpdpwssd_v4si_mask,
+	__builtin_ia32_vpdpwssd_v4si_maskz, __builtin_ia32_vpdpwssds_v8si,
+	__builtin_ia32_vpdpwssds_v8si_mask,
+	__builtin_ia32_vpdpwssds_v8si_maskz, __builtin_ia32_vpdpwssds_v4si,
+	__builtin_ia32_vpdpwssds_v4si_mask,
+	__builtin_ia32_vpdpwssds_v4si_maskz): Use
+	OPTION_MASK_ISA_AVX512VNNI | OPTION_MASK_ISA_AVX512VL instead of
+	just OPTION_MASK_ISA_AVX512VNNI.
+
+2017-12-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/82027
+	* lto-cgraph.c (output_cgraph_opt_summary_p): Also check former
+	clones.
+
+2017-12-22  Julia Koval  <julia.koval@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512BITALG_SET,
+	OPTION_MASK_ISA_AVX512BITALG_UNSET): New.
+	(ix86_handle_option): Handle -mavx512bitalg, fix 4VNNIW formatting.
+	* config.gcc: Add avx512vpopcntdqvlintrin.h and avx512bitalgintrin.h.
+	* config/i386/avx512bitalgintrin.h (_mm512_popcnt_epi8, _mm512_popcnt_epi16,
+	_mm512_mask_popcnt_epi8, _mm512_maskz_popcnt_epi8, _mm512_mask_popcnt_epi16,
+	_mm512_maskz_popcnt_epi16, _mm512_bitshuffle_epi64_mask, _mm256_popcnt_epi8,
+	_mm512_mask_bitshuffle_epi64_mask, _mm256_mask_popcnt_epi8, _mm_popcnt_epi8,
+	_mm256_maskz_popcnt_epi8, _mm_bitshuffle_epi64_mask, _mm256_popcnt_epi16,
+	_mm_mask_bitshuffle_epi64_mask, _mm256_bitshuffle_epi64_mask,
+	_mm256_mask_bitshuffle_epi64_mask, _mm_popcnt_epi16, _mm_maskz_popcnt_epi8,
+	_mm256_mask_popcnt_epi16, _mm256_maskz_popcnt_epi16, _mm_mask_popcnt_epi8,
+	_mm_mask_popcnt_epi16, _mm_maskz_popcnt_epi16): New intrinsics.
+	* config/i386/avx512vpopcntdqvlintrin.h (_mm_popcnt_epi32, _mm_popcnt_epi64,
+	_mm_mask_popcnt_epi32, _mm_maskz_popcnt_epi32, _mm256_popcnt_epi32,
+	_mm256_mask_popcnt_epi32, _mm256_maskz_popcnt_epi32, _mm_mask_popcnt_epi64,
+	_mm_maskz_popcnt_epi64, _mm256_popcnt_epi64, _mm256_mask_popcnt_epi64,
+	_mm256_maskz_popcnt_epi64): New intrinsics.
+	* config/i386/cpuid.h (bit_AVX512BITALG): New bit.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect -mavx512bitalg.
+	* config/i386/i386-builtin-types.def (V64QI_FTYPE_V64QI, V64QI_FTYPE_V64QI,
+	V4DI_FTYPE_V4DI, UHI_FTYPE_V2DI_V2DI_UHI, USI_FTYPE_V4DI_V4DI_USI,
+	V4SI_FTYPE_V4SI_V4SI_UHI, V8SI_FTYPE_V8SI_V8SI_UHI): New types.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpopcountq_v4di,
+	__builtin_ia32_vpopcountq_v4di_mask, __builtin_ia32_vpopcountq_v2di,
+	__builtin_ia32_vpopcountq_v2di_mask, __builtin_ia32_vpopcountd_v4si,
+	__builtin_ia32_vpopcountd_v4si_mask, __builtin_ia32_vpopcountd_v8si,
+	__builtin_ia32_vpopcountd_v8si_mask, __builtin_ia32_vpopcountb_v64qi,
+	__builtin_ia32_vpopcountb_v64qi_mask, __builtin_ia32_vpopcountb_v32qi,
+	__builtin_ia32_vpopcountb_v32qi_mask, __builtin_ia32_vpopcountb_v16qi,
+	__builtin_ia32_vpopcountb_v16qi_mask, __builtin_ia32_vpopcountw_v32hi,
+	__builtin_ia32_vpopcountw_v32hi_mask, __builtin_ia32_vpopcountw_v16hi,
+	__builtin_ia32_vpopcountw_v16hi_mask, __builtin_ia32_vpopcountw_v8hi,
+	__builtin_ia32_vpopcountw_v8hi_mask, __builtin_ia32_vpshufbitqmb128_mask,
+	__builtin_ia32_vpshufbitqmb256_mask,
+	__builtin_ia32_vpshufbitqmb512_mask): New builtins.
+	* config/i386/i386-c.c (__AVX512BITALG__): New.
+	* config/i386/i386.c (isa2_opts): Add -mavx512bitalg.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_expand_args_builtin): Handle new types.
+	* config/i386/i386.h (TARGET_AVX512BITALG, TARGET_AVX512BITALG_P): New.
+	* config/i386/i386.opt: Add -mavx512bitalg.
+	* config/i386/immintrin.h: Add avx512vpopcntdqvlintrin.h and
+	avx512bitalgintrin.h.
+	* config/i386/sse.md (VI48_AVX512VLBW): New iterator.
+	(vpopcount<mode><mask_name>): Add more types.
+	(avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>): New.
+	* doc/invoke.texi: Add -mavx512bitalg and -mavx512vpopcntdq.
+
+2017-12-22  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VNNI_SET):
+	Or in OPTION_MASK_ISA_AVX512F_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET): Or in
+	OPTION_MASK_ISA_AVX512VNNI_UNSET.
+	(ix86_handle_option): Adjust for
+	OPTION_MASK_ISA_AVX512VNNI_*SET being in ix86_isa_flags.
+	* config/i386/i386-builtin.def: Move VNNI builtins from ARGS2
+	section to ARGS.
+	* config/i386/i386-c.c: Check for OPTION_MASK_ISA_AVX512VNNI in
+	isa_flag instead of isa_flag2.
+	* config/i386/i386.c (ix86_target_string): Move -mavx512vnni from
+	isa_opts2 to isa_opts.
+	* config/i386/i386.opt (mavx512vnni): Move from ix86_isa_flags2
+	to ix86_isa_flags.
+
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/extend.texi (Loop-Specific Pragmas): Document pragma GCC unroll.
+
+2017-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83487
+	* config/i386/i386.c (ix86_function_arg_boundary): Return
+	PARM_BOUNDARY for TYPE_EMPTY_P types.
+
+	PR c/83448
+	* gimple-ssa-sprintf.c (maybe_warn): Don't call set_caret_index
+	if navail is >= dir.len.
+
+2017-12-21  Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/t-aarch64-linux (MULTILIB_OSDIRNAMES): Fix
+	triplet for ilp32.
+
+2017-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/80747
+	PR rtl-optimization/83512
+	* cfgrtl.c (force_nonfallthru_and_redirect): When splitting
+	succ edge from ENTRY, copy partition from e->dest to the newly
+	created bb.
+	* bb-reorder.c (reorder_basic_blocks_simple): If last_tail is
+	ENTRY, use BB_PARTITION of its successor block as current_partition.
+	Don't copy partition when splitting succ edge from ENTRY.
+
+	PR tree-optimization/83523
+	* tree-ssa-math-opts.c (is_widening_mult_p): Return false if
+	for INTEGER_TYPE TYPE_OVERFLOW_TRAPS.
+	(convert_mult_to_fma): Likewise.
+
+	PR tree-optimization/83521
+	* tree-ssa-phiopt.c (factor_out_conditional_conversion): Use
+	gimple_build_assign without code on result of
+	fold_build1 (VIEW_CONVERT_EXPR, ...), as it might not create
+	a VIEW_CONVERT_EXPR.
+
+2017-12-21  Andrew Pinski  <apinski@cavium.com>
+	    Steve Ellcey  <sellcey@cavium.com>
+
+	* config/aarch64/t-aarch64-linux (MULTILIB_OSDIRNAMES): Handle
+	multi-arch for ilp32.
+
+2017-12-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83467
+	* config/i386/i386.md (*ashl<mode>3_mask): Add operand
+	constraints to operand 2.
+	(*ashl<mode>3_mask_1): Ditto.
+	(*<shift_insn><mode>3_mask): Ditto.
+	(*<shift_insn><mode>3_mask_1): Ditto.
+	(*<rotate_insn><mode>3_mask): Ditto.
+	(*<rotate_insn><mode>3_mask_1): Ditto.
+
+2017-12-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reorg.c (make_return_insns): Reemit each insn with its own location.
+
+2017-12-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Modify code
+	generation for cases where splatting a value is not useful.
+	* simplify-rtx.c (simplify_ternary_operation): Simplify vec_merge
+	across a vec_duplicate and a paradoxical subreg forming a vector
+	mode to a vec_concat.
+
+2017-12-21  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* combine.c (simplify_set): Do not transform subregs to zero_extends
+	if the destination is not a scalar int mode.
+
+2017-12-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/82872
+	* convert.c (convert_to_integer_1) <POINTER_TYPE>: Do not return the
+	shared zero if the input has overflowed.
+
+2017-12-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/driver-arm.c (arm_cpu_table): Specify dotprod
+	support for Cortex-A55 and Cortex-A75.
+
+2017-12-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* common/config/arm/arm-common.c (compare_opt_names): Add function
+	comment.  Use strcmp instead of manual loop.
+
+2017-12-21  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/83509
+	* gcov-dump.c (dump_gcov_file): Do not read info about
+	support_unexecuted_blocks for gcda files.
+
+2017-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82973
+	* emit-rtl.h (valid_for_const_vec_duplicate_p): Rename to ...
+	(valid_for_const_vector_p): ... this.
+	* emit-rtl.c (valid_for_const_vec_duplicate_p): Rename to ...
+	(valid_for_const_vector_p): ... this.  Adjust function comment.
+	(gen_vec_duplicate): Adjust caller.
+	* optabs.c (expand_vector_broadcast): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Don't optimize into
+	CONST_VECTOR if some element isn't simplified valid_for_const_vector_p
+	constant.
+	(simplify_const_binary_operation): Likewise.  Use CONST_FIXED_P macro
+	instead of GET_CODE == CONST_FIXED.
+	(simplify_subreg): Use CONST_FIXED_P macro instead of
+	GET_CODE == CONST_FIXED.
+
+	PR target/83488
+	* config/i386/i386.c (ix86_target_string): Move -mavx512vbmi2 and
+	-mshstk entries from isa_opts2 to isa_opts and -mhle, -mmovbe,
+	-mclzero and -mmwaitx entries from isa_opts to isa_opts2.
+	(ix86_option_override_internal): Adjust for
+	OPTION_MASK_ISA_{HLE,MOVBE,CLZERO,MWAITX} moving to ix86_isa_flags2
+	and OPTION_MASK_ISA_SHSTK moving to ix86_isa_flags.
+	(BDESC_VERIFYS): Remove SPECIAL_ARGS2 related checks.
+	(ix86_init_mmx_sse_builtins): Remove bdesc_special_args2 handling.
+	Use def_builtin2 instead of def_builtin for OPTION_MASK_ISA_MWAITX
+	and OPTION_MASK_ISA_CLZERO builtins.  Use def_builtin instead of
+	def_builtin2 for CET builtins.
+	(ix86_expand_builtin): Remove bdesc_special_args2 handling.  Fix
+	up formatting in IX86_BUILTIN_RDPID code.
+	* config/i386/i386-builtin.def: Move VBMI2 builtins from SPECIAL_ARGS2
+	section to SPECIAL_ARGS and from ARGS2 section to ARGS.
+	* config/i386/i386.opt (mavx512vbmi2, mshstk): Move from
+	ix86_isa_flags2 to ix86_isa_flags.
+	(mhle, mmovbe, mclzero, mmwaitx): Move from ix86_isa_flags to
+	ix86_isa_flags2.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Check for
+	OPTION_MASK_ISA_{CLZERO,MWAITX} in isa_flag2 instead of isa_flag.
+	Check for OPTION_MASK_ISA_{SHSTK,AVX512VBMI2} in isa_flag instead
+	of isa_flag2.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512VBMI2_SET):
+	Or in OPTION_MASK_ISA_AVX512F_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET): Or in
+	OPTION_MASK_ISA_AVX512VBMI2_UNSET.
+	(ix86_handle_option): Adjust for
+	OPTION_MASK_ISA_{SHSTK,AVX512VBMI2}_*SET being in ix86_isa_flags
+	and OPTION_MASK_ISA_{MOVBE,MWAITX,CLZERO}_*SET in ix86_isa_flags2.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-data-ref.h (prune_runtime_alias_test_list): Take the
+	factor as a poly_uint64 rather than an unsigned HOST_WIDE_INT.
+	* tree-data-ref.c (prune_runtime_alias_test_list): Likewise.
+	Track polynomial offsets.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Treat drb->init as a poly_int.  Fail if its misalignment wrt
+	vector_alignment isn't known.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vectorizer.h (_loop_vec_info): Add a versioning_threshold
+	field.
+	(LOOP_VINFO_VERSIONING_THRESHOLD): New macro
+	(vect_loop_versioning): Take the loop versioning threshold as a
+	separate parameter.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	versioning_threshold.
+	(vect_analyze_loop_2): Compute the loop versioning threshold
+	whenever loop versioning is needed, and store it in the new
+	field rather than combining it with the cost model threshold.
+	(vect_transform_loop): Update call to vect_loop_versioning.
+	Try to combine the loop versioning and cost thresholds here.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-ssa-loop-ivopts.h (strip_offset): Return the offset as
+	poly_uint64_pod rather than an unsigned HOST_WIDE_INT.
+	* tree-loop-distribution.c (classify_builtin_st): Update accordingly.
+	* tree-ssa-loop-ivopts.c (iv_use::addr_offset): Change from
+	an unsigned HOST_WIDE_INT to a poly_uint64_pod.
+	(group_compare_offset): Update accordingly.
+	(split_small_address_groups_p): Likewise.
+	(record_use): Take addr_offset as a poly_uint64 rather than
+	an unsigned HOST_WIDE_INT.
+	(strip_offset): Return the offset as a poly_uint64 rather than
+	an unsigned HOST_WIDE_INT.
+	(record_group_use, split_address_groups): Track polynomial offsets.
+	(add_iv_candidate_for_use): Likewise.
+	(addr_offset_valid_p): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(strip_offset_1): Return the offset as a poly_int64 rather than
+	a HOST_WIDE_INT.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree.h (get_binfo_at_offset): Take the offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	* tree.c (get_binfo_at_offset): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* ipa-prop.h (build_ref_for_offset): Take the offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	* tree-sra.c (build_ref_for_offset): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* fold-const.h (mem_ref_offset): Return a poly_offset_int rather
+	than an offset_int.
+	* tree.c (mem_ref_offset): Likewise.
+	(build_simple_mem_ref_loc): Treat MEM_REF offsets as poly_ints.
+	* builtins.c (get_object_alignment_2): Likewise.
+	* expr.c (get_inner_reference, expand_expr_real_1): Likewise.
+	* gimple-fold.c (get_base_constructor): Likewise.
+	* gimple-ssa-strength-reduction.c (restructure_reference): Likewise.
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref):
+	Likewise.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Likewise.
+	* ipa-prop.c (compute_complex_assign_jump_func): Likewise.
+	(get_ancestor_addr_info): Likewise.
+	* ipa-param-manipulation.c (ipa_get_adjustment_candidate): Likewise.
+	* match.pd: Likewise.
+	* tree-data-ref.c (dr_analyze_innermost): Likewise.
+	* tree-dfa.c (get_addr_base_and_unit_offset_1): Likewise.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+	* tree-object-size.c (addr_object_size): Likewise.
+	* tree-ssa-address.c (copy_ref_info): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Likewise.
+	(indirect_refs_may_alias_p): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	* tree-ssa.c (maybe_rewrite_mem_ref_base): Likewise.
+	(non_rewritable_mem_ref_base): Likewise.
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Likewise.
+	* tree-vrp.c (vrp_prop::check_array_ref): Likewise.
+	* varasm.c (decode_addr_const): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gimple-ssa-stor-merging.c (find_bswap_or_nop_load): Track polynomial
+	offsets for MEM_REFs.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-ssanames.h (adjust_ptr_info_misalignment): Take the increment
+	as a poly_uint64 rather than an unsigned int.
+	* tree-ssanames.c (adjust_ptr_info_misalignment): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* varasm.c (addr_const::offset): Change from HOST_WIDE_INT
+	to poly_int64.
+	(decode_addr_const): Update accordingly.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree.h (bit_field_size, bit_field_offset): New functions.
+	* hsa-gen.c (gen_hsa_addr): Use them.
+	* tree-ssa-forwprop.c (simplify_bitfield_ref): Likewise.
+	(simplify_vector_constructor): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	* tree-cfg.c (verify_expr): Require the sizes and offsets of a
+	BIT_FIELD_REF to be poly_uint64s rather than uhwis.
+	* fold-const.c (fold_ternary_loc): Protect tree_to_uhwi with
+	tree_fits_uhwi_p.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expr.h (emit_group_load, emit_group_load_into_temps)
+	(emit_group_store): Take the size as a poly_int64 rather than an int.
+	* expr.c (emit_group_load_1, emit_group_load): Likewise.
+	(emit_group_load_into_temp, emit_group_store): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* ira-int.h (ira_spilled_reg_stack_slot::width): Change from
+	an unsigned int to a poly_uint64.
+	* ira.h (ira_reuse_stack_slot, ira_mark_new_stack_slot): Take the
+	sizes as poly_uint64s rather than unsigned ints.
+	* ira-color.c (ira_reuse_stack_slot, ira_mark_new_stack_slot):
+	Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lra-constraints.c (emit_inc): Change inc_amount from an int
+	to a poly_int64.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* cfgexpand.c (stack_var::size): Change from a HOST_WIDE_INT
+	to a poly_uint64.
+	(add_stack_var, stack_var_cmp, partition_stack_vars)
+	(dump_stack_var_partition): Update accordingly.
+	(alloc_stack_frame_space): Take the size as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(expand_stack_vars, expand_one_stack_var_1): Handle polynomial sizes.
+	(defer_stack_allocation, estimated_stack_frame_size): Likewise.
+	(account_stack_vars, expand_one_var): Likewise.  Return a poly_uint64
+	rather than a HOST_WIDE_INT.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (return_pops_args): Treat both the input and output
+	sizes as poly_int64s rather than HOST_WIDE_INTS.
+	* targhooks.h (default_return_pops_args): Update accordingly.
+	* targhooks.c (default_return_pops_args): Likewise.
+	* doc/tm.texi: Regenerate.
+	* emit-rtl.h (incoming_args): Change pops_args, size and
+	outgoing_args_size from int to poly_int64_pod.
+	* function.h (expr_status): Change x_pending_stack_adjust and
+	x_stack_pointer_delta from int to poly_int64.
+	(args_size::constant): Change from HOST_WIDE_INT to poly_int64.
+	(ARGS_SIZE_RTX): Update accordingly.
+	* calls.c (highest_outgoing_arg_in_use): Change from int to
+	unsigned int.
+	(stack_usage_watermark, stored_args_watermark): New variables.
+	(stack_region_maybe_used_p, mark_stack_region_used): New functions.
+	(emit_call_1): Change the stack_size and rounded_stack_size
+	parameters from HOST_WIDE_INT to poly_int64.  Track n_popped
+	as a poly_int64.
+	(save_fixed_argument_area): Check stack_usage_watermark.
+	(initialize_argument_information): Change old_pending_adj from
+	a HOST_WIDE_INT * to a poly_int64_pod *.
+	(compute_argument_block_size): Return the size as a poly_int64
+	rather than an int.
+	(finalize_must_preallocate): Track polynomial argument sizes.
+	(compute_argument_addresses): Likewise.
+	(internal_arg_pointer_based_exp): Track polynomial offsets.
+	(mem_overlaps_already_clobbered_arg_p): Rename to...
+	(mem_might_overlap_already_clobbered_arg_p): ...this and take the
+	size as a poly_uint64 rather than an unsigned HOST_WIDE_INT.
+	Check stored_args_used_watermark.
+	(load_register_parameters): Update accordingly.
+	(check_sibcall_argument_overlap_1): Likewise.
+	(combine_pending_stack_adjustment_and_call): Take the unadjusted
+	args size as a poly_int64 rather than an int.  Return a bool
+	indicating whether the optimization was possible and return
+	the new adjustment by reference.
+	(check_sibcall_argument_overlap): Track polynomail argument sizes.
+	Update stored_args_watermark.
+	(can_implement_as_sibling_call_p): Handle polynomial argument sizes.
+	(expand_call): Likewise.  Maintain stack_usage_watermark and
+	stored_args_watermark.  Update calls to
+	combine_pending_stack_adjustment_and_call.
+	(emit_library_call_value_1): Handle polynomial argument sizes.
+	Call stack_region_maybe_used_p and mark_stack_region_used.
+	Maintain stack_usage_watermark.
+	(store_one_arg): Likewise.  Update call to
+	mem_overlaps_already_clobbered_arg_p.
+	* config/arm/arm.c (arm_output_function_prologue): Add a cast to
+	HOST_WIDE_INT.
+	* config/avr/avr.c (avr_outgoing_args_size): Likewise.
+	* config/microblaze/microblaze.c (microblaze_function_prologue):
+	Likewise.
+	* config/cr16/cr16.c (cr16_return_pops_args): Update for new
+	TARGET_RETURN_POPS_ARGS interface.
+	(cr16_compute_frame, cr16_initial_elimination_offset): Add casts
+	to HOST_WIDE_INT.
+	* config/ft32/ft32.c (ft32_compute_frame): Likewise.
+	* config/i386/i386.c (ix86_return_pops_args): Update for new
+	TARGET_RETURN_POPS_ARGS interface.
+	(ix86_expand_split_stack_prologue): Add a cast to HOST_WIDE_INT.
+	* config/moxie/moxie.c (moxie_compute_frame): Likewise.
+	* config/m68k/m68k.c (m68k_return_pops_args): Update for new
+	TARGET_RETURN_POPS_ARGS interface.
+	* config/vax/vax.c (vax_return_pops_args): Likewise.
+	* config/pa/pa.h (STACK_POINTER_OFFSET): Add a cast to poly_int64.
+	(EXIT_IGNORE_STACK): Update reference to crtl->outgoing_args_size.
+	* config/arm/arm.h (CALLER_INTERWORKING_SLOT_SIZE): Likewise.
+	* config/powerpcspe/aix.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/powerpcspe/darwin.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/powerpcspe/powerpcspe.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/rs6000/aix.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/rs6000/darwin.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* config/rs6000/rs6000.h (STACK_DYNAMIC_OFFSET): Likewise.
+	* dojump.h (saved_pending_stack_adjust): Change x_pending_stack_adjust
+	and x_stack_pointer_delta from int to poly_int64.
+	* dojump.c (do_pending_stack_adjust): Update accordingly.
+	* explow.c (allocate_dynamic_stack_space): Handle polynomial
+	stack_pointer_deltas.
+	* function.c (STACK_DYNAMIC_OFFSET): Add a cast to poly_int64.
+	(pad_to_arg_alignment): Track polynomial offsets.
+	(assign_parm_find_stack_rtl): Likewise.
+	(assign_parms, locate_and_pad_parm): Handle polynomial argument sizes.
+	* toplev.c (output_stack_usage): Update reference to
+	current_function_pushed_stack_size.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* function.c (in_arg_offset, var_offset, dynamic_offset)
+	(out_arg_offset, cfa_offset): Change from int to poly_int64.
+	(instantiate_new_reg): Return the new offset as a poly_int64_pod
+	rather than a HOST_WIDE_INT.
+	(instantiate_virtual_regs_in_rtx): Track polynomial offsets.
+	(instantiate_virtual_regs_in_insn): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (get_args_size, add_args_size_note): New functions.
+	(find_args_size_adjust): Return a poly_int64 rather than a
+	HOST_WIDE_INT.
+	(fixup_args_size_notes): Likewise.  Make the same change to the
+	end_args_size parameter.
+	* rtlanal.c (get_args_size, add_args_size_note): New functions.
+	* builtins.c (expand_builtin_trap): Use add_args_size_note.
+	* calls.c (emit_call_1): Likewise.
+	* explow.c (adjust_stack_1): Likewise.
+	* cfgcleanup.c (old_insns_match_p): Update use of
+	find_args_size_adjust.
+	* combine.c (distribute_notes): Track polynomial arg sizes.
+	* dwarf2cfi.c (dw_trace_info): Change beg_true_args_size,
+	end_true_args_size, beg_delay_args_size and end_delay_args_size
+	from HOST_WIDE_INT to poly_int64.
+	(add_cfi_args_size): Take the args_size as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(notice_args_size, notice_eh_throw, maybe_record_trace_start)
+	(maybe_record_trace_start_abnormal, scan_trace, connect_traces): Track
+	polynomial arg sizes.
+	* emit-rtl.c (try_split): Use get_args_size.
+	* recog.c (peep2_attempt): Likewise.
+	* reload1.c (reload_as_needed): Likewise.
+	* expr.c (find_args_size_adjust): Return the adjustment as a
+	poly_int64 rather than a HOST_WIDE_INT.
+	(fixup_args_size_notes): Change end_args_size from a HOST_WIDE_INT
+	to a poly_int64 and change the return type in the same way.
+	(emit_single_push_insn): Track polynomial arg sizes.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expr.h (push_block, emit_push_insn): Change the "extra" parameter
+	from HOST_WIDE_INT to poly_int64.
+	* expr.c (push_block, emit_push_insn): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* function.h (frame_space): Change start and length from HOST_WIDE_INT
+	to poly_int64.
+	(get_frame_size): Return the size as a poly_int64 rather than a
+	HOST_WIDE_INT.
+	(frame_offset_overflow): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(assign_stack_local_1, assign_stack_local, assign_stack_temp_for_type)
+	(assign_stack_temp): Likewise for the size.
+	* function.c (get_frame_size): Return a poly_int64 rather than
+	a HOST_WIDE_INT.
+	(frame_offset_overflow): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(try_fit_stack_local): Take the start, length and size as poly_int64s
+	rather than HOST_WIDE_INTs.  Return the offset as a poly_int64_pod
+	rather than a HOST_WIDE_INT.
+	(add_frame_space): Take the start and end as poly_int64s rather than
+	HOST_WIDE_INTs.
+	(assign_stack_local_1, assign_stack_local, assign_stack_temp_for_type)
+	(assign_stack_temp): Likewise for the size.
+	(temp_slot): Change size, base_offset and full_size from HOST_WIDE_INT
+	to poly_int64.
+	(find_temp_slot_from_address): Handle polynomial offsets.
+	(combine_temp_slots): Likewise.
+	* emit-rtl.h (rtl_data::x_frame_offset): Change from HOST_WIDE_INT
+	to poly_int64.
+	* cfgexpand.c (alloc_stack_frame_space): Return the offset as a
+	poly_int64 rather than a HOST_WIDE_INT.
+	(expand_one_stack_var_at): Take the offset as a poly_int64 rather
+	than a HOST_WIDE_INT.
+	(expand_stack_vars, expand_one_stack_var_1, expand_used_vars): Handle
+	polynomial frame offsets.
+	* config/m32r/m32r-protos.h (m32r_compute_frame_size): Take the size
+	as a poly_int64 rather than an int.
+	* config/m32r/m32r.c (m32r_compute_frame_size): Likewise.
+	* config/v850/v850-protos.h (compute_frame_size): Likewise.
+	* config/v850/v850.c (compute_frame_size): Likewise.
+	* config/xtensa/xtensa-protos.h (compute_frame_size): Likewise.
+	* config/xtensa/xtensa.c (compute_frame_size): Likewise.
+	* config/pa/pa-protos.h (pa_compute_frame_size): Likewise.
+	* config/pa/pa.c (pa_compute_frame_size): Likewise.
+	* explow.h (get_dynamic_stack_base): Take the offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	* explow.c (get_dynamic_stack_base): Likewise.
+	* final.c (final_start_function): Use the constant lower bound
+	of the frame size for -Wframe-larger-than.
+	* ira.c (do_reload): Adjust for new get_frame_size return type.
+	* lra.c (lra): Likewise.
+	* reload1.c (reload): Likewise.
+	* config/avr/avr.c (avr_asm_function_end_prologue): Likewise.
+	* config/pa/pa.h (EXIT_IGNORE_STACK): Likewise.
+	* rtlanal.c (get_initial_register_offset): Return the offset as
+	a poly_int64 rather than a HOST_WIDE_INT.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* reload1.c (elim_table): Change initial_offset, offset and
+	previous_offset from HOST_WIDE_INT to poly_int64_pod.
+	(offsets_at): Change the target array's element type from
+	HOST_WIDE_INT to poly_int64_pod.
+	(set_label_offsets, eliminate_regs_1, eliminate_regs_in_insn)
+	(elimination_costs_in_insn, update_eliminable_offsets)
+	(verify_initial_elim_offsets, set_offsets_for_label)
+	(init_eliminable_invariants): Update after above changes.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* reload.h (reload::inc): Change from an int to a poly_int64_pod.
+	* reload.c (combine_reloads, debug_reload_to_stream): Likewise.
+	(decomposition): Change start and end from HOST_WIDE_INT
+	to poly_int64_pod.
+	(decompose, immune_p): Update accordingly.
+	(find_inc_amount): Return a poly_int64 rather than an int.
+	* reload1.c (inc_for_reload): Take the inc_amount as a poly_int64
+	rather than an int.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree.h (get_inner_reference): Return the bitsize and bitpos
+	as poly_int64_pods rather than HOST_WIDE_INT.
+	* fold-const.h (ptr_difference_const): Return the pointer difference
+	as a poly_int64_pod rather than a HOST_WIDE_INT.
+	* expr.c (get_inner_reference): Return the bitsize and bitpos
+	as poly_int64_pods rather than HOST_WIDE_INT.
+	(expand_expr_addr_expr_1, expand_expr_real_1): Track polynomial
+	offsets and sizes.
+	* fold-const.c (make_bit_field_ref): Take the bitpos as a poly_int64
+	rather than a HOST_WIDE_INT.  Update call to get_inner_reference.
+	(optimize_bit_field_compare): Update call to get_inner_reference.
+	(decode_field_reference): Likewise.
+	(fold_unary_loc): Track polynomial offsets and sizes.
+	(split_address_to_core_and_offset): Return the bitpos as a
+	poly_int64_pod rather than a HOST_WIDE_INT.
+	(ptr_difference_const): Likewise for the pointer difference.
+	* asan.c (instrument_derefs): Track polynomial offsets and sizes.
+	* config/mips/mips.c (r10k_safe_mem_expr_p): Likewise.
+	* dbxout.c (dbxout_expand_expr): Likewise.
+	* dwarf2out.c (loc_list_for_address_of_addr_expr_of_indirect_ref)
+	(loc_list_from_tree_1, fortran_common): Likewise.
+	* gimple-laddress.c (pass_laddress::execute): Likewise.
+	* gimple-ssa-store-merging.c (find_bswap_or_nop_load): Likewise.
+	* gimplify.c (gimplify_scan_omp_clauses): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* tree-affine.c (tree_to_aff_combination): Likewise.
+	(get_inner_reference_aff): Likewise.
+	* tree-data-ref.c (split_constant_offset_1): Likewise.
+	(dr_analyze_innermost): Likewise.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Likewise.
+	* tree-sra.c (ipa_sra_check_caller): Likewise.
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Likewise.
+	* ubsan.c (maybe_instrument_pointer_overflow): Likewise.
+	(instrument_bool_enum_load, instrument_object_size): Likewise.
+	* gimple-ssa-strength-reduction.c (slsr_process_ref): Update call
+	to get_inner_reference.
+	* hsa-gen.c (gen_hsa_addr): Likewise.
+	* sanopt.c (maybe_optimize_ubsan_ptr_ifn): Likewise.
+	* tsan.c (instrument_expr): Likewise.
+	* match.pd: Update call to ptr_difference_const.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* fold-const.c (fold_comparison): Track sizes and offsets as
+	poly_int64s rather than HOST_WIDE_INTs when folding address
+	comparisons.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expr.h (get_bit_range): Return the bitstart and bitend as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.  Return the bitpos
+	as a poly_int64 rather than a HOST_WIDE_INT.
+	* expr.c (get_bit_range): Likewise.
+	(expand_assignment): Update call accordingly.
+	* fold-const.c (optimize_bit_field_compare): Likewise.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_addr_query_type): New enum.
+	(aarch64_legitimate_address_p): Use it instead of an rtx code,
+	as an optional final parameter.
+	* config/aarch64/aarch64.c (aarch64_classify_address): Likewise.
+	(aarch64_legitimate_address_p): Likewise.
+	(aarch64_print_address_internal): Take an aarch64_addr_query_type
+	instead of an rtx code.
+	(aarch64_address_valid_for_prefetch_p): Update calls accordingly.
+	(aarch64_legitimate_address_hook_p): Likewise.
+	(aarch64_print_ldpstp_address): Likewise.
+	(aarch64_print_operand_address): Likewise.
+	(aarch64_address_cost): Likewise.
+	* config/aarch64/constraints.md (Uml, Umq, Ump, Utq): Likewise.
+	* config/aarch64/predicates.md (aarch64_mem_pair_operand): Likewise.
+	(aarch64_mem_pair_lanes_operand): Likewise.
+
+2017-12-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (dom_opt_dom_walker::optimize_stmt): Call
+	update_stmt_if_modified.
+
+2017-12-20  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR tree-optimization/83491
+	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Check for SSA_NAME
+	before walking uses.  Improve coding style and comments.
+
+2017-12-20  Tom de Vries  <tom@codesourcery.com>
+
+	* gimple-fold.c (fold_internal_goacc_dim): Simplify.
+
+2017-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/83506
+	* ipa-fnsummary.c (pass_data_ipa_free_fn_summary): Use 0 for
+	todo_flags_finish.
+	(pass_ipa_free_fn_summary): Add small_p private data member,
+	initialize to false in the ctor.
+	(pass_ipa_free_fn_summary::clone,
+	pass_ipa_free_fn_summary::set_pass_param,
+	pass_ipa_free_fn_summary::gate): New methods.
+	(pass_ipa_free_fn_summary::execute): Return TODO_remove_functions
+	| TODO_dump_symtab if small_p.
+	* passes.def: Add true parm for the existing pass_ipa_free_fn_summary
+	entry and add another instance of the pass with false parm after
+	ipa-pure-const.
+	* ipa-pure-const.c (pass_ipa_pure_const): Don't call
+	ipa_free_fn_summary here.
+
+2017-12-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* gimplify.c (gimplify_return_expr): Remove dead error_mark_node check.
+
+2017-12-20  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/83131
+	* builtins.c (expand_builtin_strlen): Use get_callee_fndecl.
+	(expand_builtin_strcmp): Call maybe_warn_nonstring_arg.
+	(expand_builtin_strncmp): Same.
+
+2017-12-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR bootstrap/83396
+	* cfgexpand.c (label_rtx_for_bb): Revert SFN changes that
+	allowed debug stmts before labels.
+	(expand_gimple_basic_block): Likewise.
+	* gimple-iterator.c (gimple_find_edge_insert_loc): Likewise.
+	* gimple-iterator.h (gsi_after_labels): Likewise.
+	* tree-cfgcleanup (remove_forwarder_block): Likewise, but
+	rename reused variable, and simplify using gsi_move_before.
+	* tree-ssa-tail-merge.c (find_duplicate): Likewise.
+	* tree-cfg.c (make_edges, cleanup_dead_labels): Likewise.
+	(gimple_can_merge_blocks_p, verify_gimple_in_cfg): Likewise.
+	(gimple_verify_flow_info, gimple_block_label): Likewise.
+	(make_blocks): Move debug markers after adjacent labels.
+	* cfgrtl.c (skip_insns_after_block): Revert SFN changes that
+	allowed debug insns outside blocks.
+	* df-scan.c (df_insn_delete): Likewise.
+	* lra-constraints.c (update_ebb_live_info): Likewise.
+	* var-tracking.c (get_first_insn, vt_emit_notes): Likewise.
+	(vt_initialize, delete_vta_debug_insns): Likewise.
+	(reemit_marker_as_note): Drop BB parm.  Adjust callers.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* poly-int-types.h (round_down_to_byte_boundary): New macro.
+	(round_up_to_byte_boundary): Likewise.
+	* expr.h (get_bit_range): Add temporary shim.
+	* gimple-ssa-store-merging.c (store_operand_info): Change the
+	bitsize, bitpos, bitregion_start and bitregion_end fields from
+	unsigned HOST_WIDE_INT to poly_uint64.
+	(merged_store_group): Likewise load_align_base.
+	(compatible_load_p, compatible_load_p): Update accordingly.
+	(imm_store_chain_info::coalesce_immediate_stores): Likewise.
+	(split_group, imm_store_chain_info::output_merged_store): Likewise.
+	(mem_valid_for_store_merging): Return the bitsize, bitpos,
+	bitregion_start and bitregion_end as poly_uint64s rather than
+	unsigned HOST_WIDE_INTs.  Track polynomial offsets internally.
+	(handled_load): Take the bitsize, bitpos,
+	bitregion_start and bitregion_end as poly_uint64s rather than
+	unsigned HOST_WIDE_INTs.
+	(pass_store_merging::process_store): Update call to
+	mem_valid_for_store_merging.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* builtins.c (get_object_alignment_2): Track polynomial offsets
+	and sizes.  Update the alignment handling.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree.h (get_inner_reference): Add a version that returns the
+	offset and size as poly_int64_pods rather than HOST_WIDE_INTs.
+	* cfgexpand.c (expand_debug_expr): Track polynomial offsets.  Simply
+	the case in which bitpos is not associated with the first byte.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-affine.h (get_inner_reference_aff): Return the size as a
+	poly_widest_int.
+	* tree-affine.c (get_inner_reference_aff): Likewise.
+	* tree-data-ref.c (dr_may_alias_p): Update accordingly.
+	* tree-ssa-loop-im.c (mem_refs_may_alias_p): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* fold-const.c (pointer_may_wrap_p): Take the offset as a
+	HOST_WIDE_INT rather than a poly_int64.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gimple-ssa-store-merging.c (symbolic_number::bytepos): Change from
+	HOST_WIDE_INT to poly_int64_pod.
+	(perform_symbolic_merge): Update accordingly.
+	(bswap_replace): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-affine.h (aff_tree::offset): Change from widest_int
+	to poly_widest_int.
+	(wide_int_ext_for_comb): Delete.
+	(aff_combination_const, aff_comb_cannot_overlap_p): Take the
+	constants as poly_widest_int rather than widest_int.
+	(aff_combination_constant_multiple_p): Return the multiplier
+	as a poly_widest_int.
+	(aff_combination_zero_p, aff_combination_singleton_var_p): Handle
+	polynomial offsets.
+	* tree-affine.c (wide_int_ext_for_comb): Make original widest_int
+	version static and add an overload for poly_widest_int.
+	(aff_combination_const, aff_combination_add_cst)
+	(wide_int_constant_multiple_p, aff_comb_cannot_overlap_p): Take
+	the constants as poly_widest_int rather than widest_int.
+	(tree_to_aff_combination): Generalize INTEGER_CST case to
+	poly_int_tree_p.
+	(aff_combination_to_tree): Track offsets as poly_widest_ints.
+	(aff_combination_add_product, aff_combination_mult): Handle
+	polynomial offsets.
+	(aff_combination_constant_multiple_p): Return the multiplier
+	as a poly_widest_int.
+	* tree-predcom.c (determine_offset): Return the offset as a
+	poly_widest_int.
+	(split_data_refs_to_components, suitable_component_p): Update
+	accordingly.
+	(valid_initializer_p): Update call to
+	aff_combination_constant_multiple_p.
+	* tree-ssa-address.c (addr_to_parts): Handle polynomial offsets.
+	* tree-ssa-loop-ivopts.c (get_address_cost_ainc): Take the step
+	as a poly_int64 rather than a HOST_WIDE_INT.
+	(get_address_cost): Handle polynomial offsets.
+	(iv_elimination_compare_lt): Likewise.
+	(rewrite_use_nonlinear_expr): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-dfa.h (get_addr_base_and_unit_offset_1): Return the offset
+	as a poly_int64_pod rather than a HOST_WIDE_INT.
+	(get_addr_base_and_unit_offset): Likewise.
+	* tree-dfa.c (get_addr_base_and_unit_offset_1): Likewise.
+	(get_addr_base_and_unit_offset): Likewise.
+	* doc/match-and-simplify.texi: Change off from HOST_WIDE_INT
+	to poly_int64 in example.
+	* fold-const.c (fold_binary_loc): Update call to
+	get_addr_base_and_unit_offset.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Likewise.
+	(maybe_canonicalize_mem_ref_addr): Likewise.
+	(gimple_fold_stmt_to_constant_1): Likewise.
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref):
+	Likewise.
+	* ipa-param-manipulation.c (ipa_modify_call_arguments): Likewise.
+	* match.pd: Likewise.
+	* omp-low.c (lower_omp_target): Likewise.
+	* tree-sra.c (build_ref_for_offset): Likewise.
+	(build_debug_ref_for_model): Likewise.
+	* tree-ssa-address.c (maybe_fold_tmr): Likewise.
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Likewise.
+	* tree-ssa-ccp.c (optimize_memcpy): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Likewise.
+	(constant_pointer_difference): Likewise.
+	* tree-ssa-loop-niter.c (expand_simple_operations): Likewise.
+	* tree-ssa-phiopt.c (jump_function_from_stmt): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Likewise.
+	(vn_reference_maybe_forwprop_address, vn_reference_lookup_3): Likewise.
+	(set_ssa_val_to): Likewise.
+	* tree-ssa-strlen.c (get_addr_stridx, addr_stridxptr)
+	(maybe_diag_stxncpy_trunc): Likewise.
+	* tree-vrp.c (vrp_prop::check_array_ref): Likewise.
+	* tree.c (build_simple_mem_ref_loc): Likewise.
+	(array_at_struct_end_p): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-dfa.h (get_ref_base_and_extent): Return the base, size and
+	max_size as poly_int64_pods rather than HOST_WIDE_INTs.
+	(get_ref_base_and_extent_hwi): Declare.
+	* tree-dfa.c (get_ref_base_and_extent): Return the base, size and
+	max_size as poly_int64_pods rather than HOST_WIDE_INTs.
+	(get_ref_base_and_extent_hwi): New function.
+	* cfgexpand.c (expand_debug_expr): Update call to
+	get_ref_base_and_extent.
+	* dwarf2out.c (add_var_loc_to_decl): Likewise.
+	* gimple-fold.c (get_base_constructor): Return the offset as a
+	poly_int64_pod rather than a HOST_WIDE_INT.
+	(fold_const_aggregate_ref_1): Track polynomial sizes and offsets.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::set_by_invariant)
+	(extr_type_from_vtbl_ptr_store): Track polynomial offsets.
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context)
+	(check_stmt_for_type_change): Use get_ref_base_and_extent_hwi
+	rather than get_ref_base_and_extent.
+	(ipa_polymorphic_call_context::get_dynamic_type): Likewise.
+	* ipa-prop.c (ipa_load_from_parm_agg, compute_complex_assign_jump_func)
+	(get_ancestor_addr_info, determine_locally_known_aggregate_parts):
+	Likewise.
+	* ipa-param-manipulation.c (ipa_get_adjustment_candidate): Update
+	call to get_ref_base_and_extent.
+	* tree-sra.c (create_access, get_access_for_expr): Likewise.
+	* tree-ssa-alias.c (ao_ref_base, aliasing_component_refs_p)
+	(stmt_kills_ref_p): Likewise.
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1): Likewise.
+	* tree-ssa-scopedtables.c (avail_expr_hash, equal_mem_array_ref_p):
+	Likewise.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Likewise.
+	Use get_ref_base_and_extent_hwi rather than get_ref_base_and_extent
+	when calling native_encode_expr.
+	* tree-ssa-structalias.c (get_constraint_for_component_ref): Update
+	call to get_ref_base_and_extent.
+	(do_structure_copy): Use get_ref_base_and_extent_hwi rather than
+	get_ref_base_and_extent.
+	* var-tracking.c (track_expr_p): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* ipa-param-manipulation.h (ipa_parm_adjustment::offset): Change from
+	HOST_WIDE_INT to poly_int64_pod.
+	* ipa-param-manipulation.c (ipa_modify_call_arguments): Track
+	polynomail parameter offsets.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gengtype.c (main): Handle poly_int64_pod.
+	* dwarf2out.h (dw_cfi_oprnd_cfa_loc): New dw_cfi_oprnd_type.
+	(dw_cfi_oprnd::dw_cfi_cfa_loc): New field.
+	(dw_cfa_location::offset, dw_cfa_location::base_offset): Change
+	from HOST_WIDE_INT to poly_int64_pod.
+	* dwarf2cfi.c (queued_reg_save::cfa_offset): Likewise.
+	(copy_cfa): New function.
+	(lookup_cfa_1): Use the cached dw_cfi_cfa_loc, if it exists.
+	(cfi_oprnd_equal_p): Handle dw_cfi_oprnd_cfa_loc.
+	(cfa_equal_p, dwarf2out_frame_debug_adjust_cfa)
+	(dwarf2out_frame_debug_cfa_offset, dwarf2out_frame_debug_expr)
+	(initial_return_save): Treat offsets as poly_ints.
+	(def_cfa_0): Likewise.  Cache the CFA in dw_cfi_cfa_loc if either
+	offset is nonconstant.
+	(reg_save): Take the offset as a poly_int64.  Fall back to
+	DW_CFA_expression for nonconstant offsets.
+	(queue_reg_save): Take the offset as a poly_int64.
+	* dwarf2out.c (dw_cfi_oprnd2_desc): Handle DW_CFA_def_cfa_expression.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (operand_subword, operand_subword_force): Take the offset
+	as a poly_uint64 an unsigned int.
+	* emit-rtl.c (operand_subword, operand_subword_force): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/rtl.texi: Update documentation of SUBREG_BYTE.  Document the
+	'p' format code.  Use INT_LIST rather than SUBREG as the example of
+	a code with an XINT and an XEXP.  Remove the implication that
+	accessing an rtx field using XINT is expected to work.
+	* rtl.def (SUBREG): Change format from "ei" to "ep".
+	* rtl.h (rtunion::rt_subreg): New field.
+	(XCSUBREG): New macro.
+	(SUBREG_BYTE): Use it.
+	(subreg_shape): Change offset from an unsigned int to a poly_uint16.
+	Update constructor accordingly.
+	(subreg_shape::operator ==): Update accordingly.
+	(subreg_shape::unique_id): Return an unsigned HOST_WIDE_INT rather
+	than an unsigned int.
+	(subreg_lsb, subreg_lowpart_offset, subreg_highpart_offset): Return
+	a poly_uint64 rather than an unsigned int.
+	(subreg_lsb_1): Likewise.  Take the offset as a poly_uint64 rather
+	than an unsigned int.
+	(subreg_size_offset_from_lsb, subreg_size_lowpart_offset)
+	(subreg_size_highpart_offset): Return a poly_uint64 rather than
+	an unsigned int.  Take the sizes as poly_uint64s.
+	(subreg_offset_from_lsb): Return a poly_uint64 rather than
+	an unsigned int.  Take the shift as a poly_uint64 rather than
+	an unsigned int.
+	(subreg_regno_offset, subreg_offset_representable_p): Take the offset
+	as a poly_uint64 rather than an unsigned int.
+	(simplify_subreg_regno): Likewise.
+	(byte_lowpart_offset): Return the memory offset as a poly_int64
+	rather than an int.
+	(subreg_memory_offset): Likewise.  Take the subreg offset as a
+	poly_uint64 rather than an unsigned int.
+	(simplify_subreg, simplify_gen_subreg, subreg_get_info)
+	(gen_rtx_SUBREG, validate_subreg): Take the subreg offset as a
+	poly_uint64 rather than an unsigned int.
+	* rtl.c (rtx_format): Describe 'p' in comment.
+	(copy_rtx, rtx_equal_p_cb, rtx_equal_p): Handle 'p'.
+	* emit-rtl.c (validate_subreg, gen_rtx_SUBREG): Take the subreg
+	offset as a poly_uint64 rather than an unsigned int.
+	(byte_lowpart_offset): Return the memory offset as a poly_int64
+	rather than an int.
+	(subreg_memory_offset): Likewise.  Take the subreg offset as a
+	poly_uint64 rather than an unsigned int.
+	(subreg_size_lowpart_offset, subreg_size_highpart_offset): Take the
+	mode sizes as poly_uint64s rather than unsigned ints.  Return a
+	poly_uint64 rather than an unsigned int.
+	(subreg_lowpart_p): Treat subreg offsets as poly_ints.
+	(copy_insn_1): Handle 'p'.
+	* rtlanal.c (set_noop_p): Treat subregs offsets as poly_uint64s.
+	(subreg_lsb_1): Take the subreg offset as a poly_uint64 rather than
+	an unsigned int.  Return the shift in the same way.
+	(subreg_lsb): Return the shift as a poly_uint64 rather than an
+	unsigned int.
+	(subreg_size_offset_from_lsb): Take the sizes and shift as
+	poly_uint64s rather than unsigned ints.  Return the offset as
+	a poly_uint64.
+	(subreg_get_info, subreg_regno_offset, subreg_offset_representable_p)
+	(simplify_subreg_regno): Take the offset as a poly_uint64 rather than
+	an unsigned int.
+	* rtlhash.c (add_rtx): Handle 'p'.
+	* genemit.c (gen_exp): Likewise.
+	* gengenrtl.c (type_from_format, gendef): Likewise.
+	* gensupport.c (subst_pattern_match, get_alternatives_number)
+	(collect_insn_data, alter_predicate_for_insn, alter_constraints)
+	(subst_dup): Likewise.
+	* gengtype.c (adjust_field_rtx_def): Likewise.
+	* genrecog.c (find_operand, find_matching_operand, validate_pattern)
+	(match_pattern_2): Likewise.
+	(rtx_test::SUBREG_FIELD): New rtx_test::kind_enum.
+	(rtx_test::subreg_field): New function.
+	(operator ==, safe_to_hoist_p, transition_parameter_type)
+	(print_nonbool_test, print_test): Handle SUBREG_FIELD.
+	* genattrtab.c (attr_rtx_1): Say that 'p' is deliberately not handled.
+	* genpeep.c (match_rtx): Likewise.
+	* print-rtl.c (print_poly_int): Include if GENERATOR_FILE too.
+	(rtx_writer::print_rtx_operand): Handle 'p'.
+	(print_value): Handle SUBREG.
+	* read-rtl.c (apply_int_iterator): Likewise.
+	(rtx_reader::read_rtx_operand): Handle 'p'.
+	* alias.c (rtx_equal_for_memref_p): Likewise.
+	* cselib.c (rtx_equal_for_cselib_1, cselib_hash_rtx): Likewise.
+	* caller-save.c (replace_reg_with_saved_mem): Treat subreg offsets
+	as poly_ints.
+	* calls.c (expand_call): Likewise.
+	* combine.c (combine_simplify_rtx, expand_field_assignment): Likewise.
+	(make_extraction, gen_lowpart_for_combine): Likewise.
+	* loop-invariant.c (hash_invariant_expr_1, invariant_expr_equal_p):
+	Likewise.
+	* cse.c (remove_invalid_subreg_refs): Take the offset as a poly_uint64
+	rather than an unsigned int.  Treat subreg offsets as poly_ints.
+	(exp_equiv_p): Handle 'p'.
+	(hash_rtx_cb): Likewise.  Treat subreg offsets as poly_ints.
+	(equiv_constant, cse_insn): Treat subreg offsets as poly_ints.
+	* dse.c (find_shift_sequence): Likewise.
+	* dwarf2out.c (rtl_for_decl_location): Likewise.
+	* expmed.c (extract_low_bits): Likewise.
+	* expr.c (emit_group_store, undefined_operand_subword_p): Likewise.
+	(expand_expr_real_2): Likewise.
+	* final.c (alter_subreg): Likewise.
+	(leaf_renumber_regs_insn): Handle 'p'.
+	* function.c (assign_parm_find_stack_rtl, assign_parm_setup_stack):
+	Treat subreg offsets as poly_ints.
+	* fwprop.c (forward_propagate_and_simplify): Likewise.
+	* ifcvt.c (noce_emit_move_insn, noce_emit_cmove): Likewise.
+	* ira.c (get_subreg_tracking_sizes): Likewise.
+	* ira-conflicts.c (go_through_subreg): Likewise.
+	* ira-lives.c (process_single_reg_class_operands): Likewise.
+	* jump.c (rtx_renumbered_equal_p): Likewise.  Handle 'p'.
+	* lower-subreg.c (simplify_subreg_concatn): Take the subreg offset
+	as a poly_uint64 rather than an unsigned int.
+	(simplify_gen_subreg_concatn, resolve_simple_move): Treat
+	subreg offsets as poly_ints.
+	* lra-constraints.c (operands_match_p): Handle 'p'.
+	(match_reload, curr_insn_transform): Treat subreg offsets as poly_ints.
+	* lra-spills.c (assign_mem_slot): Likewise.
+	* postreload.c (move2add_valid_value_p): Likewise.
+	* recog.c (general_operand, indirect_operand): Likewise.
+	* regcprop.c (copy_value, maybe_mode_change): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* reginfo.c (simplifiable_subregs_hasher::hash, simplifiable_subregs)
+	(record_subregs_of_mode): Likewise.
+	* rtlhooks.c (gen_lowpart_general, gen_lowpart_if_possible): Likewise.
+	* reload.c (operands_match_p): Handle 'p'.
+	(find_reloads_subreg_address): Treat subreg offsets as poly_ints.
+	* reload1.c (alter_reg, choose_reload_regs): Likewise.
+	(compute_reload_subreg_offset): Likewise, and return an poly_int64.
+	* simplify-rtx.c (simplify_truncation, simplify_binary_operation_1):
+	(test_vector_ops_duplicate): Treat subreg offsets as poly_ints.
+	(simplify_const_poly_int_tests<N>::run): Likewise.
+	(simplify_subreg, simplify_gen_subreg): Take the subreg offset as
+	a poly_uint64 rather than an unsigned int.
+	* valtrack.c (debug_lowpart_subreg): Likewise.
+	* var-tracking.c (var_lowpart): Likewise.
+	(loc_cmp): Handle 'p'.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* ira.c (get_subreg_tracking_sizes): New function.
+	(init_live_subregs): Take an integer size rather than a register.
+	(build_insn_chain): Use get_subreg_tracking_sizes.  Update calls
+	to init_live_subregs.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expr.c (store_constructor_field): Change bitsize from a
+	unsigned HOST_WIDE_INT to a poly_uint64 and bitpos from a
+	HOST_WIDE_INT to a poly_int64.
+	(store_constructor): Change size from a HOST_WIDE_INT to
+	a poly_int64.
+	(store_field): Likewise bitsize and bitpos.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expmed.h (store_bit_field): Change bitregion_start and
+	bitregion_end from unsigned HOST_WIDE_INT to poly_uint64.
+	* expmed.c (adjust_bit_field_mem_for_reg, strict_volatile_bitfield_p)
+	(store_bit_field_1, store_integral_bit_field, store_bit_field)
+	(store_fixed_bit_field, store_split_bit_field): Likewise.
+	* expr.c (store_constructor_field, store_field): Likewise.
+	(optimize_bitfield_assignment_op): Likewise.  Make the same change
+	to bitsize and bitpos.
+	* machmode.h (bit_field_mode_iterator): Change m_bitregion_start
+	and m_bitregion_end from HOST_WIDE_INT to poly_int64.  Make the
+	same change in the constructor arguments.
+	(get_best_mode): Change bitregion_start and bitregion_end from
+	unsigned HOST_WIDE_INT to poly_uint64.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Change bitregion_start and bitregion_end from HOST_WIDE_INT to
+	poly_int64.
+	(bit_field_mode_iterator::next_mode): Update for new types
+	of m_bitregion_start and m_bitregion_end.
+	(get_best_mode): Change bitregion_start and bitregion_end from
+	unsigned HOST_WIDE_INT to poly_uint64.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (simplify_gen_subreg): Add a temporary overload that
+	accepts poly_uint64 offsets.
+	* expmed.h (extract_bit_field): Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.
+	* expmed.c (lowpart_bit_field_p): Likewise.
+	(extract_bit_field_as_subreg): New function, split out from...
+	(extract_bit_field_1): ...here.  Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.  For vector
+	extractions, check that BITSIZE matches the size of the extracted
+	value and that BITNUM is an exact multiple of that size.
+	If all else fails, try forcing the value into memory if
+	BITNUM is variable, and adjusting the address so that the
+	offset is constant.  Split the part that can only handle constant
+	bitsize and bitnum out into...
+	(extract_integral_bit_field): ...this new function.
+	(extract_bit_field): Take bitsize and bitnum as poly_uint64s
+	rather than unsigned HOST_WIDE_INTs.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* expmed.h (store_bit_field): Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.
+	* expmed.c (simple_mem_bitfield_p): Likewise.  Add a parameter
+	that returns the byte size.
+	(store_bit_field_1): Take bitsize and bitnum as
+	poly_uint64s rather than unsigned HOST_WIDE_INTs.  Update call
+	to simple_mem_bitfield_p.  Split the part that can only handle
+	constant bitsize and bitnum out into...
+	(store_integral_bit_field): ...this new function.
+	(store_bit_field): Take bitsize and bitnum as poly_uint64s rather
+	than unsigned HOST_WIDE_INTs.
+	(extract_bit_field_1): Update call to simple_mem_bitfield_p.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lra-int.h (lra_reg): Change offset from int to poly_int64.
+	(lra_insn_recog_data): Change sp_offset from HOST_WIDE_INT
+	to poly_int64.
+	(lra_eliminate_regs_1, eliminate_regs_in_insn): Change
+	update_sp_offset from a HOST_WIDE_INT to a poly_int64.
+	(lra_update_reg_val_offset, lra_reg_val_equal_p): Take the
+	offset as a poly_int64 rather than an int.
+	* lra-assigns.c (find_hard_regno_for_1): Handle poly_int64 offsets.
+	(setup_live_pseudos_and_spill_after_risky_transforms): Likewise.
+	* lra-constraints.c (equiv_address_substitution): Track offsets
+	as poly_int64s.
+	(emit_inc): Check poly_int_rtx_p instead of CONST_INT_P.
+	(curr_insn_transform): Handle the new form of sp_offset.
+	* lra-eliminations.c (lra_elim_table): Change previous_offset
+	and offset from HOST_WIDE_INT to poly_int64.
+	(print_elim_table, update_reg_eliminate): Update accordingly.
+	(self_elim_offsets): Change from HOST_WIDE_INT to poly_int64_pod.
+	(get_elimination): Update accordingly.
+	(form_sum): Check poly_int_rtx_p instead of CONST_INT_P.
+	(lra_eliminate_regs_1, eliminate_regs_in_insn): Change
+	update_sp_offset from a HOST_WIDE_INT to a poly_int64.  Handle
+	poly_int64 offsets generally.
+	(curr_sp_change): Change from HOST_WIDE_INT to poly_int64.
+	(mark_not_eliminable, init_elimination): Update accordingly.
+	(remove_reg_equal_offset_note): Return a bool and pass the new
+	offset back by pointer as a poly_int64.
+	* lra-remat.c (change_sp_offset): Take sp_offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	(do_remat): Track offsets poly_int64s.
+	* lra.c (lra_update_insn_recog_data, setup_sp_offset): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (mem_attrs): Add a default constructor.  Change size and
+	offset from HOST_WIDE_INT to poly_int64.
+	* emit-rtl.h (set_mem_offset, set_mem_size, adjust_address_1)
+	(adjust_automodify_address_1, set_mem_attributes_minus_bitpos)
+	(widen_memory_access): Take the sizes and offsets as poly_int64s
+	rather than HOST_WIDE_INTs.
+	* alias.c (ao_ref_from_mem): Handle the new form of MEM_OFFSET.
+	(offset_overlap_p): Take poly_int64s rather than HOST_WIDE_INTs
+	and ints.
+	(adjust_offset_for_component_ref): Change the offset from a
+	HOST_WIDE_INT to a poly_int64.
+	(nonoverlapping_memrefs_p): Track polynomial offsets and sizes.
+	* cfgcleanup.c (merge_memattrs): Update after mem_attrs changes.
+	* dce.c (find_call_stack_args): Likewise.
+	* dse.c (record_store): Likewise.
+	* dwarf2out.c (tls_mem_loc_descriptor, dw_sra_loc_expr): Likewise.
+	* print-rtl.c (rtx_writer::print_rtx): Likewise.
+	* read-rtl-function.c (test_loading_mem): Likewise.
+	* rtlanal.c (may_trap_p_1): Likewise.
+	* simplify-rtx.c (delegitimize_mem_from_attrs): Likewise.
+	* var-tracking.c (int_mem_offset, track_expr_p): Likewise.
+	* emit-rtl.c (mem_attrs_eq_p, get_mem_align_offset): Likewise.
+	(mem_attrs::mem_attrs): New function.
+	(set_mem_attributes_minus_bitpos): Change bitpos from a
+	HOST_WIDE_INT to poly_int64.
+	(set_mem_alias_set, set_mem_addr_space, set_mem_align, set_mem_expr)
+	(clear_mem_offset, clear_mem_size, change_address)
+	(get_spill_slot_decl, set_mem_attrs_for_spill): Directly
+	initialize mem_attrs.
+	(set_mem_offset, set_mem_size, adjust_address_1)
+	(adjust_automodify_address_1, offset_address, widen_memory_access):
+	Likewise.  Take poly_int64s rather than HOST_WIDE_INT.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtlanal.c (rtx_addr_can_trap_p_1): Take the offset and size
+	as poly_int64s rather than HOST_WIDE_INTs.  Use a size of -1
+	rather than 0 to represent an unknown size.  Assert that the size
+	is known when the mode isn't BLKmode.
+	(may_trap_p_1): Use -1 for unknown sizes.
+	(rtx_addr_can_trap_p): Likewise.  Pass BLKmode rather than VOIDmode.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* dse.c (store_info): Change offset and width from HOST_WIDE_INT
+	to poly_int64.  Update commentary for positions_needed.large.
+	(read_info_type): Change offset and width from HOST_WIDE_INT
+	to poly_int64.
+	(set_usage_bits): Likewise.
+	(canon_address): Return the offset as a poly_int64 rather than
+	a HOST_WIDE_INT.  Use strip_offset_and_add.
+	(set_all_positions_unneeded, any_positions_needed_p): Use
+	positions_needed.large to track stores with non-constant widths.
+	(all_positions_needed_p): Likewise.  Take the offset and width
+	as poly_int64s rather than ints.  Assert that rhs is nonnull.
+	(record_store): Cope with non-constant offsets and widths.
+	Nullify the rhs of an earlier store if we can't tell which bytes
+	of it are needed.
+	(find_shift_sequence): Take the access_size and shift as poly_int64s
+	rather than ints.
+	(get_stored_val): Take the read_offset and read_width as poly_int64s
+	rather than HOST_WIDE_INTs.
+	(check_mem_read_rtx, scan_stores, scan_reads, dse_step5): Handle
+	non-constant offsets and widths.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* inchash.h (inchash::hash::add_poly_int): New function.
+	* tree-ssa-alias.h (ao_ref::offset, ao_ref::size, ao_ref::max_size):
+	Use poly_int64 rather than HOST_WIDE_INT.
+	(ao_ref::max_size_known_p): New function.
+	* tree-ssa-sccvn.h (vn_reference_op_struct::off): Use poly_int64_pod
+	rather than HOST_WIDE_INT.
+	* tree-ssa-alias.c (ao_ref_base): Apply get_ref_base_and_extent
+	to temporaries until its interface is adjusted to match.
+	(ao_ref_init_from_ptr_and_size): Handle polynomial offsets and sizes.
+	(aliasing_component_refs_p, decl_refs_may_alias_p)
+	(indirect_ref_may_alias_decl_p, indirect_refs_may_alias_p): Take
+	the offsets and max_sizes as poly_int64s instead of HOST_WIDE_INTs.
+	(refs_may_alias_p_1, stmt_kills_ref_p): Adjust for changes to
+	ao_ref fields.
+	* alias.c (ao_ref_from_mem): Likewise.
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1): Likewise.
+	* tree-ssa-dse.c (valid_ao_ref_for_dse, normalize_ref)
+	(clear_bytes_written_by, setup_live_bytes_from_ref, compute_trims)
+	(maybe_trim_complex_store, maybe_trim_constructor_store)
+	(live_bytes_read, dse_classify_store): Likewise.
+	* tree-ssa-sccvn.c (vn_reference_compute_hash, vn_reference_eq):
+	(copy_reference_ops_from_ref, ao_ref_init_from_vn_reference)
+	(fully_constant_vn_reference_p, valueize_refs_1): Likewise.
+	(vn_reference_lookup_3): Likewise.
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p)
+	(indirect_refs_may_alias_p): Use ranges_may_overlap_p
+	instead of ranges_overlap_p.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-ssa-alias.c (same_addr_size_stores_p): Take the offsets and
+	sizes as poly_int64s rather than HOST_WIDE_INTs.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gimple-fold.h (fold_ctor_reference): Take the offset and size
+	as poly_uint64 rather than unsigned HOST_WIDE_INT.
+	* gimple-fold.c (fold_ctor_reference): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (dwarf_poly_indeterminate_value): New hook.
+	* targhooks.h (default_dwarf_poly_indeterminate_value): Declare.
+	* targhooks.c (default_dwarf_poly_indeterminate_value): New function.
+	* doc/tm.texi.in (TARGET_DWARF_POLY_INDETERMINATE_VALUE): Document.
+	* doc/tm.texi: Regenerate.
+	* dwarf2out.h (build_cfa_loc, build_cfa_aligned_loc): Take the
+	offset as a poly_int64.
+	* dwarf2out.c (new_reg_loc_descr): Move later in file.  Take the
+	offset as a poly_int64.
+	(loc_descr_plus_const, loc_list_plus_const, build_cfa_aligned_loc):
+	Take the offset as a poly_int64.
+	(build_cfa_loc): Likewise.  Use loc_descr_plus_const.
+	(frame_pointer_fb_offset): Change to a poly_int64.
+	(int_loc_descriptor): Take the offset as a poly_int64.  Use
+	targetm.dwarf_poly_indeterminate_value for polynomial offsets.
+	(based_loc_descr): Take the offset as a poly_int64.
+	Use strip_offset_and_add to handle (plus X (const)).
+	Use new_reg_loc_descr instead of an open-coded version of the
+	previous implementation.
+	(mem_loc_descriptor): Handle CONST_POLY_INT.
+	(compute_frame_pointer_to_fb_displacement): Take the offset as a
+	poly_int64.  Use strip_offset_and_add to handle (plus X (const)).
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (reg_attrs::offset): Change from HOST_WIDE_INT to poly_int64.
+	(gen_rtx_REG_offset): Take the offset as a poly_int64.
+	* inchash.h (inchash::hash::add_poly_hwi): New function.
+	* gengtype.c (main): Register poly_int64.
+	* emit-rtl.c (reg_attr_hasher::hash): Use inchash.  Treat the
+	offset as a poly_int.
+	(reg_attr_hasher::equal): Use must_eq to compare offsets.
+	(get_reg_attrs, update_reg_offset, gen_rtx_REG_offset): Take the
+	offset as a poly_int64.
+	(set_reg_attrs_from_value): Treat the offset as a poly_int64.
+	* print-rtl.c (print_poly_int): New function.
+	(rtx_writer::print_rtx_operand_code_r): Treat REG_OFFSET as
+	a poly_int.
+	* var-tracking.c (track_offset_p, get_tracked_reg_offset): New
+	functions.
+	(var_reg_set, var_reg_delete_and_set, var_reg_delete): Use them.
+	(same_variable_part_p, track_loc_p): Take the offset as a poly_int64.
+	(vt_get_decl_and_offset): Return the offset as a poly_int64.
+	Enforce track_offset_p for parts of a PARALLEL.
+	(vt_add_function_parameter): Use const_offset for the final
+	offset to track.  Use get_tracked_reg_offset for the parts
+	of a PARALLEL.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (truly_noop_truncation): Take poly_uint64s instead of
+	unsigned ints.  Change default to hook_bool_puint64_puint64_true.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_bool_uint_uint_true): Delete.
+	(hook_bool_puint64_puint64_true): Declare.
+	* hooks.c (hook_bool_uint_uint_true): Delete.
+	(hook_bool_puint64_puint64_true): New function.
+	* config/mips/mips.c (mips_truly_noop_truncation): Take poly_uint64s
+	instead of unsigned ints.
+	* config/spu/spu.c (spu_truly_noop_truncation): Likewise.
+	* config/tilegx/tilegx.c (tilegx_truly_noop_truncation): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* optabs.h (expand_operand): Add an int_value field.
+	(create_expand_operand): Add an int_value parameter and use it
+	to initialize the new expand_operand field.
+	(create_integer_operand): Replace with a declaration of a function
+	that accepts poly_int64s.  Move the implementation to...
+	* optabs.c (create_integer_operand): ...here.
+	(maybe_legitimize_operand): For EXPAND_INTEGER, check whether
+	the mode preserves the value of int_value, instead of calling
+	const_int_operand on the rtx.  Use gen_int_mode to generate
+	the new rtx.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* dumpfile.h (dump_dec): Declare.
+	* dumpfile.c (dump_dec): New function.
+	* pretty-print.h (pp_wide_integer): Turn into a function and
+	declare a poly_int version.
+	* pretty-print.c (pp_wide_integer): New function for poly_ints.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/generic.texi (POLY_INT_CST): Document.
+	* tree.def (POLY_INT_CST): New tree code.
+	* treestruct.def (TS_POLY_INT_CST): New tree layout.
+	* tree-core.h (tree_poly_int_cst): New struct.
+	(tree_node): Add a poly_int_cst field.
+	* tree.h (POLY_INT_CST_P, POLY_INT_CST_COEFF): New macros.
+	(wide_int_to_tree, force_fit_type): Take a poly_wide_int_ref
+	instead of a wide_int_ref.
+	(build_int_cst, build_int_cst_type): Take a poly_int64 instead
+	of a HOST_WIDE_INT.
+	(build_int_cstu, build_array_type_nelts): Take a poly_uint64
+	instead of an unsigned HOST_WIDE_INT.
+	(build_poly_int_cst, tree_fits_poly_int64_p, tree_fits_poly_uint64_p)
+	(ptrdiff_tree_p): Declare.
+	(tree_to_poly_int64, tree_to_poly_uint64): Likewise.  Provide
+	extern inline implementations if the target doesn't use POLY_INT_CST.
+	(poly_int_tree_p): New function.
+	(wi::unextended_tree): New class.
+	(wi::int_traits <unextended_tree>): New override.
+	(wi::extended_tree): Add a default constructor.
+	(wi::extended_tree::get_tree): New function.
+	(wi::widest_extended_tree, wi::offset_extended_tree): New typedefs.
+	(wi::tree_to_widest_ref, wi::tree_to_offset_ref): Use them.
+	(wi::tree_to_poly_widest_ref, wi::tree_to_poly_offset_ref)
+	(wi::tree_to_poly_wide_ref): New typedefs.
+	(wi::ints_for): Provide overloads for extended_tree and
+	unextended_tree.
+	(poly_int_cst_value, wi::to_poly_widest, wi::to_poly_offset)
+	(wi::to_wide): New functions.
+	(wi::fits_to_boolean_p, wi::fits_to_tree_p): Handle poly_ints.
+	* tree.c (poly_int_cst_hasher): New struct.
+	(poly_int_cst_hash_table): New variable.
+	(tree_node_structure_for_code, tree_code_size, simple_cst_equal)
+	(valid_constant_size_p, add_expr, drop_tree_overflow): Handle
+	POLY_INT_CST.
+	(initialize_tree_contains_struct): Handle TS_POLY_INT_CST.
+	(init_ttree): Initialize poly_int_cst_hash_table.
+	(build_int_cst, build_int_cst_type, build_invariant_address): Take
+	a poly_int64 instead of a HOST_WIDE_INT.
+	(build_int_cstu, build_array_type_nelts): Take a poly_uint64
+	instead of an unsigned HOST_WIDE_INT.
+	(wide_int_to_tree): Rename to...
+	(wide_int_to_tree_1): ...this.
+	(build_new_poly_int_cst, build_poly_int_cst): New functions.
+	(force_fit_type): Take a poly_wide_int_ref instead of a wide_int_ref.
+	(wide_int_to_tree): New function that takes a poly_wide_int_ref.
+	(ptrdiff_tree_p, tree_to_poly_int64, tree_to_poly_uint64)
+	(tree_fits_poly_int64_p, tree_fits_poly_uint64_p): New functions.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body, hash_tree): Handle
+	TS_POLY_INT_CST.
+	* tree-streamer-in.c (lto_input_ts_poly_tree_pointers): Likewise.
+	(streamer_read_tree_body): Likewise.
+	* tree-streamer-out.c (write_ts_poly_tree_pointers): Likewise.
+	(streamer_write_tree_body): Likewise.
+	* tree-streamer.c (streamer_check_handled_ts_structures): Likewise.
+	* asan.c (asan_protect_global): Require the size to be an INTEGER_CST.
+	* cfgexpand.c (expand_debug_expr): Handle POLY_INT_CST.
+	* expr.c (expand_expr_real_1, const_vector_from_tree): Likewise.
+	* gimple-expr.h (is_gimple_constant): Likewise.
+	* gimplify.c (maybe_with_size_expr): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* tree-data-ref.c (data_ref_compare_tree): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Likewise.
+	* tree-vrp.c (compare_values_warnv): Likewise.
+	* tree-ssa-loop-ivopts.c (determine_base_object, constant_multiple_of)
+	(get_loop_invariant_expr, add_candidate_1, get_computation_aff_1)
+	(force_expr_to_var_cost): Likewise.
+	* tree-ssa-loop.c (for_each_index): Likewise.
+	* fold-const.h (build_invariant_address, size_int_kind): Take a
+	poly_int64 instead of a HOST_WIDE_INT.
+	* fold-const.c (fold_negate_expr_1, const_binop, const_unop)
+	(fold_convert_const, multiple_of_p, fold_negate_const): Handle
+	POLY_INT_CST.
+	(size_binop_loc): Likewise.  Allow int_const_binop_1 to fail.
+	(int_const_binop_2): New function, split out from...
+	(int_const_binop_1): ...here.  Handle POLY_INT_CST.
+	(size_int_kind): Take a poly_int64 instead of a HOST_WIDE_INT.
+	* expmed.c (make_tree): Handle CONST_POLY_INT_P.
+	* gimple-ssa-strength-reduction.c (slsr_process_add)
+	(slsr_process_mul): Check for INTEGER_CSTs before using them
+	as candidates.
+	* stor-layout.c (bits_from_bytes): New function.
+	(bit_from_pos): Use it.
+	(layout_type): Likewise.  For vectors, multiply the TYPE_SIZE_UNIT
+	by BITS_PER_UNIT to get the TYPE_SIZE.
+	* tree-cfg.c (verify_expr, verify_types_in_gimple_reference): Allow
+	MEM_REF and TARGET_MEM_REF offsets to be a POLY_INT_CST.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/rtl.texi (const_poly_int): Document.  Also document the
+	rtl sharing behavior.
+	* gengenrtl.c (excluded_rtx): Return true for CONST_POLY_INT.
+	* rtl.h (const_poly_int_def): New struct.
+	(rtx_def::u): Add a cpi field.
+	(CASE_CONST_UNIQUE, CASE_CONST_ANY): Add CONST_POLY_INT.
+	(CONST_POLY_INT_P, CONST_POLY_INT_COEFFS): New macros.
+	(wi::rtx_to_poly_wide_ref): New typedef
+	(const_poly_int_value, wi::to_poly_wide, rtx_to_poly_int64)
+	(poly_int_rtx_p): New functions.
+	(trunc_int_for_mode): Declare a poly_int64 version.
+	(plus_constant): Take a poly_int64 instead of a HOST_WIDE_INT.
+	(immed_wide_int_const): Take a poly_wide_int_ref rather than
+	a wide_int_ref.
+	(strip_offset): Declare.
+	(strip_offset_and_add): New function.
+	* rtl.def (CONST_POLY_INT): New rtx code.
+	* rtl.c (rtx_size): Handle CONST_POLY_INT.
+	(shared_const_p): Use poly_int_rtx_p.
+	* emit-rtl.h (gen_int_mode): Take a poly_int64 instead of a
+	HOST_WIDE_INT.
+	(gen_int_shift_amount): Likewise.
+	* emit-rtl.c (const_poly_int_hasher): New class.
+	(const_poly_int_htab): New variable.
+	(init_emit_once): Initialize it when NUM_POLY_INT_COEFFS > 1.
+	(const_poly_int_hasher::hash): New function.
+	(const_poly_int_hasher::equal): Likewise.
+	(gen_int_mode): Take a poly_int64 instead of a HOST_WIDE_INT.
+	(immed_wide_int_const): Rename to...
+	(immed_wide_int_const_1): ...this and make static.
+	(immed_wide_int_const): New function, taking a poly_wide_int_ref
+	instead of a wide_int_ref.
+	(gen_int_shift_amount): Take a poly_int64 instead of a HOST_WIDE_INT.
+	(gen_lowpart_common): Handle CONST_POLY_INT.
+	* cse.c (hash_rtx_cb, equiv_constant): Likewise.
+	* cselib.c (cselib_hash_rtx): Likewise.
+	* dwarf2out.c (const_ok_for_output_1): Likewise.
+	* expr.c (convert_modes): Likewise.
+	* print-rtl.c (rtx_writer::print_rtx, print_value): Likewise.
+	* rtlhash.c (add_rtx): Likewise.
+	* explow.c (trunc_int_for_mode): Add a poly_int64 version.
+	(plus_constant): Take a poly_int64 instead of a HOST_WIDE_INT.
+	Handle existing CONST_POLY_INT rtxes.
+	* expmed.h (expand_shift): Take a poly_int64 instead of a
+	HOST_WIDE_INT.
+	* expmed.c (expand_shift): Likewise.
+	* rtlanal.c (strip_offset): New function.
+	(commutative_operand_precedence): Give CONST_POLY_INT the same
+	precedence as CONST_DOUBLE and put CONST_WIDE_INT between that
+	and CONST_INT.
+	* rtl-tests.c (const_poly_int_tests): New struct.
+	(rtl_tests_c_tests): Use it.
+	* simplify-rtx.c (simplify_const_unary_operation): Handle
+	CONST_POLY_INT.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_binary_operation_1): Fold additions of symbolic constants
+	and CONST_POLY_INTs.
+	(simplify_subreg): Handle extensions and truncations of
+	CONST_POLY_INTs.
+	(simplify_const_poly_int_tests): New struct.
+	(simplify_rtx_c_tests): Use it.
+	* wide-int.h (storage_ref): Add default constructor.
+	(wide_int_ref_storage): Likewise.
+	(trailing_wide_ints): Use GTY((user)).
+	(trailing_wide_ints::operator[]): Add a const version.
+	(trailing_wide_ints::get_precision): New function.
+	(trailing_wide_ints::extra_size): Likewise.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* emit-rtl.h (gen_int_shift_amount): Declare.
+	* emit-rtl.c (gen_int_shift_amount): New function.
+	* asan.c (asan_emit_stack_protection): Use gen_int_shift_amount
+	instead of GEN_INT.
+	* calls.c (shift_return_value): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* dse.c (find_shift_sequence): Likewise.
+	* expmed.c (init_expmed_one_mode, store_bit_field_1, expand_shift_1)
+	(expand_shift, expand_smod_pow2): Likewise.
+	* lower-subreg.c (shift_cost): Likewise.
+	* optabs.c (expand_superword_shift, expand_doubleword_mult)
+	(expand_unop, expand_binop, shift_amt_for_vec_perm_mask)
+	(expand_vec_perm_var): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_binary_operation_1): Likewise.
+	* combine.c (try_combine, find_split_point, force_int_to_mode)
+	(simplify_shift_const_1, simplify_shift_const): Likewise.
+	(change_zero_ext): Likewise.  Use simplify_gen_binary.
+
+2017-12-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* poly-int.h (multiple_p): Fix handling of two non-poly_ints.
+
+2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/invoke.texi (ARM Options): Document accepted extension options
+	for -march=armv8.3-a.
+
+2017-12-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/83105
+	* config.gcc (arm*-*-linux*): When configured with --with-float=hard
+	or --with-float=softfp, set the default CPU to arm10e.
+
+2017-12-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/constraints.md (J, K, L): Use IN_RANGE macro.
+	* config/visium/predicates.md (const_shift_operand): Likewise.
+	* config/visium/visium.c (visium_legitimize_address): Fix oversight.
+	(visium_legitimize_reload_address): Likewise.
+
+2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82975
+	* config/arm/arm.h (TEST_REGNO): Adjust comment as expected in r255830.
+
+2017-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83490
+	* calls.c (compute_argument_addresses): Ignore TYPE_EMPTY_P arguments.
+
+2017-12-20  Julia Koval  <julia.koval@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_VPCLMULQDQ_SET,
+	OPTION_MASK_ISA_VPCLMULQDQ_UNSET): New.
+	(ix86_handle_option): Handle -mvpclmulqdq, move cx6 to flags2.
+	* config.gcc: Include vpclmulqdqintrin.h.
+	* config/i386/cpuid.h: Handle bit_VPCLMULQDQ.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Handle
+	-mvpclmulqdq.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpclmulqdq_v2di,
+	__builtin_ia32_vpclmulqdq_v4di, __builtin_ia32_vpclmulqdq_v8di): New.
+	* config/i386/i386-c.c (__VPCLMULQDQ__): New.
+	* config/i386/i386.c (isa2_opts): Add -mcx16.
+	(isa_opts): Add -mpclmulqdq, remove -mcx16.
+	(ix86_option_override_internal): Move mcx16 to flags2.
+	(ix86_valid_target_attribute_inner_p): Add vpclmulqdq.
+	(ix86_expand_builtin): Handle OPTION_MASK_ISA_VPCLMULQDQ.
+	* config/i386/i386.h (TARGET_VPCLMULQDQ, TARGET_VPCLMULQDQ_P): New.
+	* config/i386/i386.opt: Add mvpclmulqdq, move mcx16 to flags2.
+	* config/i386/immintrin.h: Include vpclmulqdqintrin.h.
+	* config/i386/sse.md (vpclmulqdq_<mode>): New pattern.
+	* config/i386/vpclmulqdqintrin.h (_mm512_clmulepi64_epi128,
+	_mm_clmulepi64_epi128, _mm256_clmulepi64_epi128): New intrinsics.
+	* doc/invoke.texi: Add -mvpclmulqdq.
+
+2017-12-20  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/83423
+	* config/i386/i386.c (ix86_static_chain): Move
+	DECL_STATIC_CHAIN test ...
+	* calls.c (rtx_for_static_chain): ... here.  New function.
+	* calls.h (rtx_for_static_chain): Declare.
+	* builtins.c (expand_builtin_setjmp_receiver): Use rtx_for_static_chain
+	instead of targetm.calls.static_chain.
+	* df-scan.c (df_get_entry_block_def_set): Same.
+
+2017-12-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/83493
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_node_for): Unshare ub
+	and lb.
+
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-ssa-sprintf.c (format_directive): Use inform_n instead of
+	inform with hardcoded english plural handling.
+
+2017-12-18  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/83477
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis): For
+	a non-virtual PHI, always push a new range.
+
 2017-12-19  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/77608
@@ -10,7 +2109,7 @@
 	character load case, if get_stridx on MEM_REF's operand doesn't
 	look usable, retry with get_addr_stridx.
 
-2017-12-19  Alexandre Oliva <aoliva@redhat.com>
+2017-12-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/83422
 	* var-tracking.c (vt_debug_insns_local): Do not drop markers.
@@ -80,7 +2179,8 @@
 	* sched-rgn.c (sched_rgn_init): Likewise.
 	* diagnostic-show-locus.c (layout::show_ruler): Likewise.
 	* combine.c (find_split_point, simplify_if_then_else, force_to_mode,
-	if_then_else_cond, simplify_shift_const_1, simplify_comparison): Likewise.
+	if_then_else_cond, simplify_shift_const_1, simplify_comparison):
+	Likewise.
 	* explow.c (eliminate_constant_term): Likewise.
 	* final.c (leaf_renumber_regs_insn): Likewise.
 	* cfgrtl.c (print_rtl_with_bb): Likewise.
@@ -130,7 +2230,7 @@
 
 	PR c++/83489
 	* config/i386/i386.c (init_cumulative_args): Don't check TYPE_EMPTY_P
-	on an error node.						     
+	on an error node.
 
 2017-12-19  Claudiu Zissulescu  <claziss@synopsys.com>
 
@@ -195,7 +2295,6 @@
 	* tree-ssa-dom.c (record_equivalences_from_phis): Fix handling
 	of degenerates resulting from ignoring an edge.
 
->>>>>>> .r255835
 2017-12-18  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/83373
@@ -250,9 +2349,9 @@
 	* doc/extend.texi (x86 Function Attributes): Reformat nocf_check
 	example	to avoid overfull hbox.
 	* doc/invoke.texi (Option Summary): Add missing @gol.
-	(C++ Dialect Options): Reformat -Wnoexcept-type example to avoid 
+	(C++ Dialect Options): Reformat -Wnoexcept-type example to avoid
 	overfull hbox.
-	
+
 2017-12-17  Sandra Loosemore  <sandra@codesourcery.com>
 	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -580,13 +2679,13 @@
 	optimizing for size.  Don't pessimize blocks which will be
 	copied, but all the statements will be dead.
 
-2017-12-15  Alexandre Oliva <aoliva@redhat.com>
+2017-12-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-optimization/81165
 	* tree-ssa-threadupdate.c (uses_in_bb): New.
 	(estimate_threading_killed_stmts): New.
 	* tree-ssa-threadupdate.h (estimate_threading_killed_stmts): Prototype.
-	* tree-ssa-threadedge.c 
+	* tree-ssa-threadedge.c
 	(record_temporary_equivalences_from_stmts_at_dest): Expand limit
 	when its hit.
 
@@ -712,7 +2811,8 @@
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesenclast_v16qi,
-	__builtin_ia32_vaesenclast_v32qi, __builtin_ia32_vaesenclast_v64qi): New.
+	__builtin_ia32_vaesenclast_v32qi, __builtin_ia32_vaesenclast_v64qi):
+	New.
 	* config/i386/sse.md (vaesenclast_<mode>): New pattern.
 	* config/i386/vaesintrin.h (_mm256_aesenclast_epi128,
 	_mm512_aesenclast_epi128, _mm_aesenclast_epi128): New intrinsics.
@@ -728,7 +2828,8 @@
 2017-12-15  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386-builtin.def (__builtin_ia32_vaesdeclast_v16qi,
-	__builtin_ia32_vaesdeclast_v32qi, __builtin_ia32_vaesdeclast_v64qi): New.
+	__builtin_ia32_vaesdeclast_v32qi, __builtin_ia32_vaesdeclast_v64qi):
+	New.
 	* config/i386/sse.md (vaesdeclast_<mode>): New pattern.
 	* config/i386/vaesintrin.h (_mm256_aesdeclast_epi128,
 	_mm512_aesdeclast_epi128, _mm_aesdeclast_epi128): New intrinsics.
@@ -784,7 +2885,7 @@
 	PR bootstrap/83396
 	* reload1.c (emit_input_reload_insns): Skip debug markers.
 
-2017-12-14  Alexandre Oliva <aoliva@redhat.com>
+2017-12-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.c (rest_of_insert_endbranch): Use call loc
 	for its nop_endbr.
@@ -822,8 +2923,7 @@
 
 	PR tree-optimization/83418
 	* vr-values.c (vr_values::extract_range_for_var_from_comparison_expr):
-	Instead of asserting we don't get unfolded comparisons deal with
-	them.
+	Instead of asserting we don't get unfolded comparisons deal with them.
 
 2017-12-14  Jakub Jelinek  <jakub@redhat.com>
 
@@ -887,7 +2987,7 @@
 	(ASSERT_MAYBE_NE_AT): New macros.
 
 2017-12-13  Eric Botcazou  <ebotcazou@adacore.com>
-            Dominik Vogt  <vogt@linux.vnet.ibm.com>
+	    Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	PR middle-end/78468
 	* emit-rtl.c (init_emit): Remove ??? comment.
@@ -903,7 +3003,7 @@
 	* config/rs6000/ppc-auxv.h (PPC_FEATURE2_HTM_NO_SUSPEND): New define.
 	* config/rs6000/rs6000.c (cpu_supports_info): Use it.
 
-2017-12-13  Alexandre Oliva <aoliva@redhat.com>
+2017-12-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR bootstrap/83396
 	* reload1.c (eliminate_regs_in_insn): Skip debug markers.
@@ -2093,7 +4193,7 @@
 	* config/xtensa/xtensa.h (FRAME_GROWS_DOWNWARD): Set to 1 if
 	ASAN is enabled.
 
-2017-12-05  Richard Biener   <rguenther@suse.de>
+2017-12-05  Richard Biener  <rguenther@suse.de>
 
 	* timevar.def (TV_TREE_RECIP, TV_TREE_SINCOS, TV_TREE_WIDEN_MUL): Add.
 	* tree-ssa-math-opts.c (pass_data_cse_reciprocal): Use TV_TREE_RECIP.

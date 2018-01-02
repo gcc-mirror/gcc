@@ -180,6 +180,23 @@ print_mem_expr (FILE *outfile, const_tree expr)
 }
 #endif
 
+/* Print X to FILE.  */
+
+static void
+print_poly_int (FILE *file, poly_int64 x)
+{
+  HOST_WIDE_INT const_x;
+  if (x.is_constant (&const_x))
+    fprintf (file, HOST_WIDE_INT_PRINT_DEC, const_x);
+  else
+    {
+      fprintf (file, "[" HOST_WIDE_INT_PRINT_DEC, x.coeffs[0]);
+      for (int i = 1; i < NUM_POLY_INT_COEFFS; ++i)
+	fprintf (file, ", " HOST_WIDE_INT_PRINT_DEC, x.coeffs[i]);
+      fprintf (file, "]");
+    }
+}
+
 /* Subroutine of print_rtx_operand for handling code '0'.
    0 indicates a field for internal use that should not be printed.
    However there are various special cases, such as the third field
@@ -509,9 +526,11 @@ rtx_writer::print_rtx_operand_code_r (const_rtx in_rtx)
       if (REG_EXPR (in_rtx))
 	print_mem_expr (m_outfile, REG_EXPR (in_rtx));
 
-      if (REG_OFFSET (in_rtx))
-	fprintf (m_outfile, "+" HOST_WIDE_INT_PRINT_DEC,
-		 REG_OFFSET (in_rtx));
+      if (maybe_ne (REG_OFFSET (in_rtx), 0))
+	{
+	  fprintf (m_outfile, "+");
+	  print_poly_int (m_outfile, REG_OFFSET (in_rtx));
+	}
       fputs (" ]", m_outfile);
     }
   if (regno != ORIGINAL_REGNO (in_rtx))
@@ -617,6 +636,11 @@ rtx_writer::print_rtx_operand (const_rtx in_rtx, int idx)
 
     case 'i':
       print_rtx_operand_code_i (in_rtx, idx);
+      break;
+
+    case 'p':
+      fprintf (m_outfile, " ");
+      print_poly_int (m_outfile, SUBREG_BYTE (in_rtx));
       break;
 
     case 'r':
@@ -875,10 +899,16 @@ rtx_writer::print_rtx (const_rtx in_rtx)
 	fputc (' ', m_outfile);
 
       if (MEM_OFFSET_KNOWN_P (in_rtx))
-	fprintf (m_outfile, "+" HOST_WIDE_INT_PRINT_DEC, MEM_OFFSET (in_rtx));
+	{
+	  fprintf (m_outfile, "+");
+	  print_poly_int (m_outfile, MEM_OFFSET (in_rtx));
+	}
 
       if (MEM_SIZE_KNOWN_P (in_rtx))
-	fprintf (m_outfile, " S" HOST_WIDE_INT_PRINT_DEC, MEM_SIZE (in_rtx));
+	{
+	  fprintf (m_outfile, " S");
+	  print_poly_int (m_outfile, MEM_SIZE (in_rtx));
+	}
 
       if (MEM_ALIGN (in_rtx) != 1)
 	fprintf (m_outfile, " A%u", MEM_ALIGN (in_rtx));
@@ -907,6 +937,17 @@ rtx_writer::print_rtx (const_rtx in_rtx)
     case CONST_WIDE_INT:
       fprintf (m_outfile, " ");
       cwi_output_hex (m_outfile, in_rtx);
+      break;
+
+    case CONST_POLY_INT:
+      fprintf (m_outfile, " [");
+      print_dec (CONST_POLY_INT_COEFFS (in_rtx)[0], m_outfile, SIGNED);
+      for (unsigned int i = 1; i < NUM_POLY_INT_COEFFS; ++i)
+	{
+	  fprintf (m_outfile, ", ");
+	  print_dec (CONST_POLY_INT_COEFFS (in_rtx)[i], m_outfile, SIGNED);
+	}
+      fprintf (m_outfile, "]");
       break;
 #endif
 
@@ -1595,6 +1636,17 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       }
       break;
 
+    case CONST_POLY_INT:
+      pp_left_bracket (pp);
+      pp_wide_int (pp, CONST_POLY_INT_COEFFS (x)[0], SIGNED);
+      for (unsigned int i = 1; i < NUM_POLY_INT_COEFFS; ++i)
+	{
+	  pp_string (pp, ", ");
+	  pp_wide_int (pp, CONST_POLY_INT_COEFFS (x)[i], SIGNED);
+	}
+      pp_right_bracket (pp);
+      break;
+
     case CONST_DOUBLE:
       if (FLOAT_MODE_P (GET_MODE (x)))
 	{
@@ -1641,7 +1693,8 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       break;
     case SUBREG:
       print_value (pp, SUBREG_REG (x), verbose);
-      pp_printf (pp, "#%d", SUBREG_BYTE (x));
+      pp_printf (pp, "#");
+      pp_wide_integer (pp, SUBREG_BYTE (x));
       break;
     case SCRATCH:
     case CC0:

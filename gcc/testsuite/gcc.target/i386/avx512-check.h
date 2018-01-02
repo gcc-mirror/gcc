@@ -75,6 +75,9 @@ main ()
 #ifdef AVX512VPOPCNTDQ
       && (ecx & bit_AVX512VPOPCNTDQ)
 #endif
+#ifdef AVX512BITALG
+      && (ecx & bit_AVX512BITALG)
+#endif
 #ifdef GFNI
       && (ecx & bit_GFNI)
 #endif
@@ -86,6 +89,9 @@ main ()
 #endif
 #ifdef VAES
       && (ecx & bit_VAES)
+#endif
+#ifdef VPCLMULQDQ
+      && (ecx & bit_VPCLMULQDQ)
 #endif
       && avx512f_os_support ())
     {

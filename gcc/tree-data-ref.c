@@ -627,7 +627,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
     case ADDR_EXPR:
       {
 	tree base, poffset;
-	HOST_WIDE_INT pbitsize, pbitpos;
+	poly_int64 pbitsize, pbitpos, pbytepos;
 	machine_mode pmode;
 	int punsignedp, preversep, pvolatilep;
 
@@ -636,10 +636,10 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	  = get_inner_reference (op0, &pbitsize, &pbitpos, &poffset, &pmode,
 				 &punsignedp, &preversep, &pvolatilep);
 
-	if (pbitpos % BITS_PER_UNIT != 0)
+	if (!multiple_p (pbitpos, BITS_PER_UNIT, &pbytepos))
 	  return false;
 	base = build_fold_addr_expr (base);
-	off0 = ssize_int (pbitpos / BITS_PER_UNIT);
+	off0 = ssize_int (pbytepos);
 
 	if (poffset)
 	  {
@@ -789,7 +789,7 @@ bool
 dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
 		      struct loop *loop)
 {
-  HOST_WIDE_INT pbitsize, pbitpos;
+  poly_int64 pbitsize, pbitpos;
   tree base, poffset;
   machine_mode pmode;
   int punsignedp, preversep, pvolatilep;
@@ -804,7 +804,8 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
 			      &punsignedp, &preversep, &pvolatilep);
   gcc_assert (base != NULL_TREE);
 
-  if (pbitpos % BITS_PER_UNIT != 0)
+  poly_int64 pbytepos;
+  if (!multiple_p (pbitpos, BITS_PER_UNIT, &pbytepos))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "failed: bit offset alignment.\n");
@@ -819,16 +820,16 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
     }
 
   /* Calculate the alignment and misalignment for the inner reference.  */
-  unsigned int HOST_WIDE_INT base_misalignment;
-  unsigned int base_alignment;
-  get_object_alignment_1 (base, &base_alignment, &base_misalignment);
+  unsigned int HOST_WIDE_INT bit_base_misalignment;
+  unsigned int bit_base_alignment;
+  get_object_alignment_1 (base, &bit_base_alignment, &bit_base_misalignment);
 
   /* There are no bitfield references remaining in BASE, so the values
      we got back must be whole bytes.  */
-  gcc_assert (base_alignment % BITS_PER_UNIT == 0
-	      && base_misalignment % BITS_PER_UNIT == 0);
-  base_alignment /= BITS_PER_UNIT;
-  base_misalignment /= BITS_PER_UNIT;
+  gcc_assert (bit_base_alignment % BITS_PER_UNIT == 0
+	      && bit_base_misalignment % BITS_PER_UNIT == 0);
+  unsigned int base_alignment = bit_base_alignment / BITS_PER_UNIT;
+  poly_int64 base_misalignment = bit_base_misalignment / BITS_PER_UNIT;
 
   if (TREE_CODE (base) == MEM_REF)
     {
@@ -836,8 +837,8 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
 	{
 	  /* Subtract MOFF from the base and add it to POFFSET instead.
 	     Adjust the misalignment to reflect the amount we subtracted.  */
-	  offset_int moff = mem_ref_offset (base);
-	  base_misalignment -= moff.to_short_addr ();
+	  poly_offset_int moff = mem_ref_offset (base);
+	  base_misalignment -= moff.force_shwi ();
 	  tree mofft = wide_int_to_tree (sizetype, moff);
 	  if (!poffset)
 	    poffset = mofft;
@@ -885,7 +886,7 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
         }
     }
 
-  init = ssize_int (pbitpos / BITS_PER_UNIT);
+  init = ssize_int (pbytepos);
 
   /* Subtract any constant component from the base and add it to INIT instead.
      Adjust the misalignment to reflect the amount we subtracted.  */
@@ -924,8 +925,14 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
   drb->offset = fold_convert (ssizetype, offset_iv.base);
   drb->init = init;
   drb->step = step;
-  drb->base_alignment = base_alignment;
-  drb->base_misalignment = base_misalignment & (base_alignment - 1);
+  if (known_misalignment (base_misalignment, base_alignment,
+			  &drb->base_misalignment))
+    drb->base_alignment = base_alignment;
+  else
+    {
+      drb->base_alignment = known_alignment (base_misalignment);
+      drb->base_misalignment = 0;
+    }
   drb->offset_alignment = highest_pow2_factor (offset_iv.base);
   drb->step_alignment = highest_pow2_factor (step);
 
@@ -1235,6 +1242,10 @@ data_ref_compare_tree (tree t1, tree t2)
       break;
 
     default:
+      if (POLY_INT_CST_P (t1))
+	return compare_sizes_for_sort (wi::to_poly_widest (t1),
+				       wi::to_poly_widest (t2));
+
       tclass = TREE_CODE_CLASS (code);
 
       /* For decls, compare their UIDs.  */
@@ -1406,7 +1417,7 @@ comp_dr_with_seg_len_pair (const void *pa_, const void *pb_)
 
 void
 prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
-			       unsigned HOST_WIDE_INT factor)
+			       poly_uint64 factor)
 {
   /* Sort the collected data ref pairs so that we can scan them once to
      combine all possible aliasing checks.  */
@@ -1451,51 +1462,63 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      std::swap (dr_a2, dr_b2);
 	    }
 
+	  poly_int64 init_a1, init_a2;
 	  if (!operand_equal_p (DR_BASE_ADDRESS (dr_a1->dr),
 				DR_BASE_ADDRESS (dr_a2->dr), 0)
 	      || !operand_equal_p (DR_OFFSET (dr_a1->dr),
 				   DR_OFFSET (dr_a2->dr), 0)
-	      || !tree_fits_shwi_p (DR_INIT (dr_a1->dr))
-	      || !tree_fits_shwi_p (DR_INIT (dr_a2->dr)))
+	      || !poly_int_tree_p (DR_INIT (dr_a1->dr), &init_a1)
+	      || !poly_int_tree_p (DR_INIT (dr_a2->dr), &init_a2))
 	    continue;
+
+	  /* Don't combine if we can't tell which one comes first.  */
+	  if (!ordered_p (init_a1, init_a2))
+	    continue;
+
+	  /* Make sure dr_a1 starts left of dr_a2.  */
+	  if (maybe_gt (init_a1, init_a2))
+	    {
+	      std::swap (*dr_a1, *dr_a2);
+	      std::swap (init_a1, init_a2);
+	    }
 
 	  /* Only merge const step data references.  */
-	  if (TREE_CODE (DR_STEP (dr_a1->dr)) != INTEGER_CST
-	      || TREE_CODE (DR_STEP (dr_a2->dr)) != INTEGER_CST)
+	  poly_int64 step_a1, step_a2;
+	  if (!poly_int_tree_p (DR_STEP (dr_a1->dr), &step_a1)
+	      || !poly_int_tree_p (DR_STEP (dr_a2->dr), &step_a2))
 	    continue;
 
-	  /* DR_A1 and DR_A2 must goes in the same direction.  */
-	  if (tree_int_cst_compare (DR_STEP (dr_a1->dr), size_zero_node)
-	      != tree_int_cst_compare (DR_STEP (dr_a2->dr), size_zero_node))
+	  bool neg_step = maybe_lt (step_a1, 0) || maybe_lt (step_a2, 0);
+
+	  /* DR_A1 and DR_A2 must go in the same direction.  */
+	  if (neg_step && (maybe_gt (step_a1, 0) || maybe_gt (step_a2, 0)))
 	    continue;
 
-	  bool neg_step
-	    = (tree_int_cst_compare (DR_STEP (dr_a1->dr), size_zero_node) < 0);
+	  poly_uint64 seg_len_a1 = 0, seg_len_a2 = 0;
+	  bool const_seg_len_a1 = poly_int_tree_p (dr_a1->seg_len,
+						   &seg_len_a1);
+	  bool const_seg_len_a2 = poly_int_tree_p (dr_a2->seg_len,
+						   &seg_len_a2);
 
 	  /* We need to compute merged segment length at compilation time for
 	     dr_a1 and dr_a2, which is impossible if either one has non-const
 	     segment length.  */
-	  if ((!tree_fits_uhwi_p (dr_a1->seg_len)
-	       || !tree_fits_uhwi_p (dr_a2->seg_len))
-	      && tree_int_cst_compare (DR_STEP (dr_a1->dr),
-				       DR_STEP (dr_a2->dr)) != 0)
+	  if ((!const_seg_len_a1 || !const_seg_len_a2)
+	      && maybe_ne (step_a1, step_a2))
 	    continue;
 
-	  /* Make sure dr_a1 starts left of dr_a2.  */
-	  if (tree_int_cst_lt (DR_INIT (dr_a2->dr), DR_INIT (dr_a1->dr)))
-	    std::swap (*dr_a1, *dr_a2);
-
 	  bool do_remove = false;
-	  wide_int diff = (wi::to_wide (DR_INIT (dr_a2->dr))
-			   - wi::to_wide (DR_INIT (dr_a1->dr)));
-	  wide_int min_seg_len_b;
+	  poly_uint64 diff = init_a2 - init_a1;
+	  poly_uint64 min_seg_len_b;
 	  tree new_seg_len;
 
-	  if (TREE_CODE (dr_b1->seg_len) == INTEGER_CST)
-	    min_seg_len_b = wi::abs (wi::to_wide (dr_b1->seg_len));
-	  else
-	    min_seg_len_b
-	      = factor * wi::abs (wi::to_wide (DR_STEP (dr_b1->dr)));
+	  if (!poly_int_tree_p (dr_b1->seg_len, &min_seg_len_b))
+	    {
+	      tree step_b = DR_STEP (dr_b1->dr);
+	      if (!tree_fits_shwi_p (step_b))
+		continue;
+	      min_seg_len_b = factor * abs_hwi (tree_to_shwi (step_b));
+	    }
 
 	  /* Now we try to merge alias check dr_a1 & dr_b and dr_a2 & dr_b.
 
@@ -1532,26 +1555,24 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	  if (neg_step)
 	    {
 	      /* Adjust diff according to access size of both references.  */
-	      tree size_a1 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a1->dr)));
-	      tree size_a2 = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a2->dr)));
-	      diff += wi::to_wide (size_a2) - wi::to_wide (size_a1);
+	      diff += tree_to_poly_uint64
+		(TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a2->dr))));
+	      diff -= tree_to_poly_uint64
+		(TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a1->dr))));
 	      /* Case A.1.  */
-	      if (wi::leu_p (diff, min_seg_len_b)
+	      if (known_le (diff, min_seg_len_b)
 		  /* Case A.2 and B combined.  */
-		  || (tree_fits_uhwi_p (dr_a2->seg_len)))
+		  || const_seg_len_a2)
 		{
-		  if (tree_fits_uhwi_p (dr_a1->seg_len)
-		      && tree_fits_uhwi_p (dr_a2->seg_len))
-		    {
-		      wide_int min_len
-			= wi::umin (wi::to_wide (dr_a1->seg_len) - diff,
-				    wi::to_wide (dr_a2->seg_len));
-		      new_seg_len = wide_int_to_tree (sizetype, min_len);
-		    }
+		  if (const_seg_len_a1 || const_seg_len_a2)
+		    new_seg_len
+		      = build_int_cstu (sizetype,
+					lower_bound (seg_len_a1 - diff,
+						     seg_len_a2));
 		  else
 		    new_seg_len
 		      = size_binop (MINUS_EXPR, dr_a2->seg_len,
-				    wide_int_to_tree (sizetype, diff));
+				    build_int_cstu (sizetype, diff));
 
 		  dr_a2->seg_len = new_seg_len;
 		  do_remove = true;
@@ -1560,22 +1581,19 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	  else
 	    {
 	      /* Case A.1.  */
-	      if (wi::leu_p (diff, min_seg_len_b)
+	      if (known_le (diff, min_seg_len_b)
 		  /* Case A.2 and B combined.  */
-		  || (tree_fits_uhwi_p (dr_a1->seg_len)))
+		  || const_seg_len_a1)
 		{
-		  if (tree_fits_uhwi_p (dr_a1->seg_len)
-		      && tree_fits_uhwi_p (dr_a2->seg_len))
-		    {
-		      wide_int max_len
-			= wi::umax (wi::to_wide (dr_a2->seg_len) + diff,
-				    wi::to_wide (dr_a1->seg_len));
-		      new_seg_len = wide_int_to_tree (sizetype, max_len);
-		    }
+		  if (const_seg_len_a1 && const_seg_len_a2)
+		    new_seg_len
+		      = build_int_cstu (sizetype,
+					upper_bound (seg_len_a2 + diff,
+						     seg_len_a1));
 		  else
 		    new_seg_len
 		      = size_binop (PLUS_EXPR, dr_a2->seg_len,
-				    wide_int_to_tree (sizetype, diff));
+				    build_int_cstu (sizetype, diff));
 
 		  dr_a1->seg_len = new_seg_len;
 		  do_remove = true;
@@ -2130,7 +2148,7 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
   if (!loop_nest)
     {
       aff_tree off1, off2;
-      widest_int size1, size2;
+      poly_widest_int size1, size2;
       get_inner_reference_aff (DR_REF (a), &off1, &size1);
       get_inner_reference_aff (DR_REF (b), &off2, &size2);
       aff_combination_scale (&off1, -1);

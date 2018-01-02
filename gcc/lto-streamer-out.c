@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gomp-constants.h"
 #include "debug.h"
+#include "omp-offload.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -752,6 +753,10 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	DFS_follow_tree_edge (VECTOR_CST_ENCODED_ELT (expr, i));
     }
 
+  if (CODE_CONTAINS_STRUCT (code, TS_POLY_INT_CST))
+    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+      DFS_follow_tree_edge (POLY_INT_CST_COEFF (expr, i));
+
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {
       DFS_follow_tree_edge (TREE_REALPART (expr));
@@ -1201,6 +1206,10 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       for (unsigned int i = 0; i < count; ++i)
 	visit (VECTOR_CST_ENCODED_ELT (t, i));
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_POLY_INT_CST))
+    for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+      visit (POLY_INT_CST_COEFF (t, i));
 
   if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
     {
@@ -2337,6 +2346,35 @@ wrap_refs (tree *tp, int *ws, void *)
   return NULL_TREE;
 }
 
+/* Remove functions that are no longer used from offload_funcs, and mark the
+   remaining ones with DECL_PRESERVE_P.  */
+
+static void
+prune_offload_funcs (void)
+{
+  if (!offload_funcs)
+    return;
+
+  unsigned int write_index = 0;
+  for (unsigned read_index = 0; read_index < vec_safe_length (offload_funcs);
+       read_index++)
+    {
+      tree fn_decl = (*offload_funcs)[read_index];
+      bool remove_p = cgraph_node::get (fn_decl) == NULL;
+      if (remove_p)
+	continue;
+
+      DECL_PRESERVE_P (fn_decl) = 1;
+
+      if (write_index != read_index)
+	(*offload_funcs)[write_index] = (*offload_funcs)[read_index];
+
+      write_index++;
+    }
+
+  offload_funcs->truncate (write_index);
+}
+
 /* Main entry point from the pass manager.  */
 
 void
@@ -2346,6 +2384,8 @@ lto_output (void)
   bitmap output = NULL;
   int i, n_nodes;
   lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
+
+  prune_offload_funcs ();
 
   if (flag_checking)
     output = lto_bitmap_alloc ();

@@ -1959,8 +1959,8 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
       goto out;
     }
   else if (TREE_CODE (ref) == BIT_FIELD_REF
-	   && ((tree_to_uhwi (TREE_OPERAND (ref, 1)) % BITS_PER_UNIT) != 0
-	       || (tree_to_uhwi (TREE_OPERAND (ref, 2)) % BITS_PER_UNIT) != 0))
+	   && (!multiple_p (bit_field_size (ref), BITS_PER_UNIT)
+	       || !multiple_p (bit_field_offset (ref), BITS_PER_UNIT)))
     {
       HSA_SORRY_ATV (EXPR_LOCATION (origref),
 		     "support for HSA does not implement "
@@ -1972,12 +1972,22 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
     {
       machine_mode mode;
       int unsignedp, volatilep, preversep;
+      poly_int64 pbitsize, pbitpos;
+      tree new_ref;
 
-      ref = get_inner_reference (ref, &bitsize, &bitpos, &varoffset, &mode,
-				 &unsignedp, &preversep, &volatilep);
-
-      offset = bitpos;
-      offset = wi::rshift (offset, LOG2_BITS_PER_UNIT, SIGNED);
+      new_ref = get_inner_reference (ref, &pbitsize, &pbitpos, &varoffset,
+				     &mode, &unsignedp, &preversep,
+				     &volatilep);
+      /* When this isn't true, the switch below will report an
+	 appropriate error.  */
+      if (pbitsize.is_constant () && pbitpos.is_constant ())
+	{
+	  bitsize = pbitsize.to_constant ();
+	  bitpos = pbitpos.to_constant ();
+	  ref = new_ref;
+	  offset = bitpos;
+	  offset = wi::rshift (offset, LOG2_BITS_PER_UNIT, SIGNED);
+	}
     }
 
   switch (TREE_CODE (ref))

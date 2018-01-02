@@ -293,9 +293,8 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
       {
 	rtx mem = XEXP (XEXP (p, 0), 0), addr;
 	HOST_WIDE_INT off = 0, size;
-	if (!MEM_SIZE_KNOWN_P (mem))
+	if (!MEM_SIZE_KNOWN_P (mem) || !MEM_SIZE (mem).is_constant (&size))
 	  return false;
-	size = MEM_SIZE (mem);
 	addr = XEXP (mem, 0);
 	if (GET_CODE (addr) == PLUS
 	    && REG_P (XEXP (addr, 0))
@@ -360,7 +359,9 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	&& MEM_P (XEXP (XEXP (p, 0), 0)))
       {
 	rtx mem = XEXP (XEXP (p, 0), 0), addr;
-	HOST_WIDE_INT off = 0, byte;
+	HOST_WIDE_INT off = 0, byte, size;
+	/* Checked in the previous iteration.  */
+	size = MEM_SIZE (mem).to_constant ();
 	addr = XEXP (mem, 0);
 	if (GET_CODE (addr) == PLUS
 	    && REG_P (XEXP (addr, 0))
@@ -386,7 +387,7 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	    set = single_set (DF_REF_INSN (defs->ref));
 	    off += INTVAL (XEXP (SET_SRC (set), 1));
 	  }
-	for (byte = off; byte < off + MEM_SIZE (mem); byte++)
+	for (byte = off; byte < off + size; byte++)
 	  {
 	    if (!bitmap_set_bit (sp_bytes, byte - min_sp_off))
 	      gcc_unreachable ();
@@ -469,8 +470,10 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	    break;
 	}
 
+      HOST_WIDE_INT size;
       if (!MEM_SIZE_KNOWN_P (mem)
-	  || !check_argument_store (MEM_SIZE (mem), off, min_sp_off,
+	  || !MEM_SIZE (mem).is_constant (&size)
+	  || !check_argument_store (size, off, min_sp_off,
 				    max_sp_off, sp_bytes))
 	break;
 

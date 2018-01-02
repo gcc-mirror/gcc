@@ -563,6 +563,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	      break;
 
 	    default:
+	      /* Don't need to handle 'p' for attributes.  */
 	      gcc_unreachable ();
 	    }
 	}

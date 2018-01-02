@@ -203,7 +203,8 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 
   if (addr->offset && !integer_zerop (addr->offset))
     {
-      offset_int dc = offset_int::from (wi::to_wide (addr->offset), SIGNED);
+      poly_offset_int dc
+	= poly_offset_int::from (wi::to_poly_wide (addr->offset), SIGNED);
       off = immed_wide_int_const (dc, pointer_mode);
     }
   else
@@ -692,7 +693,7 @@ addr_to_parts (tree type, aff_tree *addr, tree iv_cand, tree base_hint,
   parts->index = NULL_TREE;
   parts->step = NULL_TREE;
 
-  if (addr->offset != 0)
+  if (maybe_ne (addr->offset, 0))
     parts->offset = wide_int_to_tree (sizetype, addr->offset);
   else
     parts->offset = NULL_TREE;
@@ -1007,8 +1008,8 @@ copy_ref_info (tree new_ref, tree old_ref)
 			   && (TREE_INT_CST_LOW (TMR_STEP (new_ref))
 			       < align)))))
 	    {
-	      unsigned int inc = (mem_ref_offset (old_ref).to_short_addr ()
-				  - mem_ref_offset (new_ref).to_short_addr ());
+	      poly_uint64 inc = (mem_ref_offset (old_ref)
+				 - mem_ref_offset (new_ref)).force_uhwi ();
 	      adjust_ptr_info_misalignment (new_pi, inc);
 	    }
 	  else
@@ -1060,7 +1061,7 @@ maybe_fold_tmr (tree ref)
   else if (addr.symbol
 	   && handled_component_p (TREE_OPERAND (addr.symbol, 0)))
     {
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
       addr.symbol = build_fold_addr_expr
 		      (get_addr_base_and_unit_offset
 		         (TREE_OPERAND (addr.symbol, 0), &offset));

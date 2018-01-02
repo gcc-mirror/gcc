@@ -723,7 +723,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 				      TYPE_ALIGN (gnu_type));
 
 	/* Likewise, if a size is specified, use it if valid.  */
-	if (Known_Esize (gnat_entity) && No (Address_Clause (gnat_entity)))
+	if (Known_Esize (gnat_entity))
 	  gnu_size
 	    = validate_size (Esize (gnat_entity), gnu_type, gnat_entity,
 			     VAR_DECL, false, Has_Size_Clause (gnat_entity));
@@ -2111,7 +2111,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   index to the template.  */
 	for (index = (convention_fortran_p ? ndim - 1 : 0),
 	     gnat_index = First_Index (gnat_entity);
-	     index >= 0 && index < ndim;
+	     IN_RANGE (index, 0, ndim - 1);
 	     index += (convention_fortran_p ? - 1 : 1),
 	     gnat_index = Next_Index (gnat_index))
 	  {
@@ -2362,7 +2362,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       gnat_index = First_Index (gnat_entity),
 	       gnat_base_index
 		 = First_Index (Implementation_Base_Type (gnat_entity));
-	       index >= 0 && index < ndim;
+	       IN_RANGE (index, 0, ndim - 1);
 	       index += (convention_fortran_p ? - 1 : 1),
 	       gnat_index = Next_Index (gnat_index),
 	       gnat_base_index = Next_Index (gnat_base_index))

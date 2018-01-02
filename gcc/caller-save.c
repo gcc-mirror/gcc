@@ -1129,7 +1129,7 @@ replace_reg_with_saved_mem (rtx *loc,
 	{
 	  /* This is gen_lowpart_if_possible(), but without validating
 	     the newly-formed address.  */
-	  HOST_WIDE_INT offset = byte_lowpart_offset (mode, GET_MODE (mem));
+	  poly_int64 offset = byte_lowpart_offset (mode, GET_MODE (mem));
 	  mem = adjust_address_nv (mem, mode, offset);
 	}
     }

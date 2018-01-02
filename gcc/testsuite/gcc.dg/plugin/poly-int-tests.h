@@ -4505,6 +4505,19 @@ test_uhwi ()
 				   wi::uhwi (210, 16)));
 }
 
+/* Test multiple_p for non-polynomial T.  */
+
+template<typename T>
+static void
+test_nonpoly_multiple_p ()
+{
+  ASSERT_TRUE (multiple_p (T (6), T (2)));
+  ASSERT_TRUE (multiple_p (T (6), T (3)));
+  ASSERT_FALSE (multiple_p (T (6), T (4)));
+  ASSERT_FALSE (multiple_p (T (7), T (4)));
+  ASSERT_TRUE (multiple_p (T (8), T (4)));
+}
+
 /* Test known_size_p for non-polynomial T.  */
 
 template<typename T>
@@ -4523,6 +4536,7 @@ template<typename T>
 static void
 test_nonpoly_type ()
 {
+  test_nonpoly_multiple_p<T> ();
   test_nonpoly_known_size_p<T> ();
 }
 

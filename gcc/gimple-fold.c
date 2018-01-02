@@ -865,8 +865,8 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	      && TREE_CODE (dest) == ADDR_EXPR)
 	    {
 	      tree src_base, dest_base, fn;
-	      HOST_WIDE_INT src_offset = 0, dest_offset = 0;
-	      HOST_WIDE_INT maxsize;
+	      poly_int64 src_offset = 0, dest_offset = 0;
+	      poly_uint64 maxsize;
 
 	      srcvar = TREE_OPERAND (src, 0);
 	      src_base = get_addr_base_and_unit_offset (srcvar, &src_offset);
@@ -877,16 +877,14 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 							 &dest_offset);
 	      if (dest_base == NULL)
 		dest_base = destvar;
-	      if (tree_fits_uhwi_p (len))
-		maxsize = tree_to_uhwi (len);
-	      else
+	      if (!poly_int_tree_p (len, &maxsize))
 		maxsize = -1;
 	      if (SSA_VAR_P (src_base)
 		  && SSA_VAR_P (dest_base))
 		{
 		  if (operand_equal_p (src_base, dest_base, 0)
-		      && ranges_overlap_p (src_offset, maxsize,
-					   dest_offset, maxsize))
+		      && ranges_maybe_overlap_p (src_offset, maxsize,
+						 dest_offset, maxsize))
 		    return false;
 		}
 	      else if (TREE_CODE (src_base) == MEM_REF
@@ -895,17 +893,12 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return false;
-		  offset_int off = mem_ref_offset (src_base) + src_offset;
-		  if (!wi::fits_shwi_p (off))
-		    return false;
-		  src_offset = off.to_shwi ();
-
-		  off = mem_ref_offset (dest_base) + dest_offset;
-		  if (!wi::fits_shwi_p (off))
-		    return false;
-		  dest_offset = off.to_shwi ();
-		  if (ranges_overlap_p (src_offset, maxsize,
-					dest_offset, maxsize))
+		  poly_offset_int full_src_offset
+		    = mem_ref_offset (src_base) + src_offset;
+		  poly_offset_int full_dest_offset
+		    = mem_ref_offset (dest_base) + dest_offset;
+		  if (ranges_maybe_overlap_p (full_src_offset, maxsize,
+					      full_dest_offset, maxsize))
 		    return false;
 		}
 	      else
@@ -3728,15 +3721,23 @@ fold_internal_goacc_dim (const gimple *call)
 {
   int axis = oacc_get_ifn_dim_arg (call);
   int size = oacc_get_fn_dim_size (current_function_decl, axis);
-  bool is_pos = gimple_call_internal_fn (call) == IFN_GOACC_DIM_POS;
   tree result = NULL_TREE;
+  tree type = TREE_TYPE (gimple_call_lhs (call));
 
-  /* If the size is 1, or we only want the size and it is not dynamic,
-     we know the answer.  */
-  if (size == 1 || (!is_pos && size))
+  switch (gimple_call_internal_fn (call))
     {
-      tree type = TREE_TYPE (gimple_call_lhs (call));
-      result = build_int_cst (type, size - is_pos);
+    case IFN_GOACC_DIM_POS:
+      /* If the size is 1, we know the answer.  */
+      if (size == 1)
+	result = build_int_cst (type, 0);
+      break;
+    case IFN_GOACC_DIM_SIZE:
+      /* If the size is not dynamic, we know the answer.  */
+      if (size)
+	result = build_int_cst (type, size);
+      break;
+    default:
+      break;
     }
 
   return result;
@@ -4479,7 +4480,7 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 	      || handled_component_p (TREE_OPERAND (addr, 0))))
 	{
 	  tree base;
-	  HOST_WIDE_INT coffset;
+	  poly_int64 coffset;
 	  base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
 						&coffset);
 	  if (!base)
@@ -6065,7 +6066,7 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 	      else if (TREE_CODE (rhs) == ADDR_EXPR
 		       && !is_gimple_min_invariant (rhs))
 		{
-		  HOST_WIDE_INT offset = 0;
+		  poly_int64 offset = 0;
 		  tree base;
 		  base = get_addr_base_and_unit_offset_1 (TREE_OPERAND (rhs, 0),
 							  &offset,
@@ -6333,10 +6334,10 @@ gimple_fold_stmt_to_constant (gimple *stmt, tree (*valueize) (tree))
    is not explicitly available, but it is known to be zero
    such as 'static const int a;'.  */
 static tree
-get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
+get_base_constructor (tree base, poly_int64_pod *bit_offset,
 		      tree (*valueize)(tree))
 {
-  HOST_WIDE_INT bit_offset2, size, max_size;
+  poly_int64 bit_offset2, size, max_size;
   bool reverse;
 
   if (TREE_CODE (base) == MEM_REF)
@@ -6345,7 +6346,7 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
 	{
 	  if (!tree_fits_shwi_p (TREE_OPERAND (base, 1)))
 	    return NULL_TREE;
-	  *bit_offset += (mem_ref_offset (base).to_short_addr ()
+	  *bit_offset += (mem_ref_offset (base).force_shwi ()
 			  * BITS_PER_UNIT);
 	}
 
@@ -6388,7 +6389,7 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
     case COMPONENT_REF:
       base = get_ref_base_and_extent (base, &bit_offset2, &size, &max_size,
 				      &reverse);
-      if (max_size == -1 || size != max_size)
+      if (!known_size_p (max_size) || maybe_ne (size, max_size))
 	return NULL_TREE;
       *bit_offset +=  bit_offset2;
       return get_base_constructor (base, bit_offset, valueize);
@@ -6527,19 +6528,24 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
   return build_zero_cst (type);
 }
 
-/* CTOR is value initializing memory, fold reference of type TYPE and size SIZE
-   to the memory at bit OFFSET.  */
+/* CTOR is value initializing memory, fold reference of type TYPE and
+   size POLY_SIZE to the memory at bit POLY_OFFSET.  */
 
 tree
-fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
-		     unsigned HOST_WIDE_INT size, tree from_decl)
+fold_ctor_reference (tree type, tree ctor, poly_uint64 poly_offset,
+		     poly_uint64 poly_size, tree from_decl)
 {
   tree ret;
 
   /* We found the field with exact match.  */
   if (useless_type_conversion_p (type, TREE_TYPE (ctor))
-      && !offset)
+      && known_eq (poly_offset, 0U))
     return canonicalize_constructor_val (unshare_expr (ctor), from_decl);
+
+  /* The remaining optimizations need a constant size and offset.  */
+  unsigned HOST_WIDE_INT size, offset;
+  if (!poly_size.is_constant (&size) || !poly_offset.is_constant (&offset))
+    return NULL_TREE;
 
   /* We are at the end of walk, see if we can view convert the
      result.  */
@@ -6594,7 +6600,7 @@ tree
 fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 {
   tree ctor, idx, base;
-  HOST_WIDE_INT offset, size, max_size;
+  poly_int64 offset, size, max_size;
   tree tem;
   bool reverse;
 
@@ -6620,23 +6626,23 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       if (TREE_CODE (TREE_OPERAND (t, 1)) == SSA_NAME
 	  && valueize
 	  && (idx = (*valueize) (TREE_OPERAND (t, 1)))
-	  && TREE_CODE (idx) == INTEGER_CST)
+	  && poly_int_tree_p (idx))
 	{
 	  tree low_bound, unit_size;
 
 	  /* If the resulting bit-offset is constant, track it.  */
 	  if ((low_bound = array_ref_low_bound (t),
-	       TREE_CODE (low_bound) == INTEGER_CST)
+	       poly_int_tree_p (low_bound))
 	      && (unit_size = array_ref_element_size (t),
 		  tree_fits_uhwi_p (unit_size)))
 	    {
-	      offset_int woffset
-		= wi::sext (wi::to_offset (idx) - wi::to_offset (low_bound),
+	      poly_offset_int woffset
+		= wi::sext (wi::to_poly_offset (idx)
+			    - wi::to_poly_offset (low_bound),
 			    TYPE_PRECISION (TREE_TYPE (idx)));
 
-	      if (wi::fits_shwi_p (woffset))
+	      if (woffset.to_shwi (&offset))
 		{
-		  offset = woffset.to_shwi ();
 		  /* TODO: This code seems wrong, multiply then check
 		     to see if it fits.  */
 		  offset *= tree_to_uhwi (unit_size);
@@ -6649,7 +6655,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 		    return build_zero_cst (TREE_TYPE (t));
 		  /* Out of bound array access.  Value is undefined,
 		     but don't fold.  */
-		  if (offset < 0)
+		  if (maybe_lt (offset, 0))
 		    return NULL_TREE;
 		  /* We can not determine ctor.  */
 		  if (!ctor)
@@ -6674,14 +6680,14 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
       if (ctor == error_mark_node)
 	return build_zero_cst (TREE_TYPE (t));
       /* We do not know precise address.  */
-      if (max_size == -1 || max_size != size)
+      if (!known_size_p (max_size) || maybe_ne (max_size, size))
 	return NULL_TREE;
       /* We can not determine ctor.  */
       if (!ctor)
 	return NULL_TREE;
 
       /* Out of bound array access.  Value is undefined, but don't fold.  */
-      if (offset < 0)
+      if (maybe_lt (offset, 0))
 	return NULL_TREE;
 
       return fold_ctor_reference (TREE_TYPE (t), ctor, offset, size,

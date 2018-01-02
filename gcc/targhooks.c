@@ -1045,10 +1045,8 @@ default_trampoline_init (rtx ARG_UNUSED (m_tramp), tree ARG_UNUSED (t_func),
   sorry ("nested function trampolines not supported on this target");
 }
 
-int
-default_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
-			  tree funtype ATTRIBUTE_UNUSED,
-			  int size ATTRIBUTE_UNUSED)
+poly_int64
+default_return_pops_args (tree, tree, poly_int64)
 {
   return 0;
 }
@@ -1872,6 +1870,15 @@ default_debug_unwind_info (void)
 #endif
 
   return UI_NONE;
+}
+
+/* Targets that set NUM_POLY_INT_COEFFS to something greater than 1
+   must define this hook.  */
+
+unsigned int
+default_dwarf_poly_indeterminate_value (unsigned int, unsigned int *, int *)
+{
+  gcc_unreachable ();
 }
 
 /* Determine the correct mode for a Dwarf frame register that represents

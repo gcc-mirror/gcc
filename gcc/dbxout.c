@@ -2531,7 +2531,7 @@ dbxout_expand_expr (tree expr)
     case BIT_FIELD_REF:
       {
 	machine_mode mode;
-	HOST_WIDE_INT bitsize, bitpos;
+	poly_int64 bitsize, bitpos;
 	tree offset, tem;
 	int unsignedp, reversep, volatilep = 0;
 	rtx x;
@@ -2548,8 +2548,8 @@ dbxout_expand_expr (tree expr)
 	      return NULL;
 	    x = adjust_address_nv (x, mode, tree_to_shwi (offset));
 	  }
-	if (bitpos != 0)
-	  x = adjust_address_nv (x, mode, bitpos / BITS_PER_UNIT);
+	if (maybe_ne (bitpos, 0))
+	  x = adjust_address_nv (x, mode, bits_to_bytes_round_down (bitpos));
 
 	return x;
       }

@@ -4037,16 +4037,26 @@ pseudo_for_reload_consideration_p (int regno)
   return (reg_renumber[regno] >= 0 || ira_conflicts_p);
 }
 
-/* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] using
-   REG to the number of nregs, and INIT_VALUE to get the
-   initialization.  ALLOCNUM need not be the regno of REG.  */
+/* Return true if we can track the individual bytes of subreg X.
+   When returning true, set *OUTER_SIZE to the number of bytes in
+   X itself, *INNER_SIZE to the number of bytes in the inner register
+   and *START to the offset of the first byte.  */
+static bool
+get_subreg_tracking_sizes (rtx x, HOST_WIDE_INT *outer_size,
+			   HOST_WIDE_INT *inner_size, HOST_WIDE_INT *start)
+{
+  rtx reg = regno_reg_rtx[REGNO (SUBREG_REG (x))];
+  *outer_size = GET_MODE_SIZE (GET_MODE (x));
+  *inner_size = GET_MODE_SIZE (GET_MODE (reg));
+  return SUBREG_BYTE (x).is_constant (start);
+}
+
+/* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] for
+   a register with SIZE bytes, making the register live if INIT_VALUE.  */
 static void
 init_live_subregs (bool init_value, sbitmap *live_subregs,
-		   bitmap live_subregs_used, int allocnum, rtx reg)
+		   bitmap live_subregs_used, int allocnum, int size)
 {
-  unsigned int regno = REGNO (SUBREG_REG (reg));
-  int size = GET_MODE_SIZE (GET_MODE (regno_reg_rtx[regno]));
-
   gcc_assert (size > 0);
 
   /* Been there, done that.  */
@@ -4155,19 +4165,26 @@ build_insn_chain (void)
 			&& (!DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL)))
 		      {
 			rtx reg = DF_REF_REG (def);
+			HOST_WIDE_INT outer_size, inner_size, start;
 
-			/* We can model subregs, but not if they are
-			   wrapped in ZERO_EXTRACTS.  */
+			/* We can usually track the liveness of individual
+			   bytes within a subreg.  The only exceptions are
+			   subregs wrapped in ZERO_EXTRACTs and subregs whose
+			   size is not known; in those cases we need to be
+			   conservative and treat the definition as a partial
+			   definition of the full register rather than a full
+			   definition of a specific part of the register.  */
 			if (GET_CODE (reg) == SUBREG
-			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT))
+			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_ZERO_EXTRACT)
+			    && get_subreg_tracking_sizes (reg, &outer_size,
+							  &inner_size, &start))
 			  {
-			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start
-			      + GET_MODE_SIZE (GET_MODE (reg));
+			    HOST_WIDE_INT last = start + outer_size;
 
 			    init_live_subregs
 			      (bitmap_bit_p (live_relevant_regs, regno),
-			       live_subregs, live_subregs_used, regno, reg);
+			       live_subregs, live_subregs_used, regno,
+			       inner_size);
 
 			    if (!DF_REF_FLAGS_IS_SET
 				(def, DF_REF_STRICT_LOW_PART))
@@ -4252,18 +4269,20 @@ build_insn_chain (void)
 		    if (regno < FIRST_PSEUDO_REGISTER
 			|| pseudo_for_reload_consideration_p (regno))
 		      {
+			HOST_WIDE_INT outer_size, inner_size, start;
 			if (GET_CODE (reg) == SUBREG
 			    && !DF_REF_FLAGS_IS_SET (use,
 						     DF_REF_SIGN_EXTRACT
-						     | DF_REF_ZERO_EXTRACT))
+						     | DF_REF_ZERO_EXTRACT)
+			    && get_subreg_tracking_sizes (reg, &outer_size,
+							  &inner_size, &start))
 			  {
-			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start
-			      + GET_MODE_SIZE (GET_MODE (reg));
+			    HOST_WIDE_INT last = start + outer_size;
 
 			    init_live_subregs
 			      (bitmap_bit_p (live_relevant_regs, regno),
-			       live_subregs, live_subregs_used, regno, reg);
+			       live_subregs, live_subregs_used, regno,
+			       inner_size);
 
 			    /* Ignore the paradoxical bits.  */
 			    if (last > SBITMAP_SIZE (live_subregs[regno]))
@@ -5534,13 +5553,13 @@ do_reload (void)
      function's frame size is larger than we expect.  */
   if (flag_stack_check == GENERIC_STACK_CHECK)
     {
-      HOST_WIDE_INT size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
+      poly_int64 size = get_frame_size () + STACK_CHECK_FIXED_FRAME_SIZE;
 
       for (int i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (df_regs_ever_live_p (i) && !fixed_regs[i] && call_used_regs[i])
 	  size += UNITS_PER_WORD;
 
-      if (size > STACK_CHECK_MAX_FRAME_SIZE)
+      if (constant_lower_bound (size) > STACK_CHECK_MAX_FRAME_SIZE)
 	warning (0, "frame size too large for reliable stack checking");
     }
 

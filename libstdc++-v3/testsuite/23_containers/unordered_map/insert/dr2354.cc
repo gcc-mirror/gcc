@@ -30,3 +30,10 @@ test01()
   std::unordered_map<int, MoveOnly> m;
   m.insert({1, 2});  // PR libstdc++/82522  - LWG 2354
 }
+
+void
+test02()
+{
+  std::unordered_map<int, MoveOnly> m;
+  m.insert(m.begin(), {1, 2});  // PR libstdc++/82522  - LWG 2354
+}

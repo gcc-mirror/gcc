@@ -731,7 +731,24 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
       if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
 	return -2;
 
-      return tree_int_cst_compare (val1, val2);
+      if (TREE_CODE (val1) == INTEGER_CST
+	  && TREE_CODE (val2) == INTEGER_CST)
+	return tree_int_cst_compare (val1, val2);
+
+      if (poly_int_tree_p (val1) && poly_int_tree_p (val2))
+	{
+	  if (known_eq (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return 0;
+	  if (known_lt (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return -1;
+	  if (known_gt (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return 1;
+	}
+
+      return -2;
     }
   else
     {
@@ -4805,9 +4822,9 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	{
 	  tree maxbound = TYPE_MAX_VALUE (ptrdiff_type_node);
 	  tree arg = TREE_OPERAND (ref, 0);
-	  HOST_WIDE_INT off;
+	  poly_int64 off;
 
-	  if (get_addr_base_and_unit_offset (arg, &off) && off > 0)
+	  if (get_addr_base_and_unit_offset (arg, &off) && known_gt (off, 0))
 	    maxbound = wide_int_to_tree (sizetype,
 					 wi::sub (wi::to_wide (maxbound),
 						  off));
@@ -4935,7 +4952,9 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
 	  || TREE_CODE (el_sz) != INTEGER_CST)
 	return;
 
-      idx = mem_ref_offset (t);
+      if (!mem_ref_offset (t).is_constant (&idx))
+	return;
+
       idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
       if (idx < 0)
 	{
@@ -5248,7 +5267,6 @@ remove_range_assertions (void)
 	  }
       }
 }
-
 
 /* Return true if STMT is interesting for VRP.  */
 

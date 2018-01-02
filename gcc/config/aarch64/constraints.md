@@ -161,15 +161,15 @@
    A memory address which uses a base register with an offset small enough for
    a load/store pair operation in DI mode."
    (and (match_code "mem")
-	(match_test "aarch64_legitimate_address_p (DImode, XEXP (op, 0),
-						   PARALLEL, false)")))
+	(match_test "aarch64_legitimate_address_p (DImode, XEXP (op, 0), false,
+						   ADDR_QUERY_LDP_STP)")))
 
 (define_memory_constraint "Ump"
   "@internal
   A memory address suitable for a load/store pair operation."
   (and (match_code "mem")
        (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
-						  PARALLEL, 1)")))
+						  true, ADDR_QUERY_LDP_STP)")))
 
 ;; Used for storing two 64-bit values in an AdvSIMD register using an STP
 ;; as a 128-bit vec_concat.
@@ -177,8 +177,8 @@
   "@internal
   A memory address suitable for a load/store pair operation."
   (and (match_code "mem")
-       (match_test "aarch64_legitimate_address_p (DFmode, XEXP (op, 0),
-						   PARALLEL, 1)")))
+       (match_test "aarch64_legitimate_address_p (DFmode, XEXP (op, 0), 1,
+						  ADDR_QUERY_LDP_STP)")))
 
 (define_memory_constraint "Utv"
   "@internal
@@ -191,8 +191,8 @@
   "@internal
    An address valid for loading or storing a 128-bit AdvSIMD register"
   (and (match_code "mem")
-       (match_test "aarch64_legitimate_address_p (V2DImode, XEXP (op, 0),
-						  MEM, 1)")))
+       (match_test "aarch64_legitimate_address_p (V2DImode,
+						  XEXP (op, 0), 1)")))
 
 (define_constraint "Ufc"
   "A floating point constant which can be used with an\

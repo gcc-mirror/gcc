@@ -1301,6 +1301,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    const double __c2 = __param._M_c2b + __c1;
 	    const double __c3 = __c2 + 1;
 	    const double __c4 = __c3 + 1;
+	    // 1 / 78
+	    const double __178 = 0.0128205128205128205128205128205128L;
 	    // e^(1 / 78)
 	    const double __e178 = 1.0129030479320018583185514777512983L;
 	    const double __c5 = __c4 + __e178;
@@ -1340,7 +1342,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		else if (__u <= __c4)
 		  __x = 0;
 		else if (__u <= __c5)
-		  __x = 1;
+		  {
+		    __x = 1;
+		    // Only in the Errata, see libstdc++/83237.
+		    __w = __178;
+		  }
 		else
 		  {
 		    const double __v = -std::log(1.0 - __aurng());

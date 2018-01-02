@@ -1,3 +1,76 @@
+2018-01-02  Nathan Sidwell  <nathan@acm.org>
+
+	* constexpr.c (cxx_bind_parameters_in_call): Remove unneeded local
+	lval var.
+
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* constexpr.c (cxx_eval_constant_expression) <ANNOTATE_EXPR>: Remove
+	assertion on 2nd operand.
+	(potential_constant_expression_1): Likewise.
+	* cp-tree.def (RANGE_FOR_STMT): Take a 5th operand.
+	* cp-tree.h (RANGE_FOR_UNROLL): New macro.
+	(cp_convert_range_for): Adjust prototype.
+	(finish_while_stmt_cond): Likewise.
+	(finish_do_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	* init.c (build_vec_init): Adjut call to finish_for_cond.
+	* parser.c (cp_parser_statement): Adjust call to
+	cp_parser_iteration_statement.
+	(cp_parser_for): Add unroll parameter and pass it in calls to
+	cp_parser_range_for and cp_parser_c_for.
+	(cp_parser_c_for): Add unroll parameter and pass it in call to
+	finish_for_cond.
+	(cp_parser_range_for): Add unroll parameter, set in on RANGE_FOR_STMT
+	and pass it in call to cp_convert_range_for.
+	(cp_convert_range_for): Add unroll parameter and pass it in call to
+	finish_for_cond.
+	(cp_parser_iteration_statement): Add unroll parameter and pass it in
+	calls to finish_while_stmt_cond, finish_do_stmt and cp_parser_for.
+	(cp_parser_pragma_ivdep): New static function.
+	(cp_parser_pragma_unroll): Likewise.
+	(cp_parser_pragma) <PRAGMA_IVDEP>: Add support for pragma Unroll.
+	<PRAGMA_UNROLL>: New case.
+	* pt.c (tsubst_expr) <FOR_STMT>: Adjust call to finish_for_cond.
+	<RANGE_FOR_STMT>: Pass unrolling factor to cp_convert_range_for.
+	<WHILE_STMT>: Adjust call to finish_while_stmt_cond.
+	<DO_STMT>: Adjust call to finish_do_stmt.
+	* semantics.c (finish_while_stmt_cond): Add unroll parameter and
+	build ANNOTATE_EXPR if present.
+	(finish_do_stmt): Likewise.
+	(finish_for_cond): Likewise.
+	(begin_range_for_stmt): Build RANGE_FOR_STMT with 5th operand.
+
+2017-12-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83406
+	* parser.c (cp_parser_lambda_body): Remove obsolete
+	single-return-statement handling.
+
+2017-12-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* constexpr.c (check_automatic_or_tls): Track polynomial
+	offsets and sizes.
+
+2017-12-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82593
+	* decl.c (check_array_designated_initializer): Not static.
+	* cp-tree.h (check_array_designated_initializer): Declare.
+	* typeck2.c (process_init_constructor_array): Call the latter.
+	* parser.c (cp_parser_initializer_list): Check the return value
+	of require_potential_rvalue_constant_expression.
+
+2017-12-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83394
+	PR c++/83322
+	* decl2.c (cplus_decl_attributes): Look up member functions
+	in the scope of their class.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* name-lookup.c (get_std_name_hint): Replace Yoda conditions with
@@ -5403,10 +5476,10 @@
 2017-01-27  Adam Butcher  <adam@jessamine.co.uk>
 
 	PR c++/64382
-	* cp/parser.c (parsing_default_capturing_generic_lambda_in_template):
+	* parser.c (parsing_default_capturing_generic_lambda_in_template):
 	New function.
-	* cp/cp-tree.h: Declare it.
-	* cp/semantics.c (finish_id_expression): Resolve names within a default
+	* cp-tree.h: Declare it.
+	* semantics.c (finish_id_expression): Resolve names within a default
 	capturing generic lambda defined within a template prior to
 	instantiation to allow for captures to be added to the closure type.
 

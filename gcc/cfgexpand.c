@@ -314,7 +314,7 @@ struct stack_var
 
   /* Initially, the size of the variable.  Later, the size of the partition,
      if this variable becomes it's partition's representative.  */
-  HOST_WIDE_INT size;
+  poly_uint64 size;
 
   /* The *byte* alignment required for this variable.  Or as, with the
      size, the alignment for this partition.  */
@@ -389,22 +389,23 @@ align_base (HOST_WIDE_INT base, unsigned HOST_WIDE_INT align, bool align_up)
 /* Allocate SIZE bytes at byte alignment ALIGN from the stack frame.
    Return the frame offset.  */
 
-static HOST_WIDE_INT
-alloc_stack_frame_space (HOST_WIDE_INT size, unsigned HOST_WIDE_INT align)
+static poly_int64
+alloc_stack_frame_space (poly_int64 size, unsigned HOST_WIDE_INT align)
 {
-  HOST_WIDE_INT offset, new_frame_offset;
+  poly_int64 offset, new_frame_offset;
 
   if (FRAME_GROWS_DOWNWARD)
     {
       new_frame_offset
-	= align_base (frame_offset - frame_phase - size,
-		      align, false) + frame_phase;
+	= aligned_lower_bound (frame_offset - frame_phase - size,
+			       align) + frame_phase;
       offset = new_frame_offset;
     }
   else
     {
       new_frame_offset
-	= align_base (frame_offset - frame_phase, align, true) + frame_phase;
+	= aligned_upper_bound (frame_offset - frame_phase,
+			       align) + frame_phase;
       offset = new_frame_offset;
       new_frame_offset += size;
     }
@@ -442,10 +443,10 @@ add_stack_var (tree decl)
   tree size = TREE_CODE (decl) == SSA_NAME
     ? TYPE_SIZE_UNIT (TREE_TYPE (decl))
     : DECL_SIZE_UNIT (decl);
-  v->size = tree_to_uhwi (size);
+  v->size = tree_to_poly_uint64 (size);
   /* Ensure that all variables have size, so that &a != &b for any two
      variables that are simultaneously live.  */
-  if (v->size == 0)
+  if (known_eq (v->size, 0U))
     v->size = 1;
   v->alignb = align_local_variable (decl);
   /* An alignment of zero can mightily confuse us later.  */
@@ -675,8 +676,8 @@ stack_var_cmp (const void *a, const void *b)
   size_t ib = *(const size_t *)b;
   unsigned int aligna = stack_vars[ia].alignb;
   unsigned int alignb = stack_vars[ib].alignb;
-  HOST_WIDE_INT sizea = stack_vars[ia].size;
-  HOST_WIDE_INT sizeb = stack_vars[ib].size;
+  poly_int64 sizea = stack_vars[ia].size;
+  poly_int64 sizeb = stack_vars[ib].size;
   tree decla = stack_vars[ia].decl;
   tree declb = stack_vars[ib].decl;
   bool largea, largeb;
@@ -689,10 +690,9 @@ stack_var_cmp (const void *a, const void *b)
     return (int)largeb - (int)largea;
 
   /* Secondary compare on size, decreasing  */
-  if (sizea > sizeb)
-    return -1;
-  if (sizea < sizeb)
-    return 1;
+  int diff = compare_sizes_for_sort (sizeb, sizea);
+  if (diff != 0)
+    return diff;
 
   /* Tertiary compare on true alignment, decreasing.  */
   if (aligna < alignb)
@@ -903,7 +903,7 @@ partition_stack_vars (void)
     {
       size_t i = stack_vars_sorted[si];
       unsigned int ialign = stack_vars[i].alignb;
-      HOST_WIDE_INT isize = stack_vars[i].size;
+      poly_int64 isize = stack_vars[i].size;
 
       /* Ignore objects that aren't partition representatives. If we
          see a var that is not a partition representative, it must
@@ -915,7 +915,7 @@ partition_stack_vars (void)
 	{
 	  size_t j = stack_vars_sorted[sj];
 	  unsigned int jalign = stack_vars[j].alignb;
-	  HOST_WIDE_INT jsize = stack_vars[j].size;
+	  poly_int64 jsize = stack_vars[j].size;
 
 	  /* Ignore objects that aren't partition representatives.  */
 	  if (stack_vars[j].representative != j)
@@ -931,8 +931,8 @@ partition_stack_vars (void)
 	     sizes, as the shorter vars wouldn't be adequately protected.
 	     Don't do that for "large" (unsupported) alignment objects,
 	     those aren't protected anyway.  */
-	  if ((asan_sanitize_stack_p ())
-	      && isize != jsize
+	  if (asan_sanitize_stack_p ()
+	      && maybe_ne (isize, jsize)
 	      && ialign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	    break;
 
@@ -963,9 +963,9 @@ dump_stack_var_partition (void)
       if (stack_vars[i].representative != i)
 	continue;
 
-      fprintf (dump_file, "Partition %lu: size " HOST_WIDE_INT_PRINT_DEC
-	       " align %u\n", (unsigned long) i, stack_vars[i].size,
-	       stack_vars[i].alignb);
+      fprintf (dump_file, "Partition %lu: size ", (unsigned long) i);
+      print_dec (stack_vars[i].size, dump_file);
+      fprintf (dump_file, " align %u\n", stack_vars[i].alignb);
 
       for (j = i; j != EOC; j = stack_vars[j].next)
 	{
@@ -980,13 +980,13 @@ dump_stack_var_partition (void)
 
 static void
 expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
-			 HOST_WIDE_INT offset)
+			 poly_int64 offset)
 {
   unsigned align;
   rtx x;
 
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
-  gcc_assert (offset == trunc_int_for_mode (offset, Pmode));
+  gcc_assert (known_eq (offset, trunc_int_for_mode (offset, Pmode)));
 
   x = plus_constant (Pmode, base, offset);
   x = gen_rtx_MEM (TREE_CODE (decl) == SSA_NAME
@@ -1000,7 +1000,7 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
 	 important, we'll simply use the alignment that is already set.  */
       if (base == virtual_stack_vars_rtx)
 	offset -= frame_phase;
-      align = least_bit_hwi (offset);
+      align = known_alignment (offset);
       align *= BITS_PER_UNIT;
       if (align == 0 || align > base_align)
 	align = base_align;
@@ -1041,7 +1041,7 @@ static void
 expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 {
   size_t si, i, j, n = stack_vars_num;
-  HOST_WIDE_INT large_size = 0, large_alloc = 0;
+  poly_uint64 large_size = 0, large_alloc = 0;
   rtx large_base = NULL;
   unsigned large_align = 0;
   bool large_allocation_done = false;
@@ -1084,8 +1084,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	      : DECL_RTL (decl) != pc_rtx)
 	    continue;
 
-	  large_size += alignb - 1;
-	  large_size &= -(HOST_WIDE_INT)alignb;
+	  large_size = aligned_upper_bound (large_size, alignb);
 	  large_size += stack_vars[i].size;
 	}
     }
@@ -1094,7 +1093,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
     {
       rtx base;
       unsigned base_align, alignb;
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
 
       i = stack_vars_sorted[si];
 
@@ -1119,13 +1118,17 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
 	  base = virtual_stack_vars_rtx;
-	  if ((asan_sanitize_stack_p ())
-	      && pred)
+	  /* ASAN description strings don't yet have a syntax for expressing
+	     polynomial offsets.  */
+	  HOST_WIDE_INT prev_offset;
+	  if (asan_sanitize_stack_p ()
+	      && pred
+	      && frame_offset.is_constant (&prev_offset)
+	      && stack_vars[i].size.is_constant ())
 	    {
-	      HOST_WIDE_INT prev_offset
-		= align_base (frame_offset,
-			      MAX (alignb, ASAN_RED_ZONE_SIZE),
-			      !FRAME_GROWS_DOWNWARD);
+	      prev_offset = align_base (prev_offset,
+					MAX (alignb, ASAN_RED_ZONE_SIZE),
+					!FRAME_GROWS_DOWNWARD);
 	      tree repr_decl = NULL_TREE;
 	      offset
 		= alloc_stack_frame_space (stack_vars[i].size
@@ -1133,7 +1136,10 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 					   MAX (alignb, ASAN_RED_ZONE_SIZE));
 
 	      data->asan_vec.safe_push (prev_offset);
-	      data->asan_vec.safe_push (offset + stack_vars[i].size);
+	      /* Allocating a constant amount of space from a constant
+		 starting offset must give a constant result.  */
+	      data->asan_vec.safe_push ((offset + stack_vars[i].size)
+					.to_constant ());
 	      /* Find best representative of the partition.
 		 Prefer those with DECL_NAME, even better
 		 satisfying asan_protect_stack_decl predicate.  */
@@ -1177,23 +1183,22 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 
 	  /* If there were any variables requiring "large" alignment, allocate
 	     space.  */
-	  if (large_size > 0 && ! large_allocation_done)
+	  if (maybe_ne (large_size, 0U) && ! large_allocation_done)
 	    {
-	      HOST_WIDE_INT loffset;
+	      poly_int64 loffset;
 	      rtx large_allocsize;
 
-	      large_allocsize = GEN_INT (large_size);
+	      large_allocsize = gen_int_mode (large_size, Pmode);
 	      get_dynamic_stack_size (&large_allocsize, 0, large_align, NULL);
 	      loffset = alloc_stack_frame_space
-		(INTVAL (large_allocsize),
+		(rtx_to_poly_int64 (large_allocsize),
 		 PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT);
 	      large_base = get_dynamic_stack_base (loffset, large_align);
 	      large_allocation_done = true;
 	    }
 	  gcc_assert (large_base != NULL);
 
-	  large_alloc += alignb - 1;
-	  large_alloc &= -(HOST_WIDE_INT)alignb;
+	  large_alloc = aligned_upper_bound (large_alloc, alignb);
 	  offset = large_alloc;
 	  large_alloc += stack_vars[i].size;
 
@@ -1211,15 +1216,15 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
 	}
     }
 
-  gcc_assert (large_alloc == large_size);
+  gcc_assert (known_eq (large_alloc, large_size));
 }
 
 /* Take into account all sizes of partitions and reset DECL_RTLs.  */
-static HOST_WIDE_INT
+static poly_uint64
 account_stack_vars (void)
 {
   size_t si, j, i, n = stack_vars_num;
-  HOST_WIDE_INT size = 0;
+  poly_uint64 size = 0;
 
   for (si = 0; si < n; ++si)
     {
@@ -1282,18 +1287,19 @@ set_parm_rtl (tree parm, rtx x)
 static void
 expand_one_stack_var_1 (tree var)
 {
-  HOST_WIDE_INT size, offset;
+  poly_uint64 size;
+  poly_int64 offset;
   unsigned byte_align;
 
   if (TREE_CODE (var) == SSA_NAME)
     {
       tree type = TREE_TYPE (var);
-      size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+      size = tree_to_poly_uint64 (TYPE_SIZE_UNIT (type));
       byte_align = TYPE_ALIGN_UNIT (type);
     }
   else
     {
-      size = tree_to_uhwi (DECL_SIZE_UNIT (var));
+      size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
       byte_align = align_local_variable (var);
     }
 
@@ -1505,12 +1511,14 @@ defer_stack_allocation (tree var, bool toplevel)
   tree size_unit = TREE_CODE (var) == SSA_NAME
     ? TYPE_SIZE_UNIT (TREE_TYPE (var))
     : DECL_SIZE_UNIT (var);
+  poly_uint64 size;
 
   /* Whether the variable is small enough for immediate allocation not to be
      a problem with regard to the frame size.  */
   bool smallish
-    = ((HOST_WIDE_INT) tree_to_uhwi (size_unit)
-       < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING));
+    = (poly_int_tree_p (size_unit, &size)
+       && (estimated_poly_value (size)
+	   < PARAM_VALUE (PARAM_MIN_SIZE_FOR_STACK_SHARING)));
 
   /* If stack protection is enabled, *all* stack variables must be deferred,
      so that we can re-order the strings to the top of the frame.
@@ -1564,7 +1572,7 @@ defer_stack_allocation (tree var, bool toplevel)
    Return stack usage this variable is supposed to take.
 */
 
-static HOST_WIDE_INT
+static poly_uint64
 expand_one_var (tree var, bool toplevel, bool really_expand)
 {
   unsigned int align = BITS_PER_UNIT;
@@ -1607,6 +1615,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 
   record_alignment_for_reg_var (align);
 
+  poly_uint64 size;
   if (TREE_CODE (origvar) == SSA_NAME)
     {
       gcc_assert (!VAR_P (var)
@@ -1647,7 +1656,8 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
       if (really_expand)
         expand_one_register_var (origvar);
     }
-  else if (! valid_constant_size_p (DECL_SIZE_UNIT (var)))
+  else if (!poly_int_tree_p (DECL_SIZE_UNIT (var), &size)
+	   || !valid_constant_size_p (DECL_SIZE_UNIT (var)))
     {
       /* Reject variables which cover more than half of the address-space.  */
       if (really_expand)
@@ -1669,9 +1679,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 
           expand_one_stack_var (origvar);
         }
-
-
-      return tree_to_uhwi (DECL_SIZE_UNIT (var));
+      return size;
     }
   return 0;
 }
@@ -1924,7 +1932,7 @@ fini_vars_expansion (void)
 HOST_WIDE_INT
 estimated_stack_frame_size (struct cgraph_node *node)
 {
-  HOST_WIDE_INT size = 0;
+  poly_int64 size = 0;
   size_t i;
   tree var;
   struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
@@ -1948,7 +1956,7 @@ estimated_stack_frame_size (struct cgraph_node *node)
 
   fini_vars_expansion ();
   pop_cfun ();
-  return size;
+  return estimated_poly_value (size);
 }
 
 /* Helper routine to check if a record or union contains an array field. */
@@ -2218,9 +2226,12 @@ expand_used_vars (void)
 	   in addition to phase 1 and 2.  */
 	expand_stack_vars (asan_decl_phase_3, &data);
 
-      if (!data.asan_vec.is_empty ())
+      /* ASAN description strings don't yet have a syntax for expressing
+	 polynomial offsets.  */
+      HOST_WIDE_INT prev_offset;
+      if (!data.asan_vec.is_empty ()
+	  && frame_offset.is_constant (&prev_offset))
 	{
-	  HOST_WIDE_INT prev_offset = frame_offset;
 	  HOST_WIDE_INT offset, sz, redzonesz;
 	  redzonesz = ASAN_RED_ZONE_SIZE;
 	  sz = data.asan_vec[0] - prev_offset;
@@ -2229,8 +2240,10 @@ expand_used_vars (void)
 	      && sz + ASAN_RED_ZONE_SIZE >= (int) data.asan_alignb)
 	    redzonesz = ((sz + ASAN_RED_ZONE_SIZE + data.asan_alignb - 1)
 			 & ~(data.asan_alignb - HOST_WIDE_INT_1)) - sz;
-	  offset
-	    = alloc_stack_frame_space (redzonesz, ASAN_RED_ZONE_SIZE);
+	  /* Allocating a constant amount of space from a constant
+	     starting offset must give a constant result.  */
+	  offset = (alloc_stack_frame_space (redzonesz, ASAN_RED_ZONE_SIZE)
+		    .to_constant ());
 	  data.asan_vec.safe_push (prev_offset);
 	  data.asan_vec.safe_push (offset);
 	  /* Leave space for alignment if STRICT_ALIGNMENT.  */
@@ -2275,9 +2288,10 @@ expand_used_vars (void)
   if (STACK_ALIGNMENT_NEEDED)
     {
       HOST_WIDE_INT align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-      if (!FRAME_GROWS_DOWNWARD)
-	frame_offset += align - 1;
-      frame_offset &= -align;
+      if (FRAME_GROWS_DOWNWARD)
+	frame_offset = aligned_lower_bound (frame_offset, align);
+      else
+	frame_offset = aligned_upper_bound (frame_offset, align);
     }
 
   return var_end_seq;
@@ -2326,9 +2340,6 @@ label_rtx_for_bb (basic_block bb ATTRIBUTE_UNUSED)
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       glabel *lab_stmt;
-
-      if (is_gimple_debug (gsi_stmt (gsi)))
-	continue;
 
       lab_stmt = dyn_cast <glabel *> (gsi_stmt (gsi));
       if (!lab_stmt)
@@ -4264,6 +4275,9 @@ expand_debug_expr (tree exp)
       op0 = expand_expr (exp, NULL_RTX, mode, EXPAND_INITIALIZER);
       return op0;
 
+    case POLY_INT_CST:
+      return immed_wide_int_const (poly_int_cst_value (exp), mode);
+
     case COMPLEX_CST:
       gcc_assert (COMPLEX_MODE_P (mode));
       op0 = expand_debug_expr (TREE_REALPART (exp));
@@ -4467,7 +4481,7 @@ expand_debug_expr (tree exp)
     case VIEW_CONVERT_EXPR:
       {
 	machine_mode mode1;
-	HOST_WIDE_INT bitsize, bitpos;
+	poly_int64 bitsize, bitpos;
 	tree offset;
 	int reversep, volatilep = 0;
 	tree tem
@@ -4475,7 +4489,7 @@ expand_debug_expr (tree exp)
 				 &unsignedp, &reversep, &volatilep);
 	rtx orig_op0;
 
-	if (bitsize == 0)
+	if (known_eq (bitsize, 0))
 	  return NULL;
 
 	orig_op0 = op0 = expand_debug_expr (tem);
@@ -4518,19 +4532,14 @@ expand_debug_expr (tree exp)
 	    if (mode1 == VOIDmode)
 	      /* Bitfield.  */
 	      mode1 = smallest_int_mode_for_size (bitsize);
-	    if (bitpos >= BITS_PER_UNIT)
+	    poly_int64 bytepos = bits_to_bytes_round_down (bitpos);
+	    if (maybe_ne (bytepos, 0))
 	      {
-		op0 = adjust_address_nv (op0, mode1, bitpos / BITS_PER_UNIT);
-		bitpos %= BITS_PER_UNIT;
+		op0 = adjust_address_nv (op0, mode1, bytepos);
+		bitpos = num_trailing_bits (bitpos);
 	      }
-	    else if (bitpos < 0)
-	      {
-		HOST_WIDE_INT units
-		  = (-bitpos + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
-		op0 = adjust_address_nv (op0, mode1, -units);
-		bitpos += units * BITS_PER_UNIT;
-	      }
-	    else if (bitpos == 0 && bitsize == GET_MODE_BITSIZE (mode))
+	    else if (known_eq (bitpos, 0)
+		     && known_eq (bitsize, GET_MODE_BITSIZE (mode)))
 	      op0 = adjust_address_nv (op0, mode, 0);
 	    else if (GET_MODE (op0) != mode1)
 	      op0 = adjust_address_nv (op0, mode1, 0);
@@ -4541,17 +4550,18 @@ expand_debug_expr (tree exp)
 	    set_mem_attributes (op0, exp, 0);
 	  }
 
-	if (bitpos == 0 && mode == GET_MODE (op0))
+	if (known_eq (bitpos, 0) && mode == GET_MODE (op0))
 	  return op0;
 
-        if (bitpos < 0)
+	if (maybe_lt (bitpos, 0))
           return NULL;
 
 	if (GET_MODE (op0) == BLKmode)
 	  return NULL;
 
-	if ((bitpos % BITS_PER_UNIT) == 0
-	    && bitsize == GET_MODE_BITSIZE (mode1))
+	poly_int64 bytepos;
+	if (multiple_p (bitpos, BITS_PER_UNIT, &bytepos)
+	    && known_eq (bitsize, GET_MODE_BITSIZE (mode1)))
 	  {
 	    machine_mode opmode = GET_MODE (op0);
 
@@ -4564,12 +4574,11 @@ expand_debug_expr (tree exp)
 	       debug stmts).  The gen_subreg below would rightfully
 	       crash, and the address doesn't really exist, so just
 	       drop it.  */
-	    if (bitpos >= GET_MODE_BITSIZE (opmode))
+	    if (known_ge (bitpos, GET_MODE_BITSIZE (opmode)))
 	      return NULL;
 
-	    if ((bitpos % GET_MODE_BITSIZE (mode)) == 0)
-	      return simplify_gen_subreg (mode, op0, opmode,
-					  bitpos / BITS_PER_UNIT);
+	    if (multiple_p (bitpos, GET_MODE_BITSIZE (mode)))
+	      return simplify_gen_subreg (mode, op0, opmode, bytepos);
 	  }
 
 	return simplify_gen_ternary (SCALAR_INT_MODE_P (GET_MODE (op0))
@@ -4579,7 +4588,8 @@ expand_debug_expr (tree exp)
 				     GET_MODE (op0) != VOIDmode
 				     ? GET_MODE (op0)
 				     : TYPE_MODE (TREE_TYPE (tem)),
-				     op0, GEN_INT (bitsize), GEN_INT (bitpos));
+				     op0, gen_int_mode (bitsize, word_mode),
+				     gen_int_mode (bitpos, word_mode));
       }
 
     case ABS_EXPR:
@@ -4896,7 +4906,7 @@ expand_debug_expr (tree exp)
 
 	  if (handled_component_p (TREE_OPERAND (exp, 0)))
 	    {
-	      HOST_WIDE_INT bitoffset, bitsize, maxsize;
+	      poly_int64 bitoffset, bitsize, maxsize, byteoffset;
 	      bool reverse;
 	      tree decl
 		= get_ref_base_and_extent (TREE_OPERAND (exp, 0), &bitoffset,
@@ -4906,12 +4916,12 @@ expand_debug_expr (tree exp)
 		   || TREE_CODE (decl) == RESULT_DECL)
 		  && (!TREE_ADDRESSABLE (decl)
 		      || target_for_debug_bind (decl))
-		  && (bitoffset % BITS_PER_UNIT) == 0
-		  && bitsize > 0
-		  && bitsize == maxsize)
+		  && multiple_p (bitoffset, BITS_PER_UNIT, &byteoffset)
+		  && known_gt (bitsize, 0)
+		  && known_eq (bitsize, maxsize))
 		{
 		  rtx base = gen_rtx_DEBUG_IMPLICIT_PTR (mode, decl);
-		  return plus_constant (mode, base, bitoffset / BITS_PER_UNIT);
+		  return plus_constant (mode, base, byteoffset);
 		}
 	    }
 
@@ -5503,16 +5513,14 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	}
     }
 
-  gsi = gsi_start_nondebug (stmts);
+  gsi = gsi_start (stmts);
   if (!gsi_end_p (gsi))
     {
       stmt = gsi_stmt (gsi);
       if (gimple_code (stmt) != GIMPLE_LABEL)
 	stmt = NULL;
     }
-  gsi = gsi_start (stmts);
 
-  gimple *label_stmt = stmt;
   rtx_code_label **elt = lab_rtx_for_bb->get (bb);
 
   if (stmt || elt)
@@ -5523,8 +5531,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       if (stmt)
 	{
 	  expand_gimple_stmt (stmt);
-	  if (gsi_stmt (gsi) == stmt)
-	    gsi_next (&gsi);
+	  gsi_next (&gsi);
 	}
 
       if (elt)
@@ -5549,9 +5556,6 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
       basic_block new_bb;
 
       stmt = gsi_stmt (gsi);
-
-      if (stmt == label_stmt)
-	continue;
 
       /* If this statement is a non-debug one, and we generate debug
 	 insns, then this one might be the last real use of a TERed

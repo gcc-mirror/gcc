@@ -1,4 +1,64 @@
-2017-11-20  François Dumont  <fdumont@gcc.gnu.org>
+2017-12-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83600
+	* include/bits/regex.h (match_results::end()): Return valid iterator
+	when not ready.
+	* testsuite/28_regex/match_results/ctors/char/default.cc: Check that
+	unready objects are empty and have equal begin and end iterators.
+	* testsuite/28_regex/match_results/ctors/wchar_t/default.cc: Likewise.
+
+	PR libstdc++/83598
+	* include/bits/regex.h (basic_regex): Don't modify flags passed to
+	constructors.
+	* testsuite/28_regex/basic_regex/ctors/83598.cc: New test.
+
+	PR libstdc++/83538
+	* doc/xml/manual/intro.xml: Document LWG 2306 change.
+	* include/bits/regex.h (match_results::reference): Change to
+	non-const reference.
+	* testsuite/28_regex/match_results/typedefs.cc: Check types are
+	correct.
+
+2017-12-24  Michele Pezzutti <mpezz@tiscali.it>
+
+	PR libstdc++/83237
+	* include/bits/random.tcc (poisson_distribution<>::operator()):
+	Fix __x = 1 case - see updated Errata of Devroye's treatise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	values.cc: Add test.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2017-12-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83450
+	* testsuite/21_strings/basic_string/pthread18185.cc: Add return
+	statement.
+
+2017-12-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/82522
+	* include/debug/map.h (map::insert(value_type&&))
+	(map::insert(const_iterator, value_type&&)): Add overload for rvalues.
+	* include/debug/multimap.h (multimap::insert(value_type&&))
+	(multimap::insert(const_iterator, value_type&&)): Likewise.
+	* include/debug/unordered_map (unordered_map::insert(value_type&&))
+	(unordered_map::insert(const_iterator, value_type&&))
+	(unordered_multimap::insert(value_type&&))
+	(unordered_multimap::insert(const_iterator, value_type&&)): Likewise.
+	* testsuite/23_containers/map/modifiers/insert/dr2354.cc (test02): New.
+	* testsuite/23_containers/multimap/modifiers/insert/dr2354.cc (test02):
+	New.
+	* testsuite/23_containers/unordered_map/insert/dr2354.cc (test02): New.
+	* testsuite/23_containers/unordered_multimap/insert/dr2354.cc (test02):
+	New.
+
+2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/cpu/aarch64/opt/ext/opt_random.h (__VEXT): Check
+	__ARM_BIG_ENDIAN instead of __AARCH64EB__.
+
+2017-12-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/80761
 	* include/debug/map.h

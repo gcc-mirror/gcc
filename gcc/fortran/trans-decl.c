@@ -4344,9 +4344,12 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					   sym->as ? sym->as->rank : 0,
 					   sym->param_list);
 	      gfc_add_expr_to_block (&tmpblock, tmp);
-	      tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived,
-					     sym->backend_decl,
-					     sym->as ? sym->as->rank : 0);
+	      if (!sym->attr.result)
+		tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived,
+					       sym->backend_decl,
+					       sym->as ? sym->as->rank : 0);
+	      else
+		tmp = NULL_TREE;
 	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), tmp);
 	    }
 	  else if (sym->attr.dummy)
@@ -4376,8 +4379,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					   sym->param_list);
 	      gfc_add_expr_to_block (&tmpblock, tmp);
 	      tmp = gfc_class_data_get (sym->backend_decl);
-	      tmp = gfc_deallocate_pdt_comp (data->ts.u.derived, tmp,
-					     data->as ? data->as->rank : 0);
+	      if (!sym->attr.result)
+		tmp = gfc_deallocate_pdt_comp (data->ts.u.derived, tmp,
+					       data->as ? data->as->rank : 0);
+	      else
+		tmp = NULL_TREE;
 	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), tmp);
 	    }
 	  else if (sym->attr.dummy)

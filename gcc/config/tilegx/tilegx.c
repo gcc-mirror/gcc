@@ -5566,7 +5566,7 @@ tilegx_file_end (void)
    as sign-extended DI values in registers.  */
 
 static bool
-tilegx_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+tilegx_truly_noop_truncation (poly_uint64 outprec, poly_uint64 inprec)
 {
   return inprec <= 32 || outprec > 32;
 }

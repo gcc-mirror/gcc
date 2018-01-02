@@ -1,3 +1,24 @@
+2018-01-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libgfortran/83649
+	* io/unix.c (MAX_CHUNK): New define.
+	(raw_read): For reads larger than MAX_CHUNK, loop.
+	(raw_write): Write no more than MAX_CHUNK bytes per iteration.
+
+2017-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/83613
+	* io/unit.c (init_units): Don't forget to unlock the unit locks
+	after being inserted.
+
+2017-12-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/83560
+	* io/write.c (write_integer): Modify to use write_decimal.
+	For namelist mode, suppress leading blanks and emit them as
+	trailing blanks. Change parameter from len to kind for better
+	readability. (nml_write_obj): Fix comment style.
+
 2017-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/81937

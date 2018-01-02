@@ -10751,17 +10751,21 @@ c_finish_stmt_expr (location_t loc, tree body)
  continue_searching:
   if (TREE_CODE (last) == STATEMENT_LIST)
     {
-      tree_stmt_iterator i;
+      tree_stmt_iterator l = tsi_last (last);
+
+      while (!tsi_end_p (l) && TREE_CODE (tsi_stmt (l)) == DEBUG_BEGIN_STMT)
+	tsi_prev (&l);
 
       /* This can happen with degenerate cases like ({ }).  No value.  */
-      if (!TREE_SIDE_EFFECTS (last))
+      if (tsi_end_p (l))
 	return body;
 
       /* If we're supposed to generate side effects warnings, process
 	 all of the statements except the last.  */
       if (warn_unused_value)
 	{
-	  for (i = tsi_start (last); !tsi_one_before_end_p (i); tsi_next (&i))
+	  for (tree_stmt_iterator i = tsi_start (last);
+	       tsi_stmt (i) != tsi_stmt (l); tsi_next (&i))
 	    {
 	      location_t tloc;
 	      tree t = tsi_stmt (i);
@@ -10770,13 +10774,7 @@ c_finish_stmt_expr (location_t loc, tree body)
 	      emit_side_effect_warnings (tloc, t);
 	    }
 	}
-      else
-	i = tsi_last (last);
-      if (TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT)
-	do
-	  tsi_prev (&i);
-	while (TREE_CODE (tsi_stmt (i)) == DEBUG_BEGIN_STMT);
-      last_p = tsi_stmt_ptr (i);
+      last_p = tsi_stmt_ptr (l);
       last = *last_p;
     }
 

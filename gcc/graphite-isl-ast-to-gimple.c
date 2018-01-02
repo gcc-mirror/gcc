@@ -739,10 +739,10 @@ translate_isl_ast_node_for (loop_p context_loop, __isl_keep isl_ast_node *node,
 	 as expected.  */
       tree ub_one = fold_build2 (POINTER_TYPE_P (type)
 				 ? POINTER_PLUS_EXPR : PLUS_EXPR,
-				 type, ub, one);
+				 type, unshare_expr (ub), one);
       create_empty_if_region_on_edge (next_e,
 				      fold_build2 (LT_EXPR, boolean_type_node,
-						   lb, ub_one));
+						   unshare_expr (lb), ub_one));
       next_e = get_true_edge_from_guard_bb (next_e->dest);
     }
 

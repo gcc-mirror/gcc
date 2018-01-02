@@ -786,6 +786,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 	    return false;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return false;
+	  break;
+
 	case 'e':
 	  val = operands_match_p (XEXP (x, i), XEXP (y, i), -1);
 	  if (val == 0)
@@ -974,7 +979,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	      if (REG_P (subreg_reg)
 		  && (int) REGNO (subreg_reg) < lra_new_regno_start
 		  && GET_MODE (subreg_reg) == outmode
-		  && SUBREG_BYTE (in_rtx) == SUBREG_BYTE (new_in_reg)
+		  && known_eq (SUBREG_BYTE (in_rtx), SUBREG_BYTE (new_in_reg))
 		  && find_regno_note (curr_insn, REG_DEAD, REGNO (subreg_reg))
 		  && (! early_clobber_p
 		      || check_conflict_input_operands (REGNO (subreg_reg),
@@ -3084,7 +3089,8 @@ static bool
 equiv_address_substitution (struct address_info *ad)
 {
   rtx base_reg, new_base_reg, index_reg, new_index_reg, *base_term, *index_term;
-  HOST_WIDE_INT disp, scale;
+  poly_int64 disp;
+  HOST_WIDE_INT scale;
   bool change_p;
 
   base_term = strip_subreg (ad->base_term);
@@ -3115,6 +3121,7 @@ equiv_address_substitution (struct address_info *ad)
     }
   if (base_reg != new_base_reg)
     {
+      poly_int64 offset;
       if (REG_P (new_base_reg))
 	{
 	  *base_term = new_base_reg;
@@ -3122,10 +3129,10 @@ equiv_address_substitution (struct address_info *ad)
 	}
       else if (GET_CODE (new_base_reg) == PLUS
 	       && REG_P (XEXP (new_base_reg, 0))
-	       && CONST_INT_P (XEXP (new_base_reg, 1))
+	       && poly_int_rtx_p (XEXP (new_base_reg, 1), &offset)
 	       && can_add_disp_p (ad))
 	{
-	  disp += INTVAL (XEXP (new_base_reg, 1));
+	  disp += offset;
 	  *base_term = XEXP (new_base_reg, 0);
 	  change_p = true;
 	}
@@ -3134,6 +3141,7 @@ equiv_address_substitution (struct address_info *ad)
     }
   if (index_reg != new_index_reg)
     {
+      poly_int64 offset;
       if (REG_P (new_index_reg))
 	{
 	  *index_term = new_index_reg;
@@ -3141,16 +3149,16 @@ equiv_address_substitution (struct address_info *ad)
 	}
       else if (GET_CODE (new_index_reg) == PLUS
 	       && REG_P (XEXP (new_index_reg, 0))
-	       && CONST_INT_P (XEXP (new_index_reg, 1))
+	       && poly_int_rtx_p (XEXP (new_index_reg, 1), &offset)
 	       && can_add_disp_p (ad)
 	       && (scale = get_index_scale (ad)))
 	{
-	  disp += INTVAL (XEXP (new_index_reg, 1)) * scale;
+	  disp += offset * scale;
 	  *index_term = XEXP (new_index_reg, 0);
 	  change_p = true;
 	}
     }
-  if (disp != 0)
+  if (maybe_ne (disp, 0))
     {
       if (ad->disp != NULL)
 	*ad->disp = plus_constant (GET_MODE (*ad->inner), *ad->disp, disp);
@@ -3526,7 +3534,7 @@ process_address (int nop, bool check_only_p,
 
    Return pseudo containing the result.	 */
 static rtx
-emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
+emit_inc (enum reg_class new_rclass, rtx in, rtx value, poly_int64 inc_amount)
 {
   /* REG or MEM to be copied and incremented.  */
   rtx incloc = XEXP (value, 0);
@@ -3554,7 +3562,7 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
       if (GET_CODE (value) == PRE_DEC || GET_CODE (value) == POST_DEC)
 	inc_amount = -inc_amount;
 
-      inc = GEN_INT (inc_amount);
+      inc = gen_int_mode (inc_amount, GET_MODE (value));
     }
 
   if (! post && REG_P (incloc))
@@ -3630,9 +3638,10 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
 	 register.  */
       if (plus_p)
 	{
-	  if (CONST_INT_P (inc))
+	  poly_int64 offset;
+	  if (poly_int_rtx_p (inc, &offset))
 	    emit_insn (gen_add2_insn (result,
-				      gen_int_mode (-INTVAL (inc),
+				      gen_int_mode (-offset,
 						    GET_MODE (result))));
 	  else
 	    emit_insn (gen_sub2_insn (result, inc));
@@ -4000,10 +4009,13 @@ curr_insn_transform (bool check_only_p)
       if (INSN_CODE (curr_insn) >= 0
           && (p = get_insn_name (INSN_CODE (curr_insn))) != NULL)
         fprintf (lra_dump_file, " {%s}", p);
-      if (curr_id->sp_offset != 0)
-        fprintf (lra_dump_file, " (sp_off=%" HOST_WIDE_INT_PRINT "d)",
-		 curr_id->sp_offset);
-       fprintf (lra_dump_file, "\n");
+      if (maybe_ne (curr_id->sp_offset, 0))
+	{
+	  fprintf (lra_dump_file, " (sp_off=");
+	  print_dec (curr_id->sp_offset, lra_dump_file);
+	  fprintf (lra_dump_file, ")");
+	}
+      fprintf (lra_dump_file, "\n");
     }
 
   /* Right now, for any pair of operands I and J that are required to
@@ -4198,7 +4210,7 @@ curr_insn_transform (bool check_only_p)
 	{
 	  machine_mode mode;
 	  rtx reg, *loc;
-	  int hard_regno, byte;
+	  int hard_regno;
 	  enum op_type type = curr_static_id->operand[i].type;
 
 	  loc = curr_id->operand_loc[i];
@@ -4206,7 +4218,7 @@ curr_insn_transform (bool check_only_p)
 	  if (GET_CODE (*loc) == SUBREG)
 	    {
 	      reg = SUBREG_REG (*loc);
-	      byte = SUBREG_BYTE (*loc);
+	      poly_int64 byte = SUBREG_BYTE (*loc);
 	      if (REG_P (reg)
 		  /* Strict_low_part requires reloading the register and not
 		     just the subreg.  Likewise for a strict subreg no wider
@@ -5808,13 +5820,6 @@ update_ebb_live_info (rtx_insn *head, rtx_insn *tail)
       if (NOTE_P (curr_insn) && NOTE_KIND (curr_insn) != NOTE_INSN_BASIC_BLOCK)
 	continue;
       curr_bb = BLOCK_FOR_INSN (curr_insn);
-      if (!curr_bb)
-	{
-	  gcc_assert (DEBUG_INSN_P (curr_insn));
-	  if (DEBUG_MARKER_INSN_P (curr_insn))
-	    continue;
-	  curr_bb = prev_bb;
-	}
       if (curr_bb != prev_bb)
 	{
 	  if (prev_bb != NULL)

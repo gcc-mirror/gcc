@@ -1922,7 +1922,7 @@ visium_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (size > 4 && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
       if (offset_base != 0 && offset_base != offset && (offset & mask1) == 0)
 	{
@@ -1968,7 +1968,7 @@ visium_legitimize_reload_address (rtx x, machine_mode mode, int opnum,
       int offset_base = offset & ~mask;
 
       /* Check that all of the words can be accessed.  */
-      if (size > 4 && 0x80 < size + offset - offset_base)
+      if (size > 4 && size + offset - offset_base > 0x80)
 	offset_base = offset & ~0x3f;
 
       if (offset_base && (offset & mask1) == 0)

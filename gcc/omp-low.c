@@ -8329,7 +8329,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		|| OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_REFERENCE)
 	      {
 		location_t clause_loc = OMP_CLAUSE_LOCATION (c);
-		HOST_WIDE_INT offset = 0;
+		poly_int64 offset = 0;
 		gcc_assert (prev);
 		var = OMP_CLAUSE_DECL (c);
 		if (DECL_P (var)

@@ -39,4 +39,11 @@ test01()
   typedef mr::allocator_type   allocator_type;
   typedef mr::char_type        char_type;
   typedef mr::string_type      string_type;
+
+  static_assert(std::is_same<value_type, std::sub_match<char*>>::value, "");
+  static_assert(std::is_same<const_reference, const value_type&>::value, "");
+  static_assert(std::is_same<reference, value_type&>::value, "DR 2306");
+  static_assert(std::is_same<const_iterator, iterator>::value, "");
+  static_assert(std::is_same<char_type, char>::value, "");
+  static_assert(std::is_same<string_type, std::string>::value, "");
 }

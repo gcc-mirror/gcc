@@ -235,6 +235,12 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
 	  printf ("%u", REGNO (x));
 	  break;
 
+	case 'p':
+	  /* We don't have a way of parsing polynomial offsets yet,
+	     and hopefully never will.  */
+	  printf ("%d", SUBREG_BYTE (x).to_constant ());
+	  break;
+
 	case 's':
 	  printf ("\"%s\"", XSTR (x, i));
 	  break;

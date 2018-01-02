@@ -136,7 +136,7 @@ assign_mem_slot (int i)
   machine_mode wider_mode
     = wider_subreg_mode (mode, lra_reg_info[i].biggest_mode);
   HOST_WIDE_INT total_size = GET_MODE_SIZE (wider_mode);
-  HOST_WIDE_INT adjust = 0;
+  poly_int64 adjust = 0;
 
   lra_assert (regno_reg_rtx[i] != NULL_RTX && REG_P (regno_reg_rtx[i])
 	      && lra_reg_info[i].nrefs != 0 && reg_renumber[i] < 0);

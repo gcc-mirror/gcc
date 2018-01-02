@@ -2143,9 +2143,9 @@ test_loading_mem ()
   ASSERT_EQ (42, MEM_ALIAS_SET (mem1));
   /* "+17".  */
   ASSERT_TRUE (MEM_OFFSET_KNOWN_P (mem1));
-  ASSERT_EQ (17, MEM_OFFSET (mem1));
+  ASSERT_KNOWN_EQ (17, MEM_OFFSET (mem1));
   /* "S8".  */
-  ASSERT_EQ (8, MEM_SIZE (mem1));
+  ASSERT_KNOWN_EQ (8, MEM_SIZE (mem1));
   /* "A128.  */
   ASSERT_EQ (128, MEM_ALIGN (mem1));
   /* "AS5.  */
@@ -2159,9 +2159,9 @@ test_loading_mem ()
   ASSERT_EQ (43, MEM_ALIAS_SET (mem2));
   /* "+18".  */
   ASSERT_TRUE (MEM_OFFSET_KNOWN_P (mem2));
-  ASSERT_EQ (18, MEM_OFFSET (mem2));
+  ASSERT_KNOWN_EQ (18, MEM_OFFSET (mem2));
   /* "S9".  */
-  ASSERT_EQ (9, MEM_SIZE (mem2));
+  ASSERT_KNOWN_EQ (9, MEM_SIZE (mem2));
   /* "AS6.  */
   ASSERT_EQ (6, MEM_ADDR_SPACE (mem2));
 }

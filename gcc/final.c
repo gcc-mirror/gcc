@@ -1846,14 +1846,15 @@ final_start_function (rtx_insn *first, FILE *file,
       TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
     }
 
+  HOST_WIDE_INT min_frame_size = constant_lower_bound (get_frame_size ());
   if (warn_frame_larger_than
-    && get_frame_size () > frame_larger_than_size)
-  {
+      && min_frame_size > frame_larger_than_size)
+    {
       /* Issue a warning */
       warning (OPT_Wframe_larger_than_,
-               "the frame size of %wd bytes is larger than %wd bytes",
-               get_frame_size (), frame_larger_than_size);
-  }
+	       "the frame size of %wd bytes is larger than %wd bytes",
+	       min_frame_size, frame_larger_than_size);
+    }
 
   /* First output the function prologue: code to set up the stack frame.  */
   targetm.asm_out.function_prologue (file);
@@ -3251,7 +3252,7 @@ alter_subreg (rtx *xp, bool final_p)
      We are required to.  */
   if (MEM_P (y))
     {
-      int offset = SUBREG_BYTE (x);
+      poly_int64 offset = SUBREG_BYTE (x);
 
       /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
 	 contains 0 instead of the proper offset.  See simplify_subreg.  */
@@ -3274,7 +3275,7 @@ alter_subreg (rtx *xp, bool final_p)
 	{
 	  /* Simplify_subreg can't handle some REG cases, but we have to.  */
 	  unsigned int regno;
-	  HOST_WIDE_INT offset;
+	  poly_int64 offset;
 
 	  regno = subreg_regno (x);
 	  if (subreg_lowpart_p (x))
@@ -4523,6 +4524,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
       case '0':
       case 'i':
       case 'w':
+      case 'p':
       case 'n':
       case 'u':
 	break;

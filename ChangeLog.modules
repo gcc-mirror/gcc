@@ -1,5 +1,7 @@
 2018-01-02  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r256078.
+
 	Typedefs!
 	gcc/cp/
 	* decl.c (grokdeclarator): Set typedef's module/export.

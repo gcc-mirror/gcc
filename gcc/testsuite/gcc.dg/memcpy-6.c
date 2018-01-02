@@ -1,8 +1,12 @@
 /* Test to verify that overlapping memcpy with const sizes that are powers
    of two are folded into into the same code as memmove, but that they
-   are diagnosed nonetheless.
+   are diagnosed nonetheless.  Whether a call is folded depends on
+   the size of the copy, the alignment, and wheteber else the target
+   might decide to consider.  The test is only run on a small subset
+   of targets where it's known to pass (see PR testsuite/83483).
    { dg-do compile }
-   { dg-options "-O0 -Wrestrict -fdump-tree-optimized" } */
+   { dg-options "-O0 -Wrestrict -fdump-tree-optimized" }
+   { dg-skip-if "skip non-x86 targets" { ! { i?86-*-* x86_64-*-* } } }  */
 
 char a[32];
 

@@ -1445,6 +1445,52 @@ cp_omp_mappable_type (tree type)
   return true;
 }
 
+/* Return the last pushed declaration for the symbol DECL or NULL
+   when no such declaration exists.  */
+
+static tree
+find_last_decl (tree decl)
+{
+  tree last_decl = NULL_TREE;
+
+  if (tree name = DECL_P (decl) ? DECL_NAME (decl) : NULL_TREE)
+    {
+      /* Look up the declaration in its scope.  */
+      tree pushed_scope = NULL_TREE;
+      if (tree ctype = DECL_CONTEXT (decl))
+	pushed_scope = push_scope (ctype);
+
+      last_decl = lookup_name (name);
+
+      if (pushed_scope)
+	pop_scope (pushed_scope);
+
+      /* The declaration may be a member conversion operator
+	 or a bunch of overfloads (handle the latter below).  */
+      if (last_decl && BASELINK_P (last_decl))
+	last_decl = BASELINK_FUNCTIONS (last_decl);
+    }
+
+  if (!last_decl)
+    return NULL_TREE;
+
+  if (DECL_P (last_decl) || TREE_CODE (last_decl) == OVERLOAD)
+    {
+      /* A set of overloads of the same function.  */
+      for (lkp_iterator iter (last_decl); iter; ++iter)
+	{
+	  if (TREE_CODE (*iter) == OVERLOAD)
+	    continue;
+
+	  if (decls_match (decl, *iter, /*record_decls=*/false))
+	    return *iter;
+	}
+      return NULL_TREE;
+    }
+
+  return NULL_TREE;
+}
+
 /* Like decl_attributes, but handle C++ complexity.  */
 
 void
@@ -1496,28 +1542,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
     }
   else
     {
-      tree last_decl = (DECL_P (*decl) && DECL_NAME (*decl)
-			? lookup_name (DECL_NAME (*decl)) : NULL_TREE);
-
-      if (last_decl && TREE_CODE (last_decl) == OVERLOAD)
-	for (ovl_iterator iter (last_decl, true); ; ++iter)
-	  {
-	    if (!iter)
-	      {
-		last_decl = NULL_TREE;
-		break;
-	      }
-
-	    if (TREE_CODE (*iter) == OVERLOAD)
-	      continue;
-
-	    if (decls_match (*decl, *iter, /*record_decls=*/false))
-	      {
-		last_decl = *iter;
-		break;
-	      }
-	  }
-
+      tree last_decl = find_last_decl (*decl);
       decl_attributes (decl, attributes, flags, last_decl);
     }
 

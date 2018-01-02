@@ -827,10 +827,6 @@ class Gogo
   static std::string
   nested_function_name();
 
-  // Return the index of a nested function name.
-  static int
-  nested_function_num(const std::string&);
-
   // Return the name to use for a sink funciton.
   std::string
   sink_function_name();
@@ -1580,6 +1576,11 @@ class Function_declaration
   void
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
+
+  // Return the pragmas for this function.
+  unsigned int
+  pragmas() const
+  { return this->pragmas_; }
 
   // Set the pragmas for this function.
   void

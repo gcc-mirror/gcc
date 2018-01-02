@@ -417,7 +417,8 @@ ft32_compute_frame (void)
   cfun->machine->size_for_adjusting_sp =
     0 // crtl->args.pretend_args_size
     + cfun->machine->local_vars_size
-    + (ACCUMULATE_OUTGOING_ARGS ? crtl->outgoing_args_size : 0);
+    + (ACCUMULATE_OUTGOING_ARGS
+       ? (HOST_WIDE_INT) crtl->outgoing_args_size : 0);
 }
 
 // Must use LINK/UNLINK when...

@@ -1979,6 +1979,11 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
 			    fold_convert (type, to));
 
   cond = gfc_evaluate_now_loc (loc, cond, &body);
+  if (code->ext.iterator->unroll && cond != error_mark_node)
+    cond
+      = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		build_int_cst (integer_type_node, annot_expr_unroll_kind),
+		build_int_cst (integer_type_node, code->ext.iterator->unroll));
 
   /* The loop exit.  */
   tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
@@ -2305,6 +2310,11 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   /* End with the loop condition.  Loop until countm1t == 0.  */
   cond = fold_build2_loc (loc, EQ_EXPR, logical_type_node, countm1t,
 			  build_int_cst (utype, 0));
+  if (code->ext.iterator->unroll && cond != error_mark_node)
+    cond
+      = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
+		build_int_cst (integer_type_node, annot_expr_unroll_kind),
+		build_int_cst (integer_type_node, code->ext.iterator->unroll));
   tmp = fold_build1_loc (loc, GOTO_EXPR, void_type_node, exit_label);
   tmp = fold_build3_loc (loc, COND_EXPR, void_type_node,
 			 cond, tmp, build_empty_stmt (loc));

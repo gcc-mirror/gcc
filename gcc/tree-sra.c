@@ -866,11 +866,20 @@ static struct access *
 create_access (tree expr, gimple *stmt, bool write)
 {
   struct access *access;
+  poly_int64 poffset, psize, pmax_size;
   HOST_WIDE_INT offset, size, max_size;
   tree base = expr;
   bool reverse, ptr, unscalarizable_region = false;
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
+  base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
+				  &reverse);
+  if (!poffset.is_constant (&offset)
+      || !psize.is_constant (&size)
+      || !pmax_size.is_constant (&max_size))
+    {
+      disqualify_candidate (base, "Encountered a polynomial-sized access.");
+      return NULL;
+    }
 
   if (sra_mode == SRA_MODE_EARLY_IPA
       && TREE_CODE (base) == MEM_REF)
@@ -1697,14 +1706,14 @@ make_fancy_name (tree expr)
    of handling bitfields.  */
 
 tree
-build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
+build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 		      bool reverse, tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)
 {
   tree prev_base = base;
   tree off;
   tree mem_ref;
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   unsigned HOST_WIDE_INT misalign;
   unsigned int align;
 
@@ -1715,7 +1724,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 				     TYPE_QUALS (exp_type)
 				     | ENCODE_QUAL_ADDR_SPACE (as));
 
-  gcc_checking_assert (offset % BITS_PER_UNIT == 0);
+  poly_int64 byte_offset = exact_div (offset, BITS_PER_UNIT);
   get_object_alignment_1 (base, &align, &misalign);
   base = get_addr_base_and_unit_offset (base, &base_offset);
 
@@ -1737,27 +1746,26 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       else
 	gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 
-      off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   offset / BITS_PER_UNIT);
+      off = build_int_cst (reference_alias_ptr_type (prev_base), byte_offset);
       base = tmp;
     }
   else if (TREE_CODE (base) == MEM_REF)
     {
       off = build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1), off);
       base = unshare_expr (TREE_OPERAND (base, 0));
     }
   else
     {
       off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       base = build_fold_addr_expr (unshare_expr (base));
     }
 
-  misalign = (misalign + offset) & (align - 1);
-  if (misalign != 0)
-    align = least_bit_hwi (misalign);
+  unsigned int align_bound = known_alignment (misalign + offset);
+  if (align_bound != 0)
+    align = MIN (align, align_bound);
   if (align != TYPE_ALIGN (exp_type))
     exp_type = build_aligned_type (exp_type, align);
 
@@ -1812,7 +1820,7 @@ static tree
 build_debug_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 			   struct access *model)
 {
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   tree off;
 
   if (TREE_CODE (model->expr) == COMPONENT_REF
@@ -3083,7 +3091,8 @@ clobber_subtree (struct access *access, gimple_stmt_iterator *gsi,
 static struct access *
 get_access_for_expr (tree expr)
 {
-  HOST_WIDE_INT offset, size, max_size;
+  poly_int64 poffset, psize, pmax_size;
+  HOST_WIDE_INT offset, max_size;
   tree base;
   bool reverse;
 
@@ -3093,8 +3102,12 @@ get_access_for_expr (tree expr)
   if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
-  if (max_size == -1 || !DECL_P (base))
+  base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
+				  &reverse);
+  if (!known_size_p (pmax_size)
+      || !pmax_size.is_constant (&max_size)
+      || !poffset.is_constant (&offset)
+      || !DECL_P (base))
     return NULL;
 
   if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
@@ -5385,12 +5398,12 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	      continue;
 
 	  tree offset;
-	  HOST_WIDE_INT bitsize, bitpos;
+	  poly_int64 bitsize, bitpos;
 	  machine_mode mode;
 	  int unsignedp, reversep, volatilep = 0;
 	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
 			       &unsignedp, &reversep, &volatilep);
-	  if (bitpos % BITS_PER_UNIT)
+	  if (!multiple_p (bitpos, BITS_PER_UNIT))
 	    {
 	      iscc->bad_arg_alignment = true;
 	      return true;

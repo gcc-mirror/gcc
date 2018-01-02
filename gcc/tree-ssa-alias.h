@@ -80,11 +80,11 @@ struct ao_ref
      the following fields are not yet computed.  */
   tree base;
   /* The offset relative to the base.  */
-  HOST_WIDE_INT offset;
+  poly_int64 offset;
   /* The size of the access.  */
-  HOST_WIDE_INT size;
+  poly_int64 size;
   /* The maximum possible extent of the access or -1 if unconstrained.  */
-  HOST_WIDE_INT max_size;
+  poly_int64 max_size;
 
   /* The alias set of the access or -1 if not yet computed.  */
   alias_set_type ref_alias_set;
@@ -94,8 +94,18 @@ struct ao_ref
 
   /* Whether the memory is considered a volatile access.  */
   bool volatile_p;
+
+  bool max_size_known_p () const;
 };
 
+/* Return true if the maximum size is known, rather than the special -1
+   marker.  */
+
+inline bool
+ao_ref::max_size_known_p () const
+{
+  return known_size_p (max_size);
+}
 
 /* In tree-ssa-alias.c  */
 extern void ao_ref_init (ao_ref *, tree);

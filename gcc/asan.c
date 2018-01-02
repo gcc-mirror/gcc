@@ -1386,7 +1386,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   TREE_ASM_WRITTEN (id) = 1;
   emit_move_insn (mem, expand_normal (build_fold_addr_expr (decl)));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
-			      GEN_INT (ASAN_SHADOW_SHIFT),
+			      gen_int_shift_amount (Pmode, ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   shadow_base
     = plus_constant (Pmode, shadow_base,
@@ -1651,6 +1651,7 @@ asan_protect_global (tree decl, bool ignore_decl_rtl_set_p)
 	  && !section_sanitized_p (DECL_SECTION_NAME (decl)))
       || DECL_SIZE (decl) == 0
       || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT
+      || TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST
       || !valid_constant_size_p (DECL_SIZE_UNIT (decl))
       || DECL_ALIGN_UNIT (decl) > 2 * ASAN_RED_ZONE_SIZE
       || TREE_TYPE (decl) == ubsan_get_source_location_type ()
@@ -2075,7 +2076,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   if (size_in_bytes <= 0)
     return;
 
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree offset;
   machine_mode mode;
   int unsignedp, reversep, volatilep = 0;
@@ -2093,19 +2094,19 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
       return;
     }
 
-  if (bitpos % BITS_PER_UNIT
-      || bitsize != size_in_bytes * BITS_PER_UNIT)
+  if (!multiple_p (bitpos, BITS_PER_UNIT)
+      || maybe_ne (bitsize, size_in_bytes * BITS_PER_UNIT))
     return;
 
   if (VAR_P (inner) && DECL_HARD_REGISTER (inner))
     return;
 
+  poly_int64 decl_size;
   if (VAR_P (inner)
       && offset == NULL_TREE
-      && bitpos >= 0
       && DECL_SIZE (inner)
-      && tree_fits_shwi_p (DECL_SIZE (inner))
-      && bitpos + bitsize <= tree_to_shwi (DECL_SIZE (inner)))
+      && poly_int_tree_p (DECL_SIZE (inner), &decl_size)
+      && known_subrange_p (bitpos, bitsize, 0, decl_size))
     {
       if (DECL_THREAD_LOCAL_P (inner))
 	return;

@@ -944,8 +944,8 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       DR_VECT_AUX (dr)->base_misaligned = true;
       base_misalignment = 0;
     }
-  unsigned int misalignment = (base_misalignment
-			       + TREE_INT_CST_LOW (drb->init));
+  poly_int64 misalignment
+    = base_misalignment + wi::to_poly_offset (drb->init).force_shwi ();
 
   /* If this is a backward running DR then first access in the larger
      vectype actually is N-1 elements before the address in the DR.
@@ -955,7 +955,21 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
     misalignment += ((TYPE_VECTOR_SUBPARTS (vectype) - 1)
 		     * TREE_INT_CST_LOW (drb->step));
 
-  SET_DR_MISALIGNMENT (dr, misalignment & (vector_alignment - 1));
+  unsigned int const_misalignment;
+  if (!known_misalignment (misalignment, vector_alignment,
+			   &const_misalignment))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "Non-constant misalignment for access: ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, ref);
+	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	}
+      return true;
+    }
+
+  SET_DR_MISALIGNMENT (dr, const_misalignment);
 
   if (dump_enabled_p ())
     {
@@ -2753,7 +2767,7 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
     return cmp;
 
   /* Then sort after DR_INIT.  In case of identical DRs sort after stmt UID.  */
-  cmp = tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb));
+  cmp = data_ref_compare_tree (DR_INIT (dra), DR_INIT (drb));
   if (cmp == 0)
     return gimple_uid (DR_STMT (dra)) < gimple_uid (DR_STMT (drb)) ? -1 : 1;
   return cmp;
@@ -3226,7 +3240,8 @@ bool
 vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
 			   gather_scatter_info *info)
 {
-  HOST_WIDE_INT scale = 1, pbitpos, pbitsize;
+  HOST_WIDE_INT scale = 1;
+  poly_int64 pbitpos, pbitsize;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
@@ -3267,17 +3282,15 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
      that can be gimplified before the loop.  */
   base = get_inner_reference (base, &pbitsize, &pbitpos, &off, &pmode,
 			      &punsignedp, &reversep, &pvolatilep);
-  gcc_assert (base && (pbitpos % BITS_PER_UNIT) == 0 && !reversep);
+  gcc_assert (base && !reversep);
+  poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
 	  if (off == NULL_TREE)
-	    {
-	      offset_int moff = mem_ref_offset (base);
-	      off = wide_int_to_tree (sizetype, moff);
-	    }
+	    off = wide_int_to_tree (sizetype, mem_ref_offset (base));
 	  else
 	    off = size_binop (PLUS_EXPR, off,
 			      fold_convert (sizetype, TREE_OPERAND (base, 1)));
@@ -3300,14 +3313,14 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
       if (!integer_zerop (off))
 	return false;
       off = base;
-      base = size_int (pbitpos / BITS_PER_UNIT);
+      base = size_int (pbytepos);
     }
   /* Otherwise put base + constant offset into the loop invariant BASE
      and continue with OFF.  */
   else
     {
       base = fold_convert (sizetype, base);
-      base = size_binop (PLUS_EXPR, base, size_int (pbitpos / BITS_PER_UNIT));
+      base = size_binop (PLUS_EXPR, base, size_int (pbytepos));
     }
 
   /* OFF at this point may be either a SSA_NAME or some tree expression

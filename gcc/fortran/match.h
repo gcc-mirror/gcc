@@ -241,6 +241,7 @@ match gfc_match_contiguous (void);
 match gfc_match_dimension (void);
 match gfc_match_external (void);
 match gfc_match_gcc_attributes (void);
+match gfc_match_gcc_unroll (void);
 match gfc_match_import (void);
 match gfc_match_intent (void);
 match gfc_match_intrinsic (void);

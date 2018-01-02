@@ -4437,21 +4437,21 @@ virt_or_elim_regno_p (unsigned regno)
 	  || regno == ARG_POINTER_REGNUM);
 }
 
-/* Return true if X is a valid address for machine mode MODE.  If it is,
-   fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
-   effect.  OUTER_CODE is PARALLEL for a load/store pair.  */
+/* Return true if X is a valid address of type TYPE for machine mode MODE.
+   If it is, fill in INFO appropriately.  STRICT_P is true if
+   REG_OK_STRICT is in effect.  */
 
 static bool
 aarch64_classify_address (struct aarch64_address_info *info,
-			  rtx x, machine_mode mode,
-			  RTX_CODE outer_code, bool strict_p)
+			  rtx x, machine_mode mode, bool strict_p,
+			  aarch64_addr_query_type type = ADDR_QUERY_M)
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
 
   /* On BE, we use load/store pair for all large int mode load/stores.
      TI/TFmode may also use a load/store pair.  */
-  bool load_store_pair_p = (outer_code == PARALLEL
+  bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
 			    || mode == TImode
 			    || mode == TFmode
 			    || (BYTES_BIG_ENDIAN
@@ -4683,7 +4683,7 @@ aarch64_address_valid_for_prefetch_p (rtx x, bool strict_p)
   struct aarch64_address_info addr;
 
   /* PRFM accepts the same addresses as DImode...  */
-  bool res = aarch64_classify_address (&addr, x, DImode, MEM, strict_p);
+  bool res = aarch64_classify_address (&addr, x, DImode, strict_p);
   if (!res)
     return false;
 
@@ -4719,19 +4719,18 @@ aarch64_legitimate_address_hook_p (machine_mode mode, rtx x, bool strict_p)
 {
   struct aarch64_address_info addr;
 
-  return aarch64_classify_address (&addr, x, mode, MEM, strict_p);
+  return aarch64_classify_address (&addr, x, mode, strict_p);
 }
 
-/* Return TRUE if X is a legitimate address for accessing memory in
-   mode MODE.  OUTER_CODE will be PARALLEL if this is a load/store
-   pair operation.  */
+/* Return TRUE if X is a legitimate address of type TYPE for accessing
+   memory in mode MODE.  STRICT_P is true if REG_OK_STRICT is in effect.  */
 bool
-aarch64_legitimate_address_p (machine_mode mode, rtx x,
-			      RTX_CODE outer_code, bool strict_p)
+aarch64_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
+			      aarch64_addr_query_type type)
 {
   struct aarch64_address_info addr;
 
-  return aarch64_classify_address (&addr, x, mode, outer_code, strict_p);
+  return aarch64_classify_address (&addr, x, mode, strict_p, type);
 }
 
 /* Split an out-of-range address displacement into a base and offset.
@@ -5630,14 +5629,15 @@ aarch64_print_operand (FILE *f, rtx x, int code)
    'op' is the context required by aarch64_classify_address.  It can either be
    MEM for a normal memory access or PARALLEL for LDP/STP.  */
 static bool
-aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
+aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
+				aarch64_addr_query_type type)
 {
   struct aarch64_address_info addr;
 
   /* Check all addresses are Pmode - including ILP32.  */
   gcc_assert (GET_MODE (x) == Pmode);
 
-  if (aarch64_classify_address (&addr, x, mode, op, true))
+  if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
       {
       case ADDRESS_REG_IMM:
@@ -5725,14 +5725,14 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x, RTX_CODE op)
 static bool
 aarch64_print_ldpstp_address (FILE *f, machine_mode mode, rtx x)
 {
-  return aarch64_print_address_internal (f, mode, x, PARALLEL);
+  return aarch64_print_address_internal (f, mode, x, ADDR_QUERY_LDP_STP);
 }
 
 /* Print address 'x' of a memory access with mode 'mode'.  */
 static void
 aarch64_print_operand_address (FILE *f, machine_mode mode, rtx x)
 {
-  if (!aarch64_print_address_internal (f, mode, x, MEM))
+  if (!aarch64_print_address_internal (f, mode, x, ADDR_QUERY_M))
     output_addr_const (f, x);
 }
 
@@ -6561,7 +6561,7 @@ aarch64_address_cost (rtx x,
   int cost = 0;
   info.shift = 0;
 
-  if (!aarch64_classify_address (&info, x, mode, c, false))
+  if (!aarch64_classify_address (&info, x, mode, false))
     {
       if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF)
 	{
@@ -12107,9 +12107,51 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 	    maxv = matches[i][1];
 	  }
 
-      /* Create a duplicate of the most common element.  */
-      rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
-      aarch64_emit_move (target, gen_vec_duplicate (mode, x));
+      /* Create a duplicate of the most common element, unless all elements
+	 are equally useless to us, in which case just immediately set the
+	 vector register using the first element.  */
+
+      if (maxv == 1)
+	{
+	  /* For vectors of two 64-bit elements, we can do even better.  */
+	  if (n_elts == 2
+	      && (inner_mode == E_DImode
+		  || inner_mode == E_DFmode))
+
+	    {
+	      rtx x0 = XVECEXP (vals, 0, 0);
+	      rtx x1 = XVECEXP (vals, 0, 1);
+	      /* Combine can pick up this case, but handling it directly
+		 here leaves clearer RTL.
+
+		 This is load_pair_lanes<mode>, and also gives us a clean-up
+		 for store_pair_lanes<mode>.  */
+	      if (memory_operand (x0, inner_mode)
+		  && memory_operand (x1, inner_mode)
+		  && !STRICT_ALIGNMENT
+		  && rtx_equal_p (XEXP (x1, 0),
+				  plus_constant (Pmode,
+						 XEXP (x0, 0),
+						 GET_MODE_SIZE (inner_mode))))
+		{
+		  rtx t;
+		  if (inner_mode == DFmode)
+		    t = gen_load_pair_lanesdf (target, x0, x1);
+		  else
+		    t = gen_load_pair_lanesdi (target, x0, x1);
+		  emit_insn (t);
+		  return;
+		}
+	    }
+	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
+	  aarch64_emit_move (target, lowpart_subreg (mode, x, inner_mode));
+	  maxelement = 0;
+	}
+      else
+	{
+	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
+	  aarch64_emit_move (target, gen_vec_duplicate (mode, x));
+	}
 
       /* Insert the rest.  */
       for (int i = 0; i < n_elts; i++)

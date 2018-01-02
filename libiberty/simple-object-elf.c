@@ -1091,6 +1091,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
   int changed;
   int *pfnret;
   const char **pfnname;
+  unsigned first_shndx = 0;
 
   shdr_size = (ei_class == ELFCLASS32
 	       ? sizeof (Elf32_External_Shdr)
@@ -1158,6 +1159,9 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       ret = (*pfn) (&name);
       pfnret[i - 1] = ret == 1 ? 0 : -1;
       pfnname[i - 1] = name;
+      if (first_shndx == 0
+	  && pfnret[i - 1] == 0)
+	first_shndx = i;
     }
 
   /* Mark sections as preserved that are required by to be preserved
@@ -1327,6 +1331,15 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 					   sobj->offset + stroff,
 					   (unsigned char *)strings,
 					   strsz, &errmsg, err);
+	      /* Find gnu_lto_ in strings.  */
+	      char *gnu_lto = strings;
+	      while ((gnu_lto = memchr (gnu_lto, 'g',
+					strings + strsz - gnu_lto)))
+		if (strncmp (gnu_lto, "gnu_lto_v1",
+			     strings + strsz - gnu_lto) == 0)
+		  break;
+		else
+		  gnu_lto++;
 	      for (ent = buf; ent < buf + length; ent += entsize)
 		{
 		  unsigned st_shndx = ELF_FETCH_FIELD (type_functions, ei_class,
@@ -1366,31 +1379,27 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 		         in case it is local.  */
 		      int bind = ELF_ST_BIND (*st_info);
 		      int other = STV_DEFAULT;
-		      size_t st_name;
-
 		      if (bind == STB_LOCAL)
-			ELF_SET_FIELD (type_functions, ei_class, Sym,
-				       ent, st_name, Elf_Word, 0);
+			{
+			  /* Make discarded local symbols unnamed and
+			     defined in the first prevailing section.  */
+			  ELF_SET_FIELD (type_functions, ei_class, Sym,
+					 ent, st_name, Elf_Word, 0);
+			  ELF_SET_FIELD (type_functions, ei_class, Sym,
+					 ent, st_shndx, Elf_Half, first_shndx);
+			}
 		      else
 			{
+			  /* Make discarded global symbols hidden weak
+			     undefined and sharing the gnu_lto_ name.  */
 			  bind = STB_WEAK;
-			  st_name = ELF_FETCH_FIELD (type_functions, ei_class,
-						     Sym, ent, st_name,
-						     Elf_Word);
-			  if (st_name < strsz)
-			    {
-			      char *p = strings + st_name;
-			      if (p[0] == '_'
-				  && p[1] == '_'
-				  && strncmp (p + (p[2] == '_'),
-					      "__gnu_lto_", 10) == 0)
-				{
-				  other = STV_HIDDEN;
-				  ELF_SET_FIELD (type_functions, ei_class, Sym,
-						 ent, st_name, Elf_Word,
-						 st_name + 2);
-				}
-			    }
+			  other = STV_HIDDEN;
+			  if (gnu_lto)
+			    ELF_SET_FIELD (type_functions, ei_class, Sym,
+					   ent, st_name, Elf_Word,
+					   gnu_lto - strings);
+			  ELF_SET_FIELD (type_functions, ei_class, Sym,
+					 ent, st_shndx, Elf_Half, SHN_UNDEF);
 			}
 		      *st_other = other;
 		      *st_info = ELF_ST_INFO (bind, STT_NOTYPE);
@@ -1398,8 +1407,6 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 				     ent, st_value, Elf_Addr, 0);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_size, Elf_Word, 0);
-		      ELF_SET_FIELD (type_functions, ei_class, Sym,
-				     ent, st_shndx, Elf_Half, SHN_UNDEF);
 		    }
 		}
 	      XDELETEVEC (strings);
@@ -1422,6 +1429,10 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	     link.  */
 	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
 			 shdr, sh_type, Elf_Word, SHT_NULL);
+	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
+			 shdr, sh_info, Elf_Word, 0);
+	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
+			 shdr, sh_link, Elf_Word, 0);
 	}
 
       flags = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,

@@ -410,6 +410,19 @@ proc check_effective_target_avx512vpopcntdq { } {
     } "-mavx512vpopcntdq" ]
 }
 
+# Return 1 if 128 or 256-bit avx512_vpopcntdq instructions can be compiled.
+proc check_effective_target_avx512vpopcntdqvl { } {
+    return [check_no_compiler_messages avx512vpopcntdqvl object {
+        typedef int __v8si __attribute__ ((__vector_size__ (32)));
+
+        __v8si
+        _mm256_popcnt_epi32 (__v8si __A)
+        {
+            return (__v8si) __builtin_ia32_vpopcountd_v8si ((__v8si) __A);
+        }
+    } "-mavx512vpopcntdq -mavx512vl" ]
+}
+
 # Return 1 if gfni instructions can be compiled.
 proc check_effective_target_gfni { } {
     return [check_no_compiler_messages gfni object {
@@ -468,6 +481,32 @@ proc check_effective_target_avx512vaes { } {
 	  return (__v32qi)__builtin_ia32_vaesdec_v32qi ((__v32qi) __A, (__v32qi) __B);
 	}
     } "-mvaes" ]
+}
+
+# Return 1 if vpclmulqdq instructions can be compiled.
+proc check_effective_target_vpclmulqdq { } {
+    return [check_no_compiler_messages vpclmulqdq object {
+        typedef long long __v4di __attribute__ ((__vector_size__ (32)));
+
+        __v4di
+        _mm256_clmulepi64_epi128 (__v4di __A, __v4di __B)
+        {
+            return (__v4di) __builtin_ia32_vpclmulqdq_v4di (__A, __B, 0);
+        }
+    } "-mvpclmulqdq -mavx512vl" ]
+}
+
+# Return 1 if avx512_bitalg instructions can be compiled.
+proc check_effective_target_avx512bitalg { } {
+    return [check_no_compiler_messages avx512bitalg object {
+        typedef int __v32hi __attribute__ ((__vector_size__ (64)));
+
+        __v32hi
+        _mm512_popcnt_epi16 (__v32hi __A)
+        {
+            return (__v32hi) __builtin_ia32_vpopcountd_v32hi ((__v32hi) __A);
+        }
+    } "-mavx512bitalg" ]
 }
 
 # If a testcase doesn't have special options, use these.

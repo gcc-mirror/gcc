@@ -759,12 +759,12 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && TREE_OPERAND (lhs, 0) == name)
     {
       tree def_rhs_base;
-      HOST_WIDE_INT def_rhs_offset;
+      poly_int64 def_rhs_offset;
       /* If the address is invariant we can always fold it.  */
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  offset_int off = mem_ref_offset (lhs);
+	  poly_offset_int off = mem_ref_offset (lhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
@@ -851,11 +851,11 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       && TREE_OPERAND (rhs, 0) == name)
     {
       tree def_rhs_base;
-      HOST_WIDE_INT def_rhs_offset;
+      poly_int64 def_rhs_offset;
       if ((def_rhs_base = get_addr_base_and_unit_offset (TREE_OPERAND (def_rhs, 0),
 							 &def_rhs_offset)))
 	{
-	  offset_int off = mem_ref_offset (rhs);
+	  poly_offset_int off = mem_ref_offset (rhs);
 	  tree new_ptr;
 	  off += def_rhs_offset;
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
@@ -1170,12 +1170,12 @@ constant_pointer_difference (tree p1, tree p2)
 	  if (TREE_CODE (p) == ADDR_EXPR)
 	    {
 	      tree q = TREE_OPERAND (p, 0);
-	      HOST_WIDE_INT offset;
+	      poly_int64 offset;
 	      tree base = get_addr_base_and_unit_offset (q, &offset);
 	      if (base)
 		{
 		  q = base;
-		  if (offset)
+		  if (maybe_ne (offset, 0))
 		    off = size_binop (PLUS_EXPR, off, size_int (offset));
 		}
 	      if (TREE_CODE (q) == MEM_REF
@@ -1781,7 +1781,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   gimple *def_stmt;
   tree op, op0, op1, op2;
   tree elem_type;
-  unsigned idx, n, size;
+  unsigned idx, size;
   enum tree_code code;
 
   op = gimple_assign_rhs1 (stmt);
@@ -1816,12 +1816,11 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
     return false;
 
   size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
-  n = TREE_INT_CST_LOW (op1) / size;
-  if (n != 1)
+  if (maybe_ne (bit_field_size (op), size))
     return false;
-  idx = TREE_INT_CST_LOW (op2) / size;
 
-  if (code == VEC_PERM_EXPR)
+  if (code == VEC_PERM_EXPR
+      && constant_multiple_p (bit_field_offset (op), size, &idx))
     {
       tree p, m, tem;
       unsigned nelts;
@@ -2074,9 +2073,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	    return false;
 	  orig = ref;
 	}
-      if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
+      unsigned int elt;
+      if (maybe_ne (bit_field_size (op1), elem_size)
+	  || !constant_multiple_p (bit_field_offset (op1), elem_size, &elt))
 	return false;
-      unsigned int elt = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
       if (elt != i)
 	maybe_ident = false;
       sel.quick_push (elt);

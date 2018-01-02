@@ -2413,7 +2413,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	if (TREE_CODE (baseop) == ADDR_EXPR
 	    && handled_component_p (TREE_OPERAND (baseop, 0)))
 	  {
-	    HOST_WIDE_INT off;
+	    poly_int64 off;
 	    tree base;
 	    base = get_addr_base_and_unit_offset (TREE_OPERAND (baseop, 0),
 						  &off);
