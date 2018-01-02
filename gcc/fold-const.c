@@ -11705,99 +11705,65 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     case VEC_PERM_EXPR:
       if (TREE_CODE (arg2) == VECTOR_CST)
 	{
-	  unsigned int nelts = VECTOR_CST_NELTS (arg2), i, mask, mask2;
-	  bool need_mask_canon = false;
-	  bool need_mask_canon2 = false;
-	  bool all_in_vec0 = true;
-	  bool all_in_vec1 = true;
-	  bool maybe_identity = true;
+	  /* Build a vector of integers from the tree mask.  */
+	  vec_perm_builder builder;
+	  if (!tree_to_vec_perm_builder (&builder, arg2))
+	    return NULL_TREE;
+
+	  /* Create a vec_perm_indices for the integer vector.  */
+	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
 	  bool single_arg = (op0 == op1);
-	  bool changed = false;
+	  vec_perm_indices sel (builder, single_arg ? 1 : 2, nelts);
 
-	  mask2 = 2 * nelts - 1;
-	  mask = single_arg ? (nelts - 1) : mask2;
-	  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
-	  vec_perm_builder sel (nelts, nelts, 1);
-	  vec_perm_builder sel2 (nelts, nelts, 1);
-	  for (i = 0; i < nelts; i++)
+	  /* Check for cases that fold to OP0 or OP1 in their original
+	     element order.  */
+	  if (sel.series_p (0, 1, 0, 1))
+	    return op0;
+	  if (sel.series_p (0, 1, nelts, 1))
+	    return op1;
+
+	  if (!single_arg)
 	    {
-	      tree val = VECTOR_CST_ELT (arg2, i);
-	      if (TREE_CODE (val) != INTEGER_CST)
-		return NULL_TREE;
-
-	      /* Make sure that the perm value is in an acceptable
-		 range.  */
-	      wi::tree_to_wide_ref t = wi::to_wide (val);
-	      need_mask_canon |= wi::gtu_p (t, mask);
-	      need_mask_canon2 |= wi::gtu_p (t, mask2);
-	      unsigned int elt = t.to_uhwi () & mask;
-	      unsigned int elt2 = t.to_uhwi () & mask2;
-
-	      if (elt < nelts)
-		all_in_vec1 = false;
-	      else
-		all_in_vec0 = false;
-
-	      if ((elt & (nelts - 1)) != i)
-		maybe_identity = false;
-
-	      sel.quick_push (elt);
-	      sel2.quick_push (elt2);
+	      if (sel.all_from_input_p (0))
+		op1 = op0;
+	      else if (sel.all_from_input_p (1))
+		{
+		  op0 = op1;
+		  sel.rotate_inputs (1);
+		}
 	    }
 
-	  if (maybe_identity)
-	    {
-	      if (all_in_vec0)
-		return op0;
-	      if (all_in_vec1)
-		return op1;
-	    }
-
-	  if (all_in_vec0)
-	    op1 = op0;
-	  else if (all_in_vec1)
-	    {
-	      op0 = op1;
-	      for (i = 0; i < nelts; i++)
-		sel[i] -= nelts;
-	      need_mask_canon = true;
-	    }
-
-	  vec_perm_indices indices (sel, 2, nelts);
 	  if ((TREE_CODE (op0) == VECTOR_CST
 	       || TREE_CODE (op0) == CONSTRUCTOR)
 	      && (TREE_CODE (op1) == VECTOR_CST
 		  || TREE_CODE (op1) == CONSTRUCTOR))
 	    {
-	      tree t = fold_vec_perm (type, op0, op1, indices);
+	      tree t = fold_vec_perm (type, op0, op1, sel);
 	      if (t != NULL_TREE)
 		return t;
 	    }
 
-	  if (op0 == op1 && !single_arg)
-	    changed = true;
+	  bool changed = (op0 == op1 && !single_arg);
 
-	  /* Some targets are deficient and fail to expand a single
-	     argument permutation while still allowing an equivalent
-	     2-argument version.  */
-	  if (need_mask_canon && arg2 == op2
-	      && !can_vec_perm_const_p (TYPE_MODE (type), indices, false)
-	      && can_vec_perm_const_p (TYPE_MODE (type),
-				       vec_perm_indices (sel2, 2, nelts),
-				       false))
+	  /* Generate a canonical form of the selector.  */
+	  if (arg2 == op2 && sel.encoding () != builder)
 	    {
-	      need_mask_canon = need_mask_canon2;
-	      sel.truncate (0);
-	      sel.splice (sel2);
-	    }
-
-	  if (need_mask_canon && arg2 == op2)
-	    {
-	      tree eltype = TREE_TYPE (TREE_TYPE (arg2));
-	      tree_vector_builder tsel (TREE_TYPE (arg2), nelts, 1);
-	      for (i = 0; i < nelts; i++)
-		tsel.quick_push (build_int_cst (eltype, sel[i]));
-	      op2 = tsel.build ();
+	      /* Some targets are deficient and fail to expand a single
+		 argument permutation while still allowing an equivalent
+		 2-argument version.  */
+	      if (sel.ninputs () == 2
+		  || can_vec_perm_const_p (TYPE_MODE (type), sel, false))
+		op2 = vec_perm_indices_to_tree (TREE_TYPE (arg2), sel);
+	      else
+		{
+		  vec_perm_indices sel2 (builder, 2, nelts);
+		  if (can_vec_perm_const_p (TYPE_MODE (type), sel2, false))
+		    op2 = vec_perm_indices_to_tree (TREE_TYPE (arg2), sel2);
+		  else
+		    /* Not directly supported with either encoding,
+		       so use the preferred form.  */
+		    op2 = vec_perm_indices_to_tree (TREE_TYPE (arg2), sel);
+		}
 	      changed = true;
 	    }
 

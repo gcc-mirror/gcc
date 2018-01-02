@@ -1,5 +1,21 @@
 2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* selftest.h (selftest::vec_perm_indices_c_tests): Declare.
+	* selftest-run-tests.c (selftest::run_tests): Call it.
+	* vector-builder.h (vector_builder::operator ==): New function.
+	(vector_builder::operator !=): Likewise.
+	* vec-perm-indices.h (vec_perm_indices::series_p): Declare.
+	(vec_perm_indices::all_from_input_p): New function.
+	* vec-perm-indices.c (vec_perm_indices::series_p): Likewise.
+	(test_vec_perm_12, selftest::vec_perm_indices_c_tests): Likewise.
+	* fold-const.c (fold_ternary_loc): Use tree_to_vec_perm_builder
+	instead of reading the VECTOR_CST directly.  Detect whether both
+	vector inputs are the same before constructing the vec_perm_indices,
+	and update the number of inputs argument accordingly.  Use the
+	utility functions added above.  Only construct sel2 if we need to.
+
+2018-01-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* optabs.c (expand_vec_perm_var): Use an explicit encoding for
 	the broadcast of the low byte.
 	(expand_mult_highpart): Use an explicit encoding for the permutes.

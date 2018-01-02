@@ -97,6 +97,9 @@ public:
   bool encoded_full_vector_p () const;
   T elt (unsigned int) const;
 
+  bool operator == (const Derived &) const;
+  bool operator != (const Derived &x) const { return !operator == (x); }
+
   void finalize ();
 
 protected:
@@ -166,6 +169,26 @@ vector_builder<T, Derived>::new_vector (unsigned int full_nelts,
   m_nelts_per_pattern = nelts_per_pattern;
   this->reserve (encoded_nelts ());
   this->truncate (0);
+}
+
+/* Return true if this vector and OTHER have the same elements and
+   are encoded in the same way.  */
+
+template<typename T, typename Derived>
+bool
+vector_builder<T, Derived>::operator == (const Derived &other) const
+{
+  if (m_full_nelts != other.m_full_nelts
+      || m_npatterns != other.m_npatterns
+      || m_nelts_per_pattern != other.m_nelts_per_pattern)
+    return false;
+
+  unsigned int nelts = encoded_nelts ();
+  for (unsigned int i = 0; i < nelts; ++i)
+    if (!derived ()->equal_p ((*this)[i], other[i]))
+      return false;
+
+  return true;
 }
 
 /* Return the value of vector element I, which might or might not be
