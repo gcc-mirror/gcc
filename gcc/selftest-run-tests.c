@@ -73,6 +73,7 @@ selftest::run_tests ()
 
   /* Mid-level data structures.  */
   input_c_tests ();
+  vec_perm_indices_c_tests ();
   tree_c_tests ();
   gimple_c_tests ();
   rtl_tests_c_tests ();

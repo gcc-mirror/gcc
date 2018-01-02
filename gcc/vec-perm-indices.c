@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
+#include "selftest.h"
 
 /* Switch to a new permutation vector that selects between NINPUTS vector
    inputs that have NELTS_PER_INPUT elements each.  Take the elements of the
@@ -83,6 +84,54 @@ vec_perm_indices::rotate_inputs (int delta)
   element_type element_delta = delta * m_nelts_per_input;
   for (unsigned int i = 0; i < m_encoding.length (); ++i)
     m_encoding[i] = clamp (m_encoding[i] + element_delta);
+}
+
+/* Return true if index OUT_BASE + I * OUT_STEP selects input
+   element IN_BASE + I * IN_STEP.  */
+
+bool
+vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,
+			    element_type in_base, element_type in_step) const
+{
+  /* Check the base value.  */
+  if (clamp (m_encoding.elt (out_base)) != clamp (in_base))
+    return false;
+
+  unsigned int full_nelts = m_encoding.full_nelts ();
+  unsigned int npatterns = m_encoding.npatterns ();
+
+  /* Calculate which multiple of OUT_STEP elements we need to get
+     back to the same pattern.  */
+  unsigned int cycle_length = least_common_multiple (out_step, npatterns);
+
+  /* Check the steps.  */
+  in_step = clamp (in_step);
+  out_base += out_step;
+  unsigned int limit = 0;
+  for (;;)
+    {
+      /* Succeed if we've checked all the elements in the vector.  */
+      if (out_base >= full_nelts)
+	return true;
+
+      if (out_base >= npatterns)
+	{
+	  /* We've got to the end of the "foreground" values.  Check
+	     2 elements from each pattern in the "background" values.  */
+	  if (limit == 0)
+	    limit = out_base + cycle_length * 2;
+	  else if (out_base >= limit)
+	    return true;
+	}
+
+      element_type v0 = m_encoding.elt (out_base - out_step);
+      element_type v1 = m_encoding.elt (out_base);
+      if (clamp (v1 - v0) != in_step)
+	return false;
+
+      out_base += out_step;
+    }
+  return true;
 }
 
 /* Return true if all elements of the permutation vector are in the range
@@ -180,3 +229,52 @@ vec_perm_indices_to_rtx (machine_mode mode, const vec_perm_indices &indices)
     RTVEC_ELT (v, i) = gen_int_mode (indices[i], GET_MODE_INNER (mode));
   return gen_rtx_CONST_VECTOR (mode, v);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Test a 12-element vector.  */
+
+static void
+test_vec_perm_12 (void)
+{
+  vec_perm_builder builder (12, 12, 1);
+  for (unsigned int i = 0; i < 4; ++i)
+    {
+      builder.quick_push (i * 5);
+      builder.quick_push (3 + i);
+      builder.quick_push (2 + 3 * i);
+    }
+  vec_perm_indices indices (builder, 1, 12);
+  ASSERT_TRUE (indices.series_p (0, 3, 0, 5));
+  ASSERT_FALSE (indices.series_p (0, 3, 3, 5));
+  ASSERT_FALSE (indices.series_p (0, 3, 0, 8));
+  ASSERT_TRUE (indices.series_p (1, 3, 3, 1));
+  ASSERT_TRUE (indices.series_p (2, 3, 2, 3));
+
+  ASSERT_TRUE (indices.series_p (0, 4, 0, 4));
+  ASSERT_FALSE (indices.series_p (1, 4, 3, 4));
+
+  ASSERT_TRUE (indices.series_p (0, 6, 0, 10));
+  ASSERT_FALSE (indices.series_p (0, 6, 0, 100));
+
+  ASSERT_FALSE (indices.series_p (1, 10, 3, 7));
+  ASSERT_TRUE (indices.series_p (1, 10, 3, 8));
+
+  ASSERT_TRUE (indices.series_p (0, 12, 0, 10));
+  ASSERT_TRUE (indices.series_p (0, 12, 0, 11));
+  ASSERT_TRUE (indices.series_p (0, 12, 0, 100));
+}
+
+/* Run selftests for this file.  */
+
+void
+vec_perm_indices_c_tests ()
+{
+  test_vec_perm_12 ();
+}
+
+} // namespace selftest
+
+#endif

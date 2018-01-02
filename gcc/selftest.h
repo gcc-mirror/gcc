@@ -215,6 +215,7 @@ extern void vec_c_tests ();
 extern void wide_int_cc_tests ();
 extern void predict_c_tests ();
 extern void simplify_rtx_c_tests ();
+extern void vec_perm_indices_c_tests ();
 
 extern int num_passes;
 

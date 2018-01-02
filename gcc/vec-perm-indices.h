@@ -77,7 +77,9 @@ public:
 
   element_type clamp (element_type) const;
   element_type operator[] (unsigned int i) const;
+  bool series_p (unsigned int, unsigned int, element_type, element_type) const;
   bool all_in_range_p (element_type, element_type) const;
+  bool all_from_input_p (unsigned int) const;
 
 private:
   vec_perm_indices (const vec_perm_indices &);
@@ -132,6 +134,15 @@ inline vec_perm_indices::element_type
 vec_perm_indices::operator[] (unsigned int i) const
 {
   return clamp (m_encoding.elt (i));
+}
+
+/* Return true if the permutation vector only selects elements from
+   input I.  */
+
+inline bool
+vec_perm_indices::all_from_input_p (unsigned int i) const
+{
+  return all_in_range_p (i * m_nelts_per_input, m_nelts_per_input);
 }
 
 #endif
