@@ -23,12 +23,12 @@ program foo
    v = cshift(c, 2)
    if (any(b /= v)) call abort
 
-   ! Special cases shift = 0, size(a), 1-size(a)
+   ! Special cases shift = 0, size(a), size(a)
    b = cshift([1, 2, 3, 4, 5], 0)
    if (any(b /= a)) call abort
    b = cshift([1, 2, 3, 4, 5], size(a))
    if (any(b /= a)) call abort
-   b = cshift([1, 2, 3, 4, 5], 1-size(a))
+   b = cshift([1, 2, 3, 4, 5], -size(a))
    if (any(b /= a)) call abort
 
    ! simplification of array arg.

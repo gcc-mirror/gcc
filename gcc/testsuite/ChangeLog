@@ -1,3 +1,8 @@
+2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83650
+	* gfortran.dg/simplify_cshift_1.f90: Correct condition.
+
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83608
