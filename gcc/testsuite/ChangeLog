@@ -1,3 +1,8 @@
+2018-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83556
+	* g++.dg/cpp0x/pr83556.C: New test.
+
 2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45689

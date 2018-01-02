@@ -1,3 +1,13 @@
+2018-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83556
+	* tree.c (replace_placeholders_r): Pass NULL as last argument to
+	cp_walk_tree instead of d->pset.  If non-TREE_CONSTANT and
+	non-PLACEHOLDER_EXPR tree has been seen already, set *walk_subtrees
+	to false and return.
+	(replace_placeholders): Pass NULL instead of &pset as last argument
+	to cp_walk_tree.
+
 2018-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	* constexpr.c (cxx_bind_parameters_in_call): Remove unneeded local
