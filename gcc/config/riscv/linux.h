@@ -45,6 +45,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LIB_SPEC GNU_USER_TARGET_LIB_SPEC " -latomic "
 #endif
 
+#define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
+
 #define LINK_SPEC "\
 -melf" XLEN_SPEC "lriscv \
 %{shared} \
