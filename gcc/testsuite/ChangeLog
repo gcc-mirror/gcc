@@ -1,3 +1,8 @@
+2018-01-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83501
+	* c-c++-common/Warray-bounds-3.c: Remove xfail.
+
 2018-01-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/83501
