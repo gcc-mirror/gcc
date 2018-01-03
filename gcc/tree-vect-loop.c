@@ -2330,11 +2330,12 @@ loop_vec_info
 vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
 {
   loop_vec_info loop_vinfo;
-  unsigned int vector_sizes;
+  auto_vector_sizes vector_sizes;
 
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
-  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  unsigned int next_size = 0;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -2350,6 +2351,7 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
       return NULL;
     }
 
+  poly_uint64 autodetected_vector_size = 0;
   while (1)
     {
       /* Check the CFG characteristics of the loop (nesting, entry/exit).  */
@@ -2376,18 +2378,28 @@ vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo)
 
       delete loop_vinfo;
 
-      vector_sizes &= ~current_vector_size;
+      if (next_size == 0)
+	autodetected_vector_size = current_vector_size;
+
+      if (next_size < vector_sizes.length ()
+	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
+	next_size += 1;
+
       if (fatal
-	  || vector_sizes == 0
-	  || current_vector_size == 0)
+	  || next_size == vector_sizes.length ()
+	  || known_eq (current_vector_size, 0U))
 	return NULL;
 
       /* Try the next biggest vector size.  */
-      current_vector_size = 1 << floor_log2 (vector_sizes);
+      current_vector_size = vector_sizes[next_size++];
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "***** Re-trying analysis with "
-			 "vector size %d\n", current_vector_size);
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "***** Re-trying analysis with "
+			   "vector size ");
+	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_printf (MSG_NOTE, "\n");
+	}
     }
 }
 
@@ -7748,9 +7760,12 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	  dump_printf (MSG_NOTE, "\n");
 	}
       else
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "LOOP EPILOGUE VECTORIZED (VS=%d)\n",
-			 current_vector_size);
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "LOOP EPILOGUE VECTORIZED (VS=");
+	  dump_dec (MSG_NOTE, current_vector_size);
+	  dump_printf (MSG_NOTE, ")\n");
+	}
     }
 
   /* Free SLP instances here because otherwise stmt reference counting
@@ -7767,31 +7782,39 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (LOOP_VINFO_EPILOGUE_P (loop_vinfo))
     epilogue = NULL;
 
+  if (!PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK))
+    epilogue = NULL;
+
   if (epilogue)
     {
-	unsigned int vector_sizes
-	  = targetm.vectorize.autovectorize_vector_sizes ();
-	vector_sizes &= current_vector_size - 1;
+      auto_vector_sizes vector_sizes;
+      targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+      unsigned int next_size = 0;
 
-	if (!PARAM_VALUE (PARAM_VECT_EPILOGUES_NOMASK))
-	  epilogue = NULL;
-	else if (!vector_sizes)
-	  epilogue = NULL;
-	else if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-		 && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) >= 0
-		 && known_eq (vf, lowest_vf))
-	  {
-	    int smallest_vec_size = 1 << ctz_hwi (vector_sizes);
-	    int ratio = current_vector_size / smallest_vec_size;
-	    unsigned HOST_WIDE_INT eiters = LOOP_VINFO_INT_NITERS (loop_vinfo)
-	      - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
-	    eiters = eiters % lowest_vf;
+      if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) >= 0
+	  && known_eq (vf, lowest_vf))
+	{
+	  unsigned int eiters
+	    = (LOOP_VINFO_INT_NITERS (loop_vinfo)
+	       - LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo));
+	  eiters = eiters % lowest_vf;
+	  epilogue->nb_iterations_upper_bound = eiters - 1;
 
-	    epilogue->nb_iterations_upper_bound = eiters - 1;
+	  unsigned int ratio;
+	  while (next_size < vector_sizes.length ()
+		 && !(constant_multiple_p (current_vector_size,
+					   vector_sizes[next_size], &ratio)
+		      && eiters >= lowest_vf / ratio))
+	    next_size += 1;
+	}
+      else
+	while (next_size < vector_sizes.length ()
+	       && maybe_lt (current_vector_size, vector_sizes[next_size]))
+	  next_size += 1;
 
-	    if (eiters < lowest_vf / ratio)
-	      epilogue = NULL;
-	    }
+      if (next_size == vector_sizes.length ())
+	epilogue = NULL;
     }
 
   if (epilogue)

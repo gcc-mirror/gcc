@@ -48942,17 +48942,20 @@ ix86_preferred_simd_mode (scalar_mode mode)
    vectors.  If AVX512F is enabled then try vectorizing with 512bit,
    256bit and 128bit vectors.  */
 
-static unsigned int
-ix86_autovectorize_vector_sizes (void)
+static void
+ix86_autovectorize_vector_sizes (vector_sizes *sizes)
 {
-  unsigned int bytesizes = 0;
-
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
-    bytesizes |= (64 | 32 | 16);
+    {
+      sizes->safe_push (64);
+      sizes->safe_push (32);
+      sizes->safe_push (16);
+    }
   else if (TARGET_AVX && !TARGET_PREFER_AVX128)
-    bytesizes |= (32 | 16);
-
-  return bytesizes;
+    {
+      sizes->safe_push (32);
+      sizes->safe_push (16);
+    }
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */

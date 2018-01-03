@@ -284,7 +284,7 @@ static bool arm_builtin_support_vector_misalignment (machine_mode mode,
 static void arm_conditional_register_usage (void);
 static enum flt_eval_method arm_excess_precision (enum excess_precision_type);
 static reg_class_t arm_preferred_rename_class (reg_class_t rclass);
-static unsigned int arm_autovectorize_vector_sizes (void);
+static void arm_autovectorize_vector_sizes (vector_sizes *);
 static int arm_default_branch_cost (bool, bool);
 static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
@@ -28119,10 +28119,14 @@ arm_vector_alignment (const_tree type)
   return align;
 }
 
-static unsigned int
-arm_autovectorize_vector_sizes (void)
+static void
+arm_autovectorize_vector_sizes (vector_sizes *sizes)
 {
-  return TARGET_NEON_VECTORIZE_DOUBLE ? 0 : (16 | 8);
+  if (!TARGET_NEON_VECTORIZE_DOUBLE)
+    {
+      sizes->safe_push (16);
+      sizes->safe_push (8);
+    }
 }
 
 static bool

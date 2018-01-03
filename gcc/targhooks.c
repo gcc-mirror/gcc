@@ -1284,10 +1284,9 @@ default_preferred_simd_mode (scalar_mode)
 /* By default only the size derived from the preferred vector mode
    is tried.  */
 
-unsigned int
-default_autovectorize_vector_sizes (void)
+void
+default_autovectorize_vector_sizes (vector_sizes *)
 {
-  return 0;
 }
 
 /* By default a vector of integers is used as a mask.  */
