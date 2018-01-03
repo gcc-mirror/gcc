@@ -2422,6 +2422,11 @@ compute_fn_summary (struct cgraph_node *node, bool early)
           info->inlinable = false;
           node->callees->inline_failed = CIF_CHKP;
 	}
+      else if (stdarg_p (TREE_TYPE (node->decl)))
+	{
+	  info->inlinable = false;
+	  node->callees->inline_failed = CIF_VARIADIC_THUNK;
+	}
       else
         info->inlinable = true;
     }
