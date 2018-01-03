@@ -1,3 +1,9 @@
+2018-01-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83655
+	* gcc.dg/Wrestrict-5.c: New test.
+	* c-c++-common/builtins.c: New test.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
