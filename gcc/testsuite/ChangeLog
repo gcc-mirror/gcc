@@ -1,3 +1,8 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83645
+	* gcc.dg/pr83645.c: New test.
+
 2018-01-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c/83559

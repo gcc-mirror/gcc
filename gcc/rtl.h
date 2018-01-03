@@ -4254,6 +4254,7 @@ extern GTY(()) rtx stack_limit_rtx;
 
 /* In var-tracking.c */
 extern unsigned int variable_tracking_main (void);
+extern void delete_vta_debug_insns (bool);
 
 /* In stor-layout.c.  */
 extern void get_mode_bounds (scalar_int_mode, int,
