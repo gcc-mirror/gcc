@@ -54,14 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
 
-/* Says whether a statement is a load, a store of a vectorized statement
-   result, or a store of an invariant value.  */
-enum vec_load_store_type {
-  VLS_LOAD,
-  VLS_STORE,
-  VLS_STORE_INVARIANT
-};
-
 /* Return the vectorized type for the given statement.  */
 
 tree
@@ -908,7 +900,7 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
 void
 vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 		       vect_memory_access_type memory_access_type,
-		       enum vect_def_type dt, slp_tree slp_node,
+		       vec_load_store_type vls_type, slp_tree slp_node,
 		       stmt_vector_for_cost *prologue_cost_vec,
 		       stmt_vector_for_cost *body_cost_vec)
 {
@@ -917,7 +909,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   gimple *first_stmt = STMT_VINFO_STMT (stmt_info);
   bool grouped_access_p = STMT_VINFO_GROUPED_ACCESS (stmt_info);
 
-  if (dt == vect_constant_def || dt == vect_external_def)
+  if (vls_type == VLS_STORE_INVARIANT)
     prologue_cost += record_stmt_cost (prologue_cost_vec, 1, scalar_to_vec,
 				       stmt_info, 0, vect_prologue);
 
@@ -2170,7 +2162,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 			      NULL, NULL, NULL);
       else
 	vect_model_store_cost (stmt_info, ncopies, memory_access_type,
-			       dt, NULL, NULL, NULL);
+			       vls_type, NULL, NULL, NULL);
       return true;
     }
   gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
@@ -5820,8 +5812,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       /* The SLP costs are calculated during SLP analysis.  */
       if (!PURE_SLP_STMT (stmt_info))
-	vect_model_store_cost (stmt_info, ncopies, memory_access_type, dt,
-			       NULL, NULL, NULL);
+	vect_model_store_cost (stmt_info, ncopies, memory_access_type,
+			       vls_type, NULL, NULL, NULL);
       return true;
     }
   gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));

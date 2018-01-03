@@ -520,6 +520,14 @@ enum slp_vect_type {
   hybrid
 };
 
+/* Says whether a statement is a load, a store of a vectorized statement
+   result, or a store of an invariant value.  */
+enum vec_load_store_type {
+  VLS_LOAD,
+  VLS_STORE,
+  VLS_STORE_INVARIANT
+};
+
 /* Describes how we're going to vectorize an individual load or store,
    or a group of loads or stores.  */
 enum vect_memory_access_type {
@@ -1220,7 +1228,7 @@ extern void vect_model_simple_cost (stmt_vec_info, int, enum vect_def_type *,
 				    int, stmt_vector_for_cost *,
 				    stmt_vector_for_cost *);
 extern void vect_model_store_cost (stmt_vec_info, int, vect_memory_access_type,
-				   enum vect_def_type, slp_tree,
+				   vec_load_store_type, slp_tree,
 				   stmt_vector_for_cost *,
 				   stmt_vector_for_cost *);
 extern void vect_model_load_cost (stmt_vec_info, int, vect_memory_access_type,
