@@ -1,3 +1,8 @@
+2018-01-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/83594
+	* gcc.dg/ipa/pr83594.c: New test.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
