@@ -1,5 +1,7 @@
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
  	* gnat_ugn.texi: Bump @copying's copyright year.
  	* gnat_rm.texi: Likewise.
 

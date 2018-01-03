@@ -1,3 +1,7 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* jit-playback.c (get_type, playback::compile_to_file::copy_file,
@@ -2565,7 +2569,7 @@
 
 	* Initial creation
 
-Copyright (C) 2013-2017 Free Software Foundation, Inc.
+Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

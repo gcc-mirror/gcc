@@ -1,6 +1,6 @@
 /* Subroutines used to expand string and block move, clear,
    compare and other operations for PowerPC.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
