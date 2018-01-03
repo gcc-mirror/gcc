@@ -405,6 +405,20 @@ again:
 	{
 	case vect_constant_def:
 	case vect_external_def:
+	  /* We must already have set a vector size by now.  */
+	  gcc_checking_assert (maybe_ne (current_vector_size, 0U));
+	  if (!current_vector_size.is_constant ())
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "Build SLP failed: invalid type of def "
+				   "for variable-length SLP ");
+		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, oprnd);
+		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+		}
+	      return -1;
+	    }
 	  break;
 
 	case vect_reduction_def:
@@ -3233,6 +3247,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
       = build_same_sized_truth_vector_type (STMT_VINFO_VECTYPE (stmt_vinfo));
   else
     vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+  /* Enforced by vect_get_and_check_slp_defs.  */
   nunits = TYPE_VECTOR_SUBPARTS (vector_type);
 
   if (STMT_VINFO_DATA_REF (stmt_vinfo))

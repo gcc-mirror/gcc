@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Reject
+	constant and extern definitions for variable-length vectors.
+	(vect_get_constant_vectors): Note that the number of units
+	is known to be constant.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_conversion): Treat the number
 	of units as polynomial.  Choose between WIDE and NARROW based
 	on multiple_p.
