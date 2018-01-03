@@ -5131,25 +5131,28 @@ expand_assignment (tree to, tree from, bool nontemporal)
       /* Handle expand_expr of a complex value returning a CONCAT.  */
       else if (GET_CODE (to_rtx) == CONCAT)
 	{
-	  unsigned short mode_bitsize = GET_MODE_BITSIZE (GET_MODE (to_rtx));
+	  machine_mode to_mode = GET_MODE (to_rtx);
+	  gcc_checking_assert (COMPLEX_MODE_P (to_mode));
+	  poly_int64 mode_bitsize = GET_MODE_BITSIZE (to_mode);
+	  unsigned short inner_bitsize = GET_MODE_UNIT_BITSIZE (to_mode);
 	  if (TYPE_MODE (TREE_TYPE (from)) == GET_MODE (to_rtx)
 	      && COMPLEX_MODE_P (GET_MODE (to_rtx))
 	      && known_eq (bitpos, 0)
 	      && known_eq (bitsize, mode_bitsize))
 	    result = store_expr (from, to_rtx, false, nontemporal, reversep);
-	  else if (known_eq (bitsize, mode_bitsize / 2)
+	  else if (known_eq (bitsize, inner_bitsize)
 		   && (known_eq (bitpos, 0)
-		       || known_eq (bitpos, mode_bitsize / 2)))
+		       || known_eq (bitpos, inner_bitsize)))
 	    result = store_expr (from, XEXP (to_rtx, maybe_ne (bitpos, 0)),
 				 false, nontemporal, reversep);
-	  else if (known_le (bitpos + bitsize, mode_bitsize / 2))
+	  else if (known_le (bitpos + bitsize, inner_bitsize))
 	    result = store_field (XEXP (to_rtx, 0), bitsize, bitpos,
 				  bitregion_start, bitregion_end,
 				  mode1, from, get_alias_set (to),
 				  nontemporal, reversep);
-	  else if (known_ge (bitpos, mode_bitsize / 2))
+	  else if (known_ge (bitpos, inner_bitsize))
 	    result = store_field (XEXP (to_rtx, 1), bitsize,
-				  bitpos - mode_bitsize / 2,
+				  bitpos - inner_bitsize,
 				  bitregion_start, bitregion_end,
 				  mode1, from, get_alias_set (to),
 				  nontemporal, reversep);
@@ -5158,7 +5161,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      result = expand_normal (from);
 	      if (GET_CODE (result) == CONCAT)
 		{
-		  machine_mode to_mode = GET_MODE_INNER (GET_MODE (to_rtx));
+		  to_mode = GET_MODE_INNER (to_mode);
 		  machine_mode from_mode = GET_MODE_INNER (GET_MODE (result));
 		  rtx from_real
 		    = simplify_gen_subreg (to_mode, XEXP (result, 0),
@@ -5174,7 +5177,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      else
 		{
 		  rtx from_rtx
-		    = simplify_gen_subreg (GET_MODE (to_rtx), result,
+		    = simplify_gen_subreg (to_mode, result,
 					   TYPE_MODE (TREE_TYPE (from)), 0);
 		  if (from_rtx)
 		    {

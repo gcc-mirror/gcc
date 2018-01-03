@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (expand_assignment): Cope with polynomial mode sizes
+	when assigning to a CONCAT.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (mode_precision): Change from unsigned short to
 	poly_uint16_pod.
 	(mode_to_precision): Return a poly_uint16 rather than an unsigned
