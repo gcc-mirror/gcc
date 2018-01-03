@@ -4115,8 +4115,8 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
   int ndts = 2;
   gimple *new_stmt = NULL;
   stmt_vec_info prev_stmt_info;
-  int nunits_in;
-  int nunits_out;
+  poly_uint64 nunits_in;
+  poly_uint64 nunits_out;
   tree vectype_out, vectype_in;
   int ncopies, i, j;
   tree lhs_type, rhs_type;
@@ -4251,12 +4251,15 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
-  if (nunits_in < nunits_out)
-    modifier = NARROW;
-  else if (nunits_out == nunits_in)
+  if (known_eq (nunits_out, nunits_in))
     modifier = NONE;
+  else if (multiple_p (nunits_out, nunits_in))
+    modifier = NARROW;
   else
-    modifier = WIDEN;
+    {
+      gcc_checking_assert (multiple_p (nunits_in, nunits_out));
+      modifier = WIDEN;
+    }
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
