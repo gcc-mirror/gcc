@@ -5273,13 +5273,14 @@ make_tree (tree type, rtx x)
 
     case CONST_VECTOR:
       {
-	int units = CONST_VECTOR_NUNITS (x);
+	unsigned int npatterns = CONST_VECTOR_NPATTERNS (x);
+	unsigned int nelts_per_pattern = CONST_VECTOR_NELTS_PER_PATTERN (x);
 	tree itype = TREE_TYPE (type);
-	int i;
 
 	/* Build a tree with vector elements.  */
-	tree_vector_builder elts (type, units, 1);
-	for (i = 0; i < units; ++i)
+	tree_vector_builder elts (type, npatterns, nelts_per_pattern);
+	unsigned int count = elts.encoded_nelts ();
+	for (unsigned int i = 0; i < count; ++i)
 	  {
 	    rtx elt = CONST_VECTOR_ELT (x, i);
 	    elts.quick_push (make_tree (itype, elt));

@@ -1163,11 +1163,11 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 	int units;
 	rtx elt;
 
-	units = CONST_VECTOR_NUNITS (x);
+	units = const_vector_encoded_nelts (x);
 
 	for (i = 0; i < units; ++i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
+	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
 	    hash += cselib_hash_rtx (elt, 0, memmode);
 	  }
 
