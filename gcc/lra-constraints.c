@@ -4243,8 +4243,7 @@ curr_insn_transform (bool check_only_p)
 			      || (simplify_subreg_regno
 				  (ira_class_hard_regs[goal_alt[i]][0],
 				   GET_MODE (reg), byte, mode) >= 0)))
-		      || (GET_MODE_PRECISION (mode)
-			  < GET_MODE_PRECISION (GET_MODE (reg))
+		      || (partial_subreg_p (mode, GET_MODE (reg))
 			  && GET_MODE_SIZE (GET_MODE (reg)) <= UNITS_PER_WORD
 			  && WORD_REGISTER_OPERATIONS)))
 		{
