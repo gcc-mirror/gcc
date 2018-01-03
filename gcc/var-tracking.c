@@ -10271,11 +10271,40 @@ vt_initialize (void)
 
 static int debug_label_num = 1;
 
-/* Remove from the insn stream all debug insns used for variable
-   tracking at assignments.  */
+/* Remove from the insn stream a single debug insn used for
+   variable tracking at assignments.  */
 
-static void
-delete_vta_debug_insns (void)
+static inline void
+delete_vta_debug_insn (rtx_insn *insn)
+{
+  if (DEBUG_MARKER_INSN_P (insn))
+    {
+      reemit_marker_as_note (insn);
+      return;
+    }
+
+  tree decl = INSN_VAR_LOCATION_DECL (insn);
+  if (TREE_CODE (decl) == LABEL_DECL
+      && DECL_NAME (decl)
+      && !DECL_RTL_SET_P (decl))
+    {
+      PUT_CODE (insn, NOTE);
+      NOTE_KIND (insn) = NOTE_INSN_DELETED_DEBUG_LABEL;
+      NOTE_DELETED_LABEL_NAME (insn)
+	= IDENTIFIER_POINTER (DECL_NAME (decl));
+      SET_DECL_RTL (decl, insn);
+      CODE_LABEL_NUMBER (insn) = debug_label_num++;
+    }
+  else
+    delete_insn (insn);
+}
+
+/* Remove from the insn stream all debug insns used for variable
+   tracking at assignments.  USE_CFG should be false if the cfg is no
+   longer usable.  */
+
+void
+delete_vta_debug_insns (bool use_cfg)
 {
   basic_block bb;
   rtx_insn *insn, *next;
@@ -10283,33 +10312,20 @@ delete_vta_debug_insns (void)
   if (!MAY_HAVE_DEBUG_INSNS)
     return;
 
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      FOR_BB_INSNS_SAFE (bb, insn, next)
+  if (use_cfg)
+    FOR_EACH_BB_FN (bb, cfun)
+      {
+	FOR_BB_INSNS_SAFE (bb, insn, next)
+	  if (DEBUG_INSN_P (insn))
+	    delete_vta_debug_insn (insn);
+      }
+  else
+    for (insn = get_insns (); insn; insn = next)
+      {
+	next = NEXT_INSN (insn);
 	if (DEBUG_INSN_P (insn))
-	  {
-	    if (DEBUG_MARKER_INSN_P (insn))
-	      {
-		reemit_marker_as_note (insn);
-		continue;
-	      }
-
-	    tree decl = INSN_VAR_LOCATION_DECL (insn);
-	    if (TREE_CODE (decl) == LABEL_DECL
-		&& DECL_NAME (decl)
-		&& !DECL_RTL_SET_P (decl))
-	      {
-		PUT_CODE (insn, NOTE);
-		NOTE_KIND (insn) = NOTE_INSN_DELETED_DEBUG_LABEL;
-		NOTE_DELETED_LABEL_NAME (insn)
-		  = IDENTIFIER_POINTER (DECL_NAME (decl));
-		SET_DECL_RTL (decl, insn);
-		CODE_LABEL_NUMBER (insn) = debug_label_num++;
-	      }
-	    else
-	      delete_insn (insn);
-	  }
-    }
+	  delete_vta_debug_insn (insn);
+      }
 }
 
 /* Run a fast, BB-local only version of var tracking, to take care of
@@ -10322,7 +10338,7 @@ static void
 vt_debug_insns_local (bool skipped ATTRIBUTE_UNUSED)
 {
   /* ??? Just skip it all for now.  */
-  delete_vta_debug_insns ();
+  delete_vta_debug_insns (true);
 }
 
 /* Free the data structures needed for variable tracking.  */
@@ -10395,7 +10411,7 @@ variable_tracking_main_1 (void)
 	 any pseudos at this point.  */
       || targetm.no_register_allocation)
     {
-      delete_vta_debug_insns ();
+      delete_vta_debug_insns (true);
       return 0;
     }
 
@@ -10423,7 +10439,7 @@ variable_tracking_main_1 (void)
     {
       vt_finalize ();
 
-      delete_vta_debug_insns ();
+      delete_vta_debug_insns (true);
 
       /* This is later restored by our caller.  */
       flag_var_tracking_assignments = 0;

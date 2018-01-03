@@ -1,3 +1,16 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83645
+	* var-tracking.c (delete_vta_debug_insn): New inline function.
+	(delete_vta_debug_insns): Add USE_CFG argument, if true, walk just
+	insns from get_insns () to NULL instead of each bb separately.
+	Use delete_vta_debug_insn.  No longer static.
+	(vt_debug_insns_local, variable_tracking_main_1): Adjust
+	delete_vta_debug_insns callers.
+	* rtl.h (delete_vta_debug_insns): Declare.
+	* final.c (rest_of_handle_final): Call delete_vta_debug_insns
+	instead of variable_tracking_main.
+
 2018-01-03  Martin Sebor  <msebor@redhat.com>
 
 	PR c/83559
