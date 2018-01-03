@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-generic.c (nunits_for_known_piecewise_op): New function.
+	(expand_vector_piecewise): Use it instead of TYPE_VECTOR_SUBPARTS.
+	(expand_vector_addition, add_rshift, expand_vector_divmod): Likewise.
+	(expand_vector_condition, vector_element): Likewise.
+	(subparts_gt): New function.
+	(get_compute_type): Use subparts_gt.
+	(count_type_subparts): Delete.
+	(expand_vector_operations_1): Use subparts_gt instead of
+	count_type_subparts.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-data-refs.c (vect_no_alias_p): Replace with...
 	(vect_compile_time_alias): ...this new function.  Do the calculation
 	on poly_ints rather than trees.

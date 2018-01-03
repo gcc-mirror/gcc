@@ -43,6 +43,26 @@ along with GCC; see the file COPYING3.  If not see
 
 static void expand_vector_operations_1 (gimple_stmt_iterator *);
 
+/* Return the number of elements in a vector type TYPE that we have
+   already decided needs to be expanded piecewise.  We don't support
+   this kind of expansion for variable-length vectors, since we should
+   always check for target support before introducing uses of those.  */
+static unsigned int
+nunits_for_known_piecewise_op (const_tree type)
+{
+  return TYPE_VECTOR_SUBPARTS (type);
+}
+
+/* Return true if TYPE1 has more elements than TYPE2, where either
+   type may be a vector or a scalar.  */
+
+static inline bool
+subparts_gt (tree type1, tree type2)
+{
+  poly_uint64 n1 = VECTOR_TYPE_P (type1) ? TYPE_VECTOR_SUBPARTS (type1) : 1;
+  poly_uint64 n2 = VECTOR_TYPE_P (type2) ? TYPE_VECTOR_SUBPARTS (type2) : 1;
+  return known_gt (n1, n2);
+}
 
 /* Build a constant of type TYPE, made of VALUE's bits replicated
    every TYPE_SIZE (INNER_TYPE) bits to fit TYPE's precision.  */
@@ -256,7 +276,7 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
   vec<constructor_elt, va_gc> *v;
   tree part_width = TYPE_SIZE (inner_type);
   tree index = bitsize_int (0);
-  int nunits = TYPE_VECTOR_SUBPARTS (type);
+  int nunits = nunits_for_known_piecewise_op (type);
   int delta = tree_to_uhwi (part_width)
 	      / tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
   int i;
@@ -340,7 +360,7 @@ expand_vector_addition (gimple_stmt_iterator *gsi,
 
   if (INTEGRAL_TYPE_P (TREE_TYPE (type))
       && parts_per_word >= 4
-      && TYPE_VECTOR_SUBPARTS (type) >= 4)
+      && nunits_for_known_piecewise_op (type) >= 4)
     return expand_vector_parallel (gsi, f_parallel,
 				   type, a, b, code);
   else
@@ -375,7 +395,7 @@ static tree
 add_rshift (gimple_stmt_iterator *gsi, tree type, tree op0, int *shiftcnts)
 {
   optab op;
-  unsigned int i, nunits = TYPE_VECTOR_SUBPARTS (type);
+  unsigned int i, nunits = nunits_for_known_piecewise_op (type);
   bool scalar_shift = true;
 
   for (i = 1; i < nunits; i++)
@@ -419,7 +439,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   bool has_vector_shift = true;
   int mode = -1, this_mode;
   int pre_shift = -1, post_shift;
-  unsigned int nunits = TYPE_VECTOR_SUBPARTS (type);
+  unsigned int nunits = nunits_for_known_piecewise_op (type);
   int *shifts = XALLOCAVEC (int, nunits * 4);
   int *pre_shifts = shifts + nunits;
   int *post_shifts = pre_shifts + nunits;
@@ -868,7 +888,6 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   tree index = bitsize_int (0);
   tree comp_width = width;
   tree comp_index = index;
-  int nunits = TYPE_VECTOR_SUBPARTS (type);
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
@@ -921,6 +940,7 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
   warning_at (loc, OPT_Wvector_operation_performance,
 	      "vector condition will be expanded piecewise");
 
+  int nunits = nunits_for_known_piecewise_op (type);
   vec_alloc (v, nunits);
   for (i = 0; i < nunits; i++)
     {
@@ -1190,7 +1210,7 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 
   vect_type = TREE_TYPE (vect);
   vect_elt_type = TREE_TYPE (vect_type);
-  elements = TYPE_VECTOR_SUBPARTS (vect_type);
+  elements = nunits_for_known_piecewise_op (vect_type);
 
   if (TREE_CODE (idx) == INTEGER_CST)
     {
@@ -1450,8 +1470,7 @@ get_compute_type (enum tree_code code, optab op, tree type)
       tree vector_compute_type
 	= type_for_widest_vector_mode (TREE_TYPE (type), op);
       if (vector_compute_type != NULL_TREE
-	  && (TYPE_VECTOR_SUBPARTS (vector_compute_type)
-	      < TYPE_VECTOR_SUBPARTS (compute_type))
+	  && subparts_gt (compute_type, vector_compute_type)
 	  && TYPE_VECTOR_SUBPARTS (vector_compute_type) > 1
 	  && (optab_handler (op, TYPE_MODE (vector_compute_type))
 	      != CODE_FOR_nothing))
@@ -1478,15 +1497,6 @@ get_compute_type (enum tree_code code, optab op, tree type)
     }
 
   return compute_type;
-}
-
-/* Helper function of expand_vector_operations_1.  Return number of
-   vector elements for vector types or 1 for other types.  */
-
-static inline int
-count_type_subparts (tree type)
-{
-  return VECTOR_TYPE_P (type) ? TYPE_VECTOR_SUBPARTS (type) : 1;
 }
 
 static tree
@@ -1708,8 +1718,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 	  /* The rtl expander will expand vector/scalar as vector/vector
 	     if necessary.  Pick one with wider vector type.  */
 	  tree compute_vtype = get_compute_type (code, opv, type);
-	  if (count_type_subparts (compute_vtype)
-	      > count_type_subparts (compute_type))
+	  if (subparts_gt (compute_vtype, compute_type))
 	    {
 	      compute_type = compute_vtype;
 	      op = opv;
@@ -1739,14 +1748,12 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 	      tree compute_rtype = get_compute_type (RSHIFT_EXPR, opr, type);
 	      /* The rtl expander will expand vector/scalar as vector/vector
 		 if necessary.  Pick one with wider vector type.  */
-	      if (count_type_subparts (compute_lvtype)
-		  > count_type_subparts (compute_ltype))
+	      if (subparts_gt (compute_lvtype, compute_ltype))
 		{
 		  compute_ltype = compute_lvtype;
 		  opl = oplv;
 		}
-	      if (count_type_subparts (compute_rvtype)
-		  > count_type_subparts (compute_rtype))
+	      if (subparts_gt (compute_rvtype, compute_rtype))
 		{
 		  compute_rtype = compute_rvtype;
 		  opr = oprv;
@@ -1754,11 +1761,9 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
 	      /* Pick the narrowest type from LSHIFT_EXPR, RSHIFT_EXPR and
 		 BIT_IOR_EXPR.  */
 	      compute_type = compute_ltype;
-	      if (count_type_subparts (compute_type)
-		  > count_type_subparts (compute_rtype))
+	      if (subparts_gt (compute_type, compute_rtype))
 		compute_type = compute_rtype;
-	      if (count_type_subparts (compute_type)
-		  > count_type_subparts (compute_otype))
+	      if (subparts_gt (compute_type, compute_otype))
 		compute_type = compute_otype;
 	      /* Verify all 3 operations can be performed in that type.  */
 	      if (compute_type != TREE_TYPE (type))
