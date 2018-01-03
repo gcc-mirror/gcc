@@ -1154,16 +1154,17 @@ vector_alignment_reachable_p (struct data_reference *dr)
 	 the prolog loop ({VF - misalignment}), is a multiple of the
 	 number of the interleaved accesses.  */
       int elem_size, mis_in_elements;
-      int nelements = TYPE_VECTOR_SUBPARTS (vectype);
 
       /* FORNOW: handle only known alignment.  */
       if (!known_alignment_for_access_p (dr))
 	return false;
 
-      elem_size = GET_MODE_SIZE (TYPE_MODE (vectype)) / nelements;
+      poly_uint64 nelements = TYPE_VECTOR_SUBPARTS (vectype);
+      poly_uint64 vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
+      elem_size = vector_element_size (vector_size, nelements);
       mis_in_elements = DR_MISALIGNMENT (dr) / elem_size;
 
-      if ((nelements - mis_in_elements) % GROUP_SIZE (stmt_info))
+      if (!multiple_p (nelements - mis_in_elements, GROUP_SIZE (stmt_info)))
 	return false;
     }
 
