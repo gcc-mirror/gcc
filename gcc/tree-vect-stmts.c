@@ -9130,12 +9130,12 @@ free_stmt_vec_info (gimple *stmt)
    by the target.  */
 
 static tree
-get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
+get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
 {
   tree orig_scalar_type = scalar_type;
   scalar_mode inner_mode;
   machine_mode simd_mode;
-  int nunits;
+  poly_uint64 nunits;
   tree vectype;
 
   if (!is_int_mode (TYPE_MODE (scalar_type), &inner_mode)
@@ -9177,13 +9177,13 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
 
   /* If no size was supplied use the mode the target prefers.   Otherwise
      lookup a vector mode of the specified size.  */
-  if (size == 0)
+  if (known_eq (size, 0U))
     simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
-  else if (!mode_for_vector (inner_mode, size / nbytes).exists (&simd_mode))
+  else if (!multiple_p (size, nbytes, &nunits)
+	   || !mode_for_vector (inner_mode, nunits).exists (&simd_mode))
     return NULL_TREE;
-  nunits = GET_MODE_SIZE (simd_mode) / nbytes;
   /* NOTE: nunits == 1 is allowed to support single element vector types.  */
-  if (nunits < 1)
+  if (!multiple_p (GET_MODE_SIZE (simd_mode), nbytes, &nunits))
     return NULL_TREE;
 
   vectype = build_vector_type (scalar_type, nunits);
@@ -9201,7 +9201,7 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
   return vectype;
 }
 
-unsigned int current_vector_size;
+poly_uint64 current_vector_size;
 
 /* Function get_vectype_for_scalar_type.
 
@@ -9215,7 +9215,7 @@ get_vectype_for_scalar_type (tree scalar_type)
   vectype = get_vectype_for_scalar_type_and_size (scalar_type,
 						  current_vector_size);
   if (vectype
-      && current_vector_size == 0)
+      && known_eq (current_vector_size, 0U))
     current_vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
   return vectype;
 }

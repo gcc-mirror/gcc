@@ -2,6 +2,41 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.h (vector_sizes, auto_vector_sizes): New typedefs.
+	* target.def (autovectorize_vector_sizes): Return the vector sizes
+	by pointer, using vector_sizes rather than a bitmask.
+	* targhooks.h (default_autovectorize_vector_sizes): Update accordingly.
+	* targhooks.c (default_autovectorize_vector_sizes): Likewise.
+	* config/aarch64/aarch64.c (aarch64_autovectorize_vector_sizes):
+	Likewise.
+	* config/arc/arc.c (arc_autovectorize_vector_sizes): Likewise.
+	* config/arm/arm.c (arm_autovectorize_vector_sizes): Likewise.
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes): Likewise.
+	* config/mips/mips.c (mips_autovectorize_vector_sizes): Likewise.
+	* omp-general.c (omp_max_vf): Likewise.
+	* omp-low.c (omp_clause_aligned_alignment): Likewise.
+	* optabs-query.c (can_vec_mask_load_store_p): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop): Likewise.
+	* tree-vect-slp.c (vect_slp_bb): Likewise.
+	* doc/tm.texi: Regenerate.
+	* tree-vectorizer.h (current_vector_size): Change from an unsigned int
+	to a poly_uint64.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): Take
+	the vector size as a poly_uint64 rather than an unsigned int.
+	(current_vector_size): Change from an unsigned int to a poly_uint64.
+	(get_vectype_for_scalar_type): Update accordingly.
+	* tree.h (build_truth_vector_type): Take the size and number of
+	units as a poly_uint64 rather than an unsigned int.
+	(build_vector_type): Add a temporary overload that takes
+	the number of units as a poly_uint64 rather than an unsigned int.
+	* tree.c (make_vector_type): Likewise.
+	(build_truth_vector_type): Take the number of units as a poly_uint64
+	rather than an unsigned int.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (get_mask_mode): Take the number of units and length
 	as poly_uint64s rather than unsigned ints.
 	* targhooks.h (default_get_mask_mode): Update accordingly.

@@ -1894,12 +1894,16 @@ transformations even in absence of specialized @acronym{SIMD} hardware.",
    after processing the preferred one derived from preferred_simd_mode.  */
 DEFHOOK
 (autovectorize_vector_sizes,
- "This hook should return a mask of sizes that should be iterated over\n\
-after trying to autovectorize using the vector size derived from the\n\
-mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
-The default is zero which means to not iterate over other vector sizes.",
- unsigned int,
- (void),
+ "If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not\n\
+the only one that is worth considering, this hook should add all suitable\n\
+vector sizes to @var{sizes}, in order of decreasing preference.  The first\n\
+one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
+\n\
+The hook does not need to do anything if the vector returned by\n\
+@code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant\n\
+for autovectorization.  The default implementation does nothing.",
+ void,
+ (vector_sizes *sizes),
  default_autovectorize_vector_sizes)
 
 /* Function to get a target mode for a vector mask.  */

@@ -556,7 +556,6 @@ can_vec_mask_load_store_p (machine_mode mode,
 {
   optab op = is_load ? maskload_optab : maskstore_optab;
   machine_mode vmode;
-  unsigned int vector_sizes;
 
   /* If mode is vector mode, check it directly.  */
   if (VECTOR_MODE_P (mode))
@@ -580,14 +579,14 @@ can_vec_mask_load_store_p (machine_mode mode,
       && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
-  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
-  while (vector_sizes != 0)
+  auto_vector_sizes vector_sizes;
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  for (unsigned int i = 0; i < vector_sizes.length (); ++i)
     {
-      unsigned int cur = 1 << floor_log2 (vector_sizes);
-      vector_sizes &= ~cur;
-      if (cur <= GET_MODE_SIZE (smode))
+      poly_uint64 cur = vector_sizes[i];
+      poly_uint64 nunits;
+      if (!multiple_p (cur, GET_MODE_SIZE (smode), &nunits))
 	continue;
-      unsigned int nunits = cur / GET_MODE_SIZE (smode);
       if (mode_for_vector (smode, nunits).exists (&vmode)
 	  && VECTOR_MODE_P (vmode)
 	  && targetm.vectorize.get_mask_mode (nunits, cur).exists (&mask_mode)

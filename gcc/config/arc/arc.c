@@ -410,10 +410,14 @@ arc_preferred_simd_mode (scalar_mode mode)
 /* Implements target hook
    TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
 
-static unsigned int
-arc_autovectorize_vector_sizes (void)
+static void
+arc_autovectorize_vector_sizes (vector_sizes *sizes)
 {
-  return TARGET_PLUS_QMACW ? (8 | 4) : 0;
+  if (TARGET_PLUS_QMACW)
+    {
+      sizes->quick_push (8);
+      sizes->quick_push (4);
+    }
 }
 
 /* TARGET_PRESERVE_RELOAD_P is still awaiting patch re-evaluation / review.  */

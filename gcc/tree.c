@@ -9614,6 +9614,13 @@ make_vector_type (tree innertype, int nunits, machine_mode mode)
   return t;
 }
 
+/* Temporary.  */
+static tree
+make_vector_type (tree innertype, poly_uint64 nunits, machine_mode mode)
+{
+  return make_vector_type (innertype, (int) nunits.to_constant (), mode);
+}
+
 static tree
 make_or_reuse_type (unsigned size, int unsignedp)
 {
@@ -10518,19 +10525,18 @@ build_vector_type (tree innertype, int nunits)
 /* Build truth vector with specified length and number of units.  */
 
 tree
-build_truth_vector_type (unsigned nunits, unsigned vector_size)
+build_truth_vector_type (poly_uint64 nunits, poly_uint64 vector_size)
 {
   machine_mode mask_mode
     = targetm.vectorize.get_mask_mode (nunits, vector_size).else_blk ();
 
-  unsigned HOST_WIDE_INT vsize;
+  poly_uint64 vsize;
   if (mask_mode == BLKmode)
     vsize = vector_size * BITS_PER_UNIT;
   else
     vsize = GET_MODE_BITSIZE (mask_mode);
 
-  unsigned HOST_WIDE_INT esize = vsize / nunits;
-  gcc_assert (esize * nunits == vsize);
+  unsigned HOST_WIDE_INT esize = vector_element_size (vsize, nunits);
 
   tree bool_type = build_nonstandard_boolean_type (esize);
 

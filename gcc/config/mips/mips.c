@@ -13401,10 +13401,11 @@ mips_preferred_simd_mode (scalar_mode mode)
 
 /* Implement TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES.  */
 
-static unsigned int
-mips_autovectorize_vector_sizes (void)
+static void
+mips_autovectorize_vector_sizes (vector_sizes *sizes)
 {
-  return ISA_HAS_MSA ? 16 : 0;
+  if (ISA_HAS_MSA)
+    sizes->safe_push (16);
 }
 
 /* Implement TARGET_INIT_LIBFUNCS.  */

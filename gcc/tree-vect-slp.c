@@ -3032,18 +3032,20 @@ vect_slp_bb (basic_block bb)
 {
   bb_vec_info bb_vinfo;
   gimple_stmt_iterator gsi;
-  unsigned int vector_sizes;
   bool any_vectorized = false;
+  auto_vector_sizes vector_sizes;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "===vect_slp_analyze_bb===\n");
 
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
-  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  unsigned int next_size = 0;
 
   gsi = gsi_start_bb (bb);
 
+  poly_uint64 autodetected_vector_size = 0;
   while (1)
     {
       if (gsi_end_p (gsi))
@@ -3098,10 +3100,16 @@ vect_slp_bb (basic_block bb)
 
       any_vectorized |= vectorized;
 
-      vector_sizes &= ~current_vector_size;
+      if (next_size == 0)
+	autodetected_vector_size = current_vector_size;
+
+      if (next_size < vector_sizes.length ()
+	  && known_eq (vector_sizes[next_size], autodetected_vector_size))
+	next_size += 1;
+
       if (vectorized
-	  || vector_sizes == 0
-	  || current_vector_size == 0
+	  || next_size == vector_sizes.length ()
+	  || known_eq (current_vector_size, 0U)
 	  /* If vect_slp_analyze_bb_1 signaled that analysis for all
 	     vector sizes will fail do not bother iterating.  */
 	  || fatal)
@@ -3114,16 +3122,20 @@ vect_slp_bb (basic_block bb)
 
 	  /* And reset vector sizes.  */
 	  current_vector_size = 0;
-	  vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
+	  next_size = 0;
 	}
       else
 	{
 	  /* Try the next biggest vector size.  */
-	  current_vector_size = 1 << floor_log2 (vector_sizes);
+	  current_vector_size = vector_sizes[next_size++];
 	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "***** Re-trying analysis with "
-			     "vector size %d\n", current_vector_size);
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "***** Re-trying analysis with "
+			       "vector size ");
+	      dump_dec (MSG_NOTE, current_vector_size);
+	      dump_printf (MSG_NOTE, "\n");
+	    }
 
 	  /* Start over.  */
 	  gsi = region_begin;
