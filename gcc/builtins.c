@@ -5990,9 +5990,12 @@ expand_ifn_atomic_compare_exchange_into_call (gcall *call, machine_mode mode)
   /* Skip the boolean weak parameter.  */
   for (z = 4; z < 6; z++)
     vec->quick_push (gimple_call_arg (call, z));
+  /* At present we only have BUILT_IN_ATOMIC_COMPARE_EXCHANGE_{1,2,4,8,16}.  */
+  unsigned int bytes_log2 = exact_log2 (GET_MODE_SIZE (mode));
+  gcc_assert (bytes_log2 < 5);
   built_in_function fncode
     = (built_in_function) ((int) BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1
-			   + exact_log2 (GET_MODE_SIZE (mode)));
+			   + bytes_log2);
   tree fndecl = builtin_decl_explicit (fncode);
   tree fn = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fndecl)),
 		    fndecl);
