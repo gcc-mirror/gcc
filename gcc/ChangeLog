@@ -1,5 +1,11 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-stmts.c (vect_build_all_ones_mask)
+	(vect_build_zero_merge_argument): New functions, split out from...
+	(vectorizable_load): ...here.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-stmts.c (vect_check_store_rhs): New function,
 	split out from...
 	(vectorizable_mask_load_store): ...here.
