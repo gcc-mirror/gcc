@@ -5398,16 +5398,18 @@ shift_amt_for_vec_perm_mask (machine_mode mode, const vec_perm_indices &sel)
 {
   unsigned int nelt = GET_MODE_NUNITS (mode);
   unsigned int bitsize = GET_MODE_UNIT_BITSIZE (mode);
-  unsigned int first = sel[0];
-  if (first >= nelt)
+  poly_int64 first = sel[0];
+  if (maybe_ge (sel[0], nelt))
     return NULL_RTX;
 
   if (!sel.series_p (0, 1, first, 1))
     for (unsigned int i = 1; i < nelt; i++)
       {
-	unsigned int expected = i + first;
+	poly_int64 expected = i + first;
 	/* Indices into the second vector are all equivalent.  */
-	if (MIN (nelt, sel[i]) != MIN (nelt, expected))
+	if (maybe_lt (sel[i], nelt)
+	    ? maybe_ne (sel[i], expected)
+	    : maybe_lt (expected, nelt))
 	  return NULL_RTX;
       }
 

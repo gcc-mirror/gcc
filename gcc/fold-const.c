@@ -8945,9 +8945,12 @@ fold_vec_perm (tree type, tree arg0, tree arg1, const vec_perm_indices &sel)
   tree_vector_builder out_elts (type, nelts, 1);
   for (i = 0; i < nelts; i++)
     {
-      if (!CONSTANT_CLASS_P (in_elts[sel[i]]))
+      HOST_WIDE_INT index;
+      if (!sel[i].is_constant (&index))
+	return NULL_TREE;
+      if (!CONSTANT_CLASS_P (in_elts[index]))
 	need_ctor = true;
-      out_elts.quick_push (unshare_expr (in_elts[sel[i]]));
+      out_elts.quick_push (unshare_expr (in_elts[index]));
     }
 
   if (need_ctor)

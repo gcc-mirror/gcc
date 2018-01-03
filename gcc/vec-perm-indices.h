@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 /* A vector_builder for building constant permutation vectors.
    The elements do not need to be clamped to a particular range
    of input elements.  */
-typedef int_vector_builder<HOST_WIDE_INT> vec_perm_builder;
+typedef int_vector_builder<poly_int64> vec_perm_builder;
 
 /* This class represents a constant permutation vector, such as that used
    as the final operand to a VEC_PERM_EXPR.
@@ -49,7 +49,7 @@ typedef int_vector_builder<HOST_WIDE_INT> vec_perm_builder;
    different numbers of elements.  */
 class vec_perm_indices
 {
-  typedef HOST_WIDE_INT element_type;
+  typedef poly_int64 element_type;
 
 public:
   vec_perm_indices ();
@@ -118,13 +118,17 @@ vec_perm_indices::vec_perm_indices (const vec_perm_builder &elements,
 inline vec_perm_indices::element_type
 vec_perm_indices::clamp (element_type elt) const
 {
-  element_type limit = input_nelts ();
-  elt %= limit;
+  element_type limit = input_nelts (), elem_within_input;
+  int input;
+  if (!can_div_trunc_p (elt, limit, &input, &elem_within_input))
+    return elt;
+
   /* Treat negative elements as counting from the end.  This only matters
      if the vector size is not a power of 2.  */
-  if (elt < 0)
-    elt += limit;
-  return elt;
+  if (known_lt (elem_within_input, 0))
+    return elem_within_input + limit;
+
+  return elem_within_input;
 }
 
 /* Return the value of vector element I, which might or might not be
