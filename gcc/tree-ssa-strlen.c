@@ -2772,6 +2772,21 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
     }
 }
 
+/* Check if RHS is string_cst possibly wrapped by mem_ref.  */
+static tree
+get_string_cst (tree rhs)
+{
+  if (TREE_CODE (rhs) == MEM_REF
+      && integer_zerop (TREE_OPERAND (rhs, 1)))
+    {
+      rhs = TREE_OPERAND (rhs, 0);
+      if (TREE_CODE (rhs) == ADDR_EXPR)
+	rhs = TREE_OPERAND (rhs, 0);
+    }
+
+  return (TREE_CODE (rhs) == STRING_CST) ? rhs : NULL_TREE;
+}
+
 /* Handle a single character store.  */
 
 static bool
@@ -2927,11 +2942,11 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	}
     }
   else if (idx == 0
-	   && TREE_CODE (gimple_assign_rhs1 (stmt)) == STRING_CST
+	   && (rhs = get_string_cst (gimple_assign_rhs1 (stmt)))
 	   && ssaname == NULL_TREE
 	   && TREE_CODE (TREE_TYPE (lhs)) == ARRAY_TYPE)
     {
-      size_t l = strlen (TREE_STRING_POINTER (gimple_assign_rhs1 (stmt)));
+      size_t l = strlen (TREE_STRING_POINTER (rhs));
       HOST_WIDE_INT a = int_size_in_bytes (TREE_TYPE (lhs));
       if (a > 0 && (unsigned HOST_WIDE_INT) a > l)
 	{
