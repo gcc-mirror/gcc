@@ -45,7 +45,7 @@
 
 2017-10-16  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
-        * MAINTAINERS (write after approval): Add myself.
+	* MAINTAINERS (write after approval): Add myself.
 
 2017-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -79,7 +79,7 @@
 
 2017-07-31  Robin Dapp  <rdapp@linux.vnet.ibm.com>
 
-        * MAINTAINERS (write after approval): Add myself.
+	* MAINTAINERS (write after approval): Add myself.
 
 2017-07-28  Tony Reix  <tony.reix@atos.net>
 
@@ -119,7 +119,7 @@
 
 2017-06-26  Maxim Ostapenko  <m.ostapenko@samsung.com>
 
-        * MAINTAINERS: Add myself to Write After Approval
+	* MAINTAINERS: Add myself to Write After Approval
 
 2017-06-21  Andrew Jenner  <andrew@codesourcery.com>
 
@@ -321,9 +321,9 @@
 
 2017-02-03  John David Anglin  <danglin@gcc.gnu.org>
 
-        * configure.ac: Add gcc/function-tests.o to compare_exclusions for
+	* configure.ac: Add gcc/function-tests.o to compare_exclusions for
 	32-bit hppa*-*-hpux*.
-        * configure: Regenerate.
+	* configure: Regenerate.
 
 2017-01-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
