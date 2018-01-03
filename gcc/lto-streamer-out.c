@@ -2813,7 +2813,7 @@ lto_write_mode_table (void)
 	  bp_pack_value (&bp, GET_MODE_SIZE (m), 8);
 	  bp_pack_value (&bp, GET_MODE_PRECISION (m), 16);
 	  bp_pack_value (&bp, GET_MODE_INNER (m), 8);
-	  bp_pack_value (&bp, GET_MODE_NUNITS (m), 8);
+	  bp_pack_poly_value (&bp, GET_MODE_NUNITS (m), 16);
 	  switch (GET_MODE_CLASS (m))
 	    {
 	    case MODE_FRACT:

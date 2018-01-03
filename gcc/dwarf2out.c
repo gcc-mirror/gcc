@@ -16010,8 +16010,11 @@ loc_descriptor (rtx rtl, machine_mode mode,
 
       if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
 	{
+	  unsigned int length;
+	  if (!CONST_VECTOR_NUNITS (rtl).is_constant (&length))
+	    return NULL;
+
 	  unsigned int elt_size = GET_MODE_UNIT_SIZE (GET_MODE (rtl));
-	  unsigned int length = CONST_VECTOR_NUNITS (rtl);
 	  unsigned char *array
 	    = ggc_vec_alloc<unsigned char> (length * elt_size);
 	  unsigned int i;
@@ -18817,9 +18820,12 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST_VECTOR:
       {
+	unsigned int length;
+	if (!CONST_VECTOR_NUNITS (rtl).is_constant (&length))
+	  return false;
+
 	machine_mode mode = GET_MODE (rtl);
 	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
-	unsigned int length = CONST_VECTOR_NUNITS (rtl);
 	unsigned char *array
 	  = ggc_vec_alloc<unsigned char> (length * elt_size);
 	unsigned int i;

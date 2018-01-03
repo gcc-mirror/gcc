@@ -3932,7 +3932,7 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
 	unsigned int subalign = MIN (align, GET_MODE_BITSIZE (submode));
 
 	gcc_assert (GET_CODE (x) == CONST_VECTOR);
-	units = CONST_VECTOR_NUNITS (x);
+	units = GET_MODE_NUNITS (mode);
 
 	for (i = 0; i < units; i++)
 	  {

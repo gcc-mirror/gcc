@@ -371,17 +371,15 @@ force_expand_binop (machine_mode mode, optab binoptab,
 rtx
 expand_vector_broadcast (machine_mode vmode, rtx op)
 {
-  enum insn_code icode;
+  int n;
   rtvec vec;
-  rtx ret;
-  int i, n;
 
   gcc_checking_assert (VECTOR_MODE_P (vmode));
 
   if (valid_for_const_vector_p (vmode, op))
     return gen_const_vec_duplicate (vmode, op);
 
-  icode = optab_handler (vec_duplicate_optab, vmode);
+  insn_code icode = optab_handler (vec_duplicate_optab, vmode);
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[2];
@@ -391,6 +389,9 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
       return ops[0].value;
     }
 
+  if (!GET_MODE_NUNITS (vmode).is_constant (&n))
+    return NULL;
+
   /* ??? If the target doesn't have a vec_init, then we have no easy way
      of performing this operation.  Most of this sort of generic support
      is hidden away in the vector lowering support in gimple.  */
@@ -399,11 +400,10 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
   if (icode == CODE_FOR_nothing)
     return NULL;
 
-  n = GET_MODE_NUNITS (vmode);
   vec = rtvec_alloc (n);
-  for (i = 0; i < n; ++i)
+  for (int i = 0; i < n; ++i)
     RTVEC_ELT (vec, i) = op;
-  ret = gen_reg_rtx (vmode);
+  rtx ret = gen_reg_rtx (vmode);
   emit_insn (GEN_FCN (icode) (ret, gen_rtx_PARALLEL (vmode, vec)));
 
   return ret;
@@ -1074,7 +1074,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
 	 arguments.  */
       tmp_mode = insn_data[(int) icode].operand[0].mode;
       if (VECTOR_MODE_P (mode)
-	  && GET_MODE_NUNITS (tmp_mode) != 2 * GET_MODE_NUNITS (mode))
+	  && maybe_ne (GET_MODE_NUNITS (tmp_mode), 2 * GET_MODE_NUNITS (mode)))
 	{
 	  delete_insns_since (last);
 	  return NULL_RTX;
@@ -5396,22 +5396,26 @@ vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
 static rtx
 shift_amt_for_vec_perm_mask (machine_mode mode, const vec_perm_indices &sel)
 {
-  unsigned int nelt = GET_MODE_NUNITS (mode);
   unsigned int bitsize = GET_MODE_UNIT_BITSIZE (mode);
   poly_int64 first = sel[0];
-  if (maybe_ge (sel[0], nelt))
+  if (maybe_ge (sel[0], GET_MODE_NUNITS (mode)))
     return NULL_RTX;
 
   if (!sel.series_p (0, 1, first, 1))
-    for (unsigned int i = 1; i < nelt; i++)
-      {
-	poly_int64 expected = i + first;
-	/* Indices into the second vector are all equivalent.  */
-	if (maybe_lt (sel[i], nelt)
-	    ? maybe_ne (sel[i], expected)
-	    : maybe_lt (expected, nelt))
-	  return NULL_RTX;
-      }
+    {
+      unsigned int nelt;
+      if (!GET_MODE_NUNITS (mode).is_constant (&nelt))
+	return NULL_RTX;
+      for (unsigned int i = 1; i < nelt; i++)
+	{
+	  poly_int64 expected = i + first;
+	  /* Indices into the second vector are all equivalent.  */
+	  if (maybe_lt (sel[i], nelt)
+	      ? maybe_ne (sel[i], expected)
+	      : maybe_lt (expected, nelt))
+	    return NULL_RTX;
+	}
+    }
 
   return gen_int_shift_amount (mode, first * bitsize);
 }
@@ -5631,7 +5635,7 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
      permutation to a byte-based permutation and try again.  */
   machine_mode qimode;
   if (!qimode_for_vec_perm (mode).exists (&qimode)
-      || GET_MODE_NUNITS (qimode) > GET_MODE_MASK (QImode) + 1)
+      || maybe_gt (GET_MODE_NUNITS (qimode), GET_MODE_MASK (QImode) + 1))
     return NULL_RTX;
   icode = direct_optab_handler (vec_perm_optab, qimode);
   if (icode == CODE_FOR_nothing)
@@ -5755,7 +5759,8 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 
 
   gcc_assert (GET_MODE_SIZE (mode) == GET_MODE_SIZE (cmp_op_mode)
-	      && GET_MODE_NUNITS (mode) == GET_MODE_NUNITS (cmp_op_mode));
+	      && known_eq (GET_MODE_NUNITS (mode),
+			   GET_MODE_NUNITS (cmp_op_mode)));
 
   icode = get_vcond_icode (mode, cmp_op_mode, unsignedp);
   if (icode == CODE_FOR_nothing)
@@ -5850,7 +5855,7 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
 {
   struct expand_operand eops[3];
   enum insn_code icode;
-  int method, i, nunits;
+  int method, i;
   machine_mode wmode;
   rtx m1, m2;
   optab tab1, tab2;
@@ -5879,9 +5884,9 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
     }
 
   icode = optab_handler (tab1, mode);
-  nunits = GET_MODE_NUNITS (mode);
   wmode = insn_data[icode].operand[0].mode;
-  gcc_checking_assert (2 * GET_MODE_NUNITS (wmode) == nunits);
+  gcc_checking_assert (known_eq (2 * GET_MODE_NUNITS (wmode),
+				 GET_MODE_NUNITS (mode)));
   gcc_checking_assert (GET_MODE_SIZE (wmode) == GET_MODE_SIZE (mode));
 
   create_output_operand (&eops[0], gen_reg_rtx (wmode), wmode);
@@ -5900,15 +5905,15 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
   if (method == 2)
     {
       /* The encoding has 2 interleaved stepped patterns.  */
-      sel.new_vector (nunits, 2, 3);
+      sel.new_vector (GET_MODE_NUNITS (mode), 2, 3);
       for (i = 0; i < 6; ++i)
 	sel.quick_push (!BYTES_BIG_ENDIAN + (i & ~1)
-			+ ((i & 1) ? nunits : 0));
+			+ ((i & 1) ? GET_MODE_NUNITS (mode) : 0));
     }
   else
     {
       /* The encoding has a single interleaved stepped pattern.  */
-      sel.new_vector (nunits, 1, 3);
+      sel.new_vector (GET_MODE_NUNITS (mode), 1, 3);
       for (i = 0; i < 3; ++i)
 	sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
     }

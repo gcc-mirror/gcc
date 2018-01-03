@@ -25,7 +25,7 @@ typedef opt_mode<machine_mode> opt_machine_mode;
 extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
-extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
+extern const poly_uint16_pod mode_nunits[NUM_MACHINE_MODES];
 extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
@@ -75,6 +75,14 @@ struct mode_traits<machine_mode>
   /* machine_mode itself needs no conversion.  */
   typedef machine_mode from_int;
 };
+
+/* Always treat machine modes as fixed-size while compiling code specific
+   to targets that have no variable-size modes.  */
+#if defined (IN_TARGET_CODE) && NUM_POLY_INT_COEFFS == 1
+#define ONLY_FIXED_SIZE_MODES 1
+#else
+#define ONLY_FIXED_SIZE_MODES 0
+#endif
 
 /* Get the name of mode MODE as a string.  */
 
@@ -313,6 +321,7 @@ template<typename T>
 struct pod_mode
 {
   typedef typename mode_traits<T>::from_int from_int;
+  typedef typename T::measurement_type measurement_type;
 
   machine_mode m_mode;
   ALWAYS_INLINE operator machine_mode () const { return m_mode; }
@@ -391,6 +400,7 @@ class scalar_int_mode
 {
 public:
   typedef mode_traits<scalar_int_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_int_mode () {}
   ALWAYS_INLINE scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -415,6 +425,7 @@ class scalar_float_mode
 {
 public:
   typedef mode_traits<scalar_float_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_float_mode () {}
   ALWAYS_INLINE scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -439,6 +450,7 @@ class scalar_mode
 {
 public:
   typedef mode_traits<scalar_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE scalar_mode () {}
   ALWAYS_INLINE scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -480,6 +492,7 @@ class complex_mode
 {
 public:
   typedef mode_traits<complex_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE complex_mode () {}
   ALWAYS_INLINE complex_mode (from_int m) : m_mode (machine_mode (m)) {}
@@ -570,7 +583,7 @@ mode_to_unit_precision (machine_mode mode)
 
 /* Return the base GET_MODE_NUNITS value for MODE.  */
 
-ALWAYS_INLINE unsigned short
+ALWAYS_INLINE poly_uint16
 mode_to_nunits (machine_mode mode)
 {
 #if GCC_VERSION >= 4001
@@ -627,7 +640,29 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 /* Get the number of units in an object of mode MODE.  This is 2 for
    complex modes and the number of elements for vector modes.  */
 
-#define GET_MODE_NUNITS(MODE) (mode_to_nunits (MODE))
+#if ONLY_FIXED_SIZE_MODES
+#define GET_MODE_NUNITS(MODE) (mode_to_nunits (MODE).coeffs[0])
+#else
+ALWAYS_INLINE poly_uint16
+GET_MODE_NUNITS (machine_mode mode)
+{
+  return mode_to_nunits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_poly<typename T::measurement_type>::type
+GET_MODE_NUNITS (const T &mode)
+{
+  return mode_to_nunits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_nonpoly<typename T::measurement_type>::type
+GET_MODE_NUNITS (const T &mode)
+{
+  return mode_to_nunits (mode).coeffs[0];
+}
+#endif
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
@@ -660,6 +695,7 @@ class fixed_size_mode
 {
 public:
   typedef mode_traits<fixed_size_mode>::from_int from_int;
+  typedef unsigned short measurement_type;
 
   ALWAYS_INLINE fixed_size_mode () {}
   ALWAYS_INLINE fixed_size_mode (from_int m) : m_mode (machine_mode (m)) {}

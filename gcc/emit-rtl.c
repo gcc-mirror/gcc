@@ -5987,7 +5987,7 @@ const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
   /* A non-duplicated vector with two elements can always be seen as a
      series with a nonzero step.  Longer vectors must have a stepped
      encoding.  */
-  if (CONST_VECTOR_NUNITS (x) != 2
+  if (maybe_ne (CONST_VECTOR_NUNITS (x), 2)
       && !CONST_VECTOR_STEPPED_P (x))
     return false;
 
@@ -6068,7 +6068,7 @@ gen_const_vector (machine_mode mode, int constant)
 rtx
 gen_rtx_CONST_VECTOR (machine_mode mode, rtvec v)
 {
-  gcc_assert (GET_MODE_NUNITS (mode) == GET_NUM_ELEM (v));
+  gcc_assert (known_eq (GET_MODE_NUNITS (mode), GET_NUM_ELEM (v)));
 
   /* If the values are all the same, check to see if we can use one of the
      standard constant vectors.  */

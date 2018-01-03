@@ -746,14 +746,20 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	    = VECTOR_MODE_P (mode) ? GET_MODE_INNER (mode) : mode;
 	  if (GET_CODE (XEXP (pattern, 1)) == PARALLEL)
 	    {
-	      int expected = VECTOR_MODE_P (mode) ? GET_MODE_NUNITS (mode) : 1;
-	      if (XVECLEN (XEXP (pattern, 1), 0) != expected)
+	      int expected = 1;
+	      unsigned int nelems;
+	      if (VECTOR_MODE_P (mode)
+		  && !GET_MODE_NUNITS (mode).is_constant (&expected))
+		error_at (info->loc,
+			  "vec_select with variable-sized mode %s",
+			  GET_MODE_NAME (mode));
+	      else if (XVECLEN (XEXP (pattern, 1), 0) != expected)
 		error_at (info->loc,
 			  "vec_select parallel with %d elements, expected %d",
 			  XVECLEN (XEXP (pattern, 1), 0), expected);
-	      else if (VECTOR_MODE_P (imode))
+	      else if (VECTOR_MODE_P (imode)
+		       && GET_MODE_NUNITS (imode).is_constant (&nelems))
 		{
-		  unsigned int nelems = GET_MODE_NUNITS (imode);
 		  int i;
 		  for (i = 0; i < expected; ++i)
 		    if (CONST_INT_P (XVECEXP (XEXP (pattern, 1), 0, i))

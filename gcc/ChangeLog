@@ -1,4 +1,58 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* machmode.h (mode_nunits): Change from unsigned char to
+	poly_uint16_pod.
+	(ONLY_FIXED_SIZE_MODES): New macro.
+	(pod_mode::measurement_type, scalar_int_mode::measurement_type)
+	(scalar_float_mode::measurement_type, scalar_mode::measurement_type)
+	(complex_mode::measurement_type, fixed_size_mode::measurement_type):
+	New typedefs.
+	(mode_to_nunits): Return a poly_uint16 rather than an unsigned short.
+	(GET_MODE_NUNITS): Return a constant if ONLY_FIXED_SIZE_MODES,
+	or if measurement_type is not polynomial.
+	* genmodes.c (ZERO_COEFFS): New macro.
+	(emit_mode_nunits_inline): Make mode_nunits_inline return a
+	poly_uint16.
+	(emit_mode_nunits): Change the type of mode_nunits to poly_uint16_pod.
+	Use ZERO_COEFFS when emitting initializers.
+	* data-streamer.h (bp_pack_poly_value): New function.
+	(bp_unpack_poly_value): Likewise.
+	* lto-streamer-in.c (lto_input_mode_table): Use bp_unpack_poly_value
+	for GET_MODE_NUNITS.
+	* lto-streamer-out.c (lto_write_mode_table): Use bp_pack_poly_value
+	for GET_MODE_NUNITS.
+	* tree.c (make_vector_type): Remove temporary shim and make
+	the real function take the number of units as a poly_uint64
+	rather than an int.
+	(build_vector_type_for_mode): Handle polynomial nunits.
+	* dwarf2out.c (loc_descriptor, add_const_value_attribute): Likewise.
+	* emit-rtl.c (const_vec_series_p_1): Likewise.
+	(gen_rtx_CONST_VECTOR): Likewise.
+	* fold-const.c (test_vec_duplicate_folding): Likewise.
+	* genrecog.c (validate_pattern): Likewise.
+	* optabs-query.c (can_vec_perm_var_p, can_mult_highpart_p): Likewise.
+	* optabs-tree.c (expand_vec_cond_expr_p): Likewise.
+	* optabs.c (expand_vector_broadcast, expand_binop_directly): Likewise.
+	(shift_amt_for_vec_perm_mask, expand_vec_perm_var): Likewise.
+	(expand_vec_cond_expr, expand_mult_highpart): Likewise.
+	* rtlanal.c (subreg_get_info): Likewise.
+	* tree-vect-data-refs.c (vect_grouped_store_supported): Likewise.
+	(vect_grouped_load_supported): Likewise.
+	* tree-vect-generic.c (type_for_widest_vector_mode): Likewise.
+	* tree-vect-loop.c (have_whole_vector_shift): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_const_unary_operation, simplify_binary_operation_1)
+	(simplify_const_binary_operation, simplify_ternary_operation)
+	(test_vector_ops_duplicate, test_vector_ops): Likewise.
+	(simplify_immed_subreg): Use GET_MODE_NUNITS on a fixed_size_mode
+	instead of CONST_VECTOR_NUNITS.
+	* varasm.c (output_constant_pool_2): Likewise.
+	* rtx-vector-builder.c (rtx_vector_builder::build): Only include the
+	explicit-encoded elements in the XVEC for variable-length vectors.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* lra-constraints.c (curr_insn_transform): Use partial_subreg_p.
 
