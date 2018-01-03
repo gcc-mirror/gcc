@@ -1,3 +1,9 @@
+2018-01-03  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83655
+	* gimple-ssa-warn-restrict.c (wrestrict_dom_walker::check_call): Avoid
+	checking calls with invalid arguments.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vect-stmts.c (vect_get_store_rhs): New function.

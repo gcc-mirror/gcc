@@ -1693,7 +1693,18 @@ wrestrict_dom_walker::check_call (gcall *call)
 
   /* DST and SRC can be null for a call with an insufficient number
      of arguments to a built-in function declared without a protype.  */
-  if (!dst || !src || check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
+  if (!dst || !src)
+    return;
+
+  /* DST, SRC, or DSTWR can also have the wrong type in a call to
+     a function declared without a prototype.  Avoid checking such
+     invalid calls.  */
+  if (TREE_CODE (TREE_TYPE (dst)) != POINTER_TYPE
+      || TREE_CODE (TREE_TYPE (src)) != POINTER_TYPE
+      || (dstwr && !INTEGRAL_TYPE_P (TREE_TYPE (dstwr))))
+    return;
+
+  if (check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
     return;
 
   /* Avoid diagnosing the call again.  */
