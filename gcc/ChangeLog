@@ -1,5 +1,15 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-stmts.c (vect_get_store_rhs): New function.
+	(vectorizable_mask_load_store): Delete.
+	(vectorizable_call): Return false for masked loads and stores.
+	(vectorizable_store): Handle IFN_MASK_STORE.  Use vect_get_store_rhs
+	instead of gimple_assign_rhs1.
+	(vectorizable_load): Handle IFN_MASK_LOAD.
+	(vect_transform_stmt): Don't set is_store for call_vec_info_type.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-stmts.c (vect_build_gather_load_calls): New function,
 	split out from..,
 	(vectorizable_mask_load_store): ...here.
