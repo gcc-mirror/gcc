@@ -2112,7 +2112,20 @@ cp_fold (tree x)
     case NON_LVALUE_EXPR:
 
       if (VOID_TYPE_P (TREE_TYPE (x)))
-	return x;
+	{
+	  /* This is just to make sure we don't end up with casts to
+	     void from error_mark_node.  If we just return x, then
+	     cp_fold_r might fold the operand into error_mark_node and
+	     leave the conversion in the IR.  STRIP_USELESS_TYPE_CONVERSION
+	     during gimplification doesn't like such casts.
+	     Don't create a new tree if op0 != TREE_OPERAND (x, 0), the
+	     folding of the operand should be in the caches and if in cp_fold_r
+	     it will modify it in place.  */
+	  op0 = cp_fold (TREE_OPERAND (x, 0));
+	  if (op0 == error_mark_node)
+	    x = error_mark_node;
+	  break;
+	}
 
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);

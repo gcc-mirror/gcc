@@ -1,3 +1,8 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83634
+	* g++.dg/parse/pr83634.C: New test.
+
 2018-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83664
