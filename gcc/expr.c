@@ -4155,9 +4155,6 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
      access to type.  */
   else if (targetm.calls.function_arg_padding (mode, type) == PAD_DOWNWARD)
     {
-      unsigned padding_size = rounded_size - GET_MODE_SIZE (mode);
-      HOST_WIDE_INT offset;
-
       emit_move_insn (stack_pointer_rtx,
 		      expand_binop (Pmode,
 				    STACK_GROWS_DOWNWARD ? sub_optab
@@ -4166,31 +4163,27 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
 				    gen_int_mode (rounded_size, Pmode),
 				    NULL_RTX, 0, OPTAB_LIB_WIDEN));
 
-      offset = (HOST_WIDE_INT) padding_size;
+      poly_int64 offset = rounded_size - GET_MODE_SIZE (mode);
       if (STACK_GROWS_DOWNWARD && STACK_PUSH_CODE == POST_DEC)
 	/* We have already decremented the stack pointer, so get the
 	   previous value.  */
-	offset += (HOST_WIDE_INT) rounded_size;
+	offset += rounded_size;
 
       if (!STACK_GROWS_DOWNWARD && STACK_PUSH_CODE == POST_INC)
 	/* We have already incremented the stack pointer, so get the
 	   previous value.  */
-	offset -= (HOST_WIDE_INT) rounded_size;
+	offset -= rounded_size;
 
-      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				gen_int_mode (offset, Pmode));
+      dest_addr = plus_constant (Pmode, stack_pointer_rtx, offset);
     }
   else
     {
       if (STACK_GROWS_DOWNWARD)
 	/* ??? This seems wrong if STACK_PUSH_CODE == POST_DEC.  */
-	dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				  gen_int_mode (-(HOST_WIDE_INT) rounded_size,
-						Pmode));
+	dest_addr = plus_constant (Pmode, stack_pointer_rtx, -rounded_size);
       else
 	/* ??? This seems wrong if STACK_PUSH_CODE == POST_INC.  */
-	dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				  gen_int_mode (rounded_size, Pmode));
+	dest_addr = plus_constant (Pmode, stack_pointer_rtx, rounded_size);
 
       dest_addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx, dest_addr);
     }
