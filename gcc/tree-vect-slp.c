@@ -1736,7 +1736,7 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 	   : VMAT_CONTIGUOUS);
       if (DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
 	vect_model_store_cost (stmt_info, ncopies_for_cost,
-			       memory_access_type, vect_uninitialized_def,
+			       memory_access_type, VLS_STORE,
 			       node, prologue_cost_vec, body_cost_vec);
       else
 	{
