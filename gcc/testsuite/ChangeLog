@@ -1,5 +1,10 @@
 2018-01-03  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/83593
+	* gcc.dg/pr83593.c: New test.
+
+2018-01-03  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/83549
 	* g++.dg/ipa/pr83549.C: New test.
 

@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
 #include "expr.h"
+#include "tree-cfg.h"
 #include "tree-dfa.h"
 #include "domwalk.h"
 #include "tree-ssa-alias.h"
@@ -3051,10 +3052,12 @@ fold_strstr_to_strncmp (tree rhs1, tree rhs2, gimple *stmt)
 }
 
 /* Attempt to check for validity of the performed access a single statement
-   at *GSI using string length knowledge, and to optimize it.  */
+   at *GSI using string length knowledge, and to optimize it.
+   If the given basic block needs clean-up of EH, CLEANUP_EH is set to
+   true.  */
 
 static bool
-strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi)
+strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
@@ -3201,11 +3204,27 @@ strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi)
 		    if (w1 == w2
 			&& si->full_string_p)
 		      {
+			if (dump_file && (dump_flags & TDF_DETAILS) != 0)
+			  {
+			    fprintf (dump_file, "Optimizing: ");
+			    print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+			  }
+
 			/* Reading the final '\0' character.  */
 			tree zero = build_int_cst (TREE_TYPE (lhs), 0);
 			gimple_set_vuse (stmt, NULL_TREE);
 			gimple_assign_set_rhs_from_tree (gsi, zero);
-			update_stmt (gsi_stmt (*gsi));
+			*cleanup_eh
+			  |= maybe_clean_or_replace_eh_stmt (stmt,
+							     gsi_stmt (*gsi));
+			stmt = gsi_stmt (*gsi);
+			update_stmt (stmt);
+
+			if (dump_file && (dump_flags & TDF_DETAILS) != 0)
+			  {
+			    fprintf (dump_file, "into: ");
+			    print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+			  }
 		      }
 		    else if (w1 > w2)
 		      {
@@ -3318,10 +3337,16 @@ do_invalidate (basic_block dombb, gimple *phi, bitmap visited, int *count)
 class strlen_dom_walker : public dom_walker
 {
 public:
-  strlen_dom_walker (cdi_direction direction) : dom_walker (direction) {}
+  strlen_dom_walker (cdi_direction direction)
+    : dom_walker (direction), m_cleanup_cfg (false)
+  {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
+
+  /* Flag that will trigger TODO_cleanup_cfg to be returned in strlen
+     execute function.  */
+  bool m_cleanup_cfg;
 };
 
 /* Callback for walk_dominator_tree.  Attempt to optimize various
@@ -3399,10 +3424,15 @@ strlen_dom_walker::before_dom_children (basic_block bb)
 	}
     }
 
+  bool cleanup_eh = false;
+
   /* Attempt to optimize individual statements.  */
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-    if (strlen_check_and_optimize_stmt (&gsi))
+    if (strlen_check_and_optimize_stmt (&gsi, &cleanup_eh))
       gsi_next (&gsi);
+
+  if (cleanup_eh && gimple_purge_dead_eh_edges (bb))
+      m_cleanup_cfg = true;
 
   bb->aux = stridx_to_strinfo;
   if (vec_safe_length (stridx_to_strinfo) && !strinfo_shared ())
@@ -3477,7 +3507,8 @@ pass_strlen::execute (function *fun)
 
   /* String length optimization is implemented as a walk of the dominator
      tree and a forward walk of statements within each block.  */
-  strlen_dom_walker (CDI_DOMINATORS).walk (fun->cfg->x_entry_block_ptr);
+  strlen_dom_walker walker (CDI_DOMINATORS);
+  walker.walk (fun->cfg->x_entry_block_ptr);
 
   ssa_ver_to_stridx.release ();
   strinfo_pool.release ();
@@ -3498,7 +3529,7 @@ pass_strlen::execute (function *fun)
       strlen_to_stridx = NULL;
     }
 
-  return 0;
+  return walker.m_cleanup_cfg ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace
