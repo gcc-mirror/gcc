@@ -2,6 +2,72 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (_slp_instance::unrolling_factor): Change
+	from an unsigned int to a poly_uint64.
+	(_loop_vec_info::slp_unrolling_factor): Likewise.
+	(_loop_vec_info::vectorization_factor): Change from an int
+	to a poly_uint64.
+	(MAX_VECTORIZATION_FACTOR): Bump from 64 to INT_MAX.
+	(vect_get_num_vectors): New function.
+	(vect_update_max_nunits, vect_vf_for_cost): Likewise.
+	(vect_get_num_copies): Use vect_get_num_vectors.
+	(vect_analyze_data_ref_dependences): Change max_vf from an int *
+	to an unsigned int *.
+	(vect_analyze_data_refs): Change min_vf from an int * to a
+	poly_uint64 *.
+	(vect_transform_slp_perm_load): Take the vf as a poly_uint64 rather
+	than an unsigned HOST_WIDE_INT.
+	* tree-vect-data-refs.c (vect_analyze_possibly_independent_ddr)
+	(vect_analyze_data_ref_dependence): Change max_vf from an int *
+	to an unsigned int *.
+	(vect_analyze_data_ref_dependences): Likewise.
+	(vect_compute_data_ref_alignment): Handle polynomial vf.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_shift_permute_load_chain): Likewise.
+	(vect_supportable_dr_alignment): Likewise.
+	(dependence_distance_ge_vf): Take the vectorization factor as a
+	poly_uint64 rather than an unsigned HOST_WIDE_INT.
+	(vect_analyze_data_refs): Change min_vf from an int * to a
+	poly_uint64 *.
+	* tree-vect-loop-manip.c (vect_gen_scalar_loop_niters): Take
+	vfm1 as a poly_uint64 rather than an int.  Make the same change
+	for the returned bound_scalar.
+	(vect_gen_vector_loop_niters): Handle polynomial vf.
+	(vect_do_peeling): Likewise.  Update call to
+	vect_gen_scalar_loop_niters and handle polynomial bound_scalars.
+	(vect_gen_vector_loop_niters_mult_vf): Assert that the vf must
+	be constant.
+	* tree-vect-loop.c (vect_determine_vectorization_factor)
+	(vect_update_vf_for_slp, vect_analyze_loop_2): Handle polynomial vf.
+	(vect_get_known_peeling_cost): Likewise.
+	(vect_estimate_min_profitable_iters, vectorizable_reduction): Likewise.
+	(vect_worthwhile_without_simd_p, vectorizable_induction): Likewise.
+	(vect_transform_loop): Likewise.  Use the lowest possible VF when
+	updating the upper bounds of the loop.
+	(vect_min_worthwhile_factor): Make static.  Return an unsigned int
+	rather than an int.
+	* tree-vect-slp.c (vect_attempt_slp_rearrange_stmts): Cope with
+	polynomial unroll factors.
+	(vect_analyze_slp_cost_1, vect_analyze_slp_instance): Likewise.
+	(vect_make_slp_decision): Likewise.
+	(vect_supported_load_permutation_p): Likewise, and polynomial
+	vf too.
+	(vect_analyze_slp_cost): Handle polynomial vf.
+	(vect_slp_analyze_node_operations): Likewise.
+	(vect_slp_analyze_bb_1): Likewise.
+	(vect_transform_slp_perm_load): Take the vf as a poly_uint64 rather
+	than an unsigned HOST_WIDE_INT.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call, vectorizable_store)
+	(vectorizable_load): Handle polynomial vf.
+	* tree-vectorizer.c (simduid_to_vf::vf): Change from an int to
+	a poly_uint64.
+	(adjust_simduid_builtins, shrink_simd_arrays): Update accordingly.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* match.pd: Handle bit operations involving three constants
 	and try to fold one pair.
 
