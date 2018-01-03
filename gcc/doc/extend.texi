@@ -2500,7 +2500,7 @@ definition than the similar @code{pure} attribute below because it prohibits
 the function from reading global variables.  Consequently, the presence of
 the attribute on a function declarations allows GCC to emit more efficient
 code for some calls to the function.  Decorating the same function with
-both the @code{const} and the @code{pure} attribute is diagnnosed.
+both the @code{const} and the @code{pure} attribute is diagnosed.
 
 @cindex pointer arguments
 Note that a function that has pointer arguments and examines the data

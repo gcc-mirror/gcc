@@ -213,9 +213,13 @@ suggest_attribute (int option, tree decl, bool known_finite,
 static void
 warn_function_pure (tree decl, bool known_finite)
 {
-  static hash_set<tree> *warned_about;
+  /* Declaring a void function pure makes no sense and is diagnosed
+     by -Wattributes because calling it would have no effect.  */
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
+    return;
 
-  warned_about 
+  static hash_set<tree> *warned_about;
+  warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_pure, decl,
 			 known_finite, warned_about, "pure");
 }
@@ -226,8 +230,13 @@ warn_function_pure (tree decl, bool known_finite)
 static void
 warn_function_const (tree decl, bool known_finite)
 {
+  /* Declaring a void function const makes no sense is diagnosed
+     by -Wattributes because calling it would have no effect.  */
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
+    return;
+
   static hash_set<tree> *warned_about;
-  warned_about 
+  warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_const, decl,
 			 known_finite, warned_about, "const");
 }
