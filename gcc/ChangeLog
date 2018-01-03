@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (vect_nunits_for_cost): New function.
+	* tree-vect-loop.c (vect_model_reduction_cost): Use it.
+	* tree-vect-slp.c (vect_analyze_slp_cost_1): Likewise.
+	(vect_analyze_slp_cost): Likewise.
+	* tree-vect-stmts.c (vect_model_store_cost): Likewise.
+	(vect_model_load_cost): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-slp.c (vect_record_max_nunits, vect_build_slp_tree_1)
 	(vect_build_slp_tree_2, vect_build_slp_tree): Change max_nunits
 	from an unsigned int * to a poly_uint64_pod *.

@@ -1730,8 +1730,8 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 					    &n_perms);
 	      record_stmt_cost (body_cost_vec, n_perms, vec_perm,
 				stmt_info, 0, vect_body);
-	      unsigned nunits
-		= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+	      unsigned assumed_nunits
+		= vect_nunits_for_cost (STMT_VINFO_VECTYPE (stmt_info));
 	      /* And adjust the number of loads performed.  This handles
 	         redundancies as well as loads that are later dead.  */
 	      auto_sbitmap perm (GROUP_SIZE (stmt_info));
@@ -1742,7 +1742,7 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 	      bool load_seen = false;
 	      for (i = 0; i < GROUP_SIZE (stmt_info); ++i)
 		{
-		  if (i % nunits == 0)
+		  if (i % assumed_nunits == 0)
 		    {
 		      if (load_seen)
 			ncopies_for_cost++;
@@ -1755,7 +1755,7 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 		ncopies_for_cost++;
 	      gcc_assert (ncopies_for_cost
 			  <= (GROUP_SIZE (stmt_info) - GROUP_GAP (stmt_info)
-			      + nunits - 1) / nunits);
+			      + assumed_nunits - 1) / assumed_nunits);
 	      poly_uint64 uf = SLP_INSTANCE_UNROLLING_FACTOR (instance);
 	      ncopies_for_cost *= estimated_poly_value (uf);
 	    }
@@ -1868,9 +1868,9 @@ vect_analyze_slp_cost (slp_instance instance, void *data)
     assumed_vf = vect_vf_for_cost (STMT_VINFO_LOOP_VINFO (stmt_info));
   else
     assumed_vf = 1;
-  unsigned nunits = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
   /* For reductions look at a reduction operand in case the reduction
      operation is widening like DOT_PROD or SAD.  */
+  tree vectype_for_cost = STMT_VINFO_VECTYPE (stmt_info);
   if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
@@ -1878,14 +1878,16 @@ vect_analyze_slp_cost (slp_instance instance, void *data)
 	{
 	case DOT_PROD_EXPR:
 	case SAD_EXPR:
-	  nunits = TYPE_VECTOR_SUBPARTS (get_vectype_for_scalar_type
-				(TREE_TYPE (gimple_assign_rhs1 (stmt))));
+	  vectype_for_cost = get_vectype_for_scalar_type
+	    (TREE_TYPE (gimple_assign_rhs1 (stmt)));
 	  break;
 	default:;
 	}
     }
-  ncopies_for_cost = least_common_multiple (nunits,
-					    group_size * assumed_vf) / nunits;
+  unsigned int assumed_nunits = vect_nunits_for_cost (vectype_for_cost);
+  ncopies_for_cost = (least_common_multiple (assumed_nunits,
+					     group_size * assumed_vf)
+		      / assumed_nunits);
 
   prologue_cost_vec.create (10);
   body_cost_vec.create (10);
