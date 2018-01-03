@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-data-refs.c (vector_alignment_reachable_p): Treat the
+	number of units as polynomial.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.h (vector_sizes, auto_vector_sizes): New typedefs.
 	* target.def (autovectorize_vector_sizes): Return the vector sizes
 	by pointer, using vector_sizes rather than a bitmask.
