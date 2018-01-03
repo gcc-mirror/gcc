@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* calls.c (load_register_parameters): Cope with polynomial
+	mode sizes.  Require a constant size for BLKmode parameters
+	that aren't described by a PARALLEL.  If BLOCK_REG_PADDING
+	forces a parameter to be padded at the lsb end in order to
+	fill a complete number of words, require the parameter size
+	to be ordered wrt UNITS_PER_WORD.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* reload1.c (spill_stack_slot_width): Change element type
 	from unsigned int to poly_uint64_pod.
 	(alter_reg): Treat mode sizes as polynomial.
