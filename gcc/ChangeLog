@@ -1,4 +1,10 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-loop.c (vect_transform_loop): Stub out scalar
+	IFN_MASK_LOAD calls here rather than...
+	* tree-vect-stmts.c (vectorizable_mask_load_store): ...here.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
