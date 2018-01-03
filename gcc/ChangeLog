@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-slp.c (vect_record_max_nunits, vect_build_slp_tree_1)
+	(vect_build_slp_tree_2, vect_build_slp_tree): Change max_nunits
+	from an unsigned int * to a poly_uint64_pod *.
+	(calculate_unrolling_factor): New function.
+	(vect_analyze_slp_instance): Use it.  Track polynomial max_nunits.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (_slp_instance::unrolling_factor): Change
 	from an unsigned int to a poly_uint64.
 	(_loop_vec_info::slp_unrolling_factor): Likewise.
