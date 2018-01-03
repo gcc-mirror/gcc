@@ -38,16 +38,42 @@ along with GCC; see the file COPYING3.  If not see
 void
 vec_perm_indices::new_vector (const vec_perm_builder &elements,
 			      unsigned int ninputs,
-			      unsigned int nelts_per_input)
+			      poly_uint64 nelts_per_input)
 {
   m_ninputs = ninputs;
   m_nelts_per_input = nelts_per_input;
-  /* Expand the encoding and clamp each element.  E.g. { 0, 2, 4, ... }
-     might wrap halfway if there is only one vector input.  */
-  unsigned int full_nelts = elements.full_nelts ();
-  m_encoding.new_vector (full_nelts, full_nelts, 1);
-  for (unsigned int i = 0; i < full_nelts; ++i)
+  /* If the vector has a constant number of elements, expand the
+     encoding and clamp each element.  E.g. { 0, 2, 4, ... } might
+     wrap halfway if there is only one vector input, and we want
+     the wrapped form to be the canonical one.
+
+     If the vector has a variable number of elements, just copy
+     the encoding.  In that case the unwrapped form is canonical
+     and there is no way of representing the wrapped form.  */
+  poly_uint64 full_nelts = elements.full_nelts ();
+  unsigned HOST_WIDE_INT copy_nelts;
+  if (full_nelts.is_constant (&copy_nelts))
+    m_encoding.new_vector (full_nelts, copy_nelts, 1);
+  else
+    {
+      copy_nelts = elements.encoded_nelts ();
+      m_encoding.new_vector (full_nelts, elements.npatterns (),
+			     elements.nelts_per_pattern ());
+    }
+  unsigned int npatterns = m_encoding.npatterns ();
+  for (unsigned int i = 0; i < npatterns; ++i)
     m_encoding.quick_push (clamp (elements.elt (i)));
+  /* Use the fact that:
+
+	(a + b) % c == ((a % c) + (b % c)) % c
+
+     to simplify the clamping of variable-length vectors.  */
+  for (unsigned int i = npatterns; i < copy_nelts; ++i)
+    {
+      element_type step = clamp (elements.elt (i)
+				 - elements.elt (i - npatterns));
+      m_encoding.quick_push (clamp (m_encoding[i - npatterns] + step));
+    }
   m_encoding.finalize ();
 }
 
@@ -98,7 +124,7 @@ vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,
   if (maybe_ne (clamp (m_encoding.elt (out_base)), clamp (in_base)))
     return false;
 
-  unsigned int full_nelts = m_encoding.full_nelts ();
+  element_type full_nelts = m_encoding.full_nelts ();
   unsigned int npatterns = m_encoding.npatterns ();
 
   /* Calculate which multiple of OUT_STEP elements we need to get
@@ -112,7 +138,7 @@ vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,
   for (;;)
     {
       /* Succeed if we've checked all the elements in the vector.  */
-      if (out_base >= full_nelts)
+      if (known_ge (out_base, full_nelts))
 	return true;
 
       if (out_base >= npatterns)
@@ -156,7 +182,8 @@ vec_perm_indices::all_in_range_p (element_type start, element_type size) const
 
       /* The number of elements in each pattern beyond the first two
 	 that we checked above.  */
-      unsigned int step_nelts = (m_encoding.full_nelts () / npatterns) - 2;
+      poly_int64 step_nelts = exact_div (m_encoding.full_nelts (),
+					 npatterns) - 2;
       for (unsigned int i = 0; i < npatterns; ++i)
 	{
 	  /* BASE1 has been checked but BASE2 hasn't.   */
@@ -210,7 +237,7 @@ tree_to_vec_perm_builder (vec_perm_builder *builder, tree cst)
 tree
 vec_perm_indices_to_tree (tree type, const vec_perm_indices &indices)
 {
-  gcc_assert (TYPE_VECTOR_SUBPARTS (type) == indices.length ());
+  gcc_assert (known_eq (TYPE_VECTOR_SUBPARTS (type), indices.length ()));
   tree_vector_builder sel (type, indices.encoding ().npatterns (),
 			   indices.encoding ().nelts_per_pattern ());
   unsigned int encoded_nelts = sel.encoded_nelts ();
@@ -226,7 +253,7 @@ rtx
 vec_perm_indices_to_rtx (machine_mode mode, const vec_perm_indices &indices)
 {
   gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	      && GET_MODE_NUNITS (mode) == indices.length ());
+	      && known_eq (GET_MODE_NUNITS (mode), indices.length ()));
   rtx_vector_builder sel (mode, indices.encoding ().npatterns (),
 			  indices.encoding ().nelts_per_pattern ());
   unsigned int encoded_nelts = sel.encoded_nelts ();

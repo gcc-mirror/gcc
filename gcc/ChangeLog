@@ -1,5 +1,42 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* vector-builder.h (vector_builder::m_full_nelts): Change from
+	unsigned int to poly_uint64.
+	(vector_builder::full_nelts): Update prototype accordingly.
+	(vector_builder::new_vector): Likewise.
+	(vector_builder::encoded_full_vector_p): Handle polynomial full_nelts.
+	(vector_builder::operator ==): Likewise.
+	(vector_builder::finalize): Likewise.
+	* int-vector-builder.h (int_vector_builder::int_vector_builder):
+	Take the number of elements as a poly_uint64 rather than an
+	unsigned int.
+	* vec-perm-indices.h (vec_perm_indices::m_nelts_per_input): Change
+	from unsigned int to poly_uint64.
+	(vec_perm_indices::vec_perm_indices): Update prototype accordingly.
+	(vec_perm_indices::new_vector): Likewise.
+	(vec_perm_indices::length): Likewise.
+	(vec_perm_indices::nelts_per_input): Likewise.
+	(vec_perm_indices::input_nelts): Likewise.
+	* vec-perm-indices.c (vec_perm_indices::new_vector): Take the
+	number of elements per input as a poly_uint64 rather than an
+	unsigned int.  Use the original encoding for variable-length
+	vectors, rather than clamping each individual element.
+	For the second and subsequent elements in each pattern,
+	clamp the step and base before clamping their sum.
+	(vec_perm_indices::series_p): Handle polynomial element counts.
+	(vec_perm_indices::all_in_range_p): Likewise.
+	(vec_perm_indices_to_tree): Likewise.
+	(vec_perm_indices_to_rtx): Likewise.
+	* tree-vect-stmts.c (vect_gen_perm_mask_any): Likewise.
+	* tree-vector-builder.c (tree_vector_builder::new_unary_operation)
+	(tree_vector_builder::new_binary_operation): Handle polynomial
+	element counts.  Return false if we need to know the number
+	of elements at compile time.
+	* fold-const.c (fold_vec_perm): Punt if the number of elements
+	isn't known at compile time.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* vec-perm-indices.h (vec_perm_builder): Change element type
 	from HOST_WIDE_INT to poly_int64.
 	(vec_perm_indices::element_type): Update accordingly.

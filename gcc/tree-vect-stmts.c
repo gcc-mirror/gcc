@@ -6588,8 +6588,8 @@ vect_gen_perm_mask_any (tree vectype, const vec_perm_indices &sel)
 {
   tree mask_type;
 
-  unsigned int nunits = sel.length ();
-  gcc_assert (nunits == TYPE_VECTOR_SUBPARTS (vectype));
+  poly_uint64 nunits = sel.length ();
+  gcc_assert (known_eq (nunits, TYPE_VECTOR_SUBPARTS (vectype)));
 
   mask_type = build_vector_type (ssizetype, nunits);
   return vec_perm_indices_to_tree (mask_type, sel);
