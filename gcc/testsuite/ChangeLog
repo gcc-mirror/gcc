@@ -1,3 +1,7 @@
+2018-01-03  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wrestrict-3.c: New test.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83555

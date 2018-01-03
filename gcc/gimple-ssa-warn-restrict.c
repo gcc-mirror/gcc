@@ -276,13 +276,13 @@ builtin_memref::builtin_memref (tree expr, tree size)
 		  value_range_type rng = get_range_info (offset, &min, &max);
 		  if (rng == VR_RANGE)
 		    {
-		      offrange[0] = min.to_shwi ();
-		      offrange[1] = max.to_shwi ();
+		      offrange[0] = offset_int::from (min, SIGNED);
+		      offrange[1] = offset_int::from (max, SIGNED);
 		    }
 		  else if (rng == VR_ANTI_RANGE)
 		    {
-		      offrange[0] = (max + 1).to_shwi ();
-		      offrange[1] = (min - 1).to_shwi ();
+		      offrange[0] = offset_int::from (max + 1, SIGNED);
+		      offrange[1] = offset_int::from (min - 1, SIGNED);
 		    }
 		  else
 		    {
@@ -1233,25 +1233,31 @@ maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
 
   if (dstref.offrange[0] == dstref.offrange[1]
       || dstref.offrange[1] > HOST_WIDE_INT_MAX)
-    sprintf (offstr[0], "%lli", (long long) dstref.offrange[0].to_shwi ());
+    sprintf (offstr[0], HOST_WIDE_INT_PRINT_DEC,
+	     dstref.offrange[0].to_shwi ());
   else
-    sprintf (offstr[0], "[%lli, %lli]",
-	     (long long) dstref.offrange[0].to_shwi (),
-	     (long long) dstref.offrange[1].to_shwi ());
+    sprintf (offstr[0],
+	     "[" HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC "]",
+	     dstref.offrange[0].to_shwi (),
+	     dstref.offrange[1].to_shwi ());
 
   if (srcref.offrange[0] == srcref.offrange[1]
       || srcref.offrange[1] > HOST_WIDE_INT_MAX)
-    sprintf (offstr[1], "%lli", (long long) srcref.offrange[0].to_shwi ());
+    sprintf (offstr[1],
+	     HOST_WIDE_INT_PRINT_DEC,
+	     srcref.offrange[0].to_shwi ());
   else
-    sprintf (offstr[1], "[%lli, %lli]",
-	     (long long) srcref.offrange[0].to_shwi (),
-	     (long long) srcref.offrange[1].to_shwi ());
+    sprintf (offstr[1],
+	     "[" HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC "]",
+	     srcref.offrange[0].to_shwi (),
+	     srcref.offrange[1].to_shwi ());
 
   if (ovloff[0] == ovloff[1] || !ovloff[1])
-    sprintf (offstr[2], "%lli", (long long) ovloff[0]);
+    sprintf (offstr[2], HOST_WIDE_INT_PRINT_DEC, ovloff[0]);
   else
-    sprintf (offstr[2], "[%lli, %lli]",
-	     (long long) ovloff[0], (long long) ovloff[1]);
+    sprintf (offstr[2],
+	     "[" HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC "]",
+	     ovloff[0], ovloff[1]);
 
   const offset_int maxobjsize = tree_to_shwi (max_object_size ());
   bool must_overlap = ovlsiz[0] > 0;
@@ -1366,9 +1372,6 @@ maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
     }
 
   /* Issue "may overlap" diagnostics below.  */
-  gcc_assert (ovlsiz[0] == 0
-	      && ovlsiz[1] > 0
-	      && ovlsiz[1] <= maxobjsize.to_shwi ());
 
   /* Use more concise wording when one of the offsets is unbounded
      to avoid confusing the user with large and mostly meaningless
