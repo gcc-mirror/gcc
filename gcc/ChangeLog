@@ -2,6 +2,22 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (build_index_vector): Declare.
+	* tree.c (build_index_vector): New function.
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Treat the number
+	of units as polynomial, forcibly converting it to a constant if
+	vectorizable_reduction has already enforced the condition.
+	(vect_create_epilog_for_reduction): Likewise.  Use build_index_vector
+	to create a {1,2,3,...} vector.
+	(vectorizable_reduction): Treat the number of units as polynomial.
+	Choose vectype_in based on the largest scalar element size rather
+	than the smallest number of units.  Enforce the restrictions
+	relied on above.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-data-refs.c (vector_alignment_reachable_p): Treat the
 	number of units as polynomial.
 
