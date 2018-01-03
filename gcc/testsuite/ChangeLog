@@ -1,3 +1,9 @@
+2018-01-03  Jeff Law  <law@redhat.com>
+
+	PR middle-end/83654
+	* gcc.target/i386/stack-check-18.c: New test.
+	* gcc.target/i386/stack-check-19.c: New test.
+
 2018-01-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83501

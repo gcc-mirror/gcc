@@ -1997,11 +1997,27 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 
   if (residual != CONST0_RTX (Pmode))
     {
+      rtx label = NULL_RTX;
+      /* RESIDUAL could be zero at runtime and in that case *sp could
+	 hold live data.  Furthermore, we do not want to probe into the
+	 red zone.
+
+	 Go ahead and just guard the probe at *sp on RESIDUAL != 0 at
+	 runtime if RESIDUAL is not a compile time constant.  */
+      if (!CONST_INT_P (residual))
+	{
+	  label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (residual, CONST0_RTX (GET_MODE (residual)),
+				   EQ, NULL_RTX, Pmode, 1, label);
+	}
+
       rtx x = force_reg (Pmode, plus_constant (Pmode, residual,
 					       -GET_MODE_SIZE (word_mode)));
       anti_adjust_stack (residual);
       emit_stack_probe (gen_rtx_PLUS (Pmode, stack_pointer_rtx, x));
       emit_insn (gen_blockage ());
+      if (!CONST_INT_P (residual))
+	emit_label (label);
     }
 
   /* Some targets make optimistic assumptions in their prologues about
@@ -2014,28 +2030,20 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 	 live data.  Furthermore, we don't want to probe into the red
 	 zone.
 
-	 Go ahead and just guard a probe at *sp on SIZE != 0 at runtime
+	 Go ahead and just guard the probe at *sp on SIZE != 0 at runtime
 	 if SIZE is not a compile time constant.  */
-
-      /* Ideally we would just probe at *sp.  However, if SIZE is not
-	 a compile-time constant, but is zero at runtime, then *sp
-	 might hold live data.  So probe at *sp if we know that
-	 an allocation was made, otherwise probe into the red zone
-	 which is obviously undesirable.  */
-      if (CONST_INT_P (size))
+      rtx label = NULL_RTX;
+      if (!CONST_INT_P (size))
 	{
-	  emit_stack_probe (stack_pointer_rtx);
-	  emit_insn (gen_blockage ());
-	}
-      else
-	{
-	  rtx label = gen_label_rtx ();
+	  label = gen_label_rtx ();
 	  emit_cmp_and_jump_insns (size, CONST0_RTX (GET_MODE (size)),
 				   EQ, NULL_RTX, Pmode, 1, label);
-	  emit_stack_probe (stack_pointer_rtx);
-	  emit_insn (gen_blockage ());
-	  emit_label (label);
 	}
+
+      emit_stack_probe (stack_pointer_rtx);
+      emit_insn (gen_blockage ());
+      if (!CONST_INT_P (size))
+	emit_label (label);
     }
 }
 
