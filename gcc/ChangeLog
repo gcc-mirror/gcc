@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lra-spills.c (pseudo_reg_slot_compare): Sort slots by whether
+	they are variable or constant sized.
+	(assign_stack_slot_num_and_sort_pseudos): Don't reuse variable-sized
+	slots for constant-sized data.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): When
 	handling COND_EXPRs with boolean comparisons, try to find a better
 	basis for the mask type than the boolean itself.
