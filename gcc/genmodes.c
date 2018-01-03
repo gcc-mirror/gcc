@@ -483,9 +483,11 @@ make_complex_modes (enum mode_class cl,
 
 /* For all modes in class CL, construct vector modes of width
    WIDTH, having as many components as necessary.  */
-#define VECTOR_MODES(C, W) make_vector_modes (MODE_##C, W, __FILE__, __LINE__)
+#define VECTOR_MODES_WITH_PREFIX(PREFIX, C, W) \
+  make_vector_modes (MODE_##C, #PREFIX, W, __FILE__, __LINE__)
+#define VECTOR_MODES(C, W) VECTOR_MODES_WITH_PREFIX (V, C, W)
 static void ATTRIBUTE_UNUSED
-make_vector_modes (enum mode_class cl, unsigned int width,
+make_vector_modes (enum mode_class cl, const char *prefix, unsigned int width,
 		   const char *file, unsigned int line)
 {
   struct mode_data *m;
@@ -516,8 +518,8 @@ make_vector_modes (enum mode_class cl, unsigned int width,
       if (cl == MODE_INT && m->precision == 1)
 	continue;
 
-      if ((size_t)snprintf (buf, sizeof buf, "V%u%s", ncomponents, m->name)
-	  >= sizeof buf)
+      if ((size_t) snprintf (buf, sizeof buf, "%s%u%s", prefix,
+			     ncomponents, m->name) >= sizeof buf)
 	{
 	  error ("%s:%d: mode name \"%s\" is too long",
 		 m->file, m->line, m->name);

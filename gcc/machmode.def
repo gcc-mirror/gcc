@@ -142,6 +142,10 @@ along with GCC; see the file COPYING3.  If not see
 	than two bytes (if CLASS is FLOAT).  CLASS must be INT or
 	FLOAT.  The names follow the same rule as VECTOR_MODE uses.
 
+     VECTOR_MODES_WITH_PREFIX (PREFIX, CLASS, WIDTH);
+	Like VECTOR_MODES, but start the mode names with PREFIX instead
+	of the usual "V".
+
      VECTOR_BOOL_MODE (NAME, COUNT, BYTESIZE)
         Create a vector mode called NAME that contains COUNT boolean
         elements and occupies BYTESIZE bytes in total.  Each boolean
