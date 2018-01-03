@@ -2092,6 +2092,55 @@ vect_check_load_store_mask (gimple *stmt, tree mask, tree *mask_vectype_out)
   return true;
 }
 
+/* Return true if stored value RHS is suitable for vectorizing store
+   statement STMT.  When returning true, store the type of the
+   vectorized store value in *RHS_VECTYPE_OUT and the type of the
+   store in *VLS_TYPE_OUT.  */
+
+static bool
+vect_check_store_rhs (gimple *stmt, tree rhs, tree *rhs_vectype_out,
+		      vec_load_store_type *vls_type_out)
+{
+  /* In the case this is a store from a constant make sure
+     native_encode_expr can handle it.  */
+  if (CONSTANT_CLASS_P (rhs) && native_encode_expr (rhs, NULL, 64) == 0)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "cannot encode constant as a byte sequence.\n");
+      return false;
+    }
+
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  gimple *def_stmt;
+  enum vect_def_type dt;
+  tree rhs_vectype;
+  if (!vect_is_simple_use (rhs, stmt_info->vinfo, &def_stmt, &dt,
+			   &rhs_vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "use not simple.\n");
+      return false;
+    }
+
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  if (rhs_vectype && !useless_type_conversion_p (vectype, rhs_vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "incompatible vector types.\n");
+      return false;
+    }
+
+  *rhs_vectype_out = rhs_vectype;
+  if (dt == vect_constant_def || dt == vect_external_def)
+    *vls_type_out = VLS_STORE_INVARIANT;
+  else
+    *vls_type_out = VLS_STORE;
+  return true;
+}
+
 /* Function vectorizable_mask_load_store.
 
    Check if STMT performs a conditional load or store that can be vectorized.
@@ -2162,12 +2211,8 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   if (gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
     {
       tree rhs = gimple_call_arg (stmt, 3);
-      if (!vect_is_simple_use (rhs, loop_vinfo, &def_stmt, &dt, &rhs_vectype))
+      if (!vect_check_store_rhs (stmt, rhs, &rhs_vectype, &vls_type))
 	return false;
-      if (dt == vect_constant_def || dt == vect_external_def)
-	vls_type = VLS_STORE_INVARIANT;
-      else
-	vls_type = VLS_STORE;
     }
   else
     vls_type = VLS_LOAD;
@@ -2201,9 +2246,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   else if (!VECTOR_MODE_P (TYPE_MODE (vectype))
 	   || !can_vec_mask_load_store_p (TYPE_MODE (vectype),
 					  TYPE_MODE (mask_vectype),
-					  vls_type == VLS_LOAD)
-	   || (rhs_vectype
-	       && !useless_type_conversion_p (vectype, rhs_vectype)))
+					  vls_type == VLS_LOAD))
     return false;
 
   if (!vec_stmt) /* transformation not required.  */
@@ -5821,26 +5864,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     }
 
   op = gimple_assign_rhs1 (stmt);
-
-  /* In the case this is a store from a constant make sure
-     native_encode_expr can handle it.  */
-  if (CONSTANT_CLASS_P (op) && native_encode_expr (op, NULL, 64) == 0)
-    return false;
-
-  if (!vect_is_simple_use (op, vinfo, &def_stmt, &dt, &rhs_vectype))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.\n");
-      return false;
-    }
-
-  if (dt == vect_constant_def || dt == vect_external_def)
-    vls_type = VLS_STORE_INVARIANT;
-  else
-    vls_type = VLS_STORE;
-
-  if (rhs_vectype && !useless_type_conversion_p (vectype, rhs_vectype))
+  if (!vect_check_store_rhs (stmt, op, &rhs_vectype, &vls_type))
     return false;
 
   elem_type = TREE_TYPE (vectype);

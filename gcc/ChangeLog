@@ -1,5 +1,12 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-stmts.c (vect_check_store_rhs): New function,
+	split out from...
+	(vectorizable_mask_load_store): ...here.
+	(vectorizable_store): ...and here.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-stmts.c (vect_check_load_store_mask): New function,
 	split out from...
 	(vectorizable_mask_load_store): ...here.
