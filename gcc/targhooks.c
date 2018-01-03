@@ -713,7 +713,7 @@ default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return 3;
 
       case vec_construct:
-	return TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	return estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype)) - 1;
 
       default:
         gcc_unreachable ();

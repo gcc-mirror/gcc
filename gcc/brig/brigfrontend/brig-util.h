@@ -112,7 +112,7 @@ void gccbrig_print_reg_use_info (FILE *dump, const regs_use_index &info);
 inline unsigned HOST_WIDE_INT
 gccbrig_type_vector_subparts (const_tree type)
 {
-  return TYPE_VECTOR_SUBPARTS (type);
+  return TYPE_VECTOR_SUBPARTS (type).to_constant ();
 }
 
 #endif

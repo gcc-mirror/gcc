@@ -2271,10 +2271,8 @@ layout_type (tree type)
 
     case VECTOR_TYPE:
       {
-	int nunits = TYPE_VECTOR_SUBPARTS (type);
+	poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
 	tree innertype = TREE_TYPE (type);
-
-	gcc_assert (!(nunits & (nunits - 1)));
 
 	/* Find an appropriate mode for the vector type.  */
 	if (TYPE_MODE (type) == VOIDmode)

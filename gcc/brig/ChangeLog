@@ -1,3 +1,11 @@
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* brigfrontend/brig-to-generic.cc (get_unsigned_int_type): Handle
+	polynomial TYPE_VECTOR_SUBPARTS.
+	* brigfrontend/brig-util.h (gccbrig_type_vector_subparts): Likewise.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

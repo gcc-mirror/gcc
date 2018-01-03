@@ -108,14 +108,17 @@ tree_vector_builder::new_binary_operation (tree type, tree t1, tree t2,
 unsigned int
 tree_vector_builder::binary_encoded_nelts (tree t1, tree t2)
 {
-  unsigned int nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1));
-  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2)));
+  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1));
+  gcc_assert (known_eq (nelts, TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2))));
   /* See new_binary_operation for details.  */
   unsigned int npatterns = least_common_multiple (VECTOR_CST_NPATTERNS (t1),
 						  VECTOR_CST_NPATTERNS (t2));
   unsigned int nelts_per_pattern = MAX (VECTOR_CST_NELTS_PER_PATTERN (t1),
 					VECTOR_CST_NELTS_PER_PATTERN (t2));
-  return MIN (npatterns * nelts_per_pattern, nelts);
+  unsigned HOST_WIDE_INT const_nelts;
+  if (nelts.is_constant (&const_nelts))
+    return MIN (npatterns * nelts_per_pattern, const_nelts);
+  return npatterns * nelts_per_pattern;
 }
 
 /* Return a vector element with the value BASE + FACTOR * STEP.  */

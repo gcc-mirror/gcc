@@ -4920,7 +4920,9 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
 	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align,
 			     reverse);
 	    thissize = elt_size;
-	    for (unsigned int i = 1; i < VECTOR_CST_NELTS (exp); i++)
+	    /* Static constants must have a fixed size.  */
+	    unsigned int nunits = VECTOR_CST_NELTS (exp).to_constant ();
+	    for (unsigned int i = 1; i < nunits; i++)
 	      {
 		output_constant (VECTOR_CST_ELT (exp, i), elt_size, nalign,
 				 reverse);

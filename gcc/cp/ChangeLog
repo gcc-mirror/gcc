@@ -1,3 +1,17 @@
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* constexpr.c (cxx_eval_array_reference): Handle polynomial
+	VECTOR_CST_NELTS.
+	(cxx_fold_indirect_ref): Handle polynomial TYPE_VECTOR_SUBPARTS.
+	* call.c (build_conditional_expr_1): Likewise.
+	* decl.c (cp_finish_decomp): Likewise.
+	* mangle.c (write_type): Likewise.
+	* typeck.c (structural_comptypes): Likewise.
+	(cp_build_binary_op): Likewise.
+	* typeck2.c (process_init_constructor_array): Likewise.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83555

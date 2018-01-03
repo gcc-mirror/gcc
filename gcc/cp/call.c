@@ -4919,8 +4919,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	}
 
       if (!same_type_p (arg2_type, arg3_type)
-	  || TYPE_VECTOR_SUBPARTS (arg1_type)
-	     != TYPE_VECTOR_SUBPARTS (arg2_type)
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (arg1_type),
+		       TYPE_VECTOR_SUBPARTS (arg2_type))
 	  || TYPE_SIZE (arg1_type) != TYPE_SIZE (arg2_type))
 	{
 	  if (complain & tf_error)

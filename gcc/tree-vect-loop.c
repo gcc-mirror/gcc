@@ -258,9 +258,11 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 		}
 
 	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "nunits = " HOST_WIDE_INT_PRINT_DEC "\n",
-				 TYPE_VECTOR_SUBPARTS (vectype));
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
+		  dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (vectype));
+		  dump_printf (MSG_NOTE, "\n");
+		}
 
 	      vect_update_max_nunits (&vectorization_factor, vectype);
 	    }
@@ -551,9 +553,11 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	    }
 
 	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "nunits = " HOST_WIDE_INT_PRINT_DEC "\n",
-			     TYPE_VECTOR_SUBPARTS (vf_vectype));
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
+	      dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (vf_vectype));
+	      dump_printf (MSG_NOTE, "\n");
+	    }
 
 	  vect_update_max_nunits (&vectorization_factor, vf_vectype);
 
@@ -635,8 +639,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
 	      if (!mask_type)
 		mask_type = vectype;
-	      else if (TYPE_VECTOR_SUBPARTS (mask_type)
-		       != TYPE_VECTOR_SUBPARTS (vectype))
+	      else if (maybe_ne (TYPE_VECTOR_SUBPARTS (mask_type),
+				 TYPE_VECTOR_SUBPARTS (vectype)))
 		{
 		  if (dump_enabled_p ())
 		    {
@@ -4156,7 +4160,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   scalar_type = TREE_TYPE (vector_type);
   /* vectorizable_reduction has already rejected SLP reductions on
      variable-length vectors.  */
-  nunits = TYPE_VECTOR_SUBPARTS (vector_type);
+  nunits = TYPE_VECTOR_SUBPARTS (vector_type).to_constant ();
 
   gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def);
 
@@ -7733,9 +7737,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
 	  if (STMT_VINFO_VECTYPE (stmt_info))
 	    {
-	      unsigned int nunits
-		= (unsigned int)
-		  TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
+	      poly_uint64 nunits
+		= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
 	      if (!STMT_SLP_TYPE (stmt_info)
 		  && maybe_ne (nunits, vf)
 		  && dump_enabled_p ())

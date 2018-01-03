@@ -2025,8 +2025,8 @@ sem_variable::equals (tree t1, tree t2)
 						&TREE_REAL_CST (t2)));
     case VECTOR_CST:
       {
-        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
-          return return_false_with_msg ("VECTOR_CST nelts mismatch");
+	if (maybe_ne (VECTOR_CST_NELTS (t1), VECTOR_CST_NELTS (t2)))
+	  return return_false_with_msg ("VECTOR_CST nelts mismatch");
 
 	unsigned int count
 	  = tree_vector_builder::binary_encoded_nelts (t1, t2);

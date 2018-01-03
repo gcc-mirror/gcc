@@ -57,7 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 static unsigned HOST_WIDE_INT
 simd_clone_subparts (tree vectype)
 {
-  return TYPE_VECTOR_SUBPARTS (vectype);
+  return TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
 }
 
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number

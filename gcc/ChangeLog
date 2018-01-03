@@ -2,6 +2,84 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (TYPE_VECTOR_SUBPARTS): Turn into a function and handle
+	polynomial numbers of units.
+	(SET_TYPE_VECTOR_SUBPARTS): Likewise.
+	(valid_vector_subparts_p): New function.
+	(build_vector_type): Remove temporary shim and take the number
+	of units as a poly_uint64 rather than an int.
+	(build_opaque_vector_type): Take the number of units as a
+	poly_uint64 rather than an int.
+	* tree.c (build_vector_from_ctor): Handle polynomial
+	TYPE_VECTOR_SUBPARTS.
+	(type_hash_canon_hash, type_cache_hasher::equal): Likewise.
+	(uniform_vector_p, vector_type_mode, build_vector): Likewise.
+	(build_vector_from_val): If the number of units is variable,
+	use build_vec_duplicate_cst for constant operands and
+	VEC_DUPLICATE_EXPR otherwise.
+	(make_vector_type): Remove temporary is_constant ().
+	(build_vector_type, build_opaque_vector_type): Take the number of
+	units as a poly_uint64 rather than an int.
+	(check_vector_cst): Handle polynomial TYPE_VECTOR_SUBPARTS and
+	VECTOR_CST_NELTS.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* expr.c (count_type_elements, categorize_ctor_elements_1): Likewise.
+	(store_constructor, expand_expr_real_1): Likewise.
+	(const_scalar_mask_from_tree): Likewise.
+	* fold-const-call.c (fold_const_reduction): Likewise.
+	* fold-const.c (const_binop, const_unop, fold_convert_const): Likewise.
+	(operand_equal_p, fold_vec_perm, fold_ternary_loc): Likewise.
+	(native_encode_vector, vec_cst_ctor_to_array): Likewise.
+	(fold_relational_const): Likewise.
+	(native_interpret_vector): Likewise.  Change the size from an
+	int to an unsigned int.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Handle polynomial
+	TYPE_VECTOR_SUBPARTS.
+	(gimple_fold_indirect_ref, gimple_build_vector): Likewise.
+	(gimple_build_vector_from_val): Use VEC_DUPLICATE_EXPR when
+	duplicating a non-constant operand into a variable-length vector.
+	* hsa-brig.c (hsa_op_immed::emit_to_buffer): Handle polynomial
+	TYPE_VECTOR_SUBPARTS and VECTOR_CST_NELTS.
+	* ipa-icf.c (sem_variable::equals): Likewise.
+	* match.pd: Likewise.
+	* omp-simd-clone.c (simd_clone_subparts): Likewise.
+	* print-tree.c (print_node): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* targhooks.c (default_builtin_vectorization_cost): Likewise.
+	* tree-cfg.c (verify_gimple_comparison): Likewise.
+	(verify_gimple_assign_binary): Likewise.
+	(verify_gimple_assign_ternary): Likewise.
+	(verify_gimple_assign_single): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	(simplify_bitfield_ref, is_combined_permutation_identity): Likewise.
+	* tree-vect-data-refs.c (vect_permute_store_chain): Likewise.
+	(vect_grouped_load_supported, vect_permute_load_chain): Likewise.
+	(vect_shift_permute_load_chain): Likewise.
+	* tree-vect-generic.c (nunits_for_known_piecewise_op): Likewise.
+	(expand_vector_condition, optimize_vector_constructor): Likewise.
+	(lower_vec_perm, get_compute_type): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(get_initial_defs_for_reduction, vect_transform_loop): Likewise.
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Likewise.
+	(vect_recog_mask_conversion_pattern): Likewise.
+	* tree-vect-slp.c (vect_supported_load_permutation_p): Likewise.
+	(vect_get_constant_vectors, vect_transform_slp_perm_load): Likewise.
+	* tree-vect-stmts.c (perm_mask_for_reverse): Likewise.
+	(get_group_load_store_type, vectorizable_mask_load_store): Likewise.
+	(vectorizable_bswap, simd_clone_subparts, vectorizable_assignment)
+	(vectorizable_shift, vectorizable_operation, vectorizable_store)
+	(vectorizable_load, vect_is_simple_cond, vectorizable_comparison)
+	(supportable_widening_operation): Likewise.
+	(supportable_narrowing_operation): Likewise.
+	* tree-vector-builder.c (tree_vector_builder::binary_encoded_nelts):
+	Likewise.
+	* varasm.c (output_constant): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-data-refs.c (vect_permute_store_chain): Reorganize
 	so that both the length == 3 and length != 3 cases set up their
 	own permute vectors.  Add comments explaining why we know the

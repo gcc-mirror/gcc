@@ -83,7 +83,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (nop_convert @0)
  (view_convert @0)
  (if (VECTOR_TYPE_P (type) && VECTOR_TYPE_P (TREE_TYPE (@0))
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
+      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)))
       && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
 /* This one has to be last, or it shadows the others.  */
 (match (nop_convert @0)
@@ -2849,7 +2850,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (plus:c @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
+      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1)))
       && (TYPE_MODE (TREE_TYPE (type))
           == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
   (minus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
@@ -2858,7 +2860,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (minus @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
+      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1)))
       && (TYPE_MODE (TREE_TYPE (type))
           == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
   (plus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
@@ -4524,7 +4527,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (n != 0
 	&& (idx % width) == 0
 	&& (n % width) == 0
-	&& ((idx + n) / width) <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (ctor)))
+	&& known_le ((idx + n) / width,
+		     TYPE_VECTOR_SUBPARTS (TREE_TYPE (ctor))))
     (with
      {
        idx = idx / width;

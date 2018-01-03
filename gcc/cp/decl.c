@@ -7500,7 +7500,11 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
     }
   else if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      eltscnt = TYPE_VECTOR_SUBPARTS (type);
+      if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&eltscnt))
+	{
+	  error_at (loc, "cannot decompose variable length vector %qT", type);
+	  goto error_out;
+	}
       if (count != eltscnt)
 	goto cnt_mismatch;
       eltype = cp_build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
