@@ -958,18 +958,25 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   /* Costs of the stores.  */
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_GATHER_SCATTER)
-    /* N scalar stores plus extracting the elements.  */
-    inside_cost += record_stmt_cost (body_cost_vec,
-				     ncopies * TYPE_VECTOR_SUBPARTS (vectype),
-				     scalar_store, stmt_info, 0, vect_body);
+    {
+      /* N scalar stores plus extracting the elements.  */
+      unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
+      inside_cost += record_stmt_cost (body_cost_vec,
+				       ncopies * assumed_nunits,
+				       scalar_store, stmt_info, 0, vect_body);
+    }
   else
     vect_get_store_cost (dr, ncopies, &inside_cost, body_cost_vec);
 
   if (memory_access_type == VMAT_ELEMENTWISE
       || memory_access_type == VMAT_STRIDED_SLP)
-    inside_cost += record_stmt_cost (body_cost_vec,
-				     ncopies * TYPE_VECTOR_SUBPARTS (vectype),
-				     vec_to_scalar, stmt_info, 0, vect_body);
+    {
+      /* N scalar stores plus extracting the elements.  */
+      unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
+      inside_cost += record_stmt_cost (body_cost_vec,
+				       ncopies * assumed_nunits,
+				       vec_to_scalar, stmt_info, 0, vect_body);
+    }
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -1089,8 +1096,9 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
     {
       /* N scalar loads plus gathering them into a vector.  */
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+      unsigned int assumed_nunits = vect_nunits_for_cost (vectype);
       inside_cost += record_stmt_cost (body_cost_vec,
-				       ncopies * TYPE_VECTOR_SUBPARTS (vectype),
+				       ncopies * assumed_nunits,
 				       scalar_load, stmt_info, 0, vect_body);
     }
   else

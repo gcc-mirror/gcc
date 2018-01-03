@@ -3854,13 +3854,15 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
 	}
       else if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION)
 	{
-	  unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
+	  unsigned estimated_nunits = vect_nunits_for_cost (vectype);
 	  /* Extraction of scalar elements.  */
-	  epilogue_cost += add_stmt_cost (target_cost_data, 2 * nunits,
+	  epilogue_cost += add_stmt_cost (target_cost_data,
+					  2 * estimated_nunits,
 					  vec_to_scalar, stmt_info, 0,
 					  vect_epilogue);
 	  /* Scalar max reductions via COND_EXPR / MAX_EXPR.  */
-	  epilogue_cost += add_stmt_cost (target_cost_data, 2 * nunits - 3,
+	  epilogue_cost += add_stmt_cost (target_cost_data,
+					  2 * estimated_nunits - 3,
 					  scalar_stmt, stmt_info, 0,
 					  vect_epilogue);
 	}
