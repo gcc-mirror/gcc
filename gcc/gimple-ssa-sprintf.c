@@ -3040,7 +3040,7 @@ parse_directive (sprintf_dom_walker::call_info &info,
 		   "length = " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 		   dir.dirno,
 		   (unsigned HOST_WIDE_INT)(size_t)(dir.beg - info.fmtstr),
-		   (int)dir.len, dir.beg, dir.len);
+		   (int)dir.len, dir.beg, (unsigned HOST_WIDE_INT) dir.len);
 	}
 
       return len - !*str;
