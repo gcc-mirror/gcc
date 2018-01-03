@@ -1,4 +1,30 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* machmode.h (mode_precision): Prefix with CONST_MODE_PRECISION.
+	(mode_nunits): Likewise CONST_MODE_NUNITS.
+	* machmode.def (ADJUST_NUNITS): Document.
+	* genmodes.c (mode_data::need_nunits_adj): New field.
+	(blank_mode): Update accordingly.
+	(adj_nunits): New variable.
+	(print_maybe_const_decl): Replace CATEGORY with a NEEDS_ADJ
+	parameter.
+	(emit_mode_size_inline): Set need_bytesize_adj for all modes
+	listed in adj_nunits.
+	(emit_mode_nunits_inline): Set need_nunits_adj for all modes
+	listed in adj_nunits.  Don't emit case statements for such modes.
+	(emit_insn_modes_h): Emit definitions of CONST_MODE_NUNITS
+	and CONST_MODE_PRECISION.  Make CONST_MODE_SIZE expand to
+	nothing if adj_nunits is nonnull.
+	(emit_mode_precision, emit_mode_nunits): Use print_maybe_const_decl.
+	(emit_mode_unit_size, emit_mode_base_align, emit_mode_ibit)
+	(emit_mode_fbit): Update use of print_maybe_const_decl.
+	(emit_move_size): Likewise.  Treat the array as non-const
+	if adj_nunits.
+	(emit_mode_adjustments): Handle adj_nunits.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* machmode.def (VECTOR_MODES_WITH_PREFIX): Document.
 	* genmodes.c (VECTOR_MODES_WITH_PREFIX): New macro.

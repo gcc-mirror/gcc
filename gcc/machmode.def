@@ -174,6 +174,12 @@ along with GCC; see the file COPYING3.  If not see
 	Unlike a FORMAT argument, if you are adjusting a float format
 	you must put an & in front of the name of each format structure.
 
+     ADJUST_NUNITS (MODE, EXPR);
+	Like the above, but set the number of nunits of MODE to EXPR.
+	This changes the size and precision of the mode in proportion
+	to the change in the number of units; for example, doubling
+	the number of units doubles the size and precision as well.
+
    Note: If a mode is ever made which is more than 255 bytes wide,
    machmode.h and genmodes.c will have to be changed to allocate
    more space for the mode_size and mode_alignment arrays.  */
