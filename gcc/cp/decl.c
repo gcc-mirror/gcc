@@ -10866,10 +10866,11 @@ grokdeclarator (const cp_declarator *declarator,
 
       inner_declarator = declarator->declarator;
 
-      /* We don't want to warn in parmeter context because we don't
+      /* We don't want to warn in parameter context because we don't
 	 yet know if the parse will succeed, and this might turn out
 	 to be a constructor call.  */
       if (decl_context != PARM
+	  && decl_context != TYPENAME
 	  && declarator->parenthesized != UNKNOWN_LOCATION
 	  /* If the type is class-like and the inner name used a
 	     global namespace qualifier, we need the parens.
