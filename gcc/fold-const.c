@@ -14625,7 +14625,7 @@ test_vec_duplicate_folding ()
   scalar_int_mode int_mode = SCALAR_INT_TYPE_MODE (ssizetype);
   machine_mode vec_mode = targetm.vectorize.preferred_simd_mode (int_mode);
   /* This will be 1 if VEC_MODE isn't a vector mode.  */
-  unsigned int nunits = GET_MODE_NUNITS (vec_mode);
+  poly_uint64 nunits = GET_MODE_NUNITS (vec_mode);
 
   tree type = build_vector_type (ssizetype, nunits);
   tree dup5_expr = fold_unary (VEC_DUPLICATE_EXPR, type, ssize_int (5));

@@ -4582,11 +4582,21 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
   /* Check that the permutation is supported.  */
   if (VECTOR_MODE_P (mode))
     {
-      unsigned int i, nelt = GET_MODE_NUNITS (mode);
+      unsigned int i;
       if (count == 3)
 	{
 	  unsigned int j0 = 0, j1 = 0, j2 = 0;
 	  unsigned int i, j;
+
+	  unsigned int nelt;
+	  if (!GET_MODE_NUNITS (mode).is_constant (&nelt))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "cannot handle groups of 3 stores for"
+				 " variable-length vectors\n");
+	      return false;
+	    }
 
 	  vec_perm_builder sel (nelt, nelt, 1);
 	  sel.quick_grow (nelt);
@@ -4638,6 +4648,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	{
 	  /* If length is not equal to 3 then only power of 2 is supported.  */
 	  gcc_assert (pow2p_hwi (count));
+	  poly_uint64 nelt = GET_MODE_NUNITS (mode);
 
 	  /* The encoding has 2 interleaved stepped patterns.  */
 	  vec_perm_builder sel (nelt, 2, 3);
@@ -4651,7 +4662,7 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	  if (can_vec_perm_const_p (mode, indices))
 	    {
 	      for (i = 0; i < 6; i++)
-		sel[i] += nelt / 2;
+		sel[i] += exact_div (nelt, 2);
 	      indices.new_vector (sel, 2, nelt);
 	      if (can_vec_perm_const_p (mode, indices))
 		return true;
@@ -5184,10 +5195,19 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
   /* Check that the permutation is supported.  */
   if (VECTOR_MODE_P (mode))
     {
-      unsigned int i, j, nelt = GET_MODE_NUNITS (mode);
-
+      unsigned int i, j;
       if (count == 3)
 	{
+	  unsigned int nelt;
+	  if (!GET_MODE_NUNITS (mode).is_constant (&nelt))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "cannot handle groups of 3 loads for"
+				 " variable-length vectors\n");
+	      return false;
+	    }
+
 	  vec_perm_builder sel (nelt, nelt, 1);
 	  sel.quick_grow (nelt);
 	  vec_perm_indices indices;
@@ -5229,6 +5249,7 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
 	{
 	  /* If length is not equal to 3 then only power of 2 is supported.  */
 	  gcc_assert (pow2p_hwi (count));
+	  poly_uint64 nelt = GET_MODE_NUNITS (mode);
 
 	  /* The encoding has a single stepped pattern.  */
 	  vec_perm_builder sel (nelt, 1, 3);

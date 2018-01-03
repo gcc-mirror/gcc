@@ -1620,7 +1620,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
       unsigned int size = bp_unpack_value (&bp, 8);
       unsigned int prec = bp_unpack_value (&bp, 16);
       machine_mode inner = (machine_mode) bp_unpack_value (&bp, 8);
-      unsigned int nunits = bp_unpack_value (&bp, 8);
+      poly_uint16 nunits = bp_unpack_poly_value (&bp, 16);
       unsigned int ibit = 0, fbit = 0;
       unsigned int real_fmt_len = 0;
       const char *real_fmt_name = NULL;
@@ -1658,7 +1658,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 		  : GET_MODE_INNER (mr) != table[(int) inner])
 	      || GET_MODE_IBIT (mr) != ibit
 	      || GET_MODE_FBIT (mr) != fbit
-	      || GET_MODE_NUNITS (mr) != nunits)
+	      || maybe_ne (GET_MODE_NUNITS (mr), nunits))
 	    continue;
 	  else if ((mclass == MODE_FLOAT || mclass == MODE_DECIMAL_FLOAT)
 		   && strcmp (REAL_MODE_FORMAT (mr)->name, real_fmt_name) != 0)

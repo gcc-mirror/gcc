@@ -9598,19 +9598,19 @@ omp_clause_operand_check_failed (int idx, const_tree t, const char *file,
 }
 #endif /* ENABLE_TREE_CHECKING */
 
-/* Create a new vector type node holding SUBPARTS units of type INNERTYPE,
+/* Create a new vector type node holding NUNITS units of type INNERTYPE,
    and mapped to the machine mode MODE.  Initialize its fields and build
    the information necessary for debugging output.  */
 
 static tree
-make_vector_type (tree innertype, int nunits, machine_mode mode)
+make_vector_type (tree innertype, poly_int64 nunits, machine_mode mode)
 {
   tree t;
   tree mv_innertype = TYPE_MAIN_VARIANT (innertype);
 
   t = make_node (VECTOR_TYPE);
   TREE_TYPE (t) = mv_innertype;
-  SET_TYPE_VECTOR_SUBPARTS (t, nunits);
+  SET_TYPE_VECTOR_SUBPARTS (t, nunits.to_constant ()); /* Temporary */
   SET_TYPE_MODE (t, mode);
 
   if (TYPE_STRUCTURAL_EQUALITY_P (mv_innertype) || in_lto_p)
@@ -9635,13 +9635,6 @@ make_vector_type (tree innertype, int nunits, machine_mode mode)
 					      TYPE_QUALS (innertype));
 
   return t;
-}
-
-/* Temporary.  */
-static tree
-make_vector_type (tree innertype, poly_uint64 nunits, machine_mode mode)
-{
-  return make_vector_type (innertype, (int) nunits.to_constant (), mode);
 }
 
 static tree
@@ -10508,7 +10501,7 @@ reconstruct_complex_type (tree type, tree bottom)
 tree
 build_vector_type_for_mode (tree innertype, machine_mode mode)
 {
-  int nunits;
+  poly_int64 nunits;
   unsigned int bitsize;
 
   switch (GET_MODE_CLASS (mode))

@@ -391,7 +391,7 @@ can_vec_perm_var_p (machine_mode mode)
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
   machine_mode qimode;
   if (!qimode_for_vec_perm (mode).exists (&qimode)
-      || GET_MODE_NUNITS (qimode) > GET_MODE_MASK (QImode) + 1)
+      || maybe_gt (GET_MODE_NUNITS (qimode), GET_MODE_MASK (QImode) + 1))
     return false;
 
   if (direct_optab_handler (vec_perm_optab, qimode) == CODE_FOR_nothing)
@@ -498,7 +498,6 @@ int
 can_mult_highpart_p (machine_mode mode, bool uns_p)
 {
   optab op;
-  unsigned i, nunits;
 
   op = uns_p ? umul_highpart_optab : smul_highpart_optab;
   if (optab_handler (op, mode) != CODE_FOR_nothing)
@@ -508,7 +507,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
     return 0;
 
-  nunits = GET_MODE_NUNITS (mode);
+  poly_int64 nunits = GET_MODE_NUNITS (mode);
 
   op = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
   if (optab_handler (op, mode) != CODE_FOR_nothing)
@@ -518,7 +517,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 	{
 	  /* The encoding has 2 interleaved stepped patterns.  */
 	  vec_perm_builder sel (nunits, 2, 3);
-	  for (i = 0; i < 6; ++i)
+	  for (unsigned int i = 0; i < 6; ++i)
 	    sel.quick_push (!BYTES_BIG_ENDIAN
 			    + (i & ~1)
 			    + ((i & 1) ? nunits : 0));
@@ -536,7 +535,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 	{
 	  /* The encoding has a single stepped pattern.  */
 	  vec_perm_builder sel (nunits, 1, 3);
-	  for (int i = 0; i < 3; ++i)
+	  for (unsigned int i = 0; i < 3; ++i)
 	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
 	  vec_perm_indices indices (sel, 2, nunits);
 	  if (can_vec_perm_const_p (mode, indices))

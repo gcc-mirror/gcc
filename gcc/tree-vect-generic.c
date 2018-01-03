@@ -1160,7 +1160,7 @@ type_for_widest_vector_mode (tree type, optab op)
 {
   machine_mode inner_mode = TYPE_MODE (type);
   machine_mode best_mode = VOIDmode, mode;
-  int best_nunits = 0;
+  poly_int64 best_nunits = 0;
 
   if (SCALAR_FLOAT_MODE_P (inner_mode))
     mode = MIN_MODE_VECTOR_FLOAT;
@@ -1177,7 +1177,7 @@ type_for_widest_vector_mode (tree type, optab op)
 
   FOR_EACH_MODE_FROM (mode, mode)
     if (GET_MODE_INNER (mode) == inner_mode
-        && GET_MODE_NUNITS (mode) > best_nunits
+	&& maybe_gt (GET_MODE_NUNITS (mode), best_nunits)
 	&& optab_handler (op, mode) != CODE_FOR_nothing)
       best_mode = mode, best_nunits = GET_MODE_NUNITS (mode);
 

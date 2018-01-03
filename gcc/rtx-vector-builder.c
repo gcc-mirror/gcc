@@ -65,7 +65,9 @@ rtx_vector_builder::build ()
   if (x)
     return x;
 
-  unsigned int nelts = GET_MODE_NUNITS (m_mode);
+  unsigned int nelts;
+  if (!GET_MODE_NUNITS (m_mode).is_constant (&nelts))
+    nelts = encoded_nelts ();
   rtvec v = rtvec_alloc (nelts);
   for (unsigned int i = 0; i < nelts; ++i)
     RTVEC_ELT (v, i) = elt (i);

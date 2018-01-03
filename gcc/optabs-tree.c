@@ -328,7 +328,7 @@ expand_vec_cond_expr_p (tree value_type, tree cmp_op_type, enum tree_code code)
     return true;
 
   if (GET_MODE_SIZE (value_mode) != GET_MODE_SIZE (cmp_op_mode)
-      || GET_MODE_NUNITS (value_mode) != GET_MODE_NUNITS (cmp_op_mode))
+      || maybe_ne (GET_MODE_NUNITS (value_mode), GET_MODE_NUNITS (cmp_op_mode)))
     return false;
 
   if (get_vcond_icode (TYPE_MODE (value_type), TYPE_MODE (cmp_op_type),

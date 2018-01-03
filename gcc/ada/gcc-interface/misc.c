@@ -1301,9 +1301,10 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 	  }
 
       /* If no predefined C types were found, register the mode itself.  */
-      if (!skip_p)
+      int nunits;
+      if (!skip_p && GET_MODE_NUNITS (i).is_constant (&nunits))
 	f (GET_MODE_NAME (i), digs, complex_p,
-	   vector_p ? GET_MODE_NUNITS (i) : 0, float_rep,
+	   vector_p ? nunits : 0, float_rep,
 	   GET_MODE_PRECISION (i), GET_MODE_BITSIZE (i),
 	   GET_MODE_ALIGNMENT (i));
     }

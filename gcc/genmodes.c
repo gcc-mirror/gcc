@@ -901,6 +901,16 @@ calc_wider_mode (void)
     }
 }
 
+/* Text to add to the constant part of a poly_int_pod initializer in
+   order to fill out te whole structure.  */
+#if NUM_POLY_INT_COEFFS == 1
+#define ZERO_COEFFS ""
+#elif NUM_POLY_INT_COEFFS == 2
+#define ZERO_COEFFS ", 0"
+#else
+#error "Unknown value of NUM_POLY_INT_COEFFS"
+#endif
+
 /* Output routines.  */
 
 #define tagged_printf(FMT, ARG, TAG) do {		\
@@ -1008,11 +1018,10 @@ inline __attribute__((__always_inline__))\n\
 #else\n\
 extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
 #endif\n\
-unsigned char\n\
+poly_uint16\n\
 mode_nunits_inline (machine_mode mode)\n\
 {\n\
-  extern const unsigned char mode_nunits[NUM_MACHINE_MODES];\n\
-  gcc_assert (mode >= 0 && mode < NUM_MACHINE_MODES);\n\
+  extern poly_uint16_pod mode_nunits[NUM_MACHINE_MODES];\n\
   switch (mode)\n\
     {");
 
@@ -1381,10 +1390,10 @@ emit_mode_nunits (void)
   int c;
   struct mode_data *m;
 
-  print_decl ("unsigned char", "mode_nunits", "NUM_MACHINE_MODES");
+  print_decl ("poly_uint16_pod", "mode_nunits", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
-    tagged_printf ("%u", m->ncomponents, m->name);
+    tagged_printf ("{ %u" ZERO_COEFFS " }", m->ncomponents, m->name);
 
   print_closer ();
 }
