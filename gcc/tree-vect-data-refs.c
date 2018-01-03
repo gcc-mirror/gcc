@@ -180,7 +180,7 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 static bool
 vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
 				       loop_vec_info loop_vinfo,
-				       int loop_depth, int *max_vf)
+				       int loop_depth, unsigned int *max_vf)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   lambda_vector dist_v;
@@ -200,7 +200,7 @@ vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
 	     would be a win.  */
 	  if (loop->safelen >= 2 && abs_hwi (dist) <= loop->safelen)
 	    {
-	      if (loop->safelen < *max_vf)
+	      if ((unsigned int) loop->safelen < *max_vf)
 		*max_vf = loop->safelen;
 	      LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
 	      continue;
@@ -229,7 +229,8 @@ vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
 
 static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
-                                  loop_vec_info loop_vinfo, int *max_vf)
+				  loop_vec_info loop_vinfo,
+				  unsigned int *max_vf)
 {
   unsigned int i;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -278,7 +279,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	 executed concurrently, assume independence.  */
       if (loop->safelen >= 2)
 	{
-	  if (loop->safelen < *max_vf)
+	  if ((unsigned int) loop->safelen < *max_vf)
 	    *max_vf = loop->safelen;
 	  LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
 	  return false;
@@ -326,7 +327,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	 executed concurrently, assume independence.  */
       if (loop->safelen >= 2)
 	{
-	  if (loop->safelen < *max_vf)
+	  if ((unsigned int) loop->safelen < *max_vf)
 	    *max_vf = loop->safelen;
 	  LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
 	  return false;
@@ -446,8 +447,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  continue;
 	}
 
-      if (abs (dist) >= 2
-	  && abs (dist) < *max_vf)
+      unsigned int abs_dist = abs (dist);
+      if (abs_dist >= 2 && abs_dist < *max_vf)
 	{
 	  /* The dependence distance requires reduction of the maximal
 	     vectorization factor.  */
@@ -458,7 +459,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	                     *max_vf);
 	}
 
-      if (abs (dist) >= *max_vf)
+      if (abs_dist >= *max_vf)
 	{
 	  /* Dependence distance does not create dependence, as far as
 	     vectorization is concerned, in this case.  */
@@ -492,7 +493,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
    the maximum vectorization factor the data dependences allow.  */
 
 bool
-vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo, int *max_vf)
+vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
+				   unsigned int *max_vf)
 {
   unsigned int i;
   struct data_dependence_relation *ddr;
@@ -863,9 +865,9 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
      the dataref evenly divides by the alignment.  */
   else
     {
-      unsigned vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       step_preserves_misalignment_p
-	= ((DR_STEP_ALIGNMENT (dr) * vf) % vector_alignment) == 0;
+	= multiple_p (DR_STEP_ALIGNMENT (dr) * vf, vector_alignment);
 
       if (!step_preserves_misalignment_p && dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1611,10 +1613,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool one_misalignment_unknown = false;
   bool one_dr_unsupportable = false;
   struct data_reference *unsupportable_dr = NULL;
-  unsigned int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   unsigned possible_npeel_number = 1;
   tree vectype;
-  unsigned int nelements, mis, same_align_drs_max = 0;
+  unsigned int mis, same_align_drs_max = 0;
   hash_table<peel_info_hasher> peeling_htab (1);
 
   if (dump_enabled_p ())
@@ -1692,7 +1694,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 						    size_zero_node) < 0;
 
 	      vectype = STMT_VINFO_VECTYPE (stmt_info);
-	      nelements = TYPE_VECTOR_SUBPARTS (vectype);
 	      unsigned int target_align = DR_TARGET_ALIGNMENT (dr);
 	      unsigned int dr_size = vect_get_scalar_dr_size (dr);
 	      mis = (negative ? DR_MISALIGNMENT (dr) : -DR_MISALIGNMENT (dr));
@@ -1714,11 +1715,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 		 cost for every peeling option.  */
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
-		  if (STMT_SLP_TYPE (stmt_info))
-		    possible_npeel_number
-		      = (vf * GROUP_SIZE (stmt_info)) / nelements;
-		  else
-		    possible_npeel_number = vf / nelements;
+		  poly_uint64 nscalars = (STMT_SLP_TYPE (stmt_info)
+					  ? vf * GROUP_SIZE (stmt_info) : vf);
+		  possible_npeel_number
+		    = vect_get_num_vectors (nscalars, vectype);
 
 		  /* NPEEL_TMP is 0 when there is no misalignment, but also
 		     allow peeling NELEMENTS.  */
@@ -1817,13 +1817,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       unsigned int load_outside_cost = 0;
       unsigned int store_inside_cost = 0;
       unsigned int store_outside_cost = 0;
+      unsigned int estimated_npeels = vect_vf_for_cost (loop_vinfo) / 2;
 
       stmt_vector_for_cost dummy;
       dummy.create (2);
       vect_get_peeling_costs_all_drs (datarefs, dr0,
 				      &load_inside_cost,
 				      &load_outside_cost,
-				      &dummy, vf / 2, true);
+				      &dummy, estimated_npeels, true);
       dummy.release ();
 
       if (first_store)
@@ -1832,7 +1833,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  vect_get_peeling_costs_all_drs (datarefs, first_store,
 					  &store_inside_cost,
 					  &store_outside_cost,
-					  &dummy, vf / 2, true);
+					  &dummy, estimated_npeels, true);
 	  dummy.release ();
 	}
       else
@@ -1861,7 +1862,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       int dummy2;
       peel_for_unknown_alignment.outside_cost += vect_get_known_peeling_cost
-	(loop_vinfo, vf / 2, &dummy2,
+	(loop_vinfo, estimated_npeels, &dummy2,
 	 &LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
 	 &prologue_cost_vec, &epilogue_cost_vec);
 
@@ -2021,14 +2022,16 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         }
 
       /* Cost model #2 - if peeling may result in a remaining loop not
-	 iterating enough to be vectorized then do not peel.  */
+	 iterating enough to be vectorized then do not peel.  Since this
+	 is a cost heuristic rather than a correctness decision, use the
+	 most likely runtime value for variable vectorization factors.  */
       if (do_peeling
 	  && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
 	{
-	  unsigned max_peel
-	    = npeel == 0 ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1 : npeel;
-	  if (LOOP_VINFO_INT_NITERS (loop_vinfo)
-	      < LOOP_VINFO_VECT_FACTOR (loop_vinfo) + max_peel)
+	  unsigned int assumed_vf = vect_vf_for_cost (loop_vinfo);
+	  unsigned int max_peel = npeel == 0 ? assumed_vf - 1 : npeel;
+	  if ((unsigned HOST_WIDE_INT) LOOP_VINFO_INT_NITERS (loop_vinfo)
+	      < assumed_vf + max_peel)
 	    do_peeling = false;
 	}
 
@@ -3050,7 +3053,7 @@ vect_no_alias_p (struct data_reference *a, struct data_reference *b,
 
 static bool
 dependence_distance_ge_vf (data_dependence_relation *ddr,
-			   unsigned int loop_depth, unsigned HOST_WIDE_INT vf)
+			   unsigned int loop_depth, poly_uint64 vf)
 {
   if (DDR_ARE_DEPENDENT (ddr) != NULL_TREE
       || DDR_NUM_DIST_VECTS (ddr) == 0)
@@ -3066,7 +3069,7 @@ dependence_distance_ge_vf (data_dependence_relation *ddr,
       HOST_WIDE_INT dist = dist_v[loop_depth];
       if (dist != 0
 	  && !(dist > 0 && DDR_REVERSED_P (ddr))
-	  && (unsigned HOST_WIDE_INT) abs_hwi (dist) < vf)
+	  && maybe_lt ((unsigned HOST_WIDE_INT) abs_hwi (dist), vf))
 	return false;
     }
 
@@ -3101,7 +3104,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
     = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
   vec<vec_object_pair> &check_unequal_addrs
     = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
-  int vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  poly_uint64 vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
 
   ddr_p ddr;
@@ -3212,8 +3215,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       comp_alias_ddrs.safe_push (dr_with_seg_len_pair);
     }
 
-  prune_runtime_alias_test_list (&comp_alias_ddrs,
-				 (unsigned HOST_WIDE_INT) vect_factor);
+  prune_runtime_alias_test_list (&comp_alias_ddrs, vect_factor);
 
   unsigned int count = (comp_alias_ddrs.length ()
 			+ check_unequal_addrs.length ());
@@ -3465,7 +3467,7 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
 */
 
 bool
-vect_analyze_data_refs (vec_info *vinfo, int *min_vf)
+vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 {
   struct loop *loop = NULL;
   unsigned int i;
@@ -3490,7 +3492,7 @@ vect_analyze_data_refs (vec_info *vinfo, int *min_vf)
       tree base, offset, init;
       enum { SG_NONE, GATHER, SCATTER } gatherscatter = SG_NONE;
       bool simd_lane_access = false;
-      int vf;
+      poly_uint64 vf;
 
 again:
       if (!dr || !DR_REF (dr))
@@ -3874,8 +3876,7 @@ again:
       /* Adjust the minimal vectorization factor according to the
 	 vector type.  */
       vf = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
-      if (vf > *min_vf)
-	*min_vf = vf;
+      *min_vf = upper_bound (*min_vf, vf);
 
       if (gatherscatter != SG_NONE)
 	{
@@ -5556,6 +5557,11 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
 
+  unsigned HOST_WIDE_INT vf;
+  if (!LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&vf))
+    /* Not supported for variable-length vectors.  */
+    return false;
+
   vec_perm_builder sel (nelt, nelt, 1);
   sel.quick_grow (nelt);
 
@@ -5563,7 +5569,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
   memcpy (result_chain->address (), dr_chain.address (),
 	  length * sizeof (tree));
 
-  if (pow2p_hwi (length) && LOOP_VINFO_VECT_FACTOR (loop_vinfo) > 4)
+  if (pow2p_hwi (length) && vf > 4)
     {
       unsigned int j, log_length = exact_log2 (length);
       for (i = 0; i < nelt / 2; ++i)
@@ -5664,7 +5670,7 @@ vect_shift_permute_load_chain (vec<tree> dr_chain,
 	}
       return true;
     }
-  if (length == 3 && LOOP_VINFO_VECT_FACTOR (loop_vinfo) > 2)
+  if (length == 3 && vf > 2)
     {
       unsigned int k = 0, l = 0;
 
@@ -6037,9 +6043,10 @@ vect_supportable_dr_alignment (struct data_reference *dr,
 	     same alignment, instead it depends on the SLP group size.  */
 	  if (loop_vinfo
 	      && STMT_SLP_TYPE (stmt_info)
-	      && (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-		  * GROUP_SIZE (vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info)))
-		  % TYPE_VECTOR_SUBPARTS (vectype) != 0))
+	      && !multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+			      * GROUP_SIZE (vinfo_for_stmt
+					    (GROUP_FIRST_ELEMENT (stmt_info))),
+			      TYPE_VECTOR_SUBPARTS (vectype)))
 	    ;
 	  else if (!loop_vinfo
 		   || (nested_in_vect_loop

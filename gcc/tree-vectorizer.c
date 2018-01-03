@@ -91,7 +91,7 @@ vec<stmt_vec_info> stmt_vec_info_vec;
 struct simduid_to_vf : free_ptr_hash<simduid_to_vf>
 {
   unsigned int simduid;
-  int vf;
+  poly_uint64 vf;
 
   /* hash_table support.  */
   static inline hashval_t hash (const simduid_to_vf *);
@@ -161,7 +161,7 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 
       for (i = gsi_start_bb (bb); !gsi_end_p (i); )
 	{
-	  unsigned int vf = 1;
+	  poly_uint64 vf = 1;
 	  enum internal_fn ifn;
 	  gimple *stmt = gsi_stmt (i);
 	  tree t;
@@ -338,7 +338,7 @@ shrink_simd_arrays
     if ((*iter)->simduid != -1U)
       {
 	tree decl = (*iter)->decl;
-	int vf = 1;
+	poly_uint64 vf = 1;
 	if (simduid_to_vf_htab)
 	  {
 	    simduid_to_vf *p = NULL, data;
