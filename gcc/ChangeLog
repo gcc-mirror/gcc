@@ -1,3 +1,17 @@
+2017-01-03  Jakub Jelinek  <jakub@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	PR target/83641
+	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash): For
+	noreturn probe, use gen_pop instead of ix86_emit_restore_reg_using_pop,
+	only set RTX_FRAME_RELATED_P on both the push and pop if cfa_reg is sp
+	and add REG_CFA_ADJUST_CFA notes in that case to both insns.
+
+	PR target/83641
+	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash): Do not
+	explicitly probe *sp in a noreturn function if there were any callee
+	register saves or frame pointer is needed.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83621
