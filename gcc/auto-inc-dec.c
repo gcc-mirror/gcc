@@ -152,14 +152,14 @@ enum gen_form
 static rtx mem_tmp;
 
 static enum inc_state
-set_inc_state (HOST_WIDE_INT val, int size)
+set_inc_state (HOST_WIDE_INT val, poly_int64 size)
 {
   if (val == 0)
     return INC_ZERO;
   if (val < 0)
-    return (val == -size) ? INC_NEG_SIZE : INC_NEG_ANY;
+    return known_eq (val, -size) ? INC_NEG_SIZE : INC_NEG_ANY;
   else
-    return (val == size) ? INC_POS_SIZE : INC_POS_ANY;
+    return known_eq (val, size) ? INC_POS_SIZE : INC_POS_ANY;
 }
 
 /* The DECISION_TABLE that describes what form, if any, the increment

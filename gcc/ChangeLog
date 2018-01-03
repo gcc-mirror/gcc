@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* auto-inc-dec.c (set_inc_state): Take the mode size as a poly_int64
+	rather than an int.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (expand_expr_real_1): Use tree_to_poly_uint64
 	instead of int_size_in_bytes when handling VIEW_CONVERT_EXPRs
 	via stack temporaries.  Treat the mode size as polynomial too.
