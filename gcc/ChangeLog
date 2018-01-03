@@ -1,4 +1,11 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* match.pd: Handle bit operations involving three constants
+	and try to fold one pair.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vect-loop-manip.c: Include gimple-fold.h.
 	(slpeel_make_loop_iterate_ntimes): Add step, final_iv and
