@@ -4431,6 +4431,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
   unsigned HOST_WIDE_INT inner_nz;
   enum rtx_code code;
   machine_mode inner_mode;
+  unsigned int inner_width;
   scalar_int_mode xmode;
 
   unsigned int mode_width = GET_MODE_PRECISION (mode);
@@ -4735,8 +4736,9 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	 machines, we can compute this from which bits of the inner
 	 object might be nonzero.  */
       inner_mode = GET_MODE (SUBREG_REG (x));
-      if (GET_MODE_PRECISION (inner_mode) <= BITS_PER_WORD
-	  && GET_MODE_PRECISION (inner_mode) <= HOST_BITS_PER_WIDE_INT)
+      if (GET_MODE_PRECISION (inner_mode).is_constant (&inner_width)
+	  && inner_width <= BITS_PER_WORD
+	  && inner_width <= HOST_BITS_PER_WIDE_INT)
 	{
 	  nonzero &= cached_nonzero_bits (SUBREG_REG (x), mode,
 					  known_x, known_mode, known_ret);
@@ -4752,8 +4754,9 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 		   ? val_signbit_known_set_p (inner_mode, nonzero)
 		   : extend_op != ZERO_EXTEND)
 	       || (!MEM_P (SUBREG_REG (x)) && !REG_P (SUBREG_REG (x))))
-	      && xmode_width > GET_MODE_PRECISION (inner_mode))
-	    nonzero |= (GET_MODE_MASK (xmode) & ~GET_MODE_MASK (inner_mode));
+	      && xmode_width > inner_width)
+	    nonzero
+	      |= (GET_MODE_MASK (GET_MODE (x)) & ~GET_MODE_MASK (inner_mode));
 	}
       break;
 
@@ -6078,8 +6081,9 @@ lsb_bitfield_op_p (rtx x)
       machine_mode mode = GET_MODE (XEXP (x, 0));
       HOST_WIDE_INT len = INTVAL (XEXP (x, 1));
       HOST_WIDE_INT pos = INTVAL (XEXP (x, 2));
+      poly_int64 remaining_bits = GET_MODE_PRECISION (mode) - len;
 
-      return (pos == (BITS_BIG_ENDIAN ? GET_MODE_PRECISION (mode) - len : 0));
+      return known_eq (pos, BITS_BIG_ENDIAN ? remaining_bits : 0);
     }
   return false;
 }

@@ -1301,11 +1301,13 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 	  }
 
       /* If no predefined C types were found, register the mode itself.  */
-      int nunits;
-      if (!skip_p && GET_MODE_NUNITS (i).is_constant (&nunits))
+      int nunits, precision;
+      if (!skip_p
+	  && GET_MODE_NUNITS (i).is_constant (&nunits)
+	  && GET_MODE_PRECISION (i).is_constant (&precision))
 	f (GET_MODE_NAME (i), digs, complex_p,
 	   vector_p ? nunits : 0, float_rep,
-	   GET_MODE_PRECISION (i), GET_MODE_BITSIZE (i),
+	   precision, GET_MODE_BITSIZE (i),
 	   GET_MODE_ALIGNMENT (i));
     }
 }

@@ -5805,7 +5805,7 @@ extern const builtin_structptr_type builtin_structptr_types[6];
 inline bool
 type_has_mode_precision_p (const_tree t)
 {
-  return TYPE_PRECISION (t) == GET_MODE_PRECISION (TYPE_MODE (t));
+  return known_eq (TYPE_PRECISION (t), GET_MODE_PRECISION (TYPE_MODE (t)));
 }
 
 #endif  /* GCC_TREE_H  */

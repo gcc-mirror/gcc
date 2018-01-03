@@ -1358,13 +1358,14 @@ emit_mode_precision (void)
   int c;
   struct mode_data *m;
 
-  print_decl ("unsigned short", "mode_precision", "NUM_MACHINE_MODES");
+  print_decl ("poly_uint16_pod", "mode_precision", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
     if (m->precision != (unsigned int)-1)
-      tagged_printf ("%u", m->precision, m->name);
+      tagged_printf ("{ %u" ZERO_COEFFS " }", m->precision, m->name);
     else
-      tagged_printf ("%u*BITS_PER_UNIT", m->bytesize, m->name);
+      tagged_printf ("{ %u * BITS_PER_UNIT" ZERO_COEFFS " }",
+		     m->bytesize, m->name);
 
   print_closer ();
 }

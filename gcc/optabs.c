@@ -6498,7 +6498,7 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
      emulate a load with a compare-and-swap operation, but the store that
      doing this could result in would be incorrect if this is a volatile
      atomic load or targetting read-only-mapped memory.  */
-  if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
+  if (maybe_gt (GET_MODE_PRECISION (mode), BITS_PER_WORD))
     /* If there is no atomic load, leave the library call.  */
     return NULL_RTX;
 
@@ -6572,7 +6572,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 
   /* If the size of the object is greater than word size on this target,
      a default store will not be atomic.  */
-  if (GET_MODE_PRECISION (mode) > BITS_PER_WORD)
+  if (maybe_gt (GET_MODE_PRECISION (mode), BITS_PER_WORD))
     {
       /* If loads are atomic or we are called to provide a __sync builtin,
 	 we can try a atomic_exchange and throw away the result.  Otherwise,
