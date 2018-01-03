@@ -2709,7 +2709,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	{
 	  int partial = args[i].partial;
 	  int nregs;
-	  int size = 0;
+	  poly_int64 size = 0;
+	  HOST_WIDE_INT const_size = 0;
 	  rtx_insn *before_arg = get_last_insn ();
 	  /* Set non-negative if we must move a word at a time, even if
 	     just one word (e.g, partial == 4 && mode == DFmode).  Set
@@ -2725,8 +2726,12 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	    }
 	  else if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode)
 	    {
-	      size = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
-	      nregs = (size + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
+	      /* Variable-sized parameters should be described by a
+		 PARALLEL instead.  */
+	      const_size = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	      gcc_assert (const_size >= 0);
+	      nregs = (const_size + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
+	      size = const_size;
 	    }
 	  else
 	    size = GET_MODE_SIZE (args[i].mode);
@@ -2748,21 +2753,27 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      /* Handle case where we have a value that needs shifting
 		 up to the msb.  eg. a QImode value and we're padding
 		 upward on a BYTES_BIG_ENDIAN machine.  */
-	      if (size < UNITS_PER_WORD
-		  && (args[i].locate.where_pad
-		      == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
+	      if (args[i].locate.where_pad
+		  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD))
 		{
-		  rtx x;
-		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+		  gcc_checking_assert (ordered_p (size, UNITS_PER_WORD));
+		  if (maybe_lt (size, UNITS_PER_WORD))
+		    {
+		      rtx x;
+		      poly_int64 shift
+			= (UNITS_PER_WORD - size) * BITS_PER_UNIT;
 
-		  /* Assigning REG here rather than a temp makes CALL_FUSAGE
-		     report the whole reg as used.  Strictly speaking, the
-		     call only uses SIZE bytes at the msb end, but it doesn't
-		     seem worth generating rtl to say that.  */
-		  reg = gen_rtx_REG (word_mode, REGNO (reg));
-		  x = expand_shift (LSHIFT_EXPR, word_mode, reg, shift, reg, 1);
-		  if (x != reg)
-		    emit_move_insn (reg, x);
+		      /* Assigning REG here rather than a temp makes
+			 CALL_FUSAGE report the whole reg as used.
+			 Strictly speaking, the call only uses SIZE
+			 bytes at the msb end, but it doesn't seem worth
+			 generating rtl to say that.  */
+		      reg = gen_rtx_REG (word_mode, REGNO (reg));
+		      x = expand_shift (LSHIFT_EXPR, word_mode,
+					reg, shift, reg, 1);
+		      if (x != reg)
+			emit_move_insn (reg, x);
+		    }
 		}
 #endif
 	    }
@@ -2777,17 +2788,20 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 
 	  else if (partial == 0 || args[i].pass_on_stack)
 	    {
+	      /* SIZE and CONST_SIZE are 0 for partial arguments and
+		 the size of a BLKmode type otherwise.  */
+	      gcc_checking_assert (known_eq (size, const_size));
 	      rtx mem = validize_mem (copy_rtx (args[i].value));
 
 	      /* Check for overlap with already clobbered argument area,
 	         providing that this has non-zero size.  */
 	      if (is_sibcall
-		  && size != 0
+		  && const_size != 0
 		  && (mem_might_overlap_already_clobbered_arg_p
-		      (XEXP (args[i].value, 0), size)))
+		      (XEXP (args[i].value, 0), const_size)))
 		*sibcall_failure = 1;
 
-	      if (size % UNITS_PER_WORD == 0
+	      if (const_size % UNITS_PER_WORD == 0
 		  || MEM_ALIGN (mem) % BITS_PER_WORD == 0)
 		move_block_to_reg (REGNO (reg), mem, nregs, args[i].mode);
 	      else
@@ -2797,7 +2811,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 				       args[i].mode);
 		  rtx dest = gen_rtx_REG (word_mode, REGNO (reg) + nregs - 1);
 		  unsigned int bitoff = (nregs - 1) * BITS_PER_WORD;
-		  unsigned int bitsize = size * BITS_PER_UNIT - bitoff;
+		  unsigned int bitsize = const_size * BITS_PER_UNIT - bitoff;
 		  rtx x = extract_bit_field (mem, bitsize, bitoff, 1, dest,
 					     word_mode, word_mode, false,
 					     NULL);
@@ -2809,7 +2823,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		}
 
 	      /* Handle a BLKmode that needs shifting.  */
-	      if (nregs == 1 && size < UNITS_PER_WORD
+	      if (nregs == 1 && const_size < UNITS_PER_WORD
 #ifdef BLOCK_REG_PADDING
 		  && args[i].locate.where_pad == PAD_DOWNWARD
 #else
@@ -2818,7 +2832,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		  )
 		{
 		  rtx dest = gen_rtx_REG (word_mode, REGNO (reg));
-		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+		  int shift = (UNITS_PER_WORD - const_size) * BITS_PER_UNIT;
 		  enum tree_code dir = (BYTES_BIG_ENDIAN
 					? RSHIFT_EXPR : LSHIFT_EXPR);
 		  rtx x;
