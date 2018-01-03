@@ -623,7 +623,8 @@ function_and_variable_visibility (bool whole_program)
     {
       if (node->get_availability () != AVAIL_INTERPOSABLE
 	  || DECL_EXTERNAL (node->decl)
-	  || node->has_aliases_p ())
+	  || node->has_aliases_p ()
+	  || lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)))
 	continue;
 
       cgraph_node *alias = 0;
