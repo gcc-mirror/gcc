@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-stmts.c (get_load_store_type): Treat the number of
+	units as polynomial.  Reject VMAT_ELEMENTWISE and VMAT_STRIDED_SLP
+	for variable-length vectors.
+	(vectorizable_mask_load_store): Treat the number of units as
+	polynomial, asserting that it is constant if the condition has
+	already been enforced.
+	(vectorizable_store, vectorizable_load): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-loop.c (vectorizable_live_operation): Treat the number
 	of units as polynomial.  Punt if we can't tell at compile time
 	which vector contains the final result.

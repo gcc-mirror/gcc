@@ -1965,6 +1965,7 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       *memory_access_type = VMAT_GATHER_SCATTER;
@@ -2008,6 +2009,17 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp,
 	*memory_access_type = VMAT_CONTIGUOUS;
     }
 
+  if ((*memory_access_type == VMAT_ELEMENTWISE
+       || *memory_access_type == VMAT_STRIDED_SLP)
+      && !nunits.is_constant ())
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Not using elementwise accesses due to variable "
+			 "vectorization factor.\n");
+      return false;
+    }
+
   /* FIXME: At the moment the cost model seems to underestimate the
      cost of using elementwise accesses.  This check preserves the
      traditional behavior until that can be fixed.  */
@@ -2048,7 +2060,7 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   tree dummy;
   tree dataref_ptr = NULL_TREE;
   gimple *ptr_incr;
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
   int i, j;
   bool inv_p;
@@ -2178,7 +2190,8 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
       gimple_seq seq;
       basic_block new_bb;
       enum { NARROW, NONE, WIDEN } modifier;
-      int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
+      poly_uint64 gather_off_nunits
+	= TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
 
       rettype = TREE_TYPE (TREE_TYPE (gs_info.decl));
       srctype = TREE_VALUE (arglist); arglist = TREE_CHAIN (arglist);
@@ -2189,37 +2202,41 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
       gcc_checking_assert (types_compatible_p (srctype, rettype)
 			   && types_compatible_p (srctype, masktype));
 
-      if (nunits == gather_off_nunits)
+      if (known_eq (nunits, gather_off_nunits))
 	modifier = NONE;
-      else if (nunits == gather_off_nunits / 2)
+      else if (known_eq (nunits * 2, gather_off_nunits))
 	{
 	  modifier = WIDEN;
 
-	  vec_perm_builder sel (gather_off_nunits, gather_off_nunits, 1);
-	  for (i = 0; i < gather_off_nunits; ++i)
-	    sel.quick_push (i | nunits);
+	  /* Currently widening gathers and scatters are only supported for
+	     fixed-length vectors.  */
+	  int count = gather_off_nunits.to_constant ();
+	  vec_perm_builder sel (count, count, 1);
+	  for (i = 0; i < count; ++i)
+	    sel.quick_push (i | (count / 2));
 
-	  vec_perm_indices indices (sel, 1, gather_off_nunits);
+	  vec_perm_indices indices (sel, 1, count);
 	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype,
 						  indices);
 	}
-      else if (nunits == gather_off_nunits * 2)
+      else if (known_eq (nunits, gather_off_nunits * 2))
 	{
 	  modifier = NARROW;
 
-	  vec_perm_builder sel (nunits, nunits, 1);
-	  sel.quick_grow (nunits);
-	  for (i = 0; i < nunits; ++i)
-	    sel[i] = i < gather_off_nunits
-		     ? i : i + nunits - gather_off_nunits;
-	  vec_perm_indices indices (sel, 2, nunits);
+	  /* Currently narrowing gathers and scatters are only supported for
+	     fixed-length vectors.  */
+	  int count = nunits.to_constant ();
+	  vec_perm_builder sel (count, count, 1);
+	  sel.quick_grow (count);
+	  for (i = 0; i < count; ++i)
+	    sel[i] = i < count / 2 ? i : i + count / 2;
+	  vec_perm_indices indices (sel, 2, count);
 	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 
 	  ncopies *= 2;
-
-	  for (i = 0; i < nunits; ++i)
-	    sel[i] = i | gather_off_nunits;
-	  indices.new_vector (sel, 2, gather_off_nunits);
+	  for (i = 0; i < count; ++i)
+	    sel[i] = i | (count / 2);
+	  indices.new_vector (sel, 2, count);
 	  mask_perm_mask = vect_gen_perm_mask_checked (masktype, indices);
 	}
       else
@@ -5746,7 +5763,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gcc_assert (gimple_assign_single_p (stmt));
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info), rhs_vectype = NULL_TREE;
-  unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   if (loop_vinfo)
     {
@@ -5840,32 +5857,39 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       gimple_seq seq;
       basic_block new_bb;
       enum { NARROW, NONE, WIDEN } modifier;
-      int scatter_off_nunits = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
+      poly_uint64 scatter_off_nunits
+	= TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
 
-      if (nunits == (unsigned int) scatter_off_nunits)
+      if (known_eq (nunits, scatter_off_nunits))
 	modifier = NONE;
-      else if (nunits == (unsigned int) scatter_off_nunits / 2)
+      else if (known_eq (nunits * 2, scatter_off_nunits))
 	{
 	  modifier = WIDEN;
 
-	  vec_perm_builder sel (scatter_off_nunits, scatter_off_nunits, 1);
-	  for (i = 0; i < (unsigned int) scatter_off_nunits; ++i)
-	    sel.quick_push (i | nunits);
+	  /* Currently gathers and scatters are only supported for
+	     fixed-length vectors.  */
+	  unsigned int count = scatter_off_nunits.to_constant ();
+	  vec_perm_builder sel (count, count, 1);
+	  for (i = 0; i < (unsigned int) count; ++i)
+	    sel.quick_push (i | (count / 2));
 
-	  vec_perm_indices indices (sel, 1, scatter_off_nunits);
+	  vec_perm_indices indices (sel, 1, count);
 	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype,
 						  indices);
 	  gcc_assert (perm_mask != NULL_TREE);
 	}
-      else if (nunits == (unsigned int) scatter_off_nunits * 2)
+      else if (known_eq (nunits, scatter_off_nunits * 2))
 	{
 	  modifier = NARROW;
 
-	  vec_perm_builder sel (nunits, nunits, 1);
-	  for (i = 0; i < (unsigned int) nunits; ++i)
-	    sel.quick_push (i | scatter_off_nunits);
+	  /* Currently gathers and scatters are only supported for
+	     fixed-length vectors.  */
+	  unsigned int count = nunits.to_constant ();
+	  vec_perm_builder sel (count, count, 1);
+	  for (i = 0; i < (unsigned int) count; ++i)
+	    sel.quick_push (i | (count / 2));
 
-	  vec_perm_indices indices (sel, 2, nunits);
+	  vec_perm_indices indices (sel, 2, count);
 	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 	  gcc_assert (perm_mask != NULL_TREE);
 	  ncopies *= 2;
@@ -6038,6 +6062,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       tree stride_base, stride_step, alias_off;
       tree vec_oprnd;
       unsigned int g;
+      /* Checked by get_load_store_type.  */
+      unsigned int const_nunits = nunits.to_constant ();
 
       gcc_assert (!nested_in_vect_loop_p (loop, stmt));
 
@@ -6067,16 +6093,16 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	     ...
          */
 
-      unsigned nstores = nunits;
+      unsigned nstores = const_nunits;
       unsigned lnel = 1;
       tree ltype = elem_type;
       tree lvectype = vectype;
       if (slp)
 	{
-	  if (group_size < nunits
-	      && nunits % group_size == 0)
+	  if (group_size < const_nunits
+	      && const_nunits % group_size == 0)
 	    {
-	      nstores = nunits / group_size;
+	      nstores = const_nunits / group_size;
 	      lnel = group_size;
 	      ltype = build_vector_type (elem_type, group_size);
 	      lvectype = vectype;
@@ -6099,17 +6125,17 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  unsigned lsize
 		    = group_size * GET_MODE_BITSIZE (elmode);
 		  elmode = int_mode_for_size (lsize, 0).require ();
+		  unsigned int lnunits = const_nunits / group_size;
 		  /* If we can't construct such a vector fall back to
 		     element extracts from the original vector type and
 		     element size stores.  */
-		  if (mode_for_vector (elmode,
-				       nunits / group_size).exists (&vmode)
+		  if (mode_for_vector (elmode, lnunits).exists (&vmode)
 		      && VECTOR_MODE_P (vmode)
 		      && (convert_optab_handler (vec_extract_optab,
 						 vmode, elmode)
 			  != CODE_FOR_nothing))
 		    {
-		      nstores = nunits / group_size;
+		      nstores = lnunits;
 		      lnel = group_size;
 		      ltype = build_nonstandard_integer_type (lsize, 1);
 		      lvectype = build_vector_type (ltype, nstores);
@@ -6121,11 +6147,11 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		     issue exists here for reasonable archs.  */
 		}
 	    }
-	  else if (group_size >= nunits
-		   && group_size % nunits == 0)
+	  else if (group_size >= const_nunits
+		   && group_size % const_nunits == 0)
 	    {
 	      nstores = 1;
-	      lnel = nunits;
+	      lnel = const_nunits;
 	      ltype = vectype;
 	      lvectype = vectype;
 	    }
@@ -6680,8 +6706,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   tree dataref_offset = NULL_TREE;
   gimple *ptr_incr = NULL;
   int ncopies;
-  int i, j, group_size;
-  poly_int64 group_gap_adj;
+  int i, j;
+  unsigned int group_size;
+  poly_uint64 group_gap_adj;
   tree msq = NULL_TREE, lsq;
   tree offset = NULL_TREE;
   tree byte_offset = NULL_TREE;
@@ -6735,7 +6762,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     return false;
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   if (loop_vinfo)
     {
@@ -6874,32 +6901,38 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       gimple_seq seq;
       basic_block new_bb;
       enum { NARROW, NONE, WIDEN } modifier;
-      int gather_off_nunits = TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
+      poly_uint64 gather_off_nunits
+	= TYPE_VECTOR_SUBPARTS (gs_info.offset_vectype);
 
-      if (nunits == gather_off_nunits)
+      if (known_eq (nunits, gather_off_nunits))
 	modifier = NONE;
-      else if (nunits == gather_off_nunits / 2)
+      else if (known_eq (nunits * 2, gather_off_nunits))
 	{
 	  modifier = WIDEN;
 
-	  vec_perm_builder sel (gather_off_nunits, gather_off_nunits, 1);
-	  for (i = 0; i < gather_off_nunits; ++i)
-	    sel.quick_push (i | nunits);
+	  /* Currently widening gathers are only supported for
+	     fixed-length vectors.  */
+	  int count = gather_off_nunits.to_constant ();
+	  vec_perm_builder sel (count, count, 1);
+	  for (i = 0; i < count; ++i)
+	    sel.quick_push (i | (count / 2));
 
-	  vec_perm_indices indices (sel, 1, gather_off_nunits);
+	  vec_perm_indices indices (sel, 1, count);
 	  perm_mask = vect_gen_perm_mask_checked (gs_info.offset_vectype,
 						  indices);
 	}
-      else if (nunits == gather_off_nunits * 2)
+      else if (known_eq (nunits, gather_off_nunits * 2))
 	{
 	  modifier = NARROW;
 
-	  vec_perm_builder sel (nunits, nunits, 1);
-	  for (i = 0; i < nunits; ++i)
-	    sel.quick_push (i < gather_off_nunits
-			    ? i : i + nunits - gather_off_nunits);
+	  /* Currently narrowing gathers are only supported for
+	     fixed-length vectors.  */
+	  int count = nunits.to_constant ();
+	  vec_perm_builder sel (count, count, 1);
+	  for (i = 0; i < count; ++i)
+	    sel.quick_push (i < count / 2 ? i : i + count / 2);
 
-	  vec_perm_indices indices (sel, 2, nunits);
+	  vec_perm_indices indices (sel, 2, count);
 	  perm_mask = vect_gen_perm_mask_checked (vectype, indices);
 	  ncopies *= 2;
 	}
@@ -7047,6 +7080,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       vec<constructor_elt, va_gc> *v = NULL;
       gimple_seq stmts = NULL;
       tree stride_base, stride_step, alias_off;
+      /* Checked by get_load_store_type.  */
+      unsigned int const_nunits = nunits.to_constant ();
 
       gcc_assert (!nested_in_vect_loop);
 
@@ -7108,14 +7143,14 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       prev_stmt_info = NULL;
       running_off = offvar;
       alias_off = build_int_cst (ref_type, 0);
-      int nloads = nunits;
+      int nloads = const_nunits;
       int lnel = 1;
       tree ltype = TREE_TYPE (vectype);
       tree lvectype = vectype;
       auto_vec<tree> dr_chain;
       if (memory_access_type == VMAT_STRIDED_SLP)
 	{
-	  if (group_size < nunits)
+	  if (group_size < const_nunits)
 	    {
 	      /* First check if vec_init optab supports construction from
 		 vector elts directly.  */
@@ -7127,7 +7162,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					     TYPE_MODE (vectype), vmode)
 		      != CODE_FOR_nothing))
 		{
-		  nloads = nunits / group_size;
+		  nloads = const_nunits / group_size;
 		  lnel = group_size;
 		  ltype = build_vector_type (TREE_TYPE (vectype), group_size);
 		}
@@ -7143,15 +7178,15 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  unsigned lsize
 		    = group_size * TYPE_PRECISION (TREE_TYPE (vectype));
 		  elmode = int_mode_for_size (lsize, 0).require ();
+		  unsigned int lnunits = const_nunits / group_size;
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */
-		  if (mode_for_vector (elmode,
-				       nunits / group_size).exists (&vmode)
+		  if (mode_for_vector (elmode, lnunits).exists (&vmode)
 		      && VECTOR_MODE_P (vmode)
 		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
 			  != CODE_FOR_nothing))
 		    {
-		      nloads = nunits / group_size;
+		      nloads = lnunits;
 		      lnel = group_size;
 		      ltype = build_nonstandard_integer_type (lsize, 1);
 		      lvectype = build_vector_type (ltype, nloads);
@@ -7161,7 +7196,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else
 	    {
 	      nloads = 1;
-	      lnel = nunits;
+	      lnel = const_nunits;
 	      ltype = vectype;
 	    }
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
@@ -7176,13 +7211,13 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      /* We don't yet generate SLP_TREE_LOAD_PERMUTATIONs for
 		 variable VF.  */
 	      unsigned int const_vf = vf.to_constant ();
-	      ncopies = (group_size * const_vf + nunits - 1) / nunits;
+	      ncopies = CEIL (group_size * const_vf, const_nunits);
 	      dr_chain.create (ncopies);
 	    }
 	  else
 	    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	}
-      int group_el = 0;
+      unsigned int group_el = 0;
       unsigned HOST_WIDE_INT
 	elsz = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
       for (j = 0; j < ncopies; j++)
@@ -7297,7 +7332,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      /* We don't yet generate SLP_TREE_LOAD_PERMUTATIONs for
 		 variable VF.  */
 	      unsigned int const_vf = vf.to_constant ();
-	      vec_num = (group_size * const_vf + nunits - 1) / nunits;
+	      unsigned int const_nunits = nunits.to_constant ();
+	      vec_num = CEIL (group_size * const_vf, const_nunits);
 	      group_gap_adj = vf * group_size - nunits * vec_num;
 	    }
 	  else
@@ -7465,7 +7501,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     aggr_type = vectype;
 
   prev_stmt_info = NULL;
-  int group_elt = 0;
+  poly_uint64 group_elt = 0;
   for (j = 0; j < ncopies; j++)
     {
       /* 1. Create the vector or array pointer update chain.  */
