@@ -1,3 +1,10 @@
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/vect-movi.c (movi_float_lsl24): New function.
+	(main): Call it.
+
 2018-01-03  Jeff Law  <law@redhat.com>
 
 	PR target/83641

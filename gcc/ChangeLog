@@ -2,6 +2,43 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_output_simd_mov_immediate):
+	Remove the mode argument.
+	(aarch64_simd_valid_immediate): Remove the mode and inverse
+	arguments.
+	* config/aarch64/iterators.md (bitsize): New iterator.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>, and<mode>3)
+	(ior<mode>3): Update calls to aarch64_output_simd_mov_immediate.
+	* config/aarch64/constraints.md (Do, Db, Dn): Update calls to
+	aarch64_simd_valid_immediate.
+	* config/aarch64/predicates.md (aarch64_reg_or_orr_imm): Likewise.
+	(aarch64_reg_or_bic_imm): Likewise.
+	* config/aarch64/aarch64.c (simd_immediate_info): Replace mvn
+	with an insn_type enum and msl with a modifier_type enum.
+	Replace element_width with a scalar_mode.  Change the shift
+	to unsigned int.  Add constructors for scalar_float_mode and
+	scalar_int_mode elements.
+	(aarch64_vect_float_const_representable_p): Delete.
+	(aarch64_can_const_movi_rtx_p)
+	(aarch64_simd_scalar_immediate_valid_for_move)
+	(aarch64_simd_make_constant): Update call to
+	aarch64_simd_valid_immediate.
+	(aarch64_advsimd_valid_immediate_hs): New function.
+	(aarch64_advsimd_valid_immediate): Likewise.
+	(aarch64_simd_valid_immediate): Remove mode and inverse
+	arguments.  Rewrite to use the above.  Use const_vec_duplicate_p
+	to detect duplicated constants and use aarch64_float_const_zero_rtx_p
+	and aarch64_float_const_representable_p on the result.
+	(aarch64_output_simd_mov_immediate): Remove mode argument.
+	Update call to aarch64_simd_valid_immediate and use of
+	simd_immediate_info.
+	(aarch64_output_scalar_simd_mov_immediate): Update call
+	accordingly.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (mode_precision): Prefix with CONST_MODE_PRECISION.
 	(mode_nunits): Likewise CONST_MODE_NUNITS.
 	* machmode.def (ADJUST_NUNITS): Document.
