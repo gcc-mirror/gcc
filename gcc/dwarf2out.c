@@ -15395,7 +15395,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	     We output CONST_DOUBLEs as blocks.  */
 	  if (mode == VOIDmode
 	      || (GET_MODE (rtl) == VOIDmode
-		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
+		  && maybe_ne (GET_MODE_BITSIZE (mode),
+			       HOST_BITS_PER_DOUBLE_INT)))
 	    break;
 	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)

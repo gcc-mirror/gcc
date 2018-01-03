@@ -843,12 +843,10 @@ mergeable_constant_section (machine_mode mode ATTRIBUTE_UNUSED,
 			    unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED,
 			    unsigned int flags ATTRIBUTE_UNUSED)
 {
-  unsigned int modesize = GET_MODE_BITSIZE (mode);
-
   if (HAVE_GAS_SHF_MERGE && flag_merge_constants
       && mode != VOIDmode
       && mode != BLKmode
-      && modesize <= align
+      && known_le (GET_MODE_BITSIZE (mode), align)
       && align >= 8
       && align <= 256
       && (align & (align - 1)) == 0)

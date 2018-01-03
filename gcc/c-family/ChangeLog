@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* c-ubsan.c (ubsan_instrument_shift): Treat GET_MODE_BITSIZE
+	as polynomial.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* c-common.c (vector_types_convertible_p, c_build_vec_perm_expr)
 	(convert_vector_to_array_for_subscript): Handle polynomial
 	TYPE_VECTOR_SUBPARTS.

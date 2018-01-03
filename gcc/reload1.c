@@ -2146,7 +2146,11 @@ alter_reg (int i, int from_reg, bool dont_share_p)
       unsigned int inherent_align = GET_MODE_ALIGNMENT (mode);
       machine_mode wider_mode = wider_subreg_mode (mode, reg_max_ref_mode[i]);
       poly_uint64 total_size = GET_MODE_SIZE (wider_mode);
-      unsigned int min_align = GET_MODE_BITSIZE (reg_max_ref_mode[i]);
+      /* ??? Seems strange to derive the minimum alignment from the size,
+	 but that's the traditional behavior.  For polynomial-size modes,
+	 the natural extension is to use the minimum possible size.  */
+      unsigned int min_align
+	= constant_lower_bound (GET_MODE_BITSIZE (reg_max_ref_mode[i]));
       poly_int64 adjust = 0;
 
       something_was_spilled = true;

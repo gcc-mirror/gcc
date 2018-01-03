@@ -411,7 +411,6 @@ opt_machine_mode
 bitwise_mode_for_mode (machine_mode mode)
 {
   /* Quick exit if we already have a suitable mode.  */
-  unsigned int bitsize = GET_MODE_BITSIZE (mode);
   scalar_int_mode int_mode;
   if (is_a <scalar_int_mode> (mode, &int_mode)
       && GET_MODE_BITSIZE (int_mode) <= MAX_FIXED_MODE_SIZE)
@@ -419,6 +418,8 @@ bitwise_mode_for_mode (machine_mode mode)
 
   /* Reuse the sanity checks from int_mode_for_mode.  */
   gcc_checking_assert ((int_mode_for_mode (mode), true));
+
+  poly_int64 bitsize = GET_MODE_BITSIZE (mode);
 
   /* Try to replace complex modes with complex modes.  In general we
      expect both components to be processed independently, so we only
@@ -434,7 +435,8 @@ bitwise_mode_for_mode (machine_mode mode)
 
   /* Try to replace vector modes with vector modes.  Also try using vector
      modes if an integer mode would be too big.  */
-  if (VECTOR_MODE_P (mode) || bitsize > MAX_FIXED_MODE_SIZE)
+  if (VECTOR_MODE_P (mode)
+      || maybe_gt (bitsize, MAX_FIXED_MODE_SIZE))
     {
       machine_mode trial = mode;
       if ((GET_MODE_CLASS (trial) == MODE_VECTOR_INT
@@ -1772,7 +1774,7 @@ compute_record_mode (tree type)
      does not apply to unions.  */
   if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
       && tree_fits_uhwi_p (TYPE_SIZE (type))
-      && GET_MODE_BITSIZE (mode) == tree_to_uhwi (TYPE_SIZE (type)))
+      && known_eq (GET_MODE_BITSIZE (mode), tree_to_uhwi (TYPE_SIZE (type))))
     ;
   else
     mode = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1).else_blk ();

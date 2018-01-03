@@ -246,7 +246,8 @@ convert_move (rtx to, rtx from, int unsignedp)
 
   if (VECTOR_MODE_P (to_mode) || VECTOR_MODE_P (from_mode))
     {
-      gcc_assert (GET_MODE_BITSIZE (from_mode) == GET_MODE_BITSIZE (to_mode));
+      gcc_assert (known_eq (GET_MODE_BITSIZE (from_mode),
+			    GET_MODE_BITSIZE (to_mode)));
 
       if (VECTOR_MODE_P (to_mode))
 	from = simplify_gen_subreg (to_mode, from, GET_MODE (from), 0);
@@ -699,7 +700,8 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
      subreg operation.  */
   if (VECTOR_MODE_P (mode) && GET_MODE (x) == VOIDmode)
     {
-      gcc_assert (GET_MODE_BITSIZE (mode) == GET_MODE_BITSIZE (oldmode));
+      gcc_assert (known_eq (GET_MODE_BITSIZE (mode),
+			    GET_MODE_BITSIZE (oldmode)));
       return simplify_gen_subreg (mode, x, oldmode, 0);
     }
 
@@ -3680,7 +3682,8 @@ emit_move_insn_1 (rtx x, rtx y)
      only safe when simplify_subreg can convert MODE constants into integer
      constants.  At present, it can only do this reliably if the value
      fits within a HOST_WIDE_INT.  */
-  if (!CONSTANT_P (y) || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+  if (!CONSTANT_P (y)
+      || known_le (GET_MODE_BITSIZE (mode), HOST_BITS_PER_WIDE_INT))
     {
       rtx_insn *ret = emit_move_via_integer (mode, x, y, lra_in_progress);
 
@@ -4642,8 +4645,9 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
 				 machine_mode mode1, rtx str_rtx,
 				 tree to, tree src, bool reverse)
 {
+  /* str_mode is not guaranteed to be a scalar type.  */
   machine_mode str_mode = GET_MODE (str_rtx);
-  unsigned int str_bitsize = GET_MODE_BITSIZE (str_mode);
+  unsigned int str_bitsize;
   tree op0, op1;
   rtx value, result;
   optab binop;
@@ -4657,6 +4661,7 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
       || !pbitregion_start.is_constant (&bitregion_start)
       || !pbitregion_end.is_constant (&bitregion_end)
       || bitsize >= BITS_PER_WORD
+      || !GET_MODE_BITSIZE (str_mode).is_constant (&str_bitsize)
       || str_bitsize > BITS_PER_WORD
       || TREE_SIDE_EFFECTS (to)
       || TREE_THIS_VOLATILE (to))
@@ -5208,7 +5213,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  else
 	    {
 	    concat_store_slow:;
-	      rtx temp = assign_stack_temp (GET_MODE (to_rtx),
+	      rtx temp = assign_stack_temp (to_mode,
 					    GET_MODE_SIZE (GET_MODE (to_rtx)));
 	      write_complex_part (temp, XEXP (to_rtx, 0), false);
 	      write_complex_part (temp, XEXP (to_rtx, 1), true);
@@ -5651,8 +5656,8 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
     {
       if (GET_MODE_CLASS (GET_MODE (target))
 	  != GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp)))
-	  && GET_MODE_BITSIZE (GET_MODE (target))
-	     == GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (exp))))
+	  && known_eq (GET_MODE_BITSIZE (GET_MODE (target)),
+		       GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (exp)))))
 	{
 	  rtx t = simplify_gen_subreg (GET_MODE (target), temp,
 				       TYPE_MODE (TREE_TYPE (exp)), 0);
@@ -6955,7 +6960,8 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	{
 	  tree type = TREE_TYPE (exp);
 	  if (INTEGRAL_TYPE_P (type)
-	      && TYPE_PRECISION (type) < GET_MODE_BITSIZE (TYPE_MODE (type))
+	      && maybe_ne (TYPE_PRECISION (type),
+			   GET_MODE_BITSIZE (TYPE_MODE (type)))
 	      && known_eq (bitsize, TYPE_PRECISION (type)))
 	    {
 	      tree op = gimple_assign_rhs1 (nop_def);
@@ -10286,8 +10292,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    if (known_eq (offset, 0)
 	        && !reverse
 		&& tree_fits_uhwi_p (TYPE_SIZE (type))
-		&& (GET_MODE_BITSIZE (DECL_MODE (base))
-		    == tree_to_uhwi (TYPE_SIZE (type))))
+		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)),
+			     tree_to_uhwi (TYPE_SIZE (type))))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
 	    if (TYPE_MODE (type) == BLKmode)

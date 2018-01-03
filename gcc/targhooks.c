@@ -1179,7 +1179,7 @@ machine_mode
 default_secondary_memory_needed_mode (machine_mode mode)
 {
   if (!targetm.lra_p ()
-      && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+      && known_lt (GET_MODE_BITSIZE (mode), BITS_PER_WORD)
       && INTEGRAL_MODE_P (mode))
     return mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0).require ();
   return mode;

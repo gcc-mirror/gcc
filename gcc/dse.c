@@ -1734,7 +1734,7 @@ find_shift_sequence (poly_int64 access_size,
 
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
-      if (GET_MODE_BITSIZE (new_mode) < GET_MODE_BITSIZE (store_mode)
+      if (maybe_lt (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (store_mode))
 	  && !TRULY_NOOP_TRUNCATION_MODES_P (new_mode, store_mode))
 	continue;
 

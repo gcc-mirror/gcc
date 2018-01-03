@@ -132,7 +132,8 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   /* If this is not a signed operation, don't perform overflow checks.
      Also punt on bit-fields.  */
   if (TYPE_OVERFLOW_WRAPS (type0)
-      || GET_MODE_BITSIZE (TYPE_MODE (type0)) != TYPE_PRECISION (type0)
+      || maybe_ne (GET_MODE_BITSIZE (TYPE_MODE (type0)),
+		   TYPE_PRECISION (type0))
       || !sanitize_flags_p (SANITIZE_SHIFT_BASE))
     ;
 

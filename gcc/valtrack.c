@@ -611,10 +611,13 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	  usesp = &cur->next;
 	  *tailp = cur->next;
 	  cur->next = NULL;
+	  /* "may" rather than "must" because we want (for example)
+	     N V4SFs to win over plain V4SF even though N might be 1.  */
+	  rtx candidate = *DF_REF_REAL_LOC (cur->use);
 	  if (!reg
-	      || (GET_MODE_BITSIZE (GET_MODE (reg))
-		  < GET_MODE_BITSIZE (GET_MODE (*DF_REF_REAL_LOC (cur->use)))))
-	    reg = *DF_REF_REAL_LOC (cur->use);
+	      || maybe_lt (GET_MODE_BITSIZE (GET_MODE (reg)),
+			   GET_MODE_BITSIZE (GET_MODE (candidate))))
+	    reg = candidate;
 	}
       else
 	tailp = &(*tailp)->next;

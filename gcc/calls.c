@@ -3024,12 +3024,11 @@ check_sibcall_argument_overlap (rtx_insn *insn, struct arg_data *arg,
 bool
 shift_return_value (machine_mode mode, bool left_p, rtx value)
 {
-  HOST_WIDE_INT shift;
-
   gcc_assert (REG_P (value) && HARD_REGISTER_P (value));
   machine_mode value_mode = GET_MODE (value);
-  shift = GET_MODE_BITSIZE (value_mode) - GET_MODE_BITSIZE (mode);
-  if (shift == 0)
+  poly_int64 shift = GET_MODE_BITSIZE (value_mode) - GET_MODE_BITSIZE (mode);
+
+  if (known_eq (shift, 0))
     return false;
 
   /* Use ashr rather than lshr for right shifts.  This is for the benefit

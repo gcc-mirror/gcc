@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc-interface/misc.c (enumerate_modes): Treat GET_MODE_BITSIZE
+	as polynomial.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc-interface/misc.c (enumerate_modes): Treat GET_MODE_PRECISION
 	as polynomial.
 
