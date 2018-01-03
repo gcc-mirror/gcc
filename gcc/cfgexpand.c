@@ -4208,6 +4208,8 @@ expand_debug_expr (tree exp)
 
     binary:
     case tcc_binary:
+      if (mode == BLKmode)
+	return NULL_RTX;
       op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
       if (!op1)
 	return NULL_RTX;
@@ -4232,6 +4234,8 @@ expand_debug_expr (tree exp)
 
     unary:
     case tcc_unary:
+      if (mode == BLKmode)
+	return NULL_RTX;
       inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
