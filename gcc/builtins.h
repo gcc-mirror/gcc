@@ -29,14 +29,14 @@ struct target_builtins {
      the register is not used for calling a function.  If the machine
      has register windows, this gives only the outbound registers.
      INCOMING_REGNO gives the corresponding inbound register.  */
-  machine_mode x_apply_args_mode[FIRST_PSEUDO_REGISTER];
+  fixed_size_mode_pod x_apply_args_mode[FIRST_PSEUDO_REGISTER];
 
   /* For each register that may be used for returning values, this gives
      a mode used to copy the register's value.  VOIDmode indicates the
      register is not used for returning values.  If the machine has
      register windows, this gives only the outbound registers.
      INCOMING_REGNO gives the corresponding inbound register.  */
-  machine_mode x_apply_result_mode[FIRST_PSEUDO_REGISTER];
+  fixed_size_mode_pod x_apply_result_mode[FIRST_PSEUDO_REGISTER];
 };
 
 extern struct target_builtins default_target_builtins;

@@ -1,4 +1,17 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* coretypes.h (fixed_size_mode): Declare.
+	(fixed_size_mode_pod): New typedef.
+	* builtins.h (target_builtins::x_apply_args_mode)
+	(target_builtins::x_apply_result_mode): Change type to
+	fixed_size_mode_pod.
+	* builtins.c (apply_args_size, apply_result_size, result_vector)
+	(expand_builtin_apply_args_1, expand_builtin_apply)
+	(expand_builtin_return): Update accordingly.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* cse.c (hash_rtx_cb): Hash only the encoded elements.
 	* cselib.c (cselib_hash_rtx): Likewise.
