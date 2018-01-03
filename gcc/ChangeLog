@@ -1,4 +1,12 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vect-patterns.c (vect_recog_mask_conversion_pattern): When
+	handling COND_EXPRs with boolean comparisons, try to find a better
+	basis for the mask type than the boolean itself.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_MODE): Describe how the default
 	is calculated and how it can be overridden.
