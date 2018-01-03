@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expmed.c (extract_bit_field_1): For vector extracts,
+	fall back to extract_bit_field_as_subreg if vec_extract
+	isn't available.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lra-spills.c (pseudo_reg_slot_compare): Sort slots by whether
 	they are variable or constant sized.
 	(assign_stack_slot_num_and_sort_pseudos): Don't reuse variable-sized

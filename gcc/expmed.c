@@ -1709,33 +1709,49 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
     }
 
   /* Use vec_extract patterns for extracting parts of vectors whenever
-     available.  */
+     available.  If that fails, see whether the current modes and bitregion
+     give a natural subreg.  */
   machine_mode outermode = GET_MODE (op0);
-  scalar_mode innermode = GET_MODE_INNER (outermode);
-  poly_uint64 pos;
-  if (VECTOR_MODE_P (outermode)
-      && !MEM_P (op0)
-      && (convert_optab_handler (vec_extract_optab, outermode, innermode)
-	  != CODE_FOR_nothing)
-      && known_eq (bitsize, GET_MODE_BITSIZE (innermode))
-      && multiple_p (bitnum, GET_MODE_BITSIZE (innermode), &pos))
+  if (VECTOR_MODE_P (outermode) && !MEM_P (op0))
     {
-      struct expand_operand ops[3];
+      scalar_mode innermode = GET_MODE_INNER (outermode);
       enum insn_code icode
 	= convert_optab_handler (vec_extract_optab, outermode, innermode);
-
-      create_output_operand (&ops[0], target, innermode);
-      ops[0].target = 1;
-      create_input_operand (&ops[1], op0, outermode);
-      create_integer_operand (&ops[2], pos);
-      if (maybe_expand_insn (icode, 3, ops))
+      poly_uint64 pos;
+      if (icode != CODE_FOR_nothing
+	  && known_eq (bitsize, GET_MODE_BITSIZE (innermode))
+	  && multiple_p (bitnum, GET_MODE_BITSIZE (innermode), &pos))
 	{
-	  if (alt_rtl && ops[0].target)
-	    *alt_rtl = target;
-	  target = ops[0].value;
-      	  if (GET_MODE (target) != mode)
-	    return gen_lowpart (tmode, target);
-	  return target;
+	  struct expand_operand ops[3];
+
+	  create_output_operand (&ops[0], target, innermode);
+	  ops[0].target = 1;
+	  create_input_operand (&ops[1], op0, outermode);
+	  create_integer_operand (&ops[2], pos);
+	  if (maybe_expand_insn (icode, 3, ops))
+	    {
+	      if (alt_rtl && ops[0].target)
+		*alt_rtl = target;
+	      target = ops[0].value;
+	      if (GET_MODE (target) != mode)
+		return gen_lowpart (tmode, target);
+	      return target;
+	    }
+	}
+      /* Using subregs is useful if we're extracting the least-significant
+	 vector element, or if we're extracting one register vector from
+	 a multi-register vector.  extract_bit_field_as_subreg checks
+	 for valid bitsize and bitnum, so we don't need to do that here.
+
+	 The mode check makes sure that we're extracting either
+	 a single element or a subvector with the same element type.
+	 If the modes aren't such a natural fit, fall through and
+	 bitcast to integers first.  */
+      if (GET_MODE_INNER (mode) == innermode)
+	{
+	  rtx sub = extract_bit_field_as_subreg (mode, op0, bitsize, bitnum);
+	  if (sub)
+	    return sub;
 	}
     }
 
