@@ -1915,7 +1915,7 @@ The default implementation returns the mode of an integer vector that\n\
 is @var{length} bytes long and that contains @var{nunits} elements,\n\
 if such a mode exists.",
  opt_machine_mode,
- (unsigned nunits, unsigned length),
+ (poly_uint64 nunits, poly_uint64 length),
  default_get_mask_mode)
 
 /* Target builtin that implements vector gather operation.  */
