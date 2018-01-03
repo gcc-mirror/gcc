@@ -174,9 +174,17 @@ regno_freq_compare (const void *v1p, const void *v2p)
 }
 
 /* Sort pseudos according to their slots, putting the slots in the order
-   that they should be allocated.  Slots with lower numbers have the highest
-   priority and should get the smallest displacement from the stack or
-   frame pointer (whichever is being used).
+   that they should be allocated.
+
+   First prefer to group slots with variable sizes together and slots
+   with constant sizes together, since that usually makes them easier
+   to address from a common anchor point.  E.g. loads of polynomial-sized
+   registers tend to take polynomial offsets while loads of constant-sized
+   registers tend to take constant (non-polynomial) offsets.
+
+   Next, slots with lower numbers have the highest priority and should
+   get the smallest displacement from the stack or frame pointer
+   (whichever is being used).
 
    The first allocated slot is always closest to the frame pointer,
    so prefer lower slot numbers when frame_pointer_needed.  If the stack
@@ -194,6 +202,10 @@ pseudo_reg_slot_compare (const void *v1p, const void *v2p)
 
   slot_num1 = pseudo_slots[regno1].slot_num;
   slot_num2 = pseudo_slots[regno2].slot_num;
+  diff = (int (slots[slot_num1].size.is_constant ())
+	  - int (slots[slot_num2].size.is_constant ()));
+  if (diff != 0)
+    return diff;
   if ((diff = slot_num1 - slot_num2) != 0)
     return (frame_pointer_needed
 	    || (!FRAME_GROWS_DOWNWARD) == STACK_GROWS_DOWNWARD ? diff : -diff);
@@ -356,8 +368,17 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 	j = slots_num;
       else
 	{
+	  machine_mode mode
+	    = wider_subreg_mode (PSEUDO_REGNO_MODE (regno),
+				 lra_reg_info[regno].biggest_mode);
 	  for (j = 0; j < slots_num; j++)
 	    if (slots[j].hard_regno < 0
+		/* Although it's possible to share slots between modes
+		   with constant and non-constant widths, we usually
+		   get better spill code by keeping the constant and
+		   non-constant areas separate.  */
+		&& (GET_MODE_SIZE (mode).is_constant ()
+		    == slots[j].size.is_constant ())
 		&& ! (lra_intersected_live_ranges_p
 		      (slots[j].live_ranges,
 		       lra_reg_info[regno].live_ranges)))
