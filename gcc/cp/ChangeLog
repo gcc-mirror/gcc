@@ -1,3 +1,13 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83555
+	* typeck.c (build_static_cast_1): For static casts to reference types,
+	call build_base_path with flag_delete_null_pointer_checks as nonnull
+	instead of always false.  When -fsanitize=null, call
+	ubsan_maybe_instrument_reference on the NULL reference INTEGER_CST.
+	* cp-gimplify.c (cp_genericize_r): Don't walk subtrees of UBSAN_NULL
+	call if the first argument is INTEGER_CST with REFERENCE_TYPE.
+
 2018-01-03  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83667
