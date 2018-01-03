@@ -1,3 +1,11 @@
+2018-01-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (floor<mode>2): Add support for IEEE
+	128-bit round to integer instructions.
+	(ceil<mode>2): Likewise.
+	(btrunc<mode>2): Likewise.
+	(round<mode>2): Likewise.
+
 2018-01-02  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
         * config/rs6000/rs6000-string.c (expand_block_move): Allow the use of
