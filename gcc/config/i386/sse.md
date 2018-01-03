@@ -1021,8 +1021,14 @@
 	case MODE_TI:
 	  if (misaligned_operand (operands[0], <MODE>mode)
 	      || misaligned_operand (operands[1], <MODE>mode))
-	    return TARGET_AVX512VL ? "vmovdqu<ssescalarsize>\t{%1, %0|%0, %1}"
-				   : "%vmovdqu\t{%1, %0|%0, %1}";
+	    return TARGET_AVX512VL
+		   && (<MODE>mode == V4SImode
+		       || <MODE>mode == V2DImode
+		       || <MODE>mode == V8SImode
+		       || <MODE>mode == V4DImode
+		       || TARGET_AVX512BW)
+		   ? "vmovdqu<ssescalarsize>\t{%1, %0|%0, %1}"
+		   : "%vmovdqu\t{%1, %0|%0, %1}";
 	  else
 	    return TARGET_AVX512VL ? "vmovdqa64\t{%1, %0|%0, %1}"
 				   : "%vmovdqa\t{%1, %0|%0, %1}";
