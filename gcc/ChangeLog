@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-stmts.c (vectorizable_call): Treat the number of
+	vectors as polynomial.  Use build_index_vector for
+	IFN_GOMP_SIMD_LANE.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-stmts.c (get_load_store_type): Treat the number of
 	units as polynomial.  Reject VMAT_ELEMENTWISE and VMAT_STRIDED_SLP
 	for variable-length vectors.
