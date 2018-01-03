@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* reload.c (complex_word_subreg_p): New function.
+	(reload_inner_reg_of_subreg, push_reload): Use it.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lra-constraints.c (process_alt_operands): Reject matched
 	operands whose sizes aren't ordered.
 	(match_reload): Refer to this check here.

@@ -811,6 +811,23 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class rclass,
   return n_reloads;
 }
 
+/* Return true if:
+
+   (a) (subreg:OUTER_MODE REG ...) represents a word or subword subreg
+       of a multiword value; and
+
+   (b) the number of *words* in REG does not match the number of *registers*
+       in REG.  */
+
+static bool
+complex_word_subreg_p (machine_mode outer_mode, rtx reg)
+{
+  machine_mode inner_mode = GET_MODE (reg);
+  return (GET_MODE_SIZE (outer_mode) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD
+	  && GET_MODE_SIZE (inner_mode) / UNITS_PER_WORD != REG_NREGS (reg));
+}
+
 /* Return true if X is a SUBREG that will need reloading of its SUBREG_REG
    expression.  MODE is the mode that X will be used in.  OUTPUT is true if
    the function is invoked for the output part of an enclosing reload.  */
@@ -842,11 +859,7 @@ reload_inner_reg_of_subreg (rtx x, machine_mode mode, bool output)
      INNER is larger than a word and the number of registers in INNER is
      not the same as the number of words in INNER, then INNER will need
      reloading (with an in-out reload).  */
-  return (output
-	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-	  && GET_MODE_SIZE (GET_MODE (inner)) > UNITS_PER_WORD
-	  && ((GET_MODE_SIZE (GET_MODE (inner)) / UNITS_PER_WORD)
-	      != REG_NREGS (inner)));
+  return output && complex_word_subreg_p (mode, inner);
 }
 
 /* Return nonzero if IN can be reloaded into REGNO with mode MODE without
@@ -1064,12 +1077,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	      /* The case where out is nonzero
 		 is handled differently in the following statement.  */
 	      && (out == 0 || subreg_lowpart_p (in))
-	      && ((GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
-		   && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-		       > UNITS_PER_WORD)
-		   && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-			/ UNITS_PER_WORD)
-		       != REG_NREGS (SUBREG_REG (in))))
+	      && (complex_word_subreg_p (inmode, SUBREG_REG (in))
 		  || !targetm.hard_regno_mode_ok (subreg_regno (in), inmode)))
 	  || (secondary_reload_class (1, rclass, inmode, in) != NO_REGS
 	      && (secondary_reload_class (1, rclass, GET_MODE (SUBREG_REG (in)),
