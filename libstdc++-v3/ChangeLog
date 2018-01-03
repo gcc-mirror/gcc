@@ -1,3 +1,8 @@
+2018-01-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Protect optional's deduction guide with the feature macro
+	* include/std/optional: Use the feature macro.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
