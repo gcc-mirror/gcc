@@ -1607,6 +1607,8 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
   bool with_bounds = CALL_WITH_BOUNDS_P (exp);
 
+  unsigned nargs = call_expr_nargs (exp);
+
   /* The bound argument to a bounded string function like strncpy.  */
   tree bound = NULL_TREE;
 
@@ -1621,12 +1623,20 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
     case BUILT_IN_STRNCASECMP:
     case BUILT_IN_STRNCPY:
     case BUILT_IN_STRNCPY_CHK:
-      bound = CALL_EXPR_ARG (exp, with_bounds ? 4 : 2);
-      break;
+      {
+	unsigned argno = with_bounds ? 4 : 2;
+	if (argno < nargs)
+	  bound = CALL_EXPR_ARG (exp, argno);
+	break;
+      }
 
     case BUILT_IN_STRNDUP:
-      bound = CALL_EXPR_ARG (exp, with_bounds ? 2 : 1);
-      break;
+      {
+	unsigned argno = with_bounds ? 2 : 1;
+	if (argno < nargs)
+	  bound = CALL_EXPR_ARG (exp, argno);
+	break;
+      }
 
     default:
       break;
@@ -1646,6 +1656,11 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
   for (unsigned argno = 0; ; ++argno, function_args_iter_next (&it))
     {
+      /* Avoid iterating past the declared argument in a call
+	 to function declared without a prototype.  */
+      if (argno >= nargs)
+	break;
+
       tree argtype = function_args_iter_cond (&it);
       if (!argtype)
 	break;

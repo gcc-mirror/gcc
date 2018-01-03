@@ -555,6 +555,15 @@
 
 2018-01-03  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/83603
+	* calls.c (maybe_warn_nonstring_arg): Avoid accessing function
+	arguments past the endof the argument list in functions declared
+	without a prototype.
+	* gimple-ssa-warn-restrict.c (wrestrict_dom_walker::check_call):
+	Avoid checking when arguments are null.
+
+2018-01-03  Martin Sebor  <msebor@redhat.com>
+
 	PR c/83559
 	* doc/extend.texi (attribute const): Fix a typo.
 	* ipa-pure-const.c ((warn_function_const, warn_function_pure): Avoid
