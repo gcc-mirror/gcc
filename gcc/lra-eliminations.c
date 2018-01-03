@@ -748,7 +748,7 @@ mark_not_eliminable (rtx x, machine_mode mem_mode)
 		  && XEXP (x, 0) == XEXP (XEXP (x, 1), 0)
 		  && poly_int_rtx_p (XEXP (XEXP (x, 1), 1), &offset))))
 	{
-	  int size = GET_MODE_SIZE (mem_mode);
+	  poly_int64 size = GET_MODE_SIZE (mem_mode);
 	  
 #ifdef PUSH_ROUNDING
 	  /* If more bytes than MEM_MODE are pushed, account for

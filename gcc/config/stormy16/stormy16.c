@@ -2635,6 +2635,14 @@ xstormy16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   return mode1 != BImode && mode2 != BImode;
 }
+
+/* Implement PUSH_ROUNDING.  */
+
+poly_int64
+xstormy16_push_rounding (poly_int64 bytes)
+{
+  return (bytes + 1) & ~1;
+}
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"

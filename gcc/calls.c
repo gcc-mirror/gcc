@@ -5639,7 +5639,6 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
     ;
   else if (arg->mode != BLKmode)
     {
-      int size;
       unsigned int parm_align;
 
       /* Argument is a scalar, not entirely passed in registers.
@@ -5652,10 +5651,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 Note that in C the default argument promotions
 	 will prevent such mismatches.  */
 
-      if (TYPE_EMPTY_P (TREE_TYPE (pval)))
-	size = 0;
-      else
-	size = GET_MODE_SIZE (arg->mode);
+      poly_int64 size = (TYPE_EMPTY_P (TREE_TYPE (pval))
+			 ? 0 : GET_MODE_SIZE (arg->mode));
 
       /* Compute how much space the push instruction will push.
 	 On many machines, pushing a byte will advance the stack
@@ -5669,9 +5666,10 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 round up to a multiple of the alignment for arguments.  */
       if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
 	  != PAD_NONE)
-	used = (((size + PARM_BOUNDARY / BITS_PER_UNIT - 1)
-		 / (PARM_BOUNDARY / BITS_PER_UNIT))
-		* (PARM_BOUNDARY / BITS_PER_UNIT));
+	/* At the moment we don't (need to) support ABIs for which the
+	   padding isn't known at compile time.  In principle it should
+	   be easy to add though.  */
+	used = force_align_up (size, PARM_BOUNDARY / BITS_PER_UNIT);
 
       /* Compute the alignment of the pushed argument.  */
       parm_align = arg->locate.boundary;

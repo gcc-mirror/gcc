@@ -4518,8 +4518,10 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	     stack to be momentarily aligned only to that amount,
 	     so we pick the least alignment.  */
 	  if (x == stack_pointer_rtx && PUSH_ARGS)
-	    alignment = MIN ((unsigned HOST_WIDE_INT) PUSH_ROUNDING (1),
-			     alignment);
+	    {
+	      poly_uint64 rounded_1 = PUSH_ROUNDING (poly_int64 (1));
+	      alignment = MIN (known_alignment (rounded_1), alignment);
+	    }
 #endif
 
 	  nonzero &= ~(alignment - 1);

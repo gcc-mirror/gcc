@@ -323,6 +323,8 @@ extern void ix86_core2i7_init_hooks (void);
 
 extern int ix86_atom_sched_reorder (FILE *, int, rtx_insn **, int *, int);
 
+extern poly_int64 ix86_push_rounding (poly_int64);
+
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.
    Currently used for Core 2/i7 tuning.  */

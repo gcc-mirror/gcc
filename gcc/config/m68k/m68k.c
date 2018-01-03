@@ -6610,4 +6610,15 @@ m68k_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Implement PUSH_ROUNDING.  On the 680x0, sp@- in a byte insn really pushes
+   a word.  On the ColdFire, sp@- in a byte insn pushes just a byte.  */
+
+poly_int64
+m68k_push_rounding (poly_int64 bytes)
+{
+  if (TARGET_COLDFIRE)
+    return bytes;
+  return (bytes + 1) & ~1;
+}
+
 #include "gt-m68k.h"

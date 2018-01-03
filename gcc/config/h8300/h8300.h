@@ -352,18 +352,7 @@ enum reg_class {
 
 #define FRAME_GROWS_DOWNWARD 1
 
-/* If we generate an insn to push BYTES bytes,
-   this says how many the stack pointer really advances by.
-
-   On the H8/300, @-sp really pushes a byte if you ask it to - but that's
-   dangerous, so we claim that it always pushes a word, then we catch
-   the mov.b rx,@-sp and turn it into a mov.w rx,@-sp on output.
-
-   On the H8/300H, we simplify TARGET_QUICKCALL by setting this to 4
-   and doing a similar thing.  */
-
-#define PUSH_ROUNDING(BYTES) \
-  (((BYTES) + PARM_BOUNDARY / 8 - 1) & -PARM_BOUNDARY / 8)
+#define PUSH_ROUNDING(BYTES) h8300_push_rounding (BYTES)
 
 /* Offset of first parameter from the argument pointer register value.  */
 /* Is equal to the size of the saved fp + pc, even if an fp isn't

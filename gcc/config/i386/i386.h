@@ -1547,15 +1547,7 @@ enum reg_class
    goes at a more negative offset in the frame.  */
 #define FRAME_GROWS_DOWNWARD 1
 
-/* If we generate an insn to push BYTES bytes, this says how many the stack
-   pointer really advances by.  On 386, we have pushw instruction that
-   decrements by exactly 2 no matter what the position was, there is no pushb.
-
-   But as CIE data alignment factor on this arch is -4 for 32bit targets
-   and -8 for 64bit targets, we need to make sure all stack pointer adjustments
-   are in multiple of 4 for 32bit targets and 8 for 64bit targets.  */
-
-#define PUSH_ROUNDING(BYTES) ROUND_UP ((BYTES), UNITS_PER_WORD)
+#define PUSH_ROUNDING(BYTES) ix86_push_rounding (BYTES)
 
 /* If defined, the maximum amount of space required for outgoing arguments
    will be computed and placed into the variable `crtl->outgoing_args_size'.

@@ -255,7 +255,7 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack.  */
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) xstormy16_push_rounding (BYTES)
 
 
 /* Function Arguments in Registers.  */
