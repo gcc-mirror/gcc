@@ -1,5 +1,12 @@
 2018-01-03  Martin Sebor  <msebor@redhat.com>
 
+	PR c/83559
+	* doc/extend.texi (attribute const): Fix a typo.
+	* ipa-pure-const.c ((warn_function_const, warn_function_pure): Avoid
+	issuing -Wsuggest-attribute for void functions.
+
+2018-01-03  Martin Sebor  <msebor@redhat.com>
+
 	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): Use
 	offset_int::from instead of wide_int::to_shwi.
 	(maybe_diag_overlap): Remove assertion.
