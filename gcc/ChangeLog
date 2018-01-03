@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* fold-const.c (fold_indirect_ref_1): Handle polynomial offsets
+	in a POINTER_PLUS_EXPR.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* omp-simd-clone.c (simd_clone_subparts): New function.
 	(simd_clone_init_simd_arrays): Use it instead of TYPE_VECTOR_SUBPARTS.
 	(ipa_simd_modify_function_body): Likewise.
