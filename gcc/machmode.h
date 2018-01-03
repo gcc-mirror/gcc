@@ -23,9 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 typedef opt_mode<machine_mode> opt_machine_mode;
 
 extern CONST_MODE_SIZE poly_uint16_pod mode_size[NUM_MACHINE_MODES];
-extern const poly_uint16_pod mode_precision[NUM_MACHINE_MODES];
+extern CONST_MODE_PRECISION poly_uint16_pod mode_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
-extern const poly_uint16_pod mode_nunits[NUM_MACHINE_MODES];
+extern CONST_MODE_NUNITS poly_uint16_pod mode_nunits[NUM_MACHINE_MODES];
 extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
