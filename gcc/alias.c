@@ -148,7 +148,6 @@ struct GTY(()) alias_set_entry {
 };
 
 static int rtx_equal_for_memref_p (const_rtx, const_rtx);
-static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
 static void record_set (rtx, const_rtx, void *);
 static int base_alias_check (rtx, rtx, rtx, rtx, machine_mode,
 			     machine_mode);
@@ -2297,9 +2296,9 @@ get_addr (rtx x)
     is not modified by the memory reference then ADDR is returned.  */
 
 static rtx
-addr_side_effect_eval (rtx addr, int size, int n_refs)
+addr_side_effect_eval (rtx addr, poly_int64 size, int n_refs)
 {
-  int offset = 0;
+  poly_int64 offset = 0;
 
   switch (GET_CODE (addr))
     {
@@ -2320,11 +2319,7 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
       return addr;
     }
 
-  if (offset)
-    addr = gen_rtx_PLUS (GET_MODE (addr), XEXP (addr, 0),
-			 gen_int_mode (offset, GET_MODE (addr)));
-  else
-    addr = XEXP (addr, 0);
+  addr = plus_constant (GET_MODE (addr), XEXP (addr, 0), offset);
   addr = canon_rtx (addr);
 
   return addr;
@@ -2374,7 +2369,8 @@ offset_overlap_p (poly_int64 c, poly_int64 xsize, poly_int64 ysize)
    If that is fixed the TBAA hack for union type-punning can be removed.  */
 
 static int
-memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
+memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
+		    poly_int64 c)
 {
   if (GET_CODE (x) == VALUE)
     {
@@ -2419,13 +2415,13 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
   else if (GET_CODE (x) == LO_SUM)
     x = XEXP (x, 1);
   else
-    x = addr_side_effect_eval (x, abs (xsize), 0);
+    x = addr_side_effect_eval (x, maybe_lt (xsize, 0) ? -xsize : xsize, 0);
   if (GET_CODE (y) == HIGH)
     y = XEXP (y, 0);
   else if (GET_CODE (y) == LO_SUM)
     y = XEXP (y, 1);
   else
-    y = addr_side_effect_eval (y, abs (ysize), 0);
+    y = addr_side_effect_eval (y, maybe_lt (ysize, 0) ? -ysize : ysize, 0);
 
   if (GET_CODE (x) == SYMBOL_REF && GET_CODE (y) == SYMBOL_REF)
     {
@@ -2438,7 +2434,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	 through alignment adjustments (i.e., that have negative
 	 sizes), because we can't know how far they are from each
 	 other.  */
-      if (xsize < 0 || ysize < 0)
+      if (maybe_lt (xsize, 0) || maybe_lt (ysize, 0))
 	return -1;
       /* If decls are different or we know by offsets that there is no overlap,
 	 we win.  */
@@ -2469,6 +2465,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       else if (x1 == y)
 	return memrefs_conflict_p (xsize, x0, ysize, const0_rtx, c);
 
+      poly_int64 cx1, cy1;
       if (GET_CODE (y) == PLUS)
 	{
 	  /* The fact that Y is canonicalized means that this
@@ -2485,22 +2482,21 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	    return memrefs_conflict_p (xsize, x0, ysize, y0, c);
 	  if (rtx_equal_for_memref_p (x0, y0))
 	    return memrefs_conflict_p (xsize, x1, ysize, y1, c);
-	  if (CONST_INT_P (x1))
+	  if (poly_int_rtx_p (x1, &cx1))
 	    {
-	      if (CONST_INT_P (y1))
+	      if (poly_int_rtx_p (y1, &cy1))
 		return memrefs_conflict_p (xsize, x0, ysize, y0,
-					   c - INTVAL (x1) + INTVAL (y1));
+					   c - cx1 + cy1);
 	      else
-		return memrefs_conflict_p (xsize, x0, ysize, y,
-					   c - INTVAL (x1));
+		return memrefs_conflict_p (xsize, x0, ysize, y, c - cx1);
 	    }
-	  else if (CONST_INT_P (y1))
-	    return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
+	  else if (poly_int_rtx_p (y1, &cy1))
+	    return memrefs_conflict_p (xsize, x, ysize, y0, c + cy1);
 
 	  return -1;
 	}
-      else if (CONST_INT_P (x1))
-	return memrefs_conflict_p (xsize, x0, ysize, y, c - INTVAL (x1));
+      else if (poly_int_rtx_p (x1, &cx1))
+	return memrefs_conflict_p (xsize, x0, ysize, y, c - cx1);
     }
   else if (GET_CODE (y) == PLUS)
     {
@@ -2514,8 +2510,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       if (x == y1)
 	return memrefs_conflict_p (xsize, const0_rtx, ysize, y0, c);
 
-      if (CONST_INT_P (y1))
-	return memrefs_conflict_p (xsize, x, ysize, y0, c + INTVAL (y1));
+      poly_int64 cy1;
+      if (poly_int_rtx_p (y1, &cy1))
+	return memrefs_conflict_p (xsize, x, ysize, y0, c + cy1);
       else
 	return -1;
     }
@@ -2539,11 +2536,11 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	    return offset_overlap_p (c, xsize, ysize);
 
 	  /* Can't properly adjust our sizes.  */
-	  if (!CONST_INT_P (x1))
+	  if (!CONST_INT_P (x1)
+	      || !can_div_trunc_p (xsize, INTVAL (x1), &xsize)
+	      || !can_div_trunc_p (ysize, INTVAL (x1), &ysize)
+	      || !can_div_trunc_p (c, INTVAL (x1), &c))
 	    return -1;
-	  xsize /= INTVAL (x1);
-	  ysize /= INTVAL (x1);
-	  c /= INTVAL (x1);
 	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
 	}
 
@@ -2564,9 +2561,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       unsigned HOST_WIDE_INT uc = sc;
       if (sc < 0 && pow2_or_zerop (-uc))
 	{
-	  if (xsize > 0)
+	  if (maybe_gt (xsize, 0))
 	    xsize = -xsize;
-	  if (xsize)
+	  if (maybe_ne (xsize, 0))
 	    xsize += sc + 1;
 	  c -= sc + 1;
 	  return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
@@ -2579,9 +2576,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       unsigned HOST_WIDE_INT uc = sc;
       if (sc < 0 && pow2_or_zerop (-uc))
 	{
-	  if (ysize > 0)
+	  if (maybe_gt (ysize, 0))
 	    ysize = -ysize;
-	  if (ysize)
+	  if (maybe_ne (ysize, 0))
 	    ysize += sc + 1;
 	  c += sc + 1;
 	  return memrefs_conflict_p (xsize, x,
@@ -2591,9 +2588,10 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 
   if (CONSTANT_P (x))
     {
-      if (CONST_INT_P (x) && CONST_INT_P (y))
+      poly_int64 cx, cy;
+      if (poly_int_rtx_p (x, &cx) && poly_int_rtx_p (y, &cy))
 	{
-	  c += (INTVAL (y) - INTVAL (x));
+	  c += cy - cx;
 	  return offset_overlap_p (c, xsize, ysize);
 	}
 
@@ -2615,7 +2613,9 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 	 sizes), because we can't know how far they are from each
 	 other.  */
       if (CONSTANT_P (y))
-	return (xsize < 0 || ysize < 0 || offset_overlap_p (c, xsize, ysize));
+	return (maybe_lt (xsize, 0)
+		|| maybe_lt (ysize, 0)
+		|| offset_overlap_p (c, xsize, ysize));
 
       return -1;
     }
