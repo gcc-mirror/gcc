@@ -205,8 +205,8 @@ omp_adjust_chunk_size (tree chunk_size, bool simd_schedule)
   if (!simd_schedule)
     return chunk_size;
 
-  int vf = omp_max_vf ();
-  if (vf == 1)
+  poly_uint64 vf = omp_max_vf ();
+  if (known_eq (vf, 1U))
     return chunk_size;
 
   tree type = TREE_TYPE (chunk_size);
@@ -4368,11 +4368,12 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 
   if (safelen)
     {
+      poly_uint64 val;
       safelen = OMP_CLAUSE_SAFELEN_EXPR (safelen);
-      if (TREE_CODE (safelen) != INTEGER_CST)
+      if (!poly_int_tree_p (safelen, &val))
 	safelen_int = 0;
-      else if (tree_fits_uhwi_p (safelen) && tree_to_uhwi (safelen) < INT_MAX)
-	safelen_int = tree_to_uhwi (safelen);
+      else
+	safelen_int = MIN (constant_lower_bound (val), INT_MAX);
       if (safelen_int == 1)
 	safelen_int = 0;
     }

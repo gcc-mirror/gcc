@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* omp-general.h (omp_max_vf): Return a poly_uint64 instead of an int.
+	* omp-general.c (omp_max_vf): Likewise.
+	* omp-expand.c (omp_adjust_chunk_size): Update call to omp_max_vf.
+	(expand_omp_simd): Handle polynomial safelen.
+	* omp-low.c (omplow_simd_context): Add a default constructor.
+	(omplow_simd_context::max_vf): Change from int to poly_uint64.
+	(lower_rec_simd_input_clauses): Update accordingly.
+	(lower_rec_input_clauses): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (vect_nunits_for_cost): New function.
 	* tree-vect-loop.c (vect_model_reduction_cost): Use it.
 	* tree-vect-slp.c (vect_analyze_slp_cost_1): Likewise.

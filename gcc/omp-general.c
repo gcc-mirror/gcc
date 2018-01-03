@@ -419,7 +419,7 @@ omp_build_barrier (tree lhs)
 
 /* Return maximum possible vectorization factor for the target.  */
 
-int
+poly_uint64
 omp_max_vf (void)
 {
   if (!optimize
