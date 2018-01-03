@@ -1,4 +1,8 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lra-constraints.c (curr_insn_transform): Use partial_subreg_p.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
