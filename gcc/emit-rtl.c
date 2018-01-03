@@ -894,8 +894,13 @@ bool
 validate_subreg (machine_mode omode, machine_mode imode,
 		 const_rtx reg, poly_uint64 offset)
 {
-  unsigned int isize = GET_MODE_SIZE (imode);
-  unsigned int osize = GET_MODE_SIZE (omode);
+  poly_uint64 isize = GET_MODE_SIZE (imode);
+  poly_uint64 osize = GET_MODE_SIZE (omode);
+
+  /* The sizes must be ordered, so that we know whether the subreg
+     is partial, paradoxical or complete.  */
+  if (!ordered_p (isize, osize))
+    return false;
 
   /* All subregs must be aligned.  */
   if (!multiple_p (offset, osize))
@@ -905,7 +910,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
   if (maybe_ge (offset, isize))
     return false;
 
-  unsigned int regsize = REGMODE_NATURAL_SIZE (imode);
+  poly_uint64 regsize = REGMODE_NATURAL_SIZE (imode);
 
   /* ??? This should not be here.  Temporarily continue to allow word_mode
      subregs of anything.  The most common offender is (subreg:SI (reg:DF)).
@@ -915,7 +920,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
     ;
   /* ??? Similarly, e.g. with (subreg:DF (reg:TI)).  Though store_bit_field
      is the culprit here, and not the backends.  */
-  else if (osize >= regsize && isize >= osize)
+  else if (known_ge (osize, regsize) && known_ge (isize, osize))
     ;
   /* Allow component subregs of complex and vector.  Though given the below
      extraction rules, it's not always clear what that means.  */
@@ -934,7 +939,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
      (subreg:SI (reg:DF) 0) isn't.  */
   else if (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
     {
-      if (! (isize == osize
+      if (! (known_eq (isize, osize)
 	     /* LRA can use subreg to store a floating point value in
 		an integer mode.  Although the floating point and the
 		integer modes need the same number of hard registers,
@@ -946,7 +951,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
     }
 
   /* Paradoxical subregs must have offset zero.  */
-  if (osize > isize)
+  if (maybe_gt (osize, isize))
     return known_eq (offset, 0U);
 
   /* This is a normal subreg.  Verify that the offset is representable.  */
@@ -966,6 +971,12 @@ validate_subreg (machine_mode omode, machine_mode imode,
       return subreg_offset_representable_p (regno, imode, offset, omode);
     }
 
+  /* The outer size must be ordered wrt the register size, otherwise
+     we wouldn't know at compile time how many registers the outer
+     mode occupies.  */
+  if (!ordered_p (osize, regsize))
+    return false;
+
   /* For pseudo registers, we want most of the same checks.  Namely:
 
      Assume that the pseudo register will be allocated to hard registers
@@ -976,10 +987,12 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
      Given that we've already checked the mode and offset alignment,
      we only have to check subblock subregs here.  */
-  if (osize < regsize
+  if (maybe_lt (osize, regsize)
       && ! (lra_in_progress && (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))))
     {
-      poly_uint64 block_size = MIN (isize, regsize);
+      /* It is invalid for the target to pick a register size for a mode
+	 that isn't ordered wrt to the size of that mode.  */
+      poly_uint64 block_size = ordered_min (isize, regsize);
       unsigned int start_reg;
       poly_uint64 offset_within_reg;
       if (!can_div_trunc_p (offset, block_size, &start_reg, &offset_within_reg)
@@ -1518,39 +1531,43 @@ maybe_set_max_label_num (rtx_code_label *x)
 rtx
 gen_lowpart_common (machine_mode mode, rtx x)
 {
-  int msize = GET_MODE_SIZE (mode);
-  int xsize;
+  poly_uint64 msize = GET_MODE_SIZE (mode);
   machine_mode innermode;
 
   /* Unfortunately, this routine doesn't take a parameter for the mode of X,
      so we have to make one up.  Yuk.  */
   innermode = GET_MODE (x);
   if (CONST_INT_P (x)
-      && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
+      && known_le (msize * BITS_PER_UNIT,
+		   (unsigned HOST_WIDE_INT) HOST_BITS_PER_WIDE_INT))
     innermode = int_mode_for_size (HOST_BITS_PER_WIDE_INT, 0).require ();
   else if (innermode == VOIDmode)
     innermode = int_mode_for_size (HOST_BITS_PER_DOUBLE_INT, 0).require ();
-
-  xsize = GET_MODE_SIZE (innermode);
 
   gcc_assert (innermode != VOIDmode && innermode != BLKmode);
 
   if (innermode == mode)
     return x;
 
+  /* The size of the outer and inner modes must be ordered.  */
+  poly_uint64 xsize = GET_MODE_SIZE (innermode);
+  if (!ordered_p (msize, xsize))
+    return 0;
+
   if (SCALAR_FLOAT_MODE_P (mode))
     {
       /* Don't allow paradoxical FLOAT_MODE subregs.  */
-      if (msize > xsize)
+      if (maybe_gt (msize, xsize))
 	return 0;
     }
   else
     {
       /* MODE must occupy no more of the underlying registers than X.  */
-      unsigned int regsize = REGMODE_NATURAL_SIZE (innermode);
-      unsigned int mregs = CEIL (msize, regsize);
-      unsigned int xregs = CEIL (xsize, regsize);
-      if (mregs > xregs)
+      poly_uint64 regsize = REGMODE_NATURAL_SIZE (innermode);
+      unsigned int mregs, xregs;
+      if (!can_div_away_from_zero_p (msize, regsize, &mregs)
+	  || !can_div_away_from_zero_p (xsize, regsize, &xregs)
+	  || mregs > xregs)
 	return 0;
     }
 

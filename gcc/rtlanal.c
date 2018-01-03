@@ -1395,13 +1395,15 @@ modified_in_p (const_rtx x, const_rtx insn)
 bool
 read_modify_subreg_p (const_rtx x)
 {
-  unsigned int isize, osize;
   if (GET_CODE (x) != SUBREG)
     return false;
-  isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
-  osize = GET_MODE_SIZE (GET_MODE (x));
-  return isize > osize
-	 && isize > REGMODE_NATURAL_SIZE (GET_MODE (SUBREG_REG (x)));
+  poly_uint64 isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
+  poly_uint64 osize = GET_MODE_SIZE (GET_MODE (x));
+  poly_uint64 regsize = REGMODE_NATURAL_SIZE (GET_MODE (SUBREG_REG (x)));
+  /* The inner and outer modes of a subreg must be ordered, so that we
+     can tell whether they're paradoxical or partial.  */
+  gcc_checking_assert (ordered_p (isize, osize));
+  return (maybe_gt (isize, osize) && maybe_gt (isize, regsize));
 }
 
 /* Helper function for set_of.  */

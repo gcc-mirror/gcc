@@ -1294,10 +1294,14 @@ record_subregs_of_mode (rtx subreg, bool partial_def)
 	 subregs will be invalid.
 
 	 This relies on the fact that we've already been passed
-	 SUBREG with PARTIAL_DEF set to false.  */
-      unsigned int size = MAX (REGMODE_NATURAL_SIZE (shape.inner_mode),
-			       GET_MODE_SIZE (shape.outer_mode));
-      gcc_checking_assert (size < GET_MODE_SIZE (shape.inner_mode));
+	 SUBREG with PARTIAL_DEF set to false.
+
+	 The size of the outer mode must ordered wrt the size of the
+	 inner mode's registers, since otherwise we wouldn't know at
+	 compile time how many registers the outer mode occupies.  */
+      poly_uint64 size = MAX (REGMODE_NATURAL_SIZE (shape.inner_mode),
+			      GET_MODE_SIZE (shape.outer_mode));
+      gcc_checking_assert (known_lt (size, GET_MODE_SIZE (shape.inner_mode)));
       if (known_ge (shape.offset, size))
 	shape.offset -= size;
       else

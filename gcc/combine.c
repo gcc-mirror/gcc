@@ -2477,8 +2477,8 @@ can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
 
   /* Don't change between modes with different underlying register sizes,
      since this could lead to invalid subregs.  */
-  if (REGMODE_NATURAL_SIZE (mode)
-      != REGMODE_NATURAL_SIZE (GET_MODE (x)))
+  if (maybe_ne (REGMODE_NATURAL_SIZE (mode),
+		REGMODE_NATURAL_SIZE (GET_MODE (x))))
     return false;
 
   regno = REGNO (x);
