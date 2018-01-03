@@ -4763,8 +4763,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
   tree perm_mask_low, perm_mask_high;
   tree data_ref;
   tree perm3_mask_low, perm3_mask_high;
-  unsigned int i, n, log_length = exact_log2 (length);
-  unsigned int j, nelt = TYPE_VECTOR_SUBPARTS (vectype);
+  unsigned int i, j, n, log_length = exact_log2 (length);
 
   result_chain->quick_grow (length);
   memcpy (result_chain->address (), dr_chain.address (),
@@ -4772,6 +4771,8 @@ vect_permute_store_chain (vec<tree> dr_chain,
 
   if (length == 3)
     {
+      /* vect_grouped_store_supported ensures that this is constant.  */
+      unsigned int nelt = TYPE_VECTOR_SUBPARTS (vectype);
       unsigned int j0 = 0, j1 = 0, j2 = 0;
 
       vec_perm_builder sel (nelt, nelt, 1);
@@ -4838,6 +4839,7 @@ vect_permute_store_chain (vec<tree> dr_chain,
       gcc_assert (pow2p_hwi (length));
 
       /* The encoding has 2 interleaved stepped patterns.  */
+      unsigned int nelt = TYPE_VECTOR_SUBPARTS (vectype);
       vec_perm_builder sel (nelt, 2, 3);
       sel.quick_grow (6);
       for (i = 0; i < 3; i++)
@@ -5375,7 +5377,6 @@ vect_permute_load_chain (vec<tree> dr_chain,
   gimple *perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   unsigned int i, j, log_length = exact_log2 (length);
-  unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
 
   result_chain->quick_grow (length);
   memcpy (result_chain->address (), dr_chain.address (),
@@ -5383,6 +5384,8 @@ vect_permute_load_chain (vec<tree> dr_chain,
 
   if (length == 3)
     {
+      /* vect_grouped_load_supported ensures that this is constant.  */
+      unsigned nelt = TYPE_VECTOR_SUBPARTS (vectype);
       unsigned int k;
 
       vec_perm_builder sel (nelt, nelt, 1);
@@ -5435,6 +5438,7 @@ vect_permute_load_chain (vec<tree> dr_chain,
       gcc_assert (pow2p_hwi (length));
 
       /* The encoding has a single stepped pattern.  */
+      unsigned int nelt = TYPE_VECTOR_SUBPARTS (vectype);
       vec_perm_builder sel (nelt, 1, 3);
       sel.quick_grow (3);
       for (i = 0; i < 3; ++i)

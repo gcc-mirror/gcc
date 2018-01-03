@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-data-refs.c (vect_permute_store_chain): Reorganize
+	so that both the length == 3 and length != 3 cases set up their
+	own permute vectors.  Add comments explaining why we know the
+	number of elements is constant.
+	(vect_permute_load_chain): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (mode_nunits): Change from unsigned char to
 	poly_uint16_pod.
 	(ONLY_FIXED_SIZE_MODES): New macro.
