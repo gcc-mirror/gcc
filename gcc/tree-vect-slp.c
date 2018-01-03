@@ -905,10 +905,19 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
   /* If we allowed a two-operation SLP node verify the target can cope
      with the permute we are going to use.  */
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   if (alt_stmt_code != ERROR_MARK
       && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
     {
-      unsigned int count = TYPE_VECTOR_SUBPARTS (vectype);
+      unsigned HOST_WIDE_INT count;
+      if (!nunits.is_constant (&count))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Build SLP failed: different operations "
+			     "not allowed with variable-length SLP.\n");
+	  return false;
+	}
       vec_perm_builder sel (count, count, 1);
       for (i = 0; i < count; ++i)
 	{
@@ -3824,6 +3833,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 
   /* VECTYPE is the type of the destination.  */
   vectype = STMT_VINFO_VECTYPE (stmt_info);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   group_size = SLP_INSTANCE_GROUP_SIZE (instance);
 
   if (!SLP_TREE_VEC_STMTS (node).exists ())
@@ -3886,13 +3896,16 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  unsigned k = 0, l;
 	  for (j = 0; j < v0.length (); ++j)
 	    {
-	      unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
-	      tree_vector_builder melts (mvectype, nunits, 1);
-	      for (l = 0; l < nunits; ++l)
+	      /* Enforced by vect_build_slp_tree, which rejects variable-length
+		 vectors for SLP_TREE_TWO_OPERATORS.  */
+	      unsigned int const_nunits = nunits.to_constant ();
+	      tree_vector_builder melts (mvectype, const_nunits, 1);
+	      for (l = 0; l < const_nunits; ++l)
 		{
 		  if (k >= group_size)
 		    k = 0;
-		  tree t = build_int_cst (meltype, mask[k++] * nunits + l);
+		  tree t = build_int_cst (meltype,
+					  mask[k++] * const_nunits + l);
 		  melts.quick_push (t);
 		}
 	      tmask = melts.build ();

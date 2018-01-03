@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-slp.c (vect_build_slp_tree_1): Handle polynomial
+	numbers of units.
+	(vect_schedule_slp_instance): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-slp.c (vect_get_and_check_slp_defs): Reject
 	constant and extern definitions for variable-length vectors.
 	(vect_get_constant_vectors): Note that the number of units
