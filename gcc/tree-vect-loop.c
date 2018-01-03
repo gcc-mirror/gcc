@@ -6693,7 +6693,7 @@ vectorizable_induction (gimple *phi,
     return false;
 
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   if (slp_node)
     ncopies = 1;
@@ -6758,6 +6758,16 @@ vectorizable_induction (gimple *phi,
     iv_loop = loop;
   gcc_assert (iv_loop == (gimple_bb (phi))->loop_father);
 
+  if (slp_node && !nunits.is_constant ())
+    {
+      /* The current SLP code creates the initial value element-by-element.  */
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "SLP induction not supported for variable-length"
+			 " vectors.\n");
+      return false;
+    }
+
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = induc_vec_info_type;
@@ -6806,6 +6816,9 @@ vectorizable_induction (gimple *phi,
      [VF*S, VF*S, VF*S, VF*S] for all.  */
   if (slp_node)
     {
+      /* Enforced above.  */
+      unsigned int const_nunits = nunits.to_constant ();
+
       /* Convert the init to the desired type.  */
       stmts = NULL;
       init_expr = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
@@ -6834,19 +6847,20 @@ vectorizable_induction (gimple *phi,
       /* Now generate the IVs.  */
       unsigned group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
       unsigned nvects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-      unsigned elts = nunits * nvects;
-      unsigned nivs = least_common_multiple (group_size, nunits) / nunits;
+      unsigned elts = const_nunits * nvects;
+      unsigned nivs = least_common_multiple (group_size,
+					     const_nunits) / const_nunits;
       gcc_assert (elts % group_size == 0);
       tree elt = init_expr;
       unsigned ivn;
       for (ivn = 0; ivn < nivs; ++ivn)
 	{
-	  tree_vector_builder elts (vectype, nunits, 1);
+	  tree_vector_builder elts (vectype, const_nunits, 1);
 	  stmts = NULL;
-	  for (unsigned eltn = 0; eltn < nunits; ++eltn)
+	  for (unsigned eltn = 0; eltn < const_nunits; ++eltn)
 	    {
-	      if (ivn*nunits + eltn >= group_size
-		  && (ivn*nunits + eltn) % group_size == 0)
+	      if (ivn*const_nunits + eltn >= group_size
+		  && (ivn * const_nunits + eltn) % group_size == 0)
 		elt = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (elt),
 				    elt, step_expr);
 	      elts.quick_push (elt);
@@ -6883,7 +6897,7 @@ vectorizable_induction (gimple *phi,
       if (ivn < nvects)
 	{
 	  unsigned vfp
-	    = least_common_multiple (group_size, nunits) / group_size;
+	    = least_common_multiple (group_size, const_nunits) / group_size;
 	  /* Generate [VF'*S, VF'*S, ... ].  */
 	  if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
 	    {
@@ -6958,18 +6972,45 @@ vectorizable_induction (gimple *phi,
       stmts = NULL;
       new_name = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
 
-      tree_vector_builder elts (vectype, nunits, 1);
-      elts.quick_push (new_name);
-      for (i = 1; i < nunits; i++)
+      unsigned HOST_WIDE_INT const_nunits;
+      if (nunits.is_constant (&const_nunits))
 	{
-	  /* Create: new_name_i = new_name + step_expr  */
-	  new_name = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (new_name),
-				   new_name, step_expr);
+	  tree_vector_builder elts (vectype, const_nunits, 1);
 	  elts.quick_push (new_name);
+	  for (i = 1; i < const_nunits; i++)
+	    {
+	      /* Create: new_name_i = new_name + step_expr  */
+	      new_name = gimple_build (&stmts, PLUS_EXPR, TREE_TYPE (new_name),
+				       new_name, step_expr);
+	      elts.quick_push (new_name);
+	    }
+	  /* Create a vector from [new_name_0, new_name_1, ...,
+	     new_name_nunits-1]  */
+	  vec_init = gimple_build_vector (&stmts, &elts);
 	}
-      /* Create a vector from [new_name_0, new_name_1, ...,
-	 new_name_nunits-1]  */
-      vec_init = gimple_build_vector (&stmts, &elts);
+      else if (INTEGRAL_TYPE_P (TREE_TYPE (step_expr)))
+	/* Build the initial value directly from a VEC_SERIES_EXPR.  */
+	vec_init = gimple_build (&stmts, VEC_SERIES_EXPR, vectype,
+				 new_name, step_expr);
+      else
+	{
+	  /* Build:
+	        [base, base, base, ...]
+		+ (vectype) [0, 1, 2, ...] * [step, step, step, ...].  */
+	  gcc_assert (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)));
+	  gcc_assert (flag_associative_math);
+	  tree index = build_index_vector (vectype, 0, 1);
+	  tree base_vec = gimple_build_vector_from_val (&stmts, vectype,
+							new_name);
+	  tree step_vec = gimple_build_vector_from_val (&stmts, vectype,
+							step_expr);
+	  vec_init = gimple_build (&stmts, FLOAT_EXPR, vectype, index);
+	  vec_init = gimple_build (&stmts, MULT_EXPR, vectype,
+				   vec_init, step_vec);
+	  vec_init = gimple_build (&stmts, PLUS_EXPR, vectype,
+				   vec_init, base_vec);
+	}
+
       if (stmts)
 	{
 	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
