@@ -2347,20 +2347,6 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
 	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	}
-
-      /* Ensure that even with -fno-tree-dce the scalar MASK_LOAD is removed
-	 from the IL.  */
-      if (STMT_VINFO_RELATED_STMT (stmt_info))
-	{
-	  stmt = STMT_VINFO_RELATED_STMT (stmt_info);
-	  stmt_info = vinfo_for_stmt (stmt);
-	}
-      tree lhs = gimple_call_lhs (stmt);
-      new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
-      set_vinfo_for_stmt (new_stmt, stmt_info);
-      set_vinfo_for_stmt (stmt, NULL);
-      STMT_VINFO_STMT (stmt_info) = new_stmt;
-      gsi_replace (gsi, new_stmt, true);
       return true;
     }
   else if (vls_type != VLS_LOAD)
@@ -2475,23 +2461,6 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = call;
 	  prev_stmt_info = vinfo_for_stmt (call);
 	}
-    }
-
-  if (vls_type == VLS_LOAD)
-    {
-      /* Ensure that even with -fno-tree-dce the scalar MASK_LOAD is removed
-	 from the IL.  */
-      if (STMT_VINFO_RELATED_STMT (stmt_info))
-	{
-	  stmt = STMT_VINFO_RELATED_STMT (stmt_info);
-	  stmt_info = vinfo_for_stmt (stmt);
-	}
-      tree lhs = gimple_call_lhs (stmt);
-      new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
-      set_vinfo_for_stmt (new_stmt, stmt_info);
-      set_vinfo_for_stmt (stmt, NULL);
-      STMT_VINFO_STMT (stmt_info) = new_stmt;
-      gsi_replace (gsi, new_stmt, true);
     }
 
   return true;

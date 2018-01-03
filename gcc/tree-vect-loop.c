@@ -7810,6 +7810,25 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	      gsi_next (&si);
 	    }
 	}		        /* stmts in BB */
+
+      /* Stub out scalar statements that must not survive vectorization.
+	 Doing this here helps with grouped statements, or statements that
+	 are involved in patterns.  */
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
+	  if (call && gimple_call_internal_p (call, IFN_MASK_LOAD))
+	    {
+	      tree lhs = gimple_get_lhs (call);
+	      if (!VECTOR_TYPE_P (TREE_TYPE (lhs)))
+		{
+		  tree zero = build_zero_cst (TREE_TYPE (lhs));
+		  gimple *new_stmt = gimple_build_assign (lhs, zero);
+		  gsi_replace (&gsi, new_stmt, true);
+		}
+	    }
+	}
     }				/* BBs in loop */
 
   /* The vectorization factor is always > 1, so if we use an IV increment of 1.
