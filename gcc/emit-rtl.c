@@ -1605,13 +1605,13 @@ gen_lowpart_common (machine_mode mode, rtx x)
 rtx
 gen_highpart (machine_mode mode, rtx x)
 {
-  unsigned int msize = GET_MODE_SIZE (mode);
+  poly_uint64 msize = GET_MODE_SIZE (mode);
   rtx result;
 
   /* This case loses if X is a subreg.  To catch bugs early,
      complain if an invalid MODE is used even in other cases.  */
-  gcc_assert (msize <= UNITS_PER_WORD
-	      || msize == (unsigned int) GET_MODE_UNIT_SIZE (GET_MODE (x)));
+  gcc_assert (known_le (msize, (unsigned int) UNITS_PER_WORD)
+	      || known_eq (msize, GET_MODE_UNIT_SIZE (GET_MODE (x))));
 
   result = simplify_gen_subreg (mode, x, GET_MODE (x),
 				subreg_highpart_offset (mode, GET_MODE (x)));
@@ -2573,7 +2573,7 @@ rtx
 widen_memory_access (rtx memref, machine_mode mode, poly_int64 offset)
 {
   rtx new_rtx = adjust_address_1 (memref, mode, offset, 1, 1, 0, 0);
-  unsigned int size = GET_MODE_SIZE (mode);
+  poly_uint64 size = GET_MODE_SIZE (mode);
 
   /* If there are no changes, just return the original memory reference.  */
   if (new_rtx == memref)

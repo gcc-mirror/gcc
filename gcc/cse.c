@@ -3807,8 +3807,8 @@ equiv_constant (rtx x)
 
       /* If we didn't and if doing so makes sense, see if we previously
 	 assigned a constant value to the enclosing word mode SUBREG.  */
-      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode)
-	  && GET_MODE_SIZE (word_mode) < GET_MODE_SIZE (imode))
+      if (known_lt (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+	  && known_lt (UNITS_PER_WORD, GET_MODE_SIZE (imode)))
 	{
 	  poly_int64 byte = (SUBREG_BYTE (x)
 			     - subreg_lowpart_offset (mode, word_mode));
@@ -5986,9 +5986,10 @@ cse_insn (rtx_insn *insn)
 	   already entered SRC and DEST of the SET in the table.  */
 
 	if (GET_CODE (dest) == SUBREG
-	    && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1)
-		 / UNITS_PER_WORD)
-		== (GET_MODE_SIZE (GET_MODE (dest)) - 1) / UNITS_PER_WORD)
+	    && (known_equal_after_align_down
+		(GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1,
+		 GET_MODE_SIZE (GET_MODE (dest)) - 1,
+		 UNITS_PER_WORD))
 	    && !partial_subreg_p (dest)
 	    && sets[i].src_elt != 0)
 	  {

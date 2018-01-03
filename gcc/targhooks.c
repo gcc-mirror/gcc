@@ -795,7 +795,9 @@ default_function_arg_padding (machine_mode mode, const_tree type)
       size = int_size_in_bytes (type);
     }
   else
-    size = GET_MODE_SIZE (mode);
+    /* Targets with variable-sized modes must override this hook
+       and handle variable-sized modes explicitly.  */
+    size = GET_MODE_SIZE (mode).to_constant ();
 
   if (size < (PARM_BOUNDARY / BITS_PER_UNIT))
     return PAD_DOWNWARD;
@@ -1520,7 +1522,9 @@ default_addr_space_convert (rtx op ATTRIBUTE_UNUSED,
 unsigned int
 default_hard_regno_nregs (unsigned int, machine_mode mode)
 {
-  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  /* Targets with variable-sized modes must provide their own definition
+     of this hook.  */
+  return CEIL (GET_MODE_SIZE (mode).to_constant (), UNITS_PER_WORD);
 }
 
 bool
@@ -1846,7 +1850,10 @@ default_class_max_nregs (reg_class_t rclass ATTRIBUTE_UNUSED,
   return (unsigned char) CLASS_MAX_NREGS ((enum reg_class) rclass,
 					  MACRO_MODE (mode));
 #else
-  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
+  /* Targets with variable-sized modes must provide their own definition
+     of this hook.  */
+  unsigned int size = GET_MODE_SIZE (mode).to_constant ();
+  return (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 #endif
 }
 

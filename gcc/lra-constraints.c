@@ -591,7 +591,8 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 	      {
 		if (in_subreg_p)
 		  continue;
-		if (GET_MODE_SIZE (GET_MODE (reg)) < GET_MODE_SIZE (mode))
+		if (maybe_lt (GET_MODE_SIZE (GET_MODE (reg)),
+			      GET_MODE_SIZE (mode)))
 		  continue;
 		reg = lowpart_subreg (mode, reg, GET_MODE (reg));
 		if (reg == NULL_RTX || GET_CODE (reg) != SUBREG)
@@ -827,6 +828,7 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
   ((MODE) != VOIDmode				\
    && CONSTANT_P (X)				\
    && GET_CODE (X) != HIGH			\
+   && GET_MODE_SIZE (MODE).is_constant ()	\
    && !targetm.cannot_force_const_mem (MODE, X))
 
 /* True if C is a non-empty register class that has too few registers
@@ -1394,7 +1396,7 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
 	 -fno-split-wide-types specified.  */
       if (!REG_P (reg)
 	  || in_class_p (reg, cl, &new_class)
-	  || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (ptr_mode))
+	  || known_le (GET_MODE_SIZE (mode), GET_MODE_SIZE (ptr_mode)))
        loc = &SUBREG_REG (*loc);
     }
 
@@ -1557,8 +1559,8 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     a word.  */
 	  if (!(maybe_ne (GET_MODE_PRECISION (mode),
 			  GET_MODE_PRECISION (innermode))
-		&& GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-		&& GET_MODE_SIZE (innermode) <= UNITS_PER_WORD
+		&& known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+		&& known_le (GET_MODE_SIZE (innermode), UNITS_PER_WORD)
 		&& WORD_REGISTER_OPERATIONS)
 	      && (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
 		    && targetm.slow_unaligned_access (mode, MEM_ALIGN (subst)))
@@ -4245,7 +4247,8 @@ curr_insn_transform (bool check_only_p)
 				  (ira_class_hard_regs[goal_alt[i]][0],
 				   GET_MODE (reg), byte, mode) >= 0)))
 		      || (partial_subreg_p (mode, GET_MODE (reg))
-			  && GET_MODE_SIZE (GET_MODE (reg)) <= UNITS_PER_WORD
+			  && known_le (GET_MODE_SIZE (GET_MODE (reg)),
+				       UNITS_PER_WORD)
 			  && WORD_REGISTER_OPERATIONS)))
 		{
 		  /* An OP_INOUT is required when reloading a subreg of a
@@ -4745,8 +4748,8 @@ lra_constraints (bool first_p)
 		/* Prevent access beyond equivalent memory for
 		   paradoxical subregs.  */
 		|| (MEM_P (x)
-		    && (GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
-			> GET_MODE_SIZE (GET_MODE (x))))
+		    && maybe_gt (GET_MODE_SIZE (lra_reg_info[i].biggest_mode),
+				 GET_MODE_SIZE (GET_MODE (x))))
 		|| (pic_offset_table_rtx
 		    && ((CONST_POOL_OK_P (PSEUDO_REGNO_MODE (i), x)
 			 && (targetm.preferred_reload_class

@@ -263,7 +263,7 @@ avoid_constant_pool_reference (rtx x)
          If that fails we have no choice but to return the original memory.  */
       if (offset == 0 && cmode == GET_MODE (x))
 	return c;
-      else if (offset >= 0 && offset < GET_MODE_SIZE (cmode))
+      else if (known_in_range_p (offset, 0, GET_MODE_SIZE (cmode)))
         {
           rtx tem = simplify_subreg (GET_MODE (x), c, cmode, offset);
           if (tem && CONSTANT_P (tem))
@@ -3821,13 +3821,13 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  && GET_CODE (trueop0) == VEC_CONCAT)
 	{
 	  rtx vec = trueop0;
-	  int offset = INTVAL (XVECEXP (trueop1, 0, 0)) * GET_MODE_SIZE (mode);
+	  offset = INTVAL (XVECEXP (trueop1, 0, 0)) * GET_MODE_SIZE (mode);
 
 	  /* Try to find the element in the VEC_CONCAT.  */
 	  while (GET_MODE (vec) != mode
 		 && GET_CODE (vec) == VEC_CONCAT)
 	    {
-	      HOST_WIDE_INT vec_size;
+	      poly_int64 vec_size;
 
 	      if (CONST_INT_P (XEXP (vec, 0)))
 	        {
@@ -3842,13 +3842,15 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	      else
 	        vec_size = GET_MODE_SIZE (GET_MODE (XEXP (vec, 0)));
 
-	      if (offset < vec_size)
+	      if (known_lt (offset, vec_size))
 		vec = XEXP (vec, 0);
-	      else
+	      else if (known_ge (offset, vec_size))
 		{
 		  offset -= vec_size;
 		  vec = XEXP (vec, 1);
 		}
+	      else
+		break;
 	      vec = avoid_constant_pool_reference (vec);
 	    }
 
@@ -3917,8 +3919,9 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 				      : GET_MODE_INNER (mode));
 
 	gcc_assert (VECTOR_MODE_P (mode));
-	gcc_assert (GET_MODE_SIZE (op0_mode) + GET_MODE_SIZE (op1_mode)
-		    == GET_MODE_SIZE (mode));
+	gcc_assert (known_eq (GET_MODE_SIZE (op0_mode)
+			      + GET_MODE_SIZE (op1_mode),
+			      GET_MODE_SIZE (mode)));
 
 	if (VECTOR_MODE_P (op0_mode))
 	  gcc_assert (GET_MODE_INNER (mode)
@@ -6315,10 +6318,12 @@ simplify_subreg (machine_mode outermode, rtx op,
   gcc_assert (GET_MODE (op) == innermode
 	      || GET_MODE (op) == VOIDmode);
 
-  if (!multiple_p (byte, GET_MODE_SIZE (outermode)))
+  poly_uint64 outersize = GET_MODE_SIZE (outermode);
+  if (!multiple_p (byte, outersize))
     return NULL_RTX;
 
-  if (maybe_ge (byte, GET_MODE_SIZE (innermode)))
+  poly_uint64 innersize = GET_MODE_SIZE (innermode);
+  if (maybe_ge (byte, innersize))
     return NULL_RTX;
 
   if (outermode == innermode && known_eq (byte, 0U))
@@ -6363,6 +6368,7 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (GET_CODE (op) == SUBREG)
     {
       machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
+      poly_uint64 innermostsize = GET_MODE_SIZE (innermostmode);
       rtx newx;
 
       if (outermode == innermostmode
@@ -6380,12 +6386,10 @@ simplify_subreg (machine_mode outermode, rtx op,
       /* See whether resulting subreg will be paradoxical.  */
       if (!paradoxical_subreg_p (outermode, innermostmode))
 	{
-	  /* In nonparadoxical subregs we can't handle negative offsets.  */
-	  if (maybe_lt (final_offset, 0))
-	    return NULL_RTX;
 	  /* Bail out in case resulting subreg would be incorrect.  */
-	  if (!multiple_p (final_offset, GET_MODE_SIZE (outermode))
-	      || maybe_ge (final_offset, GET_MODE_SIZE (innermostmode)))
+	  if (maybe_lt (final_offset, 0)
+	      || maybe_ge (poly_uint64 (final_offset), innermostsize)
+	      || !multiple_p (final_offset, outersize))
 	    return NULL_RTX;
 	}
       else
@@ -6410,9 +6414,8 @@ simplify_subreg (machine_mode outermode, rtx op,
 	  if (SUBREG_PROMOTED_VAR_P (op)
 	      && SUBREG_PROMOTED_SIGN (op) >= 0
 	      && GET_MODE_CLASS (outermode) == MODE_INT
-	      && IN_RANGE (GET_MODE_SIZE (outermode),
-			   GET_MODE_SIZE (innermode),
-			   GET_MODE_SIZE (innermostmode))
+	      && known_ge (outersize, innersize)
+	      && known_le (outersize, innermostsize)
 	      && subreg_lowpart_p (newx))
 	    {
 	      SUBREG_PROMOTED_VAR_P (newx) = 1;
@@ -6462,7 +6465,7 @@ simplify_subreg (machine_mode outermode, rtx op,
          have instruction to move the whole thing.  */
       && (! MEM_VOLATILE_P (op)
 	  || ! have_insn_for (SET, innermode))
-      && GET_MODE_SIZE (outermode) <= GET_MODE_SIZE (GET_MODE (op)))
+      && known_le (outersize, innersize))
     return adjust_address_nv (op, outermode, byte);
 
   /* Handle complex or vector values represented as CONCAT or VEC_CONCAT
@@ -6470,14 +6473,13 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (GET_CODE (op) == CONCAT
       || GET_CODE (op) == VEC_CONCAT)
     {
-      unsigned int part_size;
       poly_uint64 final_offset;
       rtx part, res;
 
       machine_mode part_mode = GET_MODE (XEXP (op, 0));
       if (part_mode == VOIDmode)
 	part_mode = GET_MODE_INNER (GET_MODE (op));
-      part_size = GET_MODE_SIZE (part_mode);
+      poly_uint64 part_size = GET_MODE_SIZE (part_mode);
       if (known_lt (byte, part_size))
 	{
 	  part = XEXP (op, 0);
@@ -6491,7 +6493,7 @@ simplify_subreg (machine_mode outermode, rtx op,
       else
 	return NULL_RTX;
 
-      if (maybe_gt (final_offset + GET_MODE_SIZE (outermode), part_size))
+      if (maybe_gt (final_offset + outersize, part_size))
 	return NULL_RTX;
 
       part_mode = GET_MODE (part);

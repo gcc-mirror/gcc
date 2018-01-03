@@ -3803,7 +3803,7 @@ optimize_atomic_compare_exchange_p (gimple *stmt)
       && optab_handler (sync_compare_and_swap_optab, mode) == CODE_FOR_nothing)
     return false;
 
-  if (int_size_in_bytes (etype) != GET_MODE_SIZE (mode))
+  if (maybe_ne (int_size_in_bytes (etype), GET_MODE_SIZE (mode)))
     return false;
 
   return true;

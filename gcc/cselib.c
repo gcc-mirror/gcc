@@ -805,14 +805,14 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
       if (memmode == VOIDmode)
 	return x;
 
-      *off = GEN_INT (-GET_MODE_SIZE (memmode));
+      *off = gen_int_mode (-GET_MODE_SIZE (memmode), GET_MODE (x));
       return XEXP (x, 0);
 
     case PRE_INC:
       if (memmode == VOIDmode)
 	return x;
 
-      *off = GEN_INT (GET_MODE_SIZE (memmode));
+      *off = gen_int_mode (GET_MODE_SIZE (memmode), GET_MODE (x));
       return XEXP (x, 0);
 
     case PRE_MODIFY:
@@ -1068,6 +1068,7 @@ static unsigned int
 cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 {
   cselib_val *e;
+  poly_int64 offset;
   int i, j;
   enum rtx_code code;
   const char *fmt;
@@ -1203,14 +1204,15 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
     case PRE_INC:
       /* We can't compute these without knowing the MEM mode.  */
       gcc_assert (memmode != VOIDmode);
-      i = GET_MODE_SIZE (memmode);
+      offset = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
-	i = -i;
+	offset = -offset;
       /* Adjust the hash so that (mem:MEMMODE (pre_* (reg))) hashes
 	 like (mem:MEMMODE (plus (reg) (const_int I))).  */
       hash += (unsigned) PLUS - (unsigned)code
 	+ cselib_hash_rtx (XEXP (x, 0), create, memmode)
-	+ cselib_hash_rtx (GEN_INT (i), create, memmode);
+	+ cselib_hash_rtx (gen_int_mode (offset, GET_MODE (x)),
+			   create, memmode);
       return hash ? hash : 1 + (unsigned) PLUS;
 
     case PRE_MODIFY:
@@ -1871,6 +1873,7 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
   struct elt_list *l;
   rtx copy = x;
   int i;
+  poly_int64 offset;
 
   switch (code)
     {
@@ -1907,11 +1910,11 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
     case PRE_DEC:
     case PRE_INC:
       gcc_assert (memmode != VOIDmode);
-      i = GET_MODE_SIZE (memmode);
+      offset = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
-	i = -i;
+	offset = -offset;
       return cselib_subst_to_values (plus_constant (GET_MODE (x),
-						    XEXP (x, 0), i),
+						    XEXP (x, 0), offset),
 				     memmode);
 
     case PRE_MODIFY:

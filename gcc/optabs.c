@@ -5614,10 +5614,9 @@ rtx
 expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 {
   enum insn_code icode;
-  unsigned int i, w, u;
+  unsigned int i, u;
   rtx tmp, sel_qi;
 
-  w = GET_MODE_SIZE (mode);
   u = GET_MODE_UNIT_SIZE (mode);
 
   if (!target || GET_MODE (target) != mode)
@@ -5655,7 +5654,7 @@ expand_vec_perm_var (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
   /* Broadcast the low byte each element into each of its bytes.
      The encoding has U interleaved stepped patterns, one for each
      byte of an element.  */
-  vec_perm_builder const_sel (w, u, 3);
+  vec_perm_builder const_sel (GET_MODE_SIZE (mode), u, 3);
   unsigned int low_byte_in_u = BYTES_BIG_ENDIAN ? u - 1 : 0;
   for (i = 0; i < 3; ++i)
     for (unsigned int j = 0; j < u; ++j)
@@ -5758,7 +5757,7 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   unsignedp = TYPE_UNSIGNED (TREE_TYPE (op0a));
 
 
-  gcc_assert (GET_MODE_SIZE (mode) == GET_MODE_SIZE (cmp_op_mode)
+  gcc_assert (known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (cmp_op_mode))
 	      && known_eq (GET_MODE_NUNITS (mode),
 			   GET_MODE_NUNITS (cmp_op_mode)));
 
@@ -5887,7 +5886,7 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
   wmode = insn_data[icode].operand[0].mode;
   gcc_checking_assert (known_eq (2 * GET_MODE_NUNITS (wmode),
 				 GET_MODE_NUNITS (mode)));
-  gcc_checking_assert (GET_MODE_SIZE (wmode) == GET_MODE_SIZE (mode));
+  gcc_checking_assert (known_eq (GET_MODE_SIZE (wmode), GET_MODE_SIZE (mode)));
 
   create_output_operand (&eops[0], gen_reg_rtx (wmode), wmode);
   create_input_operand (&eops[1], op0, mode);
@@ -7035,10 +7034,12 @@ bool
 valid_multiword_target_p (rtx target)
 {
   machine_mode mode;
-  int i;
+  int i, size;
 
   mode = GET_MODE (target);
-  for (i = 0; i < GET_MODE_SIZE (mode); i += UNITS_PER_WORD)
+  if (!GET_MODE_SIZE (mode).is_constant (&size))
+    return false;
+  for (i = 0; i < size; i += UNITS_PER_WORD)
     if (!validate_subreg (word_mode, mode, target, i))
       return false;
   return true;

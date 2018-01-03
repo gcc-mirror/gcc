@@ -4177,8 +4177,8 @@ verify_gimple_assign_binary (gassign *stmt)
 		 || (!INTEGRAL_TYPE_P (lhs_type)
 		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
 	    || !useless_type_conversion_p (lhs_type, rhs2_type)
-	    || (GET_MODE_SIZE (element_mode (rhs2_type))
-		< 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+	    || maybe_lt (GET_MODE_SIZE (element_mode (rhs2_type)),
+			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
           {
             error ("type mismatch in widening sum reduction");
             debug_generic_expr (lhs_type);
@@ -4197,8 +4197,8 @@ verify_gimple_assign_binary (gassign *stmt)
         if (TREE_CODE (rhs1_type) != VECTOR_TYPE
             || TREE_CODE (lhs_type) != VECTOR_TYPE
 	    || !types_compatible_p (rhs1_type, rhs2_type)
-            || (GET_MODE_SIZE (element_mode (lhs_type))
-		!= 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+	    || maybe_ne (GET_MODE_SIZE (element_mode (lhs_type)),
+			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
           {
             error ("type mismatch in vector widening multiplication");
             debug_generic_expr (lhs_type);
@@ -4231,8 +4231,8 @@ verify_gimple_assign_binary (gassign *stmt)
 		 || (INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
 		     == INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))))
 	    || !types_compatible_p (rhs1_type, rhs2_type)
-            || (GET_MODE_SIZE (element_mode (rhs1_type))
-		!= 2 * GET_MODE_SIZE (element_mode (lhs_type))))
+	    || maybe_ne (GET_MODE_SIZE (element_mode (rhs1_type)),
+			 2 * GET_MODE_SIZE (element_mode (lhs_type))))
           {
             error ("type mismatch in vector pack expression");
             debug_generic_expr (lhs_type);
@@ -4532,8 +4532,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
 	    || !types_compatible_p (rhs1_type, rhs2_type)
 	    || !useless_type_conversion_p (lhs_type, rhs3_type)
-	    || (GET_MODE_SIZE (element_mode (rhs3_type))
-		< 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+	    || maybe_lt (GET_MODE_SIZE (element_mode (rhs3_type)),
+			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
           {
             error ("type mismatch in dot product reduction");
             debug_generic_expr (lhs_type);

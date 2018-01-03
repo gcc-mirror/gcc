@@ -3404,7 +3404,8 @@ omp_clause_aligned_alignment (tree clause)
 	tree type = lang_hooks.types.type_for_mode (mode, 1);
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)
 	  continue;
-	unsigned int nelts = GET_MODE_SIZE (vmode) / GET_MODE_SIZE (mode);
+	poly_uint64 nelts = exact_div (GET_MODE_SIZE (vmode),
+				       GET_MODE_SIZE (mode));
 	type = build_vector_type (type, nelts);
 	if (TYPE_MODE (type) != vmode)
 	  continue;

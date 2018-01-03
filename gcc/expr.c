@@ -2238,7 +2238,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
       else if (VECTOR_MODE_P (GET_MODE (dst))
 	       && REG_P (src))
 	{
-	  int slen = GET_MODE_SIZE (GET_MODE (src));
+	  poly_uint64 slen = GET_MODE_SIZE (GET_MODE (src));
 	  rtx mem;
 
 	  mem = assign_stack_temp (GET_MODE (src), slen);
@@ -2970,7 +2970,7 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
      just move a zero.  Otherwise, do this a piece at a time.  */
   if (mode != BLKmode
       && CONST_INT_P (size)
-      && INTVAL (size) == (HOST_WIDE_INT) GET_MODE_SIZE (mode))
+      && known_eq (INTVAL (size), GET_MODE_SIZE (mode)))
     {
       rtx zero = CONST0_RTX (mode);
       if (zero != NULL)
@@ -3508,7 +3508,7 @@ emit_move_complex (machine_mode mode, rtx x, rtx y)
 	 existing block move logic.  */
       if (MEM_P (x) && MEM_P (y))
 	{
-	  emit_block_move (x, y, GEN_INT (GET_MODE_SIZE (mode)),
+	  emit_block_move (x, y, gen_int_mode (GET_MODE_SIZE (mode), Pmode),
 			   BLOCK_OP_NO_LIBCALL);
 	  return get_last_insn ();
 	}
@@ -3573,9 +3573,12 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
   rtx_insn *seq;
   rtx inner;
   bool need_clobber;
-  int i;
+  int i, mode_size;
 
-  gcc_assert (GET_MODE_SIZE (mode) >= UNITS_PER_WORD);
+  /* This function can only handle cases where the number of words is
+     known at compile time.  */
+  mode_size = GET_MODE_SIZE (mode).to_constant ();
+  gcc_assert (mode_size >= UNITS_PER_WORD);
 
   /* If X is a push on the stack, do the push now and replace
      X with a reference to the stack pointer.  */
@@ -3594,9 +3597,7 @@ emit_move_multi_word (machine_mode mode, rtx x, rtx y)
   start_sequence ();
 
   need_clobber = false;
-  for (i = 0;
-       i < (GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
-       i++)
+  for (i = 0; i < CEIL (mode_size, UNITS_PER_WORD); i++)
     {
       rtx xpart = operand_subword (x, i, 1, mode);
       rtx ypart;
@@ -4337,7 +4338,7 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	  /* A value is to be stored in an insufficiently aligned
 	     stack slot; copy via a suitably aligned slot if
 	     necessary.  */
-	  size = GEN_INT (GET_MODE_SIZE (mode));
+	  size = gen_int_mode (GET_MODE_SIZE (mode), Pmode);
 	  if (!MEM_P (xinner))
 	    {
 	      temp = assign_temp (type, 1, 1);
@@ -4493,9 +4494,10 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
     }
   else if (partial > 0)
     {
-      /* Scalar partly in registers.  */
-
-      int size = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
+      /* Scalar partly in registers.  This case is only supported
+	 for fixed-wdth modes.  */
+      int size = GET_MODE_SIZE (mode).to_constant ();
+      size /= UNITS_PER_WORD;
       int i;
       int not_stack;
       /* # bytes of start of argument
@@ -11158,10 +11160,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		  gcc_assert (!TREE_ADDRESSABLE (exp));
 
 		  if (GET_MODE (op0) == BLKmode)
-		    emit_block_move (new_with_op0_mode, op0,
-				     GEN_INT (GET_MODE_SIZE (mode)),
-				     (modifier == EXPAND_STACK_PARM
-				      ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
+		    {
+		      rtx size_rtx = gen_int_mode (mode_size, Pmode);
+		      emit_block_move (new_with_op0_mode, op0, size_rtx,
+				       (modifier == EXPAND_STACK_PARM
+					? BLOCK_OP_CALL_PARM
+					: BLOCK_OP_NORMAL));
+		    }
 		  else
 		    emit_move_insn (new_with_op0_mode, op0);
 

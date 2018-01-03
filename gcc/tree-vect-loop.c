@@ -527,8 +527,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      return false;
 	    }
 
-	  if ((GET_MODE_SIZE (TYPE_MODE (vectype))
-	       != GET_MODE_SIZE (TYPE_MODE (vf_vectype))))
+	  if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
+			GET_MODE_SIZE (TYPE_MODE (vf_vectype))))
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -6156,7 +6156,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
           if (dump_enabled_p ())
             dump_printf (MSG_NOTE, "op not supported by target.\n");
 
-          if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
+	  if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
 	      || !vect_worthwhile_without_simd_p (loop_vinfo, code))
             return false;
 

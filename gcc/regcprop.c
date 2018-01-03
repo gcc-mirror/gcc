@@ -406,8 +406,11 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
     {
       int copy_nregs = hard_regno_nregs (copy_regno, copy_mode);
       int use_nregs = hard_regno_nregs (copy_regno, new_mode);
-      int copy_offset
-	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
+      poly_uint64 bytes_per_reg;
+      if (!can_div_trunc_p (GET_MODE_SIZE (copy_mode),
+			    copy_nregs, &bytes_per_reg))
+	return NULL_RTX;
+      poly_uint64 copy_offset = bytes_per_reg * (copy_nregs - use_nregs);
       poly_uint64 offset
 	= subreg_size_lowpart_offset (GET_MODE_SIZE (new_mode) + copy_offset,
 				      GET_MODE_SIZE (orig_mode));

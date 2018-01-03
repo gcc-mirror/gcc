@@ -213,7 +213,7 @@ get_best_extraction_insn (extraction_insn *insn,
 	  FOR_EACH_MODE_FROM (mode_iter, mode)
 	    {
 	      mode = mode_iter.require ();
-	      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (field_mode)
+	      if (maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (field_mode))
 		  || TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
 						    field_mode))
 		break;

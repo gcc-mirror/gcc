@@ -922,13 +922,15 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	    }
 
 	  CASE_CONVERT:
-	    /* Don't introduce a "can't convert between vector values of
-	       different size" error.  */
-	    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == VECTOR_TYPE
-		&& (GET_MODE_SIZE (TYPE_MODE
-				   (TREE_TYPE (TREE_OPERAND (expr, 0))))
-		    != GET_MODE_SIZE (TYPE_MODE (type))))
-	      break;
+	    {
+	      tree argtype = TREE_TYPE (TREE_OPERAND (expr, 0));
+	      /* Don't introduce a "can't convert between vector values
+		 of different size" error.  */
+	      if (TREE_CODE (argtype) == VECTOR_TYPE
+		  && maybe_ne (GET_MODE_SIZE (TYPE_MODE (argtype)),
+			       GET_MODE_SIZE (TYPE_MODE (type))))
+		break;
+	    }
 	    /* If truncating after truncating, might as well do all at once.
 	       If truncating after extending, we may get rid of wasted work.  */
 	    return convert (type, get_unwidened (TREE_OPERAND (expr, 0), type));

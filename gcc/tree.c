@@ -10570,9 +10570,9 @@ build_same_sized_truth_vector_type (tree vectype)
   if (VECTOR_BOOLEAN_TYPE_P (vectype))
     return vectype;
 
-  unsigned HOST_WIDE_INT size = GET_MODE_SIZE (TYPE_MODE (vectype));
+  poly_uint64 size = GET_MODE_SIZE (TYPE_MODE (vectype));
 
-  if (!size)
+  if (known_eq (size, 0U))
     size = tree_to_uhwi (TYPE_SIZE_UNIT (vectype));
 
   return build_truth_vector_type (TYPE_VECTOR_SUBPARTS (vectype), size);

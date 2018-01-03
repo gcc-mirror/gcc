@@ -1945,7 +1945,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
   int (*addressp) (machine_mode, rtx, addr_space_t) =
     (strictp ? strict_memory_address_addr_space_p
 	     : memory_address_addr_space_p);
-  unsigned int mode_sz = GET_MODE_SIZE (mode);
+  poly_int64 mode_sz = GET_MODE_SIZE (mode);
 
   if (CONSTANT_ADDRESS_P (y))
     return 1;
@@ -1967,7 +1967,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
      Clearly that depends on the situation in which it's being used.
      However, the current situation in which we test 0xffffffff is
      less than ideal.  Caveat user.  */
-  if (mode_sz == 0)
+  if (known_eq (mode_sz, 0))
     mode_sz = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
 
   /* If the expression contains a constant term,
@@ -1998,7 +1998,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
      go inside a LO_SUM here, so we do so as well.  */
   if (GET_CODE (y) == LO_SUM
       && mode != BLKmode
-      && mode_sz <= GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT)
+      && known_le (mode_sz, GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT))
     z = gen_rtx_LO_SUM (address_mode, XEXP (y, 0),
 			plus_constant (address_mode, XEXP (y, 1),
 				       mode_sz - 1));

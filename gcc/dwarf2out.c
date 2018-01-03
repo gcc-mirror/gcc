@@ -13184,7 +13184,10 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
       gcc_assert ((unsigned) DBX_REGISTER_NUMBER (reg) == dbx_reg_number (rtl));
       nregs = REG_NREGS (rtl);
 
-      size = GET_MODE_SIZE (GET_MODE (rtl)) / nregs;
+      /* At present we only track constant-sized pieces.  */
+      if (!GET_MODE_SIZE (GET_MODE (rtl)).is_constant (&size))
+	return NULL;
+      size /= nregs;
 
       loc_result = NULL;
       while (nregs--)
@@ -13204,7 +13207,9 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 
   gcc_assert (GET_CODE (regs) == PARALLEL);
 
-  size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
+  /* At present we only track constant-sized pieces.  */
+  if (!GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0))).is_constant (&size))
+    return NULL;
   loc_result = NULL;
 
   for (i = 0; i < XVECLEN (regs, 0); ++i)
@@ -14797,7 +14802,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (is_a <scalar_int_mode> (mode, &int_mode)
 	  && is_a <scalar_int_mode> (GET_MODE (inner), &inner_mode)
 	  ? GET_MODE_SIZE (int_mode) <= GET_MODE_SIZE (inner_mode)
-	  : GET_MODE_SIZE (mode) == GET_MODE_SIZE (GET_MODE (inner)))
+	  : known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (GET_MODE (inner))))
 	{
 	  dw_die_ref type_die;
 	  dw_loc_descr_ref cvt;
@@ -14813,8 +14818,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      mem_loc_result = NULL;
 	      break;
 	    }
-	  if (GET_MODE_SIZE (mode)
-	      != GET_MODE_SIZE (GET_MODE (inner)))
+	  if (maybe_ne (GET_MODE_SIZE (mode), GET_MODE_SIZE (GET_MODE (inner))))
 	    cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
 	  else
 	    cvt = new_loc_descr (dwarf_OP (DW_OP_reinterpret), 0, 0);
@@ -14975,15 +14979,17 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	    {
 	      dw_die_ref type_die;
 	      dw_loc_descr_ref deref;
+	      HOST_WIDE_INT size;
 
 	      if (dwarf_strict && dwarf_version < 5)
+		return NULL;
+	      if (!GET_MODE_SIZE (mode).is_constant (&size))
 		return NULL;
 	      type_die
 		= base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	      if (type_die == NULL)
 		return NULL;
-	      deref = new_loc_descr (dwarf_OP (DW_OP_deref_type),
-				     GET_MODE_SIZE (mode), 0);
+	      deref = new_loc_descr (dwarf_OP (DW_OP_deref_type), size, 0);
 	      deref->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
 	      deref->dw_loc_oprnd2.v.val_die_ref.die = type_die;
 	      deref->dw_loc_oprnd2.v.val_die_ref.external = 0;
@@ -15760,6 +15766,12 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 static dw_loc_descr_ref
 concat_loc_descriptor (rtx x0, rtx x1, enum var_init_status initialized)
 {
+  /* At present we only track constant-sized pieces.  */
+  unsigned int size0, size1;
+  if (!GET_MODE_SIZE (GET_MODE (x0)).is_constant (&size0)
+      || !GET_MODE_SIZE (GET_MODE (x1)).is_constant (&size1))
+    return 0;
+
   dw_loc_descr_ref cc_loc_result = NULL;
   dw_loc_descr_ref x0_ref
     = loc_descriptor (x0, VOIDmode, VAR_INIT_STATUS_INITIALIZED);
@@ -15770,10 +15782,10 @@ concat_loc_descriptor (rtx x0, rtx x1, enum var_init_status initialized)
     return 0;
 
   cc_loc_result = x0_ref;
-  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x0)));
+  add_loc_descr_op_piece (&cc_loc_result, size0);
 
   add_loc_descr (&cc_loc_result, x1_ref);
-  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x1)));
+  add_loc_descr_op_piece (&cc_loc_result, size1);
 
   if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
     add_loc_descr (&cc_loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
@@ -15790,18 +15802,23 @@ concatn_loc_descriptor (rtx concatn, enum var_init_status initialized)
   unsigned int i;
   dw_loc_descr_ref cc_loc_result = NULL;
   unsigned int n = XVECLEN (concatn, 0);
+  unsigned int size;
 
   for (i = 0; i < n; ++i)
     {
       dw_loc_descr_ref ref;
       rtx x = XVECEXP (concatn, 0, i);
 
+      /* At present we only track constant-sized pieces.  */
+      if (!GET_MODE_SIZE (GET_MODE (x)).is_constant (&size))
+	return NULL;
+
       ref = loc_descriptor (x, VOIDmode, VAR_INIT_STATUS_INITIALIZED);
       if (ref == NULL)
 	return NULL;
 
       add_loc_descr (&cc_loc_result, ref);
-      add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x)));
+      add_loc_descr_op_piece (&cc_loc_result, size);
     }
 
   if (cc_loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
@@ -15920,7 +15937,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	rtvec par_elems = XVEC (rtl, 0);
 	int num_elem = GET_NUM_ELEM (par_elems);
 	machine_mode mode;
-	int i;
+	int i, size;
 
 	/* Create the first one, so we have something to add to.  */
 	loc_result = loc_descriptor (XEXP (RTVEC_ELT (par_elems, 0), 0),
@@ -15928,7 +15945,10 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	if (loc_result == NULL)
 	  return NULL;
 	mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, 0), 0));
-	add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
+	/* At present we only track constant-sized pieces.  */
+	if (!GET_MODE_SIZE (mode).is_constant (&size))
+	  return NULL;
+	add_loc_descr_op_piece (&loc_result, size);
 	for (i = 1; i < num_elem; i++)
 	  {
 	    dw_loc_descr_ref temp;
@@ -15939,7 +15959,10 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	      return NULL;
 	    add_loc_descr (&loc_result, temp);
 	    mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, i), 0));
-	    add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
+	    /* At present we only track constant-sized pieces.  */
+	    if (!GET_MODE_SIZE (mode).is_constant (&size))
+	      return NULL;
+	    add_loc_descr_op_piece (&loc_result, size);
 	  }
       }
       break;
@@ -19178,7 +19201,7 @@ rtl_for_decl_location (tree decl)
 	    rtl = DECL_INCOMING_RTL (decl);
 	  else if ((rtl == NULL_RTX || is_pseudo_reg (rtl))
 		   && SCALAR_INT_MODE_P (dmode)
-		   && GET_MODE_SIZE (dmode) <= GET_MODE_SIZE (pmode)
+		   && known_le (GET_MODE_SIZE (dmode), GET_MODE_SIZE (pmode))
 		   && DECL_INCOMING_RTL (decl))
 	    {
 	      rtx inc = DECL_INCOMING_RTL (decl);
@@ -19219,12 +19242,12 @@ rtl_for_decl_location (tree decl)
 	       /* Big endian correction check.  */
 	       && BYTES_BIG_ENDIAN
 	       && TYPE_MODE (TREE_TYPE (decl)) != GET_MODE (rtl)
-	       && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)))
-		   < UNITS_PER_WORD))
+	       && known_lt (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))),
+			    UNITS_PER_WORD))
 	{
 	  machine_mode addr_mode = get_address_mode (rtl);
-	  int offset = (UNITS_PER_WORD
-			- GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
+	  poly_int64 offset = (UNITS_PER_WORD
+			       - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
 
 	  rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
 			     plus_constant (addr_mode, XEXP (rtl, 0), offset));

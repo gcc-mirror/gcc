@@ -2044,8 +2044,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  op1 = gimple_assign_rhs1 (def_stmt);
 	  if (conv_code == ERROR_MARK)
 	    {
-	      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (elt->value)))
-		  != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1))))
+	      if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (elt->value))),
+			    GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))))
 		return false;
 	      conv_code = code;
 	    }
@@ -2119,8 +2119,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
 			     nelts);
       if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
-	  || GET_MODE_SIZE (TYPE_MODE (mask_type))
-	     != GET_MODE_SIZE (TYPE_MODE (type)))
+	  || maybe_ne (GET_MODE_SIZE (TYPE_MODE (mask_type)),
+		       GET_MODE_SIZE (TYPE_MODE (type))))
 	return false;
       op2 = vec_perm_indices_to_tree (mask_type, indices);
       if (conv_code == ERROR_MARK)

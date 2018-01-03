@@ -1632,7 +1632,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       && !MEM_P (op0)
       && VECTOR_MODE_P (tmode)
       && known_eq (bitsize, GET_MODE_SIZE (tmode))
-      && GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (tmode))
+      && maybe_gt (GET_MODE_SIZE (GET_MODE (op0)), GET_MODE_SIZE (tmode)))
     {
       machine_mode new_mode = GET_MODE (op0);
       if (GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode))
@@ -1643,7 +1643,8 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 			   GET_MODE_UNIT_BITSIZE (tmode), &nunits)
 	      || !mode_for_vector (inner_mode, nunits).exists (&new_mode)
 	      || !VECTOR_MODE_P (new_mode)
-	      || GET_MODE_SIZE (new_mode) != GET_MODE_SIZE (GET_MODE (op0))
+	      || maybe_ne (GET_MODE_SIZE (new_mode),
+			   GET_MODE_SIZE (GET_MODE (op0)))
 	      || GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode)
 	      || !targetm.vector_mode_supported_p (new_mode))
 	    new_mode = VOIDmode;
@@ -1699,8 +1700,8 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	new_mode = MIN_MODE_VECTOR_INT;
 
       FOR_EACH_MODE_FROM (new_mode, new_mode)
-	if (GET_MODE_SIZE (new_mode) == GET_MODE_SIZE (GET_MODE (op0))
-	    && GET_MODE_UNIT_SIZE (new_mode) == GET_MODE_SIZE (tmode)
+	if (known_eq (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (GET_MODE (op0)))
+	    && known_eq (GET_MODE_UNIT_SIZE (new_mode), GET_MODE_SIZE (tmode))
 	    && targetm.vector_mode_supported_p (new_mode))
 	  break;
       if (new_mode != VOIDmode)
@@ -1758,7 +1759,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	}
       else
 	{
-	  HOST_WIDE_INT size = GET_MODE_SIZE (GET_MODE (op0));
+	  poly_int64 size = GET_MODE_SIZE (GET_MODE (op0));
 	  rtx mem = assign_stack_temp (GET_MODE (op0), size);
 	  emit_move_insn (mem, op0);
 	  op0 = adjust_bitfield_address_size (mem, BLKmode, 0, size);
@@ -1858,7 +1859,8 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
       /* The mode must be fixed-size, since extract_bit_field_1 handles
 	 extractions from variable-sized objects before calling this
 	 function.  */
-      unsigned int target_size = GET_MODE_SIZE (GET_MODE (target));
+      unsigned int target_size
+	= GET_MODE_SIZE (GET_MODE (target)).to_constant ();
       last = get_last_insn ();
       for (i = 0; i < nwords; i++)
 	{

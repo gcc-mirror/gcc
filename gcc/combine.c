@@ -6931,10 +6931,10 @@ simplify_set (rtx x)
 
   if (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)
       && !OBJECT_P (SUBREG_REG (src))
-      && (((GET_MODE_SIZE (GET_MODE (src)) + (UNITS_PER_WORD - 1))
-	   / UNITS_PER_WORD)
-	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
-	       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
+      && (known_equal_after_align_up
+	  (GET_MODE_SIZE (GET_MODE (src)),
+	   GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))),
+	   UNITS_PER_WORD))
       && (WORD_REGISTER_OPERATIONS || !paradoxical_subreg_p (src))
       && ! (REG_P (dest) && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && !REG_CAN_CHANGE_MODE_P (REGNO (dest),
@@ -7773,7 +7773,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       && ! mode_dependent_address_p (XEXP (inner, 0), MEM_ADDR_SPACE (inner))
       && ! MEM_VOLATILE_P (inner))
     {
-      int offset = 0;
+      poly_int64 offset = 0;
 
       /* The computations below will be correct if the machine is big
 	 endian in both bits and bytes or little endian in bits and bytes.
@@ -10469,8 +10469,6 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
   machine_mode mode = result_mode;
   machine_mode shift_mode;
   scalar_int_mode tmode, inner_mode, int_mode, int_varop_mode, int_result_mode;
-  unsigned int mode_words
-    = (GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
   /* We form (outer_op (code varop count) (outer_const)).  */
   enum rtx_code outer_op = UNKNOWN;
   HOST_WIDE_INT outer_const = 0;
@@ -10651,9 +10649,8 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  if (subreg_lowpart_p (varop)
 	      && is_int_mode (GET_MODE (SUBREG_REG (varop)), &inner_mode)
 	      && GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (int_varop_mode)
-	      && (unsigned int) ((GET_MODE_SIZE (inner_mode)
-				  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		 == mode_words
+	      && (CEIL (GET_MODE_SIZE (inner_mode), UNITS_PER_WORD)
+		  == CEIL (GET_MODE_SIZE (int_mode), UNITS_PER_WORD))
 	      && GET_MODE_CLASS (int_varop_mode) == MODE_INT)
 	    {
 	      varop = SUBREG_REG (varop);
@@ -11625,8 +11622,6 @@ static rtx
 gen_lowpart_for_combine (machine_mode omode, rtx x)
 {
   machine_mode imode = GET_MODE (x);
-  unsigned int osize = GET_MODE_SIZE (omode);
-  unsigned int isize = GET_MODE_SIZE (imode);
   rtx result;
 
   if (omode == imode)
@@ -11634,8 +11629,9 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 
   /* We can only support MODE being wider than a word if X is a
      constant integer or has a mode the same size.  */
-  if (GET_MODE_SIZE (omode) > UNITS_PER_WORD
-      && ! (CONST_SCALAR_INT_P (x) || isize == osize))
+  if (maybe_gt (GET_MODE_SIZE (omode), UNITS_PER_WORD)
+      && ! (CONST_SCALAR_INT_P (x)
+	    || known_eq (GET_MODE_SIZE (imode), GET_MODE_SIZE (omode))))
     goto fail;
 
   /* X might be a paradoxical (subreg (mem)).  In that case, gen_lowpart
@@ -11652,8 +11648,6 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 
       if (imode == omode)
 	return x;
-
-      isize = GET_MODE_SIZE (imode);
     }
 
   result = gen_lowpart_common (omode, x);
