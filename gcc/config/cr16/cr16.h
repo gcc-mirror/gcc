@@ -381,7 +381,7 @@ enum reg_class
 
 #define PUSH_ARGS 1
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) cr16_push_rounding (BYTES)
 
 #ifndef CUMULATIVE_ARGS
 struct cumulative_args

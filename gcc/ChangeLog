@@ -2,6 +2,43 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/cr16/cr16-protos.h (cr16_push_rounding): Declare.
+	* config/cr16/cr16.h (PUSH_ROUNDING): Move implementation to...
+	* config/cr16/cr16.c (cr16_push_rounding): ...this new function.
+	* config/h8300/h8300-protos.h (h8300_push_rounding): Declare.
+	* config/h8300/h8300.h (PUSH_ROUNDING): Move implementation to...
+	* config/h8300/h8300.c (h8300_push_rounding): ...this new function.
+	* config/i386/i386-protos.h (ix86_push_rounding): Declare.
+	* config/i386/i386.h (PUSH_ROUNDING): Move implementation to...
+	* config/i386/i386.c (ix86_push_rounding): ...this new function.
+	* config/m32c/m32c-protos.h (m32c_push_rounding): Take and return
+	a poly_int64.
+	* config/m32c/m32c.c (m32c_push_rounding): Likewise.
+	* config/m68k/m68k-protos.h (m68k_push_rounding): Declare.
+	* config/m68k/m68k.h (PUSH_ROUNDING): Move implementation to...
+	* config/m68k/m68k.c (m68k_push_rounding): ...this new function.
+	* config/pdp11/pdp11-protos.h (pdp11_push_rounding): Declare.
+	* config/pdp11/pdp11.h (PUSH_ROUNDING): Move implementation to...
+	* config/pdp11/pdp11.c (pdp11_push_rounding): ...this new function.
+	* config/stormy16/stormy16-protos.h (xstormy16_push_rounding): Declare.
+	* config/stormy16/stormy16.h (PUSH_ROUNDING): Move implementation to...
+	* config/stormy16/stormy16.c (xstormy16_push_rounding): ...this new
+	function.
+	* expr.c (emit_move_resolve_push): Treat the input and result
+	of PUSH_ROUNDING as a poly_int64.
+	(emit_move_complex_push, emit_single_push_insn_1): Likewise.
+	(emit_push_insn): Likewise.
+	* lra-eliminations.c (mark_not_eliminable): Likewise.
+	* recog.c (push_operand): Likewise.
+	* reload1.c (elimination_effects): Likewise.
+	* rtlanal.c (nonzero_bits1): Likewise.
+	* calls.c (store_one_arg): Likewise.  Require the padding to be
+	known at compile time.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (emit_single_push_insn_1): Treat mode sizes as polynomial.
 	Use plus_constant instead of gen_rtx_PLUS.
 

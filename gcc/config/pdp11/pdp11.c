@@ -1977,4 +1977,13 @@ pdp11_modes_tieable_p (machine_mode, machine_mode)
   return false;
 }
 
+/* Implement PUSH_ROUNDING.  On the pdp11, the stack is on an even
+   boundary.  */
+
+poly_int64
+pdp11_push_rounding (poly_int64 bytes)
+{
+  return (bytes + 1) & ~1;
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;

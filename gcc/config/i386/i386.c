@@ -49964,6 +49964,19 @@ ix86_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Implement PUSH_ROUNDING.  On 386, we have pushw instruction that
+   decrements by exactly 2 no matter what the position was, there is no pushb.
+
+   But as CIE data alignment factor on this arch is -4 for 32bit targets
+   and -8 for 64bit targets, we need to make sure all stack pointer adjustments
+   are in multiple of 4 for 32bit targets and 8 for 64bit targets.  */
+
+poly_int64
+ix86_push_rounding (poly_int64 bytes)
+{
+  return ROUND_UP (bytes, UNITS_PER_WORD);
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P

@@ -2996,7 +2996,7 @@ elimination_effects (rtx x, machine_mode mem_mode)
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->to_rtx == XEXP (x, 0))
 	  {
-	    int size = GET_MODE_SIZE (mem_mode);
+	    poly_int64 size = GET_MODE_SIZE (mem_mode);
 
 	    /* If more bytes than MEM_MODE are pushed, account for them.  */
 #ifdef PUSH_ROUNDING

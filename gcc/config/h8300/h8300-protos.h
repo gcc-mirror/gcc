@@ -112,5 +112,6 @@ extern bool            h8sx_mergeable_memrefs_p (rtx, rtx);
 extern bool            h8sx_emit_movmd (rtx, rtx, rtx, HOST_WIDE_INT);
 extern void            h8300_swap_into_er6 (rtx);
 extern void            h8300_swap_out_of_er6 (rtx);
+extern poly_int64      h8300_push_rounding (poly_int64);
 
 #endif /* ! GCC_H8300_PROTOS_H */

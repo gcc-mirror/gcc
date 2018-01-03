@@ -6044,6 +6044,21 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
       emit_move_insn (mem, tem);
     }
 }
+
+/* Implement PUSH_ROUNDING.
+
+   On the H8/300, @-sp really pushes a byte if you ask it to - but that's
+   dangerous, so we claim that it always pushes a word, then we catch
+   the mov.b rx,@-sp and turn it into a mov.w rx,@-sp on output.
+
+   On the H8/300H, we simplify TARGET_QUICKCALL by setting this to 4
+   and doing a similar thing.  */
+
+poly_int64
+h8300_push_rounding (poly_int64 bytes)
+{
+  return ((bytes + PARM_BOUNDARY / 8 - 1) & (-PARM_BOUNDARY / 8));
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE

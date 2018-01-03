@@ -3347,10 +3347,9 @@ rtx
 emit_move_resolve_push (machine_mode mode, rtx x)
 {
   enum rtx_code code = GET_CODE (XEXP (x, 0));
-  HOST_WIDE_INT adjust;
   rtx temp;
 
-  adjust = GET_MODE_SIZE (mode);
+  poly_int64 adjust = GET_MODE_SIZE (mode);
 #ifdef PUSH_ROUNDING
   adjust = PUSH_ROUNDING (adjust);
 #endif
@@ -3359,14 +3358,12 @@ emit_move_resolve_push (machine_mode mode, rtx x)
   else if (code == PRE_MODIFY || code == POST_MODIFY)
     {
       rtx expr = XEXP (XEXP (x, 0), 1);
-      HOST_WIDE_INT val;
 
       gcc_assert (GET_CODE (expr) == PLUS || GET_CODE (expr) == MINUS);
-      gcc_assert (CONST_INT_P (XEXP (expr, 1)));
-      val = INTVAL (XEXP (expr, 1));
+      poly_int64 val = rtx_to_poly_int64 (XEXP (expr, 1));
       if (GET_CODE (expr) == MINUS)
 	val = -val;
-      gcc_assert (adjust == val || adjust == -val);
+      gcc_assert (known_eq (adjust, val) || known_eq (adjust, -val));
       adjust = val;
     }
 
@@ -3408,11 +3405,11 @@ emit_move_complex_push (machine_mode mode, rtx x, rtx y)
   bool imag_first;
 
 #ifdef PUSH_ROUNDING
-  unsigned int submodesize = GET_MODE_SIZE (submode);
+  poly_int64 submodesize = GET_MODE_SIZE (submode);
 
   /* In case we output to the stack, but the size is smaller than the
      machine can push exactly, we need to use move instructions.  */
-  if (PUSH_ROUNDING (submodesize) != submodesize)
+  if (maybe_ne (PUSH_ROUNDING (submodesize), submodesize))
     {
       x = emit_move_resolve_push (mode, x);
       return emit_move_insn (x, y);
@@ -4132,7 +4129,7 @@ static void
 emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
 {
   rtx dest_addr;
-  unsigned rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
+  poly_int64 rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
   rtx dest;
   enum insn_code icode;
 
@@ -4147,7 +4144,7 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
       if (maybe_expand_insn (icode, 1, ops))
 	return;
     }
-  if (GET_MODE_SIZE (mode) == rounded_size)
+  if (known_eq (GET_MODE_SIZE (mode), rounded_size))
     dest_addr = gen_rtx_fmt_e (STACK_PUSH_CODE, Pmode, stack_pointer_rtx);
   /* If we are to pad downward, adjust the stack pointer first and
      then store X into the stack location using an offset.  This is
@@ -4375,9 +4372,9 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	     and such small pushes do rounding that causes trouble.  */
 	  && ((!targetm.slow_unaligned_access (word_mode, align))
 	      || align >= BIGGEST_ALIGNMENT
-	      || (PUSH_ROUNDING (align / BITS_PER_UNIT)
-		  == (align / BITS_PER_UNIT)))
-	  && (HOST_WIDE_INT) PUSH_ROUNDING (INTVAL (size)) == INTVAL (size))
+	      || known_eq (PUSH_ROUNDING (align / BITS_PER_UNIT),
+			   align / BITS_PER_UNIT))
+	  && known_eq (PUSH_ROUNDING (INTVAL (size)), INTVAL (size)))
 	{
 	  /* Push padding now if padding above and stack grows down,
 	     or if padding below and stack grows up.
