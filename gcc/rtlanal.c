@@ -3694,8 +3694,9 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 
   gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
-  unsigned int xsize = GET_MODE_SIZE (xmode);
-  unsigned int ysize = GET_MODE_SIZE (ymode);
+  poly_uint64 xsize = GET_MODE_SIZE (xmode);
+  poly_uint64 ysize = GET_MODE_SIZE (ymode);
+
   bool rknown = false;
 
   /* If the register representation of a non-scalar mode has holes in it,
@@ -3707,6 +3708,7 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
       /* As a consequence, we must be dealing with a constant number of
 	 scalars, and thus a constant offset.  */
       HOST_WIDE_INT coffset = offset.to_constant ();
+      HOST_WIDE_INT cysize = ysize.to_constant ();
       nregs_xmode = HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode);
       unsigned int nunits = GET_MODE_NUNITS (xmode);
       scalar_mode xmode_unit = GET_MODE_INNER (xmode);
@@ -3727,7 +3729,7 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 	 of each unit.  */
       if ((coffset / GET_MODE_SIZE (xmode_unit) + 1 < nunits)
 	  && (coffset / GET_MODE_SIZE (xmode_unit)
-	      != ((coffset + ysize - 1) / GET_MODE_SIZE (xmode_unit))))
+	      != ((coffset + cysize - 1) / GET_MODE_SIZE (xmode_unit))))
 	{
 	  info->representable_p = false;
 	  rknown = true;
@@ -3738,8 +3740,12 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 
   nregs_ymode = hard_regno_nregs (xregno, ymode);
 
+  /* Subreg sizes must be ordered, so that we can tell whether they are
+     partial, paradoxical or complete.  */
+  gcc_checking_assert (ordered_p (xsize, ysize));
+
   /* Paradoxical subregs are otherwise valid.  */
-  if (!rknown && known_eq (offset, 0U) && ysize > xsize)
+  if (!rknown && known_eq (offset, 0U) && maybe_gt (ysize, xsize))
     {
       info->representable_p = true;
       /* If this is a big endian paradoxical subreg, which uses more
@@ -3761,20 +3767,19 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 
   /* If registers store different numbers of bits in the different
      modes, we cannot generally form this subreg.  */
+  poly_uint64 regsize_xmode, regsize_ymode;
   if (!HARD_REGNO_NREGS_HAS_PADDING (xregno, xmode)
       && !HARD_REGNO_NREGS_HAS_PADDING (xregno, ymode)
-      && (xsize % nregs_xmode) == 0
-      && (ysize % nregs_ymode) == 0)
+      && multiple_p (xsize, nregs_xmode, &regsize_xmode)
+      && multiple_p (ysize, nregs_ymode, &regsize_ymode))
     {
-      int regsize_xmode = xsize / nregs_xmode;
-      int regsize_ymode = ysize / nregs_ymode;
       if (!rknown
-	  && ((nregs_ymode > 1 && regsize_xmode > regsize_ymode)
-	      || (nregs_xmode > 1 && regsize_ymode > regsize_xmode)))
+	  && ((nregs_ymode > 1 && maybe_gt (regsize_xmode, regsize_ymode))
+	      || (nregs_xmode > 1 && maybe_gt (regsize_ymode, regsize_xmode))))
 	{
 	  info->representable_p = false;
-	  info->nregs = CEIL (ysize, regsize_xmode);
-	  if (!can_div_trunc_p (offset, regsize_xmode, &info->offset))
+	  if (!can_div_away_from_zero_p (ysize, regsize_xmode, &info->nregs)
+	      || !can_div_trunc_p (offset, regsize_xmode, &info->offset))
 	    /* Checked by validate_subreg.  We must know at compile time
 	       which inner registers are being accessed.  */
 	    gcc_unreachable ();
@@ -3800,7 +3805,7 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
       HOST_WIDE_INT count;
       if (!rknown
 	  && WORDS_BIG_ENDIAN == REG_WORDS_BIG_ENDIAN
-	  && regsize_xmode == regsize_ymode
+	  && known_eq (regsize_xmode, regsize_ymode)
 	  && constant_multiple_p (offset, regsize_ymode, &count))
 	{
 	  info->representable_p = true;
@@ -3837,8 +3842,7 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
      be exact, otherwise we don't know how to verify the constraint.
      These conditions may be relaxed but subreg_regno_offset would
      need to be redesigned.  */
-  gcc_assert ((xsize % num_blocks) == 0);
-  poly_uint64 bytes_per_block = xsize / num_blocks;
+  poly_uint64 bytes_per_block = exact_div (xsize, num_blocks);
 
   /* Get the number of the first block that contains the subreg and the byte
      offset of the subreg from the start of that block.  */

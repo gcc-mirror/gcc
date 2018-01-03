@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtlanal.c (subreg_get_info): Handle polynomial mode sizes.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (can_change_dest_mode): Handle polynomial
 	REGMODE_NATURAL_SIZE.
 	* expmed.c (store_bit_field_1): Likewise.
