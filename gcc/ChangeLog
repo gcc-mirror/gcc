@@ -1,5 +1,11 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-stmts.c (vect_check_load_store_mask): New function,
+	split out from...
+	(vectorizable_mask_load_store): ...here.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vectorizer.h (vec_load_store_type): Moved from tree-vec-stmts.c
 	(vect_model_store_cost): Take a vec_load_store_type instead of a
 	vect_def_type.

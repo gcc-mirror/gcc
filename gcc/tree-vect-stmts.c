@@ -2024,6 +2024,74 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp,
   return true;
 }
 
+/* Return true if boolean argument MASK is suitable for vectorizing
+   conditional load or store STMT.  When returning true, store the
+   type of the vectorized mask in *MASK_VECTYPE_OUT.  */
+
+static bool
+vect_check_load_store_mask (gimple *stmt, tree mask, tree *mask_vectype_out)
+{
+  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "mask argument is not a boolean.\n");
+      return false;
+    }
+
+  if (TREE_CODE (mask) != SSA_NAME)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "mask argument is not an SSA name.\n");
+      return false;
+    }
+
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  gimple *def_stmt;
+  enum vect_def_type dt;
+  tree mask_vectype;
+  if (!vect_is_simple_use (mask, stmt_info->vinfo, &def_stmt, &dt,
+			   &mask_vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "mask use not simple.\n");
+      return false;
+    }
+
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  if (!mask_vectype)
+    mask_vectype = get_mask_type_for_scalar_type (TREE_TYPE (vectype));
+
+  if (!mask_vectype || !VECTOR_BOOLEAN_TYPE_P (mask_vectype))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "could not find an appropriate vector mask type.\n");
+      return false;
+    }
+
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (mask_vectype),
+		TYPE_VECTOR_SUBPARTS (vectype)))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "vector mask type ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, mask_vectype);
+	  dump_printf (MSG_MISSED_OPTIMIZATION,
+		       " does not match vector data type ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, vectype);
+	  dump_printf (MSG_MISSED_OPTIMIZATION, ".\n");
+	}
+      return false;
+    }
+
+  *mask_vectype_out = mask_vectype;
+  return true;
+}
+
 /* Function vectorizable_mask_load_store.
 
    Check if STMT performs a conditional load or store that can be vectorized.
@@ -2066,11 +2134,6 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   ncopies = vect_get_num_copies (loop_vinfo, vectype);
   gcc_assert (ncopies >= 1);
 
-  mask = gimple_call_arg (stmt, 2);
-
-  if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
-    return false;
-
   /* FORNOW. This restriction should be relaxed.  */
   if (nested_in_vect_loop && ncopies > 1)
     {
@@ -2090,21 +2153,11 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!STMT_VINFO_DATA_REF (stmt_info))
     return false;
 
+  mask = gimple_call_arg (stmt, 2);
+  if (!vect_check_load_store_mask (stmt, mask, &mask_vectype))
+    return false;
+
   elem_type = TREE_TYPE (vectype);
-
-  if (TREE_CODE (mask) != SSA_NAME)
-    return false;
-
-  if (!vect_is_simple_use (mask, loop_vinfo, &def_stmt, &dt, &mask_vectype))
-    return false;
-
-  if (!mask_vectype)
-    mask_vectype = get_mask_type_for_scalar_type (TREE_TYPE (vectype));
-
-  if (!mask_vectype || !VECTOR_BOOLEAN_TYPE_P (mask_vectype)
-      || maybe_ne (TYPE_VECTOR_SUBPARTS (mask_vectype),
-		   TYPE_VECTOR_SUBPARTS (vectype)))
-    return false;
 
   if (gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
     {
