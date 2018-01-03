@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* internal-fn.c (expand_vector_ubsan_overflow): Handle polynomial
+	numbers of elements.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* match.pd: Cope with polynomial numbers of vector elements.
 
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
