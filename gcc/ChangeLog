@@ -1,5 +1,20 @@
 2018-01-03  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/83593
+	* tree-ssa-strlen.c: Include tree-cfg.h.
+	(strlen_check_and_optimize_stmt): Add new argument cleanup_eh.
+	(strlen_dom_walker): Add new member variable m_cleanup_cfg.
+	(strlen_dom_walker::strlen_dom_walker): Initialize m_cleanup_cfg
+	to false.
+	(strlen_dom_walker::before_dom_children): Call
+	gimple_purge_dead_eh_edges. Dump tranformation with details
+	dump flags.
+	(strlen_dom_walker::before_dom_children): Update call by adding
+	new argument cleanup_eh.
+	(pass_strlen::execute): Return TODO_cleanup_cfg if needed.
+
+2018-01-03  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/83549
 	* cif-code.def (VARIADIC_THUNK): New enum value.
 	* ipa-fnsummary.c (compute_fn_summary): Do not inline variadic
