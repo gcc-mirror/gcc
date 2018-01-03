@@ -7201,10 +7201,12 @@ vectorizable_live_operation (gimple *stmt,
   imm_use_iterator imm_iter;
   tree lhs, lhs_type, bitsize, vec_bitsize;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
   gimple *use_stmt;
   auto_vec<tree> vec_oprnds;
+  int vec_entry = 0;
+  poly_uint64 vec_index = 0;
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
 
@@ -7233,6 +7235,30 @@ vectorizable_live_operation (gimple *stmt,
   else
     ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
+  if (slp_node)
+    {
+      gcc_assert (slp_index >= 0);
+
+      int num_scalar = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+
+      /* Get the last occurrence of the scalar index from the concatenation of
+	 all the slp vectors. Calculate which slp vector it is and the index
+	 within.  */
+      poly_uint64 pos = (num_vec * nunits) - num_scalar + slp_index;
+
+      /* Calculate which vector contains the result, and which lane of
+	 that vector we need.  */
+      if (!can_div_trunc_p (pos, nunits, &vec_entry, &vec_index))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Cannot determine which vector holds the"
+			     " final result.\n");
+	  return false;
+	}
+    }
+
   if (!vec_stmt)
     /* No transformation required.  */
     return true;
@@ -7254,18 +7280,6 @@ vectorizable_live_operation (gimple *stmt,
   tree vec_lhs, bitstart;
   if (slp_node)
     {
-      gcc_assert (slp_index >= 0);
-
-      int num_scalar = SLP_TREE_SCALAR_STMTS (slp_node).length ();
-      int num_vec = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-
-      /* Get the last occurrence of the scalar index from the concatenation of
-	 all the slp vectors. Calculate which slp vector it is and the index
-	 within.  */
-      int pos = (num_vec * nunits) - num_scalar + slp_index;
-      int vec_entry = pos / nunits;
-      int vec_index = pos % nunits;
-
       /* Get the correct slp vectorized stmt.  */
       vec_lhs = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[vec_entry]);
 
