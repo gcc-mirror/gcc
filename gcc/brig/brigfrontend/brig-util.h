@@ -107,4 +107,12 @@ std::string gccbrig_hsa_reg_name_from_id (size_t reg_hash);
 
 void gccbrig_print_reg_use_info (FILE *dump, const regs_use_index &info);
 
+/* Return the number of elements in a VECTOR_TYPE.  BRIG does not support
+   variable-length vectors.  */
+inline unsigned HOST_WIDE_INT
+gccbrig_type_vector_subparts (const_tree type)
+{
+  return TYPE_VECTOR_SUBPARTS (type);
+}
+
 #endif

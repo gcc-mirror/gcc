@@ -1,3 +1,22 @@
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* brigfrontend/brig-util.h (gccbrig_type_vector_subparts): New
+	function.
+	* brigfrontend/brig-basic-inst-handler.cc
+	(brig_basic_inst_handler::build_shuffle): Use it instead of
+	TYPE_VECTOR_SUBPARTS.
+	(brig_basic_inst_handler::build_unpack): Likewise.
+	(brig_basic_inst_handler::build_pack): Likewise.
+	(brig_basic_inst_handler::build_unpack_lo_or_hi): Likewise.
+	(brig_basic_inst_handler::operator ()): Likewise.
+	(brig_basic_inst_handler::build_lower_element_broadcast): Likewise.
+	* brigfrontend/brig-code-entry-handler.cc
+	(brig_code_entry_handler::get_tree_cst_for_hsa_operand): Likewise.
+	(brig_code_entry_handler::get_comparison_result_type): Likewise.
+	(brig_code_entry_handler::expand_or_call_builtin): Likewise.
+
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* brig-lang.c (brig_attribute_table): Swap affects_type_identity
