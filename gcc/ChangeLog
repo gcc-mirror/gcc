@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (can_change_dest_mode): Handle polynomial
+	REGMODE_NATURAL_SIZE.
+	* expmed.c (store_bit_field_1): Likewise.
+	* expr.c (store_constructor): Likewise.
+	* emit-rtl.c (validate_subreg): Operate on polynomial mode sizes
+	and polynomial REGMODE_NATURAL_SIZE.
+	(gen_lowpart_common): Likewise.
+	* reginfo.c (record_subregs_of_mode): Likewise.
+	* rtlanal.c (read_modify_subreg_p): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* internal-fn.c (expand_vector_ubsan_overflow): Handle polynomial
 	numbers of elements.
 
