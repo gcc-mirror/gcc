@@ -1038,7 +1038,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @}
 
+#if __cpp_deduction_guides >= 201606
   template <typename _Tp> optional(_Tp) -> optional<_Tp>;
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
