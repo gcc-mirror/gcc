@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* builtins.c (expand_ifn_atomic_compare_exchange_into_call): Assert
+	that the mode size is in the set {1, 2, 4, 8, 16}.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* var-tracking.c (adjust_mems): Treat mode sizes as polynomial.
 	Use plus_constant instead of gen_rtx_PLUS.
 
