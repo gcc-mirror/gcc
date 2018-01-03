@@ -1337,18 +1337,19 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	  != CODE_FOR_nothing
 	  && TREE_CODE (vec1) == VECTOR_CST
 	  && initializer_zerop (vec1)
-	  && indices[0]
-	  && indices[0] < elements)
+	  && maybe_ne (indices[0], 0)
+	  && known_lt (indices[0], elements))
 	{
 	  bool ok_p = indices.series_p (0, 1, indices[0], 1);
 	  if (!ok_p)
 	    {
 	      for (i = 1; i < elements; ++i)
 		{
-		  unsigned int expected = i + indices[0];
+		  poly_int64 expected = i + indices[0];
 		  /* Indices into the second vector are all equivalent.  */
-		  if (MIN (elements, (unsigned) indices[i])
-		      != MIN (elements, expected))
+		  if (maybe_lt (indices[i], elements)
+		      ? maybe_ne (indices[i], expected)
+		      : maybe_lt (expected, elements))
 		    break;
 		}
 	      ok_p = i == elements;

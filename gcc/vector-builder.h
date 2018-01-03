@@ -284,7 +284,8 @@ vector_builder<T, Derived>::stepped_sequence_p (unsigned int start,
 	  || !derived ()->integral_p (elt3))
 	return false;
 
-      if (derived ()->step (elt1, elt2) != derived ()->step (elt2, elt3))
+      if (maybe_ne (derived ()->step (elt1, elt2),
+		    derived ()->step (elt2, elt3)))
 	return false;
 
       if (!derived ()->can_elide_p (elt3))

@@ -66,7 +66,7 @@ template<typename T>
 inline bool
 int_vector_builder<T>::equal_p (T elt1, T elt2) const
 {
-  return elt1 == elt2;
+  return known_eq (elt1, elt2);
 }
 
 /* Return the value of element ELT2 minus the value of element ELT1.  */

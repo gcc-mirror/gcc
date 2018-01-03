@@ -95,7 +95,7 @@ vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,
 			    element_type in_base, element_type in_step) const
 {
   /* Check the base value.  */
-  if (clamp (m_encoding.elt (out_base)) != clamp (in_base))
+  if (maybe_ne (clamp (m_encoding.elt (out_base)), clamp (in_base)))
     return false;
 
   unsigned int full_nelts = m_encoding.full_nelts ();
@@ -127,7 +127,7 @@ vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,
 
       element_type v0 = m_encoding.elt (out_base - out_step);
       element_type v1 = m_encoding.elt (out_base);
-      if (clamp (v1 - v0) != in_step)
+      if (maybe_ne (clamp (v1 - v0), in_step))
 	return false;
 
       out_base += out_step;
@@ -146,7 +146,7 @@ vec_perm_indices::all_in_range_p (element_type start, element_type size) const
   unsigned int nelts_per_pattern = m_encoding.nelts_per_pattern ();
   unsigned int base_nelts = npatterns * MIN (nelts_per_pattern, 2);
   for (unsigned int i = 0; i < base_nelts; ++i)
-    if (m_encoding[i] < start || (m_encoding[i] - start) >= size)
+    if (!known_in_range_p (m_encoding[i], start, size))
       return false;
 
   /* For stepped encodings, check the full range of the series.  */
@@ -174,8 +174,11 @@ vec_perm_indices::all_in_range_p (element_type start, element_type size) const
 	     wide enough for overflow not to be a problem.  */
 	  element_type headroom_down = base1 - start;
 	  element_type headroom_up = size - headroom_down - 1;
-	  if (headroom_up < step * step_nelts
-	      && headroom_down < (limit - step) * step_nelts)
+	  HOST_WIDE_INT diff;
+	  if ((!step.is_constant (&diff)
+	       || maybe_lt (headroom_up, diff * step_nelts))
+	      && (!(limit - step).is_constant (&diff)
+		  || maybe_lt (headroom_down, diff * step_nelts)))
 	    return false;
 	}
     }
@@ -191,14 +194,14 @@ tree_to_vec_perm_builder (vec_perm_builder *builder, tree cst)
 {
   unsigned int encoded_nelts = vector_cst_encoded_nelts (cst);
   for (unsigned int i = 0; i < encoded_nelts; ++i)
-    if (!tree_fits_shwi_p (VECTOR_CST_ENCODED_ELT (cst, i)))
+    if (!tree_fits_poly_int64_p (VECTOR_CST_ENCODED_ELT (cst, i)))
       return false;
 
   builder->new_vector (TYPE_VECTOR_SUBPARTS (TREE_TYPE (cst)),
 		       VECTOR_CST_NPATTERNS (cst),
 		       VECTOR_CST_NELTS_PER_PATTERN (cst));
   for (unsigned int i = 0; i < encoded_nelts; ++i)
-    builder->quick_push (tree_to_shwi (VECTOR_CST_ENCODED_ELT (cst, i)));
+    builder->quick_push (tree_to_poly_int64 (VECTOR_CST_ENCODED_ELT (cst, i)));
   return true;
 }
 

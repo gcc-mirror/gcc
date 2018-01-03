@@ -3727,8 +3727,10 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 				       vect_location, 
 				       "unsupported vect permute { ");
 		      for (i = 0; i < nunits; ++i)
-			dump_printf (MSG_MISSED_OPTIMIZATION,
-				     HOST_WIDE_INT_PRINT_DEC " ", mask[i]);
+			{
+			  dump_dec (MSG_MISSED_OPTIMIZATION, mask[i]);
+			  dump_printf (MSG_MISSED_OPTIMIZATION, " ");
+			}
 		      dump_printf (MSG_MISSED_OPTIMIZATION, "}\n");
 		    }
 		  gcc_assert (analyze_only);

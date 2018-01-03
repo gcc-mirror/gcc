@@ -13625,7 +13625,7 @@ aarch64_evpc_tbl (struct expand_vec_perm_d *d)
 	 mode on NEON.  Reverse the index within each word but not the word
 	 itself.  */
       rperm[i] = GEN_INT (BYTES_BIG_ENDIAN ? d->perm[i] ^ (nunits - 1)
-					   : d->perm[i]);
+					   : (HOST_WIDE_INT) d->perm[i]);
     }
   sel = gen_rtx_CONST_VECTOR (vmode, gen_rtvec_v (nelt, rperm));
   sel = force_reg (vmode, sel);

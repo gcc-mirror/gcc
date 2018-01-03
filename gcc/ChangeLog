@@ -1,4 +1,24 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* vec-perm-indices.h (vec_perm_builder): Change element type
+	from HOST_WIDE_INT to poly_int64.
+	(vec_perm_indices::element_type): Update accordingly.
+	(vec_perm_indices::clamp): Handle polynomial element_types.
+	* vec-perm-indices.c (vec_perm_indices::series_p): Likewise.
+	(vec_perm_indices::all_in_range_p): Likewise.
+	(tree_to_vec_perm_builder): Check for poly_int64 trees rather
+	than shwi trees.
+	* vector-builder.h (vector_builder::stepped_sequence_p): Handle
+	polynomial vec_perm_indices element types.
+	* int-vector-builder.h (int_vector_builder::equal_p): Likewise.
+	* fold-const.c (fold_vec_perm): Likewise.
+	* optabs.c (shift_amt_for_vec_perm_mask): Likewise.
+	* tree-vect-generic.c (lower_vec_perm): Likewise.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Likewise.
+	* config/aarch64/aarch64.c (aarch64_evpc_tbl): Cast d->perm
+	element type to HOST_WIDE_INT.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
