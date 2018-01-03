@@ -378,7 +378,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	     tree funtype ATTRIBUTE_UNUSED,
 	     poly_int64 stack_size ATTRIBUTE_UNUSED,
 	     poly_int64 rounded_stack_size,
-	     HOST_WIDE_INT struct_value_size ATTRIBUTE_UNUSED,
+	     poly_int64 struct_value_size ATTRIBUTE_UNUSED,
 	     rtx next_arg_reg ATTRIBUTE_UNUSED, rtx valreg,
 	     int old_inhibit_defer_pop, rtx call_fusage, int ecf_flags,
 	     cumulative_args_t args_so_far ATTRIBUTE_UNUSED)
@@ -438,7 +438,8 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 					 next_arg_reg, NULL_RTX);
       else
 	pat = targetm.gen_sibcall (funmem, rounded_stack_size_rtx,
-				   next_arg_reg, GEN_INT (struct_value_size));
+				   next_arg_reg,
+				   gen_int_mode (struct_value_size, Pmode));
     }
   /* If the target has "call" or "call_value" insns, then prefer them
      if no arguments are actually popped.  If the target does not have
@@ -471,7 +472,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 				      next_arg_reg, NULL_RTX);
       else
 	pat = targetm.gen_call (funmem, rounded_stack_size_rtx, next_arg_reg,
-				GEN_INT (struct_value_size));
+				gen_int_mode (struct_value_size, Pmode));
     }
   emit_insn (pat);
 
@@ -3237,7 +3238,7 @@ expand_call (tree exp, rtx target, int ignore)
   /* Size of aggregate value wanted, or zero if none wanted
      or if we are using the non-reentrant PCC calling convention
      or expecting the value in registers.  */
-  HOST_WIDE_INT struct_value_size = 0;
+  poly_int64 struct_value_size = 0;
   /* Nonzero if called function returns an aggregate in memory PCC style,
      by returning the address of where to find it.  */
   int pcc_struct_value = 0;
@@ -3399,7 +3400,8 @@ expand_call (tree exp, rtx target, int ignore)
       }
 #else /* not PCC_STATIC_STRUCT_RETURN */
       {
-	struct_value_size = int_size_in_bytes (rettype);
+	if (!poly_int_tree_p (TYPE_SIZE_UNIT (rettype), &struct_value_size))
+	  struct_value_size = -1;
 
 	/* Even if it is semantically safe to use the target as the return
 	   slot, it may be not sufficiently aligned for the return type.  */

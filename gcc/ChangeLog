@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* calls.c (emit_call_1, expand_call): Change struct_value_size from
+	a HOST_WIDE_INT to a poly_int64.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* calls.c (load_register_parameters): Cope with polynomial
 	mode sizes.  Require a constant size for BLKmode parameters
 	that aren't described by a PARALLEL.  If BLOCK_REG_PADDING
