@@ -1,4 +1,14 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/rtl.texi (MAX_BITSIZE_MODE_ANY_MODE): Describe how the default
+	is calculated and how it can be overridden.
+	* genmodes.c (max_bitsize_mode_any_mode): New variable.
+	(create_modes): Initialize it from MAX_BITSIZE_MODE_ANY_MODE,
+	if defined.
+	(emit_max_int): Use it to set the output MAX_BITSIZE_MODE_ANY_MODE,
+	if nonzero.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

@@ -1509,7 +1509,12 @@ compute integer values.
 
 @findex MAX_BITSIZE_MODE_ANY_MODE
 @item MAX_BITSIZE_MODE_ANY_MODE
-The bitsize of the largest mode on the target.   
+The bitsize of the largest mode on the target.  The default value is
+the largest mode size given in the mode definition file, which is
+always correct for targets whose modes have a fixed size.  Targets
+that might increase the size of a mode beyond this default should define
+@code{MAX_BITSIZE_MODE_ANY_MODE} to the actual upper limit in
+@file{@var{machine}-modes.def}.
 @end table
 
 @findex byte_mode
