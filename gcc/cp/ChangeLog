@@ -1,5 +1,9 @@
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/83602
+	* name-lookup.c (lookup_name_fuzzy): Don't use macro_use_before_def
+	for builtin macros.
+
 	PR c++/83634
 	* cp-gimplify.c (cp_fold) <case NOP_EXPR>: If the operand folds to
 	error_mark_node, return error_mark_node.

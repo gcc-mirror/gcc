@@ -1,5 +1,8 @@
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/83602
+	* g++.dg/cpp/pr83602.C: New test.
+
 	PR c++/83634
 	* g++.dg/parse/pr83634.C: New test.
 
