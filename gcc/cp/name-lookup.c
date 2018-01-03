@@ -5757,7 +5757,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
       /* If we have an exact match for a macro name, then the
 	 macro has been used before it was defined.  */
       cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
-      if (macro)
+      if (macro && (macro->flags & NODE_BUILTIN) == 0)
 	return name_hint (NULL,
 			  new macro_use_before_def (loc, macro));
     }
