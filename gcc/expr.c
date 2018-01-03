@@ -5922,7 +5922,13 @@ count_type_elements (const_tree type, bool for_ctor_p)
       return 2;
 
     case VECTOR_TYPE:
-      return TYPE_VECTOR_SUBPARTS (type);
+      {
+	unsigned HOST_WIDE_INT nelts;
+	if (TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
+	  return nelts;
+	else
+	  return -1;
+      }
 
     case INTEGER_TYPE:
     case REAL_TYPE:
@@ -6024,8 +6030,10 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 
 	case VECTOR_CST:
 	  {
-	    unsigned i;
-	    for (i = 0; i < VECTOR_CST_NELTS (value); ++i)
+	    /* We can only construct constant-length vectors using
+	       CONSTRUCTOR.  */
+	    unsigned int nunits = VECTOR_CST_NELTS (value).to_constant ();
+	    for (unsigned int i = 0; i < nunits; ++i)
 	      {
 		tree v = VECTOR_CST_ELT (value, i);
 		if (!initializer_zerop (v))
@@ -6669,7 +6677,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	HOST_WIDE_INT bitsize;
 	HOST_WIDE_INT bitpos;
 	rtvec vector = NULL;
-	unsigned n_elts;
+	poly_uint64 n_elts;
+	unsigned HOST_WIDE_INT const_n_elts;
 	alias_set_type alias;
 	bool vec_vec_init_p = false;
 	machine_mode mode = GET_MODE (target);
@@ -6694,7 +6703,9 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	  }
 
 	n_elts = TYPE_VECTOR_SUBPARTS (type);
-	if (REG_P (target) && VECTOR_MODE_P (mode))
+	if (REG_P (target)
+	    && VECTOR_MODE_P (mode)
+	    && n_elts.is_constant (&const_n_elts))
 	  {
 	    machine_mode emode = eltmode;
 
@@ -6703,14 +6714,15 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		    == VECTOR_TYPE))
 	      {
 		tree etype = TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value);
-		gcc_assert (CONSTRUCTOR_NELTS (exp) * TYPE_VECTOR_SUBPARTS (etype)
-			    == n_elts);
+		gcc_assert (known_eq (CONSTRUCTOR_NELTS (exp)
+				      * TYPE_VECTOR_SUBPARTS (etype),
+				      n_elts));
 		emode = TYPE_MODE (etype);
 	      }
 	    icode = convert_optab_handler (vec_init_optab, mode, emode);
 	    if (icode != CODE_FOR_nothing)
 	      {
-		unsigned int i, n = n_elts;
+		unsigned int i, n = const_n_elts;
 
 		if (emode != eltmode)
 		  {
@@ -6749,7 +6761,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 
 	    /* Clear the entire vector first if there are any missing elements,
 	       or if the incidence of zero elements is >= 75%.  */
-	    need_to_clear = (count < n_elts || 4 * zero_count >= 3 * count);
+	    need_to_clear = (maybe_lt (count, n_elts)
+			     || 4 * zero_count >= 3 * count);
 	  }
 
 	if (need_to_clear && maybe_gt (size, 0) && !vector)
@@ -10082,9 +10095,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	if (!tmp)
 	  {
 	    vec<constructor_elt, va_gc> *v;
-	    unsigned i;
-	    vec_alloc (v, VECTOR_CST_NELTS (exp));
-	    for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+	    /* Constructors need to be fixed-length.  FIXME.  */
+	    unsigned int nunits = VECTOR_CST_NELTS (exp).to_constant ();
+	    vec_alloc (v, nunits);
+	    for (unsigned int i = 0; i < nunits; ++i)
 	      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, VECTOR_CST_ELT (exp, i));
 	    tmp = build_constructor (type, v);
 	  }
@@ -11837,9 +11851,10 @@ const_scalar_mask_from_tree (scalar_int_mode mode, tree exp)
 {
   wide_int res = wi::zero (GET_MODE_PRECISION (mode));
   tree elt;
-  unsigned i;
 
-  for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+  /* The result has a fixed number of bits so the input must too.  */
+  unsigned int nunits = VECTOR_CST_NELTS (exp).to_constant ();
+  for (unsigned int i = 0; i < nunits; ++i)
     {
       elt = VECTOR_CST_ELT (exp, i);
       gcc_assert (TREE_CODE (elt) == INTEGER_CST);

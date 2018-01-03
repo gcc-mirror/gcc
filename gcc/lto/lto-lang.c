@@ -1012,7 +1012,8 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
       if (inner_type != NULL_TREE)
 	return build_complex_type (inner_type);
     }
-  else if (VECTOR_MODE_P (mode))
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = lto_type_for_mode (inner_mode, unsigned_p);

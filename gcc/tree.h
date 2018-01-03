@@ -2035,15 +2035,6 @@ extern machine_mode vector_type_mode (const_tree);
    If set in a INTEGER_TYPE, indicates a character type.  */
 #define TYPE_STRING_FLAG(NODE) (TYPE_CHECK (NODE)->type_common.string_flag)
 
-/* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
-#define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) \
-  (HOST_WIDE_INT_1U \
-   << VECTOR_TYPE_CHECK (VECTOR_TYPE)->type_common.precision)
-
-/* Set precision to n when we have 2^n sub-parts of the vector.  */
-#define SET_TYPE_VECTOR_SUBPARTS(VECTOR_TYPE, X) \
-  (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type_common.precision = exact_log2 (X))
-
 /* Nonzero in a VECTOR_TYPE if the frontends should not emit warnings
    about missing conversions to other vector types of the same size.  */
 #define TYPE_VECTOR_OPAQUE(NODE) \
@@ -3677,6 +3668,64 @@ id_equal (const char *str, const_tree id)
   return !strcmp (str, IDENTIFIER_POINTER (id));
 }
 
+/* Return the number of elements in the VECTOR_TYPE given by NODE.  */
+
+inline poly_uint64
+TYPE_VECTOR_SUBPARTS (const_tree node)
+{
+  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 2);
+  unsigned int precision = VECTOR_TYPE_CHECK (node)->type_common.precision;
+  if (NUM_POLY_INT_COEFFS == 2)
+    {
+      poly_uint64 res = 0;
+      res.coeffs[0] = 1 << (precision & 0xff);
+      if (precision & 0x100)
+	res.coeffs[1] = 1 << (precision & 0xff);
+      return res;
+    }
+  else
+    return 1 << precision;
+}
+
+/* Set the number of elements in VECTOR_TYPE NODE to SUBPARTS, which must
+   satisfy valid_vector_subparts_p.  */
+
+inline void
+SET_TYPE_VECTOR_SUBPARTS (tree node, poly_uint64 subparts)
+{
+  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 2);
+  unsigned HOST_WIDE_INT coeff0 = subparts.coeffs[0];
+  int index = exact_log2 (coeff0);
+  gcc_assert (index >= 0);
+  if (NUM_POLY_INT_COEFFS == 2)
+    {
+      unsigned HOST_WIDE_INT coeff1 = subparts.coeffs[1];
+      gcc_assert (coeff1 == 0 || coeff1 == coeff0);
+      VECTOR_TYPE_CHECK (node)->type_common.precision
+	= index + (coeff1 != 0 ? 0x100 : 0);
+    }
+  else
+    VECTOR_TYPE_CHECK (node)->type_common.precision = index;
+}
+
+/* Return true if we can construct vector types with the given number
+   of subparts.  */
+
+static inline bool
+valid_vector_subparts_p (poly_uint64 subparts)
+{
+  unsigned HOST_WIDE_INT coeff0 = subparts.coeffs[0];
+  if (!pow2p_hwi (coeff0))
+    return false;
+  if (NUM_POLY_INT_COEFFS == 2)
+    {
+      unsigned HOST_WIDE_INT coeff1 = subparts.coeffs[1];
+      if (coeff1 != 0 && coeff1 != coeff0)
+	return false;
+    }
+  return true;
+}
+
 #define error_mark_node			global_trees[TI_ERROR_MARK]
 
 #define intQI_type_node			global_trees[TI_INTQI_TYPE]
@@ -4121,16 +4170,10 @@ extern tree build_pointer_type (tree);
 extern tree build_reference_type_for_mode (tree, machine_mode, bool);
 extern tree build_reference_type (tree);
 extern tree build_vector_type_for_mode (tree, machine_mode);
-extern tree build_vector_type (tree innertype, int nunits);
-/* Temporary.  */
-inline tree
-build_vector_type (tree innertype, poly_uint64 nunits)
-{
-  return build_vector_type (innertype, (int) nunits.to_constant ());
-}
+extern tree build_vector_type (tree, poly_int64);
 extern tree build_truth_vector_type (poly_uint64, poly_uint64);
 extern tree build_same_sized_truth_vector_type (tree vectype);
-extern tree build_opaque_vector_type (tree innertype, int nunits);
+extern tree build_opaque_vector_type (tree, poly_int64);
 extern tree build_index_type (tree);
 extern tree build_array_type (tree, tree, bool = false);
 extern tree build_nonshared_array_type (tree, tree);

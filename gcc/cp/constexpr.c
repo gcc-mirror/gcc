@@ -2338,7 +2338,8 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 	  len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
 	}
       else if (TREE_CODE (ary) == VECTOR_CST)
-	len = VECTOR_CST_NELTS (ary);
+	/* We don't create variable-length VECTOR_CSTs.  */
+	len = VECTOR_CST_NELTS (ary).to_constant ();
       else
 	{
 	  /* We can't do anything with other tree codes, so use
@@ -3115,7 +3116,8 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 
-	      if (offset / part_widthi < TYPE_VECTOR_SUBPARTS (op00type))
+	      if (known_lt (offset / part_widthi,
+			    TYPE_VECTOR_SUBPARTS (op00type)))
 		return fold_build3_loc (loc,
 					BIT_FIELD_REF, type, op00,
 					part_width, index);

@@ -50,7 +50,7 @@ static void expand_vector_operations_1 (gimple_stmt_iterator *);
 static unsigned int
 nunits_for_known_piecewise_op (const_tree type)
 {
-  return TYPE_VECTOR_SUBPARTS (type);
+  return TYPE_VECTOR_SUBPARTS (type).to_constant ();
 }
 
 /* Return true if TYPE1 has more elements than TYPE2, where either
@@ -917,9 +917,9 @@ expand_vector_condition (gimple_stmt_iterator *gsi)
      Similarly for vbfld_10 instead of x_2 < y_3.  */
   if (VECTOR_BOOLEAN_TYPE_P (type)
       && SCALAR_INT_MODE_P (TYPE_MODE (type))
-      && (GET_MODE_BITSIZE (TYPE_MODE (type))
-	  < (TYPE_VECTOR_SUBPARTS (type)
-	     * GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (type)))))
+      && known_lt (GET_MODE_BITSIZE (TYPE_MODE (type)),
+		   TYPE_VECTOR_SUBPARTS (type)
+		   * GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type))))
       && (a_is_comparison
 	  ? useless_type_conversion_p (type, TREE_TYPE (a))
 	  : expand_vec_cmp_expr_p (TREE_TYPE (a1), type, TREE_CODE (a))))
@@ -1084,14 +1084,17 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
   tree lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
   tree type = TREE_TYPE (rhs);
-  unsigned int i, j, nelts = TYPE_VECTOR_SUBPARTS (type);
+  unsigned int i, j;
+  unsigned HOST_WIDE_INT nelts;
   bool all_same = true;
   constructor_elt *elt;
   gimple *g;
   tree base = NULL_TREE;
   optab op;
 
-  if (nelts <= 2 || CONSTRUCTOR_NELTS (rhs) != nelts)
+  if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts)
+      || nelts <= 2
+      || CONSTRUCTOR_NELTS (rhs) != nelts)
     return;
   op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
   if (op == unknown_optab
@@ -1303,13 +1306,16 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   tree mask_type = TREE_TYPE (mask);
   tree vect_elt_type = TREE_TYPE (vect_type);
   tree mask_elt_type = TREE_TYPE (mask_type);
-  unsigned int elements = TYPE_VECTOR_SUBPARTS (vect_type);
+  unsigned HOST_WIDE_INT elements;
   vec<constructor_elt, va_gc> *v;
   tree constr, t, si, i_val;
   tree vec0tmp = NULL_TREE, vec1tmp = NULL_TREE, masktmp = NULL_TREE;
   bool two_operand_p = !operand_equal_p (vec0, vec1, 0);
   location_t loc = gimple_location (gsi_stmt (*gsi));
   unsigned i;
+
+  if (!TYPE_VECTOR_SUBPARTS (vect_type).is_constant (&elements))
+    return;
 
   if (TREE_CODE (mask) == SSA_NAME)
     {
@@ -1338,17 +1344,18 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	  && TREE_CODE (vec1) == VECTOR_CST
 	  && initializer_zerop (vec1)
 	  && maybe_ne (indices[0], 0)
-	  && known_lt (indices[0], elements))
+	  && known_lt (poly_uint64 (indices[0]), elements))
 	{
 	  bool ok_p = indices.series_p (0, 1, indices[0], 1);
 	  if (!ok_p)
 	    {
 	      for (i = 1; i < elements; ++i)
 		{
-		  poly_int64 expected = i + indices[0];
+		  poly_uint64 actual = indices[i];
+		  poly_uint64 expected = i + indices[0];
 		  /* Indices into the second vector are all equivalent.  */
-		  if (maybe_lt (indices[i], elements)
-		      ? maybe_ne (indices[i], expected)
+		  if (maybe_lt (actual, elements)
+		      ? maybe_ne (actual, expected)
 		      : maybe_lt (expected, elements))
 		    break;
 		}
@@ -1472,7 +1479,7 @@ get_compute_type (enum tree_code code, optab op, tree type)
 	= type_for_widest_vector_mode (TREE_TYPE (type), op);
       if (vector_compute_type != NULL_TREE
 	  && subparts_gt (compute_type, vector_compute_type)
-	  && TYPE_VECTOR_SUBPARTS (vector_compute_type) > 1
+	  && maybe_ne (TYPE_VECTOR_SUBPARTS (vector_compute_type), 1U)
 	  && (optab_handler (op, TYPE_MODE (vector_compute_type))
 	      != CODE_FOR_nothing))
 	compute_type = vector_compute_type;

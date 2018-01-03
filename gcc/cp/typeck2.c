@@ -1292,7 +1292,7 @@ process_init_constructor_array (tree type, tree init, int nested,
     }
   else
     /* Vectors are like simple fixed-size arrays.  */
-    len = TYPE_VECTOR_SUBPARTS (type);
+    unbounded = !TYPE_VECTOR_SUBPARTS (type).is_constant (&len);
 
   /* There must not be more initializers than needed.  */
   if (!unbounded && vec_safe_length (v) > len)

@@ -2287,7 +2287,8 @@ write_type (tree type)
 		  write_string ("Dv");
 		  /* Non-constant vector size would be encoded with
 		     _ expression, but we don't support that yet.  */
-		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type));
+		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type)
+					 .to_constant ());
 		  write_char ('_');
 		}
 	      else

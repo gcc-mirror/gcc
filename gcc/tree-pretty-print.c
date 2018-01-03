@@ -1793,13 +1793,18 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       {
 	unsigned i;
 	pp_string (pp, "{ ");
-	for (i = 0; i < VECTOR_CST_NELTS (node); ++i)
+	unsigned HOST_WIDE_INT nunits;
+	if (!VECTOR_CST_NELTS (node).is_constant (&nunits))
+	  nunits = vector_cst_encoded_nelts (node);
+	for (i = 0; i < nunits; ++i)
 	  {
 	    if (i != 0)
 	      pp_string (pp, ", ");
 	    dump_generic_node (pp, VECTOR_CST_ELT (node, i),
 			       spc, flags, false);
 	  }
+	if (!VECTOR_CST_NELTS (node).is_constant ())
+	  pp_string (pp, ", ...");
 	pp_string (pp, " }");
       }
       break;

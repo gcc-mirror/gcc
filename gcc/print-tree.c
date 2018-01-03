@@ -630,7 +630,10 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
       else if (code == ARRAY_TYPE)
 	print_node (file, "domain", TYPE_DOMAIN (node), indent + 4);
       else if (code == VECTOR_TYPE)
-	fprintf (file, " nunits:%d", (int) TYPE_VECTOR_SUBPARTS (node));
+	{
+	  fprintf (file, " nunits:");
+	  print_dec (TYPE_VECTOR_SUBPARTS (node), file);
+	}
       else if (code == RECORD_TYPE
 	       || code == UNION_TYPE
 	       || code == QUAL_UNION_TYPE)

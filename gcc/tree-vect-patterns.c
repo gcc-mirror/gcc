@@ -3714,8 +3714,9 @@ vect_recog_bool_pattern (vec<gimple *> *stmts, tree *type_in,
          vectorized matches the vector type of the result in
 	 size and number of elements.  */
       unsigned prec
-	= wi::udiv_trunc (wi::to_wide (TYPE_SIZE (vectype)),
-			  TYPE_VECTOR_SUBPARTS (vectype)).to_uhwi ();
+	= vector_element_size (tree_to_poly_uint64 (TYPE_SIZE (vectype)),
+			       TYPE_VECTOR_SUBPARTS (vectype));
+
       tree type
 	= build_nonstandard_integer_type (prec,
 					  TYPE_UNSIGNED (TREE_TYPE (var)));
@@ -3898,7 +3899,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
       vectype2 = get_mask_type_for_scalar_type (rhs1_type);
 
       if (!vectype1 || !vectype2
-	  || TYPE_VECTOR_SUBPARTS (vectype1) == TYPE_VECTOR_SUBPARTS (vectype2))
+	  || known_eq (TYPE_VECTOR_SUBPARTS (vectype1),
+		       TYPE_VECTOR_SUBPARTS (vectype2)))
 	return NULL;
 
       tmp = build_mask_conversion (rhs1, vectype1, stmt_vinfo, vinfo);
@@ -3973,7 +3975,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
       vectype2 = get_mask_type_for_scalar_type (rhs1_type);
 
       if (!vectype1 || !vectype2
-	  || TYPE_VECTOR_SUBPARTS (vectype1) == TYPE_VECTOR_SUBPARTS (vectype2))
+	  || known_eq (TYPE_VECTOR_SUBPARTS (vectype1),
+		       TYPE_VECTOR_SUBPARTS (vectype2)))
 	return NULL;
 
       /* If rhs1 is invariant and we can promote it leave the COND_EXPR
@@ -3981,7 +3984,8 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 	 unnecessary promotion stmts and increased vectorization factor.  */
       if (COMPARISON_CLASS_P (rhs1)
 	  && INTEGRAL_TYPE_P (rhs1_type)
-	  && TYPE_VECTOR_SUBPARTS (vectype1) < TYPE_VECTOR_SUBPARTS (vectype2))
+	  && known_le (TYPE_VECTOR_SUBPARTS (vectype1),
+		       TYPE_VECTOR_SUBPARTS (vectype2)))
 	{
 	  gimple *dummy;
 	  enum vect_def_type dt;

@@ -377,7 +377,8 @@ go_langhook_type_for_mode (machine_mode mode, int unsignedp)
      make sense for the middle-end to ask the frontend for a type
      which the frontend does not support.  However, at least for now
      it is required.  See PR 46805.  */
-  if (VECTOR_MODE_P (mode))
+  if (VECTOR_MODE_P (mode)
+      && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       tree inner;
 

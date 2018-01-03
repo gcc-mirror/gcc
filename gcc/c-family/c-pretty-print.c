@@ -1379,8 +1379,9 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
     case VECTOR_TYPE:
       if (TREE_CODE (e) == VECTOR_CST)
 	{
-	  unsigned i;
-	  for (i = 0; i < VECTOR_CST_NELTS (e); ++i)
+	  /* We don't create variable-length VECTOR_CSTs.  */
+	  unsigned int nunits = VECTOR_CST_NELTS (e).to_constant ();
+	  for (unsigned int i = 0; i < nunits; ++i)
 	    {
 	      if (i > 0)
 		pp_separate_with (pp, ',');

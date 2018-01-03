@@ -1625,15 +1625,16 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	      stmt_vec_info group_info
 		= vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (node)[0]);
 	      group_info = vinfo_for_stmt (GROUP_FIRST_ELEMENT (group_info));
-	      unsigned nunits
-		= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (group_info));
+	      unsigned HOST_WIDE_INT nunits;
 	      unsigned k, maxk = 0;
 	      FOR_EACH_VEC_ELT (SLP_TREE_LOAD_PERMUTATION (node), j, k)
 		if (k > maxk)
 		  maxk = k;
 	      /* In BB vectorization we may not actually use a loaded vector
 		 accessing elements in excess of GROUP_SIZE.  */
-	      if (maxk >= (GROUP_SIZE (group_info) & ~(nunits - 1)))
+	      tree vectype = STMT_VINFO_VECTYPE (group_info);
+	      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits)
+		  || maxk >= (GROUP_SIZE (group_info) & ~(nunits - 1)))
 		{
 		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				   "BB vectorization with gaps at the end of "
@@ -3257,7 +3258,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   else
     vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
   /* Enforced by vect_get_and_check_slp_defs.  */
-  nunits = TYPE_VECTOR_SUBPARTS (vector_type);
+  nunits = TYPE_VECTOR_SUBPARTS (vector_type).to_constant ();
 
   if (STMT_VINFO_DATA_REF (stmt_vinfo))
     {
@@ -3616,12 +3617,12 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   gimple *stmt = SLP_TREE_SCALAR_STMTS (node)[0];
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree mask_element_type = NULL_TREE, mask_type;
-  int nunits, vec_index = 0;
+  int vec_index = 0;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
-  int mask_element;
+  unsigned int mask_element;
   machine_mode mode;
-  unsigned HOST_WIDE_INT const_vf;
+  unsigned HOST_WIDE_INT nunits, const_vf;
 
   if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
     return false;
@@ -3631,8 +3632,10 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   mode = TYPE_MODE (vectype);
 
   /* At the moment, all permutations are represented using per-element
-     indices, so we can't cope with variable vectorization factors.  */
-  if (!vf.is_constant (&const_vf))
+     indices, so we can't cope with variable vector lengths or
+     vectorization factors.  */
+  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits)
+      || !vf.is_constant (&const_vf))
     return false;
 
   /* The generic VEC_PERM_EXPR code always uses an integral type of the
@@ -3640,7 +3643,6 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   mask_element_type = lang_hooks.types.type_for_mode
     (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
-  nunits = TYPE_VECTOR_SUBPARTS (vectype);
   vec_perm_builder mask (nunits, nunits, 1);
   mask.quick_grow (nunits);
   vec_perm_indices indices;
@@ -3671,7 +3673,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
      {c2,a3,b3,c3}.  */
 
   int vect_stmts_counter = 0;
-  int index = 0;
+  unsigned int index = 0;
   int first_vec_index = -1;
   int second_vec_index = -1;
   bool noop_p = true;
@@ -3681,8 +3683,8 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
     {
       for (int k = 0; k < group_size; k++)
 	{
-	  int i = (SLP_TREE_LOAD_PERMUTATION (node)[k]
-		   + j * STMT_VINFO_GROUP_SIZE (stmt_info));
+	  unsigned int i = (SLP_TREE_LOAD_PERMUTATION (node)[k]
+			    + j * STMT_VINFO_GROUP_SIZE (stmt_info));
 	  vec_index = i / nunits;
 	  mask_element = i % nunits;
 	  if (vec_index == first_vec_index
@@ -3710,8 +3712,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 	      return false;
 	    }
 
-	  gcc_assert (mask_element >= 0
-		      && mask_element < 2 * nunits);
+	  gcc_assert (mask_element < 2 * nunits);
 	  if (mask_element != index)
 	    noop_p = false;
 	  mask[index++] = mask_element;

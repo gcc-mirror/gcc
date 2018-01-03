@@ -588,12 +588,13 @@ fold_const_builtin_nan (tree type, tree arg, bool quiet)
 static tree
 fold_const_reduction (tree type, tree arg, tree_code code)
 {
-  if (TREE_CODE (arg) != VECTOR_CST)
+  unsigned HOST_WIDE_INT nelts;
+  if (TREE_CODE (arg) != VECTOR_CST
+      || !VECTOR_CST_NELTS (arg).is_constant (&nelts))
     return NULL_TREE;
 
   tree res = VECTOR_CST_ELT (arg, 0);
-  unsigned int nelts = VECTOR_CST_NELTS (arg);
-  for (unsigned int i = 1; i < nelts; i++)
+  for (unsigned HOST_WIDE_INT i = 1; i < nelts; i++)
     {
       res = const_binop (code, type, res, VECTOR_CST_ELT (arg, i));
       if (res == NULL_TREE || !CONSTANT_CLASS_P (res))

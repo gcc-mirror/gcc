@@ -940,15 +940,16 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
 
   convertible_lax =
     (tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2))
-     && (TREE_CODE (TREE_TYPE (t1)) != REAL_TYPE ||
-	 TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2))
+     && (TREE_CODE (TREE_TYPE (t1)) != REAL_TYPE
+	 || known_eq (TYPE_VECTOR_SUBPARTS (t1),
+		      TYPE_VECTOR_SUBPARTS (t2)))
      && (INTEGRAL_TYPE_P (TREE_TYPE (t1))
 	 == INTEGRAL_TYPE_P (TREE_TYPE (t2))));
 
   if (!convertible_lax || flag_lax_vector_conversions)
     return convertible_lax;
 
-  if (TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
+  if (known_eq (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
       && lang_hooks.types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return true;
 
@@ -1016,10 +1017,10 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
       return error_mark_node;
     }
 
-  if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (v0))
-      != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask))
-      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1))
-	 != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask)))
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (v0)),
+		TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask)))
+      && maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1)),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask))))
     {
       if (complain)
 	error_at (loc, "__builtin_shuffle number of elements of the "
@@ -2278,7 +2279,8 @@ c_common_type_for_mode (machine_mode mode, int unsignedp)
       if (inner_type != NULL_TREE)
 	return build_complex_type (inner_type);
     }
-  else if (VECTOR_MODE_P (mode))
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = c_common_type_for_mode (inner_mode, unsignedp);
@@ -7660,7 +7662,7 @@ convert_vector_to_array_for_subscript (location_t loc,
 
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
-            || tree_to_uhwi (index) >= TYPE_VECTOR_SUBPARTS (type))
+	    || maybe_ge (tree_to_uhwi (index), TYPE_VECTOR_SUBPARTS (type)))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
 
       /* We are building an ARRAY_REF so mark the vector as addressable
