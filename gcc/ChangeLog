@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-data-refs.c (vect_no_alias_p): Replace with...
+	(vect_compile_time_alias): ...this new function.  Do the calculation
+	on poly_ints rather than trees.
+	(vect_prune_runtime_alias_test_list): Update call accordingly.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-slp.c (vect_build_slp_tree_1): Handle polynomial
 	numbers of units.
 	(vect_schedule_slp_instance): Likewise.

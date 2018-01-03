@@ -3001,52 +3001,49 @@ vect_vfa_segment_size (struct data_reference *dr, tree length_factor)
 
 /* Function vect_no_alias_p.
 
-   Given data references A and B with equal base and offset, the alias
-   relation can be decided at compilation time, return TRUE if they do
-   not alias to each other; return FALSE otherwise.  SEGMENT_LENGTH_A
+   Given data references A and B with equal base and offset, see whether
+   the alias relation can be decided at compilation time.  Return 1 if
+   it can and the references alias, 0 if it can and the references do
+   not alias, and -1 if we cannot decide at compile time.  SEGMENT_LENGTH_A
    and SEGMENT_LENGTH_B are the memory lengths accessed by A and B
    respectively.  */
 
-static bool
-vect_no_alias_p (struct data_reference *a, struct data_reference *b,
-                 tree segment_length_a, tree segment_length_b)
+static int
+vect_compile_time_alias (struct data_reference *a, struct data_reference *b,
+			 tree segment_length_a, tree segment_length_b)
 {
-  gcc_assert (TREE_CODE (DR_INIT (a)) == INTEGER_CST
-	      && TREE_CODE (DR_INIT (b)) == INTEGER_CST);
-  if (tree_int_cst_equal (DR_INIT (a), DR_INIT (b)))
-    return false;
+  poly_offset_int offset_a = wi::to_poly_offset (DR_INIT (a));
+  poly_offset_int offset_b = wi::to_poly_offset (DR_INIT (b));
+  poly_uint64 const_length_a;
+  poly_uint64 const_length_b;
 
-  tree seg_a_min = DR_INIT (a);
-  tree seg_a_max = fold_build2 (PLUS_EXPR, TREE_TYPE (seg_a_min),
-				seg_a_min, segment_length_a);
   /* For negative step, we need to adjust address range by TYPE_SIZE_UNIT
      bytes, e.g., int a[3] -> a[1] range is [a+4, a+16) instead of
      [a, a+12) */
   if (tree_int_cst_compare (DR_STEP (a), size_zero_node) < 0)
     {
-      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (a)));
-      seg_a_min = fold_build2 (PLUS_EXPR, TREE_TYPE (seg_a_max),
-			       seg_a_max, unit_size);
-      seg_a_max = fold_build2 (PLUS_EXPR, TREE_TYPE (DR_INIT (a)),
-			       DR_INIT (a), unit_size);
+      const_length_a = (-wi::to_poly_wide (segment_length_a)).force_uhwi ();
+      offset_a = (offset_a + vect_get_scalar_dr_size (a)) - const_length_a;
     }
-  tree seg_b_min = DR_INIT (b);
-  tree seg_b_max = fold_build2 (PLUS_EXPR, TREE_TYPE (seg_b_min),
-				seg_b_min, segment_length_b);
+  else
+    const_length_a = tree_to_poly_uint64 (segment_length_a);
   if (tree_int_cst_compare (DR_STEP (b), size_zero_node) < 0)
     {
-      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (b)));
-      seg_b_min = fold_build2 (PLUS_EXPR, TREE_TYPE (seg_b_max),
-			       seg_b_max, unit_size);
-      seg_b_max = fold_build2 (PLUS_EXPR, TREE_TYPE (DR_INIT (b)),
-			       DR_INIT (b), unit_size);
+      const_length_b = (-wi::to_poly_wide (segment_length_b)).force_uhwi ();
+      offset_b = (offset_b + vect_get_scalar_dr_size (b)) - const_length_b;
     }
+  else
+    const_length_b = tree_to_poly_uint64 (segment_length_b);
 
-  if (tree_int_cst_le (seg_a_max, seg_b_min)
-      || tree_int_cst_le (seg_b_max, seg_a_min))
-    return true;
+  if (ranges_known_overlap_p (offset_a, const_length_a,
+			      offset_b, const_length_b))
+    return 1;
 
-  return false;
+  if (!ranges_maybe_overlap_p (offset_a, const_length_a,
+			       offset_b, const_length_b))
+    return 0;
+
+  return -1;
 }
 
 /* Return true if the minimum nonzero dependence distance for loop LOOP_DEPTH
@@ -3188,21 +3185,26 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	comp_res = data_ref_compare_tree (DR_OFFSET (dr_a),
 					  DR_OFFSET (dr_b));
 
-      /* Alias is known at compilation time.  */
+      /* See whether the alias is known at compilation time.  */
       if (comp_res == 0
 	  && TREE_CODE (DR_STEP (dr_a)) == INTEGER_CST
 	  && TREE_CODE (DR_STEP (dr_b)) == INTEGER_CST
-	  && TREE_CODE (segment_length_a) == INTEGER_CST
-	  && TREE_CODE (segment_length_b) == INTEGER_CST)
+	  && poly_int_tree_p (segment_length_a)
+	  && poly_int_tree_p (segment_length_b))
 	{
-	  if (vect_no_alias_p (dr_a, dr_b, segment_length_a, segment_length_b))
+	  int res = vect_compile_time_alias (dr_a, dr_b,
+					     segment_length_a,
+					     segment_length_b);
+	  if (res == 0)
 	    continue;
 
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "not vectorized: compilation time alias.\n");
-
-	  return false;
+	  if (res == 1)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "not vectorized: compilation time alias.\n");
+	      return false;
+	    }
 	}
 
       dr_with_seg_len_pair_t dr_with_seg_len_pair
