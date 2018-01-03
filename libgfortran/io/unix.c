@@ -294,12 +294,50 @@ raw_flush (unix_stream * s  __attribute__ ((unused)))
   return 0;
 }
 
+/* Write/read at most 2 GB - 4k chunks at a time. Linux never reads or
+   writes more than this, and there are reports that macOS fails for
+   larger than 2 GB as well.  */
+#define MAX_CHUNK 2147479552
+
 static ssize_t
 raw_read (unix_stream * s, void * buf, ssize_t nbyte)
 {
   /* For read we can't do I/O in a loop like raw_write does, because
-     that will break applications that wait for interactive I/O.  */
-  return read (s->fd, buf, nbyte);
+     that will break applications that wait for interactive I/O.  We
+     still can loop around EINTR, though.  This however causes a
+     problem for large reads which must be chunked, see comment above.
+     So assume that if the size is larger than the chunk size, we're
+     reading from a file and not the terminal.  */
+  if (nbyte <= MAX_CHUNK)
+    {
+      while (true)
+	{
+	  ssize_t trans = read (s->fd, buf, nbyte);
+	  if (trans == -1 && errno == EINTR)
+	    continue;
+	  return trans;
+	}
+    }
+  else
+    {
+      ssize_t bytes_left = nbyte;
+      char *buf_st = buf;
+      while (bytes_left > 0)
+	{
+	  ssize_t to_read = bytes_left < MAX_CHUNK ? bytes_left: MAX_CHUNK;
+	  ssize_t trans = read (s->fd, buf_st, to_read);
+	  if (trans == -1)
+	    {
+	      if (errno == EINTR)
+		continue;
+	      else
+		return trans;
+	    }
+	  buf_st += trans;
+	  bytes_left -= trans;
+	}
+      return nbyte - bytes_left;
+    }
 }
 
 static ssize_t
@@ -312,10 +350,13 @@ raw_write (unix_stream * s, const void * buf, ssize_t nbyte)
   buf_st = (char *) buf;
 
   /* We must write in a loop since some systems don't restart system
-     calls in case of a signal.  */
+     calls in case of a signal.  Also some systems might fail outright
+     if we try to write more than 2 GB in a single syscall, so chunk
+     up large writes.  */
   while (bytes_left > 0)
     {
-      trans = write (s->fd, buf_st, bytes_left);
+      ssize_t to_write = bytes_left < MAX_CHUNK ? bytes_left: MAX_CHUNK;
+      trans = write (s->fd, buf_st, to_write);
       if (trans < 0)
 	{
 	  if (errno == EINTR)
