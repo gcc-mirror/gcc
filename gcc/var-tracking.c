@@ -1016,6 +1016,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
   machine_mode mem_mode_save;
   bool store_save;
   scalar_int_mode tem_mode, tem_subreg_mode;
+  poly_int64 size;
   switch (GET_CODE (loc))
     {
     case REG:
@@ -1060,11 +1061,9 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
       return mem;
     case PRE_INC:
     case PRE_DEC:
-      addr = gen_rtx_PLUS (GET_MODE (loc), XEXP (loc, 0),
-			   gen_int_mode (GET_CODE (loc) == PRE_INC
-					 ? GET_MODE_SIZE (amd->mem_mode)
-					 : -GET_MODE_SIZE (amd->mem_mode),
-					 GET_MODE (loc)));
+      size = GET_MODE_SIZE (amd->mem_mode);
+      addr = plus_constant (GET_MODE (loc), XEXP (loc, 0),
+			    GET_CODE (loc) == PRE_INC ? size : -size);
       /* FALLTHRU */
     case POST_INC:
     case POST_DEC:
@@ -1072,12 +1071,10 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	addr = XEXP (loc, 0);
       gcc_assert (amd->mem_mode != VOIDmode && amd->mem_mode != BLKmode);
       addr = simplify_replace_fn_rtx (addr, old_rtx, adjust_mems, data);
-      tem = gen_rtx_PLUS (GET_MODE (loc), XEXP (loc, 0),
-			  gen_int_mode ((GET_CODE (loc) == PRE_INC
-					 || GET_CODE (loc) == POST_INC)
-					? GET_MODE_SIZE (amd->mem_mode)
-					: -GET_MODE_SIZE (amd->mem_mode),
-					GET_MODE (loc)));
+      size = GET_MODE_SIZE (amd->mem_mode);
+      tem = plus_constant (GET_MODE (loc), XEXP (loc, 0),
+			   (GET_CODE (loc) == PRE_INC
+			    || GET_CODE (loc) == POST_INC) ? size : -size);
       store_save = amd->store;
       amd->store = false;
       tem = simplify_replace_fn_rtx (tem, old_rtx, adjust_mems, data);

@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* var-tracking.c (adjust_mems): Treat mode sizes as polynomial.
+	Use plus_constant instead of gen_rtx_PLUS.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/cr16/cr16-protos.h (cr16_push_rounding): Declare.
 	* config/cr16/cr16.h (PUSH_ROUNDING): Move implementation to...
 	* config/cr16/cr16.c (cr16_push_rounding): ...this new function.
