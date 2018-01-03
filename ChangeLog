@@ -1,3 +1,8 @@
+2018-01-03  Ben Elliston  <bje@gnu.org>
+
+	* config.guess: Import latest version.
+	* config.sub: Likewise.
+
 2017-12-12  Stafford Horne  <shorne@gmail.com>
 
 	* configure.ac: Remove logic adding gdb to noconfigsdirs for or1k.
