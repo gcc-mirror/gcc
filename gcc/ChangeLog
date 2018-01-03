@@ -1,3 +1,9 @@
+2018-01-03  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/83501
+	* tree-ssa-strlen.c (get_string_cst): New.
+	(handle_char_store): Call get_string_cst.
+
 2018-01-03  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/83593
