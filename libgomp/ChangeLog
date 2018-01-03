@@ -1,3 +1,7 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Bump @copying's copyright year.
+
 2017-12-30  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/83046
