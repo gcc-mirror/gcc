@@ -3939,7 +3939,8 @@ coalesced_pseudo_reg_slot_compare (const void *v1p, const void *v2p)
 			     regno_max_ref_mode[regno1]);
   mode2 = wider_subreg_mode (PSEUDO_REGNO_MODE (regno2),
 			     regno_max_ref_mode[regno2]);
-  if ((diff = GET_MODE_SIZE (mode2) - GET_MODE_SIZE (mode1)) != 0)
+  if ((diff = compare_sizes_for_sort (GET_MODE_SIZE (mode2),
+				      GET_MODE_SIZE (mode1))) != 0)
     return diff;
   return regno1 - regno2;
 }
@@ -4228,9 +4229,10 @@ ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
 	      machine_mode mode = wider_subreg_mode
 		(PSEUDO_REGNO_MODE (ALLOCNO_REGNO (a)),
 		 reg_max_ref_mode[ALLOCNO_REGNO (a)]);
-	      fprintf (ira_dump_file, " a%dr%d(%d,%d)",
-		       ALLOCNO_NUM (a), ALLOCNO_REGNO (a), ALLOCNO_FREQ (a),
-		       GET_MODE_SIZE (mode));
+	      fprintf (ira_dump_file, " a%dr%d(%d,",
+		       ALLOCNO_NUM (a), ALLOCNO_REGNO (a), ALLOCNO_FREQ (a));
+	      print_dec (GET_MODE_SIZE (mode), ira_dump_file, SIGNED);
+	      fprintf (ira_dump_file, ")\n");
 	    }
 
 	  if (a == allocno)

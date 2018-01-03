@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef opt_mode<machine_mode> opt_machine_mode;
 
-extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
+extern CONST_MODE_SIZE poly_uint16_pod mode_size[NUM_MACHINE_MODES];
 extern const poly_uint16_pod mode_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 extern const poly_uint16_pod mode_nunits[NUM_MACHINE_MODES];
@@ -514,7 +514,7 @@ complex_mode::includes_p (machine_mode m)
 
 /* Return the base GET_MODE_SIZE value for MODE.  */
 
-ALWAYS_INLINE unsigned short
+ALWAYS_INLINE poly_uint16
 mode_to_bytes (machine_mode mode)
 {
 #if GCC_VERSION >= 4001
@@ -596,7 +596,29 @@ mode_to_nunits (machine_mode mode)
 
 /* Get the size in bytes of an object of mode MODE.  */
 
-#define GET_MODE_SIZE(MODE) (mode_to_bytes (MODE))
+#if ONLY_FIXED_SIZE_MODES
+#define GET_MODE_SIZE(MODE) ((unsigned short) mode_to_bytes (MODE).coeffs[0])
+#else
+ALWAYS_INLINE poly_uint16
+GET_MODE_SIZE (machine_mode mode)
+{
+  return mode_to_bytes (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_poly<typename T::measurement_type>::type
+GET_MODE_SIZE (const T &mode)
+{
+  return mode_to_bytes (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_nonpoly<typename T::measurement_type>::type
+GET_MODE_SIZE (const T &mode)
+{
+  return mode_to_bytes (mode).coeffs[0];
+}
+#endif
 
 /* Get the size in bits of an object of mode MODE.  */
 
@@ -761,9 +783,9 @@ protected:
 /* Return true if MODE has a fixed size.  */
 
 inline bool
-fixed_size_mode::includes_p (machine_mode)
+fixed_size_mode::includes_p (machine_mode mode)
 {
-  return true;
+  return mode_to_bytes (mode).is_constant ();
 }
 
 /* Wrapper for mode arguments to target macros, so that if a target

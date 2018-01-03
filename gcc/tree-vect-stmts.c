@@ -4776,8 +4776,8 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
        || code == VIEW_CONVERT_EXPR)
       && (!vectype_in
 	  || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in), nunits)
-	  || (GET_MODE_SIZE (TYPE_MODE (vectype))
-	      != GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
+	  || maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
+		       GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
     return false;
 
   /* We do not handle bit-precision changes.  */
@@ -5147,7 +5147,7 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                          "op not supported by target.\n");
       /* Check only during analysis.  */
-      if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
+      if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
 	  || (!vec_stmt
 	      && !vect_worthwhile_without_simd_p (vinfo, code)))
         return false;
@@ -5471,7 +5471,7 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                          "op not supported by target.\n");
       /* Check only during analysis.  */
-      if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
+      if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
 	  || (!vec_stmt && !vect_worthwhile_without_simd_p (vinfo, code)))
         return false;
       if (dump_enabled_p ())
@@ -7483,7 +7483,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
      nested within an outer-loop that is being vectorized.  */
 
   if (nested_in_vect_loop
-      && (DR_STEP_ALIGNMENT (dr) % GET_MODE_SIZE (TYPE_MODE (vectype))) != 0)
+      && !multiple_p (DR_STEP_ALIGNMENT (dr),
+		      GET_MODE_SIZE (TYPE_MODE (vectype))))
     {
       gcc_assert (alignment_support_scheme != dr_explicit_realign_optimized);
       compute_in_loop = true;

@@ -2829,8 +2829,8 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 
       if (new_rtx != SUBREG_REG (x))
 	{
-	  int x_size = GET_MODE_SIZE (GET_MODE (x));
-	  int new_size = GET_MODE_SIZE (GET_MODE (new_rtx));
+	  poly_int64 x_size = GET_MODE_SIZE (GET_MODE (x));
+	  poly_int64 new_size = GET_MODE_SIZE (GET_MODE (new_rtx));
 
 	  if (MEM_P (new_rtx)
 	      && ((partial_subreg_p (GET_MODE (x), GET_MODE (new_rtx))
@@ -2842,9 +2842,10 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 		      So if the number of words is the same, preserve the
 		      subreg so that push_reload can see it.  */
 		   && !(WORD_REGISTER_OPERATIONS
-			&& (x_size - 1) / UNITS_PER_WORD
-			   == (new_size -1 ) / UNITS_PER_WORD))
-		  || x_size == new_size)
+			&& known_equal_after_align_down (x_size - 1,
+							 new_size - 1,
+							 UNITS_PER_WORD)))
+		  || known_eq (x_size, new_size))
 	      )
 	    return adjust_address_nv (new_rtx, GET_MODE (x), SUBREG_BYTE (x));
 	  else if (insn && GET_CODE (insn) == DEBUG_INSN)

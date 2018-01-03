@@ -3346,7 +3346,7 @@ for_each_inc_dec_find_inc_dec (rtx mem, for_each_inc_dec_fn fn, void *data)
     case PRE_INC:
     case POST_INC:
       {
-	int size = GET_MODE_SIZE (GET_MODE (mem));
+	poly_int64 size = GET_MODE_SIZE (GET_MODE (mem));
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (size, GET_MODE (r1));
 	return fn (mem, x, r1, r1, c, data);
@@ -3355,7 +3355,7 @@ for_each_inc_dec_find_inc_dec (rtx mem, for_each_inc_dec_fn fn, void *data)
     case PRE_DEC:
     case POST_DEC:
       {
-	int size = GET_MODE_SIZE (GET_MODE (mem));
+	poly_int64 size = GET_MODE_SIZE (GET_MODE (mem));
 	rtx r1 = XEXP (x, 0);
 	rtx c = gen_int_mode (-size, GET_MODE (r1));
 	return fn (mem, x, r1, r1, c, data);
@@ -4194,7 +4194,7 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
 
   /* A size N times larger than UNITS_PER_WORD likely needs N times as
      many insns, taking N times as long.  */
-  factor = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
+  factor = estimated_poly_value (GET_MODE_SIZE (mode)) / UNITS_PER_WORD;
   if (factor == 0)
     factor = 1;
 
@@ -4225,7 +4225,7 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
       /* A SET doesn't have a mode, so let's look at the SET_DEST to get
 	 the mode for the factor.  */
       mode = GET_MODE (SET_DEST (x));
-      factor = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
+      factor = estimated_poly_value (GET_MODE_SIZE (mode)) / UNITS_PER_WORD;
       if (factor == 0)
 	factor = 1;
       /* FALLTHRU */

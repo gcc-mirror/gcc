@@ -107,7 +107,7 @@ struct slot
   /* Maximum alignment required by all users of the slot.  */
   unsigned int align;
   /* Maximum size required by all users of the slot.  */
-  HOST_WIDE_INT size;
+  poly_int64 size;
   /* Memory representing the all stack slot.  It can be different from
      memory representing a pseudo belonging to give stack slot because
      pseudo can be placed in a part of the corresponding stack slot.
@@ -132,10 +132,10 @@ assign_mem_slot (int i)
 {
   rtx x = NULL_RTX;
   machine_mode mode = GET_MODE (regno_reg_rtx[i]);
-  HOST_WIDE_INT inherent_size = PSEUDO_REGNO_BYTES (i);
+  poly_int64 inherent_size = PSEUDO_REGNO_BYTES (i);
   machine_mode wider_mode
     = wider_subreg_mode (mode, lra_reg_info[i].biggest_mode);
-  HOST_WIDE_INT total_size = GET_MODE_SIZE (wider_mode);
+  poly_int64 total_size = GET_MODE_SIZE (wider_mode);
   poly_int64 adjust = 0;
 
   lra_assert (regno_reg_rtx[i] != NULL_RTX && REG_P (regno_reg_rtx[i])
@@ -191,16 +191,15 @@ pseudo_reg_slot_compare (const void *v1p, const void *v2p)
   const int regno1 = *(const int *) v1p;
   const int regno2 = *(const int *) v2p;
   int diff, slot_num1, slot_num2;
-  int total_size1, total_size2;
 
   slot_num1 = pseudo_slots[regno1].slot_num;
   slot_num2 = pseudo_slots[regno2].slot_num;
   if ((diff = slot_num1 - slot_num2) != 0)
     return (frame_pointer_needed
 	    || (!FRAME_GROWS_DOWNWARD) == STACK_GROWS_DOWNWARD ? diff : -diff);
-  total_size1 = GET_MODE_SIZE (lra_reg_info[regno1].biggest_mode);
-  total_size2 = GET_MODE_SIZE (lra_reg_info[regno2].biggest_mode);
-  if ((diff = total_size2 - total_size1) != 0)
+  poly_int64 total_size1 = GET_MODE_SIZE (lra_reg_info[regno1].biggest_mode);
+  poly_int64 total_size2 = GET_MODE_SIZE (lra_reg_info[regno2].biggest_mode);
+  if ((diff = compare_sizes_for_sort (total_size2, total_size1)) != 0)
     return diff;
   return regno1 - regno2;
 }
@@ -315,7 +314,8 @@ add_pseudo_to_slot (int regno, int slot_num)
 					 lra_reg_info[regno].biggest_mode);
   unsigned int align = spill_slot_alignment (mode);
   slots[slot_num].align = MAX (slots[slot_num].align, align);
-  slots[slot_num].size = MAX (slots[slot_num].size, GET_MODE_SIZE (mode));
+  slots[slot_num].size = upper_bound (slots[slot_num].size,
+				      GET_MODE_SIZE (mode));
 
   if (slots[slot_num].regno < 0)
     {
@@ -580,8 +580,10 @@ lra_spill (void)
     {
       for (i = 0; i < slots_num; i++)
 	{
-	  fprintf (lra_dump_file, "  Slot %d regnos (width = %d):", i,
-		   GET_MODE_SIZE (GET_MODE (slots[i].mem)));
+	  fprintf (lra_dump_file, "  Slot %d regnos (width = ", i);
+	  print_dec (GET_MODE_SIZE (GET_MODE (slots[i].mem)),
+		     lra_dump_file, SIGNED);
+	  fprintf (lra_dump_file, "):");
 	  for (curr_regno = slots[i].regno;;
 	       curr_regno = pseudo_slots[curr_regno].next - pseudo_slots)
 	    {

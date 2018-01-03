@@ -601,7 +601,7 @@ try_merge (void)
     inc_insn.reg_res : mem_insn.reg0;
 
   /* The width of the mem being accessed.  */
-  int size = GET_MODE_SIZE (GET_MODE (mem));
+  poly_int64 size = GET_MODE_SIZE (GET_MODE (mem));
   rtx_insn *last_insn = NULL;
   machine_mode reg_mode = GET_MODE (inc_reg);
 

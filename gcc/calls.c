@@ -4686,7 +4686,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   rtx mem_value = 0;
   rtx valreg;
   int pcc_struct_value = 0;
-  int struct_value_size = 0;
+  poly_int64 struct_value_size = 0;
   int flags;
   int reg_parm_stack_space = 0;
   poly_int64 needed;
@@ -4925,7 +4925,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	   end it should be padded.  */
 	argvec[count].locate.where_pad =
 	  BLOCK_REG_PADDING (mode, NULL_TREE,
-			     GET_MODE_SIZE (mode) <= UNITS_PER_WORD);
+			     known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD));
 #endif
 
       targetm.calls.function_arg_advance (args_so_far, mode, (tree) 0, true);
@@ -5176,9 +5176,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
-#ifdef BLOCK_REG_PADDING
-      int size = 0;
-#endif
       
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The PA64 has examples of this for library calls.  */
@@ -5188,19 +5185,19 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
         {
 	  emit_move_insn (reg, val);
 #ifdef BLOCK_REG_PADDING
-	  size = GET_MODE_SIZE (argvec[argnum].mode);
+	  poly_int64 size = GET_MODE_SIZE (argvec[argnum].mode);
 
 	  /* Copied from load_register_parameters.  */
 
 	  /* Handle case where we have a value that needs shifting
 	     up to the msb.  eg. a QImode value and we're padding
 	     upward on a BYTES_BIG_ENDIAN machine.  */
-	  if (size < UNITS_PER_WORD
+	  if (known_lt (size, UNITS_PER_WORD)
 	      && (argvec[argnum].locate.where_pad
 		  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 	    {
 	      rtx x;
-	      int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+	      poly_int64 shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
 
 	      /* Assigning REG here rather than a temp makes CALL_FUSAGE
 		 report the whole reg as used.  Strictly speaking, the

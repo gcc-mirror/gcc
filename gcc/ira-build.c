@@ -566,7 +566,7 @@ ira_create_allocno_objects (ira_allocno_t a)
   int n = ira_reg_class_max_nregs[aclass][mode];
   int i;
 
-  if (GET_MODE_SIZE (mode) != 2 * UNITS_PER_WORD || n != 2)
+  if (n != 2 || maybe_ne (GET_MODE_SIZE (mode), n * UNITS_PER_WORD))
     n = 1;
 
   ALLOCNO_NUM_OBJECTS (a) = n;

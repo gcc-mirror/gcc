@@ -8685,7 +8685,7 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
     {
       machine_mode mode, wider_mode;
       rtx loc2;
-      HOST_WIDE_INT offset;
+      HOST_WIDE_INT offset, size, wider_size;
 
       if (i == 0 && var->onepart)
 	{
@@ -8740,7 +8740,14 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
       mode = GET_MODE (var->var_part[i].cur_loc);
       if (mode == VOIDmode && var->onepart)
 	mode = DECL_MODE (decl);
-      last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
+      /* We ony track subparts of constant-sized objects, since at present
+	 there's no representation for polynomial pieces.  */
+      if (!GET_MODE_SIZE (mode).is_constant (&size))
+	{
+	  complete = false;
+	  continue;
+	}
+      last_limit = offsets[n_var_parts] + size;
 
       /* Attempt to merge adjacent registers or memory.  */
       for (j = i + 1; j < var->n_var_parts; j++)
@@ -8748,6 +8755,7 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
 	  break;
       if (j < var->n_var_parts
 	  && GET_MODE_WIDER_MODE (mode).exists (&wider_mode)
+	  && GET_MODE_SIZE (wider_mode).is_constant (&wider_size)
 	  && var->var_part[j].cur_loc
 	  && mode == GET_MODE (var->var_part[j].cur_loc)
 	  && (REG_P (loc[n_var_parts]) || MEM_P (loc[n_var_parts]))
@@ -8785,14 +8793,12 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
 	      if ((REG_P (XEXP (loc[n_var_parts], 0))
 		   && rtx_equal_p (XEXP (loc[n_var_parts], 0),
 				   XEXP (XEXP (loc2, 0), 0))
-		   && INTVAL (XEXP (XEXP (loc2, 0), 1))
-		      == GET_MODE_SIZE (mode))
+		   && INTVAL (XEXP (XEXP (loc2, 0), 1)) == size)
 		  || (GET_CODE (XEXP (loc[n_var_parts], 0)) == PLUS
 		      && CONST_INT_P (XEXP (XEXP (loc[n_var_parts], 0), 1))
 		      && rtx_equal_p (XEXP (XEXP (loc[n_var_parts], 0), 0),
 				      XEXP (XEXP (loc2, 0), 0))
-		      && INTVAL (XEXP (XEXP (loc[n_var_parts], 0), 1))
-			 + GET_MODE_SIZE (mode)
+		      && INTVAL (XEXP (XEXP (loc[n_var_parts], 0), 1)) + size
 			 == INTVAL (XEXP (XEXP (loc2, 0), 1))))
 		new_loc = adjust_address_nv (loc[n_var_parts],
 					     wider_mode, 0);
@@ -8802,7 +8808,7 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
 	    {
 	      loc[n_var_parts] = new_loc;
 	      mode = wider_mode;
-	      last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
+	      last_limit = offsets[n_var_parts] + wider_size;
 	      i = j;
 	    }
 	}

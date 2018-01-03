@@ -270,8 +270,8 @@ void init_one_dwarf_reg_size (int regno, machine_mode regmode,
   const unsigned int rnum = DWARF2_FRAME_REG_OUT (dnum, 1);
   const unsigned int dcol = DWARF_REG_TO_UNWIND_COLUMN (rnum);
   
-  const HOST_WIDE_INT slotoffset = dcol * GET_MODE_SIZE (slotmode);
-  const HOST_WIDE_INT regsize = GET_MODE_SIZE (regmode);
+  poly_int64 slotoffset = dcol * GET_MODE_SIZE (slotmode);
+  poly_int64 regsize = GET_MODE_SIZE (regmode);
 
   init_state->processed_regno[regno] = true;
 
@@ -285,7 +285,8 @@ void init_one_dwarf_reg_size (int regno, machine_mode regmode,
       init_state->wrote_return_column = true;
     }
 
-  if (slotoffset < 0)
+  /* ??? When is this true?  Should it be a test based on DCOL instead?  */
+  if (maybe_lt (slotoffset, 0))
     return;
 
   emit_move_insn (adjust_address (table, slotmode, slotoffset),

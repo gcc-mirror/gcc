@@ -2,6 +2,101 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (mode_size): Change from unsigned short to
+	poly_uint16_pod.
+	(mode_to_bytes): Return a poly_uint16 rather than an unsigned short.
+	(GET_MODE_SIZE): Return a constant if ONLY_FIXED_SIZE_MODES,
+	or if measurement_type is not polynomial.
+	(fixed_size_mode::includes_p): Check for constant-sized modes.
+	* genmodes.c (emit_mode_size_inline): Make mode_size_inline
+	return a poly_uint16 rather than an unsigned short.
+	(emit_mode_size): Change the type of mode_size from unsigned short
+	to poly_uint16_pod.  Use ZERO_COEFFS for the initializer.
+	(emit_mode_adjustments): Cope with polynomial vector sizes.
+	* lto-streamer-in.c (lto_input_mode_table): Use bp_unpack_poly_value
+	for GET_MODE_SIZE.
+	* lto-streamer-out.c (lto_write_mode_table): Use bp_pack_poly_value
+	for GET_MODE_SIZE.
+	* auto-inc-dec.c (try_merge): Treat GET_MODE_SIZE as polynomial.
+	* builtins.c (expand_ifn_atomic_compare_exchange_into_call): Likewise.
+	* caller-save.c (setup_save_areas): Likewise.
+	(replace_reg_with_saved_mem): Likewise.
+	* calls.c (emit_library_call_value_1): Likewise.
+	* combine-stack-adj.c (combine_stack_adjustments_for_block): Likewise.
+	* combine.c (simplify_set, make_extraction, simplify_shift_const_1)
+	(gen_lowpart_for_combine): Likewise.
+	* convert.c (convert_to_integer_1): Likewise.
+	* cse.c (equiv_constant, cse_insn): Likewise.
+	* cselib.c (autoinc_split, cselib_hash_rtx): Likewise.
+	(cselib_subst_to_values): Likewise.
+	* dce.c (word_dce_process_block): Likewise.
+	* df-problems.c (df_word_lr_mark_ref): Likewise.
+	* dwarf2cfi.c (init_one_dwarf_reg_size): Likewise.
+	* dwarf2out.c (multiple_reg_loc_descriptor, mem_loc_descriptor)
+	(concat_loc_descriptor, concatn_loc_descriptor, loc_descriptor)
+	(rtl_for_decl_location): Likewise.
+	* emit-rtl.c (gen_highpart, widen_memory_access): Likewise.
+	* expmed.c (extract_bit_field_1, extract_integral_bit_field): Likewise.
+	* expr.c (emit_group_load_1, clear_storage_hints): Likewise.
+	(emit_move_complex, emit_move_multi_word, emit_push_insn): Likewise.
+	(expand_expr_real_1): Likewise.
+	* function.c (assign_parm_setup_block_p, assign_parm_setup_block)
+	(pad_below): Likewise.
+	* gimple-fold.c (optimize_atomic_compare_exchange_p): Likewise.
+	* gimple-ssa-store-merging.c (rhs_valid_for_store_merging_p): Likewise.
+	* ira.c (get_subreg_tracking_sizes): Likewise.
+	* ira-build.c (ira_create_allocno_objects): Likewise.
+	* ira-color.c (coalesced_pseudo_reg_slot_compare): Likewise.
+	(ira_sort_regnos_for_alter_reg): Likewise.
+	* ira-costs.c (record_operand_costs): Likewise.
+	* lower-subreg.c (interesting_mode_p, simplify_gen_subreg_concatn)
+	(resolve_simple_move): Likewise.
+	* lra-constraints.c (get_reload_reg, operands_match_p): Likewise.
+	(process_addr_reg, simplify_operand_subreg, curr_insn_transform)
+	(lra_constraints): Likewise.
+	(CONST_POOL_OK_P): Reject variable-sized modes.
+	* lra-spills.c (slot, assign_mem_slot, pseudo_reg_slot_compare)
+	(add_pseudo_to_slot, lra_spill): Likewise.
+	* omp-low.c (omp_clause_aligned_alignment): Likewise.
+	* optabs-query.c (get_best_extraction_insn): Likewise.
+	* optabs-tree.c (expand_vec_cond_expr_p): Likewise.
+	* optabs.c (expand_vec_perm_var, expand_vec_cond_expr): Likewise.
+	(expand_mult_highpart, valid_multiword_target_p): Likewise.
+	* recog.c (offsettable_address_addr_space_p): Likewise.
+	* regcprop.c (maybe_mode_change): Likewise.
+	* reginfo.c (choose_hard_reg_mode, record_subregs_of_mode): Likewise.
+	* regrename.c (build_def_use): Likewise.
+	* regstat.c (dump_reg_info): Likewise.
+	* reload.c (complex_word_subreg_p, push_reload, find_dummy_reload)
+	(find_reloads, find_reloads_subreg_address): Likewise.
+	* reload1.c (eliminate_regs_1): Likewise.
+	* rtlanal.c (for_each_inc_dec_find_inc_dec, rtx_cost): Likewise.
+	* simplify-rtx.c (avoid_constant_pool_reference): Likewise.
+	(simplify_binary_operation_1, simplify_subreg): Likewise.
+	* targhooks.c (default_function_arg_padding): Likewise.
+	(default_hard_regno_nregs, default_class_max_nregs): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	(verify_gimple_assign_ternary): Likewise.
+	* tree-inline.c (estimate_move_cost): Likewise.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	* tree-ssa-loop-ivopts.c (add_autoinc_candidates): Likewise.
+	(get_address_cost_ainc): Likewise.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Likewise.
+	(vect_supportable_dr_alignment): Likewise.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Likewise.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-stmts.c (vectorizable_assignment, vectorizable_shift)
+	(vectorizable_operation, vectorizable_load): Likewise.
+	* tree.c (build_same_sized_truth_vector_type): Likewise.
+	* valtrack.c (cleanup_auto_inc_dec): Likewise.
+	* var-tracking.c (emit_note_insn_var_location): Likewise.
+	* config/arc/arc.h (ASM_OUTPUT_CASE_END): Use as_a <scalar_int_mode>.
+	(ADDR_VEC_ALIGN): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (mode_to_bits): Return a poly_uint16 rather than an
 	unsigned short.
 	(GET_MODE_BITSIZE): Return a constant if ONLY_FIXED_SIZE_MODES,

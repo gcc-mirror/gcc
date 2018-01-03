@@ -2815,7 +2815,7 @@ df_word_lr_mark_ref (df_ref ref, bool is_set, regset live)
   regno = REGNO (reg);
   reg_mode = GET_MODE (reg);
   if (regno < FIRST_PSEUDO_REGISTER
-      || GET_MODE_SIZE (reg_mode) != 2 * UNITS_PER_WORD)
+      || maybe_ne (GET_MODE_SIZE (reg_mode), 2 * UNITS_PER_WORD))
     return true;
 
   if (GET_CODE (orig_reg) == SUBREG

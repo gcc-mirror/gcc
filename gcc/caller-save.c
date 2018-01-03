@@ -607,9 +607,9 @@ setup_save_areas (void)
 		    break;
 		}
 	      if (k < 0
-		  && (GET_MODE_SIZE (regno_save_mode[regno][1])
-		      <= GET_MODE_SIZE (regno_save_mode
-					[saved_reg2->hard_regno][1])))
+		  && known_le (GET_MODE_SIZE (regno_save_mode[regno][1]),
+			       GET_MODE_SIZE (regno_save_mode
+					      [saved_reg2->hard_regno][1])))
 		{
 		  saved_reg->slot
 		    = adjust_address_nv
@@ -631,8 +631,8 @@ setup_save_areas (void)
 		  slot = prev_save_slots[j];
 		  if (slot == NULL_RTX)
 		    continue;
-		  if (GET_MODE_SIZE (regno_save_mode[regno][1])
-		      <= GET_MODE_SIZE (GET_MODE (slot))
+		  if (known_le (GET_MODE_SIZE (regno_save_mode[regno][1]),
+				GET_MODE_SIZE (GET_MODE (slot)))
 		      && best_slot_num < 0)
 		    best_slot_num = j;
 		  if (GET_MODE (slot) == regno_save_mode[regno][1])
@@ -1147,7 +1147,7 @@ replace_reg_with_saved_mem (rtx *loc,
 	    machine_mode smode = save_mode[regno];
 	    gcc_assert (smode != VOIDmode);
 	    if (hard_regno_nregs (regno, smode) > 1)
-	      smode = mode_for_size (GET_MODE_SIZE (mode) / nregs,
+	      smode = mode_for_size (exact_div (GET_MODE_SIZE (mode), nregs),
 				     GET_MODE_CLASS (mode), 0).require ();
 	    XVECEXP (mem, 0, i) = gen_rtx_REG (smode, regno + i);
 	  }

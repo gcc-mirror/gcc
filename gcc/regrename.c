@@ -1697,9 +1697,11 @@ build_def_use (basic_block bb)
 		     not already tracking such a reg, we won't start here,
 		     and we must instead make sure to make the operand visible
 		     to the machinery that tracks hard registers.  */
+		  machine_mode i_mode = recog_data.operand_mode[i];
+		  machine_mode matches_mode = recog_data.operand_mode[matches];
 		  if (matches >= 0
-		      && (GET_MODE_SIZE (recog_data.operand_mode[i])
-			  != GET_MODE_SIZE (recog_data.operand_mode[matches]))
+		      && maybe_ne (GET_MODE_SIZE (i_mode),
+				   GET_MODE_SIZE (matches_mode))
 		      && !verify_reg_in_set (op, &live_in_chains))
 		    {
 		      untracked_operands |= 1 << i;

@@ -94,13 +94,15 @@ cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
 
     case PRE_INC:
     case PRE_DEC:
-      gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
-      return gen_rtx_PLUS (GET_MODE (x),
-			   cleanup_auto_inc_dec (XEXP (x, 0), mem_mode),
-			   gen_int_mode (code == PRE_INC
-					 ? GET_MODE_SIZE (mem_mode)
-					 : -GET_MODE_SIZE (mem_mode),
-					 GET_MODE (x)));
+      {
+	gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
+	poly_int64 offset = GET_MODE_SIZE (mem_mode);
+	if (code == PRE_DEC)
+	  offset = -offset;
+	return gen_rtx_PLUS (GET_MODE (x),
+			     cleanup_auto_inc_dec (XEXP (x, 0), mem_mode),
+			     gen_int_mode (offset, GET_MODE (x)));
+      }
 
     case POST_INC:
     case POST_DEC:

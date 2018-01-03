@@ -987,10 +987,10 @@ inline __attribute__((__always_inline__))\n\
 #else\n\
 extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
 #endif\n\
-unsigned short\n\
+poly_uint16\n\
 mode_size_inline (machine_mode mode)\n\
 {\n\
-  extern %sunsigned short mode_size[NUM_MACHINE_MODES];\n\
+  extern %spoly_uint16_pod mode_size[NUM_MACHINE_MODES];\n\
   gcc_assert (mode >= 0 && mode < NUM_MACHINE_MODES);\n\
   switch (mode)\n\
     {\n", adj_bytesize ? "" : "const ");
@@ -1376,11 +1376,11 @@ emit_mode_size (void)
   int c;
   struct mode_data *m;
 
-  print_maybe_const_decl ("%sunsigned short", "mode_size",
+  print_maybe_const_decl ("%spoly_uint16_pod", "mode_size",
 			  "NUM_MACHINE_MODES", bytesize);
 
   for_all_modes (c, m)
-    tagged_printf ("%u", m->bytesize, m->name);
+    tagged_printf ("{ %u" ZERO_COEFFS " }", m->bytesize, m->name);
 
   print_closer ();
 }
@@ -1647,17 +1647,33 @@ emit_mode_adjustments (void)
 \nvoid\
 \ninit_adjust_machine_modes (void)\
 \n{\
-\n  size_t s ATTRIBUTE_UNUSED;");
+\n  poly_uint16 ps ATTRIBUTE_UNUSED;\n\
+  size_t s ATTRIBUTE_UNUSED;");
 
   /* Size adjustments must be propagated to all containing modes.
      A size adjustment forces us to recalculate the alignment too.  */
   for (a = adj_bytesize; a; a = a->next)
     {
-      printf ("\n  /* %s:%d */\n  s = %s;\n",
-	      a->file, a->line, a->adjustment);
-      printf ("  mode_size[E_%smode] = s;\n", a->mode->name);
-      printf ("  mode_unit_size[E_%smode] = s;\n", a->mode->name);
-      printf ("  mode_base_align[E_%smode] = s & (~s + 1);\n",
+      printf ("\n  /* %s:%d */\n", a->file, a->line);
+      switch (a->mode->cl)
+	{
+	case MODE_VECTOR_INT:
+	case MODE_VECTOR_FLOAT:
+	case MODE_VECTOR_FRACT:
+	case MODE_VECTOR_UFRACT:
+	case MODE_VECTOR_ACCUM:
+	case MODE_VECTOR_UACCUM:
+	  printf ("  ps = %s;\n", a->adjustment);
+	  printf ("  s = mode_unit_size[E_%smode];\n", a->mode->name);
+	  break;
+
+	default:
+	  printf ("  ps = s = %s;\n", a->adjustment);
+	  printf ("  mode_unit_size[E_%smode] = s;\n", a->mode->name);
+	  break;
+	}
+      printf ("  mode_size[E_%smode] = ps;\n", a->mode->name);
+      printf ("  mode_base_align[E_%smode] = known_alignment (ps);\n",
 	      a->mode->name);
 
       for (m = a->mode->contained; m; m = m->next_cont)
@@ -1678,11 +1694,12 @@ emit_mode_adjustments (void)
 	    case MODE_VECTOR_UFRACT:
 	    case MODE_VECTOR_ACCUM:
 	    case MODE_VECTOR_UACCUM:
-	      printf ("  mode_size[E_%smode] = %d*s;\n",
+	      printf ("  mode_size[E_%smode] = %d * ps;\n",
 		      m->name, m->ncomponents);
 	      printf ("  mode_unit_size[E_%smode] = s;\n", m->name);
-	      printf ("  mode_base_align[E_%smode] = (%d*s) & (~(%d*s)+1);\n",
-		      m->name, m->ncomponents, m->ncomponents);
+	      printf ("  mode_base_align[E_%smode]"
+		      " = known_alignment (%d * ps);\n",
+		      m->name, m->ncomponents);
 	      break;
 
 	    default:

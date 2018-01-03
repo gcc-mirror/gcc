@@ -622,11 +622,11 @@ combine_stack_adjustments_for_block (basic_block bb)
 	  if (MEM_P (dest)
 	      && ((STACK_GROWS_DOWNWARD
 		   ? (GET_CODE (XEXP (dest, 0)) == PRE_DEC
-		      && last_sp_adjust
-			 == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest)))
+		      && known_eq (last_sp_adjust,
+				   GET_MODE_SIZE (GET_MODE (dest))))
 		   : (GET_CODE (XEXP (dest, 0)) == PRE_INC
-		      && last_sp_adjust
-		         == -(HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (dest))))
+		      && known_eq (-last_sp_adjust,
+				   GET_MODE_SIZE (GET_MODE (dest)))))
 		  || ((STACK_GROWS_DOWNWARD
 		       ? last_sp_adjust >= 0 : last_sp_adjust <= 0)
 		      && GET_CODE (XEXP (dest, 0)) == PRE_MODIFY

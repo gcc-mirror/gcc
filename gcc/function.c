@@ -2882,7 +2882,7 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
   /* Only assign_parm_setup_block knows how to deal with register arguments
      that are padded at the least significant end.  */
   if (REG_P (data->entry_parm)
-      && GET_MODE_SIZE (data->promoted_mode) < UNITS_PER_WORD
+      && known_lt (GET_MODE_SIZE (data->promoted_mode), UNITS_PER_WORD)
       && (BLOCK_REG_PADDING (data->passed_mode, data->passed_type, 1)
 	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
@@ -2945,7 +2945,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       SET_DECL_ALIGN (parm, MAX (DECL_ALIGN (parm), BITS_PER_WORD));
       stack_parm = assign_stack_local (BLKmode, size_stored,
 				       DECL_ALIGN (parm));
-      if (GET_MODE_SIZE (GET_MODE (entry_parm)) == size)
+      if (known_eq (GET_MODE_SIZE (GET_MODE (entry_parm)), size))
 	PUT_MODE (stack_parm, GET_MODE (entry_parm));
       set_mem_attributes (stack_parm, parm, 1);
     }
@@ -4346,8 +4346,10 @@ static void
 pad_below (struct args_size *offset_ptr, machine_mode passed_mode, tree sizetree)
 {
   unsigned int align = PARM_BOUNDARY / BITS_PER_UNIT;
-  if (passed_mode != BLKmode)
-    offset_ptr->constant += -GET_MODE_SIZE (passed_mode) & (align - 1);
+  int misalign;
+  if (passed_mode != BLKmode
+      && known_misalignment (GET_MODE_SIZE (passed_mode), align, &misalign))
+    offset_ptr->constant += -misalign & (align - 1);
   else
     {
       if (TREE_CODE (sizetree) != INTEGER_CST
