@@ -2353,11 +2353,11 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	int units;
 	rtx elt;
 
-	units = CONST_VECTOR_NUNITS (x);
+	units = const_vector_encoded_nelts (x);
 
 	for (i = 0; i < units; ++i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
+	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
 	    hash += hash_rtx_cb (elt, GET_MODE (elt),
                                  do_not_record_p, hash_arg_in_memory_p,
                                  have_reg_qty, cb);
