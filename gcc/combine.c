@@ -7707,8 +7707,9 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      are the same as for a register operation, since at present we don't
      have named patterns for aligned memory structures.  */
   struct extraction_insn insn;
-  if (get_best_reg_extraction_insn (&insn, pattern,
-				    GET_MODE_BITSIZE (inner_mode), mode))
+  unsigned int inner_size;
+  if (GET_MODE_BITSIZE (inner_mode).is_constant (&inner_size)
+      && get_best_reg_extraction_insn (&insn, pattern, inner_size, mode))
     {
       wanted_inner_reg_mode = insn.struct_mode.require ();
       pos_mode = insn.pos_mode;
@@ -7744,9 +7745,11 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	 If it's a MEM we need to recompute POS relative to that.
 	 However, if we're extracting from (or inserting into) a register,
 	 we want to recompute POS relative to wanted_inner_mode.  */
-      int width = (MEM_P (inner)
-		   ? GET_MODE_BITSIZE (is_mode)
-		   : GET_MODE_BITSIZE (wanted_inner_mode));
+      int width;
+      if (!MEM_P (inner))
+	width = GET_MODE_BITSIZE (wanted_inner_mode);
+      else if (!GET_MODE_BITSIZE (is_mode).is_constant (&width))
+	return NULL_RTX;
 
       if (pos_rtx == 0)
 	pos = width - len - pos;

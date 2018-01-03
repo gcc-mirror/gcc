@@ -2,6 +2,37 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (mode_to_bits): Return a poly_uint16 rather than an
+	unsigned short.
+	(GET_MODE_BITSIZE): Return a constant if ONLY_FIXED_SIZE_MODES,
+	or if measurement_type is polynomial.
+	* calls.c (shift_return_value): Treat GET_MODE_BITSIZE as polynomial.
+	* combine.c (make_extraction): Likewise.
+	* dse.c (find_shift_sequence): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* expmed.c (store_integral_bit_field, extract_bit_field_1): Likewise.
+	(extract_bit_field, extract_low_bits): Likewise.
+	* expr.c (convert_move, convert_modes, emit_move_insn_1): Likewise.
+	(optimize_bitfield_assignment_op, expand_assignment): Likewise.
+	(store_expr_with_bounds, store_field, expand_expr_real_1): Likewise.
+	* fold-const.c (optimize_bit_field_compare, merge_ranges): Likewise.
+	* gimple-fold.c (optimize_atomic_compare_exchange_p): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* reload1.c (alter_reg): Likewise.
+	* stor-layout.c (bitwise_mode_for_mode, compute_record_mode): Likewise.
+	* targhooks.c (default_secondary_memory_needed_mode): Likewise.
+	* tree-if-conv.c (predicate_mem_writes): Likewise.
+	* tree-ssa-strlen.c (handle_builtin_memcmp): Likewise.
+	* tree-vect-patterns.c (adjust_bool_pattern): Likewise.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Likewise.
+	* valtrack.c (dead_debug_insert_temp): Likewise.
+	* varasm.c (mergeable_constant_section): Likewise.
+	* config/sh/sh.h (LOCAL_ALIGNMENT): Use as_a <fixed_size_mode>.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (expand_assignment): Cope with polynomial mode sizes
 	when assigning to a CONCAT.
 

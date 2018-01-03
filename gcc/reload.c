@@ -3121,10 +3121,11 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			   || (REG_P (operand)
 			       && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
 			  && (WORD_REGISTER_OPERATIONS
-			      || ((GET_MODE_BITSIZE (GET_MODE (operand))
-				   < BIGGEST_ALIGNMENT)
-				  && paradoxical_subreg_p (operand_mode[i],
-							   GET_MODE (operand)))
+			      || (((maybe_lt
+				    (GET_MODE_BITSIZE (GET_MODE (operand)),
+				     BIGGEST_ALIGNMENT))
+				   && (paradoxical_subreg_p
+				       (operand_mode[i], GET_MODE (operand)))))
 			      || BYTES_BIG_ENDIAN
 			      || ((GET_MODE_SIZE (operand_mode[i])
 				   <= UNITS_PER_WORD)

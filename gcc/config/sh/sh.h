@@ -468,7 +468,9 @@ extern const sh_atomic_model& selected_atomic_model (void);
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
     || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \
-   ? (unsigned) MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (TYPE))) \
+   ? (unsigned) MIN (BIGGEST_ALIGNMENT, \
+		     GET_MODE_BITSIZE (as_a <fixed_size_mode> \
+				       (TYPE_MODE (TYPE)))) \
    : (unsigned) DATA_ALIGNMENT(TYPE, ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */

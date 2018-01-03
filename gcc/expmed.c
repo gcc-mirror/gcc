@@ -867,7 +867,7 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
   if (!MEM_P (op0)
       && !reverse
       && lowpart_bit_field_p (bitnum, bitsize, op0_mode.require ())
-      && bitsize == GET_MODE_BITSIZE (fieldmode)
+      && known_eq (bitsize, GET_MODE_BITSIZE (fieldmode))
       && optab_handler (movstrict_optab, fieldmode) != CODE_FOR_nothing)
     {
       struct expand_operand ops[2];
@@ -1638,9 +1638,10 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       if (GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode))
 	{
 	  scalar_mode inner_mode = GET_MODE_INNER (tmode);
-	  unsigned int nunits = (GET_MODE_BITSIZE (GET_MODE (op0))
-				 / GET_MODE_UNIT_BITSIZE (tmode));
-	  if (!mode_for_vector (inner_mode, nunits).exists (&new_mode)
+	  poly_uint64 nunits;
+	  if (!multiple_p (GET_MODE_BITSIZE (GET_MODE (op0)),
+			   GET_MODE_UNIT_BITSIZE (tmode), &nunits)
+	      || !mode_for_vector (inner_mode, nunits).exists (&new_mode)
 	      || !VECTOR_MODE_P (new_mode)
 	      || GET_MODE_SIZE (new_mode) != GET_MODE_SIZE (GET_MODE (op0))
 	      || GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode)
@@ -2043,9 +2044,9 @@ extract_bit_field (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   machine_mode mode1;
 
   /* Handle -fstrict-volatile-bitfields in the cases where it applies.  */
-  if (GET_MODE_BITSIZE (GET_MODE (str_rtx)) > 0)
+  if (maybe_ne (GET_MODE_BITSIZE (GET_MODE (str_rtx)), 0))
     mode1 = GET_MODE (str_rtx);
-  else if (target && GET_MODE_BITSIZE (GET_MODE (target)) > 0)
+  else if (target && maybe_ne (GET_MODE_BITSIZE (GET_MODE (target)), 0))
     mode1 = GET_MODE (target);
   else
     mode1 = tmode;
@@ -2361,7 +2362,7 @@ extract_low_bits (machine_mode mode, machine_mode src_mode, rtx src)
   if (GET_MODE_CLASS (mode) == MODE_CC || GET_MODE_CLASS (src_mode) == MODE_CC)
     return NULL_RTX;
 
-  if (GET_MODE_BITSIZE (mode) == GET_MODE_BITSIZE (src_mode)
+  if (known_eq (GET_MODE_BITSIZE (mode), GET_MODE_BITSIZE (src_mode))
       && targetm.modes_tieable_p (mode, src_mode))
     {
       rtx x = gen_lowpart_common (mode, src);

@@ -3595,7 +3595,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		  if (simd_clone_subparts (atype)
 		      < simd_clone_subparts (arginfo[i].vectype))
 		    {
-		      unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (atype));
+		      poly_uint64 prec = GET_MODE_BITSIZE (TYPE_MODE (atype));
 		      k = (simd_clone_subparts (arginfo[i].vectype)
 			   / simd_clone_subparts (atype));
 		      gcc_assert ((k & (k - 1)) == 0);
@@ -3759,7 +3759,8 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	  if (simd_clone_subparts (vectype) < nunits)
 	    {
 	      unsigned int k, l;
-	      unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (vectype));
+	      poly_uint64 prec = GET_MODE_BITSIZE (TYPE_MODE (vectype));
+	      poly_uint64 bytes = GET_MODE_SIZE (TYPE_MODE (vectype));
 	      k = nunits / simd_clone_subparts (vectype);
 	      gcc_assert ((k & (k - 1)) == 0);
 	      for (l = 0; l < k; l++)
@@ -3769,8 +3770,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		    {
 		      t = build_fold_addr_expr (new_temp);
 		      t = build2 (MEM_REF, vectype, t,
-				  build_int_cst (TREE_TYPE (t),
-						 l * prec / BITS_PER_UNIT));
+				  build_int_cst (TREE_TYPE (t), l * bytes));
 		    }
 		  else
 		    t = build3 (BIT_FIELD_REF, vectype, new_temp,

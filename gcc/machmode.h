@@ -527,7 +527,7 @@ mode_to_bytes (machine_mode mode)
 
 /* Return the base GET_MODE_BITSIZE value for MODE.  */
 
-ALWAYS_INLINE unsigned short
+ALWAYS_INLINE poly_uint16
 mode_to_bits (machine_mode mode)
 {
   return mode_to_bytes (mode) * BITS_PER_UNIT;
@@ -600,7 +600,29 @@ mode_to_nunits (machine_mode mode)
 
 /* Get the size in bits of an object of mode MODE.  */
 
-#define GET_MODE_BITSIZE(MODE) (mode_to_bits (MODE))
+#if ONLY_FIXED_SIZE_MODES
+#define GET_MODE_BITSIZE(MODE) ((unsigned short) mode_to_bits (MODE).coeffs[0])
+#else
+ALWAYS_INLINE poly_uint16
+GET_MODE_BITSIZE (machine_mode mode)
+{
+  return mode_to_bits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_poly<typename T::measurement_type>::type
+GET_MODE_BITSIZE (const T &mode)
+{
+  return mode_to_bits (mode);
+}
+
+template<typename T>
+ALWAYS_INLINE typename if_nonpoly<typename T::measurement_type>::type
+GET_MODE_BITSIZE (const T &mode)
+{
+  return mode_to_bits (mode).coeffs[0];
+}
+#endif
 
 /* Get the number of value bits of an object of mode MODE.  */
 

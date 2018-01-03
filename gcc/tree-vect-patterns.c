@@ -3388,8 +3388,8 @@ adjust_bool_pattern (tree var, tree out_type,
       gcc_assert (TREE_CODE_CLASS (rhs_code) == tcc_comparison);
       if (TREE_CODE (TREE_TYPE (rhs1)) != INTEGER_TYPE
 	  || !TYPE_UNSIGNED (TREE_TYPE (rhs1))
-	  || (TYPE_PRECISION (TREE_TYPE (rhs1))
-	      != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1)))))
+	  || maybe_ne (TYPE_PRECISION (TREE_TYPE (rhs1)),
+		       GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1)))))
 	{
 	  scalar_mode mode = SCALAR_TYPE_MODE (TREE_TYPE (rhs1));
 	  itype

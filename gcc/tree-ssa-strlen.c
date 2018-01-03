@@ -2690,7 +2690,7 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
 	  location_t loc = gimple_location (stmt2);
 	  tree type, off;
 	  type = build_nonstandard_integer_type (leni, 1);
-	  gcc_assert (GET_MODE_BITSIZE (TYPE_MODE (type)) == leni);
+	  gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (type)), leni));
 	  tree ptrtype = build_pointer_type_for_mode (char_type_node,
 						      ptr_mode, true);
 	  off = build_int_cst (ptrtype, 0);
