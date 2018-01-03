@@ -1,3 +1,22 @@
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-loop-manip.c: Include gimple-fold.h.
+	(slpeel_make_loop_iterate_ntimes): Add step, final_iv and
+	niters_maybe_zero parameters.  Handle other cases besides a step of 1.
+	(vect_gen_vector_loop_niters): Add a step_vector_ptr parameter.
+	Add a path that uses a step of VF instead of 1, but disable it
+	for now.
+	(vect_do_peeling): Add step_vector, niters_vector_mult_vf_var
+	and niters_no_overflow parameters.  Update calls to
+	slpeel_make_loop_iterate_ntimes and vect_gen_vector_loop_niters.
+	Create a new SSA name if the latter choses to use a ste other
+	than zero, and return it via niters_vector_mult_vf_var.
+	* tree-vect-loop.c (vect_transform_loop): Update calls to
+	vect_do_peeling, vect_gen_vector_loop_niters and
+	slpeel_make_loop_iterate_ntimes.
+	* tree-vectorizer.h (slpeel_make_loop_iterate_ntimes, vect_do_peeling)
+	(vect_gen_vector_loop_niters): Update declarations after above changes.
+
 2018-01-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (floor<mode>2): Add support for IEEE

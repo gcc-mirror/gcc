@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "tree-ssa-loop-ivopts.h"
+#include "gimple-fold.h"
 
 /*************************************************************************
   Simple Loop Peeling Utilities
@@ -247,29 +248,114 @@ adjust_phi_and_debug_stmts (gimple *update_phi, edge e, tree new_def)
 			gimple_bb (update_phi));
 }
 
-/* Make the LOOP iterate NITERS times. This is done by adding a new IV
-   that starts at zero, increases by one and its limit is NITERS.
+/* Make LOOP iterate N == (NITERS - STEP) / STEP + 1 times,
+   where NITERS is known to be outside the range [1, STEP - 1].
+   This is equivalent to making the loop execute NITERS / STEP
+   times when NITERS is nonzero and (1 << M) / STEP times otherwise,
+   where M is the precision of NITERS.
+
+   NITERS_MAYBE_ZERO is true if NITERS can be zero, false it is known
+   to be >= STEP.  In the latter case N is always NITERS / STEP.
+
+   If FINAL_IV is nonnull, it is an SSA name that should be set to
+   N * STEP on exit from the loop.
 
    Assumption: the exit-condition of LOOP is the last stmt in the loop.  */
 
 void
-slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
+slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters, tree step,
+				 tree final_iv, bool niters_maybe_zero)
 {
   tree indx_before_incr, indx_after_incr;
   gcond *cond_stmt;
   gcond *orig_cond;
+  edge pe = loop_preheader_edge (loop);
   edge exit_edge = single_exit (loop);
   gimple_stmt_iterator loop_cond_gsi;
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
-  tree init = build_int_cst (TREE_TYPE (niters), 0);
-  tree step = build_int_cst (TREE_TYPE (niters), 1);
   source_location loop_loc;
   enum tree_code code;
+  tree niters_type = TREE_TYPE (niters);
 
   orig_cond = get_loop_exit_condition (loop);
   gcc_assert (orig_cond);
   loop_cond_gsi = gsi_for_stmt (orig_cond);
+
+  tree init, limit;
+  if (!niters_maybe_zero && integer_onep (step))
+    {
+      /* In this case we can use a simple 0-based IV:
+
+	 A:
+	   x = 0;
+	   do
+	     {
+	       ...
+	       x += 1;
+	     }
+	   while (x < NITERS);  */
+      code = (exit_edge->flags & EDGE_TRUE_VALUE) ? GE_EXPR : LT_EXPR;
+      init = build_zero_cst (niters_type);
+      limit = niters;
+    }
+  else
+    {
+      /* The following works for all values of NITERS except 0:
+
+	 B:
+	   x = 0;
+	   do
+	     {
+	       ...
+	       x += STEP;
+	     }
+	   while (x <= NITERS - STEP);
+
+	 so that the loop continues to iterate if x + STEP - 1 < NITERS
+	 but stops if x + STEP - 1 >= NITERS.
+
+	 However, if NITERS is zero, x never hits a value above NITERS - STEP
+	 before wrapping around.  There are two obvious ways of dealing with
+	 this:
+
+	 - start at STEP - 1 and compare x before incrementing it
+	 - start at -1 and compare x after incrementing it
+
+	 The latter is simpler and is what we use.  The loop in this case
+	 looks like:
+
+	 C:
+	   x = -1;
+	   do
+	     {
+	       ...
+	       x += STEP;
+	     }
+	   while (x < NITERS - STEP);
+
+	 In both cases the loop limit is NITERS - STEP.  */
+      gimple_seq seq = NULL;
+      limit = force_gimple_operand (niters, &seq, true, NULL_TREE);
+      limit = gimple_build (&seq, MINUS_EXPR, TREE_TYPE (limit), limit, step);
+      if (seq)
+	{
+	  basic_block new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
+	  gcc_assert (!new_bb);
+	}
+      if (niters_maybe_zero)
+	{
+	  /* Case C.  */
+	  code = (exit_edge->flags & EDGE_TRUE_VALUE) ? GE_EXPR : LT_EXPR;
+	  init = build_all_ones_cst (niters_type);
+	}
+      else
+	{
+	  /* Case B.  */
+	  code = (exit_edge->flags & EDGE_TRUE_VALUE) ? GT_EXPR : LE_EXPR;
+	  init = build_zero_cst (niters_type);
+	}
+    }
 
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
   create_iv (init, step, NULL_TREE, loop,
@@ -278,11 +364,10 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   indx_after_incr = force_gimple_operand_gsi (&loop_cond_gsi, indx_after_incr,
 					      true, NULL_TREE, true,
 					      GSI_SAME_STMT);
-  niters = force_gimple_operand_gsi (&loop_cond_gsi, niters, true, NULL_TREE,
+  limit = force_gimple_operand_gsi (&loop_cond_gsi, limit, true, NULL_TREE,
 				     true, GSI_SAME_STMT);
 
-  code = (exit_edge->flags & EDGE_TRUE_VALUE) ? GE_EXPR : LT_EXPR;
-  cond_stmt = gimple_build_cond (code, indx_after_incr, niters, NULL_TREE,
+  cond_stmt = gimple_build_cond (code, indx_after_incr, limit, NULL_TREE,
 				 NULL_TREE);
 
   gsi_insert_before (&loop_cond_gsi, cond_stmt, GSI_SAME_STMT);
@@ -301,8 +386,23 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
     }
 
   /* Record the number of latch iterations.  */
-  loop->nb_iterations = fold_build2 (MINUS_EXPR, TREE_TYPE (niters), niters,
-				     build_int_cst (TREE_TYPE (niters), 1));
+  if (limit == niters)
+    /* Case A: the loop iterates NITERS times.  Subtract one to get the
+       latch count.  */
+    loop->nb_iterations = fold_build2 (MINUS_EXPR, niters_type, niters,
+				       build_int_cst (niters_type, 1));
+  else
+    /* Case B or C: the loop iterates (NITERS - STEP) / STEP + 1 times.
+       Subtract one from this to get the latch count.  */
+    loop->nb_iterations = fold_build2 (TRUNC_DIV_EXPR, niters_type,
+				       limit, step);
+
+  if (final_iv)
+    {
+      gassign *assign = gimple_build_assign (final_iv, MINUS_EXPR,
+					     indx_after_incr, init);
+      gsi_insert_on_edge_immediate (single_exit (loop), assign);
+    }
 }
 
 /* Helper routine of slpeel_tree_duplicate_loop_to_edge_cfg.
@@ -1169,23 +1269,32 @@ vect_gen_scalar_loop_niters (tree niters_prolog, int int_niters_prolog,
   return niters;
 }
 
-/* This function generates the following statements:
+/* NITERS is the number of times that the original scalar loop executes
+   after peeling.  Work out the maximum number of iterations N that can
+   be handled by the vectorized form of the loop and then either:
 
-   niters = number of iterations loop executes (after peeling)
-   niters_vector = niters / vf
+   a) set *STEP_VECTOR_PTR to the vectorization factor and generate:
 
-   and places them on the loop preheader edge.  NITERS_NO_OVERFLOW is
-   true if NITERS doesn't overflow.  */
+	niters_vector = N
+
+   b) set *STEP_VECTOR_PTR to one and generate:
+
+        niters_vector = N / vf
+
+   In both cases, store niters_vector in *NITERS_VECTOR_PTR and add
+   any new statements on the loop preheader edge.  NITERS_NO_OVERFLOW
+   is true if NITERS doesn't overflow (i.e. if NITERS is always nonzero).  */
 
 void
 vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
-			     tree *niters_vector_ptr, bool niters_no_overflow)
+			     tree *niters_vector_ptr, tree *step_vector_ptr,
+			     bool niters_no_overflow)
 {
   tree ni_minus_gap, var;
-  tree niters_vector, type = TREE_TYPE (niters);
+  tree niters_vector, step_vector, type = TREE_TYPE (niters);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   edge pe = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
-  tree log_vf = build_int_cst (type, exact_log2 (vf));
+  tree log_vf = NULL_TREE;
 
   /* If epilogue loop is required because of data accesses with gaps, we
      subtract one iteration from the total number of iterations here for
@@ -1206,21 +1315,32 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
   else
     ni_minus_gap = niters;
 
-  /* Create: niters >> log2(vf) */
-  /* If it's known that niters == number of latch executions + 1 doesn't
-     overflow, we can generate niters >> log2(vf); otherwise we generate
-     (niters - vf) >> log2(vf) + 1 by using the fact that we know ratio
-     will be at least one.  */
-  if (niters_no_overflow)
-    niters_vector = fold_build2 (RSHIFT_EXPR, type, ni_minus_gap, log_vf);
+  if (1)
+    {
+      /* Create: niters >> log2(vf) */
+      /* If it's known that niters == number of latch executions + 1 doesn't
+	 overflow, we can generate niters >> log2(vf); otherwise we generate
+	 (niters - vf) >> log2(vf) + 1 by using the fact that we know ratio
+	 will be at least one.  */
+      log_vf = build_int_cst (type, exact_log2 (vf));
+      if (niters_no_overflow)
+	niters_vector = fold_build2 (RSHIFT_EXPR, type, ni_minus_gap, log_vf);
+      else
+	niters_vector
+	  = fold_build2 (PLUS_EXPR, type,
+			 fold_build2 (RSHIFT_EXPR, type,
+				      fold_build2 (MINUS_EXPR, type,
+						   ni_minus_gap,
+						   build_int_cst (type, vf)),
+				      log_vf),
+			 build_int_cst (type, 1));
+      step_vector = build_one_cst (type);
+    }
   else
-    niters_vector
-      = fold_build2 (PLUS_EXPR, type,
-		     fold_build2 (RSHIFT_EXPR, type,
-				  fold_build2 (MINUS_EXPR, type, ni_minus_gap,
-					       build_int_cst (type, vf)),
-				  log_vf),
-		     build_int_cst (type, 1));
+    {
+      niters_vector = ni_minus_gap;
+      step_vector = build_int_cst (type, vf);
+    }
 
   if (!is_gimple_val (niters_vector))
     {
@@ -1230,7 +1350,7 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
       gsi_insert_seq_on_edge_immediate (pe, stmts);
       /* Peeling algorithm guarantees that vector loop bound is at least ONE,
 	 we set range information to make niters analyzer's life easier.  */
-      if (stmts != NULL)
+      if (stmts != NULL && log_vf)
 	set_range_info (niters_vector, VR_RANGE,
 			wi::to_wide (build_int_cst (type, 1)),
 			wi::to_wide (fold_build2 (RSHIFT_EXPR, type,
@@ -1238,6 +1358,7 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
 						  log_vf)));
     }
   *niters_vector_ptr = niters_vector;
+  *step_vector_ptr = step_vector;
 
   return;
 }
@@ -1599,7 +1720,12 @@ slpeel_update_phi_nodes_for_lcssa (struct loop *epilog)
    - TH, CHECK_PROFITABILITY: Threshold of niters to vectorize loop if
 			      CHECK_PROFITABILITY is true.
    Output:
-   - NITERS_VECTOR: The number of iterations of loop after vectorization.
+   - *NITERS_VECTOR and *STEP_VECTOR describe how the main loop should
+     iterate after vectorization; see slpeel_make_loop_iterate_ntimes
+     for details.
+   - *NITERS_VECTOR_MULT_VF_VAR is either null or an SSA name that
+     should be set to the number of scalar iterations handled by the
+     vector loop.  The SSA name is only used on exit from the loop.
 
    This function peels prolog and epilog from the loop, adds guards skipping
    PROLOG and EPILOG for various conditions.  As a result, the changed CFG
@@ -1656,8 +1782,9 @@ slpeel_update_phi_nodes_for_lcssa (struct loop *epilog)
 
 struct loop *
 vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
-		 tree *niters_vector, int th, bool check_profitability,
-		 bool niters_no_overflow)
+		 tree *niters_vector, tree *step_vector,
+		 tree *niters_vector_mult_vf_var, int th,
+		 bool check_profitability, bool niters_no_overflow)
 {
   edge e, guard_e;
   tree type = TREE_TYPE (niters), guard_cond;
@@ -1753,7 +1880,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       /* Generate and update the number of iterations for prolog loop.  */
       niters_prolog = vect_gen_prolog_loop_niters (loop_vinfo, anchor,
 						   &bound_prolog);
-      slpeel_make_loop_iterate_ntimes (prolog, niters_prolog);
+      tree step_prolog = build_one_cst (TREE_TYPE (niters_prolog));
+      slpeel_make_loop_iterate_ntimes (prolog, niters_prolog, step_prolog,
+				       NULL_TREE, false);
 
       /* Skip the prolog loop.  */
       if (skip_prolog)
@@ -1866,9 +1995,20 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 overflows.  */
       niters_no_overflow |= (prolog_peeling > 0);
       vect_gen_vector_loop_niters (loop_vinfo, niters,
-				   niters_vector, niters_no_overflow);
-      vect_gen_vector_loop_niters_mult_vf (loop_vinfo, *niters_vector,
-					   &niters_vector_mult_vf);
+				   niters_vector, step_vector,
+				   niters_no_overflow);
+      if (!integer_onep (*step_vector))
+	{
+	  /* On exit from the loop we will have an easy way of calcalating
+	     NITERS_VECTOR / STEP * STEP.  Install a dummy definition
+	     until then.  */
+	  niters_vector_mult_vf = make_ssa_name (TREE_TYPE (*niters_vector));
+	  SSA_NAME_DEF_STMT (niters_vector_mult_vf) = gimple_build_nop ();
+	  *niters_vector_mult_vf_var = niters_vector_mult_vf;
+	}
+      else
+	vect_gen_vector_loop_niters_mult_vf (loop_vinfo, *niters_vector,
+					     &niters_vector_mult_vf);
       /* Update IVs of original loop as if they were advanced by
 	 niters_vector_mult_vf steps.  */
       gcc_checking_assert (vect_can_advance_ivs_p (loop_vinfo));

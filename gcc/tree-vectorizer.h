@@ -1145,14 +1145,15 @@ extern source_location vect_location;
 
 /* Simple loop peeling and versioning utilities for vectorizer's purposes -
    in tree-vect-loop-manip.c.  */
-extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
+extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree, tree,
+					     tree, bool);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
 						     struct loop *, edge);
 extern void vect_loop_versioning (loop_vec_info, unsigned int, bool,
 				  poly_uint64);
 extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
-				     tree *, int, bool, bool);
+				     tree *, tree *, tree *, int, bool, bool);
 extern source_location find_loop_location (struct loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
@@ -1269,7 +1270,8 @@ extern bool check_reduction_path (location_t, loop_p, gphi *, tree,
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
-extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *, bool);
+extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
+					 tree *, bool);
 /* Drive for loop transformation stage.  */
 extern struct loop *vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);

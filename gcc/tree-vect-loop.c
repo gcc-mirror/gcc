@@ -7334,7 +7334,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   int i;
-  tree niters_vector = NULL;
+  tree niters_vector = NULL_TREE;
+  tree step_vector = NULL_TREE;
+  tree niters_vector_mult_vf = NULL_TREE;
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   bool grouped_store;
   bool slp_scheduled = false;
@@ -7413,17 +7415,21 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = niters;
   tree nitersm1 = unshare_expr (LOOP_VINFO_NITERSM1 (loop_vinfo));
   bool niters_no_overflow = loop_niters_no_overflow (loop_vinfo);
-  epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector, th,
+  epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector,
+			      &step_vector, &niters_vector_mult_vf, th,
 			      check_profitability, niters_no_overflow);
   if (niters_vector == NULL_TREE)
     {
       if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-	niters_vector
-	  = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
-			   LOOP_VINFO_INT_NITERS (loop_vinfo) / vf);
+	{
+	  niters_vector
+	    = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
+			     LOOP_VINFO_INT_NITERS (loop_vinfo) / vf);
+	  step_vector = build_one_cst (TREE_TYPE (niters));
+	}
       else
 	vect_gen_vector_loop_niters (loop_vinfo, niters, &niters_vector,
-				     niters_no_overflow);
+				     &step_vector, niters_no_overflow);
     }
 
   /* 1) Make sure the loop header has exactly two entries
@@ -7674,7 +7680,13 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	}		        /* stmts in BB */
     }				/* BBs in loop */
 
-  slpeel_make_loop_iterate_ntimes (loop, niters_vector);
+  /* The vectorization factor is always > 1, so if we use an IV increment of 1.
+     a zero NITERS becomes a nonzero NITERS_VECTOR.  */
+  if (integer_onep (step_vector))
+    niters_no_overflow = true;
+  slpeel_make_loop_iterate_ntimes (loop, niters_vector, step_vector,
+				   niters_vector_mult_vf,
+				   !niters_no_overflow);
 
   scale_profile_for_vect_loop (loop, vf);
 
