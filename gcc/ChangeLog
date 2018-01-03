@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* lra-constraints.c (process_alt_operands): Reject matched
+	operands whose sizes aren't ordered.
+	(match_reload): Refer to this check here.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* builtins.c (expand_ifn_atomic_compare_exchange_into_call): Assert
 	that the mode size is in the set {1, 2, 4, 8, 16}.
 

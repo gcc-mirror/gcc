@@ -933,6 +933,8 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   push_to_sequence (*before);
   if (inmode != outmode)
     {
+      /* process_alt_operands has already checked that the mode sizes
+	 are ordered.  */
       if (partial_subreg_p (outmode, inmode))
 	{
 	  reg = new_in_reg
@@ -2111,6 +2113,13 @@ process_alt_operands (int only_alternative)
 		    p = end;
 		    len = 0;
 		    lra_assert (nop > m);
+
+		    /* Reject matches if we don't know which operand is
+		       bigger.  This situation would arguably be a bug in
+		       an .md pattern, but could also occur in a user asm.  */
+		    if (!ordered_p (GET_MODE_SIZE (biggest_mode[m]),
+				    GET_MODE_SIZE (biggest_mode[nop])))
+		      break;
 
 		    this_alternative_matches = m;
 		    m_hregno = get_hard_regno (*curr_id->operand_loc[m], false);
