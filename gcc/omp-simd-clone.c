@@ -51,6 +51,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 
+/* Return the number of elements in vector type VECTYPE, which is associated
+   with a SIMD clone.  At present these always have a constant length.  */
+
+static unsigned HOST_WIDE_INT
+simd_clone_subparts (tree vectype)
+{
+  return TYPE_VECTOR_SUBPARTS (vectype);
+}
+
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number
    of arguments to reserve space for.  */
 
@@ -761,7 +770,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	    }
 	  continue;
 	}
-      if (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg)) == node->simdclone->simdlen)
+      if (simd_clone_subparts (TREE_TYPE (arg)) == node->simdclone->simdlen)
 	{
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
 	  tree ptr = build_fold_addr_expr (array);
@@ -772,7 +781,7 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 	}
       else
 	{
-	  unsigned int simdlen = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg));
+	  unsigned int simdlen = simd_clone_subparts (TREE_TYPE (arg));
 	  tree ptype = build_pointer_type (TREE_TYPE (TREE_TYPE (array)));
 	  for (k = 0; k < node->simdclone->simdlen; k += simdlen)
 	    {
@@ -918,8 +927,8 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 		  iter,
 		  NULL_TREE, NULL_TREE);
       if (adjustments[j].op == IPA_PARM_OP_NONE
-	  && TYPE_VECTOR_SUBPARTS (vectype) < node->simdclone->simdlen)
-	j += node->simdclone->simdlen / TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	  && simd_clone_subparts (vectype) < node->simdclone->simdlen)
+	j += node->simdclone->simdlen / simd_clone_subparts (vectype) - 1;
     }
 
   l = adjustments.length ();
