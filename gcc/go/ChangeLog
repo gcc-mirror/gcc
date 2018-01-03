@@ -1,3 +1,7 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2017-12-12  Tony Reix  <tony.reix@atos.net>
 	    Ian Lance Taylor  <iant@golang.org>
 

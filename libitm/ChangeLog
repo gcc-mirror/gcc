@@ -1,3 +1,7 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* libitm.texi: Bump @copying's copyright year.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* Makefile.in: Regenerate.
