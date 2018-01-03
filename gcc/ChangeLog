@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (expand_expr_real_1): Use tree_to_poly_uint64
+	instead of int_size_in_bytes when handling VIEW_CONVERT_EXPRs
+	via stack temporaries.  Treat the mode size as polynomial too.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (expand_expr_real_2): When handling conversions involving
 	unions, apply tree_to_poly_uint64 to the TYPE_SIZE rather than
 	multiplying int_size_in_bytes by BITS_PER_UNIT.  Treat GET_MODE_BISIZE
