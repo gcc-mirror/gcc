@@ -3185,6 +3185,14 @@ gfc_type_for_mode (machine_mode mode, int unsignedp)
       tree type = gfc_type_for_size (GET_MODE_PRECISION (int_mode), unsignedp);
       return type != NULL_TREE && mode == TYPE_MODE (type) ? type : NULL_TREE;
     }
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						    GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
   else if (VECTOR_MODE_P (mode)
 	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {

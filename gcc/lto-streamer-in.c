@@ -1675,6 +1675,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	{
 	  switch (mclass)
 	    {
+	    case MODE_VECTOR_BOOL:
 	    case MODE_VECTOR_INT:
 	    case MODE_VECTOR_FLOAT:
 	    case MODE_VECTOR_FRACT:

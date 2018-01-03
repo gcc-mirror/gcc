@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* trans-types.c (gfc_type_for_mode): Handle MODE_VECTOR_BOOL.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* trans-types.c (gfc_type_for_mode): Check valid_vector_subparts_p.
 
 2018-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>

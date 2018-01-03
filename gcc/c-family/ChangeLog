@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* c-common.c (c_common_type_for_mode): Handle MODE_VECTOR_BOOL.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* c-ubsan.c (ubsan_instrument_shift): Treat GET_MODE_BITSIZE
 	as polynomial.
 

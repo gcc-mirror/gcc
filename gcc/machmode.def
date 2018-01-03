@@ -142,6 +142,13 @@ along with GCC; see the file COPYING3.  If not see
 	than two bytes (if CLASS is FLOAT).  CLASS must be INT or
 	FLOAT.  The names follow the same rule as VECTOR_MODE uses.
 
+     VECTOR_BOOL_MODE (NAME, COUNT, BYTESIZE)
+        Create a vector mode called NAME that contains COUNT boolean
+        elements and occupies BYTESIZE bytes in total.  Each boolean
+        element occupies (COUNT * BITS_PER_UNIT) / BYTESIZE bits, with
+        the element at index 0 occupying the lsb of the first byte in
+        memory.  Only the lowest bit of each element is significant.
+
      COMPLEX_MODES (CLASS);
         For all modes presently declared in class CLASS, construct
 	corresponding complex modes.  Modes smaller than one byte

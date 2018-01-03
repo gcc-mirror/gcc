@@ -10082,12 +10082,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     case VECTOR_CST:
       {
 	tree tmp = NULL_TREE;
-	if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
-	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FRACT
-	    || GET_MODE_CLASS (mode) == MODE_VECTOR_UFRACT
-	    || GET_MODE_CLASS (mode) == MODE_VECTOR_ACCUM
-	    || GET_MODE_CLASS (mode) == MODE_VECTOR_UACCUM)
+	if (VECTOR_MODE_P (mode))
 	  return const_vector_from_tree (exp);
 	scalar_int_mode int_mode;
 	if (is_int_mode (mode, &int_mode))

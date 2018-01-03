@@ -88,6 +88,16 @@ rtx_vector_builder::find_cached_value ()
 
   rtx elt = (*this)[0];
 
+  if (GET_MODE_CLASS (m_mode) == MODE_VECTOR_BOOL)
+    {
+      if (elt == const1_rtx || elt == constm1_rtx)
+	return CONST1_RTX (m_mode);
+      else if (elt == const0_rtx)
+	return CONST0_RTX (m_mode);
+      else
+	gcc_unreachable ();
+    }
+
   /* We can be called before the global vector constants are set up,
      but in that case we'll just return null.  */
   scalar_mode inner_mode = GET_MODE_INNER (m_mode);

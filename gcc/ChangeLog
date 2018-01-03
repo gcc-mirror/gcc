@@ -2,6 +2,34 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* mode-classes.def (MODE_VECTOR_BOOL): New mode class.
+	* machmode.h (INTEGRAL_MODE_P, VECTOR_MODE_P): Return true
+	for MODE_VECTOR_BOOL.
+	* machmode.def (VECTOR_BOOL_MODE): Document.
+	* genmodes.c (VECTOR_BOOL_MODE): New macro.
+	(make_vector_bool_mode): New function.
+	(complete_mode, emit_mode_wider, emit_mode_adjustments): Handle
+	MODE_VECTOR_BOOL.
+	* lto-streamer-in.c (lto_input_mode_table): Likewise.
+	* rtx-vector-builder.c (rtx_vector_builder::find_cached_value):
+	Likewise.
+	* stor-layout.c (int_mode_for_mode): Likewise.
+	* tree.c (build_vector_type_for_mode): Likewise.
+	* varasm.c (output_constant_pool_2): Likewise.
+	* emit-rtl.c (init_emit_once): Make sure that CONST1_RTX (BImode) and
+	CONSTM1_RTX (BImode) are the same thing.  Initialize const_tiny_rtx
+	for MODE_VECTOR_BOOL.
+	* expr.c (expand_expr_real_1): Use VECTOR_MODE_P instead of a list
+	of mode class checks.
+	* tree-vect-generic.c (expand_vector_operation): Use VECTOR_MODE_P
+	instead of a list of mode class checks.
+	(expand_vector_scalar_condition): Likewise.
+	(type_for_widest_vector_mode): Handle BImode as an inner mode.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (mode_size): Change from unsigned short to
 	poly_uint16_pod.
 	(mode_to_bytes): Return a poly_uint16 rather than an unsigned short.
