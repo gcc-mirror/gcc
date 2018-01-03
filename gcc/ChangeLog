@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-stmts.c (simd_clone_subparts): New function.
+	(vectorizable_simd_clone_call): Use it instead of TYPE_VECTOR_SUBPARTS.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-stmts.c (vectorizable_call): Treat the number of
 	vectors as polynomial.  Use build_index_vector for
 	IFN_GOMP_SIMD_LANE.

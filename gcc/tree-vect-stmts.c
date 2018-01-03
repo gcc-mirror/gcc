@@ -3219,6 +3219,16 @@ vect_simd_lane_linear (tree op, struct loop *loop,
     }
 }
 
+/* Return the number of elements in vector type VECTYPE, which is associated
+   with a SIMD clone.  At present these vectors always have a constant
+   length.  */
+
+static unsigned HOST_WIDE_INT
+simd_clone_subparts (tree vectype)
+{
+  return TYPE_VECTOR_SUBPARTS (vectype);
+}
+
 /* Function vectorizable_simd_clone_call.
 
    Check if STMT performs a function call that can be vectorized
@@ -3487,7 +3497,7 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	  = get_vectype_for_scalar_type (TREE_TYPE (gimple_call_arg (stmt,
 								     i)));
 	if (arginfo[i].vectype == NULL
-	    || (TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)
+	    || (simd_clone_subparts (arginfo[i].vectype)
 		> bestn->simdclone->simdlen))
 	  return false;
       }
@@ -3574,15 +3584,15 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 	    {
 	    case SIMD_CLONE_ARG_TYPE_VECTOR:
 	      atype = bestn->simdclone->args[i].vector_type;
-	      o = nunits / TYPE_VECTOR_SUBPARTS (atype);
+	      o = nunits / simd_clone_subparts (atype);
 	      for (m = j * o; m < (j + 1) * o; m++)
 		{
-		  if (TYPE_VECTOR_SUBPARTS (atype)
-		      < TYPE_VECTOR_SUBPARTS (arginfo[i].vectype))
+		  if (simd_clone_subparts (atype)
+		      < simd_clone_subparts (arginfo[i].vectype))
 		    {
 		      unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (atype));
-		      k = (TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)
-			   / TYPE_VECTOR_SUBPARTS (atype));
+		      k = (simd_clone_subparts (arginfo[i].vectype)
+			   / simd_clone_subparts (atype));
 		      gcc_assert ((k & (k - 1)) == 0);
 		      if (m == 0)
 			vec_oprnd0
@@ -3608,8 +3618,8 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		    }
 		  else
 		    {
-		      k = (TYPE_VECTOR_SUBPARTS (atype)
-			   / TYPE_VECTOR_SUBPARTS (arginfo[i].vectype));
+		      k = (simd_clone_subparts (atype)
+			   / simd_clone_subparts (arginfo[i].vectype));
 		      gcc_assert ((k & (k - 1)) == 0);
 		      vec<constructor_elt, va_gc> *ctor_elts;
 		      if (k != 1)
@@ -3727,11 +3737,11 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
       new_stmt = gimple_build_call_vec (fndecl, vargs);
       if (vec_dest)
 	{
-	  gcc_assert (ratype || TYPE_VECTOR_SUBPARTS (rtype) == nunits);
+	  gcc_assert (ratype || simd_clone_subparts (rtype) == nunits);
 	  if (ratype)
 	    new_temp = create_tmp_var (ratype);
-	  else if (TYPE_VECTOR_SUBPARTS (vectype)
-		   == TYPE_VECTOR_SUBPARTS (rtype))
+	  else if (simd_clone_subparts (vectype)
+		   == simd_clone_subparts (rtype))
 	    new_temp = make_ssa_name (vec_dest, new_stmt);
 	  else
 	    new_temp = make_ssa_name (rtype, new_stmt);
@@ -3741,11 +3751,11 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 
       if (vec_dest)
 	{
-	  if (TYPE_VECTOR_SUBPARTS (vectype) < nunits)
+	  if (simd_clone_subparts (vectype) < nunits)
 	    {
 	      unsigned int k, l;
 	      unsigned int prec = GET_MODE_BITSIZE (TYPE_MODE (vectype));
-	      k = nunits / TYPE_VECTOR_SUBPARTS (vectype);
+	      k = nunits / simd_clone_subparts (vectype);
 	      gcc_assert ((k & (k - 1)) == 0);
 	      for (l = 0; l < k; l++)
 		{
@@ -3780,16 +3790,16 @@ vectorizable_simd_clone_call (gimple *stmt, gimple_stmt_iterator *gsi,
 		}
 	      continue;
 	    }
-	  else if (TYPE_VECTOR_SUBPARTS (vectype) > nunits)
+	  else if (simd_clone_subparts (vectype) > nunits)
 	    {
-	      unsigned int k = (TYPE_VECTOR_SUBPARTS (vectype)
-				/ TYPE_VECTOR_SUBPARTS (rtype));
+	      unsigned int k = (simd_clone_subparts (vectype)
+				/ simd_clone_subparts (rtype));
 	      gcc_assert ((k & (k - 1)) == 0);
 	      if ((j & (k - 1)) == 0)
 		vec_alloc (ret_ctor_elts, k);
 	      if (ratype)
 		{
-		  unsigned int m, o = nunits / TYPE_VECTOR_SUBPARTS (rtype);
+		  unsigned int m, o = nunits / simd_clone_subparts (rtype);
 		  for (m = 0; m < o; m++)
 		    {
 		      tree tem = build4 (ARRAY_REF, rtype, new_temp,
