@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* reload1.c (spill_stack_slot_width): Change element type
+	from unsigned int to poly_uint64_pod.
+	(alter_reg): Treat mode sizes as polynomial.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* reload.c (complex_word_subreg_p): New function.
 	(reload_inner_reg_of_subreg, push_reload): Use it.
 
