@@ -90,7 +90,7 @@ class vector_builder : public auto_vec<T, 32>
 public:
   vector_builder ();
 
-  unsigned int full_nelts () const { return m_full_nelts; }
+  poly_uint64 full_nelts () const { return m_full_nelts; }
   unsigned int npatterns () const { return m_npatterns; }
   unsigned int nelts_per_pattern () const { return m_nelts_per_pattern; }
   unsigned int encoded_nelts () const;
@@ -103,7 +103,7 @@ public:
   void finalize ();
 
 protected:
-  void new_vector (unsigned int, unsigned int, unsigned int);
+  void new_vector (poly_uint64, unsigned int, unsigned int);
   void reshape (unsigned int, unsigned int);
   bool repeating_sequence_p (unsigned int, unsigned int, unsigned int);
   bool stepped_sequence_p (unsigned int, unsigned int, unsigned int);
@@ -115,7 +115,7 @@ private:
   Derived *derived () { return static_cast<Derived *> (this); }
   const Derived *derived () const;
 
-  unsigned int m_full_nelts;
+  poly_uint64 m_full_nelts;
   unsigned int m_npatterns;
   unsigned int m_nelts_per_pattern;
 };
@@ -152,7 +152,7 @@ template<typename T, typename Derived>
 inline bool
 vector_builder<T, Derived>::encoded_full_vector_p () const
 {
-  return m_npatterns * m_nelts_per_pattern == m_full_nelts;
+  return known_eq (m_npatterns * m_nelts_per_pattern, m_full_nelts);
 }
 
 /* Start building a vector that has FULL_NELTS elements.  Initially
@@ -160,7 +160,7 @@ vector_builder<T, Derived>::encoded_full_vector_p () const
 
 template<typename T, typename Derived>
 void
-vector_builder<T, Derived>::new_vector (unsigned int full_nelts,
+vector_builder<T, Derived>::new_vector (poly_uint64 full_nelts,
 					unsigned int npatterns,
 					unsigned int nelts_per_pattern)
 {
@@ -178,7 +178,7 @@ template<typename T, typename Derived>
 bool
 vector_builder<T, Derived>::operator == (const Derived &other) const
 {
-  if (m_full_nelts != other.m_full_nelts
+  if (maybe_ne (m_full_nelts, other.m_full_nelts)
       || m_npatterns != other.m_npatterns
       || m_nelts_per_pattern != other.m_nelts_per_pattern)
     return false;
@@ -356,14 +356,16 @@ vector_builder<T, Derived>::finalize ()
 {
   /* The encoding requires the same number of elements to come from each
      pattern.  */
-  gcc_assert (m_full_nelts % m_npatterns == 0);
+  gcc_assert (multiple_p (m_full_nelts, m_npatterns));
 
   /* Allow the caller to build more elements than necessary.  For example,
      it's often convenient to build a stepped vector from the natural
      encoding of three elements even if the vector itself only has two.  */
-  if (m_full_nelts <= encoded_nelts ())
+  unsigned HOST_WIDE_INT const_full_nelts;
+  if (m_full_nelts.is_constant (&const_full_nelts)
+      && const_full_nelts <= encoded_nelts ())
     {
-      m_npatterns = m_full_nelts;
+      m_npatterns = const_full_nelts;
       m_nelts_per_pattern = 1;
     }
 
@@ -435,9 +437,10 @@ vector_builder<T, Derived>::finalize ()
 	 would be for 2-bit elements.  We'll have treated them as
 	 duplicates in the loop above.  */
       if (m_nelts_per_pattern == 1
-	  && this->length () >= m_full_nelts
+	  && m_full_nelts.is_constant (&const_full_nelts)
+	  && this->length () >= const_full_nelts
 	  && (m_npatterns & 3) == 0
-	  && stepped_sequence_p (m_npatterns / 4, m_full_nelts,
+	  && stepped_sequence_p (m_npatterns / 4, const_full_nelts,
 				 m_npatterns / 4))
 	{
 	  reshape (m_npatterns / 4, 3);

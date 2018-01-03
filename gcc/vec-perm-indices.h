@@ -53,9 +53,9 @@ class vec_perm_indices
 
 public:
   vec_perm_indices ();
-  vec_perm_indices (const vec_perm_builder &, unsigned int, unsigned int);
+  vec_perm_indices (const vec_perm_builder &, unsigned int, poly_uint64);
 
-  void new_vector (const vec_perm_builder &, unsigned int, unsigned int);
+  void new_vector (const vec_perm_builder &, unsigned int, poly_uint64);
   void new_expanded_vector (const vec_perm_indices &, unsigned int);
   void rotate_inputs (int delta);
 
@@ -64,16 +64,16 @@ public:
 
   /* Return the number of output elements.  This is called length ()
      so that we present a more vec-like interface.  */
-  unsigned int length () const { return m_encoding.full_nelts (); }
+  poly_uint64 length () const { return m_encoding.full_nelts (); }
 
   /* Return the number of input vectors being permuted.  */
   unsigned int ninputs () const { return m_ninputs; }
 
   /* Return the number of elements in each input vector.  */
-  unsigned int nelts_per_input () const { return m_nelts_per_input; }
+  poly_uint64 nelts_per_input () const { return m_nelts_per_input; }
 
   /* Return the total number of input elements.  */
-  unsigned int input_nelts () const { return m_ninputs * m_nelts_per_input; }
+  poly_uint64 input_nelts () const { return m_ninputs * m_nelts_per_input; }
 
   element_type clamp (element_type) const;
   element_type operator[] (unsigned int i) const;
@@ -86,7 +86,7 @@ private:
 
   vec_perm_builder m_encoding;
   unsigned int m_ninputs;
-  unsigned int m_nelts_per_input;
+  poly_uint64 m_nelts_per_input;
 };
 
 bool tree_to_vec_perm_builder (vec_perm_builder *, tree);
@@ -107,7 +107,7 @@ vec_perm_indices::vec_perm_indices ()
 inline
 vec_perm_indices::vec_perm_indices (const vec_perm_builder &elements,
 				    unsigned int ninputs,
-				    unsigned int nelts_per_input)
+				    poly_uint64 nelts_per_input)
 {
   new_vector (elements, ninputs, nelts_per_input);
 }

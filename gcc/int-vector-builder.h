@@ -33,7 +33,7 @@ class int_vector_builder : public vector_builder<T, int_vector_builder<T> >
 
 public:
   int_vector_builder () {}
-  int_vector_builder (unsigned int, unsigned int, unsigned int);
+  int_vector_builder (poly_uint64, unsigned int, unsigned int);
 
   using parent::new_vector;
 
@@ -53,7 +53,7 @@ private:
 
 template<typename T>
 inline
-int_vector_builder<T>::int_vector_builder (unsigned int full_nelts,
+int_vector_builder<T>::int_vector_builder (poly_uint64 full_nelts,
 					   unsigned int npatterns,
 					   unsigned int nelts_per_pattern)
 {

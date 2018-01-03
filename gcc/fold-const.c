@@ -8927,9 +8927,11 @@ static tree
 fold_vec_perm (tree type, tree arg0, tree arg1, const vec_perm_indices &sel)
 {
   unsigned int i;
+  unsigned HOST_WIDE_INT nelts;
   bool need_ctor = false;
 
-  unsigned int nelts = sel.length ();
+  if (!sel.length ().is_constant (&nelts))
+    return NULL_TREE;
   gcc_assert (TYPE_VECTOR_SUBPARTS (type) == nelts
 	      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts
 	      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts);

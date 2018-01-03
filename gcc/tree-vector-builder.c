@@ -36,13 +36,15 @@ bool
 tree_vector_builder::new_unary_operation (tree type, tree t,
 					  bool allow_stepped_p)
 {
-  unsigned int full_nelts = TYPE_VECTOR_SUBPARTS (type);
-  gcc_assert (full_nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (t)));
+  poly_uint64 full_nelts = TYPE_VECTOR_SUBPARTS (type);
+  gcc_assert (known_eq (full_nelts, TYPE_VECTOR_SUBPARTS (TREE_TYPE (t))));
   unsigned int npatterns = VECTOR_CST_NPATTERNS (t);
   unsigned int nelts_per_pattern = VECTOR_CST_NELTS_PER_PATTERN (t);
   if (!allow_stepped_p && nelts_per_pattern > 2)
     {
-      npatterns = full_nelts;
+      if (!full_nelts.is_constant ())
+	return false;
+      npatterns = full_nelts.to_constant ();
       nelts_per_pattern = 1;
     }
   new_vector (type, npatterns, nelts_per_pattern);
@@ -61,9 +63,9 @@ bool
 tree_vector_builder::new_binary_operation (tree type, tree t1, tree t2,
 					   bool allow_stepped_p)
 {
-  unsigned int full_nelts = TYPE_VECTOR_SUBPARTS (type);
-  gcc_assert (full_nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1))
-	      && full_nelts == TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2)));
+  poly_uint64 full_nelts = TYPE_VECTOR_SUBPARTS (type);
+  gcc_assert (known_eq (full_nelts, TYPE_VECTOR_SUBPARTS (TREE_TYPE (t1)))
+	      && known_eq (full_nelts, TYPE_VECTOR_SUBPARTS (TREE_TYPE (t2))));
   /* Conceptually we split the patterns in T1 and T2 until we have
      an equal number for both.  Each split pattern requires the same
      number of elements per pattern as the original.  E.g. splitting:
@@ -89,7 +91,9 @@ tree_vector_builder::new_binary_operation (tree type, tree t1, tree t2,
 					VECTOR_CST_NELTS_PER_PATTERN (t2));
   if (!allow_stepped_p && nelts_per_pattern > 2)
     {
-      npatterns = full_nelts;
+      if (!full_nelts.is_constant ())
+	return false;
+      npatterns = full_nelts.to_constant ();
       nelts_per_pattern = 1;
     }
   new_vector (type, npatterns, nelts_per_pattern);
