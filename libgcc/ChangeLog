@@ -1,4 +1,8 @@
-2017-12-12  Kito Cheng <kito.cheng@gmail.com>
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-12-12  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/riscv/t-elf: Use multi3.c instead of multi3.S.
 	* config/riscv/multi3.c: New file.
@@ -8869,7 +8873,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2017 Free Software Foundation, Inc.
+Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

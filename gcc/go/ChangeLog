@@ -1,5 +1,7 @@
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
+	Update copyright years.
+
 	* gccgo.texi: Bump @copyrights-go year.
 
 2017-12-12  Tony Reix  <tony.reix@atos.net>
@@ -1461,7 +1463,7 @@
 
 	Go frontend added to gcc repository.
 
-Copyright (C) 2010-2017 Free Software Foundation, Inc.
+Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
