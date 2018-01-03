@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* alias.c (addr_side_effect_eval): Take the size as a poly_int64
+	rather than an int.  Use plus_constant.
+	(memrefs_conflict_p): Take the sizes as poly_int64s rather than ints.
+	Take the offset "c" as a poly_int64 rather than a HOST_WIDE_INT.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* calls.c (emit_call_1, expand_call): Change struct_value_size from
 	a HOST_WIDE_INT to a poly_int64.
 
