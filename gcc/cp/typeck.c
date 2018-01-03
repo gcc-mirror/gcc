@@ -6943,8 +6943,11 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	}
 
       /* Convert from "B*" to "D*".  This function will check that "B"
-	 is not a virtual base of "D".  */
-      expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false,
+	 is not a virtual base of "D".  Even if we don't have a guarantee
+	 that expr is NULL, if the static_cast is to a reference type,
+	 it is UB if it would be NULL, so omit the non-NULL check.  */
+      expr = build_base_path (MINUS_EXPR, expr, base,
+			      /*nonnull=*/flag_delete_null_pointer_checks,
 			      complain);
 
       /* Convert the pointer to a reference -- but then remember that
@@ -6955,7 +6958,18 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
          is a variable with the same type, the conversion would get folded
          away, leaving just the variable and causing lvalue_kind to give
          the wrong answer.  */
-      return convert_from_reference (rvalue (cp_fold_convert (type, expr)));
+      expr = cp_fold_convert (type, expr);
+
+      /* When -fsanitize=null, make sure to diagnose reference binding to
+	 NULL even when the reference is converted to pointer later on.  */
+      if (sanitize_flags_p (SANITIZE_NULL)
+	  && TREE_CODE (expr) == COND_EXPR
+	  && TREE_OPERAND (expr, 2)
+	  && TREE_CODE (TREE_OPERAND (expr, 2)) == INTEGER_CST
+	  && TREE_TYPE (TREE_OPERAND (expr, 2)) == type)
+	ubsan_maybe_instrument_reference (&TREE_OPERAND (expr, 2));
+
+      return convert_from_reference (rvalue (expr));
     }
 
   /* "A glvalue of type cv1 T1 can be cast to type rvalue reference to

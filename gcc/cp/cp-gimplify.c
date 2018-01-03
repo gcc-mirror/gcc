@@ -1506,6 +1506,12 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      if (sanitize_flags_p (SANITIZE_VPTR) && !is_ctor)
 		cp_ubsan_maybe_instrument_member_call (stmt);
 	    }
+	  else if (fn == NULL_TREE
+		   && CALL_EXPR_IFN (stmt) == IFN_UBSAN_NULL
+		   && TREE_CODE (CALL_EXPR_ARG (stmt, 0)) == INTEGER_CST
+		   && (TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (stmt, 0)))
+		       == REFERENCE_TYPE))
+	    *walk_subtrees = 0;
 	}
       break;
 
