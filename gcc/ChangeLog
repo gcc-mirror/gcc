@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* match.pd: Cope with polynomial numbers of vector elements.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* fold-const.c (fold_indirect_ref_1): Handle polynomial offsets
 	in a POINTER_PLUS_EXPR.
 
