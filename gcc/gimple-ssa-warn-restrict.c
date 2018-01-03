@@ -1691,7 +1691,9 @@ wrestrict_dom_walker::check_call (gcall *call)
   if (!dstwr && strfun)
     dstwr = size_one_node;
 
-  if (check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
+  /* DST and SRC can be null for a call with an insufficient number
+     of arguments to a built-in function declared without a protype.  */
+  if (!dst || !src || check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
     return;
 
   /* Avoid diagnosing the call again.  */

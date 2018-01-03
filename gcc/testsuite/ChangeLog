@@ -21,6 +21,9 @@
 
 2018-01-03  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/83603
+	* gcc.dg/Wrestrict-4.c: New test.
+
 	PR c/83559
 	* gcc.dg/const-2.c: New test.
 	* gcc.dg/pure-3.c: New test.
