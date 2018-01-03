@@ -4150,6 +4150,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 
   vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
   scalar_type = TREE_TYPE (vector_type);
+  /* vectorizable_reduction has already rejected SLP reductions on
+     variable-length vectors.  */
   nunits = TYPE_VECTOR_SUBPARTS (vector_type);
 
   gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def);
@@ -4537,8 +4539,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == COND_REDUCTION)
     {
       tree indx_before_incr, indx_after_incr;
-      int nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
-      int k;
+      poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype);
 
       gimple *vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
       gcc_assert (gimple_assign_rhs_code (vec_stmt) == VEC_COND_EXPR);
@@ -4554,10 +4555,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	 vector size (STEP).  */
 
       /* Create a {1,2,3,...} vector.  */
-      tree_vector_builder vtemp (cr_index_vector_type, 1, 3);
-      for (k = 0; k < 3; ++k)
-	vtemp.quick_push (build_int_cst (cr_index_scalar_type, k + 1));
-      tree series_vect = vtemp.build ();
+      tree series_vect = build_index_vector (cr_index_vector_type, 1, 1);
 
       /* Create a vector of the step value.  */
       tree step = build_int_cst (cr_index_scalar_type, nunits_out);
@@ -4935,8 +4933,11 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       tree data_eltype = TREE_TYPE (TREE_TYPE (new_phi_result));
       tree idx_eltype = TREE_TYPE (TREE_TYPE (induction_index));
       unsigned HOST_WIDE_INT el_size = tree_to_uhwi (TYPE_SIZE (idx_eltype));
-      unsigned HOST_WIDE_INT v_size
-	= el_size * TYPE_VECTOR_SUBPARTS (TREE_TYPE (induction_index));
+      poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (TREE_TYPE (induction_index));
+      /* Enforced by vectorizable_reduction, which ensures we have target
+	 support before allowing a conditional reduction on variable-length
+	 vectors.  */
+      unsigned HOST_WIDE_INT v_size = el_size * nunits.to_constant ();
       tree idx_val = NULL_TREE, val = NULL_TREE;
       for (unsigned HOST_WIDE_INT off = 0; off < v_size; off += el_size)
 	{
@@ -5055,6 +5056,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
     {
       bool reduce_with_shift = have_whole_vector_shift (mode);
       int element_bitsize = tree_to_uhwi (bitsize);
+      /* Enforced by vectorizable_reduction, which disallows SLP reductions
+	 for variable-length vectors and also requires direct target support
+	 for loop reductions.  */
       int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
       tree vec_temp;
 
@@ -5743,10 +5747,10 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  if (k == 1
 	      && gimple_assign_rhs_code (reduc_stmt) == COND_EXPR)
 	    continue;
-	  tem = get_vectype_for_scalar_type (TREE_TYPE (op));
-	  if (! vectype_in
-	      || TYPE_VECTOR_SUBPARTS (tem) < TYPE_VECTOR_SUBPARTS (vectype_in))
-	    vectype_in = tem;
+	  if (!vectype_in
+	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
+		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (op)))))
+	    vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op));
 	  break;
 	}
       gcc_assert (vectype_in);
@@ -5912,7 +5916,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	  /* To properly compute ncopies we are interested in the widest
 	     input type in case we're looking at a widening accumulation.  */
 	  if (!vectype_in
-	      || TYPE_VECTOR_SUBPARTS (vectype_in) > TYPE_VECTOR_SUBPARTS (tem))
+	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
+		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (tem)))))
 	    vectype_in = tem;
 	}
 
@@ -6097,6 +6102,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   gcc_assert (ncopies >= 1);
 
   vec_mode = TYPE_MODE (vectype_in);
+  poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
 
   if (code == COND_EXPR)
     {
@@ -6278,12 +6284,21 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       int scalar_precision
 	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (scalar_type));
       cr_index_scalar_type = make_unsigned_type (scalar_precision);
-      cr_index_vector_type = build_vector_type
-	(cr_index_scalar_type, TYPE_VECTOR_SUBPARTS (vectype_out));
+      cr_index_vector_type = build_vector_type (cr_index_scalar_type,
+						nunits_out);
 
       if (direct_internal_fn_supported_p (IFN_REDUC_MAX, cr_index_vector_type,
 					  OPTIMIZE_FOR_SPEED))
 	reduc_fn = IFN_REDUC_MAX;
+    }
+
+  if (reduc_fn == IFN_LAST && !nunits_out.is_constant ())
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "missing target support for reduction on"
+			 " variable-length vectors.\n");
+      return false;
     }
 
   if ((double_reduc
@@ -6294,6 +6309,27 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "multiple types in double reduction or condition "
 			 "reduction.\n");
+      return false;
+    }
+
+  if (double_reduc && !nunits_out.is_constant ())
+    {
+      /* The current double-reduction code creates the initial value
+	 element-by-element.  */
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "double reduction not supported for variable-length"
+			 " vectors.\n");
+      return false;
+    }
+
+  if (slp_node && !nunits_out.is_constant ())
+    {
+      /* The current SLP code creates the initial value element-by-element.  */
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "SLP reduction not supported for variable-length"
+			 " vectors.\n");
       return false;
     }
 

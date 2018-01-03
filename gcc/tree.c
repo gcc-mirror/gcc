@@ -1930,6 +1930,29 @@ build_vec_series (tree type, tree base, tree step)
   return build2 (VEC_SERIES_EXPR, type, base, step);
 }
 
+/* Return a vector with the same number of units and number of bits
+   as VEC_TYPE, but in which the elements are a linear series of unsigned
+   integers { BASE, BASE + STEP, BASE + STEP * 2, ... }.  */
+
+tree
+build_index_vector (tree vec_type, poly_uint64 base, poly_uint64 step)
+{
+  tree index_vec_type = vec_type;
+  tree index_elt_type = TREE_TYPE (vec_type);
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vec_type);
+  if (!INTEGRAL_TYPE_P (index_elt_type) || !TYPE_UNSIGNED (index_elt_type))
+    {
+      index_elt_type = build_nonstandard_integer_type
+	(GET_MODE_BITSIZE (SCALAR_TYPE_MODE (index_elt_type)), true);
+      index_vec_type = build_vector_type (index_elt_type, nunits);
+    }
+
+  tree_vector_builder v (index_vec_type, 1, 3);
+  for (unsigned int i = 0; i < 3; ++i)
+    v.quick_push (build_int_cstu (index_elt_type, base + i * step));
+  return v.build ();
+}
+
 /* Something has messed with the elements of CONSTRUCTOR C after it was built;
    calculate TREE_CONSTANT and TREE_SIDE_EFFECTS.  */
 
