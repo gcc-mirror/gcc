@@ -7,7 +7,6 @@ __attribute__ ((noreturn)) void exit (int);
 __attribute__ ((noreturn)) void
 f (void)
 {
-  asm volatile ("nop" ::: "edi");
   exit (1);
 }
 

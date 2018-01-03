@@ -12217,21 +12217,39 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
      pointer could be anywhere in the guard page.  The safe thing
      to do is emit a probe now.
 
+     The probe can be avoided if we have already emitted any callee
+     register saves into the stack or have a frame pointer (which will
+     have been saved as well).  Those saves will function as implicit
+     probes.
+
      ?!? This should be revamped to work like aarch64 and s390 where
      we track the offset from the most recent probe.  Normally that
      offset would be zero.  For a noreturn function we would reset
      it to PROBE_INTERVAL - (STACK_BOUNDARY / BITS_PER_UNIT).   Then
      we just probe when we cross PROBE_INTERVAL.  */
-  if (TREE_THIS_VOLATILE (cfun->decl))
+  if (TREE_THIS_VOLATILE (cfun->decl)
+      && !(m->frame.nregs || m->frame.nsseregs || frame_pointer_needed))
     {
       /* We can safely use any register here since we're just going to push
 	 its value and immediately pop it back.  But we do try and avoid
 	 argument passing registers so as not to introduce dependencies in
 	 the pipeline.  For 32 bit we use %esi and for 64 bit we use %rax.  */
       rtx dummy_reg = gen_rtx_REG (word_mode, TARGET_64BIT ? AX_REG : SI_REG);
-      rtx_insn *insn = emit_insn (gen_push (dummy_reg));
-      RTX_FRAME_RELATED_P (insn) = 1;
-      ix86_emit_restore_reg_using_pop (dummy_reg);
+      rtx_insn *insn_push = emit_insn (gen_push (dummy_reg));
+      rtx_insn *insn_pop = emit_insn (gen_pop (dummy_reg));
+      m->fs.sp_offset -= UNITS_PER_WORD;
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	{
+	  m->fs.cfa_offset -= UNITS_PER_WORD;
+	  rtx x = plus_constant (Pmode, stack_pointer_rtx, -UNITS_PER_WORD);
+	  x = gen_rtx_SET (stack_pointer_rtx, x);
+	  add_reg_note (insn_push, REG_CFA_ADJUST_CFA, x);
+	  RTX_FRAME_RELATED_P (insn_push) = 1;
+	  x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
+	  x = gen_rtx_SET (stack_pointer_rtx, x);
+	  add_reg_note (insn_pop, REG_CFA_ADJUST_CFA, x);
+	  RTX_FRAME_RELATED_P (insn_pop) = 1;
+	}
       emit_insn (gen_blockage ());
     }
 
