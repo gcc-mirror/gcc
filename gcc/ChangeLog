@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* omp-simd-clone.c (simd_clone_subparts): New function.
+	(simd_clone_init_simd_arrays): Use it instead of TYPE_VECTOR_SUBPARTS.
+	(ipa_simd_modify_function_body): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-generic.c (nunits_for_known_piecewise_op): New function.
 	(expand_vector_piecewise): Use it instead of TYPE_VECTOR_SUBPARTS.
 	(expand_vector_addition, add_rshift, expand_vector_divmod): Likewise.
