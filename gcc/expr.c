@@ -8424,11 +8424,14 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 			  && !TYPE_REVERSE_STORAGE_ORDER (type));
 
 	      /* Store this field into a union of the proper type.  */
+	      poly_uint64 op0_size
+		= tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (treeop0)));
+	      poly_uint64 union_size = GET_MODE_BITSIZE (mode);
 	      store_field (target,
-			   MIN ((int_size_in_bytes (TREE_TYPE
-						    (treeop0))
-				 * BITS_PER_UNIT),
-				(HOST_WIDE_INT) GET_MODE_BITSIZE (mode)),
+			   /* The conversion must be constructed so that
+			      we know at compile time how many bits
+			      to preserve.  */
+			   ordered_min (op0_size, union_size),
 			   0, 0, 0, TYPE_MODE (valtype), treeop0, 0,
 			   false, false);
 	    }
