@@ -2270,6 +2270,26 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	  return false;
 	}
     }
+  else
+    {
+      switch (array->ts.type)
+	{
+	case BT_INTEGER:
+	case BT_LOGICAL:
+	case BT_REAL:
+	case BT_COMPLEX:
+	case BT_CHARACTER:
+	  break;
+	  
+	default:
+	  gfc_error ("Missing %qs argument to %qs intrinsic at %L for %qs "
+		     "of type %qs", gfc_current_intrinsic_arg[2]->name,
+		     gfc_current_intrinsic, &array->where,
+		     gfc_current_intrinsic_arg[0]->name,
+		     gfc_typename (&array->ts));
+	  return false;
+	}
+    }
 
   return true;
 }

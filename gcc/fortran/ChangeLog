@@ -1,3 +1,9 @@
+2018-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83664
+	* check.c (gfc_check_eoshift): Error for missing boundary if array
+	is not one of the standard types.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
