@@ -1,4 +1,11 @@
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* machmode.def (VECTOR_MODES_WITH_PREFIX): Document.
+	* genmodes.c (VECTOR_MODES_WITH_PREFIX): New macro.
+	(VECTOR_MODES): Use it.
+	(make_vector_modes): Take the prefix as an argument.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
