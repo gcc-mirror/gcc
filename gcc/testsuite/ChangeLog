@@ -1,3 +1,16 @@
+2018-01-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-hw2.c: Add tests for ceilf128,
+	floorf128, truncf128, and roundf128.
+	* gcc.target/powerpc/float128-hw5.c: New tests for _Float128
+	optimizations added in match.pd.
+	* gcc.target/powerpc/float128-hw6.c: Likewise.
+	* gcc.target/powerpc/float128-hw7.c: Likewise.
+	* gcc.target/powerpc/float128-hw8.c: Likewise.
+	* gcc.target/powerpc/float128-hw9.c: Likewise.
+	* gcc.target/powerpc/float128-hw10.c: Likewise.
+	* gcc.target/powerpc/float128-hw11.c: Likewise.
+
 2018-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83556
