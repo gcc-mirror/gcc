@@ -981,12 +981,7 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
   /* If the compute mode is not a vector mode (hence we are not decomposing
      a BLKmode vector to smaller, hardware-supported vectors), we may want
      to expand the operations in parallel.  */
-  if (GET_MODE_CLASS (compute_mode) != MODE_VECTOR_INT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_FLOAT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_FRACT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_UFRACT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_ACCUM
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_UACCUM)
+  if (!VECTOR_MODE_P (compute_mode))
     switch (code)
       {
       case PLUS_EXPR:
@@ -1175,6 +1170,8 @@ type_for_widest_vector_mode (tree type, optab op)
     mode = MIN_MODE_VECTOR_ACCUM;
   else if (SCALAR_UACCUM_MODE_P (inner_mode))
     mode = MIN_MODE_VECTOR_UACCUM;
+  else if (inner_mode == BImode)
+    mode = MIN_MODE_VECTOR_BOOL;
   else
     mode = MIN_MODE_VECTOR_INT;
 
@@ -1537,12 +1534,7 @@ expand_vector_scalar_condition (gimple_stmt_iterator *gsi)
   /* If the compute mode is not a vector mode (hence we are not decomposing
      a BLKmode vector to smaller, hardware-supported vectors), we may want
      to expand the operations in parallel.  */
-  if (GET_MODE_CLASS (compute_mode) != MODE_VECTOR_INT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_FLOAT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_FRACT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_UFRACT
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_ACCUM
-      && GET_MODE_CLASS (compute_mode) != MODE_VECTOR_UACCUM)
+  if (!VECTOR_MODE_P (compute_mode))
     new_rhs = expand_vector_parallel (gsi, do_cond, type, rhs2, rhs3,
 				      COND_EXPR);
   else

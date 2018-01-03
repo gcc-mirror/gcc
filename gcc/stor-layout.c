@@ -379,12 +379,13 @@ int_mode_for_mode (machine_mode mode)
     case MODE_COMPLEX_FLOAT:
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
-    case MODE_VECTOR_INT:
-    case MODE_VECTOR_FLOAT:
     case MODE_FRACT:
     case MODE_ACCUM:
     case MODE_UFRACT:
     case MODE_UACCUM:
+    case MODE_VECTOR_BOOL:
+    case MODE_VECTOR_INT:
+    case MODE_VECTOR_FLOAT:
     case MODE_VECTOR_FRACT:
     case MODE_VECTOR_ACCUM:
     case MODE_VECTOR_UFRACT:

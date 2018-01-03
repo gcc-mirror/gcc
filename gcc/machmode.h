@@ -108,6 +108,7 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
   (GET_MODE_CLASS (MODE) == MODE_INT		\
    || GET_MODE_CLASS (MODE) == MODE_PARTIAL_INT \
    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_INT \
+   || GET_MODE_CLASS (MODE) == MODE_VECTOR_BOOL \
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_INT)
 
 /* Nonzero if MODE is a floating-point mode.  */
@@ -123,8 +124,9 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)
 
 /* Nonzero if MODE is a vector mode.  */
-#define VECTOR_MODE_P(MODE)			\
-  (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT	\
+#define VECTOR_MODE_P(MODE)				\
+  (GET_MODE_CLASS (MODE) == MODE_VECTOR_BOOL		\
+   || GET_MODE_CLASS (MODE) == MODE_VECTOR_INT		\
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT	\
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_FRACT	\
    || GET_MODE_CLASS (MODE) == MODE_VECTOR_UFRACT	\

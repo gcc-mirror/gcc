@@ -10509,6 +10509,7 @@ build_vector_type_for_mode (tree innertype, machine_mode mode)
 
   switch (GET_MODE_CLASS (mode))
     {
+    case MODE_VECTOR_BOOL:
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
     case MODE_VECTOR_FRACT:

@@ -3918,6 +3918,32 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
       assemble_integer (x, GET_MODE_SIZE (mode), align, 1);
       break;
 
+    case MODE_VECTOR_BOOL:
+      {
+	gcc_assert (GET_CODE (x) == CONST_VECTOR);
+
+	/* Pick the smallest integer mode that contains at least one
+	   whole element.  Often this is byte_mode and contains more
+	   than one element.  */
+	unsigned int nelts = GET_MODE_NUNITS (mode);
+	unsigned int elt_bits = GET_MODE_BITSIZE (mode) / nelts;
+	unsigned int int_bits = MAX (elt_bits, BITS_PER_UNIT);
+	scalar_int_mode int_mode = int_mode_for_size (int_bits, 0).require ();
+
+	/* Build the constant up one integer at a time.  */
+	unsigned int elts_per_int = int_bits / elt_bits;
+	for (unsigned int i = 0; i < nelts; i += elts_per_int)
+	  {
+	    unsigned HOST_WIDE_INT value = 0;
+	    unsigned int limit = MIN (nelts - i, elts_per_int);
+	    for (unsigned int j = 0; j < limit; ++j)
+	      if (INTVAL (CONST_VECTOR_ELT (x, i + j)) != 0)
+		value |= 1 << (j * elt_bits);
+	    output_constant_pool_2 (int_mode, gen_int_mode (value, int_mode),
+				    i != 0 ? MIN (align, int_bits) : align);
+	  }
+	break;
+      }
     case MODE_VECTOR_FLOAT:
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FRACT:
