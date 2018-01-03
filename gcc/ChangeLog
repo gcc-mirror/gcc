@@ -1,3 +1,10 @@
+2018-01-03  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/83549
+	* cif-code.def (VARIADIC_THUNK): New enum value.
+	* ipa-fnsummary.c (compute_fn_summary): Do not inline variadic
+	thunks.
+
 2018-01-03  Jan Beulich  <jbeulich@suse.com>
 
 	* sse.md (mov<mode>_internal): Tighten condition for when to use
