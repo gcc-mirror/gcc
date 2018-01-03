@@ -170,6 +170,8 @@ plugin_init (struct plugin_name_args *plugin_info,
 		     PLUGIN_FINISH,
 		     selftest::expensive_tests,
 		     NULL); /* void *user_data */
-  return 0;
+#else
+  inform (UNKNOWN_LOCATION, "self-tests are not enabled in this build");
 #endif /* #if CHECKING_P */
+  return 0;
 }

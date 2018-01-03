@@ -1,3 +1,12 @@
+2018-01-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82050
+	* gcc.dg/plugin/expensive-selftests-1.c: Update regexp to handle
+	the !CHECKING_P case by expecting a note.
+	* gcc.dg/plugin/expensive_selftests_plugin.c (plugin_init): Issue
+	a note for the !CHECKING_P case, and move the return statement
+	outside of #if CHECKING_P guard.
+
 2018-01-03  Jeff Law  <law@redhat.com>
 
 	PR middle-end/83654
