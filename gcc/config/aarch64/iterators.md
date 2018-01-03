@@ -461,6 +461,13 @@
 			  (V1DF "1") (V2DF "2")
 			  (DI "1") (DF "1")])
 
+;; Map a mode to the number of bits in it, if the size of the mode
+;; is constant.
+(define_mode_attr bitsize [(V8QI "64") (V16QI "128")
+			   (V4HI "64") (V8HI "128")
+			   (V2SI "64") (V4SI "128")
+				       (V2DI "128")])
+
 ;; Map a floating point or integer mode to the appropriate register name prefix
 (define_mode_attr s [(HF "h") (SF "s") (DF "d") (SI "s") (DI "d")])
 

@@ -117,14 +117,52 @@ struct aarch64_address_info {
   enum aarch64_symbol_type symbol_type;
 };
 
+/* Information about a legitimate vector immediate operand.  */
 struct simd_immediate_info
 {
+  enum insn_type { MOV, MVN };
+  enum modifier_type { LSL, MSL };
+
+  simd_immediate_info () {}
+  simd_immediate_info (scalar_float_mode, rtx);
+  simd_immediate_info (scalar_int_mode, unsigned HOST_WIDE_INT,
+		       insn_type = MOV, modifier_type = LSL,
+		       unsigned int = 0);
+
+  /* The mode of the elements.  */
+  scalar_mode elt_mode;
+
+  /* The value of each element.  */
   rtx value;
-  int shift;
-  int element_width;
-  bool mvn;
-  bool msl;
+
+  /* The instruction to use to move the immediate into a vector.  */
+  insn_type insn;
+
+  /* The kind of shift modifier to use, and the number of bits to shift.
+     This is (LSL, 0) if no shift is needed.  */
+  modifier_type modifier;
+  unsigned int shift;
 };
+
+/* Construct a floating-point immediate in which each element has mode
+   ELT_MODE_IN and value VALUE_IN.  */
+inline simd_immediate_info
+::simd_immediate_info (scalar_float_mode elt_mode_in, rtx value_in)
+  : elt_mode (elt_mode_in), value (value_in), insn (MOV),
+    modifier (LSL), shift (0)
+{}
+
+/* Construct an integer immediate in which each element has mode ELT_MODE_IN
+   and value VALUE_IN.  The other parameters are as for the structure
+   fields.  */
+inline simd_immediate_info
+::simd_immediate_info (scalar_int_mode elt_mode_in,
+		       unsigned HOST_WIDE_INT value_in,
+		       insn_type insn_in, modifier_type modifier_in,
+		       unsigned int shift_in)
+  : elt_mode (elt_mode_in), value (gen_int_mode (value_in, elt_mode_in)),
+    insn (insn_in), modifier (modifier_in), shift (shift_in)
+{}
 
 /* The current code model.  */
 enum aarch64_code_model aarch64_cmodel;
@@ -4873,7 +4911,7 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   vmode = aarch64_simd_container_mode (imode, width);
   rtx v_op = aarch64_simd_gen_const_vector_dup (vmode, ival);
 
-  return aarch64_simd_valid_immediate (v_op, vmode, false, NULL);
+  return aarch64_simd_valid_immediate (v_op, NULL);
 }
 
 
@@ -11493,200 +11531,185 @@ sizetochar (int size)
     }
 }
 
-/* Return true iff x is a uniform vector of floating-point
-   constants, and the constant can be represented in
-   quarter-precision form.  Note, as aarch64_float_const_representable
-   rejects both +0.0 and -0.0, we will also reject +0.0 and -0.0.  */
+/* Return true if replicating VAL32 is a valid 2-byte or 4-byte immediate
+   for the Advanced SIMD operation described by WHICH and INSN.  If INFO
+   is nonnull, use it to describe valid immediates.  */
 static bool
-aarch64_vect_float_const_representable_p (rtx x)
+aarch64_advsimd_valid_immediate_hs (unsigned int val32,
+				    simd_immediate_info *info,
+				    enum simd_immediate_check which,
+				    simd_immediate_info::insn_type insn)
 {
-  rtx elt;
-  return (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_FLOAT
-	  && const_vec_duplicate_p (x, &elt)
-	  && aarch64_float_const_representable_p (elt));
-}
+  /* Try a 4-byte immediate with LSL.  */
+  for (unsigned int shift = 0; shift < 32; shift += 8)
+    if ((val32 & (0xff << shift)) == val32)
+      {
+	if (info)
+	  *info = simd_immediate_info (SImode, val32 >> shift, insn,
+				       simd_immediate_info::LSL, shift);
+	return true;
+      }
 
-/* Return true for valid and false for invalid.  */
-bool
-aarch64_simd_valid_immediate (rtx op, machine_mode mode, bool inverse,
-			      struct simd_immediate_info *info,
-			      enum simd_immediate_check which)
-{
-#define CHECK(STRIDE, ELSIZE, CLASS, TEST, SHIFT, NEG)	\
-  matches = 1;						\
-  for (i = 0; i < idx; i += (STRIDE))			\
-    if (!(TEST))					\
-      matches = 0;					\
-  if (matches)						\
-    {							\
-      immtype = (CLASS);				\
-      elsize = (ELSIZE);				\
-      eshift = (SHIFT);					\
-      emvn = (NEG);					\
-      break;						\
-    }
-
-  unsigned int i, elsize = 0, idx = 0, n_elts = CONST_VECTOR_NUNITS (op);
-  unsigned int innersize = GET_MODE_UNIT_SIZE (mode);
-  unsigned char bytes[16];
-  int immtype = -1, matches;
-  unsigned int invmask = inverse ? 0xff : 0;
-  int eshift, emvn;
-
-  if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-    {
-      if (! (aarch64_simd_imm_zero_p (op, mode)
-	     || aarch64_vect_float_const_representable_p (op)))
-	return false;
-
-      if (info)
+  /* Try a 2-byte immediate with LSL.  */
+  unsigned int imm16 = val32 & 0xffff;
+  if (imm16 == (val32 >> 16))
+    for (unsigned int shift = 0; shift < 16; shift += 8)
+      if ((imm16 & (0xff << shift)) == imm16)
 	{
-	  rtx elt = CONST_VECTOR_ELT (op, 0);
-	  scalar_float_mode elt_mode
-	    = as_a <scalar_float_mode> (GET_MODE (elt));
-
-	  info->value = elt;
-	  info->element_width = GET_MODE_BITSIZE (elt_mode);
-	  info->mvn = false;
-	  info->shift = 0;
+	  if (info)
+	    *info = simd_immediate_info (HImode, imm16 >> shift, insn,
+					 simd_immediate_info::LSL, shift);
+	  return true;
 	}
 
+  /* Try a 4-byte immediate with MSL, except for cases that MVN
+     can handle.  */
+  if (which == AARCH64_CHECK_MOV)
+    for (unsigned int shift = 8; shift < 24; shift += 8)
+      {
+	unsigned int low = (1 << shift) - 1;
+	if (((val32 & (0xff << shift)) | low) == val32)
+	  {
+	    if (info)
+	      *info = simd_immediate_info (SImode, val32 >> shift, insn,
+					   simd_immediate_info::MSL, shift);
+	    return true;
+	  }
+      }
+
+  return false;
+}
+
+/* Return true if replicating VAL64 is a valid immediate for the
+   Advanced SIMD operation described by WHICH.  If INFO is nonnull,
+   use it to describe valid immediates.  */
+static bool
+aarch64_advsimd_valid_immediate (unsigned HOST_WIDE_INT val64,
+				 simd_immediate_info *info,
+				 enum simd_immediate_check which)
+{
+  unsigned int val32 = val64 & 0xffffffff;
+  unsigned int val16 = val64 & 0xffff;
+  unsigned int val8 = val64 & 0xff;
+
+  if (val32 == (val64 >> 32))
+    {
+      if ((which & AARCH64_CHECK_ORR) != 0
+	  && aarch64_advsimd_valid_immediate_hs (val32, info, which,
+						 simd_immediate_info::MOV))
+	return true;
+
+      if ((which & AARCH64_CHECK_BIC) != 0
+	  && aarch64_advsimd_valid_immediate_hs (~val32, info, which,
+						 simd_immediate_info::MVN))
+	return true;
+
+      /* Try using a replicated byte.  */
+      if (which == AARCH64_CHECK_MOV
+	  && val16 == (val32 >> 16)
+	  && val8 == (val16 >> 8))
+	{
+	  if (info)
+	    *info = simd_immediate_info (QImode, val8);
+	  return true;
+	}
+    }
+
+  /* Try using a bit-to-bytemask.  */
+  if (which == AARCH64_CHECK_MOV)
+    {
+      unsigned int i;
+      for (i = 0; i < 64; i += 8)
+	{
+	  unsigned char byte = (val64 >> i) & 0xff;
+	  if (byte != 0 && byte != 0xff)
+	    break;
+	}
+      if (i == 64)
+	{
+	  if (info)
+	    *info = simd_immediate_info (DImode, val64);
+	  return true;
+	}
+    }
+  return false;
+}
+
+/* Return true if OP is a valid SIMD immediate for the operation
+   described by WHICH.  If INFO is nonnull, use it to describe valid
+   immediates.  */
+bool
+aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
+			      enum simd_immediate_check which)
+{
+  rtx elt = NULL;
+  unsigned int n_elts;
+  if (const_vec_duplicate_p (op, &elt))
+    n_elts = 1;
+  else if (GET_CODE (op) == CONST_VECTOR)
+    n_elts = CONST_VECTOR_NUNITS (op);
+  else
+    return false;
+
+  machine_mode mode = GET_MODE (op);
+  scalar_mode elt_mode = GET_MODE_INNER (mode);
+  scalar_float_mode elt_float_mode;
+  if (elt
+      && is_a <scalar_float_mode> (elt_mode, &elt_float_mode)
+      && (aarch64_float_const_zero_rtx_p (elt)
+	  || aarch64_float_const_representable_p (elt)))
+    {
+      if (info)
+	*info = simd_immediate_info (elt_float_mode, elt);
       return true;
     }
 
-  /* Splat vector constant out into a byte vector.  */
-  for (i = 0; i < n_elts; i++)
-    {
-      /* The vector is provided in gcc endian-neutral fashion.  For aarch64_be,
-         it must be laid out in the vector register in reverse order.  */
-      rtx el = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? (n_elts - 1 - i) : i);
-      unsigned HOST_WIDE_INT elpart;
-
-      gcc_assert (CONST_INT_P (el));
-      elpart = INTVAL (el);
-
-      for (unsigned int byte = 0; byte < innersize; byte++)
-	{
-	  bytes[idx++] = (elpart & 0xff) ^ invmask;
-	  elpart >>= BITS_PER_UNIT;
-	}
-
-    }
-
-  /* Sanity check.  */
-  gcc_assert (idx == GET_MODE_SIZE (mode));
-
-  do
-    {
-      if (which & AARCH64_CHECK_ORR)
-	{
-	  CHECK (4, 32, 0, bytes[i] == bytes[0] && bytes[i + 1] == 0
-		 && bytes[i + 2] == 0 && bytes[i + 3] == 0, 0, 0);
-
-	  CHECK (4, 32, 1, bytes[i] == 0 && bytes[i + 1] == bytes[1]
-		 && bytes[i + 2] == 0 && bytes[i + 3] == 0, 8, 0);
-
-	  CHECK (4, 32, 2, bytes[i] == 0 && bytes[i + 1] == 0
-		 && bytes[i + 2] == bytes[2] && bytes[i + 3] == 0, 16, 0);
-
-	  CHECK (4, 32, 3, bytes[i] == 0 && bytes[i + 1] == 0
-		 && bytes[i + 2] == 0 && bytes[i + 3] == bytes[3], 24, 0);
-
-	  CHECK (2, 16, 4, bytes[i] == bytes[0] && bytes[i + 1] == 0, 0, 0);
-
-	  CHECK (2, 16, 5, bytes[i] == 0 && bytes[i + 1] == bytes[1], 8, 0);
-	}
-
-      if (which & AARCH64_CHECK_BIC)
-	{
-	  CHECK (4, 32, 6, bytes[i] == bytes[0] && bytes[i + 1] == 0xff
-		 && bytes[i + 2] == 0xff && bytes[i + 3] == 0xff, 0, 1);
-
-	  CHECK (4, 32, 7, bytes[i] == 0xff && bytes[i + 1] == bytes[1]
-		 && bytes[i + 2] == 0xff && bytes[i + 3] == 0xff, 8, 1);
-
-	  CHECK (4, 32, 8, bytes[i] == 0xff && bytes[i + 1] == 0xff
-		 && bytes[i + 2] == bytes[2] && bytes[i + 3] == 0xff, 16, 1);
-
-	  CHECK (4, 32, 9, bytes[i] == 0xff && bytes[i + 1] == 0xff
-		 && bytes[i + 2] == 0xff && bytes[i + 3] == bytes[3], 24, 1);
-
-	  CHECK (2, 16, 10, bytes[i] == bytes[0] && bytes[i + 1] == 0xff, 0, 1);
-
-	  CHECK (2, 16, 11, bytes[i] == 0xff && bytes[i + 1] == bytes[1], 8, 1);
-	}
-
-      /* Shifting ones / 8-bit / 64-bit variants only checked
-	 for 'ALL' (MOVI/MVNI).  */
-      if (which == AARCH64_CHECK_MOV)
-	{
-	  CHECK (4, 32, 12, bytes[i] == 0xff && bytes[i + 1] == bytes[1]
-		 && bytes[i + 2] == 0 && bytes[i + 3] == 0, 8, 0);
-
-	  CHECK (4, 32, 13, bytes[i] == 0 && bytes[i + 1] == bytes[1]
-		 && bytes[i + 2] == 0xff && bytes[i + 3] == 0xff, 8, 1);
-
-	  CHECK (4, 32, 14, bytes[i] == 0xff && bytes[i + 1] == 0xff
-		 && bytes[i + 2] == bytes[2] && bytes[i + 3] == 0, 16, 0);
-
-	  CHECK (4, 32, 15, bytes[i] == 0 && bytes[i + 1] == 0
-		 && bytes[i + 2] == bytes[2] && bytes[i + 3] == 0xff, 16, 1);
-
-	  CHECK (1, 8, 16, bytes[i] == bytes[0], 0, 0);
-
-	  CHECK (1, 64, 17, (bytes[i] == 0 || bytes[i] == 0xff)
-		 && bytes[i] == bytes[(i + 8) % idx], 0, 0);
-	}
-    }
-  while (0);
-
-  if (immtype == -1)
+  unsigned int elt_size = GET_MODE_SIZE (elt_mode);
+  if (elt_size > 8)
     return false;
 
-  if (info)
+  scalar_int_mode elt_int_mode = int_mode_for_mode (elt_mode).require ();
+
+  /* Expand the vector constant out into a byte vector, with the least
+     significant byte of the register first.  */
+  auto_vec<unsigned char, 16> bytes;
+  bytes.reserve (n_elts * elt_size);
+  for (unsigned int i = 0; i < n_elts; i++)
     {
-      info->element_width = elsize;
-      info->mvn = emvn != 0;
-      info->shift = eshift;
+      if (!elt || n_elts != 1)
+	/* The vector is provided in gcc endian-neutral fashion.
+	   For aarch64_be, it must be laid out in the vector register
+	   in reverse order.  */
+	elt = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? (n_elts - 1 - i) : i);
 
-      unsigned HOST_WIDE_INT imm = 0;
+      if (elt_mode != elt_int_mode)
+	elt = gen_lowpart (elt_int_mode, elt);
 
-      if (immtype >= 12 && immtype <= 15)
-	info->msl = true;
+      if (!CONST_INT_P (elt))
+	return false;
 
-      /* Un-invert bytes of recognized vector, if necessary.  */
-      if (invmask != 0)
-        for (i = 0; i < idx; i++)
-          bytes[i] ^= invmask;
-
-      if (immtype == 17)
-        {
-          /* FIXME: Broken on 32-bit H_W_I hosts.  */
-          gcc_assert (sizeof (HOST_WIDE_INT) == 8);
-
-          for (i = 0; i < 8; i++)
-            imm |= (unsigned HOST_WIDE_INT) (bytes[i] ? 0xff : 0)
-	      << (i * BITS_PER_UNIT);
-
-
-	  info->value = GEN_INT (imm);
-	}
-      else
+      unsigned HOST_WIDE_INT elt_val = INTVAL (elt);
+      for (unsigned int byte = 0; byte < elt_size; byte++)
 	{
-	  for (i = 0; i < elsize / BITS_PER_UNIT; i++)
-	    imm |= (unsigned HOST_WIDE_INT) bytes[i] << (i * BITS_PER_UNIT);
-
-	  /* Construct 'abcdefgh' because the assembler cannot handle
-	     generic constants.	 */
-	  if (info->mvn)
-	    imm = ~imm;
-	  imm = (imm >> info->shift) & 0xff;
-	  info->value = GEN_INT (imm);
+	  bytes.quick_push (elt_val & 0xff);
+	  elt_val >>= BITS_PER_UNIT;
 	}
     }
 
-  return true;
-#undef CHECK
+  /* The immediate must repeat every eight bytes.  */
+  unsigned int nbytes = bytes.length ();
+  for (unsigned i = 8; i < nbytes; ++i)
+    if (bytes[i] != bytes[i - 8])
+      return false;
+
+  /* Get the repeating 8-byte value as an integer.  No endian correction
+     is needed here because bytes is already in lsb-first order.  */
+  unsigned HOST_WIDE_INT val64 = 0;
+  for (unsigned int i = 0; i < 8; i++)
+    val64 |= ((unsigned HOST_WIDE_INT) bytes[i % nbytes]
+	      << (i * BITS_PER_UNIT));
+
+  return aarch64_advsimd_valid_immediate (val64, info, which);
 }
 
 /* Check of immediate shift constants are within range.  */
@@ -11758,7 +11781,7 @@ aarch64_simd_scalar_immediate_valid_for_move (rtx op, scalar_int_mode mode)
 
   vmode = aarch64_preferred_simd_mode (mode);
   rtx op_v = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (op));
-  return aarch64_simd_valid_immediate (op_v, vmode, false, NULL);
+  return aarch64_simd_valid_immediate (op_v, NULL);
 }
 
 /* Construct and return a PARALLEL RTX vector with elements numbering the
@@ -12006,7 +12029,7 @@ aarch64_simd_make_constant (rtx vals)
     gcc_unreachable ();
 
   if (const_vec != NULL_RTX
-      && aarch64_simd_valid_immediate (const_vec, mode, false, NULL))
+      && aarch64_simd_valid_immediate (const_vec, NULL))
     /* Load using MOVI/MVNI.  */
     return const_vec;
   else if ((const_dup = aarch64_simd_dup_constant (vals)) != NULL_RTX)
@@ -13086,9 +13109,7 @@ aarch64_float_const_representable_p (rtx x)
    immediate with a CONST_VECTOR of MODE and WIDTH.  WHICH selects whether to
    output MOVI/MVNI, ORR or BIC immediate.  */
 char*
-aarch64_output_simd_mov_immediate (rtx const_vector,
-				   machine_mode mode,
-				   unsigned width,
+aarch64_output_simd_mov_immediate (rtx const_vector, unsigned width,
 				   enum simd_immediate_check which)
 {
   bool is_valid;
@@ -13098,23 +13119,21 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
   unsigned int lane_count = 0;
   char element_char;
 
-  struct simd_immediate_info info = { NULL_RTX, 0, 0, false, false };
+  struct simd_immediate_info info;
 
   /* This will return true to show const_vector is legal for use as either
      a AdvSIMD MOVI instruction (or, implicitly, MVNI), ORR or BIC immediate.
      It will also update INFO to show how the immediate should be generated.
      WHICH selects whether to check for MOVI/MVNI, ORR or BIC.  */
-  is_valid = aarch64_simd_valid_immediate (const_vector, mode, false,
-					   &info, which);
+  is_valid = aarch64_simd_valid_immediate (const_vector, &info, which);
   gcc_assert (is_valid);
 
-  element_char = sizetochar (info.element_width);
-  lane_count = width / info.element_width;
+  element_char = sizetochar (GET_MODE_BITSIZE (info.elt_mode));
+  lane_count = width / GET_MODE_BITSIZE (info.elt_mode);
 
-  mode = GET_MODE_INNER (mode);
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+  if (GET_MODE_CLASS (info.elt_mode) == MODE_FLOAT)
     {
-      gcc_assert (info.shift == 0 && ! info.mvn);
+      gcc_assert (info.shift == 0 && info.insn == simd_immediate_info::MOV);
       /* For FP zero change it to a CONST_INT 0 and use the integer SIMD
 	 move immediate path.  */
       if (aarch64_float_const_zero_rtx_p (info.value))
@@ -13125,7 +13144,7 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
 	  char float_buf[buf_size] = {'\0'};
 	  real_to_decimal_for_mode (float_buf,
 				    CONST_DOUBLE_REAL_VALUE (info.value),
-				    buf_size, buf_size, 1, mode);
+				    buf_size, buf_size, 1, info.elt_mode);
 
 	  if (lane_count == 1)
 	    snprintf (templ, sizeof (templ), "fmov\t%%d0, %s", float_buf);
@@ -13140,8 +13159,8 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
 
   if (which == AARCH64_CHECK_MOV)
     {
-      mnemonic = info.mvn ? "mvni" : "movi";
-      shift_op = info.msl ? "msl" : "lsl";
+      mnemonic = info.insn == simd_immediate_info::MVN ? "mvni" : "movi";
+      shift_op = info.modifier == simd_immediate_info::MSL ? "msl" : "lsl";
       if (lane_count == 1)
 	snprintf (templ, sizeof (templ), "%s\t%%d0, " HOST_WIDE_INT_PRINT_HEX,
 		  mnemonic, UINTVAL (info.value));
@@ -13157,7 +13176,7 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
   else
     {
       /* For AARCH64_CHECK_BIC and AARCH64_CHECK_ORR.  */
-      mnemonic = info.mvn ? "bic" : "orr";
+      mnemonic = info.insn == simd_immediate_info::MVN ? "bic" : "orr";
       if (info.shift)
 	snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, #"
 		  HOST_WIDE_INT_PRINT_DEC ", %s #%d", mnemonic, lane_count,
@@ -13191,7 +13210,7 @@ aarch64_output_scalar_simd_mov_immediate (rtx immediate, scalar_int_mode mode)
 
   vmode = aarch64_simd_container_mode (mode, width);
   rtx v_op = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (immediate));
-  return aarch64_output_simd_mov_immediate (v_op, vmode, width);
+  return aarch64_output_simd_mov_immediate (v_op, width);
 }
 
 /* Split operands into moves from op[1] + op[2] into op[0].  */
