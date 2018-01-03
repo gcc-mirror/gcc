@@ -2141,6 +2141,59 @@ vect_check_store_rhs (gimple *stmt, tree rhs, tree *rhs_vectype_out,
   return true;
 }
 
+/* Build an all-ones vector mask of type MASKTYPE while vectorizing STMT.
+   Note that we support masks with floating-point type, in which case the
+   floats are interpreted as a bitmask.  */
+
+static tree
+vect_build_all_ones_mask (gimple *stmt, tree masktype)
+{
+  if (TREE_CODE (masktype) == INTEGER_TYPE)
+    return build_int_cst (masktype, -1);
+  else if (TREE_CODE (TREE_TYPE (masktype)) == INTEGER_TYPE)
+    {
+      tree mask = build_int_cst (TREE_TYPE (masktype), -1);
+      mask = build_vector_from_val (masktype, mask);
+      return vect_init_vector (stmt, mask, masktype, NULL);
+    }
+  else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (masktype)))
+    {
+      REAL_VALUE_TYPE r;
+      long tmp[6];
+      for (int j = 0; j < 6; ++j)
+	tmp[j] = -1;
+      real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (masktype)));
+      tree mask = build_real (TREE_TYPE (masktype), r);
+      mask = build_vector_from_val (masktype, mask);
+      return vect_init_vector (stmt, mask, masktype, NULL);
+    }
+  gcc_unreachable ();
+}
+
+/* Build an all-zero merge value of type VECTYPE while vectorizing
+   STMT as a gather load.  */
+
+static tree
+vect_build_zero_merge_argument (gimple *stmt, tree vectype)
+{
+  tree merge;
+  if (TREE_CODE (TREE_TYPE (vectype)) == INTEGER_TYPE)
+    merge = build_int_cst (TREE_TYPE (vectype), 0);
+  else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (vectype)))
+    {
+      REAL_VALUE_TYPE r;
+      long tmp[6];
+      for (int j = 0; j < 6; ++j)
+	tmp[j] = 0;
+      real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (vectype)));
+      merge = build_real (TREE_TYPE (vectype), r);
+    }
+  else
+    gcc_unreachable ();
+  merge = build_vector_from_val (vectype, merge);
+  return vect_init_vector (stmt, merge, vectype, NULL);
+}
+
 /* Function vectorizable_mask_load_store.
 
    Check if STMT performs a conditional load or store that can be vectorized.
@@ -7011,45 +7064,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       /* Currently we support only unconditional gather loads,
 	 so mask should be all ones.  */
-      if (TREE_CODE (masktype) == INTEGER_TYPE)
-	mask = build_int_cst (masktype, -1);
-      else if (TREE_CODE (TREE_TYPE (masktype)) == INTEGER_TYPE)
-	{
-	  mask = build_int_cst (TREE_TYPE (masktype), -1);
-	  mask = build_vector_from_val (masktype, mask);
-	  mask = vect_init_vector (stmt, mask, masktype, NULL);
-	}
-      else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (masktype)))
-	{
-	  REAL_VALUE_TYPE r;
-	  long tmp[6];
-	  for (j = 0; j < 6; ++j)
-	    tmp[j] = -1;
-	  real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (masktype)));
-	  mask = build_real (TREE_TYPE (masktype), r);
-	  mask = build_vector_from_val (masktype, mask);
-	  mask = vect_init_vector (stmt, mask, masktype, NULL);
-	}
-      else
-	gcc_unreachable ();
-
+      mask = vect_build_all_ones_mask (stmt, masktype);
       scale = build_int_cst (scaletype, gs_info.scale);
-
-      if (TREE_CODE (TREE_TYPE (rettype)) == INTEGER_TYPE)
-	merge = build_int_cst (TREE_TYPE (rettype), 0);
-      else if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (rettype)))
-	{
-	  REAL_VALUE_TYPE r;
-	  long tmp[6];
-	  for (j = 0; j < 6; ++j)
-	    tmp[j] = 0;
-	  real_from_target (&r, tmp, TYPE_MODE (TREE_TYPE (rettype)));
-	  merge = build_real (TREE_TYPE (rettype), r);
-	}
-      else
-	gcc_unreachable ();
-      merge = build_vector_from_val (rettype, merge);
-      merge = vect_init_vector (stmt, merge, rettype, NULL);
+      merge = vect_build_zero_merge_argument (stmt, rettype);
 
       prev_stmt_info = NULL;
       for (j = 0; j < ncopies; ++j)
