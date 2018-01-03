@@ -2003,7 +2003,7 @@ static void
 expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 			      tree arg0, tree arg1)
 {
-  int cnt = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+  poly_uint64 cnt = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
   rtx_code_label *loop_lab = NULL;
   rtx cntvar = NULL_RTX;
   tree cntv = NULL_TREE;
@@ -2013,6 +2013,8 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
   tree resv = NULL_TREE;
   rtx lhsr = NULL_RTX;
   rtx resvr = NULL_RTX;
+  unsigned HOST_WIDE_INT const_cnt = 0;
+  bool use_loop_p = (!cnt.is_constant (&const_cnt) || const_cnt > 4);
 
   if (lhs)
     {
@@ -2033,7 +2035,7 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 	    }
 	}
     }
-  if (cnt > 4)
+  if (use_loop_p)
     {
       do_pending_stack_adjust ();
       loop_lab = gen_label_rtx ();
@@ -2052,10 +2054,10 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
       rtx arg1r = expand_normal (arg1);
       arg1 = make_tree (TREE_TYPE (arg1), arg1r);
     }
-  for (int i = 0; i < (cnt > 4 ? 1 : cnt); i++)
+  for (unsigned int i = 0; i < (use_loop_p ? 1 : const_cnt); i++)
     {
       tree op0, op1, res = NULL_TREE;
-      if (cnt > 4)
+      if (use_loop_p)
 	{
 	  tree atype = build_array_type_nelts (eltype, cnt);
 	  op0 = uniform_vector_p (arg0);
@@ -2095,7 +2097,7 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 				  false, false, false, true, &data);
 	  break;
 	case MINUS_EXPR:
-	  if (cnt > 4 ? integer_zerop (arg0) : integer_zerop (op0))
+	  if (use_loop_p ? integer_zerop (arg0) : integer_zerop (op0))
 	    expand_neg_overflow (loc, res, op1, true, &data);
 	  else
 	    expand_addsub_overflow (loc, MINUS_EXPR, res, op0, op1,
@@ -2109,7 +2111,7 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 	  gcc_unreachable ();
 	}
     }
-  if (cnt > 4)
+  if (use_loop_p)
     {
       struct separate_ops ops;
       ops.code = PLUS_EXPR;
@@ -2122,7 +2124,8 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 				    EXPAND_NORMAL);
       if (ret != cntvar)
 	emit_move_insn (cntvar, ret);
-      do_compare_rtx_and_jump (cntvar, GEN_INT (cnt), NE, false,
+      rtx cntrtx = gen_int_mode (cnt, TYPE_MODE (sizetype));
+      do_compare_rtx_and_jump (cntvar, cntrtx, NE, false,
 			       TYPE_MODE (sizetype), NULL_RTX, NULL, loop_lab,
 			       profile_probability::very_likely ());
     }
