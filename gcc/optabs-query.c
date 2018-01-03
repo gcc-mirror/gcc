@@ -653,7 +653,7 @@ can_atomic_load_p (machine_mode mode)
   /* If the size of the object is greater than word size on this target,
      then we assume that a load will not be atomic.  Also see
      expand_atomic_load.  */
-  return GET_MODE_PRECISION (mode) <= BITS_PER_WORD;
+  return known_le (GET_MODE_PRECISION (mode), BITS_PER_WORD);
 }
 
 /* Determine whether "1 << x" is relatively cheap in word_mode.  */

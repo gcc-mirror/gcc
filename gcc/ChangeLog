@@ -2,6 +2,44 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (mode_precision): Change from unsigned short to
+	poly_uint16_pod.
+	(mode_to_precision): Return a poly_uint16 rather than an unsigned
+	short.
+	(GET_MODE_PRECISION): Return a constant if ONLY_FIXED_SIZE_MODES,
+	or if measurement_type is not polynomial.
+	(HWI_COMPUTABLE_MODE_P): Turn into a function.  Optimize the case
+	in which the mode is already known to be a scalar_int_mode.
+	* genmodes.c (emit_mode_precision): Change the type of mode_precision
+	from unsigned short to poly_uint16_pod.  Use ZERO_COEFFS for the
+	initializer.
+	* lto-streamer-in.c (lto_input_mode_table): Use bp_unpack_poly_value
+	for GET_MODE_PRECISION.
+	* lto-streamer-out.c (lto_write_mode_table): Use bp_pack_poly_value
+	for GET_MODE_PRECISION.
+	* combine.c (update_rsp_from_reg_equal): Treat GET_MODE_PRECISION
+	as polynomial.
+	(try_combine, find_split_point, combine_simplify_rtx): Likewise.
+	(expand_field_assignment, make_extraction): Likewise.
+	(make_compound_operation_int, record_dead_and_set_regs_1): Likewise.
+	(get_last_value): Likewise.
+	* convert.c (convert_to_integer_1): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* lra-constraints.c (simplify_operand_subreg): Likewise.
+	* optabs-query.c (can_atomic_load_p): Likewise.
+	* optabs.c (expand_atomic_load): Likewise.
+	(expand_atomic_store): Likewise.
+	* ree.c (combine_reaching_defs): Likewise.
+	* rtl.h (partial_subreg_p, paradoxical_subreg_p): Likewise.
+	* rtlanal.c (nonzero_bits1, lsb_bitfield_op_p): Likewise.
+	* tree.h (type_has_mode_precision_p): Likewise.
+	* ubsan.c (instrument_si_overflow): Likewise.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (TYPE_VECTOR_SUBPARTS): Turn into a function and handle
 	polynomial numbers of units.
 	(SET_TYPE_VECTOR_SUBPARTS): Likewise.

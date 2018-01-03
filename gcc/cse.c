@@ -5231,8 +5231,9 @@ cse_insn (rtx_insn *insn)
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 1))
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 2))
 	      && REG_P (XEXP (SET_DEST (sets[i].rtl), 0))
-	      && (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl)))
-		  >= INTVAL (XEXP (SET_DEST (sets[i].rtl), 1)))
+	      && (known_ge
+		  (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl))),
+		   INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))))
 	      && ((unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))
 		  + (unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 2))
 		  <= HOST_BITS_PER_WIDE_INT))

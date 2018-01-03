@@ -11053,9 +11053,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	;
       /* If neither mode is BLKmode, and both modes are the same size
 	 then we can use gen_lowpart.  */
-      else if (mode != BLKmode && GET_MODE (op0) != BLKmode
-	       && (GET_MODE_PRECISION (mode)
-		   == GET_MODE_PRECISION (GET_MODE (op0)))
+      else if (mode != BLKmode
+	       && GET_MODE (op0) != BLKmode
+	       && known_eq (GET_MODE_PRECISION (mode),
+			    GET_MODE_PRECISION (GET_MODE (op0)))
 	       && !COMPLEX_MODE_P (GET_MODE (op0)))
 	{
 	  if (GET_CODE (op0) == SUBREG)

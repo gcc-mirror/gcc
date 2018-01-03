@@ -1555,7 +1555,8 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     missing important data from memory when the inner is wider than
 	     outer.  This rule only applies to modes that are no wider than
 	     a word.  */
-	  if (!(GET_MODE_PRECISION (mode) != GET_MODE_PRECISION (innermode)
+	  if (!(maybe_ne (GET_MODE_PRECISION (mode),
+			  GET_MODE_PRECISION (innermode))
 		&& GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 		&& GET_MODE_SIZE (innermode) <= UNITS_PER_WORD
 		&& WORD_REGISTER_OPERATIONS)

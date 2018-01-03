@@ -1706,7 +1706,7 @@ update_rsp_from_reg_equal (reg_stat_type *rsp, rtx_insn *insn, const_rtx set,
   if (rsp->sign_bit_copies != 1)
     {
       num = num_sign_bit_copies (SET_SRC (set), GET_MODE (x));
-      if (reg_equal && num != GET_MODE_PRECISION (GET_MODE (x)))
+      if (reg_equal && maybe_ne (num, GET_MODE_PRECISION (GET_MODE (x))))
 	{
 	  unsigned int numeq = num_sign_bit_copies (reg_equal, GET_MODE (x));
 	  if (num == 0 || numeq > num)
@@ -3962,16 +3962,20 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	   && ! (temp_expr = SET_DEST (XVECEXP (newpat, 0, 1)),
 		 (REG_P (temp_expr)
 		  && reg_stat[REGNO (temp_expr)].nonzero_bits != 0
-		  && GET_MODE_PRECISION (GET_MODE (temp_expr)) < BITS_PER_WORD
-		  && GET_MODE_PRECISION (GET_MODE (temp_expr)) < HOST_BITS_PER_INT
+		  && known_lt (GET_MODE_PRECISION (GET_MODE (temp_expr)),
+			       BITS_PER_WORD)
+		  && known_lt (GET_MODE_PRECISION (GET_MODE (temp_expr)),
+			       HOST_BITS_PER_INT)
 		  && (reg_stat[REGNO (temp_expr)].nonzero_bits
 		      != GET_MODE_MASK (word_mode))))
 	   && ! (GET_CODE (SET_DEST (XVECEXP (newpat, 0, 1))) == SUBREG
 		 && (temp_expr = SUBREG_REG (SET_DEST (XVECEXP (newpat, 0, 1))),
 		     (REG_P (temp_expr)
 		      && reg_stat[REGNO (temp_expr)].nonzero_bits != 0
-		      && GET_MODE_PRECISION (GET_MODE (temp_expr)) < BITS_PER_WORD
-		      && GET_MODE_PRECISION (GET_MODE (temp_expr)) < HOST_BITS_PER_INT
+		      && known_lt (GET_MODE_PRECISION (GET_MODE (temp_expr)),
+				   BITS_PER_WORD)
+		      && known_lt (GET_MODE_PRECISION (GET_MODE (temp_expr)),
+				   HOST_BITS_PER_INT)
 		      && (reg_stat[REGNO (temp_expr)].nonzero_bits
 			  != GET_MODE_MASK (word_mode)))))
 	   && ! reg_overlap_mentioned_p (SET_DEST (XVECEXP (newpat, 0, 1)),
@@ -5140,8 +5144,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	  break;
 	}
 
-      if (len && pos >= 0
-	  && pos + len <= GET_MODE_PRECISION (GET_MODE (inner))
+      if (len
+	  && known_subrange_p (pos, len,
+			       0, GET_MODE_PRECISION (GET_MODE (inner)))
 	  && is_a <scalar_int_mode> (GET_MODE (SET_SRC (x)), &mode))
 	{
 	  /* For unsigned, we have a choice of a shift followed by an
@@ -6007,8 +6012,9 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	       && (UINTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))
 		   == (HOST_WIDE_INT_1U << (i + 1)) - 1))
 	      || (GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
-		  && (GET_MODE_PRECISION (GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)))
-		      == (unsigned int) i + 1))))
+		  && known_eq ((GET_MODE_PRECISION
+				(GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)))),
+			       (unsigned int) i + 1))))
 	return simplify_shift_const
 	  (NULL_RTX, ASHIFTRT, int_mode,
 	   simplify_shift_const (NULL_RTX, ASHIFT, int_mode,
@@ -7346,7 +7352,7 @@ expand_field_assignment (const_rtx x)
 {
   rtx inner;
   rtx pos;			/* Always counts from low bit.  */
-  int len;
+  int len, inner_len;
   rtx mask, cleared, masked;
   scalar_int_mode compute_mode;
 
@@ -7356,8 +7362,10 @@ expand_field_assignment (const_rtx x)
       if (GET_CODE (SET_DEST (x)) == STRICT_LOW_PART
 	  && GET_CODE (XEXP (SET_DEST (x), 0)) == SUBREG)
 	{
+	  rtx x0 = XEXP (SET_DEST (x), 0);
+	  if (!GET_MODE_PRECISION (GET_MODE (x0)).is_constant (&len))
+	    break;
 	  inner = SUBREG_REG (XEXP (SET_DEST (x), 0));
-	  len = GET_MODE_PRECISION (GET_MODE (XEXP (SET_DEST (x), 0)));
 	  pos = gen_int_mode (subreg_lsb (XEXP (SET_DEST (x), 0)),
 			      MAX_MODE_INT);
 	}
@@ -7365,33 +7373,30 @@ expand_field_assignment (const_rtx x)
 	       && CONST_INT_P (XEXP (SET_DEST (x), 1)))
 	{
 	  inner = XEXP (SET_DEST (x), 0);
+	  if (!GET_MODE_PRECISION (GET_MODE (inner)).is_constant (&inner_len))
+	    break;
+
 	  len = INTVAL (XEXP (SET_DEST (x), 1));
 	  pos = XEXP (SET_DEST (x), 2);
 
 	  /* A constant position should stay within the width of INNER.  */
-	  if (CONST_INT_P (pos)
-	      && INTVAL (pos) + len > GET_MODE_PRECISION (GET_MODE (inner)))
+	  if (CONST_INT_P (pos) && INTVAL (pos) + len > inner_len)
 	    break;
 
 	  if (BITS_BIG_ENDIAN)
 	    {
 	      if (CONST_INT_P (pos))
-		pos = GEN_INT (GET_MODE_PRECISION (GET_MODE (inner)) - len
-			       - INTVAL (pos));
+		pos = GEN_INT (inner_len - len - INTVAL (pos));
 	      else if (GET_CODE (pos) == MINUS
 		       && CONST_INT_P (XEXP (pos, 1))
-		       && (INTVAL (XEXP (pos, 1))
-			   == GET_MODE_PRECISION (GET_MODE (inner)) - len))
+		       && INTVAL (XEXP (pos, 1)) == inner_len - len)
 		/* If position is ADJUST - X, new position is X.  */
 		pos = XEXP (pos, 0);
 	      else
-		{
-		  HOST_WIDE_INT prec = GET_MODE_PRECISION (GET_MODE (inner));
-		  pos = simplify_gen_binary (MINUS, GET_MODE (pos),
-					     gen_int_mode (prec - len,
-							   GET_MODE (pos)),
-					     pos);
-		}
+		pos = simplify_gen_binary (MINUS, GET_MODE (pos),
+					   gen_int_mode (inner_len - len,
+							 GET_MODE (pos)),
+					   pos);
 	    }
 	}
 
@@ -7511,7 +7516,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	     bits outside of is_mode, don't look through
 	     non-paradoxical SUBREGs.  See PR82192.  */
 	  || (pos_rtx == NULL_RTX
-	      && pos + len <= GET_MODE_PRECISION (is_mode))))
+	      && known_le (pos + len, GET_MODE_PRECISION (is_mode)))))
     {
       /* If going from (subreg:SI (mem:QI ...)) to (mem:QI ...),
 	 consider just the QI as the memory to extract from.
@@ -7542,7 +7547,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	      bits outside of is_mode, don't look through
 	      TRUNCATE.  See PR82192.  */
 	   && pos_rtx == NULL_RTX
-	   && pos + len <= GET_MODE_PRECISION (is_mode))
+	   && known_le (pos + len, GET_MODE_PRECISION (is_mode)))
     inner = XEXP (inner, 0);
 
   inner_mode = GET_MODE (inner);
@@ -7589,11 +7594,12 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 
       if (MEM_P (inner))
 	{
-	  HOST_WIDE_INT offset;
+	  poly_int64 offset;
 
 	  /* POS counts from lsb, but make OFFSET count in memory order.  */
 	  if (BYTES_BIG_ENDIAN)
-	    offset = (GET_MODE_PRECISION (is_mode) - len - pos) / BITS_PER_UNIT;
+	    offset = bits_to_bytes_round_down (GET_MODE_PRECISION (is_mode)
+					       - len - pos);
 	  else
 	    offset = pos / BITS_PER_UNIT;
 
@@ -7685,7 +7691,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      other cases, we would only be going outside our object in cases when
      an original shift would have been undefined.  */
   if (MEM_P (inner)
-      && ((pos_rtx == 0 && pos + len > GET_MODE_PRECISION (is_mode))
+      && ((pos_rtx == 0 && maybe_gt (pos + len, GET_MODE_PRECISION (is_mode)))
 	  || (pos_rtx != 0 && len != 1)))
     return 0;
 
@@ -8164,8 +8170,10 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 
 	  sub = XEXP (XEXP (x, 0), 0);
 	  machine_mode sub_mode = GET_MODE (sub);
+	  int sub_width;
 	  if ((REG_P (sub) || MEM_P (sub))
-	      && GET_MODE_PRECISION (sub_mode) < mode_width)
+	      && GET_MODE_PRECISION (sub_mode).is_constant (&sub_width)
+	      && sub_width < mode_width)
 	    {
 	      unsigned HOST_WIDE_INT mode_mask = GET_MODE_MASK (sub_mode);
 	      unsigned HOST_WIDE_INT mask;
@@ -8175,8 +8183,7 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	      if ((mask & mode_mask) == mode_mask)
 		{
 		  new_rtx = make_compound_operation (sub, next_code);
-		  new_rtx = make_extraction (mode, new_rtx, 0, 0,
-					     GET_MODE_PRECISION (sub_mode),
+		  new_rtx = make_extraction (mode, new_rtx, 0, 0, sub_width,
 					     1, 0, in_code == COMPARE);
 		}
 	    }
@@ -13248,7 +13255,7 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
       else if (GET_CODE (setter) == SET
 	       && GET_CODE (SET_DEST (setter)) == SUBREG
 	       && SUBREG_REG (SET_DEST (setter)) == dest
-	       && GET_MODE_PRECISION (GET_MODE (dest)) <= BITS_PER_WORD
+	       && known_le (GET_MODE_PRECISION (GET_MODE (dest)), BITS_PER_WORD)
 	       && subreg_lowpart_p (SET_DEST (setter)))
 	record_value_for_reg (dest, record_dead_insn,
 			      gen_lowpart (GET_MODE (dest),
@@ -13650,8 +13657,8 @@ get_last_value (const_rtx x)
 
   /* If fewer bits were set than what we are asked for now, we cannot use
      the value.  */
-  if (GET_MODE_PRECISION (rsp->last_set_mode)
-      < GET_MODE_PRECISION (GET_MODE (x)))
+  if (maybe_lt (GET_MODE_PRECISION (rsp->last_set_mode),
+		GET_MODE_PRECISION (GET_MODE (x))))
     return 0;
 
   /* If the value has all its registers valid, return it.  */

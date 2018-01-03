@@ -861,9 +861,9 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	 as destination register will not affect its reaching uses, which may
 	 read its value in a larger mode because DEF_INSN implicitly sets it
 	 in word mode.  */
-      const unsigned int prec
+      poly_int64 prec
 	= GET_MODE_PRECISION (GET_MODE (SET_DEST (*dest_sub_rtx)));
-      if (WORD_REGISTER_OPERATIONS && prec < BITS_PER_WORD)
+      if (WORD_REGISTER_OPERATIONS && known_lt (prec, BITS_PER_WORD))
 	{
 	  struct df_link *uses = get_uses (def_insn, src_reg);
 	  if (!uses)
