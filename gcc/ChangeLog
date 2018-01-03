@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-loop.c (vectorizable_induction): Treat the number
+	of units as polynomial.  Punt on SLP inductions.  Use an integer
+	VEC_SERIES_EXPR for variable-length integer reductions.  Use a
+	cast of such a series for variable-length floating-point
+	reductions.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (build_index_vector): Declare.
 	* tree.c (build_index_vector): New function.
 	* tree-vect-loop.c (get_initial_defs_for_reduction): Treat the number
