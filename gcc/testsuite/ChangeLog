@@ -1,3 +1,8 @@
+2018-01-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83667
+	* g++.dg/ipa/pr83667.C: New.
+
 2018-01-03  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/83593
