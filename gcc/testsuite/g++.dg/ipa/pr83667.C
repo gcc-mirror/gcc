@@ -1,5 +1,7 @@
-/* { dg-options "-fdump-ipa-inline" } */
-// c++/83667 ICE dumping a static thunk
+// { dg-require-alias "" }
+// { dg-options "-fdump-ipa-inline" }
+// c++/83667 ICE dumping a static thunk when TARGET_USE_LOCAL_THUNK_ALIAS_P
+
 
 struct a
 {
@@ -20,4 +22,4 @@ struct c : a, b
 
 c c;
 
-// { dg-final { scan-ipa-dump "summary for void c::\\*.LTHUNK0" "inline" } }
+// { dg-final { scan-ipa-dump "summary for void c::\[^\\n\]*THUNK0" "inline" } }
