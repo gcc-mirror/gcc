@@ -1,3 +1,9 @@
+2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vrp.c (extract_range_from_binary_expr_1): Check
+	range_int_cst_p rather than !symbolic_range_p before calling
+	extract_range_from_multiplicative_op_1.
+
 2017-01-04  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Remove

@@ -2042,7 +2042,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	      return;
 	    }
 	}
-      else if (!symbolic_range_p (&vr0) && !symbolic_range_p (&vr1))
+      else if (range_int_cst_p (&vr0) && range_int_cst_p (&vr1))
 	{
 	  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
 	  return;
