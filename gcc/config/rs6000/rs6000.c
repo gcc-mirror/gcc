@@ -11097,7 +11097,8 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
      homogeneous aggregates; these types are handled via the
      targetm.calls.split_complex_arg mechanism.  Complex types
      can be elements of homogeneous aggregates, however.  */
-  if (DEFAULT_ABI == ABI_ELFv2 && type && AGGREGATE_TYPE_P (type))
+  if (TARGET_HARD_FLOAT && DEFAULT_ABI == ABI_ELFv2 && type
+      && AGGREGATE_TYPE_P (type))
     {
       machine_mode field_mode = VOIDmode;
       int field_count = rs6000_aggregate_candidate (type, &field_mode);
