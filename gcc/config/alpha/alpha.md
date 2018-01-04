@@ -337,8 +337,8 @@
   "! sext_add_operand (operands[2], SImode) && INTVAL (operands[2]) > 0
    && INTVAL (operands[2]) % 4 == 0"
   [(set (match_dup 3) (match_dup 4))
-   (set (match_dup 0) (sign_extend:DI (plus:SI (mult:SI (match_dup 3)
-							(match_dup 5))
+   (set (match_dup 0) (sign_extend:DI (plus:SI (ashift:SI (match_dup 3)
+							  (match_dup 5))
 					       (match_dup 1))))]
 {
   HOST_WIDE_INT val = INTVAL (operands[2]) / 4;
@@ -348,7 +348,7 @@
     val /= 2, mult = 8;
 
   operands[4] = GEN_INT (val);
-  operands[5] = GEN_INT (mult);
+  operands[5] = GEN_INT (exact_log2 (mult));
 })
 
 (define_split
@@ -519,38 +519,38 @@
 (define_insn "*sadd<modesuffix>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r,r")
 	(plus:I48MODE
-	 (mult:I48MODE (match_operand:I48MODE 1 "reg_not_elim_operand" "r,r")
-		       (match_operand:I48MODE 2 "const48_operand" "I,I"))
+	 (ashift:I48MODE (match_operand:I48MODE 1 "reg_not_elim_operand" "r,r")
+			 (match_operand:I48MODE 2 "const23_operand" "I,I"))
 	 (match_operand:I48MODE 3 "sext_add_operand" "rI,O")))]
   ""
   "@
-   s%2add<modesuffix> %1,%3,%0
-   s%2sub<modesuffix> %1,%n3,%0")
+   s%P2add<modesuffix> %1,%3,%0
+   s%P2sub<modesuffix> %1,%n3,%0")
 
 (define_insn "*saddl_se"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(sign_extend:DI
-	 (plus:SI (mult:SI (match_operand:SI 1 "reg_not_elim_operand" "r,r")
-			   (match_operand:SI 2 "const48_operand" "I,I"))
+	 (plus:SI (ashift:SI (match_operand:SI 1 "reg_not_elim_operand" "r,r")
+			     (match_operand:SI 2 "const23_operand" "I,I"))
 		  (match_operand:SI 3 "sext_add_operand" "rI,O"))))]
   ""
   "@
-   s%2addl %1,%3,%0
-   s%2subl %1,%n3,%0")
+   s%P2addl %1,%3,%0
+   s%P2subl %1,%n3,%0")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
 	(sign_extend:DI
-	 (plus:SI (mult:SI (match_operator:SI 1 "comparison_operator"
+	 (plus:SI (ashift:SI (match_operator:SI 1 "comparison_operator"
 					      [(match_operand 2)
 					       (match_operand 3)])
-			   (match_operand:SI 4 "const48_operand"))
+			   (match_operand:SI 4 "const23_operand"))
 		  (match_operand:SI 5 "sext_add_operand"))))
    (clobber (match_operand:DI 6 "reg_not_elim_operand"))]
   ""
   [(set (match_dup 6) (match_dup 7))
    (set (match_dup 0)
-	(sign_extend:DI (plus:SI (mult:SI (match_dup 8) (match_dup 4))
+	(sign_extend:DI (plus:SI (ashift:SI (match_dup 8) (match_dup 4))
 				 (match_dup 5))))]
 {
   operands[7] = gen_rtx_fmt_ee (GET_CODE (operands[1]), DImode,
@@ -621,20 +621,20 @@
 (define_insn "*ssub<modesuffix>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
 	(minus:I48MODE
-	 (mult:I48MODE (match_operand:I48MODE 1 "reg_not_elim_operand" "r")
-		       (match_operand:I48MODE 2 "const48_operand" "I"))
+	 (ashift:I48MODE (match_operand:I48MODE 1 "reg_not_elim_operand" "r")
+			 (match_operand:I48MODE 2 "const23_operand" "I"))
 		  (match_operand:I48MODE 3 "reg_or_8bit_operand" "rI")))]
   ""
-  "s%2sub<modesuffix> %1,%3,%0")
+  "s%P2sub<modesuffix> %1,%3,%0")
 
 (define_insn "*ssubl_se"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
-	 (minus:SI (mult:SI (match_operand:SI 1 "reg_not_elim_operand" "r")
-			    (match_operand:SI 2 "const48_operand" "I"))
+	 (minus:SI (ashift:SI (match_operand:SI 1 "reg_not_elim_operand" "r")
+			      (match_operand:SI 2 "const23_operand" "I"))
 		   (match_operand:SI 3 "reg_or_8bit_operand" "rI"))))]
   ""
-  "s%2subl %1,%3,%0")
+  "s%P2subl %1,%3,%0")
 
 (define_insn "subv<mode>3"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
@@ -3075,9 +3075,10 @@
   [(set (match_dup 5)
 	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(plus:DI (mult:DI (match_dup 5) (match_dup 3))
+	(plus:DI (ashift:DI (match_dup 5) (match_dup 3))
 		 (match_dup 4)))]
 {
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands [3])));
   if (can_create_pseudo_p ())
     operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
@@ -3100,9 +3101,10 @@
   [(set (match_dup 5)
 	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(plus:SI (mult:SI (match_dup 6) (match_dup 3))
+	(plus:SI (ashift:SI (match_dup 6) (match_dup 3))
 		 (match_dup 4)))]
 {
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands [3])));
   if (can_create_pseudo_p ())
     operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
@@ -3128,9 +3130,10 @@
   [(set (match_dup 5)
 	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(sign_extend:DI (plus:SI (mult:SI (match_dup 6) (match_dup 3))
+	(sign_extend:DI (plus:SI (ashift:SI (match_dup 6) (match_dup 3))
 				 (match_dup 4))))]
 {
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands [3])));
   if (can_create_pseudo_p ())
     operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
@@ -3155,9 +3158,10 @@
   [(set (match_dup 5)
 	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(minus:DI (mult:DI (match_dup 5) (match_dup 3))
+	(minus:DI (ashift:DI (match_dup 5) (match_dup 3))
 		  (match_dup 4)))]
 {
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands [3])));
   if (can_create_pseudo_p ())
     operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
@@ -3180,9 +3184,10 @@
   [(set (match_dup 5)
 	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(minus:SI (mult:SI (match_dup 6) (match_dup 3))
+	(minus:SI (ashift:SI (match_dup 6) (match_dup 3))
 		 (match_dup 4)))]
 {
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands [3])));
   if (can_create_pseudo_p ())
     operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
@@ -3208,9 +3213,10 @@
   [(set (match_dup 5)
 	(match_op_dup:DI 1 [(match_dup 2) (const_int 0)]))
    (set (match_dup 0)
-	(sign_extend:DI (minus:SI (mult:SI (match_dup 6) (match_dup 3))
+	(sign_extend:DI (minus:SI (ashift:SI (match_dup 6) (match_dup 3))
 				  (match_dup 4))))]
 {
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands [3])));
   if (can_create_pseudo_p ())
     operands[5] = gen_reg_rtx (DImode);
   else if (reg_overlap_mentioned_p (operands[5], operands[4]))
