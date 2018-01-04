@@ -12824,6 +12824,9 @@ static bool
 sparc_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 				rtx op1, const vec_perm_indices &sel)
 {
+  if (!TARGET_VIS2)
+    return false;
+
   /* All permutes are supported.  */
   if (!target)
     return true;

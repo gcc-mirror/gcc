@@ -1,3 +1,9 @@
+2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/83675
+	* config/sparc/sparc.c (sparc_vectorize_vec_perm_const): Require
+	TARGET_VIS2.
+
 2018-01-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83628
