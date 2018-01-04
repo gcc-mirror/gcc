@@ -1414,6 +1414,113 @@ classes.  Currently @code{VOIDmode} and @code{BLKmode} are in
 @code{MODE_RANDOM}.
 @end table
 
+@cindex machine mode wrapper classes
+@code{machmode.h} also defines various wrapper classes that combine a
+@code{machine_mode} with a static assertion that a particular
+condition holds.  The classes are:
+
+@table @code
+@findex scalar_int_mode
+@item scalar_int_mode
+A mode that has class @code{MODE_INT} or @code{MODE_PARTIAL_INT}.
+
+@findex scalar_float_mode
+@item scalar_float_mode
+A mode that has class @code{MODE_FLOAT} or @code{MODE_DECIMAL_FLOAT}.
+
+@findex scalar_mode
+@item scalar_mode
+A mode that holds a single numerical value.  In practice this means
+that the mode is a @code{scalar_int_mode}, is a @code{scalar_float_mode},
+or has class @code{MODE_FRACT}, @code{MODE_UFRACT}, @code{MODE_ACCUM},
+@code{MODE_UACCUM} or @code{MODE_POINTER_BOUNDS}.
+
+@findex complex_mode
+@item complex_mode
+A mode that has class @code{MODE_COMPLEX_INT} or @code{MODE_COMPLEX_FLOAT}.
+
+@findex fixed_size_mode
+@item fixed_size_mode
+A mode whose size is known at compile time.
+@end table
+
+Named modes use the most constrained of the available wrapper classes,
+if one exists, otherwise they use @code{machine_mode}.  For example,
+@code{QImode} is a @code{scalar_int_mode}, @code{SFmode} is a
+@code{scalar_float_mode} and @code{BLKmode} is a plain
+@code{machine_mode}.  It is possible to refer to any mode as a raw
+@code{machine_mode} by adding the @code{E_} prefix, where @code{E}
+stands for ``enumeration''.  For example, the raw @code{machine_mode}
+names of the modes just mentioned are @code{E_QImode}, @code{E_SFmode}
+and @code{E_BLKmode} respectively.
+
+The wrapper classes implicitly convert to @code{machine_mode} and to any
+wrapper class that represents a more general condition; for example
+@code{scalar_int_mode} and @code{scalar_float_mode} both convert
+to @code{scalar_mode} and all three convert to @code{fixed_size_mode}.
+The classes act like @code{machine_mode}s that accept only certain
+named modes.
+
+@findex opt_mode
+@file{machmode.h} also defines a template class @code{opt_mode<@var{T}>}
+that holds a @code{T} or nothing, where @code{T} can be either
+@code{machine_mode} or one of the wrapper classes above.  The main
+operations on an @code{opt_mode<@var{T}>} @var{x} are as follows:
+
+@table @samp
+@item @var{x}.exists ()
+Return true if @var{x} holds a mode rather than nothing.
+
+@item @var{x}.exists (&@var{y})
+Return true if @var{x} holds a mode rather than nothing, storing the
+mode in @var{y} if so.  @var{y} must be assignment-compatible with @var{T}.
+
+@item @var{x}.require ()
+Assert that @var{x} holds a mode rather than nothing and return that mode.
+
+@item @var{x} = @var{y}
+Set @var{x} to @var{y}, where @var{y} is a @var{T} or implicitly converts
+to a @var{T}.
+@end table
+
+The default constructor sets an @code{opt_mode<@var{T}>} to nothing.
+There is also a constructor that takes an initial value of type @var{T}.
+
+It is possible to use the @file{is-a.h} accessors on a @code{machine_mode}
+or machine mode wrapper @var{x}:
+
+@table @samp
+@findex is_a
+@item is_a <@var{T}> (@var{x})
+Return true if @var{x} meets the conditions for wrapper class @var{T}.
+
+@item is_a <@var{T}> (@var{x}, &@var{y})
+Return true if @var{x} meets the conditions for wrapper class @var{T},
+storing it in @var{y} if so.  @var{y} must be assignment-compatible with
+@var{T}.
+
+@item as_a <@var{T}> (@var{x})
+Assert that @var{x} meets the conditions for wrapper class @var{T}
+and return it as a @var{T}.
+
+@item dyn_cast <@var{T}> (@var{x})
+Return an @code{opt_mode<@var{T}>} that holds @var{x} if @var{x} meets
+the conditions for wrapper class @var{T} and that holds nothing otherwise.
+@end table
+
+The purpose of these wrapper classes is to give stronger static type
+checking.  For example, if a function takes a @code{scalar_int_mode},
+a caller that has a general @code{machine_mode} must either check or
+assert that the code is indeed a scalar integer first, using one of
+the functions above.
+
+The wrapper classes are normal C++ classes, with user-defined
+constructors.  Sometimes it is useful to have a POD version of
+the same type, particularly if the type appears in a @code{union}.
+The template class @code{pod_mode<@var{T}>} provides a POD version
+of wrapper class @var{T}.  It is assignment-compatible with @var{T}
+and implicitly converts to both @code{machine_mode} and @var{T}.
+
 Here are some C macros that relate to machine modes:
 
 @table @code
