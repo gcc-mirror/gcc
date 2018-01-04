@@ -1,3 +1,9 @@
+2018-01-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/83679
+	* simplify.c (gfc_simplify_cshift): Restore early return for zero-sized
+	array.  Update Copyright year while here.
+
 2018-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83650
