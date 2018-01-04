@@ -1,3 +1,9 @@
+2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/83680
+	* config/arm/arm.c (arm_vectorize_vec_perm_const): Fix inverted
+	test for d.testing.
+
 2018-01-04  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/83387
