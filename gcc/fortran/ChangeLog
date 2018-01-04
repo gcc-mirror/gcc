@@ -1,3 +1,13 @@
+2018-01-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/83683
+	PR fortran/45689
+	* check.c (gfc_check_eoshift): Check for string length and
+	for conformance of boundary.
+	* intrinsic.c (add_functions): Add gfc_simplify_eoshift.
+	* intrinsic.h: Add prototype for gfc_simplify_eoshift.
+	* simplify.c (gfc_simplify_eoshift): New function.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

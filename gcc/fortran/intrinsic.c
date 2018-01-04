@@ -1756,7 +1756,7 @@ add_functions (void)
   make_generic ("dshiftr", GFC_ISYM_DSHIFTR, GFC_STD_F2008);
 
   add_sym_4 ("eoshift", GFC_ISYM_EOSHIFT, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_eoshift, NULL, gfc_resolve_eoshift,
+	     gfc_check_eoshift, gfc_simplify_eoshift, gfc_resolve_eoshift,
 	     ar, BT_REAL, dr, REQUIRED, sh, BT_INTEGER, ii, REQUIRED,
 	     bd, BT_REAL, dr, OPTIONAL, dm, BT_INTEGER, ii, OPTIONAL);
 
