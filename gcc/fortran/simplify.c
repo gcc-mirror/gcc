@@ -2348,6 +2348,271 @@ gfc_simplify_dshiftl (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg)
 
 
 gfc_expr *
+gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
+		   gfc_expr *dim)
+{
+  bool temp_boundary;
+  gfc_expr *bnd;
+  gfc_expr *result;
+  int which;
+  gfc_expr **arrayvec, **resultvec;
+  gfc_expr **rptr, **sptr;
+  mpz_t size;
+  size_t arraysize, i;
+  gfc_constructor *array_ctor, *shift_ctor, *bnd_ctor;
+  ssize_t shift_val, len;
+  ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+    sstride[GFC_MAX_DIMENSIONS], a_extent[GFC_MAX_DIMENSIONS],
+    a_stride[GFC_MAX_DIMENSIONS], ss_ex[GFC_MAX_DIMENSIONS];
+  ssize_t rsoffset;
+  int d, n;
+  bool continue_loop;
+  gfc_expr **src, **dest;
+  size_t s_len;
+
+  if (!is_constant_array_expr (array))
+    return NULL;
+
+  if (shift->rank > 0)
+    gfc_simplify_expr (shift, 1);
+
+  if (!gfc_is_constant_expr (shift))
+    return NULL;
+
+  if (boundary)
+    {
+      if (boundary->rank > 0)
+	gfc_simplify_expr (boundary, 1);
+      
+      if (!gfc_is_constant_expr (boundary))
+	  return NULL;
+    }
+
+  if (dim)
+    {
+      if (!gfc_is_constant_expr (dim))
+	return NULL;
+      which = mpz_get_si (dim->value.integer) - 1;
+    }
+  else
+    which = 0;
+
+  s_len = 0;
+  if (boundary == NULL)
+    {
+      temp_boundary = true;
+      switch (array->ts.type)
+	{
+	  
+	case BT_INTEGER:
+	  bnd = gfc_get_int_expr (array->ts.kind, NULL, 0);
+	  break;
+
+	case BT_LOGICAL:
+	  bnd = gfc_get_logical_expr (array->ts.kind, NULL, 0);
+	  break;
+
+	case BT_REAL:
+	  bnd = gfc_get_constant_expr (array->ts.type, array->ts.kind, &gfc_current_locus);
+	  mpfr_set_ui (bnd->value.real, 0, GFC_RND_MODE);
+	  break;
+
+	case BT_COMPLEX:
+	  bnd = gfc_get_constant_expr (array->ts.type, array->ts.kind, &gfc_current_locus);
+	  mpc_set_ui (bnd->value.complex, 0, GFC_RND_MODE);
+	  break;
+
+	case BT_CHARACTER:
+	  s_len = mpz_get_ui (array->ts.u.cl->length->value.integer);
+	  bnd = gfc_get_character_expr (array->ts.kind, &gfc_current_locus, NULL, s_len);
+	  break;
+
+	default:
+	  gcc_unreachable();
+
+	}
+    }
+  else
+    {
+      temp_boundary = false;
+      bnd = boundary;
+    }
+  
+  gfc_array_size (array, &size);
+  arraysize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  result = gfc_get_array_expr (array->ts.type, array->ts.kind, &array->where);
+  result->shape = gfc_copy_shape (array->shape, array->rank);
+  result->rank = array->rank;
+  result->ts = array->ts;
+
+  if (arraysize == 0)
+    goto final;
+
+  arrayvec = XCNEWVEC (gfc_expr *, arraysize);
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  for (i = 0; i < arraysize; i++)
+    {
+      arrayvec[i] = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
+    }
+
+  resultvec = XCNEWVEC (gfc_expr *, arraysize);
+
+  extent[0] = 1;
+  count[0] = 0;
+
+  for (d=0; d < array->rank; d++)
+    {
+      a_extent[d] = mpz_get_si (array->shape[d]);
+      a_stride[d] = d == 0 ? 1 : a_stride[d-1] * a_extent[d-1];
+    }
+
+  if (shift->rank > 0)
+    {
+      shift_ctor = gfc_constructor_first (shift->value.constructor);
+      shift_val = 0;
+    }
+  else
+    {
+      shift_ctor = NULL;
+      shift_val = mpz_get_si (shift->value.integer);
+    }
+
+  if (bnd->rank > 0)
+    bnd_ctor = gfc_constructor_first (bnd->value.constructor);
+  else
+    bnd_ctor = NULL;
+
+  /* Shut up compiler */
+  len = 1;
+  rsoffset = 1;
+
+  n = 0;
+  for (d=0; d < array->rank; d++)
+    {
+      if (d == which)
+	{
+	  rsoffset = a_stride[d];
+	  len = a_extent[d];
+	}
+      else
+	{
+	  count[n] = 0;
+	  extent[n] = a_extent[d];
+	  sstride[n] = a_stride[d];
+	  ss_ex[n] = sstride[n] * extent[n];
+	  n++;
+	}
+    }
+
+  continue_loop = true;
+  d = array->rank;
+  rptr = resultvec;
+  sptr = arrayvec;
+
+  while (continue_loop)
+    {
+      ssize_t sh, delta;
+
+      if (shift_ctor)
+	sh = mpz_get_si (shift_ctor->expr->value.integer);
+      else
+	sh = shift_val;
+
+      if (( sh >= 0 ? sh : -sh ) > len)
+	{
+	  delta = len;
+	  sh = len;
+	}
+      else
+	delta = (sh >= 0) ? sh: -sh;
+
+      if (sh > 0)
+        {
+          src = &sptr[delta * rsoffset];
+          dest = rptr;
+        }
+      else
+        {
+          src = sptr;
+          dest = &rptr[delta * rsoffset];
+        }
+
+      for (n = 0; n < len - delta; n++)
+	{
+	  *dest = *src;
+	  dest += rsoffset;
+	  src += rsoffset;
+	}
+
+      if (sh < 0)
+        dest = rptr;
+
+      n = delta;
+
+      if (bnd_ctor)
+	{
+	  while (n--)
+	    {
+	      *dest = gfc_copy_expr (bnd_ctor->expr);
+	      dest += rsoffset;
+	    }
+	}
+      else
+	{
+	  while (n--)
+	    {
+	      *dest = gfc_copy_expr (bnd);
+	      dest += rsoffset;
+	    }
+	}
+      rptr += sstride[0];
+      sptr += sstride[0];
+      if (shift_ctor)
+	shift_ctor =  gfc_constructor_next (shift_ctor);
+
+      if (bnd_ctor)
+	bnd_ctor = gfc_constructor_next (bnd_ctor);
+      
+      count[0]++;
+      n = 0;
+      while (count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  rptr -= ss_ex[n];
+	  sptr -= ss_ex[n];
+	  n++;
+	  if (n >= d - 1)
+	    {
+	      continue_loop = false;
+	      break;
+	    }
+	  else
+	    {
+	      count[n]++;
+	      rptr += sstride[n];
+	      sptr += sstride[n];
+	    }
+	}
+    }
+
+  for (i = 0; i < arraysize; i++)
+    {
+      gfc_constructor_append_expr (&result->value.constructor,
+				   gfc_copy_expr (resultvec[i]),
+				   NULL);
+    }
+
+ final:
+  if (temp_boundary)
+    gfc_free_expr (bnd);
+
+  return result;
+}
+
+gfc_expr *
 gfc_simplify_erf (gfc_expr *x)
 {
   gfc_expr *result;
