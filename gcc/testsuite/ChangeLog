@@ -1,3 +1,9 @@
+2018-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* gcc.target/alpha/pr83628-1.c: New test.
+	* gcc.target/alpha/pr83628-2.c: Ditto.
+
 2018-01-04  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/82352

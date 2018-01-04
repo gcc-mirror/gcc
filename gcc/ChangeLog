@@ -1,3 +1,22 @@
+2018-01-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* config/alpha/alpha.md (*sadd<modesuffix>): Use ASHIFT
+	instead of MULT rtx.  Update all corresponding splitters.
+	(*saddl_se): Ditto.
+	(*ssub<modesuffix>): Ditto.
+	(*ssubl_se): Ditto.
+	(*cmp_sadd_di): Update split patterns.
+	(*cmp_sadd_si): Ditto.
+	(*cmp_sadd_sidi): Ditto.
+	(*cmp_ssub_di): Ditto.
+	(*cmp_ssub_si): Ditto.
+	(*cmp_ssub_sidi): Ditto.
+	* config/alpha/predicates.md (const23_operand): New predicate.
+	* config/alpha/alpha.c (alpha_rtx_costs) [PLUS, MINUS]:
+	Look for ASHIFT, not MULT inner operand.
+	(alpha_split_conditional_move): Update for *sadd<modesuffix> change.
+
 2018-01-04  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/83669
@@ -1204,9 +1223,9 @@
 
 2018-01-02  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
-        * config/rs6000/rs6000-string.c (expand_block_move): Allow the use of
-        unaligned VSX load/store on P8/P9.
-        (expand_block_clear): Allow the use of unaligned VSX
+	* config/rs6000/rs6000-string.c (expand_block_move): Allow the use of
+	unaligned VSX load/store on P8/P9.
+	(expand_block_clear): Allow the use of unaligned VSX
 	load/store on P8/P9.
 
 2018-01-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
