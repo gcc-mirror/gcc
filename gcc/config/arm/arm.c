@@ -29440,7 +29440,7 @@ arm_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0, rtx op1,
 
   d.perm.new_vector (sel.encoding (), d.one_vector_p ? 1 : 2, nelt);
 
-  if (d.testing_p)
+  if (!d.testing_p)
     return arm_expand_vec_perm_const_1 (&d);
 
   d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
