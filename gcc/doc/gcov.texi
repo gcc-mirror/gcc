@@ -187,11 +187,8 @@ be used by @command{lcov} or other tools. The output is a single
 The format of the intermediate @file{.gcov} file is plain text with
 one entry per line
 
-@item -j
-@itemx --human-readable
-Write counts in human readable format (like 24k).
-
 @smallexample
+version:@var{gcc_version}
 file:@var{source_file_name}
 function:@var{start_line_number},@var{end_line_number},@var{execution_count},@var{function_name}
 lcount:@var{line number},@var{execution_count},@var{has_unexecuted_block}
@@ -212,6 +209,7 @@ times.
 Here is a sample when @option{-i} is used in conjunction with @option{-b} option:
 
 @smallexample
+version: 8.1.0 20180103
 file:tmp.cpp
 function:7,7,0,_ZN3FooIcEC2Ev
 function:7,7,1,_ZN3FooIiEC2Ev
@@ -251,6 +249,10 @@ branch:35,taken
 branch:35,nottaken
 lcount:36,1,0
 @end smallexample
+
+@item -j
+@itemx --human-readable
+Write counts in human readable format (like 24k).
 
 @item -k
 @itemx --use-colors

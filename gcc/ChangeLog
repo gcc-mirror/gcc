@@ -1,5 +1,13 @@
 2018-01-04  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/83669
+	* gcov.c (output_intermediate_file): Add version to intermediate
+	gcov file.
+	* doc/gcov.texi: Document new field 'version' in intermediate
+	file format. Fix location of '-k' option of gcov command.
+
+2018-01-04  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/82352
 	* ipa-icf.c (sem_function::merge): Do not cross comdat boundary.
 

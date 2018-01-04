@@ -1035,6 +1035,7 @@ file 'foo.cc.gcov' similar to the above example. */
 static void
 output_intermediate_file (FILE *gcov_file, source_info *src)
 {
+  fprintf (gcov_file, "version:%s\n", version_string);
   fprintf (gcov_file, "file:%s\n", src->name);    /* source file name */
 
   std::sort (src->functions.begin (), src->functions.end (),
