@@ -11643,7 +11643,9 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       if (TREE_CODE (arg0) == VECTOR_CST
 	  && (type == TREE_TYPE (TREE_TYPE (arg0))
 	      || (TREE_CODE (type) == VECTOR_TYPE
-		  && TREE_TYPE (type) == TREE_TYPE (TREE_TYPE (arg0)))))
+		  && TREE_TYPE (type) == TREE_TYPE (TREE_TYPE (arg0))))
+	  && tree_fits_uhwi_p (op1)
+	  && tree_fits_uhwi_p (op2))
 	{
 	  tree eltype = TREE_TYPE (TREE_TYPE (arg0));
 	  unsigned HOST_WIDE_INT width = tree_to_uhwi (TYPE_SIZE (eltype));
