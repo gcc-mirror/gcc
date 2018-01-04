@@ -4560,7 +4560,7 @@ expand_debug_expr (tree exp)
 	if (maybe_lt (bitpos, 0))
           return NULL;
 
-	if (GET_MODE (op0) == BLKmode)
+	if (GET_MODE (op0) == BLKmode || mode == BLKmode)
 	  return NULL;
 
 	poly_int64 bytepos;
