@@ -1865,7 +1865,8 @@ is_combined_permutation_identity (tree mask1, tree mask2)
   gcc_checking_assert (TREE_CODE (mask1) == VECTOR_CST
 		       && TREE_CODE (mask2) == VECTOR_CST);
   mask = fold_ternary (VEC_PERM_EXPR, TREE_TYPE (mask1), mask1, mask1, mask2);
-  gcc_assert (TREE_CODE (mask) == VECTOR_CST);
+  if (mask == NULL_TREE || TREE_CODE (mask) != VECTOR_CST)
+    return 0;
 
   if (!VECTOR_CST_NELTS (mask).is_constant (&nelts))
     return 0;
