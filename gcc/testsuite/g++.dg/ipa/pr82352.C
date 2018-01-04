@@ -2,7 +2,7 @@
 // { dg-do compile }
 // { dg-options "-O2" }
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
 class A
 {

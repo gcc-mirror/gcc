@@ -1,3 +1,9 @@
+2018-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/82352
+	* g++.dg/ipa/pr82352.C (size_t): Define to __SIZE_TYPE__ instead of
+	long unsigned int.
+
 2018-01-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83683
