@@ -1,3 +1,8 @@
+2018-01-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82352
+	* ipa-icf.c (sem_function::merge): Do not cross comdat boundary.
+
 2018-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-ssa-sprintf.c (parse_directive): Cast second dir.len to uhwi.
