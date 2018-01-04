@@ -1,3 +1,10 @@
+2018-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect-opt-info-1.c: Moved to ...
+	* gcc.dg/vect/nodump-vect-opt-info-1.c: ... here.  Only run on
+	vect_int targets, use dg-additional-options instead of dg-options and
+	use relative line numbers instead of absolute.
+
 2018-01-03  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83655
