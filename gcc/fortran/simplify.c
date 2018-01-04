@@ -1,5 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000-2016 Free Software Foundation, Inc.
+   Copyright (C) 2000-2016, 2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -1838,13 +1838,17 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
       sz = mpz_get_si (size);
       mpz_clear (size);
 
+      /* Special case: Zero-sized array.  */
+      if (sz == 0)
+	return a;
+
       /* Adjust shft to deal with right or left shifts. */
       shft = shft % sz;
       if (shft < 0)
-       shft += sz;
+	shft += sz;
 
       /* Special case: Shift to the original order!  */
-      if (sz == 0 || shft % sz == 0)
+      if (shft % sz == 0)
 	return a;
 
       result = gfc_copy_expr (a);
