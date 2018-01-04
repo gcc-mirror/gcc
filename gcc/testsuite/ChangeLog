@@ -1,3 +1,8 @@
+2018-01-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82352
+	* g++.dg/ipa/pr82352.C: New test.
+
 2018-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect-opt-info-1.c: Moved to ...
