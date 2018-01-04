@@ -1,5 +1,10 @@
 2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* fold-const.c (fold_ternary_loc): Check tree_fits_uhwi_p before
+	using tree_to_uhwi.
+
+2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-ssa-forwprop.c (is_combined_permutation_identity): Allow
 	the VEC_PERM_EXPR fold to fail.
 
