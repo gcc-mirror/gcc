@@ -1,3 +1,8 @@
+2017-01-04  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Remove
+	redundant test in assertion.
+
 2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/rtl.texi: Document machine_mode wrapper classes.

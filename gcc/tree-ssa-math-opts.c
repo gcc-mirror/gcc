@@ -544,8 +544,7 @@ execute_cse_reciprocals_1 (gimple_stmt_iterator *def_gsi, tree def)
   int square_recip_count = 0;
   int sqrt_recip_count = 0;
 
-  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (def)) && is_gimple_reg (def)
-	      && TREE_CODE (def) == SSA_NAME);
+  gcc_assert (FLOAT_TYPE_P (TREE_TYPE (def)) && TREE_CODE (def) == SSA_NAME);
   threshold = targetm.min_divisions_for_recip_mul (TYPE_MODE (TREE_TYPE (def)));
 
   /* If DEF is a square (x * x), count the number of divisions by x.
