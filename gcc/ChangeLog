@@ -1,3 +1,13 @@
+2018-01-04  Jakub Jelinek  <jakub@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83554
+	* config/i386/i386.md (*<rotate_insn>hi3_1 splitter): Use
+	QIreg_operand instead of register_operand predicate.
+	* config/i386/i386.c (ix86_rop_should_change_byte_p,
+	set_rop_modrm_reg_bits, ix86_mitigate_rop): Use -mmitigate-rop in
+	comments instead of -fmitigate[-_]rop.
+
 2018-01-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/81926

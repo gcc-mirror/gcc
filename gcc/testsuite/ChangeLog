@@ -1,5 +1,8 @@
 2018-01-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/83554
+	* gcc.target/i386/pr83554.c: New test.
+
 	PR ipa/82352
 	* g++.dg/ipa/pr82352.C (size_t): Define to __SIZE_TYPE__ instead of
 	long unsigned int.

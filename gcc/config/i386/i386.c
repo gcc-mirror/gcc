@@ -3089,7 +3089,7 @@ ix86_debug_options (void)
 }
 
 /* Return true if T is one of the bytes we should avoid with
-   -fmitigate-rop.  */
+   -mmitigate-rop.  */
 
 static bool
 ix86_rop_should_change_byte_p (int t)
@@ -41175,7 +41175,7 @@ ix86_seh_fixup_eh_fallthru (void)
 /* Given a register number BASE, the lowest of a group of registers, update
    regsets IN and OUT with the registers that should be avoided in input
    and output operands respectively when trying to avoid generating a modr/m
-   byte for -fmitigate-rop.  */
+   byte for -mmitigate-rop.  */
 
 static void
 set_rop_modrm_reg_bits (int base, HARD_REG_SET &in, HARD_REG_SET &out)
@@ -41186,7 +41186,7 @@ set_rop_modrm_reg_bits (int base, HARD_REG_SET &in, HARD_REG_SET &out)
   SET_HARD_REG_BIT (in, base + 3);
 }
 
-/* Called if -fmitigate_rop is in effect.  Try to rewrite instructions so
+/* Called if -mmitigate-rop is in effect.  Try to rewrite instructions so
    that certain encodings of modr/m bytes do not occur.  */
 static void
 ix86_mitigate_rop (void)
