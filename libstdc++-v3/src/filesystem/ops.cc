@@ -1009,7 +1009,7 @@ fs::remove(const path& p)
 {
   error_code ec;
   bool result = fs::remove(p, ec);
-  if (ec.value())
+  if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove", p, ec));
   return result;
 }
@@ -1017,17 +1017,21 @@ fs::remove(const path& p)
 bool
 fs::remove(const path& p, error_code& ec) noexcept
 {
-  if (exists(symlink_status(p, ec)))
+  const auto s = symlink_status(p, ec);
+  if (!status_known(s))
+    return false;
+  if (s.type() == file_type::not_found)
     {
-      if (::remove(p.c_str()) == 0)
-	{
-	  ec.clear();
-	  return true;
-	}
-      else
-	ec.assign(errno, std::generic_category());
+      ec.clear();
+      return false; // Nothing to do, not an error.
     }
-  return false;
+  if (::remove(p.c_str()) != 0)
+    {
+      ec.assign(errno, std::generic_category());
+      return false;
+    }
+  ec.clear();
+  return true;
 }
 
 
@@ -1036,7 +1040,7 @@ fs::remove_all(const path& p)
 {
   error_code ec;
   bool result = remove_all(p, ec);
-  if (ec.value())
+  if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
   return result;
 }
@@ -1044,14 +1048,19 @@ fs::remove_all(const path& p)
 std::uintmax_t
 fs::remove_all(const path& p, error_code& ec) noexcept
 {
-  auto fs = symlink_status(p, ec);
-  uintmax_t count = 0;
-  if (ec.value() == 0 && fs.type() == file_type::directory)
-    for (directory_iterator d(p, ec), end; ec.value() == 0 && d != end; ++d)
-      count += fs::remove_all(d->path(), ec);
-  if (ec.value())
+  const auto s = symlink_status(p, ec);
+  if (!status_known(s))
     return -1;
-  return fs::remove(p, ec) ? ++count : -1;  // fs:remove() calls ec.clear()
+  ec.clear();
+  uintmax_t count = 0;
+  if (s.type() == file_type::directory)
+    for (directory_iterator d(p, ec), end; !ec && d != end; ++d)
+      count += fs::remove_all(d->path(), ec);
+  if (!ec && fs::remove(p, ec))
+    ++count;
+  if (ec)
+    return -1;
+  return count;
 }
 
 void

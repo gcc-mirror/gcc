@@ -1,5 +1,18 @@
 2018-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83626
+	* src/filesystem/ops.cc (remove(const path&, error_code&))): Remove
+	redundant call to ec.clear().
+	(remove_all(const path&, error_code&))): Do not return an error for
+	non-existent paths.
+	* src/filesystem/std-ops.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove.cc: New test.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Fix expected
+	results for non-existent paths.
+	* testsuite/experimental/filesystem/operations/remove.cc: New test.
+	* testsuite/experimental/filesystem/operations/remove_all.cc: Fix
+	expected results for non-existent paths.
+
 	* include/bits/fs_ops.h (exists(const path&, error_code&))): Only
 	check status_known once.
 	* include/experimental/bits/fs_ops.h: Likewise.

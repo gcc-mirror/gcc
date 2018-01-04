@@ -29,19 +29,19 @@ void
 test01()
 {
   std::error_code ec;
+  const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   std::uintmax_t n;
 
   n = fs::remove_all("", ec);
-  VERIFY( ec );
-  VERIFY( n == std::uintmax_t(-1) );
+  VERIFY( !ec ); // This seems odd, but is what the TS requires.
+  VERIFY( n == 0 );
 
   auto p = __gnu_test::nonexistent_path();
-  ec.clear();
+  ec = bad_ec;
   n = remove_all(p, ec);
-  VERIFY( ec );
-  VERIFY( n == std::uintmax_t(-1) );
+  VERIFY( !ec );
+  VERIFY( n == 0 );
 
-  const auto bad_ec = ec;
   auto link = __gnu_test::nonexistent_path();
   create_symlink(p, link);  // dangling symlink
   ec = bad_ec;
@@ -59,7 +59,7 @@ test01()
   VERIFY( !exists(symlink_status(link)) );  // The symlink is removed, but
   VERIFY( exists(p) );                      // its target is not.
 
-  auto dir = __gnu_test::nonexistent_path();
+  const auto dir = __gnu_test::nonexistent_path();
   create_directories(dir/"a/b/c");
   ec = bad_ec;
   n = remove_all(dir/"a", ec);
