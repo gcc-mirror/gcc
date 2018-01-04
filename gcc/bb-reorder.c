@@ -2523,6 +2523,11 @@ insert_section_boundary_note (void)
           current_partition = BB_PARTITION (bb);
 	}
     }
+
+  /* Make sure crtl->has_bb_partition matches reality even if bbpart finds
+     some hot and some cold basic blocks, but later one of those kinds is
+     optimized away.  */
+  crtl->has_bb_partition = switched_sections;
 }
 
 namespace {

@@ -1,3 +1,9 @@
+2018-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83585
+	* bb-reorder.c (insert_section_boundary_note): Set has_bb_partition
+	to switched_sections.
+
 2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/83680
