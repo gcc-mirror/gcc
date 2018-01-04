@@ -1,5 +1,9 @@
 2018-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/fs_ops.h (exists(const path&, error_code&))): Only
+	check status_known once.
+	* include/experimental/bits/fs_ops.h: Likewise.
+
 	PR libstdc++/83607
 	* include/std/functional (__is_byte_like): New trait.
 	(__is_std_equal_to): Remove.
