@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2018 Free Software Foundation, Inc.
+// Copyright (C) 2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,59 +30,67 @@ test01()
 {
   std::error_code ec;
   const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
-  std::uintmax_t n;
+  bool n;
 
-  n = fs::remove_all("", ec);
+  n = fs::remove("", ec);
   VERIFY( !ec ); // This seems odd, but is what the standard requires.
-  VERIFY( n == 0 );
+  VERIFY( !n );
 
   auto p = __gnu_test::nonexistent_path();
   ec = bad_ec;
-  n = remove_all(p, ec);
+  n = remove(p, ec);
   VERIFY( !ec );
-  VERIFY( n == 0 );
+  VERIFY( !n );
 
   auto link = __gnu_test::nonexistent_path();
   create_symlink(p, link);  // dangling symlink
   ec = bad_ec;
-  n = remove_all(link, ec);
+  n = remove(link, ec);
   VERIFY( !ec );
-  VERIFY( n == 1 );
-  VERIFY( !exists(symlink_status(link)) ); // DR 2721
+  VERIFY( n );
+  VERIFY( !exists(symlink_status(link)) );
 
   __gnu_test::scoped_file f(p);
   create_symlink(p, link);
   ec = bad_ec;
-  n = remove_all(link, ec);
+  n = remove(link, ec);
   VERIFY( !ec );
-  VERIFY( n == 1 );
+  VERIFY( n );
   VERIFY( !exists(symlink_status(link)) );  // The symlink is removed, but
   VERIFY( exists(p) );                      // its target is not.
 
+  ec = bad_ec;
+  n = remove(p, ec);
+  VERIFY( !ec );
+  VERIFY( n );
+  VERIFY( !exists(symlink_status(p)) );
+
   const auto dir = __gnu_test::nonexistent_path();
-  create_directories(dir/"a/b/c");
-  ec = bad_ec;
-  n = remove_all(dir/"a", ec);
-  VERIFY( !ec );
-  VERIFY( n == 3 );
-  VERIFY( exists(dir) );
-  VERIFY( !exists(dir/"a") );
+  create_directories(dir/"a/b");
+  ec.clear();
+  n = remove(dir/"a", ec);
+  VERIFY( ec );
+  VERIFY( !n );
+  VERIFY( exists(dir/"a/b") );
 
-  create_directories(dir/"a/b/c");
-  __gnu_test::scoped_file a1(dir/"a/1");
-  __gnu_test::scoped_file a2(dir/"a/2");
-  __gnu_test::scoped_file b1(dir/"a/b/1");
-  __gnu_test::scoped_file b2(dir/"a/b/2");
-  ec = bad_ec;
-  n = remove_all(dir, ec);
-  VERIFY( !ec );
-  VERIFY( n == 8 );
-  VERIFY( !exists(dir) );
+  permissions(dir, fs::perms::none, ec);
+  if (!ec)
+  {
+    ec.clear();
+    n = remove(dir/"a/b", ec);
+    VERIFY( ec );
+    VERIFY( !n );
+    permissions(dir, fs::perms::owner_all, ec);
+  }
 
-  a1.path.clear();
-  a2.path.clear();
-  b1.path.clear();
-  b2.path.clear();
+  ec = bad_ec;
+  n = remove(dir/"a/b", ec);
+  VERIFY( !ec );
+  VERIFY( n );
+  VERIFY( !exists(dir/"a/b") );
+
+  remove(dir/"a", ec);
+  remove(dir, ec);
 }
 
 int
