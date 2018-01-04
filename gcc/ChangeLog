@@ -1,3 +1,11 @@
+2018-01-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/81926
+	* cgraphunit.c (symbol_table::compile): Switch to text_section
+	before calling assembly_start debug hook.
+	* run-rtl-passes.c (run_rtl_passes): Likewise.
+	Include output.h.
+
 2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vrp.c (extract_range_from_binary_expr_1): Check
