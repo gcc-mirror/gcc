@@ -1,3 +1,15 @@
+2018-01-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83607
+	* include/std/functional (__is_byte_like): New trait.
+	(__is_std_equal_to): Remove.
+	(__boyer_moore_base_t): Use __is_byte_like instead of
+	__is_std_equal_to.
+	* include/experimental/functional (__is_std_equal_to): Remove.
+	(__boyer_moore_base_t): Use __is_byte_like instead of
+	__is_std_equal_to.
+	* testsuite/20_util/function_objects/83607.cc: New test.
+
 2018-01-03  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Protect optional's deduction guide with the feature macro

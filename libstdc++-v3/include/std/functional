@@ -879,7 +879,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Fn _M_fn;
     };
 
-#if __cplusplus > 201402L
+  template<typename _Tp, typename _Pred>
+    struct __is_byte_like : false_type { };
+
+  template<typename _Tp>
+    struct __is_byte_like<_Tp, equal_to<_Tp>>
+    : __bool_constant<sizeof(_Tp) == 1 && is_integral<_Tp>::value> { };
+
+  template<typename _Tp>
+    struct __is_byte_like<_Tp, equal_to<void>>
+    : __bool_constant<sizeof(_Tp) == 1 && is_integral<_Tp>::value> { };
+
+#if __cplusplus >= 201703L
+  // Declare std::byte (full definition is in <cstddef>).
+  enum class byte : unsigned char;
+
+  template<>
+    struct __is_byte_like<byte, equal_to<byte>>
+    : true_type { };
+
+  template<>
+    struct __is_byte_like<byte, equal_to<void>>
+    : true_type { };
+
 #define __cpp_lib_not_fn 201603
   /// [func.not_fn] Function template not_fn
   template<typename _Fn>
@@ -988,20 +1010,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       tuple<_GLIBCXX_STD_C::array<_Tp, _Len>, _Pred> _M_bad_char;
     };
 
-  template<typename _Pred>
-    struct __is_std_equal_to : false_type { };
-
-  template<>
-    struct __is_std_equal_to<equal_to<void>> : true_type { };
-
   // Use __boyer_moore_array_base when pattern consists of narrow characters
-  // and uses std::equal_to as the predicate.
+  // (or std::byte) and uses std::equal_to as the predicate.
   template<typename _RAIter, typename _Hash, typename _Pred,
            typename _Val = typename iterator_traits<_RAIter>::value_type,
 	   typename _Diff = typename iterator_traits<_RAIter>::difference_type>
     using __boyer_moore_base_t
-      = conditional_t<sizeof(_Val) == 1 && is_integral<_Val>::value
-		      && __is_std_equal_to<_Pred>::value,
+      = conditional_t<__is_byte_like<_Val, _Pred>::value,
 		      __boyer_moore_array_base<_Diff, 256, _Pred>,
 		      __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
 
