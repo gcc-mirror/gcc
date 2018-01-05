@@ -448,8 +448,8 @@
 (define_mode_iterator VI2_AVX2_AVX512BW
   [(V32HI "TARGET_AVX512BW") (V16HI "TARGET_AVX2") V8HI])
 
-(define_mode_iterator VI248_VLBW
-  [(V32HI "TARGET_AVX512BW") V16SI V8DI
+(define_mode_iterator VI248_AVX512VL
+  [V32HI V16SI V8DI
    (V16HI "TARGET_AVX512VL") (V8SI "TARGET_AVX512VL")
    (V4DI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")
    (V4SI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
@@ -20116,10 +20116,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vpshrd_<mode><mask_name>"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(unspec:VI248_VLBW
-	  [(match_operand:VI248_VLBW 1 "register_operand" "v")
-	   (match_operand:VI248_VLBW 2 "nonimmediate_operand" "vm")
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI248_AVX512VL
+	  [(match_operand:VI248_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VI248_AVX512VL 2 "nonimmediate_operand" "vm")
 	   (match_operand:SI 3 "const_0_to_255_operand" "n")]
 	  UNSPEC_VPSHRD))]
   "TARGET_AVX512VBMI2"
@@ -20127,10 +20127,10 @@
    [(set_attr ("prefix") ("evex"))])
 
 (define_insn "vpshld_<mode><mask_name>"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(unspec:VI248_VLBW
-	  [(match_operand:VI248_VLBW 1 "register_operand" "v")
-	   (match_operand:VI248_VLBW 2 "nonimmediate_operand" "vm")
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI248_AVX512VL
+	  [(match_operand:VI248_AVX512VL 1 "register_operand" "v")
+	   (match_operand:VI248_AVX512VL 2 "nonimmediate_operand" "vm")
 	   (match_operand:SI 3 "const_0_to_255_operand" "n")]
 	  UNSPEC_VPSHLD))]
   "TARGET_AVX512VBMI2"
@@ -20138,11 +20138,11 @@
    [(set_attr ("prefix") ("evex"))])
 
 (define_insn "vpshrdv_<mode>"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(unspec:VI248_VLBW
-	  [(match_operand:VI248_VLBW 1 "register_operand" "0")
-	   (match_operand:VI248_VLBW 2 "register_operand" "v")
-	   (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")]
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI248_AVX512VL
+	  [(match_operand:VI248_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI248_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI248_AVX512VL 3 "nonimmediate_operand" "vm")]
 	  UNSPEC_VPSHRDV))]
   "TARGET_AVX512VBMI2"
   "vpshrdv<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3 }"
@@ -20150,12 +20150,12 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vpshrdv_<mode>_mask"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(vec_merge:VI248_VLBW
-	  (unspec:VI248_VLBW
-	    [(match_operand:VI248_VLBW 1 "register_operand" "0")
-	     (match_operand:VI248_VLBW 2 "register_operand" "v")
-	     (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")]
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI248_AVX512VL
+	  (unspec:VI248_AVX512VL
+	    [(match_operand:VI248_AVX512VL 1 "register_operand" "0")
+	     (match_operand:VI248_AVX512VL 2 "register_operand" "v")
+	     (match_operand:VI248_AVX512VL 3 "nonimmediate_operand" "vm")]
 	    UNSPEC_VPSHRDV)
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
@@ -20165,10 +20165,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "vpshrdv_<mode>_maskz"
-  [(match_operand:VI248_VLBW 0 "register_operand")
-   (match_operand:VI248_VLBW 1 "register_operand")
-   (match_operand:VI248_VLBW 2 "register_operand")
-   (match_operand:VI248_VLBW 3 "nonimmediate_operand")
+  [(match_operand:VI248_AVX512VL 0 "register_operand")
+   (match_operand:VI248_AVX512VL 1 "register_operand")
+   (match_operand:VI248_AVX512VL 2 "register_operand")
+   (match_operand:VI248_AVX512VL 3 "nonimmediate_operand")
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512VBMI2"
 {
@@ -20180,14 +20180,14 @@
 })
 
 (define_insn "vpshrdv_<mode>_maskz_1"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(vec_merge:VI248_VLBW
-	  (unspec:VI248_VLBW
-	    [(match_operand:VI248_VLBW 1 "register_operand" "0")
-	     (match_operand:VI248_VLBW 2 "register_operand" "v")
-	     (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")]
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI248_AVX512VL
+	  (unspec:VI248_AVX512VL
+	    [(match_operand:VI248_AVX512VL 1 "register_operand" "0")
+	     (match_operand:VI248_AVX512VL 2 "register_operand" "v")
+	     (match_operand:VI248_AVX512VL 3 "nonimmediate_operand" "vm")]
 	    UNSPEC_VPSHRDV)
-	  (match_operand:VI248_VLBW 4 "const0_operand" "C")
+	  (match_operand:VI248_AVX512VL 4 "const0_operand" "C")
 	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
   "TARGET_AVX512VBMI2"
   "vpshrdv<ssemodesuffix>\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
@@ -20195,11 +20195,11 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vpshldv_<mode>"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(unspec:VI248_VLBW
-	  [(match_operand:VI248_VLBW 1 "register_operand" "0")
-	   (match_operand:VI248_VLBW 2 "register_operand" "v")
-	   (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")]
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI248_AVX512VL
+	  [(match_operand:VI248_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI248_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI248_AVX512VL 3 "nonimmediate_operand" "vm")]
 	  UNSPEC_VPSHLDV))]
   "TARGET_AVX512VBMI2"
   "vpshldv<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3 }"
@@ -20207,12 +20207,12 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vpshldv_<mode>_mask"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(vec_merge:VI248_VLBW
-	  (unspec:VI248_VLBW
-	    [(match_operand:VI248_VLBW 1 "register_operand" "0")
-	     (match_operand:VI248_VLBW 2 "register_operand" "v")
-	     (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")]
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI248_AVX512VL
+	  (unspec:VI248_AVX512VL
+	    [(match_operand:VI248_AVX512VL 1 "register_operand" "0")
+	     (match_operand:VI248_AVX512VL 2 "register_operand" "v")
+	     (match_operand:VI248_AVX512VL 3 "nonimmediate_operand" "vm")]
 	    UNSPEC_VPSHLDV)
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
@@ -20222,10 +20222,10 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "vpshldv_<mode>_maskz"
-  [(match_operand:VI248_VLBW 0 "register_operand")
-   (match_operand:VI248_VLBW 1 "register_operand")
-   (match_operand:VI248_VLBW 2 "register_operand")
-   (match_operand:VI248_VLBW 3 "nonimmediate_operand")
+  [(match_operand:VI248_AVX512VL 0 "register_operand")
+   (match_operand:VI248_AVX512VL 1 "register_operand")
+   (match_operand:VI248_AVX512VL 2 "register_operand")
+   (match_operand:VI248_AVX512VL 3 "nonimmediate_operand")
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX512VBMI2"
 {
@@ -20237,14 +20237,14 @@
 })
 
 (define_insn "vpshldv_<mode>_maskz_1"
-  [(set (match_operand:VI248_VLBW 0 "register_operand" "=v")
-	(vec_merge:VI248_VLBW
-	  (unspec:VI248_VLBW
-	    [(match_operand:VI248_VLBW 1 "register_operand" "0")
-	     (match_operand:VI248_VLBW 2 "register_operand" "v")
-	     (match_operand:VI248_VLBW 3 "nonimmediate_operand" "vm")]
+  [(set (match_operand:VI248_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI248_AVX512VL
+	  (unspec:VI248_AVX512VL
+	    [(match_operand:VI248_AVX512VL 1 "register_operand" "0")
+	     (match_operand:VI248_AVX512VL 2 "register_operand" "v")
+	     (match_operand:VI248_AVX512VL 3 "nonimmediate_operand" "vm")]
 	    UNSPEC_VPSHLDV)
-	  (match_operand:VI248_VLBW 4 "const0_operand" "C")
+	  (match_operand:VI248_AVX512VL 4 "const0_operand" "C")
 	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
   "TARGET_AVX512VBMI2"
   "vpshldv<ssemodesuffix>\t{%3, %2, %0%{%5%}%{z%}|%0%{%5%}%{z%}, %2, %3 }"
