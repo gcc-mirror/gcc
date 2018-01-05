@@ -131,8 +131,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     auto __s = status(__p, __ec);
     if (status_known(__s))
-      __ec.clear();
-    return exists(__s);
+      {
+	__ec.clear();
+	return __s.type() != file_type::not_found;
+      }
+    return false;
   }
 
   uintmax_t file_size(const path& __p);
