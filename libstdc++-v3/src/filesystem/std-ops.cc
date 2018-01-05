@@ -1254,7 +1254,7 @@ bool
 fs::remove(const path& p)
 {
   error_code ec;
-  bool result = fs::remove(p, ec);
+  const bool result = fs::remove(p, ec);
   if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove", p, ec));
   return result;
@@ -1263,14 +1263,6 @@ fs::remove(const path& p)
 bool
 fs::remove(const path& p, error_code& ec) noexcept
 {
-  const auto s = symlink_status(p, ec);
-  if (!status_known(s))
-    return false;
-  if (s.type() == file_type::not_found)
-    {
-      ec.clear();
-      return false; // Nothing to do, not an error.
-    }
   if (::remove(p.c_str()) == 0)
     {
       ec.clear();
@@ -1316,14 +1308,9 @@ fs::remove_all(const path& p, error_code& ec)
 	return -1;
     }
 
-  if (::remove(p.c_str()) == 0)
+  if (fs::remove(p, ec))
     ++count;
-  else if (errno != ENOENT)
-    {
-      ec.assign(errno, std::generic_category());
-      return -1;
-    }
-  return count;
+  return ec ? -1 : count;
 }
 
 void
