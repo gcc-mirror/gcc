@@ -1,5 +1,11 @@
 2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83626
+	* src/filesystem/ops.cc (remove(const path&, error_code&)): Remove
+	unnecessary symlink_status call.
+	(remove_all(const path&, error_code&)): Use filesystem::remove.
+	* src/filesystem/std-ops.cc: Likewise.
+
 	PR libstdc++/83279
 	* src/filesystem/std-ops.cc  (do_copy_file): Use non-null offset with
 	sendfile.
