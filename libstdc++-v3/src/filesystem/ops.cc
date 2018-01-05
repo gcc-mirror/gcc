@@ -1025,13 +1025,16 @@ fs::remove(const path& p, error_code& ec) noexcept
       ec.clear();
       return false; // Nothing to do, not an error.
     }
-  if (::remove(p.c_str()) != 0)
+  if (::remove(p.c_str()) == 0)
     {
-      ec.assign(errno, std::generic_category());
-      return false;
+      ec.clear();
+      return true;
     }
-  ec.clear();
-  return true;
+  else if (errno == ENOENT)
+    ec.clear();
+  else
+    ec.assign(errno, std::generic_category());
+  return false;
 }
 
 
@@ -1039,7 +1042,7 @@ std::uintmax_t
 fs::remove_all(const path& p)
 {
   error_code ec;
-  bool result = remove_all(p, ec);
+  const auto result = remove_all(p, ec);
   if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
   return result;
@@ -1051,15 +1054,29 @@ fs::remove_all(const path& p, error_code& ec) noexcept
   const auto s = symlink_status(p, ec);
   if (!status_known(s))
     return -1;
+
   ec.clear();
+  if (s.type() == file_type::not_found)
+    return 0;
+
   uintmax_t count = 0;
   if (s.type() == file_type::directory)
-    for (directory_iterator d(p, ec), end; !ec && d != end; ++d)
-      count += fs::remove_all(d->path(), ec);
-  if (!ec && fs::remove(p, ec))
+    {
+      for (directory_iterator d(p, ec), end; !ec && d != end; d.increment(ec))
+	count += fs::remove_all(d->path(), ec);
+      if (ec.value() == ENOENT)
+	ec.clear();
+      else if (ec)
+	return -1;
+    }
+
+  if (::remove(p.c_str()) == 0)
     ++count;
-  if (ec)
-    return -1;
+  else if (errno != ENOENT)
+    {
+      ec.assign(errno, std::generic_category());
+      return -1;
+    }
   return count;
 }
 

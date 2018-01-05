@@ -1,3 +1,18 @@
+2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83626
+	* src/filesystem/ops.cc (remove(const path&, error_code&)): Do not
+	report an error for ENOENT.
+	(remove_all(const path&)): Fix type of result variable.
+	(remove_all(const path&, error_code&)): Use non-throwing increment
+	for directory iterator. Call POSIX remove directly to avoid redundant
+	calls to symlink_status. Do not report errors for ENOENT.
+	* src/filesystem/std-ops.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/remove_all.cc: Test throwing
+	overload.
+	* testsuite/experimental/filesystem/operations/remove_all.cc:
+	Likewise.
+
 2018-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83626
