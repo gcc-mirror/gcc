@@ -1,6 +1,13 @@
 2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-12-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83279
+	* src/filesystem/std-ops.cc (do_copy_file): Handle sendfile not
+	copying entire file.
+
+	Backport from mainline
 	2018-01-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/fs_ops.h (exists(const path&, error_code&))):
