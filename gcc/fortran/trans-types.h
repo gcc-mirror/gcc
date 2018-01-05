@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_BACKEND_H
 #define GFC_BACKEND_H
 
+
 extern GTY(()) tree gfc_array_index_type;
 extern GTY(()) tree gfc_array_range_type;
 extern GTY(()) tree gfc_character1_type_node;
@@ -49,9 +50,8 @@ extern GTY(()) tree logical_false_node;
 
 /* This is the type used to hold the lengths of character variables.
    It must be the same as the corresponding definition in gfortran.h.  */
-/* TODO: This is still hardcoded as kind=4 in some bits of the compiler
-   and runtime library.  */
 extern GTY(()) tree gfc_charlen_type_node;
+
 
 /* The following flags give us information on the correspondence of
    real (and complex) kinds with C floating-point types long double

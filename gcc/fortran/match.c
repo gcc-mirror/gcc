@@ -5878,7 +5878,7 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
 {
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symtree *tmp;
-  int charlen = 0;
+  HOST_WIDE_INT charlen = 0;
 
   if (ts->type == BT_CLASS || ts->type == BT_DERIVED)
     return NULL;
@@ -5889,14 +5889,14 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
 
   if (ts->type == BT_CHARACTER && ts->u.cl && ts->u.cl->length
       && ts->u.cl->length->expr_type == EXPR_CONSTANT)
-    charlen = mpz_get_si (ts->u.cl->length->value.integer);
+    charlen = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
 
   if (ts->type != BT_CHARACTER)
     sprintf (name, "__tmp_%s_%d", gfc_basic_typename (ts->type),
 	     ts->kind);
   else
-    sprintf (name, "__tmp_%s_%d_%d", gfc_basic_typename (ts->type),
-	     charlen, ts->kind);
+    snprintf (name, sizeof (name), "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d",
+	      gfc_basic_typename (ts->type), charlen, ts->kind);
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   gfc_add_type (tmp->n.sym, ts, NULL);

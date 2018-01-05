@@ -250,7 +250,7 @@ gfc_class_len_or_zero_get (tree decl)
   return len != NULL_TREE ? fold_build3_loc (input_location, COMPONENT_REF,
 					     TREE_TYPE (len), decl, len,
 					     NULL_TREE)
-			  : integer_zero_node;
+    : build_zero_cst (gfc_charlen_type_node);
 }
 
 
@@ -884,7 +884,8 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 		{
 		  /* Amazingly all data is present to compute the length of a
 		   constant string, but the expression is not yet there.  */
-		  e->ts.u.cl->length = gfc_get_constant_expr (BT_INTEGER, 4,
+		  e->ts.u.cl->length = gfc_get_constant_expr (BT_INTEGER,
+							      gfc_charlen_int_kind,
 							      &e->where);
 		  mpz_set_ui (e->ts.u.cl->length->value.integer,
 			      e->value.character.length);
@@ -902,7 +903,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
       else
 	tmp = integer_zero_node;
 
-      gfc_add_modify (&parmse->pre, ctree, tmp);
+      gfc_add_modify (&parmse->pre, ctree, fold_convert (TREE_TYPE (ctree), tmp));
     }
   else if (class_ts.type == BT_CLASS
 	   && class_ts.u.derived->components
@@ -1045,7 +1046,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
       if (DECL_LANG_SPECIFIC (tmp) && GFC_DECL_SAVED_DESCRIPTOR (tmp))
 	tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
 
-      slen = integer_zero_node;
+      slen = build_zero_cst (size_type_node);
     }
   else
     {
@@ -1096,7 +1097,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
 	  tmp = slen;
 	}
       else
-	tmp = integer_zero_node;
+	tmp = build_zero_cst (size_type_node);
       gfc_add_modify (&parmse->pre, ctree,
 		      fold_convert (TREE_TYPE (ctree), tmp));
 
@@ -1235,7 +1236,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
       if (from != NULL_TREE && unlimited)
 	from_len = gfc_class_len_or_zero_get (from);
       else
-	from_len = integer_zero_node;
+	from_len = build_zero_cst (size_type_node);
     }
 
   if (GFC_CLASS_TYPE_P (TREE_TYPE (to)))
@@ -1347,7 +1348,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
 
 	  tmp = fold_build2_loc (input_location, GT_EXPR,
 				 logical_type_node, from_len,
-				 integer_zero_node);
+				 build_zero_cst (TREE_TYPE (from_len)));
 	  tmp = fold_build3_loc (input_location, COND_EXPR,
 				 void_type_node, tmp, extcopy, stdcopy);
 	  gfc_add_expr_to_block (&body, tmp);
@@ -1375,7 +1376,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
 	  extcopy = build_call_vec (fcn_type, fcn, args);
 	  tmp = fold_build2_loc (input_location, GT_EXPR,
 				 logical_type_node, from_len,
-				 integer_zero_node);
+				 build_zero_cst (TREE_TYPE (from_len)));
 	  tmp = fold_build3_loc (input_location, COND_EXPR,
 				 void_type_node, tmp, extcopy, stdcopy);
 	}
@@ -2206,7 +2207,7 @@ gfc_conv_string_length (gfc_charlen * cl, gfc_expr * expr, stmtblock_t * pblock)
 
   gfc_conv_expr_type (&se, cl->length, gfc_charlen_type_node);
   se.expr = fold_build2_loc (input_location, MAX_EXPR, gfc_charlen_type_node,
-			     se.expr, build_int_cst (gfc_charlen_type_node, 0));
+			     se.expr, build_zero_cst (TREE_TYPE (se.expr)));
   gfc_add_block_to_block (pblock, &se.pre);
 
   if (cl->backend_decl)
@@ -2278,7 +2279,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       /* Check lower bound.  */
       fault = fold_build2_loc (input_location, LT_EXPR, logical_type_node,
 			       start.expr,
-			       build_int_cst (gfc_charlen_type_node, 1));
+			       build_one_cst (TREE_TYPE (start.expr)));
       fault = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
 			       logical_type_node, nonempty, fault);
       if (name)
@@ -2314,9 +2315,9 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
   if (ref->u.ss.end
       && gfc_dep_difference (ref->u.ss.end, ref->u.ss.start, &length))
     {
-      int i_len;
+      HOST_WIDE_INT i_len;
 
-      i_len = mpz_get_si (length) + 1;
+      i_len = gfc_mpz_get_hwi (length) + 1;
       if (i_len < 0)
 	i_len = 0;
 
@@ -2326,7 +2327,8 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
   else
     {
       tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_charlen_type_node,
-			     end.expr, start.expr);
+			     fold_convert (gfc_charlen_type_node, end.expr),
+			     fold_convert (gfc_charlen_type_node, start.expr));
       tmp = fold_build2_loc (input_location, PLUS_EXPR, gfc_charlen_type_node,
 			     build_int_cst (gfc_charlen_type_node, 1), tmp);
       tmp = fold_build2_loc (input_location, MAX_EXPR, gfc_charlen_type_node,
@@ -3129,9 +3131,9 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
     {
       /* Create a temporary variable to hold the result.  */
       tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			     gfc_charlen_type_node, len,
-			     build_int_cst (gfc_charlen_type_node, 1));
-      tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
+			     TREE_TYPE (len), len,
+			     build_int_cst (TREE_TYPE (len), 1));
+      tmp = build_range_type (gfc_charlen_type_node, size_zero_node, tmp);
 
       if (TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
 	tmp = build_array_type (TREE_TYPE (TREE_TYPE (type)), tmp);
@@ -3193,8 +3195,11 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   if (len == NULL_TREE)
     {
       len = fold_build2_loc (input_location, PLUS_EXPR,
-			     TREE_TYPE (lse.string_length),
-			     lse.string_length, rse.string_length);
+			     gfc_charlen_type_node,
+			     fold_convert (gfc_charlen_type_node,
+					   lse.string_length),
+			     fold_convert (gfc_charlen_type_node,
+					   rse.string_length));
     }
 
   type = build_pointer_type (type);
@@ -5920,11 +5925,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    gfc_conv_expr (&parmse, ts.u.cl->length);
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 	  gfc_add_block_to_block (&se->post, &parmse.post);
-
-	  tmp = fold_convert (gfc_charlen_type_node, parmse.expr);
+	  tmp = parmse.expr;
 	  tmp = fold_build2_loc (input_location, MAX_EXPR,
-				 gfc_charlen_type_node, tmp,
-				 build_int_cst (gfc_charlen_type_node, 0));
+				 TREE_TYPE (tmp), tmp,
+				 build_zero_cst (TREE_TYPE (tmp)));
 	  cl.backend_decl = tmp;
 	}
 
@@ -6403,13 +6407,16 @@ fill_with_spaces (tree start, tree type, tree size)
   tree i, el, exit_label, cond, tmp;
 
   /* For a simple char type, we can call memset().  */
+  /* TODO: This code does work and is potentially more efficient, but
+     causes spurious -Wstringop-overflow warnings.
   if (compare_tree_int (TYPE_SIZE_UNIT (type), 1) == 0)
     return build_call_expr_loc (input_location,
 			    builtin_decl_explicit (BUILT_IN_MEMSET),
 			    3, start,
 			    build_int_cst (gfc_get_int_type (gfc_c_int_kind),
 					   lang_hooks.to_target_charset (' ')),
-			    size);
+				fold_convert (size_type_node, size));
+  */
 
   /* Otherwise, we use a loop:
 	for (el = start, i = size; i > 0; el--, i+= TYPE_SIZE_UNIT (type))
@@ -6485,23 +6492,23 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 
   if (slength != NULL_TREE)
     {
-      slen = fold_convert (size_type_node, gfc_evaluate_now (slength, block));
+      slen = gfc_evaluate_now (fold_convert (gfc_charlen_type_node, slength), block);
       ssc = gfc_string_to_single_character (slen, src, skind);
     }
   else
     {
-      slen = build_int_cst (size_type_node, 1);
+      slen = build_one_cst (gfc_charlen_type_node);
       ssc =  src;
     }
 
   if (dlength != NULL_TREE)
     {
-      dlen = fold_convert (size_type_node, gfc_evaluate_now (dlength, block));
+      dlen = gfc_evaluate_now (fold_convert (gfc_charlen_type_node, dlength), block);
       dsc = gfc_string_to_single_character (dlen, dest, dkind);
     }
   else
     {
-      dlen = build_int_cst (size_type_node, 1);
+      dlen = build_one_cst (gfc_charlen_type_node);
       dsc =  dest;
     }
 
@@ -6524,18 +6531,18 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 
   /* Do nothing if the destination length is zero.  */
   cond = fold_build2_loc (input_location, GT_EXPR, logical_type_node, dlen,
-			  build_int_cst (size_type_node, 0));
+			  build_zero_cst (TREE_TYPE (dlen)));
 
   /* For non-default character kinds, we have to multiply the string
      length by the base type size.  */
   chartype = gfc_get_char_type (dkind);
-  slen = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
-			  fold_convert (size_type_node, slen),
-			  fold_convert (size_type_node,
+  slen = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (slen),
+			  slen,
+			  fold_convert (TREE_TYPE (slen),
 					TYPE_SIZE_UNIT (chartype)));
-  dlen = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
-			  fold_convert (size_type_node, dlen),
-			  fold_convert (size_type_node,
+  dlen = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (dlen),
+			  dlen,
+			  fold_convert (TREE_TYPE (dlen),
 					TYPE_SIZE_UNIT (chartype)));
 
   if (dlength && POINTER_TYPE_P (TREE_TYPE (dest)))
@@ -6553,7 +6560,8 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 			  slen);
   tmp2 = build_call_expr_loc (input_location,
 			      builtin_decl_explicit (BUILT_IN_MEMMOVE),
-			      3, dest, src, tmp2);
+			      3, dest, src,
+			      fold_convert (size_type_node, tmp2));
   stmtblock_t tmpblock2;
   gfc_init_block (&tmpblock2);
   gfc_add_expr_to_block (&tmpblock2, tmp2);
@@ -7264,7 +7272,8 @@ alloc_scalar_allocatable_for_subcomponent_assignment (stmtblock_t *block,
 
   if (cm->ts.type == BT_CHARACTER && cm->ts.deferred)
     /* Update the lhs character length.  */
-    gfc_add_modify (block, lhs_cl_size, size);
+    gfc_add_modify (block, lhs_cl_size,
+		    fold_convert (TREE_TYPE (lhs_cl_size), size));
 }
 
 
@@ -7503,7 +7512,8 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
 				     1, size);
 	  gfc_add_modify (&block, dest,
 			  fold_convert (TREE_TYPE (dest), tmp));
-	  gfc_add_modify (&block, strlen, se.string_length);
+	  gfc_add_modify (&block, strlen,
+			  fold_convert (TREE_TYPE (strlen), se.string_length));
 	  tmp = gfc_build_memcpy_call (dest, se.expr, size);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
@@ -8174,7 +8184,7 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 		  from_len = gfc_evaluate_now (se.expr, block);
 		}
 	      else
-		from_len = integer_zero_node;
+		from_len = build_zero_cst (gfc_charlen_type_node);
 	    }
 	  gfc_add_modify (pre, to_len, fold_convert (TREE_TYPE (to_len),
 						     from_len));
@@ -8385,7 +8395,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	    gfc_add_modify (&block, lse.string_length, rse.string_length);
 	  else if (lse.string_length != NULL)
 	    gfc_add_modify (&block, lse.string_length,
-			    build_int_cst (gfc_charlen_type_node, 0));
+			    build_zero_cst (TREE_TYPE (lse.string_length)));
 	}
 
       gfc_add_modify (&block, lse.expr,
@@ -9643,7 +9653,9 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
   if (expr1->ts.type == BT_CHARACTER && expr1->ts.deferred)
     {
       cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
-			      lse.string_length, size);
+			      lse.string_length,
+			      fold_convert (TREE_TYPE (lse.string_length),
+					    size));
       /* Jump past the realloc if the lengths are the same.  */
       tmp = build3_v (COND_EXPR, cond,
 		      build1_v (GOTO_EXPR, jump_label2),
@@ -9660,7 +9672,8 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
 
       /* Update the lhs character length.  */
       size = string_length;
-      gfc_add_modify (block, lse.string_length, size);
+      gfc_add_modify (block, lse.string_length,
+		      fold_convert (TREE_TYPE (lse.string_length), size));
     }
 }
 
@@ -9842,7 +9855,7 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 
 	  tmp = fold_build2_loc (input_location, GT_EXPR,
 				 logical_type_node, from_len,
-				 integer_zero_node);
+				 build_zero_cst (TREE_TYPE (from_len)));
 	  return fold_build3_loc (input_location, COND_EXPR,
 				  void_type_node, tmp,
 				  extcopy, stdcopy);

@@ -1,3 +1,17 @@
+2018-01-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78534
+	PR fortran/66310
+	* gfortran.dg/char_cast_1.f90: Update scan pattern.
+	* gfortran.dg/dependency_49.f90: Likewise.
+	* gfortran.dg/repeat_4.f90: Use integers of kind C_SIZE_T.
+	* gfortran.dg/repeat_7.f90: New test for PR 66310.
+	* gfortran.dg/scan_2.f90: Handle potential cast in assignment.
+	* gfortran.dg/string_1.f90: Limit to ilp32 targets.
+	* gfortran.dg/string_1_lp64.f90: New test.
+	* gfortran.dg/string_3.f90: Limit to ilp32 targets.
+	* gfortran.dg/string_3_lp64.f90: New test.
+
 2018-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83604

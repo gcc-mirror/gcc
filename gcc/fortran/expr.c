@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "target-memory.h" /* for gfc_convert_boz */
 #include "constructor.h"
+#include "tree.h"
 
 
 /* The following set of functions provide access to gfc_expr* of
@@ -184,7 +185,7 @@ gfc_get_constant_expr (bt type, int kind, locus *where)
    blanked and null-terminated.  */
 
 gfc_expr *
-gfc_get_character_expr (int kind, locus *where, const char *src, int len)
+gfc_get_character_expr (int kind, locus *where, const char *src, gfc_charlen_t len)
 {
   gfc_expr *e;
   gfc_char_t *dest;
@@ -210,13 +211,14 @@ gfc_get_character_expr (int kind, locus *where, const char *src, int len)
 /* Get a new expression node that is an integer constant.  */
 
 gfc_expr *
-gfc_get_int_expr (int kind, locus *where, int value)
+gfc_get_int_expr (int kind, locus *where, HOST_WIDE_INT value)
 {
   gfc_expr *p;
   p = gfc_get_constant_expr (BT_INTEGER, kind,
 			     where ? where : &gfc_current_locus);
 
-  mpz_set_si (p->value.integer, value);
+  const wide_int w = wi::shwi (value, kind * BITS_PER_UNIT);
+  wi::to_mpz (w, p->value.integer, SIGNED);
 
   return p;
 }
@@ -667,6 +669,62 @@ gfc_extract_int (gfc_expr *expr, int *result, int report_error)
     }
 
   *result = (int) mpz_get_si (expr->value.integer);
+
+  return false;
+}
+
+
+/* Same as gfc_extract_int, but use a HWI.  */
+
+bool
+gfc_extract_hwi (gfc_expr *expr, HOST_WIDE_INT *result, int report_error)
+{
+  gfc_ref *ref;
+
+  /* A KIND component is a parameter too. The expression for it is
+     stored in the initializer and should be consistent with the tests
+     below.  */
+  if (gfc_expr_attr(expr).pdt_kind)
+    {
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->u.c.component->attr.pdt_kind)
+	    expr = ref->u.c.component->initializer;
+	}
+    }
+
+  if (expr->expr_type != EXPR_CONSTANT)
+    {
+      if (report_error > 0)
+	gfc_error ("Constant expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Constant expression required at %C");
+      return true;
+    }
+
+  if (expr->ts.type != BT_INTEGER)
+    {
+      if (report_error > 0)
+	gfc_error ("Integer expression required at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer expression required at %C");
+      return true;
+    }
+
+  /* Use long_long_integer_type_node to determine when to saturate.  */
+  const wide_int val = wi::from_mpz (long_long_integer_type_node,
+				     expr->value.integer, false);
+
+  if (!wi::fits_shwi_p (val))
+    {
+      if (report_error > 0)
+	gfc_error ("Integer value too large in expression at %C");
+      else if (report_error < 0)
+	gfc_error_now ("Integer value too large in expression at %C");
+      return true;
+    }
+
+  *result = val.to_shwi ();
 
   return false;
 }
@@ -1701,7 +1759,7 @@ simplify_const_ref (gfc_expr *p)
 			 a substring out of it, update the type-spec's
 			 character length according to the first element
 			 (as all should have the same length).  */
-		      int string_len;
+		      gfc_charlen_t string_len;
 		      if ((c = gfc_constructor_first (p->value.constructor)))
 			{
 			  const gfc_expr* first = c->expr;
@@ -1719,7 +1777,7 @@ simplify_const_ref (gfc_expr *p)
 			gfc_free_expr (p->ts.u.cl->length);
 
 		      p->ts.u.cl->length
-			= gfc_get_int_expr (gfc_default_integer_kind,
+			= gfc_get_int_expr (gfc_charlen_int_kind,
 					    NULL, string_len);
 		    }
 		}
@@ -1870,18 +1928,18 @@ gfc_simplify_expr (gfc_expr *p, int type)
       if (gfc_is_constant_expr (p))
 	{
 	  gfc_char_t *s;
-	  int start, end;
+	  HOST_WIDE_INT start, end;
 
 	  start = 0;
 	  if (p->ref && p->ref->u.ss.start)
 	    {
-	      gfc_extract_int (p->ref->u.ss.start, &start);
+	      gfc_extract_hwi (p->ref->u.ss.start, &start);
 	      start--;  /* Convert from one-based to zero-based.  */
 	    }
 
 	  end = p->value.character.length;
 	  if (p->ref && p->ref->u.ss.end)
-	    gfc_extract_int (p->ref->u.ss.end, &end);
+	    gfc_extract_hwi (p->ref->u.ss.end, &end);
 
 	  if (end < start)
 	    end = start;
@@ -1894,7 +1952,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  p->value.character.string = s;
 	  p->value.character.length = end - start;
 	  p->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-	  p->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	  p->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						 NULL,
 						 p->value.character.length);
 	  gfc_free_ref_list (p->ref);

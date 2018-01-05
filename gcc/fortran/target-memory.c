@@ -65,7 +65,7 @@ size_logical (int kind)
 
 
 static size_t
-size_character (int length, int kind)
+size_character (gfc_charlen_t length, int kind)
 {
   int i = gfc_validate_kind (BT_CHARACTER, kind, false);
   return length * gfc_character_kinds[i].bit_size / 8;
@@ -97,9 +97,9 @@ gfc_element_size (gfc_expr *e)
 	       && e->ts.u.cl->length->expr_type == EXPR_CONSTANT
 	       && e->ts.u.cl->length->ts.type == BT_INTEGER)
 	{
-	  int length;
+	  HOST_WIDE_INT length;
 
-	  gfc_extract_int (e->ts.u.cl->length, &length);
+	  gfc_extract_hwi (e->ts.u.cl->length, &length);
 	  return size_character (length, e->ts.kind);
 	}
       else
@@ -217,16 +217,15 @@ encode_logical (int kind, int logical, unsigned char *buffer, size_t buffer_size
 
 
 int
-gfc_encode_character (int kind, int length, const gfc_char_t *string,
+gfc_encode_character (int kind, gfc_charlen_t length, const gfc_char_t *string,
 		      unsigned char *buffer, size_t buffer_size)
 {
   size_t elsize = size_character (1, kind);
   tree type = gfc_get_char_type (kind);
-  int i;
 
   gcc_assert (buffer_size >= size_character (length, kind));
 
-  for (i = 0; i < length; i++)
+  for (size_t i = 0; i < (size_t) length; i++)
     native_encode_expr (build_int_cst (type, string[i]), &buffer[i*elsize],
 			elsize);
 
@@ -438,11 +437,9 @@ int
 gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
 			 gfc_expr *result)
 {
-  int i;
-
   if (result->ts.u.cl && result->ts.u.cl->length)
     result->value.character.length =
-      (int) mpz_get_ui (result->ts.u.cl->length->value.integer);
+      gfc_mpz_get_hwi (result->ts.u.cl->length->value.integer);
 
   gcc_assert (buffer_size >= size_character (result->value.character.length,
 					     result->ts.kind));
@@ -450,7 +447,7 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
     gfc_get_wide_string (result->value.character.length + 1);
 
   if (result->ts.kind == gfc_default_character_kind)
-    for (i = 0; i < result->value.character.length; i++)
+    for (size_t i = 0; i < (size_t) result->value.character.length; i++)
       result->value.character.string[i] = (gfc_char_t) buffer[i];
   else
     {
@@ -459,7 +456,7 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
       mpz_init (integer);
       gcc_assert (bytes <= sizeof (unsigned long));
 
-      for (i = 0; i < result->value.character.length; i++)
+      for (size_t i = 0; i < (size_t) result->value.character.length; i++)
 	{
 	  gfc_conv_tree_to_mpz (integer,
 	    native_interpret_expr (gfc_get_char_type (result->ts.kind),

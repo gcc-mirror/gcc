@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
     * _vptr: A pointer to the vtable entry (see below) of the dynamic type.
 
     Only for unlimited polymorphic classes:
-    * _len:  An integer(4) to store the string length when the unlimited
+    * _len:  An integer(C_SIZE_T) to store the string length when the unlimited
              polymorphic pointer is used to point to a char array.  The '_len'
              component will be zero when no character array is stored in
              '_data'.
@@ -2317,13 +2317,13 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      if (!gfc_add_component (vtype, "_size", &c))
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
-	      c->ts.kind = 4;
+	      c->ts.kind = gfc_size_kind;
 	      c->attr.access = ACCESS_PRIVATE;
 	      /* Remember the derived type in ts.u.derived,
 		 so that the correct initializer can be set later on
 		 (in gfc_conv_structure).  */
 	      c->ts.u.derived = derived;
-	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
+	      c->initializer = gfc_get_int_expr (gfc_size_kind,
 						 NULL, 0);
 
 	      /* Add component _extends.  */
@@ -2685,7 +2685,7 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      if (!gfc_add_component (vtype, "_size", &c))
 		goto cleanup;
 	      c->ts.type = BT_INTEGER;
-	      c->ts.kind = 4;
+	      c->ts.kind = gfc_size_kind;
 	      c->attr.access = ACCESS_PRIVATE;
 
 	      /* Build a minimal expression to make use of
@@ -2696,11 +2696,11 @@ find_intrinsic_vtab (gfc_typespec *ts)
 	      e = gfc_get_expr ();
 	      e->ts = *ts;
 	      e->expr_type = EXPR_VARIABLE;
-	      c->initializer = gfc_get_int_expr (gfc_default_integer_kind,
+	      c->initializer = gfc_get_int_expr (gfc_size_kind,
 						 NULL,
 						 ts->type == BT_CHARACTER
 						 ? ts->kind
-						 : (int)gfc_element_size (e));
+						 : gfc_element_size (e));
 	      gfc_free_expr (e);
 
 	      /* Add component _extends.  */

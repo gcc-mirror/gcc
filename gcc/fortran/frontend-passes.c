@@ -2224,11 +2224,11 @@ optimize_trim (gfc_expr *e)
 
   /* Set the start of the reference.  */
 
-  ref->u.ss.start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+  ref->u.ss.start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
 
   /* Build the function call to len_trim(x, gfc_default_integer_kind).  */
 
-  fcn = get_len_trim_call (gfc_copy_expr (e), gfc_default_integer_kind);
+  fcn = get_len_trim_call (gfc_copy_expr (e), gfc_charlen_int_kind);
 
   /* Set the end of the reference to the call to len_trim.  */
 

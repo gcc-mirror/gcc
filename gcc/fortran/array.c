@@ -2039,7 +2039,7 @@ got_charlen:
       gcc_assert (found_length != -1);
 
       /* Update the character length of the array constructor.  */
-      expr->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+      expr->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						NULL, found_length);
     }
   else

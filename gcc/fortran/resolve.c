@@ -4901,7 +4901,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   if (char_ref->u.ss.start)
     start = gfc_copy_expr (char_ref->u.ss.start);
   else
-    start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+    start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
 
   if (char_ref->u.ss.end)
     end = gfc_copy_expr (char_ref->u.ss.end);
@@ -4924,7 +4924,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   /* Length = (end - start + 1).  */
   e->ts.u.cl->length = gfc_subtract (end, start);
   e->ts.u.cl->length = gfc_add (e->ts.u.cl->length,
-				gfc_get_int_expr (gfc_default_integer_kind,
+				gfc_get_int_expr (gfc_charlen_int_kind,
 						  NULL, 1));
 
   /* F2008, 6.4.1:  Both the starting point and the ending point shall
@@ -5690,13 +5690,13 @@ gfc_resolve_character_operator (gfc_expr *e)
   if (op1->ts.u.cl && op1->ts.u.cl->length)
     e1 = gfc_copy_expr (op1->ts.u.cl->length);
   else if (op1->expr_type == EXPR_CONSTANT)
-    e1 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+    e1 = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 			   op1->value.character.length);
 
   if (op2->ts.u.cl && op2->ts.u.cl->length)
     e2 = gfc_copy_expr (op2->ts.u.cl->length);
   else if (op2->expr_type == EXPR_CONSTANT)
-    e2 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+    e2 = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 			   op2->value.character.length);
 
   e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
@@ -8630,7 +8630,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl->length && !sym->ts.deferred
 	  && target->expr_type == EXPR_CONSTANT)
 	sym->ts.u.cl->length
-	  = gfc_get_int_expr (gfc_default_integer_kind,
+	  = gfc_get_int_expr (gfc_charlen_int_kind,
 			      NULL, target->value.character.length);
     }
 
@@ -8715,7 +8715,6 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_namespace *ns;
   int error = 0;
-  int charlen = 0;
   int rank = 0;
   gfc_ref* ref = NULL;
   gfc_expr *selector_expr = NULL;
@@ -8966,11 +8965,13 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	sprintf (name, "__tmp_type_%s", c->ts.u.derived->name);
       else if (c->ts.type == BT_CHARACTER)
 	{
+	  HOST_WIDE_INT charlen = 0;
 	  if (c->ts.u.cl && c->ts.u.cl->length
 	      && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	    charlen = mpz_get_si (c->ts.u.cl->length->value.integer);
-	  sprintf (name, "__tmp_%s_%d_%d", gfc_basic_typename (c->ts.type),
-	           charlen, c->ts.kind);
+	    charlen = gfc_mpz_get_hwi (c->ts.u.cl->length->value.integer);
+	  snprintf (name, sizeof (name),
+		    "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d",
+		    gfc_basic_typename (c->ts.type), charlen, c->ts.kind);
 	}
       else
 	sprintf (name, "__tmp_%s_%d", gfc_basic_typename (c->ts.type),
@@ -11640,7 +11641,7 @@ resolve_index_expr (gfc_expr *e)
 static bool
 resolve_charlen (gfc_charlen *cl)
 {
-  int i, k;
+  int k;
   bool saved_specification_expr;
 
   if (cl->resolved)
@@ -11676,9 +11677,10 @@ resolve_charlen (gfc_charlen *cl)
 
   /* F2008, 4.4.3.2:  If the character length parameter value evaluates to
      a negative value, the length of character entities declared is zero.  */
-  if (cl->length && !gfc_extract_int (cl->length, &i) && i < 0)
+  if (cl->length && cl->length->expr_type == EXPR_CONSTANT
+      && mpz_sgn (cl->length->value.integer) < 0)
     gfc_replace_expr (cl->length,
-		      gfc_get_int_expr (gfc_default_integer_kind, NULL, 0));
+		      gfc_get_int_expr (gfc_charlen_int_kind, NULL, 0));
 
   /* Check that the character length is not too large.  */
   k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
@@ -15962,7 +15964,7 @@ resolve_equivalence (gfc_equiv *eq)
 		{
 		  ref->type = REF_SUBSTRING;
 		  if (start == NULL)
-		    start = gfc_get_int_expr (gfc_default_integer_kind,
+		    start = gfc_get_int_expr (gfc_charlen_int_kind,
 					      NULL, 1);
 		  ref->u.ss.start = start;
 		  if (end == NULL && e->ts.u.cl)

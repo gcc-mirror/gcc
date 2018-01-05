@@ -2394,7 +2394,7 @@ namelist_write (st_parameter_dt *dtp)
   write_character (dtp, "&", 1, 1, NODELIM);
 
   /* Write namelist name in upper case - f95 std.  */
-  for (i = 0 ;i < dtp->namelist_name_len ;i++ )
+  for (gfc_charlen_type i = 0; i < dtp->namelist_name_len; i++ )
     {
       c = toupper ((int) dtp->namelist_name[i]);
       write_character (dtp, &c, 1 ,1, NODELIM);

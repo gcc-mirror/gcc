@@ -1,3 +1,109 @@
+2018-01-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78534
+	PR fortran/66310
+	* array.c (got_charlen): Use gfc_charlen_int_kind.
+	* class.c (gfc_find_derived_vtab): Use gfc_size_kind instead of
+	hardcoded kind.
+	(find_intrinsic_vtab): Likewise.
+	* decl.c (match_char_length): Use gfc_charlen_int_kind.
+	(add_init_expr_to_sym): Use gfc_charlen_t and gfc_charlen_int_kind.
+	(gfc_match_implicit): Use gfc_charlen_int_kind.
+	* dump-parse-tree.c (show_char_const): Use gfc_charlen_t and size_t.
+	(show_expr): Use HOST_WIDE_INT_PRINT_DEC.
+	* expr.c (gfc_get_character_expr): Length parameter of type
+	gfc_charlen_t.
+	(gfc_get_int_expr): Value argument of type HOST_WIDE_INT.
+	(gfc_extract_hwi): New function.
+	(simplify_const_ref): Make string_len of type gfc_charlen_t.
+	(gfc_simplify_expr): Use HOST_WIDE_INT for substring refs.
+	* frontend-passes.c (optimize_trim): Use gfc_charlen_int_kind.
+	* gfortran.h (gfc_mpz_get_hwi): New prototype.
+	(gfc_mpz_set_hwi): Likewise.
+	(gfc_charlen_t): New typedef.
+	(gfc_expr): Use gfc_charlen_t for character lengths.
+	(gfc_size_kind): New extern variable.
+	(gfc_extract_hwi): New prototype.
+	(gfc_get_character_expr): Use gfc_charlen_t for character length.
+	(gfc_get_int_expr): Use HOST_WIDE_INT type for value argument.
+	* gfortran.texi: Update description of hidden string length argument.
+	* iresolve.c (check_charlen_present): Use gfc_charlen_int_kind.
+	(gfc_resolve_char_achar): Likewise.
+	(gfc_resolve_repeat): Pass string length directly without
+	temporary, use gfc_charlen_int_kind.
+	(gfc_resolve_transfer): Use gfc_charlen_int_kind.
+	* match.c (select_intrinsic_set_tmp): Use HOST_WIDE_INT for charlen.
+	* misc.c (gfc_mpz_get_hwi): New function.
+	(gfc_mpz_set_hwi): New function.
+	* module.c (atom_int): Change type from int to HOST_WIDE_INT.
+	(parse_integer): Don't complain about large integers.
+	(write_atom): Use HOST_WIDE_INT for integers.
+	(mio_integer): Handle integer type mismatch.
+	(mio_hwi): New function.
+	(mio_intrinsic_op): Use HOST_WIDE_INT.
+	(mio_array_ref): Likewise.
+	(mio_expr): Likewise.
+	* primary.c (match_substring): Use gfc_charlen_int_kind.
+	* resolve.c (resolve_substring_charlen): Use gfc_charlen_int_kind.
+	(resolve_character_operator): Likewise.
+	(resolve_assoc_var): Likewise.
+	(resolve_select_type): Use HOST_WIDE_INT for charlen, use snprintf.
+	(resolve_charlen): Use mpz_sgn to determine sign.
+	* simplify.c (gfc_simplify_repeat): Use HOST_WIDE_INT/gfc_charlen_t
+	instead of long.
+	* symbol.c (generate_isocbinding_symbol): Use gfc_charlen_int_kind.
+	* target-memory.c (size_character): Length argument of type
+	gfc_charlen_t.
+	(gfc_encode_character): Likewise.
+	(gfc_interpret_character): Use gfc_charlen_t.
+	* target-memory.h (gfc_encode_character): Modify prototype.
+	* trans-array.c (gfc_trans_array_ctor_element): Use existing type.
+        (get_array_ctor_var_strlen): Use gfc_conv_mpz_to_tree_type.
+	(trans_array_constructor): Use existing type.
+	(get_array_charlen): Likewise.
+	* trans-const.c (gfc_conv_mpz_to_tree_type): New function.
+	* trans-const.h (gfc_conv_mpz_to_tree_type): New prototype.
+	* trans-decl.c (gfc_trans_deferred_vars): Use existing type.
+	(add_argument_checking): Likewise.
+	* trans-expr.c (gfc_class_len_or_zero_get): Build const of type
+	gfc_charlen_type_node.
+	(gfc_conv_intrinsic_to_class): Use gfc_charlen_int_kind instead of
+	4, fold_convert to correct type.
+	(gfc_conv_class_to_class): Build const of type size_type_node for
+	size.
+	(gfc_copy_class_to_class): Likewise.
+	(gfc_conv_string_length): Use same type in expression.
+	(gfc_conv_substring): Likewise, use HOST_WIDE_INT for charlen.
+	(gfc_conv_string_tmp): Make sure len is of the right type.
+	(gfc_conv_concat_op): Use same type in expression.
+	(gfc_conv_procedure_call): Likewise.
+	(fill_with_spaces): Comment out memset() block due to spurious
+	-Wstringop-overflow warnings.
+	(gfc_trans_string_copy): Use gfc_charlen_type_node.
+	(alloc_scalar_allocatable_for_subcomponent_assignment):
+	fold_convert to right type.
+	(gfc_trans_subcomponent_assign): Likewise.
+	(trans_class_vptr_len_assignment): Build const of correct type.
+	(gfc_trans_pointer_assignment): Likewise.
+	(alloc_scalar_allocatable_for_assignment): fold_convert to right
+	type in expr.
+	(trans_class_assignment): Build const of correct type.
+	* trans-intrinsic.c (gfc_conv_associated): Likewise.
+	(gfc_conv_intrinsic_repeat): Do calculation in sizetype.
+	* trans-io.c (gfc_build_io_library_fndecls): Use
+	gfc_charlen_type_node for character lengths.
+	(set_string): Convert to right type in assignment.
+	* trans-stmt.c (gfc_trans_label_assign): Build const of
+	gfc_charlen_type_node.
+	(trans_associate_var): Likewise.
+	(gfc_trans_character_select): Likewise.
+	(gfc_trans_allocate): Likewise, don't typecast strlen result.
+	(gfc_trans_deallocate): Don't typecast strlen result.
+	* trans-types.c (gfc_size_kind): New variable.
+	(gfc_init_types): Determine gfc_charlen_int_kind and gfc_size_kind
+	from size_type_node.
+	* trans-types.h: Fix comment.
+
 2018-01-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83683

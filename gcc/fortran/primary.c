@@ -862,7 +862,7 @@ match_substring (gfc_charlen *cl, int init, gfc_ref **result, bool deferred)
 
       ref->type = REF_SUBSTRING;
       if (start == NULL)
-	start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+	start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
       ref->u.ss.start = start;
       if (end == NULL && cl)
 	end = gfc_copy_expr (cl->length);
