@@ -85,8 +85,28 @@ test01()
   b2.path.clear();
 }
 
+void
+test02()
+{
+  const auto dir = __gnu_test::nonexistent_path();
+  create_directories(dir/"a/b/c");
+  std::uintmax_t n = remove_all(dir/"a");
+  VERIFY( n == 3 );
+  VERIFY( exists(dir) );
+  VERIFY( !exists(dir/"a") );
+
+  n = remove_all(dir/"a");
+  VERIFY( n == 0 );
+  VERIFY( exists(dir) );
+
+  n = remove_all(dir);
+  VERIFY( n == 1 );
+  VERIFY( !exists(dir) );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }
