@@ -431,7 +431,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	streamsize __nbytes = sizeof(_M_get_buf) - _M_unconv;
 	__nbytes = std::min(__nbytes, _M_buf->in_avail());
 	if (__nbytes < 1)
-	  __nbytes == 1;
+	  __nbytes = 1;
 	__nbytes = _M_buf->sgetn(_M_get_buf + _M_unconv, __nbytes);
 	if (__nbytes < 1)
 	  return false;
