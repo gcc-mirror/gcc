@@ -382,10 +382,10 @@ fs::do_copy_file(const char* from, const char* to,
       return false;
     }
 
-  ssize_t n = 0;
   size_t count = from_st->st_size;
 #ifdef _GLIBCXX_USE_SENDFILE
-  n = ::sendfile(out.fd, in.fd, nullptr, count);
+  off_t offset = 0;
+  ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
   if (n < 0 && errno != ENOSYS && errno != EINVAL)
     {
       ec.assign(errno, std::generic_category());
@@ -405,35 +405,32 @@ fs::do_copy_file(const char* from, const char* to,
     count -= n;
 #endif // _GLIBCXX_USE_SENDFILE
 
-  __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-  __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
+  using std::ios;
+  __gnu_cxx::stdio_filebuf<char> sbin(in.fd, ios::in|ios::binary);
+  __gnu_cxx::stdio_filebuf<char> sbout(out.fd, ios::out|ios::binary);
 
   if (sbin.is_open())
     in.fd = -1;
   if (sbout.is_open())
     out.fd = -1;
 
-  const std::streampos errpos(std::streamoff(-1));
-
-  if (n < 0)
+#ifdef _GLIBCXX_USE_SENDFILE
+  if (n != 0)
     {
-      auto p1 = sbin.pubseekoff(0, std::ios_base::beg, std::ios_base::in);
-      auto p2 = sbout.pubseekoff(0, std::ios_base::beg, std::ios_base::out);
+      if (n < 0)
+	n = 0;
+
+      const auto p1 = sbin.pubseekoff(n, ios::beg, ios::in);
+      const auto p2 = sbout.pubseekoff(n, ios::beg, ios::out);
+
+      const std::streampos errpos(std::streamoff(-1));
       if (p1 == errpos || p2 == errpos)
 	{
 	  ec = std::make_error_code(std::errc::io_error);
 	  return false;
 	}
     }
-  else if (n > 0)
-    {
-      auto p = sbout.pubseekoff(n, std::ios_base::beg, std::ios_base::out);
-      if (p == errpos)
-	{
-	  ec = std::make_error_code(std::errc::io_error);
-	  return false;
-	}
-    }
+#endif
 
   if (count && !(std::ostream(&sbout) << &sbin))
     {
