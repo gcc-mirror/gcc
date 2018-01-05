@@ -1,3 +1,9 @@
+2018-01-05  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82439
+	* simplify-rtx.c (simplify_relational_operation_1): Add simplifications
+	of (x|y) == x for BICS pattern.
+
 2018-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83605
