@@ -1,3 +1,8 @@
+2018-01-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-chrec.c (chrec_contains_symbols): Return true for
+	POLY_INT_CST.
+
 2018-01-05  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/82439
