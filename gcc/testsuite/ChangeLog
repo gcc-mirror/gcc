@@ -1,3 +1,10 @@
+2018-01-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-align-4.c: New test.
+	* gcc.dg/vect/vect-nb-iter-ub-2.c (cc): Remove alignment attribute
+	and redefine as a structure with an unaligned member "b".
+	(foo): Update accordingly.
+
 2018-01-05  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/82439
