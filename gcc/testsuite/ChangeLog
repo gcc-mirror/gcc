@@ -1,6 +1,9 @@
 2018-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83604
+	* gcc.target/i386/sse-26.c: New test.
+
+	PR target/83604
 	* gcc.target/i386/pr83604.c: New test.
 
 2018-01-05  Richard Sandiford  <richard.sandiford@linaro.org>

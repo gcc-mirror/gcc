@@ -1,6 +1,47 @@
 2018-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83604
+	* config/i386/i386-builtin.def
+	(__builtin_ia32_vgf2p8affineinvqb_v64qi,
+	__builtin_ia32_vgf2p8affineqb_v64qi, __builtin_ia32_vgf2p8mulb_v64qi):
+	Require also OPTION_MASK_ISA_AVX512F in addition to
+	OPTION_MASK_ISA_GFNI.
+	(__builtin_ia32_vgf2p8affineinvqb_v16qi_mask,
+	__builtin_ia32_vgf2p8affineqb_v16qi_mask): Require
+	OPTION_MASK_ISA_AVX512VL instead of OPTION_MASK_ISA_SSE in addition
+	to OPTION_MASK_ISA_GFNI.
+	(__builtin_ia32_vgf2p8mulb_v32qi_mask): Require
+	OPTION_MASK_ISA_AVX512VL in addition to OPTION_MASK_ISA_GFNI and
+	OPTION_MASK_ISA_AVX512BW.
+	(__builtin_ia32_vgf2p8mulb_v16qi_mask): Require
+	OPTION_MASK_ISA_AVX512VL instead of OPTION_MASK_ISA_AVX512BW in
+	addition to OPTION_MASK_ISA_GFNI.
+	(__builtin_ia32_vgf2p8affineinvqb_v16qi,
+	__builtin_ia32_vgf2p8affineqb_v16qi, __builtin_ia32_vgf2p8mulb_v16qi):
+	Require OPTION_MASK_ISA_SSE2 instead of OPTION_MASK_ISA_SSE in addition
+	to OPTION_MASK_ISA_GFNI.
+	* config/i386/i386.c (def_builtin): Change to builtin isa/isa2 being
+	a requirement for all ISAs rather than any of them with a few
+	exceptions.
+	(ix86_add_new_builtins): Clear OPTION_MASK_ISA_64BIT from isa before
+	processing.
+	(ix86_expand_builtin): Require all ISAs from builtin's isa and isa2
+	bitmasks to be enabled with 3 exceptions, instead of requiring any
+	enabled ISA with lots of exceptions.
+	* config/i386/sse.md (vgf2p8affineinvqb_<mode><mask_name>,
+	vgf2p8affineqb_<mode><mask_name>, vgf2p8mulb_<mode><mask_name>):
+	Change avx512bw in isa attribute to avx512f.
+	* config/i386/sgxintrin.h: Add license boilerplate.
+	* config/i386/vaesintrin.h: Likewise.  Fix macro spelling __AVX512F
+	to __AVX512F__ and __AVX512VL to __AVX512VL__.
+	(_mm256_aesdec_epi128, _mm256_aesdeclast_epi128, _mm256_aesenc_epi128,
+	_mm256_aesenclast_epi128): Enable temporarily avx if __AVX__ is not
+	defined.
+	* config/i386/gfniintrin.h (_mm_gf2p8mul_epi8,
+	_mm_gf2p8affineinv_epi64_epi8, _mm_gf2p8affine_epi64_epi8): Enable
+	temporarily sse2 rather than sse if not enabled already.
+
+	PR target/83604
 	* config/i386/sse.md (VI248_VLBW): Rename to ...
 	(VI248_AVX512VL): ... this.  Don't guard V32HI with TARGET_AVX512BW.
 	(vpshrd_<mode><mask_name>, vpshld_<mode><mask_name>,
