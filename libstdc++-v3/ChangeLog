@@ -1,6 +1,12 @@
 2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-01-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/fs_ops.h (exists(const path&, error_code&))):
+	Only check status_known once.
+
+	Backport from mainline
 	2017-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79283
