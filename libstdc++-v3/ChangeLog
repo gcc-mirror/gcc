@@ -1,5 +1,9 @@
 2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83279
+	* src/filesystem/std-ops.cc  (do_copy_file): Use non-null offset with
+	sendfile.
+
 	PR libstdc++/83626
 	* src/filesystem/ops.cc (remove(const path&, error_code&)): Do not
 	report an error for ENOENT.
