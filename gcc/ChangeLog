@@ -1,3 +1,10 @@
+2018-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83605
+	* gimple-ssa-strength-reduction.c: Include tree-eh.h.
+	(find_candidates_dom_walker::before_dom_children): Ignore stmts that
+	can throw.
+
 2018-01-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (epiphany-*-elf*): Add (epiphany-*-rtems*) configuration.
