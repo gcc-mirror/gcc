@@ -123,6 +123,9 @@ int gfc_intio_kind;
 /* The integer kind used to store character lengths.  */
 int gfc_charlen_int_kind;
 
+/* Kind of internal integer for storing object sizes.  */
+int gfc_size_kind;
+
 /* The size of the numeric storage unit and character storage unit.  */
 int gfc_numeric_storage_size;
 int gfc_character_storage_size;
@@ -1006,14 +1009,17 @@ gfc_init_types (void)
 			wi::mask (n, UNSIGNED,
 				  TYPE_PRECISION (size_type_node)));
 
-
   logical_type_node = gfc_get_logical_type (gfc_default_logical_kind);
   logical_true_node = build_int_cst (logical_type_node, 1);
   logical_false_node = build_int_cst (logical_type_node, 0);
 
-  /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
-  gfc_charlen_int_kind = 4;
+  /* Character lengths are of type size_t, except signed.  */
+  gfc_charlen_int_kind = get_int_kind_from_node (size_type_node);
   gfc_charlen_type_node = gfc_get_int_type (gfc_charlen_int_kind);
+
+  /* Fortran kind number of size_type_node (size_t). This is used for
+     the _size member in vtables.  */
+  gfc_size_kind = get_int_kind_from_node (size_type_node);
 }
 
 /* Get the type node for the given type and kind.  */

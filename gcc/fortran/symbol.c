@@ -4856,7 +4856,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	tmp_sym->value->value.character.string[0]
 	  = (gfc_char_t) c_interop_kinds_table[s].value;
 	tmp_sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						     NULL, 1);
 
 	/* May not need this in both attr and ts, but do need in

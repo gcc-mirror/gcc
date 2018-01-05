@@ -1537,8 +1537,8 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
       esize = size_in_bytes (gfc_get_element_type (TREE_TYPE (desc)));
       esize = fold_convert (gfc_charlen_type_node, esize);
       esize = fold_build2_loc (input_location, TRUNC_DIV_EXPR,
-			   gfc_charlen_type_node, esize,
-			   build_int_cst (gfc_charlen_type_node,
+			       TREE_TYPE (esize), esize,
+			       build_int_cst (TREE_TYPE (esize),
 					  gfc_character_kinds[i].bit_size / 8));
 
       gfc_conv_string_parameter (se);
@@ -2059,8 +2059,7 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	  mpz_init_set_ui (char_len, 1);
 	  mpz_add (char_len, char_len, ref->u.ss.end->value.integer);
 	  mpz_sub (char_len, char_len, ref->u.ss.start->value.integer);
-	  *len = gfc_conv_mpz_to_tree (char_len, gfc_default_integer_kind);
-	  *len = convert (gfc_charlen_type_node, *len);
+	  *len = gfc_conv_mpz_to_tree_type (char_len, gfc_charlen_type_node);
 	  mpz_clear (char_len);
 	  return;
 
@@ -2428,7 +2427,8 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	     set LEN = 0.  */
 	  neg_len = fold_build2_loc (input_location, LT_EXPR,
 				     logical_type_node, ss_info->string_length,
-				     build_int_cst (gfc_charlen_type_node, 0));
+				     build_zero_cst (TREE_TYPE
+						     (ss_info->string_length)));
 	  /* Print a warning if bounds checking is enabled.  */
 	  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
 	    {
@@ -2441,7 +2441,8 @@ trans_array_constructor (gfc_ss * ss, locus * where)
 	  ss_info->string_length
 	    = fold_build3_loc (input_location, COND_EXPR,
 			       gfc_charlen_type_node, neg_len,
-			       build_int_cst (gfc_charlen_type_node, 0),
+			       build_zero_cst
+			       (TREE_TYPE (ss_info->string_length)),
 			       ss_info->string_length);
 	  ss_info->string_length = gfc_evaluate_now (ss_info->string_length,
 						     &length_se.pre);
@@ -6878,8 +6879,8 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
       gfc_add_block_to_block (&se->post, &tse.post);
       tse.expr = fold_convert (gfc_charlen_type_node, tse.expr);
       tse.expr = fold_build2_loc (input_location, MAX_EXPR,
-				  gfc_charlen_type_node, tse.expr,
-				  build_int_cst (gfc_charlen_type_node, 0));
+				  TREE_TYPE (tse.expr), tse.expr,
+				  build_zero_cst (TREE_TYPE (tse.expr)));
       expr->ts.u.cl->backend_decl = tse.expr;
       gfc_free_interface_mapping (&mapping);
       break;

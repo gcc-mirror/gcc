@@ -39,7 +39,7 @@ export_proto_np(PREFIX(gerror));
 void 
 PREFIX(gerror) (char * msg, gfc_charlen_type msg_len)
 {
-  int p_len;
+  gfc_charlen_type p_len;
   char *p;
 
   p = gf_strerror (errno, msg, msg_len);

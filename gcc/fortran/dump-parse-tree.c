@@ -348,12 +348,10 @@ show_constructor (gfc_constructor_base base)
 
 
 static void
-show_char_const (const gfc_char_t *c, int length)
+show_char_const (const gfc_char_t *c, gfc_charlen_t length)
 {
-  int i;
-
   fputc ('\'', dumpfile);
-  for (i = 0; i < length; i++)
+  for (size_t i = 0; i < (size_t) length; i++)
     {
       if (c[i] == '\'')
 	fputs ("''", dumpfile);
@@ -465,7 +463,8 @@ show_expr (gfc_expr *p)
 	  break;
 
 	case BT_HOLLERITH:
-	  fprintf (dumpfile, "%dH", p->representation.length);
+	  fprintf (dumpfile, HOST_WIDE_INT_PRINT_DEC "H",
+		   p->representation.length);
 	  c = p->representation.string;
 	  for (i = 0; i < p->representation.length; i++, c++)
 	    {

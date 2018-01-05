@@ -4280,10 +4280,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		{
 		  tmp = proc_sym->ts.u.cl->passed_length;
 		  tmp = build_fold_indirect_ref_loc (input_location, tmp);
-		  tmp = fold_convert (gfc_charlen_type_node, tmp);
 		  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-					 gfc_charlen_type_node, tmp,
-					 proc_sym->ts.u.cl->backend_decl);
+					 TREE_TYPE (tmp), tmp,
+					 fold_convert
+					 (TREE_TYPE (tmp),
+					  proc_sym->ts.u.cl->backend_decl));
 		}
 	      else
 		tmp = NULL_TREE;
@@ -5840,7 +5841,8 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	    not_0length = fold_build2_loc (input_location, NE_EXPR,
 					   logical_type_node,
 					   cl->passed_length,
-					   build_zero_cst (gfc_charlen_type_node));
+					   build_zero_cst
+					   (TREE_TYPE (cl->passed_length)));
 	    /* The symbol needs to be referenced for gfc_get_symbol_decl.  */
 	    fsym->attr.referenced = 1;
 	    not_absent = gfc_conv_expr_present (fsym);

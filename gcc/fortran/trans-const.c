@@ -206,6 +206,18 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
   return wide_int_to_tree (gfc_get_int_type (kind), val);
 }
 
+
+/* Convert a GMP integer into a tree node of type given by the type
+   argument.  */
+
+tree
+gfc_conv_mpz_to_tree_type (mpz_t i, const tree type)
+{
+  const wide_int val = wi::from_mpz (type, i, true);
+  return wide_int_to_tree (type, val);
+}
+
+
 /* Converts a backend tree into a GMP integer.  */
 
 void

@@ -345,11 +345,11 @@ gfc_build_io_library_fndecls (void)
 
   iocall[IOCALL_X_CHARACTER] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character")), ".wW",
-	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_CHARACTER_WRITE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character_write")), ".wR",
-	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_CHARACTER_WIDE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character_wide")), ".wW",
@@ -852,7 +852,8 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 
       gfc_conv_string_parameter (&se);
       gfc_add_modify (&se.pre, io, fold_convert (TREE_TYPE (io), se.expr));
-      gfc_add_modify (&se.pre, len, se.string_length);
+      gfc_add_modify (&se.pre, len, fold_convert (TREE_TYPE (len),
+						  se.string_length));
     }
 
   gfc_add_block_to_block (block, &se.pre);
