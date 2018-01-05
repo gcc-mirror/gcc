@@ -1,6 +1,17 @@
 2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/iterators/
+	recursive_directory_iterator.cc: Ensure that error_code arguments are
+	cleared when required.
+	* testsuite/experimental/filesystem/operations/create_directory.cc:
+	Remove redundant check.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Ensure that error_code argument is cleared when required.
+
+	Backport from mainline
 	2017-12-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83600

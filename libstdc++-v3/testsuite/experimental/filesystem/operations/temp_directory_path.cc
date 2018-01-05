@@ -43,7 +43,7 @@ test01()
   if (!fs::exists("/tmp"))
     return; // just give up
 
-  std::error_code ec;
+  std::error_code ec = make_error_code(std::errc::invalid_argument);
   fs::path p1 = fs::temp_directory_path(ec);
   VERIFY( !ec );
   VERIFY( exists(p1) );
