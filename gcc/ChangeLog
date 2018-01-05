@@ -1,3 +1,8 @@
+2018-01-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (epiphany-*-elf*): Add (epiphany-*-rtems*) configuration.
+	* config/epiphany/rtems.h: New file.
+
 2018-01-04  Jakub Jelinek  <jakub@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
