@@ -920,19 +920,6 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 	  return true;
 	}
 
-      if (DECL_USER_ALIGN (base))
-	{
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "not forcing alignment of user-aligned "
-			       "variable: ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, base);
-	      dump_printf (MSG_NOTE, "\n");
-	    }
-	  return true;
-	}
-
       /* Force the alignment of the decl.
 	 NOTE: This is the only change to the code we make during
 	 the analysis phase, before deciding to vectorize the loop.  */
