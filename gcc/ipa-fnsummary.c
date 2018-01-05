@@ -1591,13 +1591,14 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 
 struct record_modified_bb_info
 {
+  tree op;
   bitmap bb_set;
   gimple *stmt;
 };
 
 /* Value is initialized in INIT_BB and used in USE_BB.  We want to copute
    probability how often it changes between USE_BB.
-   INIT_BB->frequency/USE_BB->frequency is an estimate, but if INIT_BB
+   INIT_BB->count/USE_BB->count is an estimate, but if INIT_BB
    is in different loop nest, we can do better.
    This is all just estimate.  In theory we look for minimal cut separating
    INIT_BB and USE_BB, but we only want to anticipate loop invariant motion
@@ -1622,12 +1623,25 @@ record_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
     (struct record_modified_bb_info *) data;
   if (SSA_NAME_DEF_STMT (vdef) == info->stmt)
     return false;
+  if (gimple_clobber_p (SSA_NAME_DEF_STMT (vdef)))
+    return false;
   bitmap_set_bit (info->bb_set,
 		  SSA_NAME_IS_DEFAULT_DEF (vdef)
 		  ? ENTRY_BLOCK_PTR_FOR_FN (cfun)->index
 		  : get_minimal_bb
 			 (gimple_bb (SSA_NAME_DEF_STMT (vdef)),
 			  gimple_bb (info->stmt))->index);
+  if (dump_file)
+    {
+      fprintf (dump_file, "     Param ");
+      print_generic_expr (dump_file, info->op, TDF_SLIM);
+      fprintf (dump_file, " changed at bb %i, minimal: %i stmt: ",
+	       gimple_bb (SSA_NAME_DEF_STMT (vdef))->index,
+	       get_minimal_bb
+			 (gimple_bb (SSA_NAME_DEF_STMT (vdef)),
+			  gimple_bb (info->stmt))->index);
+      print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (vdef), 0);
+    }
   return false;
 }
 
@@ -1661,66 +1675,75 @@ param_change_prob (gimple *stmt, int i)
      than the statement defining value, we take the frequency 1/N.  */
   if (TREE_CODE (base) == SSA_NAME)
     {
-      int init_freq;
+      profile_count init_count;
 
-      if (!bb->count.to_frequency (cfun))
+      if (!bb->count.nonzero_p ())
 	return REG_BR_PROB_BASE;
 
       if (SSA_NAME_IS_DEFAULT_DEF (base))
-	init_freq = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun);
+	init_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
       else
-	init_freq = get_minimal_bb
+	init_count = get_minimal_bb
 		      (gimple_bb (SSA_NAME_DEF_STMT (base)),
-		       gimple_bb (stmt))->count.to_frequency (cfun);
+		       gimple_bb (stmt))->count;
 
-      if (!init_freq)
-	init_freq = 1;
-      if (init_freq < bb->count.to_frequency (cfun))
-	return MAX (GCOV_COMPUTE_SCALE (init_freq,
-					bb->count.to_frequency (cfun)), 1);
-      else
-	return REG_BR_PROB_BASE;
+      if (init_count < bb->count)
+        return MAX ((init_count.to_sreal_scale (bb->count)
+		     * REG_BR_PROB_BASE).to_int (), 1);
+      return REG_BR_PROB_BASE;
     }
   else
     {
       ao_ref refd;
-      int max;
+      profile_count max = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
       struct record_modified_bb_info info;
-      bitmap_iterator bi;
-      unsigned index;
       tree init = ctor_for_folding (base);
 
       if (init != error_mark_node)
 	return 0;
-      if (!bb->count.to_frequency (cfun))
+      if (!bb->count.nonzero_p ())
 	return REG_BR_PROB_BASE;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "     Analyzing param change probablity of ");
+          print_generic_expr (dump_file, op, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
       ao_ref_init (&refd, op);
+      info.op = op;
       info.stmt = stmt;
       info.bb_set = BITMAP_ALLOC (NULL);
       walk_aliased_vdefs (&refd, gimple_vuse (stmt), record_modified, &info,
 			  NULL);
       if (bitmap_bit_p (info.bb_set, bb->index))
 	{
+	  if (dump_file)
+	    fprintf (dump_file, "     Set in same BB as used.\n");
 	  BITMAP_FREE (info.bb_set);
 	  return REG_BR_PROB_BASE;
 	}
 
-      /* Assume that every memory is initialized at entry.
-         TODO: Can we easilly determine if value is always defined
-         and thus we may skip entry block?  */
-      if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun))
-	max = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.to_frequency (cfun);
-      else
-	max = 1;
-
+      bitmap_iterator bi;
+      unsigned index;
+      /* Lookup the most frequent update of the value and believe that
+	 it dominates all the other; precise analysis here is difficult.  */
       EXECUTE_IF_SET_IN_BITMAP (info.bb_set, 0, index, bi)
-	max = MIN (max, BASIC_BLOCK_FOR_FN (cfun, index)->count.to_frequency (cfun));
+	max = max.max (BASIC_BLOCK_FOR_FN (cfun, index)->count);
+      if (dump_file)
+	{
+          fprintf (dump_file, "     Set with count ");	
+	  max.dump (dump_file);
+          fprintf (dump_file, " and used with count ");	
+	  bb->count.dump (dump_file);
+          fprintf (dump_file, " freq %f\n",
+		   max.to_sreal_scale (bb->count).to_double ());	
+	}
 
       BITMAP_FREE (info.bb_set);
-      if (max < bb->count.to_frequency (cfun))
-	return MAX (GCOV_COMPUTE_SCALE (max, bb->count.to_frequency (cfun)), 1);
-      else
-	return REG_BR_PROB_BASE;
+      if (max < bb->count)
+        return MAX ((max.to_sreal_scale (bb->count)
+		     * REG_BR_PROB_BASE).to_int (), 1);
+      return REG_BR_PROB_BASE;
     }
 }
 
