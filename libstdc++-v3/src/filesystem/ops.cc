@@ -443,48 +443,68 @@ namespace
 	return false;
       }
 
+    size_t count = from_st->st_size;
 #ifdef _GLIBCXX_USE_SENDFILE
     off_t offset = 0;
-    const auto n = ::sendfile(out.fd, in.fd, &offset, from_st->st_size);
-    if (n < 0 && (errno == ENOSYS || errno == EINVAL))
+    ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
+    if (n < 0 && errno != ENOSYS && errno != EINVAL)
       {
-#endif
-	__gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-	__gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
-	if (sbin.is_open())
-	  in.fd = -1;
-	if (sbout.is_open())
-	  out.fd = -1;
-	if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
-	  {
-	    ec = std::make_error_code(std::errc::io_error);
-	    return false;
-	  }
-	if (!sbout.close() || !sbin.close())
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
+    if ((size_t)n == count)
+      {
+	if (!out.close() || !in.close())
 	  {
 	    ec.assign(errno, std::generic_category());
 	    return false;
 	  }
-
 	ec.clear();
 	return true;
+      }
+    else if (n > 0)
+      count -= n;
+#endif // _GLIBCXX_USE_SENDFILE
+
+    using std::ios;
+    __gnu_cxx::stdio_filebuf<char> sbin(in.fd, ios::in|ios::binary);
+    __gnu_cxx::stdio_filebuf<char> sbout(out.fd, ios::out|ios::binary);
+
+    if (sbin.is_open())
+      in.fd = -1;
+    if (sbout.is_open())
+      out.fd = -1;
 
 #ifdef _GLIBCXX_USE_SENDFILE
-      }
-    if (n != from_st->st_size)
+    if (n != 0)
       {
-	ec.assign(errno, std::generic_category());
-	return false;
-      }
-    if (!out.close() || !in.close())
-      {
-	ec.assign(errno, std::generic_category());
-	return false;
-      }
+	if (n < 0)
+	  n = 0;
 
+	const auto p1 = sbin.pubseekoff(n, ios::beg, ios::in);
+	const auto p2 = sbout.pubseekoff(n, ios::beg, ios::out);
+
+	const std::streampos errpos(std::streamoff(-1));
+	if (p1 == errpos || p2 == errpos)
+	  {
+	    ec = std::make_error_code(std::errc::io_error);
+	    return false;
+	  }
+      }
+#endif
+
+    if (count && !(std::ostream(&sbout) << &sbin))
+      {
+	ec = std::make_error_code(std::errc::io_error);
+	return false;
+      }
+    if (!sbout.close() || !sbin.close())
+      {
+	ec.assign(errno, std::generic_category());
+	return false;
+      }
     ec.clear();
     return true;
-#endif
   }
 }
 #endif
