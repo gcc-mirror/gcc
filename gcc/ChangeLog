@@ -1,3 +1,14 @@
+2018-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83604
+	* config/i386/sse.md (VI248_VLBW): Rename to ...
+	(VI248_AVX512VL): ... this.  Don't guard V32HI with TARGET_AVX512BW.
+	(vpshrd_<mode><mask_name>, vpshld_<mode><mask_name>,
+	vpshrdv_<mode>, vpshrdv_<mode>_mask, vpshrdv_<mode>_maskz,
+	vpshrdv_<mode>_maskz_1, vpshldv_<mode>, vpshldv_<mode>_mask,
+	vpshldv_<mode>_maskz, vpshldv_<mode>_maskz_1): Use VI248_AVX512VL
+	mode iterator instead of VI248_VLBW.
+
 2018-01-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c (record_modified_bb_info): Add OP.
