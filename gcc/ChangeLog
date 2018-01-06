@@ -1,3 +1,8 @@
+2018-01-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lra-constraints.c (process_alt_operands): Test for the equivalence
+	substitutions when detecting a possible reload cycle.
+
 2018-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83480

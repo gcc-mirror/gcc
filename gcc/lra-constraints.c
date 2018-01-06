@@ -2866,7 +2866,12 @@ process_alt_operands (int only_alternative)
 		  /* If it is a result of recent elimination in move
 		     insn we can transform it into an add still by
 		     using this alternative.  */
-		  && GET_CODE (no_subreg_reg_operand[1]) != PLUS)))
+		  && GET_CODE (no_subreg_reg_operand[1]) != PLUS
+		  /* Likewise if the source has been replaced with an
+		     equivalent value.  This only happens once -- the reload
+		     will use the equivalent value instead of the register it
+		     replaces -- so there should be no danger of cycling.  */
+		  && !equiv_substition_p[1])))
 	{
 	  /* We have a move insn and a new reload insn will be similar
 	     to the current insn.  We should avoid such situation as
