@@ -1535,8 +1535,9 @@ process_options (void)
     flag_var_tracking_uninit = flag_var_tracking;
 
   if (flag_var_tracking_assignments == AUTODETECT_VALUE)
-    flag_var_tracking_assignments = flag_var_tracking
-      && !(flag_selective_scheduling || flag_selective_scheduling2);
+    flag_var_tracking_assignments
+      = (flag_var_tracking
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
   if (flag_var_tracking_assignments_toggle)
     flag_var_tracking_assignments = !flag_var_tracking_assignments;
@@ -1550,8 +1551,12 @@ process_options (void)
 		"var-tracking-assignments changes selective scheduling");
 
   if (debug_nonbind_markers_p == AUTODETECT_VALUE)
-    debug_nonbind_markers_p = optimize && debug_info_level >= DINFO_LEVEL_NORMAL
-      && (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG);
+    debug_nonbind_markers_p
+      = (optimize
+	 && debug_info_level >= DINFO_LEVEL_NORMAL
+	 && (write_symbols == DWARF2_DEBUG
+	     || write_symbols == VMS_AND_DWARF2_DEBUG)
+	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
   if (flag_tree_cselim == AUTODETECT_VALUE)
     {
