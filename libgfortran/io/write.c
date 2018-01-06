@@ -2372,7 +2372,6 @@ void
 namelist_write (st_parameter_dt *dtp)
 {
   namelist_info *t1, *t2, *dummy = NULL;
-  index_type i;
   index_type dummy_offset = 0;
   char c;
   char *dummy_name = NULL;
