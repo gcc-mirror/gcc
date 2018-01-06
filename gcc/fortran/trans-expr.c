@@ -8392,7 +8392,9 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       if (expr1->ts.deferred)
 	{
 	  if (expr2->expr_type != EXPR_NULL && lse.string_length != NULL)
-	    gfc_add_modify (&block, lse.string_length, rse.string_length);
+	    gfc_add_modify (&block, lse.string_length,
+			    fold_convert (TREE_TYPE (lse.string_length),
+					  rse.string_length));
 	  else if (lse.string_length != NULL)
 	    gfc_add_modify (&block, lse.string_length,
 			    build_zero_cst (TREE_TYPE (lse.string_length)));
