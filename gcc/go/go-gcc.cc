@@ -633,7 +633,7 @@ Gcc_backend::Gcc_backend()
 						     NULL_TREE);
   tree math_function_type_long =
     build_function_type_list(long_double_type_node, long_double_type_node,
-			     long_double_type_node, NULL_TREE);
+			     NULL_TREE);
   tree math_function_type_two = build_function_type_list(double_type_node,
 							 double_type_node,
 							 double_type_node,
