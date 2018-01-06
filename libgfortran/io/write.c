@@ -1358,9 +1358,9 @@ write_integer (st_parameter_dt *dtp, const char *source, int kind)
 #define NODELIM 0
 
 static void
-write_character (st_parameter_dt *dtp, const char *source, int kind, int length, int mode)
+write_character (st_parameter_dt *dtp, const char *source, int kind, size_t length, int mode)
 {
-  int i, extra;
+  size_t extra;
   char *p, d;
 
   if (mode == DELIM)
@@ -1389,7 +1389,7 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length,
 	{
 	  extra = 2;
 
-	  for (i = 0; i < length; i++)
+	  for (size_t i = 0; i < length; i++)
 	    if (source[i] == d)
 	      extra++;
 	}
@@ -1409,7 +1409,7 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length,
 	    {
 	      *p4++ = d4;
 
-	      for (i = 0; i < length; i++)
+	      for (size_t i = 0; i < length; i++)
 		{
 		  *p4++ = (gfc_char4_t) source[i];
 		  if (source[i] == d)
@@ -1427,7 +1427,7 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length,
 	{
 	  *p++ = d;
 
-	  for (i = 0; i < length; i++)
+	  for (size_t i = 0; i < length; i++)
             {
               *p++ = source[i];
               if (source[i] == d)
