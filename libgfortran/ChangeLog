@@ -1,3 +1,28 @@
+2019-01-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78534
+	* intrinsics/args.c (getarg_i4): Use gfc_charlen_type.
+	(get_command_argument_i4): Likewise.
+	(get_command_i4): Likewise.
+	* intrinsics/chmod.c (chmod_internal): Likewise.
+	* intrinsics/env.c (get_environment_variable_i4): Likewise.
+	* intrinsics/extends_type_of.c (struct vtype): Use size_t for size
+	member.
+	* intrinsics/gerror.c (gerror): Use gfc_charlen_type.
+	* intrinsics/getlog.c (getlog): Likewise.
+	* intrinsics/hostnm.c (hostnm_0): Likewise.
+	* intrinsics/string_intrinsics_inc.c (string_len_trim): Rework to
+	work if gfc_charlen_type is unsigned.
+	(string_scan): Likewise.
+	* io/transfer.c (transfer_character): Modify prototype.
+	(transfer_character_write): Likewise.
+	(transfer_character_wide): Likewise.
+	(transfer_character_wide_write): Likewise.
+	(transfer_array): Typecast to avoid signed-unsigned comparison.
+	* io/unit.c (is_trim_ok): Use gfc_charlen_type.
+	* io/write.c (namelist_write): Likewise.
+	* libgfortran.h (gfc_charlen_type): Change typedef to size_t.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
