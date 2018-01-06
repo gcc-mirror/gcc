@@ -1,5 +1,8 @@
 2018-01-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/83480
+	* gcc.dg/pr83480.c: New test.
+
 	PR rtl-optimization/83682
 	* gcc.target/i386/pr83682.c: New test.
 
