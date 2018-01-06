@@ -1,5 +1,10 @@
 2018-01-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/83682
+	* rtl.h (const_vec_duplicate_p): Only return true for VEC_DUPLICATE
+	if it has non-VECTOR_MODE element mode.
+	(vec_duplicate_p): Likewise.
+
 	PR middle-end/83694
 	* cfgexpand.c (expand_debug_expr): Punt if mode1 is VOIDmode
 	and bitsize might be greater than MAX_BITSIZE_MODE_ANY_INT.
