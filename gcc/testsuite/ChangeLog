@@ -1,3 +1,8 @@
+2018-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/83682
+	* gcc.target/i386/pr83682.c: New test.
+
 2018-01-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/78534

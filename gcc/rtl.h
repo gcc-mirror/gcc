@@ -2969,7 +2969,9 @@ const_vec_duplicate_p (T x, T *elt)
       *elt = CONST_VECTOR_ENCODED_ELT (x, 0);
       return true;
     }
-  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
+  if (GET_CODE (x) == CONST
+      && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE
+      && !VECTOR_MODE_P (GET_MODE (XEXP (XEXP (x, 0), 0))))
     {
       *elt = XEXP (XEXP (x, 0), 0);
       return true;
@@ -2984,7 +2986,8 @@ template <typename T>
 inline bool
 vec_duplicate_p (T x, T *elt)
 {
-  if (GET_CODE (x) == VEC_DUPLICATE)
+  if (GET_CODE (x) == VEC_DUPLICATE
+      && !VECTOR_MODE_P (GET_MODE (XEXP (x, 0))))
     {
       *elt = XEXP (x, 0);
       return true;
