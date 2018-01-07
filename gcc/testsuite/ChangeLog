@@ -1,3 +1,9 @@
+2018-01-06  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83640
+	* gcc.dg/Wrestrict-6.c: New test.
+	* gcc.dg/pr83640.c: New test.
+
 2018-01-06  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/aarch64/reg-alloc-1.c: New test.
