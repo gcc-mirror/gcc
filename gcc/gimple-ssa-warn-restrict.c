@@ -698,9 +698,10 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
 
 	  /* For string functions, adjust the size range of the source
 	     reference by the inverse boundaries of the offset (because
-	     the higher  the offset into the string the shorter its
+	     the higher the offset into the string the shorter its
 	     length).  */
-	  if (srcref->offrange[1] < srcref->sizrange[0])
+	  if (srcref->offrange[1] >= 0
+	      && srcref->offrange[1] < srcref->sizrange[0])
 	    srcref->sizrange[0] -= srcref->offrange[1];
 	  else
 	    srcref->sizrange[0] = 0;
@@ -1134,30 +1135,53 @@ builtin_access::overlap ()
   if (!dstref->base || !srcref->base)
     return false;
 
-  /* If the base object is an array adjust the lower bound of the offset
-     to be non-negative.  */
+  /* Set the access offsets.  */
+  acs.dstoff[0] = dstref->offrange[0];
+  acs.dstoff[1] = dstref->offrange[1];
+
+  /* If the base object is an array adjust the bounds of the offset
+     to be non-negative and within the bounds of the array if possible.  */
   if (dstref->base
       && TREE_CODE (TREE_TYPE (dstref->base)) == ARRAY_TYPE)
-    acs.dstoff[0] = wi::smax (dstref->offrange[0], 0);
-  else
-    acs.dstoff[0] = dstref->offrange[0];
+    {
+      if (acs.dstoff[0] < 0 && acs.dstoff[1] >= 0)
+	acs.dstoff[0] = 0;
 
-  acs.dstoff[1] = dstref->offrange[1];
+      if (acs.dstoff[1] < acs.dstoff[0])
+	{
+	  if (tree size = TYPE_SIZE_UNIT (TREE_TYPE (dstref->base)))
+	    acs.dstoff[1] = wi::umin (acs.dstoff[1], wi::to_offset (size));
+	  else
+	    acs.dstoff[1] = wi::umin (acs.dstoff[1], maxobjsize);
+	}
+    }
+
+  acs.srcoff[0] = srcref->offrange[0];
+  acs.srcoff[1] = srcref->offrange[1];
 
   if (srcref->base
       && TREE_CODE (TREE_TYPE (srcref->base)) == ARRAY_TYPE)
-    acs.srcoff[0] = wi::smax (srcref->offrange[0], 0);
-  else
-    acs.srcoff[0] = srcref->offrange[0];
+    {
+      if (acs.srcoff[0] < 0 && acs.srcoff[1] >= 0)
+	acs.srcoff[0] = 0;
 
-  acs.srcoff[1] = srcref->offrange[1];
+      if (tree size = TYPE_SIZE_UNIT (TREE_TYPE (srcref->base)))
+	acs.srcoff[1] = wi::umin (acs.srcoff[1], wi::to_offset (size));
+      else if (acs.srcoff[1] < acs.srcoff[0])
+	acs.srcoff[1] = wi::umin (acs.srcoff[1], maxobjsize);
+    }
 
-  /* When the lower bound of the offset is less that the upper bound
-     disregard it and use the inverse of the maximum object size
-     instead.  The upper bound is the result of a negative offset
-     being represented as a large positive value.  */
+  /* When the upper bound of the offset is less than the lower bound
+     the former is the result of a negative offset being represented
+     as a large positive value or vice versa.  The resulting range is
+     a union of two subranges: [MIN, UB] and [LB, MAX].  Since such
+     a union is not representable using the current data structure
+     replace it with the full range of offsets.  */
   if (acs.dstoff[1] < acs.dstoff[0])
-    acs.dstoff[0] = -maxobjsize;
+    {
+      acs.dstoff[0] = -maxobjsize - 1;
+      acs.dstoff[1] = maxobjsize;
+    }
 
   /* Validate the offset and size of each reference on its own first.
      This is independent of whether or not the base objects are the
@@ -1173,7 +1197,10 @@ builtin_access::overlap ()
 
   /* Repeat the same as above but for the source offsets.  */
   if (acs.srcoff[1] < acs.srcoff[0])
-    acs.srcoff[0] = -maxobjsize;
+    {
+      acs.srcoff[0] = -maxobjsize - 1;
+      acs.srcoff[1] = maxobjsize;
+    }
 
   maxoff = acs.srcoff[0] + srcref->sizrange[0];
   if (maxobjsize < maxoff)
