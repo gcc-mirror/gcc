@@ -235,7 +235,7 @@ write_utf8_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
    is set to the appropriate size to allocate.  */
 
 static void
-write_check_cc (st_parameter_dt *dtp, const char **source, int *alloc_len)
+write_check_cc (st_parameter_dt *dtp, const char **source, size_t *alloc_len)
 {
   /* Only valid for CARRIAGECONTROL=FORTRAN.  */
   if (dtp->u.p.current_unit->flags.cc != CC_FORTRAN
@@ -311,7 +311,7 @@ write_check_cc (st_parameter_dt *dtp, const char **source, int *alloc_len)
    after the start-of-record string was inserted.  */
 
 static char *
-write_cc (st_parameter_dt *dtp, char *p, int *source_len)
+write_cc (st_parameter_dt *dtp, char *p, size_t *source_len)
 {
   /* Only valid for CARRIAGECONTROL=FORTRAN.  */
   if (dtp->u.p.current_unit->flags.cc != CC_FORTRAN || source_len == NULL)
@@ -360,14 +360,15 @@ write_cc (st_parameter_dt *dtp, char *p, int *source_len)
 }
 
 void
-write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
+
+write_a (st_parameter_dt *dtp, const fnode *f, const char *source, size_t len)
 {
-  int wlen;
+  size_t wlen;
   char *p;
 
   wlen = f->u.string.length < 0
 	 || (f->format == FMT_G && f->u.string.length == 0)
-	 ? len : f->u.string.length;
+    ? len : (size_t) f->u.string.length;
 
 #ifdef HAVE_CRLF
   /* If this is formatted STREAM IO convert any embedded line feed characters
@@ -376,7 +377,7 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
   if (is_stream_io (dtp))
     {
       const char crlf[] = "\r\n";
-      int i, q, bytes;
+      size_t q, bytes;
       q = bytes = 0;
 
       /* Write out any padding if needed.  */
@@ -389,7 +390,7 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 	}
 
       /* Scan the source string looking for '\n' and convert it if found.  */
-      for (i = 0; i < wlen; i++)
+      for (size_t i = 0; i < wlen; i++)
 	{
 	  if (source[i] == '\n')
 	    {
@@ -471,14 +472,14 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
    to the UTF-8 encoded string before writing out.  */
 
 void
-write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
+write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, size_t len)
 {
-  int wlen;
+  size_t wlen;
   gfc_char4_t *q;
 
   wlen = f->u.string.length < 0
 	 || (f->format == FMT_G && f->u.string.length == 0)
-	 ? len : f->u.string.length;
+    ? len : (size_t) f->u.string.length;
 
   q = (gfc_char4_t *) source;
 #ifdef HAVE_CRLF
@@ -488,7 +489,7 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
   if (is_stream_io (dtp))
     {
       const gfc_char4_t crlf[] = {0x000d,0x000a};
-      int i, bytes;
+      size_t bytes;
       gfc_char4_t *qq;
       bytes = 0;
 
@@ -504,7 +505,7 @@ write_a_char4 (st_parameter_dt *dtp, const fnode *f, const char *source, int len
 
       /* Scan the source string looking for '\n' and convert it if found.  */
       qq = (gfc_char4_t *) source;
-      for (i = 0; i < wlen; i++)
+      for (size_t i = 0; i < wlen; i++)
 	{
 	  if (qq[i] == '\n')
 	    {
