@@ -1,3 +1,19 @@
+2018-01-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/81897
+	* tree-ssa-uninit.c (compute_control_dep_chain): Do not bail on
+	basic blocks with a small number of successors.
+	(convert_control_dep_chain_into_preds): Improve handling of
+	forwarder blocks.
+	(dump_predicates): Split apart into...
+	(dump_pred_chain): ...here...
+	(dump_pred_info): ...and here.
+	(can_one_predicate_be_invalidated_p): Add debugging printfs.
+	(can_chain_union_be_invalidated_p): Improve check for invalidation
+	of paths.
+	(uninit_uses_cannot_happen): Avoid unnecessary if
+	convert_control_dep_chain_into_preds yielded nothing.
+
 2018-01-06  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83640
