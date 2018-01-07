@@ -1430,8 +1430,8 @@ alpha_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno, int *total,
     case MINUS:
       if (float_mode_p)
 	*total = cost_data->fp_add;
-      else if (GET_CODE (XEXP (x, 0)) == MULT
-	       && const48_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
+      else if (GET_CODE (XEXP (x, 0)) == ASHIFT
+	       && const23_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
 	{
 	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0), mode,
 			      (enum rtx_code) outer_code, opno, speed)
@@ -2929,8 +2929,8 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
 	  add_op = GEN_INT (f);
 	  if (sext_add_operand (add_op, mode))
 	    {
-	      tmp = gen_rtx_MULT (DImode, copy_rtx (subtarget),
-				  GEN_INT (diff));
+	      tmp = gen_rtx_ASHIFT (DImode, copy_rtx (subtarget),
+				    GEN_INT (exact_log2 (diff)));
 	      tmp = gen_rtx_PLUS (DImode, tmp, add_op);
 	      emit_insn (gen_rtx_SET (target, tmp));
 	    }
