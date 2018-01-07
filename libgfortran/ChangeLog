@@ -1,3 +1,74 @@
+2018-01-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78534
+	PR fortran/83704
+	* io/fbuf.c (fbuf_init): Use size_t instead of int for length.
+	(fbuf_debug): Convert debug output to unsigned long.
+	(fbuf_reset): Use ptrdiff_t for return value.
+	(fbuf_alloc): Use size_t for length argument.
+	(fbuf_flush): Handle large buffers.
+	(fbuf_flush_list): Likewise.
+	(fbuf_seek): Use ptrdiff_t for offset and return value.
+	(fbuf_read): Use size_t for length argument.
+	(fbuf_getc_refill): Use size_t to match fbuf_read.
+	* io/fbuf.h (struct fbuf): Use size_t for lengths.
+	(fbuf_init): Use size_t instead of int for length.
+	(fbuf_reset): Use ptrdiff_t for return value.
+	(fbuf_alloc): Use size_t for length argument.
+	(fbuf_seek): Use ptrdiff_t for offset and return value.
+	(fbuf_read): Use size_t for length argument.
+	* io/io.h (read_block_form): Likewise.
+	(read_block_form4): Likewise.
+	(write_block): Likewise.
+	(read_a): Likewise.
+	(read_a_char4): Likewise.
+	(read_x): Likewise.
+	(write_a): Likewise.
+	(write_a_char4): Likewise.
+	* io/list_read.c (list_formatted_read_scalar): Use size_t to
+	handle large buffers.
+	* io/read.c (read_l): Likewise.
+	(read_utf8): Likewise.
+	(read_utf8_char1): Likewise.
+	(read_default_char1): Likewise.
+	(read_utf8_char4): Likewise.
+	(read_default_char4): Likewise.
+	(read_a): Likewise.
+	(read_a_char4): Likewise.
+	(eat_leading_spaces): Likewise.
+	(next_char): Likewise.
+	(read_decimal): Likewise.
+	(read_radix): Likewise.
+	(read_f): Likewise.
+	(read_x): Likewise.
+	* io/transfer.c (read_sf_internal): Likewise.
+	(read_sf): Likewise.
+	(read_block_form): Likewise.
+	(read_block_form4): Likewise.
+	(write_block): Likewise.
+	(formatted_transfer_scalar_write): Likewise.
+	(next_record_w): Likewise.
+	* io/unix.c (mem_alloc_r): Likewise.
+	(mem_alloc_r4): Likewise.
+	(mem_alloc_w): Likewise.
+	(mem_alloc_w4): Likewise.
+	(mem_read): Likewise.
+	(mem_read4): Likewise.
+	(mem_write): Likewise.
+	(mem_write4): Likewise.
+	(open_internal): Likewise.
+	(open_internal4): Likewise.
+	* io/unix.h (open_internal): Likewise.
+	(open_internal4): Likewise.
+	(mem_alloc_w): Likewise.
+	(mem_alloc_r): Likewise.
+	(mem_alloc_w4): Likewise.
+	(mem_alloc_r4): Likewise.
+	* io/write.c (write_check_cc): Likewise.
+	(write_cc): Likewise.
+	(write_a): Likewise.
+	(write_a_char4): Likewise.
+
 2018-01-06  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/write.c (namelist_write): Remove unused variable "i".

@@ -2100,7 +2100,8 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 			    int kind, size_t size)
 {
   gfc_char4_t *q, *r;
-  int c, i, m;
+  size_t m;
+  int c;
   int err = 0;
 
   /* Set the next_char and push_char worker functions.  */
@@ -2255,20 +2256,20 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
     case BT_CHARACTER:
       if (dtp->u.p.saved_string)
 	{
-	  m = ((int) size < dtp->u.p.saved_used)
-	      ? (int) size : dtp->u.p.saved_used;
+	  m = (size < (size_t) dtp->u.p.saved_used)
+	    ? size : (size_t) dtp->u.p.saved_used;
 
 	  q = (gfc_char4_t *) p;
 	  r = (gfc_char4_t *) dtp->u.p.saved_string;
 	  if (dtp->u.p.current_unit->flags.encoding == ENCODING_UTF8)
-	    for (i = 0; i < m; i++)
+	    for (size_t i = 0; i < m; i++)
 	      *q++ = *r++;
 	  else
 	    {
 	      if (kind == 1)
 		memcpy (p, dtp->u.p.saved_string, m);
 	      else
-		for (i = 0; i < m; i++)
+		for (size_t i = 0; i < m; i++)
 		  *q++ = *r++;
 	    }
 	}
@@ -2276,14 +2277,14 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	/* Just delimiters encountered, nothing to copy but SPACE.  */
         m = 0;
 
-      if (m < (int) size)
+      if (m < size)
 	{
 	  if (kind == 1)
 	    memset (((char *) p) + m, ' ', size - m);
 	  else
 	    {
 	      q = (gfc_char4_t *) p;
-	      for (i = m; i < (int) size; i++)
+	      for (size_t i = m; i < size; i++)
 		q[i] = (unsigned char) ' ';
 	    }
 	}
