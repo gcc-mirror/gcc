@@ -1738,16 +1738,10 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	      return target;
 	    }
 	}
-      /* Using subregs is useful if we're extracting the least-significant
-	 vector element, or if we're extracting one register vector from
-	 a multi-register vector.  extract_bit_field_as_subreg checks
-	 for valid bitsize and bitnum, so we don't need to do that here.
-
-	 The mode check makes sure that we're extracting either
-	 a single element or a subvector with the same element type.
-	 If the modes aren't such a natural fit, fall through and
-	 bitcast to integers first.  */
-      if (GET_MODE_INNER (mode) == innermode)
+      /* Using subregs is useful if we're extracting one register vector
+	 from a multi-register vector.  extract_bit_field_as_subreg checks
+	 for valid bitsize and bitnum, so we don't need to do that here.  */
+      if (VECTOR_MODE_P (mode))
 	{
 	  rtx sub = extract_bit_field_as_subreg (mode, op0, bitsize, bitnum);
 	  if (sub)
