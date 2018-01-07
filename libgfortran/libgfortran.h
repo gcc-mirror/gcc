@@ -413,6 +413,17 @@ typedef gfc_array_i4 gfc_array_s4;
 
 #define GFC_DTYPE_TYPE_SIZE(desc) ((desc)->dtype & GFC_DTYPE_TYPE_SIZE_MASK)
 
+/* Macros to set size and type information.  */
+
+#define GFC_DTYPE_COPY(a,b) do { (a)->dtype = (b)->dtype; } while(0)
+#define GFC_DTYPE_COPY_SETRANK(a,b,n) \
+  do { \
+  (a)->dtype = (((b)->dtype & ~GFC_DTYPE_RANK_MASK) | n ); \
+  } while (0)
+
+#define GFC_DTYPE_IS_UNSET(a) (unlikely((a)->dtype == 0))
+#define GFC_DTYPE_CLEAR(a) do { (a)->dtype = 0; } while(0)
+
 #define GFC_DTYPE_INTEGER_1 ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_INTEGER_1) << GFC_DTYPE_SIZE_SHIFT))
 #define GFC_DTYPE_INTEGER_2 ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT) \

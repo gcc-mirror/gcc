@@ -118,7 +118,7 @@ reshape_r8 (gfc_array_r8 * const restrict ret,
         alloc_size = rs;
 
       ret->base_addr = xmallocarray (alloc_size, sizeof (GFC_REAL_8));
-      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
+      GFC_DTYPE_COPY_SETRANK(ret,source,rdim);
     }
 
   if (shape_empty)

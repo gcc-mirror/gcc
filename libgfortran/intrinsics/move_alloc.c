@@ -46,7 +46,7 @@ move_alloc (gfc_array_char * from, gfc_array_char * to)
     }
 
   to->offset = from->offset;
-  to->dtype = from->dtype;
+  GFC_DTYPE_COPY(to,from);
   to->base_addr = from->base_addr;
   from->base_addr = NULL;
 }
