@@ -578,7 +578,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
     }
 
   memset (&tmp, 0, sizeof (tmp));
-  tmp.dtype = 0;
+  GFC_DTYPE_CLEAR(&tmp);
   tmp.base_addr = field;
   unpack_internal (ret, vector, mask, &tmp, GFC_DESCRIPTOR_SIZE (vector));
 }
@@ -602,7 +602,7 @@ unpack0_char (gfc_array_char *ret,
     unpack_bounds (ret, vector, mask, NULL);
 
   memset (&tmp, 0, sizeof (tmp));
-  tmp.dtype = 0;
+  GFC_DTYPE_CLEAR(&tmp);
   tmp.base_addr = field;
   unpack_internal (ret, vector, mask, &tmp, vector_length);
 }
@@ -626,7 +626,7 @@ unpack0_char4 (gfc_array_char *ret,
     unpack_bounds (ret, vector, mask, NULL);
 
   memset (&tmp, 0, sizeof (tmp));
-  tmp.dtype = 0;
+  GFC_DTYPE_CLEAR(&tmp);
   tmp.base_addr = field;
   unpack_internal (ret, vector, mask, &tmp,
 		   vector_length * sizeof (gfc_char4_t));

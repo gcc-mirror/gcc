@@ -100,7 +100,7 @@ product_i1 (gfc_array_i1 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -287,7 +287,7 @@ mproduct_i1 (gfc_array_i1 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       if (alloc_size == 0)
 	{
@@ -446,7 +446,7 @@ sproduct_i1 (gfc_array_i1 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
