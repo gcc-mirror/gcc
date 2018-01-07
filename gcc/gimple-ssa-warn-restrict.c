@@ -1371,8 +1371,6 @@ maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
       return true;
     }
 
-  /* Issue "may overlap" diagnostics below.  */
-
   /* Use more concise wording when one of the offsets is unbounded
      to avoid confusing the user with large and mostly meaningless
      numbers.  */
