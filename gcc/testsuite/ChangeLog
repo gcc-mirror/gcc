@@ -1,3 +1,7 @@
+2018-01-08  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Xfail scan for nvptx.
+
 2018-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83685

@@ -25,4 +25,4 @@ foo ()
    but the loop reads only one element at a time, and DOM cannot resolve these.
    The same happens on powerpc depending on the SIMD support available.  */
 
-/* { dg-final { scan-tree-dump "return 28;" "optimized" { xfail { { alpha*-*-* hppa*64*-*-* } || { lp64 && { powerpc*-*-* sparc*-*-* riscv*-*-* } } } } } } */
+/* { dg-final { scan-tree-dump "return 28;" "optimized" { xfail { { alpha*-*-* hppa*64*-*-* nvptx*-*-* } || { lp64 && { powerpc*-*-* sparc*-*-* riscv*-*-* } } } } } } */
