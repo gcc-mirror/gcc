@@ -1,3 +1,11 @@
+2018-01-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backport from mainline
+	2018-01-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.host (epiphany-*-elf*): Add (epiphany-*-rtems*)
+	configuration.
+
 2017-11-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline
