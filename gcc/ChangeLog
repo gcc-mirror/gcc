@@ -1,3 +1,11 @@
+2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2017-12-20  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82975
+	* config/arm/arm.h (TEST_REGNO): Adjust comment as expected in r255830.
+
 2018-01-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backported from mainline
