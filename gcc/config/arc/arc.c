@@ -548,8 +548,6 @@ static void arc_finalize_pic (void);
 
 #define TARGET_TRAMPOLINE_INIT arc_initialize_trampoline
 
-#define TARGET_TRAMPOLINE_ADJUST_ADDRESS arc_trampoline_adjust_address
-
 #define TARGET_CAN_ELIMINATE arc_can_eliminate
 
 #define TARGET_FRAME_POINTER_REQUIRED arc_frame_pointer_required
@@ -3672,69 +3670,62 @@ output_shift (rtx *operands)
 
 /* Nested function support.  */
 
-/* Directly store VALUE into memory object BLOCK at OFFSET.  */
+/* Output assembler code for a block containing the constant parts of
+   a trampoline, leaving space for variable parts.  A trampoline looks
+   like this:
+
+   ld_s r12,[pcl,8]
+   ld   r11,[pcl,12]
+   j_s [r12]
+   .word function's address
+   .word static chain value
+
+*/
 
 static void
-emit_store_direct (rtx block, int offset, int value)
+arc_asm_trampoline_template (FILE *f)
 {
-  emit_insn (gen_store_direct (adjust_address (block, SImode, offset),
-			       force_reg (SImode,
-					  gen_int_mode (value, SImode))));
+  asm_fprintf (f, "\tld_s\t%s,[pcl,8]\n", ARC_TEMP_SCRATCH_REG);
+  asm_fprintf (f, "\tld\t%s,[pcl,12]\n", reg_names[STATIC_CHAIN_REGNUM]);
+  asm_fprintf (f, "\tj_s\t[%s]\n", ARC_TEMP_SCRATCH_REG);
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
+  assemble_aligned_integer (UNITS_PER_WORD, const0_rtx);
 }
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
-   FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.  */
-/* With potentially multiple shared objects loaded, and multiple stacks
-   present for multiple thereds where trampolines might reside, a simple
-   range check will likely not suffice for the profiler to tell if a callee
-   is a trampoline.  We a speedier check by making the trampoline start at
-   an address that is not 4-byte aligned.
-   A trampoline looks like this:
-
-   nop_s	     0x78e0
-entry:
-   ld_s r12,[pcl,12] 0xd403
-   ld   r11,[pcl,12] 0x170c 700b
-   j_s [r12]         0x7c00
-   nop_s	     0x78e0
+   FNADDR is an RTX for the address of the function's pure code.  CXT
+   is an RTX for the static chain value for the function.
 
    The fastest trampoline to execute for trampolines within +-8KB of CTX
    would be:
+
    add2 r11,pcl,s12
    j [limm]           0x20200f80 limm
-   and that would also be faster to write to the stack by computing the offset
-   from CTX to TRAMP at compile time.  However, it would really be better to
-   get rid of the high cost of cache invalidation when generating trampolines,
-   which requires that the code part of trampolines stays constant, and
-   additionally either
-   - making sure that no executable code but trampolines is on the stack,
-     no icache entries linger for the area of the stack from when before the
-     stack was allocated, and allocating trampolines in trampoline-only
-     cache lines
-  or
-   - allocate trampolines fram a special pool of pre-allocated trampolines.  */
+
+   and that would also be faster to write to the stack by computing
+   the offset from CTX to TRAMP at compile time.  However, it would
+   really be better to get rid of the high cost of cache invalidation
+   when generating trampolines, which requires that the code part of
+   trampolines stays constant, and additionally either making sure
+   that no executable code but trampolines is on the stack, no icache
+   entries linger for the area of the stack from when before the stack
+   was allocated, and allocating trampolines in trampoline-only cache
+   lines or allocate trampolines fram a special pool of pre-allocated
+   trampolines.  */
 
 static void
 arc_initialize_trampoline (rtx tramp, tree fndecl, rtx cxt)
 {
   rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
 
-  emit_store_direct (tramp, 0, TARGET_BIG_ENDIAN ? 0x78e0d403 : 0xd40378e0);
-  emit_store_direct (tramp, 4, TARGET_BIG_ENDIAN ? 0x170c700b : 0x700b170c);
-  emit_store_direct (tramp, 8, TARGET_BIG_ENDIAN ? 0x7c0078e0 : 0x78e07c00);
-  emit_move_insn (adjust_address (tramp, SImode, 12), fnaddr);
-  emit_move_insn (adjust_address (tramp, SImode, 16), cxt);
-  emit_insn (gen_flush_icache (adjust_address (tramp, SImode, 0)));
-}
-
-/* Allow the profiler to easily distinguish trampolines from normal
-  functions.  */
-
-static rtx
-arc_trampoline_adjust_address (rtx addr)
-{
-  return plus_constant (Pmode, addr, 2);
+  emit_block_move (tramp, assemble_trampoline_template (),
+		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+  emit_move_insn (adjust_address (tramp, SImode, 8), fnaddr);
+  emit_move_insn (adjust_address (tramp, SImode, 12), cxt);
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
+		     LCT_NORMAL, VOIDmode, XEXP (tramp, 0), Pmode,
+		     plus_constant (Pmode, XEXP (tramp, 0), TRAMPOLINE_SIZE),
+		     Pmode);
 }
 
 /* This is set briefly to 1 when we output a ".as" address modifer, and then
@@ -10869,6 +10860,9 @@ arc_cannot_substitute_mem_equiv_p (rtx)
 
 #undef TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P
 #define TARGET_CANNOT_SUBSTITUTE_MEM_EQUIV_P arc_cannot_substitute_mem_equiv_p
+
+#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE arc_asm_trampoline_template
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
