@@ -27795,8 +27795,9 @@ output_indirect_strings (void)
       unsigned int offset = 0;
       unsigned int cur_idx = 0;
 
-      skeleton_debug_str_hash->traverse<enum dwarf_form,
-					output_indirect_string> (DW_FORM_strp);
+      if (skeleton_debug_str_hash)
+        skeleton_debug_str_hash->traverse<enum dwarf_form,
+					  output_indirect_string> (DW_FORM_strp);
 
       switch_to_section (debug_str_offsets_section);
       debug_str_hash->traverse_noresize
@@ -30818,6 +30819,12 @@ dwarf2out_early_finish (const char *filename)
 		   macinfo_section_label);
 
   save_macinfo_strings ();
+
+  if (dwarf_split_debug_info)
+    {
+      unsigned int index = 0;
+      debug_str_hash->traverse_noresize<unsigned int *, index_string> (&index);
+    }
 
   /* Output all of the compilation units.  We put the main one last so that
      the offsets are available to output_pubnames.  */
