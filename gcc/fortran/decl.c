@@ -3562,6 +3562,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      c2->as->upper[i] = e;
 	    }
 	  c2->attr.pdt_array = pdt_array ? 1 : c2->attr.pdt_string;
+	  if (c1->initializer)
+	    {
+	      c2->initializer = gfc_copy_expr (c1->initializer);
+	      gfc_insert_kind_parameter_exprs (c2->initializer);
+	      gfc_simplify_expr (c2->initializer, 1);
+	    }
 	}
 
       /* Recurse into this function for PDT components.  */

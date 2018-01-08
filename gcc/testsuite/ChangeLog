@@ -1,3 +1,13 @@
+2018-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83611
+	* gfortran.dg/pdt_15.f03 : Bump count of 'n.data = 0B' to 8.
+	* gfortran.dg/pdt_26.f03 : Bump count of '_malloc' to 9.
+	* gfortran.dg/pdt_27.f03 : New test.
+
+	PR fortran/83731
+	* gfortran.dg/pdt_28.f03 : New test.
+
 2018-01-08  Tom de Vries  <tom@codesourcery.com>
 
 	* c-c++-common/builtins.c: Require effective target alloca.

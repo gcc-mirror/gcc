@@ -1634,6 +1634,16 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  gfc_conv_descriptor_span_set (&se.pre, desc, tmp);
 	}
 
+      if (e->expr_type == EXPR_FUNCTION
+	  && sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived
+	  && sym->ts.u.derived->attr.pdt_type)
+	{
+	  tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived, se.expr,
+					 sym->as->rank);
+	  gfc_add_expr_to_block (&se.post, tmp);
+	}
+
       /* Done, register stuff as init / cleanup code.  */
       gfc_add_init_cleanup (block, gfc_finish_block (&se.pre),
 			    gfc_finish_block (&se.post));
@@ -1810,10 +1820,31 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   else
     {
       gfc_expr *lhs;
+      tree res;
 
       lhs = gfc_lval_expr_from_sym (sym);
-      tmp = gfc_trans_assignment (lhs, e, false, true);
-      gfc_add_init_cleanup (block, tmp, NULL_TREE);
+      res = gfc_trans_assignment (lhs, e, false, true);
+
+      tmp = sym->backend_decl;
+      if (e->expr_type == EXPR_FUNCTION
+	  && sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived
+	  && sym->ts.u.derived->attr.pdt_type)
+	{
+	  tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived, tmp,
+					 0);
+	}
+      else if (e->expr_type == EXPR_FUNCTION
+	       && sym->ts.type == BT_CLASS
+	       && CLASS_DATA (sym)->ts.u.derived
+	       && CLASS_DATA (sym)->ts.u.derived->attr.pdt_type)
+	{
+	  tmp = gfc_class_data_get (tmp);
+	  tmp = gfc_deallocate_pdt_comp (CLASS_DATA (sym)->ts.u.derived,
+					 tmp, 0);
+	}
+
+      gfc_add_init_cleanup (block, res, tmp);
     }
 
   /* Set the stringlength, when needed.  */

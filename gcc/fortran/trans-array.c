@@ -8450,6 +8450,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
       bool same_type = (c->ts.type == BT_DERIVED && der_type == c->ts.u.derived)
 	|| (c->ts.type == BT_CLASS && der_type == CLASS_DATA (c)->ts.u.derived);
 
+      bool is_pdt_type = c->ts.type == BT_DERIVED
+			 && c->ts.u.derived->attr.pdt_type;
+
       cdecl = c->backend_decl;
       ctype = TREE_TYPE (cdecl);
 
@@ -8909,8 +8912,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	     components that are really allocated, the deep copy code has to
 	     be generated first and then added to the if-block in
 	     gfc_duplicate_allocatable ().  */
-	  if (cmp_has_alloc_comps && !c->attr.proc_pointer
-	      && !same_type)
+	  if (cmp_has_alloc_comps && !c->attr.proc_pointer && !same_type)
 	    {
 	      rank = c->as ? c->as->rank : 0;
 	      tmp = fold_convert (TREE_TYPE (dcmp), comp);
@@ -8944,9 +8946,17 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 					   false, false, size, NULL_TREE);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
-	  else if (c->attr.allocatable && !c->attr.proc_pointer && !same_type
-		   && (!(cmp_has_alloc_comps && c->as) || c->attr.codimension
-		       || caf_in_coarray (caf_mode)))
+	  else if (c->attr.pdt_array)
+	    {
+	      tmp = duplicate_allocatable (dcmp, comp, ctype,
+					   c->as ? c->as->rank : 0,
+					   false, false, NULL_TREE, NULL_TREE);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+	  else if ((c->attr.allocatable)
+		    && !c->attr.proc_pointer && !same_type
+		    && (!(cmp_has_alloc_comps && c->as) || c->attr.codimension
+			|| caf_in_coarray (caf_mode)))
 	    {
 	      rank = c->as ? c->as->rank : 0;
 	      if (c->attr.codimension)
@@ -8969,7 +8979,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 	  else
-	    if (cmp_has_alloc_comps)
+	    if (cmp_has_alloc_comps || is_pdt_type)
 	      gfc_add_expr_to_block (&fnblock, add_when_allocated);
 
 	  break;
@@ -9022,7 +9032,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		}
 	      gfc_free_expr (e);
 
-	      /* Scalar parameterizied strings can be allocated now.  */
+	      /* Scalar parameterized strings can be allocated now.  */
 	      if (!c->as)
 		{
 		  tmp = fold_convert (gfc_array_index_type, strlen);
@@ -9033,7 +9043,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		}
 	    }
 
-	  /* Allocate paramterized arrays of parameterized derived types.  */
+	  /* Allocate parameterized arrays of parameterized derived types.  */
 	  if (!(c->attr.pdt_array && c->as && c->as->type == AS_EXPLICIT)
 	      && !((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
 		   && (c->ts.u.derived && c->ts.u.derived->attr.pdt_type)))
@@ -9111,6 +9121,23 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      gfc_conv_descriptor_data_set (&fnblock, comp, tmp);
 	      tmp = gfc_conv_descriptor_dtype (comp);
 	      gfc_add_modify (&fnblock, tmp, gfc_get_dtype (ctype));
+
+	      if (c->initializer && c->initializer->rank)
+		{
+		  gfc_init_se (&tse, NULL);
+		  e = gfc_copy_expr (c->initializer);
+		  gfc_insert_parameter_exprs (e, pdt_param_list);
+		  gfc_conv_expr_descriptor (&tse, e);
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
+		  gfc_free_expr (e);
+		  tmp = builtin_decl_explicit (BUILT_IN_MEMCPY);
+		  tmp = build_call_expr_loc (input_location, tmp, 3,
+				     gfc_conv_descriptor_data_get (comp),
+				     gfc_conv_descriptor_data_get (tse.expr),
+				     fold_convert (size_type_node, size));
+		  gfc_add_expr_to_block (&fnblock, tmp);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
+		}
 	    }
 
 	  /* Recurse in to PDT components.  */
@@ -9212,7 +9239,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	      gfc_init_se (&tse, NULL);
 	      for (; param; param = param->next)
-		if (!strcmp (c->name, param->name))
+		if (!strcmp (c->name, param->name)
+		    && param->spec_type == SPEC_EXPLICIT)
 		  c_expr = param->expr;
 
 	      if (c_expr)
