@@ -26,9 +26,12 @@ git clone https://github.com/sourceryinstitute/opencoarrays
 cd oppencoarrays
 ./install.sh --package gcc \
   --from-url https://github.com/sourceryinstitute/gcc/archive/<release-tag>.tar.gz \
-  --install-version <release-tag>
+  --install-version <release-tag> \
+  --disable-bootstrap
 ```
-where `<release-tag>` must be replaced with the appropriate string such as teams-20170921.  The final
+where `<release-tag>` must be replaced with the appropriate string such as teams-20180108 and where 
+the `--disable-bootstrap` option speeds the build considerably at the risk of some chance of failure.  
+If it fails, retry without `--disable-bootstrap`.  The final
 command above peforms the safest but slowest build, which could take several hours to complete.
 For a speedier build, add the `--disable-bootstrap`, which might fail if the GCC you are using
 to build is too old.  Also, for an interactive build, add `--yes-to-all` to instruct the
