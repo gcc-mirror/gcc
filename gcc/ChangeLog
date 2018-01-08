@@ -1,3 +1,9 @@
+2018-01-08  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-c.def (__ARC_UNALIGNED__): New define.
+	* config/arc/arc.h (STRICT_ALIGNMENT): Control this macro using
+	munaligned-access.
+
 2018-01-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR target/83681

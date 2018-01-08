@@ -288,7 +288,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* On the ARC the lower address bits are masked to 0 as necessary.  The chip
    won't croak when given an unaligned address, but the insn will still fail
    to produce the correct result.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT (!unaligned_access && !TARGET_HS)
 
 /* Layout of source language data types.  */
 
