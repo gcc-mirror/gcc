@@ -431,7 +431,7 @@ typedef struct nios2_args
 /* Output before 'small' uninitialized data.  */
 #define SBSS_SECTION_ASM_OP "\t.section\t.sbss"
 
-#ifndef IN_LIBGCC2
+#ifndef USED_FOR_TARGET
 /* Default the definition of "small data" to 8 bytes.  */
 extern unsigned HOST_WIDE_INT nios2_section_threshold;
 #endif
