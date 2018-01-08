@@ -1,6 +1,7 @@
 /* PR tree-optimization/83337 */
 /* { dg-do run { target int32plus } } */
 /* { dg-options "-O2 -floop-interchange" } */
+/* { dg-require-effective-target alloca }  */
 
 /* Copied from graphite/interchange-5.c */
 
