@@ -1,3 +1,8 @@
+2018-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/83719
+	* gcc.dg/lto/pr83719_0.c: New testcase.
+
 2018-01-08  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/graphite/interchange-7.c: Add dg-require-stack-size.
