@@ -2931,6 +2931,7 @@ void
 split_all_insns (void)
 {
   bool changed;
+  bool need_cfg_cleanup = false;
   basic_block bb;
 
   auto_sbitmap blocks (last_basic_block_for_fn (cfun));
@@ -2949,6 +2950,18 @@ split_all_insns (void)
 	     CODE_LABELS and short-out basic blocks.  */
 	  next = NEXT_INSN (insn);
 	  finish = (insn == BB_END (bb));
+
+	  /* If INSN has a REG_EH_REGION note and we split INSN, the
+	     resulting split may not have/need REG_EH_REGION notes.
+
+	     If that happens and INSN was the last reference to the
+	     given EH region, then the EH region will become unreachable.
+	     We can not leave the unreachable blocks in the CFG as that
+	     will trigger a checking failure.
+
+	     So track if INSN has a REG_EH_REGION note.  If so and we
+	     split INSN, then trigger a CFG cleanup.  */
+	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 	  if (INSN_P (insn))
 	    {
 	      rtx set = single_set (insn);
@@ -2965,6 +2978,8 @@ split_all_insns (void)
 		     nops then anyways.  */
 		  if (reload_completed)
 		      delete_insn_and_edges (insn);
+		  if (note)
+		    need_cfg_cleanup = true;
 		}
 	      else
 		{
@@ -2972,6 +2987,8 @@ split_all_insns (void)
 		    {
 		      bitmap_set_bit (blocks, bb->index);
 		      changed = true;
+		      if (note)
+			need_cfg_cleanup = true;
 		    }
 		}
 	    }
@@ -2980,7 +2997,16 @@ split_all_insns (void)
 
   default_rtl_profile ();
   if (changed)
-    find_many_sub_basic_blocks (blocks);
+    {
+      find_many_sub_basic_blocks (blocks);
+
+      /* Splitting could drop an REG_EH_REGION if it potentially
+	 trapped in its original form, but does not in its split
+	 form.  Consider a FLOAT_TRUNCATE which splits into a memory
+	 store/load pair and -fnon-call-exceptions.  */
+      if (need_cfg_cleanup)
+	cleanup_cfg (0);
+    }
 
   checking_verify_flow_info ();
 }
