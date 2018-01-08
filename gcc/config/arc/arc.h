@@ -829,7 +829,7 @@ extern int arc_initial_elimination_offset(int from, int to);
 /* Trampolines.  */
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE 20
+#define TRAMPOLINE_SIZE 16
 
 /* Alignment required for a trampoline in bits .  */
 /* For actual data alignment we just need 32, no more than the stack;

@@ -1,5 +1,16 @@
 2018-01-08  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (TARGET_TRAMPOLINE_ADJUST_ADDRESS): Delete.
+	(emit_store_direct): Likewise.
+	(arc_trampoline_adjust_address): Likewise.
+	(arc_asm_trampoline_template): New function.
+	(arc_initialize_trampoline): Use asm_trampoline_template.
+	(TARGET_ASM_TRAMPOLINE_TEMPLATE): Define.
+	* config/arc/arc.h (TRAMPOLINE_SIZE): Adjust to 16.
+	* config/arc/arc.md (flush_icache): Delete pattern.
+
+2018-01-08  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-c.def (__ARC_UNALIGNED__): New define.
 	* config/arc/arc.h (STRICT_ALIGNMENT): Control this macro using
 	munaligned-access.

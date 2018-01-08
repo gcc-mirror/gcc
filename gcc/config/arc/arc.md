@@ -4325,15 +4325,6 @@
    (set_attr "iscompact" "true")
    (set_attr "length" "2")])
 
-;; Special pattern to flush the icache.
-;; ??? Not sure what to do here.  Some ARC's are known to support this.
-
-(define_insn "flush_icache"
-  [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")] 0)]
-  ""
-  "* return \"\";"
-  [(set_attr "type" "misc")])
-
 ;; Split up troublesome insns for better scheduling.
 
 ;; Peepholes go at the end.
