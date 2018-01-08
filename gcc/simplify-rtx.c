@@ -5888,57 +5888,6 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 		return simplify_gen_binary (VEC_CONCAT, mode, newop0, newop1);
 	    }
 
-	  /* Replace:
-
-	      (vec_merge:outer (vec_duplicate:outer x:inner)
-			       (subreg:outer y:inner 0)
-			       (const_int N))
-
-	     with (vec_concat:outer x:inner y:inner) if N == 1,
-	     or (vec_concat:outer y:inner x:inner) if N == 2.
-	     We assume that degenrate cases (N == 0 or N == 3), which
-	     represent taking all elements from either input, are handled
-	     elsewhere.
-
-	     Implicitly, this means we have a paradoxical subreg, but such
-	     a check is cheap, so make it anyway.
-
-	     Only applies for vectors of two elements.  */
-
-	  if ((GET_CODE (op0) == VEC_DUPLICATE
-	       || GET_CODE (op1) == VEC_DUPLICATE)
-	      && GET_MODE (op0) == GET_MODE (op1)
-	      && known_eq (GET_MODE_NUNITS (GET_MODE (op0)), 2)
-	      && known_eq (GET_MODE_NUNITS (GET_MODE (op1)), 2)
-	      && IN_RANGE (sel, 1, 2))
-	    {
-	      rtx newop0 = op0, newop1 = op1;
-
-	      /* Canonicalize locally such that the VEC_DUPLICATE is always
-		 the first operand.  */
-	      if (GET_CODE (newop1) == VEC_DUPLICATE)
-		{
-		  std::swap (newop0, newop1);
-		  /* If we swap the operand order, we also need to swap
-		     the selector mask.  */
-		  sel = sel == 1 ? 2 : 1;
-		}
-
-	      if (GET_CODE (newop1) == SUBREG
-		  && paradoxical_subreg_p (newop1)
-		  && subreg_lowpart_p (newop1)
-		  && GET_MODE (SUBREG_REG (newop1))
-		      == GET_MODE (XEXP (newop0, 0)))
-		{
-		  newop0 = XEXP (newop0, 0);
-		  newop1 = SUBREG_REG (newop1);
-		  if (sel == 2)
-		    std::swap (newop0, newop1);
-		  return simplify_gen_binary (VEC_CONCAT, mode,
-					      newop0, newop1);
-		}
-	    }
-
 	  /* Replace (vec_merge (vec_duplicate x) (vec_duplicate y)
 				 (const_int n))
 	     with (vec_concat x y) or (vec_concat y x) depending on value
