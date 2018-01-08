@@ -322,6 +322,10 @@ canonicalize_loop_closed_ssa_form (void)
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     canonicalize_loop_closed_ssa (loop);
 
+  /* We can end up releasing duplicate exit PHIs and also introduce
+     additional copies so the cached information isn't correct anymore.  */
+  scev_reset ();
+
   checking_verify_loop_closed_ssa (true);
 }
 

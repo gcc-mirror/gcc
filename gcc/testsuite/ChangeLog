@@ -1,5 +1,10 @@
 2018-01-08  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/83563
+	* gcc.dg/graphite/pr83563.c: New testcase.
+
+2018-01-08  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/83713
 	* g++.dg/torture/pr83713.C: New testcase.
 

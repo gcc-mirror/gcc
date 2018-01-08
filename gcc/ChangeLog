@@ -1,5 +1,11 @@
 2018-01-08  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/83563
+	* graphite.c (canonicalize_loop_closed_ssa_form): Reset the SCEV
+	cache.
+
+2018-01-08  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/83713
 	* convert.c (do_narrow): Properly guard TYPE_OVERFLOW_WRAPS checks.
 
