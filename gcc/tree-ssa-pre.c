@@ -2697,6 +2697,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
        that value numbering saw through.  */
     case NAME:
       folded = PRE_EXPR_NAME (expr);
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (folded))
+	return NULL_TREE;
       if (useless_type_conversion_p (exprtype, TREE_TYPE (folded)))
 	return folded;
       break;
