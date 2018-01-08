@@ -723,23 +723,21 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 void
 split_constant_offset (tree exp, tree *var, tree *off)
 {
-  tree type = TREE_TYPE (exp), otype, op0, op1, e, o;
+  tree type = TREE_TYPE (exp), op0, op1, e, o;
   enum tree_code code;
 
   *var = exp;
   *off = ssize_int (0);
-  STRIP_NOPS (exp);
 
   if (tree_is_chrec (exp)
       || get_gimple_rhs_class (TREE_CODE (exp)) == GIMPLE_TERNARY_RHS)
     return;
 
-  otype = TREE_TYPE (exp);
   code = TREE_CODE (exp);
   extract_ops_from_tree (exp, &code, &op0, &op1);
-  if (split_constant_offset_1 (otype, op0, code, op1, &e, &o))
+  if (split_constant_offset_1 (type, op0, code, op1, &e, &o))
     {
-      *var = fold_convert (type, e);
+      *var = e;
       *off = o;
     }
 }
