@@ -1,5 +1,5 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
 This file is part of GCC.

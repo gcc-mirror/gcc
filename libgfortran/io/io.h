@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
@@ -69,7 +69,7 @@ internal_proto(old_locale_lock);
 
 #define is_array_io(dtp) ((dtp)->internal_unit_desc)
 
-#define is_internal_unit(dtp) ((dtp)->u.p.current_unit->internal_unit_kind)
+#define is_internal_unit(dtp) ((dtp)->u.p.unit_is_internal)
 
 #define is_stream_io(dtp) ((dtp)->u.p.current_unit->flags.access == ACCESS_STREAM)
 
@@ -735,6 +735,11 @@ gfc_saved_unit;
 extern gfc_offset max_offset;
 internal_proto(max_offset);
 
+/* Default RECL for sequential access if not given in OPEN statement,
+   computed at library initialization time.  */
+extern gfc_offset default_recl;
+internal_proto(default_recl);
+
 /* Unit tree root.  */
 extern gfc_unit *unit_root;
 internal_proto(unit_root);
@@ -789,13 +794,13 @@ internal_proto(new_unit);
 extern const char *type_name (bt);
 internal_proto(type_name);
 
-extern void * read_block_form (st_parameter_dt *, int *);
+extern void * read_block_form (st_parameter_dt *, size_t *);
 internal_proto(read_block_form);
 
-extern void * read_block_form4 (st_parameter_dt *, int *);
+extern void * read_block_form4 (st_parameter_dt *, size_t *);
 internal_proto(read_block_form4);
 
-extern void *write_block (st_parameter_dt *, int);
+extern void *write_block (st_parameter_dt *, size_t);
 internal_proto(write_block);
 
 extern gfc_offset next_array_record (st_parameter_dt *, array_loop_spec *,
@@ -829,10 +834,10 @@ internal_proto(convert_real);
 extern int convert_infnan (st_parameter_dt *, void *, const char *, int);
 internal_proto(convert_infnan);
 
-extern void read_a (st_parameter_dt *, const fnode *, char *, int);
+extern void read_a (st_parameter_dt *, const fnode *, char *, size_t);
 internal_proto(read_a);
 
-extern void read_a_char4 (st_parameter_dt *, const fnode *, char *, int);
+extern void read_a_char4 (st_parameter_dt *, const fnode *, char *, size_t);
 internal_proto(read_a);
 
 extern void read_f (st_parameter_dt *, const fnode *, char *, int);
@@ -841,7 +846,7 @@ internal_proto(read_f);
 extern void read_l (st_parameter_dt *, const fnode *, char *, int);
 internal_proto(read_l);
 
-extern void read_x (st_parameter_dt *, int);
+extern void read_x (st_parameter_dt *, size_t);
 internal_proto(read_x);
 
 extern void read_radix (st_parameter_dt *, const fnode *, char *, int, int);
@@ -873,10 +878,10 @@ internal_proto(namelist_write);
 
 /* write.c */
 
-extern void write_a (st_parameter_dt *, const fnode *, const char *, int);
+extern void write_a (st_parameter_dt *, const fnode *, const char *, size_t);
 internal_proto(write_a);
 
-extern void write_a_char4 (st_parameter_dt *, const fnode *, const char *, int);
+extern void write_a_char4 (st_parameter_dt *, const fnode *, const char *, size_t);
 internal_proto(write_a_char4);
 
 extern void write_b (st_parameter_dt *, const fnode *, const char *, int);

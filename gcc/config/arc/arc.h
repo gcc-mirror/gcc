@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -288,7 +288,7 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* On the ARC the lower address bits are masked to 0 as necessary.  The chip
    won't croak when given an unaligned address, but the insn will still fail
    to produce the correct result.  */
-#define STRICT_ALIGNMENT 1
+#define STRICT_ALIGNMENT (!unaligned_access && !TARGET_HS)
 
 /* Layout of source language data types.  */
 
@@ -829,7 +829,7 @@ extern int arc_initial_elimination_offset(int from, int to);
 /* Trampolines.  */
 
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE 20
+#define TRAMPOLINE_SIZE 16
 
 /* Alignment required for a trampoline in bits .  */
 /* For actual data alignment we just need 32, no more than the stack;
@@ -1291,7 +1291,8 @@ do {							\
   do                                                    \
     {                                                   \
       if (GET_CODE (PATTERN (JUMPTABLE)) == ADDR_DIFF_VEC \
-	  && ((GET_MODE_SIZE (GET_MODE (PATTERN (JUMPTABLE))) \
+	  && ((GET_MODE_SIZE (as_a <scalar_int_mode>	\
+			      (GET_MODE (PATTERN (JUMPTABLE)))) \
 	       * XVECLEN (PATTERN (JUMPTABLE), 1) + 1)	\
 	      & 2))					\
       arc_toggle_unalign ();				\
@@ -1405,7 +1406,8 @@ do { \
  : SImode)
 
 #define ADDR_VEC_ALIGN(VEC_INSN) \
-  (exact_log2 (GET_MODE_SIZE (GET_MODE (PATTERN (VEC_INSN)))))
+  (exact_log2 (GET_MODE_SIZE (as_a <scalar_int_mode> \
+			      (GET_MODE (PATTERN (VEC_INSN))))))
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
   ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE))

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -1254,7 +1254,7 @@ enum reg_class
    couldn't convert a direct call into an indirect one.  */
 #define CALLER_INTERWORKING_SLOT_SIZE			\
   (TARGET_CALLER_INTERWORKING				\
-   && crtl->outgoing_args_size != 0		\
+   && maybe_ne (crtl->outgoing_args_size, 0)		\
    ? UNITS_PER_WORD : 0)
 
 /* If we generate an insn to push BYTES bytes,
@@ -1615,12 +1615,10 @@ enum arm_auto_incmodes
 
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
-   or a pseudo reg currently allocated to a suitable hard reg.
-   Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
-   allocation.  */
+   or a pseudo reg currently allocated to a suitable hard reg.  */
 #define TEST_REGNO(R, TEST, VALUE) \
-  ((R TEST VALUE) || ((unsigned) reg_renumber[R] TEST VALUE))
+  ((R TEST VALUE)	\
+    || (reg_renumber && ((unsigned) reg_renumber[R] TEST VALUE)))
 
 /* Don't allow the pc to be used.  */
 #define ARM_REGNO_OK_FOR_BASE_P(REGNO)			\
@@ -2166,13 +2164,16 @@ extern int making_const_table;
 
 extern const char *arm_rewrite_mcpu (int argc, const char **argv);
 extern const char *arm_rewrite_march (int argc, const char **argv);
+extern const char *arm_asm_auto_mfpu (int argc, const char **argv);
 #define ASM_CPU_SPEC_FUNCTIONS			\
   { "rewrite_mcpu", arm_rewrite_mcpu },	\
-  { "rewrite_march", arm_rewrite_march },
+  { "rewrite_march", arm_rewrite_march },	\
+  { "asm_auto_mfpu", arm_asm_auto_mfpu },
 
 #define ASM_CPU_SPEC							\
+  " %{mfpu=auto:%<mfpu=auto %:asm_auto_mfpu(%{march=*: arch %*})}"	\
   " %{mcpu=generic-*:-march=%:rewrite_march(%{mcpu=generic-*:%*});"	\
-  "   march=*:-march=%:rewrite_march(%{march=*:%*});"		\
+  "   march=*:-march=%:rewrite_march(%{march=*:%*});"			\
   "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
   " }"
 

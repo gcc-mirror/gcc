@@ -1376,6 +1376,12 @@ package body Sem_SPARK is
                Free_Env (Saved_Env);
             end;
 
+         when N_Reduction_Expression =>
+            null;
+
+         when N_Reduction_Expression_Parameter =>
+            null;
+
          --  Analyze the list of associations in the aggregate
 
          when N_Aggregate =>

@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "parser.h"
 #include "c-family/name-hint.h"
 #include "c-family/known-headers.h"
+#include "c-family/c-spellcheck.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -709,6 +710,15 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
       while (ix < queue->length ());
     done:;
       if (scope == global_namespace)
+	break;
+
+      /* If looking for hidden names, we only look in the innermost
+	 namespace scope.  [namespace.memdef]/3 If a friend
+	 declaration in a non-local class first declares a class,
+	 function, class template or function template the friend is a
+	 member of the innermost enclosing namespace.  See also
+	 [basic.lookup.unqual]/7 */
+      if (flags & LOOKUP_HIDDEN)
 	break;
     }
 
@@ -5414,6 +5424,9 @@ get_std_name_hint (const char *name)
   static const std_name_hint hints[] = {
     /* <array>.  */
     {"array", "<array>"}, // C++11
+    /* <complex>.  */
+    {"complex", "<complex>"},
+    {"complex_literals", "<complex>"},
     /* <deque>.  */
     {"deque", "<deque>"},
     /* <forward_list>.  */
@@ -5472,7 +5485,7 @@ get_std_name_hint (const char *name)
   const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
   for (size_t i = 0; i < num_hints; i++)
     {
-      if (0 == strcmp (name, hints[i].name))
+      if (strcmp (name, hints[i].name) == 0)
 	return hints[i].header;
     }
   return NULL;
@@ -5613,6 +5626,10 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  bm.consider (IDENTIFIER_POINTER (best_matching_field));
       }
 
+  /* Only suggest names reserved for the implementation if NAME begins
+     with an underscore.  */
+  bool consider_implementation_names = (IDENTIFIER_POINTER (name)[0] == '_');
+
   for (tree t = lvl->names; t; t = TREE_CHAIN (t))
     {
       tree d = t;
@@ -5633,10 +5650,23 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  && DECL_ANTICIPATED (d))
 	continue;
 
-      if (tree name = DECL_NAME (d))
-	/* Ignore internal names with spaces in them.  */
-	if (!strchr (IDENTIFIER_POINTER (name), ' '))
-	  bm.consider (IDENTIFIER_POINTER (name));
+      tree suggestion = DECL_NAME (d);
+      if (!suggestion)
+	continue;
+
+      const char *suggestion_str = IDENTIFIER_POINTER (suggestion);
+
+      /* Ignore internal names with spaces in them.  */
+      if (strchr (suggestion_str, ' '))
+	continue;
+
+      /* Don't suggest names that are reserved for use by the
+	 implementation, unless NAME began with an underscore.  */
+      if (name_reserved_for_implementation_p (suggestion_str)
+	  && !consider_implementation_names)
+	continue;
+
+      bm.consider (suggestion_str);
     }
 }
 
@@ -5727,7 +5757,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
       /* If we have an exact match for a macro name, then the
 	 macro has been used before it was defined.  */
       cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
-      if (macro)
+      if (macro && (macro->flags & NODE_BUILTIN) == 0)
 	return name_hint (NULL,
 			  new macro_use_before_def (loc, macro));
     }

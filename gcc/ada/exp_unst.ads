@@ -64,7 +64,7 @@ package Exp_Unst is
    --     doing transformations of this type.
 
    --     Second: given that the transformation will be semantics-preserving,
-   --     we can still used the standard GCC back end to build code from it.
+   --     we can still use the standard GCC back end to build code from it.
    --     This means we can easily run our full test suite to verify that the
    --     transformations are indeed semantics preserving. It is a lot more
    --     work to thoroughly test the output of specialized back ends.
@@ -239,7 +239,7 @@ package Exp_Unst is
    --          procedure inner (bb : integer; AREC1F : AREC1PT) is
    --          begin
    --             Integer'Deref(AREC1F.x) :=
-   --               Integer'Deref(AREC1F.rv) + y + b + Integer_Deref(AREC1F.b);
+   --               Integer'Deref(AREC1F.rv) + y + b + Integer'Deref(AREC1F.b);
    --          end;
    --
    --       begin
@@ -658,7 +658,7 @@ package Exp_Unst is
       ARECnU : Entity_Id;
       --  This AREC entity is the uplink component. It is other than Empty only
       --  for nested subprograms that declare an activation record as indicated
-      --  by Declares_AREC being Ture, and which have uplevel references (Lev
+      --  by Declares_AREC being True, and which have uplevel references (Lev
       --  greater than Uplevel_Ref). It is the additional component in the
       --  activation record that references the ARECnF pointer (which points
       --  the activation record one level higher, thus forming the chain).

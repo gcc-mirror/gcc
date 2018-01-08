@@ -1,5 +1,5 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1987,7 +1987,7 @@ expand_simple_operations (tree expr, tree stop)
 	return expand_simple_operations (e, stop);
       else if (code == ADDR_EXPR)
 	{
-	  HOST_WIDE_INT offset;
+	  poly_int64 offset;
 	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (e, 0),
 						     &offset);
 	  if (base
@@ -3510,6 +3510,12 @@ infer_loop_bounds_from_signedness (struct loop *loop, gimple *stmt)
 
   low = lower_bound_in_type (type, type);
   high = upper_bound_in_type (type, type);
+  wide_int minv, maxv;
+  if (get_range_info (def, &minv, &maxv) == VR_RANGE)
+    {
+      low = wide_int_to_tree (type, minv);
+      high = wide_int_to_tree (type, maxv);
+    }
 
   record_nonwrapping_iv (loop, base, step, stmt, low, high, false, true);
 }

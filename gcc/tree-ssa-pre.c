@@ -1,5 +1,5 @@
 /* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-dce.h"
 #include "tree-cfgcleanup.h"
 #include "alias.h"
 
@@ -2412,7 +2413,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	if (TREE_CODE (baseop) == ADDR_EXPR
 	    && handled_component_p (TREE_OPERAND (baseop, 0)))
 	  {
-	    HOST_WIDE_INT off;
+	    poly_int64 off;
 	    tree base;
 	    base = get_addr_base_and_unit_offset (TREE_OPERAND (baseop, 0),
 						  &off);
@@ -2696,6 +2697,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
        that value numbering saw through.  */
     case NAME:
       folded = PRE_EXPR_NAME (expr);
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (folded))
+	return NULL_TREE;
       if (useless_type_conversion_p (exprtype, TREE_TYPE (folded)))
 	return folded;
       break;
@@ -3995,64 +3998,6 @@ compute_avail (void)
   free (worklist);
 }
 
-/* Cheap DCE of a known set of possibly dead stmts.
-
-   Because we don't follow exactly the standard PRE algorithm, and decide not
-   to insert PHI nodes sometimes, and because value numbering of casts isn't
-   perfect, we sometimes end up inserting dead code.   This simple DCE-like
-   pass removes any insertions we made that weren't actually used.  */
-
-static void
-remove_dead_inserted_code (void)
-{
-  /* ???  Re-use inserted_exprs as worklist not only as initial set.
-     This may end up removing non-inserted code as well.  If we
-     keep inserted_exprs unchanged we could restrict new worklist
-     elements to members of inserted_exprs.  */
-  bitmap worklist = inserted_exprs;
-  while (! bitmap_empty_p (worklist))
-    {
-      /* Pop item.  */
-      unsigned i = bitmap_first_set_bit (worklist);
-      bitmap_clear_bit (worklist, i);
-
-      tree def = ssa_name (i);
-      /* Removed by somebody else or still in use.  */
-      if (! def || ! has_zero_uses (def))
-	continue;
-
-      gimple *t = SSA_NAME_DEF_STMT (def);
-      if (gimple_has_side_effects (t))
-	continue;
-
-      /* Add uses to the worklist.  */
-      ssa_op_iter iter;
-      use_operand_p use_p;
-      FOR_EACH_PHI_OR_STMT_USE (use_p, t, iter, SSA_OP_USE)
-	{
-	  tree use = USE_FROM_PTR (use_p);
-	  if (TREE_CODE (use) == SSA_NAME
-	      && ! SSA_NAME_IS_DEFAULT_DEF (use))
-	    bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
-	}
-
-      /* Remove stmt.  */
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Removing unnecessary insertion:");
-	  print_gimple_stmt (dump_file, t, 0);
-	}
-      gimple_stmt_iterator gsi = gsi_for_stmt (t);
-      if (gimple_code (t) == GIMPLE_PHI)
-	remove_phi_node (&gsi, true);
-      else
-	{
-	  gsi_remove (&gsi, true);
-	  release_defs (t);
-	}
-    }
-}
-
 
 /* Initialize data structures used by PRE.  */
 
@@ -4188,7 +4133,11 @@ pass_pre::execute (function *fun)
   /* Remove all the redundant expressions.  */
   todo |= vn_eliminate (inserted_exprs);
 
-  remove_dead_inserted_code ();
+  /* Because we don't follow exactly the standard PRE algorithm, and decide not
+     to insert PHI nodes sometimes, and because value numbering of casts isn't
+     perfect, we sometimes end up inserting dead code.   This simple DCE-like
+     pass removes any insertions we made that weren't actually used.  */
+  simple_dce_from_worklist (inserted_exprs);
 
   fini_pre ();
 

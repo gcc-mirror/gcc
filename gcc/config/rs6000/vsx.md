@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -3189,19 +3189,6 @@
 }
   [(set_attr "type" "vecperm")])
 
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VSX_D 0 "vsx_register_operand" "")
-   (match_operand:VSX_D 1 "vsx_register_operand" "")
-   (match_operand:VSX_D 2 "vsx_register_operand" "")
-   (match_operand:V2DI  3 "" "")]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-{
-  if (rs6000_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 ;; Extraction of a single element in a small integer vector.  Until ISA 3.0,
 ;; none of the small types were allowed in a vector register, so we had to
 ;; extract to a DImode and either do a direct move or store.
@@ -4160,7 +4147,7 @@
 	(mem:VSX_M (plus:P (match_dup 0)
 			   (match_operand:P 3 "int_reg_operand" ""))))]
   "TARGET_VSX && TARGET_P8_FUSION && !TARGET_P9_VECTOR"
-  "li %0,%1\t\t\t# vector load fusion\;lx<VSX_M:VSm>x %x2,%0,%3"  
+  "li %0,%1\;lx<VSX_M:VSm>x %x2,%0,%3\t\t\t# vector load fusion"
   [(set_attr "length" "8")
    (set_attr "type" "vecload")])
 
@@ -4171,7 +4158,7 @@
 	(mem:VSX_M (plus:P (match_operand:P 3 "int_reg_operand" "")
 			   (match_dup 0))))]
   "TARGET_VSX && TARGET_P8_FUSION && !TARGET_P9_VECTOR"
-  "li %0,%1\t\t\t# vector load fusion\;lx<VSX_M:VSm>x %x2,%0,%3"  
+  "li %0,%1\;lx<VSX_M:VSm>x %x2,%0,%3\t\t\t# vector load fusion"
   [(set_attr "length" "8")
    (set_attr "type" "vecload")])
 

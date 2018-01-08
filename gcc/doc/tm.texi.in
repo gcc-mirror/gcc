@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2544,6 +2544,8 @@ terminate the stack backtrace.  New ports should avoid this.
 
 @hook TARGET_DWARF_HANDLE_FRAME_UNSPEC
 
+@hook TARGET_DWARF_POLY_INDETERMINATE_VALUE
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack
@@ -4079,7 +4081,7 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 
-@hook TARGET_VECTORIZE_VEC_PERM_CONST_OK
+@hook TARGET_VECTORIZE_VEC_PERM_CONST
 
 @hook TARGET_VECTORIZE_BUILTIN_CONVERSION
 
@@ -4606,6 +4608,8 @@ Define this macro if a non-short-circuit operation produced by
 @hook TARGET_NOCE_CONVERSION_PROFITABLE_P
 
 @hook TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
+
+@hook TARGET_ESTIMATED_POLY_VALUE
 
 @node Scheduling
 @section Adjusting the Instruction Scheduler
@@ -6629,8 +6633,8 @@ A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{DWARF_DEBUG}, @code{DWARF2_DEBUG},
-@code{XCOFF_DEBUG}, @code{VMS_DEBUG}, and @code{VMS_AND_DWARF2_DEBUG}.
+@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two

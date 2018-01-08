@@ -1,5 +1,5 @@
 /* Gimple Represented as Polyhedra.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>.
 
 This file is part of GCC.
@@ -321,6 +321,10 @@ canonicalize_loop_closed_ssa_form (void)
   loop_p loop;
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     canonicalize_loop_closed_ssa (loop);
+
+  /* We can end up releasing duplicate exit PHIs and also introduce
+     additional copies so the cached information isn't correct anymore.  */
+  scev_reset ();
 
   checking_verify_loop_closed_ssa (true);
 }

@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1462,6 +1462,49 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   type = build_nonstandard_integer_type (GET_MODE_PRECISION (mode), uns);
   sign = uns ? UNSIGNED : SIGNED;
   icode = optab_handler (uns ? umulv4_optab : mulv4_optab, mode);
+  if (uns
+      && (integer_pow2p (arg0) || integer_pow2p (arg1))
+      && (optimize_insn_for_speed_p () || icode == CODE_FOR_nothing))
+    {
+      /* Optimize unsigned multiplication by power of 2 constant
+	 using 2 shifts, one for result, one to extract the shifted
+	 out bits to see if they are all zero.
+	 Don't do this if optimizing for size and we have umulv4_optab,
+	 in that case assume multiplication will be shorter.
+	 This is heuristics based on the single target that provides
+	 umulv4 right now (i?86/x86_64), if further targets add it, this
+	 might need to be revisited.
+	 Cases where both operands are constant should be folded already
+	 during GIMPLE, and cases where one operand is constant but not
+	 power of 2 are questionable, either the WIDEN_MULT_EXPR case
+	 below can be done without multiplication, just by shifts and adds,
+	 or we'd need to divide the result (and hope it actually doesn't
+	 really divide nor multiply) and compare the result of the division
+	 with the original operand.  */
+      rtx opn0 = op0;
+      rtx opn1 = op1;
+      tree argn0 = arg0;
+      tree argn1 = arg1;
+      if (integer_pow2p (arg0))
+	{
+	  std::swap (opn0, opn1);
+	  std::swap (argn0, argn1);
+	}
+      int cnt = tree_log2 (argn1);
+      if (cnt >= 0 && cnt < GET_MODE_PRECISION (mode))
+	{
+	  rtx upper = const0_rtx;
+	  res = expand_shift (LSHIFT_EXPR, mode, opn0, cnt, NULL_RTX, uns);
+	  if (cnt != 0)
+	    upper = expand_shift (RSHIFT_EXPR, mode, opn0,
+				  GET_MODE_PRECISION (mode) - cnt,
+				  NULL_RTX, uns);
+	  do_compare_rtx_and_jump (upper, const0_rtx, EQ, true, mode,
+				   NULL_RTX, NULL, done_label,
+				   profile_probability::very_likely ());
+	  goto do_error_label;
+	}
+    }
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[4];
@@ -1960,7 +2003,7 @@ static void
 expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 			      tree arg0, tree arg1)
 {
-  int cnt = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+  poly_uint64 cnt = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
   rtx_code_label *loop_lab = NULL;
   rtx cntvar = NULL_RTX;
   tree cntv = NULL_TREE;
@@ -1970,6 +2013,8 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
   tree resv = NULL_TREE;
   rtx lhsr = NULL_RTX;
   rtx resvr = NULL_RTX;
+  unsigned HOST_WIDE_INT const_cnt = 0;
+  bool use_loop_p = (!cnt.is_constant (&const_cnt) || const_cnt > 4);
 
   if (lhs)
     {
@@ -1990,7 +2035,7 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 	    }
 	}
     }
-  if (cnt > 4)
+  if (use_loop_p)
     {
       do_pending_stack_adjust ();
       loop_lab = gen_label_rtx ();
@@ -2009,10 +2054,10 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
       rtx arg1r = expand_normal (arg1);
       arg1 = make_tree (TREE_TYPE (arg1), arg1r);
     }
-  for (int i = 0; i < (cnt > 4 ? 1 : cnt); i++)
+  for (unsigned int i = 0; i < (use_loop_p ? 1 : const_cnt); i++)
     {
       tree op0, op1, res = NULL_TREE;
-      if (cnt > 4)
+      if (use_loop_p)
 	{
 	  tree atype = build_array_type_nelts (eltype, cnt);
 	  op0 = uniform_vector_p (arg0);
@@ -2052,7 +2097,7 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 				  false, false, false, true, &data);
 	  break;
 	case MINUS_EXPR:
-	  if (cnt > 4 ? integer_zerop (arg0) : integer_zerop (op0))
+	  if (use_loop_p ? integer_zerop (arg0) : integer_zerop (op0))
 	    expand_neg_overflow (loc, res, op1, true, &data);
 	  else
 	    expand_addsub_overflow (loc, MINUS_EXPR, res, op0, op1,
@@ -2066,7 +2111,7 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 	  gcc_unreachable ();
 	}
     }
-  if (cnt > 4)
+  if (use_loop_p)
     {
       struct separate_ops ops;
       ops.code = PLUS_EXPR;
@@ -2079,7 +2124,8 @@ expand_vector_ubsan_overflow (location_t loc, enum tree_code code, tree lhs,
 				    EXPAND_NORMAL);
       if (ret != cntvar)
 	emit_move_insn (cntvar, ret);
-      do_compare_rtx_and_jump (cntvar, GEN_INT (cnt), NE, false,
+      rtx cntrtx = gen_int_mode (cnt, TYPE_MODE (sizetype));
+      do_compare_rtx_and_jump (cntvar, cntrtx, NE, false,
 			       TYPE_MODE (sizetype), NULL_RTX, NULL, loop_lab,
 			       profile_probability::very_likely ());
     }
@@ -2677,6 +2723,14 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
 		       make_tree (TREE_TYPE (arg0), quotient),
 		       make_tree (TREE_TYPE (arg1), remainder)),
 	       target, VOIDmode, EXPAND_NORMAL);
+}
+
+/* Expand a NOP.  */
+
+static void
+expand_NOP (internal_fn, gcall *)
+{
+  /* Nothing.  But it shouldn't really prevail.  */
 }
 
 /* Expand a call to FN using the operands in STMT.  FN has a single

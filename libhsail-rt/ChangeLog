@@ -1,3 +1,7 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-09-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* include/internal/phsa-rt.h: Support for improved group segment
@@ -99,7 +103,7 @@
 	* rt/segment.c: Likewise.
 	* rt/workitems.c: Likewise.
 
-Copyright (C) 2017 Free Software Foundation, Inc.
+Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

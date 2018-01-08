@@ -1,5 +1,5 @@
 /* Constant multiply table for TILE-Gx.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -20,6 +20,8 @@
 
 /* Note this file is auto-generated from gen-mul-tables.cc.
    Make any required changes there.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"

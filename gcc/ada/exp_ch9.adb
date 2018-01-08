@@ -52,6 +52,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch9;  use Sem_Ch9;
 with Sem_Ch11; use Sem_Ch11;
+with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -4905,6 +4906,10 @@ package body Exp_Ch9 is
       end if;
 
       Analyze (Call);
+
+      if Legacy_Elaboration_Checks then
+         Check_Task_Activation (N);
+      end if;
    end Build_Task_Activation_Call;
 
    -------------------------------
@@ -13444,6 +13449,12 @@ package body Exp_Ch9 is
                        Prefix        => New_Occurrence_Of (Obj_Ent, Loc),
                        Selector_Name => Make_Identifier (Loc, Chars (D))));
                Add (Decl);
+
+               --  Set debug info needed on this renaming declaration even
+               --  though it does not come from source, so that the debugger
+               --  will get the right information for these generated names.
+
+               Set_Debug_Info_Needed (Discriminal (D));
 
                Next_Discriminant (D);
             end loop;

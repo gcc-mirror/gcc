@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -39,21 +39,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 struct fbuf
 {
   char *buf;			/* Start of buffer.  */
-  int len;			/* Length of buffer.  */
-  int act;			/* Active bytes in buffer.  */
-  int pos;			/* Current position in buffer.  */
+  size_t len;			/* Length of buffer.  */
+  size_t act;			/* Active bytes in buffer.  */
+  size_t pos;			/* Current position in buffer.  */
 };
 
-extern void fbuf_init (gfc_unit *, int);
+extern void fbuf_init (gfc_unit *, size_t);
 internal_proto(fbuf_init);
 
 extern void fbuf_destroy (gfc_unit *);
 internal_proto(fbuf_destroy);
 
-extern int fbuf_reset (gfc_unit *);
+extern ptrdiff_t fbuf_reset (gfc_unit *);
 internal_proto(fbuf_reset);
 
-extern char *fbuf_alloc (gfc_unit *, int);
+extern char *fbuf_alloc (gfc_unit *, size_t);
 internal_proto(fbuf_alloc);
 
 extern int fbuf_flush (gfc_unit *, unit_mode);
@@ -62,10 +62,10 @@ internal_proto(fbuf_flush);
 extern int fbuf_flush_list (gfc_unit *, unit_mode);
 internal_proto(fbuf_flush_list);
 
-extern int fbuf_seek (gfc_unit *, int, int);
+extern ptrdiff_t fbuf_seek (gfc_unit *, ptrdiff_t, int);
 internal_proto(fbuf_seek);
 
-extern char *fbuf_read (gfc_unit *, int *);
+extern char *fbuf_read (gfc_unit *, size_t *);
 internal_proto(fbuf_read);
 
 /* Never call this function, only use fbuf_getc().  */

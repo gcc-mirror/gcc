@@ -1,6 +1,6 @@
 // Filesystem declarations -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -300,11 +300,11 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   void copy(const path& __from, const path& __to, copy_options __options);
   void copy(const path& __from, const path& __to, copy_options __options,
-	    error_code&) noexcept;
+	    error_code&);
 
   bool copy_file(const path& __from, const path& __to, copy_options __option);
   bool copy_file(const path& __from, const path& __to, copy_options __option,
-		 error_code&) noexcept;
+		 error_code&);
 
   path current_path();
 
@@ -319,7 +319,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   file_time_type last_write_time(const path&);
   file_time_type last_write_time(const path&, error_code&) noexcept;
 
-  void permissions(const path&, perms, perm_options, error_code&);
+  void permissions(const path&, perms, perm_options, error_code&) noexcept;
 
   path proximate(const path& __p, const path& __base, error_code& __ec);
   path proximate(const path& __p, const path& __base, error_code& __ec);

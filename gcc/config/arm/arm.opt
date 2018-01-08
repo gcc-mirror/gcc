@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -253,6 +253,10 @@ Use Neon quad-word (rather than double-word) registers for vectorization.
 mvectorize-with-neon-double
 Target Report RejectNegative Mask(NEON_VECTORIZE_DOUBLE)
 Use Neon double-word (rather than quad-word) registers for vectorization.
+
+mverbose-cost-dump
+Common Undocumented Var(arm_verbose_cost) Init(0)
+Enable more verbose RTX cost dumps during debug.  For GCC developers use only.
 
 mword-relocations
 Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)

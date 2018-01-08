@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -771,13 +771,29 @@ extern enum cmodel sparc_cmodel;
 /* The soft frame pointer does not have the stack bias applied.  */
 #define FRAME_POINTER_REGNUM 101
 
-/* Given the stack bias, the stack pointer isn't actually aligned.  */
 #define INIT_EXPANDERS							 \
   do {									 \
-    if (crtl->emit.regno_pointer_align && SPARC_STACK_BIAS)	 \
+    if (crtl->emit.regno_pointer_align)					 \
       {									 \
-	REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM) = BITS_PER_UNIT;	 \
-	REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = BITS_PER_UNIT; \
+	/* The biased stack pointer is only aligned on BITS_PER_UNIT.  */\
+	if (SPARC_STACK_BIAS)						 \
+	  {								 \
+	    REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM)			 \
+	      = BITS_PER_UNIT;	 					 \
+	    REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM)		 \
+	      = BITS_PER_UNIT;						 \
+	  }								 \
+									 \
+	/* In 32-bit mode, not everything is double-word aligned.  */	 \
+	if (TARGET_ARCH32)						 \
+	  {								 \
+	    REGNO_POINTER_ALIGN (VIRTUAL_INCOMING_ARGS_REGNUM)		 \
+	      = BITS_PER_WORD;						 \
+	    REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM)		 \
+	      = BITS_PER_WORD;						 \
+	    REGNO_POINTER_ALIGN (VIRTUAL_OUTGOING_ARGS_REGNUM)		 \
+	      = BITS_PER_WORD;						 \
+	  }								 \
       }									 \
   } while (0)
 

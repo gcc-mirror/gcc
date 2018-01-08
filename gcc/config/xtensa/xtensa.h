@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -430,7 +430,8 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD 1
 
-#define FRAME_GROWS_DOWNWARD flag_stack_protect
+#define FRAME_GROWS_DOWNWARD (flag_stack_protect \
+			      || (flag_sanitize & SANITIZE_ADDRESS) != 0)
 
 /* The ARG_POINTER and FRAME_POINTER are not real Xtensa registers, so
    they are eliminated to either the stack pointer or hard frame pointer.  */

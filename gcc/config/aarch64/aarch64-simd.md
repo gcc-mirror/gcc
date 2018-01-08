@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 AdvSIMD architecture.
-;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -120,8 +120,7 @@
      case 5: return "fmov\t%d0, %1";
      case 6: return "mov\t%0, %1";
      case 7:
-	return aarch64_output_simd_mov_immediate (operands[1],
-						  <MODE>mode, 64);
+	return aarch64_output_simd_mov_immediate (operands[1], 64);
      default: gcc_unreachable ();
      }
 }
@@ -154,7 +153,7 @@
     case 6:
 	return "#";
     case 7:
-	return aarch64_output_simd_mov_immediate (operands[1], <MODE>mode, 128);
+	return aarch64_output_simd_mov_immediate (operands[1], 128);
     default:
 	gcc_unreachable ();
     }
@@ -647,8 +646,8 @@
       case 0:
 	return "and\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>";
       case 1:
-	return aarch64_output_simd_mov_immediate (operands[2],
-	   <MODE>mode, GET_MODE_BITSIZE (<MODE>mode), AARCH64_CHECK_BIC);
+	return aarch64_output_simd_mov_immediate (operands[2], <bitsize>,
+						  AARCH64_CHECK_BIC);
       default:
 	gcc_unreachable ();
       }
@@ -668,8 +667,8 @@
       case 0:
 	return "orr\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>";
       case 1:
-	return aarch64_output_simd_mov_immediate (operands[2],
-		<MODE>mode, GET_MODE_BITSIZE (<MODE>mode), AARCH64_CHECK_ORR);
+	return aarch64_output_simd_mov_immediate (operands[2], <bitsize>,
+						  AARCH64_CHECK_ORR);
       default:
 	gcc_unreachable ();
       }
@@ -2484,7 +2483,7 @@
   bit\\t%0.8b, %2.8b, %1.8b
   bif\\t%0.8b, %3.8b, %1.8b
   #"
-  "&& GP_REGNUM_P (REGNO (operands[0]))"
+  "&& REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
   [(match_dup 1) (match_dup 1) (match_dup 2) (match_dup 3)]
 {
   /* Split back to individual operations.  If we're before reload, and
@@ -2526,7 +2525,7 @@
   bit\\t%0.8b, %3.8b, %1.8b
   bif\\t%0.8b, %2.8b, %1.8b
   #"
-  "&& GP_REGNUM_P (REGNO (operands[0]))"
+  "&& REG_P (operands[0]) && GP_REGNUM_P (REGNO (operands[0]))"
   [(match_dup 0) (match_dup 1) (match_dup 2) (match_dup 3)]
 {
   /* Split back to individual operations.  If we're before reload, and
@@ -2759,6 +2758,7 @@
     case UNEQ:
     case ORDERED:
     case UNORDERED:
+    case LTGT:
       break;
     default:
       gcc_unreachable ();
@@ -2811,6 +2811,15 @@
       emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
       emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
       emit_insn (gen_one_cmpl<v_int_equiv>2 (operands[0], operands[0]));
+      break;
+
+    case LTGT:
+      /* LTGT is not guranteed to not generate a FP exception.  So let's
+	 go the faster way : ((a > b) || (b > a)).  */
+      emit_insn (gen_aarch64_cmgt<mode> (operands[0],
+					 operands[2], operands[3]));
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
+      emit_insn (gen_ior<v_int_equiv>3 (operands[0], operands[0], tmp));
       break;
 
     case UNORDERED:
@@ -3047,8 +3056,8 @@
 	   (match_operand:VDC 2 "register_operand" "w, r")))]
   "TARGET_SIMD"
   "@
-   stp\\t%d1, %d2, %0
-   stp\\t%x1, %x2, %0"
+   stp\\t%d1, %d2, %y0
+   stp\\t%x1, %x2, %y0"
   [(set_attr "type" "neon_stp, store_16")]
 )
 
@@ -4453,7 +4462,7 @@
      (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (COMPARISONS:DI
@@ -4516,7 +4525,7 @@
     (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (UCOMPARISONS:DI
@@ -4587,7 +4596,7 @@
     (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (match_operand:DI 0 "register_operand")
 	(neg:DI
 	  (ne:DI
@@ -5286,6 +5295,33 @@
   DONE;
 })
 
+(define_expand "aarch64_ld1x2<VQ:mode>"
+ [(match_operand:OI 0 "register_operand" "=w")
+  (match_operand:DI 1 "register_operand" "r")
+  (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  machine_mode mode = OImode;
+  rtx mem = gen_rtx_MEM (mode, operands[1]);
+
+  emit_insn (gen_aarch64_simd_ld1<VQ:mode>_x2 (operands[0], mem));
+  DONE;
+})
+
+(define_expand "aarch64_ld1x2<VDC:mode>"
+ [(match_operand:OI 0 "register_operand" "=w")
+  (match_operand:DI 1 "register_operand" "r")
+  (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+  "TARGET_SIMD"
+{
+  machine_mode mode = OImode;
+  rtx mem = gen_rtx_MEM (mode, operands[1]);
+
+  emit_insn (gen_aarch64_simd_ld1<VDC:mode>_x2 (operands[0], mem));
+  DONE;
+})
+
+
 (define_expand "aarch64_ld<VSTRUCT:nregs>_lane<VALLDIF:mode>"
   [(match_operand:VSTRUCT 0 "register_operand" "=w")
 	(match_operand:DI 1 "register_operand" "w")
@@ -5347,20 +5383,6 @@
 ;; Permute instructions
 
 ;; vec_perm support
-
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VALL_F16 0 "register_operand")
-   (match_operand:VALL_F16 1 "register_operand")
-   (match_operand:VALL_F16 2 "register_operand")
-   (match_operand:<V_INT_EQUIV> 3)]
-  "TARGET_SIMD"
-{
-  if (aarch64_expand_vec_perm_const (operands[0], operands[1],
-				     operands[2], operands[3], <nunits>))
-    DONE;
-  else
-    FAIL;
-})
 
 (define_expand "vec_perm<mode>"
   [(match_operand:VB 0 "register_operand")
@@ -5681,6 +5703,27 @@
   "ld1r\\t{%0.<Vtype>}, %1"
   [(set_attr "type" "neon_load1_all_lanes")]
 )
+
+(define_insn "aarch64_simd_ld1<mode>_x2"
+  [(set (match_operand:OI 0 "register_operand" "=w")
+	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:VQ [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD1))]
+  "TARGET_SIMD"
+  "ld1\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
+  [(set_attr "type" "neon_load1_2reg<q>")]
+)
+
+(define_insn "aarch64_simd_ld1<mode>_x2"
+  [(set (match_operand:OI 0 "register_operand" "=w")
+	(unspec:OI [(match_operand:OI 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:VDC [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD1))]
+  "TARGET_SIMD"
+  "ld1\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
+  [(set_attr "type" "neon_load1_2reg<q>")]
+)
+
 
 (define_insn "aarch64_frecpe<mode>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")

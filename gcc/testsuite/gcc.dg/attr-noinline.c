@@ -17,7 +17,7 @@ static void function_declaration_both_after(void) {t();}
 
 static void function_declaration_noinline_before(void) __attribute__((__noinline__)); /* { dg-message "note: previous declaration" } */
 
-static inline void function_declaration_noinline_before(void) {t();} /* { dg-warning "follows declaration with attribute noinline" } */
+static inline void function_declaration_noinline_before(void) {t();} /* { dg-warning "follows declaration with attribute .noinline." } */
 
 static inline void function_declaration_noinline_after(void) {t();} /* { dg-message "note: previous definition" } */
 
@@ -41,7 +41,7 @@ static void function_declaration_inline_noinline_after(void) __attribute__((__no
 
 static void function_declaration_noinline_inline_before(void) __attribute__((__noinline__)); /* { dg-message "note: previous declaration" } */
 
-static inline void function_declaration_noinline_inline_before(void); /* { dg-warning "follows declaration with attribute noinline" } */
+static inline void function_declaration_noinline_inline_before(void); /* { dg-warning "follows declaration with attribute .noinline." } */
 
 static void function_declaration_noinline_inline_before(void) {t();}
 

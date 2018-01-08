@@ -1,6 +1,6 @@
 /* Gimple folding definitions.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -44,8 +44,7 @@ extern tree follow_single_use_edges (tree);
 extern tree gimple_fold_stmt_to_constant_1 (gimple *, tree (*) (tree),
 					    tree (*) (tree) = no_follow_ssa_edges);
 extern tree gimple_fold_stmt_to_constant (gimple *, tree (*) (tree));
-extern tree fold_ctor_reference (tree, tree, unsigned HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT, tree);
+extern tree fold_ctor_reference (tree, tree, poly_uint64, poly_uint64, tree);
 extern tree fold_const_aggregate_ref_1 (tree, tree (*) (tree));
 extern tree fold_const_aggregate_ref (tree);
 extern tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree,
@@ -135,11 +134,13 @@ gimple_build_vector_from_val (gimple_seq *seq, tree type, tree op)
   return gimple_build_vector_from_val (seq, UNKNOWN_LOCATION, type, op);
 }
 
-extern tree gimple_build_vector (gimple_seq *, location_t, tree, vec<tree>);
+class tree_vector_builder;
+extern tree gimple_build_vector (gimple_seq *, location_t,
+				 tree_vector_builder *);
 inline tree
-gimple_build_vector (gimple_seq *seq, tree type, vec<tree> elts)
+gimple_build_vector (gimple_seq *seq, tree_vector_builder *builder)
 {
-  return gimple_build_vector (seq, UNKNOWN_LOCATION, type, elts);
+  return gimple_build_vector (seq, UNKNOWN_LOCATION, builder);
 }
 
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);

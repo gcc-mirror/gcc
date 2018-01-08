@@ -1,6 +1,6 @@
 /* ET-trees data structure implementation.
    Contributed by Pavel Nejedly
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -671,7 +671,7 @@ et_nca (struct et_node *n1, struct et_node *n2)
       return NULL;
     }
 
-  if (0 < o2->depth)
+  if (o2->depth > 0)
     {
       om = o1;
       mn = o1->depth;
@@ -743,7 +743,7 @@ et_below (struct et_node *down, struct et_node *up)
       return false;
     }
 
-  if (0 >= d->depth)
+  if (d->depth <= 0)
     return false;
 
   return !d->next || d->next->min + d->depth >= 0;

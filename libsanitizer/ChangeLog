@@ -1,3 +1,12 @@
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_descriptions.cc: Cherry-pick upstream r319668.
+	* asan/asan_descriptions.h: Likewise.
+	* asan/asan_report.cc: Likewise.
+	* asan/asan_thread.cc: Likewise.
+	* asan/asan_thread.h: Likewise.
+
 2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	* acinclude.m4: Add enable.m4 and cet.m4.

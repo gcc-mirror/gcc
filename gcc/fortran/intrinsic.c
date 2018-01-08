@@ -1,6 +1,6 @@
 /* Build up a list of intrinsic subroutines and functions for the
    name-resolution stage.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -1756,7 +1756,7 @@ add_functions (void)
   make_generic ("dshiftr", GFC_ISYM_DSHIFTR, GFC_STD_F2008);
 
   add_sym_4 ("eoshift", GFC_ISYM_EOSHIFT, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_eoshift, NULL, gfc_resolve_eoshift,
+	     gfc_check_eoshift, gfc_simplify_eoshift, gfc_resolve_eoshift,
 	     ar, BT_REAL, dr, REQUIRED, sh, BT_INTEGER, ii, REQUIRED,
 	     bd, BT_REAL, dr, OPTIONAL, dm, BT_INTEGER, ii, OPTIONAL);
 
@@ -2463,7 +2463,7 @@ add_functions (void)
   make_generic ("maxexponent", GFC_ISYM_MAXEXPONENT, GFC_STD_F95);
 
   add_sym_4ml ("maxloc", GFC_ISYM_MAXLOC, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	       gfc_check_minloc_maxloc, NULL, gfc_resolve_maxloc,
+	       gfc_check_minloc_maxloc, gfc_simplify_maxloc, gfc_resolve_maxloc,
 	       ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 	       msk, BT_LOGICAL, dl, OPTIONAL, kind, BT_INTEGER, di, OPTIONAL);
 
@@ -2539,7 +2539,7 @@ add_functions (void)
   make_generic ("minexponent", GFC_ISYM_MINEXPONENT, GFC_STD_F95);
 
   add_sym_4ml ("minloc", GFC_ISYM_MINLOC, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
-	       gfc_check_minloc_maxloc, NULL, gfc_resolve_minloc,
+	       gfc_check_minloc_maxloc, gfc_simplify_minloc, gfc_resolve_minloc,
 	       ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 	       msk, BT_LOGICAL, dl, OPTIONAL, kind, BT_INTEGER, di, OPTIONAL);
 

@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running DragonFly with ELF format
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by John Marino <gnugcc@marino.st>
 
 This file is part of GCC.

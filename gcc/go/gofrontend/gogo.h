@@ -318,6 +318,20 @@ class Gogo
   set_debug_escape_level(int level)
   { this->debug_escape_level_ = level; }
 
+  // Return the size threshold used to determine whether to issue
+  // a nil-check for a given pointer dereference. A threshold of -1
+  // implies that all potentially faulting dereference ops should
+  // be nil-checked. A positive threshold of N implies that a deref
+  // of *P where P has size less than N doesn't need a nil check.
+  int64_t
+  nil_check_size_threshold() const
+  { return this->nil_check_size_threshold_; }
+
+  // Set the nil-check size threshold, as described above.
+  void
+  set_nil_check_size_threshold(int64_t bytes)
+  { this->nil_check_size_threshold_ = bytes; }
+
   // Import a package.  FILENAME is the file name argument, LOCAL_NAME
   // is the local name to give to the package.  If LOCAL_NAME is empty
   // the declarations are added to the global scope.
@@ -813,10 +827,6 @@ class Gogo
   static std::string
   nested_function_name();
 
-  // Return the index of a nested function name.
-  static int
-  nested_function_num(const std::string&);
-
   // Return the name to use for a sink funciton.
   std::string
   sink_function_name();
@@ -1025,6 +1035,8 @@ class Gogo
   // The level of escape analysis debug information to emit, from the
   // -fgo-debug-escape option.
   int debug_escape_level_;
+  // Nil-check size threshhold.
+  int64_t nil_check_size_threshold_;
   // A list of types to verify.
   std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
@@ -1564,6 +1576,11 @@ class Function_declaration
   void
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
+
+  // Return the pragmas for this function.
+  unsigned int
+  pragmas() const
+  { return this->pragmas_; }
 
   // Set the pragmas for this function.
   void

@@ -1,6 +1,6 @@
 /* Subroutines used to remove unnecessary doubleword swaps
    for p8 little-endian VSX code.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -34,6 +36,7 @@
 #include "expr.h"
 #include "output.h"
 #include "tree-pass.h"
+#include "rtx-vector-builder.h"
 
 /* Analyze vector computations and remove unnecessary doubleword
    swaps (xxswapdi instructions).  This pass is performed only
@@ -323,6 +326,38 @@ insn_is_swap_p (rtx insn)
 	return 0;
     }
   return 1;
+}
+
+/* Return 1 iff UID, known to reference a swap, is both fed by a load
+   and a feeder of a store.  */
+static unsigned int
+swap_feeds_both_load_and_store (swap_web_entry *insn_entry)
+{
+  rtx insn = insn_entry->insn;
+  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
+  df_ref def, use;
+  struct df_link *link = 0;
+  rtx_insn *load = 0, *store = 0;
+  bool fed_by_load = 0;
+  bool feeds_store = 0;
+
+  FOR_EACH_INSN_INFO_USE (use, insn_info)
+    {
+      link = DF_REF_CHAIN (use);
+      load = DF_REF_INSN (link->ref);
+      if (insn_is_load_p (load) && insn_is_swap_p (load))
+	fed_by_load = 1;
+    }
+
+  FOR_EACH_INSN_INFO_DEF (def, insn_info)
+    {
+      link = DF_REF_CHAIN (def);
+      store = DF_REF_INSN (link->ref);
+      if (insn_is_store_p (store) && insn_is_swap_p (store))
+	feeds_store = 1;
+    }
+
+  return fed_by_load && feeds_store;
 }
 
 /* Return TRUE if insn is a swap fed by a load from the constant pool.  */
@@ -929,23 +964,24 @@ mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
     }
 }
 
-/* OP is either a CONST_VECTOR or an expression containing one.
+/* *OP_PTR is either a CONST_VECTOR or an expression containing one.
    Swap the first half of the vector with the second in the first
    case.  Recurse to find it in the second.  */
 static void
-swap_const_vector_halves (rtx op)
+swap_const_vector_halves (rtx *op_ptr)
 {
   int i;
+  rtx op = *op_ptr;
   enum rtx_code code = GET_CODE (op);
   if (GET_CODE (op) == CONST_VECTOR)
     {
-      int half_units = GET_MODE_NUNITS (GET_MODE (op)) / 2;
-      for (i = 0; i < half_units; ++i)
-	{
-	  rtx temp = CONST_VECTOR_ELT (op, i);
-	  CONST_VECTOR_ELT (op, i) = CONST_VECTOR_ELT (op, i + half_units);
-	  CONST_VECTOR_ELT (op, i + half_units) = temp;
-	}
+      int units = GET_MODE_NUNITS (GET_MODE (op));
+      rtx_vector_builder builder (GET_MODE (op), units, 1);
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i + units / 2));
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i));
+      *op_ptr = builder.build ();
     }
   else
     {
@@ -953,10 +989,10 @@ swap_const_vector_halves (rtx op)
       const char *fmt = GET_RTX_FORMAT (code);
       for (i = 0; i < GET_RTX_LENGTH (code); ++i)
 	if (fmt[i] == 'e' || fmt[i] == 'u')
-	  swap_const_vector_halves (XEXP (op, i));
+	  swap_const_vector_halves (&XEXP (op, i));
 	else if (fmt[i] == 'E')
 	  for (j = 0; j < XVECLEN (op, i); ++j)
-	    swap_const_vector_halves (XVECEXP (op, i, j));
+	    swap_const_vector_halves (&XVECEXP (op, i, j));
     }
 }
 
@@ -1249,8 +1285,7 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
       {
 	/* A CONST_VECTOR will only show up somewhere in the RHS of a SET.  */
 	gcc_assert (GET_CODE (body) == SET);
-	rtx rhs = SET_SRC (body);
-	swap_const_vector_halves (rhs);
+	swap_const_vector_halves (&SET_SRC (body));
 	if (dump_file)
 	  fprintf (dump_file, "Swapping constant halves in insn %d\n", i);
 	break;
@@ -2025,6 +2060,14 @@ rs6000_analyze_swaps (function *fun)
 	 optimization isn't appropriate.  */
       else if ((insn_entry[i].is_load || insn_entry[i].is_store)
 	  && !insn_entry[i].is_swap && !insn_entry[i].is_swappable)
+	root->web_not_optimizable = 1;
+
+      /* If we have a swap that is both fed by a permuting load
+	 and a feeder of a permuting store, then the optimization
+	 isn't appropriate.  (Consider vec_xl followed by vec_xst_be.)  */
+      else if (insn_entry[i].is_swap && !insn_entry[i].is_load
+	       && !insn_entry[i].is_store
+	       && swap_feeds_both_load_and_store (&insn_entry[i]))
 	root->web_not_optimizable = 1;
 
       /* If we have permuting loads or stores that are not accompanied

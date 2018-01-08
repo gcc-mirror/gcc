@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -335,6 +335,8 @@ hash_invariant_expr_1 (rtx_insn *insn, rtx x)
 	}
       else if (fmt[i] == 'i' || fmt[i] == 'n')
 	val ^= XINT (x, i);
+      else if (fmt[i] == 'p')
+	val ^= constant_lower_bound (SUBREG_BYTE (x));
     }
 
   return val;
@@ -418,6 +420,11 @@ invariant_expr_equal_p (rtx_insn *insn1, rtx e1, rtx_insn *insn2, rtx e2)
       else if (fmt[i] == 'i' || fmt[i] == 'n')
 	{
 	  if (XINT (e1, i) != XINT (e2, i))
+	    return false;
+	}
+      else if (fmt[i] == 'p')
+	{
+	  if (maybe_ne (SUBREG_BYTE (e1), SUBREG_BYTE (e2)))
 	    return false;
 	}
       /* Unhandled type of subexpression, we fail conservatively.  */

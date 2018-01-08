@@ -1,5 +1,5 @@
 /* RTL reader for GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -222,7 +222,10 @@ find_int (const char *name)
 static void
 apply_int_iterator (rtx x, unsigned int index, int value)
 {
-  XINT (x, index) = value;
+  if (GET_CODE (x) == SUBREG)
+    SUBREG_BYTE (x) = value;
+  else
+    XINT (x, index) = value;
 }
 
 #ifdef GENERATOR_FILE
@@ -1229,7 +1232,7 @@ static int
 parse_reg_note_name (const char *string)
 {
   for (int i = 0; i < REG_NOTE_MAX; i++)
-    if (0 == strcmp (string, GET_REG_NOTE_NAME (i)))
+    if (strcmp (string, GET_REG_NOTE_NAME (i)) == 0)
       return i;
   fatal_with_file_and_line ("unrecognized REG_NOTE name: `%s'", string);
 }
@@ -1608,6 +1611,7 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 
     case 'i':
     case 'n':
+    case 'p':
       /* Can be an iterator or an integer constant.  */
       read_name (&name);
       record_potential_iterator_use (&ints, return_rtx, idx, name.string);

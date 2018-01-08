@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -63,9 +63,7 @@ extern void rs6000_expand_vector_extract (rtx, rtx, rtx);
 extern void rs6000_split_vec_extract_var (rtx, rtx, rtx, rtx, rtx);
 extern rtx rs6000_adjust_vec_address (rtx, rtx, rtx, rtx, machine_mode);
 extern void rs6000_split_v4si_init (rtx []);
-extern bool altivec_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_vec_perm_le (rtx op[4]);
-extern bool rs6000_expand_vec_perm_const (rtx op[4]);
 extern void altivec_expand_lvx_be (rtx, rtx, machine_mode, unsigned);
 extern void altivec_expand_stvx_be (rtx, rtx, machine_mode, unsigned);
 extern void altivec_expand_stvex_be (rtx, rtx, machine_mode, unsigned);
@@ -96,7 +94,7 @@ extern bool quad_address_p (rtx, machine_mode, bool);
 extern bool quad_load_store_p (rtx, rtx);
 extern bool fusion_gpr_load_p (rtx, rtx, rtx, rtx);
 extern void expand_fusion_gpr_load (rtx *);
-extern void emit_fusion_addis (rtx, rtx, const char *, const char *);
+extern void emit_fusion_addis (rtx, rtx);
 extern void emit_fusion_load_store (rtx, rtx, rtx, const char *);
 extern const char *emit_fusion_gpr_load (rtx, rtx);
 extern bool fusion_p9_p (rtx, rtx, rtx, rtx);

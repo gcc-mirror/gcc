@@ -1,5 +1,5 @@
 /* Common subexpression elimination library for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -805,14 +805,14 @@ autoinc_split (rtx x, rtx *off, machine_mode memmode)
       if (memmode == VOIDmode)
 	return x;
 
-      *off = GEN_INT (-GET_MODE_SIZE (memmode));
+      *off = gen_int_mode (-GET_MODE_SIZE (memmode), GET_MODE (x));
       return XEXP (x, 0);
 
     case PRE_INC:
       if (memmode == VOIDmode)
 	return x;
 
-      *off = GEN_INT (GET_MODE_SIZE (memmode));
+      *off = gen_int_mode (GET_MODE_SIZE (memmode), GET_MODE (x));
       return XEXP (x, 0);
 
     case PRE_MODIFY:
@@ -987,6 +987,11 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, machine_mode memmode, int depth)
 	    return 0;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return 0;
+	  break;
+
 	case 'V':
 	case 'E':
 	  /* Two vectors must have the same length.  */
@@ -1063,6 +1068,7 @@ static unsigned int
 cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 {
   cselib_val *e;
+  poly_int64 offset;
   int i, j;
   enum rtx_code code;
   const char *fmt;
@@ -1128,6 +1134,15 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 	hash += CONST_WIDE_INT_ELT (x, i);
       return hash;
 
+    case CONST_POLY_INT:
+      {
+	inchash::hash h;
+	h.add_int (hash);
+	for (unsigned int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	  h.add_wide_int (CONST_POLY_INT_COEFFS (x)[i]);
+	return h.end ();
+      }
+
     case CONST_DOUBLE:
       /* This is like the general case, except that it only counts
 	 the integers representing the constant.  */
@@ -1149,11 +1164,11 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 	int units;
 	rtx elt;
 
-	units = CONST_VECTOR_NUNITS (x);
+	units = const_vector_encoded_nelts (x);
 
 	for (i = 0; i < units; ++i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
+	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
 	    hash += cselib_hash_rtx (elt, 0, memmode);
 	  }
 
@@ -1189,14 +1204,15 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
     case PRE_INC:
       /* We can't compute these without knowing the MEM mode.  */
       gcc_assert (memmode != VOIDmode);
-      i = GET_MODE_SIZE (memmode);
+      offset = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
-	i = -i;
+	offset = -offset;
       /* Adjust the hash so that (mem:MEMMODE (pre_* (reg))) hashes
 	 like (mem:MEMMODE (plus (reg) (const_int I))).  */
       hash += (unsigned) PLUS - (unsigned)code
 	+ cselib_hash_rtx (XEXP (x, 0), create, memmode)
-	+ cselib_hash_rtx (GEN_INT (i), create, memmode);
+	+ cselib_hash_rtx (gen_int_mode (offset, GET_MODE (x)),
+			   create, memmode);
       return hash ? hash : 1 + (unsigned) PLUS;
 
     case PRE_MODIFY:
@@ -1267,6 +1283,10 @@ cselib_hash_rtx (rtx x, int create, machine_mode memmode)
 
 	case 'i':
 	  hash += XINT (x, i);
+	  break;
+
+	case 'p':
+	  hash += constant_lower_bound (SUBREG_BYTE (x));
 	  break;
 
 	case '0':
@@ -1853,6 +1873,7 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
   struct elt_list *l;
   rtx copy = x;
   int i;
+  poly_int64 offset;
 
   switch (code)
     {
@@ -1889,11 +1910,11 @@ cselib_subst_to_values (rtx x, machine_mode memmode)
     case PRE_DEC:
     case PRE_INC:
       gcc_assert (memmode != VOIDmode);
-      i = GET_MODE_SIZE (memmode);
+      offset = GET_MODE_SIZE (memmode);
       if (code == PRE_DEC)
-	i = -i;
+	offset = -offset;
       return cselib_subst_to_values (plus_constant (GET_MODE (x),
-						    XEXP (x, 0), i),
+						    XEXP (x, 0), offset),
 				     memmode);
 
     case PRE_MODIFY:

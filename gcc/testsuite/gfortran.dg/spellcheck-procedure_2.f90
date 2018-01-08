@@ -3,7 +3,7 @@
 
 
 program spellchekc
-  implicit none (external) ! { dg-warning "GNU Extension: IMPORT NONE with spec list" }
+  implicit none (external)
 
   interface
     subroutine bark_unless_zero(iarg)

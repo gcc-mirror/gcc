@@ -1,5 +1,5 @@
 /* Rematerialize pseudos values.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -994,7 +994,7 @@ calculate_global_remat_bb_data (void)
 
 /* Setup sp offset attribute to SP_OFFSET for all INSNS.  */
 static void
-change_sp_offset (rtx_insn *insns, HOST_WIDE_INT sp_offset)
+change_sp_offset (rtx_insn *insns, poly_int64 sp_offset)
 {
   for (rtx_insn *insn = insns; insn != NULL; insn = NEXT_INSN (insn))
     eliminate_regs_in_insn (insn, false, false, sp_offset);
@@ -1118,7 +1118,7 @@ do_remat (void)
 	  int i, hard_regno, nregs;
 	  int dst_hard_regno, dst_nregs;
 	  rtx_insn *remat_insn = NULL;
-	  HOST_WIDE_INT cand_sp_offset = 0;
+	  poly_int64 cand_sp_offset = 0;
 	  if (cand != NULL)
 	    {
 	      lra_insn_recog_data_t cand_id
@@ -1241,8 +1241,8 @@ do_remat (void)
 
 	  if (remat_insn != NULL)
 	    {
-	      HOST_WIDE_INT sp_offset_change = cand_sp_offset - id->sp_offset;
-	      if (sp_offset_change != 0)
+	      poly_int64 sp_offset_change = cand_sp_offset - id->sp_offset;
+	      if (maybe_ne (sp_offset_change, 0))
 		change_sp_offset (remat_insn, sp_offset_change);
 	      update_scratch_ops (remat_insn);
 	      lra_process_new_insns (insn, remat_insn, NULL,

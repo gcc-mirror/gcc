@@ -1,5 +1,5 @@
 /* Check functions
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -2199,6 +2199,8 @@ bool
 gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 		   gfc_expr *dim)
 {
+  int d;
+
   if (!array_check (array, 0))
     return false;
 
@@ -2211,6 +2213,13 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
   if (!dim_rank_check (dim, array, false))
     return false;
 
+  if (!dim)
+    d = 1;
+  else if (dim->expr_type == EXPR_CONSTANT)
+    gfc_extract_int (dim, &d);
+  else
+    d = -1;
+
   if (array->rank == 1 || shift->rank == 0)
     {
       if (!scalar_check (shift, 1))
@@ -2218,14 +2227,6 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
     }
   else if (shift->rank == array->rank - 1)
     {
-      int d;
-      if (!dim)
-	d = 1;
-      else if (dim->expr_type == EXPR_CONSTANT)
-	gfc_extract_int (dim, &d);
-      else
-	d = -1;
-
       if (d > 0)
 	{
 	  int i, j;
@@ -2260,6 +2261,24 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
       if (!same_type_check (array, 0, boundary, 2))
 	return false;
 
+      /* Reject unequal string lengths and emit a better error message than
+       gfc_check_same_strlen would.  */
+      if (array->ts.type == BT_CHARACTER)
+	{
+	  ssize_t len_a, len_b;
+
+	  len_a = gfc_var_strlen (array);
+	  len_b = gfc_var_strlen (boundary);
+	  if (len_a != -1 && len_b != -1 && len_a != len_b)
+	    {
+	      gfc_error ("%qs must be of same type and kind as %qs at %L in %qs",
+			 gfc_current_intrinsic_arg[2]->name,
+			 gfc_current_intrinsic_arg[0]->name,
+			 &boundary->where, gfc_current_intrinsic);
+	      return false;
+	    }
+	}
+      
       if (array->rank == 1 || boundary->rank == 0)
 	{
 	  if (!scalar_check (boundary, 2))
@@ -2267,13 +2286,27 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	}
       else if (boundary->rank == array->rank - 1)
 	{
-	  if (!gfc_check_conformance (shift, boundary,
-				      "arguments '%s' and '%s' for "
-				      "intrinsic %s",
-				      gfc_current_intrinsic_arg[1]->name,
-				      gfc_current_intrinsic_arg[2]->name,
-				      gfc_current_intrinsic))
-	    return false;
+	  if (d > 0)
+	    {
+	      int i,j;
+	      for (i = 0, j = 0; i < array->rank; i++)
+		{
+		  if (i != d - 1)
+		    {
+		      if (!identical_dimen_shape (array, i, boundary, j))
+			{
+			  gfc_error ("%qs argument of %qs intrinsic at %L has "
+				     "invalid shape in dimension %d (%ld/%ld)",
+				     gfc_current_intrinsic_arg[2]->name,
+				     gfc_current_intrinsic, &shift->where, i+1,
+				     mpz_get_si (array->shape[i]),
+				     mpz_get_si (boundary->shape[j]));
+			  return false;
+			}
+		      j += 1;
+		    }
+		}
+	    }
 	}
       else
 	{
@@ -2281,6 +2314,26 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 		     "rank %d or be a scalar",
 		     gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
 		     &shift->where, array->rank - 1);
+	  return false;
+	}
+    }
+  else
+    {
+      switch (array->ts.type)
+	{
+	case BT_INTEGER:
+	case BT_LOGICAL:
+	case BT_REAL:
+	case BT_COMPLEX:
+	case BT_CHARACTER:
+	  break;
+	  
+	default:
+	  gfc_error ("Missing %qs argument to %qs intrinsic at %L for %qs "
+		     "of type %qs", gfc_current_intrinsic_arg[2]->name,
+		     gfc_current_intrinsic, &array->where,
+		     gfc_current_intrinsic_arg[0]->name,
+		     gfc_typename (&array->ts));
 	  return false;
 	}
     }
@@ -3331,7 +3384,7 @@ check_reduction (gfc_actual_arglist *ap)
 bool
 gfc_check_minval_maxval (gfc_actual_arglist *ap)
 {
-  if (!int_or_real_check (ap->expr, 0)
+  if (!int_or_real_or_char_check_f2003 (ap->expr, 0)
       || !array_check (ap->expr, 0))
     return false;
 

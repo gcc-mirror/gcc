@@ -13706,7 +13706,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   ia64-*-*)
     GOARCH=ia64
     GOARCH_FAMILY=IA64
-    GOARCH_CACHELINESIZE=16384
+    GOARCH_CACHELINESIZE=128
     GOARCH_PHYSPAGESIZE=65536
     ;;
   m68k*-*-*)

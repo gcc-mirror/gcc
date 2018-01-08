@@ -1,5 +1,5 @@
 /* GCC backend definitions for the TI MSP430 Processor
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.

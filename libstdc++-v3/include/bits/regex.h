@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2017 Free Software Foundation, Inc.
+// Copyright (C) 2010-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -756,9 +756,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _FwdIter>
 	basic_regex(_FwdIter __first, _FwdIter __last, locale_type __loc,
 		    flag_type __f)
-	: _M_flags((__f & (ECMAScript | basic | extended | awk | grep | egrep))
-		   ? __f : (__f | ECMAScript)),
-	_M_loc(std::move(__loc)),
+	: _M_flags(__f), _M_loc(std::move(__loc)),
 	_M_automaton(__detail::__compile_nfa<_Rx_traits>(
 	  std::move(__first), std::move(__last), _M_loc, _M_flags))
 	{ }
@@ -773,9 +771,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename, typename, typename, bool>
 	friend class __detail::_Executor;
 
-      flag_type	      _M_flags;
-      locale_type	    _M_loc;
-      _AutomatonPtr	  _M_automaton;
+      flag_type		_M_flags;
+      locale_type	_M_loc;
+      _AutomatonPtr	_M_automaton;
     };
 
 #if __cpp_deduction_guides >= 201606
@@ -1541,7 +1539,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       //@{
       typedef sub_match<_Bi_iter>			   value_type;
       typedef const value_type&				   const_reference;
-      typedef const_reference				   reference;
+      typedef value_type&				   reference;
       typedef typename _Base_type::const_iterator	   const_iterator;
       typedef const_iterator				   iterator;
       typedef typename __iter_traits::difference_type	   difference_type;
@@ -1751,7 +1749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       const_iterator
       end() const
-      { return _Base_type::end() - 3; }
+      { return _Base_type::end() - (empty() ? 0 : 3); }
 
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.

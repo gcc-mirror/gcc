@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -2542,19 +2542,6 @@
     return "xxpermdi %x0,%x2,%x1,%3";
 }
   [(set_attr "type" "vecperm")])
-
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VSX_D 0 "vsx_register_operand" "")
-   (match_operand:VSX_D 1 "vsx_register_operand" "")
-   (match_operand:VSX_D 2 "vsx_register_operand" "")
-   (match_operand:V2DI  3 "" "")]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-{
-  if (rs6000_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
 
 ;; Extraction of a single element in a small integer vector.  Until ISA 3.0,
 ;; none of the small types were allowed in a vector register, so we had to

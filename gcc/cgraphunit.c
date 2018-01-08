@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -2155,8 +2155,8 @@ cgraph_node::expand (void)
 
       if (ret_type && TYPE_SIZE_UNIT (ret_type)
 	  && TREE_CODE (TYPE_SIZE_UNIT (ret_type)) == INTEGER_CST
-	  && 0 < compare_tree_int (TYPE_SIZE_UNIT (ret_type),
-				   larger_than_size))
+	  && compare_tree_int (TYPE_SIZE_UNIT (ret_type),
+			       larger_than_size) > 0)
 	{
 	  unsigned int size_as_int
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
@@ -2579,6 +2579,7 @@ symbol_table::compile (void)
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
+  switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
   if (!quiet_flag)
     fprintf (stderr, "Assembling functions:\n");

@@ -1,5 +1,5 @@
 /* Data and functions related to line maps and input files.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1117,7 +1117,7 @@ dump_location_info (FILE *stream)
 	  expanded_location exploc
 	    = linemap_expand_location (line_table, map, loc);
 
-	  if (0 == exploc.column)
+	  if (exploc.column == 0)
 	    {
 	      /* Beginning of a new source line: draw the line.  */
 

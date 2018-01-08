@@ -1,7 +1,7 @@
 /* Scalar Replacement of Aggregates (SRA) converts some structure
    references into scalar references, exposing them to the scalar
    optimizers.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz>
 
 This file is part of GCC.
@@ -866,11 +866,20 @@ static struct access *
 create_access (tree expr, gimple *stmt, bool write)
 {
   struct access *access;
+  poly_int64 poffset, psize, pmax_size;
   HOST_WIDE_INT offset, size, max_size;
   tree base = expr;
   bool reverse, ptr, unscalarizable_region = false;
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
+  base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
+				  &reverse);
+  if (!poffset.is_constant (&offset)
+      || !psize.is_constant (&size)
+      || !pmax_size.is_constant (&max_size))
+    {
+      disqualify_candidate (base, "Encountered a polynomial-sized access.");
+      return NULL;
+    }
 
   if (sra_mode == SRA_MODE_EARLY_IPA
       && TREE_CODE (base) == MEM_REF)
@@ -1141,6 +1150,33 @@ contains_view_convert_expr_p (const_tree ref)
   return false;
 }
 
+/* Return true if REF contains a VIEW_CONVERT_EXPR or a MEM_REF that performs
+   type conversion or a COMPONENT_REF with a bit-field field declaration.  */
+
+static bool
+contains_vce_or_bfcref_p (const_tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
+	  || (TREE_CODE (ref) == COMPONENT_REF
+	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
+	return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+
+  if (TREE_CODE (ref) != MEM_REF
+      || TREE_CODE (TREE_OPERAND (ref, 0)) != ADDR_EXPR)
+    return false;
+
+  tree mem = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (ref))
+      != TYPE_MAIN_VARIANT (TREE_TYPE (mem)))
+    return true;
+
+  return false;
+}
+
 /* Search the given tree for a declaration by skipping handled components and
    exclude it from the candidates.  */
 
@@ -1339,7 +1375,14 @@ build_accesses_from_assign (gimple *stmt)
       racc->grp_assignment_read = 1;
       if (should_scalarize_away_bitmap && !gimple_has_volatile_ops (stmt)
 	  && !is_gimple_reg_type (racc->type))
-	bitmap_set_bit (should_scalarize_away_bitmap, DECL_UID (racc->base));
+	{
+	  if (contains_vce_or_bfcref_p (rhs))
+	    bitmap_set_bit (cannot_scalarize_away_bitmap,
+			    DECL_UID (racc->base));
+	  else
+	    bitmap_set_bit (should_scalarize_away_bitmap,
+			    DECL_UID (racc->base));
+	}
       if (storage_order_barrier_p (lhs))
 	racc->grp_unscalarizable_region = 1;
     }
@@ -1663,14 +1706,14 @@ make_fancy_name (tree expr)
    of handling bitfields.  */
 
 tree
-build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
+build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
 		      bool reverse, tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)
 {
   tree prev_base = base;
   tree off;
   tree mem_ref;
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   unsigned HOST_WIDE_INT misalign;
   unsigned int align;
 
@@ -1681,7 +1724,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 				     TYPE_QUALS (exp_type)
 				     | ENCODE_QUAL_ADDR_SPACE (as));
 
-  gcc_checking_assert (offset % BITS_PER_UNIT == 0);
+  poly_int64 byte_offset = exact_div (offset, BITS_PER_UNIT);
   get_object_alignment_1 (base, &align, &misalign);
   base = get_addr_base_and_unit_offset (base, &base_offset);
 
@@ -1703,27 +1746,26 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       else
 	gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 
-      off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   offset / BITS_PER_UNIT);
+      off = build_int_cst (reference_alias_ptr_type (prev_base), byte_offset);
       base = tmp;
     }
   else if (TREE_CODE (base) == MEM_REF)
     {
       off = build_int_cst (TREE_TYPE (TREE_OPERAND (base, 1)),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1), off);
       base = unshare_expr (TREE_OPERAND (base, 0));
     }
   else
     {
       off = build_int_cst (reference_alias_ptr_type (prev_base),
-			   base_offset + offset / BITS_PER_UNIT);
+			   base_offset + byte_offset);
       base = build_fold_addr_expr (unshare_expr (base));
     }
 
-  misalign = (misalign + offset) & (align - 1);
-  if (misalign != 0)
-    align = least_bit_hwi (misalign);
+  unsigned int align_bound = known_alignment (misalign + offset);
+  if (align_bound != 0)
+    align = MIN (align, align_bound);
   if (align != TYPE_ALIGN (exp_type))
     exp_type = build_aligned_type (exp_type, align);
 
@@ -1778,7 +1820,7 @@ static tree
 build_debug_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 			   struct access *model)
 {
-  HOST_WIDE_INT base_offset;
+  poly_int64 base_offset;
   tree off;
 
   if (TREE_CODE (model->expr) == COMPONENT_REF
@@ -2478,7 +2520,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	  gcc_checking_assert (!root->grp_scalar_read
 			       && !root->grp_assignment_read);
 	  sth_created = true;
-	  if (MAY_HAVE_DEBUG_STMTS)
+	  if (MAY_HAVE_DEBUG_BIND_STMTS)
 	    {
 	      root->grp_to_be_debug_replaced = 1;
 	      root->replacement_decl = create_access_replacement (root);
@@ -3049,7 +3091,8 @@ clobber_subtree (struct access *access, gimple_stmt_iterator *gsi,
 static struct access *
 get_access_for_expr (tree expr)
 {
-  HOST_WIDE_INT offset, size, max_size;
+  poly_int64 poffset, psize, pmax_size;
+  HOST_WIDE_INT offset, max_size;
   tree base;
   bool reverse;
 
@@ -3059,8 +3102,12 @@ get_access_for_expr (tree expr)
   if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  base = get_ref_base_and_extent (expr, &offset, &size, &max_size, &reverse);
-  if (max_size == -1 || !DECL_P (base))
+  base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
+				  &reverse);
+  if (!known_size_p (pmax_size)
+      || !pmax_size.is_constant (&max_size)
+      || !poffset.is_constant (&offset)
+      || !DECL_P (base))
     return NULL;
 
   if (!bitmap_bit_p (candidate_bitmap, DECL_UID (base)))
@@ -3414,24 +3461,6 @@ get_repl_default_def_ssa_name (struct access *racc)
   if (!racc->replacement_decl)
     racc->replacement_decl = create_access_replacement (racc);
   return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
-}
-
-/* Return true if REF has an VIEW_CONVERT_EXPR or a COMPONENT_REF with a
-   bit-field field declaration somewhere in it.  */
-
-static inline bool
-contains_vce_or_bfcref_p (const_tree ref)
-{
-  while (handled_component_p (ref))
-    {
-      if (TREE_CODE (ref) == VIEW_CONVERT_EXPR
-	  || (TREE_CODE (ref) == COMPONENT_REF
-	      && DECL_BIT_FIELD (TREE_OPERAND (ref, 1))))
-	return true;
-      ref = TREE_OPERAND (ref, 0);
-    }
-
-  return false;
 }
 
 /* Examine both sides of the assignment statement pointed to by STMT, replace
@@ -5369,12 +5398,12 @@ ipa_sra_check_caller (struct cgraph_node *node, void *data)
 	      continue;
 
 	  tree offset;
-	  HOST_WIDE_INT bitsize, bitpos;
+	  poly_int64 bitsize, bitpos;
 	  machine_mode mode;
 	  int unsignedp, reversep, volatilep = 0;
 	  get_inner_reference (arg, &bitsize, &bitpos, &offset, &mode,
 			       &unsignedp, &reversep, &volatilep);
-	  if (bitpos % BITS_PER_UNIT)
+	  if (!multiple_p (bitpos, BITS_PER_UNIT))
 	    {
 	      iscc->bad_arg_alignment = true;
 	      return true;

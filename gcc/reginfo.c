@@ -1,5 +1,5 @@
 /* Compute different info about registers.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -631,14 +631,16 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
 
   /* We first look for the largest integer mode that can be validly
      held in REGNO.  If none, we look for the largest floating-point mode.
-     If we still didn't find a valid mode, try CCmode.  */
+     If we still didn't find a valid mode, try CCmode.
 
+     The tests use maybe_gt rather than known_gt because we want (for example)
+     N V4SFs to win over plain V4SF even though N might be 1.  */
   FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     if (hard_regno_nregs (regno, mode) == nregs
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
 	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
-	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
+	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
@@ -646,7 +648,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
 	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
-	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
+	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_FLOAT)
@@ -654,7 +656,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
 	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
-	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
+	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
@@ -662,7 +664,7 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
 	&& targetm.hard_regno_mode_ok (regno, mode)
 	&& (!call_saved
 	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
-	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
+	&& maybe_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (found_mode)))
       found_mode = mode;
 
   if (found_mode != VOIDmode)
@@ -1206,7 +1208,9 @@ reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 inline hashval_t
 simplifiable_subregs_hasher::hash (const simplifiable_subreg *value)
 {
-  return value->shape.unique_id ();
+  inchash::hash h;
+  h.add_hwi (value->shape.unique_id ());
+  return h.end ();
 }
 
 inline bool
@@ -1231,9 +1235,11 @@ simplifiable_subregs (const subreg_shape &shape)
   if (!this_target_hard_regs->x_simplifiable_subregs)
     this_target_hard_regs->x_simplifiable_subregs
       = new hash_table <simplifiable_subregs_hasher> (30);
+  inchash::hash h;
+  h.add_hwi (shape.unique_id ());
   simplifiable_subreg **slot
     = (this_target_hard_regs->x_simplifiable_subregs
-       ->find_slot_with_hash (&shape, shape.unique_id (), INSERT));
+       ->find_slot_with_hash (&shape, h.end (), INSERT));
 
   if (!*slot)
     {
@@ -1290,11 +1296,15 @@ record_subregs_of_mode (rtx subreg, bool partial_def)
 	 subregs will be invalid.
 
 	 This relies on the fact that we've already been passed
-	 SUBREG with PARTIAL_DEF set to false.  */
-      unsigned int size = MAX (REGMODE_NATURAL_SIZE (shape.inner_mode),
-			       GET_MODE_SIZE (shape.outer_mode));
-      gcc_checking_assert (size < GET_MODE_SIZE (shape.inner_mode));
-      if (shape.offset >= size)
+	 SUBREG with PARTIAL_DEF set to false.
+
+	 The size of the outer mode must ordered wrt the size of the
+	 inner mode's registers, since otherwise we wouldn't know at
+	 compile time how many registers the outer mode occupies.  */
+      poly_uint64 size = ordered_max (REGMODE_NATURAL_SIZE (shape.inner_mode),
+				      GET_MODE_SIZE (shape.outer_mode));
+      gcc_checking_assert (known_lt (size, GET_MODE_SIZE (shape.inner_mode)));
+      if (known_ge (shape.offset, size))
 	shape.offset -= size;
       else
 	shape.offset += size;

@@ -394,7 +394,7 @@ package body System.Fat_Gen is
 
    function Model (X : T) return T is
    begin
-      return Machine (X);
+      return T'Machine (X);
    end Model;
 
    ----------
@@ -739,10 +739,11 @@ package body System.Fat_Gen is
       Result := abs X;
 
       if Result >= Radix_To_M_Minus_1 then
-         return Machine (X);
+         return T'Machine (X);
 
       else
-         Result := Machine (Radix_To_M_Minus_1 + Result) - Radix_To_M_Minus_1;
+         Result :=
+           T'Machine (Radix_To_M_Minus_1 + Result) - Radix_To_M_Minus_1;
 
          if Result > abs X then
             Result := Result - 1.0;

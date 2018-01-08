@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -183,6 +185,7 @@ static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
 static HOST_WIDE_INT xtensa_starting_frame_offset (void);
+static unsigned HOST_WIDE_INT xtensa_asan_shadow_offset (void);
 
 
 
@@ -324,6 +327,9 @@ static HOST_WIDE_INT xtensa_starting_frame_offset (void);
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET xtensa_starting_frame_offset
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET xtensa_asan_shadow_offset
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2692,7 +2698,7 @@ xtensa_call_save_reg(int regno)
 #define XTENSA_STACK_ALIGN(LOC) (((LOC) + STACK_BYTES-1) & ~(STACK_BYTES-1))
 
 long
-compute_frame_size (int size)
+compute_frame_size (poly_int64 size)
 {
   int regno;
 
@@ -4411,6 +4417,14 @@ xtensa_starting_frame_offset (void)
   if (FRAME_GROWS_DOWNWARD)
     return 0;
   return crtl->outgoing_args_size;
+}
+
+/* Implement TARGET_ASAN_SHADOW_OFFSET.  */
+
+static unsigned HOST_WIDE_INT
+xtensa_asan_shadow_offset (void)
+{
+  return HOST_WIDE_INT_UC (0x10000000);
 }
 
 #include "gt-xtensa.h"

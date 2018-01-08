@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -129,7 +129,7 @@ typedef struct _slp_instance {
   unsigned int group_size;
 
   /* The unrolling factor required to vectorized this SLP instance.  */
-  unsigned int unrolling_factor;
+  poly_uint64 unrolling_factor;
 
   /* The group of nodes that contain loads of this SLP instance.  */
   vec<slp_tree> loads;
@@ -238,8 +238,14 @@ typedef struct _loop_vec_info : public vec_info {
      PARAM_MIN_VECT_LOOP_BOUND.  */
   unsigned int th;
 
+  /* When applying loop versioning, the vector form should only be used
+     if the number of scalar iterations is >= this value, on top of all
+     the other requirements.  Ignored when loop versioning is not being
+     used.  */
+  poly_uint64 versioning_threshold;
+
   /* Unrolling factor  */
-  int vectorization_factor;
+  poly_uint64 vectorization_factor;
 
   /* Maximum runtime vectorization factor, or MAX_VECTORIZATION_FACTOR
      if there is no particular limit.  */
@@ -291,7 +297,7 @@ typedef struct _loop_vec_info : public vec_info {
 
   /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
-  unsigned slp_unrolling_factor;
+  poly_uint64 slp_unrolling_factor;
 
   /* Cost of a single scalar iteration.  */
   int single_scalar_iteration_cost;
@@ -357,6 +363,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_NITERS_UNCHANGED(L)     (L)->num_iters_unchanged
 #define LOOP_VINFO_NITERS_ASSUMPTIONS(L)   (L)->num_iters_assumptions
 #define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
+#define LOOP_VINFO_VERSIONING_THRESHOLD(L) (L)->versioning_threshold
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
 #define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor
@@ -511,6 +518,14 @@ enum slp_vect_type {
   loop_vect = 0,
   pure_slp,
   hybrid
+};
+
+/* Says whether a statement is a load, a store of a vectorized statement
+   result, or a store of an invariant value.  */
+enum vec_load_store_type {
+  VLS_LOAD,
+  VLS_STORE,
+  VLS_STORE_INVARIANT
 };
 
 /* Describes how we're going to vectorize an individual load or store,
@@ -808,8 +823,7 @@ struct dataref_aux {
    conversion.  */
 #define MAX_INTERM_CVT_STEPS         3
 
-/* The maximum vectorization factor supported by any target (V64QI).  */
-#define MAX_VECTORIZATION_FACTOR 64
+#define MAX_VECTORIZATION_FACTOR INT_MAX
 
 /* Nonzero if TYPE represents a (scalar) boolean type or type
    in the middle-end compatible with it (unsigned precision 1 integral
@@ -1102,6 +1116,16 @@ unlimited_cost_model (loop_p loop)
   return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);
 }
 
+/* Return the number of vectors of type VECTYPE that are needed to get
+   NUNITS elements.  NUNITS should be based on the vectorization factor,
+   so it is always a known multiple of the number of elements in VECTYPE.  */
+
+static inline unsigned int
+vect_get_num_vectors (poly_uint64 nunits, tree vectype)
+{
+  return exact_div (nunits, TYPE_VECTOR_SUBPARTS (vectype)).to_constant ();
+}
+
 /* Return the number of copies needed for loop vectorization when
    a statement operates on vectors of type VECTYPE.  This is the
    vectorization factor divided by the number of elements in
@@ -1110,10 +1134,42 @@ unlimited_cost_model (loop_p loop)
 static inline unsigned int
 vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
 {
-  gcc_checking_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-		       % TYPE_VECTOR_SUBPARTS (vectype) == 0);
-  return (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	  / TYPE_VECTOR_SUBPARTS (vectype));
+  return vect_get_num_vectors (LOOP_VINFO_VECT_FACTOR (loop_vinfo), vectype);
+}
+
+/* Update maximum unit count *MAX_NUNITS so that it accounts for
+   the number of units in vector type VECTYPE.  *MAX_NUNITS can be 1
+   if we haven't yet recorded any vector types.  */
+
+static inline void
+vect_update_max_nunits (poly_uint64 *max_nunits, tree vectype)
+{
+  /* All unit counts have the form current_vector_size * X for some
+     rational X, so two unit sizes must have a common multiple.
+     Everything is a multiple of the initial value of 1.  */
+  poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  *max_nunits = force_common_multiple (*max_nunits, nunits);
+}
+
+/* Return the vectorization factor that should be used for costing
+   purposes while vectorizing the loop described by LOOP_VINFO.
+   Pick a reasonable estimate if the vectorization factor isn't
+   known at compile time.  */
+
+static inline unsigned int
+vect_vf_for_cost (loop_vec_info loop_vinfo)
+{
+  return estimated_poly_value (LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+}
+
+/* Estimate the number of elements in VEC_TYPE for costing purposes.
+   Pick a reasonable estimate if the exact number isn't known at
+   compile time.  */
+
+static inline unsigned int
+vect_nunits_for_cost (tree vec_type)
+{
+  return estimated_poly_value (TYPE_VECTOR_SUBPARTS (vec_type));
 }
 
 /* Return the size of the value accessed by unvectorized data reference DR.
@@ -1138,18 +1194,20 @@ extern source_location vect_location;
 
 /* Simple loop peeling and versioning utilities for vectorizer's purposes -
    in tree-vect-loop-manip.c.  */
-extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
+extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree, tree,
+					     tree, bool);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
 						     struct loop *, edge);
-extern void vect_loop_versioning (loop_vec_info, unsigned int, bool);
+extern void vect_loop_versioning (loop_vec_info, unsigned int, bool,
+				  poly_uint64);
 extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
-				     tree *, int, bool, bool);
+				     tree *, tree *, tree *, int, bool, bool);
 extern source_location find_loop_location (struct loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
-extern unsigned int current_vector_size;
+extern poly_uint64 current_vector_size;
 extern tree get_vectype_for_scalar_type (tree);
 extern tree get_mask_type_for_scalar_type (tree);
 extern tree get_same_sized_vectype (tree, tree);
@@ -1170,7 +1228,7 @@ extern void vect_model_simple_cost (stmt_vec_info, int, enum vect_def_type *,
 				    int, stmt_vector_for_cost *,
 				    stmt_vector_for_cost *);
 extern void vect_model_store_cost (stmt_vec_info, int, vect_memory_access_type,
-				   enum vect_def_type, slp_tree,
+				   vec_load_store_type, slp_tree,
 				   stmt_vector_for_cost *,
 				   stmt_vector_for_cost *);
 extern void vect_model_load_cost (stmt_vec_info, int, vect_memory_access_type,
@@ -1204,8 +1262,8 @@ extern void vect_get_load_cost (struct data_reference *, int, bool,
 extern void vect_get_store_cost (struct data_reference *, int,
 				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (enum tree_code, tree);
-extern tree vect_gen_perm_mask_any (tree, vec_perm_indices);
-extern tree vect_gen_perm_mask_checked (tree, vec_perm_indices);
+extern tree vect_gen_perm_mask_any (tree, const vec_perm_indices &);
+extern tree vect_gen_perm_mask_checked (tree, const vec_perm_indices &);
 extern void optimize_mask_stores (struct loop*);
 
 /* In tree-vect-data-refs.c.  */
@@ -1214,7 +1272,7 @@ extern enum dr_alignment_support vect_supportable_dr_alignment
                                            (struct data_reference *, bool);
 extern tree vect_get_smallest_scalar_type (gimple *, HOST_WIDE_INT *,
                                            HOST_WIDE_INT *);
-extern bool vect_analyze_data_ref_dependences (loop_vec_info, int *);
+extern bool vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
 extern bool vect_slp_analyze_instance_dependence (slp_instance);
 extern bool vect_enhance_data_refs_alignment (loop_vec_info);
 extern bool vect_analyze_data_refs_alignment (loop_vec_info);
@@ -1224,7 +1282,7 @@ extern bool vect_analyze_data_ref_accesses (vec_info *);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_check_gather_scatter (gimple *, loop_vec_info,
 				       gather_scatter_info *);
-extern bool vect_analyze_data_refs (vec_info *, int *);
+extern bool vect_analyze_data_refs (vec_info *, poly_uint64 *);
 extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
@@ -1255,10 +1313,14 @@ extern tree vect_create_addr_base_for_vector_ref (gimple *, gimple_seq *,
 /* FORNOW: Used in tree-parloops.c.  */
 extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *,
 					    bool *, bool);
+/* Used in gimple-loop-interchange.c.  */
+extern bool check_reduction_path (location_t, loop_p, gphi *, tree,
+				  enum tree_code);
 /* Drive for loop analysis stage.  */
 extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
-extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *, bool);
+extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
+					 tree *, bool);
 /* Drive for loop transformation stage.  */
 extern struct loop *vect_transform_loop (loop_vec_info);
 extern loop_vec_info vect_analyze_loop_form (struct loop *);
@@ -1278,8 +1340,8 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 /* In tree-vect-slp.c.  */
 extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
-                                          gimple_stmt_iterator *, int,
-                                          slp_instance, bool, unsigned *);
+					  gimple_stmt_iterator *, poly_uint64,
+					  slp_instance, bool, unsigned *);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern bool vect_schedule_slp (vec_info *);
 extern bool vect_analyze_slp (vec_info *, unsigned);

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3130,6 +3130,19 @@ the CFI label attached to the insn, @var{pattern} is the pattern of
 the insn and @var{index} is @code{UNSPEC_INDEX} or @code{UNSPECV_INDEX}.
 @end deftypefn
 
+@deftypefn {Target Hook} {unsigned int} TARGET_DWARF_POLY_INDETERMINATE_VALUE (unsigned int @var{i}, unsigned int *@var{factor}, int *@var{offset})
+Express the value of @code{poly_int} indeterminate @var{i} as a DWARF
+expression, with @var{i} counting from 1.  Return the number of a DWARF
+register @var{R} and set @samp{*@var{factor}} and @samp{*@var{offset}} such
+that the value of the indeterminate is:
+@smallexample
+value_of(@var{R}) / @var{factor} - @var{offset}
+@end smallexample
+
+A target only needs to define this hook if it sets
+@samp{NUM_POLY_INT_COEFFS} to a value greater than 1.
+@end deftypefn
+
 @defmac INCOMING_FRAME_SP_OFFSET
 A C expression whose value is an integer giving the offset, in bytes,
 from the value of the stack pointer register to the top of the stack
@@ -3806,7 +3819,7 @@ suppresses this behavior and causes the parameter to be passed on the
 stack in its natural location.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_RETURN_POPS_ARGS (tree @var{fundecl}, tree @var{funtype}, int @var{size})
+@deftypefn {Target Hook} poly_int64 TARGET_RETURN_POPS_ARGS (tree @var{fundecl}, tree @var{funtype}, poly_int64 @var{size})
 This target hook returns the number of bytes of its own arguments that
 a function pops on returning, or 0 if the function pops no arguments
 and the caller must therefore pop them all after the function returns.
@@ -5798,8 +5811,24 @@ correct for most targets.
 Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (machine_mode, @var{vec_perm_indices})
-Return true if a vector created for @code{vec_perm_const} is valid.
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST (machine_mode @var{mode}, rtx @var{output}, rtx @var{in0}, rtx @var{in1}, const vec_perm_indices @var{&sel})
+This hook is used to test whether the target can permute up to two
+vectors of mode @var{mode} using the permutation vector @code{sel}, and
+also to emit such a permutation.  In the former case @var{in0}, @var{in1}
+and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are
+the source vectors and @var{out} is the destination vector; all three are
+registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if
+@var{sel} describes a permutation on one vector instead of two.
+
+Return true if the operation is possible, emitting instructions for it
+if rtxes are provided.
+
+@cindex @code{vec_perm@var{m}} instruction pattern
+If the hook returns false for a mode with multibyte elements, GCC will
+try the equivalent byte operation.  If that also fails, it will try forcing
+the selector into a register and using the @var{vec_perm@var{mode}}
+instruction pattern.  There is no need for the hook to handle these two
+implementation approaches itself.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_CONVERSION (unsigned @var{code}, tree @var{dest_type}, tree @var{src_type})
@@ -5844,14 +5873,18 @@ equal to @code{word_mode}, because the vectorizer can do some
 transformations even in absence of specialized @acronym{SIMD} hardware.
 @end deftypefn
 
-@deftypefn {Target Hook} {unsigned int} TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (void)
-This hook should return a mask of sizes that should be iterated over
-after trying to autovectorize using the vector size derived from the
-mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
-The default is zero which means to not iterate over other vector sizes.
+@deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes})
+If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not
+the only one that is worth considering, this hook should add all suitable
+vector sizes to @var{sizes}, in order of decreasing preference.  The first
+one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
+
+The hook does not need to do anything if the vector returned by
+@code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant
+for autovectorization.  The default implementation does nothing.
 @end deftypefn
 
-@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
+@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (poly_uint64 @var{nunits}, poly_uint64 @var{length})
 A vector mask is a value that holds one boolean result for every element
 in a vector.  This hook returns the machine mode that should be used to
 represent such a mask when the vector in question is @var{length} bytes
@@ -6723,6 +6756,12 @@ delay slots.  As the eager delay slot filler can decrease performance,
 disabling it is beneficial when ordinary branches are available.  Use of
 delay slot branches filled using the basic filler is often still desirable
 as the delay slot can hide a pipeline bubble.
+@end deftypefn
+
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val})
+Return an estimate of the runtime value of @var{val}, for use in
+things like cost calculations or profiling frequencies.  The default
+implementation returns the lowest possible value of @var{val}.
 @end deftypefn
 
 @node Scheduling
@@ -9591,8 +9630,8 @@ A C expression that returns the type of debugging output GCC should
 produce when the user specifies just @option{-g}.  Define
 this if you have arranged for GCC to support more than one format of
 debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
-@code{DWARF_DEBUG}, @code{DWARF2_DEBUG},
-@code{XCOFF_DEBUG}, @code{VMS_DEBUG}, and @code{VMS_AND_DWARF2_DEBUG}.
+@code{DWARF2_DEBUG}, @code{XCOFF_DEBUG}, @code{VMS_DEBUG},
+and @code{VMS_AND_DWARF2_DEBUG}.
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
@@ -10795,7 +10834,7 @@ nevertheless truncate the shift count, you may get better code
 by overriding it.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_TRULY_NOOP_TRUNCATION (unsigned int @var{outprec}, unsigned int @var{inprec})
+@deftypefn {Target Hook} bool TARGET_TRULY_NOOP_TRUNCATION (poly_uint64 @var{outprec}, poly_uint64 @var{inprec})
 This hook returns true if it is safe to ``convert'' a value of
 @var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is
 smaller than @var{inprec}) by merely operating on it as if it had only

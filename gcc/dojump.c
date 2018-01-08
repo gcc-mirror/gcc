@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -89,8 +89,8 @@ do_pending_stack_adjust (void)
 {
   if (inhibit_defer_pop == 0)
     {
-      if (pending_stack_adjust != 0)
-        adjust_stack (GEN_INT (pending_stack_adjust));
+      if (maybe_ne (pending_stack_adjust, 0))
+	adjust_stack (gen_int_mode (pending_stack_adjust, Pmode));
       pending_stack_adjust = 0;
     }
 }
@@ -1002,8 +1002,8 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
   do_pending_stack_adjust ();
 
   code = unsignedp ? unsigned_condition (code) : code;
-  if (0 != (tem = simplify_relational_operation (code, mode, VOIDmode,
-						 op0, op1)))
+  if ((tem = simplify_relational_operation (code, mode, VOIDmode,
+					    op0, op1)) != 0)
     {
       if (CONSTANT_P (tem))
 	{

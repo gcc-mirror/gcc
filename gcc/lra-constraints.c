@@ -1,5 +1,5 @@
 /* Code for RTL transformations to satisfy insn constraints.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
    This file is part of GCC.
@@ -591,7 +591,8 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 	      {
 		if (in_subreg_p)
 		  continue;
-		if (GET_MODE_SIZE (GET_MODE (reg)) < GET_MODE_SIZE (mode))
+		if (maybe_lt (GET_MODE_SIZE (GET_MODE (reg)),
+			      GET_MODE_SIZE (mode)))
 		  continue;
 		reg = lowpart_subreg (mode, reg, GET_MODE (reg));
 		if (reg == NULL_RTX || GET_CODE (reg) != SUBREG)
@@ -786,6 +787,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
 	    return false;
 	  break;
 
+	case 'p':
+	  if (maybe_ne (SUBREG_BYTE (x), SUBREG_BYTE (y)))
+	    return false;
+	  break;
+
 	case 'e':
 	  val = operands_match_p (XEXP (x, i), XEXP (y, i), -1);
 	  if (val == 0)
@@ -822,6 +828,7 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
   ((MODE) != VOIDmode				\
    && CONSTANT_P (X)				\
    && GET_CODE (X) != HIGH			\
+   && GET_MODE_SIZE (MODE).is_constant ()	\
    && !targetm.cannot_force_const_mem (MODE, X))
 
 /* True if C is a non-empty register class that has too few registers
@@ -928,6 +935,8 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   push_to_sequence (*before);
   if (inmode != outmode)
     {
+      /* process_alt_operands has already checked that the mode sizes
+	 are ordered.  */
       if (partial_subreg_p (outmode, inmode))
 	{
 	  reg = new_in_reg
@@ -974,7 +983,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	      if (REG_P (subreg_reg)
 		  && (int) REGNO (subreg_reg) < lra_new_regno_start
 		  && GET_MODE (subreg_reg) == outmode
-		  && SUBREG_BYTE (in_rtx) == SUBREG_BYTE (new_in_reg)
+		  && known_eq (SUBREG_BYTE (in_rtx), SUBREG_BYTE (new_in_reg))
 		  && find_regno_note (curr_insn, REG_DEAD, REGNO (subreg_reg))
 		  && (! early_clobber_p
 		      || check_conflict_input_operands (REGNO (subreg_reg),
@@ -1387,7 +1396,7 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
 	 -fno-split-wide-types specified.  */
       if (!REG_P (reg)
 	  || in_class_p (reg, cl, &new_class)
-	  || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (ptr_mode))
+	  || known_le (GET_MODE_SIZE (mode), GET_MODE_SIZE (ptr_mode)))
        loc = &SUBREG_REG (*loc);
     }
 
@@ -1548,9 +1557,10 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     missing important data from memory when the inner is wider than
 	     outer.  This rule only applies to modes that are no wider than
 	     a word.  */
-	  if (!(GET_MODE_PRECISION (mode) != GET_MODE_PRECISION (innermode)
-		&& GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-		&& GET_MODE_SIZE (innermode) <= UNITS_PER_WORD
+	  if (!(maybe_ne (GET_MODE_PRECISION (mode),
+			  GET_MODE_PRECISION (innermode))
+		&& known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+		&& known_le (GET_MODE_SIZE (innermode), UNITS_PER_WORD)
 		&& WORD_REGISTER_OPERATIONS)
 	      && (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
 		    && targetm.slow_unaligned_access (mode, MEM_ALIGN (subst)))
@@ -2106,6 +2116,13 @@ process_alt_operands (int only_alternative)
 		    p = end;
 		    len = 0;
 		    lra_assert (nop > m);
+
+		    /* Reject matches if we don't know which operand is
+		       bigger.  This situation would arguably be a bug in
+		       an .md pattern, but could also occur in a user asm.  */
+		    if (!ordered_p (GET_MODE_SIZE (biggest_mode[m]),
+				    GET_MODE_SIZE (biggest_mode[nop])))
+		      break;
 
 		    this_alternative_matches = m;
 		    m_hregno = get_hard_regno (*curr_id->operand_loc[m], false);
@@ -2849,7 +2866,12 @@ process_alt_operands (int only_alternative)
 		  /* If it is a result of recent elimination in move
 		     insn we can transform it into an add still by
 		     using this alternative.  */
-		  && GET_CODE (no_subreg_reg_operand[1]) != PLUS)))
+		  && GET_CODE (no_subreg_reg_operand[1]) != PLUS
+		  /* Likewise if the source has been replaced with an
+		     equivalent value.  This only happens once -- the reload
+		     will use the equivalent value instead of the register it
+		     replaces -- so there should be no danger of cycling.  */
+		  && !equiv_substition_p[1])))
 	{
 	  /* We have a move insn and a new reload insn will be similar
 	     to the current insn.  We should avoid such situation as
@@ -3084,7 +3106,8 @@ static bool
 equiv_address_substitution (struct address_info *ad)
 {
   rtx base_reg, new_base_reg, index_reg, new_index_reg, *base_term, *index_term;
-  HOST_WIDE_INT disp, scale;
+  poly_int64 disp;
+  HOST_WIDE_INT scale;
   bool change_p;
 
   base_term = strip_subreg (ad->base_term);
@@ -3115,6 +3138,7 @@ equiv_address_substitution (struct address_info *ad)
     }
   if (base_reg != new_base_reg)
     {
+      poly_int64 offset;
       if (REG_P (new_base_reg))
 	{
 	  *base_term = new_base_reg;
@@ -3122,10 +3146,10 @@ equiv_address_substitution (struct address_info *ad)
 	}
       else if (GET_CODE (new_base_reg) == PLUS
 	       && REG_P (XEXP (new_base_reg, 0))
-	       && CONST_INT_P (XEXP (new_base_reg, 1))
+	       && poly_int_rtx_p (XEXP (new_base_reg, 1), &offset)
 	       && can_add_disp_p (ad))
 	{
-	  disp += INTVAL (XEXP (new_base_reg, 1));
+	  disp += offset;
 	  *base_term = XEXP (new_base_reg, 0);
 	  change_p = true;
 	}
@@ -3134,6 +3158,7 @@ equiv_address_substitution (struct address_info *ad)
     }
   if (index_reg != new_index_reg)
     {
+      poly_int64 offset;
       if (REG_P (new_index_reg))
 	{
 	  *index_term = new_index_reg;
@@ -3141,16 +3166,16 @@ equiv_address_substitution (struct address_info *ad)
 	}
       else if (GET_CODE (new_index_reg) == PLUS
 	       && REG_P (XEXP (new_index_reg, 0))
-	       && CONST_INT_P (XEXP (new_index_reg, 1))
+	       && poly_int_rtx_p (XEXP (new_index_reg, 1), &offset)
 	       && can_add_disp_p (ad)
 	       && (scale = get_index_scale (ad)))
 	{
-	  disp += INTVAL (XEXP (new_index_reg, 1)) * scale;
+	  disp += offset * scale;
 	  *index_term = XEXP (new_index_reg, 0);
 	  change_p = true;
 	}
     }
-  if (disp != 0)
+  if (maybe_ne (disp, 0))
     {
       if (ad->disp != NULL)
 	*ad->disp = plus_constant (GET_MODE (*ad->inner), *ad->disp, disp);
@@ -3222,7 +3247,8 @@ process_address_1 (int nop, bool check_only_p,
   /* Do not attempt to decompose arbitrary addresses generated by combine
      for asm operands with loose constraints, e.g 'X'.  */
   else if (MEM_P (op)
-	   && !(get_constraint_type (cn) == CT_FIXED_FORM
+	   && !(INSN_CODE (curr_insn) < 0
+		&& get_constraint_type (cn) == CT_FIXED_FORM
 	        && constraint_satisfied_p (op, cn)))
     decompose_mem_address (&ad, op);
   else if (GET_CODE (op) == SUBREG
@@ -3525,7 +3551,7 @@ process_address (int nop, bool check_only_p,
 
    Return pseudo containing the result.	 */
 static rtx
-emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
+emit_inc (enum reg_class new_rclass, rtx in, rtx value, poly_int64 inc_amount)
 {
   /* REG or MEM to be copied and incremented.  */
   rtx incloc = XEXP (value, 0);
@@ -3553,7 +3579,7 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
       if (GET_CODE (value) == PRE_DEC || GET_CODE (value) == POST_DEC)
 	inc_amount = -inc_amount;
 
-      inc = GEN_INT (inc_amount);
+      inc = gen_int_mode (inc_amount, GET_MODE (value));
     }
 
   if (! post && REG_P (incloc))
@@ -3629,9 +3655,10 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
 	 register.  */
       if (plus_p)
 	{
-	  if (CONST_INT_P (inc))
+	  poly_int64 offset;
+	  if (poly_int_rtx_p (inc, &offset))
 	    emit_insn (gen_add2_insn (result,
-				      gen_int_mode (-INTVAL (inc),
+				      gen_int_mode (-offset,
 						    GET_MODE (result))));
 	  else
 	    emit_insn (gen_sub2_insn (result, inc));
@@ -3999,10 +4026,13 @@ curr_insn_transform (bool check_only_p)
       if (INSN_CODE (curr_insn) >= 0
           && (p = get_insn_name (INSN_CODE (curr_insn))) != NULL)
         fprintf (lra_dump_file, " {%s}", p);
-      if (curr_id->sp_offset != 0)
-        fprintf (lra_dump_file, " (sp_off=%" HOST_WIDE_INT_PRINT "d)",
-		 curr_id->sp_offset);
-       fprintf (lra_dump_file, "\n");
+      if (maybe_ne (curr_id->sp_offset, 0))
+	{
+	  fprintf (lra_dump_file, " (sp_off=");
+	  print_dec (curr_id->sp_offset, lra_dump_file);
+	  fprintf (lra_dump_file, ")");
+	}
+      fprintf (lra_dump_file, "\n");
     }
 
   /* Right now, for any pair of operands I and J that are required to
@@ -4197,7 +4227,7 @@ curr_insn_transform (bool check_only_p)
 	{
 	  machine_mode mode;
 	  rtx reg, *loc;
-	  int hard_regno, byte;
+	  int hard_regno;
 	  enum op_type type = curr_static_id->operand[i].type;
 
 	  loc = curr_id->operand_loc[i];
@@ -4205,7 +4235,7 @@ curr_insn_transform (bool check_only_p)
 	  if (GET_CODE (*loc) == SUBREG)
 	    {
 	      reg = SUBREG_REG (*loc);
-	      byte = SUBREG_BYTE (*loc);
+	      poly_int64 byte = SUBREG_BYTE (*loc);
 	      if (REG_P (reg)
 		  /* Strict_low_part requires reloading the register and not
 		     just the subreg.  Likewise for a strict subreg no wider
@@ -4221,9 +4251,9 @@ curr_insn_transform (bool check_only_p)
 			      || (simplify_subreg_regno
 				  (ira_class_hard_regs[goal_alt[i]][0],
 				   GET_MODE (reg), byte, mode) >= 0)))
-		      || (GET_MODE_PRECISION (mode)
-			  < GET_MODE_PRECISION (GET_MODE (reg))
-			  && GET_MODE_SIZE (GET_MODE (reg)) <= UNITS_PER_WORD
+		      || (partial_subreg_p (mode, GET_MODE (reg))
+			  && known_le (GET_MODE_SIZE (GET_MODE (reg)),
+				       UNITS_PER_WORD)
 			  && WORD_REGISTER_OPERATIONS)))
 		{
 		  /* An OP_INOUT is required when reloading a subreg of a
@@ -4723,8 +4753,8 @@ lra_constraints (bool first_p)
 		/* Prevent access beyond equivalent memory for
 		   paradoxical subregs.  */
 		|| (MEM_P (x)
-		    && (GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
-			> GET_MODE_SIZE (GET_MODE (x))))
+		    && maybe_gt (GET_MODE_SIZE (lra_reg_info[i].biggest_mode),
+				 GET_MODE_SIZE (GET_MODE (x))))
 		|| (pic_offset_table_rtx
 		    && ((CONST_POOL_OK_P (PSEUDO_REGNO_MODE (i), x)
 			 && (targetm.preferred_reload_class
@@ -5264,10 +5294,11 @@ inherit_reload_reg (bool def_p, int original_regno,
       lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
       if (lra_dump_file != NULL)
 	{
+	  basic_block bb = BLOCK_FOR_INSN (usage_insn);
 	  fprintf (lra_dump_file,
 		   "    Inheritance reuse change %d->%d (bb%d):\n",
 		   original_regno, REGNO (new_reg),
-		   BLOCK_FOR_INSN (usage_insn)->index);
+		   bb ? bb->index : -1);
 	  dump_insn_slim (lra_dump_file, as_a <rtx_insn *> (usage_insn));
 	}
     }

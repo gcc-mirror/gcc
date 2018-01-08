@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -4372,6 +4372,8 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
 	= vec_copy_and_insert (*args, align_arg, 1);
       cand = perform_overload_resolution (fns, align_args, &candidates,
 					  &any_viable_p, tf_none);
+      if (cand)
+	*args = align_args;
       /* If no aligned allocation function matches, try again without the
 	 alignment.  */
     }
@@ -4917,8 +4919,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	}
 
       if (!same_type_p (arg2_type, arg3_type)
-	  || TYPE_VECTOR_SUBPARTS (arg1_type)
-	     != TYPE_VECTOR_SUBPARTS (arg2_type)
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (arg1_type),
+		       TYPE_VECTOR_SUBPARTS (arg2_type))
 	  || TYPE_SIZE (arg1_type) != TYPE_SIZE (arg2_type))
 	{
 	  if (complain & tf_error)
@@ -7348,7 +7350,7 @@ type_passed_as (tree type)
       /* There are no other pointers to this temporary.  */
       type = cp_build_qualified_type (type, TYPE_QUAL_RESTRICT);
     }
-  else if (targetm.calls.promote_prototypes (type)
+  else if (targetm.calls.promote_prototypes (NULL_TREE)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
 	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
@@ -7388,7 +7390,7 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   /* Pass classes with copy ctors by invisible reference.  */
   else if (TREE_ADDRESSABLE (type))
     val = build1 (ADDR_EXPR, build_reference_type (type), val);
-  else if (targetm.calls.promote_prototypes (type)
+  else if (targetm.calls.promote_prototypes (NULL_TREE)
 	   && INTEGRAL_TYPE_P (type)
 	   && COMPLETE_TYPE_P (type)
 	   && tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (integer_type_node)))
@@ -7422,9 +7424,6 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 int
 magic_varargs_p (tree fn)
 {
-  if (flag_cilkplus && is_cilkplus_reduce_builtin (fn) != BUILT_IN_NONE)
-    return 2;
-
   if (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
     switch (DECL_FUNCTION_CODE (fn))
       {
@@ -8648,38 +8647,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       /* Warn if the built-in writes to an object of a non-trivial type.  */
       if (nargs)
 	maybe_warn_class_memaccess (loc, fndecl, argarray);
-    }
-
-    /* If it is a built-in array notation function, then the return type of
-     the function is the element type of the array passed in as array 
-     notation (i.e. the first parameter of the function).  */
-  if (flag_cilkplus && TREE_CODE (fn) == CALL_EXPR) 
-    {
-      enum built_in_function bif = 
-	is_cilkplus_reduce_builtin (CALL_EXPR_FN (fn));
-      if (bif == BUILT_IN_CILKPLUS_SEC_REDUCE_ADD
-	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MUL
-	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX
-	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN
-	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE
-	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
-	{ 
-	  if (call_expr_nargs (fn) == 0)
-	    {
-	      error_at (EXPR_LOCATION (fn), "Invalid builtin arguments");
-	      return error_mark_node;
-	    }
-	  /* for bif == BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_ZERO or
-	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO or
-	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_NONZERO or 
-	     BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_NONZERO or
-	     BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND or
-             BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
-	     The pre-defined return-type is the correct one.  */
-	  tree array_ntn = CALL_EXPR_ARG (fn, 0); 
-	  TREE_TYPE (fn) = TREE_TYPE (array_ntn); 
-	  return fn;
-	}
     }
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))

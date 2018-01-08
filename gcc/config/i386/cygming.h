@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -447,10 +447,10 @@ do {						\
 #define TARGET_USE_LOCAL_THUNK_ALIAS_P(DECL) (!DECL_ONE_ONLY (DECL))
 
 #define SUBTARGET_ATTRIBUTE_TABLE \
-  { "selectany", 0, 0, true, false, false, ix86_handle_selectany_attribute, \
-    false }
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+  { "selectany", 0, 0, true, false, false, false, \
+    ix86_handle_selectany_attribute, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
 
 /*  mcount() does not need a counter variable.  */
 #undef NO_PROFILE_COUNTERS

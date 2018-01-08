@@ -315,7 +315,8 @@ Variable_declaration_statement::do_get_backend(Translate_context* context)
   if (binit != NULL)
     {
       Expression* e = Expression::make_temporary_reference(temp, loc);
-      e = Expression::make_unary(OPERATOR_MULT, e, loc);
+      e = Expression::make_dereference(e, Expression::NIL_CHECK_NOT_NEEDED,
+                                       loc);
       Bexpression* be = e->get_backend(context);
       set = context->backend()->assignment_statement(bfunction, be, binit, loc);
     }
@@ -740,7 +741,9 @@ Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 					    a1, a2, a3);
       Type* ptrval_type = Type::make_pointer_type(mt->val_type());
       call = Expression::make_cast(ptrval_type, call, loc);
-      Expression* indir = Expression::make_unary(OPERATOR_MULT, call, loc);
+      Expression* indir =
+          Expression::make_dereference(call, Expression::NIL_CHECK_NOT_NEEDED,
+                                       loc);
       ref = Expression::make_temporary_reference(val_temp, loc);
       b->add_statement(Statement::make_assignment(indir, ref, loc));
 
@@ -1292,7 +1295,8 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
 
   // val = *val__ptr_temp
   ref = Expression::make_temporary_reference(val_ptr_temp, loc);
-  Expression* ind = Expression::make_unary(OPERATOR_MULT, ref, loc);
+  Expression* ind =
+      Expression::make_dereference(ref, Expression::NIL_CHECK_NOT_NEEDED, loc);
   s = Statement::make_assignment(this->val_, ind, loc);
   b->add_statement(s);
 
@@ -2367,8 +2371,10 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   // ones used in build_struct.
   Expression* thunk_parameter = Expression::make_var_reference(named_parameter,
 							       location);
-  thunk_parameter = Expression::make_unary(OPERATOR_MULT, thunk_parameter,
-					   location);
+  thunk_parameter =
+      Expression::make_dereference(thunk_parameter,
+                                   Expression::NIL_CHECK_NOT_NEEDED,
+                                   location);
 
   Interface_field_reference_expression* interface_method =
     ce->fn()->interface_field_reference_expression();
@@ -2421,8 +2427,10 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 	    {
 	      Expression* thunk_param =
 		Expression::make_var_reference(named_parameter, location);
-	      thunk_param =
-		Expression::make_unary(OPERATOR_MULT, thunk_param, location);
+             thunk_param =
+                 Expression::make_dereference(thunk_param,
+                                              Expression::NIL_CHECK_NOT_NEEDED,
+                                              location);
 	      param = Expression::make_field_reference(thunk_param,
 						       next_index,
 						       location);
@@ -4858,8 +4866,8 @@ Select_clauses::get_backend(Translate_context* context,
 			    Location location)
 {
   size_t count = this->clauses_.size();
-  std::vector<std::vector<Bexpression*> > cases(count);
-  std::vector<Bstatement*> clauses(count);
+  std::vector<std::vector<Bexpression*> > cases(count + 1);
+  std::vector<Bstatement*> clauses(count + 1);
 
   Type* int_type = Type::lookup_integer_type("int");
 
@@ -4897,10 +4905,15 @@ Select_clauses::get_backend(Translate_context* context,
       return context->backend()->expression_statement(bfunction, bcall);
     }
 
+  Bfunction* bfunction = context->function()->func_value()->get_decl();
+
+  Expression* crash = Runtime::make_call(Runtime::UNREACHABLE, location, 0);
+  Bexpression* bcrash = crash->get_backend(context);
+  clauses[count] = context->backend()->expression_statement(bfunction, bcrash);
+
   std::vector<Bstatement*> statements;
   statements.reserve(2);
 
-  Bfunction* bfunction = context->function()->func_value()->get_decl();
   Bstatement* switch_stmt = context->backend()->switch_statement(bfunction,
 								 bcall,
 								 cases,
@@ -5837,7 +5850,8 @@ For_range_statement::lower_range_map(Gogo* gogo,
   Expression* lhs = Expression::make_temporary_reference(index_temp, loc);
   Expression* rhs = Expression::make_temporary_reference(hiter, loc);
   rhs = Expression::make_field_reference(ref, 0, loc);
-  rhs = Expression::make_unary(OPERATOR_MULT, ref, loc);
+  rhs = Expression::make_dereference(ref, Expression::NIL_CHECK_NOT_NEEDED,
+                                     loc);
   Statement* set = Statement::make_assignment(lhs, rhs, loc);
   iter_init->add_statement(set);
 
@@ -5846,7 +5860,8 @@ For_range_statement::lower_range_map(Gogo* gogo,
       lhs = Expression::make_temporary_reference(value_temp, loc);
       rhs = Expression::make_temporary_reference(hiter, loc);
       rhs = Expression::make_field_reference(rhs, 1, loc);
-      rhs = Expression::make_unary(OPERATOR_MULT, rhs, loc);
+      rhs = Expression::make_dereference(rhs, Expression::NIL_CHECK_NOT_NEEDED,
+                                         loc);
       set = Statement::make_assignment(lhs, rhs, loc);
       iter_init->add_statement(set);
     }

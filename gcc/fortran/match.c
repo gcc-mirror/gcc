@@ -1,5 +1,5 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1240,6 +1240,7 @@ loop:
 	default:
 	  gfc_internal_error ("gfc_match(): Bad match code %c", c);
 	}
+      /* FALLTHRU */
 
     default:
 
@@ -2105,27 +2106,31 @@ gfc_match_type_spec (gfc_typespec *ts)
       return m;
     }
 
-  if (gfc_match ("logical") == MATCH_YES)
-    {
-      ts->type = BT_LOGICAL;
-      ts->kind = gfc_default_logical_kind;
-      goto kind_selector;
-    }
-
   /* REAL is a real pain because it can be a type, intrinsic subprogram,
      or list item in a type-list of an OpenMP reduction clause.  Need to
      differentiate REAL([KIND]=scalar-int-initialization-expr) from
-     REAL(A,[KIND]) and REAL(KIND,A).  */
+     REAL(A,[KIND]) and REAL(KIND,A).  Logically, when this code was
+     written the use of LOGICAL as a type-spec or intrinsic subprogram 
+     was overlooked.  */
 
   m = gfc_match (" %n", name);
-  if (m == MATCH_YES && strcmp (name, "real") == 0)
+  if (m == MATCH_YES
+      && (strcmp (name, "real") == 0 || strcmp (name, "logical") == 0))
     {
       char c;
       gfc_expr *e;
       locus where;
 
-      ts->type = BT_REAL;
-      ts->kind = gfc_default_real_kind;
+      if (*name == 'r')
+	{
+	  ts->type = BT_REAL;
+	  ts->kind = gfc_default_real_kind;
+	}
+      else
+	{
+	  ts->type = BT_LOGICAL;
+	  ts->kind = gfc_default_logical_kind;
+	}
 
       gfc_gobble_whitespace ();
 
@@ -2157,7 +2162,7 @@ gfc_match_type_spec (gfc_typespec *ts)
 	  c = gfc_next_char ();
 	  if (c == '=')
 	    {
-	      if (strcmp(name, "a") == 0)
+	      if (strcmp(name, "a") == 0 || strcmp(name, "l") == 0)
 		return MATCH_NO;
 	      else if (strcmp(name, "kind") == 0)
 		goto found;
@@ -2197,7 +2202,7 @@ found:
 
 	  gfc_next_char (); /* Burn the ')'. */
 	  ts->kind = (int) mpz_get_si (e->value.integer);
-	  if (gfc_validate_kind (BT_REAL, ts->kind , true) == -1)
+	  if (gfc_validate_kind (ts->type, ts->kind , true) == -1)
 	    {
 	      gfc_error ("Invalid type-spec at %C");
 	      return MATCH_ERROR;
@@ -2543,8 +2548,8 @@ gfc_match_do (void)
 
   old_loc = gfc_current_locus;
 
+  memset (&iter, '\0', sizeof (gfc_iterator));
   label = NULL;
-  iter.var = iter.start = iter.end = iter.step = NULL;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -2988,7 +2993,7 @@ gfc_match_stopcode (gfc_statement st)
     {
       if (st == ST_ERROR_STOP)
 	{
-	  if (!gfc_notify_std (GFC_STD_F2015, "%s statement at %C in PURE "
+	  if (!gfc_notify_std (GFC_STD_F2018, "%s statement at %C in PURE "
 			       "procedure", gfc_ascii_statement (st)))
 	    goto cleanup;
 	}
@@ -4088,9 +4093,9 @@ gfc_match_allocate (void)
   gfc_typespec ts;
   gfc_symbol *sym;
   match m;
-  locus old_locus, deferred_locus;
+  locus old_locus, deferred_locus, assumed_locus;
   bool saw_stat, saw_errmsg, saw_source, saw_mold, saw_deferred, b1, b2, b3;
-  bool saw_unlimited = false;
+  bool saw_unlimited = false, saw_assumed = false;
 
   head = tail = NULL;
   stat = errmsg = source = mold = tmp = NULL;
@@ -4121,6 +4126,9 @@ gfc_match_allocate (void)
     }
   else
     {
+      /* Needed for the F2008:C631 check below. */
+      assumed_locus = gfc_current_locus;
+
       if (gfc_match (" :: ") == MATCH_YES)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2003, "typespec in ALLOCATE at %L",
@@ -4135,15 +4143,19 @@ gfc_match_allocate (void)
 	    }
 
 	  if (ts.type == BT_CHARACTER)
-	    ts.u.cl->length_from_typespec = true;
+	    {
+	      if (!ts.u.cl->length)
+		saw_assumed = true;
+	      else
+		ts.u.cl->length_from_typespec = true;
+	    }
 
-	  /* TODO understand why this error does not appear but, instead,
-	     the derived type is caught as a variable in primary.c.  */
-	  if (gfc_spec_list_type (type_param_spec_list, NULL) != SPEC_EXPLICIT)
+	  if (type_param_spec_list
+	      && gfc_spec_list_type (type_param_spec_list, NULL)
+		 == SPEC_DEFERRED)
 	    {
 	      gfc_error ("The type parameter spec list in the type-spec at "
-			 "%L cannot contain ASSUMED or DEFERRED parameters",
-			 &old_locus);
+			 "%L cannot contain DEFERRED parameters", &old_locus);
 	      goto cleanup;
 	    }
 	}
@@ -4182,6 +4194,19 @@ gfc_match_allocate (void)
 
       if (impure)
 	gfc_unset_implicit_pure (NULL);
+
+      /* F2008:C631 (R626) A type-param-value in a type-spec shall be an
+	 asterisk if and only if each allocate-object is a dummy argument
+	 for which the corresponding type parameter is assumed.  */
+      if (saw_assumed
+	  && (tail->expr->ts.deferred
+	      || tail->expr->ts.u.cl->length
+	      || tail->expr->symtree->n.sym->attr.dummy == 0))
+	{
+	  gfc_error ("Incompatible allocate-object at %C for CHARACTER "
+		     "type-spec at %L", &assumed_locus);
+	  goto cleanup;
+	}
 
       if (tail->expr->ts.deferred)
 	{
@@ -5982,7 +6007,7 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
 {
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symtree *tmp;
-  int charlen = 0;
+  HOST_WIDE_INT charlen = 0;
 
   if (ts->type == BT_CLASS || ts->type == BT_DERIVED)
     return NULL;
@@ -5993,14 +6018,14 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
 
   if (ts->type == BT_CHARACTER && ts->u.cl && ts->u.cl->length
       && ts->u.cl->length->expr_type == EXPR_CONSTANT)
-    charlen = mpz_get_si (ts->u.cl->length->value.integer);
+    charlen = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
 
   if (ts->type != BT_CHARACTER)
     sprintf (name, "__tmp_%s_%d", gfc_basic_typename (ts->type),
 	     ts->kind);
   else
-    sprintf (name, "__tmp_%s_%d_%d", gfc_basic_typename (ts->type),
-	     charlen, ts->kind);
+    snprintf (name, sizeof (name), "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d",
+	      gfc_basic_typename (ts->type), charlen, ts->kind);
 
   gfc_get_sym_tree (name, gfc_current_ns, &tmp, false);
   gfc_add_type (tmp->n.sym, ts, NULL);

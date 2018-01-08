@@ -1,5 +1,5 @@
 /* All matcher functions.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
 This file is part of GCC.
@@ -245,6 +245,7 @@ match gfc_match_contiguous (void);
 match gfc_match_dimension (void);
 match gfc_match_external (void);
 match gfc_match_gcc_attributes (void);
+match gfc_match_gcc_unroll (void);
 match gfc_match_import (void);
 match gfc_match_intent (void);
 match gfc_match_intrinsic (void);

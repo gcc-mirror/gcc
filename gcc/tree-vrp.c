@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -731,7 +731,24 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
       if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
 	return -2;
 
-      return tree_int_cst_compare (val1, val2);
+      if (TREE_CODE (val1) == INTEGER_CST
+	  && TREE_CODE (val2) == INTEGER_CST)
+	return tree_int_cst_compare (val1, val2);
+
+      if (poly_int_tree_p (val1) && poly_int_tree_p (val2))
+	{
+	  if (known_eq (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return 0;
+	  if (known_lt (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return -1;
+	  if (known_gt (wi::to_poly_widest (val1),
+			wi::to_poly_widest (val2)))
+	    return 1;
+	}
+
+      return -2;
     }
   else
     {
@@ -2025,7 +2042,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	      return;
 	    }
 	}
-      else if (!symbolic_range_p (&vr0) && !symbolic_range_p (&vr1))
+      else if (range_int_cst_p (&vr0) && range_int_cst_p (&vr1))
 	{
 	  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
 	  return;
@@ -4805,9 +4822,9 @@ vrp_prop::check_array_ref (location_t location, tree ref,
 	{
 	  tree maxbound = TYPE_MAX_VALUE (ptrdiff_type_node);
 	  tree arg = TREE_OPERAND (ref, 0);
-	  HOST_WIDE_INT off;
+	  poly_int64 off;
 
-	  if (get_addr_base_and_unit_offset (arg, &off) && off > 0)
+	  if (get_addr_base_and_unit_offset (arg, &off) && known_gt (off, 0))
 	    maxbound = wide_int_to_tree (sizetype,
 					 wi::sub (wi::to_wide (maxbound),
 						  off));
@@ -4935,7 +4952,9 @@ vrp_prop::search_for_addr_array (tree t, location_t location)
 	  || TREE_CODE (el_sz) != INTEGER_CST)
 	return;
 
-      idx = mem_ref_offset (t);
+      if (!mem_ref_offset (t).is_constant (&idx))
+	return;
+
       idx = wi::sdiv_trunc (idx, wi::to_offset (el_sz));
       if (idx < 0)
 	{
@@ -5000,44 +5019,62 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   return NULL_TREE;
 }
 
+/* A dom_walker subclass for use by vrp_prop::check_all_array_refs,
+   to walk over all statements of all reachable BBs and call
+   check_array_bounds on them.  */
+
+class check_array_bounds_dom_walker : public dom_walker
+{
+ public:
+  check_array_bounds_dom_walker (vrp_prop *prop)
+    : dom_walker (CDI_DOMINATORS, true), m_prop (prop) {}
+  ~check_array_bounds_dom_walker () {}
+
+  edge before_dom_children (basic_block) FINAL OVERRIDE;
+
+ private:
+  vrp_prop *m_prop;
+};
+
+/* Implementation of dom_walker::before_dom_children.
+
+   Walk over all statements of BB and call check_array_bounds on them,
+   and determine if there's a unique successor edge.  */
+
+edge
+check_array_bounds_dom_walker::before_dom_children (basic_block bb)
+{
+  gimple_stmt_iterator si;
+  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple *stmt = gsi_stmt (si);
+      struct walk_stmt_info wi;
+      if (!gimple_has_location (stmt)
+	  || is_gimple_debug (stmt))
+	continue;
+
+      memset (&wi, 0, sizeof (wi));
+
+      wi.info = m_prop;
+
+      walk_gimple_op (stmt, check_array_bounds, &wi);
+    }
+
+  /* Determine if there's a unique successor edge, and if so, return
+     that back to dom_walker, ensuring that we don't visit blocks that
+     became unreachable during the VRP propagation
+     (PR tree-optimization/83312).  */
+  return find_taken_edge (bb, NULL_TREE);
+}
+
 /* Walk over all statements of all reachable BBs and call check_array_bounds
    on them.  */
 
 void
 vrp_prop::check_all_array_refs ()
 {
-  basic_block bb;
-  gimple_stmt_iterator si;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      edge_iterator ei;
-      edge e;
-      bool executable = false;
-
-      /* Skip blocks that were found to be unreachable.  */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	executable |= !!(e->flags & EDGE_EXECUTABLE);
-      if (!executable)
-	continue;
-
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-	{
-	  gimple *stmt = gsi_stmt (si);
-	  struct walk_stmt_info wi;
-	  if (!gimple_has_location (stmt)
-	      || is_gimple_debug (stmt))
-	    continue;
-
-	  memset (&wi, 0, sizeof (wi));
-
-	  wi.info = this;
-
-	  walk_gimple_op (gsi_stmt (si),
-			  check_array_bounds,
-			  &wi);
-	}
-    }
+  check_array_bounds_dom_walker w (this);
+  w.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 }
 
 /* Return true if all imm uses of VAR are either in STMT, or
@@ -5082,10 +5119,9 @@ all_imm_uses_in_stmt_or_feed_cond (tree var, gimple *stmt, basic_block cond_bb)
    var is the x_3 var from ASSERT_EXPR, we can clear low 5 bits
    from the non-zero bitmask.  */
 
-static void
-maybe_set_nonzero_bits (basic_block bb, tree var)
+void
+maybe_set_nonzero_bits (edge e, tree var)
 {
-  edge e = single_pred_edge (bb);
   basic_block cond_bb = e->src;
   gimple *stmt = last_stmt (cond_bb);
   tree cst;
@@ -5200,7 +5236,7 @@ remove_range_assertions (void)
 		    set_range_info (var, SSA_NAME_RANGE_TYPE (lhs),
 				    SSA_NAME_RANGE_INFO (lhs)->get_min (),
 				    SSA_NAME_RANGE_INFO (lhs)->get_max ());
-		    maybe_set_nonzero_bits (bb, var);
+		    maybe_set_nonzero_bits (single_pred_edge (bb), var);
 		  }
 	      }
 
@@ -5231,7 +5267,6 @@ remove_range_assertions (void)
 	  }
       }
 }
-
 
 /* Return true if STMT is interesting for VRP.  */
 
@@ -6021,11 +6056,14 @@ intersect_ranges (enum value_range_type *vr0type,
 		   && vrp_val_is_max (vr1max))
 	    ;
 	  /* Choose the anti-range if it is ~[0,0], that range is special
-	     enough to special case when vr1's range is relatively wide.  */
+	     enough to special case when vr1's range is relatively wide.
+	     At least for types bigger than int - this covers pointers
+	     and arguments to functions like ctz.  */
 	  else if (*vr0min == *vr0max
 		   && integer_zerop (*vr0min)
-		   && (TYPE_PRECISION (TREE_TYPE (*vr0min))
-		       == TYPE_PRECISION (ptr_type_node))
+		   && ((TYPE_PRECISION (TREE_TYPE (*vr0min))
+			>= TYPE_PRECISION (integer_type_node))
+		       || POINTER_TYPE_P (TREE_TYPE (*vr0min)))
 		   && TREE_CODE (vr1max) == INTEGER_CST
 		   && TREE_CODE (vr1min) == INTEGER_CST
 		   && (wi::clz (wi::to_wide (vr1max) - wi::to_wide (vr1min))
@@ -6675,7 +6713,7 @@ vrp_dom_walker::after_dom_children (basic_block bb)
 
   x_vr_values = vr_values;
   thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
-			 m_avail_exprs_stack,
+			 m_avail_exprs_stack, NULL,
 			 simplify_stmt_for_jump_threading);
   x_vr_values = NULL;
 

@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -279,6 +279,11 @@ enum lc_reason
    To further see how source_location works in practice, see the
    worked example in libcpp/location-example.txt.  */
 typedef unsigned int source_location;
+
+/* Do not track column numbers higher than this one.  As a result, the
+   range of column_bits is [12, 18] (or 0 if column numbers are
+   disabled).  */
+const unsigned int LINE_MAP_MAX_COLUMN_NUMBER = (1U << 12);
 
 /* Do not pack ranges if locations get higher than this.
    If you change this, update:

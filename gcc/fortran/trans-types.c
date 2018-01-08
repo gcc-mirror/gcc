@@ -1,5 +1,5 @@
 /* Backend support for Fortran 95 basic types and derived types.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -122,6 +122,9 @@ int gfc_intio_kind;
 
 /* The integer kind used to store character lengths.  */
 int gfc_charlen_int_kind;
+
+/* Kind of internal integer for storing object sizes.  */
+int gfc_size_kind;
 
 /* The size of the numeric storage unit and character storage unit.  */
 int gfc_numeric_storage_size;
@@ -1006,14 +1009,17 @@ gfc_init_types (void)
 			wi::mask (n, UNSIGNED,
 				  TYPE_PRECISION (size_type_node)));
 
-
   logical_type_node = gfc_get_logical_type (gfc_default_logical_kind);
   logical_true_node = build_int_cst (logical_type_node, 1);
   logical_false_node = build_int_cst (logical_type_node, 0);
 
-  /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
-  gfc_charlen_int_kind = 4;
+  /* Character lengths are of type size_t, except signed.  */
+  gfc_charlen_int_kind = get_int_kind_from_node (size_type_node);
   gfc_charlen_type_node = gfc_get_int_type (gfc_charlen_int_kind);
+
+  /* Fortran kind number of size_type_node (size_t). This is used for
+     the _size member in vtables.  */
+  gfc_size_kind = get_int_kind_from_node (size_type_node);
 }
 
 /* Get the type node for the given type and kind.  */
@@ -1837,7 +1843,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
       TREE_NO_WARNING (decl) = 1;
     }
 
-  if (flag_coarray == GFC_FCOARRAY_LIB && codimen)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       decl = gfc_add_field_to_struct_1 (fat_type,
 					get_identifier ("token"),
@@ -2373,6 +2379,7 @@ gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
   for (; to_cm; to_cm = to_cm->next, from_cm = from_cm->next)
     {
       to_cm->backend_decl = from_cm->backend_decl;
+      to_cm->caf_token = from_cm->caf_token;
       if (from_cm->ts.type == BT_UNION)
         gfc_get_union_type (to_cm->ts.u.derived);
       else if (from_cm->ts.type == BT_DERIVED
@@ -2483,6 +2490,10 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   gfc_dt_list *dt;
   gfc_namespace *ns;
   tree tmp;
+  bool coarray_flag;
+
+  coarray_flag = flag_coarray == GFC_FCOARRAY_LIB
+		 && derived->module && !derived->attr.vtype;
 
   gcc_assert (!derived->attr.pdt_template);
 
@@ -2679,7 +2690,9 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	  field_type = build_pointer_type (tmp);
 	}
       else if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-        field_type = c->ts.u.derived->backend_decl;
+	field_type = c->ts.u.derived->backend_decl;
+      else if (c->attr.caf_token)
+	field_type = pvoid_type_node;
       else
 	{
 	  if (c->ts.type == BT_CHARACTER
@@ -2764,19 +2777,6 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	  && !(c->ts.type == BT_DERIVED
 	       && strcmp (c->name, "_data") == 0))
 	GFC_DECL_PTR_ARRAY_P (c->backend_decl) = 1;
-
-      /* Do not add a caf_token field for classes' data components.  */
-      if (codimen && !c->attr.dimension && !c->attr.codimension
-	  && (c->attr.allocatable || c->attr.pointer)
-	  && c->caf_token == NULL_TREE && strcmp ("_data", c->name) != 0)
-	{
-	  char caf_name[GFC_MAX_SYMBOL_LEN];
-	  snprintf (caf_name, GFC_MAX_SYMBOL_LEN, "_caf_%s", c->name);
-	  c->caf_token = gfc_add_field_to_struct (typenode,
-						  get_identifier (caf_name),
-						  pvoid_type_node, &chain);
-	  TREE_NO_WARNING (c->caf_token) = 1;
-	}
     }
 
   /* Now lay out the derived type, including the fields.  */
@@ -2801,6 +2801,24 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   derived->backend_decl = typenode;
 
 copy_derived_types:
+
+  for (c = derived->components; c; c = c->next)
+    {
+      /* Do not add a caf_token field for class container components.  */
+      if ((codimen || coarray_flag)
+	  && !c->attr.dimension && !c->attr.codimension
+	  && (c->attr.allocatable || c->attr.pointer)
+	  && !derived->attr.is_class)
+	{
+	  char caf_name[GFC_MAX_SYMBOL_LEN];
+	  gfc_component *token;
+	  snprintf (caf_name, GFC_MAX_SYMBOL_LEN, "_caf_%s", c->name);
+	  token = gfc_find_component (derived, caf_name, true, true, NULL);
+	  gcc_assert (token);
+	  c->caf_token = token->backend_decl;
+	  TREE_NO_WARNING (c->caf_token) = 1;
+	}
+    }
 
   for (dt = gfc_derived_types; dt; dt = dt->next)
     gfc_copy_dt_decls_ifequal (derived, dt->derived, false);
@@ -3175,7 +3193,16 @@ gfc_type_for_mode (machine_mode mode, int unsignedp)
       tree type = gfc_type_for_size (GET_MODE_PRECISION (int_mode), unsignedp);
       return type != NULL_TREE && mode == TYPE_MODE (type) ? type : NULL_TREE;
     }
-  else if (VECTOR_MODE_P (mode))
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						    GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = gfc_type_for_mode (inner_mode, unsignedp);

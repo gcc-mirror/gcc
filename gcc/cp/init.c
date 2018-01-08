@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2453,13 +2453,13 @@ throw_bad_array_new_length (void)
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
 }
 
-/* Attempt to find the initializer for field T in the initializer INIT,
-   when non-null.  Returns the initializer when successful and NULL
-   otherwise.  */
+/* Attempt to find the initializer for flexible array field T in the
+   initializer INIT, when non-null.  Returns the initializer when
+   successful and NULL otherwise.  */
 static tree
-find_field_init (tree t, tree init)
+find_flexarray_init (tree t, tree init)
 {
-  if (!init)
+  if (!init || init == error_mark_node)
     return NULL_TREE;
 
   unsigned HOST_WIDE_INT idx;
@@ -2467,16 +2467,10 @@ find_field_init (tree t, tree init)
 
   /* Iterate over all top-level initializer elements.  */
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, field, elt)
-    {
-      /* If the member T is found, return it.  */
-      if (field == t)
-	return elt;
+    /* If the member T is found, return it.  */
+    if (field == t)
+      return elt;
 
-      /* Otherwise continue and/or recurse into nested initializers.  */
-      if (TREE_CODE (elt) == CONSTRUCTOR
-	  && (init = find_field_init (t, elt)))
-	return init;
-    }
   return NULL_TREE;
 }
 
@@ -2645,7 +2639,8 @@ warn_placement_new_too_small (tree type, tree nelts, tree size, tree oper)
 		 extension).  If the array member has been initialized,
 		 determine its size from the initializer.  Otherwise,
 		 the array size is zero.  */
-	      if (tree init = find_field_init (oper, DECL_INITIAL (var_decl)))
+	      if (tree init = find_flexarray_init (oper,
+						   DECL_INITIAL (var_decl)))
 		bytes_avail = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (init)));
 	    }
 	  else
@@ -4328,7 +4323,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       finish_init_stmt (for_stmt);
       finish_for_cond (build2 (GT_EXPR, boolean_type_node, iterator,
 			       build_int_cst (TREE_TYPE (iterator), -1)),
-		       for_stmt, false);
+		       for_stmt, false, 0);
       elt_init = cp_build_unary_op (PREDECREMENT_EXPR, iterator, false,
 				    complain);
       if (elt_init == error_mark_node)

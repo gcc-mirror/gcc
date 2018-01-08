@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -68,7 +68,7 @@ class evrp_dom_walker : public dom_walker
 public:
   evrp_dom_walker ()
     : dom_walker (CDI_DOMINATORS),
-      evrp_folder (evrp_range_analyzer.get_vr_values (false))
+      evrp_folder (evrp_range_analyzer.get_vr_values ())
     {
       need_eh_cleanup = BITMAP_ALLOC (NULL);
     }
@@ -134,7 +134,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	  print_gimple_stmt (dump_file, stmt, 0);
 	}
 
-      evrp_range_analyzer.record_ranges_from_stmt (stmt);
+      evrp_range_analyzer.record_ranges_from_stmt (stmt, false);
 
       if (gcond *cond = dyn_cast <gcond *> (stmt))
 	{

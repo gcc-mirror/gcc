@@ -420,6 +420,10 @@ GFORTRAN_8 {
     _gfortran_maxloc2_4_s4;
     _gfortran_maxloc2_8_s1;
     _gfortran_maxloc2_8_s4;
+    _gfortran_maxval0_s1;
+    _gfortran_maxval0_s4;
+    _gfortran_maxval1_s1;
+    _gfortran_maxval1_s4;
     _gfortran_maxval_i16;
     _gfortran_maxval_i1;
     _gfortran_maxval_i2;
@@ -513,6 +517,10 @@ GFORTRAN_8 {
     _gfortran_minloc2_4_s4;
     _gfortran_minloc2_8_s1;
     _gfortran_minloc2_8_s4;
+    _gfortran_minval0_s1;
+    _gfortran_minval0_s4;
+    _gfortran_minval1_s1;
+    _gfortran_minval1_s4;
     _gfortran_minval_i16;
     _gfortran_minval_i1;
     _gfortran_minval_i2;
@@ -599,6 +607,10 @@ GFORTRAN_8 {
     _gfortran_mmaxloc2_4_s4;
     _gfortran_mmaxloc2_8_s1;
     _gfortran_mmaxloc2_8_s4;
+    _gfortran_mmaxval0_s1;
+    _gfortran_mmaxval0_s4;
+    _gfortran_mmaxval1_s1;
+    _gfortran_mmaxval1_s4;
     _gfortran_mmaxval_i16;
     _gfortran_mmaxval_i1;
     _gfortran_mmaxval_i2;
@@ -680,6 +692,10 @@ GFORTRAN_8 {
     _gfortran_mminloc2_4_s4;
     _gfortran_mminloc2_8_s1;
     _gfortran_mminloc2_8_s4;
+    _gfortran_mminval0_s1;
+    _gfortran_mminval0_s4;
+    _gfortran_mminval1_s1;
+    _gfortran_mminval1_s4;
     _gfortran_mminval_i16;
     _gfortran_mminval_i1;
     _gfortran_mminval_i2;
@@ -927,6 +943,10 @@ GFORTRAN_8 {
     _gfortran_smaxloc2_4_s4;
     _gfortran_smaxloc2_8_s1;
     _gfortran_smaxloc2_8_s4;
+    _gfortran_smaxval0_s1;
+    _gfortran_smaxval0_s4;
+    _gfortran_smaxval1_s1;
+    _gfortran_smaxval1_s4;
     _gfortran_smaxval_i16;
     _gfortran_smaxval_i1;
     _gfortran_smaxval_i2;
@@ -1008,6 +1028,10 @@ GFORTRAN_8 {
     _gfortran_sminloc2_4_s4;
     _gfortran_sminloc2_8_s1;
     _gfortran_sminloc2_8_s4;
+    _gfortran_sminval0_s1;
+    _gfortran_sminval0_s4;
+    _gfortran_sminval1_s1;
+    _gfortran_sminval1_s4;
     _gfortran_sminval_i16;
     _gfortran_sminval_i1;
     _gfortran_sminval_i2;

@@ -2745,14 +2745,18 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
 
   Expression* closure_ref = Expression::make_var_reference(closure,
 							   location);
-  closure_ref = Expression::make_unary(OPERATOR_MULT, closure_ref, location);
+  closure_ref =
+      Expression::make_dereference(closure_ref,
+                                   Expression::NIL_CHECK_NOT_NEEDED,
+                                   location);
 
   // The closure structure holds pointers to the variables, so we need
   // to introduce an indirection.
   Expression* e = Expression::make_field_reference(closure_ref,
 						   ins.first->index(),
 						   location);
-  e = Expression::make_unary(OPERATOR_MULT, e, location);
+  e = Expression::make_dereference(e, Expression::NIL_CHECK_NOT_NEEDED,
+                                   location);
   return Expression::make_enclosing_var_reference(e, var, location);
 }
 

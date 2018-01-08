@@ -1,10 +1,9 @@
-// { dg-do assemble  }
+// PR 59930 (part)  templated class friend declarations cannot have
+// default args.
 
-template <class T = int> // { dg-message "note: original definition" }
+template <class T>
 struct S
 { 
-  template <class U = int>
-  friend class S; // { dg-error "redefinition of default argument" }
+  template <class U = int> friend class R; // { dg-error "template friend" }
+  template <class U = int> friend class S; // { dg-error "template friend" }
 };
-
-template struct S<int>;

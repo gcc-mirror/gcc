@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.

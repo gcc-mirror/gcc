@@ -1,7 +1,7 @@
 /* This file contains routines to construct OpenACC and OpenMP constructs,
    called from parsing in the C and C++ front ends.
 
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>,
 		  Diego Novillo <dnovillo@redhat.com>.
 
@@ -536,10 +536,6 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
   bool fail = false;
   int i;
 
-  if ((code == CILK_SIMD || code == CILK_FOR)
-      && !c_check_cilk_loop (locus, TREE_VEC_ELT (declv, 0)))
-    fail = true;
-
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (initv));
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (condv));
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (incrv));
@@ -671,8 +667,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 		{
 		  if (!INTEGRAL_TYPE_P (TREE_TYPE (decl)))
 		    {
-		      if (code != CILK_SIMD && code != CILK_FOR)
-			cond_ok = false;
+		      cond_ok = false;
 		    }
 		  else if (operand_equal_p (TREE_OPERAND (cond, 1),
 					    TYPE_MIN_VALUE (TREE_TYPE (decl)),
@@ -684,7 +679,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 					    0))
 		    TREE_SET_CODE (cond, TREE_CODE (cond) == NE_EXPR
 					 ? LT_EXPR : GE_EXPR);
-		  else if (code != CILK_SIMD && code != CILK_FOR)
+		  else
 		    cond_ok = false;
 		}
 

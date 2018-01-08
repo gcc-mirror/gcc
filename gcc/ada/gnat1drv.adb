@@ -136,6 +136,13 @@ procedure Gnat1drv is
    --  Start of processing for Adjust_Global_Switches
 
    begin
+      --  Define pragma GNAT_Annotate as an alias of pragma Annotate, to be
+      --  able to work around bootstrap limitations with the old syntax of
+      --  pragma Annotate, and use pragma GNAT_Annotate in compiler sources
+      --  when needed.
+
+      Map_Pragma_Name (From => Name_Gnat_Annotate, To => Name_Annotate);
+
       --  -gnatd.M enables Relaxed_RM_Semantics
 
       if Debug_Flag_Dot_MM then
@@ -160,6 +167,7 @@ procedure Gnat1drv is
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
          Minimize_Expression_With_Actions := True;
+         Expand_Nonbinary_Modular_Ops := True;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4888,6 +4888,30 @@ and operand 1 is parallel containing values for individual fields.  The
 the vector mode @var{m}, or a vector mode with the same element mode and
 smaller number of elements.
 
+@cindex @code{vec_duplicate@var{m}} instruction pattern
+@item @samp{vec_duplicate@var{m}}
+Initialize vector output operand 0 so that each element has the value given
+by scalar input operand 1.  The vector has mode @var{m} and the scalar has
+the mode appropriate for one element of @var{m}.
+
+This pattern only handles duplicates of non-constant inputs.  Constant
+vectors go through the @code{mov@var{m}} pattern instead.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_series@var{m}} instruction pattern
+@item @samp{vec_series@var{m}}
+Initialize vector output operand 0 so that element @var{i} is equal to
+operand 1 plus @var{i} times operand 2.  In other words, create a linear
+series whose base value is operand 1 and whose step is operand 2.
+
+The vector output has mode @var{m} and the scalar inputs have the mode
+appropriate for one element of @var{m}.  This pattern is not used for
+floating-point vectors, in order to avoid having to specify the
+rounding behavior for @var{i} > 1.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for
@@ -4972,20 +4996,8 @@ where @var{q} is a vector of @code{QImode} of the same width as @var{m},
 the middle-end will lower the mode @var{m} @code{VEC_PERM_EXPR} to
 mode @var{q}.
 
-@cindex @code{vec_perm_const@var{m}} instruction pattern
-@item @samp{vec_perm_const@var{m}}
-Like @samp{vec_perm} except that the permutation is a compile-time
-constant.  That is, operand 3, the @dfn{selector}, is a @code{CONST_VECTOR}.
-
-Some targets cannot perform a permutation with a variable selector,
-but can efficiently perform a constant permutation.  Further, the
-target hook @code{vec_perm_ok} is queried to determine if the 
-specific constant permutation is available efficiently; the named
-pattern is never expanded without @code{vec_perm_ok} returning true.
-
-There is no need for a target to supply both @samp{vec_perm@var{m}}
-and @samp{vec_perm_const@var{m}} if the former can trivially implement
-the operation with, say, the vector constant loaded into a register.
+See also @code{TARGET_VECTORIZER_VEC_PERM_CONST}, which performs
+the analogous operation for constant selectors.
 
 @cindex @code{push@var{m}1} instruction pattern
 @item @samp{push@var{m}1}
@@ -7890,7 +7902,7 @@ are not valid.
 
 The splitter is allowed to split jump instructions into sequence of
 jumps or create new jumps in while splitting non-jump instructions.  As
-the central flowgraph and branch prediction information needs to be updated,
+the control flow graph and branch prediction information needs to be updated,
 several restriction apply.
 
 Splitting of jump instruction into sequence that over by another jump

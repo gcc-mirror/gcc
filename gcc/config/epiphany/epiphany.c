@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the EPIPHANY cpu.
-   Copyright (C) 1994-2017 Free Software Foundation, Inc.
+   Copyright (C) 1994-2018 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -460,13 +462,16 @@ epiphany_init_reg_tables (void)
 
 static const struct attribute_spec epiphany_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt",  0, 9, true,  false, false, epiphany_handle_interrupt_attribute, true },
-  { "forwarder_section", 1, 1, true, false, false, epiphany_handle_forwarder_attribute, false },
-  { "long_call",  0, 0, false, true, true, NULL, false },
-  { "short_call", 0, 0, false, true, true, NULL, false },
-  { "disinterrupt", 0, 0, false, true, true, NULL, true },
-  { NULL,         0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt",  0, 9, true,  false, false, true,
+    epiphany_handle_interrupt_attribute, NULL },
+  { "forwarder_section", 1, 1, true, false, false, false,
+    epiphany_handle_forwarder_attribute, NULL },
+  { "long_call",  0, 0, false, true, true, false, NULL, NULL },
+  { "short_call", 0, 0, false, true, true, false, NULL, NULL },
+  { "disinterrupt", 0, 0, false, true, true, true, NULL, NULL },
+  { NULL,         0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Handle an "interrupt" attribute; arguments as in

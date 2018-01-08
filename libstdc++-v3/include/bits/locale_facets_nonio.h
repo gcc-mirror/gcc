@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2017 Free Software Foundation, Inc.
+// Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -236,9 +236,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__dt[1] = _M_data->_M_date_time_era_format;
       }
 
+#if !_GLIBCXX_INLINE_VERSION
       void
-      _M_am_pm_format(const _CharT* __ampm) const
-      { __ampm = _M_data->_M_am_pm_format; }
+      _M_am_pm_format(const _CharT*) const
+      { /* Kept for ABI compatibility, see PR65927 */ }
+#endif
 
       void
       _M_am_pm(const _CharT** __ampm) const

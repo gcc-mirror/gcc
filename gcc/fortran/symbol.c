@@ -1,5 +1,5 @@
 /* Maintain binary trees of symbols.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -4291,6 +4291,29 @@ gfc_find_gsymbol (gfc_gsymbol *symbol, const char *name)
 }
 
 
+/* Case insensitive search a tree for the global symbol.  */
+
+gfc_gsymbol *
+gfc_find_case_gsymbol (gfc_gsymbol *symbol, const char *name)
+{
+  int c;
+
+  if (symbol == NULL)
+    return NULL;
+
+  while (symbol)
+    {
+      c = strcasecmp (name, symbol->name);
+      if (!c)
+	return symbol;
+
+      symbol = (c < 0) ? symbol->left : symbol->right;
+    }
+
+  return NULL;
+}
+
+
 /* Compare two global symbols. Used for managing the BB tree.  */
 
 static int
@@ -4833,7 +4856,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 	tmp_sym->value->value.character.string[0]
 	  = (gfc_char_t) c_interop_kinds_table[s].value;
 	tmp_sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						     NULL, 1);
 
 	/* May not need this in both attr and ts, but do need in

@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3276,12 +3276,14 @@ check_bitfield_decl (tree field)
 		   && tree_int_cst_lt (TYPE_SIZE (type), w)))
 	warning_at (DECL_SOURCE_LOCATION (field), 0,
 		    "width of %qD exceeds its type", field);
-      else if (TREE_CODE (type) == ENUMERAL_TYPE
-	       && (0 > (compare_tree_int
-			(w, TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type))))))
-	warning_at (DECL_SOURCE_LOCATION (field), 0,
-		    "%qD is too small to hold all values of %q#T",
-		    field, type);
+      else if (TREE_CODE (type) == ENUMERAL_TYPE)
+	{
+	  int prec = TYPE_PRECISION (ENUM_UNDERLYING_TYPE (type));
+	  if (compare_tree_int (w, prec) < 0)
+	    warning_at (DECL_SOURCE_LOCATION (field), 0,
+			"%qD is too small to hold all values of %q#T",
+			field, type);
+	}
     }
 
   if (w != error_mark_node)

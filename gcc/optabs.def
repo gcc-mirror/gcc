@@ -1,5 +1,5 @@
 /* Definitions for operation tables, or "optabs".
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -302,7 +302,6 @@ OPTAB_D (vec_pack_ssat_optab, "vec_pack_ssat_$a")
 OPTAB_D (vec_pack_trunc_optab, "vec_pack_trunc_$a")
 OPTAB_D (vec_pack_ufix_trunc_optab, "vec_pack_ufix_trunc_$a")
 OPTAB_D (vec_pack_usat_optab, "vec_pack_usat_$a")
-OPTAB_D (vec_perm_const_optab, "vec_perm_const$a")
 OPTAB_D (vec_perm_optab, "vec_perm$a")
 OPTAB_D (vec_realign_load_optab, "vec_realign_load_$a")
 OPTAB_D (vec_set_optab, "vec_set$a")
@@ -364,3 +363,6 @@ OPTAB_D (atomic_xor_optab, "atomic_xor$I$a")
 
 OPTAB_D (get_thread_pointer_optab, "get_thread_pointer$I$a")
 OPTAB_D (set_thread_pointer_optab, "set_thread_pointer$I$a")
+
+OPTAB_DC (vec_duplicate_optab, "vec_duplicate$a", VEC_DUPLICATE)
+OPTAB_DC (vec_series_optab, "vec_series$a", VEC_SERIES)

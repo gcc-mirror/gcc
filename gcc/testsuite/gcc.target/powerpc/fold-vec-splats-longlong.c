@@ -19,4 +19,4 @@ test3u (unsigned long long x)
   return vec_splats (x);
 }
 
-/* { dg-final { scan-assembler-times "xxpermdi" 2 } } */
+/* { dg-final { scan-assembler-times "xxpermdi|mtvsrdd" 2 } } */

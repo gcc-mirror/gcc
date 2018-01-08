@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1431,7 +1431,7 @@ cgraph_edge::redirect_call_stmt_to_callee (void)
 	 stmts and associate D#X with parm in decl_debug_args_lookup
 	 vector to say for debug info that if parameter parm had been passed,
 	 it would have value parm_Y(D).  */
-      if (e->callee->clone.combined_args_to_skip && MAY_HAVE_DEBUG_STMTS)
+      if (e->callee->clone.combined_args_to_skip && MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  vec<tree, va_gc> **debug_args
 	    = decl_debug_args_lookup (e->callee->decl);

@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos or pseudos.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1368,12 +1368,12 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
       rtx src = SET_SRC (set);
 
       if (GET_CODE (dest) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (dest))
-	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
+	  && known_eq (GET_MODE_SIZE (GET_MODE (dest)),
+		       GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))))
 	dest = SUBREG_REG (dest);
       if (GET_CODE (src) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (src))
-	      == GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
+	  && known_eq (GET_MODE_SIZE (GET_MODE (src)),
+		       GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
 	src = SUBREG_REG (src);
       if (REG_P (src) && REG_P (dest)
 	  && find_regno_note (insn, REG_DEAD, REGNO (src))

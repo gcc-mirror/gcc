@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -246,6 +246,7 @@ main (int argc, const char **argv)
 	   "#endif\n");
 
   fprintf (s_file,
+	   "#define IN_TARGET_CODE 1\n"
 	   "#include \"config.h\"\n"
 	   "#include \"system.h\"\n"
 	   "#include \"coretypes.h\"\n"

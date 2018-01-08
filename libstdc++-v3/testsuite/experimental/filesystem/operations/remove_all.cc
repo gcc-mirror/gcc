@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,19 +29,19 @@ void
 test01()
 {
   std::error_code ec;
+  const std::error_code bad_ec = make_error_code(std::errc::invalid_argument);
   std::uintmax_t n;
 
   n = fs::remove_all("", ec);
-  VERIFY( ec );
-  VERIFY( n == std::uintmax_t(-1) );
+  VERIFY( !ec ); // This seems odd, but is what the TS requires.
+  VERIFY( n == 0 );
 
   auto p = __gnu_test::nonexistent_path();
-  ec.clear();
+  ec = bad_ec;
   n = remove_all(p, ec);
-  VERIFY( ec );
-  VERIFY( n == std::uintmax_t(-1) );
+  VERIFY( !ec );
+  VERIFY( n == 0 );
 
-  const auto bad_ec = ec;
   auto link = __gnu_test::nonexistent_path();
   create_symlink(p, link);  // dangling symlink
   ec = bad_ec;
@@ -59,7 +59,7 @@ test01()
   VERIFY( !exists(symlink_status(link)) );  // The symlink is removed, but
   VERIFY( exists(p) );                      // its target is not.
 
-  auto dir = __gnu_test::nonexistent_path();
+  const auto dir = __gnu_test::nonexistent_path();
   create_directories(dir/"a/b/c");
   ec = bad_ec;
   n = remove_all(dir/"a", ec);
@@ -85,8 +85,28 @@ test01()
   b2.path.clear();
 }
 
+void
+test02()
+{
+  const auto dir = __gnu_test::nonexistent_path();
+  create_directories(dir/"a/b/c");
+  std::uintmax_t n = remove_all(dir/"a");
+  VERIFY( n == 3 );
+  VERIFY( exists(dir) );
+  VERIFY( !exists(dir/"a") );
+
+  n = remove_all(dir/"a");
+  VERIFY( n == 0 );
+  VERIFY( exists(dir) );
+
+  n = remove_all(dir);
+  VERIFY( n == 1 );
+  VERIFY( !exists(dir) );
+}
+
 int
 main()
 {
   test01();
+  test02();
 }

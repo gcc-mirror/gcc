@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -1637,7 +1637,7 @@ void, (rtx_insn *insn, int max_pri, int *fusion_pri, int *pri), NULL)
 
 HOOK_VECTOR_END (sched)
 
-/* Functions relating to OpenMP and Cilk Plus SIMD clones.  */
+/* Functions relating to OpenMP SIMD and __attribute__((simd)) clones.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_SIMD_CLONE_"
 HOOK_VECTOR (TARGET_SIMD_CLONE, simd_clone)
@@ -1841,12 +1841,27 @@ DEFHOOK
  bool, (const_tree type, bool is_packed),
  default_builtin_vector_alignment_reachable)
 
-/* Return true if a vector created for vec_perm_const is valid.
-   A NULL indicates that all constants are valid permutations.  */
 DEFHOOK
-(vec_perm_const_ok,
- "Return true if a vector created for @code{vec_perm_const} is valid.",
- bool, (machine_mode, vec_perm_indices),
+(vec_perm_const,
+ "This hook is used to test whether the target can permute up to two\n\
+vectors of mode @var{mode} using the permutation vector @code{sel}, and\n\
+also to emit such a permutation.  In the former case @var{in0}, @var{in1}\n\
+and @var{out} are all null.  In the latter case @var{in0} and @var{in1} are\n\
+the source vectors and @var{out} is the destination vector; all three are\n\
+registers of mode @var{mode}.  @var{in1} is the same as @var{in0} if\n\
+@var{sel} describes a permutation on one vector instead of two.\n\
+\n\
+Return true if the operation is possible, emitting instructions for it\n\
+if rtxes are provided.\n\
+\n\
+@cindex @code{vec_perm@var{m}} instruction pattern\n\
+If the hook returns false for a mode with multibyte elements, GCC will\n\
+try the equivalent byte operation.  If that also fails, it will try forcing\n\
+the selector into a register and using the @var{vec_perm@var{mode}}\n\
+instruction pattern.  There is no need for the hook to handle these two\n\
+implementation approaches itself.",
+ bool, (machine_mode mode, rtx output, rtx in0, rtx in1,
+	const vec_perm_indices &sel),
  NULL)
 
 /* Return true if the target supports misaligned store/load of a
@@ -1879,12 +1894,16 @@ transformations even in absence of specialized @acronym{SIMD} hardware.",
    after processing the preferred one derived from preferred_simd_mode.  */
 DEFHOOK
 (autovectorize_vector_sizes,
- "This hook should return a mask of sizes that should be iterated over\n\
-after trying to autovectorize using the vector size derived from the\n\
-mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
-The default is zero which means to not iterate over other vector sizes.",
- unsigned int,
- (void),
+ "If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not\n\
+the only one that is worth considering, this hook should add all suitable\n\
+vector sizes to @var{sizes}, in order of decreasing preference.  The first\n\
+one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.\n\
+\n\
+The hook does not need to do anything if the vector returned by\n\
+@code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant\n\
+for autovectorization.  The default implementation does nothing.",
+ void,
+ (vector_sizes *sizes),
  default_autovectorize_vector_sizes)
 
 /* Function to get a target mode for a vector mask.  */
@@ -1900,7 +1919,7 @@ The default implementation returns the mode of an integer vector that\n\
 is @var{length} bytes long and that contains @var{nunits} elements,\n\
 if such a mode exists.",
  opt_machine_mode,
- (unsigned nunits, unsigned length),
+ (poly_uint64 nunits, poly_uint64 length),
  default_get_mask_mode)
 
 /* Target builtin that implements vector gather operation.  */
@@ -3154,8 +3173,8 @@ is correct for most machines.\n\
 If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,\n\
 suboptimal code can result if this hook returns true for the corresponding\n\
 mode sizes.  Making this hook return false in such cases may improve things.",
- bool, (unsigned int outprec, unsigned int inprec),
- hook_bool_uint_uint_true)
+ bool, (poly_uint64 outprec, poly_uint64 inprec),
+ hook_bool_puint64_puint64_true)
 
 /* If the representation of integral MODE is such that values are
    always sign-extended to a wider mode MODE_REP then return
@@ -3784,6 +3803,14 @@ candidate as a replacement for the if-convertible sequence described in\n\
 bool, (rtx_insn *seq, struct noce_if_info *if_info),
 default_noce_conversion_profitable_p)
 
+DEFHOOK
+(estimated_poly_value,
+ "Return an estimate of the runtime value of @var{val}, for use in\n\
+things like cost calculations or profiling frequencies.  The default\n\
+implementation returns the lowest possible value of @var{val}.",
+ HOST_WIDE_INT, (poly_int64 val),
+ default_estimated_poly_value)
+
 /* Permit speculative instructions in delay slots during delayed-branch 
    scheduling.  */
 DEFHOOK
@@ -4127,6 +4154,21 @@ to let the backend emit the call frame instructions.  @var{label} is\n\
 the CFI label attached to the insn, @var{pattern} is the pattern of\n\
 the insn and @var{index} is @code{UNSPEC_INDEX} or @code{UNSPECV_INDEX}.",
  void, (const char *label, rtx pattern, int index), NULL)
+
+DEFHOOK
+(dwarf_poly_indeterminate_value,
+ "Express the value of @code{poly_int} indeterminate @var{i} as a DWARF\n\
+expression, with @var{i} counting from 1.  Return the number of a DWARF\n\
+register @var{R} and set @samp{*@var{factor}} and @samp{*@var{offset}} such\n\
+that the value of the indeterminate is:\n\
+@smallexample\n\
+value_of(@var{R}) / @var{factor} - @var{offset}\n\
+@end smallexample\n\
+\n\
+A target only needs to define this hook if it sets\n\
+@samp{NUM_POLY_INT_COEFFS} to a value greater than 1.",
+ unsigned int, (unsigned int i, unsigned int *factor, int *offset),
+ default_dwarf_poly_indeterminate_value)
 
 /* ??? Documenting this hook requires a GFDL license grant.  */
 DEFHOOK_UNDOC
@@ -5032,7 +5074,7 @@ arguments pop them but other functions (such as @code{printf}) pop\n\
 nothing (the caller pops all).  When this convention is in use,\n\
 @var{funtype} is examined to determine whether a function takes a fixed\n\
 number of arguments.",
- int, (tree fundecl, tree funtype, int size),
+ poly_int64, (tree fundecl, tree funtype, poly_int64 size),
  default_return_pops_args)
 
 /* Return a mode wide enough to copy any function value that might be
