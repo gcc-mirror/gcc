@@ -51,12 +51,7 @@ typedef __complex float TCtype __attribute__ ((mode (TC)));
 
 #include <quad.h>
 
-#ifdef __LONG_DOUBLE_IEEE128__
-#define IBM128_TYPE		__ibm128
-
-#else
-#define IBM128_TYPE		long double
-#endif
+#define IBM128_TYPE	__ibm128
 
 /* Add prototypes of the library functions created.  In case the appropriate
    int/long types are not declared in scope by the time quad.h is included,
@@ -185,7 +180,7 @@ union ibm128_union {
 #define CVT_FLOAT128_TO_IBM128(RESULT, VALUE)				\
 {									\
   double __high, __low;							\
-  __float128 __value = (VALUE);						\
+  TFtype __value = (VALUE);						\
   union ibm128_union u;							\
 									\
   __high = (double) __value;						\
@@ -196,7 +191,7 @@ union ibm128_union {
     {									\
       double __high_temp;						\
 									\
-      __low = (double) (__value - (__float128) __high);			\
+      __low = (double) (__value - (TFtype) __high);			\
       /* Renormalize low/high and move them into canonical IBM long	\
 	 double form.  */						\
       __high_temp = __high + __low;					\
@@ -220,13 +215,13 @@ union ibm128_union {
 									\
   /* Handle the special cases of NAN and infinity.  */			\
   if (__builtin_isnan (__high) || __builtin_isinf (__high))		\
-    RESULT = (__float128) __high;					\
+    RESULT = (TFtype) __high;						\
 									\
   /* If low is 0.0, there no need to do the add.  In addition,		\
      avoiding the add produces the correct sign if high is -0.0.  */	\
   else if (__low == 0.0)						\
-    RESULT = (__float128) __high;					\
+    RESULT = (TFtype) __high;						\
 									\
   else									\
-    RESULT = ((__float128) __high) + ((__float128) __low);		\
+    RESULT = ((TFtype) __high) + ((TFtype) __low);			\
 }

@@ -43,10 +43,10 @@
 #define __trunctfkf2_sw __trunctfkf2
 #endif
 
-__float128
+TFtype
 __trunctfkf2_sw (IBM128_TYPE value)
 {
-  __float128 ret;
+  TFtype ret;
 
   CVT_IBM128_TO_FLOAT128 (ret, value);
   return ret;

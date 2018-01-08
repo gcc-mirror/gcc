@@ -23,12 +23,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* This is a temporary specialization of code from libgcc/libgcc2.c.  */
 
-typedef float KFtype __attribute__ ((mode (KF)));
-typedef __complex float KCtype __attribute__ ((mode (KC)));
+#include "soft-fp.h"
+#include "quad-float128.h"
 
-#define COPYSIGN(x,y) __builtin_copysignq (x, y)
-#define INFINITY __builtin_infq ()
-#define FABS __builtin_fabsq
+#define COPYSIGN(x,y) __builtin_copysignf128 (x, y)
+#define INFINITY __builtin_inff128 ()
+#define FABS __builtin_fabsf128
 #define isnan __builtin_isnan
 #define isinf __builtin_isinf
 #define isfinite __builtin_isfinite
@@ -37,13 +37,11 @@ typedef __complex float KCtype __attribute__ ((mode (KC)));
 #define __divkc3 __divkc3_sw
 #endif
 
-extern KCtype __divkc3 (KFtype, KFtype, KFtype, KFtype);
-
-KCtype
-__divkc3 (KFtype a, KFtype b, KFtype c, KFtype d)
+TCtype
+__divkc3 (TFtype a, TFtype b, TFtype c, TFtype d)
 {
-  KFtype denom, ratio, x, y;
-  KCtype res;
+  TFtype denom, ratio, x, y;
+  TCtype res;
 
   /* ??? We can get better behavior from logarithmic scaling instead of
      the division.  But that would mean starting to link libgcc against
