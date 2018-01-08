@@ -510,7 +510,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Simplify (t * 2) / 2) -> t.  */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
-  (div (mult @0 @1) @1)
+  (div (mult:c @0 @1) @1)
   (if (ANY_INTEGRAL_TYPE_P (type)
        && TYPE_OVERFLOW_UNDEFINED (type))
    @0)))
