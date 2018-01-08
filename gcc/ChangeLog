@@ -1,5 +1,12 @@
 2017-01-08  Jeff Law  <law@redhat.com>
 
+	PR rtl-optimizatin/81308
+	* tree-switch-conversion.c (cfg_altered): New file scoped static.
+	(process_switch): If group_case_labels makes a change, then set
+	cfg_altered.
+	(pass_convert_switch::execute): If a switch is converted, then
+	set cfg_altered.  Return TODO_cfg_cleanup if cfg_altered is true.
+
 	PR rtl-optimization/81308
 	* recog.c (split_all_insns): Conditionally cleanup the CFG after
 	splitting insns.

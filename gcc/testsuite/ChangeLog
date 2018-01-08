@@ -1,3 +1,9 @@
+2018-01-08  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimizatin/81308
+	* g++.dg/pr81308-1.C: New test.
+	* g++.dg/pr81308-2.C: New test.
+
 2018-01-08  Vidya Praveen <vidyapraveen@arm.com>
 
 	PR target/83663 - Revert r255946
