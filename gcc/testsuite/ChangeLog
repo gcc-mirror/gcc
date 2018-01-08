@@ -1,3 +1,11 @@
+2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2017-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82975
+	* gcc.dg/pr82975.c: New test.
+
 2018-01-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83628
