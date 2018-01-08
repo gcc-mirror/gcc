@@ -139,9 +139,13 @@ MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_1_a_simd_variants), \
 # Baseline v8.2-a: map down to baseline v8-a
 MULTILIB_MATCHES	+= march?armv7=march?armv8.2-a
 
-# Map all v8.2-a SIMD variants
+# Baseline v8.3-a: map down to baseline v8-a
+MULTILIB_MATCHES	+= march?armv7=march?armv8.3-a
+
+# Map all v8.2-a SIMD variants.  v8.3-a SIMD variants have the same mappings
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_2_a_simd_variants), \
-			     march?armv7+fp=march?armv8.2-a$(ARCH))
+			     march?armv7+fp=march?armv8.2-a$(ARCH) \
+			     march?armv7+fp=march?armv8.3-a$(ARCH))
 
 # Use Thumb libraries for everything.
 

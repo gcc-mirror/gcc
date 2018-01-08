@@ -1,3 +1,8 @@
+2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add fp16, dotprod and armv8.3-a
+	combination tests.
+
 2018-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83563
