@@ -1,3 +1,11 @@
+2018-01-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from mainline
+	2018-01-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (epiphany-*-elf*): Add (epiphany-*-rtems*) configuration.
+	* config/epiphany/rtems.h: New file.
+
 2018-01-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83628

@@ -1235,11 +1235,19 @@ crisv32-*-linux* | cris-*-linux*)
 		;;
 	esac
 	;;
-epiphany-*-elf )
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	tmake_file="epiphany/t-epiphany"
+epiphany-*-elf | epiphany-*-rtems*)
+	tm_file="${tm_file} dbxelf.h elfos.h"
+	tmake_file="${tmake_file} epiphany/t-epiphany"
+	case ${target} in
+	epiphany-*-rtems*)
+	  tm_file="${tm_file} rtems.h epiphany/rtems.h newlib-stdint.h"
+	  ;;
+	*)
+	  tm_file="${tm_file} newlib-stdint.h"
+	  ;;
+	esac
 	extra_options="${extra_options} fused-madd.opt"
-	extra_objs="$extra_objs mode-switch-use.o resolve-sw-modes.o"
+	extra_objs="${extra_objs} mode-switch-use.o resolve-sw-modes.o"
 	tm_defines="${tm_defines} EPIPHANY_STACK_OFFSET=${with_stack_offset:-8}"
 	extra_headers="epiphany_intrinsics.h"
 	;;

@@ -484,8 +484,8 @@ cris-*-elf)
 cris-*-linux* | crisv32-*-linux*)
 	tmake_file="$tmake_file cris/t-cris t-softfp-sfdf t-softfp cris/t-linux"
 	;;
-epiphany-*-elf*)
-	tmake_file="epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"
+epiphany-*-elf* | epiphany-*-rtems*)
+	tmake_file="$tmake_file epiphany/t-epiphany t-fdpbit epiphany/t-custom-eqsf"
 	extra_parts="$extra_parts crti.o crtint.o crtrunc.o crtm1reg-r43.o crtm1reg-r63.o crtn.o"
 	;;
 fr30-*-elf)
