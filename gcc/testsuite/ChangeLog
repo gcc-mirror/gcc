@@ -1,3 +1,8 @@
+2018-01-08  Vidya Praveen <vidyapraveen@arm.com>
+
+	PR target/83663 - Revert r255946
+	* gcc.target/aarch64/vect-slp-dup.c: New.
+
 2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/multilib.exp: Add fp16, dotprod and armv8.3-a

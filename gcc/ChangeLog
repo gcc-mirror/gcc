@@ -1,3 +1,12 @@
+2018-01-08  Vidya Praveen  <vidyapraveen@arm.com>
+
+	PR target/83663 - Revert r255946
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init): Modify code
+	generation for cases where splatting a value is not useful.
+	* simplify-rtx.c (simplify_ternary_operation): Simplify vec_merge
+	across a vec_duplicate and a paradoxical subreg forming a vector
+	mode to a vec_concat.
+
 2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/t-aprofile (MULTILIB_MATCHES): Add mapping rules for
