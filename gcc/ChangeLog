@@ -1,3 +1,10 @@
+2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/t-aprofile (MULTILIB_MATCHES): Add mapping rules for
+	-march=armv8.3-a variants.
+	* config/arm/t-multilib: Likewise.
+	* config/arm/t-arm-elf: Likewise.  Handle dotprod extension.
+
 2018-01-08  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (cceq_ior_compare): Remove * so I can use it
