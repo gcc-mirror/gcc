@@ -1,3 +1,8 @@
+2018-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/83517
+	* gcc.dg/pr83517.c: New testcase.
+
 2018-01-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/81897
