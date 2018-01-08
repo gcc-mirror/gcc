@@ -1,3 +1,7 @@
+2018-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* expr.c (gfc_check_pointer_assign): Fix typo in comment.
+
 2018-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83611
