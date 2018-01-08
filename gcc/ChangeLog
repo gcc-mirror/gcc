@@ -1,3 +1,9 @@
+2017-01-08  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/81308
+	* recog.c (split_all_insns): Conditionally cleanup the CFG after
+	splitting insns.
+
 2018-01-08  Vidya Praveen  <vidyapraveen@arm.com>
 
 	PR target/83663 - Revert r255946
