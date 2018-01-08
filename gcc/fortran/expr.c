@@ -3911,7 +3911,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
   /* Error for assignments of contiguous pointers to targets which is not
      contiguous.  Be lenient in the definition of what counts as
-     congiguous.  */
+     contiguous.  */
 
   if (lhs_attr.contiguous && !gfc_is_simply_contiguous (rvalue, false, true))
     gfc_error ("Assignment to contiguous pointer from non-contiguous "
