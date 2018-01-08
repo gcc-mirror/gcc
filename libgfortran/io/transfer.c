@@ -3691,7 +3691,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 	{
 	  char *p;
 	  /* Internal unit, so must fit in memory.  */
-	  size_t length, m, record;
+	  size_t length, m;
 	  size_t max_pos = max_pos_off;
 	  if (is_array_io (dtp))
 	    {
@@ -3730,14 +3730,16 @@ next_record_w (st_parameter_dt *dtp, int done)
 		memset (p, ' ', length);
 
 	      /* Now that the current record has been padded out,
-		 determine where the next record in the array is. */
-	      record = next_array_record (dtp, dtp->u.p.current_unit->ls,
-					  &finished);
+		 determine where the next record in the array is.
+		 Note that this can return a negative value, so it
+		 needs to be assigned to a signed value.  */
+	      gfc_offset record = next_array_record
+		(dtp, dtp->u.p.current_unit->ls, &finished);
 	      if (finished)
 		dtp->u.p.current_unit->endfile = AT_ENDFILE;
 
 	      /* Now seek to this record */
-	      record = record * ((size_t) dtp->u.p.current_unit->recl);
+	      record = record * dtp->u.p.current_unit->recl;
 
 	      if (sseek (dtp->u.p.current_unit->s, record, SEEK_SET) < 0)
 		{

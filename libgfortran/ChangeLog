@@ -1,3 +1,9 @@
+2018-01-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR 78534, bugfix for r256322
+	* io/transfer.c (next_record_w): Use correct type for return value
+	of next_array_record.
+
 2018-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* libgfortran.h (GFC_DTYPE_COPY): New macro.
