@@ -1,3 +1,9 @@
+2018-01-08  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/builtins.c: Require effective target alloca.
+	* gcc.dg/Wrestrict.c: Same.
+	* gcc.dg/tree-ssa/loop-interchange-15.c: Same.
+
 2018-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/83580
