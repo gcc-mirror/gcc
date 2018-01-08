@@ -44,7 +44,7 @@
 #endif
 
 IBM128_TYPE
-__extendkftf2_sw (__float128 value)
+__extendkftf2_sw (TFtype value)
 {
   IBM128_TYPE ret;
 
