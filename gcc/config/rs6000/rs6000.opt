@@ -331,8 +331,12 @@ Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined 
 Specify how many bytes should be moved inline before calling out to memcpy/memmove.
 
 mblock-compare-inline-limit=
-Target Report Var(rs6000_block_compare_inline_limit) Init(5) RejectNegative Joined UInteger Save
-Specify the maximum number pairs of load instructions that should be generated inline for the compare.  If the number needed exceeds the limit, a call to memcmp will be generated instead.
+Target Report Var(rs6000_block_compare_inline_limit) Init(31) RejectNegative Joined UInteger Save
+Specify the maximum number of bytes to compare inline with non-looping code. If this is set to 0, all inline expansion (non-loop and loop) of memcmp is disabled.
+
+mblock-compare-inline-loop-limit=
+Target Report Var(rs6000_block_compare_inline_loop_limit) Init(-1) RejectNegative Joined UInteger Save
+Specify the maximum number of bytes to compare inline with loop code generation.  If the length is not known at compile time, memcmp will be called after this many bytes are compared. By default, a length will be picked depending on the tuning target.
 
 mstring-compare-inline-limit=
 Target Report Var(rs6000_string_compare_inline_limit) Init(8) RejectNegative Joined UInteger Save
