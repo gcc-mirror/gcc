@@ -1,3 +1,20 @@
+2018-01-08  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (cceq_ior_compare): Remove * so I can use it
+	to generate rtl.
+	(cceq_ior_compare_complement): Give it a name so I can use it, and
+	change boolean_or_operator predicate to boolean_operator so it can
+	be used to generate a crand.
+	(eqne): New code iterator.
+	(bd/bd_neg): New code_attrs.
+	(<bd>_<mode>): New name for ctr<mode>_internal[12] now combined into
+	a single define_insn.
+	(<bd>tf_<mode>): A new insn pattern for the conditional form branch
+	decrement (bdnzt/bdnzf/bdzt/bdzf).
+	* config/rs6000/rs6000.c (rs6000_legitimate_combined_insn): Updated
+	with the new names of the branch decrement patterns, and added the
+	names of the branch decrement conditional patterns.
+
 2018-01-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83563
