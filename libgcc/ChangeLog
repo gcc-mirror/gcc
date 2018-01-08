@@ -1,3 +1,41 @@
+2018-01-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/quad-float128.h (IBM128_TYPE): Explicitly use
+	__ibm128, instead of trying to use long double.
+	(CVT_FLOAT128_TO_IBM128): Use TFtype instead of __float128 to
+	accomidate -mabi=ieeelongdouble multilibs.
+	(CVT_IBM128_TO_FLOAT128): Likewise.
+	* config/rs6000/ibm-ldouble.c (IBM128_TYPE): New macro to define
+	the appropriate IBM extended double type.
+	(__gcc_qadd): Change all occurances of long double to IBM128_TYPE.
+	(__gcc_qsub): Likewise.
+	(__gcc_qmul): Likewise.
+	(__gcc_qdiv): Likewise.
+	(pack_ldouble): Likewise.
+	(__gcc_qneg): Likewise.
+	(__gcc_qeq): Likewise.
+	(__gcc_qne): Likewise.
+	(__gcc_qge): Likewise.
+	(__gcc_qle): Likewise.
+	(__gcc_stoq): Likewise.
+	(__gcc_dtoq): Likewise.
+	(__gcc_itoq): Likewise.
+	(__gcc_utoq): Likewise.
+	(__gcc_qunord): Likewise.
+	* config/rs6000/_mulkc3.c (toplevel): Include soft-fp.h and
+	quad-float128.h for the definitions.
+	(COPYSIGN): Use the f128 version instead of the q version.
+	(INFINITY): Likewise.
+	(__mulkc3): Use TFmode/TCmode for float128 scalar/complex types.
+	* config/rs6000/_divkc3.c (toplevel): Include soft-fp.h and
+	quad-float128.h for the definitions.
+	(COPYSIGN): Use the f128 version instead of the q version.
+	(INFINITY): Likewise.
+	(FABS): Likewise.
+	(__divkc3): Use TFmode/TCmode for float128 scalar/complex types.
+	* config/rs6000/extendkftf2-sw.c (__extendkftf2_sw): Likewise.
+	* config/rs6000/trunctfkf2-sw.c (__trunctfkf2_sw): Likewise.
+
 2018-01-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.host (epiphany-*-elf*): Add (epiphany-*-rtems*)
