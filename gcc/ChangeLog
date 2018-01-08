@@ -1,5 +1,12 @@
 2018-01-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
+	PR target/83681
+	* config/epiphany/epiphany.h (make_pass_mode_switch_use): Guard
+	by not USED_FOR_TARGET.
+	(make_pass_resolve_sw_modes): Likewise.
+
+2018-01-08  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
 	* config/nios2/nios2.h (nios2_section_threshold): Guard by not
 	USED_FOR_TARGET.
 
