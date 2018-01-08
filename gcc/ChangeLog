@@ -1,5 +1,11 @@
 2018-01-08  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/83685
+	* tree-ssa-pre.c (create_expression_by_pieces): Do not insert
+	references to abnormals.
+
+2018-01-08  Richard Biener  <rguenther@suse.de>
+
 	PR lto/83719
 	* dwarf2out.c (output_indirect_strings): Handle empty
 	skeleton_debug_str_hash.
