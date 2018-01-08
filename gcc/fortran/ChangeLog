@@ -1,3 +1,22 @@
+2018-01-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83611
+	* decl.c (gfc_get_pdt_instance): If parameterized arrays have
+	an initializer, convert the kind parameters and add to the
+	component if the instance.
+	* trans-array.c (structure_alloc_comps): Add 'is_pdt_type' and
+	use it with case COPY_ALLOC_COMP. Call 'duplicate_allocatable'
+	for parameterized arrays. Clean up typos in comments. Convert
+	parameterized array initializers and copy into the array.
+	* trans-expr.c (gfc_trans_scalar_assign): Do a deep copy for
+	parameterized types.
+	*trans-stmt.c (trans_associate_var): Deallocate associate vars
+	as necessary, when they are PDT function results for example.
+
+	PR fortran/83731
+	* trans-array.c (structure_alloc_comps): Only compare len parms
+	when they are declared explicitly.
+
 2018-01-06  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/50892

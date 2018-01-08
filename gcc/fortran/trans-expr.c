@@ -8826,7 +8826,9 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       gfc_trans_string_copy (&block, llen, lse->expr, ts.kind, rlen,
 			     rse->expr, ts.kind);
     }
-  else if (gfc_bt_struct (ts.type) && ts.u.derived->attr.alloc_comp)
+  else if (gfc_bt_struct (ts.type)
+	   && (ts.u.derived->attr.alloc_comp
+		|| (deep_copy && ts.u.derived->attr.pdt_type)))
     {
       tree tmp_var = NULL_TREE;
       cond = NULL_TREE;
