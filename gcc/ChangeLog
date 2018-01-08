@@ -1,3 +1,12 @@
+2018-01-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/83677
+	* config/rs6000/altivec.md (*altivec_vpermr_<mode>_internal):
+	Reverse order of second and third operands in first alternative.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set): Reverse order
+	of first and second elements in UNSPEC_VPERMR vector.
+	(altivec_expand_vec_perm_le): Likewise.
+
 2017-01-08  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimizatin/81308
