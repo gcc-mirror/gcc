@@ -9072,10 +9072,14 @@ rs6000_legitimate_combined_insn (rtx_insn *insn)
      for the difficult case.  It's better to not create problems
      in the first place.  */
   if (icode != CODE_FOR_nothing
-      && (icode == CODE_FOR_ctrsi_internal1
-	  || icode == CODE_FOR_ctrdi_internal1
-	  || icode == CODE_FOR_ctrsi_internal2
-	  || icode == CODE_FOR_ctrdi_internal2))
+      && (icode == CODE_FOR_bdz_si
+	  || icode == CODE_FOR_bdz_di
+	  || icode == CODE_FOR_bdnz_si
+	  || icode == CODE_FOR_bdnz_di
+	  || icode == CODE_FOR_bdztf_si
+	  || icode == CODE_FOR_bdztf_di
+	  || icode == CODE_FOR_bdnztf_si
+	  || icode == CODE_FOR_bdnztf_di))
     return false;
 
   return true;
