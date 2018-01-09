@@ -39440,6 +39440,43 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 }
 
 void
+rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
+{
+  rtx rtx_tmp0, rtx_tmp1, rtx_tmp2, rtx_tmp3;
+
+  rtx_tmp0 = gen_reg_rtx (V2DFmode);
+  rtx_tmp1 = gen_reg_rtx (V2DFmode);
+
+  /* The destination of the vmrgew instruction layout is:
+     rtx_tmp2[0] rtx_tmp3[0] rtx_tmp2[1] rtx_tmp3[0].
+     Setup rtx_tmp0 and rtx_tmp1 to ensure the order of the elements after the
+     vmrgew instruction will be correct.  */
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+       emit_insn (gen_vsx_xxpermdi_v2df_be (rtx_tmp0, src1, src2,
+					    GEN_INT (0)));
+       emit_insn (gen_vsx_xxpermdi_v2df_be (rtx_tmp1, src1, src2,
+					    GEN_INT (3)));
+    }
+  else
+    {
+       emit_insn (gen_vsx_xxpermdi_v2df (rtx_tmp0, src1, src2, GEN_INT (3)));
+       emit_insn (gen_vsx_xxpermdi_v2df (rtx_tmp1, src1, src2, GEN_INT (0)));
+    }
+
+  rtx_tmp2 = gen_reg_rtx (V4SFmode);
+  rtx_tmp3 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
+  emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
+
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));
+  else
+    emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp3, rtx_tmp2));
+}
+
+void
 rs6000_generate_float2_code (bool signed_convert, rtx dst, rtx src1, rtx src2)
 {
   rtx rtx_tmp0, rtx_tmp1, rtx_tmp2, rtx_tmp3;

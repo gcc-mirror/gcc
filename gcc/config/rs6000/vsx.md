@@ -372,6 +372,7 @@
    UNSPEC_VSX_XVCVSXDDP
    UNSPEC_VSX_XVCVUXDDP
    UNSPEC_VSX_XVCVDPSXDS
+   UNSPEC_VSX_XVCDPSP
    UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
    UNSPEC_VSX_XVCVSPSXWS
@@ -2171,6 +2172,14 @@
   "xvcvuxdsp %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
+(define_insn "vsx_xvcdpsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wd,?wa")
+	(unspec:V4SF [(match_operand:V2DF 1 "vsx_register_operand" "wf,wa")]
+		     UNSPEC_VSX_XVCDPSP))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdpsp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
 ;; Convert from 32-bit to 64-bit types
 ;; Provide both vector and scalar targets
 (define_insn "vsx_xvcvsxwdp"
@@ -2236,6 +2245,24 @@
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xvcvuxwsp %x0,%x1"
   [(set_attr "type" "vecfloat")])
+
+;; Generate float2 double
+;; convert two double to float
+(define_expand "float2_v2df"
+  [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+   (use (match_operand:V2DF 1 "register_operand" "wa"))
+   (use (match_operand:V2DF 2 "register_operand" "wa"))]
+ "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  rtx rtx_src1, rtx_src2, rtx_dst;
+
+  rtx_dst = operands[0];
+  rtx_src1 = operands[1];
+  rtx_src2 = operands[2];
+
+  rs6000_generate_float2_double_code (rtx_dst, rtx_src1, rtx_src2);
+  DONE;
+})
 
 ;; Generate float2
 ;; convert two long long signed ints to float

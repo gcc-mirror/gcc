@@ -1,3 +1,20 @@
+2018-01-09  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6002/altivec.md (p8_vmrgow): Add support for V2DI, V2DF,
+	V4SI, V4SF types.
+	(p8_vmrgew): Add support for V2DI, V2DF, V4SF types.
+	* config/rs6000/rs6000-builtin.def: Add definitions for FLOAT2_V2DF,
+	VMRGEW_V2DI, VMRGEW_V2DF, VMRGEW_V4SF, VMRGOW_V4SI, VMRGOW_V4SF,
+	VMRGOW_V2DI, VMRGOW_V2DF.  Remove definition for VMRGOW.
+	* config/rs6000/rs6000-c.c (VSX_BUILTIN_VEC_FLOAT2,
+	P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VEC_VMRGOW):  Add definitions.
+	* config/rs6000/rs6000-protos.h: Add extern defition for
+	rs6000_generate_float2_double_code.
+	* config/rs6000/rs6000.c (rs6000_generate_float2_double_code): Add
+	function.
+	* config/rs6000/vsx.md (vsx_xvcdpsp): Add define_insn.
+	(float2_v2df): Add define_expand.
+
 2018-01-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83628

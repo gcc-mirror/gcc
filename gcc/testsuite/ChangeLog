@@ -1,3 +1,13 @@
+2017-01-09 Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c (main): Add tests for vec_mergee and
+	vec_mergeo builtins with float, double, long long, unsigned long long,
+	bool long long  arguments.
+	* gcc.target/powerpc/builtins-3-runnable.c (main): Add test for
+	vec_float2 with double arguments.
+	* gcc.target/powerpc/builtins-mergew-mergow.c: New runable test for the
+	vec_mergew and vec_mergow builtins.
+
 2018-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83742
