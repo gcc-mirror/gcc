@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "params.h"
 #include "pretty-print.h"
+#include "cfganal.h"
 
 #ifdef HAVE_isl
 #include "cfghooks.h"
@@ -350,6 +351,10 @@ graphite_transform_loops (void)
 
   calculate_dominance_info (CDI_DOMINATORS);
 
+  /* We rely on post-dominators during merging of SESE regions so those
+     have to be meaningful.  */
+  connect_infinite_loops_to_exit ();
+
   ctx = isl_ctx_alloc ();
   isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
   the_isl_ctx = ctx;
@@ -367,6 +372,10 @@ graphite_transform_loops (void)
   calculate_dominance_info (CDI_POST_DOMINATORS);
   build_scops (&scops);
   free_dominance_info (CDI_POST_DOMINATORS);
+
+  /* Remove the fake exits before transform given they are not reflected
+     in loop structures we end up verifying.  */
+  remove_fake_exit_edges ();
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -428,7 +437,6 @@ graphite_transform_loops (void)
       release_recorded_exits (cfun);
       tree_estimate_probability (false);
     }
-
 }
 
 #else /* If isl is not available: #ifndef HAVE_isl.  */

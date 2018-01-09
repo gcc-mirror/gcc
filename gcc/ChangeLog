@@ -1,3 +1,10 @@
+2018-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83572
+	* graphite.c: Include cfganal.h.
+	(graphite_transform_loops): Connect infinite loops to exit
+	and remove fake edges at the end.
+
 2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-inline.c (edge_badness): Revert accidental checkin.
