@@ -1,3 +1,8 @@
+2018-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83742
+	* expr.c (gfc_is_simply_contiguous): Check for NULL pointer.
+
 2018-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* match.c (gfc_match_allocate): Check for NULL pointer.
