@@ -5313,14 +5313,14 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 
   sym = expr->symtree->n.sym;
   if (expr->ts.type != BT_CLASS
-	&& ((part_ref
-		&& !part_ref->u.c.component->attr.contiguous
-		&& part_ref->u.c.component->attr.pointer)
-	    || (!part_ref
-		&& !sym->attr.contiguous
-		&& (sym->attr.pointer
-		    || sym->as->type == AS_ASSUMED_RANK
-		    || sym->as->type == AS_ASSUMED_SHAPE))))
+      && ((part_ref
+	   && !part_ref->u.c.component->attr.contiguous
+	   && part_ref->u.c.component->attr.pointer)
+	  || (!part_ref
+	      && !sym->attr.contiguous
+	      && (sym->attr.pointer
+		  || (sym->as && sym->as->type == AS_ASSUMED_RANK)
+		  || (sym->as && sym->as->type == AS_ASSUMED_SHAPE)))))
     return false;
 
   if (!ar || ar->type == AR_FULL)
