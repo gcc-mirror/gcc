@@ -1,3 +1,19 @@
+2018-01-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Don't save registers in main().
+
+	PR target/83737
+	* doc/invoke.texi (AVR Options) [-mmain-is-OS_task]: Document it.
+	* config/avr/avr.opt (-mmain-is-OS_task): New target option.
+	* config/avr/avr.c (avr_set_current_function): Don't error if
+	naked, OS_task or OS_main are specified at the same time.
+	(avr_function_ok_for_sibcall): Don't disable sibcalls for OS_task,
+	OS_main.
+	(avr_insert_attributes) [-mmain-is-OS_task] <main>: Add OS_task
+	attribute.
+	* common/config/avr/avr-common.c (avr_option_optimization_table):
+	Switch on -mmain-is-OS_task for optimizing compilations.
+
 2018-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83572

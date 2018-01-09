@@ -669,7 +669,8 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{cost} @gol
 -mcall-prologues  -mgas-isr-prologues  -mint8 @gol
 -mn_flash=@var{size}  -mno-interrupts @gol
--mrelax  -mrmw  -mstrict-X  -mtiny-stack  -mfract-convert-truncate @gol
+-mmain-is-OS_task -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
+-mfract-convert-truncate @gol
 -mshort-calls  -nodevicelib @gol
 -Waddr-space-convert  -Wmisspelled-isr}
 
@@ -16461,6 +16462,12 @@ Assume @code{int} to be 8-bit integer.  This affects the sizes of all types: a
 and @code{long long} is 4 bytes.  Please note that this option does not
 conform to the C standards, but it results in smaller code
 size.
+
+@item -mmain-is-OS_task
+@opindex mmain-is-OS_task
+Do not save registers in @code{main}.  The effect is the same like
+attaching attribute @ref{AVR Function Attributes,,@code{OS_task}}
+to @code{main}. It is activated per default if optimization is on.
 
 @item -mn-flash=@var{num}
 @opindex mn-flash
