@@ -1,5 +1,9 @@
 2018-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* match.c (gfc_match_allocate): Check for NULL pointer.
+
+2018-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* expr.c (gfc_check_pointer_assign): Fix typo in comment.
 
 2018-01-08  Paul Thomas  <pault@gcc.gnu.org>
