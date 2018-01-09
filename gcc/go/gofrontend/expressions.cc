@@ -7496,6 +7496,10 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 
   Expression* cap_arg = NULL;
   bool cap_small = false;
+  Numeric_constant nclen;
+  Numeric_constant nccap;
+  unsigned long vlen;
+  unsigned long vcap;
   if (is_slice && parg != args->end())
     {
       cap_arg = *parg;
@@ -7503,10 +7507,6 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
       if (!this->check_int_value(cap_arg, false, &cap_small))
 	return Expression::make_error(this->location());
 
-      Numeric_constant nclen;
-      Numeric_constant nccap;
-      unsigned long vlen;
-      unsigned long vcap;
       if (len_arg->numeric_constant_value(&nclen)
 	  && cap_arg->numeric_constant_value(&nccap)
 	  && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID
@@ -7531,19 +7531,25 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   Expression* call;
   if (is_slice)
     {
-      Type* et = type->array_type()->element_type();
-      Expression* type_arg = Expression::make_type_descriptor(et, type_loc);
       if (cap_arg == NULL)
 	{
-	  Temporary_statement* temp = Statement::make_temporary(NULL,
-								len_arg,
-								loc);
-	  inserter->insert(temp);
-	  len_arg = Expression::make_temporary_reference(temp, loc);
-	  cap_arg = Expression::make_temporary_reference(temp, loc);
-	  cap_small = len_small;
+          cap_small = len_small;
+          if (len_arg->numeric_constant_value(&nclen)
+              && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID)
+            cap_arg = Expression::make_integer_ul(vlen, len_arg->type(), loc);
+          else
+            {
+              Temporary_statement* temp = Statement::make_temporary(NULL,
+                                                                    len_arg,
+                                                                    loc);
+              inserter->insert(temp);
+              len_arg = Expression::make_temporary_reference(temp, loc);
+              cap_arg = Expression::make_temporary_reference(temp, loc);
+            }
 	}
 
+      Type* et = type->array_type()->element_type();
+      Expression* type_arg = Expression::make_type_descriptor(et, type_loc);
       Runtime::Function code = Runtime::MAKESLICE;
       if (!len_small || !cap_small)
 	code = Runtime::MAKESLICE64;

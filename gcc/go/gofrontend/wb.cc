@@ -64,6 +64,47 @@ Mark_address_taken::expression(Expression** pexpr)
         }
       aie->array()->address_taken(escapes);
     }
+
+  // Rewrite non-escaping makeslice with constant size to stack allocation.
+  Unsafe_type_conversion_expression* uce =
+    expr->unsafe_conversion_expression();
+  if (uce != NULL
+      && uce->type()->is_slice_type()
+      && Node::make_node(uce->expr())->encoding() == Node::ESCAPE_NONE
+      && uce->expr()->call_expression() != NULL)
+    {
+      Call_expression* call = uce->expr()->call_expression();
+      if (call->fn()->func_expression() != NULL
+          && call->fn()->func_expression()->runtime_code() == Runtime::MAKESLICE)
+        {
+          Expression* len_arg = call->args()->at(1);
+          Expression* cap_arg = call->args()->at(2);
+          Numeric_constant nclen;
+          Numeric_constant nccap;
+          unsigned long vlen;
+          unsigned long vcap;
+          if (len_arg->numeric_constant_value(&nclen)
+              && cap_arg->numeric_constant_value(&nccap)
+              && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID
+              && nccap.to_unsigned_long(&vcap) == Numeric_constant::NC_UL_VALID)
+            {
+              // Turn it into a slice expression of an addressable array,
+              // which is allocated on stack.
+              Location loc = expr->location();
+              Type* elmt_type = expr->type()->array_type()->element_type();
+              Expression* len_expr =
+                Expression::make_integer_ul(vcap, cap_arg->type(), loc);
+              Type* array_type = Type::make_array_type(elmt_type, len_expr);
+              Expression* alloc = Expression::make_allocation(array_type, loc);
+              alloc->allocation_expression()->set_allocate_on_stack();
+              Expression* array = Expression::make_unary(OPERATOR_MULT, alloc, loc);
+              Expression* zero = Expression::make_integer_ul(0, len_arg->type(), loc);
+              Expression* slice =
+                Expression::make_array_index(array, zero, len_arg, cap_arg, loc);
+              *pexpr = slice;
+            }
+        }
+    }
   return TRAVERSE_CONTINUE;
 }
 
