@@ -69,6 +69,40 @@ go_cmd_cgo_files = \
 	$(cmdsrcdir)/cgo/out.go \
 	$(cmdsrcdir)/cgo/util.go
 
+go_cmd_vet_files = \
+	$(cmdsrcdir)/vet/asmdecl.go \
+	$(cmdsrcdir)/vet/assign.go \
+	$(cmdsrcdir)/vet/atomic.go \
+	$(cmdsrcdir)/vet/bool.go \
+	$(cmdsrcdir)/vet/buildtag.go \
+	$(cmdsrcdir)/vet/cgo.go \
+	$(cmdsrcdir)/vet/composite.go \
+	$(cmdsrcdir)/vet/copylock.go \
+	$(cmdsrcdir)/vet/deadcode.go \
+	$(cmdsrcdir)/vet/dead.go \
+	$(cmdsrcdir)/vet/doc.go \
+	$(cmdsrcdir)/vet/httpresponse.go \
+	$(cmdsrcdir)/vet/lostcancel.go \
+	$(cmdsrcdir)/vet/main.go \
+	$(cmdsrcdir)/vet/method.go \
+	$(cmdsrcdir)/vet/nilfunc.go \
+	$(cmdsrcdir)/vet/print.go \
+	$(cmdsrcdir)/vet/rangeloop.go \
+	$(cmdsrcdir)/vet/shadow.go \
+	$(cmdsrcdir)/vet/shift.go \
+	$(cmdsrcdir)/vet/structtag.go \
+	$(cmdsrcdir)/vet/tests.go \
+	$(cmdsrcdir)/vet/types.go \
+	$(cmdsrcdir)/vet/unsafeptr.go \
+	$(cmdsrcdir)/vet/unused.go
+
+go_cmd_buildid_files = \
+	$(cmdsrcdir)/buildid/buildid.go \
+	$(cmdsrcdir)/buildid/doc.go
+
+go_cmd_test2json_files = \
+	$(cmdsrcdir)/test2json/main.go
+
 GCCGO_INSTALL_NAME := $(shell echo gccgo|sed '$(program_transform_name)')
 GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
@@ -76,9 +110,9 @@ GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
 zdefaultcc.go: s-zdefaultcc; @true
 s-zdefaultcc: Makefile
 	echo 'package main' > zdefaultcc.go.tmp
-	echo 'const defaultGCCGO = "$(bindir)/$(GCCGO_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const defaultCC = "$(GCC_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const defaultCXX = "$(GXX_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'func defaultGCCGO(goos, goarch string) string { return "$(bindir)/$(GCCGO_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
+	echo 'func defaultCC(goos, goarch string) string { return "$(GCC_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
+	echo 'func defaultCXX(goos, goarch string) string { return "$(GXX_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
 	echo 'const defaultPkgConfig = "pkg-config"' >> zdefaultcc.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change zdefaultcc.go.tmp zdefaultcc.go
 	$(STAMP) $@ 
@@ -97,23 +131,33 @@ if NATIVE
 # and install them as regular programs.
 
 bin_PROGRAMS = go$(EXEEXT) gofmt$(EXEEXT)
-noinst_PROGRAMS = cgo$(EXEEXT)
+noinst_PROGRAMS = cgo$(EXEEXT) vet$(EXEEXT) buildid$(EXEEXT) test2json$(EXEEXT)
 man_MANS = go.1 gofmt.1
 
 go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
 	$(GOLINK) $(go_cmd_go_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 gofmt$(EXEEXT): $(go_cmd_gofmt_files) $(LIBGODEP)
 	$(GOLINK) $(go_cmd_gofmt_files) $(LIBS) $(NET_LIBS)
-cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGODEP)
-	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
+cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGOTOOL) $(LIBGODEP)
+	$(GOLINK) $(go_cmd_cgo_files) zdefaultcc.go $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
+vet$(EXEEXT): $(go_cmd_vet_files) $(LIBGOTOOL) $(LIBGODEP)
+	$(GOLINK) $(go_cmd_vet_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
+buildid$(EXEEXT): $(go_cmd_buildid_files) $(LIBGOTOOL) $(LIBGODEP)
+	$(GOLINK) $(go_cmd_buildid_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
+test2json$(EXEEXT): $(go_cmd_test2json_files) $(LIBGOTOOL) $(LIBGODEP)
+	$(GOLINK) $(go_cmd_test2json_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 
-install-exec-local: cgo$(EXEEXT)
+install-exec-local: $(noinst_PROGRAMS)
 	$(MKDIR_P) $(DESTDIR)$(libexecsubdir)
-	rm -f $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
-	$(INSTALL_PROGRAM) cgo$(exeext) $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
+	for f in $(noinst_PROGRAMS); do \
+	  rm -f $(DESTDIR)$(libexecsubdir)/$$f; \
+	  $(INSTALL_PROGRAM) $$f $(DESTDIR)$(libexecsubdir)/$$f; \
+	done
 
 uninstall-local:
-	rm -f $(DESTDIR)$(libexecsubdir)/cgo$(exeext)
+	for f in $(noinst_PROGRAMS); do \
+	  rm -f $(DESTDIR)$(libexecsubdir)/$$f; \
+	done
 
 GOTESTFLAGS =
 
@@ -177,8 +221,8 @@ CHECK_ENV = \
 # It assumes that abs_libgodir is set.
 ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' CC='$(abs_builddir)/check-gcc' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
 
-# check-go-tools runs `go test cmd/go` in our environment.
-check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
+# check-go-tool runs `go test cmd/go` in our environment.
+check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf check-go-dir cmd_go-testlog
 	$(MKDIR_P) check-go-dir/src/cmd/go
 	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
@@ -187,6 +231,7 @@ check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
 	cp -r $(cmdsrcdir)/go/testdata check-go-dir/src/cmd/go/
 	cp -r $(cmdsrcdir)/internal check-go-dir/src/cmd/
+	cp $(libgodir)/objabi.go check-go-dir/src/cmd/internal/objabi/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \
 	echo "cd check-go-dir/src/cmd/go && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.v" > cmd_go-testlog
@@ -200,7 +245,7 @@ check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 # The runtime package is also tested as part of libgo,
 # but the runtime tests use the go tool heavily, so testing
 # here too will catch more problems.
-check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
+check-runtime: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf check-runtime-dir runtime-testlog
 	$(MKDIR_P) check-runtime-dir
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
@@ -219,7 +264,7 @@ check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-cgo-test runs `go test misc/cgo/test` in our environment.
-check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
+check-cgo-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf cgo-test-dir cgo-testlog
 	$(MKDIR_P) cgo-test-dir/misc/cgo
 	cp -r $(libgomiscdir)/cgo/test cgo-test-dir/misc/cgo/
@@ -233,7 +278,7 @@ check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 
 # check-carchive-test runs `go test misc/cgo/testcarchive/carchive_test.go`
 # in our environment.
-check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
+check-carchive-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 	rm -rf carchive-test-dir carchive-testlog
 	$(MKDIR_P) carchive-test-dir/misc/cgo
 	cp -r $(libgomiscdir)/cgo/testcarchive carchive-test-dir/misc/cgo/
@@ -245,11 +290,25 @@ check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.v carchive_test.go) >> carchive-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
 	grep '^--- ' carchive-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
+# check-vet runs `go test cmd/vet` in our environment.
+check-vet: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
+	rm -rf check-vet-dir cmd_vet-testlog
+	$(MKDIR_P) check-vet-dir/src/cmd
+	cp -r $(cmdsrcdir)/vet check-vet-dir/src/cmd/
+	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
+	abs_checkdir=`cd check-vet-dir && $(PWD_COMMAND)`; \
+	echo "cd check-vet-dir/src/cmd/vet && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.v" > cmd_vet-testlog
+	$(CHECK_ENV) \
+	GOPATH=`cd check-vet-dir && $(PWD_COMMAND)`; \
+	export GOPATH; \
+	(cd check-vet-dir/src/cmd/vet && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cmd_vet-testlog 2>&1 || echo "--- $${fl}: go test cmd/vet (0.00s)" >> cmd_vet-testlog
+	grep '^--- ' cmd_vet-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
+
 # The check targets runs the tests and assembles the output files.
-check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test
+check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
 	@mv gotools.head gotools.sum
 	@cp gotools.sum gotools.log
-	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog; do \
+	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog; do \
 	  testname=`echo $${file} | sed -e 's/-testlog//' -e 's|_|/|'`; \
 	  echo "Running $${testname}" >> gotools.sum; \
 	  echo "Running $${testname}" >> gotools.log; \
@@ -275,7 +334,7 @@ check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test
 	@echo "runtest completed at `date`" >> gotools.log
 	@if grep '^FAIL' gotools.sum >/dev/null 2>&1; then exit 1; fi
 
-.PHONY: check check-head check-go-tool check-runtime check-cgo-test check-carchive-test
+.PHONY: check check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
 
 else
 

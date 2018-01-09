@@ -170,7 +170,18 @@ func freedefer(d *_defer) {
 			unlock(&sched.deferlock)
 		})
 	}
-	*d = _defer{}
+
+	// These lines used to be simply `*d = _defer{}` but that
+	// started causing a nosplit stack overflow via typedmemmove.
+	d.link = nil
+	d.frame = nil
+	d.panicStack = nil
+	d._panic = nil
+	d.pfn = 0
+	d.arg = nil
+	d.retaddr = 0
+	d.makefunccanrecover = false
+
 	pp.deferpool = append(pp.deferpool, d)
 }
 
@@ -327,7 +338,7 @@ func unwindStack() {
 
 // Goexit terminates the goroutine that calls it. No other goroutine is affected.
 // Goexit runs all deferred calls before terminating the goroutine. Because Goexit
-// is not panic, however, any recover calls in those deferred functions will return nil.
+// is not a panic, any recover calls in those deferred functions will return nil.
 //
 // Calling Goexit from the main goroutine terminates that goroutine
 // without func main returning. Since func main has not returned,
@@ -599,7 +610,7 @@ func canrecover(retaddr uintptr) bool {
 	// caller starts with "runtime.", then we are permitted to
 	// call recover.
 	var locs [16]location
-	if callers(2, locs[:2]) < 2 {
+	if callers(1, locs[:2]) < 2 {
 		return false
 	}
 
@@ -619,7 +630,7 @@ func canrecover(retaddr uintptr) bool {
 	// reflect.makeFuncStub or reflect.ffi_callback called by FFI
 	// functions.  Then we check the caller of that function.
 
-	n := callers(3, locs[:])
+	n := callers(2, locs[:])
 	foundFFICallback := false
 	i := 0
 	for ; i < n; i++ {
@@ -822,6 +833,12 @@ var panicking uint32
 // so that two concurrent panics don't overlap their output.
 var paniclk mutex
 
+// startpanic_m implements unrecoverable panic.
+//
+// It can have write barriers because the write barrier explicitly
+// ignores writes once dying > 0.
+//
+//go:yeswritebarrierrec
 func startpanic() {
 	_g_ := getg()
 	// Uncomment when mheap_ is in Go.
@@ -860,7 +877,7 @@ func startpanic() {
 		exit(4)
 		fallthrough
 	default:
-		// Can't even print!  Just exit.
+		// Can't even print! Just exit.
 		exit(5)
 	}
 }

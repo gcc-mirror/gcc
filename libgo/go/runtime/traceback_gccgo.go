@@ -52,7 +52,7 @@ func c_callers(skip int32, locbuf *location, max int32, keepThunks bool) int32
 // callers returns a stack trace of the current goroutine.
 // The gc version of callers takes []uintptr, but we take []location.
 func callers(skip int, locbuf []location) int {
-	n := c_callers(int32(skip), &locbuf[0], int32(len(locbuf)), false)
+	n := c_callers(int32(skip)+1, &locbuf[0], int32(len(locbuf)), false)
 	return int(n)
 }
 
@@ -156,7 +156,7 @@ func goroutineheader(gp *g) {
 	if waitfor >= 1 {
 		print(", ", waitfor, " minutes")
 	}
-	if gp.lockedm != nil {
+	if gp.lockedm != 0 {
 		print(", locked to thread")
 	}
 	print("]:\n")

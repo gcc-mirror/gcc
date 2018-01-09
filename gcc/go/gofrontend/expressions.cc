@@ -7483,6 +7483,7 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 	  return Expression::make_error(this->location());
 	}
       len_arg = Expression::make_integer_ul(0, NULL, loc);
+      len_small = true;
     }
   else
     {
@@ -7551,9 +7552,23 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   else if (is_map)
     {
       Expression* type_arg = Expression::make_type_descriptor(type, type_loc);
-      call = Runtime::make_call(Runtime::MAKEMAP, loc, 4, type_arg, len_arg,
-				Expression::make_nil(loc),
-				Expression::make_nil(loc));
+      if (!len_small)
+	call = Runtime::make_call(Runtime::MAKEMAP64, loc, 3, type_arg,
+				  len_arg,
+				  Expression::make_nil(loc));
+      else
+	{
+	  Numeric_constant nclen;
+	  unsigned long vlen;
+	  if (len_arg->numeric_constant_value(&nclen)
+	      && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID
+	      && vlen <= Map_type::bucket_size)
+	    call = Runtime::make_call(Runtime::MAKEMAP_SMALL, loc, 0);
+	  else
+	    call = Runtime::make_call(Runtime::MAKEMAP, loc, 3, type_arg,
+				      len_arg,
+				      Expression::make_nil(loc));
+	}
     }
   else if (is_chan)
     {
@@ -9503,14 +9518,8 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
   // could implement them in normal code, but then we would have to
   // explicitly unwind the stack.  These functions are intended to be
   // efficient.  Note that this technique obviously only works for
-  // direct calls, but that is the only way they are used.  The actual
-  // argument to these functions is always the address of a parameter;
-  // we don't need that for the GCC builtin functions, so we just
-  // ignore it.
-  if (gogo->compiling_runtime()
-      && this->args_ != NULL
-      && this->args_->size() == 1
-      && gogo->package_name() == "runtime")
+  // direct calls, but that is the only way they are used.
+  if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
     {
       Func_expression* fe = this->fn_->func_expression();
       if (fe != NULL
@@ -9518,15 +9527,21 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	  && fe->named_object()->package() == NULL)
 	{
 	  std::string n = Gogo::unpack_hidden_name(fe->named_object()->name());
-	  if (n == "getcallerpc")
+	  if ((this->args_ == NULL || this->args_->size() == 0)
+	      && n == "getcallerpc")
 	    {
 	      static Named_object* builtin_return_address;
 	      return this->lower_to_builtin(&builtin_return_address,
 					    "__builtin_return_address",
 					    0);
 	    }
-	  else if (n == "getcallersp")
+	  else if (this->args_ != NULL
+		   && this->args_->size() == 1
+		   && n == "getcallersp")
 	    {
+	      // The actual argument to getcallersp is always the
+	      // address of a parameter; we don't need that for the
+	      // GCC builtin function, so we just ignore it.
 	      static Named_object* builtin_frame_address;
 	      return this->lower_to_builtin(&builtin_frame_address,
 					    "__builtin_frame_address",
@@ -10027,7 +10042,7 @@ Call_expression::do_check_types(Gogo*)
     }
 
   const Typed_identifier_list* parameters = fntype->parameters();
-  if (this->args_ == NULL)
+  if (this->args_ == NULL || this->args_->size() == 0)
     {
       if (parameters != NULL && !parameters->empty())
 	this->report_error(_("not enough arguments"));

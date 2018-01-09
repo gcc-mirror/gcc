@@ -265,11 +265,12 @@ void*	runtime_mallocgc(uintptr, const Type*, bool)
   __asm__ (GOSYM_PREFIX "runtime.mallocgc");
 void*	runtime_sysAlloc(uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysAlloc");
+void	runtime_sysFree(void*, uintptr, uint64*)
+  __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_mprofinit(void);
 #define runtime_getcallersp(p) __builtin_frame_address(0)
 void	runtime_mcall(FuncVal*)
   __asm__ (GOSYM_PREFIX "runtime.mcall");
-uint32	runtime_fastrand(void) __asm__ (GOSYM_PREFIX "runtime.fastrand");
 int32	runtime_timediv(int64, int32, int32*)
   __asm__ (GOSYM_PREFIX "runtime.timediv");
 int32	runtime_round2(int32 x); // round x up to a power of 2.

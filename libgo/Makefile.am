@@ -400,8 +400,11 @@ toolexeclibgounicode_DATA = \
 # internal packages nothing will explicitly depend on them.
 # Force them to be built.
 noinst_DATA = \
+	golang_org/x/net/internal/nettest.gox \
+	golang_org/x/net/nettest.gox \
 	internal/testenv.gox \
-	net/internal/socktest.gox
+	net/internal/socktest.gox \
+	os/signal/internal/pty.gox
 
 if LIBGO_IS_RTEMS
 rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
@@ -533,6 +536,24 @@ s-version: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
 	$(STAMP) $@
 
+objabi.go: s-objabi; @true
+s-objabi: Makefile
+	rm -f objabi.go.tmp
+	echo "package objabi" > objabi.go.tmp
+	echo "import \"runtime\"" >> objabi.go.tmp
+	echo 'const defaultGOROOT = `$(prefix)`' >> objabi.go.tmp
+	echo 'const defaultGO386 = `sse2`' >> objabi.go.tmp
+	echo 'const defaultGOARM = `5`' >> objabi.go.tmp
+	echo 'const defaultGOMIPS = `hardfloat`' >> objabi.go.tmp
+	echo 'const defaultGOOS = runtime.GOOS' >> objabi.go.tmp
+	echo 'const defaultGOARCH = runtime.GOARCH' >> objabi.go.tmp
+	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> objabi.go.tmp
+	echo 'const version = `'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'`' >> objabi.go.tmp
+	echo 'const stackGuardMultiplier = 1' >> objabi.go.tmp
+	echo 'const goexperiment = ``' >> objabi.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh objabi.go.tmp objabi.go
+	$(STAMP) $@
+
 runtime_sysinfo.go: s-runtime_sysinfo; @true
 s-runtime_sysinfo: $(srcdir)/mkrsysinfo.sh gen-sysinfo.go
 	GOARCH=$(GOARCH) GOOS=$(GOOS) $(SHELL) $(srcdir)/mkrsysinfo.sh
@@ -553,10 +574,11 @@ zdefaultcc.go: s-zdefaultcc; @true
 s-zdefaultcc: Makefile
 	echo 'package cfg' > zdefaultcc.go.tmp
 	echo >> zdefaultcc.go.tmp
-	echo 'const DefaultGCCGO = "$(bindir)/$(GCCGO_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const DefaultCC = "$(GCC_INSTALL_NAME)"' >> zdefaultcc.go.tmp
-	echo 'const DefaultCXX = "$(GXX_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'func DefaultGCCGO(goos, goarch string) string { return "$(bindir)/$(GCCGO_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
+	echo 'func DefaultCC(goos, goarch string) string { return "$(GCC_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
+	echo 'func DefaultCXX(goos, goarch string) string { return "$(GXX_INSTALL_NAME)" }' >> zdefaultcc.go.tmp
 	echo 'const DefaultPkgConfig = "pkg-config"' >> zdefaultcc.go.tmp
+	echo 'var OSArchSupportsCgo = map[string]bool{}' >> zdefaultcc.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change zdefaultcc.go.tmp zdefaultcc.go
 	$(STAMP) $@ 
 
@@ -758,11 +780,15 @@ PACKAGES = \
 	go/types \
 	golang_org/x/crypto/chacha20poly1305 \
 	golang_org/x/crypto/chacha20poly1305/internal/chacha20 \
+	golang_org/x/crypto/cryptobyte \
+	golang_org/x/crypto/cryptobyte/asn1 \
 	golang_org/x/crypto/curve25519 \
 	golang_org/x/crypto/poly1305 \
 	golang_org/x/net/http2/hpack \
 	golang_org/x/net/idna \
+	golang_org/x/net/internal/nettest \
 	golang_org/x/net/lex/httplex \
+	golang_org/x/net/nettest \
 	golang_org/x/net/proxy \
 	golang_org/x/text/secure/bidirule \
 	golang_org/x/text/transform \
@@ -824,6 +850,7 @@ PACKAGES = \
 	os \
 	os/exec \
 	os/signal \
+	os/signal/internal/pty \
 	os/user \
 	path \
 	path/filepath \
@@ -905,7 +932,7 @@ libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
 GOTOOL_PACKAGES = \
 	cmd/go/internal/base \
 	cmd/go/internal/bug \
-	cmd/go/internal/buildid \
+	cmd/go/internal/cache \
 	cmd/go/internal/cfg \
 	cmd/go/internal/clean \
 	cmd/go/internal/cmdflag \
@@ -927,7 +954,12 @@ GOTOOL_PACKAGES = \
 	cmd/go/internal/web \
 	cmd/go/internal/work \
 	cmd/internal/browser \
-	cmd/internal/objabi
+	cmd/internal/buildid \
+	cmd/internal/edit \
+	cmd/internal/objabi \
+	cmd/internal/test2json \
+	cmd/vet/internal/cfg \
+	cmd/vet/internal/whitelist
 
 libgotool_a_SOURCES =
 libgotool_a_DEPENDENCIES = $(addsuffix .lo,$(GOTOOL_PACKAGES))
@@ -1136,16 +1168,22 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 
+extra_go_files_cmd_internal_objabi = objabi.go
+cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
+
 extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
 cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
 
 extra_go_files_cmd_go_internal_load = zstdpkglist.go
 cmd/go/internal/load.lo.dep: $(extra_go_files_cmd_go_internal_load)
 
+extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
+
+extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 
 # FIXME: The following C files may as well move to the runtime
 # directory and be treated like other C files.
@@ -1233,10 +1271,12 @@ TEST_PACKAGES = \
 	bufio/check \
 	bytes/check \
 	context/check \
+	crypto/check \
 	errors/check \
 	expvar/check \
 	flag/check \
 	fmt/check \
+	hash/check \
 	html/check \
 	image/check \
 	io/check \
@@ -1258,11 +1298,16 @@ TEST_PACKAGES = \
 	unicode/check \
 	archive/tar/check \
 	archive/zip/check \
+	cmd/go/internal/cache/check \
 	cmd/go/internal/generate/check \
 	cmd/go/internal/get/check \
 	cmd/go/internal/load/check \
 	cmd/go/internal/work/check \
+	cmd/internal/buildid/check \
+	cmd/internal/edit/check \
 	cmd/internal/objabi/check \
+	cmd/internal/test2json/check \
+	cmd/vet/internal/cfg/check \
 	compress/bzip2/check \
 	compress/flate/check \
 	compress/gzip/check \
@@ -1315,6 +1360,7 @@ TEST_PACKAGES = \
 	go/constant/check \
 	go/doc/check \
 	go/format/check \
+	go/importer/check \
 	go/internal/gcimporter/check \
 	go/internal/gccgoimporter/check \
 	go/internal/srcimporter/check \
@@ -1325,6 +1371,7 @@ TEST_PACKAGES = \
 	go/types/check \
 	golang_org/x/crypto/chacha20poly1305/check \
 	golang_org/x/crypto/chacha20poly1305/internal/chacha20/check \
+	golang_org/x/crypto/cryptobyte/check \
 	golang_org/x/crypto/curve25519/check \
 	golang_org/x/crypto/poly1305/check \
 	golang_org/x/net/http2/hpack/check \
