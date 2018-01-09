@@ -12383,9 +12383,7 @@ Allocation_expression::do_get_backend(Translate_context* context)
   Gogo* gogo = context->gogo();
   Location loc = this->location();
 
-  Node* n = Node::make_node(this);
-  if (this->allocate_on_stack_
-      || (n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+  if (this->allocate_on_stack_)
     {
       int64_t size;
       bool ok = this->type_->backend_type_size(gogo, &size);
@@ -13161,13 +13159,8 @@ Slice_construction_expression::do_get_backend(Translate_context* context)
     }
   else
     {
+      go_assert(this->storage_escapes_ || this->element_count() == 0);
       space = Expression::make_heap_expression(this->array_val_, loc);
-      Node* n = Node::make_node(this);
-      if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
-	{
-	  n = Node::make_node(space);
-	  n->set_encoding(Node::ESCAPE_NONE);
-	}
     }
 
   // Build a constructor for the slice.
@@ -14261,8 +14254,7 @@ Heap_expression::do_get_backend(Translate_context* context)
   Btype* btype = this->type()->get_backend(gogo);
 
   Expression* alloc = Expression::make_allocation(etype, loc);
-  Node* n = Node::make_node(this);
-  if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
+  if (this->allocate_on_stack_)
     alloc->allocation_expression()->set_allocate_on_stack();
   Bexpression* space = alloc->get_backend(context);
 

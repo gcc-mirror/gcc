@@ -3870,12 +3870,16 @@ class Heap_expression : public Expression
  public:
   Heap_expression(Expression* expr, Location location)
     : Expression(EXPRESSION_HEAP, location),
-      expr_(expr)
+      expr_(expr), allocate_on_stack_(false)
   { }
 
   Expression*
   expr() const
   { return this->expr_; }
+
+  void
+  set_allocate_on_stack()
+  { this->allocate_on_stack_ = true; }
 
  protected:
   int
@@ -3910,6 +3914,8 @@ class Heap_expression : public Expression
  private:
   // The expression which is being put on the heap.
   Expression* expr_;
+  // Whether or not this is a stack allocation.
+  bool allocate_on_stack_;
 };
 
 // A receive expression.
