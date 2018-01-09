@@ -104,6 +104,22 @@
 	(riscv_leaf_function_p): Delete.
 	(riscv_function_ok_for_sibcall): Return false when TARGET_SAVE_RESTORE.
 
+2018-01-08  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-string.c (do_load_for_compare_from_addr): New
+	function.
+	(do_ifelse): New function.
+	(do_isel): New function.
+	(do_sub3): New function.
+	(do_add3): New function.
+	(do_load_mask_compare): New function.
+	(do_overlap_load_compare): New function.
+	(expand_compare_loop): New function.
+	(expand_block_compare): Call expand_compare_loop() when appropriate.
+	* config/rs6000/rs6000.opt (-mblock-compare-inline-limit): Change
+	option description.
+	(-mblock-compare-inline-loop-limit): New option.
+
 2018-01-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/83677
