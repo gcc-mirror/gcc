@@ -7030,7 +7030,12 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
   Expression* ret = Expression::make_struct_composite_literal(st, vals, loc);
 
   if (!gogo->compiling_runtime() || gogo->package_name() != "runtime")
-    ret = Expression::make_heap_expression(ret, loc);
+    {
+      ret = Expression::make_heap_expression(ret, loc);
+      Node* n = Node::make_node(this);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        ret->heap_expression()->set_allocate_on_stack();
+    }
   else
     {
       // When compiling the runtime, method closures do not escape.
