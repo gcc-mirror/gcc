@@ -27,7 +27,8 @@ cd oppencoarrays
 ./install.sh --package gcc \
   --from-url https://github.com/sourceryinstitute/gcc/archive/<release-tag>.tar.gz \
   --install-version <release-tag> \
-  --disable-bootstrap
+  --disable-bootstrap \
+  --num-threads 4
 ```
 where `<release-tag>` must be replaced with the appropriate string such as teams-20180108 and where 
 the `--disable-bootstrap` option speeds the build considerably at the risk of some chance of failure.  
@@ -47,9 +48,9 @@ export LD_LIBRARY_PATH="${PWD}"/prerequisites/installations/gcc/teams-<release-t
 
 ./install.sh --package mpich \
    --with-fortran "${PWD}"/prerequisites/installations/gcc/<release-tag>/bin/gfortarn \
-   --with-c       "${PWD}"/prerequisites/installations/gcc/<release-tag>/bin/gcc      \
-   --with-cpp     "${PWD}"/prerequisites/installations/gcc/<release-tag>bin/g++
-
+   --with-c       "${PWD}"/prerequisites/installations/gcc/<release-tag>/bin/gcc \
+   --with-cpp     "${PWD}"/prerequisites/installations/gcc/<release-tag>bin/g++ \
+   --num-threads 4
 ```
 
 Next use the resulting [MPICH] installation to build the [opencoarrays-teams branch] of OpenCoarrays.  
