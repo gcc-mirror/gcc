@@ -1,3 +1,9 @@
+2018-01-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR tree-optimization/64811
+	* match.pd: When optimizing comparisons with Inf, avoid
+	introducing or losing exceptions from comparisons with NaN.
+
 2018-01-09  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82517

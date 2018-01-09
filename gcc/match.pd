@@ -3050,18 +3050,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
          code = swap_tree_comparison (code);
      }
      (switch
-      /* x > +Inf is always false, if with ignore sNANs.  */
+      /* x > +Inf is always false, if we ignore NaNs or exceptions.  */
       (if (code == GT_EXPR
-	   && ! HONOR_SNANS (@0))
+	   && !(HONOR_NANS (@0) && flag_trapping_math))
        { constant_boolean_node (false, type); })
       (if (code == LE_EXPR)
-       /* x <= +Inf is always true, if we don't case about NaNs.  */
+       /* x <= +Inf is always true, if we don't care about NaNs.  */
        (if (! HONOR_NANS (@0))
 	{ constant_boolean_node (true, type); }
-	/* x <= +Inf is the same as x == x, i.e. !isnan(x).  */
-	(eq @0 @0)))
-      /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
-      (if (code == EQ_EXPR || code == GE_EXPR)
+	/* x <= +Inf is the same as x == x, i.e. !isnan(x), but this loses
+	   an "invalid" exception.  */
+	(if (!flag_trapping_math)
+	 (eq @0 @0))))
+      /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX, but
+	 for == this introduces an exception for x a NaN.  */
+      (if ((code == EQ_EXPR && !(HONOR_NANS (@0) && flag_trapping_math))
+	   || code == GE_EXPR)
        (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
 	(if (neg)
 	 (lt @0 { build_real (TREE_TYPE (@0), max); })
@@ -3072,7 +3076,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(if (neg)
 	 (ge @0 { build_real (TREE_TYPE (@0), max); })
 	 (le @0 { build_real (TREE_TYPE (@0), max); }))))
-      /* x != +Inf is always equal to !(x > DBL_MAX).  */
+      /* x != +Inf is always equal to !(x > DBL_MAX), but this introduces
+	 an exception for x a NaN so use an unordered comparison.  */
       (if (code == NE_EXPR)
        (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
 	(if (! HONOR_NANS (@0))
@@ -3080,10 +3085,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  (ge @0 { build_real (TREE_TYPE (@0), max); })
 	  (le @0 { build_real (TREE_TYPE (@0), max); }))
 	 (if (neg)
-	  (bit_xor (lt @0 { build_real (TREE_TYPE (@0), max); })
-	   { build_one_cst (type); })
-	  (bit_xor (gt @0 { build_real (TREE_TYPE (@0), max); })
-	   { build_one_cst (type); }))))))))))
+	  (unge @0 { build_real (TREE_TYPE (@0), max); })
+	  (unle @0 { build_real (TREE_TYPE (@0), max); }))))))))))
 
  /* If this is a comparison of a real constant with a PLUS_EXPR
     or a MINUS_EXPR of a real constant, we can convert it into a
