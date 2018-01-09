@@ -1,3 +1,8 @@
+2018-01-09  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-stmts.c (permute_vec_elements): Create a fresh variable
+	if the destination isn't an SSA_NAME.
+
 2018-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83668
