@@ -1774,9 +1774,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 	    for (; p != sce->vals()->end(); ++p)
 	      {
 		Node* enclosed_node = Node::make_node(*p);
-		Node::Escape_state* state =
-		  enclosed_node->state(this->context_, NULL);
-		state->loop_depth = this->context_->loop_depth();
+		this->context_->track(enclosed_node);
 		this->assign(closure_node, enclosed_node);
 	      }
 	  }
