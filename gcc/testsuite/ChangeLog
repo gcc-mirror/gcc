@@ -1,3 +1,8 @@
+2018-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83734
+	* g++.dg/cpp0x/pr83734.C: New test.
+
 2017-01-09 Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-1.c (main): Add tests for vec_mergee and
