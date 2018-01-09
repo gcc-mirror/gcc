@@ -1,3 +1,10 @@
+2018-01-08  Monk Chiang  <sh.chiang04@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/riscv/riscv.c (machine_function::is_leaf): Remove field.
+	(riscv_leaf_function_p): Delete.
+	(riscv_function_ok_for_sibcall): Return false when TARGET_SAVE_RESTORE.
+
 2018-01-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/83677
