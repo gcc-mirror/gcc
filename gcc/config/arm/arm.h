@@ -1677,12 +1677,10 @@ enum arm_auto_incmodes
 
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
-   or a pseudo reg currently allocated to a suitable hard reg.
-   Since they use reg_renumber, they are safe only once reg_renumber
-   has been allocated, which happens in reginfo.c during register
-   allocation.  */
+   or a pseudo reg currently allocated to a suitable hard reg.  */
 #define TEST_REGNO(R, TEST, VALUE) \
-  ((R TEST VALUE) || ((unsigned) reg_renumber[R] TEST VALUE))
+  ((R TEST VALUE)	\
+    || (reg_renumber && ((unsigned) reg_renumber[R] TEST VALUE)))
 
 /* Don't allow the pc to be used.  */
 #define ARM_REGNO_OK_FOR_BASE_P(REGNO)			\

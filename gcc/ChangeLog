@@ -1,3 +1,12 @@
+2018-01-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline
+	2017-12-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/82975
+	* config/arm/arm.h (TEST_REGNO): Check reg_renumber is set before
+	accessing it.  Adjust comment.
+
 2017-12-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
