@@ -150,7 +150,7 @@ class SharedPointerPrinter:
                 state = 'expired, weak count %d' % weakcount
             else:
                 state = 'use count %d, weak count %d' % (usecount, weakcount - 1)
-        return '%s<%s> (%s)' % (self.typename, str(self.pointer.type.target().strip_typedefs()), state)
+        return '%s<%s> (%s)' % (self.typename, str(self.val.type.template_argument(0)), state)
 
 class UniquePointerPrinter:
     "Print a unique_ptr"
@@ -169,7 +169,7 @@ class UniquePointerPrinter:
         return SmartPtrIterator(self.pointer)
 
     def to_string (self):
-        return ('std::unique_ptr<%s>' % (str(self.pointer.type.target())))
+        return ('std::unique_ptr<%s>' % (str(self.val.type.template_argument(0))))
 
 def get_value_from_aligned_membuf(buf, valtype):
     """Returns the value held in a __gnu_cxx::__aligned_membuf."""
@@ -1328,9 +1328,13 @@ class TemplateTypePrinter(object):
                 for i, sub in enumerate(subs):
                     if ('{%d}' % (i+1)) in self.subst:
                         # apply recognizers to subgroup
+                        try:
+                            subtype = gdb.lookup_type(sub)
+                        except gdb.error:
+                            continue
                         rep = gdb.types.apply_type_recognizers(
                                 gdb.types.get_type_recognizers(),
-                                gdb.lookup_type(sub))
+                                subtype)
                         if rep:
                             subs[i] = rep
                 subs = [None] + subs

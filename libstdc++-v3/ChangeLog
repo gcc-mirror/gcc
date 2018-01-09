@@ -1,3 +1,16 @@
+2018-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80276
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter)
+	(UniquePointerPrinter): Print correct template argument, not type of
+	the pointer.
+	(TemplateTypePrinter._recognizer.recognize): Handle failure to lookup
+	a type.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test unique_ptr of
+	array type.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test shared_ptr and
+	weak_ptr of array types.
+
 2018-01-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/83709
