@@ -1,3 +1,9 @@
+2018-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* combine.c (force_int_to_mode) <case ASHIFT>: Use mode instead of
+	op_mode in the force_to_mode call.
+
 2018-01-09  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64.c (aarch64_evpc_trn): Use d.perm.series_p

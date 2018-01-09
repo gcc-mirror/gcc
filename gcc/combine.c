@@ -8908,7 +8908,7 @@ force_int_to_mode (rtx x, scalar_int_mode mode, scalar_int_mode xmode,
 	mask = fuller_mask;
 
       op0 = gen_lowpart_or_truncate (op_mode,
-				     force_to_mode (XEXP (x, 0), op_mode,
+				     force_to_mode (XEXP (x, 0), mode,
 						    mask, next_select));
 
       if (op_mode != xmode || op0 != XEXP (x, 0))
