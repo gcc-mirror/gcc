@@ -1,3 +1,8 @@
+2018-01-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/79883
+	* gcc.target/avr/torture/pr57631.c (dg-warning): Quote 'signal'.
+
 2018-01-09  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641
