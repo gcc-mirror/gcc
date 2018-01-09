@@ -3271,13 +3271,14 @@ class Traverse
 {
  public:
   // These bitmasks say what to traverse.
-  static const unsigned int traverse_variables =    0x1;
-  static const unsigned int traverse_constants =    0x2;
-  static const unsigned int traverse_functions =    0x4;
-  static const unsigned int traverse_blocks =       0x8;
-  static const unsigned int traverse_statements =  0x10;
-  static const unsigned int traverse_expressions = 0x20;
-  static const unsigned int traverse_types =       0x40;
+  static const unsigned int traverse_variables =          0x1;
+  static const unsigned int traverse_constants =          0x2;
+  static const unsigned int traverse_functions =          0x4;
+  static const unsigned int traverse_blocks =             0x8;
+  static const unsigned int traverse_statements =        0x10;
+  static const unsigned int traverse_expressions =       0x20;
+  static const unsigned int traverse_types =             0x40;
+  static const unsigned int traverse_func_declarations = 0x80;
 
   Traverse(unsigned int traverse_mask)
     : traverse_mask_(traverse_mask), types_seen_(NULL), expressions_seen_(NULL)
@@ -3341,6 +3342,11 @@ class Traverse
   // type in the tree.
   virtual int
   type(Type*);
+
+  // If traverse_func_declarations is set in the mask, this is called
+  // for every function declarations in the tree.
+  virtual int
+  function_declaration(Named_object*);
 
  private:
   // A hash table for types we have seen during this traversal.  Note

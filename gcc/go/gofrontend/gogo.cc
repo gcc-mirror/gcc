@@ -7912,6 +7912,21 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 	}
     }
 
+  // Traverse function declarations when needed.
+  if ((traverse_mask & Traverse::traverse_func_declarations) != 0)
+    {
+      for (Bindings::const_declarations_iterator p = this->begin_declarations();
+           p != this->end_declarations();
+           ++p)
+        {
+          if (p->second->is_function_declaration())
+            {
+              if (traverse->function_declaration(p->second) == TRAVERSE_EXIT)
+                return TRAVERSE_EXIT;
+            }
+        }
+    }
+
   return TRAVERSE_CONTINUE;
 }
 
@@ -8217,6 +8232,12 @@ Traverse::expression(Expression**)
 
 int
 Traverse::type(Type*)
+{
+  go_unreachable();
+}
+
+int
+Traverse::function_declaration(Named_object*)
 {
   go_unreachable();
 }
