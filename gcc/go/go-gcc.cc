@@ -426,7 +426,7 @@ class Gcc_backend : public Backend
   global_variable_set_init(Bvariable*, Bexpression*);
 
   Bvariable*
-  local_variable(Bfunction*, const std::string&, Btype*, bool,
+  local_variable(Bfunction*, const std::string&, Btype*, Bvariable*, bool,
 		 Location);
 
   Bvariable*
@@ -2584,8 +2584,8 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 
 Bvariable*
 Gcc_backend::local_variable(Bfunction* function, const std::string& name,
-			    Btype* btype, bool is_address_taken,
-			    Location location)
+			    Btype* btype, Bvariable* decl_var, 
+			    bool is_address_taken, Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -2597,6 +2597,11 @@ Gcc_backend::local_variable(Bfunction* function, const std::string& name,
   TREE_USED(decl) = 1;
   if (is_address_taken)
     TREE_ADDRESSABLE(decl) = 1;
+  if (decl_var != NULL)
+    {
+      DECL_HAS_VALUE_EXPR_P(decl) = 1;
+      SET_DECL_VALUE_EXPR(decl, decl_var->get_decl());
+    }
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }

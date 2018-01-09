@@ -3876,6 +3876,29 @@ Flatten::variable(Named_object* no)
       return TRAVERSE_CONTINUE;
     }
 
+  if (!no->var_value()->is_parameter()
+      && !no->var_value()->is_receiver()
+      && !no->var_value()->is_closure()
+      && no->var_value()->is_non_escaping_address_taken()
+      && !no->var_value()->is_in_heap()
+      && no->var_value()->toplevel_decl() == NULL)
+    {
+      // Local variable that has address taken but not escape.
+      // It needs to be live beyond its lexical scope. So we
+      // create a top-level declaration for it.
+      // No need to do it if it is already in the top level.
+      Block* top_block = function_->func_value()->block();
+      if (top_block->bindings()->lookup_local(no->name()) != no)
+        {
+          Variable* var = no->var_value();
+          Temporary_statement* ts =
+            Statement::make_temporary(var->type(), NULL, var->location());
+          ts->set_is_address_taken();
+          top_block->add_statement_at_front(ts);
+          var->set_toplevel_decl(ts);
+        }
+    }
+
   go_assert(!no->var_value()->has_pre_init());
 
   return TRAVERSE_SKIP_COMPONENTS;
@@ -6174,7 +6197,8 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
     type_from_init_tuple_(false), type_from_range_index_(false),
     type_from_range_value_(false), type_from_chan_element_(false),
     is_type_switch_var_(false), determined_type_(false),
-    in_unique_section_(false), escapes_(true)
+    in_unique_section_(false), escapes_(true),
+    toplevel_decl_(NULL)
 {
   go_assert(type != NULL || init != NULL);
   go_assert(!is_parameter || init == NULL);
@@ -6751,9 +6775,19 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 						   is_address_taken,
 						   this->location_);
 	      else
-		bvar = backend->local_variable(bfunction, n, btype,
-					       is_address_taken,
-					       this->location_);
+                {
+                  Bvariable* bvar_decl = NULL;
+                  if (this->toplevel_decl_ != NULL)
+                    {
+                      Translate_context context(gogo, NULL, NULL, NULL);
+                      bvar_decl = this->toplevel_decl_->temporary_statement()
+                        ->get_backend_variable(&context);
+                    }
+                  bvar = backend->local_variable(bfunction, n, btype,
+                                                 bvar_decl,
+                                                 is_address_taken,
+                                                 this->location_);
+                }
 	    }
 	  this->backend_ = bvar;
 	}
@@ -6785,7 +6819,7 @@ Result_variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	  bool is_address_taken = (this->is_non_escaping_address_taken_
 				   && !this->is_in_heap());
 	  this->backend_ = backend->local_variable(bfunction, n, btype,
-						   is_address_taken,
+						   NULL, is_address_taken,
 						   this->location_);
 	}
     }

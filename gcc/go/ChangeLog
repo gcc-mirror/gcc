@@ -1,5 +1,9 @@
 2018-01-09  Cherry Zhang  <cherryyz@google.com>
 
+	* go-gcc.cc (local_variable): Add decl_var parameter.
+
+2018-01-09  Cherry Zhang  <cherryyz@google.com>
+
 	* lang.opt (fgo-debug-escape-hash): New option.
 	* go-c.h (struct go_create_gogo_args): Add debug_escape_hash
 	field.
