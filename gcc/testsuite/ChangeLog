@@ -1,3 +1,8 @@
+2018-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/83741
+	* gfortran.dg/allocate_assumed_charlen_3.f90: New test.
+
 2018-01-08  Chih-Mao Chen <pkmx.tw@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 
