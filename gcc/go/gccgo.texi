@@ -239,6 +239,13 @@ heap when possible.  In the future this may be the default.
 Output escape analysis debugging information.  Larger values of
 @var{n} generate more information.
 
+@item -fgo-debug-escape-hash=@var{n}
+@cindex @option{-fgo-debug-escape-hash}
+A hash value to debug escape analysis.  @var{n} is a binary string.
+This runs escape analysis only on functions whose names hash to values
+that match the given suffix @var{n}.  This can be used to binary
+search across functions to uncover escape analysis bugs.
+
 @item -fgo-c-header=@var{file}
 @cindex @option{-fgo-c-header}
 Write top-level named Go struct definitions to @var{file} as C code.

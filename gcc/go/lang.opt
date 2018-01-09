@@ -81,6 +81,10 @@ fgo-debug-escape
 Go Joined UInteger Var(go_debug_escape_level) Init(0)
 Emit debugging information related to the escape analysis pass when run with -fgo-optimize-allocs.
 
+fgo-debug-escape-hash=
+Go Joined RejectNegative Var(go_debug_escape_hash) Init(0)
+-fgo-debug-escape-hash=<string>	Hash value to debug escape analysis.
+
 o
 Go Joined Separate
 ; Documented in common.opt

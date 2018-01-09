@@ -318,6 +318,16 @@ class Gogo
   set_debug_escape_level(int level)
   { this->debug_escape_level_ = level; }
 
+  // Return the hash for debug escape analysis.
+  std::string
+  debug_escape_hash() const
+  { return this->debug_escape_hash_; }
+
+  // Set the hash value for debug escape analysis.
+  void
+  set_debug_escape_hash(const std::string& s)
+  { this->debug_escape_hash_ = s; }
+
   // Return the size threshold used to determine whether to issue
   // a nil-check for a given pointer dereference. A threshold of -1
   // implies that all potentially faulting dereference ops should
@@ -1035,6 +1045,10 @@ class Gogo
   // The level of escape analysis debug information to emit, from the
   // -fgo-debug-escape option.
   int debug_escape_level_;
+  // A hash value for debug escape analysis, from the
+  // -fgo-debug-escape-hash option. The analysis is run only on
+  // functions with names that hash to the matching value.
+  std::string debug_escape_hash_;
   // Nil-check size threshhold.
   int64_t nil_check_size_threshold_;
   // A list of types to verify.
