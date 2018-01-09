@@ -1,3 +1,10 @@
+2018-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* gcc.target/arm/pragma_fpu_attribute.c: Rewrite to use
+	no NEON and require softfp or hard float-abi.
+	* gcc.target/arm/pragma_fpu_attribute_2.c: Likewise.
+
 2018-01-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83572
