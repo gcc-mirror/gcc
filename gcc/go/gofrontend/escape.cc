@@ -997,12 +997,15 @@ class Escape_analysis_discover : public Traverse
 {
  public:
   Escape_analysis_discover(Gogo* gogo)
-    : Traverse(traverse_functions),
+    : Traverse(traverse_functions | traverse_func_declarations),
       gogo_(gogo), component_ids_()
   { }
 
   int
   function(Named_object*);
+
+  int
+  function_declaration(Named_object*);
 
   int
   visit(Named_object*);
@@ -1031,6 +1034,13 @@ int Escape_analysis_discover::id = 0;
 
 int
 Escape_analysis_discover::function(Named_object* fn)
+{
+  this->visit(fn);
+  return TRAVERSE_CONTINUE;
+}
+
+int
+Escape_analysis_discover::function_declaration(Named_object* fn)
 {
   this->visit(fn);
   return TRAVERSE_CONTINUE;
