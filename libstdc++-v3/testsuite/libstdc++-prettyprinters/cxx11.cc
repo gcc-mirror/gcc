@@ -127,14 +127,14 @@ main()
   std::unique_ptr<datum> uptr (new datum);
   uptr->s = "hi bob";
   uptr->i = 23;
-// { dg-final { regexp-test uptr {std::unique_ptr.datum. containing 0x.*} } }
+// { dg-final { regexp-test uptr {std::unique_ptr.datum. = {get\(\) = 0x.*}} } }
   std::unique_ptr<datum> &ruptr = uptr;
-// { dg-final { regexp-test ruptr {std::unique_ptr.datum. containing 0x.*} } }
+// { dg-final { regexp-test ruptr {std::unique_ptr.datum. = {get\(\) = 0x.*}} } }
 
   ExTuple tpl(6,7);
-// { dg-final { note-test tpl {std::tuple containing = {[1] = 6, [2] = 7}} } }  
+// { dg-final { note-test tpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
   ExTuple &rtpl = tpl;
-// { dg-final { note-test rtpl {std::tuple containing = {[1] = 6, [2] = 7}} } }   
+// { dg-final { note-test rtpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
   placeholder(""); // Mark SPOT
   use(efl);
   use(fl);

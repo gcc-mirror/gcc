@@ -49,25 +49,25 @@ main()
   typedef std::weak_ptr<int> weak;
 
   shared esp;
-// { dg-final { note-test esp "std::shared_ptr (empty) 0x0" } }
+// { dg-final { note-test esp "std::shared_ptr<int> (empty) = {get() = 0x0}" } }
   weak ewp1;
-// { dg-final { note-test ewp1 "std::weak_ptr (empty) 0x0" } }
+// { dg-final { note-test ewp1 "std::weak_ptr<int> (empty) = {get() = 0x0}" } }
   weak ewp2 = esp;
-// { dg-final { note-test ewp2 "std::weak_ptr (empty) 0x0" } }
+// { dg-final { note-test ewp2 "std::weak_ptr<int> (empty) = {get() = 0x0}" } }
 
   shared sp1 = make(0x12345678);
   shared sp2 = sp1;
-// { dg-final { note-test sp1 "std::shared_ptr (count 2, weak 0) 0x12345678" } }
+// { dg-final { note-test sp1 "std::shared_ptr<int> (use count 2, weak count 0) = {get() = 0x12345678}" } }
 
   shared sp3 = make(0x12344321);
   weak sp4 = sp3;
   weak wp1 = sp3;
-// { dg-final { note-test wp1 "std::weak_ptr (count 1, weak 2) 0x12344321" } }
+// { dg-final { note-test wp1 "std::weak_ptr<int> (use count 1, weak count 2) = {get() = 0x12344321}" } }
 
   shared sp5 = make(0x56788765);
   weak wp2 = sp5;
   sp5.reset();
-// { dg-final { note-test wp2 "std::weak_ptr (expired, weak 1) 0x56788765" } }
+// { dg-final { note-test wp2 "std::weak_ptr<int> (expired, weak count 1) = {get() = 0x56788765}" } }
 
   placeholder(""); // Mark SPOT
   use(esp);

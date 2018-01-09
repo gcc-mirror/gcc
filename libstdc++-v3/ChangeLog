@@ -1,3 +1,15 @@
+2018-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59253 (partial)
+	* python/libstdcxx/v6/printers.py (SmartPtrIterator): Common iterator
+	type for pointer stored by shared_ptr, weak_ptr and unique_ptr.
+	(SharedPointerPrinter, UniquePointerPrinter): Treat stored values as
+	children.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Update expected output
+	of unique_ptr printer.
+	* testsuite/libstdc++-prettyprinters/shared_ptr.cc: Update expected
+	output of shared_ptr printer.
+
 2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83626

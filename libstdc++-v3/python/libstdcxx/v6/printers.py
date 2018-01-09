@@ -114,12 +114,31 @@ def strip_versioned_namespace(typename):
         return typename.replace(_versioned_namespace, '')
     return typename
 
+class SmartPtrIterator(Iterator):
+    "An iterator for smart pointer types with a single 'child' value"
+
+    def __init__(self, val):
+        self.val = val
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.val is None:
+            raise StopIteration
+        self.val, val = None, self.val
+        return ('get()', val)
+
 class SharedPointerPrinter:
     "Print a shared_ptr or weak_ptr"
 
     def __init__ (self, typename, val):
         self.typename = strip_versioned_namespace(typename)
         self.val = val
+        self.pointer = val['_M_ptr']
+
+    def children (self):
+        return SmartPtrIterator(self.pointer)
 
     def to_string (self):
         state = 'empty'
@@ -128,27 +147,29 @@ class SharedPointerPrinter:
             usecount = refcounts['_M_use_count']
             weakcount = refcounts['_M_weak_count']
             if usecount == 0:
-                state = 'expired, weak %d' % weakcount
+                state = 'expired, weak count %d' % weakcount
             else:
-                state = 'count %d, weak %d' % (usecount, weakcount - 1)
-        return '%s (%s) %s' % (self.typename, state, self.val['_M_ptr'])
+                state = 'use count %d, weak count %d' % (usecount, weakcount - 1)
+        return '%s<%s> (%s)' % (self.typename, str(self.pointer.type.target().strip_typedefs()), state)
 
 class UniquePointerPrinter:
     "Print a unique_ptr"
 
     def __init__ (self, typename, val):
         self.val = val
+        impl_type = val.type.fields()[0].type.tag
+        if is_specialization_of(impl_type, '__uniq_ptr_impl'): # New implementation
+            self.pointer = val['_M_t']['_M_t']['_M_head_impl']
+        elif is_specialization_of(impl_type, 'tuple'):
+            self.pointer = val['_M_t']['_M_head_impl']
+        else:
+            raise ValueError("Unsupported implementation for unique_ptr: %s" % impl_type)
+
+    def children (self):
+        return SmartPtrIterator(self.pointer)
 
     def to_string (self):
-        impl_type = self.val.type.fields()[0].type.tag
-        if is_specialization_of(impl_type, '__uniq_ptr_impl'): # New implementation
-            v = self.val['_M_t']['_M_t']['_M_head_impl']
-        elif is_specialization_of(impl_type, 'tuple'):
-            v = self.val['_M_t']['_M_head_impl']
-        else:
-            raise ValueError("Unsupported implementation for unique_ptr: %s" % self.val.type.fields()[0].type.tag)
-        return 'std::unique_ptr<%s> containing %s' % (str(v.type.target()),
-                                                      str(v))
+        return ('std::unique_ptr<%s>' % (str(self.pointer.type.target())))
 
 def get_value_from_aligned_membuf(buf, valtype):
     """Returns the value held in a __gnu_cxx::__aligned_membuf."""
