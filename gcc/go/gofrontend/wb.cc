@@ -65,6 +65,25 @@ Mark_address_taken::expression(Expression** pexpr)
       aie->array()->address_taken(escapes);
     }
 
+  if (expr->allocation_expression() != NULL)
+    {
+      Node* n = Node::make_node(expr);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        expr->allocation_expression()->set_allocate_on_stack();
+    }
+  if (expr->heap_expression() != NULL)
+    {
+      Node* n = Node::make_node(expr);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        expr->heap_expression()->set_allocate_on_stack();
+    }
+  if (expr->slice_literal() != NULL)
+    {
+      Node* n = Node::make_node(expr);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        expr->slice_literal()->set_storage_does_not_escape();
+    }
+
   // Rewrite non-escaping makeslice with constant size to stack allocation.
   Unsafe_type_conversion_expression* uce =
     expr->unsafe_conversion_expression();
