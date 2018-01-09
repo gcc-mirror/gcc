@@ -2,7 +2,7 @@
 
 	Don't save registers in main().
 
-	PR target/83737
+	PR target/83738
 	* doc/invoke.texi (AVR Options) [-mmain-is-OS_task]: Document it.
 	* config/avr/avr.opt (-mmain-is-OS_task): New target option.
 	* config/avr/avr.c (avr_set_current_function): Don't error if
