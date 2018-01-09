@@ -10679,7 +10679,7 @@ Array_index_expression::do_determine_type(const Type_context*)
 // Check types of an array index.
 
 void
-Array_index_expression::do_check_types(Gogo* gogo)
+Array_index_expression::do_check_types(Gogo*)
 {
   Numeric_constant nc;
   unsigned long v;
@@ -10798,18 +10798,9 @@ Array_index_expression::do_check_types(Gogo* gogo)
       if (!this->array_->is_addressable())
 	this->report_error(_("slice of unaddressable value"));
       else
-	{
-	  bool escapes = true;
-
-	  // When compiling the runtime, a slice operation does not
-	  // cause local variables to escape.  When escape analysis
-	  // becomes the default, this should be changed to make it an
-	  // error if we have a slice operation that escapes.
-	  if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
-	    escapes = false;
-
-	  this->array_->address_taken(escapes);
-	}
+        // Set the array address taken but not escape. The escape
+        // analysis will make it escape to heap when needed.
+        this->array_->address_taken(false);
     }
 }
 

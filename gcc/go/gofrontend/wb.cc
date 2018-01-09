@@ -45,6 +45,25 @@ Mark_address_taken::expression(Expression** pexpr)
   Unary_expression* ue = expr->unary_expression();
   if (ue != NULL)
     ue->check_operand_address_taken(this->gogo_);
+
+  Array_index_expression* aie = expr->array_index_expression();
+  if (aie != NULL
+      && aie->end() != NULL
+      && !aie->array()->type()->is_slice_type())
+    {
+      // Slice of an array. The escape analysis models this with
+      // a child Node representing the address of the array.
+      bool escapes = false;
+      if (!this->gogo_->compiling_runtime()
+          || this->gogo_->package_name() != "runtime")
+        {
+          Node* n = Node::make_node(expr);
+          if (n->child() == NULL
+              || (n->child()->encoding() & ESCAPE_MASK) != Node::ESCAPE_NONE)
+            escapes = true;
+        }
+      aie->array()->address_taken(escapes);
+    }
   return TRAVERSE_CONTINUE;
 }
 
