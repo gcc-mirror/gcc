@@ -1,3 +1,15 @@
+2018-01-08  Jim Wilson  <jimw@sifive.com>
+
+	Backport from mainline
+	2018-01-08  Chih-Mao Chen <pkmx.tw@gmail.com>
+		    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* gcc.target/riscv/save-restore-1.c: New.
+
+	2017-11-29  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/riscv.exp: New.
+
 2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline

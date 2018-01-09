@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for RISC-V.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -176,9 +176,6 @@ struct GTY(())  machine_function {
   /* The number of extra stack bytes taken up by register varargs.
      This area is allocated by the callee at the very top of the frame.  */
   int varargs_size;
-
-  /* Memoized return value of leaf_function_p.  <0 if false, >0 if true.  */
-  int is_leaf;
 
   /* The current frame information, calculated by riscv_compute_frame_info.  */
   struct riscv_frame_info frame;
@@ -3994,26 +3991,15 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   emit_insn (gen_clear_cache (addr, end_addr));
 }
 
-/* Return leaf_function_p () and memoize the result.  */
-
-static bool
-riscv_leaf_function_p (void)
-{
-  if (cfun->machine->is_leaf == 0)
-    cfun->machine->is_leaf = leaf_function_p () ? 1 : -1;
-
-  return cfun->machine->is_leaf > 0;
-}
-
 /* Implement TARGET_FUNCTION_OK_FOR_SIBCALL.  */
 
 static bool
 riscv_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 			       tree exp ATTRIBUTE_UNUSED)
 {
-  /* When optimzing for size, don't use sibcalls in non-leaf routines */
+  /* Don't use sibcalls when use save-restore routine.  */
   if (TARGET_SAVE_RESTORE)
-    return riscv_leaf_function_p ();
+    return false;
 
   return true;
 }

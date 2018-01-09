@@ -1,3 +1,13 @@
+2018-01-08  Jim Wilson  <jimw@sifive.com>
+
+	Backport from mainline
+	2018-01-08  Monk Chiang  <sh.chiang04@gmail.com>
+		    Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/riscv/riscv.c (machine_function::is_leaf): Remove field.
+	(riscv_leaf_function_p): Delete.
+	(riscv_function_ok_for_sibcall): Return false when TARGET_SAVE_RESTORE.
+
 2018-01-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
