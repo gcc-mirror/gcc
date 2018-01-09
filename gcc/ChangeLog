@@ -1,5 +1,9 @@
 2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-inline.c (edge_badness): Revert accidental checkin.
+
+2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/80763
 	* ipa-comdats.c (set_comdat_group): Only set comdat group of real
 	symbols; not inline clones.
