@@ -1884,6 +1884,20 @@ class Variable
     this->in_unique_section_ = true;
   }
 
+  // Return the top-level declaration for this variable.
+  Statement*
+  toplevel_decl()
+  { return this->toplevel_decl_; }
+
+  // Set the top-level declaration for this variable. Only used for local
+  // variables
+  void
+  set_toplevel_decl(Statement* s)
+  {
+    go_assert(!this->is_global_ && !this->is_parameter_ && !this->is_receiver_);
+    this->toplevel_decl_ = s;
+  }
+
   // Traverse the initializer expression.
   int
   traverse_expression(Traverse*, unsigned int traverse_mask);
@@ -1984,6 +1998,9 @@ class Variable
   // Whether this variable escapes the function it is created in.  This is
   // true until shown otherwise.
   bool escapes_ : 1;
+  // The top-level declaration for this variable. Only used for local
+  // variables. Must be a Temporary_statement if not NULL.
+  Statement* toplevel_decl_;
 };
 
 // A variable which is really the name for a function return value, or
