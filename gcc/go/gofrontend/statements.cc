@@ -2156,6 +2156,8 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   // Allocate the initialized struct on the heap.
   constructor = Expression::make_heap_expression(constructor, location);
+  if ((Node::make_node(this)->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+    constructor->heap_expression()->set_allocate_on_stack();
 
   // Throw an error if the function is nil.  This is so that for `go
   // nil` we get a backtrace from the go statement, rather than a
