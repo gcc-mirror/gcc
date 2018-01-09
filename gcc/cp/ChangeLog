@@ -1,3 +1,9 @@
+2018-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83734
+	* constexpr.c (cxx_eval_statement_list): Ignore DEBUG_BEGIN_STMTs
+	in STATEMENT_LIST.  Remove unneeded assert.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
