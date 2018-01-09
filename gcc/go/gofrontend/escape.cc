@@ -1420,7 +1420,14 @@ Escape_analysis_assign::statement(Block*, size_t*, Statement* s)
 
     case Statement::STATEMENT_DEFER:
       if (this->context_->loop_depth() == 1)
-	break;
+        {
+          // Defer statement may need to allocate a thunk. When it is
+          // not inside a loop, this can be stack allocated, as it
+          // runs before the function finishes.
+          Node* n = Node::make_node(s);
+          n->set_encoding(Node::ESCAPE_NONE);
+          break;
+        }
       // fallthrough
 
     case Statement::STATEMENT_GO:
