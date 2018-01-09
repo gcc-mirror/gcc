@@ -29,6 +29,7 @@
 #include <string>
 #include <map>
 #include <unordered_set>
+#include <memory>
 #include <iostream>
 
 using std::any;
@@ -37,6 +38,8 @@ using std::variant;
 using std::string_view;
 using std::map;
 using std::unordered_set;
+using std::shared_ptr;
+using std::weak_ptr;
 
 int
 main()
@@ -99,6 +102,18 @@ main()
 // { dg-final { note-test n2 {empty node handle for unordered set}}}
   unordered_set<int>::node_type n3 = s.extract(3);
 // { dg-final { note-test n1 {node handle for unordered set with element = {3}}}}
+
+  shared_ptr<int[]> p(new int[1]);
+  weak_ptr wp = p;
+  weak_ptr wp2 = p;
+// { dg-final { regexp-test p {std::shared_ptr.int \[\]. \(use count 1, weak count 2\) = {get\(\) = 0x.*}} } }
+// { dg-final { regexp-test wp {std::weak_ptr.int \[\]. \(use count 1, weak count 2\) = {get\(\) = 0x.*}} } }
+
+  shared_ptr<int[2]> q(new int[2]);
+  shared_ptr q2 = q;
+  weak_ptr wq = q;
+// { dg-final { regexp-test q {std::shared_ptr.int \[2\]. \(use count 2, weak count 1\) = {get\(\) = 0x.*}} } }
+// { dg-final { regexp-test wq {std::weak_ptr.int \[2\]. \(use count 2, weak count 1\) = {get\(\) = 0x.*}} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT

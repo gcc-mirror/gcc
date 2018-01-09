@@ -131,6 +131,12 @@ main()
   std::unique_ptr<datum> &ruptr = uptr;
 // { dg-final { regexp-test ruptr {std::unique_ptr.datum. = {get\(\) = 0x.*}} } }
 
+  using data = datum[];
+  std::unique_ptr<data> arrptr (new datum[2]);
+// { dg-final { regexp-test arrptr {std::unique_ptr.datum \[\]. = {get\(\) = 0x.*}} } }
+  std::unique_ptr<data>& rarrptr = arrptr;
+// { dg-final { regexp-test rarrptr {std::unique_ptr.datum \[\]. = {get\(\) = 0x.*}} } }
+
   ExTuple tpl(6,7);
 // { dg-final { note-test tpl {std::tuple containing = {[1] = 6, [2] = 7}} } }
   ExTuple &rtpl = tpl;
@@ -144,6 +150,7 @@ main()
   use(eums);
   use(uoms);
   use(uptr->s);
+  use(arrptr[0].s);
 
   std::cout << "\n";
   return 0;
