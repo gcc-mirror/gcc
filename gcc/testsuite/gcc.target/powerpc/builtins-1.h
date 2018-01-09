@@ -1,6 +1,6 @@
 /* This test is included into builtins-1-be.c and builtins-1-le.c to test on
    Big Endian and Little Endian machines.  */
-   
+
 #include <altivec.h>
 
 vector double y = { 2.0, 4.0 };
@@ -14,7 +14,7 @@ int main ()
   vector float fc = vec_cpsgn (fa, fb);
   vector float fe = vec_mergeh (fa, fb);
   vector float ff = vec_mergel (fa, fb);
-	  
+
   vector double da = {1.0, 2.0};
   vector double db = {-2.0, -3.0};
   vector double dz = vec_and (da, db);
@@ -36,7 +36,7 @@ int main ()
   vector long long lg = vec_andc (la, lb);
   vector long long lh = vec_andc (la, ld);
   vector long long li = vec_andc (ld, lb);
-  
+
   vector unsigned long long ug = vec_andc (ua, ub);
   vector unsigned long long uh = vec_andc (ua, ud);
   vector unsigned long long ui = vec_andc (ud, ub);
@@ -176,7 +176,7 @@ int main ()
   vector unsigned short usc = vec_cntlz (usa);
   vector unsigned short uscd = vec_mergeh (usa, usb);
   vector unsigned short usce = vec_mergel (usa, usb);
-  
+
   vector signed char sca = {-4, 3, -9, 15, -31, 31, 0, 0,
 		            1, 117, -36, 99, 98, 97, 96, 95};
   vector signed char scb = vec_cntlz (sca);
@@ -199,9 +199,15 @@ int main ()
   vector unsigned long long u4 = vec_splat (u2, 1);
   vector bool long long l5 = vec_splat (ld, 0);
   vector bool long long l6 = vec_splat (ld, 1);
+  vector bool long long l10 = vec_mergee (ld, ld);
+  vector bool long long l11 = vec_mergeo (ld, ld);
 
   vector long long l7 = vec_div (l3, l4);
   vector unsigned long long u5 = vec_div (u3, u4);
+  vector long long l12 = vec_mergee (la, lb);
+  vector long long l13 = vec_mergeo (la, lb);
+  vector unsigned long long u8 = vec_mergee (u3, u4);
+  vector unsigned long long u9 = vec_mergeo (u3, u4);
 
   vector long long l8 = vec_mul (l3, l4);
   vector unsigned long long u6 = vec_mul (u3, u4);
@@ -212,6 +218,12 @@ int main ()
   vector long long l9 = vec_cts (dh, -2);
   vector unsigned long long u7 = vec_ctu (di, 2);
   vector unsigned int usz = vec_ctu (fa, 0x1F);
+
+  vector float f1 = vec_mergee (fa, fb);
+  vector float f2 = vec_mergeo (fa, fb);
+
+  vector double d1 = vec_mergee (da, db);
+  vector double d2 = vec_mergeo (da, db);
 
   return 0;
 }

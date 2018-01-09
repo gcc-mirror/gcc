@@ -1318,6 +1318,24 @@
 }
   [(set_attr "type" "vecperm")])
 
+;; Power8 vector merge two V2DF/V2DI even words to V2DF
+(define_expand "p8_vmrgew_<mode>"
+  [(use (match_operand:VSX_D 0 "vsx_register_operand"))
+   (use (match_operand:VSX_D 1 "vsx_register_operand"))
+   (use (match_operand:VSX_D 2 "vsx_register_operand"))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  rtvec v;
+  rtx x;
+
+  v = gen_rtvec (2, GEN_INT (0), GEN_INT (2));
+  x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
+
+  x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
+  emit_insn (gen_rtx_SET (operands[0], x));
+  DONE;
+})
+
 ;; Power8 vector merge two V4SF/V4SI even words to V4SF
 (define_insn "p8_vmrgew_<mode>"
   [(set (match_operand:VSX_W 0 "register_operand" "=v")
@@ -1336,12 +1354,12 @@
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "p8_vmrgow"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-	(vec_select:V4SI
-	  (vec_concat:V8SI
-	    (match_operand:V4SI 1 "register_operand" "v")
-	    (match_operand:V4SI 2 "register_operand" "v"))
+(define_insn "p8_vmrgow_<mode>"
+  [(set (match_operand:VSX_W 0 "register_operand" "=v")
+	(vec_select:VSX_W
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_W 1 "register_operand" "v")
+	    (match_operand:VSX_W 2 "register_operand" "v"))
 	  (parallel [(const_int 1) (const_int 5)
 		     (const_int 3) (const_int 7)])))]
   "TARGET_P8_VECTOR"
@@ -1352,6 +1370,23 @@
     return "vmrgew %0,%2,%1";
 }
   [(set_attr "type" "vecperm")])
+
+(define_expand "p8_vmrgow_<mode>"
+  [(use (match_operand:VSX_D 0 "vsx_register_operand"))
+   (use (match_operand:VSX_D 1 "vsx_register_operand"))
+   (use (match_operand:VSX_D 2 "vsx_register_operand"))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  rtvec v;
+  rtx x;
+
+  v = gen_rtvec (2, GEN_INT (1), GEN_INT (3));
+  x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
+
+  x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
+  emit_insn (gen_rtx_SET (operands[0], x));
+  DONE;
+})
 
 (define_insn "p8_vmrgew_<mode>_direct"
   [(set (match_operand:VSX_W 0 "register_operand" "=v")
