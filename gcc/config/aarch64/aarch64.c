@@ -10449,6 +10449,9 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
   if (CONST_WIDE_INT_P (x))
     return false;
 
+  if (GET_CODE (x) == HIGH)
+    x = XEXP (x, 0);
+
   /* Do not allow const (plus (anchor_symbol, const_int)).  */
   if (GET_CODE (x) == CONST)
     {
@@ -10459,9 +10462,6 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
       if (SYMBOL_REF_P (x) && SYMBOL_REF_ANCHOR_P (x))
 	return false;
     }
-
-  if (GET_CODE (x) == HIGH)
-    x = XEXP (x, 0);
 
   /* Treat symbols as constants.  Avoid TLS symbols as they are complex,
      so spilling them is better than rematerialization.  */

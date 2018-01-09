@@ -1,5 +1,10 @@
 2018-01-09  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p): Fix
+	order of HIGH and CONST checks.
+
+2018-01-09  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-stmts.c (permute_vec_elements): Create a fresh variable
 	if the destination isn't an SSA_NAME.
 
