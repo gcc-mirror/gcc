@@ -47,6 +47,7 @@ struct go_create_gogo_args
   bool check_divide_overflow;
   bool compiling_runtime;
   int debug_escape_level;
+  const char* debug_escape_hash;
   int64_t nil_check_size_threshold;
 };
 

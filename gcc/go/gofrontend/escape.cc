@@ -19,6 +19,7 @@
 #include "ast-dump.h"
 #include "go-optimize.h"
 #include "go-diagnostics.h"
+#include "go-sha1.h"
 
 // class Node.
 
@@ -821,6 +822,39 @@ Escape_note::parse_tag(std::string* tag)
 
 Go_optimize optimize_allocation_flag("allocs");
 
+// A helper function to compute whether a function name has a
+// matching hash value.
+
+static bool
+escape_hash_match(std::string suffix, std::string name)
+{
+  if (suffix.empty())
+    return true;
+  if (suffix.at(0) == '-')
+    return !escape_hash_match(suffix.substr(1), name);
+
+  const char* p = name.c_str();
+  Go_sha1_helper* sha1_helper = go_create_sha1_helper();
+  sha1_helper->process_bytes(p, strlen(p));
+  std::string s = sha1_helper->finish();
+  delete sha1_helper;
+
+  int j = suffix.size() - 1;
+  for (int i = s.size() - 1; i >= 0; i--)
+    {
+      char c = s.at(i);
+      for (int k = 0; k < 8; k++, j--, c>>=1)
+        {
+          if (j < 0)
+            return true;
+          char bit = suffix.at(j) - '0';
+          if ((c&1) != bit)
+            return false;
+        }
+    }
+  return false;
+}
+
 // Analyze the program flow for escape information.
 
 void
@@ -839,11 +873,46 @@ Gogo::analyze_escape()
   // information in this package.
   this->discover_analysis_sets();
 
+  if (!this->debug_escape_hash().empty())
+    std::cerr << "debug-escape-hash " << this->debug_escape_hash() << "\n";
+
   for (std::vector<Analysis_set>::iterator p = this->analysis_sets_.begin();
        p != this->analysis_sets_.end();
        ++p)
     {
       std::vector<Named_object*> stack = p->first;
+
+      if (!this->debug_escape_hash().empty())
+        {
+          bool match = false;
+          for (std::vector<Named_object*>::const_iterator fn = stack.begin();
+               fn != stack.end();
+               ++fn)
+            match = match || escape_hash_match(this->debug_escape_hash(), (*fn)->message_name());
+          if (!match)
+            {
+              // Escape analysis won't run on these functions, but still
+              // need to tag them, so the caller knows.
+              for (std::vector<Named_object*>::iterator fn = stack.begin();
+                   fn != stack.end();
+                   ++fn)
+                if ((*fn)->is_function())
+                  {
+                    Function_type* fntype = (*fn)->func_value()->type();
+                    fntype->set_is_tagged();
+
+                    std::cerr << "debug-escape-hash disables " << debug_function_name(*fn) << "\n";
+                  }
+
+              continue;
+            }
+          for (std::vector<Named_object*>::const_iterator fn = stack.begin();
+               fn != stack.end();
+               ++fn)
+            if ((*fn)->is_function())
+              std::cerr << "debug-escape-hash triggers " << debug_function_name(*fn) << "\n";
+        }
+
       Escape_context* context = new Escape_context(this, p->second);
 
       // Analyze the flow of each function; build the connection graph.

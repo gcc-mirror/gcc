@@ -1,3 +1,11 @@
+2018-01-09  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (fgo-debug-escape-hash): New option.
+	* go-c.h (struct go_create_gogo_args): Add debug_escape_hash
+	field.
+	* go-lang.c (go_langhook_init): Set debug_escape_hash field.
+	* gccgo.texi (Invoking gccgo): Document -fgo-debug-escape-hash.
+
 2018-01-05  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::Gcc_backend): Correct
