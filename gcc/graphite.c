@@ -227,14 +227,10 @@ free_scops (vec<scop_p> scops)
 /* Transforms LOOP to the canonical loop closed SSA form.  */
 
 static void
-canonicalize_loop_closed_ssa (loop_p loop)
+canonicalize_loop_closed_ssa (loop_p loop, edge e)
 {
-  edge e = single_exit (loop);
   basic_block bb;
   gphi_iterator psi;
-
-  if (!e || (e->flags & EDGE_COMPLEX))
-    return;
 
   bb = e->dest;
 
@@ -314,14 +310,34 @@ canonicalize_loop_closed_ssa (loop_p loop)
    other statements.
 
    - there exist only one phi node per definition in the loop.
+
+   In addition to that we also make sure that loop exit edges are
+   first in the successor edge vector.  This is to make RPO order
+   as computed by pre_and_rev_post_order_compute be consistent with
+   what initial schedule generation expects.
 */
 
 static void
-canonicalize_loop_closed_ssa_form (void)
+canonicalize_loop_form (void)
 {
   loop_p loop;
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
-    canonicalize_loop_closed_ssa (loop);
+    {
+      edge e = single_exit (loop);
+      if (!e || (e->flags & EDGE_COMPLEX))
+	continue;
+
+      canonicalize_loop_closed_ssa (loop, e);
+
+      /* If the exit is not first in the edge vector make it so.  */
+      if (e != EDGE_SUCC (e->src, 0))
+	{
+	  unsigned ei;
+	  for (ei = 0; EDGE_SUCC (e->src, ei) != e; ++ei)
+	    ;
+	  std::swap (EDGE_SUCC (e->src, ei), EDGE_SUCC (e->src, 0));
+	}
+    }
 
   /* We can end up releasing duplicate exit PHIs and also introduce
      additional copies so the cached information isn't correct anymore.  */
@@ -360,7 +376,7 @@ graphite_transform_loops (void)
   the_isl_ctx = ctx;
 
   sort_sibling_loops (cfun);
-  canonicalize_loop_closed_ssa_form ();
+  canonicalize_loop_form ();
 
   /* Print the loop structure.  */
   if (dump_file && (dump_flags & TDF_DETAILS))
