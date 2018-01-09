@@ -1,3 +1,11 @@
+2018-01-09  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/83713
+	* g++.dg/torture/pr83713.C: New testcase.
+
 2018-01-08  Jim Wilson  <jimw@sifive.com>
 
 	Backport from mainline
