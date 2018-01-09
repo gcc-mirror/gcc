@@ -858,7 +858,7 @@ Gogo::analyze_escape()
 
       // Propagate levels across each dst.  This is the flood phase.
       std::set<Node*> dsts = context->dsts();
-      std::unordered_map<Node*, int> escapes;
+      Unordered_map(Node*, int) escapes;
       for (std::set<Node*>::iterator n = dsts.begin();
            n != dsts.end();
            ++n)
