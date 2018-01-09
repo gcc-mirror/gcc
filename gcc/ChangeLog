@@ -1,5 +1,22 @@
 2018-01-09  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_evpc_trn): Use d.perm.series_p
+	instead of checking each element individually.
+	(aarch64_evpc_uzp): Likewise.
+	(aarch64_evpc_zip): Likewise.
+	(aarch64_evpc_ext): Likewise.
+	(aarch64_evpc_rev): Likewise.
+	(aarch64_evpc_dup): Test the encoding for a single duplicated element,
+	instead of checking each element individually.  Return true without
+	generating rtl if
+	(aarch64_vectorize_vec_perm_const): Use all_from_input_p to test
+	whether all selected elements come from the same input, instead of
+	checking each element individually.  Remove calls to gen_rtx_REG,
+	start_sequence and end_sequence and instead assert that no rtl is
+	generated.
+
+2018-01-09  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p): Fix
 	order of HIGH and CONST checks.
 

@@ -13317,7 +13317,7 @@ aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel,
 static bool
 aarch64_evpc_trn (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->perm.length ();
+  unsigned int odd, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   machine_mode vmode = d->vmode;
 
@@ -13326,21 +13326,11 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 
   /* Note that these are little-endian tests.
      We correct for big-endian later.  */
-  if (d->perm[0] == 0)
-    odd = 0;
-  else if (d->perm[0] == 1)
-    odd = 1;
-  else
+  odd = d->perm[0];
+  if ((odd != 0 && odd != 1)
+      || !d->perm.series_p (0, 2, odd, 2)
+      || !d->perm.series_p (1, 2, nelt + odd, 2))
     return false;
-  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
-
-  for (i = 0; i < nelt; i += 2)
-    {
-      if (d->perm[i] != i + odd)
-	return false;
-      if (d->perm[i + 1] != ((i + nelt + odd) & mask))
-	return false;
-    }
 
   /* Success!  */
   if (d->testing_p)
@@ -13364,7 +13354,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->perm.length ();
+  unsigned int odd;
   rtx out, in0, in1, x;
   machine_mode vmode = d->vmode;
 
@@ -13373,20 +13363,10 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 
   /* Note that these are little-endian tests.
      We correct for big-endian later.  */
-  if (d->perm[0] == 0)
-    odd = 0;
-  else if (d->perm[0] == 1)
-    odd = 1;
-  else
+  odd = d->perm[0];
+  if ((odd != 0 && odd != 1)
+      || !d->perm.series_p (0, 1, odd, 2))
     return false;
-  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
-
-  for (i = 0; i < nelt; i++)
-    {
-      unsigned elt = (i * 2 + odd) & mask;
-      if (d->perm[i] != elt)
-	return false;
-    }
 
   /* Success!  */
   if (d->testing_p)
@@ -13410,7 +13390,7 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_zip (struct expand_vec_perm_d *d)
 {
-  unsigned int i, high, mask, nelt = d->perm.length ();
+  unsigned int high, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   machine_mode vmode = d->vmode;
 
@@ -13419,25 +13399,11 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 
   /* Note that these are little-endian tests.
      We correct for big-endian later.  */
-  high = nelt / 2;
-  if (d->perm[0] == high)
-    /* Do Nothing.  */
-    ;
-  else if (d->perm[0] == 0)
-    high = 0;
-  else
+  high = d->perm[0];
+  if ((high != 0 && high * 2 != nelt)
+      || !d->perm.series_p (0, 2, high, 1)
+      || !d->perm.series_p (1, 2, high + nelt, 1))
     return false;
-  mask = (d->one_vector_p ? nelt - 1 : 2 * nelt - 1);
-
-  for (i = 0; i < nelt / 2; i++)
-    {
-      unsigned elt = (i + high) & mask;
-      if (d->perm[i * 2] != elt)
-	return false;
-      elt = (elt + nelt) & mask;
-      if (d->perm[i * 2 + 1] != elt)
-	return false;
-    }
 
   /* Success!  */
   if (d->testing_p)
@@ -13462,23 +13428,14 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_ext (struct expand_vec_perm_d *d)
 {
-  unsigned int i, nelt = d->perm.length ();
+  unsigned int nelt = d->perm.length ();
   rtx offset;
 
   unsigned int location = d->perm[0]; /* Always < nelt.  */
 
   /* Check if the extracted indices are increasing by one.  */
-  for (i = 1; i < nelt; i++)
-    {
-      unsigned int required = location + i;
-      if (d->one_vector_p)
-        {
-          /* We'll pass the same vector in twice, so allow indices to wrap.  */
-	  required &= (nelt - 1);
-	}
-      if (d->perm[i] != required)
-        return false;
-    }
+  if (!d->perm.series_p (0, 1, location, 1))
+    return false;
 
   /* Success! */
   if (d->testing_p)
@@ -13510,7 +13467,7 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_rev (struct expand_vec_perm_d *d)
 {
-  unsigned int i, j, diff, size, unspec, nelt = d->perm.length ();
+  unsigned int i, diff, size, unspec;
 
   if (!d->one_vector_p)
     return false;
@@ -13526,18 +13483,10 @@ aarch64_evpc_rev (struct expand_vec_perm_d *d)
   else
     return false;
 
-  for (i = 0; i < nelt ; i += diff + 1)
-    for (j = 0; j <= diff; j += 1)
-      {
-	/* This is guaranteed to be true as the value of diff
-	   is 7, 3, 1 and we should have enough elements in the
-	   queue to generate this.  Getting a vector mask with a
-	   value of diff other than these values implies that
-	   something is wrong by the time we get here.  */
-	gcc_assert (i + j < nelt);
-	if (d->perm[i + j] != i + diff - j)
-	  return false;
-      }
+  unsigned int step = diff + 1;
+  for (i = 0; i < step; ++i)
+    if (!d->perm.series_p (i, step, diff - i, step))
+      return false;
 
   /* Success! */
   if (d->testing_p)
@@ -13554,15 +13503,17 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   rtx out = d->target;
   rtx in0;
   machine_mode vmode = d->vmode;
-  unsigned int i, elt, nelt = d->perm.length ();
+  unsigned int elt;
   rtx lane;
 
+  if (d->perm.encoding ().encoded_nelts () != 1)
+    return false;
+
+  /* Success! */
+  if (d->testing_p)
+    return true;
+
   elt = d->perm[0];
-  for (i = 1; i < nelt; i++)
-    {
-      if (elt != d->perm[i])
-	return false;
-    }
 
   /* The generic preparation in aarch64_expand_vec_perm_const_1
      swaps the operand order and the permute indices if it finds
@@ -13650,61 +13601,37 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 				  rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
-  unsigned int i, which;
 
+  /* Check whether the mask can be applied to a single vector.  */
+  if (op0 && rtx_equal_p (op0, op1))
+    d.one_vector_p = true;
+  else if (sel.all_from_input_p (0))
+    {
+      d.one_vector_p = true;
+      op1 = op0;
+    }
+  else if (sel.all_from_input_p (1))
+    {
+      d.one_vector_p = true;
+      op0 = op1;
+    }
+  else
+    d.one_vector_p = false;
+
+  d.perm.new_vector (sel.encoding (), d.one_vector_p ? 1 : 2,
+		     sel.nelts_per_input ());
   d.vmode = vmode;
   d.target = target;
   d.op0 = op0;
   d.op1 = op1;
   d.testing_p = !target;
 
-  /* Calculate whether all elements are in one vector.  */
-  unsigned int nelt = sel.length ();
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned int ei = sel[i] & (2 * nelt - 1);
-      which |= (ei < nelt ? 1 : 2);
-    }
-
-  switch (which)
-    {
-    default:
-      gcc_unreachable ();
-
-    case 3:
-      d.one_vector_p = false;
-      if (d.testing_p || !rtx_equal_p (op0, op1))
-	break;
-
-      /* The elements of PERM do not suggest that only the first operand
-	 is used, but both operands are identical.  Allow easier matching
-	 of the permutation by folding the permutation into the single
-	 input vector.  */
-      /* Fall Through.  */
-    case 2:
-      d.op0 = op1;
-      d.one_vector_p = true;
-      break;
-
-    case 1:
-      d.op1 = op0;
-      d.one_vector_p = true;
-      break;
-    }
-
-  d.perm.new_vector (sel.encoding (), d.one_vector_p ? 1 : 2, nelt);
-
   if (!d.testing_p)
     return aarch64_expand_vec_perm_const_1 (&d);
 
-  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
-  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
-  if (!d.one_vector_p)
-    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
-
-  start_sequence ();
+  rtx_insn *last = get_last_insn ();
   bool ret = aarch64_expand_vec_perm_const_1 (&d);
-  end_sequence ();
+  gcc_assert (last == get_last_insn ());
 
   return ret;
 }
