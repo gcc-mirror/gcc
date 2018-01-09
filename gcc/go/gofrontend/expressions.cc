@@ -12387,6 +12387,7 @@ Allocation_expression::do_get_backend(Translate_context* context)
 {
   Gogo* gogo = context->gogo();
   Location loc = this->location();
+  Btype* btype = this->type_->get_backend(gogo);
 
   if (this->allocate_on_stack_)
     {
@@ -12397,10 +12398,20 @@ Allocation_expression::do_get_backend(Translate_context* context)
           go_assert(saw_errors());
           return gogo->backend()->error_expression();
         }
-      return gogo->backend()->stack_allocation_expression(size, loc);
+      Bstatement* decl;
+      Named_object* fn = context->function();
+      go_assert(fn != NULL);
+      Bfunction* fndecl = fn->func_value()->get_or_make_decl(gogo, fn);
+      Bexpression* zero = gogo->backend()->zero_expression(btype);
+      Bvariable* temp =
+        gogo->backend()->temporary_variable(fndecl, context->bblock(), btype,
+                                            zero, true, loc, &decl);
+      Bexpression* ret = gogo->backend()->var_expression(temp, loc);
+      ret = gogo->backend()->address_expression(ret, loc);
+      ret = gogo->backend()->compound_expression(decl, ret, loc);
+      return ret;
     }
 
-  Btype* btype = this->type_->get_backend(gogo);
   Bexpression* space =
     gogo->allocate_memory(this->type_, loc)->get_backend(context);
   Btype* pbtype = gogo->backend()->pointer_type(btype);
@@ -14278,7 +14289,7 @@ Heap_expression::do_get_backend(Translate_context* context)
   // don't do this in the write barrier pass because in some cases
   // backend conversion can introduce new Heap_expression values.
   Bstatement* assn;
-  if (!etype->has_pointer())
+  if (!etype->has_pointer() || this->allocate_on_stack_)
     {
       space = gogo->backend()->var_expression(space_temp, loc);
       Bexpression* ref =
