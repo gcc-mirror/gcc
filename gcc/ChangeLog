@@ -1,5 +1,9 @@
 2018-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/83507
+	* modulo-sched.c (schedule_reg_moves): Punt if we'd need to move
+	hard registers.  Formatting fixes.
+
 	PR preprocessor/83722
 	* gcc.c (try_generate_repro): Pass
 	&temp_stderr_files[RETRY_ICE_ATTEMPTS - 1] rather than
