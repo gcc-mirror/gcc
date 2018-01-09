@@ -4071,7 +4071,7 @@ gfc_match_allocate (void)
 	 for which the corresponding type parameter is assumed.  */
       if (saw_assumed
 	  && (tail->expr->ts.deferred
-	      || tail->expr->ts.u.cl->length
+	      || (tail->expr->ts.u.cl && tail->expr->ts.u.cl->length)
 	      || tail->expr->symtree->n.sym->attr.dummy == 0))
 	{
 	  gfc_error ("Incompatible allocate-object at %C for CHARACTER "
