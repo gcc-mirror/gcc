@@ -2494,7 +2494,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-libtool_VERSION=12:0:0
+libtool_VERSION=13:0:0
 
 
 # Default to --enable-multilib
@@ -13652,7 +13652,7 @@ ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390
 
 GOARCH=unknown
 GOARCH_FAMILY=unknown
-GOARCH_BIGENDIAN=0
+GOARCH_BIGENDIAN=false
 GOARCH_CACHELINESIZE=64
 GOARCH_PHYSPAGESIZE=4096
 GOARCH_PCQUANTUM=1
@@ -13680,6 +13680,12 @@ case ${host} in
     GOARCH_CACHELINESIZE=32
     GOARCH_PCQUANTUM=4
     GOARCH_MINFRAMESIZE=4
+    case ${host} in
+      arm*b*-*-*)
+	GOARCH=armbe
+        GOARCH_BIGENDIAN=true
+	;;
+    esac
     ;;
   i[34567]86-*-* | x86_64-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13712,7 +13718,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   m68k*-*-*)
     GOARCH=m68k
     GOARCH_FAMILY=M68K
-    GOARCH_BIGENDIAN=1
+    GOARCH_BIGENDIAN=true
     GOARCH_CACHELINESIZE=16
     GOARCH_PCQUANTUM=4
     GOARCH_INT64ALIGN=2
@@ -13776,7 +13782,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         GOARCH="${GOARCH}le"
         ;;
     *)
-	GOARCH_BIGENDIAN=1
+	GOARCH_BIGENDIAN=true
         ;;
     esac
     GOARCH_CACHELINESIZE=32
@@ -13794,7 +13800,7 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=ppc
 GOARCH_FAMILY=PPC
-GOARCH_BIGENDIAN=1
+GOARCH_BIGENDIAN=true
 
 else
 
@@ -13811,7 +13817,7 @@ if ac_fn_c_try_compile "$LINENO"; then :
 
 else
   GOARCH=ppc64
-GOARCH_BIGENDIAN=1
+GOARCH_BIGENDIAN=true
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
@@ -13841,7 +13847,7 @@ GOARCH_MINFRAMESIZE=8
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    GOARCH_BIGENDIAN=1
+    GOARCH_BIGENDIAN=true
     GOARCH_CACHELINESIZE=256
     GOARCH_PCQUANTUM=2
     ;;
@@ -13863,7 +13869,7 @@ GOARCH_FAMILY=SPARC64
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-    GOARCH_BIGENDIAN=1
+    GOARCH_BIGENDIAN=true
     GOARCH_PHYSPAGESIZE=8192
     GOARCH_PCQUANTUM=4
     ;;
@@ -15142,7 +15148,7 @@ fi
 $as_echo "$libgo_cv_c_fancymath" >&6; }
 MATH_FLAG=
 if test "$libgo_cv_c_fancymath" = yes; then
-  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations"
+  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations -fno-math-errno"
 else
   MATH_FLAG="-ffp-contract=off"
 fi

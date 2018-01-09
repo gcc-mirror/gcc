@@ -13,6 +13,7 @@ import (
 	"go/token"
 	"go/types"
 	"io"
+	"os"
 	"runtime"
 )
 
@@ -29,30 +30,37 @@ type Lookup func(path string) (io.ReadCloser, error)
 // checker won't have access to those).
 //
 // If lookup is nil, the default package lookup mechanism for the
-// given compiler is used.
+// given compiler is used, and the resulting importer attempts
+// to resolve relative and absolute import paths to canonical
+// import path IDs before finding the imported file.
 //
-// BUG(issue13847): For does not support non-nil lookup functions.
+// If lookup is non-nil, then the returned importer calls lookup
+// each time it needs to resolve an import path. In this mode
+// the importer can only be invoked with canonical import paths
+// (not relative or absolute ones); it is assumed that the translation
+// to canonical import paths is being done by the client of the
+// importer.
 func For(compiler string, lookup Lookup) types.Importer {
 	switch compiler {
 	case "gc":
-		if lookup != nil {
-			panic("gc importer for custom import path lookup not supported (issue #13847).")
+		return &gcimports{
+			packages: make(map[string]*types.Package),
+			lookup:   lookup,
 		}
-
-		return make(gcimports)
 
 	case "gccgo":
-		if lookup != nil {
-			panic("gccgo importer for custom import path lookup not supported (issue #13847).")
-		}
-
 		var inst gccgoimporter.GccgoInstallation
-		if err := inst.InitFromDriver("gccgo"); err != nil {
+		gccgo := os.Getenv("GCCGO")
+		if gccgo == "" {
+			gccgo = "gccgo"
+		}
+		if err := inst.InitFromDriver(gccgo); err != nil {
 			return nil
 		}
 		return &gccgoimports{
 			packages: make(map[string]*types.Package),
 			importer: inst.GetImporter(nil, nil),
+			lookup:   lookup,
 		}
 
 	case "source":
@@ -75,17 +83,20 @@ func Default() types.Importer {
 
 // gc importer
 
-type gcimports map[string]*types.Package
+type gcimports struct {
+	packages map[string]*types.Package
+	lookup   Lookup
+}
 
-func (m gcimports) Import(path string) (*types.Package, error) {
+func (m *gcimports) Import(path string) (*types.Package, error) {
 	return m.ImportFrom(path, "" /* no vendoring */, 0)
 }
 
-func (m gcimports) ImportFrom(path, srcDir string, mode types.ImportMode) (*types.Package, error) {
+func (m *gcimports) ImportFrom(path, srcDir string, mode types.ImportMode) (*types.Package, error) {
 	if mode != 0 {
 		panic("mode must be 0")
 	}
-	return gcimporter.Import(m, path, srcDir)
+	return gcimporter.Import(m.packages, path, srcDir, m.lookup)
 }
 
 // gccgo importer
@@ -93,6 +104,7 @@ func (m gcimports) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 type gccgoimports struct {
 	packages map[string]*types.Package
 	importer gccgoimporter.Importer
+	lookup   Lookup
 }
 
 func (m *gccgoimports) Import(path string) (*types.Package, error) {
@@ -103,6 +115,5 @@ func (m *gccgoimports) ImportFrom(path, srcDir string, mode types.ImportMode) (*
 	if mode != 0 {
 		panic("mode must be 0")
 	}
-	// TODO(gri) pass srcDir
-	return m.importer(m.packages, path)
+	return m.importer(m.packages, path, srcDir, m.lookup)
 }

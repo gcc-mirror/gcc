@@ -1,3 +1,24 @@
+2018-01-08  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (go_cmd_vet_files): New variable.
+	(go_cmd_buildid_files, go_cmd_test2json_files): New variables.
+	(s-zdefaultcc): Change from constants to functions.
+	(noinst_PROGRAMS): Add vet, buildid, and test2json.
+	(cgo$(EXEEXT)): Link against $(LIBGOTOOL).
+	(vet$(EXEEXT)): New target.
+	(buildid$(EXEEXT)): New target.
+	(test2json$(EXEEXT)): New target.
+	(install-exec-local): Install all $(noinst_PROGRAMS).
+	(uninstall-local): Uninstasll all $(noinst_PROGRAMS).
+	(check-go-tool): Depend on $(noinst_PROGRAMS).  Copy down
+	objabi.go.
+	(check-runtime): Depend on $(noinst_PROGRAMS).
+	(check-cgo-test, check-carchive-test): Likewise.
+	(check-vet): New target.
+	(check): Depend on check-vet.  Look at cmd_vet-testlog.
+	(.PHONY): Add check-vet.
+	* Makefile.in: Rebuild.
+
 2017-10-25  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (check-go-tool): Output colon after ${fl}.

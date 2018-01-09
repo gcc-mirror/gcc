@@ -510,7 +510,7 @@ localname() {
 	ppc64*) text="[TD]" ;;
 	esac
 
-	symtogo='sed -e s/_test/XXXtest/ -e s/.*_\([^_]*\.\)/\1/ -e s/XXXtest/_test/'
+	symtogo='sed -e s/_test\([^A-Za-z0-9]\)/XXXtest\1/ -e s/.*_\([^_]*\.\)/\1/ -e s/XXXtest/_test/'
 
 	# test functions are named TestFoo
 	# the grep -v eliminates methods and other special names

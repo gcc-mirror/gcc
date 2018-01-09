@@ -200,7 +200,6 @@ func dumptype(t *_type) {
 
 // dump an object
 func dumpobj(obj unsafe.Pointer, size uintptr, bv bitvector) {
-	dumpbvtypes(&bv, obj)
 	dumpint(tagObject)
 	dumpint(uint64(uintptr(obj)))
 	dumpmemrange(obj, size)
@@ -537,16 +536,6 @@ func writeheapdump_m(fd uintptr) {
 func dumpfields(bv bitvector) {
 	dumpbv(&bv, 0)
 	dumpint(fieldKindEol)
-}
-
-// The heap dump reader needs to be able to disambiguate
-// Eface entries. So it needs to know every type that might
-// appear in such an entry. The following routine accomplishes that.
-// TODO(rsc, khr): Delete - no longer possible.
-
-// Dump all the types that appear in the type field of
-// any Eface described by this bit vector.
-func dumpbvtypes(bv *bitvector, base unsafe.Pointer) {
 }
 
 func makeheapobjbv(p uintptr, size uintptr) bitvector {

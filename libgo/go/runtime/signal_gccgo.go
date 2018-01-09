@@ -46,11 +46,6 @@ func kill(pid _pid_t, sig uint32) int32
 //extern setitimer
 func setitimer(which int32, new *_itimerval, old *_itimerval) int32
 
-type sigTabT struct {
-	flags int32
-	name  string
-}
-
 type sigctxt struct {
 	info *_siginfo_t
 	ctxt unsafe.Pointer

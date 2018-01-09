@@ -7830,7 +7830,7 @@ Map_type::do_get_backend(Gogo* gogo)
       bfields[7].btype = uintptr_type->get_backend(gogo);
       bfields[7].location = bloc;
 
-      bfields[8].name = "overflow";
+      bfields[8].name = "extra";
       bfields[8].btype = bpvt;
       bfields[8].location = bloc;
 
@@ -8144,21 +8144,23 @@ Map_type::hmap_type(Type* bucket_type)
 
   Type* int_type = Type::lookup_integer_type("int");
   Type* uint8_type = Type::lookup_integer_type("uint8");
+  Type* uint16_type = Type::lookup_integer_type("uint16");
   Type* uint32_type = Type::lookup_integer_type("uint32");
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   Type* void_ptr_type = Type::make_pointer_type(Type::make_void_type());
 
   Type* ptr_bucket_type = Type::make_pointer_type(bucket_type);
 
-  Struct_type* ret = make_builtin_struct_type(8,
+  Struct_type* ret = make_builtin_struct_type(9,
 					      "count", int_type,
 					      "flags", uint8_type,
 					      "B", uint8_type,
+					      "noverflow", uint16_type,
 					      "hash0", uint32_type,
 					      "buckets", ptr_bucket_type,
 					      "oldbuckets", ptr_bucket_type,
 					      "nevacuate", uintptr_type,
-					      "overflow", void_ptr_type);
+					      "extra", void_ptr_type);
   ret->set_is_struct_incomparable();
   this->hmap_type_ = ret;
   return ret;
@@ -8191,18 +8193,22 @@ Map_type::hiter_type(Gogo* gogo)
   Type* hmap_type = this->hmap_type(bucket_type);
   Type* hmap_ptr_type = Type::make_pointer_type(hmap_type);
   Type* void_ptr_type = Type::make_pointer_type(Type::make_void_type());
+  Type* bool_type = Type::lookup_bool_type();
 
-  Struct_type* ret = make_builtin_struct_type(12,
+  Struct_type* ret = make_builtin_struct_type(15,
 					      "key", key_ptr_type,
 					      "val", val_ptr_type,
 					      "t", uint8_ptr_type,
 					      "h", hmap_ptr_type,
 					      "buckets", bucket_ptr_type,
 					      "bptr", bucket_ptr_type,
-					      "overflow0", void_ptr_type,
-					      "overflow1", void_ptr_type,
+					      "overflow", void_ptr_type,
+					      "oldoverflow", void_ptr_type,
 					      "startBucket", uintptr_type,
-					      "stuff", uintptr_type,
+					      "offset", uint8_type,
+					      "wrapped", bool_type,
+					      "B", uint8_type,
+					      "i", uint8_type,
 					      "bucket", uintptr_type,
 					      "checkBucket", uintptr_type);
   ret->set_is_struct_incomparable();

@@ -6,6 +6,7 @@ package carchive_test
 
 import (
 	"bufio"
+	"bytes"
 	"debug/elf"
 	"fmt"
 	"io/ioutil"
@@ -139,8 +140,10 @@ func cmdToRun(name string) []string {
 }
 
 func testInstall(t *testing.T, exe, libgoa, libgoh string, buildcmd ...string) {
+	t.Helper()
 	cmd := exec.Command(buildcmd[0], buildcmd[1:]...)
 	cmd.Env = gopathEnv
+	t.Log(buildcmd)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Logf("%s", out)
 		t.Fatal(err)
@@ -188,7 +191,7 @@ func TestInstall(t *testing.T) {
 	testInstall(t, "./testp1"+exeSuffix,
 		filepath.Join("pkg", libgodir, libgoa),
 		filepath.Join("pkg", libgodir, "libgo.h"),
-		"go", "install", "-buildmode=c-archive", "libgo")
+		"go", "install", "-i", "-buildmode=c-archive", "libgo")
 
 	// Test building libgo other than installing it.
 	// Header files are now present.
@@ -523,7 +526,7 @@ func TestPIE(t *testing.T) {
 		os.RemoveAll("pkg")
 	}()
 
-	cmd := exec.Command("go", "install", "-buildmode=c-archive", "libgo")
+	cmd := exec.Command("go", "install", "-i", "-buildmode=c-archive", "libgo")
 	cmd.Env = gopathEnv
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Logf("%s", out)
@@ -596,6 +599,8 @@ func TestSIGPROF(t *testing.T) {
 	switch GOOS {
 	case "windows", "plan9":
 		t.Skipf("skipping SIGPROF test on %s", GOOS)
+	case "darwin":
+		t.Skipf("skipping SIGPROF test on %s; see https://golang.org/issue/19320", GOOS)
 	}
 
 	t.Parallel()
@@ -655,12 +660,29 @@ func TestCompileWithoutShared(t *testing.T) {
 	}
 
 	exe := "./testnoshared" + exeSuffix
-	ccArgs := append(cc, "-o", exe, "main5.c", "libgo2.a")
+
+	// In some cases, -no-pie is needed here, but not accepted everywhere. First try
+	// if -no-pie is accepted. See #22126.
+	ccArgs := append(cc, "-o", exe, "-no-pie", "main5.c", "libgo2.a")
 	if runtime.Compiler == "gccgo" {
 		ccArgs = append(ccArgs, "-lgo")
 	}
 	t.Log(ccArgs)
 	out, err = exec.Command(ccArgs[0], ccArgs[1:]...).CombinedOutput()
+
+	// If -no-pie unrecognized, try -nopie if this is possibly clang
+	if err != nil && bytes.Contains(out, []byte("unknown")) && !strings.Contains(cc[0], "gcc") {
+		ccArgs = append(cc, "-o", exe, "-nopie", "main5.c", "libgo2.a")
+		t.Log(ccArgs)
+		out, err = exec.Command(ccArgs[0], ccArgs[1:]...).CombinedOutput()
+	}
+
+	// Don't use either -no-pie or -nopie
+	if err != nil && bytes.Contains(out, []byte("unrecognized")) {
+		ccArgs := append(cc, "-o", exe, "main5.c", "libgo2.a")
+		t.Log(ccArgs)
+		out, err = exec.Command(ccArgs[0], ccArgs[1:]...).CombinedOutput()
+	}
 	t.Logf("%s", out)
 	if err != nil {
 		t.Fatal(err)
