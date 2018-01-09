@@ -1,3 +1,24 @@
+2018-01-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/83709
+	* include/bits/hashtable_policy.h
+	(__distance_fwd(_Iterator, _Iterator, input_iterator_tag)): Return 1 if
+	__first != __last.
+	(_Insert_base::_M_insert_range(_Ite, _Ite, _NodeGetter, true_type)): New.
+	(_Insert_base::_M_insert_range(_Ite, _Ite, _NodeGetter, false_type)):
+	Add false_type parameter.
+	(_Insert_base::insert): Adapt.
+	* include/bits/hashtable.h (_Hashtable::operator=(initializzr_list<>)):
+	Adapt.
+	(_Hashtable::_M_insert(_Arg&&, const _NodeGen&, true_type, size_t)):
+	 Add __n_elt parameter, defaulted to 1.
+	(_Hashtable::_M_insert_unique_node): Likewise. Use it to call rehash
+	policy _M_need_rehash.
+	(_Hashtable::_M_merge_unique): Pass target number of elements to add to
+	produce only 1 rehash if necessary.
+	* testsuite/23_containers/unordered_map/insert/83709.cc: New.
+	* testsuite/23_containers/unordered_set/insert/83709.cc: New.
+
 2018-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59253 (partial)

@@ -58,12 +58,12 @@ namespace __detail
     struct _Hashtable_base;
 
   // Helper function: return distance(first, last) for forward
-  // iterators, or 0 for input iterators.
+  // iterators, or 0/1 for input iterators.
   template<class _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last,
 		  std::input_iterator_tag)
-    { return 0; }
+    { return __first != __last ? 1 : 0; }
 
   template<class _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
@@ -74,10 +74,8 @@ namespace __detail
   template<class _Iterator>
     inline typename std::iterator_traits<_Iterator>::difference_type
     __distance_fw(_Iterator __first, _Iterator __last)
-    {
-      typedef typename std::iterator_traits<_Iterator>::iterator_category _Tag;
-      return __distance_fw(__first, __last, _Tag());
-    }
+    { return __distance_fw(__first, __last,
+			   std::__iterator_category(__first)); }
 
   struct _Identity
   {
@@ -820,7 +818,12 @@ namespace __detail
       template<typename _InputIterator, typename _NodeGetter>
 	void
 	_M_insert_range(_InputIterator __first, _InputIterator __last,
-			const _NodeGetter&);
+			const _NodeGetter&, true_type);
+
+      template<typename _InputIterator, typename _NodeGetter>
+	void
+	_M_insert_range(_InputIterator __first, _InputIterator __last,
+			const _NodeGetter&, false_type);
 
     public:
       __ireturn_type
@@ -849,7 +852,7 @@ namespace __detail
 	{
 	  __hashtable& __h = _M_conjure_hashtable();
 	  __node_gen_type __node_gen(__h);
-	  return _M_insert_range(__first, __last, __node_gen);
+	  return _M_insert_range(__first, __last, __node_gen, __unique_keys());
 	}
     };
 
@@ -862,13 +865,41 @@ namespace __detail
       _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal, _H1, _H2, _Hash,
 		    _RehashPolicy, _Traits>::
       _M_insert_range(_InputIterator __first, _InputIterator __last,
-		      const _NodeGetter& __node_gen)
+		      const _NodeGetter& __node_gen, true_type)
+      {
+	size_type __n_elt = __detail::__distance_fw(__first, __last);
+	if (__n_elt == 0)
+	  return;
+
+	__hashtable& __h = _M_conjure_hashtable();
+	for (; __first != __last; ++__first)
+	  {
+	    if (__h._M_insert(*__first, __node_gen, __unique_keys(),
+			      __n_elt).second)
+	      __n_elt = 1;
+	    else if (__n_elt != 1)
+	      --__n_elt;
+	  }
+      }
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash,
+	   typename _RehashPolicy, typename _Traits>
+    template<typename _InputIterator, typename _NodeGetter>
+      void
+      _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal, _H1, _H2, _Hash,
+		    _RehashPolicy, _Traits>::
+      _M_insert_range(_InputIterator __first, _InputIterator __last,
+		      const _NodeGetter& __node_gen, false_type)
       {
 	using __rehash_type = typename __hashtable::__rehash_type;
 	using __rehash_state = typename __hashtable::__rehash_state;
 	using pair_type = std::pair<bool, std::size_t>;
 
 	size_type __n_elt = __detail::__distance_fw(__first, __last);
+	if (__n_elt == 0)
+	  return;
 
 	__hashtable& __h = _M_conjure_hashtable();
 	__rehash_type& __rehash = __h._M_rehash_policy;
