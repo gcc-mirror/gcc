@@ -1228,6 +1228,11 @@ asan_function_start (void)
 static unsigned HOST_WIDE_INT
 shadow_mem_size (unsigned HOST_WIDE_INT size)
 {
+  /* It must be possible to align stack variables to granularity
+     of shadow memory.  */
+  gcc_assert (BITS_PER_UNIT
+	      * ASAN_SHADOW_GRANULARITY <= MAX_SUPPORTED_STACK_ALIGNMENT);
+
   return ROUND_UP (size, ASAN_SHADOW_GRANULARITY) / ASAN_SHADOW_GRANULARITY;
 }
 

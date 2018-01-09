@@ -1,3 +1,8 @@
+2018-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82517
+	* asan.c (shadow_mem_size): Add gcc_assert.
+
 2018-01-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	Don't save registers in main().
