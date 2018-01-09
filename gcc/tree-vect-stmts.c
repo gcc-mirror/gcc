@@ -6585,7 +6585,11 @@ permute_vec_elements (tree x, tree y, tree mask_vec, gimple *stmt,
   tree perm_dest, data_ref;
   gimple *perm_stmt;
 
-  perm_dest = vect_create_destination_var (gimple_get_lhs (stmt), vectype);
+  tree scalar_dest = gimple_get_lhs (stmt);
+  if (TREE_CODE (scalar_dest) == SSA_NAME)
+    perm_dest = vect_create_destination_var (scalar_dest, vectype);
+  else
+    perm_dest = vect_get_new_vect_var (vectype, vect_simple_var, NULL);
   data_ref = make_ssa_name (perm_dest);
 
   /* Generate the permute statement.  */
