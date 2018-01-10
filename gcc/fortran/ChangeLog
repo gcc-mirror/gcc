@@ -1,5 +1,10 @@
 2018-01-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/82367
+	* resolve.c (resolve_allocate_expr): Check for NULL pointer.
+
+2018-01-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/83093
 	* resolve.c (resolve_charlen): Check the type of cl->length
 	after resolution.
