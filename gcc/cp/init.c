@@ -4399,7 +4399,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      if (TREE_CODE (init) == TREE_LIST)
 		init = build_x_compound_expr_from_list (init, ELK_INIT,
 							complain);
-	      elt_init = build2 (INIT_EXPR, type, to, init);
+	      elt_init = (init == error_mark_node
+			  ? error_mark_node
+			  : build2 (INIT_EXPR, type, to, init));
 	    }
 	}
 

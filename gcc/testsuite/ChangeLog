@@ -1,3 +1,8 @@
+2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81055
+	* g++.dg/cpp0x/new2.C: New.
+
 2018-01-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/83735
