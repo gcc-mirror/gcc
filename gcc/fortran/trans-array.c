@@ -1562,7 +1562,8 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 	  if (first_len)
 	    {
 	      gfc_add_modify (&se->pre, first_len_val,
-				   se->string_length);
+			      fold_convert (TREE_TYPE (first_len_val),
+						       se->string_length));
 	      first_len = false;
 	    }
 	  else
@@ -1571,7 +1572,9 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 		 length.  */
 	      tree cond = fold_build2_loc (input_location, NE_EXPR,
 					   logical_type_node, first_len_val,
-					   se->string_length);
+					   fold_convert (TREE_TYPE
+							 (first_len_val),
+							 se->string_length));
 	      gfc_trans_runtime_check
 		(true, false, cond, &se->pre, &expr->where,
 		 "Different CHARACTER lengths (%ld/%ld) in array constructor",
