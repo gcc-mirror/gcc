@@ -208,10 +208,10 @@ AC_SUBST(USE_DEJAGNU)
 # supported by the gofrontend and all architectures supported by the
 # gc toolchain.
 # N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sparc sparc64"
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sh shbe sparc sparc64"
 
 # All known GOARCH_FAMILY values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SPARC SPARC64"
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SH SPARC SPARC64"
 
 GOARCH=unknown
 GOARCH_FAMILY=unknown
@@ -365,6 +365,36 @@ GOARCH_MINFRAMESIZE=8
     GOARCH_BIGENDIAN=true
     GOARCH_CACHELINESIZE=256
     GOARCH_PCQUANTUM=2
+    ;;
+  sh3eb*-*-*)
+    GOARCH=shbe
+    GOARCH_FAMILY=SH
+    GOARCH_BIGENDIAN=true
+    GOARCH_CACHELINESIZE=16
+    GOARCH_PCQUANTUM=2
+    GOARCH_MINFRAMESIZE=4
+    ;;
+  sh3*-*-*)
+    GOARCH=sh
+    GOARCH_FAMILY=SH
+    GOARCH_CACHELINESIZE=16
+    GOARCH_PCQUANTUM=2
+    GOARCH_MINFRAMESIZE=4
+    ;;
+  sh4eb*-*-*)
+    GOARCH=shbe
+    GOARCH_FAMILY=SH
+    GOARCH_BIGENDIAN=true
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PCQUANTUM=2
+    GOARCH_MINFRAMESIZE=4
+    ;;
+  sh4*-*-*)
+    GOARCH=sh
+    GOARCH_FAMILY=SH
+    GOARCH_CACHELINESIZE=32
+    GOARCH_PCQUANTUM=2
+    GOARCH_MINFRAMESIZE=4
     ;;
   sparc*-*-*)
     AC_COMPILE_IFELSE([
