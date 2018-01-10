@@ -1,3 +1,15 @@
+2018-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83671
+	* builtins.c (c_strlen): Unconditionally return zero for the empty
+	string.
+	Use -Warray-bounds for warnings.
+	* gimple-fold.c (get_range_strlen): Handle non-constant lengths
+	for non-constant array indices with COMPONENT_REF, arrays of
+	arrays, and pointers to arrays.
+	(gimple_fold_builtin_strlen): Determine and set length range for
+	non-constant character arrays.
+
 2018-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/81897
