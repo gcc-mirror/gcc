@@ -1,3 +1,7 @@
+2018-01-10  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* gcc.dg/memcmp-1.c: Reduce runtime to something reasonable.
+
 2018-01-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/82541

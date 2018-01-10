@@ -12,8 +12,20 @@ int lib_memcmp(const void *a, const void *b, size_t n) asm("memcmp");
 int lib_strncmp(const char *a, const char *b, size_t n) asm("strncmp");
 
 #ifndef NRAND
+#ifdef TEST_ALL
 #define NRAND 10000
+#else
+#define NRAND 500
 #endif
+#endif
+#ifndef TZONE
+#ifdef TEST_ALL
+#define TZONE 16
+#else
+#define TZONE 8
+#endif
+#endif
+
 #define MAX_SZ 600
 
 #define DEF_RS(ALIGN)                                                      \
@@ -33,9 +45,7 @@ static void test_memcmp_runtime_size_ ## ALIGN (const char *str1, 	   \
 	  b = four+i*ALIGN+j*(4096-2*i*ALIGN);				   \
 	  memcpy(a,str1,sz);						   \
 	  memcpy(b,str2,sz);						   \
-	  asm(" ");							   \
 	  r = memcmp(a,b,sz);						   \
-	  asm(" ");							   \
 	  if ( r < 0 && !(expect < 0) ) abort();			   \
 	  if ( r > 0 && !(expect > 0) )	abort();			   \
 	  if ( r == 0 && !(expect == 0) ) abort();			   \
@@ -67,15 +77,13 @@ static void test_memcmp_runtime_size (const char *str1, const char *str2,
 	{
 	  for (a1=0; a1 < 2*sizeof(void *); a1++)
 	    {
+	      a = three+i*a1+j*(4096-2*i*a1);
+	      memcpy(a,str1,sz);
 	      for (a2=0; a2 < 2*sizeof(void *); a2++)
 		{
-		  a = three+i*a1+j*(4096-2*i*a1);
 		  b = four+i*a2+j*(4096-2*i*a2);
-		  memcpy(a,str1,sz);
 		  memcpy(b,str2,sz);
-		  asm(" ");
 		  r = memcmp(a,b,sz);
-		  asm(" ");
 		  if ( r < 0 && !(expect < 0) ) abort();
 		  if ( r > 0 && !(expect > 0) )	abort();
 		  if ( r == 0 && !(expect == 0) ) abort();
@@ -89,7 +97,7 @@ static void test_driver_memcmp (void (test_memcmp)(const char *, const char *, i
 				void (test_strncmp)(const char *, const char *, int),
   size_t sz, int align)
 {
-  char buf1[MAX_SZ*2+10],buf2[MAX_SZ*2+10];
+  char buf1[MAX_SZ*2+TZONE],buf2[MAX_SZ*2+TZONE];
   size_t test_sz = (sz<MAX_SZ)?sz:MAX_SZ;
   size_t diff_pos, zero_pos;
   uint32_t e;
@@ -111,8 +119,8 @@ static void test_driver_memcmp (void (test_memcmp)(const char *, const char *, i
       (*test_strncmp)(buf1,buf2,e);
     }
   }
-  for(diff_pos = ((test_sz>10)?(test_sz-10):0); diff_pos < test_sz+10; diff_pos++)
-    for(zero_pos = ((test_sz>10)?(test_sz-10):0); zero_pos < test_sz+10; zero_pos++)
+  for(diff_pos = ((test_sz>TZONE)?(test_sz-TZONE):0); diff_pos < test_sz+TZONE; diff_pos++)
+    for(zero_pos = ((test_sz>TZONE)?(test_sz-TZONE):0); zero_pos < test_sz+TZONE; zero_pos++)
       {
 	memset(buf1, 'A', 2*test_sz);
 	memset(buf2, 'A', 2*test_sz);
@@ -125,7 +133,6 @@ static void test_driver_memcmp (void (test_memcmp)(const char *, const char *, i
 	(*test_memcmp)(buf2,buf2,0);
 	test_memcmp_runtime_size (buf1, buf2, sz, e);
 	test_memcmp_runtime_size (buf2, buf1, sz, -e);
-	test_memcmp_runtime_size (buf2, buf2, sz, 0);
 	e = lib_strncmp(buf1,buf2,sz);
 	(*test_strncmp)(buf1,buf2,e);
 	(*test_strncmp)(buf2,buf1,-e);
@@ -470,10 +477,8 @@ DEF_TEST(8,1)
 DEF_TEST(9,1)
 DEF_TEST(16,1)
 DEF_TEST(32,1)
-DEF_TEST(100,1)
-DEF_TEST(100,8)
-DEF_TEST(180,1)
-DEF_TEST(180,8)
+DEF_TEST(33,8)
+DEF_TEST(49,1)
 #endif
 
 int
@@ -753,9 +758,7 @@ main(int argc, char **argv)
     RUN_TEST(9,1)
     RUN_TEST(16,1)
     RUN_TEST(32,1)
-    RUN_TEST(100,1)
-    RUN_TEST(100,8)
-    RUN_TEST(180,1)
-    RUN_TEST(180,8)
+    RUN_TEST(33,8)
+    RUN_TEST(49,1)
 #endif
 }
