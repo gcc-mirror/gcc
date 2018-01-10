@@ -1,3 +1,9 @@
+2018-01-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83753
+	* tree-vect-stmts.c (get_group_load_store_type): Use VMAT_CONTIGUOUS
+	for non-strided grouped accesses if the number of elements is 1.
+
 2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/81616

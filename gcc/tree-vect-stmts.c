@@ -1849,10 +1849,16 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
 	  && (can_overrun_p || !would_overrun_p)
 	  && compare_step_with_zero (stmt) > 0)
 	{
-	  /* First try using LOAD/STORE_LANES.  */
-	  if (vls_type == VLS_LOAD
-	      ? vect_load_lanes_supported (vectype, group_size)
-	      : vect_store_lanes_supported (vectype, group_size))
+	  /* First cope with the degenerate case of a single-element
+	     vector.  */
+	  if (known_eq (TYPE_VECTOR_SUBPARTS (vectype), 1U))
+	    *memory_access_type = VMAT_CONTIGUOUS;
+
+	  /* Otherwise try using LOAD/STORE_LANES.  */
+	  if (*memory_access_type == VMAT_ELEMENTWISE
+	      && (vls_type == VLS_LOAD
+		  ? vect_load_lanes_supported (vectype, group_size)
+		  : vect_store_lanes_supported (vectype, group_size)))
 	    {
 	      *memory_access_type = VMAT_LOAD_STORE_LANES;
 	      overrun_p = would_overrun_p;
