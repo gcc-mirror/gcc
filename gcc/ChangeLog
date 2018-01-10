@@ -1,3 +1,10 @@
+2018-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR debug/83765
+	* dwarf2out.c (gen_subprogram_die): Hoist old_die && declaration
+	early out so it also covers the case where we have a non-NULL
+	origin.
+
 2018-01-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83753

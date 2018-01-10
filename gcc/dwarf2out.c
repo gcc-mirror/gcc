@@ -22044,6 +22044,11 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   int declaration = (current_function_decl != decl
 		     || class_or_namespace_scope_p (context_die));
 
+  /* A declaration that has been previously dumped needs no
+     additional information.  */
+  if (old_die && declaration)
+    return;
+
   /* Now that the C++ front end lazily declares artificial member fns, we
      might need to retrofit the declaration into its class.  */
   if (!declaration && !origin && !old_die
@@ -22084,11 +22089,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
      much as possible.  */
   else if (old_die)
     {
-      /* A declaration that has been previously dumped needs no
-	 additional information.  */
-      if (declaration)
-	return;
-
       if (!get_AT_flag (old_die, DW_AT_declaration)
 	  /* We can have a normal definition following an inline one in the
 	     case of redefinition of GNU C extern inlines.
