@@ -11429,7 +11429,7 @@ rs6000_must_pass_in_stack (machine_mode mode, const_tree type)
 static inline bool
 is_complex_IBM_long_double (machine_mode mode)
 {
-  return mode == ICmode || (!TARGET_IEEEQUAD && mode == TCmode);
+  return mode == ICmode || (mode == TCmode && FLOAT128_IBM_P (TCmode));
 }
 
 /* Whether ABI_V4 passes MODE args to a function in floating point

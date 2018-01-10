@@ -437,11 +437,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    Similarly IFmode is the IBM long double format even if the default is IEEE
    128-bit.  Don't allow IFmode if -msoft-float.  */
 #define FLOAT128_IEEE_P(MODE)						\
-  ((TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
+  ((TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128				\
+    && ((MODE) == TFmode || (MODE) == TCmode))				\
    || ((MODE) == KFmode) || ((MODE) == KCmode))
 
 #define FLOAT128_IBM_P(MODE)						\
-  ((!TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
+  ((!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128				\
+    && ((MODE) == TFmode || (MODE) == TCmode))				\
    || (TARGET_HARD_FLOAT && ((MODE) == IFmode || (MODE) == ICmode)))
 
 /* Helper macros to say whether a 128-bit floating point type can go in a
