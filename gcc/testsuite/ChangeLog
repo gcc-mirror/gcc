@@ -1,3 +1,22 @@
+2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/avx2-gather-1.c: Add -march.
+	* gcc.target/i386/avx2-gather-2.c: Add -march.
+	* gcc.target/i386/avx2-gather-3.c: Add -march.
+	* gcc.target/i386/avx2-gather-4.c: Add -march.
+	* gcc.target/i386/avx2-gather-5.c: Add -march.
+	* gcc.target/i386/avx2-gather-6.c: Add -march.
+	* gcc.target/i386/avx512f-gather-1.c: Add -march.
+	* gcc.target/i386/avx512f-gather-2.c: Add -march.
+	* gcc.target/i386/avx512f-gather-3.c: Add -march.
+	* gcc.target/i386/avx512f-gather-4.c: Add -march.
+	* gcc.target/i386/avx512f-gather-5.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherd512-1.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherd512-2.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherpd512-1.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherpd512-2.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherps512-1.c: Add -march.
+
 2018-01-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/78585:
