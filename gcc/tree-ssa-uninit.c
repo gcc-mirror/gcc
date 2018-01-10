@@ -669,9 +669,16 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
 	  e = one_cd_chain[j];
 	  guard_bb = e->src;
 	  gsi = gsi_last_bb (guard_bb);
-	  /* Ignore empty BBs as they're basically forwarder blocks.  */
+	  /* Ignore empty forwarder blocks.  */
 	  if (empty_block_p (guard_bb) && single_succ_p (guard_bb))
 	    continue;
+	  /* An empty basic block here is likely a PHI, and is not one
+	     of the cases we handle below.  */
+	  if (gsi_end_p (gsi))
+	    {
+	      has_valid_pred = false;
+	      break;
+	    }
 	  cond_stmt = gsi_stmt (gsi);
 	  if (is_gimple_call (cond_stmt) && EDGE_COUNT (e->src->succs) >= 2)
 	    /* Ignore EH edge.  Can add assertion on the other edge's flag.  */

@@ -1,3 +1,9 @@
+2018-01-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/81897
+	* tree-ssa-uninit.c (convert_control_dep_chain_into_preds): Skip
+	empty blocks.
+
 2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (dwarf2out_var_location): Do not pass NULL to fprintf.
