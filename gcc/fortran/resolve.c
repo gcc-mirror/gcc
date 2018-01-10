@@ -7484,8 +7484,13 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
   if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred
       && !UNLIMITED_POLY (e))
     {
-      int cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
-				      code->ext.alloc.ts.u.cl->length);
+      int cmp;
+
+      if (!e->ts.u.cl->length)
+	goto failure;
+
+      cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
+				  code->ext.alloc.ts.u.cl->length);
       if (cmp == 1 || cmp == -1 || cmp == -3)
 	{
 	  gfc_error ("Allocating %s at %L with type-spec requires the same "
