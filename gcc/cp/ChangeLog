@@ -1,3 +1,10 @@
+2018-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82541
+	* call.c (build_conditional_expr_1): Check complain before warning.
+	* pt.c (tsubst_copy_and_build) <case COND_EXPR>: Suppress
+	-Wduplicated-branches.
+
 2018-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81327
