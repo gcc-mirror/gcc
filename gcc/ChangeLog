@@ -1,3 +1,10 @@
+2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/81616
+	* i386.c (ix86_vectorize_builtin_gather): Check TARGET_USE_GATHER.
+	* i386.h (TARGET_USE_GATHER): Define.
+	* x86-tune.def (X86_TUNE_USE_GATHER): New.
+
 2018-01-10  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/82831
