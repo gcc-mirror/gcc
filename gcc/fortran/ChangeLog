@@ -1,3 +1,9 @@
+2018-01-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/84740
+	* trans-array.c (gfc_trans_array_ctor_element): Convert RHS to the
+	LHS type when assigning.
+
 2018-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83742
