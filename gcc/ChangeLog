@@ -1,3 +1,9 @@
+2018-01-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/83629
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_2, load_toc_v4_PIC_3b,
+	load_toc_v4_PIC_3c): Wrap const term in CONST RTL.
+
 2018-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR debug/83765

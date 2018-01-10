@@ -1,3 +1,8 @@
+2018-01-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/83629
+	* gcc.target/powerpc/pr83629.c: New testcase.
+
 2018-01-10  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/78768
