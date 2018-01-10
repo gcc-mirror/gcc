@@ -123,15 +123,15 @@ func RunSchedLocalQueueEmptyTest(iters int) {
 	// can lead to underutilization (both runnable Gs and idle Ps coexist
 	// for arbitrary long time).
 	done := make(chan bool, 1)
-	p := new(p)
+	_p_ := new(p)
 	gs := make([]g, 2)
 	ready := new(uint32)
 	for i := 0; i < iters; i++ {
 		*ready = 0
 		next0 := (i & 1) == 0
 		next1 := (i & 2) == 0
-		runqput(p, &gs[0], next0)
-		go func() {
+		runqput(_p_, &gs[0], next0)
+		go func(done chan bool, p *p, ready *uint32, next0, next1 bool) {
 			for atomic.Xadd(ready, 1); atomic.Load(ready) != 2; {
 			}
 			if runqempty(p) {
@@ -139,13 +139,13 @@ func RunSchedLocalQueueEmptyTest(iters int) {
 				throw("queue is empty")
 			}
 			done <- true
-		}()
+		}(done, _p_, ready, next0, next1)
 		for atomic.Xadd(ready, 1); atomic.Load(ready) != 2; {
 		}
-		runqput(p, &gs[1], next1)
-		runqget(p)
+		runqput(_p_, &gs[1], next1)
+		runqget(_p_)
 		<-done
-		runqget(p)
+		runqget(_p_)
 	}
 }
 
