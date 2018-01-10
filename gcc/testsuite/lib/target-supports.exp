@@ -8595,6 +8595,24 @@ proc check_effective_target_logical_op_short_circuit {} {
     return 0
 }
 
+# Return 1 if the target supports -mbranch-cost=N option.
+
+proc check_effective_target_branch_cost {} {
+    if { [   istarget arm*-*-*]
+	 || [istarget avr*-*-*]
+	 || [istarget epiphany*-*-*]
+	 || [istarget frv*-*-*]
+	 || [istarget i?86-*-linux*] || [istarget x86_64-*-linux*]
+	 || [istarget mips*-*-*]
+	 || [istarget s390*-*-*]
+	 || [istarget riscv*-*-*]
+	 || [istarget sh*-*-*]
+	 || [istarget spu*-*-*] } {
+	return 1
+    }
+    return 0
+}
+
 # Record that dg-final test TEST requires convential compilation.
 
 proc force_conventional_output_for { test } {
