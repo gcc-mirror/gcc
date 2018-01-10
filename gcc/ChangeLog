@@ -1,3 +1,22 @@
+2018-01-10  Kito Cheng  <kito.cheng@gmail.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_output_return): New.
+	* config/riscv/riscv.c (struct machine_function): New naked_p field.
+	(riscv_attribute_table, riscv_output_return),
+	(riscv_handle_fndecl_attribute, riscv_naked_function_p),
+	(riscv_allocate_stack_slots_for_args, riscv_warn_func_return): New.
+	(riscv_compute_frame_info): Only compute frame->mask if not a naked
+	function.
+	(riscv_expand_prologue): Add early return for naked function.
+	(riscv_expand_epilogue): Likewise.
+	(riscv_function_ok_for_sibcall): Return false for naked function.
+	(riscv_set_current_function): New.
+	(TARGET_SET_CURRENT_FUNCTION, TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS),
+	(TARGET_ATTRIBUTE_TABLE, TARGET_WARN_FUNC_RETURN): New.
+	* config/riscv/riscv.md (simple_return): Call riscv_output_return.
+	* doc/extend.texi (RISC-V Function Attributes): New.
+
 2018-01-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (is_complex_IBM_long_double): Explicitly
