@@ -26584,11 +26584,16 @@ create_label:
 
   if (var_loc_p && flag_debug_asm)
     {
-      const char *name = NULL, *sep = " => ", *patstr = NULL;
+      const char *name, *sep, *patstr;
       if (decl && DECL_NAME (decl))
 	name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      else
+	name = "";
       if (NOTE_VAR_LOCATION_LOC (loc_note))
-	patstr = str_pattern_slim (NOTE_VAR_LOCATION_LOC (loc_note));
+	{
+	  sep = " => ";
+	  patstr = str_pattern_slim (NOTE_VAR_LOCATION_LOC (loc_note));
+	}
       else
 	{
 	  sep = " ";
