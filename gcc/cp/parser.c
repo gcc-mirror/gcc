@@ -25321,10 +25321,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       matching_parens parens;
       if (!parens.require_open (parser))
-	{
-	  cp_parser_error (parser, "expected %<(%>");
-	  return error_mark_node;
-	}
+	return error_mark_node;
 
       cp_parser_parse_tentatively (parser);
       alignas_expr = cp_parser_type_id (parser);
@@ -25354,10 +25351,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	return error_mark_node;
 
       if (!parens.require_close (parser))
-	{
-	  cp_parser_error (parser, "expected %<)%>");
-	  return error_mark_node;
-	}
+	return error_mark_node;
 
       /* Build the C++-11 representation of an 'aligned'
 	 attribute.  */

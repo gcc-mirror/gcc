@@ -1,3 +1,10 @@
+2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_std_attribute_spec): When
+        token_pair::require_open / require_close return false simply
+	return error_mark_node, avoid duplicate cp_parser_error about
+	expected '(' / ')', respectively.
+
 2018-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/43486
