@@ -1,3 +1,17 @@
+2018-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81327
+	* call.c (maybe_warn_class_memaccess): Add forward declaration.
+	Change last argument from tree * to const vec<tree, va_gc> *, adjust
+	args uses and check number of operands too.  Don't strip away any
+	nops.  Use maybe_constant_value when looking for INTEGER_CST args.
+	Deal with src argument not having pointer type.  Check
+	tree_fits_uhwi_p before calling tree_to_uhwi.  Remove useless
+	test.
+	(build_over_call): Call maybe_warn_class_memaccess here on the
+	original arguments.
+	(build_cxx_call): Rather than here on converted arguments.
+
 2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81055
