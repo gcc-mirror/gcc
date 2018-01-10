@@ -46,7 +46,11 @@ import (
 
 // C functions for thread and context management.
 func newosproc(*m)
+
+//go:noescape
 func malg(bool, bool, *unsafe.Pointer, *uintptr) *g
+
+//go:noescape
 func resetNewG(*g, *unsafe.Pointer, *uintptr)
 func gogo(*g)
 func setGContext()

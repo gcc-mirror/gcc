@@ -201,7 +201,7 @@ func deferreturn(frame *bool) {
 			// The gc compiler does this using assembler
 			// code in jmpdefer.
 			var fn func(unsafe.Pointer)
-			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 			fn(d.arg)
 		}
 
@@ -264,7 +264,7 @@ func checkdefer(frame *bool) {
 		var p _panic
 		p.isforeign = true
 		p.link = gp._panic
-		gp._panic = &p
+		gp._panic = (*_panic)(noescape(unsafe.Pointer(&p)))
 		for {
 			d := gp._defer
 			if d == nil || d.frame != frame || d.pfn == 0 {
@@ -275,7 +275,7 @@ func checkdefer(frame *bool) {
 			gp._defer = d.link
 
 			var fn func(unsafe.Pointer)
-			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+			*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 			fn(d.arg)
 
 			freedefer(d)
@@ -368,7 +368,7 @@ func Goexit() {
 		d.pfn = 0
 
 		var fn func(unsafe.Pointer)
-		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 		fn(d.arg)
 
 		if gp._defer != d {
@@ -491,7 +491,7 @@ func gopanic(e interface{}) {
 		d._panic = p
 
 		var fn func(unsafe.Pointer)
-		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(unsafe.Pointer(&pfn))
+		*(*uintptr)(unsafe.Pointer(&fn)) = uintptr(noescape(unsafe.Pointer(&pfn)))
 		fn(d.arg)
 
 		if gp._defer != d {
