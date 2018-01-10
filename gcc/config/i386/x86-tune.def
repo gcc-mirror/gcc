@@ -399,6 +399,10 @@ DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
 DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
           m_SILVERMONT | m_INTEL)
 
+/* X86_TUNE_USE_GATHER: Use gather instructions.  */
+DEF_TUNE (X86_TUNE_USE_GATHER, "use_gather",
+          ~(m_ZNVER1 | m_GENERIC))
+
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */
 /*****************************************************************************/
