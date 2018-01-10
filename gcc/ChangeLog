@@ -1,3 +1,18 @@
+2018-01-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* doc/rtl.texi: Remove documentation of (const ...) wrappers
+	for vectors, as a partial revert of r254296.
+	* rtl.h (const_vec_p): Delete.
+	(const_vec_duplicate_p): Don't test for vector CONSTs.
+	(unwrap_const_vec_duplicate, const_vec_series_p): Likewise.
+	* expmed.c (make_tree): Likewise.
+
+	Revert:
+	* common.md (E, F): Use CONSTANT_P instead of checking for
+	CONST_VECTOR.
+	* emit-rtl.c (gen_lowpart_common): Use const_vec_p instead of
+	checking for CONST_VECTOR.
+
 2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83575
