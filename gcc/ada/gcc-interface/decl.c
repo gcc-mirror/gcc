@@ -5022,9 +5022,6 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
     gnu_type = make_packable_type (gnu_type, false, max_align);
 
-  if (Has_Atomic_Components (gnat_array))
-    check_ok_for_atomic_type (gnu_type, gnat_array, true);
-
   /* Get and validate any specified Component_Size.  */
   gnu_comp_size
     = validate_size (Component_Size (gnat_array), gnu_type, gnat_array,
@@ -5070,6 +5067,9 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	create_type_decl (TYPE_NAME (gnu_type), gnu_type, true, debug_info_p,
 			  gnat_array);
     }
+
+  if (Has_Atomic_Components (gnat_array) || Is_Atomic_Or_VFA (gnat_type))
+    check_ok_for_atomic_type (gnu_type, gnat_array, true);
 
   /* If the component type is a padded type made for a non-bit-packed array
      of scalars with reverse storage order, we need to propagate the reverse
