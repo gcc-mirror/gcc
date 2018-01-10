@@ -528,6 +528,8 @@ null_ptr_cst_p (tree t)
 
   if (cxx_dialect >= cxx11)
     {
+      STRIP_ANY_LOCATION_WRAPPER (t);
+
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && !char_type_p (type)
@@ -6531,7 +6533,7 @@ static void
 conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 {
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if (expr == null_node && TREE_CODE (totype) != BOOLEAN_TYPE
+  if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
       source_location loc =
@@ -7865,7 +7867,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
              func(NULL);
            }
       */
-      if (arg == null_node
+      if (null_node_p (arg)
           && DECL_TEMPLATE_INFO (fn)
           && cand->template_decl
           && !(flags & LOOKUP_EXPLICIT_TMPL_ARGS))

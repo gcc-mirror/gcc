@@ -1,3 +1,21 @@
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* g++.dg/diagnostic/param-type-mismatch.C: Update expected results
+	to reflect that the arguments are correctly underlined.
+	* g++.dg/plugin/diagnostic-test-expressions-1.C: Add test coverage
+	for globals, params, locals and literals.
+	(test_sizeof): Directly test the location of "sizeof", rather than
+	when used in compound expressions.
+	(test_alignof): Likewise for "alignof".
+	(test_string_literals): Likewise for string literals.
+	(test_numeric_literals): Likewise for numeric literals.
+	(test_builtin_offsetof): Likewise for "__builtin_offsetof".
+	(test_typeid): Likewise for typeid.
+	(test_unary_plus): New.
+	* g++.dg/warn/Wformat-1.C: Add tests of pointer arithmetic on
+	format strings.
+
 2018-01-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr82618.c (dg-options): Add -mno-stv.

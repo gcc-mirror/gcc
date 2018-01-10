@@ -2202,6 +2202,8 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
       && !same_type_p (t, wchar_type_node))
     return 0;
 
+  STRIP_ANY_LOCATION_WRAPPER (exp);
+
   if (TREE_CODE (exp) == STRING_CST)
     {
       /* Make sure that we don't try to convert between char and wide chars.  */
@@ -4317,7 +4319,7 @@ cp_build_binary_op (location_t location,
     }
 
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if ((orig_op0 == null_node || orig_op1 == null_node)
+  if ((null_node_p (orig_op0) || null_node_p (orig_op1))
       /* It's reasonable to use pointer values as operands of &&
 	 and ||, so NULL is no exception.  */
       && code != TRUTH_ANDIF_EXPR && code != TRUTH_ORIF_EXPR 
@@ -5734,7 +5736,7 @@ build_address (tree t)
   if (error_operand_p (t) || !cxx_mark_addressable (t))
     return error_mark_node;
   gcc_checking_assert (TREE_CODE (t) != CONSTRUCTOR);
-  t = build_fold_addr_expr (t);
+  t = build_fold_addr_expr_loc (EXPR_LOCATION (t), t);
   if (TREE_CODE (t) != ADDR_EXPR)
     t = rvalue (t);
   return t;

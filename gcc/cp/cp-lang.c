@@ -247,6 +247,8 @@ run_cp_tests (void)
   c_family_tests ();
 
   /* Additional C++-specific tests.  */
+  cp_pt_c_tests ();
+  cp_tree_c_tests ();
 }
 
 } // namespace selftest

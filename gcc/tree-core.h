@@ -1116,6 +1116,9 @@ struct GTY(()) tree_base {
        SSA_NAME_IS_VIRTUAL_OPERAND in
 	   SSA_NAME
 
+       EXPR_LOCATION_WRAPPER_P in
+	   NON_LVALUE_EXPR, VIEW_CONVERT_EXPR
+
    private_flag:
 
        TREE_PRIVATE in
