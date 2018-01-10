@@ -235,12 +235,6 @@ toolexeclibgoencoding_DATA = \
 	encoding/pem.gox \
 	encoding/xml.gox
 
-toolexeclibgoexpdir = $(toolexeclibgodir)/exp
-
-toolexeclibgoexp_DATA = \
-	exp/proxy.gox \
-	exp/terminal.gox
-
 toolexeclibgogodir = $(toolexeclibgodir)/go
 
 toolexeclibgogo_DATA = \
@@ -759,8 +753,6 @@ PACKAGES = \
 	encoding/pem \
 	encoding/xml \
 	errors \
-	exp/proxy \
-	exp/terminal \
 	expvar \
 	flag \
 	fmt \
@@ -1066,7 +1058,6 @@ CHECK_DEPS = \
 	$(toolexeclibgocrypto_DATA) \
 	$(toolexeclibgodebug_DATA) \
 	$(toolexeclibgoencoding_DATA) \
-	$(toolexeclibgoexp_DATA) \
 	$(toolexeclibgogo_DATA) \
 	$(toolexeclibgohash_DATA) \
 	$(toolexeclibgoimage_DATA) \
@@ -1352,8 +1343,6 @@ TEST_PACKAGES = \
 	encoding/json/check \
 	encoding/pem/check \
 	encoding/xml/check \
-	exp/proxy/check \
-	exp/terminal/check \
 	html/template/check \
 	go/ast/check \
 	go/build/check \
