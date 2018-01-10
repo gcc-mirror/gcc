@@ -1,3 +1,26 @@
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* c-common.c: Include "selftest.h".
+	(get_atomic_generic_size): Perform the test for integral type
+	before the range test for any integer constant, fixing indentation
+	of braces.  Call fold_for_warn before testing for an INTEGER_CST.
+	(reject_gcc_builtin): Strip any location wrapper from EXPR.
+	(selftest::test_fold_for_warn): New function.
+	(selftest::c_common_c_tests): New function.
+	(selftest::c_family_tests): Call it, and
+	selftest::c_pretty_print_c_tests.
+	* c-common.h (selftest::c_pretty_print_c_tests): New decl.
+	* c-format.c (check_format_arg): Convert VAR_P check to a
+	fold_for_warn.
+	* c-pretty-print.c: Include "selftest.h".
+	(pp_c_cast_expression): Don't print casts for location wrappers.
+	(selftest::assert_c_pretty_printer_output): New function.
+	(ASSERT_C_PRETTY_PRINTER_OUTPUT): New macro.
+	(selftest::test_location_wrappers): New function.
+	(selftest::c_pretty_print_c_tests): New function.
+	* c-warn.c (warn_for_memset): Call fold_for_warn on the arguments.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

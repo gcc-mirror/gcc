@@ -1,3 +1,20 @@
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* tree-core.h: Document EXPR_LOCATION_WRAPPER_P's usage of
+	"public_flag".
+	* tree.c (tree_nop_conversion): Return true for location wrapper
+	nodes.
+	(maybe_wrap_with_location): New function.
+	(selftest::check_strip_nops): New function.
+	(selftest::test_location_wrappers): New function.
+	(selftest::tree_c_tests): Call it.
+	* tree.h (STRIP_ANY_LOCATION_WRAPPER): New macro.
+	(maybe_wrap_with_location): New decl.
+	(EXPR_LOCATION_WRAPPER_P): New macro.
+	(location_wrapper_p): New inline function.
+	(tree_strip_any_location_wrapper): New inline function.
+
 2018-01-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/83735

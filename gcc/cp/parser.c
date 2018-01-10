@@ -2047,7 +2047,8 @@ static tree cp_parser_postfix_open_square_expression
 static tree cp_parser_postfix_dot_deref_expression
   (cp_parser *, enum cpp_ttype, cp_expr, bool, cp_id_kind *, location_t);
 static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
-  (cp_parser *, int, bool, bool, bool *, location_t * = NULL);
+  (cp_parser *, int, bool, bool, bool *, location_t * = NULL,
+   bool = false);
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
 enum { non_attr = 0, normal_attr = 1, id_attr = 2 };
 static void cp_parser_pseudo_destructor_name
@@ -6620,6 +6621,16 @@ cp_parser_compound_literal_p (cp_parser *parser)
   return compound_literal_p;
 }
 
+/* Return true if EXPR is the integer constant zero or a complex constant
+   of zero, without any folding, but ignoring location wrappers.  */
+
+static bool
+literal_integer_zerop (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+  return integer_zerop (expr);
+}
+
 /* Parse a postfix-expression.
 
    postfix-expression:
@@ -6831,6 +6842,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    location_t typeid_loc
 	      = make_location (start_loc, start_loc, close_paren->location);
 	    postfix_expression.set_location (typeid_loc);
+	    postfix_expression.maybe_add_location_wrapper ();
 	  }
       }
       break;
@@ -7088,7 +7100,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    (parser, non_attr,
 		     /*cast_p=*/false, /*allow_expansion_p=*/true,
 		     /*non_constant_p=*/NULL,
-		     /*close_paren_loc=*/&close_paren_loc));
+		     /*close_paren_loc=*/&close_paren_loc,
+		     /*wrap_locations_p=*/true));
 	    if (is_builtin_constant_p)
 	      {
 		parser->integral_constant_expression_p
@@ -7164,10 +7177,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		tree arg0 = (*args)[0];
 		tree arg1 = (*args)[1];
 		tree arg2 = (*args)[2];
-		int literal_mask = ((!!integer_zerop (arg1) << 1)
-				    | (!!integer_zerop (arg2) << 2));
-		if (TREE_CODE (arg2) == CONST_DECL)
-		  arg2 = DECL_INITIAL (arg2);
+		int literal_mask = ((literal_integer_zerop (arg1) << 1)
+				    | (literal_integer_zerop (arg2) << 2));
 		warn_for_memset (input_location, arg0, arg2, literal_mask);
 	      }
 
@@ -7621,6 +7632,10 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
    ALLOW_EXPANSION_P is true if this expression allows expansion of an
    argument pack.
 
+   WRAP_LOCATIONS_P is true if expressions within this list for which
+   CAN_HAVE_LOCATION_P is false should be wrapped with nodes expressing
+   their source locations.
+
    Returns a vector of trees.  Each element is a representation of an
    assignment-expression.  NULL is returned if the ( and or ) are
    missing.  An empty, but allocated, vector is returned on no
@@ -7640,7 +7655,8 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 bool cast_p,
                                          bool allow_expansion_p,
 					 bool *non_constant_p,
-					 location_t *close_paren_loc)
+					 location_t *close_paren_loc,
+					 bool wrap_locations_p)
 {
   vec<tree, va_gc> *expression_list;
   bool fold_expr_p = is_attribute_list != non_attr;
@@ -7663,12 +7679,12 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
     = parser->greater_than_is_operator_p;
   parser->greater_than_is_operator_p = true;
 
+  cp_expr expr (NULL_TREE);
+
   /* Consume expressions until there are no more.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
     while (true)
       {
-	tree expr;
-
 	/* At the beginning of attribute lists, check to see if the
 	   next token is an identifier.  */
 	if (is_attribute_list == id_attr
@@ -7722,11 +7738,14 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
                 expr = make_pack_expansion (expr);
               }
 
+	    if (wrap_locations_p)
+	      expr.maybe_add_location_wrapper ();
+
 	     /* Add it to the list.  We add error_mark_node
 		expressions to the list, so that we can still tell if
 		the correct form for a parenthesized expression-list
 		is found. That gives better errors.  */
-	    vec_safe_push (expression_list, expr);
+	    vec_safe_push (expression_list, expr.get_value ());
 
 	    if (expr == error_mark_node)
 	      goto skip_comma;
@@ -7992,6 +8011,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    cp_expr ret_expr (ret);
 	    ret_expr.set_location (compound_loc);
+	    ret_expr = ret_expr.maybe_add_location_wrapper ();
 	    return ret_expr;
 	  }
 
@@ -9831,6 +9851,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   parser->integral_constant_expression_p = save_ice_p;
   parser->non_integral_constant_expression_p = save_non_ice_p;
 
+  expr = expr.maybe_add_location_wrapper ();
   return expr;
 }
 

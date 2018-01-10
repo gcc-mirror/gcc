@@ -577,7 +577,7 @@ build_throw (tree exp)
       return exp;
     }
 
-  if (exp == null_node)
+  if (exp && null_node_p (exp))
     warning (0, "throwing NULL, which has integral, not pointer type");
 
   if (exp != NULL_TREE)

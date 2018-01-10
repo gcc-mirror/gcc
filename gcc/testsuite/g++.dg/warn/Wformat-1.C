@@ -7,4 +7,6 @@ foo (void)
 {
   const char *const msg = "abc";
   bar (1, msg);
+  bar (1, msg + 1);
+  bar (1, 1 + msg);
 }

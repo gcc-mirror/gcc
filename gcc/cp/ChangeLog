@@ -1,3 +1,55 @@
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* call.c (null_ptr_cst_p): Strip location wrappers when
+	converting from '0' to a pointer type in C++11 onwards.
+	(conversion_null_warnings): Replace comparison with null_node with
+	call to null_node_p.
+	(build_over_call): Likewise.
+	* cp-gimplify.c (cp_fold): Remove the early bailout when
+	processing_template_decl.
+	* cp-lang.c (selftest::run_cp_tests): Call
+	selftest::cp_pt_c_tests and selftest::cp_tree_c_tests.
+	* cp-tree.h (cp_expr::maybe_add_location_wrapper): New method.
+	(selftest::run_cp_tests): Move decl to bottom of file.
+	(null_node_p): New inline function.
+	(selftest::cp_pt_c_tests): New decl.
+	(selftest::cp_tree_c_tests): New decl.
+	* cvt.c (build_expr_type_conversion): Replace comparison with
+	null_node with call to null_node_p.
+	* error.c (args_to_string): Likewise.
+	* except.c (build_throw): Likewise.
+	* mangle.c (write_expression): Skip location wrapper nodes.
+	* parser.c (literal_integer_zerop): New function.
+	(cp_parser_postfix_expression): Call maybe_add_location_wrapper on
+	the result for RID_TYPEID. Pass true for new "wrap_locations_p"
+	param of cp_parser_parenthesized_expression_list.  When calling
+	warn_for_memset, replace integer_zerop calls with
+	literal_integer_zerop, eliminating the double logical negation
+	cast to bool.  Eliminate the special-casing for CONST_DECL in
+	favor of the fold_for_warn within warn_for_memset.
+	(cp_parser_parenthesized_expression_list): Add "wrap_locations_p"
+	param, defaulting to false.  Convert "expr" to a cp_expr, and call
+	maybe_add_location_wrapper on it when wrap_locations_p is true.
+	(cp_parser_unary_expression): Call maybe_add_location_wrapper on
+	the result for RID_ALIGNOF and RID_SIZEOF.
+	(cp_parser_builtin_offsetof): Likewise.
+	* pt.c: Include "selftest.h".
+	(tsubst_copy): Handle location wrappers.
+	(tsubst_copy_and_build): Likewise.
+	(build_non_dependent_expr): Likewise.
+	(selftest::test_build_non_dependent_expr): New function.
+	(selftest::cp_pt_c_tests): New function.
+	* tree.c: Include "selftest.h".
+	(lvalue_kind): Handle VIEW_CONVERT_EXPR location wrapper nodes.
+	(selftest::test_lvalue_kind): New function.
+	(selftest::cp_tree_c_tests): New function.
+	* typeck.c (string_conv_p): Strip any location wrapper from "exp".
+	(cp_build_binary_op): Replace comparison with null_node with call
+	to null_node_p.
+	(build_address): Use location of operand when building address
+	expression.
+
 2018-01-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/82541

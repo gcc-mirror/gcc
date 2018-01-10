@@ -2064,7 +2064,7 @@ clear_fold_cache (void)
 
 /*  This function tries to fold an expression X.
     To avoid combinatorial explosion, folding results are kept in fold_cache.
-    If we are processing a template or X is invalid, we don't fold at all.
+    If X is invalid, we don't fold at all.
     For performance reasons we don't cache expressions representing a
     declaration or constant.
     Function returns X or its folded variant.  */
@@ -2081,8 +2081,7 @@ cp_fold (tree x)
   if (!x || x == error_mark_node)
     return x;
 
-  if (processing_template_decl
-      || (EXPR_P (x) && (!TREE_TYPE (x) || TREE_TYPE (x) == error_mark_node)))
+  if (EXPR_P (x) && (!TREE_TYPE (x) || TREE_TYPE (x) == error_mark_node))
     return x;
 
   /* Don't bother to cache DECLs or constants.  */

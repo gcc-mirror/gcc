@@ -1536,12 +1536,10 @@ check_format_arg (void *ctx, tree format_tree,
 
   location_t fmt_param_loc = EXPR_LOC_OR_LOC (format_tree, input_location);
 
-  if (VAR_P (format_tree))
-    {
-      /* Pull out a constant value if the front end didn't.  */
-      format_tree = decl_constant_value (format_tree);
-      STRIP_NOPS (format_tree);
-    }
+  /* Pull out a constant value if the front end didn't, and handle location
+     wrappers.  */
+  format_tree = fold_for_warn (format_tree);
+  STRIP_NOPS (format_tree);
 
   if (integer_zerop (format_tree))
     {

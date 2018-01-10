@@ -1642,7 +1642,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   tree conv = NULL_TREE;
   tree winner = NULL_TREE;
 
-  if (expr == null_node
+  if (null_node_p (expr)
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
     {

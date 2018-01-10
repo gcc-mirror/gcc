@@ -12167,6 +12167,8 @@ tree_nop_conversion (const_tree exp)
 {
   tree outer_type, inner_type;
 
+  if (location_wrapper_p (exp))
+    return true;
   if (!CONVERT_EXPR_P (exp)
       && TREE_CODE (exp) != NON_LVALUE_EXPR)
     return false;
@@ -14093,6 +14095,42 @@ set_source_range (tree expr, source_range src_range)
   return adhoc;
 }
 
+/* Return EXPR, potentially wrapped with a node expression LOC,
+   if !CAN_HAVE_LOCATION_P (expr).
+
+   NON_LVALUE_EXPR is used for wrapping constants, apart from STRING_CST.
+   VIEW_CONVERT_EXPR is used for wrapping non-constants and STRING_CST.
+
+   Wrapper nodes can be identified using location_wrapper_p.  */
+
+tree
+maybe_wrap_with_location (tree expr, location_t loc)
+{
+  if (expr == NULL)
+    return NULL;
+  if (loc == UNKNOWN_LOCATION)
+    return expr;
+  if (CAN_HAVE_LOCATION_P (expr))
+    return expr;
+  /* We should only be adding wrappers for constants and for decls,
+     or for some exceptional tree nodes (e.g. BASELINK in the C++ FE).  */
+  gcc_assert (CONSTANT_CLASS_P (expr)
+	      || DECL_P (expr)
+	      || EXCEPTIONAL_CLASS_P (expr));
+
+  /* For now, don't add wrappers to exceptional tree nodes, to minimize
+     any impact of the wrapper nodes.  */
+  if (EXCEPTIONAL_CLASS_P (expr))
+    return expr;
+
+  tree_code code = (CONSTANT_CLASS_P (expr) && TREE_CODE (expr) != STRING_CST
+		    ? NON_LVALUE_EXPR : VIEW_CONVERT_EXPR);
+  tree wrapper = build1_loc (loc, code, TREE_TYPE (expr), expr);
+  /* Mark this node as being a wrapper.  */
+  EXPR_LOCATION_WRAPPER_P (wrapper) = 1;
+  return wrapper;
+}
+
 /* Return the name of combined function FN, for debugging purposes.  */
 
 const char *
@@ -14464,6 +14502,70 @@ test_vector_cst_patterns ()
   check_vector_cst_fill (elements, build_vector (vector_type, elements), 4);
 }
 
+/* Verify that STRIP_NOPS (NODE) is EXPECTED.
+   Helper function for test_location_wrappers, to deal with STRIP_NOPS
+   modifying its argument in-place.  */
+
+static void
+check_strip_nops (tree node, tree expected)
+{
+  STRIP_NOPS (node);
+  ASSERT_EQ (expected, node);
+}
+
+/* Verify location wrappers.  */
+
+static void
+test_location_wrappers ()
+{
+  location_t loc = BUILTINS_LOCATION;
+
+  /* Wrapping a constant.  */
+  tree int_cst = build_int_cst (integer_type_node, 42);
+  ASSERT_FALSE (CAN_HAVE_LOCATION_P (int_cst));
+  ASSERT_FALSE (location_wrapper_p (int_cst));
+
+  tree wrapped_int_cst = maybe_wrap_with_location (int_cst, loc);
+  ASSERT_TRUE (location_wrapper_p (wrapped_int_cst));
+  ASSERT_EQ (loc, EXPR_LOCATION (wrapped_int_cst));
+  ASSERT_EQ (int_cst, tree_strip_any_location_wrapper (wrapped_int_cst));
+
+  /* Wrapping a STRING_CST.  */
+  tree string_cst = build_string (4, "foo");
+  ASSERT_FALSE (CAN_HAVE_LOCATION_P (string_cst));
+  ASSERT_FALSE (location_wrapper_p (string_cst));
+
+  tree wrapped_string_cst = maybe_wrap_with_location (string_cst, loc);
+  ASSERT_TRUE (location_wrapper_p (wrapped_string_cst));
+  ASSERT_EQ (VIEW_CONVERT_EXPR, TREE_CODE (wrapped_string_cst));
+  ASSERT_EQ (loc, EXPR_LOCATION (wrapped_string_cst));
+  ASSERT_EQ (string_cst, tree_strip_any_location_wrapper (wrapped_string_cst));
+
+
+  /* Wrapping a variable.  */
+  tree int_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			     get_identifier ("some_int_var"),
+			     integer_type_node);
+  ASSERT_FALSE (CAN_HAVE_LOCATION_P (int_var));
+  ASSERT_FALSE (location_wrapper_p (int_var));
+
+  tree wrapped_int_var = maybe_wrap_with_location (int_var, loc);
+  ASSERT_TRUE (location_wrapper_p (wrapped_int_var));
+  ASSERT_EQ (loc, EXPR_LOCATION (wrapped_int_var));
+  ASSERT_EQ (int_var, tree_strip_any_location_wrapper (wrapped_int_var));
+
+  /* Verify that "reinterpret_cast<int>(some_int_var)" is not a location
+     wrapper.  */
+  tree r_cast = build1 (NON_LVALUE_EXPR, integer_type_node, int_var);
+  ASSERT_FALSE (location_wrapper_p (r_cast));
+  ASSERT_EQ (r_cast, tree_strip_any_location_wrapper (r_cast));
+
+  /* Verify that STRIP_NOPS removes wrappers.  */
+  check_strip_nops (wrapped_int_cst, int_cst);
+  check_strip_nops (wrapped_string_cst, string_cst);
+  check_strip_nops (wrapped_int_var, int_var);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -14473,6 +14575,7 @@ tree_c_tests ()
   test_identifiers ();
   test_labels ();
   test_vector_cst_patterns ();
+  test_location_wrappers ();
 }
 
 } // namespace selftest
