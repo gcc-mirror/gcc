@@ -1,3 +1,12 @@
+2018-01-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/82831
+	* basic-block.h (CLEANUP_NO_PARTITIONING): New define.
+	* bb-reorder.c (pass_reorder_blocks::execute): Do not clean up
+	partitioning.
+	* cfgcleanup.c (try_optimize_cfg): Fix up partitioning if
+	CLEANUP_NO_PARTITIONING is not set.
+
 2018-01-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/rtl.texi: Remove documentation of (const ...) wrappers
