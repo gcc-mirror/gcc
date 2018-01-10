@@ -1,3 +1,25 @@
+2018-01-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_branch_cost):
+	New function.
+	* gcc.dg/builtin-bswap-7.c: Use branch_cost effective target.
+	* gcc.dg/pr21643.c: Likewise.
+	* gcc.dg/pr46309.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-11.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-2.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-32.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-33.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+
 2018-01-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/83629

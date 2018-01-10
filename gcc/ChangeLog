@@ -1,3 +1,9 @@
+2018-01-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.opt (-mbranch-cost): New option.
+	* config/arm/arm.h (BRANCH_COST): Take arm_branch_cost into
+	account.
+
 2018-01-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/83629
