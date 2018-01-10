@@ -1,3 +1,13 @@
+2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_number): Add FLOAT_P parameter.
+	Skip 'f' and 'F' characters if it is true.
+	(store_ada_macro): Minor tweak.
+	(dump_ada_macros) <CPP_COMMENT>: Likewise.
+	<CPP_WSTRING>: Likewise.
+	<CPP_STRING>: Output '&' in the buffer if not the first string.
+	<CPP_NUMBER>: Adjust calls to dump_number.
+
 2018-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/43486
