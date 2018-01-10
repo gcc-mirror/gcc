@@ -1,3 +1,9 @@
+2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83575
+	* predict.c (force_edge_cold): Handle in more sane way edges
+	with no prediction.
+
 2018-01-09  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6002/altivec.md (p8_vmrgow): Add support for V2DI, V2DF,
