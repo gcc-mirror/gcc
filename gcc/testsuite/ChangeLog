@@ -1,3 +1,7 @@
+2018-01-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr82618.c (dg-options): Add -mno-stv.
+
 2018-01-10  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	* gcc.dg/memcmp-1.c: Reduce runtime to something reasonable.
