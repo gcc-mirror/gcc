@@ -1,3 +1,10 @@
+2018-01-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/x86intrin.h: Change #warning to #error. Update message.
+	* config/rs6000/emmintrin.h: Likewise.
+	* config/rs6000/mmintrin.h: Likewise.
+	* config/rs6000/xmmintrin.h: Likewise.
+
 2018-01-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/43486
