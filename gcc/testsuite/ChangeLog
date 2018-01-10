@@ -1,3 +1,8 @@
+2018-01-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83753
+	* gcc.dg/torture/pr83753.c: New test.
+
 2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.target/i386/avx2-gather-1.c: Add -march.
