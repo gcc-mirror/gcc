@@ -60,10 +60,11 @@ func systemstack(fn func()) {
 	if gp == mp.g0 || gp == mp.gsignal {
 		fn()
 	} else if gp == mp.curg {
-		mcall(func(origg *g) {
+		fn1 := func(origg *g) {
 			fn()
 			gogo(origg)
-		})
+		}
+		mcall(*(*func(*g))(noescape(unsafe.Pointer(&fn1))))
 	} else {
 		badsystemstack()
 	}
@@ -160,6 +161,7 @@ func breakpoint()
 func asminit() {}
 
 //go:linkname reflectcall reflect.call
+//go:noescape
 func reflectcall(fntype *functype, fn *funcval, isInterface, isMethod bool, params, results *unsafe.Pointer)
 
 func procyield(cycles uint32)
@@ -355,7 +357,10 @@ func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
 func getSigtramp() uintptr
 
 // The sa_handler field is generally hidden in a union, so use C accessors.
+//go:noescape
 func getSigactionHandler(*_sigaction) uintptr
+
+//go:noescape
 func setSigactionHandler(*_sigaction, uintptr)
 
 // Retrieve fields from the siginfo_t and ucontext_t pointers passed

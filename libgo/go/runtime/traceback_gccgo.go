@@ -9,7 +9,7 @@ package runtime
 
 import (
 	"runtime/internal/sys"
-	_ "unsafe" // for go:linkname
+	"unsafe"
 )
 
 func printcreatedby(gp *g) {
@@ -46,6 +46,7 @@ type location struct {
 	lineno   int
 }
 
+//go:noescape
 //extern runtime_callers
 func c_callers(skip int32, locbuf *location, max int32, keepThunks bool) int32
 
@@ -185,7 +186,7 @@ func tracebackothers(me *g) {
 	if gp != nil && gp != me {
 		print("\n")
 		goroutineheader(gp)
-		gp.traceback = &tb
+		gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
 		getTraceback(me, gp)
 		printtrace(tb.locbuf[:tb.c], nil)
 		printcreatedby(gp)
@@ -219,7 +220,7 @@ func tracebackothers(me *g) {
 			print("\tgoroutine in C code; stack unavailable\n")
 			printcreatedby(gp)
 		} else {
-			gp.traceback = &tb
+			gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
 			getTraceback(me, gp)
 			printtrace(tb.locbuf[:tb.c], nil)
 			printcreatedby(gp)
