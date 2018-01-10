@@ -11259,7 +11259,11 @@ ix86_compute_frame_layout (void)
   /* Calculate the size of the va-arg area (not including padding, if any).  */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
 
-  if (stack_realign_fp)
+  /* Also adjust stack_realign_offset for the largest alignment of
+     stack slot actually used.  */
+  if (stack_realign_fp
+      || (cfun->machine->max_used_stack_alignment != 0
+	  && (offset % cfun->machine->max_used_stack_alignment) != 0))
     {
       /* We may need a 16-byte aligned stack for the remainder of the
 	 register save area, but the stack frame for the local function
@@ -12668,6 +12672,62 @@ output_probe_stack_range (rtx reg, rtx end)
   return "";
 }
 
+/* Return true if stack frame is required.  Update STACK_ALIGNMENT
+   to the largest alignment, in bits, of stack slot used if stack
+   frame is required and CHECK_STACK_SLOT is true.  */
+
+static bool
+ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
+				    bool check_stack_slot)
+{
+  HARD_REG_SET set_up_by_prologue, prologue_used;
+  basic_block bb;
+
+  CLEAR_HARD_REG_SET (prologue_used);
+  CLEAR_HARD_REG_SET (set_up_by_prologue);
+  add_to_hard_reg_set (&set_up_by_prologue, Pmode, STACK_POINTER_REGNUM);
+  add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
+  add_to_hard_reg_set (&set_up_by_prologue, Pmode,
+		       HARD_FRAME_POINTER_REGNUM);
+
+  /* The preferred stack alignment is the minimum stack alignment.  */
+  if (stack_alignment > crtl->preferred_stack_boundary)
+    stack_alignment = crtl->preferred_stack_boundary;
+
+  bool require_stack_frame = false;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *insn;
+      FOR_BB_INSNS (bb, insn)
+	if (NONDEBUG_INSN_P (insn)
+	    && requires_stack_frame_p (insn, prologue_used,
+				       set_up_by_prologue))
+	  {
+	    require_stack_frame = true;
+
+	    if (check_stack_slot)
+	      {
+		/* Find the maximum stack alignment.  */
+		subrtx_iterator::array_type array;
+		FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+		  if (MEM_P (*iter)
+		      && (reg_mentioned_p (stack_pointer_rtx,
+					   *iter)
+			  || reg_mentioned_p (frame_pointer_rtx,
+					      *iter)))
+		    {
+		      unsigned int alignment = MEM_ALIGN (*iter);
+		      if (alignment > stack_alignment)
+			stack_alignment = alignment;
+		    }
+	      }
+	  }
+    }
+
+  return require_stack_frame;
+}
+
 /* Finalize stack_realign_needed and frame_pointer_needed flags, which
    will guide prologue/epilogue to be generated in correct form.  */
 
@@ -12718,52 +12778,8 @@ ix86_finalize_stack_frame_flags (void)
       && ix86_nsaved_sseregs () == 0
       && ix86_varargs_gpr_size + ix86_varargs_fpr_size == 0)
     {
-      HARD_REG_SET set_up_by_prologue, prologue_used;
-      basic_block bb;
-
-      CLEAR_HARD_REG_SET (prologue_used);
-      CLEAR_HARD_REG_SET (set_up_by_prologue);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode, STACK_POINTER_REGNUM);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode,
-			   HARD_FRAME_POINTER_REGNUM);
-
-      /* The preferred stack alignment is the minimum stack alignment.  */
-      if (stack_alignment > crtl->preferred_stack_boundary)
-	stack_alignment = crtl->preferred_stack_boundary;
-
-      bool require_stack_frame = false;
-
-      FOR_EACH_BB_FN (bb, cfun)
-        {
-          rtx_insn *insn;
-	  FOR_BB_INSNS (bb, insn)
-	    if (NONDEBUG_INSN_P (insn)
-		&& requires_stack_frame_p (insn, prologue_used,
-					   set_up_by_prologue))
-	      {
-		require_stack_frame = true;
-
-		if (stack_realign)
-		  {
-		    /* Find the maximum stack alignment.  */
-		    subrtx_iterator::array_type array;
-		    FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
-		      if (MEM_P (*iter)
-			  && (reg_mentioned_p (stack_pointer_rtx,
-					       *iter)
-			      || reg_mentioned_p (frame_pointer_rtx,
-						  *iter)))
-			{
-			  unsigned int alignment = MEM_ALIGN (*iter);
-			  if (alignment > stack_alignment)
-			    stack_alignment = alignment;
-			}
-		  }
-	      }
-	}
-
-      if (require_stack_frame)
+      if (ix86_find_max_used_stack_alignment (stack_alignment,
+					      stack_realign))
 	{
 	  /* Stack frame is required.  If stack alignment needed is less
 	     than incoming stack boundary, don't realign stack.  */
@@ -12850,6 +12866,16 @@ ix86_finalize_stack_frame_flags (void)
 
 	  recompute_frame_layout_p = true;
 	}
+    }
+  else if (crtl->max_used_stack_slot_alignment
+	   > crtl->preferred_stack_boundary)
+    {
+      /* We don't need to realign stack.  But we still need to keep
+	 stack frame properly aligned to satisfy the largest alignment
+	 of stack slots.  */
+      if (ix86_find_max_used_stack_alignment (stack_alignment, true))
+	cfun->machine->max_used_stack_alignment
+	  = stack_alignment / BITS_PER_UNIT;
     }
 
   if (crtl->stack_realign_needed != stack_realign)

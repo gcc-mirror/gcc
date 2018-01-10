@@ -1,3 +1,15 @@
+2018-01-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/83735
+	* config/i386/i386.c (ix86_compute_frame_layout): Always adjust
+	stack_realign_offset for the largest alignment of stack slot
+	actually used.
+	(ix86_find_max_used_stack_alignment): New function.
+	(ix86_finalize_stack_frame_flags): Use it.  Set
+	max_used_stack_alignment if we don't realign stack.
+	* config/i386/i386.h (machine_function): Add
+	max_used_stack_alignment.
+
 2018-01-10  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm.opt (-mbranch-cost): New option.
