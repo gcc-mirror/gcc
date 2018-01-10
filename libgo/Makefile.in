@@ -131,7 +131,6 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgodatabasesqldir)" \
 	"$(DESTDIR)$(toolexeclibgodebugdir)" \
 	"$(DESTDIR)$(toolexeclibgoencodingdir)" \
-	"$(DESTDIR)$(toolexeclibgoexpdir)" \
 	"$(DESTDIR)$(toolexeclibgogodir)" \
 	"$(DESTDIR)$(toolexeclibgohashdir)" \
 	"$(DESTDIR)$(toolexeclibgohtmldir)" \
@@ -257,17 +256,16 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgocontainer_DATA) $(toolexeclibgocrypto_DATA) \
 	$(toolexeclibgocryptox509_DATA) $(toolexeclibgodatabase_DATA) \
 	$(toolexeclibgodatabasesql_DATA) $(toolexeclibgodebug_DATA) \
-	$(toolexeclibgoencoding_DATA) $(toolexeclibgoexp_DATA) \
-	$(toolexeclibgogo_DATA) $(toolexeclibgohash_DATA) \
-	$(toolexeclibgohtml_DATA) $(toolexeclibgoimage_DATA) \
-	$(toolexeclibgoimagecolor_DATA) $(toolexeclibgoindex_DATA) \
-	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
-	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
-	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
-	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoos_DATA) \
-	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
-	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA) \
+	$(toolexeclibgoencoding_DATA) $(toolexeclibgogo_DATA) \
+	$(toolexeclibgohash_DATA) $(toolexeclibgohtml_DATA) \
+	$(toolexeclibgoimage_DATA) $(toolexeclibgoimagecolor_DATA) \
+	$(toolexeclibgoindex_DATA) $(toolexeclibgoio_DATA) \
+	$(toolexeclibgolog_DATA) $(toolexeclibgomath_DATA) \
+	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
+	$(toolexeclibgonethttp_DATA) $(toolexeclibgonetrpc_DATA) \
+	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
+	$(toolexeclibgoregexp_DATA) $(toolexeclibgoruntime_DATA) \
+	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotestinginternal_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
@@ -629,11 +627,6 @@ toolexeclibgoencoding_DATA = \
 	encoding/pem.gox \
 	encoding/xml.gox
 
-toolexeclibgoexpdir = $(toolexeclibgodir)/exp
-toolexeclibgoexp_DATA = \
-	exp/proxy.gox \
-	exp/terminal.gox
-
 toolexeclibgogodir = $(toolexeclibgodir)/go
 toolexeclibgogo_DATA = \
 	go/ast.gox \
@@ -890,8 +883,6 @@ PACKAGES = \
 	encoding/pem \
 	encoding/xml \
 	errors \
-	exp/proxy \
-	exp/terminal \
 	expvar \
 	flag \
 	fmt \
@@ -1176,18 +1167,17 @@ CHECK = \
 CHECK_DEPS = $(toolexeclibgo_DATA) $(toolexeclibgoarchive_DATA) \
 	$(toolexeclibgocompress_DATA) $(toolexeclibgocontainer_DATA) \
 	$(toolexeclibgocrypto_DATA) $(toolexeclibgodebug_DATA) \
-	$(toolexeclibgoencoding_DATA) $(toolexeclibgoexp_DATA) \
-	$(toolexeclibgogo_DATA) $(toolexeclibgohash_DATA) \
-	$(toolexeclibgoimage_DATA) $(toolexeclibgoindex_DATA) \
-	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
-	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
-	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
-	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
-	$(toolexeclibgorpc_DATA) $(toolexeclibgoruntime_DATA) \
-	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
-	$(toolexeclibgotext_DATA) $(toolexeclibgotexttemplate_DATA) \
-	$(toolexeclibgounicode_DATA) $(noinst_LIBRARIES) \
-	$(am__append_3) $(am__append_4)
+	$(toolexeclibgoencoding_DATA) $(toolexeclibgogo_DATA) \
+	$(toolexeclibgohash_DATA) $(toolexeclibgoimage_DATA) \
+	$(toolexeclibgoindex_DATA) $(toolexeclibgoio_DATA) \
+	$(toolexeclibgolog_DATA) $(toolexeclibgomath_DATA) \
+	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
+	$(toolexeclibgonethttp_DATA) $(toolexeclibgoos_DATA) \
+	$(toolexeclibgopath_DATA) $(toolexeclibgorpc_DATA) \
+	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
+	$(toolexeclibgotesting_DATA) $(toolexeclibgotext_DATA) \
+	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgounicode_DATA) \
+	$(noinst_LIBRARIES) $(am__append_3) $(am__append_4)
 
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.
@@ -1334,8 +1324,6 @@ TEST_PACKAGES = \
 	encoding/json/check \
 	encoding/pem/check \
 	encoding/xml/check \
-	exp/proxy/check \
-	exp/terminal/check \
 	html/template/check \
 	go/ast/check \
 	go/build/check \
@@ -2210,27 +2198,6 @@ uninstall-toolexeclibgoencodingDATA:
 	@list='$(toolexeclibgoencoding_DATA)'; test -n "$(toolexeclibgoencodingdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgoencodingdir)'; $(am__uninstall_files_from_dir)
-install-toolexeclibgoexpDATA: $(toolexeclibgoexp_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(toolexeclibgoexp_DATA)'; test -n "$(toolexeclibgoexpdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgoexpdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgoexpdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgoexpdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgoexpdir)" || exit $$?; \
-	done
-
-uninstall-toolexeclibgoexpDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclibgoexp_DATA)'; test -n "$(toolexeclibgoexpdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(toolexeclibgoexpdir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgogoDATA: $(toolexeclibgogo_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgogo_DATA)'; test -n "$(toolexeclibgogodir)" || list=; \
@@ -2855,7 +2822,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) all-multi $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgoexpdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2931,9 +2898,9 @@ install-exec-am: install-multi install-toolexeclibLIBRARIES \
 	install-toolexeclibgodatabaseDATA \
 	install-toolexeclibgodatabasesqlDATA \
 	install-toolexeclibgodebugDATA \
-	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
-	install-toolexeclibgogoDATA install-toolexeclibgohashDATA \
-	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
+	install-toolexeclibgoencodingDATA install-toolexeclibgogoDATA \
+	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
+	install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
@@ -2999,8 +2966,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodatabasesqlDATA \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
-	uninstall-toolexeclibgoexpDATA uninstall-toolexeclibgogoDATA \
-	uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
@@ -3046,9 +3012,9 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgodatabaseDATA \
 	install-toolexeclibgodatabasesqlDATA \
 	install-toolexeclibgodebugDATA \
-	install-toolexeclibgoencodingDATA install-toolexeclibgoexpDATA \
-	install-toolexeclibgogoDATA install-toolexeclibgohashDATA \
-	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
+	install-toolexeclibgoencodingDATA install-toolexeclibgogoDATA \
+	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
+	install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA install-toolexeclibgoioDATA \
 	install-toolexeclibgologDATA install-toolexeclibgomathDATA \
@@ -3078,8 +3044,7 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodatabasesqlDATA \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
-	uninstall-toolexeclibgoexpDATA uninstall-toolexeclibgogoDATA \
-	uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
