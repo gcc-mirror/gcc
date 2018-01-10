@@ -375,9 +375,15 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 		}
 	}
 
-	ldflags = append(ldflags, "-Wl,--whole-archive")
+	wholeArchive := []string{"-Wl,--whole-archive"}
+	noWholeArchive := []string{"-Wl,--no-whole-archive"}
+	if cfg.Goos == "aix" {
+		wholeArchive = nil
+		noWholeArchive = nil
+	}
+	ldflags = append(ldflags, wholeArchive...)
 	ldflags = append(ldflags, afiles...)
-	ldflags = append(ldflags, "-Wl,--no-whole-archive")
+	ldflags = append(ldflags, noWholeArchive...)
 
 	ldflags = append(ldflags, cgoldflags...)
 	ldflags = append(ldflags, envList("CGO_LDFLAGS", "")...)
@@ -385,7 +391,9 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 		ldflags = append(ldflags, root.Package.CgoLDFLAGS...)
 	}
 
-	ldflags = str.StringList("-Wl,-(", ldflags, "-Wl,-)")
+	if cfg.Goos != "aix" {
+		ldflags = str.StringList("-Wl,-(", ldflags, "-Wl,-)")
+	}
 
 	if root.buildID != "" {
 		// On systems that normally use gold or the GNU linker,
@@ -396,17 +404,24 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 		}
 	}
 
+	var rLibPath string
+	if cfg.Goos == "aix" {
+		rLibPath = "-Wl,-blibpath="
+	} else {
+		rLibPath = "-Wl,-rpath="
+	}
 	for _, shlib := range shlibs {
 		ldflags = append(
 			ldflags,
 			"-L"+filepath.Dir(shlib),
-			"-Wl,-rpath="+filepath.Dir(shlib),
+			rLibPath+filepath.Dir(shlib),
 			"-l"+strings.TrimSuffix(
 				strings.TrimPrefix(filepath.Base(shlib), "lib"),
 				".so"))
 	}
 
 	var realOut string
+	goLibBegin := str.StringList(wholeArchive, "-lgolibbegin", noWholeArchive)
 	switch buildmode {
 	case "exe":
 		if usesCgo && cfg.Goos == "linux" {
@@ -428,7 +443,8 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 		// split-stack and non-split-stack code in a single -r
 		// link, and libgo picks up non-split-stack code from
 		// libffi.
-		ldflags = append(ldflags, "-Wl,-r", "-nostdlib", "-Wl,--whole-archive", "-lgolibbegin", "-Wl,--no-whole-archive")
+		ldflags = append(ldflags, "-Wl,-r", "-nostdlib")
+		ldflags = append(ldflags, goLibBegin...)
 
 		if nopie := b.gccNoPie([]string{tools.linker()}); nopie != "" {
 			ldflags = append(ldflags, nopie)
@@ -443,7 +459,9 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 		out = out + ".o"
 
 	case "c-shared":
-		ldflags = append(ldflags, "-shared", "-nostdlib", "-Wl,--whole-archive", "-lgolibbegin", "-Wl,--no-whole-archive", "-lgo", "-lgcc_s", "-lgcc", "-lc", "-lgcc")
+		ldflags = append(ldflags, "-shared", "-nostdlib")
+		ldflags = append(ldflags, goLibBegin...)
+		ldflags = append(ldflags, "-lgo", "-lgcc_s", "-lgcc", "-lc", "-lgcc")
 	case "shared":
 		ldflags = append(ldflags, "-zdefs", "-shared", "-nostdlib", "-lgo", "-lgcc_s", "-lgcc", "-lc")
 
