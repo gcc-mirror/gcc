@@ -1,5 +1,21 @@
 2018-01-10  Peter Bergner  <bergner@vnet.ibm.com>
 
+	PR target/83399
+	* config/rs6000/rs6000.c (print_operand) <'y'>: Use
+	VECTOR_MEM_ALTIVEC_OR_VSX_P.
+	* config/rs6000/vsx.md (*vsx_le_perm_load_<mode> for VSX_D): Use
+	indexed_or_indirect_operand predicate.
+	(*vsx_le_perm_load_<mode> for VSX_W): Likewise.
+	(*vsx_le_perm_load_v8hi): Likewise.
+	(*vsx_le_perm_load_v16qi): Likewise.
+	(*vsx_le_perm_store_<mode> for VSX_D): Likewise.
+	(*vsx_le_perm_store_<mode> for VSX_W): Likewise.
+	(*vsx_le_perm_store_v8hi): Likewise.
+	(*vsx_le_perm_store_v16qi): Likewise.
+	(eight unnamed splitters): Likewise.
+
+2018-01-10  Peter Bergner  <bergner@vnet.ibm.com>
+
 	* config/rs6000/x86intrin.h: Change #warning to #error. Update message.
 	* config/rs6000/emmintrin.h: Likewise.
 	* config/rs6000/mmintrin.h: Likewise.
