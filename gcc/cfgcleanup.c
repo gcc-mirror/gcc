@@ -3012,7 +3012,8 @@ try_optimize_cfg (int mode)
                  to detect and fix during edge forwarding, and in some cases
                  is only visible after newly unreachable blocks are deleted,
                  which will be done in fixup_partitions.  */
-	      fixup_partitions ();
+	      if ((mode & CLEANUP_NO_PARTITIONING) == 0)
+		fixup_partitions ();
 	      checking_verify_flow_info ();
             }
 
