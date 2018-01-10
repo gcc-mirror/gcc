@@ -621,6 +621,9 @@ c_strlen (tree src, int only_value)
 	  return NULL_TREE;
 	}
 
+      if (!maxelts)
+	return ssize_int (0);
+
       /* We don't know the starting offset, but we do know that the string
 	 has no internal zero bytes.  We can assume that the offset falls
 	 within the bounds of the string; otherwise, the programmer deserves
@@ -651,7 +654,8 @@ c_strlen (tree src, int only_value)
       if (only_value != 2
 	  && !TREE_NO_WARNING (src))
         {
-	  warning_at (loc, 0, "offset %qwi outside bounds of constant string",
+	  warning_at (loc, OPT_Warray_bounds,
+		      "offset %qwi outside bounds of constant string",
 		      eltoff);
           TREE_NO_WARNING (src) = 1;
         }
