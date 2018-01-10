@@ -473,9 +473,7 @@ extern void typedmemmove(const Type *, void *, const void *)
   __asm__ (GOSYM_PREFIX "runtime.typedmemmove");
 extern void setncpu(int32)
   __asm__(GOSYM_PREFIX "runtime.setncpu");
-extern P** runtime_getAllP()
-  __asm__ (GOSYM_PREFIX "runtime.getAllP");
-extern Sched* runtime_getsched()
+extern Sched* runtime_getsched(void)
   __asm__ (GOSYM_PREFIX "runtime.getsched");
 extern void setpagesize(uintptr_t)
   __asm__(GOSYM_PREFIX "runtime.setpagesize");

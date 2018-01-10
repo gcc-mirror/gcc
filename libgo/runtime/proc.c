@@ -369,8 +369,6 @@ runtime_mcall(FuncVal *fv)
 //
 // Design doc at http://golang.org/s/go11sched.
 
-extern bool* runtime_getCgoHasExtraM()
-  __asm__ (GOSYM_PREFIX "runtime.getCgoHasExtraM");
 extern G* allocg(void)
   __asm__ (GOSYM_PREFIX "runtime.allocg");
 
@@ -560,7 +558,7 @@ void setGContext(void) __asm__ (GOSYM_PREFIX "runtime.setGContext");
 
 // setGContext sets up a new goroutine context for the current g.
 void
-setGContext()
+setGContext(void)
 {
 	int val;
 	G *gp;
