@@ -1,3 +1,28 @@
+2018-01-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/forward_list.h
+	(_Fwd_list_node_base(_Fwd_list_node_base&&)): New.
+	(_Fwd_list_node_base& operator=(_Fwd_list_node_base&&)): New.
+	(_Fwd_list_node_base(const _Fwd_list_node_base&)): Explicit delete.
+	(_Fwd_list_node_base& operator=(const _Fwd_list_node_base&)): Likewise.
+	(_Fwd_list_impl()): Add noexcept qualification.
+	(_Fwd_list_impl(const _Node_alloc_type&)): Delete.
+	(_Fwd_list_impl(_Fwd_list_impl&&)): New, default.
+	(_Fwd_list_impl(_Fwd_list_impl&&, _Node_alloc_type&&)): New.
+	(_Fwd_list_base()): Default.
+	(_Fwd_list_base(_Fwd_list_base&&, _Node_alloc_type&&, true_type)): New.
+	(_Fwd_list_base(_Fwd_list_base&&)): Default.
+	(forward_list<>()): Default.
+	(forward_list<>(forward_list&&)): Default.
+	(forward_list(forward_list&&, _Node_alloc_type&&, false_type)): New.
+	(forward_list(forward_list&&, _Node_alloc_type&&, true_type)): New.
+	(forward_list(forward_list&&, const _Alloc&)): Adapt to use latters.
+	* include/bits/forward_list.tcc
+	(_Fwd_list_base(_Fwd_list_base&&, _Node_alloc_type&&)): Adapt to use
+	_M_impl._M_head move assignment.
+	(forward_list<>::merge(forward_list<>&&, _Comp)): Likewise.
+	* testsuite/23_containers/forward_list/allocator/default_init.cc: New.
+
 2018-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80276
