@@ -1,6 +1,11 @@
 2018-01-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
-	PR fortran/84740
+	PR fortran/83740
+	* trans-array.c (gfc_trans_array_ctor_element): Fix formatting.
+
+2018-01-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/83740
 	* trans-array.c (gfc_trans_array_ctor_element): Convert RHS to the
 	LHS type when assigning.
 

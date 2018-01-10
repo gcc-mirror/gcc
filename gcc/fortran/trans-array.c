@@ -1563,18 +1563,18 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 	    {
 	      gfc_add_modify (&se->pre, first_len_val,
 			      fold_convert (TREE_TYPE (first_len_val),
-						       se->string_length));
+					    se->string_length));
 	      first_len = false;
 	    }
 	  else
 	    {
 	      /* Verify that all constructor elements are of the same
 		 length.  */
+	      tree rhs = fold_convert (TREE_TYPE (first_len_val),
+				       se->string_length);
 	      tree cond = fold_build2_loc (input_location, NE_EXPR,
 					   logical_type_node, first_len_val,
-					   fold_convert (TREE_TYPE
-							 (first_len_val),
-							 se->string_length));
+					   rhs);
 	      gfc_trans_runtime_check
 		(true, false, cond, &se->pre, &expr->where,
 		 "Different CHARACTER lengths (%ld/%ld) in array constructor",
