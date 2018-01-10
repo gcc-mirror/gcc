@@ -1,3 +1,10 @@
+2018-01-10  Steven G. Kargl  <kargl@kgcc.gnu.org>
+
+	Backport r254555 from trunk
+	PR Fortran/82841
+	* simplify.c(gfc_simplify_transfer): Do not dereference a NULL pointer.
+	Unwrap a short line.
+
 2018-01-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR Fortran/83679
