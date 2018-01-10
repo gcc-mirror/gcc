@@ -11458,10 +11458,17 @@ resolve_charlen (gfc_charlen *cl)
 	  specification_expr = saved_specification_expr;
 	  return false;
 	}
+
+      /* cl->length has been resolved.  It should have an integer type.  */
+      if (cl->length && cl->length->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("Scalar INTEGER expression expected at %L",
+		     &cl->length->where);
+	  return false;
+	}
     }
   else
     {
-
       if (!resolve_index_expr (cl->length))
 	{
 	  specification_expr = saved_specification_expr;
