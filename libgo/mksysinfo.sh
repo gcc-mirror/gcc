@@ -443,6 +443,12 @@ grep '^type _tms ' gen-sysinfo.go | \
       -e 's/tms_cstime/Cstime/' \
     >> ${OUT}
 
+# AIX uses st_timespec struct for stat.
+grep '^type _st_timespec ' gen-sysinfo.go | \
+    sed -e 's/type _st_timespec /type StTimespec /' \
+      -e 's/tv_sec/Sec/' \
+      -e 's/tv_nsec/Nsec/' >> ${OUT}
+
 # The stat type.
 # Prefer largefile variant if available.
 stat=`grep '^type _stat64 ' gen-sysinfo.go || true`
@@ -467,7 +473,7 @@ fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/st_ctim/Ctim/' \
          -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
-         -e 's/\([^a-zA-Z0-9_]\)_st_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
+         -e 's/\([^a-zA-Z0-9_]\)_st_timespec_t\([^a-zA-Z0-9_]\)/\1StTimespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
          -e 's/Godump_[0-9] struct { \([^;]*;\) };/\1/g' \
