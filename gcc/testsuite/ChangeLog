@@ -1,3 +1,9 @@
+2018-01-10  Steven G. Kargl  <kargl@kgcc.gnu.org>
+
+	Backport r254555 from trunk
+	PR Fortran/82841
+	* gfortran.dg/transfer_simplify_11.f90: New test.
+
 2018-01-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
