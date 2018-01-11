@@ -1,3 +1,10 @@
+2018-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82682
+	* ree.c (combine_reaching_defs): Optimize also
+	reg2=exp; reg1=reg2; reg2=any_extend(reg1); into
+	reg2=any_extend(exp); reg1=reg2;, formatting fix.
+
 2018-01-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83189
