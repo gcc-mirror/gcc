@@ -32,22 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "common/common-target.h"
 
-/* Various flags to control the mangling process.  */
-
-enum mangling_flags
-{
-  /* No flags.  */
-  mf_none = 0,
-  /* The thing we are presently mangling is part of a template type,
-     rather than a fully instantiated type.  Therefore, we may see
-     complex expressions where we would normally expect to see a
-     simple integer constant.  */
-  mf_maybe_uninstantiated = 1,
-  /* When mangling a numeric value, use the form `_XX_' (instead of
-     just `XX') if the value has more than one digit.  */
-  mf_use_underscores_around_value = 2
-};
-
 static void do_build_copy_assign (tree);
 static void do_build_copy_constructor (tree);
 static tree make_alias_for_thunk (tree);
