@@ -3013,8 +3013,10 @@ try_optimize_cfg (int mode)
                  is only visible after newly unreachable blocks are deleted,
                  which will be done in fixup_partitions.  */
 	      if ((mode & CLEANUP_NO_PARTITIONING) == 0)
-		fixup_partitions ();
-	      checking_verify_flow_info ();
+		{
+		  fixup_partitions ();
+	          checking_verify_flow_info ();
+		}
             }
 
 	  changed_overall |= changed;

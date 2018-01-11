@@ -1,3 +1,12 @@
+2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83575
+	* cfgrtl.c (rtl_verify_edges): Only verify fixability of partition
+	when in layout mode.
+	(cfg_layout_finalize): Do not verify cfg before we are out of layout.
+	* cfgcleanup.c (try_optimize_cfg): Only verify flow info when doing
+	partition fixup.
+
 2018-01-10  Michael Collison  <michael.collison@arm.com>
 
 	* config/aarch64/aarch64-modes.def (V2HF): New VECTOR_MODE.

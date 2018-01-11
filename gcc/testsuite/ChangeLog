@@ -1,3 +1,7 @@
+2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/pr83575.c: New testcase.
+
 2018-01-10  Michael Collison  <michael.collison@arm.com>
 
 	gcc.target/aarch64/fp16_fmul_high_1.c: New testcase.
