@@ -1,3 +1,38 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Convert_Aggr_In_Object_Decl): Update the call to
+	Establish_Transient_Scope.
+	(Convert_To_Assignments): Update the call to Establish_Transient_Scope.
+	(Expand_Array_Aggregate): Update the call to Establish_Transient_Scope.
+	* exp_ch6.adb (Expand_Call_Helper): Update the call to
+	Establish_Transient_Scope.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Update the call to
+	Establish_Transient_Scope.
+	* exp_ch7.adb (Establish_Transient_Scope): Restructured. Delegate the
+	management of the secondary stack to an enclosing scope if there is no
+	suitable construct to wrap, and the transient scope was intended to
+	manage the secondary stack.
+	(Find_Node_To_Be_Wrapped): Restructured. A case_statement_alternative
+	is a valid boundary for a transient expression which comes from the
+	statements of the alternative, otherwise alternatives cannot be
+	wrapped. Assignments of controlled objects which have controlled
+	actions suppressed now stop the traversal as there is no point in
+	looking for an enclosing construct. Add several N_xxx_Body choices to
+	the termination conditions for completeness.
+	* exp_ch7.ads (Establish_Transient_Scope): Update the parameter profile
+	and the associated comment on usage.
+	* exp_smem.adb (Add_Shared_Var_Lock_Procs): Update the call to
+	Establish_Transient_Scope.
+	(Add_Write_After): Update the call to Establish_Transient_Scope.
+	* sem_res.adb (Check_Initialization_Call): Removed.
+	(Resolve_Actuals): Account for additional cases where finalization
+	actions are required by utilizing predicate Needs_Finalization rather
+	than Is_Controlled.
+	(Resolve_Call): Type initialization procedures can now utilize
+	transient scopes to manage the secondary stack, thus preventing leaks
+	during initialization.  Remove the previous kludgy algorithm which
+	attempts to manage the secondary stack at the object creation site.
+
 2018-01-11  Jerome Lambourg  <lambourg@adacore.com>
 
 	* libgnat/g-soliop__qnx.ads: New.

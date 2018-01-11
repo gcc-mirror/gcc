@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4092,15 +4092,16 @@ package body Exp_Aggr is
         and then Ekind (Current_Scope) /= E_Return_Statement
         and then not Is_Limited_Type (Typ)
       then
-         Establish_Transient_Scope (Aggr, Sec_Stack => False);
+         Establish_Transient_Scope (Aggr, Manage_Sec_Stack => False);
       end if;
 
       declare
-         Node_After   : constant Node_Id := Next (N);
+         Node_After : constant Node_Id := Next (N);
       begin
          Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
          Collect_Initialization_Statements (Obj, N, Node_After);
       end;
+
       Set_No_Initialization (N);
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;
@@ -4228,7 +4229,7 @@ package body Exp_Aggr is
       --  Should the condition be more restrictive ???
 
       if Requires_Transient_Scope (Typ) and then not Inside_Init_Proc then
-         Establish_Transient_Scope (N, Sec_Stack => False);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       --  If the aggregate is nonlimited, create a temporary. If it is limited
@@ -6161,7 +6162,7 @@ package body Exp_Aggr is
       --  for default initialization, e.g. with Initialize_Scalars.
 
       if Requires_Transient_Scope (Typ) then
-         Establish_Transient_Scope (N, Sec_Stack => False);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       if Has_Default_Init_Comps (N) then
@@ -6292,15 +6293,15 @@ package body Exp_Aggr is
          Set_No_Initialization (Tmp_Decl, True);
 
          --  If we are within a loop, the temporary will be pushed on the
-         --  stack at each iteration. If the aggregate is the expression for an
-         --  allocator, it will be immediately copied to the heap and can
-         --  be reclaimed at once. We create a transient scope around the
-         --  aggregate for this purpose.
+         --  stack at each iteration. If the aggregate is the expression
+         --  for an allocator, it will be immediately copied to the heap
+         --  and can be reclaimed at once. We create a transient scope
+         --  around the aggregate for this purpose.
 
          if Ekind (Current_Scope) = E_Loop
            and then Nkind (Parent (Parent (N))) = N_Allocator
          then
-            Establish_Transient_Scope (N, Sec_Stack => False);
+            Establish_Transient_Scope (N, Manage_Sec_Stack => False);
          end if;
 
          Insert_Action (N, Tmp_Decl);

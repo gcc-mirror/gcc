@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -207,7 +207,7 @@ package body Exp_Smem is
 
       else
          Insert_Action (N, Vde);
-         Establish_Transient_Scope (N, Sec_Stack => False);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       --  Mark object as locked in the current (transient) scope
@@ -255,13 +255,15 @@ package body Exp_Smem is
    ---------------------
 
    procedure Add_Write_After (N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Entity_Id  := Entity (N);
+      Loc : constant Source_Ptr := Sloc (N);
       Par : constant Node_Id    := Insert_Node;
+
    begin
       if Present (Shared_Var_Procs_Instance (Ent)) then
          if Nkind (Insert_Node) = N_Function_Call then
-            Establish_Transient_Scope (Insert_Node, Sec_Stack => False);
+            Establish_Transient_Scope (Insert_Node, Manage_Sec_Stack => False);
+
             Store_After_Actions_In_Scope (New_List (
               Build_Shared_Var_Proc_Call (Loc, Ent, Name_Write)));
          else
