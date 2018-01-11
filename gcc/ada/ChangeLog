@@ -1,3 +1,10 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Predicate): Indicate that the type
+	has a delayed aspect which must be processed at the point the type is
+	frozen. This mimics what is done when the predicate is provided by a
+	source aspect.
+
 2018-01-11  Doug Rupp  <rupp@adacore.com>
 
 	* init.c (vxworks): Add macro checks for __aarch64__.
