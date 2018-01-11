@@ -1,3 +1,9 @@
+2018-01-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-direio.ads, libgnat/a-sequio.ads, libgnat/a-ststio.ads,
+	libgnat/a-textio.ads, libgnat/a-witeio.ads, libgnat/a-ztexio.ads
+	(File_Type): Add Default_Initial_Condition aspect.
+
 2018-01-11  Pascal Obry  <obry@adacore.com>
 
 	* libgnat/s-os_lib.adb (Normalize_Pathname): New implementation.
