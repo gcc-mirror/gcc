@@ -1,3 +1,17 @@
+2018-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83203
+	* config/i386/i386.c (ix86_expand_vector_init_one_nonzero): If one_var
+	is 0, for V{8,16}S[IF] and V[48]D[IF]mode use gen_vec_set<mode>_0.
+	* config/i386/sse.md (VI8_AVX_AVX512F, VI4F_256_512): New mode
+	iterators.
+	(ssescalarmodesuffix): Add 512-bit vectors.  Use "d" or "q" for
+	integral modes instead of "ss" and "sd".
+	(vec_set<mode>_0): New define_insns for 256-bit and 512-bit
+	vectors with 32-bit and 64-bit elements.
+	(vecdupssescalarmodesuffix): New mode attribute.
+	(vec_dup<mode>): Use it.
+
 2018-01-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/83330

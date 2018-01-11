@@ -41767,6 +41767,7 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
   rtx new_target;
   rtx x, tmp;
   bool use_vector_set = false;
+  rtx (*gen_vec_set_0) (rtx, rtx, rtx) = NULL;
 
   switch (mode)
     {
@@ -41791,14 +41792,41 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       break;
     case E_V32QImode:
     case E_V16HImode:
+      use_vector_set = TARGET_AVX;
+      break;
     case E_V8SImode:
+      use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = gen_vec_setv8si_0;
+      break;
     case E_V8SFmode:
+      use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = gen_vec_setv8sf_0;
+      break;
     case E_V4DFmode:
       use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = gen_vec_setv4df_0;
       break;
     case E_V4DImode:
       /* Use ix86_expand_vector_set in 64bit mode only.  */
       use_vector_set = TARGET_AVX && TARGET_64BIT;
+      gen_vec_set_0 = gen_vec_setv4di_0;
+      break;
+    case E_V16SImode:
+      use_vector_set = TARGET_AVX512F && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv16si_0;
+      break;
+    case E_V16SFmode:
+      use_vector_set = TARGET_AVX512F && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv16sf_0;
+      break;
+    case E_V8DFmode:
+      use_vector_set = TARGET_AVX512F && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv8df_0;
+      break;
+    case E_V8DImode:
+      /* Use ix86_expand_vector_set in 64bit mode only.  */
+      use_vector_set = TARGET_AVX512F && TARGET_64BIT && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv8di_0;
       break;
     default:
       break;
@@ -41806,6 +41834,12 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
 
   if (use_vector_set)
     {
+      if (gen_vec_set_0 && one_var == 0)
+	{
+	  var = force_reg (GET_MODE_INNER (mode), var);
+	  emit_insn (gen_vec_set_0 (target, CONST0_RTX (mode), var));
+	  return true;
+	}
       emit_insn (gen_rtx_SET (target, CONST0_RTX (mode)));
       var = force_reg (GET_MODE_INNER (mode), var);
       ix86_expand_vector_set (mmx_ok, target, var, one_var);
