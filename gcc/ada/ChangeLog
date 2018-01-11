@@ -1,3 +1,8 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* binde.adb, par-ch6.adb, par-ch9.adb, sem_ch12.adb, sem_ch13.adb:
+	Minor reformatting.
+
 2018-01-11  Justin Squirek  <squirek@adacore.com>
 
 	* par-ch6.adb (Scan_Body_Or_Expression_Function): Add additional check

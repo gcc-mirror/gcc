@@ -873,6 +873,7 @@ package body Ch6 is
                     New_Node
                       (N_Expression_Function, Sloc (Specification_Node));
                   Set_Specification (Body_Node, Specification_Node);
+
                   declare
                      Expr : constant Node_Id := P_Expression;
                   begin
@@ -888,8 +889,9 @@ package body Ch6 is
                                                       N_Extension_Aggregate,
                                                       N_Quantified_Expression))
                      then
-                        Error_Msg ("expression function must be enclosed "
-                          & "in parentheses", Sloc (Expr));
+                        Error_Msg
+                          ("expression function must be enclosed in "
+                           & "parentheses", Sloc (Expr));
                      end if;
                   end;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -787,8 +787,7 @@ package body Ch9 is
    --  Start of processing for P_Protected_Operation_Declaration_Opt
 
    begin
-      --  This loop runs more than once only when a junk declaration
-      --  is skipped.
+      --  This loop runs more than once only when a junk declaration is skipped
 
       loop
          case Token is
@@ -796,7 +795,9 @@ package body Ch9 is
                Result := P_Pragma;
                exit;
 
-            when Tok_Not | Tok_Overriding =>
+            when Tok_Not
+               | Tok_Overriding
+            =>
                Result := P_Entry_Or_Subprogram_With_Indicator;
                exit;
 
@@ -804,7 +805,9 @@ package body Ch9 is
                Result := P_Entry_Declaration;
                exit;
 
-            when Tok_Function | Tok_Procedure =>
+            when Tok_Function
+               | Tok_Procedure
+            =>
                Result := P_Subprogram (Pf_Decl_Pexp);
                exit;
 
@@ -846,7 +849,7 @@ package body Ch9 is
 
       if Nkind (Result) = N_Subprogram_Declaration
         and then Nkind (Specification (Result)) =
-                 N_Procedure_Specification
+                   N_Procedure_Specification
         and then Null_Present (Specification (Result))
       then
          Error_Msg_N
