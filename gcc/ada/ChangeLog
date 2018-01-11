@@ -1,3 +1,9 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Replace_Type_Ref): Handle properly reference to a
+	subcomponent of the current entity when building the body for a dynamic
+	predicate function for a record with composite subcomponents.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb (Convert_Aggr_In_Object_Decl): Update the call to

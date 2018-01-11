@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -12684,17 +12684,26 @@ package body Sem_Ch13 is
                return Skip;
             end if;
 
-         --  Case of selected component (which is what a qualification looks
-         --  like in the unanalyzed tree, which is what we have.
+         --  Case of selected component, which may be a subcomponent of the
+         --  current instance, or an expanded name which is still unanalyzed.
 
          elsif Nkind (N) = N_Selected_Component then
 
             --  If selector name is not our type, keep going (we might still
             --  have an occurrence of the type in the prefix).
+            --  If it is a subcomponent of the current entity, add prefix.
 
             if Nkind (Selector_Name (N)) /= N_Identifier
               or else Chars (Selector_Name (N)) /= TName
             then
+               if Nkind (Prefix (N)) = N_Identifier then
+                  Comp := Visible_Component (Chars (Prefix (N)));
+
+                  if Present (Comp) then
+                     Add_Prefix (Prefix (N), Comp);
+                  end if;
+               end if;
+
                return OK;
 
             --  Selector name is our type, check qualification
