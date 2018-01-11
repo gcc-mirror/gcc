@@ -1680,14 +1680,6 @@ package body Sinfo is
       return Flag16 (N);
    end Implicit_With;
 
-   function Implicit_With_From_Instantiation
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_With_Clause);
-      return Flag12 (N);
-   end Implicit_With_From_Instantiation;
-
    function Interface_List
       (N : Node_Id) return List_Id is
    begin
@@ -2765,6 +2757,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Renaming_Declaration);
       return Node4 (N);
    end Parent_Spec;
+
+   function Parent_With
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_With_Clause);
+      return Flag1 (N);
+   end Parent_With;
 
    function Position
       (N : Node_Id) return Node_Id is
@@ -5147,14 +5147,6 @@ package body Sinfo is
       Set_Flag16 (N, Val);
    end Set_Implicit_With;
 
-   procedure Set_Implicit_With_From_Instantiation
-      (N : Node_Id; Val : Boolean := True) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_With_Clause);
-      Set_Flag12 (N, Val);
-   end Set_Implicit_With_From_Instantiation;
-
    procedure Set_Interface_List
       (N : Node_Id; Val : List_Id) is
    begin
@@ -6232,6 +6224,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Renaming_Declaration);
       Set_Node4 (N, Val); -- semantic field, no parent set
    end Set_Parent_Spec;
+
+   procedure Set_Parent_With
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_With_Clause);
+      Set_Flag1 (N, Val);
+   end Set_Parent_With;
 
    procedure Set_Position
       (N : Node_Id; Val : Node_Id) is

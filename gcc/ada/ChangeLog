@@ -1,5 +1,44 @@
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* ali.adb: Document the remaining letters available for ALI lines.
+	(Scan_ALI): A with clause is internal when it is encoded on a 'Z' line.
+	* ali.ads: Update type With_Record. Field
+	Implicit_With_From_Instantiation is no longer in use. Add field
+	Implicit_With.
+	* csinfo.adb (CSinfo): Remove the setup for attribute
+	Implicit_With_From_Instantiation.
+	* lib-writ.adb (Collect_Withs): Correct the logic which marks a unit as
+	either implicitly or explicitly withed.
+	(Is_Implicit_With_Clause): New routine.
+	(Write_ALI): Rename array Implicit_With to Has_Implicit_With to avoid
+	confusion with the with clause attribute by the same name.
+	(Write_With_Lines): Update the emission of 'W', 'Y', and 'Z' headers.
+	* rtsfind.adb (Maybe_Add_With): Code cleanup.
+	* sem_ch8.adb (Present_System_Aux): Code cleanup.
+	* sem_ch10.adb (Expand_With_Clause): Mark the with clause as generated
+	for a parent unit.
+	(Implicit_With_On_Parent): Mark the with clause as generated for a
+	parent unit.
+	* sem_ch12.adb (Inherit_Context): With clauses inherited by an
+	instantiation are no longer marked as Implicit_With_From_Instantiation
+	because they are already marked as implicit.
+	* sem_elab.adb (Ensure_Prior_Elaboration_Static): Remove the kludge
+	which marks implicit with clauses as related to an instantiation.
+	* sinfo.adb (Implicit_With_From_Instantiation): Removed.
+	(Parent_With): New routine.
+	(Set_Implicit_With_From_Instantiation): Removed.
+	(Set_Parent_With): New routine.
+	* sinfo.ads: Update the documentation of attribute Implicit_With.
+	Remove attribute Implicit_With_From_Instantiation along with
+	occurrences in nodes.  Add attribute Parent_With along with occurrences
+	in nodes.
+	(Implicit_With_From_Instantiation): Removed along with pragma Inline.
+	(Parent_With): New routine along with pragma Inline.
+	(Set_Implicit_With_From_Instantiation): Removed along with pragma Inline.
+	(Set_Parent_With): New routine along with pragma Inline.
+
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_util.adb (Find_Enclosing_Scope): Return the unique defining
 	entity when the enclosing construct is a body.
 

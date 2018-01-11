@@ -35,9 +35,11 @@ package body ALI is
    use ASCII;
    --  Make control characters visible
 
-   --  The following variable records which characters currently are
-   --  used as line type markers in the ALI file. This is used in
-   --  Scan_ALI to detect (or skip) invalid lines.
+   --  The following variable records which characters currently are used as
+   --  line type markers in the ALI file. This is used in Scan_ALI to detect
+   --  (or skip) invalid lines. The following letters are still available:
+   --
+   --    B G H J K O Q Z
 
    Known_ALI_Lines : constant array (Character range 'A' .. 'Z') of Boolean :=
      ('V'    => True,   -- version
@@ -2028,8 +2030,7 @@ package body ALI is
                Withs.Table (Withs.Last).Elab_All_Desirable := False;
                Withs.Table (Withs.Last).SAL_Interface      := False;
                Withs.Table (Withs.Last).Limited_With       := (C = 'Y');
-               Withs.Table (Withs.Last).Implicit_With_From_Instantiation
-                                                           := (C = 'Z');
+               Withs.Table (Withs.Last).Implicit_With      := (C = 'Z');
 
                --  Generic case with no object file available
 

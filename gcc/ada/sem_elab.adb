@@ -3585,16 +3585,6 @@ package body Sem_Elab is
          Set_Implicit_With (Clause);
          Set_Library_Unit  (Clause, Unit_Cunit);
 
-         --  The following is a kludge to satisfy a GPRbuild requirement. In
-         --  general, internal with clauses should be encoded on a 'Z' line in
-         --  ALI files, but due to an old bug, they are encoded as source with
-         --  clauses on a 'W' line. As a result, these "semi-implicit" clauses
-         --  introduce spurious build dependencies in GPRbuild. The only way to
-         --  eliminate this effect is to mark the implicit clauses as generated
-         --  for an instantiation.
-
-         Set_Implicit_With_From_Instantiation (Clause);
-
          Append_To (Items, Clause);
       end if;
 
@@ -11717,7 +11707,7 @@ package body Sem_Elab is
 
       begin
          Set_Library_Unit  (CW, Library_Unit (Itm));
-         Set_Implicit_With (CW, True);
+         Set_Implicit_With (CW);
 
          --  Set elaborate all desirable on copy and then append the copy to
          --  the list of body with's and we are done.
