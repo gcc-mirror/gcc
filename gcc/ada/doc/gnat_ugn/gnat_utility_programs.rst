@@ -1401,9 +1401,8 @@ Alternatively, you may run the script using the following command line:
          Several such switches may be specified simultaneously.
 
      :switch:`--ignore={filename}`
-        Do not process the sources listed in a specified file. This option cannot
-        be used in incremental mode.
-
+         Do not process the sources listed in a specified file. This option cannot
+         be used in incremental mode.
 
      :switch:`-q`
          Quiet
@@ -2763,7 +2762,6 @@ Alternatively, you may run the script using the following command line:
   :switch:`--ignore={filename}`
     Do not process the sources listed in a specified file.
 
-
   .. index:: -j (gnatmetric)
 
   :switch:`-j{n}`
@@ -3477,12 +3475,11 @@ Alternatively, you may run the script using the following command line:
      Several such switches may be specified simultaneously.
 
 
-  .. index:: --ignore (gnatpp)
+   .. index:: --ignore (gnatpp)
 
-  :switch:`--ignore={filename}`
-    Do not process the sources listed in a specified file. This option cannot
-    be used in incremental mode.
-
+   :switch:`--ignore={filename}`
+     Do not process the sources listed in a specified file. This option cannot
+     be used in incremental mode.
 
    .. index:: -j (gnatpp)
 
