@@ -166,6 +166,7 @@ procedure Gnat1drv is
       if Generate_C_Code then
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
+         Building_Static_Dispatch_Tables := False;
          Minimize_Expression_With_Actions := True;
          Expand_Nonbinary_Modular_Ops := True;
 

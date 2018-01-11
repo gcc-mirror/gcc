@@ -1,3 +1,11 @@
+2018-01-11  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): No action done for functions
+	returning class-wide types since it requires generating code using
+	'reference and the CCG target has no secondary stack.
+	* gnat1drv.adb: Disable building static dispatch tables when generating
+	C code.
+
 2018-01-11  Piotr Trojanek  <trojanek@adacore.com>
 
 	* libgnat/a-direio.ads, libgnat/a-sequio.ads, libgnat/a-ststio.ads,
