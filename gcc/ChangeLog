@@ -1,5 +1,10 @@
 2018-01-11  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR middle-end/83189
+	* gimple-ssa-isolate-paths.c (isolate_path): Fix profile update.
+
+2018-01-11  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR middle-end/83718
 	* tree-inline.c (copy_cfg_body): Adjust num&den for scaling
 	after they are computed.
