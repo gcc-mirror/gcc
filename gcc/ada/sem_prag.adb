@@ -18297,7 +18297,7 @@ package body Sem_Prag is
             Variant := First (Pragma_Argument_Associations (N));
             while Present (Variant) loop
                if Chars (Variant) = No_Name then
-                  Error_Pragma_Arg ("expect name `Increases`", Variant);
+                  Error_Pragma_Arg_Ident ("expect name `Increases`", Variant);
 
                elsif not Nam_In (Chars (Variant), Name_Decreases,
                                                   Name_Increases)

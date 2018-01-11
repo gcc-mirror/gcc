@@ -1,3 +1,8 @@
+2018-01-11  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma:Pragma_Loop_Variant): Modify error
+	message to be printed on the pragma argument identifier.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb (Build_Invariant_Procedure_Declaration): Set the last

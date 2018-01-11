@@ -1,3 +1,7 @@
+2018-01-11  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/loopvar.adb: New testcase.
+
 2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83189
