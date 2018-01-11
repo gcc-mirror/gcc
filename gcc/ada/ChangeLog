@@ -1,3 +1,9 @@
+2018-01-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Is_Null_Range): Retrieve the full view when called on a
+	private (sub)type; refactor to avoid early return statement.
+	(Not_Null_Range): Same as above.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Ensure that a Ghost type is not
