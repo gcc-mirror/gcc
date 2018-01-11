@@ -9118,6 +9118,7 @@ package body Sem_Ch8 is
    -----------------------------
 
    procedure Update_Use_Clause_Chain is
+
       procedure Update_Chain_In_Scope (Level : Int);
       --  Iterate through one level in the scope stack verifying each use-type
       --  clause within said level is used then reset the Current_Use_Clause
@@ -9161,7 +9162,7 @@ package body Sem_Ch8 is
                if Nkind (Curr) = N_Use_Package_Clause then
 
                   --  Renamings and formal subprograms may cause the associated
-                  --  to be marked as effective instead of the original.
+                  --  node to be marked as effective instead of the original.
 
                   if not (Present (Associated_Node (N))
                            and then Present
