@@ -3466,6 +3466,7 @@ package body Exp_Util is
       Set_Scope (Obj_Id, Proc_Id);
 
       Set_First_Entity (Proc_Id, Obj_Id);
+      Set_Last_Entity  (Proc_Id, Obj_Id);
 
       --  Generate:
       --    procedure <Work_Typ>[Partial_]Invariant (_object : <Obj_Typ>);
