@@ -148,6 +148,14 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_V8_3       (1 << 10)  /* Has ARMv8.3-A features.  */
 #define AARCH64_FL_RCPC       (1 << 11)  /* Has support for RCpc model.  */
 #define AARCH64_FL_DOTPROD    (1 << 12)  /* Has ARMv8.2-A Dot Product ins.  */
+/* New flags to split crypto into aes and sha2.  */
+#define AARCH64_FL_AES	      (1 << 13)  /* Has Crypto AES.  */
+#define AARCH64_FL_SHA2	      (1 << 14)  /* Has Crypto SHA2.  */
+/* ARMv8.4-A architecture extensions.  */
+#define AARCH64_FL_V8_4	      (1 << 15)  /* Has ARMv8.4-A features.  */
+#define AARCH64_FL_SM4	      (1 << 16)  /* Has ARMv8.4-A SM3 and SM4.  */
+#define AARCH64_FL_SHA3	      (1 << 17)  /* Has ARMv8.4-a SHA3 and SHA512.  */
+#define AARCH64_FL_F16FML     (1 << 18)  /* Has ARMv8.4-a FP16 extensions.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -164,6 +172,8 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_V8_2)
 #define AARCH64_FL_FOR_ARCH8_3			\
   (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
+#define AARCH64_FL_FOR_ARCH8_4			\
+  (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML)
 
 /* Macros to test ISA flags.  */
 
@@ -177,9 +187,30 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F16		   (aarch64_isa_flags & AARCH64_FL_F16)
 #define AARCH64_ISA_V8_3	   (aarch64_isa_flags & AARCH64_FL_V8_3)
 #define AARCH64_ISA_DOTPROD	   (aarch64_isa_flags & AARCH64_FL_DOTPROD)
+#define AARCH64_ISA_AES	           (aarch64_isa_flags & AARCH64_FL_AES)
+#define AARCH64_ISA_SHA2	   (aarch64_isa_flags & AARCH64_FL_SHA2)
+#define AARCH64_ISA_V8_4	   (aarch64_isa_flags & AARCH64_FL_V8_4)
+#define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
+#define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
+#define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
+
+/* SHA2 is an optional extension to AdvSIMD.  */
+#define TARGET_SHA2 ((TARGET_SIMD && AARCH64_ISA_SHA2) || TARGET_CRYPTO)
+
+/* SHA3 is an optional extension to AdvSIMD.  */
+#define TARGET_SHA3 (TARGET_SIMD && AARCH64_ISA_SHA3)
+
+/* AES is an optional extension to AdvSIMD.  */
+#define TARGET_AES ((TARGET_SIMD && AARCH64_ISA_AES) || TARGET_CRYPTO)
+
+/* SM is an optional extension to AdvSIMD.  */
+#define TARGET_SM4 (TARGET_SIMD && AARCH64_ISA_SM4)
+
+/* FP16FML is an optional extension to AdvSIMD.  */
+#define TARGET_F16FML (TARGET_SIMD && AARCH64_ISA_F16FML && TARGET_FP_F16INST)
 
 /* CRC instructions that can be enabled through +crc arch extension.  */
 #define TARGET_CRC32 (AARCH64_ISA_CRC)

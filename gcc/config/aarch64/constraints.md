@@ -139,11 +139,23 @@
   A constraint that matches the immediate constant +1."
   (match_test "op == const1_rtx"))
 
+(define_constraint "Ui2"
+  "@internal
+  A constraint that matches the integers 0...3."
+  (and (match_code "const_int")
+       (match_test "(unsigned HOST_WIDE_INT) ival <= 3")))
+
 (define_constraint "Ui3"
   "@internal
   A constraint that matches the integers 0...4."
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT) ival <= 4")))
+
+(define_constraint "Ui7"
+  "@internal
+  A constraint that matches the integers 0...7."
+  (and (match_code "const_int")
+       (match_test "(unsigned HOST_WIDE_INT) ival <= 7")))
 
 (define_constraint "Up3"
   "@internal

@@ -164,6 +164,12 @@ aarch64_types_ternopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_unsigned };
 #define TYPES_TERNOPU (aarch64_types_ternopu_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_immediate };
+#define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
+
 
 static enum aarch64_type_qualifiers
 aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -175,6 +181,12 @@ aarch64_types_quadopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_lane_index };
 #define TYPES_QUADOPU_LANE (aarch64_types_quadopu_lane_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_quadopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_immediate };
+#define TYPES_QUADOPUI (aarch64_types_quadopu_imm_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_binop_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]

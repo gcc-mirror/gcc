@@ -361,6 +361,23 @@
     UNSPEC_FMINNM       ; Used in aarch64-simd.md.
     UNSPEC_SDOT		; Used in aarch64-simd.md.
     UNSPEC_UDOT		; Used in aarch64-simd.md.
+    UNSPEC_SM3SS1	; Used in aarch64-simd.md.
+    UNSPEC_SM3TT1A	; Used in aarch64-simd.md.
+    UNSPEC_SM3TT1B	; Used in aarch64-simd.md.
+    UNSPEC_SM3TT2A	; Used in aarch64-simd.md.
+    UNSPEC_SM3TT2B	; Used in aarch64-simd.md.
+    UNSPEC_SM3PARTW1	; Used in aarch64-simd.md.
+    UNSPEC_SM3PARTW2	; Used in aarch64-simd.md.
+    UNSPEC_SM4E		; Used in aarch64-simd.md.
+    UNSPEC_SM4EKEY	; Used in aarch64-simd.md.
+    UNSPEC_SHA512H      ; Used in aarch64-simd.md.
+    UNSPEC_SHA512H2     ; Used in aarch64-simd.md.
+    UNSPEC_SHA512SU0    ; Used in aarch64-simd.md.
+    UNSPEC_SHA512SU1    ; Used in aarch64-simd.md.
+    UNSPEC_FMLAL	; Used in aarch64-simd.md.
+    UNSPEC_FMLSL	; Used in aarch64-simd.md.
+    UNSPEC_FMLAL2	; Used in aarch64-simd.md.
+    UNSPEC_FMLSL2	; Used in aarch64-simd.md.
 ])
 
 ;; ------------------------------------------------------------------
@@ -843,6 +860,15 @@
 ;; No need of iterator for -fPIC as it use got_lo12 for both modes.
 (define_mode_attr got_modifier [(SI "gotpage_lo14") (DI "gotpage_lo15")])
 
+;; Width of 2nd and 3rd arguments to fp16 vector multiply add/sub
+(define_mode_attr VFMLA_W [(V2SF "V4HF") (V4SF "V8HF")])
+
+(define_mode_attr VFMLA_SEL_W [(V2SF "V2HF") (V4SF "V4HF")])
+
+(define_mode_attr f16quad [(V2SF "") (V4SF "q")])
+
+(define_code_attr f16mac [(plus "a") (minus "s")])
+
 ;; -------------------------------------------------------------------
 ;; Code Iterators
 ;; -------------------------------------------------------------------
@@ -1140,6 +1166,19 @@
 
 (define_int_iterator CRYPTO_SHA256 [UNSPEC_SHA256H UNSPEC_SHA256H2])
 
+(define_int_iterator CRYPTO_SHA512 [UNSPEC_SHA512H UNSPEC_SHA512H2])
+
+(define_int_iterator CRYPTO_SM3TT [UNSPEC_SM3TT1A UNSPEC_SM3TT1B
+				   UNSPEC_SM3TT2A UNSPEC_SM3TT2B])
+
+(define_int_iterator CRYPTO_SM3PART [UNSPEC_SM3PARTW1 UNSPEC_SM3PARTW2])
+
+;; Iterators for fp16 operations
+
+(define_int_iterator VFMLA16_LOW [UNSPEC_FMLAL UNSPEC_FMLSL])
+
+(define_int_iterator VFMLA16_HIGH [UNSPEC_FMLAL2 UNSPEC_FMLSL2])
+
 ;; Iterators for atomic operations.
 
 (define_int_iterator ATOMIC_LDOP
@@ -1312,3 +1351,13 @@
 (define_int_attr sha256_op [(UNSPEC_SHA256H "") (UNSPEC_SHA256H2 "2")])
 
 (define_int_attr rdma_as [(UNSPEC_SQRDMLAH "a") (UNSPEC_SQRDMLSH "s")])
+
+(define_int_attr sha512_op [(UNSPEC_SHA512H "") (UNSPEC_SHA512H2 "2")])
+
+(define_int_attr sm3tt_op [(UNSPEC_SM3TT1A "1a") (UNSPEC_SM3TT1B "1b")
+			   (UNSPEC_SM3TT2A "2a") (UNSPEC_SM3TT2B "2b")])
+
+(define_int_attr sm3part_op [(UNSPEC_SM3PARTW1 "1") (UNSPEC_SM3PARTW2 "2")])
+
+(define_int_attr f16mac1 [(UNSPEC_FMLAL "a") (UNSPEC_FMLSL "s")
+			  (UNSPEC_FMLAL2 "a") (UNSPEC_FMLSL2 "s")])

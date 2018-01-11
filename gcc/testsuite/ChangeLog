@@ -1,3 +1,37 @@
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	gcc.target/aarch64/fp16_fmul_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_high_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_high_3.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_high.h: New shared testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high.h: New shared testcase.
+	gcc.target/aarch64/fp16_fmul_low_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_low_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_low_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_low.h: New sharedtestcase.
+	gcc.target/aarch64/fp16_fmul_lane_low_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_low_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_low_3.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_low.h: New shared testcase.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	gcc.target/aarch64/sha2.h: New shared testcase.
+	gcc.target/aarch64/sha2_1.c: New testcase.
+	gcc.target/aarch64/sha2_2.c: New testcase.
+	gcc.target/aarch64/sha2_3.c: New testcase.
+	gcc.target/aarch64/sha3.h: New shared testcase.
+	gcc.target/aarch64/sha3_1.c: New testcase.
+	gcc.target/aarch64/sha3_2.c: New testcase.
+	gcc.target/aarch64/sha3_3.c: New testcase.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	gcc.target/aarch64/sm3_sm4.c: New testcase.
+
 2018-01-10  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83781

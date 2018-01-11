@@ -137,6 +137,14 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_CRYPTO, "__ARM_FEATURE_CRYPTO", pfile);
   aarch64_def_or_undef (TARGET_SIMD_RDMA, "__ARM_FEATURE_QRDMX", pfile);
 
+  aarch64_def_or_undef (TARGET_AES, "__ARM_FEATURE_AES", pfile);
+  aarch64_def_or_undef (TARGET_SHA2, "__ARM_FEATURE_SHA2", pfile);
+  aarch64_def_or_undef (TARGET_SHA3, "__ARM_FEATURE_SHA3", pfile);
+  aarch64_def_or_undef (TARGET_SHA3, "__ARM_FEATURE_SHA512", pfile);
+  aarch64_def_or_undef (TARGET_SM4, "__ARM_FEATURE_SM3", pfile);
+  aarch64_def_or_undef (TARGET_SM4, "__ARM_FEATURE_SM4", pfile);
+  aarch64_def_or_undef (TARGET_F16FML, "__ARM_FEATURE_FP16_FML", pfile);
+
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
      16-bit floating-point extensions.  */
