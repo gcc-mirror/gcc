@@ -901,7 +901,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
                                  REGNO (SET_DEST (pat)));
       emit_move_insn (new_dst, new_src);
 
-      rtx_insn *insn = get_insns();
+      rtx_insn *insn = get_insns ();
       end_sequence ();
       if (NEXT_INSN (insn))
 	return false;
@@ -910,8 +910,81 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
       extract_insn (insn);
       if (!constrain_operands (1, get_preferred_alternatives (insn, bb)))
 	return false;
-    }
 
+      while (REG_P (SET_SRC (*dest_sub_rtx))
+	     && (REGNO (SET_SRC (*dest_sub_rtx)) == REGNO (SET_DEST (pat))))
+	{
+	  /* Considering transformation of
+	     (set (reg2) (expression))
+	     ...
+	     (set (reg1) (reg2))
+	     ...
+	     (set (reg2) (any_extend (reg1)))
+
+	     into
+
+	     (set (reg2) (any_extend (expression)))
+	     (set (reg1) (reg2))
+	     ...  */
+	  struct df_link *defs
+	    = get_defs (def_insn, SET_SRC (*dest_sub_rtx), NULL);
+	  if (defs == NULL || defs->next)
+	    break;
+
+	  /* There is only one reaching def.  */
+	  rtx_insn *def_insn2 = DF_REF_INSN (defs->ref);
+
+	  /* The defining statement must not have been modified either.  */
+	  if (state->modified[INSN_UID (def_insn2)].kind != EXT_MODIFIED_NONE)
+	    break;
+
+	  /* The def_insn2 and candidate insn must be in the same
+	     block and def_insn follows def_insn2.  */
+	  if (bb != BLOCK_FOR_INSN (def_insn2)
+	      || DF_INSN_LUID (def_insn2) > DF_INSN_LUID (def_insn))
+	    break;
+
+	  rtx *dest_sub_rtx2 = get_sub_rtx (def_insn2);
+	  if (dest_sub_rtx2 == NULL
+	      || !REG_P (SET_DEST (*dest_sub_rtx2)))
+	    break;
+
+	  /* On RISC machines we must make sure that changing the mode of
+	     SRC_REG as destination register will not affect its reaching
+	     uses, which may read its value in a larger mode because DEF_INSN
+	     implicitly sets it in word mode.  */
+	  if (WORD_REGISTER_OPERATIONS && known_lt (prec, BITS_PER_WORD))
+	    {
+	      struct df_link *uses = get_uses (def_insn2, SET_DEST (pat));
+	      if (!uses)
+		break;
+
+	      df_link *use;
+	      rtx dest2 = SET_DEST (*dest_sub_rtx2);
+	      for (use = uses; use; use = use->next)
+		if (paradoxical_subreg_p (GET_MODE (*DF_REF_LOC (use->ref)),
+					  GET_MODE (dest2)))
+		  break;
+	      if (use)
+		break;
+	    }
+
+	  /* The destination register of the extension insn must not be
+	     used or set between the def_insn2 and def_insn exclusive.
+	     Likewise for the other reg, i.e. check both reg1 and reg2
+	     in the above comment.  */
+	  if (reg_used_between_p (SET_DEST (PATTERN (cand->insn)),
+				  def_insn2, def_insn)
+	      || reg_set_between_p (SET_DEST (PATTERN (cand->insn)),
+				    def_insn2, def_insn)
+	      || reg_used_between_p (src_reg, def_insn2, def_insn)
+	      || reg_set_between_p (src_reg, def_insn2, def_insn))
+	    break;
+
+	  state->defs_list[0] = def_insn2;
+	  break;
+	}
+    }
 
   /* If cand->insn has been already modified, update cand->mode to a wider
      mode if possible, or punt.  */
