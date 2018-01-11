@@ -193,7 +193,7 @@ package Namet is
    --  The special Name_Id value No_Name is used in the parser to indicate
    --  a situation where no name is present (e.g. on a loop or block).
 
-   Error_Name : constant Name_Id := Names_Low_Bound +  1;
+   Error_Name : constant Name_Id := Names_Low_Bound + 1;
    --  The special Name_Id value Error_Name is used in the parser to
    --  indicate that some kind of error was encountered in scanning out
    --  the relevant name, so it does not have a representable label.
