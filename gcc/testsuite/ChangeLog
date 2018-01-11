@@ -1,3 +1,13 @@
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add combination tests for fp16fml.
+	* gcc.target/arm/simd/fp16fml_high.c: New test.
+	* gcc.target/arm/simd/fp16fml_low.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16fml_neon_ok_nocache,
+	check_effective_target_arm_fp16fml_neon_ok,
+	add_options_for_arm_fp16fml_neon): New procedures.
+
 2017-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/multilib.exp: Add some -march=armv8.4-a

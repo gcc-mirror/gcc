@@ -1,3 +1,40 @@
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cpus.in (fp16fml): New feature.
+	(ALL_SIMD): Add fp16fml.
+	(armv8.2-a): Add fp16fml as an option.
+	(armv8.3-a): Likewise.
+	(armv8.4-a): Add fp16fml as part of fp16.
+	* config/arm/arm.h (TARGET_FP16FML): Define.
+	* config/arm/arm-c.c (arm_cpu_builtins): Define __ARM_FEATURE_FP16_FML
+	when appropriate.
+	* config/arm/arm-modes.def (V2HF): Define.
+	* config/arm/arm_neon.h (vfmlal_low_u32, vfmlsl_low_u32,
+	vfmlal_high_u32, vfmlsl_high_u32, vfmlalq_low_u32,
+	vfmlslq_low_u32, vfmlalq_high_u32, vfmlslq_high_u32): Define.
+	* config/arm/arm_neon_builtins.def (vfmal_low, vfmal_high,
+	vfmsl_low, vfmsl_high): New set of builtins.
+	* config/arm/iterators.md (PLUSMINUS): New code iterator.
+	(vfml_op): New code attribute.
+	(VFMLHALVES): New int iterator.
+	(VFML, VFMLSEL): New mode attributes.
+	(V_reg): Define mapping for V2HF.
+	(V_hi, V_lo): New mode attributes.
+	(VF_constraint): Likewise.
+	(vfml_half, vfml_half_selector): New int attributes.
+	* config/arm/neon.md (neon_vfm<vfml_op>l_<vfml_half><mode>): New
+	define_expand.
+	(vfmal_low<mode>_intrinsic, vfmsl_high<mode>_intrinsic,
+	vfmal_high<mode>_intrinsic, vfmsl_low<mode>_intrinsic):
+	New define_insn.
+	* config/arm/t-arm-elf (v8_fps): Add fp16fml.
+	* config/arm/t-multilib (v8_2_a_simd_variants): Add fp16fml.
+	* config/arm/unspecs.md (UNSPEC_VFML_LO, UNSPEC_VFML_HI): New unspecs.
+	* doc/invoke.texi (ARM Options): Document fp16fml.  Update armv8.4-a
+	documentation.
+	* doc/sourcebuild.texi (arm_fp16fml_neon_ok, arm_fp16fml_neon):
+	Document new effective target and option set.
+
 2017-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cpus.in (armv8_4): New feature.

@@ -165,6 +165,9 @@ define feature fp16
 # Dot Product instructions extension to ARMv8.2-a.
 define feature dotprod
 
+# Half-precision floating-point instructions in ARMv8.4-A.
+define feature fp16fml
+
 # ISA Quirks (errata?).  Don't forget to add this to the fgroup
 # ALL_QUIRKS below.
 
@@ -202,7 +205,7 @@ define fgroup ALL_CRYPTO	crypto
 # strip off 32 D-registers, but does not remove support for
 # double-precision FP.
 define fgroup ALL_SIMD_INTERNAL	fp_d32 neon ALL_CRYPTO
-define fgroup ALL_SIMD	ALL_SIMD_INTERNAL dotprod
+define fgroup ALL_SIMD	ALL_SIMD_INTERNAL dotprod fp16fml
 
 # List of all FPU bits to strip out if -mfpu is used to override the
 # default.  fp16 is deliberately missing from this list.
@@ -581,6 +584,7 @@ begin arch armv8.2-a
  isa ARMv8_2a
  option simd add FP_ARMv8 NEON
  option fp16 add fp16 FP_ARMv8 NEON
+ option fp16fml add fp16fml fp16 FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
@@ -595,6 +599,7 @@ begin arch armv8.3-a
  isa ARMv8_3a
  option simd add FP_ARMv8 NEON
  option fp16 add fp16 FP_ARMv8 NEON
+ option fp16fml add fp16fml fp16 FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
@@ -608,7 +613,7 @@ begin arch armv8.4-a
  profile A
  isa ARMv8_4a
  option simd add FP_ARMv8 DOTPROD
- option fp16 add fp16 FP_ARMv8 DOTPROD
+ option fp16 add fp16 fp16fml FP_ARMv8 DOTPROD
  option crypto add FP_ARMv8 CRYPTO DOTPROD
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
