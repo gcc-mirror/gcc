@@ -8359,15 +8359,15 @@ package body Sem_Ch13 is
    -- Build_Predicate_Functions --
    -------------------------------
 
-   --  The procedures that are constructed here have the form:
+   --  The functions that are constructed here have the form:
 
    --    function typPredicate (Ixxx : typ) return Boolean is
    --    begin
    --       return
    --          typ1Predicate (typ1 (Ixxx))
    --          and then typ2Predicate (typ2 (Ixxx))
-   --          and then ...;
-   --          exp1 and then exp2 and then ...
+   --          and then ...
+   --          and then exp1 and then exp2 and then ...;
    --    end typPredicate;
 
    --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that

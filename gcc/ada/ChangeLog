@@ -1,3 +1,8 @@
+2018-01-11  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): Fix minor issues in
+	comment.
+
 2018-01-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* einfo.ads, einfo.adb (Activation_Record_Component,
