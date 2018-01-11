@@ -1360,9 +1360,16 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	    {
 	      tree type = TREE_TYPE (TREE_OPERAND (arg, 0));
 
+	      /* Determine the "innermost" array type.  */
 	      while (TREE_CODE (type) == ARRAY_TYPE
 		     && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
 		type = TREE_TYPE (type);
+
+	      /* Avoid arrays of pointers.  */
+	      tree eltype = TREE_TYPE (type);
+	      if (TREE_CODE (type) != ARRAY_TYPE
+		  || !INTEGRAL_TYPE_P (eltype))
+		return false;
 
 	      val = TYPE_SIZE_UNIT (type);
 	      if (!val || integer_zerop (val))
