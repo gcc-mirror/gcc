@@ -1,3 +1,11 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Fixed_Point_Type): Do not apply check if the
+	formsl type corresponding to the actual fixed point type is private,
+	because in this case there can be no suspicious arithmetic operations
+	in the generic unless they reference a formal subprogram.  Clarify
+	warning.
+
 2018-01-11  Javier Miranda  <miranda@adacore.com>
 
 	* exp_util.adb (Remove_Side_Effects): No action done for functions

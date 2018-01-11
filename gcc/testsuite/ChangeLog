@@ -1,3 +1,7 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/fixedpnt2.adb, gnat.dg/fixedpnt2.ads: New testcase.
+
 2018-01-11  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/loopvar.adb: New testcase.
