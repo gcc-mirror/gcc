@@ -1,3 +1,9 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Add_Failure_Expression): New routine.
+	(Make_Predicate_Check): Reimplement the handling of Predicate_Failure.
+	* sem_util.adb (Is_Current_Instance): Code cleanup.
+
 2018-01-11  Patrick Bernardi  <bernardi@adacore.com>
 
 	* libgnat/s-parame*.adb, libgnat/s-parame*.ads: Remove unneeded
