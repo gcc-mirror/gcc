@@ -1,5 +1,9 @@
 2018-01-11  Ben Brosgol  <brosgol@adacore.com>
 
+	* doc/Makefile: Add Sphinx option -W to treat warnings as errors.
+
+2018-01-11  Ben Brosgol  <brosgol@adacore.com>
+
 	* doc/gnat_rm/implementation_defined_aspects.rst: Minor type/wording
 	corrections.
 	* gnat_rm.texi: Regenerate.
