@@ -1,3 +1,8 @@
+2018-01-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/83178
+	* g++.dg/ipa/devirt-22.C: Adjust scan-dump-times count.
+
 2018-01-11  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/83695
