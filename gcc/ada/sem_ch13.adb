@@ -2210,7 +2210,6 @@ package body Sem_Ch13 is
                   | Aspect_Output
                   | Aspect_Read
                   | Aspect_Scalar_Storage_Order
-                  | Aspect_Secondary_Stack_Size
                   | Aspect_Simple_Storage_Pool
                   | Aspect_Size
                   | Aspect_Small
@@ -3204,6 +3203,27 @@ package body Sem_Ch13 is
                         goto Continue;
                      end;
                   end if;
+
+               --  Secondary_Stack_Size
+
+               --  Aspect Secondary_Stack_Size needs to be converted into a
+               --  pragma for two reasons: the attribute is not analyzed until
+               --  after the expansion of the task type declaration and the
+               --  attribute does not have visibility on the discriminant.
+
+               when Aspect_Secondary_Stack_Size =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  =>
+                       Name_Secondary_Stack_Size);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Volatile_Function
 
                --  Aspect Volatile_Function is never delayed because it is
                --  equivalent to a source pragma which appears after the
@@ -5849,46 +5869,6 @@ package body Sem_Ch13 is
 
                Set_SSO_Set_Low_By_Default  (Base_Type (U_Ent), False);
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
-            end if;
-
-         --------------------------
-         -- Secondary_Stack_Size --
-         --------------------------
-
-         when Attribute_Secondary_Stack_Size =>
-
-            --  Secondary_Stack_Size attribute definition clause not allowed
-            --  except from aspect specification.
-
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N
-                    ("Secondary Stack Size can only be defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  Check_Restriction (No_Secondary_Stack, Expr);
-
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the discriminants must be restored
-
-                  Push_Scope_And_Install_Discriminants (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, Any_Integer);
-                  Uninstall_Discriminants_And_Pop_Scope (U_Ent);
-
-                  if not Is_OK_Static_Expression (Expr) then
-                     Check_Restriction (Static_Storage_Size, Expr);
-                  end if;
-               end if;
-
-            else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
             end if;
 
          ----------

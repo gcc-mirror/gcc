@@ -5437,7 +5437,7 @@ package body Exp_Ch9 is
         (Restriction_Active (No_Implicit_Heap_Allocations)
           or else Restriction_Active (No_Implicit_Task_Allocations))
         and then not Restriction_Active (No_Secondary_Stack)
-        and then Has_Rep_Item
+        and then Has_Rep_Pragma
                    (T, Name_Secondary_Stack_Size, Check_Parents => False);
    end Create_Secondary_Stack_For_Task;
 
@@ -11933,7 +11933,7 @@ package body Exp_Ch9 is
                   Set_Analyzed (Task_Size);
 
                else
-                  Task_Size := Relocate_Node (Expr_N);
+                  Task_Size := New_Copy_Tree (Expr_N);
                end if;
             end;
 
@@ -11971,28 +11971,34 @@ package body Exp_Ch9 is
 
       if Create_Secondary_Stack_For_Task (TaskId) then
          declare
-            Ritem     : Node_Id;
-            Size_Expr : Node_Id;
+            Stack_Size : Node_Id;
+
+            Size_Expr : constant Node_Id :=
+                          Expression (First (
+                            Pragma_Argument_Associations (
+                              Get_Rep_Pragma (TaskId,
+                                Name_Secondary_Stack_Size))));
 
          begin
-            --  First extract the secondary stack size from the task type's
-            --  representation aspect.
+            --  The secondary stack is defined inside the corresponding
+            --  record. Therefore if the size of the stack is set by means
+            --  of a discriminant, we must reference the discriminant of the
+            --  corresponding record type.
 
-            Ritem :=
-              Get_Rep_Item
-                (TaskId, Name_Secondary_Stack_Size, Check_Parents => False);
+            if Nkind (Size_Expr) in N_Has_Entity
+              and then Present (Discriminal_Link (Entity (Size_Expr)))
+            then
+               Stack_Size :=
+                 New_Occurrence_Of
+                   (CR_Discriminant (Discriminal_Link (Entity (Size_Expr))),
+                    Loc);
+               Set_Parent   (Stack_Size, Parent (Size_Expr));
+               Set_Etype    (Stack_Size, Etype (Size_Expr));
+               Set_Analyzed (Stack_Size);
 
-            --  Get Secondary_Stack_Size expression. Can be a pragma or aspect.
-
-            if Nkind (Ritem) = N_Pragma then
-               Size_Expr :=
-                 Expression
-                   (First (Pragma_Argument_Associations (Ritem)));
             else
-               Size_Expr := Expression (Ritem);
+               Stack_Size := New_Copy_Tree (Size_Expr);
             end if;
-
-            pragma Assert (Compile_Time_Known_Value (Size_Expr));
 
             --  Create the secondary stack for the task
 
@@ -12010,8 +12016,8 @@ package body Exp_Ch9 is
                         Constraint   =>
                           Make_Index_Or_Discriminant_Constraint (Loc,
                             Constraints  => New_List (
-                              Make_Integer_Literal (Loc,
-                                Expr_Value (Size_Expr)))))));
+                              Convert_To (RTE (RE_Size_Type),
+                                Stack_Size))))));
 
             Append_To (Cdecls, Decl_SS);
          end;
@@ -12052,16 +12058,16 @@ package body Exp_Ch9 is
 
              Expression =>
                Convert_To (RTE (RE_Size_Type),
-                 Relocate_Node (
+                 New_Copy_Tree (
                    Expression (First (
                      Pragma_Argument_Associations (
                        Get_Rep_Pragma (TaskId, Name_Storage_Size))))))));
       end if;
 
       --  Add the _Secondary_Stack_Size component if a Secondary_Stack_Size
-      --  rep item is present.
+      --  pragma is present.
 
-      if Has_Rep_Item
+      if Has_Rep_Pragma
            (TaskId, Name_Secondary_Stack_Size, Check_Parents => False)
       then
          Append_To (Cdecls,
@@ -12135,7 +12141,7 @@ package body Exp_Ch9 is
 
              Expression =>
                Convert_To (RTE (RE_Time_Span),
-                 Relocate_Node (
+                 New_Copy_Tree (
                    Expression (First (
                      Pragma_Argument_Associations (
                        Get_Relative_Deadline_Pragma (Taskdef))))))));
@@ -14246,15 +14252,15 @@ package body Exp_Ch9 is
       end if;
 
       --  Secondary_Stack_Size parameter. Set RE_Unspecified_Size unless there
-      --  is a Secondary_Stack_Size rep item, in which case take the value from
-      --  the rep item. If the restriction No_Secondary_Stack is active then a
+      --  is a Secondary_Stack_Size pragma, in which case take the value from
+      --  the pragma. If the restriction No_Secondary_Stack is active then a
       --  size of 0 is passed regardless to prevent the allocation of the
       --  unused stack.
 
       if Restriction_Active (No_Secondary_Stack) then
          Append_To (Args, Make_Integer_Literal (Loc, 0));
 
-      elsif Has_Rep_Item
+      elsif Has_Rep_Pragma
               (Ttyp, Name_Secondary_Stack_Size, Check_Parents => False)
       then
          Append_To (Args,
