@@ -1,5 +1,12 @@
 2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR middle-end/83189
+	* gfortran.fortran-torture/compile/pr83189.f90: New testcase.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop): Handle zero
+	profile.
+
+2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR middle-end/83575
 	* cfgrtl.c (rtl_verify_edges): Only verify fixability of partition
 	when in layout mode.

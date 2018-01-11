@@ -1,5 +1,10 @@
 2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR middle-end/83189
+	* gfortran.fortran-torture/compile/pr83189.f90: New testcase.
+
+2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
 	* gcc.c-torture/compile/pr83575.c: New testcase.
 
 2018-01-10  Michael Collison  <michael.collison@arm.com>
