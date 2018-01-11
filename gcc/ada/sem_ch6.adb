@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4463,6 +4463,12 @@ package body Sem_Ch6 is
             Set_First_Entity (Spec_Id, Empty);
             Set_Last_Entity  (Spec_Id, Empty);
          end if;
+
+      --  Otherwise the body does not complete a previous declaration. Check
+      --  the categorization of the body against the units it withs.
+
+      else
+         Validate_Categorization_Dependency (N, Body_Id);
       end if;
 
       Check_Missing_Return;

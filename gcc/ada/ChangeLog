@@ -1,5 +1,11 @@
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Check the
+	categorization of a subprogram body which does not complete a previous
+	declaration.
+
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch10.adb (Check_Private_Child_Unit): Ensure that the enclosing
 	scope of package Ada is Standard.
 
