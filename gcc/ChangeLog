@@ -1,3 +1,9 @@
+2018-01-11  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/81821
+	* config/rx/rx.md (BW): New mode attribute.
+	(sync_lock_test_and_setsi): Add mode suffix to insn output.
+
 2018-01-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83435
