@@ -113,6 +113,7 @@ struct aarch64_address_info {
   enum aarch64_address_type type;
   rtx base;
   rtx offset;
+  poly_int64 const_offset;
   int shift;
   enum aarch64_symbol_type symbol_type;
 };
@@ -4545,6 +4546,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
+  poly_int64 offset;
+
   HOST_WIDE_INT const_size;
 
   /* On BE, we use load/store pair for all large int mode load/stores.
@@ -4573,6 +4576,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
       info->type = ADDRESS_REG_IMM;
       info->base = x;
       info->offset = const0_rtx;
+      info->const_offset = 0;
       return aarch64_base_register_rtx_p (x, strict_p);
 
     case PLUS:
@@ -4582,24 +4586,24 @@ aarch64_classify_address (struct aarch64_address_info *info,
       if (! strict_p
 	  && REG_P (op0)
 	  && virt_or_elim_regno_p (REGNO (op0))
-	  && CONST_INT_P (op1))
+	  && poly_int_rtx_p (op1, &offset))
 	{
 	  info->type = ADDRESS_REG_IMM;
 	  info->base = op0;
 	  info->offset = op1;
+	  info->const_offset = offset;
 
 	  return true;
 	}
 
       if (maybe_ne (GET_MODE_SIZE (mode), 0)
-	  && CONST_INT_P (op1)
-	  && aarch64_base_register_rtx_p (op0, strict_p))
+	  && aarch64_base_register_rtx_p (op0, strict_p)
+	  && poly_int_rtx_p (op1, &offset))
 	{
-	  HOST_WIDE_INT offset = INTVAL (op1);
-
 	  info->type = ADDRESS_REG_IMM;
 	  info->base = op0;
 	  info->offset = op1;
+	  info->const_offset = offset;
 
 	  /* TImode and TFmode values are allowed in both pairs of X
 	     registers and individual Q registers.  The available
@@ -4679,13 +4683,12 @@ aarch64_classify_address (struct aarch64_address_info *info,
       info->type = ADDRESS_REG_WB;
       info->base = XEXP (x, 0);
       if (GET_CODE (XEXP (x, 1)) == PLUS
-	  && CONST_INT_P (XEXP (XEXP (x, 1), 1))
+	  && poly_int_rtx_p (XEXP (XEXP (x, 1), 1), &offset)
 	  && rtx_equal_p (XEXP (XEXP (x, 1), 0), info->base)
 	  && aarch64_base_register_rtx_p (info->base, strict_p))
 	{
-	  HOST_WIDE_INT offset;
 	  info->offset = XEXP (XEXP (x, 1), 1);
-	  offset = INTVAL (info->offset);
+	  info->const_offset = offset;
 
 	  /* TImode and TFmode values are allowed in both pairs of X
 	     registers and individual Q registers.  The available
@@ -5735,7 +5738,7 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
     switch (addr.type)
       {
       case ADDRESS_REG_IMM:
-	if (addr.offset == const0_rtx)
+	if (known_eq (addr.const_offset, 0))
 	  asm_fprintf (f, "[%s]", reg_names [REGNO (addr.base)]);
 	else
 	  asm_fprintf (f, "[%s, %wd]", reg_names [REGNO (addr.base)],

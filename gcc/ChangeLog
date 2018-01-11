@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_address_info): Add a const_offset
+	field.
+	(aarch64_classify_address): Initialize it.  Track polynomial offsets.
+	(aarch64_print_address_internal): Use it to check for a zero offset.
+
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64-modes.def (NUM_POLY_INT_COEFFS): Set to 2.
 	* config/aarch64/aarch64-protos.h (aarch64_initial_elimination_offset):
 	Return a poly_int64 rather than a HOST_WIDE_INT.
