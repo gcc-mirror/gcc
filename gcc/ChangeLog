@@ -1,3 +1,17 @@
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_fml<f16mac1>l<f16quad>_low<mode>): Avoid GET_MODE_NUNITS.
+	(aarch64_fml<f16mac1>l<f16quad>_high<mode>): Likewise.
+	(aarch64_fml<f16mac1>l_lane_lowv2sf): Likewise.
+	(aarch64_fml<f16mac1>l_lane_highv2sf): Likewise.
+	(aarch64_fml<f16mac1>lq_laneq_lowv4sf): Likewise.
+	(aarch64_fml<f16mac1>lq_laneq_highv4sf): Likewise.
+	(aarch64_fml<f16mac1>l_laneq_lowv2sf): Likewise.
+	(aarch64_fml<f16mac1>l_laneq_highv2sf): Likewise.
+	(aarch64_fml<f16mac1>lq_lane_lowv4sf): Likewise.
+	(aarch64_fml<f16mac1>lq_lane_highv4sf): Likewise.
+
 2018-01-11  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR target/83514
