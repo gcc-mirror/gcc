@@ -1,3 +1,8 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_util.adb (Find_Enclosing_Scope): Return the unique defining
+	entity when the enclosing construct is a body.
+
 2018-01-11  Patrick Bernardi  <bernardi@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Simplified

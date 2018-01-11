@@ -7847,8 +7847,7 @@ package body Sem_Util is
    --------------------------
 
    function Find_Enclosing_Scope (N : Node_Id) return Entity_Id is
-      Par     : Node_Id;
-      Spec_Id : Entity_Id;
+      Par : Node_Id;
 
    begin
       --  Examine the parent chain looking for a construct which defines a
@@ -7877,7 +7876,8 @@ package body Sem_Util is
                return Defining_Entity (Par);
 
             --  The construct denotes a body, the proper scope is the entity of
-            --  the corresponding spec.
+            --  the corresponding spec or that of the body if the body does not
+            --  complete a previous declaration.
 
             when N_Entry_Body
                | N_Package_Body
@@ -7885,22 +7885,7 @@ package body Sem_Util is
                | N_Subprogram_Body
                | N_Task_Body
             =>
-               Spec_Id := Corresponding_Spec (Par);
-
-               --  The defining entity of a stand-alone subprogram body defines
-               --  a scope.
-
-               if Nkind (Par) = N_Subprogram_Body and then No (Spec_Id) then
-                  return Defining_Entity (Par);
-
-               --  Otherwise there should be corresponding spec which defines a
-               --  scope.
-
-               else
-                  pragma Assert (Present (Spec_Id));
-
-                  return Spec_Id;
-               end if;
+               return Unique_Defining_Entity (Par);
 
             --  Special cases
 
