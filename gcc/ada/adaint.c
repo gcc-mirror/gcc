@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -79,6 +79,10 @@
 
 #ifdef __PikeOS__
 #define __BSD_VISIBLE 1
+#endif
+
+#if defined (__QNX__)
+#define _LARGEFILE64_SOURCE 1
 #endif
 
 #ifdef IN_RTS
@@ -773,7 +777,7 @@ __gnat_rmdir (char *path)
 }
 
 #if defined (_WIN32) || defined (__linux__) || defined (__sun__) \
-  || defined (__FreeBSD__) || defined(__DragonFly__)
+  || defined (__FreeBSD__) || defined(__DragonFly__) || defined (__QNX__)
 #define HAS_TARGET_WCHAR_T
 #endif
 
@@ -2346,7 +2350,7 @@ __gnat_number_of_cpus (void)
 
 #if defined (__linux__) || defined (__sun__) || defined (_AIX) \
   || defined (__APPLE__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-  || defined (__DragonFly__) || defined (__NetBSD__)
+  || defined (__DragonFly__) || defined (__NetBSD__) || defined (__QNX__)
   cores = (int) sysconf (_SC_NPROCESSORS_ONLN);
 
 #elif defined (__hpux__)

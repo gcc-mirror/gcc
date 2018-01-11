@@ -1,3 +1,9 @@
+2018-01-11  Jerome Lambourg  <lambourg@adacore.com>
+
+	* libgnat/g-soliop__qnx.ads: New.
+	* adaint.c, adaint.h, cstreams.c, s-oscons-tmplt.c, sysdep.c: Update
+	for QNX.
+
 2018-01-11  Bob Duff  <duff@adacore.com>
 
 	* par-ch9.adb (P_Protected_Operation_Declaration_Opt): Give an error if
