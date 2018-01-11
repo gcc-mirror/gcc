@@ -1699,8 +1699,9 @@ package body Sem_Aggr is
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Parent (Ent, Parent (N));
          Push_Scope (Ent);
-         Id := Make_Defining_Identifier (Loc,
-           Chars => Chars (Defining_Identifier (N)));
+         Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => Chars (Defining_Identifier (N)));
 
          --  Insert and decorate the index variable in the current scope.
          --  The expression has to be analyzed once the index variable is

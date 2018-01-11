@@ -11971,13 +11971,13 @@ package body Exp_Ch9 is
 
       if Create_Secondary_Stack_For_Task (TaskId) then
          declare
-            Stack_Size : Node_Id;
-
             Size_Expr : constant Node_Id :=
                           Expression (First (
                             Pragma_Argument_Associations (
                               Get_Rep_Pragma (TaskId,
                                 Name_Secondary_Stack_Size))));
+
+            Stack_Size : Node_Id;
 
          begin
             --  The secondary stack is defined inside the corresponding

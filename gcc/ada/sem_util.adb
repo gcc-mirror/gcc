@@ -15824,13 +15824,12 @@ package body Sem_Util is
       --  conjunct in a postcondition) with a potentially unevaluated operand.
 
       Par := Parent (Expr);
-
-      while not Nkind_In (Par, N_If_Expression,
+      while not Nkind_In (Par, N_And_Then,
                                N_Case_Expression,
-                               N_And_Then,
-                               N_Or_Else,
+                               N_If_Expression,
                                N_In,
                                N_Not_In,
+                               N_Or_Else,
                                N_Quantified_Expression)
       loop
          Expr := Par;
