@@ -1,3 +1,13 @@
+2018-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82728 - wrong -Wunused-but-set-variable
+	PR c++/82799
+	PR c++/83690
+	* call.c (perform_implicit_conversion_flags): Call mark_rvalue_use.
+	* decl.c (case_conversion): Likewise.
+	* semantics.c (finish_static_assert): Call
+	perform_implicit_conversion_flags.
+
 2018-01-11  Nathan Sidwell  <nathan@acm.org>
 
 	* method.c (enum mangling_flags): Delete long-dead enum.
