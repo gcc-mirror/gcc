@@ -15753,6 +15753,7 @@ unsigned long __builtin_divdeuo (unsigned long, unsigned long);
 unsigned int cdtbcd (unsigned int);
 unsigned int cbcdtd (unsigned int);
 unsigned int addg6s (unsigned int, unsigned int);
+void __builtin_rs6000_speculation_barrier (void);
 @end smallexample
 
 The @code{__builtin_divde}, @code{__builtin_divdeo},
