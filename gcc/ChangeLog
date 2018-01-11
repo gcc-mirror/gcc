@@ -1,3 +1,237 @@
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-modes.def (V2HF): New VECTOR_MODE.
+	* config/aarch64/aarch64-option-extension.def: Add
+	AARCH64_OPT_EXTENSION of 'fp16fml'.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	(__ARM_FEATURE_FP16_FML): Define if TARGET_F16FML is true.
+	* config/aarch64/predicates.md (aarch64_lane_imm3): New predicate.
+	* config/aarch64/constraints.md (Ui7): New constraint.
+	* config/aarch64/iterators.md (VFMLA_W): New mode iterator.
+	(VFMLA_SEL_W): Ditto.
+	(f16quad): Ditto.
+	(f16mac1): Ditto.
+	(VFMLA16_LOW): New int iterator.
+	(VFMLA16_HIGH): Ditto.
+	(UNSPEC_FMLAL): New unspec.
+	(UNSPEC_FMLSL): Ditto.
+	(UNSPEC_FMLAL2): Ditto.
+	(UNSPEC_FMLSL2): Ditto.
+	(f16mac): New code attribute.
+	* config/aarch64/aarch64-simd-builtins.def
+	(aarch64_fmlal_lowv2sf): Ditto.
+	(aarch64_fmlsl_lowv2sf): Ditto.
+	(aarch64_fmlalq_lowv4sf): Ditto.
+	(aarch64_fmlslq_lowv4sf): Ditto.
+	(aarch64_fmlal_highv2sf): Ditto.
+	(aarch64_fmlsl_highv2sf): Ditto.
+	(aarch64_fmlalq_highv4sf): Ditto.
+	(aarch64_fmlslq_highv4sf): Ditto.
+	(aarch64_fmlal_lane_lowv2sf): Ditto.
+	(aarch64_fmlsl_lane_lowv2sf): Ditto.
+	(aarch64_fmlal_laneq_lowv2sf): Ditto.
+	(aarch64_fmlsl_laneq_lowv2sf): Ditto.
+	(aarch64_fmlalq_lane_lowv4sf): Ditto.
+	(aarch64_fmlsl_lane_lowv4sf): Ditto.
+	(aarch64_fmlalq_laneq_lowv4sf): Ditto.
+	(aarch64_fmlsl_laneq_lowv4sf): Ditto.
+	(aarch64_fmlal_lane_highv2sf): Ditto.
+	(aarch64_fmlsl_lane_highv2sf): Ditto.
+	(aarch64_fmlal_laneq_highv2sf): Ditto.
+	(aarch64_fmlsl_laneq_highv2sf): Ditto.
+	(aarch64_fmlalq_lane_highv4sf): Ditto.
+	(aarch64_fmlsl_lane_highv4sf): Ditto.
+	(aarch64_fmlalq_laneq_highv4sf): Ditto.
+	(aarch64_fmlsl_laneq_highv4sf): Ditto.
+	* config/aarch64/aarch64-simd.md:
+	(aarch64_fml<f16mac1>l<f16quad>_low<mode>): New pattern.
+	(aarch64_fml<f16mac1>l<f16quad>_high<mode>): Ditto.
+	(aarch64_simd_fml<f16mac1>l<f16quad>_low<mode>): Ditto.
+	(aarch64_simd_fml<f16mac1>l<f16quad>_high<mode>): Ditto.
+	(aarch64_fml<f16mac1>l_lane_lowv2sf): Ditto.
+	(aarch64_fml<f16mac1>l_lane_highv2sf): Ditto.
+	(aarch64_simd_fml<f16mac>l_lane_lowv2sf): Ditto.
+	(aarch64_simd_fml<f16mac>l_lane_highv2sf): Ditto.
+	(aarch64_fml<f16mac1>lq_laneq_lowv4sf): Ditto.
+	(aarch64_fml<f16mac1>lq_laneq_highv4sf): Ditto.
+	(aarch64_simd_fml<f16mac>lq_laneq_lowv4sf): Ditto.
+	(aarch64_simd_fml<f16mac>lq_laneq_highv4sf): Ditto.
+	(aarch64_fml<f16mac1>l_laneq_lowv2sf): Ditto.
+	(aarch64_fml<f16mac1>l_laneq_highv2sf): Ditto.
+	(aarch64_simd_fml<f16mac>l_laneq_lowv2sf): Ditto.
+	(aarch64_simd_fml<f16mac>l_laneq_highv2sf): Ditto.
+	(aarch64_fml<f16mac1>lq_lane_lowv4sf): Ditto.
+	(aarch64_fml<f16mac1>lq_lane_highv4sf): Ditto.
+	(aarch64_simd_fml<f16mac>lq_lane_lowv4sf): Ditto.
+	(aarch64_simd_fml<f16mac>lq_lane_highv4sf): Ditto.
+	* config/aarch64/arm_neon.h (vfmlal_low_u32): New intrinsic.
+	(vfmlsl_low_u32): Ditto.
+	(vfmlalq_low_u32): Ditto.
+	(vfmlslq_low_u32): Ditto.
+	(vfmlal_high_u32): Ditto.
+	(vfmlsl_high_u32): Ditto.
+	(vfmlalq_high_u32): Ditto.
+	(vfmlslq_high_u32): Ditto.
+	(vfmlal_lane_low_u32): Ditto.
+	(vfmlsl_lane_low_u32): Ditto.
+	(vfmlal_laneq_low_u32): Ditto.
+	(vfmlsl_laneq_low_u32): Ditto.
+	(vfmlalq_lane_low_u32): Ditto.
+	(vfmlslq_lane_low_u32): Ditto.
+	(vfmlalq_laneq_low_u32): Ditto.
+	(vfmlslq_laneq_low_u32): Ditto.
+	(vfmlal_lane_high_u32): Ditto.
+	(vfmlsl_lane_high_u32): Ditto.
+	(vfmlal_laneq_high_u32): Ditto.
+	(vfmlsl_laneq_high_u32): Ditto.
+	(vfmlalq_lane_high_u32): Ditto.
+	(vfmlslq_lane_high_u32): Ditto.
+	(vfmlalq_laneq_high_u32): Ditto.
+	(vfmlslq_laneq_high_u32): Ditto.
+	* config/aarch64/aarch64.h (AARCH64_FL_F16SML): New flag.
+	(AARCH64_FL_FOR_ARCH8_4): New.
+	(AARCH64_ISA_F16FML): New ISA flag.
+	(TARGET_F16FML): New feature flag for fp16fml.
+	(doc/invoke.texi): Document new fp16fml option.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-builtins.c:
+	(aarch64_types_ternopu_imm_qualifiers, TYPES_TERNOPUI): New.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	(__ARM_FEATURE_SHA3): Define if TARGET_SHA3 is true.
+	* config/aarch64/aarch64.h (AARCH64_FL_SHA3): New flags.
+	(AARCH64_ISA_SHA3): New ISA flag.
+	(TARGET_SHA3): New feature flag for sha3.
+	* config/aarch64/iterators.md (sha512_op): New int attribute.
+	(CRYPTO_SHA512): New int iterator.
+	(UNSPEC_SHA512H): New unspec.
+	(UNSPEC_SHA512H2): Ditto.
+	(UNSPEC_SHA512SU0): Ditto.
+	(UNSPEC_SHA512SU1): Ditto.
+	* config/aarch64/aarch64-simd-builtins.def
+	(aarch64_crypto_sha512hqv2di): New builtin.
+	(aarch64_crypto_sha512h2qv2di): Ditto.
+	(aarch64_crypto_sha512su0qv2di): Ditto.
+	(aarch64_crypto_sha512su1qv2di): Ditto.
+	(aarch64_eor3qv8hi): Ditto.
+	(aarch64_rax1qv2di): Ditto.
+	(aarch64_xarqv2di): Ditto.
+	(aarch64_bcaxqv8hi): Ditto.
+	* config/aarch64/aarch64-simd.md:
+	(aarch64_crypto_sha512h<sha512_op>qv2di): New pattern.
+	(aarch64_crypto_sha512su0qv2di): Ditto.
+	(aarch64_crypto_sha512su1qv2di): Ditto.
+	(aarch64_eor3qv8hi): Ditto.
+	(aarch64_rax1qv2di): Ditto.
+	(aarch64_xarqv2di): Ditto.
+	(aarch64_bcaxqv8hi): Ditto.
+	* config/aarch64/arm_neon.h (vsha512hq_u64): New intrinsic.
+	(vsha512h2q_u64): Ditto.
+	(vsha512su0q_u64): Ditto.
+	(vsha512su1q_u64): Ditto.
+	(veor3q_u16): Ditto.
+	(vrax1q_u64): Ditto.
+	(vxarq_u64): Ditto.
+	(vbcaxq_u16): Ditto.
+	* config/arm/types.md (crypto_sha512): New type attribute.
+	(crypto_sha3): Ditto.
+	(doc/invoke.texi): Document new sha3 option.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-builtins.c:
+	(aarch64_types_quadopu_imm_qualifiers, TYPES_QUADOPUI): New.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	(__ARM_FEATURE_SM3): Define if TARGET_SM4 is true.
+	(__ARM_FEATURE_SM4): Define if TARGET_SM4 is true.
+	* config/aarch64/aarch64.h (AARCH64_FL_SM4): New flags.
+	(AARCH64_ISA_SM4): New ISA flag.
+	(TARGET_SM4): New feature flag for sm4.
+	* config/aarch64/aarch64-simd-builtins.def
+	(aarch64_sm3ss1qv4si): Ditto.
+	(aarch64_sm3tt1aq4si): Ditto.
+	(aarch64_sm3tt1bq4si): Ditto.
+	(aarch64_sm3tt2aq4si): Ditto.
+	(aarch64_sm3tt2bq4si): Ditto.
+	(aarch64_sm3partw1qv4si): Ditto.
+	(aarch64_sm3partw2qv4si): Ditto.
+	(aarch64_sm4eqv4si): Ditto.
+	(aarch64_sm4ekeyqv4si): Ditto.
+	* config/aarch64/aarch64-simd.md:
+	(aarch64_sm3ss1qv4si): Ditto.
+	(aarch64_sm3tt<sm3tt_op>qv4si): Ditto.
+	(aarch64_sm3partw<sm3part_op>qv4si): Ditto.
+	(aarch64_sm4eqv4si): Ditto.
+	(aarch64_sm4ekeyqv4si): Ditto.
+	* config/aarch64/iterators.md (sm3tt_op): New int iterator.
+	(sm3part_op): Ditto.
+	(CRYPTO_SM3TT): Ditto.
+	(CRYPTO_SM3PART): Ditto.
+	(UNSPEC_SM3SS1): New unspec.
+	(UNSPEC_SM3TT1A): Ditto.
+	(UNSPEC_SM3TT1B): Ditto.
+	(UNSPEC_SM3TT2A): Ditto.
+	(UNSPEC_SM3TT2B): Ditto.
+	(UNSPEC_SM3PARTW1): Ditto.
+	(UNSPEC_SM3PARTW2): Ditto.
+	(UNSPEC_SM4E): Ditto.
+	(UNSPEC_SM4EKEY): Ditto.
+	* config/aarch64/constraints.md (Ui2): New constraint.
+	* config/aarch64/predicates.md (aarch64_imm2): New predicate.
+	* config/arm/types.md (crypto_sm3): New type attribute.
+	(crypto_sm4): Ditto.
+	* config/aarch64/arm_neon.h (vsm3ss1q_u32): New intrinsic.
+	(vsm3tt1aq_u32): Ditto.
+	(vsm3tt1bq_u32): Ditto.
+	(vsm3tt2aq_u32): Ditto.
+	(vsm3tt2bq_u32): Ditto.
+	(vsm3partw1q_u32): Ditto.
+	(vsm3partw2q_u32): Ditto.
+	(vsm4eq_u32): Ditto.
+	(vsm4ekeyq_u32): Ditto.
+	(doc/invoke.texi): Document new sm4 option.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-arches.def (armv8.4-a): New architecture.
+	* config/aarch64/aarch64.h (AARCH64_ISA_V8_4): New ISA flag.
+	(AARCH64_FL_FOR_ARCH8_4): New.
+	(AARCH64_FL_V8_4): New flag.
+	(doc/invoke.texi): Document new armv8.4-a option.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	(__ARM_FEATURE_AES): Define if TARGET_AES is true.
+	(__ARM_FEATURE_SHA2): Define if TARGET_SHA2 is true.
+	* config/aarch64/aarch64-option-extension.def: Add
+	AARCH64_OPT_EXTENSION of 'sha2'.
+	(aes): Add AARCH64_OPT_EXTENSION of 'aes'.
+	(crypto): Disable sha2 and aes if crypto disabled.
+	(crypto): Enable aes and sha2 if enabled.
+	(simd): Disable sha2 and aes if simd disabled.
+	* config/aarch64/aarch64.h (AARCH64_FL_AES, AARCH64_FL_SHA2):
+	New flags.
+	(AARCH64_ISA_AES, AARCH64_ISA_SHA2): New ISA flags.
+	(TARGET_SHA2): New feature flag for sha2.
+	(TARGET_AES): New feature flag for aes.
+	* config/aarch64/aarch64-simd.md:
+	(aarch64_crypto_aes<aes_op>v16qi): Make pattern
+	conditional on TARGET_AES.
+	(aarch64_crypto_aes<aesmc_op>v16qi): Ditto.
+	(aarch64_crypto_sha1hsi): Make pattern conditional
+	on TARGET_SHA2.
+	(aarch64_crypto_sha1hv4si): Ditto.
+	(aarch64_be_crypto_sha1hv4si): Ditto.
+	(aarch64_crypto_sha1su1v4si): Ditto.
+	(aarch64_crypto_sha1<sha1_op>v4si): Ditto.
+	(aarch64_crypto_sha1su0v4si): Ditto.
+	(aarch64_crypto_sha256h<sha256_op>v4si): Ditto.
+	(aarch64_crypto_sha256su0v4si): Ditto.
+	(aarch64_crypto_sha256su1v4si): Ditto.
+	(doc/invoke.texi): Document new aes and sha2 options.
+
 2018-01-10  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83781

@@ -14481,7 +14481,11 @@ more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
 The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a} or @var{native}.
+@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a} or @samp{armv8.4-a}
+or @var{native}.
+
+The value @samp{armv8.4-a} implies @samp{armv8.3-a} and enables compiler
+support for the ARMv8.4-A architecture extensions.
 
 The value @samp{armv8.3-a} implies @samp{armv8.2-a} and enables compiler
 support for the ARMv8.3-A architecture extensions.
@@ -14619,18 +14623,34 @@ Enable Round Double Multiply Accumulate instructions.  This is on by default
 for @option{-march=armv8.1-a}.
 @item fp16
 Enable FP16 extension.  This also enables floating-point instructions.
+@item fp16fml
+Enable FP16 fmla extension.  This also enables FP16 extensions and
+floating-point instructions. This option is enabled by default for @option{-march=armv8.4-a}. Use of this option with architectures prior to Armv8.2-A is not supported.
+
 @item rcpc
 Enable the RcPc extension.  This does not change code generation from GCC,
 but is passed on to the assembler, enabling inline asm statements to use
 instructions from the RcPc extension.
 @item dotprod
 Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
+@item aes
+Enable the Armv8-a aes and pmull crypto extension.  This also enables Advanced
+SIMD instructions.
+@item sha2
+Enable the Armv8-a sha2 crypto extension.  This also enables Advanced SIMD instructions.
+@item sha3
+Enable the sha512 and sha3 crypto extension.  This also enables Advanced SIMD
+instructions. Use of this option with architectures prior to Armv8.2-A is not supported.
+@item sm4
+Enable the sm3 and sm4 crypto extension.  This also enables Advanced SIMD instructions.
+Use of this option with architectures prior to Armv8.2-A is not supported.
 
 @end table
 
-Feature @option{crypto} implies @option{simd}, which implies @option{fp}.
+Feature @option{crypto} implies @option{aes}, @option{sha2}, and @option{simd},
+which implies @option{fp}.
 Conversely, @option{nofp} implies @option{nosimd}, which implies
-@option{nocrypto}.
+@option{nocrypto}, @option{noaes} and @option{nosha2}.
 
 @node Adapteva Epiphany Options
 @subsection Adapteva Epiphany Options

@@ -160,6 +160,18 @@
   (and (match_code "const_int")
        (match_test "(unsigned HOST_WIDE_INT) INTVAL (op) <= 4")))
 
+;; The imm2 field is a 2-bit field that only accepts immediates in the
+;; range 0..3.
+(define_predicate "aarch64_imm2"
+  (and (match_code "const_int")
+       (match_test "UINTVAL (op) <= 3")))
+
+;; The imm3 field is a 3-bit field that only accepts immediates in the
+;; range 0..7.
+(define_predicate "aarch64_lane_imm3"
+  (and (match_code "const_int")
+       (match_test "UINTVAL (op) <= 7")))
+
 ;; An immediate that fits into 24 bits.
 (define_predicate "aarch64_imm24"
   (and (match_code "const_int")
