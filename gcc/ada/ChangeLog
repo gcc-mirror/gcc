@@ -1,3 +1,9 @@
+2018-01-11  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Update description of restriction SPARK_05 with SPARK 2014.
+	* gnat_rm.texi: Regenerate.
+
 2018-01-11  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Fix layout.
