@@ -1,5 +1,31 @@
 2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm_neon.h (vfmlal_lane_low_u32, vfmlal_lane_high_u32,
+	vfmlalq_laneq_low_u32, vfmlalq_lane_low_u32, vfmlal_laneq_low_u32,
+	vfmlalq_laneq_high_u32, vfmlalq_lane_high_u32, vfmlal_laneq_high_u32,
+	vfmlsl_lane_low_u32, vfmlsl_lane_high_u32, vfmlslq_laneq_low_u32,
+	vfmlslq_lane_low_u32, vfmlsl_laneq_low_u32, vfmlslq_laneq_high_u32,
+	vfmlslq_lane_high_u32, vfmlsl_laneq_high_u32): Define.
+	* config/arm/arm_neon_builtins.def (vfmal_lane_low,
+	vfmal_lane_lowv4hf, vfmal_lane_lowv8hf, vfmal_lane_high,
+	vfmal_lane_highv4hf, vfmal_lane_highv8hf, vfmsl_lane_low,
+	vfmsl_lane_lowv4hf, vfmsl_lane_lowv8hf, vfmsl_lane_high,
+	vfmsl_lane_highv4hf, vfmsl_lane_highv8hf): New sets of builtins.
+	* config/arm/iterators.md (VFMLSEL2, vfmlsel2): New mode attributes.
+	(V_lane_reg): Likewise.
+	* config/arm/neon.md (neon_vfm<vfml_op>l_lane_<vfml_half><VCVTF:mode>):
+	New define_expand.
+	(neon_vfm<vfml_op>l_lane_<vfml_half><vfmlsel2><mode>): Likewise.
+	(vfmal_lane_low<mode>_intrinsic,
+	vfmal_lane_low<vfmlsel2><mode>_intrinsic,
+	vfmal_lane_high<vfmlsel2><mode>_intrinsic,
+	vfmal_lane_high<mode>_intrinsic, vfmsl_lane_low<mode>_intrinsic,
+	vfmsl_lane_low<vfmlsel2><mode>_intrinsic,
+	vfmsl_lane_high<vfmlsel2><mode>_intrinsic,
+	vfmsl_lane_high<mode>_intrinsic): New define_insns.
+
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm-cpus.in (fp16fml): New feature.
 	(ALL_SIMD): Add fp16fml.
 	(armv8.2-a): Add fp16fml as an option.

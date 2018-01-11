@@ -484,6 +484,12 @@
 ;; Mode mapping for VFM[A,S]L instructions for the vec_select result.
 (define_mode_attr VFMLSEL [(V2SF "V2HF") (V4SF "V4HF")])
 
+;; Mode mapping for VFM[A,S]L instructions for some awkward lane-wise forms.
+(define_mode_attr VFMLSEL2 [(V2SF "V8HF") (V4SF "V4HF")])
+
+;; Same as the above, but lowercase.
+(define_mode_attr vfmlsel2 [(V2SF "v8hf") (V4SF "v4hf")])
+
 ;; Similar, for three elements.
 (define_mode_attr V_three_elem [(V8QI "BLK") (V16QI "BLK")
                                 (V4HI "BLK") (V8HI "BLK")
@@ -515,6 +521,10 @@
 
 ;; Output template to select the low VFP register of a mult-register value.
 (define_mode_attr V_lo [(V2SF "") (V4SF  "e")])
+
+;; Helper attribute for printing output templates for awkward forms of
+;; vfmlal/vfmlsl intrinsics.
+(define_mode_attr V_lane_reg [(V2SF "") (V4SF  "P")])
 
 ;; Wider modes with the same number of elements.
 (define_mode_attr V_widen [(V8QI "V8HI") (V4HI "V4SI") (V2SI "V2DI")])
