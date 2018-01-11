@@ -1,3 +1,9 @@
+2018-01-11  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Call New_Copy_Tree on the
+	result of Get_Simple_Init_Value and pass the source location of the
+	object declaration's object_definition.
+
 2018-01-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration): Handle
