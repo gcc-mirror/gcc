@@ -50,7 +50,7 @@ package Ada.Sequential_IO is
      (Element_Type'Has_Tagged_Values,
       "Element_Type for Sequential_IO instance has tagged values");
 
-   type File_Type is limited private;
+   type File_Type is limited private with Default_Initial_Condition;
 
    type File_Mode is (In_File, Out_File, Append_File);
 
