@@ -1,3 +1,9 @@
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/83761
+	* caller-save.c (replace_reg_with_saved_mem): Pass bits rather
+	than bytes to mode_for_size.
+
 2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83189
