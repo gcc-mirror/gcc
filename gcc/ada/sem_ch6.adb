@@ -423,6 +423,20 @@ package body Sem_Ch6 is
                Check_And_Freeze_Type (Designated_Type (Etype (Node)));
             end if;
 
+            --  An implicit dereference freezes the designated type. In the
+            --  case of a dispatching call whose controlling argument is an
+            --  access type, the dereference is not made explicit, so we must
+            --  check for such a call and freeze the designated type.
+
+            if Nkind (Node) in N_Has_Etype
+              and then Present (Etype (Node))
+              and then Is_Access_Type (Etype (Node))
+              and then Nkind (Parent (Node)) = N_Function_Call
+              and then Node = Controlling_Argument (Parent (Node))
+            then
+               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            end if;
+
             --  No point in posting several errors on the same expression
 
             if Serious_Errors_Detected > 0 then
