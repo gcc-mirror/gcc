@@ -1,3 +1,9 @@
+2018-01-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads, einfo.adb (Activation_Record_Component,
+	Set_Activation_Record_Component, Set_Is_Uplevel_Referenced_Entity):
+	Allow E_Discriminant.
+
 2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_component_type): Apply the check

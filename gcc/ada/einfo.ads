@@ -364,11 +364,12 @@ package Einfo is
 --       the IP routine to avoid performing this elaboration twice.
 
 --    Activation_Record_Component (Node31)
---       Defined in E_Variable, E_Constant, E_Loop_Parameter, E_In_Parameter,
---       E_Out_Parameter, E_In_Out_Parameter nodes. Used only if we are in
---       Opt.Unnest_Subprogram_Mode, in which case for the case of an uplevel
---       referenced entity, this field contains the entity for the component
---       in the generated ARECnT activation record (Exp_Unst for details).
+--       Defined in E_Variable, E_Constant, E_Discriminant, E_Loop_Parameter,
+--       E_In_Parameter, E_Out_Parameter, E_In_Out_Parameter nodes. Used only
+--       if we are in Opt.Unnest_Subprogram_Mode, in which case for the case of
+--       an uplevel referenced entity, this field contains the entity for the
+--       component in the generated ARECnT activation record (Exp_Unst for
+--       details).
 
 --    Actual_Subtype (Node17)
 --       Defined in variables, constants, and formal parameters. This is the
@@ -3317,11 +3318,12 @@ package Einfo is
 --       Defined in all entities. Used when unnesting subprograms to indicate
 --       that an entity is locally defined within a subprogram P, and there is
 --       a reference to the entity within a subprogram nested within P (at any
---       depth). Set for uplevel referenced objects (variables, constants and
---       loop parameters), and also for upreferenced dynamic types, including
---       the cases where the reference is implicit (e.g. the type of an array
---       used for computing the location of an element in an array. This is
---       used internally in Exp_Unst, see this package for further details.
+--       depth). Set for uplevel referenced objects (variables, constants,
+--       discriminants and loop parameters), and also for upreferenced dynamic
+--       types, including the cases where the reference is implicit (e.g. the
+--       type of an array used for computing the location of an element in an
+--       array. This is used internally in Exp_Unst, see this package for
+--       further details.
 
 --    Is_Valued_Procedure (Flag127)
 --       Defined in procedure entities. Set if an Import_Valued_Procedure

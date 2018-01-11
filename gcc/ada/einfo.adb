@@ -742,6 +742,7 @@ package body Einfo is
    function Activation_Record_Component (Id : E) return E is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_Discriminant,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,
@@ -3932,6 +3933,7 @@ package body Einfo is
    procedure Set_Activation_Record_Component (Id : E; V : E) is
    begin
       pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_Discriminant,
                                    E_In_Parameter,
                                    E_In_Out_Parameter,
                                    E_Loop_Parameter,
@@ -5925,7 +5927,7 @@ package body Einfo is
    procedure Set_Is_Uplevel_Referenced_Entity (Id : E; V : B := True) is
    begin
       pragma Assert
-        (Ekind_In (Id, E_Constant, E_Variable)
+        (Ekind_In (Id, E_Constant, E_Variable, E_Discriminant)
           or else Is_Formal (Id)
           or else Is_Type (Id));
       Set_Flag283 (Id, V);
