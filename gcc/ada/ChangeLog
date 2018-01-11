@@ -1,3 +1,8 @@
+2018-01-11  Justin Squirek  <squirek@adacore.com>
+
+	* par-ch6.adb (Scan_Body_Or_Expression_Function): Add additional check
+	to make sure a given expression function is properly parenthesized.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Check the
