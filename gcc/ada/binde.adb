@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1808,11 +1808,11 @@ package body Binde is
 
       package Name_Map is new System.HTable.Simple_HTable
         (Header_Num => Header_Num,
-         Element => Line_Number,
+         Element    => Line_Number,
          No_Element => No_Line_Number,
-         Key => Unit_Name_Type,
-         Hash => Hash,
-         Equal => "=");
+         Key        => Unit_Name_Type,
+         Hash       => Hash,
+         Equal      => "=");
       --  Name_Map contains an entry for each file name seen, mapped to the
       --  line number where we saw it first. This is used to give an error for
       --  duplicates.
@@ -1979,6 +1979,7 @@ package body Binde is
          declare
             Uname : constant Unit_Name_Type := Name_Find (Get_Line);
             Error : Boolean := False;
+
          begin
             if Uname = Empty_Name then
                null; -- silently skip blank lines
@@ -1996,7 +1997,7 @@ package body Binde is
 
                      if Get_Name_Table_Int (Uname) = 0
                        or else Unit_Id (Get_Name_Table_Int (Uname)) =
-                            No_Unit_Id
+                                 No_Unit_Id
                      then
                         Error := True;
                         if Doing_New then
@@ -2012,8 +2013,9 @@ package body Binde is
                         Error_Msg_Nat_1  := Nat (Cur_Line_Number);
                         Error_Msg_Unit_1 := Uname;
                         Error_Msg_Nat_2  := Nat (Dup);
-                        Error_Msg (Force_Elab_Order_File.all &
-                                     ":#: duplicate unit name $ from line #");
+                        Error_Msg
+                          (Force_Elab_Order_File.all
+                           & ":#: duplicate unit name $ from line #");
                      end if;
                   end if;
                end;
@@ -2023,12 +2025,12 @@ package body Binde is
                      Cur_Unit : constant Unit_Id := Unit_Id_Of (Uname);
                   begin
                      if Is_Internal_File_Name
-                       (Units.Table (Cur_Unit).Sfile)
+                          (Units.Table (Cur_Unit).Sfile)
                      then
                         if Doing_New then
                            Write_Line
-                             ("""" & Get_Name_String (Uname) &
-                                """: predefined unit ignored");
+                             ("""" & Get_Name_String (Uname)
+                              & """: predefined unit ignored");
                         end if;
 
                      else
@@ -2042,8 +2044,8 @@ package body Binde is
 
                            Build_Link
                              (Before => Prev_Unit,
-                              After => Cur_Unit,
-                              R => Forced);
+                              After  => Cur_Unit,
+                              R      => Forced);
                         end if;
 
                         Prev_Unit := Cur_Unit;

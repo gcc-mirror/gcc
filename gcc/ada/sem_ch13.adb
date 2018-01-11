@@ -12690,8 +12690,8 @@ package body Sem_Ch13 is
          elsif Nkind (N) = N_Selected_Component then
 
             --  If selector name is not our type, keep going (we might still
-            --  have an occurrence of the type in the prefix).
-            --  If it is a subcomponent of the current entity, add prefix.
+            --  have an occurrence of the type in the prefix). If it is a
+            --  subcomponent of the current entity, add prefix.
 
             if Nkind (Selector_Name (N)) /= N_Identifier
               or else Chars (Selector_Name (N)) /= TName
