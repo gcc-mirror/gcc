@@ -2773,18 +2773,40 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
 }
 
 /* Check if RHS is string_cst possibly wrapped by mem_ref.  */
-static tree
-get_string_cst (tree rhs)
+static int
+get_string_len (tree rhs)
 {
   if (TREE_CODE (rhs) == MEM_REF
       && integer_zerop (TREE_OPERAND (rhs, 1)))
     {
-      rhs = TREE_OPERAND (rhs, 0);
+      tree rhs_addr = rhs = TREE_OPERAND (rhs, 0);
       if (TREE_CODE (rhs) == ADDR_EXPR)
-	rhs = TREE_OPERAND (rhs, 0);
+	{
+	  rhs = TREE_OPERAND (rhs, 0);
+	  if (TREE_CODE (rhs) != STRING_CST)
+	    {
+	      int idx = get_stridx (rhs_addr);
+	      if (idx > 0)
+		{
+		  strinfo *si = get_strinfo (idx);
+		  if (si && si->full_string_p)
+		    return tree_to_shwi (si->nonzero_chars);
+		}
+	    }
+	}
     }
 
-  return (TREE_CODE (rhs) == STRING_CST) ? rhs : NULL_TREE;
+  if (TREE_CODE (rhs) == VAR_DECL
+      && TREE_READONLY (rhs))
+    rhs = DECL_INITIAL (rhs);
+
+  if (rhs && TREE_CODE (rhs) == STRING_CST)
+    {
+      unsigned HOST_WIDE_INT ilen = strlen (TREE_STRING_POINTER (rhs));
+      return ilen <= INT_MAX ? ilen : -1;
+    }
+
+  return -1;
 }
 
 /* Handle a single character store.  */
@@ -2798,6 +2820,9 @@ handle_char_store (gimple_stmt_iterator *gsi)
   tree ssaname = NULL_TREE, lhs = gimple_assign_lhs (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
   unsigned HOST_WIDE_INT offset = 0;
+
+  /* Set to the length of the string being assigned if known.  */
+  int rhslen;
 
   if (TREE_CODE (lhs) == MEM_REF
       && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME)
@@ -2942,19 +2967,18 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	}
     }
   else if (idx == 0
-	   && (rhs = get_string_cst (gimple_assign_rhs1 (stmt)))
+	   && (rhslen = get_string_len (gimple_assign_rhs1 (stmt))) >= 0
 	   && ssaname == NULL_TREE
 	   && TREE_CODE (TREE_TYPE (lhs)) == ARRAY_TYPE)
     {
-      size_t l = strlen (TREE_STRING_POINTER (rhs));
       HOST_WIDE_INT a = int_size_in_bytes (TREE_TYPE (lhs));
-      if (a > 0 && (unsigned HOST_WIDE_INT) a > l)
+      if (a > 0 && (unsigned HOST_WIDE_INT) a > (unsigned HOST_WIDE_INT) rhslen)
 	{
 	  int idx = new_addr_stridx (lhs);
 	  if (idx != 0)
 	    {
 	      si = new_strinfo (build_fold_addr_expr (lhs), idx,
-				build_int_cst (size_type_node, l), true);
+				build_int_cst (size_type_node, rhslen), true);
 	      set_strinfo (idx, si);
 	      si->dont_invalidate = true;
 	    }
