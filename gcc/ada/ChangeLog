@@ -1,3 +1,8 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Check_Private_Child_Unit): Ensure that the enclosing
+	scope of package Ada is Standard.
+
 2018-01-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Replace_Type_Ref): Handle properly reference to a
