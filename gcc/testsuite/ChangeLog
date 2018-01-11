@@ -1,3 +1,8 @@
+2018-01-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/83695
+	* gcc.dg/tree-ssa/pr83695.c: New test.
+
 2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/simd/fp16fml_lane_high.c: New test.
