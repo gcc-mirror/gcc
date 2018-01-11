@@ -1,3 +1,14 @@
+2018-01-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* configure.ac (--with-long-double-format): Add support for the
+	configuration option to change the default long double format on
+	PowerPC systems.
+	* config.gcc (powerpc*-linux*-*): Likewise.
+	* configure: Regenerate.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): If long
+	double is IEEE, define __KC__ and __KF__ to allow floatn.h to be
+	used without modification.
+
 2018-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_P7_MISC_X): New #define.

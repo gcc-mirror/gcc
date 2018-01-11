@@ -945,6 +945,7 @@ enable_linker_build_id
 enable_libssp
 enable_default_ssp
 with_long_double_128
+with_long_double_format
 with_gc
 with_system_zlib
 enable_maintainer_mode
@@ -1738,6 +1739,9 @@ Optional Packages:
   --with-glibc-version=M.N
                           assume GCC used with glibc version M.N or later
   --with-long-double-128  use 128-bit long double by default
+  --with-long-double-format={ieee,ibm}
+		  Specify whether PowerPC long double uses IEEE or IBM format
+
   --with-gc={page,zone}   this option is not supported anymore. It used to
                           choose the garbage collection mechanism to use with
                           the compiler
@@ -18442,7 +18446,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18445 "configure"
+#line 18449 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18548,7 +18552,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18551 "configure"
+#line 18555 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -29184,6 +29188,45 @@ if test x$gcc_cv_target_ldbl128 = xyes; then
 $as_echo "#define TARGET_DEFAULT_LONG_DOUBLE_128 1" >>confdefs.h
 
 fi
+
+# Check if TFmode long double target should use the IBM extended double or IEEE
+# 128-bit floating point formats if long doubles are 128-bits long.  The long
+# double type can only be switched on powerpc64 bit Linux systems where VSX is
+# supported.  Other PowerPC systems do not build the IEEE 128-bit emulator in
+# libgcc.
+
+# Check whether --with-long-double-format was given.
+if test "${with_long_double_format+set}" = set; then :
+  withval=$with_long_double_format;
+case "$target:$with_long_double_format" in
+  powerpc64le-*-linux*:ieee | powerpc64le-*-linux*:ibm)
+    :
+    ;;
+  powerpc64-*-linux*:ieee | powerpc64-*-linux*:ibm)
+    # IEEE 128-bit emulation is only built on 64-bit VSX Linux systems
+    case "$with_cpu" in
+      power7 | power8 | power9 | power1*)
+	:
+	;;
+      *)
+	as_fn_error "Configuration option --with-long-double-format is only \
+supported if the default cpu is power7 or newer" "$LINENO" 5
+	with_long_double_format=""
+	;;
+      esac
+      ;;
+  xpowerpc64*-*-linux*:*)
+    as_fn_error "--with-long-double-format argument should be ibm or ieee" "$LINENO" 5
+    with_long_double_format=""
+    ;;
+  *)
+    as_fn_error "Configure option --with-long-double-format is only supported \
+on 64-bit PowerPC VSX Linux systems" "$LINENO" 5
+    with_long_double_format=""
+    ;;
+esac
+fi
+
 
 # Check if the target LIBC supports exporting the AT_PLATFORM and AT_HWCAP
 # values in the TCB.  Currently, only GLIBC 2.23 and later support this.

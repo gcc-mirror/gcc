@@ -4400,6 +4400,14 @@ case "${target}" in
 			exit 1
 		    fi
 		fi
+
+		# Set up the default long double format if the user changed it.
+		if test x$with_long_double_format = xieee; then
+		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=1"
+
+		elif test x$with_long_double_format = xibm; then
+		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=0"
+		fi
 		;;
 
 	s390*-*-*)
