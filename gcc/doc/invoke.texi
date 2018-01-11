@@ -15676,6 +15676,7 @@ Permissible names are:
 @samp{armv6z}, @samp{armv6zk},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7ve}, 
 @samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a},
+@samp{armv8.4-a},
 @samp{armv7-r},
 @samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
@@ -15889,6 +15890,28 @@ floating-point instructions.
 
 @item +dotprod
 Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
+
+@item +nocrypto
+Disable the cryptographic extension.
+
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+@end table
+
+@item armv8.4-a
+@table @samp
+@item +fp16
+The half-precision floating-point data processing instructions.
+This also enables the Advanced SIMD and floating-point instructions as well
+as the Dot Product extension.
+
+@item +simd
+The ARMv8.3-A Advanced SIMD and floating-point instructions as well as the
+Dot Product extension.
+
+@item +crypto
+The cryptographic instructions.  This also enables the Advanced SIMD and
+floating-point instructions as well as the Dot Product extension.
 
 @item +nocrypto
 Disable the cryptographic extension.

@@ -1,3 +1,8 @@
+2017-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add some -march=armv8.4-a
+	combination tests.
+
 2018-01-11  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83435

@@ -120,6 +120,9 @@ define feature armv8_2
 # Architecture rel 8.3.
 define feature armv8_3
 
+# Architecture rel 8.4.
+define feature armv8_4
+
 # M-Profile security extensions.
 define feature cmse
 
@@ -242,6 +245,7 @@ define fgroup ARMv8a      ARMv7ve armv8
 define fgroup ARMv8_1a    ARMv8a crc32 armv8_1
 define fgroup ARMv8_2a    ARMv8_1a armv8_2
 define fgroup ARMv8_3a    ARMv8_2a armv8_3
+define fgroup ARMv8_4a    ARMv8_3a armv8_4
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
@@ -596,6 +600,19 @@ begin arch armv8.3-a
  option nofp remove ALL_FP
  option dotprod add FP_ARMv8 DOTPROD
 end arch armv8.3-a
+
+begin arch armv8.4-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ profile A
+ isa ARMv8_4a
+ option simd add FP_ARMv8 DOTPROD
+ option fp16 add fp16 FP_ARMv8 DOTPROD
+ option crypto add FP_ARMv8 CRYPTO DOTPROD
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8.4-a
 
 begin arch armv8-m.base
  tune for cortex-m23
