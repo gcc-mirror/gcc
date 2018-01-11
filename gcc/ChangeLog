@@ -1,3 +1,9 @@
+2018-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83781
+	* gimple-fold.c (get_range_strlen): Avoid treating arrays of pointers
+	as string arrays.
+
 2018-01-11  Martin Sebor  <msebor@gmail.com>
 	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
