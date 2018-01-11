@@ -36,7 +36,7 @@ v7ve_fps	:= vfpv3-d16 vfpv3 vfpv3-d16-fp16 vfpv3-fp16 vfpv4 neon \
 
 # Not all these permutations exist for all architecture variants, but
 # it seems to work ok.
-v8_fps		:= simd fp16 crypto fp16+crypto dotprod
+v8_fps		:= simd fp16 crypto fp16+crypto dotprod fp16fml
 
 # We don't do anything special with these.  Pre-v4t probably doesn't work.
 all_early_nofp	:= armv2 armv2a armv3 armv3m armv4 armv4t armv5 armv5t

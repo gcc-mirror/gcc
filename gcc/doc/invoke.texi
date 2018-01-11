@@ -15881,6 +15881,11 @@ Disable the floating-point, Advanced SIMD and cryptographic instructions.
 The half-precision floating-point data processing instructions.
 This also enables the Advanced SIMD and floating-point instructions.
 
+@item +fp16fml
+The half-precision floating-point fmla extension.  This also enables
+the half-precision floating-point extension and Advanced SIMD and
+floating-point instructions.
+
 @item +simd
 The ARMv8.1-A Advanced SIMD and floating-point instructions.
 
@@ -15903,7 +15908,8 @@ Disable the floating-point, Advanced SIMD and cryptographic instructions.
 @item +fp16
 The half-precision floating-point data processing instructions.
 This also enables the Advanced SIMD and floating-point instructions as well
-as the Dot Product extension.
+as the Dot Product extension and the half-precision floating-point fmla
+extension.
 
 @item +simd
 The ARMv8.3-A Advanced SIMD and floating-point instructions as well as the

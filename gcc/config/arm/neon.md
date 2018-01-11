@@ -2290,6 +2290,98 @@
   DONE;
 })
 
+;; The expand RTL structure here is not important.
+;; We use the gen_* functions anyway.
+;; We just need something to wrap the iterators around.
+
+(define_expand "neon_vfm<vfml_op>l_<vfml_half><mode>"
+  [(set (match_operand:VCVTF 0 "s_register_operand")
+     (unspec:VCVTF
+	[(match_operand:VCVTF 1 "s_register_operand")
+	   (PLUSMINUS:<VFML>
+	     (match_operand:<VFML> 2 "s_register_operand")
+	     (match_operand:<VFML> 3 "s_register_operand"))] VFMLHALVES))]
+  "TARGET_FP16FML"
+{
+  rtx half = arm_simd_vect_par_cnst_half (<VFML>mode, <vfml_half_selector>);
+  emit_insn (gen_vfm<vfml_op>l_<vfml_half><mode>_intrinsic (operands[0],
+							     operands[1],
+							     operands[2],
+							     operands[3],
+							     half, half));
+  DONE;
+})
+
+(define_insn "vfmal_low<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_low" "")))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_low" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmal.f16\\t%<V_reg>0, %<V_lo>2, %<V_lo>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmsl_high<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	      (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	      (match_operand:<VFML> 4 "vect_par_constant_high" ""))))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_high" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmsl.f16\\t%<V_reg>0, %<V_hi>2, %<V_hi>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmal_high<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 4 "vect_par_constant_high" "")))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_high" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmal.f16\\t%<V_reg>0, %<V_hi>2, %<V_hi>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
+(define_insn "vfmsl_low<mode>_intrinsic"
+ [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+	(fma:VCVTF
+	 (float_extend:VCVTF
+	  (neg:<VFMLSEL>
+	    (vec_select:<VFMLSEL>
+	      (match_operand:<VFML> 2 "s_register_operand" "<VF_constraint>")
+	      (match_operand:<VFML> 4 "vect_par_constant_low" ""))))
+	 (float_extend:VCVTF
+	  (vec_select:<VFMLSEL>
+	   (match_operand:<VFML> 3 "s_register_operand" "<VF_constraint>")
+	   (match_operand:<VFML> 5 "vect_par_constant_low" "")))
+	 (match_operand:VCVTF 1 "s_register_operand" "0")))]
+ "TARGET_FP16FML"
+ "vfmsl.f16\\t%<V_reg>0, %<V_lo>2, %<V_lo>3"
+ [(set_attr "type" "neon_fp_mla_s<q>")]
+)
+
 ; Used for intrinsics when flag_unsafe_math_optimizations is false.
 
 (define_insn "neon_vmla<mode>_unspec"

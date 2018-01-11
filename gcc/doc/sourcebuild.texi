@@ -1769,6 +1769,12 @@ ARM target supports executing instructions from ARMv8.2-A with the Dot
 Product extension. Some multilibs may be incompatible with these options.
 Implies arm_v8_2a_dotprod_neon_ok.
 
+@item arm_fp16fml_neon_ok
+@anchor{arm_fp16fml_neon_ok}
+ARM target supports extensions to generate the @code{VFMAL} and @code{VFMLS}
+half-precision floating-point instructions available from ARMv8.2-A and
+onwards.  Some multilibs may be incompatible with these options.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
@@ -2383,6 +2389,11 @@ keyword.
 Add options for ARMv8.2-A with Adv.SIMD Dot Product support, if this is
 supported by the target; see the
 @ref{arm_v8_2a_dotprod_neon_ok} effective target keyword.
+
+@item arm_fp16fml_neon
+Add options to enable generation of the @code{VFMAL} and @code{VFMSL}
+instructions, if this is supported by the target; see the
+@ref{arm_fp16fml_neon_ok} effective target keyword.
 
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind

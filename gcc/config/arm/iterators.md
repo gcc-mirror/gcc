@@ -247,6 +247,9 @@
 ;; Operations on the sign of a number.
 (define_code_iterator ABSNEG [abs neg])
 
+;; The PLUS and MINUS operators.
+(define_code_iterator PLUSMINUS [plus minus])
+
 ;; Conversions.
 (define_code_iterator FCVT [unsigned_float float])
 
@@ -265,6 +268,8 @@
                           (gtu "gt") (geu "ge")])
 
 (define_code_attr cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")])
+
+(define_code_attr vfml_op [(plus "a") (minus "s")])
 
 ;;----------------------------------------------------------------------------
 ;; Int iterators
@@ -412,6 +417,8 @@
 
 (define_int_iterator DOTPROD [UNSPEC_DOT_S UNSPEC_DOT_U])
 
+(define_int_iterator VFMLHALVES [UNSPEC_VFML_LO UNSPEC_VFML_HI])
+
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
 ;;----------------------------------------------------------------------------
@@ -471,6 +478,12 @@
                               (V2SF "V2SF") (V4SF "V2SF")
                               (DI "V2DI")   (V2DI "V2DI")])
 
+;; Mode mapping for VFM[A,S]L instructions.
+(define_mode_attr VFML [(V2SF "V4HF") (V4SF "V8HF")])
+
+;; Mode mapping for VFM[A,S]L instructions for the vec_select result.
+(define_mode_attr VFMLSEL [(V2SF "V2HF") (V4SF "V4HF")])
+
 ;; Similar, for three elements.
 (define_mode_attr V_three_elem [(V8QI "BLK") (V16QI "BLK")
                                 (V4HI "BLK") (V8HI "BLK")
@@ -494,8 +507,14 @@
 			 (V2SI "P") (V4SI  "q")
 			 (V2SF "P") (V4SF  "q")
 			 (DI   "P") (V2DI  "q")
-			 (SF   "")  (DF    "P")
-			 (HF   "")])
+			 (V2HF "") (SF   "")
+			 (DF    "P") (HF   "")])
+
+;; Output template to select the high VFP register of a mult-register value.
+(define_mode_attr V_hi [(V2SF "p") (V4SF  "f")])
+
+;; Output template to select the low VFP register of a mult-register value.
+(define_mode_attr V_lo [(V2SF "") (V4SF  "e")])
 
 ;; Wider modes with the same number of elements.
 (define_mode_attr V_widen [(V8QI "V8HI") (V4HI "V4SI") (V2SI "V2DI")])
@@ -708,6 +727,7 @@
 (define_mode_attr F_constraint [(SF "t") (DF "w")])
 (define_mode_attr vfp_type [(SF "s") (DF "d")])
 (define_mode_attr vfp_double_cond [(SF "") (DF "&& TARGET_VFP_DOUBLE")])
+(define_mode_attr VF_constraint [(V2SF "t") (V4SF "w")])
 
 ;; Mode attribute used to build the "type" attribute.
 (define_mode_attr q [(V8QI "") (V16QI "_q")
@@ -823,6 +843,12 @@
   (UNSPEC_VCVTH_S "s") (UNSPEC_VCVTH_U "u")
   (UNSPEC_DOT_S "s") (UNSPEC_DOT_U "u")
 ])
+
+(define_int_attr vfml_half
+ [(UNSPEC_VFML_HI "high") (UNSPEC_VFML_LO "low")])
+
+(define_int_attr vfml_half_selector
+ [(UNSPEC_VFML_HI "true") (UNSPEC_VFML_LO "false")])
 
 (define_int_attr vcvth_op
  [(UNSPEC_VCVTA_S "a") (UNSPEC_VCVTA_U "a")
