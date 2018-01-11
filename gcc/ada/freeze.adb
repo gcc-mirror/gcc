@@ -5517,6 +5517,11 @@ package body Freeze is
       --  Case of a type or subtype being frozen
 
       else
+         --  Verify several SPARK legality rules related to Ghost types now
+         --  that the type is frozen.
+
+         Check_Ghost_Type (E);
+
          --  We used to check here that a full type must have preelaborable
          --  initialization if it completes a private type specified with
          --  pragma Preelaborable_Initialization, but that missed cases where
@@ -5566,21 +5571,6 @@ package body Freeze is
                  ("\can only be specified for a tagged type", Prag);
             end if;
          end;
-
-         if Is_Ghost_Entity (E) then
-
-            --  A Ghost type cannot be concurrent (SPARK RM 6.9(19)). Verify
-            --  this legality rule first to five a finer-grained diagnostic.
-
-            if Is_Concurrent_Type (E) then
-               Error_Msg_N ("ghost type & cannot be concurrent", E);
-
-            --  A Ghost type cannot be effectively volatile (SPARK RM 6.9(7))
-
-            elsif Is_Effectively_Volatile (E) then
-               Error_Msg_N ("ghost type & cannot be volatile", E);
-            end if;
-         end if;
 
          --  Deal with special cases of freezing for subtype
 
