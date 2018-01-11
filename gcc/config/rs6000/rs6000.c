@@ -16792,6 +16792,12 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case RS6000_BUILTIN_CPU_SUPPORTS:
       return cpu_expand_builtin (fcode, exp, target);
 
+    case MISC_BUILTIN_SPEC_BARRIER:
+      {
+	emit_insn (gen_rs6000_speculation_barrier ());
+	return NULL_RTX;
+      }
+
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
@@ -17164,6 +17170,8 @@ rs6000_init_builtins (void)
 
   ftype = build_function_type_list (void_type_node, NULL_TREE);
   def_builtin ("__builtin_cpu_init", ftype, RS6000_BUILTIN_CPU_INIT);
+  def_builtin ("__builtin_rs6000_speculation_barrier", ftype,
+	       MISC_BUILTIN_SPEC_BARRIER);
 
   ftype = build_function_type_list (bool_int_type_node, const_ptr_type_node,
 				    NULL_TREE);

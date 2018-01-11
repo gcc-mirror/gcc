@@ -1,3 +1,15 @@
+2018-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_P7_MISC_X): New #define.
+	(SPEC_BARRIER): New instantiation of BU_P7_MISC_X.
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): Handle
+	MISC_BUILTIN_SPEC_BARRIER.
+	(rs6000_init_builtins): Likewise.
+	* config/rs6000/rs6000.md (UNSPECV_SPEC_BARRIER): New UNSPECV
+	enum value.
+	(speculation_barrier): New define_insn.
+	* doc/extend.texi: Document __builtin_speculation_barrier.
+
 2018-01-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/83203
