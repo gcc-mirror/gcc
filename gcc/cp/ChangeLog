@@ -1,3 +1,7 @@
+2018-01-11  Nathan Sidwell  <nathan@acm.org>
+
+	* method.c (enum mangling_flags): Delete long-dead enum.
+
 2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_std_attribute_spec): When
