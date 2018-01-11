@@ -428,7 +428,7 @@ scop_detection::get_sese (loop_p loop)
 
   edge scop_begin = loop_preheader_edge (loop);
   edge scop_end = single_exit (loop);
-  if (!scop_end || (scop_end->flags & EDGE_COMPLEX))
+  if (!scop_end || (scop_end->flags & (EDGE_COMPLEX|EDGE_FAKE)))
     return invalid_sese;
   /* Include the BB with the loop-closed SSA PHI nodes.
      canonicalize_loop_closed_ssa makes sure that is in proper shape.  */

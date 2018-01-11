@@ -2786,6 +2786,8 @@ add_assert_info (vec<assert_info> &asserts,
   assert_info info;
   info.comp_code = comp_code;
   info.name = name;
+  if (TREE_OVERFLOW_P (val))
+    val = drop_tree_overflow (val);
   info.val = val;
   info.expr = expr;
   asserts.safe_push (info);
