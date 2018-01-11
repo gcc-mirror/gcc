@@ -1,3 +1,17 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Perform
+	analysis on a copy of the expression with a copy of the index variable,
+	because full expansion will rewrite construct into a loop with the
+	original loop variable.
+	* exp_aggr.adb (Gen_Assign): Defer analysis and resolution if the
+	expression is an iterated component association. Full analysis takes
+	place when construct is rewritten as a loop.
+	(In_Place_Assign_OK, Safe_Component): An iterated_component_association
+	is not safe for in-place assignment.
+	* sem_util.adb (Remove_Entity): Handle properly the case of an isolated
+	entity with no homonym and no other entity in the scope.
+
 2018-01-11  Justin Squirek  <squirek@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma:Pragma_Loop_Variant): Modify error

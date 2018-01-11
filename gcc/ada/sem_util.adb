@@ -22373,11 +22373,13 @@ package body Sem_Util is
 
       else
          Prev_Id := Current_Entity (Id);
-         while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
-            Prev_Id := Homonym (Prev_Id);
-         end loop;
+         if Present (Prev_Id) then
+            while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
+               Prev_Id := Homonym (Prev_Id);
+            end loop;
 
-         Set_Homonym (Prev_Id, Homonym (Id));
+            Set_Homonym (Prev_Id, Homonym (Id));
+         end if;
       end if;
 
       --  Remove the entity from the scope entity chain. When the entity is
@@ -22397,7 +22399,9 @@ package body Sem_Util is
             Next_Entity (Prev_Id);
          end loop;
 
-         Set_Next_Entity (Prev_Id, Next_Entity (Id));
+         if Present (Prev_Id) then
+            Set_Next_Entity (Prev_Id, Next_Entity (Id));
+         end if;
       end if;
 
       --  Handle the case where the entity acts as the tail of the scope entity

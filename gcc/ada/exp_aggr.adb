@@ -240,7 +240,7 @@ package body Exp_Aggr is
    --  calling Flatten.
    --
    --  This function also detects and warns about one-component aggregates that
-   --  appear in a non-static context. Even if the component value is static,
+   --  appear in a nonstatic context. Even if the component value is static,
    --  such an aggregate must be expanded into an assignment.
 
    function Backend_Processing_Possible (N : Node_Id) return Boolean;
@@ -492,7 +492,7 @@ package body Exp_Aggr is
          end if;
 
          --  One-component aggregates are suspicious, and if the context type
-         --  is an object declaration with non-static bounds it will trip gcc;
+         --  is an object declaration with nonstatic bounds it will trip gcc;
          --  such an aggregate must be expanded into a single assignment.
 
          if Hiv = Lov and then Nkind (Parent (N)) = N_Object_Declaration then
@@ -674,7 +674,7 @@ package body Exp_Aggr is
 
          --  Recurse to check subaggregates, which may appear in qualified
          --  expressions. If delayed, the front-end will have to expand.
-         --  If the component is a discriminated record, treat as non-static,
+         --  If the component is a discriminated record, treat as nonstatic,
          --  as the back-end cannot handle this properly.
 
          Expr := First (Expressions (N));
@@ -1537,11 +1537,17 @@ package body Exp_Aggr is
             --  of the generated loop will analyze the expression in the
             --  proper context, in which the loop parameter is visible.
 
-            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ)
-              and then
-                Nkind (Parent (Expr_Q)) /= N_Iterated_Component_Association
-            then
-               Analyze_And_Resolve (Expr_Q, Comp_Typ);
+            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ) then
+               if
+                 Nkind (Parent (Expr_Q)) = N_Iterated_Component_Association
+                or else
+                  Nkind (Parent (Parent ((Expr_Q))))
+                     = N_Iterated_Component_Association
+               then
+                  null;
+               else
+                  Analyze_And_Resolve (Expr_Q, Comp_Typ);
+               end if;
             end if;
 
             if Is_Delayed_Aggregate (Expr_Q) then
@@ -4045,7 +4051,7 @@ package body Exp_Aggr is
             Next_Elmt (Disc2);
          end loop;
 
-         --  If any discriminant constraint is non-static, emit a check
+         --  If any discriminant constraint is nonstatic, emit a check
 
          if Present (Cond) then
             Insert_Action (N,
@@ -4298,7 +4304,7 @@ package body Exp_Aggr is
       --  Check whether all components of the aggregate are compile-time known
       --  values, and can be passed as is to the back-end without further
       --  expansion.
-      --  An Iterated_Component_Association is treated as non-static, but there
+      --  An Iterated_Component_Association is treated as nonstatic, but there
       --  are possibilities for optimization here.
 
       function Flatten
@@ -5493,6 +5499,16 @@ package body Exp_Aggr is
                   --  For now, too complex to analyze
 
                   return False;
+
+               elsif
+                  Nkind (Parent (Expr)) = N_Iterated_Component_Association
+               then
+
+                  --  Ditto for iterated component associations, which in
+                  --  general require an enclosing loop and involve nonstatic
+                  --  expressions.
+
+                  return False;
                end if;
 
                Comp := New_Copy_Tree (Expr);
@@ -5555,7 +5571,7 @@ package body Exp_Aggr is
                --  bounds. Ditto for an allocator whose qualified expression
                --  is a constrained type. If the expression in the allocator
                --  is an unconstrained array, we accept an upper bound that
-               --  is not static, to allow for non-static expressions of the
+               --  is not static, to allow for nonstatic expressions of the
                --  base type. Clearly there are further possibilities (with
                --  diminishing returns) for safely building arrays in place
                --  here.
@@ -7759,7 +7775,7 @@ package body Exp_Aggr is
          function Get_Component_Val (N : Node_Id) return Uint;
          --  Given a expression value N of the component type Ctyp, returns a
          --  value of Csiz (component size) bits representing this value. If
-         --  the value is non-static or any other reason exists why the value
+         --  the value is nonstatic or any other reason exists why the value
          --  cannot be returned, then Not_Handled is raised.
 
          -----------------------
