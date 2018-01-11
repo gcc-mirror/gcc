@@ -1,3 +1,21 @@
+2018-01-11  Patrick Bernardi  <bernardi@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Simplified
+	Secondary_Stack_Size handling as a pragma is now generated for the
+	corresponding aspect instead of an attribute.  Pragma expression is
+	relocated instead of evaluated. Discriminant of the corresponding
+	record type is referenced rather than the type discriminant.
+	(Create_Secondary_Stack_For_Task, Make_Task_Create_Call): Update
+	Secondary_Stack_Size rep item checks to only look for the pragma rep.
+	* sem_ch13.adb (Analyze_One_Aspect): Transform
+	Aspect_Secondary_Stack_Size into a pragma instead of an attribute
+	because the attribute does not have visibility on a task type's
+	discriminants when the type's definition is expanded.
+	(Analyze_Attribute_Definition_Clause): Remove handling of
+	Attribute_Secondary_Stack_Size.
+	* snames.adb-tmpl, snames.ads-tmpl: Remove
+	Attribute_Secondary_Stack_Size, no longer used.
+
 2018-01-11  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch8.adb: Minor comment fix.
