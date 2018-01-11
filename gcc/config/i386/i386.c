@@ -11339,11 +11339,16 @@ ix86_compute_frame_layout (void)
       offset += frame->va_arg_size;
     }
 
-  /* Align start of frame for local function.  */
+  /* Align start of frame for local function.  When a function call
+     is removed, it may become a leaf function.  But if argument may
+     be passed on stack, we need to align the stack when there is no
+     tail call.  */
   if (m->call_ms2sysv
       || frame->va_arg_size != 0
       || size != 0
       || !crtl->is_leaf
+      || (!crtl->tail_call_emit
+	  && cfun->machine->outgoing_args_on_stack)
       || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
     offset = ROUND_UP (offset, stack_alignment_needed);
