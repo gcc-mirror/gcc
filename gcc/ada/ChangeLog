@@ -1,3 +1,8 @@
+2018-01-11  Bob Duff  <duff@adacore.com>
+
+	* binde.adb (Force_Elab_Order): Give an error if there are duplicate
+	unit names.
+
 2018-01-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Freeze_Expr_Types): If an access value is the
