@@ -1,3 +1,15 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Add_Internal_Interface_Entities): When checking the
+	legality of an inherited operation that may require overriding, ignore
+	primitive_wrappers that correspond to explicit operations that override
+	an interface primitive.
+	* exp_util.adb (Build_Class_Wide_Expression, Replace_Entity): If the
+	operation to which the class-wide expression applies is a protected op.
+	with a primitive_wrapper, verify that the updated inherited expression
+	does not contain an internal call to a protected function.  This
+	completes the implementation of AI12-0166.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* ali.adb: Document the remaining letters available for ALI lines.

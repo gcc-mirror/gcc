@@ -1129,6 +1129,24 @@ package body Exp_Util is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
 
+               --  Implement rule in AI12-0166: a precondition for a
+               --  protected operation cannot include an internal call to
+               --  a protected function of the type. In the case of an
+               --  inherited condition for an overriding operation, both the
+               --  operation and the function are given by primitive wrappers.
+
+               if Ekind (New_E) = E_Function
+                 and then Is_Primitive_Wrapper (New_E)
+                 and then Is_Primitive_Wrapper (Subp)
+                 and then Scope (Subp) = Scope (New_E)
+               then
+                  Error_Msg_Node_2 := Wrapped_Entity (Subp);
+                  Error_Msg_NE
+                    ("internal call to& cannot appear in inherited "
+                     & "precondition of protected operation&",
+                       N, Wrapped_Entity (New_E));
+               end if;
+
                --  If the entity is an overridden primitive and we are not
                --  in GNATprove mode, we must build a wrapper for the current
                --  inherited operation. If the reference is the prefix of an
