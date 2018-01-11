@@ -1,3 +1,8 @@
+2018-01-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/83330
+	* gcc.target/i386/pr83330.c: New test.
+
 2018-01-11  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/79383
