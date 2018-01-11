@@ -2,6 +2,85 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64-modes.def (NUM_POLY_INT_COEFFS): Set to 2.
+	* config/aarch64/aarch64-protos.h (aarch64_initial_elimination_offset):
+	Return a poly_int64 rather than a HOST_WIDE_INT.
+	(aarch64_offset_7bit_signed_scaled_p): Take the offset as a poly_int64
+	rather than a HOST_WIDE_INT.
+	* config/aarch64/aarch64.h (aarch64_frame): Protect with
+	HAVE_POLY_INT_H rather than HOST_WIDE_INT.  Change locals_offset,
+	hard_fp_offset, frame_size, initial_adjust, callee_offset and
+	final_offset from HOST_WIDE_INT to poly_int64.
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args): Use
+	to_constant when getting the number of units in an Advanced SIMD
+	mode.
+	(aarch64_builtin_vectorized_function): Check for a constant number
+	of units.
+	* config/aarch64/aarch64-simd.md (mov<mode>): Handle polynomial
+	GET_MODE_SIZE.
+	(aarch64_ld<VSTRUCT:nregs>_lane<VALLDIF:mode>): Use the nunits
+	attribute instead of GET_MODE_NUNITS.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_nregs)
+	(aarch64_class_max_nregs): Use the constant_lowest_bound of the
+	GET_MODE_SIZE for fixed-size registers.
+	(aarch64_const_vec_all_same_in_range_p): Use const_vec_duplicate_p.
+	(aarch64_hard_regno_call_part_clobbered, aarch64_classify_index)
+	(aarch64_mode_valid_for_sched_fusion_p, aarch64_classify_address)
+	(aarch64_legitimize_address_displacement, aarch64_secondary_reload)
+	(aarch64_print_operand, aarch64_print_address_internal)
+	(aarch64_address_cost, aarch64_rtx_costs, aarch64_register_move_cost)
+	(aarch64_short_vector_p, aapcs_vfp_sub_candidate)
+	(aarch64_simd_attr_length_rglist, aarch64_operands_ok_for_ldpstp):
+	Handle polynomial GET_MODE_SIZE.
+	(aarch64_hard_regno_caller_save_mode): Likewise.  Return modes
+	wider than SImode without modification.
+	(tls_symbolic_operand_type): Use strip_offset instead of split_const.
+	(aarch64_pass_by_reference, aarch64_layout_arg, aarch64_pad_reg_upward)
+	(aarch64_gimplify_va_arg_expr): Assert that we don't yet handle
+	passing and returning SVE modes.
+	(aarch64_function_value, aarch64_layout_arg): Use gen_int_mode
+	rather than GEN_INT.
+	(aarch64_emit_probe_stack_range): Take the size as a poly_int64
+	rather than a HOST_WIDE_INT, but call sorry if it isn't constant.
+	(aarch64_allocate_and_probe_stack_space): Likewise.
+	(aarch64_layout_frame): Cope with polynomial offsets.
+	(aarch64_save_callee_saves, aarch64_restore_callee_saves): Take the
+	start_offset as a poly_int64 rather than a HOST_WIDE_INT.  Track
+	polynomial offsets.
+	(offset_9bit_signed_unscaled_p, offset_12bit_unsigned_scaled_p)
+	(aarch64_offset_7bit_signed_scaled_p): Take the offset as a
+	poly_int64 rather than a HOST_WIDE_INT.
+	(aarch64_get_separate_components, aarch64_process_components)
+	(aarch64_expand_prologue, aarch64_expand_epilogue)
+	(aarch64_use_return_insn_p): Handle polynomial frame offsets.
+	(aarch64_anchor_offset): New function, split out from...
+	(aarch64_legitimize_address): ...here.
+	(aarch64_builtin_vectorization_cost): Handle polynomial
+	TYPE_VECTOR_SUBPARTS.
+	(aarch64_simd_check_vect_par_cnst_half): Handle polynomial
+	GET_MODE_NUNITS.
+	(aarch64_simd_make_constant, aarch64_expand_vector_init): Get the
+	number of elements from the PARALLEL rather than the mode.
+	(aarch64_shift_truncation_mask): Use GET_MODE_UNIT_BITSIZE
+	rather than GET_MODE_BITSIZE.
+	(aarch64_evpc_trn, aarch64_evpc_uzp, aarch64_evpc_ext)
+	(aarch64_evpc_rev, aarch64_evpc_dup, aarch64_evpc_zip)
+	(aarch64_expand_vec_perm_const_1): Handle polynomial
+	d->perm.length () and d->perm elements.
+	(aarch64_evpc_tbl): Likewise.  Use nelt rather than GET_MODE_NUNITS.
+	Apply to_constant to d->perm elements.
+	(aarch64_simd_valid_immediate, aarch64_vec_fpconst_pow_of_2): Handle
+	polynomial CONST_VECTOR_NUNITS.
+	(aarch64_move_pointer): Take amount as a poly_int64 rather
+	than an int.
+	(aarch64_progress_pointer): Avoid temporary variable.
+	* config/aarch64/aarch64.md (aarch64_<crc_variant>): Use
+	the mode attribute instead of GET_MODE.
+
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_force_temporary): Assert that
 	x exists before using it.
 	(aarch64_add_constant_internal): Rename to...

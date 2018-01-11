@@ -31,9 +31,9 @@
      normal str, so the check need not apply.  */
   if (GET_CODE (operands[0]) == MEM
       && !(aarch64_simd_imm_zero (operands[1], <MODE>mode)
-	   && ((GET_MODE_SIZE (<MODE>mode) == 16
+	   && ((known_eq (GET_MODE_SIZE (<MODE>mode), 16)
 		&& aarch64_mem_pair_operand (operands[0], DImode))
-	       || GET_MODE_SIZE (<MODE>mode) == 8)))
+	       || known_eq (GET_MODE_SIZE (<MODE>mode), 8))))
       operands[1] = force_reg (<MODE>mode, operands[1]);
   "
 )
@@ -5334,9 +5334,7 @@
   set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<VALLDIF:MODE>mode))
 		     * <VSTRUCT:nregs>);
 
-  aarch64_simd_lane_bounds (operands[3], 0,
-			    GET_MODE_NUNITS (<VALLDIF:MODE>mode),
-			    NULL);
+  aarch64_simd_lane_bounds (operands[3], 0, <VALLDIF:nunits>, NULL);
   emit_insn (gen_aarch64_vec_load_lanes<VSTRUCT:mode>_lane<VALLDIF:mode> (
 	operands[0], mem, operands[2], operands[3]));
   DONE;
