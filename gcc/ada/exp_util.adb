@@ -1129,11 +1129,11 @@ package body Exp_Util is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
 
-               --  Implement rule in AI12-0166: a precondition for a
-               --  protected operation cannot include an internal call to
-               --  a protected function of the type. In the case of an
-               --  inherited condition for an overriding operation, both the
-               --  operation and the function are given by primitive wrappers.
+               --  AI12-0166: a precondition for a protected operation
+               --  cannot include an internal call to a protected function
+               --  of the type. In the case of an inherited condition for an
+               --  overriding operation, both the operation and the function
+               --  are given by primitive wrappers.
 
                if Ekind (New_E) = E_Function
                  and then Is_Primitive_Wrapper (New_E)
@@ -1144,7 +1144,7 @@ package body Exp_Util is
                   Error_Msg_NE
                     ("internal call to& cannot appear in inherited "
                      & "precondition of protected operation&",
-                       N, Wrapped_Entity (New_E));
+                     N, Wrapped_Entity (New_E));
                end if;
 
                --  If the entity is an overridden primitive and we are not

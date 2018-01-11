@@ -1,3 +1,8 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb, exp_ch9.adb, exp_util.adb, sem_aggr.adb, sem_ch3.adb,
+	sem_res.adb, sem_util.adb: Minor reformatting.
+
 2018-01-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Predicate): Indicate that the type

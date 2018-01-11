@@ -1538,11 +1538,9 @@ package body Exp_Aggr is
             --  proper context, in which the loop parameter is visible.
 
             if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ) then
-               if
-                 Nkind (Parent (Expr_Q)) = N_Iterated_Component_Association
-                or else
-                  Nkind (Parent (Parent ((Expr_Q))))
-                     = N_Iterated_Component_Association
+               if Nkind (Parent (Expr_Q)) = N_Iterated_Component_Association
+                 or else Nkind (Parent (Parent ((Expr_Q)))) =
+                           N_Iterated_Component_Association
                then
                   null;
                else
@@ -5009,7 +5007,6 @@ package body Exp_Aggr is
          --  Scalar types are OK if their size is a multiple of Storage_Unit
 
          elsif Is_Scalar_Type (Ctyp) then
-
             if Csiz mod System_Storage_Unit /= 0 then
                return False;
             end if;
@@ -5500,10 +5497,9 @@ package body Exp_Aggr is
 
                   return False;
 
-               elsif
-                  Nkind (Parent (Expr)) = N_Iterated_Component_Association
+               elsif Nkind (Parent (Expr)) =
+                       N_Iterated_Component_Association
                then
-
                   --  Ditto for iterated component associations, which in
                   --  general require an enclosing loop and involve nonstatic
                   --  expressions.

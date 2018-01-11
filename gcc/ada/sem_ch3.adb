@@ -1749,7 +1749,7 @@ package body Sem_Ch3 is
                      then
                         null;
 
-                     --  The operation is inherited and must be overridden.
+                     --  The operation is inherited and must be overridden
 
                      elsif not Comes_From_Source (Prim) then
                         Error_Msg_NE

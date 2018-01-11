@@ -9100,7 +9100,6 @@ package body Sem_Res is
             Error_Msg_N
               ("\even if user-defined equality exists (RM 4.5.2 (28.1/3)?", N);
          end if;
-
       end Resolve_Set_Membership;
 
    --  Start of processing for Resolve_Membership_Op
