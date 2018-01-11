@@ -889,10 +889,7 @@ package body Sem_Res is
             Full_Type := T;
          end if;
 
-         if Is_Controlled (Full_Type) then
-            return False;
-
-         elsif Is_Array_Type (Full_Type) then
+         if Is_Array_Type (Full_Type) then
             return Uses_SS (Component_Type (Full_Type));
 
          elsif Is_Record_Type (Full_Type) then
