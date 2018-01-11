@@ -1,3 +1,11 @@
+2018-01-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/83695
+	* gimple-loop-linterchange.cc
+	(tree_loop_interchange::interchange_loops): Call scev_reset_htab to
+	reset cached scev information after interchange.
+	(pass_linterchange::execute): Remove call to scev_reset_htab.
+
 2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm_neon.h (vfmlal_lane_low_u32, vfmlal_lane_high_u32,
