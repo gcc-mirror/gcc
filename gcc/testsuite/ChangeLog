@@ -1,3 +1,7 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/bip_overlay.adb, gnat.dg/bip_overlay.ads: New testcase.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/protected_func.adb, gnat.dg/protected_func.ads: New testcase.

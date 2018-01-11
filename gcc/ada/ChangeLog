@@ -1,3 +1,13 @@
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration): Handle
+	properly object declarations with initializations that are
+	build-in-place function calls, when there is an address specification,
+	either as an aspect specification or an explicit attribute
+	specification clause, for the initialized object.
+	* freeze.adb (Check_Address_Clause): Do not remove side-effects from
+	initial expressions in the case of a build-in-place call.
+
 2018-01-11  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_eval.adb (Is_Null_Range): Retrieve the full view when called on a

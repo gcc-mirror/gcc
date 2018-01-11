@@ -711,11 +711,16 @@ package body Freeze is
             end;
          end if;
 
-         if Present (Init) then
+         --  Remove side effects from initial expression, except in the case
+         --  of a build-in-place call, which has its own later expansion.
 
-            --  Capture initialization value at point of declaration,
-            --  and make explicit assignment legal, because object may
-            --  be a constant.
+         if Present (Init)
+           and then (Nkind (Init) /= N_Function_Call
+             or else not Is_Expanded_Build_In_Place_Call (Init))
+         then
+
+            --  Capture initialization value at point of declaration, and make
+            --  explicit assignment legal, because object may be a constant.
 
             Remove_Side_Effects (Init);
             Lhs := New_Occurrence_Of (E, Sloc (Decl));
