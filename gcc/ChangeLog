@@ -1,3 +1,10 @@
+2018-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83435
+	* graphite.c (canonicalize_loop_form): Ignore fake loop exit edges.
+	* graphite-scop-detection.c (scop_detection::get_sese): Likewise.
+	* tree-vrp.c (add_assert_info): Drop TREE_OVERFLOW if they appear.
+
 2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

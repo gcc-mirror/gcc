@@ -324,7 +324,7 @@ canonicalize_loop_form (void)
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
       edge e = single_exit (loop);
-      if (!e || (e->flags & EDGE_COMPLEX))
+      if (!e || (e->flags & (EDGE_COMPLEX|EDGE_FAKE)))
 	continue;
 
       canonicalize_loop_closed_ssa (loop, e);
