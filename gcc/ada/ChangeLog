@@ -1,3 +1,10 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Process_Action): Do not abandon the inspection of an
+	individual action because the action may denote a complex expression,
+	such as a case statement, which in turn may contain additional
+	transient objects.
+
 2018-01-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_aggr.adb (Resolve_Iterated_Component_Association): Perform
