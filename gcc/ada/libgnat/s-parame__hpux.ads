@@ -91,10 +91,6 @@ package System.Parameters is
    --  The run-time chosen default size for secondary stacks that may be
    --  overriden by the user with the use of binder -D switch.
 
-   function Default_Sec_Stack_Size return Size_Type;
-   --  The default initial size for secondary stacks that reflects any user
-   --  specified default via the binder -D switch.
-
    Sec_Stack_Dynamic : constant Boolean := True;
    --  Indicates if secondary stacks can grow and shrink at run-time. If False,
    --  the size of a secondary stack is fixed at the point of its creation.
