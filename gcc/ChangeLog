@@ -1,5 +1,10 @@
 2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_reinterpret_float_as_int):
+	Use scalar_float_mode.
+
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/aarch64-simd.md
 	(aarch64_fml<f16mac1>l<f16quad>_low<mode>): Avoid GET_MODE_NUNITS.
 	(aarch64_fml<f16mac1>l<f16quad>_high<mode>): Likewise.

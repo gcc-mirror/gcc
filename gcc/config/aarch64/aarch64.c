@@ -4806,9 +4806,9 @@ aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *intval)
       return true;
     }
 
-  machine_mode mode = GET_MODE (value);
+  scalar_float_mode mode;
   if (GET_CODE (value) != CONST_DOUBLE
-      || !SCALAR_FLOAT_MODE_P (mode)
+      || !is_a <scalar_float_mode> (GET_MODE (value), &mode)
       || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT
       /* Only support up to DF mode.  */
       || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (DFmode))
