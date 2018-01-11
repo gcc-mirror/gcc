@@ -1279,7 +1279,8 @@ package body Sem_Ch12 is
                if No (Formal) then
                   Error_Msg_Sloc := Sloc (Node (Elem));
                   Error_Msg_NE
-                    ("?instance does not use primitive operation&#",
+                    ("?instance uses predefined operation, "
+                      & "not primitive operation&#",
                       Actual, Node (Elem));
                end if;
             end if;
@@ -1717,7 +1718,16 @@ package body Sem_Ch12 is
                           (Formal, Match, Analyzed_Formal, Assoc_List),
                         Assoc_List);
 
-                     if Is_Fixed_Point_Type (Entity (Match)) then
+                     --  Warn when an actual is a fixed-point with user-
+                     --  defined promitives. The warning is superfluous
+                     --  if the fornal is private, because there can be
+                     --  no arithmetic operations in the generic so there
+                     --  no danger of confusion.
+
+                     if Is_Fixed_Point_Type (Entity (Match))
+                       and then not Is_Private_Type
+                         (Defining_Identifier (Analyzed_Formal))
+                     then
                         Check_Fixed_Point_Actual (Match);
                      end if;
 
