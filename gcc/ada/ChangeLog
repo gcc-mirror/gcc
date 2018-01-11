@@ -1,5 +1,9 @@
 2018-01-11  Bob Duff  <duff@adacore.com>
 
+	* binderr.ads, namet.ads: Minor reformatting.
+
+2018-01-11  Bob Duff  <duff@adacore.com>
+
 	* doc/gnat_ugn/gnat_utility_programs.rst: Improve documentation of
 	xml2gnat.
 
