@@ -1,3 +1,9 @@
+2018-01-11  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Rewrite gnatpp documentation
+	to match what the Libadalang-based version does.
+	* doc/gnat_ugn/about_this_guide.rst: Update reference.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Uses_SS): A controlled type requires the secondary stack
