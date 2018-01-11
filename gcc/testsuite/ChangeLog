@@ -1,3 +1,7 @@
+2018-01-11  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/protected_null.adb: New testcase.
+
 2018-01-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/expr_func3.adb, gnat.dg/expr_func3.ads: New testcase.
