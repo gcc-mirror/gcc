@@ -1,5 +1,10 @@
 2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/arm/simd/fp16fml_lane_high.c: New test.
+	* gcc.target/arm/simd/fp16fml_lane_low.c: New test.
+
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/arm/multilib.exp: Add combination tests for fp16fml.
 	* gcc.target/arm/simd/fp16fml_high.c: New test.
 	* gcc.target/arm/simd/fp16fml_low.c: Likewise.
