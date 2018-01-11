@@ -1,3 +1,12 @@
+2018-01-11  Martin Sebor  <msebor@gmail.com>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/83501
+	PR tree-optimization/81703
+
+	* gcc.dg/strlenopt-39.c: New test-case.
+	* gcc.dg/pr81703.c: Likewise.
+
 2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/atomic10.adb: New test.
