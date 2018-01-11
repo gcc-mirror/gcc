@@ -708,7 +708,18 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__LONGDOUBLE128");
 
       if (TARGET_IEEEQUAD)
-	builtin_define ("__LONG_DOUBLE_IEEE128__");
+	{
+	  /* Older versions of GLIBC used __attribute__((__KC__)) to create the
+	     IEEE 128-bit floating point complex type for C++ (which does not
+	     support _Float128 _Complex).  If the default for long double is
+	     IEEE 128-bit mode, the library would need to use
+	     __attribute__((__TC__)) instead.  Defining __KF__ and __KC__
+	     is a stop-gap to build with the older libraries, until we
+	     get an updated library.  */
+	  builtin_define ("__LONG_DOUBLE_IEEE128__");
+	  builtin_define ("__KF__=__TF__");
+	  builtin_define ("__KC__=__TC__");
+	}
       else
 	builtin_define ("__LONG_DOUBLE_IBM128__");
     }
