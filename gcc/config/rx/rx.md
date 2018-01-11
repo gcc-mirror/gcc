@@ -2167,6 +2167,7 @@
   [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])
 
 (define_mode_iterator QIHI [QI HI])
+(define_mode_attr BW [(QI "B") (HI "W")])
 
 (define_insn "sync_lock_test_and_setsi"
   [(set (match_operand:SI 0 "register_operand"   "=r,r")
@@ -2208,7 +2209,7 @@
    (set (match_dup 1)
 	(match_operand:QIHI 2 "register_operand"    "0"))]
   ""
-  "xchg\t%1, %0"
+  "xchg\t%1.<BW>, %0"
   [(set_attr "length" "6")
    (set_attr "timings" "22")]
 )
