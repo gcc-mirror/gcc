@@ -586,7 +586,7 @@ extern enum aarch64_processor aarch64_tune;
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-#ifdef HOST_WIDE_INT
+#ifdef HAVE_POLY_INT_H
 struct GTY (()) aarch64_frame
 {
   HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
@@ -604,20 +604,20 @@ struct GTY (()) aarch64_frame
   /* Offset from the base of the frame (incomming SP) to the
      top of the locals area.  This value is always a multiple of
      STACK_BOUNDARY.  */
-  HOST_WIDE_INT locals_offset;
+  poly_int64 locals_offset;
 
   /* Offset from the base of the frame (incomming SP) to the
      hard_frame_pointer.  This value is always a multiple of
      STACK_BOUNDARY.  */
-  HOST_WIDE_INT hard_fp_offset;
+  poly_int64 hard_fp_offset;
 
   /* The size of the frame.  This value is the offset from base of the
-   * frame (incomming SP) to the stack_pointer.  This value is always
-   * a multiple of STACK_BOUNDARY.  */
-  HOST_WIDE_INT frame_size;
+     frame (incomming SP) to the stack_pointer.  This value is always
+     a multiple of STACK_BOUNDARY.  */
+  poly_int64 frame_size;
 
   /* The size of the initial stack adjustment before saving callee-saves.  */
-  HOST_WIDE_INT initial_adjust;
+  poly_int64 initial_adjust;
 
   /* The writeback value when pushing callee-save registers.
      It is zero when no push is used.  */
@@ -625,10 +625,10 @@ struct GTY (()) aarch64_frame
 
   /* The offset from SP to the callee-save registers after initial_adjust.
      It may be non-zero if no push is used (ie. callee_adjust == 0).  */
-  HOST_WIDE_INT callee_offset;
+  poly_int64 callee_offset;
 
   /* The size of the stack adjustment after saving callee-saves.  */
-  HOST_WIDE_INT final_adjust;
+  poly_int64 final_adjust;
 
   /* Store FP,LR and setup a frame pointer.  */
   bool emit_frame_chain;

@@ -1077,9 +1077,9 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	      gcc_assert (opc > 1);
 	      if (CONST_INT_P (op[opc]))
 		{
-		  aarch64_simd_lane_bounds (op[opc], 0,
-					    GET_MODE_NUNITS (builtin_mode),
-					    exp);
+		  unsigned int nunits
+		    = GET_MODE_NUNITS (builtin_mode).to_constant ();
+		  aarch64_simd_lane_bounds (op[opc], 0, nunits, exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
 		  op[opc] = aarch64_endian_lane_rtx (builtin_mode,
 						     INTVAL (op[opc]));
@@ -1092,8 +1092,9 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	      if (CONST_INT_P (op[opc]))
 		{
 		  machine_mode vmode = insn_data[icode].operand[opc - 1].mode;
-		  aarch64_simd_lane_bounds (op[opc],
-					    0, GET_MODE_NUNITS (vmode), exp);
+		  unsigned int nunits
+		    = GET_MODE_NUNITS (vmode).to_constant ();
+		  aarch64_simd_lane_bounds (op[opc], 0, nunits, exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
 		  op[opc] = aarch64_endian_lane_rtx (vmode, INTVAL (op[opc]));
 		}
@@ -1412,16 +1413,17 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 				     tree type_in)
 {
   machine_mode in_mode, out_mode;
-  int in_n, out_n;
+  unsigned HOST_WIDE_INT in_n, out_n;
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
   out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  out_n = TYPE_VECTOR_SUBPARTS (type_out);
   in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  if (!TYPE_VECTOR_SUBPARTS (type_out).is_constant (&out_n)
+      || !TYPE_VECTOR_SUBPARTS (type_in).is_constant (&in_n))
+    return NULL_TREE;
 
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) 1

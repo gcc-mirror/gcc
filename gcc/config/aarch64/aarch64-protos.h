@@ -333,7 +333,7 @@ enum simd_immediate_check {
 
 extern struct tune_params aarch64_tune_params;
 
-HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
+poly_int64 aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_address_valid_for_prefetch_p (rtx, bool);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, machine_mode);
@@ -366,7 +366,7 @@ bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, machine_mode);
 rtx aarch64_reverse_mask (machine_mode, unsigned int);
-bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
+bool aarch64_offset_7bit_signed_scaled_p (machine_mode, poly_int64);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, scalar_int_mode);
 char *aarch64_output_simd_mov_immediate (rtx, unsigned,
 			enum simd_immediate_check w = AARCH64_CHECK_MOV);

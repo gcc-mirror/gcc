@@ -3328,7 +3328,7 @@
          CRC))]
   "TARGET_CRC32"
   {
-    if (GET_MODE_BITSIZE (GET_MODE (operands[2])) >= 64)
+    if (GET_MODE_BITSIZE (<crc_mode>mode) >= 64)
       return "<crc_variant>\\t%w0, %w1, %x2";
     else
       return "<crc_variant>\\t%w0, %w1, %w2";
