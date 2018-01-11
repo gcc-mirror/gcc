@@ -1883,29 +1883,12 @@ aarch64_force_temporary (machine_mode mode, rtx x, rtx value)
     return force_reg (mode, value);
   else
     {
-      x = aarch64_emit_move (x, value);
+      gcc_assert (x);
+      aarch64_emit_move (x, value);
       return x;
     }
 }
 
-
-static rtx
-aarch64_add_offset (scalar_int_mode mode, rtx temp, rtx reg,
-		    HOST_WIDE_INT offset)
-{
-  if (!aarch64_plus_immediate (GEN_INT (offset), mode))
-    {
-      rtx high;
-      /* Load the full offset into a register.  This
-         might be improvable in the future.  */
-      high = GEN_INT (offset);
-      offset = 0;
-      high = aarch64_force_temporary (mode, temp, high);
-      reg = aarch64_force_temporary (mode, temp,
-				     gen_rtx_PLUS (mode, high, reg));
-    }
-  return plus_constant (mode, reg, offset);
-}
 
 static int
 aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
@@ -2031,12 +2014,16 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   return num_insns;
 }
 
-/* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to hold a
-   temporary value if necessary.  FRAME_RELATED_P should be true if
-   the RTX_FRAME_RELATED flag should be set and CFA adjustments added
-   to the generated instructions.  If SCRATCHREG is known to hold
-   abs (delta), EMIT_MOVE_IMM can be set to false to avoid emitting the
-   immediate again.
+/* A subroutine of aarch64_add_offset.  Set DEST to SRC + OFFSET for
+   a non-polynomial OFFSET.  MODE is the mode of the addition.
+   FRAME_RELATED_P is true if the RTX_FRAME_RELATED flag should
+   be set and CFA adjustments added to the generated instructions.
+
+   TEMP1, if nonnull, is a register of mode MODE that can be used as a
+   temporary if register allocation is already complete.  This temporary
+   register may overlap DEST but must not overlap SRC.  If TEMP1 is known
+   to hold abs (OFFSET), EMIT_MOVE_IMM can be set to false to avoid emitting
+   the immediate again.
 
    Since this function may be used to adjust the stack pointer, we must
    ensure that it cannot cause transient stack deallocation (for example
@@ -2044,73 +2031,119 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
    large immediate).  */
 
 static void
-aarch64_add_constant_internal (scalar_int_mode mode, int regnum,
-			       int scratchreg, HOST_WIDE_INT delta,
-			       bool frame_related_p, bool emit_move_imm)
+aarch64_add_offset_1 (scalar_int_mode mode, rtx dest,
+		      rtx src, HOST_WIDE_INT offset, rtx temp1,
+		      bool frame_related_p, bool emit_move_imm)
 {
-  HOST_WIDE_INT mdelta = abs_hwi (delta);
-  rtx this_rtx = gen_rtx_REG (mode, regnum);
+  gcc_assert (emit_move_imm || temp1 != NULL_RTX);
+  gcc_assert (temp1 == NULL_RTX || !reg_overlap_mentioned_p (temp1, src));
+
+  HOST_WIDE_INT moffset = abs_hwi (offset);
   rtx_insn *insn;
 
-  if (!mdelta)
-    return;
+  if (!moffset)
+    {
+      if (!rtx_equal_p (dest, src))
+	{
+	  insn = emit_insn (gen_rtx_SET (dest, src));
+	  RTX_FRAME_RELATED_P (insn) = frame_related_p;
+	}
+      return;
+    }
 
   /* Single instruction adjustment.  */
-  if (aarch64_uimm12_shift (mdelta))
+  if (aarch64_uimm12_shift (moffset))
     {
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta)));
+      insn = emit_insn (gen_add3_insn (dest, src, GEN_INT (offset)));
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
       return;
     }
 
-  /* Emit 2 additions/subtractions if the adjustment is less than 24 bits.
-     Only do this if mdelta is not a 16-bit move as adjusting using a move
-     is better.  */
-  if (mdelta < 0x1000000 && !aarch64_move_imm (mdelta, mode))
-    {
-      HOST_WIDE_INT low_off = mdelta & 0xfff;
+  /* Emit 2 additions/subtractions if the adjustment is less than 24 bits
+     and either:
 
-      low_off = delta < 0 ? -low_off : low_off;
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (low_off)));
+     a) the offset cannot be loaded by a 16-bit move or
+     b) there is no spare register into which we can move it.  */
+  if (moffset < 0x1000000
+      && ((!temp1 && !can_create_pseudo_p ())
+	  || !aarch64_move_imm (moffset, mode)))
+    {
+      HOST_WIDE_INT low_off = moffset & 0xfff;
+
+      low_off = offset < 0 ? -low_off : low_off;
+      insn = emit_insn (gen_add3_insn (dest, src, GEN_INT (low_off)));
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      insn = emit_insn (gen_add2_insn (this_rtx, GEN_INT (delta - low_off)));
+      insn = emit_insn (gen_add2_insn (dest, GEN_INT (offset - low_off)));
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
       return;
     }
 
   /* Emit a move immediate if required and an addition/subtraction.  */
-  rtx scratch_rtx = gen_rtx_REG (mode, scratchreg);
   if (emit_move_imm)
-    aarch64_internal_mov_immediate (scratch_rtx, GEN_INT (mdelta), true, mode);
-  insn = emit_insn (delta < 0 ? gen_sub2_insn (this_rtx, scratch_rtx)
-			      : gen_add2_insn (this_rtx, scratch_rtx));
+    {
+      gcc_assert (temp1 != NULL_RTX || can_create_pseudo_p ());
+      temp1 = aarch64_force_temporary (mode, temp1, GEN_INT (moffset));
+    }
+  insn = emit_insn (offset < 0
+		    ? gen_sub3_insn (dest, src, temp1)
+		    : gen_add3_insn (dest, src, temp1));
   if (frame_related_p)
     {
       RTX_FRAME_RELATED_P (insn) = frame_related_p;
-      rtx adj = plus_constant (mode, this_rtx, delta);
-      add_reg_note (insn , REG_CFA_ADJUST_CFA, gen_rtx_SET (this_rtx, adj));
+      rtx adj = plus_constant (mode, src, offset);
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, gen_rtx_SET (dest, adj));
     }
 }
 
-static inline void
-aarch64_add_constant (scalar_int_mode mode, int regnum, int scratchreg,
-		      HOST_WIDE_INT delta)
+/* Set DEST to SRC + OFFSET.  MODE is the mode of the addition.
+   FRAME_RELATED_P is true if the RTX_FRAME_RELATED flag should
+   be set and CFA adjustments added to the generated instructions.
+
+   TEMP1, if nonnull, is a register of mode MODE that can be used as a
+   temporary if register allocation is already complete.  This temporary
+   register may overlap DEST but must not overlap SRC.  If TEMP1 is known
+   to hold abs (OFFSET), EMIT_MOVE_IMM can be set to false to avoid emitting
+   the immediate again.
+
+   Since this function may be used to adjust the stack pointer, we must
+   ensure that it cannot cause transient stack deallocation (for example
+   by first incrementing SP and then decrementing when adjusting by a
+   large immediate).  */
+
+static void
+aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
+		    poly_int64 offset, rtx temp1, bool frame_related_p,
+		    bool emit_move_imm = true)
 {
-  aarch64_add_constant_internal (mode, regnum, scratchreg, delta, false, true);
+  gcc_assert (emit_move_imm || temp1 != NULL_RTX);
+  gcc_assert (temp1 == NULL_RTX || !reg_overlap_mentioned_p (temp1, src));
+
+  /* SVE support will go here.  */
+  HOST_WIDE_INT constant = offset.to_constant ();
+  aarch64_add_offset_1 (mode, dest, src, constant, temp1,
+			frame_related_p, emit_move_imm);
 }
 
-static inline void
-aarch64_add_sp (int scratchreg, HOST_WIDE_INT delta, bool emit_move_imm)
-{
-  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, delta,
-				 true, emit_move_imm);
-}
+/* Add DELTA to the stack pointer, marking the instructions frame-related.
+   TEMP1 is available as a temporary if nonnull.  EMIT_MOVE_IMM is false
+   if TEMP1 already contains abs (DELTA).  */
 
 static inline void
-aarch64_sub_sp (int scratchreg, HOST_WIDE_INT delta, bool frame_related_p)
+aarch64_add_sp (rtx temp1, poly_int64 delta, bool emit_move_imm)
 {
-  aarch64_add_constant_internal (Pmode, SP_REGNUM, scratchreg, -delta,
-				 frame_related_p, true);
+  aarch64_add_offset (Pmode, stack_pointer_rtx, stack_pointer_rtx, delta,
+		      temp1, true, emit_move_imm);
+}
+
+/* Subtract DELTA from the stack pointer, marking the instructions
+   frame-related if FRAME_RELATED_P.  TEMP1 is available as a temporary
+   if nonnull.  */
+
+static inline void
+aarch64_sub_sp (rtx temp1, poly_int64 delta, bool frame_related_p)
+{
+  aarch64_add_offset (Pmode, stack_pointer_rtx, stack_pointer_rtx, -delta,
+		      temp1, frame_related_p);
 }
 
 void
@@ -2143,9 +2176,8 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	    {
 	      gcc_assert (can_create_pseudo_p ());
 	      base = aarch64_force_temporary (int_mode, dest, base);
-	      base = aarch64_add_offset (int_mode, NULL, base,
-					 INTVAL (offset));
-	      aarch64_emit_move (dest, base);
+	      aarch64_add_offset (int_mode, dest, base, INTVAL (offset),
+				  NULL_RTX, false);
 	      return;
 	    }
 
@@ -2184,9 +2216,8 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	    {
 	      gcc_assert(can_create_pseudo_p ());
 	      base = aarch64_force_temporary (int_mode, dest, base);
-	      base = aarch64_add_offset (int_mode, NULL, base,
-					 INTVAL (offset));
-	      aarch64_emit_move (dest, base);
+	      aarch64_add_offset (int_mode, dest, base, INTVAL (offset),
+				  NULL_RTX, false);
 	      return;
 	    }
 	  /* FALLTHRU */
@@ -3738,7 +3769,10 @@ aarch64_expand_prologue (void)
 	aarch64_emit_probe_stack_range (get_stack_check_protect (), frame_size);
     }
 
-  aarch64_sub_sp (IP0_REGNUM, initial_adjust, true);
+  rtx ip0_rtx = gen_rtx_REG (Pmode, IP0_REGNUM);
+  rtx ip1_rtx = gen_rtx_REG (Pmode, IP1_REGNUM);
+
+  aarch64_sub_sp (ip0_rtx, initial_adjust, true);
 
   if (callee_adjust != 0)
     aarch64_push_regs (reg1, reg2, callee_adjust);
@@ -3748,10 +3782,9 @@ aarch64_expand_prologue (void)
       if (callee_adjust == 0)
 	aarch64_save_callee_saves (DImode, callee_offset, R29_REGNUM,
 				   R30_REGNUM, false);
-      insn = emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
-				       stack_pointer_rtx,
-				       GEN_INT (callee_offset)));
-      RTX_FRAME_RELATED_P (insn) = frame_pointer_needed;
+      aarch64_add_offset (Pmode, hard_frame_pointer_rtx,
+			  stack_pointer_rtx, callee_offset, ip1_rtx,
+			  frame_pointer_needed);
       emit_insn (gen_stack_tie (stack_pointer_rtx, hard_frame_pointer_rtx));
     }
 
@@ -3759,7 +3792,7 @@ aarch64_expand_prologue (void)
 			     callee_adjust != 0 || emit_frame_chain);
   aarch64_save_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain);
-  aarch64_sub_sp (IP1_REGNUM, final_adjust, !frame_pointer_needed);
+  aarch64_sub_sp (ip1_rtx, final_adjust, !frame_pointer_needed);
 }
 
 /* Return TRUE if we can use a simple_return insn.
@@ -3815,17 +3848,16 @@ aarch64_expand_epilogue (bool for_sibcall)
 
   /* Restore the stack pointer from the frame pointer if it may not
      be the same as the stack pointer.  */
+  rtx ip0_rtx = gen_rtx_REG (Pmode, IP0_REGNUM);
+  rtx ip1_rtx = gen_rtx_REG (Pmode, IP1_REGNUM);
   if (frame_pointer_needed && (final_adjust || cfun->calls_alloca))
-    {
-      insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
-				       hard_frame_pointer_rtx,
-				       GEN_INT (-callee_offset)));
-      /* If writeback is used when restoring callee-saves, the CFA
-	 is restored on the instruction doing the writeback.  */
-      RTX_FRAME_RELATED_P (insn) = callee_adjust == 0;
-    }
+    /* If writeback is used when restoring callee-saves, the CFA
+       is restored on the instruction doing the writeback.  */
+    aarch64_add_offset (Pmode, stack_pointer_rtx,
+			hard_frame_pointer_rtx, -callee_offset,
+			ip1_rtx, callee_adjust == 0);
   else
-    aarch64_add_sp (IP1_REGNUM, final_adjust, df_regs_ever_live_p (IP1_REGNUM));
+    aarch64_add_sp (ip1_rtx, final_adjust, df_regs_ever_live_p (IP1_REGNUM));
 
   aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 				callee_adjust != 0, &cfi_ops);
@@ -3848,7 +3880,7 @@ aarch64_expand_epilogue (bool for_sibcall)
       cfi_ops = NULL;
     }
 
-  aarch64_add_sp (IP0_REGNUM, initial_adjust, df_regs_ever_live_p (IP0_REGNUM));
+  aarch64_add_sp (ip0_rtx, initial_adjust, df_regs_ever_live_p (IP0_REGNUM));
 
   if (cfi_ops)
     {
@@ -3953,15 +3985,15 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   reload_completed = 1;
   emit_note (NOTE_INSN_PROLOGUE_END);
 
+  this_rtx = gen_rtx_REG (Pmode, this_regno);
+  temp0 = gen_rtx_REG (Pmode, IP0_REGNUM);
+  temp1 = gen_rtx_REG (Pmode, IP1_REGNUM);
+
   if (vcall_offset == 0)
-    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta);
+    aarch64_add_offset (Pmode, this_rtx, this_rtx, delta, temp1, false);
   else
     {
       gcc_assert ((vcall_offset & (POINTER_BYTES - 1)) == 0);
-
-      this_rtx = gen_rtx_REG (Pmode, this_regno);
-      temp0 = gen_rtx_REG (Pmode, IP0_REGNUM);
-      temp1 = gen_rtx_REG (Pmode, IP1_REGNUM);
 
       addr = this_rtx;
       if (delta != 0)
@@ -3970,7 +4002,8 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	    addr = gen_rtx_PRE_MODIFY (Pmode, this_rtx,
 				       plus_constant (Pmode, this_rtx, delta));
 	  else
-	    aarch64_add_constant (Pmode, this_regno, IP1_REGNUM, delta);
+	    aarch64_add_offset (Pmode, this_rtx, this_rtx, delta, temp1,
+				false);
 	}
 
       if (Pmode == ptr_mode)
