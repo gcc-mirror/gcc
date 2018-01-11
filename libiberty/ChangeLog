@@ -1,3 +1,20 @@
+2018-01-11  Richard Biener  <rguenther@suse.de>
+	Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR lto/81968
+	* simple-object-common.h (struct simple_object_functions):
+	Change copy_lto_debug_sections callback signature.
+	* simple-object-elf.c (SHN_HIRESERVE, SHT_SYMTAB_SHNDX,
+	SHF_INFO_LINK): Add defines.
+	(simple_object_elf_copy_lto_debug_sections): Instead of
+	leaving not to be copied sections empty unnamed SHT_NULL
+	remove them from the target section headers and adjust section
+	reference everywhere.  Handle SHN_XINDEX in the symbol table
+	processing properly.
+	* simple-object.c (handle_lto_debug_sections): Change
+	interface to return a modified string and handle renaming
+	of relocation sections.
+
 2018-01-10  Daniel van Gerpen  <daniel@vangerpen.de>
 
 	* argv.c (expandargv): Correct check for dynamically

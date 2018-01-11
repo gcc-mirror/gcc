@@ -126,6 +126,7 @@ typedef struct {
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
 #define SHN_COMMON	0xFFF2	/* Associated symbol is in common */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
+#define SHN_HIRESERVE	0xffff		/* End of reserved indices */
 
 
 /* 32-bit ELF program header.  */
@@ -193,9 +194,11 @@ typedef struct {
 #define SHT_RELA	4		/* Relocation entries with addends */
 #define SHT_REL		9		/* Relocation entries, no addends */
 #define SHT_GROUP	17		/* Section contains a section group */
+#define SHT_SYMTAB_SHNDX 18		/* Extended section indeces */
 
 /* Values for sh_flags field.  */
 
+#define SHF_INFO_LINK	0x00000040	/* `sh_info' contains SHT index */
 #define SHF_EXECINSTR	0x00000004	/* Executable section.  */
 #define SHF_EXCLUDE	0x80000000	/* Link editor is to exclude this
 					   section from executable and
@@ -1070,7 +1073,7 @@ simple_object_elf_release_write (void *data)
 static const char *
 simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 					   simple_object_write *dobj,
-					   int (*pfn) (const char **),
+					   char *(*pfn) (const char *),
 					   int *err)
 {
   struct simple_object_elf_read *eor =
@@ -1091,7 +1094,10 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
   int changed;
   int *pfnret;
   const char **pfnname;
+  unsigned new_i;
+  unsigned *sh_map;
   unsigned first_shndx = 0;
+  unsigned int *symtab_indices_shndx;
 
   shdr_size = (ei_class == ELFCLASS32
 	       ? sizeof (Elf32_External_Shdr)
@@ -1130,18 +1136,20 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       return errmsg;
     }
 
-  eow->shdrs = XNEWVEC (unsigned char, shdr_size * (shnum - 1));
   pfnret = XNEWVEC (int, shnum);
   pfnname = XNEWVEC (const char *, shnum);
+
+  /* Map of symtab to index section.  */
+  symtab_indices_shndx = XCNEWVEC (unsigned int, shnum - 1);
 
   /* First perform the callbacks to know which sections to preserve and
      what name to use for those.  */
   for (i = 1; i < shnum; ++i)
     {
       unsigned char *shdr;
-      unsigned int sh_name;
+      unsigned int sh_name, sh_type;
       const char *name;
-      int ret;
+      char *ret;
 
       shdr = shdrs + (i - 1) * shdr_size;
       sh_name = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
@@ -1156,12 +1164,28 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 
       name = (const char *) names + sh_name;
 
-      ret = (*pfn) (&name);
-      pfnret[i - 1] = ret == 1 ? 0 : -1;
-      pfnname[i - 1] = name;
+      ret = (*pfn) (name);
+      pfnret[i - 1] = ret == NULL ? -1 : 0;
+      pfnname[i - 1] = ret == NULL ? name : ret;
       if (first_shndx == 0
 	  && pfnret[i - 1] == 0)
 	first_shndx = i;
+
+      /* Remember the indexes of existing SHT_SYMTAB_SHNDX sections.  */
+      sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_type, Elf_Word);
+      if (sh_type == SHT_SYMTAB_SHNDX)
+	{
+	  unsigned int sh_link;
+	  sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				     shdr, sh_link, Elf_Word);
+	  symtab_indices_shndx[sh_link - 1] = i;
+	  /* Always discard the extended index sections, after
+	     copying it will not be needed.  This way we don't need to
+	     update it and deal with the ordering constraints of
+	     processing the existing symtab and changing the index.  */
+	  pfnret[i - 1] = -1;
+	}
     }
 
   /* Mark sections as preserved that are required by to be preserved
@@ -1244,7 +1268,26 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
     }
   while (changed);
 
+  /* Compute a mapping of old -> new section numbers.  */
+  sh_map = XNEWVEC (unsigned, shnum);
+  sh_map[0] = 0;
+  new_i = 1;
+  for (i = 1; i < shnum; ++i)
+    {
+      if (pfnret[i - 1] == -1)
+	sh_map[i] = 0;
+      else
+	sh_map[i] = new_i++;
+    }
+  if (new_i - 1 >= SHN_LORESERVE)
+    {
+      *err = ENOTSUP;
+      return "Too many copied sections";
+    }
+  eow->shdrs = XNEWVEC (unsigned char, shdr_size * (new_i - 1));
+
   /* Then perform the actual copying.  */
+  new_i = 0;
   for (i = 1; i < shnum; ++i)
     {
       unsigned char *shdr;
@@ -1252,11 +1295,14 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       const char *name;
       off_t offset;
       off_t length;
-      int ret;
       simple_object_write_section *dest;
       off_t flags;
       unsigned char *buf;
 
+      if (pfnret[i - 1])
+	continue;
+
+      new_i++;
       shdr = shdrs + (i - 1) * shdr_size;
       sh_name = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				 shdr, sh_name, Elf_Word);
@@ -1265,10 +1311,11 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  *err = 0;
 	  XDELETEVEC (names);
 	  XDELETEVEC (shdrs);
+	  XDELETEVEC (symtab_indices_shndx);
 	  return "ELF section name out of range";
 	}
 
-      name = (const char *) names + sh_name;
+      name = pfnname[i - 1];
       offset = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				shdr, sh_offset, Elf_Addr);
       length = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
@@ -1276,178 +1323,223 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 				 shdr, sh_type, Elf_Word);
 
-      ret = pfnret[i - 1];
-      name = ret == 0 ? pfnname[i - 1] : "";
-
-      dest = simple_object_write_create_section (dobj, name, 0, &errmsg, err);
+      dest = simple_object_write_create_section (dobj, pfnname[i - 1],
+						 0, &errmsg, err);
       if (dest == NULL)
 	{
 	  XDELETEVEC (names);
 	  XDELETEVEC (shdrs);
+	  XDELETEVEC (symtab_indices_shndx);
 	  return errmsg;
 	}
 
       /* Record the SHDR of the source.  */
-      memcpy (eow->shdrs + (i - 1) * shdr_size, shdr, shdr_size);
-      shdr = eow->shdrs + (i - 1) * shdr_size;
+      memcpy (eow->shdrs + (new_i - 1) * shdr_size, shdr, shdr_size);
+      shdr = eow->shdrs + (new_i - 1) * shdr_size;
 
       /* Copy the data.
 	 ???  This is quite wasteful and ideally would be delayed until
 	 write_to_file ().  Thus it questions the interfacing
 	 which eventually should contain destination creation plus
 	 writing.  */
-      /* Keep empty sections for sections we should discard.  This avoids
-         the need to rewrite section indices in symtab and relocation
-	 sections.  */
-      if (ret == 0)
+      buf = XNEWVEC (unsigned char, length);
+      if (!simple_object_internal_read (sobj->descriptor,
+					sobj->offset + offset, buf,
+					(size_t) length, &errmsg, err))
 	{
-	  buf = XNEWVEC (unsigned char, length);
-	  if (!simple_object_internal_read (sobj->descriptor,
-					    sobj->offset + offset, buf,
-					    (size_t) length, &errmsg, err))
-	    {
-	      XDELETEVEC (buf);
-	      XDELETEVEC (names);
-	      XDELETEVEC (shdrs);
-	      return errmsg;
-	    }
+	  XDELETEVEC (buf);
+	  XDELETEVEC (names);
+	  XDELETEVEC (shdrs);
+	  XDELETEVEC (symtab_indices_shndx);
+	  return errmsg;
+	}
 
-	  /* If we are processing .symtab purge __gnu_lto_v1 and
-	     __gnu_lto_slim symbols from it.  */
-	  if (sh_type == SHT_SYMTAB)
+      /* If we are processing .symtab purge __gnu_lto_v1 and
+	 __gnu_lto_slim symbols from it and any symbols in discarded
+	 sections.  */
+      if (sh_type == SHT_SYMTAB)
+	{
+	  unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					      shdr, sh_entsize, Elf_Addr);
+	  unsigned strtab = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					     shdr, sh_link, Elf_Word);
+	  unsigned char *strshdr = shdrs + (strtab - 1) * shdr_size;
+	  off_t stroff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					  strshdr, sh_offset, Elf_Addr);
+	  size_t strsz = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					  strshdr, sh_size, Elf_Addr);
+	  char *strings = XNEWVEC (char, strsz);
+	  char *gnu_lto = strings;
+	  unsigned char *ent;
+	  unsigned *shndx_table = NULL;
+	  simple_object_internal_read (sobj->descriptor,
+				       sobj->offset + stroff,
+				       (unsigned char *)strings,
+				       strsz, &errmsg, err);
+	  /* Find gnu_lto_ in strings.  */
+	  while ((gnu_lto = (char *) memchr (gnu_lto, 'g',
+					     strings + strsz - gnu_lto)))
+	    if (strncmp (gnu_lto, "gnu_lto_v1",
+			 strings + strsz - gnu_lto) == 0)
+	      break;
+	    else
+	      gnu_lto++;
+	  /* Read the section index table if present.  */
+	  if (symtab_indices_shndx[i - 1] != 0)
 	    {
-	      unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-						  shdr, sh_entsize, Elf_Addr);
-	      unsigned strtab = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-						 shdr, sh_link, Elf_Word);
-	      unsigned char *strshdr = shdrs + (strtab - 1) * shdr_size;
-	      off_t stroff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-					      strshdr, sh_offset, Elf_Addr);
-	      size_t strsz = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-					      strshdr, sh_size, Elf_Addr);
-	      char *strings = XNEWVEC (char, strsz);
-	      unsigned char *ent;
+	      unsigned char *sidxhdr = shdrs + (strtab - 1) * shdr_size;
+	      off_t sidxoff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					       sidxhdr, sh_offset, Elf_Addr);
+	      size_t sidxsz = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					       sidxhdr, sh_size, Elf_Addr);
+	      shndx_table = (unsigned *)XNEWVEC (char, sidxsz);
 	      simple_object_internal_read (sobj->descriptor,
-					   sobj->offset + stroff,
-					   (unsigned char *)strings,
-					   strsz, &errmsg, err);
-	      /* Find gnu_lto_ in strings.  */
-	      char *gnu_lto = strings;
-	      while ((gnu_lto = memchr (gnu_lto, 'g',
-					strings + strsz - gnu_lto)))
-		if (strncmp (gnu_lto, "gnu_lto_v1",
-			     strings + strsz - gnu_lto) == 0)
-		  break;
-		else
-		  gnu_lto++;
-	      for (ent = buf; ent < buf + length; ent += entsize)
+					   sobj->offset + sidxoff,
+					   (unsigned char *)shndx_table,
+					   sidxsz, &errmsg, err);
+	    }
+	  for (ent = buf; ent < buf + length; ent += entsize)
+	    {
+	      unsigned st_shndx = ELF_FETCH_FIELD (type_functions, ei_class,
+						   Sym, ent,
+						   st_shndx, Elf_Half);
+	      unsigned raw_st_shndx = st_shndx;
+	      unsigned char *st_info;
+	      unsigned char *st_other;
+	      int discard = 0;
+	      if (ei_class == ELFCLASS32)
 		{
-		  unsigned st_shndx = ELF_FETCH_FIELD (type_functions, ei_class,
-						       Sym, ent,
-						       st_shndx, Elf_Half);
-		  unsigned char *st_info;
-		  unsigned char *st_other;
-		  int discard = 0;
-		  if (ei_class == ELFCLASS32)
+		  st_info = &((Elf32_External_Sym *)ent)->st_info;
+		  st_other = &((Elf32_External_Sym *)ent)->st_other;
+		}
+	      else
+		{
+		  st_info = &((Elf64_External_Sym *)ent)->st_info;
+		  st_other = &((Elf64_External_Sym *)ent)->st_other;
+		}
+	      if (st_shndx == SHN_XINDEX)
+		st_shndx = type_functions->fetch_Elf_Word
+		    ((unsigned char *)(shndx_table + (ent - buf) / entsize));
+	      /* Eliminate all COMMONs - this includes __gnu_lto_v1
+		 and __gnu_lto_slim which otherwise cause endless
+		 LTO plugin invocation.  */
+	      if (st_shndx == SHN_COMMON)
+		discard = 1;
+	      /* We also need to remove symbols refering to sections
+		 we'll eventually remove as with fat LTO objects
+		 we otherwise get duplicate symbols at final link
+		 (with GNU ld, gold is fine and ignores symbols in
+		 sections marked as EXCLUDE).  ld/20513  */
+	      else if (st_shndx != SHN_UNDEF
+		       && st_shndx < shnum
+		       && pfnret[st_shndx - 1] == -1)
+		discard = 1;
+
+	      if (discard)
+		{
+		  /* Make discarded symbols undefined and unnamed
+		     in case it is local.  */
+		  int bind = ELF_ST_BIND (*st_info);
+		  int other = STV_DEFAULT;
+		  if (bind == STB_LOCAL)
 		    {
-		      st_info = &((Elf32_External_Sym *)ent)->st_info;
-		      st_other = &((Elf32_External_Sym *)ent)->st_other;
+		      /* Make discarded local symbols unnamed and
+			 defined in the first prevailing section.  */
+		      ELF_SET_FIELD (type_functions, ei_class, Sym,
+				     ent, st_name, Elf_Word, 0);
+		      ELF_SET_FIELD (type_functions, ei_class, Sym,
+				     ent, st_shndx, Elf_Half,
+				     sh_map[first_shndx]);
 		    }
 		  else
 		    {
-		      st_info = &((Elf64_External_Sym *)ent)->st_info;
-		      st_other = &((Elf64_External_Sym *)ent)->st_other;
-		    }
-		  /* Eliminate all COMMONs - this includes __gnu_lto_v1
-		     and __gnu_lto_slim which otherwise cause endless
-		     LTO plugin invocation.  */
-		  if (st_shndx == SHN_COMMON)
-		    discard = 1;
-		  /* We also need to remove symbols refering to sections
-		     we'll eventually remove as with fat LTO objects
-		     we otherwise get duplicate symbols at final link
-		     (with GNU ld, gold is fine and ignores symbols in
-		     sections marked as EXCLUDE).  ld/20513  */
-		  else if (st_shndx != SHN_UNDEF
-			   && st_shndx < shnum
-			   && pfnret[st_shndx - 1] == -1)
-		    discard = 1;
-
-		  if (discard)
-		    {
-		      /* Make discarded symbols undefined and unnamed
-		         in case it is local.  */
-		      int bind = ELF_ST_BIND (*st_info);
-		      int other = STV_DEFAULT;
-		      if (bind == STB_LOCAL)
-			{
-			  /* Make discarded local symbols unnamed and
-			     defined in the first prevailing section.  */
-			  ELF_SET_FIELD (type_functions, ei_class, Sym,
-					 ent, st_name, Elf_Word, 0);
-			  ELF_SET_FIELD (type_functions, ei_class, Sym,
-					 ent, st_shndx, Elf_Half, first_shndx);
-			}
-		      else
-			{
-			  /* Make discarded global symbols hidden weak
-			     undefined and sharing the gnu_lto_ name.  */
-			  bind = STB_WEAK;
-			  other = STV_HIDDEN;
-			  if (gnu_lto)
-			    ELF_SET_FIELD (type_functions, ei_class, Sym,
-					   ent, st_name, Elf_Word,
-					   gnu_lto - strings);
-			  ELF_SET_FIELD (type_functions, ei_class, Sym,
-					 ent, st_shndx, Elf_Half, SHN_UNDEF);
-			}
-		      *st_other = other;
-		      *st_info = ELF_ST_INFO (bind, STT_NOTYPE);
+		      /* Make discarded global symbols hidden weak
+			 undefined and sharing the gnu_lto_ name.  */
+		      bind = STB_WEAK;
+		      other = STV_HIDDEN;
+		      if (gnu_lto)
+			ELF_SET_FIELD (type_functions, ei_class, Sym,
+				       ent, st_name, Elf_Word,
+				       gnu_lto - strings);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
-				     ent, st_value, Elf_Addr, 0);
-		      ELF_SET_FIELD (type_functions, ei_class, Sym,
-				     ent, st_size, Elf_Word, 0);
+				     ent, st_shndx, Elf_Half, SHN_UNDEF);
 		    }
+		  *st_other = other;
+		  *st_info = ELF_ST_INFO (bind, STT_NOTYPE);
+		  ELF_SET_FIELD (type_functions, ei_class, Sym,
+				 ent, st_value, Elf_Addr, 0);
+		  ELF_SET_FIELD (type_functions, ei_class, Sym,
+				 ent, st_size, Elf_Word, 0);
 		}
-	      XDELETEVEC (strings);
+	      else if (raw_st_shndx < SHN_LORESERVE
+		       || raw_st_shndx == SHN_XINDEX)
+		/* Remap the section reference.  */
+		ELF_SET_FIELD (type_functions, ei_class, Sym,
+			       ent, st_shndx, Elf_Half, sh_map[st_shndx]);
 	    }
-
-	  errmsg = simple_object_write_add_data (dobj, dest,
-						 buf, length, 1, err);
-	  XDELETEVEC (buf);
-	  if (errmsg)
-	    {
-	      XDELETEVEC (names);
-	      XDELETEVEC (shdrs);
-	      return errmsg;
-	    }
+	  XDELETEVEC (strings);
+	  XDELETEVEC (shndx_table);
 	}
-      else
+      else if (sh_type == SHT_GROUP)
 	{
-	  /* For deleted sections mark the section header table entry as
-	     unused.  That allows the link editor to remove it in a partial
-	     link.  */
-	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
-			 shdr, sh_type, Elf_Word, SHT_NULL);
-	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
-			 shdr, sh_info, Elf_Word, 0);
-	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
-			 shdr, sh_link, Elf_Word, 0);
+	  /* Remap section indices in groups and remove removed members.  */
+	  unsigned char *ent, *dst;
+	  for (dst = ent = buf + 4; ent < buf + length; ent += 4)
+	    {
+	      unsigned shndx = type_functions->fetch_Elf_Word (ent);
+	      if (pfnret[shndx - 1] == -1)
+		;
+	      else
+		{
+		  type_functions->set_Elf_Word (dst, sh_map[shndx]);
+		  dst += 4;
+		}
+	    }
+	  /* Adjust the length.  */
+	  length = dst - buf;
+	}
+
+      errmsg = simple_object_write_add_data (dobj, dest,
+					     buf, length, 1, err);
+      XDELETEVEC (buf);
+      if (errmsg)
+	{
+	  XDELETEVEC (names);
+	  XDELETEVEC (shdrs);
+	  XDELETEVEC (symtab_indices_shndx);
+	  return errmsg;
 	}
 
       flags = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
 			       shdr, sh_flags, Elf_Addr);
-      if (ret == 0)
-	{
-	  /* The debugobj doesn't contain any code, thus no trampolines.
-	     Even when the original object needs trampolines, debugobj
-	     doesn't.  */
-	  if (strcmp (name, ".note.GNU-stack") == 0)
-	    flags &= ~SHF_EXECINSTR;
-	  flags &= ~SHF_EXCLUDE;
-	}
-      else if (ret == -1)
-	flags = SHF_EXCLUDE;
+      /* Remap the section references.  */
+      {
+	unsigned int sh_info, sh_link;
+	if (flags & SHF_INFO_LINK || sh_type == SHT_REL || sh_type == SHT_RELA)
+	  {
+	    sh_info = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				       shdr, sh_info, Elf_Word);
+	    if (sh_info < SHN_LORESERVE
+		|| sh_info > SHN_HIRESERVE)
+	      sh_info = sh_map[sh_info];
+	    ELF_SET_FIELD (type_functions, ei_class, Shdr,
+			   shdr, sh_info, Elf_Word, sh_info);
+	  }
+	sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				   shdr, sh_link, Elf_Word);
+	if (sh_link < SHN_LORESERVE
+	    || sh_link > SHN_HIRESERVE)
+	  sh_link = sh_map[sh_link];
+	ELF_SET_FIELD (type_functions, ei_class, Shdr,
+		       shdr, sh_link, Elf_Word, sh_link);
+      }
+      /* The debugobj doesn't contain any code, thus no trampolines.
+	 Even when the original object needs trampolines, debugobj
+	 doesn't.  */
+      if (strcmp (name, ".note.GNU-stack") == 0)
+	flags &= ~SHF_EXECINSTR;
+      /* Clear SHF_EXCLUDE on to be preserved sections.  */
+      flags &= ~SHF_EXCLUDE;
       ELF_SET_FIELD (type_functions, ei_class, Shdr,
 		     shdr, sh_flags, Elf_Addr, flags);
     }
@@ -1456,6 +1548,8 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
   XDELETEVEC (shdrs);
   XDELETEVEC (pfnret);
   XDELETEVEC (pfnname);
+  XDELETEVEC (symtab_indices_shndx);
+  XDELETEVEC (sh_map);
 
   return NULL;
 }
