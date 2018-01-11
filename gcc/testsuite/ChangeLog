@@ -1,3 +1,15 @@
+2018-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* g++.dg/wrappers: New subdirectory.
+	* g++.dg/wrappers/README: New file.
+	* g++.dg/wrappers/alloc.C: New test case.
+	* g++.dg/wrappers/cow-istream-string.C: New test case.
+	* g++.dg/wrappers/cp-stdlib.C: New test case.
+	* g++.dg/wrappers/sanitizer_coverage_libcdep_new.C: New test case.
+	* g++.dg/wrappers/wrapper-around-type-pack-expansion.C: New test
+	case.
+
 2018-01-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83718
