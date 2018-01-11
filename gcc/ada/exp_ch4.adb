@@ -5340,7 +5340,7 @@ package body Exp_Ch4 is
            and then Is_Finalizable_Transient (Act, N)
          then
             Process_Transient_In_Expression (Act, N, Acts);
-            return Abandon;
+            return Skip;
 
          --  Avoid processing temporary function results multiple times when
          --  dealing with nested expression_with_actions.
