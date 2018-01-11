@@ -8935,16 +8935,17 @@ package body Sem_Ch8 is
               Make_With_Clause (Loc,
                 Name =>
                   Make_Expanded_Name (Loc,
-                    Chars  => Chars (System_Aux_Id),
-                    Prefix => New_Occurrence_Of (Scope (System_Aux_Id), Loc),
+                    Chars         => Chars (System_Aux_Id),
+                    Prefix        =>
+                      New_Occurrence_Of (Scope (System_Aux_Id), Loc),
                     Selector_Name => New_Occurrence_Of (System_Aux_Id, Loc)));
 
             Set_Entity (Name (Withn), System_Aux_Id);
 
-            Set_Library_Unit       (Withn, Cunit (Unum));
             Set_Corresponding_Spec (Withn, System_Aux_Id);
-            Set_First_Name         (Withn, True);
-            Set_Implicit_With      (Withn, True);
+            Set_First_Name         (Withn);
+            Set_Implicit_With      (Withn);
+            Set_Library_Unit       (Withn, Cunit (Unum));
 
             Insert_After (With_Sys, Withn);
             Mark_Rewrite_Insertion (Withn);

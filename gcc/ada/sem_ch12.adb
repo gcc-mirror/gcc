@@ -9106,8 +9106,8 @@ package body Sem_Ch12 is
                   Clause := First (Current_Context);
                   OK := True;
                   while Present (Clause) loop
-                     if Nkind (Clause) = N_With_Clause and then
-                       Library_Unit (Clause) = Lib_Unit
+                     if Nkind (Clause) = N_With_Clause
+                       and then Library_Unit (Clause) = Lib_Unit
                      then
                         OK := False;
                         exit;
@@ -9118,8 +9118,8 @@ package body Sem_Ch12 is
 
                   if OK then
                      New_I := New_Copy (Item);
-                     Set_Implicit_With (New_I, True);
-                     Set_Implicit_With_From_Instantiation (New_I, True);
+                     Set_Implicit_With (New_I);
+
                      Append (New_I, Current_Context);
                   end if;
                end if;
