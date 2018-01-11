@@ -20244,6 +20244,13 @@ package body Sem_Prag is
             --  general Assertion_Policy pragma) to preserve existing warnings.
 
             Set_Has_Predicates (Typ);
+
+            --  Indicate that the pragma must be processed at the point the
+            --  type is frozen, as is done for the corresponding aspect.
+
+            Set_Has_Delayed_Aspects (Typ);
+            Set_Has_Delayed_Freeze (Typ);
+
             Set_Predicates_Ignored (Typ,
               Present (Check_Policy_List)
                 and then
