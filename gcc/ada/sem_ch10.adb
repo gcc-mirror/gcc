@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2995,6 +2995,8 @@ package body Sem_Ch10 is
                   if Ekind (Priv_Child) = E_Generic_Package
                     and then Chars (Priv_Child) in Text_IO_Package_Name
                     and then Chars (Scope (Scope (Priv_Child))) = Name_Ada
+                    and then Scope (Scope (Scope (Priv_Child))) =
+                               Standard_Standard
                   then
                      Error_Msg_NE
                        ("& is a nested package, not a compilation unit",
