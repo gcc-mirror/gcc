@@ -1,3 +1,8 @@
+2018-01-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83718
+	* g++.dg/torture/pr83718.C: New testcase.
+
 2018-01-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/83178

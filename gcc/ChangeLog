@@ -1,3 +1,9 @@
+2018-01-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83718
+	* tree-inline.c (copy_cfg_body): Adjust num&den for scaling
+	after they are computed.
+
 2018-01-11  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/83695

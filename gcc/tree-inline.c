@@ -2683,8 +2683,6 @@ copy_cfg_body (copy_body_data * id,
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count;
   profile_count num = entry_block_map->count;
 
-  profile_count::adjust_for_ipa_scaling (&num, &den);
-
   cfun_to_copy = id->src_cfun = DECL_STRUCT_FUNCTION (callee_fndecl);
 
   /* Register specific tree functions.  */
@@ -2706,6 +2704,8 @@ copy_cfg_body (copy_body_data * id,
 	  den += e->count ();
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = den;
     }
+
+  profile_count::adjust_for_ipa_scaling (&num, &den);
 
   /* Must have a CFG here at this point.  */
   gcc_assert (ENTRY_BLOCK_PTR_FOR_FN
