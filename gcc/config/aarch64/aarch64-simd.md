@@ -6060,9 +6060,10 @@
 	 VFMLA16_LOW))]
   "TARGET_F16FML"
 {
-  int nunits = GET_MODE_NUNITS (<VFMLA_W>mode);
-  rtx p1 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode, nunits, false);
-  rtx p2 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode, nunits, false);
+  rtx p1 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode,
+					    <nunits> * 2, false);
+  rtx p2 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode,
+					    <nunits> * 2, false);
 
   emit_insn (gen_aarch64_simd_fml<f16mac1>l<f16quad>_low<mode> (operands[0],
 								operands[1],
@@ -6082,9 +6083,8 @@
 	 VFMLA16_HIGH))]
   "TARGET_F16FML"
 {
-  int nunits = GET_MODE_NUNITS (<VFMLA_W>mode);
-  rtx p1 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode, nunits, true);
-  rtx p2 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode, nunits, true);
+  rtx p1 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode, <nunits> * 2, true);
+  rtx p2 = aarch64_simd_vect_par_cnst_half (<VFMLA_W>mode, <nunits> * 2, true);
 
   emit_insn (gen_aarch64_simd_fml<f16mac1>l<f16quad>_high<mode> (operands[0],
 								 operands[1],
@@ -6173,9 +6173,7 @@
 	 VFMLA16_LOW))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode,
-					      GET_MODE_NUNITS (V4HFmode),
-					      false);
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode, 4, false);
     rtx lane = aarch64_endian_lane_rtx (V4HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>l_lane_lowv2sf (operands[0],
@@ -6196,9 +6194,7 @@
 	 VFMLA16_HIGH))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode,
-					      GET_MODE_NUNITS (V4HFmode),
-					      true);
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode, 4, true);
     rtx lane = aarch64_endian_lane_rtx (V4HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>l_lane_highv2sf (operands[0],
@@ -6292,9 +6288,7 @@
 	 VFMLA16_LOW))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode,
-					      GET_MODE_NUNITS (V8HFmode),
-					      false);
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode, 8, false);
     rtx lane = aarch64_endian_lane_rtx (V8HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>lq_laneq_lowv4sf (operands[0],
@@ -6314,10 +6308,7 @@
 	 VFMLA16_HIGH))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode,
-					      GET_MODE_NUNITS (V8HFmode),
-					      true);
-
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode, 8, true);
     rtx lane = aarch64_endian_lane_rtx (V8HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>lq_laneq_highv4sf (operands[0],
@@ -6411,9 +6402,7 @@
 	 VFMLA16_LOW))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode,
-					      GET_MODE_NUNITS (V4HFmode),
-					      false);
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode, 4, false);
     rtx lane = aarch64_endian_lane_rtx (V8HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>l_laneq_lowv2sf (operands[0],
@@ -6434,9 +6423,7 @@
 	 VFMLA16_HIGH))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode,
-					      GET_MODE_NUNITS(V4HFmode),
-					      true);
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V4HFmode, 4, true);
     rtx lane = aarch64_endian_lane_rtx (V8HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>l_laneq_highv2sf (operands[0],
@@ -6531,10 +6518,7 @@
 	 VFMLA16_LOW))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode,
-					      GET_MODE_NUNITS (V8HFmode),
-					      false);
-
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode, 8, false);
     rtx lane = aarch64_endian_lane_rtx (V4HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>lq_lane_lowv4sf (operands[0],
@@ -6554,9 +6538,7 @@
 	 VFMLA16_HIGH))]
   "TARGET_F16FML"
 {
-    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode,
-					      GET_MODE_NUNITS (V8HFmode),
-					      true);
+    rtx p1 = aarch64_simd_vect_par_cnst_half (V8HFmode, 8, true);
     rtx lane = aarch64_endian_lane_rtx (V4HFmode, INTVAL (operands[4]));
 
     emit_insn (gen_aarch64_simd_fml<f16mac1>lq_lane_highv4sf (operands[0],
