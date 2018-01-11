@@ -1,4 +1,8 @@
-2017-01-11  Sudakshina Das  <sudi.das@arm.com>
+2018-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-2.c: New.
+
+2018-01-11  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/82096
 	* gcc.c-torture/compile/pr82096.c: New test.

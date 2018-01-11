@@ -1,4 +1,9 @@
-2017-01-11  Sudakshina Das  <sudi.das@arm.com>
+2018-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.h
+	(AARCH64_FL_FOR_ARCH8_4): Add  AARCH64_FL_DOTPROD.
+
+2018-01-11  Sudakshina Das  <sudi.das@arm.com>
 
 	PR target/82096
 	* expmed.c (emit_store_flag_force): Swap if const op0
