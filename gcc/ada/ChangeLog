@@ -1,3 +1,7 @@
+2018-01-11  Arnaud Charlet  <charlet@adacore.com>
+
+	Bump copyright notices to 2018.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* binde.adb, par-ch6.adb, par-ch9.adb, sem_ch12.adb, sem_ch13.adb:
