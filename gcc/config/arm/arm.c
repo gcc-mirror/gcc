@@ -30953,8 +30953,13 @@ arm_declare_function_name (FILE *stream, const char *name, tree decl)
   gcc_assert (targ_options);
 
   /* Only update the assembler .arch string if it is distinct from the last
-     such string we printed.  */
-  std::string arch_to_print = targ_options->x_arm_arch_string;
+     such string we printed. arch_to_print is set conditionally in case
+     targ_options->x_arm_arch_string is NULL which can be the case
+     when cc1 is invoked directly without passing -march option.  */
+  std::string arch_to_print;
+  if (targ_options->x_arm_arch_string)
+    arch_to_print = targ_options->x_arm_arch_string;
+
   if (arch_to_print != arm_last_printed_arch_string)
     {
       std::string arch_name

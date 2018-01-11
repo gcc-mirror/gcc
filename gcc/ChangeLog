@@ -1,3 +1,9 @@
+2018-01-11  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/83514
+	* config/arm/arm.c (arm_declare_function_name): Set arch_to_print if
+	targ_options->x_arm_arch_string is non NULL.
+
 2018-01-11  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64.h
