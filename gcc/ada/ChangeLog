@@ -1,5 +1,10 @@
 2018-01-11  Bob Duff  <duff@adacore.com>
 
+	* doc/gnat_ugn/gnat_utility_programs.rst: Improve documentation of
+	xml2gnat.
+
+2018-01-11  Bob Duff  <duff@adacore.com>
+
 	* binde.adb (Force_Elab_Order): Give an error if there are duplicate
 	unit names.
 
