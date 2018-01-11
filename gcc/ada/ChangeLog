@@ -1,5 +1,19 @@
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* freeze.adb (Freeze_Entity): Ensure that a Ghost type is not
+	concurrent, nor effectively volatile.
+	* ghost.adb (Check_Ghost_Type): New routine.
+	* ghost.ads (Check_Ghost_Type): New routine.
+	* sem_util.adb (Is_Declaration): Reimplemented. The routine can now
+	consider specific subsets of declarations.
+	(Is_Declaration_Other_Than_Renaming): Removed. Its functionality is
+	replicated by Is_Declaration.
+	* sem_util.ads (Is_Declaration): New parameter profile. Update the
+	comment on usage.
+	(Is_Declaration_Other_Than_Renaming): Removed.
+
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch5.adb (Analyze_Assignment): Assignments to variables that act
 	as Part_Of consituents of single protected types are illegal when they
 	take place inside a protected function.
