@@ -1,3 +1,15 @@
+2017-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-cpus.in (armv8_4): New feature.
+	(ARMv8_4a): New fgroup.
+	(armv8.4-a): New arch.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/t-aprofile: Add matching rules for -march=armv8.4-a.
+	* config/arm/t-arm-elf (all_v8_archs): Add armv8.4-a.
+	* config/arm/t-multilib (v8_4_a_simd_variants): New variable.
+	Add matching rules for -march=armv8.4-a and extensions.
+	* doc/invoke.texi (ARM Options): Document -march=armv8.4-a.
+
 2018-01-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/81821
