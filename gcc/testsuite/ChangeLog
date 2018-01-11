@@ -1,3 +1,9 @@
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/pr70044.c: Allow "mov x29, sp" too.
+
 2018-01-11  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-2.c: New.

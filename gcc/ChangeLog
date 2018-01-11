@@ -1,4 +1,31 @@
 2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_force_temporary): Assert that
+	x exists before using it.
+	(aarch64_add_constant_internal): Rename to...
+	(aarch64_add_offset_1): ...this.  Replace regnum with separate
+	src and dest rtxes.  Handle the case in which they're different,
+	including when the offset is zero.  Replace scratchreg with an rtx.
+	Use 2 additions if there is no spare register into which we can
+	move a 16-bit constant.
+	(aarch64_add_constant): Delete.
+	(aarch64_add_offset): Replace reg with separate src and dest
+	rtxes.  Take a poly_int64 offset instead of a HOST_WIDE_INT.
+	Use aarch64_add_offset_1.
+	(aarch64_add_sp, aarch64_sub_sp): Take the scratch register as
+	an rtx rather than an int.  Take the delta as a poly_int64
+	rather than a HOST_WIDE_INT.  Use aarch64_add_offset.
+	(aarch64_expand_mov_immediate): Update uses of aarch64_add_offset.
+	(aarch64_expand_prologue): Update calls to aarch64_sub_sp,
+	aarch64_allocate_and_probe_stack_space and aarch64_add_offset.
+	(aarch64_expand_epilogue): Update calls to aarch64_add_offset
+	and aarch64_add_sp.
+	(aarch64_output_mi_thunk): Use aarch64_add_offset rather than
+	aarch64_add_constant.
+
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64.c (aarch64_reinterpret_float_as_int):
 	Use scalar_float_mode.
