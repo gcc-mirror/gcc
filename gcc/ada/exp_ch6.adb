@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4369,7 +4369,7 @@ package body Exp_Ch6 is
                or else Nkind (Parent (N)) /= N_Function_Call
                or else not Is_Build_In_Place_Function_Call (Parent (N)))
          then
-            Establish_Transient_Scope (Call_Node, Sec_Stack => True);
+            Establish_Transient_Scope (Call_Node, Manage_Sec_Stack => True);
          end if;
       end if;
    end Expand_Call_Helper;
@@ -8548,8 +8548,8 @@ package body Exp_Ch6 is
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
-      --  In other indefinite cases, pass an indication to do the allocation on
-      --  the secondary stack and set Caller_Object to Empty so that a null
+      --  In other indefinite cases, pass an indication to do the allocation
+      --  on the secondary stack and set Caller_Object to Empty so that a null
       --  value will be passed for the caller's object address. A transient
       --  scope is established to ensure eventual cleanup of the result.
 
@@ -8558,7 +8558,7 @@ package body Exp_Ch6 is
            (Func_Call, Function_Id, Alloc_Form => Secondary_Stack);
          Caller_Object := Empty;
 
-         Establish_Transient_Scope (Obj_Decl, Sec_Stack => True);
+         Establish_Transient_Scope (Obj_Decl, Manage_Sec_Stack => True);
       end if;
 
       --  Pass along any finalization master actual, which is needed in the
