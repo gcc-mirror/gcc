@@ -11174,6 +11174,16 @@ package body Exp_Util is
         and then Side_Effect_Free (Exp, Name_Req, Variable_Ref)
       then
          return;
+
+      --  Generating C code we cannot remove side effect of function returning
+      --  class-wide types since there is no secondary stack (required to use
+      --  'reference).
+
+      elsif Modify_Tree_For_C
+        and then Nkind (Exp) = N_Function_Call
+        and then Is_Class_Wide_Type (Etype (Exp))
+      then
+         return;
       end if;
 
       --  The remaining processing is done with all checks suppressed
