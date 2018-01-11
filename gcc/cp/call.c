@@ -10514,6 +10514,11 @@ perform_implicit_conversion_flags (tree type, tree expr,
   void *p;
   location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
 
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    expr = mark_lvalue_use (expr);
+  else
+    expr = mark_rvalue_use (expr);
+
   if (error_operand_p (expr))
     return error_mark_node;
 
