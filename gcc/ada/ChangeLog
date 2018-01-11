@@ -1,3 +1,7 @@
+2018-01-11  Pascal Obry  <obry@adacore.com>
+
+	* libgnat/s-os_lib.adb (Normalize_Pathname): New implementation.
+
 2018-01-11  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Rewrite gnatpp documentation
