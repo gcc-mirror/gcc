@@ -1,3 +1,7 @@
+2018-01-11  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Fix layout.
+
 2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb, exp_ch9.adb, exp_util.adb, sem_aggr.adb, sem_ch3.adb,
