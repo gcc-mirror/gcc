@@ -1,3 +1,13 @@
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Assignments to variables that act
+	as Part_Of consituents of single protected types are illegal when they
+	take place inside a protected function.
+	(Diagnose_Non_Variable_Lhs): Use Within_Function to check for an
+	enclosing function.
+	(Is_Protected_Part_Of_Constituent): New routine.
+	(Within_Function): New routine.
+
 2018-01-11  Arnaud Charlet  <charlet@adacore.com>
 
 	Bump copyright notices to 2018.

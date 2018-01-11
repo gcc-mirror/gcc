@@ -107,6 +107,11 @@ package body Sem_Ch5 is
       --  N is the node for the left hand side of an assignment, and it is not
       --  a variable. This routine issues an appropriate diagnostic.
 
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean;
+      --  Determine whether arbitrary node Nod denotes a Part_Of constituent of
+      --  a single protected type.
+
       procedure Kill_Lhs;
       --  This is called to kill current value settings of a simple variable
       --  on the left hand side. We call it if we find any error in analyzing
@@ -141,6 +146,10 @@ package body Sem_Ch5 is
       --  assignment statements that are really initializations. These are
       --  marked No_Ctrl_Actions.
 
+      function Within_Function return Boolean;
+      --  Determine whether the current scope is a function or appears within
+      --  one.
+
       -------------------------------
       -- Diagnose_Non_Variable_Lhs --
       -------------------------------
@@ -170,11 +179,7 @@ package body Sem_Ch5 is
                --  of single protected types, the private component appears
                --  directly.
 
-               elsif (Is_Prival (Ent)
-                       and then
-                         (Ekind (Current_Scope) = E_Function
-                           or else Ekind (Enclosing_Dynamic_Scope
-                                            (Current_Scope)) = E_Function))
+               elsif (Is_Prival (Ent) and then Within_Function)
                    or else
                      (Ekind (Ent) = E_Component
                        and then Is_Protected_Type (Scope (Ent)))
@@ -221,6 +226,39 @@ package body Sem_Ch5 is
 
          Error_Msg_N ("left hand side of assignment must be a variable", N);
       end Diagnose_Non_Variable_Lhs;
+
+      --------------------------------------
+      -- Is_Protected_Part_Of_Constituent --
+      --------------------------------------
+
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean
+      is
+         Encap_Id : Entity_Id;
+         Var_Id   : Entity_Id;
+
+      begin
+         --  Abstract states and variables may act as Part_Of constituents of
+         --  single protected types, however only variables can be modified by
+         --  an assignment.
+
+         if Is_Entity_Name (Nod) then
+            Var_Id := Entity (Nod);
+
+            if Present (Var_Id) and then Ekind (Var_Id) = E_Variable then
+               Encap_Id := Encapsulating_State (Var_Id);
+
+               --  To qualify, the node must denote a reference to a variable
+               --  whose encapsulating state is a single protected object.
+
+               return
+                 Present (Encap_Id)
+                   and then Is_Single_Protected_Object (Encap_Id);
+            end if;
+         end if;
+
+         return False;
+      end Is_Protected_Part_Of_Constituent;
 
       --------------
       -- Kill_Lhs --
@@ -385,6 +423,24 @@ package body Sem_Ch5 is
 
          Insert_Action (N, Obj_Decl);
       end Transform_BIP_Assignment;
+
+      ---------------------
+      -- Within_Function --
+      ---------------------
+
+      function Within_Function return Boolean is
+         Scop_Id : constant Entity_Id := Current_Scope;
+
+      begin
+         if Ekind (Scop_Id) = E_Function then
+            return True;
+
+         elsif Ekind (Enclosing_Dynamic_Scope (Scop_Id)) = E_Function then
+            return True;
+         end if;
+
+         return False;
+      end Within_Function;
 
       --  Local variables
 
@@ -711,6 +767,15 @@ package body Sem_Ch5 is
       elsif Is_Abstract_Type (T1) and then Comes_From_Source (N) then
          Error_Msg_N
            ("target of assignment operation must not be abstract", Lhs);
+      end if;
+
+      --  Variables which are Part_Of constituents of single protected types
+      --  behave in similar fashion to protected components. Such variables
+      --  cannot be modified by protected functions.
+
+      if Is_Protected_Part_Of_Constituent (Lhs) and then Within_Function then
+         Error_Msg_N
+           ("protected function cannot modify protected object", Lhs);
       end if;
 
       --  Resolution may have updated the subtype, in case the left-hand side
