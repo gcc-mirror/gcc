@@ -1,3 +1,8 @@
+2017-01-11  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82096
+	* gcc.c-torture/compile/pr82096.c: New test.
+
 2018-01-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/bip_overlay.adb, gnat.dg/bip_overlay.ads: New testcase.

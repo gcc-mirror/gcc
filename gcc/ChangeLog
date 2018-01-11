@@ -1,3 +1,9 @@
+2017-01-11  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82096
+	* expmed.c (emit_store_flag_force): Swap if const op0
+	and change VOIDmode to mode of op0.
+
 2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR rtl-optimization/83761
