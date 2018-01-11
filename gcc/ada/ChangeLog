@@ -1,5 +1,10 @@
 2018-01-11  Bob Duff  <duff@adacore.com>
 
+	* par-ch9.adb (P_Protected_Operation_Declaration_Opt): Give an error if
+	a null procedure occurs in a protected definition.
+
+2018-01-11  Bob Duff  <duff@adacore.com>
+
 	* binderr.ads, namet.ads: Minor reformatting.
 
 2018-01-11  Bob Duff  <duff@adacore.com>
