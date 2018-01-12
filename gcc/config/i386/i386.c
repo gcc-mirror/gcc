@@ -4900,6 +4900,11 @@ ix86_option_override_internal (bool main_args_p,
 	(cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
     }
 
+  if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])
+    maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 128,
+			   opts->x_param_values,
+			   opts_set->x_param_values);
+
   return true;
 }
 

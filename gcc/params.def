@@ -1326,6 +1326,11 @@ DEFPARAM(PARAM_UNROLL_JAM_MAX_UNROLL,
 	 "Maximum unroll factor for the unroll-and-jam transformation.",
 	 4, 0, 0)
 
+DEFPARAM(PARAM_AVOID_FMA_MAX_BITS,
+	 "avoid-fma-max-bits",
+	 "Maximum number of bits for which we avoid creating FMAs.",
+	 0, 0, 512)
+
 /*
 
 Local variables:

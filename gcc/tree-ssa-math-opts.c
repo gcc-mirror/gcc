@@ -115,6 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-libfuncs.h"
 #include "tree-eh.h"
 #include "targhooks.h"
+#include "domwalk.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -2639,17 +2640,214 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   return true;
 }
 
-/* Combine the multiplication at MUL_STMT with operands MULOP1 and MULOP2
-   with uses in additions and subtractions to form fused multiply-add
-   operations.  Returns true if successful and MUL_STMT should be removed.  */
+/* Given a result MUL_RESULT which is a result of a multiplication of OP1 and
+   OP2 and which we know is used in statements that can be, together with the
+   multiplication, converted to FMAs, perform the transformation.  */
+
+static void
+convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
+{
+  tree type = TREE_TYPE (mul_result);
+  gimple *use_stmt;
+  imm_use_iterator imm_iter;
+  gassign *fma_stmt;
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, mul_result)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+      enum tree_code use_code;
+      tree addop, mulop1 = op1, result = mul_result;
+      bool negate_p = false;
+
+      if (is_gimple_debug (use_stmt))
+	continue;
+
+      use_code = gimple_assign_rhs_code (use_stmt);
+      if (use_code == NEGATE_EXPR)
+	{
+	  result = gimple_assign_lhs (use_stmt);
+	  use_operand_p use_p;
+	  gimple *neguse_stmt;
+	  single_imm_use (gimple_assign_lhs (use_stmt), &use_p, &neguse_stmt);
+	  gsi_remove (&gsi, true);
+	  release_defs (use_stmt);
+
+	  use_stmt = neguse_stmt;
+	  gsi = gsi_for_stmt (use_stmt);
+	  use_code = gimple_assign_rhs_code (use_stmt);
+	  negate_p = true;
+	}
+
+      if (gimple_assign_rhs1 (use_stmt) == result)
+	{
+	  addop = gimple_assign_rhs2 (use_stmt);
+	  /* a * b - c -> a * b + (-c)  */
+	  if (gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
+	    addop = force_gimple_operand_gsi (&gsi,
+					      build1 (NEGATE_EXPR,
+						      type, addop),
+					      true, NULL_TREE, true,
+					      GSI_SAME_STMT);
+	}
+      else
+	{
+	  addop = gimple_assign_rhs1 (use_stmt);
+	  /* a - b * c -> (-b) * c + a */
+	  if (gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
+	    negate_p = !negate_p;
+	}
+
+      if (negate_p)
+	mulop1 = force_gimple_operand_gsi (&gsi,
+					   build1 (NEGATE_EXPR,
+						   type, mulop1),
+					   true, NULL_TREE, true,
+					   GSI_SAME_STMT);
+
+      fma_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
+				      FMA_EXPR, mulop1, op2, addop);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Generated FMA ");
+	  print_gimple_stmt (dump_file, fma_stmt, 0, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      gsi_replace (&gsi, fma_stmt, true);
+      widen_mul_stats.fmas_inserted++;
+    }
+}
+
+/* Data necessary to perform the actual transformation from a multiplication
+   and an addition to an FMA after decision is taken it should be done and to
+   then delete the multiplication statement from the function IL.  */
+
+struct fma_transformation_info
+{
+  gimple *mul_stmt;
+  tree mul_result;
+  tree op1;
+  tree op2;
+};
+
+/* Structure containing the current state of FMA deferring, i.e. whether we are
+   deferring, whether to continue deferring, and all data necessary to come
+   back and perform all deferred transformations.  */
+
+class fma_deferring_state
+{
+public:
+  /* Class constructor.  Pass true as PERFORM_DEFERRING in order to actually
+     do any deferring.  */
+
+  fma_deferring_state (bool perform_deferring)
+    : m_candidates (), m_mul_result_set (), m_initial_phi (NULL),
+      m_last_result (NULL_TREE), m_deferring_p (perform_deferring) {}
+
+  /* List of FMA candidates for which we the transformation has been determined
+     possible but we at this point in BB analysis we do not consider them
+     beneficial.  */
+  auto_vec<fma_transformation_info, 8> m_candidates;
+
+  /* Set of results of multiplication that are part of an already deferred FMA
+     candidates.  */
+  hash_set<tree> m_mul_result_set;
+
+  /* The PHI that supposedly feeds back result of a FMA to another over loop
+     boundary.  */
+  gphi *m_initial_phi;
+
+  /* Result of the last produced FMA candidate or NULL if there has not been
+     one.  */
+  tree m_last_result;
+
+  /* If true, deferring might still be profitable.  If false, transform all
+     candidates and no longer defer.  */
+  bool m_deferring_p;
+};
+
+/* Transform all deferred FMA candidates and mark STATE as no longer
+   deferring.  */
+
+static void
+cancel_fma_deferring (fma_deferring_state *state)
+{
+  if (!state->m_deferring_p)
+    return;
+
+  for (unsigned i = 0; i < state->m_candidates.length (); i++)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Generating deferred FMA\n");
+
+      const fma_transformation_info &fti = state->m_candidates[i];
+      convert_mult_to_fma_1 (fti.mul_result, fti.op1, fti.op2);
+
+      gimple_stmt_iterator gsi = gsi_for_stmt (fti.mul_stmt);
+      gsi_remove (&gsi, true);
+      release_defs (fti.mul_stmt);
+    }
+  state->m_deferring_p = false;
+}
+
+/* If OP is an SSA name defined by a PHI node, return the PHI statement.
+   Otherwise return NULL.  */
+
+static gphi *
+result_of_phi (tree op)
+{
+  if (TREE_CODE (op) != SSA_NAME)
+    return NULL;
+
+  return dyn_cast <gphi *> (SSA_NAME_DEF_STMT (op));
+}
+
+/* After processing statements of a BB and recording STATE, return true if the
+   initial phi is fed by the last FMA candidate result ore one such result from
+   previously processed BBs marked in LAST_RESULT_SET.  */
 
 static bool
-convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2)
+last_fma_candidate_feeds_initial_phi (fma_deferring_state *state,
+				      hash_set<tree> *last_result_set)
+{
+  ssa_op_iter iter;
+  use_operand_p use;
+  FOR_EACH_PHI_ARG (use, state->m_initial_phi, iter, SSA_OP_USE)
+    {
+      tree t = USE_FROM_PTR (use);
+      if (t == state->m_last_result
+	  || last_result_set->contains (t))
+	return true;
+    }
+
+  return false;
+}
+
+/* Combine the multiplication at MUL_STMT with operands MULOP1 and MULOP2
+   with uses in additions and subtractions to form fused multiply-add
+   operations.  Returns true if successful and MUL_STMT should be removed.
+
+   If STATE indicates that we are deferring FMA transformation, that means
+   that we do not produce FMAs for basic blocks which look like:
+
+    <bb 6>
+    # accumulator_111 = PHI <0.0(5), accumulator_66(6)>
+    _65 = _14 * _16;
+    accumulator_66 = _65 + accumulator_111;
+
+  or its unrolled version, i.e. with several FMA candidates that feed result
+  of one into the addend of another.  Instead, we add them to a list in STATE
+  and if we later discover an FMA candidate that is not part of such a chain,
+  we go back and perform all deferred past candidates.  */
+
+static bool
+convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
+		     fma_deferring_state *state)
 {
   tree mul_result = gimple_get_lhs (mul_stmt);
   tree type = TREE_TYPE (mul_result);
   gimple *use_stmt, *neguse_stmt;
-  gassign *fma_stmt;
   use_operand_p use_p;
   imm_use_iterator imm_iter;
 
@@ -2673,6 +2871,11 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2)
   if (has_zero_uses (mul_result))
     return false;
 
+  bool check_defer
+    = (state->m_deferring_p
+       && (tree_to_shwi (TYPE_SIZE (type))
+	   <= PARAM_VALUE (PARAM_AVOID_FMA_MAX_BITS)));
+  bool defer = check_defer;
   /* Make sure that the multiplication statement becomes dead after
      the transformation, thus that all uses are transformed to FMAs.
      This means we assume that an FMA operation has the same cost
@@ -2770,77 +2973,92 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2)
 	    }
 	}
 
+      tree use_rhs1 = gimple_assign_rhs1 (use_stmt);
+      tree use_rhs2 = gimple_assign_rhs2 (use_stmt);
       /* We can't handle a * b + a * b.  */
-      if (gimple_assign_rhs1 (use_stmt) == gimple_assign_rhs2 (use_stmt))
+      if (use_rhs1 == use_rhs2)
+	return false;
+      /* If deferring, make sure we are not looking at an instruction that
+	 wouldn't have existed if we were not.  */
+      if (state->m_deferring_p
+	  && (state->m_mul_result_set.contains (use_rhs1)
+	      || state->m_mul_result_set.contains (use_rhs2)))
 	return false;
 
-      /* While it is possible to validate whether or not the exact form
-	 that we've recognized is available in the backend, the assumption
-	 is that the transformation is never a loss.  For instance, suppose
-	 the target only has the plain FMA pattern available.  Consider
-	 a*b-c -> fma(a,b,-c): we've exchanged MUL+SUB for FMA+NEG, which
-	 is still two operations.  Consider -(a*b)-c -> fma(-a,b,-c): we
-	 still have 3 operations, but in the FMA form the two NEGs are
-	 independent and could be run in parallel.  */
-    }
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, mul_result)
-    {
-      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-      enum tree_code use_code;
-      tree addop, mulop1 = op1, result = mul_result;
-      bool negate_p = false;
-
-      if (is_gimple_debug (use_stmt))
-	continue;
-
-      use_code = gimple_assign_rhs_code (use_stmt);
-      if (use_code == NEGATE_EXPR)
+      if (check_defer)
 	{
-	  result = gimple_assign_lhs (use_stmt);
-	  single_imm_use (gimple_assign_lhs (use_stmt), &use_p, &neguse_stmt);
-	  gsi_remove (&gsi, true);
-	  release_defs (use_stmt);
+	  tree use_lhs = gimple_assign_lhs (use_stmt);
+	  if (state->m_last_result)
+	    {
+	      if (use_rhs2 == state->m_last_result
+		  || use_rhs1 == state->m_last_result)
+		defer = true;
+	      else
+		defer = false;
+	    }
+	  else
+	    {
+	      gcc_checking_assert (!state->m_initial_phi);
+	      gphi *phi;
+	      if (use_rhs1 == result)
+		phi = result_of_phi (use_rhs2);
+	      else
+		{
+		  gcc_assert (use_rhs2 == result);
+		  phi = result_of_phi (use_rhs1);
+		}
 
-	  use_stmt = neguse_stmt;
-	  gsi = gsi_for_stmt (use_stmt);
-	  use_code = gimple_assign_rhs_code (use_stmt);
-	  negate_p = true;
-	}
+	      if (phi)
+		{
+		  state->m_initial_phi = phi;
+		  defer = true;
+		}
+	      else
+		defer = false;
+	    }
 
-      if (gimple_assign_rhs1 (use_stmt) == result)
-	{
-	  addop = gimple_assign_rhs2 (use_stmt);
-	  /* a * b - c -> a * b + (-c)  */
-	  if (gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
-	    addop = force_gimple_operand_gsi (&gsi,
-					      build1 (NEGATE_EXPR,
-						      type, addop),
-					      true, NULL_TREE, true,
-					      GSI_SAME_STMT);
+	  state->m_last_result = use_lhs;
+	  check_defer = false;
 	}
       else
-	{
-	  addop = gimple_assign_rhs1 (use_stmt);
-	  /* a - b * c -> (-b) * c + a */
-	  if (gimple_assign_rhs_code (use_stmt) == MINUS_EXPR)
-	    negate_p = !negate_p;
-	}
+	defer = false;
 
-      if (negate_p)
-	mulop1 = force_gimple_operand_gsi (&gsi,
-					   build1 (NEGATE_EXPR,
-						   type, mulop1),
-					   true, NULL_TREE, true,
-					   GSI_SAME_STMT);
-
-      fma_stmt = gimple_build_assign (gimple_assign_lhs (use_stmt),
-				      FMA_EXPR, mulop1, op2, addop);
-      gsi_replace (&gsi, fma_stmt, true);
-      widen_mul_stats.fmas_inserted++;
+      /* While it is possible to validate whether or not the exact form that
+	 we've recognized is available in the backend, the assumption is that
+	 if the deferring logic above did not trigger, the transformation is
+	 never a loss.  For instance, suppose the target only has the plain FMA
+	 pattern available.  Consider a*b-c -> fma(a,b,-c): we've exchanged
+	 MUL+SUB for FMA+NEG, which is still two operations.  Consider
+         -(a*b)-c -> fma(-a,b,-c): we still have 3 operations, but in the FMA
+	 form the two NEGs are independent and could be run in parallel.  */
     }
 
-  return true;
+  if (defer)
+    {
+      fma_transformation_info fti;
+      fti.mul_stmt = mul_stmt;
+      fti.mul_result = mul_result;
+      fti.op1 = op1;
+      fti.op2 = op2;
+      state->m_candidates.safe_push (fti);
+      state->m_mul_result_set.add (mul_result);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Deferred generating FMA for multiplication ");
+	  print_gimple_stmt (dump_file, mul_stmt, 0, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      return false;
+    }
+  else
+    {
+      if (state->m_deferring_p)
+	cancel_fma_deferring (state);
+      convert_mult_to_fma_1 (mul_result, op1, op2);
+      return true;
+    }
 }
 
 
@@ -3270,92 +3488,135 @@ public:
 
 }; // class pass_optimize_widening_mul
 
+/* Walker class to perform the transformation in reverse dominance order. */
+
+class math_opts_dom_walker : public dom_walker
+{
+public:
+  /* Constructor, CFG_CHANGED is a pointer to a boolean flag that will be set
+     if walking modidifes the CFG.  */
+
+  math_opts_dom_walker (bool *cfg_changed_p)
+    : dom_walker (CDI_DOMINATORS), m_last_result_set (),
+      m_cfg_changed_p (cfg_changed_p) {}
+
+  /* The actual actions performed in the walk.  */
+
+  virtual void after_dom_children (basic_block);
+
+  /* Set of results of chains of multiply and add statement combinations that
+     were not transformed into FMAs because of active deferring.  */
+  hash_set<tree> m_last_result_set;
+
+  /* Pointer to a flag of the user that needs to be set if CFG has been
+     modified.  */
+  bool *m_cfg_changed_p;
+};
+
+void
+math_opts_dom_walker::after_dom_children (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+
+  fma_deferring_state fma_state (PARAM_VALUE (PARAM_AVOID_FMA_MAX_BITS) > 0);
+
+  for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      enum tree_code code;
+
+      if (is_gimple_assign (stmt))
+	{
+	  code = gimple_assign_rhs_code (stmt);
+	  switch (code)
+	    {
+	    case MULT_EXPR:
+	      if (!convert_mult_to_widen (stmt, &gsi)
+		  && !convert_expand_mult_copysign (stmt, &gsi)
+		  && convert_mult_to_fma (stmt,
+					  gimple_assign_rhs1 (stmt),
+					  gimple_assign_rhs2 (stmt),
+					  &fma_state))
+		{
+		  gsi_remove (&gsi, true);
+		  release_defs (stmt);
+		  continue;
+		}
+	      break;
+
+	    case PLUS_EXPR:
+	    case MINUS_EXPR:
+	      if (!convert_plusminus_to_widen (&gsi, stmt, code))
+		match_uaddsub_overflow (&gsi, stmt, code);
+	      break;
+
+	    case TRUNC_MOD_EXPR:
+	      convert_to_divmod (as_a<gassign *> (stmt));
+	      break;
+
+	    default:;
+	    }
+	}
+      else if (is_gimple_call (stmt))
+	{
+	  tree fndecl = gimple_call_fndecl (stmt);
+	  if (fndecl && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+	    {
+	      switch (DECL_FUNCTION_CODE (fndecl))
+		{
+		case BUILT_IN_POWF:
+		case BUILT_IN_POW:
+		case BUILT_IN_POWL:
+		  if (gimple_call_lhs (stmt)
+		      && TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
+		      && real_equal
+		      (&TREE_REAL_CST (gimple_call_arg (stmt, 1)),
+		       &dconst2)
+		      && convert_mult_to_fma (stmt,
+					      gimple_call_arg (stmt, 0),
+					      gimple_call_arg (stmt, 0),
+					      &fma_state))
+		    {
+		      unlink_stmt_vdef (stmt);
+		      if (gsi_remove (&gsi, true)
+			  && gimple_purge_dead_eh_edges (bb))
+			*m_cfg_changed_p = true;
+		      release_defs (stmt);
+		      continue;
+		    }
+		  break;
+
+		default:;
+		}
+	    }
+	  else
+	    cancel_fma_deferring (&fma_state);
+	}
+      gsi_next (&gsi);
+    }
+  if (fma_state.m_deferring_p
+      && fma_state.m_initial_phi)
+    {
+      gcc_checking_assert (fma_state.m_last_result);
+      if (!last_fma_candidate_feeds_initial_phi (&fma_state,
+						 &m_last_result_set))
+	cancel_fma_deferring (&fma_state);
+      else
+	m_last_result_set.add (fma_state.m_last_result);
+    }
+}
+
+
 unsigned int
 pass_optimize_widening_mul::execute (function *fun)
 {
-  basic_block bb;
   bool cfg_changed = false;
 
   memset (&widen_mul_stats, 0, sizeof (widen_mul_stats));
   calculate_dominance_info (CDI_DOMINATORS);
   renumber_gimple_stmt_uids ();
 
-  FOR_EACH_BB_FN (bb, fun)
-    {
-      gimple_stmt_iterator gsi;
-
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
-        {
-	  gimple *stmt = gsi_stmt (gsi);
-	  enum tree_code code;
-
-	  if (is_gimple_assign (stmt))
-	    {
-	      code = gimple_assign_rhs_code (stmt);
-	      switch (code)
-		{
-		case MULT_EXPR:
-		  if (!convert_mult_to_widen (stmt, &gsi)
-		      && !convert_expand_mult_copysign (stmt, &gsi)
-		      && convert_mult_to_fma (stmt,
-					      gimple_assign_rhs1 (stmt),
-					      gimple_assign_rhs2 (stmt)))
-		    {
-		      gsi_remove (&gsi, true);
-		      release_defs (stmt);
-		      continue;
-		    }
-		  break;
-
-		case PLUS_EXPR:
-		case MINUS_EXPR:
-		  if (!convert_plusminus_to_widen (&gsi, stmt, code))
-		    match_uaddsub_overflow (&gsi, stmt, code);
-		  break;
-
-		case TRUNC_MOD_EXPR:
-		  convert_to_divmod (as_a<gassign *> (stmt));
-		  break;
-
-		default:;
-		}
-	    }
-	  else if (is_gimple_call (stmt)
-		   && gimple_call_lhs (stmt))
-	    {
-	      tree fndecl = gimple_call_fndecl (stmt);
-	      if (fndecl
-		  && gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
-		{
-		  switch (DECL_FUNCTION_CODE (fndecl))
-		    {
-		      case BUILT_IN_POWF:
-		      case BUILT_IN_POW:
-		      case BUILT_IN_POWL:
-			if (TREE_CODE (gimple_call_arg (stmt, 1)) == REAL_CST
-			    && real_equal
-			         (&TREE_REAL_CST (gimple_call_arg (stmt, 1)),
-				  &dconst2)
-			    && convert_mult_to_fma (stmt,
-						    gimple_call_arg (stmt, 0),
-						    gimple_call_arg (stmt, 0)))
-			  {
-			    unlink_stmt_vdef (stmt);
-			    if (gsi_remove (&gsi, true)
-				&& gimple_purge_dead_eh_edges (bb))
-			      cfg_changed = true;
-			    release_defs (stmt);
-			    continue;
-			  }
-			  break;
-
-		      default:;
-		    }
-		}
-	    }
-	  gsi_next (&gsi);
-	}
-    }
+  math_opts_dom_walker (&cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   statistics_counter_event (fun, "widening multiplications inserted",
 			    widen_mul_stats.widen_mults_inserted);

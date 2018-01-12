@@ -1,3 +1,26 @@
+2018-01-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR target/81616
+	* params.def: New parameter PARAM_AVOID_FMA_MAX_BITS.
+	* tree-ssa-math-opts.c: Include domwalk.h.
+	(convert_mult_to_fma_1): New function.
+	(fma_transformation_info): New type.
+	(fma_deferring_state): Likewise.
+	(cancel_fma_deferring): New function.
+	(result_of_phi): Likewise.
+	(last_fma_candidate_feeds_initial_phi): Likewise.
+	(convert_mult_to_fma): Added deferring logic, split actual
+	transformation to convert_mult_to_fma_1.
+	(math_opts_dom_walker): New type.
+	(math_opts_dom_walker::after_dom_children): New method, body moved
+	here from pass_optimize_widening_mul::execute, added deferring logic
+	bits.
+	(pass_optimize_widening_mul::execute): Moved most of code to
+	math_opts_dom_walker::after_dom_children.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_128FMA_CHAINS): New.
+	* config/i386/i386.c (ix86_option_override_internal): Added
+	maybe_setting of PARAM_AVOID_FMA_MAX_BITS.
+
 2018-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR debug/83157
