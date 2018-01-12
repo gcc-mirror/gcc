@@ -1905,6 +1905,18 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 /* An array used to sort copies.  */
 static ira_copy_t *sorted_copies;
 
+/* If allocno A is a cap, return non-cap allocno from which A is
+   created.  Otherwise, return A.  */
+static ira_allocno_t
+get_cap_member (ira_allocno_t a)
+{
+  ira_allocno_t member;
+  
+  while ((member = ALLOCNO_CAP_MEMBER (a)) != NULL)
+    a = member;
+  return a;
+}
+
 /* Return TRUE if live ranges of allocnos A1 and A2 intersect.  It is
    used to find a conflict for new allocnos or allocnos with the
    different allocno classes.  */
@@ -1924,6 +1936,10 @@ allocnos_conflict_by_live_ranges_p (ira_allocno_t a1, ira_allocno_t a2)
       && ORIGINAL_REGNO (reg1) == ORIGINAL_REGNO (reg2))
     return false;
 
+  /* We don't keep live ranges for caps because they can be quite big.
+     Use ranges of non-cap allocno from which caps are created.  */
+  a1 = get_cap_member (a1);
+  a2 = get_cap_member (a2);
   for (i = 0; i < n1; i++)
     {
       ira_object_t c1 = ALLOCNO_OBJECT (a1, i);
@@ -4027,7 +4043,7 @@ slot_coalesced_allocno_live_ranges_intersect_p (ira_allocno_t allocno, int n)
     {
       int i;
       int nr = ALLOCNO_NUM_OBJECTS (a);
-
+      gcc_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
       for (i = 0; i < nr; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
@@ -4057,6 +4073,7 @@ setup_slot_coalesced_allocno_live_ranges (ira_allocno_t allocno)
        a = ALLOCNO_COALESCE_DATA (a)->next)
     {
       int nr = ALLOCNO_NUM_OBJECTS (a);
+      gcc_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
       for (i = 0; i < nr; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);

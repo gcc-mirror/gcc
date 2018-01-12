@@ -1,3 +1,11 @@
+2018-01-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80481
+	* ira-color.c (get_cap_member): New function.
+	(allocnos_conflict_by_live_ranges_p): Use it.
+	(slot_coalesced_allocno_live_ranges_intersect_p): Add assert.
+	(setup_slot_coalesced_allocno_live_ranges): Ditto.
+
 2018-01-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83628
