@@ -1,5 +1,8 @@
 2018-01-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* regrename.c (regrename_do_replace): If replacing the same
+	reg multiple times, try to reuse last created gen_raw_REG.
+
 	PR debug/81155
 	* bb-reorder.c (pass_partition_blocks::gate): In lto don't partition
 	main to workaround a bug in GDB.
@@ -1394,7 +1397,7 @@
 2018-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83666
-	* cfgexpand.c (expand_dbeug_expr) <case BIT_FIELD_REF>: Punt if mode
+	* cfgexpand.c (expand_debug_expr) <case BIT_FIELD_REF>: Punt if mode
 	is BLKmode and bitpos not zero or mode change is needed.
 
 2018-01-04  Richard Sandiford  <richard.sandiford@linaro.org>

@@ -963,6 +963,7 @@ regrename_do_replace (struct du_head *head, int reg)
   struct du_chain *chain;
   unsigned int base_regno = head->regno;
   machine_mode mode;
+  rtx last_reg = NULL_RTX, last_repl = NULL_RTX;
 
   for (chain = head->first; chain; chain = chain->next_use)
     {
@@ -975,12 +976,16 @@ regrename_do_replace (struct du_head *head, int reg)
 			 gen_rtx_UNKNOWN_VAR_LOC (), true);
       else
 	{
-	  validate_change (chain->insn, chain->loc, 
-			   gen_raw_REG (GET_MODE (*chain->loc), reg), true);
-	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    ORIGINAL_REGNO (*chain->loc) = regno;
-	  REG_ATTRS (*chain->loc) = attr;
-	  REG_POINTER (*chain->loc) = reg_ptr;
+	  if (*chain->loc != last_reg)
+	    {
+	      last_repl = gen_raw_REG (GET_MODE (*chain->loc), reg);
+	      if (regno >= FIRST_PSEUDO_REGISTER)
+		ORIGINAL_REGNO (last_repl) = regno;
+	      REG_ATTRS (last_repl) = attr;
+	      REG_POINTER (last_repl) = reg_ptr;
+	      last_reg = *chain->loc;
+	    }
+	  validate_change (chain->insn, chain->loc, last_repl, true);
 	}
     }
 
