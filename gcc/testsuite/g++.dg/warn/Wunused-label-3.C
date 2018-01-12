@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-Wunused-label" }
+// { dg-require-effective-target indirect_jumps }
 
 extern void f9();
 

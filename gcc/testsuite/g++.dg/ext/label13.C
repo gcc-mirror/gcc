@@ -1,6 +1,7 @@
 // PR c++/41090
 // { dg-do run }
 // { dg-options "" }
+// { dg-require-effective-target indirect_jumps }
 
 int i;
 struct C
