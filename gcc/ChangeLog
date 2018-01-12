@@ -1,3 +1,9 @@
+2018-01-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/81819
+	* config/rx/rx.c (rx_is_restricted_memory_address):
+	Handle SUBREG case.
+
 2018-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80846
