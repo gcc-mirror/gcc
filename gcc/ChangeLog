@@ -1,3 +1,8 @@
+2018-01-12  Martin Liska  <mliska@suse.cz>
+
+	* profile-count.h (enum profile_quality): Use 0 as invalid
+	enum value of profile_quality.
+
 2018-01-12  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* doc/invoke.texi (NDS32 Options): Add -mext-perf, -mext-perf2 and
