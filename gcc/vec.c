@@ -60,15 +60,6 @@ struct vec_usage: public mem_usage
     : mem_usage (allocated, times, peak),
     m_items (items), m_items_peak (items_peak) {}
 
-  /* Comparison operator.  */
-  inline bool
-  operator< (const vec_usage &second) const
-  {
-    return (m_allocated == second.m_allocated ?
-	    (m_peak == second.m_peak ? m_times < second.m_times
-	     : m_peak < second.m_peak) : m_allocated < second.m_allocated);
-  }
-
   /* Sum the usage with SECOND usage.  */
   vec_usage
   operator+ (const vec_usage &second)
@@ -113,18 +104,6 @@ struct vec_usage: public mem_usage
     fprintf (stderr, "%-48s %11s%15s%10s%17s%11s\n", name, "Leak", "Peak",
 	     "Times", "Leak items", "Peak items");
     print_dash_line ();
-  }
-
-  /* Compare wrapper used by qsort method.  */
-  static int
-  compare (const void *first, const void *second)
-  {
-    typedef std::pair<mem_location *, vec_usage *> mem_pair_t;
-
-    const mem_pair_t f = *(const mem_pair_t *)first;
-    const mem_pair_t s = *(const mem_pair_t *)second;
-
-    return (*f.second) < (*s.second);
   }
 
   /* Current number of items allocated.  */

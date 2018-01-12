@@ -1332,7 +1332,8 @@ build_new_int_cst (tree type, const wide_int &cst)
 /* Return a new POLY_INT_CST with coefficients COEFFS and type TYPE.  */
 
 static tree
-build_new_poly_int_cst (tree type, tree (&coeffs)[NUM_POLY_INT_COEFFS])
+build_new_poly_int_cst (tree type, tree (&coeffs)[NUM_POLY_INT_COEFFS]
+			CXX_MEM_STAT_INFO)
 {
   size_t length = sizeof (struct tree_poly_int_cst);
   record_node_allocation_statistics (POLY_INT_CST, length);
@@ -14429,7 +14430,7 @@ check_vector_cst_stepped (vec<tree> expected, tree actual,
 /* Test the creation of VECTOR_CSTs.  */
 
 static void
-test_vector_cst_patterns ()
+test_vector_cst_patterns (ALONE_CXX_MEM_STAT_INFO)
 {
   auto_vec<tree, 8> elements (8);
   elements.quick_grow (8);
@@ -14440,24 +14441,28 @@ test_vector_cst_patterns ()
      { 0, 1, 2, 3, 4, 5, 6, 7 }.  */
   for (unsigned int i = 0; i < 8; ++i)
     elements[i] = build_int_cst (element_type, i);
-  check_vector_cst_stepped (elements, build_vector (vector_type, elements), 1);
+  tree vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_stepped (elements, vector, 1);
 
   /* Try the same with the first element replaced by 100:
      { 100, 1, 2, 3, 4, 5, 6, 7 }.  */
   elements[0] = build_int_cst (element_type, 100);
-  check_vector_cst_stepped (elements, build_vector (vector_type, elements), 1);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_stepped (elements, vector, 1);
 
   /* Try a series that wraps around.
      { 100, 65531, 65532, 65533, 65534, 65535, 0, 1 }.  */
   for (unsigned int i = 1; i < 8; ++i)
     elements[i] = build_int_cst (element_type, (65530 + i) & 0xffff);
-  check_vector_cst_stepped (elements, build_vector (vector_type, elements), 1);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_stepped (elements, vector, 1);
 
   /* Try a downward series:
      { 100, 79, 78, 77, 76, 75, 75, 73 }.  */
   for (unsigned int i = 1; i < 8; ++i)
     elements[i] = build_int_cst (element_type, 80 - i);
-  check_vector_cst_stepped (elements, build_vector (vector_type, elements), 1);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_stepped (elements, vector, 1);
 
   /* Try two interleaved series with different bases and steps:
      { 100, 53, 66, 206, 62, 212, 58, 218 }.  */
@@ -14467,39 +14472,43 @@ test_vector_cst_patterns ()
       elements[i] = build_int_cst (element_type, 70 - i * 2);
       elements[i + 1] = build_int_cst (element_type, 200 + i * 3);
     }
-  check_vector_cst_stepped (elements, build_vector (vector_type, elements), 2);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_stepped (elements, vector, 2);
 
   /* Try a duplicated value:
      { 100, 100, 100, 100, 100, 100, 100, 100 }.  */
   for (unsigned int i = 1; i < 8; ++i)
     elements[i] = elements[0];
-  check_vector_cst_duplicate (elements,
-			      build_vector (vector_type, elements), 1);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_duplicate (elements, vector, 1);
 
   /* Try an interleaved duplicated value:
      { 100, 55, 100, 55, 100, 55, 100, 55 }.  */
   elements[1] = build_int_cst (element_type, 55);
   for (unsigned int i = 2; i < 8; ++i)
     elements[i] = elements[i - 2];
-  check_vector_cst_duplicate (elements,
-			      build_vector (vector_type, elements), 2);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_duplicate (elements, vector, 2);
 
   /* Try a duplicated value with 2 exceptions
      { 41, 97, 100, 55, 100, 55, 100, 55 }.  */
   elements[0] = build_int_cst (element_type, 41);
   elements[1] = build_int_cst (element_type, 97);
-  check_vector_cst_fill (elements, build_vector (vector_type, elements), 2);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_fill (elements, vector, 2);
 
   /* Try with and without a step
      { 41, 97, 100, 21, 100, 35, 100, 49 }.  */
   for (unsigned int i = 3; i < 8; i += 2)
     elements[i] = build_int_cst (element_type, i * 7);
-  check_vector_cst_stepped (elements, build_vector (vector_type, elements), 2);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_stepped (elements, vector, 2);
 
   /* Try a fully-general constant:
      { 41, 97, 100, 21, 100, 9990, 100, 49 }.  */
   elements[5] = build_int_cst (element_type, 9990);
-  check_vector_cst_fill (elements, build_vector (vector_type, elements), 4);
+  vector = build_vector (vector_type, elements PASS_MEM_STAT);
+  check_vector_cst_fill (elements, vector, 4);
 }
 
 /* Verify that STRIP_NOPS (NODE) is EXPECTED.
