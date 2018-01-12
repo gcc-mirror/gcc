@@ -1015,12 +1015,13 @@ static unsigned
 get_vec_alignment_for_array_type (tree type) 
 {
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+  poly_uint64 array_size, vector_size;
 
   tree vectype = get_vectype_for_scalar_type (strip_array_types (type));
   if (!vectype
-      || !TYPE_SIZE (type)
-      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-      || tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (vectype)))
+      || !poly_int_tree_p (TYPE_SIZE (type), &array_size)
+      || !poly_int_tree_p (TYPE_SIZE (vectype), &vector_size)
+      || maybe_lt (array_size, vector_size))
     return 0;
 
   return TYPE_ALIGN (vectype);
