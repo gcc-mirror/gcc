@@ -1,5 +1,12 @@
 2018-01-12  Martin Liska  <mliska@suse.cz>
 
+	* tree-core.h: Use uint64_t instead of int.
+	* tree.c (tree_node_counts): Likewise.
+	(tree_node_sizes): Likewise.
+	(dump_tree_statistics): Use PRIu64 in printf format.
+
+2018-01-12  Martin Liska  <mliska@suse.cz>
+
 	* Makefile.in: As qsort_chk is implemented in vec.c, add
 	vec.o to linkage of gencfn-macros.
 	* tree.c (build_new_poly_int_cst): Add CXX_MEM_STAT_INFO as it's
