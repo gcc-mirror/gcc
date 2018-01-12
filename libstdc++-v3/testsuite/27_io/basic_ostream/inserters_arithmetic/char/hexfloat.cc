@@ -1,6 +1,5 @@
 // { dg-do run { target c++11 } }
 // { dg-require-string-conversions "" }
-// { dg-xfail-run-if "PR libstdc++/64054" { *-*-solaris* } }
 // { dg-xfail-run-if "broken long double IO" { newlib_broken_long_double_io  } }
 
 // 2014-03-27 Rüdiger Sonderfeld
