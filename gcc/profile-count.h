@@ -30,27 +30,27 @@ enum profile_quality {
      or may not match reality.  It is local to function and can not be compared
      inter-procedurally.  Never used by probabilities (they are always local).
    */
-  profile_guessed_local = 0,
+  profile_guessed_local = 1,
   /* Profile was read by feedback and was 0, we used local heuristics to guess
      better.  This is the case of functions not run in profile fedback.
      Never used by probabilities.  */
-  profile_guessed_global0 = 1,
+  profile_guessed_global0 = 2,
 
   /* Same as profile_guessed_global0 but global count is adjusted 0.  */
-  profile_guessed_global0adjusted = 2,
+  profile_guessed_global0adjusted = 3,
 
   /* Profile is based on static branch prediction heuristics.  It may or may
      not reflect the reality but it can be compared interprocedurally
      (for example, we inlined function w/o profile feedback into function
       with feedback and propagated from that).
      Never used by probablities.  */
-  profile_guessed = 3,
+  profile_guessed = 4,
   /* Profile was determined by autofdo.  */
-  profile_afdo = 4,
+  profile_afdo = 5,
   /* Profile was originally based on feedback but it was adjusted
      by code duplicating optimization.  It may not precisely reflect the
      particular code path.  */
-  profile_adjusted = 5,
+  profile_adjusted = 6,
   /* Profile was read from profile feedback or determined by accurate static
      method.  */
   profile_precise = 7
@@ -505,6 +505,8 @@ public:
   /* Return false if profile_probability is bogus.  */
   bool verify () const
     {
+      gcc_checking_assert (profile_guessed_local <= m_quality
+			   && m_quality <= profile_precise);
       if (m_val == uninitialized_probability)
 	return m_quality == profile_guessed;
       else if (m_quality < profile_guessed)
@@ -784,6 +786,8 @@ public:
   /* Return false if profile_count is bogus.  */
   bool verify () const
     {
+      gcc_checking_assert (profile_guessed_local <= m_quality
+			   && m_quality <= profile_precise);
       return m_val != uninitialized_count || m_quality == profile_guessed_local;
     }
 
