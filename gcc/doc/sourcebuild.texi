@@ -2133,6 +2133,9 @@ Target supports wide characters.
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
+@item branch_cost
+Target supports @option{-branch-cost=N}.
+
 @item cxa_atexit
 Target uses @code{__cxa_atexit}.
 
