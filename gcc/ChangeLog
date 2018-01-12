@@ -1,3 +1,12 @@
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2018-01-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/81926
+	* cgraphunit.c (symbol_table::compile): Switch to text_section
+	before calling assembly_start debug hook.
+
 2018-01-11  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
