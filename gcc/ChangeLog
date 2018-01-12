@@ -1,3 +1,8 @@
+2018-01-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* doc/invoke.texi (NDS32 Options): Add -mext-perf, -mext-perf2 and
+	-mext-string options.
+
 2018-01-12  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer-out.c (DFS::DFS_write_tree_body): Process
