@@ -1,3 +1,8 @@
+2018-01-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other attributes):
+	Add item for branch_cost.
+
 2018-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/83565
