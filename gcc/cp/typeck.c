@@ -7204,6 +7204,8 @@ build_static_cast (tree type, tree oexpr, tsubst_flags_t complain)
       TREE_SIDE_EFFECTS (expr) = 1;
       return convert_from_reference (expr);
     }
+  else if (processing_template_decl)
+    expr = build_non_dependent_expr (expr);
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
