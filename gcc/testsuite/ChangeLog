@@ -1,3 +1,8 @@
+2018-01-12  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/83054
+	* g++.dg/warn/pr83054.C: New test.
+
 2018-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/spec-barr-1.c: New file.

@@ -2901,10 +2901,27 @@ struct decl_warn_count
 
 struct final_warning_record
 {
+  /* If needed grow type_warnings vector and initialize new decl_warn_count
+     to have dyn_count set to profile_count::zero ().  */
+  void grow_type_warnings (unsigned newlen);
+
   profile_count dyn_count;
   auto_vec<odr_type_warn_count> type_warnings;
   hash_map<tree, decl_warn_count> decl_warnings;
 };
+
+void
+final_warning_record::grow_type_warnings (unsigned newlen)
+{
+  unsigned len = type_warnings.length ();
+  if (newlen > len)
+    {
+      type_warnings.safe_grow_cleared (newlen);
+      for (unsigned i = len; i < newlen; i++)
+	type_warnings[i].dyn_count = profile_count::zero ();
+    }
+}
+
 struct final_warning_record *final_warning_records;
 
 /* Return vector containing possible targets of polymorphic call of type
@@ -3176,9 +3193,8 @@ possible_polymorphic_call_targets (tree otr_type,
 		      && warn_suggest_final_types
 		      && !outer_type->derived_types.length ())
 		    {
-		      if (outer_type->id >= (int)final_warning_records->type_warnings.length ())
-			final_warning_records->type_warnings.safe_grow_cleared
-			  (odr_types.length ());
+		      final_warning_records->grow_type_warnings
+			(outer_type->id);
 		      final_warning_records->type_warnings[outer_type->id].count++;
 		      if (!final_warning_records->type_warnings
 				[outer_type->id].dyn_count.initialized_p ())
@@ -3545,8 +3561,7 @@ ipa_devirt (void)
     {
       final_warning_records = new (final_warning_record);
       final_warning_records->dyn_count = profile_count::zero ();
-      final_warning_records->type_warnings.safe_grow_cleared
-						 (odr_types.length ());
+      final_warning_records->grow_type_warnings (odr_types.length ());
       free_polymorphic_call_targets_hash ();
     }
 

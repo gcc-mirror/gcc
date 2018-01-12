@@ -1,5 +1,13 @@
 2018-01-12  Martin Liska  <mliska@suse.cz>
 
+	PR ipa/83054
+	* ipa-devirt.c (final_warning_record::grow_type_warnings):
+	New function.
+	(possible_polymorphic_call_targets): Use it.
+	(ipa_devirt): Likewise.
+
+2018-01-12  Martin Liska  <mliska@suse.cz>
+
 	* profile-count.h (enum profile_quality): Use 0 as invalid
 	enum value of profile_quality.
 
