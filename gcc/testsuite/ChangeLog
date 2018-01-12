@@ -1,3 +1,8 @@
+2018-01-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80481
+	* g++.dg/pr80481.C: New.
+
 2018-01-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/83628
