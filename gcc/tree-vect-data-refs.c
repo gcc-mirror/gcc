@@ -2227,9 +2227,9 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr)
     return;
 
   /* Two references with distance zero have the same alignment.  */
-  offset_int diff = (wi::to_offset (DR_INIT (dra))
-		     - wi::to_offset (DR_INIT (drb)));
-  if (diff != 0)
+  poly_offset_int diff = (wi::to_poly_offset (DR_INIT (dra))
+			  - wi::to_poly_offset (DR_INIT (drb)));
+  if (maybe_ne (diff, 0))
     {
       /* Get the wider of the two alignments.  */
       unsigned int align_a = (vect_calculate_target_alignment (dra)
@@ -2239,7 +2239,7 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr)
       unsigned int max_align = MAX (align_a, align_b);
 
       /* Require the gap to be a multiple of the larger vector alignment.  */
-      if (!wi::multiple_of_p (diff, max_align, SIGNED))
+      if (!multiple_p (diff, max_align))
 	return;
     }
 
@@ -2475,6 +2475,7 @@ vect_analyze_group_access_1 (struct data_reference *dr)
       gimple *prev = stmt;
       HOST_WIDE_INT diff, gaps = 0;
 
+      /* By construction, all group members have INTEGER_CST DR_INITs.  */
       while (next)
         {
           /* Skip same data-refs.  In case that two or more stmts share
@@ -2862,6 +2863,11 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	     ???  We don't distinguish this during sorting.  */
 	  if (!types_compatible_p (TREE_TYPE (DR_REF (dra)),
 				   TREE_TYPE (DR_REF (drb))))
+	    break;
+
+	  /* Check that the DR_INITs are compile-time constants.  */
+	  if (TREE_CODE (DR_INIT (dra)) != INTEGER_CST
+	      || TREE_CODE (DR_INIT (drb)) != INTEGER_CST)
 	    break;
 
 	  /* Sorting has ensured that DR_INIT (dra) <= DR_INIT (drb).  */
