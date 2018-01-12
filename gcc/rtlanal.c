@@ -4312,7 +4312,7 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 {
   unsigned HOST_WIDE_INT nonzero = GET_MODE_MASK (mode);
   unsigned HOST_WIDE_INT inner_nz;
-  enum rtx_code code;
+  enum rtx_code code = GET_CODE (x);
   machine_mode inner_mode;
   unsigned int mode_width = GET_MODE_PRECISION (mode);
 
@@ -4335,18 +4335,18 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
     return nonzero;
 
   /* If MODE is wider than X, but both are a single word for both the host
-     and target machines, we can compute this from which bits of the
-     object might be nonzero in its own mode, taking into account the fact
-     that on many CISC machines, accessing an object in a wider mode
-     causes the high-order bits to become undefined.  So they are
-     not known to be zero.  */
-
-  if (!WORD_REGISTER_OPERATIONS
-      && GET_MODE (x) != VOIDmode
+     and target machines, we can compute this from which bits of the object
+     might be nonzero in its own mode, taking into account the fact that, on
+     CISC machines, accessing an object in a wider mode generally causes the
+     high-order bits to become undefined, so they are not known to be zero.
+     We extend this reasoning to RISC machines for rotate operations since the
+     semantics of the operations in the larger mode is not well defined.  */
+  if (GET_MODE (x) != VOIDmode
       && GET_MODE (x) != mode
       && GET_MODE_PRECISION (GET_MODE (x)) <= BITS_PER_WORD
       && GET_MODE_PRECISION (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
-      && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (GET_MODE (x)))
+      && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (GET_MODE (x))
+      && (!WORD_REGISTER_OPERATIONS || code == ROTATE))
     {
       nonzero &= cached_nonzero_bits (x, GET_MODE (x),
 				      known_x, known_mode, known_ret);
@@ -4356,7 +4356,6 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 
   /* Please keep nonzero_bits_binary_arith_p above in sync with
      the code in the switch below.  */
-  code = GET_CODE (x);
   switch (code)
     {
     case REG:
@@ -4873,8 +4872,10 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
     {
       /* If this machine does not do all register operations on the entire
 	 register and MODE is wider than the mode of X, we can say nothing
-	 at all about the high-order bits.  */
-      if (!WORD_REGISTER_OPERATIONS)
+	 at all about the high-order bits.  We extend this reasoning to every
+	 machine for rotate operations since the semantics of the operations
+	 in the larger mode is not well defined.  */
+      if (!WORD_REGISTER_OPERATIONS || code == ROTATE || code == ROTATERT)
 	return 1;
 
       /* Likewise on machines that do, if the mode of the object is smaller
