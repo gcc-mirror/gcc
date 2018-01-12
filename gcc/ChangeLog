@@ -1,3 +1,10 @@
+2018-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/83565
+	* rtlanal.c (nonzero_bits1): On WORD_REGISTER_OPERATIONS machines, do
+	not extend the result to a larger mode for rotate operations.
+	(num_sign_bit_copies1): Likewise.
+
 2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/40411
