@@ -1,5 +1,16 @@
 2018-01-12  Tom de Vries  <tom@codesourcery.com>
 
+	* g++.dg/ext/label13.C: Add dg-require-effective-target indirect_jumps.
+	* g++.dg/ext/label13a.C: Same.
+	* g++.dg/ext/label14.C: Same.
+	* g++.dg/ext/label2.C: Same.
+	* g++.dg/ext/label3.C: Same.
+	* g++.dg/torture/pr42462.C: Same.
+	* g++.dg/torture/pr42739.C: Same.
+	* g++.dg/warn/Wunused-label-3.C: Same.
+
+2018-01-12  Tom de Vries  <tom@codesourcery.com>
+
 	* c-c++-common/dwarf2/vla1.c: Add dg-require-effective-target alloca.
 	* g++.dg/Walloca1.C: Same.
 	* g++.dg/cpp0x/pr70338.C: Same.
