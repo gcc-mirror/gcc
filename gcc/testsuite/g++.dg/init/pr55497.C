@@ -1,5 +1,6 @@
 // PR c++/55497
 // { dg-options "-g" }
+// { dg-require-effective-target alloca }
 
 int get();
 
