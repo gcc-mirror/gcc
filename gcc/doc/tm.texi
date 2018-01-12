@@ -5873,6 +5873,13 @@ equal to @code{word_mode}, because the vectorizer can do some
 transformations even in absence of specialized @acronym{SIMD} hardware.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_SPLIT_REDUCTION (machine_mode)
+This hook should return the preferred mode to split the final reduction
+step on @var{mode} to.  The reduction is then carried out reducing upper
+against lower halves of vectors recursively until the specified mode is
+reached.  The default is @var{mode} which means no splitting.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes})
 If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not
 the only one that is worth considering, this hook should add all suitable

@@ -5062,12 +5062,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
     }
   else
     {
-      bool reduce_with_shift = have_whole_vector_shift (mode);
-      int element_bitsize = tree_to_uhwi (bitsize);
-      /* Enforced by vectorizable_reduction, which disallows SLP reductions
-	 for variable-length vectors and also requires direct target support
-	 for loop reductions.  */
-      int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
+      bool reduce_with_shift;
       tree vec_temp;
 
       /* COND reductions all do the final reduction with MAX_EXPR
@@ -5081,30 +5076,125 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	    code = MAX_EXPR;
 	}
 
-      /* Regardless of whether we have a whole vector shift, if we're
-         emulating the operation via tree-vect-generic, we don't want
-         to use it.  Only the first round of the reduction is likely
-         to still be profitable via emulation.  */
-      /* ??? It might be better to emit a reduction tree code here, so that
-         tree-vect-generic can expand the first round via bit tricks.  */
-      if (!VECTOR_MODE_P (mode))
-        reduce_with_shift = false;
+      /* See if the target wants to do the final (shift) reduction
+	 in a vector mode of smaller size and first reduce upper/lower
+	 halves against each other.  */
+      enum machine_mode mode1 = mode;
+      tree vectype1 = vectype;
+      unsigned sz = tree_to_uhwi (TYPE_SIZE_UNIT (vectype));
+      unsigned sz1 = sz;
+      if (!slp_reduc
+	  && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
+	sz1 = GET_MODE_SIZE (mode1).to_constant ();
+
+      vectype1 = get_vectype_for_scalar_type_and_size (scalar_type, sz1);
+      reduce_with_shift = have_whole_vector_shift (mode1);
+      if (!VECTOR_MODE_P (mode1))
+	reduce_with_shift = false;
       else
-        {
-          optab optab = optab_for_tree_code (code, vectype, optab_default);
-          if (optab_handler (optab, mode) == CODE_FOR_nothing)
-            reduce_with_shift = false;
-        }
+	{
+	  optab optab = optab_for_tree_code (code, vectype1, optab_default);
+	  if (optab_handler (optab, mode1) == CODE_FOR_nothing)
+	    reduce_with_shift = false;
+	}
+
+      /* First reduce the vector to the desired vector size we should
+	 do shift reduction on by combining upper and lower halves.  */
+      new_temp = new_phi_result;
+      while (sz > sz1)
+	{
+	  gcc_assert (!slp_reduc);
+	  sz /= 2;
+	  vectype1 = get_vectype_for_scalar_type_and_size (scalar_type, sz);
+
+	  /* The target has to make sure we support lowpart/highpart
+	     extraction, either via direct vector extract or through
+	     an integer mode punning.  */
+	  tree dst1, dst2;
+	  if (convert_optab_handler (vec_extract_optab,
+				     TYPE_MODE (TREE_TYPE (new_temp)),
+				     TYPE_MODE (vectype1))
+	      != CODE_FOR_nothing)
+	    {
+	      /* Extract sub-vectors directly once vec_extract becomes
+		 a conversion optab.  */
+	      dst1 = make_ssa_name (vectype1);
+	      epilog_stmt
+		  = gimple_build_assign (dst1, BIT_FIELD_REF,
+					 build3 (BIT_FIELD_REF, vectype1,
+						 new_temp, TYPE_SIZE (vectype1),
+						 bitsize_int (0)));
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	      dst2 =  make_ssa_name (vectype1);
+	      epilog_stmt
+		  = gimple_build_assign (dst2, BIT_FIELD_REF,
+					 build3 (BIT_FIELD_REF, vectype1,
+						 new_temp, TYPE_SIZE (vectype1),
+						 bitsize_int (sz * BITS_PER_UNIT)));
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	    }
+	  else
+	    {
+	      /* Extract via punning to appropriately sized integer mode
+		 vector.  */
+	      tree eltype = build_nonstandard_integer_type (sz * BITS_PER_UNIT,
+							    1);
+	      tree etype = build_vector_type (eltype, 2);
+	      gcc_assert (convert_optab_handler (vec_extract_optab,
+						 TYPE_MODE (etype),
+						 TYPE_MODE (eltype))
+			  != CODE_FOR_nothing);
+	      tree tem = make_ssa_name (etype);
+	      epilog_stmt = gimple_build_assign (tem, VIEW_CONVERT_EXPR,
+						 build1 (VIEW_CONVERT_EXPR,
+							 etype, new_temp));
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	      new_temp = tem;
+	      tem = make_ssa_name (eltype);
+	      epilog_stmt
+		  = gimple_build_assign (tem, BIT_FIELD_REF,
+					 build3 (BIT_FIELD_REF, eltype,
+						 new_temp, TYPE_SIZE (eltype),
+						 bitsize_int (0)));
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	      dst1 = make_ssa_name (vectype1);
+	      epilog_stmt = gimple_build_assign (dst1, VIEW_CONVERT_EXPR,
+						 build1 (VIEW_CONVERT_EXPR,
+							 vectype1, tem));
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	      tem = make_ssa_name (eltype);
+	      epilog_stmt
+		  = gimple_build_assign (tem, BIT_FIELD_REF,
+					 build3 (BIT_FIELD_REF, eltype,
+						 new_temp, TYPE_SIZE (eltype),
+						 bitsize_int (sz * BITS_PER_UNIT)));
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	      dst2 =  make_ssa_name (vectype1);
+	      epilog_stmt = gimple_build_assign (dst2, VIEW_CONVERT_EXPR,
+						 build1 (VIEW_CONVERT_EXPR,
+							 vectype1, tem));
+	      gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	    }
+
+	  new_temp = make_ssa_name (vectype1);
+	  epilog_stmt = gimple_build_assign (new_temp, code, dst1, dst2);
+	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	}
 
       if (reduce_with_shift && !slp_reduc)
-        {
-          int nelements = vec_size_in_bits / element_bitsize;
+	{
+	  int element_bitsize = tree_to_uhwi (bitsize);
+	  /* Enforced by vectorizable_reduction, which disallows SLP reductions
+	     for variable-length vectors and also requires direct target support
+	     for loop reductions.  */
+	  int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
+	  int nelements = vec_size_in_bits / element_bitsize;
 	  vec_perm_builder sel;
 	  vec_perm_indices indices;
 
           int elt_offset;
 
-          tree zero_vec = build_zero_cst (vectype);
+          tree zero_vec = build_zero_cst (vectype1);
           /* Case 2: Create:
              for (offset = nelements/2; offset >= 1; offset/=2)
                 {
@@ -5118,15 +5208,15 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
             dump_printf_loc (MSG_NOTE, vect_location,
 			     "Reduce using vector shifts\n");
 
-          vec_dest = vect_create_destination_var (scalar_dest, vectype);
-          new_temp = new_phi_result;
+	  mode1 = TYPE_MODE (vectype1);
+          vec_dest = vect_create_destination_var (scalar_dest, vectype1);
           for (elt_offset = nelements / 2;
                elt_offset >= 1;
                elt_offset /= 2)
             {
 	      calc_vec_perm_mask_for_shift (elt_offset, nelements, &sel);
 	      indices.new_vector (sel, 2, nelements);
-	      tree mask = vect_gen_perm_mask_any (vectype, indices);
+	      tree mask = vect_gen_perm_mask_any (vectype1, indices);
 	      epilog_stmt = gimple_build_assign (vec_dest, VEC_PERM_EXPR,
 						 new_temp, zero_vec, mask);
               new_name = make_ssa_name (vec_dest, epilog_stmt);
@@ -5171,7 +5261,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
             dump_printf_loc (MSG_NOTE, vect_location,
 			     "Reduce using scalar code.\n");
 
-          vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
+	  int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
+	  int element_bitsize = tree_to_uhwi (bitsize);
           FOR_EACH_VEC_ELT (new_phis, i, new_phi)
             {
               int bit_offset;

@@ -1890,6 +1890,17 @@ transformations even in absence of specialized @acronym{SIMD} hardware.",
  (scalar_mode mode),
  default_preferred_simd_mode)
 
+/* Returns the preferred mode for splitting SIMD reductions to.  */
+DEFHOOK
+(split_reduction,
+ "This hook should return the preferred mode to split the final reduction\n\
+step on @var{mode} to.  The reduction is then carried out reducing upper\n\
+against lower halves of vectors recursively until the specified mode is\n\
+reached.  The default is @var{mode} which means no splitting.",
+  machine_mode,
+  (machine_mode),
+  default_split_reduction)
+
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
    after processing the preferred one derived from preferred_simd_mode.  */
 DEFHOOK

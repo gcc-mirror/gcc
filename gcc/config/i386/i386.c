@@ -49008,6 +49008,39 @@ ix86_preferred_simd_mode (scalar_mode mode)
     }
 }
 
+/* All CPUs prefer to avoid cross-lane operations so perform reductions
+   upper against lower halves up to SSE reg size.  */
+
+static machine_mode
+ix86_split_reduction (machine_mode mode)
+{
+  /* Reduce lowpart against highpart until we reach SSE reg width to
+     avoid cross-lane operations.  */
+  switch (mode)
+    {
+    case E_V8DImode:
+    case E_V4DImode:
+      return V2DImode;
+    case E_V16SImode:
+    case E_V8SImode:
+      return V4SImode;
+    case E_V32HImode:
+    case E_V16HImode:
+      return V8HImode;
+    case E_V64QImode:
+    case E_V32QImode:
+      return V16QImode;
+    case E_V16SFmode:
+    case E_V8SFmode:
+      return V4SFmode;
+    case E_V8DFmode:
+    case E_V4DFmode:
+      return V2DFmode;
+    default:
+      return mode;
+    }
+}
+
 /* If AVX is enabled then try vectorizing with both 256bit and 128bit
    vectors.  If AVX512F is enabled then try vectorizing with 512bit,
    256bit and 128bit vectors.  */
@@ -50640,6 +50673,9 @@ ix86_run_selftests (void)
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
   ix86_preferred_simd_mode
+#undef TARGET_VECTORIZE_SPLIT_REDUCTION
+#define TARGET_VECTORIZE_SPLIT_REDUCTION \
+  ix86_split_reduction
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
   ix86_autovectorize_vector_sizes

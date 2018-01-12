@@ -1,3 +1,9 @@
+2018-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80846
+	* gcc.target/i386/pr80846-1.c: New testcase.
+	* gcc.target/i386/pr80846-2.c: Likewise.
+
 2018-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20180112-1.c: New test.
