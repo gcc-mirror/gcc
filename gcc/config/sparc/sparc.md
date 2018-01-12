@@ -1797,7 +1797,7 @@
   "flag_pic"
   "or\t%1, %%lo(%a3-(%a2-.)), %0")
 
-;; Set up the PIC register for VxWorks.
+;; Set up the GOT register for VxWorks.
 
 (define_expand "vxworks_load_got"
   [(set (match_dup 0)
@@ -1808,7 +1808,7 @@
 	(mem:SI (lo_sum:SI (match_dup 0) (match_dup 2))))]
   "TARGET_VXWORKS_RTP"
 {
-  operands[0] = pic_offset_table_rtx;
+  operands[0] = global_offset_table_rtx;
   operands[1] = gen_rtx_SYMBOL_REF (SImode, VXWORKS_GOTT_BASE);
   operands[2] = gen_rtx_SYMBOL_REF (SImode, VXWORKS_GOTT_INDEX);
 })
@@ -7475,7 +7475,7 @@ visl")
 
 (define_expand "builtin_setjmp_receiver"
   [(label_ref (match_operand 0 "" ""))]
-  "flag_pic"
+  "TARGET_VXWORKS_RTP && flag_pic"
 {
   load_got_register ();
   DONE;

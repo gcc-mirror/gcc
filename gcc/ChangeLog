@@ -1,3 +1,26 @@
+2018-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/83368
+	* config/sparc/sparc.h (PIC_OFFSET_TABLE_REGNUM): Set to INVALID_REGNUM
+	in PIC mode except for TARGET_VXWORKS_RTP.
+	* config/sparc/sparc.c: Include cfgrtl.h.
+	(TARGET_INIT_PIC_REG): Define.
+	(TARGET_USE_PSEUDO_PIC_REG): Likewise.
+	(sparc_pic_register_p): New predicate.
+	(sparc_legitimate_address_p): Use it.
+	(sparc_legitimize_pic_address): Likewise.
+	(sparc_delegitimize_address): Likewise.
+	(sparc_mode_dependent_address_p): Likewise.
+	(gen_load_pcrel_sym): Remove 4th parameter.
+	(load_got_register): Adjust call to above.  Remove obsolete stuff.
+	(sparc_expand_prologue): Do not call load_got_register here.
+	(sparc_flat_expand_prologue): Likewise.
+	(sparc_output_mi_thunk): Set the pic_offset_table_rtx object.
+	(sparc_use_pseudo_pic_reg): New function.
+	(sparc_init_pic_reg): Likewise.
+	* config/sparc/sparc.md (vxworks_load_got): Set the GOT register.
+	(builtin_setjmp_receiver): Enable only for TARGET_VXWORKS_RTP.
+
 2018-01-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Other attributes):
