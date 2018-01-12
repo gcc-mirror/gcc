@@ -6890,9 +6890,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     };
 
   expr = convert_like_real (next_conversion (convs), expr, fn, argnum,
-			    convs->kind == ck_ref_bind ? issue_conversion_warnings : false, 
-			    c_cast_p,
-			    complain);
+			    convs->kind == ck_ref_bind
+			    ? issue_conversion_warnings : false, 
+			    c_cast_p, complain);
   if (expr == error_mark_node)
     return error_mark_node;
 

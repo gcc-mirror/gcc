@@ -1,3 +1,10 @@
+2018-01-12  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (mark_rvalue_use): Add parm name.
+	* expr.c (mark_lvalue_use, mark_lvalue_use_nonread): Move next to
+	mark_rvalue_use.
+	* call.c (convert_like_real): Fix formatting.
+
 2018-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82728 - wrong -Wunused-but-set-variable

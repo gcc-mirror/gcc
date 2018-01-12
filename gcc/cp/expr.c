@@ -199,6 +199,22 @@ mark_rvalue_use (tree e,
   return mark_use (e, true, true, loc, reject_builtin);
 }
 
+/* Called whenever an expression is used in an lvalue context.  */
+
+tree
+mark_lvalue_use (tree expr)
+{
+  return mark_use (expr, false, true, input_location, false);
+}
+
+/* As above, but don't consider this use a read.  */
+
+tree
+mark_lvalue_use_nonread (tree expr)
+{
+  return mark_use (expr, false, false, input_location, false);
+}
+
 /* Called when expr appears as a discarded-value expression.  */
 
 tree
@@ -243,22 +259,6 @@ mark_discarded_use (tree expr)
 
   /* Like mark_rvalue_use, but don't reject built-ins.  */
   return mark_use (expr, true, true, input_location, false);
-}
-
-/* Called whenever an expression is used in an lvalue context.  */
-
-tree
-mark_lvalue_use (tree expr)
-{
-  return mark_use (expr, false, true, input_location, false);
-}
-
-/* As above, but don't consider this use a read.  */
-
-tree
-mark_lvalue_use_nonread (tree expr)
-{
-  return mark_use (expr, false, false, input_location, false);
 }
 
 /* Called whenever an expression is used in a type use context.  */

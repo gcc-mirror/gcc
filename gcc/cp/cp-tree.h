@@ -6330,7 +6330,7 @@ extern tree create_try_catch_expr               (tree, tree);
 extern tree cplus_expand_constant		(tree);
 extern tree mark_rvalue_use			(tree,
                                                  location_t = UNKNOWN_LOCATION,
-                                                 bool = true);
+                                                 bool reject_builtin = true);
 extern tree mark_lvalue_use			(tree);
 extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
@@ -6341,7 +6341,8 @@ extern void mark_exp_read			(tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend				(tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, bool);
+extern tree do_friend				(tree, tree, tree, tree,
+						 enum overload_flags, bool);
 
 extern void set_global_friend			(tree);
 extern bool is_global_friend			(tree);
