@@ -802,7 +802,8 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	   || TREE_CODE (expr) == PARM_DECL)
 	  && DECL_HAS_VALUE_EXPR_P (expr))
 	DFS_follow_tree_edge (DECL_VALUE_EXPR (expr));
-      if (VAR_P (expr))
+      if (VAR_P (expr)
+	  && DECL_HAS_DEBUG_EXPR_P (expr))
 	DFS_follow_tree_edge (DECL_DEBUG_EXPR (expr));
     }
 

@@ -714,7 +714,8 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
       && DECL_HAS_VALUE_EXPR_P (expr))
     SET_DECL_VALUE_EXPR (expr, stream_read_tree (ib, data_in));
 
-  if (VAR_P (expr))
+  if (VAR_P (expr)
+      && DECL_HAS_DEBUG_EXPR_P (expr))
     {
       tree dexpr = stream_read_tree (ib, data_in);
       if (dexpr)

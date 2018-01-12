@@ -609,7 +609,8 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
       && DECL_HAS_VALUE_EXPR_P (expr))
     stream_write_tree (ob, DECL_VALUE_EXPR (expr), ref_p);
 
-  if (VAR_P (expr))
+  if (VAR_P (expr)
+      && DECL_HAS_DEBUG_EXPR_P (expr))
     stream_write_tree (ob, DECL_DEBUG_EXPR (expr), ref_p);
 }
 
