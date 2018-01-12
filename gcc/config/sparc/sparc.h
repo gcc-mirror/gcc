@@ -808,11 +808,14 @@ extern enum cmodel sparc_cmodel;
 
 #define GLOBAL_OFFSET_TABLE_REGNUM 23
 
-/* Register which holds offset table for position-independent
-   data references.  */
+/* Register which holds offset table for position-independent data references.
+   The original SPARC ABI imposes no requirement on the choice of the register
+   so we use a pseudo-register to make sure it is properly saved and restored
+   around calls to setjmp.  Now the ABI of VxWorks RTP makes it live on entry
+   to PLT entries so we use the canonical GOT register in this case.  */
 
 #define PIC_OFFSET_TABLE_REGNUM \
-  (flag_pic ? GLOBAL_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
+  (TARGET_VXWORKS_RTP && flag_pic ? GLOBAL_OFFSET_TABLE_REGNUM : INVALID_REGNUM)
 
 /* Pick a default value we can notice from override_options:
    !v9: Default is on.
