@@ -1,5 +1,10 @@
 2018-01-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vectorizer.c (get_vec_alignment_for_array_type): Handle
+	polynomial type sizes.
+
+2018-01-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gimplify.c (gimple_add_tmp_var_fn): Allow variables to have a
 	poly_uint64 size, rather than requiring an unsigned HOST_WIDE_INT size.
 	(gimple_add_tmp_var): Likewise.
