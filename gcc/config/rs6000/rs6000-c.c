@@ -6496,6 +6496,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  tree call = NULL_TREE;
 	  int nunits = GET_MODE_NUNITS (mode);
 
+	  arg2 = fold_for_warn (arg2);
+
 	  /* If the second argument is an integer constant, if the value is in
 	     the expected range, generate the built-in code if we can.  We need
 	     64-bit and direct move to extract the small integer vectors.  */
@@ -6640,7 +6642,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       arg0 = (*arglist)[0];
       arg1 = (*arglist)[1];
       arg1_type = TREE_TYPE (arg1);
-      arg2 = (*arglist)[2];
+      arg2 = fold_for_warn ((*arglist)[2]);
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
 	goto bad;

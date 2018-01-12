@@ -1,3 +1,9 @@
+2018-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83778
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Call
+	fold_for_warn before checking if arg2 is INTEGER_CST.
+
 2018-01-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/predicates.md (load_multiple_operation): Delete.
