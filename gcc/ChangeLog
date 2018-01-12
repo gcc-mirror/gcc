@@ -1,3 +1,20 @@
+2018-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80846
+	* target.def (split_reduction): New target hook.
+	* targhooks.c (default_split_reduction): New function.
+	* targhooks.h (default_split_reduction): Declare.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): If the
+	target requests first reduce vectors by combining low and high
+	parts.
+	* tree-vect-stmts.c (vect_gen_perm_mask_any): Adjust.
+	(get_vectype_for_scalar_type_and_size): Export.
+	* tree-vectorizer.h (get_vectype_for_scalar_type_and_size): Declare.
+	* doc/tm.texi.in (TARGET_VECTORIZE_SPLIT_REDUCTION): Document.
+	* doc/tm.texi: Regenerate.
+	* config/i386/i386.c (ix86_split_reduction): Implement
+	TARGET_VECTORIZE_SPLIT_REDUCTION.
+
 2018-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/83368

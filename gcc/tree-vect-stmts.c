@@ -9068,7 +9068,7 @@ free_stmt_vec_info (gimple *stmt)
    Returns the vector type corresponding to SCALAR_TYPE  and SIZE as supported
    by the target.  */
 
-static tree
+tree
 get_vectype_for_scalar_type_and_size (tree scalar_type, poly_uint64 size)
 {
   tree orig_scalar_type = scalar_type;

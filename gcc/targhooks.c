@@ -1283,6 +1283,14 @@ default_preferred_simd_mode (scalar_mode)
   return word_mode;
 }
 
+/* By default do not split reductions further.  */
+
+machine_mode
+default_split_reduction (machine_mode mode)
+{
+  return mode;
+}
+
 /* By default only the size derived from the preferred vector mode
    is tried.  */
 
