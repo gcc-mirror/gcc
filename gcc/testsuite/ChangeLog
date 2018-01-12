@@ -1,3 +1,8 @@
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_branch_cost):
+	Accept all x86 targets.
+
 2018-01-12  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/83054

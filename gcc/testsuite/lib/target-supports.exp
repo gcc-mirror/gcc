@@ -8647,7 +8647,7 @@ proc check_effective_target_branch_cost {} {
 	 || [istarget avr*-*-*]
 	 || [istarget epiphany*-*-*]
 	 || [istarget frv*-*-*]
-	 || [istarget i?86-*-linux*] || [istarget x86_64-*-linux*]
+	 || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	 || [istarget mips*-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget riscv*-*-*]
