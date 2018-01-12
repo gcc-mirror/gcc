@@ -1,3 +1,9 @@
+2018-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/81155
+	* bb-reorder.c (pass_partition_blocks::gate): In lto don't partition
+	main to workaround a bug in GDB.
+
 2018-01-12  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/83737

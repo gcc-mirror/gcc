@@ -2873,7 +2873,10 @@ pass_partition_blocks::gate (function *fun)
 	     we are going to omit the reordering.  */
 	  && optimize_function_for_speed_p (fun)
 	  && !DECL_COMDAT_GROUP (current_function_decl)
-	  && !lookup_attribute ("section", DECL_ATTRIBUTES (fun->decl)));
+	  && !lookup_attribute ("section", DECL_ATTRIBUTES (fun->decl))
+	  /* Workaround a bug in GDB where read_partial_die doesn't cope
+	     with DIEs with DW_AT_ranges, see PR81115.  */
+	  && !(in_lto_p && MAIN_NAME_P (DECL_NAME (fun->decl))));
 }
 
 unsigned
