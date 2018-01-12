@@ -941,7 +941,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mbig-endian  -mlittle-endian @gol
 -mreduced-regs  -mfull-regs @gol
 -mcmov  -mno-cmov @gol
--mperf-ext  -mno-perf-ext @gol
+-mext-perf  -mno-ext-perf @gol
+-mext-perf2  -mno-ext-perf2 @gol
+-mext-string  -mno-ext-string @gol
 -mv3push  -mno-v3push @gol
 -m16bit  -mno-16bit @gol
 -misr-vector-size=@var{num} @gol
@@ -21304,13 +21306,29 @@ Generate conditional move instructions.
 @opindex mno-cmov
 Do not generate conditional move instructions.
 
-@item -mperf-ext
+@item -mext-perf
 @opindex mperf-ext
 Generate performance extension instructions.
 
-@item -mno-perf-ext
+@item -mno-ext-perf
 @opindex mno-perf-ext
 Do not generate performance extension instructions.
+
+@item -mext-perf2
+@opindex mperf-ext
+Generate performance extension 2 instructions.
+
+@item -mno-ext-perf2
+@opindex mno-perf-ext
+Do not generate performance extension 2 instructions.
+
+@item -mext-string
+@opindex mperf-ext
+Generate string extension instructions.
+
+@item -mno-ext-string
+@opindex mno-perf-ext
+Do not generate string extension instructions.
 
 @item -mv3push
 @opindex mv3push
