@@ -835,7 +835,7 @@ namespace __variant
       static constexpr __visit_invoke(_Visitor&& __visitor, _Variants... __vars)
       {
 	return __invoke(std::forward<_Visitor>(__visitor),
-			std::get<__indices>(
+			__get<__indices>(
 			    std::forward<_Variants>(__vars))...);
       }
 
