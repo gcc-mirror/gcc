@@ -1,3 +1,8 @@
+2018-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/float128-hw7.c: Use scan-assembler-times
+	instead of scan-assembler-not for xsnabsqp.
+
 2018-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/83525

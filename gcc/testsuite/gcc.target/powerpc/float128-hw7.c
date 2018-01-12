@@ -20,7 +20,7 @@ _Float128 cs_x_neg2 (_Float128 x)
 }
 
 /* { dg-final { scan-assembler-times {\mxsabsqp\M}  1 } } */
-/* { dg-final { scan-assembler-not   {\mxsnabsqp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mxsnabsqp\M} 1 } } */
 /* { dg-final { scan-assembler-not   {\mxscpsgnqp\M}  } } */
 /* { dg-final { scan-assembler-not   {\mlxvx\M}       } } */
 /* { dg-final { scan-assembler-not   {\mlxv\M}        } } */
