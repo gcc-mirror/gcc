@@ -1,3 +1,11 @@
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/40411
+	* config/sol2.h (STARTFILE_ARCH_SPEC): Don't use with -shared or
+	-symbolic.
+	Use values-Xc.o for -pedantic.
+	Link with values-xpg4.o for C90, values-xpg6.o otherwise.
+
 2018-01-12  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/83054

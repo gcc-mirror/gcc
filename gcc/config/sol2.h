@@ -169,9 +169,34 @@ along with GCC; see the file COPYING3.  If not see
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY HAVE_INITFINI_ARRAY_SUPPORT
 
+/* Solaris libc and libm implement multiple behaviours for various
+   interfaces that have changed over the years in different versions of the
+   C standard.  The behaviour is controlled by linking corresponding
+   values-*.o objects.  Each of these objects contain alternate definitions
+   of one or more variables that the libraries use to select which
+   conflicting behaviour they should exhibit.  There are two sets of these
+   objects, values-X*.o and values-xpg*.o.
+
+   The values-X[ac].o objects set the variable _lib_version.  The Studio C
+   compilers use values-Xc.o with either -Xc or (since Studio 12.6)
+   -pedantic to select strictly conformant ISO C behaviour, otherwise
+   values-Xa.o.
+
+   The values-xpg[46].o objects define either or both __xpg[46] variables,
+   selecting XPG4 mode (__xpg4) and conforming C99/SUSv3 behavior (__xpg6).
+
+   Since GCC 5, gcc defaults to -std=gnu11 or higher, so we link
+   values-xpg6.o to get C99 semantics.  Besides, most of the runtime
+   libraries always require C99 semantics.
+
+   Since only one instance of _lib_version and __xpg[46] takes effekt (the
+   first in ld.so.1's search path), we only link the values-*.o files into
+   executable programs.  */
 #undef STARTFILE_ARCH_SPEC
-#define STARTFILE_ARCH_SPEC "%{ansi:values-Xc.o%s} \
-			    %{!ansi:values-Xa.o%s}"
+#define STARTFILE_ARCH_SPEC \
+  "%{!shared:%{!symbolic: \
+     %{pedantic:values-Xc.o%s; :values-Xa.o%s} \
+     %{std=c90|std=gnu90:values-xpg4.o%s; :values-xpg6.o%s}}}"
 
 #if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
 #define STARTFILE_CRTBEGIN_SPEC "%{static:crtbegin.o%s; \

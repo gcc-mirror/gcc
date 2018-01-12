@@ -1,3 +1,9 @@
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/64054
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
+	Remove dg-xfail-run-if.
+
 2018-01-10  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/forward_list.h

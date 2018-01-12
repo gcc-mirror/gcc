@@ -1,5 +1,11 @@
 2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR libfortran/67412
+	* gfortran.dg/execute_command_line_2.f90: Remove dg-xfail-run-if
+	on *-*-solaris2.10.
+
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* lib/target-supports.exp (check_effective_target_branch_cost):
 	Accept all x86 targets.
 
