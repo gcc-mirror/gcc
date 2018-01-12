@@ -1,3 +1,11 @@
+2018-01-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* config/alpha/alpha.md (*saddsi_1): New insn_ans_split pattern.
+	(*saddl_se_1): Ditto.
+	(*ssubsi_1): Ditto.
+	(*saddl_se_1): Ditto.
+
 2018-01-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-predcom.c (aff_combination_dr_offset): Use wi::to_poly_widest
