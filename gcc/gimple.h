@@ -6386,8 +6386,8 @@ enum gimple_alloc_kind
   gimple_alloc_kind_all
 };
 
-extern int gimple_alloc_counts[];
-extern int gimple_alloc_sizes[];
+extern uint64_t gimple_alloc_counts[];
+extern uint64_t gimple_alloc_sizes[];
 
 /* Return the allocation kind for a given stmt CODE.  */
 static inline enum gimple_alloc_kind

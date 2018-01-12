@@ -77,8 +77,8 @@ EXPORTED_CONST enum gimple_statement_structure_enum gss_for_code_[] = {
 
 /* Gimple stats.  */
 
-int gimple_alloc_counts[(int) gimple_alloc_kind_all];
-int gimple_alloc_sizes[(int) gimple_alloc_kind_all];
+uint64_t gimple_alloc_counts[(int) gimple_alloc_kind_all];
+uint64_t gimple_alloc_sizes[(int) gimple_alloc_kind_all];
 
 /* Keep in sync with gimple.h:enum gimple_alloc_kind.  */
 static const char * const gimple_alloc_kind_names[] = {
@@ -2057,11 +2057,12 @@ gimple_assign_rhs_could_trap_p (gimple *s)
 void
 dump_gimple_statistics (void)
 {
-  int i, total_tuples = 0, total_bytes = 0;
+  int i;
+  uint64_t total_tuples = 0, total_bytes = 0;
 
   if (! GATHER_STATISTICS)
     {
-      fprintf (stderr, "No gimple statistics\n");
+      fprintf (stderr, "No GIMPLE statistics\n");
       return;
     }
 
@@ -2070,13 +2071,15 @@ dump_gimple_statistics (void)
   fprintf (stderr, "---------------------------------------\n");
   for (i = 0; i < (int) gimple_alloc_kind_all; ++i)
     {
-      fprintf (stderr, "%-20s %7d %10d\n", gimple_alloc_kind_names[i],
-	  gimple_alloc_counts[i], gimple_alloc_sizes[i]);
+      fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n",
+	       gimple_alloc_kind_names[i], gimple_alloc_counts[i],
+	       gimple_alloc_sizes[i]);
       total_tuples += gimple_alloc_counts[i];
       total_bytes += gimple_alloc_sizes[i];
     }
   fprintf (stderr, "---------------------------------------\n");
-  fprintf (stderr, "%-20s %7d %10d\n", "Total", total_tuples, total_bytes);
+  fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n", "Total",
+	   total_tuples, total_bytes);
   fprintf (stderr, "---------------------------------------\n");
 }
 

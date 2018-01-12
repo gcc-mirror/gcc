@@ -1,5 +1,12 @@
 2018-01-12  Martin Liska  <mliska@suse.cz>
 
+	* gimple.c (gimple_alloc_counts): Use uint64_t instead of int.
+	(gimple_alloc_sizes): Likewise.
+	(dump_gimple_statistics): Use PRIu64 in printf format.
+	* gimple.h: Change uint64_t to int.
+
+2018-01-12  Martin Liska  <mliska@suse.cz>
+
 	* tree-core.h: Use uint64_t instead of int.
 	* tree.c (tree_node_counts): Likewise.
 	(tree_node_sizes): Likewise.
