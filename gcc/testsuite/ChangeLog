@@ -1,3 +1,54 @@
+2018-01-12  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/dwarf2/vla1.c: Add dg-require-effective-target alloca.
+	* g++.dg/Walloca1.C: Same.
+	* g++.dg/cpp0x/pr70338.C: Same.
+	* g++.dg/cpp1y/lambda-generic-vla1.C: Same.
+	* g++.dg/cpp1y/vla10.C: Same.
+	* g++.dg/cpp1y/vla2.C: Same.
+	* g++.dg/cpp1y/vla6.C: Same.
+	* g++.dg/cpp1y/vla8.C: Same.
+	* g++.dg/debug/debug5.C: Same.
+	* g++.dg/debug/debug6.C: Same.
+	* g++.dg/debug/pr54828.C: Same.
+	* g++.dg/diagnostic/pr70105.C: Same.
+	* g++.dg/eh/cleanup5.C: Same.
+	* g++.dg/eh/spbp.C: Same.
+	* g++.dg/ext/tmplattr9.C: Same.
+	* g++.dg/ext/vla10.C: Same.
+	* g++.dg/ext/vla11.C: Same.
+	* g++.dg/ext/vla12.C: Same.
+	* g++.dg/ext/vla15.C: Same.
+	* g++.dg/ext/vla16.C: Same.
+	* g++.dg/ext/vla17.C: Same.
+	* g++.dg/ext/vla3.C: Same.
+	* g++.dg/ext/vla6.C: Same.
+	* g++.dg/ext/vla7.C: Same.
+	* g++.dg/init/array24.C: Same.
+	* g++.dg/init/new47.C: Same.
+	* g++.dg/init/pr55497.C: Same.
+	* g++.dg/opt/pr78201.C: Same.
+	* g++.dg/template/vla2.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Same.
+	* g++.dg/torture/pr62127.C: Same.
+	* g++.dg/torture/pr67055.C: Same.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Same.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Same.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Same.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Same.
+	* g++.dg/warn/Wplacement-new-size-5.C: Same.
+	* g++.dg/warn/Wsizeof-pointer-memaccess-1.C: Same.
+	* g++.dg/warn/Wvla-1.C: Same.
+	* g++.dg/warn/Wvla-3.C: Same.
+	* g++.old-deja/g++.ext/array2.C: Same.
+	* g++.old-deja/g++.ext/constructor.C: Same.
+	* g++.old-deja/g++.law/builtin1.C: Same.
+	* g++.old-deja/g++.other/crash12.C: Same.
+	* g++.old-deja/g++.other/eh3.C: Same.
+	* g++.old-deja/g++.pt/array6.C: Same.
+	* g++.old-deja/g++.pt/dynarray.C: Same.
+
 2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/cpp0x/inh-ctor30.C: Allow for alternate mangled form.

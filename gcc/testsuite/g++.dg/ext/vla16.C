@@ -1,5 +1,6 @@
 // PR c++/72766
 // { dg-options "-Wno-vla" }
+// { dg-require-effective-target alloca }
 
 long fn1() {
   const int a = fn1();
