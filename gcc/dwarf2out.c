@@ -22970,10 +22970,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	{
 	  /* If we will be creating an inlined instance, we need a
 	     new DIE that will get annotated with
-	     DW_AT_abstract_origin.  Clear things so we can get a
-	     new DIE.  */
+	     DW_AT_abstract_origin.  */
 	  gcc_assert (!DECL_ABSTRACT_P (decl));
-	  old_die = NULL;
 	}
       else
 	{
