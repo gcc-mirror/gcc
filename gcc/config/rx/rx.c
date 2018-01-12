@@ -284,6 +284,9 @@ rx_is_restricted_memory_address (rtx mem, machine_mode mode)
       /* Simple memory addresses are OK.  */
       return true;
 
+    case SUBREG:
+      return RX_REG_P (SUBREG_REG (mem));
+
     case PRE_DEC:
     case POST_INC:
       return false;
