@@ -1,3 +1,8 @@
+2018-01-12  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/83737
+	* config.gcc (nvptx*-*-*): Set use_gcc_stdint=wrap.
+
 2018-01-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/80481
