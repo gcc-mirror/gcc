@@ -1,3 +1,8 @@
+2018-01-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/83629
+	* gcc.target/powerpc/pr83629.c: Require ilp32.
+
 2018-01-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80846
