@@ -380,7 +380,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     /* The option machinery will define this.  */
 #endif
 
-#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_STRING)
+#define TARGET_DEFAULT (MASK_MULTIPLE)
 
 /* FPU operations supported. 
    Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
@@ -658,7 +658,6 @@ extern int rs6000_vector_align[];
 #define MASK_RECIP_PRECISION		OPTION_MASK_RECIP_PRECISION
 #define MASK_SOFT_FLOAT			OPTION_MASK_SOFT_FLOAT
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
-#define MASK_STRING			OPTION_MASK_STRING
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
 
