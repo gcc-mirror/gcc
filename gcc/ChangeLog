@@ -1,5 +1,15 @@
 2018-01-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-predcom.c (aff_combination_dr_offset): Use wi::to_poly_widest
+	rather than wi::to_widest for DR_INITs.
+	* tree-vect-data-refs.c (vect_find_same_alignment_drs): Use
+	wi::to_poly_offset rather than wi::to_offset for DR_INIT.
+	(vect_analyze_data_ref_accesses): Require both DR_INITs to be
+	INTEGER_CSTs.
+	(vect_analyze_group_access_1): Note that here.
+
+2018-01-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vectorizer.c (get_vec_alignment_for_array_type): Handle
 	polynomial type sizes.
 
