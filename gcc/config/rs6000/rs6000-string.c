@@ -2234,42 +2234,6 @@ expand_block_move (rtx operands[])
 	  mode = V4SImode;
 	  gen_func.mov = gen_movv4si;
 	}
-      else if (TARGET_STRING
-	  && bytes > 24		/* move up to 32 bytes at a time */
-	  && ! fixed_regs[5]
-	  && ! fixed_regs[6]
-	  && ! fixed_regs[7]
-	  && ! fixed_regs[8]
-	  && ! fixed_regs[9]
-	  && ! fixed_regs[10]
-	  && ! fixed_regs[11]
-	  && ! fixed_regs[12])
-	{
-	  move_bytes = (bytes > 32) ? 32 : bytes;
-	  gen_func.movmemsi = gen_movmemsi_8reg;
-	}
-      else if (TARGET_STRING
-	       && bytes > 16	/* move up to 24 bytes at a time */
-	       && ! fixed_regs[5]
-	       && ! fixed_regs[6]
-	       && ! fixed_regs[7]
-	       && ! fixed_regs[8]
-	       && ! fixed_regs[9]
-	       && ! fixed_regs[10])
-	{
-	  move_bytes = (bytes > 24) ? 24 : bytes;
-	  gen_func.movmemsi = gen_movmemsi_6reg;
-	}
-      else if (TARGET_STRING
-	       && bytes > 8	/* move up to 16 bytes at a time */
-	       && ! fixed_regs[5]
-	       && ! fixed_regs[6]
-	       && ! fixed_regs[7]
-	       && ! fixed_regs[8])
-	{
-	  move_bytes = (bytes > 16) ? 16 : bytes;
-	  gen_func.movmemsi = gen_movmemsi_4reg;
-	}
       else if (bytes >= 8 && TARGET_POWERPC64
 	       && (align >= 64 || !STRICT_ALIGNMENT))
 	{
@@ -2302,11 +2266,6 @@ expand_block_move (rtx operands[])
 		}
 	    }
 	}
-      else if (TARGET_STRING && bytes > 4 && !TARGET_POWERPC64)
-	{			/* move up to 8 bytes at a time */
-	  move_bytes = (bytes > 8) ? 8 : bytes;
-	  gen_func.movmemsi = gen_movmemsi_2reg;
-	}
       else if (bytes >= 4 && (align >= 32 || !STRICT_ALIGNMENT))
 	{			/* move 4 bytes */
 	  move_bytes = 4;
@@ -2318,11 +2277,6 @@ expand_block_move (rtx operands[])
 	  move_bytes = 2;
 	  mode = HImode;
 	  gen_func.mov = gen_movhi;
-	}
-      else if (TARGET_STRING && bytes > 1)
-	{			/* move up to 4 bytes at a time */
-	  move_bytes = (bytes > 4) ? 4 : bytes;
-	  gen_func.movmemsi = gen_movmemsi_1reg;
 	}
       else /* move 1 byte at a time */
 	{
@@ -2376,61 +2330,3 @@ expand_block_move (rtx operands[])
 
   return 1;
 }
-
-
-/* Return a string to perform a load_multiple operation.
-   operands[0] is the vector.
-   operands[1] is the source address.
-   operands[2] is the first destination register.  */
-
-const char *
-rs6000_output_load_multiple (rtx operands[3])
-{
-  /* We have to handle the case where the pseudo used to contain the address
-     is assigned to one of the output registers.  */
-  int i, j;
-  int words = XVECLEN (operands[0], 0);
-  rtx xop[10];
-
-  if (XVECLEN (operands[0], 0) == 1)
-    return "lwz %2,0(%1)";
-
-  for (i = 0; i < words; i++)
-    if (refers_to_regno_p (REGNO (operands[2]) + i, operands[1]))
-      {
-	if (i == words-1)
-	  {
-	    xop[0] = GEN_INT (4 * (words-1));
-	    xop[1] = operands[1];
-	    xop[2] = operands[2];
-	    output_asm_insn ("lswi %2,%1,%0\n\tlwz %1,%0(%1)", xop);
-	    return "";
-	  }
-	else if (i == 0)
-	  {
-	    xop[0] = GEN_INT (4 * (words-1));
-	    xop[1] = operands[1];
-	    xop[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
-	    output_asm_insn ("addi %1,%1,4\n\tlswi %2,%1,%0\n\tlwz %1,-4(%1)", xop);
-	    return "";
-	  }
-	else
-	  {
-	    for (j = 0; j < words; j++)
-	      if (j != i)
-		{
-		  xop[0] = GEN_INT (j * 4);
-		  xop[1] = operands[1];
-		  xop[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + j);
-		  output_asm_insn ("lwz %2,%0(%1)", xop);
-		}
-	    xop[0] = GEN_INT (i * 4);
-	    xop[1] = operands[1];
-	    output_asm_insn ("lwz %1,%0(%1)", xop);
-	    return "";
-	  }
-      }
-
-  return "lswi %2,%1,%N0";
-}
-

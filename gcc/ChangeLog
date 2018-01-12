@@ -1,3 +1,48 @@
+2018-01-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (load_multiple_operation): Delete.
+	(store_multiple_operation): Delete.
+	* config/rs6000/rs6000-cpus.def (601): Remove MASK_STRING.
+	* config/rs6000/rs6000-protos.h (rs6000_output_load_multiple): Delete.
+	* config/rs6000/rs6000-string.c (expand_block_move): Delete everything
+	guarded by TARGET_STRING.
+	(rs6000_output_load_multiple): Delete.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Delete
+	OPTION_MASK_STRING / TARGET_STRING handling.
+	(print_operand) <'N', 'O'>: Add comment that these are unused now.
+	(const rs6000_opt_masks) <"string">: Change mask to 0.
+	* config/rs6000/rs6000.h (TARGET_DEFAULT): Remove MASK_STRING.
+	(MASK_STRING): Delete.
+	* config/rs6000/rs6000.md (*mov<mode>_string): Delete TARGET_STRING
+	parts.  Simplify.
+	(load_multiple): Delete.
+	(*ldmsi8): Delete.
+	(*ldmsi7): Delete.
+	(*ldmsi6): Delete.
+	(*ldmsi5): Delete.
+	(*ldmsi4): Delete.
+	(*ldmsi3): Delete.
+	(store_multiple): Delete.
+	(*stmsi8): Delete.
+	(*stmsi7): Delete.
+	(*stmsi6): Delete.
+	(*stmsi5): Delete.
+	(*stmsi4): Delete.
+	(*stmsi3): Delete.
+	(movmemsi_8reg): Delete.
+	(corresponding unnamed define_insn): Delete.
+	(movmemsi_6reg): Delete.
+	(corresponding unnamed define_insn): Delete.
+	(movmemsi_4reg): Delete.
+	(corresponding unnamed define_insn): Delete.
+	(movmemsi_2reg): Delete.
+	(corresponding unnamed define_insn): Delete.
+	(movmemsi_1reg): Delete.
+	(corresponding unnamed define_insn): Delete.
+	* config/rs6000/rs6000.opt (mno-string): New.
+	(mstring): Replace by deprecation warning stub.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete -mstring.
+
 2018-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* regrename.c (regrename_do_replace): If replacing the same

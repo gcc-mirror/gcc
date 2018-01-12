@@ -4204,34 +4204,21 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* If we are optimizing big endian systems for space, use the load/store
-     multiple and string instructions.  */
+     multiple instructions.  */
   if (BYTES_BIG_ENDIAN && optimize_size)
-    rs6000_isa_flags |= ~rs6000_isa_flags_explicit & (OPTION_MASK_MULTIPLE
-						      | OPTION_MASK_STRING);
+    rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE;
 
-  /* Don't allow -mmultiple or -mstring on little endian systems
-     unless the cpu is a 750, because the hardware doesn't support the
-     instructions used in little endian mode, and causes an alignment
-     trap.  The 750 does not cause an alignment trap (except when the
-     target is unaligned).  */
+  /* Don't allow -mmultiple on little endian systems unless the cpu is a 750,
+     because the hardware doesn't support the instructions used in little
+     endian mode, and causes an alignment trap.  The 750 does not cause an
+     alignment trap (except when the target is unaligned).  */
 
-  if (!BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
+  if (!BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750 && TARGET_MULTIPLE)
     {
-      if (TARGET_MULTIPLE)
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_MULTIPLE;
-	  if ((rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE) != 0)
-	    warning (0, "%qs is not supported on little endian systems",
-		     "-mmultiple");
-	}
-
-      if (TARGET_STRING)
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_STRING;
-	  if ((rs6000_isa_flags_explicit & OPTION_MASK_STRING) != 0)
-	    warning (0, "%qs is not supported on little endian systems",
-		     "-mstring");
-	}
+      rs6000_isa_flags &= ~OPTION_MASK_MULTIPLE;
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE) != 0)
+	warning (0, "%qs is not supported on little endian systems",
+		 "-mmultiple");
     }
 
   /* If little-endian, default to -mstrict-align on older processors.
@@ -4812,9 +4799,7 @@ rs6000_option_override_internal (bool global_init_p)
     rs6000_print_isa_options (stderr, 0, "after subtarget", rs6000_isa_flags);
 
   /* For the E500 family of cores, reset the single/double FP flags to let us
-     check that they remain constant across attributes or pragmas.  Also,
-     clear a possible request for string instructions, not supported and which
-     we might have silently queried above for -Os.  */
+     check that they remain constant across attributes or pragmas.  */
 
   switch (rs6000_cpu)
     {
@@ -4826,7 +4811,6 @@ rs6000_option_override_internal (bool global_init_p)
     case PROCESSOR_PPCE6500:
       rs6000_single_float = 0;
       rs6000_double_float = 0;
-      rs6000_isa_flags &= ~OPTION_MASK_STRING;
       break;
 
     default:
@@ -21371,7 +21355,7 @@ print_operand (FILE *file, rtx x, int code)
 	}
       return;
 
-    case 'N':
+    case 'N': /* Unused */
       /* Write the number of elements in the vector times 4.  */
       if (GET_CODE (x) != PARALLEL)
 	output_operand_lossage ("invalid %%N value");
@@ -21379,7 +21363,7 @@ print_operand (FILE *file, rtx x, int code)
 	fprintf (file, "%d", XVECLEN (x, 0) * 4);
       return;
 
-    case 'O':
+    case 'O': /* Unused */
       /* Similar, but subtract 1 first.  */
       if (GET_CODE (x) != PARALLEL)
 	output_operand_lossage ("invalid %%O value");
@@ -36633,7 +36617,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "quad-memory-atomic",	OPTION_MASK_QUAD_MEMORY_ATOMIC,	false, true  },
   { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
   { "save-toc-indirect",	OPTION_MASK_SAVE_TOC_INDIRECT,	false, true  },
-  { "string",			OPTION_MASK_STRING,		false, true  },
+  { "string",			0,				false, true  },
   { "toc-fusion",		OPTION_MASK_TOC_FUSION,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
   { "vsx",			OPTION_MASK_VSX,		false, true  },
@@ -36660,7 +36644,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "strict-align",		OPTION_MASK_STRICT_ALIGN,	false, false },
 #endif
   { "soft-float",		OPTION_MASK_SOFT_FLOAT,		false, false },
-  { "string",			OPTION_MASK_STRING,		false, false },
+  { "string",			0,				false, false },
 };
 
 /* Builtin mask mapping for printing the flags.  */

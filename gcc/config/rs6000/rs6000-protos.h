@@ -77,7 +77,6 @@ extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern bool expand_block_compare (rtx[]);
 extern bool expand_strn_compare (rtx[], int);
-extern const char * rs6000_output_load_multiple (rtx[]);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
 extern bool rs6000_is_valid_shift_mask (rtx, rtx, machine_mode);
