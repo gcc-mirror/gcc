@@ -7885,6 +7885,9 @@ expand_expr_addr_expr_1 (tree exp, rtx target, scalar_int_mode tmode,
 	return expand_expr (tem, target, tmode, modifier);
       }
 
+    case TARGET_MEM_REF:
+      return addr_for_mem_ref (exp, as, true);
+
     case CONST_DECL:
       /* Expand the initializer like constants above.  */
       result = XEXP (expand_expr_constant (DECL_INITIAL (exp),

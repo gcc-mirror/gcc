@@ -2412,15 +2412,54 @@ expand_LOOP_DIST_ALIAS (internal_fn, gcall *)
   gcc_unreachable ();
 }
 
+/* Return a memory reference of type TYPE for argument INDEX of STMT.
+   Use argument INDEX + 1 to derive the second (TBAA) operand.  */
+
+static tree
+expand_call_mem_ref (tree type, gcall *stmt, int index)
+{
+  tree addr = gimple_call_arg (stmt, index);
+  tree alias_ptr_type = TREE_TYPE (gimple_call_arg (stmt, index + 1));
+  unsigned int align = tree_to_shwi (gimple_call_arg (stmt, index + 1));
+  if (TYPE_ALIGN (type) != align)
+    type = build_aligned_type (type, align);
+
+  tree tmp = addr;
+  if (TREE_CODE (tmp) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (tmp);
+      if (gimple_assign_single_p (def))
+	tmp = gimple_assign_rhs1 (def);
+    }
+
+  if (TREE_CODE (tmp) == ADDR_EXPR)
+    {
+      tree mem = TREE_OPERAND (tmp, 0);
+      if (TREE_CODE (mem) == TARGET_MEM_REF
+	  && types_compatible_p (TREE_TYPE (mem), type))
+	{
+	  tree offset = TMR_OFFSET (mem);
+	  if (alias_ptr_type != TREE_TYPE (offset) || !integer_zerop (offset))
+	    {
+	      mem = copy_node (mem);
+	      TMR_OFFSET (mem) = wide_int_to_tree (alias_ptr_type,
+						   wi::to_poly_wide (offset));
+	    }
+	  return mem;
+	}
+    }
+
+  return fold_build2 (MEM_REF, type, addr, build_int_cst (alias_ptr_type, 0));
+}
+
 /* Expand MASK_LOAD{,_LANES} call STMT using optab OPTAB.  */
 
 static void
 expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
-  tree type, lhs, rhs, maskt, ptr;
+  tree type, lhs, rhs, maskt;
   rtx mem, target, mask;
-  unsigned align;
   insn_code icode;
 
   maskt = gimple_call_arg (stmt, 2);
@@ -2428,11 +2467,7 @@ expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   if (lhs == NULL_TREE)
     return;
   type = TREE_TYPE (lhs);
-  ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)), 0);
-  align = tree_to_shwi (gimple_call_arg (stmt, 1));
-  if (TYPE_ALIGN (type) != align)
-    type = build_aligned_type (type, align);
-  rhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0), ptr);
+  rhs = expand_call_mem_ref (type, stmt, 0);
 
   if (optab == vec_mask_load_lanes_optab)
     icode = get_multi_vector_move (type, optab);
@@ -2458,19 +2493,14 @@ static void
 expand_mask_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   struct expand_operand ops[3];
-  tree type, lhs, rhs, maskt, ptr;
+  tree type, lhs, rhs, maskt;
   rtx mem, reg, mask;
-  unsigned align;
   insn_code icode;
 
   maskt = gimple_call_arg (stmt, 2);
   rhs = gimple_call_arg (stmt, 3);
   type = TREE_TYPE (rhs);
-  ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)), 0);
-  align = tree_to_shwi (gimple_call_arg (stmt, 1));
-  if (TYPE_ALIGN (type) != align)
-    type = build_aligned_type (type, align);
-  lhs = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0), ptr);
+  lhs = expand_call_mem_ref (type, stmt, 0);
 
   if (optab == vec_mask_store_lanes_optab)
     icode = get_multi_vector_move (type, optab);
