@@ -1,4 +1,14 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* g++.target/aarch64/sve/aarch64-sve.exp: New harness.
+	* g++.target/aarch64/sve/catch_1.C: New test.
+	* g++.target/aarch64/sve/catch_2.C: Likewise.
+	* g++.target/aarch64/sve/catch_3.C: Likewise.
+	* g++.target/aarch64/sve/catch_4.C: Likewise.
+	* g++.target/aarch64/sve/catch_5.C: Likewise.
+	* g++.target/aarch64/sve/catch_6.C: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

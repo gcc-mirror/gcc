@@ -216,12 +216,12 @@ _Unwind_IsExtendedContext (struct _Unwind_Context *context)
 	  || (context->flags & EXTENDED_CONTEXT_BIT));
 }
 
-/* Get the value of register INDEX as saved in CONTEXT.  */
+/* Get the value of register REGNO as saved in CONTEXT.  */
 
 inline _Unwind_Word
-_Unwind_GetGR (struct _Unwind_Context *context, int index)
+_Unwind_GetGR (struct _Unwind_Context *context, int regno)
 {
-  int size;
+  int size, index;
   _Unwind_Context_Reg_Val val;
 
 #ifdef DWARF_ZERO_REG
@@ -229,13 +229,21 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
     return 0;
 #endif
 
-  index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  index = DWARF_REG_TO_UNWIND_COLUMN (regno);
   gcc_assert (index < (int) sizeof(dwarf_reg_size_table));
   size = dwarf_reg_size_table[index];
   val = context->reg[index];
 
   if (_Unwind_IsExtendedContext (context) && context->by_value[index])
     return _Unwind_Get_Unwind_Word (val);
+
+#ifdef DWARF_LAZY_REGISTER_VALUE
+  {
+    _Unwind_Word value;
+    if (DWARF_LAZY_REGISTER_VALUE (regno, &value))
+      return value;
+  }
+#endif
 
   /* This will segfault if the register hasn't been saved.  */
   if (size == sizeof(_Unwind_Ptr))
