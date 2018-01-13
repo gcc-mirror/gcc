@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/sourcebuild.texi (vect_fully_masked): Document.
+	* params.def (PARAM_MIN_VECT_LOOP_BOUND): Change minimum and
+	default value to 0.
+	* tree-vect-loop.c (vect_analyze_loop_costing): New function,
+	split out from...
+	(vect_analyze_loop_2): ...here. Don't check the vectorization
+	factor against the number of loop iterations if the loop is
+	fully-masked.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-ssa-loop-ivopts.c (USE_ADDRESS): Split into...
 	(USE_REF_ADDRESS, USE_PTR_ADDRESS): ...these new use types.
 	(dump_groups): Update accordingly.

@@ -6494,6 +6494,12 @@ proc check_effective_target_vect_natural_alignment { } {
     return $et_vect_natural_alignment
 }
 
+# Return true if fully-masked loops are supported.
+
+proc check_effective_target_vect_fully_masked { } {
+    return [check_effective_target_aarch64_sve]
+}
+
 # Return 1 if the target doesn't prefer any alignment beyond element
 # alignment during vectorization.
 

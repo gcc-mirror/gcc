@@ -139,7 +139,7 @@ DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,
 DEFPARAM (PARAM_MIN_VECT_LOOP_BOUND,
 	  "min-vect-loop-bound",
 	  "If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization.",
-	  1, 1, 0)
+	  0, 0, 0)
 
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary
