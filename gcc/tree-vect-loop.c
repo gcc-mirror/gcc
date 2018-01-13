@@ -2250,7 +2250,7 @@ again:
       vinfo = vinfo_for_stmt (STMT_VINFO_GROUP_FIRST_ELEMENT (vinfo));
       unsigned int size = STMT_VINFO_GROUP_SIZE (vinfo);
       tree vectype = STMT_VINFO_VECTYPE (vinfo);
-      if (! vect_store_lanes_supported (vectype, size)
+      if (! vect_store_lanes_supported (vectype, size, false)
 	  && ! vect_grouped_store_supported (vectype, size))
 	return false;
       FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, node)
@@ -2260,7 +2260,7 @@ again:
 	  bool single_element_p = !STMT_VINFO_GROUP_NEXT_ELEMENT (vinfo);
 	  size = STMT_VINFO_GROUP_SIZE (vinfo);
 	  vectype = STMT_VINFO_VECTYPE (vinfo);
-	  if (! vect_load_lanes_supported (vectype, size)
+	  if (! vect_load_lanes_supported (vectype, size, false)
 	      && ! vect_grouped_load_supported (vectype, single_element_p,
 						size))
 	    return false;

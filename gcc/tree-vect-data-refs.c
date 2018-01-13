@@ -2780,6 +2780,62 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   return cmp;
 }
 
+/* If OP is the result of a conversion, return the unconverted value,
+   otherwise return null.  */
+
+static tree
+strip_conversion (tree op)
+{
+  if (TREE_CODE (op) != SSA_NAME)
+    return NULL_TREE;
+  gimple *stmt = SSA_NAME_DEF_STMT (op);
+  if (!is_gimple_assign (stmt)
+      || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt)))
+    return NULL_TREE;
+  return gimple_assign_rhs1 (stmt);
+}
+
+/* Return true if vectorizable_* routines can handle statements STMT1
+   and STMT2 being in a single group.  */
+
+static bool
+can_group_stmts_p (gimple *stmt1, gimple *stmt2)
+{
+  if (gimple_assign_single_p (stmt1))
+    return gimple_assign_single_p (stmt2);
+
+  if (is_gimple_call (stmt1) && gimple_call_internal_p (stmt1))
+    {
+      /* Check for two masked loads or two masked stores.  */
+      if (!is_gimple_call (stmt2) || !gimple_call_internal_p (stmt2))
+	return false;
+      internal_fn ifn = gimple_call_internal_fn (stmt1);
+      if (ifn != IFN_MASK_LOAD && ifn != IFN_MASK_STORE)
+	return false;
+      if (ifn != gimple_call_internal_fn (stmt2))
+	return false;
+
+      /* Check that the masks are the same.  Cope with casts of masks,
+	 like those created by build_mask_conversion.  */
+      tree mask1 = gimple_call_arg (stmt1, 2);
+      tree mask2 = gimple_call_arg (stmt2, 2);
+      if (!operand_equal_p (mask1, mask2, 0))
+	{
+	  mask1 = strip_conversion (mask1);
+	  if (!mask1)
+	    return false;
+	  mask2 = strip_conversion (mask2);
+	  if (!mask2)
+	    return false;
+	  if (!operand_equal_p (mask1, mask2, 0))
+	    return false;
+	}
+      return true;
+    }
+
+  return false;
+}
+
 /* Function vect_analyze_data_ref_accesses.
 
    Analyze the access pattern of all the data references in the loop.
@@ -2846,8 +2902,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	      || data_ref_compare_tree (DR_BASE_ADDRESS (dra),
 					DR_BASE_ADDRESS (drb)) != 0
 	      || data_ref_compare_tree (DR_OFFSET (dra), DR_OFFSET (drb)) != 0
-	      || !gimple_assign_single_p (DR_STMT (dra))
-	      || !gimple_assign_single_p (DR_STMT (drb)))
+	      || !can_group_stmts_p (DR_STMT (dra), DR_STMT (drb)))
 	    break;
 
 	  /* Check that the data-refs have the same constant size.  */
@@ -4684,15 +4739,21 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 }
 
 
-/* Return TRUE if vec_store_lanes is available for COUNT vectors of
-   type VECTYPE.  */
+/* Return TRUE if vec_{mask_}store_lanes is available for COUNT vectors of
+   type VECTYPE.  MASKED_P says whether the masked form is needed.  */
 
 bool
-vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
+vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
+			    bool masked_p)
 {
-  return vect_lanes_optab_supported_p ("vec_store_lanes",
-				       vec_store_lanes_optab,
-				       vectype, count);
+  if (masked_p)
+    return vect_lanes_optab_supported_p ("vec_mask_store_lanes",
+					 vec_mask_store_lanes_optab,
+					 vectype, count);
+  else
+    return vect_lanes_optab_supported_p ("vec_store_lanes",
+					 vec_store_lanes_optab,
+					 vectype, count);
 }
 
 
@@ -5283,15 +5344,21 @@ vect_grouped_load_supported (tree vectype, bool single_element_p,
   return false;
 }
 
-/* Return TRUE if vec_load_lanes is available for COUNT vectors of
-   type VECTYPE.  */
+/* Return TRUE if vec_{masked_}load_lanes is available for COUNT vectors of
+   type VECTYPE.  MASKED_P says whether the masked form is needed.  */
 
 bool
-vect_load_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count)
+vect_load_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
+			   bool masked_p)
 {
-  return vect_lanes_optab_supported_p ("vec_load_lanes",
-				       vec_load_lanes_optab,
-				       vectype, count);
+  if (masked_p)
+    return vect_lanes_optab_supported_p ("vec_mask_load_lanes",
+					 vec_mask_load_lanes_optab,
+					 vectype, count);
+  else
+    return vect_lanes_optab_supported_p ("vec_load_lanes",
+					 vec_load_lanes_optab,
+					 vectype, count);
 }
 
 /* Function vect_permute_load_chain.

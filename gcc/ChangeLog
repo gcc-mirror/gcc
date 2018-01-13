@@ -2,6 +2,47 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/md.texi (vec_mask_load_lanes@var{m}@var{n}): Document.
+	(vec_mask_store_lanes@var{m}@var{n}): Likewise.
+	* optabs.def (vec_mask_load_lanes_optab): New optab.
+	(vec_mask_store_lanes_optab): Likewise.
+	* internal-fn.def (MASK_LOAD_LANES): New internal function.
+	(MASK_STORE_LANES): Likewise.
+	* internal-fn.c (mask_load_lanes_direct): New macro.
+	(mask_store_lanes_direct): Likewise.
+	(expand_mask_load_optab_fn): Handle masked operations.
+	(expand_mask_load_lanes_optab_fn): New macro.
+	(expand_mask_store_optab_fn): Handle masked operations.
+	(expand_mask_store_lanes_optab_fn): New macro.
+	(direct_mask_load_lanes_optab_supported_p): Likewise.
+	(direct_mask_store_lanes_optab_supported_p): Likewise.
+	* tree-vectorizer.h (vect_store_lanes_supported): Take a masked_p
+	parameter.
+	(vect_load_lanes_supported): Likewise.
+	* tree-vect-data-refs.c (strip_conversion): New function.
+	(can_group_stmts_p): Likewise.
+	(vect_analyze_data_ref_accesses): Use it instead of checking
+	for a pair of assignments.
+	(vect_store_lanes_supported): Take a masked_p parameter.
+	(vect_load_lanes_supported): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_2): Update calls to
+	vect_store_lanes_supported and vect_load_lanes_supported.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Likewise.
+	* tree-vect-stmts.c (get_group_load_store_type): Take a masked_p
+	parameter.  Don't allow gaps for masked accesses.
+	Use vect_get_store_rhs.  Update calls to vect_store_lanes_supported
+	and vect_load_lanes_supported.
+	(get_load_store_type): Take a masked_p parameter and update
+	call to get_group_load_store_type.
+	(vectorizable_store): Update call to get_load_store_type.
+	Handle IFN_MASK_STORE_LANES.
+	(vectorizable_load): Update call to get_load_store_type.
+	Handle IFN_MASK_LOAD_LANES.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64-modes.def: Define x2, x3 and x4 vector
 	modes for SVE.
 	* config/aarch64/aarch64-protos.h

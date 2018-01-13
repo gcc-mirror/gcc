@@ -4855,6 +4855,26 @@ loads for vectors of mode @var{n}.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{vec_mask_load_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_load_lanes@var{m}@var{n}}
+Like @samp{vec_load_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2) that specifies which elements of the destination
+vectors should be loaded.  Other elements of the destination
+vectors are set to zero.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[i][j] = operand1[j * c + i];
+  else
+    for (i = 0; i < c; i++)
+      operand0[i][j] = 0;
+@end smallexample
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{vec_store_lanes@var{m}@var{n}} instruction pattern
 @item @samp{vec_store_lanes@var{m}@var{n}}
 Equivalent to @samp{vec_load_lanes@var{m}@var{n}}, with the memory
@@ -4869,6 +4889,22 @@ for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
 @end smallexample
 
 for a memory operand 0 and register operand 1.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{vec_mask_store_lanes@var{m}@var{n}} instruction pattern
+@item @samp{vec_mask_store_lanes@var{m}@var{n}}
+Like @samp{vec_store_lanes@var{m}@var{n}}, but takes an additional
+mask operand (operand 2) that specifies which elements of the source
+vectors should be stored.  The operation is equivalent to:
+
+@smallexample
+int c = GET_MODE_SIZE (@var{m}) / GET_MODE_SIZE (@var{n});
+for (j = 0; j < GET_MODE_NUNITS (@var{n}); j++)
+  if (operand2[j])
+    for (i = 0; i < c; i++)
+      operand0[j * c + i] = operand1[i][j];
+@end smallexample
 
 This pattern is not allowed to @code{FAIL}.
 
