@@ -3194,9 +3194,10 @@ write_proc (gfc_symbol *sym)
       if (rok == T_WARN)
 	fputs(" /* WARNING: non-interoperable KIND */ ", dumpfile);
 
-      fputs (f->next ? ", " : ")", dumpfile);
+      if (f->next)
+	fputs(", ", dumpfile);
     }
-  fputs (";\n", dumpfile);
+  fputs (");\n", dumpfile);
 }
 
 
