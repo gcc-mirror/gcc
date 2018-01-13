@@ -189,6 +189,63 @@
   "st1<Vesize>\t%1.<Vetype>, %2, %0"
 )
 
+;; Unpredicated gather loads.
+(define_expand "gather_load<mode>"
+  [(set (match_operand:SVE_SD 0 "register_operand")
+	(unspec:SVE_SD
+	  [(match_dup 5)
+	   (match_operand:DI 1 "aarch64_reg_or_zero")
+	   (match_operand:<V_INT_EQUIV> 2 "register_operand")
+	   (match_operand:DI 3 "const_int_operand")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_<Vesize>")
+	   (mem:BLK (scratch))]
+	  UNSPEC_LD1_GATHER))]
+  "TARGET_SVE"
+  {
+    operands[5] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+;; Predicated gather loads for 32-bit elements.  Operand 3 is true for
+;; unsigned extension and false for signed extension.
+(define_insn "mask_gather_load<mode>"
+  [(set (match_operand:SVE_S 0 "register_operand" "=w, w, w, w, w")
+	(unspec:SVE_S
+	  [(match_operand:<VPRED> 5 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (match_operand:DI 1 "aarch64_reg_or_zero" "Z, rk, rk, rk, rk")
+	   (match_operand:<V_INT_EQUIV> 2 "register_operand" "w, w, w, w, w")
+	   (match_operand:DI 3 "const_int_operand" "i, Z, Ui1, Z, Ui1")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_w" "Ui1, Ui1, Ui1, i, i")
+	   (mem:BLK (scratch))]
+	  UNSPEC_LD1_GATHER))]
+  "TARGET_SVE"
+  "@
+   ld1w\t%0.s, %5/z, [%2.s]
+   ld1w\t%0.s, %5/z, [%1, %2.s, sxtw]
+   ld1w\t%0.s, %5/z, [%1, %2.s, uxtw]
+   ld1w\t%0.s, %5/z, [%1, %2.s, sxtw %p4]
+   ld1w\t%0.s, %5/z, [%1, %2.s, uxtw %p4]"
+)
+
+;; Predicated gather loads for 64-bit elements.  The value of operand 3
+;; doesn't matter in this case.
+(define_insn "mask_gather_load<mode>"
+  [(set (match_operand:SVE_D 0 "register_operand" "=w, w, w")
+	(unspec:SVE_D
+	  [(match_operand:<VPRED> 5 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:DI 1 "aarch64_reg_or_zero" "Z, rk, rk")
+	   (match_operand:<V_INT_EQUIV> 2 "register_operand" "w, w, w")
+	   (match_operand:DI 3 "const_int_operand")
+	   (match_operand:DI 4 "aarch64_gather_scale_operand_d" "Ui1, Ui1, i")
+	   (mem:BLK (scratch))]
+	  UNSPEC_LD1_GATHER))]
+  "TARGET_SVE"
+  "@
+   ld1d\t%0.d, %5/z, [%2.d]
+   ld1d\t%0.d, %5/z, [%1, %2.d]
+   ld1d\t%0.d, %5/z, [%1, %2.d, lsl %p4]"
+)
+
 ;; SVE structure moves.
 (define_expand "mov<mode>"
   [(set (match_operand:SVE_STRUCT 0 "nonimmediate_operand")

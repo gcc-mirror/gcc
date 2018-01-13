@@ -83,6 +83,7 @@ init_internal_fns ()
 #define mask_load_direct { -1, 2, false }
 #define load_lanes_direct { -1, -1, false }
 #define mask_load_lanes_direct { -1, -1, false }
+#define gather_load_direct { -1, -1, false }
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
@@ -2729,6 +2730,38 @@ expand_LAUNDER (internal_fn, gcall *call)
   expand_assignment (lhs, gimple_call_arg (call, 0), false);
 }
 
+/* Expand {MASK_,}GATHER_LOAD call CALL using optab OPTAB.  */
+
+static void
+expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree base = gimple_call_arg (stmt, 0);
+  tree offset = gimple_call_arg (stmt, 1);
+  tree scale = gimple_call_arg (stmt, 2);
+
+  rtx lhs_rtx = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx base_rtx = expand_normal (base);
+  rtx offset_rtx = expand_normal (offset);
+  HOST_WIDE_INT scale_int = tree_to_shwi (scale);
+
+  int i = 0;
+  struct expand_operand ops[6];
+  create_output_operand (&ops[i++], lhs_rtx, TYPE_MODE (TREE_TYPE (lhs)));
+  create_address_operand (&ops[i++], base_rtx);
+  create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
+  create_integer_operand (&ops[i++], TYPE_UNSIGNED (TREE_TYPE (offset)));
+  create_integer_operand (&ops[i++], scale_int);
+  if (optab == mask_gather_load_optab)
+    {
+      tree mask = gimple_call_arg (stmt, 3);
+      rtx mask_rtx = expand_normal (mask);
+      create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
+    }
+  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (lhs)));
+  expand_insn (icode, i, ops);
+}
+
 /* Expand DIVMOD() using:
  a) optab handler for udivmod/sdivmod if it is available.
  b) If optab_handler doesn't exist, generate call to
@@ -2979,6 +3012,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
+#define direct_gather_load_optab_supported_p direct_optab_supported_p
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
@@ -3002,6 +3036,25 @@ direct_internal_fn_optab (internal_fn fn, tree_pair types)
     case IFN_##CODE: return (TYPE_UNSIGNED (types.SELECTOR)		\
 			     ? UNSIGNED_OPTAB ## _optab			\
 			     : SIGNED_OPTAB ## _optab);
+#include "internal-fn.def"
+
+    case IFN_LAST:
+      break;
+    }
+  gcc_unreachable ();
+}
+
+/* Return the optab used by internal function FN.  */
+
+static optab
+direct_internal_fn_optab (internal_fn fn)
+{
+  switch (fn)
+    {
+#define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) \
+    case IFN_##CODE: break;
+#define DEF_INTERNAL_OPTAB_FN(CODE, FLAGS, OPTAB, TYPE) \
+    case IFN_##CODE: return OPTAB##_optab;
 #include "internal-fn.def"
 
     case IFN_LAST:
@@ -3128,6 +3181,87 @@ get_conditional_internal_fn (tree_code code)
     default:
       return IFN_LAST;
     }
+}
+
+/* Return true if IFN is some form of load from memory.  */
+
+bool
+internal_load_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_LOAD:
+    case IFN_LOAD_LANES:
+    case IFN_MASK_LOAD_LANES:
+    case IFN_GATHER_LOAD:
+    case IFN_MASK_GATHER_LOAD:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if IFN is some form of gather load or scatter store.  */
+
+bool
+internal_gather_scatter_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_GATHER_LOAD:
+    case IFN_MASK_GATHER_LOAD:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* If FN takes a vector mask argument, return the index of that argument,
+   otherwise return -1.  */
+
+int
+internal_fn_mask_index (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_LOAD:
+    case IFN_MASK_LOAD_LANES:
+    case IFN_MASK_STORE:
+    case IFN_MASK_STORE_LANES:
+      return 2;
+
+    case IFN_MASK_GATHER_LOAD:
+      return 3;
+
+    default:
+      return -1;
+    }
+}
+
+/* Return true if the target supports gather load or scatter store function
+   IFN.  For loads, VECTOR_TYPE is the vector type of the load result,
+   while for stores it is the vector type of the stored data argument.
+   MEMORY_ELEMENT_TYPE is the type of the memory elements being loaded
+   or stored.  OFFSET_SIGN is the sign of the offset argument, which is
+   only relevant when the offset is narrower than an address.  SCALE is
+   the amount by which the offset should be multiplied *after* it has
+   been extended to address width.  */
+
+bool
+internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
+					tree memory_element_type,
+					signop offset_sign, int scale)
+{
+  if (!tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (vector_type)),
+			   TYPE_SIZE (memory_element_type)))
+    return false;
+  optab optab = direct_internal_fn_optab (ifn);
+  insn_code icode = direct_optab_handler (optab, TYPE_MODE (vector_type));
+  return (icode != CODE_FOR_nothing
+	  && insn_operand_matches (icode, 3, GEN_INT (offset_sign == UNSIGNED))
+	  && insn_operand_matches (icode, 4, GEN_INT (scale)));
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */

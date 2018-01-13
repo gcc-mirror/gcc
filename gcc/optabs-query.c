@@ -682,3 +682,32 @@ lshift_cheap_p (bool speed_p)
 
   return cheap[speed_p];
 }
+
+/* Return true if optab OP supports at least one mode.  */
+
+static bool
+supports_at_least_one_mode_p (optab op)
+{
+  for (int i = 0; i < NUM_MACHINE_MODES; ++i)
+    if (direct_optab_handler (op, (machine_mode) i) != CODE_FOR_nothing)
+      return true;
+
+  return false;
+}
+
+/* Return true if vec_gather_load is available for at least one vector
+   mode.  */
+
+bool
+supports_vec_gather_load_p ()
+{
+  if (this_fn_optabs->supports_vec_gather_load_cached)
+    return this_fn_optabs->supports_vec_gather_load;
+
+  this_fn_optabs->supports_vec_gather_load_cached = true;
+
+  this_fn_optabs->supports_vec_gather_load
+    = supports_at_least_one_mode_p (gather_load_optab);
+
+  return this_fn_optabs->supports_vec_gather_load;
+}

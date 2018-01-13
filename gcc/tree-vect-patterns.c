@@ -69,6 +69,8 @@ static gimple *vect_recog_mixed_size_cond_pattern (vec<gimple *> *,
 						  tree *, tree *);
 static gimple *vect_recog_bool_pattern (vec<gimple *> *, tree *, tree *);
 static gimple *vect_recog_mask_conversion_pattern (vec<gimple *> *, tree *, tree *);
+static gimple *vect_recog_gather_scatter_pattern (vec<gimple *> *, tree *,
+						  tree *);
 
 struct vect_recog_func
 {
@@ -93,6 +95,10 @@ static vect_recog_func vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
       {	vect_recog_mult_pattern, "mult" },
       {	vect_recog_mixed_size_cond_pattern, "mixed_size_cond" },
       {	vect_recog_bool_pattern, "bool" },
+      /* This must come before mask conversion, and includes the parts
+	 of mask conversion that are needed for gather and scatter
+	 internal functions.  */
+      { vect_recog_gather_scatter_pattern, "gather_scatter" },
       {	vect_recog_mask_conversion_pattern, "mask_conversion" }
 };
 
@@ -4117,6 +4123,203 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
   return pattern_stmt;
 }
 
+/* STMT is a load or store.  If the load or store is conditional, return
+   the boolean condition under which it occurs, otherwise return null.  */
+
+static tree
+vect_get_load_store_mask (gimple *stmt)
+{
+  if (gassign *def_assign = dyn_cast <gassign *> (stmt))
+    {
+      gcc_assert (gimple_assign_single_p (def_assign));
+      return NULL_TREE;
+    }
+
+  if (gcall *def_call = dyn_cast <gcall *> (stmt))
+    {
+      internal_fn ifn = gimple_call_internal_fn (def_call);
+      int mask_index = internal_fn_mask_index (ifn);
+      return gimple_call_arg (def_call, mask_index);
+    }
+
+  gcc_unreachable ();
+}
+
+/* Return the scalar offset type that an internal gather/scatter function
+   should use.  GS_INFO describes the gather/scatter operation.  */
+
+static tree
+vect_get_gather_scatter_offset_type (gather_scatter_info *gs_info)
+{
+  tree offset_type = TREE_TYPE (gs_info->offset);
+  unsigned int element_bits = tree_to_uhwi (TYPE_SIZE (gs_info->element_type));
+
+  /* Enforced by vect_check_gather_scatter.  */
+  unsigned int offset_bits = TYPE_PRECISION (offset_type);
+  gcc_assert (element_bits >= offset_bits);
+
+  /* If the offset is narrower than the elements, extend it according
+     to its sign.  */
+  if (element_bits > offset_bits)
+    return build_nonstandard_integer_type (element_bits,
+					   TYPE_UNSIGNED (offset_type));
+
+  return offset_type;
+}
+
+/* Return MASK if MASK is suitable for masking an operation on vectors
+   of type VECTYPE, otherwise convert it into such a form and return
+   the result.  Associate any conversion statements with STMT_INFO's
+   pattern.  */
+
+static tree
+vect_convert_mask_for_vectype (tree mask, tree vectype,
+			       stmt_vec_info stmt_info, vec_info *vinfo)
+{
+  tree mask_type = search_type_for_mask (mask, vinfo);
+  if (mask_type)
+    {
+      tree mask_vectype = get_mask_type_for_scalar_type (mask_type);
+      if (mask_vectype
+	  && maybe_ne (TYPE_VECTOR_SUBPARTS (vectype),
+		       TYPE_VECTOR_SUBPARTS (mask_vectype)))
+	mask = build_mask_conversion (mask, vectype, stmt_info, vinfo);
+    }
+  return mask;
+}
+
+/* Return the equivalent of:
+
+     fold_convert (TYPE, VALUE)
+
+   with the expectation that the operation will be vectorized.
+   If new statements are needed, add them as pattern statements
+   to STMT_INFO.  */
+
+static tree
+vect_add_conversion_to_patterm (tree type, tree value,
+				stmt_vec_info stmt_info,
+				vec_info *vinfo)
+{
+  if (useless_type_conversion_p (type, TREE_TYPE (value)))
+    return value;
+
+  tree new_value = vect_recog_temp_ssa_var (type, NULL);
+  gassign *conversion = gimple_build_assign (new_value, CONVERT_EXPR, value);
+  stmt_vec_info new_stmt_info = new_stmt_vec_info (conversion, vinfo);
+  set_vinfo_for_stmt (conversion, new_stmt_info);
+  STMT_VINFO_VECTYPE (new_stmt_info) = get_vectype_for_scalar_type (type);
+  append_pattern_def_seq (stmt_info, conversion);
+  return new_value;
+}
+
+/* Try to convert STMT into a call to a gather load or scatter store
+   internal function.  Return the final statement on success and set
+   *TYPE_IN and *TYPE_OUT to the vector type being loaded or stored.
+
+   This function only handles gathers and scatters that were recognized
+   as such from the outset (indicated by STMT_VINFO_GATHER_SCATTER_P).  */
+
+static gimple *
+vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
+				 tree *type_in, tree *type_out)
+{
+  /* Currently we only support this for loop vectorization.  */
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (stmt_info->vinfo);
+  if (!loop_vinfo)
+    return NULL;
+
+  /* Make sure that we're looking at a gather load or scatter store.  */
+  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  if (!dr || !STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+    return NULL;
+
+  /* Reject stores for now.  */
+  if (!DR_IS_READ (dr))
+    return NULL;
+
+  /* Get the boolean that controls whether the load or store happens.
+     This is null if the operation is unconditional.  */
+  tree mask = vect_get_load_store_mask (stmt);
+
+  /* Make sure that the target supports an appropriate internal
+     function for the gather/scatter operation.  */
+  gather_scatter_info gs_info;
+  if (!vect_check_gather_scatter (stmt, loop_vinfo, &gs_info)
+      || gs_info.decl)
+    return NULL;
+
+  /* Convert the mask to the right form.  */
+  tree gs_vectype = get_vectype_for_scalar_type (gs_info.element_type);
+  if (mask)
+    mask = vect_convert_mask_for_vectype (mask, gs_vectype, last_stmt_info,
+					  loop_vinfo);
+
+  /* Get the invariant base and non-invariant offset, converting the
+     latter to the same width as the vector elements.  */
+  tree base = gs_info.base;
+  tree offset_type = vect_get_gather_scatter_offset_type (&gs_info);
+  tree offset = vect_add_conversion_to_patterm (offset_type, gs_info.offset,
+						last_stmt_info, loop_vinfo);
+
+  /* Build the new pattern statement.  */
+  tree scale = size_int (gs_info.scale);
+  gcall *pattern_stmt;
+  if (DR_IS_READ (dr))
+    {
+      if (mask != NULL)
+	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 4, base,
+						   offset, scale, mask);
+      else
+	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 3, base,
+						   offset, scale);
+      tree load_lhs = vect_recog_temp_ssa_var (gs_info.element_type, NULL);
+      gimple_call_set_lhs (pattern_stmt, load_lhs);
+    }
+  else
+    /* Not yet supported.  */
+    gcc_unreachable ();
+  gimple_call_set_nothrow (pattern_stmt, true);
+
+  /* Copy across relevant vectorization info and associate DR with the
+     new pattern statement instead of the original statement.  */
+  stmt_vec_info pattern_stmt_info = new_stmt_vec_info (pattern_stmt,
+						       loop_vinfo);
+  set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
+  STMT_VINFO_DATA_REF (pattern_stmt_info) = dr;
+  STMT_VINFO_DR_WRT_VEC_LOOP (pattern_stmt_info)
+    = STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info);
+  STMT_VINFO_GATHER_SCATTER_P (pattern_stmt_info)
+    = STMT_VINFO_GATHER_SCATTER_P (stmt_info);
+  DR_STMT (dr) = pattern_stmt;
+
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  *type_out = vectype;
+  *type_in = vectype;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "gather/scatter pattern detected:\n");
+
+  return pattern_stmt;
+}
+
+/* Pattern wrapper around vect_try_gather_scatter_pattern.  */
+
+static gimple *
+vect_recog_gather_scatter_pattern (vec<gimple *> *stmts, tree *type_in,
+				   tree *type_out)
+{
+  gimple *last_stmt = stmts->pop ();
+  stmt_vec_info last_stmt_info = vinfo_for_stmt (last_stmt);
+  gimple *pattern_stmt = vect_try_gather_scatter_pattern (last_stmt,
+							  last_stmt_info,
+							  type_in, type_out);
+  if (pattern_stmt)
+    stmts->safe_push (last_stmt);
+  return pattern_stmt;
+}
 
 /* Mark statements that are involved in a pattern.  */
 

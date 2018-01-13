@@ -2,6 +2,67 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/md.texi (gather_load@var{m}): Document.
+	(mask_gather_load@var{m}): Likewise.
+	* genopinit.c (main): Add supports_vec_gather_load and
+	supports_vec_gather_load_cached to target_optabs.
+	* optabs-tree.c (init_tree_optimization_optabs): Use
+	ggc_cleared_alloc to allocate target_optabs.
+	* optabs.def (gather_load_optab, mask_gather_laod_optab): New optabs.
+	* internal-fn.def (GATHER_LOAD, MASK_GATHER_LOAD): New internal
+	functions.
+	* internal-fn.h (internal_load_fn_p): Declare.
+	(internal_gather_scatter_fn_p): Likewise.
+	(internal_fn_mask_index): Likewise.
+	(internal_gather_scatter_fn_supported_p): Likewise.
+	* internal-fn.c (gather_load_direct): New macro.
+	(expand_gather_load_optab_fn): New function.
+	(direct_gather_load_optab_supported_p): New macro.
+	(direct_internal_fn_optab): New function.
+	(internal_load_fn_p): Likewise.
+	(internal_gather_scatter_fn_p): Likewise.
+	(internal_fn_mask_index): Likewise.
+	(internal_gather_scatter_fn_supported_p): Likewise.
+	* optabs-query.c (supports_at_least_one_mode_p): New function.
+	(supports_vec_gather_load_p): Likewise.
+	* optabs-query.h (supports_vec_gather_load_p): Declare.
+	* tree-vectorizer.h (gather_scatter_info): Add ifn, element_type
+	and memory_type field.
+	(NUM_PATTERNS): Bump to 15.
+	* tree-vect-data-refs.c: Include internal-fn.h.
+	(vect_gather_scatter_fn_p): New function.
+	(vect_describe_gather_scatter_call): Likewise.
+	(vect_check_gather_scatter): Try using internal functions for
+	gather loads.  Recognize existing calls to a gather load function.
+	(vect_analyze_data_refs): Consider using gather loads if
+	supports_vec_gather_load_p.
+	* tree-vect-patterns.c (vect_get_load_store_mask): New function.
+	(vect_get_gather_scatter_offset_type): Likewise.
+	(vect_convert_mask_for_vectype): Likewise.
+	(vect_add_conversion_to_patterm): Likewise.
+	(vect_try_gather_scatter_pattern): Likewise.
+	(vect_recog_gather_scatter_pattern): New pattern recognizer.
+	(vect_vect_recog_func_ptrs): Add it.
+	* tree-vect-stmts.c (exist_non_indexing_operands_for_use_p): Use
+	internal_fn_mask_index and internal_gather_scatter_fn_p.
+	(check_load_store_masking): Take the gather_scatter_info as an
+	argument and handle gather loads.
+	(vect_get_gather_scatter_ops): New function.
+	(vectorizable_call): Check internal_load_fn_p.
+	(vectorizable_load): Likewise.  Handle gather load internal
+	functions.
+	(vectorizable_store): Update call to check_load_store_masking.
+	* config/aarch64/aarch64.md (UNSPEC_LD1_GATHER): New unspec.
+	* config/aarch64/iterators.md (SVE_S, SVE_D): New mode iterators.
+	* config/aarch64/predicates.md (aarch64_gather_scale_operand_w)
+	(aarch64_gather_scale_operand_d): New predicates.
+	* config/aarch64/aarch64-sve.md (gather_load<mode>): New expander.
+	(mask_gather_load<mode>): New insns.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* optabs.def (fold_left_plus_optab): New optab.
 	* doc/md.texi (fold_left_plus_@var{m}): Document.
 	* internal-fn.def (IFN_FOLD_LEFT_PLUS): New internal function.

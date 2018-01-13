@@ -276,6 +276,12 @@
 ;; All SVE vector modes that have 32-bit or 64-bit elements.
 (define_mode_iterator SVE_SD [VNx4SI VNx2DI VNx4SF VNx2DF])
 
+;; All SVE vector modes that have 32-bit elements.
+(define_mode_iterator SVE_S [VNx4SI VNx4SF])
+
+;; All SVE vector modes that have 64-bit elements.
+(define_mode_iterator SVE_D [VNx2DI VNx2DF])
+
 ;; All SVE integer vector modes that have 32-bit or 64-bit elements.
 (define_mode_iterator SVE_SDI [VNx4SI VNx2DI])
 

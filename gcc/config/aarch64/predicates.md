@@ -610,3 +610,11 @@
 (define_predicate "aarch64_sve_vec_perm_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_constant_vector_operand")))
+
+(define_predicate "aarch64_gather_scale_operand_w"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 4")))
+
+(define_predicate "aarch64_gather_scale_operand_d"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == 1 || INTVAL (op) == 8")))

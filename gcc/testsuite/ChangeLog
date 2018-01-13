@@ -2,6 +2,25 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.target/aarch64/sve/gather_load_1.c: New test.
+	* gcc.target/aarch64/sve/gather_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_7.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_7.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/vect/no-fast-math-vect16.c: Expect the test to pass and
 	check for a message about using in-order reductions.
 	* gcc.dg/vect/pr79920.c: Expect both loops to be vectorized and
