@@ -2,6 +2,23 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (vect_gather_scatter_fn_p): Declare.
+	* tree-vect-data-refs.c (vect_gather_scatter_fn_p): Make public.
+	* tree-vect-stmts.c (vect_truncate_gather_scatter_offset): New
+	function.
+	(vect_use_strided_gather_scatters_p): Take a masked_p argument.
+	Use vect_truncate_gather_scatter_offset if we can't treat the
+	operation as a normal gather load or scatter store.
+	(get_group_load_store_type): Take the gather_scatter_info
+	as argument.  Try using a gather load or scatter store for
+	single-element groups.
+	(get_load_store_type): Update calls to get_group_load_store_type
+	and vect_use_strided_gather_scatters_p.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (vect_create_data_ref_ptr): Take an extra
 	optional tree argument.
 	* tree-vect-data-refs.c (vect_check_gather_scatter): Check for

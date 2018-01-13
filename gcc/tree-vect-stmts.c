@@ -1849,18 +1849,117 @@ prepare_load_store_mask (tree mask_type, tree loop_mask, tree vec_mask,
   return and_res;
 }
 
+/* Determine whether we can use a gather load or scatter store to vectorize
+   strided load or store STMT by truncating the current offset to a smaller
+   width.  We need to be able to construct an offset vector:
+
+     { 0, X, X*2, X*3, ... }
+
+   without loss of precision, where X is STMT's DR_STEP.
+
+   Return true if this is possible, describing the gather load or scatter
+   store in GS_INFO.  MASKED_P is true if the load or store is conditional.  */
+
+static bool
+vect_truncate_gather_scatter_offset (gimple *stmt, loop_vec_info loop_vinfo,
+				     bool masked_p,
+				     gather_scatter_info *gs_info)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+  tree step = DR_STEP (dr);
+  if (TREE_CODE (step) != INTEGER_CST)
+    {
+      /* ??? Perhaps we could use range information here?  */
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "cannot truncate variable step.\n");
+      return false;
+    }
+
+  /* Get the number of bits in an element.  */
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  scalar_mode element_mode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
+  unsigned int element_bits = GET_MODE_BITSIZE (element_mode);
+
+  /* Set COUNT to the upper limit on the number of elements - 1.
+     Start with the maximum vectorization factor.  */
+  unsigned HOST_WIDE_INT count = vect_max_vf (loop_vinfo) - 1;
+
+  /* Try lowering COUNT to the number of scalar latch iterations.  */
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  widest_int max_iters;
+  if (max_loop_iterations (loop, &max_iters)
+      && max_iters < count)
+    count = max_iters.to_shwi ();
+
+  /* Try scales of 1 and the element size.  */
+  int scales[] = { 1, vect_get_scalar_dr_size (dr) };
+  bool overflow_p = false;
+  for (int i = 0; i < 2; ++i)
+    {
+      int scale = scales[i];
+      widest_int factor;
+      if (!wi::multiple_of_p (wi::to_widest (step), scale, SIGNED, &factor))
+	continue;
+
+      /* See whether we can calculate (COUNT - 1) * STEP / SCALE
+	 in OFFSET_BITS bits.  */
+      widest_int range = wi::mul (count, factor, SIGNED, &overflow_p);
+      if (overflow_p)
+	continue;
+      signop sign = range >= 0 ? UNSIGNED : SIGNED;
+      if (wi::min_precision (range, sign) > element_bits)
+	{
+	  overflow_p = true;
+	  continue;
+	}
+
+      /* See whether the target supports the operation.  */
+      tree memory_type = TREE_TYPE (DR_REF (dr));
+      if (!vect_gather_scatter_fn_p (DR_IS_READ (dr), masked_p, vectype,
+				     memory_type, element_bits, sign, scale,
+				     &gs_info->ifn, &gs_info->element_type))
+	continue;
+
+      tree offset_type = build_nonstandard_integer_type (element_bits,
+							 sign == UNSIGNED);
+
+      gs_info->decl = NULL_TREE;
+      /* Logically the sum of DR_BASE_ADDRESS, DR_INIT and DR_OFFSET,
+	 but we don't need to store that here.  */
+      gs_info->base = NULL_TREE;
+      gs_info->offset = fold_convert (offset_type, step);
+      gs_info->offset_dt = vect_unknown_def_type;
+      gs_info->offset_vectype = NULL_TREE;
+      gs_info->scale = scale;
+      gs_info->memory_type = memory_type;
+      return true;
+    }
+
+  if (overflow_p && dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "truncating gather/scatter offset to %d bits"
+		     " might change its value.\n", element_bits);
+
+  return false;
+}
+
 /* Return true if we can use gather/scatter internal functions to
    vectorize STMT, which is a grouped or strided load or store.
-   When returning true, fill in GS_INFO with the information required
-   to perform the operation.  */
+   MASKED_P is true if load or store is conditional.  When returning
+   true, fill in GS_INFO with the information required to perform the
+   operation.  */
 
 static bool
 vect_use_strided_gather_scatters_p (gimple *stmt, loop_vec_info loop_vinfo,
+				    bool masked_p,
 				    gather_scatter_info *gs_info)
 {
   if (!vect_check_gather_scatter (stmt, loop_vinfo, gs_info)
       || gs_info->decl)
-    return false;
+    return vect_truncate_gather_scatter_offset (stmt, loop_vinfo,
+						masked_p, gs_info);
 
   scalar_mode element_mode = SCALAR_TYPE_MODE (gs_info->element_type);
   unsigned int element_bits = GET_MODE_BITSIZE (element_mode);
@@ -1951,7 +2050,8 @@ vect_get_store_rhs (gimple *stmt)
 static bool
 get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
 			   bool masked_p, vec_load_store_type vls_type,
-			   vect_memory_access_type *memory_access_type)
+			   vect_memory_access_type *memory_access_type,
+			   gather_scatter_info *gs_info)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vec_info *vinfo = stmt_info->vinfo;
@@ -2073,6 +2173,20 @@ get_group_load_store_type (gimple *stmt, tree vectype, bool slp,
 	      overrun_p = would_overrun_p;
 	    }
 	}
+
+      /* As a last resort, trying using a gather load or scatter store.
+
+	 ??? Although the code can handle all group sizes correctly,
+	 it probably isn't a win to use separate strided accesses based
+	 on nearby locations.  Or, even if it's a win over scalar code,
+	 it might not be a win over vectorizing at a lower VF, if that
+	 allows us to use contiguous accesses.  */
+      if (*memory_access_type == VMAT_ELEMENTWISE
+	  && single_element_p
+	  && loop_vinfo
+	  && vect_use_strided_gather_scatters_p (stmt, loop_vinfo,
+						 masked_p, gs_info))
+	*memory_access_type = VMAT_GATHER_SCATTER;
     }
 
   if (vls_type != VLS_LOAD && first_stmt == stmt)
@@ -2200,14 +2314,15 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp, bool masked_p,
   else if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       if (!get_group_load_store_type (stmt, vectype, slp, masked_p, vls_type,
-				      memory_access_type))
+				      memory_access_type, gs_info))
 	return false;
     }
   else if (STMT_VINFO_STRIDED_P (stmt_info))
     {
       gcc_assert (!slp);
       if (loop_vinfo
-	  && vect_use_strided_gather_scatters_p (stmt, loop_vinfo, gs_info))
+	  && vect_use_strided_gather_scatters_p (stmt, loop_vinfo,
+						 masked_p, gs_info))
 	*memory_access_type = VMAT_GATHER_SCATTER;
       else
 	*memory_access_type = VMAT_ELEMENTWISE;
