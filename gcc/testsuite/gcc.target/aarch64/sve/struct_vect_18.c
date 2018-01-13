@@ -42,3 +42,6 @@ TEST (test)
 /* { dg-final { scan-assembler-times {\tstr\ts} 1 } } */
 /* { dg-final { scan-assembler-times {\tldr\td} 2 } } */
 /* { dg-final { scan-assembler-times {\tstr\td} 1 } } */
+
+/* The only branches should be in the vectorized loop.  */
+/* { dg-final { scan-assembler-times {\tb[a-z]+\t} 4 } } */

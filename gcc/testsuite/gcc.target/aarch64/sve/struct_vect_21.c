@@ -6,7 +6,7 @@
   NAME (TYPE *restrict dest, TYPE *restrict src, int n)		\
   {								\
     for (int i = 0; i < n; ++i)					\
-      dest[i] += src[i * 3];					\
+      dest[i] += src[i * 2];					\
   }
 
 #define TEST(NAME) \
@@ -19,16 +19,16 @@ TEST (test)
 
 /* Check the vectorized loop.  */
 /* { dg-final { scan-assembler-times {\tld1b\t} 1 } } */
-/* { dg-final { scan-assembler-times {\tld3b\t} 1 } } */
+/* { dg-final { scan-assembler-times {\tld2b\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tst1b\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tld1h\t} 1 } } */
-/* { dg-final { scan-assembler-times {\tld3h\t} 1 } } */
+/* { dg-final { scan-assembler-times {\tld2h\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tst1h\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tld1w\t} 1 } } */
-/* { dg-final { scan-assembler-times {\tld3w\t} 1 } } */
+/* { dg-final { scan-assembler-times {\tld2w\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tst1w\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tld1d\t} 1 } } */
-/* { dg-final { scan-assembler-times {\tld3d\t} 1 } } */
+/* { dg-final { scan-assembler-times {\tld2d\t} 1 } } */
 /* { dg-final { scan-assembler-times {\tst1d\t} 1 } } */
 
 /* Check the scalar tail.  */

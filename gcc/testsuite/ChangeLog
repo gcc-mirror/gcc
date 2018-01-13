@@ -2,6 +2,22 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.target/aarch64/sve/struct_vect_18.c: Check the number
+	of branches.
+	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_20.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_20_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_21.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_21_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_22.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_22_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_23.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_23_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.target/aarch64/sve/struct_vect_18.c: New test.
 	* gcc.target/aarch64/sve/struct_vect_18_run.c: Likewise.
 	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.

@@ -2,6 +2,21 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-loop-manip.c (vect_gen_scalar_loop_niters): Replace
+	vfm1 with a bound_epilog parameter.
+	(vect_do_peeling): Update calls accordingly, and move the prologue
+	call earlier in the function.  Treat the base bound_epilog as 0 for
+	fully-masked loops and retain vf - 1 for other loops.  Add 1 to
+	this base when peeling for gaps.
+	* tree-vect-loop.c (vect_analyze_loop_2): Allow peeling for gaps
+	with fully-masked loops.
+	(vect_estimate_min_profitable_iters): Handle the single peeled
+	iteration in that case.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-data-refs.c (vect_analyze_group_access_1): Allow
 	single-element interleaving even if the size is not a power of 2.
 	* tree-vect-stmts.c (get_load_store_type): Disallow elementwise
