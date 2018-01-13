@@ -5924,13 +5924,16 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
    or CONST_FIXED or CONST_VECTOR, returning another CONST_INT or
    CONST_WIDE_INT or CONST_DOUBLE or CONST_FIXED or CONST_VECTOR.
 
-   Works by unpacking OP into a collection of 8-bit values
+   Works by unpacking INNER_BYTES bytes of OP into a collection of 8-bit values
    represented as a little-endian array of 'unsigned char', selecting by BYTE,
-   and then repacking them again for OUTERMODE.  */
+   and then repacking them again for OUTERMODE.  If OP is a CONST_VECTOR,
+   FIRST_ELEM is the number of the first element to extract, otherwise
+   FIRST_ELEM is ignored.  */
 
 static rtx
 simplify_immed_subreg (fixed_size_mode outermode, rtx op,
-		       fixed_size_mode innermode, unsigned int byte)
+		       machine_mode innermode, unsigned int byte,
+		       unsigned int first_elem, unsigned int inner_bytes)
 {
   enum {
     value_bit = 8,
@@ -5960,13 +5963,13 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
 
   /* We support any size mode.  */
   max_bitsize = MAX (GET_MODE_BITSIZE (outermode),
-		     GET_MODE_BITSIZE (innermode));
+		     inner_bytes * BITS_PER_UNIT);
 
   /* Unpack the value.  */
 
   if (GET_CODE (op) == CONST_VECTOR)
     {
-      num_elem = GET_MODE_NUNITS (innermode);
+      num_elem = CEIL (inner_bytes, GET_MODE_UNIT_SIZE (innermode));
       elem_bitsize = GET_MODE_UNIT_BITSIZE (innermode);
     }
   else
@@ -5983,7 +5986,7 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
     {
       unsigned char * vp;
       rtx el = (GET_CODE (op) == CONST_VECTOR
-		? CONST_VECTOR_ELT (op, elem)
+		? CONST_VECTOR_ELT (op, first_elem + elem)
 		: op);
 
       /* Vectors are kept in target memory order.  (This is probably
@@ -6110,10 +6113,9 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
   /* Renumber BYTE so that the least-significant byte is byte 0.  A special
      case is paradoxical SUBREGs, which shouldn't be adjusted since they
      will already have offset 0.  */
-  if (GET_MODE_SIZE (innermode) >= GET_MODE_SIZE (outermode))
+  if (inner_bytes >= GET_MODE_SIZE (outermode))
     {
-      unsigned ibyte = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode)
-			- byte);
+      unsigned ibyte = inner_bytes - GET_MODE_SIZE (outermode) - byte;
       unsigned word_byte = WORDS_BIG_ENDIAN ? ibyte : byte;
       unsigned subword_byte = BYTES_BIG_ENDIAN ? ibyte : byte;
       byte = (subword_byte % UNITS_PER_WORD
@@ -6122,7 +6124,7 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx op,
 
   /* BYTE should still be inside OP.  (Note that BYTE is unsigned,
      so if it's become negative it will instead be very large.)  */
-  gcc_assert (byte < GET_MODE_SIZE (innermode));
+  gcc_assert (byte < inner_bytes);
 
   /* Convert from bytes to chunks of size value_bit.  */
   value_start = byte * (BITS_PER_UNIT / value_bit);
@@ -6311,7 +6313,18 @@ simplify_subreg (machine_mode outermode, rtx op,
       if (is_a <fixed_size_mode> (outermode, &fs_outermode)
 	  && is_a <fixed_size_mode> (innermode, &fs_innermode)
 	  && byte.is_constant (&cbyte))
-	return simplify_immed_subreg (fs_outermode, op, fs_innermode, cbyte);
+	return simplify_immed_subreg (fs_outermode, op, fs_innermode, cbyte,
+				      0, GET_MODE_SIZE (fs_innermode));
+
+      /* Handle constant-sized outer modes and variable-sized inner modes.  */
+      unsigned HOST_WIDE_INT first_elem;
+      if (GET_CODE (op) == CONST_VECTOR
+	  && is_a <fixed_size_mode> (outermode, &fs_outermode)
+	  && constant_multiple_p (byte, GET_MODE_UNIT_SIZE (innermode),
+				  &first_elem))
+	return simplify_immed_subreg (fs_outermode, op, innermode, 0,
+				      first_elem,
+				      GET_MODE_SIZE (fs_outermode));
 
       return NULL_RTX;
     }
