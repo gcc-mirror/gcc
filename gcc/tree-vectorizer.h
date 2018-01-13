@@ -74,7 +74,15 @@ enum vect_reduction_type {
 
        for (int i = 0; i < VF; ++i)
          res = cond[i] ? val[i] : res;  */
-  EXTRACT_LAST_REDUCTION
+  EXTRACT_LAST_REDUCTION,
+
+  /* Use a folding reduction within the loop to implement:
+
+       for (int i = 0; i < VF; ++i)
+	 res = res OP val[i];
+
+     (with no reassocation).  */
+  FOLD_LEFT_REDUCTION
 };
 
 #define VECTORIZABLE_CYCLE_DEF(D) (((D) == vect_reduction_def)           \
@@ -1390,6 +1398,7 @@ extern void vect_model_load_cost (stmt_vec_info, int, vect_memory_access_type,
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
 				  int, enum vect_cost_model_location);
+extern void vect_finish_replace_stmt (gimple *, gimple *);
 extern void vect_finish_stmt_generation (gimple *, gimple *,
                                          gimple_stmt_iterator *);
 extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);

@@ -58,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 
    - cond_binary: a conditional binary optab, such as add<mode>cc
 
+   - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
+
    DEF_INTERNAL_SIGNED_OPTAB_FN defines an internal function that
    maps to one of two optabs, depending on the signedness of an input.
    SIGNED_OPTAB and UNSIGNED_OPTAB are the optabs for signed and
@@ -162,6 +164,8 @@ DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 		       fold_extract_last, fold_extract)
 
+DEF_INTERNAL_OPTAB_FN (FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
+		       fold_left_plus, fold_left)
 
 /* Unary math functions.  */
 DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)
