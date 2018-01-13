@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-slp.c: Include gimple-fold.h and internal-fn.h
+	(can_duplicate_and_interleave_p): New function.
+	(vect_get_and_check_slp_defs): Take the vector of statements
+	rather than just the current one.  Remove excess parentheses.
+	Restriction rejectinon of vect_constant_def and vect_external_def
+	for variable-length vectors to boolean types, or types for which
+	can_duplicate_and_interleave_p is false.
+	(vect_build_slp_tree_2): Update call to vect_get_and_check_slp_defs.
+	(duplicate_and_interleave): New function.
+	(vect_get_constant_vectors): Use gimple_build_vector for
+	constant-length vectors and suitable variable-length constant
+	vectors.  Use duplicate_and_interleave for other variable-length
+	vectors.  Don't defer the update when inserting new statements.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Make sure
 	min_profitable_iters doesn't go negative.
 

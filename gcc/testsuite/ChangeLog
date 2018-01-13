@@ -2,6 +2,56 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/vect/no-scevccp-slp-30.c: Don't XFAIL for vect_variable_length
+	&& vect_load_lanes
+	* gcc.dg/vect/slp-1.c: Likewise.
+	* gcc.dg/vect/slp-10.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-12c.c: Likewise.
+	* gcc.dg/vect/slp-17.c: Likewise.
+	* gcc.dg/vect/slp-19b.c: Likewise.
+	* gcc.dg/vect/slp-20.c: Likewise.
+	* gcc.dg/vect/slp-21.c: Likewise.
+	* gcc.dg/vect/slp-22.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/slp-24-big-array.c: Likewise.
+	* gcc.dg/vect/slp-24.c: Likewise.
+	* gcc.dg/vect/slp-28.c: Likewise.
+	* gcc.dg/vect/slp-39.c: Likewise.
+	* gcc.dg/vect/slp-6.c: Likewise.
+	* gcc.dg/vect/slp-7.c: Likewise.
+	* gcc.dg/vect/slp-cond-1.c: Likewise.
+	* gcc.dg/vect/slp-cond-2-big-array.c: Likewise.
+	* gcc.dg/vect/slp-cond-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-1.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-8.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-9.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-10.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-12.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-1.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-2.c: Likewise.
+	* gcc.dg/vect/pr33953.c: Don't XFAIL for vect_variable_length.
+	* gcc.dg/vect/slp-12a.c: Likewise.
+	* gcc.dg/vect/slp-14.c: Likewise.
+	* gcc.dg/vect/slp-15.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-4.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-5.c: Likewise.
+	* gcc.target/aarch64/sve/slp_1.c: New test.
+	* gcc.target/aarch64/sve/slp_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_2.c: Likewise.
+	* gcc.target/aarch64/sve/slp_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/vect/vect-ooo-group-1.c: New test.
 	* gcc.target/aarch64/sve/mask_struct_load_1.c: Likewise.
 	* gcc.target/aarch64/sve/mask_struct_load_1_run.c: Likewise.

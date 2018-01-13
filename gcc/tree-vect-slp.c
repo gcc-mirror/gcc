@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "gimple-fold.h"
+#include "internal-fn.h"
 
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
@@ -208,24 +210,87 @@ vect_get_place_in_interleaving_chain (gimple *stmt, gimple *first_stmt)
   return -1;
 }
 
+/* Check whether it is possible to load COUNT elements of type ELT_MODE
+   using the method implemented by duplicate_and_interleave.  Return true
+   if so, returning the number of intermediate vectors in *NVECTORS_OUT
+   (if nonnull) and the type of each intermediate vector in *VECTOR_TYPE_OUT
+   (if nonnull).  */
+
+static bool
+can_duplicate_and_interleave_p (unsigned int count, machine_mode elt_mode,
+				unsigned int *nvectors_out = NULL,
+				tree *vector_type_out = NULL,
+				tree *permutes = NULL)
+{
+  poly_int64 elt_bytes = count * GET_MODE_SIZE (elt_mode);
+  poly_int64 nelts;
+  unsigned int nvectors = 1;
+  for (;;)
+    {
+      scalar_int_mode int_mode;
+      poly_int64 elt_bits = elt_bytes * BITS_PER_UNIT;
+      if (multiple_p (current_vector_size, elt_bytes, &nelts)
+	  && int_mode_for_size (elt_bits, 0).exists (&int_mode))
+	{
+	  tree int_type = build_nonstandard_integer_type
+	    (GET_MODE_BITSIZE (int_mode), 1);
+	  tree vector_type = build_vector_type (int_type, nelts);
+	  if (VECTOR_MODE_P (TYPE_MODE (vector_type)))
+	    {
+	      vec_perm_builder sel1 (nelts, 2, 3);
+	      vec_perm_builder sel2 (nelts, 2, 3);
+	      poly_int64 half_nelts = exact_div (nelts, 2);
+	      for (unsigned int i = 0; i < 3; ++i)
+		{
+		  sel1.quick_push (i);
+		  sel1.quick_push (i + nelts);
+		  sel2.quick_push (half_nelts + i);
+		  sel2.quick_push (half_nelts + i + nelts);
+		}
+	      vec_perm_indices indices1 (sel1, 2, nelts);
+	      vec_perm_indices indices2 (sel2, 2, nelts);
+	      if (can_vec_perm_const_p (TYPE_MODE (vector_type), indices1)
+		  && can_vec_perm_const_p (TYPE_MODE (vector_type), indices2))
+		{
+		  if (nvectors_out)
+		    *nvectors_out = nvectors;
+		  if (vector_type_out)
+		    *vector_type_out = vector_type;
+		  if (permutes)
+		    {
+		      permutes[0] = vect_gen_perm_mask_checked (vector_type,
+								indices1);
+		      permutes[1] = vect_gen_perm_mask_checked (vector_type,
+								indices2);
+		    }
+		  return true;
+		}
+	    }
+	}
+      if (!multiple_p (elt_bytes, 2, &elt_bytes))
+	return false;
+      nvectors *= 2;
+    }
+}
 
 /* Get the defs for the rhs of STMT (collect them in OPRNDS_INFO), check that
    they are of a valid type and that they match the defs of the first stmt of
    the SLP group (stored in OPRNDS_INFO).  This function tries to match stmts
-   by swapping operands of STMT when possible.  Non-zero *SWAP indicates swap
-   is required for cond_expr stmts.  Specifically, *SWAP is 1 if STMT is cond
-   and operands of comparison need to be swapped; *SWAP is 2 if STMT is cond
-   and code of comparison needs to be inverted.  If there is any operand swap
-   in this function, *SWAP is set to non-zero value.
+   by swapping operands of STMTS[STMT_NUM] when possible.  Non-zero *SWAP
+   indicates swap is required for cond_expr stmts.  Specifically, *SWAP
+   is 1 if STMT is cond and operands of comparison need to be swapped;
+   *SWAP is 2 if STMT is cond and code of comparison needs to be inverted.
+   If there is any operand swap in this function, *SWAP is set to non-zero
+   value.
    If there was a fatal error return -1; if the error could be corrected by
    swapping operands of father node of this one, return 1; if everything is
    ok return 0.  */
-
 static int
 vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char *swap,
-			     gimple *stmt, unsigned stmt_num,
+			     vec<gimple *> stmts, unsigned stmt_num,
 			     vec<slp_oprnd_info> *oprnds_info)
 {
+  gimple *stmt = stmts[stmt_num];
   tree oprnd;
   unsigned int i, number_of_oprnds;
   gimple *def_stmt;
@@ -373,15 +438,15 @@ again:
 	     types for reduction chains: the first stmt must be a
 	     vect_reduction_def (a phi node), and the rest
 	     vect_internal_def.  */
-	  if (((oprnd_info->first_dt != dt
-                && !(oprnd_info->first_dt == vect_reduction_def
-                     && dt == vect_internal_def)
-		&& !((oprnd_info->first_dt == vect_external_def
-		      || oprnd_info->first_dt == vect_constant_def)
-		     && (dt == vect_external_def
-			 || dt == vect_constant_def)))
-               || !types_compatible_p (oprnd_info->first_op_type,
-				       TREE_TYPE (oprnd))))
+	  tree type = TREE_TYPE (oprnd);
+	  if ((oprnd_info->first_dt != dt
+	       && !(oprnd_info->first_dt == vect_reduction_def
+		    && dt == vect_internal_def)
+	       && !((oprnd_info->first_dt == vect_external_def
+		     || oprnd_info->first_dt == vect_constant_def)
+		    && (dt == vect_external_def
+			|| dt == vect_constant_def)))
+	      || !types_compatible_p (oprnd_info->first_op_type, type))
 	    {
 	      /* Try swapping operands if we got a mismatch.  */
 	      if (i == 0
@@ -398,16 +463,12 @@ again:
 
 	      return 1;
 	    }
-	}
-
-      /* Check the types of the definitions.  */
-      switch (dt)
-	{
-	case vect_constant_def:
-	case vect_external_def:
-	  /* We must already have set a vector size by now.  */
-	  gcc_checking_assert (maybe_ne (current_vector_size, 0U));
-	  if (!current_vector_size.is_constant ())
+	  if ((dt == vect_constant_def
+	       || dt == vect_external_def)
+	      && !current_vector_size.is_constant ()
+	      && (TREE_CODE (type) == BOOLEAN_TYPE
+		  || !can_duplicate_and_interleave_p (stmts.length (),
+						      TYPE_MODE (type))))
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -419,6 +480,13 @@ again:
 		}
 	      return -1;
 	    }
+	}
+
+      /* Check the types of the definitions.  */
+      switch (dt)
+	{
+	case vect_constant_def:
+	case vect_external_def:
 	  break;
 
 	case vect_reduction_def:
@@ -1119,7 +1187,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
       int res = vect_get_and_check_slp_defs (vinfo, &swap[i],
-					     stmt, i, &oprnds_info);
+					     stmts, i, &oprnds_info);
       if (res != 0)
 	matches[(res == -1) ? 0 : i] = false;
       if (!matches[0])
@@ -3219,6 +3287,118 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
   return VECTOR_BOOLEAN_TYPE_P (STMT_VINFO_VECTYPE (stmt_vinfo));
 }
 
+/* Build a variable-length vector in which the elements in ELTS are repeated
+   to a fill NRESULTS vectors of type VECTOR_TYPE.  Store the vectors in
+   RESULTS and add any new instructions to SEQ.
+
+   The approach we use is:
+
+   (1) Find a vector mode VM with integer elements of mode IM.
+
+   (2) Replace ELTS[0:NELTS] with ELTS'[0:NELTS'], where each element of
+       ELTS' has mode IM.  This involves creating NELTS' VIEW_CONVERT_EXPRs
+       from small vectors to IM.
+
+   (3) Duplicate each ELTS'[I] into a vector of mode VM.
+
+   (4) Use a tree of interleaving VEC_PERM_EXPRs to create VMs with the
+       correct byte contents.
+
+   (5) Use VIEW_CONVERT_EXPR to cast the final VMs to the required type.
+
+   We try to find the largest IM for which this sequence works, in order
+   to cut down on the number of interleaves.  */
+
+static void
+duplicate_and_interleave (gimple_seq *seq, tree vector_type, vec<tree> elts,
+			  unsigned int nresults, vec<tree> &results)
+{
+  unsigned int nelts = elts.length ();
+  tree element_type = TREE_TYPE (vector_type);
+
+  /* (1) Find a vector mode VM with integer elements of mode IM.  */
+  unsigned int nvectors = 1;
+  tree new_vector_type;
+  tree permutes[2];
+  if (!can_duplicate_and_interleave_p (nelts, TYPE_MODE (element_type),
+				       &nvectors, &new_vector_type,
+				       permutes))
+    gcc_unreachable ();
+
+  /* Get a vector type that holds ELTS[0:NELTS/NELTS'].  */
+  unsigned int partial_nelts = nelts / nvectors;
+  tree partial_vector_type = build_vector_type (element_type, partial_nelts);
+
+  tree_vector_builder partial_elts;
+  auto_vec<tree, 32> pieces (nvectors * 2);
+  pieces.quick_grow (nvectors * 2);
+  for (unsigned int i = 0; i < nvectors; ++i)
+    {
+      /* (2) Replace ELTS[0:NELTS] with ELTS'[0:NELTS'], where each element of
+	     ELTS' has mode IM.  */
+      partial_elts.new_vector (partial_vector_type, partial_nelts, 1);
+      for (unsigned int j = 0; j < partial_nelts; ++j)
+	partial_elts.quick_push (elts[i * partial_nelts + j]);
+      tree t = gimple_build_vector (seq, &partial_elts);
+      t = gimple_build (seq, VIEW_CONVERT_EXPR,
+			TREE_TYPE (new_vector_type), t);
+
+      /* (3) Duplicate each ELTS'[I] into a vector of mode VM.  */
+      pieces[i] = gimple_build_vector_from_val (seq, new_vector_type, t);
+    }
+
+  /* (4) Use a tree of VEC_PERM_EXPRs to create a single VM with the
+	 correct byte contents.
+
+     We need to repeat the following operation log2(nvectors) times:
+
+	out[i * 2] = VEC_PERM_EXPR (in[i], in[i + hi_start], lo_permute);
+	out[i * 2 + 1] = VEC_PERM_EXPR (in[i], in[i + hi_start], hi_permute);
+
+     However, if each input repeats every N elements and the VF is
+     a multiple of N * 2, the HI result is the same as the LO.  */
+  unsigned int in_start = 0;
+  unsigned int out_start = nvectors;
+  unsigned int hi_start = nvectors / 2;
+  /* A bound on the number of outputs needed to produce NRESULTS results
+     in the final iteration.  */
+  unsigned int noutputs_bound = nvectors * nresults;
+  for (unsigned int in_repeat = 1; in_repeat < nvectors; in_repeat *= 2)
+    {
+      noutputs_bound /= 2;
+      unsigned int limit = MIN (noutputs_bound, nvectors);
+      for (unsigned int i = 0; i < limit; ++i)
+	{
+	  if ((i & 1) != 0
+	      && multiple_p (TYPE_VECTOR_SUBPARTS (new_vector_type),
+			     2 * in_repeat))
+	    {
+	      pieces[out_start + i] = pieces[out_start + i - 1];
+	      continue;
+	    }
+
+	  tree output = make_ssa_name (new_vector_type);
+	  tree input1 = pieces[in_start + (i / 2)];
+	  tree input2 = pieces[in_start + (i / 2) + hi_start];
+	  gassign *stmt = gimple_build_assign (output, VEC_PERM_EXPR,
+					       input1, input2,
+					       permutes[i & 1]);
+	  gimple_seq_add_stmt (seq, stmt);
+	  pieces[out_start + i] = output;
+	}
+      std::swap (in_start, out_start);
+    }
+
+  /* (5) Use VIEW_CONVERT_EXPR to cast the final VM to the required type.  */
+  results.reserve (nresults);
+  for (unsigned int i = 0; i < nresults; ++i)
+    if (i < nvectors)
+      results.quick_push (gimple_build (seq, VIEW_CONVERT_EXPR, vector_type,
+					pieces[in_start + i]));
+    else
+      results.quick_push (results[i - nvectors]);
+}
+
 
 /* For constant and loop invariant defs of SLP_NODE this function returns
    (vector) defs (VEC_OPRNDS) that will be used in the vectorized stmts.
@@ -3235,7 +3415,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   gimple *stmt = stmts[0];
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-  unsigned nunits;
+  unsigned HOST_WIDE_INT nunits;
   tree vec_cst;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type;
@@ -3249,6 +3429,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   tree neutral_op = NULL;
   enum tree_code code = gimple_expr_code (stmt);
   gimple_seq ctor_seq = NULL;
+  auto_vec<tree, 16> permute_results;
 
   /* Check if vector type is a boolean vector.  */
   if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (op))
@@ -3257,8 +3438,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
       = build_same_sized_truth_vector_type (STMT_VINFO_VECTYPE (stmt_vinfo));
   else
     vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
-  /* Enforced by vect_get_and_check_slp_defs.  */
-  nunits = TYPE_VECTOR_SUBPARTS (vector_type).to_constant ();
 
   if (STMT_VINFO_DATA_REF (stmt_vinfo))
     {
@@ -3285,6 +3464,11 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
      For example, NUNITS is four as before, and the group size is 8
      (s1, s2, ..., s8).  We will create two vectors {s1, s2, s3, s4} and
      {s5, s6, s7, s8}.  */
+
+  /* When using duplicate_and_interleave, we just need one element for
+     each scalar statement.  */
+  if (!TYPE_VECTOR_SUBPARTS (vector_type).is_constant (&nunits))
+    nunits = group_size;
 
   number_of_copies = nunits * number_of_vectors / group_size;
 
@@ -3407,16 +3591,17 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
           if (number_of_places_left_in_vector == 0)
             {
-	      if (constant_p)
-		vec_cst = elts.build ();
+	      if (constant_p
+		  ? multiple_p (TYPE_VECTOR_SUBPARTS (vector_type), nunits)
+		  : known_eq (TYPE_VECTOR_SUBPARTS (vector_type), nunits))
+		vec_cst = gimple_build_vector (&ctor_seq, &elts);
 	      else
 		{
-		  vec<constructor_elt, va_gc> *v;
-		  unsigned k;
-		  vec_alloc (v, nunits);
-		  for (k = 0; k < nunits; ++k)
-		    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[k]);
-		  vec_cst = build_constructor (vector_type, v);
+		  if (vec_oprnds->is_empty ())
+		    duplicate_and_interleave (&ctor_seq, vector_type, elts,
+					      number_of_vectors,
+					      permute_results);
+		  vec_cst = permute_results[number_of_vectors - j - 1];
 		}
 	      tree init;
 	      gimple_stmt_iterator gsi;
@@ -3431,8 +3616,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 	      if (ctor_seq != NULL)
 		{
 		  gsi = gsi_for_stmt (SSA_NAME_DEF_STMT (init));
-		  gsi_insert_seq_before_without_update (&gsi, ctor_seq,
-							GSI_SAME_STMT);
+		  gsi_insert_seq_before (&gsi, ctor_seq, GSI_SAME_STMT);
 		  ctor_seq = NULL;
 		}
 	      voprnds.quick_push (init);

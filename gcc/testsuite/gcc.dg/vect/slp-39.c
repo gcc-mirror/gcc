@@ -21,4 +21,4 @@ void bar (double w)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { xfail vect_variable_length } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" } } */
