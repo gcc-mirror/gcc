@@ -640,7 +640,7 @@ extern struct c_expr default_function_array_read_conversion (location_t,
 							     struct c_expr);
 extern struct c_expr convert_lvalue_to_rvalue (location_t, struct c_expr,
 					       bool, bool);
-extern tree decl_constant_value_1 (tree);
+extern tree decl_constant_value_1 (tree, bool);
 extern void mark_exp_read (tree);
 extern tree composite_type (tree, tree);
 extern tree build_component_ref (location_t, tree, tree, location_t);

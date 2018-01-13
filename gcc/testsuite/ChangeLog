@@ -1,3 +1,8 @@
+2018-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83801
+	* gcc.dg/pr83801.c: New test.
+
 2018-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52162
