@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/tree-ssa/scev-9.c: Expected REFERENCE ADDRESS
+	instead of just ADDRESS.
+	* gcc.dg/tree-ssa/scev-10.c: Likewise.
+	* gcc.dg/tree-ssa/scev-11.c: Likewise.
+	* gcc.dg/tree-ssa/scev-12.c: Likewise.
+	* gcc.target/aarch64/sve/index_offset_1.c: New test.
+	* gcc.target/aarch64/sve/index_offset_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_2.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_3.c: Likewise.
+	* gcc.target/aarch64/sve/while_1.c: Check for indexed addressing modes.
+	* gcc.target/aarch64/sve/while_2.c: Likewise.
+	* gcc.target/aarch64/sve/while_3.c: Likewise.
+	* gcc.target/aarch64/sve/while_4.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/vect/pr60482.c: Remove XFAIL for variable-length vectors.
 	* gcc.target/aarch64/sve/reduc_1.c: Expect the loop operations
 	to be predicated.
