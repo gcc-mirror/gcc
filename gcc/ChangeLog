@@ -1,4 +1,9 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-if-conv.c (predicate_mem_writes): Remove redundant
+	call to ifc_temp_var.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
