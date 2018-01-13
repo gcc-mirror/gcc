@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (expand_expr_addr_expr_1): Handle ADDR_EXPRs of
+	TARGET_MEM_REFs.
+	* gimple-expr.h (is_gimple_addressable: Likewise.
+	* gimple-expr.c (is_gimple_address): Likewise.
+	* internal-fn.c (expand_call_mem_ref): New function.
+	(expand_mask_load_optab_fn): Use it.
+	(expand_mask_store_optab_fn): Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/md.texi (cond_add@var{mode}, cond_sub@var{mode})
 	(cond_and@var{mode}, cond_ior@var{mode}, cond_xor@var{mode})
 	(cond_smin@var{mode}, cond_smax@var{mode}, cond_umin@var{mode})
