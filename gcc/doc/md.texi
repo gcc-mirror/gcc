@@ -6248,6 +6248,42 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
+@cindex @code{cond_add@var{mode}} instruction pattern
+@cindex @code{cond_sub@var{mode}} instruction pattern
+@cindex @code{cond_and@var{mode}} instruction pattern
+@cindex @code{cond_ior@var{mode}} instruction pattern
+@cindex @code{cond_xor@var{mode}} instruction pattern
+@cindex @code{cond_smin@var{mode}} instruction pattern
+@cindex @code{cond_smax@var{mode}} instruction pattern
+@cindex @code{cond_umin@var{mode}} instruction pattern
+@cindex @code{cond_umax@var{mode}} instruction pattern
+@item @samp{cond_add@var{mode}}
+@itemx @samp{cond_sub@var{mode}}
+@itemx @samp{cond_and@var{mode}}
+@itemx @samp{cond_ior@var{mode}}
+@itemx @samp{cond_xor@var{mode}}
+@itemx @samp{cond_smin@var{mode}}
+@itemx @samp{cond_smax@var{mode}}
+@itemx @samp{cond_umin@var{mode}}
+@itemx @samp{cond_umax@var{mode}}
+Perform an elementwise operation on vector operands 2 and 3,
+under the control of the vector mask in operand 1, and store the result
+in operand 0.  This is equivalent to:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{n}); i++)
+  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op2[i];
+@end smallexample
+
+where, for example, @var{op} is @code{+} for @samp{cond_add@var{mode}}.
+
+When defined for floating-point modes, the contents of @samp{op3[i]}
+are not interpreted if @var{op1[i]} is false, just like they would not
+be in a normal C @samp{?:} condition.
+
+Operands 0, 2 and 3 all have mode @var{m}, while operand 1 has the mode
+returned by @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
 @cindex @code{neg@var{mode}cc} instruction pattern
 @item @samp{neg@var{mode}cc}
 Similar to @samp{mov@var{mode}cc} but for conditional negation.  Conditionally

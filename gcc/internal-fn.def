@@ -53,6 +53,11 @@ along with GCC; see the file COPYING3.  If not see
    - store_lanes: currently just vec_store_lanes
    - mask_store_lanes: currently just vec_mask_store_lanes
 
+   - unary: a normal unary optab, such as vec_reverse_<mode>
+   - binary: a normal binary optab, such as vec_interleave_lo_<mode>
+
+   - cond_binary: a conditional binary optab, such as add<mode>cc
+
    DEF_INTERNAL_SIGNED_OPTAB_FN defines an internal function that
    maps to one of two optabs, depending on the signedness of an input.
    SIGNED_OPTAB and UNSIGNED_OPTAB are the optabs for signed and
@@ -120,6 +125,19 @@ DEF_INTERNAL_OPTAB_FN (WHILE_ULT, ECF_CONST | ECF_NOTHROW, while_ult, while)
 
 DEF_INTERNAL_OPTAB_FN (VEC_SHL_INSERT, ECF_CONST | ECF_NOTHROW,
 		       vec_shl_insert, binary)
+
+DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MIN, ECF_CONST, first,
+			      cond_smin, cond_umin, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MAX, ECF_CONST, first,
+			      cond_smax, cond_umax, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_AND, ECF_CONST | ECF_NOTHROW,
+		       cond_and, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_IOR, ECF_CONST | ECF_NOTHROW,
+		       cond_ior, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_XOR, ECF_CONST | ECF_NOTHROW,
+		       cond_xor, cond_binary)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 

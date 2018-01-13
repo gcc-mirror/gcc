@@ -6893,19 +6893,42 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
+  if (slp_node)
+    vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+  else
+    vec_num = 1;
+
+  internal_fn cond_fn = get_conditional_internal_fn (code);
+  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+
   if (!vec_stmt) /* transformation not required.  */
     {
-      if (LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop due to "
-			     "reduction operation.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
-	}
-
       if (first_p)
 	vect_model_reduction_cost (stmt_info, reduc_fn, ncopies);
+      if (loop_vinfo && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
+	{
+	  if (cond_fn == IFN_LAST
+	      || !direct_internal_fn_supported_p (cond_fn, vectype_in,
+						  OPTIMIZE_FOR_SPEED))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "can't use a fully-masked loop because no"
+				 " conditional operation is available.\n");
+	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	    }
+	  else if (reduc_index == -1)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "can't use a fully-masked loop for chained"
+				 " reductions.\n");
+	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	    }
+	  else
+	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
+				   vectype_in);
+	}
       STMT_VINFO_TYPE (stmt_info) = reduc_vec_info_type;
       return true;
     }
@@ -6919,16 +6942,15 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   if (code == COND_EXPR)
     gcc_assert (ncopies == 1);
 
+  bool masked_loop_p = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+
   /* Create the destination vector  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
   prev_stmt_info = NULL;
   prev_phi_info = NULL;
-  if (slp_node)
-    vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-  else
+  if (!slp_node)
     {
-      vec_num = 1;
       vec_oprnds0.create (1);
       vec_oprnds1.create (1);
       if (op_type == ternary_op)
@@ -7002,19 +7024,19 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 	      gcc_assert (reduc_index != -1 || ! single_defuse_cycle);
 
 	      if (single_defuse_cycle && reduc_index == 0)
-		vec_oprnds0[0] = gimple_assign_lhs (new_stmt);
+		vec_oprnds0[0] = gimple_get_lhs (new_stmt);
 	      else
 		vec_oprnds0[0]
 		  = vect_get_vec_def_for_stmt_copy (dts[0], vec_oprnds0[0]);
 	      if (single_defuse_cycle && reduc_index == 1)
-		vec_oprnds1[0] = gimple_assign_lhs (new_stmt);
+		vec_oprnds1[0] = gimple_get_lhs (new_stmt);
 	      else
 		vec_oprnds1[0]
 		  = vect_get_vec_def_for_stmt_copy (dts[1], vec_oprnds1[0]);
 	      if (op_type == ternary_op)
 		{
 		  if (single_defuse_cycle && reduc_index == 2)
-		    vec_oprnds2[0] = gimple_assign_lhs (new_stmt);
+		    vec_oprnds2[0] = gimple_get_lhs (new_stmt);
 		  else
 		    vec_oprnds2[0] 
 		      = vect_get_vec_def_for_stmt_copy (dts[2], vec_oprnds2[0]);
@@ -7025,13 +7047,33 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       FOR_EACH_VEC_ELT (vec_oprnds0, i, def0)
         {
 	  tree vop[3] = { def0, vec_oprnds1[i], NULL_TREE };
-	  if (op_type == ternary_op)
-	    vop[2] = vec_oprnds2[i];
+	  if (masked_loop_p)
+	    {
+	      /* Make sure that the reduction accumulator is vop[0].  */
+	      if (reduc_index == 1)
+		{
+		  gcc_assert (commutative_tree_code (code));
+		  std::swap (vop[0], vop[1]);
+		}
+	      tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
+					      vectype_in, i * ncopies + j);
+	      gcall *call = gimple_build_call_internal (cond_fn, 3, mask,
+							vop[0], vop[1]);
+	      new_temp = make_ssa_name (vec_dest, call);
+	      gimple_call_set_lhs (call, new_temp);
+	      gimple_call_set_nothrow (call, true);
+	      new_stmt = call;
+	    }
+	  else
+	    {
+	      if (op_type == ternary_op)
+		vop[2] = vec_oprnds2[i];
 
-          new_temp = make_ssa_name (vec_dest, new_stmt);
-          new_stmt = gimple_build_assign (new_temp, code,
-					  vop[0], vop[1], vop[2]);
-          vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      new_stmt = gimple_build_assign (new_temp, code,
+					      vop[0], vop[1], vop[2]);
+	    }
+	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
           if (slp_node)
             {
@@ -7056,7 +7098,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Finalize the reduction-phi (set its arguments) and create the
      epilog reduction code.  */
   if ((!single_defuse_cycle || code == COND_EXPR) && !slp_node)
-    vect_defs[0] = gimple_assign_lhs (*vec_stmt);
+    vect_defs[0] = gimple_get_lhs (*vec_stmt);
 
   vect_create_epilog_for_reduction (vect_defs, stmt, reduc_def_stmt,
 				    epilog_copies, reduc_fn, phis,

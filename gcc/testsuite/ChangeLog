@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/vect/pr60482.c: Remove XFAIL for variable-length vectors.
+	* gcc.target/aarch64/sve/reduc_1.c: Expect the loop operations
+	to be predicated.
+	* gcc.target/aarch64/sve/slp_5.c: Check for a fully-masked loop.
+	* gcc.target/aarch64/sve/slp_7.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_5.c: New test.
+	* gcc.target/aarch64/sve/slp_13.c: Likewise.
+	* gcc.target/aarch64/sve/slp_13_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/tree-ssa/cunroll-10.c: Disable vectorization.
 	* gcc.dg/tree-ssa/peel1.c: Likewise.
 	* gcc.dg/vect/vect-load-lanes-peeling-1.c: Remove XFAIL for
