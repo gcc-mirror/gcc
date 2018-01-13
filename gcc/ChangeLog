@@ -1,3 +1,8 @@
+2018-01-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.c (determine_unlikely_bbs): Handle correctly BBs
+	which appears in the queue multiple times.
+
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
