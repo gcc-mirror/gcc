@@ -122,6 +122,6 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect"  { target vect_short_mult } } }*/
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect"  { target { ! { vect_short_mult } } } } }*/
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect"  { target vect_short_mult xfail vect_variable_length } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 3 "vect"  { target vect_short_mult } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect"  { target { ! { vect_short_mult } } } } } */
  
