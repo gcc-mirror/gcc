@@ -1,3 +1,14 @@
+2018-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52162
+	* trans-expr.c (gfc_trans_scalar_assign): Flag is_alloc_lhs if
+	the rhs expression is neither an elemental nor a conversion
+	function.
+
+	PR fortran/83622
+	* trans-array.c (is_pointer_array): Remove unconditional return
+	of false for -fopenmp.
+
 2018-01-13  Thomas Koenig <tkoenig@gcc.gnu.org>
 	<emsr@gcc.gnu.org>
 
