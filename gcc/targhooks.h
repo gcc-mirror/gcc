@@ -111,6 +111,7 @@ extern machine_mode default_preferred_simd_mode (scalar_mode mode);
 extern machine_mode default_split_reduction (machine_mode);
 extern void default_autovectorize_vector_sizes (vector_sizes *);
 extern opt_machine_mode default_get_mask_mode (poly_uint64, poly_uint64);
+extern bool default_empty_mask_is_expensive (unsigned);
 extern void *default_init_cost (struct loop *);
 extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,
 				       struct _stmt_vec_info *, int,

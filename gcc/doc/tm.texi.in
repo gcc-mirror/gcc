@@ -4108,6 +4108,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_GET_MASK_MODE
 
+@hook TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
+
 @hook TARGET_VECTORIZE_INIT_COST
 
 @hook TARGET_VECTORIZE_ADD_STMT_COST

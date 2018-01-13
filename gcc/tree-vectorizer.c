@@ -826,7 +826,8 @@ vectorize_loops (void)
       if (loop_vinfo)
 	has_mask_store = LOOP_VINFO_HAS_MASK_STORE (loop_vinfo);
       delete loop_vinfo;
-      if (has_mask_store)
+      if (has_mask_store
+	  && targetm.vectorize.empty_mask_is_expensive (IFN_MASK_STORE))
 	optimize_mask_stores (loop);
       loop->aux = NULL;
     }

@@ -1933,6 +1933,17 @@ if such a mode exists.",
  (poly_uint64 nunits, poly_uint64 length),
  default_get_mask_mode)
 
+/* Function to say whether a masked operation is expensive when the
+   mask is all zeros.  */
+DEFHOOK
+(empty_mask_is_expensive,
+ "This hook returns true if masked internal function @var{ifn} (really of\n\
+type @code{internal_fn}) should be considered expensive when the mask is\n\
+all zeros.  GCC can then try to branch around the instruction instead.",
+ bool,
+ (unsigned ifn),
+ default_empty_mask_is_expensive)
+
 /* Target builtin that implements vector gather operation.  */
 DEFHOOK
 (builtin_gather,
