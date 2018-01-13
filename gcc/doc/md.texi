@@ -4954,6 +4954,19 @@ rounding behavior for @var{i} > 1.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{while_ult@var{m}@var{n}} instruction pattern
+@item @code{while_ult@var{m}@var{n}}
+Set operand 0 to a mask that is true while incrementing operand 1
+gives a value that is less than operand 2.  Operand 0 has mode @var{n}
+and operands 1 and 2 are scalar integers of mode @var{m}.
+The operation is equivalent to:
+
+@smallexample
+operand0[0] = operand1 < operand2;
+for (i = 1; i < GET_MODE_NUNITS (@var{n}); i++)
+  operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
+@end smallexample
+
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for

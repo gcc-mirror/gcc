@@ -174,6 +174,20 @@ extern bool direct_internal_fn_supported_p (internal_fn, tree_pair,
 					    optimization_type);
 extern bool direct_internal_fn_supported_p (internal_fn, tree,
 					    optimization_type);
+
+/* Return true if FN is supported for types TYPE0 and TYPE1 when the
+   optimization type is OPT_TYPE.  The types are those associated with
+   the "type0" and "type1" fields of FN's direct_internal_fn_info
+   structure.  */
+
+inline bool
+direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
+				optimization_type opt_type)
+{
+  return direct_internal_fn_supported_p (fn, tree_pair (type0, type1),
+					 opt_type);
+}
+
 extern bool set_edom_supported_p (void);
 
 extern void expand_internal_call (gcall *);
