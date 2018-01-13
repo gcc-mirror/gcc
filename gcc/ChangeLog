@@ -2,6 +2,25 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (vect_create_data_ref_ptr): Take an extra
+	optional tree argument.
+	* tree-vect-data-refs.c (vect_check_gather_scatter): Check for
+	null target hooks.
+	(vect_create_data_ref_ptr): Take the iv_step as an optional argument,
+	but continue to use the current value as a fallback.
+	(bump_vector_ptr): Use operand_equal_p rather than tree_int_cst_compare
+	to compare the updates.
+	* tree-vect-stmts.c (vect_use_strided_gather_scatters_p): New function.
+	(get_load_store_type): Use it when handling a strided access.
+	(vect_get_strided_load_store_ops): New function.
+	(vect_get_data_ptr_increment): Likewise.
+	(vectorizable_load): Handle strided gather loads.  Always pass
+	a step to vect_create_data_ref_ptr and bump_vector_ptr.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/md.texi (gather_load@var{m}): Document.
 	(mask_gather_load@var{m}): Likewise.
 	* genopinit.c (main): Add supports_vec_gather_load and
