@@ -3340,6 +3340,35 @@ proc check_effective_target_aarch64_little_endian { } {
     }]
 }
 
+# Return 1 if this is an AArch64 target supporting SVE.
+proc check_effective_target_aarch64_sve { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages aarch64_sve assembly {
+	#if !defined (__ARM_FEATURE_SVE)
+	#error FOO
+	#endif
+    }]
+}
+
+# Return the size in bits of an SVE vector, or 0 if the size is variable.
+proc aarch64_sve_bits { } {
+    return [check_cached_effective_target aarch64_sve_bits {
+	global tool
+
+	set src dummy[pid].c
+	set f [open $src "w"]
+	puts $f "int bits = __ARM_FEATURE_SVE_BITS;"
+	close $f
+	set output [${tool}_target_compile $src "" preprocess ""]
+	file delete $src
+
+	regsub {.*bits = ([^;]*);.*} $output {\1} bits
+	expr { $bits }
+    }]
+}
+
 # Return 1 if this is a compiler supporting ARC atomic operations
 proc check_effective_target_arc_atomic { } {
     return [check_no_compiler_messages arc_atomic assembly {
@@ -4276,6 +4305,49 @@ proc check_effective_target_arm_neon_hw { } {
 	  return (a != 1);
 	}
     } [add_options_for_arm_neon ""]]
+}
+
+# Return true if this is an AArch64 target that can run SVE code.
+
+proc check_effective_target_aarch64_sve_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_sve_hw_available {
+	int
+	main (void)
+	{
+	  asm volatile ("ptrue p0.b");
+	  return 0;
+	}
+    }]
+}
+
+# Return true if this is an AArch64 target that can run SVE code and
+# if its SVE vectors have exactly BITS bits.
+
+proc aarch64_sve_hw_bits { bits } {
+    if { ![check_effective_target_aarch64_sve_hw] } {
+	return 0
+    }
+    return [check_runtime aarch64_sve${bits}_hw [subst {
+	int
+	main (void)
+	{
+	  int res;
+	  asm volatile ("cntd %0" : "=r" (res));
+	  if (res * 64 != $bits)
+	    __builtin_abort ();
+	  return 0;
+	}
+    }]]
+}
+
+# Return true if this is an AArch64 target that can run SVE code and
+# if its SVE vectors have exactly 256 bits.
+
+proc check_effective_target_aarch64_sve256_hw { } {
+    return [aarch64_sve_hw_bits 256]
 }
 
 proc check_effective_target_arm_neonv2_hw { } {
@@ -5579,7 +5651,8 @@ proc check_effective_target_vect_perm { } {
     } else {
 	set et_vect_perm_saved($et_index) 0
         if { [is-effective-target arm_neon]
-	     || [istarget aarch64*-*-*]
+	     || ([istarget aarch64*-*-*]
+		 && ![check_effective_target_vect_variable_length])
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
@@ -5684,7 +5757,8 @@ proc check_effective_target_vect_perm_byte { } {
         if { ([is-effective-target arm_neon]
 	      && [is-effective-target arm_little_endian])
 	     || ([istarget aarch64*-*-*]
-		 && [is-effective-target aarch64_little_endian])
+		 && [is-effective-target aarch64_little_endian]
+		 && ![check_effective_target_vect_variable_length])
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
 	     || ([istarget mips-*.*]
@@ -5723,7 +5797,8 @@ proc check_effective_target_vect_perm_short { } {
         if { ([is-effective-target arm_neon]
 	      && [is-effective-target arm_little_endian])
 	     || ([istarget aarch64*-*-*]
-		 && [is-effective-target aarch64_little_endian])
+		 && [is-effective-target aarch64_little_endian]
+		 && ![check_effective_target_vect_variable_length])
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
 	     || ([istarget mips*-*-*]
@@ -5783,7 +5858,8 @@ proc check_effective_target_vect_widen_sum_hi_to_si_pattern { } {
     } else {
 	set et_vect_widen_sum_hi_to_si_pattern_saved($et_index) 0
         if { [istarget powerpc*-*-*]
-             || [istarget aarch64*-*-*]
+             || ([istarget aarch64*-*-*]
+		 && ![check_effective_target_aarch64_sve])
 	     || [is-effective-target arm_neon]
              || [istarget ia64-*-*] } {
 	    set et_vect_widen_sum_hi_to_si_pattern_saved($et_index) 1
@@ -5895,7 +5971,8 @@ proc check_effective_target_vect_widen_mult_qi_to_hi { } {
 	    set et_vect_widen_mult_qi_to_hi_saved($et_index) 0
 	}
         if { [istarget powerpc*-*-*]
-              || [istarget aarch64*-*-*]
+              || ([istarget aarch64*-*-*]
+		  && ![check_effective_target_aarch64_sve])
               || [is-effective-target arm_neon]
 	      || ([istarget s390*-*-*]
 		  && [check_effective_target_s390_vx]) } {
@@ -5933,7 +6010,8 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
         if { [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
 	     || [istarget ia64-*-*]
-	     || [istarget aarch64*-*-*]
+	     || ([istarget aarch64*-*-*]
+		 && ![check_effective_target_aarch64_sve])
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [is-effective-target arm_neon]
 	     || ([istarget s390*-*-*]
@@ -6420,12 +6498,16 @@ proc check_effective_target_vect_natural_alignment { } {
 # alignment during vectorization.
 
 proc check_effective_target_vect_element_align_preferred { } {
-    return [check_effective_target_vect_variable_length]
+    return [expr { [check_effective_target_aarch64_sve]
+		   && [check_effective_target_vect_variable_length] }]
 }
 
 # Return 1 if we can align stack data to the preferred vector alignment.
 
 proc check_effective_target_vect_align_stack_vars { } {
+    if { [check_effective_target_aarch64_sve] } {
+	return [check_effective_target_vect_variable_length]
+    }
     return 1
 }
 
@@ -6497,7 +6579,8 @@ proc check_effective_target_vect_load_lanes { } {
     } else {
 	set et_vect_load_lanes 0
 	if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])
-	     || [istarget aarch64*-*-*] } {
+	     || ([istarget aarch64*-*-*]
+		 && ![check_effective_target_aarch64_sve]) } {
 	    set et_vect_load_lanes 1
 	}
     }
@@ -6509,7 +6592,7 @@ proc check_effective_target_vect_load_lanes { } {
 # Return 1 if the target supports vector masked stores.
 
 proc check_effective_target_vect_masked_store { } {
-    return 0
+    return [check_effective_target_aarch64_sve]
 }
 
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
@@ -6777,6 +6860,9 @@ foreach N {2 3 4 8} {
 proc available_vector_sizes { } {
     set result {}
     if { [istarget aarch64*-*-*] } {
+	if { [check_effective_target_aarch64_sve] } {
+	    lappend result [aarch64_sve_bits]
+	}
 	lappend result 128 64
     } elseif { [istarget arm*-*-*]
 		&& [check_effective_target_arm_neon_ok] } {

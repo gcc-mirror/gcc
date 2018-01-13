@@ -57,10 +57,11 @@ int main (int argc, const char* argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 2 "vect" { target { ! { vect_perm_short || vect_load_lanes } } } } } */
+/* Fails for variable-length SVE because we fall back to Advanced SIMD
+   and use LD3/ST3.  Will be fixed when SVE LOAD_LANES support is added.  */
+/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 2 "vect" { target { ! { vect_perm_short || vect_load_lanes } } xfail { aarch64_sve && vect_variable_length } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_perm_short || vect_load_lanes } } } } */
 /* { dg-final { scan-tree-dump-times "permutation requires at least three vectors" 1 "vect" { target { vect_perm_short && { ! vect_perm3_short } } } } } */
 /* { dg-final { scan-tree-dump-not "permutation requires at least three vectors" "vect" { target vect_perm3_short } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { { ! vect_perm3_short } || vect_load_lanes } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm3_short && { ! vect_load_lanes } } } } } */
-
