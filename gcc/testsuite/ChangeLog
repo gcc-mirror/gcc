@@ -1,4 +1,31 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/no-fast-math-vect16.c: Expect the test to pass and
+	check for a message about using in-order reductions.
+	* gcc.dg/vect/pr79920.c: Expect both loops to be vectorized and
+	check for a message about using in-order reductions.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Expect all three loops to be
+	vectorized and check for a message about using in-order reductions.
+	Expect targets with variable-length vectors to fall back to the
+	fixed-length mininum.
+	* gcc.dg/vect/vect-reduc-6.c: Expect the loop to be vectorized and
+	check for a message about using in-order reductions.
+	* gcc.dg/vect/vect-reduc-in-order-1.c: New test.
+	* gcc.dg/vect/vect-reduc-in-order-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-in-order-3.c: Likewise.
+	* gcc.dg/vect/vect-reduc-in-order-4.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_1.c: New test.
+	* gcc.target/aarch64/sve/reduc_strict_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_2.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_13.c: Add floating-point types.
+	* gfortran.dg/vect/vect-8.f90: Expect 22 loops to be vectorized if
+	vect_fold_left_plus.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/aarch64/sve/spill_1.c: Also test that no predicates
 	are spilled.

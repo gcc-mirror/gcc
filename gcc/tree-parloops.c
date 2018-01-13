@@ -2531,6 +2531,19 @@ set_reduc_phi_uids (reduction_info **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
+/* Return true if the type of reduction performed by STMT is suitable
+   for this pass.  */
+
+static bool
+valid_reduction_p (gimple *stmt)
+{
+  /* Parallelization would reassociate the operation, which isn't
+     allowed for in-order reductions.  */
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vect_reduction_type reduc_type = STMT_VINFO_REDUC_TYPE (stmt_info);
+  return reduc_type != FOLD_LEFT_REDUCTION;
+}
+
 /* Detect all reductions in the LOOP, insert them into REDUCTION_LIST.  */
 
 static void
@@ -2564,7 +2577,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
       gimple *reduc_stmt
 	= vect_force_simple_reduction (simple_loop_info, phi,
 				       &double_reduc, true);
-      if (!reduc_stmt)
+      if (!reduc_stmt || !valid_reduction_p (reduc_stmt))
 	continue;
 
       if (double_reduc)
@@ -2610,7 +2623,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 		= vect_force_simple_reduction (simple_loop_info, inner_phi,
 					       &double_reduc, true);
 	      gcc_assert (!double_reduc);
-	      if (inner_reduc_stmt == NULL)
+	      if (inner_reduc_stmt == NULL
+		  || !valid_reduction_p (inner_reduc_stmt))
 		continue;
 
 	      build_new_reduction (reduction_list, double_reduc_stmts[i], phi);

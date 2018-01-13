@@ -1,4 +1,38 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* optabs.def (fold_left_plus_optab): New optab.
+	* doc/md.texi (fold_left_plus_@var{m}): Document.
+	* internal-fn.def (IFN_FOLD_LEFT_PLUS): New internal function.
+	* internal-fn.c (fold_left_direct): Define.
+	(expand_fold_left_optab_fn): Likewise.
+	(direct_fold_left_optab_supported_p): Likewise.
+	* fold-const-call.c (fold_const_fold_left): New function.
+	(fold_const_call): Use it to fold CFN_FOLD_LEFT_PLUS.
+	* tree-parloops.c (valid_reduction_p): New function.
+	(gather_scalar_reductions): Use it.
+	* tree-vectorizer.h (FOLD_LEFT_REDUCTION): New vect_reduction_type.
+	(vect_finish_replace_stmt): Declare.
+	* tree-vect-loop.c (fold_left_reduction_fn): New function.
+	(needs_fold_left_reduction_p): New function, split out from...
+	(vect_is_simple_reduction): ...here.  Accept reductions that
+	forbid reassociation, but give them type FOLD_LEFT_REDUCTION.
+	(vect_force_simple_reduction): Also store the reduction type in
+	the assignment's STMT_VINFO_REDUC_TYPE.
+	(vect_model_reduction_cost): Handle FOLD_LEFT_REDUCTION.
+	(merge_with_identity): New function.
+	(vect_expand_fold_left): Likewise.
+	(vectorize_fold_left_reduction): Likewise.
+	(vectorizable_reduction): Handle FOLD_LEFT_REDUCTION.  Leave the
+	scalar phi in place for it.  Check for target support and reject
+	cases that would reassociate the operation.  Defer the transform
+	phase to vectorize_fold_left_reduction.
+	* config/aarch64/aarch64.md (UNSPEC_FADDA): New unspec.
+	* config/aarch64/aarch64-sve.md (fold_left_plus_<mode>): New expander.
+	(*fold_left_plus_<mode>, *pred_fold_left_plus_<mode>): New insns.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-if-conv.c (predicate_mem_writes): Remove redundant
 	call to ifc_temp_var.
