@@ -5924,6 +5924,12 @@ is @var{length} bytes long and that contains @var{nunits} elements,
 if such a mode exists.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE (unsigned @var{ifn})
+This hook returns true if masked internal function @var{ifn} (really of
+type @code{internal_fn}) should be considered expensive when the mask is
+all zeros.  GCC can then try to branch around the instruction instead.
+@end deftypefn
+
 @deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})
 This hook should initialize target-specific data structures in preparation for modeling the costs of vectorizing a loop or basic block.  The default allocates three unsigned integers for accumulating costs for the prologue, body, and epilogue of the loop or basic block.  If @var{loop_info} is non-NULL, it identifies the loop being vectorized; otherwise a single block is being vectorized.
 @end deftypefn

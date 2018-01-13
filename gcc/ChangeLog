@@ -2,6 +2,21 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (empty_mask_is_expensive): New hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE): New hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_empty_mask_is_expensive): Declare.
+	* targhooks.c (default_empty_mask_is_expensive): New function.
+	* tree-vectorizer.c (vectorize_loops): Only call optimize_mask_stores
+	if the target says that empty masks are expensive.
+	* config/aarch64/aarch64.c (aarch64_empty_mask_is_expensive):
+	New function.
+	(TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE): Redefine.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (_loop_vec_info::mask_skip_niters): New field.
 	(LOOP_VINFO_MASK_SKIP_NITERS): New macro.
 	(vect_use_loop_mask_for_alignment_p): New function.

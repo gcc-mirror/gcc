@@ -1319,6 +1319,14 @@ default_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
   return opt_machine_mode ();
 }
 
+/* By default consider masked stores to be expensive.  */
+
+bool
+default_empty_mask_is_expensive (unsigned ifn)
+{
+  return ifn == IFN_MASK_STORE;
+}
+
 /* By default, the cost model accumulates three separate costs (prologue,
    loop body, and epilogue) for a vectorized loop or block.  So allocate an
    array of three unsigned ints, set it to zero, and return its address.  */
