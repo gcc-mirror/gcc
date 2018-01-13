@@ -246,6 +246,63 @@
    ld1d\t%0.d, %5/z, [%1, %2.d, lsl %p4]"
 )
 
+;; Unpredicated scatter store.
+(define_expand "scatter_store<mode>"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(match_dup 5)
+	   (match_operand:DI 0 "aarch64_reg_or_zero")
+	   (match_operand:<V_INT_EQUIV> 1 "register_operand")
+	   (match_operand:DI 2 "const_int_operand")
+	   (match_operand:DI 3 "aarch64_gather_scale_operand_<Vesize>")
+	   (match_operand:SVE_SD 4 "register_operand")]
+	  UNSPEC_ST1_SCATTER))]
+  "TARGET_SVE"
+  {
+    operands[5] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+;; Predicated scatter stores for 32-bit elements.  Operand 2 is true for
+;; unsigned extension and false for signed extension.
+(define_insn "mask_scatter_store<mode>"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(match_operand:<VPRED> 5 "register_operand" "Upl, Upl, Upl, Upl, Upl")
+	   (match_operand:DI 0 "aarch64_reg_or_zero" "Z, rk, rk, rk, rk")
+	   (match_operand:<V_INT_EQUIV> 1 "register_operand" "w, w, w, w, w")
+	   (match_operand:DI 2 "const_int_operand" "i, Z, Ui1, Z, Ui1")
+	   (match_operand:DI 3 "aarch64_gather_scale_operand_w" "Ui1, Ui1, Ui1, i, i")
+	   (match_operand:SVE_S 4 "register_operand" "w, w, w, w, w")]
+	  UNSPEC_ST1_SCATTER))]
+  "TARGET_SVE"
+  "@
+   st1w\t%4.s, %5, [%1.s]
+   st1w\t%4.s, %5, [%0, %1.s, sxtw]
+   st1w\t%4.s, %5, [%0, %1.s, uxtw]
+   st1w\t%4.s, %5, [%0, %1.s, sxtw %p3]
+   st1w\t%4.s, %5, [%0, %1.s, uxtw %p3]"
+)
+
+;; Predicated scatter stores for 64-bit elements.  The value of operand 2
+;; doesn't matter in this case.
+(define_insn "mask_scatter_store<mode>"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(match_operand:<VPRED> 5 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:DI 0 "aarch64_reg_or_zero" "Z, rk, rk")
+	   (match_operand:<V_INT_EQUIV> 1 "register_operand" "w, w, w")
+	   (match_operand:DI 2 "const_int_operand")
+	   (match_operand:DI 3 "aarch64_gather_scale_operand_d" "Ui1, Ui1, i")
+	   (match_operand:SVE_D 4 "register_operand" "w, w, w")]
+	  UNSPEC_ST1_SCATTER))]
+  "TARGET_SVE"
+  "@
+   st1d\t%4.d, %5, [%1.d]
+   st1d\t%4.d, %5, [%0, %1.d]
+   st1d\t%4.d, %5, [%0, %1.d, lsl %p3]"
+)
+
 ;; SVE structure moves.
 (define_expand "mov<mode>"
   [(set (match_operand:SVE_STRUCT 0 "nonimmediate_operand")

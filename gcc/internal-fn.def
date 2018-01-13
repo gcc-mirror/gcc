@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
    - mask_store_lanes: currently just vec_mask_store_lanes
+   - scatter_store: used for {mask_,}scatter_store
 
    - unary: a normal unary optab, such as vec_reverse_<mode>
    - binary: a normal binary optab, such as vec_interleave_lo_<mode>
@@ -122,6 +123,10 @@ DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
 DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
 		       mask_gather_load, gather_load)
+
+DEF_INTERNAL_OPTAB_FN (SCATTER_STORE, 0, scatter_store, scatter_store)
+DEF_INTERNAL_OPTAB_FN (MASK_SCATTER_STORE, 0,
+		       mask_scatter_store, scatter_store)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)

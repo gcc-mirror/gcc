@@ -4937,6 +4937,35 @@ operand 5.  Bit @var{i} of the mask is set if element @var{i}
 of the result should be loaded from memory and clear if element @var{i}
 of the result should be set to zero.
 
+@cindex @code{scatter_store@var{m}} instruction pattern
+@item @samp{scatter_store@var{m}}
+Store a vector of mode @var{m} into several distinct memory locations.
+Operand 0 is a scalar base address and operand 1 is a vector of offsets
+from that base.  Operand 4 is the vector of values that should be stored,
+which has the same number of elements as the offset.  For each element
+index @var{i}:
+
+@itemize @bullet
+@item
+extend the offset element @var{i} to address width, using zero
+extension if operand 2 is 1 and sign extension if operand 2 is zero;
+@item
+multiply the extended offset by operand 3;
+@item
+add the result to the base; and
+@item
+store element @var{i} of operand 4 to that address.
+@end itemize
+
+The value of operand 2 does not matter if the offsets are already
+address width.
+
+@cindex @code{mask_scatter_store@var{m}} instruction pattern
+@item @samp{mask_scatter_store@var{m}}
+Like @samp{scatter_store@var{m}}, but takes an extra mask operand as
+operand 5.  Bit @var{i} of the mask is set if element @var{i}
+of the result should be stored to memory.
+
 @cindex @code{vec_set@var{m}} instruction pattern
 @item @samp{vec_set@var{m}}
 Set given field in the vector value.  Operand 0 is the vector to modify,

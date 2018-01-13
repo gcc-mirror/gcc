@@ -1421,6 +1421,9 @@ so that vector loops can handle partial as well as full vectors.
 @item vect_masked_store
 Target supports vector masked stores.
 
+@item vect_scatter_store
+Target supports vector scatter stores.
+
 @item vect_aligned_arrays
 Target aligns arrays to vector alignment boundary.
 
