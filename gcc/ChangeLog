@@ -2,6 +2,28 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs.def (reduc_and_scal_optab, reduc_ior_scal_optab)
+	(reduc_xor_scal_optab): New optabs.
+	* doc/md.texi (reduc_and_scal_@var{m}, reduc_ior_scal_@var{m})
+	(reduc_xor_scal_@var{m}): Document.
+	* doc/sourcebuild.texi (vect_logical_reduc): Likewise.
+	* internal-fn.def (IFN_REDUC_AND, IFN_REDUC_IOR, IFN_REDUC_XOR): New
+	internal functions.
+	* fold-const-call.c (fold_const_call): Handle them.
+	* tree-vect-loop.c (reduction_fn_for_scalar_code): Return the new
+	internal functions for BIT_AND_EXPR, BIT_IOR_EXPR and BIT_XOR_EXPR.
+	* config/aarch64/aarch64-sve.md (reduc_<bit_reduc>_scal_<mode>):
+	(*reduc_<bit_reduc>_scal_<mode>): New patterns.
+	* config/aarch64/iterators.md (UNSPEC_ANDV, UNSPEC_ORV)
+	(UNSPEC_XORV): New unspecs.
+	(optab): Add entries for them.
+	(BITWISEV): New int iterator.
+	(bit_reduc_op): New int attributes.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/md.texi (vec_shl_insert_@var{m}): New optab.
 	* internal-fn.def (VEC_SHL_INSERT): New internal function.
 	* optabs.def (vec_shl_insert_optab): New optab.

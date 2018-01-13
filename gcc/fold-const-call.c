@@ -1181,6 +1181,15 @@ fold_const_call (combined_fn fn, tree type, tree arg)
     case CFN_REDUC_MIN:
       return fold_const_reduction (type, arg, MIN_EXPR);
 
+    case CFN_REDUC_AND:
+      return fold_const_reduction (type, arg, BIT_AND_EXPR);
+
+    case CFN_REDUC_IOR:
+      return fold_const_reduction (type, arg, BIT_IOR_EXPR);
+
+    case CFN_REDUC_XOR:
+      return fold_const_reduction (type, arg, BIT_XOR_EXPR);
+
     default:
       return fold_const_call_1 (fn, type, arg);
     }

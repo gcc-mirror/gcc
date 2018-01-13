@@ -56,6 +56,20 @@
       }							\
     }
 
+#define TEST_REDUC_BITWISE(TYPE, NAME, BIT_OP)		\
+  {							\
+    INIT_MATRIX (TYPE);					\
+    reduc_##NAME##_##TYPE (mat, r, NROWS);		\
+    for (int i = 0; i < NROWS; i++)			\
+      {							\
+	volatile TYPE r2 = mat[i][0];			\
+	for (int j = 0; j < NUM_ELEMS (TYPE); ++j)	\
+	  r2 BIT_OP mat[i][j];				\
+	if (r[i] != r2)					\
+	  __builtin_abort ();				\
+      }							\
+    }
+
 int main ()
 {
   TEST_PLUS (TEST_REDUC_PLUS)

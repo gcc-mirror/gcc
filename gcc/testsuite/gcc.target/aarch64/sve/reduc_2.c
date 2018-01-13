@@ -73,6 +73,49 @@ reduc_##NAME##_##TYPE (TYPE (*restrict a)[NUM_ELEMS (TYPE)],	\
 
 TEST_MAXMIN (DEF_REDUC_MAXMIN)
 
+#define DEF_REDUC_BITWISE(TYPE,NAME,BIT_OP)			\
+void __attribute__ ((noinline, noclone))			\
+reduc_##NAME##TYPE (TYPE (*restrict a)[NUM_ELEMS(TYPE)],	\
+		    TYPE *restrict r, int n)			\
+{								\
+  for (int i = 0; i < n; i++)					\
+    {								\
+      r[i] = a[i][0];						\
+      for (int j = 0; j < NUM_ELEMS(TYPE); j++)			\
+        r[i] BIT_OP a[i][j];					\
+    }								\
+}
+
+#define TEST_BITWISE(T)				\
+  T (int8_t, and, &=)				\
+  T (int16_t, and, &=)				\
+  T (int32_t, and, &=)				\
+  T (int64_t, and, &=)				\
+  T (uint8_t, and, &=)				\
+  T (uint16_t, and, &=)				\
+  T (uint32_t, and, &=)				\
+  T (uint64_t, and, &=)				\
+						\
+  T (int8_t, ior, |=)				\
+  T (int16_t, ior, |=)				\
+  T (int32_t, ior, |=)				\
+  T (int64_t, ior, |=)				\
+  T (uint8_t, ior, |=)				\
+  T (uint16_t, ior, |=)				\
+  T (uint32_t, ior, |=)				\
+  T (uint64_t, ior, |=)				\
+						\
+  T (int8_t, xor, ^=)				\
+  T (int16_t, xor, ^=)				\
+  T (int32_t, xor, ^=)				\
+  T (int64_t, xor, ^=)				\
+  T (uint8_t, xor, ^=)				\
+  T (uint16_t, xor, ^=)				\
+  T (uint32_t, xor, ^=)				\
+  T (uint64_t, xor, ^=)
+
+TEST_BITWISE (DEF_REDUC_BITWISE)
+
 /* { dg-final { scan-assembler-times {\tuaddv\td[0-9]+, p[0-7], z[0-9]+\.b\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tuaddv\td[0-9]+, p[0-7], z[0-9]+\.h\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tuaddv\td[0-9]+, p[0-7], z[0-9]+\.s\n} 2 } } */
@@ -104,3 +147,18 @@ TEST_MAXMIN (DEF_REDUC_MAXMIN)
 /* { dg-final { scan-assembler-times {\tfminnmv\th[0-9]+, p[0-7], z[0-9]+\.h\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfminnmv\ts[0-9]+, p[0-7], z[0-9]+\.s\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tfminnmv\td[0-9]+, p[0-7], z[0-9]+\.d\n} 1 } } */
+
+/* { dg-final { scan-assembler-times {\tandv\tb[0-9]+, p[0-7], z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tandv\th[0-9]+, p[0-7], z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tandv\ts[0-9]+, p[0-7], z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tandv\td[0-9]+, p[0-7], z[0-9]+\.d\n} 2 } } */
+
+/* { dg-final { scan-assembler-times {\torv\tb[0-9]+, p[0-7], z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\torv\th[0-9]+, p[0-7], z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\torv\ts[0-9]+, p[0-7], z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\torv\td[0-9]+, p[0-7], z[0-9]+\.d\n} 2 } } */
+
+/* { dg-final { scan-assembler-times {\teorv\tb[0-9]+, p[0-7], z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\teorv\th[0-9]+, p[0-7], z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\teorv\ts[0-9]+, p[0-7], z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\teorv\td[0-9]+, p[0-7], z[0-9]+\.d\n} 2 } } */

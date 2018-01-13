@@ -7222,6 +7222,12 @@ proc check_effective_target_vect_call_roundf { } {
     return $et_vect_call_roundf_saved($et_index)
 }
 
+# Return 1 if the target supports AND, OR and XOR reduction.
+
+proc check_effective_target_vect_logical_reduc { } {
+    return [check_effective_target_aarch64_sve]
+}
+
 # Return 1 if the target supports section-anchors
 
 proc check_effective_target_section_anchors { } {
