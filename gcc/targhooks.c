@@ -171,9 +171,8 @@ default_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
 }
 
 bool
-default_legitimize_address_displacement (rtx *disp ATTRIBUTE_UNUSED,
-					 rtx *offset ATTRIBUTE_UNUSED,
-					 machine_mode mode ATTRIBUTE_UNUSED)
+default_legitimize_address_displacement (rtx *, rtx *, poly_int64,
+					 machine_mode)
 {
   return false;
 }

@@ -269,7 +269,8 @@ static bool sh_legitimate_address_p (machine_mode, rtx, bool);
 static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
 static bool sh_cannot_substitute_mem_equiv_p (rtx);
-static bool sh_legitimize_address_displacement (rtx *, rtx *, machine_mode);
+static bool sh_legitimize_address_displacement (rtx *, rtx *,
+						poly_int64, machine_mode);
 static int scavenge_reg (HARD_REG_SET *s);
 
 static rtx sh_struct_value_rtx (tree, int);
@@ -11395,20 +11396,21 @@ sh_cannot_substitute_mem_equiv_p (rtx)
   return true;
 }
 
-/* Return true if DISP can be legitimized.  */
+/* Implement TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT.  */
 static bool
-sh_legitimize_address_displacement (rtx *disp, rtx *offs,
+sh_legitimize_address_displacement (rtx *offset1, rtx *offset2,
+				    poly_int64 orig_offset,
 				    machine_mode mode)
 {
   if ((TARGET_FPU_DOUBLE && mode == DFmode)
       || (TARGET_SH2E && mode == SFmode))
     return false;
 
-  struct disp_adjust adj = sh_find_mov_disp_adjust (mode, INTVAL (*disp));
+  struct disp_adjust adj = sh_find_mov_disp_adjust (mode, orig_offset);
   if (adj.offset_adjust != NULL_RTX && adj.mov_disp != NULL_RTX)
     {
-      *disp = adj.mov_disp;
-      *offs = adj.offset_adjust;
+      *offset1 = adj.offset_adjust;
+      *offset2 = adj.mov_disp;
       return true;
     }
  

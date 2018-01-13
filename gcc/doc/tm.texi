@@ -2894,13 +2894,16 @@ machines with non orthogonal register usage for addressing, such
 as SH, this hook can be used to avoid excessive spilling.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT (rtx *@var{disp}, rtx *@var{offset}, machine_mode @var{mode})
-A target hook which returns @code{true} if *@var{disp} is
-legitimezed to valid address displacement with subtracting *@var{offset}
-at memory mode @var{mode}.
-The default version of this target hook returns @code{false}.
-This hook will benefit machines with limited base plus displacement
-addressing.
+@deftypefn {Target Hook} bool TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT (rtx *@var{offset1}, rtx *@var{offset2}, poly_int64 @var{orig_offset}, machine_mode @var{mode})
+This hook tries to split address offset @var{orig_offset} into
+two parts: one that should be added to the base address to create
+a local anchor point, and an additional offset that can be applied
+to the anchor to address a value of mode @var{mode}.  The idea is that
+the local anchor could be shared by other accesses to nearby locations.
+
+The hook returns true if it succeeds, storing the offset of the
+anchor from the base in @var{offset1} and the offset of the final address
+from the anchor in @var{offset2}.  The default implementation returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, @var{machine_mode})
