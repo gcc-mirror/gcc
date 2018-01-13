@@ -170,6 +170,7 @@ bool gfc_check_stat (gfc_expr *, gfc_expr *);
 bool gfc_check_storage_size (gfc_expr *, gfc_expr *);
 bool gfc_check_sum (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_symlnk (gfc_expr *, gfc_expr *);
+bool gfc_check_team_number (gfc_expr *);
 bool gfc_check_transf_bit_intrins (gfc_actual_arglist *);
 bool gfc_check_transfer (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_transpose (gfc_expr *);
