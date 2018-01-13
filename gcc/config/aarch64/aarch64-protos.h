@@ -432,6 +432,7 @@ rtx aarch64_simd_gen_const_vector_dup (machine_mode, HOST_WIDE_INT);
 bool aarch64_simd_mem_operand_p (rtx);
 bool aarch64_sve_ld1r_operand_p (rtx);
 bool aarch64_sve_ldr_operand_p (rtx);
+bool aarch64_sve_struct_memory_operand_p (rtx);
 rtx aarch64_simd_vect_par_cnst_half (machine_mode, int, bool);
 rtx aarch64_tls_get_addr (void);
 tree aarch64_fold_builtin (tree, int, tree *, bool);

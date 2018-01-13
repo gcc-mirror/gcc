@@ -88,6 +88,9 @@ INT_MODE (XI, 64);
 /* Give SVE vectors the names normally used for 256-bit vectors.
    The actual number depends on command-line flags.  */
 SVE_MODES (1, VNx16, VNx8, VNx4, VNx2)
+SVE_MODES (2, VNx32, VNx16, VNx8, VNx4)
+SVE_MODES (3, VNx48, VNx24, VNx12, VNx6)
+SVE_MODES (4, VNx64, VNx32, VNx16, VNx8)
 
 /* Quad float: 128-bit floating mode for long doubles.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);

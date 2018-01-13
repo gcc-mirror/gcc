@@ -496,6 +496,14 @@
 	    (match_operand 0 "aarch64_sve_ldr_operand")
 	    (match_test "aarch64_mov_operand_p (op, mode)"))))
 
+(define_predicate "aarch64_sve_struct_memory_operand"
+  (and (match_code "mem")
+       (match_test "aarch64_sve_struct_memory_operand_p (op)")))
+
+(define_predicate "aarch64_sve_struct_nonimmediate_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "aarch64_sve_struct_memory_operand")))
+
 ;; Doesn't include immediates, since those are handled by the move
 ;; patterns instead.
 (define_predicate "aarch64_sve_dup_operand"

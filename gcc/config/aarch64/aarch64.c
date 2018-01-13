@@ -1178,9 +1178,15 @@ aarch64_classify_vector_mode (machine_mode mode)
 	  || inner == DImode
 	  || inner == DFmode))
     {
-      if (TARGET_SVE
-	  && known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR))
-	return VEC_SVE_DATA;
+      if (TARGET_SVE)
+	{
+	  if (known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR))
+	    return VEC_SVE_DATA;
+	  if (known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR * 2)
+	      || known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR * 3)
+	      || known_eq (GET_MODE_BITSIZE (mode), BITS_PER_SVE_VECTOR * 4))
+	    return VEC_SVE_DATA | VEC_STRUCT;
+	}
 
       /* This includes V1DF but not V1DI (which doesn't exist).  */
       if (TARGET_SIMD
@@ -1206,6 +1212,18 @@ static bool
 aarch64_sve_data_mode_p (machine_mode mode)
 {
   return aarch64_classify_vector_mode (mode) & VEC_SVE_DATA;
+}
+
+/* Implement target hook TARGET_ARRAY_MODE.  */
+static opt_machine_mode
+aarch64_array_mode (machine_mode mode, unsigned HOST_WIDE_INT nelems)
+{
+  if (aarch64_classify_vector_mode (mode) == VEC_SVE_DATA
+      && IN_RANGE (nelems, 2, 4))
+    return mode_for_vector (GET_MODE_INNER (mode),
+			    GET_MODE_NUNITS (mode) * nelems);
+
+  return opt_machine_mode ();
 }
 
 /* Implement target hook TARGET_ARRAY_MODE_SUPPORTED_P.  */
@@ -5590,6 +5608,18 @@ aarch64_classify_address (struct aarch64_address_info *info,
 		    ? offset_4bit_signed_scaled_p (mode, offset)
 		    : offset_9bit_signed_scaled_p (mode, offset));
 
+	  if (vec_flags == (VEC_SVE_DATA | VEC_STRUCT))
+	    {
+	      poly_int64 end_offset = (offset
+				       + GET_MODE_SIZE (mode)
+				       - BYTES_PER_SVE_VECTOR);
+	      return (type == ADDR_QUERY_M
+		      ? offset_4bit_signed_scaled_p (mode, offset)
+		      : (offset_9bit_signed_scaled_p (SVE_BYTE_MODE, offset)
+			 && offset_9bit_signed_scaled_p (SVE_BYTE_MODE,
+							 end_offset)));
+	    }
+
 	  if (vec_flags == VEC_SVE_PRED)
 	    return offset_9bit_signed_scaled_p (mode, offset);
 
@@ -6302,6 +6332,20 @@ aarch64_print_vector_float_operand (FILE *f, rtx x, bool negate)
   return true;
 }
 
+/* Return the equivalent letter for size.  */
+static char
+sizetochar (int size)
+{
+  switch (size)
+    {
+    case 64: return 'd';
+    case 32: return 's';
+    case 16: return 'h';
+    case 8 : return 'b';
+    default: gcc_unreachable ();
+    }
+}
+
 /* Print operand X to file F in a target specific manner according to CODE.
    The acceptable formatting commands given by CODE are:
      'c':		An integer or symbol address without a preceding #
@@ -6589,7 +6633,18 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	{
 	case REG:
 	  if (aarch64_sve_data_mode_p (GET_MODE (x)))
-	    asm_fprintf (f, "z%d", REGNO (x) - V0_REGNUM);
+	    {
+	      if (REG_NREGS (x) == 1)
+		asm_fprintf (f, "z%d", REGNO (x) - V0_REGNUM);
+	      else
+		{
+		  char suffix
+		    = sizetochar (GET_MODE_UNIT_BITSIZE (GET_MODE (x)));
+		  asm_fprintf (f, "{z%d.%c - z%d.%c}",
+			       REGNO (x) - V0_REGNUM, suffix,
+			       END_REGNO (x) - V0_REGNUM - 1, suffix);
+		}
+	    }
 	  else
 	    asm_fprintf (f, "%s", reg_names [REGNO (x)]);
 	  break;
@@ -12760,20 +12815,6 @@ aarch64_final_prescan_insn (rtx_insn *insn)
 }
 
 
-/* Return the equivalent letter for size.  */
-static char
-sizetochar (int size)
-{
-  switch (size)
-    {
-    case 64: return 'd';
-    case 32: return 's';
-    case 16: return 'h';
-    case 8 : return 'b';
-    default: gcc_unreachable ();
-    }
-}
-
 /* Return true if BASE_OR_STEP is a valid immediate operand for an SVE INDEX
    instruction.  */
 
@@ -13366,6 +13407,28 @@ aarch64_sve_ldr_operand_p (rtx op)
 	  && aarch64_classify_address (&addr, XEXP (op, 0), GET_MODE (op),
 				       false, ADDR_QUERY_ANY)
 	  && addr.type == ADDRESS_REG_IMM);
+}
+
+/* Return true if OP is a valid MEM operand for an SVE_STRUCT mode.
+   We need to be able to access the individual pieces, so the range
+   is different from LD[234] and ST[234].  */
+bool
+aarch64_sve_struct_memory_operand_p (rtx op)
+{
+  if (!MEM_P (op))
+    return false;
+
+  machine_mode mode = GET_MODE (op);
+  struct aarch64_address_info addr;
+  if (!aarch64_classify_address (&addr, XEXP (op, 0), SVE_BYTE_MODE, false,
+				 ADDR_QUERY_ANY)
+      || addr.type != ADDRESS_REG_IMM)
+    return false;
+
+  poly_int64 first = addr.const_offset;
+  poly_int64 last = first + GET_MODE_SIZE (mode) - BYTES_PER_SVE_VECTOR;
+  return (offset_4bit_signed_scaled_p (SVE_BYTE_MODE, first)
+	  && offset_4bit_signed_scaled_p (SVE_BYTE_MODE, last));
 }
 
 /* Emit a register copy from operand to operand, taking care not to
@@ -17375,6 +17438,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
   aarch64_builtin_support_vector_misalignment
+
+#undef TARGET_ARRAY_MODE
+#define TARGET_ARRAY_MODE aarch64_array_mode
 
 #undef TARGET_ARRAY_MODE_SUPPORTED_P
 #define TARGET_ARRAY_MODE_SUPPORTED_P aarch64_array_mode_supported_p

@@ -6579,8 +6579,7 @@ proc check_effective_target_vect_load_lanes { } {
     } else {
 	set et_vect_load_lanes 0
 	if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok])
-	     || ([istarget aarch64*-*-*]
-		 && ![check_effective_target_aarch64_sve]) } {
+	     || [istarget aarch64*-*-*] } {
 	    set et_vect_load_lanes 1
 	}
     }

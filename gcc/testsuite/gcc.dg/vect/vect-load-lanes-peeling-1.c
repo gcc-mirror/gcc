@@ -10,4 +10,4 @@ f (int *__restrict a, int *__restrict b)
 }
 
 /* { dg-final { scan-tree-dump-not "Data access with gaps" "vect" } } */
-/* { dg-final { scan-tree-dump-not "epilog loop required" "vect" } } */
+/* { dg-final { scan-tree-dump-not "epilog loop required" "vect" { xfail vect_variable_length } } } */
