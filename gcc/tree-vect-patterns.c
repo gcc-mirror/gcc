@@ -4235,10 +4235,6 @@ vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
   if (!dr || !STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     return NULL;
 
-  /* Reject stores for now.  */
-  if (!DR_IS_READ (dr))
-    return NULL;
-
   /* Get the boolean that controls whether the load or store happens.
      This is null if the operation is unconditional.  */
   tree mask = vect_get_load_store_mask (stmt);
@@ -4278,8 +4274,16 @@ vect_try_gather_scatter_pattern (gimple *stmt, stmt_vec_info last_stmt_info,
       gimple_call_set_lhs (pattern_stmt, load_lhs);
     }
   else
-    /* Not yet supported.  */
-    gcc_unreachable ();
+    {
+      tree rhs = vect_get_store_rhs (stmt);
+      if (mask != NULL)
+	pattern_stmt = gimple_build_call_internal (IFN_MASK_SCATTER_STORE, 5,
+						   base, offset, scale, rhs,
+						   mask);
+      else
+	pattern_stmt = gimple_build_call_internal (IFN_SCATTER_STORE, 4,
+						   base, offset, scale, rhs);
+    }
   gimple_call_set_nothrow (pattern_stmt, true);
 
   /* Copy across relevant vectorization info and associate DR with the

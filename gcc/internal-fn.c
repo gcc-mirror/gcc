@@ -87,6 +87,7 @@ init_internal_fns ()
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
+#define scatter_store_direct { 3, 3, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
 #define cond_unary_direct { 1, 1, true }
@@ -2730,6 +2731,42 @@ expand_LAUNDER (internal_fn, gcall *call)
   expand_assignment (lhs, gimple_call_arg (call, 0), false);
 }
 
+/* Expand {MASK_,}SCATTER_STORE{S,U} call CALL using optab OPTAB.  */
+
+static void
+expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
+{
+  internal_fn ifn = gimple_call_internal_fn (stmt);
+  int rhs_index = internal_fn_stored_value_index (ifn);
+  int mask_index = internal_fn_mask_index (ifn);
+  tree base = gimple_call_arg (stmt, 0);
+  tree offset = gimple_call_arg (stmt, 1);
+  tree scale = gimple_call_arg (stmt, 2);
+  tree rhs = gimple_call_arg (stmt, rhs_index);
+
+  rtx base_rtx = expand_normal (base);
+  rtx offset_rtx = expand_normal (offset);
+  HOST_WIDE_INT scale_int = tree_to_shwi (scale);
+  rtx rhs_rtx = expand_normal (rhs);
+
+  struct expand_operand ops[6];
+  int i = 0;
+  create_address_operand (&ops[i++], base_rtx);
+  create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
+  create_integer_operand (&ops[i++], TYPE_UNSIGNED (TREE_TYPE (offset)));
+  create_integer_operand (&ops[i++], scale_int);
+  create_input_operand (&ops[i++], rhs_rtx, TYPE_MODE (TREE_TYPE (rhs)));
+  if (mask_index >= 0)
+    {
+      tree mask = gimple_call_arg (stmt, mask_index);
+      rtx mask_rtx = expand_normal (mask);
+      create_input_operand (&ops[i++], mask_rtx, TYPE_MODE (TREE_TYPE (mask)));
+    }
+
+  insn_code icode = direct_optab_handler (optab, TYPE_MODE (TREE_TYPE (rhs)));
+  expand_insn (icode, i, ops);
+}
+
 /* Expand {MASK_,}GATHER_LOAD call CALL using optab OPTAB.  */
 
 static void
@@ -3016,6 +3053,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_store_optab_supported_p direct_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
+#define direct_scatter_store_optab_supported_p direct_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
@@ -3202,6 +3240,25 @@ internal_load_fn_p (internal_fn fn)
     }
 }
 
+/* Return true if IFN is some form of store to memory.  */
+
+bool
+internal_store_fn_p (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_STORE:
+    case IFN_STORE_LANES:
+    case IFN_MASK_STORE_LANES:
+    case IFN_SCATTER_STORE:
+    case IFN_MASK_SCATTER_STORE:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Return true if IFN is some form of gather load or scatter store.  */
 
 bool
@@ -3211,6 +3268,8 @@ internal_gather_scatter_fn_p (internal_fn fn)
     {
     case IFN_GATHER_LOAD:
     case IFN_MASK_GATHER_LOAD:
+    case IFN_SCATTER_STORE:
+    case IFN_MASK_SCATTER_STORE:
       return true;
 
     default:
@@ -3233,6 +3292,27 @@ internal_fn_mask_index (internal_fn fn)
       return 2;
 
     case IFN_MASK_GATHER_LOAD:
+      return 3;
+
+    case IFN_MASK_SCATTER_STORE:
+      return 4;
+
+    default:
+      return -1;
+    }
+}
+
+/* If FN takes a value that should be stored to memory, return the index
+   of that argument, otherwise return -1.  */
+
+int
+internal_fn_stored_value_index (internal_fn fn)
+{
+  switch (fn)
+    {
+    case IFN_MASK_STORE:
+    case IFN_SCATTER_STORE:
+    case IFN_MASK_SCATTER_STORE:
       return 3;
 
     default:
@@ -3259,9 +3339,12 @@ internal_gather_scatter_fn_supported_p (internal_fn ifn, tree vector_type,
     return false;
   optab optab = direct_internal_fn_optab (ifn);
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (vector_type));
+  int output_ops = internal_load_fn_p (ifn) ? 1 : 0;
   return (icode != CODE_FOR_nothing
-	  && insn_operand_matches (icode, 3, GEN_INT (offset_sign == UNSIGNED))
-	  && insn_operand_matches (icode, 4, GEN_INT (scale)));
+	  && insn_operand_matches (icode, 2 + output_ops,
+				   GEN_INT (offset_sign == UNSIGNED))
+	  && insn_operand_matches (icode, 3 + output_ops,
+				   GEN_INT (scale)));
 }
 
 /* Expand STMT as though it were a call to internal function FN.  */

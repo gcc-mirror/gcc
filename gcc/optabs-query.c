@@ -711,3 +711,21 @@ supports_vec_gather_load_p ()
 
   return this_fn_optabs->supports_vec_gather_load;
 }
+
+/* Return true if vec_scatter_store is available for at least one vector
+   mode.  */
+
+bool
+supports_vec_scatter_store_p ()
+{
+  if (this_fn_optabs->supports_vec_scatter_store_cached)
+    return this_fn_optabs->supports_vec_scatter_store;
+
+  this_fn_optabs->supports_vec_scatter_store_cached = true;
+
+  this_fn_optabs->supports_vec_scatter_store
+    = supports_at_least_one_mode_p (scatter_store_optab);
+
+  return this_fn_optabs->supports_vec_scatter_store;
+}
+

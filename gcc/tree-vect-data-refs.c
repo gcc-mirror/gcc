@@ -2648,6 +2648,9 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
 
+  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+    return true;
+
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
 
@@ -3336,7 +3339,7 @@ vect_gather_scatter_fn_p (bool read_p, bool masked_p, tree vectype,
   if (read_p)
     ifn = masked_p ? IFN_MASK_GATHER_LOAD : IFN_GATHER_LOAD;
   else
-    return false;
+    ifn = masked_p ? IFN_MASK_SCATTER_STORE : IFN_SCATTER_STORE;
 
   /* Test whether the target supports this combination.  */
   if (!internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
@@ -3408,7 +3411,8 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
   /* True if we should aim to use internal functions rather than
      built-in functions.  */
   bool use_ifn_p = (DR_IS_READ (dr)
-		    && supports_vec_gather_load_p ());
+		    ? supports_vec_gather_load_p ()
+		    : supports_vec_scatter_store_p ());
 
   base = DR_REF (dr);
   /* For masked loads/stores, DR_REF (dr) is an artificial MEM_REF,
@@ -3727,7 +3731,8 @@ again:
 	  bool maybe_scatter
 	    = DR_IS_WRITE (dr)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr))
-	      && targetm.vectorize.builtin_scatter != NULL;
+	      && (targetm.vectorize.builtin_scatter != NULL
+		  || supports_vec_scatter_store_p ());
 	  bool maybe_simd_lane_access
 	    = is_a <loop_vec_info> (vinfo) && loop->simduid;
 

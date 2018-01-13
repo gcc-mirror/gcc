@@ -192,6 +192,7 @@ bool can_atomic_exchange_p (machine_mode, bool);
 bool can_atomic_load_p (machine_mode);
 bool lshift_cheap_p (bool);
 bool supports_vec_gather_load_p ();
+bool supports_vec_scatter_store_p ();
 
 /* Version of find_widening_optab_handler_and_mode that operates on
    specific mode types.  */

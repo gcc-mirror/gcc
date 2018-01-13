@@ -2,6 +2,55 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/sourcebuild.texi (vect_scatter_store): Document.
+	* optabs.def (scatter_store_optab, mask_scatter_store_optab): New
+	optabs.
+	* doc/md.texi (scatter_store@var{m}, mask_scatter_store@var{m}):
+	Document.
+	* genopinit.c (main): Add supports_vec_scatter_store and
+	supports_vec_scatter_store_cached to target_optabs.
+	* gimple.h (gimple_expr_type): Handle IFN_SCATTER_STORE and
+	IFN_MASK_SCATTER_STORE.
+	* internal-fn.def (SCATTER_STORE, MASK_SCATTER_STORE): New internal
+	functions.
+	* internal-fn.h (internal_store_fn_p): Declare.
+	(internal_fn_stored_value_index): Likewise.
+	* internal-fn.c (scatter_store_direct): New macro.
+	(expand_scatter_store_optab_fn): New function.
+	(direct_scatter_store_optab_supported_p): New macro.
+	(internal_store_fn_p): New function.
+	(internal_gather_scatter_fn_p): Handle IFN_SCATTER_STORE and
+	IFN_MASK_SCATTER_STORE.
+	(internal_fn_mask_index): Likewise.
+	(internal_fn_stored_value_index): New function.
+	(internal_gather_scatter_fn_supported_p): Adjust operand numbers
+	for scatter stores.
+	* optabs-query.h (supports_vec_scatter_store_p): Declare.
+	* optabs-query.c (supports_vec_scatter_store_p): New function.
+	* tree-vectorizer.h (vect_get_store_rhs): Declare.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Return
+	true for scatter stores.
+	(vect_gather_scatter_fn_p): Handle scatter stores too.
+	(vect_check_gather_scatter): Consider using scatter stores if
+	supports_vec_scatter_store_p.
+	* tree-vect-patterns.c (vect_try_gather_scatter_pattern): Handle
+	scatter stores too.
+	* tree-vect-stmts.c (exist_non_indexing_operands_for_use_p): Use
+	internal_fn_stored_value_index.
+	(check_load_store_masking): Handle scatter stores too.
+	(vect_get_store_rhs): Make public.
+	(vectorizable_call): Use internal_store_fn_p.
+	(vectorizable_store): Handle scatter store internal functions.
+	(vect_transform_stmt): Compare GROUP_STORE_COUNT with GROUP_SIZE
+	when deciding whether the end of the group has been reached.
+	* config/aarch64/aarch64.md (UNSPEC_ST1_SCATTER): New unspec.
+	* config/aarch64/aarch64-sve.md (scatter_store<mode>): New expander.
+	(mask_scatter_store<mode>): New insns.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (vect_gather_scatter_fn_p): Declare.
 	* tree-vect-data-refs.c (vect_gather_scatter_fn_p): Make public.
 	* tree-vect-stmts.c (vect_truncate_gather_scatter_offset): New

@@ -6600,6 +6600,12 @@ proc check_effective_target_vect_masked_store { } {
     return [check_effective_target_aarch64_sve]
 }
 
+# Return 1 if the target supports vector scatter stores.
+
+proc check_effective_target_vect_scatter_store { } {
+    return [check_effective_target_aarch64_sve]
+}
+
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
 
 proc check_effective_target_vect_condition { } {

@@ -386,6 +386,8 @@ OPTAB_D (set_thread_pointer_optab, "set_thread_pointer$I$a")
 
 OPTAB_D (gather_load_optab, "gather_load$a")
 OPTAB_D (mask_gather_load_optab, "mask_gather_load$a")
+OPTAB_D (scatter_store_optab, "scatter_store$a")
+OPTAB_D (mask_scatter_store_optab, "mask_scatter_store$a")
 
 OPTAB_DC (vec_duplicate_optab, "vec_duplicate$a", VEC_DUPLICATE)
 OPTAB_DC (vec_series_optab, "vec_series$a", VEC_SERIES)

@@ -239,6 +239,8 @@ main (int argc, const char **argv)
 	   "     mode.  */\n"
 	   "  bool supports_vec_gather_load;\n"
 	   "  bool supports_vec_gather_load_cached;\n"
+	   "  bool supports_vec_scatter_store;\n"
+	   "  bool supports_vec_scatter_store_cached;\n"
 	   "};\n"
 	   "extern void init_all_optabs (struct target_optabs *);\n"
 	   "\n"

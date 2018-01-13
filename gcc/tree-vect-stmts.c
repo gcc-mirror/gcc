@@ -397,11 +397,12 @@ exist_non_indexing_operands_for_use_p (tree use, gimple *stmt)
 	  if (mask_index >= 0
 	      && use == gimple_call_arg (stmt, mask_index))
 	    return true;
+	  int stored_value_index = internal_fn_stored_value_index (ifn);
+	  if (stored_value_index >= 0
+	      && use == gimple_call_arg (stmt, stored_value_index))
+	    return true;
 	  if (internal_gather_scatter_fn_p (ifn)
 	      && use == gimple_call_arg (stmt, 1))
-	    return true;
-	  if (ifn == IFN_MASK_STORE
-	      && use == gimple_call_arg (stmt, 3))
 	    return true;
 	}
       return false;
@@ -1765,10 +1766,11 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 
   if (memory_access_type == VMAT_GATHER_SCATTER)
     {
-      gcc_assert (is_load);
+      internal_fn ifn = (is_load
+			 ? IFN_MASK_GATHER_LOAD
+			 : IFN_MASK_SCATTER_STORE);
       tree offset_type = TREE_TYPE (gs_info->offset);
-      if (!internal_gather_scatter_fn_supported_p (IFN_MASK_GATHER_LOAD,
-						   vectype,
+      if (!internal_gather_scatter_fn_supported_p (ifn, vectype,
 						   gs_info->memory_type,
 						   TYPE_SIGN (offset_type),
 						   gs_info->scale))
@@ -1777,7 +1779,7 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "can't use a fully-masked loop because the"
 			     " target doesn't have an appropriate masked"
-			     " gather load instruction.\n");
+			     " gather load or scatter store instruction.\n");
 	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
 	  return;
 	}
@@ -2021,7 +2023,7 @@ perm_mask_for_reverse (tree vectype)
 /* STMT is either a masked or unconditional store.  Return the value
    being stored.  */
 
-static tree
+tree
 vect_get_store_rhs (gimple *stmt)
 {
   if (gassign *assign = dyn_cast <gassign *> (stmt))
@@ -2032,8 +2034,9 @@ vect_get_store_rhs (gimple *stmt)
   if (gcall *call = dyn_cast <gcall *> (stmt))
     {
       internal_fn ifn = gimple_call_internal_fn (call);
-      gcc_assert (ifn == IFN_MASK_STORE);
-      return gimple_call_arg (stmt, 3);
+      int index = internal_fn_stored_value_index (ifn);
+      gcc_assert (index >= 0);
+      return gimple_call_arg (stmt, index);
     }
   gcc_unreachable ();
 }
@@ -3023,7 +3026,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   if (gimple_call_internal_p (stmt)
       && (internal_load_fn_p (gimple_call_internal_fn (stmt))
-	  || gimple_call_internal_fn (stmt) == IFN_MASK_STORE))
+	  || internal_store_fn_p (gimple_call_internal_fn (stmt))))
     /* Handled by vectorizable_load and vectorizable_store.  */
     return false;
 
@@ -6109,7 +6112,11 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   else
     {
       gcall *call = dyn_cast <gcall *> (stmt);
-      if (!call || !gimple_call_internal_p (call, IFN_MASK_STORE))
+      if (!call || !gimple_call_internal_p (call))
+	return false;
+
+      internal_fn ifn = gimple_call_internal_fn (call);
+      if (!internal_store_fn_p (ifn))
 	return false;
 
       if (slp_node != NULL)
@@ -6120,10 +6127,13 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  return false;
 	}
 
-      ref_type = TREE_TYPE (gimple_call_arg (call, 1));
-      mask = gimple_call_arg (call, 2);
-      if (!vect_check_load_store_mask (stmt, mask, &mask_vectype))
-	return false;
+      int mask_index = internal_fn_mask_index (ifn);
+      if (mask_index >= 0)
+	{
+	  mask = gimple_call_arg (call, mask_index);
+	  if (!vect_check_load_store_mask (stmt, mask, &mask_vectype))
+	    return false;
+	}
     }
 
   op = vect_get_store_rhs (stmt);
@@ -6185,7 +6195,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					     TYPE_MODE (mask_vectype), false))
 	    return false;
 	}
-      else if (memory_access_type != VMAT_LOAD_STORE_LANES)
+      else if (memory_access_type != VMAT_LOAD_STORE_LANES
+	       && (memory_access_type != VMAT_GATHER_SCATTER || gs_info.decl))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6201,7 +6212,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	return false;
     }
 
-  grouped_store = STMT_VINFO_GROUPED_ACCESS (stmt_info);
+  grouped_store = (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+		   && memory_access_type != VMAT_GATHER_SCATTER);
   if (grouped_store)
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
@@ -6237,7 +6249,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   ensure_base_align (dr);
 
-  if (memory_access_type == VMAT_GATHER_SCATTER)
+  if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
       tree vec_oprnd0 = NULL_TREE, vec_oprnd1 = NULL_TREE, src;
       tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
@@ -6387,10 +6399,14 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       return true;
     }
 
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    {
+      gimple *group_stmt = GROUP_FIRST_ELEMENT (stmt_info);
+      GROUP_STORE_COUNT (vinfo_for_stmt (group_stmt))++;
+    }
+
   if (grouped_store)
     {
-      GROUP_STORE_COUNT (vinfo_for_stmt (first_stmt))++;
-
       /* FORNOW */
       gcc_assert (!loop || !nested_in_vect_loop_p (loop, stmt));
 
@@ -6690,10 +6706,27 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       || memory_access_type == VMAT_CONTIGUOUS_REVERSE)
     offset = size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1);
 
-  if (memory_access_type == VMAT_LOAD_STORE_LANES)
-    aggr_type = build_array_type_nelts (elem_type, vec_num * nunits);
+  tree bump;
+  tree vec_offset = NULL_TREE;
+  if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+    {
+      aggr_type = NULL_TREE;
+      bump = NULL_TREE;
+    }
+  else if (memory_access_type == VMAT_GATHER_SCATTER)
+    {
+      aggr_type = elem_type;
+      vect_get_strided_load_store_ops (stmt, loop_vinfo, &gs_info,
+				       &bump, &vec_offset);
+    }
   else
-    aggr_type = vectype;
+    {
+      if (memory_access_type == VMAT_LOAD_STORE_LANES)
+	aggr_type = build_array_type_nelts (elem_type, vec_num * nunits);
+      else
+	aggr_type = vectype;
+      bump = vect_get_data_ptr_increment (dr, aggr_type, memory_access_type);
+    }
 
   if (mask)
     LOOP_VINFO_HAS_MASK_STORE (loop_vinfo) = true;
@@ -6798,12 +6831,19 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      dataref_offset = build_int_cst (ref_type, 0);
 	      inv_p = false;
 	    }
+	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	    {
+	      vect_get_gather_scatter_ops (loop, stmt, &gs_info,
+					   &dataref_ptr, &vec_offset);
+	      inv_p = false;
+	    }
 	  else
 	    dataref_ptr
 	      = vect_create_data_ref_ptr (first_stmt, aggr_type,
 					  simd_lane_access_p ? loop : NULL,
 					  offset, &dummy, gsi, &ptr_incr,
-					  simd_lane_access_p, &inv_p);
+					  simd_lane_access_p, &inv_p,
+					  NULL_TREE, bump);
 	  gcc_assert (bb_vinfo || !inv_p);
 	}
       else
@@ -6830,11 +6870,17 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 	  if (dataref_offset)
 	    dataref_offset
-	      = int_const_binop (PLUS_EXPR, dataref_offset,
-				 TYPE_SIZE_UNIT (aggr_type));
+	      = int_const_binop (PLUS_EXPR, dataref_offset, bump);
+	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	    {
+	      gimple *def_stmt;
+	      vect_def_type dt;
+	      vect_is_simple_use (vec_offset, loop_vinfo, &def_stmt, &dt);
+	      vec_offset = vect_get_vec_def_for_stmt_copy (dt, vec_offset);
+	    }
 	  else
 	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
-					   TYPE_SIZE_UNIT (aggr_type));
+					   bump);
 	}
 
       if (memory_access_type == VMAT_LOAD_STORE_LANES)
@@ -6906,10 +6952,28 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		final_mask = prepare_load_store_mask (mask_vectype, final_mask,
 						      vec_mask, gsi);
 
+	      if (memory_access_type == VMAT_GATHER_SCATTER)
+		{
+		  tree scale = size_int (gs_info.scale);
+		  gcall *call;
+		  if (masked_loop_p)
+		    call = gimple_build_call_internal
+		      (IFN_MASK_SCATTER_STORE, 5, dataref_ptr, vec_offset,
+		       scale, vec_oprnd, final_mask);
+		  else
+		    call = gimple_build_call_internal
+		      (IFN_SCATTER_STORE, 4, dataref_ptr, vec_offset,
+		       scale, vec_oprnd);
+		  gimple_call_set_nothrow (call, true);
+		  new_stmt = call;
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  break;
+		}
+
 	      if (i > 0)
 		/* Bump the vector pointer.  */
 		dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
-					       stmt, NULL_TREE);
+					       stmt, bump);
 
 	      if (slp)
 		vec_oprnd = vec_oprnds[i];
@@ -9407,9 +9471,11 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
 	     one are skipped, and there vec_stmt_info shouldn't be freed
 	     meanwhile.  */
 	  *grouped_store = true;
-	  if (STMT_VINFO_VEC_STMT (stmt_info))
+	  stmt_vec_info group_info
+	    = vinfo_for_stmt (GROUP_FIRST_ELEMENT (stmt_info));
+	  if (GROUP_STORE_COUNT (group_info) == GROUP_SIZE (group_info))
 	    is_store = true;
-	  }
+	}
       else
 	is_store = true;
       break;
