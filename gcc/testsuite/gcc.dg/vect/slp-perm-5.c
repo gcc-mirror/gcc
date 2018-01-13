@@ -104,7 +104,9 @@ int main (int argc, const char* argv[])
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target vect_perm } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { vect_perm3_int && {! vect_load_lanes } } } } } */
+/* Fails for variable-length SVE because we fall back to Advanced SIMD
+   and use LD3/ST3.  Will be fixed when SVE LOAD_LANES support is added.  */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { vect_perm3_int && {! vect_load_lanes } } xfail { aarch64_sve && vect_variable_length } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target vect_load_lanes } } } */
 /* { dg-final { scan-tree-dump "note: Built SLP cancelled: can use load/store-lanes" "vect" { target { vect_perm3_int && vect_load_lanes } } } } */
 /* { dg-final { scan-tree-dump "LOAD_LANES" "vect" { target vect_load_lanes } } } */

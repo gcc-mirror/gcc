@@ -1,4 +1,38 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_sve)
+	(aarch64_sve_bits, check_effective_target_aarch64_sve_hw)
+	(aarch64_sve_hw_bits, check_effective_target_aarch64_sve256_hw):
+	New procedures.
+	(check_effective_target_vect_perm): Handle SVE.
+	(check_effective_target_vect_perm_byte): Likewise.
+	(check_effective_target_vect_perm_short): Likewise.
+	(check_effective_target_vect_widen_sum_hi_to_si_pattern): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_element_align_preferred): Likewise.
+	(check_effective_target_vect_align_stack_vars): Likewise.
+	(check_effective_target_vect_load_lanes): Likewise.
+	(check_effective_target_vect_masked_store): Likewise.
+	(available_vector_sizes): Use aarch64_sve_bits for SVE.
+	* gcc.dg/vect/tree-vect.h (VECTOR_BITS): Define appropriately
+	for SVE.
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Add SVE XFAIL.
+	* gcc.dg/vect/bb-slp-pr69907.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-3.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-9.c: Likewise.
+	* gcc.dg/vect/slp-reduc-3.c: Likewise.
+	* gcc.dg/vect/vect-114.c: Likewise.
+	* gcc.dg/vect/vect-mult-const-pattern-1.c: Likewise.
+	* gcc.dg/vect/vect-mult-const-pattern-2.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/vect/no-scevccp-slp-30.c: XFAIL SLP test for
 	vect_variable_length, expecting the test to be vectorized
