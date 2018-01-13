@@ -35,3 +35,21 @@ TEST_ALL (VEC_PERM)
 /* { dg-final { scan-assembler-times {\tld1rqb\tz[0-9]+\.b, } 3 } } */
 /* { dg-final { scan-assembler-not {\tzip1\t} } } */
 /* { dg-final { scan-assembler-not {\tzip2\t} } } */
+
+/* The loop should be fully-masked.  */
+/* { dg-final { scan-assembler-times {\tld1b\t} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1b\t} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1h\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1h\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tld1w\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1w\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tld1d\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1d\t} 3 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.b} 4 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.h} 6 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d} 6 } } */
+/* { dg-final { scan-assembler-not {\tldr} } } */
+/* { dg-final { scan-assembler-not {\tstr} } } */
+
+/* { dg-final { scan-assembler-not {\tuqdec} } } */

@@ -3496,6 +3496,63 @@
   [(set_attr "type" "csel")]
 )
 
+;; If X can be loaded by a single CNT[BHWD] instruction,
+;;
+;;    A = UMAX (B, X)
+;;
+;; is equivalent to:
+;;
+;;    TMP = UQDEC[BHWD] (B, X)
+;;    A = TMP + X
+;;
+;; Defining the pattern this way means that:
+;;
+;;    A = UMAX (B, X) - X
+;;
+;; becomes:
+;;
+;;    TMP1 = UQDEC[BHWD] (B, X)
+;;    TMP2 = TMP1 + X
+;;    A = TMP2 - X
+;;
+;; which combine can optimize to:
+;;
+;;    A = UQDEC[BHWD] (B, X)
+;;
+;; We don't use match_operand predicates because the order of the operands
+;; can vary: the CNT[BHWD] constant will come first if the other operand is
+;; a simpler constant (such as a CONST_INT), otherwise it will come second.
+(define_expand "umax<mode>3"
+  [(set (match_operand:GPI 0 "register_operand")
+	(umax:GPI (match_operand:GPI 1 "")
+		  (match_operand:GPI 2 "")))]
+  "TARGET_SVE"
+  {
+    if (aarch64_sve_cnt_immediate (operands[1], <MODE>mode))
+      std::swap (operands[1], operands[2]);
+    else if (!aarch64_sve_cnt_immediate (operands[2], <MODE>mode))
+      FAIL;
+    rtx temp = gen_reg_rtx (<MODE>mode);
+    operands[1] = force_reg (<MODE>mode, operands[1]);
+    emit_insn (gen_aarch64_uqdec<mode> (temp, operands[1], operands[2]));
+    emit_insn (gen_add<mode>3 (operands[0], temp, operands[2]));
+    DONE;
+  }
+)
+
+;; Saturating unsigned subtraction of a CNT[BHWD] immediate.
+(define_insn "aarch64_uqdec<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI
+	 (umax:GPI (match_operand:GPI 1 "register_operand" "0")
+		   (match_operand:GPI 2 "aarch64_sve_cnt_immediate" "Usv"))
+	 (match_dup 2)))]
+  "TARGET_SVE"
+  {
+    return aarch64_output_sve_cnt_immediate ("uqdec", "%<w>0", operands[2]);
+  }
+)
+
 ;; -------------------------------------------------------------------
 ;; Logical operations
 ;; -------------------------------------------------------------------

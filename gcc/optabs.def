@@ -94,6 +94,8 @@ OPTAB_CD(maskstore_optab, "maskstore$a$b")
 OPTAB_CD(vec_extract_optab, "vec_extract$a$b")
 OPTAB_CD(vec_init_optab, "vec_init$a$b")
 
+OPTAB_CD (while_ult_optab, "while_ult$a$b")
+
 OPTAB_NL(add_optab, "add$P$a3", PLUS, "add", '3', gen_int_fp_fixed_libfunc)
 OPTAB_NX(add_optab, "add$F$a3")
 OPTAB_NX(add_optab, "add$Q$a3")

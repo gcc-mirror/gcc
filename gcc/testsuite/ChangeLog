@@ -2,6 +2,38 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/tree-ssa/cunroll-10.c: Disable vectorization.
+	* gcc.dg/tree-ssa/peel1.c: Likewise.
+	* gcc.dg/vect/vect-load-lanes-peeling-1.c: Remove XFAIL for
+	variable-length vectors.
+	* gcc.target/aarch64/sve/vcond_6.c: XFAIL test for AND.
+	* gcc.target/aarch64/sve/vec_bool_cmp_1.c: Expect BIC instead of NOT.
+	* gcc.target/aarch64/sve/slp_1.c: Check for a fully-masked loop.
+	* gcc.target/aarch64/sve/slp_2.c: Likewise.
+	* gcc.target/aarch64/sve/slp_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+	* gcc.target/aarch64/sve/slp_6.c: Likewise.
+	* gcc.target/aarch64/sve/slp_8.c: New test.
+	* gcc.target/aarch64/sve/slp_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_9.c: Likewise.
+	* gcc.target/aarch64/sve/slp_9_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_10.c: Likewise.
+	* gcc.target/aarch64/sve/slp_10_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_11.c: Likewise.
+	* gcc.target/aarch64/sve/slp_11_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_12.c: Likewise.
+	* gcc.target/aarch64/sve/slp_12_run.c: Likewise.
+	* gcc.target/aarch64/sve/ld1r_2.c: Likewise.
+	* gcc.target/aarch64/sve/ld1r_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/while_1.c: Likewise.
+	* gcc.target/aarch64/sve/while_2.c: Likewise.
+	* gcc.target/aarch64/sve/while_3.c: Likewise.
+	* gcc.target/aarch64/sve/while_4.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lib/target-supports.exp (check_effective_target_vect_logical_reduc):
 	New proc.
 	* gcc.dg/vect/vect-reduc-or_1.c: Also run for vect_logical_reduc

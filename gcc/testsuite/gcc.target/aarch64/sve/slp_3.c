@@ -47,3 +47,23 @@ TEST_ALL (VEC_PERM)
       ZIP1 ZIP2.  */
 /* { dg-final { scan-assembler-times {\tzip1\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 9 } } */
 /* { dg-final { scan-assembler-times {\tzip2\tz[0-9]+\.d, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
+
+/* The loop should be fully-masked.  The 64-bit types need two loads
+   and stores each.  */
+/* { dg-final { scan-assembler-times {\tld1b\t} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1b\t} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1h\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1h\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tld1w\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1w\t} 3 } } */
+/* { dg-final { scan-assembler-times {\tld1d\t} 6 } } */
+/* { dg-final { scan-assembler-times {\tst1d\t} 6 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.b} 4 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.h} 6 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.s} 6 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d} 12 } } */
+/* { dg-final { scan-assembler-not {\tldr} } } */
+/* { dg-final { scan-assembler-not {\tstr} } } */
+
+/* { dg-final { scan-assembler-not {\tuqdec[bhw]\t} } } */
+/* { dg-final { scan-assembler-times {\tuqdecd\t} 3 } } */

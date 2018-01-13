@@ -2,6 +2,82 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs.def (while_ult_optab): New optab.
+	* doc/md.texi (while_ult@var{m}@var{n}): Document.
+	* internal-fn.def (WHILE_ULT): New internal function.
+	* internal-fn.h (direct_internal_fn_supported_p): New override
+	that takes two types as argument.
+	* internal-fn.c (while_direct): New macro.
+	(expand_while_optab_fn): New function.
+	(convert_optab_supported_p): Likewise.
+	(direct_while_optab_supported_p): New macro.
+	* wide-int.h (wi::udiv_ceil): New function.
+	* tree-vectorizer.h (rgroup_masks): New structure.
+	(vec_loop_masks): New typedef.
+	(_loop_vec_info): Add masks, mask_compare_type, can_fully_mask_p
+	and fully_masked_p.
+	(LOOP_VINFO_CAN_FULLY_MASK_P, LOOP_VINFO_FULLY_MASKED_P)
+	(LOOP_VINFO_MASKS, LOOP_VINFO_MASK_COMPARE_TYPE): New macros.
+	(vect_max_vf): New function.
+	(slpeel_make_loop_iterate_ntimes): Delete.
+	(vect_set_loop_condition, vect_get_loop_mask_type, vect_gen_while)
+	(vect_halve_mask_nunits, vect_double_mask_nunits): Declare.
+	(vect_record_loop_mask, vect_get_loop_mask): Likewise.
+	* tree-vect-loop-manip.c: Include tree-ssa-loop-niter.h,
+	internal-fn.h, stor-layout.h and optabs-query.h.
+	(vect_set_loop_mask): New function.
+	(add_preheader_seq): Likewise.
+	(add_header_seq): Likewise.
+	(interleave_supported_p): Likewise.
+	(vect_maybe_permute_loop_masks): Likewise.
+	(vect_set_loop_masks_directly): Likewise.
+	(vect_set_loop_condition_masked): Likewise.
+	(vect_set_loop_condition_unmasked): New function, split out from
+	slpeel_make_loop_iterate_ntimes.
+	(slpeel_make_loop_iterate_ntimes): Rename to..
+	(vect_set_loop_condition): ...this.  Use vect_set_loop_condition_masked
+	for fully-masked loops and vect_set_loop_condition_unmasked otherwise.
+	(vect_do_peeling): Update call accordingly.
+	(vect_gen_vector_loop_niters): Use VF as the step for fully-masked
+	loops.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	mask_compare_type, can_fully_mask_p and fully_masked_p.
+	(release_vec_loop_masks): New function.
+	(_loop_vec_info): Use it to free the loop masks.
+	(can_produce_all_loop_masks_p): New function.
+	(vect_get_max_nscalars_per_iter): Likewise.
+	(vect_verify_full_masking): Likewise.
+	(vect_analyze_loop_2): Save LOOP_VINFO_CAN_FULLY_MASK_P around
+	retries, and free the mask rgroups before retrying.  Check loop-wide
+	reasons for disallowing fully-masked loops.  Make the final decision
+	about whether use a fully-masked loop or not.
+	(vect_estimate_min_profitable_iters): Do not assume that peeling
+	for the number of iterations will be needed for fully-masked loops.
+	(vectorizable_reduction): Disable fully-masked loops.
+	(vectorizable_live_operation): Likewise.
+	(vect_halve_mask_nunits): New function.
+	(vect_double_mask_nunits): Likewise.
+	(vect_record_loop_mask): Likewise.
+	(vect_get_loop_mask): Likewise.
+	(vect_transform_loop): Handle the case in which the final loop
+	iteration might handle a partial vector.  Call vect_set_loop_condition
+	instead of slpeel_make_loop_iterate_ntimes.
+	* tree-vect-stmts.c: Include tree-ssa-loop-niter.h and gimple-fold.h.
+	(check_load_store_masking): New function.
+	(prepare_load_store_mask): Likewise.
+	(vectorizable_store): Handle fully-masked loops.
+	(vectorizable_load): Likewise.
+	(supportable_widening_operation): Use vect_halve_mask_nunits for
+	booleans.
+	(supportable_narrowing_operation): Likewise vect_double_mask_nunits.
+	(vect_gen_while): New function.
+	* config/aarch64/aarch64.md (umax<mode>3): New expander.
+	(aarch64_uqdec<mode>): New insn.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* optabs.def (reduc_and_scal_optab, reduc_ior_scal_optab)
 	(reduc_xor_scal_optab): New optabs.
 	* doc/md.texi (reduc_and_scal_@var{m}, reduc_ior_scal_@var{m})
