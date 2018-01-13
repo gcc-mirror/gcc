@@ -746,6 +746,35 @@ gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
 					     true, GSI_SAME_STMT);
 }
 
+/* Return true if the OFFSET in PARTS is the only thing that is making
+   it an invalid address for type TYPE.  */
+
+static bool
+mem_ref_valid_without_offset_p (tree type, mem_address parts)
+{
+  if (!parts.base)
+    parts.base = parts.offset;
+  parts.offset = NULL_TREE;
+  return valid_mem_ref_p (TYPE_MODE (type), TYPE_ADDR_SPACE (type), &parts);
+}
+
+/* Fold PARTS->offset into PARTS->base, so that there is no longer
+   a separate offset.  Emit any new instructions before GSI.  */
+
+static void
+add_offset_to_base (gimple_stmt_iterator *gsi, mem_address *parts)
+{
+  tree tmp = parts->offset;
+  if (parts->base)
+    {
+      tmp = fold_build_pointer_plus (parts->base, tmp);
+      tmp = force_gimple_operand_gsi_1 (gsi, tmp, is_gimple_mem_ref_addr,
+					NULL_TREE, true, GSI_SAME_STMT);
+    }
+  parts->base = tmp;
+  parts->offset = NULL_TREE;
+}
+
 /* Creates and returns a TARGET_MEM_REF for address ADDR.  If necessary
    computations are emitted in front of GSI.  TYPE is the mode
    of created memory reference. IV_CAND is the selected iv candidate in ADDR,
@@ -812,6 +841,14 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
   if (parts.step && !integer_onep (parts.step))
     {
       gcc_assert (parts.index);
+      if (parts.offset && mem_ref_valid_without_offset_p (type, parts))
+	{
+	  add_offset_to_base (gsi, &parts);
+	  mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts, true);
+	  gcc_assert (mem_ref);
+	  return mem_ref;
+	}
+
       parts.index = force_gimple_operand_gsi (gsi,
 				fold_build2 (MULT_EXPR, sizetype,
 					     parts.index, parts.step),
@@ -906,18 +943,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
        [base'].  */
   if (parts.offset && !integer_zerop (parts.offset))
     {
-      tmp = parts.offset;
-      parts.offset = NULL_TREE;
-      /* Add offset to base.  */
-      if (parts.base)
-	{
-	  tmp = fold_build_pointer_plus (parts.base, tmp);
-	  tmp = force_gimple_operand_gsi_1 (gsi, tmp,
-					    is_gimple_mem_ref_addr,
-					    NULL_TREE, true, GSI_SAME_STMT);
-	}
-      parts.base = tmp;
-
+      add_offset_to_base (gsi, &parts);
       mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts, true);
       if (mem_ref)
 	return mem_ref;
