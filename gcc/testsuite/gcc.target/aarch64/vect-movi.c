@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O3 --save-temps -fno-inline" } */
 
+#pragma GCC target "+nosve"
+
 extern void abort (void);
 
 #define N 16
