@@ -5573,6 +5573,19 @@ reload from using some alternatives, like @code{TARGET_PREFERRED_RELOAD_CLASS}."
  default_preferred_output_reload_class)
 
 DEFHOOK
+(select_early_remat_modes,
+ "On some targets, certain modes cannot be held in registers around a\n\
+standard ABI call and are relatively expensive to spill to the stack.\n\
+The early rematerialization pass can help in such cases by aggressively\n\
+recomputing values after calls, so that they don't need to be spilled.\n\
+\n\
+This hook returns the set of such modes by setting the associated bits\n\
+in @var{modes}.  The default implementation selects no modes, which has\n\
+the effect of disabling the early rematerialization pass.",
+ void, (sbitmap modes),
+ default_select_early_remat_modes)
+
+DEFHOOK
 (class_likely_spilled_p,
  "A target hook which returns @code{true} if pseudos that have been assigned\n\
 to registers of class @var{rclass} would likely be spilled because\n\
