@@ -23,3 +23,19 @@
 #if defined __aarch64__ && !defined __LP64__
 # define REG_VALUE_IN_UNWIND_CONTEXT
 #endif
+
+/* Return the value of the pseudo VG register.  This should only be
+   called if we know this is an SVE host.  */
+static inline int
+aarch64_vg (void)
+{
+  register int vg asm ("x0");
+  /* CNTD X0.  */
+  asm (".inst 0x04e0e3e0" : "=r" (vg));
+  return vg;
+}
+
+/* Lazily provide a value for VG, so that we don't try to execute SVE
+   instructions unless we know they're needed.  */
+#define DWARF_LAZY_REGISTER_VALUE(REGNO, VALUE) \
+  ((REGNO) == AARCH64_DWARF_VG && ((*VALUE) = aarch64_vg (), 1))
