@@ -2261,7 +2261,6 @@ predicate_mem_writes (loop_p loop)
 		    }
 		  gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
 
-		  mask = ifc_temp_var (TREE_TYPE (mask), mask, &gsi);
 		  /* Save mask and its size for further use.  */
 		  vect_sizes.safe_push (bitsize);
 		  vect_masks.safe_push (mask);
