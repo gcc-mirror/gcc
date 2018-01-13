@@ -190,6 +190,8 @@ direct_internal_fn_supported_p (internal_fn fn, tree type0, tree type1,
 
 extern bool set_edom_supported_p (void);
 
+extern internal_fn get_conditional_internal_fn (tree_code);
+
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);

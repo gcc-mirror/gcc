@@ -2,6 +2,36 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/md.texi (cond_add@var{mode}, cond_sub@var{mode})
+	(cond_and@var{mode}, cond_ior@var{mode}, cond_xor@var{mode})
+	(cond_smin@var{mode}, cond_smax@var{mode}, cond_umin@var{mode})
+	(cond_umax@var{mode}): Document.
+	* optabs.def (cond_add_optab, cond_sub_optab, cond_and_optab)
+	(cond_ior_optab, cond_xor_optab, cond_smin_optab, cond_smax_optab)
+	(cond_umin_optab, cond_umax_optab): New optabs.
+	* internal-fn.def (COND_ADD, COND_SUB, COND_MIN, COND_MAX, COND_AND)
+	(COND_IOR, COND_XOR): New internal functions.
+	* internal-fn.h (get_conditional_internal_fn): Declare.
+	* internal-fn.c (cond_binary_direct): New macro.
+	(expand_cond_binary_optab_fn): Likewise.
+	(direct_cond_binary_optab_supported_p): Likewise.
+	(get_conditional_internal_fn): New function.
+	* tree-vect-loop.c (vectorizable_reduction): Handle fully-masked loops.
+	Cope with reduction statements that are vectorized as calls rather
+	than assignments.
+	* config/aarch64/aarch64-sve.md (cond_<optab><mode>): New insns.
+	* config/aarch64/iterators.md (UNSPEC_COND_ADD, UNSPEC_COND_SUB)
+	(UNSPEC_COND_SMAX, UNSPEC_COND_UMAX, UNSPEC_COND_SMIN)
+	(UNSPEC_COND_UMIN, UNSPEC_COND_AND, UNSPEC_COND_ORR)
+	(UNSPEC_COND_EOR): New unspecs.
+	(optab): Add mappings for them.
+	(SVE_COND_INT_OP, SVE_COND_FP_OP): New int iterators.
+	(sve_int_op, sve_fp_op): New int attributes.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* optabs.def (while_ult_optab): New optab.
 	* doc/md.texi (while_ult@var{m}@var{n}): Document.
 	* internal-fn.def (WHILE_ULT): New internal function.

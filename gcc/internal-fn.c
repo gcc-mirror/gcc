@@ -88,6 +88,7 @@ init_internal_fns ()
 #define mask_store_lanes_direct { 0, 0, false }
 #define unary_direct { 0, 0, true }
 #define binary_direct { 0, 0, true }
+#define cond_binary_direct { 1, 1, true }
 #define while_direct { 0, 2, false }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
@@ -2855,6 +2856,9 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_binary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
+#define expand_cond_binary_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -2928,6 +2932,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
 #define direct_binary_optab_supported_p direct_optab_supported_p
+#define direct_cond_binary_optab_supported_p direct_optab_supported_p
 #define direct_mask_load_optab_supported_p direct_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
@@ -3048,6 +3053,37 @@ static void (*const internal_fn_expanders[]) (internal_fn, gcall *) = {
 #include "internal-fn.def"
   0
 };
+
+/* Return a function that performs the conditional form of CODE, i.e.:
+
+     LHS = RHS1 ? RHS2 CODE RHS3 : RHS2
+
+   (operating elementwise if the operands are vectors).  Return IFN_LAST
+   if no such function exists.  */
+
+internal_fn
+get_conditional_internal_fn (tree_code code)
+{
+  switch (code)
+    {
+    case PLUS_EXPR:
+      return IFN_COND_ADD;
+    case MINUS_EXPR:
+      return IFN_COND_SUB;
+    case MIN_EXPR:
+      return IFN_COND_MIN;
+    case MAX_EXPR:
+      return IFN_COND_MAX;
+    case BIT_AND_EXPR:
+      return IFN_COND_AND;
+    case BIT_IOR_EXPR:
+      return IFN_COND_IOR;
+    case BIT_XOR_EXPR:
+      return IFN_COND_XOR;
+    default:
+      return IFN_LAST;
+    }
+}
 
 /* Expand STMT as though it were a call to internal function FN.  */
 
