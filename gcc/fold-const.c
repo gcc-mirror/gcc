@@ -9323,7 +9323,7 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
   if ((code == BIT_AND_EXPR || code == BIT_IOR_EXPR
        || code == EQ_EXPR || code == NE_EXPR)
-      && TREE_CODE (type) != VECTOR_TYPE
+      && !VECTOR_TYPE_P (TREE_TYPE (arg0))
       && ((truth_value_p (TREE_CODE (arg0))
 	   && (truth_value_p (TREE_CODE (arg1))
 	       || (TREE_CODE (arg1) == BIT_AND_EXPR

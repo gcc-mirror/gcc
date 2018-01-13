@@ -1,4 +1,11 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* fold-const.c (fold_binary_loc): Check the argument types
+	rather than the result type when testing for a vector operation.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* doc/tm.texi.in (DWARF_LAZY_REGISTER_VALUE): Document.
 	* doc/tm.texi: Regenerate.

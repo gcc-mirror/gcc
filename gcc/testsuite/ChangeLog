@@ -1,4 +1,11 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/vec_bool_cmp_1.c: New test.
+	* gcc.target/aarch64/sve/vec_bool_cmp_1_run.c: Likweise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* g++.target/aarch64/sve/aarch64-sve.exp: New harness.
 	* g++.target/aarch64/sve/catch_1.C: New test.
