@@ -2,6 +2,39 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (_loop_vec_info::mask_skip_niters): New field.
+	(LOOP_VINFO_MASK_SKIP_NITERS): New macro.
+	(vect_use_loop_mask_for_alignment_p): New function.
+	(vect_prepare_for_masked_peels, vect_gen_while_not): Declare.
+	* tree-vect-loop-manip.c (vect_set_loop_masks_directly): Add an
+	niters_skip argument.  Make sure that the first niters_skip elements
+	of the first iteration are inactive.
+	(vect_set_loop_condition_masked): Handle LOOP_VINFO_MASK_SKIP_NITERS.
+	Update call to vect_set_loop_masks_directly.
+	(get_misalign_in_elems): New function, split out from...
+	(vect_gen_prolog_loop_niters): ...here.
+	(vect_update_init_of_dr): Take a code argument that specifies whether
+	the adjustment should be added or subtracted.
+	(vect_update_init_of_drs): Likewise.
+	(vect_prepare_for_masked_peels): New function.
+	(vect_do_peeling): Skip prologue peeling if we're using a mask
+	instead.  Update call to vect_update_inits_of_drs.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	mask_skip_niters.
+	(vect_analyze_loop_2): Allow fully-masked loops with peeling for
+	alignment.  Do not include the number of peeled iterations in
+	the minimum threshold in that case.
+	(vectorizable_induction): Adjust the start value down by
+	LOOP_VINFO_MASK_SKIP_NITERS iterations.
+	(vect_transform_loop): Call vect_prepare_for_masked_peels.
+	Take the number of skipped iterations into account when calculating
+	the loop bounds.
+	* tree-vect-stmts.c (vect_gen_while_not): New function.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/sourcebuild.texi (vect_fully_masked): Document.
 	* params.def (PARAM_MIN_VECT_LOOP_BOUND): Change minimum and
 	default value to 0.
