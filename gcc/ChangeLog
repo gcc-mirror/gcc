@@ -1,3 +1,13 @@
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-ssa-address.c (mem_ref_valid_without_offset_p): New function.
+	(add_offset_to_base): New function, split out from...
+	(create_mem_ref): ...here.  When handling a scale other than 1,
+	check first whether the address is valid without the offset.
+	Add it into the base if so, leaving the index and scale as-is.
+
 2018-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83778
