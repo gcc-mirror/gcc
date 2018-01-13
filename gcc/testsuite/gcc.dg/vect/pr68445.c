@@ -16,4 +16,4 @@ void IMB_double_fast_x (int *destf, int *dest, int y, int *p1f)
     }
 }
 
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { xfail vect_variable_length } } } */

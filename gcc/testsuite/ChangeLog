@@ -1,3 +1,55 @@
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/no-scevccp-slp-30.c: XFAIL SLP test for
+	vect_variable_length, expecting the test to be vectorized
+	without SLP instead.
+	* gcc.dg/vect/pr33953.c: Likewise.
+	* gcc.dg/vect/pr37027.c: Likewise.
+	* gcc.dg/vect/pr67790.c: Likewise.
+	* gcc.dg/vect/pr68445.c: Likewise.
+	* gcc.dg/vect/slp-1.c: Likewise.
+	* gcc.dg/vect/slp-10.c: Likewise.
+	* gcc.dg/vect/slp-12a.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-12c.c: Likewise.
+	* gcc.dg/vect/slp-13-big-array.c: Likewise.
+	* gcc.dg/vect/slp-13.c: Likewise.
+	* gcc.dg/vect/slp-14.c: Likewise.
+	* gcc.dg/vect/slp-15.c: Likewise.
+	* gcc.dg/vect/slp-17.c: Likewise.
+	* gcc.dg/vect/slp-19b.c: Likewise.
+	* gcc.dg/vect/slp-2.c: Likewise.
+	* gcc.dg/vect/slp-20.c: Likewise.
+	* gcc.dg/vect/slp-21.c: Likewise.
+	* gcc.dg/vect/slp-22.c: Likewise.
+	* gcc.dg/vect/slp-24-big-array.c: Likewise.
+	* gcc.dg/vect/slp-24.c: Likewise.
+	* gcc.dg/vect/slp-28.c: Likewise.
+	* gcc.dg/vect/slp-39.c: Likewise.
+	* gcc.dg/vect/slp-42.c: Likewise.
+	* gcc.dg/vect/slp-6.c: Likewise.
+	* gcc.dg/vect/slp-7.c: Likewise.
+	* gcc.dg/vect/slp-cond-1.c: Likewise.
+	* gcc.dg/vect/slp-cond-2-big-array.c: Likewise.
+	* gcc.dg/vect/slp-cond-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-1.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-10.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-12.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-4.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-5.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-8.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-9.c: Likewise.
+	* gcc.dg/vect/slp-reduc-1.c: Likewise.
+	* gcc.dg/vect/slp-reduc-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-4.c: Likewise.
+	* gcc.dg/vect/slp-reduc-5.c: Likewise.
+	* gcc.dg/vect/slp-reduc-7.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-1.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-2.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-3.c: Likewise.
+
 2018-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/83801

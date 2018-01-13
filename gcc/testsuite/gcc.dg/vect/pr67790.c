@@ -37,4 +37,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { xfail vect_variable_length } } } */
