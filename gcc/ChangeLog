@@ -2,6 +2,41 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-ssa-loop-ivopts.c (USE_ADDRESS): Split into...
+	(USE_REF_ADDRESS, USE_PTR_ADDRESS): ...these new use types.
+	(dump_groups): Update accordingly.
+	(iv_use::mem_type): New member variable.
+	(address_p): New function.
+	(record_use): Add a mem_type argument and initialize the new
+	mem_type field.
+	(record_group_use): Add a mem_type argument.  Use address_p.
+	Remove obsolete null checks of base_object.  Update call to record_use.
+	(find_interesting_uses_op): Update call to record_group_use.
+	(find_interesting_uses_cond): Likewise.
+	(find_interesting_uses_address): Likewise.
+	(get_mem_type_for_internal_fn): New function.
+	(find_address_like_use): Likewise.
+	(find_interesting_uses_stmt): Try find_address_like_use before
+	calling find_interesting_uses_op.
+	(addr_offset_valid_p): Use the iv mem_type field as the type
+	of the addressed memory.
+	(add_autoinc_candidates): Likewise.
+	(get_address_cost): Likewise.
+	(split_small_address_groups_p): Use address_p.
+	(split_address_groups): Likewise.
+	(add_iv_candidate_for_use): Likewise.
+	(autoinc_possible_for_pair): Likewise.
+	(rewrite_groups): Likewise.
+	(get_use_type): Check for USE_REF_ADDRESS instead of USE_ADDRESS.
+	(determine_group_iv_cost): Update after split of USE_ADDRESS.
+	(get_alias_ptr_type_for_ptr_address): New function.
+	(rewrite_use_address): Rewrite address uses in calls that were
+	identified by find_address_like_use.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (expand_expr_addr_expr_1): Handle ADDR_EXPRs of
 	TARGET_MEM_REFs.
 	* gimple-expr.h (is_gimple_addressable: Likewise.

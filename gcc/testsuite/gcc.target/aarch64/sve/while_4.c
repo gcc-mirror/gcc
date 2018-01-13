@@ -35,3 +35,11 @@ TEST_ALL (ADD_LOOP)
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.s, x[0-9]+,} 3 } } */
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d, xzr,} 3 } } */
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d, x[0-9]+,} 3 } } */
+/* { dg-final { scan-assembler-times {\tld1b\tz[0-9]+\.b, p[0-7]/z, \[x0, x[0-9]+\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1b\tz[0-9]+\.b, p[0-7], \[x0, x[0-9]+\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.h, p[0-7]/z, \[x0, x[0-9]+, lsl 1\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1h\tz[0-9]+\.h, p[0-7], \[x0, x[0-9]+, lsl 1\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.s, p[0-7]/z, \[x0, x[0-9]+, lsl 2\]\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+\.s, p[0-7], \[x0, x[0-9]+, lsl 2\]\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tld1d\tz[0-9]+\.d, p[0-7]/z, \[x0, x[0-9]+, lsl 3\]\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d, p[0-7], \[x0, x[0-9]+, lsl 3\]\n} 3 } } */

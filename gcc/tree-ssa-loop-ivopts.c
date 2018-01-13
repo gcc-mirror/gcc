@@ -166,7 +166,11 @@ struct version_info
 enum use_type
 {
   USE_NONLINEAR_EXPR,	/* Use in a nonlinear expression.  */
-  USE_ADDRESS,		/* Use in an address.  */
+  USE_REF_ADDRESS,	/* Use is an address for an explicit memory
+			   reference.  */
+  USE_PTR_ADDRESS,	/* Use is a pointer argument to a function in
+			   cases where the expansion of the function
+			   will turn the argument into a normal address.  */
   USE_COMPARE		/* Use is a compare.  */
 };
 
@@ -362,6 +366,9 @@ struct iv_use
   unsigned id;		/* The id of the use.  */
   unsigned group_id;	/* The group id the use belongs to.  */
   enum use_type type;	/* Type of the use.  */
+  tree mem_type;	/* The memory type to use when testing whether an
+			   address is legitimate, and what the address's
+			   cost is.  */
   struct iv *iv;	/* The induction variable it is based on.  */
   gimple *stmt;		/* Statement in that it occurs.  */
   tree *op_p;		/* The place where it occurs.  */
@@ -505,6 +512,14 @@ struct iv_inv_expr_hasher : free_ptr_hash <iv_inv_expr_ent>
   static inline hashval_t hash (const iv_inv_expr_ent *);
   static inline bool equal (const iv_inv_expr_ent *, const iv_inv_expr_ent *);
 };
+
+/* Return true if uses of type TYPE represent some form of address.  */
+
+inline bool
+address_p (use_type type)
+{
+  return type == USE_REF_ADDRESS || type == USE_PTR_ADDRESS;
+}
 
 /* Hash function for loop invariant expressions.  */
 
@@ -768,8 +783,10 @@ dump_groups (FILE *file, struct ivopts_data *data)
       fprintf (file, "Group %d:\n", group->id);
       if (group->type == USE_NONLINEAR_EXPR)
 	fprintf (file, "  Type:\tGENERIC\n");
-      else if (group->type == USE_ADDRESS)
-	fprintf (file, "  Type:\tADDRESS\n");
+      else if (group->type == USE_REF_ADDRESS)
+	fprintf (file, "  Type:\tREFERENCE ADDRESS\n");
+      else if (group->type == USE_PTR_ADDRESS)
+	fprintf (file, "  Type:\tPOINTER ARGUMENT ADDRESS\n");
       else
 	{
 	  gcc_assert (group->type == USE_COMPARE);
@@ -1502,19 +1519,21 @@ find_induction_variables (struct ivopts_data *data)
 
 /* Records a use of TYPE at *USE_P in STMT whose value is IV in GROUP.
    For address type use, ADDR_BASE is the stripped IV base, ADDR_OFFSET
-   is the const offset stripped from IV base; for other types use, both
-   are zero by default.  */
+   is the const offset stripped from IV base and MEM_TYPE is the type
+   of the memory being addressed.  For uses of other types, ADDR_BASE
+   and ADDR_OFFSET are zero by default and MEM_TYPE is NULL_TREE.  */
 
 static struct iv_use *
 record_use (struct iv_group *group, tree *use_p, struct iv *iv,
-	    gimple *stmt, enum use_type type, tree addr_base,
-	    poly_uint64 addr_offset)
+	    gimple *stmt, enum use_type type, tree mem_type,
+	    tree addr_base, poly_uint64 addr_offset)
 {
   struct iv_use *use = XCNEW (struct iv_use);
 
   use->id = group->vuses.length ();
   use->group_id = group->id;
   use->type = type;
+  use->mem_type = mem_type;
   use->iv = iv;
   use->stmt = stmt;
   use->op_p = use_p;
@@ -1569,18 +1588,21 @@ record_group (struct ivopts_data *data, enum use_type type)
 }
 
 /* Record a use of TYPE at *USE_P in STMT whose value is IV in a group.
-   New group will be created if there is no existing group for the use.  */
+   New group will be created if there is no existing group for the use.
+   MEM_TYPE is the type of memory being addressed, or NULL if this
+   isn't an address reference.  */
 
 static struct iv_use *
 record_group_use (struct ivopts_data *data, tree *use_p,
-		  struct iv *iv, gimple *stmt, enum use_type type)
+		  struct iv *iv, gimple *stmt, enum use_type type,
+		  tree mem_type)
 {
   tree addr_base = NULL;
   struct iv_group *group = NULL;
   poly_uint64 addr_offset = 0;
 
   /* Record non address type use in a new group.  */
-  if (type == USE_ADDRESS && iv->base_object)
+  if (address_p (type))
     {
       unsigned int i;
 
@@ -1591,7 +1613,7 @@ record_group_use (struct ivopts_data *data, tree *use_p,
 
 	  group = data->vgroups[i];
 	  use = group->vuses[0];
-	  if (use->type != USE_ADDRESS || !use->iv->base_object)
+	  if (!address_p (use->type))
 	    continue;
 
 	  /* Check if it has the same stripped base and step.  */
@@ -1607,7 +1629,8 @@ record_group_use (struct ivopts_data *data, tree *use_p,
   if (!group)
     group = record_group (data, type);
 
-  return record_use (group, use_p, iv, stmt, type, addr_base, addr_offset);
+  return record_use (group, use_p, iv, stmt, type, mem_type,
+		     addr_base, addr_offset);
 }
 
 /* Checks whether the use OP is interesting and if so, records it.  */
@@ -1641,7 +1664,7 @@ find_interesting_uses_op (struct ivopts_data *data, tree op)
   stmt = SSA_NAME_DEF_STMT (op);
   gcc_assert (gimple_code (stmt) == GIMPLE_PHI || is_gimple_assign (stmt));
 
-  use = record_group_use (data, NULL, iv, stmt, USE_NONLINEAR_EXPR);
+  use = record_group_use (data, NULL, iv, stmt, USE_NONLINEAR_EXPR, NULL_TREE);
   iv->nonlin_use = use;
   return use;
 }
@@ -1757,10 +1780,10 @@ find_interesting_uses_cond (struct ivopts_data *data, gimple *stmt)
       return;
     }
 
-  record_group_use (data, var_p, var_iv, stmt, USE_COMPARE);
+  record_group_use (data, var_p, var_iv, stmt, USE_COMPARE, NULL_TREE);
   /* Record compare type iv_use for iv on the other side of comparison.  */
   if (ret == COMP_IV_EXPR_2)
-    record_group_use (data, bound_p, bound_iv, stmt, USE_COMPARE);
+    record_group_use (data, bound_p, bound_iv, stmt, USE_COMPARE, NULL_TREE);
 }
 
 /* Returns the outermost loop EXPR is obviously invariant in
@@ -2375,7 +2398,7 @@ find_interesting_uses_address (struct ivopts_data *data, gimple *stmt,
   if (civ->base_object == NULL_TREE)
     goto fail;
 
-  record_group_use (data, op_p, civ, stmt, USE_ADDRESS);
+  record_group_use (data, op_p, civ, stmt, USE_REF_ADDRESS, TREE_TYPE (*op_p));
   return;
 
 fail:
@@ -2396,6 +2419,55 @@ find_invariants_stmt (struct ivopts_data *data, gimple *stmt)
       op = USE_FROM_PTR (use_p);
       record_invariant (data, op, false);
     }
+}
+
+/* CALL calls an internal function.  If operand *OP_P will become an
+   address when the call is expanded, return the type of the memory
+   being addressed, otherwise return null.  */
+
+static tree
+get_mem_type_for_internal_fn (gcall *call, tree *op_p)
+{
+  switch (gimple_call_internal_fn (call))
+    {
+    case IFN_MASK_LOAD:
+      if (op_p == gimple_call_arg_ptr (call, 0))
+	return TREE_TYPE (gimple_call_lhs (call));
+      return NULL_TREE;
+
+    case IFN_MASK_STORE:
+      if (op_p == gimple_call_arg_ptr (call, 0))
+	return TREE_TYPE (gimple_call_arg (call, 3));
+      return NULL_TREE;
+
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* IV is a (non-address) iv that describes operand *OP_P of STMT.
+   Return true if the operand will become an address when STMT
+   is expanded and record the associated address use if so.  */
+
+static bool
+find_address_like_use (struct ivopts_data *data, gimple *stmt, tree *op_p,
+		       struct iv *iv)
+{
+  /* Fail if base object of this memory reference is unknown.  */
+  if (iv->base_object == NULL_TREE)
+    return false;
+
+  tree mem_type = NULL_TREE;
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    if (gimple_call_internal_p (call))
+      mem_type = get_mem_type_for_internal_fn (call, op_p);
+  if (mem_type)
+    {
+      iv = alloc_iv (data, iv->base, iv->step);
+      record_group_use (data, op_p, iv, stmt, USE_PTR_ADDRESS, mem_type);
+      return true;
+    }
+  return false;
 }
 
 /* Finds interesting uses of induction variables in the statement STMT.  */
@@ -2482,7 +2554,8 @@ find_interesting_uses_stmt (struct ivopts_data *data, gimple *stmt)
       if (!iv)
 	continue;
 
-      find_interesting_uses_op (data, op);
+      if (!find_address_like_use (data, stmt, use_p->use, iv))
+	find_interesting_uses_op (data, op);
     }
 }
 
@@ -2516,7 +2589,7 @@ addr_offset_valid_p (struct iv_use *use, poly_int64 offset)
   rtx reg, addr;
   unsigned list_index;
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (use->iv->base));
-  machine_mode addr_mode, mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
+  machine_mode addr_mode, mem_mode = TYPE_MODE (use->mem_type);
 
   list_index = (unsigned) as * MAX_MACHINE_MODE + (unsigned) mem_mode;
   if (list_index >= vec_safe_length (addr_list))
@@ -2573,7 +2646,7 @@ split_small_address_groups_p (struct ivopts_data *data)
       if (group->vuses.length () == 1)
 	continue;
 
-      gcc_assert (group->type == USE_ADDRESS);
+      gcc_assert (address_p (group->type));
       if (group->vuses.length () == 2)
 	{
 	  if (compare_sizes_for_sort (group->vuses[0]->addr_offset,
@@ -2625,7 +2698,7 @@ split_address_groups (struct ivopts_data *data)
       if (group->vuses.length () == 1)
 	continue;
 
-      gcc_assert (group->type == USE_ADDRESS);
+      gcc_assert (address_p (use->type));
 
       for (j = 1; j < group->vuses.length ();)
 	{
@@ -3145,7 +3218,7 @@ add_autoinc_candidates (struct ivopts_data *data, tree base, tree step,
 
   cstepi = int_cst_value (step);
 
-  mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
+  mem_mode = TYPE_MODE (use->mem_type);
   if (((USE_LOAD_PRE_INCREMENT (mem_mode)
 	|| USE_STORE_PRE_INCREMENT (mem_mode))
        && known_eq (GET_MODE_SIZE (mem_mode), cstepi))
@@ -3436,7 +3509,7 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
   /* At last, add auto-incremental candidates.  Make such variables
      important since other iv uses with same base object may be based
      on it.  */
-  if (use != NULL && use->type == USE_ADDRESS)
+  if (use != NULL && address_p (use->type))
     add_autoinc_candidates (data, iv->base, iv->step, true, use);
 }
 
@@ -3903,7 +3976,7 @@ get_use_type (struct iv_use *use)
   tree base_type = TREE_TYPE (use->iv->base);
   tree type;
 
-  if (use->type == USE_ADDRESS)
+  if (use->type == USE_REF_ADDRESS)
     {
       /* The base_type may be a void pointer.  Create a pointer type based on
 	 the mem_ref instead.  */
@@ -4331,7 +4404,7 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
   struct mem_address parts = {NULL_TREE, integer_one_node,
 			      NULL_TREE, NULL_TREE, NULL_TREE};
   machine_mode addr_mode = TYPE_MODE (type);
-  machine_mode mem_mode = TYPE_MODE (TREE_TYPE (*use->op_p));
+  machine_mode mem_mode = TYPE_MODE (use->mem_type);
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (use->iv->base));
   /* Only true if ratio != 1.  */
   bool ok_with_ratio_p = false;
@@ -5220,7 +5293,8 @@ determine_group_iv_cost (struct ivopts_data *data,
     case USE_NONLINEAR_EXPR:
       return determine_group_iv_cost_generic (data, group, cand);
 
-    case USE_ADDRESS:
+    case USE_REF_ADDRESS:
+    case USE_PTR_ADDRESS:
       return determine_group_iv_cost_address (data, group, cand);
 
     case USE_COMPARE:
@@ -5238,7 +5312,7 @@ static bool
 autoinc_possible_for_pair (struct ivopts_data *data, struct iv_use *use,
 			   struct iv_cand *cand)
 {
-  if (use->type != USE_ADDRESS)
+  if (!address_p (use->type))
     return false;
 
   bool can_autoinc = false;
@@ -6997,6 +7071,27 @@ adjust_iv_update_pos (struct iv_cand *cand, struct iv_use *use)
   cand->incremented_at = use->stmt;
 }
 
+/* Return the alias pointer type that should be used for a MEM_REF
+   associated with USE, which has type USE_PTR_ADDRESS.  */
+
+static tree
+get_alias_ptr_type_for_ptr_address (iv_use *use)
+{
+  gcall *call = as_a <gcall *> (use->stmt);
+  switch (gimple_call_internal_fn (call))
+    {
+    case IFN_MASK_LOAD:
+    case IFN_MASK_STORE:
+      /* The second argument contains the correct alias type.  */
+      gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
+      return TREE_TYPE (gimple_call_arg (call, 1));
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
 /* Rewrites USE (address that is an iv) using candidate CAND.  */
 
 static void
@@ -7025,16 +7120,31 @@ rewrite_use_address (struct ivopts_data *data,
   tree iv = var_at_stmt (data->current_loop, cand, use->stmt);
   tree base_hint = (cand->iv->base_object) ? iv : NULL_TREE;
   gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
-  tree type = TREE_TYPE (*use->op_p);
-  unsigned int align = get_object_alignment (*use->op_p);
-  if (align != TYPE_ALIGN (type))
-    type = build_aligned_type (type, align);
-
-  tree ref = create_mem_ref (&bsi, type, &aff,
-			     reference_alias_ptr_type (*use->op_p),
+  tree type = use->mem_type;
+  tree alias_ptr_type;
+  if (use->type == USE_PTR_ADDRESS)
+    alias_ptr_type = get_alias_ptr_type_for_ptr_address (use);
+  else
+    {
+      gcc_assert (type == TREE_TYPE (*use->op_p));
+      unsigned int align = get_object_alignment (*use->op_p);
+      if (align != TYPE_ALIGN (type))
+	type = build_aligned_type (type, align);
+      alias_ptr_type = reference_alias_ptr_type (*use->op_p);
+    }
+  tree ref = create_mem_ref (&bsi, type, &aff, alias_ptr_type,
 			     iv, base_hint, data->speed);
 
-  copy_ref_info (ref, *use->op_p);
+  if (use->type == USE_PTR_ADDRESS)
+    {
+      ref = fold_build1 (ADDR_EXPR, build_pointer_type (use->mem_type), ref);
+      ref = fold_convert (get_use_type (use), ref);
+      ref = force_gimple_operand_gsi (&bsi, ref, true, NULL_TREE,
+				      true, GSI_SAME_STMT);
+    }
+  else
+    copy_ref_info (ref, *use->op_p);
+
   *use->op_p = ref;
 }
 
@@ -7110,7 +7220,7 @@ rewrite_groups (struct ivopts_data *data)
 	      update_stmt (group->vuses[j]->stmt);
 	    }
 	}
-      else if (group->type == USE_ADDRESS)
+      else if (address_p (group->type))
 	{
 	  for (j = 0; j < group->vuses.length (); j++)
 	    {
