@@ -5227,6 +5227,15 @@ has vector mode @var{m} while operand 0 has the mode appropriate for one
 element of @var{m}.  Operand 1 has the usual mask mode for vectors of mode
 @var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
 
+@cindex @code{fold_extract_last_@var{m}} instruction pattern
+@item @code{fold_extract_last_@var{m}}
+If any bits of mask operand 2 are set, find the last set bit, extract
+the associated element from vector operand 3, and store the result
+in operand 0.  Store operand 1 in operand 0 otherwise.  Operand 3
+has mode @var{m} and operands 0 and 1 have the mode appropriate for
+one element of @var{m}.  Operand 2 has the usual mask mode for vectors
+of mode @var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern

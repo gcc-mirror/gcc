@@ -1588,6 +1588,9 @@ Target supports 32- and 16-bytes vectors.
 
 @item vect_logical_reduc
 Target supports AND, IOR and XOR reduction on vectors.
+
+@item vect_fold_extract_last
+Target supports the @code{fold_extract_last} optab.
 @end table
 
 @subsubsection Thread Local Storage attributes
