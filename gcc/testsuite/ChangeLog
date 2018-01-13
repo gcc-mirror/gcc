@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.target/aarch64/sve/live_1.c: New test.
+	* gcc.target/aarch64/sve/live_1_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.target/aarch64/sve/nopeel_1.c: New test.
 	* gcc.target/aarch64/sve/peel_ind_1.c: Likewise.
 	* gcc.target/aarch64/sve/peel_ind_1_run.c: Likewise.

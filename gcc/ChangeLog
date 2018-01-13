@@ -2,6 +2,22 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/md.texi (extract_last_@var{m}): Document.
+	* optabs.def (extract_last_optab): New optab.
+	* internal-fn.def (EXTRACT_LAST): New internal function.
+	* internal-fn.c (cond_unary_direct): New macro.
+	(expand_cond_unary_optab_fn): Likewise.
+	(direct_cond_unary_optab_supported_p): Likewise.
+	* tree-vect-loop.c (vectorizable_live_operation): Allow fully-masked
+	loops using EXTRACT_LAST.
+	* config/aarch64/aarch64-sve.md (aarch64_sve_lastb<mode>): Rename to...
+	(extract_last_<mode>): ...this optab.
+	(vec_extract<mode><Vel>): Update accordingly.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (empty_mask_is_expensive): New hook.
 	* doc/tm.texi.in (TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE): New hook.
 	* doc/tm.texi: Regenerate.

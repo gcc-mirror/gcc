@@ -307,6 +307,8 @@ OPTAB_D (reduc_and_scal_optab,  "reduc_and_scal_$a")
 OPTAB_D (reduc_ior_scal_optab,  "reduc_ior_scal_$a")
 OPTAB_D (reduc_xor_scal_optab,  "reduc_xor_scal_$a")
 
+OPTAB_D (extract_last_optab, "extract_last_$a")
+
 OPTAB_D (sdot_prod_optab, "sdot_prod$I$a")
 OPTAB_D (ssum_widen_optab, "widen_ssum$I$a3")
 OPTAB_D (udot_prod_optab, "udot_prod$I$a")

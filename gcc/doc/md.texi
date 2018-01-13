@@ -5219,6 +5219,14 @@ of a vector of mode @var{m}.  Operand 1 is the vector input and operand 0
 is the scalar result.  The mode of the scalar result is the same as one
 element of @var{m}.
 
+@cindex @code{extract_last_@var{m}} instruction pattern
+@item @code{extract_last_@var{m}}
+Find the last set bit in mask operand 1 and extract the associated element
+of vector operand 2.  Store the result in scalar operand 0.  Operand 2
+has vector mode @var{m} while operand 0 has the mode appropriate for one
+element of @var{m}.  Operand 1 has the usual mask mode for vectors of mode
+@var{m}; see @code{TARGET_VECTORIZE_GET_MASK_MODE}.
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern
