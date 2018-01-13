@@ -786,9 +786,6 @@ gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
 static bool
 is_pointer_array (tree expr)
 {
-  if (flag_openmp)
-    return false;
-
   if (expr == NULL_TREE
       || !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (expr))
       || GFC_CLASS_TYPE_P (TREE_TYPE (expr)))

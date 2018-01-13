@@ -9924,9 +9924,12 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   /* Walk the lhs.  */
   lss = gfc_walk_expr (expr1);
   if (gfc_is_reallocatable_lhs (expr1)
-	&& !(expr2->expr_type == EXPR_FUNCTION
-	     && expr2->value.function.isym != NULL))
+      && !(expr2->expr_type == EXPR_FUNCTION
+	   && expr2->value.function.isym != NULL
+	   && !(expr2->value.function.isym->elemental
+		|| expr2->value.function.isym->conversion)))
     lss->is_alloc_lhs = 1;
+
   rss = NULL;
 
   if ((expr1->ts.type == BT_DERIVED)
