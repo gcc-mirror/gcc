@@ -1277,7 +1277,7 @@ class TemplateTypePrinter(object):
     Recognizes type names that match a regular expression.
     Replaces them with a formatted string which can use replacement field
     {N} to refer to the \N subgroup of the regex match.
-    Type printers are recusively applied to the subgroups.
+    Type printers are recursively applied to the subgroups.
 
     This allows recognizing e.g. "std::vector<(.*), std::allocator<\\1> >"
     and replacing it with "std::vector<{1}>", omitting the template argument
@@ -1473,15 +1473,15 @@ def register_type_printers(obj):
             'unordered_multiset<{1}>')
 
     # strip the "fundamentals_v1" inline namespace from these types
-    add_one_template_type_printer(obj, 'any<T>',
-            'experimental::fundamentals_v\d::any<(.*)>',
-            'experimental::any<\\1>')
+    add_one_template_type_printer(obj, 'any',
+            'experimental::fundamentals_v\d::any',
+            'experimental::any')
     add_one_template_type_printer(obj, 'optional<T>',
             'experimental::fundamentals_v\d::optional<(.*)>',
-            'experimental::optional<\\1>')
+            'experimental::optional<{1}>')
     add_one_template_type_printer(obj, 'basic_string_view<C>',
             'experimental::fundamentals_v\d::basic_string_view<(.*), std::char_traits<\\1> >',
-            'experimental::basic_string_view<\\1>')
+            'experimental::basic_string_view<{1}>')
 
 def register_libstdcxx_printers (obj):
     "Register libstdc++ pretty-printers with objfile Obj."

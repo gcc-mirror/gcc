@@ -1,5 +1,9 @@
 2018-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* python/libstdcxx/v6/printers.py (register_type_printers): Remove
+	printer for experimental::any. Fix printers for experimental::optional
+	and experimental::basic_string_view.
+
 	Backport from mainline
 	2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
