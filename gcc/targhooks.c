@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "real.h"
 #include "langhooks.h"
+#include "sbitmap.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
@@ -2327,6 +2328,13 @@ bool
 default_stack_clash_protection_final_dynamic_probe (rtx residual ATTRIBUTE_UNUSED)
 {
   return 0;
+}
+
+/* The default implementation of TARGET_EARLY_REMAT_MODES.  */
+
+void
+default_select_early_remat_modes (sbitmap)
+{
 }
 
 #include "gt-targhooks.h"

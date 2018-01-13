@@ -1277,6 +1277,7 @@ OBJS = \
 	dwarf2asm.o \
 	dwarf2cfi.o \
 	dwarf2out.o \
+	early-remat.o \
 	emit-rtl.o \
 	et-forest.o \
 	except.o \

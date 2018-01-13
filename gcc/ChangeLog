@@ -1,4 +1,20 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* Makefile.in (OBJS): Add early-remat.o.
+	* target.def (select_early_remat_modes): New hook.
+	* doc/tm.texi.in (TARGET_SELECT_EARLY_REMAT_MODES): New hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_select_early_remat_modes): Declare.
+	* targhooks.c (default_select_early_remat_modes): New function.
+	* timevar.def (TV_EARLY_REMAT): New timevar.
+	* passes.def (pass_early_remat): New pass.
+	* tree-pass.h (make_pass_early_remat): Declare.
+	* early-remat.c: New file.
+	* config/aarch64/aarch64.c (aarch64_select_early_remat_modes): New
+	function.
+	(TARGET_SELECT_EARLY_REMAT_MODES): Define.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

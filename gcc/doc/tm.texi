@@ -2774,6 +2774,17 @@ details.
 With LRA, the default is to use @var{mode} unmodified.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SELECT_EARLY_REMAT_MODES (sbitmap @var{modes})
+On some targets, certain modes cannot be held in registers around a
+standard ABI call and are relatively expensive to spill to the stack.
+The early rematerialization pass can help in such cases by aggressively
+recomputing values after calls, so that they don't need to be spilled.
+
+This hook returns the set of such modes by setting the associated bits
+in @var{modes}.  The default implementation selects no modes, which has
+the effect of disabling the early rematerialization pass.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_CLASS_LIKELY_SPILLED_P (reg_class_t @var{rclass})
 A target hook which returns @code{true} if pseudos that have been assigned
 to registers of class @var{rclass} would likely be spilled because

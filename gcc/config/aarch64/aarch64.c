@@ -17130,6 +17130,22 @@ aarch64_can_change_mode_class (machine_mode from,
   return true;
 }
 
+/* Implement TARGET_EARLY_REMAT_MODES.  */
+
+static void
+aarch64_select_early_remat_modes (sbitmap modes)
+{
+  /* SVE values are not normally live across a call, so it should be
+     worth doing early rematerialization even in VL-specific mode.  */
+  for (int i = 0; i < NUM_MACHINE_MODES; ++i)
+    {
+      machine_mode mode = (machine_mode) i;
+      unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+      if (vec_flags & VEC_ANY_SVE)
+	bitmap_set_bit (modes, i);
+    }
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -17595,6 +17611,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS aarch64_can_change_mode_class
+
+#undef TARGET_SELECT_EARLY_REMAT_MODES
+#define TARGET_SELECT_EARLY_REMAT_MODES aarch64_select_early_remat_modes
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS
