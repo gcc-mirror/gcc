@@ -3058,19 +3058,19 @@ base_to_reg (struct address_info *ad)
   return new_inner;
 }
 
-/* Make reload base reg + disp from address AD.  Return the new pseudo.  */
+/* Make reload base reg + DISP from address AD.  Return the new pseudo.  */
 static rtx
-base_plus_disp_to_reg (struct address_info *ad)
+base_plus_disp_to_reg (struct address_info *ad, rtx disp)
 {
   enum reg_class cl;
   rtx new_reg;
 
-  lra_assert (ad->base == ad->base_term && ad->disp == ad->disp_term);
+  lra_assert (ad->base == ad->base_term);
   cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
 		       get_index_code (ad));
   new_reg = lra_create_new_reg (GET_MODE (*ad->base_term), NULL_RTX,
 				cl, "base + disp");
-  lra_emit_add (new_reg, *ad->base_term, *ad->disp_term);
+  lra_emit_add (new_reg, *ad->base_term, disp);
   return new_reg;
 }
 
@@ -3421,12 +3421,30 @@ process_address_1 (int nop, bool check_only_p,
 	 displacements, so reloading into an index register would
 	 not necessarily be a win.  */
       if (new_reg == NULL_RTX)
-        new_reg = base_plus_disp_to_reg (&ad);
+	{
+	  /* See if the target can split the displacement into a
+	     legitimate new displacement from a local anchor.  */
+	  gcc_assert (ad.disp == ad.disp_term);
+	  poly_int64 orig_offset;
+	  rtx offset1, offset2;
+	  if (poly_int_rtx_p (*ad.disp, &orig_offset)
+	      && targetm.legitimize_address_displacement (&offset1, &offset2,
+							  orig_offset,
+							  ad.mode))
+	    {
+	      new_reg = base_plus_disp_to_reg (&ad, offset1);
+	      new_reg = gen_rtx_PLUS (GET_MODE (new_reg), new_reg, offset2);
+	    }
+	  else
+	    new_reg = base_plus_disp_to_reg (&ad, *ad.disp);
+	}
       insns = get_insns ();
       last_insn = get_last_insn ();
       /* If we generated at least two insns, try last insn source as
 	 an address.  If we succeed, we generate one less insn.  */
-      if (last_insn != insns && (set = single_set (last_insn)) != NULL_RTX
+      if (REG_P (new_reg)
+	  && last_insn != insns
+	  && (set = single_set (last_insn)) != NULL_RTX
 	  && GET_CODE (SET_SRC (set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (set), 0))
 	  && CONSTANT_P (XEXP (SET_SRC (set), 1)))
@@ -3446,32 +3464,6 @@ process_address_1 (int nop, bool check_only_p,
 	      delete_insns_since (PREV_INSN (last_insn));
 	    }
 	}
-      /* Try if target can split displacement into legitimite new disp
-	 and offset.  If it's the case, we replace the last insn with
-	 insns for base + offset => new_reg and set new_reg + new disp
-	 to *ad.inner.  */
-      last_insn = get_last_insn ();
-      if ((set = single_set (last_insn)) != NULL_RTX
-	  && GET_CODE (SET_SRC (set)) == PLUS
-	  && REG_P (XEXP (SET_SRC (set), 0))
-	  && REGNO (XEXP (SET_SRC (set), 0)) < FIRST_PSEUDO_REGISTER
-	  && CONST_INT_P (XEXP (SET_SRC (set), 1)))
-	{
-	  rtx addend, disp = XEXP (SET_SRC (set), 1);
-	  if (targetm.legitimize_address_displacement (&disp, &addend,
-						       ad.mode))
-	    {
-	      rtx_insn *new_insns;
-	      start_sequence ();
-	      lra_emit_add (new_reg, XEXP (SET_SRC (set), 0), addend);
-	      new_insns = get_insns ();
-	      end_sequence ();
-	      new_reg = gen_rtx_PLUS (Pmode, new_reg, disp);
-	      delete_insns_since (PREV_INSN (last_insn));
-	      add_insn (new_insns);
-	      insns = get_insns ();
-	    }
-	}
       end_sequence ();
       emit_insn (insns);
       *ad.inner = new_reg;
@@ -3480,7 +3472,8 @@ process_address_1 (int nop, bool check_only_p,
     {
       /* base + scale * index + disp => new base + scale * index,
 	 case (1) above.  */
-      new_reg = base_plus_disp_to_reg (&ad);
+      gcc_assert (ad.disp == ad.disp_term);
+      new_reg = base_plus_disp_to_reg (&ad, *ad.disp);
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       new_reg, *ad.index);
     }

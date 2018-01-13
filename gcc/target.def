@@ -5657,13 +5657,16 @@ as SH, this hook can be used to avoid excessive spilling.",
    displacement addressing.  */
 DEFHOOK
 (legitimize_address_displacement,
- "A target hook which returns @code{true} if *@var{disp} is\n\
-legitimezed to valid address displacement with subtracting *@var{offset}\n\
-at memory mode @var{mode}.\n\
-The default version of this target hook returns @code{false}.\n\
-This hook will benefit machines with limited base plus displacement\n\
-addressing.",
- bool, (rtx *disp, rtx *offset, machine_mode mode),
+ "This hook tries to split address offset @var{orig_offset} into\n\
+two parts: one that should be added to the base address to create\n\
+a local anchor point, and an additional offset that can be applied\n\
+to the anchor to address a value of mode @var{mode}.  The idea is that\n\
+the local anchor could be shared by other accesses to nearby locations.\n\
+\n\
+The hook returns true if it succeeds, storing the offset of the\n\
+anchor from the base in @var{offset1} and the offset of the final address\n\
+from the anchor in @var{offset2}.  The default implementation returns false.",
+ bool, (rtx *offset1, rtx *offset2, poly_int64 orig_offset, machine_mode mode),
  default_legitimize_address_displacement)
 
 /* This target hook allows the backend to perform additional

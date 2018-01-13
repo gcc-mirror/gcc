@@ -5820,32 +5820,78 @@ aarch64_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
   return aarch64_classify_address (&addr, x, mode, strict_p, type);
 }
 
-/* Split an out-of-range address displacement into a base and offset.
-   Use 4KB range for 1- and 2-byte accesses and a 16KB range otherwise
-   to increase opportunities for sharing the base address of different sizes.
-   Unaligned accesses use the signed 9-bit range, TImode/TFmode use
-   the intersection of signed scaled 7-bit and signed 9-bit offset.  */
+/* Implement TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT.  */
+
 static bool
-aarch64_legitimize_address_displacement (rtx *disp, rtx *off, machine_mode mode)
+aarch64_legitimize_address_displacement (rtx *offset1, rtx *offset2,
+					 poly_int64 orig_offset,
+					 machine_mode mode)
 {
   HOST_WIDE_INT size;
   if (GET_MODE_SIZE (mode).is_constant (&size))
     {
-      HOST_WIDE_INT offset = INTVAL (*disp);
-      HOST_WIDE_INT base;
+      HOST_WIDE_INT const_offset, second_offset;
 
+      /* A general SVE offset is A * VQ + B.  Remove the A component from
+	 coefficient 0 in order to get the constant B.  */
+      const_offset = orig_offset.coeffs[0] - orig_offset.coeffs[1];
+
+      /* Split an out-of-range address displacement into a base and
+	 offset.  Use 4KB range for 1- and 2-byte accesses and a 16KB
+	 range otherwise to increase opportunities for sharing the base
+	 address of different sizes.  Unaligned accesses use the signed
+	 9-bit range, TImode/TFmode use the intersection of signed
+	 scaled 7-bit and signed 9-bit offset.  */
       if (mode == TImode || mode == TFmode)
-	base = (offset + 0x100) & ~0x1f8;
-      else if ((offset & (size - 1)) != 0)
-	base = (offset + 0x100) & ~0x1ff;
+	second_offset = ((const_offset + 0x100) & 0x1f8) - 0x100;
+      else if ((const_offset & (size - 1)) != 0)
+	second_offset = ((const_offset + 0x100) & 0x1ff) - 0x100;
       else
-	base = offset & ~(size < 4 ? 0xfff : 0x3ffc);
+	second_offset = const_offset & (size < 4 ? 0xfff : 0x3ffc);
 
-      *off = GEN_INT (base);
-      *disp = GEN_INT (offset - base);
+      if (second_offset == 0 || known_eq (orig_offset, second_offset))
+	return false;
+
+      /* Split the offset into second_offset and the rest.  */
+      *offset1 = gen_int_mode (orig_offset - second_offset, Pmode);
+      *offset2 = gen_int_mode (second_offset, Pmode);
       return true;
     }
-  return false;
+  else
+    {
+      /* Get the mode we should use as the basis of the range.  For structure
+	 modes this is the mode of one vector.  */
+      unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+      machine_mode step_mode
+	= (vec_flags & VEC_STRUCT) != 0 ? SVE_BYTE_MODE : mode;
+
+      /* Get the "mul vl" multiplier we'd like to use.  */
+      HOST_WIDE_INT factor = GET_MODE_SIZE (step_mode).coeffs[1];
+      HOST_WIDE_INT vnum = orig_offset.coeffs[1] / factor;
+      if (vec_flags & VEC_SVE_DATA)
+	/* LDR supports a 9-bit range, but the move patterns for
+	   structure modes require all vectors to be in range of the
+	   same base.  The simplest way of accomodating that while still
+	   promoting reuse of anchor points between different modes is
+	   to use an 8-bit range unconditionally.  */
+	vnum = ((vnum + 128) & 255) - 128;
+      else
+	/* Predicates are only handled singly, so we might as well use
+	   the full range.  */
+	vnum = ((vnum + 256) & 511) - 256;
+      if (vnum == 0)
+	return false;
+
+      /* Convert the "mul vl" multiplier into a byte offset.  */
+      poly_int64 second_offset = GET_MODE_SIZE (step_mode) * vnum;
+      if (known_eq (second_offset, orig_offset))
+	return false;
+
+      /* Split the offset into second_offset and the rest.  */
+      *offset1 = gen_int_mode (orig_offset - second_offset, Pmode);
+      *offset2 = gen_int_mode (second_offset, Pmode);
+      return true;
+    }
 }
 
 /* Return the binary representation of floating point constant VALUE in INTVAL.

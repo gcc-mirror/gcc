@@ -1,4 +1,24 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (legitimize_address_displacement): Take the original
+	offset as a poly_int.
+	* targhooks.h (default_legitimize_address_displacement): Update
+	accordingly.
+	* targhooks.c (default_legitimize_address_displacement): Likewise.
+	* doc/tm.texi: Regenerate.
+	* lra-constraints.c (base_plus_disp_to_reg): Take the displacement
+	as an argument, moving assert of ad->disp == ad->disp_term to...
+	(process_address_1): ...here.  Update calls to base_plus_disp_to_reg.
+	Try calling targetm.legitimize_address_displacement before expanding
+	the address rather than afterwards, and adjust for the new interface.
+	* config/aarch64/aarch64.c (aarch64_legitimize_address_displacement):
+	Match the new hook interface.  Handle SVE addresses.
+	* config/sh/sh.c (sh_legitimize_address_displacement): Make the
+	new hook interface.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* Makefile.in (OBJS): Add early-remat.o.
 	* target.def (select_early_remat_modes): New hook.
