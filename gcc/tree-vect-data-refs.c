@@ -2427,11 +2427,10 @@ vect_analyze_group_access_1 (struct data_reference *dr)
 	 element of the group that is accessed in the loop.  */
 
       /* Gaps are supported only for loads. STEP must be a multiple of the type
-	 size.  The size of the group must be a power of 2.  */
+	 size.  */
       if (DR_IS_READ (dr)
 	  && (dr_step % type_size) == 0
-	  && groupsize > 0
-	  && pow2p_hwi (groupsize))
+	  && groupsize > 0)
 	{
 	  GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = stmt;
 	  GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;

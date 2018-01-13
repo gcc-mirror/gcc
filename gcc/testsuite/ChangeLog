@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.target/aarch64/sve/struct_vect_18.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_18_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_19_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lib/target-supports.exp
 	(check_effective_target_vect_fold_extract_last): New proc.
 	* gcc.dg/vect/pr65947-1.c: Update dump messages.  Add markup
