@@ -216,11 +216,11 @@ vect_get_place_in_interleaving_chain (gimple *stmt, gimple *first_stmt)
    (if nonnull) and the type of each intermediate vector in *VECTOR_TYPE_OUT
    (if nonnull).  */
 
-static bool
+bool
 can_duplicate_and_interleave_p (unsigned int count, machine_mode elt_mode,
-				unsigned int *nvectors_out = NULL,
-				tree *vector_type_out = NULL,
-				tree *permutes = NULL)
+				unsigned int *nvectors_out,
+				tree *vector_type_out,
+				tree *permutes)
 {
   poly_int64 elt_bytes = count * GET_MODE_SIZE (elt_mode);
   poly_int64 nelts;
@@ -3309,7 +3309,7 @@ vect_mask_constant_operand_p (gimple *stmt, int opnum)
    We try to find the largest IM for which this sequence works, in order
    to cut down on the number of interleaves.  */
 
-static void
+void
 duplicate_and_interleave (gimple_seq *seq, tree vector_type, vec<tree> elts,
 			  unsigned int nresults, vec<tree> &results)
 {

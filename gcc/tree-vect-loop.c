@@ -2451,6 +2451,54 @@ reduction_fn_for_scalar_code (enum tree_code code, internal_fn *reduc_fn)
     }
 }
 
+/* If there is a neutral value X such that SLP reduction NODE would not
+   be affected by the introduction of additional X elements, return that X,
+   otherwise return null.  CODE is the code of the reduction.  REDUC_CHAIN
+   is true if the SLP statements perform a single reduction, false if each
+   statement performs an independent reduction.  */
+
+static tree
+neutral_op_for_slp_reduction (slp_tree slp_node, tree_code code,
+			      bool reduc_chain)
+{
+  vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
+  gimple *stmt = stmts[0];
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
+  tree vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
+  tree scalar_type = TREE_TYPE (vector_type);
+  struct loop *loop = gimple_bb (stmt)->loop_father;
+  gcc_assert (loop);
+
+  switch (code)
+    {
+    case WIDEN_SUM_EXPR:
+    case DOT_PROD_EXPR:
+    case SAD_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+      return build_zero_cst (scalar_type);
+
+    case MULT_EXPR:
+      return build_one_cst (scalar_type);
+
+    case BIT_AND_EXPR:
+      return build_all_ones_cst (scalar_type);
+
+    case MAX_EXPR:
+    case MIN_EXPR:
+      /* For MIN/MAX the initial values are neutral.  A reduction chain
+	 has only a single initial value, so that value is neutral for
+	 all statements.  */
+      if (reduc_chain)
+	return PHI_ARG_DEF_FROM_EDGE (stmt, loop_preheader_edge (loop));
+      return NULL_TREE;
+
+    default:
+      return NULL_TREE;
+    }
+}
 
 /* Error reporting helper for vect_is_simple_reduction below.  GIMPLE statement
    STMT is printed with a message MSG. */
@@ -4095,6 +4143,16 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 	  /* Option1: the first element is '0' or '1' as well.  */
 	  init_def = gimple_build_vector_from_val (&stmts, vectype,
 						   def_for_init);
+	else if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ())
+	  {
+	    /* Option2 (variable length): the first element is INIT_VAL.  */
+	    init_def = build_vector_from_val (vectype, def_for_init);
+	    gcall *call = gimple_build_call_internal (IFN_VEC_SHL_INSERT,
+						      2, init_def, init_val);
+	    init_def = make_ssa_name (vectype);
+	    gimple_call_set_lhs (call, init_def);
+	    gimple_seq_add_stmt (&stmts, call);
+	  }
 	else
 	  {
 	    /* Option2: the first element is INIT_VAL.  */
@@ -4134,34 +4192,32 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 }
 
 /* Get at the initial defs for the reduction PHIs in SLP_NODE.
-   NUMBER_OF_VECTORS is the number of vector defs to create.  */
+   NUMBER_OF_VECTORS is the number of vector defs to create.
+   If NEUTRAL_OP is nonnull, introducing extra elements of that
+   value will not change the result.  */
 
 static void
 get_initial_defs_for_reduction (slp_tree slp_node,
 				vec<tree> *vec_oprnds,
 				unsigned int number_of_vectors,
-				enum tree_code code, bool reduc_chain)
+				bool reduc_chain, tree neutral_op)
 {
   vec<gimple *> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
   gimple *stmt = stmts[0];
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
-  unsigned nunits;
+  unsigned HOST_WIDE_INT nunits;
   unsigned j, number_of_places_left_in_vector;
-  tree vector_type, scalar_type;
+  tree vector_type;
   tree vop;
   int group_size = stmts.length ();
   unsigned int vec_num, i;
   unsigned number_of_copies = 1;
   vec<tree> voprnds;
   voprnds.create (number_of_vectors);
-  tree neutral_op = NULL;
   struct loop *loop;
+  auto_vec<tree, 16> permute_results;
 
   vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
-  scalar_type = TREE_TYPE (vector_type);
-  /* vectorizable_reduction has already rejected SLP reductions on
-     variable-length vectors.  */
-  nunits = TYPE_VECTOR_SUBPARTS (vector_type).to_constant ();
 
   gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def);
 
@@ -4169,45 +4225,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   gcc_assert (loop);
   edge pe = loop_preheader_edge (loop);
 
-  /* op is the reduction operand of the first stmt already.  */
-  /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
-     we need either neutral operands or the original operands.  See
-     get_initial_def_for_reduction() for details.  */
-  switch (code)
-    {
-    case WIDEN_SUM_EXPR:
-    case DOT_PROD_EXPR:
-    case SAD_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-      neutral_op = build_zero_cst (scalar_type);
-      break;
-
-    case MULT_EXPR:
-      neutral_op = build_one_cst (scalar_type);
-      break;
-
-    case BIT_AND_EXPR:
-      neutral_op = build_all_ones_cst (scalar_type);
-      break;
-
-    /* For MIN/MAX we don't have an easy neutral operand but
-       the initial values can be used fine here.  Only for
-       a reduction chain we have to force a neutral element.  */
-    case MAX_EXPR:
-    case MIN_EXPR:
-      if (! reduc_chain)
-	neutral_op = NULL;
-      else
-	neutral_op = PHI_ARG_DEF_FROM_EDGE (stmt, pe);
-      break;
-
-    default:
-      gcc_assert (! reduc_chain);
-      neutral_op = NULL;
-    }
+  gcc_assert (!reduc_chain || neutral_op);
 
   /* NUMBER_OF_COPIES is the number of times we need to use the same values in
      created vectors. It is greater than 1 if unrolling is performed.
@@ -4225,9 +4243,13 @@ get_initial_defs_for_reduction (slp_tree slp_node,
      (s1, s2, ..., s8).  We will create two vectors {s1, s2, s3, s4} and
      {s5, s6, s7, s8}.  */
 
+  if (!TYPE_VECTOR_SUBPARTS (vector_type).is_constant (&nunits))
+    nunits = group_size;
+
   number_of_copies = nunits * number_of_vectors / group_size;
 
   number_of_places_left_in_vector = nunits;
+  bool constant_p = true;
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
   for (j = 0; j < number_of_copies; j++)
@@ -4247,11 +4269,48 @@ get_initial_defs_for_reduction (slp_tree slp_node,
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           number_of_places_left_in_vector--;
 	  elts[number_of_places_left_in_vector] = op;
+	  if (!CONSTANT_CLASS_P (op))
+	    constant_p = false;
 
           if (number_of_places_left_in_vector == 0)
             {
 	      gimple_seq ctor_seq = NULL;
-	      tree init = gimple_build_vector (&ctor_seq, &elts);
+	      tree init;
+	      if (constant_p && !neutral_op
+		  ? multiple_p (TYPE_VECTOR_SUBPARTS (vector_type), nunits)
+		  : known_eq (TYPE_VECTOR_SUBPARTS (vector_type), nunits))
+		/* Build the vector directly from ELTS.  */
+		init = gimple_build_vector (&ctor_seq, &elts);
+	      else if (neutral_op)
+		{
+		  /* Build a vector of the neutral value and shift the
+		     other elements into place.  */
+		  init = gimple_build_vector_from_val (&ctor_seq, vector_type,
+						       neutral_op);
+		  int k = nunits;
+		  while (k > 0 && elts[k - 1] == neutral_op)
+		    k -= 1;
+		  while (k > 0)
+		    {
+		      k -= 1;
+		      gcall *call = gimple_build_call_internal
+			(IFN_VEC_SHL_INSERT, 2, init, elts[k]);
+		      init = make_ssa_name (vector_type);
+		      gimple_call_set_lhs (call, init);
+		      gimple_seq_add_stmt (&ctor_seq, call);
+		    }
+		}
+	      else
+		{
+		  /* First time round, duplicate ELTS to fill the
+		     required number of vectors, then cherry pick the
+		     appropriate result for each iteration.  */
+		  if (vec_oprnds->is_empty ())
+		    duplicate_and_interleave (&ctor_seq, vector_type, elts,
+					      number_of_vectors,
+					      permute_results);
+		  init = permute_results[number_of_vectors - j - 1];
+		}
 	      if (ctor_seq != NULL)
 		gsi_insert_seq_on_edge_immediate (pe, ctor_seq);
 	      voprnds.quick_push (init);
@@ -4259,6 +4318,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
               number_of_places_left_in_vector = nunits;
 	      elts.new_vector (vector_type, nunits, 1);
 	      elts.quick_grow (nunits);
+	      constant_p = true;
             }
         }
     }
@@ -4328,6 +4388,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
      be smaller than any value of the IV in the loop, for MIN_EXPR larger than
      any value of the IV in the loop.
    INDUC_CODE is the code for epilog reduction if INTEGER_INDUC_COND_REDUCTION.
+   NEUTRAL_OP is the value given by neutral_op_for_slp_reduction; it is
+     null if this is not an SLP reduction
 
    This function:
    1. Creates the reduction def-use cycles: sets the arguments for 
@@ -4376,7 +4438,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
                                   bool double_reduc, 
 				  slp_tree slp_node,
 				  slp_instance slp_node_instance,
-				  tree induc_val, enum tree_code induc_code)
+				  tree induc_val, enum tree_code induc_code,
+				  tree neutral_op)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   stmt_vec_info prev_phi_info;
@@ -4412,6 +4475,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
   auto_vec<tree> vec_initial_defs;
   auto_vec<gimple *> phis;
   bool slp_reduc = false;
+  bool direct_slp_reduc;
   tree new_phi_result;
   gimple *inner_phi = NULL;
   tree induction_index = NULL_TREE;
@@ -4455,8 +4519,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
       unsigned vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
       vec_initial_defs.reserve (vec_num);
       get_initial_defs_for_reduction (slp_node_instance->reduc_phis,
-				      &vec_initial_defs, vec_num, code,
-				      GROUP_FIRST_ELEMENT (stmt_info));
+				      &vec_initial_defs, vec_num,
+				      GROUP_FIRST_ELEMENT (stmt_info),
+				      neutral_op);
     }
   else
     {
@@ -4763,6 +4828,12 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
      b2 = operation (b1)  */
   slp_reduc = (slp_node && !GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)));
 
+  /* True if we should implement SLP_REDUC using native reduction operations
+     instead of scalar operations.  */
+  direct_slp_reduc = (reduc_fn != IFN_LAST
+		      && slp_reduc
+		      && !TYPE_VECTOR_SUBPARTS (vectype).is_constant ());
+
   /* In case of reduction chain, e.g.,
      # a1 = phi <a3, a0>
      a2 = operation (a1)
@@ -4770,7 +4841,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 
      we may end up with more than one vector result.  Here we reduce them to
      one vector.  */
-  if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)))
+  if (GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) || direct_slp_reduc)
     {
       tree first_vect = PHI_RESULT (new_phis[0]);
       gassign *new_vec_stmt = NULL;
@@ -5060,6 +5131,83 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	}
 
       scalar_results.safe_push (new_temp);
+    }
+  else if (direct_slp_reduc)
+    {
+      /* Here we create one vector for each of the GROUP_SIZE results,
+	 with the elements for other SLP statements replaced with the
+	 neutral value.  We can then do a normal reduction on each vector.  */
+
+      /* Enforced by vectorizable_reduction.  */
+      gcc_assert (new_phis.length () == 1);
+      gcc_assert (pow2p_hwi (group_size));
+
+      slp_tree orig_phis_slp_node = slp_node_instance->reduc_phis;
+      vec<gimple *> orig_phis = SLP_TREE_SCALAR_STMTS (orig_phis_slp_node);
+      gimple_seq seq = NULL;
+
+      /* Build a vector {0, 1, 2, ...}, with the same number of elements
+	 and the same element size as VECTYPE.  */
+      tree index = build_index_vector (vectype, 0, 1);
+      tree index_type = TREE_TYPE (index);
+      tree index_elt_type = TREE_TYPE (index_type);
+      tree mask_type = build_same_sized_truth_vector_type (index_type);
+
+      /* Create a vector that, for each element, identifies which of
+	 the GROUP_SIZE results should use it.  */
+      tree index_mask = build_int_cst (index_elt_type, group_size - 1);
+      index = gimple_build (&seq, BIT_AND_EXPR, index_type, index,
+			    build_vector_from_val (index_type, index_mask));
+
+      /* Get a neutral vector value.  This is simply a splat of the neutral
+	 scalar value if we have one, otherwise the initial scalar value
+	 is itself a neutral value.  */
+      tree vector_identity = NULL_TREE;
+      if (neutral_op)
+	vector_identity = gimple_build_vector_from_val (&seq, vectype,
+							neutral_op);
+      for (unsigned int i = 0; i < group_size; ++i)
+	{
+	  /* If there's no univeral neutral value, we can use the
+	     initial scalar value from the original PHI.  This is used
+	     for MIN and MAX reduction, for example.  */
+	  if (!neutral_op)
+	    {
+	      tree scalar_value
+		= PHI_ARG_DEF_FROM_EDGE (orig_phis[i],
+					 loop_preheader_edge (loop));
+	      vector_identity = gimple_build_vector_from_val (&seq, vectype,
+							      scalar_value);
+	    }
+
+	  /* Calculate the equivalent of:
+
+	     sel[j] = (index[j] == i);
+
+	     which selects the elements of NEW_PHI_RESULT that should
+	     be included in the result.  */
+	  tree compare_val = build_int_cst (index_elt_type, i);
+	  compare_val = build_vector_from_val (index_type, compare_val);
+	  tree sel = gimple_build (&seq, EQ_EXPR, mask_type,
+				   index, compare_val);
+
+	  /* Calculate the equivalent of:
+
+	     vec = seq ? new_phi_result : vector_identity;
+
+	     VEC is now suitable for a full vector reduction.  */
+	  tree vec = gimple_build (&seq, VEC_COND_EXPR, vectype,
+				   sel, new_phi_result, vector_identity);
+
+	  /* Do the reduction and convert it to the appropriate type.  */
+	  gcall *call = gimple_build_call_internal (reduc_fn, 1, vec);
+	  tree scalar = make_ssa_name (TREE_TYPE (vectype));
+	  gimple_call_set_lhs (call, scalar);
+	  gimple_seq_add_stmt (&seq, call);
+	  scalar = gimple_convert (&seq, scalar_type, scalar);
+	  scalar_results.safe_push (scalar);
+	}
+      gsi_insert_seq_before (&exit_gsi, seq, GSI_SAME_STMT);
     }
   else
     {
@@ -6412,25 +6560,64 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       return false;
     }
 
-  if (double_reduc && !nunits_out.is_constant ())
+  /* For SLP reductions, see if there is a neutral value we can use.  */
+  tree neutral_op = NULL_TREE;
+  if (slp_node)
+    neutral_op
+      = neutral_op_for_slp_reduction (slp_node_instance->reduc_phis, code,
+				      GROUP_FIRST_ELEMENT (stmt_info) != NULL);
+
+  /* For double reductions, and for SLP reductions with a neutral value,
+     we construct a variable-length initial vector by loading a vector
+     full of the neutral value and then shift-and-inserting the start
+     values into the low-numbered elements.  */
+  if ((double_reduc || neutral_op)
+      && !nunits_out.is_constant ()
+      && !direct_internal_fn_supported_p (IFN_VEC_SHL_INSERT,
+					  vectype_out, OPTIMIZE_FOR_SPEED))
     {
-      /* The current double-reduction code creates the initial value
-	 element-by-element.  */
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "double reduction not supported for variable-length"
-			 " vectors.\n");
+			 "reduction on variable-length vectors requires"
+			 " target support for a vector-shift-and-insert"
+			 " operation.\n");
       return false;
     }
 
-  if (slp_node && !nunits_out.is_constant ())
+  /* Check extra constraints for variable-length unchained SLP reductions.  */
+  if (STMT_SLP_TYPE (stmt_info)
+      && !GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt))
+      && !nunits_out.is_constant ())
     {
-      /* The current SLP code creates the initial value element-by-element.  */
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "SLP reduction not supported for variable-length"
-			 " vectors.\n");
-      return false;
+      /* We checked above that we could build the initial vector when
+	 there's a neutral element value.  Check here for the case in
+	 which each SLP statement has its own initial value and in which
+	 that value needs to be repeated for every instance of the
+	 statement within the initial vector.  */
+      unsigned int group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
+      scalar_mode elt_mode = SCALAR_TYPE_MODE (TREE_TYPE (vectype_out));
+      if (!neutral_op
+	  && !can_duplicate_and_interleave_p (group_size, elt_mode))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported form of SLP reduction for"
+			     " variable-length vectors: cannot build"
+			     " initial vector.\n");
+	  return false;
+	}
+      /* The epilogue code relies on the number of elements being a multiple
+	 of the group size.  The duplicate-and-interleave approach to setting
+	 up the the initial vector does too.  */
+      if (!multiple_p (nunits_out, group_size))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported form of SLP reduction for"
+			     " variable-length vectors: the vector size"
+			     " is not a multiple of the number of results.\n");
+	  return false;
+	}
     }
 
   /* In case of widenning multiplication by a constant, we update the type
@@ -6698,7 +6885,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   vect_create_epilog_for_reduction (vect_defs, stmt, reduc_def_stmt,
 				    epilog_copies, reduc_fn, phis,
 				    double_reduc, slp_node, slp_node_instance,
-				    cond_reduc_val, cond_reduc_op_code);
+				    cond_reduc_val, cond_reduc_op_code,
+				    neutral_op);
 
   return true;
 }

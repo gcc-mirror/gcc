@@ -2073,3 +2073,16 @@
     operands[5] = gen_reg_rtx (VNx4SImode);
   }
 )
+
+;; Shift an SVE vector left and insert a scalar into element 0.
+(define_insn "vec_shl_insert_<mode>"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w")
+	(unspec:SVE_ALL
+	  [(match_operand:SVE_ALL 1 "register_operand" "0, 0")
+	   (match_operand:<VEL> 2 "register_operand" "rZ, w")]
+	  UNSPEC_INSR))]
+  "TARGET_SVE"
+  "@
+   insr\t%0.<Vetype>, %<vwcore>2
+   insr\t%0.<Vetype>, %<Vetype>2"
+)

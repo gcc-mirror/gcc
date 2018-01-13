@@ -1352,6 +1352,11 @@ extern void vect_get_slp_defs (vec<tree> , slp_tree, vec<vec<tree> > *);
 extern bool vect_slp_bb (basic_block);
 extern gimple *vect_find_last_scalar_stmt_in_slp (slp_tree);
 extern bool is_simple_and_all_uses_invariant (gimple *, loop_vec_info);
+extern bool can_duplicate_and_interleave_p (unsigned int, machine_mode,
+					    unsigned int * = NULL,
+					    tree * = NULL, tree * = NULL);
+extern void duplicate_and_interleave (gimple_seq *, tree, vec<tree>,
+				      unsigned int, vec<tree> &);
 
 /* In tree-vect-patterns.c.  */
 /* Pattern recognition functions.
