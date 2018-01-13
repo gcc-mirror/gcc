@@ -3616,9 +3616,15 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
   else
     {
       if (DR_IS_READ (dr))
-	decl = targetm.vectorize.builtin_gather (vectype, offtype, scale);
+	{
+	  if (targetm.vectorize.builtin_gather)
+	    decl = targetm.vectorize.builtin_gather (vectype, offtype, scale);
+	}
       else
-	decl = targetm.vectorize.builtin_scatter (vectype, offtype, scale);
+	{
+	  if (targetm.vectorize.builtin_scatter)
+	    decl = targetm.vectorize.builtin_scatter (vectype, offtype, scale);
+	}
 
       if (!decl)
 	return false;
@@ -4367,6 +4373,10 @@ vect_create_addr_base_for_vector_ref (gimple *stmt,
 	to the initial address accessed by the data-ref in STMT.  This is
 	similar to OFFSET, but OFFSET is counted in elements, while BYTE_OFFSET
 	in bytes.
+   8. IV_STEP (optional, defaults to NULL): the amount that should be added
+	to the IV during each iteration of the loop.  NULL says to move
+	by one copy of AGGR_TYPE up or down, depending on the step of the
+	data reference.
 
    Output:
    1. Declare a new ptr to vector_type, and have it point to the base of the
@@ -4399,7 +4409,8 @@ tree
 vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
 			  tree offset, tree *initial_address,
 			  gimple_stmt_iterator *gsi, gimple **ptr_incr,
-			  bool only_init, bool *inv_p, tree byte_offset)
+			  bool only_init, bool *inv_p, tree byte_offset,
+			  tree iv_step)
 {
   const char *base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -4423,7 +4434,8 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
   tree step;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
 
-  gcc_assert (TREE_CODE (aggr_type) == ARRAY_TYPE
+  gcc_assert (iv_step != NULL_TREE
+	      || TREE_CODE (aggr_type) == ARRAY_TYPE
 	      || TREE_CODE (aggr_type) == VECTOR_TYPE);
 
   if (loop_vinfo)
@@ -4564,14 +4576,17 @@ vect_create_data_ref_ptr (gimple *stmt, tree aggr_type, struct loop *at_loop,
     aptr = aggr_ptr_init;
   else
     {
-      /* The step of the aggregate pointer is the type size.  */
-      tree iv_step = TYPE_SIZE_UNIT (aggr_type);
-      /* One exception to the above is when the scalar step of the load in
-	 LOOP is zero. In this case the step here is also zero.  */
-      if (*inv_p)
-	iv_step = size_zero_node;
-      else if (tree_int_cst_sgn (step) == -1)
-	iv_step = fold_build1 (NEGATE_EXPR, TREE_TYPE (iv_step), iv_step);
+      if (iv_step == NULL_TREE)
+	{
+	  /* The step of the aggregate pointer is the type size.  */
+	  iv_step = TYPE_SIZE_UNIT (aggr_type);
+	  /* One exception to the above is when the scalar step of the load in
+	     LOOP is zero. In this case the step here is also zero.  */
+	  if (*inv_p)
+	    iv_step = size_zero_node;
+	  else if (tree_int_cst_sgn (step) == -1)
+	    iv_step = fold_build1 (NEGATE_EXPR, TREE_TYPE (iv_step), iv_step);
+	}
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
@@ -4704,7 +4719,7 @@ bump_vector_ptr (tree dataref_ptr, gimple *ptr_incr, gimple_stmt_iterator *gsi,
       if (use == dataref_ptr)
         SET_USE (use_p, new_dataref_ptr);
       else
-        gcc_assert (tree_int_cst_compare (use, update) == 0);
+        gcc_assert (operand_equal_p (use, update, 0));
     }
 
   return new_dataref_ptr;

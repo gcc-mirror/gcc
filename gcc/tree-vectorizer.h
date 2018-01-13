@@ -1462,7 +1462,7 @@ extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
 				      gimple **, bool, bool *,
-				      tree = NULL_TREE);
+				      tree = NULL_TREE, tree = NULL_TREE);
 extern tree bump_vector_ptr (tree, gimple *, gimple_stmt_iterator *, gimple *,
 			     tree);
 extern tree vect_create_destination_var (tree, tree);
