@@ -47,9 +47,11 @@ along with GCC; see the file COPYING3.  If not see
 
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
+   - mask_load_lanes: currently just vec_mask_load_lanes
 
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
+   - mask_store_lanes: currently just vec_mask_store_lanes
 
    DEF_INTERNAL_SIGNED_OPTAB_FN defines an internal function that
    maps to one of two optabs, depending on the signedness of an input.
@@ -106,9 +108,13 @@ along with GCC; see the file COPYING3.  If not see
 
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
 DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
+		       vec_mask_load_lanes, mask_load_lanes)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
+		       vec_mask_store_lanes, mask_store_lanes)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 
