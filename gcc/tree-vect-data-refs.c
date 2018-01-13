@@ -61,20 +61,23 @@ static bool
 vect_lanes_optab_supported_p (const char *name, convert_optab optab,
 			      tree vectype, unsigned HOST_WIDE_INT count)
 {
-  machine_mode mode;
-  scalar_int_mode array_mode;
+  machine_mode mode, array_mode;
   bool limit_p;
 
   mode = TYPE_MODE (vectype);
-  limit_p = !targetm.array_mode_supported_p (mode, count);
-  if (!int_mode_for_size (count * GET_MODE_BITSIZE (mode),
-			  limit_p).exists (&array_mode))
+  if (!targetm.array_mode (mode, count).exists (&array_mode))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "no array mode for %s[" HOST_WIDE_INT_PRINT_DEC "]\n",
-                         GET_MODE_NAME (mode), count);
-      return false;
+      poly_uint64 bits = count * GET_MODE_BITSIZE (mode);
+      limit_p = !targetm.array_mode_supported_p (mode, count);
+      if (!int_mode_for_size (bits, limit_p).exists (&array_mode))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "no array mode for %s["
+			     HOST_WIDE_INT_PRINT_DEC "]\n",
+			     GET_MODE_NAME (mode), count);
+	  return false;
+	}
     }
 
   if (convert_optab_handler (optab, array_mode, mode) == CODE_FOR_nothing)

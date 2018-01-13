@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (array_mode): New target hook.
+	* doc/tm.texi.in (TARGET_ARRAY_MODE): New hook.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_optmode_mode_uhwi_none): Declare.
+	* hooks.c (hook_optmode_mode_uhwi_none): New function.
+	* tree-vect-data-refs.c (vect_lanes_optab_supported_p): Use
+	targetm.array_mode.
+	* stor-layout.c (mode_for_array): Likewise.  Support polynomial
+	type sizes.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* fold-const.c (fold_binary_loc): Check the argument types
 	rather than the result type when testing for a vector operation.
 

@@ -4250,6 +4250,20 @@ insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
 @end deftypefn
 
+@deftypefn {Target Hook} opt_machine_mode TARGET_ARRAY_MODE (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
+Return the mode that GCC should use for an array that has
+@var{nelems} elements, with each element having mode @var{mode}.
+Return no mode if the target has no special requirements.  In the
+latter case, GCC looks for an integer mode of the appropriate size
+if available and uses BLKmode otherwise.  Usually the search for the
+integer mode is limited to @code{MAX_FIXED_MODE_SIZE}, but the
+@code{TARGET_ARRAY_MODE_SUPPORTED_P} hook allows a larger mode to be
+used in specific cases.
+
+The main use of this hook is to specify that an array of vectors should
+also have a vector mode.  The default implementation returns no mode.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_ARRAY_MODE_SUPPORTED_P (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
 Return true if GCC should try to use a scalar mode to store an array
 of @var{nelems} elements, given that each element has mode @var{mode}.
