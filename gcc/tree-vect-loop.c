@@ -3663,23 +3663,24 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 
   if ((scalar_single_iter_cost * assumed_vf) > (int) vec_inside_cost)
     {
-      if (vec_outside_cost <= 0)
+      min_profitable_iters = ((vec_outside_cost - scalar_outside_cost)
+			      * assumed_vf
+			      - vec_inside_cost * peel_iters_prologue
+			      - vec_inside_cost * peel_iters_epilogue);
+
+      if (min_profitable_iters <= 0)
         min_profitable_iters = 0;
       else
-        {
-	  min_profitable_iters = ((vec_outside_cost - scalar_outside_cost)
-				  * assumed_vf
-				  - vec_inside_cost * peel_iters_prologue
-				  - vec_inside_cost * peel_iters_epilogue)
-				 / ((scalar_single_iter_cost * assumed_vf)
-				    - vec_inside_cost);
+	{
+	  min_profitable_iters /= ((scalar_single_iter_cost * assumed_vf)
+				   - vec_inside_cost);
 
 	  if ((scalar_single_iter_cost * assumed_vf * min_profitable_iters)
 	      <= (((int) vec_inside_cost * min_profitable_iters)
 		  + (((int) vec_outside_cost - scalar_outside_cost)
 		     * assumed_vf)))
 	    min_profitable_iters++;
-        }
+	}
     }
   /* vector version will never be profitable.  */
   else

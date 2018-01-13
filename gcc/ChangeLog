@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Make sure
+	min_profitable_iters doesn't go negative.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/md.texi (vec_mask_load_lanes@var{m}@var{n}): Document.
 	(vec_mask_store_lanes@var{m}@var{n}): Likewise.
 	* optabs.def (vec_mask_load_lanes_optab): New optab.
