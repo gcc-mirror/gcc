@@ -1,4 +1,15 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* simplify-rtx.c (simplify_immed_subreg): Add an inner_bytes
+	parameter and use it instead of GET_MODE_SIZE (innermode).  Use
+	inner_bytes * BITS_PER_UNIT instead of GET_MODE_BITSIZE (innermode).
+	Use CEIL (inner_bytes, GET_MODE_UNIT_SIZE (innermode)) instead of
+	GET_MODE_NUNITS (innermode).  Also add a first_elem parameter.
+	Change innermode from fixed_mode_size to machine_mode.
+	(simplify_subreg): Update call accordingly.  Handle a constant-sized
+	subreg of a variable-length CONST_VECTOR.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
