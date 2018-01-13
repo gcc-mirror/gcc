@@ -168,9 +168,15 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       if (VAR_P (expr) && !lval && (optimize || in_init))
 	{
 	  if (in_init)
-	    ret = decl_constant_value_1 (expr);
+	    ret = decl_constant_value_1 (expr, true);
 	  else
-	    ret = decl_constant_value (expr);
+	    {
+	      ret = decl_constant_value (expr);
+	      if (ret != expr
+		  && (TYPE_MODE (TREE_TYPE (ret)) == BLKmode
+		      || TREE_CODE (TREE_TYPE (ret)) == ARRAY_TYPE))
+		return expr;
+	    }
 	  /* Avoid unwanted tree sharing between the initializer and current
 	     function's body where the tree can be modified e.g. by the
 	     gimplifier.  */
@@ -264,6 +270,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  TREE_READONLY (ret) = TREE_READONLY (expr);
 	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
 	}
+      if (!lval)
+	ret = fold (ret);
       goto out;
 
     case ARRAY_REF:
