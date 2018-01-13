@@ -2330,16 +2330,12 @@ break_alias_scc_partitions (struct graph *rdg,
 static tree
 data_ref_segment_size (struct data_reference *dr, tree niters)
 {
-  tree segment_length;
-
-  if (integer_zerop (DR_STEP (dr)))
-    segment_length = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
-  else
-    segment_length = size_binop (MULT_EXPR,
-				 fold_convert (sizetype, DR_STEP (dr)),
-				 fold_convert (sizetype, niters));
-
-  return segment_length;
+  niters = size_binop (MINUS_EXPR,
+		       fold_convert (sizetype, niters),
+		       size_one_node);
+  return size_binop (MULT_EXPR,
+		     fold_convert (sizetype, DR_STEP (dr)),
+		     fold_convert (sizetype, niters));
 }
 
 /* Return true if LOOP's latch is dominated by statement for data reference
@@ -2394,9 +2390,16 @@ compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
       else
 	seg_length_b = data_ref_segment_size (dr_b, niters);
 
+      unsigned HOST_WIDE_INT access_size_a
+	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a))));
+      unsigned HOST_WIDE_INT access_size_b
+	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_b))));
+      unsigned int align_a = TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_a)));
+      unsigned int align_b = TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_b)));
+
       dr_with_seg_len_pair_t dr_with_seg_len_pair
-	  (dr_with_seg_len (dr_a, seg_length_a),
-	   dr_with_seg_len (dr_b, seg_length_b));
+	(dr_with_seg_len (dr_a, seg_length_a, access_size_a, align_a),
+	 dr_with_seg_len (dr_b, seg_length_b, access_size_b, align_b));
 
       /* Canonicalize pairs by sorting the two DR members.  */
       if (comp_res > 0)
