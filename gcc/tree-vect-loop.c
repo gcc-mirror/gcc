@@ -2260,16 +2260,6 @@ start_over:
       return false;
     }
 
-  if (LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
-      && LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-    {
-      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "can't use a fully-masked loop because peeling for"
-			 " gaps is required.\n");
-    }
-
   /* Decide whether to use a fully-masked loop for this vectorization
      factor.  */
   LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -3714,6 +3704,23 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
     {
       peel_iters_prologue = 0;
       peel_iters_epilogue = 0;
+
+      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+	{
+	  /* We need to peel exactly one iteration.  */
+	  peel_iters_epilogue += 1;
+	  stmt_info_for_cost *si;
+	  int j;
+	  FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+			    j, si)
+	    {
+	      struct _stmt_vec_info *stmt_info
+		= si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
+	      (void) add_stmt_cost (target_cost_data, si->count,
+				    si->kind, stmt_info, si->misalign,
+				    vect_epilogue);
+	    }
+	}
     }
   else if (npeel < 0)
     {
