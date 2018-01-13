@@ -7812,16 +7812,43 @@ vectorizable_live_operation (gimple *stmt,
 
   if (!vec_stmt)
     {
+      /* No transformation required.  */
       if (LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't use a fully-masked loop because "
-			     "a value is live outside the loop.\n");
-	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	  if (!direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
+					       OPTIMIZE_FOR_SPEED))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "can't use a fully-masked loop because "
+				 "the target doesn't support extract last "
+				 "reduction.\n");
+	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	    }
+	  else if (slp_node)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "can't use a fully-masked loop because an "
+				 "SLP statement is live after the loop.\n");
+	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	    }
+	  else if (ncopies > 1)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "can't use a fully-masked loop because"
+				 " ncopies is greater than 1.\n");
+	      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	    }
+	  else
+	    {
+	      gcc_assert (ncopies == 1 && !slp_node);
+	      vect_record_loop_mask (loop_vinfo,
+				     &LOOP_VINFO_MASKS (loop_vinfo),
+				     1, vectype);
+	    }
 	}
-
-      /* No transformation required.  */
       return true;
     }
 
@@ -7838,12 +7865,12 @@ vectorizable_live_operation (gimple *stmt,
 	     : TYPE_SIZE (TREE_TYPE (vectype)));
   vec_bitsize = TYPE_SIZE (vectype);
 
-  gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
-
   /* Get the vectorized lhs of STMT and the lane to use (counted in bits).  */
   tree vec_lhs, bitstart;
   if (slp_node)
     {
+      gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
+
       /* Get the correct slp vectorized stmt.  */
       vec_lhs = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[vec_entry]);
 
@@ -7855,6 +7882,8 @@ vectorizable_live_operation (gimple *stmt,
     {
       enum vect_def_type dt = STMT_VINFO_DEF_TYPE (stmt_info);
       vec_lhs = vect_get_vec_def_for_operand_1 (stmt, dt);
+      gcc_checking_assert (ncopies == 1
+			   || !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
 
       /* For multiple copies, get the last copy.  */
       for (int i = 1; i < ncopies; ++i)
@@ -7865,15 +7894,39 @@ vectorizable_live_operation (gimple *stmt,
       bitstart = int_const_binop (MINUS_EXPR, vec_bitsize, bitsize);
     }
 
-  /* Create a new vectorized stmt for the uses of STMT and insert outside the
-     loop.  */
   gimple_seq stmts = NULL;
-  tree bftype = TREE_TYPE (vectype);
-  if (VECTOR_BOOLEAN_TYPE_P (vectype))
-    bftype = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 1);
-  tree new_tree = build3 (BIT_FIELD_REF, bftype, vec_lhs, bitsize, bitstart);
-  new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree), &stmts,
-				   true, NULL_TREE);
+  tree new_tree;
+  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    {
+      /* Emit:
+
+	   SCALAR_RES = EXTRACT_LAST <VEC_LHS, MASK>
+
+	 where VEC_LHS is the vectorized live-out result and MASK is
+	 the loop mask for the final iteration.  */
+      gcc_assert (ncopies == 1 && !slp_node);
+      tree scalar_type = TREE_TYPE (STMT_VINFO_VECTYPE (stmt_info));
+      tree scalar_res = make_ssa_name (scalar_type);
+      tree mask = vect_get_loop_mask (gsi, &LOOP_VINFO_MASKS (loop_vinfo),
+				      1, vectype, 0);
+      gcall *new_stmt = gimple_build_call_internal (IFN_EXTRACT_LAST,
+						    2, mask, vec_lhs);
+      gimple_call_set_lhs (new_stmt, scalar_res);
+      gimple_seq_add_stmt (&stmts, new_stmt);
+
+      /* Convert the extracted vector element to the required scalar type.  */
+      new_tree = gimple_convert (&stmts, lhs_type, scalar_res);
+    }
+  else
+    {
+      tree bftype = TREE_TYPE (vectype);
+      if (VECTOR_BOOLEAN_TYPE_P (vectype))
+	bftype = build_nonstandard_integer_type (tree_to_uhwi (bitsize), 1);
+      new_tree = build3 (BIT_FIELD_REF, bftype, vec_lhs, bitsize, bitstart);
+      new_tree = force_gimple_operand (fold_convert (lhs_type, new_tree),
+				       &stmts, true, NULL_TREE);
+    }
+
   if (stmts)
     gsi_insert_seq_on_edge_immediate (single_exit (loop), stmts);
 

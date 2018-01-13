@@ -345,8 +345,7 @@
 	/* The last element can be extracted with a LASTB and a false
 	   predicate.  */
 	rtx sel = force_reg (<VPRED>mode, CONST0_RTX (<VPRED>mode));
-	emit_insn (gen_aarch64_sve_lastb<mode> (operands[0], sel,
-						operands[1]));
+	emit_insn (gen_extract_last_<mode> (operands[0], sel, operands[1]));
 	DONE;
       }
     if (!CONST_INT_P (operands[2]))
@@ -365,8 +364,7 @@
 	emit_insn (gen_vec_cmp<v_int_equiv><vpred> (sel, cmp, series, zero));
 
 	/* Select the element using LASTB.  */
-	emit_insn (gen_aarch64_sve_lastb<mode> (operands[0], sel,
-						operands[1]));
+	emit_insn (gen_extract_last_<mode> (operands[0], sel, operands[1]));
 	DONE;
       }
   }
@@ -431,7 +429,7 @@
 
 ;; Extract the last active element of operand 1 into operand 0.
 ;; If no elements are active, extract the last inactive element instead.
-(define_insn "aarch64_sve_lastb<mode>"
+(define_insn "extract_last_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand" "=r, w")
 	(unspec:<VEL>
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
