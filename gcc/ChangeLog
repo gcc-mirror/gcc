@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Allow
+	single-element interleaving even if the size is not a power of 2.
+	* tree-vect-stmts.c (get_load_store_type): Disallow elementwise
+	accesses for single-element interleaving if the group size is
+	not a power of 2.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/md.texi (fold_extract_last_@var{m}): Document.
 	* doc/sourcebuild.texi (vect_fold_extract_last): Likewise.
 	* optabs.def (fold_extract_last_optab): New optab.
