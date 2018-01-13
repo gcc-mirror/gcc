@@ -2,6 +2,64 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (vec_lower_bound): New structure.
+	(_loop_vec_info): Add check_nonzero and lower_bounds.
+	(LOOP_VINFO_CHECK_NONZERO): New macro.
+	(LOOP_VINFO_LOWER_BOUNDS): Likewise.
+	(LOOP_REQUIRES_VERSIONING_FOR_ALIAS): Check lower_bounds too.
+	* tree-data-ref.h (dr_with_seg_len): Add access_size and align
+	fields.  Make seg_len the distance travelled, not including the
+	access size.
+	(dr_direction_indicator): Declare.
+	(dr_zero_step_indicator): Likewise.
+	(dr_known_forward_stride_p): Likewise.
+	* tree-data-ref.c: Include stringpool.h, tree-vrp.h and
+	tree-ssanames.h.
+	(runtime_alias_check_p): Allow runtime alias checks with
+	variable strides.
+	(operator ==): Compare access_size and align.
+	(prune_runtime_alias_test_list): Rework for new distinction between
+	the access_size and seg_len.
+	(create_intersect_range_checks_index): Likewise.  Cope with polynomial
+	segment lengths.
+	(get_segment_min_max): New function.
+	(create_intersect_range_checks): Use it.
+	(dr_step_indicator): New function.
+	(dr_direction_indicator): Likewise.
+	(dr_zero_step_indicator): Likewise.
+	(dr_known_forward_stride_p): Likewise.
+	* tree-loop-distribution.c (data_ref_segment_size): Return
+	DR_STEP * (niters - 1).
+	(compute_alias_check_pairs): Update call to the dr_with_seg_len
+	constructor.
+	* tree-vect-data-refs.c (vect_check_nonzero_value): New function.
+	(vect_preserves_scalar_order_p): New function, split out from...
+	(vect_analyze_data_ref_dependence): ...here.  Check for zero steps.
+	(vect_vfa_segment_size): Return DR_STEP * (length_factor - 1).
+	(vect_vfa_access_size): New function.
+	(vect_vfa_align): Likewise.
+	(vect_compile_time_alias): Take access_size_a and access_b arguments.
+	(dump_lower_bound): New function.
+	(vect_check_lower_bound): Likewise.
+	(vect_small_gap_p): Likewise.
+	(vectorizable_with_step_bound_p): Likewise.
+	(vect_prune_runtime_alias_test_list): Ignore cross-iteration
+	depencies if the vectorization factor is 1.  Convert the checks
+	for nonzero steps into checks on the bounds of DR_STEP.  Try using
+	a bunds check for variable steps if the minimum required step is
+	relatively small. Update calls to the dr_with_seg_len
+	constructor and to vect_compile_time_alias.
+	* tree-vect-loop-manip.c (vect_create_cond_for_lower_bounds): New
+	function.
+	(vect_loop_versioning): Call it.
+	* tree-vect-loop.c (vect_analyze_loop_2): Clear LOOP_VINFO_LOWER_BOUNDS
+	when retrying.
+	(vect_estimate_min_profitable_iters): Account for any bounds checks.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/sourcebuild.texi (vect_scatter_store): Document.
 	* optabs.def (scatter_store_optab, mask_scatter_store_optab): New
 	optabs.

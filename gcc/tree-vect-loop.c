@@ -2475,6 +2475,7 @@ again:
 	}
     }
   /* Free optimized alias test DDRS.  */
+  LOOP_VINFO_LOWER_BOUNDS (loop_vinfo).truncate (0);
   LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).release ();
   LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).release ();
   /* Reset target cost data.  */
@@ -3673,6 +3674,18 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	/* Count LEN - 1 ANDs and LEN comparisons.  */
 	(void) add_stmt_cost (target_cost_data, len * 2 - 1, scalar_stmt,
 			      NULL, 0, vect_prologue);
+      len = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo).length ();
+      if (len)
+	{
+	  /* Count LEN - 1 ANDs and LEN comparisons.  */
+	  unsigned int nstmts = len * 2 - 1;
+	  /* +1 for each bias that needs adding.  */
+	  for (unsigned int i = 0; i < len; ++i)
+	    if (!LOOP_VINFO_LOWER_BOUNDS (loop_vinfo)[i].unsigned_p)
+	      nstmts += 1;
+	  (void) add_stmt_cost (target_cost_data, nstmts, scalar_stmt,
+				NULL, 0, vect_prologue);
+	}
       dump_printf (MSG_NOTE,
                    "cost model: Adding cost of checks for loop "
                    "versioning aliasing.\n");

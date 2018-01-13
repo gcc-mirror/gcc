@@ -2,6 +2,37 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/vect/bb-slp-cond-1.c: Expect loop vectorization rather
+	than SLP vectorization.
+	* gcc.dg/vect/vect-alias-check-10.c: New test.
+	* gcc.dg/vect/vect-alias-check-11.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-12.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-8.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-9.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_8.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_1.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_1.h: Likewise.
+	* gcc.target/aarch64/sve/var_stride_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_2.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_3.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_4.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_5.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_6.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_7.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_8.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_8_run.c: Likewise.
+	* gfortran.dg/vect/vect-alias-check-1.F90: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* lib/target-supports.exp (check_effective_target_vect_scatter_store):
 	New proc.
 	* gcc.dg/vect/pr25413a.c: Expect both loops to be optimized on

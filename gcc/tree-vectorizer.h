@@ -174,6 +174,18 @@ typedef struct _slp_instance {
    loop to be valid.  */
 typedef std::pair<tree, tree> vec_object_pair;
 
+/* Records that vectorization is only possible if abs (EXPR) >= MIN_VALUE.
+   UNSIGNED_P is true if we can assume that abs (EXPR) == EXPR.  */
+struct vec_lower_bound {
+  vec_lower_bound () {}
+  vec_lower_bound (tree e, bool u, poly_uint64 m)
+    : expr (e), unsigned_p (u), min_value (m) {}
+
+  tree expr;
+  bool unsigned_p;
+  poly_uint64 min_value;
+};
+
 /* Vectorizer state common between loop and basic-block vectorization.  */
 struct vec_info {
   enum vec_kind { bb, loop };
@@ -406,6 +418,14 @@ typedef struct _loop_vec_info : public vec_info {
   /* Check that the addresses of each pair of objects is unequal.  */
   auto_vec<vec_object_pair> check_unequal_addrs;
 
+  /* List of values that are required to be nonzero.  This is used to check
+     whether things like "x[i * n] += 1;" are safe and eventually gets added
+     to the checks for lower bounds below.  */
+  auto_vec<tree> check_nonzero;
+
+  /* List of values that need to be checked for a minimum value.  */
+  auto_vec<vec_lower_bound> lower_bounds;
+
   /* Statements in the loop that have data references that are candidates for a
      runtime (loop versioning) misalignment check.  */
   auto_vec<gimple *> may_misalign_stmts;
@@ -514,6 +534,8 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_MAY_ALIAS_DDRS(L)       (L)->may_alias_ddrs
 #define LOOP_VINFO_COMP_ALIAS_DDRS(L)      (L)->comp_alias_ddrs
 #define LOOP_VINFO_CHECK_UNEQUAL_ADDRS(L)  (L)->check_unequal_addrs
+#define LOOP_VINFO_CHECK_NONZERO(L)        (L)->check_nonzero
+#define LOOP_VINFO_LOWER_BOUNDS(L)         (L)->lower_bounds
 #define LOOP_VINFO_GROUPED_STORES(L)       (L)->grouped_stores
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
@@ -534,7 +556,8 @@ typedef struct _loop_vec_info : public vec_info {
   ((L)->may_misalign_stmts.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)		\
   ((L)->comp_alias_ddrs.length () > 0 \
-   || (L)->check_unequal_addrs.length () > 0)
+   || (L)->check_unequal_addrs.length () > 0 \
+   || (L)->lower_bounds.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_NITERS(L)		\
   (LOOP_VINFO_NITERS_ASSUMPTIONS (L))
 #define LOOP_REQUIRES_VERSIONING(L)			\

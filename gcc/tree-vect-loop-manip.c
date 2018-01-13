@@ -2875,6 +2875,31 @@ vect_create_cond_for_unequal_addrs (loop_vec_info loop_vinfo, tree *cond_expr)
     }
 }
 
+/* Create an expression that is true when all lower-bound conditions for
+   the vectorized loop are met.  Chain this condition with *COND_EXPR.  */
+
+static void
+vect_create_cond_for_lower_bounds (loop_vec_info loop_vinfo, tree *cond_expr)
+{
+  vec<vec_lower_bound> lower_bounds = LOOP_VINFO_LOWER_BOUNDS (loop_vinfo);
+  for (unsigned int i = 0; i < lower_bounds.length (); ++i)
+    {
+      tree expr = lower_bounds[i].expr;
+      tree type = unsigned_type_for (TREE_TYPE (expr));
+      expr = fold_convert (type, expr);
+      poly_uint64 bound = lower_bounds[i].min_value;
+      if (!lower_bounds[i].unsigned_p)
+	{
+	  expr = fold_build2 (PLUS_EXPR, type, expr,
+			      build_int_cstu (type, bound - 1));
+	  bound += bound - 1;
+	}
+      tree part_cond_expr = fold_build2 (GE_EXPR, boolean_type_node, expr,
+					 build_int_cstu (type, bound));
+      chain_cond_expr (cond_expr, part_cond_expr);
+    }
+}
+
 /* Function vect_create_cond_for_alias_checks.
 
    Create a conditional expression that represents the run-time checks for
@@ -2986,6 +3011,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   if (version_alias)
     {
       vect_create_cond_for_unequal_addrs (loop_vinfo, &cond_expr);
+      vect_create_cond_for_lower_bounds (loop_vinfo, &cond_expr);
       vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr);
     }
 
