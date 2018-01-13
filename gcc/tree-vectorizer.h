@@ -67,7 +67,14 @@ enum vect_reduction_type {
   TREE_CODE_REDUCTION,
   COND_REDUCTION,
   INTEGER_INDUC_COND_REDUCTION,
-  CONST_COND_REDUCTION
+  CONST_COND_REDUCTION,
+
+  /* Retain a scalar phi and use a FOLD_EXTRACT_LAST within the loop
+     to implement:
+
+       for (int i = 0; i < VF; ++i)
+         res = cond[i] ? val[i] : res;  */
+  EXTRACT_LAST_REDUCTION
 };
 
 #define VECTORIZABLE_CYCLE_DEF(D) (((D) == vect_reduction_def)           \

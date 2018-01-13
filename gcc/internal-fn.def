@@ -158,6 +158,11 @@ DEF_INTERNAL_OPTAB_FN (REDUC_XOR, ECF_CONST | ECF_NOTHROW,
 DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
 		       extract_last, cond_unary)
 
+/* Same, but return the first argument if no elements are active.  */
+DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
+		       fold_extract_last, fold_extract)
+
+
 /* Unary math functions.  */
 DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)
 DEF_INTERNAL_FLT_FN (ASIN, ECF_CONST, asin, unary)

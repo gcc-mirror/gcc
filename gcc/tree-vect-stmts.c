@@ -1603,6 +1603,47 @@ vect_get_vec_defs (tree op0, tree op1, gimple *stmt,
     }
 }
 
+/* Helper function called by vect_finish_replace_stmt and
+   vect_finish_stmt_generation.  Set the location of the new
+   statement and create a stmt_vec_info for it.  */
+
+static void
+vect_finish_stmt_generation_1 (gimple *stmt, gimple *vec_stmt)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vec_info *vinfo = stmt_info->vinfo;
+
+  set_vinfo_for_stmt (vec_stmt, new_stmt_vec_info (vec_stmt, vinfo));
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "add new stmt: ");
+      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, vec_stmt, 0);
+    }
+
+  gimple_set_location (vec_stmt, gimple_location (stmt));
+
+  /* While EH edges will generally prevent vectorization, stmt might
+     e.g. be in a must-not-throw region.  Ensure newly created stmts
+     that could throw are part of the same region.  */
+  int lp_nr = lookup_stmt_eh_lp (stmt);
+  if (lp_nr != 0 && stmt_could_throw_p (vec_stmt))
+    add_stmt_to_eh_lp (vec_stmt, lp_nr);
+}
+
+/* Replace the scalar statement STMT with a new vector statement VEC_STMT,
+   which sets the same scalar result as STMT did.  */
+
+void
+vect_finish_replace_stmt (gimple *stmt, gimple *vec_stmt)
+{
+  gcc_assert (gimple_get_lhs (stmt) == gimple_get_lhs (vec_stmt));
+
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  gsi_replace (&gsi, vec_stmt, false);
+
+  vect_finish_stmt_generation_1 (stmt, vec_stmt);
+}
 
 /* Function vect_finish_stmt_generation.
 
@@ -1612,9 +1653,6 @@ void
 vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
 			     gimple_stmt_iterator *gsi)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  vec_info *vinfo = stmt_info->vinfo;
-
   gcc_assert (gimple_code (stmt) != GIMPLE_LABEL);
 
   if (!gsi_end_p (*gsi)
@@ -1644,23 +1682,7 @@ vect_finish_stmt_generation (gimple *stmt, gimple *vec_stmt,
 	}
     }
   gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
-
-  set_vinfo_for_stmt (vec_stmt, new_stmt_vec_info (vec_stmt, vinfo));
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "add new stmt: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, vec_stmt, 0);
-    }
-
-  gimple_set_location (vec_stmt, gimple_location (stmt));
-
-  /* While EH edges will generally prevent vectorization, stmt might
-     e.g. be in a must-not-throw region.  Ensure newly created stmts
-     that could throw are part of the same region.  */
-  int lp_nr = lookup_stmt_eh_lp (stmt);
-  if (lp_nr != 0 && stmt_could_throw_p (vec_stmt))
-    add_stmt_to_eh_lp (vec_stmt, lp_nr);
+  vect_finish_stmt_generation_1 (stmt, vec_stmt);
 }
 
 /* We want to vectorize a call to combined function CFN with function
@@ -8107,7 +8129,9 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
   if (reduc_index && STMT_SLP_TYPE (stmt_info))
     return false;
 
-  if (STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info) == TREE_CODE_REDUCTION)
+  vect_reduction_type reduction_type
+    = STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info);
+  if (reduction_type == TREE_CODE_REDUCTION)
     {
       if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
 	return false;
@@ -8266,12 +8290,13 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 
   /* Handle def.  */
   scalar_dest = gimple_assign_lhs (stmt);
-  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+  if (reduction_type != EXTRACT_LAST_REDUCTION)
+    vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   /* Handle cond expr.  */
   for (j = 0; j < ncopies; j++)
     {
-      gassign *new_stmt = NULL;
+      gimple *new_stmt = NULL;
       if (j == 0)
 	{
           if (slp_node)
@@ -8405,11 +8430,42 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
 		    }
 		}
 	    }
-          new_temp = make_ssa_name (vec_dest);
-          new_stmt = gimple_build_assign (new_temp, VEC_COND_EXPR,
-					  vec_compare, vec_then_clause,
-					  vec_else_clause);
-          vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  if (reduction_type == EXTRACT_LAST_REDUCTION)
+	    {
+	      if (!is_gimple_val (vec_compare))
+		{
+		  tree vec_compare_name = make_ssa_name (vec_cmp_type);
+		  new_stmt = gimple_build_assign (vec_compare_name,
+						  vec_compare);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		  vec_compare = vec_compare_name;
+		}
+	      gcc_assert (reduc_index == 2);
+	      new_stmt = gimple_build_call_internal
+		(IFN_FOLD_EXTRACT_LAST, 3, else_clause, vec_compare,
+		 vec_then_clause);
+	      gimple_call_set_lhs (new_stmt, scalar_dest);
+	      SSA_NAME_DEF_STMT (scalar_dest) = new_stmt;
+	      if (stmt == gsi_stmt (*gsi))
+		vect_finish_replace_stmt (stmt, new_stmt);
+	      else
+		{
+		  /* In this case we're moving the definition to later in the
+		     block.  That doesn't matter because the only uses of the
+		     lhs are in phi statements.  */
+		  gimple_stmt_iterator old_gsi = gsi_for_stmt (stmt);
+		  gsi_remove (&old_gsi, true);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		}
+	    }
+	  else
+	    {
+	      new_temp = make_ssa_name (vec_dest);
+	      new_stmt = gimple_build_assign (new_temp, VEC_COND_EXPR,
+					      vec_compare, vec_then_clause,
+					      vec_else_clause);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	    }
           if (slp_node)
             SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
         }

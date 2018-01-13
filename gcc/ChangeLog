@@ -2,6 +2,36 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/md.texi (fold_extract_last_@var{m}): Document.
+	* doc/sourcebuild.texi (vect_fold_extract_last): Likewise.
+	* optabs.def (fold_extract_last_optab): New optab.
+	* internal-fn.def (FOLD_EXTRACT_LAST): New internal function.
+	* internal-fn.c (fold_extract_direct): New macro.
+	(expand_fold_extract_optab_fn): Likewise.
+	(direct_fold_extract_optab_supported_p): Likewise.
+	* tree-vectorizer.h (EXTRACT_LAST_REDUCTION): New vect_reduction_type.
+	* tree-vect-loop.c (vect_model_reduction_cost): Handle
+	EXTRACT_LAST_REDUCTION.
+	(get_initial_def_for_reduction): Do not create an initial vector
+	for EXTRACT_LAST_REDUCTION reductions.
+	(vectorizable_reduction): Leave the scalar phi in place for
+	EXTRACT_LAST_REDUCTIONs.  Try using EXTRACT_LAST_REDUCTION
+	ahead of INTEGER_INDUC_COND_REDUCTION.  Do not check for an
+	epilogue code for EXTRACT_LAST_REDUCTION and defer the
+	transform phase to vectorizable_condition.
+	* tree-vect-stmts.c (vect_finish_stmt_generation_1): New function,
+	split out from...
+	(vect_finish_stmt_generation): ...here.
+	(vect_finish_replace_stmt): New function.
+	(vectorizable_condition): Handle EXTRACT_LAST_REDUCTION.
+	* config/aarch64/aarch64-sve.md (fold_extract_last_<mode>): New
+	pattern.
+	* config/aarch64/aarch64.md (UNSPEC_CLASTB): New unspec.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* doc/md.texi (extract_last_@var{m}): Document.
 	* optabs.def (extract_last_optab): New optab.
 	* internal-fn.def (EXTRACT_LAST): New internal function.

@@ -1427,6 +1427,21 @@
   "<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
 )
 
+;; Set operand 0 to the last active element in operand 3, or to tied
+;; operand 1 if no elements are active.
+(define_insn "fold_extract_last_<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand" "=r, w")
+	(unspec:<VEL>
+	  [(match_operand:<VEL> 1 "register_operand" "0, 0")
+	   (match_operand:<VPRED> 2 "register_operand" "Upl, Upl")
+	   (match_operand:SVE_ALL 3 "register_operand" "w, w")]
+	  UNSPEC_CLASTB))]
+  "TARGET_SVE"
+  "@
+   clastb\t%<vwcore>0, %2, %<vwcore>0, %3.<Vetype>
+   clastb\t%<vw>0, %2, %<vw>0, %3.<Vetype>"
+)
+
 ;; Unpredicated integer add reduction.
 (define_expand "reduc_plus_scal_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand")
