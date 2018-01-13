@@ -525,3 +525,11 @@ hook_bool_mode_reg_class_t_reg_class_t_false (machine_mode, reg_class_t,
   return false;
 }
 
+/* Generic hook that takes a mode and an unsigned HOST_WIDE_INT and
+   returns no mode.  */
+
+opt_machine_mode
+hook_optmode_mode_uhwi_none (machine_mode, unsigned HOST_WIDE_INT)
+{
+  return opt_machine_mode ();
+}

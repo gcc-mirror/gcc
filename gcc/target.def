@@ -3426,6 +3426,22 @@ the vector element type.",
  HOST_WIDE_INT, (const_tree type),
  default_vector_alignment)
 
+DEFHOOK
+(array_mode,
+ "Return the mode that GCC should use for an array that has\n\
+@var{nelems} elements, with each element having mode @var{mode}.\n\
+Return no mode if the target has no special requirements.  In the\n\
+latter case, GCC looks for an integer mode of the appropriate size\n\
+if available and uses BLKmode otherwise.  Usually the search for the\n\
+integer mode is limited to @code{MAX_FIXED_MODE_SIZE}, but the\n\
+@code{TARGET_ARRAY_MODE_SUPPORTED_P} hook allows a larger mode to be\n\
+used in specific cases.\n\
+\n\
+The main use of this hook is to specify that an array of vectors should\n\
+also have a vector mode.  The default implementation returns no mode.",
+ opt_machine_mode, (machine_mode mode, unsigned HOST_WIDE_INT nelems),
+ hook_optmode_mode_uhwi_none)
+
 /* True if we should try to use a scalar mode to represent an array,
    overriding the usual MAX_FIXED_MODE limit.  */
 DEFHOOK
