@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.target/aarch64/sve/reduc_strict_3.c: Expect FADDA to be used
+	for double_reduc1.
+	* gcc.target/aarch64/sve/strided_load_4.c: New test.
+	* gcc.target/aarch64/sve/strided_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_7.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.target/aarch64/sve/strided_load_1.c: New test.
 	* gcc.target/aarch64/sve/strided_load_2.c: Likewise.
 	* gcc.target/aarch64/sve/strided_load_3.c: Likewise.

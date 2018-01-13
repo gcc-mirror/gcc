@@ -118,14 +118,11 @@ double_reduc3 (float *restrict i, float *restrict j)
   return l * k;
 }
 
-/* We can't yet handle double_reduc1.  */
-/* { dg-final { scan-assembler-times {\tfadda\ts[0-9]+, p[0-7], s[0-9]+, z[0-9]+\.s} 3 } } */
+/* { dg-final { scan-assembler-times {\tfadda\ts[0-9]+, p[0-7], s[0-9]+, z[0-9]+\.s} 4 } } */
 /* { dg-final { scan-assembler-times {\tfadda\td[0-9]+, p[0-7], d[0-9]+, z[0-9]+\.d} 9 } } */
 /* 1 reduction each for double_reduc{1,2} and 2 for double_reduc3.  Each one
    is reported three times, once for SVE, once for 128-bit AdvSIMD and once
    for 64-bit AdvSIMD.  */
 /* { dg-final { scan-tree-dump-times "Detected double reduction" 12 "vect" } } */
-/* double_reduc2 has 2 reductions and slp_non_chained_reduc has 3.
-   double_reduc1 is reported 3 times (SVE, 128-bit AdvSIMD, 64-bit AdvSIMD)
-   before failing.  */
-/* { dg-final { scan-tree-dump-times "Detected reduction" 12 "vect" } } */
+/* double_reduc2 has 2 reductions and slp_non_chained_reduc has 3.  */
+/* { dg-final { scan-tree-dump-times "Detected reduction" 10 "vect" } } */

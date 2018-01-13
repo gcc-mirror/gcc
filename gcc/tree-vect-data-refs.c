@@ -3312,7 +3312,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
    Return true if the function is supported, storing the function
    id in *IFN_OUT and the type of a vector element in *ELEMENT_TYPE_OUT.  */
 
-static bool
+bool
 vect_gather_scatter_fn_p (bool read_p, bool masked_p, tree vectype,
 			  tree memory_type, unsigned int offset_bits,
 			  signop offset_sign, int scale,
