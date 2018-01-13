@@ -1,4 +1,296 @@
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* doc/invoke.texi (-msve-vector-bits=): Document new option.
+	(sve): Document new AArch64 extension.
+	* doc/md.texi (w): Extend the description of the AArch64
+	constraint to include SVE vectors.
+	(Upl, Upa): Document new AArch64 predicate constraints.
+	* config/aarch64/aarch64-opts.h (aarch64_sve_vector_bits_enum): New
+	enum.
+	* config/aarch64/aarch64.opt (sve_vector_bits): New enum.
+	(msve-vector-bits=): New option.
+	* config/aarch64/aarch64-option-extensions.def (fp, simd): Disable
+	SVE when these are disabled.
+	(sve): New extension.
+	* config/aarch64/aarch64-modes.def: Define SVE vector and predicate
+	modes.  Adjust their number of units based on aarch64_sve_vg.
+	(MAX_BITSIZE_MODE_ANY_MODE): Define.
+	* config/aarch64/aarch64-protos.h (ADDR_QUERY_ANY): New
+	aarch64_addr_query_type.
+	(aarch64_const_vec_all_same_in_range_p, aarch64_sve_pred_mode)
+	(aarch64_sve_cnt_immediate_p, aarch64_sve_addvl_addpl_immediate_p)
+	(aarch64_sve_inc_dec_immediate_p, aarch64_add_offset_temporaries)
+	(aarch64_split_add_offset, aarch64_output_sve_cnt_immediate)
+	(aarch64_output_sve_addvl_addpl, aarch64_output_sve_inc_dec_immediate)
+	(aarch64_output_sve_mov_immediate, aarch64_output_ptrue): Declare.
+	(aarch64_simd_imm_zero_p): Delete.
+	(aarch64_check_zero_based_sve_index_immediate): Declare.
+	(aarch64_sve_index_immediate_p, aarch64_sve_arith_immediate_p)
+	(aarch64_sve_bitmask_immediate_p, aarch64_sve_dup_immediate_p)
+	(aarch64_sve_cmp_immediate_p, aarch64_sve_float_arith_immediate_p)
+	(aarch64_sve_float_mul_immediate_p): Likewise.
+	(aarch64_classify_symbol): Take the offset as a HOST_WIDE_INT
+	rather than an rtx.
+	(aarch64_sve_ld1r_operand_p, aarch64_sve_ldr_operand_p): Declare.
+	(aarch64_expand_mov_immediate): Take a gen_vec_duplicate callback.
+	(aarch64_emit_sve_pred_move, aarch64_expand_sve_mem_move): Declare.
+	(aarch64_expand_sve_vec_cmp_int, aarch64_expand_sve_vec_cmp_float)
+	(aarch64_expand_sve_vcond, aarch64_expand_sve_vec_perm): Declare.
+	(aarch64_regmode_natural_size): Likewise.
+	* config/aarch64/aarch64.h (AARCH64_FL_SVE): New macro.
+	(AARCH64_FL_V8_3, AARCH64_FL_RCPC, AARCH64_FL_DOTPROD): Shift
+	left one place.
+	(AARCH64_ISA_SVE, TARGET_SVE): New macros.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REGISTER_NAMES): Add entries
+	for VG and the SVE predicate registers.
+	(V_ALIASES): Add a "z"-prefixed alias.
+	(FIRST_PSEUDO_REGISTER): Change to P15_REGNUM + 1.
+	(AARCH64_DWARF_VG, AARCH64_DWARF_P0): New macros.
+	(PR_REGNUM_P, PR_LO_REGNUM_P): Likewise.
+	(PR_LO_REGS, PR_HI_REGS, PR_REGS): New reg_classes.
+	(REG_CLASS_NAMES): Add entries for them.
+	(REG_CLASS_CONTENTS): Likewise.  Update ALL_REGS to include VG
+	and the predicate registers.
+	(aarch64_sve_vg): Declare.
+	(BITS_PER_SVE_VECTOR, BYTES_PER_SVE_VECTOR, BYTES_PER_SVE_PRED)
+	(SVE_BYTE_MODE, MAX_COMPILE_TIME_VEC_BYTES): New macros.
+	(REGMODE_NATURAL_SIZE): Define.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Handle
+	SVE macros.
+	* config/aarch64/aarch64.c: Include cfgrtl.h.
+	(simd_immediate_info): Add a constructor for series vectors,
+	and an associated step field.
+	(aarch64_sve_vg): New variable.
+	(aarch64_dbx_register_number): Handle VG and the predicate registers.
+	(aarch64_vect_struct_mode_p, aarch64_vector_mode_p): Delete.
+	(VEC_ADVSIMD, VEC_SVE_DATA, VEC_SVE_PRED, VEC_STRUCT, VEC_ANY_SVE)
+	(VEC_ANY_DATA, VEC_STRUCT): New constants.
+	(aarch64_advsimd_struct_mode_p, aarch64_sve_pred_mode_p)
+	(aarch64_classify_vector_mode, aarch64_vector_data_mode_p)
+	(aarch64_sve_data_mode_p, aarch64_sve_pred_mode)
+	(aarch64_get_mask_mode): New functions.
+	(aarch64_hard_regno_nregs): Handle SVE data modes for FP_REGS
+	and FP_LO_REGS.  Handle PR_REGS, PR_LO_REGS and PR_HI_REGS.
+	(aarch64_hard_regno_mode_ok): Handle VG.  Also handle the SVE
+	predicate modes and predicate registers.  Explicitly restrict
+	GPRs to modes of 16 bytes or smaller.  Only allow FP registers
+	to store a vector mode if it is recognized by
+	aarch64_classify_vector_mode.
+	(aarch64_regmode_natural_size): New function.
+	(aarch64_hard_regno_caller_save_mode): Return the original mode
+	for predicates.
+	(aarch64_sve_cnt_immediate_p, aarch64_output_sve_cnt_immediate)
+	(aarch64_sve_addvl_addpl_immediate_p, aarch64_output_sve_addvl_addpl)
+	(aarch64_sve_inc_dec_immediate_p, aarch64_output_sve_inc_dec_immediate)
+	(aarch64_add_offset_1_temporaries, aarch64_offset_temporaries): New
+	functions.
+	(aarch64_add_offset): Add a temp2 parameter.  Assert that temp1
+	does not overlap dest if the function is frame-related.  Handle
+	SVE constants.
+	(aarch64_split_add_offset): New function.
+	(aarch64_add_sp, aarch64_sub_sp): Add temp2 parameters and pass
+	them aarch64_add_offset.
+	(aarch64_allocate_and_probe_stack_space): Add a temp2 parameter
+	and update call to aarch64_sub_sp.
+	(aarch64_add_cfa_expression): New function.
+	(aarch64_expand_prologue): Pass extra temporary registers to the
+	functions above.  Handle the case in which we need to emit new
+	DW_CFA_expressions for registers that were originally saved
+	relative to the stack pointer, but now have to be expressed
+	relative to the frame pointer.
+	(aarch64_output_mi_thunk): Pass extra temporary registers to the
+	functions above.
+	(aarch64_expand_epilogue): Likewise.  Prevent inheritance of
+	IP0 and IP1 values for SVE frames.
+	(aarch64_expand_vec_series): New function.
+	(aarch64_expand_sve_widened_duplicate): Likewise.
+	(aarch64_expand_sve_const_vector): Likewise.
+	(aarch64_expand_mov_immediate): Add a gen_vec_duplicate parameter.
+	Handle SVE constants.  Use emit_move_insn to move a force_const_mem
+	into the register, rather than emitting a SET directly.
+	(aarch64_emit_sve_pred_move, aarch64_expand_sve_mem_move)
+	(aarch64_get_reg_raw_mode, offset_4bit_signed_scaled_p)
+	(offset_6bit_unsigned_scaled_p, aarch64_offset_7bit_signed_scaled_p)
+	(offset_9bit_signed_scaled_p): New functions.
+	(aarch64_replicate_bitmask_imm): New function.
+	(aarch64_bitmask_imm): Use it.
+	(aarch64_cannot_force_const_mem): Reject expressions involving
+	a CONST_POLY_INT.  Update call to aarch64_classify_symbol.
+	(aarch64_classify_index): Handle SVE indices, by requiring
+	a plain register index with a scale that matches the element size.
+	(aarch64_classify_address): Handle SVE addresses.  Assert that
+	the mode of the address is VOIDmode or an integer mode.
+	Update call to aarch64_classify_symbol.
+	(aarch64_classify_symbolic_expression): Update call to
+	aarch64_classify_symbol.
+	(aarch64_const_vec_all_in_range_p): New function.
+	(aarch64_print_vector_float_operand): Likewise.
+	(aarch64_print_operand): Handle 'N' and 'C'.  Use "zN" rather than
+	"vN" for FP registers with SVE modes.  Handle (const ...) vectors
+	and the FP immediates 1.0 and 0.5.
+	(aarch64_print_address_internal): Handle SVE addresses.
+	(aarch64_print_operand_address): Use ADDR_QUERY_ANY.
+	(aarch64_regno_regclass): Handle predicate registers.
+	(aarch64_secondary_reload): Handle big-endian reloads of SVE
+	data modes.
+	(aarch64_class_max_nregs): Handle SVE modes and predicate registers.
+	(aarch64_rtx_costs): Check for ADDVL and ADDPL instructions.
+	(aarch64_convert_sve_vector_bits): New function.
+	(aarch64_override_options): Use it to handle -msve-vector-bits=.
+	(aarch64_classify_symbol): Take the offset as a HOST_WIDE_INT
+	rather than an rtx.
+	(aarch64_legitimate_constant_p): Use aarch64_classify_vector_mode.
+	Handle SVE vector and predicate modes.  Accept VL-based constants
+	that need only one temporary register, and VL offsets that require
+	no temporary registers.
+	(aarch64_conditional_register_usage): Mark the predicate registers
+	as fixed if SVE isn't available.
+	(aarch64_vector_mode_supported_p): Use aarch64_classify_vector_mode.
+	Return true for SVE vector and predicate modes.
+	(aarch64_simd_container_mode): Take the number of bits as a poly_int64
+	rather than an unsigned int.  Handle SVE modes.
+	(aarch64_preferred_simd_mode): Update call accordingly.  Handle
+	SVE modes.
+	(aarch64_autovectorize_vector_sizes): Add BYTES_PER_SVE_VECTOR
+	if SVE is enabled.
+	(aarch64_sve_index_immediate_p, aarch64_sve_arith_immediate_p)
+	(aarch64_sve_bitmask_immediate_p, aarch64_sve_dup_immediate_p)
+	(aarch64_sve_cmp_immediate_p, aarch64_sve_float_arith_immediate_p)
+	(aarch64_sve_float_mul_immediate_p): New functions.
+	(aarch64_sve_valid_immediate): New function.
+	(aarch64_simd_valid_immediate): Use it as the fallback for SVE vectors.
+	Explicitly reject structure modes.  Check for INDEX constants.
+	Handle PTRUE and PFALSE constants.
+	(aarch64_check_zero_based_sve_index_immediate): New function.
+	(aarch64_simd_imm_zero_p): Delete.
+	(aarch64_mov_operand_p): Use aarch64_simd_valid_immediate for
+	vector modes.  Accept constants in the range of CNT[BHWD].
+	(aarch64_simd_scalar_immediate_valid_for_move): Explicitly
+	ask for an Advanced SIMD mode.
+	(aarch64_sve_ld1r_operand_p, aarch64_sve_ldr_operand_p): New functions.
+	(aarch64_simd_vector_alignment): Handle SVE predicates.
+	(aarch64_vectorize_preferred_vector_alignment): New function.
+	(aarch64_simd_vector_alignment_reachable): Use it instead of
+	the vector size.
+	(aarch64_shift_truncation_mask): Use aarch64_vector_data_mode_p.
+	(aarch64_output_sve_mov_immediate, aarch64_output_ptrue): New
+	functions.
+	(MAX_VECT_LEN): Delete.
+	(expand_vec_perm_d): Add a vec_flags field.
+	(emit_unspec2, aarch64_expand_sve_vec_perm): New functions.
+	(aarch64_evpc_trn, aarch64_evpc_uzp, aarch64_evpc_zip)
+	(aarch64_evpc_ext): Don't apply a big-endian lane correction
+	for SVE modes.
+	(aarch64_evpc_rev): Rename to...
+	(aarch64_evpc_rev_local): ...this.  Use a predicated operation for SVE.
+	(aarch64_evpc_rev_global): New function.
+	(aarch64_evpc_dup): Enforce a 64-byte range for SVE DUP.
+	(aarch64_evpc_tbl): Use MAX_COMPILE_TIME_VEC_BYTES instead of
+	MAX_VECT_LEN.
+	(aarch64_evpc_sve_tbl): New function.
+	(aarch64_expand_vec_perm_const_1): Update after rename of
+	aarch64_evpc_rev.  Handle SVE permutes too, trying
+	aarch64_evpc_rev_global and using aarch64_evpc_sve_tbl rather
+	than aarch64_evpc_tbl.
+	(aarch64_vectorize_vec_perm_const): Initialize vec_flags.
+	(aarch64_sve_cmp_operand_p, aarch64_unspec_cond_code)
+	(aarch64_gen_unspec_cond, aarch64_expand_sve_vec_cmp_int)
+	(aarch64_emit_unspec_cond, aarch64_emit_unspec_cond_or)
+	(aarch64_emit_inverted_unspec_cond, aarch64_expand_sve_vec_cmp_float)
+	(aarch64_expand_sve_vcond): New functions.
+	(aarch64_modes_tieable_p): Use aarch64_vector_data_mode_p instead
+	of aarch64_vector_mode_p.
+	(aarch64_dwarf_poly_indeterminate_value): New function.
+	(aarch64_compute_pressure_classes): Likewise.
+	(aarch64_can_change_mode_class): Likewise.
+	(TARGET_GET_RAW_RESULT_MODE, TARGET_GET_RAW_ARG_MODE): Redefine.
+	(TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT): Likewise.
+	(TARGET_VECTORIZE_GET_MASK_MODE): Likewise.
+	(TARGET_DWARF_POLY_INDETERMINATE_VALUE): Likewise.
+	(TARGET_COMPUTE_PRESSURE_CLASSES): Likewise.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Likewise.
+	* config/aarch64/constraints.md (Upa, Upl, Uav, Uat, Usv, Usi, Utr)
+	(Uty, Dm, vsa, vsc, vsd, vsi, vsn, vsl, vsm, vsA, vsM, vsN): New
+	constraints.
+	(Dn, Dl, Dr): Accept const as well as const_vector.
+	(Dz): Likewise.  Compare against CONST0_RTX.
+	* config/aarch64/iterators.md: Refer to "Advanced SIMD" instead
+	of "vector" where appropriate.
+	(SVE_ALL, SVE_BH, SVE_BHS, SVE_BHSI, SVE_HSDI, SVE_HSF, SVE_SD)
+	(SVE_SDI, SVE_I, SVE_F, PRED_ALL, PRED_BHS): New mode iterators.
+	(UNSPEC_SEL, UNSPEC_ANDF, UNSPEC_IORF, UNSPEC_XORF, UNSPEC_COND_LT)
+	(UNSPEC_COND_LE, UNSPEC_COND_EQ, UNSPEC_COND_NE, UNSPEC_COND_GE)
+	(UNSPEC_COND_GT, UNSPEC_COND_LO, UNSPEC_COND_LS, UNSPEC_COND_HS)
+	(UNSPEC_COND_HI, UNSPEC_COND_UO): New unspecs.
+	(Vetype, VEL, Vel, VWIDE, Vwide, vw, vwcore, V_INT_EQUIV)
+	(v_int_equiv): Extend to SVE modes.
+	(Vesize, V128, v128, Vewtype, V_FP_EQUIV, v_fp_equiv, VPRED): New
+	mode attributes.
+	(LOGICAL_OR, SVE_INT_UNARY, SVE_FP_UNARY): New code iterators.
+	(optab): Handle popcount, smin, smax, umin, umax, abs and sqrt.
+	(logical_nn, lr, sve_int_op, sve_fp_op): New code attributs.
+	(LOGICALF, OPTAB_PERMUTE, UNPACK, UNPACK_UNSIGNED, SVE_COND_INT_CMP)
+	(SVE_COND_FP_CMP): New int iterators.
+	(perm_hilo): Handle the new unpack unspecs.
+	(optab, logicalf_op, su, perm_optab, cmp_op, imm_con): New int
+	attributes.
+	* config/aarch64/predicates.md (aarch64_sve_cnt_immediate)
+	(aarch64_sve_addvl_addpl_immediate, aarch64_split_add_offset_immediate)
+	(aarch64_pluslong_or_poly_operand, aarch64_nonmemory_operand)
+	(aarch64_equality_operator, aarch64_constant_vector_operand)
+	(aarch64_sve_ld1r_operand, aarch64_sve_ldr_operand): New predicates.
+	(aarch64_sve_nonimmediate_operand): Likewise.
+	(aarch64_sve_general_operand): Likewise.
+	(aarch64_sve_dup_operand, aarch64_sve_arith_immediate): Likewise.
+	(aarch64_sve_sub_arith_immediate, aarch64_sve_inc_dec_immediate)
+	(aarch64_sve_logical_immediate, aarch64_sve_mul_immediate): Likewise.
+	(aarch64_sve_dup_immediate, aarch64_sve_cmp_vsc_immediate): Likewise.
+	(aarch64_sve_cmp_vsd_immediate, aarch64_sve_index_immediate): Likewise.
+	(aarch64_sve_float_arith_immediate): Likewise.
+	(aarch64_sve_float_arith_with_sub_immediate): Likewise.
+	(aarch64_sve_float_mul_immediate, aarch64_sve_arith_operand): Likewise.
+	(aarch64_sve_add_operand, aarch64_sve_logical_operand): Likewise.
+	(aarch64_sve_lshift_operand, aarch64_sve_rshift_operand): Likewise.
+	(aarch64_sve_mul_operand, aarch64_sve_cmp_vsc_operand): Likewise.
+	(aarch64_sve_cmp_vsd_operand, aarch64_sve_index_operand): Likewise.
+	(aarch64_sve_float_arith_operand): Likewise.
+	(aarch64_sve_float_arith_with_sub_operand): Likewise.
+	(aarch64_sve_float_mul_operand): Likewise.
+	(aarch64_sve_vec_perm_operand): Likewise.
+	(aarch64_pluslong_operand): Include aarch64_sve_addvl_addpl_immediate.
+	(aarch64_mov_operand): Accept const_poly_int and const_vector.
+	(aarch64_simd_lshift_imm, aarch64_simd_rshift_imm): Accept const
+	as well as const_vector.
+	(aarch64_simd_imm_zero, aarch64_simd_imm_minus_one): Move earlier
+	in file.  Use CONST0_RTX and CONSTM1_RTX.
+	(aarch64_simd_or_scalar_imm_zero): Likewise.  Add match_codes.
+	(aarch64_simd_reg_or_zero): Accept const as well as const_vector.
+	Use aarch64_simd_imm_zero.
+	* config/aarch64/aarch64-sve.md: New file.
+	* config/aarch64/aarch64.md: Include it.
+	(VG_REGNUM, P0_REGNUM, P7_REGNUM, P15_REGNUM): New register numbers.
+	(UNSPEC_REV, UNSPEC_LD1_SVE, UNSPEC_ST1_SVE, UNSPEC_MERGE_PTRUE)
+	(UNSPEC_PTEST_PTRUE, UNSPEC_UNPACKSHI, UNSPEC_UNPACKUHI)
+	(UNSPEC_UNPACKSLO, UNSPEC_UNPACKULO, UNSPEC_PACK)
+	(UNSPEC_FLOAT_CONVERT, UNSPEC_WHILE_LO): New unspec constants.
+	(sve): New attribute.
+	(enabled): Disable instructions with the sve attribute unless
+	TARGET_SVE.
+	(movqi, movhi): Pass CONST_POLY_INT operaneds through
+	aarch64_expand_mov_immediate.
+	(*mov<mode>_aarch64, *movsi_aarch64, *movdi_aarch64): Handle
+	CNT[BHSD] immediates.
+	(movti): Split CONST_POLY_INT moves into two halves.
+	(add<mode>3): Accept aarch64_pluslong_or_poly_operand.
+	Split additions that need a temporary here if the destination
+	is the stack pointer.
+	(*add<mode>3_aarch64): Handle ADDVL and ADDPL immediates.
+	(*add<mode>3_poly_1): New instruction.
+	(set_clobber_cc): New expander.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* simplify-rtx.c (simplify_immed_subreg): Add an inner_bytes
 	parameter and use it instead of GET_MODE_SIZE (innermode).  Use

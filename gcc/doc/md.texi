@@ -1735,7 +1735,13 @@ the meanings of that architecture's constraints.
 The stack pointer register (@code{SP})
 
 @item w
-Floating point or SIMD vector register
+Floating point register, Advanced SIMD vector register or SVE vector register
+
+@item Upl
+One of the low eight SVE predicate registers (@code{P0} to @code{P7})
+
+@item Upa
+Any of the SVE predicate registers (@code{P0} to @code{P15})
 
 @item I
 Integer constant that is valid as an immediate operand in an @code{ADD}

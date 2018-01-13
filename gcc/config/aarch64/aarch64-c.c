@@ -136,6 +136,15 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_CRYPTO, "__ARM_FEATURE_CRYPTO", pfile);
   aarch64_def_or_undef (TARGET_SIMD_RDMA, "__ARM_FEATURE_QRDMX", pfile);
+  aarch64_def_or_undef (TARGET_SVE, "__ARM_FEATURE_SVE", pfile);
+  cpp_undef (pfile, "__ARM_FEATURE_SVE_BITS");
+  if (TARGET_SVE)
+    {
+      int bits;
+      if (!BITS_PER_SVE_VECTOR.is_constant (&bits))
+	bits = 0;
+      builtin_define_with_int_value ("__ARM_FEATURE_SVE_BITS", bits);
+    }
 
   aarch64_def_or_undef (TARGET_AES, "__ARM_FEATURE_AES", pfile);
   aarch64_def_or_undef (TARGET_SHA2, "__ARM_FEATURE_SHA2", pfile);

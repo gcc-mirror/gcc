@@ -14594,6 +14594,23 @@ Permissible values are @samp{none}, which disables return address signing,
 functions, and @samp{all}, which enables pointer signing for all functions.  The
 default value is @samp{none}.
 
+@item -msve-vector-bits=@var{bits}
+@opindex msve-vector-bits
+Specify the number of bits in an SVE vector register.  This option only has
+an effect when SVE is enabled.
+
+GCC supports two forms of SVE code generation: ``vector-length
+agnostic'' output that works with any size of vector register and
+``vector-length specific'' output that only works when the vector
+registers are a particular size.  Replacing @var{bits} with
+@samp{scalable} selects vector-length agnostic output while
+replacing it with a number selects vector-length specific output.
+The possible lengths in the latter case are: 128, 256, 512, 1024
+and 2048.  @samp{scalable} is the default.
+
+At present, @samp{-msve-vector-bits=128} produces the same output
+as @samp{-msve-vector-bits=scalable}.
+
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
@@ -14617,6 +14634,9 @@ values for options @option{-march} and @option{-mcpu}.
 Enable Advanced SIMD instructions.  This also enables floating-point
 instructions.  This is on by default for all possible values for options
 @option{-march} and @option{-mcpu}.
+@item sve
+Enable Scalable Vector Extension instructions.  This also enables Advanced
+SIMD and floating-point instructions.
 @item lse
 Enable Large System Extension instructions.  This is on by default for
 @option{-march=armv8.1-a}.
