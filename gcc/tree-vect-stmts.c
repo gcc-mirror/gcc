@@ -9991,3 +9991,16 @@ vect_gen_while (tree mask, tree start_index, tree end_index)
   gimple_call_set_lhs (call, mask);
   return call;
 }
+
+/* Generate a vector mask of type MASK_TYPE for which index I is false iff
+   J + START_INDEX < END_INDEX for all J <= I.  Add the statements to SEQ.  */
+
+tree
+vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
+		    tree end_index)
+{
+  tree tmp = make_ssa_name (mask_type);
+  gcall *call = vect_gen_while (tmp, start_index, end_index);
+  gimple_seq_add_stmt (seq, call);
+  return gimple_build (seq, BIT_NOT_EXPR, mask_type, tmp);
+}

@@ -1121,6 +1121,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in)
     versioning_threshold (0),
     vectorization_factor (0),
     max_vectorization_factor (0),
+    mask_skip_niters (NULL_TREE),
     mask_compare_type (NULL_TREE),
     unaligned_dr (NULL),
     peeling_for_alignment (0),
@@ -2269,16 +2270,6 @@ start_over:
 			 " gaps is required.\n");
     }
 
-  if (LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo)
-      && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo))
-    {
-      LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "can't use a fully-masked loop because peeling for"
-			 " alignment is required.\n");
-    }
-
   /* Decide whether to use a fully-masked loop for this vectorization
      factor.  */
   LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
@@ -2379,18 +2370,21 @@ start_over:
      increase threshold for this case if necessary.  */
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
     {
-      poly_uint64 niters_th;
+      poly_uint64 niters_th = 0;
 
-      /* Niters for peeled prolog loop.  */
-      if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
+      if (!vect_use_loop_mask_for_alignment_p (loop_vinfo))
 	{
-	  struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-	  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr)));
-
-	  niters_th = TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	  /* Niters for peeled prolog loop.  */
+	  if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
+	    {
+	      struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
+	      tree vectype
+		= STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr)));
+	      niters_th += TYPE_VECTOR_SUBPARTS (vectype) - 1;
+	    }
+	  else
+	    niters_th += LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
 	}
-      else
-	niters_th = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
 
       /* Niters for at least one iteration of vectorized loop.  */
       if (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
@@ -7336,9 +7330,28 @@ vectorizable_induction (gimple *phi,
   init_expr = PHI_ARG_DEF_FROM_EDGE (phi,
 				     loop_preheader_edge (iv_loop));
 
-  /* Convert the step to the desired type.  */
+  /* Convert the initial value and step to the desired type.  */
   stmts = NULL;
+  init_expr = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
   step_expr = gimple_convert (&stmts, TREE_TYPE (vectype), step_expr);
+
+  /* If we are using the loop mask to "peel" for alignment then we need
+     to adjust the start value here.  */
+  tree skip_niters = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
+  if (skip_niters != NULL_TREE)
+    {
+      if (FLOAT_TYPE_P (vectype))
+	skip_niters = gimple_build (&stmts, FLOAT_EXPR, TREE_TYPE (vectype),
+				    skip_niters);
+      else
+	skip_niters = gimple_convert (&stmts, TREE_TYPE (vectype),
+				      skip_niters);
+      tree skip_step = gimple_build (&stmts, MULT_EXPR, TREE_TYPE (vectype),
+				     skip_niters, step_expr);
+      init_expr = gimple_build (&stmts, MINUS_EXPR, TREE_TYPE (vectype),
+				init_expr, skip_step);
+    }
+
   if (stmts)
     {
       new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -8209,6 +8222,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   split_edge (loop_preheader_edge (loop));
 
+  if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+      && vect_use_loop_mask_for_alignment_p (loop_vinfo))
+    /* This will deal with any possible peeling.  */
+    vect_prepare_for_masked_peels (loop_vinfo);
+
   /* FORNOW: the vectorizer supports only loops which body consist
      of one basic block (header + empty latch). When the vectorizer will
      support more involved loop forms, the order by which the BBs are
@@ -8488,29 +8506,40 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   /* +1 to convert latch counts to loop iteration counts,
      -min_epilogue_iters to remove iterations that cannot be performed
        by the vector code.  */
-  int bias = 1 - min_epilogue_iters;
+  int bias_for_lowest = 1 - min_epilogue_iters;
+  int bias_for_assumed = bias_for_lowest;
+  int alignment_npeels = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
+  if (alignment_npeels && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+    {
+      /* When the amount of peeling is known at compile time, the first
+	 iteration will have exactly alignment_npeels active elements.
+	 In the worst case it will have at least one.  */
+      int min_first_active = (alignment_npeels > 0 ? alignment_npeels : 1);
+      bias_for_lowest += lowest_vf - min_first_active;
+      bias_for_assumed += assumed_vf - min_first_active;
+    }
   /* In these calculations the "- 1" converts loop iteration counts
      back to latch counts.  */
   if (loop->any_upper_bound)
     loop->nb_iterations_upper_bound
       = (final_iter_may_be_partial
-	 ? wi::udiv_ceil (loop->nb_iterations_upper_bound + bias,
+	 ? wi::udiv_ceil (loop->nb_iterations_upper_bound + bias_for_lowest,
 			  lowest_vf) - 1
-	 : wi::udiv_floor (loop->nb_iterations_upper_bound + bias,
+	 : wi::udiv_floor (loop->nb_iterations_upper_bound + bias_for_lowest,
 			   lowest_vf) - 1);
   if (loop->any_likely_upper_bound)
     loop->nb_iterations_likely_upper_bound
       = (final_iter_may_be_partial
-	 ? wi::udiv_ceil (loop->nb_iterations_likely_upper_bound + bias,
-			  lowest_vf) - 1
-	 : wi::udiv_floor (loop->nb_iterations_likely_upper_bound + bias,
-			   lowest_vf) - 1);
+	 ? wi::udiv_ceil (loop->nb_iterations_likely_upper_bound
+			  + bias_for_lowest, lowest_vf) - 1
+	 : wi::udiv_floor (loop->nb_iterations_likely_upper_bound
+			   + bias_for_lowest, lowest_vf) - 1);
   if (loop->any_estimate)
     loop->nb_iterations_estimate
       = (final_iter_may_be_partial
-	 ? wi::udiv_ceil (loop->nb_iterations_estimate + bias,
+	 ? wi::udiv_ceil (loop->nb_iterations_estimate + bias_for_assumed,
 			  assumed_vf) - 1
-	 : wi::udiv_floor (loop->nb_iterations_estimate + bias,
+	 : wi::udiv_floor (loop->nb_iterations_estimate + bias_for_assumed,
 			   assumed_vf) - 1);
 
   if (dump_enabled_p ())
