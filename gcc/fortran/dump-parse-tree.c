@@ -3006,7 +3006,6 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
   *type_name = "<error>";
   if (ts->type == BT_REAL || ts->type == BT_INTEGER)
     {
- 
       if (ts->is_c_interop && ts->interop_kind)
 	{
 	  *type_name = ts->interop_kind->name + 2;
@@ -3021,8 +3020,7 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 	{
 	  /* The user did not specify a C interop type.  Let's look through
 	     the available table and use the first one, but warn.  */
-	  int i;
-	  for (i=0; i<ISOCBINDING_NUMBER; i++)
+	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
 	    {
 	      if (c_interop_kinds_table[i].f90_type == ts->type
 		  && c_interop_kinds_table[i].value == ts->kind)
@@ -3035,6 +3033,48 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 
 		  ret = T_WARN;
 		  break;
+		}
+	    }
+	}
+    }
+  else if (ts->type == BT_LOGICAL)
+    {
+      if (ts->is_c_interop && ts->interop_kind)
+	{
+	  *type_name = "_Bool";
+	  ret = T_OK;
+	}
+      else
+	{
+	  /* Let's select an appropriate int, with a warning. */
+	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
+	    {
+	      if (c_interop_kinds_table[i].f90_type == BT_INTEGER
+		  && c_interop_kinds_table[i].value == ts->kind)
+		{
+		  *type_name = c_interop_kinds_table[i].name + 2;
+		  ret = T_WARN;
+		}
+	    }
+	}
+    }
+  else if (ts->type == BT_CHARACTER)
+    {
+      if (ts->is_c_interop)
+	{
+	  *type_name = "char";
+	  ret = T_OK;
+	}
+      else
+	{
+	  /* Let's select an appropriate int, with a warning. */
+	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
+	    {
+	      if (c_interop_kinds_table[i].f90_type == BT_INTEGER
+		  && c_interop_kinds_table[i].value == ts->kind)
+		{
+		  *type_name = c_interop_kinds_table[i].name + 2;
+		  ret = T_WARN;
 		}
 	    }
 	}
@@ -3082,24 +3122,32 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 /* Write out a declaration.  */
 static void
 write_decl (gfc_typespec *ts, gfc_array_spec *as, const char *sym_name,
-	    bool func_ret)
+	    bool func_ret, locus *where)
 {
-    const char *pre, *type_name, *post;
-    bool asterisk;
-    enum type_return rok;
+  const char *pre, *type_name, *post;
+  bool asterisk;
+  enum type_return rok;
 
-    rok = get_c_type_name (ts, as, &pre, &type_name, &asterisk, &post, func_ret);
-    gcc_assert (rok != T_ERROR);
-    fputs (type_name, dumpfile);
-    fputs (pre, dumpfile);
-    if (asterisk)
-      fputs ("*", dumpfile);
+  rok = get_c_type_name (ts, as, &pre, &type_name, &asterisk, &post, func_ret);
+  if (rok == T_ERROR)
+    {
+      gfc_error_now ("Cannot convert %qs to interoperable type at %L",
+		     gfc_typename (ts), where);
+      fprintf (dumpfile, "/* Cannot convert '%s' to interoperable type */",
+	       gfc_typename (ts));
+      return;
+    }
+  fputs (type_name, dumpfile);
+  fputs (pre, dumpfile);
+  if (asterisk)
+    fputs ("*", dumpfile);
 
-    fputs (sym_name, dumpfile);
-    fputs (post, dumpfile);
+  fputs (sym_name, dumpfile);
+  fputs (post, dumpfile);
     
-    if (rok == T_WARN)
-      fputs(" /* WARNING: non-interoperable KIND */", dumpfile);
+  if (rok == T_WARN)
+    fprintf (dumpfile," /* WARNING: Converting '%s' to interoperable type */",
+	     gfc_typename (ts));
 }
 
 /* Write out an interoperable type.  It will be written as a typedef
@@ -3114,7 +3162,7 @@ write_type (gfc_symbol *sym)
   for (c = sym->components; c; c = c->next)
     {
       fputs ("    ", dumpfile);
-      write_decl (&(c->ts), c->as, c->name, false);
+      write_decl (&(c->ts), c->as, c->name, false, &sym->declared_at);
       fputs (";\n", dumpfile);
     }
 
@@ -3136,7 +3184,7 @@ write_variable (gfc_symbol *sym)
     sym_name = sym->name;
 
   fputs ("extern ", dumpfile);
-  write_decl (&(sym->ts), sym->as, sym_name, false);
+  write_decl (&(sym->ts), sym->as, sym_name, false, &sym->declared_at);
   fputs (";\n", dumpfile);
 }
 
@@ -3163,7 +3211,7 @@ write_proc (gfc_symbol *sym)
       fputs (sym_name, dumpfile);
     }
   else
-    write_decl (&(sym->ts), sym->as, sym->name, true);
+    write_decl (&(sym->ts), sym->as, sym->name, true, &sym->declared_at);
 
   fputs (" (", dumpfile);
 
@@ -3173,7 +3221,14 @@ write_proc (gfc_symbol *sym)
       s = f->sym;
       rok = get_c_type_name (&(s->ts), NULL, &pre, &type_name, &asterisk,
 			     &post, false);
-      gcc_assert (rok != T_ERROR);
+      if (rok == T_ERROR)
+	{
+	  gfc_error_now ("Cannot convert %qs to interoperable type at %L",
+			 gfc_typename (&s->ts), &s->declared_at);
+	  fprintf (stderr, "/* Cannot convert '%s' to interoperable type */",
+		   gfc_typename (&s->ts));
+	  return;
+	}
 
       if (!s->attr.value)
 	asterisk = true;

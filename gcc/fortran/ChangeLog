@@ -1,3 +1,16 @@
+2018-01-13  Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/83744
+	* dump-parse-tree.c (get_c_type_name): Remove extra line.
+	Change for loop to use declaration in for loop. Handle BT_LOGICAL
+	and BT_CHARACTER.
+	(write_decl): Add where argument. Fix indentation. Replace
+	assert with error message. Add typename to warning
+	in comment.
+	(write_type): Adjust locus to call of write_decl.
+	(write_variable): Likewise.
+	(write_proc): Likewise. Replace assert with error message.
+
 2018-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52162
