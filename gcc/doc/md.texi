@@ -5224,6 +5224,14 @@ operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
 
+@cindex @code{vec_shl_insert_@var{m}} instruction pattern
+@item @samp{vec_shl_insert_@var{m}}
+Shift the elements in vector input operand 1 left one element (i.e.
+away from element 0) and fill the vacated element 0 with the scalar
+in operand 2.  Store the result in vector output operand 0.  Operands
+0 and 1 have mode @var{m} and operand 2 has the mode appropriate for
+one element of @var{m}.
+
 @cindex @code{vec_shr_@var{m}} instruction pattern
 @item @samp{vec_shr_@var{m}}
 Whole vector right shift in bits, i.e. towards element 0.

@@ -163,6 +163,7 @@
     UNSPEC_WHILE_LO
     UNSPEC_LDN
     UNSPEC_STN
+    UNSPEC_INSR
 ])
 
 (define_c_enum "unspecv" [

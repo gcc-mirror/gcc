@@ -2,6 +2,47 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* doc/md.texi (vec_shl_insert_@var{m}): New optab.
+	* internal-fn.def (VEC_SHL_INSERT): New internal function.
+	* optabs.def (vec_shl_insert_optab): New optab.
+	* tree-vectorizer.h (can_duplicate_and_interleave_p): Declare.
+	(duplicate_and_interleave): Likewise.
+	* tree-vect-loop.c: Include internal-fn.h.
+	(neutral_op_for_slp_reduction): New function, split out from
+	get_initial_defs_for_reduction.
+	(get_initial_def_for_reduction): Handle option 2 for variable-length
+	vectors by loading the neutral value into a vector and then shifting
+	the initial value into element 0.
+	(get_initial_defs_for_reduction): Replace the code argument with
+	the neutral value calculated by neutral_op_for_slp_reduction.
+	Use gimple_build_vector for constant-length vectors.
+	Use IFN_VEC_SHL_INSERT for variable-length vectors if all
+	but the first group_size elements have a neutral value.
+	Use duplicate_and_interleave otherwise.
+	(vect_create_epilog_for_reduction): Take a neutral_op parameter.
+	Update call to get_initial_defs_for_reduction.  Handle SLP
+	reductions for variable-length vectors by creating one vector
+	result for each scalar result, with the elements associated
+	with other scalar results stubbed out with the neutral value.
+	(vectorizable_reduction): Call neutral_op_for_slp_reduction.
+	Require IFN_VEC_SHL_INSERT for double reductions on
+	variable-length vectors, or SLP reductions that have
+	a neutral value.  Require can_duplicate_and_interleave_p
+	support for variable-length unchained SLP reductions if there
+	is no neutral value, such as for MIN/MAX reductions.  Also require
+	the number of vector elements to be a multiple of the number of
+	SLP statements when doing variable-length unchained SLP reductions.
+	Update call to vect_create_epilog_for_reduction.
+	* tree-vect-slp.c (can_duplicate_and_interleave_p): Make public
+	and remove initial values.
+	(duplicate_and_interleave): Make public.
+	* config/aarch64/aarch64.md (UNSPEC_INSR): New unspec.
+	* config/aarch64/aarch64-sve.md (vec_shl_insert_<mode>): New insn.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-slp.c: Include gimple-fold.h and internal-fn.h
 	(can_duplicate_and_interleave_p): New function.
 	(vect_get_and_check_slp_defs): Take the vector of statements

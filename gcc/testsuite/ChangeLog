@@ -2,6 +2,23 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc.dg/vect/pr37027.c: Remove XFAIL for variable-length vectors.
+	* gcc.dg/vect/pr67790.c: Likewise.
+	* gcc.dg/vect/slp-reduc-1.c: Likewise.
+	* gcc.dg/vect/slp-reduc-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-3.c: Likewise.
+	* gcc.dg/vect/slp-reduc-5.c: Likewise.
+	* gcc.target/aarch64/sve/slp_5.c: New test.
+	* gcc.target/aarch64/sve/slp_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_6.c: Likewise.
+	* gcc.target/aarch64/sve/slp_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_7.c: Likewise.
+	* gcc.target/aarch64/sve/slp_7_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc.dg/vect/no-scevccp-slp-30.c: Don't XFAIL for vect_variable_length
 	&& vect_load_lanes
 	* gcc.dg/vect/slp-1.c: Likewise.
