@@ -1414,6 +1414,10 @@ Target supports hardware vectors of @code{long}.
 @item vect_long_long
 Target supports hardware vectors of @code{long long}.
 
+@item vect_fully_masked
+Target supports fully-masked (also known as fully-predicated) loops,
+so that vector loops can handle partial as well as full vectors.
+
 @item vect_masked_store
 Target supports vector masked stores.
 
