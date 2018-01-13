@@ -2,6 +2,36 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64-modes.def: Define x2, x3 and x4 vector
+	modes for SVE.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_sve_struct_memory_operand_p): Declare.
+	* config/aarch64/iterators.md (SVE_STRUCT): New mode iterator.
+	(vector_count, insn_length, VSINGLE, vsingle): New mode attributes.
+	(VPRED, vpred): Handle SVE structure modes.
+	* config/aarch64/constraints.md (Utx): New constraint.
+	* config/aarch64/predicates.md (aarch64_sve_struct_memory_operand)
+	(aarch64_sve_struct_nonimmediate_operand): New predicates.
+	* config/aarch64/aarch64.md (UNSPEC_LDN, UNSPEC_STN): New unspecs.
+	* config/aarch64/aarch64-sve.md (mov<mode>, *aarch64_sve_mov<mode>_le)
+	(*aarch64_sve_mov<mode>_be, pred_mov<mode>): New patterns for
+	structure modes.  Split into pieces after RA.
+	(vec_load_lanes<mode><vsingle>, vec_mask_load_lanes<mode><vsingle>)
+	(vec_store_lanes<mode><vsingle>, vec_mask_store_lanes<mode><vsingle>):
+	New patterns.
+	* config/aarch64/aarch64.c (aarch64_classify_vector_mode): Handle
+	SVE structure modes.
+	(aarch64_classify_address): Likewise.
+	(sizetochar): Move earlier in file.
+	(aarch64_print_operand): Handle SVE register lists.
+	(aarch64_array_mode): New function.
+	(aarch64_sve_struct_memory_operand_p): Likewise.
+	(TARGET_ARRAY_MODE): Redefine.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (array_mode): New target hook.
 	* doc/tm.texi.in (TARGET_ARRAY_MODE): New hook.
 	* doc/tm.texi: Regenerate.

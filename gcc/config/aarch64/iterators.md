@@ -250,6 +250,14 @@
 (define_mode_iterator SVE_ALL [VNx16QI VNx8HI VNx4SI VNx2DI
 			       VNx8HF VNx4SF VNx2DF])
 
+;; All SVE vector structure modes.
+(define_mode_iterator SVE_STRUCT [VNx32QI VNx16HI VNx8SI VNx4DI
+				  VNx16HF VNx8SF VNx4DF
+				  VNx48QI VNx24HI VNx12SI VNx6DI
+				  VNx24HF VNx12SF VNx6DF
+				  VNx64QI VNx32HI VNx16SI VNx8DI
+				  VNx32HF VNx16SF VNx8DF])
+
 ;; All SVE vector modes that have 8-bit or 16-bit elements.
 (define_mode_iterator SVE_BH [VNx16QI VNx8HI VNx8HF])
 
@@ -604,9 +612,16 @@
 
 ;; Equivalent of "size" for a vector element.
 (define_mode_attr Vesize [(VNx16QI "b")
-			  (VNx8HI  "h") (VNx8HF "h")
-			  (VNx4SI  "w") (VNx4SF "w")
-			  (VNx2DI  "d") (VNx2DF "d")])
+			  (VNx8HI  "h") (VNx8HF  "h")
+			  (VNx4SI  "w") (VNx4SF  "w")
+			  (VNx2DI  "d") (VNx2DF  "d")
+			  (VNx32QI "b") (VNx48QI "b") (VNx64QI "b")
+			  (VNx16HI "h") (VNx24HI "h") (VNx32HI "h")
+			  (VNx16HF "h") (VNx24HF "h") (VNx32HF "h")
+			  (VNx8SI  "w") (VNx12SI "w") (VNx16SI "w")
+			  (VNx8SF  "w") (VNx12SF "w") (VNx16SF "w")
+			  (VNx4DI  "d") (VNx6DI  "d") (VNx8DI  "d")
+			  (VNx4DF  "d") (VNx6DF  "d") (VNx8DF  "d")])
 
 ;; Vetype is used everywhere in scheduling type and assembly output,
 ;; sometimes they are not the same, for example HF modes on some
@@ -983,17 +998,93 @@
 
 (define_code_attr f16mac [(plus "a") (minus "s")])
 
-;; The predicate mode associated with an SVE data mode.
+;; The number of subvectors in an SVE_STRUCT.
+(define_mode_attr vector_count [(VNx32QI "2") (VNx16HI "2")
+				(VNx8SI  "2") (VNx4DI  "2")
+				(VNx16HF "2") (VNx8SF  "2") (VNx4DF "2")
+				(VNx48QI "3") (VNx24HI "3")
+				(VNx12SI "3") (VNx6DI  "3")
+				(VNx24HF "3") (VNx12SF "3") (VNx6DF "3")
+				(VNx64QI "4") (VNx32HI "4")
+				(VNx16SI "4") (VNx8DI  "4")
+				(VNx32HF "4") (VNx16SF "4") (VNx8DF "4")])
+
+;; The number of instruction bytes needed for an SVE_STRUCT move.  This is
+;; equal to vector_count * 4.
+(define_mode_attr insn_length [(VNx32QI "8")  (VNx16HI "8")
+			       (VNx8SI  "8")  (VNx4DI  "8")
+			       (VNx16HF "8")  (VNx8SF  "8")  (VNx4DF "8")
+			       (VNx48QI "12") (VNx24HI "12")
+			       (VNx12SI "12") (VNx6DI  "12")
+			       (VNx24HF "12") (VNx12SF "12") (VNx6DF "12")
+			       (VNx64QI "16") (VNx32HI "16")
+			       (VNx16SI "16") (VNx8DI  "16")
+			       (VNx32HF "16") (VNx16SF "16") (VNx8DF "16")])
+
+;; The type of a subvector in an SVE_STRUCT.
+(define_mode_attr VSINGLE [(VNx32QI "VNx16QI")
+			   (VNx16HI "VNx8HI") (VNx16HF "VNx8HF")
+			   (VNx8SI "VNx4SI") (VNx8SF "VNx4SF")
+			   (VNx4DI "VNx2DI") (VNx4DF "VNx2DF")
+			   (VNx48QI "VNx16QI")
+			   (VNx24HI "VNx8HI") (VNx24HF "VNx8HF")
+			   (VNx12SI "VNx4SI") (VNx12SF "VNx4SF")
+			   (VNx6DI "VNx2DI") (VNx6DF "VNx2DF")
+			   (VNx64QI "VNx16QI")
+			   (VNx32HI "VNx8HI") (VNx32HF "VNx8HF")
+			   (VNx16SI "VNx4SI") (VNx16SF "VNx4SF")
+			   (VNx8DI "VNx2DI") (VNx8DF "VNx2DF")])
+
+;; ...and again in lower case.
+(define_mode_attr vsingle [(VNx32QI "vnx16qi")
+			   (VNx16HI "vnx8hi") (VNx16HF "vnx8hf")
+			   (VNx8SI "vnx4si") (VNx8SF "vnx4sf")
+			   (VNx4DI "vnx2di") (VNx4DF "vnx2df")
+			   (VNx48QI "vnx16qi")
+			   (VNx24HI "vnx8hi") (VNx24HF "vnx8hf")
+			   (VNx12SI "vnx4si") (VNx12SF "vnx4sf")
+			   (VNx6DI "vnx2di") (VNx6DF "vnx2df")
+			   (VNx64QI "vnx16qi")
+			   (VNx32HI "vnx8hi") (VNx32HF "vnx8hf")
+			   (VNx16SI "vnx4si") (VNx16SF "vnx4sf")
+			   (VNx8DI "vnx2di") (VNx8DF "vnx2df")])
+
+;; The predicate mode associated with an SVE data mode.  For structure modes
+;; this is equivalent to the <VPRED> of the subvector mode.
 (define_mode_attr VPRED [(VNx16QI "VNx16BI")
 			 (VNx8HI "VNx8BI") (VNx8HF "VNx8BI")
 			 (VNx4SI "VNx4BI") (VNx4SF "VNx4BI")
-			 (VNx2DI "VNx2BI") (VNx2DF "VNx2BI")])
+			 (VNx2DI "VNx2BI") (VNx2DF "VNx2BI")
+			 (VNx32QI "VNx16BI")
+			 (VNx16HI "VNx8BI") (VNx16HF "VNx8BI")
+			 (VNx8SI "VNx4BI") (VNx8SF "VNx4BI")
+			 (VNx4DI "VNx2BI") (VNx4DF "VNx2BI")
+			 (VNx48QI "VNx16BI")
+			 (VNx24HI "VNx8BI") (VNx24HF "VNx8BI")
+			 (VNx12SI "VNx4BI") (VNx12SF "VNx4BI")
+			 (VNx6DI "VNx2BI") (VNx6DF "VNx2BI")
+			 (VNx64QI "VNx16BI")
+			 (VNx32HI "VNx8BI") (VNx32HF "VNx8BI")
+			 (VNx16SI "VNx4BI") (VNx16SF "VNx4BI")
+			 (VNx8DI "VNx2BI") (VNx8DF "VNx2BI")])
 
 ;; ...and again in lower case.
 (define_mode_attr vpred [(VNx16QI "vnx16bi")
 			 (VNx8HI "vnx8bi") (VNx8HF "vnx8bi")
 			 (VNx4SI "vnx4bi") (VNx4SF "vnx4bi")
-			 (VNx2DI "vnx2bi") (VNx2DF "vnx2bi")])
+			 (VNx2DI "vnx2bi") (VNx2DF "vnx2bi")
+			 (VNx32QI "vnx16bi")
+			 (VNx16HI "vnx8bi") (VNx16HF "vnx8bi")
+			 (VNx8SI "vnx4bi") (VNx8SF "vnx4bi")
+			 (VNx4DI "vnx2bi") (VNx4DF "vnx2bi")
+			 (VNx48QI "vnx16bi")
+			 (VNx24HI "vnx8bi") (VNx24HF "vnx8bi")
+			 (VNx12SI "vnx4bi") (VNx12SF "vnx4bi")
+			 (VNx6DI "vnx2bi") (VNx6DF "vnx2bi")
+			 (VNx64QI "vnx16bi")
+			 (VNx32HI "vnx8bi") (VNx32HF "vnx4bi")
+			 (VNx16SI "vnx4bi") (VNx16SF "vnx4bi")
+			 (VNx8DI "vnx2bi") (VNx8DF "vnx2bi")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

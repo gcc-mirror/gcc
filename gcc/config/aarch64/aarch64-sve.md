@@ -189,6 +189,105 @@
   "st1<Vesize>\t%1.<Vetype>, %2, %0"
 )
 
+;; SVE structure moves.
+(define_expand "mov<mode>"
+  [(set (match_operand:SVE_STRUCT 0 "nonimmediate_operand")
+	(match_operand:SVE_STRUCT 1 "general_operand"))]
+  "TARGET_SVE"
+  {
+    /* Big-endian loads and stores need to be done via LD1 and ST1;
+       see the comment at the head of the file for details.  */
+    if ((MEM_P (operands[0]) || MEM_P (operands[1]))
+	&& BYTES_BIG_ENDIAN)
+      {
+	gcc_assert (can_create_pseudo_p ());
+	aarch64_expand_sve_mem_move (operands[0], operands[1], <VPRED>mode);
+	DONE;
+      }
+
+    if (CONSTANT_P (operands[1]))
+      {
+	aarch64_expand_mov_immediate (operands[0], operands[1]);
+	DONE;
+      }
+  }
+)
+
+;; Unpredicated structure moves (little-endian).
+(define_insn "*aarch64_sve_mov<mode>_le"
+  [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_nonimmediate_operand" "=w, Utr, w, w")
+	(match_operand:SVE_STRUCT 1 "aarch64_sve_general_operand" "Utr, w, w, Dn"))]
+  "TARGET_SVE && !BYTES_BIG_ENDIAN"
+  "#"
+  [(set_attr "length" "<insn_length>")]
+)
+
+;; Unpredicated structure moves (big-endian).  Memory accesses require
+;; secondary reloads.
+(define_insn "*aarch64_sve_mov<mode>_le"
+  [(set (match_operand:SVE_STRUCT 0 "register_operand" "=w, w")
+	(match_operand:SVE_STRUCT 1 "aarch64_nonmemory_operand" "w, Dn"))]
+  "TARGET_SVE && BYTES_BIG_ENDIAN"
+  "#"
+  [(set_attr "length" "<insn_length>")]
+)
+
+;; Split unpredicated structure moves into pieces.  This is the same
+;; for both big-endian and little-endian code, although it only needs
+;; to handle memory operands for little-endian code.
+(define_split
+  [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_nonimmediate_operand")
+	(match_operand:SVE_STRUCT 1 "aarch64_sve_general_operand"))]
+  "TARGET_SVE && reload_completed"
+  [(const_int 0)]
+  {
+    rtx dest = operands[0];
+    rtx src = operands[1];
+    if (REG_P (dest) && REG_P (src))
+      aarch64_simd_emit_reg_reg_move (operands, <VSINGLE>mode, <vector_count>);
+    else
+      for (unsigned int i = 0; i < <vector_count>; ++i)
+	{
+	  rtx subdest = simplify_gen_subreg (<VSINGLE>mode, dest, <MODE>mode,
+					     i * BYTES_PER_SVE_VECTOR);
+	  rtx subsrc = simplify_gen_subreg (<VSINGLE>mode, src, <MODE>mode,
+					    i * BYTES_PER_SVE_VECTOR);
+	  emit_insn (gen_rtx_SET (subdest, subsrc));
+	}
+    DONE;
+  }
+)
+
+;; Predicated structure moves.  This works for both endiannesses but in
+;; practice is only useful for big-endian.
+(define_insn_and_split "pred_mov<mode>"
+  [(set (match_operand:SVE_STRUCT 0 "aarch64_sve_struct_nonimmediate_operand" "=w, Utx")
+	(unspec:SVE_STRUCT
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
+	   (match_operand:SVE_STRUCT 2 "aarch64_sve_struct_nonimmediate_operand" "Utx, w")]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE
+   && (register_operand (operands[0], <MODE>mode)
+       || register_operand (operands[2], <MODE>mode))"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    for (unsigned int i = 0; i < <vector_count>; ++i)
+      {
+	rtx subdest = simplify_gen_subreg (<VSINGLE>mode, operands[0],
+					   <MODE>mode,
+					   i * BYTES_PER_SVE_VECTOR);
+	rtx subsrc = simplify_gen_subreg (<VSINGLE>mode, operands[2],
+					  <MODE>mode,
+					  i * BYTES_PER_SVE_VECTOR);
+	aarch64_emit_sve_pred_move (subdest, operands[1], subsrc);
+      }
+    DONE;
+  }
+  [(set_attr "length" "<insn_length>")]
+)
+
 (define_expand "mov<mode>"
   [(set (match_operand:PRED_ALL 0 "nonimmediate_operand")
 	(match_operand:PRED_ALL 1 "general_operand"))]
@@ -458,6 +557,60 @@
     operands[2] = aarch64_check_zero_based_sve_index_immediate (operands[2]);
     return "index\t%0.<Vetype>, %<vw>1, #%2";
   }
+)
+
+;; Unpredicated LD[234].
+(define_expand "vec_load_lanes<mode><vsingle>"
+  [(set (match_operand:SVE_STRUCT 0 "register_operand")
+	(unspec:SVE_STRUCT
+	  [(match_dup 2)
+	   (match_operand:SVE_STRUCT 1 "memory_operand")]
+	  UNSPEC_LDN))]
+  "TARGET_SVE"
+  {
+    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+;; Predicated LD[234].
+(define_insn "vec_mask_load_lanes<mode><vsingle>"
+  [(set (match_operand:SVE_STRUCT 0 "register_operand" "=w")
+	(unspec:SVE_STRUCT
+	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
+	   (match_operand:SVE_STRUCT 1 "memory_operand" "m")]
+	  UNSPEC_LDN))]
+  "TARGET_SVE"
+  "ld<vector_count><Vesize>\t%0, %2/z, %1"
+)
+
+;; Unpredicated ST[234].  This is always a full update, so the dependence
+;; on the old value of the memory location (via (match_dup 0)) is redundant.
+;; There doesn't seem to be any obvious benefit to treating the all-true
+;; case differently though.  In particular, it's very unlikely that we'll
+;; only find out during RTL that a store_lanes is dead.
+(define_expand "vec_store_lanes<mode><vsingle>"
+  [(set (match_operand:SVE_STRUCT 0 "memory_operand")
+	(unspec:SVE_STRUCT
+	  [(match_dup 2)
+	   (match_operand:SVE_STRUCT 1 "register_operand")
+	   (match_dup 0)]
+	  UNSPEC_STN))]
+  "TARGET_SVE"
+  {
+    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+;; Predicated ST[234].
+(define_insn "vec_mask_store_lanes<mode><vsingle>"
+  [(set (match_operand:SVE_STRUCT 0 "memory_operand" "+m")
+	(unspec:SVE_STRUCT
+	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
+	   (match_operand:SVE_STRUCT 1 "register_operand" "w")
+	   (match_dup 0)]
+	  UNSPEC_STN))]
+  "TARGET_SVE"
+  "st<vector_count><Vesize>\t%1, %2, %0"
 )
 
 (define_expand "vec_perm<mode>"

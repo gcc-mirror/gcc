@@ -161,6 +161,8 @@
     UNSPEC_PACK
     UNSPEC_FLOAT_CONVERT
     UNSPEC_WHILE_LO
+    UNSPEC_LDN
+    UNSPEC_STN
 ])
 
 (define_c_enum "unspecv" [

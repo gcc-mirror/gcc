@@ -249,6 +249,12 @@
   (and (match_code "mem")
        (match_test "aarch64_sve_ld1r_operand_p (op)")))
 
+(define_memory_constraint "Utx"
+  "@internal
+   An address valid for SVE structure mov patterns (as distinct from
+   LD[234] and ST[234] patterns)."
+  (match_operand 0 "aarch64_sve_struct_memory_operand"))
+
 (define_constraint "Ufc"
   "A floating point constant which can be used with an\
    FMOV immediate operation."
