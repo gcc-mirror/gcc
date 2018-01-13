@@ -5195,6 +5195,17 @@ Compute the sum of the elements of a vector. The vector is operand 1, and
 operand 0 is the scalar result, with mode equal to the mode of the elements of
 the input vector.
 
+@cindex @code{reduc_and_scal_@var{m}} instruction pattern
+@item @samp{reduc_and_scal_@var{m}}
+@cindex @code{reduc_ior_scal_@var{m}} instruction pattern
+@itemx @samp{reduc_ior_scal_@var{m}}
+@cindex @code{reduc_xor_scal_@var{m}} instruction pattern
+@itemx @samp{reduc_xor_scal_@var{m}}
+Compute the bitwise @code{AND}/@code{IOR}/@code{XOR} reduction of the elements
+of a vector of mode @var{m}.  Operand 1 is the vector input and operand 0
+is the scalar result.  The mode of the scalar result is the same as one
+element of @var{m}.
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern

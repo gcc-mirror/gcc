@@ -1581,6 +1581,9 @@ Target supports 16- and 8-bytes vectors.
 
 @item vect_sizes_32B_16B
 Target supports 32- and 16-bytes vectors.
+
+@item vect_logical_reduc
+Target supports AND, IOR and XOR reduction on vectors.
 @end table
 
 @subsubsection Thread Local Storage attributes

@@ -1505,6 +1505,26 @@
   "<maxmin_uns_op>v\t%<Vetype>0, %1, %2.<Vetype>"
 )
 
+(define_expand "reduc_<optab>_scal_<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand")
+	(unspec:<VEL> [(match_dup 2)
+		       (match_operand:SVE_I 1 "register_operand")]
+		      BITWISEV))]
+  "TARGET_SVE"
+  {
+    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+(define_insn "*reduc_<optab>_scal_<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+	(unspec:<VEL> [(match_operand:<VPRED> 1 "register_operand" "Upl")
+		       (match_operand:SVE_I 2 "register_operand" "w")]
+		      BITWISEV))]
+  "TARGET_SVE"
+  "<bit_reduc_op>\t%<Vetype>0, %1, %2.<Vetype>"
+)
+
 ;; Unpredicated floating-point addition.
 (define_expand "add<mode>3"
   [(set (match_operand:SVE_F 0 "register_operand")

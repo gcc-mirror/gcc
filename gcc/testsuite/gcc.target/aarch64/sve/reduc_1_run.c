@@ -9,7 +9,7 @@
   TYPE a[NUM_ELEMS (TYPE) + 1];				\
   for (int i = 0; i < NUM_ELEMS (TYPE) + 1; i++)	\
     {							\
-      a[i] = (i * 2) * (i & 1 ? 1 : -1);		\
+      a[i] = ((i * 2) * (i & 1 ? 1 : -1) | 3);		\
       asm volatile ("" ::: "memory");			\
     }
 
@@ -35,10 +35,22 @@
       __builtin_abort ();					\
   }
 
+#define TEST_REDUC_BITWISE(TYPE, NAME, BIT_OP)			\
+  {								\
+    INIT_VECTOR (TYPE);						\
+    TYPE r1 = reduc_##NAME##_##TYPE (a, NUM_ELEMS (TYPE));	\
+    volatile TYPE r2 = 13;					\
+    for (int i = 0; i < NUM_ELEMS (TYPE); ++i)			\
+      r2 BIT_OP a[i];						\
+    if (r1 != r2)						\
+      __builtin_abort ();					\
+  }
+
 int main ()
 {
   TEST_PLUS (TEST_REDUC_PLUS)
   TEST_MAXMIN (TEST_REDUC_MAXMIN)
+  TEST_BITWISE (TEST_REDUC_BITWISE)
 
   return 0;
 }
