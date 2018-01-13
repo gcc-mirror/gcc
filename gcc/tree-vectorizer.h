@@ -844,7 +844,12 @@ typedef struct _stmt_vec_info {
 
 /* Information about a gather/scatter call.  */
 struct gather_scatter_info {
-  /* The FUNCTION_DECL for the built-in gather/scatter function.  */
+  /* The internal function to use for the gather/scatter operation,
+     or IFN_LAST if a built-in function should be used instead.  */
+  internal_fn ifn;
+
+  /* The FUNCTION_DECL for the built-in gather/scatter function,
+     or null if an internal function should be used instead.  */
   tree decl;
 
   /* The loop-invariant base value.  */
@@ -862,6 +867,12 @@ struct gather_scatter_info {
 
   /* The type of the vectorized offset.  */
   tree offset_vectype;
+
+  /* The type of the scalar elements after loading or before storing.  */
+  tree element_type;
+
+  /* The type of the scalar elements being loaded or stored.  */
+  tree memory_type;
 };
 
 /* Access Functions.  */
@@ -1533,7 +1544,7 @@ extern void duplicate_and_interleave (gimple_seq *, tree, vec<tree>,
    Additional pattern recognition functions can (and will) be added
    in the future.  */
 typedef gimple *(* vect_recog_func_ptr) (vec<gimple *> *, tree *, tree *);
-#define NUM_PATTERNS 14
+#define NUM_PATTERNS 15
 void vect_pattern_recog (vec_info *);
 
 /* In tree-vectorizer.c.  */

@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
    - mask_load_lanes: currently just vec_mask_load_lanes
+   - gather_load: used for {mask_,}gather_load
 
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
@@ -117,6 +118,10 @@ DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
 DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
 		       vec_mask_load_lanes, mask_load_lanes)
+
+DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
+DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
+		       mask_gather_load, gather_load)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)

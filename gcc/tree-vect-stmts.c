@@ -391,21 +391,19 @@ exist_non_indexing_operands_for_use_p (tree use, gimple *stmt)
     {
       if (is_gimple_call (stmt)
 	  && gimple_call_internal_p (stmt))
-	switch (gimple_call_internal_fn (stmt))
-	  {
-	  case IFN_MASK_STORE:
-	    operand = gimple_call_arg (stmt, 3);
-	    if (operand == use)
-	      return true;
-	    /* FALLTHRU */
-	  case IFN_MASK_LOAD:
-	    operand = gimple_call_arg (stmt, 2);
-	    if (operand == use)
-	      return true;
-	    break;
-	  default:
-	    break;
-	  }
+	{
+	  internal_fn ifn = gimple_call_internal_fn (stmt);
+	  int mask_index = internal_fn_mask_index (ifn);
+	  if (mask_index >= 0
+	      && use == gimple_call_arg (stmt, mask_index))
+	    return true;
+	  if (internal_gather_scatter_fn_p (ifn)
+	      && use == gimple_call_arg (stmt, 1))
+	    return true;
+	  if (ifn == IFN_MASK_STORE
+	      && use == gimple_call_arg (stmt, 3))
+	    return true;
+	}
       return false;
     }
 
@@ -1727,6 +1725,8 @@ static tree permute_vec_elements (tree, tree, tree, gimple *,
    is the type of the vector being loaded or stored.  MEMORY_ACCESS_TYPE
    says how the load or store is going to be implemented and GROUP_SIZE
    is the number of load or store statements in the containing group.
+   If the access is a gather load or scatter store, GS_INFO describes
+   its arguments.
 
    Clear LOOP_VINFO_CAN_FULLY_MASK_P if a fully-masked loop is not
    supported, otherwise record the required mask types.  */
@@ -1734,7 +1734,8 @@ static tree permute_vec_elements (tree, tree, tree, gimple *,
 static void
 check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 			  vec_load_store_type vls_type, int group_size,
-			  vect_memory_access_type memory_access_type)
+			  vect_memory_access_type memory_access_type,
+			  gather_scatter_info *gs_info)
 {
   /* Invariant loads need no special support.  */
   if (memory_access_type == VMAT_INVARIANT)
@@ -1754,6 +1755,29 @@ check_load_store_masking (loop_vec_info loop_vinfo, tree vectype,
 			     "can't use a fully-masked loop because the"
 			     " target doesn't have an appropriate masked"
 			     " load/store-lanes instruction.\n");
+	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
+	  return;
+	}
+      unsigned int ncopies = vect_get_num_copies (loop_vinfo, vectype);
+      vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype);
+      return;
+    }
+
+  if (memory_access_type == VMAT_GATHER_SCATTER)
+    {
+      gcc_assert (is_load);
+      tree offset_type = TREE_TYPE (gs_info->offset);
+      if (!internal_gather_scatter_fn_supported_p (IFN_MASK_GATHER_LOAD,
+						   vectype,
+						   gs_info->memory_type,
+						   TYPE_SIGN (offset_type),
+						   gs_info->scale))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "can't use a fully-masked loop because the"
+			     " target doesn't have an appropriate masked"
+			     " gather load instruction.\n");
 	  LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo) = false;
 	  return;
 	}
@@ -2563,6 +2587,31 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
     }
 }
 
+/* Prepare the base and offset in GS_INFO for vectorization.
+   Set *DATAREF_PTR to the loop-invariant base address and *VEC_OFFSET
+   to the vectorized offset argument for the first copy of STMT.  STMT
+   is the statement described by GS_INFO and LOOP is the containing loop.  */
+
+static void
+vect_get_gather_scatter_ops (struct loop *loop, gimple *stmt,
+			     gather_scatter_info *gs_info,
+			     tree *dataref_ptr, tree *vec_offset)
+{
+  gimple_seq stmts = NULL;
+  *dataref_ptr = force_gimple_operand (gs_info->base, &stmts, true, NULL_TREE);
+  if (stmts != NULL)
+    {
+      basic_block new_bb;
+      edge pe = loop_preheader_edge (loop);
+      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+      gcc_assert (!new_bb);
+    }
+  tree offset_type = TREE_TYPE (gs_info->offset);
+  tree offset_vectype = get_vectype_for_scalar_type (offset_type);
+  *vec_offset = vect_get_vec_def_for_operand (gs_info->offset, stmt,
+					      offset_vectype);
+}
+
 /* Check and perform vectorization of BUILT_IN_BSWAP{16,32,64}.  */
 
 static bool
@@ -2751,7 +2800,7 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     return false;
 
   if (gimple_call_internal_p (stmt)
-      && (gimple_call_internal_fn (stmt) == IFN_MASK_LOAD
+      && (internal_load_fn_p (gimple_call_internal_fn (stmt))
 	  || gimple_call_internal_fn (stmt) == IFN_MASK_STORE))
     /* Handled by vectorizable_load and vectorizable_store.  */
     return false;
@@ -5951,7 +6000,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	check_load_store_masking (loop_vinfo, vectype, vls_type, group_size,
-				  memory_access_type);
+				  memory_access_type, &gs_info);
 
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       /* The SLP costs are calculated during SLP analysis.  */
@@ -6932,7 +6981,11 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   else
     {
       gcall *call = dyn_cast <gcall *> (stmt);
-      if (!call || !gimple_call_internal_p (call, IFN_MASK_LOAD))
+      if (!call || !gimple_call_internal_p (call))
+	return false;
+
+      internal_fn ifn = gimple_call_internal_fn (call);
+      if (!internal_load_fn_p (ifn))
 	return false;
 
       scalar_dest = gimple_call_lhs (call);
@@ -6947,9 +7000,13 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  return false;
 	}
 
-      mask = gimple_call_arg (call, 2);
-      if (!vect_check_load_store_mask (stmt, mask, &mask_vectype))
-	return false;
+      int mask_index = internal_fn_mask_index (ifn);
+      if (mask_index >= 0)
+	{
+	  mask = gimple_call_arg (call, mask_index);
+	  if (!vect_check_load_store_mask (stmt, mask, &mask_vectype))
+	    return false;
+	}
     }
 
   if (!STMT_VINFO_DATA_REF (stmt_info))
@@ -7073,7 +7130,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 					     TYPE_MODE (mask_vectype), true))
 	    return false;
 	}
-      else if (memory_access_type == VMAT_GATHER_SCATTER)
+      else if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
 	{
 	  tree arglist = TYPE_ARG_TYPES (TREE_TYPE (gs_info.decl));
 	  tree masktype
@@ -7087,7 +7144,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      return false;
 	    }
 	}
-      else if (memory_access_type != VMAT_LOAD_STORE_LANES)
+      else if (memory_access_type != VMAT_LOAD_STORE_LANES
+	       && memory_access_type != VMAT_GATHER_SCATTER)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7104,7 +7162,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_FULLY_MASK_P (loop_vinfo))
 	check_load_store_masking (loop_vinfo, vectype, VLS_LOAD, group_size,
-				  memory_access_type);
+				  memory_access_type, &gs_info);
 
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       /* The SLP costs are calculated during SLP analysis.  */
@@ -7126,7 +7184,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   ensure_base_align (dr);
 
-  if (memory_access_type == VMAT_GATHER_SCATTER)
+  if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
       vect_build_gather_load_calls (stmt, gsi, vec_stmt, &gs_info, mask);
       return true;
@@ -7571,6 +7629,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     aggr_type = vectype;
 
   tree vec_mask = NULL_TREE;
+  tree vec_offset = NULL_TREE;
   prev_stmt_info = NULL;
   poly_uint64 group_elt = 0;
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
@@ -7613,6 +7672,12 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 					     stmt, diff);
 	    }
+	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	    {
+	      vect_get_gather_scatter_ops (loop, stmt, &gs_info,
+					   &dataref_ptr, &vec_offset);
+	      inv_p = false;
+	    }
 	  else
 	    dataref_ptr
 	      = vect_create_data_ref_ptr (first_stmt, aggr_type, at_loop,
@@ -7628,6 +7693,13 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  if (dataref_offset)
 	    dataref_offset = int_const_binop (PLUS_EXPR, dataref_offset,
 					      TYPE_SIZE_UNIT (aggr_type));
+	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	    {
+	      gimple *def_stmt;
+	      vect_def_type dt;
+	      vect_is_simple_use (vec_offset, loop_vinfo, &def_stmt, &dt);
+	      vec_offset = vect_get_vec_def_for_stmt_copy (dt, vec_offset);
+	    }
 	  else
 	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
 					   TYPE_SIZE_UNIT (aggr_type));
@@ -7715,6 +7787,24 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		case dr_unaligned_supported:
 		  {
 		    unsigned int align, misalign;
+
+		    if (memory_access_type == VMAT_GATHER_SCATTER)
+		      {
+			tree scale = size_int (gs_info.scale);
+			gcall *call;
+			if (masked_loop_p)
+			  call = gimple_build_call_internal
+			    (IFN_MASK_GATHER_LOAD, 4, dataref_ptr,
+			     vec_offset, scale, final_mask);
+			else
+			  call = gimple_build_call_internal
+			    (IFN_GATHER_LOAD, 3, dataref_ptr,
+			     vec_offset, scale);
+			gimple_call_set_nothrow (call, true);
+			new_stmt = call;
+			data_ref = NULL_TREE;
+			break;
+		      }
 
 		    align = DR_TARGET_ALIGNMENT (dr);
 		    if (alignment_support_scheme == dr_aligned)

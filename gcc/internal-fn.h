@@ -192,6 +192,12 @@ extern bool set_edom_supported_p (void);
 
 extern internal_fn get_conditional_internal_fn (tree_code);
 
+extern bool internal_load_fn_p (internal_fn);
+extern bool internal_gather_scatter_fn_p (internal_fn);
+extern int internal_fn_mask_index (internal_fn);
+extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
+						    tree, signop, int);
+
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);

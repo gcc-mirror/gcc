@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-hash-traits.h"
 #include "vec-perm-indices.h"
+#include "internal-fn.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */
@@ -3300,6 +3301,74 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   return true;
 }
 
+/* Check whether we can use an internal function for a gather load
+   or scatter store.  READ_P is true for loads and false for stores.
+   MASKED_P is true if the load or store is conditional.  MEMORY_TYPE is
+   the type of the memory elements being loaded or stored.  OFFSET_BITS
+   is the number of bits in each scalar offset and OFFSET_SIGN is the
+   sign of the offset.  SCALE is the amount by which the offset should
+   be multiplied *after* it has been converted to address width.
+
+   Return true if the function is supported, storing the function
+   id in *IFN_OUT and the type of a vector element in *ELEMENT_TYPE_OUT.  */
+
+static bool
+vect_gather_scatter_fn_p (bool read_p, bool masked_p, tree vectype,
+			  tree memory_type, unsigned int offset_bits,
+			  signop offset_sign, int scale,
+			  internal_fn *ifn_out, tree *element_type_out)
+{
+  unsigned int memory_bits = tree_to_uhwi (TYPE_SIZE (memory_type));
+  unsigned int element_bits = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (vectype)));
+  if (offset_bits > element_bits)
+    /* Internal functions require the offset to be the same width as
+       the vector elements.  We can extend narrower offsets, but it isn't
+       safe to truncate wider offsets.  */
+    return false;
+
+  if (element_bits != memory_bits)
+    /* For now the vector elements must be the same width as the
+       memory elements.  */
+    return false;
+
+  /* Work out which function we need.  */
+  internal_fn ifn;
+  if (read_p)
+    ifn = masked_p ? IFN_MASK_GATHER_LOAD : IFN_GATHER_LOAD;
+  else
+    return false;
+
+  /* Test whether the target supports this combination.  */
+  if (!internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
+					       offset_sign, scale))
+    return false;
+
+  *ifn_out = ifn;
+  *element_type_out = TREE_TYPE (vectype);
+  return true;
+}
+
+/* CALL is a call to an internal gather load or scatter store function.
+   Describe the operation in INFO.  */
+
+static void
+vect_describe_gather_scatter_call (gcall *call, gather_scatter_info *info)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (call);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+
+  info->ifn = gimple_call_internal_fn (call);
+  info->decl = NULL_TREE;
+  info->base = gimple_call_arg (call, 0);
+  info->offset = gimple_call_arg (call, 1);
+  info->offset_dt = vect_unknown_def_type;
+  info->offset_vectype = NULL_TREE;
+  info->scale = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
+  info->element_type = TREE_TYPE (vectype);
+  info->memory_type = TREE_TYPE (DR_REF (dr));
+}
+
 /* Return true if a non-affine read or write in STMT is suitable for a
    gather load or scatter store.  Describe the operation in *INFO if so.  */
 
@@ -3313,17 +3382,38 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree offtype = NULL_TREE;
-  tree decl, base, off;
+  tree decl = NULL_TREE, base, off;
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  tree memory_type = TREE_TYPE (DR_REF (dr));
   machine_mode pmode;
   int punsignedp, reversep, pvolatilep = 0;
+  internal_fn ifn;
+  tree element_type;
+  bool masked_p = false;
+
+  /* See whether this is already a call to a gather/scatter internal function.
+     If not, see whether it's a masked load or store.  */
+  gcall *call = dyn_cast <gcall *> (stmt);
+  if (call && gimple_call_internal_p (call))
+    {
+      ifn = gimple_call_internal_fn (stmt);
+      if (internal_gather_scatter_fn_p (ifn))
+	{
+	  vect_describe_gather_scatter_call (call, info);
+	  return true;
+	}
+      masked_p = (ifn == IFN_MASK_LOAD || ifn == IFN_MASK_STORE);
+    }
+
+  /* True if we should aim to use internal functions rather than
+     built-in functions.  */
+  bool use_ifn_p = (DR_IS_READ (dr)
+		    && supports_vec_gather_load_p ());
 
   base = DR_REF (dr);
   /* For masked loads/stores, DR_REF (dr) is an artificial MEM_REF,
      see if we can use the def stmt of the address.  */
-  if (is_gimple_call (stmt)
-      && gimple_call_internal_p (stmt)
-      && (gimple_call_internal_fn (stmt) == IFN_MASK_LOAD
-	  || gimple_call_internal_fn (stmt) == IFN_MASK_STORE)
+  if (masked_p
       && TREE_CODE (base) == MEM_REF
       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
       && integer_zerop (TREE_OPERAND (base, 1))
@@ -3454,7 +3544,17 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
 	case MULT_EXPR:
 	  if (scale == 1 && tree_fits_shwi_p (op1))
 	    {
-	      scale = tree_to_shwi (op1);
+	      int new_scale = tree_to_shwi (op1);
+	      /* Only treat this as a scaling operation if the target
+		 supports it.  */
+	      if (use_ifn_p
+		  && !vect_gather_scatter_fn_p (DR_IS_READ (dr), masked_p,
+						vectype, memory_type, 1,
+						TYPE_SIGN (TREE_TYPE (op0)),
+						new_scale, &ifn,
+						&element_type))
+		break;
+	      scale = new_scale;
 	      off = op0;
 	      continue;
 	    }
@@ -3472,6 +3572,15 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
 	      off = op0;
 	      continue;
 	    }
+
+	  /* The internal functions need the offset to be the same width
+	     as the elements of VECTYPE.  Don't include operations that
+	     cast the offset from that width to a different width.  */
+	  if (use_ifn_p
+	      && (int_size_in_bytes (TREE_TYPE (vectype))
+		  == int_size_in_bytes (TREE_TYPE (off))))
+	    break;
+
 	  if (TYPE_PRECISION (TREE_TYPE (op0))
 	      < TYPE_PRECISION (TREE_TYPE (off)))
 	    {
@@ -3496,22 +3605,37 @@ vect_check_gather_scatter (gimple *stmt, loop_vec_info loop_vinfo,
   if (offtype == NULL_TREE)
     offtype = TREE_TYPE (off);
 
-  if (DR_IS_READ (dr))
-    decl = targetm.vectorize.builtin_gather (STMT_VINFO_VECTYPE (stmt_info),
-					     offtype, scale);
+  if (use_ifn_p)
+    {
+      if (!vect_gather_scatter_fn_p (DR_IS_READ (dr), masked_p, vectype,
+				     memory_type, TYPE_PRECISION (offtype),
+				     TYPE_SIGN (offtype), scale, &ifn,
+				     &element_type))
+	return false;
+    }
   else
-    decl = targetm.vectorize.builtin_scatter (STMT_VINFO_VECTYPE (stmt_info),
-					      offtype, scale);
+    {
+      if (DR_IS_READ (dr))
+	decl = targetm.vectorize.builtin_gather (vectype, offtype, scale);
+      else
+	decl = targetm.vectorize.builtin_scatter (vectype, offtype, scale);
 
-  if (decl == NULL_TREE)
-    return false;
+      if (!decl)
+	return false;
 
+      ifn = IFN_LAST;
+      element_type = TREE_TYPE (vectype);
+    }
+
+  info->ifn = ifn;
   info->decl = decl;
   info->base = base;
   info->offset = off;
   info->offset_dt = vect_unknown_def_type;
   info->offset_vectype = NULL_TREE;
   info->scale = scale;
+  info->element_type = element_type;
+  info->memory_type = memory_type;
   return true;
 }
 
@@ -3592,7 +3716,8 @@ again:
 	  bool maybe_gather
 	    = DR_IS_READ (dr)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr))
-	      && targetm.vectorize.builtin_gather != NULL;
+	      && (targetm.vectorize.builtin_gather != NULL
+		  || supports_vec_gather_load_p ());
 	  bool maybe_scatter
 	    = DR_IS_WRITE (dr)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr))
