@@ -1,3 +1,10 @@
+2018-01-13  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/83601
+	* include/bits/regex.tcc (regex_replace): Fix escaping in sed.
+	* testsuite/28_regex/algorithms/regex_replace/char/pr83601.cc: Tests.
+	* testsuite/28_regex/algorithms/regex_replace/wchar_t/pr83601.cc: Tests.
+
 2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/64054
