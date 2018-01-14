@@ -1,5 +1,12 @@
 2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (print_reg): Print the name of the full
+	integer register without '%'.
+	(ix86_print_operand): Handle 'V'.
+	 * doc/extend.texi: Document 'V' modifier.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/constraints.md (Bs): Disallow memory operand for
 	-mindirect-branch-register.
 	(Bw): Likewise.
