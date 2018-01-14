@@ -594,6 +594,7 @@ void gfc_resolve_symlnk (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_system (gfc_expr *, gfc_expr *);
 void gfc_resolve_tan (gfc_expr *, gfc_expr *);
 void gfc_resolve_tanh (gfc_expr *, gfc_expr *);
+void gfc_resolve_team_number (gfc_expr *, gfc_expr *);
 void gfc_resolve_this_image (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_time (gfc_expr *);
 void gfc_resolve_time8 (gfc_expr *);
