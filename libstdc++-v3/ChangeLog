@@ -1,3 +1,8 @@
+2018-01-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR libstdc++/81092
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+
 2018-01-13  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/83601
