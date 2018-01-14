@@ -7064,7 +7064,7 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
     {
       if (TARGET_P9_VECTOR)
 	x = gen_rtx_UNSPEC (mode,
-			    gen_rtvec (3, target, reg,
+			    gen_rtvec (3, reg, target,
 				       force_reg (V16QImode, x)),
 			    UNSPEC_VPERMR);
       else
@@ -35045,7 +35045,7 @@ altivec_expand_vec_perm_le (rtx operands[4])
 
   if (TARGET_P9_VECTOR)
     {
-      unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op0, op1, sel),
+      unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op0, sel),
 			       UNSPEC_VPERMR);
     }
   else
