@@ -1,3 +1,39 @@
+2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/pr48857.c: Modify dejagnu directives to look
+	for lvx and stvx instead of lxvd2x and stxvd2x and require
+	little-endian target.  Add comments.
+	* gcc.target/powerpc/swaps-p8-28.c: Add functions for more
+	comprehensive testing.
+	* gcc.target/powerpc/swaps-p8-29.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-30.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-31.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-32.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-33.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-34.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-35.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-36.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-37.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-38.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-39.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-40.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-41.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-42.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-43.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-44.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-45.c: Likewise.
+	* gcc.target/powerpc/vec-extract-2.c: Add comment and remove
+	scan-assembler-not directives that forbid lvx and xxpermdi.
+	* gcc.target/powerpc/vec-extract-3.c: Likewise.
+	* gcc.target/powerpc/vec-extract-5.c: Likewise.
+	* gcc.target/powerpc/vec-extract-6.c: Likewise.
+	* gcc.target/powerpc/vec-extract-7.c: Likewise.
+	* gcc.target/powerpc/vec-extract-8.c: Likewise.
+	* gcc.target/powerpc/vec-extract-9.c: Likewise.
+	* gcc.target/powerpc/vsx-vector-6-le.c: Change
+	scan-assembler-times directives to reflect different numbers of
+	expected xxlnor, xxlor, xvcmpgtdp, and xxland instructions.
+
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

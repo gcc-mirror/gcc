@@ -434,7 +434,7 @@
         (match_operand:VSX_D 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -445,6 +445,33 @@
           (parallel [(const_int 1) (const_int 0)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+          rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -457,7 +484,7 @@
         (match_operand:VSX_W 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -470,6 +497,33 @@
                      (const_int 0) (const_int 1)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+          rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -482,7 +536,7 @@
         (match_operand:V8HI 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:V8HI
           (match_dup 1)
@@ -499,6 +553,33 @@
                      (const_int 2) (const_int 3)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+	  rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -511,7 +592,7 @@
         (match_operand:V16QI 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:V16QI
           (match_dup 1)
@@ -536,6 +617,33 @@
                      (const_int 6) (const_int 7)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+	  rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -564,6 +672,31 @@
           (match_dup 2)
           (parallel [(const_int 1) (const_int 0)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })
@@ -611,6 +744,31 @@
           (parallel [(const_int 2) (const_int 3)
 	             (const_int 0) (const_int 1)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })
@@ -665,6 +823,31 @@
                      (const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })
@@ -733,6 +916,31 @@
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })

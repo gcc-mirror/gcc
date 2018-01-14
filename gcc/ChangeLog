@@ -1,3 +1,37 @@
+2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-p8swap.c (rs6000_sum_of_two_registers_p):
+	New function.
+	(rs6000_quadword_masked_address_p): Likewise.
+	(quad_aligned_load_p): Likewise.
+	(quad_aligned_store_p): Likewise.
+	(const_load_sequence_p): Add comment to describe the outer-most loop.
+	(mimic_memory_attributes_and_flags): New function.
+	(rs6000_gen_stvx): Likewise.
+	(replace_swapped_aligned_store): Likewise.
+	(rs6000_gen_lvx): Likewise.
+	(replace_swapped_aligned_load): Likewise.
+	(replace_swapped_load_constant): Capitalize argument name in
+	comment describing this function.
+	(rs6000_analyze_swaps): Add a third pass to search for vector loads
+	and stores that access quad-word aligned addresses and replace
+	with stvx or lvx instructions when appropriate.
+	* config/rs6000/rs6000-protos.h (rs6000_sum_of_two_registers_p):
+	New function prototype.
+	(rs6000_quadword_masked_address_p): Likewise.
+	(rs6000_gen_lvx): Likewise.
+	(rs6000_gen_stvx): Likewise.
+	* config/rs6000/vsx.md (*vsx_le_perm_load_<mode>): For modes
+	VSX_D (V2DF, V2DI), modify this split to select lvx instruction
+	when memory address is aligned.
+	(*vsx_le_perm_load_<mode>): For modes VSX_W (V4SF, V4SI), modify
+	this split to select lvx instruction when memory address is aligned.
+	(*vsx_le_perm_load_v8hi): Modify this split to select lvx
+	instruction when memory address is aligned.
+	(*vsx_le_perm_load_v16qi): Likewise.
+	(four unnamed splitters): Modify to select the stvx instruction
+	when memory is aligned.
+
 2018-01-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* predict.c (determine_unlikely_bbs): Handle correctly BBs
