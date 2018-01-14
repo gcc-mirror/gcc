@@ -1,3 +1,8 @@
+2018-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/83051
+	* ipa-inline.c (edge_badness): Tolerate roundoff errors.
+
 2018-01-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* ipa-inline.c (want_inline_small_function_p): Return false if

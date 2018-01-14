@@ -1,3 +1,8 @@
+2018-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/83051
+	* gcc.c-torture/compile/pr83051.c: New testcase.
+
 2018-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/83501
