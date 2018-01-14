@@ -54,7 +54,8 @@
 	return.
 	(output_indirect_thunk_function): Pass false to
 	indirect_thunk_name.
-	(ix86_output_indirect_branch): Likewise.
+	(ix86_output_indirect_branch_via_reg): Likewise.
+	(ix86_output_indirect_branch_via_push): Likewise.
 	(output_indirect_thunk_function): Create alias for function
 	return thunk if regno < 0.
 	(ix86_output_function_return): New function.
