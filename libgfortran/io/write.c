@@ -1537,8 +1537,9 @@ select_buffer (st_parameter_dt *dtp, const fnode *f, int precision,
 {
   char *result;
   
-  /* The buffer needs at least one more byte to allow room for normalizing.  */
-  *size = size_from_kind (dtp, f, kind) + precision + 1;
+  /* The buffer needs at least one more byte to allow room for
+     normalizing and 1 to hold null terminator.  */
+  *size = size_from_kind (dtp, f, kind) + precision + 1 + 1;
 
   if (*size > BUF_STACK_SZ)
      result = xmalloc (*size);
