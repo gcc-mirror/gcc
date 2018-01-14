@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-pic" } */
+/* { dg-options "-O2 -mfunction-return=keep -fno-pic" } */
 
 void func0 (void);
 void func1 (void);

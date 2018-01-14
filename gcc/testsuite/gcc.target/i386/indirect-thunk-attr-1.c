@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-pic" } */
+/* { dg-options "-O2 -mfunction-return=keep -fno-pic" } */
 
 typedef void (*dispatch_t)(long offset);
 

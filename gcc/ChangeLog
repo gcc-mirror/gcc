@@ -1,5 +1,30 @@
 2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386-protos.h (ix86_output_function_return): New.
+	* config/i386/i386.c (ix86_set_indirect_branch_type): Also
+	set function_return_type.
+	(indirect_thunk_name): Add ret_p to indicate thunk for function
+	return.
+	(output_indirect_thunk_function): Pass false to
+	indirect_thunk_name.
+	(ix86_output_indirect_branch): Likewise.
+	(output_indirect_thunk_function): Create alias for function
+	return thunk if regno < 0.
+	(ix86_output_function_return): New function.
+	(ix86_handle_fndecl_attribute): Handle function_return.
+	(ix86_attribute_table): Add function_return.
+	* config/i386/i386.h (machine_function): Add
+	function_return_type.
+	* config/i386/i386.md (simple_return_internal): Use
+	ix86_output_function_return.
+	(simple_return_internal_long): Likewise.
+	* config/i386/i386.opt (mfunction-return=): New option.
+	(indirect_branch): Mention -mfunction-return=.
+	* doc/extend.texi: Document function_return function attribute.
+	* doc/invoke.texi: Document -mfunction-return= option.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386-opts.h (indirect_branch): New.
 	* config/i386/i386-protos.h (ix86_output_indirect_jmp): Likewise.
 	* config/i386/i386.c (ix86_using_red_zone): Disallow red-zone

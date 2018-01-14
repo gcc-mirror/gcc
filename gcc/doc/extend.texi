@@ -5764,6 +5764,15 @@ indirect call and jump to inlined call and return thunk.
 @samp{thunk-extern} converts indirect call and jump to external call
 and return thunk provided in a separate object file.
 
+@item function_return("@var{choice}")
+@cindex @code{function_return} function attribute, x86
+On x86 targets, the @code{function_return} attribute causes the compiler
+to convert function return with @var{choice}.  @samp{keep} keeps function
+return unmodified.  @samp{thunk} converts function return to call and
+return thunk.  @samp{thunk-inline} converts function return to inlined
+call and return thunk.  @samp{thunk-extern} converts function return to
+external call and return thunk provided in a separate object file.
+
 @item nocf_check
 @cindex @code{nocf_check} function attribute
 The @code{nocf_check} attribute on a function is used to inform the

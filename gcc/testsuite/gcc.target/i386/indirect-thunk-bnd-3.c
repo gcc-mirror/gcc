@@ -1,5 +1,5 @@
 /* { dg-do compile { target { *-*-linux* && { ! x32 } } } } */
-/* { dg-options "-O2 -mindirect-branch=thunk -fcheck-pointer-bounds -mmpx -fpic -fno-plt" } */
+/* { dg-options "-O2 -mfunction-return=keep -mindirect-branch=thunk -fcheck-pointer-bounds -mmpx -fpic -fno-plt" } */
 
 void bar (char *);
 char buf[10];

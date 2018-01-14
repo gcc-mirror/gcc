@@ -2577,6 +2577,9 @@ struct GTY(()) machine_function {
      "indirect_jump" or "tablejump".  */
   BOOL_BITFIELD has_local_indirect_jump : 1;
 
+  /* How to generate function return.  */
+  ENUM_BITFIELD(indirect_branch) function_return_type : 3;
+
   /* If true, the current function is a function specified with
      the "interrupt" or "no_caller_saved_registers" attribute.  */
   BOOL_BITFIELD no_caller_saved_registers : 1;
