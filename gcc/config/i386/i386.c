@@ -5841,6 +5841,19 @@ ix86_set_indirect_branch_type (tree fndecl)
 	}
       else
 	cfun->machine->indirect_branch_type = ix86_indirect_branch;
+
+      /* -mcmodel=large is not compatible with -mindirect-branch=thunk
+	 nor -mindirect-branch=thunk-extern.  */
+      if ((ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+	  && ((cfun->machine->indirect_branch_type
+	       == indirect_branch_thunk_extern)
+	      || (cfun->machine->indirect_branch_type
+		  == indirect_branch_thunk)))
+	error ("%<-mindirect-branch=%s%> and %<-mcmodel=large%> are not "
+	       "compatible",
+	       ((cfun->machine->indirect_branch_type
+		 == indirect_branch_thunk_extern)
+		? "thunk-extern" : "thunk"));
     }
 
   if (cfun->machine->function_return_type == indirect_branch_unset)
@@ -5866,6 +5879,19 @@ ix86_set_indirect_branch_type (tree fndecl)
 	}
       else
 	cfun->machine->function_return_type = ix86_function_return;
+
+      /* -mcmodel=large is not compatible with -mfunction-return=thunk
+	 nor -mfunction-return=thunk-extern.  */
+      if ((ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+	  && ((cfun->machine->function_return_type
+	       == indirect_branch_thunk_extern)
+	      || (cfun->machine->function_return_type
+		  == indirect_branch_thunk)))
+	error ("%<-mfunction-return=%s%> and %<-mcmodel=large%> are not "
+	       "compatible",
+	       ((cfun->machine->function_return_type
+		 == indirect_branch_thunk_extern)
+		? "thunk-extern" : "thunk"));
     }
 }
 
