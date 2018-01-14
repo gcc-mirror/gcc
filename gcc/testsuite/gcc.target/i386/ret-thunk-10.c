@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfunction-return=thunk-inline -mindirect-branch=thunk -fno-pic" } */
+/* { dg-options "-O2 -mno-indirect-branch-register -mno-indirect-branch-register -mfunction-return=thunk-inline -mindirect-branch=thunk -fno-pic" } */
 
 extern void (*bar) (void);
 
