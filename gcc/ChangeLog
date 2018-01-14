@@ -1,3 +1,21 @@
+2018-01-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2018-01-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* config/alpha/alpha.md (*saddsi_1): New insn_ans_split pattern.
+	(*saddl_se_1): Ditto.
+	(*ssubsi_1): Ditto.
+	(*ssubl_se_1): Ditto.
+
+	Backport from mainline
+	2018-01-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* combine.c (force_int_to_mode) <case ASHIFT>: Use mode instead of
+	op_mode in the force_to_mode call.
+
 2018-01-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
