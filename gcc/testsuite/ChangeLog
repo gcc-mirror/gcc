@@ -1,3 +1,8 @@
+2018-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/83501
+	* gcc.dg/strlenopt-39.c: Restrict to i?86 and x86_64-*-* targets.
+
 2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/pr48857.c: Modify dejagnu directives to look
