@@ -1230,7 +1230,8 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-offset=@var{offset} @gol
 -mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
 -mgeneral-regs-only -mcall-ms2sysv-xlogues @gol
--mindirect-branch=@var{choice} -mfunction-return==@var{choice}}
+-mindirect-branch=@var{choice} -mfunction-return==@var{choice} @gol
+-mindirect-branch-register}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -26867,6 +26868,10 @@ function return to external call and return thunk provided in a separate
 object file.  You can control this behavior for a specific function by
 using the function attribute @code{function_return}.
 @xref{Function Attributes}.
+
+@item -mindirect-branch-register
+@opindex -mindirect-branch-register
+Force indirect call and jump via register.
 
 @end table
 

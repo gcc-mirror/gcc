@@ -665,7 +665,8 @@
 ;; Test for a valid operand for indirect branch.
 (define_predicate "indirect_branch_operand"
   (ior (match_operand 0 "register_operand")
-       (and (not (match_test "TARGET_X32"))
+       (and (not (match_test "TARGET_X32
+			      || ix86_indirect_branch_thunk_register"))
 	    (match_operand 0 "memory_operand"))))
 
 ;; Return true if OP is a memory operands that can be used in sibcalls.
@@ -694,7 +695,8 @@
 
 ;; Return true if OP is a GOT memory operand.
 (define_predicate "GOT_memory_operand"
-  (match_operand 0 "memory_operand")
+  (and (match_test "!ix86_indirect_branch_thunk_register")
+       (match_operand 0 "memory_operand"))
 {
   op = XEXP (op, 0);
   return (GET_CODE (op) == CONST
@@ -708,9 +710,11 @@
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "call_register_no_elim_operand")
-       (ior (and (not (match_test "TARGET_X32"))
+       (ior (and (not (match_test "TARGET_X32
+				   || ix86_indirect_branch_thunk_register"))
 		 (match_operand 0 "memory_operand"))
-	    (and (match_test "TARGET_X32 && Pmode == DImode")
+	    (and (match_test "TARGET_X32 && Pmode == DImode
+			      && !ix86_indirect_branch_thunk_register")
 		 (match_operand 0 "GOT_memory_operand")))))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
@@ -718,14 +722,17 @@
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "register_no_elim_operand")
-       (ior (and (not (match_test "TARGET_X32"))
+       (ior (and (not (match_test "TARGET_X32
+				   || ix86_indirect_branch_thunk_register"))
 		 (match_operand 0 "sibcall_memory_operand"))
-	    (and (match_test "TARGET_X32 && Pmode == DImode")
+	    (and (match_test "TARGET_X32 && Pmode == DImode
+			      && !ix86_indirect_branch_thunk_register")
 		 (match_operand 0 "GOT_memory_operand")))))
 
 ;; Return true if OP is a 32-bit GOT symbol operand.
 (define_predicate "GOT32_symbol_operand"
-  (match_test "GET_CODE (op) == CONST
+  (match_test "!ix86_indirect_branch_thunk_register
+	       && GET_CODE (op) == CONST
                && GET_CODE (XEXP (op, 0)) == UNSPEC
                && XINT (XEXP (op, 0), 1) == UNSPEC_GOT"))
 

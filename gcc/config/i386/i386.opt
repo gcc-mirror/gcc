@@ -1045,3 +1045,7 @@ Enum(indirect_branch) String(thunk-inline) Value(indirect_branch_thunk_inline)
 
 EnumValue
 Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
+
+mindirect-branch-register
+Target Report Var(ix86_indirect_branch_thunk_register) Init(0)
+Force indirect call and jump via register.
