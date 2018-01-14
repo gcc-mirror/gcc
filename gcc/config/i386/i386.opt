@@ -1026,9 +1026,13 @@ mindirect-branch=
 Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_indirect_branch) Init(indirect_branch_keep)
 Convert indirect call and jump to call and return thunks.
 
+mfunction-return=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_function_return) Init(indirect_branch_keep)
+Convert function return to call and return thunk.
+
 Enum
 Name(indirect_branch) Type(enum indirect_branch)
-Known indirect branch choices (for use with the -mindirect-branch= option):
+Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):
 
 EnumValue
 Enum(indirect_branch) String(keep) Value(indirect_branch_keep)

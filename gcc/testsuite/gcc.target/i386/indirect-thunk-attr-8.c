@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mindirect-branch=thunk -fno-pic" } */
+/* { dg-options "-O2 -mfunction-return=keep -mindirect-branch=thunk -fno-pic" } */
 
 void func0 (void);
 void func1 (void);

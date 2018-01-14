@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mindirect-branch=thunk-inline -fno-pic" } */
+/* { dg-options "-O2 -mfunction-return=keep -mindirect-branch=thunk-inline -fno-pic" } */
 
 typedef void (*dispatch_t)(long offset);
 
