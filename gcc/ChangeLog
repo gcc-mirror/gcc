@@ -1,3 +1,8 @@
+2018-01-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/81327
+	* doc/invoke.texi (-Wlass-memaccess): Document suppression by casting.
+
 2018-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.gcc (i[34567]86-*-*): Remove one duplicate gfniintrin.h
