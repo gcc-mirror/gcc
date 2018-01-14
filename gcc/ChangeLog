@@ -87,6 +87,8 @@
 	(indirect_thunk_name): Likewise.
 	(output_indirect_thunk): Likewise.
 	(output_indirect_thunk_function): Likewise.
+	(ix86_output_indirect_branch_via_reg): Likewise.
+	(ix86_output_indirect_branch_via_push): Likewise.
 	(ix86_output_indirect_branch): Likewise.
 	(ix86_output_indirect_jmp): Likewise.
 	(ix86_code_end): Call output_indirect_thunk_function if needed.
