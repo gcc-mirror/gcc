@@ -12,6 +12,7 @@ import (
 	"go/importer"
 	"go/token"
 	"go/types"
+	"runtime"
 )
 
 // stdImporter is the importer we use to import packages.
@@ -309,4 +310,4 @@ func (f *File) hasMethod(typ types.Type, name string) bool {
 	return ok
 }
 
-var archSizes = types.SizesFor("gc", build.Default.GOARCH)
+var archSizes = types.SizesFor(runtime.Compiler, build.Default.GOARCH)
