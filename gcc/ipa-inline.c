@@ -706,7 +706,11 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   bool want_inline = true;
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
 
-  if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
+  /* Allow this function to be called before can_inline_edge_p,
+     since it's usually cheaper.  */
+  if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    want_inline = false;
+  else if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
     ;
   else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	   && !opt_for_fn (e->caller->decl, flag_inline_small_functions))
@@ -1312,8 +1316,8 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
         if (!check_inlinablity_for
 	    || check_inlinablity_for == edge)
 	  {
-	    if (can_inline_edge_p (edge, false)
-		&& want_inline_small_function_p (edge, false))
+	    if (want_inline_small_function_p (edge, false)
+		&& can_inline_edge_p (edge, false))
 	      update_edge_key (heap, edge);
 	    else if (edge->aux)
 	      {
@@ -1356,8 +1360,8 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
 	  {
-	    if (can_inline_edge_p (e, false)
-		&& want_inline_small_function_p (e, false))
+	    if (want_inline_small_function_p (e, false)
+		&& can_inline_edge_p (e, false))
 	      update_edge_key (heap, e);
 	    else if (e->aux)
 	      {

@@ -1,3 +1,11 @@
+2018-01-14  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* ipa-inline.c (want_inline_small_function_p): Return false if
+	inlining has already failed with CIF_FINAL_ERROR.
+	(update_caller_keys): Call want_inline_small_function_p before
+	can_inline_edge_p.
+	(update_callee_keys): Likewise.
+
 2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-p8swap.c (rs6000_sum_of_two_registers_p):
