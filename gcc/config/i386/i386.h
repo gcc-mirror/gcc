@@ -2570,6 +2570,13 @@ struct GTY(()) machine_function {
   /* Function type.  */
   ENUM_BITFIELD(function_type) func_type : 2;
 
+  /* How to generate indirec branch.  */
+  ENUM_BITFIELD(indirect_branch) indirect_branch_type : 3;
+
+  /* If true, the current function has local indirect jumps, like
+     "indirect_jump" or "tablejump".  */
+  BOOL_BITFIELD has_local_indirect_jump : 1;
+
   /* If true, the current function is a function specified with
      the "interrupt" or "no_caller_saved_registers" attribute.  */
   BOOL_BITFIELD no_caller_saved_registers : 1;

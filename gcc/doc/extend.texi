@@ -5754,6 +5754,16 @@ Specify which floating-point unit to use.  You must specify the
 @code{target("fpmath=sse+387")} because the comma would separate
 different options.
 
+@item indirect_branch("@var{choice}")
+@cindex @code{indirect_branch} function attribute, x86
+On x86 targets, the @code{indirect_branch} attribute causes the compiler
+to convert indirect call and jump with @var{choice}.  @samp{keep}
+keeps indirect call and jump unmodified.  @samp{thunk} converts indirect
+call and jump to call and return thunk.  @samp{thunk-inline} converts
+indirect call and jump to inlined call and return thunk.
+@samp{thunk-extern} converts indirect call and jump to external call
+and return thunk provided in a separate object file.
+
 @item nocf_check
 @cindex @code{nocf_check} function attribute
 The @code{nocf_check} attribute on a function is used to inform the
