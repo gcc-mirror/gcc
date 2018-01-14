@@ -997,7 +997,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   /* Check that inlined time is better, but tolerate some roundoff issues.
      FIXME: When callee profile drops to 0 we account calls more.  This
      should be fixed by never doing that.  */
-  gcc_checking_assert ((edge_time - callee_info->time).to_int () <= 0
+  gcc_checking_assert ((edge_time * 100
+			- callee_info->time * 101).to_int () <= 0
 			|| callee->count.ipa ().initialized_p ());
   gcc_checking_assert (growth <= callee_info->size);
 
