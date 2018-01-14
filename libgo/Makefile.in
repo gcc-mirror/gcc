@@ -303,14 +303,6 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GOARCH = @GOARCH@
-GOARCH_BIGENDIAN = @GOARCH_BIGENDIAN@
-GOARCH_CACHELINESIZE = @GOARCH_CACHELINESIZE@
-GOARCH_FAMILY = @GOARCH_FAMILY@
-GOARCH_HUGEPAGESIZE = @GOARCH_HUGEPAGESIZE@
-GOARCH_INT64ALIGN = @GOARCH_INT64ALIGN@
-GOARCH_MINFRAMESIZE = @GOARCH_MINFRAMESIZE@
-GOARCH_PCQUANTUM = @GOARCH_PCQUANTUM@
-GOARCH_PHYSPAGESIZE = @GOARCH_PHYSPAGESIZE@
 GOC = @GOC@
 GOCFLAGS = $(CFLAGS)
 GOOS = @GOOS@
@@ -1212,6 +1204,7 @@ runtime_internal_sys_lo_check_GOCFLAGS = -fgo-compiling-runtime
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
+extra_go_files_go_types = gccgosizes.go
 extra_go_files_cmd_internal_objabi = objabi.go
 extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
 extra_go_files_cmd_go_internal_load = zstdpkglist.go
@@ -3095,14 +3088,14 @@ s-version: Makefile
 	done
 	echo >> version.go.tmp
 	echo "const (" >> version.go.tmp
-	echo "	ArchFamily = $(GOARCH_FAMILY)" >> version.go.tmp
-	echo "	BigEndian = $(GOARCH_BIGENDIAN)" >> version.go.tmp
-	echo "	CacheLineSize = $(GOARCH_CACHELINESIZE)" >> version.go.tmp
-	echo "	PhysPageSize = $(GOARCH_PHYSPAGESIZE)" >> version.go.tmp
-	echo "	PCQuantum = $(GOARCH_PCQUANTUM)" >> version.go.tmp
-	echo "	Int64Align = $(GOARCH_INT64ALIGN)" >> version.go.tmp
-	echo "	HugePageSize = $(GOARCH_HUGEPAGESIZE)" >> version.go.tmp
-	echo "	MinFrameSize = $(GOARCH_MINFRAMESIZE)" >> version.go.tmp
+	echo "  ArchFamily = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) family`" >> version.go.tmp
+	echo "  BigEndian = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) bigendian`" >> version.go.tmp
+	echo "  CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> version.go.tmp
+	echo "  DefaultPhysPageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) defaultphyspagesize`" >> version.go.tmp
+	echo "  HugePageSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) hugepagesize`" >> version.go.tmp
+	echo "  Int64Align = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) int64align`" >> version.go.tmp
+	echo "  MinFrameSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) minframesize`" >> version.go.tmp
+	echo "  PCQuantum = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) pcquantum`" >> version.go.tmp
 	echo ")" >> version.go.tmp
 	echo >> version.go.tmp
 	for a in $(ALLGOOS); do \
@@ -3135,6 +3128,21 @@ s-objabi: Makefile
 	echo 'const stackGuardMultiplier = 1' >> objabi.go.tmp
 	echo 'const goexperiment = ``' >> objabi.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh objabi.go.tmp objabi.go
+	$(STAMP) $@
+
+gccgosizes.go: s-gccgosizes; @true
+s-gccgosizes: Makefile goarch.sh
+	rm -f gccgosizes.go.tmp
+	echo "package types" > gccgosizes.go.tmp
+	echo >> gccgosizes.go.tmp
+	echo "var gccgoArchSizes = map[string]*StdSizes{" >> gccgosizes.go.tmp
+	for a in $(ALLGOARCH); do \
+	  ptrsize=`$(SHELL) $(srcdir)/goarch.sh $$a ptrsize`; \
+	  maxalign=`$(SHELL) $(srcdir)/goarch.sh $$a maxalign`; \
+	  echo "	\"$$a\": {$${ptrsize}, $${maxalign}}," >> gccgosizes.go.tmp; \
+	done
+	echo "}" >> gccgosizes.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh gccgosizes.go.tmp gccgosizes.go
 	$(STAMP) $@
 
 runtime_sysinfo.go: s-runtime_sysinfo; @true
@@ -3313,6 +3321,7 @@ $(foreach package,$(GOTOOL_PACKAGES),$(eval $(call PACKAGE_template,$(package)))
 runtime.lo.dep: $(extra_go_files_runtime)
 syscall.lo.dep: $(extra_go_files_syscall)
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
+go/types.lo.dep: $(extra_go_files_go_types)
 cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)
 cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
 cmd/go/internal/load.lo.dep: $(extra_go_files_cmd_go_internal_load)
