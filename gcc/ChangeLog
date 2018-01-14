@@ -1,3 +1,10 @@
+2018-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.gcc (i[34567]86-*-*): Remove one duplicate gfniintrin.h
+	entry from extra_headers.
+	(x86_64-*-*): Remove two duplicate gfniintrin.h entries from
+	extra_headers, make the list bitwise identical to the i?86-*-* one.
+
 2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_set_indirect_branch_type): Disallow
