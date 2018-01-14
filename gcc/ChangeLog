@@ -1,5 +1,15 @@
 2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_set_indirect_branch_type): Disallow
+	-mcmodel=large with -mindirect-branch=thunk,
+	-mindirect-branch=thunk-extern, -mfunction-return=thunk and
+	-mfunction-return=thunk-extern.
+	* doc/invoke.texi: Document -mcmodel=large is incompatible with
+	-mindirect-branch=thunk, -mindirect-branch=thunk-extern,
+	-mfunction-return=thunk and -mfunction-return=thunk-extern.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (print_reg): Print the name of the full
 	integer register without '%'.
 	(ix86_print_operand): Handle 'V'.
