@@ -5225,7 +5225,6 @@ gfc_check_team_number (gfc_expr *team)
 
   if (team)
     {
-      printf("type = %d\n", team->ts.type);
       if (team->ts.type != BT_DERIVED)
         {
           // ARTLESS TODO : this works on other teams types when it should
