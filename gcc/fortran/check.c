@@ -5215,6 +5215,34 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 
 
 bool
+gfc_check_team_number (gfc_expr *team)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return false;
+    }
+
+  if (team)
+    {
+      printf("type = %d\n", team->ts.type);
+      if (team->ts.type != BT_DERIVED)
+        {
+          // ARTLESS TODO : this works on other teams types when it should
+          //                only be TEAM_NUMBER
+          gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
+                     "shall be of type TEAM_TYPE", &team->where);
+          return false;
+        }
+    }
+  else
+    return true;
+
+  return true;
+}
+
+
+bool
 gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
