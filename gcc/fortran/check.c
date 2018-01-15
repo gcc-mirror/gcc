@@ -5225,10 +5225,10 @@ gfc_check_team_number (gfc_expr *team)
 
   if (team)
     {
+      /* todo: this works on any derived type when
+         it should only work with type team */
       if (team->ts.type != BT_DERIVED)
         {
-          // ARTLESS TODO : this works on other teams types when it should
-          //                only be TEAM_NUMBER
           gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
                      "shall be of type TEAM_TYPE", &team->where);
           return false;
