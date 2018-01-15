@@ -1631,7 +1631,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
       && VECTOR_MODE_P (tmode)
-      && known_eq (bitsize, GET_MODE_SIZE (tmode))
+      && known_eq (bitsize, GET_MODE_BITSIZE (tmode))
       && maybe_gt (GET_MODE_SIZE (GET_MODE (op0)), GET_MODE_SIZE (tmode)))
     {
       machine_mode new_mode = GET_MODE (op0);

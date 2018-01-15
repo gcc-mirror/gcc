@@ -1,3 +1,8 @@
+2018-01-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/83850
+	* expmed.c (extract_bit_field_1): Fix typo.
+
 2018-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/83687
