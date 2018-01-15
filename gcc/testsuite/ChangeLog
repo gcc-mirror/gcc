@@ -1,26 +1,3 @@
-2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
-
-	Backport from mainline
-	* config/i386/i386.c (ix86_can_use_return_insn_p): Use reference
-	of struct ix86_frame.
-	(ix86_initial_elimination_offset): Likewise.
-	(ix86_expand_split_stack_prologue): Likewise.
-
-2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
-
-	Backport from mainline
-	* config/i386/i386.c (ix86_frame): Moved to ...
-	* config/i386/i386.h (ix86_frame): Here.
-	(machine_function): Add frame.
-	* config/i386/i386.c (ix86_compute_frame_layout): Repace the
-	frame argument with &cfun->machine->frame.
-	(ix86_can_use_return_insn_p): Don't pass &frame to
-	ix86_compute_frame_layout.  Copy frame from cfun->machine->frame.
-	(ix86_can_eliminate): Likewise.
-	(ix86_expand_prologue): Likewise.
-	(ix86_expand_epilogue): Likewise.
-	(ix86_expand_split_stack_prologue): Likewise.
-
 2018-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
