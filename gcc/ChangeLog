@@ -1,6 +1,13 @@
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	* config/i386/i386.c (ix86_expand_prologue): Use reference of
+	struct ix86_frame.
+	(ix86_expand_epilogue): Likewise.
+
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
 	* config/i386/i386.c (ix86_can_use_return_insn_p): Use reference
 	of struct ix86_frame.
 	(ix86_initial_elimination_offset): Likewise.
