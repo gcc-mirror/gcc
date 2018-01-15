@@ -1,5 +1,35 @@
 2018-01-15  Georg-Johann Lay  <avr@gjlay.de>
 
+	Adjust tests to AVR_TINY.
+
+	* gcc.target/avr/progmem.h (pgm_read_char): Handle AVR_TINY.
+	* gcc.target/avr/pr52472.c: Add "! avr_tiny" target filter.
+	* gcc.target/avr/pr71627.c: Same.
+	* gcc.target/avr/torture/addr-space-1-0.c: Same.
+	* gcc.target/avr/torture/addr-space-1-1.c: Same.
+	* gcc.target/avr/torture/addr-space-1-x.c: Same.
+	* gcc.target/avr/torture/addr-space-2-0.c: Same.
+	* gcc.target/avr/torture/addr-space-2-1.c: Same.
+	* gcc.target/avr/torture/addr-space-2-x.c: Same.
+	* gcc.target/avr/torture/sat-hr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-k-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-llk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-r-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uhr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ullk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ur-plus-minus.c: Same.
+	* gcc.target/avr/torture/pr61055.c: Same.
+	* gcc.target/avr/torture/builtins-3-absfx.c: Only use __flash if
+	available.
+	* gcc.target/avr/torture/int24-mul.c: Same.
+	* gcc.target/avr/torture/pr51782-1.c: Same.
+	* gcc.target/avr/torture/pr61443.c: Same.
+	* gcc.target/avr/torture/builtins-2.c: Factor out addr-space stuff...
+	* gcc.target/avr/torture/builtins-2-flash.c: ...to this new test.
+
+2018-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR c/83801
 	PR c/83729
 	* gcc.target/avr/torture/pr83729.c: New test.
