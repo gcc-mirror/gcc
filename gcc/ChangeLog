@@ -1,3 +1,11 @@
+2018-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83837
+	* omp-expand.c (expand_omp_atomic_pipeline): Use loaded_val
+	type rather than type addr's type points to.
+	(expand_omp_atomic_mutex): Likewise.
+	(expand_omp_atomic): Likewise.
+
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/83839
