@@ -1,3 +1,10 @@
+2018-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR c/83801
+	PR c/83729
+	* gcc.target/avr/torture/pr83729.c: New test.
+	* gcc.target/avr/torture/pr83801.c: New test.
+
 2018-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82694
