@@ -2691,7 +2691,7 @@ gfc_simplify_fraction (gfc_expr *x)
 
 #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
 
-  /* MPFR versions before 3.1.0 do not include mpfr_frexp.  
+  /* MPFR versions before 3.1.0 do not include mpfr_frexp.
      TODO: remove the kludge when MPFR 3.1.0 or newer will be required */
 
   if (mpfr_sgn (x->value.real) == 0)
@@ -6595,7 +6595,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	|| !gfc_is_constant_expr (size))
     return NULL;
 
-  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size, 
+  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size,
 				     &result_size, &result_length))
     return NULL;
 
