@@ -1,3 +1,11 @@
+2018-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/83687
+	* config/arm/iterators.md (VF): New mode iterator.
+	* config/arm/neon.md (neon_vabd<mode>_2): Use the above.
+	Remove integer-related logic from pattern.
+	(neon_vabd<mode>_3): Likewise.
+
 2018-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82694
