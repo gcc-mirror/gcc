@@ -300,8 +300,7 @@ allocno_hard_regs_compare (const void *v1p, const void *v2p)
     return 1;
   else if (hv2->cost < hv1->cost)
     return -1;
-  else
-    return 0;
+  return SORTGT (allocno_hard_regs_hasher::hash(hv2), allocno_hard_regs_hasher::hash(hv1));
 }
 
 

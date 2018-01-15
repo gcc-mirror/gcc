@@ -1,3 +1,8 @@
+2018-01-14  Cory Fields  <cory-nospam-@coryfields.com>
+
+	* tree-ssa-loop-im.c (sort_bbs_in_loop_postorder_cmp): Stabilize sort.
+	* ira-color (allocno_hard_regs_compare): Likewise.
+
 2018-01-14  Nathan Rossi  <nathan@nathanrossi.com>
 
         PR target/83013
