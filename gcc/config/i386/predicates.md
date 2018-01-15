@@ -695,8 +695,7 @@
 
 ;; Return true if OP is a GOT memory operand.
 (define_predicate "GOT_memory_operand"
-  (and (match_test "!ix86_indirect_branch_register")
-       (match_operand 0 "memory_operand"))
+  (match_operand 0 "memory_operand")
 {
   op = XEXP (op, 0);
   return (GET_CODE (op) == CONST
@@ -729,8 +728,7 @@
 
 ;; Return true if OP is a 32-bit GOT symbol operand.
 (define_predicate "GOT32_symbol_operand"
-  (match_test "!ix86_indirect_branch_register
-	       && GET_CODE (op) == CONST
+  (match_test "GET_CODE (op) == CONST
                && GET_CODE (XEXP (op, 0)) == UNSPEC
                && XINT (XEXP (op, 0), 1) == UNSPEC_GOT"))
 

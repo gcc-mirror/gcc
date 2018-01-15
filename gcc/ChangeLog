@@ -1,5 +1,15 @@
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/constraints.md (Bs): Update
+	ix86_indirect_branch_register check.  Don't check
+	ix86_indirect_branch_register with GOT_memory_operand.
+	(Bw): Likewise.
+	* config/i386/predicates.md (GOT_memory_operand): Don't check
+	ix86_indirect_branch_register here.
+	(GOT32_symbol_operand): Likewise.
+
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/predicates.md (constant_call_address_operand):
 	Rewrite ix86_indirect_branch_register logic.
 	(sibcall_insn_operand): Likewise.
