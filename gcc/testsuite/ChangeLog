@@ -1,3 +1,9 @@
+2018-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82694
+	* gcc.dg/no-strict-overflow-7.c: Revert 2017-08-01 changes.
+	* gcc.dg/tree-ssa/pr81388-1.c: Likewise.
+
 2018-01-10  Martin Sebor  <msebor@redhat.com>
 
 	PR other/83508

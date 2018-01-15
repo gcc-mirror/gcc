@@ -12581,6 +12581,18 @@ The options @option{-ftrapv} and @option{-fwrapv} override each other, so using
 using @option{-ftrapv} @option{-fwrapv} @option{-fno-wrapv} on the command-line
 results in @option{-ftrapv} being effective.
 
+@item -fwrapv-pointer
+@opindex fwrapv-pointer
+This option instructs the compiler to assume that pointer arithmetic
+overflow on addition and subtraction wraps around using twos-complement
+representation.  This flag disables some optimizations which assume
+pointer overflow is invalid.
+
+@item -fstrict-overflow
+@opindex fstrict-overflow
+This option implies @option{-fno-wrapv} @option{-fno-wrapv-pointer} and when
+negated implies @option{-fwrapv} @option{-fwrapv-pointer}.
+
 @item -fexceptions
 @opindex fexceptions
 Enable exception handling.  Generates extra code needed to propagate

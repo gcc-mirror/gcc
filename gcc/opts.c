@@ -2465,6 +2465,13 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_flag_wrapv = 0;
       break;
 
+    case OPT_fstrict_overflow:
+      opts->x_flag_wrapv = !value;
+      opts->x_flag_wrapv_pointer = !value;
+      if (!value)
+	opts->x_flag_trapv = 0;
+      break;
+
     case OPT_fipa_icf:
       opts->x_flag_ipa_icf_functions = value;
       opts->x_flag_ipa_icf_variables = value;
