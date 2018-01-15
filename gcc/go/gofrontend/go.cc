@@ -167,6 +167,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Flatten the parse tree.
   ::gogo->flatten();
 
+  // Reclaim memory of escape analysis Nodes.
+  ::gogo->reclaim_escape_nodes();
+
   // Dump ast, use filename[0] as the base name
   ::gogo->dump_ast(filenames[0]);
 }
