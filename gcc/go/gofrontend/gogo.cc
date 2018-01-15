@@ -5568,6 +5568,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
   // initial values.
   std::vector<Bvariable*> vars;
   std::vector<Bexpression*> var_inits;
+  std::vector<Statement*> var_decls_stmts;
   for (Bindings::const_definitions_iterator p =
 	 this->block_->bindings()->begin_definitions();
        p != this->block_->bindings()->end_definitions();
@@ -5642,6 +5643,24 @@ Function::build(Gogo* gogo, Named_object* named_function)
           vars.push_back(bvar);
           var_inits.push_back(init);
 	}
+      else if (this->defer_stack_ != NULL
+               && (*p)->is_variable()
+               && (*p)->var_value()->is_non_escaping_address_taken()
+               && !(*p)->var_value()->is_in_heap())
+        {
+          // Local variable captured by deferred closure needs to be live
+          // until the end of the function. We create a top-level
+          // declaration for it.
+          // TODO: we don't need to do this if the variable is not captured
+          // by the defer closure. There is no easy way to check it here,
+          // so we do this for all address-taken variables for now.
+          Variable* var = (*p)->var_value();
+          Temporary_statement* ts =
+            Statement::make_temporary(var->type(), NULL, var->location());
+          ts->set_is_address_taken();
+          var->set_toplevel_decl(ts);
+          var_decls_stmts.push_back(ts);
+        }
     }
   if (!gogo->backend()->function_set_parameters(this->fndecl_, param_vars))
     {
@@ -5661,7 +5680,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
     {
       // Declare variables if necessary.
       Bblock* var_decls = NULL;
-
+      std::vector<Bstatement*> var_decls_bstmt_list;
       Bstatement* defer_init = NULL;
       if (!vars.empty() || this->defer_stack_ != NULL)
 	{
@@ -5675,6 +5694,14 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	      Translate_context dcontext(gogo, named_function, this->block_,
                                          var_decls);
               defer_init = this->defer_stack_->get_backend(&dcontext);
+              var_decls_bstmt_list.push_back(defer_init);
+              for (std::vector<Statement*>::iterator p = var_decls_stmts.begin();
+                   p != var_decls_stmts.end();
+                   ++p)
+                {
+                  Bstatement* bstmt = (*p)->get_backend(&dcontext);
+                  var_decls_bstmt_list.push_back(bstmt);
+                }
 	    }
 	}
 
@@ -5693,8 +5720,6 @@ Function::build(Gogo* gogo, Named_object* named_function)
                                               var_inits[i]);
           init.push_back(init_stmt);
 	}
-      if (defer_init != NULL)
-	init.push_back(defer_init);
       Bstatement* var_init = gogo->backend()->statement_list(init);
 
       // Initialize all variables before executing this code block.
@@ -5722,8 +5747,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
       // we built one.
       if (var_decls != NULL)
         {
-          std::vector<Bstatement*> code_stmt_list(1, code_stmt);
-          gogo->backend()->block_add_statements(var_decls, code_stmt_list);
+          var_decls_bstmt_list.push_back(code_stmt);
+          gogo->backend()->block_add_statements(var_decls, var_decls_bstmt_list);
           code_stmt = gogo->backend()->block_statement(var_decls);
         }
 
