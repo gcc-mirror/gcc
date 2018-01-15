@@ -10958,7 +10958,6 @@ output_indirect_thunk_function (bool need_bnd_p, int regno)
       char alias[32];
 
       indirect_thunk_name (alias, regno, need_bnd_p, true);
-      ASM_OUTPUT_DEF (asm_out_file, alias, name);
 #if TARGET_MACHO
       if (TARGET_MACHO)
 	{
@@ -10967,8 +10966,10 @@ output_indirect_thunk_function (bool need_bnd_p, int regno)
 	  fputs ("\n\t.private_extern\t", asm_out_file);
 	  assemble_name (asm_out_file, alias);
 	  putc ('\n', asm_out_file);
+	  ASM_OUTPUT_LABEL (asm_out_file, alias);
 	}
 #else
+      ASM_OUTPUT_DEF (asm_out_file, alias, name);
       if (USE_HIDDEN_LINKONCE)
 	{
 	  fputs ("\t.globl\t", asm_out_file);
