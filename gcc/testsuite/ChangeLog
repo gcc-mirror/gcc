@@ -1,3 +1,10 @@
+2018-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/83687
+	* gcc.target/arm/neon-combine-sub-abs-into-vabd.c: Delete integer
+	tests.
+	* gcc.target/arm/pr83687.c: New test.
+
 2018-01-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	Adjust tests to AVR_TINY.
