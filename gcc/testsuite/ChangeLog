@@ -1,3 +1,8 @@
+2018-01-15  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR testsuite/79920
+	* gcc.dg/vect/pr79920.c: Restrict reduction test to vect_double
+
 2018-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/83687
