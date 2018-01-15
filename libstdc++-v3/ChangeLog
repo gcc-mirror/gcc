@@ -1,3 +1,23 @@
+2018-01-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make optional conditionally
+	trivially_{copy,move}_{constructible,assignable}
+	* include/std/optional (_Optional_payload): Fix the comment in
+	the class head and turn into a primary and one specialization.
+	(_Optional_payload::_M_engaged): Strike the NSDMI.
+	(_Optional_payload<_Tp, false>::operator=(const _Optional_payload&)):
+	New.
+	(_Optional_payload<_Tp, false>::operator=(_Optional_payload&&)):
+	Likewise.
+	(_Optional_payload<_Tp, false>::_M_get): Likewise.
+	(_Optional_payload<_Tp, false>::_M_reset): Likewise.
+	(_Optional_base_impl): Likewise.
+	(_Optional_base): Turn into a primary and three specializations.
+	(optional(nullopt)): Change the base init.
+	* testsuite/20_util/optional/assignment/8.cc: New.
+	* testsuite/20_util/optional/cons/trivial.cc: Likewise.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
+
 2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80276
