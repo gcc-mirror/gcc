@@ -30654,7 +30654,6 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
                 case TYPE_CMP:
                 case TYPE_FPCOMPARE:
                 case TYPE_CR_LOGICAL:
-                case TYPE_DELAYED_CR:
 		  return cost + 2;
                 case TYPE_EXTS:
                 case TYPE_MUL:
@@ -30950,7 +30949,8 @@ is_cracked_insn (rtx_insn *insn)
 	      && get_attr_indexed (insn) == INDEXED_NO)
 	  || ((type == TYPE_FPLOAD || type == TYPE_FPSTORE)
 	      && get_attr_update (insn) == UPDATE_YES)
-	  || type == TYPE_DELAYED_CR
+	  || (type == TYPE_CR_LOGICAL
+	      && get_attr_cr_logical_3op (insn) == CR_LOGICAL_3OP_YES)
 	  || (type == TYPE_EXTS
 	      && get_attr_dot (insn) == DOT_YES)
 	  || (type == TYPE_SHIFT
@@ -31941,7 +31941,6 @@ insn_must_be_first_in_group (rtx_insn *insn)
         case TYPE_MFCR:
         case TYPE_MFCRF:
         case TYPE_MTCR:
-        case TYPE_DELAYED_CR:
         case TYPE_CR_LOGICAL:
         case TYPE_MTJMPR:
         case TYPE_MFJMPR:
@@ -32044,7 +32043,6 @@ insn_must_be_first_in_group (rtx_insn *insn)
       switch (type)
         {
         case TYPE_CR_LOGICAL:
-        case TYPE_DELAYED_CR:
         case TYPE_MFCR:
         case TYPE_MFCRF:
         case TYPE_MTCR:

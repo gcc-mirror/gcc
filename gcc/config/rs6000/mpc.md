@@ -106,7 +106,7 @@
   "bpu_mpc")
 
 (define_insn_reservation "mpccore-jmpreg" 1
-  (and (eq_attr "type" "jmpreg,branch,cr_logical,delayed_cr,mfcr,mtcr,isync")
+  (and (eq_attr "type" "jmpreg,branch,cr_logical,mfcr,mtcr,isync")
        (eq_attr "cpu" "mpccore"))
   "bpu_mpc")
 
