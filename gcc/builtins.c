@@ -3154,6 +3154,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	      || (tree_fits_uhwi_p (dstwrite)
 		  && tree_int_cst_lt (dstwrite, range[0]))))
 	{
+	  if (TREE_NO_WARNING (exp))
+	    return false;
+
 	  location_t loc = tree_nonartificial_location (exp);
 	  loc = expansion_point_location_if_in_system_header (loc);
 
@@ -3213,6 +3216,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
 
 	  if (tree_int_cst_lt (maxobjsize, range[0]))
 	    {
+	      if (TREE_NO_WARNING (exp))
+		return false;
+
 	      /* Warn about crazy big sizes first since that's more
 		 likely to be meaningful than saying that the bound
 		 is greater than the object size if both are big.  */
@@ -3234,6 +3240,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
 
 	  if (dstsize != maxobjsize && tree_int_cst_lt (dstsize, range[0]))
 	    {
+	      if (TREE_NO_WARNING (exp))
+		return false;
+
 	      if (tree_int_cst_equal (range[0], range[1]))
 		warning_at (loc, opt,
 			    "%K%qD specified bound %E "
@@ -3257,6 +3266,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
       && dstwrite && range[0]
       && tree_int_cst_lt (slen, range[0]))
     {
+      if (TREE_NO_WARNING (exp))
+	return false;
+
       location_t loc = tree_nonartificial_location (exp);
 
       if (tree_int_cst_equal (range[0], range[1]))

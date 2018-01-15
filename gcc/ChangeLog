@@ -1,3 +1,9 @@
+2018-01-14  Martin Sebor  <msebor@redhat.com>
+
+	PR other/83508
+	* builtins.c (check_access): Avoid warning when the no-warning bit
+	is set.
+
 2018-01-14  Cory Fields  <cory-nospam-@coryfields.com>
 
 	* tree-ssa-loop-im.c (sort_bbs_in_loop_postorder_cmp): Stabilize sort.
