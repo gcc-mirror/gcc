@@ -1,5 +1,10 @@
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/predicates.md (indirect_branch_operand): Rewrite
+	ix86_indirect_branch_register logic.
+
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/constraints.md (Bs): Update
 	ix86_indirect_branch_register check.  Don't check
 	ix86_indirect_branch_register with GOT_memory_operand.
