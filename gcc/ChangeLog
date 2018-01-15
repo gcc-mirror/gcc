@@ -1,5 +1,11 @@
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/predicates.md (constant_call_address_operand):
+	Rewrite ix86_indirect_branch_register logic.
+	(sibcall_insn_operand): Likewise.
+
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/constraints.md (Bs): Replace
 	ix86_indirect_branch_thunk_register with
 	ix86_indirect_branch_register.
