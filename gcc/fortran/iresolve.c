@@ -2978,12 +2978,12 @@ gfc_resolve_stopped_images (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED,
 
 
 /* Resolve team_number (team).  */
-// ARTLESS
+
 void
 gfc_resolve_team_number (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED)
 {
   static char team_number[] = "_gfortran_caf_team_number";
-  f->rank = 0; // ARTLESS TODO figure what rank should be
+  f->rank = 0;
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = team_number;
