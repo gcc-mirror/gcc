@@ -75,7 +75,8 @@
 	* testsuite/23_containers/unordered_map/insert/83709.cc: New.
 	* testsuite/23_containers/unordered_set/insert/83709.cc: New.
 
-2018-01-09  Jonathan Wakely  <jwakely@redhat.com>
+2018-01-09  Juraj Oršulić  <juraj.orsulic@fer.hr>
+	    Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59253 (partial)
 	* python/libstdcxx/v6/printers.py (SmartPtrIterator): Common iterator
