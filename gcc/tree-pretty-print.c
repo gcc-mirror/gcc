@@ -1412,8 +1412,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  pp_space (pp);
 	  pp_left_paren (pp);
 	  pp_string (pp, str);
-	  if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
-	    dump_decl_name (pp, TYPE_NAME (node), flags);
+	  if (TYPE_IDENTIFIER (node))
+	    dump_generic_node (pp, TYPE_NAME (node), spc, flags, false);
 	  else if (flags & TDF_NOUID)
 	    pp_printf (pp, "<Txxxx>");
 	  else
@@ -1816,8 +1816,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       if (TREE_CODE (node) == METHOD_TYPE)
 	{
 	  if (TYPE_METHOD_BASETYPE (node))
-	    dump_decl_name (pp, TYPE_NAME (TYPE_METHOD_BASETYPE (node)),
-			    flags);
+	    dump_generic_node (pp, TYPE_NAME (TYPE_METHOD_BASETYPE (node)),
+			       spc, flags, false);
 	  else
 	    pp_string (pp, "<null method basetype>");
 	  pp_colon_colon (pp);
