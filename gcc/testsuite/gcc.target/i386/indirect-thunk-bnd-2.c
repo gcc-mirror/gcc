@@ -11,7 +11,7 @@ foo (void)
   return 0;
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*_?dispatch" { target { ! x32 } } } } */
+/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*_?dispatch" { target { { ! x32 } && *-*-linux* } } } } */
 /* { dg-final { scan-assembler "pushq\[ \t\]%rax" { target x32 } } } */
 /* { dg-final { scan-assembler "bnd jmp\[ \t\]*__x86_indirect_thunk_bnd" } } */
 /* { dg-final { scan-assembler "bnd jmp\[ \t\]*\.LIND" } } */

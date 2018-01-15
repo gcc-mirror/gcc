@@ -36,7 +36,7 @@ bar (int i)
     }
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*\.L\[0-9\]+\\(,%" { target { ! x32 } } } } */
+/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*\.L\[0-9\]+\\(,%" { target { { ! x32 } && *-*-linux* } } } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*__x86_indirect_thunk_(r|e)ax" { target x32 } } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*__x86_indirect_thunk" } } */
 /* { dg-final { scan-assembler-not {\t(lfence|pause)} } } */

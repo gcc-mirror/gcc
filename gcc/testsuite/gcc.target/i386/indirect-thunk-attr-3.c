@@ -14,7 +14,7 @@ male_indirect_jump (long offset)
   return 0;
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*_?dispatch" { target { ! x32 } } } } */
+/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*_?dispatch" { target { { ! x32 } && *-*-linux* } } } } */
 /* { dg-final { scan-assembler-times "jmp\[ \t\]*\.LIND" 2 } } */
 /* { dg-final { scan-assembler-times "call\[ \t\]*\.LIND" 2 } } */
 /* { dg-final { scan-assembler {\tpause} } } */

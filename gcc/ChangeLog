@@ -1,3 +1,10 @@
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/83839
+	* config/i386/i386.c (output_indirect_thunk_function): Use
+	ASM_OUTPUT_LABEL, instead of ASM_OUTPUT_DEF, for TARGET_MACHO
+	for  __x86_return_thunk.
+
 2018-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/83850
