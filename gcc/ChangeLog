@@ -1,5 +1,18 @@
 2018-01-15  Richard Biener  <rguenther@suse.de>
 
+	PR lto/83804
+	* tree.c (free_lang_data_in_type): Always unlink TYPE_DECLs
+	from TYPE_FIELDS.  Free TYPE_BINFO if not used by devirtualization.
+	Reset type names to their identifier if their TYPE_DECL doesn't
+	have linkage (and thus is used for ODR and devirt).
+	(save_debug_info_for_decl): Remove.
+	(save_debug_info_for_type): Likewise.
+	(add_tree_to_fld_list): Adjust.
+	* tree-pretty-print.c (dump_generic_node): Make dumping of
+	type names more robust.
+
+2018-01-15  Richard Biener  <rguenther@suse.de>
+
 	* BASE-VER: Bump to 8.0.1.
 
 2018-01-14  Martin Sebor  <msebor@redhat.com>

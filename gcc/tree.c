@@ -5128,15 +5128,10 @@ free_lang_data_in_type (tree type)
       TREE_PURPOSE (p) = NULL;
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
-      /* Remove members that are not FIELD_DECLs (and maybe
-	 TYPE_DECLs) from the field list of an aggregate.  These occur
-	 in C++.  */
+      /* Remove members that are not FIELD_DECLs from the field list
+	 of an aggregate.  These occur in C++.  */
       for (tree *prev = &TYPE_FIELDS (type), member; (member = *prev);)
-	if (TREE_CODE (member) == FIELD_DECL
-	    || (TREE_CODE (member) == TYPE_DECL
-		&& !DECL_IGNORED_P (member)
-		&& debug_info_level > DINFO_LEVEL_TERSE
-		&& !is_redundant_typedef (member)))
+	if (TREE_CODE (member) == FIELD_DECL)
 	  prev = &DECL_CHAIN (member);
 	else
 	  *prev = DECL_CHAIN (member);
@@ -5150,15 +5145,9 @@ free_lang_data_in_type (tree type)
 	{
 	  free_lang_data_in_binfo (TYPE_BINFO (type));
 	  /* We need to preserve link to bases and virtual table for all
-	     polymorphic types to make devirtualization machinery working.
-	     Debug output cares only about bases, but output also
-	     virtual table pointers so merging of -fdevirtualize and
-	     -fno-devirtualize units is easier.  */
-	  if ((!BINFO_VTABLE (TYPE_BINFO (type))
-	       || !flag_devirtualize)
-	      && ((!BINFO_N_BASE_BINFOS (TYPE_BINFO (type))
-		   && !BINFO_VTABLE (TYPE_BINFO (type)))
-		  || debug_info_level != DINFO_LEVEL_NONE))
+	     polymorphic types to make devirtualization machinery working.  */
+	  if (!BINFO_VTABLE (TYPE_BINFO (type))
+	      || !flag_devirtualize)
 	    TYPE_BINFO (type) = NULL;
 	}
     }
@@ -5186,6 +5175,11 @@ free_lang_data_in_type (tree type)
       while (ctx && TREE_CODE (ctx) == BLOCK);
       TYPE_CONTEXT (type) = ctx;
     }
+
+  /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
+     TYPE_DECL if the type doesn't have linkage.  */
+  if (! type_with_linkage_p (type))
+    TYPE_NAME (type) = TYPE_IDENTIFIER (type);
 }
 
 
@@ -5408,34 +5402,6 @@ struct free_lang_data_d
 };
 
 
-/* Save all language fields needed to generate proper debug information
-   for DECL.  This saves most fields cleared out by free_lang_data_in_decl.  */
-
-static void
-save_debug_info_for_decl (tree t)
-{
-  /*struct saved_debug_info_d *sdi;*/
-
-  gcc_assert (debug_info_level > DINFO_LEVEL_TERSE && t && DECL_P (t));
-
-  /* FIXME.  Partial implementation for saving debug info removed.  */
-}
-
-
-/* Save all language fields needed to generate proper debug information
-   for TYPE.  This saves most fields cleared out by free_lang_data_in_type.  */
-
-static void
-save_debug_info_for_type (tree t)
-{
-  /*struct saved_debug_info_d *sdi;*/
-
-  gcc_assert (debug_info_level > DINFO_LEVEL_TERSE && t && TYPE_P (t));
-
-  /* FIXME.  Partial implementation for saving debug info removed.  */
-}
-
-
 /* Add type or decl T to one of the list of tree nodes that need their
    language data removed.  The lists are held inside FLD.  */
 
@@ -5443,17 +5409,9 @@ static void
 add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
 {
   if (DECL_P (t))
-    {
-      fld->decls.safe_push (t);
-      if (debug_info_level > DINFO_LEVEL_TERSE)
-	save_debug_info_for_decl (t);
-    }
+    fld->decls.safe_push (t);
   else if (TYPE_P (t))
-    {
-      fld->types.safe_push (t);
-      if (debug_info_level > DINFO_LEVEL_TERSE)
-	save_debug_info_for_type (t);
-    }
+    fld->types.safe_push (t);
   else
     gcc_unreachable ();
 }
