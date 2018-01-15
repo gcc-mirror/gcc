@@ -3062,13 +3062,8 @@ add_functions (void)
 
   make_generic ("tanh", GFC_ISYM_TANH, GFC_STD_F77);
 
-// ARTLESS: define GFC_ISYM_TEAM_NUMBER
-// question: what does actual ok do? actual_yes: modify argument?
-// something tricky about it being transformational
-//look at failed_images
   add_sym_1 ("team_number", GFC_ISYM_TEAM_NUMBER, CLASS_TRANSFORMATIONAL,
 	     ACTUAL_YES, BT_INTEGER, di, GFC_STD_F2008_TS,
-//	     gfc_check_team_number, NULL, gfc_resolve_get_team,
              gfc_check_team_number, NULL, gfc_resolve_team_number,
 	     team, BT_DERIVED, di, OPTIONAL);
 
