@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do compile }
 
-// Copyright (C) 2013-2018 Free Software Foundation, Inc.
+// Copyright (C) 2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,26 +19,29 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <optional>
-#include <testsuite_hooks.h>
 
-#include <string>
-#include <memory>
-
-int main()
+struct X
 {
-  {
-    struct X
-    {
-      explicit X(int) {}
-    };
-    std::optional<X> ox{42};
-    std::optional<X> ox2 = 42; // { dg-error "conversion" }
-    std::optional<std::unique_ptr<int>> oup{new int};
-    std::optional<std::unique_ptr<int>> oup2 = new int;  // { dg-error "conversion" }
-    struct U { explicit U(std::in_place_t); };
-    std::optional<U> ou(std::in_place); // { dg-error "no matching" }
-    // { dg-error "no type" "" { target { *-*-* } } 647 }
-    // { dg-error "no type" "" { target { *-*-* } } 657 }
-    // { dg-error "no type" "" { target { *-*-* } } 714 }
-  }
-}
+  ~X();
+};
+
+struct Y
+{
+  Y(const Y&) = default;
+  Y(Y&&);
+};
+
+struct Z
+{
+  Z(const Z&);
+  Z(Z&&) = default;
+};
+
+static_assert(std::is_trivially_copy_constructible_v<std::optional<int>>);
+static_assert(std::is_trivially_move_constructible_v<std::optional<int>>);
+static_assert(!std::is_trivially_copy_constructible_v<std::optional<X>>);
+static_assert(!std::is_trivially_move_constructible_v<std::optional<X>>);
+static_assert(std::is_trivially_copy_constructible_v<std::optional<Y>>);
+static_assert(!std::is_trivially_move_constructible_v<std::optional<Y>>);
+static_assert(!std::is_trivially_copy_constructible_v<std::optional<Z>>);
+static_assert(std::is_trivially_move_constructible_v<std::optional<Z>>);
