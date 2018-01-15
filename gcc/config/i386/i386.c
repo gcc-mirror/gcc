@@ -11843,8 +11843,6 @@ symbolic_reference_mentioned_p (rtx op)
 bool
 ix86_can_use_return_insn_p (void)
 {
-  struct ix86_frame frame;
-
   /* Don't use `ret' instruction in interrupt handler.  */
   if (! reload_completed
       || frame_pointer_needed
@@ -11857,7 +11855,7 @@ ix86_can_use_return_insn_p (void)
     return 0;
 
   ix86_compute_frame_layout ();
-  frame = cfun->machine->frame;
+  struct ix86_frame &frame = cfun->machine->frame;
   return (frame.stack_pointer_offset == UNITS_PER_WORD
 	  && (frame.nregs + frame.nsseregs) == 0);
 }
@@ -12344,7 +12342,7 @@ HOST_WIDE_INT
 ix86_initial_elimination_offset (int from, int to)
 {
   ix86_compute_frame_layout ();
-  struct ix86_frame frame = cfun->machine->frame;
+  struct ix86_frame &frame = cfun->machine->frame;
 
   if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return frame.hard_frame_pointer_offset;
@@ -14860,7 +14858,6 @@ static GTY(()) rtx split_stack_fn_large;
 void
 ix86_expand_split_stack_prologue (void)
 {
-  struct ix86_frame frame;
   HOST_WIDE_INT allocate;
   unsigned HOST_WIDE_INT args_size;
   rtx_code_label *label;
@@ -14873,7 +14870,7 @@ ix86_expand_split_stack_prologue (void)
 
   ix86_finalize_stack_realign_flags ();
   ix86_compute_frame_layout ();
-  frame = cfun->machine->frame;
+  struct ix86_frame &frame = cfun->machine->frame;
   allocate = frame.stack_pointer_offset - INCOMING_FRAME_SP_OFFSET;
 
   /* This is the label we will branch to if we have enough stack
