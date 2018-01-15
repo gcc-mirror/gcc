@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
    first argument to a resolution function is an expression pointer to
    the original function node and the rest are pointers to the
    arguments of the function call.  For subroutines, a pointer to the
-   code node is passed.  The result type and library subroutine name
+   code ndoe is passed.  The result type and library subroutine name
    are generally set according to the function arguments.  */
 
 #include "config.h"
@@ -2974,6 +2974,19 @@ gfc_resolve_stopped_images (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED,
   else
     gfc_extract_int (kind, &f->ts.kind);
   f->value.function.name = stopped_images;
+}
+
+
+/* Resolve team_number (team).  */
+// ARTLESS
+void
+gfc_resolve_team_number (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED)
+{
+  static char team_number[] = "_gfortran_caf_team_number";
+  f->rank = 0; // ARTLESS TODO figure what rank should be
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = team_number;
 }
 
 
