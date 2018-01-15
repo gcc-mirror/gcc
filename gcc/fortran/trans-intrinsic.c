@@ -4562,13 +4562,22 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree pos;
   int n;
 
+  actual = expr->value.function.actual;
+
+  /* The last argument, BACK, is passed by value. Ensure that
+     by setting its name to %VAL. */
+  for (gfc_actual_arglist *a = actual; a; a = a->next)
+    {
+      if (a->next == NULL)
+	a->name = "%VAL";
+    }
+
   if (se->ss)
     {
       gfc_conv_intrinsic_funcall (se, expr);
       return;
     }
 
-  actual = expr->value.function.actual;
   arrayexpr = actual->expr;
 
   /* Special case for character maxloc.  Remove unneeded actual
@@ -4576,22 +4585,19 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a2, *a3, *a4;
-      a2 = actual->next;
-      a3 = a2->next;
-      a4 = a3->next;
-      a4->next = NULL;
-      if (a3->expr == NULL)
+      gfc_actual_arglist *a, *b;
+      a = actual;
+      while (a->next)
 	{
-	  actual->next = NULL;
-	  gfc_free_actual_arglist (a2);
-	}
-      else
-	{
-	  actual->next = a3;  /* dim */
-	  a3->next = NULL;
-	  a2->next = a4;
-	  gfc_free_actual_arglist (a4);
+	  b = a->next;
+	  if (b->expr == NULL || strcmp (b->name, "dim") == 0)
+	    {
+	      a->next = b->next;
+	      b->next = NULL;
+	      gfc_free_actual_arglist (b);
+	    }
+	  else
+	    a = b;
 	}
       gfc_conv_intrinsic_funcall (se, expr);
       return;
@@ -8645,6 +8651,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	      /* For all of those the first argument specifies the type and the
 		 third is optional.  */
 	      conv_generic_with_optional_char_arg (se, expr, 1, 3);
+	      break;
+
+	    case GFC_ISYM_MINLOC:
+	      gfc_conv_intrinsic_minmaxloc (se, expr, LT_EXPR);
+	      break;
+	      
+	    case GFC_ISYM_MAXLOC:
+	      gfc_conv_intrinsic_minmaxloc (se, expr, GT_EXPR);
 	      break;
 
 	    default:

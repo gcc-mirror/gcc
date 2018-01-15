@@ -1,3 +1,29 @@
+2018-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* gfortran.h (gfc_check_f): Rename f4ml to f5ml.
+	(gfc_logical_4_kind): New macro
+	* intrinsic.h (gfc_simplify_minloc): Add a gfc_expr *argument.
+	(gfc_simplify_maxloc): Likewise.
+	(gfc_resolve_maxloc): Likewise.
+	(gfc_resolve_minloc): Likewise.
+	* check.c (gfc_check_minloc_maxloc): Add checking for "back"
+	argument; also raise error if it is used (for now). Add it
+	if it isn't present.
+	* intrinsic.c (add_sym_4ml): Rename to
+	(add_sym_5ml), adjust for extra argument.
+	(add_functions): Add "back" constant. Adjust maxloc and minloc
+	for back argument.
+	* iresolve.c (gfc_resolve_maxloc): Add back argument. If back is
+	not of gfc_logical_4_kind, convert.
+	(gfc_resolve_minloc): Likewise.
+	* simplify.c (gfc_simplify_minloc): Add back argument.
+	(gfc_simplify_maxloc): Likewise.
+	* trans-intinsic.c (gfc_conv_intrinsic_minmaxloc): Rename last
+	argument to %VAL to ensure passing by value.
+	(gfc_conv_intrinsic_function): Call gfc_conv_intrinsic_minmaxloc
+	also for library calls.
+
 2018-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/82007
@@ -6,7 +32,7 @@
 	format string or format label is present.
 	* trans-io.c (get_dtio_proc): Likewise. (transfer_expr): Fix
 	whitespace.
-	
+
 2018-01-13  Thomas Koenig <tkoenig@gcc.gnu.org>
 
 	PR fortran/83744

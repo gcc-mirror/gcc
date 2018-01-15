@@ -51,6 +51,10 @@ sum_r10 (gfc_array_r10 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
+
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -218,6 +222,9 @@ msum_r10 (gfc_array_r10 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -399,7 +406,11 @@ ssum_r10 (gfc_array_r10 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      sum_r10 (retarray, array, pdim, back);
+#else
       sum_r10 (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */
