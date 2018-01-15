@@ -2411,8 +2411,8 @@ Common Report Var(flag_strict_aliasing) Optimization
 Assume strict aliasing rules apply.
 
 fstrict-overflow
-Common NegativeAlias Alias(fwrapv)
-Treat signed overflow as undefined.  Negated as -fwrapv.
+Common Report
+Treat signed overflow as undefined.  Negated as -fwrapv -fwrapv-pointer.
 
 fsync-libcalls
 Common Report Var(flag_sync_libcalls) Init(1)
@@ -2859,6 +2859,10 @@ Enable conditional dead code elimination for builtin calls.
 fwhole-program
 Common Report Var(flag_whole_program) Init(0)
 Perform whole program optimizations.
+
+fwrapv-pointer
+Common Report Var(flag_wrapv_pointer) Optimization
+Assume pointer overflow wraps around.
 
 fwrapv
 Common Report Var(flag_wrapv) Optimization

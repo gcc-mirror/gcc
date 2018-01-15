@@ -8551,9 +8551,13 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	{
 	  /* We can fold this expression to a constant if the non-constant
 	     offset parts are equal.  */
-	  if (offset0 == offset1
-	      || (offset0 && offset1
-		  && operand_equal_p (offset0, offset1, 0)))
+	  if ((offset0 == offset1
+	       || (offset0 && offset1
+		   && operand_equal_p (offset0, offset1, 0)))
+	      && (equality_code
+		  || (indirect_base0
+		      && (DECL_P (base0) || CONSTANT_CLASS_P (base0)))
+		  || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))))
 	    {
 	      if (!equality_code
 		  && maybe_ne (bitpos0, bitpos1)
@@ -8612,7 +8616,11 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	     because pointer arithmetic is restricted to retain within an
 	     object and overflow on pointer differences is undefined as of
 	     6.5.6/8 and /9 with respect to the signed ptrdiff_t.  */
-	  else if (known_eq (bitpos0, bitpos1))
+	  else if (known_eq (bitpos0, bitpos1)
+		   && (equality_code
+		       || (indirect_base0
+			   && (DECL_P (base0) || CONSTANT_CLASS_P (base0)))
+		       || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (arg0))))
 	    {
 	      /* By converting to signed sizetype we cover middle-end pointer
 	         arithmetic which operates on unsigned pointer types of size
@@ -9721,8 +9729,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
 	  /* With undefined overflow prefer doing association in a type
 	     which wraps on overflow, if that is one of the operand types.  */
-	  if (POINTER_TYPE_P (type)
-	      || (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_WRAPS (type)))
+	  if ((POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type))
+	      && !TYPE_OVERFLOW_WRAPS (type))
 	    {
 	      if (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
 		  && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
@@ -9735,8 +9743,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 
 	  /* With undefined overflow we can only associate constants with one
 	     variable, and constants whose association doesn't overflow.  */
-	  if (POINTER_TYPE_P (atype)
-	      || (INTEGRAL_TYPE_P (atype) && !TYPE_OVERFLOW_WRAPS (atype)))
+	  if ((POINTER_TYPE_P (atype) || INTEGRAL_TYPE_P (atype))
+	      && !TYPE_OVERFLOW_WRAPS (atype))
 	    {
 	      if ((var0 && var1) || (minus_var0 && minus_var1))
 		{

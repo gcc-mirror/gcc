@@ -1,3 +1,19 @@
+2018-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82694
+	* common.opt (fstrict-overflow): No longer an alias.
+	(fwrapv-pointer): New option.
+	* tree.h (TYPE_OVERFLOW_WRAPS, TYPE_OVERFLOW_UNDEFINED): Define
+	also for pointer types based on flag_wrapv_pointer.
+	* opts.c (common_handle_option) <case OPT_fstrict_overflow>: Set
+	opts->x_flag_wrap[pv] to !value, clear opts->x_flag_trapv if
+	opts->x_flag_wrapv got set.
+	* fold-const.c (fold_comparison, fold_binary_loc): Revert 2017-08-01
+	changes, just use TYPE_OVERFLOW_UNDEFINED on pointer type instead of
+	POINTER_TYPE_OVERFLOW_UNDEFINED.
+	* match.pd: Likewise in address comparison pattern.
+	* doc/invoke.texi: Document -fwrapv and -fstrict-overflow.
+
 2018-01-15  Richard Biener  <rguenther@suse.de>
 
 	PR lto/83804

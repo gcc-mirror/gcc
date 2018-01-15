@@ -829,13 +829,16 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Same as TYPE_UNSIGNED but converted to SIGNOP.  */
 #define TYPE_SIGN(NODE) ((signop) TYPE_UNSIGNED (NODE))
 
-/* True if overflow wraps around for the given integral type.  That
+/* True if overflow wraps around for the given integral or pointer type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
 #define TYPE_OVERFLOW_WRAPS(TYPE) \
-  (ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag || flag_wrapv)
+  (POINTER_TYPE_P (TYPE)					\
+   ? flag_wrapv_pointer						\
+   : (ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
+      || flag_wrapv))
 
-/* True if overflow is undefined for the given integral type.  We may
-   optimize on the assumption that values in the type never overflow.
+/* True if overflow is undefined for the given integral or pointer type.
+   We may optimize on the assumption that values in the type never overflow.
 
    IMPORTANT NOTE: Any optimization based on TYPE_OVERFLOW_UNDEFINED
    must issue a warning based on warn_strict_overflow.  In some cases
@@ -843,8 +846,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    other cases it will be appropriate to simply set a flag and let the
    caller decide whether a warning is appropriate or not.  */
 #define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
-  (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
-   && !flag_wrapv && !flag_trapv)
+  (POINTER_TYPE_P (TYPE)					\
+   ? !flag_wrapv_pointer					\
+   : (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
+      && !flag_wrapv && !flag_trapv))
 
 /* True if overflow for the given integral type should issue a
    trap.  */
