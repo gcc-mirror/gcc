@@ -445,6 +445,17 @@ Node::state(Escape_context* context, Named_object* fn)
   return this->state_;
 }
 
+Node::~Node()
+{
+  if (this->state_ != NULL)
+    {
+      if (this->expr() == NULL || this->expr()->var_expression() == NULL)
+        // Var expression Node is excluded since it shares state with the
+        // underlying var Node.
+        delete this->state_;
+    }
+}
+
 int
 Node::encoding()
 {
@@ -552,6 +563,7 @@ Node::is_sink() const
 std::map<Named_object*, Node*> Node::objects;
 std::map<Expression*, Node*> Node::expressions;
 std::map<Statement*, Node*> Node::statements;
+std::vector<Node*> Node::indirects;
 
 // Make a object node or return a cached node for this object.
 
@@ -601,6 +613,7 @@ Node*
 Node::make_indirect_node(Node* child)
 {
   Node* n = new Node(child);
+  Node::indirects.push_back(n);
   return n;
 }
 
@@ -3334,4 +3347,40 @@ Gogo::tag_function(Escape_context* context, Named_object* fn)
 {
   Escape_analysis_tag eat(context);
   eat.tag(fn);
+}
+
+// Reclaim memory of escape analysis Nodes.
+
+void
+Gogo::reclaim_escape_nodes()
+{
+  Node::reclaim_nodes();
+}
+
+void
+Node::reclaim_nodes()
+{
+  for (std::map<Named_object*, Node*>::iterator p = Node::objects.begin();
+       p != Node::objects.end();
+       ++p)
+    delete p->second;
+  Node::objects.clear();
+
+  for (std::map<Expression*, Node*>::iterator p = Node::expressions.begin();
+       p != Node::expressions.end();
+       ++p)
+    delete p->second;
+  Node::expressions.clear();
+
+  for (std::map<Statement*, Node*>::iterator p = Node::statements.begin();
+       p != Node::statements.end();
+       ++p)
+    delete p->second;
+  Node::statements.clear();
+
+  for (std::vector<Node*>::iterator p = Node::indirects.begin();
+       p != Node::indirects.end();
+       ++p)
+    delete *p;
+  Node::indirects.clear();
 }

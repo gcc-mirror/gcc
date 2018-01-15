@@ -682,6 +682,10 @@ class Gogo
   void
   tag_function(Escape_context*, Named_object*);
 
+  // Reclaim memory of escape analysis Nodes.
+  void
+  reclaim_escape_nodes();
+
   // Do all exports.
   void
   do_exports();

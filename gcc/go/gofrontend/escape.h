@@ -191,6 +191,8 @@ class Node
       child_(n)
   {}
 
+  ~Node();
+
   // Return this node's type.
   Type*
   type() const;
@@ -296,6 +298,10 @@ class Node
   static int
   note_inout_flows(int e, int index, Level level);
 
+  // Reclaim nodes.
+  static void
+  reclaim_nodes();
+
  private:
   // The classification of this Node.
   Node_classification classification_;
@@ -326,6 +332,10 @@ class Node
   static std::map<Named_object*, Node*> objects;
   static std::map<Expression*, Node*> expressions;
   static std::map<Statement*, Node*> statements;
+
+  // Collection of all NODE_INDIRECT Nodes, used for reclaiming memory. This
+  // is not a cache -- each make_indirect_node will make a fresh Node.
+  static std::vector<Node*> indirects;
 };
 
 // The amount of bits used for the escapement encoding.
