@@ -162,6 +162,7 @@ tree gfor_fndecl_caf_change_team;
 tree gfor_fndecl_caf_end_team;
 tree gfor_fndecl_caf_sync_team;
 tree gfor_fndecl_caf_get_team;
+tree gfor_fndecl_caf_team_number;
 tree gfor_fndecl_co_broadcast;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
@@ -3802,6 +3803,12 @@ gfc_build_builtin_function_decls (void)
 	= gfc_build_library_function_decl_with_spec (
 	    get_identifier (PREFIX("caf_image_status")), "RR",
 	    integer_type_node, 2, integer_type_node, ppvoid_type_node);
+
+//ARTLESS
+      gfor_fndecl_caf_team_number
+      	= gfc_build_library_function_decl_with_spec (
+      	    get_identifier (PREFIX("caf_team_number")), "R",
+      	    integer_type_node, 1, integer_type_node);
 
       gfor_fndecl_caf_stopped_images
 	= gfc_build_library_function_decl_with_spec (
