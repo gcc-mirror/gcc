@@ -3394,7 +3394,9 @@ microblaze_asm_output_ident (const char *string)
   else
     section_asm_op = READONLY_DATA_SECTION_ASM_OP;
 
-  buf = ACONCAT ((section_asm_op, "\n\t.ascii \"", string, "\\0\"\n", NULL));
+  buf = ACONCAT (("\t.pushsection", section_asm_op,
+                  "\n\t.ascii \"", string, "\\0\"\n",
+                  "\t.popsection\n", NULL));
   symtab->finalize_toplevel_asm (build_string (strlen (buf), buf));
 }
 
