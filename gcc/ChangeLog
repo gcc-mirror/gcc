@@ -1,3 +1,21 @@
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/constraints.md (Bs): Replace
+	ix86_indirect_branch_thunk_register with
+	ix86_indirect_branch_register.
+	(Bw): Likewise.
+	* config/i386/i386.md (indirect_jump): Likewise.
+	(tablejump): Likewise.
+	(*sibcall_memory): Likewise.
+	(*sibcall_value_memory): Likewise.
+	Peepholes of indirect call and jump via memory: Likewise.
+	* config/i386/i386.opt: Likewise.
+	* config/i386/predicates.md (indirect_branch_operand): Likewise.
+	(GOT_memory_operand): Likewise.
+	(call_insn_operand): Likewise.
+	(sibcall_insn_operand): Likewise.
+	(GOT32_symbol_operand): Likewise.
+
 2018-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83837
