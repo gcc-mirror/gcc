@@ -1,3 +1,25 @@
+2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80276
+	* python/libstdcxx/v6/printers.py (strip_inline_namespaces): New.
+	(get_template_arg_list): New.
+	(StdVariantPrinter._template_args): Remove, use get_template_arg_list
+	instead.
+	(TemplateTypePrinter): Rewrite to work with gdb.Type objects instead
+	of strings and regular expressions.
+	(add_one_template_type_printer): Adapt to new TemplateTypePrinter.
+	(FilteringTypePrinter): Add docstring. Match using startswith. Use
+	strip_inline_namespaces instead of strip_versioned_namespace.
+	(add_one_type_printer): Prepend namespace to match argument.
+	(register_type_printers): Add type printers for char16_t and char32_t
+	string types and for types using cxx11 ABI. Update calls to
+	add_one_template_type_printer to provide default argument dicts.
+	* testsuite/libstdc++-prettyprinters/80276.cc: New test.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Remove tests for
+	basic_string<unsigned char> and basic_string<signed char>.
+	* testsuite/libstdc++-prettyprinters/whatis2.cc: Duplicate whatis.cc
+	to test local variables, without overriding _GLIBCXX_USE_CXX11_ABI.
+
 2018-01-14  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR libstdc++/81092
