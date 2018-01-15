@@ -144,7 +144,7 @@
   "ppc750_du,iu1_7xx")
 
 (define_insn_reservation "ppc750-crlogical" 3
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "nothing,sru_7xx*2")
 

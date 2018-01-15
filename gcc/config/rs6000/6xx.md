@@ -233,12 +233,12 @@
   "iu1_6xx|iu2_6xx")
 
 (define_insn_reservation "ppc604-crlogical" 2
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "ppc604"))
   "bpu_6xx")
 
 (define_insn_reservation "ppc604e-crlogical" 2
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "ppc604e,ppc620,ppc630"))
   "cru_6xx")
 

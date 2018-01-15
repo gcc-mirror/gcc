@@ -475,11 +475,6 @@
 
 (define_bypass 3 "power6-crlogical" "power6-branch")
 
-(define_insn_reservation "power6-delayedcr" 3
-  (and (eq_attr "type" "delayed_cr")
-       (eq_attr "cpu" "power6"))
-  "BRU_power6")
-
 (define_insn_reservation "power6-mfcr" 6 ; N/A
   (and (eq_attr "type" "mfcr")
        (eq_attr "cpu" "power6"))

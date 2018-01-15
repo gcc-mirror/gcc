@@ -1,3 +1,38 @@
+2018-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Remove delayed_cr.
+	(define_attr "cr_logical_3op"): New.
+	(cceq_ior_compare): Adjust.
+	(cceq_ior_compare_complement): Adjust.
+	(*cceq_rev_compare): Adjust.
+	* config/rs6000/rs6000.c (rs6000_adjust_cost): Adjust.
+	(is_cracked_insn): Adjust.
+	(insn_must_be_first_in_group): Adjust.
+	* config/rs6000/40x.md: Adjust.
+	* config/rs6000/440.md: Adjust.
+	* config/rs6000/476.md: Adjust.
+	* config/rs6000/601.md: Adjust.
+	* config/rs6000/603.md: Adjust.
+	* config/rs6000/6xx.md: Adjust.
+	* config/rs6000/7450.md: Adjust.
+	* config/rs6000/7xx.md: Adjust.
+	* config/rs6000/8540.md: Adjust.
+	* config/rs6000/cell.md: Adjust.
+	* config/rs6000/e300c2c3.md: Adjust.
+	* config/rs6000/e500mc.md: Adjust.
+	* config/rs6000/e500mc64.md: Adjust.
+	* config/rs6000/e5500.md: Adjust.
+	* config/rs6000/e6500.md: Adjust.
+	* config/rs6000/mpc.md: Adjust.
+	* config/rs6000/power4.md: Adjust.
+	* config/rs6000/power5.md: Adjust.
+	* config/rs6000/power6.md: Adjust.
+	* config/rs6000/power7.md: Adjust.
+	* config/rs6000/power8.md: Adjust.
+	* config/rs6000/power9.md: Adjust.
+	* config/rs6000/rs64.md: Adjust.
+	* config/rs6000/titan.md: Adjust.
+
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/predicates.md (indirect_branch_operand): Rewrite
