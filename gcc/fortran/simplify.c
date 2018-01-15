@@ -5343,13 +5343,15 @@ gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
 }
 
 gfc_expr *
-gfc_simplify_minloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind)
+gfc_simplify_minloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind,
+		     gfc_expr *back ATTRIBUTE_UNUSED)
 {
   return gfc_simplify_minmaxloc (array, dim, mask, kind, -1);
 }
 
 gfc_expr *
-gfc_simplify_maxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind)
+gfc_simplify_maxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *kind,
+		     gfc_expr *back ATTRIBUTE_UNUSED)
 {
   return gfc_simplify_minmaxloc (array, dim, mask, kind, 1);
 }

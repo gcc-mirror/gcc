@@ -51,6 +51,10 @@ iall_i16 (gfc_array_i16 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
+
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -218,6 +222,9 @@ miall_i16 (gfc_array_i16 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -399,7 +406,11 @@ siall_i16 (gfc_array_i16 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      iall_i16 (retarray, array, pdim, back);
+#else
       iall_i16 (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */

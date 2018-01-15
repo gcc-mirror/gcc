@@ -28,7 +28,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_16)
 
+#define HAVE_BACK_ARG 1
+
 #include <string.h>
+#include <assert.h>
 
 static inline int
 compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, gfc_charlen_type n)
@@ -40,14 +43,15 @@ compare_fcn (const GFC_INTEGER_4 *a, const GFC_INTEGER_4 *b, gfc_charlen_type n)
 }
 
 extern void maxloc1_16_s4 (gfc_array_i16 * const restrict, 
-	gfc_array_s4 * const restrict, const index_type * const restrict,
+	gfc_array_s4 * const restrict, const index_type * const restrict , GFC_LOGICAL_4 back,
 	gfc_charlen_type);
 export_proto(maxloc1_16_s4);
 
 void
 maxloc1_16_s4 (gfc_array_i16 * const restrict retarray, 
 	gfc_array_s4 * const restrict array, 
-	const index_type * const restrict pdim, gfc_charlen_type string_len)
+	const index_type * const restrict pdim, GFC_LOGICAL_4 back,
+	gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -61,6 +65,10 @@ maxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
   index_type delta;
   index_type dim;
   int continue_loop;
+
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
 
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
@@ -210,14 +218,15 @@ maxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
 
 extern void mmaxloc1_16_s4 (gfc_array_i16 * const restrict, 
 	gfc_array_s4 * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict, gfc_charlen_type);
+	gfc_array_l1 * const restrict, GFC_LOGICAL_4 back, gfc_charlen_type);
 export_proto(mmaxloc1_16_s4);
 
 void
 mmaxloc1_16_s4 (gfc_array_i16 * const restrict retarray, 
 	gfc_array_s4 * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask, gfc_charlen_type string_len)
+	gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back,
+	gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -235,6 +244,9 @@ mmaxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -411,14 +423,14 @@ mmaxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
 
 extern void smaxloc1_16_s4 (gfc_array_i16 * const restrict, 
 	gfc_array_s4 * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *, gfc_charlen_type);
+	GFC_LOGICAL_4 *, GFC_LOGICAL_4 back, gfc_charlen_type);
 export_proto(smaxloc1_16_s4);
 
 void
 smaxloc1_16_s4 (gfc_array_i16 * const restrict retarray, 
 	gfc_array_s4 * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask, gfc_charlen_type string_len)
+	GFC_LOGICAL_4 * mask , GFC_LOGICAL_4 back, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -431,7 +443,11 @@ smaxloc1_16_s4 (gfc_array_i16 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      maxloc1_16_s4 (retarray, array, pdim, back, string_len);
+#else
       maxloc1_16_s4 (retarray, array, pdim, string_len);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */

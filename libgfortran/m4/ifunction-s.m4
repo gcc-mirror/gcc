@@ -19,6 +19,7 @@ dnl You should not return or break from the inner loop of the implementation.
 dnl Care should also be taken to avoid using the names defined in iparm.m4
 define(START_ARRAY_FUNCTION,
 `#include <string.h>
+#include <assert.h>
 
 static inline int
 compare_fcn (const atype_name *a, const atype_name *b, gfc_charlen_type n)
@@ -29,21 +30,22 @@ compare_fcn (const atype_name *a, const atype_name *b, gfc_charlen_type n)
     return memcmp_char4 (a, b, n);
 }
 
-extern void name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict,
+extern void name`'rtype_qual`_'atype_code (rtype` * const restrict, 
+	'atype` * const restrict, const index_type * const restrict 'back_arg`,
 	gfc_charlen_type);
-export_proto(name`'rtype_qual`_'atype_code);
+export_proto('name`'rtype_qual`_'atype_code`);
 
 void
-name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
-	const index_type * const restrict pdim, gfc_charlen_type string_len)
+'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array, 
+	const index_type * const restrict pdim'back_arg`,
+	gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const atype_name * restrict base;
+  const 'atype_name * restrict base;
   rtype_name * restrict dest;
   index_type rank;
   index_type n;
@@ -51,6 +53,10 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   index_type delta;
   index_type dim;
   int continue_loop;
+
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
 
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
@@ -192,23 +198,24 @@ define(FINISH_ARRAY_FUNCTION,
 }')dnl
 define(START_MASKED_ARRAY_FUNCTION,
 `
-extern void `m'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict, gfc_charlen_type);
-export_proto(`m'name`'rtype_qual`_'atype_code);
+extern void `m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict, 
+	'atype` * const restrict, const index_type * const restrict,
+	gfc_array_l1 * const restrict'back_arg`, gfc_charlen_type);
+export_proto(m'name`'rtype_qual`_'atype_code`);
 
 void
-`m'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
+m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask, gfc_charlen_type string_len)
+	gfc_array_l1 * const restrict mask'back_arg`,
+	gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  rtype_name * restrict dest;
+  'rtype_name * restrict dest;
   const atype_name * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
   index_type rank;
@@ -219,6 +226,9 @@ void
   index_type mdelta;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -377,21 +387,21 @@ define(FINISH_MASKED_ARRAY_FUNCTION,
 }')dnl
 define(SCALAR_ARRAY_FUNCTION,
 `
-extern void `s'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *, gfc_charlen_type);
-export_proto(`s'name`'rtype_qual`_'atype_code);
+extern void `s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict, 
+	'atype` * const restrict, const index_type * const restrict,
+	GFC_LOGICAL_4 *'back_arg`, gfc_charlen_type);
+export_proto(s'name`'rtype_qual`_'atype_code`);
 
 void
-`s'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
+s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask, gfc_charlen_type string_len)
+	GFC_LOGICAL_4 * mask 'back_arg`, gfc_charlen_type string_len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  rtype_name * restrict dest;
+  'rtype_name * restrict dest;
   index_type rank;
   index_type n;
   index_type dim;
@@ -399,7 +409,11 @@ void
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      name`'rtype_qual`_'atype_code (retarray, array, pdim, back, string_len);
+#else
       name`'rtype_qual`_'atype_code (retarray, array, pdim, string_len);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */

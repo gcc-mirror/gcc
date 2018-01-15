@@ -1697,7 +1697,7 @@ gfc_resolve_max (gfc_expr *f, gfc_actual_arglist *args)
 
 void
 gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
-		    gfc_expr *mask, gfc_expr *kind)
+		    gfc_expr *mask, gfc_expr *kind, gfc_expr *back)
 {
   const char *name;
   int i, j, idim;
@@ -1780,6 +1780,15 @@ gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
       ts.type = BT_INTEGER;
       ts.kind = fkind;
       gfc_convert_type_warn (f, &ts, 2, 0);
+    }
+
+  if (back->ts.kind != gfc_logical_4_kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_logical_4_kind;
+      gfc_convert_type_warn (back, &ts, 2, 0);
     }
 }
 
@@ -1907,7 +1916,7 @@ gfc_resolve_min (gfc_expr *f, gfc_actual_arglist *args)
 
 void
 gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
-		    gfc_expr *mask, gfc_expr *kind)
+		    gfc_expr *mask, gfc_expr *kind, gfc_expr *back)
 {
   const char *name;
   int i, j, idim;
@@ -1985,6 +1994,15 @@ gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
       ts.type = BT_INTEGER;
       ts.kind = fkind;
       gfc_convert_type_warn (f, &ts, 2, 0);
+    }
+
+  if (back->ts.kind != gfc_logical_4_kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_logical_4_kind;
+      gfc_convert_type_warn (back, &ts, 2, 0);
     }
 }
 

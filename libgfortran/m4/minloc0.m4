@@ -23,7 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "libgfortran.h"'
+#include "libgfortran.h"
+#include <assert.h>'
 
 include(iparm.m4)dnl
 include(iforeach.m4)dnl

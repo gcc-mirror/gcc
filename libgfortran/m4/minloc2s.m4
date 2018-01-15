@@ -25,7 +25,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 #include <stdlib.h>
-#include <string.h>'
+#include <string.h>
+#include <assert.h>'
 include(iparm.m4)dnl
 
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)
@@ -39,11 +40,13 @@ compare_fcn (const 'atype_name` *a, const 'atype_name` *b, gfc_charlen_type n)
     return memcmp_char4 (a, b, n);
 }
 
-extern 'rtype_name` 'name`'rtype_qual`_'atype_code` ('atype` * const restrict, gfc_charlen_type);
+extern 'rtype_name` 'name`'rtype_qual`_'atype_code` ('atype` * const restrict'back_arg`,
+       gfc_charlen_type);
 export_proto('name`'rtype_qual`_'atype_code`);
 
 'rtype_name`
-'name`'rtype_qual`_'atype_code` ('atype` * const restrict array, gfc_charlen_type len)
+'name`'rtype_qual`_'atype_code` ('atype` * const restrict array'back_arg`,
+				gfc_charlen_type len)
 {
   index_type ret;
   index_type sstride;
@@ -52,6 +55,7 @@ export_proto('name`'rtype_qual`_'atype_code`);
   const 'atype_name` *maxval;
   index_type i;
 
+  assert(back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -74,12 +78,14 @@ export_proto('name`'rtype_qual`_'atype_code`);
 }
 
 extern 'rtype_name` m'name`'rtype_qual`_'atype_code` ('atype` * const restrict,
-                    gfc_array_l1 *const restrict mask, gfc_charlen_type);
+                    gfc_array_l1 *const restrict mask'back_arg`,
+		    gfc_charlen_type);
 export_proto(m'name`'rtype_qual`_'atype_code`);
 
 'rtype_name`
 m'name`'rtype_qual`_'atype_code` ('atype` * const restrict array,
-				 gfc_array_l1 * const restrict mask, gfc_charlen_type len)
+				 gfc_array_l1 * const restrict mask'back_arg`,
+				 gfc_charlen_type len)
 {
   index_type ret;
   index_type sstride;
@@ -91,6 +97,7 @@ m'name`'rtype_qual`_'atype_code` ('atype` * const restrict array,
   int mask_kind;
   index_type mstride;
 
+  assert (back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -140,15 +147,15 @@ m'name`'rtype_qual`_'atype_code` ('atype` * const restrict array,
 }
 
 extern 'rtype_name` s'name`'rtype_qual`_'atype_code` ('atype` * const restrict,
-       		    	GFC_LOGICAL_4 *mask, gfc_charlen_type);
+       		    	GFC_LOGICAL_4 *mask'back_arg`, gfc_charlen_type);
 export_proto(s'name`'rtype_qual`_'atype_code`);
 
 'rtype_name`
 s'name`'rtype_qual`_'atype_code` ('atype` * const restrict array,
-				 GFC_LOGICAL_4 *mask, gfc_charlen_type len)
+				 GFC_LOGICAL_4 *mask'back_arg`, gfc_charlen_type len)
 {
   if (mask)
-    return 'name`'rtype_qual`_'atype_code` (array, len);
+    return 'name`'rtype_qual`_'atype_code` (array, len, back);
   else
     return 0;
 }

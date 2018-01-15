@@ -51,6 +51,10 @@ parity_l2 (gfc_array_l2 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
+
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
