@@ -9752,7 +9752,13 @@ ix86_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   /* For pointers passed in memory we expect bounds passed in Bounds
      Table.  */
   if (!nregs)
-    cum->bnds_in_bt = chkp_type_bounds_count (type);
+    {
+      /* Track if there are outgoing arguments on stack.  */
+      if (cum->caller)
+	cfun->machine->outgoing_args_on_stack = true;
+
+      cum->bnds_in_bt = chkp_type_bounds_count (type);
+    }
 }
 
 /* Define where to put the arguments to a function.
@@ -10080,6 +10086,10 @@ ix86_function_arg (cumulative_args_t cum_v, machine_mode omode,
     }
   else
     arg = function_arg_32 (cum, mode, omode, type, bytes, words);
+
+  /* Track if there are outgoing arguments on stack.  */
+  if (arg == NULL_RTX && cum->caller)
+    cfun->machine->outgoing_args_on_stack = true;
 
   return arg;
 }
@@ -12510,11 +12520,16 @@ ix86_compute_frame_layout (void)
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
   offset += frame->va_arg_size;
 
-  /* Align start of frame for local function.  */
+  /* Align start of frame for local function.  When a function call
+     is removed, it may become a leaf function.  But if argument may
+     be passed on stack, we need to align the stack when there is no
+     tail call.  */
   if (stack_realign_fp
       || offset != frame->sse_reg_save_offset
       || size != 0
       || !crtl->is_leaf
+      || (!crtl->tail_call_emit
+	  && cfun->machine->outgoing_args_on_stack)
       || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
     offset = ROUND_UP (offset, stack_alignment_needed);

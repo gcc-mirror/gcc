@@ -1,6 +1,19 @@
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	PR target/83330
+	* config/i386/i386.c (ix86_function_arg_advance): Set
+	outgoing_args_on_stack to true if there are outgoing arguments
+	on stack.
+	(ix86_function_arg): Likewise.
+	(ix86_compute_frame_layout): Align stack frame if argument is
+	passed on stack.
+	* config/i386/i386.h (machine_function): Add
+	outgoing_args_on_stack.
+
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
 	* config/i386/i386.c (ix86_expand_prologue): Use reference of
 	struct ix86_frame.
 	(ix86_expand_epilogue): Likewise.
