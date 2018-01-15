@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! avr_tiny } } } */
 /* { dg-options "-O1" } */
 
 
