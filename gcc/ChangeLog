@@ -1,3 +1,8 @@
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): For an
+	ADDR_EXPR, do not count the offset of a COMPONENT_REF twice.
+
 2018-01-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000-p8swap.c (rs6000_gen_stvx): Generate

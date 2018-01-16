@@ -1,5 +1,9 @@
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-c++-common/Warray-bounds-3.c (test_memmove_bounds): Fix mismatch.
+
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-c++-common/Wrestrict.c (test_strcpy_range): Bump string size of one
 	test and add dg-warning for the -Wstringop-overflow warning.
 
