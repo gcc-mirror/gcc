@@ -1,3 +1,7 @@
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/17_intro/names.cc: Undefine 'y' on SPARC/Linux.
+
 2018-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83834
