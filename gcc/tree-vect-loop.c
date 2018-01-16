@@ -1851,7 +1851,10 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 		ok = vectorizable_reduction (phi, NULL, NULL, NULL, NULL);
             }
 
-	  if (ok && STMT_VINFO_LIVE_P (stmt_info))
+	  /* SLP PHIs are tested by vect_slp_analyze_node_operations.  */
+	  if (ok
+	      && STMT_VINFO_LIVE_P (stmt_info)
+	      && !PURE_SLP_STMT (stmt_info))
 	    ok = vectorizable_live_operation (phi, NULL, NULL, -1, NULL);
 
           if (!ok)
@@ -8217,7 +8220,11 @@ vectorizable_live_operation (gimple *stmt,
       gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
 
       /* Get the correct slp vectorized stmt.  */
-      vec_lhs = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[vec_entry]);
+      gimple *vec_stmt = SLP_TREE_VEC_STMTS (slp_node)[vec_entry];
+      if (gphi *phi = dyn_cast <gphi *> (vec_stmt))
+	vec_lhs = gimple_phi_result (phi);
+      else
+	vec_lhs = gimple_get_lhs (vec_stmt);
 
       /* Get entry to use.  */
       bitstart = bitsize_int (vec_index);
