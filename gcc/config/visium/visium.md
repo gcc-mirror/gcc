@@ -2962,13 +2962,13 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "nop			;generated nop"
+  "nop			;generated"
   [(set_attr "type" "nop")])
 
 (define_insn "hazard_nop"
   [(unspec_volatile [(const_int 0)] UNSPEC_NOP)]
   ""
-  "nop			;hazard avoidance nop"
+  "nop			;hazard avoidance"
   [(set_attr "type" "nop")])
 
 (define_insn "blockage"

@@ -1,3 +1,8 @@
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/visium/visium.md (nop): Tweak comment.
+	(hazard_nop): Likewise.
+
 2018-01-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_opt_vars): Add entry for
