@@ -199,7 +199,8 @@ void test_memmove_bounds (char *d, const char *s, size_t n)
   T (int,  2, a + SR ( 1, 3), pi, n);
   T (int,  2, a + SR ( 2, 3), pi, n);
 
-  T (int32_t, 2, a + SR ( 3, 4), pi, n);      /* { dg-warning "offset \\\[12, 16] is out of the bounds \\\[0, 8] of object .\[^\n\r]+. with type .int32_t ?\\\[2]." } */
+  const int32_t *pi32 = (const int32_t*)s;
+  T (int32_t, 2, a + SR ( 3, 4), pi32, n);      /* { dg-warning "offset \\\[12, 16] is out of the bounds \\\[0, 8] of object .\[^\n\r]+. with type .int32_t ?\\\[2]." } */
 }
 
 
