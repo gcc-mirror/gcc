@@ -1,3 +1,9 @@
+2018-01-15  Andrew Waterman  <andrew@sifive.com>
+
+	* config/riscv/riscv.c (riscv_rtx_costs) <MULT>: Increase cost if
+	!TARGET_MUL.
+	<UDIV>: Increase cost if !TARGET_DIV.
+
 2018-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (define_attr "type"): Remove delayed_cr.
