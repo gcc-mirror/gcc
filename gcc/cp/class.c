@@ -6566,14 +6566,17 @@ find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
 	  /* Flexible array members have no upper bound.  */
 	  if (fmem->array)
 	    {
-	      /* Replace the zero-length array if it's been stored and
-		 reset the after pointer.  */
 	      if (TYPE_DOMAIN (TREE_TYPE (fmem->array)))
 		{
+		  /* Replace the zero-length array if it's been stored and
+		     reset the after pointer.  */
 		  fmem->after[bool (pun)] = NULL_TREE;
 		  fmem->array = fld;
 		  fmem->enclosing = pstr;
 		}
+	      else if (!fmem->after[bool (pun)])
+		/* Make a record of another flexible array member.  */
+		fmem->after[bool (pun)] = fld;
 	    }
 	  else
 	    {
