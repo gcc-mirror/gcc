@@ -3619,6 +3619,15 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		  gimple_seq_add_stmt_without_update (&seq, stmt);
 		  src = gimple_assign_lhs (stmt);
 		}
+	      inv_op = invert_op (split_store, 2, int_type, xor_mask);
+	      if (inv_op != NOP_EXPR)
+		{
+		  stmt = gimple_build_assign (make_ssa_name (int_type),
+					      inv_op, src, xor_mask);
+		  gimple_set_location (stmt, loc);
+		  gimple_seq_add_stmt_without_update (&seq, stmt);
+		  src = gimple_assign_lhs (stmt);
+		}
 	      break;
 	    default:
 	      src = ops[0];
