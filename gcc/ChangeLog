@@ -1,5 +1,8 @@
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/86620
+	* params.def (max-sched-ready-insns): Bump minimum value to 1.
+
 	PR rtl-optimization/83213
 	* recog.c (peep2_attempt): Copy over CROSSING_JUMP_P from peepinsn
 	to last if both are JUMP_INSNs.
