@@ -1,3 +1,8 @@
+2018-01-16  Artyom Skrobov tyomitch@gmail.com
+
+        * caller-save.c (insert_save): Drop unnecessary parameter.  All
+	callers updated.
+
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenth@suse.de>
 
