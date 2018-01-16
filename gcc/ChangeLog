@@ -1,6 +1,8 @@
 2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386-opts.h (indirect_branch): New.
 	* config/i386/i386-protos.h (ix86_output_indirect_jmp): Likewise.
 	* config/i386/i386.c (ix86_using_red_zone): Disallow red-zone
