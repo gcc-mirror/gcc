@@ -9333,6 +9333,9 @@ check_return_expr (tree retval, bool *no_warning)
 	 to undo it so we can try to treat it as an rvalue below.  */
       retval = maybe_undo_parenthesized_ref (retval);
 
+      if (processing_template_decl)
+	retval = build_non_dependent_expr (retval);
+
       /* Under C++11 [12.8/32 class.copy], a returned lvalue is sometimes
 	 treated as an rvalue for the purposes of overload resolution to
 	 favor move constructors over copy constructors.
