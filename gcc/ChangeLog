@@ -1,3 +1,7 @@
+2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses):
+
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/86620

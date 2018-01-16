@@ -2923,7 +2923,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
       data_reference_p dra = datarefs_copy[i];
       stmt_vec_info stmtinfo_a = vinfo_for_stmt (DR_STMT (dra));
       stmt_vec_info lastinfo = NULL;
-      if (! STMT_VINFO_VECTORIZABLE (stmtinfo_a))
+      if (!STMT_VINFO_VECTORIZABLE (stmtinfo_a)
+	  || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a))
 	{
 	  ++i;
 	  continue;
@@ -2932,7 +2933,8 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	{
 	  data_reference_p drb = datarefs_copy[i];
 	  stmt_vec_info stmtinfo_b = vinfo_for_stmt (DR_STMT (drb));
-	  if (! STMT_VINFO_VECTORIZABLE (stmtinfo_b))
+	  if (!STMT_VINFO_VECTORIZABLE (stmtinfo_b)
+	      || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
 	    break;
 
 	  /* ???  Imperfect sorting (non-compatible types, non-modulo
