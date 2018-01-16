@@ -1,5 +1,8 @@
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/83817
+	* g++.dg/cpp1y/pr83817.C: New test.
+
 	PR c++/83825
 	* g++.dg/template/pr83825.C: New test.
 

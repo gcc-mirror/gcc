@@ -17819,7 +17819,10 @@ tsubst_copy_and_build (tree t,
 		CALL_EXPR_REVERSE_ARGS (function) = rev;
 		if (thk)
 		  {
-		    CALL_FROM_THUNK_P (function) = true;
+		    if (TREE_CODE (function) == CALL_EXPR)
+		      CALL_FROM_THUNK_P (function) = true;
+		    else
+		      AGGR_INIT_FROM_THUNK_P (function) = true;
 		    /* The thunk location is not interesting.  */
 		    SET_EXPR_LOCATION (function, UNKNOWN_LOCATION);
 		  }
