@@ -1,3 +1,12 @@
+2018-01-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/safe-indirect-jump-1.c: New file.
+	* gcc.target/powerpc/safe-indirect-jump-2.c: New file.
+	* gcc.target/powerpc/safe-indirect-jump-3.c: New file.
+	* gcc.target/powerpc/safe-indirect-jump-4.c: New file.
+	* gcc.target/powerpc/safe-indirect-jump-5.c: New file.
+	* gcc.target/powerpc/safe-indirect-jump-6.c: New file.
+
 2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83857

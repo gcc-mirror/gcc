@@ -36716,6 +36716,9 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "sched-epilog",
     offsetof (struct gcc_options, x_TARGET_SCHED_PROLOG),
     offsetof (struct cl_target_option, x_TARGET_SCHED_PROLOG), },
+  { "speculate-indirect-jumps",
+    offsetof (struct gcc_options, x_rs6000_speculate_indirect_jumps),
+    offsetof (struct cl_target_option, x_rs6000_speculate_indirect_jumps), },
 };
 
 /* Inner function to handle attribute((target("..."))) and #pragma GCC target
