@@ -1520,8 +1520,7 @@ resort_type_member_vec (void *obj, void */*orig_obj*/,
     {
       resort_data.new_value = new_value;
       resort_data.cookie = cookie;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), resort_member_name_cmp);
+      member_vec->qsort (resort_member_name_cmp);
     }
 }
 
@@ -1596,6 +1595,9 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
 {
   unsigned len = member_vec->length ();
   unsigned store = 0;
+
+  if (!len)
+    return;
 
   tree current = (*member_vec)[0], name = OVL_NAME (current);
   tree next = NULL_TREE, next_name = NULL_TREE;
@@ -1712,8 +1714,7 @@ set_class_bindings (tree klass, unsigned extra)
   if (member_vec)
     {
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), member_name_cmp);
+      member_vec->qsort (member_name_cmp);
       member_vec_dedup (member_vec);
     }
 }
@@ -1741,8 +1742,7 @@ insert_late_enum_def_bindings (tree klass, tree enumtype)
       else
 	member_vec_append_class_fields (member_vec, klass);
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), member_name_cmp);
+      member_vec->qsort (member_name_cmp);
       member_vec_dedup (member_vec);
     }
 }
