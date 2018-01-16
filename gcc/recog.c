@@ -3446,6 +3446,8 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
   last = emit_insn_after_setloc (attempt,
 				 peep2_insn_data[i].insn,
 				 INSN_LOCATION (peepinsn));
+  if (JUMP_P (peepinsn) && JUMP_P (last))
+    CROSSING_JUMP_P (last) = CROSSING_JUMP_P (peepinsn);
   before_try = PREV_INSN (insn);
   delete_insn_chain (insn, peep2_insn_data[i].insn, false);
 

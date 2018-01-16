@@ -1,5 +1,9 @@
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/83213
+	* recog.c (peep2_attempt): Copy over CROSSING_JUMP_P from peepinsn
+	to last if both are JUMP_INSNs.
+
 	PR tree-optimization/83843
 	* gimple-ssa-store-merging.c
 	(imm_store_chain_info::output_merged_store): Handle bit_not_p on
