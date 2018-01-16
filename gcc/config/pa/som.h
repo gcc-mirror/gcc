@@ -136,8 +136,8 @@ do {								\
 		 else							\
 		   {							\
 		     int arg_size =					\
-		       FUNCTION_ARG_SIZE (TYPE_MODE (DECL_ARG_TYPE (parm)),\
-					  DECL_ARG_TYPE (parm));	\
+		       pa_function_arg_size (TYPE_MODE (DECL_ARG_TYPE (parm)),\
+					     DECL_ARG_TYPE (parm));	\
 		     /* Passing structs by invisible reference uses	\
 			one general register.  */			\
 		     if (arg_size > 2					\

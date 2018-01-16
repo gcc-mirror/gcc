@@ -9485,7 +9485,7 @@ pa_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int arg_size = FUNCTION_ARG_SIZE (mode, type);
+  int arg_size = pa_function_arg_size (mode, type);
 
   cum->nargs_prototype--;
   cum->words += (arg_size
@@ -9517,7 +9517,7 @@ pa_function_arg (cumulative_args_t cum_v, machine_mode mode,
   if (mode == VOIDmode)
     return NULL_RTX;
 
-  arg_size = FUNCTION_ARG_SIZE (mode, type);
+  arg_size = pa_function_arg_size (mode, type);
 
   /* If this arg would be passed partially or totally on the stack, then
      this routine should return zero.  pa_arg_partial_bytes will
@@ -9724,10 +9724,10 @@ pa_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   if (!TARGET_64BIT)
     return 0;
 
-  if (FUNCTION_ARG_SIZE (mode, type) > 1 && (cum->words & 1))
+  if (pa_function_arg_size (mode, type) > 1 && (cum->words & 1))
     offset = 1;
 
-  if (cum->words + offset + FUNCTION_ARG_SIZE (mode, type) <= max_arg_words)
+  if (cum->words + offset + pa_function_arg_size (mode, type) <= max_arg_words)
     /* Arg fits fully into registers.  */
     return 0;
   else if (cum->words + offset >= max_arg_words)
@@ -10833,6 +10833,18 @@ static HOST_WIDE_INT
 pa_starting_frame_offset (void)
 {
   return 8;
+}
+
+/* Figure out the size in words of the function argument.  The size
+   returned by this function should always be greater than zero because
+   we pass variable and zero sized objects by reference.  */
+
+HOST_WIDE_INT
+pa_function_arg_size (machine_mode mode, const_tree type)
+{
+  if (mode != BLKmode)
+    return GET_MODE_SIZE (mode);
+  return CEIL (int_size_in_bytes (type), UNITS_PER_WORD);
 }
 
 #include "gt-pa.h"
