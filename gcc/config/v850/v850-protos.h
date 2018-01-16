@@ -1,5 +1,5 @@
 /* Prototypes for v850.c functions used in the md file & elsewhere.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -26,7 +26,7 @@ extern void   expand_prologue               (void);
 extern void   expand_epilogue               (void);
 extern int    v850_handle_pragma            (int (*)(void), void (*)(int), char *);
 extern int    compute_register_save_size    (long *);
-extern int    compute_frame_size            (int, long *);
+extern int    compute_frame_size            (poly_int64, long *);
 extern void   v850_init_expanders           (void);
 
 #ifdef RTX_CODE

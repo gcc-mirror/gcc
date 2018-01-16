@@ -2826,6 +2826,9 @@ class Map_type : public Type
   static Type*
   make_map_type_descriptor_type();
 
+  // This must be in  sync with libgo/go/runtime/hashmap.go.
+  static const int bucket_size = 8;
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2867,7 +2870,6 @@ class Map_type : public Type
 
  private:
   // These must be in sync with libgo/go/runtime/hashmap.go.
-  static const int bucket_size = 8;
   static const int max_key_size = 128;
   static const int max_val_size = 128;
   static const int max_zero_size = 1024;

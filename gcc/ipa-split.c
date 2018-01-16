@@ -1,5 +1,5 @@
 /* Function splitting pass
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka  <jh@suse.cz>
 
 This file is part of GCC.
@@ -1485,7 +1485,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
     {
       vec<tree, va_gc> **debug_args = NULL;
       unsigned i = 0, len = 0;
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  debug_args = decl_debug_args_lookup (node->decl);
 	  if (debug_args)
@@ -1498,11 +1498,12 @@ split_function (basic_block return_bb, struct split_point *split_point,
 	    tree ddecl;
 	    gimple *def_temp;
 
-	    /* This needs to be done even without MAY_HAVE_DEBUG_STMTS,
-	       otherwise if it didn't exist before, we'd end up with
-	       different SSA_NAME_VERSIONs between -g and -g0.  */
+	    /* This needs to be done even without
+	       MAY_HAVE_DEBUG_BIND_STMTS, otherwise if it didn't exist
+	       before, we'd end up with different SSA_NAME_VERSIONs
+	       between -g and -g0.  */
 	    arg = get_or_create_ssa_default_def (cfun, parm);
-	    if (!MAY_HAVE_DEBUG_STMTS || debug_args == NULL)
+	    if (!MAY_HAVE_DEBUG_BIND_STMTS || debug_args == NULL)
 	      continue;
 
 	    while (i < len && (**debug_args)[i] != DECL_ORIGIN (parm))

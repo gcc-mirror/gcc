@@ -1,5 +1,5 @@
 ;; Constraint definitions for IA-32 and x86-64.
-;; Copyright (C) 2006-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -225,14 +225,16 @@
 
 (define_constraint "Bs"
   "@internal Sibcall memory operand."
-  (ior (and (not (match_test "TARGET_X32"))
+  (ior (and (not (match_test "ix86_indirect_branch_register"))
+	    (not (match_test "TARGET_X32"))
 	    (match_operand 0 "sibcall_memory_operand"))
        (and (match_test "TARGET_X32 && Pmode == DImode")
 	    (match_operand 0 "GOT_memory_operand"))))
 
 (define_constraint "Bw"
   "@internal Call memory operand."
-  (ior (and (not (match_test "TARGET_X32"))
+  (ior (and (not (match_test "ix86_indirect_branch_register"))
+	    (not (match_test "TARGET_X32"))
 	    (match_operand 0 "memory_operand"))
        (and (match_test "TARGET_X32 && Pmode == DImode")
 	    (match_operand 0 "GOT_memory_operand"))))

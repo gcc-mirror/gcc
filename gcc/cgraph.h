@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -822,9 +822,6 @@ struct GTY(()) cgraph_simd_clone {
   /* True if this is the masked, in-branch version of the clone,
      otherwise false.  */
   unsigned int inbranch : 1;
-
-  /* True if this is a Cilk Plus variant.  */
-  unsigned int cilk_elemental : 1;
 
   /* Doubly linked list of SIMD clones.  */
   cgraph_node *prev_clone, *next_clone;

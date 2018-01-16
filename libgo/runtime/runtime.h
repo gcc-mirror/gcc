@@ -265,11 +265,12 @@ void*	runtime_mallocgc(uintptr, const Type*, bool)
   __asm__ (GOSYM_PREFIX "runtime.mallocgc");
 void*	runtime_sysAlloc(uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysAlloc");
+void	runtime_sysFree(void*, uintptr, uint64*)
+  __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_mprofinit(void);
 #define runtime_getcallersp(p) __builtin_frame_address(0)
 void	runtime_mcall(FuncVal*)
   __asm__ (GOSYM_PREFIX "runtime.mcall");
-uint32	runtime_fastrand(void) __asm__ (GOSYM_PREFIX "runtime.fastrand");
 int32	runtime_timediv(int64, int32, int32*)
   __asm__ (GOSYM_PREFIX "runtime.timediv");
 int32	runtime_round2(int32 x); // round x up to a power of 2.
@@ -472,9 +473,7 @@ extern void typedmemmove(const Type *, void *, const void *)
   __asm__ (GOSYM_PREFIX "runtime.typedmemmove");
 extern void setncpu(int32)
   __asm__(GOSYM_PREFIX "runtime.setncpu");
-extern P** runtime_getAllP()
-  __asm__ (GOSYM_PREFIX "runtime.getAllP");
-extern Sched* runtime_getsched()
+extern Sched* runtime_getsched(void)
   __asm__ (GOSYM_PREFIX "runtime.getsched");
 extern void setpagesize(uintptr_t)
   __asm__(GOSYM_PREFIX "runtime.setpagesize");

@@ -1,5 +1,5 @@
 /* Implementation of the ALL intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -97,7 +97,7 @@ all_l4 (gfc_array_l4 * const restrict retarray,
         }
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

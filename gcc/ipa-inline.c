@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -260,8 +260,12 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
   if (!caller || !callee)
     return true;
 
-  return sanitize_flags_p (SANITIZE_ADDRESS, caller)
-    == sanitize_flags_p (SANITIZE_ADDRESS, callee);
+  return ((sanitize_flags_p (SANITIZE_ADDRESS, caller)
+	   == sanitize_flags_p (SANITIZE_ADDRESS, callee))
+	  && (sanitize_flags_p (SANITIZE_POINTER_COMPARE, caller)
+	      == sanitize_flags_p (SANITIZE_POINTER_COMPARE, callee))
+	  && (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT, caller)
+	      == sanitize_flags_p (SANITIZE_POINTER_SUBTRACT, callee)));
 }
 
 /* Used for flags where it is safe to inline when caller's value is
@@ -687,7 +691,7 @@ big_speedup_p (struct cgraph_edge *e)
   sreal time = compute_uninlined_call_time (e, unspec_time);
   sreal inlined_time = compute_inlined_call_time (e, spec_time);
 
-  if (time - inlined_time * 100
+  if ((time - inlined_time) * 100
       > (sreal) (time * PARAM_VALUE (PARAM_INLINE_MIN_SPEEDUP)))
     return true;
   return false;
@@ -702,7 +706,11 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   bool want_inline = true;
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
 
-  if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
+  /* Allow this function to be called before can_inline_edge_p,
+     since it's usually cheaper.  */
+  if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    want_inline = false;
+  else if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
     ;
   else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	   && !opt_for_fn (e->caller->decl, flag_inline_small_functions))
@@ -989,7 +997,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   /* Check that inlined time is better, but tolerate some roundoff issues.
      FIXME: When callee profile drops to 0 we account calls more.  This
      should be fixed by never doing that.  */
-  gcc_checking_assert ((edge_time - callee_info->time).to_int () <= 0
+  gcc_checking_assert ((edge_time * 100
+			- callee_info->time * 101).to_int () <= 0
 			|| callee->count.ipa ().initialized_p ());
   gcc_checking_assert (growth <= callee_info->size);
 
@@ -1118,7 +1127,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
-      /*denominator *= inlined_time;*/
+      denominator *= inlined_time;
 
       badness = - numerator / denominator;
 
@@ -1308,8 +1317,8 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
         if (!check_inlinablity_for
 	    || check_inlinablity_for == edge)
 	  {
-	    if (can_inline_edge_p (edge, false)
-		&& want_inline_small_function_p (edge, false))
+	    if (want_inline_small_function_p (edge, false)
+		&& can_inline_edge_p (edge, false))
 	      update_edge_key (heap, edge);
 	    else if (edge->aux)
 	      {
@@ -1352,8 +1361,8 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
 	  {
-	    if (can_inline_edge_p (e, false)
-		&& want_inline_small_function_p (e, false))
+	    if (want_inline_small_function_p (e, false)
+		&& can_inline_edge_p (e, false))
 	      update_edge_key (heap, e);
 	    else if (e->aux)
 	      {
@@ -2334,6 +2343,19 @@ dump_inline_stats (void)
 	       (int) reason[i][1], reason_freq[i].to_double (), reason[i][0]);
 }
 
+/* Called when node is removed.  */
+
+static void
+flatten_remove_node_hook (struct cgraph_node *node, void *data)
+{
+  if (lookup_attribute ("flatten", DECL_ATTRIBUTES (node->decl)) == NULL)
+    return;
+
+  hash_set<struct cgraph_node *> *removed
+    = (hash_set<struct cgraph_node *> *) data;
+  removed->add (node);
+}
+
 /* Decide on the inlining.  We do so in the topological order to avoid
    expenses on updating data structures.  */
 
@@ -2343,7 +2365,7 @@ ipa_inline (void)
   struct cgraph_node *node;
   int nnodes;
   struct cgraph_node **order;
-  int i;
+  int i, j;
   int cold;
   bool remove_functions = false;
 
@@ -2376,26 +2398,56 @@ ipa_inline (void)
   if (dump_file)
     fprintf (dump_file, "\nFlattening functions:\n");
 
-  /* In the first pass handle functions to be flattened.  Do this with
-     a priority so none of our later choices will make this impossible.  */
-  for (i = nnodes - 1; i >= 0; i--)
+  /* First shrink order array, so that it only contains nodes with
+     flatten attribute.  */
+  for (i = nnodes - 1, j = i; i >= 0; i--)
     {
       node = order[i];
+      if (lookup_attribute ("flatten",
+			    DECL_ATTRIBUTES (node->decl)) != NULL)
+	order[j--] = order[i];
+    }
+
+  /* After the above loop, order[j + 1] ... order[nnodes - 1] contain
+     nodes with flatten attribute.  If there is more than one such
+     node, we need to register a node removal hook, as flatten_function
+     could remove other nodes with flatten attribute.  See PR82801.  */
+  struct cgraph_node_hook_list *node_removal_hook_holder = NULL;
+  hash_set<struct cgraph_node *> *flatten_removed_nodes = NULL;
+  if (j < nnodes - 2)
+    {
+      flatten_removed_nodes = new hash_set<struct cgraph_node *>;
+      node_removal_hook_holder
+	= symtab->add_cgraph_removal_hook (&flatten_remove_node_hook,
+					   flatten_removed_nodes);
+    }
+
+  /* In the first pass handle functions to be flattened.  Do this with
+     a priority so none of our later choices will make this impossible.  */
+  for (i = nnodes - 1; i > j; i--)
+    {
+      node = order[i];
+      if (flatten_removed_nodes
+	  && flatten_removed_nodes->contains (node))
+	continue;
 
       /* Handle nodes to be flattened.
 	 Ideally when processing callees we stop inlining at the
 	 entry of cycles, possibly cloning that entry point and
 	 try to flatten itself turning it into a self-recursive
 	 function.  */
-      if (lookup_attribute ("flatten",
-			    DECL_ATTRIBUTES (node->decl)) != NULL)
-	{
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Flattening %s\n", node->name ());
-	  flatten_function (node, false);
-	}
+      if (dump_file)
+	fprintf (dump_file, "Flattening %s\n", node->name ());
+      flatten_function (node, false);
     }
+
+  if (j < nnodes - 2)
+    {
+      symtab->remove_cgraph_removal_hook (node_removal_hook_holder);
+      delete flatten_removed_nodes;
+    }
+  free (order);
+
   if (dump_file)
     dump_overall_stats ();
 
@@ -2407,7 +2459,6 @@ ipa_inline (void)
      inline functions and virtual functions so we really know what is called
      once.  */
   symtab->remove_unreachable_nodes (dump_file);
-  free (order);
 
   /* Inline functions with a property that after inlining into all callers the
      code size will shrink because the out-of-line copy is eliminated. 

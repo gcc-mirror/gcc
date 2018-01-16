@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
 This file is part of GCC.
@@ -1885,6 +1885,8 @@ static fmtresult
 format_floating (const directive &dir, tree arg)
 {
   HOST_WIDE_INT prec[] = { dir.prec[0], dir.prec[1] };
+  tree type = (dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
+	       ? long_double_type_node : double_type_node);
 
   /* For an indeterminate precision the lower bound must be assumed
      to be zero.  */
@@ -1892,10 +1894,6 @@ format_floating (const directive &dir, tree arg)
     {
       /* Get the number of fractional decimal digits needed to represent
 	 the argument without a loss of accuracy.  */
-      tree type = arg ? TREE_TYPE (arg) :
-	(dir.modifier == FMT_LEN_L || dir.modifier == FMT_LEN_ll
-	 ? long_double_type_node : double_type_node);
-
       unsigned fmtprec
 	= REAL_MODE_FORMAT (TYPE_MODE (type))->p;
 
@@ -1946,7 +1944,9 @@ format_floating (const directive &dir, tree arg)
 	}
     }
 
-  if (!arg || TREE_CODE (arg) != REAL_CST)
+  if (!arg
+      || TREE_CODE (arg) != REAL_CST
+      || !useless_type_conversion_p (type, TREE_TYPE (arg)))
     return format_floating (dir, prec);
 
   /* The minimum and maximum number of bytes produced by the directive.  */
@@ -2466,7 +2466,8 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
 	  /* For plain character directives (i.e., the format string itself)
 	     but not others, point the caret at the first character that's
 	     past the end of the destination.  */
-	  dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+	  if (navail < dir.len)
+	    dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
 	}
 
       if (*dir.beg == '\0')
@@ -2594,7 +2595,8 @@ maybe_warn (substring_loc &dirloc, location_t argloc,
       /* For plain character directives (i.e., the format string itself)
 	 but not others, point the caret at the first character that's
 	 past the end of the destination.  */
-      dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
+      if (navail < dir.len)
+	dirloc.set_caret_index (dirloc.get_caret_idx () + navail);
     }
 
   if (*dir.beg == '\0')
@@ -2854,7 +2856,7 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   if (!warned
       /* Only warn at level 2.  */
-      && 1 < warn_level
+      && warn_level > 1
       && (!minunder4k
 	  || (!maxunder4k && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
@@ -2902,7 +2904,7 @@ format_directive (const sprintf_dom_walker::call_info &info,
       /* Warn for the likely output size at level 1.  */
       && (likelyximax
 	  /* But only warn for the maximum at level 2.  */
-	  || (1 < warn_level
+	  || (warn_level > 1
 	      && maxximax
 	      && fmtres.range.max < HOST_WIDE_INT_MAX)))
     {
@@ -2933,13 +2935,15 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   if (warned && fmtres.range.min < fmtres.range.likely
       && fmtres.range.likely < fmtres.range.max)
-    {
-      inform (info.fmtloc,
-	      (1 == fmtres.range.likely
-	       ? G_("assuming directive output of %wu byte")
-	       : G_("assuming directive output of %wu bytes")),
+    /* Some languages have special plural rules even for large values,
+       but it is periodic with period of 10, 100, 1000 etc.  */
+    inform_n (info.fmtloc,
+	      fmtres.range.likely > INT_MAX
+	      ? (fmtres.range.likely % 1000000) + 1000000
+	      : fmtres.range.likely,
+	      "assuming directive output of %wu byte",
+	      "assuming directive output of %wu bytes",
 	      fmtres.range.likely);
-    }
 
   if (warned && fmtres.argmin)
     {
@@ -2991,16 +2995,16 @@ format_directive (const sprintf_dom_walker::call_info &info,
 
   if (dump_file && *dir.beg)
     {
-      fprintf (dump_file, "    Result: %lli, %lli, %lli, %lli "
-	       "(%lli, %lli, %lli, %lli)\n",
-	       (long long)fmtres.range.min,
-	       (long long)fmtres.range.likely,
-	       (long long)fmtres.range.max,
-	       (long long)fmtres.range.unlikely,
-	       (long long)res->range.min,
-	       (long long)res->range.likely,
-	       (long long)res->range.max,
-	       (long long)res->range.unlikely);
+      fprintf (dump_file,
+	       "    Result: "
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC ", "
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC " ("
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC ", "
+	       HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC ")\n",
+	       fmtres.range.min, fmtres.range.likely,
+	       fmtres.range.max, fmtres.range.unlikely,
+	       res->range.min, res->range.likely,
+	       res->range.max, res->range.unlikely);
     }
 
   return true;
@@ -3031,11 +3035,12 @@ parse_directive (sprintf_dom_walker::call_info &info,
 
       if (dump_file)
 	{
-	  fprintf (dump_file, "  Directive %u at offset %llu: \"%.*s\", "
-		   "length = %llu\n",
+	  fprintf (dump_file, "  Directive %u at offset "
+		   HOST_WIDE_INT_PRINT_UNSIGNED ": \"%.*s\", "
+		   "length = " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 		   dir.dirno,
-		   (unsigned long long)(size_t)(dir.beg - info.fmtstr),
-		   (int)dir.len, dir.beg, (unsigned long long)dir.len);
+		   (unsigned HOST_WIDE_INT)(size_t)(dir.beg - info.fmtstr),
+		   (int)dir.len, dir.beg, (unsigned HOST_WIDE_INT) dir.len);
 	}
 
       return len - !*str;
@@ -3407,25 +3412,34 @@ parse_directive (sprintf_dom_walker::call_info &info,
 
   if (dump_file)
     {
-      fprintf (dump_file, "  Directive %u at offset %llu: \"%.*s\"",
-	       dir.dirno, (unsigned long long)(size_t)(dir.beg - info.fmtstr),
+      fprintf (dump_file,
+	       "  Directive %u at offset " HOST_WIDE_INT_PRINT_UNSIGNED
+	       ": \"%.*s\"",
+	       dir.dirno,
+	       (unsigned HOST_WIDE_INT)(size_t)(dir.beg - info.fmtstr),
 	       (int)dir.len, dir.beg);
       if (star_width)
 	{
 	  if (dir.width[0] == dir.width[1])
-	    fprintf (dump_file, ", width = %lli", (long long)dir.width[0]);
+	    fprintf (dump_file, ", width = " HOST_WIDE_INT_PRINT_DEC,
+		     dir.width[0]);
 	  else
-	    fprintf (dump_file, ", width in range [%lli, %lli]",
-		     (long long)dir.width[0], (long long)dir.width[1]);
+	    fprintf (dump_file,
+		     ", width in range [" HOST_WIDE_INT_PRINT_DEC
+		     ", " HOST_WIDE_INT_PRINT_DEC "]",
+		     dir.width[0], dir.width[1]);
 	}
 
       if (star_precision)
 	{
 	  if (dir.prec[0] == dir.prec[1])
-	    fprintf (dump_file, ", precision = %lli", (long long)dir.prec[0]);
+	    fprintf (dump_file, ", precision = " HOST_WIDE_INT_PRINT_DEC,
+		     dir.prec[0]);
 	  else
-	    fprintf (dump_file, ", precision in range [%lli, %lli]",
-		     (long long)dir.prec[0], (long long)dir.prec[1]);
+	    fprintf (dump_file,
+		     ", precision in range [" HOST_WIDE_INT_PRINT_DEC
+		     HOST_WIDE_INT_PRINT_DEC "]",
+		     dir.prec[0], dir.prec[1]);
 	}
       fputc ('\n', dump_file);
     }
@@ -3451,8 +3465,10 @@ sprintf_dom_walker::compute_format_length (call_info &info,
 	       LOCATION_FILE (callloc), LOCATION_LINE (callloc));
       print_generic_expr (dump_file, info.func, dump_flags);
 
-      fprintf (dump_file, ": objsize = %llu, fmtstr = \"%s\"\n",
-	       (unsigned long long)info.objsize, info.fmtstr);
+      fprintf (dump_file,
+	       ": objsize = " HOST_WIDE_INT_PRINT_UNSIGNED
+	       ", fmtstr = \"%s\"\n",
+	       info.objsize, info.fmtstr);
     }
 
   /* Reset the minimum and maximum byte counters.  */
@@ -3678,13 +3694,14 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	  const char *what = setrange ? "Setting" : "Discarding";
 	  if (retval[0] != retval[1])
 	    fprintf (dump_file,
-		     "  %s %s-bounds return value range [%llu, %llu].\n",
-		     what, inbounds,
-		     (unsigned long long)retval[0],
-		     (unsigned long long)retval[1]);
+		     "  %s %s-bounds return value range ["
+		     HOST_WIDE_INT_PRINT_UNSIGNED ", "
+		     HOST_WIDE_INT_PRINT_UNSIGNED "].\n",
+		     what, inbounds, retval[0], retval[1]);
 	  else
-	    fprintf (dump_file, "  %s %s-bounds return value %llu.\n",
-		     what, inbounds, (unsigned long long)retval[0]);
+	    fprintf (dump_file, "  %s %s-bounds return value "
+		     HOST_WIDE_INT_PRINT_UNSIGNED ".\n",
+		     what, inbounds, retval[0]);
 	}
     }
 

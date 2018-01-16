@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3281,72 +3281,200 @@ package body Sem_Util is
    -----------------------------
 
    procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id) is
+      function Is_Enclosing_Package_Body
+        (Body_Decl : Node_Id;
+         Obj_Id    : Entity_Id) return Boolean;
+      pragma Inline (Is_Enclosing_Package_Body);
+      --  Determine whether package body Body_Decl or its corresponding spec
+      --  immediately encloses the declaration of object Obj_Id.
+
+      function Is_Internal_Declaration_Or_Body
+        (Decl : Node_Id) return Boolean;
+      pragma Inline (Is_Internal_Declaration_Or_Body);
+      --  Determine whether declaration or body denoted by Decl is internal
+
+      function Is_Single_Declaration_Or_Body
+        (Decl     : Node_Id;
+         Conc_Typ : Entity_Id) return Boolean;
+      pragma Inline (Is_Single_Declaration_Or_Body);
+      --  Determine whether protected/task declaration or body denoted by Decl
+      --  belongs to single concurrent type Conc_Typ.
+
+      function Is_Single_Task_Pragma
+        (Prag     : Node_Id;
+         Task_Typ : Entity_Id) return Boolean;
+      pragma Inline (Is_Single_Task_Pragma);
+      --  Determine whether pragma Prag belongs to single task type Task_Typ
+
+      -------------------------------
+      -- Is_Enclosing_Package_Body --
+      -------------------------------
+
+      function Is_Enclosing_Package_Body
+        (Body_Decl : Node_Id;
+         Obj_Id    : Entity_Id) return Boolean
+      is
+         Obj_Context : Node_Id;
+
+      begin
+         --  Find the context of the object declaration
+
+         Obj_Context := Parent (Declaration_Node (Obj_Id));
+
+         if Nkind (Obj_Context) = N_Package_Specification then
+            Obj_Context := Parent (Obj_Context);
+         end if;
+
+         --  The object appears immediately within the package body
+
+         if Obj_Context = Body_Decl then
+            return True;
+
+         --  The object appears immediately within the corresponding spec
+
+         elsif Nkind (Obj_Context) = N_Package_Declaration
+           and then Unit_Declaration_Node (Corresponding_Spec (Body_Decl)) =
+                      Obj_Context
+         then
+            return True;
+         end if;
+
+         return False;
+      end Is_Enclosing_Package_Body;
+
+      -------------------------------------
+      -- Is_Internal_Declaration_Or_Body --
+      -------------------------------------
+
+      function Is_Internal_Declaration_Or_Body
+        (Decl : Node_Id) return Boolean
+      is
+      begin
+         if Comes_From_Source (Decl) then
+            return False;
+
+         --  A body generated for an expression function which has not been
+         --  inserted into the tree yet (In_Spec_Expression is True) is not
+         --  considered internal.
+
+         elsif Nkind (Decl) = N_Subprogram_Body
+           and then Was_Expression_Function (Decl)
+           and then not In_Spec_Expression
+         then
+            return False;
+         end if;
+
+         return True;
+      end Is_Internal_Declaration_Or_Body;
+
+      -----------------------------------
+      -- Is_Single_Declaration_Or_Body --
+      -----------------------------------
+
+      function Is_Single_Declaration_Or_Body
+        (Decl     : Node_Id;
+         Conc_Typ : Entity_Id) return Boolean
+      is
+         Spec_Id : constant Entity_Id := Unique_Defining_Entity (Decl);
+
+      begin
+         return
+           Present (Anonymous_Object (Spec_Id))
+             and then Anonymous_Object (Spec_Id) = Conc_Typ;
+      end Is_Single_Declaration_Or_Body;
+
+      ---------------------------
+      -- Is_Single_Task_Pragma --
+      ---------------------------
+
+      function Is_Single_Task_Pragma
+        (Prag     : Node_Id;
+         Task_Typ : Entity_Id) return Boolean
+      is
+         Decl : constant Node_Id := Find_Related_Declaration_Or_Body (Prag);
+
+      begin
+         --  To qualify, the pragma must be associated with single task type
+         --  Task_Typ.
+
+         return
+           Is_Single_Task_Object (Task_Typ)
+             and then Nkind (Decl) = N_Object_Declaration
+             and then Defining_Entity (Decl) = Task_Typ;
+      end Is_Single_Task_Pragma;
+
+      --  Local variables
+
       Conc_Obj : constant Entity_Id := Encapsulating_State (Var_Id);
-      Decl     : Node_Id;
-      OK_Use   : Boolean := False;
       Par      : Node_Id;
       Prag_Nam : Name_Id;
-      Spec_Id  : Entity_Id;
+      Prev     : Node_Id;
+
+   --  Start of processing for Check_Part_Of_Reference
 
    begin
+      --  Nothing to do when the variable was recorded, but did not become a
+      --  constituent of a single concurrent type.
+
+      if No (Conc_Obj) then
+         return;
+      end if;
+
       --  Traverse the parent chain looking for a suitable context for the
       --  reference to the concurrent constituent.
 
-      Par := Parent (Ref);
+      Prev := Ref;
+      Par  := Parent (Prev);
       while Present (Par) loop
          if Nkind (Par) = N_Pragma then
             Prag_Nam := Pragma_Name (Par);
 
             --  A concurrent constituent is allowed to appear in pragmas
             --  Initial_Condition and Initializes as this is part of the
-            --  elaboration checks for the constituent (SPARK RM 9.3).
+            --  elaboration checks for the constituent (SPARK RM 9(3)).
 
             if Nam_In (Prag_Nam, Name_Initial_Condition, Name_Initializes) then
-               OK_Use := True;
-               exit;
+               return;
 
             --  When the reference appears within pragma Depends or Global,
             --  check whether the pragma applies to a single task type. Note
-            --  that the pragma is not encapsulated by the type definition,
+            --  that the pragma may not encapsulated by the type definition,
             --  but this is still a valid context.
 
-            elsif Nam_In (Prag_Nam, Name_Depends, Name_Global) then
-               Decl := Find_Related_Declaration_Or_Body (Par);
-
-               if Nkind (Decl) = N_Object_Declaration
-                 and then Defining_Entity (Decl) = Conc_Obj
-               then
-                  OK_Use := True;
-                  exit;
-               end if;
+            elsif Nam_In (Prag_Nam, Name_Depends, Name_Global)
+              and then Is_Single_Task_Pragma (Par, Conc_Obj)
+            then
+               return;
             end if;
 
-         --  The reference appears somewhere in the definition of the single
-         --  protected/task type (SPARK RM 9.3).
+         --  The reference appears somewhere in the definition of a single
+         --  concurrent type (SPARK RM 9(3)).
 
          elsif Nkind_In (Par, N_Single_Protected_Declaration,
                               N_Single_Task_Declaration)
            and then Defining_Entity (Par) = Conc_Obj
          then
-            OK_Use := True;
-            exit;
+            return;
 
-         --  The reference appears within the expanded declaration or the body
-         --  of the single protected/task type (SPARK RM 9.3).
+         --  The reference appears within the declaration or body of a single
+         --  concurrent type (SPARK RM 9(3)).
 
          elsif Nkind_In (Par, N_Protected_Body,
                               N_Protected_Type_Declaration,
                               N_Task_Body,
                               N_Task_Type_Declaration)
+           and then Is_Single_Declaration_Or_Body (Par, Conc_Obj)
          then
-            Spec_Id := Unique_Defining_Entity (Par);
+            return;
 
-            if Present (Anonymous_Object (Spec_Id))
-              and then Anonymous_Object (Spec_Id) = Conc_Obj
-            then
-               OK_Use := True;
-               exit;
-            end if;
+         --  The reference appears within the statement list of the object's
+         --  immediately enclosing package (SPARK RM 9(3)).
+
+         elsif Nkind (Par) = N_Package_Body
+           and then Nkind (Prev) = N_Handled_Sequence_Of_Statements
+           and then Is_Enclosing_Package_Body (Par, Var_Id)
+         then
+            return;
 
          --  The reference has been relocated within an internally generated
          --  package or subprogram. Assume that the reference is legal as the
@@ -3357,25 +3485,9 @@ package body Sem_Util is
                               N_Package_Declaration,
                               N_Subprogram_Body,
                               N_Subprogram_Declaration)
-           and then not Comes_From_Source (Par)
+           and then Is_Internal_Declaration_Or_Body (Par)
          then
-            --  Continue to examine the context if the reference appears in a
-            --  subprogram body which was previously an expression function,
-            --  unless this is during preanalysis (when In_Spec_Expression is
-            --  True), as the body may not yet be inserted in the tree.
-
-            if Nkind (Par) = N_Subprogram_Body
-              and then Was_Expression_Function (Par)
-              and then not In_Spec_Expression
-            then
-               null;
-
-            --  Otherwise the reference is legal
-
-            else
-               OK_Use := True;
-               exit;
-            end if;
+            return;
 
          --  The reference has been relocated to an inlined body for GNATprove.
          --  Assume that the reference is legal as the real check was already
@@ -3385,30 +3497,27 @@ package body Sem_Util is
            and then Nkind (Par) = N_Subprogram_Body
            and then Chars (Defining_Entity (Par)) = Name_uParent
          then
-            OK_Use := True;
-            exit;
+            return;
          end if;
 
-         Par := Parent (Par);
+         Prev := Par;
+         Par  := Parent (Prev);
       end loop;
 
-      --  The reference is illegal as it appears outside the definition or
-      --  body of the single protected/task type.
+      --  At this point it is known that the reference does not appear within a
+      --  legal context.
 
-      if not OK_Use then
+      Error_Msg_NE
+        ("reference to variable & cannot appear in this context", Ref, Var_Id);
+      Error_Msg_Name_1 := Chars (Var_Id);
+
+      if Is_Single_Protected_Object (Conc_Obj) then
          Error_Msg_NE
-           ("reference to variable & cannot appear in this context",
-            Ref, Var_Id);
-         Error_Msg_Name_1 := Chars (Var_Id);
+           ("\% is constituent of single protected type &", Ref, Conc_Obj);
 
-         if Is_Single_Protected_Object (Conc_Obj) then
-            Error_Msg_NE
-              ("\% is constituent of single protected type &", Ref, Conc_Obj);
-
-         else
-            Error_Msg_NE
-              ("\% is constituent of single task type &", Ref, Conc_Obj);
-         end if;
+      else
+         Error_Msg_NE
+           ("\% is constituent of single task type &", Ref, Conc_Obj);
       end if;
    end Check_Part_Of_Reference;
 
@@ -5295,209 +5404,6 @@ package body Sem_Util is
          Set_Has_Delayed_Freeze (New_Ent);
       end if;
    end Conditional_Delay;
-
-   ----------------------------
-   -- Contains_Refined_State --
-   ----------------------------
-
-   function Contains_Refined_State (Prag : Node_Id) return Boolean is
-      function Has_State_In_Dependency (List : Node_Id) return Boolean;
-      --  Determine whether a dependency list mentions a state with a visible
-      --  refinement.
-
-      function Has_State_In_Global (List : Node_Id) return Boolean;
-      --  Determine whether a global list mentions a state with a visible
-      --  refinement.
-
-      function Is_Refined_State (Item : Node_Id) return Boolean;
-      --  Determine whether Item is a reference to an abstract state with a
-      --  visible refinement.
-
-      -----------------------------
-      -- Has_State_In_Dependency --
-      -----------------------------
-
-      function Has_State_In_Dependency (List : Node_Id) return Boolean is
-         Clause : Node_Id;
-         Output : Node_Id;
-
-      begin
-         --  A null dependency list does not mention any states
-
-         if Nkind (List) = N_Null then
-            return False;
-
-         --  Dependency clauses appear as component associations of an
-         --  aggregate.
-
-         elsif Nkind (List) = N_Aggregate
-           and then Present (Component_Associations (List))
-         then
-            Clause := First (Component_Associations (List));
-            while Present (Clause) loop
-
-               --  Inspect the outputs of a dependency clause
-
-               Output := First (Choices (Clause));
-               while Present (Output) loop
-                  if Is_Refined_State (Output) then
-                     return True;
-                  end if;
-
-                  Next (Output);
-               end loop;
-
-               --  Inspect the outputs of a dependency clause
-
-               if Is_Refined_State (Expression (Clause)) then
-                  return True;
-               end if;
-
-               Next (Clause);
-            end loop;
-
-            --  If we get here, then none of the dependency clauses mention a
-            --  state with visible refinement.
-
-            return False;
-
-         --  An illegal pragma managed to sneak in
-
-         else
-            raise Program_Error;
-         end if;
-      end Has_State_In_Dependency;
-
-      -------------------------
-      -- Has_State_In_Global --
-      -------------------------
-
-      function Has_State_In_Global (List : Node_Id) return Boolean is
-         Item : Node_Id;
-
-      begin
-         --  A null global list does not mention any states
-
-         if Nkind (List) = N_Null then
-            return False;
-
-         --  Simple global list or moded global list declaration
-
-         elsif Nkind (List) = N_Aggregate then
-
-            --  The declaration of a simple global list appear as a collection
-            --  of expressions.
-
-            if Present (Expressions (List)) then
-               Item := First (Expressions (List));
-               while Present (Item) loop
-                  if Is_Refined_State (Item) then
-                     return True;
-                  end if;
-
-                  Next (Item);
-               end loop;
-
-            --  The declaration of a moded global list appears as a collection
-            --  of component associations where individual choices denote
-            --  modes.
-
-            else
-               Item := First (Component_Associations (List));
-               while Present (Item) loop
-                  if Has_State_In_Global (Expression (Item)) then
-                     return True;
-                  end if;
-
-                  Next (Item);
-               end loop;
-            end if;
-
-            --  If we get here, then the simple/moded global list did not
-            --  mention any states with a visible refinement.
-
-            return False;
-
-         --  Single global item declaration
-
-         elsif Is_Entity_Name (List) then
-            return Is_Refined_State (List);
-
-         --  An illegal pragma managed to sneak in
-
-         else
-            raise Program_Error;
-         end if;
-      end Has_State_In_Global;
-
-      ----------------------
-      -- Is_Refined_State --
-      ----------------------
-
-      function Is_Refined_State (Item : Node_Id) return Boolean is
-         Elmt    : Node_Id;
-         Item_Id : Entity_Id;
-
-      begin
-         if Nkind (Item) = N_Null then
-            return False;
-
-         --  States cannot be subject to attribute 'Result. This case arises
-         --  in dependency relations.
-
-         elsif Nkind (Item) = N_Attribute_Reference
-           and then Attribute_Name (Item) = Name_Result
-         then
-            return False;
-
-         --  Multiple items appear as an aggregate. This case arises in
-         --  dependency relations.
-
-         elsif Nkind (Item) = N_Aggregate
-           and then Present (Expressions (Item))
-         then
-            Elmt := First (Expressions (Item));
-            while Present (Elmt) loop
-               if Is_Refined_State (Elmt) then
-                  return True;
-               end if;
-
-               Next (Elmt);
-            end loop;
-
-            --  If we get here, then none of the inputs or outputs reference a
-            --  state with visible refinement.
-
-            return False;
-
-         --  Single item
-
-         else
-            Item_Id := Entity_Of (Item);
-
-            return
-              Present (Item_Id)
-                and then Ekind (Item_Id) = E_Abstract_State
-                and then Has_Visible_Refinement (Item_Id);
-         end if;
-      end Is_Refined_State;
-
-      --  Local variables
-
-      Arg : constant Node_Id :=
-              Get_Pragma_Arg (First (Pragma_Argument_Associations (Prag)));
-      Nam : constant Name_Id := Pragma_Name (Prag);
-
-   --  Start of processing for Contains_Refined_State
-
-   begin
-      if Nam = Name_Depends then
-         return Has_State_In_Dependency (Arg);
-
-      else pragma Assert (Nam = Name_Global);
-         return Has_State_In_Global (Arg);
-      end if;
-   end Contains_Refined_State;
 
    -------------------------
    -- Copy_Component_List --
@@ -7941,8 +7847,7 @@ package body Sem_Util is
    --------------------------
 
    function Find_Enclosing_Scope (N : Node_Id) return Entity_Id is
-      Par     : Node_Id;
-      Spec_Id : Entity_Id;
+      Par : Node_Id;
 
    begin
       --  Examine the parent chain looking for a construct which defines a
@@ -7971,7 +7876,8 @@ package body Sem_Util is
                return Defining_Entity (Par);
 
             --  The construct denotes a body, the proper scope is the entity of
-            --  the corresponding spec.
+            --  the corresponding spec or that of the body if the body does not
+            --  complete a previous declaration.
 
             when N_Entry_Body
                | N_Package_Body
@@ -7979,22 +7885,7 @@ package body Sem_Util is
                | N_Subprogram_Body
                | N_Task_Body
             =>
-               Spec_Id := Corresponding_Spec (Par);
-
-               --  The defining entity of a stand-alone subprogram body defines
-               --  a scope.
-
-               if Nkind (Par) = N_Subprogram_Body and then No (Spec_Id) then
-                  return Defining_Entity (Par);
-
-               --  Otherwise there should be corresponding spec which defines a
-               --  scope.
-
-               else
-                  pragma Assert (Present (Spec_Id));
-
-                  return Spec_Id;
-               end if;
+               return Unique_Defining_Entity (Par);
 
             --  Special cases
 
@@ -9086,7 +8977,8 @@ package body Sem_Util is
 
          Lit := First_Literal (Btyp);
 
-         --  Position in the enumeration type starts at 0.
+         --  Position in the enumeration type starts at 0
+
          if UI_To_Int (Pos) < 0 then
             raise Constraint_Error;
          end if;
@@ -10586,19 +10478,16 @@ package body Sem_Util is
 
    function Has_Full_Default_Initialization (Typ : Entity_Id) return Boolean is
       Comp : Entity_Id;
-      Prag : Node_Id;
 
    begin
-      --  A type subject to pragma Default_Initial_Condition is fully default
-      --  initialized when the pragma appears with a non-null argument. Since
-      --  any type may act as the full view of a private type, this check must
-      --  be performed prior to the specialized tests below.
+      --  A type subject to pragma Default_Initial_Condition may be fully
+      --  default initialized depending on inheritance and the argument of
+      --  the pragma. Since any type may act as the full view of a private
+      --  type, this check must be performed prior to the specialized tests
+      --  below.
 
-      if Has_DIC (Typ) then
-         Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
-         pragma Assert (Present (Prag));
-
-         return Is_Verifiable_DIC_Pragma (Prag);
+      if Has_Fully_Default_Initializing_DIC_Pragma (Typ) then
+         return True;
       end if;
 
       --  A scalar type is fully default initialized if it is subject to aspect
@@ -10664,6 +10553,47 @@ package body Sem_Util is
          return False;
       end if;
    end Has_Full_Default_Initialization;
+
+   -----------------------------------------------
+   -- Has_Fully_Default_Initializing_DIC_Pragma --
+   -----------------------------------------------
+
+   function Has_Fully_Default_Initializing_DIC_Pragma
+     (Typ : Entity_Id) return Boolean
+   is
+      Args : List_Id;
+      Prag : Node_Id;
+
+   begin
+      --  A type that inherits pragma Default_Initial_Condition from a parent
+      --  type is automatically fully default initialized.
+
+      if Has_Inherited_DIC (Typ) then
+         return True;
+
+      --  Otherwise the type is fully default initialized only when the pragma
+      --  appears without an argument, or the argument is non-null.
+
+      elsif Has_Own_DIC (Typ) then
+         Prag := Get_Pragma (Typ, Pragma_Default_Initial_Condition);
+         pragma Assert (Present (Prag));
+         Args := Pragma_Argument_Associations (Prag);
+
+         --  The pragma appears without an argument in which case it defaults
+         --  to True.
+
+         if No (Args) then
+            return True;
+
+         --  The pragma appears with a non-null expression
+
+         elsif Nkind (Get_Pragma_Arg (First (Args))) /= N_Null then
+            return True;
+         end if;
+      end if;
+
+      return False;
+   end Has_Fully_Default_Initializing_DIC_Pragma;
 
    --------------------
    -- Has_Infinities --
@@ -10820,6 +10750,30 @@ package body Sem_Util is
         Present (Constits)
           and then Nkind (Node (First_Elmt (Constits))) /= N_Null;
    end Has_Non_Null_Refinement;
+
+   -----------------------------
+   -- Has_Non_Null_Statements --
+   -----------------------------
+
+   function Has_Non_Null_Statements (L : List_Id) return Boolean is
+      Node : Node_Id;
+
+   begin
+      if Is_Non_Empty_List (L) then
+         Node := First (L);
+
+         loop
+            if Nkind (Node) /= N_Null_Statement then
+               return True;
+            end if;
+
+            Next (Node);
+            exit when Node = Empty;
+         end loop;
+      end if;
+
+      return False;
+   end Has_Non_Null_Statements;
 
    ----------------------------------
    -- Has_Non_Trivial_Precondition --
@@ -12224,7 +12178,8 @@ package body Sem_Util is
    ---------------------------------------
 
    function Incomplete_View_From_Limited_With
-     (Typ : Entity_Id) return Entity_Id is
+     (Typ : Entity_Id) return Entity_Id
+   is
    begin
       --  It might make sense to make this an attribute in Einfo, and set it
       --  in Sem_Ch10 in Build_Shadow_Entity. However, we're running short on
@@ -13363,8 +13318,8 @@ package body Sem_Util is
 
    begin
       --  Simplest case: entity is a concurrent type and we are currently
-      --  inside the body. This will eventually be expanded into a
-      --  call to Self (for tasks) or _object (for protected objects).
+      --  inside the body. This will eventually be expanded into a call to
+      --  Self (for tasks) or _object (for protected objects).
 
       if Is_Concurrent_Type (Typ) and then In_Open_Scopes (Typ) then
          return True;
@@ -13395,8 +13350,7 @@ package body Sem_Util is
                return True;
 
             elsif Nkind (P) = N_Pragma
-              and then
-                Get_Pragma_Id (P) = Pragma_Predicate_Failure
+              and then Get_Pragma_Id (P) = Pragma_Predicate_Failure
             then
                return True;
             end if;
@@ -13414,40 +13368,113 @@ package body Sem_Util is
    -- Is_Declaration --
    --------------------
 
-   function Is_Declaration (N : Node_Id) return Boolean is
-   begin
-      return
-        Is_Declaration_Other_Than_Renaming (N)
-          or else Is_Renaming_Declaration (N);
-   end Is_Declaration;
-
-   ----------------------------------------
-   -- Is_Declaration_Other_Than_Renaming --
-   ----------------------------------------
-
-   function Is_Declaration_Other_Than_Renaming (N : Node_Id) return Boolean is
+   function Is_Declaration
+     (N                : Node_Id;
+      Body_OK          : Boolean := True;
+      Concurrent_OK    : Boolean := True;
+      Formal_OK        : Boolean := True;
+      Generic_OK       : Boolean := True;
+      Instantiation_OK : Boolean := True;
+      Renaming_OK      : Boolean := True;
+      Stub_OK          : Boolean := True;
+      Subprogram_OK    : Boolean := True;
+      Type_OK          : Boolean := True) return Boolean
+   is
    begin
       case Nkind (N) is
-         when N_Abstract_Subprogram_Declaration
-            | N_Exception_Declaration
-            | N_Expression_Function
-            | N_Full_Type_Declaration
-            | N_Generic_Package_Declaration
+
+         --  Body declarations
+
+         when N_Proper_Body =>
+            return Body_OK;
+
+         --  Concurrent type declarations
+
+         when N_Protected_Type_Declaration
+            | N_Single_Protected_Declaration
+            | N_Single_Task_Declaration
+            | N_Task_Type_Declaration
+         =>
+            return Concurrent_OK or Type_OK;
+
+         --  Formal declarations
+
+         when N_Formal_Abstract_Subprogram_Declaration
+            | N_Formal_Concrete_Subprogram_Declaration
+            | N_Formal_Object_Declaration
+            | N_Formal_Package_Declaration
+            | N_Formal_Type_Declaration
+         =>
+            return Formal_OK;
+
+         --  Generic declarations
+
+         when N_Generic_Package_Declaration
             | N_Generic_Subprogram_Declaration
+         =>
+            return Generic_OK;
+
+         --  Generic instantiations
+
+         when N_Function_Instantiation
+            | N_Package_Instantiation
+            | N_Procedure_Instantiation
+         =>
+            return Instantiation_OK;
+
+         --  Generic renaming declarations
+
+         when N_Generic_Renaming_Declaration =>
+            return Generic_OK or Renaming_OK;
+
+         --  Renaming declarations
+
+         when N_Exception_Renaming_Declaration
+            | N_Object_Renaming_Declaration
+            | N_Package_Renaming_Declaration
+            | N_Subprogram_Renaming_Declaration
+         =>
+            return Renaming_OK;
+
+         --  Stub declarations
+
+         when N_Body_Stub =>
+            return Stub_OK;
+
+         --  Subprogram declarations
+
+         when N_Abstract_Subprogram_Declaration
+            | N_Entry_Declaration
+            | N_Expression_Function
+            | N_Subprogram_Declaration
+         =>
+            return Subprogram_OK;
+
+         --  Type declarations
+
+         when N_Full_Type_Declaration
+            | N_Incomplete_Type_Declaration
+            | N_Private_Extension_Declaration
+            | N_Private_Type_Declaration
+            | N_Subtype_Declaration
+         =>
+            return Type_OK;
+
+         --  Miscellaneous
+
+         when N_Component_Declaration
+            | N_Exception_Declaration
+            | N_Implicit_Label_Declaration
             | N_Number_Declaration
             | N_Object_Declaration
             | N_Package_Declaration
-            | N_Private_Extension_Declaration
-            | N_Private_Type_Declaration
-            | N_Subprogram_Declaration
-            | N_Subtype_Declaration
          =>
             return True;
 
          when others =>
             return False;
       end case;
-   end Is_Declaration_Other_Than_Renaming;
+   end Is_Declaration;
 
    --------------------------------
    -- Is_Declared_Within_Variant --
@@ -15846,24 +15873,36 @@ package body Sem_Util is
 
    begin
       Expr := N;
-      Par  := Parent (N);
+      Par  := N;
 
       --  A postcondition whose expression is a short-circuit is broken down
       --  into individual aspects for better exception reporting. The original
       --  short-circuit expression is rewritten as the second operand, and an
       --  occurrence of 'Old in that operand is potentially unevaluated.
-      --  See Sem_ch13.adb for details of this transformation.
+      --  See sem_ch13.adb for details of this transformation. The reference
+      --  to 'Old may appear within an expression, so we must look for the
+      --  enclosing pragma argument in the tree that contains the reference.
 
-      if Nkind (Original_Node (Par)) = N_And_Then then
-         return True;
-      end if;
+      while Present (Par)
+        and then Nkind (Par) /= N_Pragma_Argument_Association
+      loop
+         if Nkind (Original_Node (Par)) = N_And_Then then
+            return True;
+         end if;
 
-      while not Nkind_In (Par, N_If_Expression,
+         Par := Parent (Par);
+      end loop;
+
+      --  Other cases; 'Old appears within other expression (not the top-level
+      --  conjunct in a postcondition) with a potentially unevaluated operand.
+
+      Par := Parent (Expr);
+      while not Nkind_In (Par, N_And_Then,
                                N_Case_Expression,
-                               N_And_Then,
-                               N_Or_Else,
+                               N_If_Expression,
                                N_In,
                                N_Not_In,
+                               N_Or_Else,
                                N_Quantified_Expression)
       loop
          Expr := Par;
@@ -17195,21 +17234,6 @@ package body Sem_Util is
       end if;
    end Is_Variable;
 
-   ------------------------------
-   -- Is_Verifiable_DIC_Pragma --
-   ------------------------------
-
-   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean is
-      Args : constant List_Id := Pragma_Argument_Associations (Prag);
-
-   begin
-      --  To qualify as verifiable, a DIC pragma must have a non-null argument
-
-      return
-        Present (Args)
-          and then Nkind (Get_Pragma_Arg (First (Args))) /= N_Null;
-   end Is_Verifiable_DIC_Pragma;
-
    ---------------------------
    -- Is_Visibly_Controlled --
    ---------------------------
@@ -18026,6 +18050,14 @@ package body Sem_Util is
    --  Start of processing for Mark_Elaboration_Attributes
 
    begin
+      --  Do not capture any elaboration-related attributes when switch -gnatH
+      --  (legacy elaboration checking mode enabled) is in effect because the
+      --  attributes are useless to the legacy model.
+
+      if Legacy_Elaboration_Checks then
+         return;
+      end if;
+
       if Nkind (N_Id) in N_Entity then
          Mark_Elaboration_Attributes_Id (N_Id);
       else
@@ -22273,7 +22305,7 @@ package body Sem_Util is
    begin
       --  The variable is a constituent of a single protected/task type. Such
       --  a variable acts as a component of the type and must appear within a
-      --  specific region (SPARK RM 9.3). Instead of recording the reference,
+      --  specific region (SPARK RM 9(3)). Instead of recording the reference,
       --  verify its legality now.
 
       if Present (Encap) and then Is_Single_Concurrent_Object (Encap) then
@@ -22397,11 +22429,13 @@ package body Sem_Util is
 
       else
          Prev_Id := Current_Entity (Id);
-         while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
-            Prev_Id := Homonym (Prev_Id);
-         end loop;
+         if Present (Prev_Id) then
+            while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
+               Prev_Id := Homonym (Prev_Id);
+            end loop;
 
-         Set_Homonym (Prev_Id, Homonym (Id));
+            Set_Homonym (Prev_Id, Homonym (Id));
+         end if;
       end if;
 
       --  Remove the entity from the scope entity chain. When the entity is
@@ -22421,7 +22455,9 @@ package body Sem_Util is
             Next_Entity (Prev_Id);
          end loop;
 
-         Set_Next_Entity (Prev_Id, Next_Entity (Id));
+         if Present (Prev_Id) then
+            Set_Next_Entity (Prev_Id, Next_Entity (Id));
+         end if;
       end if;
 
       --  Handle the case where the entity acts as the tail of the scope entity
@@ -23080,17 +23116,7 @@ package body Sem_Util is
         and then Is_Access_Subprogram_Type (Base_Type (E))
         and then Has_Foreign_Convention (E)
       then
-
-         --  A pragma Convention in an instance may apply to the subtype
-         --  created for a formal, in which case we have already verified
-         --  that conventions of actual and formal match and there is nothing
-         --  to flag on the subtype.
-
-         if In_Instance then
-            null;
-         else
-            Set_Can_Use_Internal_Rep (E, False);
-         end if;
+         Set_Can_Use_Internal_Rep (E, False);
       end if;
 
       --  If E is an object, including a component, and the type of E is an

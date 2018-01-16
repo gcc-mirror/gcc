@@ -1,5 +1,5 @@
 ;; Scheduling description for cell processor.
-;; Copyright (C) 2001-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2001-2018 Free Software Foundation, Inc.
 ;; Contributed by Sony Computer Entertainment, Inc.,
 
 
@@ -288,7 +288,7 @@
 ;; page 90, special cases for CR hazard, only one instr can access cr per cycle
 ;; if insn reads CR following a stwcx, pipeline stall till stwcx finish
 (define_insn_reservation "cell-crlogical" 1
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "cell"))
   "bru_cell+slot01")
 

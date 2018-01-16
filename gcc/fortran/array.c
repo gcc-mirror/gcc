@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2053,7 +2053,7 @@ got_charlen:
       gcc_assert (found_length != -1);
 
       /* Update the character length of the array constructor.  */
-      expr->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+      expr->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						NULL, found_length);
     }
   else
@@ -2137,6 +2137,7 @@ gfc_copy_iterator (gfc_iterator *src)
   dest->start = gfc_copy_expr (src->start);
   dest->end = gfc_copy_expr (src->end);
   dest->step = gfc_copy_expr (src->step);
+  dest->unroll = src->unroll;
 
   return dest;
 }

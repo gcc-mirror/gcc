@@ -1,5 +1,5 @@
 /* Miscellaneous stuff that doesn't fit anywhere else.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "gfortran.h"
 #include "spellcheck.h"
+#include "tree.h"
 
 
 /* Initialize a typespec to unknown.  */
@@ -155,7 +156,8 @@ gfc_typename (gfc_typespec *ts)
       sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
       break;
     case BT_CLASS:
-      ts = &ts->u.derived->components->ts;
+      if (ts->u.derived->components)
+	ts = &ts->u.derived->components->ts;
       if (ts->u.derived->attr.unlimited_polymorphic)
 	sprintf (buffer, "CLASS(*)");
       else
@@ -320,4 +322,24 @@ gfc_closest_fuzzy_match (const char *typo, char **candidates)
       XDELETEVEC (candidates);
     }
   return best;
+}
+
+/* Convert between GMP integers (mpz_t) and HOST_WIDE_INT.  */
+
+HOST_WIDE_INT
+gfc_mpz_get_hwi (mpz_t op)
+{
+  /* Using long_long_integer_type_node as that is the integer type
+     node that closest matches HOST_WIDE_INT; both are guaranteed to
+     be at least 64 bits.  */
+  const wide_int w = wi::from_mpz (long_long_integer_type_node, op, true);
+  return w.to_shwi ();
+}
+
+
+void
+gfc_mpz_set_hwi (mpz_t rop, const HOST_WIDE_INT op)
+{
+  const wide_int w = wi::shwi (op, HOST_BITS_PER_WIDE_INT);
+  wi::to_mpz (w, rop, SIGNED);
 }

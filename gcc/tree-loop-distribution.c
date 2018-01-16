@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -826,7 +826,7 @@ generate_loops_for_partition (struct loop *loop, partition *partition,
   /* Remove stmts not in the PARTITION bitmap.  */
   bbs = get_loop_body_in_dom_order (loop);
 
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     for (i = 0; i < loop->num_nodes; i++)
       {
 	basic_block bb = bbs[i];
@@ -944,13 +944,16 @@ const_with_all_bytes_same (tree val)
 	    return 0;
 	  break;
 	case VECTOR_CST:
-	  unsigned int j;
-	  for (j = 0; j < VECTOR_CST_NELTS (val); ++j)
-	    if (const_with_all_bytes_same (VECTOR_CST_ELT (val, j)))
-	      break;
-	  if (j == VECTOR_CST_NELTS (val))
-	    return 0;
-	  break;
+	  {
+	    unsigned int count = vector_cst_encoded_nelts (val);
+	    unsigned int j;
+	    for (j = 0; j < count; ++j)
+	      if (const_with_all_bytes_same (VECTOR_CST_ENCODED_ELT (val, j)))
+		break;
+	    if (j == count)
+	      return 0;
+	    break;
+	  }
 	default:
 	  break;
 	}
@@ -1510,10 +1513,16 @@ classify_builtin_st (loop_p loop, partition *partition, data_reference_p dr)
   if (!compute_access_range (loop, dr, &base, &size))
     return;
 
+  poly_uint64 base_offset;
+  unsigned HOST_WIDE_INT const_base_offset;
+  tree base_base = strip_offset (base, &base_offset);
+  if (!base_offset.is_constant (&const_base_offset))
+    return;
+
   struct builtin_info *builtin;
   builtin = alloc_builtin (dr, NULL, base, NULL_TREE, size);
-  builtin->dst_base_base = strip_offset (builtin->dst_base,
-					 &builtin->dst_base_offset);
+  builtin->dst_base_base = base_base;
+  builtin->dst_base_offset = const_base_offset;
   partition->builtin = builtin;
   partition->kind = PKIND_MEMSET;
 }
@@ -2321,16 +2330,12 @@ break_alias_scc_partitions (struct graph *rdg,
 static tree
 data_ref_segment_size (struct data_reference *dr, tree niters)
 {
-  tree segment_length;
-
-  if (integer_zerop (DR_STEP (dr)))
-    segment_length = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
-  else
-    segment_length = size_binop (MULT_EXPR,
-				 fold_convert (sizetype, DR_STEP (dr)),
-				 fold_convert (sizetype, niters));
-
-  return segment_length;
+  niters = size_binop (MINUS_EXPR,
+		       fold_convert (sizetype, niters),
+		       size_one_node);
+  return size_binop (MULT_EXPR,
+		     fold_convert (sizetype, DR_STEP (dr)),
+		     fold_convert (sizetype, niters));
 }
 
 /* Return true if LOOP's latch is dominated by statement for data reference
@@ -2385,9 +2390,16 @@ compute_alias_check_pairs (struct loop *loop, vec<ddr_p> *alias_ddrs,
       else
 	seg_length_b = data_ref_segment_size (dr_b, niters);
 
+      unsigned HOST_WIDE_INT access_size_a
+	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a))));
+      unsigned HOST_WIDE_INT access_size_b
+	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_b))));
+      unsigned int align_a = TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_a)));
+      unsigned int align_b = TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_b)));
+
       dr_with_seg_len_pair_t dr_with_seg_len_pair
-	  (dr_with_seg_len (dr_a, seg_length_a),
-	   dr_with_seg_len (dr_b, seg_length_b));
+	(dr_with_seg_len (dr_a, seg_length_a, access_size_a, align_a),
+	 dr_with_seg_len (dr_b, seg_length_b, access_size_b, align_b));
 
       /* Canonicalize pairs by sorting the two DR members.  */
       if (comp_res > 0)
@@ -3094,7 +3106,7 @@ pass_loop_distribution::execute (function *fun)
 
   checking_verify_loop_structure ();
 
-  return 0;
+  return changed ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace

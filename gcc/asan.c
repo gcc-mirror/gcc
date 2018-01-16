@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -1228,6 +1228,11 @@ asan_function_start (void)
 static unsigned HOST_WIDE_INT
 shadow_mem_size (unsigned HOST_WIDE_INT size)
 {
+  /* It must be possible to align stack variables to granularity
+     of shadow memory.  */
+  gcc_assert (BITS_PER_UNIT
+	      * ASAN_SHADOW_GRANULARITY <= MAX_SUPPORTED_STACK_ALIGNMENT);
+
   return ROUND_UP (size, ASAN_SHADOW_GRANULARITY) / ASAN_SHADOW_GRANULARITY;
 }
 
@@ -1386,7 +1391,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   TREE_ASM_WRITTEN (id) = 1;
   emit_move_insn (mem, expand_normal (build_fold_addr_expr (decl)));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
-			      GEN_INT (ASAN_SHADOW_SHIFT),
+			      gen_int_shift_amount (Pmode, ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   shadow_base
     = plus_constant (Pmode, shadow_base,
@@ -1605,7 +1610,7 @@ is_odr_indicator (tree decl)
    ASAN_RED_ZONE_SIZE bytes.  */
 
 bool
-asan_protect_global (tree decl)
+asan_protect_global (tree decl, bool ignore_decl_rtl_set_p)
 {
   if (!ASAN_GLOBALS)
     return false;
@@ -1627,7 +1632,13 @@ asan_protect_global (tree decl)
       || DECL_THREAD_LOCAL_P (decl)
       /* Externs will be protected elsewhere.  */
       || DECL_EXTERNAL (decl)
-      || !DECL_RTL_SET_P (decl)
+      /* PR sanitizer/81697: For architectures that use section anchors first
+	 call to asan_protect_global may occur before DECL_RTL (decl) is set.
+	 We should ignore DECL_RTL_SET_P then, because otherwise the first call
+	 to asan_protect_global will return FALSE and the following calls on the
+	 same decl after setting DECL_RTL (decl) will return TRUE and we'll end
+	 up with inconsistency at runtime.  */
+      || (!DECL_RTL_SET_P (decl) && !ignore_decl_rtl_set_p)
       /* Comdat vars pose an ABI problem, we can't know if
 	 the var that is selected by the linker will have
 	 padding or not.  */
@@ -1645,20 +1656,25 @@ asan_protect_global (tree decl)
 	  && !section_sanitized_p (DECL_SECTION_NAME (decl)))
       || DECL_SIZE (decl) == 0
       || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT
+      || TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST
       || !valid_constant_size_p (DECL_SIZE_UNIT (decl))
       || DECL_ALIGN_UNIT (decl) > 2 * ASAN_RED_ZONE_SIZE
       || TREE_TYPE (decl) == ubsan_get_source_location_type ()
       || is_odr_indicator (decl))
     return false;
 
-  rtl = DECL_RTL (decl);
-  if (!MEM_P (rtl) || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF)
-    return false;
-  symbol = XEXP (rtl, 0);
+  if (!ignore_decl_rtl_set_p || DECL_RTL_SET_P (decl))
+    {
 
-  if (CONSTANT_POOL_ADDRESS_P (symbol)
-      || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
-    return false;
+      rtl = DECL_RTL (decl);
+      if (!MEM_P (rtl) || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF)
+	return false;
+      symbol = XEXP (rtl, 0);
+
+      if (CONSTANT_POOL_ADDRESS_P (symbol)
+	  || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
+	return false;
+    }
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return false;
@@ -2065,7 +2081,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   if (size_in_bytes <= 0)
     return;
 
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree offset;
   machine_mode mode;
   int unsignedp, reversep, volatilep = 0;
@@ -2083,19 +2099,19 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
       return;
     }
 
-  if (bitpos % BITS_PER_UNIT
-      || bitsize != size_in_bytes * BITS_PER_UNIT)
+  if (!multiple_p (bitpos, BITS_PER_UNIT)
+      || maybe_ne (bitsize, size_in_bytes * BITS_PER_UNIT))
     return;
 
   if (VAR_P (inner) && DECL_HARD_REGISTER (inner))
     return;
 
+  poly_int64 decl_size;
   if (VAR_P (inner)
       && offset == NULL_TREE
-      && bitpos >= 0
       && DECL_SIZE (inner)
-      && tree_fits_shwi_p (DECL_SIZE (inner))
-      && bitpos + bitsize <= tree_to_shwi (DECL_SIZE (inner)))
+      && poly_int_tree_p (DECL_SIZE (inner), &decl_size)
+      && known_subrange_p (bitpos, bitsize, 0, decl_size))
     {
       if (DECL_THREAD_LOCAL_P (inner))
 	return;

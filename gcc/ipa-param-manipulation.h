@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,7 +84,7 @@ struct ipa_parm_adjustment
 
   /* Offset into the original parameter (for the cases when the new parameter
      is a component of an original one).  */
-  HOST_WIDE_INT offset;
+  poly_int64_pod offset;
 
   /* Zero based index of the original parameter this one is based on.  */
   int base_index;

@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2639,6 +2639,64 @@ return_prediction (tree val, enum prediction *prediction)
   return PRED_NO_PREDICTION;
 }
 
+/* Return zero if phi result could have values other than -1, 0 or 1,
+   otherwise return a bitmask, with bits 0, 1 and 2 set if -1, 0 and 1
+   values are used or likely.  */
+
+static int
+zero_one_minusone (gphi *phi, int limit)
+{
+  int phi_num_args = gimple_phi_num_args (phi);
+  int ret = 0;
+  for (int i = 0; i < phi_num_args; i++)
+    {
+      tree t = PHI_ARG_DEF (phi, i);
+      if (TREE_CODE (t) != INTEGER_CST)
+	continue;
+      wide_int w = wi::to_wide (t);
+      if (w == -1)
+	ret |= 1;
+      else if (w == 0)
+	ret |= 2;
+      else if (w == 1)
+	ret |= 4;
+      else
+	return 0;
+    }
+  for (int i = 0; i < phi_num_args; i++)
+    {
+      tree t = PHI_ARG_DEF (phi, i);
+      if (TREE_CODE (t) == INTEGER_CST)
+	continue;
+      if (TREE_CODE (t) != SSA_NAME)
+	return 0;
+      gimple *g = SSA_NAME_DEF_STMT (t);
+      if (gimple_code (g) == GIMPLE_PHI && limit > 0)
+	if (int r = zero_one_minusone (as_a <gphi *> (g), limit - 1))
+	  {
+	    ret |= r;
+	    continue;
+	  }
+      if (!is_gimple_assign (g))
+	return 0;
+      if (gimple_assign_cast_p (g))
+	{
+	  tree rhs1 = gimple_assign_rhs1 (g);
+	  if (TREE_CODE (rhs1) != SSA_NAME
+	      || !INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+	      || TYPE_PRECISION (TREE_TYPE (rhs1)) != 1
+	      || !TYPE_UNSIGNED (TREE_TYPE (rhs1)))
+	    return 0;
+	  ret |= (2 | 4);
+	  continue;
+	}
+      if (TREE_CODE_CLASS (gimple_assign_rhs_code (g)) != tcc_comparison)
+	return 0;
+      ret |= (2 | 4);
+    }
+  return ret;
+}
+
 /* Find the basic block with return expression and look up for possible
    return value trying to apply RETURN_PREDICTION heuristics.  */
 static void
@@ -2675,6 +2733,19 @@ apply_return_prediction (void)
   phi = as_a <gphi *> (SSA_NAME_DEF_STMT (return_val));
   phi_num_args = gimple_phi_num_args (phi);
   pred = return_prediction (PHI_ARG_DEF (phi, 0), &direction);
+
+  /* Avoid the case where the function returns -1, 0 and 1 values and
+     nothing else.  Those could be qsort etc. comparison functions
+     where the negative return isn't less probable than positive.
+     For this require that the function returns at least -1 or 1
+     or -1 and a boolean value or comparison result, so that functions
+     returning just -1 and 0 are treated as if -1 represents error value.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (return_val))
+      && !TYPE_UNSIGNED (TREE_TYPE (return_val))
+      && TYPE_PRECISION (TREE_TYPE (return_val)) > 1)
+    if (int r = zero_one_minusone (phi, 3))
+      if ((r & (1 | 4)) == (1 | 4))
+	return;
 
   /* Avoid the degenerate case where all return values form the function
      belongs to same category (ie they are all positive constants)
@@ -3494,6 +3565,8 @@ determine_unlikely_bbs ()
   while (worklist.length () > 0)
     {
       bb = worklist.pop ();
+      if (bb->count == profile_count::zero ())
+	continue;
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  bool found = false;
@@ -3512,8 +3585,7 @@ determine_unlikely_bbs ()
 	  if (found)
 	    continue;
 	}
-      if (!(bb->count == profile_count::zero ())
-	  && (dump_file && (dump_flags & TDF_DETAILS)))
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Basic block %i is marked unlikely by backward prop\n",
 		 bb->index);
@@ -3523,6 +3595,7 @@ determine_unlikely_bbs ()
 	  {
 	    if (!(e->src->count == profile_count::zero ()))
 	      {
+		gcc_checking_assert (nsuccs[e->src->index] > 0);
 	        nsuccs[e->src->index]--;
 	        if (!nsuccs[e->src->index])
 		  worklist.safe_push (e->src);
@@ -3969,6 +4042,10 @@ force_edge_cold (edge e, bool impossible)
   edge e2;
   bool uninitialized_exit = false;
 
+  /* When branch probability guesses are not known, then do nothing.  */
+  if (!impossible && !e->count ().initialized_p ())
+    return;
+
   profile_probability goal = (impossible ? profile_probability::never ()
 			      : profile_probability::very_unlikely ());
 
@@ -3979,17 +4056,23 @@ force_edge_cold (edge e, bool impossible)
   FOR_EACH_EDGE (e2, ei, e->src->succs)
     if (e2 != e)
       {
+	if (e->flags & EDGE_FAKE)
+	  continue;
 	if (e2->count ().initialized_p ())
 	  count_sum += e2->count ();
-	else
-	  uninitialized_exit = true;
 	if (e2->probability.initialized_p ())
 	  prob_sum += e2->probability;
+	else 
+	  uninitialized_exit = true;
       }
 
+  /* If we are not guessing profiles but have some other edges out,
+     just assume the control flow goes elsewhere.  */
+  if (uninitialized_exit)
+    e->probability = goal;
   /* If there are other edges out of e->src, redistribute probabilitity
      there.  */
-  if (prob_sum > profile_probability::never ())
+  else if (prob_sum > profile_probability::never ())
     {
       if (!(e->probability < goal))
 	e->probability = goal;
@@ -4029,8 +4112,7 @@ force_edge_cold (edge e, bool impossible)
 	update_br_prob_note (e->src);
       if (e->src->count == profile_count::zero ())
 	return;
-      if (count_sum == profile_count::zero () && !uninitialized_exit
-	  && impossible)
+      if (count_sum == profile_count::zero () && impossible)
 	{
 	  bool found = false;
 	  if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))

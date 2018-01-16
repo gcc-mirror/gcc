@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -366,10 +366,13 @@ package body Sem_Ch6 is
 
             procedure Check_And_Freeze_Type (Typ : Entity_Id) is
             begin
-               --  Skip Itypes created by the preanalysis
+               --  Skip Itypes created by the preanalysis, and itypes whose
+               --  scope is another type (i.e. component subtypes that depend
+               --  on a discriminant),
 
                if Is_Itype (Typ)
-                 and then Scope_Within_Or_Same (Scope (Typ), Def_Id)
+                 and then (Scope_Within_Or_Same (Scope (Typ), Def_Id)
+                            or else Is_Type (Scope (Typ)))
                then
                   return;
                end if;
@@ -416,6 +419,20 @@ package body Sem_Ch6 is
             elsif Nkind (Node) = N_Type_Conversion
               and then Is_Access_Type (Etype (Node))
               and then Is_Interface (Designated_Type (Etype (Node)))
+            then
+               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            end if;
+
+            --  An implicit dereference freezes the designated type. In the
+            --  case of a dispatching call whose controlling argument is an
+            --  access type, the dereference is not made explicit, so we must
+            --  check for such a call and freeze the designated type.
+
+            if Nkind (Node) in N_Has_Etype
+              and then Present (Etype (Node))
+              and then Is_Access_Type (Etype (Node))
+              and then Nkind (Parent (Node)) = N_Function_Call
+              and then Node = Controlling_Argument (Parent (Node))
             then
                Check_And_Freeze_Type (Designated_Type (Etype (Node)));
             end if;
@@ -4446,6 +4463,12 @@ package body Sem_Ch6 is
             Set_First_Entity (Spec_Id, Empty);
             Set_Last_Entity  (Spec_Id, Empty);
          end if;
+
+      --  Otherwise the body does not complete a previous declaration. Check
+      --  the categorization of the body against the units it withs.
+
+      else
+         Validate_Categorization_Dependency (N, Body_Id);
       end if;
 
       Check_Missing_Return;
@@ -5822,20 +5845,32 @@ package body Sem_Ch6 is
    ------------------------------
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id) is
-      F : Entity_Id;
-
       procedure Possible_Freeze (T : Entity_Id);
-      --  T is the type of either a formal parameter or of the return type.
-      --  If T is not yet frozen and needs a delayed freeze, then the
-      --  subprogram itself must be delayed.
+      --  T is the type of either a formal parameter or of the return type. If
+      --  T is not yet frozen and needs a delayed freeze, then the subprogram
+      --  itself must be delayed.
 
       ---------------------
       -- Possible_Freeze --
       ---------------------
 
       procedure Possible_Freeze (T : Entity_Id) is
+         Scop : constant Entity_Id := Scope (Designator);
+
       begin
-         if Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
+         --  If the subprogram appears within a package instance (which may be
+         --  the wrapper package of a subprogram instance) the freeze node for
+         --  that package will freeze the subprogram at the proper place, so
+         --  do not emit a freeze node for the subprogram, given that it may
+         --  appear in the wrong scope.
+
+         if Ekind (Scop) = E_Package
+           and then not Comes_From_Source (Scop)
+           and then Is_Generic_Instance (Scop)
+         then
+            null;
+
+         elsif Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
             Set_Has_Delayed_Freeze (Designator);
 
          elsif Is_Access_Type (T)
@@ -5844,8 +5879,11 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Designator);
          end if;
-
       end Possible_Freeze;
+
+      --  Local variables
+
+      F : Entity_Id;
 
    --  Start of processing for Check_Delayed_Subprogram
 
@@ -5856,8 +5894,8 @@ package body Sem_Ch6 is
       Possible_Freeze (Etype (Designator));
       Possible_Freeze (Base_Type (Etype (Designator))); -- needed ???
 
-      --  Need delayed freeze if any of the formal types themselves need
-      --  a delayed freeze and are not yet frozen.
+      --  Need delayed freeze if any of the formal types themselves need a
+      --  delayed freeze and are not yet frozen.
 
       F := First_Formal (Designator);
       while Present (F) loop
@@ -5866,17 +5904,19 @@ package body Sem_Ch6 is
          Next_Formal (F);
       end loop;
 
-      --  Mark functions that return by reference. Note that it cannot be
-      --  done for delayed_freeze subprograms because the underlying
-      --  returned type may not be known yet (for private types)
+      --  Mark functions that return by reference. Note that it cannot be done
+      --  for delayed_freeze subprograms because the underlying returned type
+      --  may not be known yet (for private types).
 
       if not Has_Delayed_Freeze (Designator) and then Expander_Active then
          declare
             Typ  : constant Entity_Id := Etype (Designator);
             Utyp : constant Entity_Id := Underlying_Type (Typ);
+
          begin
             if Is_Limited_View (Typ) then
                Set_Returns_By_Ref (Designator);
+
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
             end if;
@@ -7646,10 +7686,12 @@ package body Sem_Ch6 is
          return True;
 
       --  In Ada 2012, incomplete types (including limited views) can appear
-      --  as actuals in instantiations.
+      --  as actuals in instantiations, where they are conformant to the
+      --  corresponding incomplete formal.
 
       elsif Is_Incomplete_Type (Type_1)
         and then Is_Incomplete_Type (Type_2)
+        and then In_Instance
         and then (Used_As_Generic_Actual (Type_1)
                    or else Used_As_Generic_Actual (Type_2))
       then
@@ -8139,6 +8181,13 @@ package body Sem_Ch6 is
               Add_Extra_Formal
                 (E, Formal_Typ, E, BIP_Formal_Suffix (BIP_Object_Access));
          end;
+      end if;
+
+      --  If this is an instance of a generic, we need to have extra formals
+      --  for the Alias.
+
+      if Is_Generic_Instance (E) and then Present (Alias (E)) then
+         Set_Extra_Formals (Alias (E), Extra_Formals (E));
       end if;
    end Create_Extra_Formals;
 

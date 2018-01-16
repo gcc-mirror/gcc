@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -464,7 +464,8 @@ ipa_get_param (struct ipa_node_params *info, int i)
 static inline tree
 ipa_get_type (struct ipa_node_params *info, int i)
 {
-  gcc_checking_assert (info->descriptors);
+  if (vec_safe_length (info->descriptors) <= (unsigned) i)
+    return NULL;
   tree t = (*info->descriptors)[i].decl_or_type;
   if (!t)
     return NULL;
@@ -773,7 +774,7 @@ void ipcp_write_transformation_summaries (void);
 void ipcp_read_transformation_summaries (void);
 int ipa_get_param_decl_index (struct ipa_node_params *, tree);
 tree ipa_value_from_jfunc (struct ipa_node_params *info,
-			   struct ipa_jump_func *jfunc);
+			   struct ipa_jump_func *jfunc, tree type);
 unsigned int ipcp_transform_function (struct cgraph_node *node);
 ipa_polymorphic_call_context ipa_context_from_jfunc (ipa_node_params *,
 						     cgraph_edge *,
@@ -784,7 +785,7 @@ void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
 
 /* From tree-sra.c:  */
-tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, bool, tree,
+tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 			   gimple_stmt_iterator *, bool);
 
 /* In ipa-cp.c  */

@@ -1,5 +1,5 @@
 /* Read and annotate call graph profile from the auto profile data file.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Dehao Chen (dehao@google.com)
 
 This file is part of GCC.
@@ -477,7 +477,7 @@ string_table::get_index_by_decl (tree decl) const
   ret = get_index (lang_hooks.dwarf_name (decl, 0));
   if (ret != -1)
     return ret;
-  if (DECL_ABSTRACT_ORIGIN (decl))
+  if (DECL_ABSTRACT_ORIGIN (decl) && DECL_ABSTRACT_ORIGIN (decl) != decl)
     return get_index_by_decl (DECL_ABSTRACT_ORIGIN (decl));
 
   return -1;

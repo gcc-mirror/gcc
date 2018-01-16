@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -471,8 +471,10 @@ do_narrow (location_t loc,
 	     type in case the operation in outprec precision
 	     could overflow.  Otherwise, we would introduce
 	     signed-overflow undefinedness.  */
-	  || ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
-	       || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+	  || ((!(INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+		 && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
+	       || !(INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+		    && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1))))
 	      && ((TYPE_PRECISION (TREE_TYPE (arg0)) * 2u
 		   > outprec)
 		  || (TYPE_PRECISION (TREE_TYPE (arg1)) * 2u
@@ -554,6 +556,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
       switch (fcode)
         {
 	CASE_FLT_FN (BUILT_IN_CEIL):
+	CASE_FLT_FN_FLOATN_NX (BUILT_IN_CEIL):
 	  /* Only convert in ISO C99 mode.  */
 	  if (!targetm.libc_has_function (function_c99_misc))
 	    break;
@@ -570,6 +573,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_FLOOR):
+	CASE_FLT_FN_FLOATN_NX (BUILT_IN_FLOOR):
 	  /* Only convert in ISO C99 mode.  */
 	  if (!targetm.libc_has_function (function_c99_misc))
 	    break;
@@ -586,6 +590,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_ROUND):
+	CASE_FLT_FN_FLOATN_NX (BUILT_IN_ROUND):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
 	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
 	    break;
@@ -602,11 +607,13 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_NEARBYINT):
+	CASE_FLT_FN_FLOATN_NX (BUILT_IN_NEARBYINT):
 	  /* Only convert nearbyint* if we can ignore math exceptions.  */
 	  if (flag_trapping_math)
 	    break;
 	  gcc_fallthrough ();
 	CASE_FLT_FN (BUILT_IN_RINT):
+	CASE_FLT_FN_FLOATN_NX (BUILT_IN_RINT):
 	  /* Only convert in ISO C99 mode and with -fno-math-errno.  */
 	  if (!targetm.libc_has_function (function_c99_misc) || flag_errno_math)
 	    break;
@@ -623,6 +630,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	  break;
 
 	CASE_FLT_FN (BUILT_IN_TRUNC):
+	CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
 	  return convert_to_integer_1 (type, CALL_EXPR_ARG (s_expr, 0), dofold);
 
 	default:
@@ -671,7 +679,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
     {
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      if (integer_zerop (expr))
+      if (integer_zerop (expr) && !TREE_OVERFLOW (expr))
 	return build_int_cst (type, 0);
 
       /* Convert to an unsigned integer of the correct width first, and from
@@ -731,7 +739,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	 type corresponding to its mode, then do a nop conversion
 	 to TYPE.  */
       else if (TREE_CODE (type) == ENUMERAL_TYPE
-	       || outprec != GET_MODE_PRECISION (TYPE_MODE (type)))
+	       || maybe_ne (outprec, GET_MODE_PRECISION (TYPE_MODE (type))))
 	{
 	  expr = convert (lang_hooks.types.type_for_mode
 			  (TYPE_MODE (type), TYPE_UNSIGNED (type)), expr);
@@ -916,13 +924,15 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	    }
 
 	  CASE_CONVERT:
-	    /* Don't introduce a "can't convert between vector values of
-	       different size" error.  */
-	    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == VECTOR_TYPE
-		&& (GET_MODE_SIZE (TYPE_MODE
-				   (TREE_TYPE (TREE_OPERAND (expr, 0))))
-		    != GET_MODE_SIZE (TYPE_MODE (type))))
-	      break;
+	    {
+	      tree argtype = TREE_TYPE (TREE_OPERAND (expr, 0));
+	      /* Don't introduce a "can't convert between vector values
+		 of different size" error.  */
+	      if (TREE_CODE (argtype) == VECTOR_TYPE
+		  && maybe_ne (GET_MODE_SIZE (TYPE_MODE (argtype)),
+			       GET_MODE_SIZE (TYPE_MODE (type))))
+		break;
+	    }
 	    /* If truncating after truncating, might as well do all at once.
 	       If truncating after extending, we may get rid of wasted work.  */
 	    return convert (type, get_unwidened (TREE_OPERAND (expr, 0), type));

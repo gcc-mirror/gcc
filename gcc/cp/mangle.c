@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -1247,6 +1247,51 @@ write_template_prefix (const tree node)
   add_substitution (substitution);
 }
 
+/* As the list of identifiers for the structured binding declaration
+   DECL is likely gone, try to recover the DC <source-name>+ E portion
+   from its mangled name.  Return pointer to the DC and set len to
+   the length up to and including the terminating E.  On failure
+   return NULL.  */
+
+static const char *
+find_decomp_unqualified_name (tree decl, size_t *len)
+{
+  const char *p = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  const char *end = p + IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl));
+  bool nested = false;
+  if (strncmp (p, "_Z", 2))
+    return NULL;
+  p += 2;
+  if (!strncmp (p, "St", 2))
+    p += 2;
+  else if (*p == 'N')
+    {
+      nested = true;
+      ++p;
+      while (ISDIGIT (p[0]))
+	{
+	  char *e;
+	  long num = strtol (p, &e, 10);
+	  if (num >= 1 && num < end - e)
+	    p = e + num;
+	  else
+	    break;
+	}
+    }
+  if (strncmp (p, "DC", 2))
+    return NULL;
+  if (nested)
+    {
+      if (end[-1] != 'E')
+	return NULL;
+      --end;
+    }
+  if (end[-1] != 'E')
+    return NULL;
+  *len = end - p;
+  return p;
+}
+
 /* We don't need to handle thunks, vtables, or VTTs here.  Those are
    mangled through special entry points.
 
@@ -1291,7 +1336,17 @@ write_unqualified_name (tree decl)
     {
       found = true;
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
-      write_source_name (DECL_ASSEMBLER_NAME (decl));
+      const char *decomp_str = NULL;
+      size_t decomp_len = 0;
+      if (VAR_P (decl)
+	  && DECL_DECOMPOSITION_P (decl)
+	  && DECL_NAME (decl) == NULL_TREE
+	  && DECL_NAMESPACE_SCOPE_P (decl))
+	decomp_str = find_decomp_unqualified_name (decl, &decomp_len);
+      if (decomp_str)
+	write_chars (decomp_str, decomp_len);
+      else
+	write_source_name (DECL_ASSEMBLER_NAME (decl));
     }
   else if (DECL_DECLARES_FUNCTION_P (decl))
     {
@@ -2232,7 +2287,8 @@ write_type (tree type)
 		  write_string ("Dv");
 		  /* Non-constant vector size would be encoded with
 		     _ expression, but we don't support that yet.  */
-		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type));
+		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type)
+					 .to_constant ());
 		  write_char ('_');
 		}
 	      else
@@ -2834,6 +2890,7 @@ write_expression (tree expr)
   /* Skip NOP_EXPR and CONVERT_EXPR.  They can occur when (say) a pointer
      argument is converted (via qualification conversions) to another type.  */
   while (CONVERT_EXPR_CODE_P (code)
+	 || location_wrapper_p (expr)
 	 /* Parentheses aren't mangled.  */
 	 || code == PAREN_EXPR
 	 || code == NON_LVALUE_EXPR)

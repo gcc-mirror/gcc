@@ -1,5 +1,5 @@
 /* Natural loop discovery code for GNU compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -296,13 +296,25 @@ establish_preds (struct loop *loop, struct loop *father)
 
 /* Add LOOP to the loop hierarchy tree where FATHER is father of the
    added loop.  If LOOP has some children, take care of that their
-   pred field will be initialized correctly.  */
+   pred field will be initialized correctly.  If AFTER is non-null
+   then it's expected it's a pointer into FATHERs inner sibling
+   list and LOOP is added behind AFTER, otherwise it's added in front
+   of FATHERs siblings.  */
 
 void
-flow_loop_tree_node_add (struct loop *father, struct loop *loop)
+flow_loop_tree_node_add (struct loop *father, struct loop *loop,
+			 struct loop *after)
 {
-  loop->next = father->inner;
-  father->inner = loop;
+  if (after)
+    {
+      loop->next = after->next;
+      after->next = loop;
+    }
+  else
+    {
+      loop->next = father->inner;
+      father->inner = loop;
+    }
 
   establish_preds (loop, father);
 }

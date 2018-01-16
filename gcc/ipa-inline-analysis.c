@@ -1,5 +1,5 @@
 /* Analysis used by inlining decision heuristics.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "ipa-utils.h"
-#include "cilk.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
 

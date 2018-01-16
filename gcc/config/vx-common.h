@@ -1,5 +1,5 @@
 /* Target-independent configuration for VxWorks and VxWorks AE.   
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -70,7 +70,6 @@ along with GCC; see the file COPYING3.  If not see
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* None of these other formats is supported.  */
-#undef DWARF_DEBUGGING_INFO
 #undef DBX_DEBUGGING_INFO
 #undef XCOFF_DEBUGGING_INFO
 #undef VMS_DEBUGGING_INFO

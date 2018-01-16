@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -444,7 +444,7 @@ remove_forwarder_block (basic_block bb)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
-  gimple *label;
+  gimple *stmt;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
   bool can_move_debug_stmts;
@@ -457,9 +457,9 @@ remove_forwarder_block (basic_block bb)
 
   /* If the destination block consists of a nonlocal label or is a
      EH landing pad, do not merge it.  */
-  label = first_stmt (dest);
-  if (label)
-    if (glabel *label_stmt = dyn_cast <glabel *> (label))
+  stmt = first_stmt (dest);
+  if (stmt)
+    if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
       if (DECL_NONLOCAL (gimple_label_label (label_stmt))
 	  || EH_LANDING_PAD_NR (gimple_label_label (label_stmt)) != 0)
 	return false;
@@ -540,35 +540,34 @@ remove_forwarder_block (basic_block bb)
   gsi_to = gsi_start_bb (dest);
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
     {
-      tree decl;
-      label = gsi_stmt (gsi);
-      if (is_gimple_debug (label))
+      stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
 	break;
-      decl = gimple_label_label (as_a <glabel *> (label));
+
+      /* Forwarder blocks can only contain labels and debug stmts, and
+	 labels must come first, so if we get to this point, we know
+	 we're looking at a label.  */
+      tree decl = gimple_label_label (as_a <glabel *> (stmt));
       if (EH_LANDING_PAD_NR (decl) != 0
 	  || DECL_NONLOCAL (decl)
 	  || FORCED_LABEL (decl)
 	  || !DECL_ARTIFICIAL (decl))
-	{
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
-	}
+	gsi_move_before (&gsi, &gsi_to);
       else
 	gsi_next (&gsi);
     }
 
   /* Move debug statements if the destination has a single predecessor.  */
-  if (can_move_debug_stmts)
+  if (can_move_debug_stmts && !gsi_end_p (gsi))
     {
       gsi_to = gsi_after_labels (dest);
-      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
+      do
 	{
 	  gimple *debug = gsi_stmt (gsi);
-	  if (!is_gimple_debug (debug))
-	    break;
-	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, debug, GSI_SAME_STMT);
+	  gcc_assert (is_gimple_debug (debug));
+	  gsi_move_before (&gsi, &gsi_to);
 	}
+      while (!gsi_end_p (gsi));
     }
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
@@ -1309,7 +1308,8 @@ execute_cleanup_cfg_post_optimizing (void)
 
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  fprintf (final_output, "\n");
-	  dump_enumerated_decls (final_output, dump_flags | TDF_NOUID);
+	  dump_enumerated_decls (final_output,
+				 dump_flags | TDF_SLIM | TDF_NOUID);
 	  flag_dump_noaddr = save_noaddr;
 	  flag_dump_unnumbered = save_unnumbered;
 	  if (fclose (final_output))

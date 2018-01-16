@@ -1,5 +1,5 @@
 /* Subroutine declarations for Altera Nios II target support.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com).
    Contributed by Mentor Graphics, Inc.
 
@@ -31,10 +31,10 @@ extern void nios2_function_profiler (FILE *, int);
 
 #ifdef RTX_CODE
 extern bool nios2_large_constant_p (rtx);
-extern bool nios2_symbolic_memory_operand_p (rtx);
+extern bool nios2_large_constant_memory_operand_p (rtx);
 
 extern rtx nios2_split_large_constant (rtx, rtx);
-extern rtx nios2_split_symbolic_memory_operand (rtx);
+extern rtx nios2_split_large_constant_memory_operand (rtx);
 extern bool nios2_emit_move_sequence (rtx *, machine_mode);
 extern void nios2_emit_expensive_div (rtx *, machine_mode);
 extern void nios2_adjust_call_address (rtx *, rtx);

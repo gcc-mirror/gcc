@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -961,6 +961,7 @@ chrec_contains_symbols (const_tree chrec)
 
   if (TREE_CODE (chrec) == SSA_NAME
       || VAR_P (chrec)
+      || TREE_CODE (chrec) == POLY_INT_CST
       || TREE_CODE (chrec) == PARM_DECL
       || TREE_CODE (chrec) == FUNCTION_DECL
       || TREE_CODE (chrec) == LABEL_DECL
@@ -1161,6 +1162,7 @@ evolution_function_is_univariate_p (const_tree chrec)
 	    return false;
 	  break;
 	}
+      return true;
 
     default:
       return true;

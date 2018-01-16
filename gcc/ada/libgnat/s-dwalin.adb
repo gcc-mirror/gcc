@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -372,7 +372,8 @@ package body System.Dwarf_Lines is
 
    function Is_Inside (C : Dwarf_Context; Addr : Address) return Boolean is
    begin
-      return Addr >= C.Low and Addr <= C.High;
+      return (Addr >= To_Address (To_Integer (C.Low) + C.Load_Slide)
+                and Addr <= To_Address (To_Integer (C.High) + C.Load_Slide));
    end Is_Inside;
 
    ---------
@@ -577,14 +578,21 @@ package body System.Dwarf_Lines is
          Initialize_State_Machine (C);
       end if;
 
-      --  Read the next prologue
+      --  If we have reached the next prologue, read it. Beware of possibly
+      --  empty blocks.
+
+      --  When testing for the end of section, beware of possible zero padding
+      --  at the end. Bail out as soon as there's not even room for at least a
+      --  DW_LNE_end_sequence, 3 bytes from Off to Off+2. This resolves to
+      --  Off+2 > Last_Offset_Within_Section, that is Off+2 > Section_Length-1,
+      --  or Off+3 > Section_Length.
 
       Tell (C.Lines, Off);
       while Off = C.Next_Prologue loop
          Initialize_State_Machine (C);
          Parse_Prologue (C);
          Tell (C.Lines, Off);
-         exit when Off + 4 >= Length (C.Lines);
+         exit when Off + 3 > Length (C.Lines);
       end loop;
 
       --  Test whether we're done
@@ -594,7 +602,7 @@ package body System.Dwarf_Lines is
       --  We are finished when we either reach the end of the section, or we
       --  have reached zero padding at the end of the section.
 
-      if Prologue.Unit_Length = 0 or else Off + 4 >= Length (C.Lines) then
+      if Prologue.Unit_Length = 0 or else Off + 3 > Length (C.Lines) then
          Done := True;
          return;
       end if;
@@ -771,15 +779,7 @@ package body System.Dwarf_Lines is
 
    procedure Set_Load_Address (C : in out Dwarf_Context; Addr : Address) is
    begin
-      if Addr = Null_Address then
-         return;
-      else
-         C.Load_Slide :=
-           To_Integer (Addr) - Integer_Address (Get_Load_Address (C.Obj.all));
-
-         C.Low  := To_Address (To_Integer (C.Low) + C.Load_Slide);
-         C.High := To_Address (To_Integer (C.High) + C.Load_Slide);
-      end if;
+      C.Load_Slide := To_Integer (Addr);
    end Set_Load_Address;
 
    ------------------
@@ -1523,8 +1523,10 @@ package body System.Dwarf_Lines is
       Res          : in out System.Bounded_Strings.Bounded_String)
    is
       use Ada.Characters.Handling;
-      C    : Dwarf_Context := Cin;
-      Addr : Address;
+      C : Dwarf_Context := Cin;
+
+      Addr_In_Traceback : Address;
+      Addr_To_Lookup    : Address;
 
       Dir_Name    : Str_Access;
       File_Name   : Str_Access;
@@ -1543,10 +1545,14 @@ package body System.Dwarf_Lines is
          --  If the buffer is full, no need to do any useless work
          exit when Is_Full (Res);
 
-         Addr := PC_For (Traceback (J));
+         Addr_In_Traceback := PC_For (Traceback (J));
+
+         Addr_To_Lookup := To_Address
+           (To_Integer (Addr_In_Traceback) - C.Load_Slide);
+
          Symbolic_Address
            (C,
-            To_Address (To_Integer (Addr) + C.Load_Slide),
+            Addr_To_Lookup,
             Dir_Name,
             File_Name,
             Subprg_Name,
@@ -1608,7 +1614,7 @@ package body System.Dwarf_Lines is
             if Suppress_Hex then
                Append (Res, "...");
             else
-               Append_Address (Res, Addr);
+               Append_Address (Res, Addr_In_Traceback);
             end if;
 
             if Subprg_Name.Len > 0 then

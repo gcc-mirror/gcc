@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V for GNU compiler.
-;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -1456,7 +1456,13 @@
    (match_operand 1 "pmode_register_operand")]
   ""
 {
+#ifdef ICACHE_FLUSH_FUNC
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, ICACHE_FLUSH_FUNC),
+		     LCT_NORMAL, VOIDmode, operands[0], Pmode,
+		     operands[1], Pmode, const0_rtx, Pmode);
+#else
   emit_insn (gen_fence_i ());
+#endif
   DONE;
 })
 
@@ -1520,6 +1526,49 @@
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return "<insn>%i2w\t%0,%1,%2";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Non-canonical, but can be formed by ree when combine is not successful at
+;; producing one of the two canonical patterns below.
+(define_insn "*lshrsi3_zero_extend_1"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(zero_extend:DI
+	 (lshiftrt:SI (match_operand:SI     1 "register_operand" " r")
+		      (match_operand:SI     2 "const_int_operand"))))]
+  "TARGET_64BIT && (INTVAL (operands[2]) & 0x1f) > 0"
+{
+  operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
+
+  return "srliw\t%0,%1,%2";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Canonical form for a zero-extend of a logical right shift.
+(define_insn "*lshrsi3_zero_extend_2"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(zero_extract:DI (match_operand:DI  1 "register_operand" " r")
+			 (match_operand     2 "const_int_operand")
+			 (match_operand     3 "const_int_operand")))]
+  "(TARGET_64BIT && (INTVAL (operands[3]) > 0)
+    && (INTVAL (operands[2]) + INTVAL (operands[3]) == 32))"
+{
+  return "srliw\t%0,%1,%3";
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "SI")])
+
+;; Canonical form for a zero-extend of a logical right shift when the
+;; shift count is 31.
+(define_insn "*lshrsi3_zero_extend_3"
+  [(set (match_operand:DI                   0 "register_operand" "=r")
+	(lt:DI (match_operand:SI            1 "register_operand" " r")
+	       (const_int 0)))]
+  "TARGET_64BIT"
+{
+  return "srliw\t%0,%1,31";
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
@@ -1878,7 +1927,9 @@
 (define_insn "simple_return"
   [(simple_return)]
   ""
-  "ret"
+{
+  return riscv_output_return ();
+}
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 

@@ -1,5 +1,5 @@
 /* Perform simple optimizations to clean up the result of reload.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -836,7 +836,7 @@ fixup_debug_insns (rtx reg, rtx replacement, rtx_insn *from, rtx_insn *to)
     {
       rtx t;
 
-      if (!DEBUG_INSN_P (insn))
+      if (!DEBUG_BIND_INSN_P (insn))
 	continue;
       
       t = INSN_VAR_LOCATION_LOC (insn);
@@ -1704,9 +1704,9 @@ move2add_valid_value_p (int regno, scalar_int_mode mode)
 	 mode after truncation only if (REG:mode regno) is the lowpart of
 	 (REG:reg_mode[regno] regno).  Now, for big endian, the starting
 	 regno of the lowpart might be different.  */
-      int s_off = subreg_lowpart_offset (mode, old_mode);
+      poly_int64 s_off = subreg_lowpart_offset (mode, old_mode);
       s_off = subreg_regno_offset (regno, old_mode, s_off, mode);
-      if (s_off != 0)
+      if (maybe_ne (s_off, 0))
 	/* We could in principle adjust regno, check reg_mode[regno] to be
 	   BLKmode, and return s_off to the caller (vs. -1 for failure),
 	   but we currently have no callers that could make use of this

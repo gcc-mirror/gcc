@@ -113,17 +113,18 @@ int test9 (int *intarr)
 
 int test99 (int *intarr)
 {
-  extern int foo9 (int) __attribute__ ((pure));
+  extern int foo99 (int) __attribute__ ((pure));
   int h, v;
   g9 = 9;
-  h = foo9 (g9);
+  h = foo99 (g9);
   v = g9;
   if (v != 9)
     link_error ();
   return g9;
 }
 
-extern int foo99 (int);
+/* foo9 is const because of its declaration in test9.  */
+extern int foo9 (int);
 
 int test999 (int *arr)
 {
@@ -134,10 +135,12 @@ int test999 (int *arr)
   v1 = g9;
   if (v1 != 9)
     link_error ();
-  l = foo99 (l);
+  l = foo9 (l);
   return v1 + l;
 }
 
+/* foo99 is pure because of its declaration in test99.  */
+extern int foo9 (int);
 
 int test9999 (void)
 {

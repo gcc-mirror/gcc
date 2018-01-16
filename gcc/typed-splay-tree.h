@@ -1,5 +1,5 @@
 /* A typesafe wrapper around libiberty's splay-tree.h.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,9 +75,12 @@ inline typed_splay_tree<KEY_TYPE, VALUE_TYPE>::
 		    delete_key_fn delete_key_fn,
 		    delete_value_fn delete_value_fn)
 {
-  m_inner = splay_tree_new ((splay_tree_compare_fn)compare_fn,
-			    (splay_tree_delete_key_fn)delete_key_fn,
-			    (splay_tree_delete_value_fn)delete_value_fn);
+  m_inner = splay_tree_new ((splay_tree_compare_fn)
+			    (void (*) (void)) compare_fn,
+			    (splay_tree_delete_key_fn)
+			    (void (*) (void)) delete_key_fn,
+			    (splay_tree_delete_value_fn)
+			    (void (*) (void)) delete_value_fn);
 }
 
 /* Destructor for typed_splay_tree <K, V>.  */

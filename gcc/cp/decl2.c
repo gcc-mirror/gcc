@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -911,9 +911,18 @@ grokfield (const cp_declarator *declarator,
 	{
 	  if (init == ridpointers[(int)RID_DELETE])
 	    {
-	      DECL_DELETED_FN (value) = 1;
-	      DECL_DECLARED_INLINE_P (value) = 1;
-	      DECL_INITIAL (value) = error_mark_node;
+	      if (friendp && decl_defined_p (value))
+		{
+		  error ("redefinition of %q#D", value);
+		  inform (DECL_SOURCE_LOCATION (value),
+			  "%q#D previously defined here", value);
+		}
+	      else
+		{
+		  DECL_DELETED_FN (value) = 1;
+		  DECL_DECLARED_INLINE_P (value) = 1;
+		  DECL_INITIAL (value) = error_mark_node;
+		}
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {
@@ -1235,7 +1244,7 @@ splice_template_attributes (tree *attr_p, tree decl)
    DECL_P.  */
 
 static void
-save_template_attributes (tree *attr_p, tree *decl_p)
+save_template_attributes (tree *attr_p, tree *decl_p, int flags)
 {
   tree *q;
 
@@ -1256,7 +1265,20 @@ save_template_attributes (tree *attr_p, tree *decl_p)
   /* Merge the late attributes at the beginning with the attribute
      list.  */
   late_attrs = merge_attributes (late_attrs, *q);
-  *q = late_attrs;
+  if (*q != late_attrs
+      && !DECL_P (*decl_p)
+      && !(flags & ATTR_FLAG_TYPE_IN_PLACE))
+    {
+      if (!dependent_type_p (*decl_p))
+	*decl_p = cp_build_type_attribute_variant (*decl_p, late_attrs);
+      else
+	{
+	  *decl_p = build_variant_type_copy (*decl_p);
+	  TYPE_ATTRIBUTES (*decl_p) = late_attrs;
+	}
+    }
+  else
+    *q = late_attrs;
 
   if (!DECL_P (*decl_p) && *decl_p == TYPE_MAIN_VARIANT (*decl_p))
     {
@@ -1423,6 +1445,52 @@ cp_omp_mappable_type (tree type)
   return true;
 }
 
+/* Return the last pushed declaration for the symbol DECL or NULL
+   when no such declaration exists.  */
+
+static tree
+find_last_decl (tree decl)
+{
+  tree last_decl = NULL_TREE;
+
+  if (tree name = DECL_P (decl) ? DECL_NAME (decl) : NULL_TREE)
+    {
+      /* Look up the declaration in its scope.  */
+      tree pushed_scope = NULL_TREE;
+      if (tree ctype = DECL_CONTEXT (decl))
+	pushed_scope = push_scope (ctype);
+
+      last_decl = lookup_name (name);
+
+      if (pushed_scope)
+	pop_scope (pushed_scope);
+
+      /* The declaration may be a member conversion operator
+	 or a bunch of overfloads (handle the latter below).  */
+      if (last_decl && BASELINK_P (last_decl))
+	last_decl = BASELINK_FUNCTIONS (last_decl);
+    }
+
+  if (!last_decl)
+    return NULL_TREE;
+
+  if (DECL_P (last_decl) || TREE_CODE (last_decl) == OVERLOAD)
+    {
+      /* A set of overloads of the same function.  */
+      for (lkp_iterator iter (last_decl); iter; ++iter)
+	{
+	  if (TREE_CODE (*iter) == OVERLOAD)
+	    continue;
+
+	  if (decls_match (decl, *iter, /*record_decls=*/false))
+	    return *iter;
+	}
+      return NULL_TREE;
+    }
+
+  return NULL_TREE;
+}
+
 /* Like decl_attributes, but handle C++ complexity.  */
 
 void
@@ -1457,7 +1525,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
       if (check_for_bare_parameter_packs (attributes))
 	return;
 
-      save_template_attributes (&attributes, decl);
+      save_template_attributes (&attributes, decl, flags);
     }
 
   cp_check_const_attributes (attributes);
@@ -1473,7 +1541,10 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 		       attributes, flags);
     }
   else
-    decl_attributes (decl, attributes, flags);
+    {
+      tree last_decl = find_last_decl (*decl);
+      decl_attributes (decl, attributes, flags, last_decl);
+    }
 
   if (TREE_CODE (*decl) == TYPE_DECL)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
@@ -3525,7 +3596,8 @@ start_static_storage_duration_function (unsigned count)
       priority_info_map = splay_tree_new (splay_tree_compare_ints,
 					  /*delete_key_fn=*/0,
 					  /*delete_value_fn=*/
-					  (splay_tree_delete_value_fn) &free);
+					  (splay_tree_delete_value_fn)
+					  (void (*) (void)) free);
 
       /* We always need to generate functions for the
 	 DEFAULT_INIT_PRIORITY so enter it now.  That way when we walk

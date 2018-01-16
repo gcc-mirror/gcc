@@ -1,6 +1,7 @@
 // PR c++/34937, 34962
 // { dg-require-weak "" }
 // { dg-options "" }
+// { dg-require-effective-target alloca }
 
 struct A
 {

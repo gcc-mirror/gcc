@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Jack Howarth <howarth.at.gcc@gmail.com>.
 
 This file is part of GCC.

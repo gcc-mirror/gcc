@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2000-2017, Free Software Foundation, Inc.       *
+ *            Copyright (C) 2000-2018, Free Software Foundation, Inc.       *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -373,7 +373,11 @@ extern void __runnit(); /* thread entry point.  */
   (defined (__powerpc__) && defined (__Lynx__) && defined(__ELF__)) || \
   (defined (__linux__) && defined (__powerpc__))
 
+#if defined (_ARCH_PPC64) && !defined (__USING_SJLJ_EXCEPTIONS__)
+#define USE_GCC_UNWINDER
+#else
 #define USE_GENERIC_UNWINDER
+#endif
 
 struct layout
 {

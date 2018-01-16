@@ -1,5 +1,5 @@
 /* Back-propagation of usage information to definitions.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -729,7 +729,7 @@ strip_sign_op (tree rhs)
 void
 backprop::prepare_change (tree var)
 {
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     insert_debug_temp_for_var_def (NULL, var);
   reset_flow_sensitive_info (var);
 }

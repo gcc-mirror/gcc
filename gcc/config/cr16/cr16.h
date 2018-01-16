@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for CR16.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
 
    This file is part of GCC.
@@ -233,7 +233,7 @@ while (0)
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME) 			  		\
-  (0 == COUNT)	?  gen_rtx_PLUS (Pmode, gen_rtx_RA, gen_rtx_RA)		\
+  (COUNT == 0)	?  gen_rtx_PLUS (Pmode, gen_rtx_RA, gen_rtx_RA)		\
 		:  const0_rtx
 
 enum reg_class
@@ -293,7 +293,7 @@ enum reg_class
 	(CR16_REGNO_OK_FOR_BASE_P(REGNO)  &&	  \
 	  ((GET_MODE_SIZE (MODE) > 4  &&  	  \
 	     (REGNO) < CR16_FIRST_DWORD_REGISTER) \
-	     ? (0 == ((REGNO) & 1)) 		  \
+	     ? (((REGNO) & 1) == 0) 		  \
 	     : 1))
 
 /* TODO: For now lets not support index addressing mode.  */
@@ -381,7 +381,7 @@ enum reg_class
 
 #define PUSH_ARGS 1
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) cr16_push_rounding (BYTES)
 
 #ifndef CUMULATIVE_ARGS
 struct cumulative_args

@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2017 Free Software Foundation, Inc.
+   Copyright (C) 1990-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -843,7 +843,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2017 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2018 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.\n"
@@ -1035,6 +1035,7 @@ file 'foo.cc.gcov' similar to the above example. */
 static void
 output_intermediate_file (FILE *gcov_file, source_info *src)
 {
+  fprintf (gcov_file, "version:%s\n", version_string);
   fprintf (gcov_file, "file:%s\n", src->name);    /* source file name */
 
   std::sort (src->functions.begin (), src->functions.end (),

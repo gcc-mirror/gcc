@@ -15,4 +15,4 @@ foo (short *p, short *q, short *r)
   p[1] = e & f;
 }
 
-/* { dg-final { scan-tree-dump-times "Merging successful" 1 "store-merging" } } */
+/* { dg-final { scan-tree-dump-times "Merging successful" 1 "store-merging" { target { ! arm*-*-* } } } } */

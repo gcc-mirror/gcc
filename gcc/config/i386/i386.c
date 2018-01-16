@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IA-32.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -16,6 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -2609,21 +2611,25 @@ rest_of_insert_endbranch (void)
 	{
 	  if (INSN_P (insn) && GET_CODE (insn) == CALL_INSN)
 	    {
-	      rtx_insn *next_insn = insn;
+	      if (find_reg_note (insn, REG_SETJMP, NULL) == NULL)
+		continue;
+	      /* Generate ENDBRANCH after CALL, which can return more than
+		 twice, setjmp-like functions.  */
 
+	      /* Skip notes and debug insns that must be next to the
+		 call insn.  ??? This might skip a lot more than
+		 that...  ??? Skipping barriers and emitting code
+		 after them surely looks like a mistake; we probably
+		 won't ever hit it, for we'll hit BB_END first.  */
+	      rtx_insn *next_insn = insn;
 	      while ((next_insn != BB_END (bb))
 		      && (DEBUG_INSN_P (NEXT_INSN (next_insn))
 			  || NOTE_P (NEXT_INSN (next_insn))
 			  || BARRIER_P (NEXT_INSN (next_insn))))
 		next_insn = NEXT_INSN (next_insn);
 
-	      /* Generate ENDBRANCH after CALL, which can return more than
-		 twice, setjmp-like functions.  */
-	      if (find_reg_note (insn, REG_SETJMP, NULL) != NULL)
-		{
-		  cet_eb = gen_nop_endbr ();
-		  emit_insn_after (cet_eb, next_insn);
-		}
+	      cet_eb = gen_nop_endbr ();
+	      emit_insn_after_setloc (cet_eb, next_insn, INSN_LOCATION (insn));
 	      continue;
 	    }
 
@@ -2718,12 +2724,23 @@ make_pass_insert_endbranch (gcc::context *ctxt)
   return new pass_insert_endbranch (ctxt);
 }
 
-/* Return true if a red-zone is in use.  */
+/* Return true if a red-zone is in use.  We can't use red-zone when
+   there are local indirect jumps, like "indirect_jump" or "tablejump",
+   which jumps to another place in the function, since "call" in the
+   indirect thunk pushes the return address onto stack, destroying
+   red-zone.
+
+   TODO: If we can reserve the first 2 WORDs, for PUSH and, another
+   for CALL, in red-zone, we can allow local indirect jumps with
+   indirect thunk.  */
 
 bool
 ix86_using_red_zone (void)
 {
-  return TARGET_RED_ZONE && !TARGET_64BIT_MS_ABI;
+  return (TARGET_RED_ZONE
+	  && !TARGET_64BIT_MS_ABI
+	  && (!cfun->machine->has_local_indirect_jump
+	      || cfun->machine->indirect_branch_type == indirect_branch_keep));
 }
 
 /* Return a string that documents the current -m options.  The caller is
@@ -2745,19 +2762,27 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
      ISAs come first.  Target string will be displayed in the same order.  */
   static struct ix86_target_opts isa2_opts[] =
   {
+    { "-mcx16",		OPTION_MASK_ISA_CX16 },
     { "-mmpx",		OPTION_MASK_ISA_MPX },
-    { "-mavx512vbmi2",	OPTION_MASK_ISA_AVX512VBMI2 },
+    { "-mvaes",		OPTION_MASK_ISA_VAES },
     { "-mrdpid",	OPTION_MASK_ISA_RDPID },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
-    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
-    { "-mibt",	OPTION_MASK_ISA_IBT },
-    { "-mshstk",	OPTION_MASK_ISA_SHSTK }
+    { "-mibt",		OPTION_MASK_ISA_IBT },
+    { "-mhle",		OPTION_MASK_ISA_HLE },
+    { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
+    { "-mclzero",	OPTION_MASK_ISA_CLZERO },
+    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX }
   };
   static struct ix86_target_opts isa_opts[] =
   {
+    { "-mavx512vpopcntdq", OPTION_MASK_ISA_AVX512VPOPCNTDQ },
+    { "-mavx512bitalg", OPTION_MASK_ISA_AVX512BITALG },
+    { "-mvpclmulqdq",	OPTION_MASK_ISA_VPCLMULQDQ },
     { "-mgfni",		OPTION_MASK_ISA_GFNI },
+    { "-mavx512vnni",	OPTION_MASK_ISA_AVX512VNNI },
+    { "-mavx512vbmi2",	OPTION_MASK_ISA_AVX512VBMI2 },
     { "-mavx512vbmi",	OPTION_MASK_ISA_AVX512VBMI },
     { "-mavx512ifma",	OPTION_MASK_ISA_AVX512IFMA },
     { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
@@ -2803,19 +2828,15 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mlzcnt",	OPTION_MASK_ISA_LZCNT },
     { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
-    { "-mcx16",		OPTION_MASK_ISA_CX16 },
     { "-msahf",		OPTION_MASK_ISA_SAHF },
-    { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-mcrc32",	OPTION_MASK_ISA_CRC32 },
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
-    { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
-    { "-mclzero",	OPTION_MASK_ISA_CLZERO },
     { "-mpku",		OPTION_MASK_ISA_PKU },
     { "-mlwp",		OPTION_MASK_ISA_LWP },
-    { "-mhle",		OPTION_MASK_ISA_HLE },
     { "-mfxsr",		OPTION_MASK_ISA_FXSR },
-    { "-mclwb",		OPTION_MASK_ISA_CLWB }
+    { "-mclwb",		OPTION_MASK_ISA_CLWB },
+    { "-mshstk",	OPTION_MASK_ISA_SHSTK }
   };
 
   /* Flag options.  */
@@ -3079,7 +3100,7 @@ ix86_debug_options (void)
 }
 
 /* Return true if T is one of the bytes we should avoid with
-   -fmitigate-rop.  */
+   -mmitigate-rop.  */
 
 static bool
 ix86_rop_should_change_byte_p (int t)
@@ -3152,8 +3173,8 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
       if (next_range_str)
         *next_range_str++ = '\0';
 
-      if (3 != sscanf (curr_range_str, "%20[^:]:%d:%10s",
-                       alg_name, &maxs, align))
+      if (sscanf (curr_range_str, "%20[^:]:%d:%10s", alg_name, &maxs,
+		  align) != 3)
         {
 	  error ("wrong argument %qs to option %qs", curr_range_str, opt);
           return;
@@ -3445,9 +3466,9 @@ ix86_option_override_internal (bool main_args_p,
   (PTA_BROADWELL | PTA_CLFLUSHOPT | PTA_XSAVEC | PTA_XSAVES)
 #define PTA_SKYLAKE_AVX512 \
   (PTA_SKYLAKE | PTA_AVX512F | PTA_AVX512CD | PTA_AVX512VL \
-   | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU)
+   | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU | PTA_CLWB)
 #define PTA_CANNONLAKE \
-  (PTA_SKYLAKE_AVX512 | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA | PTA_CLWB)
+  (PTA_SKYLAKE_AVX512 | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA)
 #define PTA_KNL \
   (PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER | PTA_AVX512F | PTA_AVX512CD)
 #define PTA_BONNELL \
@@ -3990,8 +4011,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_BMI2))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_BMI2;
 	if (processor_alias_table[i].flags & PTA_CX16
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CX16))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CX16;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CX16))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CX16;
 	if (processor_alias_table[i].flags & (PTA_POPCNT | PTA_ABM)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_POPCNT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_POPCNT;
@@ -4000,8 +4021,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_SAHF))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SAHF;
 	if (processor_alias_table[i].flags & PTA_MOVBE
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVBE))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MOVBE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MOVBE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MOVBE;
 	if (processor_alias_table[i].flags & PTA_AES
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
 	  ix86_isa_flags |= OPTION_MASK_ISA_AES;
@@ -4024,8 +4045,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_RTM))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_RTM;
 	if (processor_alias_table[i].flags & PTA_HLE
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_HLE))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_HLE;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_HLE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_HLE;
 	if (processor_alias_table[i].flags & PTA_PRFCHW
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PRFCHW))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PRFCHW;
@@ -4066,8 +4087,8 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLFLUSHOPT))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLFLUSHOPT;
 	if (processor_alias_table[i].flags & PTA_CLZERO
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_CLZERO))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_CLZERO;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_CLZERO))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_CLZERO;
 	if (processor_alias_table[i].flags & PTA_XSAVEC
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEC))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_XSAVEC;
@@ -4094,14 +4115,17 @@ ix86_option_override_internal (bool main_args_p,
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512IFMA;
 
 	if (processor_alias_table[i].flags & PTA_AVX5124VNNIW
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX5124VNNIW))
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA_AVX5124VNNIW))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124VNNIW;
 	if (processor_alias_table[i].flags & PTA_AVX5124FMAPS
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX5124FMAPS))
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA_AVX5124FMAPS))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX5124FMAPS;
 	if (processor_alias_table[i].flags & PTA_AVX512VPOPCNTDQ
-	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
-	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
+	    && !(opts->x_ix86_isa_flags_explicit
+		 & OPTION_MASK_ISA_AVX512VPOPCNTDQ))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VPOPCNTDQ;
 	if (processor_alias_table[i].flags & PTA_SGX
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_SGX))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX;
@@ -4109,8 +4133,8 @@ ix86_option_override_internal (bool main_args_p,
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 	if (processor_alias_table[i].flags & PTA_MWAITX
-	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_MWAITX))
-	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_MWAITX;
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_MWAITX))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_MWAITX;
 	if (processor_alias_table[i].flags & PTA_PKU
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
@@ -4860,7 +4884,7 @@ ix86_option_override_internal (bool main_args_p,
   if (opts->x_flag_cf_protection != CF_NONE)
     {
       if (!(TARGET_IBT_P (opts->x_ix86_isa_flags2)
-	    || TARGET_SHSTK_P (opts->x_ix86_isa_flags2)))
+	    || TARGET_SHSTK_P (opts->x_ix86_isa_flags)))
 	{
 	  if (flag_cf_protection == CF_FULL)
 	    {
@@ -4886,6 +4910,11 @@ ix86_option_override_internal (bool main_args_p,
       opts->x_flag_cf_protection =
 	(cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
     }
+
+  if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])
+    maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 128,
+			   opts->x_param_values,
+			   opts_set->x_param_values);
 
   return true;
 }
@@ -5256,6 +5285,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx5124vnniw", OPT_mavx5124vnniw),
     IX86_ATTR_ISA ("avx512vpopcntdq", OPT_mavx512vpopcntdq),
     IX86_ATTR_ISA ("avx512vbmi2", OPT_mavx512vbmi2),
+    IX86_ATTR_ISA ("avx512vnni", OPT_mavx512vnni),
+    IX86_ATTR_ISA ("avx512bitalg", OPT_mavx512bitalg),
 
     IX86_ATTR_ISA ("avx512vbmi", OPT_mavx512vbmi),
     IX86_ATTR_ISA ("avx512ifma", OPT_mavx512ifma),
@@ -5320,6 +5351,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("gfni",	OPT_mgfni),
     IX86_ATTR_ISA ("ibt",	OPT_mibt),
     IX86_ATTR_ISA ("shstk",	OPT_mshstk),
+    IX86_ATTR_ISA ("vaes",	OPT_mvaes),
+    IX86_ATTR_ISA ("vpclmulqdq", OPT_mvpclmulqdq),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -5780,6 +5813,88 @@ ix86_set_func_type (tree fndecl)
     }
 }
 
+/* Set the indirect_branch_type field from the function FNDECL.  */
+
+static void
+ix86_set_indirect_branch_type (tree fndecl)
+{
+  if (cfun->machine->indirect_branch_type == indirect_branch_unset)
+    {
+      tree attr = lookup_attribute ("indirect_branch",
+				    DECL_ATTRIBUTES (fndecl));
+      if (attr != NULL)
+	{
+	  tree args = TREE_VALUE (attr);
+	  if (args == NULL)
+	    gcc_unreachable ();
+	  tree cst = TREE_VALUE (args);
+	  if (strcmp (TREE_STRING_POINTER (cst), "keep") == 0)
+	    cfun->machine->indirect_branch_type = indirect_branch_keep;
+	  else if (strcmp (TREE_STRING_POINTER (cst), "thunk") == 0)
+	    cfun->machine->indirect_branch_type = indirect_branch_thunk;
+	  else if (strcmp (TREE_STRING_POINTER (cst), "thunk-inline") == 0)
+	    cfun->machine->indirect_branch_type = indirect_branch_thunk_inline;
+	  else if (strcmp (TREE_STRING_POINTER (cst), "thunk-extern") == 0)
+	    cfun->machine->indirect_branch_type = indirect_branch_thunk_extern;
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	cfun->machine->indirect_branch_type = ix86_indirect_branch;
+
+      /* -mcmodel=large is not compatible with -mindirect-branch=thunk
+	 nor -mindirect-branch=thunk-extern.  */
+      if ((ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+	  && ((cfun->machine->indirect_branch_type
+	       == indirect_branch_thunk_extern)
+	      || (cfun->machine->indirect_branch_type
+		  == indirect_branch_thunk)))
+	error ("%<-mindirect-branch=%s%> and %<-mcmodel=large%> are not "
+	       "compatible",
+	       ((cfun->machine->indirect_branch_type
+		 == indirect_branch_thunk_extern)
+		? "thunk-extern" : "thunk"));
+    }
+
+  if (cfun->machine->function_return_type == indirect_branch_unset)
+    {
+      tree attr = lookup_attribute ("function_return",
+				    DECL_ATTRIBUTES (fndecl));
+      if (attr != NULL)
+	{
+	  tree args = TREE_VALUE (attr);
+	  if (args == NULL)
+	    gcc_unreachable ();
+	  tree cst = TREE_VALUE (args);
+	  if (strcmp (TREE_STRING_POINTER (cst), "keep") == 0)
+	    cfun->machine->function_return_type = indirect_branch_keep;
+	  else if (strcmp (TREE_STRING_POINTER (cst), "thunk") == 0)
+	    cfun->machine->function_return_type = indirect_branch_thunk;
+	  else if (strcmp (TREE_STRING_POINTER (cst), "thunk-inline") == 0)
+	    cfun->machine->function_return_type = indirect_branch_thunk_inline;
+	  else if (strcmp (TREE_STRING_POINTER (cst), "thunk-extern") == 0)
+	    cfun->machine->function_return_type = indirect_branch_thunk_extern;
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	cfun->machine->function_return_type = ix86_function_return;
+
+      /* -mcmodel=large is not compatible with -mfunction-return=thunk
+	 nor -mfunction-return=thunk-extern.  */
+      if ((ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+	  && ((cfun->machine->function_return_type
+	       == indirect_branch_thunk_extern)
+	      || (cfun->machine->function_return_type
+		  == indirect_branch_thunk)))
+	error ("%<-mfunction-return=%s%> and %<-mcmodel=large%> are not "
+	       "compatible",
+	       ((cfun->machine->function_return_type
+		 == indirect_branch_thunk_extern)
+		? "thunk-extern" : "thunk"));
+    }
+}
+
 /* Establish appropriate back-end context for processing the function
    FNDECL.  The argument might be NULL to indicate processing at top
    level, outside of any function scope.  */
@@ -5795,7 +5910,10 @@ ix86_set_current_function (tree fndecl)
 	 one is extern inline and one isn't.  Call ix86_set_func_type
 	 to set the func_type field.  */
       if (fndecl != NULL_TREE)
-	ix86_set_func_type (fndecl);
+	{
+	  ix86_set_func_type (fndecl);
+	  ix86_set_indirect_branch_type (fndecl);
+	}
       return;
     }
 
@@ -5815,6 +5933,7 @@ ix86_set_current_function (tree fndecl)
     }
 
   ix86_set_func_type (fndecl);
+  ix86_set_indirect_branch_type (fndecl);
 
   tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
   if (new_tree == NULL_TREE)
@@ -6262,10 +6381,8 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
    arguments as in struct attribute_spec.handler.  */
 
 static tree
-ix86_handle_cconv_attribute (tree *node, tree name,
-				   tree args,
-				   int,
-				   bool *no_add_attrs)
+ix86_handle_cconv_attribute (tree *node, tree name, tree args, int,
+			     bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE
       && TREE_CODE (*node) != METHOD_TYPE
@@ -6725,8 +6842,8 @@ ix86_keep_aggregate_return_pointer (tree fntype)
 
    The attribute stdcall is equivalent to RTD on a per module basis.  */
 
-static int
-ix86_return_pops_args (tree fundecl, tree funtype, int size)
+static poly_int64
+ix86_return_pops_args (tree fundecl, tree funtype, poly_int64 size)
 {
   unsigned int ccvt;
 
@@ -7210,7 +7327,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
       bool seen_empty_type = false;
       FOREACH_FUNCTION_ARGS (fntype, argtype, iter)
 	{
-	  if (VOID_TYPE_P (argtype))
+	  if (argtype == error_mark_node || VOID_TYPE_P (argtype))
 	    break;
 	  if (TYPE_EMPTY_P (argtype))
 	    seen_empty_type = true;
@@ -8963,6 +9080,8 @@ ix86_function_arg_boundary (machine_mode mode, const_tree type)
 	 the main variant type.  */
       type = TYPE_MAIN_VARIANT (type);
       align = TYPE_ALIGN (type);
+      if (TYPE_EMPTY_P (type))
+	return PARM_BOUNDARY;
     }
   else
     align = GET_MODE_ALIGNMENT (mode);
@@ -10380,12 +10499,13 @@ standard_sse_constant_p (rtx x, machine_mode pred_mode)
 }
 
 /* Return the opcode of the special instruction to be used to load
-   the constant X.  */
+   the constant operands[1] into operands[0].  */
 
 const char *
-standard_sse_constant_opcode (rtx_insn *insn, rtx x)
+standard_sse_constant_opcode (rtx_insn *insn, rtx *operands)
 {
   machine_mode mode;
+  rtx x = operands[1];
 
   gcc_assert (TARGET_SSE);
 
@@ -10395,34 +10515,51 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
     {
       switch (get_attr_mode (insn))
 	{
-	case MODE_XI:
-	  return "vpxord\t%g0, %g0, %g0";
-	case MODE_OI:
-	  return (TARGET_AVX512VL
-		  ? "vpxord\t%x0, %x0, %x0"
-		  : "vpxor\t%x0, %x0, %x0");
 	case MODE_TI:
-	  return (TARGET_AVX512VL
-		  ? "vpxord\t%t0, %t0, %t0"
-		  : "%vpxor\t%0, %d0");
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "%vpxor\t%0, %d0";
+	  /* FALLTHRU */
+	case MODE_XI:
+	case MODE_OI:
+	  if (EXT_REX_SSE_REG_P (operands[0]))
+	    return (TARGET_AVX512VL
+		    ? "vpxord\t%x0, %x0, %x0"
+		    : "vpxord\t%g0, %g0, %g0");
+	  return "vpxor\t%x0, %x0, %x0";
 
-	case MODE_V8DF:
-	  return (TARGET_AVX512DQ
-		  ? "vxorpd\t%g0, %g0, %g0"
-		  : "vpxorq\t%g0, %g0, %g0");
-	case MODE_V4DF:
-	  return "vxorpd\t%x0, %x0, %x0";
 	case MODE_V2DF:
-	  return "%vxorpd\t%0, %d0";
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "%vxorpd\t%0, %d0";
+	  /* FALLTHRU */
+	case MODE_V8DF:
+	case MODE_V4DF:
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "vxorpd\t%x0, %x0, %x0";
+	  else if (TARGET_AVX512DQ)
+	    return (TARGET_AVX512VL
+		    ? "vxorpd\t%x0, %x0, %x0"
+		    : "vxorpd\t%g0, %g0, %g0");
+	  else
+	    return (TARGET_AVX512VL
+		    ? "vpxorq\t%x0, %x0, %x0"
+		    : "vpxorq\t%g0, %g0, %g0");
 
-	case MODE_V16SF:
-	  return (TARGET_AVX512DQ
-		  ? "vxorps\t%g0, %g0, %g0"
-		  : "vpxord\t%g0, %g0, %g0");
-	case MODE_V8SF:
-	  return "vxorps\t%x0, %x0, %x0";
 	case MODE_V4SF:
-	  return "%vxorps\t%0, %d0";
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "%vxorps\t%0, %d0";
+	  /* FALLTHRU */
+	case MODE_V16SF:
+	case MODE_V8SF:
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return "vxorps\t%x0, %x0, %x0";
+	  else if (TARGET_AVX512DQ)
+	    return (TARGET_AVX512VL
+		    ? "vxorps\t%x0, %x0, %x0"
+		    : "vxorps\t%g0, %g0, %g0");
+	  else
+	    return (TARGET_AVX512VL
+		    ? "vpxord\t%x0, %x0, %x0"
+		    : "vpxord\t%g0, %g0, %g0");
 
 	default:
 	  gcc_unreachable ();
@@ -10449,9 +10586,14 @@ standard_sse_constant_opcode (rtx_insn *insn, rtx x)
 	case MODE_V2DF:
 	case MODE_V4SF:
 	  gcc_assert (TARGET_SSE2);
-	  return (TARGET_AVX
-		  ? "vpcmpeqd\t%0, %0, %0"
-		  : "pcmpeqd\t%0, %0");
+	  if (!EXT_REX_SSE_REG_P (operands[0]))
+	    return (TARGET_AVX
+		    ? "vpcmpeqd\t%0, %0, %0"
+		    : "pcmpeqd\t%0, %0");
+	  else if (TARGET_AVX512VL)
+	    return "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}";
+	  else
+	    return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
 
 	default:
 	  gcc_unreachable ();
@@ -10599,6 +10741,267 @@ ix86_setup_frame_addresses (void)
 # endif
 #endif
 
+/* Label count for call and return thunks.  It is used to make unique
+   labels in call and return thunks.  */
+static int indirectlabelno;
+
+/* True if call and return thunk functions are needed.  */
+static bool indirect_thunk_needed = false;
+/* True if call and return thunk functions with the BND prefix are
+   needed.  */
+static bool indirect_thunk_bnd_needed = false;
+
+/* Bit masks of integer registers, which contain branch target, used
+   by call and return thunks functions.  */
+static int indirect_thunks_used;
+/* Bit masks of integer registers, which contain branch target, used
+   by call and return thunks functions with the BND prefix.  */
+static int indirect_thunks_bnd_used;
+
+#ifndef INDIRECT_LABEL
+# define INDIRECT_LABEL "LIND"
+#endif
+
+/* Fills in the label name that should be used for the indirect thunk.  */
+
+static void
+indirect_thunk_name (char name[32], int regno, bool need_bnd_p,
+		     bool ret_p)
+{
+  if (regno >= 0 && ret_p)
+    gcc_unreachable ();
+
+  if (USE_HIDDEN_LINKONCE)
+    {
+      const char *bnd = need_bnd_p ? "_bnd" : "";
+      if (regno >= 0)
+	{
+	  const char *reg_prefix;
+	  if (LEGACY_INT_REGNO_P (regno))
+	    reg_prefix = TARGET_64BIT ? "r" : "e";
+	  else
+	    reg_prefix = "";
+	  sprintf (name, "__x86_indirect_thunk%s_%s%s",
+		   bnd, reg_prefix, reg_names[regno]);
+	}
+      else
+	{
+	  const char *ret = ret_p ? "return" : "indirect";
+	  sprintf (name, "__x86_%s_thunk%s", ret, bnd);
+	}
+    }
+  else
+    {
+      if (regno >= 0)
+	{
+	  if (need_bnd_p)
+	    ASM_GENERATE_INTERNAL_LABEL (name, "LITBR", regno);
+	  else
+	    ASM_GENERATE_INTERNAL_LABEL (name, "LITR", regno);
+	}
+      else
+	{
+	  if (ret_p)
+	    {
+	      if (need_bnd_p)
+		ASM_GENERATE_INTERNAL_LABEL (name, "LRTB", 0);
+	      else
+		ASM_GENERATE_INTERNAL_LABEL (name, "LRT", 0);
+	    }
+	  else
+	    {
+	      if (need_bnd_p)
+		ASM_GENERATE_INTERNAL_LABEL (name, "LITB", 0);
+	      else
+		ASM_GENERATE_INTERNAL_LABEL (name, "LIT", 0);
+	    }
+	}
+    }
+}
+
+/* Output a call and return thunk for indirect branch.  If BND_P is
+   true, the BND prefix is needed.   If REGNO != -1,  the function
+   address is in REGNO and the call and return thunk looks like:
+
+	call	L2
+   L1:
+	pause
+	jmp	L1
+   L2:
+	mov	%REG, (%sp)
+	ret
+
+   Otherwise, the function address is on the top of stack and the
+   call and return thunk looks like:
+
+	call L2
+  L1:
+	pause
+	jmp L1
+  L2:
+	lea WORD_SIZE(%sp), %sp
+	ret
+ */
+
+static void
+output_indirect_thunk (bool need_bnd_p, int regno)
+{
+  char indirectlabel1[32];
+  char indirectlabel2[32];
+
+  ASM_GENERATE_INTERNAL_LABEL (indirectlabel1, INDIRECT_LABEL,
+			       indirectlabelno++);
+  ASM_GENERATE_INTERNAL_LABEL (indirectlabel2, INDIRECT_LABEL,
+			       indirectlabelno++);
+
+  /* Call */
+  if (need_bnd_p)
+    fputs ("\tbnd call\t", asm_out_file);
+  else
+    fputs ("\tcall\t", asm_out_file);
+  assemble_name_raw (asm_out_file, indirectlabel2);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
+
+  /* Pause + lfence.  */
+  fprintf (asm_out_file, "\tpause\n\tlfence\n");
+
+  /* Jump.  */
+  fputs ("\tjmp\t", asm_out_file);
+  assemble_name_raw (asm_out_file, indirectlabel1);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
+
+  if (regno >= 0)
+    {
+      /* MOV.  */
+      rtx xops[2];
+      xops[0] = gen_rtx_MEM (word_mode, stack_pointer_rtx);
+      xops[1] = gen_rtx_REG (word_mode, regno);
+      output_asm_insn ("mov\t{%1, %0|%0, %1}", xops);
+    }
+  else
+    {
+      /* LEA.  */
+      rtx xops[2];
+      xops[0] = stack_pointer_rtx;
+      xops[1] = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
+      output_asm_insn ("lea\t{%E1, %0|%0, %E1}", xops);
+    }
+
+  if (need_bnd_p)
+    fputs ("\tbnd ret\n", asm_out_file);
+  else
+    fputs ("\tret\n", asm_out_file);
+}
+
+/* Output a funtion with a call and return thunk for indirect branch.
+   If BND_P is true, the BND prefix is needed.   If REGNO != -1,  the
+   function address is in REGNO.  Otherwise, the function address is
+   on the top of stack.  */
+
+static void
+output_indirect_thunk_function (bool need_bnd_p, int regno)
+{
+  char name[32];
+  tree decl;
+
+  /* Create __x86_indirect_thunk/__x86_indirect_thunk_bnd.  */
+  indirect_thunk_name (name, regno, need_bnd_p, false);
+  decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+		     get_identifier (name),
+		     build_function_type_list (void_type_node, NULL_TREE));
+  DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
+				   NULL_TREE, void_type_node);
+  TREE_PUBLIC (decl) = 1;
+  TREE_STATIC (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+
+#if TARGET_MACHO
+  if (TARGET_MACHO)
+    {
+      switch_to_section (darwin_sections[picbase_thunk_section]);
+      fputs ("\t.weak_definition\t", asm_out_file);
+      assemble_name (asm_out_file, name);
+      fputs ("\n\t.private_extern\t", asm_out_file);
+      assemble_name (asm_out_file, name);
+      putc ('\n', asm_out_file);
+      ASM_OUTPUT_LABEL (asm_out_file, name);
+      DECL_WEAK (decl) = 1;
+    }
+  else
+#endif
+    if (USE_HIDDEN_LINKONCE)
+      {
+	cgraph_node::create (decl)->set_comdat_group (DECL_ASSEMBLER_NAME (decl));
+
+	targetm.asm_out.unique_section (decl, 0);
+	switch_to_section (get_named_section (decl, NULL, 0));
+
+	targetm.asm_out.globalize_label (asm_out_file, name);
+	fputs ("\t.hidden\t", asm_out_file);
+	assemble_name (asm_out_file, name);
+	putc ('\n', asm_out_file);
+	ASM_DECLARE_FUNCTION_NAME (asm_out_file, name, decl);
+      }
+    else
+      {
+	switch_to_section (text_section);
+	ASM_OUTPUT_LABEL (asm_out_file, name);
+      }
+
+  if (regno < 0)
+    {
+      /* Create alias for __x86.return_thunk/__x86.return_thunk_bnd.  */
+      char alias[32];
+
+      indirect_thunk_name (alias, regno, need_bnd_p, true);
+#if TARGET_MACHO
+      if (TARGET_MACHO)
+	{
+	  fputs ("\t.weak_definition\t", asm_out_file);
+	  assemble_name (asm_out_file, alias);
+	  fputs ("\n\t.private_extern\t", asm_out_file);
+	  assemble_name (asm_out_file, alias);
+	  putc ('\n', asm_out_file);
+	  ASM_OUTPUT_LABEL (asm_out_file, alias);
+	}
+#else
+      ASM_OUTPUT_DEF (asm_out_file, alias, name);
+      if (USE_HIDDEN_LINKONCE)
+	{
+	  fputs ("\t.globl\t", asm_out_file);
+	  assemble_name (asm_out_file, alias);
+	  putc ('\n', asm_out_file);
+	  fputs ("\t.hidden\t", asm_out_file);
+	  assemble_name (asm_out_file, alias);
+	  putc ('\n', asm_out_file);
+	}
+#endif
+    }
+
+  DECL_INITIAL (decl) = make_node (BLOCK);
+  current_function_decl = decl;
+  allocate_struct_function (decl, false);
+  init_function_start (decl);
+  /* We're about to hide the function body from callees of final_* by
+     emitting it directly; tell them we're a thunk, if they care.  */
+  cfun->is_thunk = true;
+  first_function_block_is_cold = false;
+  /* Make sure unwind info is emitted for the thunk if needed.  */
+  final_start_function (emit_barrier (), asm_out_file, 1);
+
+  output_indirect_thunk (need_bnd_p, regno);
+
+  final_end_function ();
+  init_insn_lengths ();
+  free_after_compilation (cfun);
+  set_cfun (NULL);
+  current_function_decl = NULL;
+}
+
 static int pic_labels_used;
 
 /* Fills in the label name that should be used for a pc thunk for
@@ -10625,10 +11028,31 @@ ix86_code_end (void)
   rtx xops[2];
   int regno;
 
+  if (indirect_thunk_needed)
+    output_indirect_thunk_function (false, -1);
+  if (indirect_thunk_bnd_needed)
+    output_indirect_thunk_function (true, -1);
+
+  for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
+    {
+      int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
+      if ((indirect_thunks_used & (1 << i)))
+	output_indirect_thunk_function (false, regno);
+
+      if ((indirect_thunks_bnd_used & (1 << i)))
+	output_indirect_thunk_function (true, regno);
+    }
+
   for (regno = FIRST_INT_REG; regno <= LAST_INT_REG; regno++)
     {
       char name[32];
       tree decl;
+
+      if ((indirect_thunks_used & (1 << regno)))
+	output_indirect_thunk_function (false, regno);
+
+      if ((indirect_thunks_bnd_used & (1 << regno)))
+	output_indirect_thunk_function (true, regno);
 
       if (!(pic_labels_used & (1 << regno)))
 	continue;
@@ -11219,7 +11643,11 @@ ix86_compute_frame_layout (void)
   /* Calculate the size of the va-arg area (not including padding, if any).  */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
 
-  if (stack_realign_fp)
+  /* Also adjust stack_realign_offset for the largest alignment of
+     stack slot actually used.  */
+  if (stack_realign_fp
+      || (cfun->machine->max_used_stack_alignment != 0
+	  && (offset % cfun->machine->max_used_stack_alignment) != 0))
     {
       /* We may need a 16-byte aligned stack for the remainder of the
 	 register save area, but the stack frame for the local function
@@ -11295,11 +11723,16 @@ ix86_compute_frame_layout (void)
       offset += frame->va_arg_size;
     }
 
-  /* Align start of frame for local function.  */
+  /* Align start of frame for local function.  When a function call
+     is removed, it may become a leaf function.  But if argument may
+     be passed on stack, we need to align the stack when there is no
+     tail call.  */
   if (m->call_ms2sysv
       || frame->va_arg_size != 0
       || size != 0
       || !crtl->is_leaf
+      || (!crtl->tail_call_emit
+	  && cfun->machine->outgoing_args_on_stack)
       || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
     offset = ROUND_UP (offset, stack_alignment_needed);
@@ -12177,21 +12610,39 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
      pointer could be anywhere in the guard page.  The safe thing
      to do is emit a probe now.
 
+     The probe can be avoided if we have already emitted any callee
+     register saves into the stack or have a frame pointer (which will
+     have been saved as well).  Those saves will function as implicit
+     probes.
+
      ?!? This should be revamped to work like aarch64 and s390 where
      we track the offset from the most recent probe.  Normally that
      offset would be zero.  For a noreturn function we would reset
      it to PROBE_INTERVAL - (STACK_BOUNDARY / BITS_PER_UNIT).   Then
      we just probe when we cross PROBE_INTERVAL.  */
-  if (TREE_THIS_VOLATILE (cfun->decl))
+  if (TREE_THIS_VOLATILE (cfun->decl)
+      && !(m->frame.nregs || m->frame.nsseregs || frame_pointer_needed))
     {
       /* We can safely use any register here since we're just going to push
 	 its value and immediately pop it back.  But we do try and avoid
 	 argument passing registers so as not to introduce dependencies in
 	 the pipeline.  For 32 bit we use %esi and for 64 bit we use %rax.  */
       rtx dummy_reg = gen_rtx_REG (word_mode, TARGET_64BIT ? AX_REG : SI_REG);
-      rtx_insn *insn = emit_insn (gen_push (dummy_reg));
-      RTX_FRAME_RELATED_P (insn) = 1;
-      ix86_emit_restore_reg_using_pop (dummy_reg);
+      rtx_insn *insn_push = emit_insn (gen_push (dummy_reg));
+      rtx_insn *insn_pop = emit_insn (gen_pop (dummy_reg));
+      m->fs.sp_offset -= UNITS_PER_WORD;
+      if (m->fs.cfa_reg == stack_pointer_rtx)
+	{
+	  m->fs.cfa_offset -= UNITS_PER_WORD;
+	  rtx x = plus_constant (Pmode, stack_pointer_rtx, -UNITS_PER_WORD);
+	  x = gen_rtx_SET (stack_pointer_rtx, x);
+	  add_reg_note (insn_push, REG_CFA_ADJUST_CFA, x);
+	  RTX_FRAME_RELATED_P (insn_push) = 1;
+	  x = plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD);
+	  x = gen_rtx_SET (stack_pointer_rtx, x);
+	  add_reg_note (insn_pop, REG_CFA_ADJUST_CFA, x);
+	  RTX_FRAME_RELATED_P (insn_pop) = 1;
+	}
       emit_insn (gen_blockage ());
     }
 
@@ -12610,6 +13061,62 @@ output_probe_stack_range (rtx reg, rtx end)
   return "";
 }
 
+/* Return true if stack frame is required.  Update STACK_ALIGNMENT
+   to the largest alignment, in bits, of stack slot used if stack
+   frame is required and CHECK_STACK_SLOT is true.  */
+
+static bool
+ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
+				    bool check_stack_slot)
+{
+  HARD_REG_SET set_up_by_prologue, prologue_used;
+  basic_block bb;
+
+  CLEAR_HARD_REG_SET (prologue_used);
+  CLEAR_HARD_REG_SET (set_up_by_prologue);
+  add_to_hard_reg_set (&set_up_by_prologue, Pmode, STACK_POINTER_REGNUM);
+  add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
+  add_to_hard_reg_set (&set_up_by_prologue, Pmode,
+		       HARD_FRAME_POINTER_REGNUM);
+
+  /* The preferred stack alignment is the minimum stack alignment.  */
+  if (stack_alignment > crtl->preferred_stack_boundary)
+    stack_alignment = crtl->preferred_stack_boundary;
+
+  bool require_stack_frame = false;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *insn;
+      FOR_BB_INSNS (bb, insn)
+	if (NONDEBUG_INSN_P (insn)
+	    && requires_stack_frame_p (insn, prologue_used,
+				       set_up_by_prologue))
+	  {
+	    require_stack_frame = true;
+
+	    if (check_stack_slot)
+	      {
+		/* Find the maximum stack alignment.  */
+		subrtx_iterator::array_type array;
+		FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+		  if (MEM_P (*iter)
+		      && (reg_mentioned_p (stack_pointer_rtx,
+					   *iter)
+			  || reg_mentioned_p (frame_pointer_rtx,
+					      *iter)))
+		    {
+		      unsigned int alignment = MEM_ALIGN (*iter);
+		      if (alignment > stack_alignment)
+			stack_alignment = alignment;
+		    }
+	      }
+	  }
+    }
+
+  return require_stack_frame;
+}
+
 /* Finalize stack_realign_needed and frame_pointer_needed flags, which
    will guide prologue/epilogue to be generated in correct form.  */
 
@@ -12660,52 +13167,8 @@ ix86_finalize_stack_frame_flags (void)
       && ix86_nsaved_sseregs () == 0
       && ix86_varargs_gpr_size + ix86_varargs_fpr_size == 0)
     {
-      HARD_REG_SET set_up_by_prologue, prologue_used;
-      basic_block bb;
-
-      CLEAR_HARD_REG_SET (prologue_used);
-      CLEAR_HARD_REG_SET (set_up_by_prologue);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode, STACK_POINTER_REGNUM);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
-      add_to_hard_reg_set (&set_up_by_prologue, Pmode,
-			   HARD_FRAME_POINTER_REGNUM);
-
-      /* The preferred stack alignment is the minimum stack alignment.  */
-      if (stack_alignment > crtl->preferred_stack_boundary)
-	stack_alignment = crtl->preferred_stack_boundary;
-
-      bool require_stack_frame = false;
-
-      FOR_EACH_BB_FN (bb, cfun)
-        {
-          rtx_insn *insn;
-	  FOR_BB_INSNS (bb, insn)
-	    if (NONDEBUG_INSN_P (insn)
-		&& requires_stack_frame_p (insn, prologue_used,
-					   set_up_by_prologue))
-	      {
-		require_stack_frame = true;
-
-		if (stack_realign)
-		  {
-		    /* Find the maximum stack alignment.  */
-		    subrtx_iterator::array_type array;
-		    FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
-		      if (MEM_P (*iter)
-			  && (reg_mentioned_p (stack_pointer_rtx,
-					       *iter)
-			      || reg_mentioned_p (frame_pointer_rtx,
-						  *iter)))
-			{
-			  unsigned int alignment = MEM_ALIGN (*iter);
-			  if (alignment > stack_alignment)
-			    stack_alignment = alignment;
-			}
-		  }
-	      }
-	}
-
-      if (require_stack_frame)
+      if (ix86_find_max_used_stack_alignment (stack_alignment,
+					      stack_realign))
 	{
 	  /* Stack frame is required.  If stack alignment needed is less
 	     than incoming stack boundary, don't realign stack.  */
@@ -12792,6 +13255,16 @@ ix86_finalize_stack_frame_flags (void)
 
 	  recompute_frame_layout_p = true;
 	}
+    }
+  else if (crtl->max_used_stack_slot_alignment
+	   > crtl->preferred_stack_boundary)
+    {
+      /* We don't need to realign stack.  But we still need to keep
+	 stack frame properly aligned to satisfy the largest alignment
+	 of stack slots.  */
+      if (ix86_find_max_used_stack_alignment (stack_alignment, true))
+	cfun->machine->max_used_stack_alignment
+	  = stack_alignment / BITS_PER_UNIT;
     }
 
   if (crtl->stack_realign_needed != stack_realign)
@@ -14474,7 +14947,7 @@ ix86_expand_split_stack_prologue (void)
      anyhow.  In 64-bit mode we pass the parameters in r10 and
      r11.  */
   allocate_rtx = GEN_INT (allocate);
-  args_size = crtl->args.size >= 0 ? crtl->args.size : 0;
+  args_size = crtl->args.size >= 0 ? (HOST_WIDE_INT) crtl->args.size : 0;
   call_fusage = NULL_RTX;
   rtx pop = NULL_RTX;
   if (TARGET_64BIT)
@@ -17209,6 +17682,7 @@ put_condition_code (enum rtx_code code, machine_mode mode, bool reverse,
    If CODE is 'h', pretend the reg is the 'high' byte register.
    If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.
    If CODE is 'd', duplicate the operand for AVX instruction.
+   If CODE is 'V', print naked full integer register name without %.
  */
 
 void
@@ -17219,7 +17693,7 @@ print_reg (rtx x, int code, FILE *file)
   unsigned int regno;
   bool duplicated;
 
-  if (ASSEMBLER_DIALECT == ASM_ATT)
+  if (ASSEMBLER_DIALECT == ASM_ATT && code != 'V')
     putc ('%', file);
 
   if (x == pc_rtx)
@@ -17269,6 +17743,14 @@ print_reg (rtx x, int code, FILE *file)
     {
       output_operand_lossage ("invalid use of asm flag output");
       return;
+    }
+
+  if (code == 'V')
+    {
+      if (GENERAL_REGNO_P (regno))
+	msize = GET_MODE_SIZE (word_mode);
+      else
+	error ("'V' modifier on non-integer register");
     }
 
   duplicated = code == 'd' && TARGET_AVX;
@@ -17390,6 +17872,7 @@ print_reg (rtx x, int code, FILE *file)
    & -- print some in-use local-dynamic symbol name.
    H -- print a memory address offset by 8; used for sse high-parts
    Y -- print condition for XOP pcom* instruction.
+   V -- print naked full integer register name without %.
    + -- print a branch hint as 'cs' or 'ds' prefix
    ; -- print a semicolon (after prefixes due to bug in older gas).
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
@@ -17613,6 +18096,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case 'X':
 	case 'P':
 	case 'p':
+	case 'V':
 	  break;
 
 	case 's':
@@ -28061,12 +28545,332 @@ ix86_nopic_noplt_attribute_p (rtx call_op)
   return false;
 }
 
+/* Output indirect branch via a call and return thunk.  CALL_OP is a
+   register which contains the branch target.  XASM is the assembly
+   template for CALL_OP.  Branch is a tail call if SIBCALL_P is true.
+   A normal call is converted to:
+
+	call __x86_indirect_thunk_reg
+
+   and a tail call is converted to:
+
+	jmp __x86_indirect_thunk_reg
+ */
+
+static void
+ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
+{
+  char thunk_name_buf[32];
+  char *thunk_name;
+  bool need_bnd_p = ix86_bnd_prefixed_insn_p (current_output_insn);
+  int regno = REGNO (call_op);
+
+  if (cfun->machine->indirect_branch_type
+      != indirect_branch_thunk_inline)
+    {
+      if (cfun->machine->indirect_branch_type == indirect_branch_thunk)
+	{
+	  int i = regno;
+	  if (i >= FIRST_REX_INT_REG)
+	    i -= (FIRST_REX_INT_REG - LAST_INT_REG - 1);
+	  if (need_bnd_p)
+	    indirect_thunks_bnd_used |= 1 << i;
+	  else
+	    indirect_thunks_used |= 1 << i;
+	}
+      indirect_thunk_name (thunk_name_buf, regno, need_bnd_p, false);
+      thunk_name = thunk_name_buf;
+    }
+  else
+    thunk_name = NULL;
+
+  if (sibcall_p)
+    {
+      if (thunk_name != NULL)
+	{
+	  if (need_bnd_p)
+	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	  else
+	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	}
+      else
+	output_indirect_thunk (need_bnd_p, regno);
+    }
+  else
+    {
+      if (thunk_name != NULL)
+	{
+	  if (need_bnd_p)
+	    fprintf (asm_out_file, "\tbnd call\t%s\n", thunk_name);
+	  else
+	    fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
+	  return;
+	}
+
+      char indirectlabel1[32];
+      char indirectlabel2[32];
+
+      ASM_GENERATE_INTERNAL_LABEL (indirectlabel1,
+				   INDIRECT_LABEL,
+				   indirectlabelno++);
+      ASM_GENERATE_INTERNAL_LABEL (indirectlabel2,
+				   INDIRECT_LABEL,
+				   indirectlabelno++);
+
+      /* Jump.  */
+      if (need_bnd_p)
+	fputs ("\tbnd jmp\t", asm_out_file);
+      else
+	fputs ("\tjmp\t", asm_out_file);
+      assemble_name_raw (asm_out_file, indirectlabel2);
+      fputc ('\n', asm_out_file);
+
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
+
+      if (thunk_name != NULL)
+	{
+	  if (need_bnd_p)
+	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	  else
+	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	}
+      else
+	output_indirect_thunk (need_bnd_p, regno);
+
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
+
+      /* Call.  */
+      if (need_bnd_p)
+	fputs ("\tbnd call\t", asm_out_file);
+      else
+	fputs ("\tcall\t", asm_out_file);
+      assemble_name_raw (asm_out_file, indirectlabel1);
+      fputc ('\n', asm_out_file);
+    }
+}
+
+/* Output indirect branch via a call and return thunk.  CALL_OP is
+   the branch target.  XASM is the assembly template for CALL_OP.
+   Branch is a tail call if SIBCALL_P is true.  A normal call is
+   converted to:
+
+	jmp L2
+   L1:
+	push CALL_OP
+	jmp __x86_indirect_thunk
+   L2:
+	call L1
+
+   and a tail call is converted to:
+
+	push CALL_OP
+	jmp __x86_indirect_thunk
+ */
+
+static void
+ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
+				      bool sibcall_p)
+{
+  char thunk_name_buf[32];
+  char *thunk_name;
+  char push_buf[64];
+  bool need_bnd_p = ix86_bnd_prefixed_insn_p (current_output_insn);
+  int regno = -1;
+
+  if (cfun->machine->indirect_branch_type
+      != indirect_branch_thunk_inline)
+    {
+      if (cfun->machine->indirect_branch_type == indirect_branch_thunk)
+	{
+	  if (need_bnd_p)
+	    indirect_thunk_bnd_needed = true;
+	  else
+	    indirect_thunk_needed = true;
+	}
+      indirect_thunk_name (thunk_name_buf, regno, need_bnd_p, false);
+      thunk_name = thunk_name_buf;
+    }
+  else
+    thunk_name = NULL;
+
+  snprintf (push_buf, sizeof (push_buf), "push{%c}\t%s",
+	    TARGET_64BIT ? 'q' : 'l', xasm);
+
+  if (sibcall_p)
+    {
+      output_asm_insn (push_buf, &call_op);
+      if (thunk_name != NULL)
+	{
+	  if (need_bnd_p)
+	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	  else
+	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	}
+      else
+	output_indirect_thunk (need_bnd_p, regno);
+    }
+  else
+    {
+      char indirectlabel1[32];
+      char indirectlabel2[32];
+
+      ASM_GENERATE_INTERNAL_LABEL (indirectlabel1,
+				   INDIRECT_LABEL,
+				   indirectlabelno++);
+      ASM_GENERATE_INTERNAL_LABEL (indirectlabel2,
+				   INDIRECT_LABEL,
+				   indirectlabelno++);
+
+      /* Jump.  */
+      if (need_bnd_p)
+	fputs ("\tbnd jmp\t", asm_out_file);
+      else
+	fputs ("\tjmp\t", asm_out_file);
+      assemble_name_raw (asm_out_file, indirectlabel2);
+      fputc ('\n', asm_out_file);
+
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
+
+      /* An external function may be called via GOT, instead of PLT.  */
+      if (MEM_P (call_op))
+	{
+	  struct ix86_address parts;
+	  rtx addr = XEXP (call_op, 0);
+	  if (ix86_decompose_address (addr, &parts)
+	      && parts.base == stack_pointer_rtx)
+	    {
+	      /* Since call will adjust stack by -UNITS_PER_WORD,
+		 we must convert "disp(stack, index, scale)" to
+		 "disp+UNITS_PER_WORD(stack, index, scale)".  */
+	      if (parts.index)
+		{
+		  addr = gen_rtx_MULT (Pmode, parts.index,
+				       GEN_INT (parts.scale));
+		  addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				       addr);
+		}
+	      else
+		addr = stack_pointer_rtx;
+
+	      rtx disp;
+	      if (parts.disp != NULL_RTX)
+		disp = plus_constant (Pmode, parts.disp,
+				      UNITS_PER_WORD);
+	      else
+		disp = GEN_INT (UNITS_PER_WORD);
+
+	      addr = gen_rtx_PLUS (Pmode, addr, disp);
+	      call_op = gen_rtx_MEM (GET_MODE (call_op), addr);
+	    }
+	}
+
+      output_asm_insn (push_buf, &call_op);
+
+      if (thunk_name != NULL)
+	{
+	  if (need_bnd_p)
+	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	  else
+	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	}
+      else
+	output_indirect_thunk (need_bnd_p, regno);
+
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
+
+      /* Call.  */
+      if (need_bnd_p)
+	fputs ("\tbnd call\t", asm_out_file);
+      else
+	fputs ("\tcall\t", asm_out_file);
+      assemble_name_raw (asm_out_file, indirectlabel1);
+      fputc ('\n', asm_out_file);
+    }
+}
+
+/* Output indirect branch via a call and return thunk.  CALL_OP is
+   the branch target.  XASM is the assembly template for CALL_OP.
+   Branch is a tail call if SIBCALL_P is true.   */
+
+static void
+ix86_output_indirect_branch (rtx call_op, const char *xasm,
+			     bool sibcall_p)
+{
+  if (REG_P (call_op))
+    ix86_output_indirect_branch_via_reg (call_op, sibcall_p);
+  else
+    ix86_output_indirect_branch_via_push (call_op, xasm, sibcall_p);
+}
+/* Output indirect jump.  CALL_OP is the jump target.  Jump is a
+   function return if RET_P is true.  */
+
+const char *
+ix86_output_indirect_jmp (rtx call_op, bool ret_p)
+{
+  if (cfun->machine->indirect_branch_type != indirect_branch_keep)
+    {
+      /* We can't have red-zone if this isn't a function return since
+	 "call" in the indirect thunk pushes the return address onto
+	 stack, destroying red-zone.  */
+      if (!ret_p && ix86_red_zone_size != 0)
+	gcc_unreachable ();
+
+      ix86_output_indirect_branch (call_op, "%0", true);
+      return "";
+    }
+  else
+    return "%!jmp\t%A0";
+}
+
+/* Output function return.  CALL_OP is the jump target.  Add a REP
+   prefix to RET if LONG_P is true and function return is kept.  */
+
+const char *
+ix86_output_function_return (bool long_p)
+{
+  if (cfun->machine->function_return_type != indirect_branch_keep)
+    {
+      char thunk_name[32];
+      bool need_bnd_p = ix86_bnd_prefixed_insn_p (current_output_insn);
+
+      if (cfun->machine->function_return_type
+	  != indirect_branch_thunk_inline)
+	{
+	  bool need_thunk = (cfun->machine->function_return_type
+			     == indirect_branch_thunk);
+	  indirect_thunk_name (thunk_name, -1, need_bnd_p, true);
+	  if (need_bnd_p)
+	    {
+	      indirect_thunk_bnd_needed |= need_thunk;
+	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
+	    }
+	  else
+	    {
+	      indirect_thunk_needed |= need_thunk;
+	      fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
+	    }
+	}
+      else
+	output_indirect_thunk (need_bnd_p, -1);
+
+      return "";
+    }
+
+  if (!long_p || ix86_bnd_prefixed_insn_p (current_output_insn))
+    return "%!ret";
+
+  return "rep%; ret";
+}
+
 /* Output the assembly for a call instruction.  */
 
 const char *
 ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 {
   bool direct_p = constant_call_address_operand (call_op, VOIDmode);
+  bool output_indirect_p
+    = (!TARGET_SEH
+       && cfun->machine->indirect_branch_type != indirect_branch_keep);
   bool seh_nop_p = false;
   const char *xasm;
 
@@ -28076,10 +28880,21 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 	{
 	  if (ix86_nopic_noplt_attribute_p (call_op))
 	    {
+	      direct_p = false;
 	      if (TARGET_64BIT)
-		xasm = "%!jmp\t{*%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+		{
+		  if (output_indirect_p)
+		    xasm = "{%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+		  else
+		    xasm = "%!jmp\t{*%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+		}
 	      else
-		xasm = "%!jmp\t{*%p0@GOT|[DWORD PTR %p0@GOT]}";
+		{
+		  if (output_indirect_p)
+		    xasm = "{%p0@GOT|[DWORD PTR %p0@GOT]}";
+		  else
+		    xasm = "%!jmp\t{*%p0@GOT|[DWORD PTR %p0@GOT]}";
+		}
 	    }
 	  else
 	    xasm = "%!jmp\t%P0";
@@ -28089,9 +28904,17 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
       else if (TARGET_SEH)
 	xasm = "%!rex.W jmp\t%A0";
       else
-	xasm = "%!jmp\t%A0";
+	{
+	  if (output_indirect_p)
+	    xasm = "%0";
+	  else
+	    xasm = "%!jmp\t%A0";
+	}
 
-      output_asm_insn (xasm, &call_op);
+      if (output_indirect_p && !direct_p)
+	ix86_output_indirect_branch (call_op, xasm, true);
+      else
+	output_asm_insn (xasm, &call_op);
       return "";
     }
 
@@ -28129,18 +28952,37 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
     {
       if (ix86_nopic_noplt_attribute_p (call_op))
 	{
+	  direct_p = false;
 	  if (TARGET_64BIT)
-	    xasm = "%!call\t{*%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+	    {
+	      if (output_indirect_p)
+		xasm = "{%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+	      else
+		xasm = "%!call\t{*%p0@GOTPCREL(%%rip)|[QWORD PTR %p0@GOTPCREL[rip]]}";
+	    }
 	  else
-	    xasm = "%!call\t{*%p0@GOT|[DWORD PTR %p0@GOT]}";
+	    {
+	      if (output_indirect_p)
+		xasm = "{%p0@GOT|[DWORD PTR %p0@GOT]}";
+	      else
+		xasm = "%!call\t{*%p0@GOT|[DWORD PTR %p0@GOT]}";
+	    }
 	}
       else
 	xasm = "%!call\t%P0";
     }
   else
-    xasm = "%!call\t%A0";
+    {
+      if (output_indirect_p)
+	xasm = "%0";
+      else
+	xasm = "%!call\t%A0";
+    }
 
-  output_asm_insn (xasm, &call_op);
+  if (output_indirect_p && !direct_p)
+    ix86_output_indirect_branch (call_op, xasm, false);
+  else
+    output_asm_insn (xasm, &call_op);
 
   if (seh_nop_p)
     return "nop";
@@ -28821,6 +29663,7 @@ ix86_sched_init_global (FILE *, int, int)
     case PROCESSOR_NEHALEM:
     case PROCESSOR_SANDYBRIDGE:
     case PROCESSOR_HASWELL:
+    case PROCESSOR_GENERIC:
       /* Do not perform multipass scheduling for pre-reload schedule
          to save compile time.  */
       if (reload_completed)
@@ -29203,12 +30046,6 @@ static rtx
 ix86_static_chain (const_tree fndecl_or_type, bool incoming_p)
 {
   unsigned regno;
-
-  /* While this function won't be called by the middle-end when a static
-     chain isn't needed, it's also used throughout the backend so it's
-     easiest to keep this check centralized.  */
-  if (DECL_P (fndecl_or_type) && !DECL_STATIC_CHAIN (fndecl_or_type))
-    return NULL;
 
   if (TARGET_64BIT)
     {
@@ -29763,20 +30600,20 @@ def_builtin (HOST_WIDE_INT mask, const char *name,
     {
       ix86_builtins_isa[(int) code].isa = mask;
 
-      /* OPTION_MASK_ISA_AVX512VL has special meaning. Despite of generic case,
-	 where any bit set means that built-in is enable, this bit must be *and-ed*
-	 with another one. E.g.: OPTION_MASK_ISA_AVX512DQ | OPTION_MASK_ISA_AVX512VL
-	 means that *both* cpuid bits must be set for the built-in to be available.
-	 Handle this here.  */
-      if (mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
-	mask &= ~OPTION_MASK_ISA_AVX512VL;
-
       mask &= ~OPTION_MASK_ISA_64BIT;
+
+      /* Filter out the masks most often ored together with others.  */
+      if ((mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
+	  && mask != OPTION_MASK_ISA_AVX512VL)
+	mask &= ~OPTION_MASK_ISA_AVX512VL;
+      if ((mask & ix86_isa_flags & OPTION_MASK_ISA_AVX512BW)
+	  && mask != OPTION_MASK_ISA_AVX512BW)
+	mask &= ~OPTION_MASK_ISA_AVX512BW;
+
       if (mask == 0
 	  || (mask & ix86_isa_flags) != 0
 	  || (lang_hooks.builtin_function
 	      == lang_hooks.builtin_function_ext_scope))
-
 	{
 	  tree type = ix86_get_builtin_func_type (tcode);
 	  decl = add_builtin_function (name, type, code, BUILT_IN_MD,
@@ -29911,6 +30748,8 @@ def_builtin_pure2 (HOST_WIDE_INT mask, const char *name,
 static void
 ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 {
+  isa &= ~OPTION_MASK_ISA_64BIT;
+
   if ((isa & deferred_isa_values) == 0
       && (isa2 & deferred_isa_values2) == 0)
     return;
@@ -30168,10 +31007,8 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ROUND_ARGS_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
-	       IX86_BUILTIN__BDESC_ARGS2_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
-	       IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST, 1);
+	       IX86_BUILTIN__BDESC_ARGS2_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_CONST_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
@@ -30242,21 +31079,6 @@ ix86_init_mmx_sse_builtins (void)
 		 IX86_BUILTIN__BDESC_ARGS2_FIRST,
 		 ARRAY_SIZE (bdesc_args2) - 1);
   
-  for (i = 0, d = bdesc_special_args2;
-       i < ARRAY_SIZE (bdesc_special_args2);
-       i++, d++)
-    {
-      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST, i);
-       if (d->name == 0)
-	 continue;
-
-	ftype = (enum ix86_builtin_func_type) d->flag;
-	def_builtin2 (d->mask, d->name, ftype, d->code);
-    }
-  BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST,
-		 IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
-		 ARRAY_SIZE (bdesc_special_args2) - 1);
-
   /* Add all builtins with rounding.  */
   for (i = 0, d = bdesc_round_args;
        i < ARRAY_SIZE (bdesc_round_args);
@@ -30845,14 +31667,14 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLWB);
 
   /* MONITORX and MWAITX.  */
-  def_builtin (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_monitorx",
-	       VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITORX);
-  def_builtin (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
-	       VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
+  def_builtin2 (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_monitorx",
+		VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITORX);
+  def_builtin2 (OPTION_MASK_ISA_MWAITX, "__builtin_ia32_mwaitx",
+		VOID_FTYPE_UNSIGNED_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAITX);
 
   /* CLZERO.  */
-  def_builtin (OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
-               VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
+  def_builtin2 (OPTION_MASK_ISA_CLZERO, "__builtin_ia32_clzero",
+		VOID_FTYPE_PCVOID, IX86_BUILTIN_CLZERO);
 
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
@@ -30876,7 +31698,7 @@ ix86_init_mmx_sse_builtins (void)
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
-      def_builtin2 (d->mask, d->name, ftype, d->code);
+      def_builtin (d->mask, d->name, ftype, d->code);
     }
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_LAST,
 		 IX86_BUILTIN__BDESC_CET_FIRST,
@@ -30891,7 +31713,7 @@ ix86_init_mmx_sse_builtins (void)
 	continue;
 
       ftype = (enum ix86_builtin_func_type) d->flag;
-      def_builtin2 (d->mask, d->name, ftype, d->code);
+      def_builtin (d->mask, d->name, ftype, d->code);
     }
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_CET_NORMAL_LAST,
 		 IX86_BUILTIN__BDESC_CET_NORMAL_FIRST,
@@ -33523,12 +34345,15 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16SI_FTYPE_V4SI:
     case V16SI_FTYPE_V16SF:
     case V16SI_FTYPE_V16SI:
+    case V64QI_FTYPE_V64QI:
+    case V32HI_FTYPE_V32HI:
     case V16SF_FTYPE_V16SF:
     case V8DI_FTYPE_UQI:
     case V8DI_FTYPE_V8DI:
     case V8DF_FTYPE_V4DF:
     case V8DF_FTYPE_V2DF:
     case V8DF_FTYPE_V8DF:
+    case V4DI_FTYPE_V4DI:
       nargs = 1;
       break;
     case V4SF_FTYPE_V4SF_VEC_MERGE:
@@ -33828,6 +34653,13 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8HI_FTYPE_V8DI_V8HI_UQI:
     case V8SI_FTYPE_V8DI_V8SI_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI:
+    case V16SI_FTYPE_V16SI_V16SI_V16SI:
+    case V8DI_FTYPE_V8DI_V8DI_V8DI:
+    case V32HI_FTYPE_V32HI_V32HI_V32HI:
+    case V2DI_FTYPE_V2DI_V2DI_V2DI:
+    case V16HI_FTYPE_V16HI_V16HI_V16HI:
+    case V8SI_FTYPE_V8SI_V8SI_V8SI:
+    case V8HI_FTYPE_V8HI_V8HI_V8HI:
       nargs = 3;
       break;
     case V32QI_FTYPE_V32QI_V32QI_INT:
@@ -33856,6 +34688,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case UHI_FTYPE_V16SI_V16SI_INT:
     case UHI_FTYPE_V16SF_V16SF_INT:
     case V64QI_FTYPE_V64QI_V64QI_INT:
+    case V32HI_FTYPE_V32HI_V32HI_INT:
+    case V16SI_FTYPE_V16SI_V16SI_INT:
+    case V8DI_FTYPE_V8DI_V8DI_INT:
       nargs = 3;
       nargs_constant = 1;
       break;
@@ -33895,6 +34730,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case HI_FTYPE_V16SF_INT_UHI:
     case QI_FTYPE_V8SF_INT_UQI:
     case QI_FTYPE_V4SF_INT_UQI:
+    case UHI_FTYPE_V2DI_V2DI_UHI:
+    case USI_FTYPE_V4DI_V4DI_USI:
+    case V4SI_FTYPE_V4SI_V4SI_UHI:
+    case V8SI_FTYPE_V8SI_V8SI_UHI:
       nargs = 3;
       mask_pos = 1;
       nargs_constant = 1;
@@ -33986,6 +34825,15 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case USI_FTYPE_V32HI_V32HI_INT_USI:
     case UHI_FTYPE_V16HI_V16HI_INT_UHI:
     case UQI_FTYPE_V8HI_V8HI_INT_UQI:
+    case V32HI_FTYPE_V32HI_V32HI_V32HI_INT:
+    case V16HI_FTYPE_V16HI_V16HI_V16HI_INT:
+    case V8HI_FTYPE_V8HI_V8HI_V8HI_INT:
+    case V8SI_FTYPE_V8SI_V8SI_V8SI_INT:
+    case V4DI_FTYPE_V4DI_V4DI_V4DI_INT:
+    case V8DI_FTYPE_V8DI_V8DI_V8DI_INT:
+    case V16SI_FTYPE_V16SI_V16SI_V16SI_INT:
+    case V2DI_FTYPE_V2DI_V2DI_V2DI_INT:
+    case V4SI_FTYPE_V4SI_V4SI_V4SI_INT:
       nargs = 4;
       mask_pos = 1;
       nargs_constant = 1;
@@ -34086,6 +34934,15 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V64QI_FTYPE_V64QI_V64QI_INT_V64QI_UDI:
     case V32QI_FTYPE_V32QI_V32QI_INT_V32QI_USI:
     case V16QI_FTYPE_V16QI_V16QI_INT_V16QI_UHI:
+    case V32HI_FTYPE_V32HI_V32HI_INT_V32HI_INT:
+    case V16SI_FTYPE_V16SI_V16SI_INT_V16SI_INT:
+    case V8DI_FTYPE_V8DI_V8DI_INT_V8DI_INT:
+    case V16HI_FTYPE_V16HI_V16HI_INT_V16HI_INT:
+    case V8SI_FTYPE_V8SI_V8SI_INT_V8SI_INT:
+    case V4DI_FTYPE_V4DI_V4DI_INT_V4DI_INT:
+    case V8HI_FTYPE_V8HI_V8HI_INT_V8HI_INT:
+    case V4SI_FTYPE_V4SI_V4SI_INT_V4SI_INT:
+    case V2DI_FTYPE_V2DI_V2DI_INT_V2DI_INT:
       nargs = 5;
       mask_pos = 1;
       nargs_constant = 2;
@@ -34957,6 +35814,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
 	default:
 	  break;
 	}
+      /* FALLTHRU */
     case V64QI_FTYPE_PCCHAR_V64QI_UDI:
     case V32QI_FTYPE_PCCHAR_V32QI_USI:
     case V16QI_FTYPE_PCCHAR_V16QI_UHI:
@@ -35309,36 +36167,34 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       }
     }
 
-  /* Determine whether the builtin function is available under the current ISA.
-     Originally the builtin was not created if it wasn't applicable to the
-     current ISA based on the command line switches.  With function specific
-     options, we need to check in the context of the function making the call
-     whether it is supported.  Treat AVX512VL and MMX specially.  For other flags,
-     if isa includes more than one ISA bit, treat those are requiring any
-     of them.  For AVX512VL, require both AVX512VL and the non-AVX512VL
-     ISAs.  Likewise for MMX, require both MMX and the non-MMX ISAs.
-     Similarly for 64BIT, but we shouldn't be building such builtins
-     at all, -m64 is a whole TU option.  */
-  if (((ix86_builtins_isa[fcode].isa
-	& ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
-	    | OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_GFNI))
-       && !(ix86_builtins_isa[fcode].isa
-	    & ~(OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA_MMX
-		| OPTION_MASK_ISA_64BIT | OPTION_MASK_ISA_GFNI)
-	    & ix86_isa_flags))
-      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_AVX512VL)
-	  && !(ix86_isa_flags & OPTION_MASK_ISA_AVX512VL))
-      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_GFNI)
-	  && !(ix86_isa_flags & OPTION_MASK_ISA_GFNI))
-      || ((ix86_builtins_isa[fcode].isa & OPTION_MASK_ISA_MMX)
-	  && !(ix86_isa_flags & OPTION_MASK_ISA_MMX))
-      || (ix86_builtins_isa[fcode].isa2
-	  && !(ix86_builtins_isa[fcode].isa2 & ix86_isa_flags2)))
+  HOST_WIDE_INT isa = ix86_isa_flags;
+  HOST_WIDE_INT isa2 = ix86_isa_flags2;
+  HOST_WIDE_INT bisa = ix86_builtins_isa[fcode].isa;
+  HOST_WIDE_INT bisa2 = ix86_builtins_isa[fcode].isa2;
+  /* The general case is we require all the ISAs specified in bisa{,2}
+     to be enabled.
+     The exceptions are:
+     OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A
+     OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32
+     OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4
+     where for each this pair it is sufficient if either of the ISAs is
+     enabled, plus if it is ored with other options also those others.  */
+  if (((bisa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
+       == (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A))
+      && (isa & (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A)) != 0)
+    isa |= (OPTION_MASK_ISA_SSE | OPTION_MASK_ISA_3DNOW_A);
+  if (((bisa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
+       == (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32))
+      && (isa & (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32)) != 0)
+    isa |= (OPTION_MASK_ISA_SSE4_2 | OPTION_MASK_ISA_CRC32);
+  if (((bisa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
+       == (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4))
+      && (isa & (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4)) != 0)
+    isa |= (OPTION_MASK_ISA_FMA | OPTION_MASK_ISA_FMA4);
+  if ((bisa & isa) != bisa || (bisa2 & isa2) != bisa2)
     {
-      char *opts = ix86_target_string (ix86_builtins_isa[fcode].isa,
-				       ix86_builtins_isa[fcode].isa2, 0, 0,
-				       NULL, NULL, (enum fpmath_unit) 0,
-				       false);
+      char *opts = ix86_target_string (bisa, bisa2, 0, 0, NULL, NULL,
+				       (enum fpmath_unit) 0, false);
       if (!opts)
 	error ("%qE needs unknown isa option", fndecl);
       else
@@ -37438,20 +38294,12 @@ s4fma_expand:
 		}
 	      return target;
 	    }
-	    case IX86_BUILTIN_RDPID:
-	      return ix86_expand_special_args_builtin (bdesc_args2 + i, exp,
+	  case IX86_BUILTIN_RDPID:
+	    return ix86_expand_special_args_builtin (bdesc_args2 + i, exp,
 						     target);
 	  default:
 	    return ix86_expand_args_builtin (bdesc_args2 + i, exp, target);
 	  }
-    }
-
-  if (fcode >= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST
-      && fcode <= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST)
-    {
-      i = fcode - IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST;
-      return ix86_expand_special_args_builtin (bdesc_special_args2 + i, exp,
-					       target);
     }
 
   if (fcode >= IX86_BUILTIN__BDESC_COMI_FIRST
@@ -38169,7 +39017,7 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
   bool si;
   enum ix86_builtins code;
 
-  if (! TARGET_AVX2)
+  if (! TARGET_AVX2 || !TARGET_USE_GATHER)
     return NULL_TREE;
 
   if ((TREE_CODE (index_type) != INTEGER_TYPE
@@ -40169,10 +41017,8 @@ x86_order_regs_for_local_alloc (void)
 /* Handle a "callee_pop_aggregate_return" attribute; arguments as
    in struct attribute_spec handler.  */
 static tree
-ix86_handle_callee_pop_aggregate_return (tree *node, tree name,
-					      tree args,
-					      int,
-					      bool *no_add_attrs)
+ix86_handle_callee_pop_aggregate_return (tree *node, tree name, tree args, int,
+					 bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE
       && TREE_CODE (*node) != METHOD_TYPE
@@ -40294,7 +41140,7 @@ ix86_handle_struct_attribute (tree *node, tree name, tree, int,
 }
 
 static tree
-ix86_handle_fndecl_attribute (tree *node, tree name, tree, int,
+ix86_handle_fndecl_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
@@ -40303,6 +41149,51 @@ ix86_handle_fndecl_attribute (tree *node, tree name, tree, int,
                name);
       *no_add_attrs = true;
     }
+
+  if (is_attribute_p ("indirect_branch", name))
+    {
+      tree cst = TREE_VALUE (args);
+      if (TREE_CODE (cst) != STRING_CST)
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute requires a string constant argument",
+		   name);
+	  *no_add_attrs = true;
+	}
+      else if (strcmp (TREE_STRING_POINTER (cst), "keep") != 0
+	       && strcmp (TREE_STRING_POINTER (cst), "thunk") != 0
+	       && strcmp (TREE_STRING_POINTER (cst), "thunk-inline") != 0
+	       && strcmp (TREE_STRING_POINTER (cst), "thunk-extern") != 0)
+	{
+	  warning (OPT_Wattributes,
+		   "argument to %qE attribute is not "
+		   "(keep|thunk|thunk-inline|thunk-extern)", name);
+	  *no_add_attrs = true;
+	}
+    }
+
+  if (is_attribute_p ("function_return", name))
+    {
+      tree cst = TREE_VALUE (args);
+      if (TREE_CODE (cst) != STRING_CST)
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute requires a string constant argument",
+		   name);
+	  *no_add_attrs = true;
+	}
+      else if (strcmp (TREE_STRING_POINTER (cst), "keep") != 0
+	       && strcmp (TREE_STRING_POINTER (cst), "thunk") != 0
+	       && strcmp (TREE_STRING_POINTER (cst), "thunk-inline") != 0
+	       && strcmp (TREE_STRING_POINTER (cst), "thunk-extern") != 0)
+	{
+	  warning (OPT_Wattributes,
+		   "argument to %qE attribute is not "
+		   "(keep|thunk|thunk-inline|thunk-extern)", name);
+	  *no_add_attrs = true;
+	}
+    }
+
   return NULL_TREE;
 }
 
@@ -41100,7 +41991,7 @@ ix86_seh_fixup_eh_fallthru (void)
 /* Given a register number BASE, the lowest of a group of registers, update
    regsets IN and OUT with the registers that should be avoided in input
    and output operands respectively when trying to avoid generating a modr/m
-   byte for -fmitigate-rop.  */
+   byte for -mmitigate-rop.  */
 
 static void
 set_rop_modrm_reg_bits (int base, HARD_REG_SET &in, HARD_REG_SET &out)
@@ -41111,7 +42002,7 @@ set_rop_modrm_reg_bits (int base, HARD_REG_SET &in, HARD_REG_SET &out)
   SET_HARD_REG_BIT (in, base + 3);
 }
 
-/* Called if -fmitigate_rop is in effect.  Try to rewrite instructions so
+/* Called if -mmitigate-rop is in effect.  Try to rewrite instructions so
    that certain encodings of modr/m bytes do not occur.  */
 static void
 ix86_mitigate_rop (void)
@@ -41674,6 +42565,7 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
   rtx new_target;
   rtx x, tmp;
   bool use_vector_set = false;
+  rtx (*gen_vec_set_0) (rtx, rtx, rtx) = NULL;
 
   switch (mode)
     {
@@ -41698,14 +42590,41 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       break;
     case E_V32QImode:
     case E_V16HImode:
+      use_vector_set = TARGET_AVX;
+      break;
     case E_V8SImode:
+      use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = gen_vec_setv8si_0;
+      break;
     case E_V8SFmode:
+      use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = gen_vec_setv8sf_0;
+      break;
     case E_V4DFmode:
       use_vector_set = TARGET_AVX;
+      gen_vec_set_0 = gen_vec_setv4df_0;
       break;
     case E_V4DImode:
       /* Use ix86_expand_vector_set in 64bit mode only.  */
       use_vector_set = TARGET_AVX && TARGET_64BIT;
+      gen_vec_set_0 = gen_vec_setv4di_0;
+      break;
+    case E_V16SImode:
+      use_vector_set = TARGET_AVX512F && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv16si_0;
+      break;
+    case E_V16SFmode:
+      use_vector_set = TARGET_AVX512F && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv16sf_0;
+      break;
+    case E_V8DFmode:
+      use_vector_set = TARGET_AVX512F && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv8df_0;
+      break;
+    case E_V8DImode:
+      /* Use ix86_expand_vector_set in 64bit mode only.  */
+      use_vector_set = TARGET_AVX512F && TARGET_64BIT && one_var == 0;
+      gen_vec_set_0 = gen_vec_setv8di_0;
       break;
     default:
       break;
@@ -41713,6 +42632,12 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
 
   if (use_vector_set)
     {
+      if (gen_vec_set_0 && one_var == 0)
+	{
+	  var = force_reg (GET_MODE_INNER (mode), var);
+	  emit_insn (gen_vec_set_0 (target, CONST0_RTX (mode), var));
+	  return true;
+	}
       emit_insn (gen_rtx_SET (target, CONST0_RTX (mode)));
       var = force_reg (GET_MODE_INNER (mode), var);
       ix86_expand_vector_set (mmx_ok, target, var, one_var);
@@ -44200,8 +45125,7 @@ ix86_expand_lfloorceil (rtx op0, rtx op1, bool do_floor)
   emit_move_insn (op0, ireg);
 }
 
-/* Expand rint (IEEE round to nearest) rounding OPERAND1 and storing the
-   result in OPERAND0.  */
+/* Expand rint rounding OPERAND1 and storing the result in OPERAND0.  */
 void
 ix86_expand_rint (rtx operand0, rtx operand1)
 {
@@ -44209,11 +45133,17 @@ ix86_expand_rint (rtx operand0, rtx operand1)
 	xa = fabs (operand1);
         if (!isless (xa, 2**52))
 	  return operand1;
-        xa = xa + 2**52 - 2**52;
+        two52 = 2**52;
+        if (flag_rounding_math)
+	  {
+	    two52 = copysign (two52, operand1);
+	    xa = operand1;
+	  }
+        xa = xa + two52 - two52;
         return copysign (xa, operand1);
    */
   machine_mode mode = GET_MODE (operand0);
-  rtx res, xa, TWO52, mask;
+  rtx res, xa, TWO52, two52, mask;
   rtx_code_label *label;
 
   res = gen_reg_rtx (mode);
@@ -44226,8 +45156,16 @@ ix86_expand_rint (rtx operand0, rtx operand1)
   TWO52 = ix86_gen_TWO52 (mode);
   label = ix86_expand_sse_compare_and_jump (UNLE, TWO52, xa, false);
 
-  xa = expand_simple_binop (mode, PLUS, xa, TWO52, NULL_RTX, 0, OPTAB_DIRECT);
-  xa = expand_simple_binop (mode, MINUS, xa, TWO52, xa, 0, OPTAB_DIRECT);
+  two52 = TWO52;
+  if (flag_rounding_math)
+    {
+      two52 = gen_reg_rtx (mode);
+      ix86_sse_copysign_to_positive (two52, TWO52, res, mask);
+      xa = res;
+    }
+
+  xa = expand_simple_binop (mode, PLUS, xa, two52, NULL_RTX, 0, OPTAB_DIRECT);
+  xa = expand_simple_binop (mode, MINUS, xa, two52, xa, 0, OPTAB_DIRECT);
 
   ix86_sse_copysign_to_positive (res, xa, res, mask);
 
@@ -44637,70 +45575,78 @@ ix86_expand_round_sse4 (rtx op0, rtx op1)
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ix86_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+  { "stdcall",   0, 0, false, true,  true,  true, ix86_handle_cconv_attribute,
+    NULL },
   /* Fastcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+  { "fastcall",  0, 0, false, true,  true,  true, ix86_handle_cconv_attribute,
+    NULL },
   /* Thiscall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "thiscall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+  { "thiscall",  0, 0, false, true,  true,  true, ix86_handle_cconv_attribute,
+    NULL },
   /* Cdecl attribute says the callee is a normal C declaration */
-  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+  { "cdecl",     0, 0, false, true,  true,  true, ix86_handle_cconv_attribute,
+    NULL },
   /* Regparm attribute specifies how many integer arguments are to be
      passed in registers.  */
-  { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute,
-    true },
+  { "regparm",   1, 1, false, true,  true,  true, ix86_handle_cconv_attribute,
+    NULL },
   /* Sseregparm attribute says we are using x86_64 calling conventions
      for FP arguments.  */
-  { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute,
-    true },
+  { "sseregparm", 0, 0, false, true, true,  true, ix86_handle_cconv_attribute,
+    NULL },
   /* The transactional memory builtins are implicitly regparm or fastcall
      depending on the ABI.  Override the generic do-nothing attribute that
      these builtins were declared with.  */
-  { "*tm regparm", 0, 0, false, true, true, ix86_handle_tm_regparm_attribute,
-    true },
+  { "*tm regparm", 0, 0, false, true, true, true,
+    ix86_handle_tm_regparm_attribute, NULL },
   /* force_align_arg_pointer says this function realigns the stack at entry.  */
   { (const char *)&ix86_force_align_arg_pointer_string, 0, 0,
-    false, true,  true, ix86_handle_force_align_arg_pointer_attribute, false },
+    false, true,  true, false, ix86_handle_force_align_arg_pointer_attribute,
+    NULL },
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport", 0, 0, false, false, false, handle_dll_attribute, false },
-  { "dllexport", 0, 0, false, false, false, handle_dll_attribute, false },
-  { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute,
-    false },
+  { "dllimport", 0, 0, false, false, false, false, handle_dll_attribute,
+    NULL },
+  { "dllexport", 0, 0, false, false, false, false, handle_dll_attribute,
+    NULL },
+  { "shared",    0, 0, true,  false, false, false,
+    ix86_handle_shared_attribute, NULL },
 #endif
-  { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute,
-    false },
-  { "gcc_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute,
-    false },
+  { "ms_struct", 0, 0, false, false,  false, false,
+    ix86_handle_struct_attribute, NULL },
+  { "gcc_struct", 0, 0, false, false,  false, false,
+    ix86_handle_struct_attribute, NULL },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
   /* ms_abi and sysv_abi calling convention function attributes.  */
-  { "ms_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
-  { "sysv_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
-  { "ms_abi va_list", 0, 0, false, false, false, NULL, false },
-  { "sysv_abi va_list", 0, 0, false, false, false, NULL, false },
-  { "ms_hook_prologue", 0, 0, true, false, false, ix86_handle_fndecl_attribute,
-    false },
-  { "callee_pop_aggregate_return", 1, 1, false, true, true,
-    ix86_handle_callee_pop_aggregate_return, true },
-  { "interrupt", 0, 0, false, true, true,
-    ix86_handle_interrupt_attribute, false },
-  { "no_caller_saved_registers", 0, 0, false, true, true,
-    ix86_handle_no_caller_saved_registers_attribute, false },
-  { "naked", 0, 0, true, false, false,
-    ix86_handle_fndecl_attribute, false },
+  { "ms_abi", 0, 0, false, true, true, true, ix86_handle_abi_attribute, NULL },
+  { "sysv_abi", 0, 0, false, true, true, true, ix86_handle_abi_attribute,
+    NULL },
+  { "ms_abi va_list", 0, 0, false, false, false, false, NULL, NULL },
+  { "sysv_abi va_list", 0, 0, false, false, false, false, NULL, NULL },
+  { "ms_hook_prologue", 0, 0, true, false, false, false,
+    ix86_handle_fndecl_attribute, NULL },
+  { "callee_pop_aggregate_return", 1, 1, false, true, true, true,
+    ix86_handle_callee_pop_aggregate_return, NULL },
+  { "interrupt", 0, 0, false, true, true, false,
+    ix86_handle_interrupt_attribute, NULL },
+  { "no_caller_saved_registers", 0, 0, false, true, true, false,
+    ix86_handle_no_caller_saved_registers_attribute, NULL },
+  { "naked", 0, 0, true, false, false, false,
+    ix86_handle_fndecl_attribute, NULL },
+  { "indirect_branch", 1, 1, true, false, false, false,
+    ix86_handle_fndecl_attribute, NULL },
+  { "function_return", 1, 1, true, false, false, false,
+    ix86_handle_fndecl_attribute, NULL },
 
   /* End element.  */
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -47531,9 +48477,8 @@ expand_vec_perm_vpshufb4_vpermq2 (struct expand_vec_perm_d *d)
   return true;
 }
 
-/* The guts of ix86_expand_vec_perm_const, also used by the ok hook.
-   With all of the interface bits taken care of, perform the expansion
-   in D and return true on success.  */
+/* The guts of ix86_vectorize_vec_perm_const.  With all of the interface bits
+   taken care of, perform the expansion in D and return true on success.  */
 
 static bool
 ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
@@ -47668,35 +48613,144 @@ canonicalize_perm (struct expand_vec_perm_d *d)
   return (which == 3);
 }
 
-bool
-ix86_expand_vec_perm_const (rtx operands[4])
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
+
+static bool
+ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+			       rtx op1, const vec_perm_indices &sel)
 {
   struct expand_vec_perm_d d;
   unsigned char perm[MAX_VECT_LEN];
-  int i, nelt;
+  unsigned int i, nelt, which;
   bool two_args;
-  rtx sel;
 
-  d.target = operands[0];
-  d.op0 = operands[1];
-  d.op1 = operands[2];
-  sel = operands[3];
+  d.target = target;
+  d.op0 = op0;
+  d.op1 = op1;
 
-  d.vmode = GET_MODE (d.target);
+  d.vmode = vmode;
   gcc_assert (VECTOR_MODE_P (d.vmode));
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = false;
+  d.testing_p = !target;
 
-  gcc_assert (GET_CODE (sel) == CONST_VECTOR);
-  gcc_assert (XVECLEN (sel, 0) == nelt);
+  gcc_assert (sel.length () == nelt);
   gcc_checking_assert (sizeof (d.perm) == sizeof (perm));
 
-  for (i = 0; i < nelt; ++i)
+  /* Given sufficient ISA support we can just return true here
+     for selected vector modes.  */
+  switch (d.vmode)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      int ei = INTVAL (e) & (2 * nelt - 1);
-      d.perm[i] = ei;
-      perm[i] = ei;
+    case E_V16SFmode:
+    case E_V16SImode:
+    case E_V8DImode:
+    case E_V8DFmode:
+      if (!TARGET_AVX512F)
+	return false;
+      /* All implementable with a single vperm[it]2 insn.  */
+      if (d.testing_p)
+	return true;
+      break;
+    case E_V32HImode:
+      if (!TARGET_AVX512BW)
+	return false;
+      if (d.testing_p)
+	/* All implementable with a single vperm[it]2 insn.  */
+	return true;
+      break;
+    case E_V64QImode:
+      if (!TARGET_AVX512BW)
+	return false;
+      if (d.testing_p)
+	/* Implementable with 2 vperm[it]2, 2 vpshufb and 1 or insn.  */
+	return true;
+      break;
+    case E_V8SImode:
+    case E_V8SFmode:
+    case E_V4DFmode:
+    case E_V4DImode:
+      if (!TARGET_AVX)
+	return false;
+      if (d.testing_p && TARGET_AVX512VL)
+	/* All implementable with a single vperm[it]2 insn.  */
+	return true;
+      break;
+    case E_V16HImode:
+      if (!TARGET_SSE2)
+	return false;
+      if (d.testing_p && TARGET_AVX2)
+	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
+	return true;
+      break;
+    case E_V32QImode:
+      if (!TARGET_SSE2)
+	return false;
+      if (d.testing_p && TARGET_AVX2)
+	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
+	return true;
+      break;
+    case E_V8HImode:
+    case E_V16QImode:
+      if (!TARGET_SSE2)
+	return false;
+      /* Fall through.  */
+    case E_V4SImode:
+    case E_V4SFmode:
+      if (!TARGET_SSE)
+	return false;
+      /* All implementable with a single vpperm insn.  */
+      if (d.testing_p && TARGET_XOP)
+	return true;
+      /* All implementable with 2 pshufb + 1 ior.  */
+      if (d.testing_p && TARGET_SSSE3)
+	return true;
+      break;
+    case E_V2DImode:
+    case E_V2DFmode:
+      if (!TARGET_SSE)
+	return false;
+      /* All implementable with shufpd or unpck[lh]pd.  */
+      if (d.testing_p)
+	return true;
+      break;
+    default:
+      return false;
+    }
+
+  for (i = which = 0; i < nelt; ++i)
+    {
+      unsigned char e = sel[i];
+      gcc_assert (e < 2 * nelt);
+      d.perm[i] = e;
+      perm[i] = e;
+      which |= (e < nelt ? 1 : 2);
+    }
+
+  if (d.testing_p)
+    {
+      /* For all elements from second vector, fold the elements to first.  */
+      if (which == 2)
+	for (i = 0; i < nelt; ++i)
+	  d.perm[i] -= nelt;
+
+      /* Check whether the mask can be applied to the vector type.  */
+      d.one_operand_p = (which != 3);
+
+      /* Implementable with shufps or pshufd.  */
+      if (d.one_operand_p && (d.vmode == V4SFmode || d.vmode == V4SImode))
+	return true;
+
+      /* Otherwise we have to go through the motions and see if we can
+	 figure out how to generate the requested permutation.  */
+      d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
+      d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
+      if (!d.one_operand_p)
+	d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
+
+      start_sequence ();
+      bool ret = ix86_expand_vec_perm_const_1 (&d);
+      end_sequence ();
+
+      return ret;
     }
 
   two_args = canonicalize_perm (&d);
@@ -47716,114 +48770,6 @@ ix86_expand_vec_perm_const (rtx operands[4])
     }
 
   return false;
-}
-
-/* Implement targetm.vectorize.vec_perm_const_ok.  */
-
-static bool
-ix86_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
-{
-  struct expand_vec_perm_d d;
-  unsigned int i, nelt, which;
-  bool ret;
-
-  d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
-  d.testing_p = true;
-
-  /* Given sufficient ISA support we can just return true here
-     for selected vector modes.  */
-  switch (d.vmode)
-    {
-    case E_V16SFmode:
-    case E_V16SImode:
-    case E_V8DImode:
-    case E_V8DFmode:
-      if (TARGET_AVX512F)
-	/* All implementable with a single vperm[it]2 insn.  */
-	return true;
-      break;
-    case E_V32HImode:
-      if (TARGET_AVX512BW)
-	/* All implementable with a single vperm[it]2 insn.  */
-	return true;
-      break;
-    case E_V64QImode:
-      if (TARGET_AVX512BW)
-	/* Implementable with 2 vperm[it]2, 2 vpshufb and 1 or insn.  */
-	return true;
-      break;
-    case E_V8SImode:
-    case E_V8SFmode:
-    case E_V4DFmode:
-    case E_V4DImode:
-      if (TARGET_AVX512VL)
-	/* All implementable with a single vperm[it]2 insn.  */
-	return true;
-      break;
-    case E_V16HImode:
-      if (TARGET_AVX2)
-	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
-	return true;
-      break;
-    case E_V32QImode:
-      if (TARGET_AVX2)
-	/* Implementable with 4 vpshufb insns, 2 vpermq and 3 vpor insns.  */
-	return true;
-      break;
-    case E_V4SImode:
-    case E_V4SFmode:
-    case E_V8HImode:
-    case E_V16QImode:
-      /* All implementable with a single vpperm insn.  */
-      if (TARGET_XOP)
-	return true;
-      /* All implementable with 2 pshufb + 1 ior.  */
-      if (TARGET_SSSE3)
-	return true;
-      break;
-    case E_V2DImode:
-    case E_V2DFmode:
-      /* All implementable with shufpd or unpck[lh]pd.  */
-      return true;
-    default:
-      return false;
-    }
-
-  /* Extract the values from the vector CST into the permutation
-     array in D.  */
-  for (i = which = 0; i < nelt; ++i)
-    {
-      unsigned char e = sel[i];
-      gcc_assert (e < 2 * nelt);
-      d.perm[i] = e;
-      which |= (e < nelt ? 1 : 2);
-    }
-
-  /* For all elements from second vector, fold the elements to first.  */
-  if (which == 2)
-    for (i = 0; i < nelt; ++i)
-      d.perm[i] -= nelt;
-
-  /* Check whether the mask can be applied to the vector type.  */
-  d.one_operand_p = (which != 3);
-
-  /* Implementable with shufps or pshufd.  */
-  if (d.one_operand_p && (d.vmode == V4SFmode || d.vmode == V4SImode))
-    return true;
-
-  /* Otherwise we have to go through the motions and see if we can
-     figure out how to generate the requested permutation.  */
-  d.target = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 1);
-  d.op1 = d.op0 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 2);
-  if (!d.one_operand_p)
-    d.op1 = gen_raw_REG (d.vmode, LAST_VIRTUAL_REGISTER + 3);
-
-  start_sequence ();
-  ret = ix86_expand_vec_perm_const_1 (&d);
-  end_sequence ();
-
-  return ret;
 }
 
 void
@@ -48864,27 +49810,63 @@ ix86_preferred_simd_mode (scalar_mode mode)
     }
 }
 
+/* All CPUs prefer to avoid cross-lane operations so perform reductions
+   upper against lower halves up to SSE reg size.  */
+
+static machine_mode
+ix86_split_reduction (machine_mode mode)
+{
+  /* Reduce lowpart against highpart until we reach SSE reg width to
+     avoid cross-lane operations.  */
+  switch (mode)
+    {
+    case E_V8DImode:
+    case E_V4DImode:
+      return V2DImode;
+    case E_V16SImode:
+    case E_V8SImode:
+      return V4SImode;
+    case E_V32HImode:
+    case E_V16HImode:
+      return V8HImode;
+    case E_V64QImode:
+    case E_V32QImode:
+      return V16QImode;
+    case E_V16SFmode:
+    case E_V8SFmode:
+      return V4SFmode;
+    case E_V8DFmode:
+    case E_V4DFmode:
+      return V2DFmode;
+    default:
+      return mode;
+    }
+}
+
 /* If AVX is enabled then try vectorizing with both 256bit and 128bit
    vectors.  If AVX512F is enabled then try vectorizing with 512bit,
    256bit and 128bit vectors.  */
 
-static unsigned int
-ix86_autovectorize_vector_sizes (void)
+static void
+ix86_autovectorize_vector_sizes (vector_sizes *sizes)
 {
-  unsigned int bytesizes = 0;
-
   if (TARGET_AVX512F && !TARGET_PREFER_AVX256)
-    bytesizes |= (64 | 32 | 16);
+    {
+      sizes->safe_push (64);
+      sizes->safe_push (32);
+      sizes->safe_push (16);
+    }
   else if (TARGET_AVX && !TARGET_PREFER_AVX128)
-    bytesizes |= (32 | 16);
-
-  return bytesizes;
+    {
+      sizes->safe_push (32);
+      sizes->safe_push (16);
+    }
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
 
 static opt_machine_mode
-ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
+ix86_get_mask_mode (poly_uint64 nunits, poly_uint64 vector_size)
 {
   unsigned elem_size = vector_size / nunits;
 
@@ -49259,12 +50241,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	return 0;
       }
 
-  if (clonei->cilk_elemental)
-    {
-      /* Parse here processor clause.  If not present, default to 'b'.  */
-      clonei->vecsize_mangle = 'b';
-    }
-  else if (!TREE_PUBLIC (node->decl))
+  if (!TREE_PUBLIC (node->decl))
     {
       /* If the function isn't exported, we can pick up just one ISA
 	 for the clones.  */
@@ -49892,6 +50869,19 @@ ix86_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Implement PUSH_ROUNDING.  On 386, we have pushw instruction that
+   decrements by exactly 2 no matter what the position was, there is no pushb.
+
+   But as CIE data alignment factor on this arch is -4 for 32bit targets
+   and -8 for 64bit targets, we need to make sure all stack pointer adjustments
+   are in multiple of 4 for 32bit targets and 8 for 64bit targets.  */
+
+poly_int64
+ix86_push_rounding (poly_int64 bytes)
+{
+  return ROUND_UP (bytes, UNITS_PER_WORD);
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -50480,12 +51470,14 @@ ix86_run_selftests (void)
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   ix86_builtin_vectorization_cost
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK \
-  ix86_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST ix86_vectorize_vec_perm_const
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
   ix86_preferred_simd_mode
+#undef TARGET_VECTORIZE_SPLIT_REDUCTION
+#define TARGET_VECTORIZE_SPLIT_REDUCTION \
+  ix86_split_reduction
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
   ix86_autovectorize_vector_sizes

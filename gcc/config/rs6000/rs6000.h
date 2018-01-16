@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -380,7 +380,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     /* The option machinery will define this.  */
 #endif
 
-#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_STRING)
+#define TARGET_DEFAULT (MASK_MULTIPLE)
 
 /* FPU operations supported. 
    Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
@@ -390,9 +390,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_SINGLE_FPU   0
 #define TARGET_SIMPLE_FPU   0
 #define TARGET_XILINX_FPU   0
-
-/* Recast the processor type to the cpu attribute.  */
-#define rs6000_cpu_attr ((enum attr_cpu)rs6000_cpu)
 
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
@@ -440,11 +437,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    Similarly IFmode is the IBM long double format even if the default is IEEE
    128-bit.  Don't allow IFmode if -msoft-float.  */
 #define FLOAT128_IEEE_P(MODE)						\
-  ((TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
+  ((TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128				\
+    && ((MODE) == TFmode || (MODE) == TCmode))				\
    || ((MODE) == KFmode) || ((MODE) == KCmode))
 
 #define FLOAT128_IBM_P(MODE)						\
-  ((!TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
+  ((!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128				\
+    && ((MODE) == TFmode || (MODE) == TCmode))				\
    || (TARGET_HARD_FLOAT && ((MODE) == IFmode || (MODE) == ICmode)))
 
 /* Helper macros to say whether a 128-bit floating point type can go in a
@@ -659,7 +658,6 @@ extern int rs6000_vector_align[];
 #define MASK_RECIP_PRECISION		OPTION_MASK_RECIP_PRECISION
 #define MASK_SOFT_FLOAT			OPTION_MASK_SOFT_FLOAT
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
-#define MASK_STRING			OPTION_MASK_STRING
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
 
@@ -1568,7 +1566,8 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
    This value must be a multiple of STACK_BOUNDARY (hard coded in
    `emit-rtl.c').  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  RS6000_ALIGN (crtl->outgoing_args_size + STACK_POINTER_OFFSET,	\
+  RS6000_ALIGN (crtl->outgoing_args_size.to_constant ()			\
+		+ STACK_POINTER_OFFSET,					\
 		(TARGET_ALTIVEC || TARGET_VSX) ? 16 : 8)
 
 /* If we generate an insn to push BYTES bytes,

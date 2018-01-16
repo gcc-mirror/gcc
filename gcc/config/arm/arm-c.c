@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -15,6 +15,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -158,6 +160,7 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 		      TARGET_VFP_FP16INST);
   def_or_undef_macro (pfile, "__ARM_FEATURE_FP16_VECTOR_ARITHMETIC",
 		      TARGET_NEON_FP16INST);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_FP16_FML", TARGET_FP16FML);
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_FMA", TARGET_FMA);
   def_or_undef_macro (pfile, "__ARM_NEON__", TARGET_NEON);

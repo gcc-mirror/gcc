@@ -1,5 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -873,7 +873,7 @@ typedef struct
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1, lock_comp:1,
 	   event_comp:1, defined_assign_comp:1, unlimited_polymorphic:1,
-	   has_dtio_procs:1;
+	   has_dtio_procs:1, caf_token:1;
 
   /* This is a temporary selector for SELECT TYPE or an associate
      variable for SELECT_TYPE or ASSOCIATE.  */
@@ -2003,7 +2003,7 @@ typedef union
   bool (*f1m)(gfc_actual_arglist *);
   bool (*f2)(struct gfc_expr *, struct gfc_expr *);
   bool (*f3)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *);
-  bool (*f4ml)(gfc_actual_arglist *);
+  bool (*f5ml)(gfc_actual_arglist *);
   bool (*f3red)(gfc_actual_arglist *);
   bool (*f4)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *,
 	    struct gfc_expr *);
@@ -2096,6 +2096,14 @@ gfc_intrinsic_sym;
 
 typedef splay_tree gfc_constructor_base;
 
+
+/* This should be an unsigned variable of type size_t.  But to handle
+   compiling to a 64-bit target from a 32-bit host, we need to use a
+   HOST_WIDE_INT.  Also, occasionally the string length field is used
+   as a flag with values -1 and -2, see e.g. gfc_add_assign_aux_vars.
+   So it needs to be signed.  */
+typedef HOST_WIDE_INT gfc_charlen_t;
+
 typedef struct gfc_expr
 {
   expr_t expr_type;
@@ -2141,7 +2149,7 @@ typedef struct gfc_expr
      the value.  */
   struct
   {
-    int length;
+    gfc_charlen_t length;
     char *string;
   }
   representation;
@@ -2197,7 +2205,7 @@ typedef struct gfc_expr
 
     struct
     {
-      int length;
+      gfc_charlen_t length;
       gfc_char_t *string;
     }
     character;
@@ -2354,6 +2362,7 @@ gfc_case;
 typedef struct
 {
   gfc_expr *var, *start, *end, *step;
+  unsigned short unroll;
 }
 gfc_iterator;
 
@@ -2729,6 +2738,7 @@ gfc_finalizer;
 /* decl.c */
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);
+extern int directive_unroll;
 
 /* Handling Parameterized Derived Types  */
 bool gfc_insert_kind_parameter_exprs (gfc_expr *);
@@ -2811,6 +2821,9 @@ vec_push (char **&optr, size_t &osz, const char *elt)
   optr[osz] = CONST_CAST (char *, elt);
   optr[++osz] = NULL;
 }
+
+HOST_WIDE_INT gfc_mpz_get_hwi (mpz_t);
+void gfc_mpz_set_hwi (mpz_t, const HOST_WIDE_INT);
 
 /* options.c */
 unsigned int gfc_option_lang_mask (void);
@@ -2903,8 +2916,11 @@ extern int gfc_atomic_int_kind;
 extern int gfc_atomic_logical_kind;
 extern int gfc_intio_kind;
 extern int gfc_charlen_int_kind;
+extern int gfc_size_kind;
 extern int gfc_numeric_storage_size;
 extern int gfc_character_storage_size;
+
+#define gfc_logical_4_kind 4
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);
@@ -3040,6 +3056,7 @@ void gfc_free_dt_list (void);
 
 gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
+gfc_gsymbol *gfc_find_case_gsymbol (gfc_gsymbol *, const char *);
 
 gfc_typebound_proc* gfc_get_typebound_proc (gfc_typebound_proc*);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
@@ -3136,7 +3153,10 @@ void gfc_resolve_oacc_blocks (gfc_code *, gfc_namespace *);
 /* expr.c */
 void gfc_free_actual_arglist (gfc_actual_arglist *);
 gfc_actual_arglist *gfc_copy_actual_arglist (gfc_actual_arglist *);
+
 bool gfc_extract_int (gfc_expr *, int *, int = 0);
+bool gfc_extract_hwi (gfc_expr *, HOST_WIDE_INT *, int = 0);
+
 bool is_subref_array (gfc_expr *);
 bool gfc_is_simply_contiguous (gfc_expr *, bool, bool);
 bool gfc_check_init_expr (gfc_expr *);
@@ -3154,8 +3174,8 @@ gfc_expr *gfc_get_null_expr (locus *);
 gfc_expr *gfc_get_operator_expr (locus *, gfc_intrinsic_op,gfc_expr *, gfc_expr *);
 gfc_expr *gfc_get_structure_constructor_expr (bt, int, locus *);
 gfc_expr *gfc_get_constant_expr (bt, int, locus *);
-gfc_expr *gfc_get_character_expr (int, locus *, const char *, int len);
-gfc_expr *gfc_get_int_expr (int, locus *, int);
+gfc_expr *gfc_get_character_expr (int, locus *, const char *, gfc_charlen_t len);
+gfc_expr *gfc_get_int_expr (int, locus *, HOST_WIDE_INT);
 gfc_expr *gfc_get_logical_expr (int, locus *, bool);
 gfc_expr *gfc_get_iokind_expr (locus *, io_kind);
 

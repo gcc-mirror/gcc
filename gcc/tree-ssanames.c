@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -562,7 +562,7 @@ release_ssa_name_fn (struct function *fn, tree var)
       int saved_ssa_name_version = SSA_NAME_VERSION (var);
       use_operand_p imm = &(SSA_NAME_IMM_USE_NODE (var));
 
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	insert_debug_temp_for_var_def (NULL, var);
 
       if (flag_checking)
@@ -643,13 +643,16 @@ set_ptr_info_alignment (struct ptr_info_def *pi, unsigned int align,
    misalignment by INCREMENT modulo its current alignment.  */
 
 void
-adjust_ptr_info_misalignment (struct ptr_info_def *pi,
-			      unsigned int increment)
+adjust_ptr_info_misalignment (struct ptr_info_def *pi, poly_uint64 increment)
 {
   if (pi->align != 0)
     {
-      pi->misalign += increment;
-      pi->misalign &= (pi->align - 1);
+      increment += pi->misalign;
+      if (!known_misalignment (increment, pi->align, &pi->misalign))
+	{
+	  pi->align = known_alignment (increment);
+	  pi->misalign = 0;
+	}
     }
 }
 

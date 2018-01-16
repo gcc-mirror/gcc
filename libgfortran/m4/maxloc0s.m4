@@ -1,5 +1,5 @@
 `/* Implementation of the MAXLOC intrinsic
-   Copyright 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -33,6 +33,8 @@ include(iparm.m4)dnl
 include(iforeach-s.m4)dnl
 
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
+
+#define HAVE_BACK_ARG 1
 
 FOREACH_FUNCTION(
 `  const atype_name *maxval;

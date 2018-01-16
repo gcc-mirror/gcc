@@ -1,6 +1,7 @@
 // PR c++/70338
 // { dg-do compile { target c++11 } }
 // { dg-options "-g" }
+// { dg-require-effective-target alloca }
 
 template<typename T>
 void

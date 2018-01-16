@@ -1,7 +1,8 @@
 // { dg-do run { target c++11 } }
-// { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
+// { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__ -ffp-contract=off" }
+// { dg-additional-options "-ffloat-store" { target { m68*-*-* || ia32 } } }
 //
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

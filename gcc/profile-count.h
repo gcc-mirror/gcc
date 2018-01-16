@@ -1,5 +1,5 @@
 /* Profile counter container type.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -30,27 +30,27 @@ enum profile_quality {
      or may not match reality.  It is local to function and can not be compared
      inter-procedurally.  Never used by probabilities (they are always local).
    */
-  profile_guessed_local = 0,
+  profile_guessed_local = 1,
   /* Profile was read by feedback and was 0, we used local heuristics to guess
      better.  This is the case of functions not run in profile fedback.
      Never used by probabilities.  */
-  profile_guessed_global0 = 1,
+  profile_guessed_global0 = 2,
 
   /* Same as profile_guessed_global0 but global count is adjusted 0.  */
-  profile_guessed_global0adjusted = 2,
+  profile_guessed_global0adjusted = 3,
 
   /* Profile is based on static branch prediction heuristics.  It may or may
      not reflect the reality but it can be compared interprocedurally
      (for example, we inlined function w/o profile feedback into function
       with feedback and propagated from that).
      Never used by probablities.  */
-  profile_guessed = 3,
+  profile_guessed = 4,
   /* Profile was determined by autofdo.  */
-  profile_afdo = 4,
+  profile_afdo = 5,
   /* Profile was originally based on feedback but it was adjusted
      by code duplicating optimization.  It may not precisely reflect the
      particular code path.  */
-  profile_adjusted = 5,
+  profile_adjusted = 6,
   /* Profile was read from profile feedback or determined by accurate static
      method.  */
   profile_precise = 7
@@ -505,6 +505,8 @@ public:
   /* Return false if profile_probability is bogus.  */
   bool verify () const
     {
+      gcc_checking_assert (profile_guessed_local <= m_quality
+			   && m_quality <= profile_precise);
       if (m_val == uninitialized_probability)
 	return m_quality == profile_guessed;
       else if (m_quality < profile_guessed)
@@ -667,18 +669,6 @@ public:
       return c;
     }
 
-  /* The profiling runtime uses gcov_type, which is usually 64bit integer.
-     Conversions back and forth are used to read the coverage and get it
-     into internal representation.  */
-  static profile_count from_gcov_type (gcov_type v)
-    {
-      profile_count ret;
-      gcc_checking_assert (v >= 0 && (uint64_t) v <= max_count);
-      ret.m_val = v;
-      ret.m_quality = profile_precise;
-      return ret;
-    }
-
   /* Conversion to gcov_type is lossy.  */
   gcov_type to_gcov_type () const
     {
@@ -796,6 +786,8 @@ public:
   /* Return false if profile_count is bogus.  */
   bool verify () const
     {
+      gcc_checking_assert (profile_guessed_local <= m_quality
+			   && m_quality <= profile_precise);
       return m_val != uninitialized_count || m_quality == profile_guessed_local;
     }
 
@@ -1082,6 +1074,11 @@ public:
      and if IPA is zero, turning THIS into corresponding local profile with
      global0.  */
   profile_count combine_with_ipa_count (profile_count ipa);
+
+  /* The profiling runtime uses gcov_type, which is usually 64bit integer.
+     Conversions back and forth are used to read the coverage and get it
+     into internal representation.  */
+  static profile_count from_gcov_type (gcov_type v);
 
   /* LTO streaming support.  */
   static profile_count stream_in (struct lto_input_block *);

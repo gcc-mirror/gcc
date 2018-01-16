@@ -1,5 +1,5 @@
 /* PowerPC AltiVec include file.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
    Rewritten by Paolo Bonzini (bonzini@gnu.org).
 
@@ -458,6 +458,8 @@
 
 #define vec_extract_fp_from_shorth __builtin_vec_vextract_fp_from_shorth
 #define vec_extract_fp_from_shortl __builtin_vec_vextract_fp_from_shortl
+#define vec_extract_fp32_from_shorth __builtin_vec_vextract_fp_from_shorth
+#define vec_extract_fp32_from_shortl __builtin_vec_vextract_fp_from_shortl
 
 #define scalar_extract_exp __builtin_vec_scalar_extract_exp
 #define scalar_extract_sig __builtin_vec_scalar_extract_sig

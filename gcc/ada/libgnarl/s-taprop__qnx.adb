@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -442,16 +442,15 @@ package body System.Task_Primitives.Operations is
 
       --  Workaround bug in QNX on ceiling locks: tasks with priority higher
       --  than the ceiling priority don't receive EINVAL upon trying to lock.
-      if Result = 0 then
+      if Result = 0 and then Locking_Policy = 'C' then
          Result := pthread_getschedparam (Self, Policy'Access, Sched'Access);
          pragma Assert (Result = 0);
          Result := pthread_mutex_getprioceiling (L.WO'Access, Ceiling'Access);
          pragma Assert (Result = 0);
 
-         --  Ceiling = 0 means no Ceiling Priority policy is set on this mutex
-         --  Else, Ceiling < current priority means Ceiling violation
+         --  Ceiling < current priority means Ceiling violation
          --  (otherwise the current priority == ceiling)
-         if Ceiling > 0 and then Ceiling < Sched.sched_curpriority then
+         if Ceiling < Sched.sched_curpriority then
             Ceiling_Violation := True;
             Result := pthread_mutex_unlock (L.WO'Access);
             pragma Assert (Result = 0);

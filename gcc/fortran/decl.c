@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -95,6 +95,9 @@ gfc_symbol *gfc_new_block;
 
 bool gfc_matching_function;
 
+/* Set upon parsing a !GCC$ unroll n directive for use in the next loop.  */
+int directive_unroll = -1;
+
 /* If a kind expression of a component of a parameterized derived type is
    parameterized, temporarily store the expression here.  */
 static gfc_expr *saved_kind_expr = NULL;
@@ -103,7 +106,6 @@ static gfc_expr *saved_kind_expr = NULL;
    in the typespec of a PDT variable or component.  */
 static gfc_actual_arglist *decl_type_param_list;
 static gfc_actual_arglist *type_param_spec_list;
-
 
 /********************* DATA statement subroutines *********************/
 
@@ -993,7 +995,7 @@ match_char_length (gfc_expr **expr, bool *deferred, bool obsolescent_check)
       if (obsolescent_check
 	  && !gfc_notify_std (GFC_STD_F95_OBS, "Old-style character length at %C"))
 	return MATCH_ERROR;
-      *expr = gfc_get_int_expr (gfc_default_integer_kind, NULL, length);
+      *expr = gfc_get_int_expr (gfc_charlen_int_kind, NULL, length);
       return m;
     }
 
@@ -1700,7 +1702,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 
 	  if (sym->ts.u.cl->length == NULL)
 	    {
-	      int clen;
+	      gfc_charlen_t clen;
 	      /* If there are multiple CHARACTER variables declared on the
 		 same line, we don't want them to share the same length.  */
 	      sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
@@ -1711,7 +1713,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		    {
 		      clen = init->value.character.length;
 		      sym->ts.u.cl->length
-				= gfc_get_int_expr (gfc_default_integer_kind,
+				= gfc_get_int_expr (gfc_charlen_int_kind,
 						    NULL, clen);
 		    }
 		  else if (init->expr_type == EXPR_ARRAY)
@@ -1738,7 +1740,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		      else
 			  gcc_unreachable ();
 		      sym->ts.u.cl->length
-				= gfc_get_int_expr (gfc_default_integer_kind,
+				= gfc_get_int_expr (gfc_charlen_int_kind,
 						    NULL, clen);
 		    }
 		  else if (init->ts.u.cl && init->ts.u.cl->length)
@@ -1971,7 +1973,8 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
     c->ts.u.cl = cl;
 
   if (c->ts.type != BT_CLASS && c->ts.type != BT_DERIVED
-      && c->ts.kind == 0 && saved_kind_expr != NULL)
+      && (c->ts.kind == 0 || c->ts.type == BT_CHARACTER)
+      && saved_kind_expr != NULL)
     c->kind_expr = gfc_copy_expr (saved_kind_expr);
 
   c->attr = current_attr;
@@ -3070,7 +3073,7 @@ done:
   cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (seen_length == 0)
-    cl->length = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+    cl->length = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
   else
     cl->length = len;
 
@@ -3250,6 +3253,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	name_seen = true;
       param = type_param_name_list->sym;
 
+      if (!param || !param->name)
+	continue;
+
       c1 = gfc_find_component (pdt, param->name, false, true, NULL);
       /* An error should already have been thrown in resolve.c
 	 (resolve_fl_derived0).  */
@@ -3358,7 +3364,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	}
 
       gfc_extract_int (kind_expr, &kind_value);
-      sprintf (name, "%s_%d", name, kind_value);
+      sprintf (name + strlen (name), "_%d", kind_value);
 
       if (!name_seen && actual_param)
 	actual_param = actual_param->next;
@@ -3406,8 +3412,18 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   for (; c1; c1 = c1->next)
     {
       gfc_add_component (instance, c1->name, &c2);
+
       c2->ts = c1->ts;
       c2->attr = c1->attr;
+
+      /* The order of declaration of the type_specs might not be the
+	 same as that of the components.  */
+      if (c1->attr.pdt_kind || c1->attr.pdt_len)
+	{
+	  for (tail = type_param_spec_list; tail; tail = tail->next)
+	    if (strcmp (c1->name, tail->name) == 0)
+	      break;
+	}
 
       /* Deal with type extension by recursively calling this function
 	 to obtain the instance of the extended type.  */
@@ -3453,17 +3469,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    }
 	  instance->attr.extension = c2->ts.u.derived->attr.extension + 1;
 
-	  /* Advance the position in the spec list by the number of
-	     parameters in the extended type.  */
-	  tail = type_param_spec_list;
-	  for (f = c1->ts.u.derived->formal; f && f->next; f = f->next)
-	    tail = tail->next;
-
 	  continue;
 	}
 
       /* Set the component kind using the parameterized expression.  */
-      if (c1->ts.kind == 0 && c1->kind_expr != NULL)
+      if ((c1->ts.kind == 0 || c1->ts.type == BT_CHARACTER)
+	   && c1->kind_expr != NULL)
 	{
 	  gfc_expr *e = gfc_copy_expr (c1->kind_expr);
 	  gfc_insert_kind_parameter_exprs (e);
@@ -3509,8 +3520,6 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
 	  if (!c2->initializer && c1->initializer)
 	    c2->initializer = gfc_copy_expr (c1->initializer);
-
-	  tail = tail->next;
 	}
 
       /* Copy the array spec.  */
@@ -3553,6 +3562,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      c2->as->upper[i] = e;
 	    }
 	  c2->attr.pdt_array = pdt_array ? 1 : c2->attr.pdt_string;
+	  if (c1->initializer)
+	    {
+	      c2->initializer = gfc_copy_expr (c1->initializer);
+	      gfc_insert_kind_parameter_exprs (c2->initializer);
+	      gfc_simplify_expr (c2->initializer, 1);
+	    }
 	}
 
       /* Recurse into this function for PDT components.  */
@@ -4107,7 +4122,7 @@ gfc_match_implicit_none (void)
   if (c == '(')
     {
       (void) gfc_next_ascii_char ();
-      if (!gfc_notify_std (GFC_STD_F2015, "IMPORT NONE with spec list at %C"))
+      if (!gfc_notify_std (GFC_STD_F2018, "IMPORT NONE with spec list at %C"))
 	return MATCH_ERROR;
 
       gfc_gobble_whitespace ();
@@ -4306,7 +4321,7 @@ gfc_match_implicit (void)
 		{
 		  ts.kind = gfc_default_character_kind;
 		  ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-		  ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+		  ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						      NULL, 1);
 		}
 
@@ -5944,18 +5959,24 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
       if (gfc_match_char ('*') == MATCH_YES)
 	{
 	  sym = NULL;
-	  if (!gfc_notify_std (GFC_STD_F95_OBS, "Alternate-return argument "
-			       "at %C"))
+	  if (!typeparam && !gfc_notify_std (GFC_STD_F95_OBS,
+			     "Alternate-return argument at %C"))
 	    {
 	      m = MATCH_ERROR;
 	      goto cleanup;
 	    }
+	  else if (typeparam)
+	    gfc_error_now ("A parameter name is required at %C");
 	}
       else
 	{
 	  m = gfc_match_name (name);
 	  if (m != MATCH_YES)
-	    goto cleanup;
+	    {
+	      if(typeparam)
+		gfc_error_now ("A parameter name is required at %C");
+	      goto cleanup;
+	    }
 
 	  if (!typeparam && gfc_get_symbol (name, NULL, &sym))
 	    goto cleanup;
@@ -9828,9 +9849,11 @@ gfc_match_derived_decl (void)
 
   if (parameterized_type)
     {
-      /* Ignore error or mismatches to avoid the component declarations
-	 causing problems later.  */
-      gfc_match_formal_arglist (sym, 0, 0, true);
+      /* Ignore error or mismatches by going to the end of the statement
+	 in order to avoid the component declarations causing problems.  */
+      m = gfc_match_formal_arglist (sym, 0, 0, true);
+      if (m != MATCH_YES)
+	gfc_error_recovery ();
       m = gfc_match_eos ();
       if (m != MATCH_YES)
 	return m;
@@ -10941,5 +10964,39 @@ gfc_match_gcc_attributes (void)
 
 syntax:
   gfc_error ("Syntax error in !GCC$ ATTRIBUTES statement at %C");
+  return MATCH_ERROR;
+}
+
+
+/* Match a !GCC$ UNROLL statement of the form:
+      !GCC$ UNROLL n
+
+   The parameter n is the number of times we are supposed to unroll.
+
+   When we come here, we have already matched the !GCC$ UNROLL string.  */
+match
+gfc_match_gcc_unroll (void)
+{
+  int value;
+
+  if (gfc_match_small_int (&value) == MATCH_YES)
+    {
+      if (value < 0 || value > USHRT_MAX)
+	{
+	  gfc_error ("%<GCC unroll%> directive requires a"
+	      " non-negative integral constant"
+	      " less than or equal to %u at %C",
+	      USHRT_MAX
+	  );
+	  return MATCH_ERROR;
+	}
+      if (gfc_match_eos () == MATCH_YES)
+	{
+	  directive_unroll = value == 0 ? 1 : value;
+	  return MATCH_YES;
+	}
+    }
+
+  gfc_error ("Syntax error in !GCC$ UNROLL directive at %C");
   return MATCH_ERROR;
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -432,6 +432,8 @@ package body Ada.Exceptions is
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Bad_Predicated_Generic_Type
      (File : System.Address; Line : Integer);
+   procedure Rcheck_PE_Build_In_Place_Mismatch
+     (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Current_Task_In_Entry_Body
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Duplicated_Entry_Address
@@ -520,6 +522,8 @@ package body Ada.Exceptions is
                   "__gnat_rcheck_PE_All_Guards_Closed");
    pragma Export (C, Rcheck_PE_Bad_Predicated_Generic_Type,
                   "__gnat_rcheck_PE_Bad_Predicated_Generic_Type");
+   pragma Export (C, Rcheck_PE_Build_In_Place_Mismatch,
+                  "__gnat_rcheck_PE_Build_In_Place_Mismatch");
    pragma Export (C, Rcheck_PE_Current_Task_In_Entry_Body,
                   "__gnat_rcheck_PE_Current_Task_In_Entry_Body");
    pragma Export (C, Rcheck_PE_Duplicated_Entry_Address,
@@ -588,6 +592,7 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_PE_Aliased_Parameters);
    pragma No_Return (Rcheck_PE_All_Guards_Closed);
    pragma No_Return (Rcheck_PE_Bad_Predicated_Generic_Type);
+   pragma No_Return (Rcheck_PE_Build_In_Place_Mismatch);
    pragma No_Return (Rcheck_PE_Current_Task_In_Entry_Body);
    pragma No_Return (Rcheck_PE_Duplicated_Entry_Address);
    pragma No_Return (Rcheck_PE_Explicit_Raise);
@@ -661,6 +666,7 @@ package body Ada.Exceptions is
    Rmsg_34 : constant String := "infinite recursion"               & NUL;
    Rmsg_35 : constant String := "object too large"                 & NUL;
    Rmsg_36 : constant String := "stream operation not allowed"     & NUL;
+   Rmsg_37 : constant String := "build-in-place mismatch"          & NUL;
 
    -----------------------
    -- Polling Interface --
@@ -1334,6 +1340,13 @@ package body Ada.Exceptions is
    begin
       Raise_Program_Error_Msg (File, Line, Rmsg_19'Address);
    end Rcheck_PE_Bad_Predicated_Generic_Type;
+
+   procedure Rcheck_PE_Build_In_Place_Mismatch
+     (File : System.Address; Line : Integer)
+   is
+   begin
+      Raise_Program_Error_Msg (File, Line, Rmsg_37'Address);
+   end Rcheck_PE_Build_In_Place_Mismatch;
 
    procedure Rcheck_PE_Current_Task_In_Entry_Body
      (File : System.Address; Line : Integer)

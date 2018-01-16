@@ -1,5 +1,5 @@
 /* Debug hooks for GCC.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -175,6 +175,9 @@ struct gcc_debug_hooks
 
   /* Called from final_scan_insn for any NOTE_INSN_VAR_LOCATION note.  */
   void (* var_location) (rtx_insn *);
+
+  /* Called from final_scan_insn for any NOTE_INSN_INLINE_ENTRY note.  */
+  void (* inline_entry) (tree block);
 
   /* Called from finalize_size_functions for size functions so that their body
      can be encoded in the debug info to describe the layout of variable-length

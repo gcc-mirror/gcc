@@ -1,5 +1,5 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -205,7 +205,7 @@ void
 sese_insert_phis_for_liveouts (sese_info_p region, basic_block bb,
 			       edge false_e, edge true_e)
 {
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     sese_reset_debug_liveouts (region);
 
   unsigned i;
@@ -460,7 +460,7 @@ sese_trivially_empty_bb_p (basic_block bb)
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG
+    if (!is_gimple_debug (gsi_stmt (gsi))
 	&& gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
       return false;
 

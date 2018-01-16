@@ -318,6 +318,30 @@ class Gogo
   set_debug_escape_level(int level)
   { this->debug_escape_level_ = level; }
 
+  // Return the hash for debug escape analysis.
+  std::string
+  debug_escape_hash() const
+  { return this->debug_escape_hash_; }
+
+  // Set the hash value for debug escape analysis.
+  void
+  set_debug_escape_hash(const std::string& s)
+  { this->debug_escape_hash_ = s; }
+
+  // Return the size threshold used to determine whether to issue
+  // a nil-check for a given pointer dereference. A threshold of -1
+  // implies that all potentially faulting dereference ops should
+  // be nil-checked. A positive threshold of N implies that a deref
+  // of *P where P has size less than N doesn't need a nil check.
+  int64_t
+  nil_check_size_threshold() const
+  { return this->nil_check_size_threshold_; }
+
+  // Set the nil-check size threshold, as described above.
+  void
+  set_nil_check_size_threshold(int64_t bytes)
+  { this->nil_check_size_threshold_ = bytes; }
+
   // Import a package.  FILENAME is the file name argument, LOCAL_NAME
   // is the local name to give to the package.  If LOCAL_NAME is empty
   // the declarations are added to the global scope.
@@ -658,6 +682,10 @@ class Gogo
   void
   tag_function(Escape_context*, Named_object*);
 
+  // Reclaim memory of escape analysis Nodes.
+  void
+  reclaim_escape_nodes();
+
   // Do all exports.
   void
   do_exports();
@@ -812,10 +840,6 @@ class Gogo
   // Return the name to use for a nested function.
   static std::string
   nested_function_name();
-
-  // Return the index of a nested function name.
-  static int
-  nested_function_num(const std::string&);
 
   // Return the name to use for a sink funciton.
   std::string
@@ -1025,6 +1049,12 @@ class Gogo
   // The level of escape analysis debug information to emit, from the
   // -fgo-debug-escape option.
   int debug_escape_level_;
+  // A hash value for debug escape analysis, from the
+  // -fgo-debug-escape-hash option. The analysis is run only on
+  // functions with names that hash to the matching value.
+  std::string debug_escape_hash_;
+  // Nil-check size threshhold.
+  int64_t nil_check_size_threshold_;
   // A list of types to verify.
   std::vector<Type*> verify_types_;
   // A list of interface types defined while parsing.
@@ -1565,6 +1595,11 @@ class Function_declaration
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
 
+  // Return the pragmas for this function.
+  unsigned int
+  pragmas() const
+  { return this->pragmas_; }
+
   // Set the pragmas for this function.
   void
   set_pragmas(unsigned int pragmas)
@@ -1853,6 +1888,20 @@ class Variable
     this->in_unique_section_ = true;
   }
 
+  // Return the top-level declaration for this variable.
+  Statement*
+  toplevel_decl()
+  { return this->toplevel_decl_; }
+
+  // Set the top-level declaration for this variable. Only used for local
+  // variables
+  void
+  set_toplevel_decl(Statement* s)
+  {
+    go_assert(!this->is_global_ && !this->is_parameter_ && !this->is_receiver_);
+    this->toplevel_decl_ = s;
+  }
+
   // Traverse the initializer expression.
   int
   traverse_expression(Traverse*, unsigned int traverse_mask);
@@ -1953,6 +2002,9 @@ class Variable
   // Whether this variable escapes the function it is created in.  This is
   // true until shown otherwise.
   bool escapes_ : 1;
+  // The top-level declaration for this variable. Only used for local
+  // variables. Must be a Temporary_statement if not NULL.
+  Statement* toplevel_decl_;
 };
 
 // A variable which is really the name for a function return value, or
@@ -3223,13 +3275,14 @@ class Traverse
 {
  public:
   // These bitmasks say what to traverse.
-  static const unsigned int traverse_variables =    0x1;
-  static const unsigned int traverse_constants =    0x2;
-  static const unsigned int traverse_functions =    0x4;
-  static const unsigned int traverse_blocks =       0x8;
-  static const unsigned int traverse_statements =  0x10;
-  static const unsigned int traverse_expressions = 0x20;
-  static const unsigned int traverse_types =       0x40;
+  static const unsigned int traverse_variables =          0x1;
+  static const unsigned int traverse_constants =          0x2;
+  static const unsigned int traverse_functions =          0x4;
+  static const unsigned int traverse_blocks =             0x8;
+  static const unsigned int traverse_statements =        0x10;
+  static const unsigned int traverse_expressions =       0x20;
+  static const unsigned int traverse_types =             0x40;
+  static const unsigned int traverse_func_declarations = 0x80;
 
   Traverse(unsigned int traverse_mask)
     : traverse_mask_(traverse_mask), types_seen_(NULL), expressions_seen_(NULL)
@@ -3293,6 +3346,11 @@ class Traverse
   // type in the tree.
   virtual int
   type(Type*);
+
+  // If traverse_func_declarations is set in the mask, this is called
+  // for every function declarations in the tree.
+  virtual int
+  function_declaration(Named_object*);
 
  private:
   // A hash table for types we have seen during this traversal.  Note

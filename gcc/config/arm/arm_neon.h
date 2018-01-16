@@ -1,6 +1,6 @@
 /* ARM NEON intrinsics include file.
 
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.
@@ -18095,6 +18095,213 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vdotq_lane_s32 (int32x4_t __r, int8x16_t __a, int8x8_t __b, const int __index)
 {
   return __builtin_neon_sdot_lanev16qi (__r, __a, __b, __index);
+}
+
+#pragma GCC pop_options
+#endif
+
+#if defined (__ARM_FP16_FORMAT_IEEE) || defined (__ARM_FP16_FORMAT_ALTERNATIVE)
+#pragma GCC push_options
+#pragma GCC target ("arch=armv8.2-a+fp16fml")
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlal_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vfmal_lowv2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlsl_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vfmsl_lowv2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlal_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vfmal_highv2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlsl_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_neon_vfmsl_highv2sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlalq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vfmal_lowv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlslq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vfmsl_lowv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlalq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vfmal_highv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlslq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_neon_vfmsl_highv4sf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlal_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+		     const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmal_lane_lowv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlal_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+		      const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmal_lane_highv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlalq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmal_lane_lowv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlalq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmal_lane_lowv4hfv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlal_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmal_lane_lowv8hfv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlalq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+			const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmal_lane_highv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlalq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmal_lane_highv4hfv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlal_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmal_lane_highv8hfv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlsl_lane_low_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+		     const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmsl_lane_lowv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlsl_lane_high_u32 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+		      const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmsl_lane_highv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlslq_laneq_low_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmsl_lane_lowv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlslq_lane_low_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmsl_lane_lowv4hfv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlsl_laneq_low_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmsl_lane_lowv8hfv2sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlslq_laneq_high_u32 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+			const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmsl_lane_highv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlslq_lane_high_u32 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (4, __index);
+  return __builtin_neon_vfmsl_lane_highv4hfv4sf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vfmlsl_laneq_high_u32 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+		       const int __index)
+{
+  __builtin_arm_lane_check (8, __index);
+  return __builtin_neon_vfmsl_lane_highv8hfv2sf (__r, __a, __b, __index);
 }
 
 #pragma GCC pop_options

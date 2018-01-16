@@ -1,5 +1,5 @@
 /* Tail merging for gimple.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Tom de Vries (tom@codesourcery.com)
 
 This file is part of GCC.
@@ -1781,7 +1781,7 @@ tail_merge_optimize (unsigned int todo)
 
   if (nr_bbs_removed_total > 0)
     {
-      if (MAY_HAVE_DEBUG_STMTS)
+      if (MAY_HAVE_DEBUG_BIND_STMTS)
 	{
 	  calculate_dominance_info (CDI_DOMINATORS);
 	  update_debug_stmts ();

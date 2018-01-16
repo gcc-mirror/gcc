@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
    This file is part of GCC.
@@ -18,6 +18,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 #ifndef IN_GEN_AVR_MMCU_TEXI
+#define IN_TARGET_CODE 1
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

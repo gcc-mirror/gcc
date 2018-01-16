@@ -1,6 +1,7 @@
 // PR c++/53812
 // { dg-do compile }
 // { dg-options "" }
+// { dg-require-effective-target indirect_jumps }
 
 struct T { T () : t(0) {}; int t; ~T (); };
 struct S { void *operator [] (T); };

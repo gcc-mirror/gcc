@@ -1,5 +1,5 @@
 /* Simulate storage of variables into target memory, header.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Paul Thomas and Brooks Moses
 
 This file is part of GCC.
@@ -28,7 +28,7 @@ size_t gfc_element_size (gfc_expr *);
 size_t gfc_target_expr_size (gfc_expr *);
 
 /* Write a constant expression in binary form to a target buffer.  */
-int gfc_encode_character (int, int, const gfc_char_t *, unsigned char *,
+int gfc_encode_character (int, gfc_charlen_t, const gfc_char_t *, unsigned char *,
 			  size_t);
 unsigned HOST_WIDE_INT gfc_target_encode_expr (gfc_expr *, unsigned char *,
 					       size_t);

@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1056,7 +1056,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 			       common_root->n.common->binding_label);
       if (gsym && gsym->type != GSYM_COMMON)
 	{
-	  gfc_error ("COMMON block at %L with binding label %s uses the same "
+	  gfc_error ("COMMON block at %L with binding label %qs uses the same "
 		     "global identifier as entity at %L",
 		     &common_root->n.common->where,
 		     common_root->n.common->binding_label, &gsym->where);
@@ -1174,7 +1174,7 @@ static bool
 get_pdt_constructor (gfc_expr *expr, gfc_constructor **constr,
 		     gfc_symbol *derived)
 {
-  gfc_constructor *cons;
+  gfc_constructor *cons = NULL;
   gfc_component *comp;
   bool t = true;
 
@@ -1289,7 +1289,9 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	}
 
       rank = comp->as ? comp->as->rank : 0;
-      if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->as)
+      if (comp->ts.type == BT_CLASS
+	  && !comp->ts.u.derived->attr.unlimited_polymorphic
+	  && CLASS_DATA (comp)->as)
  	rank = CLASS_DATA (comp)->as->rank;
 
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
@@ -4901,7 +4903,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   if (char_ref->u.ss.start)
     start = gfc_copy_expr (char_ref->u.ss.start);
   else
-    start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+    start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
 
   if (char_ref->u.ss.end)
     end = gfc_copy_expr (char_ref->u.ss.end);
@@ -4924,7 +4926,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   /* Length = (end - start + 1).  */
   e->ts.u.cl->length = gfc_subtract (end, start);
   e->ts.u.cl->length = gfc_add (e->ts.u.cl->length,
-				gfc_get_int_expr (gfc_default_integer_kind,
+				gfc_get_int_expr (gfc_charlen_int_kind,
 						  NULL, 1));
 
   /* F2008, 6.4.1:  Both the starting point and the ending point shall
@@ -5690,13 +5692,13 @@ gfc_resolve_character_operator (gfc_expr *e)
   if (op1->ts.u.cl && op1->ts.u.cl->length)
     e1 = gfc_copy_expr (op1->ts.u.cl->length);
   else if (op1->expr_type == EXPR_CONSTANT)
-    e1 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+    e1 = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 			   op1->value.character.length);
 
   if (op2->ts.u.cl && op2->ts.u.cl->length)
     e2 = gfc_copy_expr (op2->ts.u.cl->length);
   else if (op2->expr_type == EXPR_CONSTANT)
-    e2 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+    e2 = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 			   op2->value.character.length);
 
   e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
@@ -7484,8 +7486,13 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
   if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred
       && !UNLIMITED_POLY (e))
     {
-      int cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
-				      code->ext.alloc.ts.u.cl->length);
+      int cmp;
+
+      if (!e->ts.u.cl->length)
+	goto failure;
+
+      cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
+				  code->ext.alloc.ts.u.cl->length);
       if (cmp == 1 || cmp == -1 || cmp == -3)
 	{
 	  gfc_error ("Allocating %s at %L with type-spec requires the same "
@@ -8627,9 +8634,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
-      if (!sym->ts.u.cl->length && !sym->ts.deferred)
+      if (!sym->ts.u.cl->length && !sym->ts.deferred
+	  && target->expr_type == EXPR_CONSTANT)
 	sym->ts.u.cl->length
-	  = gfc_get_int_expr (gfc_default_integer_kind,
+	  = gfc_get_int_expr (gfc_charlen_int_kind,
 			      NULL, target->value.character.length);
     }
 
@@ -8714,7 +8722,6 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_namespace *ns;
   int error = 0;
-  int charlen = 0;
   int rank = 0;
   gfc_ref* ref = NULL;
   gfc_expr *selector_expr = NULL;
@@ -8965,11 +8972,13 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	sprintf (name, "__tmp_type_%s", c->ts.u.derived->name);
       else if (c->ts.type == BT_CHARACTER)
 	{
+	  HOST_WIDE_INT charlen = 0;
 	  if (c->ts.u.cl && c->ts.u.cl->length
 	      && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	    charlen = mpz_get_si (c->ts.u.cl->length->value.integer);
-	  sprintf (name, "__tmp_%s_%d_%d", gfc_basic_typename (c->ts.type),
-	           charlen, c->ts.kind);
+	    charlen = gfc_mpz_get_hwi (c->ts.u.cl->length->value.integer);
+	  snprintf (name, sizeof (name),
+		    "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d",
+		    gfc_basic_typename (c->ts.type), charlen, c->ts.kind);
 	}
       else
 	sprintf (name, "__tmp_%s_%d", gfc_basic_typename (c->ts.type),
@@ -9191,19 +9200,9 @@ resolve_transfer (gfc_code *code)
       else
 	derived = ts->u.derived->components->ts.u.derived;
 
-      if (dt->format_expr)
-	{
-	  char *fmt;
-	  fmt = gfc_widechar_to_char (dt->format_expr->value.character.string,
-				      -1);
-	  if (strtok (fmt, "DT") != NULL)
-	    formatted = true;
-	}
-      else if (dt->format_label == &format_asterisk)
-	{
-	  /* List directed io must call the formatted DTIO procedure.  */
-	  formatted = true;
-	}
+      /* Determine when to use the formatted DTIO procedure.  */
+      if (dt && (dt->format_expr || dt->format_label))
+	formatted = true;
 
       write = dt->dt_io_kind->value.iokind == M_WRITE
 	      || dt->dt_io_kind->value.iokind == M_PRINT;
@@ -11546,7 +11545,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       || sym->attr.flavor == FL_DERIVED || !sym->binding_label)
     return;
 
-  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
+  gsym = gfc_find_case_gsymbol (gfc_gsym_root, sym->binding_label);
 
   if (sym->module)
     module = sym->module;
@@ -11582,7 +11581,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 
   if (sym->attr.flavor == FL_VARIABLE && gsym->type != GSYM_UNKNOWN)
     {
-      gfc_error ("Variable %s with binding label %s at %L uses the same global "
+      gfc_error ("Variable %qs with binding label %qs at %L uses the same global "
 		 "identifier as entity at %L", sym->name,
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       /* Clear the binding label to prevent checking multiple times.  */
@@ -11595,8 +11594,8 @@ gfc_verify_binding_labels (gfc_symbol *sym)
     {
       /* This can only happen if the variable is defined in a module - if it
 	 isn't the same module, reject it.  */
-      gfc_error ("Variable %s from module %s with binding label %s at %L uses "
-		   "the same global identifier as entity at %L from module %s",
+      gfc_error ("Variable %qs from module %qs with binding label %qs at %L "
+		 "uses the same global identifier as entity at %L from module %qs",
 		 sym->name, module, sym->binding_label,
 		 &sym->declared_at, &gsym->where, gsym->mod_name);
       sym->binding_label = NULL;
@@ -11612,7 +11611,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       /* Print an error if the procedure is defined multiple times; we have to
 	 exclude references to the same procedure via module association or
 	 multiple checks for the same procedure.  */
-      gfc_error ("Procedure %s with binding label %s at %L uses the same "
+      gfc_error ("Procedure %qs with binding label %qs at %L uses the same "
 		 "global identifier as entity at %L", sym->name,
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       sym->binding_label = NULL;
@@ -11643,7 +11642,7 @@ resolve_index_expr (gfc_expr *e)
 static bool
 resolve_charlen (gfc_charlen *cl)
 {
-  int i, k;
+  int k;
   bool saved_specification_expr;
 
   if (cl->resolved)
@@ -11666,10 +11665,17 @@ resolve_charlen (gfc_charlen *cl)
 	  specification_expr = saved_specification_expr;
 	  return false;
 	}
+
+      /* cl->length has been resolved.  It should have an integer type.  */
+      if (cl->length->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("Scalar INTEGER expression expected at %L",
+		     &cl->length->where);
+	  return false;
+	}
     }
   else
     {
-
       if (!resolve_index_expr (cl->length))
 	{
 	  specification_expr = saved_specification_expr;
@@ -11679,9 +11685,10 @@ resolve_charlen (gfc_charlen *cl)
 
   /* F2008, 4.4.3.2:  If the character length parameter value evaluates to
      a negative value, the length of character entities declared is zero.  */
-  if (cl->length && !gfc_extract_int (cl->length, &i) && i < 0)
+  if (cl->length && cl->length->expr_type == EXPR_CONSTANT
+      && mpz_sgn (cl->length->value.integer) < 0)
     gfc_replace_expr (cl->length,
-		      gfc_get_int_expr (gfc_default_integer_kind, NULL, 0));
+		      gfc_get_int_expr (gfc_charlen_int_kind, NULL, 0));
 
   /* Check that the character length is not too large.  */
   k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
@@ -13506,7 +13513,11 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   if (c->attr.artificial)
     return true;
 
-  if (sym->attr.vtype && sym->attr.use_assoc)
+  /* Do not allow vtype components to be resolved in nameless namespaces
+     such as block data because the procedure pointers will cause ICEs
+     and vtables are not needed in these contexts.  */
+  if (sym->attr.vtype && sym->attr.use_assoc
+      && sym->ns->proc_name == NULL)
     return true;
 
   /* F2008, C442.  */
@@ -13992,6 +14003,31 @@ resolve_fl_derived0 (gfc_symbol *sym)
   if (!success)
     return false;
 
+  /* Now add the caf token field, where needed.  */
+  if (flag_coarray != GFC_FCOARRAY_NONE
+      && !sym->attr.is_class && !sym->attr.vtype)
+    {
+      for (c = sym->components; c; c = c->next)
+	if (!c->attr.dimension && !c->attr.codimension
+	    && (c->attr.allocatable || c->attr.pointer))
+	  {
+	    char name[GFC_MAX_SYMBOL_LEN+9];
+	    gfc_component *token;
+	    sprintf (name, "_caf_%s", c->name);
+	    token = gfc_find_component (sym, name, true, true, NULL);
+	    if (token == NULL)
+	      {
+		if (!gfc_add_component (sym, name, &token))
+		  return false;
+		token->ts.type = BT_VOID;
+		token->ts.kind = gfc_default_integer_kind;
+		token->attr.access = ACCESS_PRIVATE;
+		token->attr.artificial = 1;
+		token->attr.caf_token = 1;
+	      }
+	  }
+    }
+
   check_defined_assignments (sym);
 
   if (!sym->attr.defined_assign_comp && super_type)
@@ -14010,6 +14046,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
     {
       for (f = sym->formal; f; f = f->next)
 	{
+	  if (!f->sym)
+	    continue;
 	  c = gfc_find_component (sym, f->sym->name, true, true, NULL);
 	  if (c == NULL)
 	    {
@@ -14283,7 +14321,7 @@ resolve_fl_parameter (gfc_symbol *sym)
 }
 
 
-/* Called by resolve_symbol to chack PDTs.  */
+/* Called by resolve_symbol to check PDTs.  */
 
 static void
 resolve_pdt (gfc_symbol* sym)
@@ -14293,11 +14331,18 @@ resolve_pdt (gfc_symbol* sym)
   gfc_component *c;
   bool const_len_exprs = true;
   bool assumed_len_exprs = false;
+  symbol_attribute *attr;
 
   if (sym->ts.type == BT_DERIVED)
-    derived = sym->ts.u.derived;
+    {
+      derived = sym->ts.u.derived;
+      attr = &(sym->attr);
+    }
   else if (sym->ts.type == BT_CLASS)
-    derived = CLASS_DATA (sym)->ts.u.derived;
+    {
+      derived = CLASS_DATA (sym)->ts.u.derived;
+      attr = &(CLASS_DATA (sym)->attr);
+    }
   else
     gcc_unreachable ();
 
@@ -14315,6 +14360,14 @@ resolve_pdt (gfc_symbol* sym)
 	const_len_exprs = false;
       else if (param->spec_type == SPEC_ASSUMED)
 	assumed_len_exprs = true;
+
+      if (param->spec_type == SPEC_DEFERRED
+	  && !attr->allocatable && !attr->pointer)
+	gfc_error ("The object %qs at %L has a deferred LEN "
+		   "parameter %qs and is neither allocatable "
+		   "nor a pointer", sym->name, &sym->declared_at,
+		   param->name);
+
     }
 
   if (!const_len_exprs
@@ -15919,7 +15972,7 @@ resolve_equivalence (gfc_equiv *eq)
 		{
 		  ref->type = REF_SUBSTRING;
 		  if (start == NULL)
-		    start = gfc_get_int_expr (gfc_default_integer_kind,
+		    start = gfc_get_int_expr (gfc_charlen_int_kind,
 					      NULL, 1);
 		  ref->u.ss.start = start;
 		  if (end == NULL && e->ts.u.cl)

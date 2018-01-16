@@ -64,6 +64,8 @@ main (int argc, char **argv)
   for (i = 0; i < N; i++)
     b[i] = a[i];
 
+  acc_wait (1);
+
   acc_memcpy_from_device (a, d_a, nbytes);
   acc_memcpy_from_device (b, d_b, nbytes);
   

@@ -4,32 +4,9 @@
    { dg-require-effective-target alloca }
    { dg-options "-O2 -Warray-bounds -ftrack-macro-expansion=0" }  */
 
-#define SIZE_MAX  __SIZE_MAX__
-#define DIFF_MAX  __PTRDIFF_MAX__
-#define DIFF_MIN  (-DIFF_MAX - 1)
+#include "../gcc.dg/range.h"
 
 #define offsetof(T, m)   __builtin_offsetof (T, m)
-
-typedef __PTRDIFF_TYPE__ ssize_t;
-typedef __SIZE_TYPE__    size_t;
-
-extern ssize_t signed_value (void)
-{
-  extern volatile ssize_t signed_value_source;
-  return signed_value_source;
-}
-
-extern size_t unsigned_value (void)
-{
-  extern volatile size_t unsigned_value_source;
-  return unsigned_value_source;
-}
-
-ssize_t signed_range (ssize_t min, ssize_t max)
-{
-  ssize_t val = signed_value ();
-  return val < min || max < val ? min : val;
-}
 
 typedef struct AX { int n; char ax[]; } AX;
 
@@ -98,7 +75,7 @@ void farr_s16_7 (void)
   T (ax_7[DIFF_MAX / 2][0]);              /* { dg-warning "array subscript \[0-9\]+ is above array bounds" } */
   T (ax_7[SIZE_MAX][0]);                  /* { dg-warning "array subscript \[0-9\]+ is above array bounds" } */
 
-  ssize_t i = R (DIFF_MIN, -1);
+  ptrdiff_t i = R (DIFF_MIN, -1);
   T (ax_7[i][0]);                         /* { dg-warning "array subscript -1 is below array bounds" } */
 
   T (ax_7[R (DIFF_MIN, -1)][0]);          /* { dg-warning "array subscript -1 is below array bounds" } */

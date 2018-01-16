@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,10 +92,6 @@ package System.Parameters is
    Runtime_Default_Sec_Stack_Size : constant Size_Type := 10 * 1024;
    --  The run-time chosen default size for secondary stacks that may be
    --  overriden by the user with the use of binder -D switch.
-
-   function Default_Sec_Stack_Size return Size_Type;
-   --  The default size for secondary stacks that reflects any user specified
-   --  default via the binder -D switch.
 
    Sec_Stack_Dynamic : constant Boolean := False;
    --  Indicates if secondary stacks can grow and shrink at run-time. If False,

@@ -1,5 +1,5 @@
 /* Intrinsic function resolution.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -82,7 +82,7 @@ check_charlen_present (gfc_expr *source)
   if (source->expr_type == EXPR_CONSTANT)
     {
       source->ts.u.cl->length
-		= gfc_get_int_expr (gfc_default_integer_kind, NULL,
+		= gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 				    source->value.character.length);
       source->rank = 0;
     }
@@ -90,7 +90,7 @@ check_charlen_present (gfc_expr *source)
     {
       gfc_constructor *c = gfc_constructor_first (source->value.constructor);
       source->ts.u.cl->length
-		= gfc_get_int_expr (gfc_default_integer_kind, NULL,
+		= gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 				    c->expr->value.character.length);
     }
 }
@@ -247,7 +247,7 @@ gfc_resolve_char_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind,
   f->ts.kind = (kind == NULL)
 	     ? gfc_default_character_kind : mpz_get_si (kind->value.integer);
   f->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-  f->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+  f->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
 
   f->value.function.name
     = gfc_get_string ("__%schar_%d_%c%d", is_achar ? "a" : "", f->ts.kind,
@@ -1697,7 +1697,7 @@ gfc_resolve_max (gfc_expr *f, gfc_actual_arglist *args)
 
 void
 gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
-		    gfc_expr *mask, gfc_expr *kind)
+		    gfc_expr *mask, gfc_expr *kind, gfc_expr *back)
 {
   const char *name;
   int i, j, idim;
@@ -1781,6 +1781,15 @@ gfc_resolve_maxloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
       ts.kind = fkind;
       gfc_convert_type_warn (f, &ts, 2, 0);
     }
+
+  if (back->ts.kind != gfc_logical_4_kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_logical_4_kind;
+      gfc_convert_type_warn (back, &ts, 2, 0);
+    }
 }
 
 
@@ -1823,9 +1832,14 @@ gfc_resolve_maxval (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   else
     name = "maxval";
 
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+  if (array->ts.type != BT_CHARACTER)
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s_%c%d"), name,
+			gfc_type_letter (array->ts.type), array->ts.kind);
+  else
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s%d_%c%d"), name, f->rank != 0,
+			gfc_type_letter (array->ts.type), array->ts.kind);     
 }
 
 
@@ -1902,7 +1916,7 @@ gfc_resolve_min (gfc_expr *f, gfc_actual_arglist *args)
 
 void
 gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
-		    gfc_expr *mask, gfc_expr *kind)
+		    gfc_expr *mask, gfc_expr *kind, gfc_expr *back)
 {
   const char *name;
   int i, j, idim;
@@ -1981,6 +1995,15 @@ gfc_resolve_minloc (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
       ts.kind = fkind;
       gfc_convert_type_warn (f, &ts, 2, 0);
     }
+
+  if (back->ts.kind != gfc_logical_4_kind)
+    {
+      gfc_typespec ts;
+      gfc_clear_ts (&ts);
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_logical_4_kind;
+      gfc_convert_type_warn (back, &ts, 2, 0);
+    }
 }
 
 
@@ -2023,9 +2046,14 @@ gfc_resolve_minval (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
   else
     name = "minval";
 
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+  if (array->ts.type != BT_CHARACTER)
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s_%c%d"), name,
+			gfc_type_letter (array->ts.type), array->ts.kind);
+  else
+    f->value.function.name
+      = gfc_get_string (PREFIX ("%s%d_%c%d"), name, f->rank != 0,
+			gfc_type_letter (array->ts.type), array->ts.kind);     
 }
 
 
@@ -2233,7 +2261,6 @@ void
 gfc_resolve_repeat (gfc_expr *f, gfc_expr *string,
 		    gfc_expr *ncopies)
 {
-  int len;
   gfc_expr *tmp;
   f->ts.type = BT_CHARACTER;
   f->ts.kind = string->ts.kind;
@@ -2246,8 +2273,8 @@ gfc_resolve_repeat (gfc_expr *f, gfc_expr *string,
   tmp = NULL;
   if (string->expr_type == EXPR_CONSTANT)
     {
-      len = string->value.character.length;
-      tmp = gfc_get_int_expr (gfc_default_integer_kind, NULL , len);
+      tmp = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
+			      string->value.character.length);
     }
   else if (string->ts.u.cl && string->ts.u.cl->length)
     {
@@ -3039,14 +3066,14 @@ gfc_resolve_transfer (gfc_expr *f, gfc_expr *source ATTRIBUTE_UNUSED,
       if (mold->expr_type == EXPR_CONSTANT)
         {
 	  len = mold->value.character.length;
-	  mold->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	  mold->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						    NULL, len);
 	}
       else
 	{
 	  gfc_constructor *c = gfc_constructor_first (mold->value.constructor);
 	  len = c->expr->value.character.length;
-	  mold->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+	  mold->ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						    NULL, len);
 	}
     }

@@ -1,5 +1,5 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -343,6 +343,7 @@ print_header (void)
 /* Generated automatically by the program `genextract'\n\
    from the machine description file `md'.  */\n\
 \n\
+#define IN_TARGET_CODE 1\n\
 #include \"config.h\"\n\
 #include \"system.h\"\n\
 #include \"coretypes.h\"\n\

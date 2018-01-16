@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---          Copyright (C) 1997-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -620,7 +620,7 @@ private
 
    type pid_t is new int;
 
-   type time_t is new long;
+   type time_t is new Long_Long_Integer;
 
    type timespec is record
       tv_sec  : time_t;
@@ -649,21 +649,33 @@ private
       Data : char_array (1 .. OS_Constants.PTHREAD_MUTEXATTR_SIZE);
    end  record;
    pragma Convention (C, pthread_mutexattr_t);
-   for pthread_mutexattr_t'Alignment use Interfaces.C.double'Alignment;
+   for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
 
    type pthread_rwlockattr_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCKATTR_SIZE);
    end record;
    pragma Convention (C, pthread_rwlockattr_t);
-   for pthread_rwlockattr_t'Alignment use Interfaces.C.double'Alignment;
+   for pthread_rwlockattr_t'Alignment use Interfaces.C.int'Alignment;
 
    type pthread_t is new rtems_id;
 
-   type pthread_mutex_t is new rtems_id;
+   type pthread_mutex_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_MUTEX_SIZE);
+   end record;
+   pragma Convention (C, pthread_mutex_t);
+   for pthread_mutex_t'Alignment use Interfaces.C.double'Alignment;
 
-   type pthread_rwlock_t is new rtems_id;
+   type pthread_rwlock_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCK_SIZE);
+   end record;
+   pragma Convention (C, pthread_rwlock_t);
+   for pthread_rwlock_t'Alignment use Interfaces.C.size_t'Alignment;
 
-   type pthread_cond_t is new rtems_id;
+   type pthread_cond_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_COND_SIZE);
+   end record;
+   pragma Convention (C, pthread_cond_t);
+   for pthread_cond_t'Alignment use Interfaces.C.size_t'Alignment;
 
    type pthread_key_t is new rtems_id;
 

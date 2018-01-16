@@ -11,6 +11,10 @@ import (
 	"unsafe"
 )
 
+// Functions called by cgo-generated code.
+//go:linkname cgoCheckPointer runtime.cgoCheckPointer
+//go:linkname cgoCheckResult runtime.cgoCheckResult
+
 // Pointer checking for cgo code.
 
 // We want to detect all cases where a program that does not use
@@ -230,10 +234,8 @@ func cgoCheckUnknownPointer(p unsafe.Pointer, msg string) (base, i uintptr) {
 				// No more possible pointers.
 				break
 			}
-			if hbits.isPointer() {
-				if cgoIsGoPointer(*(*unsafe.Pointer)(unsafe.Pointer(base + i))) {
-					panic(errorString(msg))
-				}
+			if hbits.isPointer() && cgoIsGoPointer(*(*unsafe.Pointer)(unsafe.Pointer(base + i))) {
+				panic(errorString(msg))
 			}
 			hbits = hbits.next()
 		}

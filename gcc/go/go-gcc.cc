@@ -1,5 +1,5 @@
 // go-gcc.cc -- Go frontend to gcc IR.
-// Copyright (C) 2011-2017 Free Software Foundation, Inc.
+// Copyright (C) 2011-2018 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 
 // This file is part of GCC.
@@ -426,7 +426,7 @@ class Gcc_backend : public Backend
   global_variable_set_init(Bvariable*, Bexpression*);
 
   Bvariable*
-  local_variable(Bfunction*, const std::string&, Btype*, bool,
+  local_variable(Bfunction*, const std::string&, Btype*, Bvariable*, bool,
 		 Location);
 
   Bvariable*
@@ -486,7 +486,8 @@ class Gcc_backend : public Backend
   Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
            bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool in_unique_section, Location);
+           bool disable_split_stack, bool does_not_return,
+	   bool in_unique_section, Location);
 
   Bstatement*
   function_defer_statement(Bfunction* function, Bexpression* undefer,
@@ -632,7 +633,7 @@ Gcc_backend::Gcc_backend()
 						     NULL_TREE);
   tree math_function_type_long =
     build_function_type_list(long_double_type_node, long_double_type_node,
-			     long_double_type_node, NULL_TREE);
+			     NULL_TREE);
   tree math_function_type_two = build_function_type_list(double_type_node,
 							 double_type_node,
 							 double_type_node,
@@ -760,6 +761,12 @@ Gcc_backend::Gcc_backend()
 							const_ptr_type_node,
 							NULL_TREE),
 		       false, false);
+
+  // The compiler uses __builtin_unreachable for cases that can not
+  // occur.
+  this->define_builtin(BUILT_IN_UNREACHABLE, "__builtin_unreachable", NULL,
+		       build_function_type(void_type_node, void_list_node),
+		       true, true);
 }
 
 // Get an unnamed integer type.
@@ -2289,8 +2296,8 @@ Gcc_backend::switch_statement(
   tree tv = value->get_tree();
   if (tv == error_mark_node)
     return this->error_statement();
-  tree t = build3_loc(switch_location.gcc_location(), SWITCH_EXPR,
-                      NULL_TREE, tv, stmt_list, NULL_TREE);
+  tree t = build2_loc(switch_location.gcc_location(), SWITCH_EXPR,
+                      NULL_TREE, tv, stmt_list);
   return this->make_statement(t);
 }
 
@@ -2577,8 +2584,8 @@ Gcc_backend::global_variable_set_init(Bvariable* var, Bexpression* expr)
 
 Bvariable*
 Gcc_backend::local_variable(Bfunction* function, const std::string& name,
-			    Btype* btype, bool is_address_taken,
-			    Location location)
+			    Btype* btype, Bvariable* decl_var, 
+			    bool is_address_taken, Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -2590,6 +2597,11 @@ Gcc_backend::local_variable(Bfunction* function, const std::string& name,
   TREE_USED(decl) = 1;
   if (is_address_taken)
     TREE_ADDRESSABLE(decl) = 1;
+  if (decl_var != NULL)
+    {
+      DECL_HAS_VALUE_EXPR_P(decl) = 1;
+      SET_DECL_VALUE_EXPR(decl, decl_var->get_decl());
+    }
   go_preserve_from_gc(decl);
   return new Bvariable(decl);
 }
@@ -3012,8 +3024,8 @@ Bfunction*
 Gcc_backend::function(Btype* fntype, const std::string& name,
                       const std::string& asm_name, bool is_visible,
                       bool is_declaration, bool is_inlinable,
-                      bool disable_split_stack, bool in_unique_section,
-                      Location location)
+                      bool disable_split_stack, bool does_not_return,
+		      bool in_unique_section, Location location)
 {
   tree functype = fntype->get_tree();
   if (functype != error_mark_node)
@@ -3049,6 +3061,8 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
       tree attr = get_identifier ("no_split_stack");
       DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
     }
+  if (does_not_return)
+    TREE_THIS_VOLATILE(decl) = 1;
   if (in_unique_section)
     resolve_unique_section(decl, 0, 1);
 

@@ -1,5 +1,5 @@
 /* Create and destroy argument vectors (argv's)
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Written by Fred Fish @ Cygnus Support
 
 This file is part of the libiberty library.
@@ -367,8 +367,8 @@ expandargv (int *argcp, char ***argvp)
 {
   /* The argument we are currently processing.  */
   int i = 0;
-  /* Non-zero if ***argvp has been dynamically allocated.  */
-  int argv_dynamic = 0;
+  /* To check if ***argvp has been dynamically allocated.  */
+  char ** const original_argv = *argvp;
   /* Limit the number of response files that we parse in order
      to prevent infinite recursion.  */
   unsigned int iteration_limit = 2000;
@@ -449,7 +449,7 @@ expandargv (int *argcp, char ***argvp)
 	/* Parse the string.  */
 	file_argv = buildargv (buffer);
       /* If *ARGVP is not already dynamically allocated, copy it.  */
-      if (!argv_dynamic)
+      if (*argvp == original_argv)
 	*argvp = dupargv (*argvp);
       /* Count the number of arguments.  */
       file_argc = 0;

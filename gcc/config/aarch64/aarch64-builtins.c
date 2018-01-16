@@ -1,5 +1,5 @@
 /* Builtins' description for AArch64 SIMD architecture.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -162,6 +164,12 @@ aarch64_types_ternopu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_unsigned };
 #define TYPES_TERNOPU (aarch64_types_ternopu_qualifiers)
+static enum aarch64_type_qualifiers
+aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_immediate };
+#define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
+
 
 static enum aarch64_type_qualifiers
 aarch64_types_quadop_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -173,6 +181,12 @@ aarch64_types_quadopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
       qualifier_unsigned, qualifier_lane_index };
 #define TYPES_QUADOPU_LANE (aarch64_types_quadopu_lane_qualifiers)
+
+static enum aarch64_type_qualifiers
+aarch64_types_quadopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
+  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
+      qualifier_unsigned, qualifier_immediate };
+#define TYPES_QUADOPUI (aarch64_types_quadopu_imm_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_binop_imm_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
@@ -1063,9 +1077,9 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	      gcc_assert (opc > 1);
 	      if (CONST_INT_P (op[opc]))
 		{
-		  aarch64_simd_lane_bounds (op[opc], 0,
-					    GET_MODE_NUNITS (builtin_mode),
-					    exp);
+		  unsigned int nunits
+		    = GET_MODE_NUNITS (builtin_mode).to_constant ();
+		  aarch64_simd_lane_bounds (op[opc], 0, nunits, exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
 		  op[opc] = aarch64_endian_lane_rtx (builtin_mode,
 						     INTVAL (op[opc]));
@@ -1078,8 +1092,9 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 	      if (CONST_INT_P (op[opc]))
 		{
 		  machine_mode vmode = insn_data[icode].operand[opc - 1].mode;
-		  aarch64_simd_lane_bounds (op[opc],
-					    0, GET_MODE_NUNITS (vmode), exp);
+		  unsigned int nunits
+		    = GET_MODE_NUNITS (vmode).to_constant ();
+		  aarch64_simd_lane_bounds (op[opc], 0, nunits, exp);
 		  /* Keep to GCC-vector-extension lane indices in the RTL.  */
 		  op[opc] = aarch64_endian_lane_rtx (vmode, INTVAL (op[opc]));
 		}
@@ -1398,16 +1413,17 @@ aarch64_builtin_vectorized_function (unsigned int fn, tree type_out,
 				     tree type_in)
 {
   machine_mode in_mode, out_mode;
-  int in_n, out_n;
+  unsigned HOST_WIDE_INT in_n, out_n;
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
       || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
   out_mode = TYPE_MODE (TREE_TYPE (type_out));
-  out_n = TYPE_VECTOR_SUBPARTS (type_out);
   in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  if (!TYPE_VECTOR_SUBPARTS (type_out).is_constant (&out_n)
+      || !TYPE_VECTOR_SUBPARTS (type_in).is_constant (&in_n))
+    return NULL_TREE;
 
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) 1

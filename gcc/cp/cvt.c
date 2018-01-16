@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1642,7 +1642,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
   tree conv = NULL_TREE;
   tree winner = NULL_TREE;
 
-  if (expr == null_node
+  if (null_node_p (expr)
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
     {

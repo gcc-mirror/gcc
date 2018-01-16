@@ -1,6 +1,6 @@
 #ifdef __powerpc64__
 # PowerPC64 support for -fsplit-stack.
-# Copyright (C) 2009-2017 Free Software Foundation, Inc.
+# Copyright (C) 2009-2018 Free Software Foundation, Inc.
 # Contributed by Alan Modra <amodra@gmail.com>.
 
 # This file is part of GCC.

@@ -11,4 +11,4 @@ main (int argc, char **argv)
 }
 
 /* Check that the frame pointer really is created.  */
-/* { dg-final { scan-lto-assembler "add	x29, sp," } } */
+/* { dg-final { scan-lto-assembler "(mov|add)	x29, sp" } } */

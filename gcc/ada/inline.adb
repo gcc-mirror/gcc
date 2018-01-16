@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -298,9 +298,64 @@ package body Inline is
       --  Inline_Package means that the call is considered for inlining and
       --  its package compiled and scanned for more inlining opportunities.
 
+      function Is_Non_Loading_Expression_Function
+        (Id : Entity_Id) return Boolean;
+      --  Determine whether arbitrary entity Id denotes a subprogram which is
+      --  either
+      --
+      --    * An expression function
+      --
+      --    * A function completed by an expression function where both the
+      --      spec and body are in the same context.
+
       function Must_Inline return Inline_Level_Type;
       --  Inlining is only done if the call statement N is in the main unit,
       --  or within the body of another inlined subprogram.
+
+      ----------------------------------------
+      -- Is_Non_Loading_Expression_Function --
+      ----------------------------------------
+
+      function Is_Non_Loading_Expression_Function
+        (Id : Entity_Id) return Boolean
+      is
+         Body_Decl : Node_Id;
+         Body_Id   : Entity_Id;
+         Spec_Decl : Node_Id;
+
+      begin
+         --  A stand-alone expression function is transformed into a spec-body
+         --  pair in-place. Since both the spec and body are in the same list,
+         --  the inlining of such an expression function does not need to load
+         --  anything extra.
+
+         if Is_Expression_Function (Id) then
+            return True;
+
+         --  A function may be completed by an expression function
+
+         elsif Ekind (Id) = E_Function then
+            Spec_Decl := Unit_Declaration_Node (Id);
+
+            if Nkind (Spec_Decl) = N_Subprogram_Declaration then
+               Body_Id := Corresponding_Body (Spec_Decl);
+
+               if Present (Body_Id) then
+                  Body_Decl := Unit_Declaration_Node (Body_Id);
+
+                  --  The inlining of a completing expression function does
+                  --  not need to load anything extra when both the spec and
+                  --  body are in the same context.
+
+                  return
+                    Was_Expression_Function (Body_Decl)
+                      and then Parent (Spec_Decl) = Parent (Body_Decl);
+               end if;
+            end if;
+         end if;
+
+         return False;
+      end Is_Non_Loading_Expression_Function;
 
       -----------------
       -- Must_Inline --
@@ -415,10 +470,12 @@ package body Inline is
          Set_Needs_Debug_Info (E, False);
       end if;
 
-      --  If the subprogram is an expression function, then there is no need to
-      --  load any package body since the body of the function is in the spec.
+      --  If the subprogram is an expression function, or is completed by one
+      --  where both the spec and body are in the same context, then there is
+      --  no need to load any package body since the body of the function is
+      --  in the spec.
 
-      if Is_Expression_Function (E) then
+      if Is_Non_Loading_Expression_Function (E) then
          Set_Is_Called (E);
          return;
       end if;

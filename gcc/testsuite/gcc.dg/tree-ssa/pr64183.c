@@ -17,4 +17,4 @@ test ()
    bits += 8;
 }
 
-/* { dg-final { scan-tree-dump "Loop 2 iterates at most 4 times" "cunroll"} } */
+/* { dg-final { scan-tree-dump "Loop 2 iterates at most 3 times" "cunroll"} } */

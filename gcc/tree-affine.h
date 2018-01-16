@@ -1,5 +1,5 @@
 /* Operations with affine combinations of trees.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,7 +43,7 @@ struct aff_tree
   tree type;
 
   /* Constant offset.  */
-  widest_int offset;
+  poly_widest_int offset;
 
   /* Number of elements of the combination.  */
   unsigned n;
@@ -64,8 +64,7 @@ struct aff_tree
 
 struct name_expansion;
 
-widest_int wide_int_ext_for_comb (const widest_int &, aff_tree *);
-void aff_combination_const (aff_tree *, tree, const widest_int &);
+void aff_combination_const (aff_tree *, tree, const poly_widest_int &);
 void aff_combination_elt (aff_tree *, tree, tree);
 void aff_combination_scale (aff_tree *, const widest_int &);
 void aff_combination_mult (aff_tree *, aff_tree *, aff_tree *);
@@ -76,14 +75,15 @@ void aff_combination_convert (aff_tree *, tree);
 void tree_to_aff_combination (tree, tree, aff_tree *);
 tree aff_combination_to_tree (aff_tree *);
 void unshare_aff_combination (aff_tree *);
-bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *, widest_int *);
+bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *,
+					  poly_widest_int *);
 void aff_combination_expand (aff_tree *, hash_map<tree, name_expansion *> **);
 void tree_to_aff_combination_expand (tree, tree, aff_tree *,
 				     hash_map<tree, name_expansion *> **);
-tree get_inner_reference_aff (tree, aff_tree *, widest_int *);
+tree get_inner_reference_aff (tree, aff_tree *, poly_widest_int *);
 void free_affine_expand_cache (hash_map<tree, name_expansion *> **);
-bool aff_comb_cannot_overlap_p (aff_tree *, const widest_int &,
-				const widest_int &);
+bool aff_comb_cannot_overlap_p (aff_tree *, const poly_widest_int &,
+				const poly_widest_int &);
 
 /* Debugging functions.  */
 void debug_aff (aff_tree *);
@@ -102,7 +102,7 @@ aff_combination_zero_p (aff_tree *aff)
   if (!aff)
     return true;
 
-  if (aff->n == 0 && aff->offset == 0)
+  if (aff->n == 0 && known_eq (aff->offset, 0))
     return true;
 
   return false;
@@ -121,7 +121,7 @@ inline bool
 aff_combination_singleton_var_p (aff_tree *aff)
 {
   return (aff->n == 1
-	  && aff->offset == 0
+	  && known_eq (aff->offset, 0)
 	  && (aff->elts[0].coef == 1 || aff->elts[0].coef == -1));
 }
 #endif /* GCC_TREE_AFFINE_H */

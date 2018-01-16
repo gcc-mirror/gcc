@@ -1,5 +1,5 @@
 /* Next Runtime (ABI-0/1) private.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Iain Sandoe (split from objc-act.c)
 
 This file is part of GCC.
@@ -1662,7 +1662,7 @@ generate_dispatch_table (tree chain, const char *name, tree attr)
 {
   tree decl, method_list_template, initlist;
   vec<constructor_elt, va_gc> *v = NULL;
-  int size;;
+  int size;
 
   if (!chain || !name || !(size = list_length (chain)))
     return NULL_TREE;

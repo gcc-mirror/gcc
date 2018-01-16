@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -31,22 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "toplev.h"
 #include "common/common-target.h"
-
-/* Various flags to control the mangling process.  */
-
-enum mangling_flags
-{
-  /* No flags.  */
-  mf_none = 0,
-  /* The thing we are presently mangling is part of a template type,
-     rather than a fully instantiated type.  Therefore, we may see
-     complex expressions where we would normally expect to see a
-     simple integer constant.  */
-  mf_maybe_uninstantiated = 1,
-  /* When mangling a numeric value, use the form `_XX_' (instead of
-     just `XX') if the value has more than one digit.  */
-  mf_use_underscores_around_value = 2
-};
 
 static void do_build_copy_assign (tree);
 static void do_build_copy_constructor (tree);
@@ -206,7 +190,7 @@ make_alias_for (tree target, tree newid)
 			   TREE_CODE (target), newid, TREE_TYPE (target));
   DECL_LANG_SPECIFIC (alias) = DECL_LANG_SPECIFIC (target);
   cxx_dup_lang_specific_decl (alias);
-  DECL_CONTEXT (alias) = NULL;
+  DECL_CONTEXT (alias) = DECL_CONTEXT (target);
   TREE_READONLY (alias) = TREE_READONLY (target);
   TREE_THIS_VOLATILE (alias) = TREE_THIS_VOLATILE (target);
   TREE_PUBLIC (alias) = 0;

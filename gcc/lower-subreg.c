@@ -1,5 +1,5 @@
 /* Decompose multiword subregs.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 		  Ian Lance Taylor <iant@google.com>
 
@@ -110,7 +110,8 @@ static inline bool
 interesting_mode_p (machine_mode mode, unsigned int *bytes,
 		    unsigned int *words)
 {
-  *bytes = GET_MODE_SIZE (mode);
+  if (!GET_MODE_SIZE (mode).is_constant (bytes))
+    return false;
   *words = CEIL (*bytes, UNITS_PER_WORD);
   return true;
 }
@@ -141,7 +142,7 @@ shift_cost (bool speed_p, struct cost_rtxes *rtxes, enum rtx_code code,
   PUT_CODE (rtxes->shift, code);
   PUT_MODE (rtxes->shift, mode);
   PUT_MODE (rtxes->source, mode);
-  XEXP (rtxes->shift, 1) = GEN_INT (op1);
+  XEXP (rtxes->shift, 1) = gen_int_shift_amount (mode, op1);
   return set_src_cost (rtxes->shift, mode, speed_p);
 }
 
@@ -609,19 +610,21 @@ decompose_register (unsigned int regno)
 /* Get a SUBREG of a CONCATN.  */
 
 static rtx
-simplify_subreg_concatn (machine_mode outermode, rtx op,
-			 unsigned int byte)
+simplify_subreg_concatn (machine_mode outermode, rtx op, poly_uint64 orig_byte)
 {
   unsigned int outer_size, outer_words, inner_size, inner_words;
   machine_mode innermode, partmode;
   rtx part;
   unsigned int final_offset;
+  unsigned int byte;
 
   innermode = GET_MODE (op);
   if (!interesting_mode_p (outermode, &outer_size, &outer_words)
       || !interesting_mode_p (innermode, &inner_size, &inner_words))
     gcc_unreachable ();
 
+  /* Must be constant if interesting_mode_p passes.  */
+  byte = orig_byte.to_constant ();
   gcc_assert (GET_CODE (op) == CONCATN);
   gcc_assert (byte % outer_size == 0);
 
@@ -665,9 +668,9 @@ simplify_gen_subreg_concatn (machine_mode outermode, rtx op,
     {
       rtx op2;
 
-      if ((GET_MODE_SIZE (GET_MODE (op))
-	   == GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))))
-	  && SUBREG_BYTE (op) == 0)
+      if (known_eq (GET_MODE_SIZE (GET_MODE (op)),
+		    GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))))
+	  && known_eq (SUBREG_BYTE (op), 0))
 	return simplify_gen_subreg_concatn (outermode, SUBREG_REG (op),
 					    GET_MODE (SUBREG_REG (op)), byte);
 
@@ -866,9 +869,8 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 
   if (GET_CODE (src) == SUBREG
       && resolve_reg_p (SUBREG_REG (src))
-      && (SUBREG_BYTE (src) != 0
-	  || (GET_MODE_SIZE (orig_mode)
-	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))))
+      && (maybe_ne (SUBREG_BYTE (src), 0)
+	  || maybe_ne (orig_size, GET_MODE_SIZE (GET_MODE (SUBREG_REG (src))))))
     {
       real_dest = dest;
       dest = gen_reg_rtx (orig_mode);
@@ -881,9 +883,9 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 
   if (GET_CODE (dest) == SUBREG
       && resolve_reg_p (SUBREG_REG (dest))
-      && (SUBREG_BYTE (dest) != 0
-	  || (GET_MODE_SIZE (orig_mode)
-	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))))
+      && (maybe_ne (SUBREG_BYTE (dest), 0)
+	  || maybe_ne (orig_size,
+		       GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))))
     {
       rtx reg, smove;
       rtx_insn *minsn;

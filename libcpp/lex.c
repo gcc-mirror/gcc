@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -568,7 +568,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
     {
       vc m_nl, m_cr, m_bs, m_qm;
 
-      data = *((const vc *)s);
+      data = __builtin_vec_vsx_ld (0, s);
       s += 16;
 
       m_nl = (vc) __builtin_vec_cmpeq(data, repl_nl);
@@ -772,7 +772,7 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   const uint8x16_t repl_qm = vdupq_n_u8 ('?');
   const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
 
-#ifdef __AARCH64EB
+#ifdef __ARM_BIG_ENDIAN
   const int16x8_t shift = {8, 8, 8, 8, 0, 0, 0, 0};
 #else
   const int16x8_t shift = {0, 0, 0, 0, 8, 8, 8, 8};

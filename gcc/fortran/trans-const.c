@@ -1,5 +1,5 @@
 /* Translation of constants
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -205,6 +205,18 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
   wide_int val = wi::from_mpz (gfc_get_int_type (kind), i, true);
   return wide_int_to_tree (gfc_get_int_type (kind), val);
 }
+
+
+/* Convert a GMP integer into a tree node of type given by the type
+   argument.  */
+
+tree
+gfc_conv_mpz_to_tree_type (mpz_t i, const tree type)
+{
+  const wide_int val = wi::from_mpz (type, i, true);
+  return wide_int_to_tree (type, val);
+}
+
 
 /* Converts a backend tree into a GMP integer.  */
 

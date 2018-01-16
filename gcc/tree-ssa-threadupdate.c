@@ -1,5 +1,5 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1333,6 +1333,31 @@ thread_block_1 (basic_block bb, bool noloop_only, bool joiners)
 
 	  if (i != path->length ())
 	    continue;
+
+	  /* Loop parallelization can be confused by the result of
+	     threading through the loop exit test back into the loop.
+	     However, theading those jumps seems to help other codes.
+
+	     I have been unable to find anything related to the shape of
+	     the CFG, the contents of the affected blocks, etc which would
+	     allow a more sensible test than what we're using below which
+	     merely avoids the optimization when parallelizing loops.  */
+	  if (flag_tree_parallelize_loops > 1)
+	    {
+	      for (i = 1; i < path->length (); i++)
+	        if (bb->loop_father == e2->src->loop_father
+		    && loop_exits_from_bb_p (bb->loop_father,
+					     (*path)[i]->e->src)
+		    && !loop_exit_edge_p (bb->loop_father, e2))
+		  break;
+
+	      if (i != path->length ())
+		{
+		  delete_jump_thread_path (path);
+		  e->aux = NULL;
+		  continue;
+		}
+	    }
 	}
 
       /* Insert the outgoing edge into the hash table if it is not
@@ -1712,6 +1737,31 @@ phi_args_equal_on_edges (edge e1, edge e2)
   return true;
 }
 
+/* Return the number of non-debug statements and non-virtual PHIs in a
+   block.  */
+
+static unsigned int
+count_stmts_and_phis_in_block (basic_block bb)
+{
+  unsigned int num_stmts = 0;
+
+  gphi_iterator gpi;
+  for (gpi = gsi_start_phis (bb); !gsi_end_p (gpi); gsi_next (&gpi))
+    if (!virtual_operand_p (PHI_RESULT (gpi.phi ())))
+      num_stmts++;
+
+  gimple_stmt_iterator gsi;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (!is_gimple_debug (stmt))
+        num_stmts++;
+    }
+
+  return num_stmts;
+}
+
+
 /* Walk through the registered jump threads and convert them into a
    form convenient for this pass.
 
@@ -1831,28 +1881,51 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	}
     }
 
-  /* If optimizing for size, only thread through block if we don't have
-     to duplicate it or it's an otherwise empty redirection block.  */
+  /* When optimizing for size, prune all thread paths where statement
+     duplication is necessary.
+
+     We walk the jump thread path looking for copied blocks.  There's
+     two types of copied blocks.
+
+       EDGE_COPY_SRC_JOINER_BLOCK is always copied and thus we will
+       cancel the jump threading request when optimizing for size.
+
+       EDGE_COPY_SRC_BLOCK which is copied, but some of its statements
+       will be killed by threading.  If threading does not kill all of
+       its statements, then we should cancel the jump threading request
+       when optimizing for size.  */
   if (optimize_function_for_size_p (cfun))
     {
       EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
 	{
-	  bb = BASIC_BLOCK_FOR_FN (cfun, i);
-	  if (EDGE_COUNT (bb->preds) > 1
-	      && !redirection_block_p (bb))
-	    {
-	      FOR_EACH_EDGE (e, ei, bb->preds)
-		{
-		  if (e->aux)
-		    {
-		      vec<jump_thread_edge *> *path = THREAD_PATH (e);
-		      delete_jump_thread_path (path);
-		      e->aux = NULL;
-		    }
-		}
-	    }
-	  else
-	    bitmap_set_bit (threaded_blocks, i);
+	  FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (cfun, i)->preds)
+	    if (e->aux)
+	      {
+		vec<jump_thread_edge *> *path = THREAD_PATH (e);
+
+		unsigned int j;
+		for (j = 1; j < path->length (); j++)
+		  {
+		    bb = (*path)[j]->e->src;
+		    if (redirection_block_p (bb))
+		      ;
+		    else if ((*path)[j]->type == EDGE_COPY_SRC_JOINER_BLOCK
+			     || ((*path)[j]->type == EDGE_COPY_SRC_BLOCK
+			         && (count_stmts_and_phis_in_block (bb)
+				     != estimate_threading_killed_stmts (bb))))
+		      break;
+		  }
+
+		if (j != path->length ())
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      dump_jump_thread_path (dump_file, *path, 0);
+		    delete_jump_thread_path (path);
+		    e->aux = NULL;
+		  }
+		else
+		  bitmap_set_bit (threaded_blocks, i);
+	      }
 	}
     }
   else
@@ -2405,4 +2478,140 @@ register_jump_thread (vec<jump_thread_edge *> *path)
     paths.create (5);
 
   paths.safe_push (path);
+}
+
+/* Return how many uses of T there are within BB, as long as there
+   aren't any uses outside BB.  If there are any uses outside BB,
+   return -1 if there's at most one use within BB, or -2 if there is
+   more than one use within BB.  */
+
+static int
+uses_in_bb (tree t, basic_block bb)
+{
+  int uses = 0;
+  bool outside_bb = false;
+
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, iter, t)
+    {
+      if (is_gimple_debug (USE_STMT (use_p)))
+	continue;
+
+      if (gimple_bb (USE_STMT (use_p)) != bb)
+	outside_bb = true;
+      else
+	uses++;
+
+      if (outside_bb && uses > 1)
+	return -2;
+    }
+
+  if (outside_bb)
+    return -1;
+
+  return uses;
+}
+
+/* Starting from the final control flow stmt in BB, assuming it will
+   be removed, follow uses in to-be-removed stmts back to their defs
+   and count how many defs are to become dead and be removed as
+   well.  */
+
+unsigned int
+estimate_threading_killed_stmts (basic_block bb)
+{
+  int killed_stmts = 0;
+  hash_map<tree, int> ssa_remaining_uses;
+  auto_vec<gimple *, 4> dead_worklist;
+
+  /* If the block has only two predecessors, threading will turn phi
+     dsts into either src, so count them as dead stmts.  */
+  bool drop_all_phis = EDGE_COUNT (bb->preds) == 2;
+
+  if (drop_all_phis)
+    for (gphi_iterator gsi = gsi_start_phis (bb);
+	 !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gphi *phi = gsi.phi ();
+	tree dst = gimple_phi_result (phi);
+
+	/* We don't count virtual PHIs as stmts in
+	   record_temporary_equivalences_from_phis.  */
+	if (virtual_operand_p (dst))
+	  continue;
+
+	killed_stmts++;
+      }
+
+  if (gsi_end_p (gsi_last_bb (bb)))
+    return killed_stmts;
+
+  gimple *stmt = gsi_stmt (gsi_last_bb (bb));
+  if (gimple_code (stmt) != GIMPLE_COND
+      && gimple_code (stmt) != GIMPLE_GOTO
+      && gimple_code (stmt) != GIMPLE_SWITCH)
+    return killed_stmts;
+
+  /* The control statement is always dead.  */
+  killed_stmts++;
+  dead_worklist.quick_push (stmt);
+  while (!dead_worklist.is_empty ())
+    {
+      stmt = dead_worklist.pop ();
+
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	{
+	  tree t = USE_FROM_PTR (use_p);
+	  gimple *def = SSA_NAME_DEF_STMT (t);
+
+	  if (gimple_bb (def) == bb
+	      && (gimple_code (def) != GIMPLE_PHI
+		  || !drop_all_phis)
+	      && !gimple_has_side_effects (def))
+	    {
+	      int *usesp = ssa_remaining_uses.get (t);
+	      int uses;
+
+	      if (usesp)
+		uses = *usesp;
+	      else
+		uses = uses_in_bb (t, bb);
+
+	      gcc_assert (uses);
+
+	      /* Don't bother recording the expected use count if we
+		 won't find any further uses within BB.  */
+	      if (!usesp && (uses < -1 || uses > 1))
+		{
+		  usesp = &ssa_remaining_uses.get_or_insert (t);
+		  *usesp = uses;
+		}
+
+	      if (uses < 0)
+		continue;
+
+	      --uses;
+	      if (usesp)
+		*usesp = uses;
+
+	      if (!uses)
+		{
+		  killed_stmts++;
+		  if (usesp)
+		    ssa_remaining_uses.remove (t);
+		  if (gimple_code (def) != GIMPLE_PHI)
+		    dead_worklist.safe_push (def);
+		}
+	    }
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "threading bb %i kills %i stmts\n",
+	     bb->index, killed_stmts);
+
+  return killed_stmts;
 }

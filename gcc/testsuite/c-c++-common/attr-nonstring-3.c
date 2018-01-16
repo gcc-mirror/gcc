@@ -247,14 +247,14 @@ void test_stpncpy_warn (struct MemArrays *p, unsigned n)
 
   T (stpncpy (ptr, str, N + 1));
   T (stpncpy (ptr, arr, N + 1));          /* { dg-warning "argument 2 declared attribute .nonstring. is smaller than the specified bound 5" } */
-  T (stpncpy (arr, str, N + 1));          /* { dg-warning "writing 5 bytes into a region of size 4 overflows " } */
+  T (stpncpy (arr, str, N + 1));          /* { dg-warning "writing 5 bytes into a region of size 4 overflows " "bug 82609" { xfail c++ } } */
 
   T (stpncpy (ptr, ptr, N + 1));
   T (stpncpy (ptr, parr, N + 1));
   T (stpncpy (parr, str, N + 1));
 
   T (stpncpy (ptr, p->arr, N + 1));       /* { dg-warning "argument 2 declared attribute .nonstring. is smaller" } */
-  T (stpncpy (p->arr, p->str, N + 1));    /* { dg-warning "writing 5 bytes into a region of size 4 overflows" } */
+  T (stpncpy (p->arr, p->str, N + 1));    /* { dg-warning "writing 5 bytes into a region of size 4 overflows" "bug 82609" { xfail c++ } } */
   T (stpncpy (p->parr, p->str, N + 1));
 }
 

@@ -1,7 +1,7 @@
 /* General types and functions that are uselful for processing of OpenMP,
    OpenACC and similar directivers at various stages of compilation.
 
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -143,8 +143,6 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->sched_modifiers = 0;
   fd->chunk_size = NULL_TREE;
   fd->simd_schedule = false;
-  if (gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_CILKFOR)
-    fd->sched_kind = OMP_CLAUSE_SCHEDULE_CILKFOR;
   collapse_iter = NULL;
   collapse_count = NULL;
 
@@ -252,9 +250,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 
       loop->cond_code = gimple_omp_for_cond (for_stmt, i);
       loop->n2 = gimple_omp_for_final (for_stmt, i);
-      gcc_assert (loop->cond_code != NE_EXPR
-		  || gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_CILKSIMD
-		  || gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_CILKFOR);
+      gcc_assert (loop->cond_code != NE_EXPR);
       omp_adjust_for_condition (loc, &loop->cond_code, &loop->n2);
 
       t = gimple_omp_for_incr (for_stmt, i);
@@ -423,7 +419,7 @@ omp_build_barrier (tree lhs)
 
 /* Return maximum possible vectorization factor for the target.  */
 
-int
+poly_uint64
 omp_max_vf (void)
 {
   if (!optimize
@@ -433,17 +429,21 @@ omp_max_vf (void)
 	  && global_options_set.x_flag_tree_loop_vectorize))
     return 1;
 
-  int vf = 1;
-  int vs = targetm.vectorize.autovectorize_vector_sizes ();
-  if (vs)
-    vf = 1 << floor_log2 (vs);
-  else
+  auto_vector_sizes sizes;
+  targetm.vectorize.autovectorize_vector_sizes (&sizes);
+  if (!sizes.is_empty ())
     {
-      machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
-      if (GET_MODE_CLASS (vqimode) == MODE_VECTOR_INT)
-	vf = GET_MODE_NUNITS (vqimode);
+      poly_uint64 vf = 0;
+      for (unsigned int i = 0; i < sizes.length (); ++i)
+	vf = ordered_max (vf, sizes[i]);
+      return vf;
     }
-  return vf;
+
+  machine_mode vqimode = targetm.vectorize.preferred_simd_mode (QImode);
+  if (GET_MODE_CLASS (vqimode) == MODE_VECTOR_INT)
+    return GET_MODE_NUNITS (vqimode);
+
+  return 1;
 }
 
 /* Return maximum SIMT width if offloading may target SIMT hardware.  */

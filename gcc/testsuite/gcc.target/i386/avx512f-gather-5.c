@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx512f" } */
+/* { dg-options "-O3 -mavx512f -mtune=knl" } */
 
 #include "avx512f-gather-4.c"
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -782,57 +782,82 @@ package body Ch9 is
          return Decl;
       end P_Entry_Or_Subprogram_With_Indicator;
 
+      Result : Node_Id := Empty;
+
    --  Start of processing for P_Protected_Operation_Declaration_Opt
 
    begin
-      --  This loop runs more than once only when a junk declaration
-      --  is skipped.
+      --  This loop runs more than once only when a junk declaration is skipped
 
       loop
-         if Token = Tok_Pragma then
-            return P_Pragma;
+         case Token is
+            when Tok_Pragma =>
+               Result := P_Pragma;
+               exit;
 
-         elsif Token = Tok_Not or else Token = Tok_Overriding then
-            return P_Entry_Or_Subprogram_With_Indicator;
+            when Tok_Not
+               | Tok_Overriding
+            =>
+               Result := P_Entry_Or_Subprogram_With_Indicator;
+               exit;
 
-         elsif Token = Tok_Entry then
-            return P_Entry_Declaration;
+            when Tok_Entry =>
+               Result := P_Entry_Declaration;
+               exit;
 
-         elsif Token = Tok_Function or else Token = Tok_Procedure then
-            return P_Subprogram (Pf_Decl_Pexp);
+            when Tok_Function
+               | Tok_Procedure
+            =>
+               Result := P_Subprogram (Pf_Decl_Pexp);
+               exit;
 
-         elsif Token = Tok_Identifier then
-            L := New_List;
-            P := Token_Ptr;
-            Skip_Declaration (L);
+            when Tok_Identifier =>
+               L := New_List;
+               P := Token_Ptr;
+               Skip_Declaration (L);
 
-            if Nkind (First (L)) = N_Object_Declaration then
-               Error_Msg
-                 ("component must be declared in private part of " &
-                  "protected type", P);
-            else
-               Error_Msg
-                 ("illegal declaration in protected definition", P);
-            end if;
+               if Nkind (First (L)) = N_Object_Declaration then
+                  Error_Msg
+                    ("component must be declared in private part of " &
+                     "protected type", P);
+               else
+                  Error_Msg
+                    ("illegal declaration in protected definition", P);
+               end if;
+               --  Continue looping
 
-         elsif Token in Token_Class_Declk then
-            Error_Msg_SC ("illegal declaration in protected definition");
-            Resync_Past_Semicolon;
+            when Tok_For =>
+               Error_Msg_SC
+                 ("representation clause not allowed in protected definition");
+               Resync_Past_Semicolon;
+               --  Continue looping
 
-            --  Return now to avoid cascaded messages if next declaration
-            --  is a valid component declaration.
+            when others =>
+               if Token in Token_Class_Declk then
+                  Error_Msg_SC ("illegal declaration in protected definition");
+                  Resync_Past_Semicolon;
 
-            return Error;
+                  --  Return now to avoid cascaded messages if next declaration
+                  --  is a valid component declaration.
 
-         elsif Token = Tok_For then
-            Error_Msg_SC
-              ("representation clause not allowed in protected definition");
-            Resync_Past_Semicolon;
+                  Result := Error;
+               end if;
 
-         else
-            return Empty;
-         end if;
+               exit;
+         end case;
       end loop;
+
+      if Nkind (Result) = N_Subprogram_Declaration
+        and then Nkind (Specification (Result)) =
+                   N_Procedure_Specification
+        and then Null_Present (Specification (Result))
+      then
+         Error_Msg_N
+           ("protected operation cannot be a null procedure",
+            Null_Statement (Specification (Result)));
+      end if;
+
+      return Result;
    end P_Protected_Operation_Declaration_Opt;
 
    -----------------------------------

@@ -1,6 +1,6 @@
 /* PR other/81345 - -Wall resets -Wstringop-overflow to 1 from the default 2
    { dg-do compile }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
 char a[3];
 

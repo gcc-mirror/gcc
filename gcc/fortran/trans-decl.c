@@ -1,5 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -1815,7 +1815,10 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  || !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
       && (flag_coarray != GFC_FCOARRAY_LIB
-	  || !sym->attr.codimension || sym->attr.allocatable))
+	  || !sym->attr.codimension || sym->attr.allocatable)
+      && !(sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+      && !(sym->ts.type == BT_CLASS
+	   && CLASS_DATA (sym)->ts.u.derived->attr.pdt_type))
     {
       /* Add static initializer. For procedures, it is only needed if
 	 SAVE is specified otherwise they need to be reinitialized
@@ -4042,6 +4045,10 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 
   gcc_assert (block);
 
+  /* Initialization of PDTs is done elsewhere.  */
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+    return;
+
   gcc_assert (!sym->attr.allocatable);
   gfc_set_sym_referenced (sym);
   e = gfc_lval_expr_from_sym (sym);
@@ -4311,10 +4318,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		{
 		  tmp = proc_sym->ts.u.cl->passed_length;
 		  tmp = build_fold_indirect_ref_loc (input_location, tmp);
-		  tmp = fold_convert (gfc_charlen_type_node, tmp);
 		  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-					 gfc_charlen_type_node, tmp,
-					 proc_sym->ts.u.cl->backend_decl);
+					 TREE_TYPE (tmp), tmp,
+					 fold_convert
+					 (TREE_TYPE (tmp),
+					  proc_sym->ts.u.cl->backend_decl));
 		}
 	      else
 		tmp = NULL_TREE;
@@ -4375,9 +4383,12 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					   sym->as ? sym->as->rank : 0,
 					   sym->param_list);
 	      gfc_add_expr_to_block (&tmpblock, tmp);
-	      tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived,
-					     sym->backend_decl,
-					     sym->as ? sym->as->rank : 0);
+	      if (!sym->attr.result)
+		tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived,
+					       sym->backend_decl,
+					       sym->as ? sym->as->rank : 0);
+	      else
+		tmp = NULL_TREE;
 	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), tmp);
 	    }
 	  else if (sym->attr.dummy)
@@ -4407,8 +4418,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					   sym->param_list);
 	      gfc_add_expr_to_block (&tmpblock, tmp);
 	      tmp = gfc_class_data_get (sym->backend_decl);
-	      tmp = gfc_deallocate_pdt_comp (data->ts.u.derived, tmp,
-					     data->as ? data->as->rank : 0);
+	      if (!sym->attr.result)
+		tmp = gfc_deallocate_pdt_comp (data->ts.u.derived, tmp,
+					       data->as ? data->as->rank : 0);
+	      else
+		tmp = NULL_TREE;
 	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), tmp);
 	    }
 	  else if (sym->attr.dummy)
@@ -5796,8 +5810,7 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
   tmp = gfc_finish_block (&block);
   /* The first argument selects the entry point.  */
   val = DECL_ARGUMENTS (current_function_decl);
-  tmp = fold_build3_loc (input_location, SWITCH_EXPR, NULL_TREE,
-			 val, tmp, NULL_TREE);
+  tmp = fold_build2_loc (input_location, SWITCH_EXPR, NULL_TREE, val, tmp);
   return tmp;
 }
 
@@ -5866,7 +5879,8 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	    not_0length = fold_build2_loc (input_location, NE_EXPR,
 					   logical_type_node,
 					   cl->passed_length,
-					   build_zero_cst (gfc_charlen_type_node));
+					   build_zero_cst
+					   (TREE_TYPE (cl->passed_length)));
 	    /* The symbol needs to be referenced for gfc_get_symbol_decl.  */
 	    fsym->attr.referenced = 1;
 	    not_absent = gfc_conv_expr_present (fsym);

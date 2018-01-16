@@ -1,5 +1,5 @@
 /* Producing binary form of HSA BRIG from our internal representation.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Martin Jambor <mjambor@suse.cz> and
    Martin Liska <mliska@suse.cz>.
 
@@ -963,7 +963,8 @@ hsa_op_immed::emit_to_buffer (unsigned *brig_repr_size)
 
       if (TREE_CODE (m_tree_value) == VECTOR_CST)
 	{
-	  int i, num = VECTOR_CST_NELTS (m_tree_value);
+	  /* Variable-length vectors aren't supported.  */
+	  int i, num = VECTOR_CST_NELTS (m_tree_value).to_constant ();
 	  for (i = 0; i < num; i++)
 	    {
 	      tree v = VECTOR_CST_ELT (m_tree_value, i);

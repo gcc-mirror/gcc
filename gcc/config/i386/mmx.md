@@ -1,5 +1,5 @@
 ;; GCC machine description for MMX and 3dNOW! instructions
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -112,7 +112,7 @@
 	return "movdq2q\t{%1, %0|%0, %1}";
 
     case TYPE_SSELOG1:
-      return standard_sse_constant_opcode (insn, operands[1]);
+      return standard_sse_constant_opcode (insn, operands);
 
     case TYPE_SSEMOV:
       switch (get_attr_mode (insn))
