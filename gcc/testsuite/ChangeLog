@@ -1,3 +1,11 @@
+2018-01-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from mainline
+	2017-12-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/83424
+	* gcc.dg/pr83424.c: New testsuite.
+
 2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
