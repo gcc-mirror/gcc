@@ -10842,9 +10842,10 @@ pa_starting_frame_offset (void)
 HOST_WIDE_INT
 pa_function_arg_size (machine_mode mode, const_tree type)
 {
-  if (mode != BLKmode)
-    return GET_MODE_SIZE (mode);
-  return CEIL (int_size_in_bytes (type), UNITS_PER_WORD);
+  HOST_WIDE_INT size;
+
+  size = mode != BLKmode ? GET_MODE_SIZE (mode) : int_size_in_bytes (type); 
+  return CEIL (size, UNITS_PER_WORD);
 }
 
 #include "gt-pa.h"
