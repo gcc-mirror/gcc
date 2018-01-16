@@ -744,7 +744,7 @@ DEFPARAM (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE,
 DEFPARAM(PARAM_MAX_SCHED_READY_INSNS,
 	 "max-sched-ready-insns",
 	 "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass.",
-	 100, 0, 0)
+	 100, 1, 0)
 
 /* This is the maximum number of active local stores RTL DSE will consider.  */
 DEFPARAM (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES,

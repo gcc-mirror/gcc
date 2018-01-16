@@ -1,5 +1,11 @@
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/86620
+	* gcc.dg/pr64935-2.c: Use --param=max-sched-ready-insns=1
+	instead of --param=max-sched-ready-insns=0.
+	* gcc.target/i386/pr83620.c: New test.
+	* gcc.dg/pr83620.c: New test.
+
 	PR tree-optimization/83843
 	* gcc.dg/store_merging_18.c: New test.
 
