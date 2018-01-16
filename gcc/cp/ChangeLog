@@ -1,3 +1,11 @@
+2018-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83825
+	* name-lookup.c (member_vec_dedup): Return early if len is 0.
+	(resort_type_member_vec, set_class_bindings,
+	insert_late_enum_def_bindings): Use vec qsort method instead of
+	calling qsort directly.
+
 2018-01-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/83588
