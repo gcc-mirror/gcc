@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -18297,7 +18297,7 @@ package body Sem_Prag is
             Variant := First (Pragma_Argument_Associations (N));
             while Present (Variant) loop
                if Chars (Variant) = No_Name then
-                  Error_Pragma_Arg ("expect name `Increases`", Variant);
+                  Error_Pragma_Arg_Ident ("expect name `Increases`", Variant);
 
                elsif not Nam_In (Chars (Variant), Name_Decreases,
                                                   Name_Increases)
@@ -20244,6 +20244,13 @@ package body Sem_Prag is
             --  general Assertion_Policy pragma) to preserve existing warnings.
 
             Set_Has_Predicates (Typ);
+
+            --  Indicate that the pragma must be processed at the point the
+            --  type is frozen, as is done for the corresponding aspect.
+
+            Set_Has_Delayed_Aspects (Typ);
+            Set_Has_Delayed_Freeze (Typ);
+
             Set_Predicates_Ignored (Typ,
               Present (Check_Policy_List)
                 and then

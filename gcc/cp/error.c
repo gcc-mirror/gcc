@@ -3230,7 +3230,7 @@ args_to_string (tree p, int verbose)
   reinit_cxx_pp ();
   for (; p; p = TREE_CHAIN (p))
     {
-      if (TREE_VALUE (p) == null_node)
+      if (null_node_p (TREE_VALUE (p)))
 	pp_cxx_ws_string (cxx_pp, "NULL");
       else
 	dump_type (cxx_pp, error_type (TREE_VALUE (p)), flags);

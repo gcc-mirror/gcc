@@ -7,10 +7,10 @@
 
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 6 } } */
-/* { dg-final { scan-assembler-times "xxlor" 16 } } */
+/* { dg-final { scan-assembler-times "xxlnor" 8 } } */
+/* { dg-final { scan-assembler-times "xxlor" 30 } } */
 /* { dg-final { scan-assembler-times "xvcmpeqdp" 5 } } */
-/* { dg-final { scan-assembler-times "xvcmpgtdp" 7 } } */
+/* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
 /* { dg-final { scan-assembler-times "xvcmpgedp" 6 } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
 /* { dg-final { scan-assembler-times "xvmaddadp" 1 } } */
@@ -26,7 +26,7 @@
 /* { dg-final { scan-assembler-times "xvmsubasp" 1 } } */
 /* { dg-final { scan-assembler-times "xvnmaddasp" 1 } } */
 /* { dg-final { scan-assembler-times "vmsumshs" 1 } } */
-/* { dg-final { scan-assembler-times "xxland" 9 } } */
+/* { dg-final { scan-assembler-times "xxland" 13 } } */
 
 /* Source code for the test in vsx-vector-6.h */
 #include "vsx-vector-6.h"

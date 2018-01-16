@@ -1890,6 +1890,17 @@ transformations even in absence of specialized @acronym{SIMD} hardware.",
  (scalar_mode mode),
  default_preferred_simd_mode)
 
+/* Returns the preferred mode for splitting SIMD reductions to.  */
+DEFHOOK
+(split_reduction,
+ "This hook should return the preferred mode to split the final reduction\n\
+step on @var{mode} to.  The reduction is then carried out reducing upper\n\
+against lower halves of vectors recursively until the specified mode is\n\
+reached.  The default is @var{mode} which means no splitting.",
+  machine_mode,
+  (machine_mode),
+  default_split_reduction)
+
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
    after processing the preferred one derived from preferred_simd_mode.  */
 DEFHOOK
@@ -1921,6 +1932,17 @@ if such a mode exists.",
  opt_machine_mode,
  (poly_uint64 nunits, poly_uint64 length),
  default_get_mask_mode)
+
+/* Function to say whether a masked operation is expensive when the
+   mask is all zeros.  */
+DEFHOOK
+(empty_mask_is_expensive,
+ "This hook returns true if masked internal function @var{ifn} (really of\n\
+type @code{internal_fn}) should be considered expensive when the mask is\n\
+all zeros.  GCC can then try to branch around the instruction instead.",
+ bool,
+ (unsigned ifn),
+ default_empty_mask_is_expensive)
 
 /* Target builtin that implements vector gather operation.  */
 DEFHOOK
@@ -3414,6 +3436,22 @@ this hook must be a power-of-two multiple of the default alignment of\n\
 the vector element type.",
  HOST_WIDE_INT, (const_tree type),
  default_vector_alignment)
+
+DEFHOOK
+(array_mode,
+ "Return the mode that GCC should use for an array that has\n\
+@var{nelems} elements, with each element having mode @var{mode}.\n\
+Return no mode if the target has no special requirements.  In the\n\
+latter case, GCC looks for an integer mode of the appropriate size\n\
+if available and uses BLKmode otherwise.  Usually the search for the\n\
+integer mode is limited to @code{MAX_FIXED_MODE_SIZE}, but the\n\
+@code{TARGET_ARRAY_MODE_SUPPORTED_P} hook allows a larger mode to be\n\
+used in specific cases.\n\
+\n\
+The main use of this hook is to specify that an array of vectors should\n\
+also have a vector mode.  The default implementation returns no mode.",
+ opt_machine_mode, (machine_mode mode, unsigned HOST_WIDE_INT nelems),
+ hook_optmode_mode_uhwi_none)
 
 /* True if we should try to use a scalar mode to represent an array,
    overriding the usual MAX_FIXED_MODE limit.  */
@@ -5535,6 +5573,19 @@ reload from using some alternatives, like @code{TARGET_PREFERRED_RELOAD_CLASS}."
  default_preferred_output_reload_class)
 
 DEFHOOK
+(select_early_remat_modes,
+ "On some targets, certain modes cannot be held in registers around a\n\
+standard ABI call and are relatively expensive to spill to the stack.\n\
+The early rematerialization pass can help in such cases by aggressively\n\
+recomputing values after calls, so that they don't need to be spilled.\n\
+\n\
+This hook returns the set of such modes by setting the associated bits\n\
+in @var{modes}.  The default implementation selects no modes, which has\n\
+the effect of disabling the early rematerialization pass.",
+ void, (sbitmap modes),
+ default_select_early_remat_modes)
+
+DEFHOOK
 (class_likely_spilled_p,
  "A target hook which returns @code{true} if pseudos that have been assigned\n\
 to registers of class @var{rclass} would likely be spilled because\n\
@@ -5606,13 +5657,16 @@ as SH, this hook can be used to avoid excessive spilling.",
    displacement addressing.  */
 DEFHOOK
 (legitimize_address_displacement,
- "A target hook which returns @code{true} if *@var{disp} is\n\
-legitimezed to valid address displacement with subtracting *@var{offset}\n\
-at memory mode @var{mode}.\n\
-The default version of this target hook returns @code{false}.\n\
-This hook will benefit machines with limited base plus displacement\n\
-addressing.",
- bool, (rtx *disp, rtx *offset, machine_mode mode),
+ "This hook tries to split address offset @var{orig_offset} into\n\
+two parts: one that should be added to the base address to create\n\
+a local anchor point, and an additional offset that can be applied\n\
+to the anchor to address a value of mode @var{mode}.  The idea is that\n\
+the local anchor could be shared by other accesses to nearby locations.\n\
+\n\
+The hook returns true if it succeeds, storing the offset of the\n\
+anchor from the base in @var{offset1} and the offset of the final address\n\
+from the anchor in @var{offset2}.  The default implementation returns false.",
+ bool, (rtx *offset1, rtx *offset2, poly_int64 orig_offset, machine_mode mode),
  default_legitimize_address_displacement)
 
 /* This target hook allows the backend to perform additional

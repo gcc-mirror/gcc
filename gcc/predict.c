@@ -3565,6 +3565,8 @@ determine_unlikely_bbs ()
   while (worklist.length () > 0)
     {
       bb = worklist.pop ();
+      if (bb->count == profile_count::zero ())
+	continue;
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  bool found = false;
@@ -3583,8 +3585,7 @@ determine_unlikely_bbs ()
 	  if (found)
 	    continue;
 	}
-      if (!(bb->count == profile_count::zero ())
-	  && (dump_file && (dump_flags & TDF_DETAILS)))
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Basic block %i is marked unlikely by backward prop\n",
 		 bb->index);
@@ -3594,6 +3595,7 @@ determine_unlikely_bbs ()
 	  {
 	    if (!(e->src->count == profile_count::zero ()))
 	      {
+		gcc_checking_assert (nsuccs[e->src->index] > 0);
 	        nsuccs[e->src->index]--;
 	        if (!nsuccs[e->src->index])
 		  worklist.safe_push (e->src);
@@ -4040,6 +4042,10 @@ force_edge_cold (edge e, bool impossible)
   edge e2;
   bool uninitialized_exit = false;
 
+  /* When branch probability guesses are not known, then do nothing.  */
+  if (!impossible && !e->count ().initialized_p ())
+    return;
+
   profile_probability goal = (impossible ? profile_probability::never ()
 			      : profile_probability::very_unlikely ());
 
@@ -4050,17 +4056,23 @@ force_edge_cold (edge e, bool impossible)
   FOR_EACH_EDGE (e2, ei, e->src->succs)
     if (e2 != e)
       {
+	if (e->flags & EDGE_FAKE)
+	  continue;
 	if (e2->count ().initialized_p ())
 	  count_sum += e2->count ();
-	else
-	  uninitialized_exit = true;
 	if (e2->probability.initialized_p ())
 	  prob_sum += e2->probability;
+	else 
+	  uninitialized_exit = true;
       }
 
+  /* If we are not guessing profiles but have some other edges out,
+     just assume the control flow goes elsewhere.  */
+  if (uninitialized_exit)
+    e->probability = goal;
   /* If there are other edges out of e->src, redistribute probabilitity
      there.  */
-  if (prob_sum > profile_probability::never ())
+  else if (prob_sum > profile_probability::never ())
     {
       if (!(e->probability < goal))
 	e->probability = goal;
@@ -4100,8 +4112,7 @@ force_edge_cold (edge e, bool impossible)
 	update_br_prob_note (e->src);
       if (e->src->count == profile_count::zero ())
 	return;
-      if (count_sum == profile_count::zero () && !uninitialized_exit
-	  && impossible)
+      if (count_sum == profile_count::zero () && impossible)
 	{
 	  bool found = false;
 	  if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))

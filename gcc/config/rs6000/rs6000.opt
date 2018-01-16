@@ -180,9 +180,12 @@ mmultiple
 Target Report Mask(MULTIPLE) Var(rs6000_isa_flags)
 Generate load/store multiple instructions.
 
+;; This option existed in the past, but now is always off.
+mno-string
+Target RejectNegative Undocumented Ignore
+
 mstring
-Target Report Mask(STRING) Var(rs6000_isa_flags)
-Generate string instructions for block moves.
+Target RejectNegative Undocumented Warn(%<-mstring%> is deprecated)
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT) Var(rs6000_isa_flags)

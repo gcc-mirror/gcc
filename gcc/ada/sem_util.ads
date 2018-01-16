@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1561,11 +1561,39 @@ package Sem_Util is
    --  declarations. In Ada 2012 it also covers type and subtype declarations
    --  with aspects: Invariant, Predicate, and Default_Initial_Condition.
 
-   function Is_Declaration (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N denotes a declaration
-
-   function Is_Declaration_Other_Than_Renaming (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N denotes a non-renaming declaration
+   function Is_Declaration
+     (N                : Node_Id;
+      Body_OK          : Boolean := True;
+      Concurrent_OK    : Boolean := True;
+      Formal_OK        : Boolean := True;
+      Generic_OK       : Boolean := True;
+      Instantiation_OK : Boolean := True;
+      Renaming_OK      : Boolean := True;
+      Stub_OK          : Boolean := True;
+      Subprogram_OK    : Boolean := True;
+      Type_OK          : Boolean := True) return Boolean;
+   --  Determine whether arbitrary node N denotes a declaration depending
+   --  on the allowed subsets of declarations. Set the following flags to
+   --  consider specific subsets of declarations:
+   --
+   --    * Body_OK - body declarations
+   --
+   --    * Concurrent_OK - concurrent type declarations
+   --
+   --    * Formal_OK - formal declarations
+   --
+   --    * Generic_OK - generic declarations, including generic renamings
+   --
+   --    * Instantiation_OK - generic instantiations
+   --
+   --    * Renaming_OK - renaming declarations, including generic renamings
+   --
+   --    * Stub_OK - stub declarations
+   --
+   --    * Subprogram_OK - entry, expression function, and subprogram
+   --      declarations.
+   --
+   --    * Type_OK - type declarations, including concurrent types
 
    function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean;
    --  Returns True iff component Comp is declared within a variant part

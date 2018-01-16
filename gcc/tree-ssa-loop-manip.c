@@ -1378,7 +1378,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
     {
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
-      freq_e = freq_e.force_nonzero ();
+      if (freq_h.nonzero_p () && !(freq_e == profile_count::zero ()))
+        freq_e = freq_e.force_nonzero ();
       scale_loop_frequencies (loop, freq_e.probability_in (freq_h));
     }
 

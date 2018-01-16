@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -472,8 +472,8 @@ package body Sem_Ch10 is
                --  visibility analysis, but is also not redundant.
 
                elsif Nkind (Cont_Item) = N_With_Clause
-                 and then not Implicit_With (Cont_Item)
                  and then Comes_From_Source (Cont_Item)
+                 and then not Implicit_With (Cont_Item)
                  and then not Limited_Present (Cont_Item)
                  and then Cont_Item /= Clause
                  and then Entity (Name (Cont_Item)) = Nam_Ent
@@ -517,16 +517,16 @@ package body Sem_Ch10 is
 
                   begin
                      Process_Spec_Clauses
-                      (Context_List => Spec_Context_Items,
-                       Clause       => Clause,
-                       Used         => Used_In_Spec,
-                       Withed       => Withed_In_Spec);
+                       (Context_List => Spec_Context_Items,
+                        Clause       => Clause,
+                        Used         => Used_In_Spec,
+                        Withed       => Withed_In_Spec);
 
                      Process_Body_Clauses
-                      (Context_List      => Context_Items,
-                       Clause            => Clause,
-                       Used              => Used_In_Body,
-                       Used_Type_Or_Elab => Used_Type_Or_Elab);
+                       (Context_List      => Context_Items,
+                        Clause            => Clause,
+                        Used              => Used_In_Body,
+                        Used_Type_Or_Elab => Used_Type_Or_Elab);
 
                      --  "Type Elab" refers to the presence of either a use
                      --  type clause, pragmas Elaborate or Elaborate_All.
@@ -555,29 +555,29 @@ package body Sem_Ch10 is
                           ("redundant with clause in body?r?", Clause);
                      end if;
 
-                     Used_In_Body := False;
-                     Used_In_Spec := False;
+                     Used_In_Body      := False;
+                     Used_In_Spec      := False;
                      Used_Type_Or_Elab := False;
-                     Withed_In_Spec := False;
+                     Withed_In_Spec    := False;
                   end;
 
                --  Standalone package spec or body check
 
                else
                   declare
-                     Dont_Care : Boolean := False;
-                     Withed    : Boolean := False;
+                     Dummy  : Boolean := False;
+                     Withed : Boolean := False;
 
                   begin
                      --  The mechanism for examining the context clauses of a
                      --  package spec can be applied to package body clauses.
 
                      Process_Spec_Clauses
-                      (Context_List => Context_Items,
-                       Clause       => Clause,
-                       Used         => Dont_Care,
-                       Withed       => Withed,
-                       Exit_On_Self => True);
+                       (Context_List => Context_Items,
+                        Clause       => Clause,
+                        Used         => Dummy,
+                        Withed       => Withed,
+                        Exit_On_Self => True);
 
                      if Withed then
                         Error_Msg_N -- CODEFIX
@@ -1058,7 +1058,7 @@ package body Sem_Ch10 is
                if Nkind (Item) = N_With_Clause
                  and then not Implicit_With (Item)
 
-                  --  Ada 2005 (AI-50217): Ignore limited-withed units
+                 --  Ada 2005 (AI-50217): Ignore limited-withed units
 
                  and then not Limited_Present (Item)
                then
@@ -1487,8 +1487,9 @@ package body Sem_Ch10 is
                      P := Parent_Spec (Unit (N));
                      loop
                         if Unit (P) = Lib_U then
-                           Error_Msg_N ("limited with_clause cannot "
-                                        & "name ancestor", Item);
+                           Error_Msg_N
+                             ("limited with_clause cannot name ancestor",
+                              Item);
                            exit;
                         end if;
 
@@ -1539,13 +1540,11 @@ package body Sem_Ch10 is
                               then
                                  Error_Msg_Sloc := Sloc (It);
                                  Error_Msg_N
-                                   ("simultaneous visibility of limited "
-                                    & "and unlimited views not allowed",
-                                    Item);
+                                   ("simultaneous visibility of limited and "
+                                    & "unlimited views not allowed", Item);
                                  Error_Msg_NE
-                                   ("\unlimited view visible through "
-                                    & "context clause #",
-                                    Item, It);
+                                   ("\unlimited view visible through context "
+                                    & "clause #", Item, It);
                                  exit;
 
                               elsif Nkind (Unit_Name) = N_Identifier then
@@ -1572,15 +1571,15 @@ package body Sem_Ch10 is
                Analyze (Item);
             end if;
 
-            --  A limited_with does not impose an elaboration order, but
-            --  there is a semantic dependency for recompilation purposes.
+            --  A limited_with does not impose an elaboration order, but there
+            --  is a semantic dependency for recompilation purposes.
 
             if not Implicit_With (Item) then
                Version_Update (N, Library_Unit (Item));
             end if;
 
-            --  Pragmas and use clauses and with clauses other than limited
-            --  with's are ignored in this pass through the context items.
+         --  Pragmas and use clauses and with clauses other than limited with's
+         --  are ignored in this pass through the context items.
 
          else
             null;
@@ -2632,8 +2631,8 @@ package body Sem_Ch10 is
                      Error_Msg_F ("\use ""~"" instead?i?", Name (N));
                   else
                      Error_Msg_F
-                       ("\use of this unit is non-portable " &
-                        "and version-dependent?i?", Name (N));
+                       ("\use of this unit is non-portable and "
+                        & "version-dependent?i?", Name (N));
                   end if;
 
                elsif U_Kind = Ada_2005_Unit
@@ -2996,10 +2995,12 @@ package body Sem_Ch10 is
                   if Ekind (Priv_Child) = E_Generic_Package
                     and then Chars (Priv_Child) in Text_IO_Package_Name
                     and then Chars (Scope (Scope (Priv_Child))) = Name_Ada
+                    and then Scope (Scope (Scope (Priv_Child))) =
+                               Standard_Standard
                   then
                      Error_Msg_NE
                        ("& is a nested package, not a compilation unit",
-                       Name (Item), Priv_Child);
+                        Name (Item), Priv_Child);
 
                   else
                      Error_Msg_N
@@ -3027,7 +3028,6 @@ package body Sem_Ch10 is
 
          Next (Item);
       end loop;
-
    end Check_Private_Child_Unit;
 
    ----------------------
@@ -3063,10 +3063,7 @@ package body Sem_Ch10 is
    ------------------------
 
    procedure Expand_With_Clause (Item : Node_Id; Nam : Node_Id; N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (Nam);
-      Ent   : constant Entity_Id := Entity (Nam);
-      Withn : Node_Id;
-      P     : Node_Id;
+      Loc : constant Source_Ptr := Sloc (Nam);
 
       function Build_Unit_Name (Nam : Node_Id) return Node_Id;
       --  Build name to be used in implicit with_clause. In most cases this
@@ -3093,8 +3090,8 @@ package body Sem_Ch10 is
             if Present (Entity (Selector_Name (Nam)))
               and then Chars (Entity (Selector_Name (Nam))) /= Chars (Ent)
               and then
-                Nkind (Unit_Declaration_Node (Entity (Selector_Name (Nam))))
-                  = N_Package_Renaming_Declaration
+                Nkind (Unit_Declaration_Node (Entity (Selector_Name (Nam)))) =
+                  N_Package_Renaming_Declaration
             then
                --  The name in the with_clause is of the form A.B.C, and B is
                --  given by a renaming declaration. In that case we may not
@@ -3111,13 +3108,19 @@ package body Sem_Ch10 is
 
             Result :=
               Make_Expanded_Name (Loc,
-                Chars  => Chars (Entity (Nam)),
-                Prefix => Build_Unit_Name (Prefix (Nam)),
+                Chars         => Chars (Entity (Nam)),
+                Prefix        => Build_Unit_Name (Prefix (Nam)),
                 Selector_Name => New_Occurrence_Of (Ent, Loc));
             Set_Entity (Result, Ent);
+
             return Result;
          end if;
       end Build_Unit_Name;
+
+      --  Local variables
+
+      Ent   : constant Entity_Id  := Entity (Nam);
+      Withn : Node_Id;
 
    --  Start of processing for Expand_With_Clause
 
@@ -3126,18 +3129,18 @@ package body Sem_Ch10 is
         Make_With_Clause (Loc,
           Name => Build_Unit_Name (Nam));
 
-      P := Parent (Unit_Declaration_Node (Ent));
-      Set_Library_Unit       (Withn, P);
       Set_Corresponding_Spec (Withn, Ent);
-      Set_First_Name         (Withn, True);
-      Set_Implicit_With      (Withn, True);
+      Set_First_Name         (Withn);
+      Set_Implicit_With      (Withn);
+      Set_Library_Unit       (Withn, Parent (Unit_Declaration_Node (Ent)));
+      Set_Parent_With        (Withn);
 
       --  If the unit is a package or generic package declaration, a private_
       --  with_clause on a child unit implies that the implicit with on the
       --  parent is also private.
 
-      if Nkind_In (Unit (N), N_Package_Declaration,
-                             N_Generic_Package_Declaration)
+      if Nkind_In (Unit (N), N_Generic_Package_Declaration,
+                             N_Package_Declaration)
       then
          Set_Private_Present (Withn, Private_Present (Item));
       end if;
@@ -3277,8 +3280,8 @@ package body Sem_Ch10 is
          P_Spec : Node_Id := P;
 
       begin
-         --  Ancestor may have been rewritten as a package body. Retrieve
-         --  the original spec to trace earlier ancestors.
+         --  Ancestor may have been rewritten as a package body. Retrieve the
+         --  original spec to trace earlier ancestors.
 
          if Nkind (P) = N_Package_Body
            and then Nkind (Original_Node (P)) = N_Package_Instantiation
@@ -3291,7 +3294,8 @@ package body Sem_Ch10 is
          else
             return
               Make_Selected_Component (Loc,
-                Prefix => Build_Ancestor_Name (Unit (Parent_Spec (P_Spec))),
+                Prefix        =>
+                  Build_Ancestor_Name (Unit (Parent_Spec (P_Spec))),
                 Selector_Name => P_Ref);
          end if;
       end Build_Ancestor_Name;
@@ -3310,10 +3314,12 @@ package body Sem_Ch10 is
          else
             Result :=
               Make_Expanded_Name (Loc,
-                Chars  => Chars (P_Name),
-                Prefix => Build_Ancestor_Name (Unit (Parent_Spec (P_Unit))),
+                Chars         => Chars (P_Name),
+                Prefix        =>
+                  Build_Ancestor_Name (Unit (Parent_Spec (P_Unit))),
                 Selector_Name => New_Occurrence_Of (P_Name, Loc));
             Set_Entity (Result, P_Name);
+
             return Result;
          end if;
       end Build_Unit_Name;
@@ -3343,10 +3349,11 @@ package body Sem_Ch10 is
 
       Withn := Make_With_Clause (Loc, Name => Build_Unit_Name);
 
-      Set_Library_Unit          (Withn, P);
-      Set_Corresponding_Spec    (Withn, P_Name);
-      Set_First_Name            (Withn, True);
-      Set_Implicit_With         (Withn, True);
+      Set_Corresponding_Spec (Withn, P_Name);
+      Set_First_Name         (Withn);
+      Set_Implicit_With      (Withn);
+      Set_Library_Unit       (Withn, P);
+      Set_Parent_With        (Withn);
 
       --  Node is placed at the beginning of the context items, so that
       --  subsequent use clauses on the parent can be validated.
@@ -3913,9 +3920,9 @@ package body Sem_Ch10 is
             Set_Parent (Withn, Parent (N));
          end if;
 
-         Set_Limited_Present (Withn);
          Set_First_Name      (Withn);
          Set_Implicit_With   (Withn);
+         Set_Limited_Present (Withn);
 
          Unum :=
            Load_Unit

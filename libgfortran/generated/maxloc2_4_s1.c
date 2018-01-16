@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #if defined (HAVE_GFC_INTEGER_1) && defined (HAVE_GFC_INTEGER_4)
 
@@ -38,12 +39,12 @@ compare_fcn (const GFC_INTEGER_1 *a, const GFC_INTEGER_1 *b, gfc_charlen_type n)
     return memcmp_char4 (a, b, n);
 }
 
-extern GFC_INTEGER_4 maxloc2_4_s1 (gfc_array_s1 * const restrict,
+extern GFC_INTEGER_4 maxloc2_4_s1 (gfc_array_s1 * const restrict, GFC_LOGICAL_4 back,
        gfc_charlen_type);
 export_proto(maxloc2_4_s1);
 
 GFC_INTEGER_4
-maxloc2_4_s1 (gfc_array_s1 * const restrict array, gfc_charlen_type len)
+maxloc2_4_s1 (gfc_array_s1 * const restrict array, GFC_LOGICAL_4 back, gfc_charlen_type len)
 {
   index_type ret;
   index_type sstride;
@@ -52,6 +53,7 @@ maxloc2_4_s1 (gfc_array_s1 * const restrict array, gfc_charlen_type len)
   const GFC_INTEGER_1 *maxval;
   index_type i;
 
+  assert(back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -74,12 +76,13 @@ maxloc2_4_s1 (gfc_array_s1 * const restrict array, gfc_charlen_type len)
 }
 
 extern GFC_INTEGER_4 mmaxloc2_4_s1 (gfc_array_s1 * const restrict,
-       		    	gfc_array_l1 *const restrict mask, gfc_charlen_type);
+       		    	gfc_array_l1 *const restrict mask, GFC_LOGICAL_4 back,
+			gfc_charlen_type);
 export_proto(mmaxloc2_4_s1);
 
 GFC_INTEGER_4
 mmaxloc2_4_s1 (gfc_array_s1 * const restrict array,
-				 gfc_array_l1 * const restrict mask,
+				 gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back,
 				 gfc_charlen_type len)
 {
   index_type ret;
@@ -92,6 +95,7 @@ mmaxloc2_4_s1 (gfc_array_s1 * const restrict array,
   int mask_kind;
   index_type mstride;
 
+  assert(back == 0);
   extent = GFC_DESCRIPTOR_EXTENT(array,0);
   if (extent <= 0)
     return 0;
@@ -141,15 +145,15 @@ mmaxloc2_4_s1 (gfc_array_s1 * const restrict array,
 }
 
 extern GFC_INTEGER_4 smaxloc2_4_s1 (gfc_array_s1 * const restrict,
-                               GFC_LOGICAL_4 *mask, gfc_charlen_type);
+                               GFC_LOGICAL_4 *mask, GFC_LOGICAL_4 back, gfc_charlen_type);
 export_proto(smaxloc2_4_s1);
 
 GFC_INTEGER_4
 smaxloc2_4_s1 (gfc_array_s1 * const restrict array,
-				 GFC_LOGICAL_4 *mask, gfc_charlen_type len)
+				 GFC_LOGICAL_4 *mask, GFC_LOGICAL_4 back, gfc_charlen_type len)
 {
   if (mask)
-    return maxloc2_4_s1 (array, len);
+    return maxloc2_4_s1 (array, len, back);
   else
     return 0;
 }

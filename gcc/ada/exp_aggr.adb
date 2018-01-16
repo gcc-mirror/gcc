@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -240,7 +240,7 @@ package body Exp_Aggr is
    --  calling Flatten.
    --
    --  This function also detects and warns about one-component aggregates that
-   --  appear in a non-static context. Even if the component value is static,
+   --  appear in a nonstatic context. Even if the component value is static,
    --  such an aggregate must be expanded into an assignment.
 
    function Backend_Processing_Possible (N : Node_Id) return Boolean;
@@ -492,7 +492,7 @@ package body Exp_Aggr is
          end if;
 
          --  One-component aggregates are suspicious, and if the context type
-         --  is an object declaration with non-static bounds it will trip gcc;
+         --  is an object declaration with nonstatic bounds it will trip gcc;
          --  such an aggregate must be expanded into a single assignment.
 
          if Hiv = Lov and then Nkind (Parent (N)) = N_Object_Declaration then
@@ -674,7 +674,7 @@ package body Exp_Aggr is
 
          --  Recurse to check subaggregates, which may appear in qualified
          --  expressions. If delayed, the front-end will have to expand.
-         --  If the component is a discriminated record, treat as non-static,
+         --  If the component is a discriminated record, treat as nonstatic,
          --  as the back-end cannot handle this properly.
 
          Expr := First (Expressions (N));
@@ -1537,11 +1537,15 @@ package body Exp_Aggr is
             --  of the generated loop will analyze the expression in the
             --  proper context, in which the loop parameter is visible.
 
-            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ)
-              and then
-                Nkind (Parent (Expr_Q)) /= N_Iterated_Component_Association
-            then
-               Analyze_And_Resolve (Expr_Q, Comp_Typ);
+            if Present (Comp_Typ) and then not Is_Array_Type (Comp_Typ) then
+               if Nkind (Parent (Expr_Q)) = N_Iterated_Component_Association
+                 or else Nkind (Parent (Parent ((Expr_Q)))) =
+                           N_Iterated_Component_Association
+               then
+                  null;
+               else
+                  Analyze_And_Resolve (Expr_Q, Comp_Typ);
+               end if;
             end if;
 
             if Is_Delayed_Aggregate (Expr_Q) then
@@ -4045,7 +4049,7 @@ package body Exp_Aggr is
             Next_Elmt (Disc2);
          end loop;
 
-         --  If any discriminant constraint is non-static, emit a check
+         --  If any discriminant constraint is nonstatic, emit a check
 
          if Present (Cond) then
             Insert_Action (N,
@@ -4088,15 +4092,16 @@ package body Exp_Aggr is
         and then Ekind (Current_Scope) /= E_Return_Statement
         and then not Is_Limited_Type (Typ)
       then
-         Establish_Transient_Scope (Aggr, Sec_Stack => False);
+         Establish_Transient_Scope (Aggr, Manage_Sec_Stack => False);
       end if;
 
       declare
-         Node_After   : constant Node_Id := Next (N);
+         Node_After : constant Node_Id := Next (N);
       begin
          Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
          Collect_Initialization_Statements (Obj, N, Node_After);
       end;
+
       Set_No_Initialization (N);
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;
@@ -4224,7 +4229,7 @@ package body Exp_Aggr is
       --  Should the condition be more restrictive ???
 
       if Requires_Transient_Scope (Typ) and then not Inside_Init_Proc then
-         Establish_Transient_Scope (N, Sec_Stack => False);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       --  If the aggregate is nonlimited, create a temporary. If it is limited
@@ -4298,7 +4303,7 @@ package body Exp_Aggr is
       --  Check whether all components of the aggregate are compile-time known
       --  values, and can be passed as is to the back-end without further
       --  expansion.
-      --  An Iterated_Component_Association is treated as non-static, but there
+      --  An Iterated_Component_Association is treated as nonstatic, but there
       --  are possibilities for optimization here.
 
       function Flatten
@@ -5003,7 +5008,6 @@ package body Exp_Aggr is
          --  Scalar types are OK if their size is a multiple of Storage_Unit
 
          elsif Is_Scalar_Type (Ctyp) then
-
             if Csiz mod System_Storage_Unit /= 0 then
                return False;
             end if;
@@ -5493,6 +5497,15 @@ package body Exp_Aggr is
                   --  For now, too complex to analyze
 
                   return False;
+
+               elsif Nkind (Parent (Expr)) =
+                       N_Iterated_Component_Association
+               then
+                  --  Ditto for iterated component associations, which in
+                  --  general require an enclosing loop and involve nonstatic
+                  --  expressions.
+
+                  return False;
                end if;
 
                Comp := New_Copy_Tree (Expr);
@@ -5555,7 +5568,7 @@ package body Exp_Aggr is
                --  bounds. Ditto for an allocator whose qualified expression
                --  is a constrained type. If the expression in the allocator
                --  is an unconstrained array, we accept an upper bound that
-               --  is not static, to allow for non-static expressions of the
+               --  is not static, to allow for nonstatic expressions of the
                --  base type. Clearly there are further possibilities (with
                --  diminishing returns) for safely building arrays in place
                --  here.
@@ -6149,7 +6162,7 @@ package body Exp_Aggr is
       --  for default initialization, e.g. with Initialize_Scalars.
 
       if Requires_Transient_Scope (Typ) then
-         Establish_Transient_Scope (N, Sec_Stack => False);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       if Has_Default_Init_Comps (N) then
@@ -6280,15 +6293,15 @@ package body Exp_Aggr is
          Set_No_Initialization (Tmp_Decl, True);
 
          --  If we are within a loop, the temporary will be pushed on the
-         --  stack at each iteration. If the aggregate is the expression for an
-         --  allocator, it will be immediately copied to the heap and can
-         --  be reclaimed at once. We create a transient scope around the
-         --  aggregate for this purpose.
+         --  stack at each iteration. If the aggregate is the expression
+         --  for an allocator, it will be immediately copied to the heap
+         --  and can be reclaimed at once. We create a transient scope
+         --  around the aggregate for this purpose.
 
          if Ekind (Current_Scope) = E_Loop
            and then Nkind (Parent (Parent (N))) = N_Allocator
          then
-            Establish_Transient_Scope (N, Sec_Stack => False);
+            Establish_Transient_Scope (N, Manage_Sec_Stack => False);
          end if;
 
          Insert_Action (N, Tmp_Decl);
@@ -7759,7 +7772,7 @@ package body Exp_Aggr is
          function Get_Component_Val (N : Node_Id) return Uint;
          --  Given a expression value N of the component type Ctyp, returns a
          --  value of Csiz (component size) bits representing this value. If
-         --  the value is non-static or any other reason exists why the value
+         --  the value is nonstatic or any other reason exists why the value
          --  cannot be returned, then Not_Handled is raised.
 
          -----------------------

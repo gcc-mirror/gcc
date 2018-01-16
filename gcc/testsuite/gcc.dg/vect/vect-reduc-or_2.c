@@ -1,4 +1,4 @@
-/* { dg-require-effective-target whole_vector_shift } */
+/* { dg-do run { target { whole_vector_shift || vect_logical_reduc } } } */
 
 /* Write a reduction loop to be reduced using vector shifts and folded.  */
 
@@ -23,12 +23,15 @@ main (unsigned char argc, char **argv)
   check_vect ();
 
   for (i = 0; i < N; i++)
-    in[i] = (i + i + 1) & 0xfd;
+    {
+      in[i] = (i + i + 1) & 0xfd;
+      asm volatile ("" ::: "memory");
+    }
 
   for (i = 0; i < N; i++)
     {
       expected |= in[i];
-      asm volatile ("");
+      asm volatile ("" ::: "memory");
     }
 
   for (i = 0; i < N; i++)
@@ -43,5 +46,5 @@ main (unsigned char argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Reduce using vector shifts" "vect" } } */
-
+/* { dg-final { scan-tree-dump "Reduce using vector shifts" "vect" { target { ! vect_logical_reduc } } } } */
+/* { dg-final { scan-tree-dump "Reduce using direct vector reduction" "vect" { target vect_logical_reduc } } } */

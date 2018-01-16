@@ -1116,6 +1116,9 @@ struct GTY(()) tree_base {
        SSA_NAME_IS_VIRTUAL_OPERAND in
 	   SSA_NAME
 
+       EXPR_LOCATION_WRAPPER_P in
+	   NON_LVALUE_EXPR, VIEW_CONVERT_EXPR
+
    private_flag:
 
        TREE_PRIVATE in
@@ -2120,8 +2123,8 @@ extern GTY(()) tree integer_types[itk_none];
 extern GTY(()) tree sizetype_tab[(int) stk_type_kind_last];
 
 /* Arrays for keeping track of tree node statistics.  */
-extern int tree_node_counts[];
-extern int tree_node_sizes[];
+extern uint64_t tree_node_counts[];
+extern uint64_t tree_node_sizes[];
 
 /* True if we are in gimple form and the actions of the folders need to
    be restricted.  False if we are not in gimple form and folding is not

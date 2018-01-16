@@ -145,7 +145,7 @@ struct simple_object_functions
   /* Copy LTO debug sections.  */
   const char *(*copy_lto_debug_sections) (simple_object_read *sobj,
 					  simple_object_write *dobj,
-					  int (*pfn) (const char **),
+					  char *(*pfn) (const char *),
 					  int *err);
 };
 

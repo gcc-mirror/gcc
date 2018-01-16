@@ -185,6 +185,32 @@ Enable the division approximation.  Enabling this reduces
 precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
 
+Enum
+Name(sve_vector_bits) Type(enum aarch64_sve_vector_bits_enum)
+The possible SVE vector lengths:
+
+EnumValue
+Enum(sve_vector_bits) String(scalable) Value(SVE_SCALABLE)
+
+EnumValue
+Enum(sve_vector_bits) String(128) Value(SVE_128)
+
+EnumValue
+Enum(sve_vector_bits) String(256) Value(SVE_256)
+
+EnumValue
+Enum(sve_vector_bits) String(512) Value(SVE_512)
+
+EnumValue
+Enum(sve_vector_bits) String(1024) Value(SVE_1024)
+
+EnumValue
+Enum(sve_vector_bits) String(2048) Value(SVE_2048)
+
+msve-vector-bits=
+Target RejectNegative Joined Enum(sve_vector_bits) Var(aarch64_sve_vector_bits) Init(SVE_SCALABLE)
+-msve-vector-bits=N	Set the number of bits in an SVE vector register to N.
+
 mverbose-cost-dump
 Common Undocumented Var(flag_aarch64_verbose_cost)
 Enables verbose cost model dumping in the debug dump files.

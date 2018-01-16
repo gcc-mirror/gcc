@@ -36,3 +36,5 @@ define(`upcase', `translit(`$*', `a-z', `A-Z')')dnl
 define(`u_name',`regexp(upcase(name),`\([A-Z]*\)',`\1')')dnl
 define(rtype_ccode,ifelse(rtype_letter,`i',rtype_kind,rtype_code))dnl
 define(initval,ifelse(index(name,`maxval'),0,0,index(name,`minval'),0,255))dnl
+define(back_arg,ifelse(index(name,`maxloc'),0,``, GFC_LOGICAL_4 back'',dnl
+index(name,`minloc'),0,``, GFC_LOGICAL_4 back''))dnl

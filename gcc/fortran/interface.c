@@ -754,8 +754,12 @@ compare_rank (gfc_symbol *s1, gfc_symbol *s2)
   if (s2->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
     return true;
 
-  as1 = (s1->ts.type == BT_CLASS) ? CLASS_DATA (s1)->as : s1->as;
-  as2 = (s2->ts.type == BT_CLASS) ? CLASS_DATA (s2)->as : s2->as;
+  as1 = (s1->ts.type == BT_CLASS
+	 && !s1->ts.u.derived->attr.unlimited_polymorphic)
+	? CLASS_DATA (s1)->as : s1->as;
+  as2 = (s2->ts.type == BT_CLASS
+	 && !s2->ts.u.derived->attr.unlimited_polymorphic)
+	? CLASS_DATA (s2)->as : s2->as;
 
   r1 = as1 ? as1->rank : 0;
   r2 = as2 ? as2->rank : 0;

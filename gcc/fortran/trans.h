@@ -842,6 +842,7 @@ extern GTY(()) tree gfor_fndecl_caf_change_team;
 extern GTY(()) tree gfor_fndecl_caf_end_team;
 extern GTY(()) tree gfor_fndecl_caf_get_team;
 extern GTY(()) tree gfor_fndecl_caf_sync_team;
+extern GTY(()) tree gfor_fndecl_caf_team_number;
 extern GTY(()) tree gfor_fndecl_co_broadcast;
 extern GTY(()) tree gfor_fndecl_co_max;
 extern GTY(()) tree gfor_fndecl_co_min;

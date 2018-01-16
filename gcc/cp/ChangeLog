@@ -1,3 +1,127 @@
+2018-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83588
+	* class.c (find_flexarrays): Make a record of multiple flexible array
+	members.
+
+2018-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83186 - ICE with static_cast of list-initialized temporary.
+	* typeck.c (build_static_cast): Use build_non_dependent_expr.
+
+2018-01-12  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (mark_rvalue_use): Add parm name.
+	* expr.c (mark_lvalue_use, mark_lvalue_use_nonread): Move next to
+	mark_rvalue_use.
+	* call.c (convert_like_real): Fix formatting.
+
+2018-01-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82728 - wrong -Wunused-but-set-variable
+	PR c++/82799
+	PR c++/83690
+	* call.c (perform_implicit_conversion_flags): Call mark_rvalue_use.
+	* decl.c (case_conversion): Likewise.
+	* semantics.c (finish_static_assert): Call
+	perform_implicit_conversion_flags.
+
+2018-01-11  Nathan Sidwell  <nathan@acm.org>
+
+	* method.c (enum mangling_flags): Delete long-dead enum.
+
+2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_std_attribute_spec): When
+        token_pair::require_open / require_close return false simply
+	return error_mark_node, avoid duplicate cp_parser_error about
+	expected '(' / ')', respectively.
+
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* call.c (null_ptr_cst_p): Strip location wrappers when
+	converting from '0' to a pointer type in C++11 onwards.
+	(conversion_null_warnings): Replace comparison with null_node with
+	call to null_node_p.
+	(build_over_call): Likewise.
+	* cp-gimplify.c (cp_fold): Remove the early bailout when
+	processing_template_decl.
+	* cp-lang.c (selftest::run_cp_tests): Call
+	selftest::cp_pt_c_tests and selftest::cp_tree_c_tests.
+	* cp-tree.h (cp_expr::maybe_add_location_wrapper): New method.
+	(selftest::run_cp_tests): Move decl to bottom of file.
+	(null_node_p): New inline function.
+	(selftest::cp_pt_c_tests): New decl.
+	(selftest::cp_tree_c_tests): New decl.
+	* cvt.c (build_expr_type_conversion): Replace comparison with
+	null_node with call to null_node_p.
+	* error.c (args_to_string): Likewise.
+	* except.c (build_throw): Likewise.
+	* mangle.c (write_expression): Skip location wrapper nodes.
+	* parser.c (literal_integer_zerop): New function.
+	(cp_parser_postfix_expression): Call maybe_add_location_wrapper on
+	the result for RID_TYPEID. Pass true for new "wrap_locations_p"
+	param of cp_parser_parenthesized_expression_list.  When calling
+	warn_for_memset, replace integer_zerop calls with
+	literal_integer_zerop, eliminating the double logical negation
+	cast to bool.  Eliminate the special-casing for CONST_DECL in
+	favor of the fold_for_warn within warn_for_memset.
+	(cp_parser_parenthesized_expression_list): Add "wrap_locations_p"
+	param, defaulting to false.  Convert "expr" to a cp_expr, and call
+	maybe_add_location_wrapper on it when wrap_locations_p is true.
+	(cp_parser_unary_expression): Call maybe_add_location_wrapper on
+	the result for RID_ALIGNOF and RID_SIZEOF.
+	(cp_parser_builtin_offsetof): Likewise.
+	* pt.c: Include "selftest.h".
+	(tsubst_copy): Handle location wrappers.
+	(tsubst_copy_and_build): Likewise.
+	(build_non_dependent_expr): Likewise.
+	(selftest::test_build_non_dependent_expr): New function.
+	(selftest::cp_pt_c_tests): New function.
+	* tree.c: Include "selftest.h".
+	(lvalue_kind): Handle VIEW_CONVERT_EXPR location wrapper nodes.
+	(selftest::test_lvalue_kind): New function.
+	(selftest::cp_tree_c_tests): New function.
+	* typeck.c (string_conv_p): Strip any location wrapper from "exp".
+	(cp_build_binary_op): Replace comparison with null_node with call
+	to null_node_p.
+	(build_address): Use location of operand when building address
+	expression.
+
+2018-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82541
+	* call.c (build_conditional_expr_1): Check complain before warning.
+	* pt.c (tsubst_copy_and_build) <case COND_EXPR>: Suppress
+	-Wduplicated-branches.
+
+2018-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81327
+	* call.c (maybe_warn_class_memaccess): Add forward declaration.
+	Change last argument from tree * to const vec<tree, va_gc> *, adjust
+	args uses and check number of operands too.  Don't strip away any
+	nops.  Use maybe_constant_value when looking for INTEGER_CST args.
+	Deal with src argument not having pointer type.  Check
+	tree_fits_uhwi_p before calling tree_to_uhwi.  Remove useless
+	test.
+	(build_over_call): Call maybe_warn_class_memaccess here on the
+	original arguments.
+	(build_cxx_call): Rather than here on converted arguments.
+
+2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81055
+	* init.c (build_vec_init): Avoid building an INIT_EXPR with
+	error_mark_node as second argument.
+
+2018-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83734
+	* constexpr.c (cxx_eval_statement_list): Ignore DEBUG_BEGIN_STMTs
+	in STATEMENT_LIST.  Remove unneeded assert.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

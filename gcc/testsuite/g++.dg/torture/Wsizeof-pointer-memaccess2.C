@@ -5,6 +5,7 @@
 // suppressing buffer overflow warnings.
 // { dg-skip-if "" { *-*-* }  { "*" } { "-O0" "-O2" } }
 // { dg-skip-if "" { *-*-* }  { "-flto" } { "" } }
+// { dg-require-effective-target alloca }
 
 extern "C" {
 

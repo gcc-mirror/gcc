@@ -2935,24 +2935,14 @@ extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
 
-/* Return true if X is some form of vector constant.  */
-
-inline bool
-const_vec_p (const_rtx x)
-{
-  return VECTOR_MODE_P (GET_MODE (x)) && CONSTANT_P (x);
-}
-
 /* Return true if X is a vector constant with a duplicated element value.  */
 
 inline bool
 const_vec_duplicate_p (const_rtx x)
 {
-  return ((GET_CODE (x) == CONST_VECTOR
-	   && CONST_VECTOR_NPATTERNS (x) == 1
-	   && CONST_VECTOR_DUPLICATE_P (x))
-	  || (GET_CODE (x) == CONST
-	      && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE));
+  return (GET_CODE (x) == CONST_VECTOR
+	  && CONST_VECTOR_NPATTERNS (x) == 1
+	  && CONST_VECTOR_DUPLICATE_P (x));
 }
 
 /* Return true if X is a vector constant with a duplicated element value.
@@ -2962,18 +2952,9 @@ template <typename T>
 inline bool
 const_vec_duplicate_p (T x, T *elt)
 {
-  if (GET_CODE (x) == CONST_VECTOR
-      && CONST_VECTOR_NPATTERNS (x) == 1
-      && CONST_VECTOR_DUPLICATE_P (x))
+  if (const_vec_duplicate_p (x))
     {
       *elt = CONST_VECTOR_ENCODED_ELT (x, 0);
-      return true;
-    }
-  if (GET_CODE (x) == CONST
-      && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE
-      && !VECTOR_MODE_P (GET_MODE (XEXP (XEXP (x, 0), 0))))
-    {
-      *elt = XEXP (XEXP (x, 0), 0);
       return true;
     }
   return false;
@@ -3002,12 +2983,8 @@ template <typename T>
 inline T
 unwrap_const_vec_duplicate (T x)
 {
-  if (GET_CODE (x) == CONST_VECTOR
-      && CONST_VECTOR_NPATTERNS (x) == 1
-      && CONST_VECTOR_DUPLICATE_P (x))
-    return CONST_VECTOR_ENCODED_ELT (x, 0);
-  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
-    return XEXP (XEXP (x, 0), 0);
+  if (const_vec_duplicate_p (x))
+    x = CONST_VECTOR_ELT (x, 0);
   return x;
 }
 
@@ -3030,12 +3007,6 @@ const_vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
       && CONST_VECTOR_NPATTERNS (x) == 1
       && !CONST_VECTOR_DUPLICATE_P (x))
     return const_vec_series_p_1 (x, base_out, step_out);
-  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_SERIES)
-    {
-      *base_out = XEXP (XEXP (x, 0), 0);
-      *step_out = XEXP (XEXP (x, 0), 1);
-      return true;
-    }
   return false;
 }
 

@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "substring-locations.h"
 #include "spellcheck.h"
+#include "selftest.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -6737,8 +6738,15 @@ get_atomic_generic_size (location_t loc, tree function,
   for (x = n_param - n_model ; x < n_param; x++)
     {
       tree p = (*params)[x];
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (p)))
+	{
+	  error_at (loc, "non-integer memory model argument %d of %qE", x + 1,
+		    function);
+	  return 0;
+	}
+      p = fold_for_warn (p);
       if (TREE_CODE (p) == INTEGER_CST)
-        {
+	{
 	  /* memmodel_base masks the low 16 bits, thus ignore any bits above
 	     it by using TREE_INT_CST_LOW instead of tree_to_*hwi.  Those high
 	     bits will be checked later during expansion in target specific
@@ -6748,14 +6756,7 @@ get_atomic_generic_size (location_t loc, tree function,
 			"invalid memory model argument %d of %qE", x + 1,
 			function);
 	}
-      else
-	if (!INTEGRAL_TYPE_P (TREE_TYPE (p)))
-	  {
-	    error_at (loc, "non-integer memory model argument %d of %qE", x + 1,
-		   function);
-	    return 0;
-	  }
-      }
+    }
 
   return size_0;
 }
@@ -7846,6 +7847,8 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
   if (TREE_CODE (expr) == ADDR_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
   if (TREE_TYPE (expr)
       && TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE
       && TREE_CODE (expr) == FUNCTION_DECL
@@ -8187,12 +8190,30 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
 
 namespace selftest {
 
+/* Verify that fold_for_warn on error_mark_node is safe.  */
+
+static void
+test_fold_for_warn ()
+{
+  ASSERT_EQ (error_mark_node, fold_for_warn (error_mark_node));
+}
+
+/* Run all of the selftests within this file.  */
+
+static void
+c_common_c_tests ()
+{
+  test_fold_for_warn ();
+}
+
 /* Run all of the tests within c-family.  */
 
 void
 c_family_tests (void)
 {
+  c_common_c_tests ();
   c_format_c_tests ();
+  c_pretty_print_c_tests ();
   c_spellcheck_cc_tests ();
 }
 

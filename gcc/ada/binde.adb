@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ with Output;   use Output;
 with Table;
 
 with System.Case_Util; use System.Case_Util;
+with System.HTable;
 with System.OS_Lib;
 
 package body Binde is
@@ -1796,6 +1797,38 @@ package body Binde is
       function Read_File (Name : String) return String_Ptr;
       --  Read the entire contents of the named file
 
+      subtype Header_Num is Unit_Name_Type'Base range 0 .. 2**16 - 1;
+      type Line_Number is new Nat;
+      No_Line_Number  : constant Line_Number := 0;
+      Cur_Line_Number : Line_Number := 0;
+      --  Current line number in the Force_Elab_Order_File.
+      --  Incremented by Get_Line. Used in error messages.
+
+      function Hash (N : Unit_Name_Type) return Header_Num;
+
+      package Name_Map is new System.HTable.Simple_HTable
+        (Header_Num => Header_Num,
+         Element    => Line_Number,
+         No_Element => No_Line_Number,
+         Key        => Unit_Name_Type,
+         Hash       => Hash,
+         Equal      => "=");
+      --  Name_Map contains an entry for each file name seen, mapped to the
+      --  line number where we saw it first. This is used to give an error for
+      --  duplicates.
+
+      ----------
+      -- Hash --
+      ----------
+
+      function Hash (N : Unit_Name_Type) return Header_Num is
+         --  Name_Ids are already widely dispersed; no need for any actual
+         --  hashing. Just subtract to make it zero based, and "mod" to
+         --  bring it in range.
+      begin
+         return (N - Unit_Name_Type'First) mod (Header_Num'Last + 1);
+      end Hash;
+
       ---------------
       -- Read_File --
       ---------------
@@ -1848,6 +1881,8 @@ package body Binde is
          Last  : Natural;
 
       begin
+         Cur_Line_Number := Cur_Line_Number + 1;
+
          --  Skip to end of line
 
          while Cur <= S'Last
@@ -1943,50 +1978,80 @@ package body Binde is
       while Cur <= S'Last loop
          declare
             Uname : constant Unit_Name_Type := Name_Find (Get_Line);
+            Error : Boolean := False;
 
          begin
             if Uname = Empty_Name then
                null; -- silently skip blank lines
-
-            elsif Get_Name_Table_Int (Uname) = 0
-              or else Unit_Id (Get_Name_Table_Int (Uname)) = No_Unit_Id
-            then
-               if Doing_New then
-                  Write_Line
-                    ("""" & Get_Name_String (Uname)
-                     & """: not present; ignored");
-               end if;
-
             else
                declare
-                  Cur_Unit : constant Unit_Id := Unit_Id_Of (Uname);
-
+                  Dup : constant Line_Number := Name_Map.Get (Uname);
                begin
-                  if Is_Internal_File_Name (Units.Table (Cur_Unit).Sfile) then
-                     if Doing_New then
-                        Write_Line
-                          ("""" & Get_Name_String (Uname) &
-                             """: predefined unit ignored");
+                  if Dup = No_Line_Number then
+                     Name_Map.Set (Uname, Cur_Line_Number);
+
+                     --  We don't need to give the "not present" message in
+                     --  the case of "duplicate unit", because we would have
+                     --  already given the "not present" message on the
+                     --  first occurrence.
+
+                     if Get_Name_Table_Int (Uname) = 0
+                       or else Unit_Id (Get_Name_Table_Int (Uname)) =
+                                 No_Unit_Id
+                     then
+                        Error := True;
+                        if Doing_New then
+                           Write_Line
+                             ("""" & Get_Name_String (Uname)
+                              & """: not present; ignored");
+                        end if;
                      end if;
 
                   else
-                     if Prev_Unit /= No_Unit_Id then
-                        if Doing_New then
-                           Write_Unit_Name (Units.Table (Prev_Unit).Uname);
-                           Write_Str (" <-- ");
-                           Write_Unit_Name (Units.Table (Cur_Unit).Uname);
-                           Write_Eol;
-                        end if;
-
-                        Build_Link
-                          (Before => Prev_Unit,
-                           After => Cur_Unit,
-                           R => Forced);
+                     Error := True;
+                     if Doing_New then
+                        Error_Msg_Nat_1  := Nat (Cur_Line_Number);
+                        Error_Msg_Unit_1 := Uname;
+                        Error_Msg_Nat_2  := Nat (Dup);
+                        Error_Msg
+                          (Force_Elab_Order_File.all
+                           & ":#: duplicate unit name $ from line #");
                      end if;
-
-                     Prev_Unit := Cur_Unit;
                   end if;
                end;
+
+               if not Error then
+                  declare
+                     Cur_Unit : constant Unit_Id := Unit_Id_Of (Uname);
+                  begin
+                     if Is_Internal_File_Name
+                          (Units.Table (Cur_Unit).Sfile)
+                     then
+                        if Doing_New then
+                           Write_Line
+                             ("""" & Get_Name_String (Uname)
+                              & """: predefined unit ignored");
+                        end if;
+
+                     else
+                        if Prev_Unit /= No_Unit_Id then
+                           if Doing_New then
+                              Write_Unit_Name (Units.Table (Prev_Unit).Uname);
+                              Write_Str (" <-- ");
+                              Write_Unit_Name (Units.Table (Cur_Unit).Uname);
+                              Write_Eol;
+                           end if;
+
+                           Build_Link
+                             (Before => Prev_Unit,
+                              After  => Cur_Unit,
+                              R      => Forced);
+                        end if;
+
+                        Prev_Unit := Cur_Unit;
+                     end if;
+                  end;
+               end if;
             end if;
          end;
       end loop;

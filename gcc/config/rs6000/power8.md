@@ -281,7 +281,7 @@
   "DU_first_power8,cru_power8+FXU_power8")
 
 (define_insn_reservation "power8-crlogical" 3
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "power8"))
   "DU_first_power8,cru_power8")
 

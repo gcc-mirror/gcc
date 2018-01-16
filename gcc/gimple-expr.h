@@ -119,6 +119,7 @@ static inline bool
 is_gimple_addressable (tree t)
 {
   return (is_gimple_id (t) || handled_component_p (t)
+	  || TREE_CODE (t) == TARGET_MEM_REF
 	  || TREE_CODE (t) == MEM_REF);
 }
 

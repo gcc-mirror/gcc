@@ -292,11 +292,13 @@
 ; Condition Register logical ops are split if non-destructive (RT != RB)
 (define_insn_reservation "power5-crlogical" 2
   (and (eq_attr "type" "cr_logical")
+       (eq_attr "cr_logical_3op" "no")
        (eq_attr "cpu" "power5"))
   "du1_power5,cru_power5")
 
 (define_insn_reservation "power5-delayedcr" 4
-  (and (eq_attr "type" "delayed_cr")
+  (and (eq_attr "type" "cr_logical")
+       (eq_attr "cr_logical_3op" "yes")
        (eq_attr "cpu" "power5"))
   "du1_power5+du2_power5,cru_power5,cru_power5")
 

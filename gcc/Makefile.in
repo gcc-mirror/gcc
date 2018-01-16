@@ -1277,6 +1277,7 @@ OBJS = \
 	dwarf2asm.o \
 	dwarf2cfi.o \
 	dwarf2out.o \
+	early-remat.o \
 	emit-rtl.o \
 	et-forest.o \
 	except.o \
@@ -2810,7 +2811,8 @@ genprog = $(genprogerr) check checksum condmd match
 build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 build/genrecog$(build_exeext) : build/hash-table.o build/inchash.o
-build/gencfn-macros$(build_exeext) : build/hash-table.o build/ggc-none.o
+build/gencfn-macros$(build_exeext) : build/hash-table.o build/vec.o \
+  build/ggc-none.o
 
 # For stage1 and when cross-compiling use the build libcpp which is
 # built with NLS disabled.  For stage2+ use the host library and

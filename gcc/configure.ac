@@ -5885,6 +5885,43 @@ if test x$gcc_cv_target_ldbl128 = xyes; then
 	    [Define if TFmode long double should be the default])
 fi
 
+# Check if TFmode long double target should use the IBM extended double or IEEE
+# 128-bit floating point formats if long doubles are 128-bits long.  The long
+# double type can only be switched on powerpc64 bit Linux systems where VSX is
+# supported.  Other PowerPC systems do not build the IEEE 128-bit emulator in
+# libgcc.
+AC_ARG_WITH([long-double-format],
+  [AS_HELP_STRING([--with-long-double-format={ieee,ibm}]
+		  [Specify whether PowerPC long double uses IEEE or IBM format])],[
+case "$target:$with_long_double_format" in
+  powerpc64le-*-linux*:ieee | powerpc64le-*-linux*:ibm)
+    :
+    ;;
+  powerpc64-*-linux*:ieee | powerpc64-*-linux*:ibm)
+    # IEEE 128-bit emulation is only built on 64-bit VSX Linux systems
+    case "$with_cpu" in
+      power7 | power8 | power9 | power1*)
+	:
+	;;
+      *)
+	AC_MSG_ERROR([Configuration option --with-long-double-format is only \
+supported if the default cpu is power7 or newer])
+	with_long_double_format=""
+	;;
+      esac
+      ;;
+  xpowerpc64*-*-linux*:*)
+    AC_MSG_ERROR([--with-long-double-format argument should be ibm or ieee])
+    with_long_double_format=""
+    ;;
+  *)
+    AC_MSG_ERROR([Configure option --with-long-double-format is only supported \
+on 64-bit PowerPC VSX Linux systems])
+    with_long_double_format=""
+    ;;
+esac],
+  [])
+
 # Check if the target LIBC supports exporting the AT_PLATFORM and AT_HWCAP
 # values in the TCB.  Currently, only GLIBC 2.23 and later support this.
 gcc_cv_libc_provides_hwcap_in_tcb=no

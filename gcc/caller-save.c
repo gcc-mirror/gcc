@@ -1147,7 +1147,8 @@ replace_reg_with_saved_mem (rtx *loc,
 	    machine_mode smode = save_mode[regno];
 	    gcc_assert (smode != VOIDmode);
 	    if (hard_regno_nregs (regno, smode) > 1)
-	      smode = mode_for_size (exact_div (GET_MODE_SIZE (mode), nregs),
+	      smode = mode_for_size (exact_div (GET_MODE_BITSIZE (mode),
+						nregs),
 				     GET_MODE_CLASS (mode), 0).require ();
 	    XVECEXP (mem, 0, i) = gen_rtx_REG (smode, regno + i);
 	  }

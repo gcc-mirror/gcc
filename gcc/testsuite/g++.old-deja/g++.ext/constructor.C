@@ -1,5 +1,6 @@
 // { dg-do run  }
 // { dg-options "" }
+// { dg-require-effective-target alloca }
 // Testcase for constructor expressions (GNU extension)
 
 struct Any {

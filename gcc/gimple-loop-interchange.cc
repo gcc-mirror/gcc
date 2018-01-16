@@ -1119,6 +1119,10 @@ tree_loop_interchange::interchange_loops (loop_cand &iloop, loop_cand &oloop)
   oloop.m_loop->any_likely_upper_bound = false;
   free_numbers_of_iterations_estimates (oloop.m_loop);
 
+  /* Clear all cached scev information.  This is expensive but shouldn't be
+     a problem given we interchange in very limited times.  */
+  scev_reset_htab ();
+
   /* ???  The association between the loop data structure and the
      CFG changed, so what was loop N at the source level is now
      loop M.  We should think of retaining the association or breaking
@@ -2069,9 +2073,6 @@ pass_linterchange::execute (function *fun)
       free_data_refs_with_aux (datarefs);
       loop_nest.release ();
     }
-
-  if (changed_p)
-    scev_reset_htab ();
 
   return changed_p ? (TODO_update_ssa_only_virtuals) : 0;
 }

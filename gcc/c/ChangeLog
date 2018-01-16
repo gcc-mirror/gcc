@@ -1,3 +1,16 @@
+2018-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83801
+	* c-tree.h (decl_constant_value_1): Add a bool argument.
+	* c-typeck.c (decl_constant_value_1): Add IN_INIT argument, allow
+	returning a CONSTRUCTOR if it is true.  Use error_operand_p.
+	(decl_constant_value): Adjust caller.
+	* c-fold.c (c_fully_fold_internal): If in_init, pass true to
+	decl_constant_value_1 as IN_INIT.  Otherwise, punt if
+	decl_constant_value returns initializer that has BLKmode or
+	array type.
+	(c_fully_fold_internal) <case COMPONENT_REF>: Fold if !lval.
+
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

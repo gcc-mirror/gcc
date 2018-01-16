@@ -63,4 +63,3 @@ int main (int argc, const char* argv[])
 /* { dg-final { scan-tree-dump-not "permutation requires at least three vectors" "vect" { target vect_perm3_short } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { { ! vect_perm3_short } || vect_load_lanes } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm3_short && { ! vect_load_lanes } } } } } */
-

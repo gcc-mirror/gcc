@@ -1,6 +1,7 @@
 // PR c++/55149
 // { dg-do compile { target c++11 } }
 // { dg-options "-Wno-vla" }
+// { dg-require-effective-target alloca }
 
 template<unsigned int TA>
  struct SA

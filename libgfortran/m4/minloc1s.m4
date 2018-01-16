@@ -30,6 +30,8 @@ include(ifunction-s.m4)dnl
 
 `#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
 
+#define HAVE_BACK_ARG 1
+
 ARRAY_FUNCTION(0,
 `	const atype_name *minval;
 	minval = base;

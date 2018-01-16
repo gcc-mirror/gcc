@@ -3279,12 +3279,13 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 	 DIM	MASK
 
    I.e. in the case of minloc(array,mask), mask will be in the second
-   position of the argument list and we'll have to fix that up.  */
+   position of the argument list and we'll have to fix that up.  Also,
+   add the BACK argument if that isn't present.  */
 
 bool
 gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 {
-  gfc_expr *a, *m, *d, *k;
+  gfc_expr *a, *m, *d, *k, *b;
 
   a = ap->expr;
   if (!int_or_real_or_char_check_f2003 (a, 0) || !array_check (a, 0))
@@ -3293,6 +3294,26 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
   d = ap->next->expr;
   m = ap->next->next->expr;
   k = ap->next->next->next->expr;
+  b = ap->next->next->next->next->expr;
+
+  if (b)
+    {
+      if (!type_check (b, 4, BT_LOGICAL) || !scalar_check (b,4))
+	return false;
+
+      /* TODO: Remove this once BACK is actually implemented.  */
+      if (b->expr_type != EXPR_CONSTANT || b->value.logical != 0)
+	{
+	  gfc_error ("BACK argument to %qs intrinsic not yet "
+		     "implemented", gfc_current_intrinsic);
+	  return false;
+	}
+    }
+  else
+    {
+      b = gfc_get_logical_expr (gfc_default_logical_kind, NULL, 0);
+      ap->next->next->next->next->expr = b;
+    }
 
   if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
       && ap->next->name == NULL)
@@ -5262,6 +5283,33 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 			   "NUM_IMAGES at %L", &failed->where))
 	return false;
     }
+
+  return true;
+}
+
+
+bool
+gfc_check_team_number (gfc_expr *team)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return false;
+    }
+
+  if (team)
+    {
+      /* todo: this works on any derived type when
+         it should only work with type team */
+      if (team->ts.type != BT_DERIVED)
+        {
+          gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
+                     "shall be of type TEAM_TYPE", &team->where);
+          return false;
+        }
+    }
+  else
+    return true;
 
   return true;
 }

@@ -19,6 +19,7 @@
 #include "ast-dump.h"
 #include "go-optimize.h"
 #include "go-diagnostics.h"
+#include "go-sha1.h"
 
 // class Node.
 
@@ -444,6 +445,17 @@ Node::state(Escape_context* context, Named_object* fn)
   return this->state_;
 }
 
+Node::~Node()
+{
+  if (this->state_ != NULL)
+    {
+      if (this->expr() == NULL || this->expr()->var_expression() == NULL)
+        // Var expression Node is excluded since it shares state with the
+        // underlying var Node.
+        delete this->state_;
+    }
+}
+
 int
 Node::encoding()
 {
@@ -551,6 +563,7 @@ Node::is_sink() const
 std::map<Named_object*, Node*> Node::objects;
 std::map<Expression*, Node*> Node::expressions;
 std::map<Statement*, Node*> Node::statements;
+std::vector<Node*> Node::indirects;
 
 // Make a object node or return a cached node for this object.
 
@@ -600,6 +613,7 @@ Node*
 Node::make_indirect_node(Node* child)
 {
   Node* n = new Node(child);
+  Node::indirects.push_back(n);
   return n;
 }
 
@@ -821,6 +835,39 @@ Escape_note::parse_tag(std::string* tag)
 
 Go_optimize optimize_allocation_flag("allocs");
 
+// A helper function to compute whether a function name has a
+// matching hash value.
+
+static bool
+escape_hash_match(std::string suffix, std::string name)
+{
+  if (suffix.empty())
+    return true;
+  if (suffix.at(0) == '-')
+    return !escape_hash_match(suffix.substr(1), name);
+
+  const char* p = name.c_str();
+  Go_sha1_helper* sha1_helper = go_create_sha1_helper();
+  sha1_helper->process_bytes(p, strlen(p));
+  std::string s = sha1_helper->finish();
+  delete sha1_helper;
+
+  int j = suffix.size() - 1;
+  for (int i = s.size() - 1; i >= 0; i--)
+    {
+      char c = s.at(i);
+      for (int k = 0; k < 8; k++, j--, c>>=1)
+        {
+          if (j < 0)
+            return true;
+          char bit = suffix.at(j) - '0';
+          if ((c&1) != bit)
+            return false;
+        }
+    }
+  return false;
+}
+
 // Analyze the program flow for escape information.
 
 void
@@ -839,11 +886,46 @@ Gogo::analyze_escape()
   // information in this package.
   this->discover_analysis_sets();
 
+  if (!this->debug_escape_hash().empty())
+    std::cerr << "debug-escape-hash " << this->debug_escape_hash() << "\n";
+
   for (std::vector<Analysis_set>::iterator p = this->analysis_sets_.begin();
        p != this->analysis_sets_.end();
        ++p)
     {
       std::vector<Named_object*> stack = p->first;
+
+      if (!this->debug_escape_hash().empty())
+        {
+          bool match = false;
+          for (std::vector<Named_object*>::const_iterator fn = stack.begin();
+               fn != stack.end();
+               ++fn)
+            match = match || escape_hash_match(this->debug_escape_hash(), (*fn)->message_name());
+          if (!match)
+            {
+              // Escape analysis won't run on these functions, but still
+              // need to tag them, so the caller knows.
+              for (std::vector<Named_object*>::iterator fn = stack.begin();
+                   fn != stack.end();
+                   ++fn)
+                if ((*fn)->is_function())
+                  {
+                    Function_type* fntype = (*fn)->func_value()->type();
+                    fntype->set_is_tagged();
+
+                    std::cerr << "debug-escape-hash disables " << debug_function_name(*fn) << "\n";
+                  }
+
+              continue;
+            }
+          for (std::vector<Named_object*>::const_iterator fn = stack.begin();
+               fn != stack.end();
+               ++fn)
+            if ((*fn)->is_function())
+              std::cerr << "debug-escape-hash triggers " << debug_function_name(*fn) << "\n";
+        }
+
       Escape_context* context = new Escape_context(this, p->second);
 
       // Analyze the flow of each function; build the connection graph.
@@ -858,7 +940,7 @@ Gogo::analyze_escape()
 
       // Propagate levels across each dst.  This is the flood phase.
       std::set<Node*> dsts = context->dsts();
-      std::unordered_map<Node*, int> escapes;
+      Unordered_map(Node*, int) escapes;
       for (std::set<Node*>::iterator n = dsts.begin();
            n != dsts.end();
            ++n)
@@ -928,12 +1010,15 @@ class Escape_analysis_discover : public Traverse
 {
  public:
   Escape_analysis_discover(Gogo* gogo)
-    : Traverse(traverse_functions),
+    : Traverse(traverse_functions | traverse_func_declarations),
       gogo_(gogo), component_ids_()
   { }
 
   int
   function(Named_object*);
+
+  int
+  function_declaration(Named_object*);
 
   int
   visit(Named_object*);
@@ -962,6 +1047,13 @@ int Escape_analysis_discover::id = 0;
 
 int
 Escape_analysis_discover::function(Named_object* fn)
+{
+  this->visit(fn);
+  return TRAVERSE_CONTINUE;
+}
+
+int
+Escape_analysis_discover::function_declaration(Named_object* fn)
 {
   this->visit(fn);
   return TRAVERSE_CONTINUE;
@@ -1341,7 +1433,14 @@ Escape_analysis_assign::statement(Block*, size_t*, Statement* s)
 
     case Statement::STATEMENT_DEFER:
       if (this->context_->loop_depth() == 1)
-	break;
+        {
+          // Defer statement may need to allocate a thunk. When it is
+          // not inside a loop, this can be stack allocated, as it
+          // runs before the function finishes.
+          Node* n = Node::make_node(s);
+          n->set_encoding(Node::ESCAPE_NONE);
+          break;
+        }
       // fallthrough
 
     case Statement::STATEMENT_GO:
@@ -1688,9 +1787,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 	    for (; p != sce->vals()->end(); ++p)
 	      {
 		Node* enclosed_node = Node::make_node(*p);
-		Node::Escape_state* state =
-		  enclosed_node->state(this->context_, NULL);
-		state->loop_depth = this->context_->loop_depth();
+		this->context_->track(enclosed_node);
 		this->assign(closure_node, enclosed_node);
 	      }
 	  }
@@ -3250,4 +3347,40 @@ Gogo::tag_function(Escape_context* context, Named_object* fn)
 {
   Escape_analysis_tag eat(context);
   eat.tag(fn);
+}
+
+// Reclaim memory of escape analysis Nodes.
+
+void
+Gogo::reclaim_escape_nodes()
+{
+  Node::reclaim_nodes();
+}
+
+void
+Node::reclaim_nodes()
+{
+  for (std::map<Named_object*, Node*>::iterator p = Node::objects.begin();
+       p != Node::objects.end();
+       ++p)
+    delete p->second;
+  Node::objects.clear();
+
+  for (std::map<Expression*, Node*>::iterator p = Node::expressions.begin();
+       p != Node::expressions.end();
+       ++p)
+    delete p->second;
+  Node::expressions.clear();
+
+  for (std::map<Statement*, Node*>::iterator p = Node::statements.begin();
+       p != Node::statements.end();
+       ++p)
+    delete p->second;
+  Node::statements.clear();
+
+  for (std::vector<Node*>::iterator p = Node::indirects.begin();
+       p != Node::indirects.end();
+       ++p)
+    delete *p;
+  Node::indirects.clear();
 }

@@ -71,12 +71,12 @@ extern void rs6000_expand_extract_even (rtx, rtx, rtx);
 extern void rs6000_expand_interleave (rtx, rtx, rtx, bool);
 extern void rs6000_scale_v2df (rtx, rtx, int);
 extern void rs6000_generate_float2_code (bool, rtx, rtx, rtx);
+extern void rs6000_generate_float2_double_code (rtx, rtx, rtx);
 extern void rs6000_generate_vsigned2_code (bool, rtx, rtx, rtx);
 extern int expand_block_clear (rtx[]);
 extern int expand_block_move (rtx[]);
 extern bool expand_block_compare (rtx[]);
 extern bool expand_strn_compare (rtx[], int);
-extern const char * rs6000_output_load_multiple (rtx[]);
 extern bool rs6000_is_valid_mask (rtx, int *, int *, machine_mode);
 extern bool rs6000_is_valid_and_mask (rtx, machine_mode);
 extern bool rs6000_is_valid_shift_mask (rtx, rtx, machine_mode);
@@ -254,5 +254,9 @@ namespace gcc { class context; }
 class rtl_opt_pass;
 
 extern rtl_opt_pass *make_pass_analyze_swaps (gcc::context *);
+extern bool rs6000_sum_of_two_registers_p (const_rtx expr);
+extern bool rs6000_quadword_masked_address_p (const_rtx exp);
+extern rtx rs6000_gen_lvx (enum machine_mode, rtx, rtx);
+extern rtx rs6000_gen_stvx (enum machine_mode, rtx, rtx);
 
 #endif  /* rs6000-protos.h */

@@ -3851,6 +3851,8 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
   for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
     {
       tree stmt = tsi_stmt (i);
+      if (TREE_CODE (stmt) == DEBUG_BEGIN_STMT)
+	continue;
       r = cxx_eval_constant_expression (ctx, stmt, false,
 					non_constant_p, overflow_p,
 					jump_target);
@@ -3859,14 +3861,6 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       if (returns (jump_target) || breaks (jump_target))
 	break;
     }
-  /* Make sure we don't use the "result" of a debug-only marker.  That
-     would be wrong.  We should be using the result of the previous
-     statement, or NULL if there isn't one.  In practice, this should
-     never happen: the statement after the marker should override the
-     result of the marker, so its value shouldn't survive in R.  Now,
-     should that ever change, we'll need some fixing here to stop
-     markers from modifying the generated executable code.  */
-  gcc_checking_assert (!r || TREE_CODE (r) != DEBUG_BEGIN_STMT);
   return r;
 }
 

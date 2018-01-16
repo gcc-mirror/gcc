@@ -2774,6 +2774,17 @@ details.
 With LRA, the default is to use @var{mode} unmodified.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SELECT_EARLY_REMAT_MODES (sbitmap @var{modes})
+On some targets, certain modes cannot be held in registers around a
+standard ABI call and are relatively expensive to spill to the stack.
+The early rematerialization pass can help in such cases by aggressively
+recomputing values after calls, so that they don't need to be spilled.
+
+This hook returns the set of such modes by setting the associated bits
+in @var{modes}.  The default implementation selects no modes, which has
+the effect of disabling the early rematerialization pass.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_CLASS_LIKELY_SPILLED_P (reg_class_t @var{rclass})
 A target hook which returns @code{true} if pseudos that have been assigned
 to registers of class @var{rclass} would likely be spilled because
@@ -2883,13 +2894,16 @@ machines with non orthogonal register usage for addressing, such
 as SH, this hook can be used to avoid excessive spilling.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT (rtx *@var{disp}, rtx *@var{offset}, machine_mode @var{mode})
-A target hook which returns @code{true} if *@var{disp} is
-legitimezed to valid address displacement with subtracting *@var{offset}
-at memory mode @var{mode}.
-The default version of this target hook returns @code{false}.
-This hook will benefit machines with limited base plus displacement
-addressing.
+@deftypefn {Target Hook} bool TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT (rtx *@var{offset1}, rtx *@var{offset2}, poly_int64 @var{orig_offset}, machine_mode @var{mode})
+This hook tries to split address offset @var{orig_offset} into
+two parts: one that should be added to the base address to create
+a local anchor point, and an additional offset that can be applied
+to the anchor to address a value of mode @var{mode}.  The idea is that
+the local anchor could be shared by other accesses to nearby locations.
+
+The hook returns true if it succeeds, storing the offset of the
+anchor from the base in @var{offset1} and the offset of the final address
+from the anchor in @var{offset2}.  The default implementation returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} reg_class_t TARGET_SPILL_CLASS (reg_class_t, @var{machine_mode})
@@ -3621,6 +3635,13 @@ defined and 0 otherwise.
 
 @end defmac
 
+@defmac DWARF_LAZY_REGISTER_VALUE (@var{regno}, @var{value})
+Define this macro if the target has pseudo DWARF registers whose
+values need to be computed lazily on demand by the unwinder (such as when
+referenced in a CFA expression).  The macro returns true if @var{regno}
+is such a register and stores its value in @samp{*@var{value}} if so.
+@end defmac
+
 @node Elimination
 @subsection Eliminating Frame Pointer and Arg Pointer
 
@@ -4241,6 +4262,20 @@ code in @file{optabs.c}.
 Define this to return nonzero if the port is prepared to handle
 insns involving vector mode @var{mode}.  At the very least, it
 must have move patterns for this mode.
+@end deftypefn
+
+@deftypefn {Target Hook} opt_machine_mode TARGET_ARRAY_MODE (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
+Return the mode that GCC should use for an array that has
+@var{nelems} elements, with each element having mode @var{mode}.
+Return no mode if the target has no special requirements.  In the
+latter case, GCC looks for an integer mode of the appropriate size
+if available and uses BLKmode otherwise.  Usually the search for the
+integer mode is limited to @code{MAX_FIXED_MODE_SIZE}, but the
+@code{TARGET_ARRAY_MODE_SUPPORTED_P} hook allows a larger mode to be
+used in specific cases.
+
+The main use of this hook is to specify that an array of vectors should
+also have a vector mode.  The default implementation returns no mode.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_ARRAY_MODE_SUPPORTED_P (machine_mode @var{mode}, unsigned HOST_WIDE_INT @var{nelems})
@@ -5873,6 +5908,13 @@ equal to @code{word_mode}, because the vectorizer can do some
 transformations even in absence of specialized @acronym{SIMD} hardware.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_SPLIT_REDUCTION (machine_mode)
+This hook should return the preferred mode to split the final reduction
+step on @var{mode} to.  The reduction is then carried out reducing upper
+against lower halves of vectors recursively until the specified mode is
+reached.  The default is @var{mode} which means no splitting.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes})
 If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not
 the only one that is worth considering, this hook should add all suitable
@@ -5894,6 +5936,12 @@ long and contains @var{nunits} elements.  The hook returns an empty
 The default implementation returns the mode of an integer vector that
 is @var{length} bytes long and that contains @var{nunits} elements,
 if such a mode exists.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE (unsigned @var{ifn})
+This hook returns true if masked internal function @var{ifn} (really of
+type @code{internal_fn}) should be considered expensive when the mask is
+all zeros.  GCC can then try to branch around the instruction instead.
 @end deftypefn
 
 @deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})

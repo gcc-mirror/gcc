@@ -336,7 +336,7 @@
   "DU_even_power9,fx_div0_power9*8|fx_div1_power9*8")
 
 (define_insn_reservation "power9-crlogical" 2
-  (and (eq_attr "type" "cr_logical,delayed_cr")
+  (and (eq_attr "type" "cr_logical")
        (eq_attr "cpu" "power9"))
   "DU_any_power9,VSU_power9")
 

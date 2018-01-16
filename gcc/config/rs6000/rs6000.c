@@ -4204,34 +4204,21 @@ rs6000_option_override_internal (bool global_init_p)
     }
 
   /* If we are optimizing big endian systems for space, use the load/store
-     multiple and string instructions.  */
+     multiple instructions.  */
   if (BYTES_BIG_ENDIAN && optimize_size)
-    rs6000_isa_flags |= ~rs6000_isa_flags_explicit & (OPTION_MASK_MULTIPLE
-						      | OPTION_MASK_STRING);
+    rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE;
 
-  /* Don't allow -mmultiple or -mstring on little endian systems
-     unless the cpu is a 750, because the hardware doesn't support the
-     instructions used in little endian mode, and causes an alignment
-     trap.  The 750 does not cause an alignment trap (except when the
-     target is unaligned).  */
+  /* Don't allow -mmultiple on little endian systems unless the cpu is a 750,
+     because the hardware doesn't support the instructions used in little
+     endian mode, and causes an alignment trap.  The 750 does not cause an
+     alignment trap (except when the target is unaligned).  */
 
-  if (!BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
+  if (!BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750 && TARGET_MULTIPLE)
     {
-      if (TARGET_MULTIPLE)
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_MULTIPLE;
-	  if ((rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE) != 0)
-	    warning (0, "%qs is not supported on little endian systems",
-		     "-mmultiple");
-	}
-
-      if (TARGET_STRING)
-	{
-	  rs6000_isa_flags &= ~OPTION_MASK_STRING;
-	  if ((rs6000_isa_flags_explicit & OPTION_MASK_STRING) != 0)
-	    warning (0, "%qs is not supported on little endian systems",
-		     "-mstring");
-	}
+      rs6000_isa_flags &= ~OPTION_MASK_MULTIPLE;
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE) != 0)
+	warning (0, "%qs is not supported on little endian systems",
+		 "-mmultiple");
     }
 
   /* If little-endian, default to -mstrict-align on older processors.
@@ -4812,9 +4799,7 @@ rs6000_option_override_internal (bool global_init_p)
     rs6000_print_isa_options (stderr, 0, "after subtarget", rs6000_isa_flags);
 
   /* For the E500 family of cores, reset the single/double FP flags to let us
-     check that they remain constant across attributes or pragmas.  Also,
-     clear a possible request for string instructions, not supported and which
-     we might have silently queried above for -Os.  */
+     check that they remain constant across attributes or pragmas.  */
 
   switch (rs6000_cpu)
     {
@@ -4826,7 +4811,6 @@ rs6000_option_override_internal (bool global_init_p)
     case PROCESSOR_PPCE6500:
       rs6000_single_float = 0;
       rs6000_double_float = 0;
-      rs6000_isa_flags &= ~OPTION_MASK_STRING;
       break;
 
     default:
@@ -7300,7 +7284,7 @@ rs6000_expand_vector_set (rtx target, rtx val, int elt)
     {
       if (TARGET_P9_VECTOR)
 	x = gen_rtx_UNSPEC (mode,
-			    gen_rtvec (3, target, reg,
+			    gen_rtvec (3, reg, target,
 				       force_reg (V16QImode, x)),
 			    UNSPEC_VPERMR);
       else
@@ -11429,7 +11413,7 @@ rs6000_must_pass_in_stack (machine_mode mode, const_tree type)
 static inline bool
 is_complex_IBM_long_double (machine_mode mode)
 {
-  return mode == ICmode || (!TARGET_IEEEQUAD && mode == TCmode);
+  return mode == ICmode || (mode == TCmode && FLOAT128_IBM_P (TCmode));
 }
 
 /* Whether ABI_V4 passes MODE args to a function in floating point
@@ -16792,6 +16776,12 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case RS6000_BUILTIN_CPU_SUPPORTS:
       return cpu_expand_builtin (fcode, exp, target);
 
+    case MISC_BUILTIN_SPEC_BARRIER:
+      {
+	emit_insn (gen_rs6000_speculation_barrier ());
+	return NULL_RTX;
+      }
+
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
@@ -17164,6 +17154,8 @@ rs6000_init_builtins (void)
 
   ftype = build_function_type_list (void_type_node, NULL_TREE);
   def_builtin ("__builtin_cpu_init", ftype, RS6000_BUILTIN_CPU_INIT);
+  def_builtin ("__builtin_rs6000_speculation_barrier", ftype,
+	       MISC_BUILTIN_SPEC_BARRIER);
 
   ftype = build_function_type_list (bool_int_type_node, const_ptr_type_node,
 				    NULL_TREE);
@@ -21363,7 +21355,7 @@ print_operand (FILE *file, rtx x, int code)
 	}
       return;
 
-    case 'N':
+    case 'N': /* Unused */
       /* Write the number of elements in the vector times 4.  */
       if (GET_CODE (x) != PARALLEL)
 	output_operand_lossage ("invalid %%N value");
@@ -21371,7 +21363,7 @@ print_operand (FILE *file, rtx x, int code)
 	fprintf (file, "%d", XVECLEN (x, 0) * 4);
       return;
 
-    case 'O':
+    case 'O': /* Unused */
       /* Similar, but subtract 1 first.  */
       if (GET_CODE (x) != PARALLEL)
 	output_operand_lossage ("invalid %%O value");
@@ -21671,7 +21663,7 @@ print_operand (FILE *file, rtx x, int code)
 
 	tmp = XEXP (x, 0);
 
-	if (VECTOR_MEM_ALTIVEC_P (GET_MODE (x))
+	if (VECTOR_MEM_ALTIVEC_OR_VSX_P (GET_MODE (x))
 	    && GET_CODE (tmp) == AND
 	    && GET_CODE (XEXP (tmp, 1)) == CONST_INT
 	    && INTVAL (XEXP (tmp, 1)) == -16)
@@ -30662,7 +30654,6 @@ rs6000_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
                 case TYPE_CMP:
                 case TYPE_FPCOMPARE:
                 case TYPE_CR_LOGICAL:
-                case TYPE_DELAYED_CR:
 		  return cost + 2;
                 case TYPE_EXTS:
                 case TYPE_MUL:
@@ -30958,7 +30949,8 @@ is_cracked_insn (rtx_insn *insn)
 	      && get_attr_indexed (insn) == INDEXED_NO)
 	  || ((type == TYPE_FPLOAD || type == TYPE_FPSTORE)
 	      && get_attr_update (insn) == UPDATE_YES)
-	  || type == TYPE_DELAYED_CR
+	  || (type == TYPE_CR_LOGICAL
+	      && get_attr_cr_logical_3op (insn) == CR_LOGICAL_3OP_YES)
 	  || (type == TYPE_EXTS
 	      && get_attr_dot (insn) == DOT_YES)
 	  || (type == TYPE_SHIFT
@@ -31949,7 +31941,6 @@ insn_must_be_first_in_group (rtx_insn *insn)
         case TYPE_MFCR:
         case TYPE_MFCRF:
         case TYPE_MTCR:
-        case TYPE_DELAYED_CR:
         case TYPE_CR_LOGICAL:
         case TYPE_MTJMPR:
         case TYPE_MFJMPR:
@@ -32052,7 +32043,6 @@ insn_must_be_first_in_group (rtx_insn *insn)
       switch (type)
         {
         case TYPE_CR_LOGICAL:
-        case TYPE_DELAYED_CR:
         case TYPE_MFCR:
         case TYPE_MFCRF:
         case TYPE_MTCR:
@@ -35683,7 +35673,7 @@ altivec_expand_vec_perm_le (rtx operands[4])
 
   if (TARGET_P9_VECTOR)
     {
-      unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op0, op1, sel),
+      unspec = gen_rtx_UNSPEC (mode, gen_rtvec (3, op1, op0, sel),
 			       UNSPEC_VPERMR);
     }
   else
@@ -36625,7 +36615,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "quad-memory-atomic",	OPTION_MASK_QUAD_MEMORY_ATOMIC,	false, true  },
   { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
   { "save-toc-indirect",	OPTION_MASK_SAVE_TOC_INDIRECT,	false, true  },
-  { "string",			OPTION_MASK_STRING,		false, true  },
+  { "string",			0,				false, true  },
   { "toc-fusion",		OPTION_MASK_TOC_FUSION,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
   { "vsx",			OPTION_MASK_VSX,		false, true  },
@@ -36652,7 +36642,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "strict-align",		OPTION_MASK_STRICT_ALIGN,	false, false },
 #endif
   { "soft-float",		OPTION_MASK_SOFT_FLOAT,		false, false },
-  { "string",			OPTION_MASK_STRING,		false, false },
+  { "string",			0,				false, false },
 };
 
 /* Builtin mask mapping for printing the flags.  */
@@ -39437,6 +39427,43 @@ rs6000_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 				       fenv_update_mtfsf);
 
   *update = build2 (COMPOUND_EXPR, void_type_node, update_mffs, update_mtfsf);
+}
+
+void
+rs6000_generate_float2_double_code (rtx dst, rtx src1, rtx src2)
+{
+  rtx rtx_tmp0, rtx_tmp1, rtx_tmp2, rtx_tmp3;
+
+  rtx_tmp0 = gen_reg_rtx (V2DFmode);
+  rtx_tmp1 = gen_reg_rtx (V2DFmode);
+
+  /* The destination of the vmrgew instruction layout is:
+     rtx_tmp2[0] rtx_tmp3[0] rtx_tmp2[1] rtx_tmp3[0].
+     Setup rtx_tmp0 and rtx_tmp1 to ensure the order of the elements after the
+     vmrgew instruction will be correct.  */
+  if (VECTOR_ELT_ORDER_BIG)
+    {
+       emit_insn (gen_vsx_xxpermdi_v2df_be (rtx_tmp0, src1, src2,
+					    GEN_INT (0)));
+       emit_insn (gen_vsx_xxpermdi_v2df_be (rtx_tmp1, src1, src2,
+					    GEN_INT (3)));
+    }
+  else
+    {
+       emit_insn (gen_vsx_xxpermdi_v2df (rtx_tmp0, src1, src2, GEN_INT (3)));
+       emit_insn (gen_vsx_xxpermdi_v2df (rtx_tmp1, src1, src2, GEN_INT (0)));
+    }
+
+  rtx_tmp2 = gen_reg_rtx (V4SFmode);
+  rtx_tmp3 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_vsx_xvcdpsp (rtx_tmp2, rtx_tmp0));
+  emit_insn (gen_vsx_xvcdpsp (rtx_tmp3, rtx_tmp1));
+
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp2, rtx_tmp3));
+  else
+    emit_insn (gen_p8_vmrgew_v4sf (dst, rtx_tmp3, rtx_tmp2));
 }
 
 void

@@ -1,3 +1,1586 @@
+2018-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83588
+	* g++.dg/ext/flexary28.C: New test.
+
+2018-01-15  Louis Krupp  <louis.krupp@zoho.com>
+
+	PR fortran/82257
+	* gfortran.dg/unlimited_polymorphic_28.f90: New test.
+
+2018-01-15  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/83869
+	* c-c++-common/attr-nonstring-3.c: Work around bug c++/74762.
+
+2018-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* gfortran.dg/minmaxloc_9.f90: New test.
+	* gfortran.dg/minmaxloc_10.f90: New test.
+	* gfortran.dg/minmaxloc_11.f90: New test.
+
+2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/83839
+	* gcc.target/i386/indirect-thunk-1.c: Scan for "push" only on
+	Linux.
+	* gcc.target/i386/indirect-thunk-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-4.c: Likewise.
+	* gcc.target/i386/ret-thunk-10.c: Likewise.
+	* gcc.target/i386/ret-thunk-11.c: Likewise.
+	* gcc.target/i386/ret-thunk-12.c: Likewise.
+	* gcc.target/i386/ret-thunk-13.c: Likewise.
+	* gcc.target/i386/ret-thunk-14.c: Likewise.
+	* gcc.target/i386/ret-thunk-15.c: Likewise.
+	* gcc.target/i386/ret-thunk-9.c: Don't check the
+	__x86_return_thunk label.
+	Scan for "push" only for Linux.
+
+2018-01-15  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR testsuite/79920
+	* gcc.dg/vect/pr79920.c: Restrict reduction test to vect_double
+
+2018-01-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/83687
+	* gcc.target/arm/neon-combine-sub-abs-into-vabd.c: Delete integer
+	tests.
+	* gcc.target/arm/pr83687.c: New test.
+
+2018-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	Adjust tests to AVR_TINY.
+
+	* gcc.target/avr/progmem.h (pgm_read_char): Handle AVR_TINY.
+	* gcc.target/avr/pr52472.c: Add "! avr_tiny" target filter.
+	* gcc.target/avr/pr71627.c: Same.
+	* gcc.target/avr/torture/addr-space-1-0.c: Same.
+	* gcc.target/avr/torture/addr-space-1-1.c: Same.
+	* gcc.target/avr/torture/addr-space-1-x.c: Same.
+	* gcc.target/avr/torture/addr-space-2-0.c: Same.
+	* gcc.target/avr/torture/addr-space-2-1.c: Same.
+	* gcc.target/avr/torture/addr-space-2-x.c: Same.
+	* gcc.target/avr/torture/sat-hr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-k-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-llk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-r-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uhr-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-uk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ullk-plus-minus.c: Same.
+	* gcc.target/avr/torture/sat-ur-plus-minus.c: Same.
+	* gcc.target/avr/torture/pr61055.c: Same.
+	* gcc.target/avr/torture/builtins-3-absfx.c: Only use __flash if
+	available.
+	* gcc.target/avr/torture/int24-mul.c: Same.
+	* gcc.target/avr/torture/pr51782-1.c: Same.
+	* gcc.target/avr/torture/pr61443.c: Same.
+	* gcc.target/avr/torture/builtins-2.c: Factor out addr-space stuff...
+	* gcc.target/avr/torture/builtins-2-flash.c: ...to this new test.
+
+2018-01-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR c/83801
+	PR c/83729
+	* gcc.target/avr/torture/pr83729.c: New test.
+	* gcc.target/avr/torture/pr83801.c: New test.
+
+2018-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82694
+	* gcc.dg/no-strict-overflow-7.c: Revert 2017-08-01 changes.
+	* gcc.dg/tree-ssa/pr81388-1.c: Likewise.
+
+2018-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR other/83508
+	* gcc.dg/Wstringop-overflow-2.c: New test.
+
+2018-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/83811
+	* gfortran.dg/fmt_e.f90: New test.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/indirect-thunk-10.c: New test.
+	* gcc.target/i386/indirect-thunk-8.c: Likewise.
+	* gcc.target/i386/indirect-thunk-9.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-10.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-11.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-9.c: Likewise.
+	* gcc.target/i386/ret-thunk-17.c: Likewise.
+	* gcc.target/i386/ret-thunk-18.c: Likewise.
+	* gcc.target/i386/ret-thunk-19.c: Likewise.
+	* gcc.target/i386/ret-thunk-20.c: Likewise.
+	* gcc.target/i386/ret-thunk-21.c: Likewise.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/indirect-thunk-register-4.c: New test.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/indirect-thunk-1.c (dg-options): Add
+	-mno-indirect-branch-register.
+	* gcc.target/i386/indirect-thunk-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-7.c: Likewise.
+	* gcc.target/i386/ret-thunk-10.c: Likewise.
+	* gcc.target/i386/ret-thunk-11.c: Likewise.
+	* gcc.target/i386/ret-thunk-12.c: Likewise.
+	* gcc.target/i386/ret-thunk-13.c: Likewise.
+	* gcc.target/i386/ret-thunk-14.c: Likewise.
+	* gcc.target/i386/ret-thunk-15.c: Likewise.
+	* gcc.target/i386/ret-thunk-9.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-1.c: New test.
+	* gcc.target/i386/indirect-thunk-register-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-3.c: Likewise.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/indirect-thunk-1.c (dg-options): Add
+	-mfunction-return=keep.
+	* gcc.target/i386/indirect-thunk-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-8.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-7.c: Likewise.
+	* gcc.target/i386/ret-thunk-1.c: New test.
+	* gcc.target/i386/ret-thunk-10.c: Likewise.
+	* gcc.target/i386/ret-thunk-11.c: Likewise.
+	* gcc.target/i386/ret-thunk-12.c: Likewise.
+	* gcc.target/i386/ret-thunk-13.c: Likewise.
+	* gcc.target/i386/ret-thunk-14.c: Likewise.
+	* gcc.target/i386/ret-thunk-15.c: Likewise.
+	* gcc.target/i386/ret-thunk-16.c: Likewise.
+	* gcc.target/i386/ret-thunk-2.c: Likewise.
+	* gcc.target/i386/ret-thunk-3.c: Likewise.
+	* gcc.target/i386/ret-thunk-4.c: Likewise.
+	* gcc.target/i386/ret-thunk-5.c: Likewise.
+	* gcc.target/i386/ret-thunk-6.c: Likewise.
+	* gcc.target/i386/ret-thunk-7.c: Likewise.
+	* gcc.target/i386/ret-thunk-8.c: Likewise.
+	* gcc.target/i386/ret-thunk-9.c: Likewise.
+
+2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/indirect-thunk-1.c: New test.
+	* gcc.target/i386/indirect-thunk-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-8.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-7.c: Likewise.
+
+2018-01-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/83051
+	* gcc.c-torture/compile/pr83051.c: New testcase.
+
+2018-01-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/83501
+	* gcc.dg/strlenopt-39.c: Restrict to i?86 and x86_64-*-* targets.
+
+2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/pr48857.c: Modify dejagnu directives to look
+	for lvx and stvx instead of lxvd2x and stxvd2x and require
+	little-endian target.  Add comments.
+	* gcc.target/powerpc/swaps-p8-28.c: Add functions for more
+	comprehensive testing.
+	* gcc.target/powerpc/swaps-p8-29.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-30.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-31.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-32.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-33.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-34.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-35.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-36.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-37.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-38.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-39.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-40.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-41.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-42.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-43.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-44.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-45.c: Likewise.
+	* gcc.target/powerpc/vec-extract-2.c: Add comment and remove
+	scan-assembler-not directives that forbid lvx and xxpermdi.
+	* gcc.target/powerpc/vec-extract-3.c: Likewise.
+	* gcc.target/powerpc/vec-extract-5.c: Likewise.
+	* gcc.target/powerpc/vec-extract-6.c: Likewise.
+	* gcc.target/powerpc/vec-extract-7.c: Likewise.
+	* gcc.target/powerpc/vec-extract-8.c: Likewise.
+	* gcc.target/powerpc/vec-extract-9.c: Likewise.
+	* gcc.target/powerpc/vsx-vector-6-le.c: Change
+	scan-assembler-times directives to reflect different numbers of
+	expected xxlnor, xxlor, xvcmpgtdp, and xxland instructions.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/bb-slp-cond-1.c: Expect loop vectorization rather
+	than SLP vectorization.
+	* gcc.dg/vect/vect-alias-check-10.c: New test.
+	* gcc.dg/vect/vect-alias-check-11.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-12.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-8.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-9.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_8.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_1.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_1.h: Likewise.
+	* gcc.target/aarch64/sve/var_stride_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_2.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_3.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_4.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_5.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_6.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_7.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_8.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_8_run.c: Likewise.
+	* gfortran.dg/vect/vect-alias-check-1.F90: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_scatter_store):
+	New proc.
+	* gcc.dg/vect/pr25413a.c: Expect both loops to be optimized on
+	targets with scatter stores.
+	* gcc.dg/vect/vect-71.c: Restrict XFAIL to targets without scatter
+	stores.
+	* gcc.target/aarch64/sve/mask_scatter_store_1.c: New test.
+	* gcc.target/aarch64/sve/mask_scatter_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_1.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_3.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_4.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_5.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_6.c: Likewise.
+	* gcc.target/aarch64/sve/scatter_store_7.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_1.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_3.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_4.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_5.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_6.c: Likewise.
+	* gcc.target/aarch64/sve/strided_store_7.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_strict_3.c: Expect FADDA to be used
+	for double_reduc1.
+	* gcc.target/aarch64/sve/strided_load_4.c: New test.
+	* gcc.target/aarch64/sve/strided_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_7.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/strided_load_1.c: New test.
+	* gcc.target/aarch64/sve/strided_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/strided_load_3.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/gather_load_1.c: New test.
+	* gcc.target/aarch64/sve/gather_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/gather_load_7.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_7.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/no-fast-math-vect16.c: Expect the test to pass and
+	check for a message about using in-order reductions.
+	* gcc.dg/vect/pr79920.c: Expect both loops to be vectorized and
+	check for a message about using in-order reductions.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: Expect all three loops to be
+	vectorized and check for a message about using in-order reductions.
+	Expect targets with variable-length vectors to fall back to the
+	fixed-length mininum.
+	* gcc.dg/vect/vect-reduc-6.c: Expect the loop to be vectorized and
+	check for a message about using in-order reductions.
+	* gcc.dg/vect/vect-reduc-in-order-1.c: New test.
+	* gcc.dg/vect/vect-reduc-in-order-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-in-order-3.c: Likewise.
+	* gcc.dg/vect/vect-reduc-in-order-4.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_1.c: New test.
+	* gcc.target/aarch64/sve/reduc_strict_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_2.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_strict_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_13.c: Add floating-point types.
+	* gfortran.dg/vect/vect-8.f90: Expect 22 loops to be vectorized if
+	vect_fold_left_plus.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/aarch64/sve/spill_1.c: Also test that no predicates
+	are spilled.
+	* gcc.target/aarch64/sve/spill_2.c: New test.
+	* gcc.target/aarch64/sve/spill_3.c: Likewise.
+	* gcc.target/aarch64/sve/spill_4.c: Likewise.
+	* gcc.target/aarch64/sve/spill_5.c: Likewise.
+	* gcc.target/aarch64/sve/spill_6.c: Likewise.
+	* gcc.target/aarch64/sve/spill_7.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/struct_vect_18.c: Check the number
+	of branches.
+	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_20.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_20_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_21.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_21_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_22.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_22_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_23.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_23_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/struct_vect_18.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_18_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_19_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_fold_extract_last): New proc.
+	* gcc.dg/vect/pr65947-1.c: Update dump messages.  Add markup
+	for fold_extract_last.
+	* gcc.dg/vect/pr65947-2.c: Likewise.
+	* gcc.dg/vect/pr65947-3.c: Likewise.
+	* gcc.dg/vect/pr65947-4.c: Likewise.
+	* gcc.dg/vect/pr65947-5.c: Likewise.
+	* gcc.dg/vect/pr65947-6.c: Likewise.
+	* gcc.dg/vect/pr65947-9.c: Likewise.
+	* gcc.dg/vect/pr65947-10.c: Likewise.
+	* gcc.dg/vect/pr65947-12.c: Likewise.
+	* gcc.dg/vect/pr65947-14.c: Likewise.
+	* gcc.dg/vect/pr80631-1.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_1.c: New test.
+	* gcc.target/aarch64/sve/clastb_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_2.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_3.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_4.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_5.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_6.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_7.c: Likewise.
+	* gcc.target/aarch64/sve/clastb_7_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/live_1.c: New test.
+	* gcc.target/aarch64/sve/live_1_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/nopeel_1.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_1.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_2.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_3.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_4.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_4_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_fully_masked):
+	New proc.
+	* gcc.dg/vect/slp-3.c: Expect all loops to be vectorized if
+	vect_fully_masked.
+	* gcc.target/aarch64/sve/loop_add_4.c: New test.
+	* gcc.target/aarch64/sve/loop_add_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_5.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/miniloop_1.c: Likewise.
+	* gcc.target/aarch64/sve/miniloop_2.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/tree-ssa/scev-9.c: Expected REFERENCE ADDRESS
+	instead of just ADDRESS.
+	* gcc.dg/tree-ssa/scev-10.c: Likewise.
+	* gcc.dg/tree-ssa/scev-11.c: Likewise.
+	* gcc.dg/tree-ssa/scev-12.c: Likewise.
+	* gcc.target/aarch64/sve/index_offset_1.c: New test.
+	* gcc.target/aarch64/sve/index_offset_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_2.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_3.c: Likewise.
+	* gcc.target/aarch64/sve/while_1.c: Check for indexed addressing modes.
+	* gcc.target/aarch64/sve/while_2.c: Likewise.
+	* gcc.target/aarch64/sve/while_3.c: Likewise.
+	* gcc.target/aarch64/sve/while_4.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/pr60482.c: Remove XFAIL for variable-length vectors.
+	* gcc.target/aarch64/sve/reduc_1.c: Expect the loop operations
+	to be predicated.
+	* gcc.target/aarch64/sve/slp_5.c: Check for a fully-masked loop.
+	* gcc.target/aarch64/sve/slp_7.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_5.c: New test.
+	* gcc.target/aarch64/sve/slp_13.c: Likewise.
+	* gcc.target/aarch64/sve/slp_13_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/tree-ssa/cunroll-10.c: Disable vectorization.
+	* gcc.dg/tree-ssa/peel1.c: Likewise.
+	* gcc.dg/vect/vect-load-lanes-peeling-1.c: Remove XFAIL for
+	variable-length vectors.
+	* gcc.target/aarch64/sve/vcond_6.c: XFAIL test for AND.
+	* gcc.target/aarch64/sve/vec_bool_cmp_1.c: Expect BIC instead of NOT.
+	* gcc.target/aarch64/sve/slp_1.c: Check for a fully-masked loop.
+	* gcc.target/aarch64/sve/slp_2.c: Likewise.
+	* gcc.target/aarch64/sve/slp_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+	* gcc.target/aarch64/sve/slp_6.c: Likewise.
+	* gcc.target/aarch64/sve/slp_8.c: New test.
+	* gcc.target/aarch64/sve/slp_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_9.c: Likewise.
+	* gcc.target/aarch64/sve/slp_9_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_10.c: Likewise.
+	* gcc.target/aarch64/sve/slp_10_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_11.c: Likewise.
+	* gcc.target/aarch64/sve/slp_11_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_12.c: Likewise.
+	* gcc.target/aarch64/sve/slp_12_run.c: Likewise.
+	* gcc.target/aarch64/sve/ld1r_2.c: Likewise.
+	* gcc.target/aarch64/sve/ld1r_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/while_1.c: Likewise.
+	* gcc.target/aarch64/sve/while_2.c: Likewise.
+	* gcc.target/aarch64/sve/while_3.c: Likewise.
+	* gcc.target/aarch64/sve/while_4.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_logical_reduc):
+	New proc.
+	* gcc.dg/vect/vect-reduc-or_1.c: Also run for vect_logical_reduc
+	and add an associated scan-dump test.  Prevent vectorization
+	of the first two loops.
+	* gcc.dg/vect/vect-reduc-or_2.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_1.c: Add AND, IOR and XOR reductions.
+	* gcc.target/aarch64/sve/reduc_2.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_1_run.c: Likewise.
+	(INIT_VECTOR): Tweak initial value so that some bits are always set.
+	* gcc.target/aarch64/sve/reduc_2_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/pr37027.c: Remove XFAIL for variable-length vectors.
+	* gcc.dg/vect/pr67790.c: Likewise.
+	* gcc.dg/vect/slp-reduc-1.c: Likewise.
+	* gcc.dg/vect/slp-reduc-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-3.c: Likewise.
+	* gcc.dg/vect/slp-reduc-5.c: Likewise.
+	* gcc.target/aarch64/sve/slp_5.c: New test.
+	* gcc.target/aarch64/sve/slp_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_6.c: Likewise.
+	* gcc.target/aarch64/sve/slp_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_7.c: Likewise.
+	* gcc.target/aarch64/sve/slp_7_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/no-scevccp-slp-30.c: Don't XFAIL for vect_variable_length
+	&& vect_load_lanes
+	* gcc.dg/vect/slp-1.c: Likewise.
+	* gcc.dg/vect/slp-10.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-12c.c: Likewise.
+	* gcc.dg/vect/slp-17.c: Likewise.
+	* gcc.dg/vect/slp-19b.c: Likewise.
+	* gcc.dg/vect/slp-20.c: Likewise.
+	* gcc.dg/vect/slp-21.c: Likewise.
+	* gcc.dg/vect/slp-22.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/slp-24-big-array.c: Likewise.
+	* gcc.dg/vect/slp-24.c: Likewise.
+	* gcc.dg/vect/slp-28.c: Likewise.
+	* gcc.dg/vect/slp-39.c: Likewise.
+	* gcc.dg/vect/slp-6.c: Likewise.
+	* gcc.dg/vect/slp-7.c: Likewise.
+	* gcc.dg/vect/slp-cond-1.c: Likewise.
+	* gcc.dg/vect/slp-cond-2-big-array.c: Likewise.
+	* gcc.dg/vect/slp-cond-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-1.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-8.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-9.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-10.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-12.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-1.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-2.c: Likewise.
+	* gcc.dg/vect/pr33953.c: Don't XFAIL for vect_variable_length.
+	* gcc.dg/vect/slp-12a.c: Likewise.
+	* gcc.dg/vect/slp-14.c: Likewise.
+	* gcc.dg/vect/slp-15.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-4.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-5.c: Likewise.
+	* gcc.target/aarch64/sve/slp_1.c: New test.
+	* gcc.target/aarch64/sve/slp_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_2.c: Likewise.
+	* gcc.target/aarch64/sve/slp_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4_run.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.dg/vect/vect-ooo-group-1.c: New test.
+	* gcc.target/aarch64/sve/mask_struct_load_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_7.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_8.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_4.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/struct_move_1.c: New test.
+	* gcc.target/aarch64/sve/struct_move_2.c: Likewise.
+	* gcc.target/aarch64/sve/struct_move_3.c: Likewise.
+	* gcc.target/aarch64/sve/struct_move_4.c: Likewise.
+	* gcc.target/aarch64/sve/struct_move_5.c: Likewise.
+	* gcc.target/aarch64/sve/struct_move_6.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_1.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_2.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_3.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_4.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_5.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_6.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_7.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_7_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_8.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_9.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_9_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_10.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_10_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_11.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_11_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_12.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_12_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_13.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_13_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_14.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_15.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_16.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_17.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_load_lanes):
+	Return true for SVE too.
+	* g++.dg/vect/pr36648.cc: XFAIL for variable-length vectors
+	if load/store lanes are supported.
+	* gcc.dg/vect/slp-10.c: Likewise.
+	* gcc.dg/vect/slp-12c.c: Likewise.
+	* gcc.dg/vect/slp-17.c: Likewise.
+	* gcc.dg/vect/slp-33.c: Likewise.
+	* gcc.dg/vect/slp-6.c: Likewise.
+	* gcc.dg/vect/slp-cond-1.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-11-big-array.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-11.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-12.c: Likewise.
+	* gcc.dg/vect/slp-perm-5.c: Remove XFAIL for variable-length SVE.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-9.c: Likewise.
+	* gcc.dg/vect/slp-reduc-6.c: Remove XFAIL for variable-length vectors.
+	* gcc.dg/vect/vect-load-lanes-peeling-1.c: Expect an epilogue loop
+	for variable-length vectors.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/sve/vec_bool_cmp_1.c: New test.
+	* gcc.target/aarch64/sve/vec_bool_cmp_1_run.c: Likweise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* g++.target/aarch64/sve/aarch64-sve.exp: New harness.
+	* g++.target/aarch64/sve/catch_1.C: New test.
+	* g++.target/aarch64/sve/catch_2.C: Likewise.
+	* g++.target/aarch64/sve/catch_3.C: Likewise.
+	* g++.target/aarch64/sve/catch_4.C: Likewise.
+	* g++.target/aarch64/sve/catch_5.C: Likewise.
+	* g++.target/aarch64/sve/catch_6.C: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_asm_sve_ok):
+	New proc.
+	* gcc.target/aarch64/bic_imm_1.c: Use #pragma GCC target "+nosve".
+	* gcc.target/aarch64/fmaxmin.c: Likewise.
+	* gcc.target/aarch64/fmul_fcvt_2.c: Likewise.
+	* gcc.target/aarch64/orr_imm_1.c: Likewise.
+	* gcc.target/aarch64/pr62178.c: Likewise.
+	* gcc.target/aarch64/pr71727-2.c: Likewise.
+	* gcc.target/aarch64/saddw-1.c: Likewise.
+	* gcc.target/aarch64/saddw-2.c: Likewise.
+	* gcc.target/aarch64/uaddw-1.c: Likewise.
+	* gcc.target/aarch64/uaddw-2.c: Likewise.
+	* gcc.target/aarch64/uaddw-3.c: Likewise.
+	* gcc.target/aarch64/vect-add-sub-cond.c: Likewise.
+	* gcc.target/aarch64/vect-compile.c: Likewise.
+	* gcc.target/aarch64/vect-faddv-compile.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-eq-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-eq-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-ge-f.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-d.c: Likewise.
+	* gcc.target/aarch64/vect-fcm-gt-f.c: Likewise.
+	* gcc.target/aarch64/vect-fmax-fmin-compile.c: Likewise.
+	* gcc.target/aarch64/vect-fmaxv-fminv-compile.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovd.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf-zero.c: Likewise.
+	* gcc.target/aarch64/vect-fmovf.c: Likewise.
+	* gcc.target/aarch64/vect-fp-compile.c: Likewise.
+	* gcc.target/aarch64/vect-ld1r-compile-fp.c: Likewise.
+	* gcc.target/aarch64/vect-ld1r-compile.c: Likewise.
+	* gcc.target/aarch64/vect-movi.c: Likewise.
+	* gcc.target/aarch64/vect-mull-compile.c: Likewise.
+	* gcc.target/aarch64/vect-reduc-or_1.c: Likewise.
+	* gcc.target/aarch64/vect-vaddv.c: Likewise.
+	* gcc.target/aarch64/vect_saddl_1.c: Likewise.
+	* gcc.target/aarch64/vect_smlal_1.c: Likewise.
+	* gcc.target/aarch64/vector_initialization_nostack.c: XFAIL for
+	fixed-length SVE.
+	* gcc.target/aarch64/sve/aarch64-sve.exp: New file.
+	* gcc.target/aarch64/sve/arith_1.c: New test.
+	* gcc.target/aarch64/sve/const_pred_1.C: Likewise.
+	* gcc.target/aarch64/sve/const_pred_2.C: Likewise.
+	* gcc.target/aarch64/sve/const_pred_3.C: Likewise.
+	* gcc.target/aarch64/sve/const_pred_4.C: Likewise.
+	* gcc.target/aarch64/sve/cvtf_signed_1.c: Likewise.
+	* gcc.target/aarch64/sve/cvtf_signed_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/cvtf_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/cvtf_unsigned_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/dup_imm_1.c: Likewise.
+	* gcc.target/aarch64/sve/dup_imm_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/dup_lane_1.c: Likewise.
+	* gcc.target/aarch64/sve/ext_1.c: Likewise.
+	* gcc.target/aarch64/sve/ext_2.c: Likewise.
+	* gcc.target/aarch64/sve/extract_1.c: Likewise.
+	* gcc.target/aarch64/sve/extract_2.c: Likewise.
+	* gcc.target/aarch64/sve/extract_3.c: Likewise.
+	* gcc.target/aarch64/sve/extract_4.c: Likewise.
+	* gcc.target/aarch64/sve/fabs_1.c: Likewise.
+	* gcc.target/aarch64/sve/fcvtz_signed_1.c: Likewise.
+	* gcc.target/aarch64/sve/fcvtz_signed_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/fcvtz_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/fcvtz_unsigned_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/fdiv_1.c: Likewise.
+	* gcc.target/aarch64/sve/fdup_1.c: Likewise.
+	* gcc.target/aarch64/sve/fdup_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/fmad_1.c: Likewise.
+	* gcc.target/aarch64/sve/fmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/fmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/fmsb_1.c: Likewise.
+	* gcc.target/aarch64/sve/fmul_1.c: Likewise.
+	* gcc.target/aarch64/sve/fneg_1.c: Likewise.
+	* gcc.target/aarch64/sve/fnmad_1.c: Likewise.
+	* gcc.target/aarch64/sve/fnmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/fnmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/fnmsb_1.c: Likewise.
+	* gcc.target/aarch64/sve/fp_arith_1.c: Likewise.
+	* gcc.target/aarch64/sve/frinta_1.c: Likewise.
+	* gcc.target/aarch64/sve/frinti_1.c: Likewise.
+	* gcc.target/aarch64/sve/frintm_1.c: Likewise.
+	* gcc.target/aarch64/sve/frintp_1.c: Likewise.
+	* gcc.target/aarch64/sve/frintx_1.c: Likewise.
+	* gcc.target/aarch64/sve/frintz_1.c: Likewise.
+	* gcc.target/aarch64/sve/fsqrt_1.c: Likewise.
+	* gcc.target/aarch64/sve/fsubr_1.c: Likewise.
+	* gcc.target/aarch64/sve/index_1.c: Likewise.
+	* gcc.target/aarch64/sve/index_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/ld1r_1.c: Likewise.
+	* gcc.target/aarch64/sve/load_const_offset_1.c: Likewise.
+	* gcc.target/aarch64/sve/load_const_offset_2.c: Likewise.
+	* gcc.target/aarch64/sve/load_const_offset_3.c: Likewise.
+	* gcc.target/aarch64/sve/load_scalar_offset_1.c: Likewise.
+	* gcc.target/aarch64/sve/logical_1.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_1.c: Likewise.
+	* gcc.target/aarch64/sve/loop_add_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/mad_1.c: Likewise.
+	* gcc.target/aarch64/sve/maxmin_1.c: Likewise.
+	* gcc.target/aarch64/sve/maxmin_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/maxmin_strict_1.c: Likewise.
+	* gcc.target/aarch64/sve/maxmin_strict_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/mla_1.c: Likewise.
+	* gcc.target/aarch64/sve/mls_1.c: Likewise.
+	* gcc.target/aarch64/sve/mov_rr_1.c: Likewise.
+	* gcc.target/aarch64/sve/msb_1.c: Likewise.
+	* gcc.target/aarch64/sve/mul_1.c: Likewise.
+	* gcc.target/aarch64/sve/neg_1.c: Likewise.
+	* gcc.target/aarch64/sve/nlogical_1.c: Likewise.
+	* gcc.target/aarch64/sve/nlogical_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/pack_1.c: Likewise.
+	* gcc.target/aarch64/sve/pack_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/pack_fcvt_signed_1.c: Likewise.
+	* gcc.target/aarch64/sve/pack_fcvt_signed_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/pack_fcvt_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/pack_fcvt_unsigned_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/pack_float_1.c: Likewise.
+	* gcc.target/aarch64/sve/pack_float_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/popcount_1.c: Likewise.
+	* gcc.target/aarch64/sve/popcount_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_1.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_2.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/reduc_3.c: Likewise.
+	* gcc.target/aarch64/sve/rev_1.c: Likewise.
+	* gcc.target/aarch64/sve/revb_1.c: Likewise.
+	* gcc.target/aarch64/sve/revh_1.c: Likewise.
+	* gcc.target/aarch64/sve/revw_1.c: Likewise.
+	* gcc.target/aarch64/sve/shift_1.c: Likewise.
+	* gcc.target/aarch64/sve/single_1.c: Likewise.
+	* gcc.target/aarch64/sve/single_2.c: Likewise.
+	* gcc.target/aarch64/sve/single_3.c: Likewise.
+	* gcc.target/aarch64/sve/single_4.c: Likewise.
+	* gcc.target/aarch64/sve/spill_1.c: Likewise.
+	* gcc.target/aarch64/sve/store_scalar_offset_1.c: Likewise.
+	* gcc.target/aarch64/sve/subr_1.c: Likewise.
+	* gcc.target/aarch64/sve/trn1_1.c: Likewise.
+	* gcc.target/aarch64/sve/trn2_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_fcvt_signed_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_fcvt_signed_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_fcvt_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_fcvt_unsigned_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_float_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_float_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_signed_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_signed_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_unsigned_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/uzp1_1.c: Likewise.
+	* gcc.target/aarch64/sve/uzp1_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/uzp2_1.c: Likewise.
+	* gcc.target/aarch64/sve/uzp2_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_1.C: Likewise.
+	* gcc.target/aarch64/sve/vcond_1_run.C: Likewise.
+	* gcc.target/aarch64/sve/vcond_2.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_3.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_4.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_5.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_5_run.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_6.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_6_run.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_1.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/vec_init_2.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_1.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_1_overrange_run.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_const_1.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_const_1_overrun.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_const_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_const_single_1.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_const_single_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_single_1.c: Likewise.
+	* gcc.target/aarch64/sve/vec_perm_single_1_run.c: Likewise.
+	* gcc.target/aarch64/sve/zip1_1.c: Likewise.
+	* gcc.target/aarch64/sve/zip2_1.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_sve)
+	(aarch64_sve_bits, check_effective_target_aarch64_sve_hw)
+	(aarch64_sve_hw_bits, check_effective_target_aarch64_sve256_hw):
+	New procedures.
+	(check_effective_target_vect_perm): Handle SVE.
+	(check_effective_target_vect_perm_byte): Likewise.
+	(check_effective_target_vect_perm_short): Likewise.
+	(check_effective_target_vect_widen_sum_hi_to_si_pattern): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_element_align_preferred): Likewise.
+	(check_effective_target_vect_align_stack_vars): Likewise.
+	(check_effective_target_vect_load_lanes): Likewise.
+	(check_effective_target_vect_masked_store): Likewise.
+	(available_vector_sizes): Use aarch64_sve_bits for SVE.
+	* gcc.dg/vect/tree-vect.h (VECTOR_BITS): Define appropriately
+	for SVE.
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Add SVE XFAIL.
+	* gcc.dg/vect/bb-slp-pr69907.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-2.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-depend-3.c: Likewise.
+	* gcc.dg/vect/slp-23.c: Likewise.
+	* gcc.dg/vect/slp-perm-5.c: Likewise.
+	* gcc.dg/vect/slp-perm-6.c: Likewise.
+	* gcc.dg/vect/slp-perm-9.c: Likewise.
+	* gcc.dg/vect/slp-reduc-3.c: Likewise.
+	* gcc.dg/vect/vect-114.c: Likewise.
+	* gcc.dg/vect/vect-mult-const-pattern-1.c: Likewise.
+	* gcc.dg/vect/vect-mult-const-pattern-2.c: Likewise.
+
+2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/no-scevccp-slp-30.c: XFAIL SLP test for
+	vect_variable_length, expecting the test to be vectorized
+	without SLP instead.
+	* gcc.dg/vect/pr33953.c: Likewise.
+	* gcc.dg/vect/pr37027.c: Likewise.
+	* gcc.dg/vect/pr67790.c: Likewise.
+	* gcc.dg/vect/pr68445.c: Likewise.
+	* gcc.dg/vect/slp-1.c: Likewise.
+	* gcc.dg/vect/slp-10.c: Likewise.
+	* gcc.dg/vect/slp-12a.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-12c.c: Likewise.
+	* gcc.dg/vect/slp-13-big-array.c: Likewise.
+	* gcc.dg/vect/slp-13.c: Likewise.
+	* gcc.dg/vect/slp-14.c: Likewise.
+	* gcc.dg/vect/slp-15.c: Likewise.
+	* gcc.dg/vect/slp-17.c: Likewise.
+	* gcc.dg/vect/slp-19b.c: Likewise.
+	* gcc.dg/vect/slp-2.c: Likewise.
+	* gcc.dg/vect/slp-20.c: Likewise.
+	* gcc.dg/vect/slp-21.c: Likewise.
+	* gcc.dg/vect/slp-22.c: Likewise.
+	* gcc.dg/vect/slp-24-big-array.c: Likewise.
+	* gcc.dg/vect/slp-24.c: Likewise.
+	* gcc.dg/vect/slp-28.c: Likewise.
+	* gcc.dg/vect/slp-39.c: Likewise.
+	* gcc.dg/vect/slp-42.c: Likewise.
+	* gcc.dg/vect/slp-6.c: Likewise.
+	* gcc.dg/vect/slp-7.c: Likewise.
+	* gcc.dg/vect/slp-cond-1.c: Likewise.
+	* gcc.dg/vect/slp-cond-2-big-array.c: Likewise.
+	* gcc.dg/vect/slp-cond-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-1.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-10.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-12.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-2.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-4.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-5.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-8.c: Likewise.
+	* gcc.dg/vect/slp-multitypes-9.c: Likewise.
+	* gcc.dg/vect/slp-reduc-1.c: Likewise.
+	* gcc.dg/vect/slp-reduc-2.c: Likewise.
+	* gcc.dg/vect/slp-reduc-4.c: Likewise.
+	* gcc.dg/vect/slp-reduc-5.c: Likewise.
+	* gcc.dg/vect/slp-reduc-7.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-half.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-1.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-2.c: Likewise.
+	* gcc.dg/vect/vect-live-slp-3.c: Likewise.
+
+2018-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83801
+	* gcc.dg/pr83801.c: New test.
+
+2018-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52162
+	* gfortran.dg/bounds_check_19.f90 : New test.
+
+2018-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/powerpc/float128-hw7.c: Use scan-assembler-times
+	instead of scan-assembler-not for xsnabsqp.
+
+2018-01-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/83525
+	* gfortran.dg/newunit_5.f90: New test.
+
+2018-01-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/80481
+	* g++.dg/pr80481.C: New.
+
+2018-01-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/83628
+	* gcc.target/alpha/pr83628-3.c: New test.
+
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_avx512f): Also
+	check for __builtin_ia32_addsd_round,
+	__builtin_ia32_getmantsd_round.
+	* gcc.target/i386/i386.exp (check_effective_target_avx512f):
+	Remove.
+
+2018-01-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/83629
+	* gcc.target/powerpc/pr83629.c: Require ilp32.
+
+2018-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80846
+	* gcc.target/i386/pr80846-1.c: New testcase.
+	* gcc.target/i386/pr80846-2.c: Likewise.
+
+2018-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20180112-1.c: New test.
+
+2018-01-12  Tom de Vries  <tom@codesourcery.com>
+
+	* g++.dg/ext/label13.C: Add dg-require-effective-target indirect_jumps.
+	* g++.dg/ext/label13a.C: Same.
+	* g++.dg/ext/label14.C: Same.
+	* g++.dg/ext/label2.C: Same.
+	* g++.dg/ext/label3.C: Same.
+	* g++.dg/torture/pr42462.C: Same.
+	* g++.dg/torture/pr42739.C: Same.
+	* g++.dg/warn/Wunused-label-3.C: Same.
+
+2018-01-12  Tom de Vries  <tom@codesourcery.com>
+
+	* c-c++-common/dwarf2/vla1.c: Add dg-require-effective-target alloca.
+	* g++.dg/Walloca1.C: Same.
+	* g++.dg/cpp0x/pr70338.C: Same.
+	* g++.dg/cpp1y/lambda-generic-vla1.C: Same.
+	* g++.dg/cpp1y/vla10.C: Same.
+	* g++.dg/cpp1y/vla2.C: Same.
+	* g++.dg/cpp1y/vla6.C: Same.
+	* g++.dg/cpp1y/vla8.C: Same.
+	* g++.dg/debug/debug5.C: Same.
+	* g++.dg/debug/debug6.C: Same.
+	* g++.dg/debug/pr54828.C: Same.
+	* g++.dg/diagnostic/pr70105.C: Same.
+	* g++.dg/eh/cleanup5.C: Same.
+	* g++.dg/eh/spbp.C: Same.
+	* g++.dg/ext/tmplattr9.C: Same.
+	* g++.dg/ext/vla10.C: Same.
+	* g++.dg/ext/vla11.C: Same.
+	* g++.dg/ext/vla12.C: Same.
+	* g++.dg/ext/vla15.C: Same.
+	* g++.dg/ext/vla16.C: Same.
+	* g++.dg/ext/vla17.C: Same.
+	* g++.dg/ext/vla3.C: Same.
+	* g++.dg/ext/vla6.C: Same.
+	* g++.dg/ext/vla7.C: Same.
+	* g++.dg/init/array24.C: Same.
+	* g++.dg/init/new47.C: Same.
+	* g++.dg/init/pr55497.C: Same.
+	* g++.dg/opt/pr78201.C: Same.
+	* g++.dg/template/vla2.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: Same.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: Same.
+	* g++.dg/torture/pr62127.C: Same.
+	* g++.dg/torture/pr67055.C: Same.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Same.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Same.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Same.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Same.
+	* g++.dg/warn/Wplacement-new-size-5.C: Same.
+	* g++.dg/warn/Wsizeof-pointer-memaccess-1.C: Same.
+	* g++.dg/warn/Wvla-1.C: Same.
+	* g++.dg/warn/Wvla-3.C: Same.
+	* g++.old-deja/g++.ext/array2.C: Same.
+	* g++.old-deja/g++.ext/constructor.C: Same.
+	* g++.old-deja/g++.law/builtin1.C: Same.
+	* g++.old-deja/g++.other/crash12.C: Same.
+	* g++.old-deja/g++.other/eh3.C: Same.
+	* g++.old-deja/g++.pt/array6.C: Same.
+	* g++.old-deja/g++.pt/dynarray.C: Same.
+
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/cpp0x/inh-ctor30.C: Allow for alternate mangled form.
+
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libfortran/67412
+	* gfortran.dg/execute_command_line_2.f90: Remove dg-xfail-run-if
+	on *-*-solaris2.10.
+
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_branch_cost):
+	Accept all x86 targets.
+
+2018-01-12  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/83054
+	* g++.dg/warn/pr83054.C: New test.
+
+2018-01-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/spec-barr-1.c: New file.
+
+2018-01-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/83330
+	* gcc.target/i386/pr83330.c: New test.
+
+2018-01-11  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/79383
+	* gfortran.dg/dtio_31.f03: New test.
+	* gfortran.dg/dtio_32.f03: New test.
+
+2018-01-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* g++.dg/wrappers: New subdirectory.
+	* g++.dg/wrappers/README: New file.
+	* g++.dg/wrappers/alloc.C: New test case.
+	* g++.dg/wrappers/cow-istream-string.C: New test case.
+	* g++.dg/wrappers/cp-stdlib.C: New test case.
+	* g++.dg/wrappers/sanitizer_coverage_libcdep_new.C: New test case.
+	* g++.dg/wrappers/wrapper-around-type-pack-expansion.C: New test
+	case.
+
+2018-01-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83718
+	* g++.dg/torture/pr83718.C: New testcase.
+
+2018-01-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/83178
+	* g++.dg/ipa/devirt-22.C: Adjust scan-dump-times count.
+
+2018-01-11  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/83695
+	* gcc.dg/tree-ssa/pr83695.c: New test.
+
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/simd/fp16fml_lane_high.c: New test.
+	* gcc.target/arm/simd/fp16fml_lane_low.c: New test.
+
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add combination tests for fp16fml.
+	* gcc.target/arm/simd/fp16fml_high.c: New test.
+	* gcc.target/arm/simd/fp16fml_low.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16fml_neon_ok_nocache,
+	check_effective_target_arm_fp16fml_neon_ok,
+	add_options_for_arm_fp16fml_neon): New procedures.
+
+2017-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add some -march=armv8.4-a
+	combination tests.
+
+2018-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83435
+	* gcc.dg/graphite/pr83435.c: New testcase.
+
+2018-01-11  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc.target/aarch64/pr70044.c: Allow "mov x29, sp" too.
+
+2018-01-11  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-compile-2.c: New.
+
+2018-01-11  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82096
+	* gcc.c-torture/compile/pr82096.c: New test.
+
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/bip_overlay.adb, gnat.dg/bip_overlay.ads: New testcase.
+
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/protected_func.adb, gnat.dg/protected_func.ads: New testcase.
+
+2018-01-11  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/expr_func4.adb: New testcase.
+
+2018-01-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/pure_subp_body.adb, gnat.dg/pure_subp_body_pkg.ads: New
+	testcase.
+
+2018-01-11  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/protected_null.adb: New testcase.
+
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/expr_func3.adb, gnat.dg/expr_func3.ads: New testcase.
+
+2018-01-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/fixedpnt2.adb, gnat.dg/fixedpnt2.ads: New testcase.
+
+2018-01-11  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/loopvar.adb: New testcase.
+
+2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83189
+	* gfortran.fortran-torture/compile/pr83189.f90: New testcase.
+
+2018-01-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/pr83575.c: New testcase.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	gcc.target/aarch64/fp16_fmul_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_high_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_high_3.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_high.h: New shared testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_high.h: New shared testcase.
+	gcc.target/aarch64/fp16_fmul_low_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_low_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_low_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_low.h: New sharedtestcase.
+	gcc.target/aarch64/fp16_fmul_lane_low_1.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_low_2.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_low_3.c: New testcase.
+	gcc.target/aarch64/fp16_fmul_lane_low.h: New shared testcase.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	gcc.target/aarch64/sha2.h: New shared testcase.
+	gcc.target/aarch64/sha2_1.c: New testcase.
+	gcc.target/aarch64/sha2_2.c: New testcase.
+	gcc.target/aarch64/sha2_3.c: New testcase.
+	gcc.target/aarch64/sha3.h: New shared testcase.
+	gcc.target/aarch64/sha3_1.c: New testcase.
+	gcc.target/aarch64/sha3_2.c: New testcase.
+	gcc.target/aarch64/sha3_3.c: New testcase.
+
+2018-01-10  Michael Collison  <michael.collison@arm.com>
+
+	gcc.target/aarch64/sm3_sm4.c: New testcase.
+
+2018-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83781
+	* gcc.dg/strlenopt-42.c: New test.
+
+2018-01-11  Martin Sebor  <msebor@gmail.com>
+	    Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/83501
+	PR tree-optimization/81703
+
+	* gcc.dg/strlenopt-39.c: New test-case.
+	* gcc.dg/pr81703.c: Likewise.
+
+2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/atomic10.adb: New test.
+
+2018-01-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82367
+	* gfortran.dg/deferred_character_18.f90: New test.
+
+2018-01-10  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83671
+	* gcc.dg/strlenopt-40.c: New test.
+	* gcc.dg/strlenopt-41.c: New test.
+
+2018-01-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83093
+	* gfortran.dg/allocate_with_typespec_7.f90: New test.
+
+2018-01-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83399
+	* gcc.target/powerpc/pr83399.c: New test.
+
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* g++.dg/diagnostic/param-type-mismatch.C: Update expected results
+	to reflect that the arguments are correctly underlined.
+	* g++.dg/plugin/diagnostic-test-expressions-1.C: Add test coverage
+	for globals, params, locals and literals.
+	(test_sizeof): Directly test the location of "sizeof", rather than
+	when used in compound expressions.
+	(test_alignof): Likewise for "alignof".
+	(test_string_literals): Likewise for string literals.
+	(test_numeric_literals): Likewise for numeric literals.
+	(test_builtin_offsetof): Likewise for "__builtin_offsetof".
+	(test_typeid): Likewise for typeid.
+	(test_unary_plus): New.
+	* g++.dg/warn/Wformat-1.C: Add tests of pointer arithmetic on
+	format strings.
+
+2018-01-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr82618.c (dg-options): Add -mno-stv.
+
+2018-01-10  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* gcc.dg/memcmp-1.c: Reduce runtime to something reasonable.
+
+2018-01-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82541
+	* g++.dg/warn/Wduplicated-branches4.C: New test.
+
+2018-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81327
+	* g++.dg/Wclass-memaccess-2.C: Don't expect a warning when explicitly
+	cast to void *.
+
+2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81055
+	* g++.dg/cpp0x/new2.C: New.
+
+2018-01-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/83735
+	* gcc.target/i386/pr83735.c: New test.
+
+2018-01-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_branch_cost):
+	New function.
+	* gcc.dg/builtin-bswap-7.c: Use branch_cost effective target.
+	* gcc.dg/pr21643.c: Likewise.
+	* gcc.dg/pr46309.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-11.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-2.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-32.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-33.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+
+2018-01-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/83629
+	* gcc.target/powerpc/pr83629.c: New testcase.
+
+2018-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/78768
+	* gcc.dg/pr78768.c: Un-XFAIL.
+
+2018-01-10  Richard Biener  <rguenther@suse.de>
+
+	PR debug/82425
+	* gcc.dg/guality/inline-params-2.c: Un-XFAIL for slim LTO.
+
+2018-01-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83753
+	* gcc.dg/torture/pr83753.c: New test.
+
+2018-01-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/avx2-gather-1.c: Add -march.
+	* gcc.target/i386/avx2-gather-2.c: Add -march.
+	* gcc.target/i386/avx2-gather-3.c: Add -march.
+	* gcc.target/i386/avx2-gather-4.c: Add -march.
+	* gcc.target/i386/avx2-gather-5.c: Add -march.
+	* gcc.target/i386/avx2-gather-6.c: Add -march.
+	* gcc.target/i386/avx512f-gather-1.c: Add -march.
+	* gcc.target/i386/avx512f-gather-2.c: Add -march.
+	* gcc.target/i386/avx512f-gather-3.c: Add -march.
+	* gcc.target/i386/avx512f-gather-4.c: Add -march.
+	* gcc.target/i386/avx512f-gather-5.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherd512-1.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherd512-2.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherpd512-1.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherpd512-2.c: Add -march.
+	* gcc.target/i386/avx512f-i32gatherps512-1.c: Add -march.
+
+2018-01-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/78585:
+	* gcc.target/i386/pr78585.c: New test.
+
+2018-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83734
+	* g++.dg/cpp0x/pr83734.C: New test.
+
+2017-01-09 Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-1.c (main): Add tests for vec_mergee and
+	vec_mergeo builtins with float, double, long long, unsigned long long,
+	bool long long  arguments.
+	* gcc.target/powerpc/builtins-3-runnable.c (main): Add test for
+	vec_float2 with double arguments.
+	* gcc.target/powerpc/builtins-mergew-mergow.c: New runable test for the
+	vec_mergew and vec_mergow builtins.
+
+2018-01-09  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83742
+	* gfortran.dg/contiguous_6.f90: New test.
+
+2018-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83668
+	* gcc.dg/graphite/pr83668.c: New testcase.
+
+2018-01-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR tree-optimization/64811
+	* gcc.dg/torture/inf-compare-1.c, gcc.dg/torture/inf-compare-2.c,
+	gcc.dg/torture/inf-compare-3.c, gcc.dg/torture/inf-compare-4.c,
+	gcc.dg/torture/inf-compare-5.c, gcc.dg/torture/inf-compare-6.c,
+	gcc.dg/torture/inf-compare-7.c, gcc.dg/torture/inf-compare-8.c:
+	New tests.
+	* gcc.c-torture/execute/ieee/fp-cmp-7.x: New file.
+
+2018-01-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/79883
+	* gcc.target/avr/torture/pr57631.c (dg-warning): Quote 'signal'.
+
+2018-01-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* gcc.target/arm/pragma_fpu_attribute.c: Rewrite to use
+	no NEON and require softfp or hard float-abi.
+	* gcc.target/arm/pragma_fpu_attribute_2.c: Likewise.
+
+2018-01-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83572
+	* gcc.dg/graphite/pr83572.c: New testcase.
+
+2018-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83507
+	* gcc.dg/sms-13.c: New test.
+
+2018-01-08  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83741
+	* gfortran.dg/allocate_assumed_charlen_3.f90: New test.
+
+2018-01-08  Chih-Mao Chen <pkmx.tw@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+
+	* gcc.target/riscv/save-restore-1.c: New.
+
+2018-01-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/83677
+	* gcc.target/powerpc/pr83677.c: New file.
+
 2018-01-08  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimizatin/81308

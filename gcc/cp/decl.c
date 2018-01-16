@@ -3541,6 +3541,8 @@ case_conversion (tree type, tree value)
   if (value == NULL_TREE)
     return value;
 
+  value = mark_rvalue_use (value);
+
   if (cxx_dialect >= cxx11
       && (SCOPED_ENUM_P (type)
 	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))))

@@ -2445,6 +2445,52 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
   se->expr = tmp;
 }
 
+static void
+conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
+{
+  unsigned int num_args;
+
+  tree *args, tmp;
+  printf("trans-intrinsic.c: conv_intrinsic_team_number\n");
+
+  num_args = gfc_intrinsic_argument_list_length (expr);
+  args = XALLOCAVEC (tree, num_args);
+  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
+
+  //
+  // TODO
+  // for GFC_FCOARRAY_SINGLE put error message "not currently implemented"?
+
+  if (flag_coarray == GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
+    {
+      tree arg;
+
+      arg = gfc_evaluate_now (args[0], &se->pre);
+      tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+      			     fold_convert (integer_type_node, arg),
+      			     integer_one_node);
+      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
+      			     tmp, integer_zero_node,
+      			     build_int_cst (integer_type_node,
+      					    GFC_STAT_STOPPED_IMAGE));
+    }
+  else if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      // the value -1 represents that no team has been created yet
+      tmp = build_int_cst (integer_type_node, -1);
+    }
+  else if (flag_coarray == GFC_FCOARRAY_LIB && expr->value.function.actual->expr)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
+			       args[0], build_int_cst (integer_type_node, -1));
+  else if (flag_coarray == GFC_FCOARRAY_LIB)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
+			       integer_zero_node, build_int_cst (integer_type_node, -1));
+  else
+    gcc_unreachable ();
+
+  se->expr = tmp;
+}
+
 
 static void
 trans_image_index (gfc_se * se, gfc_expr *expr)
@@ -2566,7 +2612,6 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 			      build_int_cst (type, 0), tmp);
 }
 
-
 static void
 trans_num_images (gfc_se * se, gfc_expr *expr)
 {
@@ -2594,7 +2639,7 @@ trans_num_images (gfc_se * se, gfc_expr *expr)
     }
   else
     failed = build_int_cst (integer_type_node, -1);
-
+// ARTLESS: how to return?
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
 			     distance, failed);
   se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
@@ -3011,7 +3056,7 @@ conv_intrinsic_stride (gfc_se * se, gfc_expr * expr)
   se->expr = gfc_conv_descriptor_stride_get (desc, tmp);
 }
 
-
+// artless look at
 static void
 gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
 {
@@ -4575,36 +4620,42 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree pos;
   int n;
 
+  actual = expr->value.function.actual;
+
+  /* The last argument, BACK, is passed by value. Ensure that
+     by setting its name to %VAL. */
+  for (gfc_actual_arglist *a = actual; a; a = a->next)
+    {
+      if (a->next == NULL)
+	a->name = "%VAL";
+    }
+
   if (se->ss)
     {
       gfc_conv_intrinsic_funcall (se, expr);
       return;
     }
 
-  actual = expr->value.function.actual;
   arrayexpr = actual->expr;
 
   /* Special case for character maxloc.  Remove unneeded actual
      arguments, then call a library function.  */
-  
+
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a2, *a3, *a4;
-      a2 = actual->next;
-      a3 = a2->next;
-      a4 = a3->next;
-      a4->next = NULL;
-      if (a3->expr == NULL)
+      gfc_actual_arglist *a, *b;
+      a = actual;
+      while (a->next)
 	{
-	  actual->next = NULL;
-	  gfc_free_actual_arglist (a2);
-	}
-      else
-	{
-	  actual->next = a3;  /* dim */
-	  a3->next = NULL;
-	  a2->next = a4;
-	  gfc_free_actual_arglist (a4);
+	  b = a->next;
+	  if (b->expr == NULL || strcmp (b->name, "dim") == 0)
+	    {
+	      a->next = b->next;
+	      b->next = NULL;
+	      gfc_free_actual_arglist (b);
+	    }
+	  else
+	    a = b;
 	}
       gfc_conv_intrinsic_funcall (se, expr);
       return;
@@ -6104,7 +6155,7 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
   gfc_free_symbol (sym);
 }
 
-
+// ARTLESS: THIS SEEMS LIKE A GOOD EXAMPLE
 /* The length of a character string.  */
 static void
 gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
@@ -8660,6 +8711,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	      conv_generic_with_optional_char_arg (se, expr, 1, 3);
 	      break;
 
+	    case GFC_ISYM_MINLOC:
+	      gfc_conv_intrinsic_minmaxloc (se, expr, LT_EXPR);
+	      break;
+
+	    case GFC_ISYM_MAXLOC:
+	      gfc_conv_intrinsic_minmaxloc (se, expr, GT_EXPR);
+	      break;
+
 	    default:
 	      gfc_conv_intrinsic_funcall (se, expr);
 	      break;
@@ -9181,6 +9240,11 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_SUM:
       gfc_conv_intrinsic_arith (se, expr, PLUS_EXPR, false);
+      break;
+
+// ARTLESS: look at image_status
+    case GFC_ISYM_TEAM_NUMBER:
+      conv_intrinsic_team_number(se, expr);
       break;
 
     case GFC_ISYM_TRANSFER:

@@ -95,6 +95,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-affine.h"
 #include "params.h"
 #include "builtins.h"
+#include "stringpool.h"
+#include "tree-vrp.h"
+#include "tree-ssanames.h"
 
 static struct datadep_stats
 {
@@ -1305,18 +1308,6 @@ runtime_alias_check_p (ddr_p ddr, struct loop *loop, bool speed_p)
       return false;
     }
 
-  /* FORNOW: We don't support creating runtime alias tests for non-constant
-     step.  */
-  if (TREE_CODE (DR_STEP (DDR_A (ddr))) != INTEGER_CST
-      || TREE_CODE (DR_STEP (DDR_B (ddr))) != INTEGER_CST)
-    {
-      if (dump_enabled_p ())
-	dump_printf (MSG_MISSED_OPTIMIZATION,
-                     "runtime alias check not supported for non-constant "
-		     "step\n");
-      return false;
-    }
-
   return true;
 }
 
@@ -1331,11 +1322,13 @@ static bool
 operator == (const dr_with_seg_len& d1,
 	     const dr_with_seg_len& d2)
 {
-  return operand_equal_p (DR_BASE_ADDRESS (d1.dr),
-			  DR_BASE_ADDRESS (d2.dr), 0)
-	   && data_ref_compare_tree (DR_OFFSET (d1.dr), DR_OFFSET (d2.dr)) == 0
-	   && data_ref_compare_tree (DR_INIT (d1.dr), DR_INIT (d2.dr)) == 0
-	   && data_ref_compare_tree (d1.seg_len, d2.seg_len) == 0;
+  return (operand_equal_p (DR_BASE_ADDRESS (d1.dr),
+			   DR_BASE_ADDRESS (d2.dr), 0)
+	  && data_ref_compare_tree (DR_OFFSET (d1.dr), DR_OFFSET (d2.dr)) == 0
+	  && data_ref_compare_tree (DR_INIT (d1.dr), DR_INIT (d2.dr)) == 0
+	  && data_ref_compare_tree (d1.seg_len, d2.seg_len) == 0
+	  && known_eq (d1.access_size, d2.access_size)
+	  && d1.align == d2.align);
 }
 
 /* Comparison function for sorting objects of dr_with_seg_len_pair_t
@@ -1415,7 +1408,7 @@ comp_dr_with_seg_len_pair (const void *pa_, const void *pb_)
 
 void
 prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
-			       poly_uint64 factor)
+			       poly_uint64)
 {
   /* Sort the collected data ref pairs so that we can scan them once to
      combine all possible aliasing checks.  */
@@ -1461,6 +1454,8 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	    }
 
 	  poly_int64 init_a1, init_a2;
+	  /* Only consider cases in which the distance between the initial
+	     DR_A1 and the initial DR_A2 is known at compile time.  */
 	  if (!operand_equal_p (DR_BASE_ADDRESS (dr_a1->dr),
 				DR_BASE_ADDRESS (dr_a2->dr), 0)
 	      || !operand_equal_p (DR_OFFSET (dr_a1->dr),
@@ -1480,141 +1475,79 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      std::swap (init_a1, init_a2);
 	    }
 
-	  /* Only merge const step data references.  */
-	  poly_int64 step_a1, step_a2;
-	  if (!poly_int_tree_p (DR_STEP (dr_a1->dr), &step_a1)
-	      || !poly_int_tree_p (DR_STEP (dr_a2->dr), &step_a2))
-	    continue;
+	  /* Work out what the segment length would be if we did combine
+	     DR_A1 and DR_A2:
 
-	  bool neg_step = maybe_lt (step_a1, 0) || maybe_lt (step_a2, 0);
+	     - If DR_A1 and DR_A2 have equal lengths, that length is
+	       also the combined length.
 
-	  /* DR_A1 and DR_A2 must go in the same direction.  */
-	  if (neg_step && (maybe_gt (step_a1, 0) || maybe_gt (step_a2, 0)))
-	    continue;
+	     - If DR_A1 and DR_A2 both have negative "lengths", the combined
+	       length is the lower bound on those lengths.
 
-	  poly_uint64 seg_len_a1 = 0, seg_len_a2 = 0;
-	  bool const_seg_len_a1 = poly_int_tree_p (dr_a1->seg_len,
-						   &seg_len_a1);
-	  bool const_seg_len_a2 = poly_int_tree_p (dr_a2->seg_len,
-						   &seg_len_a2);
+	     - If DR_A1 and DR_A2 both have positive lengths, the combined
+	       length is the upper bound on those lengths.
 
-	  /* We need to compute merged segment length at compilation time for
-	     dr_a1 and dr_a2, which is impossible if either one has non-const
-	     segment length.  */
-	  if ((!const_seg_len_a1 || !const_seg_len_a2)
-	      && maybe_ne (step_a1, step_a2))
-	    continue;
+	     Other cases are unlikely to give a useful combination.
 
-	  bool do_remove = false;
-	  poly_uint64 diff = init_a2 - init_a1;
-	  poly_uint64 min_seg_len_b;
-	  tree new_seg_len;
-
-	  if (!poly_int_tree_p (dr_b1->seg_len, &min_seg_len_b))
+	     The lengths both have sizetype, so the sign is taken from
+	     the step instead.  */
+	  if (!operand_equal_p (dr_a1->seg_len, dr_a2->seg_len, 0))
 	    {
-	      tree step_b = DR_STEP (dr_b1->dr);
-	      if (!tree_fits_shwi_p (step_b))
+	      poly_uint64 seg_len_a1, seg_len_a2;
+	      if (!poly_int_tree_p (dr_a1->seg_len, &seg_len_a1)
+		  || !poly_int_tree_p (dr_a2->seg_len, &seg_len_a2))
 		continue;
-	      min_seg_len_b = factor * abs_hwi (tree_to_shwi (step_b));
+
+	      tree indicator_a = dr_direction_indicator (dr_a1->dr);
+	      if (TREE_CODE (indicator_a) != INTEGER_CST)
+		continue;
+
+	      tree indicator_b = dr_direction_indicator (dr_a2->dr);
+	      if (TREE_CODE (indicator_b) != INTEGER_CST)
+		continue;
+
+	      int sign_a = tree_int_cst_sgn (indicator_a);
+	      int sign_b = tree_int_cst_sgn (indicator_b);
+
+	      poly_uint64 new_seg_len;
+	      if (sign_a <= 0 && sign_b <= 0)
+		new_seg_len = lower_bound (seg_len_a1, seg_len_a2);
+	      else if (sign_a >= 0 && sign_b >= 0)
+		new_seg_len = upper_bound (seg_len_a1, seg_len_a2);
+	      else
+		continue;
+
+	      dr_a1->seg_len = build_int_cst (TREE_TYPE (dr_a1->seg_len),
+					      new_seg_len);
+	      dr_a1->align = MIN (dr_a1->align, known_alignment (new_seg_len));
 	    }
 
-	  /* Now we try to merge alias check dr_a1 & dr_b and dr_a2 & dr_b.
+	  /* This is always positive due to the swap above.  */
+	  poly_uint64 diff = init_a2 - init_a1;
 
-	     Case A:
-	       check if the following condition is satisfied:
-
-	       DIFF - SEGMENT_LENGTH_A < SEGMENT_LENGTH_B
-
-	       where DIFF = DR_A2_INIT - DR_A1_INIT.  However,
-	       SEGMENT_LENGTH_A or SEGMENT_LENGTH_B may not be constant so we
-	       have to make a best estimation.  We can get the minimum value
-	       of SEGMENT_LENGTH_B as a constant, represented by MIN_SEG_LEN_B,
-	       then either of the following two conditions can guarantee the
-	       one above:
-
-	       1: DIFF <= MIN_SEG_LEN_B
-	       2: DIFF - SEGMENT_LENGTH_A < MIN_SEG_LEN_B
-		  Because DIFF - SEGMENT_LENGTH_A is done in sizetype, we need
-		  to take care of wrapping behavior in it.
-
-	     Case B:
-	       If the left segment does not extend beyond the start of the
-	       right segment the new segment length is that of the right
-	       plus the segment distance.  The condition is like:
-
-	       DIFF >= SEGMENT_LENGTH_A   ;SEGMENT_LENGTH_A is a constant.
-
-	     Note 1: Case A.2 and B combined together effectively merges every
-	     dr_a1 & dr_b and dr_a2 & dr_b when SEGMENT_LENGTH_A is const.
-
-	     Note 2: Above description is based on positive DR_STEP, we need to
-	     take care of negative DR_STEP for wrapping behavior.  See PR80815
-	     for more information.  */
-	  if (neg_step)
+	  /* The new check will start at DR_A1.  Make sure that its access
+	     size encompasses the initial DR_A2.  */
+	  if (maybe_lt (dr_a1->access_size, diff + dr_a2->access_size))
 	    {
-	      /* Adjust diff according to access size of both references.  */
-	      diff += tree_to_poly_uint64
-		(TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a2->dr))));
-	      diff -= tree_to_poly_uint64
-		(TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a1->dr))));
-	      /* Case A.1.  */
-	      if (known_le (diff, min_seg_len_b)
-		  /* Case A.2 and B combined.  */
-		  || const_seg_len_a2)
-		{
-		  if (const_seg_len_a1 || const_seg_len_a2)
-		    new_seg_len
-		      = build_int_cstu (sizetype,
-					lower_bound (seg_len_a1 - diff,
-						     seg_len_a2));
-		  else
-		    new_seg_len
-		      = size_binop (MINUS_EXPR, dr_a2->seg_len,
-				    build_int_cstu (sizetype, diff));
-
-		  dr_a2->seg_len = new_seg_len;
-		  do_remove = true;
-		}
+	      dr_a1->access_size = upper_bound (dr_a1->access_size,
+						diff + dr_a2->access_size);
+	      unsigned int new_align = known_alignment (dr_a1->access_size);
+	      dr_a1->align = MIN (dr_a1->align, new_align);
 	    }
-	  else
+	  if (dump_enabled_p ())
 	    {
-	      /* Case A.1.  */
-	      if (known_le (diff, min_seg_len_b)
-		  /* Case A.2 and B combined.  */
-		  || const_seg_len_a1)
-		{
-		  if (const_seg_len_a1 && const_seg_len_a2)
-		    new_seg_len
-		      = build_int_cstu (sizetype,
-					upper_bound (seg_len_a2 + diff,
-						     seg_len_a1));
-		  else
-		    new_seg_len
-		      = size_binop (PLUS_EXPR, dr_a2->seg_len,
-				    build_int_cstu (sizetype, diff));
-
-		  dr_a1->seg_len = new_seg_len;
-		  do_remove = true;
-		}
+	      dump_printf (MSG_NOTE, "merging ranges for ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a1->dr));
+	      dump_printf (MSG_NOTE,  ", ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b1->dr));
+	      dump_printf (MSG_NOTE,  " and ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a2->dr));
+	      dump_printf (MSG_NOTE,  ", ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
+	      dump_printf (MSG_NOTE, "\n");
 	    }
-
-	  if (do_remove)
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf (MSG_NOTE, "merging ranges for ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a1->dr));
-		  dump_printf (MSG_NOTE,  ", ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b1->dr));
-		  dump_printf (MSG_NOTE,  " and ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a2->dr));
-		  dump_printf (MSG_NOTE,  ", ");
-		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
-		  dump_printf (MSG_NOTE, "\n");
-		}
-	      alias_pairs->ordered_remove (neg_step ? i - 1 : i);
-	      i--;
-	    }
+	  alias_pairs->ordered_remove (i);
+	  i--;
 	}
     }
 }
@@ -1654,7 +1587,9 @@ create_intersect_range_checks_index (struct loop *loop, tree *cond_expr,
       || DR_NUM_DIMENSIONS (dr_a.dr) != DR_NUM_DIMENSIONS (dr_b.dr))
     return false;
 
-  if (!tree_fits_uhwi_p (dr_a.seg_len) || !tree_fits_uhwi_p (dr_b.seg_len))
+  poly_uint64 seg_len1, seg_len2;
+  if (!poly_int_tree_p (dr_a.seg_len, &seg_len1)
+      || !poly_int_tree_p (dr_b.seg_len, &seg_len2))
     return false;
 
   if (!tree_fits_shwi_p (DR_STEP (dr_a.dr)))
@@ -1669,19 +1604,42 @@ create_intersect_range_checks_index (struct loop *loop, tree *cond_expr,
   gcc_assert (TREE_CODE (DR_STEP (dr_a.dr)) == INTEGER_CST);
 
   bool neg_step = tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0;
-  unsigned HOST_WIDE_INT abs_step
-    = absu_hwi (tree_to_shwi (DR_STEP (dr_a.dr)));
+  unsigned HOST_WIDE_INT abs_step = tree_to_shwi (DR_STEP (dr_a.dr));
+  if (neg_step)
+    {
+      abs_step = -abs_step;
+      seg_len1 = -seg_len1;
+      seg_len2 = -seg_len2;
+    }
+  else
+    {
+      /* Include the access size in the length, so that we only have one
+	 tree addition below.  */
+      seg_len1 += dr_a.access_size;
+      seg_len2 += dr_b.access_size;
+    }
 
-  unsigned HOST_WIDE_INT seg_len1 = tree_to_uhwi (dr_a.seg_len);
-  unsigned HOST_WIDE_INT seg_len2 = tree_to_uhwi (dr_b.seg_len);
   /* Infer the number of iterations with which the memory segment is accessed
      by DR.  In other words, alias is checked if memory segment accessed by
      DR_A in some iterations intersect with memory segment accessed by DR_B
      in the same amount iterations.
      Note segnment length is a linear function of number of iterations with
      DR_STEP as the coefficient.  */
-  unsigned HOST_WIDE_INT niter_len1 = (seg_len1 + abs_step - 1) / abs_step;
-  unsigned HOST_WIDE_INT niter_len2 = (seg_len2 + abs_step - 1) / abs_step;
+  poly_uint64 niter_len1, niter_len2;
+  if (!can_div_trunc_p (seg_len1 + abs_step - 1, abs_step, &niter_len1)
+      || !can_div_trunc_p (seg_len2 + abs_step - 1, abs_step, &niter_len2))
+    return false;
+
+  poly_uint64 niter_access1 = 0, niter_access2 = 0;
+  if (neg_step)
+    {
+      /* Divide each access size by the byte step, rounding up.  */
+      if (!can_div_trunc_p (dr_a.access_size - abs_step - 1,
+			    abs_step, &niter_access1)
+	  || !can_div_trunc_p (dr_b.access_size + abs_step - 1,
+			       abs_step, &niter_access2))
+	return false;
+    }
 
   unsigned int i;
   for (i = 0; i < DR_NUM_DIMENSIONS (dr_a.dr); i++)
@@ -1732,12 +1690,22 @@ create_intersect_range_checks_index (struct loop *loop, tree *cond_expr,
       /* Adjust ranges for negative step.  */
       if (neg_step)
 	{
-	  min1 = fold_build2 (MINUS_EXPR, TREE_TYPE (min1), max1, idx_step);
-	  max1 = fold_build2 (MINUS_EXPR, TREE_TYPE (min1),
-			      CHREC_LEFT (access1), idx_step);
-	  min2 = fold_build2 (MINUS_EXPR, TREE_TYPE (min2), max2, idx_step);
-	  max2 = fold_build2 (MINUS_EXPR, TREE_TYPE (min2),
-			      CHREC_LEFT (access2), idx_step);
+	  /* IDX_LEN1 and IDX_LEN2 are negative in this case.  */
+	  std::swap (min1, max1);
+	  std::swap (min2, max2);
+
+	  /* As with the lengths just calculated, we've measured the access
+	     sizes in iterations, so multiply them by the index step.  */
+	  tree idx_access1
+	    = fold_build2 (MULT_EXPR, TREE_TYPE (min1), idx_step,
+			   build_int_cst (TREE_TYPE (min1), niter_access1));
+	  tree idx_access2
+	    = fold_build2 (MULT_EXPR, TREE_TYPE (min2), idx_step,
+			   build_int_cst (TREE_TYPE (min2), niter_access2));
+
+	  /* MINUS_EXPR because the above values are negative.  */
+	  max1 = fold_build2 (MINUS_EXPR, TREE_TYPE (max1), max1, idx_access1);
+	  max2 = fold_build2 (MINUS_EXPR, TREE_TYPE (max2), max2, idx_access2);
 	}
       tree part_cond_expr
 	= fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
@@ -1750,6 +1718,89 @@ create_intersect_range_checks_index (struct loop *loop, tree *cond_expr,
 	*cond_expr = part_cond_expr;
     }
   return true;
+}
+
+/* If ALIGN is nonzero, set up *SEQ_MIN_OUT and *SEQ_MAX_OUT so that for
+   every address ADDR accessed by D:
+
+     *SEQ_MIN_OUT <= ADDR (== ADDR & -ALIGN) <= *SEQ_MAX_OUT
+
+   In this case, every element accessed by D is aligned to at least
+   ALIGN bytes.
+
+   If ALIGN is zero then instead set *SEG_MAX_OUT so that:
+
+     *SEQ_MIN_OUT <= ADDR < *SEQ_MAX_OUT.  */
+
+static void
+get_segment_min_max (const dr_with_seg_len &d, tree *seg_min_out,
+		     tree *seg_max_out, HOST_WIDE_INT align)
+{
+  /* Each access has the following pattern:
+
+	  <- |seg_len| ->
+	  <--- A: -ve step --->
+	  +-----+-------+-----+-------+-----+
+	  | n-1 | ,.... |  0  | ..... | n-1 |
+	  +-----+-------+-----+-------+-----+
+			<--- B: +ve step --->
+			<- |seg_len| ->
+			|
+		   base address
+
+     where "n" is the number of scalar iterations covered by the segment.
+     (This should be VF for a particular pair if we know that both steps
+     are the same, otherwise it will be the full number of scalar loop
+     iterations.)
+
+     A is the range of bytes accessed when the step is negative,
+     B is the range when the step is positive.
+
+     If the access size is "access_size" bytes, the lowest addressed byte is:
+
+	 base + (step < 0 ? seg_len : 0)   [LB]
+
+     and the highest addressed byte is always below:
+
+	 base + (step < 0 ? 0 : seg_len) + access_size   [UB]
+
+     Thus:
+
+	 LB <= ADDR < UB
+
+     If ALIGN is nonzero, all three values are aligned to at least ALIGN
+     bytes, so:
+
+	 LB <= ADDR <= UB - ALIGN
+
+     where "- ALIGN" folds naturally with the "+ access_size" and often
+     cancels it out.
+
+     We don't try to simplify LB and UB beyond this (e.g. by using
+     MIN and MAX based on whether seg_len rather than the stride is
+     negative) because it is possible for the absolute size of the
+     segment to overflow the range of a ssize_t.
+
+     Keeping the pointer_plus outside of the cond_expr should allow
+     the cond_exprs to be shared with other alias checks.  */
+  tree indicator = dr_direction_indicator (d.dr);
+  tree neg_step = fold_build2 (LT_EXPR, boolean_type_node,
+			       fold_convert (ssizetype, indicator),
+			       ssize_int (0));
+  tree addr_base = fold_build_pointer_plus (DR_BASE_ADDRESS (d.dr),
+					    DR_OFFSET (d.dr));
+  addr_base = fold_build_pointer_plus (addr_base, DR_INIT (d.dr));
+  tree seg_len = fold_convert (sizetype, d.seg_len);
+
+  tree min_reach = fold_build3 (COND_EXPR, sizetype, neg_step,
+				seg_len, size_zero_node);
+  tree max_reach = fold_build3 (COND_EXPR, sizetype, neg_step,
+				size_zero_node, seg_len);
+  max_reach = fold_build2 (PLUS_EXPR, sizetype, max_reach,
+			   size_int (d.access_size - align));
+
+  *seg_min_out = fold_build_pointer_plus (addr_base, min_reach);
+  *seg_max_out = fold_build_pointer_plus (addr_base, max_reach);
 }
 
 /* Given two data references and segment lengths described by DR_A and DR_B,
@@ -1768,43 +1819,48 @@ create_intersect_range_checks (struct loop *loop, tree *cond_expr,
   if (create_intersect_range_checks_index (loop, cond_expr, dr_a, dr_b))
     return;
 
-  tree segment_length_a = dr_a.seg_len;
-  tree segment_length_b = dr_b.seg_len;
-  tree addr_base_a = DR_BASE_ADDRESS (dr_a.dr);
-  tree addr_base_b = DR_BASE_ADDRESS (dr_b.dr);
-  tree offset_a = DR_OFFSET (dr_a.dr), offset_b = DR_OFFSET (dr_b.dr);
-
-  offset_a = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_a),
-			  offset_a, DR_INIT (dr_a.dr));
-  offset_b = fold_build2 (PLUS_EXPR, TREE_TYPE (offset_b),
-			  offset_b, DR_INIT (dr_b.dr));
-  addr_base_a = fold_build_pointer_plus (addr_base_a, offset_a);
-  addr_base_b = fold_build_pointer_plus (addr_base_b, offset_b);
-
-  tree seg_a_min = addr_base_a;
-  tree seg_a_max = fold_build_pointer_plus (addr_base_a, segment_length_a);
-  /* For negative step, we need to adjust address range by TYPE_SIZE_UNIT
-     bytes, e.g., int a[3] -> a[1] range is [a+4, a+16) instead of
-     [a, a+12) */
-  if (tree_int_cst_compare (DR_STEP (dr_a.dr), size_zero_node) < 0)
+  unsigned HOST_WIDE_INT min_align;
+  tree_code cmp_code;
+  if (TREE_CODE (DR_STEP (dr_a.dr)) == INTEGER_CST
+      && TREE_CODE (DR_STEP (dr_b.dr)) == INTEGER_CST)
     {
-      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_a.dr)));
-      seg_a_min = fold_build_pointer_plus (seg_a_max, unit_size);
-      seg_a_max = fold_build_pointer_plus (addr_base_a, unit_size);
+      /* In this case adding access_size to seg_len is likely to give
+	 a simple X * step, where X is either the number of scalar
+	 iterations or the vectorization factor.  We're better off
+	 keeping that, rather than subtracting an alignment from it.
+
+	 In this case the maximum values are exclusive and so there is
+	 no alias if the maximum of one segment equals the minimum
+	 of another.  */
+      min_align = 0;
+      cmp_code = LE_EXPR;
+    }
+  else
+    {
+      /* Calculate the minimum alignment shared by all four pointers,
+	 then arrange for this alignment to be subtracted from the
+	 exclusive maximum values to get inclusive maximum values.
+	 This "- min_align" is cumulative with a "+ access_size"
+	 in the calculation of the maximum values.  In the best
+	 (and common) case, the two cancel each other out, leaving
+	 us with an inclusive bound based only on seg_len.  In the
+	 worst case we're simply adding a smaller number than before.
+
+	 Because the maximum values are inclusive, there is an alias
+	 if the maximum value of one segment is equal to the minimum
+	 value of the other.  */
+      min_align = MIN (dr_a.align, dr_b.align);
+      cmp_code = LT_EXPR;
     }
 
-  tree seg_b_min = addr_base_b;
-  tree seg_b_max = fold_build_pointer_plus (addr_base_b, segment_length_b);
-  if (tree_int_cst_compare (DR_STEP (dr_b.dr), size_zero_node) < 0)
-    {
-      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr_b.dr)));
-      seg_b_min = fold_build_pointer_plus (seg_b_max, unit_size);
-      seg_b_max = fold_build_pointer_plus (addr_base_b, unit_size);
-    }
+  tree seg_a_min, seg_a_max, seg_b_min, seg_b_max;
+  get_segment_min_max (dr_a, &seg_a_min, &seg_a_max, min_align);
+  get_segment_min_max (dr_b, &seg_b_min, &seg_b_max, min_align);
+
   *cond_expr
     = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-	fold_build2 (LE_EXPR, boolean_type_node, seg_a_max, seg_b_min),
-	fold_build2 (LE_EXPR, boolean_type_node, seg_b_max, seg_a_min));
+	fold_build2 (cmp_code, boolean_type_node, seg_a_max, seg_b_min),
+	fold_build2 (cmp_code, boolean_type_node, seg_b_max, seg_a_min));
 }
 
 /* Create a conditional expression that represents the run-time checks for
@@ -5270,4 +5326,91 @@ free_data_refs (vec<data_reference_p> datarefs)
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     free_data_ref (dr);
   datarefs.release ();
+}
+
+/* Common routine implementing both dr_direction_indicator and
+   dr_zero_step_indicator.  Return USEFUL_MIN if the indicator is known
+   to be >= USEFUL_MIN and -1 if the indicator is known to be negative.
+   Return the step as the indicator otherwise.  */
+
+static tree
+dr_step_indicator (struct data_reference *dr, int useful_min)
+{
+  tree step = DR_STEP (dr);
+  STRIP_NOPS (step);
+  /* Look for cases where the step is scaled by a positive constant
+     integer, which will often be the access size.  If the multiplication
+     doesn't change the sign (due to overflow effects) then we can
+     test the unscaled value instead.  */
+  if (TREE_CODE (step) == MULT_EXPR
+      && TREE_CODE (TREE_OPERAND (step, 1)) == INTEGER_CST
+      && tree_int_cst_sgn (TREE_OPERAND (step, 1)) > 0)
+    {
+      tree factor = TREE_OPERAND (step, 1);
+      step = TREE_OPERAND (step, 0);
+
+      /* Strip widening and truncating conversions as well as nops.  */
+      if (CONVERT_EXPR_P (step)
+	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (step, 0))))
+	step = TREE_OPERAND (step, 0);
+      tree type = TREE_TYPE (step);
+
+      /* Get the range of step values that would not cause overflow.  */
+      widest_int minv = (wi::to_widest (TYPE_MIN_VALUE (ssizetype))
+			 / wi::to_widest (factor));
+      widest_int maxv = (wi::to_widest (TYPE_MAX_VALUE (ssizetype))
+			 / wi::to_widest (factor));
+
+      /* Get the range of values that the unconverted step actually has.  */
+      wide_int step_min, step_max;
+      if (TREE_CODE (step) != SSA_NAME
+	  || get_range_info (step, &step_min, &step_max) != VR_RANGE)
+	{
+	  step_min = wi::to_wide (TYPE_MIN_VALUE (type));
+	  step_max = wi::to_wide (TYPE_MAX_VALUE (type));
+	}
+
+      /* Check whether the unconverted step has an acceptable range.  */
+      signop sgn = TYPE_SIGN (type);
+      if (wi::les_p (minv, widest_int::from (step_min, sgn))
+	  && wi::ges_p (maxv, widest_int::from (step_max, sgn)))
+	{
+	  if (wi::ge_p (step_min, useful_min, sgn))
+	    return ssize_int (useful_min);
+	  else if (wi::lt_p (step_max, 0, sgn))
+	    return ssize_int (-1);
+	  else
+	    return fold_convert (ssizetype, step);
+	}
+    }
+  return DR_STEP (dr);
+}
+
+/* Return a value that is negative iff DR has a negative step.  */
+
+tree
+dr_direction_indicator (struct data_reference *dr)
+{
+  return dr_step_indicator (dr, 0);
+}
+
+/* Return a value that is zero iff DR has a zero step.  */
+
+tree
+dr_zero_step_indicator (struct data_reference *dr)
+{
+  return dr_step_indicator (dr, 1);
+}
+
+/* Return true if DR is known to have a nonnegative (but possibly zero)
+   step.  */
+
+bool
+dr_known_forward_stride_p (struct data_reference *dr)
+{
+  tree indicator = dr_direction_indicator (dr);
+  tree neg_step_val = fold_binary (LT_EXPR, boolean_type_node,
+				   fold_convert (ssizetype, indicator),
+				   ssize_int (0));
+  return neg_step_val && integer_zerop (neg_step_val);
 }

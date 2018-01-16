@@ -23,3 +23,10 @@ func write(fd uintptr, p unsafe.Pointer, n int32) int32
 
 //go:noescape
 func open(name *byte, mode, perm int32) int32
+
+// exitThread terminates the current thread, writing *wait = 0 when
+// the stack is safe to reclaim.
+func exitThread(wait *uint32) {
+	// This is never used by gccgo.
+	throw("exitThread")
+}

@@ -1631,7 +1631,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
       && VECTOR_MODE_P (tmode)
-      && known_eq (bitsize, GET_MODE_SIZE (tmode))
+      && known_eq (bitsize, GET_MODE_BITSIZE (tmode))
       && maybe_gt (GET_MODE_SIZE (GET_MODE (op0)), GET_MODE_SIZE (tmode)))
     {
       machine_mode new_mode = GET_MODE (op0);
@@ -5355,22 +5355,7 @@ make_tree (tree type, rtx x)
       return fold_convert (type, make_tree (t, XEXP (x, 0)));
 
     case CONST:
-      {
-	rtx op = XEXP (x, 0);
-	if (GET_CODE (op) == VEC_DUPLICATE)
-	  {
-	    tree elt_tree = make_tree (TREE_TYPE (type), XEXP (op, 0));
-	    return build_vector_from_val (type, elt_tree);
-	  }
-	if (GET_CODE (op) == VEC_SERIES)
-	  {
-	    tree itype = TREE_TYPE (type);
-	    tree base_tree = make_tree (itype, XEXP (op, 0));
-	    tree step_tree = make_tree (itype, XEXP (op, 1));
-	    return build_vec_series (type, base_tree, step_tree);
-	  }
-	return make_tree (type, op);
-      }
+      return make_tree (type, XEXP (x, 0));
 
     case SYMBOL_REF:
       t = SYMBOL_REF_DECL (x);
@@ -6096,6 +6081,17 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
   tem = emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep);
   if (tem != 0)
     return tem;
+
+  /* If one operand is constant, make it the second one.  Only do this
+     if the other operand is not constant as well.  */
+  if (swap_commutative_operands_p (op0, op1))
+    {
+      std::swap (op0, op1);
+      code = swap_condition (code);
+    }
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op0);
 
   if (!target)
     target = gen_reg_rtx (word_mode);

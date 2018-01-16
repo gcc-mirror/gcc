@@ -1181,9 +1181,40 @@ fold_const_call (combined_fn fn, tree type, tree arg)
     case CFN_REDUC_MIN:
       return fold_const_reduction (type, arg, MIN_EXPR);
 
+    case CFN_REDUC_AND:
+      return fold_const_reduction (type, arg, BIT_AND_EXPR);
+
+    case CFN_REDUC_IOR:
+      return fold_const_reduction (type, arg, BIT_IOR_EXPR);
+
+    case CFN_REDUC_XOR:
+      return fold_const_reduction (type, arg, BIT_XOR_EXPR);
+
     default:
       return fold_const_call_1 (fn, type, arg);
     }
+}
+
+/* Fold a call to IFN_FOLD_LEFT_<CODE> (ARG0, ARG1), returning a value
+   of type TYPE.  */
+
+static tree
+fold_const_fold_left (tree type, tree arg0, tree arg1, tree_code code)
+{
+  if (TREE_CODE (arg1) != VECTOR_CST)
+    return NULL_TREE;
+
+  unsigned HOST_WIDE_INT nelts;
+  if (!VECTOR_CST_NELTS (arg1).is_constant (&nelts))
+    return NULL_TREE;
+
+  for (unsigned HOST_WIDE_INT i = 0; i < nelts; i++)
+    {
+      arg0 = const_binop (code, type, arg0, VECTOR_CST_ELT (arg1, i));
+      if (arg0 == NULL_TREE || !CONSTANT_CLASS_P (arg0))
+	return NULL_TREE;
+    }
+  return arg0;
 }
 
 /* Try to evaluate:
@@ -1490,6 +1521,9 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	    return fold_convert (type, arg0);
 	}
       return NULL_TREE;
+
+    case CFN_FOLD_LEFT_PLUS:
+      return fold_const_fold_left (type, arg0, arg1, PLUS_EXPR);
 
     default:
       return fold_const_call_1 (fn, type, arg0, arg1);

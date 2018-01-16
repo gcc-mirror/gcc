@@ -599,6 +599,7 @@ enum gfc_isym_id
   GFC_ISYM_SYSTEM_CLOCK,
   GFC_ISYM_TAN,
   GFC_ISYM_TANH,
+  GFC_ISYM_TEAM_NUMBER,
   GFC_ISYM_THIS_IMAGE,
   GFC_ISYM_TIME,
   GFC_ISYM_TIME8,
@@ -2002,7 +2003,7 @@ typedef union
   bool (*f1m)(gfc_actual_arglist *);
   bool (*f2)(struct gfc_expr *, struct gfc_expr *);
   bool (*f3)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *);
-  bool (*f4ml)(gfc_actual_arglist *);
+  bool (*f5ml)(gfc_actual_arglist *);
   bool (*f3red)(gfc_actual_arglist *);
   bool (*f4)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *,
 	    struct gfc_expr *);
@@ -2918,6 +2919,8 @@ extern int gfc_charlen_int_kind;
 extern int gfc_size_kind;
 extern int gfc_numeric_storage_size;
 extern int gfc_character_storage_size;
+
+#define gfc_logical_4_kind 4
 
 /* symbol.c */
 void gfc_clear_new_implicit (void);

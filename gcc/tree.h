@@ -483,6 +483,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define STRIP_USELESS_TYPE_CONVERSION(EXP) \
   (EXP) = tree_ssa_strip_useless_type_conversions (EXP)
 
+/* Remove any VIEW_CONVERT_EXPR or NON_LVALUE_EXPR that's purely
+   in use to provide a location_t.  */
+
+#define STRIP_ANY_LOCATION_WRAPPER(EXP) \
+  (EXP) = tree_strip_any_location_wrapper (CONST_CAST_TREE (EXP))
+
 /* Nonzero if TYPE represents a vector type.  */
 
 #define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
@@ -823,13 +829,16 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Same as TYPE_UNSIGNED but converted to SIGNOP.  */
 #define TYPE_SIGN(NODE) ((signop) TYPE_UNSIGNED (NODE))
 
-/* True if overflow wraps around for the given integral type.  That
+/* True if overflow wraps around for the given integral or pointer type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
 #define TYPE_OVERFLOW_WRAPS(TYPE) \
-  (ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag || flag_wrapv)
+  (POINTER_TYPE_P (TYPE)					\
+   ? flag_wrapv_pointer						\
+   : (ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
+      || flag_wrapv))
 
-/* True if overflow is undefined for the given integral type.  We may
-   optimize on the assumption that values in the type never overflow.
+/* True if overflow is undefined for the given integral or pointer type.
+   We may optimize on the assumption that values in the type never overflow.
 
    IMPORTANT NOTE: Any optimization based on TYPE_OVERFLOW_UNDEFINED
    must issue a warning based on warn_strict_overflow.  In some cases
@@ -837,8 +846,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    other cases it will be appropriate to simply set a flag and let the
    caller decide whether a warning is appropriate or not.  */
 #define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
-  (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
-   && !flag_wrapv && !flag_trapv)
+  (POINTER_TYPE_P (TYPE)					\
+   ? !flag_wrapv_pointer					\
+   : (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
+      && !flag_wrapv && !flag_trapv))
 
 /* True if overflow for the given integral type should issue a
    trap.  */
@@ -1179,6 +1190,8 @@ get_expr_source_range (tree expr)
 }
 
 extern void protected_set_expr_location (tree, location_t);
+
+extern tree maybe_wrap_with_location (tree, location_t);
 
 /* In a TARGET_EXPR node.  */
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
@@ -3724,6 +3737,45 @@ valid_vector_subparts_p (poly_uint64 subparts)
 	return false;
     }
   return true;
+}
+
+/* In NON_LVALUE_EXPR and VIEW_CONVERT_EXPR, set when this node is merely a
+   wrapper added to express a location_t on behalf of the node's child
+   (e.g. by maybe_wrap_with_location).  */
+
+#define EXPR_LOCATION_WRAPPER_P(NODE) \
+  (TREE_CHECK2(NODE, NON_LVALUE_EXPR, VIEW_CONVERT_EXPR)->base.public_flag)
+
+/* Test if EXP is merely a wrapper node, added to express a location_t
+   on behalf of the node's child (e.g. by maybe_wrap_with_location).  */
+
+inline bool
+location_wrapper_p (const_tree exp)
+{
+  /* A wrapper node has code NON_LVALUE_EXPR or VIEW_CONVERT_EXPR, and
+     the flag EXPR_LOCATION_WRAPPER_P is set.
+     It normally has the same type as its operand, but it can have a
+     different one if the type of the operand has changed (e.g. when
+     merging duplicate decls).
+
+     NON_LVALUE_EXPR is used for wrapping constants, apart from STRING_CST.
+     VIEW_CONVERT_EXPR is used for wrapping non-constants and STRING_CST.  */
+  if ((TREE_CODE (exp) == NON_LVALUE_EXPR
+       || TREE_CODE (exp) == VIEW_CONVERT_EXPR)
+      && EXPR_LOCATION_WRAPPER_P (exp))
+    return true;
+  return false;
+}
+
+/* Implementation of STRIP_ANY_LOCATION_WRAPPER.  */
+
+inline tree
+tree_strip_any_location_wrapper (tree exp)
+{
+  if (location_wrapper_p (exp))
+    return TREE_OPERAND (exp, 0);
+  else
+    return exp;
 }
 
 #define error_mark_node			global_trees[TI_ERROR_MARK]

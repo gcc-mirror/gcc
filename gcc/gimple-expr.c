@@ -631,7 +631,9 @@ is_gimple_address (const_tree t)
       op = TREE_OPERAND (op, 0);
     }
 
-  if (CONSTANT_CLASS_P (op) || TREE_CODE (op) == MEM_REF)
+  if (CONSTANT_CLASS_P (op)
+      || TREE_CODE (op) == TARGET_MEM_REF
+      || TREE_CODE (op) == MEM_REF)
     return true;
 
   switch (TREE_CODE (op))

@@ -786,9 +786,6 @@ gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
 static bool
 is_pointer_array (tree expr)
 {
-  if (flag_openmp)
-    return false;
-
   if (expr == NULL_TREE
       || !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (expr))
       || GFC_CLASS_TYPE_P (TREE_TYPE (expr)))
@@ -1562,16 +1559,19 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 	  if (first_len)
 	    {
 	      gfc_add_modify (&se->pre, first_len_val,
-				   se->string_length);
+			      fold_convert (TREE_TYPE (first_len_val),
+					    se->string_length));
 	      first_len = false;
 	    }
 	  else
 	    {
 	      /* Verify that all constructor elements are of the same
 		 length.  */
+	      tree rhs = fold_convert (TREE_TYPE (first_len_val),
+				       se->string_length);
 	      tree cond = fold_build2_loc (input_location, NE_EXPR,
 					   logical_type_node, first_len_val,
-					   se->string_length);
+					   rhs);
 	      gfc_trans_runtime_check
 		(true, false, cond, &se->pre, &expr->where,
 		 "Different CHARACTER lengths (%ld/%ld) in array constructor",

@@ -45,6 +45,85 @@ Mark_address_taken::expression(Expression** pexpr)
   Unary_expression* ue = expr->unary_expression();
   if (ue != NULL)
     ue->check_operand_address_taken(this->gogo_);
+
+  Array_index_expression* aie = expr->array_index_expression();
+  if (aie != NULL
+      && aie->end() != NULL
+      && !aie->array()->type()->is_slice_type())
+    {
+      // Slice of an array. The escape analysis models this with
+      // a child Node representing the address of the array.
+      bool escapes = false;
+      if (!this->gogo_->compiling_runtime()
+          || this->gogo_->package_name() != "runtime")
+        {
+          Node* n = Node::make_node(expr);
+          if (n->child() == NULL
+              || (n->child()->encoding() & ESCAPE_MASK) != Node::ESCAPE_NONE)
+            escapes = true;
+        }
+      aie->array()->address_taken(escapes);
+    }
+
+  if (expr->allocation_expression() != NULL)
+    {
+      Node* n = Node::make_node(expr);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        expr->allocation_expression()->set_allocate_on_stack();
+    }
+  if (expr->heap_expression() != NULL)
+    {
+      Node* n = Node::make_node(expr);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        expr->heap_expression()->set_allocate_on_stack();
+    }
+  if (expr->slice_literal() != NULL)
+    {
+      Node* n = Node::make_node(expr);
+      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+        expr->slice_literal()->set_storage_does_not_escape();
+    }
+
+  // Rewrite non-escaping makeslice with constant size to stack allocation.
+  Unsafe_type_conversion_expression* uce =
+    expr->unsafe_conversion_expression();
+  if (uce != NULL
+      && uce->type()->is_slice_type()
+      && Node::make_node(uce->expr())->encoding() == Node::ESCAPE_NONE
+      && uce->expr()->call_expression() != NULL)
+    {
+      Call_expression* call = uce->expr()->call_expression();
+      if (call->fn()->func_expression() != NULL
+          && call->fn()->func_expression()->runtime_code() == Runtime::MAKESLICE)
+        {
+          Expression* len_arg = call->args()->at(1);
+          Expression* cap_arg = call->args()->at(2);
+          Numeric_constant nclen;
+          Numeric_constant nccap;
+          unsigned long vlen;
+          unsigned long vcap;
+          if (len_arg->numeric_constant_value(&nclen)
+              && cap_arg->numeric_constant_value(&nccap)
+              && nclen.to_unsigned_long(&vlen) == Numeric_constant::NC_UL_VALID
+              && nccap.to_unsigned_long(&vcap) == Numeric_constant::NC_UL_VALID)
+            {
+              // Turn it into a slice expression of an addressable array,
+              // which is allocated on stack.
+              Location loc = expr->location();
+              Type* elmt_type = expr->type()->array_type()->element_type();
+              Expression* len_expr =
+                Expression::make_integer_ul(vcap, cap_arg->type(), loc);
+              Type* array_type = Type::make_array_type(elmt_type, len_expr);
+              Expression* alloc = Expression::make_allocation(array_type, loc);
+              alloc->allocation_expression()->set_allocate_on_stack();
+              Expression* array = Expression::make_unary(OPERATOR_MULT, alloc, loc);
+              Expression* zero = Expression::make_integer_ul(0, len_arg->type(), loc);
+              Expression* slice =
+                Expression::make_array_index(array, zero, len_arg, cap_arg, loc);
+              *pexpr = slice;
+            }
+        }
+    }
   return TRAVERSE_CONTINUE;
 }
 
@@ -331,6 +410,25 @@ Gogo::assign_needs_write_barrier(Expression* lhs)
   if (!lhs->type()->has_pointer())
     return false;
 
+  // An assignment to a field is handled like an assignment to the
+  // struct.
+  while (true)
+    {
+      // Nothing to do for a type that can not be in the heap, or a
+      // pointer to a type that can not be in the heap.  We check this
+      // at each level of a struct.
+      if (!lhs->type()->in_heap())
+	return false;
+      if (lhs->type()->points_to() != NULL
+	  && !lhs->type()->points_to()->in_heap())
+	return false;
+
+      Field_reference_expression* fre = lhs->field_reference_expression();
+      if (fre == NULL)
+	break;
+      lhs = fre->expr();
+    }
+
   // Nothing to do for an assignment to a temporary.
   if (lhs->temporary_reference_expression() != NULL)
     return false;
@@ -359,12 +457,30 @@ Gogo::assign_needs_write_barrier(Expression* lhs)
 	}
     }
 
-  // Nothing to do for a type that can not be in the heap, or a
-  // pointer to a type that can not be in the heap.
-  if (!lhs->type()->in_heap())
-    return false;
-  if (lhs->type()->points_to() != NULL && !lhs->type()->points_to()->in_heap())
-    return false;
+  // For a struct assignment, we don't need a write barrier if all the
+  // pointer types can not be in the heap.
+  Struct_type* st = lhs->type()->struct_type();
+  if (st != NULL)
+    {
+      bool in_heap = false;
+      const Struct_field_list* fields = st->fields();
+      for (Struct_field_list::const_iterator p = fields->begin();
+	   p != fields->end();
+	   p++)
+	{
+	  Type* ft = p->type();
+	  if (!ft->has_pointer())
+	    continue;
+	  if (!ft->in_heap())
+	    continue;
+	  if (ft->points_to() != NULL && !ft->points_to()->in_heap())
+	    continue;
+	  in_heap = true;
+	  break;
+	}
+      if (!in_heap)
+	return false;
+    }
 
   // Write barrier needed in other cases.
   return true;

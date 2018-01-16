@@ -113,14 +113,15 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 }
 
 /* Dump all digits/hex chars from NUMBER to BUFFER and return a pointer
-   to the character after the last character written.  */
+   to the character after the last character written.  If FLOAT_P is true,
+   this is a floating-point number.  */
 
 static unsigned char *
-dump_number (unsigned char *number, unsigned char *buffer)
+dump_number (unsigned char *number, unsigned char *buffer, bool float_p)
 {
   while (*number != '\0'
-	 && *number != 'U'
-	 && *number != 'u'
+	 && *number != (float_p ? 'F' : 'U')
+	 && *number != (float_p ? 'f' : 'u')
 	 && *number != 'l'
 	 && *number != 'L')
     *buffer++ = *number++;
@@ -192,7 +193,8 @@ store_ada_macro (cpp_reader *pfile ATTRIBUTE_UNUSED,
 {
   const cpp_macro *macro = node->value.macro;
 
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN)
+  if (node->type == NT_MACRO
+      && !(node->flags & NODE_BUILTIN)
       && macro->count
       && *NODE_NAME (node) != '_'
       && LOCATION_FILE (macro->line) == macro_source_file)
@@ -345,7 +347,8 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 		    is_one = prev_is_one;
 		    break;
 
-		  case CPP_COMMENT: break;
+		  case CPP_COMMENT:
+		    break;
 
 		  case CPP_WSTRING:
 		  case CPP_STRING16:
@@ -359,11 +362,18 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 		    if (!macro->fun_like)
 		      supported = 0;
 		    else
-		      buffer = cpp_spell_token (parse_in, token, buffer, false);
+		      buffer
+			= cpp_spell_token (parse_in, token, buffer, false);
 		    break;
 
 		  case CPP_STRING:
-		    is_string = 1;
+		    if (is_string)
+		      {
+			*buffer++ = '&';
+			*buffer++ = ' ';
+		      }
+		    else
+		      is_string = 1;
 		    {
 		      const unsigned char *s = token->val.str.text;
 
@@ -428,7 +438,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 				*buffer++ = '1';
 				*buffer++ = '6';
 				*buffer++ = '#';
-				buffer = dump_number (tmp + 2, buffer);
+				buffer = dump_number (tmp + 2, buffer, false);
 				*buffer++ = '#';
 				break;
 
@@ -436,19 +446,20 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 			      case 'B':
 				*buffer++ = '2';
 				*buffer++ = '#';
-				buffer = dump_number (tmp + 2, buffer);
+				buffer = dump_number (tmp + 2, buffer, false);
 				*buffer++ = '#';
 				break;
 
 			      default:
-				/* Dump floating constants unmodified.  */
+				/* Dump floating-point constant unmodified.  */
 				if (strchr ((const char *)tmp, '.'))
-				  buffer = dump_number (tmp, buffer);
+				  buffer = dump_number (tmp, buffer, true);
 				else
 				  {
 				    *buffer++ = '8';
 				    *buffer++ = '#';
-				    buffer = dump_number (tmp + 1, buffer);
+				    buffer
+				      = dump_number (tmp + 1, buffer, false);
 				    *buffer++ = '#';
 				  }
 				break;
@@ -456,19 +467,23 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 			  break;
 
 			case '1':
-			  if (tmp[1] == '\0' || tmp[1] == 'l' || tmp[1] == 'u'
-			      || tmp[1] == 'L' || tmp[1] == 'U')
+			  if (tmp[1] == '\0'
+			      || tmp[1] == 'u'
+			      || tmp[1] == 'U'
+			      || tmp[1] == 'l'
+			      || tmp[1] == 'L')
 			    {
 			      is_one = 1;
 			      char_one = buffer;
 			      *buffer++ = '1';
+			      break;
 			    }
-			  else
-			    buffer = dump_number (tmp, buffer);
-			  break;
+			  /* fallthrough */
 
 			default:
-			  buffer = dump_number (tmp, buffer);
+			  buffer
+			    = dump_number (tmp, buffer,
+					   strchr ((const char *)tmp, '.'));
 			  break;
 		      }
 		    break;

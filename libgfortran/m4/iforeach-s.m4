@@ -13,22 +13,26 @@ compare_fcn (const atype_name *a, const atype_name *b, gfc_charlen_type n)
 
 }
 
-extern void name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, gfc_charlen_type len);
-export_proto(name`'rtype_qual`_'atype_code);
+extern void name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array'back_arg`, gfc_charlen_type len);
+export_proto('name`'rtype_qual`_'atype_code);
 
 void
-name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, gfc_charlen_type len)
+name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array'back_arg`, gfc_charlen_type len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
-  const atype_name *base;
+  const 'atype_name *base;
   rtype_name * restrict dest;
   index_type rank;
   index_type n;
+
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
 
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
@@ -112,27 +116,32 @@ define(FINISH_FOREACH_FUNCTION,
 }')dnl
 define(START_MASKED_FOREACH_FUNCTION,
 `
-extern void `m'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, gfc_array_l1 * const restrict, gfc_charlen_type len);
-export_proto(`m'name`'rtype_qual`_'atype_code);
+extern void `m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict, 
+	'atype` * const restrict, gfc_array_l1 * const restrict 'back_arg`,
+	gfc_charlen_type len);
+export_proto(m'name`'rtype_qual`_'atype_code`);
 
 void
-`m'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array,
-	gfc_array_l1 * const restrict mask, gfc_charlen_type len)
+m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array,
+	gfc_array_l1 * const restrict mask'back_arg`,
+	gfc_charlen_type len)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
-  rtype_name *dest;
+  'rtype_name *dest;
   const atype_name *base;
   GFC_LOGICAL_1 *mbase;
   int rank;
   index_type n;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -243,23 +252,29 @@ $2
 FINISH_MASKED_FOREACH_FUNCTION')dnl
 define(SCALAR_FOREACH_FUNCTION,
 `
-extern void `s'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, GFC_LOGICAL_4 *, gfc_charlen_type len);
-export_proto(`s'name`'rtype_qual`_'atype_code);
+extern void `s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict, 
+	'atype` * const restrict, GFC_LOGICAL_4 *'back_arg`,
+	gfc_charlen_type len);
+export_proto(s'name`'rtype_qual`_'atype_code);
 
 void
-`s'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array,
-	GFC_LOGICAL_4 * mask, gfc_charlen_type len)
+`s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array,
+	GFC_LOGICAL_4 * mask'back_arg`,
+	gfc_charlen_type len)
 {
   index_type rank;
   index_type dstride;
   index_type n;
-  rtype_name *dest;
+  'rtype_name *dest;
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG    
+      name`'rtype_qual`_'atype_code (retarray, array, back, len);
+#else
       name`'rtype_qual`_'atype_code (retarray, array, len);
+#endif
       return;
     }
 

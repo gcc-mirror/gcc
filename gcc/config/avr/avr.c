@@ -1030,9 +1030,6 @@ avr_no_gccisr_function_p (tree func)
 static void
 avr_set_current_function (tree decl)
 {
-  location_t loc;
-  const char *isr;
-
   if (decl == NULL_TREE
       || current_function_decl == NULL_TREE
       || current_function_decl == error_mark_node
@@ -1040,7 +1037,7 @@ avr_set_current_function (tree decl)
       || cfun->machine->attributes_checked_p)
     return;
 
-  loc = DECL_SOURCE_LOCATION (decl);
+  location_t loc = DECL_SOURCE_LOCATION (decl);
 
   cfun->machine->is_naked = avr_naked_function_p (decl);
   cfun->machine->is_signal = avr_signal_function_p (decl);
@@ -1049,21 +1046,19 @@ avr_set_current_function (tree decl)
   cfun->machine->is_OS_main = avr_OS_main_function_p (decl);
   cfun->machine->is_no_gccisr = avr_no_gccisr_function_p (decl);
 
-  isr = cfun->machine->is_interrupt ? "interrupt" : "signal";
+  const char *isr = cfun->machine->is_interrupt ? "interrupt" : "signal";
 
   /* Too much attributes make no sense as they request conflicting features. */
 
-  if (cfun->machine->is_OS_task + cfun->machine->is_OS_main
-      + (cfun->machine->is_signal || cfun->machine->is_interrupt) > 1)
-    error_at (loc, "function attributes %qs, %qs and %qs are mutually"
-              " exclusive", "OS_task", "OS_main", isr);
+  if (cfun->machine->is_OS_task
+      && (cfun->machine->is_signal || cfun->machine->is_interrupt))
+    error_at (loc, "function attributes %qs and %qs are mutually exclusive",
+              "OS_task", isr);
 
-  /* 'naked' will hide effects of 'OS_task' and 'OS_main'.  */
-
-  if (cfun->machine->is_naked
-      && (cfun->machine->is_OS_task || cfun->machine->is_OS_main))
-    warning_at (loc, OPT_Wattributes, "function attributes %qs and %qs have"
-                " no effect on %qs function", "OS_task", "OS_main", "naked");
+  if (cfun->machine->is_OS_main
+      && (cfun->machine->is_signal || cfun->machine->is_interrupt))
+    error_at (loc, "function attributes %qs and %qs are mutually exclusive",
+              "OS_main", isr);
 
   if (cfun->machine->is_interrupt || cfun->machine->is_signal)
     {
@@ -3526,12 +3521,7 @@ avr_function_ok_for_sibcall (tree decl_callee, tree exp_callee)
   if (cfun->machine->is_interrupt
       || cfun->machine->is_signal
       || cfun->machine->is_naked
-      || avr_naked_function_p (decl_callee)
-      /* FIXME: For OS_task and OS_main, this might be over-conservative.  */
-      || (avr_OS_task_function_p (decl_callee)
-          != cfun->machine->is_OS_task)
-      || (avr_OS_main_function_p (decl_callee)
-          != cfun->machine->is_OS_main))
+      || avr_naked_function_p (decl_callee))
     {
       return false;
     }
@@ -10101,12 +10091,28 @@ avr_pgm_check_var_decl (tree node)
 }
 
 
-/* Add the section attribute if the variable is in progmem.  */
+/* Implement `TARGET_INSERT_ATTRIBUTES'.  */
 
 static void
 avr_insert_attributes (tree node, tree *attributes)
 {
   avr_pgm_check_var_decl (node);
+
+  if (TARGET_MAIN_IS_OS_TASK
+      && TREE_CODE (node) == FUNCTION_DECL
+      && MAIN_NAME_P (DECL_NAME (node))
+      // FIXME:  We'd like to also test `flag_hosted' which is only
+      // available in the C-ish fronts, hence no such test for now.
+      // Instead, we test the return type of "main" which is not exactly
+      // the same but good enough.
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (node)))
+      && NULL == lookup_attribute ("OS_task", *attributes))
+    {
+      *attributes = tree_cons (get_identifier ("OS_task"),
+                               NULL, *attributes);
+    }
+
+  /* Add the section attribute if the variable is in progmem.  */
 
   if (TREE_CODE (node) == VAR_DECL
       && (TREE_STATIC (node) || DECL_EXTERNAL (node))

@@ -687,9 +687,9 @@ schedule_reg_moves (partial_schedule_ptr ps)
       rtx set = single_set (u->insn);
       
       /* Skip instructions that do not set a register.  */
-      if ((set && !REG_P (SET_DEST (set))))
+      if (set && !REG_P (SET_DEST (set)))
         continue;
- 
+
       /* Compute the number of reg_moves needed for u, by looking at life
 	 ranges started at u (excluding self-loops).  */
       distances[0] = distances[1] = false;
@@ -743,7 +743,10 @@ schedule_reg_moves (partial_schedule_ptr ps)
       first_move += ps->g->num_nodes;
 
       /* Generate each move.  */
-      old_reg = prev_reg = SET_DEST (single_set (u->insn));
+      old_reg = prev_reg = SET_DEST (set);
+      if (HARD_REGISTER_P (old_reg))
+	return false;
+
       for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
 	{
 	  ps_reg_move_info *move = ps_reg_move (ps, first_move + i_reg_move);

@@ -380,7 +380,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     /* The option machinery will define this.  */
 #endif
 
-#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_STRING)
+#define TARGET_DEFAULT (MASK_MULTIPLE)
 
 /* FPU operations supported. 
    Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
@@ -437,11 +437,13 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    Similarly IFmode is the IBM long double format even if the default is IEEE
    128-bit.  Don't allow IFmode if -msoft-float.  */
 #define FLOAT128_IEEE_P(MODE)						\
-  ((TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
+  ((TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128				\
+    && ((MODE) == TFmode || (MODE) == TCmode))				\
    || ((MODE) == KFmode) || ((MODE) == KCmode))
 
 #define FLOAT128_IBM_P(MODE)						\
-  ((!TARGET_IEEEQUAD && ((MODE) == TFmode || (MODE) == TCmode))		\
+  ((!TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128				\
+    && ((MODE) == TFmode || (MODE) == TCmode))				\
    || (TARGET_HARD_FLOAT && ((MODE) == IFmode || (MODE) == ICmode)))
 
 /* Helper macros to say whether a 128-bit floating point type can go in a
@@ -656,7 +658,6 @@ extern int rs6000_vector_align[];
 #define MASK_RECIP_PRECISION		OPTION_MASK_RECIP_PRECISION
 #define MASK_SOFT_FLOAT			OPTION_MASK_SOFT_FLOAT
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
-#define MASK_STRING			OPTION_MASK_STRING
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
 

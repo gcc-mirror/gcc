@@ -1,6 +1,7 @@
 // PR c++/41090
 // { dg-do run }
 // { dg-options "-save-temps" }
+// { dg-require-effective-target indirect_jumps }
 // { dg-final { scan-assembler "_ZN1CC4Ev" } }
 
 int i;

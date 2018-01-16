@@ -1,3 +1,149 @@
+2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83833
+	* include/bits/random.h (chi_squared_distribution::param): Update
+	gamma distribution parameter.
+	* testsuite/26_numerics/random/chi_squared_distribution/83833.cc: New
+	test.
+
+	PR libstdc++/83830
+	* include/std/type_traits (has_unique_object_representations_v): Add
+	variable template.
+	* testsuite/20_util/has_unique_object_representations/value.cc: Check
+	variable template.
+
+2018-01-15  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make optional conditionally
+	trivially_{copy,move}_{constructible,assignable}
+	* include/std/optional (_Optional_payload): Fix the comment in
+	the class head and turn into a primary and one specialization.
+	(_Optional_payload::_M_engaged): Strike the NSDMI.
+	(_Optional_payload<_Tp, false>::operator=(const _Optional_payload&)):
+	New.
+	(_Optional_payload<_Tp, false>::operator=(_Optional_payload&&)):
+	Likewise.
+	(_Optional_payload<_Tp, false>::_M_get): Likewise.
+	(_Optional_payload<_Tp, false>::_M_reset): Likewise.
+	(_Optional_base_impl): Likewise.
+	(_Optional_base): Turn into a primary and three specializations.
+	(optional(nullopt)): Change the base init.
+	* testsuite/20_util/optional/assignment/8.cc: New.
+	* testsuite/20_util/optional/cons/trivial.cc: Likewise.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
+
+2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80276
+	* python/libstdcxx/v6/printers.py (strip_inline_namespaces): New.
+	(get_template_arg_list): New.
+	(StdVariantPrinter._template_args): Remove, use get_template_arg_list
+	instead.
+	(TemplateTypePrinter): Rewrite to work with gdb.Type objects instead
+	of strings and regular expressions.
+	(add_one_template_type_printer): Adapt to new TemplateTypePrinter.
+	(FilteringTypePrinter): Add docstring. Match using startswith. Use
+	strip_inline_namespaces instead of strip_versioned_namespace.
+	(add_one_type_printer): Prepend namespace to match argument.
+	(register_type_printers): Add type printers for char16_t and char32_t
+	string types and for types using cxx11 ABI. Update calls to
+	add_one_template_type_printer to provide default argument dicts.
+	* testsuite/libstdc++-prettyprinters/80276.cc: New test.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Remove tests for
+	basic_string<unsigned char> and basic_string<signed char>.
+	* testsuite/libstdc++-prettyprinters/whatis2.cc: Duplicate whatis.cc
+	to test local variables, without overriding _GLIBCXX_USE_CXX11_ABI.
+
+2018-01-14  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR libstdc++/81092
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+
+2018-01-13  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/83601
+	* include/bits/regex.tcc (regex_replace): Fix escaping in sed.
+	* testsuite/28_regex/algorithms/regex_replace/char/pr83601.cc: Tests.
+	* testsuite/28_regex/algorithms/regex_replace/wchar_t/pr83601.cc: Tests.
+
+2018-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/64054
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/hexfloat.cc:
+	Remove dg-xfail-run-if.
+
+2018-01-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/forward_list.h
+	(_Fwd_list_node_base(_Fwd_list_node_base&&)): New.
+	(_Fwd_list_node_base& operator=(_Fwd_list_node_base&&)): New.
+	(_Fwd_list_node_base(const _Fwd_list_node_base&)): Explicit delete.
+	(_Fwd_list_node_base& operator=(const _Fwd_list_node_base&)): Likewise.
+	(_Fwd_list_impl()): Add noexcept qualification.
+	(_Fwd_list_impl(const _Node_alloc_type&)): Delete.
+	(_Fwd_list_impl(_Fwd_list_impl&&)): New, default.
+	(_Fwd_list_impl(_Fwd_list_impl&&, _Node_alloc_type&&)): New.
+	(_Fwd_list_base()): Default.
+	(_Fwd_list_base(_Fwd_list_base&&, _Node_alloc_type&&, true_type)): New.
+	(_Fwd_list_base(_Fwd_list_base&&)): Default.
+	(forward_list<>()): Default.
+	(forward_list<>(forward_list&&)): Default.
+	(forward_list(forward_list&&, _Node_alloc_type&&, false_type)): New.
+	(forward_list(forward_list&&, _Node_alloc_type&&, true_type)): New.
+	(forward_list(forward_list&&, const _Alloc&)): Adapt to use latters.
+	* include/bits/forward_list.tcc
+	(_Fwd_list_base(_Fwd_list_base&&, _Node_alloc_type&&)): Adapt to use
+	_M_impl._M_head move assignment.
+	(forward_list<>::merge(forward_list<>&&, _Comp)): Likewise.
+	* testsuite/23_containers/forward_list/allocator/default_init.cc: New.
+
+2018-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80276
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter)
+	(UniquePointerPrinter): Print correct template argument, not type of
+	the pointer.
+	(TemplateTypePrinter._recognizer.recognize): Handle failure to lookup
+	a type.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test unique_ptr of
+	array type.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test shared_ptr and
+	weak_ptr of array types.
+
+2018-01-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/83709
+	* include/bits/hashtable_policy.h
+	(__distance_fwd(_Iterator, _Iterator, input_iterator_tag)): Return 1 if
+	__first != __last.
+	(_Insert_base::_M_insert_range(_Ite, _Ite, _NodeGetter, true_type)): New.
+	(_Insert_base::_M_insert_range(_Ite, _Ite, _NodeGetter, false_type)):
+	Add false_type parameter.
+	(_Insert_base::insert): Adapt.
+	* include/bits/hashtable.h (_Hashtable::operator=(initializzr_list<>)):
+	Adapt.
+	(_Hashtable::_M_insert(_Arg&&, const _NodeGen&, true_type, size_t)):
+	 Add __n_elt parameter, defaulted to 1.
+	(_Hashtable::_M_insert_unique_node): Likewise. Use it to call rehash
+	policy _M_need_rehash.
+	(_Hashtable::_M_merge_unique): Pass target number of elements to add to
+	produce only 1 rehash if necessary.
+	* testsuite/23_containers/unordered_map/insert/83709.cc: New.
+	* testsuite/23_containers/unordered_set/insert/83709.cc: New.
+
+2018-01-09  Juraj Oršulić  <juraj.orsulic@fer.hr>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59253 (partial)
+	* python/libstdcxx/v6/printers.py (SmartPtrIterator): Common iterator
+	type for pointer stored by shared_ptr, weak_ptr and unique_ptr.
+	(SharedPointerPrinter, UniquePointerPrinter): Treat stored values as
+	children.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Update expected output
+	of unique_ptr printer.
+	* testsuite/libstdc++-prettyprinters/shared_ptr.cc: Update expected
+	output of shared_ptr printer.
+
 2018-01-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83626

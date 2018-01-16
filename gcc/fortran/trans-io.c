@@ -2227,25 +2227,9 @@ get_dtio_proc (gfc_typespec * ts, gfc_code * code, gfc_symbol **dtio_sub)
   bool formatted = false;
   gfc_dt *dt = code->ext.dt;
 
-  if (dt)
-    {
-      char *fmt = NULL;
-
-      if (dt->format_label == &format_asterisk)
-	{
-	  /* List directed io must call the formatted DTIO procedure.  */
-	  formatted = true;
-	}
-      else if (dt->format_expr)
-	fmt = gfc_widechar_to_char (dt->format_expr->value.character.string,
-				      -1);
-      else if (dt->format_label)
-	fmt = gfc_widechar_to_char (dt->format_label->format->value.character.string,
-				      -1);
-      if (fmt && strtok (fmt, "DT") != NULL)
-	formatted = true;
-
-    }
+  /* Determine when to use the formatted DTIO procedure.  */
+  if (dt && (dt->format_expr || dt->format_label))
+    formatted = true;
 
   if (ts->type == BT_CLASS)
     derived = ts->u.derived->components->ts.u.derived;
@@ -2455,8 +2439,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 	    {
 	      /* Recurse into the elements of the derived type.  */
 	      expr = gfc_evaluate_now (addr_expr, &se->pre);
-	      expr = build_fold_indirect_ref_loc (input_location,
-				      expr);
+	      expr = build_fold_indirect_ref_loc (input_location, expr);
 
 	      /* Make sure that the derived type has been built.  An external
 		 function, if only referenced in an io statement, requires this

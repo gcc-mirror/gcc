@@ -24,19 +24,22 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
+#include <assert.h>
 
 
 #if defined (HAVE_GFC_REAL_4) && defined (HAVE_GFC_INTEGER_16)
 
+#define HAVE_BACK_ARG 1
+
 
 extern void minloc1_16_r4 (gfc_array_i16 * const restrict, 
-	gfc_array_r4 * const restrict, const index_type * const restrict);
+	gfc_array_r4 * const restrict, const index_type * const restrict, GFC_LOGICAL_4 back);
 export_proto(minloc1_16_r4);
 
 void
 minloc1_16_r4 (gfc_array_i16 * const restrict retarray, 
 	gfc_array_r4 * const restrict array, 
-	const index_type * const restrict pdim)
+	const index_type * const restrict pdim, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -50,6 +53,10 @@ minloc1_16_r4 (gfc_array_i16 * const restrict retarray,
   index_type delta;
   index_type dim;
   int continue_loop;
+
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
 
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
@@ -214,14 +221,14 @@ minloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 
 extern void mminloc1_16_r4 (gfc_array_i16 * const restrict, 
 	gfc_array_r4 * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict);
+	gfc_array_l1 * const restrict, GFC_LOGICAL_4 back);
 export_proto(mminloc1_16_r4);
 
 void
 mminloc1_16_r4 (gfc_array_i16 * const restrict retarray, 
 	gfc_array_r4 * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -239,6 +246,9 @@ mminloc1_16_r4 (gfc_array_i16 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -433,14 +443,14 @@ mminloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 
 extern void sminloc1_16_r4 (gfc_array_i16 * const restrict, 
 	gfc_array_r4 * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *);
+	GFC_LOGICAL_4 *, GFC_LOGICAL_4 back);
 export_proto(sminloc1_16_r4);
 
 void
 sminloc1_16_r4 (gfc_array_i16 * const restrict retarray, 
 	gfc_array_r4 * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -453,7 +463,11 @@ sminloc1_16_r4 (gfc_array_i16 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      minloc1_16_r4 (retarray, array, pdim, back);
+#else
       minloc1_16_r4 (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */

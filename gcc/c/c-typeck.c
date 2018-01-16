@@ -1832,20 +1832,20 @@ c_size_in_bytes (const_tree type)
 /* Return either DECL or its known constant value (if it has one).  */
 
 tree
-decl_constant_value_1 (tree decl)
+decl_constant_value_1 (tree decl, bool in_init)
 {
   if (/* Note that DECL_INITIAL isn't valid for a PARM_DECL.  */
       TREE_CODE (decl) != PARM_DECL
       && !TREE_THIS_VOLATILE (decl)
       && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != NULL_TREE
-      && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK
+      && !error_operand_p (DECL_INITIAL (decl))
       /* This is invalid if initial value is not constant.
 	 If it has either a function call, a memory reference,
 	 or a variable, then re-evaluating it could give different results.  */
       && TREE_CONSTANT (DECL_INITIAL (decl))
       /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
+      && (in_init || TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR))
     return DECL_INITIAL (decl);
   return decl;
 }
@@ -1858,7 +1858,7 @@ decl_constant_value (tree decl)
 {
   /* Don't change a variable array bound or initial value to a constant
      in a place where a variable is invalid.  */
-  return current_function_decl ? decl_constant_value_1 (decl) : decl;
+  return current_function_decl ? decl_constant_value_1 (decl, false) : decl;
 }
 
 /* Convert the array expression EXP to a pointer.  */

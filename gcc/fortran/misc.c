@@ -156,7 +156,8 @@ gfc_typename (gfc_typespec *ts)
       sprintf (buffer, "TYPE(%s)", ts->u.derived->name);
       break;
     case BT_CLASS:
-      ts = &ts->u.derived->components->ts;
+      if (ts->u.derived->components)
+	ts = &ts->u.derived->components->ts;
       if (ts->u.derived->attr.unlimited_polymorphic)
 	sprintf (buffer, "CLASS(*)");
       else

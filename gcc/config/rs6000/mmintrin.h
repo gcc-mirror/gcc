@@ -49,7 +49,7 @@
    C language 64-bit scalar operation or optimized to use the newer
    128-bit SSE/Altivec operations.  We recomend this for new
    applications.  */
-#warning "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this warning."
+#error "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this error."
 #endif
 
 #ifndef _MMINTRIN_H_INCLUDED
