@@ -12595,9 +12595,34 @@ multiple_of_p (tree type, const_tree top, const_tree bottom)
 	 a multiple of BOTTOM then TOP is a multiple of BOTTOM.  */
       if (!integer_pow2p (bottom))
 	return 0;
-      /* FALLTHRU */
+      return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
+	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
 
     case MULT_EXPR:
+      if (TREE_CODE (bottom) == INTEGER_CST)
+	{
+	  op1 = TREE_OPERAND (top, 0);
+	  op2 = TREE_OPERAND (top, 1);
+	  if (TREE_CODE (op1) == INTEGER_CST)
+	    std::swap (op1, op2);
+	  if (TREE_CODE (op2) == INTEGER_CST)
+	    {
+	      if (multiple_of_p (type, op2, bottom))
+		return 1;
+	      /* Handle multiple_of_p ((x * 2 + 2) * 4, 8).  */
+	      if (multiple_of_p (type, bottom, op2))
+		{
+		  widest_int w = wi::sdiv_trunc (wi::to_widest (bottom),
+						 wi::to_widest (op2));
+		  if (wi::fits_to_tree_p (w, TREE_TYPE (bottom)))
+		    {
+		      op2 = wide_int_to_tree (TREE_TYPE (bottom), w);
+		      return multiple_of_p (type, op1, op2);
+		    }
+		}
+	      return multiple_of_p (type, op1, bottom);
+	    }
+	}
       return (multiple_of_p (type, TREE_OPERAND (top, 1), bottom)
 	      || multiple_of_p (type, TREE_OPERAND (top, 0), bottom));
 

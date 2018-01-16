@@ -1,3 +1,17 @@
+2018-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83844
+	* stor-layout.c (handle_warn_if_not_align): Use byte_position and
+	multiple_of_p instead of unchecked tree_to_uhwi and UHWI check.
+	If off is not INTEGER_CST, issue a may not be aligned warning
+	rather than isn't aligned.  Use isn%'t rather than isn't.
+	* fold-const.c (multiple_of_p) <case BIT_AND_EXPR>: Don't fall through
+	into MULT_EXPR.
+	<case MULT_EXPR>: Improve the case when bottom and one of the
+	MULT_EXPR operands are INTEGER_CSTs and bottom is multiple of that
+	operand, in that case check if the other operand is multiple of
+	bottom divided by the INTEGER_CST operand.
+
 2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR target/83858

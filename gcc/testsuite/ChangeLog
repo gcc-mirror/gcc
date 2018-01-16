@@ -1,3 +1,8 @@
+2018-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83844
+	* gcc.dg/pr83844.c: New test.
+
 2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/torture/pr83847.c: New test.

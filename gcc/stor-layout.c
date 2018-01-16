@@ -1150,12 +1150,16 @@ handle_warn_if_not_align (tree field, unsigned int record_align)
     warning (opt_w, "alignment %u of %qT is less than %u",
 	     record_align, context, warn_if_not_align);
 
-  unsigned HOST_WIDE_INT off
-    = (tree_to_uhwi (DECL_FIELD_OFFSET (field))
-       + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field)) / BITS_PER_UNIT);
-  if ((off % warn_if_not_align) != 0)
-    warning (opt_w, "%q+D offset %wu in %qT isn't aligned to %u",
-	     field, off, context, warn_if_not_align);
+  tree off = byte_position (field);
+  if (!multiple_of_p (TREE_TYPE (off), off, size_int (warn_if_not_align)))
+    {
+      if (TREE_CODE (off) == INTEGER_CST)
+	warning (opt_w, "%q+D offset %E in %qT isn%'t aligned to %u",
+		 field, off, context, warn_if_not_align);
+      else
+	warning (opt_w, "%q+D offset %E in %qT may not be aligned to %u",
+		 field, off, context, warn_if_not_align);
+    }
 }
 
 /* Called from place_field to handle unions.  */
