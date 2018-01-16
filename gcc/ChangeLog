@@ -1,5 +1,11 @@
 2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_expand_prologue): Don't use reference
+	of struct ix86_frame.
+	(ix86_expand_epilogue): Likewise.
+
+2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
+
 	Backport from mainline
 	2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -214,6 +220,8 @@
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	2017-11-06  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_can_use_return_insn_p): Use reference
 	of struct ix86_frame.
 	(ix86_initial_elimination_offset): Likewise.
@@ -222,6 +230,8 @@
 2018-01-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	2017-06-01  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	* config/i386/i386.c (ix86_frame): Moved to ...
 	* config/i386/i386.h (ix86_frame): Here.
 	(machine_function): Add frame.
