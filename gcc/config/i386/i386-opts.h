@@ -99,4 +99,17 @@ enum stack_protector_guard {
   SSP_GLOBAL    /* global canary */
 };
 
+/* This is used to mitigate variant #2 of the speculative execution
+   vulnerabilities on x86 processors identified by CVE-2017-5715, aka
+   Spectre.  They convert indirect branches and function returns to
+   call and return thunks to avoid speculative execution via indirect
+   call, jmp and ret.  */
+enum indirect_branch {
+  indirect_branch_unset = 0,
+  indirect_branch_keep,
+  indirect_branch_thunk,
+  indirect_branch_thunk_inline,
+  indirect_branch_thunk_extern
+};
+
 #endif
