@@ -1,3 +1,9 @@
+2018-01-16  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-p8swap.c (rs6000_gen_stvx): Generate
+	different rtl trees depending on TARGET_64BIT.
+	(rs6000_gen_lvx): Likewise.
+
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/visium/visium.md (nop): Tweak comment.
