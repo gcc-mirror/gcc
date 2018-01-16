@@ -1,5 +1,10 @@
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-c++-common/Wrestrict.c (test_strcpy_range): Bump string size of one
+	test and add dg-warning for the -Wstringop-overflow warning.
+
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-c++-common/Warray-bounds-4.c (test_strcpy_bounds_memarray_range):
 	XFAIL last test on SPARC and Visium.
 
