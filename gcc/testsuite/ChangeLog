@@ -1,3 +1,8 @@
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/77734
+	* gcc.dg/plugin/must-tail-call-1.c: Pass -fdelayed-branch on SPARC.
+
 2018-01-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/safe-indirect-jump-1.c: New file.
