@@ -1,3 +1,11 @@
+2018-01-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-09-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/81481
+	* gcc.target/i386/pr81481.c: New.
+
 2018-01-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from mainline
