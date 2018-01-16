@@ -11406,8 +11406,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		  else /* Currently unreachable.  */
 		    return NULL_TREE;
 		}
-	      tree t = fold_vec_perm (type, arg1, arg2,
-				      vec_perm_indices (sel, 2, nelts));
+	      vec_perm_indices indices (sel, 2, nelts);
+	      tree t = fold_vec_perm (type, arg1, arg2, indices);
 	      if (t != NULL_TREE)
 		return t;
 	    }
