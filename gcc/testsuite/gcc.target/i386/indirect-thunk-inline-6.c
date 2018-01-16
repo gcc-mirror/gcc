@@ -1,5 +1,5 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-O2 -fpic -fno-plt -mindirect-branch=thunk-inline" } */
+/* { dg-options "-O2 -mfunction-return=keep -fpic -fno-plt -mindirect-branch=thunk-inline" } */
 
 extern void bar (void);
 
