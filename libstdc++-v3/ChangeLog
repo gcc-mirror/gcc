@@ -1,3 +1,9 @@
+2018-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83834
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Replace std::c[a-g]* wildcard
+	pattern with exact match for std::cerr.
+
 2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83833
