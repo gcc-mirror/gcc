@@ -2445,7 +2445,6 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
   se->expr = tmp;
 }
 
-//ARTLESS : look at impementation of co_sum, image_status
 static void
 conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
 {
@@ -2458,23 +2457,13 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
   args = XALLOCAVEC (tree, num_args);
   gfc_conv_intrinsic_function_args (se, expr, args, num_args);
 
+  //
+  // TODO
+  // for GFC_FCOARRAY_SINGLE put error message "not currently implemented"?
+
   if (flag_coarray == GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
     {
-      /* gfc_se argse; */
-      /* tree team_id,team_type; */
-      /* gfc_init_se (&argse, NULL); */
-      /* gfc_conv_expr_val (&argse, code->expr1); */
-      /* team_id = fold_convert (integer_type_node, argse.expr); */
-      /* gfc_init_se (&argse, NULL); */
-      /* gfc_conv_expr_val (&argse, code->expr2); */
-      /* team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr); */
-      /* return build_call_expr_loc (input_location, */
-      /* 				  gfor_fndecl_caf_form_team, 3, */
-      /* 				  team_id, team_type, */
-      /* 				  build_int_cst (integer_type_node, 0)); */
-
       tree arg;
-      printf("TRANS TEST: %d\n",args[0]);
 
       arg = gfc_evaluate_now (args[0], &se->pre);
       tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
@@ -2487,9 +2476,7 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
     }
   else if (flag_coarray == GFC_FCOARRAY_SINGLE)
     {
-      //
-      // # T O D O
-      // if initial team
+      // the value -1 represents that no team has been created yet
       tmp = build_int_cst (integer_type_node, -1);
     }
   else if (flag_coarray == GFC_FCOARRAY_LIB && expr->value.function.actual->expr)
@@ -8727,7 +8714,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	    case GFC_ISYM_MINLOC:
 	      gfc_conv_intrinsic_minmaxloc (se, expr, LT_EXPR);
 	      break;
-	      
+
 	    case GFC_ISYM_MAXLOC:
 	      gfc_conv_intrinsic_minmaxloc (se, expr, GT_EXPR);
 	      break;
