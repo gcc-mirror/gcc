@@ -1,5 +1,10 @@
 2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* fold-const.c (fold_ternary_loc): Construct the vec_perm_indices
+	in a separate statement.
+
+2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses):
 
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
