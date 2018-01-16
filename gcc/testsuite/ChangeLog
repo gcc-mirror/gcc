@@ -1,5 +1,11 @@
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-c++-common/patchable_function_entry-decl.c: Use 3 NOPs on Visium.
+	* c-c++-common/patchable_function_entry-default.c: 4 NOPs on Visium.
+	* c-c++-common/patchable_function_entry-definition.c: 2 NOPs on Visium.
+
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/tree-ssa/ldist-27.c: Skip on Visium.
 	* gcc.dg/tree-ssa/loop-interchange-1.c: Likewise.
 	* gcc.dg/tree-ssa/loop-interchange-1b.c: Likewise.
