@@ -88,7 +88,7 @@ static void mark_set_regs (rtx, const_rtx, void *);
 static void mark_referenced_regs (rtx *, refmarker_fn *mark, void *mark_arg);
 static refmarker_fn mark_reg_as_referenced;
 static refmarker_fn replace_reg_with_saved_mem;
-static int insert_save (struct insn_chain *, int, int, HARD_REG_SET *,
+static int insert_save (struct insn_chain *, int, HARD_REG_SET *,
 			machine_mode *);
 static int insert_restore (struct insn_chain *, int, int, int,
 			   machine_mode *);
@@ -861,7 +861,8 @@ save_call_clobbered_regs (void)
 
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (TEST_HARD_REG_BIT (hard_regs_to_save, regno))
-		  regno += insert_save (chain, 1, regno, &hard_regs_to_save, save_mode);
+		  regno += insert_save (chain, regno,
+					&hard_regs_to_save, save_mode);
 
 	      /* Must recompute n_regs_saved.  */
 	      n_regs_saved = 0;
@@ -1252,7 +1253,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
 /* Like insert_restore above, but save registers instead.  */
 
 static int
-insert_save (struct insn_chain *chain, int before_p, int regno,
+insert_save (struct insn_chain *chain, int regno,
 	     HARD_REG_SET *to_save, machine_mode *save_mode)
 {
   int i;
@@ -1314,7 +1315,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
 
   pat = gen_rtx_SET (mem, gen_rtx_REG (GET_MODE (mem), regno));
   code = reg_save_code (regno, GET_MODE (mem));
-  new_chain = insert_one_insn (chain, before_p, code, pat);
+  new_chain = insert_one_insn (chain, 1, code, pat);
 
   /* Set hard_regs_saved and dead_or_set for all the registers we saved.  */
   for (k = 0; k < numregs; k++)
