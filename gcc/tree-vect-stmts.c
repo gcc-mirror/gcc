@@ -9426,6 +9426,11 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
   gcc_assert (slp_node || !PURE_SLP_STMT (stmt_info));
   gimple *old_vec_stmt = STMT_VINFO_VEC_STMT (stmt_info);
 
+  bool nested_p = (STMT_VINFO_LOOP_VINFO (stmt_info)
+		   && nested_in_vect_loop_p
+		        (LOOP_VINFO_LOOP (STMT_VINFO_LOOP_VINFO (stmt_info)),
+			 stmt));
+
   switch (STMT_VINFO_TYPE (stmt_info))
     {
     case type_demotion_vec_info_type:
@@ -9525,9 +9530,7 @@ vect_transform_stmt (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Handle inner-loop stmts whose DEF is used in the loop-nest that
      is being vectorized, but outside the immediately enclosing loop.  */
   if (vec_stmt
-      && STMT_VINFO_LOOP_VINFO (stmt_info)
-      && nested_in_vect_loop_p (LOOP_VINFO_LOOP (
-                                STMT_VINFO_LOOP_VINFO (stmt_info)), stmt)
+      && nested_p
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
       && (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_outer
           || STMT_VINFO_RELEVANT (stmt_info) ==
