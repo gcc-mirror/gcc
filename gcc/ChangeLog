@@ -1,3 +1,30 @@
+2018-01-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_opt_vars): Add entry for
+	-mspeculate-indirect-jumps.
+	* config/rs6000/rs6000.md (*call_indirect_elfv2<mode>): Disable
+	for -mno-speculate-indirect-jumps.
+	(*call_indirect_elfv2<mode>_nospec): New define_insn.
+	(*call_value_indirect_elfv2<mode>): Disable for
+	-mno-speculate-indirect-jumps.
+	(*call_value_indirect_elfv2<mode>_nospec): New define_insn.
+	(indirect_jump): Emit different RTL for
+	-mno-speculate-indirect-jumps.
+	(*indirect_jump<mode>): Disable for
+	-mno-speculate-indirect-jumps.
+	(*indirect_jump<mode>_nospec): New define_insn.
+	(tablejump): Emit different RTL for
+	-mno-speculate-indirect-jumps.
+	(tablejumpsi): Disable for -mno-speculate-indirect-jumps.
+	(tablejumpsi_nospec): New define_expand.
+	(tablejumpdi): Disable for -mno-speculate-indirect-jumps.
+	(tablejumpdi_nospec): New define_expand.
+	(*tablejump<mode>_internal1): Disable for
+	-mno-speculate-indirect-jumps.
+	(*tablejump<mode>_internal1_nospec): New define_insn.
+	* config/rs6000/rs6000.opt (mspeculate-indirect-jumps): New
+	option.
+
 2018-01-16  Artyom Skrobov tyomitch@gmail.com
 
         * caller-save.c (insert_save): Drop unnecessary parameter.  All
