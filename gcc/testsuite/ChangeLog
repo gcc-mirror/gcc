@@ -1,3 +1,8 @@
+2018-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83867
+	* gcc.dg/vect/pr83867.c: New testcase.
+
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/83844

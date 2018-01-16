@@ -1,3 +1,9 @@
+2018-01-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83867
+	* tree-vect-stmts.c (vect_transform_stmt): Precompute
+	nested_in_vect_loop_p since the scalar stmt may get invalidated.
+
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/83844
