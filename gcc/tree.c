@@ -8825,11 +8825,12 @@ variably_modified_type_p (tree type, tree fn)
   do { tree _t = (T);							\
     if (_t != NULL_TREE							\
 	&& _t != error_mark_node					\
-	&& TREE_CODE (_t) != INTEGER_CST				\
+	&& !CONSTANT_CLASS_P (_t)					\
 	&& TREE_CODE (_t) != PLACEHOLDER_EXPR				\
 	&& (!fn								\
 	    || (!TYPE_SIZES_GIMPLIFIED (type)				\
-		&& !is_gimple_sizepos (_t))				\
+		&& (TREE_CODE (_t) != VAR_DECL				\
+		    && !CONTAINS_PLACEHOLDER_P (_t)))			\
 	    || walk_tree (&_t, find_var_from_fn, fn, NULL)))		\
       return true;  } while (0)
 
