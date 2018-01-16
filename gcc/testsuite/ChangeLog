@@ -1,6 +1,8 @@
 2018-01-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	2018-01-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.target/i386/indirect-thunk-1.c: New test.
 	* gcc.target/i386/indirect-thunk-2.c: Likewise.
 	* gcc.target/i386/indirect-thunk-3.c: Likewise.
