@@ -14061,6 +14061,7 @@ ix86_expand_prologue (void)
 {
   struct machine_function *m = cfun->machine;
   rtx insn, t;
+  struct ix86_frame frame;
   HOST_WIDE_INT allocate;
   bool int_registers_saved;
   bool sse_registers_saved;
@@ -14084,7 +14085,7 @@ ix86_expand_prologue (void)
   m->fs.sp_valid = true;
 
   ix86_compute_frame_layout ();
-  struct ix86_frame &frame = cfun->machine->frame;
+  frame = m->frame;
 
   if (!TARGET_64BIT && ix86_function_ms_hook_prologue (current_function_decl))
     {
@@ -14747,12 +14748,13 @@ ix86_expand_epilogue (int style)
 {
   struct machine_function *m = cfun->machine;
   struct machine_frame_state frame_state_save = m->fs;
+  struct ix86_frame frame;
   bool restore_regs_via_mov;
   bool using_drap;
 
   ix86_finalize_stack_realign_flags ();
   ix86_compute_frame_layout ();
-  struct ix86_frame &frame = cfun->machine->frame;
+  frame = m->frame;
 
   m->fs.sp_valid = (!frame_pointer_needed
 		    || (crtl->sp_is_unchanging
