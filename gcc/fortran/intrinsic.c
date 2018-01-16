@@ -1246,7 +1246,7 @@ add_functions (void)
     *num = "number", *tm = "time", *nm = "name", *md = "mode",
     *vl = "values", *p1 = "path1", *p2 = "path2", *com = "command",
     *ca = "coarray", *sub = "sub", *dist = "distance", *failed="failed",
-    *c_ptr_1 = "c_ptr_1", *c_ptr_2 = "c_ptr_2", *back = "back";
+    *c_ptr_1 = "c_ptr_1", *c_ptr_2 = "c_ptr_2", *back = "back",
     *team = "team", *image = "image", *level = "level";
 
   int di, dr, dd, dl, dc, dz, ii;
