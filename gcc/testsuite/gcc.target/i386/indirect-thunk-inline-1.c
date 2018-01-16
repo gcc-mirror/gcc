@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mindirect-branch=thunk-inline -fno-pic" } */
+/* { dg-options "-O2 -mfunction-return=keep -mindirect-branch=thunk-inline -fno-pic" } */
 
 typedef void (*dispatch_t)(long offset);
 
@@ -11,7 +11,7 @@ male_indirect_jump (long offset)
   dispatch(offset);
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*_?dispatch" { target { ! x32 } } } } */
+/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*_?dispatch" { target { { ! x32 } && *-*-linux* } } } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler {\tpause} } } */

@@ -5550,6 +5550,15 @@ call and jump to call and return thunk.  @samp{thunk-inline} converts
 indirect call and jump to inlined call and return thunk.
 @samp{thunk-extern} converts indirect call and jump to external call
 and return thunk provided in a separate object file.
+
+@item function_return("@var{choice}")
+@cindex @code{function_return} function attribute, x86
+On x86 targets, the @code{function_return} attribute causes the compiler
+to convert function return with @var{choice}.  @samp{keep} keeps function
+return unmodified.  @samp{thunk} converts function return to call and
+return thunk.  @samp{thunk-inline} converts function return to inlined
+call and return thunk.  @samp{thunk-extern} converts function return to
+external call and return thunk provided in a separate object file.
 @end table
 
 On the x86, the inliner does not inline a
