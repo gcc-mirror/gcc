@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! x32 } } } */
-/* { dg-options "-O2 -mfunction-return=keep -mindirect-branch=thunk -fcheck-pointer-bounds -mmpx -fno-pic" } */
+/* { dg-options "-O2 -mno-indirect-branch-register -mfunction-return=keep -mindirect-branch=thunk -fcheck-pointer-bounds -mmpx -fno-pic" } */
 
 void (*dispatch) (char *);
 char buf[10];
