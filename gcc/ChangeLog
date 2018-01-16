@@ -1,5 +1,16 @@
 2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR target/83858
+	* config/pa/pa.h (FUNCTION_ARG_SIZE): Delete.
+	* config/pa/pa-protos.h (pa_function_arg_size): Declare.
+	* config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Use
+	pa_function_arg_size instead of FUNCTION_ARG_SIZE.
+	* config/pa/pa.c (pa_function_arg_advance): Likewise.
+	(pa_function_arg, pa_arg_partial_bytes): Likewise.
+	(pa_function_arg_size): New function.
+
+2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* fold-const.c (fold_ternary_loc): Construct the vec_perm_indices
 	in a separate statement.
 

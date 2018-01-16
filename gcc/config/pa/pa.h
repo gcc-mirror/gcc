@@ -592,15 +592,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
   (CUM).indirect = 0,				\
   (CUM).nargs_prototype = 1000
 
-/* Figure out the size in words of the function argument.  The size
-   returned by this macro should always be greater than zero because
-   we pass variable and zero sized objects by reference.  */
-
-#define FUNCTION_ARG_SIZE(MODE, TYPE)	\
-  ((((MODE) != BLKmode \
-     ? (HOST_WIDE_INT) GET_MODE_SIZE (MODE) \
-     : int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
