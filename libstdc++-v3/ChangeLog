@@ -1,3 +1,7 @@
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/17_intro/names.cc: Undefine 'y' on SPARC/Linux.
+
 2018-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (register_type_printers): Remove
