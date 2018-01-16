@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -floop-interchange -fdump-tree-linterchange-details" } */
+/* { dg-skip-if "too big stack" { visium-*-* } } */
 
 /* Copied from graphite/interchange-6.c */
 
