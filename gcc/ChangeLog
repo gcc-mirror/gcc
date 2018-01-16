@@ -5,7 +5,9 @@
 
 2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
-	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses):
+	PR tree-optimization/83847
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Don't
+	group gathers and scatters.
 
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
