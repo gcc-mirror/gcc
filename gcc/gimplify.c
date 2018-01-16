@@ -12562,7 +12562,10 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
      a VAR_DECL.  If it's a VAR_DECL from another function, the gimplifier
      will want to replace it with a new variable, but that will cause problems
      if this type is from outside the function.  It's OK to have that here.  */
-  if (is_gimple_sizepos (expr))
+  if (expr == NULL_TREE
+      || is_gimple_constant (expr)
+      || TREE_CODE (expr) == VAR_DECL
+      || CONTAINS_PLACEHOLDER_P (expr))
     return;
 
   *expr_p = unshare_expr (expr);
@@ -12570,6 +12573,12 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
   /* SSA names in decl/type fields are a bad idea - they'll get reclaimed
      if the def vanishes.  */
   gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue, false);
+
+  /* If expr wasn't already is_gimple_sizepos or is_gimple_constant from the
+     FE, ensure that it is a VAR_DECL, otherwise we might handle some decls
+     as gimplify_vla_decl even when they would have all sizes INTEGER_CSTs.  */
+  if (is_gimple_constant (*expr_p))
+    *expr_p = get_initialized_tmp_var (*expr_p, stmt_p, NULL, false);
 }
 
 /* Gimplify the body of statements of FNDECL and return a GIMPLE_BIND node

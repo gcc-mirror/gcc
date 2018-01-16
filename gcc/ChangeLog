@@ -1,3 +1,14 @@
+2018-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenth@suse.de>
+
+	PR libgomp/83590
+	* gimplify.c (gimplify_one_sizepos): For is_gimple_constant (expr)
+	return early, inline manually is_gimple_sizepos.  Make sure if we
+	call gimplify_expr we don't end up with a gimple constant.
+	* tree.c (variably_modified_type_p): Don't return true for
+	is_gimple_constant (_t).  Inline manually is_gimple_sizepos.
+	* gimplify.h (is_gimple_sizepos): Remove.
+
 2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83857
