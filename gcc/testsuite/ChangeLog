@@ -1,5 +1,8 @@
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83843
+	* gcc.dg/store_merging_18.c: New test.
+
 	PR c++/83817
 	* g++.dg/cpp1y/pr83817.C: New test.
 

@@ -1,3 +1,10 @@
+2018-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83843
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::output_merged_store): Handle bit_not_p on
+	store_immediate_info for bswap/nop orig_stores.
+
 2018-01-15  Andrew Waterman  <andrew@sifive.com>
 
 	* config/riscv/riscv.c (riscv_rtx_costs) <MULT>: Increase cost if
