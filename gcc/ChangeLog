@@ -1,3 +1,10 @@
+2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83857
+	* tree-vect-loop.c (vect_analyze_loop_operations): Don't call
+	vectorizable_live_operation for pure SLP statements.
+	(vectorizable_live_operation): Handle PHIs.
+
 2018-01-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83867

@@ -1,3 +1,8 @@
+2018-01-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83857
+	* gcc.dg/vect/pr83857.c: New test.
+
 2018-01-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83867
