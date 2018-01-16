@@ -1,5 +1,23 @@
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/tree-ssa/ldist-27.c: Skip on Visium.
+	* gcc.dg/tree-ssa/loop-interchange-1.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-1b.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-2.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-3.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-4.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-5.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-6.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-7.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-8.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-9.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-10.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-11.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-14.c: Likewise.
+	* gcc.dg/tree-ssa/loop-interchange-15.c: Likewise.
+
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR testsuite/77734
 	* gcc.dg/plugin/must-tail-call-1.c: Pass -fdelayed-branch on SPARC.
 
