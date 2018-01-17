@@ -2212,8 +2212,8 @@ BU_P9V_OVERLOAD_2 (VIEDP,	"insert_exp_dp")
 BU_P9V_OVERLOAD_2 (VIESP,	"insert_exp_sp")
 
 /* 2 argument vector functions added in ISA 3.0 (power9).  */
-BU_P9V_64BIT_VSX_2 (LXVL,	"lxvl",		CONST,	lxvl)
-BU_P9V_64BIT_VSX_2 (XL_LEN_R,	"xl_len_r",	CONST,  xl_len_r)
+BU_P9V_64BIT_VSX_2 (LXVL,	"lxvl",		PURE,	lxvl)
+BU_P9V_64BIT_VSX_2 (XL_LEN_R,	"xl_len_r",	PURE,	xl_len_r)
 
 BU_P9V_AV_2 (VEXTUBLX, "vextublx",		CONST,	vextublx)
 BU_P9V_AV_2 (VEXTUBRX, "vextubrx",		CONST,	vextubrx)

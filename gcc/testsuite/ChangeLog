@@ -1,3 +1,9 @@
+2018-01-17  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/builtins-6-p9-runnable.c: Add additional tests.
+	Add debug print statements.
+	* gcc.target/powerpc/builtins-5-p9-runnable.c: Add test to do
+	16 byte vector load followed by a partial vector load.
+
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/83799

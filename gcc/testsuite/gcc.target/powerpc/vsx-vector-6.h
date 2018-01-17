@@ -135,7 +135,7 @@ void foo (vector double *out, vector double *in, vector long *p_l, vector bool l
 
   *in++ = vec_andc (inbl0, in1);
   *in++ = vec_andc (in0, inbl1);
-}
+
 
 int main()
 {
