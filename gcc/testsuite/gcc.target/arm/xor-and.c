@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O -march=armv6" } */
-/* { dg-prune-output "switch .* conflicts with" } */
+/* { dg-require-effective-target arm_arch_v6_ok } */
+/* { dg-add-options arm_arch_v6 } */
+/* { dg-options "-O" }  */
 
 unsigned short foo (unsigned short x)
 {
