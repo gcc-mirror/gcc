@@ -1,3 +1,7 @@
+2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/Wrestrict.c (test_strcpy_range): Revert latest change.
+
 2018-01-16  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	PR target/83546
