@@ -2325,7 +2325,12 @@ build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
   else if (init->is_empty ())
     init_list = void_node;
   else
-    init_list = build_tree_list_vec (init);
+    {
+      init_list = build_tree_list_vec (init);
+      for (tree v = init_list; v; v = TREE_CHAIN (v))
+	if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
+	  lookup_keep (TREE_VALUE (v), true);
+    }
 
   new_expr = build4 (NEW_EXPR, build_pointer_type (type),
 		     build_tree_list_vec (placement), type, nelts,

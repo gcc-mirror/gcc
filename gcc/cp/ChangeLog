@@ -1,3 +1,8 @@
+2018-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83287
+	* init.c (build_raw_new_expr): Scan list for lookups to keep.
+
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/83814
