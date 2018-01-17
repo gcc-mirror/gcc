@@ -479,7 +479,7 @@ version.go: s-version; @true
 s-version: Makefile
 	rm -f version.go.tmp
 	echo "package sys" > version.go.tmp
-	echo 'const DefaultGoroot = "$(prefix)"' >> version.go.tmp
+	echo 'func init() { DefaultGoroot = "$(prefix)" }' >> version.go.tmp
 	echo 'const TheVersion = "'`cat $(srcdir)/VERSION | sed 1q`' '`$(GOC) --version | sed 1q`'"' >> version.go.tmp
 	echo 'const Goexperiment = ``' >> version.go.tmp
 	echo 'const GOARCH = "'$(GOARCH)'"' >> version.go.tmp
@@ -535,7 +535,7 @@ s-objabi: Makefile
 	rm -f objabi.go.tmp
 	echo "package objabi" > objabi.go.tmp
 	echo "import \"runtime\"" >> objabi.go.tmp
-	echo 'const defaultGOROOT = `$(prefix)`' >> objabi.go.tmp
+	echo 'func init() { defaultGOROOT = `$(prefix)` }' >> objabi.go.tmp
 	echo 'const defaultGO386 = `sse2`' >> objabi.go.tmp
 	echo 'const defaultGOARM = `5`' >> objabi.go.tmp
 	echo 'const defaultGOMIPS = `hardfloat`' >> objabi.go.tmp
@@ -824,6 +824,7 @@ PACKAGES = \
 	internal/singleflight \
 	internal/syscall/unix \
 	internal/testenv \
+	internal/testlog \
 	internal/trace \
 	io \
 	io/ioutil \
