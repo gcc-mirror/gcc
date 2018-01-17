@@ -1,5 +1,10 @@
 2018-01-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81843 - ICE with variadic member template.
+	PR c++/72801
+	* pt.c (unify_pack_expansion): Don't try to deduce enclosing
+	template args.
+
 	PR c++/82331 - ICE with variadic partial specialization of auto
 	* pt.c (unify) [TEMPLATE_PARM_INDEX]: Set processing_template_decl
 	around call to tsubst.
