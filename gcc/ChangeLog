@@ -1,3 +1,12 @@
+2018-01-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (indirect_thunk_name): Declare regno
+	as unsigned int.  Compare regno with INVALID_REGNUM.
+	(output_indirect_thunk): Ditto.
+	(output_indirect_thunk_function): Ditto.
+	(ix86_code_end): Declare regno as unsigned int.  Use INVALID_REGNUM
+	in the call to output_indirect_thunk_function.
+
 2018-01-17  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR middle-end/83884
@@ -1639,7 +1648,7 @@
 	* config/alpha/alpha.md (*saddsi_1): New insn_ans_split pattern.
 	(*saddl_se_1): Ditto.
 	(*ssubsi_1): Ditto.
-	(*saddl_se_1): Ditto.
+	(*ssubl_se_1): Ditto.
 
 2018-01-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
