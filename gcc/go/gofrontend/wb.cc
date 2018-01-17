@@ -54,14 +54,10 @@ Mark_address_taken::expression(Expression** pexpr)
       // Slice of an array. The escape analysis models this with
       // a child Node representing the address of the array.
       bool escapes = false;
-      if (!this->gogo_->compiling_runtime()
-          || this->gogo_->package_name() != "runtime")
-        {
-          Node* n = Node::make_node(expr);
-          if (n->child() == NULL
-              || (n->child()->encoding() & ESCAPE_MASK) != Node::ESCAPE_NONE)
-            escapes = true;
-        }
+      Node* n = Node::make_node(expr);
+      if (n->child() == NULL
+          || (n->child()->encoding() & ESCAPE_MASK) != Node::ESCAPE_NONE)
+        escapes = true;
       aie->array()->address_taken(escapes);
     }
 
@@ -123,6 +119,53 @@ Mark_address_taken::expression(Expression** pexpr)
               *pexpr = slice;
             }
         }
+    }
+  return TRAVERSE_CONTINUE;
+}
+
+// Check variables and closures do not escape when compiling runtime.
+
+class Check_escape : public Traverse
+{
+ public:
+  Check_escape(Gogo* gogo)
+    : Traverse(traverse_expressions | traverse_variables),
+      gogo_(gogo)
+  { }
+
+  int
+  expression(Expression**);
+
+  int
+  variable(Named_object*);
+
+ private:
+  Gogo* gogo_;
+};
+
+int
+Check_escape::variable(Named_object* no)
+{
+  if ((no->is_variable() && no->var_value()->is_in_heap())
+      || (no->is_result_variable()
+          && no->result_var_value()->is_in_heap()))
+    go_error_at(no->location(),
+                "%s escapes to heap, not allowed in runtime",
+                no->name().c_str());
+  return TRAVERSE_CONTINUE;
+}
+
+int
+Check_escape::expression(Expression** pexpr)
+{
+  Expression* expr = *pexpr;
+  Func_expression* fe = expr->func_expression();
+  if (fe != NULL && fe->closure() != NULL)
+    {
+      Node* n = Node::make_node(expr);
+      if (n->encoding() == Node::ESCAPE_HEAP)
+        go_error_at(expr->location(),
+                    "heap-allocated closure, not allowed in runtime");
     }
   return TRAVERSE_CONTINUE;
 }
@@ -369,6 +412,12 @@ Gogo::add_write_barriers()
 {
   Mark_address_taken mat(this);
   this->traverse(&mat);
+
+  if (this->compiling_runtime() && this->package_name() == "runtime")
+    {
+      Check_escape chk(this);
+      this->traverse(&chk);
+    }
 
   Write_barriers wb(this);
   this->traverse(&wb);
