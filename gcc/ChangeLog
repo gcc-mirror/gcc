@@ -1,3 +1,9 @@
+2018-01-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/83051
+	* ipa-inline.c (flatten_function): Do not overwrite final inlining
+	failure.
+
 2018-01-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_builtin): Add gimple folding
