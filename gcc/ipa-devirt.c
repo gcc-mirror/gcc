@@ -1844,7 +1844,12 @@ add_type_duplicate (odr_type val, tree type)
 	}
     }
 
-  /* Next compare memory layout.  */
+  /* Next compare memory layout.
+     The DECL_SOURCE_LOCATIONs in this invocation came from LTO streaming.
+     We must apply the location cache to ensure that they are valid
+     before we can pass them to odr_types_equivalent_p (PR lto/83121).  */
+  if (lto_location_cache::current_cache)
+    lto_location_cache::current_cache->apply_location_cache ();
   if (!odr_types_equivalent_p (val->type, type,
 			       !flag_ltrans && !val->odr_violated && !warned,
 			       &warned, &visited,
