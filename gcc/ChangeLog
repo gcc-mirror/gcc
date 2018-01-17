@@ -1,3 +1,9 @@
+2018-01-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): If we load or store a
+	long double type, set the flags for noting the default long double
+	type, even if we don't pass or return a long double type.
+
 2018-01-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/83051

@@ -10494,6 +10494,23 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       gcc_unreachable ();
     }
 
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+  /* If we use a long double type, set the flags in .gnu_attribute that say
+     what the long double type is.  This is to allow the linker's warning
+     message for the wrong long double to be useful, even if the function does
+     not do a call (for example, doing a 128-bit add on power9 if the long
+     double type is IEEE 128-bit.  Do not set this if __ibm128 or __floa128 are
+     used if they aren't the default long dobule type.  */
+  if (rs6000_gnu_attr && (HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE || TARGET_64BIT))
+    {
+      if (TARGET_LONG_DOUBLE_128 && (mode == TFmode || mode == TCmode))
+	rs6000_passes_float = rs6000_passes_long_double = true;
+
+      else if (!TARGET_LONG_DOUBLE_128 && (mode == DFmode || mode == DCmode))
+	rs6000_passes_float = rs6000_passes_long_double = true;
+    }
+#endif
+
   /* See if we need to special case SImode/SFmode SUBREG moves.  */
   if ((mode == SImode || mode == SFmode) && SUBREG_P (source)
       && rs6000_emit_move_si_sf_subreg (dest, source, mode))
