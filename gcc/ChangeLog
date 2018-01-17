@@ -1,5 +1,10 @@
 2018-01-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config/pa.h (MALLOC_ABI_ALIGNMENT): Set 32-bit alignment default to
+	64 bits.
+	* config/pa/pa32-linux.h (MALLOC_ABI_ALIGNMENT): Set alignment to
+	128 bits.
+
 	* config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Cleanup type and mode
 	variables.
 

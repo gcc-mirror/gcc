@@ -307,7 +307,7 @@ typedef struct GTY(()) machine_function
    POSIX types such as pthread_mutex_t require 16-byte alignment.  Again,
    this is non critical since 16-byte alignment is no longer needed for
    atomic operations.  */
-#define MALLOC_ABI_ALIGNMENT (TARGET_SOM ? 64 : 128)
+#define MALLOC_ABI_ALIGNMENT (TARGET_64BIT ? 128 : 64)
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
