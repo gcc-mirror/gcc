@@ -1,5 +1,8 @@
 2018-01-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config/pa/som.h (ASM_DECLARE_FUNCTION_NAME): Cleanup type and mode
+	variables.
+
 	* config/pa/pa.c (pa_function_arg_size): Apply CEIL to GET_MODE_SIZE
 	return value.
 
