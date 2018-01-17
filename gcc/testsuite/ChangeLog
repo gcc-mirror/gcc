@@ -1,3 +1,8 @@
+2018-01-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/g2.c: Add -marm to dg-options.
+	* gcc.target/arm/scd42-2.c: Likewise.
+
 2018-01-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83287
