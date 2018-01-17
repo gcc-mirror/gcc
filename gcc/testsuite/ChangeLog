@@ -1,5 +1,12 @@
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/83814
+	PR c++/83902
+	* g++.dg/wrappers/pr83814.C: New test case.
+	* g++.dg/wrappers/pr83902.C: New test case.
+
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
 	PR lto/83121
 	* g++.dg/lto/pr83121_0.C: New test case.
 	* g++.dg/lto/pr83121_1.C: New test case.

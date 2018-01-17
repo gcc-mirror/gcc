@@ -315,3 +315,18 @@ mark_exp_read (tree exp)
     }
 }
 
+/* Fold X for consideration by one of the warning functions when checking
+   whether an expression has a constant value.  */
+
+tree
+fold_for_warn (tree x)
+{
+  /* C++ implementation.  */
+
+  /* It's not generally safe to fully fold inside of a template, so
+     call fold_non_dependent_expr instead.  */
+  if (processing_template_decl)
+    return fold_non_dependent_expr (x);
+
+  return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
+}
