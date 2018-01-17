@@ -4859,10 +4859,12 @@
 ;; Load VSX Vector with Length
 (define_expand "lxvl"
   [(set (match_dup 3)
-        (match_operand:DI 2 "register_operand"))
+        (ashift:DI (match_operand:DI 2 "register_operand")
+                   (const_int 56)))
    (set (match_operand:V16QI 0 "vsx_register_operand")
 	(unspec:V16QI
 	 [(match_operand:DI 1 "gpc_reg_operand")
+          (mem:V16QI (match_dup 1))
 	  (match_dup 3)]
 	 UNSPEC_LXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
@@ -4874,16 +4876,17 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI
 	 [(match_operand:DI 1 "gpc_reg_operand" "b")
-	  (match_operand:DI 2 "register_operand" "+r")]
+	  (mem:V16QI (match_dup 1))
+	  (match_operand:DI 2 "register_operand" "r")]
 	 UNSPEC_LXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
-  "sldi %2,%2, 56\; lxvl %x0,%1,%2"
-  [(set_attr "length" "8")
-   (set_attr "type" "vecload")])
+  "lxvl %x0,%1,%2"
+  [(set_attr "type" "vecload")])
 
 (define_insn "lxvll"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI [(match_operand:DI 1 "gpc_reg_operand" "b")
+                       (mem:V16QI (match_dup 1))
 		       (match_operand:DI 2 "register_operand" "r")]
 		      UNSPEC_LXVLL))]
   "TARGET_P9_VECTOR"
@@ -4912,6 +4915,7 @@
 (define_insn "stxvll"
   [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
 	(unspec:V16QI [(match_operand:V16QI 0 "vsx_register_operand" "wa")
+		       (mem:V16QI (match_dup 1))
 		       (match_operand:DI 2 "register_operand" "r")]
 	              UNSPEC_STXVLL))]
   "TARGET_P9_VECTOR"
@@ -4921,10 +4925,12 @@
 ;; Store VSX Vector with Length
 (define_expand "stxvl"
   [(set (match_dup 3)
-	(match_operand:DI 2 "register_operand"))
+	(ashift:DI (match_operand:DI 2 "register_operand")
+		   (const_int 56)))
    (set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand"))
 	(unspec:V16QI
 	 [(match_operand:V16QI 0 "vsx_register_operand")
+	  (mem:V16QI (match_dup 1))
 	  (match_dup 3)]
 	 UNSPEC_STXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
@@ -4936,12 +4942,12 @@
   [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
 	(unspec:V16QI
 	 [(match_operand:V16QI 0 "vsx_register_operand" "wa")
-	  (match_operand:DI 2 "register_operand" "+r")]
+	  (mem:V16QI (match_dup 1))
+	  (match_operand:DI 2 "register_operand" "r")]
 	 UNSPEC_STXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
-  "sldi %2,%2,56\;stxvl %x0,%1,%2"
-  [(set_attr "length" "8")
-   (set_attr "type" "vecstore")])
+  "stxvl %x0,%1,%2"
+  [(set_attr "type" "vecstore")])
 
 ;; Expand for builtin xst_len_r
 (define_expand "xst_len_r"

@@ -1,3 +1,13 @@
+2018-01-17 Carl Love  <cel@us.ibm.com>
+	* config/rs6000/vsx.md (define_expand xl_len_r,
+	define_expand stxvl, define_expand *stxvl): Add match_dup argument.
+	(define_insn): Add, match_dup 1 argument to define_insn stxvll and
+	lxvll.
+	(define_expand, define_insn): Move the shift left from	the
+	define_insn to the define_expand for lxvl and stxvl instructions.
+	* config/rs6000/rs6000-builtin.def (BU_P9V_64BIT_VSX_2): Change LXVL
+	and XL_LEN_R definitions to PURE.
+
 2018-01-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (indirect_thunk_name): Declare regno
