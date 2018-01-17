@@ -1079,9 +1079,9 @@
 
 (define_insn "*movti_aarch64"
   [(set (match_operand:TI 0
-	 "nonimmediate_operand"  "=r, w,r,w,r,m,m,w,m")
+	 "nonimmediate_operand"  "=   r,w, r,w,r,m,m,w,m")
 	(match_operand:TI 1
-	 "aarch64_movti_operand" " rn,r,w,w,m,r,Z,m,w"))]
+	 "aarch64_movti_operand" " rUti,r, w,w,m,r,Z,m,w"))]
   "(register_operand (operands[0], TImode)
     || aarch64_reg_or_zero (operands[1], TImode))"
   "@
