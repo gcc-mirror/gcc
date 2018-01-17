@@ -1,3 +1,9 @@
+2018-01-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83739
+	* pt.c (tsubst_expr) <case RANGE_FOR_STMT>: Rebuild a range_for if
+	this not a final instantiation.
+
 2018-01-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/83714 - ICE checking return in template.
