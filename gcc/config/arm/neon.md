@@ -6199,28 +6199,22 @@ if (BYTES_BIG_ENDIAN)
 })
 
 (define_insn "neon_vabd<mode>_2"
- [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-       (abs:VDQ (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
-                           (match_operand:VDQ 2 "s_register_operand" "w"))))]
- "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ [(set (match_operand:VF 0 "s_register_operand" "=w")
+       (abs:VF (minus:VF (match_operand:VF 1 "s_register_operand" "w")
+			 (match_operand:VF 2 "s_register_operand" "w"))))]
+ "TARGET_NEON && flag_unsafe_math_optimizations"
  "vabd.<V_s_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set (attr "type")
-       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                     (const_string "neon_fp_abd_s<q>")
-                     (const_string "neon_abd<q>")))]
+ [(set_attr "type" "neon_fp_abd_s<q>")]
 )
 
 (define_insn "neon_vabd<mode>_3"
- [(set (match_operand:VDQ 0 "s_register_operand" "=w")
-       (abs:VDQ (unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "w")
-                             (match_operand:VDQ 2 "s_register_operand" "w")]
-                 UNSPEC_VSUB)))]
- "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+ [(set (match_operand:VF 0 "s_register_operand" "=w")
+       (abs:VF (unspec:VF [(match_operand:VF 1 "s_register_operand" "w")
+			    (match_operand:VF 2 "s_register_operand" "w")]
+		UNSPEC_VSUB)))]
+ "TARGET_NEON && flag_unsafe_math_optimizations"
  "vabd.<V_if_elem> %<V_reg>0, %<V_reg>1, %<V_reg>2"
- [(set (attr "type")
-       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                     (const_string "neon_fp_abd_s<q>")
-                     (const_string "neon_abd<q>")))]
+ [(set_attr "type" "neon_fp_abd_s<q>")]
 )
 
 ;; Copy from core-to-neon regs, then extend, not vice-versa
