@@ -1718,7 +1718,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		    }
 		  else if (init->expr_type == EXPR_ARRAY)
 		    {
-		      if (init->ts.u.cl)
+		      if (init->ts.u.cl && init->ts.u.cl->length)
 			{
 			  const gfc_expr *length = init->ts.u.cl->length;
 			  if (length->expr_type != EXPR_CONSTANT)
