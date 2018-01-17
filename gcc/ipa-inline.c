@@ -2083,7 +2083,8 @@ flatten_function (struct cgraph_node *node, bool early)
 		     "Not inlining %s into %s to avoid cycle.\n",
 		     xstrdup_for_dump (callee->name ()),
 		     xstrdup_for_dump (e->caller->name ()));
-	  e->inline_failed = CIF_RECURSIVE_INLINING;
+	  if (cgraph_inline_failed_type (e->inline_failed) != CIF_FINAL_ERROR)
+	    e->inline_failed = CIF_RECURSIVE_INLINING;
 	  continue;
 	}
 
