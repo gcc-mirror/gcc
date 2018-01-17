@@ -758,8 +758,7 @@ void test_strcpy_range (void)
   T (8, "012", a + r, a);            /* { dg-warning "accessing 4 bytes at offsets \\\[3, \[0-9\]+] and 0 may overlap 1 byte at offset 3" "strcpy" } */
 
   r = SR (DIFF_MAX - 2, DIFF_MAX - 1);
-  T (8, "0123", a + r, a);            /* { dg-warning "accessing 5 bytes at offsets \\\[\[0-9\]+, \[0-9\]+] and 0 overlaps" "strcpy" } */
-                                      /* { dg-warning "writing 5 bytes into a region of size 0 overflows" "memcpy" { target *-*-* } .-1 } */
+  T (8, "012", a + r, a);            /* { dg-warning "accessing 4 bytes at offsets \\\[\[0-9\]+, \[0-9\]+] and 0 overlaps" "strcpy" } */
 
   /* Exercise the full range of ptrdiff_t.  */
   r = signed_value ();
