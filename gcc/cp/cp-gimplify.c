@@ -1581,6 +1581,7 @@ cp_maybe_instrument_return (tree fndecl)
 	  t = BIND_EXPR_BODY (t);
 	  continue;
 	case TRY_FINALLY_EXPR:
+	case CLEANUP_POINT_EXPR:
 	  t = TREE_OPERAND (t, 0);
 	  continue;
 	case STATEMENT_LIST:
