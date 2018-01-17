@@ -75,7 +75,8 @@ literal_type_p (tree t)
 }
 
 /* If DECL is a variable declared `constexpr', require its type
-   be literal.  Return the DECL if OK, otherwise NULL.  */
+   be literal.  Return error_mark_node if we give an error, the
+   DECL otherwise.  */
 
 tree
 ensure_literal_type_for_constexpr_object (tree decl)
@@ -97,6 +98,7 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	      error ("the type %qT of %<constexpr%> variable %qD "
 		     "is not literal", type, decl);
 	      explain_non_literal_class (type);
+	      decl = error_mark_node;
 	    }
 	  else
 	    {
@@ -105,10 +107,10 @@ ensure_literal_type_for_constexpr_object (tree decl)
 		  error ("variable %qD of non-literal type %qT in %<constexpr%> "
 			 "function", decl, type);
 		  explain_non_literal_class (type);
+		  decl = error_mark_node;
 		}
 	      cp_function_chain->invalid_constexpr = true;
 	    }
-	  return NULL;
 	}
     }
   return decl;
