@@ -1,3 +1,21 @@
+2018-01-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config.gcc (powerpc*-linux*-*): Add support for 64-bit little
+	endian Linux systems to optionally enable multilibs for selecting
+	the long double type if the user configured an explicit type.
+	* config/rs6000/rs6000.h (TARGET_IEEEQUAD_MULTILIB): Indicate we
+	have no long double multilibs if not defined.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Do not
+	warn if the user used -mabi={ieee,ibm}longdouble and we built
+	multilibs for long double.
+	* config/rs6000/linux64.h (MULTILIB_DEFAULTS_IEEE): Define as the
+	appropriate multilib option.
+	(MULTILIB_DEFAULTS): Add MULTILIB_DEFAULTS_IEEE to the default
+	multilib options.
+	* config/rs6000/t-ldouble-linux64le-ibm: New configuration files
+	for building long double multilibs.
+	* config/rs6000/t-ldouble-linux64le-ieee: Likewise.
+
 2018-01-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config.gcc (hppa*-*-linux*): Change callee copies ABI to caller

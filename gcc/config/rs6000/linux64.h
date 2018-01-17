@@ -245,11 +245,18 @@ extern int dot_symbols;
 #define DYNAMIC_LINKER_PREFIX	""
 #endif
 
-#undef	MULTILIB_DEFAULTS
+#if TARGET_IEEEQUAD_DEFAULT
+#define MULTILIB_DEFAULTS_IEEE "mabi=ieeelongdouble"
+
+#else  /* TARGET_IEEEQUAD_DEFAULT.  */
+#define MULTILIB_DEFAULTS_IEEE "mabi=ibmlongdouble"
+#endif /* TARGET_IEEEQUAD_DEFAULT.  */
+
+#undef MULTILIB_DEFAULTS
 #if DEFAULT_ARCH64_P
-#define MULTILIB_DEFAULTS { "m64" }
+#define MULTILIB_DEFAULTS { "m64", MULTILIB_DEFAULTS_IEEE }
 #else
-#define MULTILIB_DEFAULTS { "m32" }
+#define MULTILIB_DEFAULTS { "m32", MULTILIB_DEFAULTS_IEEE }
 #endif
 
 /* Split stack is only supported for 64 bit, and requires glibc >= 2.18.  */
