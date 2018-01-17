@@ -24237,6 +24237,8 @@ type_dependent_expression_p (tree expression)
   if (expression == NULL_TREE || expression == error_mark_node)
     return false;
 
+  STRIP_ANY_LOCATION_WRAPPER (expression);
+
   /* An unresolved name is always dependent.  */
   if (identifier_p (expression)
       || TREE_CODE (expression) == USING_DECL
@@ -26675,12 +26677,48 @@ test_build_non_dependent_expr ()
 	     build_non_dependent_expr (wrapped_string_lit));
 }
 
+/* Verify that type_dependent_expression_p () works correctly, even
+   in the presence of location wrapper nodes.  */
+
+static void
+test_type_dependent_expression_p ()
+{
+  location_t loc = BUILTINS_LOCATION;
+
+  tree name = get_identifier ("foo");
+
+  /* If no templates are involved, nothing is type-dependent.  */
+  gcc_assert (!processing_template_decl);
+  ASSERT_FALSE (type_dependent_expression_p (name));
+
+  ++processing_template_decl;
+
+  /* Within a template, an unresolved name is always type-dependent.  */
+  ASSERT_TRUE (type_dependent_expression_p (name));
+
+  /* Ensure it copes with NULL_TREE and errors.  */
+  ASSERT_FALSE (type_dependent_expression_p (NULL_TREE));
+  ASSERT_FALSE (type_dependent_expression_p (error_mark_node));
+
+  /* A USING_DECL in a template should be type-dependent, even if wrapped
+     with a location wrapper (PR c++/83799).  */
+  tree using_decl = build_lang_decl (USING_DECL, name, NULL_TREE);
+  TREE_TYPE (using_decl) = integer_type_node;
+  ASSERT_TRUE (type_dependent_expression_p (using_decl));
+  tree wrapped_using_decl = maybe_wrap_with_location (using_decl, loc);
+  ASSERT_TRUE (location_wrapper_p (wrapped_using_decl));
+  ASSERT_TRUE (type_dependent_expression_p (wrapped_using_decl));
+
+  --processing_template_decl;
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 cp_pt_c_tests ()
 {
   test_build_non_dependent_expr ();
+  test_type_dependent_expression_p ();
 }
 
 } // namespace selftest
