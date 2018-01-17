@@ -4587,11 +4587,15 @@ rs6000_option_override_internal (bool global_init_p)
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
      explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
      those systems will not pick up this default.  Warn if the user changes the
-     default unless -Wno-psabi.  */
+     default unless either the user used the -Wno-psabi option, or the compiler
+     was built to enable multilibs to switch between the two long double
+     types.  */
   if (!global_options_set.x_rs6000_ieeequad)
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
-  else if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
+  else if (!TARGET_IEEEQUAD_MULTILIB
+	   && rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT
+	   && TARGET_LONG_DOUBLE_128)
     {
       static bool warned_change_long_double;
       if (!warned_change_long_double)
