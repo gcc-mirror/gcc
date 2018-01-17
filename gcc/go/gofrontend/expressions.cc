@@ -3700,7 +3700,7 @@ Expression::make_unsafe_cast(Type* type, Expression* expr,
 // called after escape analysis but before inserting write barriers.
 
 void
-Unary_expression::check_operand_address_taken(Gogo* gogo)
+Unary_expression::check_operand_address_taken(Gogo*)
 {
   if (this->op_ != OPERATOR_AND)
     return;
@@ -3712,13 +3712,6 @@ Unary_expression::check_operand_address_taken(Gogo* gogo)
   // escape.
   Node* n = Node::make_node(this);
   if ((n->encoding() & ESCAPE_MASK) == int(Node::ESCAPE_NONE))
-    this->escapes_ = false;
-
-  // When compiling the runtime, the address operator does not cause
-  // local variables to escape.  When escape analysis becomes the
-  // default, this should be changed to make it an error if we have an
-  // address operator that escapes.
-  if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
     this->escapes_ = false;
 
   Named_object* var = NULL;
@@ -7028,26 +7021,14 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
   vals->push_back(val);
 
   Expression* ret = Expression::make_struct_composite_literal(st, vals, loc);
+  ret = Expression::make_heap_expression(ret, loc);
 
-  if (!gogo->compiling_runtime() || gogo->package_name() != "runtime")
-    {
-      ret = Expression::make_heap_expression(ret, loc);
-      Node* n = Node::make_node(this);
-      if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
-        ret->heap_expression()->set_allocate_on_stack();
-    }
-  else
-    {
-      // When compiling the runtime, method closures do not escape.
-      // When escape analysis becomes the default, and applies to
-      // method closures, this should be changed to make it an error
-      // if a method closure escapes.
-      Temporary_statement* ctemp = Statement::make_temporary(st, ret, loc);
-      inserter->insert(ctemp);
-      ret = Expression::make_temporary_reference(ctemp, loc);
-      ret = Expression::make_unary(OPERATOR_AND, ret, loc);
-      ret->unary_expression()->set_does_not_escape();
-    }
+  Node* n = Node::make_node(this);
+  if ((n->encoding() & ESCAPE_MASK) == Node::ESCAPE_NONE)
+    ret->heap_expression()->set_allocate_on_stack();
+  else if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
+    go_error_at(loc, "%s escapes to heap, not allowed in runtime",
+                n->ast_format(gogo).c_str());
 
   // If necessary, check whether the expression or any embedded
   // pointers are nil.
@@ -9577,12 +9558,6 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 			       Type* varargs_type, size_t param_count,
                                Slice_storage_escape_disp escape_disp)
 {
-  // When compiling the runtime, varargs slices do not escape.  When
-  // escape analysis becomes the default, this should be changed to
-  // make it an error if we have a varargs slice that escapes.
-  if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
-    escape_disp = SLICE_STORAGE_DOES_NOT_ESCAPE;
-
   if (this->varargs_are_lowered_)
     return;
 
