@@ -6804,6 +6804,12 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, complain);
+      if (expr == null_node
+	  && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (totype))
+	/* If __null has been converted to an integer type, we do not want to
+	   continue to warn about uses of EXPR as an integer, rather than as a
+	   pointer.  */
+	expr = build_int_cst (totype, 0);
       return expr;
     case ck_ambig:
       /* We leave bad_p off ck_ambig because overload resolution considers

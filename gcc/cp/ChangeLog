@@ -1,5 +1,10 @@
 2018-01-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81067 - redundant NULL warning.
+	* call.c (convert_like_real): Restore null_node handling.
+
+2018-01-17  Jason Merrill  <jason@redhat.com>
+
 	PR c++/81843 - ICE with variadic member template.
 	PR c++/72801
 	* pt.c (unify_pack_expansion): Don't try to deduce enclosing
