@@ -11145,11 +11145,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		}
 	      else if (STRICT_ALIGNMENT)
 		{
-		  tree inner_type = TREE_TYPE (treeop0);
 		  poly_uint64 mode_size = GET_MODE_SIZE (mode);
-		  poly_uint64 op0_size
-		    = tree_to_poly_uint64 (TYPE_SIZE_UNIT (inner_type));
-		  poly_int64 temp_size = upper_bound (op0_size, mode_size);
+		  poly_uint64 temp_size = mode_size;
+		  if (GET_MODE (op0) != BLKmode)
+		    temp_size = upper_bound (temp_size,
+					     GET_MODE_SIZE (GET_MODE (op0)));
 		  rtx new_rtx
 		    = assign_stack_temp_for_type (mode, temp_size, type);
 		  rtx new_with_op0_mode

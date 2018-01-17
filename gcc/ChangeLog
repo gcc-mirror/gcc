@@ -1,3 +1,10 @@
+2018-01-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR middle-end/83884
+	* expr.c (expand_expr_real_1): Use the size of GET_MODE (op0)
+	rather than the size of inner_type to determine the stack slot size
+	when handling VIEW_CONVERT_EXPRs on strict-alignment targets.
+
 2018-01-16  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	PR target/83546
