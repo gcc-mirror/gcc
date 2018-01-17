@@ -290,8 +290,8 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	      /* Do not warn if the access is fully outside of the
 	         variable.  */
 	      if (ref.size != -1
-		  && ref.max_size == ref.size
-		  && (ref.offset + ref.size <= 0
+		  && ((ref.max_size == ref.size
+		       && ref.offset + ref.size <= 0)
 		      || (ref.offset >= 0
 			  && TREE_CODE (DECL_SIZE (base)) == INTEGER_CST
 			  && compare_tree_int (DECL_SIZE (base),
