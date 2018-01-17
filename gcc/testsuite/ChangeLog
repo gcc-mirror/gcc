@@ -1,3 +1,9 @@
+2018-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83843
+	* gcc.dg/store_merging_18.c: Don't expect "Merging successful" on arm.
+	* gcc.dg/store_merging_19.c: New test.
+
 2018-01-17  Kyrylo Tkachov <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/xor-and.c: Fix armv6 effective target checks
