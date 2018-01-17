@@ -1,3 +1,17 @@
+2018-01-16  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (codes) [GENERATE_FIXED_HUFFMAN_TABLE]: Fix size to be
+	288.
+	(main) [GENERATE_FIXED_HUFFMAN_TABLE]: Pass 288 to
+	elf_zlib_inflate_table.  Generate elf_zlib_default_dist_table.
+	(elf_zlib_default_table): Update.
+	(elf_zlib_default_dist_table): New static array.
+	(elf_zlib_inflate): Use elf_zlib_default_dist_table for dist table
+	for block type 1.
+	* ztest.c (struct zlib_test): Add uncompressed_len.
+	(tests): Initialize uncompressed_len field.  Add new test case.
+	(test_samples): Use uncompressed_len field.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
