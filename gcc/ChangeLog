@@ -1,3 +1,12 @@
+2018-01-17  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_builtin): Add gimple folding
+	support for merge[hl].
+	(fold_mergehl_helper): New helper function.
+	(tree-vector-builder.h): New #include for tree_vector_builder usage.
+	* config/rs6000/altivec.md (altivec_vmrghw_direct): Add xxmrghw insn.
+	(altivec_vmrglw_direct): Add xxmrglw insn.
+
 2018-01-17  Andrew Waterman  <andrew@sifive.com>
 
 	* config/riscv/riscv.c (riscv_conditional_register_usage): If

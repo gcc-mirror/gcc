@@ -997,8 +997,8 @@
 
 (define_insn "altivec_vmrghb_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-                       (match_operand:V16QI 2 "register_operand" "v")]
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
+		       (match_operand:V16QI 2 "register_operand" "v")]
 		      UNSPEC_VMRGH_DIRECT))]
   "TARGET_ALTIVEC"
   "vmrghb %0,%1,%2"
@@ -1104,12 +1104,14 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vmrghw_direct"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-                      (match_operand:V4SI 2 "register_operand" "v")]
-                     UNSPEC_VMRGH_DIRECT))]
+  [(set (match_operand:V4SI 0 "register_operand" "=v,wa")
+	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v,wa")
+		      (match_operand:V4SI 2 "register_operand" "v,wa")]
+		     UNSPEC_VMRGH_DIRECT))]
   "TARGET_ALTIVEC"
-  "vmrghw %0,%1,%2"
+  "@
+   vmrghw %0,%1,%2
+   xxmrghw %x0,%x1,%x2"
   [(set_attr "type" "vecperm")])
 
 (define_insn "*altivec_vmrghsf"
@@ -1186,9 +1188,9 @@
 
 (define_insn "altivec_vmrglb_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-    		       (match_operand:V16QI 2 "register_operand" "v")]
-                      UNSPEC_VMRGL_DIRECT))]
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
+		       (match_operand:V16QI 2 "register_operand" "v")]
+		      UNSPEC_VMRGL_DIRECT))]
   "TARGET_ALTIVEC"
   "vmrglb %0,%1,%2"
   [(set_attr "type" "vecperm")])
@@ -1244,7 +1246,7 @@
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "v")
 		      (match_operand:V8HI 2 "register_operand" "v")]
-                     UNSPEC_VMRGL_DIRECT))]
+		     UNSPEC_VMRGL_DIRECT))]
   "TARGET_ALTIVEC"
   "vmrglh %0,%1,%2"
   [(set_attr "type" "vecperm")])
@@ -1293,12 +1295,14 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vmrglw_direct"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-	              (match_operand:V4SI 2 "register_operand" "v")]
-                     UNSPEC_VMRGL_DIRECT))]
+  [(set (match_operand:V4SI 0 "register_operand" "=v,wa")
+	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v,wa")
+		      (match_operand:V4SI 2 "register_operand" "v,wa")]
+		     UNSPEC_VMRGL_DIRECT))]
   "TARGET_ALTIVEC"
-  "vmrglw %0,%1,%2"
+  "@
+   vmrglw %0,%1,%2
+   xxmrglw %x0,%x1,%x2"
   [(set_attr "type" "vecperm")])
 
 (define_insn "*altivec_vmrglsf"
