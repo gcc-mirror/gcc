@@ -1,4 +1,11 @@
-2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
+2018-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/81184
+	* gcc.dg/pr21643.c: Adjust dg-final line for logical_op_short_circuit
+	targets.
+	* gcc.dg/tree-ssa/phi-opt-11.c: Likewise.
+
+2018-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/Wrestrict.c (test_strcpy_range): Revert latest change.
 
