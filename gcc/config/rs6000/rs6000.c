@@ -68,6 +68,7 @@
 #include "tree-vectorizer.h"
 #include "target-globals.h"
 #include "builtins.h"
+#include "tree-vector-builder.h"
 #include "context.h"
 #include "tree-pass.h"
 #include "except.h"
@@ -16111,6 +16112,40 @@ fold_compare_helper (gimple_stmt_iterator *gsi, tree_code code, gimple *stmt)
   gsi_replace (gsi, g, true);
 }
 
+/* Helper function to handle the vector merge[hl] built-ins.  The
+   implementation difference between h and l versions for this code are in
+   the values used when building of the permute vector for high word versus
+   low word merge.  The variance is keyed off the use_high parameter.  */
+static void
+fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  tree lhs = gimple_call_lhs (stmt);
+  tree lhs_type = TREE_TYPE (lhs);
+  tree lhs_type_type = TREE_TYPE (lhs_type);
+  int n_elts = TYPE_VECTOR_SUBPARTS (lhs_type);
+  int midpoint = n_elts / 2;
+  int offset = 0;
+
+  if (use_high == 1)
+    offset = midpoint;
+
+  tree_vector_builder elts (lhs_type, VECTOR_CST_NELTS (arg0), 1);
+
+  for (int i = 0; i < midpoint; i++)
+    {
+      elts.safe_push (build_int_cst (lhs_type_type, offset + i));
+      elts.safe_push (build_int_cst (lhs_type_type, offset + n_elts + i));
+    }
+
+  tree permute = elts.build ();
+
+  gimple *g = gimple_build_assign (lhs, VEC_PERM_EXPR, arg0, arg1, permute);
+  gimple_set_location (g, gimple_location (stmt));
+  gsi_replace (gsi, g, true);
+}
+
 /* Fold a machine-dependent built-in in GIMPLE.  (For folding into
    a constant, use rs6000_fold_builtin.)  */
 
@@ -16639,6 +16674,28 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	 return true;
       }
 
+    /* vec_mergel (integrals).  */
+    case ALTIVEC_BUILTIN_VMRGLH:
+    case ALTIVEC_BUILTIN_VMRGLW:
+    case VSX_BUILTIN_XXMRGLW_4SI:
+    case ALTIVEC_BUILTIN_VMRGLB:
+    case VSX_BUILTIN_VEC_MERGEL_V2DI:
+	/* Do not fold for -maltivec=be on LE targets.  */
+	if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
+	  return false;
+	fold_mergehl_helper (gsi, stmt, 1);
+	return true;
+    /* vec_mergeh (integrals).  */
+    case ALTIVEC_BUILTIN_VMRGHH:
+    case ALTIVEC_BUILTIN_VMRGHW:
+    case VSX_BUILTIN_XXMRGHW_4SI:
+    case ALTIVEC_BUILTIN_VMRGHB:
+    case VSX_BUILTIN_VEC_MERGEH_V2DI:
+	/* Do not fold for -maltivec=be on LE targets.  */
+	if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
+	  return false;
+	fold_mergehl_helper (gsi, stmt, 0);
+	return true;
     default:
       if (TARGET_DEBUG_BUILTIN)
 	fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",

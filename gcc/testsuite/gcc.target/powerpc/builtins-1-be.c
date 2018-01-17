@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc64-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O0" } */
+/* { dg-options "-mcpu=power8 -O0 -mno-fold-gimple" } */
 
 /* Test that a number of newly added builtin overloads are accepted
    by the compiler.  */
