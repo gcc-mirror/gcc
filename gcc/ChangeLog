@@ -1,5 +1,8 @@
 2018-01-16  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config.gcc (hppa*-*-linux*): Change callee copies ABI to caller
+	copies.
+
 	* config/pa.h (MALLOC_ABI_ALIGNMENT): Set 32-bit alignment default to
 	64 bits.
 	* config/pa/pa32-linux.h (MALLOC_ABI_ALIGNMENT): Set alignment to
