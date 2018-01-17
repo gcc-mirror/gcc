@@ -1,3 +1,10 @@
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83814
+	* expr.c (fold_for_warn): Move from c-common.c, reducing to just
+	the C++ part.  If processing a template, call
+	fold_non_dependent_expr rather than fully folding.
+
 2018-01-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81067 - redundant NULL warning.

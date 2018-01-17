@@ -868,19 +868,6 @@ c_get_substring_location (const substring_loc &substr_loc,
 }
 
 
-/* Fold X for consideration by one of the warning functions when checking
-   whether an expression has a constant value.  */
-
-tree
-fold_for_warn (tree x)
-{
-  if (c_dialect_cxx ())
-    return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
-  else
-    /* The C front-end has already folded X appropriately.  */
-    return x;
-}
-
 /* Return true iff T is a boolean promoted to int.  */
 
 bool

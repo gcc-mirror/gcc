@@ -676,3 +676,13 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
     }
   return ret;
 }
+
+/* Fold X for consideration by one of the warning functions when checking
+   whether an expression has a constant value.  */
+
+tree
+fold_for_warn (tree x)
+{
+  /* The C front-end has already folded X appropriately.  */
+  return x;
+}

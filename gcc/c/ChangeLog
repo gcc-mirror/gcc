@@ -1,3 +1,9 @@
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83814
+	* c-fold.c (fold_for_warn): Move from c-common.c, reducing to just
+	the C part.
+
 2018-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/83801

@@ -1,3 +1,8 @@
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83814
+	* c-common.c (fold_for_warn): Move to c/c-fold.c and cp/expr.c.
+
 2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_number): Add FLOAT_P parameter.
