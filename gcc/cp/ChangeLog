@@ -1,3 +1,15 @@
+2018-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83824
+	* parser.c (attr_chainon): New function.
+	(cp_parser_label_for_labeled_statement, cp_parser_decl_specifier_seq,
+	cp_parser_namespace_definition, cp_parser_init_declarator,
+	cp_parser_type_specifier_seq, cp_parser_parameter_declaration,
+	cp_parser_gnu_attributes_opt): Use it.
+	(cp_parser_member_declaration, cp_parser_objc_class_ivars,
+	cp_parser_objc_struct_declaration): Likewise.  Don't reset
+	prefix_attributes if attributes is error_mark_node.
+
 2018-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/78344
