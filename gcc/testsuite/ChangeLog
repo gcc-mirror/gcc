@@ -1,3 +1,7 @@
+2018-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/ipa/inlinehint-4.c: Also pass --param inline-unit-growth=20.
+
 2018-01-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/rtl/arm/stl-cond.c: New test.
