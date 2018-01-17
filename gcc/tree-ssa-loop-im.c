@@ -197,7 +197,7 @@ static struct
 static bitmap_obstack lim_bitmap_obstack;
 static obstack mem_ref_obstack;
 
-static bool ref_indep_loop_p (struct loop *, im_mem_ref *, struct loop *);
+static bool ref_indep_loop_p (struct loop *, im_mem_ref *);
 
 /* Minimum cost of an expensive expression.  */
 #define LIM_EXPENSIVE ((unsigned) PARAM_VALUE (PARAM_LIM_EXPENSIVE))
@@ -545,10 +545,10 @@ outermost_indep_loop (struct loop *outer, struct loop *loop, im_mem_ref *ref)
        aloop != loop;
        aloop = superloop_at_depth (loop, loop_depth (aloop) + 1))
     if ((!ref->stored || !bitmap_bit_p (ref->stored, aloop->num))
-	&& ref_indep_loop_p (aloop, ref, loop))
+	&& ref_indep_loop_p (aloop, ref))
       return aloop;
 
-  if (ref_indep_loop_p (loop, ref, loop))
+  if (ref_indep_loop_p (loop, ref))
     return loop;
   else
     return NULL;
@@ -2111,19 +2111,12 @@ record_dep_loop (struct loop *loop, im_mem_ref *ref, bool stored_p)
 }
 
 /* Returns true if REF is independent on all other memory
-   references in LOOP.  REF_LOOP is where REF is accessed, SAFELEN is the
-   safelen to apply.  */
+   references in LOOP.  */
 
 static bool
-ref_indep_loop_p_1 (int safelen, struct loop *loop, im_mem_ref *ref,
-		    bool stored_p, struct loop *ref_loop)
+ref_indep_loop_p_1 (struct loop *loop, im_mem_ref *ref, bool stored_p)
 {
   stored_p |= (ref->stored && bitmap_bit_p (ref->stored, loop->num));
-
-  if (loop->safelen > safelen
-      /* Check that REF is accessed inside LOOP.  */
-      && (loop == ref_loop || flow_loop_nested_p (loop, ref_loop)))
-    safelen = loop->safelen;
 
   bool indep_p = true;
   bitmap refs_to_check;
@@ -2135,32 +2128,6 @@ ref_indep_loop_p_1 (int safelen, struct loop *loop, im_mem_ref *ref,
 
   if (bitmap_bit_p (refs_to_check, UNANALYZABLE_MEM_ID))
     indep_p = false;
-  else if (safelen > 1)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file,"REF is independent due to safelen %d\n",
-		   safelen);
-	  print_generic_expr (dump_file, ref->mem.ref, TDF_SLIM);
-	  fprintf (dump_file, "\n");
-	}
-
-      /* We need to recurse to properly handle UNANALYZABLE_MEM_ID.  */
-      struct loop *inner = loop->inner;
-      while (inner)
-	{
-	  if (!ref_indep_loop_p_1 (safelen, inner, ref, stored_p, ref_loop))
-	    {
-	      indep_p = false;
-	      break;
-	    }
-	  inner = inner->next;
-	}
-
-      /* Avoid caching here as safelen depends on context and refs
-         are shared between different contexts.  */
-      return indep_p;
-    }
   else
     {
       if (bitmap_bit_p (&ref->indep_loop, LOOP_DEP_BIT (loop->num, stored_p)))
@@ -2171,7 +2138,7 @@ ref_indep_loop_p_1 (int safelen, struct loop *loop, im_mem_ref *ref,
       struct loop *inner = loop->inner;
       while (inner)
 	{
-	  if (!ref_indep_loop_p_1 (safelen, inner, ref, stored_p, ref_loop))
+	  if (!ref_indep_loop_p_1 (inner, ref, stored_p))
 	    {
 	      indep_p = false;
 	      break;
@@ -2225,14 +2192,14 @@ ref_indep_loop_p_1 (int safelen, struct loop *loop, im_mem_ref *ref,
 }
 
 /* Returns true if REF is independent on all other memory references in
-   LOOP.  REF_LOOP is the loop where REF is accessed.  */
+   LOOP.  */
 
 static bool
-ref_indep_loop_p (struct loop *loop, im_mem_ref *ref, struct loop *ref_loop)
+ref_indep_loop_p (struct loop *loop, im_mem_ref *ref)
 {
   gcc_checking_assert (MEM_ANALYZABLE (ref));
 
-  return ref_indep_loop_p_1 (0, loop, ref, false, ref_loop);
+  return ref_indep_loop_p_1 (loop, ref, false);
 }
 
 /* Returns true if we can perform store motion of REF from LOOP.  */
@@ -2268,7 +2235,7 @@ can_sm_ref_p (struct loop *loop, im_mem_ref *ref)
 
   /* And it must be independent on all other memory references
      in LOOP.  */
-  if (!ref_indep_loop_p (loop, ref, loop))
+  if (!ref_indep_loop_p (loop, ref))
     return false;
 
   return true;

@@ -1,3 +1,20 @@
+2018-01-17  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81877
+	* tree-ssa-loop-im.c (ref_indep_loop_p): Remove safelen parameters.
+	(outermost_indep_loop): Adjust.
+	(ref_indep_loop_p_1): Likewise.  Remove safelen handling again.
+	(can_sm_ref_p): Adjust.
+
+	2017-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81782
+	* tree-ssa-uninit.c (warn_uninitialized_vars): Properly
+	handle accesses outside of zero-sized vars.
+
 2018-01-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mailine
