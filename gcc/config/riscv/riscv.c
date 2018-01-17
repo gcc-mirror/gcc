@@ -4123,6 +4123,13 @@ riscv_conditional_register_usage (void)
       for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
 	fixed_regs[regno] = call_used_regs[regno] = 1;
     }
+
+  /* In the soft-float ABI, there are no callee-saved FP registers.  */
+  if (UNITS_PER_FP_ARG == 0)
+    {
+      for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+	call_used_regs[regno] = 1;
+    }
 }
 
 /* Return a register priority for hard reg REGNO.  */
