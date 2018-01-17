@@ -87,6 +87,12 @@
  (and (match_code "const_int")
       (match_test "aarch64_move_imm (ival, DImode)")))
 
+(define_constraint "Uti"
+ "A constant that can be used with a 128-bit MOV immediate operation."
+ (and (ior (match_code "const_int")
+	   (match_code "const_wide_int"))
+      (match_test "aarch64_mov128_immediate (op)")))
+
 (define_constraint "UsO"
  "A constant that can be used with a 32-bit and operation."
  (and (match_code "const_int")

@@ -2393,6 +2393,24 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   return num_insns;
 }
 
+/* Return whether imm is a 128-bit immediate which is simple enough to
+   expand inline.  */
+bool
+aarch64_mov128_immediate (rtx imm)
+{
+  if (GET_CODE (imm) == CONST_INT)
+    return true;
+
+  gcc_assert (CONST_WIDE_INT_NUNITS (imm) == 2);
+
+  rtx lo = GEN_INT (CONST_WIDE_INT_ELT (imm, 0));
+  rtx hi = GEN_INT (CONST_WIDE_INT_ELT (imm, 1));
+
+  return aarch64_internal_mov_immediate (NULL_RTX, lo, false, DImode)
+	 + aarch64_internal_mov_immediate (NULL_RTX, hi, false, DImode) <= 4;
+}
+
+
 /* Return the number of temporary registers that aarch64_add_offset_1
    would need to add OFFSET to a register.  */
 
@@ -11738,7 +11756,10 @@ static bool
 aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 {
   /* Support CSE and rematerialization of common constants.  */
-  if (CONST_INT_P (x) || CONST_DOUBLE_P (x) || GET_CODE (x) == CONST_VECTOR)
+  if (CONST_INT_P (x)
+      || (CONST_DOUBLE_P (x)
+	  && (mode == SFmode || mode == DFmode || mode == TFmode))
+      || GET_CODE (x) == CONST_VECTOR)
     return true;
 
   /* Do not allow vector struct mode constants for Advanced SIMD.
@@ -11746,10 +11767,6 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
      aarch64-simd.md.  */
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   if (vec_flags == (VEC_ADVSIMD | VEC_STRUCT))
-    return false;
-
-  /* Do not allow wide int constants - this requires support in movti.  */
-  if (CONST_WIDE_INT_P (x))
     return false;
 
   /* Only accept variable-length vector constants if they can be

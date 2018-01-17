@@ -1,3 +1,16 @@
+2018-01-17  Wilco Dijkstra  <wdijkstr@arm.com>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/aarch64.md (movti_aarch64): Use Uti constraint.
+	* config/aarch64/aarch64.c (aarch64_mov128_immediate): New function.
+	(aarch64_legitimate_constant_p): Just support CONST_DOUBLE 
+	SF/DF/TF mode to avoid creating illegal CONST_WIDE_INT immediates.
+	* config/aarch64/aarch64-protos.h (aarch64_mov128_immediate):
+	Add declaration.
+	* config/aarch64/constraints.md (aarch64_movti_operand):
+	Limit immediates.
+	* config/aarch64/predicates.md (Uti): Add new constraint.
+
 2018-01-17 Carl Love  <cel@us.ibm.com>
 	* config/rs6000/vsx.md (define_expand xl_len_r,
 	define_expand stxvl, define_expand *stxvl): Add match_dup argument.

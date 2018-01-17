@@ -293,15 +293,14 @@
 	    (match_test "aarch64_mov_operand_p (op, mode)"))))
 
 (define_predicate "aarch64_movti_operand"
-  (and (match_code "reg,subreg,mem,const_int")
-       (ior (match_operand 0 "register_operand")
-	    (ior (match_operand 0 "memory_operand")
-		 (match_operand 0 "const_int_operand")))))
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "memory_operand")
+       (and (match_operand 0 "const_scalar_int_operand")
+	    (match_test "aarch64_mov128_immediate (op)"))))
 
 (define_predicate "aarch64_reg_or_imm"
-  (and (match_code "reg,subreg,const_int")
-       (ior (match_operand 0 "register_operand")
-	    (match_operand 0 "const_int_operand"))))
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const_scalar_int_operand")))
 
 ;; True for integer comparisons and for FP comparisons other than LTGT or UNEQ.
 (define_special_predicate "aarch64_comparison_operator"
