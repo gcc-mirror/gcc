@@ -1,3 +1,11 @@
+2018-01-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/gnuattr1.c: New test to make sure we set the
+	appropriate .gnu_attribute for the long double type, if we use the
+	long double type, but do not generate any calls.
+	* gcc.target/powerpc/gnuattr2.c: Likewise.
+	* gcc.target/powerpc/gnuattr3.c: Likewise.
+
 2018-01-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/78344
