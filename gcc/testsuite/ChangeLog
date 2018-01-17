@@ -1,3 +1,8 @@
+2018-01-16  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	PR target/83546
+	* gcc.target/i386/pr83546.c: New test.
+
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/Warray-bounds-3.c (test_memmove_bounds): Fix mismatch.

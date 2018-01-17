@@ -1,3 +1,9 @@
+2018-01-16  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	PR target/83546
+	* config/i386/i386.c (ix86_option_override_internal): Add PTA_RDRND
+	to PTA_SILVERMONT.
+
 2018-01-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config.gcc (powerpc*-linux*-*): Add support for 64-bit little
