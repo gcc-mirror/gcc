@@ -11757,8 +11757,7 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 {
   /* Support CSE and rematerialization of common constants.  */
   if (CONST_INT_P (x)
-      || (CONST_DOUBLE_P (x)
-	  && (mode == SFmode || mode == DFmode || mode == TFmode))
+      || (CONST_DOUBLE_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT)
       || GET_CODE (x) == CONST_VECTOR)
     return true;
 
