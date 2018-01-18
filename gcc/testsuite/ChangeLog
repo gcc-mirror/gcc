@@ -1,3 +1,10 @@
+2018-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83887
+	* gcc.dg/graphite/pr83887.c: New testcase.
+	* gfortran.dg/graphite/pr83887.f90: Likewise.
+	* gfortran.dg/graphite/pr83887.f: Likewise.
+
 2018-01-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/65578

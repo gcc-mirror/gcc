@@ -309,16 +309,6 @@ public:
 
   sese_l get_sese (loop_p loop);
 
-  /* Return the closest dominator with a single entry edge.  In case of a
-     back-loop the back-edge is not counted.  */
-
-  static edge get_nearest_dom_with_single_entry (basic_block dom);
-
-  /* Return the closest post-dominator with a single exit edge.  In case of a
-     back-loop the back-edge is not counted.  */
-
-  static edge get_nearest_pdom_with_single_exit (basic_block dom);
-
   /* Merge scops at same loop depth and returns the new sese.
      Returns a new SESE when merge was successful, INVALID_SESE otherwise.  */
 
@@ -441,85 +431,6 @@ scop_detection::get_sese (loop_p loop)
   return sese_l (scop_begin, scop_end);
 }
 
-/* Return the closest dominator with a single entry edge.  */
-
-edge
-scop_detection::get_nearest_dom_with_single_entry (basic_block dom)
-{
-  if (!dom->preds)
-    return NULL;
-
-  /* If any of the dominators has two predecessors but one of them is a back
-     edge, then that basic block also qualifies as a dominator with single
-     entry.  */
-  if (dom->preds->length () == 2)
-    {
-      /* If e1->src dominates e2->src then e1->src will also dominate dom.  */
-      edge e1 = (*dom->preds)[0];
-      edge e2 = (*dom->preds)[1];
-      loop_p l = dom->loop_father;
-      loop_p l1 = e1->src->loop_father;
-      loop_p l2 = e2->src->loop_father;
-      if (l != l1 && l == l2
-	  && dominated_by_p (CDI_DOMINATORS, e2->src, e1->src))
-	return e1;
-      if (l != l2 && l == l1
-	  && dominated_by_p (CDI_DOMINATORS, e1->src, e2->src))
-	return e2;
-    }
-
-  while (dom->preds->length () != 1)
-    {
-      if (dom->preds->length () < 1)
-	return NULL;
-      dom = get_immediate_dominator (CDI_DOMINATORS, dom);
-      if (!dom->preds)
-	return NULL;
-    }
-  return (*dom->preds)[0];
-}
-
-/* Return the closest post-dominator with a single exit edge.  In case of a
-   back-loop the back-edge is not counted.  */
-
-edge
-scop_detection::get_nearest_pdom_with_single_exit (basic_block pdom)
-{
-  if (!pdom->succs)
-    return NULL;
-
-  /* If any of the post-dominators has two successors but one of them is a back
-     edge, then that basic block also qualifies as a post-dominator with single
-     exit. */
-  if (pdom->succs->length () == 2)
-    {
-      /* If e1->dest post-dominates e2->dest then e1->dest will also
-	 post-dominate pdom.  */
-      edge e1 = (*pdom->succs)[0];
-      edge e2 = (*pdom->succs)[1];
-      loop_p l = pdom->loop_father;
-      loop_p l1 = e1->dest->loop_father;
-      loop_p l2 = e2->dest->loop_father;
-      if (l != l1 && l == l2
-	  && dominated_by_p (CDI_POST_DOMINATORS, e2->dest, e1->dest))
-	return e1;
-      if (l != l2 && l == l1
-	  && dominated_by_p (CDI_POST_DOMINATORS, e1->dest, e2->dest))
-	return e2;
-    }
-
-  while (pdom->succs->length () != 1)
-    {
-      if (pdom->succs->length () < 1)
-	return NULL;
-      pdom = get_immediate_dominator (CDI_POST_DOMINATORS, pdom);
-      if (!pdom->succs)
-	return NULL;
-    }
-
-  return (*pdom->succs)[0];
-}
-
 /* Merge scops at same loop depth and returns the new sese.
    Returns a new SESE when merge was successful, INVALID_SESE otherwise.  */
 
@@ -537,72 +448,77 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 	       dp << "[scop-detection] try merging sese s2: ";
 	       print_sese (dump_file, second));
 
-  /* Assumption: Both the sese's should be at the same loop depth or one scop
-     should subsume the other like in case of nested loops.  */
+  auto_bitmap worklist, in_sese_region;
+  bitmap_set_bit (worklist, get_entry_bb (first)->index);
+  bitmap_set_bit (worklist, get_exit_bb (first)->index);
+  bitmap_set_bit (worklist, get_entry_bb (second)->index);
+  bitmap_set_bit (worklist, get_exit_bb (second)->index);
+  edge entry = NULL, exit = NULL;
 
-  /* Find the common dominators for entry,
-     and common post-dominators for the exit.  */
-  basic_block dom = nearest_common_dominator (CDI_DOMINATORS,
-					      get_entry_bb (first),
-					      get_entry_bb (second));
+  /* We can optimize the case of adding a loop entry dest or exit
+     src to the worklist (for single-exit loops) by skipping
+     directly to the exit dest / entry src.  in_sese_region
+     doesn't have to cover all blocks in the region but merely
+     its border it acts more like a visited bitmap.  */
+  do
+    {
+      int index = bitmap_first_set_bit (worklist);
+      bitmap_clear_bit (worklist, index);
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, index);
+      edge_iterator ei;
+      edge e;
 
-  edge entry = get_nearest_dom_with_single_entry (dom);
+      /* With fake exit edges we can end up with no possible exit.  */
+      if (index == EXIT_BLOCK)
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] cannot merge seses.\n");
+	  return invalid_sese;
+	}
 
-  if (!entry || (entry->flags & EDGE_IRREDUCIBLE_LOOP))
-    return invalid_sese;
+      bitmap_set_bit (in_sese_region, bb->index);
+         
+      basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->src == dom
+	    && (! entry
+		|| dominated_by_p (CDI_DOMINATORS, entry->dest, bb)))
+	  {
+	    if (entry
+		&& ! bitmap_bit_p (in_sese_region, entry->src->index))
+	      bitmap_set_bit (worklist, entry->src->index);
+	    entry = e;
+	  }
+	else if (! bitmap_bit_p (in_sese_region, e->src->index))
+	  bitmap_set_bit (worklist, e->src->index);
 
-  basic_block pdom = nearest_common_dominator (CDI_POST_DOMINATORS,
-					       get_exit_bb (first),
-					       get_exit_bb (second));
-  pdom = nearest_common_dominator (CDI_POST_DOMINATORS, dom, pdom);
+      basic_block pdom = get_immediate_dominator (CDI_POST_DOMINATORS, bb);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->dest == pdom
+	    && (! exit
+		|| dominated_by_p (CDI_POST_DOMINATORS, exit->src, bb)))
+	  {
+	    if (exit
+		&& ! bitmap_bit_p (in_sese_region, exit->dest->index))
+	      bitmap_set_bit (worklist, exit->dest->index);
+	    exit = e;
+	  }
+	else if (! bitmap_bit_p (in_sese_region, e->dest->index))
+	  bitmap_set_bit (worklist, e->dest->index);
+    }
+  while (! bitmap_empty_p (worklist));
 
-  edge exit = get_nearest_pdom_with_single_exit (pdom);
-
-  if (!exit || (exit->flags & EDGE_IRREDUCIBLE_LOOP))
-    return invalid_sese;
+  /* Include the BB with the loop-closed SSA PHI nodes.
+     canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
+  if (exit->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+      && loop_exit_edge_p (exit->src->loop_father, exit))
+    {
+      gcc_assert (single_pred_p (exit->dest)
+		  && single_succ_p (exit->dest)
+		  && sese_trivially_empty_bb_p (exit->dest));
+      exit = single_succ_edge (exit->dest);
+    }
 
   sese_l combined (entry, exit);
-
-  DEBUG_PRINT (dp << "[scop-detection] checking combined sese: ";
-	       print_sese (dump_file, combined));
-
-  /* FIXME: We could iterate to find the dom which dominates pdom, and pdom
-     which post-dominates dom, until it stabilizes.  Also, ENTRY->SRC and
-     EXIT->DEST should be in the same loop nest.  */
-  if (!dominated_by_p (CDI_DOMINATORS, pdom, dom)
-      || entry->src->loop_father != exit->dest->loop_father)
-    return invalid_sese;
-
-  /* For now we just bail out when there is a loop exit in the region
-     that is not also the exit of the region.  We could enlarge the
-     region to cover the loop that region exits to.  See PR79977.  */
-  if (loop_outer (entry->src->loop_father))
-    {
-      vec<edge> exits = get_loop_exit_edges (entry->src->loop_father);
-      for (unsigned i = 0; i < exits.length (); ++i)
-	{
-	  if (exits[i] != exit
-	      && bb_in_region (exits[i]->src, entry->dest, exit->src))
-	    {
-	      DEBUG_PRINT (dp << "[scop-detection-fail] cannot merge seses.\n");
-	      exits.release ();
-	      return invalid_sese;
-	    }
-	}
-      exits.release ();
-    }
-
-  /* For now we just want to bail out when exit does not post-dominate entry.
-     TODO: We might just add a basic_block at the exit to make exit
-     post-dominate entry (the entire region).  */
-  if (!dominated_by_p (CDI_POST_DOMINATORS, get_entry_bb (combined),
-		       get_exit_bb (combined))
-      || !dominated_by_p (CDI_DOMINATORS, get_exit_bb (combined),
-			  get_entry_bb (combined)))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] cannot merge seses.\n");
-      return invalid_sese;
-    }
 
   DEBUG_PRINT (dp << "[merged-sese] s1: "; print_sese (dump_file, combined));
 
