@@ -1,3 +1,10 @@
+2018-01-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83714
+	* search.c (any_dependent_bases_p): Handle null TREE_BINFO.
+	* pt.c (instantiation_dependent_scope_ref_p): True if
+	any_dependent_bases_p.
+
 2018-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h: Fix comment typo (DECL_NON_TRIVIALLY_INITIALIZED_P

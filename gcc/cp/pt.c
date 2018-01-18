@@ -23952,6 +23952,9 @@ instantiation_dependent_scope_ref_p (tree t)
 {
   if (DECL_P (TREE_OPERAND (t, 1))
       && CLASS_TYPE_P (TREE_OPERAND (t, 0))
+      /* A dependent base could make a member inaccessible in the current
+	 class.  */
+      && !any_dependent_bases_p ()
       && accessible_in_template_p (TREE_OPERAND (t, 0),
 				   TREE_OPERAND (t, 1)))
     return false;

@@ -2612,6 +2612,13 @@ any_dependent_bases_p (tree type)
   if (!type || !CLASS_TYPE_P (type) || !processing_template_decl)
     return false;
 
+  /* If we haven't set TYPE_BINFO yet, we don't know anything about the bases.
+     Return false because in this situation we aren't actually looking up names
+     in the scope of the class, so it doesn't matter whether it has dependent
+     bases.  */
+  if (!TYPE_BINFO (type))
+    return false;
+
   unsigned i;
   tree base_binfo;
   FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_BINFOS (TYPE_BINFO (type)), i, base_binfo)
