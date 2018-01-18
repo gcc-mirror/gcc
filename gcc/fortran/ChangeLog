@@ -1,3 +1,9 @@
+2018-01-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from mainline
+	PR fortran/83864
+	* expr.c (gfc_apply_init): Do not dereference NULL pointer.
+
 2018-01-17  Harald Anlauf  <anlauf@gmx.de>
 
 	Backport from mainline
