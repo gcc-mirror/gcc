@@ -1,3 +1,11 @@
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+        PR other/70268
+        * c-family/c.opt (-fmacro-prefix-map): New option.
+        * c-family/c-opts.c (c_common_handle_option): Handle it.
+        * c-family/c-lex.c (init_c_lex): Set remap_filename cpp callback.
+        * c-family/c-ppoutput.c (init_pp_output): Likewise.
+
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/83814
@@ -119,7 +127,7 @@
 
 2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
 
-	PR middle_end/79538 
+	PR middle_end/79538
 	* c-cppbuiltin.c (builtin_define_with_hex_fp_value):
 	Adjust the size of buf1 and buf2, add a new buf to avoid
 	format-overflow warning.
@@ -463,7 +471,7 @@
 	(set_std_cxx17): ... this.
 	(c_common_handle_option): Rename OPT_std_c__1z to OPT_std_c__17
 	and OPT_std_gnu__1z to OPT_std_gnu__17.  Adjust set_std_cxx1z
-	caller.  
+	caller.
 	(c_common_post_options): Use cxx17 instead of cxx1z.  Adjust
 	comments.
 
@@ -2430,7 +2438,7 @@
 	    Matthias Klose  <doko@debian.org>
 
 	* c-common.c (get_source_date_epoch): New function, gets the environment
-	variable SOURCE_DATE_EPOCH and parses it as long long with error 
+	variable SOURCE_DATE_EPOCH and parses it as long long with error
 	handling.
 	* c-common.h (get_source_date_epoch): Prototype.
 	* c-lex.c (c_lex_with_flags): set parse_in->source_date_epoch.
@@ -2901,7 +2909,7 @@
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
-	* c-pragma.c (oacc_pragmas): Add entry for declare directive. 
+	* c-pragma.c (oacc_pragmas): Add entry for declare directive.
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OACC_DECLARE.
 	(enum pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT and
 	PRAGMA_OACC_CLAUSE_LINK.

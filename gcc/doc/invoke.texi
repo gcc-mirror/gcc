@@ -172,7 +172,8 @@ in the following sections.
 @gccoptlist{-c  -S  -E  -o @var{file}  -x @var{language}  @gol
 -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
 -pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
-@@@var{file}  -fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}  @gol
+@@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  @gol
+-fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}  @gol
 -fdump-ada-spec@r{[}-slim@r{]}  -fada-spec-parent=@var{unit}  -fdump-go-spec=@var{file}}
 
 @item C Language Options
@@ -481,9 +482,9 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset}  -fno-canonical-system-headers @gol
--fpch-deps  -fpch-preprocess  -fpreprocessed @gol
--ftabstop=@var{width}  -ftrack-macro-expansion  @gol
+-finput-charset=@var{charset} -fmacro-prefix-map=@var{old}=@var{new}  @gol
+-fno-canonical-system-headers @gol -fpch-deps  -fpch-preprocess  @gol
+-fpreprocessed -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
 -H  -imacros @var{file}  -include @var{file} @gol
 -M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT @gol
@@ -1659,6 +1660,16 @@ gcc -c t.c -wrapper gdb,--args
 This invokes all subprograms of @command{gcc} under
 @samp{gdb --args}, thus the invocation of @command{cc1} is
 @samp{gdb --args cc1 @dots{}}.
+
+@item -ffile-prefix-map=@var{old}=@var{new}
+@opindex ffile-prefix-map
+When compiling files residing in directory @file{@var{old}}, record
+any references to them in the result of the compilation as if the
+files resided in directory @file{@var{new}} instead.  Specifying this
+option is equivalent to specifying all the individual
+@option{-f*-prefix-map} options.  This can be used to make reproducible
+builds that are location independent.  See also
+@option{-fmacro-prefix-map} and @option{-fdebug-prefix-map}.
 
 @item -fplugin=@var{name}.so
 @opindex fplugin
@@ -7103,13 +7114,14 @@ link processing time.  Merging is enabled by default.
 
 @item -fdebug-prefix-map=@var{old}=@var{new}
 @opindex fdebug-prefix-map
-When compiling files in directory @file{@var{old}}, record debugging
-information describing them as in @file{@var{new}} instead.  This can be
-used to replace a build-time path with an install-time path in the debug info.
-It can also be used to change an absolute path to a relative path by using
-@file{.} for @var{new}.  This can give more reproducible builds, which are
-location independent, but may require an extra command to tell GDB where to
-find the source files.
+When compiling files residing in directory @file{@var{old}}, record
+debugging information describing them as if the files resided in
+directory @file{@var{new}} instead.  This can be used to replace a
+build-time path with an install-time path in the debug info.  It can
+also be used to change an absolute path to a relative path by using
+@file{.} for @var{new}.  This can give more reproducible builds, which
+are location independent, but may require an extra command to tell GDB
+where to find the source files. See also @option{-ffile-prefix-map}.
 
 @item -fvar-tracking
 @opindex fvar-tracking

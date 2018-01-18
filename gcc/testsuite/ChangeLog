@@ -1,3 +1,11 @@
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+        PR other/70268
+        * c-c++-common/ffile-prefix-map.c: New test.
+        * c-c++-common/fmacro-prefix-map.c: New test.
+        * c-c++-common/cpp/ffile-prefix-map.c: New test.
+        * c-c++-common/cpp/fmacro-prefix-map.c: New test.
+
 2018-01-18  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/i386/indirect-thunk-3.c: Remove duplicate options.

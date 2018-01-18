@@ -249,9 +249,6 @@ extern bool dwarf2out_do_frame (void);
 extern bool dwarf2out_do_cfi_asm (void);
 extern void dwarf2out_switch_text_section (void);
 
-const char *remap_debug_filename (const char *);
-void add_debug_prefix_map (const char *);
-
 /* For -fdump-go-spec.  */
 
 extern const struct gcc_debug_hooks *

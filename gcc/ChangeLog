@@ -1,3 +1,33 @@
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+        PR other/70268
+        * common.opt: (-ffile-prefix-map): New option.
+        * opts.c (common_handle_option): Defer it.
+        * opts-global.c (handle_common_deferred_options): Handle it.
+        * debug.h (remap_debug_filename, add_debug_prefix_map): Move to...
+        * file-prefix-map.h: New file.
+        (remap_debug_filename, add_debug_prefix_map): ...here.
+        (add_macro_prefix_map, add_file_prefix_map, remap_macro_filename): New.
+        * final.c (debug_prefix_map, add_debug_prefix_map
+        remap_debug_filename): Move to...
+        * file-prefix-map.c: New file.
+        (file_prefix_map, add_prefix_map, remap_filename) ...here and rename,
+        generalize, get rid of alloca(), use strrchr() instead of strchr().
+        (add_macro_prefix_map, add_debug_prefix_map, add_file_prefix_map):
+        Implement in terms of add_prefix_map().
+        (remap_macro_filename, remap_debug_filename): Implement in term of
+        remap_filename().
+        * Makefile.in (OBJS, PLUGIN_HEADERS): Add new files.
+        * builtins.c (fold_builtin_FILE): Call remap_macro_filename().
+        * dbxout.c: Include file-prefix-map.h.
+        * varasm.c: Likewise.
+        * vmsdbgout.c: Likewise.
+        * xcoffout.c: Likewise.
+        * dwarf2out.c: Likewise plus omit new options from DW_AT_producer.
+        * doc/cppopts.texi (-fmacro-prefix-map): Document.
+        * doc/invoke.texi (-ffile-prefix-map): Document.
+	(-fdebug-prefix-map): Update description.
+
 2018-01-18  Martin Liska  <mliska@suse.cz>
 
 	* config/i386/i386.c (indirect_thunk_name): Document that also
@@ -73,7 +103,7 @@
 
 	* config/aarch64/aarch64.md (movti_aarch64): Use Uti constraint.
 	* config/aarch64/aarch64.c (aarch64_mov128_immediate): New function.
-	(aarch64_legitimate_constant_p): Just support CONST_DOUBLE 
+	(aarch64_legitimate_constant_p): Just support CONST_DOUBLE
 	SF/DF/TF mode to avoid creating illegal CONST_WIDE_INT immediates.
 	* config/aarch64/aarch64-protos.h (aarch64_mov128_immediate):
 	Add declaration.
