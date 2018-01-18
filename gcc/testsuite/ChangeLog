@@ -1,3 +1,7 @@
+2018-01-18  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/builtins-6.h (foo): Add missing closing bracket
+	to the function.
+
 2018-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81013
