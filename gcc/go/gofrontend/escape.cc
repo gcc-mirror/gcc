@@ -360,6 +360,7 @@ Node::op_format() const
 		  break;
 
 		case Runtime::MAKECHAN:
+		case Runtime::MAKECHAN64:
 		case Runtime::MAKEMAP:
 		case Runtime::MAKESLICE:
 		case Runtime::MAKESLICE64:
@@ -1602,6 +1603,7 @@ Escape_analysis_assign::expression(Expression** pexpr)
 	    switch (fe->runtime_code())
 	      {
 	      case Runtime::MAKECHAN:
+	      case Runtime::MAKECHAN64:
 	      case Runtime::MAKEMAP:
 	      case Runtime::MAKESLICE:
 	      case Runtime::MAKESLICE64:
@@ -2284,6 +2286,7 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
 		switch (fe->runtime_code())
 		  {
 		  case Runtime::MAKECHAN:
+		  case Runtime::MAKECHAN64:
 		  case Runtime::MAKEMAP:
 		  case Runtime::MAKESLICE:
 		  case Runtime::MAKESLICE64:
@@ -3056,6 +3059,7 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
               switch (call->fn()->func_expression()->runtime_code())
                 {
                 case Runtime::MAKECHAN:
+		case Runtime::MAKECHAN64:
                 case Runtime::MAKEMAP:
                 case Runtime::MAKESLICE:
                 case Runtime::MAKESLICE64:

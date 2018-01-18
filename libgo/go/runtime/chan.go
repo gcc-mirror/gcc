@@ -26,6 +26,7 @@ import (
 // themselves, so that the compiler will export them.
 //
 //go:linkname makechan runtime.makechan
+//go:linkname makechan64 runtime.makechan64
 //go:linkname chansend1 runtime.chansend1
 //go:linkname chanrecv1 runtime.chanrecv1
 //go:linkname chanrecv2 runtime.chanrecv2

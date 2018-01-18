@@ -139,7 +139,8 @@ DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
 
 
 // Make a channel.
-DEF_GO_RUNTIME(MAKECHAN, "runtime.makechan", P2(TYPE, INT64), R1(CHAN))
+DEF_GO_RUNTIME(MAKECHAN, "runtime.makechan", P2(TYPE, INT), R1(CHAN))
+DEF_GO_RUNTIME(MAKECHAN64, "runtime.makechan64", P2(TYPE, INT64), R1(CHAN))
 
 // Send a value on a channel.
 DEF_GO_RUNTIME(CHANSEND, "runtime.chansend1", P2(CHAN, POINTER), R0())
