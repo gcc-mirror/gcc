@@ -1,3 +1,8 @@
+2018-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h: Fix comment typo (DECL_NON_TRIVIALLY_INITIALIZED_P
+	vs DECL_NONTRIVIALLY_INITIALIZED_P).
+
 2018-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82461 - constexpr list-initialized member
