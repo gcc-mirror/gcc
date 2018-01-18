@@ -2634,7 +2634,6 @@ trans_num_images (gfc_se * se, gfc_expr *expr)
     }
   else
     failed = build_int_cst (integer_type_node, -1);
-// ARTLESS: how to return?
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
 			     distance, failed);
   se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
@@ -3051,7 +3050,6 @@ conv_intrinsic_stride (gfc_se * se, gfc_expr * expr)
   se->expr = gfc_conv_descriptor_stride_get (desc, tmp);
 }
 
-// artless look at
 static void
 gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
 {
@@ -6150,7 +6148,6 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
   gfc_free_symbol (sym);
 }
 
-// ARTLESS: THIS SEEMS LIKE A GOOD EXAMPLE
 /* The length of a character string.  */
 static void
 gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
@@ -9237,7 +9234,6 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_arith (se, expr, PLUS_EXPR, false);
       break;
 
-// ARTLESS: look at image_status
     case GFC_ISYM_TEAM_NUMBER:
       conv_intrinsic_team_number(se, expr);
       break;
