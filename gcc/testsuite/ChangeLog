@@ -1,3 +1,17 @@
+2018-01-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/65578
+	* gcc.target/arm/builtin-bswap.x: New file.
+	* gcc.target/arm/builtin-bswap-1.c: Include the above.  Add checks
+	and options for armv6t2.
+	* gcc.target/arm/builtin-bswap-2.c: Include the above.  Add checks
+	and options for Thumb1.
+	* gcc.target/arm/builtin-bswap16.x: New file.
+	* gcc.target/arm/builtin-bswap16-1.c: Include the above.  Add checks
+	and options for armv6t2.
+	* gcc.target/arm/builtin-bswap16-2.c: Include the above.  Add checks
+	and options for Thumb1.
+
 2018-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/pr40887.c: Fix dg-options and dg-add-options
