@@ -1,3 +1,8 @@
+2018-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83864
+	* gfortran.dg/pr83864.f90: New test.
+
 2018-01-17  Jeff Law  <law@redhat.com>
 
 	PR testsuite/83883
