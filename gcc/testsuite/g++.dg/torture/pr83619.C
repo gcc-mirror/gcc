@@ -22,7 +22,7 @@ public:
     static void
     c (e *g)
     {
-      g->c ();
+      g->c ();			// { dg-message "incomplete" }
     }
   };
 };
