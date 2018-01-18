@@ -12589,7 +12589,7 @@ gbind *
 gimplify_body (tree fndecl, bool do_parms)
 {
   location_t saved_location = input_location;
-  gimple_seq parm_stmts, seq;
+  gimple_seq parm_stmts, parm_cleanup = NULL, seq;
   gimple *outer_stmt;
   gbind *outer_bind;
   struct cgraph_node *cgn;
@@ -12628,7 +12628,7 @@ gimplify_body (tree fndecl, bool do_parms)
 
   /* Resolve callee-copies.  This has to be done before processing
      the body so that DECL_VALUE_EXPR gets processed correctly.  */
-  parm_stmts = do_parms ? gimplify_parameters () : NULL;
+  parm_stmts = do_parms ? gimplify_parameters (&parm_cleanup) : NULL;
 
   /* Gimplify the function's body.  */
   seq = NULL;
@@ -12657,6 +12657,13 @@ gimplify_body (tree fndecl, bool do_parms)
       tree parm;
 
       gimplify_seq_add_seq (&parm_stmts, gimple_bind_body (outer_bind));
+      if (parm_cleanup)
+	{
+	  gtry *g = gimple_build_try (parm_stmts, parm_cleanup,
+				      GIMPLE_TRY_FINALLY);
+	  parm_stmts = NULL;
+	  gimple_seq_add_stmt (&parm_stmts, g);
+	}
       gimple_bind_set_body (outer_bind, parm_stmts);
 
       for (parm = DECL_ARGUMENTS (current_function_decl);

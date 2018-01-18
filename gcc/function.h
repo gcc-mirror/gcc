@@ -607,7 +607,7 @@ extern bool initial_value_entry (int i, rtx *, rtx *);
 extern void instantiate_decl_rtl (rtx x);
 extern int aggregate_value_p (const_tree, const_tree);
 extern bool use_register_for_decl (const_tree);
-extern gimple_seq gimplify_parameters (void);
+extern gimple_seq gimplify_parameters (gimple_seq *);
 extern void locate_and_pad_parm (machine_mode, tree, int, int, int,
 				 tree, struct args_size *,
 				 struct locate_and_pad_arg_data *);

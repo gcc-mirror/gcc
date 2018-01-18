@@ -1,3 +1,15 @@
+2018-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81715
+	PR testsuite/83882
+	* function.h (gimplify_parameters): Add gimple_seq * argument.
+	* function.c: Include gimple.h and options.h.
+	(gimplify_parameters): Add cleanup argument, add CLOBBER stmts
+	for the added local temporaries if needed.
+	* gimplify.c (gimplify_body): Adjust gimplify_parameters caller,
+	if there are any parameter cleanups, wrap whole body into a
+	try/finally with the cleanups.
+
 2018-01-18  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/82964
