@@ -1,6 +1,14 @@
 2018-01-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Include new section.
+	* doc/xml/manual/status_cxxis29124.xml: New section on IS 29124
+	status.
+	* doc/html/*: Regenerate.
+
+	Backport from mainline
 	2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Update references to C++17
