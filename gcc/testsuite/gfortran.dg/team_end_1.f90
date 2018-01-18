@@ -1,18 +1,18 @@
 ! { dg-do run }
 ! { dg-options "-fcoarray=single" }
 !
-! Tests if end team reverts this_image value
+! Tests if team_number intrinsic fucntion works
 !
   use iso_fortran_env, only : team_type
   implicit none
   type(team_type) :: team
-  integer :: orig_i
+  integer, parameter :: standard_initial_value=-1
 
-  orig_i = this_image ()
-  form team (orig_i + 1,team)
-  change team (team)
-  end team
-  if ( orig_i .NE. this_image () ) call abort
+  associate(new_team => mod(this_image(),2)+1)
+    form team (new_team,team)
+      change team (team)
+    end team
+  end associate
+
+  if (team_number()/=standard_initial_value) call abort
 end
-
-
