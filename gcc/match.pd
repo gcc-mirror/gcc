@@ -1832,7 +1832,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* The second argument of pointer_plus must be interpreted as signed, and
        thus sign-extended if necessary.  */
     (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
-     (convert (convert:stype @1))))
+     /* Use view_convert instead of convert here, as POINTER_PLUS_EXPR
+	second arg is unsigned even when we need to consider it as signed,
+	we don't want to diagnose overflow here.  */
+     (convert (view_convert:stype @1))))
 
   /* (T)P - (T)(P + A) -> -(T) A */
   (simplify
@@ -1876,7 +1879,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* The second argument of pointer_plus must be interpreted as signed, and
        thus sign-extended if necessary.  */
     (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
-     (negate (convert (convert:stype @1)))))
+     /* Use view_convert instead of convert here, as POINTER_PLUS_EXPR
+	second arg is unsigned even when we need to consider it as signed,
+	we don't want to diagnose overflow here.  */
+     (negate (convert (view_convert:stype @1)))))
 
   /* (T)(P + A) - (T)(P + B) -> (T)A - (T)B */
   (simplify
@@ -1927,7 +1933,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* The second argument of pointer_plus must be interpreted as signed, and
        thus sign-extended if necessary.  */
     (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
-     (minus (convert (convert:stype @1)) (convert (convert:stype @2)))))))
+     /* Use view_convert instead of convert here, as POINTER_PLUS_EXPR
+	second arg is unsigned even when we need to consider it as signed,
+	we don't want to diagnose overflow here.  */
+     (minus (convert (view_convert:stype @1))
+	    (convert (view_convert:stype @2)))))))
 
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
