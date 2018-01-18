@@ -1,3 +1,7 @@
+2018-01-18  Christophe Lyon <christophe.lyon@linaro.org>
+
+	* gcc.dg/rtl/arm/stl-cond.c: Enable on arm*.
+
 2018-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/83619
