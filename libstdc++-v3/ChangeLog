@@ -1,3 +1,11 @@
+2018-01-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update references to C++17
+	section numbers.
+
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* testsuite/17_intro/names.cc: Undefine 'y' on SPARC/Linux.
