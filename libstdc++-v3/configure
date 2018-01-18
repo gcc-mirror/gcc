@@ -21799,7 +21799,7 @@ for ac_header in endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \
 locale.h machine/endian.h machine/param.h nan.h stdint.h stdlib.h string.h \
 strings.h sys/ipc.h sys/isa_defs.h sys/machine.h sys/param.h \
 sys/resource.h sys/sem.h sys/stat.h sys/time.h sys/types.h unistd.h \
-wchar.h wctype.h linux/random.h
+wchar.h wctype.h linux/types.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -21807,6 +21807,23 @@ eval as_val=\$$as_ac_Header
    if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+for ac_header in linux/random.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "linux/random.h" "ac_cv_header_linux_random_h" "#ifdef HAVE_LINUX_TYPES_H
+# include <linux/types.h>
+#endif
+
+"
+if test "x$ac_cv_header_linux_random_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LINUX_RANDOM_H 1
 _ACEOF
 
 fi

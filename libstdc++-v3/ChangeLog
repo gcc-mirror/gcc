@@ -1,3 +1,11 @@
+2018-01-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (AC_CHECK_HEADERS): Add linux/types.h.  Conditionally
+	include linux/types.h when checking linux/random.h header.
+	* config.h.in: Regenerate.
+	* configure: Ditto.
+	* src/c++11/random.cc: Conditionally include linux/types.h.
+
 2018-01-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* testsuite/17_intro/names.cc: Undefine 'y' on SPARC/Linux.

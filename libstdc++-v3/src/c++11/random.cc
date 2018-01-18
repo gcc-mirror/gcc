@@ -42,6 +42,10 @@
 # include <sys/ioctl.h>
 #endif
 
+#ifdef _GLIBCXX_HAVE_LINUX_TYPES_H
+# include <linux/types.h>
+#endif
+
 #ifdef _GLIBCXX_HAVE_LINUX_RANDOM_H
 # include <linux/random.h>
 #endif
