@@ -1,3 +1,7 @@
+2018-01-18  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (-Wclass-memaccess): Tweak text.
+
 2018-01-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/83619
