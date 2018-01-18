@@ -95,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
 				   int, bool);
@@ -23535,6 +23536,8 @@ gen_producer_string (void)
       case OPT_fltrans_output_list_:
       case OPT_fresolution_:
       case OPT_fdebug_prefix_map_:
+      case OPT_fmacro_prefix_map_:
+      case OPT_ffile_prefix_map_:
       case OPT_fcompare_debug:
 	/* Ignore these.  */
 	continue;

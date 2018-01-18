@@ -22,6 +22,7 @@
 #include "c-common.h"		/* For flags.  */
 #include "../libcpp/internal.h"
 #include "c-pragma.h"		/* For parse_in.  */
+#include "file-prefix-map.h"    /* remap_macro_filename()  */
 
 /* Encapsulates state used to convert a stream of tokens into a text
    file.  */
@@ -151,6 +152,7 @@ init_pp_output (FILE *out_stream)
 
   cb->has_attribute = c_common_has_attribute;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
+  cb->remap_filename = remap_macro_filename;
 
   /* Initialize the print structure.  */
   print.src_line = 1;

@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "file-prefix-map.h" /* add_*_prefix_map()  */
 
 typedef const char *const_char_p; /* For DEF_VEC_P.  */
 
@@ -363,6 +364,10 @@ handle_common_deferred_options (void)
 
 	case OPT_fdebug_prefix_map_:
 	  add_debug_prefix_map (opt->arg);
+	  break;
+
+	case OPT_ffile_prefix_map_:
+	  add_file_prefix_map (opt->arg);
 	  break;
 
 	case OPT_fdump_:

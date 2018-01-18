@@ -1390,6 +1390,10 @@ fdollars-in-identifiers
 C ObjC C++ ObjC++
 Permit '$' as an identifier character.
 
+fmacro-prefix-map=
+C ObjC C++ ObjC++ Joined RejectNegative
+-fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE().
+
 fdump-ada-spec
 C ObjC C++ ObjC++ RejectNegative Var(flag_dump_ada_spec)
 Write all declarations as Ada code transitively.

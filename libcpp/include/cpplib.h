@@ -622,6 +622,10 @@ struct cpp_callbacks
      C++-style comments it does not include the terminating newline.  */
   void (*comment) (cpp_reader *, source_location, const unsigned char *,
 		   size_t);
+
+  /* Callback for filename remapping in __FILE__ and __BASE_FILE__ macro
+     expansions.  */
+  const char *(*remap_filename) (const char*);
 };
 
 #ifdef VMS

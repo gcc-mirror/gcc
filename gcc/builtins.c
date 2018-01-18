@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "gimple-fold.h"
 #include "intl.h"
+#include "file-prefix-map.h" /* remap_macro_filename()  */
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -8871,7 +8872,13 @@ static inline tree
 fold_builtin_FILE (location_t loc)
 {
   if (const char *fname = LOCATION_FILE (loc))
+    {
+      /* The documentation says this builtin is equivalent to the preprocessor
+	 __FILE__ macro so it appears appropriate to use the same file prefix
+	 mappings.  */
+      fname = remap_macro_filename (fname);
     return build_string_literal (strlen (fname) + 1, fname);
+    }
 
   return build_string_literal (1, "");
 }

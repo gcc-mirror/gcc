@@ -196,7 +196,7 @@ static int dialect_number;
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
 rtx current_insn_predicate;
 
-/* True if printing into -fdump-final-insns= dump.  */   
+/* True if printing into -fdump-final-insns= dump.  */
 bool final_insns_dump_p;
 
 /* True if profile_function should be called, but hasn't been called yet.  */
@@ -760,7 +760,7 @@ compute_alignments (void)
       if (!has_fallthru
 	  && (branch_count > count_threshold
 	      || (bb->count > bb->prev_bb->count.apply_scale (10, 1)
-		  && (bb->prev_bb->count 
+		  && (bb->prev_bb->count
 		      <= ENTRY_BLOCK_PTR_FOR_FN (cfun)
 			   ->count.apply_scale (1, 2)))))
 	{
@@ -804,7 +804,7 @@ compute_alignments (void)
 
 /* Grow the LABEL_ALIGN array after new labels are created.  */
 
-static void 
+static void
 grow_label_align (void)
 {
   int old = max_labelno;
@@ -1505,72 +1505,6 @@ asm_str_count (const char *templ)
       count++;
 
   return count;
-}
-
-/* ??? This is probably the wrong place for these.  */
-/* Structure recording the mapping from source file and directory
-   names at compile time to those to be embedded in debug
-   information.  */
-struct debug_prefix_map
-{
-  const char *old_prefix;
-  const char *new_prefix;
-  size_t old_len;
-  size_t new_len;
-  struct debug_prefix_map *next;
-};
-
-/* Linked list of such structures.  */
-static debug_prefix_map *debug_prefix_maps;
-
-
-/* Record a debug file prefix mapping.  ARG is the argument to
-   -fdebug-prefix-map and must be of the form OLD=NEW.  */
-
-void
-add_debug_prefix_map (const char *arg)
-{
-  debug_prefix_map *map;
-  const char *p;
-
-  p = strchr (arg, '=');
-  if (!p)
-    {
-      error ("invalid argument %qs to -fdebug-prefix-map", arg);
-      return;
-    }
-  map = XNEW (debug_prefix_map);
-  map->old_prefix = xstrndup (arg, p - arg);
-  map->old_len = p - arg;
-  p++;
-  map->new_prefix = xstrdup (p);
-  map->new_len = strlen (p);
-  map->next = debug_prefix_maps;
-  debug_prefix_maps = map;
-}
-
-/* Perform user-specified mapping of debug filename prefixes.  Return
-   the new name corresponding to FILENAME.  */
-
-const char *
-remap_debug_filename (const char *filename)
-{
-  debug_prefix_map *map;
-  char *s;
-  const char *name;
-  size_t name_len;
-
-  for (map = debug_prefix_maps; map; map = map->next)
-    if (filename_ncmp (filename, map->old_prefix, map->old_len) == 0)
-      break;
-  if (!map)
-    return filename;
-  name = filename + map->old_len;
-  name_len = strlen (name) + 1;
-  s = (char *) alloca (name_len + map->new_len);
-  memcpy (s, map->new_prefix, map->new_len);
-  memcpy (s + map->new_len, name, name_len);
-  return ggc_strdup (s);
 }
 
 /* Return true if DWARF2 debug info can be emitted for DECL.  */

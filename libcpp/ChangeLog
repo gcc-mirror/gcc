@@ -1,3 +1,10 @@
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+        PR other/70268
+        * include/cpplib.h (cpp_callbacks::remap_filename): New callback.
+        * libcpp/macro.c (_cpp_builtin_macro_text): Call remap_filename for
+        __FILE__ and __BASE_FILE__.
+
 2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* lex.c (search_line_fast): Remove illegal coercion of an
@@ -19,7 +26,7 @@
 2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* internal.h (maybe_print_line): Change signature.
-	
+
 2017-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/79228
@@ -714,9 +721,9 @@
 	* init.c (cpp_init_source_date_epoch): New function.
 	* internal.h: Added source_date_epoch variable to struct
 	cpp_reader to store a reproducible date.
-	* macro.c (_cpp_builtin_macro_text): Set pfile->date timestamp from 
-	pfile->source_date_epoch instead of localtime if source_date_epoch is 
-	set, to be used for __DATE__ and __TIME__ macros to help reproducible 
+	* macro.c (_cpp_builtin_macro_text): Set pfile->date timestamp from
+	pfile->source_date_epoch instead of localtime if source_date_epoch is
+	set, to be used for __DATE__ and __TIME__ macros to help reproducible
 	builds.
 
 2016-04-13  Bernd Schmidt  <bschmidt@redhat.com>

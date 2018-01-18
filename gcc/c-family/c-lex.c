@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "c-pragma.h"
 #include "debug.h"
+#include "file-prefix-map.h" /* remap_macro_filename()  */
 
 #include "attribs.h"
 
@@ -82,6 +83,7 @@ init_c_lex (void)
   cb->has_attribute = c_common_has_attribute;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->get_suggestion = cb_get_suggestion;
+  cb->remap_filename = remap_macro_filename;
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
