@@ -4130,7 +4130,8 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
       if (init->expr_type == EXPR_CONSTANT)
         gfc_set_constant_character_len (len, init, -1);
       else if (init
-               && init->ts.u.cl
+	       && init->ts.type == BT_CHARACTER
+               && init->ts.u.cl && init->ts.u.cl->length
                && mpz_cmp (ts->u.cl->length->value.integer,
                            init->ts.u.cl->length->value.integer))
         {
