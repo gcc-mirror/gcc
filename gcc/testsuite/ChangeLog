@@ -1,3 +1,8 @@
+2018-01-18  Christophe Lyon <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
+	Add function body to force error messages in some configurations.
+
 2018-01-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/pr70278.c: Add effective target checks for armv4t
