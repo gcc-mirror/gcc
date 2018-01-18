@@ -79,6 +79,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimple.h"
+#include "options.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -3993,7 +3995,7 @@ gimplify_parm_type (tree *tp, int *walk_subtrees, void *data)
    statements to add to the beginning of the function.  */
 
 gimple_seq
-gimplify_parameters (void)
+gimplify_parameters (gimple_seq *cleanup)
 {
   struct assign_parm_data_all all;
   tree parm;
@@ -4058,6 +4060,16 @@ gimplify_parameters (void)
 		  else if (TREE_CODE (type) == COMPLEX_TYPE
 			   || TREE_CODE (type) == VECTOR_TYPE)
 		    DECL_GIMPLE_REG_P (local) = 1;
+
+		  if (!is_gimple_reg (local)
+		      && flag_stack_reuse != SR_NONE)
+		    {
+		      tree clobber = build_constructor (type, NULL);
+		      gimple *clobber_stmt;
+		      TREE_THIS_VOLATILE (clobber) = 1;
+		      clobber_stmt = gimple_build_assign (local, clobber);
+		      gimple_seq_add_stmt (cleanup, clobber_stmt);
+		    }
 		}
 	      else
 		{
