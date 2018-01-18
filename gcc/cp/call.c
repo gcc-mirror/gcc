@@ -102,7 +102,8 @@ struct conversion {
      being bound to an lvalue expression or an rvalue reference is
      being bound to an rvalue expression.  If KIND is ck_rvalue,
      true when we are treating an lvalue as an rvalue (12.8p33).  If
-     KIND is ck_base, always false.  */
+     KIND is ck_base, always false.  If ck_identity, we will be
+     binding a reference directly.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
   /* The type of the expression resulting from the conversion.  */
@@ -1476,6 +1477,10 @@ direct_reference_binding (tree type, conversion *conv)
 
   t = TREE_TYPE (type);
 
+  if (conv->kind == ck_identity)
+    /* Mark the identity conv as to not decay to rvalue.  */
+    conv->rvaluedness_matches_p = true;
+
   /* [over.ics.rank]
 
      When a parameter of reference type binds directly
@@ -1501,6 +1506,7 @@ direct_reference_binding (tree type, conversion *conv)
 	 That way, convert_like knows not to generate a temporary.  */
       conv->need_temporary_p = false;
     }
+
   return build_conv (ck_ref_bind, type, conv);
 }
 
@@ -6800,7 +6806,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else
 	    gcc_unreachable ();
 	}
-      expr = mark_rvalue_use (expr);
+      expr = mark_use (expr, /*rvalue_p=*/!convs->rvaluedness_matches_p,
+		       /*read_p=*/true, UNKNOWN_LOCATION,
+		       /*reject_builtin=*/true);
 
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, complain);

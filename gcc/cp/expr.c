@@ -89,7 +89,7 @@ cplus_expand_constant (tree cst)
 /* We've seen an actual use of EXPR.  Possibly replace an outer variable
    reference inside with its constant value or a lambda capture.  */
 
-static tree
+tree
 mark_use (tree expr, bool rvalue_p, bool read_p,
 	  location_t loc /* = UNKNOWN_LOCATION */,
 	  bool reject_builtin /* = true */)
