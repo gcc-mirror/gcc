@@ -1253,6 +1253,20 @@ gfc_check_failed_or_stopped_images (gfc_expr *team, gfc_expr *kind)
 
 
 bool
+gfc_check_get_team (gfc_expr *level)
+{
+  if (level)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &level->where);
+      return false;
+    }
+  return true;
+}
+
+
+bool
 gfc_check_atomic_cas (gfc_expr *atom, gfc_expr *old, gfc_expr *compare,
 		      gfc_expr *new_val,  gfc_expr *stat)
 {
@@ -5269,6 +5283,33 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 			   "NUM_IMAGES at %L", &failed->where))
 	return false;
     }
+
+  return true;
+}
+
+
+bool
+gfc_check_team_number (gfc_expr *team)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return false;
+    }
+
+  if (team)
+    {
+      /* todo: this works on any derived type when
+         it should only work with type team */
+      if (team->ts.type != BT_DERIVED)
+        {
+          gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
+                     "shall be of type TEAM_TYPE", &team->where);
+          return false;
+        }
+    }
+  else
+    return true;
 
   return true;
 }
