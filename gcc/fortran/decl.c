@@ -1692,7 +1692,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		    }
 		  else if (init->expr_type == EXPR_ARRAY)
 		    {
-		      if (init->ts.u.cl)
+		      if (init->ts.u.cl && init->ts.u.cl->length)
 			clen = mpz_get_si (init->ts.u.cl->length->value.integer);
 		      else if (init->value.constructor)
 			{
