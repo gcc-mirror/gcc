@@ -1,3 +1,18 @@
+2018-01-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (*call_indirect_nonlocal_sysv<mode>):
+	Generate different code for -mno-speculate-indirect-jumps.
+	(*call_value_indirect_nonlocal_sysv<mode>): Likewise.
+	(*call_indirect_aix<mode>): Disable for
+	-mno-speculate-indirect-jumps.
+	(*call_indirect_aix<mode>_nospec): New define_insn.
+	(*call_value_indirect_aix<mode>): Disable for
+	-mno-speculate-indirect-jumps.
+	(*call_value_indirect_aix<mode>_nospec): New define_insn.
+	(*sibcall_nonlocal_sysv<mode>): Generate different code for
+	-mno-speculate-indirect-jumps.
+	(*sibcall_value_nonlocal_sysv<mode>): Likewise.
+
 2018-01-17  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): If we load or store a
