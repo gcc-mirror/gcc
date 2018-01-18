@@ -3216,7 +3216,6 @@ cpms_out::lang_decl_bools (tree t)
   WB (lang->u.base.anticipated_p);
   WB (lang->u.base.friend_or_tls);
   WB (lang->u.base.odr_used);
-  WB (lang->u.base.u2sel);
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   switch (lang->u.base.selector)
@@ -3270,7 +3269,6 @@ cpms_in::lang_decl_bools (tree t)
   RB (lang->u.base.anticipated_p);
   RB (lang->u.base.friend_or_tls);
   RB (lang->u.base.odr_used);
-  RB (lang->u.base.u2sel);
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
   switch (lang->u.base.selector)
@@ -4202,10 +4200,7 @@ cpms_out::lang_decl_vals (tree t)
       /* FALLTHROUGH.  */
     case lds_min:  /* lang_decl_min.  */
       WT (lang->u.min.template_info);
-      if (lang->u.base.u2sel)
-	WU (lang->u.min.u2.discriminator);
-      else
-	WT (lang->u.min.u2.access);
+      WT (lang->u.min.access);
       break;
     case lds_ns:  /* lang_decl_ns.  */
       break;
@@ -4254,10 +4249,7 @@ cpms_in::lang_decl_vals (tree t)
       /* FALLTHROUGH.  */
     case lds_min:  /* lang_decl_min.  */
       RT (lang->u.min.template_info);
-      if (lang->u.base.u2sel)
-	RU (lang->u.min.u2.discriminator);
-      else
-	RT (lang->u.min.u2.access);
+      RT (lang->u.min.access);
       break;
     case lds_ns:  /* lang_decl_ns.  */
       break;

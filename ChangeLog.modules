@@ -1,3 +1,20 @@
+2018-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	Merge access & discriminator.
+	gcc/cp/
+	* cp-tree.h (struct lang_decl_base): Rename u2sel to spare.
+	(struct lang_decl_min): Replace lang_decl_u2 union with plain
+	tree.
+	(LANG_DECL_U2_CHECK): Delete.
+	(DECL_DISCRIMINATOR_SET_P, DECL_DISCRIMINATOR): Adjust.
+	(DECL_CAPTURED_VARIABLE, DECL_ACCESS, THUNK_VIRTUAL_OFFSET): Adjust.
+	* decl.c (push_local_name): Represent discriminator as INTEGER_CST.
+	(duplicate_decls): Copy DECL_ACCESS. fix formatting.
+	* mangle.c (discriminator_for_local_entity): Extract integer value.
+	* module.c (cpms_{in,out},lang_decl_bools): Drop u.base.u2sel.
+	(cpms_{in,out}::lang_decl_vals): Drop u.min.u2 handling.
+	* semantics.c (finish_omp_threadprivate): Drop u.base.u2sel copying.
+
 2018-01-02  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r256078.

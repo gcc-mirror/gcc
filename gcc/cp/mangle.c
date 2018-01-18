@@ -1978,7 +1978,7 @@ discriminator_for_local_entity (tree entity)
   if (DECL_DISCRIMINATOR_P (entity))
     {
       if (DECL_DISCRIMINATOR_SET_P (entity))
-	return DECL_DISCRIMINATOR (entity);
+	return TREE_INT_CST_LOW (DECL_DISCRIMINATOR (entity));
       else
 	/* The first entity with a particular name doesn't get
 	   DECL_DISCRIMINATOR set up.  */
