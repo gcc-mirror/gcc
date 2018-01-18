@@ -4125,6 +4125,11 @@ foreach { armfunc armflag armdefs } {
 		#if !(DEFS)
 		#error !(DEFS)
 		#endif
+		int
+		main (void)
+		{
+		    return 0;
+		}
 	    } "FLAG" ]
 	}
 
