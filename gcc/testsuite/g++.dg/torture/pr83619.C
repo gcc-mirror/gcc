@@ -5,7 +5,9 @@ class d
 public:
   virtual unsigned c ();
 };
-class e;
+class e : public d
+{
+};
 class i
 {
   void h ();
@@ -32,9 +34,6 @@ class l
 public:
   l (int);
   k *operator-> ();
-};
-class e : public d
-{
 };
 class m final : e
 {
