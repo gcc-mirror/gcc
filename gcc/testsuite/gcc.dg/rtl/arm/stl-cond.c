@@ -1,4 +1,4 @@
-/* { dg-do compile { target arm-*-* } } */
+/* { dg-do compile { target arm*-*-* } } */
 /* { dg-require-effective-target arm_arm_ok } */
 /* { dg-require-effective-target arm_arch_v8a_ok } */
 /* { dg-options "-O2 -marm" } */
