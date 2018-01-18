@@ -1,3 +1,8 @@
+2018-01-17  Jeff Law  <law@redhat.com>
+
+	PR testsuite/83883
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Tighten expected output.
+
 2018-01-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/safe-indirect-jump-1.c: Remove endian
