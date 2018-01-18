@@ -10826,6 +10826,7 @@ indirect_thunk_name (char name[32], unsigned int regno,
 	call	L2
    L1:
 	pause
+	lfence
 	jmp	L1
    L2:
 	mov	%REG, (%sp)
@@ -10837,6 +10838,7 @@ indirect_thunk_name (char name[32], unsigned int regno,
 	call L2
   L1:
 	pause
+	lfence
 	jmp L1
   L2:
 	lea WORD_SIZE(%sp), %sp
@@ -10864,7 +10866,8 @@ output_indirect_thunk (bool need_bnd_p, unsigned int regno)
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel1);
 
-  /* Pause + lfence.  */
+  /* AMD and Intel CPUs prefer each a different instruction as loop filler.
+     Usage of both pause + lfence is compromise solution.  */
   fprintf (asm_out_file, "\tpause\n\tlfence\n");
 
   /* Jump.  */

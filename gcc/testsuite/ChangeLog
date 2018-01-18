@@ -1,3 +1,15 @@
+2018-01-18  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/indirect-thunk-3.c: Remove duplicate options.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-bnd-4.c: Likewise.
+	* gcc.target/i386/ret-thunk-10.c: Likewise.
+	* gcc.target/i386/ret-thunk-11.c: Likewise.
+	* gcc.target/i386/ret-thunk-12.c: Likewise.
+	* gcc.target/i386/ret-thunk-15.c: Likewise.
+	* gcc.target/i386/ret-thunk-9.c: Likewise.
+
 2018-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/xor-and.c: Fix dg-options and dg-add-options

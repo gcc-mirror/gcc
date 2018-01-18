@@ -1,3 +1,10 @@
+2018-01-18  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c (indirect_thunk_name): Document that also
+	lfence is emitted.
+	(output_indirect_thunk): Document why both instructions
+	(pause and lfence) are generated.
+
 2018-01-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83887
