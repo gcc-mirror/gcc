@@ -1,3 +1,8 @@
+2018-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81013
+	* g++.dg/inherit/union3.C: New.
+
 2018-01-18  Christophe Lyon <christophe.lyon@linaro.org>
 
 	* gcc.dg/rtl/arm/stl-cond.c: Enable on arm*.
