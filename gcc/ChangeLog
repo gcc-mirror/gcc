@@ -1,3 +1,12 @@
+2018-01-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83887
+	* graphite-scop-detection.c
+	(scop_detection::get_nearest_dom_with_single_entry): Remove.
+	(scop_detection::get_nearest_pdom_with_single_exit): Likewise.
+	(scop_detection::merge_sese): Re-implement with a flood-fill
+	algorithm that properly finds a SESE region if it exists.
+
 2018-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/61240
