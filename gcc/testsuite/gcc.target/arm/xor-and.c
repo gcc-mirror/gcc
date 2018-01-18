@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_arch_v6_ok } */
-/* { dg-add-options arm_arch_v6 } */
 /* { dg-options "-O" }  */
+/* { dg-add-options arm_arch_v6 } */
 
 unsigned short foo (unsigned short x)
 {

@@ -1,3 +1,8 @@
+2018-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/xor-and.c: Fix dg-options and dg-add-options
+	order.
+
 2018-01-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83160
