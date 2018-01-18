@@ -700,3 +700,8 @@ Use the given offset for addressing the stack-protector guard.
 
 TargetVariable
 long rs6000_stack_protector_guard_offset = 0
+
+;; -mno-speculate-indirect-jumps adds deliberate misprediction to indirect
+;; branches via the CTR.
+mspeculate-indirect-jumps
+Target Undocumented Var(rs6000_speculate_indirect_jumps) Init(1) Save
