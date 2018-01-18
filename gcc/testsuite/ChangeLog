@@ -1,3 +1,8 @@
+2018-01-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/pr70278.c: Add effective target checks for armv4t
+	and arm_thumb1_ok.
+
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
         PR other/70268
