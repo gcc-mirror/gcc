@@ -7565,7 +7565,10 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
   else if (is_chan)
     {
       Expression* type_arg = Expression::make_type_descriptor(type, type_loc);
-      call = Runtime::make_call(Runtime::MAKECHAN, loc, 2, type_arg, len_arg);
+      Runtime::Function code = Runtime::MAKECHAN;
+      if (!len_small)
+	code = Runtime::MAKECHAN64;
+      call = Runtime::make_call(code, loc, 2, type_arg, len_arg);
     }
   else
     go_unreachable();
