@@ -1007,7 +1007,7 @@ cgraph_node::create_version_clone_with_body
   /* Update the call_expr on the edges to call the new version node. */
   update_call_expr (new_version_node);
 
-  symtab->call_cgraph_insertion_hooks (this);
+  symtab->call_cgraph_insertion_hooks (new_version_node);
   return new_version_node;
 }
 

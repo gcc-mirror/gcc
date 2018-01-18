@@ -1,3 +1,10 @@
+2018-01-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/82256
+	patch by PaX Team
+	* cgraphclones.c (cgraph_node::create_version_clone_with_body):
+	Fix call of call_cgraph_insertion_hooks.
+
 2018-01-18  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (-Wclass-memaccess): Tweak text.
