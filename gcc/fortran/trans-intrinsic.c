@@ -2451,15 +2451,10 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
   unsigned int num_args;
 
   tree *args, tmp;
-  printf("trans-intrinsic.c: conv_intrinsic_team_number\n");
 
   num_args = gfc_intrinsic_argument_list_length (expr);
   args = XALLOCAVEC (tree, num_args);
   gfc_conv_intrinsic_function_args (se, expr, args, num_args);
-
-  //
-  // TODO
-  // for GFC_FCOARRAY_SINGLE put error message "not currently implemented"?
 
   if (flag_coarray == GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
     {
