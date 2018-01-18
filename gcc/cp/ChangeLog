@@ -1,3 +1,13 @@
+2018-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83160
+	* cp-tree.h (mark_use): Declare.
+	* expr.c (mark_use): Make extern.
+	* call.c (direct_reference_binding): Set inner conv's
+	rvaluedness_matches_p, if it is an identity.
+	(convert_like_real): Mark lvalue or rvalue use for identity as
+	rvaledness_matches_p demands.
+
 2018-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83824

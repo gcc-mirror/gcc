@@ -1,3 +1,8 @@
+2018-01-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83160
+	* g++.dg/cpp0x/pr83160.C: New.
+
 2018-01-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83887
