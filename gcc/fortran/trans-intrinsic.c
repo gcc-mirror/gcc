@@ -2456,7 +2456,8 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
   args = XALLOCAVEC (tree, num_args);
   gfc_conv_intrinsic_function_args (se, expr, args, num_args);
 
-  if (flag_coarray == GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
+  if (flag_coarray ==
+      GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
     {
       tree arg;
 
@@ -2479,7 +2480,7 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
 			       args[0], build_int_cst (integer_type_node, -1));
   else if (flag_coarray == GFC_FCOARRAY_LIB)
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
-			       integer_zero_node, build_int_cst (integer_type_node, -1));
+		integer_zero_node, build_int_cst (integer_type_node, -1));
   else
     gcc_unreachable ();
 
@@ -9235,7 +9236,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_TEAM_NUMBER:
-      conv_intrinsic_team_number(se, expr);
+      conv_intrinsic_team_number (se, expr);
       break;
 
     case GFC_ISYM_TRANSFER:

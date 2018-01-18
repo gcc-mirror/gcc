@@ -3070,7 +3070,7 @@ add_functions (void)
 
   add_sym_1 ("team_number", GFC_ISYM_TEAM_NUMBER, CLASS_TRANSFORMATIONAL,
 	     ACTUAL_YES, BT_INTEGER, di, GFC_STD_F2008_TS,
-             gfc_check_team_number, NULL, gfc_resolve_team_number,
+	     gfc_check_team_number, NULL, gfc_resolve_team_number,
 	     team, BT_DERIVED, di, OPTIONAL);
 
   add_sym_3 ("this_image", GFC_ISYM_THIS_IMAGE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008,

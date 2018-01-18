@@ -2278,7 +2278,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	      return false;
 	    }
 	}
-      
+
       if (array->rank == 1 || boundary->rank == 0)
 	{
 	  if (!scalar_check (boundary, 2))
@@ -2327,7 +2327,7 @@ gfc_check_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	case BT_COMPLEX:
 	case BT_CHARACTER:
 	  break;
-	  
+
 	default:
 	  gfc_error ("Missing %qs argument to %qs intrinsic at %L for %qs "
 		     "of type %qs", gfc_current_intrinsic_arg[2]->name,
@@ -5299,8 +5299,8 @@ gfc_check_team_number (gfc_expr *team)
 
   if (team)
     {
-      /* todo: this works on any derived type when
-         it should only work with type team */
+      /* TODO: this works on any derived type when
+         it should only work with team_type.  */
       if (team->ts.type != BT_DERIVED)
         {
           gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
