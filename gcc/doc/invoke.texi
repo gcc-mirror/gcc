@@ -2970,11 +2970,11 @@ Warn when the destination of a call to a raw memory function such as
 @code{memset} or @code{memcpy} is an object of class type, and when writing
 into such an object might bypass the class non-trivial or deleted constructor
 or copy assignment, violate const-correctness or encapsulation, or corrupt
-the virtual table.  Modifying the representation of such objects may violate
-invariants maintained by member functions of the class.  For example, the call
-to @code{memset} below is undefined because it modifies a non-trivial class
-object and is, therefore, diagnosed.  The safe way to either initialize or
-clear the storage of objects of such types is by using the appropriate
+virtual table pointers.  Modifying the representation of such objects may
+violate invariants maintained by member functions of the class.  For example,
+the call to @code{memset} below is undefined because it modifies a non-trivial
+class object and is, therefore, diagnosed.  The safe way to either initialize
+or clear the storage of objects of such types is by using the appropriate
 constructor or assignment operator, if one is available.
 @smallexample
 std::string str = "abc";
