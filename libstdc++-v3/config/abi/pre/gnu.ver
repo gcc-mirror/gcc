@@ -60,7 +60,7 @@ GLIBCXX_3.4 {
       std::basic_[t-z]*;
       std::ba[t-z]*;
       std::b[b-z]*;
-      std::c[a-g]*;
+      std::cerr;
 #     std::char_traits;
 #     std::c[i-z]*;
       std::c[i-n]*;
