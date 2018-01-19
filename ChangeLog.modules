@@ -1,5 +1,9 @@
 2018-01-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (cpms_{in.out}::tree_node_special): New, broken out of ...
+	(cpms_{in,out}::tree_node): ... here.  Call them.
+
 	Merge trunk r256894.
 
 	gcc/cp/

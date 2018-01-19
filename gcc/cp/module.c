@@ -26,14 +26,14 @@ along with GCC; see the file COPYING3.  If not see
 /* (Incomplete) Design Notes
 
    Each namespace-scope decl has a MODULE_INDEX and a MODULE_PURVIEW_P
-   flag (NOT CURRENTLY TRUE).  The symbols for a particular module are
-   held located in a sparse array hanging off the ns-level binding.
-   Both global module and module-specific are on the same slot.  The
-   current TU is slot 0 (NOT CURRENTLY TRUE).  Imports have non-zero
-   indices, and any indirect import will have a smaller index than any
-   module importing it (direct imports of course have a higher index
-   than zero).  Builtins are always in the current TU -- imports do
-   not have their own shadow decls.
+   flag.  The symbols for a particular module are held located in a
+   sparse array hanging off the ns-level binding.  Both global module
+   and module-specific are on the same slot.  The current TU is slot 0
+   (NOT CURRENTLY TRUE).  Imports have non-zero indices, and any
+   indirect import will have a smaller index than any module importing
+   it (direct imports of course have a higher index than zero).
+   Builtins are always in the current TU -- imports do not have their
+   own shadow decls.
 
    I have not yet decided how to represent the decls for the same
    global-module entity appearing in two different modules.  Two
@@ -1494,6 +1494,7 @@ private:
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
   void tree_node_raw (tree_code, tree);
+  int tree_node_special (tree);
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
@@ -1604,6 +1605,7 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   bool tree_node_raw (tree_code, tree, tree, tree);
+  tree tree_node_special (unsigned);
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
@@ -4471,32 +4473,18 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
   return true;
 }
 
-/* Write either the decl (as a declaration) itself (and create a
-   mapping for it), or write the existing mapping or write null.  This
-   is essentially the lisp self-referential structure pretty-printer,
-   except that we implicitly number every node, so need neither two
-   passes, nor explicit labelling.
-*/
+/* If tree has special streaming semantics, do that.  */
 
-void
-cpms_out::tree_node (tree t)
+int
+cpms_out::tree_node_special (tree t)
 {
-  if (!t)
-    {
-      nulls++;
-      w.u (0); /* This also matches t_eof, but we cannot be confused. */
-      return;
-    }
-
-  nest ();
   if (unsigned *val = tree_map.get (t))
     {
       refs++;
       w.u (*val);
       dump () && dump ("Wrote:%u referenced %C:%N%M", *val,
 		       TREE_CODE (t), t, t);
-      unnest ();
-      return;
+      return true;
     }
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t))
@@ -4514,8 +4502,7 @@ cpms_out::tree_node (tree t)
 	  w.u (ix);
 	  unsigned tag = insert (t);
 	  dump () && dump ("Wrote:%u typeinfo pseudo %u %N", tag, ix, t);
-	  unnest ();
-	  return;
+	  return true;
 	}
       else if (!tree_map.get (name))
 	{
@@ -4531,10 +4518,8 @@ cpms_out::tree_node (tree t)
 	  tree_node (name);
 	  dump () && dump ("Wrote interstitial type name %C:%N%M",
 			   TREE_CODE (name), name, name);
-	  unnest ();
 	  /* The type could be a variant of TREE_TYPE (name).  */
-	  tree_node (t);
-	  return;
+	  return -1;
 	}
     }
 
@@ -4549,7 +4534,7 @@ cpms_out::tree_node (tree t)
       unsigned tag = insert (t);
       dump () && dump ("Wrote:%u typeinfo %M for %N", tag, t, type);
       unnest ();
-      return;
+      return true;
     }
 
   if (TREE_CODE (t) == IDENTIFIER_NODE)
@@ -4567,6 +4552,139 @@ cpms_out::tree_node (tree t)
       dump () && dump ("Written:%u %sidentifier:%N",
 		       tag, conv_op ? "conv_op_" : "",
 		       conv_op ? TREE_TYPE (t) : t);
+      return true;
+    }
+
+  return false;  /* Not a special snowflake. */
+}
+
+tree
+cpms_in::tree_node_special (unsigned tag)
+{
+  if (tag >= rt_ref_base)
+    {
+      tree *val = (tree *)tree_map.get (tag);
+      if (!val || !*val)
+	{
+	  error ("unknown tree reference %qd", tag);
+	  r.bad ();
+	  return NULL_TREE;
+	}
+
+      tree res = *val;
+      dump () && dump ("Read:%u found %C:%N%M", tag,
+		       TREE_CODE (res), res, res);
+      return res;
+    }
+
+  if (tag == rt_type_name)
+    {
+      /* An interstitial type name.  Read the name and then start
+	 over.  */
+      tree name = tree_node ();
+      if (!name || TREE_CODE (name) != TYPE_DECL)
+	r.bad ();
+      else
+	dump () && dump ("Read interstitial type name %C:%N%M",
+			 TREE_CODE (name), name, name);
+      return NULL_TREE;
+    }
+
+  if (tag == rt_typeinfo_var)
+    {
+      /* A typeinfo.  Get the type and recreate the var decl.  */
+      tree var = NULL_TREE, type = tree_node ();
+      if (!type || !TYPE_P (type))
+	r.bad ();
+      else
+	{
+	  var = get_tinfo_decl (type);
+	  unsigned tag = insert (var);
+	  dump () && dump ("Created:%u typeinfo var %M for %N",
+			   tag, var, type);
+	}
+      return var;
+    }
+
+  if (tag == rt_typeinfo_pseudo)
+    {
+      /* A pseuto typeinfo.  Get the index and recreate the pseudo.  */
+      unsigned ix = r.u ();
+      tree type = NULL_TREE;
+
+      if (ix >= 1000)
+	r.bad ();
+      else
+	type = get_pseudo_tinfo_type (ix);
+
+      unsigned tag = insert (type);
+      dump () && dump ("Created:%u typeinfo pseudo %u %N", tag, ix, type);
+      return type;
+    }
+
+  if (tag == rt_definition)
+    {
+      /* An immediate definition.  */
+      tree res = tag_definition ();
+      if (res)
+	dump () && dump ("Read immediate definition %C:%N%M",
+			 TREE_CODE (res), res, res);
+      else
+	gcc_assert (r.error ());
+      return res;
+    }
+
+  if (tag == rt_identifier)
+    {
+      size_t l;
+      const char *str = r.str (&l);
+      tree id = get_identifier_with_length (str, l);
+      tag = insert (id);
+      dump () && dump ("Read:%u identifier:%N", tag, id);
+      return id;
+    }
+
+  if (tag == rt_conv_identifier)
+    {
+      tree t = tree_node ();
+      if (!t || !TYPE_P (t))
+	{
+	  error ("bad conversion operator");
+	  r.bad ();
+	  t = void_type_node;
+	}
+      tree id = make_conv_op_name (t);
+      tag = insert (id);
+      dump () && dump ("Read:%u conv_op_identifier:%N", tag, t);
+      return id;
+    }
+
+  return NULL_TREE;
+}
+
+/* Write either the decl (as a declaration) itself (and create a
+   mapping for it), or write the existing mapping or write null.  This
+   is essentially the lisp self-referential structure pretty-printer,
+   except that we implicitly number every node, so need neither two
+   passes, nor explicit labelling.
+*/
+
+void
+cpms_out::tree_node (tree t)
+{
+  if (!t)
+    {
+      nulls++;
+      w.u (0);
+      return;
+    }
+
+  nest ();
+ again:
+  if (int special = tree_node_special (t))
+    {
+      if (special < 0)
+	goto again;
       unnest ();
       return;
     }
@@ -4645,110 +4763,28 @@ cpms_in::tree_node ()
     return NULL_TREE;
 
   nest ();
-  if (tag >= rt_ref_base)
+ again:
+  tree res = tree_node_special (tag);
+  if (!res && !r.error ())
     {
-      tree *val = (tree *)tree_map.get (tag);
-      if (!val || !*val)
+      if (tag == rt_type_name)
 	{
-	  error ("unknown tree reference %qd", tag);
-	  r.bad ();
-	  return NULL_TREE;
+	  tag = r.u ();
+	  goto again;
 	}
 
-      tree res = *val;
-      dump () && dump ("Read:%u found %C:%N%M", tag,
-		       TREE_CODE (res), res, res);
+      if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
+	{
+	  error (tag < rt_tree_base ? "unexpected key %qd"
+		 : "unknown tree code %qd" , tag);
+	  r.bad ();
+	}
+    }
+      
+  if (res || r.error ())
+    {
       unnest ();
       return res;
-    }
-
-  if (tag == rt_type_name)
-    {
-      /* An interstitial type name.  Read the name and then start
-	 over.  */
-      tree name = tree_node ();
-      if (!name || TREE_CODE (name) != TYPE_DECL)
-	r.bad ();
-      else
-	dump () && dump ("Read interstitial type name %C:%N%M",
-			 TREE_CODE (name), name, name);
-      unnest ();
-      return tree_node ();
-    }
-  else if (tag == rt_typeinfo_var)
-    {
-      /* A typeinfo.  Get the type and recreate the var decl.  */
-      tree var = NULL_TREE, type = tree_node ();
-      if (!type || !TYPE_P (type))
-	r.bad ();
-      else
-	{
-	  var = get_tinfo_decl (type);
-	  unsigned tag = insert (var);
-	  dump () && dump ("Created:%u typeinfo var %M for %N",
-			   tag, var, type);
-	}
-      unnest ();
-      return var;
-    }
-  else if (tag == rt_typeinfo_pseudo)
-    {
-      /* A pseuto typeinfo.  Get the index and recreate the pseudo.  */
-      unsigned ix = r.u ();
-      tree type = NULL_TREE;
-
-      if (ix >= 1000)
-	r.bad ();
-      else
-	type = get_pseudo_tinfo_type (ix);
-
-      unsigned tag = insert (type);
-      dump () && dump ("Created:%u typeinfo pseudo %u %N", tag, ix, type);
-      unnest ();
-      return type;
-    }
-  else if (tag == rt_definition)
-    {
-      /* An immediate definition.  */
-      tree res = tag_definition ();
-      if (res)
-	dump () && dump ("Read immediate definition %C:%N%M",
-			 TREE_CODE (res), res, res);
-      unnest ();
-      return res;
-    }
-  else if (tag == rt_identifier)
-    {
-      size_t l;
-      const char *str = r.str (&l);
-      tree id = get_identifier_with_length (str, l);
-      tag = insert (id);
-      dump () && dump ("Read:%u identifier:%N", tag, id);
-      unnest ();
-      return id;
-    }
-  else if (tag == rt_conv_identifier)
-    {
-      tree t = tree_node ();
-      if (!t || !TYPE_P (t))
-	{
-	  error ("bad conversion operator");
-	  r.bad ();
-	  t = void_type_node;
-	}
-      tree id = make_conv_op_name (t);
-      tag = insert (id);
-      dump () && dump ("Read:%u conv_op_identifier:%N", tag, t);
-      unnest ();
-      return id;
-    }
-  else if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
-    {
-      error (tag < rt_tree_base ? "unexpected key %qd"
-	     : "unknown tree code %qd" , tag);
-      r.bad ();
-      unnest ();
-      return NULL_TREE;
     }
 
   tree_code code = tree_code (tag - rt_tree_base);
