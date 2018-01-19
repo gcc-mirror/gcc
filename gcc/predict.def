@@ -54,7 +54,7 @@ DEF_PREDICTOR (PRED_UNCONDITIONAL, "unconditional jump", PROB_ALWAYS,
 /* Use number of loop iterations determined by # of iterations
    analysis to set probability.  We don't want to use Dempster-Shaffer
    theory here, as the predictions is exact.  */
-DEF_PREDICTOR (PRED_LOOP_ITERATIONS, "loop iterations", PROB_ALWAYS,
+DEF_PREDICTOR (PRED_LOOP_ITERATIONS, "loop iterations", PROB_UNINITIALIZED,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Assume that any given atomic operation has low contention,
@@ -71,11 +71,11 @@ DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY,
 
 /* Use number of loop iterations guessed by the contents of the loop.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS_GUESSED, "guessed loop iterations",
-	       PROB_ALWAYS, PRED_FLAG_FIRST_MATCH)
+	       PROB_UNINITIALIZED, PRED_FLAG_FIRST_MATCH)
 
 /* Use number of loop iterations guessed by the contents of the loop.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS_MAX, "guessed loop iterations",
-	       PROB_ALWAYS, PRED_FLAG_FIRST_MATCH)
+	       PROB_UNINITIALIZED, PRED_FLAG_FIRST_MATCH)
 
 /* Branch containing goto is probably not taken.  */
 DEF_PREDICTOR (PRED_CONTINUE, "continue", HITRATE (67), 0)
@@ -151,7 +151,7 @@ DEF_PREDICTOR (PRED_LOOP_IV_COMPARE_GUESS, "guess loop iv compare",
 
 /* Use number of loop iterations determined by # of iterations analysis
    to set probability of branches that compares IV to loop bound variable.  */
-DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_VERY_LIKELY,
+DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_UNINITIALIZED,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* In the following code

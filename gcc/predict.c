@@ -545,6 +545,7 @@ predict_insn_def (rtx_insn *insn, enum br_predictor predictor,
 		  enum prediction taken)
 {
    int probability = predictor_info[(int) predictor].hitrate;
+   gcc_assert (probability != PROB_UNINITIALIZED);
 
    if (taken != TAKEN)
      probability = REG_BR_PROB_BASE - probability;
@@ -4196,7 +4197,7 @@ namespace selftest {
 struct branch_predictor
 {
   const char *name;
-  unsigned probability;
+  int probability;
 };
 
 #define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) { NAME, HITRATE },
@@ -4211,6 +4212,9 @@ test_prediction_value_range ()
 
   for (unsigned i = 0; predictors[i].name != NULL; i++)
     {
+      if (predictors[i].probability == PROB_UNINITIALIZED)
+	continue;
+
       unsigned p = 100 * predictors[i].probability / REG_BR_PROB_BASE;
       ASSERT_TRUE (p > 50 && p <= 100);
     }
