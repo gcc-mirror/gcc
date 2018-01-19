@@ -1298,6 +1298,7 @@ cpm_stream::dump (const char *format, ...)
 	    indent += strlen (indent) - nesting;
 	  fputs (indent, d);
 	}
+      bol = false;
     }
 
   va_start (args, format);
@@ -1502,7 +1503,6 @@ private:
   void define_var (tree, tree);
   void define_class (tree, tree);
   void define_enum (tree, tree);
-  void ident_imported_decl (tree ctx, unsigned mod, tree decl);
 
 public:
   void tree_node (tree);
@@ -1613,7 +1613,6 @@ private:
   tree define_var (tree, tree);
   tree define_class (tree, tree);
   tree define_enum (tree, tree);
-  tree ident_imported_decl (tree ctx, unsigned mod, tree name);
 
 public:
   tree tree_node ();
@@ -4315,55 +4314,6 @@ cpms_in::lang_type_vals (tree t)
   return !r.error ();
 }
 
-/* Refer to imported decls via reference information, not directly.  */
-
-void
-cpms_out::ident_imported_decl (tree ctx, unsigned mod, tree decl)
-{
-  unsigned key = 0;
-  tree name = DECL_NAME (decl);
-
-  switch (TREE_CODE (ctx))
-    {
-    case NAMESPACE_DECL:
-      key = get_ident_in_namespace (ctx, mod, name, decl);
-      break;
-
-    case RECORD_TYPE:
-    case UNION_TYPE:
-      key = get_ident_in_class (ctx, name, decl);
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-  w.u (key);
-}
-
-tree
-cpms_in::ident_imported_decl (tree ctx, unsigned mod, tree name)
-{
-  unsigned key = r.u ();
-  tree res = NULL_TREE;
-
-  switch (TREE_CODE (ctx))
-    {
-    case NAMESPACE_DECL:
-      res = find_by_ident_in_namespace (ctx, mod, name, key);
-      break;
-      
-    case RECORD_TYPE:
-    case UNION_TYPE:
-      res = find_by_ident_in_class (ctx, name, key);
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return res;
-}
-
 /* The raw tree node.  We've already dealt with the code, and in the
    case of decls, determining name, context & module.  Stream the
    bools and vals without post-processing.  Caller is responsible for
@@ -4711,7 +4661,7 @@ cpms_out::tree_node (tree t)
       w.u (node_module);
       if (node_module)
 	{
-	  ident_imported_decl (CP_DECL_CONTEXT (t), node_module, t);
+	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
 	  dump () && dump ("Writing imported %N@%I", t,
 			   module_name (node_module));
 	  body = false;
@@ -4823,22 +4773,17 @@ cpms_in::tree_node ()
 
       if (node_module != mod_ix)
 	{
-	  tree cp_ctx = (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
-			 ? global_namespace : ctx);
+	  tree type = tree_node ();
 
-	  t = ident_imported_decl (cp_ctx, node_module, name);
-	  if (!t || TREE_CODE (t) != code)
-	    {
-	      if (cp_ctx != global_namespace)
-		error ("failed to find %<%E::%E@%E%>",
-		       cp_ctx, name, module_name (node_module));
-	      else
-		error ("failed to find %<%E@%E%>",
-		       name, module_name (node_module));
-	      t = NULL_TREE;
-	    }
+	  if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL)
+	    ctx = global_namespace;
+	  t = lookup_by_ident (ctx, node_module, name, type, code);
+	  if (!t)
+	    error ("failed to find %<%E%s%E@%E%>",
+		   ctx, &"::"[2 * (ctx == global_namespace)],
+		   name, module_name (node_module));
 	  dump () && dump ("Importing %P@%I",
-			   cp_ctx, name, module_name (node_module));
+			   ctx, name, module_name (node_module));
 	  body = false;
 	}
     }

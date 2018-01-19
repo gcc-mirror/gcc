@@ -346,11 +346,7 @@ extern tree decapsulate_binding (tree value, tree *type_p);
 extern tree merge_global_decl (tree ctx, unsigned mod, tree decl);
 extern bool push_module_binding (tree ctx, tree name, unsigned mod,
 				 tree value, tree type);
-extern unsigned get_ident_in_namespace (tree ctx, unsigned mod,
-					tree name, tree decl);
-extern tree find_by_ident_in_namespace (tree ctx, unsigned mod,
-					tree name, unsigned key);
-extern unsigned get_ident_in_class (tree ctx, tree name, tree decl);
-extern tree find_by_ident_in_class (tree ctx, tree name, unsigned key);
+extern tree lookup_by_ident (tree ctx, unsigned mod,
+			     tree name, tree type, unsigned code);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

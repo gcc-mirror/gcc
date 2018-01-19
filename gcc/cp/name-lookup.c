@@ -3635,92 +3635,67 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
   return true;
 }
 
-/* CTX contains DECL in a module MOD binding for NAME.  Determine a
-   distinguishing KEY so we can find it again upon import.  */
-
-unsigned
-get_ident_in_namespace (tree ctx, unsigned mod, tree name, tree decl)
-{
-  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL
-	      || DECL_NAMESPACE_ALIAS (decl));
-
-  /* This will need extending for other kinds of context.  */
-  gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-
-  /* There must be a binding, so no need to check for NULLs.  */
-  tree *slot = find_namespace_slot (ctx, name);
-  tree *mslot = module_binding_slot (slot, name, mod, 0);
-  tree binding = *mslot;
-  unsigned key = 0;
-
-  if (MAYBE_STAT_TYPE (binding) != decl)
-    for (ovl_iterator iter (MAYBE_STAT_DECL (binding));
-	 key++, *iter != decl; ++iter)
-      continue;
-
-  return key;
-}
-
-/* CTX contains DECL binding for NAME.  Determine a distinguishing KEY
-   so we can find it again upon import.  */
-
-unsigned
-get_ident_in_class (tree klass, tree name, tree decl)
-{
-  tree lookup = IDENTIFIER_CONV_OP_P (name) ? conv_op_identifier : name;
-  unsigned key = 0;
-
-  gcc_assert (COMPLETE_TYPE_P (klass));
-  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass))
-    {
-      tree binding = member_vec_binary_search (member_vec, lookup);
-
-      if (MAYBE_STAT_TYPE (binding) != decl)
-	for (ovl_iterator iter (MAYBE_STAT_DECL (binding));
-	     ++key, *iter != decl; ++iter)
-	  continue;
-    }
-  else
-    for (tree binding = TYPE_FIELDS (klass); binding != decl;
-	 binding = DECL_CHAIN (binding))
-      key++;
-  return key;
-}
-
-/* CTX contains a module MOD binding for NAME.  Use KEY to find the
-   binding we want.  Return NULL if nothing found (that would be an
-   error).  */
+/* CTX contains a module MOD binding for NAME.  Use TYPE & CODE to
+   find the binding we want.  Return NULL if nothing found (that would
+   be an error).  */
 
 tree
-find_by_ident_in_namespace (tree ctx, unsigned mod, tree name, unsigned key)
+lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
 {
-  /* This will need extending for other kinds of context.  */
-  gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+  tree binding = NULL_TREE;
   tree decl = NULL_TREE;
-  
-  /* Although there must be a binding, we're dealing with
-     untrustworthy data, so check for NULL.  */
-  if (tree *slot = find_namespace_slot (ctx, name))
-    if (tree *mslot = module_binding_slot (slot, name, mod, 0))
-      if (tree binding = *mslot)
+
+  switch (TREE_CODE (ctx))
+    {
+    case NAMESPACE_DECL:
+      /* Although there must be a binding, we're dealing with
+	 untrustworthy data, so check for NULL.  */
+      if (tree *slot = find_namespace_slot (ctx, name))
+	if (tree *mslot = module_binding_slot (slot, name, mod, 0))
+	  binding = *mslot;
+      break;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      gcc_assert (COMPLETE_TYPE_P (ctx));
+      if (IDENTIFIER_CONV_OP_P (name))
+	name = conv_op_identifier;
+      /* The originating module might not have lazily declared
+	 members, but the referencing module will have done so.  We
+	 need to repeat that declaration at this point.  */
+      maybe_lazily_declare (ctx, name);
+      if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (ctx))
+	binding = member_vec_binary_search (member_vec, name);
+      else
+	for (decl = TYPE_FIELDS (ctx); decl; decl = DECL_CHAIN (decl))
+	  if (TREE_CODE (decl) == code
+	      && (!type || same_type_p (type, TREE_TYPE (decl))))
+	    return decl;
+      break;
+
+    default:
+      break;
+    }
+
+  if (binding)
+    {
+      for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
 	{
-	  if (!key)
-	    decl = MAYBE_STAT_TYPE (binding);
-	  else
-	    for (ovl_iterator iter (MAYBE_STAT_DECL (binding)); iter; ++iter)
-	      if (!--key)
-		{
-		  decl = *iter;
-		  break;
-		}
+	  decl = *iter;
+	  if (TREE_CODE (decl) == code
+	      && (!type || same_type_p (type, TREE_TYPE (decl))))
+	    return decl;
 	}
 
-  /* We should not have found a namespace.  */
-  if (decl && TREE_CODE (decl) == NAMESPACE_DECL
-      && !DECL_NAMESPACE_ALIAS (decl))
-    decl = NULL_TREE;
+      if (code == TYPE_DECL)
+	{
+	  decl = MAYBE_STAT_TYPE (binding);
+	  if (decl && TREE_CODE (decl) == code)
+	    return decl;
+	}
+    }
 
-  return decl;
+  return NULL_TREE;
 }
 
 /* CTX contains DECL binding for NAME.  Determine a distinguishing KEY

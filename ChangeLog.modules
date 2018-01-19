@@ -1,5 +1,17 @@
 2018-01-19  Nathan Sidwell  <nathan@acm.org>
 
+	Import ident by type not index.
+	gcc/cp/
+	* name-lookup.h (get_ident_in_namespace, get_ident_in_class,
+	find_by_ident_in_namespace, find_by_ident_in_class): Delete.
+	(lookup_by_ident): Declare.
+	* name-lookup.c (get_ident_in_namespace, get_ident_in_class): Delete.
+	(find_by_ident_in_namespace, find_by_ident_in_class): Replace with ...
+	(lookup_by_ident): ... this.
+	* module.c (cpms_{in,out}::ident_imported_decl): Delete.
+	(cpms_out::tree_node): Write imported decl info directly.
+	(cpms_in::tree_node): Use lookup_by_ident.
+
 	gcc/cp/
 	* module.c (cpms_{in.out}::tree_node_special): New, broken out of ...
 	(cpms_{in,out}::tree_node): ... here.  Call them.
