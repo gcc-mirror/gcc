@@ -1,5 +1,8 @@
 2018-01-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* Make-lang.in: Set MODULE_STAMP if non-branch experimental.
+
 	Beginnings of global module correctness
 	gcc/cp/
 	* cp-tree.h (struct mc_index): New.
