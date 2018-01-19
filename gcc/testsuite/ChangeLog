@@ -1,3 +1,8 @@
+2018-01-19  Jeff Law  <law@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/stack-check-16.c: New test.
+
 2018-01-19  Cesar Philippidis  <cesar@codesourcery.com>
 
 	PR target/83790
