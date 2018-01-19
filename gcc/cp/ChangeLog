@@ -1,3 +1,7 @@
+2018-01-19  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.c (fold_simple): Simplify.
+
 2018-01-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/83714
