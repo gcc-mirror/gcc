@@ -1,3 +1,10 @@
+2018-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (GOTOOLS_TEST_TIMEOUT): Define.
+	(check-go-tool): Pass -test.timeout with GOTOOLS_TEST_TIMEOUT.
+	(check-cgo-test, check-carchive-test, check-vet): Likewise.
+	* Makefile.in: Rebuild.
+
 2018-01-08  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (go_cmd_vet_files): New variable.
