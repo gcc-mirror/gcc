@@ -1,5 +1,5 @@
 /* -*- C++ -*- modules.  Experimental!
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -18,15 +18,49 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* MODULE_STAMP is a #define passed in from the Makefile.  When
-   present, it is used for version stamping the binary files, and
-   indicates experimentalness of the module system.
-
-   Comments in this file have a non-negligible chance of being wrong
+/* Comments in this file have a non-negligible chance of being wrong
    or at least inaccurate.  Due to (a) my misunderstanding, (b)
    ambiguities that I have interpretted differently to original intent
    (c) changes in the specification, (d) my poor wording.  */
 
+/* (Incomplete) Design Notes
+
+   Each namespace-scope decl has a MODULE_INDEX and a MODULE_PURVIEW_P
+   flag (NOT CURRENTLY TRUE).  The symbols for a particular module are
+   held located in a sparse array hanging off the ns-level binding.
+   Both global module and module-specific are on the same slot.  The
+   current TU is slot 0 (NOT CURRENTLY TRUE).  Imports have non-zero
+   indices, and any indirect import will have a smaller index than any
+   module importing it (direct imports of course have a higher index
+   than zero).  Builtins are always in the current TU -- imports do
+   not have their own shadow decls.
+
+   I have not yet decided how to represent the decls for the same
+   global-module entity appearing in two different modules.  Two
+   distinct decls may get expensive, and we'd certainly need to know
+   about duplicates in the case of an inline fn or identical class
+   decl. (There is still C++ discussion about exacly how much global
+   module state needs dumping.)
+
+   A module interface compilation produces a BMI, which is essentially
+   a tree serialization using auto-numbered back references.  We can
+   generate this in a single pass, walking the namespace graph.
+   Inter-module references are by name.
+
+   There is no lazy loading.  This will probably be needed later.  For
+   lazy loading, importing a module would populate the binding array
+   with markers.  When name-lookup encounters such a marker, it would
+   lazily load the entities of that name from that module.  This means
+   breaking the tree serialization.
+
+   The MODULE_PURVIEW_P is an explicit flag in the decl.  We could do
+   it implicitly by location, as all global module entities must come
+   before all module-specific entities.  */
+
+/* MODULE_STAMP is a #define passed in from the Makefile.  When
+   present, it is used for version stamping the binary files, and
+   indicates experimentalness of the module system.  It is very
+   experimental right now.  */
 #ifndef MODULE_STAMP
 #error "Stahp! What are you doing? This is not ready yet."
 #endif
@@ -47,7 +81,11 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Id for dumping module information.  */
 int module_dump_id;
- 
+
+/* We have a few more special module indices.  */
+#define MODULE_INDEX_IMPORTING (~0U)  /* Currently being imported.  */
+#define MODULE_INDEX_ERROR (~0U - 1)  /* Previously failed to import.  */
+
 /* State of a particular module. */
 struct GTY(()) module_state {
   /* We always import & export ourselves.  */
@@ -67,7 +105,6 @@ struct GTY(()) module_state {
   module_state ();
 
  public:
-  void freeze (const module_state *);
   void set_index (unsigned index);
   void set_name (tree name, hashval_t);
   bool set_crc (unsigned crc_);
@@ -113,12 +150,9 @@ struct module_state_hash : ggc_remove <module_state *>
   static void mark_deleted (value_type) { gcc_unreachable (); }
 };
 
-/* Vector of module state.  */
+/* Vector of module state.  If this is non-null, index 0 is
+   occupied.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
-
-/* We need a module state, even if we're not a module.  We promote
-   this to a real module upon meeting the module declaration.  */
-static GTY(()) module_state *this_module;
 
 /* Map from identifier to module index. */
 static GTY(()) hash_table<module_state_hash> *module_hash;
@@ -133,16 +167,10 @@ static int validate_module_name (bool, const char *, size_t);
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), name_parts (NULL), direct_import (0), mod (~0u),
+    name (NULL_TREE), name_parts (NULL), direct_import (0), mod (0),
     crc (0), filename (NULL), loc (UNKNOWN_LOCATION)
 {
   crc_known = false;
-}
-
-void module_state::freeze (const module_state *other)
-{
-  gcc_assert (!other->name);
-  bitmap_copy (imports, other->imports);
 }
 
 /* We've been assigned INDEX.  Mark the self-import-export bits.  */
@@ -354,7 +382,7 @@ module_state::do_import (unsigned index, bool is_export)
 {
   module_state *other = (*modules)[index];
 
-  if (this == this_module)
+  if (this == (*modules)[0])
     other->direct_import = 1 + is_export;
   bitmap_ior_into (imports, other->exports);
   if (is_export)
@@ -1440,7 +1468,7 @@ public:
   void tag_conf ();
   void tag_import (unsigned ix, const module_state *);
   void tag_trees ();
-  tree tag_binding (tree ns, bool, tree name, tree ovl);
+  tree tag_binding (tree ns, tree name, tree ovl);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
   int done ()
@@ -1565,7 +1593,7 @@ private:
 private:
   bool alloc_remap_vec (unsigned limit);
   tree start (tree_code);
-  tree finish (tree, int);
+  tree finish (tree);
   location_t loc ();
   bool mark_present (tree);
   bool globals (const tree *, unsigned);
@@ -1575,7 +1603,7 @@ private:
   bool lang_type_vals (tree);
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
-  bool tree_node_raw (tree_code, tree, tree, tree, int);
+  bool tree_node_raw (tree_code, tree, tree, tree);
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
@@ -1591,7 +1619,7 @@ public:
 
 cpms_in::cpms_in (FILE *s, module_state *state, cpms_in *from)
   :cpm_stream (state, from), r (s, state->filename),
-   mod_ix (GLOBAL_MODULE_INDEX), remap_num (0), remap_vec (NULL)
+   mod_ix (MODULE_INDEX_IMPORTING), remap_num (0), remap_vec (NULL)
 {
   dump () && dump ("Importing %I", state->name);
 }
@@ -1673,6 +1701,8 @@ cpms_in::header ()
       dbuf v_dform, ver_dform;
       d2s (v_date, v_dform);
       d2s (ver_date, ver_dform);
+      int ver_time = v2t (ver);
+      int v_time = v2t (v);
 
       if (ver_date != v_date)
 	{
@@ -1681,11 +1711,13 @@ cpms_in::header ()
 		 v_dform, ver_dform);
 	  return false;
 	}
+      else if (ver_time == v_time)
+	/* This only happens with non-MODULE_STAMP (i.e. stable)
+           builds, and the condition allows the inliner to remove the
+           else block as unreachable.  */;
       else
 	{
 	  /* Times differ, give it a go.  */
-	  int ver_time = v2t (ver);
-	  int v_time = v2t (v);
 	  tbuf v_tform, ver_tform;
 	  t2s (v_time, v_tform);
 	  t2s (ver_time, ver_tform);
@@ -1955,9 +1987,6 @@ cpms_in::alloc_remap_vec (unsigned limit)
 {
   if (!remap_num && limit < MODULE_INDEX_LIMIT)
     {
-      if (limit < THIS_MODULE_INDEX)
-	limit = THIS_MODULE_INDEX;
-
       remap_num = limit + 1;
       remap_vec = XNEWVEC (unsigned, remap_num);
       memset (remap_vec, 0, sizeof (unsigned) * remap_num);
@@ -1980,7 +2009,7 @@ cpms_in::tag_import ()
     return false;
 
   /* Not designed to import after having assigned our number. */
-  if (mod_ix)
+  if (mod_ix != MODULE_INDEX_IMPORTING)
     {
       error ("misordered import %qE", imp);
       return false;
@@ -1993,10 +2022,11 @@ cpms_in::tag_import ()
 
   dump () && dump ("Begin nested %simport %I",
 		   direct == 2 ? "export " : direct ? "" : "indirect ", imp);
-  int imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
-				 direct ? ik_direct : ik_indirect,
-				 this, crc);
-  if (imp_ix != GLOBAL_MODULE_INDEX)
+  unsigned imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
+				      direct ? ik_direct : ik_indirect,
+				      this, crc);
+  bool ok = imp_ix != MODULE_INDEX_ERROR;
+  if (ok)
     {
       remap_vec[ix] = imp_ix;
       if (direct)
@@ -2009,8 +2039,8 @@ cpms_in::tag_import ()
     }
 
   dump () && dump ("Completed nested import %I #%u %s", imp,
-		   imp_ix, imp_ix != GLOBAL_MODULE_INDEX ? "ok" : "failed");
-  return imp_ix != GLOBAL_MODULE_INDEX;
+		   imp_ix, ok ? "ok" : "failed");
+  return ok;
 }
 
 /* NAME is bound to OVL in namespace NS.  Write out the binding.
@@ -2028,7 +2058,7 @@ cpms_in::tag_import ()
 /* Return a child namespace to walk.  */
 
 tree
-cpms_out::tag_binding (tree ns, bool main_p, tree name, tree binding)
+cpms_out::tag_binding (tree ns, tree name, tree binding)
 {
   tree type = NULL_TREE;
   tree value = ovl_skip_hidden (decapsulate_binding (binding, &type));
@@ -2069,17 +2099,12 @@ cpms_out::tag_binding (tree ns, bool main_p, tree name, tree binding)
   if (!value && !type)
     return NULL_TREE;
 
-  dump () && dump ("Writing %N %s bindings for %N", ns,
-		   main_p ? "main" : "global", name);
+  dump () && dump ("Writing %N bindings for %N", ns, name);
 
   tag (rt_binding);
   tree_node (ns);
   tree_node (name);
-  w.b (main_p);
-  w.b (type != NULL_TREE);
-  w.bflush ();
-  if (type)
-    tree_node (type);
+  tree_node (type);
   tree_node (value);
   w.checkpoint ();
 
@@ -2097,20 +2122,15 @@ cpms_in::tag_binding ()
 {
   tree ns = tree_node ();
   tree name = tree_node ();
-  unsigned main_p = r.b ();
-  unsigned stat_p = r.b ();
-  r.bflush ();
-  dump () && dump ("Reading %N %s binding for %N", ns,
-		   main_p ? "main" : "global", name);
+  dump () && dump ("Reading %N binding for %N", ns, name);
 
-  tree type = stat_p ? tree_node () : NULL_TREE;
+  tree type = tree_node ();
   tree value = tree_node ();
 
   if (!r.checkpoint ())
     return false;
 
-  return push_module_binding (ns, name, main_p ? mod_ix : GLOBAL_MODULE_INDEX,
-			      value, type);
+  return push_module_binding (ns, name, mod_ix, value, type);
 }
 
 /* Stream a function definition.  */
@@ -2140,15 +2160,15 @@ cpms_in::define_function (tree decl, tree maybe_template)
   if (TREE_CODE (CP_DECL_CONTEXT (maybe_template)) == NAMESPACE_DECL)
     {
       unsigned mod = MAYBE_DECL_MODULE_INDEX (maybe_template);
-      if (mod == GLOBAL_MODULE_INDEX
-	  && DECL_SAVED_TREE (decl))
-	return decl; // FIXME check same
-      else if (mod != mod_ix)
+      if (mod != mod_ix)
 	{
 	  error ("unexpected definition of %q#D", decl);
 	  r.bad ();
 	  return NULL_TREE;
 	}
+      if (!MAYBE_DECL_MODULE_PURVIEW_P (maybe_template)
+	  && DECL_SAVED_TREE (decl))
+	return decl; // FIXME check same
     }
 
   DECL_RESULT (decl) = result;
@@ -2662,27 +2682,24 @@ cpms_in::read_item ()
       break;
     }
 
-  if (mod_ix == GLOBAL_MODULE_INDEX)
+  if (mod_ix == MODULE_INDEX_IMPORTING)
     {
-      if (state == this_module)
+      unsigned ix = 0;
+      if (state != (*modules)[0])
 	{
-	  mod_ix = THIS_MODULE_INDEX;
-	  (*modules)[mod_ix] = state;
-	}
-      else
-	{
-	  mod_ix = modules->length ();
-	  if (mod_ix == MODULE_INDEX_LIMIT)
+	  ix = modules->length ();
+	  if (ix == MODULE_INDEX_LIMIT)
 	    {
-	      sorry ("too many modules loaded (limit is %u)", mod_ix);
+	      sorry ("too many modules loaded (limit is %u)", ix);
 	      r.bad ();
 	      return -1;
 	    }
 	  vec_safe_push (modules, state);
-	  state->set_index (mod_ix);
+	  state->set_index (ix);
 	}
-      alloc_remap_vec (THIS_MODULE_INDEX);
-      remap_vec[THIS_MODULE_INDEX] = mod_ix;
+      mod_ix = ix;
+      alloc_remap_vec (0);
+      remap_vec[0] = ix;
 
       dump () && dump ("Assigning %N module index %u", state->name, mod_ix);
     }
@@ -2817,7 +2834,7 @@ cpms_in::start (tree_code code)
    possibly-remapped tree.  */
 
 tree
-cpms_in::finish (tree t, int node_module)
+cpms_in::finish (tree t)
 {
   if (TYPE_P (t))
     {
@@ -2863,14 +2880,15 @@ cpms_in::finish (tree t, int node_module)
       return remap;
     }
 
-  if (DECL_P (t) && node_module == GLOBAL_MODULE_INDEX)
+  if (DECL_P (t) && !MAYBE_DECL_MODULE_PURVIEW_P (t))
     {
+      // FIXME:Revisit
       tree ctx = CP_DECL_CONTEXT (t);
 
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	{
 	  /* A global-module decl.  See if there's already a duplicate.  */
-	  tree old = merge_global_decl (ctx, t);
+	  tree old = merge_global_decl (ctx, mod_ix, t);
 
 	  if (!old)
 	    error ("failed to merge %#qD", t);
@@ -3218,6 +3236,7 @@ cpms_out::lang_decl_bools (tree t)
   WB (lang->u.base.odr_used);
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
+  WB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
     case lds_fn:  /* lang_decl_fn.  */
@@ -3271,6 +3290,7 @@ cpms_in::lang_decl_bools (tree t)
   RB (lang->u.base.odr_used);
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
+  RB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
     case lds_fn:  /* lang_decl_fn.  */
@@ -4389,8 +4409,7 @@ cpms_out::tree_node_raw (tree_code code, tree t)
 }
 
 bool
-cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx,
-			int node_module)
+cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 {
   tree_code_class klass = TREE_CODE_CLASS (code);
   bool specific = false;
@@ -4423,6 +4442,10 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx,
     {
       DECL_CONTEXT (t) = ctx;
       DECL_NAME (t) = name;
+      if (ctx && (TREE_CODE (ctx) == NAMESPACE_DECL
+		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL))
+	// FIXME:maybe retrofit lang_decl?
+	DECL_MODULE_INDEX (t) = mod_ix;
     }
 
   if (!core_vals (t))
@@ -4438,8 +4461,6 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx,
 	}
       else
 	{
-	  if (node_module >= 0)
-	    DECL_MODULE_INDEX (t) = node_module;
 	  if (!lang_decl_vals (t))
 	    return false;
 	}
@@ -4566,10 +4587,11 @@ cpms_out::tree_node (tree t)
       tree_node (DECL_NAME (t));
 
       tree module_ctx = module_context (t);
-      unsigned node_module = module_ctx ? MAYBE_DECL_MODULE_INDEX (module_ctx)
-	: GLOBAL_MODULE_INDEX;
-      w.u ((node_module << 1) | (module_ctx == t));
-      if (node_module >= IMPORTED_MODULE_BASE)
+      unsigned node_module = 0;
+      if (module_ctx)
+	node_module = MAYBE_DECL_MODULE_INDEX (module_ctx);
+      w.u (node_module);
+      if (node_module)
 	{
 	  ident_imported_decl (CP_DECL_CONTEXT (t), node_module, t);
 	  dump () && dump ("Writing imported %N@%I", t,
@@ -4736,28 +4758,22 @@ cpms_in::tree_node ()
   bool body = true;
   tree name = NULL_TREE;
   tree ctx = NULL_TREE;
-  int node_module = -1;
-  int set_module = -1;
 
   if (klass == tcc_declaration)
     {
+      unsigned node_module;
+
       ctx = tree_node ();
       name = tree_node ();
       if (!r.error ())
 	{
 	  unsigned incoming = r.u ();
-	  bool self_node = incoming & 1;
-	  incoming >>= 1;
 
 	  if (incoming < remap_num)
 	    node_module = remap_vec[incoming];
-	  if (self_node)
-	    set_module = node_module;
-	  if (incoming >= IMPORTED_MODULE_BASE
-	      && (node_module < 0
-		  || node_module == GLOBAL_MODULE_INDEX
-		  || node_module == THIS_MODULE_INDEX
-		  || node_module == int (mod_ix)))
+
+	  if (incoming >= remap_num
+	      || ((incoming != 0) != (node_module != mod_ix)))
 	    r.bad ();
 	}
 
@@ -4767,10 +4783,9 @@ cpms_in::tree_node ()
 	  return NULL_TREE;
 	}
 
-      gcc_assert (node_module != THIS_MODULE_INDEX
-		  || mod_ix == THIS_MODULE_INDEX);
-      
-      if (node_module != GLOBAL_MODULE_INDEX && node_module != int (mod_ix))
+      gcc_assert (node_module || !mod_ix);
+
+      if (node_module != mod_ix)
 	{
 	  tree cp_ctx = (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
 			 ? global_namespace : ctx);
@@ -4802,7 +4817,7 @@ cpms_in::tree_node ()
 
   if (body)
     {
-      if (!tree_node_raw (code, t, name, ctx, set_module))
+      if (!tree_node_raw (code, t, name, ctx))
 	goto barf;
     }
   else if (!t)
@@ -4826,7 +4841,7 @@ cpms_in::tree_node ()
 
   if (body)
     {
-      tree found = finish (t, node_module);
+      tree found = finish (t);
 
       if (found != t)
 	{
@@ -4842,8 +4857,8 @@ cpms_in::tree_node ()
   return t;
 }
 
-/* Walk the bindings of NS, writing out the bindings for the global
-   module and the main module.  */
+/* Walk the bindings of NS, writing out the bindings for the current
+   TU.   */
 
 void
 cpms_out::bindings (tree ns)
@@ -4860,28 +4875,14 @@ cpms_out::bindings (tree ns)
   for (hash_table<named_decl_hash>::iterator iter
 	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
     {
-      tree global = *iter;
-      tree inner = NULL_TREE;
+      tree binding = *iter;
 
-      if (TREE_CODE (global) == MODULE_VECTOR)
-	{
-	  const module_cluster *cluster = &MODULE_VECTOR_CLUSTER (global, 0);
-	  tree name = MODULE_VECTOR_NAME (global);
-	  global = cluster->slots[GLOBAL_MODULE_INDEX];
+      if (TREE_CODE (binding) == MODULE_VECTOR)
+	binding = MODULE_VECTOR_CLUSTER (binding, 0).slots[0];
 
-	  if (tree main = cluster->slots[THIS_MODULE_INDEX])
-	    inner = tag_binding (ns, true, name, main);
-	}
-
-      if (global)
-	if (tree ginner = tag_binding (ns, false, OVL_NAME (global), global))
-	  {
-	    gcc_assert (!inner || inner == ginner);
-	    inner = ginner;
-	  }
-
-      if (inner)
-	bindings (inner);
+      if (binding)
+	if (tree inner_ns = tag_binding (ns, OVL_NAME (binding), binding))
+	  bindings (inner_ns);
     }
 
   dump () && dump ("Walked namespace %N", ns);
@@ -4891,7 +4892,6 @@ cpms_out::bindings (tree ns)
 #define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
 #define MOD_FNAME_DOT '-'
 
-static location_t module_loc;	 /* Location of the module decl.  */
 static GTY(()) tree proclaimer;
 static int export_depth; /* -1 for singleton export.  */
 
@@ -5028,10 +5028,10 @@ decl_set_module (tree decl)
   if (export_depth)
     DECL_MODULE_EXPORT_P (decl) = true;
 
-  if (this_module && this_module->name)
+  if (modules && (*modules)[0]->name)
     {
       retrofit_lang_decl (decl);
-      DECL_MODULE_INDEX (decl) = THIS_MODULE_INDEX;
+      DECL_MODULE_PURVIEW_P (decl) = true;
     }
 }
 
@@ -5040,7 +5040,7 @@ decl_set_module (tree decl)
 bool
 module_purview_p ()
 {
-  return this_module && this_module->name;
+  return modules && (*modules)[0]->name;
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
@@ -5049,11 +5049,11 @@ module_purview_p ()
 bool
 module_interface_p ()
 {
-  return this_module && this_module->direct_import;
+  return modules && (*modules)[0]->direct_import;
 }
 
 /* Read a module NAME file name FNAME on STREAM.  Returns its module
-   index, or 0 */
+   index (or fatally exits). */
 
 static unsigned
 read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
@@ -5075,17 +5075,15 @@ read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
       ok = false;
     }
 
-  if (ok)
+  if (!ok)
     {
-      ok = in.get_mod ();
-      gcc_assert (ok >= THIS_MODULE_INDEX);
+      /* Failure to read a module is going to cause big problems, so
+	 bail out now.  */
+      fatal_error (input_location, "failed to read module %qE", state->name);
+      gcc_unreachable ();
     }
-  else
-    /* Failure to read a module is going to cause big problems, so
-       bail out now.  */
-    fatal_error (input_location, "failed to read module %qE", state->name);
 
-  return ok;
+  return in.get_mod ();
 }
 
 static int
@@ -5351,8 +5349,9 @@ make_module_file (char *&name, size_t name_len)
   return stream;
 }
 
-/* Import the module NAME into the current TU.  This includes the
-   main module's interface and as implementation.  */
+/* Import the module NAME into the current TU.  This includes the TU's
+   interface and as implementation.  Returns index of imported
+   module (or MODULE_INDEX_ERROR).  */
 
 unsigned
 do_module_import (location_t loc, tree name, import_kind kind,
@@ -5361,14 +5360,9 @@ do_module_import (location_t loc, tree name, import_kind kind,
   if (!module_hash)
     {
       module_hash = hash_table<module_state_hash>::create_ggc (31);
-      vec_safe_reserve (modules, IMPORTED_MODULE_BASE);
-      this_module = new (ggc_alloc <module_state> ()) module_state ();
-      for (unsigned ix = IMPORTED_MODULE_BASE; ix--;)
-	modules->quick_push (NULL);
-      /* Insert map as unless/until we declare a module, we're the
-	 global modle.  */
-      if (kind <= ik_interface)
-	(*modules)[GLOBAL_MODULE_INDEX] = this_module;
+      vec_safe_reserve (modules, 20);
+      module_state *current = new (ggc_alloc <module_state> ()) module_state ();
+      modules->quick_push (current);
     }
 
   hashval_t hash;
@@ -5378,55 +5372,65 @@ do_module_import (location_t loc, tree name, import_kind kind,
     hash = hashval_t (crc32_string (TREE_STRING_LENGTH (name),
 				    TREE_STRING_POINTER (name)));
   module_state **slot = module_hash->find_slot_with_hash (name, hash, INSERT);
-  unsigned index = GLOBAL_MODULE_INDEX;
+  unsigned index = 0;
   module_state *state = *slot;
 
   if (state)
+    /* We already know a module called NAME.  */
     switch (state->mod)
       {
-      case ~0U:
+      case MODULE_INDEX_IMPORTING:
 	error_at (loc, "circular dependency of module %qE", name);
-	return GLOBAL_MODULE_INDEX;
-      case GLOBAL_MODULE_INDEX:
+	return MODULE_INDEX_ERROR;
+      case MODULE_INDEX_ERROR:
 	error_at (loc, "already failed to read module %qE", name);
-	return GLOBAL_MODULE_INDEX;
-      case THIS_MODULE_INDEX:
+	return MODULE_INDEX_ERROR;
+      case 0:
+	/* Cannot import the current module.  */
 	error_at (loc, "already declared as module %qE", name);
-	return GLOBAL_MODULE_INDEX;
+	return MODULE_INDEX_ERROR;
       default:
 	if (kind >= ik_interface)
 	  {
+	    /* Cannot be interface/implementation of an imported
+	       module.  */
 	    error_at (loc, "module %qE already imported", name);
-	    return GLOBAL_MODULE_INDEX;
+	    return MODULE_INDEX_ERROR;
 	  }
 	index = state->mod;
       }
-  else if (kind == ik_indirect)
-    {
-      /* The ordering of the import table implies that indirect
-	 imports should have already been loaded.  */
-      error ("indirect import %qE not present", name);
-      index = GLOBAL_MODULE_INDEX;
-    }
   else
     {
       if (kind >= ik_interface)
-	{
-	  state = this_module;
-	  state->set_index (THIS_MODULE_INDEX);
-	  (*modules)[THIS_MODULE_INDEX] = state;
-	}
+	state = (*modules)[0];
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
+
+      if (state->name)
+	{
+	  /* Already declared the module.  */
+	  error_at (loc, "already declared as module %qE", state->name);
+	  return MODULE_INDEX_ERROR;
+	}
 
       state->set_name (name, hash);
       if (from)
 	state->set_crc (crc);
-
       *slot = state;
 
       if (kind == ik_interface)
-	index = THIS_MODULE_INDEX;
+	{
+	  /* We're the interface, so not really importing anything.  */
+	  index = 0;
+	  state->direct_import = 1;
+	}
+      else if (kind == ik_indirect)
+	{
+	  /* The ordering of the import table implies that indirect
+	     imports should have already been loaded.  */
+	  error ("indirect import %qE not present", name);
+	  index = MODULE_INDEX_ERROR;
+	}
       else
 	{
           /* First look in the module file map. If not found, fall back to the
@@ -5466,7 +5470,12 @@ do_module_import (location_t loc, tree name, import_kind kind,
 		  diagnostic_set_last_function (global_dc,
 						(diagnostic_info *) NULL);
 		}
+
+	      /* Note, read_module succeeds or never returns.  */
+	      state->mod = MODULE_INDEX_IMPORTING;
 	      index = read_module (stream, state, from);
+	      gcc_assert (state->mod == MODULE_INDEX_IMPORTING);
+
 	      if (!quiet_flag)
 		{
 		  fprintf (stderr, " imported:%s(#%d)", str_name, index);
@@ -5480,7 +5489,6 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	      input_location = saved_loc;
 
 	      fclose (stream);
-	      gcc_assert (state->mod == ~0U);
 	    }
 	  else
 	    {
@@ -5491,10 +5499,10 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	}
     }
 
-  if (index != GLOBAL_MODULE_INDEX && crc && crc != state->crc)
+  if (index != MODULE_INDEX_ERROR && crc && crc != state->crc)
     {
       error ("module %qE crc mismatch", name);
-      index = GLOBAL_MODULE_INDEX;
+      index = MODULE_INDEX_ERROR;
     }
 
   state->mod = index;
@@ -5509,47 +5517,22 @@ import_module (const cp_expr &name, tree)
 {
   gcc_assert (global_namespace == current_scope ());
   unsigned index = do_module_import (name.get_location (), *name, ik_direct);
-  if (index != GLOBAL_MODULE_INDEX)
-    this_module->do_import (index, export_depth != 0);
+  if (index != MODULE_INDEX_ERROR)
+    (*modules)[0]->do_import (index, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
 }
 
-/* Declare the name of the current module to be NAME. ATTRS is used to
-   determine if this is the interface or not.  */
+/* Declare the name of the current module to be NAME.  INTER
+   distinguishes interface from implementation.  */
 
 void
 declare_module (const cp_expr &name, bool inter, tree)
 {
-  if (this_module && this_module->name)
-    {
-      error_at (name.get_location (), "module %qE already declared", *name);
-      inform (module_loc, "existing declaration");
-      return;
-    }
-
   gcc_assert (global_namespace == current_scope ());
-
-  module_loc = name.get_location ();
-
-  module_state *frozen = NULL;
-  if (modules)
-    {
-      /* If we did any importing already, freeze it.  */
-      gcc_assert ((*modules)[GLOBAL_MODULE_INDEX] == this_module);
-      frozen = new (ggc_alloc <module_state> ()) module_state (*this_module);
-      frozen->freeze (this_module);
-    }
 
   unsigned index = do_module_import
     (name.get_location (), *name, inter ? ik_interface : ik_implementation);
-  if (index != GLOBAL_MODULE_INDEX)
-    {
-      gcc_assert (index == THIS_MODULE_INDEX);
-
-      (*modules)[GLOBAL_MODULE_INDEX] = frozen;
-      current_module = index;
-      this_module->direct_import = inter;
-    }
+  gcc_assert (!index || index == MODULE_INDEX_ERROR);
 }
 
 static void
@@ -5563,9 +5546,8 @@ write_module (FILE *stream, module_state *state)
 
   /* Write the direct imports.  Write in reverse order, so that when
      checking an indirect import we should have already read it.  */
-  for (unsigned ix = modules->length (); --ix > THIS_MODULE_INDEX;)
-    if (module_state *state = (*modules)[ix])
-      out.tag_import (ix, state);
+  for (unsigned ix = modules->length (); --ix;)
+    out.tag_import (ix, (*modules)[ix]);
 
   out.tag_trees ();
 
@@ -5602,43 +5584,46 @@ init_module_processing ()
 void
 finish_module ()
 {
-  if (this_module && this_module->direct_import)
-    {
-      char *filename;
-      size_t filename_len;
-
-      if (module_output)
-	{
-	  filename_len = strlen (module_output);
-	  filename = XNEWVEC (char, filename_len + 1);
-	  memcpy (filename, module_output, filename_len + 1);
-	}
-      else
-	filename = module_to_filename (this_module->name, filename_len);
-
-      if (errorcount)
-	;
-      else if (FILE *stream = make_module_file (filename, filename_len))
-	{
-	  this_module->set_location (filename);
-	  write_module (stream, this_module);
-	  fclose (stream);
-	}
-      else
-	error_at (module_loc, "cannot open module interface %qE (%qs): %m",
-		  this_module->name, filename);
-
-      if (errorcount)
-	unlink (filename);
-
-      XDELETE (filename);
-    }
-  else if (module_output)
-    error ("-fmodule-output specified for non-module interface compilation");
-
   /* GC can clean up the detritus.  */
   module_hash = NULL;
-  this_module = NULL;
+
+  module_state *state = modules ? (*modules)[0] : NULL;
+  if (!state || !state->direct_import)
+    {
+      if (module_output)
+	error ("-fmodule-output specified for non-module interface compilation");
+      return;
+    }
+
+  char *filename;
+  size_t filename_len;
+
+  if (module_output)
+    {
+      filename_len = strlen (module_output);
+      filename = XNEWVEC (char, filename_len + 1);
+      memcpy (filename, module_output, filename_len + 1);
+    }
+  else
+    filename = module_to_filename (state->name, filename_len);
+
+  /* We don't bail out early with errorcount, because we want to
+     remove the BMI file in the case of previous errors.  */
+  if (FILE *stream = make_module_file (filename, filename_len))
+    {
+      state->set_location (filename);
+      if (!errorcount)
+	write_module (stream, state);
+      fclose (stream);
+    }
+  else
+    error_at (state->loc, "cannot open module interface %qE (%qs): %m",
+	      state->name, filename);
+
+  if (errorcount)
+    unlink (filename);
+
+  XDELETE (filename);
 }
 
 #include "gt-cp-module.h"

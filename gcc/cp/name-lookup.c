@@ -127,26 +127,20 @@ find_namespace_value (tree ns, tree name)
 static tree *
 module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 {
-  bool not_vec = !*slot || TREE_CODE (*slot) != MODULE_VECTOR;
   unsigned clusters = 0;
-  module_cluster *cluster;
+  module_cluster *cluster = NULL;
+  unsigned offset = 0;
 
-  if (not_vec)
-    {
-      if (ix == GLOBAL_MODULE_INDEX)
-	/* The global module can just use slot directly.  */
-	return slot;
-      if (!create)
-	return NULL;
-    }
-  else
+  if (*slot && TREE_CODE (*slot) == MODULE_VECTOR)
     {
       clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
       cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
 
-      if (ix < IMPORTED_MODULE_BASE)
+      if (!ix)
 	{
-	  gcc_assert (cluster->spans[ix]);
+	  /* There must always be a current TU slot.  */
+	  gcc_assert (cluster->indices[ix].span
+		      && !cluster->indices[ix].base);
 
 	  return &cluster->slots[ix];
 	}
@@ -156,86 +150,77 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	 determine the append case.  */
 
       unsigned probe = clusters;
-      for (cluster += clusters; --cluster, --probe;)
+      for (cluster += clusters; cluster--, probe--;)
 	{
-	  gcc_checking_assert (cluster->spans[0]);
-	  if (cluster->spans[1])
-	    {
-	      if (cluster->bases[1] + cluster->spans[1] <= ix)
-		break;
-	      if (cluster->bases[1] <= ix)
-		return &cluster->slots[1];
+	  /* The first slot must be occupied.  */
+	  gcc_checking_assert (cluster->indices[0].span);
+	  for (offset = MODULE_VECTOR_SLOTS_PER_CLUSTER - 1; offset; offset--)
+	    if (cluster->indices[offset].span)
+	      {
+		if (cluster->indices[offset].base
+		    + cluster->indices[offset].span <= ix)
+		  goto not_found;
+		if (cluster->indices[offset].base <= ix)
+		  return &cluster->slots[offset];
 	    }
-	  if (cluster->bases[0] + cluster->spans[0] < ix)
-	    break;
-	  if (cluster->bases[0] <= ix)
-	    return &cluster->slots[0];
 	}
+    not_found:;
+
       if (!create)
 	return NULL;
+
       /* If we're to insert, we must be at the end.  */
-      gcc_assert (probe + 1 == clusters);
-    }
+      gcc_assert (probe + 1 == clusters
+		  && (offset + 1 == MODULE_VECTOR_SLOTS_PER_CLUSTER
+		      || !cluster->indices[offset+1].span));
 
-  /* Figure out if we need to extend the module vector itself.  */
-  unsigned incr = 0;
-  if (ix < IMPORTED_MODULE_BASE)
-    incr = not_vec; /* Only if it's not already a vector.  */
-  else if (clusters < 2)
-    incr = 2 - clusters; /* Make sure we have glob/this slots too.  */
-  else
-    {
-      cluster = MODULE_VECTOR_CLUSTER_LAST (*slot);
-      if (create < 0)
+      /* If we're binding a namespace, see if we can extend the span
+	 of the final element.  */
+      if (create < 0
+	  && cluster->indices[offset].base + cluster->indices[offset].span == ix)
 	{
-	  /* If we're binding a namespace, see if we can extend the span
-	     of the final element.  */
-	  incr = cluster->spans[1] != 0;
-	  if (cluster->bases[incr] + cluster->spans[incr] == ix)
-	    {
-	      cluster->spans[incr]++;
-	      return &cluster->slots[incr];
-	    }
-	  /* Otherwise we need to extend, if that was the last slot of the
-	     cluster.  */
+	  cluster->indices[offset].span++;
+	  return &cluster->slots[offset];
 	}
-      else if (cluster->spans[1])
-	incr = 1; /* No spare slot in the final cluster.  */
-    }
 
-  if (incr)
+      offset = (offset + 1) & (MODULE_VECTOR_SLOTS_PER_CLUSTER - 1);
+      if (!offset)
+	/* Need to extend vector.  */
+	cluster = NULL;
+      else
+	/* Can use slot in last cluster.  */
+	clusters--;
+    }
+  else if (!ix)
+    /* The current TU can just use slot directly.  */
+    return slot;
+  else if (!create)
+    return NULL;
+
+  if (!offset)
     {
-      tree new_vec = make_module_vec (name, clusters + incr);
+      tree new_vec = make_module_vec (name, clusters + 1);
       cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
       if (clusters)
 	memcpy (cluster, MODULE_VECTOR_CLUSTER_BASE (*slot),
 		clusters * sizeof (module_cluster));
       else
 	{
-	  /* Initialize the reserved slots.  */
-	  cluster->slots[GLOBAL_MODULE_INDEX] = *slot;
-	  cluster->bases[GLOBAL_MODULE_INDEX] = GLOBAL_MODULE_INDEX;
-	  cluster->bases[THIS_MODULE_INDEX] = THIS_MODULE_INDEX;
-	  cluster->spans[GLOBAL_MODULE_INDEX] = 1;
-	  cluster->spans[THIS_MODULE_INDEX] = 1;
+	  /* Initialize the current TU slot.  */
+	  cluster->indices[0].base = 0;
+	  cluster->indices[0].span = 1;
+	  cluster->slots[0] = *slot;
+	  offset = 1;
 	}
       *slot = new_vec;
     }
-  else
-    cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
 
-  unsigned off = ix;
-  if (ix >= IMPORTED_MODULE_BASE)
-    {
-      cluster += MODULE_VECTOR_NUM_CLUSTERS (*slot) - 1;
-      off = cluster->spans[0] != 0;
-
-      gcc_assert (!off || cluster->bases[0] + cluster->spans[0] <= ix);
-
-      cluster->bases[off] = ix;
-      cluster->spans[off] = 1;
-    }
-  return &cluster->slots[off];
+  /* Fill the free slot of the cluster.  */
+  cluster += clusters;
+  cluster->indices[offset].span = 1;
+  cluster->indices[offset].base = ix;
+  cluster->slots[offset] = NULL_TREE;
+  return &cluster->slots[offset];
 }
 
 /* Add DECL to the list of things declared in binding level B.  */
@@ -677,12 +662,9 @@ name_lookup::process_module_binding (bitmap imports, unsigned marker,
   tree new_type = MAYBE_STAT_TYPE (bind);
   tree new_val = MAYBE_STAT_DECL (bind);
 
-  if (ix != GLOBAL_MODULE_INDEX
-      && (ix > current_module || ix + span <= current_module))
+  if (ix > current_module || ix + span <= current_module)
     {
-      /* Looking at something other than the global or current
-	 module.  */
-
+      /* Looking at something other than the current module.  */
       if (!imports)
 	return marker;
 
@@ -754,11 +736,11 @@ name_lookup::search_namespace_only (tree scope)
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
 	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
-	    for (unsigned jx = 2; jx--;)
+	    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
 	      if (cluster->slots[jx])
 		marker = process_module_binding
 		  (imports, marker, cluster->slots[jx],
-		   cluster->bases[jx], cluster->spans[jx]);
+		   cluster->indices[jx].base, cluster->indices[jx].span);
 	  found |= marker & 1;
 	}
     }
@@ -970,11 +952,9 @@ name_lookup::add_module_fns (bitmap imports, tree bind,
 {
   tree val = MAYBE_STAT_DECL (bind);
 
-  if (ix != GLOBAL_MODULE_INDEX
-      && (ix > current_module || ix + span <= current_module))
+  if (ix > current_module || ix + span <= current_module)
     {
-      /* Looking at something other than the global or current
-	 module.  */
+      /* Looking at something other than the current module.  */
 
       if (!imports)
 	return;
@@ -1028,10 +1008,11 @@ name_lookup::adl_namespace_only (tree scope)
 	  bitmap imports = module_import_bitmap (current_module);
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
-	    for (unsigned jx = 2; jx--;)
+	    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
 	      if (cluster->slots[jx])
 		add_module_fns (imports, cluster->slots[jx],
-				cluster->bases[jx], cluster->spans[jx]);
+				cluster->indices[jx].base,
+				cluster->indices[jx].span);
 	}
     }
 }
@@ -3340,8 +3321,8 @@ do_pushdecl (tree decl, bool is_friend)
 	  slot = find_namespace_slot (ns, name,ns == current_namespace);
 	  if (slot)
 	    {
-	      gcc_assert (current_module <= IMPORTED_MODULE_BASE);
-	      mslot = module_binding_slot (slot, name, current_module,
+	      gcc_assert (!current_module);
+	      mslot = module_binding_slot (slot, name, 0,
 					   ns == current_namespace);
 	      old = MAYBE_STAT_DECL (*mslot);
 	    }
@@ -3512,8 +3493,12 @@ find_namespace_partition (tree slot_val)
    on error.  */
 
 tree
-merge_global_decl (tree ctx, tree decl)
+merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
 {
+  // FIXME: need to properly think about artificial decls.  See rtti.c
+  // comment about abi_namespace too.
+  if (DECL_ARTIFICIAL (decl))
+    mod_ix = 0;
   bool is_ns = (TREE_CODE (decl) == NAMESPACE_DECL
 		&& !DECL_NAMESPACE_ALIAS (decl));
   gcc_assert (CP_DECL_CONTEXT (decl) == ctx);
@@ -3521,8 +3506,11 @@ merge_global_decl (tree ctx, tree decl)
      slot now.  */
   tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
   tree *mslot = module_binding_slot (slot, DECL_NAME (decl),
-				     GLOBAL_MODULE_INDEX, is_ns);
+				     mod_ix, is_ns);
   tree old = NULL_TREE;
+
+  if (!mslot)
+    return decl;
 
   if (*mslot && anticipated_builtin_p (*mslot))
     /* Zap out an anticipated builtin.  */
@@ -3577,9 +3565,9 @@ merge_global_decl (tree ctx, tree decl)
   return old;
 }
 
-/* NAME is being bound within namespace NS and MODULE.  Unless
-   MODULE is GLOBAL_MODULE_INDEX, there should be no existing
-   binding.  VALUE and TYPE are the value and type bindings.  */
+/* During an import NAME is being bound within namespace NS and
+   MODULE.  There should be no existing binding.  VALUE and TYPE are
+   the value and type bindings.  */
 
 bool
 push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
@@ -3592,6 +3580,7 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
 
+  // FIXME: with changes to global module, this is now overcomplicated
   tree export_tail = NULL_TREE;
   for (ovl_iterator iter (value); iter; ++iter)
     {
@@ -7274,7 +7263,7 @@ do_push_to_top_level (void)
   FOR_EACH_VEC_SAFE_ELT (s->old_bindings, i, sb)
     IDENTIFIER_MARKED (sb->identifier) = 0;
 
-  s->this_module = GLOBAL_MODULE_INDEX;
+  s->this_module = 0;
 
   s->prev = scope_chain;
   s->bindings = b;

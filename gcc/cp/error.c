@@ -1004,13 +1004,12 @@ static void
 dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 {
   tree ctx = module_context (decl);
-  unsigned mod = MAYBE_DECL_MODULE_INDEX (ctx);
 
-  if (!DECL_MODULE_EXPORT_P (ctx) && mod != GLOBAL_MODULE_INDEX)
+  if (!DECL_MODULE_EXPORT_P (ctx) && MAYBE_DECL_MODULE_PURVIEW_P (ctx))
     {
       pp_character (pp, '@');
       pp->padding = pp_none;
-      dump_expr (pp, module_name (mod), 0);
+      dump_expr (pp, module_name (DECL_MODULE_INDEX (ctx)), 0);
     }
 }
 

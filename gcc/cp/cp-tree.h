@@ -834,17 +834,25 @@ struct named_decl_hash : ggc_remove <tree>
   static void mark_deleted (value_type) { gcc_unreachable (); }
 };
 
-/* Bindings for modules are held in a sparse array.  Slots 0 & 1 are
-   aways present (global and this modules).  Remaining slots are
-   allocated as needed.  By construction of the importing mechanism we
-   only ever need to append to the array.  Rather than have straight
-   index/slot tuples, we bunch them up for greater packing.
-   We don't optimize for lookups in the main TU.  */
+/* Bindings for modules are held in a sparse array.  There is always a
+   current TU slot, others are allocated as needed.  By construction
+   of the importing mechanism we only ever need to append to the
+   array.  Rather than have straight index/slot tuples, we bunch them
+   up for greater packing.  We don't optimize for lookups in the main
+   TU.
 
-struct GTY(()) module_cluster {
-  unsigned short bases[2];
-  unsigned short spans[2]; /* Used for namespace binding compression. */
-  tree slots[2];
+   The cluster representation packs well on a 64-bit system.  */
+
+#define MODULE_VECTOR_SLOTS_PER_CLUSTER 2
+struct GTY(()) mc_index
+{
+  unsigned short base;
+  unsigned short span;
+};
+struct GTY(()) module_cluster
+{
+  mc_index indices[MODULE_VECTOR_SLOTS_PER_CLUSTER];
+  tree slots[MODULE_VECTOR_SLOTS_PER_CLUSTER];
 };
 
 #define MODULE_VECTOR_NUM_CLUSTERS(NODE) \
@@ -1518,25 +1526,30 @@ check_constraint_info (tree t)
 /* Module defines.  */
 
 /* Indices for modules.  */
-#define GLOBAL_MODULE_INDEX 0
-#define THIS_MODULE_INDEX 1
-#define IMPORTED_MODULE_BASE 2
-#define MODULE_INDEX_LIMIT (1<<14)
+#define MODULE_INDEX_IMPORT_BASE 1
+#define MODULE_INDEX_LIMIT (1<<MODULE_INDEX_BITS)
 
 /* The owning module of a DECL.  */
-
 #define DECL_MODULE_INDEX(N) \
   (DECL_LANG_SPECIFIC (N)->u.base.module_index)
 
-/* Get DECL's module index.  Anything lacking lang-specific is in the
-   global module.  */
-#define MAYBE_DECL_MODULE_INDEX(N) \
-  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_INDEX (N) : GLOBAL_MODULE_INDEX)
+/* In module purview.  */
+#define DECL_MODULE_PURVIEW_P(N) \
+  (DECL_LANG_SPECIFIC (N)->u.base.module_purview_p)
 
 /* Whether this is an exported DECL.  */
 #define DECL_MODULE_EXPORT_P(NODE) \
   TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
 
+/* Any namespace-scope decl lacking lang-specific is in the current
+   TU.  */
+#define MAYBE_DECL_MODULE_INDEX(N)				\
+  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_INDEX (N) : 0)
+
+/* Any namespace-scope decl lacking lang-specific is not in the
+   purview of a module.  */
+#define MAYBE_DECL_MODULE_PURVIEW_P(N)				\
+  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_PURVIEW_P (N) : false)
 
 enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
@@ -2524,12 +2537,13 @@ struct GTY(()) lang_decl_base {
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
   unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
-  unsigned spare : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
-
   unsigned var_declared_inline_p : 1;	   /* var */
+
   unsigned dependent_init_p : 1;	   /* var */
-  unsigned module_index : 14;		   /* Module index. */
+#define MODULE_INDEX_BITS (14)
+  unsigned module_index : MODULE_INDEX_BITS;	/* Module index. */
+  unsigned module_purview_p : 1;	   /* In module purview. */
   /* No spare bits.  */
 };
 

@@ -938,10 +938,15 @@ tinfo_base_init (tinfo_s *ti, tree target)
   vtable_ptr = ti->vtable;
   if (!vtable_ptr)
     {
-      tree real_type;
+      // FIXME: we need to not modularize the abi namespace.  Need to audit
       push_abi_namespace ();
-      real_type = xref_tag (class_type, ti->name,
-			    /*tag_scope=*/ts_current, false);
+      tree real_type = xref_tag (class_type, ti->name,
+				 /*tag_scope=*/ts_current, false);
+      tree real_decl = TYPE_NAME (real_type);
+      DECL_SOURCE_LOCATION (real_decl) = BUILTINS_LOCATION;
+      DECL_MODULE_EXPORT_P (real_decl) = false;
+      if (DECL_LANG_SPECIFIC (real_decl))
+	DECL_MODULE_PURVIEW_P (real_decl) = false;
       pop_abi_namespace ();
 
       if (!COMPLETE_TYPE_P (real_type))
@@ -1446,8 +1451,6 @@ get_tinfo_desc (unsigned ix)
       }
     }
 
-  push_abi_namespace ();
-
   /* Generate the pseudo type name.  */
   const char *real_name = tinfo_names[ix < TK_VMI_CLASS_TYPES
 				      ? ix : unsigned (TK_VMI_CLASS_TYPES)];
@@ -1463,8 +1466,8 @@ get_tinfo_desc (unsigned ix)
   tree pseudo_type = make_class_type (RECORD_TYPE);
   /* Pass the fields chained in reverse.  */
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
-  DECL_TINFO_P (TYPE_NAME (pseudo_type)) = true;
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
+  DECL_TINFO_P (TYPE_NAME (pseudo_type)) = true;
 
   res->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
   res->name = get_identifier (real_name);
@@ -1473,7 +1476,6 @@ get_tinfo_desc (unsigned ix)
      internal linkage.  */
   TREE_PUBLIC (TYPE_MAIN_DECL (res->type)) = 1;
 
-  pop_abi_namespace ();
   return res;
 }
 
@@ -1620,12 +1622,10 @@ emit_support_tinfos (void)
 bool
 emit_tinfo_decl (tree decl)
 {
-  tree type = TREE_TYPE (DECL_NAME (decl));
-  int in_library = typeinfo_in_lib_p (type);
-
   gcc_assert (DECL_TINFO_P (decl));
 
-  if (in_library)
+  tree type = TREE_TYPE (DECL_NAME (decl));
+  if (typeinfo_in_lib_p (type))
     {
       if (doing_runtime)
 	DECL_EXTERNAL (decl) = 0;

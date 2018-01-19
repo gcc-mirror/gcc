@@ -4508,8 +4508,10 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
   DECL_MEMBER_TEMPLATE_P (tmpl) = member_template_p;
 
   DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
-  if (MAYBE_DECL_MODULE_INDEX (decl))
-    DECL_MODULE_INDEX (tmpl) = DECL_MODULE_INDEX (decl);
+  if (unsigned ix = MAYBE_DECL_MODULE_INDEX (decl))
+    DECL_MODULE_INDEX (tmpl) = ix;
+  if (bool purview = MAYBE_DECL_MODULE_PURVIEW_P (decl))
+    DECL_MODULE_PURVIEW_P (tmpl) = purview;
 
   return tmpl;
 }

@@ -870,10 +870,10 @@ maybe_write_module (tree decl)
   if (DECL_MODULE_EXPORT_P (ctx))
     return;
 
-  unsigned mod_ix = MAYBE_DECL_MODULE_INDEX (ctx);
-
-  if (mod_ix == GLOBAL_MODULE_INDEX)
+  if (!MAYBE_DECL_MODULE_PURVIEW_P (ctx))
     return;
+
+  unsigned mod_ix = DECL_MODULE_INDEX (ctx);
 
   write_char ('W');
 
@@ -883,6 +883,8 @@ maybe_write_module (tree decl)
   // FIXME: back-references?
   for (unsigned ix = 0; ix < parts->length (); ix++)
     write_source_name ((*parts)[ix]);
+
+  // FIXME: promoted linkage?
 
   write_char ('E');
 }

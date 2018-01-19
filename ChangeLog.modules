@@ -1,3 +1,61 @@
+2018-01-19  Nathan Sidwell  <nathan@acm.org>
+
+	Beginnings of global module correctness
+	gcc/cp/
+	* cp-tree.h (struct mc_index): New.
+	(module_cluster): Use it.
+	(MODULE_VECTOR_SLOTS_PER_CLUSTER): New.
+	(GLOBAL_MODULE_INDEX, THIS_MODULE_INDEX, IMPORTED_MODULE_BASE): Delete.
+	(MODULE_INDEX_IMPORT_BASE): New.
+	(DECL_MODULE_PURVIEW_P, MAYBE_DECL_MODULE_PURVIEW_P): New.
+	(MAYBE_DECL_MODULE_INDEX): Adjust.
+	(MODULE_INDEX_BITS): New.
+	(struct lang_decl_base): Add module_purview_p field.
+	* decl2.c (c_parse_final_cleanups): Adjust.
+	* error.c (dump_module_suffix): Adjust.
+	* mangle.c (maybe_write_module): Adjust.
+	* module.c (MODULE_INDEX_IMPORTING, MODULE_INDEX_ERROR): New.
+	(module_state::freeze): Delete.
+	(this_module): Delete.  Replace with (*modules)[0].
+	(cpms_in::alloc_remap_vec): Adjust.
+	(cpms_in::tag_import): Use MODULE_INDEX_ERROR.
+	(cpms_{in,out}::tag_binding): Lose MAIN_P parm.  Adjust.
+	(cpms_in::define_function): Remove GLOBAL_MODULE_INDEX handling.
+	(cpms_in::read_item): Use MODULE_INDEX_IMPORTING.
+	(cpms_in::finish): Remove NODE_MODULE parm.  use
+	MAYBE_DECL_MODULE_PURVIEW_P.
+	(cpms_{in,out}::lang_decl_bools): Read & write module_purview_p.
+	(cpms_in::tree_node_raw): Lose NODE_MODULE parm.  Set module
+	directly.
+	(cpms_{in,out}::tree_node): Adjust module identification.
+	(cpms_out::bindings): Bindings are on a single slot.
+	(module_loc): Delete.
+	(decl_set_module): Set purview as needed.
+	(module_purview_p, module_interface_p): Adjust.
+	(read_module): Simplify.
+	(do_module_import): Adjust for lack of global module slot.  Use
+	MODULE_INDEX_ERROR, MODULE_INDEX_IMPORTING.  Detect already
+	declared module here.
+	(import_module): Adjust.
+	(declare_module): Don't detect already declared here.
+	(write_module): Adjust.
+	(finish_module): Adjust.
+	* name-lookup.c (module_binding_slot): Reimplement.
+	(name_lookup::process_module_binding)
+	(name_lookup::search_namespace_only, name_lookup::add_module_fns)
+	(name_lookup::adl_namespace_only, do_pushdecl): Adjust.
+	(merge_global_decl): Kludge into reworking.
+	(push_module_binding): Likewise.
+	* name-lookup.h (merge_global_decl): Add module parm.
+	* pt.c (build_template_decl): Propagate purview.
+	* ptree.c (cxx_print_xnode): Adjust.
+	* rtti.c (tinfo_base_init): Kludge into working.
+	(get_tinfo_desc): Drop unnecessary push/pop abi namespace.
+	(emit_tinfo_decl): Simplify.
+	gcc/testsuite/
+	* g++.dg/modules/global-1_[ab].C: New
+	* g++.dg/modules/mod++-decl-0_b.C: Remove xfail.
+
 2018-01-18  Nathan Sidwell  <nathan@acm.org>
 
 	Merge access & discriminator.

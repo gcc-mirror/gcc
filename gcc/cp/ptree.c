@@ -228,14 +228,12 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	  {
 	    module_cluster *cluster = &MODULE_VECTOR_CLUSTER (node, ix);
 	    char pfx[16];
-	    for (unsigned jx = 0; jx != 2; jx++)
-	      if (cluster->spans[jx])
+	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	      if (cluster->indices[jx].span)
 		{
-		  if (cluster->spans[jx] > 1)
-		    sprintf (pfx, "elts %u-%u",
-			     cluster->bases[jx], cluster->spans[jx]);
-		  else
-		    sprintf (pfx, "elt %u", cluster->bases[jx]);
+		  int len = sprintf (pfx, "elt %u", cluster->indices[jx].base);
+		  if (cluster->indices[jx].span > 1)
+		    sprintf (&pfx[len], "-%u", cluster->indices[jx].span);
 		  print_node (file, pfx, cluster->slots[jx], indent + 4);
 		}
 	  }
