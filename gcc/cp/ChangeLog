@@ -1,3 +1,10 @@
+2018-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83919
+	* typeck.c (convert_for_assignment): Suppress warn_ignored_qualifiers
+	for direct enum init.
+	* decl.c (reshape_init): Likewise.
+
 2018-01-19  Marek Polacek  <polacek@redhat.com>
 
 	* constexpr.c (fold_simple): Simplify.

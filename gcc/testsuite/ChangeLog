@@ -1,3 +1,8 @@
+2018-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83919
+	* g++.dg/cpp0x/pr83919.C: New test.
+
 2018-01-19  Jeff Law  <law@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
