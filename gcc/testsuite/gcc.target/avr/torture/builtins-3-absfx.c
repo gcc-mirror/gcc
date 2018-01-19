@@ -98,6 +98,10 @@ long long accum test2_llk (void)
   if (abs ## FX (-VAL ## FX) != abs ## FX (VAL ## FX))  \
     abort();
 
+#ifndef __FLASH
+#define __flash /* empty */
+#endif
+
 const __flash short fract volatile v = 0.33hr;
 const __flash short fract volatile z = 0hr;
 

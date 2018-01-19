@@ -1,5 +1,5 @@
 /* Standard problems for dataflow support routines.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -2815,7 +2815,7 @@ df_word_lr_mark_ref (df_ref ref, bool is_set, regset live)
   regno = REGNO (reg);
   reg_mode = GET_MODE (reg);
   if (regno < FIRST_PSEUDO_REGISTER
-      || GET_MODE_SIZE (reg_mode) != 2 * UNITS_PER_WORD)
+      || maybe_ne (GET_MODE_SIZE (reg_mode), 2 * UNITS_PER_WORD))
     return true;
 
   if (GET_CODE (orig_reg) == SUBREG

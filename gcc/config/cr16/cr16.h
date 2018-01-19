@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for CR16.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
 
    This file is part of GCC.
@@ -381,7 +381,7 @@ enum reg_class
 
 #define PUSH_ARGS 1
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) cr16_push_rounding (BYTES)
 
 #ifndef CUMULATIVE_ARGS
 struct cumulative_args

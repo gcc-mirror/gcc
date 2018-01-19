@@ -127,8 +127,12 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	    p = filename;
 	  if (__builtin_strcmp (p, "/proc.c") == 0)
 	    {
-	      if (__builtin_strcmp (function, "kickoff") == 0
-		  || __builtin_strcmp (function, "runtime.mstart") == 0
+	      if (__builtin_strcmp (function, "runtime_mstart") == 0)
+		return 1;
+	    }
+	  else if (__builtin_strcmp (p, "/proc.go") == 0)
+	    {
+	      if (__builtin_strcmp (function, "runtime.kickoff") == 0
 		  || __builtin_strcmp (function, "runtime.main") == 0)
 		return 1;
 	    }
@@ -184,6 +188,21 @@ runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
   backtrace_full (__go_get_backtrace_state (), 0, callback, error_callback,
 		  &data);
   runtime_xadd (&runtime_in_callers, -1);
+
+  /* For some reason GCC sometimes loses the name of a thunk function
+     at the top of the stack.  If we are skipping thunks, skip that
+     one too.  */
+  if (!keep_thunks
+      && data.index > 2
+      && locbuf[data.index - 2].function.len == 0
+      && locbuf[data.index - 1].function.str != NULL
+      && __builtin_strcmp ((const char *) locbuf[data.index - 1].function.str,
+			   "runtime.kickoff") == 0)
+    {
+      locbuf[data.index - 2] = locbuf[data.index - 1];
+      --data.index;
+    }
+
   return data.index;
 }
 

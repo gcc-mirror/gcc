@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1279,8 +1279,8 @@ package body Sem_Ch12 is
                if No (Formal) then
                   Error_Msg_Sloc := Sloc (Node (Elem));
                   Error_Msg_NE
-                    ("?instance does not use primitive operation&#",
-                      Actual, Node (Elem));
+                    ("?instance uses predefined operation, not primitive "
+                     & "operation&#", Actual, Node (Elem));
                end if;
             end if;
 
@@ -1717,7 +1717,16 @@ package body Sem_Ch12 is
                           (Formal, Match, Analyzed_Formal, Assoc_List),
                         Assoc_List);
 
-                     if Is_Fixed_Point_Type (Entity (Match)) then
+                     --  Warn when an actual is a fixed-point with user-
+                     --  defined promitives. The warning is superfluous
+                     --  if the fornal is private, because there can be
+                     --  no arithmetic operations in the generic so there
+                     --  no danger of confusion.
+
+                     if Is_Fixed_Point_Type (Entity (Match))
+                       and then not Is_Private_Type
+                                      (Defining_Identifier (Analyzed_Formal))
+                     then
                         Check_Fixed_Point_Actual (Match);
                      end if;
 
@@ -9106,8 +9115,8 @@ package body Sem_Ch12 is
                   Clause := First (Current_Context);
                   OK := True;
                   while Present (Clause) loop
-                     if Nkind (Clause) = N_With_Clause and then
-                       Library_Unit (Clause) = Lib_Unit
+                     if Nkind (Clause) = N_With_Clause
+                       and then Library_Unit (Clause) = Lib_Unit
                      then
                         OK := False;
                         exit;
@@ -9118,8 +9127,8 @@ package body Sem_Ch12 is
 
                   if OK then
                      New_I := New_Copy (Item);
-                     Set_Implicit_With (New_I, True);
-                     Set_Implicit_With_From_Instantiation (New_I, True);
+                     Set_Implicit_With (New_I);
+
                      Append (New_I, Current_Context);
                   end if;
                end if;

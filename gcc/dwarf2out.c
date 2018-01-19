@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from GCC.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -95,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
 				   int, bool);
@@ -13184,7 +13185,10 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
       gcc_assert ((unsigned) DBX_REGISTER_NUMBER (reg) == dbx_reg_number (rtl));
       nregs = REG_NREGS (rtl);
 
-      size = GET_MODE_SIZE (GET_MODE (rtl)) / nregs;
+      /* At present we only track constant-sized pieces.  */
+      if (!GET_MODE_SIZE (GET_MODE (rtl)).is_constant (&size))
+	return NULL;
+      size /= nregs;
 
       loc_result = NULL;
       while (nregs--)
@@ -13204,7 +13208,9 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 
   gcc_assert (GET_CODE (regs) == PARALLEL);
 
-  size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
+  /* At present we only track constant-sized pieces.  */
+  if (!GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0))).is_constant (&size))
+    return NULL;
   loc_result = NULL;
 
   for (i = 0; i < XVECLEN (regs, 0); ++i)
@@ -14797,7 +14803,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (is_a <scalar_int_mode> (mode, &int_mode)
 	  && is_a <scalar_int_mode> (GET_MODE (inner), &inner_mode)
 	  ? GET_MODE_SIZE (int_mode) <= GET_MODE_SIZE (inner_mode)
-	  : GET_MODE_SIZE (mode) == GET_MODE_SIZE (GET_MODE (inner)))
+	  : known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (GET_MODE (inner))))
 	{
 	  dw_die_ref type_die;
 	  dw_loc_descr_ref cvt;
@@ -14813,8 +14819,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      mem_loc_result = NULL;
 	      break;
 	    }
-	  if (GET_MODE_SIZE (mode)
-	      != GET_MODE_SIZE (GET_MODE (inner)))
+	  if (maybe_ne (GET_MODE_SIZE (mode), GET_MODE_SIZE (GET_MODE (inner))))
 	    cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
 	  else
 	    cvt = new_loc_descr (dwarf_OP (DW_OP_reinterpret), 0, 0);
@@ -14975,15 +14980,17 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	    {
 	      dw_die_ref type_die;
 	      dw_loc_descr_ref deref;
+	      HOST_WIDE_INT size;
 
 	      if (dwarf_strict && dwarf_version < 5)
+		return NULL;
+	      if (!GET_MODE_SIZE (mode).is_constant (&size))
 		return NULL;
 	      type_die
 		= base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	      if (type_die == NULL)
 		return NULL;
-	      deref = new_loc_descr (dwarf_OP (DW_OP_deref_type),
-				     GET_MODE_SIZE (mode), 0);
+	      deref = new_loc_descr (dwarf_OP (DW_OP_deref_type), size, 0);
 	      deref->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
 	      deref->dw_loc_oprnd2.v.val_die_ref.die = type_die;
 	      deref->dw_loc_oprnd2.v.val_die_ref.external = 0;
@@ -15395,7 +15402,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	     We output CONST_DOUBLEs as blocks.  */
 	  if (mode == VOIDmode
 	      || (GET_MODE (rtl) == VOIDmode
-		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
+		  && maybe_ne (GET_MODE_BITSIZE (mode),
+			       HOST_BITS_PER_DOUBLE_INT)))
 	    break;
 	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
@@ -15759,6 +15767,12 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 static dw_loc_descr_ref
 concat_loc_descriptor (rtx x0, rtx x1, enum var_init_status initialized)
 {
+  /* At present we only track constant-sized pieces.  */
+  unsigned int size0, size1;
+  if (!GET_MODE_SIZE (GET_MODE (x0)).is_constant (&size0)
+      || !GET_MODE_SIZE (GET_MODE (x1)).is_constant (&size1))
+    return 0;
+
   dw_loc_descr_ref cc_loc_result = NULL;
   dw_loc_descr_ref x0_ref
     = loc_descriptor (x0, VOIDmode, VAR_INIT_STATUS_INITIALIZED);
@@ -15769,10 +15783,10 @@ concat_loc_descriptor (rtx x0, rtx x1, enum var_init_status initialized)
     return 0;
 
   cc_loc_result = x0_ref;
-  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x0)));
+  add_loc_descr_op_piece (&cc_loc_result, size0);
 
   add_loc_descr (&cc_loc_result, x1_ref);
-  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x1)));
+  add_loc_descr_op_piece (&cc_loc_result, size1);
 
   if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
     add_loc_descr (&cc_loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
@@ -15789,18 +15803,23 @@ concatn_loc_descriptor (rtx concatn, enum var_init_status initialized)
   unsigned int i;
   dw_loc_descr_ref cc_loc_result = NULL;
   unsigned int n = XVECLEN (concatn, 0);
+  unsigned int size;
 
   for (i = 0; i < n; ++i)
     {
       dw_loc_descr_ref ref;
       rtx x = XVECEXP (concatn, 0, i);
 
+      /* At present we only track constant-sized pieces.  */
+      if (!GET_MODE_SIZE (GET_MODE (x)).is_constant (&size))
+	return NULL;
+
       ref = loc_descriptor (x, VOIDmode, VAR_INIT_STATUS_INITIALIZED);
       if (ref == NULL)
 	return NULL;
 
       add_loc_descr (&cc_loc_result, ref);
-      add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x)));
+      add_loc_descr_op_piece (&cc_loc_result, size);
     }
 
   if (cc_loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
@@ -15919,7 +15938,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	rtvec par_elems = XVEC (rtl, 0);
 	int num_elem = GET_NUM_ELEM (par_elems);
 	machine_mode mode;
-	int i;
+	int i, size;
 
 	/* Create the first one, so we have something to add to.  */
 	loc_result = loc_descriptor (XEXP (RTVEC_ELT (par_elems, 0), 0),
@@ -15927,7 +15946,10 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	if (loc_result == NULL)
 	  return NULL;
 	mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, 0), 0));
-	add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
+	/* At present we only track constant-sized pieces.  */
+	if (!GET_MODE_SIZE (mode).is_constant (&size))
+	  return NULL;
+	add_loc_descr_op_piece (&loc_result, size);
 	for (i = 1; i < num_elem; i++)
 	  {
 	    dw_loc_descr_ref temp;
@@ -15938,7 +15960,10 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	      return NULL;
 	    add_loc_descr (&loc_result, temp);
 	    mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, i), 0));
-	    add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
+	    /* At present we only track constant-sized pieces.  */
+	    if (!GET_MODE_SIZE (mode).is_constant (&size))
+	      return NULL;
+	    add_loc_descr_op_piece (&loc_result, size);
 	  }
       }
       break;
@@ -16010,8 +16035,11 @@ loc_descriptor (rtx rtl, machine_mode mode,
 
       if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
 	{
+	  unsigned int length;
+	  if (!CONST_VECTOR_NUNITS (rtl).is_constant (&length))
+	    return NULL;
+
 	  unsigned int elt_size = GET_MODE_UNIT_SIZE (GET_MODE (rtl));
-	  unsigned int length = CONST_VECTOR_NUNITS (rtl);
 	  unsigned char *array
 	    = ggc_vec_alloc<unsigned char> (length * elt_size);
 	  unsigned int i;
@@ -18817,9 +18845,12 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST_VECTOR:
       {
+	unsigned int length;
+	if (!CONST_VECTOR_NUNITS (rtl).is_constant (&length))
+	  return false;
+
 	machine_mode mode = GET_MODE (rtl);
 	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
-	unsigned int length = CONST_VECTOR_NUNITS (rtl);
 	unsigned char *array
 	  = ggc_vec_alloc<unsigned char> (length * elt_size);
 	unsigned int i;
@@ -19171,7 +19202,7 @@ rtl_for_decl_location (tree decl)
 	    rtl = DECL_INCOMING_RTL (decl);
 	  else if ((rtl == NULL_RTX || is_pseudo_reg (rtl))
 		   && SCALAR_INT_MODE_P (dmode)
-		   && GET_MODE_SIZE (dmode) <= GET_MODE_SIZE (pmode)
+		   && known_le (GET_MODE_SIZE (dmode), GET_MODE_SIZE (pmode))
 		   && DECL_INCOMING_RTL (decl))
 	    {
 	      rtx inc = DECL_INCOMING_RTL (decl);
@@ -19212,12 +19243,12 @@ rtl_for_decl_location (tree decl)
 	       /* Big endian correction check.  */
 	       && BYTES_BIG_ENDIAN
 	       && TYPE_MODE (TREE_TYPE (decl)) != GET_MODE (rtl)
-	       && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)))
-		   < UNITS_PER_WORD))
+	       && known_lt (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))),
+			    UNITS_PER_WORD))
 	{
 	  machine_mode addr_mode = get_address_mode (rtl);
-	  int offset = (UNITS_PER_WORD
-			- GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
+	  poly_int64 offset = (UNITS_PER_WORD
+			       - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
 
 	  rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
 			     plus_constant (addr_mode, XEXP (rtl, 0), offset));
@@ -22014,6 +22045,11 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   int declaration = (current_function_decl != decl
 		     || class_or_namespace_scope_p (context_die));
 
+  /* A declaration that has been previously dumped needs no
+     additional information.  */
+  if (old_die && declaration)
+    return;
+
   /* Now that the C++ front end lazily declares artificial member fns, we
      might need to retrofit the declaration into its class.  */
   if (!declaration && !origin && !old_die
@@ -22054,11 +22090,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
      much as possible.  */
   else if (old_die)
     {
-      /* A declaration that has been previously dumped needs no
-	 additional information.  */
-      if (declaration)
-	return;
-
       if (!get_AT_flag (old_die, DW_AT_declaration)
 	  /* We can have a normal definition following an inline one in the
 	     case of redefinition of GNU C extern inlines.
@@ -22940,10 +22971,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	{
 	  /* If we will be creating an inlined instance, we need a
 	     new DIE that will get annotated with
-	     DW_AT_abstract_origin.  Clear things so we can get a
-	     new DIE.  */
+	     DW_AT_abstract_origin.  */
 	  gcc_assert (!DECL_ABSTRACT_P (decl));
-	  old_die = NULL;
 	}
       else
 	{
@@ -23507,6 +23536,8 @@ gen_producer_string (void)
       case OPT_fltrans_output_list_:
       case OPT_fresolution_:
       case OPT_fdebug_prefix_map_:
+      case OPT_fmacro_prefix_map_:
+      case OPT_ffile_prefix_map_:
       case OPT_fcompare_debug:
 	/* Ignore these.  */
 	continue;
@@ -26554,11 +26585,16 @@ create_label:
 
   if (var_loc_p && flag_debug_asm)
     {
-      const char *name = NULL, *sep = " => ", *patstr = NULL;
+      const char *name, *sep, *patstr;
       if (decl && DECL_NAME (decl))
 	name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      else
+	name = "";
       if (NOTE_VAR_LOCATION_LOC (loc_note))
-	patstr = str_pattern_slim (NOTE_VAR_LOCATION_LOC (loc_note));
+	{
+	  sep = " => ";
+	  patstr = str_pattern_slim (NOTE_VAR_LOCATION_LOC (loc_note));
+	}
       else
 	{
 	  sep = " ";
@@ -27765,8 +27801,9 @@ output_indirect_strings (void)
       unsigned int offset = 0;
       unsigned int cur_idx = 0;
 
-      skeleton_debug_str_hash->traverse<enum dwarf_form,
-					output_indirect_string> (DW_FORM_strp);
+      if (skeleton_debug_str_hash)
+        skeleton_debug_str_hash->traverse<enum dwarf_form,
+					  output_indirect_string> (DW_FORM_strp);
 
       switch_to_section (debug_str_offsets_section);
       debug_str_hash->traverse_noresize
@@ -30788,6 +30825,12 @@ dwarf2out_early_finish (const char *filename)
 		   macinfo_section_label);
 
   save_macinfo_strings ();
+
+  if (dwarf_split_debug_info)
+    {
+      unsigned int index = 0;
+      debug_str_hash->traverse_noresize<unsigned int *, index_string> (&index);
+    }
 
   /* Output all of the compilation units.  We put the main one last so that
      the offsets are available to output_pubnames.  */

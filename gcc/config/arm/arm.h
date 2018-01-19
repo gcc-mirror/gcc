@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -216,9 +216,17 @@ extern tree arm_fp16_type_node;
 					isa_bit_dotprod)		\
 			&& arm_arch8_2)
 
-/* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
+/* FPU supports the floating point FP16 instructions for ARMv8.2-A
+   and later.  */
 #define TARGET_VFP_FP16INST \
   (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)
+
+/* Target supports the floating point FP16 instructions from ARMv8.2-A
+   and later.  */
+#define TARGET_FP16FML (TARGET_NEON					\
+			&& bitmap_bit_p (arm_active_target.isa,	\
+					isa_bit_fp16fml)		\
+			&& arm_arch8_2)
 
 /* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
@@ -1899,8 +1907,9 @@ enum arm_auto_incmodes
 
 /* Try to generate sequences that don't involve branches, we can then use
    conditional instructions.  */
-#define BRANCH_COST(speed_p, predictable_p) \
-  (current_tune->branch_cost (speed_p, predictable_p))
+#define BRANCH_COST(speed_p, predictable_p)			\
+  ((arm_branch_cost != -1) ? arm_branch_cost :			\
+   (current_tune->branch_cost (speed_p, predictable_p)))
 
 /* False if short circuit operation is preferred.  */
 #define LOGICAL_OP_NON_SHORT_CIRCUIT					\

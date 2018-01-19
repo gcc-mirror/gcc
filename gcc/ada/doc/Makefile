@@ -1,7 +1,7 @@
 # Makefile for Sphinx documentation
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
+SPHINXOPTS    = -W
 SPHINXBUILD   = DOC_NAME=$* sphinx-build
 PAPER         =
 BUILDDIR      = build

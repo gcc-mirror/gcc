@@ -1,5 +1,5 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "flags.h"
+#include "selftest.h"
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
@@ -239,6 +240,11 @@ lvalue_kind (const_tree ref)
 
     case NON_DEPENDENT_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
+
+    case VIEW_CONVERT_EXPR:
+      if (location_wrapper_p (ref))
+	return lvalue_kind (TREE_OPERAND (ref, 0));
+      /* Fallthrough.  */
 
     default:
       if (!TREE_TYPE (ref))
@@ -3151,6 +3157,11 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
       {
 	constructor_elt *ce;
 	vec<constructor_elt,va_gc> *v = CONSTRUCTOR_ELTS (*t);
+	if (d->pset->add (*t))
+	  {
+	    *walk_subtrees = false;
+	    return NULL_TREE;
+	  }
 	for (unsigned i = 0; vec_safe_iterate (v, i, &ce); ++i)
 	  {
 	    tree *valp = &ce->value;
@@ -3170,7 +3181,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
 		  valp = &TARGET_EXPR_INITIAL (*valp);
 	      }
 	    d->obj = subob;
-	    cp_walk_tree (valp, replace_placeholders_r, data_, d->pset);
+	    cp_walk_tree (valp, replace_placeholders_r, data_, NULL);
 	    d->obj = obj;
 	  }
 	*walk_subtrees = false;
@@ -3178,6 +3189,8 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
       }
 
     default:
+      if (d->pset->add (*t))
+	*walk_subtrees = false;
       break;
     }
 
@@ -3206,7 +3219,7 @@ replace_placeholders (tree exp, tree obj, bool *seen_p)
   replace_placeholders_t data = { obj, false, &pset };
   if (TREE_CODE (exp) == TARGET_EXPR)
     tp = &TARGET_EXPR_INITIAL (exp);
-  cp_walk_tree (tp, replace_placeholders_r, &data, &pset);
+  cp_walk_tree (tp, replace_placeholders_r, &data, NULL);
   if (seen_p)
     *seen_p = data.seen;
   return exp;
@@ -5383,5 +5396,65 @@ lang_check_failed (const char* file, int line, const char* function)
 		  function, trim_filename (file), line);
 }
 #endif /* ENABLE_TREE_CHECKING */
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that lvalue_kind () works, for various expressions,
+   and that location wrappers don't affect the results.  */
+
+static void
+test_lvalue_kind ()
+{
+  location_t loc = BUILTINS_LOCATION;
+
+  /* Verify constants and parameters, without and with
+     location wrappers.  */
+  tree int_cst = build_int_cst (integer_type_node, 42);
+  ASSERT_EQ (clk_none, lvalue_kind (int_cst));
+
+  tree wrapped_int_cst = maybe_wrap_with_location (int_cst, loc);
+  ASSERT_TRUE (location_wrapper_p (wrapped_int_cst));
+  ASSERT_EQ (clk_none, lvalue_kind (wrapped_int_cst));
+
+  tree string_lit = build_string (4, "foo");
+  TREE_TYPE (string_lit) = char_array_type_node;
+  string_lit = fix_string_type (string_lit);
+  ASSERT_EQ (clk_ordinary, lvalue_kind (string_lit));
+
+  tree wrapped_string_lit = maybe_wrap_with_location (string_lit, loc);
+  ASSERT_TRUE (location_wrapper_p (wrapped_string_lit));
+  ASSERT_EQ (clk_ordinary, lvalue_kind (wrapped_string_lit));
+
+  tree parm = build_decl (UNKNOWN_LOCATION, PARM_DECL,
+			  get_identifier ("some_parm"),
+			  integer_type_node);
+  ASSERT_EQ (clk_ordinary, lvalue_kind (parm));
+
+  tree wrapped_parm = maybe_wrap_with_location (parm, loc);
+  ASSERT_TRUE (location_wrapper_p (wrapped_parm));
+  ASSERT_EQ (clk_ordinary, lvalue_kind (wrapped_parm));
+
+  /* Verify that lvalue_kind of std::move on a parm isn't
+     affected by location wrappers.  */
+  tree rvalue_ref_of_parm = move (parm);
+  ASSERT_EQ (clk_rvalueref, lvalue_kind (rvalue_ref_of_parm));
+  tree rvalue_ref_of_wrapped_parm = move (wrapped_parm);
+  ASSERT_EQ (clk_rvalueref, lvalue_kind (rvalue_ref_of_wrapped_parm));
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+cp_tree_c_tests ()
+{
+  test_lvalue_kind ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */
+
 
 #include "gt-cp-tree.h"

@@ -1,7 +1,7 @@
 /* Half-float conversion routines.  Code mostly borrowed from the ARM's
    builtin function.
 
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is free software; you can redistribute it and/or modify it

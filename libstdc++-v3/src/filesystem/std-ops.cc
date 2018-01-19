@@ -1,6 +1,6 @@
 // Filesystem operations -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -382,10 +382,10 @@ fs::do_copy_file(const char* from, const char* to,
       return false;
     }
 
-  ssize_t n = 0;
   size_t count = from_st->st_size;
 #ifdef _GLIBCXX_USE_SENDFILE
-  n = ::sendfile(out.fd, in.fd, nullptr, count);
+  off_t offset = 0;
+  ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
   if (n < 0 && errno != ENOSYS && errno != EINVAL)
     {
       ec.assign(errno, std::generic_category());
@@ -405,35 +405,32 @@ fs::do_copy_file(const char* from, const char* to,
     count -= n;
 #endif // _GLIBCXX_USE_SENDFILE
 
-  __gnu_cxx::stdio_filebuf<char> sbin(in.fd, std::ios::in);
-  __gnu_cxx::stdio_filebuf<char> sbout(out.fd, std::ios::out);
+  using std::ios;
+  __gnu_cxx::stdio_filebuf<char> sbin(in.fd, ios::in|ios::binary);
+  __gnu_cxx::stdio_filebuf<char> sbout(out.fd, ios::out|ios::binary);
 
   if (sbin.is_open())
     in.fd = -1;
   if (sbout.is_open())
     out.fd = -1;
 
-  const std::streampos errpos(std::streamoff(-1));
-
-  if (n < 0)
+#ifdef _GLIBCXX_USE_SENDFILE
+  if (n != 0)
     {
-      auto p1 = sbin.pubseekoff(0, std::ios_base::beg, std::ios_base::in);
-      auto p2 = sbout.pubseekoff(0, std::ios_base::beg, std::ios_base::out);
+      if (n < 0)
+	n = 0;
+
+      const auto p1 = sbin.pubseekoff(n, ios::beg, ios::in);
+      const auto p2 = sbout.pubseekoff(n, ios::beg, ios::out);
+
+      const std::streampos errpos(std::streamoff(-1));
       if (p1 == errpos || p2 == errpos)
 	{
 	  ec = std::make_error_code(std::errc::io_error);
 	  return false;
 	}
     }
-  else if (n > 0)
-    {
-      auto p = sbout.pubseekoff(n, std::ios_base::beg, std::ios_base::out);
-      if (p == errpos)
-	{
-	  ec = std::make_error_code(std::errc::io_error);
-	  return false;
-	}
-    }
+#endif
 
   if (count && !(std::ostream(&sbout) << &sbin))
     {
@@ -1257,7 +1254,7 @@ bool
 fs::remove(const path& p)
 {
   error_code ec;
-  bool result = fs::remove(p, ec);
+  const bool result = fs::remove(p, ec);
   if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove", p, ec));
   return result;
@@ -1266,16 +1263,15 @@ fs::remove(const path& p)
 bool
 fs::remove(const path& p, error_code& ec) noexcept
 {
-  if (exists(symlink_status(p, ec)))
+  if (::remove(p.c_str()) == 0)
     {
-      if (::remove(p.c_str()) == 0)
-	{
-	  ec.clear();
-	  return true;
-	}
-      else
-	ec.assign(errno, std::generic_category());
+      ec.clear();
+      return true;
     }
+  else if (errno == ENOENT)
+    ec.clear();
+  else
+    ec.assign(errno, std::generic_category());
   return false;
 }
 
@@ -1284,7 +1280,7 @@ std::uintmax_t
 fs::remove_all(const path& p)
 {
   error_code ec;
-  bool result = remove_all(p, ec);
+  const auto result = remove_all(p, ec);
   if (ec)
     _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot remove all", p, ec));
   return result;
@@ -1293,14 +1289,28 @@ fs::remove_all(const path& p)
 std::uintmax_t
 fs::remove_all(const path& p, error_code& ec)
 {
-  auto fs = symlink_status(p, ec);
-  uintmax_t count = 0;
-  if (!ec && fs.type() == file_type::directory)
-    for (directory_iterator d(p, ec), end; !ec && d != end; ++d)
-      count += fs::remove_all(d->path(), ec);
-  if (ec)
+  const auto s = symlink_status(p, ec);
+  if (!status_known(s))
     return -1;
-  return fs::remove(p, ec) ? ++count : -1;  // fs:remove() calls ec.clear()
+
+  ec.clear();
+  if (s.type() == file_type::not_found)
+    return 0;
+
+  uintmax_t count = 0;
+  if (s.type() == file_type::directory)
+    {
+      for (directory_iterator d(p, ec), end; !ec && d != end; d.increment(ec))
+	count += fs::remove_all(d->path(), ec);
+      if (ec.value() == ENOENT)
+	ec.clear();
+      else if (ec)
+	return -1;
+    }
+
+  if (fs::remove(p, ec))
+    ++count;
+  return ec ? -1 : count;
 }
 
 void

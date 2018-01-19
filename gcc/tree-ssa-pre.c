@@ -1,5 +1,5 @@
 /* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -2697,6 +2697,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
        that value numbering saw through.  */
     case NAME:
       folded = PRE_EXPR_NAME (expr);
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (folded))
+	return NULL_TREE;
       if (useless_type_conversion_p (exprtype, TREE_TYPE (folded)))
 	return folded;
       break;

@@ -1,5 +1,5 @@
 /* Definitions for c-common.c.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1472,6 +1472,7 @@ namespace selftest {
   /* Declarations for specific families of tests within c-family,
      by source file, in alphabetical order.  */
   extern void c_format_c_tests (void);
+  extern void c_pretty_print_c_tests (void);
   extern void c_spellcheck_cc_tests (void);
 
   /* The entrypoint for running all of the above tests.  */

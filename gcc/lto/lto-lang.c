@@ -1,5 +1,5 @@
 /* Language-dependent hooks for LTO.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -1012,7 +1012,16 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
       if (inner_type != NULL_TREE)
 	return build_complex_type (inner_type);
     }
-  else if (VECTOR_MODE_P (mode))
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						    GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = lto_type_for_mode (inner_mode, unsigned_p);

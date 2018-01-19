@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfortran.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -255,7 +255,7 @@ typedef GFC_INTEGER_4 GFC_IO_INT;
 typedef ptrdiff_t index_type;
 
 /* The type used for the lengths of character variables.  */
-typedef GFC_INTEGER_4 gfc_charlen_type;
+typedef size_t gfc_charlen_type;
 
 /* Definitions of CHARACTER data types:
      - CHARACTER(KIND=1) corresponds to the C char type,
@@ -412,6 +412,17 @@ typedef gfc_array_i4 gfc_array_s4;
 #define GFC_DTYPE_TYPE_SIZE_MASK (GFC_DTYPE_SIZE_MASK | GFC_DTYPE_TYPE_MASK)
 
 #define GFC_DTYPE_TYPE_SIZE(desc) ((desc)->dtype & GFC_DTYPE_TYPE_SIZE_MASK)
+
+/* Macros to set size and type information.  */
+
+#define GFC_DTYPE_COPY(a,b) do { (a)->dtype = (b)->dtype; } while(0)
+#define GFC_DTYPE_COPY_SETRANK(a,b,n) \
+  do { \
+  (a)->dtype = (((b)->dtype & ~GFC_DTYPE_RANK_MASK) | n ); \
+  } while (0)
+
+#define GFC_DTYPE_IS_UNSET(a) (unlikely((a)->dtype == 0))
+#define GFC_DTYPE_CLEAR(a) do { (a)->dtype = 0; } while(0)
 
 #define GFC_DTYPE_INTEGER_1 ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_INTEGER_1) << GFC_DTYPE_SIZE_SHIFT))

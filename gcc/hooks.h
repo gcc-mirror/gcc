@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -124,4 +124,7 @@ extern const char *hook_constcharptr_const_rtx_insn_null (const rtx_insn *);
 extern const char *hook_constcharptr_const_tree_const_tree_null (const_tree, const_tree);
 extern const char *hook_constcharptr_int_const_tree_null (int, const_tree);
 extern const char *hook_constcharptr_int_const_tree_const_tree_null (int, const_tree, const_tree);
+
+extern opt_machine_mode hook_optmode_mode_uhwi_none (machine_mode,
+						     unsigned HOST_WIDE_INT);
 #endif

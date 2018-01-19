@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -622,6 +622,10 @@ struct cpp_callbacks
      C++-style comments it does not include the terminating newline.  */
   void (*comment) (cpp_reader *, source_location, const unsigned char *,
 		   size_t);
+
+  /* Callback for filename remapping in __FILE__ and __BASE_FILE__ macro
+     expansions.  */
+  const char *(*remap_filename) (const char*);
 };
 
 #ifdef VMS

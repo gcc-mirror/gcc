@@ -1,6 +1,6 @@
 /* Gimple decl, type, and expression support functions.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -631,7 +631,9 @@ is_gimple_address (const_tree t)
       op = TREE_OPERAND (op, 0);
     }
 
-  if (CONSTANT_CLASS_P (op) || TREE_CODE (op) == MEM_REF)
+  if (CONSTANT_CLASS_P (op)
+      || TREE_CODE (op) == TARGET_MEM_REF
+      || TREE_CODE (op) == MEM_REF)
     return true;
 
   switch (TREE_CODE (op))

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -468,7 +468,9 @@ extern const sh_atomic_model& selected_atomic_model (void);
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
     || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \
-   ? (unsigned) MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (TYPE))) \
+   ? (unsigned) MIN (BIGGEST_ALIGNMENT, \
+		     GET_MODE_BITSIZE (as_a <fixed_size_mode> \
+				       (TYPE_MODE (TYPE)))) \
    : (unsigned) DATA_ALIGNMENT(TYPE, ALIGN))
 
 /* Make arrays of chars word-aligned for the same reasons.  */

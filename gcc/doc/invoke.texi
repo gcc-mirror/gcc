@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2017 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,7 +8,7 @@
 @c man end
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1988-2017 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2018 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -172,7 +172,8 @@ in the following sections.
 @gccoptlist{-c  -S  -E  -o @var{file}  -x @var{language}  @gol
 -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
 -pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
-@@@var{file}  -fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}  @gol
+@@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  @gol
+-fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}  @gol
 -fdump-ada-spec@r{[}-slim@r{]}  -fada-spec-parent=@var{unit}  -fdump-go-spec=@var{file}}
 
 @item C Language Options
@@ -481,9 +482,9 @@ Objective-C and Objective-C++ Dialects}.
 -dD  -dI  -dM  -dN  -dU @gol
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
--finput-charset=@var{charset}  -fno-canonical-system-headers @gol
--fpch-deps  -fpch-preprocess  -fpreprocessed @gol
--ftabstop=@var{width}  -ftrack-macro-expansion  @gol
+-finput-charset=@var{charset} -fmacro-prefix-map=@var{old}=@var{new}  @gol
+-fno-canonical-system-headers @gol -fpch-deps  -fpch-preprocess  @gol
+-fpreprocessed -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
 -H  -imacros @var{file}  -include @var{file} @gol
 -M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT @gol
@@ -669,7 +670,8 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{cost} @gol
 -mcall-prologues  -mgas-isr-prologues  -mint8 @gol
 -mn_flash=@var{size}  -mno-interrupts @gol
--mrelax  -mrmw  -mstrict-X  -mtiny-stack  -mfract-convert-truncate @gol
+-mmain-is-OS_task -mrelax  -mrmw  -mstrict-X  -mtiny-stack @gol
+-mfract-convert-truncate @gol
 -mshort-calls  -nodevicelib @gol
 -Waddr-space-convert  -Wmisspelled-isr}
 
@@ -940,7 +942,9 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mbig-endian  -mlittle-endian @gol
 -mreduced-regs  -mfull-regs @gol
 -mcmov  -mno-cmov @gol
--mperf-ext  -mno-perf-ext @gol
+-mext-perf  -mno-ext-perf @gol
+-mext-perf2  -mno-ext-perf2 @gol
+-mext-string  -mno-ext-string @gol
 -mv3push  -mno-v3push @gol
 -m16bit  -mno-16bit @gol
 -misr-vector-size=@var{num} @gol
@@ -1015,7 +1019,7 @@ See RS/6000 and PowerPC Options.
 -malign-power  -malign-natural @gol
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
 -msingle-float  -mdouble-float  -msimple-fpu @gol
--mstring  -mno-string  -mupdate  -mno-update @gol
+-mupdate  -mno-update @gol
 -mavoid-indexed-addresses  -mno-avoid-indexed-addresses @gol
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align @gol
 -mstrict-align  -mno-strict-align  -mrelocatable @gol
@@ -1226,7 +1230,9 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} @gol
 -mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
--mgeneral-regs-only  -mcall-ms2sysv-xlogues}
+-mgeneral-regs-only -mcall-ms2sysv-xlogues @gol
+-mindirect-branch=@var{choice} -mfunction-return==@var{choice} @gol
+-mindirect-branch-register}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -1654,6 +1660,16 @@ gcc -c t.c -wrapper gdb,--args
 This invokes all subprograms of @command{gcc} under
 @samp{gdb --args}, thus the invocation of @command{cc1} is
 @samp{gdb --args cc1 @dots{}}.
+
+@item -ffile-prefix-map=@var{old}=@var{new}
+@opindex ffile-prefix-map
+When compiling files residing in directory @file{@var{old}}, record
+any references to them in the result of the compilation as if the
+files resided in directory @file{@var{new}} instead.  Specifying this
+option is equivalent to specifying all the individual
+@option{-f*-prefix-map} options.  This can be used to make reproducible
+builds that are location independent.  See also
+@option{-fmacro-prefix-map} and @option{-fdebug-prefix-map}.
 
 @item -fplugin=@var{name}.so
 @opindex fplugin
@@ -2989,20 +3005,23 @@ C++17 it calls @code{f<void(*)()noexcept>}.
 @item -Wclass-memaccess @r{(C++ and Objective-C++ only)}
 @opindex Wclass-memaccess
 Warn when the destination of a call to a raw memory function such as
-@code{memset} or @code{memcpy} is an object of class type writing into which
-might bypass the class non-trivial or deleted constructor or copy assignment,
-violate const-correctness or encapsulation, or corrupt the virtual table.
-Modifying the representation of such objects may violate invariants maintained
-by member functions of the class.  For example, the call to @code{memset}
-below is undefined because it modifies a non-trivial class object and is,
-therefore, diagnosed.  The safe way to either initialize or clear the storage
-of objects of such types is by using the appropriate constructor or assignment
-operator, if one is available.
+@code{memset} or @code{memcpy} is an object of class type, and when writing
+into such an object might bypass the class non-trivial or deleted constructor
+or copy assignment, violate const-correctness or encapsulation, or corrupt
+virtual table pointers.  Modifying the representation of such objects may
+violate invariants maintained by member functions of the class.  For example,
+the call to @code{memset} below is undefined because it modifies a non-trivial
+class object and is, therefore, diagnosed.  The safe way to either initialize
+or clear the storage of objects of such types is by using the appropriate
+constructor or assignment operator, if one is available.
 @smallexample
 std::string str = "abc";
-memset (&str, 0, 3);
+memset (&str, 0, sizeof str);
 @end smallexample
 The @option{-Wclass-memaccess} option is enabled by @option{-Wall}.
+Explicitly casting the pointer to the class object to @code{void *} or
+to a type that can be safely accessed by the raw memory function suppresses
+the warning.
 
 @item -Wnon-virtual-dtor @r{(C++ and Objective-C++ only)}
 @opindex Wnon-virtual-dtor
@@ -7133,13 +7152,14 @@ link processing time.  Merging is enabled by default.
 
 @item -fdebug-prefix-map=@var{old}=@var{new}
 @opindex fdebug-prefix-map
-When compiling files in directory @file{@var{old}}, record debugging
-information describing them as in @file{@var{new}} instead.  This can be
-used to replace a build-time path with an install-time path in the debug info.
-It can also be used to change an absolute path to a relative path by using
-@file{.} for @var{new}.  This can give more reproducible builds, which are
-location independent, but may require an extra command to tell GDB where to
-find the source files.
+When compiling files residing in directory @file{@var{old}}, record
+debugging information describing them as if the files resided in
+directory @file{@var{new}} instead.  This can be used to replace a
+build-time path with an install-time path in the debug info.  It can
+also be used to change an absolute path to a relative path by using
+@file{.} for @var{new}.  This can give more reproducible builds, which
+are location independent, but may require an extra command to tell GDB
+where to find the source files. See also @option{-ffile-prefix-map}.
 
 @item -fvar-tracking
 @opindex fvar-tracking
@@ -12611,6 +12631,18 @@ The options @option{-ftrapv} and @option{-fwrapv} override each other, so using
 using @option{-ftrapv} @option{-fwrapv} @option{-fno-wrapv} on the command-line
 results in @option{-ftrapv} being effective.
 
+@item -fwrapv-pointer
+@opindex fwrapv-pointer
+This option instructs the compiler to assume that pointer arithmetic
+overflow on addition and subtraction wraps around using twos-complement
+representation.  This flag disables some optimizations which assume
+pointer overflow is invalid.
+
+@item -fstrict-overflow
+@opindex fstrict-overflow
+This option implies @option{-fno-wrapv} @option{-fno-wrapv-pointer} and when
+negated implies @option{-fwrapv} @option{-fwrapv-pointer}.
+
 @item -fexceptions
 @opindex fexceptions
 Enable exception handling.  Generates extra code needed to propagate
@@ -14526,7 +14558,11 @@ more feature modifiers.  This option has the form
 @option{-march=@var{arch}@r{@{}+@r{[}no@r{]}@var{feature}@r{@}*}}.
 
 The permissible values for @var{arch} are @samp{armv8-a},
-@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a} or @var{native}.
+@samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a} or @samp{armv8.4-a}
+or @var{native}.
+
+The value @samp{armv8.4-a} implies @samp{armv8.3-a} and enables compiler
+support for the ARMv8.4-A architecture extensions.
 
 The value @samp{armv8.3-a} implies @samp{armv8.2-a} and enables compiler
 support for the ARMv8.3-A architecture extensions.
@@ -14633,6 +14669,23 @@ Permissible values are @samp{none}, which disables return address signing,
 functions, and @samp{all}, which enables pointer signing for all functions.  The
 default value is @samp{none}.
 
+@item -msve-vector-bits=@var{bits}
+@opindex msve-vector-bits
+Specify the number of bits in an SVE vector register.  This option only has
+an effect when SVE is enabled.
+
+GCC supports two forms of SVE code generation: ``vector-length
+agnostic'' output that works with any size of vector register and
+``vector-length specific'' output that only works when the vector
+registers are a particular size.  Replacing @var{bits} with
+@samp{scalable} selects vector-length agnostic output while
+replacing it with a number selects vector-length specific output.
+The possible lengths in the latter case are: 128, 256, 512, 1024
+and 2048.  @samp{scalable} is the default.
+
+At present, @samp{-msve-vector-bits=128} produces the same output
+as @samp{-msve-vector-bits=scalable}.
+
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
@@ -14656,6 +14709,9 @@ values for options @option{-march} and @option{-mcpu}.
 Enable Advanced SIMD instructions.  This also enables floating-point
 instructions.  This is on by default for all possible values for options
 @option{-march} and @option{-mcpu}.
+@item sve
+Enable Scalable Vector Extension instructions.  This also enables Advanced
+SIMD and floating-point instructions.
 @item lse
 Enable Large System Extension instructions.  This is on by default for
 @option{-march=armv8.1-a}.
@@ -14664,18 +14720,34 @@ Enable Round Double Multiply Accumulate instructions.  This is on by default
 for @option{-march=armv8.1-a}.
 @item fp16
 Enable FP16 extension.  This also enables floating-point instructions.
+@item fp16fml
+Enable FP16 fmla extension.  This also enables FP16 extensions and
+floating-point instructions. This option is enabled by default for @option{-march=armv8.4-a}. Use of this option with architectures prior to Armv8.2-A is not supported.
+
 @item rcpc
 Enable the RcPc extension.  This does not change code generation from GCC,
 but is passed on to the assembler, enabling inline asm statements to use
 instructions from the RcPc extension.
 @item dotprod
 Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
+@item aes
+Enable the Armv8-a aes and pmull crypto extension.  This also enables Advanced
+SIMD instructions.
+@item sha2
+Enable the Armv8-a sha2 crypto extension.  This also enables Advanced SIMD instructions.
+@item sha3
+Enable the sha512 and sha3 crypto extension.  This also enables Advanced SIMD
+instructions. Use of this option with architectures prior to Armv8.2-A is not supported.
+@item sm4
+Enable the sm3 and sm4 crypto extension.  This also enables Advanced SIMD instructions.
+Use of this option with architectures prior to Armv8.2-A is not supported.
 
 @end table
 
-Feature @option{crypto} implies @option{simd}, which implies @option{fp}.
+Feature @option{crypto} implies @option{aes}, @option{sha2}, and @option{simd},
+which implies @option{fp}.
 Conversely, @option{nofp} implies @option{nosimd}, which implies
-@option{nocrypto}.
+@option{nocrypto}, @option{noaes} and @option{nosha2}.
 
 @node Adapteva Epiphany Options
 @subsection Adapteva Epiphany Options
@@ -15701,6 +15773,7 @@ Permissible names are:
 @samp{armv6z}, @samp{armv6zk},
 @samp{armv7}, @samp{armv7-a}, @samp{armv7ve}, 
 @samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a},
+@samp{armv8.4-a},
 @samp{armv7-r},
 @samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
@@ -15905,6 +15978,11 @@ Disable the floating-point, Advanced SIMD and cryptographic instructions.
 The half-precision floating-point data processing instructions.
 This also enables the Advanced SIMD and floating-point instructions.
 
+@item +fp16fml
+The half-precision floating-point fmla extension.  This also enables
+the half-precision floating-point extension and Advanced SIMD and
+floating-point instructions.
+
 @item +simd
 The ARMv8.1-A Advanced SIMD and floating-point instructions.
 
@@ -15914,6 +15992,29 @@ floating-point instructions.
 
 @item +dotprod
 Enable the Dot Product extension.  This also enables Advanced SIMD instructions.
+
+@item +nocrypto
+Disable the cryptographic extension.
+
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+@end table
+
+@item armv8.4-a
+@table @samp
+@item +fp16
+The half-precision floating-point data processing instructions.
+This also enables the Advanced SIMD and floating-point instructions as well
+as the Dot Product extension and the half-precision floating-point fmla
+extension.
+
+@item +simd
+The ARMv8.3-A Advanced SIMD and floating-point instructions as well as the
+Dot Product extension.
+
+@item +crypto
+The cryptographic instructions.  This also enables the Advanced SIMD and
+floating-point instructions as well as the Dot Product extension.
 
 @item +nocrypto
 Disable the cryptographic extension.
@@ -16507,6 +16608,12 @@ Assume @code{int} to be 8-bit integer.  This affects the sizes of all types: a
 and @code{long long} is 4 bytes.  Please note that this option does not
 conform to the C standards, but it results in smaller code
 size.
+
+@item -mmain-is-OS_task
+@opindex mmain-is-OS_task
+Do not save registers in @code{main}.  The effect is the same like
+attaching attribute @ref{AVR Function Attributes,,@code{OS_task}}
+to @code{main}. It is activated per default if optimization is on.
 
 @item -mn-flash=@var{num}
 @opindex mn-flash
@@ -21294,13 +21401,29 @@ Generate conditional move instructions.
 @opindex mno-cmov
 Do not generate conditional move instructions.
 
-@item -mperf-ext
+@item -mext-perf
 @opindex mperf-ext
 Generate performance extension instructions.
 
-@item -mno-perf-ext
+@item -mno-ext-perf
 @opindex mno-perf-ext
 Do not generate performance extension instructions.
+
+@item -mext-perf2
+@opindex mperf-ext
+Generate performance extension 2 instructions.
+
+@item -mno-ext-perf2
+@opindex mno-perf-ext
+Do not generate performance extension 2 instructions.
+
+@item -mext-string
+@opindex mperf-ext
+Generate string extension instructions.
+
+@item -mno-ext-string
+@opindex mno-perf-ext
+Do not generate string extension instructions.
 
 @item -mv3push
 @opindex mv3push
@@ -22264,7 +22387,7 @@ following options:
 @gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple @gol
 -mpopcntb -mpopcntd  -mpowerpc64 @gol
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
--msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
+-msimple-fpu  -mmulhw  -mdlmzb  -mmfpgpr -mvsx @gol
 -mcrypto -mdirect-move -mhtm -mpower8-fusion -mpower8-vector @gol
 -mquad-memory -mquad-memory-atomic -mfloat128 -mfloat128-hardware}
 
@@ -22660,19 +22783,6 @@ generated on PowerPC systems.  Do not use @option{-mmultiple} on little-endian
 PowerPC systems, since those instructions do not work when the
 processor is in little-endian mode.  The exceptions are PPC740 and
 PPC750 which permit these instructions in little-endian mode.
-
-@item -mstring
-@itemx -mno-string
-@opindex mstring
-@opindex mno-string
-Generate code that uses (does not use) the load string instructions
-and the store string word instructions to save multiple registers and
-do small block moves.  These instructions are generated by default on
-POWER systems, and not generated on PowerPC systems.  Do not use
-@option{-mstring} on little-endian PowerPC systems, since those
-instructions do not work when the processor is in little-endian mode.
-The exceptions are PPC740 and PPC750 which permit these instructions
-in little-endian mode.
 
 @item -mupdate
 @itemx -mno-update
@@ -26809,6 +26919,43 @@ on to provide serious protection.
 Generate code that uses only the general-purpose registers.  This
 prevents the compiler from using floating-point, vector, mask and bound
 registers.
+
+@item -mindirect-branch=@var{choice}
+@opindex -mindirect-branch
+Convert indirect call and jump with @var{choice}.  The default is
+@samp{keep}, which keeps indirect call and jump unmodified.
+@samp{thunk} converts indirect call and jump to call and return thunk.
+@samp{thunk-inline} converts indirect call and jump to inlined call
+and return thunk.  @samp{thunk-extern} converts indirect call and jump
+to external call and return thunk provided in a separate object file.
+You can control this behavior for a specific function by using the
+function attribute @code{indirect_branch}.  @xref{Function Attributes}.
+
+Note that @option{-mcmodel=large} is incompatible with
+@option{-mindirect-branch=thunk} nor
+@option{-mindirect-branch=thunk-extern} since the thunk function may
+not be reachable in large code model.
+
+@item -mfunction-return=@var{choice}
+@opindex -mfunction-return
+Convert function return with @var{choice}.  The default is @samp{keep},
+which keeps function return unmodified.  @samp{thunk} converts function
+return to call and return thunk.  @samp{thunk-inline} converts function
+return to inlined call and return thunk.  @samp{thunk-extern} converts
+function return to external call and return thunk provided in a separate
+object file.  You can control this behavior for a specific function by
+using the function attribute @code{function_return}.
+@xref{Function Attributes}.
+
+Note that @option{-mcmodel=large} is incompatible with
+@option{-mfunction-return=thunk} nor
+@option{-mfunction-return=thunk-extern} since the thunk function may
+not be reachable in large code model.
+
+
+@item -mindirect-branch-register
+@opindex -mindirect-branch-register
+Force indirect call and jump via register.
 
 @end table
 

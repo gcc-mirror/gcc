@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -3544,6 +3544,8 @@ case_conversion (tree type, tree value)
   if (value == NULL_TREE)
     return value;
 
+  value = mark_rvalue_use (value);
+
   if (cxx_dialect >= cxx11
       && (SCOPED_ENUM_P (type)
 	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))))
@@ -6822,8 +6824,12 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
     }
 
-  if (!ensure_literal_type_for_constexpr_object (decl))
-    DECL_DECLARED_CONSTEXPR_P (decl) = 0;
+  if (ensure_literal_type_for_constexpr_object (decl)
+      == error_mark_node)
+    {
+      DECL_DECLARED_CONSTEXPR_P (decl) = 0;
+      return;
+    }
 
   if (VAR_P (decl)
       && DECL_CLASS_SCOPE_P (decl)
@@ -7514,7 +7520,11 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
     }
   else if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      eltscnt = TYPE_VECTOR_SUBPARTS (type);
+      if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&eltscnt))
+	{
+	  error_at (loc, "cannot decompose variable length vector %qT", type);
+	  goto error_out;
+	}
       if (count != eltscnt)
 	goto cnt_mismatch;
       eltype = cp_build_qualified_type (TREE_TYPE (type), TYPE_QUALS (type));
@@ -10884,10 +10894,11 @@ grokdeclarator (const cp_declarator *declarator,
 
       inner_declarator = declarator->declarator;
 
-      /* We don't want to warn in parmeter context because we don't
+      /* We don't want to warn in parameter context because we don't
 	 yet know if the parse will succeed, and this might turn out
 	 to be a constructor call.  */
       if (decl_context != PARM
+	  && decl_context != TYPENAME
 	  && declarator->parenthesized != UNKNOWN_LOCATION
 	  /* If the type is class-like and the inner name used a
 	     global namespace qualifier, we need the parens.
@@ -11498,9 +11509,15 @@ grokdeclarator (const cp_declarator *declarator,
       && declarator->kind == cdk_id
       && declarator->std_attributes
       && attrlist != NULL)
-    /* [dcl.meaning]/1: The optional attribute-specifier-seq following
-       a declarator-id appertains to the entity that is declared.  */
-    *attrlist = chainon (*attrlist, declarator->std_attributes);
+    {
+      /* [dcl.meaning]/1: The optional attribute-specifier-seq following
+	 a declarator-id appertains to the entity that is declared.  */
+      if (declarator->std_attributes != error_mark_node)
+	*attrlist = chainon (*attrlist, declarator->std_attributes);
+      else
+	/* We should have already diagnosed the issue (c++/78344).  */
+	gcc_assert (seen_error ());
+    }
 
   /* Handle parameter packs. */
   if (parameter_pack_p)
@@ -13805,7 +13822,10 @@ xref_basetypes (tree ref, tree base_list)
       CLASSTYPE_NON_LAYOUT_POD_P (ref) = true;
 
       if (TREE_CODE (ref) == UNION_TYPE)
-	error ("derived union %qT invalid", ref);
+	{
+	  error ("derived union %qT invalid", ref);
+	  return;
+	}
     }
 
   if (max_bases > 1)

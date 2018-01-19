@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -3561,7 +3561,7 @@ gnat_types_compatible_p (tree t1, tree t2)
   /* Vector types are also compatible if they have the same number of subparts
      and the same form of (scalar) element type.  */
   if (code == VECTOR_TYPE
-      && TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
+      && known_eq (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
       && TREE_CODE (TREE_TYPE (t1)) == TREE_CODE (TREE_TYPE (t2))
       && TYPE_PRECISION (TREE_TYPE (t1)) == TYPE_PRECISION (TREE_TYPE (t2)))
     return 1;

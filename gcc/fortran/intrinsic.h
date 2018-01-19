@@ -1,6 +1,6 @@
 /* Header file for intrinsics check, resolve and simplify function
    prototypes.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -287,6 +287,7 @@ gfc_expr *gfc_simplify_dot_product (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dreal (gfc_expr *);
 gfc_expr *gfc_simplify_dshiftl (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_dshiftr (gfc_expr *, gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_eoshift (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_epsilon (gfc_expr *);
 gfc_expr *gfc_simplify_erf (gfc_expr *);
 gfc_expr *gfc_simplify_erfc (gfc_expr *);
@@ -347,8 +348,12 @@ gfc_expr *gfc_simplify_maskr (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_merge (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_merge_bits (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_min (gfc_expr *);
+gfc_expr *gfc_simplify_minloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+			       gfc_expr *);
 gfc_expr *gfc_simplify_minval (gfc_expr *, gfc_expr*, gfc_expr*);
 gfc_expr *gfc_simplify_max (gfc_expr *);
+gfc_expr *gfc_simplify_maxloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+			       gfc_expr *);
 gfc_expr *gfc_simplify_maxval (gfc_expr *, gfc_expr*, gfc_expr*);
 gfc_expr *gfc_simplify_maxexponent (gfc_expr *);
 gfc_expr *gfc_simplify_minexponent (gfc_expr *);
@@ -537,7 +542,7 @@ void gfc_resolve_logical (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_lstat (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_matmul (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_max (gfc_expr *, gfc_actual_arglist *);
-void gfc_resolve_maxloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_maxloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_maxval (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_mclock (gfc_expr *);
 void gfc_resolve_mclock8 (gfc_expr *);
@@ -545,7 +550,7 @@ void gfc_resolve_mask (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_merge (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_merge_bits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_min (gfc_expr *, gfc_actual_arglist *);
-void gfc_resolve_minloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_minloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_minval (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_mod (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_modulo (gfc_expr *, gfc_expr *, gfc_expr *);

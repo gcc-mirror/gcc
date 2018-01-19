@@ -1,5 +1,5 @@
 /* Control flow optimization code for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3012,8 +3012,11 @@ try_optimize_cfg (int mode)
                  to detect and fix during edge forwarding, and in some cases
                  is only visible after newly unreachable blocks are deleted,
                  which will be done in fixup_partitions.  */
-	      fixup_partitions ();
-	      checking_verify_flow_info ();
+	      if ((mode & CLEANUP_NO_PARTITIONING) == 0)
+		{
+		  fixup_partitions ();
+	          checking_verify_flow_info ();
+		}
             }
 
 	  changed_overall |= changed;

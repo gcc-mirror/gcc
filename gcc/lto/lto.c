@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -316,7 +316,7 @@ hash_canonical_type (tree type)
 
   if (VECTOR_TYPE_P (type))
     {
-      hstate.add_int (TYPE_VECTOR_SUBPARTS (type));
+      hstate.add_poly_int (TYPE_VECTOR_SUBPARTS (type));
       hstate.add_int (TYPE_UNSIGNED (type));
     }
 

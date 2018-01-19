@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -91,7 +91,7 @@ vec<stmt_vec_info> stmt_vec_info_vec;
 struct simduid_to_vf : free_ptr_hash<simduid_to_vf>
 {
   unsigned int simduid;
-  int vf;
+  poly_uint64 vf;
 
   /* hash_table support.  */
   static inline hashval_t hash (const simduid_to_vf *);
@@ -161,7 +161,7 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 
       for (i = gsi_start_bb (bb); !gsi_end_p (i); )
 	{
-	  unsigned int vf = 1;
+	  poly_uint64 vf = 1;
 	  enum internal_fn ifn;
 	  gimple *stmt = gsi_stmt (i);
 	  tree t;
@@ -338,7 +338,7 @@ shrink_simd_arrays
     if ((*iter)->simduid != -1U)
       {
 	tree decl = (*iter)->decl;
-	int vf = 1;
+	poly_uint64 vf = 1;
 	if (simduid_to_vf_htab)
 	  {
 	    simduid_to_vf *p = NULL, data;
@@ -826,7 +826,8 @@ vectorize_loops (void)
       if (loop_vinfo)
 	has_mask_store = LOOP_VINFO_HAS_MASK_STORE (loop_vinfo);
       delete loop_vinfo;
-      if (has_mask_store)
+      if (has_mask_store
+	  && targetm.vectorize.empty_mask_is_expensive (IFN_MASK_STORE))
 	optimize_mask_stores (loop);
       loop->aux = NULL;
     }
@@ -1015,12 +1016,13 @@ static unsigned
 get_vec_alignment_for_array_type (tree type) 
 {
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+  poly_uint64 array_size, vector_size;
 
   tree vectype = get_vectype_for_scalar_type (strip_array_types (type));
   if (!vectype
-      || !TYPE_SIZE (type)
-      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
-      || tree_int_cst_lt (TYPE_SIZE (type), TYPE_SIZE (vectype)))
+      || !poly_int_tree_p (TYPE_SIZE (type), &array_size)
+      || !poly_int_tree_p (TYPE_SIZE (vectype), &vector_size)
+      || maybe_lt (array_size, vector_size))
     return 0;
 
   return TYPE_ALIGN (vectype);

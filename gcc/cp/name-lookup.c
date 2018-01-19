@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -1782,8 +1782,7 @@ resort_type_member_vec (void *obj, void */*orig_obj*/,
     {
       resort_data.new_value = new_value;
       resort_data.cookie = cookie;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), resort_member_name_cmp);
+      member_vec->qsort (resort_member_name_cmp);
     }
 }
 
@@ -1858,6 +1857,9 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
 {
   unsigned len = member_vec->length ();
   unsigned store = 0;
+
+  if (!len)
+    return;
 
   tree current = (*member_vec)[0], name = OVL_NAME (current);
   tree next = NULL_TREE, next_name = NULL_TREE;
@@ -1974,14 +1976,8 @@ set_class_bindings (tree klass, unsigned extra)
   if (member_vec)
     {
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      /* We can get here with a zero members if we came via
-	 get_member_slot on a complete class.  */
-      if (member_vec->length ())
-	{
-	  qsort (member_vec->address (), member_vec->length (),
-		 sizeof (tree), member_name_cmp);
-	  member_vec_dedup (member_vec);
-	}
+      member_vec->qsort (member_name_cmp);
+      member_vec_dedup (member_vec);
     }
 }
 
@@ -2008,8 +2004,7 @@ insert_late_enum_def_bindings (tree klass, tree enumtype)
       else
 	member_vec_append_class_fields (member_vec, klass);
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), member_name_cmp);
+      member_vec->qsort (member_name_cmp);
       member_vec_dedup (member_vec);
     }
 }
@@ -6368,7 +6363,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
       /* If we have an exact match for a macro name, then the
 	 macro has been used before it was defined.  */
       cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
-      if (macro)
+      if (macro && (macro->flags & NODE_BUILTIN) == 0)
 	return name_hint (NULL,
 			  new macro_use_before_def (loc, macro));
     }

@@ -2,7 +2,7 @@
    constexpr functions.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -75,7 +75,8 @@ literal_type_p (tree t)
 }
 
 /* If DECL is a variable declared `constexpr', require its type
-   be literal.  Return the DECL if OK, otherwise NULL.  */
+   be literal.  Return error_mark_node if we give an error, the
+   DECL otherwise.  */
 
 tree
 ensure_literal_type_for_constexpr_object (tree decl)
@@ -97,6 +98,7 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	      error ("the type %qT of %<constexpr%> variable %qD "
 		     "is not literal", type, decl);
 	      explain_non_literal_class (type);
+	      decl = error_mark_node;
 	    }
 	  else
 	    {
@@ -105,10 +107,10 @@ ensure_literal_type_for_constexpr_object (tree decl)
 		  error ("variable %qD of non-literal type %qT in %<constexpr%> "
 			 "function", decl, type);
 		  explain_non_literal_class (type);
+		  decl = error_mark_node;
 		}
 	      cp_function_chain->invalid_constexpr = true;
 	    }
-	  return NULL;
 	}
     }
   return decl;
@@ -2354,7 +2356,8 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 	  len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
 	}
       else if (TREE_CODE (ary) == VECTOR_CST)
-	len = VECTOR_CST_NELTS (ary);
+	/* We don't create variable-length VECTOR_CSTs.  */
+	len = VECTOR_CST_NELTS (ary).to_constant ();
       else
 	{
 	  /* We can't do anything with other tree codes, so use
@@ -3131,7 +3134,8 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
 	      tree index = bitsize_int (indexi);
 
-	      if (offset / part_widthi < TYPE_VECTOR_SUBPARTS (op00type))
+	      if (known_lt (offset / part_widthi,
+			    TYPE_VECTOR_SUBPARTS (op00type)))
 		return fold_build3_loc (loc,
 					BIT_FIELD_REF, type, op00,
 					part_width, index);
@@ -3865,6 +3869,8 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
   for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
     {
       tree stmt = tsi_stmt (i);
+      if (TREE_CODE (stmt) == DEBUG_BEGIN_STMT)
+	continue;
       r = cxx_eval_constant_expression (ctx, stmt, false,
 					non_constant_p, overflow_p,
 					jump_target);
@@ -3873,14 +3879,6 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       if (returns (jump_target) || breaks (jump_target))
 	break;
     }
-  /* Make sure we don't use the "result" of a debug-only marker.  That
-     would be wrong.  We should be using the result of the previous
-     statement, or NULL if there isn't one.  In practice, this should
-     never happen: the statement after the marker should override the
-     result of the marker, so its value shouldn't survive in R.  Now,
-     should that ever change, we'll need some fixing here to stop
-     markers from modifying the generated executable code.  */
-  gcc_checking_assert (!r || TREE_CODE (r) != DEBUG_BEGIN_STMT);
   return r;
 }
 
@@ -5744,7 +5742,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return RECUR (TREE_OPERAND (t, 1), want_rval);
 
     case TARGET_EXPR:
-      if (!literal_type_p (TREE_TYPE (t)))
+      if (!TARGET_EXPR_DIRECT_INIT_P (t)
+	  && !literal_type_p (TREE_TYPE (t)))
 	{
 	  if (flags & tf_error)
 	    {

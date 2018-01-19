@@ -1,5 +1,5 @@
 /* Generic implementation of the UNPACK intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -578,7 +578,7 @@ unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
     }
 
   memset (&tmp, 0, sizeof (tmp));
-  tmp.dtype = 0;
+  GFC_DTYPE_CLEAR(&tmp);
   tmp.base_addr = field;
   unpack_internal (ret, vector, mask, &tmp, GFC_DESCRIPTOR_SIZE (vector));
 }
@@ -602,7 +602,7 @@ unpack0_char (gfc_array_char *ret,
     unpack_bounds (ret, vector, mask, NULL);
 
   memset (&tmp, 0, sizeof (tmp));
-  tmp.dtype = 0;
+  GFC_DTYPE_CLEAR(&tmp);
   tmp.base_addr = field;
   unpack_internal (ret, vector, mask, &tmp, vector_length);
 }
@@ -626,7 +626,7 @@ unpack0_char4 (gfc_array_char *ret,
     unpack_bounds (ret, vector, mask, NULL);
 
   memset (&tmp, 0, sizeof (tmp));
-  tmp.dtype = 0;
+  GFC_DTYPE_CLEAR(&tmp);
   tmp.base_addr = field;
   unpack_internal (ret, vector, mask, &tmp,
 		   vector_length * sizeof (gfc_char4_t));

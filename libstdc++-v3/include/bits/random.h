@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009-2017 Free Software Foundation, Inc.
+// Copyright (C) 2009-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -2643,7 +2643,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       void
       param(const param_type& __param)
-      { _M_param = __param; }
+      {
+	_M_param = __param;
+	typedef typename std::gamma_distribution<result_type>::param_type
+	  param_type;
+	_M_gd.param(param_type{__param.n() / 2});
+      }
 
       /**
        * @brief Returns the greatest lower bound value of the distribution.

@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "gimple-fold.h"
 #include "intl.h"
+#include "file-prefix-map.h" /* remap_macro_filename()  */
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -621,6 +622,9 @@ c_strlen (tree src, int only_value)
 	  return NULL_TREE;
 	}
 
+      if (!maxelts)
+	return ssize_int (0);
+
       /* We don't know the starting offset, but we do know that the string
 	 has no internal zero bytes.  We can assume that the offset falls
 	 within the bounds of the string; otherwise, the programmer deserves
@@ -651,7 +655,8 @@ c_strlen (tree src, int only_value)
       if (only_value != 2
 	  && !TREE_NO_WARNING (src))
         {
-	  warning_at (loc, 0, "offset %qwi outside bounds of constant string",
+	  warning_at (loc, OPT_Warray_bounds,
+		      "offset %qwi outside bounds of constant string",
 		      eltoff);
           TREE_NO_WARNING (src) = 1;
         }
@@ -1364,7 +1369,6 @@ apply_args_size (void)
   static int size = -1;
   int align;
   unsigned int regno;
-  machine_mode mode;
 
   /* The values computed by this function never change.  */
   if (size < 0)
@@ -1380,7 +1384,7 @@ apply_args_size (void)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (FUNCTION_ARG_REGNO_P (regno))
 	  {
-	    mode = targetm.calls.get_raw_arg_mode (regno);
+	    fixed_size_mode mode = targetm.calls.get_raw_arg_mode (regno);
 
 	    gcc_assert (mode != VOIDmode);
 
@@ -1392,7 +1396,7 @@ apply_args_size (void)
 	  }
 	else
 	  {
-	    apply_args_mode[regno] = VOIDmode;
+	    apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
 	  }
     }
   return size;
@@ -1406,7 +1410,6 @@ apply_result_size (void)
 {
   static int size = -1;
   int align, regno;
-  machine_mode mode;
 
   /* The values computed by this function never change.  */
   if (size < 0)
@@ -1416,7 +1419,7 @@ apply_result_size (void)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (targetm.calls.function_value_regno_p (regno))
 	  {
-	    mode = targetm.calls.get_raw_result_mode (regno);
+	    fixed_size_mode mode = targetm.calls.get_raw_result_mode (regno);
 
 	    gcc_assert (mode != VOIDmode);
 
@@ -1427,7 +1430,7 @@ apply_result_size (void)
 	    apply_result_mode[regno] = mode;
 	  }
 	else
-	  apply_result_mode[regno] = VOIDmode;
+	  apply_result_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
 
       /* Allow targets that use untyped_call and untyped_return to override
 	 the size so that machine-specific information can be stored here.  */
@@ -1446,7 +1449,7 @@ static rtx
 result_vector (int savep, rtx result)
 {
   int regno, size, align, nelts;
-  machine_mode mode;
+  fixed_size_mode mode;
   rtx reg, mem;
   rtx *savevec = XALLOCAVEC (rtx, FIRST_PSEUDO_REGISTER);
 
@@ -1475,7 +1478,7 @@ expand_builtin_apply_args_1 (void)
 {
   rtx registers, tem;
   int size, align, regno;
-  machine_mode mode;
+  fixed_size_mode mode;
   rtx struct_incoming_value = targetm.calls.struct_value_rtx (cfun ? TREE_TYPE (cfun->decl) : 0, 1);
 
   /* Create a block where the arg-pointer, structure value address,
@@ -1579,7 +1582,7 @@ static rtx
 expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 {
   int size, align, regno;
-  machine_mode mode;
+  fixed_size_mode mode;
   rtx incoming_args, result, reg, dest, src;
   rtx_call_insn *call_insn;
   rtx old_stack_level = 0;
@@ -1740,7 +1743,7 @@ static void
 expand_builtin_return (rtx result)
 {
   int size, align, regno;
-  machine_mode mode;
+  fixed_size_mode mode;
   rtx reg;
   rtx_insn *call_fusage = 0;
 
@@ -3152,6 +3155,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
 	      || (tree_fits_uhwi_p (dstwrite)
 		  && tree_int_cst_lt (dstwrite, range[0]))))
 	{
+	  if (TREE_NO_WARNING (exp))
+	    return false;
+
 	  location_t loc = tree_nonartificial_location (exp);
 	  loc = expansion_point_location_if_in_system_header (loc);
 
@@ -3211,6 +3217,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
 
 	  if (tree_int_cst_lt (maxobjsize, range[0]))
 	    {
+	      if (TREE_NO_WARNING (exp))
+		return false;
+
 	      /* Warn about crazy big sizes first since that's more
 		 likely to be meaningful than saying that the bound
 		 is greater than the object size if both are big.  */
@@ -3232,6 +3241,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
 
 	  if (dstsize != maxobjsize && tree_int_cst_lt (dstsize, range[0]))
 	    {
+	      if (TREE_NO_WARNING (exp))
+		return false;
+
 	      if (tree_int_cst_equal (range[0], range[1]))
 		warning_at (loc, opt,
 			    "%K%qD specified bound %E "
@@ -3255,6 +3267,9 @@ check_access (tree exp, tree, tree, tree dstwrite,
       && dstwrite && range[0]
       && tree_int_cst_lt (slen, range[0]))
     {
+      if (TREE_NO_WARNING (exp))
+	return false;
+
       location_t loc = tree_nonartificial_location (exp);
 
       if (tree_int_cst_equal (range[0], range[1]))
@@ -5990,9 +6005,12 @@ expand_ifn_atomic_compare_exchange_into_call (gcall *call, machine_mode mode)
   /* Skip the boolean weak parameter.  */
   for (z = 4; z < 6; z++)
     vec->quick_push (gimple_call_arg (call, z));
+  /* At present we only have BUILT_IN_ATOMIC_COMPARE_EXCHANGE_{1,2,4,8,16}.  */
+  unsigned int bytes_log2 = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
+  gcc_assert (bytes_log2 < 5);
   built_in_function fncode
     = (built_in_function) ((int) BUILT_IN_ATOMIC_COMPARE_EXCHANGE_1
-			   + exact_log2 (GET_MODE_SIZE (mode)));
+			   + bytes_log2);
   tree fndecl = builtin_decl_explicit (fncode);
   tree fn = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fndecl)),
 		    fndecl);
@@ -8854,7 +8872,13 @@ static inline tree
 fold_builtin_FILE (location_t loc)
 {
   if (const char *fname = LOCATION_FILE (loc))
+    {
+      /* The documentation says this builtin is equivalent to the preprocessor
+	 __FILE__ macro so it appears appropriate to use the same file prefix
+	 mappings.  */
+      fname = remap_macro_filename (fname);
     return build_string_literal (strlen (fname) + 1, fname);
+    }
 
   return build_string_literal (1, "");
 }

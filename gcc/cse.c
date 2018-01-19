@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2353,11 +2353,11 @@ hash_rtx_cb (const_rtx x, machine_mode mode,
 	int units;
 	rtx elt;
 
-	units = CONST_VECTOR_NUNITS (x);
+	units = const_vector_encoded_nelts (x);
 
 	for (i = 0; i < units; ++i)
 	  {
-	    elt = CONST_VECTOR_ELT (x, i);
+	    elt = CONST_VECTOR_ENCODED_ELT (x, i);
 	    hash += hash_rtx_cb (elt, GET_MODE (elt),
                                  do_not_record_p, hash_arg_in_memory_p,
                                  have_reg_qty, cb);
@@ -3807,8 +3807,8 @@ equiv_constant (rtx x)
 
       /* If we didn't and if doing so makes sense, see if we previously
 	 assigned a constant value to the enclosing word mode SUBREG.  */
-      if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (word_mode)
-	  && GET_MODE_SIZE (word_mode) < GET_MODE_SIZE (imode))
+      if (known_lt (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+	  && known_lt (UNITS_PER_WORD, GET_MODE_SIZE (imode)))
 	{
 	  poly_int64 byte = (SUBREG_BYTE (x)
 			     - subreg_lowpart_offset (mode, word_mode));
@@ -5231,8 +5231,9 @@ cse_insn (rtx_insn *insn)
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 1))
 	      && CONST_INT_P (XEXP (SET_DEST (sets[i].rtl), 2))
 	      && REG_P (XEXP (SET_DEST (sets[i].rtl), 0))
-	      && (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl)))
-		  >= INTVAL (XEXP (SET_DEST (sets[i].rtl), 1)))
+	      && (known_ge
+		  (GET_MODE_PRECISION (GET_MODE (SET_DEST (sets[i].rtl))),
+		   INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))))
 	      && ((unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 1))
 		  + (unsigned) INTVAL (XEXP (SET_DEST (sets[i].rtl), 2))
 		  <= HOST_BITS_PER_WIDE_INT))
@@ -5985,9 +5986,10 @@ cse_insn (rtx_insn *insn)
 	   already entered SRC and DEST of the SET in the table.  */
 
 	if (GET_CODE (dest) == SUBREG
-	    && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1)
-		 / UNITS_PER_WORD)
-		== (GET_MODE_SIZE (GET_MODE (dest)) - 1) / UNITS_PER_WORD)
+	    && (known_equal_after_align_down
+		(GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1,
+		 GET_MODE_SIZE (GET_MODE (dest)) - 1,
+		 UNITS_PER_WORD))
 	    && !partial_subreg_p (dest)
 	    && sets[i].src_elt != 0)
 	  {

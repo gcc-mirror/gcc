@@ -8,6 +8,7 @@ import (
 	"fmt"
 	. "math"
 	"testing"
+	"unsafe"
 )
 
 var vf = []float64{
@@ -209,6 +210,18 @@ var erfc = []float64{
 	6.9965297083261411448825169e-01,
 	7.9630075582117758758440411e-01,
 	1.7806938696800922672994468e+00,
+}
+var erfinv = []float64{
+	4.746037673358033586786350696e-01,
+	8.559054432692110956388764172e-01,
+	-2.45427830571707336251331946e-02,
+	-4.78116683518973366268905506e-01,
+	1.479804430319470983648120853e+00,
+	2.654485787128896161882650211e-01,
+	5.027444534221520197823192493e-01,
+	2.466703532707627818954585670e-01,
+	1.632011465103005426240343116e-01,
+	-1.06672334642196900710000389e+00,
 }
 var exp = []float64{
 	1.4533071302642137507696589e+02,
@@ -515,6 +528,18 @@ var remainder = []float64{
 	-9.117596417440410050403443e-01,
 	8.734595415957246977711748e-01,
 	1.314075231424398637614104e+00,
+}
+var round = []float64{
+	5,
+	8,
+	Copysign(0, -1),
+	-5,
+	10,
+	3,
+	5,
+	3,
+	2,
+	-9,
 }
 var signbit = []bool{
 	false,
@@ -941,6 +966,40 @@ var erfcSC = []float64{
 	NaN(),
 }
 
+var vferfinvSC = []float64{
+	1,
+	-1,
+	0,
+	Inf(-1),
+	Inf(1),
+	NaN(),
+}
+var erfinvSC = []float64{
+	Inf(+1),
+	Inf(-1),
+	0,
+	NaN(),
+	NaN(),
+	NaN(),
+}
+
+var vferfcinvSC = []float64{
+	0,
+	2,
+	1,
+	Inf(1),
+	Inf(-1),
+	NaN(),
+}
+var erfcinvSC = []float64{
+	Inf(+1),
+	Inf(-1),
+	0,
+	NaN(),
+	NaN(),
+	NaN(),
+}
+
 var vfexpSC = []float64{
 	Inf(-1),
 	-2000,
@@ -952,6 +1011,7 @@ var vfexpSC = []float64{
 	// Issue 18912
 	1.48852223e+09,
 	1.4885222e+09,
+	1,
 }
 var expSC = []float64{
 	0,
@@ -962,6 +1022,7 @@ var expSC = []float64{
 	Inf(1),
 	Inf(1),
 	Inf(1),
+	2.718281828459045,
 }
 
 var vfexp2SC = []float64{
@@ -1368,6 +1429,8 @@ var vfldexpSC = []fi{
 	{Inf(-1), 0},
 	{Inf(-1), -1024},
 	{NaN(), -1024},
+	{10, int(1) << (uint64(unsafe.Sizeof(0)-1) * 8)},
+	{10, -(int(1) << (uint64(unsafe.Sizeof(0)-1) * 8))},
 }
 var ldexpSC = []float64{
 	0,
@@ -1381,6 +1444,8 @@ var ldexpSC = []float64{
 	Inf(-1),
 	Inf(-1),
 	NaN(),
+	Inf(1),
+	0,
 }
 
 var vflgammaSC = []float64{
@@ -1524,6 +1589,7 @@ var vfpowSC = [][2]float64{
 	{Inf(-1), 1},
 	{Inf(-1), 3},
 	{Inf(-1), Pi},
+	{Inf(-1), 0.5},
 	{Inf(-1), NaN()},
 
 	{-Pi, Inf(-1)},
@@ -1542,9 +1608,11 @@ var vfpowSC = [][2]float64{
 	{-1 / 2, Inf(1)},
 	{Copysign(0, -1), Inf(-1)},
 	{Copysign(0, -1), -Pi},
+	{Copysign(0, -1), -0.5},
 	{Copysign(0, -1), -3},
 	{Copysign(0, -1), 3},
 	{Copysign(0, -1), Pi},
+	{Copysign(0, -1), 0.5},
 	{Copysign(0, -1), Inf(1)},
 
 	{0, Inf(-1)},
@@ -1581,6 +1649,17 @@ var vfpowSC = [][2]float64{
 	{NaN(), 1},
 	{NaN(), Pi},
 	{NaN(), NaN()},
+
+	// Issue #7394 overflow checks
+	{2, float64(1 << 32)},
+	{2, -float64(1 << 32)},
+	{-2, float64(1<<32 + 1)},
+	{1 / 2, float64(1 << 45)},
+	{1 / 2, -float64(1 << 45)},
+	{Nextafter(1, 2), float64(1 << 63)},
+	{Nextafter(1, -2), float64(1 << 63)},
+	{Nextafter(-1, 2), float64(1 << 63)},
+	{Nextafter(-1, -2), float64(1 << 63)},
 }
 var powSC = []float64{
 	0,               // pow(-Inf, -Pi)
@@ -1590,6 +1669,7 @@ var powSC = []float64{
 	Inf(-1),         // pow(-Inf, 1)
 	Inf(-1),         // pow(-Inf, 3)
 	Inf(1),          // pow(-Inf, Pi)
+	Inf(1),          // pow(-Inf, 0.5)
 	NaN(),           // pow(-Inf, NaN)
 	0,               // pow(-Pi, -Inf)
 	NaN(),           // pow(-Pi, -Pi)
@@ -1606,9 +1686,11 @@ var powSC = []float64{
 	0,               // pow(-1/2, +Inf)
 	Inf(1),          // pow(-0, -Inf)
 	Inf(1),          // pow(-0, -Pi)
+	Inf(1),          // pow(-0, -0.5)
 	Inf(-1),         // pow(-0, -3) IEEE 754-2008
 	Copysign(0, -1), // pow(-0, 3) IEEE 754-2008
 	0,               // pow(-0, +Pi)
+	0,               // pow(-0, 0.5)
 	0,               // pow(-0, +Inf)
 	Inf(1),          // pow(+0, -Inf)
 	Inf(1),          // pow(+0, -Pi)
@@ -1642,6 +1724,17 @@ var powSC = []float64{
 	NaN(),           // pow(NaN, 1)
 	NaN(),           // pow(NaN, +Pi)
 	NaN(),           // pow(NaN, NaN)
+
+	// Issue #7394 overflow checks
+	Inf(1),  // pow(2, float64(1 << 32))
+	0,       // pow(2, -float64(1 << 32))
+	Inf(-1), // pow(-2, float64(1<<32 + 1))
+	0,       // pow(1/2, float64(1 << 45))
+	Inf(1),  // pow(1/2, -float64(1 << 45))
+	Inf(1),  // pow(Nextafter(1, 2), float64(1 << 63))
+	0,       // pow(Nextafter(1, -2), float64(1 << 63))
+	0,       // pow(Nextafter(-1, 2), float64(1 << 63))
+	Inf(1),  // pow(Nextafter(-1, -2), float64(1 << 63))
 }
 
 var vfpow10SC = []int{
@@ -1678,6 +1771,37 @@ var pow10SC = []float64{
 	1.0e308,  // pow10(308)
 	Inf(1),   // pow10(309)
 	Inf(1),   // pow10(MaxInt32)
+}
+
+var vfroundSC = [][2]float64{
+	{0, 0},
+	{1.390671161567e-309, 0}, // denormal
+	{0.49999999999999994, 0}, // 0.5-epsilon
+	{0.5, 1},
+	{0.5000000000000001, 1}, // 0.5+epsilon
+	{-1.5, -2},
+	{-2.5, -3},
+	{NaN(), NaN()},
+	{Inf(1), Inf(1)},
+	{2251799813685249.5, 2251799813685250}, // 1 bit fraction
+	{2251799813685250.5, 2251799813685251},
+	{4503599627370495.5, 4503599627370496}, // 1 bit fraction, rounding to 0 bit fraction
+	{4503599627370497, 4503599627370497},   // large integer
+}
+var vfroundEvenSC = [][2]float64{
+	{0, 0},
+	{1.390671161567e-309, 0}, // denormal
+	{0.49999999999999994, 0}, // 0.5-epsilon
+	{0.5, 0},
+	{0.5000000000000001, 1}, // 0.5+epsilon
+	{-1.5, -2},
+	{-2.5, -2},
+	{NaN(), NaN()},
+	{Inf(1), Inf(1)},
+	{2251799813685249.5, 2251799813685250}, // 1 bit fraction
+	{2251799813685250.5, 2251799813685250},
+	{4503599627370495.5, 4503599627370496}, // 1 bit fraction, rounding to 0 bit fraction
+	{4503599627370497, 4503599627370497},   // large integer
 }
 
 var vfsignbitSC = []float64{
@@ -2089,6 +2213,54 @@ func TestErfc(t *testing.T) {
 	for i := 0; i < len(vferfcSC); i++ {
 		if f := Erfc(vferfcSC[i]); !alike(erfcSC[i], f) {
 			t.Errorf("Erfc(%g) = %g, want %g", vferfcSC[i], f, erfcSC[i])
+		}
+	}
+}
+
+func TestErfinv(t *testing.T) {
+	for i := 0; i < len(vf); i++ {
+		a := vf[i] / 10
+		if f := Erfinv(a); !veryclose(erfinv[i], f) {
+			t.Errorf("Erfinv(%g) = %g, want %g", a, f, erfinv[i])
+		}
+	}
+	for i := 0; i < len(vferfinvSC); i++ {
+		if f := Erfinv(vferfinvSC[i]); !alike(erfinvSC[i], f) {
+			t.Errorf("Erfinv(%g) = %g, want %g", vferfinvSC[i], f, erfinvSC[i])
+		}
+	}
+	for x := -0.9; x <= 0.90; x += 1e-2 {
+		if f := Erf(Erfinv(x)); !close(x, f) {
+			t.Errorf("Erf(Erfinv(%g)) = %g, want %g", x, f, x)
+		}
+	}
+	for x := -0.9; x <= 0.90; x += 1e-2 {
+		if f := Erfinv(Erf(x)); !close(x, f) {
+			t.Errorf("Erfinv(Erf(%g)) = %g, want %g", x, f, x)
+		}
+	}
+}
+
+func TestErfcinv(t *testing.T) {
+	for i := 0; i < len(vf); i++ {
+		a := 1.0 - (vf[i] / 10)
+		if f := Erfcinv(a); !veryclose(erfinv[i], f) {
+			t.Errorf("Erfcinv(%g) = %g, want %g", a, f, erfinv[i])
+		}
+	}
+	for i := 0; i < len(vferfcinvSC); i++ {
+		if f := Erfcinv(vferfcinvSC[i]); !alike(erfcinvSC[i], f) {
+			t.Errorf("Erfcinv(%g) = %g, want %g", vferfcinvSC[i], f, erfcinvSC[i])
+		}
+	}
+	for x := 0.1; x <= 1.9; x += 1e-2 {
+		if f := Erfc(Erfcinv(x)); !close(x, f) {
+			t.Errorf("Erfc(Erfcinv(%g)) = %g, want %g", x, f, x)
+		}
+	}
+	for x := 0.1; x <= 1.9; x += 1e-2 {
+		if f := Erfcinv(Erfc(x)); !close(x, f) {
+			t.Errorf("Erfcinv(Erfc(%g)) = %g, want %g", x, f, x)
 		}
 	}
 }
@@ -2590,6 +2762,32 @@ func TestRemainder(t *testing.T) {
 	}
 }
 
+func TestRound(t *testing.T) {
+	for i := 0; i < len(vf); i++ {
+		if f := Round(vf[i]); !alike(round[i], f) {
+			t.Errorf("Round(%g) = %g, want %g", vf[i], f, round[i])
+		}
+	}
+	for i := 0; i < len(vfroundSC); i++ {
+		if f := Round(vfroundSC[i][0]); !alike(vfroundSC[i][1], f) {
+			t.Errorf("Round(%g) = %g, want %g", vfroundSC[i][0], f, vfroundSC[i][1])
+		}
+	}
+}
+
+func TestRoundToEven(t *testing.T) {
+	for i := 0; i < len(vf); i++ {
+		if f := RoundToEven(vf[i]); !alike(round[i], f) {
+			t.Errorf("RoundToEven(%g) = %g, want %g", vf[i], f, round[i])
+		}
+	}
+	for i := 0; i < len(vfroundEvenSC); i++ {
+		if f := RoundToEven(vfroundEvenSC[i][0]); !alike(vfroundEvenSC[i][1], f) {
+			t.Errorf("RoundToEven(%g) = %g, want %g", vfroundEvenSC[i][0], f, vfroundEvenSC[i][1])
+		}
+	}
+}
+
 func TestSignbit(t *testing.T) {
 	for i := 0; i < len(vf); i++ {
 		if f := Signbit(vf[i]); signbit[i] != f {
@@ -2906,10 +3104,12 @@ func BenchmarkCeil(b *testing.B) {
 	GlobalF = x
 }
 
+var copysignNeg = -1.0
+
 func BenchmarkCopysign(b *testing.B) {
 	x := 0.0
 	for i := 0; i < b.N; i++ {
-		x = Copysign(.5, -1)
+		x = Copysign(.5, copysignNeg)
 	}
 	GlobalF = x
 }
@@ -2942,6 +3142,22 @@ func BenchmarkErfc(b *testing.B) {
 	x := 0.0
 	for i := 0; i < b.N; i++ {
 		x = Erfc(.5)
+	}
+	GlobalF = x
+}
+
+func BenchmarkErfinv(b *testing.B) {
+	x := 0.0
+	for i := 0; i < b.N; i++ {
+		x = Erfinv(.5)
+	}
+	GlobalF = x
+}
+
+func BenchmarkErfcinv(b *testing.B) {
+	x := 0.0
+	for i := 0; i < b.N; i++ {
+		x = Erfcinv(.5)
 	}
 	GlobalF = x
 }
@@ -2986,10 +3202,12 @@ func BenchmarkExp2Go(b *testing.B) {
 	GlobalF = x
 }
 
+var absPos = .5
+
 func BenchmarkAbs(b *testing.B) {
 	x := 0.0
 	for i := 0; i < b.N; i++ {
-		x = Abs(.5)
+		x = Abs(absPos)
 	}
 	GlobalF = x
 
@@ -2998,7 +3216,7 @@ func BenchmarkAbs(b *testing.B) {
 func BenchmarkDim(b *testing.B) {
 	x := 0.0
 	for i := 0; i < b.N; i++ {
-		x = Dim(10, 3)
+		x = Dim(GlobalF, x)
 	}
 	GlobalF = x
 }
@@ -3221,6 +3439,24 @@ func BenchmarkPow10Neg(b *testing.B) {
 	GlobalF = x
 }
 
+var roundNeg = float64(-2.5)
+
+func BenchmarkRound(b *testing.B) {
+	x := 0.0
+	for i := 0; i < b.N; i++ {
+		x = Round(roundNeg)
+	}
+	GlobalF = x
+}
+
+func BenchmarkRoundToEven(b *testing.B) {
+	x := 0.0
+	for i := 0; i < b.N; i++ {
+		x = RoundToEven(roundNeg)
+	}
+	GlobalF = x
+}
+
 func BenchmarkRemainder(b *testing.B) {
 	x := 0.0
 	for i := 0; i < b.N; i++ {
@@ -3229,10 +3465,12 @@ func BenchmarkRemainder(b *testing.B) {
 	GlobalF = x
 }
 
+var signbitPos = 2.5
+
 func BenchmarkSignbit(b *testing.B) {
 	x := false
 	for i := 0; i < b.N; i++ {
-		x = Signbit(2.5)
+		x = Signbit(signbitPos)
 	}
 	GlobalB = x
 }

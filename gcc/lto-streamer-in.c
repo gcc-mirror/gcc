@@ -1,6 +1,6 @@
 /* Read the GIMPLE representation from a file stream.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -1617,10 +1617,10 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
     {
       enum mode_class mclass
 	= bp_unpack_enum (&bp, mode_class, MAX_MODE_CLASS);
-      unsigned int size = bp_unpack_value (&bp, 8);
-      unsigned int prec = bp_unpack_value (&bp, 16);
+      poly_uint16 size = bp_unpack_poly_value (&bp, 16);
+      poly_uint16 prec = bp_unpack_poly_value (&bp, 16);
       machine_mode inner = (machine_mode) bp_unpack_value (&bp, 8);
-      unsigned int nunits = bp_unpack_value (&bp, 8);
+      poly_uint16 nunits = bp_unpack_poly_value (&bp, 16);
       unsigned int ibit = 0, fbit = 0;
       unsigned int real_fmt_len = 0;
       const char *real_fmt_name = NULL;
@@ -1651,14 +1651,14 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	     pass ? mr = (machine_mode) (mr + 1)
 		  : mr = GET_MODE_WIDER_MODE (mr).else_void ())
 	  if (GET_MODE_CLASS (mr) != mclass
-	      || GET_MODE_SIZE (mr) != size
-	      || GET_MODE_PRECISION (mr) != prec
+	      || maybe_ne (GET_MODE_SIZE (mr), size)
+	      || maybe_ne (GET_MODE_PRECISION (mr), prec)
 	      || (inner == m
 		  ? GET_MODE_INNER (mr) != mr
 		  : GET_MODE_INNER (mr) != table[(int) inner])
 	      || GET_MODE_IBIT (mr) != ibit
 	      || GET_MODE_FBIT (mr) != fbit
-	      || GET_MODE_NUNITS (mr) != nunits)
+	      || maybe_ne (GET_MODE_NUNITS (mr), nunits))
 	    continue;
 	  else if ((mclass == MODE_FLOAT || mclass == MODE_DECIMAL_FLOAT)
 		   && strcmp (REAL_MODE_FORMAT (mr)->name, real_fmt_name) != 0)
@@ -1675,6 +1675,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	{
 	  switch (mclass)
 	    {
+	    case MODE_VECTOR_BOOL:
 	    case MODE_VECTOR_INT:
 	    case MODE_VECTOR_FLOAT:
 	    case MODE_VECTOR_FRACT:

@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -91,6 +91,12 @@ public:
   void set_range (location_t start, location_t finish)
   {
     set_location (make_location (m_loc, start, finish));
+  }
+
+  cp_expr& maybe_add_location_wrapper ()
+  {
+    m_value = maybe_wrap_with_location (m_value, m_loc);
+    return *this;
   }
 
  private:
@@ -424,7 +430,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       TYPE_MARKED_P (in _TYPE)
-      DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
+      DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
       CALL_EXPR_OPERATOR_SYNTAX (in CALL_EXPR, AGGR_INIT_EXPR)
 
@@ -6403,9 +6409,12 @@ extern tree create_try_catch_expr               (tree, tree);
 
 /* in expr.c */
 extern tree cplus_expand_constant		(tree);
+extern tree mark_use (tree expr, bool rvalue_p, bool read_p,
+		      location_t = UNKNOWN_LOCATION,
+		      bool reject_builtin = true);
 extern tree mark_rvalue_use			(tree,
                                                  location_t = UNKNOWN_LOCATION,
-                                                 bool = true);
+                                                 bool reject_builtin = true);
 extern tree mark_lvalue_use			(tree);
 extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
@@ -6416,7 +6425,8 @@ extern void mark_exp_read			(tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend				(tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, bool);
+extern tree do_friend				(tree, tree, tree, tree,
+						 enum overload_flags, bool);
 
 extern void set_global_friend			(tree);
 extern bool is_global_friend			(tree);
@@ -7529,12 +7539,6 @@ extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
 
-#if CHECKING_P
-namespace selftest {
-  extern void run_cp_tests (void);
-} // namespace selftest
-#endif /* #if CHECKING_P */
-
 /* Inline bodies.  */
   
 inline tree
@@ -7576,6 +7580,24 @@ named_decl_hash::equal (const value_type existing, compare_type candidate)
 	       ? MODULE_VECTOR_NAME (existing) : OVL_NAME (existing));
   return candidate == name;
 }
+
+inline bool
+null_node_p (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+  return expr == null_node;
+}
+
+#if CHECKING_P
+namespace selftest {
+  extern void run_cp_tests (void);
+
+  /* Declarations for specific families of tests within cp,
+     by source file, in alphabetical order.  */
+  extern void cp_pt_c_tests ();
+  extern void cp_tree_c_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
 
 /* -- end of C++ */
 

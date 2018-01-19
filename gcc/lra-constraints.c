@@ -1,5 +1,5 @@
 /* Code for RTL transformations to satisfy insn constraints.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
    This file is part of GCC.
@@ -591,7 +591,8 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 	      {
 		if (in_subreg_p)
 		  continue;
-		if (GET_MODE_SIZE (GET_MODE (reg)) < GET_MODE_SIZE (mode))
+		if (maybe_lt (GET_MODE_SIZE (GET_MODE (reg)),
+			      GET_MODE_SIZE (mode)))
 		  continue;
 		reg = lowpart_subreg (mode, reg, GET_MODE (reg));
 		if (reg == NULL_RTX || GET_CODE (reg) != SUBREG)
@@ -827,6 +828,7 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
   ((MODE) != VOIDmode				\
    && CONSTANT_P (X)				\
    && GET_CODE (X) != HIGH			\
+   && GET_MODE_SIZE (MODE).is_constant ()	\
    && !targetm.cannot_force_const_mem (MODE, X))
 
 /* True if C is a non-empty register class that has too few registers
@@ -933,6 +935,8 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   push_to_sequence (*before);
   if (inmode != outmode)
     {
+      /* process_alt_operands has already checked that the mode sizes
+	 are ordered.  */
       if (partial_subreg_p (outmode, inmode))
 	{
 	  reg = new_in_reg
@@ -1392,7 +1396,7 @@ process_addr_reg (rtx *loc, bool check_only_p, rtx_insn **before, rtx_insn **aft
 	 -fno-split-wide-types specified.  */
       if (!REG_P (reg)
 	  || in_class_p (reg, cl, &new_class)
-	  || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (ptr_mode))
+	  || known_le (GET_MODE_SIZE (mode), GET_MODE_SIZE (ptr_mode)))
        loc = &SUBREG_REG (*loc);
     }
 
@@ -1553,9 +1557,10 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	     missing important data from memory when the inner is wider than
 	     outer.  This rule only applies to modes that are no wider than
 	     a word.  */
-	  if (!(GET_MODE_PRECISION (mode) != GET_MODE_PRECISION (innermode)
-		&& GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-		&& GET_MODE_SIZE (innermode) <= UNITS_PER_WORD
+	  if (!(maybe_ne (GET_MODE_PRECISION (mode),
+			  GET_MODE_PRECISION (innermode))
+		&& known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD)
+		&& known_le (GET_MODE_SIZE (innermode), UNITS_PER_WORD)
 		&& WORD_REGISTER_OPERATIONS)
 	      && (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
 		    && targetm.slow_unaligned_access (mode, MEM_ALIGN (subst)))
@@ -2111,6 +2116,13 @@ process_alt_operands (int only_alternative)
 		    p = end;
 		    len = 0;
 		    lra_assert (nop > m);
+
+		    /* Reject matches if we don't know which operand is
+		       bigger.  This situation would arguably be a bug in
+		       an .md pattern, but could also occur in a user asm.  */
+		    if (!ordered_p (GET_MODE_SIZE (biggest_mode[m]),
+				    GET_MODE_SIZE (biggest_mode[nop])))
+		      break;
 
 		    this_alternative_matches = m;
 		    m_hregno = get_hard_regno (*curr_id->operand_loc[m], false);
@@ -2854,7 +2866,12 @@ process_alt_operands (int only_alternative)
 		  /* If it is a result of recent elimination in move
 		     insn we can transform it into an add still by
 		     using this alternative.  */
-		  && GET_CODE (no_subreg_reg_operand[1]) != PLUS)))
+		  && GET_CODE (no_subreg_reg_operand[1]) != PLUS
+		  /* Likewise if the source has been replaced with an
+		     equivalent value.  This only happens once -- the reload
+		     will use the equivalent value instead of the register it
+		     replaces -- so there should be no danger of cycling.  */
+		  && !equiv_substition_p[1])))
 	{
 	  /* We have a move insn and a new reload insn will be similar
 	     to the current insn.  We should avoid such situation as
@@ -3041,19 +3058,19 @@ base_to_reg (struct address_info *ad)
   return new_inner;
 }
 
-/* Make reload base reg + disp from address AD.  Return the new pseudo.  */
+/* Make reload base reg + DISP from address AD.  Return the new pseudo.  */
 static rtx
-base_plus_disp_to_reg (struct address_info *ad)
+base_plus_disp_to_reg (struct address_info *ad, rtx disp)
 {
   enum reg_class cl;
   rtx new_reg;
 
-  lra_assert (ad->base == ad->base_term && ad->disp == ad->disp_term);
+  lra_assert (ad->base == ad->base_term);
   cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
 		       get_index_code (ad));
   new_reg = lra_create_new_reg (GET_MODE (*ad->base_term), NULL_RTX,
 				cl, "base + disp");
-  lra_emit_add (new_reg, *ad->base_term, *ad->disp_term);
+  lra_emit_add (new_reg, *ad->base_term, disp);
   return new_reg;
 }
 
@@ -3404,12 +3421,30 @@ process_address_1 (int nop, bool check_only_p,
 	 displacements, so reloading into an index register would
 	 not necessarily be a win.  */
       if (new_reg == NULL_RTX)
-        new_reg = base_plus_disp_to_reg (&ad);
+	{
+	  /* See if the target can split the displacement into a
+	     legitimate new displacement from a local anchor.  */
+	  gcc_assert (ad.disp == ad.disp_term);
+	  poly_int64 orig_offset;
+	  rtx offset1, offset2;
+	  if (poly_int_rtx_p (*ad.disp, &orig_offset)
+	      && targetm.legitimize_address_displacement (&offset1, &offset2,
+							  orig_offset,
+							  ad.mode))
+	    {
+	      new_reg = base_plus_disp_to_reg (&ad, offset1);
+	      new_reg = gen_rtx_PLUS (GET_MODE (new_reg), new_reg, offset2);
+	    }
+	  else
+	    new_reg = base_plus_disp_to_reg (&ad, *ad.disp);
+	}
       insns = get_insns ();
       last_insn = get_last_insn ();
       /* If we generated at least two insns, try last insn source as
 	 an address.  If we succeed, we generate one less insn.  */
-      if (last_insn != insns && (set = single_set (last_insn)) != NULL_RTX
+      if (REG_P (new_reg)
+	  && last_insn != insns
+	  && (set = single_set (last_insn)) != NULL_RTX
 	  && GET_CODE (SET_SRC (set)) == PLUS
 	  && REG_P (XEXP (SET_SRC (set), 0))
 	  && CONSTANT_P (XEXP (SET_SRC (set), 1)))
@@ -3429,32 +3464,6 @@ process_address_1 (int nop, bool check_only_p,
 	      delete_insns_since (PREV_INSN (last_insn));
 	    }
 	}
-      /* Try if target can split displacement into legitimite new disp
-	 and offset.  If it's the case, we replace the last insn with
-	 insns for base + offset => new_reg and set new_reg + new disp
-	 to *ad.inner.  */
-      last_insn = get_last_insn ();
-      if ((set = single_set (last_insn)) != NULL_RTX
-	  && GET_CODE (SET_SRC (set)) == PLUS
-	  && REG_P (XEXP (SET_SRC (set), 0))
-	  && REGNO (XEXP (SET_SRC (set), 0)) < FIRST_PSEUDO_REGISTER
-	  && CONST_INT_P (XEXP (SET_SRC (set), 1)))
-	{
-	  rtx addend, disp = XEXP (SET_SRC (set), 1);
-	  if (targetm.legitimize_address_displacement (&disp, &addend,
-						       ad.mode))
-	    {
-	      rtx_insn *new_insns;
-	      start_sequence ();
-	      lra_emit_add (new_reg, XEXP (SET_SRC (set), 0), addend);
-	      new_insns = get_insns ();
-	      end_sequence ();
-	      new_reg = gen_rtx_PLUS (Pmode, new_reg, disp);
-	      delete_insns_since (PREV_INSN (last_insn));
-	      add_insn (new_insns);
-	      insns = get_insns ();
-	    }
-	}
       end_sequence ();
       emit_insn (insns);
       *ad.inner = new_reg;
@@ -3463,7 +3472,8 @@ process_address_1 (int nop, bool check_only_p,
     {
       /* base + scale * index + disp => new base + scale * index,
 	 case (1) above.  */
-      new_reg = base_plus_disp_to_reg (&ad);
+      gcc_assert (ad.disp == ad.disp_term);
+      new_reg = base_plus_disp_to_reg (&ad, *ad.disp);
       *ad.inner = simplify_gen_binary (PLUS, GET_MODE (new_reg),
 				       new_reg, *ad.index);
     }
@@ -4234,9 +4244,9 @@ curr_insn_transform (bool check_only_p)
 			      || (simplify_subreg_regno
 				  (ira_class_hard_regs[goal_alt[i]][0],
 				   GET_MODE (reg), byte, mode) >= 0)))
-		      || (GET_MODE_PRECISION (mode)
-			  < GET_MODE_PRECISION (GET_MODE (reg))
-			  && GET_MODE_SIZE (GET_MODE (reg)) <= UNITS_PER_WORD
+		      || (partial_subreg_p (mode, GET_MODE (reg))
+			  && known_le (GET_MODE_SIZE (GET_MODE (reg)),
+				       UNITS_PER_WORD)
 			  && WORD_REGISTER_OPERATIONS)))
 		{
 		  /* An OP_INOUT is required when reloading a subreg of a
@@ -4736,8 +4746,8 @@ lra_constraints (bool first_p)
 		/* Prevent access beyond equivalent memory for
 		   paradoxical subregs.  */
 		|| (MEM_P (x)
-		    && (GET_MODE_SIZE (lra_reg_info[i].biggest_mode)
-			> GET_MODE_SIZE (GET_MODE (x))))
+		    && maybe_gt (GET_MODE_SIZE (lra_reg_info[i].biggest_mode),
+				 GET_MODE_SIZE (GET_MODE (x))))
 		|| (pic_offset_table_rtx
 		    && ((CONST_POOL_OK_P (PSEUDO_REGNO_MODE (i), x)
 			 && (targetm.preferred_reload_class

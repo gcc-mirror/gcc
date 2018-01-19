@@ -1,5 +1,5 @@
 /* Special implementation of the SPREAD intrinsic
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>, based on
    spread_generic.c written by Paul Brook <paul@nowt.org>
 
@@ -72,7 +72,7 @@ spread_i8 (gfc_array_i8 *ret, const gfc_array_i8 *source,
 
       /* The front end has signalled that we need to populate the
 	 return array descriptor.  */
-      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rrank;
+      GFC_DTYPE_COPY_SETRANK(ret,source,rrank);
       dim = 0;
       rs = 1;
       for (n = 0; n < rrank; n++)

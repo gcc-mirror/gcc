@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -102,7 +102,8 @@ struct conversion {
      being bound to an lvalue expression or an rvalue reference is
      being bound to an rvalue expression.  If KIND is ck_rvalue,
      true when we are treating an lvalue as an rvalue (12.8p33).  If
-     KIND is ck_base, always false.  */
+     KIND is ck_base, always false.  If ck_identity, we will be
+     binding a reference directly.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
   /* The type of the expression resulting from the conversion.  */
@@ -147,6 +148,8 @@ static int equal_functions (tree, tree);
 static int joust (struct z_candidate *, struct z_candidate *, bool,
 		  tsubst_flags_t);
 static int compare_ics (conversion *, conversion *);
+static void maybe_warn_class_memaccess (location_t, tree,
+					const vec<tree, va_gc> *);
 static tree build_over_call (struct z_candidate *, int, tsubst_flags_t);
 #define convert_like(CONV, EXPR, COMPLAIN)			\
   convert_like_real ((CONV), (EXPR), NULL_TREE, 0,		\
@@ -526,6 +529,8 @@ null_ptr_cst_p (tree t)
 
   if (cxx_dialect >= cxx11)
     {
+      STRIP_ANY_LOCATION_WRAPPER (t);
+
       /* Core issue 903 says only literal 0 is a null pointer constant.  */
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && !char_type_p (type)
@@ -1472,6 +1477,10 @@ direct_reference_binding (tree type, conversion *conv)
 
   t = TREE_TYPE (type);
 
+  if (conv->kind == ck_identity)
+    /* Mark the identity conv as to not decay to rvalue.  */
+    conv->rvaluedness_matches_p = true;
+
   /* [over.ics.rank]
 
      When a parameter of reference type binds directly
@@ -1497,6 +1506,7 @@ direct_reference_binding (tree type, conversion *conv)
 	 That way, convert_like knows not to generate a temporary.  */
       conv->need_temporary_p = false;
     }
+
   return build_conv (ck_ref_bind, type, conv);
 }
 
@@ -4919,8 +4929,8 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	}
 
       if (!same_type_p (arg2_type, arg3_type)
-	  || TYPE_VECTOR_SUBPARTS (arg1_type)
-	     != TYPE_VECTOR_SUBPARTS (arg2_type)
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (arg1_type),
+		       TYPE_VECTOR_SUBPARTS (arg2_type))
 	  || TYPE_SIZE (arg1_type) != TYPE_SIZE (arg2_type))
 	{
 	  if (complain & tf_error)
@@ -5343,6 +5353,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
   /* If the ARG2 and ARG3 are the same and don't have side-effects,
      warn here, because the COND_EXPR will be turned into ARG2.  */
   if (warn_duplicated_branches
+      && (complain & tf_warning)
       && (arg2 == arg3 || operand_equal_p (arg2, arg3, 0)))
     warning_at (EXPR_LOCATION (result), OPT_Wduplicated_branches,
 		"this condition has identical branches");
@@ -6528,7 +6539,7 @@ static void
 conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
 {
   /* Issue warnings about peculiar, but valid, uses of NULL.  */
-  if (expr == null_node && TREE_CODE (totype) != BOOLEAN_TYPE
+  if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
       source_location loc =
@@ -6795,10 +6806,18 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else
 	    gcc_unreachable ();
 	}
-      expr = mark_rvalue_use (expr);
+      expr = mark_use (expr, /*rvalue_p=*/!convs->rvaluedness_matches_p,
+		       /*read_p=*/true, UNKNOWN_LOCATION,
+		       /*reject_builtin=*/true);
 
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, complain);
+      if (expr == null_node
+	  && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (totype))
+	/* If __null has been converted to an integer type, we do not want to
+	   continue to warn about uses of EXPR as an integer, rather than as a
+	   pointer.  */
+	expr = build_int_cst (totype, 0);
       return expr;
     case ck_ambig:
       /* We leave bad_p off ck_ambig because overload resolution considers
@@ -6885,9 +6904,9 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     };
 
   expr = convert_like_real (next_conversion (convs), expr, fn, argnum,
-			    convs->kind == ck_ref_bind ? issue_conversion_warnings : false, 
-			    c_cast_p,
-			    complain);
+			    convs->kind == ck_ref_bind
+			    ? issue_conversion_warnings : false, 
+			    c_cast_p, complain);
   if (expr == error_mark_node)
     return error_mark_node;
 
@@ -7862,7 +7881,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
              func(NULL);
            }
       */
-      if (arg == null_node
+      if (null_node_p (arg)
           && DECL_TEMPLATE_INFO (fn)
           && cand->template_decl
           && !(flags & LOOKUP_EXPLICIT_TMPL_ARGS))
@@ -8180,6 +8199,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       && !mark_used (fn, complain))
     return error_mark_node;
 
+  /* Warn if the built-in writes to an object of a non-trivial type.  */
+  if (warn_class_memaccess
+      && vec_safe_length (args) >= 2
+      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
+    maybe_warn_class_memaccess (input_location, fn, args);
+
   if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
       /* Don't mess with virtual lookup in instantiate_non_dependent_expr;
 	 virtual functions can't be constexpr.  */
@@ -8360,7 +8385,8 @@ has_trivial_copy_p (tree type, bool access, bool hasctor[2])
    assignments.  */
 
 static void
-maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
+maybe_warn_class_memaccess (location_t loc, tree fndecl,
+			    const vec<tree, va_gc> *args)
 {
   /* Except for bcopy where it's second, the destination pointer is
      the first argument for all functions handled here.  Compute
@@ -8368,14 +8394,9 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
   unsigned dstidx = DECL_FUNCTION_CODE (fndecl) == BUILT_IN_BCOPY;
   unsigned srcidx = !dstidx;
 
-  tree dest = args[dstidx];
-  if (!dest || !TREE_TYPE (dest) || !POINTER_TYPE_P (TREE_TYPE (dest)))
+  tree dest = (*args)[dstidx];
+  if (!TREE_TYPE (dest) || !POINTER_TYPE_P (TREE_TYPE (dest)))
     return;
-
-  /* Remove the outermost (usually implicit) conversion to the void*
-     argument type.  */
-  if (TREE_CODE (dest) == NOP_EXPR)
-    dest = TREE_OPERAND (dest, 0);
 
   tree srctype = NULL_TREE;
 
@@ -8436,7 +8457,7 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
   switch (DECL_FUNCTION_CODE (fndecl))
     {
     case BUILT_IN_MEMSET:
-      if (!integer_zerop (args[1]))
+      if (!integer_zerop (maybe_constant_value ((*args)[1])))
 	{
 	  /* Diagnose setting non-copy-assignable or non-trivial types,
 	     or types with a private member, to (potentially) non-zero
@@ -8497,8 +8518,11 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
     case BUILT_IN_MEMMOVE:
     case BUILT_IN_MEMPCPY:
       /* Determine the type of the source object.  */
-      srctype = STRIP_NOPS (args[srcidx]);
-      srctype = TREE_TYPE (TREE_TYPE (srctype));
+      srctype = TREE_TYPE ((*args)[srcidx]);
+      if (!srctype || !POINTER_TYPE_P (srctype))
+	srctype = void_type_node;
+      else
+	srctype = TREE_TYPE (srctype);
 
       /* Since it's impossible to determine wheter the byte copy is
 	 being used in place of assignment to an existing object or
@@ -8547,13 +8571,16 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
 			       "assignment or copy-initialization instead",
 			       fndecl, desttype, access, fld, srctype);
 	}
-      else if (!trivial && TREE_CODE (args[2]) == INTEGER_CST)
+      else if (!trivial && vec_safe_length (args) > 2)
 	{
+	  tree sz = maybe_constant_value ((*args)[2]);
+	  if (!tree_fits_uhwi_p (sz))
+	    break;
+
 	  /* Finally, warn on partial copies.  */
 	  unsigned HOST_WIDE_INT typesize
 	    = tree_to_uhwi (TYPE_SIZE_UNIT (desttype));
-	  if (unsigned HOST_WIDE_INT partial
-	      = tree_to_uhwi (args[2]) % typesize)
+	  if (unsigned HOST_WIDE_INT partial = tree_to_uhwi (sz) % typesize)
 	    warned = warning_at (loc, OPT_Wclass_memaccess,
 				 (typesize - partial > 1
 				  ? G_("%qD writing to an object of "
@@ -8577,25 +8604,23 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl, tree *args)
       else if (!get_dtor (desttype, tf_none))
 	warnfmt = G_("%qD moving an object of type %#qT with deleted "
 		     "destructor");
-      else if (!trivial
-	       && TREE_CODE (args[1]) == INTEGER_CST
-	       && tree_int_cst_lt (args[1], TYPE_SIZE_UNIT (desttype)))
+      else if (!trivial)
 	{
-	  /* Finally, warn on reallocation into insufficient space.  */
-	  warned = warning_at (loc, OPT_Wclass_memaccess,
-			       "%qD moving an object of non-trivial type "
-			       "%#qT and size %E into a region of size %E",
-			       fndecl, desttype, TYPE_SIZE_UNIT (desttype),
-			       args[1]);
+	  tree sz = maybe_constant_value ((*args)[1]);
+	  if (TREE_CODE (sz) == INTEGER_CST
+	      && tree_int_cst_lt (sz, TYPE_SIZE_UNIT (desttype)))
+	    /* Finally, warn on reallocation into insufficient space.  */
+	    warned = warning_at (loc, OPT_Wclass_memaccess,
+				 "%qD moving an object of non-trivial type "
+				 "%#qT and size %E into a region of size %E",
+				 fndecl, desttype, TYPE_SIZE_UNIT (desttype),
+				 sz);
 	}
       break;
 
     default:
       return;
     }
-
-  if (!warned && !warnfmt)
-    return;
 
   if (warnfmt)
     {
@@ -8643,10 +8668,6 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       if (!check_builtin_function_arguments (EXPR_LOCATION (fn), vNULL, fndecl,
 					     nargs, argarray))
 	return error_mark_node;
-
-      /* Warn if the built-in writes to an object of a non-trivial type.  */
-      if (nargs)
-	maybe_warn_class_memaccess (loc, fndecl, argarray);
     }
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))
@@ -10506,6 +10527,11 @@ perform_implicit_conversion_flags (tree type, tree expr,
   conversion *conv;
   void *p;
   location_t loc = EXPR_LOC_OR_LOC (expr, input_location);
+
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    expr = mark_lvalue_use (expr);
+  else
+    expr = mark_rvalue_use (expr);
 
   if (error_operand_p (expr))
     return error_mark_node;

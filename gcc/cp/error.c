@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -3248,7 +3248,7 @@ args_to_string (tree p, int verbose)
   reinit_cxx_pp ();
   for (; p; p = TREE_CHAIN (p))
     {
-      if (TREE_VALUE (p) == null_node)
+      if (null_node_p (TREE_VALUE (p)))
 	pp_cxx_ws_string (cxx_pp, "NULL");
       else
 	dump_type (cxx_pp, error_type (TREE_VALUE (p)), flags);

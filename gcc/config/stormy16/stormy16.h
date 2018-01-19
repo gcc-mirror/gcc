@@ -1,5 +1,5 @@
 /* Xstormy16 cpu description.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
    This file is part of GCC.
@@ -255,7 +255,7 @@ enum reg_class
 
 /* Passing Function Arguments on the Stack.  */
 
-#define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) xstormy16_push_rounding (BYTES)
 
 
 /* Function Arguments in Registers.  */

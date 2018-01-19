@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -345,11 +345,11 @@ gfc_build_io_library_fndecls (void)
 
   iocall[IOCALL_X_CHARACTER] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character")), ".wW",
-	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_CHARACTER_WRITE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character_write")), ".wR",
-	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_int4_type_node);
+	void_type_node, 3, dt_parm_type, pvoid_type_node, gfc_charlen_type_node);
 
   iocall[IOCALL_X_CHARACTER_WIDE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_character_wide")), ".wW",
@@ -852,7 +852,8 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 
       gfc_conv_string_parameter (&se);
       gfc_add_modify (&se.pre, io, fold_convert (TREE_TYPE (io), se.expr));
-      gfc_add_modify (&se.pre, len, se.string_length);
+      gfc_add_modify (&se.pre, len, fold_convert (TREE_TYPE (len),
+						  se.string_length));
     }
 
   gfc_add_block_to_block (block, &se.pre);
@@ -2226,25 +2227,9 @@ get_dtio_proc (gfc_typespec * ts, gfc_code * code, gfc_symbol **dtio_sub)
   bool formatted = false;
   gfc_dt *dt = code->ext.dt;
 
-  if (dt)
-    {
-      char *fmt = NULL;
-
-      if (dt->format_label == &format_asterisk)
-	{
-	  /* List directed io must call the formatted DTIO procedure.  */
-	  formatted = true;
-	}
-      else if (dt->format_expr)
-	fmt = gfc_widechar_to_char (dt->format_expr->value.character.string,
-				      -1);
-      else if (dt->format_label)
-	fmt = gfc_widechar_to_char (dt->format_label->format->value.character.string,
-				      -1);
-      if (fmt && strtok (fmt, "DT") != NULL)
-	formatted = true;
-
-    }
+  /* Determine when to use the formatted DTIO procedure.  */
+  if (dt && (dt->format_expr || dt->format_label))
+    formatted = true;
 
   if (ts->type == BT_CLASS)
     derived = ts->u.derived->components->ts.u.derived;
@@ -2454,8 +2439,7 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 	    {
 	      /* Recurse into the elements of the derived type.  */
 	      expr = gfc_evaluate_now (addr_expr, &se->pre);
-	      expr = build_fold_indirect_ref_loc (input_location,
-				      expr);
+	      expr = build_fold_indirect_ref_loc (input_location, expr);
 
 	      /* Make sure that the derived type has been built.  An external
 		 function, if only referenced in an io statement, requires this

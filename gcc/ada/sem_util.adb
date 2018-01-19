@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7847,8 +7847,7 @@ package body Sem_Util is
    --------------------------
 
    function Find_Enclosing_Scope (N : Node_Id) return Entity_Id is
-      Par     : Node_Id;
-      Spec_Id : Entity_Id;
+      Par : Node_Id;
 
    begin
       --  Examine the parent chain looking for a construct which defines a
@@ -7877,7 +7876,8 @@ package body Sem_Util is
                return Defining_Entity (Par);
 
             --  The construct denotes a body, the proper scope is the entity of
-            --  the corresponding spec.
+            --  the corresponding spec or that of the body if the body does not
+            --  complete a previous declaration.
 
             when N_Entry_Body
                | N_Package_Body
@@ -7885,22 +7885,7 @@ package body Sem_Util is
                | N_Subprogram_Body
                | N_Task_Body
             =>
-               Spec_Id := Corresponding_Spec (Par);
-
-               --  The defining entity of a stand-alone subprogram body defines
-               --  a scope.
-
-               if Nkind (Par) = N_Subprogram_Body and then No (Spec_Id) then
-                  return Defining_Entity (Par);
-
-               --  Otherwise there should be corresponding spec which defines a
-               --  scope.
-
-               else
-                  pragma Assert (Present (Spec_Id));
-
-                  return Spec_Id;
-               end if;
+               return Unique_Defining_Entity (Par);
 
             --  Special cases
 
@@ -13333,8 +13318,8 @@ package body Sem_Util is
 
    begin
       --  Simplest case: entity is a concurrent type and we are currently
-      --  inside the body. This will eventually be expanded into a
-      --  call to Self (for tasks) or _object (for protected objects).
+      --  inside the body. This will eventually be expanded into a call to
+      --  Self (for tasks) or _object (for protected objects).
 
       if Is_Concurrent_Type (Typ) and then In_Open_Scopes (Typ) then
          return True;
@@ -13365,8 +13350,7 @@ package body Sem_Util is
                return True;
 
             elsif Nkind (P) = N_Pragma
-              and then
-                Get_Pragma_Id (P) = Pragma_Predicate_Failure
+              and then Get_Pragma_Id (P) = Pragma_Predicate_Failure
             then
                return True;
             end if;
@@ -13384,40 +13368,113 @@ package body Sem_Util is
    -- Is_Declaration --
    --------------------
 
-   function Is_Declaration (N : Node_Id) return Boolean is
-   begin
-      return
-        Is_Declaration_Other_Than_Renaming (N)
-          or else Is_Renaming_Declaration (N);
-   end Is_Declaration;
-
-   ----------------------------------------
-   -- Is_Declaration_Other_Than_Renaming --
-   ----------------------------------------
-
-   function Is_Declaration_Other_Than_Renaming (N : Node_Id) return Boolean is
+   function Is_Declaration
+     (N                : Node_Id;
+      Body_OK          : Boolean := True;
+      Concurrent_OK    : Boolean := True;
+      Formal_OK        : Boolean := True;
+      Generic_OK       : Boolean := True;
+      Instantiation_OK : Boolean := True;
+      Renaming_OK      : Boolean := True;
+      Stub_OK          : Boolean := True;
+      Subprogram_OK    : Boolean := True;
+      Type_OK          : Boolean := True) return Boolean
+   is
    begin
       case Nkind (N) is
-         when N_Abstract_Subprogram_Declaration
-            | N_Exception_Declaration
-            | N_Expression_Function
-            | N_Full_Type_Declaration
-            | N_Generic_Package_Declaration
+
+         --  Body declarations
+
+         when N_Proper_Body =>
+            return Body_OK;
+
+         --  Concurrent type declarations
+
+         when N_Protected_Type_Declaration
+            | N_Single_Protected_Declaration
+            | N_Single_Task_Declaration
+            | N_Task_Type_Declaration
+         =>
+            return Concurrent_OK or Type_OK;
+
+         --  Formal declarations
+
+         when N_Formal_Abstract_Subprogram_Declaration
+            | N_Formal_Concrete_Subprogram_Declaration
+            | N_Formal_Object_Declaration
+            | N_Formal_Package_Declaration
+            | N_Formal_Type_Declaration
+         =>
+            return Formal_OK;
+
+         --  Generic declarations
+
+         when N_Generic_Package_Declaration
             | N_Generic_Subprogram_Declaration
+         =>
+            return Generic_OK;
+
+         --  Generic instantiations
+
+         when N_Function_Instantiation
+            | N_Package_Instantiation
+            | N_Procedure_Instantiation
+         =>
+            return Instantiation_OK;
+
+         --  Generic renaming declarations
+
+         when N_Generic_Renaming_Declaration =>
+            return Generic_OK or Renaming_OK;
+
+         --  Renaming declarations
+
+         when N_Exception_Renaming_Declaration
+            | N_Object_Renaming_Declaration
+            | N_Package_Renaming_Declaration
+            | N_Subprogram_Renaming_Declaration
+         =>
+            return Renaming_OK;
+
+         --  Stub declarations
+
+         when N_Body_Stub =>
+            return Stub_OK;
+
+         --  Subprogram declarations
+
+         when N_Abstract_Subprogram_Declaration
+            | N_Entry_Declaration
+            | N_Expression_Function
+            | N_Subprogram_Declaration
+         =>
+            return Subprogram_OK;
+
+         --  Type declarations
+
+         when N_Full_Type_Declaration
+            | N_Incomplete_Type_Declaration
+            | N_Private_Extension_Declaration
+            | N_Private_Type_Declaration
+            | N_Subtype_Declaration
+         =>
+            return Type_OK;
+
+         --  Miscellaneous
+
+         when N_Component_Declaration
+            | N_Exception_Declaration
+            | N_Implicit_Label_Declaration
             | N_Number_Declaration
             | N_Object_Declaration
             | N_Package_Declaration
-            | N_Private_Extension_Declaration
-            | N_Private_Type_Declaration
-            | N_Subprogram_Declaration
-            | N_Subtype_Declaration
          =>
             return True;
 
          when others =>
             return False;
       end case;
-   end Is_Declaration_Other_Than_Renaming;
+   end Is_Declaration;
 
    --------------------------------
    -- Is_Declared_Within_Variant --
@@ -15840,13 +15897,12 @@ package body Sem_Util is
       --  conjunct in a postcondition) with a potentially unevaluated operand.
 
       Par := Parent (Expr);
-
-      while not Nkind_In (Par, N_If_Expression,
+      while not Nkind_In (Par, N_And_Then,
                                N_Case_Expression,
-                               N_And_Then,
-                               N_Or_Else,
+                               N_If_Expression,
                                N_In,
                                N_Not_In,
+                               N_Or_Else,
                                N_Quantified_Expression)
       loop
          Expr := Par;
@@ -22373,11 +22429,13 @@ package body Sem_Util is
 
       else
          Prev_Id := Current_Entity (Id);
-         while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
-            Prev_Id := Homonym (Prev_Id);
-         end loop;
+         if Present (Prev_Id) then
+            while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
+               Prev_Id := Homonym (Prev_Id);
+            end loop;
 
-         Set_Homonym (Prev_Id, Homonym (Id));
+            Set_Homonym (Prev_Id, Homonym (Id));
+         end if;
       end if;
 
       --  Remove the entity from the scope entity chain. When the entity is
@@ -22397,7 +22455,9 @@ package body Sem_Util is
             Next_Entity (Prev_Id);
          end loop;
 
-         Set_Next_Entity (Prev_Id, Next_Entity (Id));
+         if Present (Prev_Id) then
+            Set_Next_Entity (Prev_Id, Next_Entity (Id));
+         end if;
       end if;
 
       --  Handle the case where the entity acts as the tail of the scope entity

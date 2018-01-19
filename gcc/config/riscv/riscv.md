@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V for GNU compiler.
-;; Copyright (C) 2011-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2018 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -1456,7 +1456,13 @@
    (match_operand 1 "pmode_register_operand")]
   ""
 {
+#ifdef ICACHE_FLUSH_FUNC
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, ICACHE_FLUSH_FUNC),
+		     LCT_NORMAL, VOIDmode, operands[0], Pmode,
+		     operands[1], Pmode, const0_rtx, Pmode);
+#else
   emit_insn (gen_fence_i ());
+#endif
   DONE;
 })
 
@@ -1921,7 +1927,9 @@
 (define_insn "simple_return"
   [(simple_return)]
   ""
-  "ret"
+{
+  return riscv_output_return ();
+}
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
 

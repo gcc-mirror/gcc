@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -680,7 +680,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
   tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset,
 				  &name_expansions);
-  aff_combination_const (&delta, type, wi::to_widest (DR_INIT (dr)));
+  aff_combination_const (&delta, type, wi::to_poly_widest (DR_INIT (dr)));
   aff_combination_add (offset, &delta);
 }
 

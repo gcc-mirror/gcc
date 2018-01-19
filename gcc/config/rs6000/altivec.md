@@ -1,5 +1,5 @@
 ;; AltiVec patterns.
-;; Copyright (C) 2002-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2002-2018 Free Software Foundation, Inc.
 ;; Contributed by Aldy Hernandez (aldy@quesejoda.com)
 
 ;; This file is part of GCC.
@@ -997,8 +997,8 @@
 
 (define_insn "altivec_vmrghb_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-                       (match_operand:V16QI 2 "register_operand" "v")]
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
+		       (match_operand:V16QI 2 "register_operand" "v")]
 		      UNSPEC_VMRGH_DIRECT))]
   "TARGET_ALTIVEC"
   "vmrghb %0,%1,%2"
@@ -1104,12 +1104,14 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vmrghw_direct"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-                      (match_operand:V4SI 2 "register_operand" "v")]
-                     UNSPEC_VMRGH_DIRECT))]
+  [(set (match_operand:V4SI 0 "register_operand" "=v,wa")
+	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v,wa")
+		      (match_operand:V4SI 2 "register_operand" "v,wa")]
+		     UNSPEC_VMRGH_DIRECT))]
   "TARGET_ALTIVEC"
-  "vmrghw %0,%1,%2"
+  "@
+   vmrghw %0,%1,%2
+   xxmrghw %x0,%x1,%x2"
   [(set_attr "type" "vecperm")])
 
 (define_insn "*altivec_vmrghsf"
@@ -1186,9 +1188,9 @@
 
 (define_insn "altivec_vmrglb_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-        (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-    		       (match_operand:V16QI 2 "register_operand" "v")]
-                      UNSPEC_VMRGL_DIRECT))]
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
+		       (match_operand:V16QI 2 "register_operand" "v")]
+		      UNSPEC_VMRGL_DIRECT))]
   "TARGET_ALTIVEC"
   "vmrglb %0,%1,%2"
   [(set_attr "type" "vecperm")])
@@ -1244,7 +1246,7 @@
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "v")
 		      (match_operand:V8HI 2 "register_operand" "v")]
-                     UNSPEC_VMRGL_DIRECT))]
+		     UNSPEC_VMRGL_DIRECT))]
   "TARGET_ALTIVEC"
   "vmrglh %0,%1,%2"
   [(set_attr "type" "vecperm")])
@@ -1293,12 +1295,14 @@
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vmrglw_direct"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-	              (match_operand:V4SI 2 "register_operand" "v")]
-                     UNSPEC_VMRGL_DIRECT))]
+  [(set (match_operand:V4SI 0 "register_operand" "=v,wa")
+	(unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v,wa")
+		      (match_operand:V4SI 2 "register_operand" "v,wa")]
+		     UNSPEC_VMRGL_DIRECT))]
   "TARGET_ALTIVEC"
-  "vmrglw %0,%1,%2"
+  "@
+   vmrglw %0,%1,%2
+   xxmrglw %x0,%x1,%x2"
   [(set_attr "type" "vecperm")])
 
 (define_insn "*altivec_vmrglsf"
@@ -1318,6 +1322,24 @@
 }
   [(set_attr "type" "vecperm")])
 
+;; Power8 vector merge two V2DF/V2DI even words to V2DF
+(define_expand "p8_vmrgew_<mode>"
+  [(use (match_operand:VSX_D 0 "vsx_register_operand"))
+   (use (match_operand:VSX_D 1 "vsx_register_operand"))
+   (use (match_operand:VSX_D 2 "vsx_register_operand"))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  rtvec v;
+  rtx x;
+
+  v = gen_rtvec (2, GEN_INT (0), GEN_INT (2));
+  x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
+
+  x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
+  emit_insn (gen_rtx_SET (operands[0], x));
+  DONE;
+})
+
 ;; Power8 vector merge two V4SF/V4SI even words to V4SF
 (define_insn "p8_vmrgew_<mode>"
   [(set (match_operand:VSX_W 0 "register_operand" "=v")
@@ -1336,12 +1358,12 @@
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "p8_vmrgow"
-  [(set (match_operand:V4SI 0 "register_operand" "=v")
-	(vec_select:V4SI
-	  (vec_concat:V8SI
-	    (match_operand:V4SI 1 "register_operand" "v")
-	    (match_operand:V4SI 2 "register_operand" "v"))
+(define_insn "p8_vmrgow_<mode>"
+  [(set (match_operand:VSX_W 0 "register_operand" "=v")
+	(vec_select:VSX_W
+	  (vec_concat:<VS_double>
+	    (match_operand:VSX_W 1 "register_operand" "v")
+	    (match_operand:VSX_W 2 "register_operand" "v"))
 	  (parallel [(const_int 1) (const_int 5)
 		     (const_int 3) (const_int 7)])))]
   "TARGET_P8_VECTOR"
@@ -1352,6 +1374,23 @@
     return "vmrgew %0,%2,%1";
 }
   [(set_attr "type" "vecperm")])
+
+(define_expand "p8_vmrgow_<mode>"
+  [(use (match_operand:VSX_D 0 "vsx_register_operand"))
+   (use (match_operand:VSX_D 1 "vsx_register_operand"))
+   (use (match_operand:VSX_D 2 "vsx_register_operand"))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+{
+  rtvec v;
+  rtx x;
+
+  v = gen_rtvec (2, GEN_INT (1), GEN_INT (3));
+  x = gen_rtx_VEC_CONCAT (<VS_double>mode, operands[1], operands[2]);
+
+  x = gen_rtx_VEC_SELECT (<MODE>mode, x, gen_rtx_PARALLEL (VOIDmode, v));
+  emit_insn (gen_rtx_SET (operands[0], x));
+  DONE;
+})
 
 (define_insn "p8_vmrgew_<mode>_direct"
   [(set (match_operand:VSX_W 0 "register_operand" "=v")
@@ -2198,19 +2237,6 @@
   }
 })
 
-(define_expand "vec_perm_constv16qi"
-  [(match_operand:V16QI 0 "register_operand" "")
-   (match_operand:V16QI 1 "register_operand" "")
-   (match_operand:V16QI 2 "register_operand" "")
-   (match_operand:V16QI 3 "" "")]
-  "TARGET_ALTIVEC"
-{
-  if (altivec_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
-
 (define_insn "*altivec_vpermr_<mode>_internal"
   [(set (match_operand:VM 0 "register_operand" "=v,?wo")
 	(unspec:VM [(match_operand:VM 1 "register_operand" "v,wo")
@@ -2219,7 +2245,7 @@
 		   UNSPEC_VPERMR))]
   "TARGET_P9_VECTOR"
   "@
-   vpermr %0,%2,%1,%3
+   vpermr %0,%1,%2,%3
    xxpermr %x0,%x1,%x3"
   [(set_attr "type" "vecperm")
    (set_attr "length" "4")])

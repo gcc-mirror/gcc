@@ -1,5 +1,5 @@
 /* GIMPLE store merging and byte swapping passes.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -3619,6 +3619,15 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
 		  gimple_seq_add_stmt_without_update (&seq, stmt);
 		  src = gimple_assign_lhs (stmt);
 		}
+	      inv_op = invert_op (split_store, 2, int_type, xor_mask);
+	      if (inv_op != NOP_EXPR)
+		{
+		  stmt = gimple_build_assign (make_ssa_name (int_type),
+					      inv_op, src, xor_mask);
+		  gimple_set_location (stmt, loc);
+		  gimple_seq_add_stmt_without_update (&seq, stmt);
+		  src = gimple_assign_lhs (stmt);
+		}
 	      break;
 	    default:
 	      src = ops[0];
@@ -3798,8 +3807,9 @@ lhs_valid_for_store_merging_p (tree lhs)
 static bool
 rhs_valid_for_store_merging_p (tree rhs)
 {
-  return native_encode_expr (rhs, NULL,
-			     GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (rhs)))) != 0;
+  unsigned HOST_WIDE_INT size;
+  return (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (rhs))).is_constant (&size)
+	  && native_encode_expr (rhs, NULL, size) != 0);
 }
 
 /* If MEM is a memory reference usable for store merging (either as

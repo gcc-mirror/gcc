@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -1506,6 +1506,12 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      if (sanitize_flags_p (SANITIZE_VPTR) && !is_ctor)
 		cp_ubsan_maybe_instrument_member_call (stmt);
 	    }
+	  else if (fn == NULL_TREE
+		   && CALL_EXPR_IFN (stmt) == IFN_UBSAN_NULL
+		   && TREE_CODE (CALL_EXPR_ARG (stmt, 0)) == INTEGER_CST
+		   && (TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (stmt, 0)))
+		       == REFERENCE_TYPE))
+	    *walk_subtrees = 0;
 	}
       break;
 
@@ -1575,6 +1581,7 @@ cp_maybe_instrument_return (tree fndecl)
 	  t = BIND_EXPR_BODY (t);
 	  continue;
 	case TRY_FINALLY_EXPR:
+	case CLEANUP_POINT_EXPR:
 	  t = TREE_OPERAND (t, 0);
 	  continue;
 	case STATEMENT_LIST:
@@ -2058,7 +2065,7 @@ clear_fold_cache (void)
 
 /*  This function tries to fold an expression X.
     To avoid combinatorial explosion, folding results are kept in fold_cache.
-    If we are processing a template or X is invalid, we don't fold at all.
+    If X is invalid, we don't fold at all.
     For performance reasons we don't cache expressions representing a
     declaration or constant.
     Function returns X or its folded variant.  */
@@ -2075,8 +2082,7 @@ cp_fold (tree x)
   if (!x || x == error_mark_node)
     return x;
 
-  if (processing_template_decl
-      || (EXPR_P (x) && (!TREE_TYPE (x) || TREE_TYPE (x) == error_mark_node)))
+  if (EXPR_P (x) && (!TREE_TYPE (x) || TREE_TYPE (x) == error_mark_node))
     return x;
 
   /* Don't bother to cache DECLs or constants.  */
@@ -2112,7 +2118,20 @@ cp_fold (tree x)
     case NON_LVALUE_EXPR:
 
       if (VOID_TYPE_P (TREE_TYPE (x)))
-	return x;
+	{
+	  /* This is just to make sure we don't end up with casts to
+	     void from error_mark_node.  If we just return x, then
+	     cp_fold_r might fold the operand into error_mark_node and
+	     leave the conversion in the IR.  STRIP_USELESS_TYPE_CONVERSION
+	     during gimplification doesn't like such casts.
+	     Don't create a new tree if op0 != TREE_OPERAND (x, 0), the
+	     folding of the operand should be in the caches and if in cp_fold_r
+	     it will modify it in place.  */
+	  op0 = cp_fold (TREE_OPERAND (x, 0));
+	  if (op0 == error_mark_node)
+	    x = error_mark_node;
+	  break;
+	}
 
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops);

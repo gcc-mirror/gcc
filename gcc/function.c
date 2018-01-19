@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -79,6 +79,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gimple.h"
+#include "options.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -2882,7 +2884,7 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
   /* Only assign_parm_setup_block knows how to deal with register arguments
      that are padded at the least significant end.  */
   if (REG_P (data->entry_parm)
-      && GET_MODE_SIZE (data->promoted_mode) < UNITS_PER_WORD
+      && known_lt (GET_MODE_SIZE (data->promoted_mode), UNITS_PER_WORD)
       && (BLOCK_REG_PADDING (data->passed_mode, data->passed_type, 1)
 	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
@@ -2945,7 +2947,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
       SET_DECL_ALIGN (parm, MAX (DECL_ALIGN (parm), BITS_PER_WORD));
       stack_parm = assign_stack_local (BLKmode, size_stored,
 				       DECL_ALIGN (parm));
-      if (GET_MODE_SIZE (GET_MODE (entry_parm)) == size)
+      if (known_eq (GET_MODE_SIZE (GET_MODE (entry_parm)), size))
 	PUT_MODE (stack_parm, GET_MODE (entry_parm));
       set_mem_attributes (stack_parm, parm, 1);
     }
@@ -3993,7 +3995,7 @@ gimplify_parm_type (tree *tp, int *walk_subtrees, void *data)
    statements to add to the beginning of the function.  */
 
 gimple_seq
-gimplify_parameters (void)
+gimplify_parameters (gimple_seq *cleanup)
 {
   struct assign_parm_data_all all;
   tree parm;
@@ -4058,6 +4060,16 @@ gimplify_parameters (void)
 		  else if (TREE_CODE (type) == COMPLEX_TYPE
 			   || TREE_CODE (type) == VECTOR_TYPE)
 		    DECL_GIMPLE_REG_P (local) = 1;
+
+		  if (!is_gimple_reg (local)
+		      && flag_stack_reuse != SR_NONE)
+		    {
+		      tree clobber = build_constructor (type, NULL);
+		      gimple *clobber_stmt;
+		      TREE_THIS_VOLATILE (clobber) = 1;
+		      clobber_stmt = gimple_build_assign (local, clobber);
+		      gimple_seq_add_stmt (cleanup, clobber_stmt);
+		    }
 		}
 	      else
 		{
@@ -4346,8 +4358,10 @@ static void
 pad_below (struct args_size *offset_ptr, machine_mode passed_mode, tree sizetree)
 {
   unsigned int align = PARM_BOUNDARY / BITS_PER_UNIT;
-  if (passed_mode != BLKmode)
-    offset_ptr->constant += -GET_MODE_SIZE (passed_mode) & (align - 1);
+  int misalign;
+  if (passed_mode != BLKmode
+      && known_misalignment (GET_MODE_SIZE (passed_mode), align, &misalign))
+    offset_ptr->constant += -misalign & (align - 1);
   else
     {
       if (TREE_CODE (sizetree) != INTEGER_CST

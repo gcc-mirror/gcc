@@ -1,5 +1,5 @@
 /* params.def - Run-time parameters.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
 This file is part of GCC.
@@ -139,7 +139,7 @@ DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,
 DEFPARAM (PARAM_MIN_VECT_LOOP_BOUND,
 	  "min-vect-loop-bound",
 	  "If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization.",
-	  1, 1, 0)
+	  0, 0, 0)
 
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary
@@ -744,7 +744,7 @@ DEFPARAM (PARAM_MAX_FIELDS_FOR_FIELD_SENSITIVE,
 DEFPARAM(PARAM_MAX_SCHED_READY_INSNS,
 	 "max-sched-ready-insns",
 	 "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass.",
-	 100, 0, 0)
+	 100, 1, 0)
 
 /* This is the maximum number of active local stores RTL DSE will consider.  */
 DEFPARAM (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES,
@@ -1325,6 +1325,11 @@ DEFPARAM(PARAM_UNROLL_JAM_MAX_UNROLL,
 	 "unroll-jam-max-unroll",
 	 "Maximum unroll factor for the unroll-and-jam transformation.",
 	 4, 0, 0)
+
+DEFPARAM(PARAM_AVOID_FMA_MAX_BITS,
+	 "avoid-fma-max-bits",
+	 "Maximum number of bits for which we avoid creating FMAs.",
+	 0, 0, 512)
 
 /*
 

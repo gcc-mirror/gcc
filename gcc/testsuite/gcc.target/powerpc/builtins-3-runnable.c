@@ -266,6 +266,10 @@ int main()
 	vec_flt_result = vec_float2 (vec_ll_uns_int0, vec_ll_uns_int1);
 	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
 
+	vec_flt_expected = (vector float){34.0, 97.0, 214.0, -5.5};
+	vec_flt_result = vec_float2 (vec_dble0, vec_dble1);
+	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
+
 	/* conversion of even words in double precision vector to single precision vector */
 	vec_flt_expected = (vector float){-12.00, 00.00, -12345678901234.00, 0.00};
 	vec_flt_result = vec_floate (vec_ll_int0);

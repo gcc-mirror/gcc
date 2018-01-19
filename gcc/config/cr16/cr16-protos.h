@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in cr16.c
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
 
    This file is part of GCC.
@@ -94,5 +94,6 @@ extern const char *cr16_emit_logical_di (rtx *, enum rtx_code);
 /* Handling the "interrupt" attribute.  */
 extern int cr16_interrupt_function_p (void);
 extern bool cr16_is_data_model (enum data_model_type);
+extern poly_int64 cr16_push_rounding (poly_int64);
 
 #endif /* Not GCC_CR16_PROTOS_H.  */ 

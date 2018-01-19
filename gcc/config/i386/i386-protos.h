@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -133,7 +133,6 @@ extern bool ix86_expand_fp_movcc (rtx[]);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_vec_perm (rtx[]);
-extern bool ix86_expand_vec_perm_const (rtx[]);
 extern bool ix86_expand_mask_vec_cmp (rtx[]);
 extern bool ix86_expand_int_vec_cmp (rtx[]);
 extern bool ix86_expand_fp_vec_cmp (rtx[]);
@@ -306,6 +305,8 @@ extern enum attr_cpu ix86_schedule;
 #endif
 
 extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
+extern const char * ix86_output_indirect_jmp (rtx call_op, bool ret_p);
+extern const char * ix86_output_function_return (bool long_p);
 extern bool ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 						machine_mode mode);
 extern int ix86_min_insn_size (rtx_insn *);
@@ -323,6 +324,8 @@ extern void ix86_bd_do_dispatch (rtx_insn *insn, int mode);
 extern void ix86_core2i7_init_hooks (void);
 
 extern int ix86_atom_sched_reorder (FILE *, int, rtx_insn **, int *, int);
+
+extern poly_int64 ix86_push_rounding (poly_int64);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.

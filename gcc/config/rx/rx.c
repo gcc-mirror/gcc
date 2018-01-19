@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008-2017 Free Software Foundation, Inc.
+   Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -287,6 +287,9 @@ rx_is_restricted_memory_address (rtx mem, machine_mode mode)
     case REG:
       /* Simple memory addresses are OK.  */
       return true;
+
+    case SUBREG:
+      return RX_REG_P (SUBREG_REG (mem));
 
     case PRE_DEC:
     case POST_INC:

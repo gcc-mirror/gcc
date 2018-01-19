@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -379,12 +379,13 @@ int_mode_for_mode (machine_mode mode)
     case MODE_COMPLEX_FLOAT:
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
-    case MODE_VECTOR_INT:
-    case MODE_VECTOR_FLOAT:
     case MODE_FRACT:
     case MODE_ACCUM:
     case MODE_UFRACT:
     case MODE_UACCUM:
+    case MODE_VECTOR_BOOL:
+    case MODE_VECTOR_INT:
+    case MODE_VECTOR_FLOAT:
     case MODE_VECTOR_FRACT:
     case MODE_VECTOR_ACCUM:
     case MODE_VECTOR_UFRACT:
@@ -411,7 +412,6 @@ opt_machine_mode
 bitwise_mode_for_mode (machine_mode mode)
 {
   /* Quick exit if we already have a suitable mode.  */
-  unsigned int bitsize = GET_MODE_BITSIZE (mode);
   scalar_int_mode int_mode;
   if (is_a <scalar_int_mode> (mode, &int_mode)
       && GET_MODE_BITSIZE (int_mode) <= MAX_FIXED_MODE_SIZE)
@@ -419,6 +419,8 @@ bitwise_mode_for_mode (machine_mode mode)
 
   /* Reuse the sanity checks from int_mode_for_mode.  */
   gcc_checking_assert ((int_mode_for_mode (mode), true));
+
+  poly_int64 bitsize = GET_MODE_BITSIZE (mode);
 
   /* Try to replace complex modes with complex modes.  In general we
      expect both components to be processed independently, so we only
@@ -434,7 +436,8 @@ bitwise_mode_for_mode (machine_mode mode)
 
   /* Try to replace vector modes with vector modes.  Also try using vector
      modes if an integer mode would be too big.  */
-  if (VECTOR_MODE_P (mode) || bitsize > MAX_FIXED_MODE_SIZE)
+  if (VECTOR_MODE_P (mode)
+      || maybe_gt (bitsize, MAX_FIXED_MODE_SIZE))
     {
       machine_mode trial = mode;
       if ((GET_MODE_CLASS (trial) == MODE_VECTOR_INT
@@ -543,7 +546,8 @@ static machine_mode
 mode_for_array (tree elem_type, tree size)
 {
   tree elem_size;
-  unsigned HOST_WIDE_INT int_size, int_elem_size;
+  poly_uint64 int_size, int_elem_size;
+  unsigned HOST_WIDE_INT num_elems;
   bool limit_p;
 
   /* One-element arrays get the component type's mode.  */
@@ -552,14 +556,16 @@ mode_for_array (tree elem_type, tree size)
     return TYPE_MODE (elem_type);
 
   limit_p = true;
-  if (tree_fits_uhwi_p (size) && tree_fits_uhwi_p (elem_size))
+  if (poly_int_tree_p (size, &int_size)
+      && poly_int_tree_p (elem_size, &int_elem_size)
+      && maybe_ne (int_elem_size, 0U)
+      && constant_multiple_p (int_size, int_elem_size, &num_elems))
     {
-      int_size = tree_to_uhwi (size);
-      int_elem_size = tree_to_uhwi (elem_size);
-      if (int_elem_size > 0
-	  && int_size % int_elem_size == 0
-	  && targetm.array_mode_supported_p (TYPE_MODE (elem_type),
-					     int_size / int_elem_size))
+      machine_mode elem_mode = TYPE_MODE (elem_type);
+      machine_mode mode;
+      if (targetm.array_mode (elem_mode, num_elems).exists (&mode))
+	return mode;
+      if (targetm.array_mode_supported_p (elem_mode, num_elems))
 	limit_p = false;
     }
   return mode_for_size_tree (size, MODE_INT, limit_p).else_blk ();
@@ -1144,12 +1150,16 @@ handle_warn_if_not_align (tree field, unsigned int record_align)
     warning (opt_w, "alignment %u of %qT is less than %u",
 	     record_align, context, warn_if_not_align);
 
-  unsigned HOST_WIDE_INT off
-    = (tree_to_uhwi (DECL_FIELD_OFFSET (field))
-       + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field)) / BITS_PER_UNIT);
-  if ((off % warn_if_not_align) != 0)
-    warning (opt_w, "%q+D offset %wu in %qT isn't aligned to %u",
-	     field, off, context, warn_if_not_align);
+  tree off = byte_position (field);
+  if (!multiple_of_p (TREE_TYPE (off), off, size_int (warn_if_not_align)))
+    {
+      if (TREE_CODE (off) == INTEGER_CST)
+	warning (opt_w, "%q+D offset %E in %qT isn%'t aligned to %u",
+		 field, off, context, warn_if_not_align);
+      else
+	warning (opt_w, "%q+D offset %E in %qT may not be aligned to %u",
+		 field, off, context, warn_if_not_align);
+    }
 }
 
 /* Called from place_field to handle unions.  */
@@ -1772,7 +1782,7 @@ compute_record_mode (tree type)
      does not apply to unions.  */
   if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
       && tree_fits_uhwi_p (TYPE_SIZE (type))
-      && GET_MODE_BITSIZE (mode) == tree_to_uhwi (TYPE_SIZE (type)))
+      && known_eq (GET_MODE_BITSIZE (mode), tree_to_uhwi (TYPE_SIZE (type))))
     ;
   else
     mode = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1).else_blk ();
@@ -2271,10 +2281,8 @@ layout_type (tree type)
 
     case VECTOR_TYPE:
       {
-	int nunits = TYPE_VECTOR_SUBPARTS (type);
+	poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
 	tree innertype = TREE_TYPE (type);
-
-	gcc_assert (!(nunits & (nunits - 1)));
 
 	/* Find an appropriate mode for the vector type.  */
 	if (TYPE_MODE (type) == VOIDmode)

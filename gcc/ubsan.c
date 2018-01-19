@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -1579,7 +1579,8 @@ instrument_si_overflow (gimple_stmt_iterator gsi)
      Also punt on bit-fields.  */
   if (!INTEGRAL_TYPE_P (lhsinner)
       || TYPE_OVERFLOW_WRAPS (lhsinner)
-      || GET_MODE_BITSIZE (TYPE_MODE (lhsinner)) != TYPE_PRECISION (lhsinner))
+      || maybe_ne (GET_MODE_BITSIZE (TYPE_MODE (lhsinner)),
+		   TYPE_PRECISION (lhsinner)))
     return;
 
   switch (code)

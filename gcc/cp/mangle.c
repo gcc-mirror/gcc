@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -2328,7 +2328,8 @@ write_type (tree type)
 		  write_string ("Dv");
 		  /* Non-constant vector size would be encoded with
 		     _ expression, but we don't support that yet.  */
-		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type));
+		  write_unsigned_number (TYPE_VECTOR_SUBPARTS (type)
+					 .to_constant ());
 		  write_char ('_');
 		}
 	      else
@@ -2930,6 +2931,7 @@ write_expression (tree expr)
   /* Skip NOP_EXPR and CONVERT_EXPR.  They can occur when (say) a pointer
      argument is converted (via qualification conversions) to another type.  */
   while (CONVERT_EXPR_CODE_P (code)
+	 || location_wrapper_p (expr)
 	 /* Parentheses aren't mangled.  */
 	 || code == PAREN_EXPR
 	 || code == NON_LVALUE_EXPR)

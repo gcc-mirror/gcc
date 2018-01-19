@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7035,8 +7035,8 @@ try_generate_repro (const char **argv)
 
     /* In final attempt we append compiler options and preprocesssed code to last
        generated .out file with configuration and backtrace.  */
-    char **output = &temp_stdout_files[RETRY_ICE_ATTEMPTS - 1];
-    do_report_bug (new_argv, nargs, stderr_commented, output);
+    char **err = &temp_stderr_files[RETRY_ICE_ATTEMPTS - 1];
+    do_report_bug (new_argv, nargs, stderr_commented, err);
   }
 
 out:
@@ -8058,7 +8058,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2017 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2018 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),

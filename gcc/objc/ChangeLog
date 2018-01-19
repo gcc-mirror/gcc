@@ -1,3 +1,7 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc-next-runtime-abi-01.c (generate_dispatch_table): Use ; instead
@@ -3786,7 +3790,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2017 Free Software Foundation, Inc.
+Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

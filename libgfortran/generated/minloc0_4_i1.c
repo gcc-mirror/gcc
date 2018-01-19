@@ -1,5 +1,5 @@
 /* Implementation of the MINLOC intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -24,18 +24,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "libgfortran.h"
+#include <assert.h>
 
 
 #if defined (HAVE_GFC_INTEGER_1) && defined (HAVE_GFC_INTEGER_4)
 
 
 extern void minloc0_4_i1 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i1 * const restrict array);
+	gfc_array_i1 * const restrict array, GFC_LOGICAL_4);
 export_proto(minloc0_4_i1);
 
 void
 minloc0_4_i1 (gfc_array_i4 * const restrict retarray, 
-	gfc_array_i1 * const restrict array)
+	gfc_array_i1 * const restrict array, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -46,6 +47,7 @@ minloc0_4_i1 (gfc_array_i4 * const restrict retarray,
   index_type rank;
   index_type n;
 
+  assert(back == 0);
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -53,7 +55,7 @@ minloc0_4_i1 (gfc_array_i4 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
     }
@@ -167,13 +169,14 @@ minloc0_4_i1 (gfc_array_i4 * const restrict retarray,
 
 
 extern void mminloc0_4_i1 (gfc_array_i4 * const restrict, 
-	gfc_array_i1 * const restrict, gfc_array_l1 * const restrict);
+	gfc_array_i1 * const restrict, gfc_array_l1 * const restrict,
+	GFC_LOGICAL_4);
 export_proto(mminloc0_4_i1);
 
 void
 mminloc0_4_i1 (gfc_array_i4 * const restrict retarray, 
 	gfc_array_i1 * const restrict array,
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask, GFC_LOGICAL_4 back)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -187,6 +190,7 @@ mminloc0_4_i1 (gfc_array_i4 * const restrict retarray,
   index_type n;
   int mask_kind;
 
+  assert(back == 0);
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
     runtime_error ("Rank of array needs to be > 0");
@@ -194,7 +198,7 @@ mminloc0_4_i1 (gfc_array_i4 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank - 1, 1);
-      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
     }
@@ -335,13 +339,13 @@ mminloc0_4_i1 (gfc_array_i4 * const restrict retarray,
 
 
 extern void sminloc0_4_i1 (gfc_array_i4 * const restrict, 
-	gfc_array_i1 * const restrict, GFC_LOGICAL_4 *);
+	gfc_array_i1 * const restrict, GFC_LOGICAL_4 *, GFC_LOGICAL_4);
 export_proto(sminloc0_4_i1);
 
 void
 sminloc0_4_i1 (gfc_array_i4 * const restrict retarray, 
 	gfc_array_i1 * const restrict array,
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask, GFC_LOGICAL_4 back)
 {
   index_type rank;
   index_type dstride;
@@ -350,7 +354,7 @@ sminloc0_4_i1 (gfc_array_i4 * const restrict retarray,
 
   if (*mask)
     {
-      minloc0_4_i1 (retarray, array);
+      minloc0_4_i1 (retarray, array, back);
       return;
     }
 
@@ -362,7 +366,7 @@ sminloc0_4_i1 (gfc_array_i4 * const restrict retarray,
   if (retarray->base_addr == NULL)
     {
       GFC_DIMENSION_SET(retarray->dim[0], 0, rank-1, 1);
-      retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
+      GFC_DTYPE_COPY_SETRANK(retarray,retarray,1);
       retarray->offset = 0;
       retarray->base_addr = xmallocarray (rank, sizeof (GFC_INTEGER_4));
     }

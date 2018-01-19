@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -4562,13 +4562,22 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   tree pos;
   int n;
 
+  actual = expr->value.function.actual;
+
+  /* The last argument, BACK, is passed by value. Ensure that
+     by setting its name to %VAL. */
+  for (gfc_actual_arglist *a = actual; a; a = a->next)
+    {
+      if (a->next == NULL)
+	a->name = "%VAL";
+    }
+
   if (se->ss)
     {
       gfc_conv_intrinsic_funcall (se, expr);
       return;
     }
 
-  actual = expr->value.function.actual;
   arrayexpr = actual->expr;
 
   /* Special case for character maxloc.  Remove unneeded actual
@@ -4576,22 +4585,19 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
   
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
-      gfc_actual_arglist *a2, *a3, *a4;
-      a2 = actual->next;
-      a3 = a2->next;
-      a4 = a3->next;
-      a4->next = NULL;
-      if (a3->expr == NULL)
+      gfc_actual_arglist *a, *b;
+      a = actual;
+      while (a->next)
 	{
-	  actual->next = NULL;
-	  gfc_free_actual_arglist (a2);
-	}
-      else
-	{
-	  actual->next = a3;  /* dim */
-	  a3->next = NULL;
-	  a2->next = a4;
-	  gfc_free_actual_arglist (a4);
+	  b = a->next;
+	  if (b->expr == NULL || strcmp (b->name, "dim") == 0)
+	    {
+	      a->next = b->next;
+	      b->next = NULL;
+	      gfc_free_actual_arglist (b);
+	    }
+	  else
+	    a = b;
 	}
       gfc_conv_intrinsic_funcall (se, expr);
       return;
@@ -7600,7 +7606,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	nonzero_charlen = fold_build2_loc (input_location, NE_EXPR,
 					   logical_type_node,
 					   arg1->expr->ts.u.cl->backend_decl,
-					   integer_zero_node);
+					   build_zero_cst
+					   (TREE_TYPE (arg1->expr->ts.u.cl->backend_decl)));
       if (scalar)
         {
 	  /* A pointer to a scalar.  */
@@ -7890,11 +7897,11 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 
   /* We store in charsize the size of a character.  */
   i = gfc_validate_kind (BT_CHARACTER, expr->ts.kind, false);
-  size = build_int_cst (size_type_node, gfc_character_kinds[i].bit_size / 8);
+  size = build_int_cst (sizetype, gfc_character_kinds[i].bit_size / 8);
 
   /* Get the arguments.  */
   gfc_conv_intrinsic_function_args (se, expr, args, 3);
-  slen = fold_convert (size_type_node, gfc_evaluate_now (args[0], &se->pre));
+  slen = fold_convert (sizetype, gfc_evaluate_now (args[0], &se->pre));
   src = args[1];
   ncopies = gfc_evaluate_now (args[2], &se->pre);
   ncopies_type = TREE_TYPE (ncopies);
@@ -7911,7 +7918,7 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
      is valid, and nothing happens.  */
   n = gfc_create_var (ncopies_type, "ncopies");
   cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node, slen,
-			  build_int_cst (size_type_node, 0));
+			  size_zero_node);
   tmp = fold_build3_loc (input_location, COND_EXPR, ncopies_type, cond,
 			 build_int_cst (ncopies_type, 0), ncopies);
   gfc_add_modify (&se->pre, n, tmp);
@@ -7921,17 +7928,17 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
      (or equal to) MAX / slen, where MAX is the maximal integer of
      the gfc_charlen_type_node type.  If slen == 0, we need a special
      case to avoid the division by zero.  */
-  i = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
-  max = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].huge, gfc_charlen_int_kind);
-  max = fold_build2_loc (input_location, TRUNC_DIV_EXPR, size_type_node,
-			  fold_convert (size_type_node, max), slen);
-  largest = TYPE_PRECISION (size_type_node) > TYPE_PRECISION (ncopies_type)
-	      ? size_type_node : ncopies_type;
+  max = fold_build2_loc (input_location, TRUNC_DIV_EXPR, sizetype,
+			 fold_convert (sizetype,
+				       TYPE_MAX_VALUE (gfc_charlen_type_node)),
+			 slen);
+  largest = TYPE_PRECISION (sizetype) > TYPE_PRECISION (ncopies_type)
+	      ? sizetype : ncopies_type;
   cond = fold_build2_loc (input_location, GT_EXPR, logical_type_node,
 			  fold_convert (largest, ncopies),
 			  fold_convert (largest, max));
   tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node, slen,
-			 build_int_cst (size_type_node, 0));
+			 size_zero_node);
   cond = fold_build3_loc (input_location, COND_EXPR, logical_type_node, tmp,
 			  logical_false_node, cond);
   gfc_trans_runtime_check (true, false, cond, &se->pre, &expr->where,
@@ -7948,8 +7955,8 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
        for (i = 0; i < ncopies; i++)
          memmove (dest + (i * slen * size), src, slen*size);  */
   gfc_start_block (&block);
-  count = gfc_create_var (ncopies_type, "count");
-  gfc_add_modify (&block, count, build_int_cst (ncopies_type, 0));
+  count = gfc_create_var (sizetype, "count");
+  gfc_add_modify (&block, count, size_zero_node);
   exit_label = gfc_build_label_decl (NULL_TREE);
 
   /* Start the loop body.  */
@@ -7957,7 +7964,7 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 
   /* Exit the loop if count >= ncopies.  */
   cond = fold_build2_loc (input_location, GE_EXPR, logical_type_node, count,
-			  ncopies);
+			  fold_convert (sizetype, ncopies));
   tmp = build1_v (GOTO_EXPR, exit_label);
   TREE_USED (exit_label) = 1;
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond, tmp,
@@ -7965,25 +7972,22 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
   gfc_add_expr_to_block (&body, tmp);
 
   /* Call memmove (dest + (i*slen*size), src, slen*size).  */
-  tmp = fold_build2_loc (input_location, MULT_EXPR, gfc_charlen_type_node,
-			 fold_convert (gfc_charlen_type_node, slen),
-			 fold_convert (gfc_charlen_type_node, count));
-  tmp = fold_build2_loc (input_location, MULT_EXPR, gfc_charlen_type_node,
-			 tmp, fold_convert (gfc_charlen_type_node, size));
+  tmp = fold_build2_loc (input_location, MULT_EXPR, sizetype, slen,
+			 count);
+  tmp = fold_build2_loc (input_location, MULT_EXPR, sizetype, tmp,
+			 size);
   tmp = fold_build_pointer_plus_loc (input_location,
 				     fold_convert (pvoid_type_node, dest), tmp);
   tmp = build_call_expr_loc (input_location,
 			     builtin_decl_explicit (BUILT_IN_MEMMOVE),
 			     3, tmp, src,
 			     fold_build2_loc (input_location, MULT_EXPR,
-					      size_type_node, slen,
-					      fold_convert (size_type_node,
-							    size)));
+					      size_type_node, slen, size));
   gfc_add_expr_to_block (&body, tmp);
 
   /* Increment count.  */
-  tmp = fold_build2_loc (input_location, PLUS_EXPR, ncopies_type,
-			 count, build_int_cst (TREE_TYPE (count), 1));
+  tmp = fold_build2_loc (input_location, PLUS_EXPR, sizetype,
+			 count, size_one_node);
   gfc_add_modify (&body, count, tmp);
 
   /* Build the loop.  */
@@ -8647,6 +8651,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	      /* For all of those the first argument specifies the type and the
 		 third is optional.  */
 	      conv_generic_with_optional_char_arg (se, expr, 1, 3);
+	      break;
+
+	    case GFC_ISYM_MINLOC:
+	      gfc_conv_intrinsic_minmaxloc (se, expr, LT_EXPR);
+	      break;
+	      
+	    case GFC_ISYM_MAXLOC:
+	      gfc_conv_intrinsic_minmaxloc (se, expr, GT_EXPR);
 	      break;
 
 	    default:

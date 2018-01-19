@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -8602,6 +8602,8 @@ void
 finish_static_assert (tree condition, tree message, location_t location, 
                       bool member_p)
 {
+  tsubst_flags_t complain = tf_warning_or_error;
+
   if (message == NULL_TREE
       || message == error_mark_node
       || condition == NULL_TREE
@@ -8634,9 +8636,9 @@ finish_static_assert (tree condition, tree message, location_t location,
     }
 
   /* Fold the expression and convert it to a boolean value. */
-  condition = instantiate_non_dependent_expr (condition);
-  condition = cp_convert (boolean_type_node, condition, tf_warning_or_error);
-  condition = maybe_constant_value (condition);
+  condition = perform_implicit_conversion_flags (boolean_type_node, condition,
+						 complain, LOOKUP_NORMAL);
+  condition = fold_non_dependent_expr (condition);
 
   if (TREE_CODE (condition) == INTEGER_CST && !integer_zerop (condition))
     /* Do nothing; the condition is satisfied. */

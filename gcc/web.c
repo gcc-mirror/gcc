@@ -1,6 +1,6 @@
 /* Web construction code for GNU compiler.
    Contributed by Jan Hubicka.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,10 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Simple optimization pass that splits independent uses of each pseudo,
    increasing effectiveness of other optimizations.  The optimization can
    serve as an example of use for the dataflow module.
-
-   We don't split registers with REG_USERVAR set unless -fmessy-debugging
-   is specified, because debugging information about such split variables
-   is almost unusable.
 
    TODO
     - We may use profile information and ignore infrequent use for the

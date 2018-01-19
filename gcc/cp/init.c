@@ -1,5 +1,5 @@
 /* Handle initialization things in C++.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -2325,7 +2325,12 @@ build_raw_new_expr (vec<tree, va_gc> *placement, tree type, tree nelts,
   else if (init->is_empty ())
     init_list = void_node;
   else
-    init_list = build_tree_list_vec (init);
+    {
+      init_list = build_tree_list_vec (init);
+      for (tree v = init_list; v; v = TREE_CHAIN (v))
+	if (TREE_CODE (TREE_VALUE (v)) == OVERLOAD)
+	  lookup_keep (TREE_VALUE (v), true);
+    }
 
   new_expr = build4 (NEW_EXPR, build_pointer_type (type),
 		     build_tree_list_vec (placement), type, nelts,
@@ -4399,7 +4404,9 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      if (TREE_CODE (init) == TREE_LIST)
 		init = build_x_compound_expr_from_list (init, ELK_INIT,
 							complain);
-	      elt_init = build2 (INIT_EXPR, type, to, init);
+	      elt_init = (init == error_mark_node
+			  ? error_mark_node
+			  : build2 (INIT_EXPR, type, to, init));
 	    }
 	}
 

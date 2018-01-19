@@ -1,6 +1,6 @@
 /* Tree lowering pass.  This pass converts the GENERIC functions-as-trees
    tree representation into the GIMPLE form.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
 
@@ -702,7 +702,7 @@ gimple_add_tmp_var_fn (struct function *fn, tree tmp)
   /* Later processing assumes that the object size is constant, which might
      not be true at this point.  Force the use of a constant upper bound in
      this case.  */
-  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (tmp)))
+  if (!tree_fits_poly_uint64_p (DECL_SIZE_UNIT (tmp)))
     force_constant_size (tmp);
 
   DECL_CONTEXT (tmp) = fn->decl;
@@ -721,7 +721,7 @@ gimple_add_tmp_var (tree tmp)
   /* Later processing assumes that the object size is constant, which might
      not be true at this point.  Force the use of a constant upper bound in
      this case.  */
-  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (tmp)))
+  if (!tree_fits_poly_uint64_p (DECL_SIZE_UNIT (tmp)))
     force_constant_size (tmp);
 
   DECL_CONTEXT (tmp) = current_function_decl;
@@ -12562,7 +12562,10 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
      a VAR_DECL.  If it's a VAR_DECL from another function, the gimplifier
      will want to replace it with a new variable, but that will cause problems
      if this type is from outside the function.  It's OK to have that here.  */
-  if (is_gimple_sizepos (expr))
+  if (expr == NULL_TREE
+      || is_gimple_constant (expr)
+      || TREE_CODE (expr) == VAR_DECL
+      || CONTAINS_PLACEHOLDER_P (expr))
     return;
 
   *expr_p = unshare_expr (expr);
@@ -12570,6 +12573,12 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
   /* SSA names in decl/type fields are a bad idea - they'll get reclaimed
      if the def vanishes.  */
   gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue, false);
+
+  /* If expr wasn't already is_gimple_sizepos or is_gimple_constant from the
+     FE, ensure that it is a VAR_DECL, otherwise we might handle some decls
+     as gimplify_vla_decl even when they would have all sizes INTEGER_CSTs.  */
+  if (is_gimple_constant (*expr_p))
+    *expr_p = get_initialized_tmp_var (*expr_p, stmt_p, NULL, false);
 }
 
 /* Gimplify the body of statements of FNDECL and return a GIMPLE_BIND node
@@ -12580,7 +12589,7 @@ gbind *
 gimplify_body (tree fndecl, bool do_parms)
 {
   location_t saved_location = input_location;
-  gimple_seq parm_stmts, seq;
+  gimple_seq parm_stmts, parm_cleanup = NULL, seq;
   gimple *outer_stmt;
   gbind *outer_bind;
   struct cgraph_node *cgn;
@@ -12619,7 +12628,7 @@ gimplify_body (tree fndecl, bool do_parms)
 
   /* Resolve callee-copies.  This has to be done before processing
      the body so that DECL_VALUE_EXPR gets processed correctly.  */
-  parm_stmts = do_parms ? gimplify_parameters () : NULL;
+  parm_stmts = do_parms ? gimplify_parameters (&parm_cleanup) : NULL;
 
   /* Gimplify the function's body.  */
   seq = NULL;
@@ -12648,6 +12657,13 @@ gimplify_body (tree fndecl, bool do_parms)
       tree parm;
 
       gimplify_seq_add_seq (&parm_stmts, gimple_bind_body (outer_bind));
+      if (parm_cleanup)
+	{
+	  gtry *g = gimple_build_try (parm_stmts, parm_cleanup,
+				      GIMPLE_TRY_FINALLY);
+	  parm_stmts = NULL;
+	  gimple_seq_add_stmt (&parm_stmts, g);
+	}
       gimple_bind_set_body (outer_bind, parm_stmts);
 
       for (parm = DECL_ARGUMENTS (current_function_decl);

@@ -1,5 +1,5 @@
 ;; Machine description of the Synopsys DesignWare ARC cpu for GNU C compiler
-;; Copyright (C) 1994-2017 Free Software Foundation, Inc.
+;; Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 ;; Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
 ;; behalf of Synopsys Inc.
@@ -4324,15 +4324,6 @@
   [(set_attr "type" "misc")
    (set_attr "iscompact" "true")
    (set_attr "length" "2")])
-
-;; Special pattern to flush the icache.
-;; ??? Not sure what to do here.  Some ARC's are known to support this.
-
-(define_insn "flush_icache"
-  [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")] 0)]
-  ""
-  "* return \"\";"
-  [(set_attr "type" "misc")])
 
 ;; Split up troublesome insns for better scheduling.
 

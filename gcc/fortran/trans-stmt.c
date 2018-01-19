@@ -1,5 +1,5 @@
 /* Statement translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -112,7 +112,7 @@ gfc_trans_label_assign (gfc_code * code)
       || code->label1->defined == ST_LABEL_DO_TARGET)
     {
       label_tree = gfc_build_addr_expr (pvoid_type_node, label_tree);
-      len_tree = integer_minus_one_node;
+      len_tree = build_int_cst (gfc_charlen_type_node, -1);
     }
   else
     {
@@ -125,7 +125,7 @@ gfc_trans_label_assign (gfc_code * code)
       label_tree = gfc_build_addr_expr (pvoid_type_node, label_tree);
     }
 
-  gfc_add_modify (&se.pre, len, len_tree);
+  gfc_add_modify (&se.pre, len, fold_convert (TREE_TYPE (len), len_tree));
   gfc_add_modify (&se.pre, addr, label_tree);
 
   return gfc_finish_block (&se.pre);
@@ -1600,7 +1600,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  && se.string_length != sym->ts.u.cl->backend_decl)
 	{
 	  gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
-			  fold_convert (gfc_charlen_type_node,
+			  fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
 					se.string_length));
 	}
 
@@ -1632,6 +1632,16 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  tmp = gfc_get_element_type (TREE_TYPE (tmp));
 	  tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
 	  gfc_conv_descriptor_span_set (&se.pre, desc, tmp);
+	}
+
+      if (e->expr_type == EXPR_FUNCTION
+	  && sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived
+	  && sym->ts.u.derived->attr.pdt_type)
+	{
+	  tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived, se.expr,
+					 sym->as->rank);
+	  gfc_add_expr_to_block (&se.post, tmp);
 	}
 
       /* Done, register stuff as init / cleanup code.  */
@@ -1777,7 +1787,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  && se.string_length != sym->ts.u.cl->backend_decl)
 	{
 	  gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
-			  fold_convert (gfc_charlen_type_node,
+			  fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
 					se.string_length));
 	  if (e->expr_type == EXPR_FUNCTION)
 	    {
@@ -1810,10 +1820,31 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   else
     {
       gfc_expr *lhs;
+      tree res;
 
       lhs = gfc_lval_expr_from_sym (sym);
-      tmp = gfc_trans_assignment (lhs, e, false, true);
-      gfc_add_init_cleanup (block, tmp, NULL_TREE);
+      res = gfc_trans_assignment (lhs, e, false, true);
+
+      tmp = sym->backend_decl;
+      if (e->expr_type == EXPR_FUNCTION
+	  && sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived
+	  && sym->ts.u.derived->attr.pdt_type)
+	{
+	  tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived, tmp,
+					 0);
+	}
+      else if (e->expr_type == EXPR_FUNCTION
+	       && sym->ts.type == BT_CLASS
+	       && CLASS_DATA (sym)->ts.u.derived
+	       && CLASS_DATA (sym)->ts.u.derived->attr.pdt_type)
+	{
+	  tmp = gfc_class_data_get (tmp);
+	  tmp = gfc_deallocate_pdt_comp (CLASS_DATA (sym)->ts.u.derived,
+					 tmp, 0);
+	}
+
+      gfc_add_init_cleanup (block, res, tmp);
     }
 
   /* Set the stringlength, when needed.  */
@@ -2838,7 +2869,7 @@ gfc_trans_character_select (gfc_code *code)
     {
       for (d = cp; d; d = d->right)
 	{
-	  int i;
+	  gfc_charlen_t i;
 	  if (d->low)
 	    {
 	      gcc_assert (d->low->expr_type == EXPR_CONSTANT
@@ -3043,7 +3074,7 @@ gfc_trans_character_select (gfc_code *code)
       if (d->low == NULL)
         {
           CONSTRUCTOR_APPEND_ELT (node, ss_string1[k], null_pointer_node);
-          CONSTRUCTOR_APPEND_ELT (node, ss_string1_len[k], integer_zero_node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string1_len[k], build_zero_cst (gfc_charlen_type_node));
         }
       else
         {
@@ -3056,7 +3087,7 @@ gfc_trans_character_select (gfc_code *code)
       if (d->high == NULL)
         {
           CONSTRUCTOR_APPEND_ELT (node, ss_string2[k], null_pointer_node);
-          CONSTRUCTOR_APPEND_ELT (node, ss_string2_len[k], integer_zero_node);
+          CONSTRUCTOR_APPEND_ELT (node, ss_string2_len[k], build_zero_cst (gfc_charlen_type_node));
         }
       else
         {
@@ -5747,7 +5778,7 @@ gfc_trans_allocate (gfc_code * code)
 	{
 	  gfc_init_se (&se, NULL);
 	  temp_var_needed = false;
-	  expr3_len = integer_zero_node;
+	  expr3_len = build_zero_cst (gfc_charlen_type_node);
 	  e3_is = E3_MOLD;
 	}
       /* Prevent aliasing, i.e., se.expr may be already a
@@ -6152,7 +6183,8 @@ gfc_trans_allocate (gfc_code * code)
 		     e.g., a string.  */
 		  memsz = fold_build2_loc (input_location, GT_EXPR,
 					   logical_type_node, expr3_len,
-					   integer_zero_node);
+					   build_zero_cst
+					   (TREE_TYPE (expr3_len)));
 		  memsz = fold_build3_loc (input_location, COND_EXPR,
 					 TREE_TYPE (expr3_esize),
 					 memsz, tmp, expr3_esize);
@@ -6521,7 +6553,7 @@ gfc_trans_allocate (gfc_code * code)
 		gfc_build_addr_expr (pchar_type_node,
 			gfc_build_localized_cstring_const (msg)));
 
-      slen = build_int_cst (gfc_charlen_type_node, ((int) strlen (msg)));
+      slen = build_int_cst (gfc_charlen_type_node, strlen (msg));
       dlen = gfc_get_expr_charlen (code->expr2);
       slen = fold_build2_loc (input_location, MIN_EXPR,
 			      TREE_TYPE (slen), dlen, slen);
@@ -6818,7 +6850,7 @@ gfc_trans_deallocate (gfc_code *code)
       gfc_add_modify (&errmsg_block, errmsg_str,
 		gfc_build_addr_expr (pchar_type_node,
                         gfc_build_localized_cstring_const (msg)));
-      slen = build_int_cst (gfc_charlen_type_node, ((int) strlen (msg)));
+      slen = build_int_cst (gfc_charlen_type_node, strlen (msg));
       dlen = gfc_get_expr_charlen (code->expr2);
 
       gfc_trans_string_copy (&errmsg_block, dlen, errmsg, code->expr2->ts.kind,

@@ -1,6 +1,6 @@
 # CPU, FPU and architecture specifications for ARM.
 #
-# Copyright (C) 2011-2017 Free Software Foundation, Inc.
+# Copyright (C) 2011-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -120,6 +120,9 @@ define feature armv8_2
 # Architecture rel 8.3.
 define feature armv8_3
 
+# Architecture rel 8.4.
+define feature armv8_4
+
 # M-Profile security extensions.
 define feature cmse
 
@@ -162,6 +165,9 @@ define feature fp16
 # Dot Product instructions extension to ARMv8.2-a.
 define feature dotprod
 
+# Half-precision floating-point instructions in ARMv8.4-A.
+define feature fp16fml
+
 # ISA Quirks (errata?).  Don't forget to add this to the fgroup
 # ALL_QUIRKS below.
 
@@ -199,7 +205,7 @@ define fgroup ALL_CRYPTO	crypto
 # strip off 32 D-registers, but does not remove support for
 # double-precision FP.
 define fgroup ALL_SIMD_INTERNAL	fp_d32 neon ALL_CRYPTO
-define fgroup ALL_SIMD	ALL_SIMD_INTERNAL dotprod
+define fgroup ALL_SIMD	ALL_SIMD_INTERNAL dotprod fp16fml
 
 # List of all FPU bits to strip out if -mfpu is used to override the
 # default.  fp16 is deliberately missing from this list.
@@ -242,6 +248,7 @@ define fgroup ARMv8a      ARMv7ve armv8
 define fgroup ARMv8_1a    ARMv8a crc32 armv8_1
 define fgroup ARMv8_2a    ARMv8_1a armv8_2
 define fgroup ARMv8_3a    ARMv8_2a armv8_3
+define fgroup ARMv8_4a    ARMv8_3a armv8_4
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
@@ -577,6 +584,7 @@ begin arch armv8.2-a
  isa ARMv8_2a
  option simd add FP_ARMv8 NEON
  option fp16 add fp16 FP_ARMv8 NEON
+ option fp16fml add fp16fml fp16 FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
@@ -591,11 +599,25 @@ begin arch armv8.3-a
  isa ARMv8_3a
  option simd add FP_ARMv8 NEON
  option fp16 add fp16 FP_ARMv8 NEON
+ option fp16fml add fp16fml fp16 FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
  option dotprod add FP_ARMv8 DOTPROD
 end arch armv8.3-a
+
+begin arch armv8.4-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ profile A
+ isa ARMv8_4a
+ option simd add FP_ARMv8 DOTPROD
+ option fp16 add fp16 fp16fml FP_ARMv8 DOTPROD
+ option crypto add FP_ARMv8 CRYPTO DOTPROD
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8.4-a
 
 begin arch armv8-m.base
  tune for cortex-m23

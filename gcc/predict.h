@@ -1,5 +1,5 @@
 /* Definitions for branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #define PROB_ALWAYS		(REG_BR_PROB_BASE)
 #define PROB_UNLIKELY           (REG_BR_PROB_BASE / 5 - 1)
 #define PROB_LIKELY             (REG_BR_PROB_BASE - PROB_UNLIKELY)
+#define PROB_UNINITIALIZED      (-1)
 
 #define DEF_PREDICTOR(ENUM, NAME, HITRATE, FLAGS) ENUM,
 enum br_predictor

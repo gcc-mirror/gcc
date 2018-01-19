@@ -1,3 +1,20 @@
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lto-lang.c (lto_type_for_mode): Handle MODE_VECTOR_BOOL.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lto-lang.c (lto_type_for_mode): Check valid_vector_subparts_p.
+	* lto.c (hash_canonical_type): Handle polynomial TYPE_VECTOR_SUBPARTS.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-lang.c (lto_attribute_table, lto_format_attribute_table): Swap
@@ -5733,7 +5750,7 @@
 	* lto-tree.h: Likewise.
 	* lto-lang.c: Likewise.
 
-Copyright (C) 2006-2017 Free Software Foundation, Inc.
+Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

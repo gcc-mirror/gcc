@@ -1,5 +1,5 @@
 /* Generic implementation of the SPREAD intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -71,7 +71,7 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 
       size_t ub, stride;
 
-      ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rrank;
+      GFC_DTYPE_COPY_SETRANK(ret,source,rrank);
       dim = 0;
       rs = 1;
       for (n = 0; n < rrank; n++)
@@ -464,7 +464,7 @@ spread_scalar (gfc_array_char *ret, const char *source,
 {
   index_type type_size;
 
-  if (!ret->dtype)
+  if (GFC_DTYPE_IS_UNSET(ret))
     runtime_error ("return array missing descriptor in spread()");
 
   type_size = GFC_DTYPE_TYPE_SIZE(ret);
@@ -625,7 +625,7 @@ spread_char_scalar (gfc_array_char *ret,
 		    const index_type *pncopies,
 		    GFC_INTEGER_4 source_length __attribute__((unused)))
 {
-  if (!ret->dtype)
+  if (GFC_DTYPE_IS_UNSET(ret))
     runtime_error ("return array missing descriptor in spread()");
   spread_internal_scalar (ret, source, along, pncopies);
 }
@@ -643,7 +643,7 @@ spread_char4_scalar (gfc_array_char *ret,
 		     const index_type *pncopies,
 		     GFC_INTEGER_4 source_length __attribute__((unused)))
 {
-  if (!ret->dtype)
+  if (GFC_DTYPE_IS_UNSET(ret))
     runtime_error ("return array missing descriptor in spread()");
   spread_internal_scalar (ret, source, along, pncopies);
 

@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1412,8 +1412,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  pp_space (pp);
 	  pp_left_paren (pp);
 	  pp_string (pp, str);
-	  if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
-	    dump_decl_name (pp, TYPE_NAME (node), flags);
+	  if (TYPE_IDENTIFIER (node))
+	    dump_generic_node (pp, TYPE_NAME (node), spc, flags, false);
 	  else if (flags & TDF_NOUID)
 	    pp_printf (pp, "<Txxxx>");
 	  else
@@ -1793,13 +1793,18 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       {
 	unsigned i;
 	pp_string (pp, "{ ");
-	for (i = 0; i < VECTOR_CST_NELTS (node); ++i)
+	unsigned HOST_WIDE_INT nunits;
+	if (!VECTOR_CST_NELTS (node).is_constant (&nunits))
+	  nunits = vector_cst_encoded_nelts (node);
+	for (i = 0; i < nunits; ++i)
 	  {
 	    if (i != 0)
 	      pp_string (pp, ", ");
 	    dump_generic_node (pp, VECTOR_CST_ELT (node, i),
 			       spc, flags, false);
 	  }
+	if (!VECTOR_CST_NELTS (node).is_constant ())
+	  pp_string (pp, ", ...");
 	pp_string (pp, " }");
       }
       break;
@@ -1811,8 +1816,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       if (TREE_CODE (node) == METHOD_TYPE)
 	{
 	  if (TYPE_METHOD_BASETYPE (node))
-	    dump_decl_name (pp, TYPE_NAME (TYPE_METHOD_BASETYPE (node)),
-			    flags);
+	    dump_generic_node (pp, TYPE_NAME (TYPE_METHOD_BASETYPE (node)),
+			       spc, flags, false);
 	  else
 	    pp_string (pp, "<null method basetype>");
 	  pp_colon_colon (pp);

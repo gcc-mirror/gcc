@@ -1,5 +1,5 @@
 # GCC target-specific configuration file.
-# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+# Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -381,9 +381,8 @@ i[34567]86-*-*)
 		       clzerointrin.h pkuintrin.h sgxintrin.h cetintrin.h
 		       gfniintrin.h cet.h avx512vbmi2intrin.h
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
-		       avx512vnnivlintrin.h gfniintrin.h vaesintrin.h
-		       vpclmulqdqintrin.h avx512vpopcntdqvlintrin.h
-		       avx512bitalgintrin.h"
+		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
+		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -396,7 +395,7 @@ x86_64-*-*)
 		       nmmintrin.h bmmintrin.h fma4intrin.h wmmintrin.h
 		       immintrin.h x86intrin.h avxintrin.h xopintrin.h
 		       ia32intrin.h cross-stdarg.h lwpintrin.h popcntintrin.h
-		       lzcntintrin.h bmiintrin.h tbmintrin.h bmi2intrin.h
+		       lzcntintrin.h bmiintrin.h bmi2intrin.h tbmintrin.h
 		       avx2intrin.h avx512fintrin.h fmaintrin.h f16cintrin.h
 		       rtmintrin.h xtestintrin.h rdseedintrin.h prfchwintrin.h
 		       adxintrin.h fxsrintrin.h xsaveintrin.h xsaveoptintrin.h
@@ -410,8 +409,7 @@ x86_64-*-*)
 		       clzerointrin.h pkuintrin.h sgxintrin.h cetintrin.h
 		       gfniintrin.h cet.h avx512vbmi2intrin.h
 		       avx512vbmi2vlintrin.h avx512vnniintrin.h
-		       avx512vnnivlintrin.h gfniintrin.h vaesintrin.h
-		       vpclmulqdqintrin.h gfniintrin.h
+		       avx512vnnivlintrin.h vaesintrin.h vpclmulqdqintrin.h
 		       avx512vpopcntdqvlintrin.h avx512bitalgintrin.h"
 	;;
 ia64-*-*)
@@ -1269,11 +1267,19 @@ crisv32-*-linux* | cris-*-linux*)
 		;;
 	esac
 	;;
-epiphany-*-elf )
-	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
-	tmake_file="epiphany/t-epiphany"
+epiphany-*-elf | epiphany-*-rtems*)
+	tm_file="${tm_file} dbxelf.h elfos.h"
+	tmake_file="${tmake_file} epiphany/t-epiphany"
+	case ${target} in
+	epiphany-*-rtems*)
+	  tm_file="${tm_file} rtems.h epiphany/rtems.h newlib-stdint.h"
+	  ;;
+	*)
+	  tm_file="${tm_file} newlib-stdint.h"
+	  ;;
+	esac
 	extra_options="${extra_options} fused-madd.opt"
-	extra_objs="$extra_objs mode-switch-use.o resolve-sw-modes.o"
+	extra_objs="${extra_objs} mode-switch-use.o resolve-sw-modes.o"
 	tm_defines="${tm_defines} EPIPHANY_STACK_OFFSET=${with_stack_offset:-8}"
 	extra_headers="epiphany_intrinsics.h"
 	;;
@@ -1333,7 +1339,7 @@ hppa*64*-*-linux*)
 	gas=yes gnu_ld=yes
 	;;
 hppa*-*-linux*)
-	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS"
+	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS|MASK_CALLER_COPIES"
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file="${tmake_file} pa/t-linux"
@@ -2345,6 +2351,7 @@ nios2-*-*)
 	;;
 nvptx-*)
 	tm_file="${tm_file} newlib-stdint.h"
+	use_gcc_stdint=wrap
 	tmake_file="nvptx/t-nvptx"
 	if test x$enable_as_accelerator = xyes; then
 		extra_programs="${extra_programs} mkoffload\$(exeext)"
@@ -4392,6 +4399,24 @@ case "${target}" in
 			exit 1
 		    fi
 		fi
+
+		# Set up the default long double format if the user changed it.
+		if test x$with_long_double_format = xieee; then
+		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=1"
+
+		elif test x$with_long_double_format = xibm; then
+		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=0"
+		fi
+
+		case "${target}:${enable_multilib}:${with_long_double_format}" in
+		    powerpc64le*:yes:ieee | powerpc64le*:yes:ibm)
+			tm_defines="${tm_defines} TARGET_IEEEQUAD_MULTILIB=1"
+			tmake_file="${tmake_file} rs6000/t-ldouble-linux64le-${with_long_double_format}"
+			;;
+		    *)
+			:
+			;;
+		esac
 		;;
 
 	s390*-*-*)

@@ -3876,6 +3876,29 @@ Flatten::variable(Named_object* no)
       return TRAVERSE_CONTINUE;
     }
 
+  if (!no->var_value()->is_parameter()
+      && !no->var_value()->is_receiver()
+      && !no->var_value()->is_closure()
+      && no->var_value()->is_non_escaping_address_taken()
+      && !no->var_value()->is_in_heap()
+      && no->var_value()->toplevel_decl() == NULL)
+    {
+      // Local variable that has address taken but not escape.
+      // It needs to be live beyond its lexical scope. So we
+      // create a top-level declaration for it.
+      // No need to do it if it is already in the top level.
+      Block* top_block = function_->func_value()->block();
+      if (top_block->bindings()->lookup_local(no->name()) != no)
+        {
+          Variable* var = no->var_value();
+          Temporary_statement* ts =
+            Statement::make_temporary(var->type(), NULL, var->location());
+          ts->set_is_address_taken();
+          top_block->add_statement_at_front(ts);
+          var->set_toplevel_decl(ts);
+        }
+    }
+
   go_assert(!no->var_value()->has_pre_init());
 
   return TRAVERSE_SKIP_COMPONENTS;
@@ -5545,6 +5568,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
   // initial values.
   std::vector<Bvariable*> vars;
   std::vector<Bexpression*> var_inits;
+  std::vector<Statement*> var_decls_stmts;
   for (Bindings::const_definitions_iterator p =
 	 this->block_->bindings()->begin_definitions();
        p != this->block_->bindings()->end_definitions();
@@ -5619,6 +5643,24 @@ Function::build(Gogo* gogo, Named_object* named_function)
           vars.push_back(bvar);
           var_inits.push_back(init);
 	}
+      else if (this->defer_stack_ != NULL
+               && (*p)->is_variable()
+               && (*p)->var_value()->is_non_escaping_address_taken()
+               && !(*p)->var_value()->is_in_heap())
+        {
+          // Local variable captured by deferred closure needs to be live
+          // until the end of the function. We create a top-level
+          // declaration for it.
+          // TODO: we don't need to do this if the variable is not captured
+          // by the defer closure. There is no easy way to check it here,
+          // so we do this for all address-taken variables for now.
+          Variable* var = (*p)->var_value();
+          Temporary_statement* ts =
+            Statement::make_temporary(var->type(), NULL, var->location());
+          ts->set_is_address_taken();
+          var->set_toplevel_decl(ts);
+          var_decls_stmts.push_back(ts);
+        }
     }
   if (!gogo->backend()->function_set_parameters(this->fndecl_, param_vars))
     {
@@ -5638,7 +5680,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
     {
       // Declare variables if necessary.
       Bblock* var_decls = NULL;
-
+      std::vector<Bstatement*> var_decls_bstmt_list;
       Bstatement* defer_init = NULL;
       if (!vars.empty() || this->defer_stack_ != NULL)
 	{
@@ -5652,6 +5694,14 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	      Translate_context dcontext(gogo, named_function, this->block_,
                                          var_decls);
               defer_init = this->defer_stack_->get_backend(&dcontext);
+              var_decls_bstmt_list.push_back(defer_init);
+              for (std::vector<Statement*>::iterator p = var_decls_stmts.begin();
+                   p != var_decls_stmts.end();
+                   ++p)
+                {
+                  Bstatement* bstmt = (*p)->get_backend(&dcontext);
+                  var_decls_bstmt_list.push_back(bstmt);
+                }
 	    }
 	}
 
@@ -5670,8 +5720,6 @@ Function::build(Gogo* gogo, Named_object* named_function)
                                               var_inits[i]);
           init.push_back(init_stmt);
 	}
-      if (defer_init != NULL)
-	init.push_back(defer_init);
       Bstatement* var_init = gogo->backend()->statement_list(init);
 
       // Initialize all variables before executing this code block.
@@ -5699,8 +5747,8 @@ Function::build(Gogo* gogo, Named_object* named_function)
       // we built one.
       if (var_decls != NULL)
         {
-          std::vector<Bstatement*> code_stmt_list(1, code_stmt);
-          gogo->backend()->block_add_statements(var_decls, code_stmt_list);
+          var_decls_bstmt_list.push_back(code_stmt);
+          gogo->backend()->block_add_statements(var_decls, var_decls_bstmt_list);
           code_stmt = gogo->backend()->block_statement(var_decls);
         }
 
@@ -6174,7 +6222,8 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
     type_from_init_tuple_(false), type_from_range_index_(false),
     type_from_range_value_(false), type_from_chan_element_(false),
     is_type_switch_var_(false), determined_type_(false),
-    in_unique_section_(false), escapes_(true)
+    in_unique_section_(false), escapes_(true),
+    toplevel_decl_(NULL)
 {
   go_assert(type != NULL || init != NULL);
   go_assert(!is_parameter || init == NULL);
@@ -6751,9 +6800,19 @@ Variable::get_backend_variable(Gogo* gogo, Named_object* function,
 						   is_address_taken,
 						   this->location_);
 	      else
-		bvar = backend->local_variable(bfunction, n, btype,
-					       is_address_taken,
-					       this->location_);
+                {
+                  Bvariable* bvar_decl = NULL;
+                  if (this->toplevel_decl_ != NULL)
+                    {
+                      Translate_context context(gogo, NULL, NULL, NULL);
+                      bvar_decl = this->toplevel_decl_->temporary_statement()
+                        ->get_backend_variable(&context);
+                    }
+                  bvar = backend->local_variable(bfunction, n, btype,
+                                                 bvar_decl,
+                                                 is_address_taken,
+                                                 this->location_);
+                }
 	    }
 	  this->backend_ = bvar;
 	}
@@ -6785,7 +6844,7 @@ Result_variable::get_backend_variable(Gogo* gogo, Named_object* function,
 	  bool is_address_taken = (this->is_non_escaping_address_taken_
 				   && !this->is_in_heap());
 	  this->backend_ = backend->local_variable(bfunction, n, btype,
-						   is_address_taken,
+						   NULL, is_address_taken,
 						   this->location_);
 	}
     }
@@ -7878,6 +7937,21 @@ Bindings::traverse(Traverse* traverse, bool is_global)
 	}
     }
 
+  // Traverse function declarations when needed.
+  if ((traverse_mask & Traverse::traverse_func_declarations) != 0)
+    {
+      for (Bindings::const_declarations_iterator p = this->begin_declarations();
+           p != this->end_declarations();
+           ++p)
+        {
+          if (p->second->is_function_declaration())
+            {
+              if (traverse->function_declaration(p->second) == TRAVERSE_EXIT)
+                return TRAVERSE_EXIT;
+            }
+        }
+    }
+
   return TRAVERSE_CONTINUE;
 }
 
@@ -8183,6 +8257,12 @@ Traverse::expression(Expression**)
 
 int
 Traverse::type(Type*)
+{
+  go_unreachable();
+}
+
+int
+Traverse::function_declaration(Named_object*)
 {
   go_unreachable();
 }

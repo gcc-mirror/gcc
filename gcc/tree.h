@@ -1,5 +1,5 @@
 /* Definitions for the ubiquitous 'tree' type for GNU compilers.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -489,6 +489,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define STRIP_USELESS_TYPE_CONVERSION(EXP) \
   (EXP) = tree_ssa_strip_useless_type_conversions (EXP)
 
+/* Remove any VIEW_CONVERT_EXPR or NON_LVALUE_EXPR that's purely
+   in use to provide a location_t.  */
+
+#define STRIP_ANY_LOCATION_WRAPPER(EXP) \
+  (EXP) = tree_strip_any_location_wrapper (CONST_CAST_TREE (EXP))
+
 /* Nonzero if TYPE represents a vector type.  */
 
 #define VECTOR_TYPE_P(TYPE) (TREE_CODE (TYPE) == VECTOR_TYPE)
@@ -829,13 +835,16 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Same as TYPE_UNSIGNED but converted to SIGNOP.  */
 #define TYPE_SIGN(NODE) ((signop) TYPE_UNSIGNED (NODE))
 
-/* True if overflow wraps around for the given integral type.  That
+/* True if overflow wraps around for the given integral or pointer type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
 #define TYPE_OVERFLOW_WRAPS(TYPE) \
-  (ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag || flag_wrapv)
+  (POINTER_TYPE_P (TYPE)					\
+   ? flag_wrapv_pointer						\
+   : (ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
+      || flag_wrapv))
 
-/* True if overflow is undefined for the given integral type.  We may
-   optimize on the assumption that values in the type never overflow.
+/* True if overflow is undefined for the given integral or pointer type.
+   We may optimize on the assumption that values in the type never overflow.
 
    IMPORTANT NOTE: Any optimization based on TYPE_OVERFLOW_UNDEFINED
    must issue a warning based on warn_strict_overflow.  In some cases
@@ -843,8 +852,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    other cases it will be appropriate to simply set a flag and let the
    caller decide whether a warning is appropriate or not.  */
 #define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
-  (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
-   && !flag_wrapv && !flag_trapv)
+  (POINTER_TYPE_P (TYPE)					\
+   ? !flag_wrapv_pointer					\
+   : (!ANY_INTEGRAL_TYPE_CHECK(TYPE)->base.u.bits.unsigned_flag	\
+      && !flag_wrapv && !flag_trapv))
 
 /* True if overflow for the given integral type should issue a
    trap.  */
@@ -1185,6 +1196,8 @@ get_expr_source_range (tree expr)
 }
 
 extern void protected_set_expr_location (tree, location_t);
+
+extern tree maybe_wrap_with_location (tree, location_t);
 
 /* In a TARGET_EXPR node.  */
 #define TARGET_EXPR_SLOT(NODE) TREE_OPERAND_CHECK_CODE (NODE, TARGET_EXPR, 0)
@@ -2040,15 +2053,6 @@ extern machine_mode vector_type_mode (const_tree);
    that distinguish string from array of char).
    If set in a INTEGER_TYPE, indicates a character type.  */
 #define TYPE_STRING_FLAG(NODE) (TYPE_CHECK (NODE)->type_common.string_flag)
-
-/* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
-#define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) \
-  (HOST_WIDE_INT_1U \
-   << VECTOR_TYPE_CHECK (VECTOR_TYPE)->type_common.precision)
-
-/* Set precision to n when we have 2^n sub-parts of the vector.  */
-#define SET_TYPE_VECTOR_SUBPARTS(VECTOR_TYPE, X) \
-  (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type_common.precision = exact_log2 (X))
 
 /* Nonzero in a VECTOR_TYPE if the frontends should not emit warnings
    about missing conversions to other vector types of the same size.  */
@@ -3683,6 +3687,103 @@ id_equal (const char *str, const_tree id)
   return !strcmp (str, IDENTIFIER_POINTER (id));
 }
 
+/* Return the number of elements in the VECTOR_TYPE given by NODE.  */
+
+inline poly_uint64
+TYPE_VECTOR_SUBPARTS (const_tree node)
+{
+  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 2);
+  unsigned int precision = VECTOR_TYPE_CHECK (node)->type_common.precision;
+  if (NUM_POLY_INT_COEFFS == 2)
+    {
+      poly_uint64 res = 0;
+      res.coeffs[0] = 1 << (precision & 0xff);
+      if (precision & 0x100)
+	res.coeffs[1] = 1 << (precision & 0xff);
+      return res;
+    }
+  else
+    return 1 << precision;
+}
+
+/* Set the number of elements in VECTOR_TYPE NODE to SUBPARTS, which must
+   satisfy valid_vector_subparts_p.  */
+
+inline void
+SET_TYPE_VECTOR_SUBPARTS (tree node, poly_uint64 subparts)
+{
+  STATIC_ASSERT (NUM_POLY_INT_COEFFS <= 2);
+  unsigned HOST_WIDE_INT coeff0 = subparts.coeffs[0];
+  int index = exact_log2 (coeff0);
+  gcc_assert (index >= 0);
+  if (NUM_POLY_INT_COEFFS == 2)
+    {
+      unsigned HOST_WIDE_INT coeff1 = subparts.coeffs[1];
+      gcc_assert (coeff1 == 0 || coeff1 == coeff0);
+      VECTOR_TYPE_CHECK (node)->type_common.precision
+	= index + (coeff1 != 0 ? 0x100 : 0);
+    }
+  else
+    VECTOR_TYPE_CHECK (node)->type_common.precision = index;
+}
+
+/* Return true if we can construct vector types with the given number
+   of subparts.  */
+
+static inline bool
+valid_vector_subparts_p (poly_uint64 subparts)
+{
+  unsigned HOST_WIDE_INT coeff0 = subparts.coeffs[0];
+  if (!pow2p_hwi (coeff0))
+    return false;
+  if (NUM_POLY_INT_COEFFS == 2)
+    {
+      unsigned HOST_WIDE_INT coeff1 = subparts.coeffs[1];
+      if (coeff1 != 0 && coeff1 != coeff0)
+	return false;
+    }
+  return true;
+}
+
+/* In NON_LVALUE_EXPR and VIEW_CONVERT_EXPR, set when this node is merely a
+   wrapper added to express a location_t on behalf of the node's child
+   (e.g. by maybe_wrap_with_location).  */
+
+#define EXPR_LOCATION_WRAPPER_P(NODE) \
+  (TREE_CHECK2(NODE, NON_LVALUE_EXPR, VIEW_CONVERT_EXPR)->base.public_flag)
+
+/* Test if EXP is merely a wrapper node, added to express a location_t
+   on behalf of the node's child (e.g. by maybe_wrap_with_location).  */
+
+inline bool
+location_wrapper_p (const_tree exp)
+{
+  /* A wrapper node has code NON_LVALUE_EXPR or VIEW_CONVERT_EXPR, and
+     the flag EXPR_LOCATION_WRAPPER_P is set.
+     It normally has the same type as its operand, but it can have a
+     different one if the type of the operand has changed (e.g. when
+     merging duplicate decls).
+
+     NON_LVALUE_EXPR is used for wrapping constants, apart from STRING_CST.
+     VIEW_CONVERT_EXPR is used for wrapping non-constants and STRING_CST.  */
+  if ((TREE_CODE (exp) == NON_LVALUE_EXPR
+       || TREE_CODE (exp) == VIEW_CONVERT_EXPR)
+      && EXPR_LOCATION_WRAPPER_P (exp))
+    return true;
+  return false;
+}
+
+/* Implementation of STRIP_ANY_LOCATION_WRAPPER.  */
+
+inline tree
+tree_strip_any_location_wrapper (tree exp)
+{
+  if (location_wrapper_p (exp))
+    return TREE_OPERAND (exp, 0);
+  else
+    return exp;
+}
+
 #define error_mark_node			global_trees[TI_ERROR_MARK]
 
 #define intQI_type_node			global_trees[TI_INTQI_TYPE]
@@ -4068,6 +4169,7 @@ extern tree make_vector (unsigned, unsigned CXX_MEM_STAT_INFO);
 extern tree build_vector_from_ctor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_vector_from_val (tree, tree);
 extern tree build_vec_series (tree, tree, tree);
+extern tree build_index_vector (tree, poly_uint64, poly_uint64);
 extern void recompute_constructor_flags (tree);
 extern void verify_constructor_flags (tree);
 extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
@@ -4126,10 +4228,10 @@ extern tree build_pointer_type (tree);
 extern tree build_reference_type_for_mode (tree, machine_mode, bool);
 extern tree build_reference_type (tree);
 extern tree build_vector_type_for_mode (tree, machine_mode);
-extern tree build_vector_type (tree innertype, int nunits);
-extern tree build_truth_vector_type (unsigned, unsigned);
+extern tree build_vector_type (tree, poly_int64);
+extern tree build_truth_vector_type (poly_uint64, poly_uint64);
 extern tree build_same_sized_truth_vector_type (tree vectype);
-extern tree build_opaque_vector_type (tree innertype, int nunits);
+extern tree build_opaque_vector_type (tree, poly_int64);
 extern tree build_index_type (tree);
 extern tree build_array_type (tree, tree, bool = false);
 extern tree build_nonshared_array_type (tree, tree);
@@ -5761,7 +5863,7 @@ extern const builtin_structptr_type builtin_structptr_types[6];
 inline bool
 type_has_mode_precision_p (const_tree t)
 {
-  return TYPE_PRECISION (t) == GET_MODE_PRECISION (TYPE_MODE (t));
+  return known_eq (TYPE_PRECISION (t), GET_MODE_PRECISION (TYPE_MODE (t)));
 }
 
 #endif  /* GCC_TREE_H  */

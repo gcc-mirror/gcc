@@ -1,5 +1,5 @@
 /* Statement simplification on GIMPLE.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Split out from tree-ssa-ccp.c.
 
 This file is part of GCC.
@@ -1299,7 +1299,7 @@ static bool
 get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		  bool fuzzy, bool *flexp)
 {
-  tree var, val;
+  tree var, val = NULL_TREE;
   gimple *def_stmt;
 
   /* The minimum and maximum length.  The MAXLEN pointer stays unchanged
@@ -1311,14 +1311,33 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
     {
       /* We can end up with &(*iftmp_1)[0] here as well, so handle it.  */
       if (TREE_CODE (arg) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF
-	  && integer_zerop (TREE_OPERAND (TREE_OPERAND (arg, 0), 1)))
+	  && TREE_CODE (TREE_OPERAND (arg, 0)) == ARRAY_REF)
 	{
-	  tree aop0 = TREE_OPERAND (TREE_OPERAND (arg, 0), 0);
-	  if (TREE_CODE (aop0) == INDIRECT_REF
-	      && TREE_CODE (TREE_OPERAND (aop0, 0)) == SSA_NAME)
-	    return get_range_strlen (TREE_OPERAND (aop0, 0),
-				     length, visited, type, fuzzy, flexp);
+	  tree op = TREE_OPERAND (arg, 0);
+	  if (integer_zerop (TREE_OPERAND (op, 1)))
+	    {
+	      tree aop0 = TREE_OPERAND (op, 0);
+	      if (TREE_CODE (aop0) == INDIRECT_REF
+		  && TREE_CODE (TREE_OPERAND (aop0, 0)) == SSA_NAME)
+		return get_range_strlen (TREE_OPERAND (aop0, 0),
+					 length, visited, type, fuzzy, flexp);
+	    }
+	  else if (TREE_CODE (TREE_OPERAND (op, 0)) == COMPONENT_REF && fuzzy)
+	    {
+	      /* Fail if an array is the last member of a struct object
+		 since it could be treated as a (fake) flexible array
+		 member.  */
+	      tree idx = TREE_OPERAND (op, 1);
+
+	      arg = TREE_OPERAND (op, 0);
+	      tree optype = TREE_TYPE (arg);
+	      if (tree dom = TYPE_DOMAIN (optype))
+		if (tree bound = TYPE_MAX_VALUE (dom))
+		  if (TREE_CODE (bound) == INTEGER_CST
+		      && TREE_CODE (idx) == INTEGER_CST
+		      && tree_int_cst_lt (bound, idx))
+		    return false;
+	    }
 	}
 
       if (type == 2)
@@ -1337,21 +1356,55 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	    return get_range_strlen (TREE_OPERAND (arg, 0), length,
 				     visited, type, fuzzy, flexp);
 
-	  if (TREE_CODE (arg) == COMPONENT_REF
+	  if (TREE_CODE (arg) == ARRAY_REF)
+	    {
+	      tree type = TREE_TYPE (TREE_OPERAND (arg, 0));
+
+	      /* Determine the "innermost" array type.  */
+	      while (TREE_CODE (type) == ARRAY_TYPE
+		     && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+		type = TREE_TYPE (type);
+
+	      /* Avoid arrays of pointers.  */
+	      tree eltype = TREE_TYPE (type);
+	      if (TREE_CODE (type) != ARRAY_TYPE
+		  || !INTEGRAL_TYPE_P (eltype))
+		return false;
+
+	      val = TYPE_SIZE_UNIT (type);
+	      if (!val || integer_zerop (val))
+		return false;
+
+	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
+				 integer_one_node);
+	      /* Set the minimum size to zero since the string in
+		 the array could have zero length.  */
+	      *minlen = ssize_int (0);
+	    }
+	  else if (TREE_CODE (arg) == COMPONENT_REF
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1))) == ARRAY_TYPE)
 	    {
 	      /* Use the type of the member array to determine the upper
 		 bound on the length of the array.  This may be overly
 		 optimistic if the array itself isn't NUL-terminated and
 		 the caller relies on the subsequent member to contain
-		 the NUL.
+		 the NUL but that would only be considered valid if
+		 the array were the last member of a struct.
 		 Set *FLEXP to true if the array whose bound is being
 		 used is at the end of a struct.  */
 	      if (array_at_struct_end_p (arg))
 		*flexp = true;
 
 	      arg = TREE_OPERAND (arg, 1);
-	      val = TYPE_SIZE_UNIT (TREE_TYPE (arg));
+
+	      tree type = TREE_TYPE (arg);
+
+	      while (TREE_CODE (type) == ARRAY_TYPE
+		     && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+		type = TREE_TYPE (type);
+
+	      /* Fail when the array bound is unknown or zero.  */
+	      val = TYPE_SIZE_UNIT (type);
 	      if (!val || integer_zerop (val))
 		return false;
 	      val = fold_build2 (MINUS_EXPR, TREE_TYPE (val), val,
@@ -1361,17 +1414,25 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	      *minlen = ssize_int (0);
 	    }
 
-	  if (VAR_P (arg) 
-	      && TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+	  if (VAR_P (arg))
 	    {
-	      val = TYPE_SIZE_UNIT (TREE_TYPE (arg));
-	      if (!val || TREE_CODE (val) != INTEGER_CST || integer_zerop (val))
-		return false;
-	      val = wide_int_to_tree (TREE_TYPE (val), 
-				      wi::sub(wi::to_wide (val), 1));
-	      /* Set the minimum size to zero since the string in
-		 the array could have zero length.  */
-	      *minlen = ssize_int (0);
+	      tree type = TREE_TYPE (arg);
+	      if (POINTER_TYPE_P (type))
+		type = TREE_TYPE (type);
+
+	      if (TREE_CODE (type) == ARRAY_TYPE)
+		{
+		  val = TYPE_SIZE_UNIT (type);
+		  if (!val
+		      || TREE_CODE (val) != INTEGER_CST
+		      || integer_zerop (val))
+		    return false;
+		  val = wide_int_to_tree (TREE_TYPE (val),
+					  wi::sub(wi::to_wide (val), 1));
+		  /* Set the minimum size to zero since the string in
+		     the array could have zero length.  */
+		  *minlen = ssize_int (0);
+		}
 	    }
 	}
 
@@ -3462,12 +3523,44 @@ static bool
 gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  tree len = get_maxval_strlen (gimple_call_arg (stmt, 0), 0);
-  if (!len)
-    return false;
-  len = force_gimple_operand_gsi (gsi, len, true, NULL, true, GSI_SAME_STMT);
-  replace_call_with_value (gsi, len);
-  return true;
+
+  wide_int minlen;
+  wide_int maxlen;
+
+  tree lenrange[2];
+  if (!get_range_strlen (gimple_call_arg (stmt, 0), lenrange)
+      && lenrange[0] && TREE_CODE (lenrange[0]) == INTEGER_CST
+      && lenrange[1] && TREE_CODE (lenrange[1]) == INTEGER_CST)
+    {
+      /* The range of lengths refers to either a single constant
+	 string or to the longest and shortest constant string
+	 referenced by the argument of the strlen() call, or to
+	 the strings that can possibly be stored in the arrays
+	 the argument refers to.  */
+      minlen = wi::to_wide (lenrange[0]);
+      maxlen = wi::to_wide (lenrange[1]);
+    }
+  else
+    {
+      unsigned prec = TYPE_PRECISION (sizetype);
+
+      minlen = wi::shwi (0, prec);
+      maxlen = wi::to_wide (max_object_size (), prec) - 2;
+    }
+
+  if (minlen == maxlen)
+    {
+      lenrange[0] = force_gimple_operand_gsi (gsi, lenrange[0], true, NULL,
+					      true, GSI_SAME_STMT);
+      replace_call_with_value (gsi, lenrange[0]);
+      return true;
+    }
+
+  tree lhs = gimple_call_lhs (stmt);
+  if (lhs && TREE_CODE (lhs) == SSA_NAME)
+    set_range_info (lhs, VR_RANGE, minlen, maxlen);
+
+  return false;
 }
 
 /* Fold a call to __builtin_acc_on_device.  */
@@ -3786,7 +3879,8 @@ optimize_atomic_compare_exchange_p (gimple *stmt)
       /* Don't optimize floating point expected vars, VIEW_CONVERT_EXPRs
 	 might not preserve all the bits.  See PR71716.  */
       || SCALAR_FLOAT_TYPE_P (etype)
-      || TYPE_PRECISION (etype) != GET_MODE_BITSIZE (TYPE_MODE (etype)))
+      || maybe_ne (TYPE_PRECISION (etype),
+		   GET_MODE_BITSIZE (TYPE_MODE (etype))))
     return false;
 
   tree weak = gimple_call_arg (stmt, 3);
@@ -3802,7 +3896,7 @@ optimize_atomic_compare_exchange_p (gimple *stmt)
       && optab_handler (sync_compare_and_swap_optab, mode) == CODE_FOR_nothing)
     return false;
 
-  if (int_size_in_bytes (etype) != GET_MODE_SIZE (mode))
+  if (maybe_ne (int_size_in_bytes (etype), GET_MODE_SIZE (mode)))
     return false;
 
   return true;
@@ -6079,13 +6173,13 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		}
 	      else if (TREE_CODE (rhs) == CONSTRUCTOR
 		       && TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE
-		       && (CONSTRUCTOR_NELTS (rhs)
-			   == TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
+		       && known_eq (CONSTRUCTOR_NELTS (rhs),
+				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
 		{
 		  unsigned i, nelts;
 		  tree val;
 
-		  nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
+		  nelts = CONSTRUCTOR_NELTS (rhs);
 		  tree_vector_builder vec (TREE_TYPE (rhs), nelts, 1);
 		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
 		    {
@@ -6930,8 +7024,8 @@ gimple_fold_indirect_ref (tree t)
             = tree_to_shwi (part_width) / BITS_PER_UNIT;
           unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
           tree index = bitsize_int (indexi);
-          if (offset / part_widthi
-	      < TYPE_VECTOR_SUBPARTS (TREE_TYPE (addrtype)))
+	  if (known_lt (offset / part_widthi,
+			TYPE_VECTOR_SUBPARTS (TREE_TYPE (addrtype))))
             return fold_build3 (BIT_FIELD_REF, type, TREE_OPERAND (addr, 0),
                                 part_width, index);
 	}
@@ -7233,6 +7327,10 @@ tree
 gimple_build_vector_from_val (gimple_seq *seq, location_t loc, tree type,
 			      tree op)
 {
+  if (!TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && !CONSTANT_CLASS_P (op))
+    return gimple_build (seq, loc, VEC_DUPLICATE_EXPR, type, op);
+
   tree res, vec = build_vector_from_val (type, op);
   if (is_gimple_val (vec))
     return vec;
@@ -7265,7 +7363,7 @@ gimple_build_vector (gimple_seq *seq, location_t loc,
     if (!TREE_CONSTANT ((*builder)[i]))
       {
 	tree type = builder->type ();
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
+	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 	vec<constructor_elt, va_gc> *v;
 	vec_alloc (v, nelts);
 	for (i = 0; i < nelts; ++i)

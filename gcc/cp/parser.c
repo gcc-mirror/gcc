@@ -1,5 +1,5 @@
 /* -*- C++ -*- Parser.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -2047,7 +2047,8 @@ static tree cp_parser_postfix_open_square_expression
 static tree cp_parser_postfix_dot_deref_expression
   (cp_parser *, enum cpp_ttype, cp_expr, bool, cp_id_kind *, location_t);
 static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
-  (cp_parser *, int, bool, bool, bool *, location_t * = NULL);
+  (cp_parser *, int, bool, bool, bool *, location_t * = NULL,
+   bool = false);
 /* Values for the second parameter of cp_parser_parenthesized_expression_list.  */
 enum { non_attr = 0, normal_attr = 1, id_attr = 2 };
 static void cp_parser_pseudo_destructor_name
@@ -6626,6 +6627,16 @@ cp_parser_compound_literal_p (cp_parser *parser)
   return compound_literal_p;
 }
 
+/* Return true if EXPR is the integer constant zero or a complex constant
+   of zero, without any folding, but ignoring location wrappers.  */
+
+static bool
+literal_integer_zerop (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+  return integer_zerop (expr);
+}
+
 /* Parse a postfix-expression.
 
    postfix-expression:
@@ -6837,6 +6848,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    location_t typeid_loc
 	      = make_location (start_loc, start_loc, close_paren->location);
 	    postfix_expression.set_location (typeid_loc);
+	    postfix_expression.maybe_add_location_wrapper ();
 	  }
       }
       break;
@@ -7094,7 +7106,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		    (parser, non_attr,
 		     /*cast_p=*/false, /*allow_expansion_p=*/true,
 		     /*non_constant_p=*/NULL,
-		     /*close_paren_loc=*/&close_paren_loc));
+		     /*close_paren_loc=*/&close_paren_loc,
+		     /*wrap_locations_p=*/true));
 	    if (is_builtin_constant_p)
 	      {
 		parser->integral_constant_expression_p
@@ -7170,10 +7183,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		tree arg0 = (*args)[0];
 		tree arg1 = (*args)[1];
 		tree arg2 = (*args)[2];
-		int literal_mask = ((!!integer_zerop (arg1) << 1)
-				    | (!!integer_zerop (arg2) << 2));
-		if (TREE_CODE (arg2) == CONST_DECL)
-		  arg2 = DECL_INITIAL (arg2);
+		int literal_mask = ((literal_integer_zerop (arg1) << 1)
+				    | (literal_integer_zerop (arg2) << 2));
 		warn_for_memset (input_location, arg0, arg2, literal_mask);
 	      }
 
@@ -7627,6 +7638,10 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
    ALLOW_EXPANSION_P is true if this expression allows expansion of an
    argument pack.
 
+   WRAP_LOCATIONS_P is true if expressions within this list for which
+   CAN_HAVE_LOCATION_P is false should be wrapped with nodes expressing
+   their source locations.
+
    Returns a vector of trees.  Each element is a representation of an
    assignment-expression.  NULL is returned if the ( and or ) are
    missing.  An empty, but allocated, vector is returned on no
@@ -7646,7 +7661,8 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 bool cast_p,
                                          bool allow_expansion_p,
 					 bool *non_constant_p,
-					 location_t *close_paren_loc)
+					 location_t *close_paren_loc,
+					 bool wrap_locations_p)
 {
   vec<tree, va_gc> *expression_list;
   bool fold_expr_p = is_attribute_list != non_attr;
@@ -7669,12 +7685,12 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
     = parser->greater_than_is_operator_p;
   parser->greater_than_is_operator_p = true;
 
+  cp_expr expr (NULL_TREE);
+
   /* Consume expressions until there are no more.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
     while (true)
       {
-	tree expr;
-
 	/* At the beginning of attribute lists, check to see if the
 	   next token is an identifier.  */
 	if (is_attribute_list == id_attr
@@ -7728,11 +7744,14 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
                 expr = make_pack_expansion (expr);
               }
 
+	    if (wrap_locations_p)
+	      expr.maybe_add_location_wrapper ();
+
 	     /* Add it to the list.  We add error_mark_node
 		expressions to the list, so that we can still tell if
 		the correct form for a parenthesized expression-list
 		is found. That gives better errors.  */
-	    vec_safe_push (expression_list, expr);
+	    vec_safe_push (expression_list, expr.get_value ());
 
 	    if (expr == error_mark_node)
 	      goto skip_comma;
@@ -7998,6 +8017,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    cp_expr ret_expr (ret);
 	    ret_expr.set_location (compound_loc);
+	    ret_expr = ret_expr.maybe_add_location_wrapper ();
 	    return ret_expr;
 	  }
 
@@ -9837,6 +9857,7 @@ cp_parser_builtin_offsetof (cp_parser *parser)
   parser->integral_constant_expression_p = save_ice_p;
   parser->non_integral_constant_expression_p = save_non_ice_p;
 
+  expr = expr.maybe_add_location_wrapper ();
   return expr;
 }
 
@@ -10893,6 +10914,18 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 		"attributes at the beginning of statement are ignored");
 }
 
+/* Append ATTR to attribute list ATTRS.  */
+
+static tree
+attr_chainon (tree attrs, tree attr)
+{
+  if (attrs == error_mark_node)
+    return error_mark_node;
+  if (attr == error_mark_node)
+    return error_mark_node;
+  return chainon (attrs, attr);
+}
+
 /* Parse the label for a labeled-statement, i.e.
 
    identifier :
@@ -11012,7 +11045,7 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
       else if (!cp_parser_parse_definitely (parser))
 	;
       else
-	attributes = chainon (attributes, attrs);
+	attributes = attr_chainon (attributes, attrs);
     }
 
   if (attributes != NULL_TREE)
@@ -13611,8 +13644,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		  else
 		    {
 		      decl_specs->std_attributes
-			= chainon (decl_specs->std_attributes,
-				   attrs);
+			= attr_chainon (decl_specs->std_attributes, attrs);
 		      if (decl_specs->locations[ds_std_attribute] == 0)
 			decl_specs->locations[ds_std_attribute] = token->location;
 		    }
@@ -13620,9 +13652,8 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		}
 	    }
 
-	    decl_specs->attributes
-	      = chainon (decl_specs->attributes,
-			 attrs);
+	  decl_specs->attributes
+	    = attr_chainon (decl_specs->attributes, attrs);
 	  if (decl_specs->locations[ds_attribute] == 0)
 	    decl_specs->locations[ds_attribute] = token->location;
 	  continue;
@@ -18688,7 +18719,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 	  identifier = cp_parser_identifier (parser);
 
 	  /* Parse any attributes specified after the identifier.  */
-	  attribs = chainon (attribs, cp_parser_attributes_opt (parser));
+	  attribs = attr_chainon (attribs, cp_parser_attributes_opt (parser));
 	}
 
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE))
@@ -19850,7 +19881,7 @@ cp_parser_init_declarator (cp_parser* parser,
       decl = grokfield (declarator, decl_specifiers,
 			initializer, !is_non_constant_init,
 			/*asmspec=*/NULL_TREE,
-			chainon (attributes, prefix_attributes));
+			attr_chainon (attributes, prefix_attributes));
       if (decl && TREE_CODE (decl) == FUNCTION_DECL)
 	cp_parser_save_default_args (parser, decl);
       cp_finalize_omp_declare_simd (parser, decl);
@@ -21224,9 +21255,9 @@ cp_parser_type_specifier_seq (cp_parser* parser,
       /* Check for attributes first.  */
       if (cp_next_tokens_can_be_attribute_p (parser))
 	{
-	  type_specifier_seq->attributes =
-	    chainon (type_specifier_seq->attributes,
-		     cp_parser_attributes_opt (parser));
+	  type_specifier_seq->attributes
+	    = attr_chainon (type_specifier_seq->attributes,
+			    cp_parser_attributes_opt (parser));
 	  continue;
 	}
 
@@ -21708,8 +21739,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
       parser->default_arg_ok_p = saved_default_arg_ok_p;
       /* After the declarator, allow more attributes.  */
       decl_specifiers.attributes
-	= chainon (decl_specifiers.attributes,
-		   cp_parser_attributes_opt (parser));
+	= attr_chainon (decl_specifiers.attributes,
+			cp_parser_attributes_opt (parser));
 
       /* If the declarator is a template parameter pack, remember that and
 	 clear the flag in the declarator itself so we don't get errors
@@ -23870,13 +23901,13 @@ cp_parser_member_declaration (cp_parser* parser)
 		  late_attributes = cp_parser_attributes_opt (parser);
 		}
 
-	      attributes = chainon (attributes, late_attributes);
+	      attributes = attr_chainon (attributes, late_attributes);
 
 	      /* Remember which attributes are prefix attributes and
 		 which are not.  */
 	      first_attribute = attributes;
 	      /* Combine the attributes.  */
-	      attributes = chainon (prefix_attributes, attributes);
+	      attributes = attr_chainon (prefix_attributes, attributes);
 
 	      /* Create the bitfield declaration.  */
 	      decl = grokbitfield (identifier
@@ -23932,7 +23963,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		 which are not.  */
 	      first_attribute = attributes;
 	      /* Combine the attributes.  */
-	      attributes = chainon (prefix_attributes, attributes);
+	      attributes = attr_chainon (prefix_attributes, attributes);
 
 	      /* If it's an `=', then we have a constant-initializer or a
 		 pure-specifier.  It is not correct to parse the
@@ -24054,10 +24085,13 @@ cp_parser_member_declaration (cp_parser* parser)
 	  cp_finalize_oacc_routine (parser, decl, false);
 
 	  /* Reset PREFIX_ATTRIBUTES.  */
-	  while (attributes && TREE_CHAIN (attributes) != first_attribute)
-	    attributes = TREE_CHAIN (attributes);
-	  if (attributes)
-	    TREE_CHAIN (attributes) = NULL_TREE;
+	  if (attributes != error_mark_node)
+	    {
+	      while (attributes && TREE_CHAIN (attributes) != first_attribute)
+		attributes = TREE_CHAIN (attributes);
+	      if (attributes)
+		TREE_CHAIN (attributes) = NULL_TREE;
+	    }
 
 	  /* If there is any qualification still in effect, clear it
 	     now; we will be starting fresh with the next declarator.  */
@@ -25126,7 +25160,7 @@ cp_parser_gnu_attributes_opt (cp_parser* parser)
 	cp_parser_skip_to_end_of_statement (parser);
 
       /* Add these new attributes to the list.  */
-      attributes = chainon (attributes, attribute_list);
+      attributes = attr_chainon (attributes, attribute_list);
     }
 
   return attributes;
@@ -25538,10 +25572,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       matching_parens parens;
       if (!parens.require_open (parser))
-	{
-	  cp_parser_error (parser, "expected %<(%>");
-	  return error_mark_node;
-	}
+	return error_mark_node;
 
       cp_parser_parse_tentatively (parser);
       alignas_expr = cp_parser_type_id (parser);
@@ -25571,10 +25602,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	return error_mark_node;
 
       if (!parens.require_close (parser))
-	{
-	  cp_parser_error (parser, "expected %<)%>");
-	  return error_mark_node;
-	}
+	return error_mark_node;
 
       /* Build the C++-11 representation of an 'aligned'
 	 attribute.  */
@@ -30332,7 +30360,7 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	     which are not.  */
 	  first_attribute = attributes;
 	  /* Combine the attributes.  */
-	  attributes = chainon (prefix_attributes, attributes);
+	  attributes = attr_chainon (prefix_attributes, attributes);
 
 	  if (width)
 	    /* Create the bitfield declaration.  */
@@ -30348,10 +30376,13 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	    objc_add_instance_variable (decl);
 
 	  /* Reset PREFIX_ATTRIBUTES.  */
-	  while (attributes && TREE_CHAIN (attributes) != first_attribute)
-	    attributes = TREE_CHAIN (attributes);
-	  if (attributes)
-	    TREE_CHAIN (attributes) = NULL_TREE;
+	  if (attributes != error_mark_node)
+	    {
+	      while (attributes && TREE_CHAIN (attributes) != first_attribute)
+		attributes = TREE_CHAIN (attributes);
+	      if (attributes)
+		TREE_CHAIN (attributes) = NULL_TREE;
+	    }
 
 	  token = cp_lexer_peek_token (parser->lexer);
 
@@ -30884,8 +30915,8 @@ cp_parser_objc_struct_declaration (cp_parser *parser)
 	 which are not.  */
       first_attribute = attributes;
       /* Combine the attributes.  */
-      attributes = chainon (prefix_attributes, attributes);
-      
+      attributes = attr_chainon (prefix_attributes, attributes);
+
       decl = grokfield (declarator, &declspecs,
 			NULL_TREE, /*init_const_expr_p=*/false,
 			NULL_TREE, attributes);
@@ -30894,10 +30925,13 @@ cp_parser_objc_struct_declaration (cp_parser *parser)
 	return error_mark_node;
       
       /* Reset PREFIX_ATTRIBUTES.  */
-      while (attributes && TREE_CHAIN (attributes) != first_attribute)
-	attributes = TREE_CHAIN (attributes);
-      if (attributes)
-	TREE_CHAIN (attributes) = NULL_TREE;
+      if (attributes != error_mark_node)
+	{
+	  while (attributes && TREE_CHAIN (attributes) != first_attribute)
+	    attributes = TREE_CHAIN (attributes);
+	  if (attributes)
+	    TREE_CHAIN (attributes) = NULL_TREE;
+	}
 
       DECL_CHAIN (decl) = decls;
       decls = decl;

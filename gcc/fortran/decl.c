@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -995,7 +995,7 @@ match_char_length (gfc_expr **expr, bool *deferred, bool obsolescent_check)
       if (obsolescent_check
 	  && !gfc_notify_std (GFC_STD_F95_OBS, "Old-style character length at %C"))
 	return MATCH_ERROR;
-      *expr = gfc_get_int_expr (gfc_default_integer_kind, NULL, length);
+      *expr = gfc_get_int_expr (gfc_charlen_int_kind, NULL, length);
       return m;
     }
 
@@ -1702,7 +1702,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 
 	  if (sym->ts.u.cl->length == NULL)
 	    {
-	      int clen;
+	      gfc_charlen_t clen;
 	      /* If there are multiple CHARACTER variables declared on the
 		 same line, we don't want them to share the same length.  */
 	      sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
@@ -1713,12 +1713,12 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		    {
 		      clen = init->value.character.length;
 		      sym->ts.u.cl->length
-				= gfc_get_int_expr (gfc_default_integer_kind,
+				= gfc_get_int_expr (gfc_charlen_int_kind,
 						    NULL, clen);
 		    }
 		  else if (init->expr_type == EXPR_ARRAY)
 		    {
-		      if (init->ts.u.cl)
+		      if (init->ts.u.cl && init->ts.u.cl->length)
 			{
 			  const gfc_expr *length = init->ts.u.cl->length;
 			  if (length->expr_type != EXPR_CONSTANT)
@@ -1740,7 +1740,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 		      else
 			  gcc_unreachable ();
 		      sym->ts.u.cl->length
-				= gfc_get_int_expr (gfc_default_integer_kind,
+				= gfc_get_int_expr (gfc_charlen_int_kind,
 						    NULL, clen);
 		    }
 		  else if (init->ts.u.cl && init->ts.u.cl->length)
@@ -3073,7 +3073,7 @@ done:
   cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (seen_length == 0)
-    cl->length = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+    cl->length = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
   else
     cl->length = len;
 
@@ -3562,6 +3562,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      c2->as->upper[i] = e;
 	    }
 	  c2->attr.pdt_array = pdt_array ? 1 : c2->attr.pdt_string;
+	  if (c1->initializer)
+	    {
+	      c2->initializer = gfc_copy_expr (c1->initializer);
+	      gfc_insert_kind_parameter_exprs (c2->initializer);
+	      gfc_simplify_expr (c2->initializer, 1);
+	    }
 	}
 
       /* Recurse into this function for PDT components.  */
@@ -4315,7 +4321,7 @@ gfc_match_implicit (void)
 		{
 		  ts.kind = gfc_default_character_kind;
 		  ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-		  ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+		  ts.u.cl->length = gfc_get_int_expr (gfc_charlen_int_kind,
 						      NULL, 1);
 		}
 

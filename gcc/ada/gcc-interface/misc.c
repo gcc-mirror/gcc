@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2018, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1301,11 +1301,14 @@ enumerate_modes (void (*f) (const char *, int, int, int, int, int, int, int))
 	  }
 
       /* If no predefined C types were found, register the mode itself.  */
-      if (!skip_p)
+      int nunits, precision, bitsize;
+      if (!skip_p
+	  && GET_MODE_NUNITS (i).is_constant (&nunits)
+	  && GET_MODE_PRECISION (i).is_constant (&precision)
+	  && GET_MODE_BITSIZE (i).is_constant (&bitsize))
 	f (GET_MODE_NAME (i), digs, complex_p,
-	   vector_p ? GET_MODE_NUNITS (i) : 0, float_rep,
-	   GET_MODE_PRECISION (i), GET_MODE_BITSIZE (i),
-	   GET_MODE_ALIGNMENT (i));
+	   vector_p ? nunits : 0, float_rep,
+	   precision, bitsize, GET_MODE_ALIGNMENT (i));
     }
 }
 

@@ -1,5 +1,5 @@
 /* Output routines for CR16 processor.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by KPIT Cummins Infosystems Limited.
   
    This file is part of GCC.
@@ -2213,6 +2213,14 @@ cr16_emit_logical_di (rtx *operands, enum rtx_code code)
   }
 
   return "";
+}
+
+/* Implement PUSH_ROUNDING.  */
+
+poly_int64
+cr16_push_rounding (poly_int64 bytes)
+{
+  return (bytes + 1) & ~1;
 }
 
 /* Initialize 'targetm' variable which contains pointers to functions 

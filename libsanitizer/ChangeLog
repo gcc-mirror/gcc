@@ -1,3 +1,14 @@
+2018-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82825
+	* sanitizer_common/sanitizer_internal_defs.h: Cherry-pick upstream
+	r??????.
+
+2018-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82824
+	* lsan/lsan_common_mac.cc: Cherry-pick upstream r322437.
+
 2017-12-05  Martin Liska  <mliska@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 

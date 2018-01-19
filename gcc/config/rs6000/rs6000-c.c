@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the PowerPC architecture.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
    and Paolo Bonzini <bonzini@gnu.org>
@@ -708,7 +708,18 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__LONGDOUBLE128");
 
       if (TARGET_IEEEQUAD)
-	builtin_define ("__LONG_DOUBLE_IEEE128__");
+	{
+	  /* Older versions of GLIBC used __attribute__((__KC__)) to create the
+	     IEEE 128-bit floating point complex type for C++ (which does not
+	     support _Float128 _Complex).  If the default for long double is
+	     IEEE 128-bit mode, the library would need to use
+	     __attribute__((__TC__)) instead.  Defining __KF__ and __KC__
+	     is a stop-gap to build with the older libraries, until we
+	     get an updated library.  */
+	  builtin_define ("__LONG_DOUBLE_IEEE128__");
+	  builtin_define ("__KF__=__TF__");
+	  builtin_define ("__KC__=__TC__");
+	}
       else
 	builtin_define ("__LONG_DOUBLE_IBM128__");
     }
@@ -1531,6 +1542,8 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_V4SF, RS6000_BTI_V4SI, 0, 0 },
   { VSX_BUILTIN_VEC_FLOAT, VSX_BUILTIN_XVCVUXWSP_V4SF,
     RS6000_BTI_V4SF, RS6000_BTI_unsigned_V4SI, 0, 0 },
+  { VSX_BUILTIN_VEC_FLOAT2, VSX_BUILTIN_FLOAT2_V2DF,
+    RS6000_BTI_V4SF, RS6000_BTI_V2DF, RS6000_BTI_V2DF, 0 },
   { VSX_BUILTIN_VEC_FLOAT2, VSX_BUILTIN_FLOAT2_V2DI,
     RS6000_BTI_V4SF, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
   { VSX_BUILTIN_VEC_FLOAT2, VSX_BUILTIN_UNS_FLOAT2_V2DI,
@@ -5520,6 +5533,17 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
     RS6000_BTI_unsigned_V2DI, 0 },
 
+  { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
+  { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, 0 },
+  { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V2DI,
+    RS6000_BTI_bool_V2DI, RS6000_BTI_bool_V2DI, RS6000_BTI_bool_V2DI, 0 },
+  { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V4SF,
+    RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0 },
+  { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, RS6000_BTI_V2DF, 0 },
   { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V4SI,
     RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
   { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V4SI,
@@ -5528,13 +5552,26 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
   { P8V_BUILTIN_VEC_VMRGEW, P8V_BUILTIN_VMRGEW_V4SI,
     RS6000_BTI_bool_V4SI, RS6000_BTI_bool_V4SI, RS6000_BTI_bool_V4SI, 0 },
 
-  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW,
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V4SI,
     RS6000_BTI_V4SI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
-  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW,
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V4SI,
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
     RS6000_BTI_unsigned_V4SI, 0 },
-  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW,
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V4SI,
     RS6000_BTI_bool_V4SI, RS6000_BTI_bool_V4SI, RS6000_BTI_bool_V4SI, 0 },
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V2DI,
+    RS6000_BTI_V2DI, RS6000_BTI_V2DI, RS6000_BTI_V2DI, 0 },
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, 0 },
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V2DI,
+    RS6000_BTI_bool_V2DI, RS6000_BTI_bool_V2DI, RS6000_BTI_bool_V2DI, 0 },
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, RS6000_BTI_V2DF, 0 },
+  { P8V_BUILTIN_VEC_VMRGOW, P8V_BUILTIN_VMRGOW_V4SF,
+    RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0 },
 
   { P8V_BUILTIN_VEC_VPMSUM, P8V_BUILTIN_VPMSUMB,
     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V16QI,
@@ -6459,6 +6496,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  tree call = NULL_TREE;
 	  int nunits = GET_MODE_NUNITS (mode);
 
+	  arg2 = fold_for_warn (arg2);
+
 	  /* If the second argument is an integer constant, if the value is in
 	     the expected range, generate the built-in code if we can.  We need
 	     64-bit and direct move to extract the small integer vectors.  */
@@ -6603,7 +6642,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       arg0 = (*arglist)[0];
       arg1 = (*arglist)[1];
       arg1_type = TREE_TYPE (arg1);
-      arg2 = (*arglist)[2];
+      arg2 = fold_for_warn ((*arglist)[2]);
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
 	goto bad;

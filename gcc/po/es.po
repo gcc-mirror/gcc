@@ -1,8 +1,8 @@
 # Mensajes en español para gcc-4.7.2.
-# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2016, 2017 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2016, 2017, 2018 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-# Antonio Ceballos Roa <aceballos@gmail.com>, 2016, 2017
+# Antonio Ceballos Roa <aceballos@gmail.com>, 2016, 2017, 2018
 #
 # Agradezco a Juan Cuquejo Mira por sus comentarios sobre esta traducción
 #
@@ -40,7 +40,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-08-04 22:17+0000\n"
-"PO-Revision-Date: 2017-12-30 09:45+0100\n"
+"PO-Revision-Date: 2018-01-07 10:20+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -20407,10 +20407,9 @@ msgid "double linked list of assembler names corrupted"
 msgstr "lista doblemente enlazada de nombres del ensamblador corrrupta"
 
 #: symtab.c:1043
-#, fuzzy, gcc-internal-format
-#| msgid "%qD used before its definition"
+#, gcc-internal-format
 msgid "node has body_removed but is definition"
-msgstr "se usó %qD antes de su definición"
+msgstr "el nodo tiene body_removed y sin embargo es una definición"
 
 #: symtab.c:1048
 #, gcc-internal-format
@@ -24992,10 +24991,9 @@ msgid "argument to %<sizeof%> in %qD call is the same pointer type %qT as the se
 msgstr "el argumento de %<sizeof%> en la llamada %qD es el mismo tipo de puntero %qT que el segundo origen; se esperaba %qT o una longitud explícita"
 
 #: c-family/c-warn.c:860 c-family/c-warn.c:867
-#, fuzzy, gcc-internal-format
-#| msgid "invalid parameter type %qT"
+#, gcc-internal-format
 msgid "%<_Atomic%>-qualified parameter type %qT of %q+D"
-msgstr "tipo de parámetro %qT no válido"
+msgstr "tipo de parámetro cualificado %<_Atomic%> %qT de %q+D"
 
 #: c-family/c-warn.c:877
 #, gcc-internal-format
@@ -25777,38 +25775,34 @@ msgid "this compiler does not support %s"
 msgstr "este compilador no tiene soporte para %s"
 
 #: config/darwin-driver.c:233
-#, fuzzy, gcc-internal-format
-#| msgid "The compiler does not support -march=%s."
+#, gcc-internal-format
 msgid "this compiler does not support PowerPC (arch flags ignored)"
-msgstr "El compilador no tiene soporte para -march=%s."
+msgstr "este compilador no tiene soporte para PowerPC (se hace caso omiso de los indicadores de arquitectura)"
 
 #: config/darwin-driver.c:237
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-mcpu=%s conflicts with -march=%s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s conflicts with i386 (arch flags ignored)"
-msgstr "-mcpu=%s genera conflicto con -march=%s"
+msgstr "%s genera conflicto con i386 (se hace caso omiso de los indicadores de arquitectura)"
 
 #: config/darwin-driver.c:245
 #, gcc-internal-format, gfc-internal-format
 msgid "%s conflicts with x86_64 (arch flags ignored)"
-msgstr ""
+msgstr "%s genera conflicto con x86_64 (se hace caso omiso de los indicadores de arquitectura)"
 
 #: config/darwin-driver.c:252
-#, fuzzy, gcc-internal-format
-#| msgid "The compiler does not support -march=%s."
+#, gcc-internal-format
 msgid "this compiler does not support X86 (arch flags ignored)"
-msgstr "El compilador no tiene soporte para -march=%s."
+msgstr "este compilador no tiene soporte para x86 (se hace caso omiso de los indicadores de arquitectura)"
 
 #: config/darwin-driver.c:256
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-mcpu=%s conflicts with -march=%s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s conflicts with ppc (arch flags ignored)"
-msgstr "-mcpu=%s genera conflicto con -march=%s"
+msgstr "%s genera conflicto con ppc (se hace caso omiso de los indicadores de arquitectura)"
 
 #: config/darwin-driver.c:264
 #, gcc-internal-format, gfc-internal-format
 msgid "%s conflicts with ppc64 (arch flags ignored)"
-msgstr ""
+msgstr "%s genera conflicto con ppc64 (se hace caso omiso de los indicadores de arquitectura)"
 
 #: config/darwin.c:1691
 #, gcc-internal-format
@@ -25977,10 +25971,9 @@ msgid "%Klane index must be a constant immediate"
 msgstr "el índice %Klane debe ser un inmediato constante"
 
 #: config/aarch64/aarch64-builtins.c:1163
-#, fuzzy, gcc-internal-format
-#| msgid "the second argument must be a 4-bit immediate"
+#, gcc-internal-format
 msgid "%Ktotal size and element size must be a non-zero constant immediate"
-msgstr "el segundo argumento debe ser un inmediato de 4-bit"
+msgstr "el tamaño %Ktotal y el tamaño de elemento han de ser un inmediato constante distinto de cero"
 
 #: config/aarch64/aarch64.c:927
 #, gcc-internal-format
@@ -25988,10 +25981,9 @@ msgid "%qs is incompatible with %s %s"
 msgstr "%qs es incompatible con %s %s"
 
 #: config/aarch64/aarch64.c:929
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is incompatible with %qs"
+#, gcc-internal-format
 msgid "%qs feature modifier is incompatible with %s %s"
-msgstr "%qs es incompatible con %qs"
+msgstr "el modificador de característica %qs es incompatible con %s %s"
 
 #: config/aarch64/aarch64.c:8382
 #, gcc-internal-format, gfc-internal-format
@@ -26004,16 +25996,14 @@ msgid "%s string ill-formed\n"
 msgstr "cadena %s mal formada\n"
 
 #: config/aarch64/aarch64.c:8483
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid range %s in option %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "tuning string missing in option (%s)"
-msgstr "Rango %s no válido en la opción %s"
+msgstr "falta la cadena de ajuste en la opción (%s)"
 
 #: config/aarch64/aarch64.c:8501
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unknown string token %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown tuning option (%s)"
-msgstr "cadena de elemento %s desconocida\n"
+msgstr "opción de cadena de ajuste desconocida (%s)"
 
 #: config/aarch64/aarch64.c:8715
 #, gcc-internal-format
@@ -26026,16 +26016,14 @@ msgid "missing cpu name in %<-mcpu=%s%>"
 msgstr "falta el nombre de la cpu en %<-mcpu=%s%>"
 
 #: config/aarch64/aarch64.c:8763
-#, fuzzy, gcc-internal-format
-#| msgid "invalid floating point option: -mfpu=%s"
+#, gcc-internal-format
 msgid "invalid feature modifier in %<-mcpu=%s%>"
-msgstr "opción de coma flotante no válida: -mfpu-%s"
+msgstr "modificador de característica no válido en %<-mcpu=%s%>"
 
 #: config/aarch64/aarch64.c:8790
-#, fuzzy, gcc-internal-format
-#| msgid "missing path after %qs"
+#, gcc-internal-format
 msgid "missing arch name in %<-march=%s%>"
-msgstr "falta una ruta después de %qs"
+msgstr "falta el nombre de la arquitectura en %<-march=%s%>"
 
 #: config/aarch64/aarch64.c:8793
 #, gcc-internal-format
@@ -26043,10 +26031,9 @@ msgid "unknown value %qs for -march"
 msgstr "valor %qs desconocido para -march"
 
 #: config/aarch64/aarch64.c:8797
-#, fuzzy, gcc-internal-format
-#| msgid "invalid data model option -mdata-model=%s"
+#, gcc-internal-format
 msgid "invalid feature modifier in %<-march=%s%>"
-msgstr "opción de modelo de datos -mdata-model=%s no válida"
+msgstr "modificador de característica no válido en %<-march=%s%>"
 
 #: config/aarch64/aarch64.c:8823
 #, gcc-internal-format
@@ -26091,7 +26078,7 @@ msgstr "valor %qs desconocido para el objetivo 'arch' %s"
 #: config/aarch64/aarch64.c:9202
 #, gcc-internal-format
 msgid "invalid feature modifier %qs for 'arch' target %s"
-msgstr ""
+msgstr "modificador de característica no válido %qs para el objetivo 'arch' %s"
 
 #: config/aarch64/aarch64.c:9236
 #, gcc-internal-format, gfc-internal-format
@@ -26106,7 +26093,7 @@ msgstr "valor %qs desconocido para el objetivo 'cpu' %s"
 #: config/aarch64/aarch64.c:9243
 #, gcc-internal-format
 msgid "invalid feature modifier %qs for 'cpu' target %s"
-msgstr ""
+msgstr "modificador de característica no válido %qs para el objetivo 'cpu' %s"
 
 #: config/aarch64/aarch64.c:9274
 #, gcc-internal-format
@@ -26114,16 +26101,14 @@ msgid "unknown value %qs for 'tune' target %s"
 msgstr "valor %qs desconocido para el objetivo 'tune' %s"
 
 #: config/aarch64/aarch64.c:9315
-#, fuzzy, gcc-internal-format
-#| msgid "missing makefile target after %qs"
+#, gcc-internal-format
 msgid "missing feature modifier in target %s %qs"
-msgstr "falta un fichero make objetivo después de %qs"
+msgstr "falta el modificador de característica en el objetivo %s %qs"
 
 #: config/aarch64/aarch64.c:9320
-#, fuzzy, gcc-internal-format
-#| msgid "invalid memory model argument %d of %qE"
+#, gcc-internal-format
 msgid "invalid feature modifier in target %s %qs"
-msgstr "argumento de modelo de memoria %d no válido de %qE"
+msgstr "modificador de característica no válido en el objetivo %s %qs"
 
 #: config/aarch64/aarch64.c:9372
 #, gcc-internal-format, gfc-internal-format
@@ -26148,10 +26133,9 @@ msgstr "el objetivo %s %s=%s no es válido"
 #: config/aarch64/aarch64.c:9544 config/arm/arm.c:30400
 #: config/i386/i386.c:6778 config/rs6000/rs6000.c:39332
 #: config/s390/s390.c:15024
-#, fuzzy, gcc-internal-format
-#| msgid "attribute %qE argument not a string"
+#, gcc-internal-format
 msgid "attribute %<target%> argument not a string"
-msgstr "el argumento del atributo %qE no es una cadena"
+msgstr "el argumento del atributo %<target%>  no es una cadena"
 
 #: config/aarch64/aarch64.c:9554
 #, gcc-internal-format, gfc-internal-format
@@ -26166,7 +26150,7 @@ msgstr "el objetivo %s %qs no es válido"
 #: config/aarch64/aarch64.c:9580
 #, gcc-internal-format
 msgid "malformed target %s list %qs"
-msgstr ""
+msgstr "lista %qs del objetivo %s mal formada"
 
 #: config/aarch64/aarch64.c:11428
 #, gcc-internal-format
@@ -26174,10 +26158,9 @@ msgid "%Klane %wd out of range %wd - %wd"
 msgstr "%Klane %wd fuera de rango %wd - %wd"
 
 #: config/aarch64/aarch64.c:11430
-#, fuzzy, gcc-internal-format
-#| msgid "line number out of range"
+#, gcc-internal-format
 msgid "lane %wd out of range %wd - %wd"
-msgstr "número de línea fuera de rango"
+msgstr "vía %wd fuera de rango %wd - %wd"
 
 #: config/alpha/alpha.c:414
 #, gcc-internal-format
@@ -26244,7 +26227,7 @@ msgstr "fcode interno erróneo"
 #: config/arc/arc.c:717
 #, gcc-internal-format
 msgid "-mno-mpy supported only for ARC700 or ARCv2"
-msgstr ""
+msgstr "-mno-mpy solo se admite para ARC700 o ARCv2"
 
 #: config/arc/arc.c:720
 #, gcc-internal-format
@@ -26252,10 +26235,9 @@ msgid "-mno-dpfp-lrsr supported only with -mdpfp"
 msgstr "-mno-dpfp-lrsr sólo se admite con -mdpfp"
 
 #: config/arc/arc.c:725
-#, fuzzy, gcc-internal-format
-#| msgid "-mcorea and -mcoreb can%'t be used together"
+#, gcc-internal-format
 msgid "FPX fast and compact options cannot be specified together"
-msgstr "no se pueden usar juntos -mcorea y -mcoreab"
+msgstr "las opciones de FPX fast y compact no pueden especificarse juntas"
 
 #: config/arc/arc.c:729
 #, gcc-internal-format
@@ -26275,8 +26257,7 @@ msgstr "No se admite PIC para %s. Se generará soloamente código no PIC.."
 #. Check options against architecture options.  Throw an error if
 #. option is not allowed.
 #: config/arc/arc.c:850 config/arc/arc.c:858
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qD is not a variable in clause %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s is not available for %s architecture"
 msgstr "%s no está disponible para la arquitectura %s"
 
@@ -26413,10 +26394,9 @@ msgid "insn addresses not freed"
 msgstr "direcciones de insn no liberadas"
 
 #: config/arm/arm-builtins.c:2354
-#, fuzzy, gcc-internal-format
-#| msgid "nested functions not supported on this target"
+#, gcc-internal-format
 msgid "this builtin is not supported for this target"
-msgstr "no se admiten funciones anidadas en este objetivo"
+msgstr "no se admite este interno para este objetivo"
 
 #: config/arm/arm-builtins.c:2459
 #, gcc-internal-format
@@ -26926,20 +26906,18 @@ msgid "devices natively supported:%s"
 msgstr "dispositivos aceptados de forma nativa:%s"
 
 #: config/avr/avr-devices.c:212
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unknown architecture %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "supported core architectures:%s"
-msgstr "arquitectura %qs desconocida"
+msgstr "arquitecturas de núcleo no admitidas:%s"
 
 #. Reached the end of `avr_mcu_types'.  This should actually never
 #. happen as options are provided by device-specs.  It could be a
 #. typo in a device-specs or calling the compiler proper directly
 #. with -mmcu=<device>.
 #: config/avr/avr.c:703
-#, fuzzy, gcc-internal-format
-#| msgid "unknown architecture %qs"
+#, gcc-internal-format
 msgid "unknown core architecture %qs specified with %qs"
-msgstr "arquitectura %qs desconocida"
+msgstr "arquitectura de núcleo %qs desconocida especificada con %qs"
 
 #: config/avr/avr.c:769 config/visium/visium.c:387
 #, gcc-internal-format
@@ -26982,15 +26960,14 @@ msgid "%qs function cannot return a value"
 msgstr "la función %qs no puede devolver un valor"
 
 #: config/avr/avr.c:1085
-#, fuzzy, gcc-internal-format
-#| msgid "%qs appears to be a misspelled %s handler, missing __vector prefix"
+#, gcc-internal-format
 msgid "%qs appears to be a misspelled %qs handler, missing %<__vector%> prefix"
-msgstr "%qs parece ser un manejador %s mal escrito; falta el prefijo __vector"
+msgstr "%qs parece ser un manejador %s mal escrito; falta el prefijo %<__vector%>"
 
 #: config/avr/avr.c:1098
 #, gcc-internal-format
 msgid "%qs is a reserved indentifier in AVR-LibC.  Consider %<#include <avr/interrupt.h>%> before using the %qs macro"
-msgstr ""
+msgstr "%qs es un identificador invertido en AVR-LibC.  Plantéese %<#include <avr/interrupt.h>%> antes de usar la macro %qs"
 
 #: config/avr/avr.c:1327
 #, gcc-internal-format
@@ -27100,10 +27077,9 @@ msgstr "Sólo las variables sin inicializar se pueden colocar en la sección .no
 
 #. This might happen with C++ if stuff needs constructing.
 #: config/avr/avr.c:10149
-#, fuzzy, gcc-internal-format
-#| msgid "uninitialized variable %q+D put into program memory area"
+#, gcc-internal-format
 msgid "variable %q+D with dynamic initialization put into program memory area"
-msgstr "se colocó la variable %q+D sin inicializar en el área de memoria del programa"
+msgstr "se colocó la variable %q+D con inicialización dinámica en el área de memoria del programa"
 
 #: config/avr/avr.c:10160
 #, gcc-internal-format
@@ -29009,10 +28985,9 @@ msgid "-mdata-region=upper requires 430X-compatible cpu"
 msgstr "-mdata-region=upper requiere una -mmcu= compatible con 430X"
 
 #: config/msp430/msp430.c:1859
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument of %qE attribute"
+#, gcc-internal-format
 msgid "unrecognized interrupt vector argument of %qE attribute"
-msgstr "argumento no válido del atributo %qE"
+msgstr "no se reconoce el argumento de vector de interrupciones del atributo %qE"
 
 #: config/msp430/msp430.c:1868
 #, gcc-internal-format
@@ -29025,10 +29000,9 @@ msgid "argument of %qE attribute is not a string constant or number"
 msgstr "el argumento del atributo %qE no es una cadena constante ni un número"
 
 #: config/msp430/msp430.c:2124
-#, fuzzy, gcc-internal-format
-#| msgid "cannot set interrupt attribute: no current function"
+#, gcc-internal-format
 msgid "argument to interrupt attribute is unsupported for weak functions"
-msgstr "no se puede establecer el atributo de interrupción: no hay una función actual"
+msgstr "no se admite el argumento para el atributo de interrupción para funciones débiles"
 
 #: config/msp430/msp430.c:2494
 #, gcc-internal-format
@@ -29063,10 +29037,9 @@ msgid "multiple save reg attributes to function %qD"
 msgstr "faltan argumentos para la función %q#D"
 
 #: config/nds32/nds32-isr.c:348
-#, fuzzy, gcc-internal-format
-#| msgid "multiple function type attributes specified"
+#, gcc-internal-format
 msgid "multiple nested types attributes to function %qD"
-msgstr "se especificaron múltiples atributos de tipo de función"
+msgstr "atributos de tipos anidados múltiples para la función %qD"
 
 #: config/nds32/nds32-isr.c:360
 #, gcc-internal-format
@@ -29773,23 +29746,22 @@ msgstr "el atributo o pragma target cambia el tamaño de double long"
 #: config/rs6000/rs6000.c:4799
 #, gcc-internal-format
 msgid "-mfloat128 requires VSX support"
-msgstr ""
+msgstr "-mfloat128 necesita soporte para VSX"
 
 #: config/rs6000/rs6000.c:4809
 #, gcc-internal-format
 msgid "-mfloat128-type requires VSX support"
-msgstr ""
+msgstr "-mfloat128-type necesita soporte para VSX"
 
 #: config/rs6000/rs6000.c:4825
 #, gcc-internal-format
 msgid "-mfloat128 requires -mfloat128-type"
-msgstr ""
+msgstr "-mfloat128 necesita -mfloat128-type"
 
 #: config/rs6000/rs6000.c:4838
-#, fuzzy, gcc-internal-format
-#| msgid "-mrecip requires -mfused-madd"
+#, gcc-internal-format
 msgid "-mfloat128-hardware requires -mfloat128-type"
-msgstr "-mrecip requiere -mfused-madd"
+msgstr "-mfloat128-hardware necesita -mfloat128-type"
 
 #: config/rs6000/rs6000.c:4861
 #, gcc-internal-format

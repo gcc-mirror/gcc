@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1258,33 +1258,35 @@ nonmemory_operand (rtx op, machine_mode mode)
 int
 push_operand (rtx op, machine_mode mode)
 {
-  unsigned int rounded_size = GET_MODE_SIZE (mode);
-
-#ifdef PUSH_ROUNDING
-  rounded_size = PUSH_ROUNDING (rounded_size);
-#endif
-
   if (!MEM_P (op))
     return 0;
 
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
 
+  poly_int64 rounded_size = GET_MODE_SIZE (mode);
+
+#ifdef PUSH_ROUNDING
+  rounded_size = PUSH_ROUNDING (MACRO_INT (rounded_size));
+#endif
+
   op = XEXP (op, 0);
 
-  if (rounded_size == GET_MODE_SIZE (mode))
+  if (known_eq (rounded_size, GET_MODE_SIZE (mode)))
     {
       if (GET_CODE (op) != STACK_PUSH_CODE)
 	return 0;
     }
   else
     {
+      poly_int64 offset;
       if (GET_CODE (op) != PRE_MODIFY
 	  || GET_CODE (XEXP (op, 1)) != PLUS
 	  || XEXP (XEXP (op, 1), 0) != XEXP (op, 0)
-	  || !CONST_INT_P (XEXP (XEXP (op, 1), 1))
-	  || INTVAL (XEXP (XEXP (op, 1), 1))
-	     != ((STACK_GROWS_DOWNWARD ? -1 : 1) * (int) rounded_size))
+	  || !poly_int_rtx_p (XEXP (XEXP (op, 1), 1), &offset)
+	  || (STACK_GROWS_DOWNWARD
+	      ? maybe_ne (offset, -rounded_size)
+	      : maybe_ne (offset, rounded_size)))
 	return 0;
     }
 
@@ -1943,7 +1945,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
   int (*addressp) (machine_mode, rtx, addr_space_t) =
     (strictp ? strict_memory_address_addr_space_p
 	     : memory_address_addr_space_p);
-  unsigned int mode_sz = GET_MODE_SIZE (mode);
+  poly_int64 mode_sz = GET_MODE_SIZE (mode);
 
   if (CONSTANT_ADDRESS_P (y))
     return 1;
@@ -1965,7 +1967,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
      Clearly that depends on the situation in which it's being used.
      However, the current situation in which we test 0xffffffff is
      less than ideal.  Caveat user.  */
-  if (mode_sz == 0)
+  if (known_eq (mode_sz, 0))
     mode_sz = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
 
   /* If the expression contains a constant term,
@@ -1996,7 +1998,7 @@ offsettable_address_addr_space_p (int strictp, machine_mode mode, rtx y,
      go inside a LO_SUM here, so we do so as well.  */
   if (GET_CODE (y) == LO_SUM
       && mode != BLKmode
-      && mode_sz <= GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT)
+      && known_le (mode_sz, GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT))
     z = gen_rtx_LO_SUM (address_mode, XEXP (y, 0),
 			plus_constant (address_mode, XEXP (y, 1),
 				       mode_sz - 1));
@@ -2929,6 +2931,7 @@ void
 split_all_insns (void)
 {
   bool changed;
+  bool need_cfg_cleanup = false;
   basic_block bb;
 
   auto_sbitmap blocks (last_basic_block_for_fn (cfun));
@@ -2947,6 +2950,18 @@ split_all_insns (void)
 	     CODE_LABELS and short-out basic blocks.  */
 	  next = NEXT_INSN (insn);
 	  finish = (insn == BB_END (bb));
+
+	  /* If INSN has a REG_EH_REGION note and we split INSN, the
+	     resulting split may not have/need REG_EH_REGION notes.
+
+	     If that happens and INSN was the last reference to the
+	     given EH region, then the EH region will become unreachable.
+	     We can not leave the unreachable blocks in the CFG as that
+	     will trigger a checking failure.
+
+	     So track if INSN has a REG_EH_REGION note.  If so and we
+	     split INSN, then trigger a CFG cleanup.  */
+	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 	  if (INSN_P (insn))
 	    {
 	      rtx set = single_set (insn);
@@ -2963,6 +2978,8 @@ split_all_insns (void)
 		     nops then anyways.  */
 		  if (reload_completed)
 		      delete_insn_and_edges (insn);
+		  if (note)
+		    need_cfg_cleanup = true;
 		}
 	      else
 		{
@@ -2970,6 +2987,8 @@ split_all_insns (void)
 		    {
 		      bitmap_set_bit (blocks, bb->index);
 		      changed = true;
+		      if (note)
+			need_cfg_cleanup = true;
 		    }
 		}
 	    }
@@ -2978,7 +2997,16 @@ split_all_insns (void)
 
   default_rtl_profile ();
   if (changed)
-    find_many_sub_basic_blocks (blocks);
+    {
+      find_many_sub_basic_blocks (blocks);
+
+      /* Splitting could drop an REG_EH_REGION if it potentially
+	 trapped in its original form, but does not in its split
+	 form.  Consider a FLOAT_TRUNCATE which splits into a memory
+	 store/load pair and -fnon-call-exceptions.  */
+      if (need_cfg_cleanup)
+	cleanup_cfg (0);
+    }
 
   checking_verify_flow_info ();
 }
@@ -3418,6 +3446,8 @@ peep2_attempt (basic_block bb, rtx_insn *insn, int match_len, rtx_insn *attempt)
   last = emit_insn_after_setloc (attempt,
 				 peep2_insn_data[i].insn,
 				 INSN_LOCATION (peepinsn));
+  if (JUMP_P (peepinsn) && JUMP_P (last))
+    CROSSING_JUMP_P (last) = CROSSING_JUMP_P (peepinsn);
   before_try = PREV_INSN (insn);
   delete_insn_chain (insn, peep2_insn_data[i].insn, false);
 

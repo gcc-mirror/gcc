@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Renesas H8/300.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -6043,6 +6043,21 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
       mem = adjust_address (m_tramp, SImode, 6);
       emit_move_insn (mem, tem);
     }
+}
+
+/* Implement PUSH_ROUNDING.
+
+   On the H8/300, @-sp really pushes a byte if you ask it to - but that's
+   dangerous, so we claim that it always pushes a word, then we catch
+   the mov.b rx,@-sp and turn it into a mov.w rx,@-sp on output.
+
+   On the H8/300H, we simplify TARGET_QUICKCALL by setting this to 4
+   and doing a similar thing.  */
+
+poly_int64
+h8300_push_rounding (poly_int64 bytes)
+{
+  return ((bytes + PARM_BOUNDARY / 8 - 1) & (-PARM_BOUNDARY / 8));
 }
 
 /* Initialize the GCC target structure.  */

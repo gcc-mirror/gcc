@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -53,7 +53,7 @@
    the PowerISA FPSCR / VSCR registers. We recommend applications
    replace direct access to the MXSCR with the more portable <fenv.h>
    Posix APIs. */
-#warning "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this warning."
+#error "Please read comment above.  Use -DNO_WARN_X86_INTRINSICS to disable this error."
 #endif
 
 #ifndef EMMINTRIN_H_

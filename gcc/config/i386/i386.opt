@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -1021,3 +1021,31 @@ indirect jump.
 mforce-indirect-call
 Target Report Var(flag_force_indirect_call) Init(0)
 Make all function calls indirect.
+
+mindirect-branch=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_indirect_branch) Init(indirect_branch_keep)
+Convert indirect call and jump to call and return thunks.
+
+mfunction-return=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(ix86_function_return) Init(indirect_branch_keep)
+Convert function return to call and return thunk.
+
+Enum
+Name(indirect_branch) Type(enum indirect_branch)
+Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):
+
+EnumValue
+Enum(indirect_branch) String(keep) Value(indirect_branch_keep)
+
+EnumValue
+Enum(indirect_branch) String(thunk) Value(indirect_branch_thunk)
+
+EnumValue
+Enum(indirect_branch) String(thunk-inline) Value(indirect_branch_thunk_inline)
+
+EnumValue
+Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
+
+mindirect-branch-register
+Target Report Var(ix86_indirect_branch_register) Init(0)
+Force indirect call and jump via register.

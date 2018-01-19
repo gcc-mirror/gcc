@@ -1,5 +1,5 @@
 /* Backend support for Fortran 95 basic types and derived types.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -122,6 +122,9 @@ int gfc_intio_kind;
 
 /* The integer kind used to store character lengths.  */
 int gfc_charlen_int_kind;
+
+/* Kind of internal integer for storing object sizes.  */
+int gfc_size_kind;
 
 /* The size of the numeric storage unit and character storage unit.  */
 int gfc_numeric_storage_size;
@@ -1006,14 +1009,17 @@ gfc_init_types (void)
 			wi::mask (n, UNSIGNED,
 				  TYPE_PRECISION (size_type_node)));
 
-
   logical_type_node = gfc_get_logical_type (gfc_default_logical_kind);
   logical_true_node = build_int_cst (logical_type_node, 1);
   logical_false_node = build_int_cst (logical_type_node, 0);
 
-  /* ??? Shouldn't this be based on gfc_index_integer_kind or so?  */
-  gfc_charlen_int_kind = 4;
+  /* Character lengths are of type size_t, except signed.  */
+  gfc_charlen_int_kind = get_int_kind_from_node (size_type_node);
   gfc_charlen_type_node = gfc_get_int_type (gfc_charlen_int_kind);
+
+  /* Fortran kind number of size_type_node (size_t). This is used for
+     the _size member in vtables.  */
+  gfc_size_kind = get_int_kind_from_node (size_type_node);
 }
 
 /* Get the type node for the given type and kind.  */
@@ -3185,7 +3191,16 @@ gfc_type_for_mode (machine_mode mode, int unsignedp)
       tree type = gfc_type_for_size (GET_MODE_PRECISION (int_mode), unsignedp);
       return type != NULL_TREE && mode == TYPE_MODE (type) ? type : NULL_TREE;
     }
-  else if (VECTOR_MODE_P (mode))
+  else if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
+    {
+      unsigned int elem_bits = vector_element_size (GET_MODE_BITSIZE (mode),
+						    GET_MODE_NUNITS (mode));
+      tree bool_type = build_nonstandard_boolean_type (elem_bits);
+      return build_vector_type_for_mode (bool_type, mode);
+    }
+  else if (VECTOR_MODE_P (mode)
+	   && valid_vector_subparts_p (GET_MODE_NUNITS (mode)))
     {
       machine_mode inner_mode = GET_MODE_INNER (mode);
       tree inner_type = gfc_type_for_mode (inner_mode, unsignedp);

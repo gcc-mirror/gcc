@@ -1,5 +1,5 @@
 /* Builtin functions for rs6000/powerpc.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.
@@ -637,6 +637,14 @@
 		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
 		     | RS6000_BTC_BINARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P7_MISC_X(ENUM, NAME, ATTR)					\
+  RS6000_BUILTIN_X (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_POPCNTD,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
 
 
 /* Miscellaneous builtins for instructions added in ISA 2.07.  These
@@ -1650,6 +1658,7 @@ BU_VSX_2 (CMPLE_U16QI,        "cmple_u16qi",    CONST,  vector_ngtuv16qi)
 BU_VSX_2 (CMPLE_U8HI,         "cmple_u8hi",     CONST,  vector_ngtuv8hi)
 BU_VSX_2 (CMPLE_U4SI,         "cmple_u4si",     CONST,  vector_ngtuv4si)
 BU_VSX_2 (CMPLE_U2DI,         "cmple_u2di",     CONST,  vector_ngtuv2di)
+BU_VSX_2 (FLOAT2_V2DF,        "float2_v2df",    CONST,  float2_v2df)
 BU_VSX_2 (FLOAT2_V2DI,        "float2_v2di",    CONST,  float2_v2di)
 BU_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
 
@@ -1924,8 +1933,14 @@ BU_P8V_AV_2 (VMINSD,		"vminsd",	CONST,	sminv2di3)
 BU_P8V_AV_2 (VMAXSD,		"vmaxsd",	CONST,	smaxv2di3)
 BU_P8V_AV_2 (VMINUD,		"vminud",	CONST,	uminv2di3)
 BU_P8V_AV_2 (VMAXUD,		"vmaxud",	CONST,	umaxv2di3)
+BU_P8V_AV_2 (VMRGEW_V2DI,	"vmrgew_v2di",	CONST,	p8_vmrgew_v2di)
+BU_P8V_AV_2 (VMRGEW_V2DF,	"vmrgew_v2df",	CONST,	p8_vmrgew_v2df)
 BU_P8V_AV_2 (VMRGEW_V4SI,	"vmrgew_v4si",	CONST,	p8_vmrgew_v4si)
-BU_P8V_AV_2 (VMRGOW,		"vmrgow",	CONST,	p8_vmrgow)
+BU_P8V_AV_2 (VMRGEW_V4SF,	"vmrgew_v4sf",	CONST,	p8_vmrgew_v4sf)
+BU_P8V_AV_2 (VMRGOW_V4SI,	"vmrgow_v4si",	CONST,	p8_vmrgow_v4si)
+BU_P8V_AV_2 (VMRGOW_V4SF,	"vmrgow_v4sf",	CONST,	p8_vmrgow_v4sf)
+BU_P8V_AV_2 (VMRGOW_V2DI,	"vmrgow_v2di",	CONST,	p8_vmrgow_v2di)
+BU_P8V_AV_2 (VMRGOW_V2DF,	"vmrgow_v2df",	CONST,	p8_vmrgow_v2df)
 BU_P8V_AV_2 (VBPERMQ,		"vbpermq",	CONST,	altivec_vbpermq)
 BU_P8V_AV_2 (VBPERMQ2,		"vbpermq2",	CONST,	altivec_vbpermq2)
 BU_P8V_AV_2 (VPKUDUM,		"vpkudum",	CONST,	altivec_vpkudum)
@@ -2197,8 +2212,8 @@ BU_P9V_OVERLOAD_2 (VIEDP,	"insert_exp_dp")
 BU_P9V_OVERLOAD_2 (VIESP,	"insert_exp_sp")
 
 /* 2 argument vector functions added in ISA 3.0 (power9).  */
-BU_P9V_64BIT_VSX_2 (LXVL,	"lxvl",		CONST,	lxvl)
-BU_P9V_64BIT_VSX_2 (XL_LEN_R,	"xl_len_r",	CONST,  xl_len_r)
+BU_P9V_64BIT_VSX_2 (LXVL,	"lxvl",		PURE,	lxvl)
+BU_P9V_64BIT_VSX_2 (XL_LEN_R,	"xl_len_r",	PURE,	xl_len_r)
 
 BU_P9V_AV_2 (VEXTUBLX, "vextublx",		CONST,	vextublx)
 BU_P9V_AV_2 (VEXTUBRX, "vextubrx",		CONST,	vextubrx)
@@ -2316,6 +2331,11 @@ BU_DFP_MISC_2 (DSCLI,		"dscli",	CONST,	dfp_dscli_dd)
 BU_DFP_MISC_2 (DSCLIQ,		"dscliq",	CONST,	dfp_dscli_td)
 BU_DFP_MISC_2 (DSCRI,		"dscri",	CONST,	dfp_dscri_dd)
 BU_DFP_MISC_2 (DSCRIQ,		"dscriq",	CONST,	dfp_dscri_td)
+
+/* 0 argument void function that we pretend was added in ISA 2.06.
+   It's a special nop recognized by 2018+ firmware for P7 and up,
+   with speculation barrier semantics.  */
+BU_P7_MISC_X (SPEC_BARRIER,	"rs6000_speculation_barrier",	MISC)
 
 /* 1 argument BCD functions added in ISA 2.06.  */
 BU_P7_MISC_1 (CDTBCD,		"cdtbcd",	CONST,	cdtbcd)

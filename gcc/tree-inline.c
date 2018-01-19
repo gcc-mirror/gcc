@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -2683,8 +2683,6 @@ copy_cfg_body (copy_body_data * id,
   profile_count den = ENTRY_BLOCK_PTR_FOR_FN (src_cfun)->count;
   profile_count num = entry_block_map->count;
 
-  profile_count::adjust_for_ipa_scaling (&num, &den);
-
   cfun_to_copy = id->src_cfun = DECL_STRUCT_FUNCTION (callee_fndecl);
 
   /* Register specific tree functions.  */
@@ -2706,6 +2704,8 @@ copy_cfg_body (copy_body_data * id,
 	  den += e->count ();
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = den;
     }
+
+  profile_count::adjust_for_ipa_scaling (&num, &den);
 
   /* Must have a CFG here at this point.  */
   gcc_assert (ENTRY_BLOCK_PTR_FOR_FN
@@ -3808,10 +3808,11 @@ estimate_move_cost (tree type, bool ARG_UNUSED (speed_p))
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
       scalar_mode inner = SCALAR_TYPE_MODE (TREE_TYPE (type));
-      machine_mode simd
-	= targetm.vectorize.preferred_simd_mode (inner);
-      int simd_mode_size = GET_MODE_SIZE (simd);
-      return ((GET_MODE_SIZE (TYPE_MODE (type)) + simd_mode_size - 1)
+      machine_mode simd = targetm.vectorize.preferred_simd_mode (inner);
+      int orig_mode_size
+	= estimated_poly_value (GET_MODE_SIZE (TYPE_MODE (type)));
+      int simd_mode_size = estimated_poly_value (GET_MODE_SIZE (simd));
+      return ((orig_mode_size + simd_mode_size - 1)
 	      / simd_mode_size);
     }
 

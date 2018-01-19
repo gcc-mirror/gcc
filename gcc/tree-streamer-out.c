@@ -1,6 +1,6 @@
 /* Routines for emitting trees to a file stream.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -609,7 +609,8 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
       && DECL_HAS_VALUE_EXPR_P (expr))
     stream_write_tree (ob, DECL_VALUE_EXPR (expr), ref_p);
 
-  if (VAR_P (expr))
+  if (VAR_P (expr)
+      && DECL_HAS_DEBUG_EXPR_P (expr))
     stream_write_tree (ob, DECL_DEBUG_EXPR (expr), ref_p);
 }
 

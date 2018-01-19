@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck (zadeck@naturalbridge.com).
 
 This file is part of GCC.
@@ -436,8 +436,12 @@ dump_reg_info (FILE *file)
       else if (REG_N_CALLS_CROSSED (i))
 	fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
       if (regno_reg_rtx[i] != NULL
-	  && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
-	fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
+	  && maybe_ne (PSEUDO_REGNO_BYTES (i), UNITS_PER_WORD))
+	{
+	  fprintf (file, "; ");
+	  print_dec (PSEUDO_REGNO_BYTES (i), file, SIGNED);
+	  fprintf (file, " bytes");
+	}
 
       rclass = reg_preferred_class (i);
       altclass = reg_alternate_class (i);

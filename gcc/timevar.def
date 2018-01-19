@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -253,6 +253,7 @@ DEFTIMEVAR (TV_MODE_SWITCH           , "mode switching")
 DEFTIMEVAR (TV_SMS		     , "sms modulo scheduling")
 DEFTIMEVAR (TV_LIVE_RANGE_SHRINKAGE  , "live range shrinkage")
 DEFTIMEVAR (TV_SCHED                 , "scheduling")
+DEFTIMEVAR (TV_EARLY_REMAT           , "early rematerialization")
 DEFTIMEVAR (TV_IRA		     , "integrated RA")
 DEFTIMEVAR (TV_LRA		     , "LRA non-specific")
 DEFTIMEVAR (TV_LRA_ELIMINATE	     , "LRA virtuals elimination")

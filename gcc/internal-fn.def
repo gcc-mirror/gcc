@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,9 +47,20 @@ along with GCC; see the file COPYING3.  If not see
 
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
+   - mask_load_lanes: currently just vec_mask_load_lanes
+   - gather_load: used for {mask_,}gather_load
 
    - mask_store: currently just maskstore
    - store_lanes: currently just vec_store_lanes
+   - mask_store_lanes: currently just vec_mask_store_lanes
+   - scatter_store: used for {mask_,}scatter_store
+
+   - unary: a normal unary optab, such as vec_reverse_<mode>
+   - binary: a normal binary optab, such as vec_interleave_lo_<mode>
+
+   - cond_binary: a conditional binary optab, such as add<mode>cc
+
+   - fold_left: for scalar = FN (scalar, vector), keyed off the vector mode
 
    DEF_INTERNAL_SIGNED_OPTAB_FN defines an internal function that
    maps to one of two optabs, depending on the signedness of an input.
@@ -106,9 +117,39 @@ along with GCC; see the file COPYING3.  If not see
 
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD, ECF_PURE, maskload, mask_load)
 DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
+		       vec_mask_load_lanes, mask_load_lanes)
+
+DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
+DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
+		       mask_gather_load, gather_load)
+
+DEF_INTERNAL_OPTAB_FN (SCATTER_STORE, 0, scatter_store, scatter_store)
+DEF_INTERNAL_OPTAB_FN (MASK_SCATTER_STORE, 0,
+		       mask_scatter_store, scatter_store)
 
 DEF_INTERNAL_OPTAB_FN (MASK_STORE, 0, maskstore, mask_store)
 DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
+DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
+		       vec_mask_store_lanes, mask_store_lanes)
+
+DEF_INTERNAL_OPTAB_FN (WHILE_ULT, ECF_CONST | ECF_NOTHROW, while_ult, while)
+
+DEF_INTERNAL_OPTAB_FN (VEC_SHL_INSERT, ECF_CONST | ECF_NOTHROW,
+		       vec_shl_insert, binary)
+
+DEF_INTERNAL_OPTAB_FN (COND_ADD, ECF_CONST, cond_add, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_SUB, ECF_CONST, cond_sub, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MIN, ECF_CONST, first,
+			      cond_smin, cond_umin, cond_binary)
+DEF_INTERNAL_SIGNED_OPTAB_FN (COND_MAX, ECF_CONST, first,
+			      cond_smax, cond_umax, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_AND, ECF_CONST | ECF_NOTHROW,
+		       cond_and, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_IOR, ECF_CONST | ECF_NOTHROW,
+		       cond_ior, cond_binary)
+DEF_INTERNAL_OPTAB_FN (COND_XOR, ECF_CONST | ECF_NOTHROW,
+		       cond_xor, cond_binary)
 
 DEF_INTERNAL_OPTAB_FN (RSQRT, ECF_CONST, rsqrt, unary)
 
@@ -118,6 +159,23 @@ DEF_INTERNAL_SIGNED_OPTAB_FN (REDUC_MAX, ECF_CONST | ECF_NOTHROW, first,
 			      reduc_smax_scal, reduc_umax_scal, unary)
 DEF_INTERNAL_SIGNED_OPTAB_FN (REDUC_MIN, ECF_CONST | ECF_NOTHROW, first,
 			      reduc_smin_scal, reduc_umin_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_AND, ECF_CONST | ECF_NOTHROW,
+		       reduc_and_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_IOR, ECF_CONST | ECF_NOTHROW,
+		       reduc_ior_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_XOR, ECF_CONST | ECF_NOTHROW,
+		       reduc_xor_scal, unary)
+
+/* Extract the last active element from a vector.  */
+DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
+		       extract_last, cond_unary)
+
+/* Same, but return the first argument if no elements are active.  */
+DEF_INTERNAL_OPTAB_FN (FOLD_EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,
+		       fold_extract_last, fold_extract)
+
+DEF_INTERNAL_OPTAB_FN (FOLD_LEFT_PLUS, ECF_CONST | ECF_NOTHROW,
+		       fold_left_plus, fold_left)
 
 /* Unary math functions.  */
 DEF_INTERNAL_FLT_FN (ACOS, ECF_CONST, acos, unary)

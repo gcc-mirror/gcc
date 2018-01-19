@@ -2,7 +2,7 @@
    This file is consumed by genmatch which produces gimple-match.c
    and generic-match.c from it.
 
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
    and Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
@@ -83,7 +83,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (nop_convert @0)
  (view_convert @0)
  (if (VECTOR_TYPE_P (type) && VECTOR_TYPE_P (TREE_TYPE (@0))
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0))
+      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)))
       && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
 /* This one has to be last, or it shadows the others.  */
 (match (nop_convert @0)
@@ -509,7 +510,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Simplify (t * 2) / 2) -> t.  */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
-  (div (mult @0 @1) @1)
+  (div (mult:c @0 @1) @1)
   (if (ANY_INTEGRAL_TYPE_P (type)
        && TYPE_OVERFLOW_UNDEFINED (type))
    @0)))
@@ -1111,7 +1112,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for bitop (bit_and bit_ior bit_xor)
  (simplify
   (bitop (bitop @0 CONSTANT_CLASS_P@1) CONSTANT_CLASS_P@2)
-  (bitop @0 (bitop @1 @2))))
+  (if (!CONSTANT_CLASS_P (@0))
+   /* This is the canonical form regardless of whether (bitop @1 @2) can be
+      folded to a constant.  */
+   (bitop @0 (bitop @1 @2))
+   /* In this case we have three constants and (bitop @0 @1) doesn't fold
+      to a constant.  This can happen if @0 or @1 is a POLY_INT_CST and if
+      the values involved are such that the operation can't be decided at
+      compile time.  Try folding one of @0 or @1 with @2 to see whether
+      that combination can be decided at compile time.
+
+      Keep the existing form if both folds fail, to avoid endless
+      oscillation.  */
+   (with { tree cst1 = const_binop (bitop, type, @0, @2); }
+    (if (cst1)
+     (bitop @1 { cst1; })
+     (with { tree cst2 = const_binop (bitop, type, @1, @2); }
+      (if (cst2)
+       (bitop @0 { cst2; }))))))))
 
 /* Try simple folding for X op !X, and X op X with the help
    of the truth_valued_p and logical_inverted_value predicates.  */
@@ -1814,7 +1832,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* The second argument of pointer_plus must be interpreted as signed, and
        thus sign-extended if necessary.  */
     (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
-     (convert (convert:stype @1))))
+     /* Use view_convert instead of convert here, as POINTER_PLUS_EXPR
+	second arg is unsigned even when we need to consider it as signed,
+	we don't want to diagnose overflow here.  */
+     (convert (view_convert:stype @1))))
 
   /* (T)P - (T)(P + A) -> -(T) A */
   (simplify
@@ -1858,7 +1879,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* The second argument of pointer_plus must be interpreted as signed, and
        thus sign-extended if necessary.  */
     (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
-     (negate (convert (convert:stype @1)))))
+     /* Use view_convert instead of convert here, as POINTER_PLUS_EXPR
+	second arg is unsigned even when we need to consider it as signed,
+	we don't want to diagnose overflow here.  */
+     (negate (convert (view_convert:stype @1)))))
 
   /* (T)(P + A) - (T)(P + B) -> (T)A - (T)B */
   (simplify
@@ -1909,7 +1933,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* The second argument of pointer_plus must be interpreted as signed, and
        thus sign-extended if necessary.  */
     (with { tree stype = signed_type_for (TREE_TYPE (@1)); }
-     (minus (convert (convert:stype @1)) (convert (convert:stype @2)))))))
+     /* Use view_convert instead of convert here, as POINTER_PLUS_EXPR
+	second arg is unsigned even when we need to consider it as signed,
+	we don't want to diagnose overflow here.  */
+     (minus (convert (view_convert:stype @1))
+	    (convert (view_convert:stype @2)))))))
 
 
 /* Simplifications of MIN_EXPR, MAX_EXPR, fmin() and fmax().  */
@@ -2832,7 +2860,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (plus:c @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
+      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1)))
       && (TYPE_MODE (TREE_TYPE (type))
           == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
   (minus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
@@ -2841,7 +2870,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (minus @3 (view_convert? (vec_cond:s @0 integer_each_onep@1 integer_zerop@2)))
  (if (VECTOR_TYPE_P (type)
-      && TYPE_VECTOR_SUBPARTS (type) == TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1))
+      && known_eq (TYPE_VECTOR_SUBPARTS (type),
+		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1)))
       && (TYPE_MODE (TREE_TYPE (type))
           == TYPE_MODE (TREE_TYPE (TREE_TYPE (@1)))))
   (plus @3 (view_convert (vec_cond @0 (negate @1) @2)))))
@@ -3030,18 +3060,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
          code = swap_tree_comparison (code);
      }
      (switch
-      /* x > +Inf is always false, if with ignore sNANs.  */
+      /* x > +Inf is always false, if we ignore NaNs or exceptions.  */
       (if (code == GT_EXPR
-	   && ! HONOR_SNANS (@0))
+	   && !(HONOR_NANS (@0) && flag_trapping_math))
        { constant_boolean_node (false, type); })
       (if (code == LE_EXPR)
-       /* x <= +Inf is always true, if we don't case about NaNs.  */
+       /* x <= +Inf is always true, if we don't care about NaNs.  */
        (if (! HONOR_NANS (@0))
 	{ constant_boolean_node (true, type); }
-	/* x <= +Inf is the same as x == x, i.e. !isnan(x).  */
-	(eq @0 @0)))
-      /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
-      (if (code == EQ_EXPR || code == GE_EXPR)
+	/* x <= +Inf is the same as x == x, i.e. !isnan(x), but this loses
+	   an "invalid" exception.  */
+	(if (!flag_trapping_math)
+	 (eq @0 @0))))
+      /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX, but
+	 for == this introduces an exception for x a NaN.  */
+      (if ((code == EQ_EXPR && !(HONOR_NANS (@0) && flag_trapping_math))
+	   || code == GE_EXPR)
        (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
 	(if (neg)
 	 (lt @0 { build_real (TREE_TYPE (@0), max); })
@@ -3052,7 +3086,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(if (neg)
 	 (ge @0 { build_real (TREE_TYPE (@0), max); })
 	 (le @0 { build_real (TREE_TYPE (@0), max); }))))
-      /* x != +Inf is always equal to !(x > DBL_MAX).  */
+      /* x != +Inf is always equal to !(x > DBL_MAX), but this introduces
+	 an exception for x a NaN so use an unordered comparison.  */
       (if (code == NE_EXPR)
        (with { real_maxval (&max, neg, TYPE_MODE (TREE_TYPE (@0))); }
 	(if (! HONOR_NANS (@0))
@@ -3060,10 +3095,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  (ge @0 { build_real (TREE_TYPE (@0), max); })
 	  (le @0 { build_real (TREE_TYPE (@0), max); }))
 	 (if (neg)
-	  (bit_xor (lt @0 { build_real (TREE_TYPE (@0), max); })
-	   { build_one_cst (type); })
-	  (bit_xor (gt @0 { build_real (TREE_TYPE (@0), max); })
-	   { build_one_cst (type); }))))))))))
+	  (unge @0 { build_real (TREE_TYPE (@0), max); })
+	  (unle @0 { build_real (TREE_TYPE (@0), max); }))))))))))
 
  /* If this is a comparison of a real constant with a PLUS_EXPR
     or a MINUS_EXPR of a real constant, we can convert it into a
@@ -3587,7 +3620,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		    || TREE_CODE (base1) == STRING_CST))
          equal = (base0 == base1);
      }
-     (if (equal == 1)
+     (if (equal == 1
+	  && (cmp == EQ_EXPR || cmp == NE_EXPR
+	      /* If the offsets are equal we can ignore overflow.  */
+	      || known_eq (off0, off1)
+	      || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+		 /* Or if we compare using pointers to decls or strings.  */
+	      || (POINTER_TYPE_P (TREE_TYPE (@2))
+		  && (DECL_P (base0) || TREE_CODE (base0) == STRING_CST))))
       (switch
        (if (cmp == EQ_EXPR && (known_eq (off0, off1) || known_ne (off0, off1)))
 	{ constant_boolean_node (known_eq (off0, off1), type); })
@@ -4507,52 +4547,50 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (n != 0
 	&& (idx % width) == 0
 	&& (n % width) == 0
-	&& ((idx + n) / width) <= TYPE_VECTOR_SUBPARTS (TREE_TYPE (ctor)))
+	&& known_le ((idx + n) / width,
+		     TYPE_VECTOR_SUBPARTS (TREE_TYPE (ctor))))
     (with
      {
        idx = idx / width;
        n = n / width;
        /* Constructor elements can be subvectors.  */
-       unsigned HOST_WIDE_INT k = 1;
+       poly_uint64 k = 1;
        if (CONSTRUCTOR_NELTS (ctor) != 0)
          {
            tree cons_elem = TREE_TYPE (CONSTRUCTOR_ELT (ctor, 0)->value);
 	   if (TREE_CODE (cons_elem) == VECTOR_TYPE)
 	     k = TYPE_VECTOR_SUBPARTS (cons_elem);
 	 }
+       unsigned HOST_WIDE_INT elt, count, const_k;
      }
      (switch
       /* We keep an exact subset of the constructor elements.  */
-      (if ((idx % k) == 0 && (n % k) == 0)
+      (if (multiple_p (idx, k, &elt) && multiple_p (n, k, &count))
        (if (CONSTRUCTOR_NELTS (ctor) == 0)
         { build_constructor (type, NULL); }
-	(with
+	(if (count == 1)
+	 (if (elt < CONSTRUCTOR_NELTS (ctor))
+	  { CONSTRUCTOR_ELT (ctor, elt)->value; }
+	  { build_zero_cst (type); })
 	 {
-	   idx /= k;
-	   n /= k;
-	 }
-	 (if (n == 1)
-	  (if (idx < CONSTRUCTOR_NELTS (ctor))
-	   { CONSTRUCTOR_ELT (ctor, idx)->value; }
-	   { build_zero_cst (type); })
-	  {
-	    vec<constructor_elt, va_gc> *vals;
-	    vec_alloc (vals, n);
-	    for (unsigned i = 0;
-	         i < n && idx + i < CONSTRUCTOR_NELTS (ctor); ++i)
-	      CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
-				      CONSTRUCTOR_ELT (ctor, idx + i)->value);
-	    build_constructor (type, vals);
-	  }))))
+	   vec<constructor_elt, va_gc> *vals;
+	   vec_alloc (vals, count);
+	   for (unsigned i = 0;
+		i < count && elt + i < CONSTRUCTOR_NELTS (ctor); ++i)
+	     CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
+				     CONSTRUCTOR_ELT (ctor, elt + i)->value);
+	   build_constructor (type, vals);
+	 })))
       /* The bitfield references a single constructor element.  */
-      (if (idx + n <= (idx / k + 1) * k)
+      (if (k.is_constant (&const_k)
+	   && idx + n <= (idx / const_k + 1) * const_k)
        (switch
-        (if (CONSTRUCTOR_NELTS (ctor) <= idx / k)
+	(if (CONSTRUCTOR_NELTS (ctor) <= idx / const_k)
 	 { build_zero_cst (type); })
-	(if (n == k)
-	 { CONSTRUCTOR_ELT (ctor, idx / k)->value; })
-	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / k)->value; }
-		       @1 { bitsize_int ((idx % k) * width); })))))))))
+	(if (n == const_k)
+	 { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; })
+	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; }
+		       @1 { bitsize_int ((idx % const_k) * width); })))))))))
 
 /* Simplify a bit extraction from a bit insertion for the cases with
    the inserted element fully covering the extraction or the insertion

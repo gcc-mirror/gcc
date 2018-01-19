@@ -1,5 +1,5 @@
 /* HSAIL IL Register allocation and out-of-SSA.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
 
 This file is part of GCC.

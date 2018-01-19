@@ -1,5 +1,5 @@
 /* Register Transfer Language (RTL) definitions for GCC
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -418,6 +418,19 @@ struct GTY((desc("0"), tag("0"),
     /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of
        HOST_WIDE_INTs in the hwivec_def.  */
     unsigned int num_elem;
+
+    /* Information about a CONST_VECTOR.  */
+    struct
+    {
+      /* The value of CONST_VECTOR_NPATTERNS.  */
+      unsigned int npatterns : 16;
+
+      /* The value of CONST_VECTOR_NELTS_PER_PATTERN.  */
+      unsigned int nelts_per_pattern : 8;
+
+      /* For future expansion.  */
+      unsigned int unused : 8;
+    } const_vector;
   } GTY ((skip)) u2;
 
   /* The first element of the operands of this rtx.
@@ -1956,10 +1969,35 @@ set_regno_raw (rtx x, unsigned int regno, unsigned int nregs)
   ((HOST_WIDE_INT) (CONST_FIXED_VALUE (r)->data.low))
 
 /* For a CONST_VECTOR, return element #n.  */
-#define CONST_VECTOR_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
+#define CONST_VECTOR_ELT(RTX, N) const_vector_elt (RTX, N)
+
+/* See rtl.texi for a description of these macros.  */
+#define CONST_VECTOR_NPATTERNS(RTX) \
+ (RTL_FLAG_CHECK1 ("CONST_VECTOR_NPATTERNS", (RTX), CONST_VECTOR) \
+  ->u2.const_vector.npatterns)
+
+#define CONST_VECTOR_NELTS_PER_PATTERN(RTX) \
+ (RTL_FLAG_CHECK1 ("CONST_VECTOR_NELTS_PER_PATTERN", (RTX), CONST_VECTOR) \
+  ->u2.const_vector.nelts_per_pattern)
+
+#define CONST_VECTOR_DUPLICATE_P(RTX) \
+  (CONST_VECTOR_NELTS_PER_PATTERN (RTX) == 1)
+
+#define CONST_VECTOR_STEPPED_P(RTX) \
+  (CONST_VECTOR_NELTS_PER_PATTERN (RTX) == 3)
+
+#define CONST_VECTOR_ENCODED_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)
+
+/* Return the number of elements encoded directly in a CONST_VECTOR.  */
+
+inline unsigned int
+const_vector_encoded_nelts (const_rtx x)
+{
+  return CONST_VECTOR_NPATTERNS (x) * CONST_VECTOR_NELTS_PER_PATTERN (x);
+}
 
 /* For a CONST_VECTOR, return the number of elements in a vector.  */
-#define CONST_VECTOR_NUNITS(RTX) XCVECLEN (RTX, 0, CONST_VECTOR)
+#define CONST_VECTOR_NUNITS(RTX) GET_MODE_NUNITS (GET_MODE (RTX))
 
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
    SUBREG_BYTE extracts the byte-number.  */
@@ -2897,22 +2935,14 @@ extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
 
-/* Return true if X is some form of vector constant.  */
-
-inline bool
-const_vec_p (const_rtx x)
-{
-  return VECTOR_MODE_P (GET_MODE (x)) && CONSTANT_P (x);
-}
-
 /* Return true if X is a vector constant with a duplicated element value.  */
 
 inline bool
 const_vec_duplicate_p (const_rtx x)
 {
-  return ((GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
-	  || (GET_CODE (x) == CONST
-	      && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE));
+  return (GET_CODE (x) == CONST_VECTOR
+	  && CONST_VECTOR_NPATTERNS (x) == 1
+	  && CONST_VECTOR_DUPLICATE_P (x));
 }
 
 /* Return true if X is a vector constant with a duplicated element value.
@@ -2922,14 +2952,9 @@ template <typename T>
 inline bool
 const_vec_duplicate_p (T x, T *elt)
 {
-  if (GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
+  if (const_vec_duplicate_p (x))
     {
-      *elt = CONST_VECTOR_ELT (x, 0);
-      return true;
-    }
-  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
-    {
-      *elt = XEXP (XEXP (x, 0), 0);
+      *elt = CONST_VECTOR_ENCODED_ELT (x, 0);
       return true;
     }
   return false;
@@ -2942,7 +2967,8 @@ template <typename T>
 inline bool
 vec_duplicate_p (T x, T *elt)
 {
-  if (GET_CODE (x) == VEC_DUPLICATE)
+  if (GET_CODE (x) == VEC_DUPLICATE
+      && !VECTOR_MODE_P (GET_MODE (XEXP (x, 0))))
     {
       *elt = XEXP (x, 0);
       return true;
@@ -2957,18 +2983,18 @@ template <typename T>
 inline T
 unwrap_const_vec_duplicate (T x)
 {
-  if (GET_CODE (x) == CONST_VECTOR && rtvec_all_equal_p (XVEC (x, 0)))
-    return CONST_VECTOR_ELT (x, 0);
-  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
-    return XEXP (XEXP (x, 0), 0);
+  if (const_vec_duplicate_p (x))
+    x = CONST_VECTOR_ELT (x, 0);
   return x;
 }
 
 /* In emit-rtl.c.  */
+extern wide_int const_vector_int_elt (const_rtx, unsigned int);
+extern rtx const_vector_elt (const_rtx, unsigned int);
 extern bool const_vec_series_p_1 (const_rtx, rtx *, rtx *);
 
-/* Return true if X is a constant vector that contains a linear series
-   of the form:
+/* Return true if X is an integer constant vector that contains a linear
+   series of the form:
 
    { B, B + S, B + 2 * S, B + 3 * S, ... }
 
@@ -2978,14 +3004,9 @@ inline bool
 const_vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
 {
   if (GET_CODE (x) == CONST_VECTOR
-      && GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
+      && CONST_VECTOR_NPATTERNS (x) == 1
+      && !CONST_VECTOR_DUPLICATE_P (x))
     return const_vec_series_p_1 (x, base_out, step_out);
-  if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == VEC_SERIES)
-    {
-      *base_out = XEXP (XEXP (x, 0), 0);
-      *step_out = XEXP (XEXP (x, 0), 1);
-      return true;
-    }
   return false;
 }
 
@@ -3059,7 +3080,12 @@ extern poly_uint64 subreg_size_lowpart_offset (poly_uint64, poly_uint64);
 inline bool
 partial_subreg_p (machine_mode outermode, machine_mode innermode)
 {
-  return GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode);
+  /* Modes involved in a subreg must be ordered.  In particular, we must
+     always know at compile time whether the subreg is paradoxical.  */
+  poly_int64 outer_prec = GET_MODE_PRECISION (outermode);
+  poly_int64 inner_prec = GET_MODE_PRECISION (innermode);
+  gcc_checking_assert (ordered_p (outer_prec, inner_prec));
+  return maybe_lt (outer_prec, inner_prec);
 }
 
 /* Likewise return true if X is a subreg that is smaller than the inner
@@ -3080,7 +3106,12 @@ partial_subreg_p (const_rtx x)
 inline bool
 paradoxical_subreg_p (machine_mode outermode, machine_mode innermode)
 {
-  return GET_MODE_PRECISION (outermode) > GET_MODE_PRECISION (innermode);
+  /* Modes involved in a subreg must be ordered.  In particular, we must
+     always know at compile time whether the subreg is paradoxical.  */
+  poly_int64 outer_prec = GET_MODE_PRECISION (outermode);
+  poly_int64 inner_prec = GET_MODE_PRECISION (innermode);
+  gcc_checking_assert (ordered_p (outer_prec, inner_prec));
+  return maybe_gt (outer_prec, inner_prec);
 }
 
 /* Return true if X is a paradoxical subreg, false otherwise.  */
@@ -4207,6 +4238,7 @@ extern GTY(()) rtx stack_limit_rtx;
 
 /* In var-tracking.c */
 extern unsigned int variable_tracking_main (void);
+extern void delete_vta_debug_insns (bool);
 
 /* In stor-layout.c.  */
 extern void get_mode_bounds (scalar_int_mode, int,

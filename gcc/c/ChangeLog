@@ -1,3 +1,33 @@
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83814
+	* c-fold.c (fold_for_warn): Move from c-common.c, reducing to just
+	the C part.
+
+2018-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83801
+	* c-tree.h (decl_constant_value_1): Add a bool argument.
+	* c-typeck.c (decl_constant_value_1): Add IN_INIT argument, allow
+	returning a CONSTRUCTOR if it is true.  Use error_operand_p.
+	(decl_constant_value): Adjust caller.
+	* c-fold.c (c_fully_fold_internal): If in_init, pass true to
+	decl_constant_value_1 as IN_INIT.  Otherwise, punt if
+	decl_constant_value returns initializer that has BLKmode or
+	array type.
+	(c_fully_fold_internal) <case COMPONENT_REF>: Fold if !lval.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-typeck.c (comptypes_internal, build_binary_op): Handle polynomial
+	TYPE_VECTOR_SUBPARTS.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/83595
@@ -5321,7 +5351,7 @@
 	* c-decl.c: Likewise.  Include gt-c-c-decl.h, not gt-c-decl.h.
 	* c-parser.c: Likewise.  Include gt-c-c-parser.h, not gt-c-parser.h.
 
-Copyright (C) 2012-2017 Free Software Foundation, Inc.
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

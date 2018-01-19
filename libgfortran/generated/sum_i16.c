@@ -1,5 +1,5 @@
 /* Implementation of the SUM intrinsic
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -51,6 +51,10 @@ sum_i16 (gfc_array_i16 * const restrict retarray,
   index_type dim;
   int continue_loop;
 
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
+
   /* Make dim zero based to avoid confusion.  */
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
   dim = (*pdim) - 1;
@@ -100,7 +104,7 @@ sum_i16 (gfc_array_i16 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -218,6 +222,9 @@ msum_i16 (gfc_array_i16 * const restrict retarray,
   index_type mdelta;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -287,7 +294,7 @@ msum_i16 (gfc_array_i16 * const restrict retarray,
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       if (alloc_size == 0)
 	{
@@ -399,7 +406,11 @@ ssum_i16 (gfc_array_i16 * const restrict retarray,
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      sum_i16 (retarray, array, pdim, back);
+#else
       sum_i16 (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */
@@ -446,7 +457,7 @@ ssum_i16 (gfc_array_i16 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

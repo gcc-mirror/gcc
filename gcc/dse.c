@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
    and Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -1734,7 +1734,7 @@ find_shift_sequence (poly_int64 access_size,
 
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
-      if (GET_MODE_BITSIZE (new_mode) < GET_MODE_BITSIZE (store_mode)
+      if (maybe_lt (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (store_mode))
 	  && !TRULY_NOOP_TRUNCATION_MODES_P (new_mode, store_mode))
 	continue;
 

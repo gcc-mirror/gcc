@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1237,7 +1237,7 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
       break;
 
     case VECTOR_TYPE:
-      val = (TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
+      val = (known_eq (TYPE_VECTOR_SUBPARTS (t1), TYPE_VECTOR_SUBPARTS (t2))
 	     && comptypes_internal (TREE_TYPE (t1), TREE_TYPE (t2),
 				    enum_and_int_p, different_types_p));
       break;
@@ -1832,20 +1832,20 @@ c_size_in_bytes (const_tree type)
 /* Return either DECL or its known constant value (if it has one).  */
 
 tree
-decl_constant_value_1 (tree decl)
+decl_constant_value_1 (tree decl, bool in_init)
 {
   if (/* Note that DECL_INITIAL isn't valid for a PARM_DECL.  */
       TREE_CODE (decl) != PARM_DECL
       && !TREE_THIS_VOLATILE (decl)
       && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != NULL_TREE
-      && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK
+      && !error_operand_p (DECL_INITIAL (decl))
       /* This is invalid if initial value is not constant.
 	 If it has either a function call, a memory reference,
 	 or a variable, then re-evaluating it could give different results.  */
       && TREE_CONSTANT (DECL_INITIAL (decl))
       /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
+      && (in_init || TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR))
     return DECL_INITIAL (decl);
   return decl;
 }
@@ -1858,7 +1858,7 @@ decl_constant_value (tree decl)
 {
   /* Don't change a variable array bound or initial value to a constant
      in a place where a variable is invalid.  */
-  return current_function_decl ? decl_constant_value_1 (decl) : decl;
+  return current_function_decl ? decl_constant_value_1 (decl, false) : decl;
 }
 
 /* Convert the array expression EXP to a pointer.  */
@@ -11346,7 +11346,8 @@ build_binary_op (location_t location, enum tree_code code,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
-	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	  && known_eq (TYPE_VECTOR_SUBPARTS (type0),
+		       TYPE_VECTOR_SUBPARTS (type1)))
 	{
 	  result_type = type0;
 	  converted = 1;
@@ -11403,7 +11404,8 @@ build_binary_op (location_t location, enum tree_code code,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
 	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
-	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	  && known_eq (TYPE_VECTOR_SUBPARTS (type0),
+		       TYPE_VECTOR_SUBPARTS (type1)))
 	{
 	  result_type = type0;
 	  converted = 1;
@@ -11477,7 +11479,8 @@ build_binary_op (location_t location, enum tree_code code,
               return error_mark_node;
             }
 
-          if (TYPE_VECTOR_SUBPARTS (type0) != TYPE_VECTOR_SUBPARTS (type1))
+	  if (maybe_ne (TYPE_VECTOR_SUBPARTS (type0),
+			TYPE_VECTOR_SUBPARTS (type1)))
             {
               error_at (location, "comparing vectors with different "
                                   "number of elements");
@@ -11637,7 +11640,8 @@ build_binary_op (location_t location, enum tree_code code,
               return error_mark_node;
             }
 
-          if (TYPE_VECTOR_SUBPARTS (type0) != TYPE_VECTOR_SUBPARTS (type1))
+	  if (maybe_ne (TYPE_VECTOR_SUBPARTS (type0),
+			TYPE_VECTOR_SUBPARTS (type1)))
             {
               error_at (location, "comparing vectors with different "
                                   "number of elements");

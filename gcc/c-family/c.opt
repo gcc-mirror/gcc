@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2017 Free Software Foundation, Inc.
+; Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -1389,6 +1389,10 @@ Preprocess directives only.
 fdollars-in-identifiers
 C ObjC C++ ObjC++
 Permit '$' as an identifier character.
+
+fmacro-prefix-map=
+C ObjC C++ ObjC++ Joined RejectNegative
+-fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE().
 
 fdump-ada-spec
 C ObjC C++ ObjC++ RejectNegative Var(flag_dump_ada_spec)

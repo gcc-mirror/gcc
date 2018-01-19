@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -4046,9 +4046,9 @@ get_subreg_tracking_sizes (rtx x, HOST_WIDE_INT *outer_size,
 			   HOST_WIDE_INT *inner_size, HOST_WIDE_INT *start)
 {
   rtx reg = regno_reg_rtx[REGNO (SUBREG_REG (x))];
-  *outer_size = GET_MODE_SIZE (GET_MODE (x));
-  *inner_size = GET_MODE_SIZE (GET_MODE (reg));
-  return SUBREG_BYTE (x).is_constant (start);
+  return (GET_MODE_SIZE (GET_MODE (x)).is_constant (outer_size)
+	  && GET_MODE_SIZE (GET_MODE (reg)).is_constant (inner_size)
+	  && SUBREG_BYTE (x).is_constant (start));
 }
 
 /* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] for

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1732,6 +1732,9 @@ package body Sem_Ch3 is
                   --  nonconforming preconditions in both an ancestor and
                   --  a progenitor operation.
 
+                  --  If the operation is a primitive wrapper it is an explicit
+                  --  (overriding) operqtion and all is fine.
+
                   if Present (Anc)
                     and then Has_Non_Trivial_Precondition (Anc)
                     and then Has_Non_Trivial_Precondition (Iface_Prim)
@@ -1742,10 +1745,11 @@ package body Sem_Ch3 is
                            and then Nkind (Parent (Prim)) =
                                       N_Procedure_Specification
                            and then Null_Present (Parent (Prim)))
+                       or else Is_Primitive_Wrapper (Prim)
                      then
                         null;
 
-                     --  The inherited operation must be overridden
+                     --  The operation is inherited and must be overridden
 
                      elsif not Comes_From_Source (Prim) then
                         Error_Msg_NE

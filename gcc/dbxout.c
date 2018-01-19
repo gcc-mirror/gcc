@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,6 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "expr.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"

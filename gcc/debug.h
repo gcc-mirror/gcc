@@ -1,5 +1,5 @@
 /* Debug hooks for GCC.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -248,9 +248,6 @@ extern bool dwarf2out_do_eh_frame (void);
 extern bool dwarf2out_do_frame (void);
 extern bool dwarf2out_do_cfi_asm (void);
 extern void dwarf2out_switch_text_section (void);
-
-const char *remap_debug_filename (const char *);
-void add_debug_prefix_map (const char *);
 
 /* For -fdump-go-spec.  */
 

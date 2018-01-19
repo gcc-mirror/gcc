@@ -1,5 +1,5 @@
 /* Output VMS debug format symbol table information from GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
    Updated by Bernard W. Giroud (bgiroud@users.sourceforge.net).
 
@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "function.h"
 #include "target.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 /* Difference in seconds between the VMS Epoch and the Unix Epoch */
 static const long long vms_epoch_offset = 3506716800ll;

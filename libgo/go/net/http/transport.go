@@ -73,6 +73,15 @@ const DefaultMaxIdleConnsPerHost = 2
 // and how the Transport is configured. The DefaultTransport supports HTTP/2.
 // To explicitly enable HTTP/2 on a transport, use golang.org/x/net/http2
 // and call ConfigureTransport. See the package docs for more about HTTP/2.
+//
+// The Transport will send CONNECT requests to a proxy for its own use
+// when processing HTTPS requests, but Transport should generally not
+// be used to send a CONNECT request. That is, the Request passed to
+// the RoundTrip method should not have a Method of "CONNECT", as Go's
+// HTTP/1.x implementation does not support full-duplex request bodies
+// being written while the response body is streamed. Go's HTTP/2
+// implementation does support full duplex, but many CONNECT proxies speak
+// HTTP/1.x.
 type Transport struct {
 	idleMu     sync.Mutex
 	wantIdle   bool                                // user has requested to close all idle conns
@@ -443,7 +452,7 @@ func (t *Transport) RoundTrip(req *Request) (*Response, error) {
 // HTTP request on a new connection. The non-nil input error is the
 // error from roundTrip.
 func (pc *persistConn) shouldRetryRequest(req *Request, err error) bool {
-	if err == http2ErrNoCachedConn {
+	if http2isNoCachedConnError(err) {
 		// Issue 16582: if the user started a bunch of
 		// requests at once, they can all pick the same conn
 		// and violate the server's max concurrent streams.
@@ -646,9 +655,14 @@ var (
 	errTooManyIdleHost    = errors.New("http: putIdleConn: too many idle connections for host")
 	errCloseIdleConns     = errors.New("http: CloseIdleConnections called")
 	errReadLoopExiting    = errors.New("http: persistConn.readLoop exiting")
-	errServerClosedIdle   = errors.New("http: server closed idle connection")
 	errIdleConnTimeout    = errors.New("http: idle connection timeout")
 	errNotCachingH2Conn   = errors.New("http: not caching alternate protocol's connections")
+
+	// errServerClosedIdle is not seen by users for idempotent requests, but may be
+	// seen by a user if the server shuts down an idle connection and sends its FIN
+	// in flight with already-written POST body bytes from the client.
+	// See https://github.com/golang/go/issues/19943#issuecomment-355607646
+	errServerClosedIdle = errors.New("http: server closed idle connection")
 )
 
 // transportReadFromServerError is used by Transport.readLoop when the
@@ -1016,6 +1030,69 @@ func (d oneConnDialer) Dial(network, addr string) (net.Conn, error) {
 	}
 }
 
+// The connect method and the transport can both specify a TLS
+// Host name.  The transport's name takes precedence if present.
+func chooseTLSHost(cm connectMethod, t *Transport) string {
+	tlsHost := ""
+	if t.TLSClientConfig != nil {
+		tlsHost = t.TLSClientConfig.ServerName
+	}
+	if tlsHost == "" {
+		tlsHost = cm.tlsHost()
+	}
+	return tlsHost
+}
+
+// Add TLS to a persistent connection, i.e. negotiate a TLS session. If pconn is already a TLS
+// tunnel, this function establishes a nested TLS session inside the encrypted channel.
+// The remote endpoint's name may be overridden by TLSClientConfig.ServerName.
+func (pconn *persistConn) addTLS(name string, trace *httptrace.ClientTrace) error {
+	// Initiate TLS and check remote host name against certificate.
+	cfg := cloneTLSConfig(pconn.t.TLSClientConfig)
+	if cfg.ServerName == "" {
+		cfg.ServerName = name
+	}
+	plainConn := pconn.conn
+	tlsConn := tls.Client(plainConn, cfg)
+	errc := make(chan error, 2)
+	var timer *time.Timer // for canceling TLS handshake
+	if d := pconn.t.TLSHandshakeTimeout; d != 0 {
+		timer = time.AfterFunc(d, func() {
+			errc <- tlsHandshakeTimeoutError{}
+		})
+	}
+	go func() {
+		if trace != nil && trace.TLSHandshakeStart != nil {
+			trace.TLSHandshakeStart()
+		}
+		err := tlsConn.Handshake()
+		if timer != nil {
+			timer.Stop()
+		}
+		errc <- err
+	}()
+	if err := <-errc; err != nil {
+		plainConn.Close()
+		if trace != nil && trace.TLSHandshakeDone != nil {
+			trace.TLSHandshakeDone(tls.ConnectionState{}, err)
+		}
+		return err
+	}
+	if !cfg.InsecureSkipVerify {
+		if err := tlsConn.VerifyHostname(cfg.ServerName); err != nil {
+			plainConn.Close()
+			return err
+		}
+	}
+	cs := tlsConn.ConnectionState()
+	if trace != nil && trace.TLSHandshakeDone != nil {
+		trace.TLSHandshakeDone(cs, nil)
+	}
+	pconn.tlsState = &cs
+	pconn.conn = tlsConn
+	return nil
+}
+
 func (t *Transport) dialConn(ctx context.Context, cm connectMethod) (*persistConn, error) {
 	pconn := &persistConn{
 		t:             t,
@@ -1027,15 +1104,21 @@ func (t *Transport) dialConn(ctx context.Context, cm connectMethod) (*persistCon
 		writeLoopDone: make(chan struct{}),
 	}
 	trace := httptrace.ContextClientTrace(ctx)
-	tlsDial := t.DialTLS != nil && cm.targetScheme == "https" && cm.proxyURL == nil
-	if tlsDial {
+	wrapErr := func(err error) error {
+		if cm.proxyURL != nil {
+			// Return a typed error, per Issue 16997
+			return &net.OpError{Op: "proxyconnect", Net: "tcp", Err: err}
+		}
+		return err
+	}
+	if cm.scheme() == "https" && t.DialTLS != nil {
 		var err error
 		pconn.conn, err = t.DialTLS("tcp", cm.addr())
 		if err != nil {
-			return nil, err
+			return nil, wrapErr(err)
 		}
 		if pconn.conn == nil {
-			return nil, errors.New("net/http: Transport.DialTLS returned (nil, nil)")
+			return nil, wrapErr(errors.New("net/http: Transport.DialTLS returned (nil, nil)"))
 		}
 		if tc, ok := pconn.conn.(*tls.Conn); ok {
 			// Handshake here, in case DialTLS didn't. TLSNextProto below
@@ -1059,13 +1142,18 @@ func (t *Transport) dialConn(ctx context.Context, cm connectMethod) (*persistCon
 	} else {
 		conn, err := t.dial(ctx, "tcp", cm.addr())
 		if err != nil {
-			if cm.proxyURL != nil {
-				// Return a typed error, per Issue 16997:
-				err = &net.OpError{Op: "proxyconnect", Net: "tcp", Err: err}
-			}
-			return nil, err
+			return nil, wrapErr(err)
 		}
 		pconn.conn = conn
+		if cm.scheme() == "https" {
+			var firstTLSHost string
+			if firstTLSHost, _, err = net.SplitHostPort(cm.addr()); err != nil {
+				return nil, wrapErr(err)
+			}
+			if err = pconn.addTLS(firstTLSHost, trace); err != nil {
+				return nil, wrapErr(err)
+			}
+		}
 	}
 
 	// Proxy setup.
@@ -1125,54 +1213,17 @@ func (t *Transport) dialConn(ctx context.Context, cm connectMethod) (*persistCon
 		if resp.StatusCode != 200 {
 			f := strings.SplitN(resp.Status, " ", 2)
 			conn.Close()
+			if len(f) < 2 {
+				return nil, errors.New("unknown status code")
+			}
 			return nil, errors.New(f[1])
 		}
 	}
 
-	if cm.targetScheme == "https" && !tlsDial {
-		// Initiate TLS and check remote host name against certificate.
-		cfg := cloneTLSConfig(t.TLSClientConfig)
-		if cfg.ServerName == "" {
-			cfg.ServerName = cm.tlsHost()
-		}
-		plainConn := pconn.conn
-		tlsConn := tls.Client(plainConn, cfg)
-		errc := make(chan error, 2)
-		var timer *time.Timer // for canceling TLS handshake
-		if d := t.TLSHandshakeTimeout; d != 0 {
-			timer = time.AfterFunc(d, func() {
-				errc <- tlsHandshakeTimeoutError{}
-			})
-		}
-		go func() {
-			if trace != nil && trace.TLSHandshakeStart != nil {
-				trace.TLSHandshakeStart()
-			}
-			err := tlsConn.Handshake()
-			if timer != nil {
-				timer.Stop()
-			}
-			errc <- err
-		}()
-		if err := <-errc; err != nil {
-			plainConn.Close()
-			if trace != nil && trace.TLSHandshakeDone != nil {
-				trace.TLSHandshakeDone(tls.ConnectionState{}, err)
-			}
+	if cm.proxyURL != nil && cm.targetScheme == "https" {
+		if err := pconn.addTLS(cm.tlsHost(), trace); err != nil {
 			return nil, err
 		}
-		if !cfg.InsecureSkipVerify {
-			if err := tlsConn.VerifyHostname(cfg.ServerName); err != nil {
-				plainConn.Close()
-				return nil, err
-			}
-		}
-		cs := tlsConn.ConnectionState()
-		if trace != nil && trace.TLSHandshakeDone != nil {
-			trace.TLSHandshakeDone(cs, nil)
-		}
-		pconn.tlsState = &cs
-		pconn.conn = tlsConn
 	}
 
 	if s := pconn.tlsState; s != nil && s.NegotiatedProtocolIsMutual && s.NegotiatedProtocol != "" {
@@ -1224,8 +1275,8 @@ func useProxy(addr string) bool {
 		}
 	}
 
-	no_proxy := noProxyEnv.Get()
-	if no_proxy == "*" {
+	noProxy := noProxyEnv.Get()
+	if noProxy == "*" {
 		return false
 	}
 
@@ -1234,7 +1285,7 @@ func useProxy(addr string) bool {
 		addr = addr[:strings.LastIndex(addr, ":")]
 	}
 
-	for _, p := range strings.Split(no_proxy, ",") {
+	for _, p := range strings.Split(noProxy, ",") {
 		p = strings.ToLower(strings.TrimSpace(p))
 		if len(p) == 0 {
 			continue
@@ -1266,21 +1317,24 @@ func useProxy(addr string) bool {
 //
 // A connect method may be of the following types:
 //
-// Cache key form                    Description
-// -----------------                 -------------------------
-// |http|foo.com                     http directly to server, no proxy
-// |https|foo.com                    https directly to server, no proxy
-// http://proxy.com|https|foo.com    http to proxy, then CONNECT to foo.com
-// http://proxy.com|http             http to proxy, http to anywhere after that
-// socks5://proxy.com|http|foo.com   socks5 to proxy, then http to foo.com
-// socks5://proxy.com|https|foo.com  socks5 to proxy, then https to foo.com
-//
-// Note: no support to https to the proxy yet.
+//	Cache key form                    Description
+//	-----------------                 -------------------------
+//	|http|foo.com                     http directly to server, no proxy
+//	|https|foo.com                    https directly to server, no proxy
+//	http://proxy.com|https|foo.com    http to proxy, then CONNECT to foo.com
+//	http://proxy.com|http             http to proxy, http to anywhere after that
+//	socks5://proxy.com|http|foo.com   socks5 to proxy, then http to foo.com
+//	socks5://proxy.com|https|foo.com  socks5 to proxy, then https to foo.com
+//	https://proxy.com|https|foo.com   https to proxy, then CONNECT to foo.com
+//	https://proxy.com|http            https to proxy, http to anywhere after that
 //
 type connectMethod struct {
 	proxyURL     *url.URL // nil for no proxy, else full proxy URL
 	targetScheme string   // "http" or "https"
-	targetAddr   string   // Not used if http proxy + http targetScheme (4th example in table)
+	// If proxyURL specifies an http or https proxy, and targetScheme is http (not https),
+	// then targetAddr is not included in the connect method key, because the socket can
+	// be reused for different targetAddr values.
+	targetAddr string
 }
 
 func (cm *connectMethod) key() connectMethodKey {
@@ -1288,7 +1342,7 @@ func (cm *connectMethod) key() connectMethodKey {
 	targetAddr := cm.targetAddr
 	if cm.proxyURL != nil {
 		proxyStr = cm.proxyURL.String()
-		if strings.HasPrefix(cm.proxyURL.Scheme, "http") && cm.targetScheme == "http" {
+		if (cm.proxyURL.Scheme == "http" || cm.proxyURL.Scheme == "https") && cm.targetScheme == "http" {
 			targetAddr = ""
 		}
 	}
@@ -1297,6 +1351,14 @@ func (cm *connectMethod) key() connectMethodKey {
 		scheme: cm.targetScheme,
 		addr:   targetAddr,
 	}
+}
+
+// scheme returns the first hop scheme: http, https, or socks5
+func (cm *connectMethod) scheme() string {
+	if cm.proxyURL != nil {
+		return cm.proxyURL.Scheme
+	}
+	return cm.targetScheme
 }
 
 // addr returns the first hop "host:port" to which we need to TCP connect.
@@ -1616,6 +1678,7 @@ func (pc *persistConn) readLoop() {
 			body: resp.Body,
 			earlyCloseFn: func() error {
 				waitForBodyRead <- false
+				<-eofc // will be closed by deferred call at the end of the function
 				return nil
 
 			},
@@ -2021,8 +2084,8 @@ func (pc *persistConn) roundTrip(req *transportRequest) (resp *Response, err err
 // a t.Logf func. See export_test.go's Request.WithT method.
 type tLogKey struct{}
 
-func (r *transportRequest) logf(format string, args ...interface{}) {
-	if logf, ok := r.Request.Context().Value(tLogKey{}).(func(string, ...interface{})); ok {
+func (tr *transportRequest) logf(format string, args ...interface{}) {
+	if logf, ok := tr.Request.Context().Value(tLogKey{}).(func(string, ...interface{})); ok {
 		logf(time.Now().Format(time.RFC3339Nano)+": "+format, args...)
 	}
 }

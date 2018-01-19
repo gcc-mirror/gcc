@@ -1,5 +1,5 @@
 /* Implementation of the MAXVAL intrinsic
-   Copyright 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Contributed by Thomas Koenig
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -114,7 +114,7 @@ minval1_s4 (gfc_array_s4 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1]
       		 * string_len;
@@ -310,7 +310,7 @@ mminval1_s4 (gfc_array_s4 * const restrict retarray,
       		 * string_len;
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       if (alloc_size == 0)
 	{
@@ -485,7 +485,7 @@ sminval1_s4 (gfc_array_s4 * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1]
       		 * string_len;

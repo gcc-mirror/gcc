@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "optabs-query.h"
 #include "optabs-libfuncs.h"
+#include "vec-perm-indices.h"
 
 /* Generate code for a widening multiply.  */
 extern rtx expand_widening_mult (machine_mode, rtx, rtx, rtx, int, optab);
@@ -301,7 +302,9 @@ extern int have_insn_for (enum rtx_code, machine_mode);
 extern rtx_insn *gen_cond_trap (enum rtx_code, rtx, rtx, rtx);
 
 /* Generate code for VEC_PERM_EXPR.  */
-extern rtx expand_vec_perm (machine_mode, rtx, rtx, rtx, rtx);
+extern rtx expand_vec_perm_var (machine_mode, rtx, rtx, rtx, rtx);
+extern rtx expand_vec_perm_const (machine_mode, rtx, rtx,
+				  const vec_perm_builder &, machine_mode, rtx);
 
 /* Generate code for vector comparison.  */
 extern rtx expand_vec_cmp_expr (tree, tree, rtx);

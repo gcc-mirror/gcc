@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
@@ -93,17 +93,17 @@ export_proto(transfer_logical);
 extern void transfer_logical_write (st_parameter_dt *, void *, int);
 export_proto(transfer_logical_write);
 
-extern void transfer_character (st_parameter_dt *, void *, int);
+extern void transfer_character (st_parameter_dt *, void *, gfc_charlen_type);
 export_proto(transfer_character);
 
-extern void transfer_character_write (st_parameter_dt *, void *, int);
+extern void transfer_character_write (st_parameter_dt *, void *, gfc_charlen_type);
 export_proto(transfer_character_write);
 
-extern void transfer_character_wide (st_parameter_dt *, void *, int, int);
+extern void transfer_character_wide (st_parameter_dt *, void *, gfc_charlen_type, int);
 export_proto(transfer_character_wide);
 
 extern void transfer_character_wide_write (st_parameter_dt *,
-					   void *, int, int);
+					   void *, gfc_charlen_type, int);
 export_proto(transfer_character_wide_write);
 
 extern void transfer_complex (st_parameter_dt *, void *, int);
@@ -223,11 +223,11 @@ current_mode (st_parameter_dt *dtp)
 /* Read sequential file - internal unit  */
 
 static char *
-read_sf_internal (st_parameter_dt *dtp, int *length)
+read_sf_internal (st_parameter_dt *dtp, size_t *length)
 {
   static char *empty_string[0];
   char *base = NULL;
-  int lorig;
+  size_t lorig;
 
   /* Zero size array gives internal unit len of 0.  Nothing to read. */
   if (dtp->internal_unit_len == 0
@@ -256,11 +256,10 @@ read_sf_internal (st_parameter_dt *dtp, int *length)
   lorig = *length;
   if (is_char4_unit(dtp))
     {
-      int i;
       gfc_char4_t *p = (gfc_char4_t *) mem_alloc_r4 (dtp->u.p.current_unit->s,
 			length);
       base = fbuf_alloc (dtp->u.p.current_unit, lorig);
-      for (i = 0; i < *length; i++, p++)
+      for (size_t i = 0; i < *length; i++, p++)
 	base[i] = *p > 255 ? '?' : (unsigned char) *p;
     }
   else
@@ -297,11 +296,12 @@ read_sf_internal (st_parameter_dt *dtp, int *length)
 /* Read sequential file - external unit */
 
 static char *
-read_sf (st_parameter_dt *dtp, int *length)
+read_sf (st_parameter_dt *dtp, size_t *length)
 {
   static char *empty_string[0];
+  size_t lorig, n;
   int q, q2;
-  int n, lorig, seen_comma;
+  int seen_comma;
 
   /* If we have seen an eor previously, return a length of 0.  The
      caller is responsible for correctly padding the input field.  */
@@ -439,10 +439,10 @@ read_sf (st_parameter_dt *dtp, int *length)
    short reads.  */
 
 void *
-read_block_form (st_parameter_dt *dtp, int *nbytes)
+read_block_form (st_parameter_dt *dtp, size_t *nbytes)
 {
   char *source;
-  int norig;
+  size_t norig;
 
   if (!is_stream_io (dtp))
     {
@@ -534,11 +534,11 @@ read_block_form (st_parameter_dt *dtp, int *nbytes)
    a character(kind=4) variable.  Note: Portions of this code borrowed from
    read_sf_internal.  */
 void *
-read_block_form4 (st_parameter_dt *dtp, int *nbytes)
+read_block_form4 (st_parameter_dt *dtp, size_t *nbytes)
 {
   static gfc_char4_t *empty_string[0];
   gfc_char4_t *source;
-  int lorig;
+  size_t lorig;
 
   if (dtp->u.p.current_unit->bytes_left < (gfc_offset) *nbytes)
     *nbytes = dtp->u.p.current_unit->bytes_left;
@@ -743,7 +743,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
    fill in.  Returns NULL on error.  */
 
 void *
-write_block (st_parameter_dt *dtp, int length)
+write_block (st_parameter_dt *dtp, size_t length)
 {
   char *dest;
 
@@ -1792,7 +1792,7 @@ static void
 formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kind,
 				 size_t size)
 {
-  int pos, bytes_used;
+  gfc_offset pos, bytes_used;
   const fnode *f;
   format_token t;
   int n;
@@ -1856,10 +1856,10 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	{
 	  if (dtp->u.p.skips > 0)
 	    {
-	      int tmp;
+	      gfc_offset tmp;
 	      write_x (dtp, dtp->u.p.skips, dtp->u.p.pending_spaces);
-	      tmp = (int)(dtp->u.p.current_unit->recl
-			  - dtp->u.p.current_unit->bytes_left);
+	      tmp = dtp->u.p.current_unit->recl
+			  - dtp->u.p.current_unit->bytes_left;
 	      dtp->u.p.max_pos =
 		dtp->u.p.max_pos > tmp ? dtp->u.p.max_pos : tmp;
 	      dtp->u.p.skips = 0;
@@ -1875,8 +1875,8 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  dtp->u.p.skips = dtp->u.p.pending_spaces = 0;
 	}
 
-      bytes_used = (int)(dtp->u.p.current_unit->recl
-		   - dtp->u.p.current_unit->bytes_left);
+      bytes_used = dtp->u.p.current_unit->recl
+		   - dtp->u.p.current_unit->bytes_left;
 
       if (is_stream_io(dtp))
 	bytes_used = 0;
@@ -2231,7 +2231,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  p = ((char *) p) + size;
 	}
 
-      pos = (int)(dtp->u.p.current_unit->recl - dtp->u.p.current_unit->bytes_left);
+      pos = dtp->u.p.current_unit->recl - dtp->u.p.current_unit->bytes_left;
       dtp->u.p.max_pos = (dtp->u.p.max_pos > pos) ? dtp->u.p.max_pos : pos;
     }
 
@@ -2331,7 +2331,7 @@ transfer_logical_write (st_parameter_dt *dtp, void *p, int kind)
 }
 
 void
-transfer_character (st_parameter_dt *dtp, void *p, int len)
+transfer_character (st_parameter_dt *dtp, void *p, gfc_charlen_type len)
 {
   static char *empty_string[0];
 
@@ -2349,13 +2349,13 @@ transfer_character (st_parameter_dt *dtp, void *p, int len)
 }
 
 void
-transfer_character_write (st_parameter_dt *dtp, void *p, int len)
+transfer_character_write (st_parameter_dt *dtp, void *p, gfc_charlen_type len)
 {
   transfer_character (dtp, p, len);
 }
 
 void
-transfer_character_wide (st_parameter_dt *dtp, void *p, int len, int kind)
+transfer_character_wide (st_parameter_dt *dtp, void *p, gfc_charlen_type len, int kind)
 {
   static char *empty_string[0];
 
@@ -2373,7 +2373,7 @@ transfer_character_wide (st_parameter_dt *dtp, void *p, int len, int kind)
 }
 
 void
-transfer_character_wide_write (st_parameter_dt *dtp, void *p, int len, int kind)
+transfer_character_wide_write (st_parameter_dt *dtp, void *p, gfc_charlen_type len, int kind)
 {
   transfer_character_wide (dtp, p, len, kind);
 }
@@ -2410,7 +2410,7 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
     return;
 
   iotype = (bt) GFC_DESCRIPTOR_TYPE (desc);
-  size = iotype == BT_CHARACTER ? charlen : GFC_DESCRIPTOR_SIZE (desc);
+  size = iotype == BT_CHARACTER ? (index_type) charlen : GFC_DESCRIPTOR_SIZE (desc);
 
   rank = GFC_DESCRIPTOR_RANK (desc);
   for (n = 0; n < rank; n++)
@@ -3691,8 +3691,8 @@ next_record_w (st_parameter_dt *dtp, int done)
 	{
 	  char *p;
 	  /* Internal unit, so must fit in memory.  */
-	  ptrdiff_t length, m, record;
-	  ptrdiff_t max_pos = max_pos_off;
+	  size_t length, m;
+	  size_t max_pos = max_pos_off;
 	  if (is_array_io (dtp))
 	    {
 	      int finished;
@@ -3714,7 +3714,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 		      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 		      return;
 		    }
-		  length = ((ptrdiff_t) dtp->u.p.current_unit->recl - max_pos);
+		  length = ((size_t) dtp->u.p.current_unit->recl - max_pos);
 		}
 
 	      p = write_block (dtp, length);
@@ -3730,14 +3730,16 @@ next_record_w (st_parameter_dt *dtp, int done)
 		memset (p, ' ', length);
 
 	      /* Now that the current record has been padded out,
-		 determine where the next record in the array is. */
-	      record = next_array_record (dtp, dtp->u.p.current_unit->ls,
-					  &finished);
+		 determine where the next record in the array is.
+		 Note that this can return a negative value, so it
+		 needs to be assigned to a signed value.  */
+	      gfc_offset record = next_array_record
+		(dtp, dtp->u.p.current_unit->ls, &finished);
 	      if (finished)
 		dtp->u.p.current_unit->endfile = AT_ENDFILE;
 
 	      /* Now seek to this record */
-	      record = record * ((ptrdiff_t) dtp->u.p.current_unit->recl);
+	      record = record * dtp->u.p.current_unit->recl;
 
 	      if (sseek (dtp->u.p.current_unit->s, record, SEEK_SET) < 0)
 		{
@@ -3767,7 +3769,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 			  generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 			  return;
 			}
-		      length = (ptrdiff_t) dtp->u.p.current_unit->recl
+		      length = (size_t) dtp->u.p.current_unit->recl
 			- max_pos;
 		    }
 		  else

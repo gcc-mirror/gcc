@@ -1,5 +1,5 @@
 /* Definitions of x86 tunable features.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -398,6 +398,14 @@ DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
 /* X86_TUNE_AVOID_4BYTE_PREFIXES: Avoid instructions requiring 4+ bytes of prefixes.  */
 DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
           m_SILVERMONT | m_INTEL)
+
+/* X86_TUNE_USE_GATHER: Use gather instructions.  */
+DEF_TUNE (X86_TUNE_USE_GATHER, "use_gather",
+          ~(m_ZNVER1 | m_GENERIC))
+
+/* X86_TUNE_AVOID_128FMA_CHAINS: Avoid creating loops with tight 128bit or
+   smaller FMA chain.  */
+DEF_TUNE (X86_TUNE_AVOID_128FMA_CHAINS, "avoid_fma_chains", m_ZNVER1)
 
 /*****************************************************************************/
 /* AVX instruction selection tuning (some of SSE flags affects AVX, too)     */

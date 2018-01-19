@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -378,7 +378,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	     tree funtype ATTRIBUTE_UNUSED,
 	     poly_int64 stack_size ATTRIBUTE_UNUSED,
 	     poly_int64 rounded_stack_size,
-	     HOST_WIDE_INT struct_value_size ATTRIBUTE_UNUSED,
+	     poly_int64 struct_value_size ATTRIBUTE_UNUSED,
 	     rtx next_arg_reg ATTRIBUTE_UNUSED, rtx valreg,
 	     int old_inhibit_defer_pop, rtx call_fusage, int ecf_flags,
 	     cumulative_args_t args_so_far ATTRIBUTE_UNUSED)
@@ -438,7 +438,8 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 					 next_arg_reg, NULL_RTX);
       else
 	pat = targetm.gen_sibcall (funmem, rounded_stack_size_rtx,
-				   next_arg_reg, GEN_INT (struct_value_size));
+				   next_arg_reg,
+				   gen_int_mode (struct_value_size, Pmode));
     }
   /* If the target has "call" or "call_value" insns, then prefer them
      if no arguments are actually popped.  If the target does not have
@@ -471,7 +472,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 				      next_arg_reg, NULL_RTX);
       else
 	pat = targetm.gen_call (funmem, rounded_stack_size_rtx, next_arg_reg,
-				GEN_INT (struct_value_size));
+				gen_int_mode (struct_value_size, Pmode));
     }
   emit_insn (pat);
 
@@ -1606,6 +1607,8 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
   bool with_bounds = CALL_WITH_BOUNDS_P (exp);
 
+  unsigned nargs = call_expr_nargs (exp);
+
   /* The bound argument to a bounded string function like strncpy.  */
   tree bound = NULL_TREE;
 
@@ -1620,12 +1623,20 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
     case BUILT_IN_STRNCASECMP:
     case BUILT_IN_STRNCPY:
     case BUILT_IN_STRNCPY_CHK:
-      bound = CALL_EXPR_ARG (exp, with_bounds ? 4 : 2);
-      break;
+      {
+	unsigned argno = with_bounds ? 4 : 2;
+	if (argno < nargs)
+	  bound = CALL_EXPR_ARG (exp, argno);
+	break;
+      }
 
     case BUILT_IN_STRNDUP:
-      bound = CALL_EXPR_ARG (exp, with_bounds ? 2 : 1);
-      break;
+      {
+	unsigned argno = with_bounds ? 2 : 1;
+	if (argno < nargs)
+	  bound = CALL_EXPR_ARG (exp, argno);
+	break;
+      }
 
     default:
       break;
@@ -1645,6 +1656,11 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
   for (unsigned argno = 0; ; ++argno, function_args_iter_next (&it))
     {
+      /* Avoid iterating past the declared argument in a call
+	 to function declared without a prototype.  */
+      if (argno >= nargs)
+	break;
+
       tree argtype = function_args_iter_cond (&it);
       if (!argtype)
 	break;
@@ -2709,7 +2725,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	{
 	  int partial = args[i].partial;
 	  int nregs;
-	  int size = 0;
+	  poly_int64 size = 0;
+	  HOST_WIDE_INT const_size = 0;
 	  rtx_insn *before_arg = get_last_insn ();
 	  /* Set non-negative if we must move a word at a time, even if
 	     just one word (e.g, partial == 4 && mode == DFmode).  Set
@@ -2725,8 +2742,12 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	    }
 	  else if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode)
 	    {
-	      size = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
-	      nregs = (size + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
+	      /* Variable-sized parameters should be described by a
+		 PARALLEL instead.  */
+	      const_size = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	      gcc_assert (const_size >= 0);
+	      nregs = (const_size + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
+	      size = const_size;
 	    }
 	  else
 	    size = GET_MODE_SIZE (args[i].mode);
@@ -2748,21 +2769,27 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      /* Handle case where we have a value that needs shifting
 		 up to the msb.  eg. a QImode value and we're padding
 		 upward on a BYTES_BIG_ENDIAN machine.  */
-	      if (size < UNITS_PER_WORD
-		  && (args[i].locate.where_pad
-		      == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
+	      if (args[i].locate.where_pad
+		  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD))
 		{
-		  rtx x;
-		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+		  gcc_checking_assert (ordered_p (size, UNITS_PER_WORD));
+		  if (maybe_lt (size, UNITS_PER_WORD))
+		    {
+		      rtx x;
+		      poly_int64 shift
+			= (UNITS_PER_WORD - size) * BITS_PER_UNIT;
 
-		  /* Assigning REG here rather than a temp makes CALL_FUSAGE
-		     report the whole reg as used.  Strictly speaking, the
-		     call only uses SIZE bytes at the msb end, but it doesn't
-		     seem worth generating rtl to say that.  */
-		  reg = gen_rtx_REG (word_mode, REGNO (reg));
-		  x = expand_shift (LSHIFT_EXPR, word_mode, reg, shift, reg, 1);
-		  if (x != reg)
-		    emit_move_insn (reg, x);
+		      /* Assigning REG here rather than a temp makes
+			 CALL_FUSAGE report the whole reg as used.
+			 Strictly speaking, the call only uses SIZE
+			 bytes at the msb end, but it doesn't seem worth
+			 generating rtl to say that.  */
+		      reg = gen_rtx_REG (word_mode, REGNO (reg));
+		      x = expand_shift (LSHIFT_EXPR, word_mode,
+					reg, shift, reg, 1);
+		      if (x != reg)
+			emit_move_insn (reg, x);
+		    }
 		}
 #endif
 	    }
@@ -2777,17 +2804,20 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 
 	  else if (partial == 0 || args[i].pass_on_stack)
 	    {
+	      /* SIZE and CONST_SIZE are 0 for partial arguments and
+		 the size of a BLKmode type otherwise.  */
+	      gcc_checking_assert (known_eq (size, const_size));
 	      rtx mem = validize_mem (copy_rtx (args[i].value));
 
 	      /* Check for overlap with already clobbered argument area,
 	         providing that this has non-zero size.  */
 	      if (is_sibcall
-		  && size != 0
+		  && const_size != 0
 		  && (mem_might_overlap_already_clobbered_arg_p
-		      (XEXP (args[i].value, 0), size)))
+		      (XEXP (args[i].value, 0), const_size)))
 		*sibcall_failure = 1;
 
-	      if (size % UNITS_PER_WORD == 0
+	      if (const_size % UNITS_PER_WORD == 0
 		  || MEM_ALIGN (mem) % BITS_PER_WORD == 0)
 		move_block_to_reg (REGNO (reg), mem, nregs, args[i].mode);
 	      else
@@ -2797,7 +2827,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 				       args[i].mode);
 		  rtx dest = gen_rtx_REG (word_mode, REGNO (reg) + nregs - 1);
 		  unsigned int bitoff = (nregs - 1) * BITS_PER_WORD;
-		  unsigned int bitsize = size * BITS_PER_UNIT - bitoff;
+		  unsigned int bitsize = const_size * BITS_PER_UNIT - bitoff;
 		  rtx x = extract_bit_field (mem, bitsize, bitoff, 1, dest,
 					     word_mode, word_mode, false,
 					     NULL);
@@ -2809,7 +2839,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		}
 
 	      /* Handle a BLKmode that needs shifting.  */
-	      if (nregs == 1 && size < UNITS_PER_WORD
+	      if (nregs == 1 && const_size < UNITS_PER_WORD
 #ifdef BLOCK_REG_PADDING
 		  && args[i].locate.where_pad == PAD_DOWNWARD
 #else
@@ -2818,7 +2848,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		  )
 		{
 		  rtx dest = gen_rtx_REG (word_mode, REGNO (reg));
-		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+		  int shift = (UNITS_PER_WORD - const_size) * BITS_PER_UNIT;
 		  enum tree_code dir = (BYTES_BIG_ENDIAN
 					? RSHIFT_EXPR : LSHIFT_EXPR);
 		  rtx x;
@@ -3009,12 +3039,11 @@ check_sibcall_argument_overlap (rtx_insn *insn, struct arg_data *arg,
 bool
 shift_return_value (machine_mode mode, bool left_p, rtx value)
 {
-  HOST_WIDE_INT shift;
-
   gcc_assert (REG_P (value) && HARD_REGISTER_P (value));
   machine_mode value_mode = GET_MODE (value);
-  shift = GET_MODE_BITSIZE (value_mode) - GET_MODE_BITSIZE (mode);
-  if (shift == 0)
+  poly_int64 shift = GET_MODE_BITSIZE (value_mode) - GET_MODE_BITSIZE (mode);
+
+  if (known_eq (shift, 0))
     return false;
 
   /* Use ashr rather than lshr for right shifts.  This is for the benefit
@@ -3223,7 +3252,7 @@ expand_call (tree exp, rtx target, int ignore)
   /* Size of aggregate value wanted, or zero if none wanted
      or if we are using the non-reentrant PCC calling convention
      or expecting the value in registers.  */
-  HOST_WIDE_INT struct_value_size = 0;
+  poly_int64 struct_value_size = 0;
   /* Nonzero if called function returns an aggregate in memory PCC style,
      by returning the address of where to find it.  */
   int pcc_struct_value = 0;
@@ -3385,7 +3414,8 @@ expand_call (tree exp, rtx target, int ignore)
       }
 #else /* not PCC_STATIC_STRUCT_RETURN */
       {
-	struct_value_size = int_size_in_bytes (rettype);
+	if (!poly_int_tree_p (TYPE_SIZE_UNIT (rettype), &struct_value_size))
+	  struct_value_size = -1;
 
 	/* Even if it is semantically safe to use the target as the return
 	   slot, it may be not sufficiently aligned for the return type.  */
@@ -4671,7 +4701,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   rtx mem_value = 0;
   rtx valreg;
   int pcc_struct_value = 0;
-  int struct_value_size = 0;
+  poly_int64 struct_value_size = 0;
   int flags;
   int reg_parm_stack_space = 0;
   poly_int64 needed;
@@ -4910,7 +4940,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	   end it should be padded.  */
 	argvec[count].locate.where_pad =
 	  BLOCK_REG_PADDING (mode, NULL_TREE,
-			     GET_MODE_SIZE (mode) <= UNITS_PER_WORD);
+			     known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD));
 #endif
 
       targetm.calls.function_arg_advance (args_so_far, mode, (tree) 0, true);
@@ -5161,9 +5191,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
-#ifdef BLOCK_REG_PADDING
-      int size = 0;
-#endif
       
       /* Handle calls that pass values in multiple non-contiguous
 	 locations.  The PA64 has examples of this for library calls.  */
@@ -5173,19 +5200,19 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
         {
 	  emit_move_insn (reg, val);
 #ifdef BLOCK_REG_PADDING
-	  size = GET_MODE_SIZE (argvec[argnum].mode);
+	  poly_int64 size = GET_MODE_SIZE (argvec[argnum].mode);
 
 	  /* Copied from load_register_parameters.  */
 
 	  /* Handle case where we have a value that needs shifting
 	     up to the msb.  eg. a QImode value and we're padding
 	     upward on a BYTES_BIG_ENDIAN machine.  */
-	  if (size < UNITS_PER_WORD
+	  if (known_lt (size, UNITS_PER_WORD)
 	      && (argvec[argnum].locate.where_pad
 		  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 	    {
 	      rtx x;
-	      int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+	      poly_int64 shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
 
 	      /* Assigning REG here rather than a temp makes CALL_FUSAGE
 		 report the whole reg as used.  Strictly speaking, the
@@ -5639,7 +5666,6 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
     ;
   else if (arg->mode != BLKmode)
     {
-      int size;
       unsigned int parm_align;
 
       /* Argument is a scalar, not entirely passed in registers.
@@ -5652,10 +5678,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 Note that in C the default argument promotions
 	 will prevent such mismatches.  */
 
-      if (TYPE_EMPTY_P (TREE_TYPE (pval)))
-	size = 0;
-      else
-	size = GET_MODE_SIZE (arg->mode);
+      poly_int64 size = (TYPE_EMPTY_P (TREE_TYPE (pval))
+			 ? 0 : GET_MODE_SIZE (arg->mode));
 
       /* Compute how much space the push instruction will push.
 	 On many machines, pushing a byte will advance the stack
@@ -5669,9 +5693,10 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	 round up to a multiple of the alignment for arguments.  */
       if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
 	  != PAD_NONE)
-	used = (((size + PARM_BOUNDARY / BITS_PER_UNIT - 1)
-		 / (PARM_BOUNDARY / BITS_PER_UNIT))
-		* (PARM_BOUNDARY / BITS_PER_UNIT));
+	/* At the moment we don't (need to) support ABIs for which the
+	   padding isn't known at compile time.  In principle it should
+	   be easy to add though.  */
+	used = force_align_up (size, PARM_BOUNDARY / BITS_PER_UNIT);
 
       /* Compute the alignment of the pushed argument.  */
       parm_align = arg->locate.boundary;

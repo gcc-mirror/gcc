@@ -1,6 +1,6 @@
 /* Pass to detect and issue warnings for violations of the restrict
    qualifier.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
    This file is part of GCC.
@@ -276,13 +276,13 @@ builtin_memref::builtin_memref (tree expr, tree size)
 		  value_range_type rng = get_range_info (offset, &min, &max);
 		  if (rng == VR_RANGE)
 		    {
-		      offrange[0] = min.to_shwi ();
-		      offrange[1] = max.to_shwi ();
+		      offrange[0] = offset_int::from (min, SIGNED);
+		      offrange[1] = offset_int::from (max, SIGNED);
 		    }
 		  else if (rng == VR_ANTI_RANGE)
 		    {
-		      offrange[0] = (max + 1).to_shwi ();
-		      offrange[1] = (min - 1).to_shwi ();
+		      offrange[0] = offset_int::from (max + 1, SIGNED);
+		      offrange[1] = offset_int::from (min - 1, SIGNED);
 		    }
 		  else
 		    {
@@ -312,11 +312,11 @@ builtin_memref::builtin_memref (tree expr, tree size)
   if (TREE_CODE (expr) == ADDR_EXPR)
     {
       poly_int64 off;
-      tree oper = TREE_OPERAND (expr, 0);
+      tree op = TREE_OPERAND (expr, 0);
 
       /* Determine the base object or pointer of the reference
 	 and its constant offset from the beginning of the base.  */
-      base = get_addr_base_and_unit_offset (oper, &off);
+      base = get_addr_base_and_unit_offset (op, &off);
 
       HOST_WIDE_INT const_off;
       if (base && off.is_constant (&const_off))
@@ -325,17 +325,11 @@ builtin_memref::builtin_memref (tree expr, tree size)
 	  offrange[1] += const_off;
 
 	  /* Stash the reference for offset validation.  */
-	  ref = oper;
+	  ref = op;
 
 	  /* Also stash the constant offset for offset validation.  */
-	  tree_code code = TREE_CODE (oper);
-	  if (code == COMPONENT_REF)
-	    {
-	      tree field = TREE_OPERAND (ref, 1);
-	      tree fldoff = DECL_FIELD_OFFSET (field);
-	      if (TREE_CODE (fldoff) == INTEGER_CST)
-		refoff = const_off + wi::to_offset (fldoff);
-	    }
+	  if (TREE_CODE (op) == COMPONENT_REF)
+	    refoff = const_off;
 	}
       else
 	{
@@ -698,9 +692,10 @@ builtin_access::builtin_access (gcall *call, builtin_memref &dst,
 
 	  /* For string functions, adjust the size range of the source
 	     reference by the inverse boundaries of the offset (because
-	     the higher  the offset into the string the shorter its
+	     the higher the offset into the string the shorter its
 	     length).  */
-	  if (srcref->offrange[1] < srcref->sizrange[0])
+	  if (srcref->offrange[1] >= 0
+	      && srcref->offrange[1] < srcref->sizrange[0])
 	    srcref->sizrange[0] -= srcref->offrange[1];
 	  else
 	    srcref->sizrange[0] = 0;
@@ -1134,30 +1129,53 @@ builtin_access::overlap ()
   if (!dstref->base || !srcref->base)
     return false;
 
-  /* If the base object is an array adjust the lower bound of the offset
-     to be non-negative.  */
+  /* Set the access offsets.  */
+  acs.dstoff[0] = dstref->offrange[0];
+  acs.dstoff[1] = dstref->offrange[1];
+
+  /* If the base object is an array adjust the bounds of the offset
+     to be non-negative and within the bounds of the array if possible.  */
   if (dstref->base
       && TREE_CODE (TREE_TYPE (dstref->base)) == ARRAY_TYPE)
-    acs.dstoff[0] = wi::smax (dstref->offrange[0], 0);
-  else
-    acs.dstoff[0] = dstref->offrange[0];
+    {
+      if (acs.dstoff[0] < 0 && acs.dstoff[1] >= 0)
+	acs.dstoff[0] = 0;
 
-  acs.dstoff[1] = dstref->offrange[1];
+      if (acs.dstoff[1] < acs.dstoff[0])
+	{
+	  if (tree size = TYPE_SIZE_UNIT (TREE_TYPE (dstref->base)))
+	    acs.dstoff[1] = wi::umin (acs.dstoff[1], wi::to_offset (size));
+	  else
+	    acs.dstoff[1] = wi::umin (acs.dstoff[1], maxobjsize);
+	}
+    }
+
+  acs.srcoff[0] = srcref->offrange[0];
+  acs.srcoff[1] = srcref->offrange[1];
 
   if (srcref->base
       && TREE_CODE (TREE_TYPE (srcref->base)) == ARRAY_TYPE)
-    acs.srcoff[0] = wi::smax (srcref->offrange[0], 0);
-  else
-    acs.srcoff[0] = srcref->offrange[0];
+    {
+      if (acs.srcoff[0] < 0 && acs.srcoff[1] >= 0)
+	acs.srcoff[0] = 0;
 
-  acs.srcoff[1] = srcref->offrange[1];
+      if (tree size = TYPE_SIZE_UNIT (TREE_TYPE (srcref->base)))
+	acs.srcoff[1] = wi::umin (acs.srcoff[1], wi::to_offset (size));
+      else if (acs.srcoff[1] < acs.srcoff[0])
+	acs.srcoff[1] = wi::umin (acs.srcoff[1], maxobjsize);
+    }
 
-  /* When the lower bound of the offset is less that the upper bound
-     disregard it and use the inverse of the maximum object size
-     instead.  The upper bound is the result of a negative offset
-     being represented as a large positive value.  */
+  /* When the upper bound of the offset is less than the lower bound
+     the former is the result of a negative offset being represented
+     as a large positive value or vice versa.  The resulting range is
+     a union of two subranges: [MIN, UB] and [LB, MAX].  Since such
+     a union is not representable using the current data structure
+     replace it with the full range of offsets.  */
   if (acs.dstoff[1] < acs.dstoff[0])
-    acs.dstoff[0] = -maxobjsize;
+    {
+      acs.dstoff[0] = -maxobjsize - 1;
+      acs.dstoff[1] = maxobjsize;
+    }
 
   /* Validate the offset and size of each reference on its own first.
      This is independent of whether or not the base objects are the
@@ -1173,7 +1191,10 @@ builtin_access::overlap ()
 
   /* Repeat the same as above but for the source offsets.  */
   if (acs.srcoff[1] < acs.srcoff[0])
-    acs.srcoff[0] = -maxobjsize;
+    {
+      acs.srcoff[0] = -maxobjsize - 1;
+      acs.srcoff[1] = maxobjsize;
+    }
 
   maxoff = acs.srcoff[0] + srcref->sizrange[0];
   if (maxobjsize < maxoff)
@@ -1233,25 +1254,31 @@ maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
 
   if (dstref.offrange[0] == dstref.offrange[1]
       || dstref.offrange[1] > HOST_WIDE_INT_MAX)
-    sprintf (offstr[0], "%lli", (long long) dstref.offrange[0].to_shwi ());
+    sprintf (offstr[0], HOST_WIDE_INT_PRINT_DEC,
+	     dstref.offrange[0].to_shwi ());
   else
-    sprintf (offstr[0], "[%lli, %lli]",
-	     (long long) dstref.offrange[0].to_shwi (),
-	     (long long) dstref.offrange[1].to_shwi ());
+    sprintf (offstr[0],
+	     "[" HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC "]",
+	     dstref.offrange[0].to_shwi (),
+	     dstref.offrange[1].to_shwi ());
 
   if (srcref.offrange[0] == srcref.offrange[1]
       || srcref.offrange[1] > HOST_WIDE_INT_MAX)
-    sprintf (offstr[1], "%lli", (long long) srcref.offrange[0].to_shwi ());
+    sprintf (offstr[1],
+	     HOST_WIDE_INT_PRINT_DEC,
+	     srcref.offrange[0].to_shwi ());
   else
-    sprintf (offstr[1], "[%lli, %lli]",
-	     (long long) srcref.offrange[0].to_shwi (),
-	     (long long) srcref.offrange[1].to_shwi ());
+    sprintf (offstr[1],
+	     "[" HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC "]",
+	     srcref.offrange[0].to_shwi (),
+	     srcref.offrange[1].to_shwi ());
 
   if (ovloff[0] == ovloff[1] || !ovloff[1])
-    sprintf (offstr[2], "%lli", (long long) ovloff[0]);
+    sprintf (offstr[2], HOST_WIDE_INT_PRINT_DEC, ovloff[0]);
   else
-    sprintf (offstr[2], "[%lli, %lli]",
-	     (long long) ovloff[0], (long long) ovloff[1]);
+    sprintf (offstr[2],
+	     "[" HOST_WIDE_INT_PRINT_DEC ", " HOST_WIDE_INT_PRINT_DEC "]",
+	     ovloff[0], ovloff[1]);
 
   const offset_int maxobjsize = tree_to_shwi (max_object_size ());
   bool must_overlap = ovlsiz[0] > 0;
@@ -1364,11 +1391,6 @@ maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
 		    ovlsiz[0], offstr[2]);
       return true;
     }
-
-  /* Issue "may overlap" diagnostics below.  */
-  gcc_assert (ovlsiz[0] == 0
-	      && ovlsiz[1] > 0
-	      && ovlsiz[1] <= maxobjsize.to_shwi ());
 
   /* Use more concise wording when one of the offsets is unbounded
      to avoid confusing the user with large and mostly meaningless
@@ -1687,6 +1709,19 @@ wrestrict_dom_walker::check_call (gcall *call)
      assume the size of the access is one.  */
   if (!dstwr && strfun)
     dstwr = size_one_node;
+
+  /* DST and SRC can be null for a call with an insufficient number
+     of arguments to a built-in function declared without a protype.  */
+  if (!dst || !src)
+    return;
+
+  /* DST, SRC, or DSTWR can also have the wrong type in a call to
+     a function declared without a prototype.  Avoid checking such
+     invalid calls.  */
+  if (TREE_CODE (TREE_TYPE (dst)) != POINTER_TYPE
+      || TREE_CODE (TREE_TYPE (src)) != POINTER_TYPE
+      || (dstwr && !INTEGRAL_TYPE_P (TREE_TYPE (dstwr))))
+    return;
 
   if (check_bounds_or_overlap (call, dst, src, dstwr, NULL_TREE))
     return;

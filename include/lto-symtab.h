@@ -1,5 +1,5 @@
 /* Data types used in the IL symbol table.
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Rafael Espindola <espindola@google.com>
 
 This file is part of GCC.

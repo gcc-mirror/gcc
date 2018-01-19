@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6052,7 +6052,10 @@ package body Exp_Ch3 is
            and then not Has_Init_Expression (N)
          then
             Set_No_Initialization (N, False);
-            Set_Expression (N, Get_Simple_Init_Val (Typ, N, Esize (Def_Id)));
+            Set_Expression
+              (N, New_Copy_Tree
+                    (Get_Simple_Init_Val (Typ, N, Esize (Def_Id)),
+                     New_Sloc => Sloc (Obj_Def)));
             Analyze_And_Resolve (Expression (N), Typ);
          end if;
 

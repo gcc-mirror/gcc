@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -802,7 +802,8 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	   || TREE_CODE (expr) == PARM_DECL)
 	  && DECL_HAS_VALUE_EXPR_P (expr))
 	DFS_follow_tree_edge (DECL_VALUE_EXPR (expr));
-      if (VAR_P (expr))
+      if (VAR_P (expr)
+	  && DECL_HAS_DEBUG_EXPR_P (expr))
 	DFS_follow_tree_edge (DECL_DEBUG_EXPR (expr));
     }
 
@@ -2810,10 +2811,10 @@ lto_write_mode_table (void)
 	    continue;
 	  bp_pack_value (&bp, m, 8);
 	  bp_pack_enum (&bp, mode_class, MAX_MODE_CLASS, GET_MODE_CLASS (m));
-	  bp_pack_value (&bp, GET_MODE_SIZE (m), 8);
-	  bp_pack_value (&bp, GET_MODE_PRECISION (m), 16);
+	  bp_pack_poly_value (&bp, GET_MODE_SIZE (m), 16);
+	  bp_pack_poly_value (&bp, GET_MODE_PRECISION (m), 16);
 	  bp_pack_value (&bp, GET_MODE_INNER (m), 8);
-	  bp_pack_value (&bp, GET_MODE_NUNITS (m), 8);
+	  bp_pack_poly_value (&bp, GET_MODE_NUNITS (m), 16);
 	  switch (GET_MODE_CLASS (m))
 	    {
 	    case MODE_FRACT:

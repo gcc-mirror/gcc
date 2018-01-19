@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4208,6 +4208,8 @@ expand_debug_expr (tree exp)
 
     binary:
     case tcc_binary:
+      if (mode == BLKmode)
+	return NULL_RTX;
       op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
       if (!op1)
 	return NULL_RTX;
@@ -4232,6 +4234,8 @@ expand_debug_expr (tree exp)
 
     unary:
     case tcc_unary:
+      if (mode == BLKmode)
+	return NULL_RTX;
       inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
@@ -4530,8 +4534,12 @@ expand_debug_expr (tree exp)
 	if (MEM_P (op0))
 	  {
 	    if (mode1 == VOIDmode)
-	      /* Bitfield.  */
-	      mode1 = smallest_int_mode_for_size (bitsize);
+	      {
+		if (maybe_gt (bitsize, MAX_BITSIZE_MODE_ANY_INT))
+		  return NULL;
+		/* Bitfield.  */
+		mode1 = smallest_int_mode_for_size (bitsize);
+	      }
 	    poly_int64 bytepos = bits_to_bytes_round_down (bitpos);
 	    if (maybe_ne (bytepos, 0))
 	      {
@@ -4556,7 +4564,7 @@ expand_debug_expr (tree exp)
 	if (maybe_lt (bitpos, 0))
           return NULL;
 
-	if (GET_MODE (op0) == BLKmode)
+	if (GET_MODE (op0) == BLKmode || mode == BLKmode)
 	  return NULL;
 
 	poly_int64 bytepos;
@@ -4957,9 +4965,11 @@ expand_debug_expr (tree exp)
 
     case VECTOR_CST:
       {
-	unsigned i, nelts;
+	unsigned HOST_WIDE_INT i, nelts;
 
-	nelts = VECTOR_CST_NELTS (exp);
+	if (!VECTOR_CST_NELTS (exp).is_constant (&nelts))
+	  return NULL;
+
 	op0 = gen_rtx_CONCATN (mode, rtvec_alloc (nelts));
 
 	for (i = 0; i < nelts; ++i)
@@ -4979,10 +4989,13 @@ expand_debug_expr (tree exp)
       else if (TREE_CODE (TREE_TYPE (exp)) == VECTOR_TYPE)
 	{
 	  unsigned i;
+	  unsigned HOST_WIDE_INT nelts;
 	  tree val;
 
-	  op0 = gen_rtx_CONCATN
-	    (mode, rtvec_alloc (TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp))));
+	  if (!TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp)).is_constant (&nelts))
+	    goto flag_unsupported;
+
+	  op0 = gen_rtx_CONCATN (mode, rtvec_alloc (nelts));
 
 	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), i, val)
 	    {
@@ -4992,7 +5005,7 @@ expand_debug_expr (tree exp)
 	      XVECEXP (op0, 0, i) = op1;
 	    }
 
-	  if (i < TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp)))
+	  if (i < nelts)
 	    {
 	      op1 = expand_debug_expr
 		(build_zero_cst (TREE_TYPE (TREE_TYPE (exp))));
@@ -5000,7 +5013,7 @@ expand_debug_expr (tree exp)
 	      if (!op1)
 		return NULL;
 
-	      for (; i < TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp)); i++)
+	      for (; i < nelts; i++)
 		XVECEXP (op0, 0, i) = op1;
 	    }
 

@@ -1,5 +1,5 @@
 /* Emit RTL for the GCC expander.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "opts.h"
 #include "predict.h"
+#include "rtx-vector-builder.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -893,8 +894,13 @@ bool
 validate_subreg (machine_mode omode, machine_mode imode,
 		 const_rtx reg, poly_uint64 offset)
 {
-  unsigned int isize = GET_MODE_SIZE (imode);
-  unsigned int osize = GET_MODE_SIZE (omode);
+  poly_uint64 isize = GET_MODE_SIZE (imode);
+  poly_uint64 osize = GET_MODE_SIZE (omode);
+
+  /* The sizes must be ordered, so that we know whether the subreg
+     is partial, paradoxical or complete.  */
+  if (!ordered_p (isize, osize))
+    return false;
 
   /* All subregs must be aligned.  */
   if (!multiple_p (offset, osize))
@@ -904,7 +910,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
   if (maybe_ge (offset, isize))
     return false;
 
-  unsigned int regsize = REGMODE_NATURAL_SIZE (imode);
+  poly_uint64 regsize = REGMODE_NATURAL_SIZE (imode);
 
   /* ??? This should not be here.  Temporarily continue to allow word_mode
      subregs of anything.  The most common offender is (subreg:SI (reg:DF)).
@@ -914,7 +920,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
     ;
   /* ??? Similarly, e.g. with (subreg:DF (reg:TI)).  Though store_bit_field
      is the culprit here, and not the backends.  */
-  else if (osize >= regsize && isize >= osize)
+  else if (known_ge (osize, regsize) && known_ge (isize, osize))
     ;
   /* Allow component subregs of complex and vector.  Though given the below
      extraction rules, it's not always clear what that means.  */
@@ -933,7 +939,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
      (subreg:SI (reg:DF) 0) isn't.  */
   else if (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))
     {
-      if (! (isize == osize
+      if (! (known_eq (isize, osize)
 	     /* LRA can use subreg to store a floating point value in
 		an integer mode.  Although the floating point and the
 		integer modes need the same number of hard registers,
@@ -945,7 +951,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
     }
 
   /* Paradoxical subregs must have offset zero.  */
-  if (osize > isize)
+  if (maybe_gt (osize, isize))
     return known_eq (offset, 0U);
 
   /* This is a normal subreg.  Verify that the offset is representable.  */
@@ -965,6 +971,12 @@ validate_subreg (machine_mode omode, machine_mode imode,
       return subreg_offset_representable_p (regno, imode, offset, omode);
     }
 
+  /* The outer size must be ordered wrt the register size, otherwise
+     we wouldn't know at compile time how many registers the outer
+     mode occupies.  */
+  if (!ordered_p (osize, regsize))
+    return false;
+
   /* For pseudo registers, we want most of the same checks.  Namely:
 
      Assume that the pseudo register will be allocated to hard registers
@@ -975,10 +987,12 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
      Given that we've already checked the mode and offset alignment,
      we only have to check subblock subregs here.  */
-  if (osize < regsize
+  if (maybe_lt (osize, regsize)
       && ! (lra_in_progress && (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))))
     {
-      poly_uint64 block_size = MIN (isize, regsize);
+      /* It is invalid for the target to pick a register size for a mode
+	 that isn't ordered wrt to the size of that mode.  */
+      poly_uint64 block_size = ordered_min (isize, regsize);
       unsigned int start_reg;
       poly_uint64 offset_within_reg;
       if (!can_div_trunc_p (offset, block_size, &start_reg, &offset_within_reg)
@@ -1517,39 +1531,43 @@ maybe_set_max_label_num (rtx_code_label *x)
 rtx
 gen_lowpart_common (machine_mode mode, rtx x)
 {
-  int msize = GET_MODE_SIZE (mode);
-  int xsize;
+  poly_uint64 msize = GET_MODE_SIZE (mode);
   machine_mode innermode;
 
   /* Unfortunately, this routine doesn't take a parameter for the mode of X,
      so we have to make one up.  Yuk.  */
   innermode = GET_MODE (x);
   if (CONST_INT_P (x)
-      && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
+      && known_le (msize * BITS_PER_UNIT,
+		   (unsigned HOST_WIDE_INT) HOST_BITS_PER_WIDE_INT))
     innermode = int_mode_for_size (HOST_BITS_PER_WIDE_INT, 0).require ();
   else if (innermode == VOIDmode)
     innermode = int_mode_for_size (HOST_BITS_PER_DOUBLE_INT, 0).require ();
-
-  xsize = GET_MODE_SIZE (innermode);
 
   gcc_assert (innermode != VOIDmode && innermode != BLKmode);
 
   if (innermode == mode)
     return x;
 
+  /* The size of the outer and inner modes must be ordered.  */
+  poly_uint64 xsize = GET_MODE_SIZE (innermode);
+  if (!ordered_p (msize, xsize))
+    return 0;
+
   if (SCALAR_FLOAT_MODE_P (mode))
     {
       /* Don't allow paradoxical FLOAT_MODE subregs.  */
-      if (msize > xsize)
+      if (maybe_gt (msize, xsize))
 	return 0;
     }
   else
     {
       /* MODE must occupy no more of the underlying registers than X.  */
-      unsigned int regsize = REGMODE_NATURAL_SIZE (innermode);
-      unsigned int mregs = CEIL (msize, regsize);
-      unsigned int xregs = CEIL (xsize, regsize);
-      if (mregs > xregs)
+      poly_uint64 regsize = REGMODE_NATURAL_SIZE (innermode);
+      unsigned int mregs, xregs;
+      if (!can_div_away_from_zero_p (msize, regsize, &mregs)
+	  || !can_div_away_from_zero_p (xsize, regsize, &xregs)
+	  || mregs > xregs)
 	return 0;
     }
 
@@ -1575,7 +1593,7 @@ gen_lowpart_common (machine_mode mode, rtx x)
 	return gen_rtx_fmt_e (GET_CODE (x), int_mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
-	   || GET_CODE (x) == CONCAT || const_vec_p (x)
+	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
 	   || CONST_DOUBLE_AS_FLOAT_P (x) || CONST_SCALAR_INT_P (x)
 	   || CONST_POLY_INT_P (x))
     return lowpart_subreg (mode, x, innermode);
@@ -1587,13 +1605,13 @@ gen_lowpart_common (machine_mode mode, rtx x)
 rtx
 gen_highpart (machine_mode mode, rtx x)
 {
-  unsigned int msize = GET_MODE_SIZE (mode);
+  poly_uint64 msize = GET_MODE_SIZE (mode);
   rtx result;
 
   /* This case loses if X is a subreg.  To catch bugs early,
      complain if an invalid MODE is used even in other cases.  */
-  gcc_assert (msize <= UNITS_PER_WORD
-	      || msize == (unsigned int) GET_MODE_UNIT_SIZE (GET_MODE (x)));
+  gcc_assert (known_le (msize, (unsigned int) UNITS_PER_WORD)
+	      || known_eq (msize, GET_MODE_UNIT_SIZE (GET_MODE (x))));
 
   result = simplify_gen_subreg (mode, x, GET_MODE (x),
 				subreg_highpart_offset (mode, GET_MODE (x)));
@@ -2555,7 +2573,7 @@ rtx
 widen_memory_access (rtx memref, machine_mode mode, poly_int64 offset)
 {
   rtx new_rtx = adjust_address_1 (memref, mode, offset, 1, 1, 0, 0);
-  unsigned int size = GET_MODE_SIZE (mode);
+  poly_uint64 size = GET_MODE_SIZE (mode);
 
   /* If there are no changes, just return the original memory reference.  */
   if (new_rtx == memref)
@@ -5861,6 +5879,62 @@ init_emit (void)
 #endif
 }
 
+/* Return the value of element I of CONST_VECTOR X as a wide_int.  */
+
+wide_int
+const_vector_int_elt (const_rtx x, unsigned int i)
+{
+  /* First handle elements that are directly encoded.  */
+  machine_mode elt_mode = GET_MODE_INNER (GET_MODE (x));
+  if (i < (unsigned int) XVECLEN (x, 0))
+    return rtx_mode_t (CONST_VECTOR_ENCODED_ELT (x, i), elt_mode);
+
+  /* Identify the pattern that contains element I and work out the index of
+     the last encoded element for that pattern.  */
+  unsigned int encoded_nelts = const_vector_encoded_nelts (x);
+  unsigned int npatterns = CONST_VECTOR_NPATTERNS (x);
+  unsigned int count = i / npatterns;
+  unsigned int pattern = i % npatterns;
+  unsigned int final_i = encoded_nelts - npatterns + pattern;
+
+  /* If there are no steps, the final encoded value is the right one.  */
+  if (!CONST_VECTOR_STEPPED_P (x))
+    return rtx_mode_t (CONST_VECTOR_ENCODED_ELT (x, final_i), elt_mode);
+
+  /* Otherwise work out the value from the last two encoded elements.  */
+  rtx v1 = CONST_VECTOR_ENCODED_ELT (x, final_i - npatterns);
+  rtx v2 = CONST_VECTOR_ENCODED_ELT (x, final_i);
+  wide_int diff = wi::sub (rtx_mode_t (v2, elt_mode),
+			   rtx_mode_t (v1, elt_mode));
+  return wi::add (rtx_mode_t (v2, elt_mode), (count - 2) * diff);
+}
+
+/* Return the value of element I of CONST_VECTOR X.  */
+
+rtx
+const_vector_elt (const_rtx x, unsigned int i)
+{
+  /* First handle elements that are directly encoded.  */
+  if (i < (unsigned int) XVECLEN (x, 0))
+    return CONST_VECTOR_ENCODED_ELT (x, i);
+
+  /* If there are no steps, the final encoded value is the right one.  */
+  if (!CONST_VECTOR_STEPPED_P (x))
+    {
+      /* Identify the pattern that contains element I and work out the index of
+	 the last encoded element for that pattern.  */
+      unsigned int encoded_nelts = const_vector_encoded_nelts (x);
+      unsigned int npatterns = CONST_VECTOR_NPATTERNS (x);
+      unsigned int pattern = i % npatterns;
+      unsigned int final_i = encoded_nelts - npatterns + pattern;
+      return CONST_VECTOR_ENCODED_ELT (x, final_i);
+    }
+
+  /* Otherwise work out the value from the last two encoded elements.  */
+  return immed_wide_int_const (const_vector_int_elt (x, i),
+			       GET_MODE_INNER (GET_MODE (x)));
+}
+
 /* Return true if X is a valid element for a CONST_VECTOR of the given
   mode.  */
 
@@ -5872,33 +5946,15 @@ valid_for_const_vector_p (machine_mode, rtx x)
 	  || CONST_FIXED_P (x));
 }
 
-/* Like gen_const_vec_duplicate, but ignore const_tiny_rtx.  */
-
-static rtx
-gen_const_vec_duplicate_1 (machine_mode mode, rtx el)
-{
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  for (int i = 0; i < nunits; ++i)
-    RTVEC_ELT (v, i) = el;
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
-}
-
 /* Generate a vector constant of mode MODE in which every element has
    value ELT.  */
 
 rtx
 gen_const_vec_duplicate (machine_mode mode, rtx elt)
 {
-  scalar_mode inner_mode = GET_MODE_INNER (mode);
-  if (elt == CONST0_RTX (inner_mode))
-    return CONST0_RTX (mode);
-  else if (elt == CONST1_RTX (inner_mode))
-    return CONST1_RTX (mode);
-  else if (elt == CONSTM1_RTX (inner_mode))
-    return CONSTM1_RTX (mode);
-
-  return gen_const_vec_duplicate_1 (mode, elt);
+  rtx_vector_builder builder (mode, 1, 1);
+  builder.quick_push (elt);
+  return builder.build ();
 }
 
 /* Return a vector rtx of mode MODE in which every element has value X.
@@ -5912,28 +5968,44 @@ gen_vec_duplicate (machine_mode mode, rtx x)
   return gen_rtx_VEC_DUPLICATE (mode, x);
 }
 
-/* A subroutine of const_vec_series_p that handles the case in which
-   X is known to be an integer CONST_VECTOR.  */
+/* A subroutine of const_vec_series_p that handles the case in which:
+
+     (GET_CODE (X) == CONST_VECTOR
+      && CONST_VECTOR_NPATTERNS (X) == 1
+      && !CONST_VECTOR_DUPLICATE_P (X))
+
+   is known to hold.  */
 
 bool
 const_vec_series_p_1 (const_rtx x, rtx *base_out, rtx *step_out)
 {
-  unsigned int nelts = CONST_VECTOR_NUNITS (x);
-  if (nelts < 2)
+  /* Stepped sequences are only defined for integers, to avoid specifying
+     rounding behavior.  */
+  if (GET_MODE_CLASS (GET_MODE (x)) != MODE_VECTOR_INT)
     return false;
 
+  /* A non-duplicated vector with two elements can always be seen as a
+     series with a nonzero step.  Longer vectors must have a stepped
+     encoding.  */
+  if (maybe_ne (CONST_VECTOR_NUNITS (x), 2)
+      && !CONST_VECTOR_STEPPED_P (x))
+    return false;
+
+  /* Calculate the step between the first and second elements.  */
   scalar_mode inner = GET_MODE_INNER (GET_MODE (x));
   rtx base = CONST_VECTOR_ELT (x, 0);
   rtx step = simplify_binary_operation (MINUS, inner,
-					CONST_VECTOR_ELT (x, 1), base);
+					CONST_VECTOR_ENCODED_ELT (x, 1), base);
   if (rtx_equal_p (step, CONST0_RTX (inner)))
     return false;
 
-  for (unsigned int i = 2; i < nelts; ++i)
+  /* If we have a stepped encoding, check that the step between the
+     second and third elements is the same as STEP.  */
+  if (CONST_VECTOR_STEPPED_P (x))
     {
       rtx diff = simplify_binary_operation (MINUS, inner,
-					    CONST_VECTOR_ELT (x, i),
-					    CONST_VECTOR_ELT (x, i - 1));
+					    CONST_VECTOR_ENCODED_ELT (x, 2),
+					    CONST_VECTOR_ENCODED_ELT (x, 1));
       if (!rtx_equal_p (step, diff))
 	return false;
     }
@@ -5952,14 +6024,12 @@ gen_const_vec_series (machine_mode mode, rtx base, rtx step)
   gcc_assert (valid_for_const_vector_p (mode, base)
 	      && valid_for_const_vector_p (mode, step));
 
-  int nunits = GET_MODE_NUNITS (mode);
-  rtvec v = rtvec_alloc (nunits);
-  scalar_mode inner_mode = GET_MODE_INNER (mode);
-  RTVEC_ELT (v, 0) = base;
-  for (int i = 1; i < nunits; ++i)
-    RTVEC_ELT (v, i) = simplify_gen_binary (PLUS, inner_mode,
-					    RTVEC_ELT (v, i - 1), step);
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
+  rtx_vector_builder builder (mode, 1, 3);
+  builder.quick_push (base);
+  for (int i = 1; i < 3; ++i)
+    builder.quick_push (simplify_gen_binary (PLUS, GET_MODE_INNER (mode),
+					     builder[i - 1], step));
+  return builder.build ();
 }
 
 /* Generate a vector of mode MODE in which element I has the value
@@ -5990,7 +6060,7 @@ gen_const_vector (machine_mode mode, int constant)
   rtx el = const_tiny_rtx[constant][(int) inner];
   gcc_assert (el);
 
-  return gen_const_vec_duplicate_1 (mode, el);
+  return gen_const_vec_duplicate (mode, el);
 }
 
 /* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
@@ -5998,14 +6068,18 @@ gen_const_vector (machine_mode mode, int constant)
 rtx
 gen_rtx_CONST_VECTOR (machine_mode mode, rtvec v)
 {
-  gcc_assert (GET_MODE_NUNITS (mode) == GET_NUM_ELEM (v));
+  gcc_assert (known_eq (GET_MODE_NUNITS (mode), GET_NUM_ELEM (v)));
 
   /* If the values are all the same, check to see if we can use one of the
      standard constant vectors.  */
   if (rtvec_all_equal_p (v))
     return gen_const_vec_duplicate (mode, RTVEC_ELT (v, 0));
 
-  return gen_rtx_raw_CONST_VECTOR (mode, v);
+  unsigned int nunits = GET_NUM_ELEM (v);
+  rtx_vector_builder builder (mode, nunits, 1);
+  for (unsigned int i = 0; i < nunits; ++i)
+    builder.quick_push (RTVEC_ELT (v, i));
+  return builder.build (v);
 }
 
 /* Initialise global register information required by all functions.  */
@@ -6194,6 +6268,12 @@ init_emit_once (void)
   FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
 
+  /* For BImode, 1 and -1 are unsigned and signed interpretations
+     of the same value.  */
+  const_tiny_rtx[0][(int) BImode] = const0_rtx;
+  const_tiny_rtx[1][(int) BImode] = const_true_rtx;
+  const_tiny_rtx[3][(int) BImode] = const_true_rtx;
+
   for (mode = MIN_MODE_PARTIAL_INT;
        mode <= MAX_MODE_PARTIAL_INT;
        mode = (machine_mode)((int)(mode) + 1))
@@ -6209,6 +6289,15 @@ init_emit_once (void)
     {
       rtx inner = const_tiny_rtx[0][(int)GET_MODE_INNER (mode)];
       const_tiny_rtx[0][(int) mode] = gen_rtx_CONCAT (mode, inner, inner);
+    }
+
+  /* As for BImode, "all 1" and "all -1" are unsigned and signed
+     interpretations of the same value.  */
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_BOOL)
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+      const_tiny_rtx[3][(int) mode] = gen_const_vector (mode, 3);
+      const_tiny_rtx[1][(int) mode] = const_tiny_rtx[3][(int) mode];
     }
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
@@ -6311,10 +6400,6 @@ init_emit_once (void)
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)
     if (GET_MODE_CLASS ((machine_mode) i) == MODE_CC)
       const_tiny_rtx[0][i] = const0_rtx;
-
-  const_tiny_rtx[0][(int) BImode] = const0_rtx;
-  if (STORE_FLAG_VALUE == 1)
-    const_tiny_rtx[1][(int) BImode] = const1_rtx;
 
   FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_POINTER_BOUNDS)
     {

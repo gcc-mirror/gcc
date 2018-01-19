@@ -1,5 +1,5 @@
 /* Implementation of the EXTENDS_TYPE_OF intrinsic.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Janus Weil <janus@gcc.gnu.org>.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -30,7 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef struct vtype
 {
   GFC_INTEGER_4 hash;
-  GFC_INTEGER_4 size;
+  size_t size;
   struct vtype *extends;
 }
 vtype;

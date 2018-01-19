@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -2579,6 +2579,7 @@ symbol_table::compile (void)
   timevar_pop (TV_CGRAPHOPT);
 
   /* Output everything.  */
+  switch_to_section (text_section);
   (*debug_hooks->assembly_start) ();
   if (!quiet_flag)
     fprintf (stderr, "Assembling functions:\n");

@@ -461,6 +461,126 @@ func TestMuxRedirectLeadingSlashes(t *testing.T) {
 	}
 }
 
+// Test that the special cased "/route" redirect
+// implicitly created by a registered "/route/"
+// properly sets the query string in the redirect URL.
+// See Issue 17841.
+func TestServeWithSlashRedirectKeepsQueryString(t *testing.T) {
+	setParallel(t)
+	defer afterTest(t)
+
+	writeBackQuery := func(w ResponseWriter, r *Request) {
+		fmt.Fprintf(w, "%s", r.URL.RawQuery)
+	}
+
+	mux := NewServeMux()
+	mux.HandleFunc("/testOne", writeBackQuery)
+	mux.HandleFunc("/testTwo/", writeBackQuery)
+	mux.HandleFunc("/testThree", writeBackQuery)
+	mux.HandleFunc("/testThree/", func(w ResponseWriter, r *Request) {
+		fmt.Fprintf(w, "%s:bar", r.URL.RawQuery)
+	})
+
+	ts := httptest.NewServer(mux)
+	defer ts.Close()
+
+	tests := [...]struct {
+		path     string
+		method   string
+		want     string
+		statusOk bool
+	}{
+		0: {"/testOne?this=that", "GET", "this=that", true},
+		1: {"/testTwo?foo=bar", "GET", "foo=bar", true},
+		2: {"/testTwo?a=1&b=2&a=3", "GET", "a=1&b=2&a=3", true},
+		3: {"/testTwo?", "GET", "", true},
+		4: {"/testThree?foo", "GET", "foo", true},
+		5: {"/testThree/?foo", "GET", "foo:bar", true},
+		6: {"/testThree?foo", "CONNECT", "foo", true},
+		7: {"/testThree/?foo", "CONNECT", "foo:bar", true},
+
+		// canonicalization or not
+		8: {"/testOne/foo/..?foo", "GET", "foo", true},
+		9: {"/testOne/foo/..?foo", "CONNECT", "404 page not found\n", false},
+	}
+
+	for i, tt := range tests {
+		req, _ := NewRequest(tt.method, ts.URL+tt.path, nil)
+		res, err := ts.Client().Do(req)
+		if err != nil {
+			continue
+		}
+		slurp, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		if !tt.statusOk {
+			if got, want := res.StatusCode, 404; got != want {
+				t.Errorf("#%d: Status = %d; want = %d", i, got, want)
+			}
+		}
+		if got, want := string(slurp), tt.want; got != want {
+			t.Errorf("#%d: Body = %q; want = %q", i, got, want)
+		}
+	}
+}
+
+func TestServeWithSlashRedirectForHostPatterns(t *testing.T) {
+	setParallel(t)
+	defer afterTest(t)
+
+	mux := NewServeMux()
+	mux.Handle("example.com/pkg/foo/", stringHandler("example.com/pkg/foo/"))
+	mux.Handle("example.com/pkg/bar", stringHandler("example.com/pkg/bar"))
+	mux.Handle("example.com/pkg/bar/", stringHandler("example.com/pkg/bar/"))
+	mux.Handle("example.com:3000/pkg/connect/", stringHandler("example.com:3000/pkg/connect/"))
+	mux.Handle("example.com:9000/", stringHandler("example.com:9000/"))
+	mux.Handle("/pkg/baz/", stringHandler("/pkg/baz/"))
+
+	tests := []struct {
+		method string
+		url    string
+		code   int
+		loc    string
+		want   string
+	}{
+		{"GET", "http://example.com/", 404, "", ""},
+		{"GET", "http://example.com/pkg/foo", 301, "/pkg/foo/", ""},
+		{"GET", "http://example.com/pkg/bar", 200, "", "example.com/pkg/bar"},
+		{"GET", "http://example.com/pkg/bar/", 200, "", "example.com/pkg/bar/"},
+		{"GET", "http://example.com/pkg/baz", 301, "/pkg/baz/", ""},
+		{"GET", "http://example.com:3000/pkg/foo", 301, "/pkg/foo/", ""},
+		{"CONNECT", "http://example.com/", 404, "", ""},
+		{"CONNECT", "http://example.com:3000/", 404, "", ""},
+		{"CONNECT", "http://example.com:9000/", 200, "", "example.com:9000/"},
+		{"CONNECT", "http://example.com/pkg/foo", 301, "/pkg/foo/", ""},
+		{"CONNECT", "http://example.com:3000/pkg/foo", 404, "", ""},
+		{"CONNECT", "http://example.com:3000/pkg/baz", 301, "/pkg/baz/", ""},
+		{"CONNECT", "http://example.com:3000/pkg/connect", 301, "/pkg/connect/", ""},
+	}
+
+	ts := httptest.NewServer(mux)
+	defer ts.Close()
+
+	for i, tt := range tests {
+		req, _ := NewRequest(tt.method, tt.url, nil)
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+
+		if got, want := w.Code, tt.code; got != want {
+			t.Errorf("#%d: Status = %d; want = %d", i, got, want)
+		}
+
+		if tt.code == 301 {
+			if got, want := w.HeaderMap.Get("Location"), tt.loc; got != want {
+				t.Errorf("#%d: Location = %q; want = %q", i, got, want)
+			}
+		} else {
+			if got, want := w.HeaderMap.Get("Result"), tt.want; got != want {
+				t.Errorf("#%d: Result = %q; want = %q", i, got, want)
+			}
+		}
+	}
+}
+
 func BenchmarkServeMux(b *testing.B) {
 
 	type test struct {
@@ -624,12 +744,8 @@ func TestHTTP2WriteDeadlineExtendedOnNewRequest(t *testing.T) {
 		req = req.WithContext(ctx)
 
 		r, err := c.Do(req)
-		select {
-		case <-ctx.Done():
-			if ctx.Err() == context.DeadlineExceeded {
-				t.Fatalf("http2 Get #%d response timed out", i)
-			}
-		default:
+		if ctx.Err() == context.DeadlineExceeded {
+			t.Fatalf("http2 Get #%d response timed out", i)
 		}
 		if err != nil {
 			t.Fatalf("http2 Get #%d: %v", i, err)
@@ -2376,6 +2492,14 @@ func TestTimeoutHandlerEmptyResponse(t *testing.T) {
 	}
 }
 
+// https://golang.org/issues/22084
+func TestTimeoutHandlerPanicRecovery(t *testing.T) {
+	wrapper := func(h Handler) Handler {
+		return TimeoutHandler(h, time.Second, "")
+	}
+	testHandlerPanic(t, false, false, wrapper, "intentional death for testing")
+}
+
 func TestRedirectBadPath(t *testing.T) {
 	// This used to crash. It's not valid input (bad path), but it
 	// shouldn't crash.
@@ -2436,6 +2560,37 @@ func TestRedirect(t *testing.T) {
 	}
 }
 
+// Test that Content-Type header is set for GET and HEAD requests.
+func TestRedirectContentTypeAndBody(t *testing.T) {
+	var tests = []struct {
+		method   string
+		wantCT   string
+		wantBody string
+	}{
+		{MethodGet, "text/html; charset=utf-8", "<a href=\"/foo\">Found</a>.\n\n"},
+		{MethodHead, "text/html; charset=utf-8", ""},
+		{MethodPost, "", ""},
+		{MethodDelete, "", ""},
+		{"foo", "", ""},
+	}
+	for _, tt := range tests {
+		req := httptest.NewRequest(tt.method, "http://example.com/qux/", nil)
+		rec := httptest.NewRecorder()
+		Redirect(rec, req, "/foo", 302)
+		if got, want := rec.Header().Get("Content-Type"), tt.wantCT; got != want {
+			t.Errorf("Redirect(%q) generated Content-Type header %q; want %q", tt.method, got, want)
+		}
+		resp := rec.Result()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := string(body), tt.wantBody; got != want {
+			t.Errorf("Redirect(%q) generated Body %q; want %q", tt.method, got, want)
+		}
+	}
+}
+
 // TestZeroLengthPostAndResponse exercises an optimization done by the Transport:
 // when there is no body (either because the method doesn't permit a body, or an
 // explicit Content-Length of zero is present), then the transport can re-use the
@@ -2489,22 +2644,22 @@ func testZeroLengthPostAndResponse(t *testing.T, h2 bool) {
 	}
 }
 
-func TestHandlerPanicNil_h1(t *testing.T) { testHandlerPanic(t, false, h1Mode, nil) }
-func TestHandlerPanicNil_h2(t *testing.T) { testHandlerPanic(t, false, h2Mode, nil) }
+func TestHandlerPanicNil_h1(t *testing.T) { testHandlerPanic(t, false, h1Mode, nil, nil) }
+func TestHandlerPanicNil_h2(t *testing.T) { testHandlerPanic(t, false, h2Mode, nil, nil) }
 
 func TestHandlerPanic_h1(t *testing.T) {
-	testHandlerPanic(t, false, h1Mode, "intentional death for testing")
+	testHandlerPanic(t, false, h1Mode, nil, "intentional death for testing")
 }
 func TestHandlerPanic_h2(t *testing.T) {
-	testHandlerPanic(t, false, h2Mode, "intentional death for testing")
+	testHandlerPanic(t, false, h2Mode, nil, "intentional death for testing")
 }
 
 func TestHandlerPanicWithHijack(t *testing.T) {
 	// Only testing HTTP/1, and our http2 server doesn't support hijacking.
-	testHandlerPanic(t, true, h1Mode, "intentional death for testing")
+	testHandlerPanic(t, true, h1Mode, nil, "intentional death for testing")
 }
 
-func testHandlerPanic(t *testing.T, withHijack, h2 bool, panicValue interface{}) {
+func testHandlerPanic(t *testing.T, withHijack, h2 bool, wrapper func(Handler) Handler, panicValue interface{}) {
 	defer afterTest(t)
 	// Unlike the other tests that set the log output to ioutil.Discard
 	// to quiet the output, this test uses a pipe. The pipe serves three
@@ -2527,7 +2682,7 @@ func testHandlerPanic(t *testing.T, withHijack, h2 bool, panicValue interface{})
 	defer log.SetOutput(os.Stderr)
 	defer pw.Close()
 
-	cst := newClientServerTest(t, h2, HandlerFunc(func(w ResponseWriter, r *Request) {
+	var handler Handler = HandlerFunc(func(w ResponseWriter, r *Request) {
 		if withHijack {
 			rwc, _, err := w.(Hijacker).Hijack()
 			if err != nil {
@@ -2536,7 +2691,11 @@ func testHandlerPanic(t *testing.T, withHijack, h2 bool, panicValue interface{})
 			defer rwc.Close()
 		}
 		panic(panicValue)
-	}))
+	})
+	if wrapper != nil {
+		handler = wrapper(handler)
+	}
+	cst := newClientServerTest(t, h2, handler)
 	defer cst.close()
 
 	// Do a blocking read on the log output pipe so its logging
@@ -2691,15 +2850,28 @@ func testRequestLimit(t *testing.T, h2 bool) {
 		req.Header.Set(fmt.Sprintf("header%05d", i), fmt.Sprintf("val%05d", i))
 	}
 	res, err := cst.c.Do(req)
-	if err != nil {
+	if res != nil {
+		defer res.Body.Close()
+	}
+	if h2 {
+		// In HTTP/2, the result depends on a race. If the client has received the
+		// server's SETTINGS before RoundTrip starts sending the request, then RoundTrip
+		// will fail with an error. Otherwise, the client should receive a 431 from the
+		// server.
+		if err == nil && res.StatusCode != 431 {
+			t.Fatalf("expected 431 response status; got: %d %s", res.StatusCode, res.Status)
+		}
+	} else {
+		// In HTTP/1, we expect a 431 from the server.
 		// Some HTTP clients may fail on this undefined behavior (server replying and
 		// closing the connection while the request is still being written), but
 		// we do support it (at least currently), so we expect a response below.
-		t.Fatalf("Do: %v", err)
-	}
-	defer res.Body.Close()
-	if res.StatusCode != 431 {
-		t.Fatalf("expected 431 response status; got: %d %s", res.StatusCode, res.Status)
+		if err != nil {
+			t.Fatalf("Do: %v", err)
+		}
+		if res.StatusCode != 431 {
+			t.Fatalf("expected 431 response status; got: %d %s", res.StatusCode, res.Status)
+		}
 	}
 }
 
@@ -3325,9 +3497,6 @@ func TestHeaderToWire(t *testing.T) {
 			handler: func(rw ResponseWriter, r *Request) {
 			},
 			check: func(got string) error {
-				if !strings.Contains(got, "Content-Type: text/plain") {
-					return errors.New("wrong content-type; want text/plain")
-				}
 				if !strings.Contains(got, "Content-Length: 0") {
 					return errors.New("want 0 content-length")
 				}
@@ -5336,7 +5505,11 @@ func TestServerCloseDeadlock(t *testing.T) {
 func TestServerKeepAlivesEnabled_h1(t *testing.T) { testServerKeepAlivesEnabled(t, h1Mode) }
 func TestServerKeepAlivesEnabled_h2(t *testing.T) { testServerKeepAlivesEnabled(t, h2Mode) }
 func testServerKeepAlivesEnabled(t *testing.T, h2 bool) {
-	setParallel(t)
+	if h2 {
+		restore := ExportSetH2GoawayTimeout(10 * time.Millisecond)
+		defer restore()
+	}
+	// Not parallel: messes with global variable. (http2goAwayTimeout)
 	defer afterTest(t)
 	cst := newClientServerTest(t, h2, HandlerFunc(func(w ResponseWriter, r *Request) {
 		fmt.Fprintf(w, "%v", r.RemoteAddr)
@@ -5363,32 +5536,54 @@ func testServerKeepAlivesEnabled(t *testing.T, h2 bool) {
 func TestServerCancelsReadTimeoutWhenIdle(t *testing.T) {
 	setParallel(t)
 	defer afterTest(t)
-	const timeout = 250 * time.Millisecond
-	ts := httptest.NewUnstartedServer(HandlerFunc(func(w ResponseWriter, r *Request) {
-		select {
-		case <-time.After(2 * timeout):
-			fmt.Fprint(w, "ok")
-		case <-r.Context().Done():
-			fmt.Fprint(w, r.Context().Err())
+	runTimeSensitiveTest(t, []time.Duration{
+		10 * time.Millisecond,
+		50 * time.Millisecond,
+		250 * time.Millisecond,
+		time.Second,
+		2 * time.Second,
+	}, func(t *testing.T, timeout time.Duration) error {
+		ts := httptest.NewUnstartedServer(HandlerFunc(func(w ResponseWriter, r *Request) {
+			select {
+			case <-time.After(2 * timeout):
+				fmt.Fprint(w, "ok")
+			case <-r.Context().Done():
+				fmt.Fprint(w, r.Context().Err())
+			}
+		}))
+		ts.Config.ReadTimeout = timeout
+		ts.Start()
+		defer ts.Close()
+
+		c := ts.Client()
+
+		res, err := c.Get(ts.URL)
+		if err != nil {
+			return fmt.Errorf("Get: %v", err)
 		}
-	}))
-	ts.Config.ReadTimeout = timeout
-	ts.Start()
-	defer ts.Close()
+		slurp, err := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		if err != nil {
+			return fmt.Errorf("Body ReadAll: %v", err)
+		}
+		if string(slurp) != "ok" {
+			return fmt.Errorf("got: %q, want ok", slurp)
+		}
+		return nil
+	})
+}
 
-	c := ts.Client()
-
-	res, err := c.Get(ts.URL)
-	if err != nil {
-		t.Fatal(err)
-	}
-	slurp, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(slurp) != "ok" {
-		t.Fatalf("Got: %q, want ok", slurp)
+// runTimeSensitiveTest runs test with the provided durations until one passes.
+// If they all fail, t.Fatal is called with the last one's duration and error value.
+func runTimeSensitiveTest(t *testing.T, durations []time.Duration, test func(t *testing.T, d time.Duration) error) {
+	for i, d := range durations {
+		err := test(t, d)
+		if err == nil {
+			return
+		}
+		if i == len(durations)-1 {
+			t.Fatalf("failed with duration %v: %v", d, err)
+		}
 	}
 }
 

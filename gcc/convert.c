@@ -1,5 +1,5 @@
 /* Utility routines for data type conversion for GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -471,8 +471,10 @@ do_narrow (location_t loc,
 	     type in case the operation in outprec precision
 	     could overflow.  Otherwise, we would introduce
 	     signed-overflow undefinedness.  */
-	  || ((!TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0))
-	       || !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1)))
+	  || ((!(INTEGRAL_TYPE_P (TREE_TYPE (arg0))
+		 && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0)))
+	       || !(INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+		    && TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1))))
 	      && ((TYPE_PRECISION (TREE_TYPE (arg0)) * 2u
 		   > outprec)
 		  || (TYPE_PRECISION (TREE_TYPE (arg1)) * 2u
@@ -737,7 +739,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	 type corresponding to its mode, then do a nop conversion
 	 to TYPE.  */
       else if (TREE_CODE (type) == ENUMERAL_TYPE
-	       || outprec != GET_MODE_PRECISION (TYPE_MODE (type)))
+	       || maybe_ne (outprec, GET_MODE_PRECISION (TYPE_MODE (type))))
 	{
 	  expr = convert (lang_hooks.types.type_for_mode
 			  (TYPE_MODE (type), TYPE_UNSIGNED (type)), expr);
@@ -922,13 +924,15 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	    }
 
 	  CASE_CONVERT:
-	    /* Don't introduce a "can't convert between vector values of
-	       different size" error.  */
-	    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == VECTOR_TYPE
-		&& (GET_MODE_SIZE (TYPE_MODE
-				   (TREE_TYPE (TREE_OPERAND (expr, 0))))
-		    != GET_MODE_SIZE (TYPE_MODE (type))))
-	      break;
+	    {
+	      tree argtype = TREE_TYPE (TREE_OPERAND (expr, 0));
+	      /* Don't introduce a "can't convert between vector values
+		 of different size" error.  */
+	      if (TREE_CODE (argtype) == VECTOR_TYPE
+		  && maybe_ne (GET_MODE_SIZE (TYPE_MODE (argtype)),
+			       GET_MODE_SIZE (TYPE_MODE (type))))
+		break;
+	    }
 	    /* If truncating after truncating, might as well do all at once.
 	       If truncating after extending, we may get rid of wasted work.  */
 	    return convert (type, get_unwidened (TREE_OPERAND (expr, 0), type));

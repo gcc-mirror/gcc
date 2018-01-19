@@ -1,6 +1,6 @@
 /* Routines for reading trees from a file stream.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -714,7 +714,8 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
       && DECL_HAS_VALUE_EXPR_P (expr))
     SET_DECL_VALUE_EXPR (expr, stream_read_tree (ib, data_in));
 
-  if (VAR_P (expr))
+  if (VAR_P (expr)
+      && DECL_HAS_DEBUG_EXPR_P (expr))
     {
       tree dexpr = stream_read_tree (ib, data_in);
       if (dexpr)

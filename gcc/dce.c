@@ -1,5 +1,5 @@
 /* RTL dead code elimination.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -884,8 +884,8 @@ word_dce_process_block (basic_block bb, bool redo_out,
 	df_ref use;
 	FOR_EACH_INSN_USE (use, insn)
 	  if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER
-	      && (GET_MODE_SIZE (GET_MODE (DF_REF_REAL_REG (use)))
-		  == 2 * UNITS_PER_WORD)
+	      && known_eq (GET_MODE_SIZE (GET_MODE (DF_REF_REAL_REG (use))),
+			   2 * UNITS_PER_WORD)
 	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (use))
 	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (use) + 1))
 	    dead_debug_add (&debug, use, DF_REF_REGNO (use));

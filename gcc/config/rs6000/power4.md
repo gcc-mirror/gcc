@@ -1,5 +1,5 @@
 ;; Scheduling description for IBM Power4 and PowerPC 970 processors.
-;;   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+;;   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -351,11 +351,13 @@
 ; Condition Register logical ops are split if non-destructive (RT != RB)
 (define_insn_reservation "power4-crlogical" 2
   (and (eq_attr "type" "cr_logical")
+       (eq_attr "cr_logical_3op" "no")
        (eq_attr "cpu" "power4"))
   "du1_power4,cru_power4")
 
 (define_insn_reservation "power4-delayedcr" 4
-  (and (eq_attr "type" "delayed_cr")
+  (and (eq_attr "type" "cr_logical")
+       (eq_attr "cr_logical_3op" "yes")
        (eq_attr "cpu" "power4"))
   "du1_power4+du2_power4,cru_power4,cru_power4")
 

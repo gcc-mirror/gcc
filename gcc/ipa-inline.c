@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -706,7 +706,11 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   bool want_inline = true;
   struct cgraph_node *callee = e->callee->ultimate_alias_target ();
 
-  if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
+  /* Allow this function to be called before can_inline_edge_p,
+     since it's usually cheaper.  */
+  if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    want_inline = false;
+  else if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
     ;
   else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	   && !opt_for_fn (e->caller->decl, flag_inline_small_functions))
@@ -993,7 +997,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   /* Check that inlined time is better, but tolerate some roundoff issues.
      FIXME: When callee profile drops to 0 we account calls more.  This
      should be fixed by never doing that.  */
-  gcc_checking_assert ((edge_time - callee_info->time).to_int () <= 0
+  gcc_checking_assert ((edge_time * 100
+			- callee_info->time * 101).to_int () <= 0
 			|| callee->count.ipa ().initialized_p ());
   gcc_checking_assert (growth <= callee_info->size);
 
@@ -1122,7 +1127,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	    overall_growth += 256 * 256 - 256;
 	  denominator *= overall_growth;
         }
-      /*denominator *= inlined_time;*/
+      denominator *= inlined_time;
 
       badness = - numerator / denominator;
 
@@ -1312,8 +1317,8 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
         if (!check_inlinablity_for
 	    || check_inlinablity_for == edge)
 	  {
-	    if (can_inline_edge_p (edge, false)
-		&& want_inline_small_function_p (edge, false))
+	    if (want_inline_small_function_p (edge, false)
+		&& can_inline_edge_p (edge, false))
 	      update_edge_key (heap, edge);
 	    else if (edge->aux)
 	      {
@@ -1356,8 +1361,8 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
 	  {
-	    if (can_inline_edge_p (e, false)
-		&& want_inline_small_function_p (e, false))
+	    if (want_inline_small_function_p (e, false)
+		&& can_inline_edge_p (e, false))
 	      update_edge_key (heap, e);
 	    else if (e->aux)
 	      {
@@ -2078,7 +2083,8 @@ flatten_function (struct cgraph_node *node, bool early)
 		     "Not inlining %s into %s to avoid cycle.\n",
 		     xstrdup_for_dump (callee->name ()),
 		     xstrdup_for_dump (e->caller->name ()));
-	  e->inline_failed = CIF_RECURSIVE_INLINING;
+	  if (cgraph_inline_failed_type (e->inline_failed) != CIF_FINAL_ERROR)
+	    e->inline_failed = CIF_RECURSIVE_INLINING;
 	  continue;
 	}
 

@@ -1,18 +1,20 @@
 /* Test for target attribute assembly extension generations.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_arch_v8a_ok } */
-/* { dg-additional-options "-std=gnu99 -mfpu=vfpv3-d16" } */
+/* { dg-require-effective-target arm_fp_ok } */
+/* { dg-add-options arm_fp } */
 
 #include <stdint.h>
-#include <arm_neon.h>
 
-extern uint32_t bar();
+extern uint32_t bar ();
 
-__attribute__((target("fpu=crypto-neon-fp-armv8"))) poly64x1_t vsricw(poly64x1_t crc, uint32_t val)
+#pragma GCC target("fpu=vfpv3-d16")
+
+extern float fmaf (float, float, float);
+
+float
+__attribute__((target("fpu=vfpv4"))) vfma32 (float x, float y, float z)
 {
-    poly64x1_t res;
-    asm("vsri %0, %1, %2" : "=r"(res) : "r"(crc), "r"(val));
-    return res;
+  return fmaf (x, y, z);
 }
 
 uint32_t restored ()
@@ -20,5 +22,5 @@ uint32_t restored ()
   return bar();
 }
 
-/* { dg-final { scan-assembler-times {\.fpu\s+crypto-neon-fp-armv8} 1 } } */
+/* { dg-final { scan-assembler-times {\.fpu\s+vfpv4} 1 } } */
 /* { dg-final { scan-assembler-times {\.fpu\s+vfpv3-d16} 1 } } */

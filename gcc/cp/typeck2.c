@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1292,7 +1292,7 @@ process_init_constructor_array (tree type, tree init, int nested,
     }
   else
     /* Vectors are like simple fixed-size arrays.  */
-    len = TYPE_VECTOR_SUBPARTS (type);
+    unbounded = !TYPE_VECTOR_SUBPARTS (type).is_constant (&len);
 
   /* There must not be more initializers than needed.  */
   if (!unbounded && vec_safe_length (v) > len)

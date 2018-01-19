@@ -1,6 +1,6 @@
 ; Options for the ATMEL AVR port of the compiler.
 
-; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -63,6 +63,10 @@ Change the stack pointer without disabling interrupts.
 mbranch-cost=
 Target Report Joined RejectNegative UInteger Var(avr_branch_cost) Init(0)
 Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0.
+
+mmain-is-OS_task
+Target Report Mask(MAIN_IS_OS_TASK)
+Treat main as if it had attribute OS_task.
 
 morder1
 Target Report Undocumented Mask(ORDER_1)

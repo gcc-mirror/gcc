@@ -27,6 +27,13 @@ var iscgo bool
 // The extra M must be created before any C/C++ code calls cgocallback.
 var cgoHasExtraM bool
 
+// cgoAlwaysFalse is a boolean value that is always false.
+// The cgo-generated code says if cgoAlwaysFalse { cgoUse(p) }.
+// The compiler cannot see that cgoAlwaysFalse is always false,
+// so it emits the test and keeps the call, giving the desired
+// escape analysis result. The test is cheaper than the call.
+var cgoAlwaysFalse bool
+
 // Cgocall prepares to call from code written in Go to code written in
 // C/C++. This takes the current goroutine out of the Go scheduler, as
 // though it were making a system call. Otherwise the program can
@@ -37,12 +44,11 @@ var cgoHasExtraM bool
 //     defer syscall.Cgocalldone()
 //     cfunction()
 func Cgocall() {
-	lockOSThread()
 	mp := getg().m
 	mp.ncgocall++
 	mp.ncgo++
-	mp.incgo = true
 	entersyscall(0)
+	mp.incgo = true
 }
 
 // CgocallDone prepares to return to Go code from C/C++ code.
@@ -59,8 +65,6 @@ func CgocallDone() {
 	if readgstatus(gp)&^_Gscan == _Gsyscall {
 		exitsyscall(0)
 	}
-
-	unlockOSThread()
 }
 
 // CgocallBack is used when calling from C/C++ code into Go code.
@@ -77,6 +81,8 @@ func CgocallBack() {
 		mp := gp.m
 		mp.dropextram = true
 	}
+
+	lockOSThread()
 
 	exitsyscall(0)
 	gp.m.incgo = false
@@ -100,6 +106,8 @@ func CgocallBack() {
 // CgocallBackDone prepares to return to C/C++ code that has called
 // into Go code.
 func CgocallBackDone() {
+	unlockOSThread()
+
 	// If we are the top level Go function called from C/C++, then
 	// we need to release the m. But don't release it if we are
 	// panicing; since this is the top level, we are going to

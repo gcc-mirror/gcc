@@ -1,6 +1,6 @@
 /* Convert language-specific tree expression to rtl instructions,
    for GNU compiler.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -89,7 +89,7 @@ cplus_expand_constant (tree cst)
 /* We've seen an actual use of EXPR.  Possibly replace an outer variable
    reference inside with its constant value or a lambda capture.  */
 
-static tree
+tree
 mark_use (tree expr, bool rvalue_p, bool read_p,
 	  location_t loc /* = UNKNOWN_LOCATION */,
 	  bool reject_builtin /* = true */)
@@ -199,6 +199,22 @@ mark_rvalue_use (tree e,
   return mark_use (e, true, true, loc, reject_builtin);
 }
 
+/* Called whenever an expression is used in an lvalue context.  */
+
+tree
+mark_lvalue_use (tree expr)
+{
+  return mark_use (expr, false, true, input_location, false);
+}
+
+/* As above, but don't consider this use a read.  */
+
+tree
+mark_lvalue_use_nonread (tree expr)
+{
+  return mark_use (expr, false, false, input_location, false);
+}
+
 /* Called when expr appears as a discarded-value expression.  */
 
 tree
@@ -243,22 +259,6 @@ mark_discarded_use (tree expr)
 
   /* Like mark_rvalue_use, but don't reject built-ins.  */
   return mark_use (expr, true, true, input_location, false);
-}
-
-/* Called whenever an expression is used in an lvalue context.  */
-
-tree
-mark_lvalue_use (tree expr)
-{
-  return mark_use (expr, false, true, input_location, false);
-}
-
-/* As above, but don't consider this use a read.  */
-
-tree
-mark_lvalue_use_nonread (tree expr)
-{
-  return mark_use (expr, false, false, input_location, false);
 }
 
 /* Called whenever an expression is used in a type use context.  */
@@ -315,3 +315,18 @@ mark_exp_read (tree exp)
     }
 }
 
+/* Fold X for consideration by one of the warning functions when checking
+   whether an expression has a constant value.  */
+
+tree
+fold_for_warn (tree x)
+{
+  /* C++ implementation.  */
+
+  /* It's not generally safe to fully fold inside of a template, so
+     call fold_non_dependent_expr instead.  */
+  if (processing_template_decl)
+    return fold_non_dependent_expr (x);
+
+  return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
+}

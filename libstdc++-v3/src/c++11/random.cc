@@ -1,6 +1,6 @@
 // random -*- C++ -*-
 
-// Copyright (C) 2012-2017 Free Software Foundation, Inc.
+// Copyright (C) 2012-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,6 +40,10 @@
 
 #ifdef _GLIBCXX_HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
+#endif
+
+#ifdef _GLIBCXX_HAVE_LINUX_TYPES_H
+# include <linux/types.h>
 #endif
 
 #ifdef _GLIBCXX_HAVE_LINUX_RANDOM_H

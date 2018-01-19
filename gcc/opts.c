@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -2103,6 +2103,7 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdebug_prefix_map_:
+    case OPT_ffile_prefix_map_:
       /* Deferred.  */
       break;
 
@@ -2463,6 +2464,13 @@ common_handle_option (struct gcc_options *opts,
     case OPT_ftrapv:
       if (value)
 	opts->x_flag_wrapv = 0;
+      break;
+
+    case OPT_fstrict_overflow:
+      opts->x_flag_wrapv = !value;
+      opts->x_flag_wrapv_pointer = !value;
+      if (!value)
+	opts->x_flag_trapv = 0;
       break;
 
     case OPT_fipa_icf:

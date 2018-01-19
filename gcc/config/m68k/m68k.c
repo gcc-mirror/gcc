@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6608,6 +6608,17 @@ m68k_excess_precision (enum excess_precision_type type)
 	gcc_unreachable ();
     }
   return FLT_EVAL_METHOD_UNPREDICTABLE;
+}
+
+/* Implement PUSH_ROUNDING.  On the 680x0, sp@- in a byte insn really pushes
+   a word.  On the ColdFire, sp@- in a byte insn pushes just a byte.  */
+
+poly_int64
+m68k_push_rounding (poly_int64 bytes)
+{
+  if (TARGET_COLDFIRE)
+    return bytes;
+  return (bytes + 1) & ~1;
 }
 
 #include "gt-m68k.h"

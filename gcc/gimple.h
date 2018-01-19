@@ -1,6 +1,6 @@
 /* Gimple IR definitions.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -6355,11 +6355,18 @@ gimple_expr_type (const gimple *stmt)
   if (code == GIMPLE_CALL)
     {
       const gcall *call_stmt = as_a <const gcall *> (stmt);
-      if (gimple_call_internal_p (call_stmt)
-          && gimple_call_internal_fn (call_stmt) == IFN_MASK_STORE)
-        return TREE_TYPE (gimple_call_arg (call_stmt, 3));
-      else
-        return gimple_call_return_type (call_stmt);
+      if (gimple_call_internal_p (call_stmt))
+	switch (gimple_call_internal_fn (call_stmt))
+	  {
+	  case IFN_MASK_STORE:
+	  case IFN_SCATTER_STORE:
+	    return TREE_TYPE (gimple_call_arg (call_stmt, 3));
+	  case IFN_MASK_SCATTER_STORE:
+	    return TREE_TYPE (gimple_call_arg (call_stmt, 4));
+	  default:
+	    break;
+	  }
+      return gimple_call_return_type (call_stmt);
     }
   else if (code == GIMPLE_ASSIGN)
     {
@@ -6386,8 +6393,8 @@ enum gimple_alloc_kind
   gimple_alloc_kind_all
 };
 
-extern int gimple_alloc_counts[];
-extern int gimple_alloc_sizes[];
+extern uint64_t gimple_alloc_counts[];
+extern uint64_t gimple_alloc_sizes[];
 
 /* Return the allocation kind for a given stmt CODE.  */
 static inline enum gimple_alloc_kind

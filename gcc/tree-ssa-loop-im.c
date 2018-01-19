@@ -1,5 +1,5 @@
 /* Loop invariant motion.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1496,7 +1496,7 @@ sort_bbs_in_loop_postorder_cmp (const void *bb1_, const void *bb2_)
   struct loop *loop1 = bb1->loop_father;
   struct loop *loop2 = bb2->loop_father;
   if (loop1->num == loop2->num)
-    return 0;
+    return bb1->index - bb2->index;
   return bb_loop_postorder[loop1->num] < bb_loop_postorder[loop2->num] ? -1 : 1;
 }
 

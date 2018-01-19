@@ -1,5 +1,5 @@
 /* Definitions for describing one tree-ssa optimization pass.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 
 This file is part of GCC.
@@ -576,6 +576,7 @@ extern rtl_opt_pass *make_pass_mode_switching (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_sms (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_sched (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_live_range_shrinkage (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_early_remat (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_ira (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_reload (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_clean_state (gcc::context *ctxt);

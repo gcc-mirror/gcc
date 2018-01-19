@@ -1,6 +1,6 @@
 /* Infrastructure for tracking user variable locations and values
    throughout compilation.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>.
 
 This file is part of GCC.
@@ -94,13 +94,15 @@ cleanup_auto_inc_dec (rtx src, machine_mode mem_mode ATTRIBUTE_UNUSED)
 
     case PRE_INC:
     case PRE_DEC:
-      gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
-      return gen_rtx_PLUS (GET_MODE (x),
-			   cleanup_auto_inc_dec (XEXP (x, 0), mem_mode),
-			   gen_int_mode (code == PRE_INC
-					 ? GET_MODE_SIZE (mem_mode)
-					 : -GET_MODE_SIZE (mem_mode),
-					 GET_MODE (x)));
+      {
+	gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
+	poly_int64 offset = GET_MODE_SIZE (mem_mode);
+	if (code == PRE_DEC)
+	  offset = -offset;
+	return gen_rtx_PLUS (GET_MODE (x),
+			     cleanup_auto_inc_dec (XEXP (x, 0), mem_mode),
+			     gen_int_mode (offset, GET_MODE (x)));
+      }
 
     case POST_INC:
     case POST_DEC:
@@ -611,10 +613,13 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	  usesp = &cur->next;
 	  *tailp = cur->next;
 	  cur->next = NULL;
+	  /* "may" rather than "must" because we want (for example)
+	     N V4SFs to win over plain V4SF even though N might be 1.  */
+	  rtx candidate = *DF_REF_REAL_LOC (cur->use);
 	  if (!reg
-	      || (GET_MODE_BITSIZE (GET_MODE (reg))
-		  < GET_MODE_BITSIZE (GET_MODE (*DF_REF_REAL_LOC (cur->use)))))
-	    reg = *DF_REF_REAL_LOC (cur->use);
+	      || maybe_lt (GET_MODE_BITSIZE (GET_MODE (reg)),
+			   GET_MODE_BITSIZE (GET_MODE (candidate))))
+	    reg = candidate;
 	}
       else
 	tailp = &(*tailp)->next;

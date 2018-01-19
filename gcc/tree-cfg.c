@@ -1,5 +1,5 @@
 /* Control flow functions for trees.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -3775,7 +3775,8 @@ verify_gimple_comparison (tree type, tree op0, tree op1, enum tree_code code)
           return true;
         }
 
-      if (TYPE_VECTOR_SUBPARTS (type) != TYPE_VECTOR_SUBPARTS (op0_type))
+      if (maybe_ne (TYPE_VECTOR_SUBPARTS (type),
+		    TYPE_VECTOR_SUBPARTS (op0_type)))
         {
           error ("invalid vector comparison resulting type");
           debug_generic_expr (type);
@@ -4176,8 +4177,8 @@ verify_gimple_assign_binary (gassign *stmt)
 		 || (!INTEGRAL_TYPE_P (lhs_type)
 		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
 	    || !useless_type_conversion_p (lhs_type, rhs2_type)
-	    || (GET_MODE_SIZE (element_mode (rhs2_type))
-		< 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+	    || maybe_lt (GET_MODE_SIZE (element_mode (rhs2_type)),
+			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
           {
             error ("type mismatch in widening sum reduction");
             debug_generic_expr (lhs_type);
@@ -4196,8 +4197,8 @@ verify_gimple_assign_binary (gassign *stmt)
         if (TREE_CODE (rhs1_type) != VECTOR_TYPE
             || TREE_CODE (lhs_type) != VECTOR_TYPE
 	    || !types_compatible_p (rhs1_type, rhs2_type)
-            || (GET_MODE_SIZE (element_mode (lhs_type))
-		!= 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+	    || maybe_ne (GET_MODE_SIZE (element_mode (lhs_type)),
+			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
           {
             error ("type mismatch in vector widening multiplication");
             debug_generic_expr (lhs_type);
@@ -4214,8 +4215,8 @@ verify_gimple_assign_binary (gassign *stmt)
       if (VECTOR_BOOLEAN_TYPE_P (lhs_type)
 	  && VECTOR_BOOLEAN_TYPE_P (rhs1_type)
 	  && types_compatible_p (rhs1_type, rhs2_type)
-	  && (TYPE_VECTOR_SUBPARTS (lhs_type)
-	      == 2 * TYPE_VECTOR_SUBPARTS (rhs1_type)))
+	  && known_eq (TYPE_VECTOR_SUBPARTS (lhs_type),
+		       2 * TYPE_VECTOR_SUBPARTS (rhs1_type)))
 	return false;
 
       /* Fallthru.  */
@@ -4230,8 +4231,8 @@ verify_gimple_assign_binary (gassign *stmt)
 		 || (INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
 		     == INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))))
 	    || !types_compatible_p (rhs1_type, rhs2_type)
-            || (GET_MODE_SIZE (element_mode (rhs1_type))
-		!= 2 * GET_MODE_SIZE (element_mode (lhs_type))))
+	    || maybe_ne (GET_MODE_SIZE (element_mode (rhs1_type)),
+			 2 * GET_MODE_SIZE (element_mode (lhs_type))))
           {
             error ("type mismatch in vector pack expression");
             debug_generic_expr (lhs_type);
@@ -4365,8 +4366,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 
     case VEC_COND_EXPR:
       if (!VECTOR_BOOLEAN_TYPE_P (rhs1_type)
-	  || TYPE_VECTOR_SUBPARTS (rhs1_type)
-	     != TYPE_VECTOR_SUBPARTS (lhs_type))
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs1_type),
+		       TYPE_VECTOR_SUBPARTS (lhs_type)))
 	{
 	  error ("the first argument of a VEC_COND_EXPR must be of a "
 		 "boolean vector type of the same number of elements "
@@ -4412,11 +4413,12 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  return true;
 	}
 
-      if (TYPE_VECTOR_SUBPARTS (rhs1_type) != TYPE_VECTOR_SUBPARTS (rhs2_type)
-	  || TYPE_VECTOR_SUBPARTS (rhs2_type)
-	     != TYPE_VECTOR_SUBPARTS (rhs3_type)
-	  || TYPE_VECTOR_SUBPARTS (rhs3_type)
-	     != TYPE_VECTOR_SUBPARTS (lhs_type))
+      if (maybe_ne (TYPE_VECTOR_SUBPARTS (rhs1_type),
+		    TYPE_VECTOR_SUBPARTS (rhs2_type))
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs2_type),
+		       TYPE_VECTOR_SUBPARTS (rhs3_type))
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (rhs3_type),
+		       TYPE_VECTOR_SUBPARTS (lhs_type)))
 	{
 	  error ("vectors with different element number found "
 		 "in vector permute expression");
@@ -4428,8 +4430,11 @@ verify_gimple_assign_ternary (gassign *stmt)
 	}
 
       if (TREE_CODE (TREE_TYPE (rhs3_type)) != INTEGER_TYPE
-	  || GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs3_type)))
-	     != GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (rhs1_type))))
+	  || (TREE_CODE (rhs3) != VECTOR_CST
+	      && (GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE
+				    (TREE_TYPE (rhs3_type)))
+		  != GET_MODE_BITSIZE (SCALAR_TYPE_MODE
+				       (TREE_TYPE (rhs1_type))))))
 	{
 	  error ("invalid mask type in vector permute expression");
 	  debug_generic_expr (lhs_type);
@@ -4527,8 +4532,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
 	    || !types_compatible_p (rhs1_type, rhs2_type)
 	    || !useless_type_conversion_p (lhs_type, rhs3_type)
-	    || (GET_MODE_SIZE (element_mode (rhs3_type))
-		< 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+	    || maybe_lt (GET_MODE_SIZE (element_mode (rhs3_type)),
+			 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
           {
             error ("type mismatch in dot product reduction");
             debug_generic_expr (lhs_type);
@@ -4696,9 +4701,9 @@ verify_gimple_assign_single (gassign *stmt)
 			  debug_generic_stmt (rhs1);
 			  return true;
 			}
-		      else if (CONSTRUCTOR_NELTS (rhs1)
-			       * TYPE_VECTOR_SUBPARTS (elt_t)
-			       != TYPE_VECTOR_SUBPARTS (rhs1_type))
+		      else if (maybe_ne (CONSTRUCTOR_NELTS (rhs1)
+					 * TYPE_VECTOR_SUBPARTS (elt_t),
+					 TYPE_VECTOR_SUBPARTS (rhs1_type)))
 			{
 			  error ("incorrect number of vector CONSTRUCTOR"
 				 " elements");
@@ -4713,8 +4718,8 @@ verify_gimple_assign_single (gassign *stmt)
 		      debug_generic_stmt (rhs1);
 		      return true;
 		    }
-		  else if (CONSTRUCTOR_NELTS (rhs1)
-			   > TYPE_VECTOR_SUBPARTS (rhs1_type))
+		  else if (maybe_gt (CONSTRUCTOR_NELTS (rhs1),
+				     TYPE_VECTOR_SUBPARTS (rhs1_type)))
 		    {
 		      error ("incorrect number of vector CONSTRUCTOR elements");
 		      debug_generic_stmt (rhs1);

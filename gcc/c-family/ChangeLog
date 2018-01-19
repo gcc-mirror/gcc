@@ -1,3 +1,77 @@
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+        PR other/70268
+        * c-family/c.opt (-fmacro-prefix-map): New option.
+        * c-family/c-opts.c (c_common_handle_option): Handle it.
+        * c-family/c-lex.c (init_c_lex): Set remap_filename cpp callback.
+        * c-family/c-ppoutput.c (init_pp_output): Likewise.
+
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83814
+	* c-common.c (fold_for_warn): Move to c/c-fold.c and cp/expr.c.
+
+2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_number): Add FLOAT_P parameter.
+	Skip 'f' and 'F' characters if it is true.
+	(store_ada_macro): Minor tweak.
+	(dump_ada_macros) <CPP_COMMENT>: Likewise.
+	<CPP_WSTRING>: Likewise.
+	<CPP_STRING>: Output '&' in the buffer if not the first string.
+	<CPP_NUMBER>: Adjust calls to dump_number.
+
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* c-common.c: Include "selftest.h".
+	(get_atomic_generic_size): Perform the test for integral type
+	before the range test for any integer constant, fixing indentation
+	of braces.  Call fold_for_warn before testing for an INTEGER_CST.
+	(reject_gcc_builtin): Strip any location wrapper from EXPR.
+	(selftest::test_fold_for_warn): New function.
+	(selftest::c_common_c_tests): New function.
+	(selftest::c_family_tests): Call it, and
+	selftest::c_pretty_print_c_tests.
+	* c-common.h (selftest::c_pretty_print_c_tests): New decl.
+	* c-format.c (check_format_arg): Convert VAR_P check to a
+	fold_for_warn.
+	* c-pretty-print.c: Include "selftest.h".
+	(pp_c_cast_expression): Don't print casts for location wrappers.
+	(selftest::assert_c_pretty_printer_output): New function.
+	(ASSERT_C_PRETTY_PRINTER_OUTPUT): New macro.
+	(selftest::test_location_wrappers): New function.
+	(selftest::c_pretty_print_c_tests): New function.
+	* c-warn.c (warn_for_memset): Call fold_for_warn on the arguments.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_type_for_mode): Handle MODE_VECTOR_BOOL.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Treat GET_MODE_BITSIZE
+	as polynomial.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (vector_types_convertible_p, c_build_vec_perm_expr)
+	(convert_vector_to_array_for_subscript): Handle polynomial
+	TYPE_VECTOR_SUBPARTS.
+	(c_common_type_for_mode): Check valid_vector_subparts_p.
+	* c-pretty-print.c (pp_c_initializer_list): Handle polynomial
+	VECTOR_CST_NELTS.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
 2017-12-22  Mike Stump  <mikestump@comcast.net>
             Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -53,7 +127,7 @@
 
 2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
 
-	PR middle_end/79538 
+	PR middle_end/79538
 	* c-cppbuiltin.c (builtin_define_with_hex_fp_value):
 	Adjust the size of buf1 and buf2, add a new buf to avoid
 	format-overflow warning.
@@ -397,7 +471,7 @@
 	(set_std_cxx17): ... this.
 	(c_common_handle_option): Rename OPT_std_c__1z to OPT_std_c__17
 	and OPT_std_gnu__1z to OPT_std_gnu__17.  Adjust set_std_cxx1z
-	caller.  
+	caller.
 	(c_common_post_options): Use cxx17 instead of cxx1z.  Adjust
 	comments.
 
@@ -2364,7 +2438,7 @@
 	    Matthias Klose  <doko@debian.org>
 
 	* c-common.c (get_source_date_epoch): New function, gets the environment
-	variable SOURCE_DATE_EPOCH and parses it as long long with error 
+	variable SOURCE_DATE_EPOCH and parses it as long long with error
 	handling.
 	* c-common.h (get_source_date_epoch): Prototype.
 	* c-lex.c (c_lex_with_flags): set parse_in->source_date_epoch.
@@ -2835,7 +2909,7 @@
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
-	* c-pragma.c (oacc_pragmas): Add entry for declare directive. 
+	* c-pragma.c (oacc_pragmas): Add entry for declare directive.
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OACC_DECLARE.
 	(enum pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT and
 	PRAGMA_OACC_CLAUSE_LINK.
@@ -8623,7 +8697,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2017 Free Software Foundation, Inc.
+Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

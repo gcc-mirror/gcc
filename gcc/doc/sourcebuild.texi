@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2017 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2018 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1414,8 +1414,15 @@ Target supports hardware vectors of @code{long}.
 @item vect_long_long
 Target supports hardware vectors of @code{long long}.
 
+@item vect_fully_masked
+Target supports fully-masked (also known as fully-predicated) loops,
+so that vector loops can handle partial as well as full vectors.
+
 @item vect_masked_store
 Target supports vector masked stores.
+
+@item vect_scatter_store
+Target supports vector scatter stores.
 
 @item vect_aligned_arrays
 Target aligns arrays to vector alignment boundary.
@@ -1581,6 +1588,12 @@ Target supports 16- and 8-bytes vectors.
 
 @item vect_sizes_32B_16B
 Target supports 32- and 16-bytes vectors.
+
+@item vect_logical_reduc
+Target supports AND, IOR and XOR reduction on vectors.
+
+@item vect_fold_extract_last
+Target supports the @code{fold_extract_last} optab.
 @end table
 
 @subsubsection Thread Local Storage attributes
@@ -1768,6 +1781,12 @@ options.
 ARM target supports executing instructions from ARMv8.2-A with the Dot
 Product extension. Some multilibs may be incompatible with these options.
 Implies arm_v8_2a_dotprod_neon_ok.
+
+@item arm_fp16fml_neon_ok
+@anchor{arm_fp16fml_neon_ok}
+ARM target supports extensions to generate the @code{VFMAL} and @code{VFMLS}
+half-precision floating-point instructions available from ARMv8.2-A and
+onwards.  Some multilibs may be incompatible with these options.
 
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
@@ -2127,6 +2146,9 @@ Target supports wide characters.
 @item automatic_stack_alignment
 Target supports automatic stack alignment.
 
+@item branch_cost
+Target supports @option{-branch-cost=N}.
+
 @item cxa_atexit
 Target uses @code{__cxa_atexit}.
 
@@ -2383,6 +2405,11 @@ keyword.
 Add options for ARMv8.2-A with Adv.SIMD Dot Product support, if this is
 supported by the target; see the
 @ref{arm_v8_2a_dotprod_neon_ok} effective target keyword.
+
+@item arm_fp16fml_neon
+Add options to enable generation of the @code{VFMAL} and @code{VFMSL}
+instructions, if this is supported by the target; see the
+@ref{arm_fp16fml_neon_ok} effective target keyword.
 
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind

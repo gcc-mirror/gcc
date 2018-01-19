@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2018 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -372,6 +372,7 @@
    UNSPEC_VSX_XVCVSXDDP
    UNSPEC_VSX_XVCVUXDDP
    UNSPEC_VSX_XVCVDPSXDS
+   UNSPEC_VSX_XVCDPSP
    UNSPEC_VSX_XVCVDPUXDS
    UNSPEC_VSX_SIGN_EXTEND
    UNSPEC_VSX_XVCVSPSXWS
@@ -430,10 +431,10 @@
 ;; VSX moves so they match first.
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_D 0 "vsx_register_operand" "=<VSa>")
-        (match_operand:VSX_D 1 "memory_operand" "Z"))]
+        (match_operand:VSX_D 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -444,6 +445,33 @@
           (parallel [(const_int 1) (const_int 0)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (reg_or_subregno (operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+          rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -453,10 +481,10 @@
 
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_W 0 "vsx_register_operand" "=<VSa>")
-        (match_operand:VSX_W 1 "memory_operand" "Z"))]
+        (match_operand:VSX_W 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:<MODE>
           (match_dup 1)
@@ -469,6 +497,33 @@
                      (const_int 0) (const_int 1)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+          rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -478,10 +533,10 @@
 
 (define_insn_and_split "*vsx_le_perm_load_v8hi"
   [(set (match_operand:V8HI 0 "vsx_register_operand" "=wa")
-        (match_operand:V8HI 1 "memory_operand" "Z"))]
+        (match_operand:V8HI 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:V8HI
           (match_dup 1)
@@ -498,6 +553,33 @@
                      (const_int 2) (const_int 3)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+	  rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -507,10 +589,10 @@
 
 (define_insn_and_split "*vsx_le_perm_load_v16qi"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
-        (match_operand:V16QI 1 "memory_operand" "Z"))]
+        (match_operand:V16QI 1 "indexed_or_indirect_operand" "Z"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "&& 1"
   [(set (match_dup 2)
         (vec_select:V16QI
           (match_dup 1)
@@ -535,6 +617,33 @@
                      (const_int 6) (const_int 7)])))]
   "
 {
+  rtx mem = operands[1];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register destination is not in the altivec
+     range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((REGNO(operands[0]) >= FIRST_PSEUDO_REGISTER)
+	  || ALTIVEC_REGNO_P (REGNO(operands[0]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+        {
+	  /* Replace the source memory address with masked address.  */
+	  rtx lvx_set_expr = rs6000_gen_lvx (mode, operands[0], mem);
+	  emit_insn (lvx_set_expr);
+	  DONE;
+        }
+      else if (rs6000_quadword_masked_address_p (mem_address))
+        {
+	  /* This rtl is already in the form that matches lvx
+	     instruction, so leave it alone.  */
+	  DONE;
+        }
+      /* Otherwise, fall through to transform into a swapping load.  */
+    }
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
@@ -543,7 +652,7 @@
    (set_attr "length" "8")])
 
 (define_insn "*vsx_le_perm_store_<mode>"
-  [(set (match_operand:VSX_D 0 "memory_operand" "=Z")
+  [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand" "=Z")
         (match_operand:VSX_D 1 "vsx_register_operand" "+<VSa>"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
@@ -551,7 +660,7 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:VSX_D 0 "memory_operand" "")
+  [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand" "")
         (match_operand:VSX_D 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
@@ -563,6 +672,31 @@
           (match_dup 2)
           (parallel [(const_int 1) (const_int 0)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })
@@ -570,7 +704,7 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:VSX_D 0 "memory_operand" "")
+  [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand" "")
         (match_operand:VSX_D 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
@@ -588,7 +722,7 @@
   "")
 
 (define_insn "*vsx_le_perm_store_<mode>"
-  [(set (match_operand:VSX_W 0 "memory_operand" "=Z")
+  [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "=Z")
         (match_operand:VSX_W 1 "vsx_register_operand" "+<VSa>"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
@@ -596,7 +730,7 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:VSX_W 0 "memory_operand" "")
+  [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "")
         (match_operand:VSX_W 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
@@ -610,6 +744,31 @@
           (parallel [(const_int 2) (const_int 3)
 	             (const_int 0) (const_int 1)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })
@@ -617,7 +776,7 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:VSX_W 0 "memory_operand" "")
+  [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "")
         (match_operand:VSX_W 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
@@ -638,7 +797,7 @@
   "")
 
 (define_insn "*vsx_le_perm_store_v8hi"
-  [(set (match_operand:V8HI 0 "memory_operand" "=Z")
+  [(set (match_operand:V8HI 0 "indexed_or_indirect_operand" "=Z")
         (match_operand:V8HI 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
@@ -646,7 +805,7 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:V8HI 0 "memory_operand" "")
+  [(set (match_operand:V8HI 0 "indexed_or_indirect_operand" "")
         (match_operand:V8HI 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
@@ -664,6 +823,31 @@
                      (const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })
@@ -671,7 +855,7 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:V8HI 0 "memory_operand" "")
+  [(set (match_operand:V8HI 0 "indexed_or_indirect_operand" "")
         (match_operand:V8HI 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
@@ -698,7 +882,7 @@
   "")
 
 (define_insn "*vsx_le_perm_store_v16qi"
-  [(set (match_operand:V16QI 0 "memory_operand" "=Z")
+  [(set (match_operand:V16QI 0 "indexed_or_indirect_operand" "=Z")
         (match_operand:V16QI 1 "vsx_register_operand" "+wa"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "#"
@@ -706,7 +890,7 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:V16QI 0 "memory_operand" "")
+  [(set (match_operand:V16QI 0 "indexed_or_indirect_operand" "")
         (match_operand:V16QI 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
@@ -732,6 +916,31 @@
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
 {
+  rtx mem = operands[0];
+
+  /* Don't apply the swap optimization if we've already performed register
+     allocation and the hard register source is not in the altivec range.  */
+  if ((MEM_ALIGN (mem) >= 128)
+      && ((reg_or_subregno (operands[1]) >= FIRST_PSEUDO_REGISTER)
+          || ALTIVEC_REGNO_P (reg_or_subregno (operands[1]))))
+    {
+      rtx mem_address = XEXP (mem, 0);
+      enum machine_mode mode = GET_MODE (mem);
+      if (REG_P (mem_address) || rs6000_sum_of_two_registers_p (mem_address))
+	{
+	  rtx stvx_set_expr = rs6000_gen_stvx (mode, mem, operands[1]);
+	  emit_insn (stvx_set_expr);
+	  DONE;
+	}
+      else if (rs6000_quadword_masked_address_p (mem_address))
+	{
+	  /* This rtl is already in the form that matches stvx instruction,
+	     so leave it alone.  */
+	  DONE;
+	}
+      /* Otherwise, fall through to transform into a swapping store.  */
+    }
+
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[1]) 
                                        : operands[1];
 })
@@ -739,7 +948,7 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:V16QI 0 "memory_operand" "")
+  [(set (match_operand:V16QI 0 "indexed_or_indirect_operand" "")
         (match_operand:V16QI 1 "vsx_register_operand" ""))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
@@ -2171,6 +2380,14 @@
   "xvcvuxdsp %x0,%x1"
   [(set_attr "type" "vecdouble")])
 
+(define_insn "vsx_xvcdpsp"
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wd,?wa")
+	(unspec:V4SF [(match_operand:V2DF 1 "vsx_register_operand" "wf,wa")]
+		     UNSPEC_VSX_XVCDPSP))]
+  "VECTOR_UNIT_VSX_P (V2DFmode)"
+  "xvcvdpsp %x0,%x1"
+  [(set_attr "type" "vecdouble")])
+
 ;; Convert from 32-bit to 64-bit types
 ;; Provide both vector and scalar targets
 (define_insn "vsx_xvcvsxwdp"
@@ -2236,6 +2453,24 @@
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xvcvuxwsp %x0,%x1"
   [(set_attr "type" "vecfloat")])
+
+;; Generate float2 double
+;; convert two double to float
+(define_expand "float2_v2df"
+  [(use (match_operand:V4SF 0 "register_operand" "=wa"))
+   (use (match_operand:V2DF 1 "register_operand" "wa"))
+   (use (match_operand:V2DF 2 "register_operand" "wa"))]
+ "VECTOR_UNIT_VSX_P (V4SFmode)"
+{
+  rtx rtx_src1, rtx_src2, rtx_dst;
+
+  rtx_dst = operands[0];
+  rtx_src1 = operands[1];
+  rtx_src2 = operands[2];
+
+  rs6000_generate_float2_double_code (rtx_dst, rtx_src1, rtx_src2);
+  DONE;
+})
 
 ;; Generate float2
 ;; convert two long long signed ints to float
@@ -3188,19 +3423,6 @@
     return "xxpermdi %x0,%x2,%x1,%3";
 }
   [(set_attr "type" "vecperm")])
-
-(define_expand "vec_perm_const<mode>"
-  [(match_operand:VSX_D 0 "vsx_register_operand" "")
-   (match_operand:VSX_D 1 "vsx_register_operand" "")
-   (match_operand:VSX_D 2 "vsx_register_operand" "")
-   (match_operand:V2DI  3 "" "")]
-  "VECTOR_MEM_VSX_P (<MODE>mode)"
-{
-  if (rs6000_expand_vec_perm_const (operands))
-    DONE;
-  else
-    FAIL;
-})
 
 ;; Extraction of a single element in a small integer vector.  Until ISA 3.0,
 ;; none of the small types were allowed in a vector register, so we had to
@@ -4637,10 +4859,12 @@
 ;; Load VSX Vector with Length
 (define_expand "lxvl"
   [(set (match_dup 3)
-        (match_operand:DI 2 "register_operand"))
+        (ashift:DI (match_operand:DI 2 "register_operand")
+                   (const_int 56)))
    (set (match_operand:V16QI 0 "vsx_register_operand")
 	(unspec:V16QI
 	 [(match_operand:DI 1 "gpc_reg_operand")
+          (mem:V16QI (match_dup 1))
 	  (match_dup 3)]
 	 UNSPEC_LXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
@@ -4652,16 +4876,17 @@
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI
 	 [(match_operand:DI 1 "gpc_reg_operand" "b")
-	  (match_operand:DI 2 "register_operand" "+r")]
+	  (mem:V16QI (match_dup 1))
+	  (match_operand:DI 2 "register_operand" "r")]
 	 UNSPEC_LXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
-  "sldi %2,%2, 56\; lxvl %x0,%1,%2"
-  [(set_attr "length" "8")
-   (set_attr "type" "vecload")])
+  "lxvl %x0,%1,%2"
+  [(set_attr "type" "vecload")])
 
 (define_insn "lxvll"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI [(match_operand:DI 1 "gpc_reg_operand" "b")
+                       (mem:V16QI (match_dup 1))
 		       (match_operand:DI 2 "register_operand" "r")]
 		      UNSPEC_LXVLL))]
   "TARGET_P9_VECTOR"
@@ -4690,6 +4915,7 @@
 (define_insn "stxvll"
   [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
 	(unspec:V16QI [(match_operand:V16QI 0 "vsx_register_operand" "wa")
+		       (mem:V16QI (match_dup 1))
 		       (match_operand:DI 2 "register_operand" "r")]
 	              UNSPEC_STXVLL))]
   "TARGET_P9_VECTOR"
@@ -4699,10 +4925,12 @@
 ;; Store VSX Vector with Length
 (define_expand "stxvl"
   [(set (match_dup 3)
-	(match_operand:DI 2 "register_operand"))
+	(ashift:DI (match_operand:DI 2 "register_operand")
+		   (const_int 56)))
    (set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand"))
 	(unspec:V16QI
 	 [(match_operand:V16QI 0 "vsx_register_operand")
+	  (mem:V16QI (match_dup 1))
 	  (match_dup 3)]
 	 UNSPEC_STXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
@@ -4714,12 +4942,12 @@
   [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
 	(unspec:V16QI
 	 [(match_operand:V16QI 0 "vsx_register_operand" "wa")
-	  (match_operand:DI 2 "register_operand" "+r")]
+	  (mem:V16QI (match_dup 1))
+	  (match_operand:DI 2 "register_operand" "r")]
 	 UNSPEC_STXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
-  "sldi %2,%2,56\;stxvl %x0,%1,%2"
-  [(set_attr "length" "8")
-   (set_attr "type" "vecstore")])
+  "stxvl %x0,%1,%2"
+  [(set_attr "type" "vecstore")])
 
 ;; Expand for builtin xst_len_r
 (define_expand "xst_len_r"

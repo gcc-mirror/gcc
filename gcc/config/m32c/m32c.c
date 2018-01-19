@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -1290,8 +1290,8 @@ m32c_initial_elimination_offset (int from, int to)
 
 /* Implements PUSH_ROUNDING.  The R8C and M16C have byte stacks, the
    M32C has word stacks.  */
-unsigned int
-m32c_push_rounding (int n)
+poly_int64
+m32c_push_rounding (poly_int64 n)
 {
   if (TARGET_R8C || TARGET_M16C)
     return n;
