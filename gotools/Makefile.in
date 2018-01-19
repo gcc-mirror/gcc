@@ -347,6 +347,9 @@ MOSTLYCLEANFILES = \
 @NATIVE_TRUE@man_MANS = go.1 gofmt.1
 @NATIVE_TRUE@GOTESTFLAGS = 
 
+# Number of seconds before tests time out.
+@NATIVE_TRUE@GOTOOLS_TEST_TIMEOUT = 240
+
 # CHECK_ENV sets up the environment to run the newly built go tool.
 # If you change this, change ECHO_ENV, below.
 # The fl shell variable is used to avoid having FAIL appear
@@ -813,11 +816,11 @@ mostlyclean-local:
 @NATIVE_TRUE@	cp $(libgodir)/objabi.go check-go-dir/src/cmd/internal/objabi/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \
-@NATIVE_TRUE@	echo "cd check-go-dir/src/cmd/go && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.v" > cmd_go-testlog
+@NATIVE_TRUE@	echo "cd check-go-dir/src/cmd/go && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > cmd_go-testlog
 @NATIVE_TRUE@	$(CHECK_ENV) \
 @NATIVE_TRUE@	GOPATH=`cd check-go-dir && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	export GOPATH; \
-@NATIVE_TRUE@	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cmd_go-testlog 2>&1 || echo "--- $${fl}: go test cmd/go (0.00s)" >> cmd_go-testlog
+@NATIVE_TRUE@	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> cmd_go-testlog 2>&1 || echo "--- $${fl}: go test cmd/go (0.00s)" >> cmd_go-testlog
 @NATIVE_TRUE@	grep '^--- ' cmd_go-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-runtime runs `go test runtime` in our environment.
@@ -848,11 +851,11 @@ mostlyclean-local:
 @NATIVE_TRUE@	$(MKDIR_P) cgo-test-dir/misc/cgo
 @NATIVE_TRUE@	cp -r $(libgomiscdir)/cgo/test cgo-test-dir/misc/cgo/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
-@NATIVE_TRUE@	echo "cd cgo-test-dir/misc/cgo/test && $(ECHO_ENV) GOTRACEBACK=2 $(abs_builddir)/go$(EXEEXT) test -test.short -test.v" > cgo-testlog
+@NATIVE_TRUE@	echo "cd cgo-test-dir/misc/cgo/test && $(ECHO_ENV) GOTRACEBACK=2 $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > cgo-testlog
 @NATIVE_TRUE@	$(CHECK_ENV) \
 @NATIVE_TRUE@	GOTRACEBACK=2; \
 @NATIVE_TRUE@	export GOTRACEBACK; \
-@NATIVE_TRUE@	(cd cgo-test-dir/misc/cgo/test && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cgo-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/test (0.00s)" >> cgo-testlog
+@NATIVE_TRUE@	(cd cgo-test-dir/misc/cgo/test && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> cgo-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/test (0.00s)" >> cgo-testlog
 @NATIVE_TRUE@	grep '^--- ' cgo-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-carchive-test runs `go test misc/cgo/testcarchive/carchive_test.go`
@@ -862,11 +865,11 @@ mostlyclean-local:
 @NATIVE_TRUE@	$(MKDIR_P) carchive-test-dir/misc/cgo
 @NATIVE_TRUE@	cp -r $(libgomiscdir)/cgo/testcarchive carchive-test-dir/misc/cgo/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
-@NATIVE_TRUE@	echo "cd carchive-test-dir/misc/cgo/testcarchive && $(ECHO_ENV) LIBRARY_PATH=`echo $${abs_libgodir}/.libs` $(abs_builddir)/go$(EXEEXT) test -test.v carchive_test.go" > carchive-testlog
+@NATIVE_TRUE@	echo "cd carchive-test-dir/misc/cgo/testcarchive && $(ECHO_ENV) LIBRARY_PATH=`echo $${abs_libgodir}/.libs` $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v carchive_test.go" > carchive-testlog
 @NATIVE_TRUE@	$(CHECK_ENV) \
 @NATIVE_TRUE@	LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 @NATIVE_TRUE@	export LIBRARY_PATH; \
-@NATIVE_TRUE@	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.v carchive_test.go) >> carchive-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
+@NATIVE_TRUE@	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v carchive_test.go) >> carchive-testlog 2>&1 || echo "--- $${fl}: go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
 @NATIVE_TRUE@	grep '^--- ' carchive-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # check-vet runs `go test cmd/vet` in our environment.
@@ -876,11 +879,11 @@ mostlyclean-local:
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/vet check-vet-dir/src/cmd/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	abs_checkdir=`cd check-vet-dir && $(PWD_COMMAND)`; \
-@NATIVE_TRUE@	echo "cd check-vet-dir/src/cmd/vet && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.v" > cmd_vet-testlog
+@NATIVE_TRUE@	echo "cd check-vet-dir/src/cmd/vet && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > cmd_vet-testlog
 @NATIVE_TRUE@	$(CHECK_ENV) \
 @NATIVE_TRUE@	GOPATH=`cd check-vet-dir && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	export GOPATH; \
-@NATIVE_TRUE@	(cd check-vet-dir/src/cmd/vet && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cmd_vet-testlog 2>&1 || echo "--- $${fl}: go test cmd/vet (0.00s)" >> cmd_vet-testlog
+@NATIVE_TRUE@	(cd check-vet-dir/src/cmd/vet && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> cmd_vet-testlog 2>&1 || echo "--- $${fl}: go test cmd/vet (0.00s)" >> cmd_vet-testlog
 @NATIVE_TRUE@	grep '^--- ' cmd_vet-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
 # The check targets runs the tests and assembles the output files.
