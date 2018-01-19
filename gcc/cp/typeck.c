@@ -8689,6 +8689,7 @@ convert_for_assignment (tree type, tree rhs,
       if (check_narrowing (ENUM_UNDERLYING_TYPE (type), elt, complain))
 	{
 	  warning_sentinel w (warn_useless_cast);
+	  warning_sentinel w2 (warn_ignored_qualifiers);
 	  rhs = cp_build_c_cast (type, elt, complain);
 	}
       else
