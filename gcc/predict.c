@@ -747,6 +747,19 @@ dump_prediction (FILE *file, enum br_predictor predictor, int probability,
     }
 
   fprintf (file, "\n");
+
+  /* Print output that be easily read by analyze_brprob.py script. We are
+     interested only in counts that are read from GCDA files.  */
+  if (dump_file && (dump_flags & TDF_DETAILS)
+      && bb->count.precise_p ()
+      && reason == REASON_NONE)
+    {
+      gcc_assert (e->count ().precise_p ());
+      fprintf (file, ";;heuristics;%s;%" PRId64 ";%" PRId64 ";%.1f;\n",
+	       predictor_info[predictor].name,
+	       bb->count.to_gcov_type (), e->count ().to_gcov_type (),
+	       probability * 100.0 / REG_BR_PROB_BASE);
+    }
 }
 
 /* Return true if STMT is known to be unlikely executed.  */

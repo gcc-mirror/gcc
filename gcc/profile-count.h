@@ -691,6 +691,11 @@ public:
     {
       return !initialized_p () || m_quality >= profile_guessed_global0;
     }
+  /* Return true if quality of profile is precise.  */
+  bool precise_p () const
+    {
+      return m_quality == profile_precise;
+    }
 
   /* When merging basic blocks, the two different profile counts are unified.
      Return true if this can be done without losing info about profile.

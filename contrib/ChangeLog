@@ -1,3 +1,8 @@
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Support new format that can be easily
+	parsed. Add new column to report.
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py: Skip pdt-5.f03 in gfortran.dg subdir.
