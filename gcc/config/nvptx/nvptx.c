@@ -4102,9 +4102,33 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 
 	     There is nothing in the PTX spec to suggest that this is wrong, or
 	     to explain why the extra initialization is needed.  So, we classify
-	     it as a JIT bug, and the extra initialization as workaround.  */
-	  emit_insn_before (gen_movbi (pvar, const0_rtx),
+	     it as a JIT bug, and the extra initialization as workaround:
+
+		{
+		    .reg .u32 %x;
+		    mov.u32 %x,%tid.x;
+		    setp.ne.u32 %rnotvzero,%x,0;
+		}
+
+		+.reg .pred %rcond2;
+		+setp.eq.u32 %rcond2, 1, 0;
+
+		 @%rnotvzero bra Lskip;
+		 setp.<op>.<type> %rcond,op1,op2;
+		+mov.pred %rcond2, %rcond;
+		 Lskip:
+		+mov.pred %rcond, %rcond2;
+		 selp.u32 %rcondu32,1,0,%rcond;
+		 shfl.idx.b32 %rcondu32,%rcondu32,0,31;
+		 setp.ne.u32 %rcond,%rcondu32,0;
+	  */
+	  rtx_insn *label = PREV_INSN (tail);
+	  gcc_assert (label && LABEL_P (label));
+	  rtx tmp = gen_reg_rtx (BImode);
+	  emit_insn_before (gen_movbi (tmp, const0_rtx),
 			    bb_first_real_insn (from));
+	  emit_insn_before (gen_rtx_SET (tmp, pvar), label);
+	  emit_insn_before (gen_rtx_SET (pvar, tmp), tail);
 #endif
 	  emit_insn_before (nvptx_gen_vcast (pvar), tail);
 	}
