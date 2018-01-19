@@ -1,3 +1,8 @@
+2018-01-19  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR target/83790
+	* gcc.target/nvptx/indirect_call.c: New test.
+
 2018-01-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/torture/pr83619.C: Remove dg-message.
