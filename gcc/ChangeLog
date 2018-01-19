@@ -1,5 +1,17 @@
 2018-01-19  Martin Liska  <mliska@suse.cz>
 
+	* predict.c (predict_insn_def): Add new assert.
+	(struct branch_predictor): Change type to signed integer.
+	(test_prediction_value_range): Amend test to cover
+	PROB_UNINITIALIZED.
+	* predict.def (PRED_LOOP_ITERATIONS): Use the new constant.
+	(PRED_LOOP_ITERATIONS_GUESSED): Likewise.
+	(PRED_LOOP_ITERATIONS_MAX): Likewise.
+	(PRED_LOOP_IV_COMPARE): Likewise.
+	* predict.h (PROB_UNINITIALIZED): Define new constant.
+
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
 	* predict.c (dump_prediction): Add new format for
 	analyze_brprob.py script which is enabled with -details
 	suboption.
