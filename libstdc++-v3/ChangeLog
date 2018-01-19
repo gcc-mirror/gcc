@@ -1,3 +1,49 @@
+2018-01-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/ext/special_functions/airy_ai/check_nan.cc: Fix
+          dg-options and dg-add-options order.
+	* testsuite/ext/special_functions/airy_bi/check_nan.cc: Likewise.
+	* testsuite/ext/special_functions/conf_hyperg/check_nan.cc:
+	Likewise.
+	* testsuite/ext/special_functions/hyperg/check_nan.cc: Likewise.
+	* testsuite/special_functions/01_assoc_laguerre/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/02_assoc_legendre/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/03_beta/check_nan.cc: Likewise.
+	* testsuite/special_functions/04_comp_ellint_1/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/05_comp_ellint_2/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/06_comp_ellint_3/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/06_comp_ellint_3/pr66689.cc:
+	Likewise.
+	* testsuite/special_functions/07_cyl_bessel_i/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/08_cyl_bessel_j/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/09_cyl_bessel_k/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/10_cyl_neumann/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/11_ellint_1/check_nan.cc: Likewise.
+	* testsuite/special_functions/12_ellint_2/check_nan.cc: Likewise.
+	* testsuite/special_functions/13_ellint_3/check_nan.cc: Likewise.
+	* testsuite/special_functions/13_ellint_3/pr66689.cc: Likewise.
+	* testsuite/special_functions/14_expint/check_nan.cc: Likewise.
+	* testsuite/special_functions/15_hermite/check_nan.cc: Likewise.
+	* testsuite/special_functions/16_laguerre/check_nan.cc: Likewise.
+	* testsuite/special_functions/17_legendre/check_nan.cc: Likewise.
+	* testsuite/special_functions/18_riemann_zeta/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/19_sph_bessel/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/20_sph_legendre/check_nan.cc:
+	Likewise.
+	* testsuite/special_functions/21_sph_neumann/check_nan.cc:
+	Likewise.
+
 2018-01-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (AC_CHECK_HEADERS): Add linux/types.h.  Conditionally
