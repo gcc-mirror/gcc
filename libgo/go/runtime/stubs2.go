@@ -10,6 +10,7 @@ package runtime
 
 import "unsafe"
 
+//go:noescape
 func read(fd int32, p unsafe.Pointer, n int32) int32
 func closefd(fd int32) int32
 
