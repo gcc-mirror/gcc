@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-require-c-std "" }
-// { dg-add-options ieee }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
+// { dg-add-options ieee }
 
 // Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
