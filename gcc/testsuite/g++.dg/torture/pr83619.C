@@ -24,7 +24,7 @@ public:
     static void
     c (e *g)
     {
-      g->c ();			// { dg-message "incomplete" }
+      g->c ();
     }
   };
 };

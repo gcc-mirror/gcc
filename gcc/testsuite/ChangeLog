@@ -1,3 +1,7 @@
+2018-01-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/torture/pr83619.C: Remove dg-message.
+
 2018-01-19  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-1.c: Adjust expected probability.
