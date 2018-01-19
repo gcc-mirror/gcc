@@ -1,3 +1,21 @@
+2018-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/81570
+	PR debug/83728
+	* dwarf2cfi.c (DEFAULT_INCOMING_FRAME_SP_OFFSET): Define to
+	INCOMING_FRAME_SP_OFFSET if not defined.
+	(scan_trace): Add ENTRY argument.  If true and
+	DEFAULT_INCOMING_FRAME_SP_OFFSET != INCOMING_FRAME_SP_OFFSET,
+	emit a note to adjust the CFA offset.
+	(create_cfi_notes): Adjust scan_trace callers.
+	(create_cie_data): Use DEFAULT_INCOMING_FRAME_SP_OFFSET rather than
+	INCOMING_FRAME_SP_OFFSET in the CIE.
+	* config/i386/i386.h (DEFAULT_INCOMING_FRAME_SP_OFFSET): Define.
+	* config/stormy16/stormy16.h (DEFAULT_INCOMING_FRAME_SP_OFFSET):
+	Likewise.
+	* doc/tm.texi.in (DEFAULT_INCOMING_FRAME_SP_OFFSET): Document.
+	* doc/tm.texi: Regenerated.
+
 2018-01-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR rtl-optimization/83147
