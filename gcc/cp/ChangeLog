@@ -1,5 +1,9 @@
 2018-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/81167
+	* call.c (joust): Use TREE_TYPE (source) if source is
+	a POINTER_TYPE_P rather than if ! DECL_CONSTRUCTOR_P (w->fn).
+
 	PR c++/83919
 	* typeck.c (convert_for_assignment): Suppress warn_ignored_qualifiers
 	for direct enum init.
