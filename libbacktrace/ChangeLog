@@ -1,3 +1,10 @@
+2018-01-19  Tony Reix  <tony.reix@atos.net>
+
+	* xcoff.c (xcoff_incl_compare): New function.
+	(xcoff_incl_search): New function.
+	(xcoff_process_linenos): Use bsearch to find include file.
+	(xcoff_initialize_fileline): Sort include file information.
+
 2018-01-16  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (codes) [GENERATE_FIXED_HUFFMAN_TABLE]: Fix size to be
