@@ -1,3 +1,11 @@
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/predict-1.c: Adjust expected probability.
+	* gcc.dg/predict-3.c: Likewise.
+	* gcc.dg/predict-5.c: Likewise.
+	* gcc.dg/predict-6.c: Likewise.
+	* gcc.dg/predict-9.c: Likewise.
+
 2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83922
