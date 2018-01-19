@@ -127,7 +127,6 @@ enum cp_tree_index
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
     CPTI_ABI,
-    CPTI_MANGLE,
     CPTI_GLOBAL,
     CPTI_GLOBAL_TYPE,
     CPTI_CONST_TYPE_INFO_TYPE,
@@ -207,7 +206,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
 #define std_node			cp_global_trees[CPTI_STD]
 #define abi_node			cp_global_trees[CPTI_ABI]
-#define mangle_namespace		cp_global_trees[CPTI_MANGLE]
 #define global_namespace		cp_global_trees[CPTI_GLOBAL]
 #define global_type_node		cp_global_trees[CPTI_GLOBAL_TYPE]
 #define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]

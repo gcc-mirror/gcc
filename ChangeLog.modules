@@ -1,5 +1,12 @@
 2018-01-19  Nathan Sidwell  <nathan@acm.org>
 
+	Kill mangle_namespace.
+	gcc/cp/
+	* cp-tree.h (CPTI_MANGLE, mangle_namespace): Delete.
+	* decl.c (cxx_init_decl_processing): Don't create it.
+	* module.c (cpms_out::bindings): Don't skip it.
+	* name-lookup.c (suggest_alternatives_for): Likewise.
+
 	Import ident by type not index.
 	gcc/cp/
 	* name-lookup.h (get_ident_in_namespace, get_ident_in_class,

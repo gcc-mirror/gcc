@@ -5933,8 +5933,7 @@ suggest_alternatives_for (location_t location, tree name,
 	       decl; decl = TREE_CHAIN (decl))
 	    if (TREE_CODE (decl) == NAMESPACE_DECL
 		&& !DECL_NAMESPACE_ALIAS (decl)
-		&& !DECL_NAMESPACE_INLINE_P (decl)
-		&& decl != mangle_namespace)
+		&& !DECL_NAMESPACE_INLINE_P (decl))
 	      children.safe_push (decl);
 
 	  while (!limited && !children.is_empty ())

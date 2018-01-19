@@ -4844,11 +4844,6 @@ cpms_in::tree_node ()
 void
 cpms_out::bindings (tree ns)
 {
-  if (ns == mangle_namespace)
-    {
-      dump () && dump ("Skipping namespace %N", ns);
-      return;
-    }
   dump () && dump ("Walking namespace %N", ns);
 
   hash_table<named_decl_hash>::iterator end
