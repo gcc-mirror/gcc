@@ -1,3 +1,10 @@
+2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83914
+	* tree-vect-loop.c (vectorizable_induction): Don't convert
+	init_expr or apply the peeling adjustment for inductions
+	that are nested within the vectorized loop.
+
 2018-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/thumb2.md (*thumb2_negsi2_short): Use RSB mnemonic

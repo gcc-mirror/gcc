@@ -7678,27 +7678,32 @@ vectorizable_induction (gimple *phi,
   init_expr = PHI_ARG_DEF_FROM_EDGE (phi,
 				     loop_preheader_edge (iv_loop));
 
-  /* Convert the initial value and step to the desired type.  */
   stmts = NULL;
-  init_expr = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
-  step_expr = gimple_convert (&stmts, TREE_TYPE (vectype), step_expr);
-
-  /* If we are using the loop mask to "peel" for alignment then we need
-     to adjust the start value here.  */
-  tree skip_niters = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
-  if (skip_niters != NULL_TREE)
+  if (!nested_in_vect_loop)
     {
-      if (FLOAT_TYPE_P (vectype))
-	skip_niters = gimple_build (&stmts, FLOAT_EXPR, TREE_TYPE (vectype),
-				    skip_niters);
-      else
-	skip_niters = gimple_convert (&stmts, TREE_TYPE (vectype),
-				      skip_niters);
-      tree skip_step = gimple_build (&stmts, MULT_EXPR, TREE_TYPE (vectype),
-				     skip_niters, step_expr);
-      init_expr = gimple_build (&stmts, MINUS_EXPR, TREE_TYPE (vectype),
-				init_expr, skip_step);
+      /* Convert the initial value to the desired type.  */
+      tree new_type = TREE_TYPE (vectype);
+      init_expr = gimple_convert (&stmts, new_type, init_expr);
+
+      /* If we are using the loop mask to "peel" for alignment then we need
+	 to adjust the start value here.  */
+      tree skip_niters = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
+      if (skip_niters != NULL_TREE)
+	{
+	  if (FLOAT_TYPE_P (vectype))
+	    skip_niters = gimple_build (&stmts, FLOAT_EXPR, new_type,
+					skip_niters);
+	  else
+	    skip_niters = gimple_convert (&stmts, new_type, skip_niters);
+	  tree skip_step = gimple_build (&stmts, MULT_EXPR, new_type,
+					 skip_niters, step_expr);
+	  init_expr = gimple_build (&stmts, MINUS_EXPR, new_type,
+				    init_expr, skip_step);
+	}
     }
+
+  /* Convert the step to the desired type.  */
+  step_expr = gimple_convert (&stmts, TREE_TYPE (vectype), step_expr);
 
   if (stmts)
     {
@@ -7717,15 +7722,6 @@ vectorizable_induction (gimple *phi,
     {
       /* Enforced above.  */
       unsigned int const_nunits = nunits.to_constant ();
-
-      /* Convert the init to the desired type.  */
-      stmts = NULL;
-      init_expr = gimple_convert (&stmts, TREE_TYPE (vectype), init_expr);
-      if (stmts)
-	{
-	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-	  gcc_assert (!new_bb);
-	}
 
       /* Generate [VF*S, VF*S, ... ].  */
       if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))

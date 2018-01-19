@@ -1,3 +1,8 @@
+2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83914
+	* gcc.dg/vect/pr83914.c: New test.
+
 2018-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/negdi-1.c: Remove bogus assembler scan for negs.
