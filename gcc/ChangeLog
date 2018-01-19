@@ -1,3 +1,9 @@
+2018-01-19  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR target/83790
+	* config/nvptx/nvptx.c (output_init_frag): Don't use generic address
+	spaces for function labels.
+
 2018-01-19  Martin Liska  <mliska@suse.cz>
 
 	* predict.def (PRED_LOOP_EXIT): Change from 85 to 89.
