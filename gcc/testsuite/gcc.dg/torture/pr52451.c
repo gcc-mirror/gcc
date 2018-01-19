@@ -49,7 +49,11 @@ main (void)
 
   TEST (float, f);
   TEST (double, );
+#if !defined(__hppa__) || !defined(__hpux__)
+  /* Long double on hppa*-hpux* is implemented in software and the routines
+     in fenv.h do not support it.  */
   TEST (long double, l);
+#endif
   
   return 0;
 }

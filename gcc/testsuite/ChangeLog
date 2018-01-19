@@ -1,3 +1,8 @@
+2018-01-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/torture/pr52451.c (main): Skip long double test on
+	hppa*-*-hpux*.
+
 2018-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/83619
