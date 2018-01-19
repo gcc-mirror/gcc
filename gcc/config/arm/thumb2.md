@@ -1420,7 +1420,7 @@
 	(neg:SI (match_operand:SI 1 "low_register_operand" "l")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2 && reload_completed"
-  "neg%!\t%0, %1"
+  "rsb%!\t%0, %1, #0"
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
    (set_attr "type" "alu_sreg")]
