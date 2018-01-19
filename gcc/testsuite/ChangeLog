@@ -1,3 +1,7 @@
+2018-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/pr79058.c: Add arm_arm_ok check and -marm to options.
+
 2018-01-18  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/torture/pr52451.c (main): Skip long double test on
