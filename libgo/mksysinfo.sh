@@ -1120,8 +1120,16 @@ if test "$timex" != ""; then
 fi
 
 # The rlimit struct.
-grep '^type _rlimit ' gen-sysinfo.go | \
-    sed -e 's/_rlimit/Rlimit/' \
+# On systems that use syscall/libcall_posix_largefile.go, use rlimit64
+# if it exists.
+rlimit="_rlimit"
+if test "${GOOS}" = "aix" || test "${GOOS}" = "linux" || (test "${GOOS}" = "solaris" && (test "${GOARCH}" = "386" || test "${GOARCH}" = "sparc")); then
+  if grep '^type _rlimit64 ' gen-sysinfo.go > /dev/null 2>&1; then
+    rlimit="_rlimit64"
+  fi
+fi
+grep "^type ${rlimit} " gen-sysinfo.go | \
+    sed -e "s/${rlimit}/Rlimit/" \
       -e 's/rlim_cur/Cur/' \
       -e 's/rlim_max/Max/' \
     >> ${OUT}
@@ -1130,7 +1138,13 @@ grep '^type _rlimit ' gen-sysinfo.go | \
 grep '^const _RLIMIT_' gen-sysinfo.go |
     sed -e 's/^\(const \)_\(RLIMIT_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 grep '^const _RLIM_' gen-sysinfo.go |
+    grep -v '^const _RLIM_INFINITY ' |
     sed -e 's/^\(const \)_\(RLIM_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+if test "${rlimit}" = "_rlimit64" && grep '^const _RLIM64_INFINITY ' gen-sysinfo.go > /dev/null 2>&1; then
+  echo 'const RLIM_INFINITY = _RLIM64_INFINITY' >> ${OUT}
+elif grep '^const _RLIM_INFINITY ' gen-sysinfo-go; then
+  echo 'const RLIM_INFINITY = _RLIM_INFINITY' >> ${OUT}
+fi
 
 # The sysinfo struct.
 grep '^type _sysinfo ' gen-sysinfo.go | \
