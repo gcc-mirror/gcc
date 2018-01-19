@@ -228,6 +228,7 @@ enum reg_class
 
 #define INCOMING_FRAME_SP_OFFSET (xstormy16_interrupt_function_p () ? -6 : -4)
 
+#define DEFAULT_INCOMING_FRAME_SP_OFFSET -4
 
 /* Register That Address the Stack Frame.  */
 

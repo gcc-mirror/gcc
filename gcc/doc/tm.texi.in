@@ -2559,6 +2559,15 @@ You only need to define this macro if you want to support call frame
 debugging information like that provided by DWARF 2.
 @end defmac
 
+@defmac DEFAULT_INCOMING_FRAME_SP_OFFSET
+Like @code{INCOMING_FRAME_SP_OFFSET}, but must be the same for all
+functions of the same ABI, and when using GAS @code{.cfi_*} directives
+must also agree with the default CFI GAS emits.  Define this macro
+only if @code{INCOMING_FRAME_SP_OFFSET} can have different values
+between different functions of the same ABI or when
+@code{INCOMING_FRAME_SP_OFFSET} does not agree with GAS default CFI.
+@end defmac
+
 @defmac ARG_POINTER_CFA_OFFSET (@var{fundecl})
 A C expression whose value is an integer giving the offset, in bytes,
 from the argument pointer to the canonical frame address (cfa).  The

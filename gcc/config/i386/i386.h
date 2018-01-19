@@ -2110,6 +2110,10 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
   (cfun->machine->func_type == TYPE_EXCEPTION \
    ? 2 * UNITS_PER_WORD : UNITS_PER_WORD)
 
+/* The value of INCOMING_FRAME_SP_OFFSET the assembler assumes in
+   .cfi_startproc.  */
+#define DEFAULT_INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
+
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	((N) <= DX_REG ? (N) : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, CX_REG)
