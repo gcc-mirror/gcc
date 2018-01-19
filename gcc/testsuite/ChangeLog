@@ -1,5 +1,10 @@
 2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/83922
+	* gcc.dg/pr83922.c: New test.
+
+2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/83914
 	* gcc.dg/vect/pr83914.c: New test.
 

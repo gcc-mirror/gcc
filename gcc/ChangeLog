@@ -1,5 +1,14 @@
 2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/83922
+	* tree-vect-loop.c (vect_verify_full_masking): Return false if
+	there are no statements that need masking.
+	(vect_active_double_reduction_p): New function.
+	(vect_analyze_loop_operations): Use it when handling phis that
+	are not in the loop header.
+
+2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/83914
 	* tree-vect-loop.c (vectorizable_induction): Don't convert
 	init_expr or apply the peeling adjustment for inductions
