@@ -1,3 +1,10 @@
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
+	* predict.c (dump_prediction): Add new format for
+	analyze_brprob.py script which is enabled with -details
+	suboption.
+	* profile-count.h (precise_p): New function.
+
 2018-01-19  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83922
