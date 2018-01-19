@@ -6719,10 +6719,12 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 		    {
 		      lra_assert (GET_MODE (SET_SRC (prev_set))
 				  == GET_MODE (regno_reg_rtx[sregno]));
-		      if (GET_CODE (SET_SRC (set)) == SUBREG)
-			SUBREG_REG (SET_SRC (set)) = SET_SRC (prev_set);
-		      else
-			SET_SRC (set) = SET_SRC (prev_set);
+		      /* Although we have a single set, the insn can
+			 contain more one sregno register occurrence
+			 as a source.  Change all occurrences.  */
+		      lra_substitute_pseudo_within_insn (curr_insn, sregno,
+							 SET_SRC (prev_set),
+							 false);
 		      /* As we are finishing with processing the insn
 			 here, check the destination too as it might
 			 inheritance pseudo for another pseudo.  */

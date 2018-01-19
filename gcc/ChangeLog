@@ -1,3 +1,9 @@
+2018-01-19  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR rtl-optimization/83147
+	* lra-constraints.c (remove_inheritance_pseudos): Use
+	lra_substitute_pseudo_within_insn.
+
 2018-01-19  Tom de Vries  <tom@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
