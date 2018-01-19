@@ -1294,6 +1294,12 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned int min_ni_width;
 
+  /* Use a normal loop if there are no statements that need masking.
+     This only happens in rare degenerate cases: it means that the loop
+     has no loads, no stores, and no live-out values.  */
+  if (LOOP_VINFO_MASKS (loop_vinfo).is_empty ())
+    return false;
+
   /* Get the maximum number of iterations that is representable
      in the counter type.  */
   tree ni_type = TREE_TYPE (LOOP_VINFO_NITERSM1 (loop_vinfo));
@@ -1739,6 +1745,33 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
     }
 }
 
+/* Return true if STMT_INFO describes a double reduction phi and if
+   the other phi in the reduction is also relevant for vectorization.
+   This rejects cases such as:
+
+      outer1:
+	x_1 = PHI <x_3(outer2), ...>;
+	...
+
+      inner:
+	x_2 = ...;
+	...
+
+      outer2:
+	x_3 = PHI <x_2(inner)>;
+
+   if nothing in x_2 or elsewhere makes x_1 relevant.  */
+
+static bool
+vect_active_double_reduction_p (stmt_vec_info stmt_info)
+{
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_double_reduction_def)
+    return false;
+
+  gimple *other_phi = STMT_VINFO_REDUC_DEF (stmt_info);
+  return STMT_VINFO_RELEVANT_P (vinfo_for_stmt (other_phi));
+}
+
 /* Function vect_analyze_loop_operations.
 
    Scan the loop stmts and make sure they are all vectorizable.  */
@@ -1786,8 +1819,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
                  i.e., this phi is vect_reduction_def), cause this case
                  requires to actually do something here.  */
               if (STMT_VINFO_LIVE_P (stmt_info)
-                  && STMT_VINFO_DEF_TYPE (stmt_info)
-                     != vect_double_reduction_def)
+		  && !vect_active_double_reduction_p (stmt_info))
                 {
                   if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
