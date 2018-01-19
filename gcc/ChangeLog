@@ -1,5 +1,17 @@
 2018-01-19  Martin Liska  <mliska@suse.cz>
 
+	* predict.def (PRED_LOOP_EXIT): Change from 85 to 89.
+	(PRED_LOOP_EXIT_WITH_RECURSION): Change from 72 to 78.
+	(PRED_LOOP_EXTRA_EXIT): Change from 83 to 67.
+	(PRED_OPCODE_POSITIVE): Change from 64 to 59.
+	(PRED_TREE_OPCODE_POSITIVE): Change from 64 to 59.
+	(PRED_CONST_RETURN): Change from 69 to 65.
+	(PRED_NULL_RETURN): Change from 91 to 71.
+	(PRED_LOOP_IV_COMPARE_GUESS): Change from 98 to 64.
+	(PRED_LOOP_GUARD): Change from 66 to 73.
+
+2018-01-19  Martin Liska  <mliska@suse.cz>
+
 	* predict.c (predict_insn_def): Add new assert.
 	(struct branch_predictor): Change type to signed integer.
 	(test_prediction_value_range): Amend test to cover
