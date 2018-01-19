@@ -1,5 +1,11 @@
 2018-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* gcc.target/arm/negdi-1.c: Remove bogus assembler scan for negs.
+	* gcc.target/arm/negdi-2.c: Likewise.
+	* gcc.target/arm/thumb-16bit-ops.c: Replace scan for NEGS with RSBS.
+
+2018-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/arm/pr40956.c: Adjust scan-assembler pattern.
 
 2018-01-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
