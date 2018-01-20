@@ -1,3 +1,9 @@
+2018-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83930
+	* simplify-rtx.c (simplify_binary_operation_1) <case UMOD>: Use
+	UINTVAL (trueop1) instead of INTVAL (op1).
+
 2018-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/81570
