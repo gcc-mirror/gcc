@@ -4590,7 +4590,6 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       || !is_constant_array_expr (matrix_b))
     return NULL;
 
-  gcc_assert (gfc_compare_types (&matrix_a->ts, &matrix_b->ts));
   result = gfc_get_array_expr (matrix_a->ts.type,
 			       matrix_a->ts.kind,
 			       &matrix_a->where);
