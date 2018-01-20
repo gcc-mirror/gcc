@@ -1932,7 +1932,7 @@ vect_truncate_gather_scatter_offset (gimple *stmt, loop_vec_info loop_vinfo,
 	 but we don't need to store that here.  */
       gs_info->base = NULL_TREE;
       gs_info->offset = fold_convert (offset_type, step);
-      gs_info->offset_dt = vect_unknown_def_type;
+      gs_info->offset_dt = vect_constant_def;
       gs_info->offset_vectype = NULL_TREE;
       gs_info->scale = scale;
       gs_info->memory_type = memory_type;
@@ -2374,11 +2374,14 @@ get_load_store_type (gimple *stmt, tree vectype, bool slp, bool masked_p,
 }
 
 /* Return true if boolean argument MASK is suitable for vectorizing
-   conditional load or store STMT.  When returning true, store the
-   type of the vectorized mask in *MASK_VECTYPE_OUT.  */
+   conditional load or store STMT.  When returning true, store the type
+   of the definition in *MASK_DT_OUT and the type of the vectorized mask
+   in *MASK_VECTYPE_OUT.  */
 
 static bool
-vect_check_load_store_mask (gimple *stmt, tree mask, tree *mask_vectype_out)
+vect_check_load_store_mask (gimple *stmt, tree mask,
+			    vect_def_type *mask_dt_out,
+			    tree *mask_vectype_out)
 {
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (mask)))
     {
@@ -2398,9 +2401,9 @@ vect_check_load_store_mask (gimple *stmt, tree mask, tree *mask_vectype_out)
 
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   gimple *def_stmt;
-  enum vect_def_type dt;
+  enum vect_def_type mask_dt;
   tree mask_vectype;
-  if (!vect_is_simple_use (mask, stmt_info->vinfo, &def_stmt, &dt,
+  if (!vect_is_simple_use (mask, stmt_info->vinfo, &def_stmt, &mask_dt,
 			   &mask_vectype))
     {
       if (dump_enabled_p ())
@@ -2437,18 +2440,19 @@ vect_check_load_store_mask (gimple *stmt, tree mask, tree *mask_vectype_out)
       return false;
     }
 
+  *mask_dt_out = mask_dt;
   *mask_vectype_out = mask_vectype;
   return true;
 }
 
 /* Return true if stored value RHS is suitable for vectorizing store
    statement STMT.  When returning true, store the type of the
-   vectorized store value in *RHS_VECTYPE_OUT and the type of the
-   store in *VLS_TYPE_OUT.  */
+   definition in *RHS_DT_OUT, the type of the vectorized store value in
+   *RHS_VECTYPE_OUT and the type of the store in *VLS_TYPE_OUT.  */
 
 static bool
-vect_check_store_rhs (gimple *stmt, tree rhs, tree *rhs_vectype_out,
-		      vec_load_store_type *vls_type_out)
+vect_check_store_rhs (gimple *stmt, tree rhs, vect_def_type *rhs_dt_out,
+		      tree *rhs_vectype_out, vec_load_store_type *vls_type_out)
 {
   /* In the case this is a store from a constant make sure
      native_encode_expr can handle it.  */
@@ -2462,9 +2466,9 @@ vect_check_store_rhs (gimple *stmt, tree rhs, tree *rhs_vectype_out,
 
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   gimple *def_stmt;
-  enum vect_def_type dt;
+  enum vect_def_type rhs_dt;
   tree rhs_vectype;
-  if (!vect_is_simple_use (rhs, stmt_info->vinfo, &def_stmt, &dt,
+  if (!vect_is_simple_use (rhs, stmt_info->vinfo, &def_stmt, &rhs_dt,
 			   &rhs_vectype))
     {
       if (dump_enabled_p ())
@@ -2482,8 +2486,9 @@ vect_check_store_rhs (gimple *stmt, tree rhs, tree *rhs_vectype_out,
       return false;
     }
 
+  *rhs_dt_out = rhs_dt;
   *rhs_vectype_out = rhs_vectype;
-  if (dt == vect_constant_def || dt == vect_external_def)
+  if (rhs_dt == vect_constant_def || rhs_dt == vect_external_def)
     *vls_type_out = VLS_STORE_INVARIANT;
   else
     *vls_type_out = VLS_STORE;
@@ -2546,12 +2551,12 @@ vect_build_zero_merge_argument (gimple *stmt, tree vectype)
 /* Build a gather load call while vectorizing STMT.  Insert new instructions
    before GSI and add them to VEC_STMT.  GS_INFO describes the gather load
    operation.  If the load is conditional, MASK is the unvectorized
-   condition, otherwise MASK is null.  */
+   condition and MASK_DT is its definition type, otherwise MASK is null.  */
 
 static void
 vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
 			      gimple **vec_stmt, gather_scatter_info *gs_info,
-			      tree mask)
+			      tree mask, vect_def_type mask_dt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -2682,12 +2687,7 @@ vect_build_gather_load_calls (gimple *stmt, gimple_stmt_iterator *gsi,
 	      if (j == 0)
 		vec_mask = vect_get_vec_def_for_operand (mask, stmt);
 	      else
-		{
-		  gimple *def_stmt;
-		  enum vect_def_type dt;
-		  vect_is_simple_use (vec_mask, loop_vinfo, &def_stmt, &dt);
-		  vec_mask = vect_get_vec_def_for_stmt_copy (dt, vec_mask);
-		}
+		vec_mask = vect_get_vec_def_for_stmt_copy (mask_dt, vec_mask);
 
 	      mask_op = vec_mask;
 	      if (!useless_type_conversion_p (masktype, TREE_TYPE (vec_mask)))
@@ -6057,7 +6057,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   tree dummy;
   enum dr_alignment_support alignment_support_scheme;
   gimple *def_stmt;
-  enum vect_def_type dt;
+  enum vect_def_type rhs_dt = vect_unknown_def_type;
+  enum vect_def_type mask_dt = vect_unknown_def_type;
   stmt_vec_info prev_stmt_info = NULL;
   tree dataref_ptr = NULL_TREE;
   tree dataref_offset = NULL_TREE;
@@ -6078,7 +6079,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   vec_info *vinfo = stmt_info->vinfo;
   tree aggr_type;
   gather_scatter_info gs_info;
-  enum vect_def_type scatter_src_dt = vect_unknown_def_type;
   gimple *new_stmt;
   poly_uint64 vf;
   vec_load_store_type vls_type;
@@ -6131,7 +6131,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (mask_index >= 0)
 	{
 	  mask = gimple_call_arg (call, mask_index);
-	  if (!vect_check_load_store_mask (stmt, mask, &mask_vectype))
+	  if (!vect_check_load_store_mask (stmt, mask, &mask_dt,
+					   &mask_vectype))
 	    return false;
 	}
     }
@@ -6172,7 +6173,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       return false;
     }
 
-  if (!vect_check_store_rhs (stmt, op, &rhs_vectype, &vls_type))
+  if (!vect_check_store_rhs (stmt, op, &rhs_dt, &rhs_vectype, &vls_type))
     return false;
 
   elem_type = TREE_TYPE (vectype);
@@ -6339,7 +6340,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      if (modifier == WIDEN)
 		{
 		  src = vec_oprnd1
-		    = vect_get_vec_def_for_stmt_copy (scatter_src_dt, vec_oprnd1);
+		    = vect_get_vec_def_for_stmt_copy (rhs_dt, vec_oprnd1);
 		  op = permute_vec_elements (vec_oprnd0, vec_oprnd0, perm_mask,
 					     stmt, gsi);
 		}
@@ -6357,7 +6358,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else
 	    {
 	      src = vec_oprnd1
-		= vect_get_vec_def_for_stmt_copy (scatter_src_dt, vec_oprnd1);
+		= vect_get_vec_def_for_stmt_copy (rhs_dt, vec_oprnd1);
 	      op = vec_oprnd0
 		= vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
 						  vec_oprnd0);
@@ -6616,8 +6617,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		    vec_oprnd = vec_oprnds[j];
 		  else
 		    {
-		      vect_is_simple_use (vec_oprnd, vinfo, &def_stmt, &dt);
-		      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, vec_oprnd);
+		      vect_is_simple_use (op, vinfo, &def_stmt, &rhs_dt);
+		      vec_oprnd = vect_get_vec_def_for_stmt_copy (rhs_dt,
+								  vec_oprnd);
 		    }
 		}
 	      /* Pun the vector to extract from if necessary.  */
@@ -6858,26 +6860,19 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  for (i = 0; i < group_size; i++)
 	    {
 	      op = oprnds[i];
-	      vect_is_simple_use (op, vinfo, &def_stmt, &dt);
-	      vec_oprnd = vect_get_vec_def_for_stmt_copy (dt, op);
+	      vect_is_simple_use (op, vinfo, &def_stmt, &rhs_dt);
+	      vec_oprnd = vect_get_vec_def_for_stmt_copy (rhs_dt, op);
 	      dr_chain[i] = vec_oprnd;
 	      oprnds[i] = vec_oprnd;
 	    }
 	  if (mask)
-	    {
-	      vect_is_simple_use (vec_mask, vinfo, &def_stmt, &dt);
-	      vec_mask = vect_get_vec_def_for_stmt_copy (dt, vec_mask);
-	    }
+	    vec_mask = vect_get_vec_def_for_stmt_copy (mask_dt, vec_mask);
 	  if (dataref_offset)
 	    dataref_offset
 	      = int_const_binop (PLUS_EXPR, dataref_offset, bump);
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    {
-	      gimple *def_stmt;
-	      vect_def_type dt;
-	      vect_is_simple_use (vec_offset, loop_vinfo, &def_stmt, &dt);
-	      vec_offset = vect_get_vec_def_for_stmt_copy (dt, vec_offset);
-	    }
+	    vec_offset = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
+							 vec_offset);
 	  else
 	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
 					   bump);
@@ -7238,6 +7233,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   gather_scatter_info gs_info;
   vec_info *vinfo = stmt_info->vinfo;
   tree ref_type;
+  enum vect_def_type mask_dt = vect_unknown_def_type;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -7290,7 +7286,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (mask_index >= 0)
 	{
 	  mask = gimple_call_arg (call, mask_index);
-	  if (!vect_check_load_store_mask (stmt, mask, &mask_vectype))
+	  if (!vect_check_load_store_mask (stmt, mask, &mask_dt,
+					   &mask_vectype))
 	    return false;
 	}
     }
@@ -7472,7 +7469,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   if (memory_access_type == VMAT_GATHER_SCATTER && gs_info.decl)
     {
-      vect_build_gather_load_calls (stmt, gsi, vec_stmt, &gs_info, mask);
+      vect_build_gather_load_calls (stmt, gsi, vec_stmt, &gs_info, mask,
+				    mask_dt);
       return true;
     }
 
@@ -7999,22 +7997,13 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    dataref_offset = int_const_binop (PLUS_EXPR, dataref_offset,
 					      bump);
 	  else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
-	    {
-	      gimple *def_stmt;
-	      vect_def_type dt;
-	      vect_is_simple_use (vec_offset, loop_vinfo, &def_stmt, &dt);
-	      vec_offset = vect_get_vec_def_for_stmt_copy (dt, vec_offset);
-	    }
+	    vec_offset = vect_get_vec_def_for_stmt_copy (gs_info.offset_dt,
+							 vec_offset);
 	  else
 	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi,
 					   stmt, bump);
 	  if (mask)
-	    {
-	      gimple *def_stmt;
-	      vect_def_type dt;
-	      vect_is_simple_use (vec_mask, vinfo, &def_stmt, &dt);
-	      vec_mask = vect_get_vec_def_for_stmt_copy (dt, vec_mask);
-	    }
+	    vec_mask = vect_get_vec_def_for_stmt_copy (mask_dt, vec_mask);
 	}
 
       if (grouped_load || slp_perm)
