@@ -1,5 +1,10 @@
 2018-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/83900
+	* simplify.c (gfc_simplify_matmul): Delete bogus assertion.
+
+2018-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	Backport of r250734 from mainline
 	PR fortran/80768
 	* check.c (gfc_check_num_images): Fix typo.
