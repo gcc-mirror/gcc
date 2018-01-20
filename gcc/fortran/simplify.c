@@ -4590,9 +4590,23 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       || !is_constant_array_expr (matrix_b))
     return NULL;
 
-  result = gfc_get_array_expr (matrix_a->ts.type,
-			       matrix_a->ts.kind,
-			       &matrix_a->where);
+  /* MATMUL should do mixed-mode arithmetic.  Set the result type.  */
+  if (matrix_a->ts.type != matrix_b->ts.type)
+    {
+      gfc_expr e;
+      e.expr_type = EXPR_OP;
+      gfc_clear_ts (&e.ts);
+      e.value.op.op = INTRINSIC_NONE;
+      e.value.op.op1 = matrix_a;
+      e.value.op.op2 = matrix_b;
+      gfc_type_convert_binary (&e, 1);
+      result = gfc_get_array_expr (e.ts.type, e.ts.kind, &matrix_a->where);
+    }
+  else
+    {
+      result = gfc_get_array_expr (matrix_a->ts.type, matrix_a->ts.kind,
+				   &matrix_a->where);
+    }
 
   if (matrix_a->rank == 1 && matrix_b->rank == 2)
     {
