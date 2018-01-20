@@ -1,5 +1,12 @@
 2018-01-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83945
+	* tree-emutls.c: Include gimplify.h.
+	(lower_emutls_2): New function.
+	(lower_emutls_1): If ADDR_EXPR is a gimple invariant and walk_tree
+	with lower_emutls_2 callback finds some TLS decl in it, unshare_expr
+	it before further processing.
+
 	PR target/83930
 	* simplify-rtx.c (simplify_binary_operation_1) <case UMOD>: Use
 	UINTVAL (trueop1) instead of INTVAL (op1).

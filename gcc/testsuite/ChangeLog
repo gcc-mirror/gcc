@@ -1,5 +1,8 @@
 2018-01-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/83945
+	* gcc.dg/tls/pr83945.c: New test.
+
 	PR target/83930
 	* gcc.dg/pr83930.c: New test.
 
