@@ -1,3 +1,8 @@
+2018-01-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83900
+    * simplify.c (gfc_simplify_matmul): Set return type correctly.
+
 2018-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83900
