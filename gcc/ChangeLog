@@ -1,3 +1,23 @@
+2018-01-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83940
+	* tree-vect-stmts.c (vect_truncate_gather_scatter_offset): Set
+	offset_dt to vect_constant_def rather than vect_unknown_def_type.
+	(vect_check_load_store_mask): Add a mask_dt_out parameter and
+	use it to pass back the definition type.
+	(vect_check_store_rhs): Likewise rhs_dt_out.
+	(vect_build_gather_load_calls): Add a mask_dt argument and use
+	it instead of a call to vect_is_simple_use.
+	(vectorizable_store): Update calls to vect_check_load_store_mask
+	and vect_check_store_rhs.  Use the dt returned by the latter instead
+	of scatter_src_dt.  Use the cached mask_dt and gs_info.offset_dt
+	instead of calls to vect_is_simple_use.  Pass the scalar rather
+	than the vector operand to vect_is_simple_use when handling
+	second and subsequent copies of an rhs value.
+	(vectorizable_load): Update calls to vect_check_load_store_mask
+	and vect_build_gather_load_calls.  Use the cached mask_dt and
+	gs_info.offset_dt instead of calls to vect_is_simple_use.
+
 2018-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83945
