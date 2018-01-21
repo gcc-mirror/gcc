@@ -1,5 +1,10 @@
 2018-01-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/81485
+	* config/sh/sh-protos.h (sh_find_set_of_reg): Remove assert.
+
+2018-01-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	Backport from mainline
 	2018-01-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
