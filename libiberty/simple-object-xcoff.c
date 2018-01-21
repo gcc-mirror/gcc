@@ -596,15 +596,24 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
 	      aux = (unsigned char *) auxent;
 	      if (u64)
 		{
+		  /* Use an intermediate 64-bit type to avoid
+		     compilation warning about 32-bit shift below on
+		     hosts with 32-bit off_t which aren't supported by
+		     AC_SYS_LARGEFILE.  */
+		  ulong_type x_scnlen64;
+
 		  if ((auxent->u.xcoff64.x_csect.x_smtyp & 0x7) != XTY_SD
 		      || auxent->u.xcoff64.x_csect.x_smclas != XMC_XO)
 		    continue;
 
-		  x_scnlen = fetch_32 (aux + offsetof (union external_auxent,
-						       u.xcoff64.x_csect.x_scnlen_hi));
-		  x_scnlen = x_scnlen << 32
-			   | fetch_32 (aux + offsetof (union external_auxent,
-						       u.xcoff64.x_csect.x_scnlen_lo));
+		  x_scnlen64 = 
+		    fetch_32 (aux + offsetof (union external_auxent,
+					      u.xcoff64.x_csect.x_scnlen_hi));
+		  x_scnlen = 
+		    ((x_scnlen64 << 32)
+		     | fetch_32 (aux
+				 + offsetof (union external_auxent,
+					     u.xcoff64.x_csect.x_scnlen_lo)));
 		}
 	      else
 		{
