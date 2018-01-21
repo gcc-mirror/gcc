@@ -1,3 +1,9 @@
+2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr83621.c: Add -fno-common additional option on hppa*-&-hpux*.
+	* gcc.dg/pr83623.c: Likewise.
+	* gcc.dg/pr83666.c: Likewise.
+
 2018-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    David Edelsohn <dje.gcc@gmail.com>
 
