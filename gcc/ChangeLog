@@ -1,3 +1,10 @@
+2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR gcc/77734
+	* config/pa/pa.c (pa_function_ok_for_sibcall): Use
+	targetm.binds_local_p instead of TREE_PUBLIC to check local binding.
+	Move TARGET_PORTABLE_RUNTIME check after TARGET_64BIT check.
+
 2018-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    David Edelsohn <dje.gcc@gmail.com>
 
