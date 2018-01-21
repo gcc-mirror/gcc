@@ -1,3 +1,9 @@
+2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR lto/83452
+	* config/pa/stublib.c (L_gnu_lto_v1): New stub definition.
+	* config/pa/t-stublib (gnu_lto_v1-stub.o): Add make fragment.
+	
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/value-unwind.h (aarch64_vg): New function.
