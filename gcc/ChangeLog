@@ -1,3 +1,9 @@
+2018-01-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/80870
+	* config/sh/rx/rx.c (config/sh/sh_optimize_sett_clrt.cc):
+	Use INCLUDE_ALGORITHM and INCLUDE_VECTOR instead of direct includes.
+
 2018-01-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83940
