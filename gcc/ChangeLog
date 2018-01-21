@@ -1,3 +1,20 @@
+2018-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    David Edelsohn <dje.gcc@gmail.com>
+
+	PR target/83946
+	* config/rs6000/rs6000.md (*call_indirect_nonlocal_sysv<mode>):
+	Change "crset eq" to "crset 2".
+	(*call_value_indirect_nonlocal_sysv<mode>): Likewise.
+	(*call_indirect_aix<mode>_nospec): Likewise.
+	(*call_value_indirect_aix<mode>_nospec): Likewise.
+	(*call_indirect_elfv2<mode>_nospec): Likewise.
+	(*call_value_indirect_elfv2<mode>_nospec): Likewise.
+	(*sibcall_nonlocal_sysv<mode>): Change "crset eq" to "crset 2";
+	change assembly output from . to $.
+	(*sibcall_value_nonlocal_sysv<mode>): Likewise.
+	(indirect_jump<mode>_nospec): Change assembly output from . to $.
+	(*tablejump<mode>_internal1_nospec): Likewise.
+
 2018-01-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/80870

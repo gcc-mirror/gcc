@@ -1,3 +1,17 @@
+2018-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    David Edelsohn <dje.gcc@gmail.com>
+
+	PR target/83946
+	* gcc.target/powerpc/safe-indirect-jump-1.c: Change expected
+	assembly output from "crset eq" to "crset 2".
+	* gcc.target/powerpc/safe-indirect-jump-2.c: Change expected
+	assembly output from . to $.
+	* gcc.target/powerpc/safe-indirect-jump-3.c: Likewise.
+	* gcc.target/powerpc/safe-indirect-jump-1.c: Change expected
+	assembly output from "crset eq" to "crset 2".
+	* gcc.target/powerpc/safe-indirect-jump-8.c: Change expected
+	assembly output from "crset eq" to "crset 2", and from . to $.
+
 2018-01-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83900
