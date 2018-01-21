@@ -30,4 +30,4 @@ int foo (int x)
 
 /* { dg-final { scan-assembler "crset 30" } } */
 /* { dg-final { scan-assembler "beqctr- 7" } } */
-/* { dg-final { scan-assembler "b ." } } */
+/* { dg-final { scan-assembler {b \$} } } */

@@ -10,5 +10,5 @@ int bar ()
   return (*f) ();
 }
 
-/* { dg-final { scan-assembler "crset eq" } } */
+/* { dg-final { scan-assembler "crset 2" } } */
 /* { dg-final { scan-assembler "beqctrl-" } } */
