@@ -1,0 +1,33 @@
+#ifndef _PORTLIB_H_
+#define _PORTLIB_H_
+#include <stdio.h>
+#include <math.h>
+#include <assert.h>
+#include <complex.h>
+#include <ctype.h>
+#include <errno.h>
+#include <fenv.h>
+#include <float.h>
+#include <inttypes.h>
+#include <iso646.h>
+#include <limits.h>
+#include <locale.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <stdalign.h>
+#include <stdarg.h>
+#include <stdatomic.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdnoreturn.h>
+#include <string.h>
+#include <tgmath.h>
+#include <uchar.h>
+#include <time.h>
+#include <wchar.h>
+#include <wctype.h>
+#ifdef RC_INVOKED
+#endif 
+#endif
