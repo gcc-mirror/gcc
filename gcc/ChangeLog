@@ -1,5 +1,11 @@
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
+	* config/rl78/rl78-expand.md: New define_expand "bswaphi2"
+	* config/rl78/rl78-virt.md: New define_insn "*bswaphi2_virt"
+	* config/rl78/rl78-real.md: New define_insn "*bswaphi2_real"
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
 	* config/rl78/rl78-protos.h: New function declaration rl78_split_movdi
 	* config/rl78/rl78.md: New define_expand "movdi"
 	* config/rl78/rl78.c: New function definition rl78_split_movdi
