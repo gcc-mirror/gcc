@@ -1,3 +1,11 @@
+2018-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83963
+	* graphite-scop-detection.c (scop_detection::get_sese): Delay
+	including the loop exit block.
+	(scop_detection::merge_sese): Likewise.
+	(scop_detection::add_scop): Do it here instead.
+
 2018-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/sourcebuild.texi (arm_softfloat): Document.

@@ -420,13 +420,6 @@ scop_detection::get_sese (loop_p loop)
   edge scop_end = single_exit (loop);
   if (!scop_end || (scop_end->flags & (EDGE_COMPLEX|EDGE_FAKE)))
     return invalid_sese;
-  /* Include the BB with the loop-closed SSA PHI nodes.
-     canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
-  if (! single_pred_p (scop_end->dest)
-      || ! single_succ_p (scop_end->dest)
-      || ! sese_trivially_empty_bb_p (scop_end->dest))
-    gcc_unreachable ();
-  scop_end = single_succ_edge (scop_end->dest);
 
   return sese_l (scop_begin, scop_end);
 }
@@ -506,17 +499,6 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 	  bitmap_set_bit (worklist, e->dest->index);
     }
   while (! bitmap_empty_p (worklist));
-
-  /* Include the BB with the loop-closed SSA PHI nodes.
-     canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
-  if (exit->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
-      && loop_exit_edge_p (exit->src->loop_father, exit))
-    {
-      gcc_assert (single_pred_p (exit->dest)
-		  && single_succ_p (exit->dest)
-		  && sese_trivially_empty_bb_p (exit->dest));
-      exit = single_succ_edge (exit->dest);
-    }
 
   sese_l combined (entry, exit);
 
@@ -607,6 +589,18 @@ void
 scop_detection::add_scop (sese_l s)
 {
   gcc_assert (s);
+
+  /* Include the BB with the loop-closed SSA PHI nodes, we need this
+     block in the region for code-generating out-of-SSA copies.
+     canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
+  if (s.exit->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
+      && loop_exit_edge_p (s.exit->src->loop_father, s.exit))
+    {
+      gcc_assert (single_pred_p (s.exit->dest)
+		  && single_succ_p (s.exit->dest)
+		  && sese_trivially_empty_bb_p (s.exit->dest));
+      s.exit = single_succ_edge (s.exit->dest);
+    }
 
   /* Do not add scops with only one loop.  */
   if (region_has_one_loop (s))
