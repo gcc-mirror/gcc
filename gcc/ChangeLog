@@ -1,3 +1,22 @@
+2018-01-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/83862
+	* config/rs6000/rs6000-protos.h (rs6000_split_signbit): Delete,
+	no longer used.
+	* config/rs6000/rs6000.c (rs6000_split_signbit): Likewise.
+	* config/rs6000/rs6000.md (signbit<mode>2): Change code for IEEE
+	128-bit to produce an UNSPEC move to get the double word with the
+	signbit and then a shift directly to do signbit.
+	(signbit<mode>2_dm): Replace old IEEE 128-bit signbit
+	implementation with a new version that just does either a direct
+	move or a regular move.  Move memory interface to separate insns.
+	Move insns so they are next to the expander.
+	(signbit<mode>2_dm_mem_be): New combiner insns to combine load
+	with signbit move.  Split big and little endian case.
+	(signbit<mode>2_dm_mem_le): Likewise.
+	(signbit<mode>2_dm_<su>ext): Delete, no longer used.
+	(signbit<mode>2_dm2): Likewise.
+
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.md: New define_expand "anddi3".

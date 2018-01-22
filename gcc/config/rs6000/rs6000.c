@@ -23424,49 +23424,6 @@ rs6000_emit_minmax (rtx dest, enum rtx_code code, rtx op0, rtx op1)
     emit_move_insn (dest, target);
 }
 
-/* Split a signbit operation on 64-bit machines with direct move.  Also allow
-   for the value to come from memory or if it is already loaded into a GPR.  */
-
-void
-rs6000_split_signbit (rtx dest, rtx src)
-{
-  machine_mode d_mode = GET_MODE (dest);
-  machine_mode s_mode = GET_MODE (src);
-  rtx dest_di = (d_mode == DImode) ? dest : gen_lowpart (DImode, dest);
-  rtx shift_reg = dest_di;
-
-  gcc_assert (FLOAT128_IEEE_P (s_mode) && TARGET_POWERPC64);
-
-  if (MEM_P (src))
-    {
-      rtx mem = (WORDS_BIG_ENDIAN
-		 ? adjust_address (src, DImode, 0)
-		 : adjust_address (src, DImode, 8));
-      emit_insn (gen_rtx_SET (dest_di, mem));
-    }
-
-  else
-    {
-      unsigned int r = reg_or_subregno (src);
-
-      if (INT_REGNO_P (r))
-	shift_reg = gen_rtx_REG (DImode, r + (BYTES_BIG_ENDIAN == 0));
-
-      else
-	{
-	  /* Generate the special mfvsrd instruction to get it in a GPR.  */
-	  gcc_assert (VSX_REGNO_P (r));
-	  if (s_mode == KFmode)
-	    emit_insn (gen_signbitkf2_dm2 (dest_di, src));
-	  else
-	    emit_insn (gen_signbittf2_dm2 (dest_di, src));
-	}
-    }
-
-  emit_insn (gen_lshrdi3 (dest_di, shift_reg, GEN_INT (63)));
-  return;
-}
-
 /* A subroutine of the atomic operation splitters.  Jump to LABEL if
    COND is true.  Mark the jump as unlikely to be taken.  */
 
