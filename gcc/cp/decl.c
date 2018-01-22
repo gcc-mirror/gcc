@@ -10882,6 +10882,7 @@ grokdeclarator (const cp_declarator *declarator,
 	 to be a constructor call.  */
       if (decl_context != PARM
 	  && decl_context != TYPENAME
+	  && !typedef_p
 	  && declarator->parenthesized != UNKNOWN_LOCATION
 	  /* If the type is class-like and the inner name used a
 	     global namespace qualifier, we need the parens.

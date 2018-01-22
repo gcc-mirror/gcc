@@ -1,3 +1,10 @@
+2018-01-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/83895
+
+	* decl.c (grokdeclarator): Don't diagnose extra parens
+	on typedefs.
+
 2018-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81167
