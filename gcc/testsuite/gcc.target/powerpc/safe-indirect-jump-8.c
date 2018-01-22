@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ilp32 } } } */
+/* { dg-skip-if "" { powerpc*-*-aix* } } */
 /* { dg-additional-options "-O2 -mno-speculate-indirect-jumps" } */
 
 /* Test for deliberate misprediction of -m32 sibcalls.  */
