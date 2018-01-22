@@ -410,6 +410,30 @@ public:
       return *this;
     }
 
+  /* Split *THIS (ORIG) probability into 2 probabilities, such that
+     the returned one (FIRST) is *THIS * CPROB and *THIS is
+     adjusted (SECOND) so that FIRST + FIRST.invert () * SECOND
+     == ORIG.  This is useful e.g. when splitting a conditional
+     branch like:
+     if (cond)
+       goto lab; // ORIG probability
+     into
+     if (cond1)
+       goto lab; // FIRST = ORIG * CPROB probability
+     if (cond2)
+       goto lab; // SECOND probability
+     such that the overall probability of jumping to lab remains
+     the same.  CPROB gives the relative probability between the
+     branches.  */
+  profile_probability split (const profile_probability &cprob)
+    {
+      profile_probability ret = *this * cprob;
+      /* The following is equivalent to:
+         *this = cprob.invert () * *this / ret.invert ();  */
+      *this = (*this - ret) / ret.invert ();
+      return ret;
+    }
+
   gcov_type apply (gcov_type val) const
     {
       if (*this == profile_probability::uninitialized ())
