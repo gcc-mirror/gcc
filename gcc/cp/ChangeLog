@@ -1,9 +1,16 @@
+2018-01-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83720 - ICE with lambda and LTO.
+	* decl2.c (determine_visibility): Clear template_decl for
+	function-scope decls.  Propagate anonymous linkage from containing
+	function.
+
 2018-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81933
 	* typeck2.c (split_nonconstant_init_1): Return false if we didn't
 	split out anything.
-	
+
 2018-01-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/83895
