@@ -15582,6 +15582,12 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
        unaligned-supporting store, so use a generic expander.  For
        little-endian, the exact element-reversing instruction must
        be used.  */
+   case VSX_BUILTIN_ST_ELEMREV_V1TI:
+     {
+        enum insn_code code = (BYTES_BIG_ENDIAN ? CODE_FOR_vsx_store_v1ti
+			       : CODE_FOR_vsx_st_elemrev_v1ti);
+        return altivec_expand_stv_builtin (code, exp);
+      }
     case VSX_BUILTIN_ST_ELEMREV_V2DF:
       {
 	enum insn_code code = (BYTES_BIG_ENDIAN ? CODE_FOR_vsx_store_v2df
@@ -15854,6 +15860,12 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       {
 	enum insn_code code = (BYTES_BIG_ENDIAN ? CODE_FOR_vsx_load_v2df
 			       : CODE_FOR_vsx_ld_elemrev_v2df);
+	return altivec_expand_lv_builtin (code, exp, target, false);
+      }
+    case VSX_BUILTIN_LD_ELEMREV_V1TI:
+      {
+	enum insn_code code = (BYTES_BIG_ENDIAN ? CODE_FOR_vsx_load_v1ti
+			       : CODE_FOR_vsx_ld_elemrev_v1ti);
 	return altivec_expand_lv_builtin (code, exp, target, false);
       }
     case VSX_BUILTIN_LD_ELEMREV_V2DI:
@@ -17457,6 +17469,10 @@ altivec_init_builtins (void)
     = build_function_type_list (void_type_node,
 				V2DF_type_node, long_integer_type_node,
 				pvoid_type_node, NULL_TREE);
+  tree void_ftype_v1ti_long_pvoid
+    = build_function_type_list (void_type_node,
+				V1TI_type_node, long_integer_type_node,
+				pvoid_type_node, NULL_TREE);
   tree void_ftype_v2di_long_pvoid
     = build_function_type_list (void_type_node,
 				V2DI_type_node, long_integer_type_node,
@@ -17612,6 +17628,8 @@ altivec_init_builtins (void)
 	       VSX_BUILTIN_LD_ELEMREV_V16QI);
   def_builtin ("__builtin_vsx_st_elemrev_v2df", void_ftype_v2df_long_pvoid,
 	       VSX_BUILTIN_ST_ELEMREV_V2DF);
+  def_builtin ("__builtin_vsx_st_elemrev_v1ti", void_ftype_v1ti_long_pvoid,
+	       VSX_BUILTIN_ST_ELEMREV_V1TI);
   def_builtin ("__builtin_vsx_st_elemrev_v2di", void_ftype_v2di_long_pvoid,
 	       VSX_BUILTIN_ST_ELEMREV_V2DI);
   def_builtin ("__builtin_vsx_st_elemrev_v4sf", void_ftype_v4sf_long_pvoid,
@@ -17935,6 +17953,8 @@ altivec_init_builtins (void)
 	= build_function_type_list (void_type_node,
 				    V1TI_type_node, long_integer_type_node,
 				    pvoid_type_node, NULL_TREE);
+      def_builtin ("__builtin_vsx_ld_elemrev_v1ti", v1ti_ftype_long_pcvoid,
+		   VSX_BUILTIN_LD_ELEMREV_V1TI);
       def_builtin ("__builtin_vsx_lxvd2x_v1ti", v1ti_ftype_long_pcvoid,
 		   VSX_BUILTIN_LXVD2X_V1TI);
       def_builtin ("__builtin_vsx_stxvd2x_v1ti", void_ftype_v1ti_long_pvoid,

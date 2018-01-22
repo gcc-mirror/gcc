@@ -1,3 +1,19 @@
+2018-01-22 Carl Love <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (ST_ELEMREV_V1TI, LD_ELEMREV_V1TI,
+	LVX_V1TI): Add macro expansion.
+	* config/rs6000/rs6000-c.c (altivec_builtin_types): Add argument
+	definitions for VSX_BUILTIN_VEC_XST_BE, VSX_BUILTIN_VEC_ST,
+	VSX_BUILTIN_VEC_XL, LD_ELEMREV_V1TI builtins.
+	* config/rs6000/rs6000-p8swap.c (insn_is_swappable_p);
+	Change check to determine if the instruction is a byte reversing
+	entry.  Fix typo in comment.
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Add case entry
+	for VSX_BUILTIN_ST_ELEMREV_V1TI and VSX_BUILTIN_LD_ELEMREV_V1TI.
+	Add def_builtin calls for new builtins.
+	* config/rs6000/vsx.md (vsx_st_elemrev_v1ti, vsx_ld_elemrev_v1ti):
+	Add define_insn expansion.
+
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.md: New define_expand "umaxdi3".
