@@ -2184,25 +2184,21 @@ ovl_copy (tree ovl)
    true, if FN is via a using declaration.  We also pay attention to
    DECL_HIDDEN.  If EXPORT_TAIL is non-null, store through it with an
    updated export list change.  Overloads are ordered as hidden,
-   using, regular, exported.
-
-   I'm not sure if using decls can be exported?  */
+   regular, exported.  */
 
 tree
 ovl_insert (tree fn, tree maybe_ovl, bool using_p, tree *export_tail)
 {
   bool copying = false; /* Checking use only.  */
   bool hidden_p = DECL_HIDDEN_P (fn);
-  int weight = ((hidden_p - DECL_MODULE_EXPORT_P (fn)) << 1) |  (using_p << 0);
+  int weight = hidden_p - DECL_MODULE_EXPORT_P (fn);
 
   tree result = NULL_TREE;
   tree insert_after = NULL_TREE;
 
   /* Find insertion point.  */
   while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
-	 && (weight < (((OVL_HIDDEN_P (maybe_ovl)
-			 - OVL_EXPORT_P (maybe_ovl)) << 1)
-		       | (OVL_USING_P (maybe_ovl) << 0))))
+	 && weight < (OVL_HIDDEN_P (maybe_ovl) - OVL_EXPORT_P (maybe_ovl)))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
 			   && !OVL_EXPORT_P (maybe_ovl)
@@ -2296,8 +2292,7 @@ ovl_iterator::reveal_node (tree overload, tree node)
 
   OVL_HIDDEN_P (node) = false;
   if (tree chain = OVL_CHAIN (node))
-    if (TREE_CODE (chain) == OVERLOAD
-	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
+    if (TREE_CODE (chain) == OVERLOAD && OVL_HIDDEN_P (chain))
       {
 	/* The node needs moving, and the simplest way is to remove it
 	   and reinsert.  What about this making it exported?  */

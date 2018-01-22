@@ -1,5 +1,9 @@
 2018-01-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* tree.c (ovl_insert): No need to sort by USING_P.
+	(ovl_iterator::reveal_node): Likewise.
+
 	Update bug reporting instructions
 	gcc/
 	* configure.ac (ACX_BUGURL): Set new url
