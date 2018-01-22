@@ -1,5 +1,8 @@
 2018-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83957
+	* gcc.dg/autopar/pr83957.c: New test.
+
 	PR tree-optimization/83081
 	* gcc.dg/predict-8.c: Adjust expected probability.
 
