@@ -3792,16 +3792,21 @@ static void
 rl78_note_reg_set (char *dead, rtx d, rtx insn)
 {
   int r, i;
-
+  bool is_dead;
   if (GET_CODE (d) == MEM)
     rl78_note_reg_uses (dead, XEXP (d, 0), insn);
 
   if (GET_CODE (d) != REG)
     return;
 
+  /* Do not mark the reg unused unless all QImode parts of it are dead.  */
   r = REGNO (d);
-  if (dead [r])
-    add_reg_note (insn, REG_UNUSED, gen_rtx_REG (GET_MODE (d), r));
+  is_dead = true;
+  for (i = 0; i < GET_MODE_SIZE (GET_MODE (d)); i ++)
+	  if (!dead [r + i])
+		  is_dead = false;
+  if(is_dead)
+	add_reg_note (insn, REG_UNUSED, gen_rtx_REG (GET_MODE (d), r));
   if (dump_file)
     fprintf (dump_file, "note set reg %d size %d\n", r, GET_MODE_SIZE (GET_MODE (d)));
   for (i = 0; i < GET_MODE_SIZE (GET_MODE (d)); i ++)
