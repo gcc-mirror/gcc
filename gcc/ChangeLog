@@ -1,3 +1,9 @@
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78-protos.h: New function declaration rl78_split_movdi
+	* config/rl78/rl78.md: New define_expand "movdi"
+	* config/rl78/rl78.c: New function definition rl78_split_movdi
+
 2018-01-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/83862
