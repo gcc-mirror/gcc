@@ -1962,7 +1962,7 @@ bool
 gfc_resolve_character_array_constructor (gfc_expr *expr)
 {
   gfc_constructor *p;
-  int found_length;
+  HOST_WIDE_INT found_length;
 
   gcc_assert (expr->expr_type == EXPR_ARRAY);
   gcc_assert (expr->ts.type == BT_CHARACTER);
@@ -1994,7 +1994,7 @@ got_charlen:
       for (p = gfc_constructor_first (expr->value.constructor);
 	   p; p = gfc_constructor_next (p))
 	{
-	  int current_length = -1;
+	  HOST_WIDE_INT current_length = -1;
 	  gfc_ref *ref;
 	  for (ref = p->expr->ref; ref; ref = ref->next)
 	    if (ref->type == REF_SUBSTRING
@@ -2005,19 +2005,11 @@ got_charlen:
 	  if (p->expr->expr_type == EXPR_CONSTANT)
 	    current_length = p->expr->value.character.length;
 	  else if (ref)
-	    {
-	      long j;
-	      j = mpz_get_ui (ref->u.ss.end->value.integer)
-		- mpz_get_ui (ref->u.ss.start->value.integer) + 1;
-	      current_length = (int) j;
-	    }
+	    current_length = gfc_mpz_get_hwi (ref->u.ss.end->value.integer)
+	      - gfc_mpz_get_hwi (ref->u.ss.start->value.integer) + 1;
 	  else if (p->expr->ts.u.cl && p->expr->ts.u.cl->length
 		   && p->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	    {
-	      long j;
-	      j = mpz_get_si (p->expr->ts.u.cl->length->value.integer);
-	      current_length = (int) j;
-	    }
+	    current_length = gfc_mpz_get_hwi (p->expr->ts.u.cl->length->value.integer);
 	  else
 	    return true;
 
@@ -2027,9 +2019,9 @@ got_charlen:
 	    found_length = current_length;
 	  else if (found_length != current_length)
 	    {
-	      gfc_error ("Different CHARACTER lengths (%d/%d) in array"
-			 " constructor at %L", found_length, current_length,
-			 &p->expr->where);
+	      gfc_error ("Different CHARACTER lengths (%ld/%ld) in array"
+			 " constructor at %L", (long) found_length,
+			 (long) current_length, &p->expr->where);
 	      return false;
 	    }
 
@@ -2051,7 +2043,7 @@ got_charlen:
       /* If we've got a constant character length, pad according to this.
 	 gfc_extract_int does check for BT_INTEGER and EXPR_CONSTANT and sets
 	 max_length only if they pass.  */
-      gfc_extract_int (expr->ts.u.cl->length, &found_length);
+      gfc_extract_hwi (expr->ts.u.cl->length, &found_length);
 
       /* Now pad/truncate the elements accordingly to the specified character
 	 length.  This is ok inside this conditional, as in the case above
@@ -2063,13 +2055,13 @@ got_charlen:
 	  if (p->expr->expr_type == EXPR_CONSTANT)
 	    {
 	      gfc_expr *cl = NULL;
-	      int current_length = -1;
+	      HOST_WIDE_INT current_length = -1;
 	      bool has_ts;
 
 	      if (p->expr->ts.u.cl && p->expr->ts.u.cl->length)
 	      {
 		cl = p->expr->ts.u.cl->length;
-		gfc_extract_int (cl, &current_length);
+		gfc_extract_hwi (cl, &current_length);
 	      }
 
 	      /* If gfc_extract_int above set current_length, we implicitly

@@ -275,7 +275,7 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
   else if (e && e->expr_type == EXPR_CONSTANT)
     {
       int i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
-      int length;
+      HOST_WIDE_INT length;
       gfc_char_t *string;
 
       switch (e->ts.type)
@@ -313,14 +313,14 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 	    if (init == INT_MIN)
 	      {
 		gfc_expr *len = gfc_simplify_len (array, NULL);
-		gfc_extract_int (len, &length);
+		gfc_extract_hwi (len, &length);
 		string = gfc_get_wide_string (length + 1);
 		gfc_wide_memset (string, 0, length);
 	      }
 	    else if (init == INT_MAX)
 	      {
 		gfc_expr *len = gfc_simplify_len (array, NULL);
-		gfc_extract_int (len, &length);
+		gfc_extract_hwi (len, &length);
 		string = gfc_get_wide_string (length + 1);
 		gfc_wide_memset (string, 255, length);
 	      }
@@ -4415,7 +4415,7 @@ gfc_expr *
 gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
 {
   gfc_expr *result;
-  int count, len, i;
+  size_t count, len, i;
   int k = get_kind (BT_INTEGER, kind, "LEN_TRIM", gfc_default_integer_kind);
 
   if (k == -1)

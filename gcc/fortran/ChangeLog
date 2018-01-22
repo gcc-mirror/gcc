@@ -1,3 +1,39 @@
+2018-01-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR 78534
+	PR 83704
+	* arith.c (gfc_arith_concat): Use size_t for string length.
+	(gfc_compare_string): Likewise.
+	(gfc_compare_with_Cstring): Likewise.
+	* array.c (gfc_resolve_character_array_constructor): Use
+	HOST_WIDE_INT, gfc_mpz_get_hwi.
+	* check.c (gfc_check_fe_runtime_error): Use size_t.
+	* data.c (create_character_initializer): Use HOST_WIDE_INT,
+	gfc_extract_hwi.
+	* decl.c (gfc_set_constant_character_len): Use gfc_charlen_t.
+	(add_init_expr_to_sym): Use HOST_WIDE_INT.
+	* expr.c (gfc_build_init_expr): Use HOST_WIDE_INT,
+	gfc_extract_hwi.
+	(gfc_apply_init): Likewise.
+	* match.h (gfc_set_constant_character_len): Update prototype.
+	* primary.c (match_string_constant): Use size_t.
+	* resolve.c (resolve_ordinary_assign): Use HOST_WIDE_INT,
+	gfc_mpz_get_hwi.
+	* simplify.c (init_result_expr): Likewise.
+	(gfc_simplify_len_trim): Use size_t.
+	* target-memory.c (gfc_encode_character): Use size_t.
+	(gfc_target_encode_expr): Use HOST_WIDE_INT, gfc_mpz_get_hwi.
+	(interpret_array): Use size_t.
+	(gfc_interpret_character): Likewise.
+	* target-memory.h (gfc_encode_character): Update prototype.
+	(gfc_interpret_character): Likewise.
+	(gfc_target_interpret_expr): Likewise.
+	* trans-const.c (gfc_build_string_const): Use size_t for length
+	argument.
+	(gfc_build_wide_string_const): Likewise.
+	* trans-const.h (gfc_build_string_const): Likewise.
+	(gfc_build_wide_string_const): Likewise.
+
 2018-01-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83900

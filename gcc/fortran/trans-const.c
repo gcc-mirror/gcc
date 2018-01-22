@@ -69,7 +69,7 @@ gfc_build_const (tree type, tree intval)
 /* Build a string constant with C char type.  */
 
 tree
-gfc_build_string_const (int length, const char *s)
+gfc_build_string_const (size_t length, const char *s)
 {
   tree str;
   tree len;
@@ -89,7 +89,7 @@ gfc_build_string_const (int length, const char *s)
    non-default character kinds.  */
 
 tree
-gfc_build_wide_string_const (int kind, int length, const gfc_char_t *string)
+gfc_build_wide_string_const (int kind, size_t length, const gfc_char_t *string)
 {
   int i;
   tree str, len;
