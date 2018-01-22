@@ -873,10 +873,11 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
   if (insn_entry[i].is_store)
     {
       if (GET_CODE (body) == SET
-	  && GET_CODE (SET_SRC (body)) != UNSPEC)
+	  && GET_CODE (SET_SRC (body)) != UNSPEC
+	  && GET_CODE (SET_SRC (body)) != VEC_SELECT)
 	{
 	  rtx lhs = SET_DEST (body);
-	  /* Even without a swap, the LHS might be a vec_select for, say,
+	  /* Even without a swap, the RHS might be a vec_select for, say,
 	     a byte-reversing store.  */
 	  if (GET_CODE (lhs) != MEM)
 	    return 0;

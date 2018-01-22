@@ -1302,6 +1302,17 @@
   "lxvd2x %x0,%y1"
   [(set_attr "type" "vecload")])
 
+(define_insn "vsx_ld_elemrev_v1ti"
+  [(set (match_operand:V1TI 0 "vsx_register_operand" "=wa")
+        (vec_select:V1TI
+	  (match_operand:V1TI 1 "memory_operand" "Z")
+	  (parallel [(const_int 0)])))]
+  "VECTOR_MEM_VSX_P (V1TImode) && !BYTES_BIG_ENDIAN"
+{
+   return "lxvd2x %x0,%y1\;xxpermdi %x0,%x0,%x0,2";
+}
+  [(set_attr "type" "vecload")])
+
 (define_insn "vsx_ld_elemrev_v2df"
   [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
         (vec_select:V2DF
@@ -1431,6 +1442,18 @@
   "lxvb16x %x0,%y1"
   [(set_attr "type" "vecload")])
 
+(define_insn "vsx_st_elemrev_v1ti"
+  [(set (match_operand:V1TI 0 "memory_operand" "=Z")
+        (vec_select:V1TI
+          (match_operand:V1TI 1 "vsx_register_operand" "+wa")
+          (parallel [(const_int 0)])))
+   (clobber (match_dup 1))]
+  "VECTOR_MEM_VSX_P (V2DImode) && !BYTES_BIG_ENDIAN"
+{
+  return "xxpermdi %x1,%x1,%x1,2\;stxvd2x %x1,%y0";
+}
+  [(set_attr "type" "vecstore")])
+
 (define_insn "vsx_st_elemrev_v2df"
   [(set (match_operand:V2DF 0 "memory_operand" "=Z")
         (vec_select:V2DF
@@ -1481,7 +1504,7 @@
 {
   if (!TARGET_P9_VECTOR)
     {
-      rtx subreg, perm[16], pcv;
+      rtx mem_subreg, subreg, perm[16], pcv;
       rtx tmp = gen_reg_rtx (V8HImode);
       /* 2 is leftmost element in register */
       unsigned int reorder[16] = {13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2};
@@ -1496,10 +1519,20 @@
       emit_insn (gen_altivec_vperm_v8hi_direct (tmp, operands[1],
                                                 operands[1], pcv));
       subreg = simplify_gen_subreg (V4SImode, tmp, V8HImode, 0);
-      emit_insn (gen_vsx_st_elemrev_v4si (subreg, operands[0]));
+      mem_subreg = simplify_gen_subreg (V4SImode, operands[0], V8HImode, 0);
+      emit_insn (gen_vsx_st_elemrev_v4si (mem_subreg, subreg));
       DONE;
     }
 })
+
+(define_insn "*vsx_st_elemrev_v2di_internal"
+  [(set (match_operand:V2DI 0 "memory_operand" "=Z")
+        (vec_select:V2DI
+          (match_operand:V2DI 1 "vsx_register_operand" "wa")
+          (parallel [(const_int 1) (const_int 0)])))]
+  "VECTOR_MEM_VSX_P (V2DImode) && !BYTES_BIG_ENDIAN && TARGET_P9_VECTOR"
+  "stxvd2x %x1,%y0"
+  [(set_attr "type" "vecstore")])
 
 (define_insn "*vsx_st_elemrev_v8hi_internal"
   [(set (match_operand:V8HI 0 "memory_operand" "=Z")
@@ -1529,7 +1562,7 @@
 {
   if (!TARGET_P9_VECTOR)
     {
-      rtx subreg, perm[16], pcv;
+      rtx mem_subreg, subreg, perm[16], pcv;
       rtx tmp = gen_reg_rtx (V16QImode);
       /* 3 is leftmost element in register */
       unsigned int reorder[16] = {12,13,14,15,8,9,10,11,4,5,6,7,0,1,2,3};
@@ -1544,7 +1577,8 @@
       emit_insn (gen_altivec_vperm_v16qi_direct (tmp, operands[1],
                                                  operands[1], pcv));
       subreg = simplify_gen_subreg (V4SImode, tmp, V16QImode, 0);
-      emit_insn (gen_vsx_st_elemrev_v4si (subreg, operands[0]));
+      mem_subreg = simplify_gen_subreg (V4SImode, operands[0], V16QImode, 0);
+      emit_insn (gen_vsx_st_elemrev_v4si (mem_subreg, subreg));
       DONE;
     }
 })

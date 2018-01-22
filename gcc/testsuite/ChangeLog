@@ -1,3 +1,11 @@
+2018-01-22  Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/powerpc.exp: Add torture tests for
+	builtins-4-runnable.c, builtins-6-runnable.c,
+	builtins-5-p9-runnable.c, builtins-6-p9-runnable.c.
+	* gcc.target/powerpc/builtins-6-runnable.c: New test file.
+	* gcc.target/powerpc/builtins-4-runnable.c: Add additional tests
+	for signed/unsigned 128-bit and long long int loads.
+
 2018-01-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81933
