@@ -34,6 +34,7 @@ LIB2ADD = \
 	$(srcdir)/config/rl78/adddi3.S \
 	$(srcdir)/config/rl78/subdi3.S \
 	$(srcdir)/config/rl78/umaxdi3.S \
+	$(srcdir)/config/rl78/smindi3.S \
 	$(srcdir)/config/rl78/smaxdi3.S
 
 LIB2FUNCS_EXCLUDE = _clzhi2 _clzsi2 _ctzhi2 _ctzsi2 \
