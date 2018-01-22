@@ -2388,9 +2388,7 @@ determine_visibility (tree decl)
 	     containing function by default, except that
 	     -fvisibility-inlines-hidden doesn't affect them.  */
 	  tree fn = DECL_CONTEXT (decl);
-	  if (! TREE_PUBLIC (fn))
-	    constrain_visibility (decl, VISIBILITY_ANON, false);
-	  else if (DECL_VISIBILITY_SPECIFIED (fn))
+	  if (DECL_VISIBILITY_SPECIFIED (fn))
 	    {
 	      DECL_VISIBILITY (decl) = DECL_VISIBILITY (fn);
 	      DECL_VISIBILITY_SPECIFIED (decl) = 
@@ -2416,9 +2414,10 @@ determine_visibility (tree decl)
 
 	  /* Local classes in templates have CLASSTYPE_USE_TEMPLATE set,
 	     but have no TEMPLATE_INFO.  Their containing template
-	     function determines their visibility, so we neither
-	     need nor want the template_decl handling.  */
-	  template_decl = NULL_TREE;
+	     function does, and the local class could be constrained
+	     by that.  */
+	  if (DECL_LANG_SPECIFIC (fn) && DECL_USE_TEMPLATE (fn))
+	    template_decl = fn;
 	}
       else if (VAR_P (decl) && DECL_TINFO_P (decl)
 	       && flag_visibility_ms_compat)

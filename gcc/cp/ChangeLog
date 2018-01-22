@@ -1,5 +1,9 @@
 2018-01-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/83720
+	* decl2.c (determine_visibility): Fix template_decl handling
+	instead of blocking it.
+
 	PR c++/83720 - ICE with lambda and LTO.
 	* decl2.c (determine_visibility): Clear template_decl for
 	function-scope decls.  Propagate anonymous linkage from containing
