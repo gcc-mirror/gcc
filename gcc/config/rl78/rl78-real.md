@@ -90,6 +90,15 @@
    movw\t%0, %1"
 )
 
+(define_insn "*bswaphi2_real"
+  [(set (match_operand:HI           0 "rl78_nonfar_nonimm_operand" "=A,A")
+        (bswap:HI (match_operand:HI 1 "general_operand"  "0,viU")))]
+  "rl78_real_insns_ok ()"
+  "@
+   xch\ta, x
+   movw\tax, %1\n\txch\ta, x"
+)
+
 ;;---------- Conversions ------------------------
 
 (define_insn "*zero_extendqihi2_real"
