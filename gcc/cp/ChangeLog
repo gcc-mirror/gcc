@@ -1,7 +1,12 @@
+2018-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81933
+	* typeck2.c (split_nonconstant_init_1): Return false if we didn't
+	split out anything.
+	
 2018-01-22  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/83895
-
 	* decl.c (grokdeclarator): Don't diagnose extra parens
 	on typedefs.
 

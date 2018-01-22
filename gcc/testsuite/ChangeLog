@@ -1,3 +1,8 @@
+2018-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81933
+	* g++.dg/cpp1y/constexpr-empty4.C: New test.
+
 2018-01-22  Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-abs-short-fwrap.c: Add xxspltib to
