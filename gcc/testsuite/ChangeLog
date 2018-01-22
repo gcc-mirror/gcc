@@ -1,3 +1,9 @@
+
+2018-01-22  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.c-torture/compile/pr82096.c: Add dg-skip-if and
+	dg-require-effective-target directives.
+
 2018-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_softfloat):

@@ -1,3 +1,5 @@
+/* { dg-require-effective-target arm_arch_v5t_ok { target arm*-*-* } } */
+/* { dg-skip-if "Do not combine float-abi values" { arm*-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=soft" } } */
 /* { dg-additional-options "-march=armv5t -mthumb -mfloat-abi=soft" { target arm*-*-* } } */
 
 static long long AL[24];
