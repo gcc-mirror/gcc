@@ -930,7 +930,9 @@ AC_ARG_WITH(specs,
 AC_SUBST(CONFIGURE_SPECS)
 
 ACX_PKGVERSION([GCC])
-ACX_BUGURL([https://gcc.gnu.org/bugs/])
+# ACX_BUGURL([https://gcc.gnu.org/bugs/])
+# '\#' needed to escape hash to Make
+ACX_BUGURL([https://gcc.gnu.org/wiki/cxx-modules\#Bugs])
 
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.

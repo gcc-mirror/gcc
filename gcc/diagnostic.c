@@ -522,12 +522,19 @@ diagnostic_action_after_output (diagnostic_context *context,
 	if (context->abort_on_error)
 	  real_abort ();
 
+#if 1
+	fnotice (stderr, "Oopsie-daisy, it is broke.\n"
+		 "This is an incomplete in-development implementation "
+		 "of a moving draft specification.\n"
+		 "And it broke.  You should not be surprised.\n");
+#else
 	fnotice (stderr, "Please submit a full bug report,\n"
 		 "with preprocessed source if appropriate.\n");
 	if (count > 0)
 	  fnotice (stderr,
 		   ("Please include the complete backtrace "
 		    "with any bug report.\n"));
+#endif
 	fnotice (stderr, "See %s for instructions.\n", bug_report_url);
 
 	exit (ICE_EXIT_CODE);

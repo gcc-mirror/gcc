@@ -1,3 +1,12 @@
+2018-01-22  Nathan Sidwell  <nathan@acm.org>
+
+	Update bug reporting instructions
+	gcc/
+	* configure.ac (ACX_BUGURL): Set new url
+	* diagnostic.c (diagnostic_action_after_output): Special ICE
+	instructions.
+	* configure: Rebuilt.
+
 2018-01-19  Nathan Sidwell  <nathan@acm.org>
 
 	Kill mangle_namespace.
