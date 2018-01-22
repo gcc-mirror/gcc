@@ -1,4 +1,4 @@
-2017-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
  
 	* config/rl78/umaxdi3.S: New assembly file.
 	* config/rl78/t-rl78: Added umaxdi3.S to LIB2ADD.
