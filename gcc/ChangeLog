@@ -1,4 +1,4 @@
-2017-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.md: New define_expand "umaxdi3".
 
