@@ -980,7 +980,7 @@ static arith
 gfc_arith_concat (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   gfc_expr *result;
-  int len;
+  size_t len;
 
   gcc_assert (op1->ts.kind == op2->ts.kind);
   result = gfc_get_constant_expr (BT_CHARACTER, op1->ts.kind,
@@ -1089,7 +1089,7 @@ compare_complex (gfc_expr *op1, gfc_expr *op2)
 int
 gfc_compare_string (gfc_expr *a, gfc_expr *b)
 {
-  int len, alen, blen, i;
+  size_t len, alen, blen, i;
   gfc_char_t ac, bc;
 
   alen = a->value.character.length;
@@ -1116,7 +1116,7 @@ gfc_compare_string (gfc_expr *a, gfc_expr *b)
 int
 gfc_compare_with_Cstring (gfc_expr *a, const char *b, bool case_sensitive)
 {
-  int len, alen, blen, i;
+  size_t len, alen, blen, i;
   gfc_char_t ac, bc;
 
   alen = a->value.character.length;

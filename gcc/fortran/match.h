@@ -230,7 +230,8 @@ match gfc_match_type (gfc_statement *);
 match gfc_match_implicit_none (void);
 match gfc_match_implicit (void);
 
-void gfc_set_constant_character_len (int, gfc_expr *, int);
+void gfc_set_constant_character_len (gfc_charlen_t, gfc_expr *,
+				     gfc_charlen_t);
 
 /* Matchers for attribute declarations.  */
 match gfc_match_allocatable (void);

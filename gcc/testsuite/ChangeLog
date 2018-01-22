@@ -1,3 +1,9 @@
+2018-01-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR 78534
+	PR 83704
+	* gfortran.dg/string_1.f90: Remove printing the length.
+
 2018-01-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83963

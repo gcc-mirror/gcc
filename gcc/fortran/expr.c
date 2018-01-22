@@ -4088,9 +4088,7 @@ gfc_build_default_init_expr (gfc_typespec *ts, locus *where)
 gfc_expr *
 gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
 {
-  int char_len;
   gfc_expr *init_expr;
-  int i;
 
   /* Try to build an initializer expression.  */
   init_expr = gfc_get_constant_expr (ts->type, ts->kind, where);
@@ -4202,10 +4200,10 @@ gfc_build_init_expr (gfc_typespec *ts, locus *where, bool force)
           && ts->u.cl->length
           && ts->u.cl->length->expr_type == EXPR_CONSTANT)
         {
-          char_len = mpz_get_si (ts->u.cl->length->value.integer);
+          HOST_WIDE_INT char_len = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
           init_expr->value.character.length = char_len;
           init_expr->value.character.string = gfc_get_wide_string (char_len+1);
-          for (i = 0; i < char_len; i++)
+          for (size_t i = 0; i < (size_t) char_len; i++)
             init_expr->value.character.string[i]
               = (unsigned char) gfc_option.flag_init_character_value;
         }
@@ -4255,13 +4253,11 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
       && ts->u.cl
       && ts->u.cl->length && ts->u.cl->length->expr_type == EXPR_CONSTANT)
     {
-      int len;
-
       gcc_assert (ts->u.cl && ts->u.cl->length);
       gcc_assert (ts->u.cl->length->expr_type == EXPR_CONSTANT);
       gcc_assert (ts->u.cl->length->ts.type == BT_INTEGER);
 
-      len = mpz_get_si (ts->u.cl->length->value.integer);
+      HOST_WIDE_INT len = gfc_mpz_get_hwi (ts->u.cl->length->value.integer);
 
       if (init->expr_type == EXPR_CONSTANT)
         gfc_set_constant_character_len (len, init, -1);
@@ -4276,7 +4272,6 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
 
           if (ctor)
             {
-              int first_len;
               bool has_ts = (init->ts.u.cl
                              && init->ts.u.cl->length_from_typespec);
 
@@ -4285,7 +4280,7 @@ gfc_apply_init (gfc_typespec *ts, symbol_attribute *attr, gfc_expr *init)
                  length.  This need not be the length of the LHS!  */
               gcc_assert (ctor->expr->expr_type == EXPR_CONSTANT);
               gcc_assert (ctor->expr->ts.type == BT_CHARACTER);
-              first_len = ctor->expr->value.character.length;
+              gfc_charlen_t first_len = ctor->expr->value.character.length;
 
               for ( ; ctor; ctor = gfc_constructor_next (ctor))
                 if (ctor->expr->expr_type == EXPR_CONSTANT)

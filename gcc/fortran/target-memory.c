@@ -216,8 +216,8 @@ encode_logical (int kind, int logical, unsigned char *buffer, size_t buffer_size
 }
 
 
-int
-gfc_encode_character (int kind, gfc_charlen_t length, const gfc_char_t *string,
+size_t
+gfc_encode_character (int kind, size_t length, const gfc_char_t *string,
 		      unsigned char *buffer, size_t buffer_size)
 {
   size_t elsize = size_character (1, kind);
@@ -225,7 +225,7 @@ gfc_encode_character (int kind, gfc_charlen_t length, const gfc_char_t *string,
 
   gcc_assert (buffer_size >= size_character (length, kind));
 
-  for (size_t i = 0; i < (size_t) length; i++)
+  for (size_t i = 0; i < length; i++)
     native_encode_expr (build_int_cst (type, string[i]), &buffer[i*elsize],
 			elsize);
 
@@ -318,11 +318,11 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 				     buffer, buffer_size);
       else
 	{
-	  int start, end;
+	  HOST_WIDE_INT start, end;
 
 	  gcc_assert (source->expr_type == EXPR_SUBSTRING);
-	  gfc_extract_int (source->ref->u.ss.start, &start);
-	  gfc_extract_int (source->ref->u.ss.end, &end);
+	  gfc_extract_hwi (source->ref->u.ss.start, &start);
+	  gfc_extract_hwi (source->ref->u.ss.end, &end);
 	  return gfc_encode_character (source->ts.kind, MAX(end - start + 1, 0),
 				       &source->value.character.string[start-1],
 				       buffer, buffer_size);
@@ -348,22 +348,21 @@ gfc_target_encode_expr (gfc_expr *source, unsigned char *buffer,
 }
 
 
-static int
+static size_t
 interpret_array (unsigned char *buffer, size_t buffer_size, gfc_expr *result)
 {
   gfc_constructor_base base = NULL;
-  int array_size = 1;
-  int i;
-  int ptr = 0;
+  size_t array_size = 1;
+  size_t ptr = 0;
 
   /* Calculate array size from its shape and rank.  */
   gcc_assert (result->rank > 0 && result->shape);
 
-  for (i = 0; i < result->rank; i++)
-    array_size *= (int)mpz_get_ui (result->shape[i]);
+  for (int i = 0; i < result->rank; i++)
+    array_size *= mpz_get_ui (result->shape[i]);
 
   /* Iterate over array elements, producing constructors.  */
-  for (i = 0; i < array_size; i++)
+  for (size_t i = 0; i < array_size; i++)
     {
       gfc_expr *e = gfc_get_constant_expr (result->ts.type, result->ts.kind,
 					   &result->where);
@@ -433,7 +432,7 @@ gfc_interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
 }
 
 
-int
+size_t
 gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
 			 gfc_expr *result)
 {
@@ -452,7 +451,7 @@ gfc_interpret_character (unsigned char *buffer, size_t buffer_size,
   else
     {
       mpz_t integer;
-      unsigned bytes = size_character (1, result->ts.kind);
+      size_t bytes = size_character (1, result->ts.kind);
       mpz_init (integer);
       gcc_assert (bytes <= sizeof (unsigned long));
 
@@ -556,7 +555,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 
 
 /* Read a binary buffer to a constant expression.  */
-int
+size_t
 gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
 			   gfc_expr *result, bool convert_widechar)
 {

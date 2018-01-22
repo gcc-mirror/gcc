@@ -1538,10 +1538,11 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
    means no checking.  */
 
 void
-gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
+gfc_set_constant_character_len (gfc_charlen_t len, gfc_expr *expr,
+				gfc_charlen_t check_len)
 {
   gfc_char_t *s;
-  int slen;
+  gfc_charlen_t slen;
 
   if (expr->ts.type != BT_CHARACTER)
     return;
@@ -1564,15 +1565,17 @@ gfc_set_constant_character_len (int len, gfc_expr *expr, int check_len)
       if (warn_character_truncation && slen > len)
 	gfc_warning_now (OPT_Wcharacter_truncation,
 			 "CHARACTER expression at %L is being truncated "
-			 "(%d/%d)", &expr->where, slen, len);
+			 "(%ld/%ld)", &expr->where,
+			 (long) slen, (long) len);
 
       /* Apply the standard by 'hand' otherwise it gets cleared for
 	 initializers.  */
       if (check_len != -1 && slen != check_len
           && !(gfc_option.allow_std & GFC_STD_GNU))
 	gfc_error_now ("The CHARACTER elements of the array constructor "
-		       "at %L must have the same length (%d/%d)",
-			&expr->where, slen, check_len);
+		       "at %L must have the same length (%ld/%ld)",
+		       &expr->where, (long) slen,
+		       (long) check_len);
 
       s[len] = '\0';
       free (expr->value.character.string);
@@ -1751,12 +1754,10 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  /* Update initializer character length according symbol.  */
 	  else if (sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
 	    {
-	      int len;
-
 	      if (!gfc_specification_expr (sym->ts.u.cl->length))
 		return false;
 
-	      len = mpz_get_si (sym->ts.u.cl->length->value.integer);
+	      HOST_WIDE_INT len = gfc_mpz_get_hwi (sym->ts.u.cl->length->value.integer);
 
 	      if (init->expr_type == EXPR_CONSTANT)
 		gfc_set_constant_character_len (len, init, -1);

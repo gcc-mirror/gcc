@@ -5860,7 +5860,7 @@ bool
 gfc_check_fe_runtime_error (gfc_actual_arglist *a)
 {
   gfc_expr *e;
-  int len, i;
+  size_t len, i;
   int num_percent, nargs;
 
   e = a->expr;
