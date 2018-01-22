@@ -1,5 +1,10 @@
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
+	* config/rl78/anddi3.S: New assembly file.
+	* config/rl78/t-rl78: Added anddi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
 	* config/rl78/umindi3.S: New assembly file.
 	* config/rl78/t-rl78: Added umindi3.S to LIB2ADD.
 
