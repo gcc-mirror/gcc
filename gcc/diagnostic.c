@@ -523,10 +523,9 @@ diagnostic_action_after_output (diagnostic_context *context,
 	  real_abort ();
 
 #if 1
-	fnotice (stderr, "Oopsie-daisy, it is broke.\n"
-		 "This is an incomplete in-development implementation "
-		 "of a moving draft specification.\n"
-		 "And it broke.  You should not be surprised.\n");
+	fnotice (stderr, "We are damaged, This is broken.\n"
+		 "Incomplete implementation, Moving specification.\n"
+		 "Hunt through the rubble for what once was.\n");
 #else
 	fnotice (stderr, "Please submit a full bug report,\n"
 		 "with preprocessed source if appropriate.\n");
