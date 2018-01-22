@@ -1,3 +1,7 @@
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78.md: New define_expand "smaxdi3".
+
 2018-01-22 Carl Love <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (ST_ELEMREV_V1TI, LD_ELEMREV_V1TI,
