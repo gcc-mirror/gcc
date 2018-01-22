@@ -1,3 +1,7 @@
+2018-01-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* doc/sourcebuild.texi (arm_softfloat): Document.
+
 2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR gcc/77734
