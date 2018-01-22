@@ -1,3 +1,7 @@
+2018-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83963
+	* gcc.dg/graphite/pr83963.c: New testcase.
 
 2018-01-22  Sudakshina Das  <sudi.das@arm.com>
 
