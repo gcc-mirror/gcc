@@ -1081,17 +1081,6 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
   return NULL;
 }
 
-class move_computations_dom_walker : public dom_walker
-{
-public:
-  move_computations_dom_walker (cdi_direction direction)
-    : dom_walker (direction), todo_ (0) {}
-
-  virtual edge before_dom_children (basic_block);
-
-  unsigned int todo_;
-};
-
 /* Hoist the statements in basic block BB out of the loops prescribed by
    data stored in LIM_DATA structures associated with each statement.  Callback
    for walk_dominator_tree.  */
