@@ -8,6 +8,7 @@
 #
 # Glosario
 #
+# alignment          - alineamiento > alineación
 # array              - TBD
 # asan               - asan
 # bug                - error
@@ -40,7 +41,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-08-04 22:17+0000\n"
-"PO-Revision-Date: 2018-01-07 10:20+0100\n"
+"PO-Revision-Date: 2018-01-20 10:10+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -26348,10 +26349,9 @@ msgid "operand 2 should be an even 3-bit value (subreg 0,2,4,6)"
 msgstr "el operando 2 debería ser un valor de 3 bits par (subreg 0,2,4,6)"
 
 #: config/arc/arc.c:6127
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "symbol used as immediate operand"
+#, gcc-internal-format, gfc-internal-format
 msgid "builtin requires an immediate for operand %d"
-msgstr "se usó un símbolo como un operando inmediato"
+msgstr "el interno requiere un inmediato para el operando %d"
 
 #: config/arc/arc.c:6132
 #, gcc-internal-format, gfc-internal-format
@@ -26880,10 +26880,9 @@ msgid "using %qs with unsigned type has no effect"
 msgstr "usar %qs con un tipo sin signo no tiene ningún efecto"
 
 #: config/avr/avr-c.c:105 config/avr/avr-c.c:171 config/avr/avr-c.c:228
-#, fuzzy, gcc-internal-format
-#| msgid "no matching template for %qD found"
+#, gcc-internal-format
 msgid "no matching fixed-point overload found for %qs"
-msgstr "no se encontró una plantilla coincidente para %qD"
+msgstr "no se encontró una sobrecarga de coma flotante coincidente para %qs"
 
 #: config/avr/avr-c.c:122
 #, gcc-internal-format
@@ -28750,10 +28749,9 @@ msgid "the %qs architecture does not support madd or msub instructions"
 msgstr "la arquitectura %qs no admite las instrucciones madd ni msub"
 
 #: config/mips/mips.c:19848
-#, fuzzy, gcc-internal-format
-#| msgid "the %qs architecture does not support paired-single instructions"
+#, gcc-internal-format
 msgid "the %qs architecture does not support odd single-precision registers"
-msgstr "la arquitectura %qs no admite las instrucciones par-sencillo"
+msgstr "la arquitectura %qs no admite los registros de precisión sencilla impar"
 
 #: config/mips/mips.c:19861 config/mips/mips.c:19867
 #, gcc-internal-format
@@ -29766,13 +29764,12 @@ msgstr "-mfloat128-hardware necesita -mfloat128-type"
 #: config/rs6000/rs6000.c:4861
 #, gcc-internal-format
 msgid "-mfloat128-hardware requires full ISA 3.0 support"
-msgstr ""
+msgstr "-mfloat128-hardware requiere suporte pleno de ISA 3.0"
 
 #: config/rs6000/rs6000.c:4869
-#, fuzzy, gcc-internal-format
-#| msgid "-mrecip requires -mfused-madd"
+#, gcc-internal-format
 msgid "-mfloat128-hardware requires -m64"
-msgstr "-mrecip requiere -mfused-madd"
+msgstr "-mfloat128-hardware requiere -m64"
 
 #: config/rs6000/rs6000.c:4933
 #, gcc-internal-format, gfc-internal-format
@@ -29802,29 +29799,27 @@ msgstr "el atributo o pragma target cambia la coma flotante de precisión doble"
 #: config/rs6000/rs6000.c:5153
 #, gcc-internal-format
 msgid "%qs is not a valid number in -mstack-protector-guard-offset="
-msgstr ""
+msgstr "%qs no es un número válido en -mstack-protector-guard-offset="
 
 #: config/rs6000/rs6000.c:5158
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not a valid option to the preprocessor"
+#, gcc-internal-format
 msgid "%qs is not a valid offset in -mstack-protector-guard-offset="
-msgstr "%qs no es una opción válida para el preprocesador"
+msgstr "%qs no es un desplazamiento válido en -mstack-protector-guard-offset="
 
 #: config/rs6000/rs6000.c:5170
 #, gcc-internal-format
 msgid "%qs is not a valid base register in -mstack-protector-guard-reg="
-msgstr ""
+msgstr "%qs no es un registro base válido en -mstack-protector-guard-reg="
 
 #: config/rs6000/rs6000.c:5178
 #, gcc-internal-format
 msgid "-mstack-protector-guard=tls needs a valid base register"
-msgstr ""
+msgstr "-mstack-protector-guard==tls necesita un registro bae válido"
 
 #: config/rs6000/rs6000.c:8202
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The ABI for passing parameters with %d-byte alignment has changed in GCC 4.6"
+#, gcc-internal-format, gfc-internal-format
 msgid "the layout of aggregates containing vectors with %d-byte alignment has changed in GCC 5"
-msgstr "La ABI para pasar parámetros con alineación de %d-bytes cambió en GCC 4.6"
+msgstr "la disposición de los agregados que contienen vectores con alineamiento de %d bytes cambió en GCC 5"
 
 #: config/rs6000/rs6000.c:11615
 #, gcc-internal-format
@@ -29837,10 +29832,9 @@ msgid "cannot return value in vector register because altivec instructions are d
 msgstr "no se puede devolver un valor en el registro vector porque las instrucciones altivec están desactivadas, use -maltivec para activarlas"
 
 #: config/rs6000/rs6000.c:11977
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The ABI for passing parameters with %d-byte alignment has changed in GCC 4.6"
+#, gcc-internal-format, gfc-internal-format
 msgid "the ABI of passing aggregates with %d-byte alignment has changed in GCC 5"
-msgstr "La ABI para pasar parámetros con alineación de %d-bytes cambió en GCC 4.6"
+msgstr "la ABI para pasar agregados con alineación de %d bytes cambió en GCC 5"
 
 #: config/rs6000/rs6000.c:12246
 #, gcc-internal-format
@@ -29864,32 +29858,29 @@ msgid "internal error: builtin function %s already processed"
 msgstr "error interno: la función interna %s ya se procesó"
 
 #: config/rs6000/rs6000.c:14571
-#, fuzzy, gcc-internal-format
-#| msgid "argument 1 must be a 5-bit signed literal"
+#, gcc-internal-format
 msgid "argument 1 must be an 8-bit field value"
-msgstr "el argumento 1 debe ser una literal con signo de 5-bit"
+msgstr "el argumento 1 debe ser un valor de un campo de 8 bits"
 
 #: config/rs6000/rs6000.c:14617
 #, gcc-internal-format
 msgid "argument 1 must be a 5-bit signed literal"
-msgstr "el argumento 1 debe ser una literal con signo de 5-bit"
+msgstr "el argumento 1 debe ser un literal con signo de 5 bits"
 
 #: config/rs6000/rs6000.c:14720 config/rs6000/rs6000.c:16593
 #, gcc-internal-format
 msgid "argument 2 must be a 5-bit unsigned literal"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el argumento 2 debe ser un literal sin signo de 5 bits"
 
 #: config/rs6000/rs6000.c:14738
-#, fuzzy, gcc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format
 msgid "argument 1 must be a 6-bit unsigned literal"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el argumento 1 debe ser un literal sin signo de 6 bits"
 
 #: config/rs6000/rs6000.c:14752
-#, fuzzy, gcc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format
 msgid "argument 2 must be a 7-bit unsigned literal"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el argumento 2 debe ser un literal sin signo de 7 bits"
 
 #: config/rs6000/rs6000.c:14791
 #, gcc-internal-format
