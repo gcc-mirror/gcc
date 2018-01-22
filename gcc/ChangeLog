@@ -1,5 +1,9 @@
 2018-01-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/83957
+	* omp-expand.c (expand_omp_for_generic): Ignore virtual PHIs.  Remove
+	semicolon after for body surrounded by braces.
+
 	PR tree-optimization/83081
 	* profile-count.h (profile_probability::split): New method.
 	* dojump.c (do_jump_1) <case TRUTH_ANDIF_EXPR, case TRUTH_ORIF_EXPR>:
