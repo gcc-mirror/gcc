@@ -1,5 +1,11 @@
 2018-23-01  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/83866
+	* decl.c (gfc_match_derived_decl): If eos not matched, recover
+	and emit error about garbage after declaration.
+
+2018-23-01  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/83898
 	* trans-stmt.c (trans_associate_var): Do not set cst_array_ctor
 	for characters.
