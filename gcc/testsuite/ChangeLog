@@ -1,12 +1,17 @@
-2018-23-01  Paul Thomas  <pault@gcc.gnu.org>
+2018-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* g++.dg/ubsan/pr83987.C: New test.
+
+2018-01-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83866
-	* gfortran.dg/pdt_29.f03 : New test.
+	* gfortran.dg/pdt_29.f03: New test.
 
-2018-23-01  Paul Thomas  <pault@gcc.gnu.org>
+2018-01-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83898
-	* gfortran.dg/associate_33.f03 : New test.
+	* gfortran.dg/associate_33.f03: New test.
 
 2018-01-23  Martin Liska  <mliska@suse.cz>
 
@@ -1704,7 +1709,7 @@
 2018-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52162
-	* gfortran.dg/bounds_check_19.f90 : New test.
+	* gfortran.dg/bounds_check_19.f90: New test.
 
 2018-01-12  Jakub Jelinek  <jakub@redhat.com>
 
@@ -2262,12 +2267,12 @@
 2018-01-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83611
-	* gfortran.dg/pdt_15.f03 : Bump count of 'n.data = 0B' to 8.
-	* gfortran.dg/pdt_26.f03 : Bump count of '_malloc' to 9.
-	* gfortran.dg/pdt_27.f03 : New test.
+	* gfortran.dg/pdt_15.f03: Bump count of 'n.data = 0B' to 8.
+	* gfortran.dg/pdt_26.f03: Bump count of '_malloc' to 9.
+	* gfortran.dg/pdt_27.f03: New test.
 
 	PR fortran/83731
-	* gfortran.dg/pdt_28.f03 : New test.
+	* gfortran.dg/pdt_28.f03: New test.
 
 2018-01-08  Tom de Vries  <tom@codesourcery.com>
 
@@ -2562,10 +2567,10 @@
 2018-01-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83076
-	* gfortran.dg/coarray_45.f90 : New test.
+	* gfortran.dg/coarray_45.f90: New test.
 
 	PR fortran/83319
-	* gfortran.dg/coarray_46.f90 : New test.
+	* gfortran.dg/coarray_46.f90: New test.
 
 2018-01-01  Jakub Jelinek  <jakub@redhat.com>
 

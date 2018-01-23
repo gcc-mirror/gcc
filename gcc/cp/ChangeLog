@@ -1,3 +1,9 @@
+2018-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* tree.c (cp_free_lang_data): Change DECL_VALUE_EXPR of
+	DECL_OMP_PRIVATIZED_MEMBER vars to error_mark_node.
+
 2018-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83988
