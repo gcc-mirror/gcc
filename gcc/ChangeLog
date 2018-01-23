@@ -1,3 +1,9 @@
+2018-01-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.h (profile_probability::very_unlikely,
+	profile_probability::unlikely, profile_probability::even): Set
+	precision to guessed.
+
 2018-01-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83963

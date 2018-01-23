@@ -164,7 +164,7 @@ public:
     {
       /* Be consistent with PROB_VERY_UNLIKELY in predict.h.  */
       profile_probability r
-	 = profile_probability::always ().apply_scale (1, 2000);
+	 = profile_probability::guessed_always ().apply_scale (1, 2000);
       r.m_val--;
       return r;
     }
@@ -172,13 +172,13 @@ public:
     {
       /* Be consistent with PROB_VERY_LIKELY in predict.h.  */
       profile_probability r
-	 = profile_probability::always ().apply_scale (1, 5);
+	 = profile_probability::guessed_always ().apply_scale (1, 5);
       r.m_val--;
       return r;
     }
   static profile_probability even ()
     {
-      return profile_probability::always ().apply_scale (1, 2);
+      return profile_probability::guessed_always ().apply_scale (1, 2);
     }
   static profile_probability very_likely ()
     {
