@@ -16195,15 +16195,17 @@ fndecl_declared_return_type (tree fn)
   return TREE_TYPE (TREE_TYPE (fn));
 }
 
-/* Returns true iff DECL was declared with an auto type and it has
-   not yet been deduced to a real type.  */
+/* Returns true iff DECL is a variable or function declared with an auto type
+   that has not yet been deduced to a real type.  */
 
 bool
 undeduced_auto_decl (tree decl)
 {
   if (cxx_dialect < cxx11)
     return false;
-  return type_uses_auto (TREE_TYPE (decl));
+  return ((VAR_OR_FUNCTION_DECL_P (decl)
+	   || TREE_CODE (decl) == TEMPLATE_DECL)
+	  && type_uses_auto (TREE_TYPE (decl)));
 }
 
 /* Complain if DECL has an undeduced return type.  */

@@ -25884,6 +25884,10 @@ do_auto_deduction (tree type, tree init, tree auto_node,
        from ahead of time isn't worth the trouble.  */
     return type;
 
+  /* Similarly, we can't deduce from another undeduced decl.  */
+  if (init && undeduced_auto_decl (init))
+    return type;
+
   if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
     /* C++17 class template argument deduction.  */
     return do_class_deduction (type, tmpl, init, flags, complain);
