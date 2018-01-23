@@ -18097,10 +18097,6 @@ tsubst_copy_and_build (tree t,
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 
-	/* digest_init will do the wrong thing if we let it.  */
-	if (type && TYPE_PTRMEMFUNC_P (type))
-	  RETURN (t);
-
 	/* We do not want to process the index of aggregate
 	   initializers as they are identifier nodes which will be
 	   looked up by digest_init.  */

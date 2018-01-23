@@ -1,3 +1,8 @@
+2018-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83974
+	* g++.dg/warn/pr83974.C: New test case.
+
 2018-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83987

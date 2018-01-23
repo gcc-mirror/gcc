@@ -1,3 +1,9 @@
+2018-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83974
+	* pt.c (tsubst_copy_and_build) <CONSTRUCTOR>: Remove early bailout
+	for pointer to member function types.
+
 2018-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83987
