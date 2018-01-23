@@ -1403,7 +1403,13 @@ The target's preferred vector alignment is the same as the element
 alignment.
 
 @item vect_float
-Target supports hardware vectors of @code{float}.
+Target supports hardware vectors of @code{float} when
+@option{-funsafe-math-optimizations} is in effect.
+
+@item vect_float_strict
+Target supports hardware vectors of @code{float} when
+@option{-funsafe-math-optimizations} is not in effect.
+This implies @code{vect_float}.
 
 @item vect_int
 Target supports hardware vectors of @code{int}.

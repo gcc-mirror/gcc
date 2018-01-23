@@ -1,5 +1,15 @@
 2018-01-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR testsuite/83888
+	* lib/target-supports.exp (check_effective_target_vect_float): Say
+	that the result only holds when -funsafe-math-optimizations is on.
+	(check_effective_target_vect_float_strict): New procedure.
+	* gcc.dg/vect/no-fast-math-vect16.c: Use vect_float_strict instead
+	of vect_float.
+	* gcc.dg/vect/vect-reduc-6.c: Likewise.
+
+2018-01-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/83965
 	* gcc.dg/vect/pr83965.c: New test.
 
