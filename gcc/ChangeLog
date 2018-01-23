@@ -1,3 +1,16 @@
+2018-01-23  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_stack_boundary): New.
+	(riscv_option_override): Set riscv_stack_boundary.  Handle
+	riscv_preferred_stack_boundary_arg.
+	* config/riscv/riscv.h (MIN_STACK_BOUNDARY, ABI_STACK_BOUNDARY): New.
+	(BIGGEST_ALIGNMENT): Set to STACK_BOUNDARY.
+	(STACK_BOUNDARY): Set to riscv_stack_boundary.
+	(RISCV_STACK_ALIGN): Use STACK_BOUNDARY.
+	* config/riscv/riscv.opt (mpreferred-stack-boundary): New.
+	* doc/invoke.tex (RISC-V Options): Add -mpreferred-stack-boundary.
+
 2018-01-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/83905

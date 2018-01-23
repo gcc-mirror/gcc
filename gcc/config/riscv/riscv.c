@@ -222,6 +222,9 @@ struct riscv_cpu_info {
 /* Whether unaligned accesses execute very slowly.  */
 bool riscv_slow_unaligned_access_p;
 
+/* Stack alignment to assume/maintain.  */
+unsigned riscv_stack_boundary;
+
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
 
@@ -4111,6 +4114,20 @@ riscv_option_override (void)
   /* We do not yet support ILP32 on RV64.  */
   if (BITS_PER_WORD != POINTER_SIZE)
     error ("ABI requires -march=rv%d", POINTER_SIZE);
+
+  /* Validate -mpreferred-stack-boundary= value.  */
+  riscv_stack_boundary = ABI_STACK_BOUNDARY;
+  if (riscv_preferred_stack_boundary_arg)
+    {
+      int min = ctz_hwi (MIN_STACK_BOUNDARY / 8);
+      int max = 8;
+
+      if (!IN_RANGE (riscv_preferred_stack_boundary_arg, min, max))
+	error ("-mpreferred-stack-boundary=%d must be between %d and %d",
+	       riscv_preferred_stack_boundary_arg, min, max);
+
+      riscv_stack_boundary = 8 << riscv_preferred_stack_boundary_arg;
+    }
 }
 
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
