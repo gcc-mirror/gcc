@@ -1,5 +1,11 @@
 2018-01-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* predict.c (probably_never_executed): Only use precise profile info.
+	(compute_function_frequency): Skip after inlining hack since we now
+	have quality checking.
+
+2018-01-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* profile-count.h (profile_probability::very_unlikely,
 	profile_probability::unlikely, profile_probability::even): Set
 	precision to guessed.

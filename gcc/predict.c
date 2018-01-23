@@ -212,7 +212,12 @@ probably_never_executed (struct function *fun,
   gcc_checking_assert (fun);
   if (count == profile_count::zero ())
     return true;
-  if (count.initialized_p () && profile_status_for_fn (fun) == PROFILE_READ)
+  /* Do not trust adjusted counts.  This will make us to drop int cold section
+     code with low execution count as a result of inlining. These low counts
+     are not safe even with read profile and may lead us to dropping
+     code which actually gets executed into cold section of binary that is not
+     desirable.  */
+  if (count.precise_p () && profile_status_for_fn (fun) == PROFILE_READ)
     {
       int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
       if (count.apply_scale (unlikely_count_fraction, 1) >= profile_info->runs)
@@ -3759,15 +3764,10 @@ compute_function_frequency (void)
       return;
     }
 
-  /* Only first time try to drop function into unlikely executed.
-     After inlining the roundoff errors may confuse us.
-     Ipa-profile pass will drop functions only called from unlikely
-     functions to unlikely and that is most of what we care about.  */
-  if (!cfun->after_inlining)
-    {
-      node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-      warn_function_cold (current_function_decl);
-    }
+  node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+  warn_function_cold (current_function_decl);
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa() == profile_count::zero ())
+    return;
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (maybe_hot_bb_p (cfun, bb))
