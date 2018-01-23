@@ -9857,7 +9857,10 @@ gfc_match_derived_decl (void)
 	gfc_error_recovery ();
       m = gfc_match_eos ();
       if (m != MATCH_YES)
-	return m;
+	{
+	  gfc_error_recovery ();
+	  gfc_error_now ("Garbage after PARAMETERIZED TYPE declaration at %C");
+	}
       sym->attr.pdt_template = 1;
     }
 

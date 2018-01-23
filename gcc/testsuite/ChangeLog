@@ -1,5 +1,10 @@
 2018-23-01  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/83866
+	* gfortran.dg/pdt_29.f03 : New test.
+
+2018-23-01  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/83898
 	* gfortran.dg/associate_33.f03 : New test.
 
