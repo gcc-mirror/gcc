@@ -992,6 +992,7 @@ See RS/6000 and PowerPC Options.
 -mdiv  -mno-div @gol
 -march=@var{ISA-string} @gol
 -mtune=@var{processor-string} @gol
+-mpreferred-stack-boundary=@var{num} @gol
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
 -mstrict-align -mno-strict-align @gol
@@ -22071,6 +22072,16 @@ lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, and @samp{rv32imaf}.
 @opindex mtune
 Optimize the output for the given processor, specified by microarchitecture
 name.
+
+@item -mpreferred-stack-boundary=@var{num}
+@opindex mpreferred-stack-boundary
+Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
+byte boundary.  If @option{-mpreferred-stack-boundary} is not specified,
+the default is 4 (16 bytes or 128-bits).
+
+@strong{Warning:} If you use this switch, then you must build all modules with
+the same value, including any libraries.  This includes the system libraries
+and startup modules.
 
 @item -msmall-data-limit=@var{n}
 @opindex msmall-data-limit
