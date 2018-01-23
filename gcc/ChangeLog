@@ -1,3 +1,8 @@
+2018-01-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* sbitmap.c (selftest::test_set_range): Fix memory leaks.
+	(selftest::test_bit_in_range): Likewise.
+
 2018-01-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR testsuite/83888
