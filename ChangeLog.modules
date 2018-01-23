@@ -1,3 +1,17 @@
+2018-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	Static bindings not visible in imports
+	gcc/cp/
+	* name-lookup.h (decapsulate_binding): Delete.
+	(module_binding_vec, extract_module_bindings): Declare.
+	* module.c (cpms_{in,out}::tag_binding): Reimplement.
+	(cpms_out::bindings): Likewise.
+	* name-lookup.c (decapsulate_binding): Delete.
+	(extract_module_bindings): New.
+	gcc/testsuite/
+	* g++.dg/modules/mod++-decl-0_c.C: Remove XFAIL.
+	* g++.dg/modules/static-1_[abc].C: New.
+
 2018-01-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

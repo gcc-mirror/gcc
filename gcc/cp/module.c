@@ -28,19 +28,23 @@ along with GCC; see the file COPYING3.  If not see
    Each namespace-scope decl has a MODULE_INDEX and a MODULE_PURVIEW_P
    flag.  The symbols for a particular module are held located in a
    sparse array hanging off the ns-level binding.  Both global module
-   and module-specific are on the same slot.  The current TU is slot 0
-   (NOT CURRENTLY TRUE).  Imports have non-zero indices, and any
-   indirect import will have a smaller index than any module importing
-   it (direct imports of course have a higher index than zero).
-   Builtins are always in the current TU -- imports do not have their
-   own shadow decls.
+   and module-specific are on the same slot.  The current TU is slot
+   0.  Imports have non-zero indices, and any indirect import will
+   have a smaller index than any module importing it (direct imports
+   of course have a higher index than zero).  This scheme has the nice
+   property that builtins and the global module get the expected
+   MODULE_INDEX of zero and MODULE_PURVIEW_P of false, without needing
+   special handling.
 
    I have not yet decided how to represent the decls for the same
    global-module entity appearing in two different modules.  Two
    distinct decls may get expensive, and we'd certainly need to know
    about duplicates in the case of an inline fn or identical class
    decl. (There is still C++ discussion about exacly how much global
-   module state needs dumping.)
+   module state needs dumping.)  I'm thinking every global module decl
+   gets a HIDDEN decl in the current TU -- unless it too declares it.
+   Such decls can have different default args in different modules,
+   but that is likely to be rare.
 
    A module interface compilation produces a BMI, which is essentially
    a tree serialization using auto-numbered back references.  We can
@@ -1469,7 +1473,7 @@ public:
   void tag_conf ();
   void tag_import (unsigned ix, const module_state *);
   void tag_trees ();
-  tree tag_binding (tree ns, tree name, tree ovl);
+  void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
   int done ()
@@ -2044,78 +2048,50 @@ cpms_in::tag_import ()
   return ok;
 }
 
-/* NAME is bound to OVL in namespace NS.  Write out the binding.
-   We also write out the definitions of things in the binding list.
+/* BINDING is a vector of decls bound in namespace NS.  Write out the
+   binding and definitions of things in the binding list.
    NS must have already have a binding somewhere.
 
    tree:ns
    tree:name
-   b:main_p
-   b:stat_p
-   [tree:stat_type]
-   tree:binding
+   tree:binding*
+   tree:NULL
 */
 
-/* Return a child namespace to walk.  */
-
-tree
-cpms_out::tag_binding (tree ns, tree name, tree binding)
+void
+cpms_out::tag_binding (tree ns, tree name, module_binding_vec *binding)
 {
-  tree type = NULL_TREE;
-  tree value = ovl_skip_hidden (decapsulate_binding (binding, &type));
-
-  // FIXME
-  if (type && DECL_IS_BUILTIN (type))
-    type = NULL_TREE;
-
-  if (value)
-    {
-      if (TREE_CODE (value) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (value))
-	{
-	  gcc_assert (!type);
-	  return value;
-	}
-
-      /* Don't write builtins (mostly).  */
-      // FIXME: write the builtin
-      while (TREE_CODE (value) == OVERLOAD
-	     && DECL_IS_BUILTIN (OVL_FUNCTION (value)))
-	value = OVL_CHAIN (value);
-
-      if (TREE_CODE (value) != OVERLOAD)
-	{
-	  if (DECL_IS_BUILTIN (value))
-	    value = NULL_TREE; // FIXME
-	  else if (TREE_CODE (value) == CONST_DECL)
-	    {
-	      gcc_assert (TREE_CODE (CP_DECL_CONTEXT (value))
-			  == ENUMERAL_TYPE);
-	      value = NULL_TREE;
-	    }
-	  else if (TREE_CODE (value) == VAR_DECL && DECL_TINFO_P (value))
-	    value = NULL_TREE;
-	}
-    }
-
-  if (!value && !type)
-    return NULL_TREE;
-
   dump () && dump ("Writing %N bindings for %N", ns, name);
-
   tag (rt_binding);
   tree_node (ns);
   tree_node (name);
-  tree_node (type);
-  tree_node (value);
+
+  for (unsigned ix = binding->length (); ix--;)
+    {
+      tree decl = (*binding)[ix];
+
+      if (DECL_IS_BUILTIN (decl))
+	// FIXME: write the builtin
+	continue;
+
+      if (TREE_CODE (decl) == CONST_DECL)
+	{
+	  gcc_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == ENUMERAL_TYPE);
+	  continue;
+	}
+
+      tree_node (decl);
+    }
+  tree_node (NULL_TREE);
   w.checkpoint ();
 
-  if (type && !DECL_IS_BUILTIN (type))
-    maybe_tag_definition (type);
-  for (ovl_iterator iter (value); iter; ++iter)
-    if (!DECL_IS_BUILTIN (*iter))
-      maybe_tag_definition (*iter);
-
-  return NULL_TREE;
+  // FIXME:Write during binding?
+  while (binding->length ())
+    {
+      tree decl = binding->pop ();
+      if (!DECL_IS_BUILTIN (decl) && TREE_CODE (decl) != CONST_DECL)
+	maybe_tag_definition (decl);
+    }
 }
 
 bool
@@ -2125,13 +2101,41 @@ cpms_in::tag_binding ()
   tree name = tree_node ();
   dump () && dump ("Reading %N binding for %N", ns, name);
 
-  tree type = tree_node ();
-  tree value = tree_node ();
+  tree type = NULL_TREE;
+  tree decls = NULL_TREE;
+
+  while (tree decl = tree_node ())
+    {
+      if (TREE_CODE (decl) == TYPE_DECL)
+	{
+	  if (type)
+	    r.bad ();
+	  type = decl;
+	}
+      else if (decls
+	       || (TREE_CODE (decl) == TEMPLATE_DECL
+		   && TREE_CODE (DECL_TEMPLATE_RESULT (decl)) == FUNCTION_DECL))
+	{
+	  if (!DECL_DECLARES_FUNCTION_P (decl)
+	      || (decls
+		  && TREE_CODE (decls) != OVERLOAD
+		  && TREE_CODE (decls) != FUNCTION_DECL))
+	    r.bad ();
+	  decls = ovl_make (decl, decls);
+	  if (DECL_MODULE_EXPORT_P (decl))
+	    OVL_EXPORT_P (decls) = true;
+	}
+      else
+	decls = decl;
+    }
 
   if (!r.checkpoint ())
     return false;
 
-  return push_module_binding (ns, name, mod_ix, value, type);
+  if (!decls && !type)
+    return true;
+
+  return push_module_binding (ns, name, mod_ix, decls, type);
 }
 
 /* Stream a function definition.  */
@@ -4846,6 +4850,8 @@ cpms_out::bindings (tree ns)
 {
   dump () && dump ("Walking namespace %N", ns);
 
+  module_binding_vec *module_bindings = NULL;
+  vec_alloc (module_bindings, 10);
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
   for (hash_table<named_decl_hash>::iterator iter
@@ -4856,11 +4862,22 @@ cpms_out::bindings (tree ns)
       if (TREE_CODE (binding) == MODULE_VECTOR)
 	binding = MODULE_VECTOR_CLUSTER (binding, 0).slots[0];
 
-      if (binding)
-	if (tree inner_ns = tag_binding (ns, OVL_NAME (binding), binding))
-	  bindings (inner_ns);
-    }
+      if (!binding)
+	continue;
 
+      module_bindings = extract_module_bindings (module_bindings, binding);
+      if (module_bindings->length ())
+	{
+	  tree first = (*module_bindings)[0];
+	  if (TREE_CODE (first) == NAMESPACE_DECL
+	      && !DECL_NAMESPACE_ALIAS (first))
+	    bindings (module_bindings->pop ());
+	  else
+	    tag_binding (ns, DECL_NAME (first), module_bindings);
+	  gcc_checking_assert (!module_bindings->length ());
+	}
+    }
+  vec_free (module_bindings);
   dump () && dump ("Walked namespace %N", ns);
 }
 

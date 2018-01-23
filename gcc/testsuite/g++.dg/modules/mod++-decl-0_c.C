@@ -9,6 +9,6 @@ module
 void bonk ()
 {
   baz ();
-  bar (); // { dg-error "" "" { xfail *-*-* } }
+  bar (); // { dg-error "not declared" }
   bink ();
 }

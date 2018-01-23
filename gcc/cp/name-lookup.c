@@ -86,17 +86,6 @@ create_local_binding (cp_binding_level *level, tree name)
   return binding;
 }
 
-/* Split a potentialy stat-hacked value binding into type and value.
-   Decapsulate is totally a word now.  */
-
-tree
-decapsulate_binding (tree value, tree *type_p)
-{
-  if (type_p)
-    *type_p = MAYBE_STAT_TYPE (value);
-  return MAYBE_STAT_DECL (value);
-}
-
 /* Find the binding for NAME in namespace NS.  If CREATE_P is true,
    make an empty binding if there wasn't one.  */
 
@@ -922,6 +911,7 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
 	break;
     }
 
+  /* Restore to incoming length.  */
   vec_safe_truncate (queue, length);
 
   return found;
@@ -3560,6 +3550,58 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   return old;
 }
 
+/* Given a namespace-level binding BINDING, initialize *VEC with the
+   set of bindings that are visible to importers and implementations.
+   I.e. the exported decls, the module-linkage decls and the global
+   module external-linkage decls.  Any TYPE binding is pushed first.
+   If VEC is NULL, we are determining if there are any such entities
+   -- so bail as soon as we find one.  if VEC is non-null the target
+   vector must have at least 2 available slots.  */
+
+module_binding_vec *
+extract_module_bindings (module_binding_vec *vec, tree binding)
+{
+  if (tree type = MAYBE_STAT_TYPE (binding))
+    {
+      if (DECL_MODULE_EXPORT_P (type) || MAYBE_DECL_MODULE_PURVIEW_P (type))
+	{
+	  if (!vec)
+	    return (module_binding_vec *)1;
+	  vec->quick_push (type);
+	}
+    }
+
+  tree decls = MAYBE_STAT_DECL (binding);
+  gcc_assert (decls);
+  for (ovl_iterator iter (decls); iter; ++iter)
+    {
+      tree decl = *iter;
+      // FIXME using decls, hidden decls
+      tree res = decl;
+      if (TREE_CODE (res) == TEMPLATE_DECL)
+	res = DECL_TEMPLATE_RESULT (res);
+
+      if (!DECL_MODULE_EXPORT_P (res)
+	  && !MAYBE_DECL_MODULE_PURVIEW_P (res))
+	continue;
+
+      if (TREE_CODE (res) == VAR_DECL && DECL_TINFO_P (res))
+	continue;
+
+
+      if ((TREE_CODE (res) == FUNCTION_DECL
+	   || TREE_CODE (res) == VAR_DECL)
+	  && !TREE_PUBLIC (res))
+	continue;
+
+      if (!vec)
+	return (module_binding_vec *)1;
+      vec_safe_push (vec, decl);
+    }
+
+  return vec;
+}
+
 /* During an import NAME is being bound within namespace NS and
    MODULE.  There should be no existing binding.  VALUE and TYPE are
    the value and type bindings.  */
@@ -3567,6 +3609,9 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
 bool
 push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 {
+  gcc_assert (!value || !type); // FIXME stat hack
+  if (!value)
+    value = type;
   bool is_ns = (TREE_CODE (value) == NAMESPACE_DECL
 		&& !DECL_NAMESPACE_ALIAS (value));
 
@@ -3628,9 +3673,6 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
       else
 	*mslot = value;
     }
-
-  if (type)
-    gcc_unreachable (); // FIXME
 
   return true;
 }
