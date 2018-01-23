@@ -32,17 +32,37 @@ class dom_walker
 public:
   static const edge STOP;
 
-  /* Use SKIP_UNREACHABLE_BLOCKS = true when your client can discover
-     that some edges are not executable.
+  /* An enum for determining whether the dom walk should be constrained to
+     blocks reachable by executable edges.  */
 
-     If a client can discover that a COND, SWITCH or GOTO has a static
-     target in the before_dom_children callback, the taken edge should
-     be returned.  The generic walker will clear EDGE_EXECUTABLE on all
-     edges it can determine are not executable.
-     
-     You can provide a mapping of basic-block index to RPO if you
+  enum reachability
+  {
+    /* Walk all blocks within the CFG.  */
+    ALL_BLOCKS,
+
+    /* Use REACHABLE_BLOCKS when your subclass can discover that some edges
+       are not executable.
+
+       If a subclass can discover that a COND, SWITCH or GOTO has a static
+       target in the before_dom_children callback, the taken edge should
+       be returned.  The generic walker will clear EDGE_EXECUTABLE on all
+       edges it can determine are not executable.
+
+       With REACHABLE_BLOCKS, EDGE_EXECUTABLE will be set on every edge in
+       the dom_walker ctor; the flag will then be cleared on edges that are
+       determined to be not executable.  */
+    REACHABLE_BLOCKS,
+
+    /* Identical to REACHABLE_BLOCKS, but the initial state of EDGE_EXECUTABLE
+       will instead be preserved in the ctor, allowing for information about
+       non-executable edges to be merged in from an earlier analysis (and
+       potentially for additional edges to be marked as non-executable).  */
+    REACHABLE_BLOCKS_PRESERVING_FLAGS
+  };
+
+  /* You can provide a mapping of basic-block index to RPO if you
      have that readily available or you do multiple walks.  */
-  dom_walker (cdi_direction direction, bool skip_unreachable_blocks = false,
+  dom_walker (cdi_direction direction, enum reachability = ALL_BLOCKS,
 	      int *bb_index_to_rpo = NULL);
 
   ~dom_walker ();
@@ -86,5 +106,7 @@ private:
   void propagate_unreachable_to_edges (basic_block, FILE *, dump_flags_t);
 
 };
+
+extern void set_all_edges_as_executable (function *fn);
 
 #endif

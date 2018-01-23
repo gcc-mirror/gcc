@@ -1424,7 +1424,7 @@ private:
 };
 }
 gather_bbs::gather_bbs (cdi_direction direction, scop_p scop, int *bb_to_rpo)
-  : dom_walker (direction, false, bb_to_rpo), scop (scop)
+  : dom_walker (direction, ALL_BLOCKS, bb_to_rpo), scop (scop)
 {
 }
 

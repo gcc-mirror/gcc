@@ -1,5 +1,31 @@
 2018-01-23  David Malcolm  <dmalcolm@redhat.com>
 
+	PR tree-optimization/83510
+	* domwalk.c (set_all_edges_as_executable): New function.
+	(dom_walker::dom_walker): Convert bool param
+	"skip_unreachable_blocks" to enum reachability.  Move setup of
+	edge flags to set_all_edges_as_executable and only do it when
+	reachability is REACHABLE_BLOCKS.
+	* domwalk.h (enum dom_walker::reachability): New enum.
+	(dom_walker::dom_walker): Convert bool param
+	"skip_unreachable_blocks" to enum reachability.
+	(set_all_edges_as_executable): New decl.
+	* graphite-scop-detection.c  (gather_bbs::gather_bbs): Convert
+	from false for "skip_unreachable_blocks" to ALL_BLOCKS for
+	"reachability".
+	* tree-ssa-dom.c (dom_opt_dom_walker::dom_opt_dom_walker): Likewise,
+	but converting true to REACHABLE_BLOCKS.
+	* tree-ssa-sccvn.c (sccvn_dom_walker::sccvn_dom_walker): Likewise.
+	* tree-vrp.c
+	(check_array_bounds_dom_walker::check_array_bounds_dom_walker):
+	Likewise, but converting it to REACHABLE_BLOCKS_PRESERVING_FLAGS.
+	(vrp_dom_walker::vrp_dom_walker): Likewise, but converting it to
+	REACHABLE_BLOCKS.
+	(vrp_prop::vrp_finalize): Call set_all_edges_as_executable
+	if check_all_array_refs will be called.
+
+2018-01-23  David Malcolm  <dmalcolm@redhat.com>
+
 	* tree.c (selftest::test_location_wrappers): Add more test
 	coverage.
 

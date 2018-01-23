@@ -5029,7 +5029,12 @@ class check_array_bounds_dom_walker : public dom_walker
 {
  public:
   check_array_bounds_dom_walker (vrp_prop *prop)
-    : dom_walker (CDI_DOMINATORS, true), m_prop (prop) {}
+    : dom_walker (CDI_DOMINATORS,
+		  /* Discover non-executable edges, preserving EDGE_EXECUTABLE
+		     flags, so that we can merge in information on
+		     non-executable edges from vrp_folder .  */
+		  REACHABLE_BLOCKS_PRESERVING_FLAGS),
+      m_prop (prop) {}
   ~check_array_bounds_dom_walker () {}
 
   edge before_dom_children (basic_block) FINAL OVERRIDE;
@@ -6645,7 +6650,7 @@ public:
   vrp_dom_walker (cdi_direction direction,
 		  class const_and_copies *const_and_copies,
 		  class avail_exprs_stack *avail_exprs_stack)
-    : dom_walker (direction, true),
+    : dom_walker (direction, REACHABLE_BLOCKS),
       m_const_and_copies (const_and_copies),
       m_avail_exprs_stack (avail_exprs_stack),
       m_dummy_cond (NULL) {}
@@ -6834,6 +6839,18 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
 			wi::to_wide (vr->min),
 			wi::to_wide (vr->max));
     }
+
+  /* If we're checking array refs, we want to merge information on
+     the executability of each edge between vrp_folder and the
+     check_array_bounds_dom_walker: each can clear the
+     EDGE_EXECUTABLE flag on edges, in different ways.
+
+     Hence, if we're going to call check_all_array_refs, set
+     the flag on every edge now, rather than in
+     check_array_bounds_dom_walker's ctor; vrp_folder may clear
+     it from some edges.  */
+  if (warn_array_bounds && warn_array_bounds_p)
+    set_all_edges_as_executable (cfun);
 
   class vrp_folder vrp_folder;
   vrp_folder.vr_values = &vr_values;
