@@ -330,6 +330,43 @@ func (b *Builder) gccgoBuildIDELFFile(a *Action) (string, error) {
 	return sfile, nil
 }
 
+// gccgoBuildIDXCOFFFile creates an assembler file that records the
+// action's build ID in a CSECT (AIX linker deletes CSECTs that are
+// not referenced in the output file).
+func (b *Builder) gccgoBuildIDXCOFFFile(a *Action) (string, error) {
+	sfile := a.Objdir + "_buildid.s"
+
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "\t.csect .go.buildid[XO]\n")
+	fmt.Fprintf(&buf, "\t.byte ")
+	for i := 0; i < len(a.buildID); i++ {
+		if i > 0 {
+			if i%8 == 0 {
+				fmt.Fprintf(&buf, "\n\t.byte ")
+			} else {
+				fmt.Fprintf(&buf, ",")
+			}
+		}
+		fmt.Fprintf(&buf, "%#02x", a.buildID[i])
+	}
+	fmt.Fprintf(&buf, "\n")
+
+	if cfg.BuildN || cfg.BuildX {
+		for _, line := range bytes.Split(buf.Bytes(), []byte("\n")) {
+			b.Showcmd("", "echo '%s' >> %s", line, sfile)
+		}
+		if cfg.BuildN {
+			return sfile, nil
+		}
+	}
+
+	if err := ioutil.WriteFile(sfile, buf.Bytes(), 0666); err != nil {
+		return "", err
+	}
+
+	return sfile, nil
+}
+
 // buildID returns the build ID found in the given file.
 // If no build ID is found, buildID returns the content hash of the file.
 func (b *Builder) buildID(file string) string {

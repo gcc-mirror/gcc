@@ -637,6 +637,16 @@ func (b *Builder) build(a *Action) (err error) {
 				return err
 			}
 			objects = append(objects, ofiles...)
+		case "aix":
+			asmfile, err := b.gccgoBuildIDXCOFFFile(a)
+			if err != nil {
+				return err
+			}
+			ofiles, err := BuildToolchain.asm(b, a, []string{asmfile})
+			if err != nil {
+				return err
+			}
+			objects = append(objects, ofiles...)
 		}
 	}
 
