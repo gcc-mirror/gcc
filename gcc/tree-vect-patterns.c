@@ -217,6 +217,16 @@ vect_recog_temp_ssa_var (tree type, gimple *stmt)
   return make_temp_ssa_name (type, stmt, "patt");
 }
 
+/* Return true if STMT_VINFO describes a reduction for which reassociation
+   is allowed.  */
+
+static bool
+vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
+{
+  return (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
+	  && STMT_VINFO_REDUC_TYPE (stmt_vinfo) != FOLD_LEFT_REDUCTION);
+}
+
 /* Function vect_recog_dot_prod_pattern
 
    Try to find the following pattern:
@@ -336,7 +346,7 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
     {
       gimple *def_stmt;
 
-      if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_reduction_def
+      if (!vect_reassociating_reduction_p (stmt_vinfo)
 	  && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
 	return NULL;
       oprnd0 = gimple_assign_rhs1 (last_stmt);
@@ -557,7 +567,7 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
     {
       gimple *def_stmt;
 
-      if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_reduction_def
+      if (!vect_reassociating_reduction_p (stmt_vinfo)
 	  && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
 	return NULL;
       plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
@@ -1181,7 +1191,7 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
   if (gimple_assign_rhs_code (last_stmt) != PLUS_EXPR)
     return NULL;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_reduction_def
+  if (!vect_reassociating_reduction_p (stmt_vinfo)
       && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
     return NULL;
 
