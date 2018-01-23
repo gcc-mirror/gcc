@@ -1,3 +1,11 @@
+2018-01-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/83905
+	* config/i386/i386.c (ix86_expand_prologue): Use cost reference
+	of struct ix86_frame.
+	(ix86_expand_epilogue): Likewise.  Add a local variable for
+	the reg_save_offset field in struct ix86_frame.
+
 2018-01-23  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82604
