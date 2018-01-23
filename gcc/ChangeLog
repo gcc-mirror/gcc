@@ -1,5 +1,12 @@
 2018-01-23  Martin Liska  <mliska@suse.cz>
 
+	* tree-profile.c (tree_profiling): Print function header to
+	aware reader which function we are working on.
+	* value-prof.c (gimple_find_values_to_profile): Do not print
+	not interesting value histograms.
+
+2018-01-23  Martin Liska  <mliska@suse.cz>
+
 	* profile-count.h (enum profile_quality): Add
 	profile_uninitialized as the first value. Do not number values
 	as they are zero based.
