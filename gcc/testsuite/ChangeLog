@@ -1,3 +1,10 @@
+2018-01-23  Martin Liska  <mliska@suse.cz>
+
+	PR lto/81440
+	* gcc.dg/lto/pr81440.h: New test.
+	* gcc.dg/lto/pr81440_0.c: New test.
+	* gcc.dg/lto/pr81440_1.c: New test.
+
 2018-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/83988

@@ -352,18 +352,31 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
     return false;
 
   if (DECL_SIZE (decl) && DECL_SIZE (prevailing_decl)
-      && !tree_int_cst_equal (DECL_SIZE (decl), DECL_SIZE (prevailing_decl))
+      && !tree_int_cst_equal (DECL_SIZE (decl), DECL_SIZE (prevailing_decl)))
+      {
+	if (!DECL_COMMON (decl) && !DECL_EXTERNAL (decl))
+	  return false;
+
+	tree type = TREE_TYPE (decl);
+
+	/* For record type, check for array at the end of the structure.  */
+	if (TREE_CODE (type) == RECORD_TYPE)
+	  {
+	    tree field = TYPE_FIELDS (type);
+	    while (DECL_CHAIN (field) != NULL_TREE)
+	      field = DECL_CHAIN (field);
+
+	    return TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE;
+	  }
       /* As a special case do not warn about merging
 	 int a[];
 	 and
 	 int a[]={1,2,3};
 	 here the first declaration is COMMON
 	 and sizeof(a) == sizeof (int).  */
-      && ((!DECL_COMMON (decl) && !DECL_EXTERNAL (decl))
-	  || TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
-	  || TYPE_SIZE (TREE_TYPE (decl))
-	     != TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl)))))
-    return false;
+	else if (TREE_CODE (type) == ARRAY_TYPE)
+	  return (TYPE_SIZE (decl) == TYPE_SIZE (TREE_TYPE (type)));
+      }
 
   return true;
 }
