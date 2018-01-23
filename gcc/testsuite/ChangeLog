@@ -1,5 +1,10 @@
 2018-01-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/82882
+	PR c++/83978
+	* g++.dg/cpp0x/pr82882.C: New test.
+	* g++.dg/cpp0x/pr83978.C: New test.
+
 	PR c++/83958
 	* g++.dg/cpp1z/decomp35.C: New test.
 
