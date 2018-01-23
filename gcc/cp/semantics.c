@@ -931,7 +931,7 @@ tree
 begin_for_scope (tree *init)
 {
   tree scope = NULL_TREE;
-  if (flag_new_for_scope > 0)
+  if (flag_new_for_scope)
     scope = do_pushlevel (sk_for);
 
   if (processing_template_decl)
@@ -956,7 +956,7 @@ begin_for_stmt (tree scope, tree init)
 
   if (scope == NULL_TREE)
     {
-      gcc_assert (!init || !(flag_new_for_scope > 0));
+      gcc_assert (!init || !flag_new_for_scope);
       if (!init)
 	scope = begin_for_scope (&init);
     }
@@ -1053,7 +1053,7 @@ finish_for_stmt (tree for_stmt)
     FOR_BODY (for_stmt) = do_poplevel (FOR_BODY (for_stmt));
 
   /* Pop the scope for the body of the loop.  */
-  if (flag_new_for_scope > 0)
+  if (flag_new_for_scope)
     {
       tree scope;
       tree *scope_ptr = (TREE_CODE (for_stmt) == RANGE_FOR_STMT
@@ -1082,7 +1082,7 @@ begin_range_for_stmt (tree scope, tree init)
 
   if (scope == NULL_TREE)
     {
-      gcc_assert (!init || !(flag_new_for_scope > 0));
+      gcc_assert (!init || !flag_new_for_scope);
       if (!init)
 	scope = begin_for_scope (&init);
     }

@@ -1,3 +1,15 @@
+2018-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	Deprecate ARM-era for scope handling
+	* decl.c (poplevel): Flag_new_for_scope is a boolean-like.
+	(cxx_init_decl_processing): Deprecate flag_new_for_scope being
+	cleared.
+	* name-lookup.c (check_for_out_of_scope_variable): Deprecate and
+	cleanup handling.
+	* semantics.c (begin_for_scope): Flag_new_for_scope is
+	boolean-like.
+	(finish_for_stmt, begin_range_for_stmt): Likewise.
+
 2018-01-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/83720

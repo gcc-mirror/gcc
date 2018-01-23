@@ -2467,9 +2467,8 @@ a @i{for-init-statement} extends to the end of the enclosing scope,
 as was the case in old versions of G++, and other (traditional)
 implementations of C++.
 
-If neither flag is given, the default is to follow the standard,
-but to allow and give a warning for old-style code that would
-otherwise be invalid, or have different behavior.
+This option is deprecated and the associated non-standard
+functionality will be removed.
 
 @item -fno-gnu-keywords
 @opindex fno-gnu-keywords

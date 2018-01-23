@@ -1,3 +1,7 @@
+2018-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/invoke.texi (ffor-scope): Deprecate.
+
 2018-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/83510

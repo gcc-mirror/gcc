@@ -3231,7 +3231,9 @@ push_local_binding (tree id, tree decl, bool is_using)
    standard.  If so, issue an error message.  If name lookup would
    work in both cases, but return a different result, this function
    returns the result of ANSI/ISO lookup.  Otherwise, it returns
-   DECL.  */
+   DECL.
+
+   FIXME: Scheduled for removal after GCC-8 is done.  */
 
 tree
 check_for_out_of_scope_variable (tree decl)
@@ -3252,16 +3254,16 @@ check_for_out_of_scope_variable (tree decl)
     shadowed = find_namespace_value (current_namespace, DECL_NAME (decl));
   if (shadowed)
     {
-      if (!DECL_ERROR_REPORTED (decl))
+      if (!DECL_ERROR_REPORTED (decl)
+	  && flag_permissive
+	  && warning (0, "name lookup of %qD changed", DECL_NAME (decl)))
 	{
-	  warning (0, "name lookup of %qD changed", DECL_NAME (decl));
-	  warning_at (DECL_SOURCE_LOCATION (shadowed), 0,
-		      "  matches this %qD under ISO standard rules",
-		      shadowed);
-	  warning_at (DECL_SOURCE_LOCATION (decl), 0,
-		      "  matches this %qD under old rules", decl);
-	  DECL_ERROR_REPORTED (decl) = 1;
+	  inform (DECL_SOURCE_LOCATION (shadowed),
+		  "matches this %qD under ISO standard rules", shadowed);
+	  inform (DECL_SOURCE_LOCATION (decl),
+		  "  matches this %qD under old rules", decl);
 	}
+      DECL_ERROR_REPORTED (decl) = 1;
       return shadowed;
     }
 
@@ -3279,26 +3281,25 @@ check_for_out_of_scope_variable (tree decl)
     {
       error ("name lookup of %qD changed for ISO %<for%> scoping",
 	     DECL_NAME (decl));
-      error ("  cannot use obsolete binding at %q+D because "
-	     "it has a destructor", decl);
+      inform (DECL_SOURCE_LOCATION (decl),
+	      "cannot use obsolete binding %qD because it has a destructor",
+	      decl);
       return error_mark_node;
     }
   else
     {
-      permerror (input_location, "name lookup of %qD changed for ISO %<for%> scoping",
+      permerror (input_location,
+		 "name lookup of %qD changed for ISO %<for%> scoping",
 	         DECL_NAME (decl));
       if (flag_permissive)
-        permerror (DECL_SOURCE_LOCATION (decl),
-		   "  using obsolete binding at %qD", decl);
-      else
-	{
-	  static bool hint;
-	  if (!hint)
-	    {
-	      inform (input_location, "(if you use %<-fpermissive%> G++ will accept your code)");
-	      hint = true;
-	    }
-	}
+        inform (DECL_SOURCE_LOCATION (decl),
+		"using obsolete binding %qD", decl);
+      static bool hint;
+      if (!hint)
+	inform (input_location, flag_permissive
+		? "this flexibility is deprecated and will be removed"
+		: "if you use %<-fpermissive%> G++ will accept your code");
+      hint = true;
     }
 
   return decl;
