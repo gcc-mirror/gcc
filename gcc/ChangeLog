@@ -1,5 +1,10 @@
 2018-01-23  David Malcolm  <dmalcolm@redhat.com>
 
+	* tree.c (selftest::test_location_wrappers): Add more test
+	coverage.
+
+2018-01-23  David Malcolm  <dmalcolm@redhat.com>
+
 	* sbitmap.c (selftest::test_set_range): Fix memory leaks.
 	(selftest::test_bit_in_range): Likewise.
 
