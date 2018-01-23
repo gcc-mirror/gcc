@@ -1,5 +1,12 @@
 2018-01-23  Martin Liska  <mliska@suse.cz>
 
+	* predict.def (PRED_INDIR_CALL): Set probability to PROB_EVEN in
+	order to ignore the predictor.
+	(PRED_POLYMORPHIC_CALL): Likewise.
+	(PRED_RECURSIVE_CALL): Likewise.
+
+2018-01-23  Martin Liska  <mliska@suse.cz>
+
 	* tree-profile.c (tree_profiling): Print function header to
 	aware reader which function we are working on.
 	* value-prof.c (gimple_find_values_to_profile): Do not print

@@ -4216,7 +4216,7 @@ test_prediction_value_range ()
 	continue;
 
       unsigned p = 100 * predictors[i].probability / REG_BR_PROB_BASE;
-      ASSERT_TRUE (p > 50 && p <= 100);
+      ASSERT_TRUE (p >= 50 && p <= 100);
     }
 }
 
