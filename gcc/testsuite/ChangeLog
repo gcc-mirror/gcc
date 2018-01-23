@@ -1,3 +1,8 @@
+2018-01-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/83988
+	* g++.dg/template/pr83988.C: New.
+
 2018-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82882

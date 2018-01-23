@@ -14447,11 +14447,8 @@ tsubst_baselink (tree baselink, tree object_type,
 	fns = BASELINK_FUNCTIONS (baselink);
     }
   else
-    {
-      gcc_assert (optype == BASELINK_OPTYPE (baselink));
-      /* We're going to overwrite pieces below, make a duplicate.  */
-      baselink = copy_node (baselink);
-    }
+    /* We're going to overwrite pieces below, make a duplicate.  */
+    baselink = copy_node (baselink);
 
   /* If lookup found a single function, mark it as used at this point.
      (If lookup found multiple functions the one selected later by
