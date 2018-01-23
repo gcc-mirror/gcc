@@ -644,7 +644,7 @@ poplevel (int keep, int reverse, int functionbody)
      in a init statement were in scope after the for-statement ended.
      We only use the new rules if flag_new_for_scope is nonzero.  */
   leaving_for_scope
-    = current_binding_level->kind == sk_for && flag_new_for_scope == 1;
+    = current_binding_level->kind == sk_for && flag_new_for_scope;
 
   /* Before we remove the declarations first check for unused variables.  */
   if ((warn_unused_variable || warn_unused_but_set_variable)
@@ -4094,6 +4094,8 @@ cxx_init_decl_processing (void)
   pop_namespace ();
 
   flag_noexcept_type = (cxx_dialect >= cxx17);
+  if (!flag_new_for_scope)
+    warning (OPT_Wdeprecated, "%<-fno-for-scope%> is deprecated");
 
   c_common_nodes_and_builtins ();
 

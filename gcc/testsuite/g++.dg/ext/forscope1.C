@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options -fno-for-scope }
+// { dg-options "-fno-for-scope -Wno-deprecated" }
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 4 Sept 2001 <nathan@codesourcery.com>
