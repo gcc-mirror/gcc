@@ -5492,7 +5492,8 @@ proc check_effective_target_vect_long { } {
     return $answer
 }
 
-# Return 1 if the target supports hardware vectors of float, 0 otherwise.
+# Return 1 if the target supports hardware vectors of float when
+# -funsafe-math-optimizations is enabled, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
 
@@ -5523,6 +5524,14 @@ proc check_effective_target_vect_float { } {
     verbose "check_effective_target_vect_float:\
 	     returning $et_vect_float_saved($et_index)" 2
     return $et_vect_float_saved($et_index)
+}
+
+# Return 1 if the target supports hardware vectors of float without
+# -funsafe-math-optimizations being enabled, 0 otherwise.
+
+proc check_effective_target_vect_float_strict { } {
+    return [expr { [check_effective_target_vect_float]
+		   && ![istarget arm*-*-*] }]
 }
 
 # Return 1 if the target supports hardware vectors of double, 0 otherwise.

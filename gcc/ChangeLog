@@ -1,5 +1,12 @@
 2018-01-23  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR testsuite/83888
+	* doc/sourcebuild.texi (vect_float): Say that the selector
+	only describes the situation when -funsafe-math-optimizations is on.
+	(vect_float_strict): Document.
+
+2018-01-23  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/83965
 	* tree-vect-patterns.c (vect_reassociating_reduction_p): New function.
 	(vect_recog_dot_prod_pattern, vect_recog_sad_pattern): Use it
