@@ -1,3 +1,11 @@
+2018-01-23  Martin Liska  <mliska@suse.cz>
+
+	* profile-count.h (enum profile_quality): Add
+	profile_uninitialized as the first value. Do not number values
+	as they are zero based.
+	(profile_count::verify): Update sanity check.
+	(profile_probability::verify): Likewise.
+
 2018-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/invoke.texi (ffor-scope): Deprecate.
