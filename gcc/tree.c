@@ -14085,8 +14085,10 @@ maybe_wrap_with_location (tree expr, location_t loc)
   if (EXCEPTIONAL_CLASS_P (expr))
     return expr;
 
-  tree_code code = (CONSTANT_CLASS_P (expr) && TREE_CODE (expr) != STRING_CST
-		    ? NON_LVALUE_EXPR : VIEW_CONVERT_EXPR);
+  tree_code code
+    = (((CONSTANT_CLASS_P (expr) && TREE_CODE (expr) != STRING_CST)
+	|| (TREE_CODE (expr) == CONST_DECL && !TREE_STATIC (expr)))
+       ? NON_LVALUE_EXPR : VIEW_CONVERT_EXPR);
   tree wrapper = build1_loc (loc, code, TREE_TYPE (expr), expr);
   /* Mark this node as being a wrapper.  */
   EXPR_LOCATION_WRAPPER_P (wrapper) = 1;
