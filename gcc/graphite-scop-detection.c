@@ -677,10 +677,10 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
 	if (!stmt_simple_for_scop_p (scop, gsi_stmt (gsi), bb))
 	  return true;
 
-      if (bb != exit_bb)
-	for (basic_block dom = first_dom_son (CDI_DOMINATORS, bb);
-	     dom;
-	     dom = next_dom_son (CDI_DOMINATORS, dom))
+      for (basic_block dom = first_dom_son (CDI_DOMINATORS, bb);
+	   dom;
+	   dom = next_dom_son (CDI_DOMINATORS, dom))
+	if (dom != scop.exit->dest)
 	  worklist.safe_push (dom);
     }
 

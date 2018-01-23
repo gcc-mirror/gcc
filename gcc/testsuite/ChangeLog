@@ -1,3 +1,9 @@
+2018-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83963
+	* gfortran.dg/graphite/pr83963.f: New testcase.
+	* gcc.dg/graphite/pr83963-2.c: Likewise.
+
 2018-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83918
