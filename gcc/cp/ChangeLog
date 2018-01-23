@@ -1,3 +1,9 @@
+2018-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83947 - ICE with auto declarations.
+	* pt.c (do_auto_deduction): Don't deduce from an auto decl.
+	* decl.c (undeduced_auto_decl): Limit to vars and fns.
+
 2018-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/83974
