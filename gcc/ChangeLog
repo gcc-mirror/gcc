@@ -1,3 +1,19 @@
+2018-01-23  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82604
+	* tree-loop-distribution.c (enum partition_kind): New enum item
+	PKIND_PARTIAL_MEMSET.
+	(partition_builtin_p): Support above new enum item.
+	(generate_code_for_partition): Ditto.
+	(compute_access_range): Differentiate cases that equality can be
+	proven at all loops, the innermost loops or no loops.
+	(classify_builtin_st, classify_builtin_ldst): Adjust call to above
+	function.  Set PKIND_PARTIAL_MEMSET for partition appropriately.
+	(finalize_partitions, distribute_loop): Don't fuse partition of
+	PKIND_PARTIAL_MEMSET kind when distributing 3-level loop nest.
+	(prepare_perfect_loop_nest): Distribute 3-level loop nest only if
+	parloop is enabled.
+
 2018-01-23  Martin Liska  <mliska@suse.cz>
 
 	* predict.def (PRED_INDIR_CALL): Set probability to PROB_EVEN in
