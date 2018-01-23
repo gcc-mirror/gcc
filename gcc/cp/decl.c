@@ -7435,6 +7435,12 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       type = complete_type (TREE_TYPE (type));
       if (type == error_mark_node)
 	goto error_out;
+      if (!COMPLETE_TYPE_P (type))
+	{
+	  error_at (loc, "structured binding refers to incomplete type %qT",
+		    type);
+	  goto error_out;
+	}
     }
 
   tree eltype = NULL_TREE;

@@ -1,3 +1,8 @@
+2018-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83958
+	* g++.dg/cpp1z/decomp35.C: New test.
+
 2018-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp0x/range-for10.C: Adjust.
