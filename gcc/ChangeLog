@@ -1,5 +1,11 @@
 2018-01-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82819
+	* graphite-isl-ast-to-gimple.c (binary_op_to_tree): Avoid
+	code generating pluses that are no-ops in the target precision.
+
+2018-01-24  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/84000
 	* tree-cfg.c (replace_loop_annotate): Handle annot_expr_parallel_kind.
 
