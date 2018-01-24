@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-ffast-math" } */
 
 #define N 100

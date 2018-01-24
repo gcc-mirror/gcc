@@ -1,5 +1,3 @@
-/* { dg-do run { target { whole_vector_shift || vect_logical_reduc } } } */
-
 /* Write a reduction loop to be reduced using vector shifts.  */
 
 #include "tree-vect.h"
