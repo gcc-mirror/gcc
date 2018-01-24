@@ -10961,7 +10961,12 @@ extract_fnparm_pack (tree tmpl_parm, tree *spec_p)
   parmvec = make_tree_vec (len);
   spec_parm = *spec_p;
   for (i = 0; i < len; i++, spec_parm = DECL_CHAIN (spec_parm))
-    TREE_VEC_ELT (parmvec, i) = spec_parm;
+    {
+      tree elt = spec_parm;
+      if (DECL_PACK_P (elt))
+	elt = make_pack_expansion (elt);
+      TREE_VEC_ELT (parmvec, i) = elt;
+    }
 
   /* Build the argument packs.  */
   SET_ARGUMENT_PACK_ARGS (argpack, parmvec);
@@ -11414,6 +11419,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   tree pattern;
   tree pack, packs = NULL_TREE;
   bool unsubstituted_packs = false;
+  bool unsubstituted_fn_pack = false;
   int i, len = -1;
   tree result;
   hash_map<tree, tree> *saved_local_specializations = NULL;
@@ -11484,6 +11490,13 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	      else
 		arg_pack = make_fnparm_pack (arg_pack);
 	    }
+	  else if (argument_pack_element_is_expansion_p (arg_pack, 0))
+	    /* This argument pack isn't fully instantiated yet.  We set this
+	       flag rather than clear arg_pack because we do want to do the
+	       optimization below, and we don't want to substitute directly
+	       into the pattern (as that would expose a NONTYPE_ARGUMENT_PACK
+	       where it isn't expected).  */
+	    unsubstituted_fn_pack = true;
 	}
       else if (TREE_CODE (parm_pack) == FIELD_DECL)
 	arg_pack = tsubst_copy (parm_pack, args, complain, in_decl);
@@ -11521,7 +11534,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
           if (len < 0)
 	    len = my_len;
-          else if (len != my_len)
+          else if (len != my_len
+		   && !unsubstituted_fn_pack)
             {
 	      if (!(complain & tf_error))
 		/* Fail quietly.  */;
@@ -11574,7 +11588,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
   /* We cannot expand this expansion expression, because we don't have
      all of the argument packs we need.  */
-  if (use_pack_expansion_extra_args_p (packs, len, unsubstituted_packs))
+  if (use_pack_expansion_extra_args_p (packs, len, (unsubstituted_packs
+						    || unsubstituted_fn_pack)))
     {
       /* We got some full packs, but we can't substitute them in until we
 	 have values for all the packs.  So remember these until then.  */
