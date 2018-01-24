@@ -1,3 +1,9 @@
+2018-01-24  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/68467
+	* config/m68k/m68k.c (m68k_promote_function_mode): New function.
+	(TARGET_PROMOTE_FUNCTION_MODE): New macro.
+
 2017-01-08  Jeff Law  <law@redhat.com>
 
 	PR target/83994
