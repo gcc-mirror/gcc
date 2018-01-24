@@ -1,3 +1,9 @@
+2018-01-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/84014
+	* ira-build.c (setup_min_max_allocno_live_range_point): Set up
+	min/max for never referenced object.
+
 2018-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83977
