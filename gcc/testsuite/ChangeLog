@@ -1,3 +1,8 @@
+2018-01-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/lto/20110201-1_0.c: Remove explicit -mfloat-abi=softfp
+	option.  Add arm_neon_ok_no_float_abi check.
+
 2018-01-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83176
