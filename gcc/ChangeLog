@@ -1,3 +1,8 @@
+2018-01-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-profile.c (ipa_propagate_frequency_1): Fix logic skipping calls
+	with zero counts.
+
 2018-01-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (*call_indirect_nonlocal_sysv<mode>):
