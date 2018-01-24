@@ -1,3 +1,9 @@
+2018-01-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83979
+	* fold-const.c (fold_comparison): Use constant_boolean_node
+	instead of boolean_{true,false}_node.
+
 2018-01-24  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-profile.c (ipa_propagate_frequency_1): Fix logic skipping calls

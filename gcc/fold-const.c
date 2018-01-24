@@ -8572,39 +8572,39 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 		{
 		case EQ_EXPR:
 		  if (known_eq (bitpos0, bitpos1))
-		    return boolean_true_node;
+		    return constant_boolean_node (true, type);
 		  if (known_ne (bitpos0, bitpos1))
-		    return boolean_false_node;
+		    return constant_boolean_node (false, type);
 		  break;
 		case NE_EXPR:
 		  if (known_ne (bitpos0, bitpos1))
-		    return boolean_true_node;
+		    return constant_boolean_node (true, type);
 		  if (known_eq (bitpos0, bitpos1))
-		    return boolean_false_node;
+		    return constant_boolean_node (false, type);
 		  break;
 		case LT_EXPR:
 		  if (known_lt (bitpos0, bitpos1))
-		    return boolean_true_node;
+		    return constant_boolean_node (true, type);
 		  if (known_ge (bitpos0, bitpos1))
-		    return boolean_false_node;
+		    return constant_boolean_node (false, type);
 		  break;
 		case LE_EXPR:
 		  if (known_le (bitpos0, bitpos1))
-		    return boolean_true_node;
+		    return constant_boolean_node (true, type);
 		  if (known_gt (bitpos0, bitpos1))
-		    return boolean_false_node;
+		    return constant_boolean_node (false, type);
 		  break;
 		case GE_EXPR:
 		  if (known_ge (bitpos0, bitpos1))
-		    return boolean_true_node;
+		    return constant_boolean_node (true, type);
 		  if (known_lt (bitpos0, bitpos1))
-		    return boolean_false_node;
+		    return constant_boolean_node (false, type);
 		  break;
 		case GT_EXPR:
 		  if (known_gt (bitpos0, bitpos1))
-		    return boolean_true_node;
+		    return constant_boolean_node (true, type);
 		  if (known_le (bitpos0, bitpos1))
-		    return boolean_false_node;
+		    return constant_boolean_node (false, type);
 		  break;
 		default:;
 		}
