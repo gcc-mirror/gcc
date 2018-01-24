@@ -1,3 +1,13 @@
+2018-01-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2018-01-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-p8swap.c (swap_feeds_both_load_and_store):
+	New function.
+	(rs6000_analyze_swaps): Mark a web unoptimizable if it contains a
+	swap associated with both a load and a store.
+
 2018-01-23  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Back port from mainline
