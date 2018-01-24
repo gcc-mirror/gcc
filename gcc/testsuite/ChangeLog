@@ -1,3 +1,8 @@
+2018-01-19  Jeff Law  <law@redhat.com>
+
+	PR target/83994
+	* gcc.target/i386/pr83994.c: New test.
+
 2018-01-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/84014
