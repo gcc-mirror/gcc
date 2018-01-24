@@ -1,3 +1,8 @@
+2018-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84000
+	* tree-cfg.c (replace_loop_annotate): Handle annot_expr_parallel_kind.
+
 2018-01-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* cfgcleanup.c (try_crossjump_to_edge): Use combine_with_count
