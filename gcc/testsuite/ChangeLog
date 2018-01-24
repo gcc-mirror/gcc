@@ -1,5 +1,31 @@
 2018-01-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR testsuite/83889
+	* gcc.dg/vect/pr79920.c: Remove explicit dg-do run.
+	* gcc.dg/vect/pr80631-1.c: Likewise.
+	* gcc.dg/vect/pr80631-2.c: Likewise.
+	* gcc.dg/vect/pr81410.c: Likewise.
+	* gcc.dg/vect/pr81633.c: Likewise.
+	* gcc.dg/vect/pr81815.c: Likewise.
+	* gcc.dg/vect/pr82108.c: Likewise.
+	* gcc.dg/vect/pr83857.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-8.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-9.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-10.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-11.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-12.c: Likewise.
+	* gcc.dg/vect/vect-reduc-11.c: Likewise.
+	* gcc.dg/vect/vect-tail-nomask-1.c: Likewise.
+	* gcc.dg/vect/vect-reduc-in-order-1.c: Remove dg-do run and use
+	dg-xfail-run-if instead.
+	* gcc.dg/vect/vect-reduc-in-order-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-in-order-3.c: Likewise.
+	* gcc.dg/vect/vect-reduc-in-order-4.c: Likewise.
+	* gcc.dg/vect/vect-reduc-or_1.c: Remove conditional dg-do run.
+	* gcc.dg/vect/vect-reduc-or_2.c: Likewise.
+
+2018-01-24  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/83979
 	* g++.dg/pr83979.c: New test.
 

@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 #define N 200
 #define M 4
 
