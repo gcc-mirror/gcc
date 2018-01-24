@@ -1,3 +1,14 @@
+2018-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83977
+	* tree.c (free_lang_data_in_decl): Don't clear DECL_ABSTRACT_ORIGIN
+	here.
+	* omp-low.c (create_omp_child_function): Remove "omp declare simd"
+	attributes from DECL_ATTRIBUTES (decl) without affecting
+	DECL_ATTRIBUTES (current_function_decl).
+	* omp-simd-clone.c (expand_simd_clones): Ignore DECL_ARTIFICIAL
+	functions with non-NULL DECL_ABSTRACT_ORIGIN.
+
 2018-01-24  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83979
