@@ -98,12 +98,13 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
   hashval_t name_hash;  /* Name hash. */
-  int direct_import;	/* Direct import/rexport of main module.  */
   unsigned mod;		/* Module index.  */
   unsigned crc;		/* CRC we saw reading it in. */
   const char *filename;	/* Filename */
   location_t loc;	/* Its location.  */
   bool crc_known : 1;
+  bool imported : 1;	/* Imported via import declaration.  */
+  bool exported : 1;	/* The import is exported.  */
 
  public:
   module_state ();
@@ -171,10 +172,11 @@ static int validate_module_name (bool, const char *, size_t);
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), name_parts (NULL), direct_import (0), mod (0),
+    name (NULL_TREE), name_parts (NULL), mod (0),
     crc (0), filename (NULL), loc (UNKNOWN_LOCATION)
 {
   crc_known = false;
+  imported = exported = false;
 }
 
 /* We've been assigned INDEX.  Mark the self-import-export bits.  */
@@ -387,19 +389,14 @@ module_state::do_import (unsigned index, bool is_export)
   module_state *other = (*modules)[index];
 
   if (this == (*modules)[0])
-    other->direct_import = 1 + is_export;
+    {
+      other->imported = true;
+      other->exported = is_export;
+    }
   bitmap_ior_into (imports, other->exports);
   if (is_export)
     bitmap_ior_into (exports, other->exports);
 }
-
-enum import_kind 
-{
-  ik_indirect,
-  ik_direct,
-  ik_interface,
-  ik_implementation
-};
 
 /* Byte serializer base.  */
 class cpm_serial {
@@ -1652,7 +1649,8 @@ cpms_in::insert (tree t)
   return tag;
 }
 
-static unsigned do_module_import (location_t, tree, import_kind,
+static unsigned do_module_import (location_t, tree, bool module_unit_p,
+				  bool import_export_p,
 				  cpms_in * = NULL, unsigned = 0);
 
 /* File header
@@ -1964,24 +1962,31 @@ cpms_in::globals (const tree *ary, unsigned num)
 }
 
 /* Item import
+   b:imported
+   b:exported
    u:index
-   u:direct
    u:crc
    wu:stamp
    str:module_name  */
 
 // FIXME: Should we stream the pathname to the import?
 
+/* We need to write out indirect imports, in order to build up the
+   mapping between module-indices in this TU and that in the TU we get
+   read into.  */
+
 void
 cpms_out::tag_import (unsigned ix, const module_state *state)
 {
   dump () && dump ("Writing %simport %I (crc=%x)",
-		   state->direct_import == 2 ? "export " :
-		   state->direct_import ? "" : "indirect ",
+		   state->exported ? "export " :
+		   state->imported ? "" : "indirect ",
 		   state->name, state->crc);
   tag (rt_import);
+  w.b (state->imported);
+  w.b (state->exported);
+  w.bflush ();
   w.u (ix);
-  w.u (state->direct_import);
   w.u (state->crc);
   w.module_name (state->name);
   w.checkpoint ();
@@ -2002,8 +2007,10 @@ cpms_in::alloc_remap_vec (unsigned limit)
 bool
 cpms_in::tag_import ()
 {
+  bool imported = r.b ();
+  bool exported = r.b ();
+  r.bflush ();
   unsigned ix = r.u ();
-  unsigned direct = r.u ();
   unsigned crc = r.u ();
   tree imp = r.module_name ();
 
@@ -2026,20 +2033,19 @@ cpms_in::tag_import ()
     }
 
   dump () && dump ("Begin nested %simport %I",
-		   direct == 2 ? "export " : direct ? "" : "indirect ", imp);
+		   exported ? "export " : imported ? "" : "indirect ", imp);
   unsigned imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
-				      direct ? ik_direct : ik_indirect,
+				      /*unit_p=*/false, /*import_p=*/imported,
 				      this, crc);
   bool ok = imp_ix != MODULE_INDEX_ERROR;
   if (ok)
     {
       remap_vec[ix] = imp_ix;
-      if (direct)
+      if (imported)
 	{
-	  bool is_export = direct == 2;
 	  dump () && dump ("Direct %simport %I %u",
-			   is_export ? "export " : "", imp, imp_ix);
-	  state->do_import (imp_ix, direct == 2);
+			   exported ? "export " : "", imp, imp_ix);
+	  state->do_import (imp_ix, exported);
 	}
     }
 
@@ -2099,10 +2105,10 @@ cpms_in::tag_binding ()
 {
   tree ns = tree_node ();
   tree name = tree_node ();
-  dump () && dump ("Reading %N binding for %N", ns, name);
-
   tree type = NULL_TREE;
   tree decls = NULL_TREE;
+
+  dump () && dump ("Reading %N binding for %N", ns, name);
 
   while (tree decl = tree_node ())
     {
@@ -5037,12 +5043,12 @@ module_purview_p ()
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
-   module perview.  */
+   module purview.  */
 
 bool
 module_interface_p ()
 {
-  return modules && (*modules)[0]->direct_import;
+  return modules && (*modules)[0]->exported;
 }
 
 /* Read a module NAME file name FNAME on STREAM.  Returns its module
@@ -5347,8 +5353,8 @@ make_module_file (char *&name, size_t name_len)
    module (or MODULE_INDEX_ERROR).  */
 
 unsigned
-do_module_import (location_t loc, tree name, import_kind kind,
-		  cpms_in *from, unsigned crc)
+do_module_import (location_t loc, tree name, bool module_unit_p,
+		  bool import_export_p, cpms_in *from, unsigned crc)
 {
   if (!module_hash)
     {
@@ -5383,7 +5389,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	error_at (loc, "already declared as module %qE", name);
 	return MODULE_INDEX_ERROR;
       default:
-	if (kind >= ik_interface)
+	if (module_unit_p)
 	  {
 	    /* Cannot be interface/implementation of an imported
 	       module.  */
@@ -5394,7 +5400,7 @@ do_module_import (location_t loc, tree name, import_kind kind,
       }
   else
     {
-      if (kind >= ik_interface)
+      if (module_unit_p)
 	state = (*modules)[0];
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
@@ -5411,13 +5417,13 @@ do_module_import (location_t loc, tree name, import_kind kind,
 	state->set_crc (crc);
       *slot = state;
 
-      if (kind == ik_interface)
+      if (module_unit_p && import_export_p)
 	{
-	  /* We're the interface, so not really importing anything.  */
+	  /* We're the exporting module unit, so not loading anything.  */
 	  index = 0;
-	  state->direct_import = 1;
+	  state->exported = true;
 	}
-      else if (kind == ik_indirect)
+      else if (!module_unit_p && !import_export_p)
 	{
 	  /* The ordering of the import table implies that indirect
 	     imports should have already been loaded.  */
@@ -5509,22 +5515,23 @@ void
 import_module (const cp_expr &name, tree)
 {
   gcc_assert (global_namespace == current_scope ());
-  unsigned index = do_module_import (name.get_location (), *name, ik_direct);
+  unsigned index = do_module_import (name.get_location (), *name,
+				     /*unit_p=*/false, /*import_p=*/true);
   if (index != MODULE_INDEX_ERROR)
     (*modules)[0]->do_import (index, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
 }
 
-/* Declare the name of the current module to be NAME.  INTER
-   distinguishes interface from implementation.  */
+/* Declare the name of the current module to be NAME.  EXPORTING_p is
+   true if this TU is the exporting module unit.  */
 
 void
-declare_module (const cp_expr &name, bool inter, tree)
+declare_module (const cp_expr &name, bool exporting_p, tree)
 {
   gcc_assert (global_namespace == current_scope ());
 
   unsigned index = do_module_import
-    (name.get_location (), *name, inter ? ik_interface : ik_implementation);
+    (name.get_location (), *name, true, exporting_p);
   gcc_assert (!index || index == MODULE_INDEX_ERROR);
 }
 
@@ -5580,17 +5587,16 @@ finish_module ()
   /* GC can clean up the detritus.  */
   module_hash = NULL;
 
-  module_state *state = modules ? (*modules)[0] : NULL;
-  if (!state || !state->direct_import)
+  if (!module_interface_p ())
     {
       if (module_output)
 	error ("-fmodule-output specified for non-module interface compilation");
       return;
     }
 
+  module_state *state = (*modules)[0];
   char *filename;
   size_t filename_len;
-
   if (module_output)
     {
       filename_len = strlen (module_output);

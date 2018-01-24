@@ -3089,11 +3089,8 @@ build_cleanup (tree decl)
 tree
 get_guard (tree decl)
 {
-  tree sname;
-  tree guard;
-
-  sname = mangle_guard_variable (decl);
-  guard = get_global_binding (sname);
+  tree sname = mangle_guard_variable (decl);
+  tree guard = get_global_binding (sname);
   if (! guard)
     {
       tree guard_type;

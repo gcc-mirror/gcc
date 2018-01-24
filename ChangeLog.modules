@@ -1,3 +1,15 @@
+2018-01-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (module_state): Replace direct_import with imported &
+	exported flags.
+	(module_state::do_import): Adjust.
+	(enum import_kind): Delete.
+	(do_module_import): Adjust.
+	(cpms_{in.out}::tag_import): Adjust.
+	(module_interface_p, import_module, declare_module)
+	(finish_module): Adjust.
+
 2018-01-23  Nathan Sidwell  <nathan@acm.org>
 
 	Static bindings not visible in imports
