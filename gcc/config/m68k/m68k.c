@@ -192,6 +192,8 @@ m68k_excess_precision (enum excess_precision_type);
 static unsigned int m68k_hard_regno_nregs (unsigned int, machine_mode);
 static bool m68k_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool m68k_modes_tieable_p (machine_mode, machine_mode);
+static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
+						int *, const_tree, int);
 
 /* Initialize the GCC target structure.  */
 
@@ -346,6 +348,9 @@ static bool m68k_modes_tieable_p (machine_mode, machine_mode);
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P m68k_modes_tieable_p
+
+#undef TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE m68k_promote_function_mode
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -6619,6 +6624,22 @@ m68k_push_rounding (poly_int64 bytes)
   if (TARGET_COLDFIRE)
     return bytes;
   return (bytes + 1) & ~1;
+}
+
+/* Implement TARGET_PROMOTE_FUNCTION_MODE.  */
+
+static machine_mode
+m68k_promote_function_mode (const_tree type, machine_mode mode,
+                            int *punsignedp ATTRIBUTE_UNUSED,
+                            const_tree fntype ATTRIBUTE_UNUSED,
+                            int for_return)
+{
+  /* Promote libcall arguments narrower than int to match the normal C
+     ABI (for which promotions are handled via
+     TARGET_PROMOTE_PROTOTYPES).  */
+  if (type == NULL_TREE && !for_return && (mode == QImode || mode == HImode))
+    return SImode;
+  return mode;
 }
 
 #include "gt-m68k.h"
