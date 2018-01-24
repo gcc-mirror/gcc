@@ -1,5 +1,15 @@
 2018-01-24  Tom de Vries  <tom@codesourcery.com>
 
+	PR target/83589
+	* config/nvptx/nvptx.c (WORKAROUND_PTXJIT_BUG_2): Define to 1.
+	(nvptx_pc_set, nvptx_condjump_label): New function. Copy from jump.c.
+	Add strict parameter.
+	(prevent_branch_around_nothing): Insert dummy insn between branch to
+	label and label with no ptx insn inbetween.
+	* config/nvptx/nvptx.md (define_insn "fake_nop"): New insn.
+
+2018-01-24  Tom de Vries  <tom@codesourcery.com>
+
 	PR target/81352
 	* config/nvptx/nvptx.c (nvptx_single): Add exit insn after noreturn call
 	for neutered threads in warp.

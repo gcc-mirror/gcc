@@ -1,5 +1,10 @@
 2018-01-24  Tom de Vries  <tom@codesourcery.com>
 
+	PR target/83589
+	* testsuite/libgomp.oacc-c-c++-common/pr83589.c: New test.
+
+2018-01-24  Tom de Vries  <tom@codesourcery.com>
+
 	PR target/81352
 	* testsuite/libgomp.oacc-fortran/pr81352.f90: New test.
 
