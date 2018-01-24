@@ -1,3 +1,8 @@
+2018-01-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/81352
+	* testsuite/libgomp.oacc-fortran/pr81352.f90: New test.
+
 2018-01-19  Tom de Vries  <tom@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
