@@ -1,3 +1,12 @@
+2018-01-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (*call_indirect_nonlocal_sysv<mode>):
+	Simplify the clause that sets the length attribute.
+	(*call_value_indirect_nonlocal_sysv<mode>): Likewise.
+	(*sibcall_nonlocal_sysv<mode>): Clean up code block; simplify the
+	clause that sets the length attribute.
+	(*sibcall_value_nonlocal_sysv<mode>): Likewise.
+
 2018-01-24  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/83589
