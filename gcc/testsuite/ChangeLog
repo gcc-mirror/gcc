@@ -1,3 +1,7 @@
+2018-01-24  Ian Lance Taylor  <iant@golang.org>
+
+	* go.go-torture/execute/names-1.go: New test.
+
 2018-01-19  Jeff Law  <law@redhat.com>
 
 	PR target/83994

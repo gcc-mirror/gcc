@@ -68,13 +68,14 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
     {
       const char *p;
 
-      p = __builtin_strchr (function, '.');
-      if (p != NULL && __builtin_strncmp (p + 1, "$thunk", 6) == 0)
+      p = function + __builtin_strlen (function);
+      while (p > function && p[-1] >= '0' && p[-1] <= '9')
+	--p;
+      if (p - function > 7 && __builtin_strncmp (p - 7, "..thunk", 7) == 0)
 	return 0;
-      p = __builtin_strrchr (function, '$');
-      if (p != NULL && __builtin_strcmp(p, "$recover") == 0)
+      if (p - function > 3 && __builtin_strcmp (p - 3, "..r") == 0)
 	return 0;
-      if (p != NULL && __builtin_strncmp(p, "$stub", 5) == 0)
+      if (p - function > 6 && __builtin_strcmp (p - 6, "..stub") == 0)
 	return 0;
     }
 

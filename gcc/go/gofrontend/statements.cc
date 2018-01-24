@@ -2120,7 +2120,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
       fn = Expression::make_temporary_reference(fn_temp, location);
     }
 
-  std::string thunk_name = Gogo::thunk_name();
+  std::string thunk_name = gogo->thunk_name();
 
   // Build the thunk.
   this->build_thunk(gogo, thunk_name);

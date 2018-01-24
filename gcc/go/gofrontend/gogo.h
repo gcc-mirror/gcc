@@ -801,7 +801,7 @@ class Gogo
 
   // Return the name to use for a generated stub method.
   std::string
-  stub_method_name(const std::string& method_name);
+  stub_method_name(const Package*, const std::string& method_name);
 
   // Return the names of the hash and equality functions for TYPE.
   void
@@ -826,7 +826,7 @@ class Gogo
   // Return a name to use for a thunk function.  A thunk function is
   // one we create during the compilation, for a go statement or a
   // defer statement or a method expression.
-  static std::string
+  std::string
   thunk_name();
 
   // Return whether an object is a thunk.
@@ -838,8 +838,8 @@ class Gogo
   init_function_name();
 
   // Return the name to use for a nested function.
-  static std::string
-  nested_function_name();
+  std::string
+  nested_function_name(Named_object* enclosing);
 
   // Return the name to use for a sink funciton.
   std::string
@@ -886,6 +886,12 @@ class Gogo
   // Return the name to use for an interface method table.
   std::string
   interface_method_table_name(Interface_type*, Type*, bool is_pointer);
+
+  // Return whether NAME is a special name that can not be passed to
+  // unpack_hidden_name.  This is needed because various special names
+  // use "..SUFFIX", but unpack_hidden_name just looks for '.'.
+  static bool
+  is_special_name(const std::string& name);
 
  private:
   // During parsing, we keep a stack of functions.  Each function on
@@ -1233,6 +1239,11 @@ class Function
   results_are_named() const
   { return this->results_are_named_; }
 
+  // Return the assembler name.
+  const std::string&
+  asm_name() const
+  { return this->asm_name_; }
+
   // Set the assembler name.
   void
   set_asm_name(const std::string& asm_name)
@@ -1248,6 +1259,14 @@ class Function
   set_pragmas(unsigned int pragmas)
   {
     this->pragmas_ = pragmas;
+  }
+
+  // Return the index to use for a nested function.
+  unsigned int
+  next_nested_function_index()
+  {
+    ++this->nested_functions_;
+    return this->nested_functions_;
   }
 
   // Whether this method should not be included in the type
@@ -1510,6 +1529,8 @@ class Function
   Temporary_statement* defer_stack_;
   // Pragmas for this function.  This is a set of GOPRAGMA bits.
   unsigned int pragmas_;
+  // Number of nested functions defined within this function.
+  unsigned int nested_functions_;
   // True if this function is sink-named.  No code is generated.
   bool is_sink_ : 1;
   // True if the result variables are named.

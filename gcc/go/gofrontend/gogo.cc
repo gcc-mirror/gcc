@@ -1758,7 +1758,7 @@ Gogo::start_function(const std::string& name, Function_type* type,
   else
     {
       // Invent a name for a nested function.
-      nested_name = this->nested_function_name();
+      nested_name = this->nested_function_name(enclosing);
       pname = &nested_name;
     }
 
@@ -4821,9 +4821,9 @@ Function::Function(Function_type* type, Named_object* enclosing, Block* block,
   : type_(type), enclosing_(enclosing), results_(NULL),
     closure_var_(NULL), block_(block), location_(location), labels_(),
     local_type_count_(0), descriptor_(NULL), fndecl_(NULL), defer_stack_(NULL),
-    pragmas_(0), is_sink_(false), results_are_named_(false),
-    is_unnamed_type_stub_method_(false), calls_recover_(false),
-    is_recover_thunk_(false), has_recover_thunk_(false),
+    pragmas_(0), nested_functions_(0), is_sink_(false),
+    results_are_named_(false), is_unnamed_type_stub_method_(false),
+    calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
     calls_defer_retaddr_(false), is_type_specific_function_(false),
     in_unique_section_(false)
 {
@@ -4948,7 +4948,7 @@ Function::set_closure_type()
   // The first field of a closure is always a pointer to the function
   // code.
   Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());
-  st->push_field(Struct_field(Typed_identifier(".$f", voidptr_type,
+  st->push_field(Struct_field(Typed_identifier(".f", voidptr_type,
 					       this->location_)));
 
   unsigned int index = 1;

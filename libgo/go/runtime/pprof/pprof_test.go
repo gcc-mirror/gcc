@@ -730,7 +730,7 @@ func TestMutexProfile(t *testing.T) {
 		stks := stacks(p)
 		for _, want := range [][]string{
 			// {"sync.(*Mutex).Unlock", "pprof.blockMutex.func1"},
-			{"sync.Unlock.pN10_sync.Mutex", "pprof.$nested17"},
+			{".1sync.Mutex.Unlock", "pprof.blockMutex..func1"},
 		} {
 			if !containsStack(stks, want) {
 				t.Errorf("No matching stack entry for %+v", want)

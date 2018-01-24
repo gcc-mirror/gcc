@@ -2654,14 +2654,14 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
 // Return a symbol name for this ptrmask.  This is used to coalesce
 // identical ptrmasks, which are common.  The symbol name must use
 // only characters that are valid in symbols.  It's nice if it's
-// short.  We convert it to a base64 string.
+// short.  We convert it to a string that uses only 32 characters,
+// avoiding digits and u and U.
 
 std::string
 Ptrmask::symname() const
 {
-  const char chars[65] =
-    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_.";
-  go_assert(chars[64] == '\0');
+  const char chars[33] = "abcdefghijklmnopqrstvwxyzABCDEFG";
+  go_assert(chars[32] == '\0');
   std::string ret;
   unsigned int b = 0;
   int remaining = 0;
@@ -2671,18 +2671,18 @@ Ptrmask::symname() const
     {
       b |= *p << remaining;
       remaining += 8;
-      while (remaining >= 6)
+      while (remaining >= 5)
 	{
-	  ret += chars[b & 0x3f];
-	  b >>= 6;
-	  remaining -= 6;
+	  ret += chars[b & 0x1f];
+	  b >>= 5;
+	  remaining -= 5;
 	}
     }
   while (remaining > 0)
     {
-      ret += chars[b & 0x3f];
-      b >>= 6;
-      remaining -= 6;
+      ret += chars[b & 0x1f];
+      b >>= 5;
+      remaining -= 5;
     }
   return ret;
 }
@@ -4447,7 +4447,11 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
     }
 
   const Typed_identifier_list* parms1 = this->parameters();
+  if (parms1 != NULL && parms1->empty())
+    parms1 = NULL;
   const Typed_identifier_list* parms2 = t->parameters();
+  if (parms2 != NULL && parms2->empty())
+    parms2 = NULL;
   if ((parms1 != NULL) != (parms2 != NULL))
     {
       if (reason != NULL)
@@ -4492,7 +4496,11 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
     }
 
   const Typed_identifier_list* results1 = this->results();
+  if (results1 != NULL && results1->empty())
+    results1 = NULL;
   const Typed_identifier_list* results2 = t->results();
+  if (results2 != NULL && results2->empty())
+    results2 = NULL;
   if ((results1 != NULL) != (results2 != NULL))
     {
       if (reason != NULL)
@@ -11144,7 +11152,7 @@ Type::build_stub_methods(Gogo* gogo, const Type* type, const Methods* methods,
 	package = NULL;
       else
 	package = type->named_type()->named_object()->package();
-      std::string stub_name = gogo->stub_method_name(name);
+      std::string stub_name = gogo->stub_method_name(package, name);
       Named_object* stub;
       if (package != NULL)
 	stub = Named_object::make_function_declaration(stub_name, package,

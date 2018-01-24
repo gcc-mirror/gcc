@@ -686,42 +686,33 @@ debug_function_name(Named_object* fn)
 
   if (!fn->is_function())
     return Gogo::unpack_hidden_name(fn->name());
-  if (fn->func_value()->enclosing() == NULL)
+
+  std::string fnname = Gogo::unpack_hidden_name(fn->name());
+  if (fn->func_value()->is_method())
     {
-      std::string fnname = Gogo::unpack_hidden_name(fn->name());
-      if (fn->func_value()->is_method())
-        {
-          // Methods in gc compiler are named "T.m" or "(*T).m" where
-          // T is the receiver type. Add the receiver here.
-          Type* rt = fn->func_value()->type()->receiver()->type();
-          switch (rt->classification())
-            {
-              case Type::TYPE_NAMED:
-                fnname = rt->named_type()->name() + "." + fnname;
-                break;
+      // Methods in gc compiler are named "T.m" or "(*T).m" where
+      // T is the receiver type. Add the receiver here.
+      Type* rt = fn->func_value()->type()->receiver()->type();
+      switch (rt->classification())
+	{
+	case Type::TYPE_NAMED:
+	  fnname = rt->named_type()->name() + "." + fnname;
+	  break;
 
-              case Type::TYPE_POINTER:
-                {
-                  Named_type* nt = rt->points_to()->named_type();
-                  if (nt != NULL)
-                    fnname = "(*" + nt->name() + ")." + fnname;
-                  break;
-                }
+	case Type::TYPE_POINTER:
+	  {
+	    Named_type* nt = rt->points_to()->named_type();
+	    if (nt != NULL)
+	      fnname = "(*" + nt->name() + ")." + fnname;
+	    break;
+	  }
 
-              default:
-                break;
-            }
-        }
-      return fnname;
+	default:
+	  break;
+	}
     }
 
-  // Closures are named ".$nested#" where # is a global counter. Add outer
-  // function name for better distinguishing. This is also closer to what
-  // gc compiler prints, "outer.func#".
-  Named_object* enclosing = fn->func_value()->enclosing();
-  std::string name = Gogo::unpack_hidden_name(fn->name());
-  std::string outer_name = Gogo::unpack_hidden_name(enclosing->name());
-  return outer_name + "." + name;
+  return fnname;
 }
 
 // Return the name of the current function.

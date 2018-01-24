@@ -656,7 +656,7 @@ func canrecover(retaddr uintptr) bool {
 		}
 
 		// Ignore other functions in the reflect package.
-		if hasprefix(name, "reflect.") {
+		if hasprefix(name, "reflect.") || hasprefix(name, ".1reflect.") {
 			continue
 		}
 
