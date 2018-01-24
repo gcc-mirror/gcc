@@ -1116,7 +1116,7 @@ public:
     rt_definition,	/* A definition. */
     rt_identifier,	/* An identifier node.  */
     rt_conv_identifier,	/* A conversion operator name.  */
-    rt_trees,		/* Global trees.  */
+    rt_globals,		/* Global trees.  */
     rt_type_name,	/* A type name.  */
     rt_typeinfo_var,	/* A typeinfo object.  */
     rt_typeinfo_pseudo, /* A typeinfo pseudo type.  */
@@ -1129,7 +1129,9 @@ public:
   };
 
 public:
-  static const gtp global_tree_arys[];
+  static const gtp globals_arys[];
+  static vec<tree, va_gc> *globals;
+  static unsigned globals_crc;
 
 public:
   module_state *state;
@@ -1149,9 +1151,11 @@ public:
 
 protected:
   /* Allocate a new reference index.  */
-  unsigned next ()
+  unsigned next (unsigned count = 1)
   {
-    return tag++;
+    unsigned res = tag;
+    tag += count;
+    return res;
   }
 
 public:
@@ -1200,6 +1204,18 @@ public:
   }
 };
 
+/* Global trees.  */
+const cpm_stream::gtp cpm_stream::globals_arys[] =
+  {
+    {sizetype_tab, stk_type_kind_last},
+    {integer_types, itk_none},
+    {global_trees, TI_MAX},
+    {cp_global_trees, CPTI_MAX},
+    {NULL, 0}
+  };
+vec<tree, va_gc> GTY(()) *cpm_stream::globals;
+unsigned cpm_stream::globals_crc;
+
 cpm_stream::cpm_stream (module_state *state_, cpm_stream *chain)
   : state (state_), tag (rt_ref_base), d (chain ? chain->d : NULL),
     depth (chain ? chain->depth + 1 : 0), nesting (0), bol (true)
@@ -1207,6 +1223,64 @@ cpm_stream::cpm_stream (module_state *state_, cpm_stream *chain)
   gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
   if (!chain)
     d = dump_begin (module_dump_id, NULL);
+
+  if (!globals)
+    {
+      /* Construct the global tree array.  This is an array of unique
+	 global trees (& types).  */
+      unsigned crc = 0;
+      hash_table<nofree_ptr_hash<tree_node> > hash (200);
+      vec_alloc (globals, 200);
+
+      dump () && dump ("+Creating globals");
+      /* Insert the TRANSLATION_UNIT_DECL.  */
+      *hash.find_slot (DECL_CONTEXT (global_namespace), INSERT)
+	= DECL_CONTEXT (global_namespace);
+      globals->quick_push (DECL_CONTEXT (global_namespace));
+
+      for (unsigned jx = 0; globals_arys[jx].ptr; jx++)
+	{
+	  const tree *ptr = globals_arys[jx].ptr;
+	  unsigned limit = globals_arys[jx].num;
+	  
+	  for (unsigned ix = 0; ix != limit; ix++, ptr++)
+	    {
+	      dump () && !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx,ix);
+	      unsigned v = 0;
+	      if (tree val = *ptr)
+		{
+		  tree *slot = hash.find_slot (val, INSERT);
+		  if (!*slot)
+		    {
+		      *slot = val;
+		      crc = crc32_unsigned (crc, globals->length ());
+		      vec_safe_push (globals, val);
+		      v++;
+		      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+			{
+			  val = TREE_TYPE (val);
+			  if (val)
+			    {
+			      slot = hash.find_slot (val, INSERT);
+			      if (!*slot)
+				{
+				  *slot = val;
+				  crc = crc32_unsigned (crc, globals->length ());
+				  vec_safe_push (globals, val);
+				  v++;
+				}
+			    }
+			}
+		    }
+		}
+	      dump () && dump ("+%u", v);
+	    }
+	}
+      gcc_checking_assert (hash.elements () == globals->length ());
+      globals_crc = crc32_unsigned (crc, globals->length ());
+      dump () && dump ("") &&dump ("Created %u unique globals, crc=%x",
+				   globals->length (), globals_crc);
+    }
 }
 
 cpm_stream::~cpm_stream ()
@@ -1469,7 +1543,7 @@ public:
   void tag_eof ();
   void tag_conf ();
   void tag_import (unsigned ix, const module_state *);
-  void tag_trees ();
+  void tag_globals ();
   void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
@@ -1487,8 +1561,6 @@ private:
   unsigned insert (tree);
   void start (tree_code, tree);
   void loc (location_t);
-  bool mark_present (tree);
-  void globals (const tree *, unsigned);
   void core_bools (tree);
   void core_vals (tree);
   void lang_type_bools (tree);
@@ -1577,7 +1649,7 @@ public:
   bool tag_import ();
   bool tag_binding ();
   tree tag_definition ();
-  bool tag_trees ();
+  bool tag_globals ();
   int read_item ();
   int done ()
   {
@@ -1597,8 +1669,6 @@ private:
   tree start (tree_code);
   tree finish (tree);
   location_t loc ();
-  bool mark_present (tree);
-  bool globals (const tree *, unsigned);
   bool core_bools (tree);
   bool core_vals (tree);
   bool lang_type_bools (tree);
@@ -1822,143 +1892,42 @@ cpms_in::tag_conf ()
   return true;
 }
 
-/* Dump the global trees directly to save encoding them for no reason.
-   Further types such as sizetype and global_namespace are oddly
-   recursive, and this avoids having to deal with that in the
-   cpm_reader.
-
-   <ary>*
-   <u:0>
-*/
-
-const cpm_stream::gtp cpm_stream::global_tree_arys[] =
-  {
-    {sizetype_tab, stk_type_kind_last},
-    {integer_types, itk_none},
-    {global_trees, TI_MAX},
-    {cp_global_trees, CPTI_MAX},
-    {NULL, 0}
-  };
-
 void
-cpms_out::tag_trees ()
+cpms_out::tag_globals ()
 {
-  tag (rt_trees);
-  globals (&DECL_CONTEXT (global_namespace), 1);
-  for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
-    globals (global_tree_arys[ix].ptr, global_tree_arys[ix].num);
+  unsigned limit = globals->length ();
+  tag (rt_globals);
+  w.u (limit);
+  w.u (globals_crc);
   w.checkpoint ();
+
+  for (unsigned ix = 0; ix != limit; ix++)
+    {
+      tree val = (*globals)[ix];
+      bool existed;
+      unsigned *slot = &tree_map.get_or_insert (val, &existed);
+      gcc_checking_assert (!existed);
+      *slot = next ();
+    }
 }
 
 bool
-cpms_in::tag_trees ()
+cpms_in::tag_globals ()
 {
-  if (!globals (&DECL_CONTEXT (global_namespace), 1))
+  unsigned limit = r.u ();
+  unsigned crc = r.u ();
+  if (!r.checkpoint ())
     return false;
-  for (unsigned ix = 0; global_tree_arys[ix].ptr; ix++)
-    if (!globals (global_tree_arys[ix].ptr, global_tree_arys[ix].num))
+  if (limit != globals->length () || crc != globals_crc)
+    {
+      error ("global tree mismatch");
       return false;
-  return r.checkpoint ();
-}
-
-bool
-cpms_out::mark_present (tree t)
-{
-  bool existed = true;
-
-  if (t)
-    {
-      unsigned *val = &tree_map.get_or_insert (t, &existed);
-      if (!existed)
-	*val = next ();
     }
-  w.b (existed);
 
-  return existed;
-}
-
-bool
-cpms_in::mark_present (tree t)
-{
-  bool existed = r.b ();
-
-  if (!existed)
-    {
-      unsigned tag = next ();
-
-      gcc_assert (t);
-      tree_map.put (tag, t);
-    }
-  return existed;
-}
-
-/* Global tree array
-   u:count
-   b[]:insert_p  */
-
-void
-cpms_out::globals (const tree *ary, unsigned num)
-{
-  w.u (num);
-
-  dump () && dump ("+Writing %u globals", num);
-
-  unsigned outer = 0, inner = 0;
-  for (unsigned ix = 0; ix != num; ix++)
-    {
-      dump () && !(ix & 31) && dump ("") && dump ("+\t%u:", ix);
-
-      tree t = ary[ix];
-      unsigned first = !mark_present (t);
-      if (first)
-	{
-	  outer++;
-	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
-	      && !mark_present (TREE_TYPE (t)))
-	    {
-	      first++;
-	      inner++;
-	    }
-	}
-      dump () && dump ("+%u", first);
-    }
-  w.bflush ();
-  dump () && dump ("") && dump ("Wrote %u unique %u inner", outer, inner);
-
-  w.checkpoint ();
-}
-
-bool
-cpms_in::globals (const tree *ary, unsigned num)
-{
-  if (r.u () != num)
-    return false;
-
-  dump () && dump ("+Reading %u globals", num);
-
-  unsigned outer = 0, inner = 0;
-  for (unsigned ix = 0; ix != num; ix++)
-    {
-      dump () && !(ix & 31) && dump ("") && dump ("+\t%u:", ix);
-
-      tree t = ary[ix];
-      unsigned first = !mark_present (t);
-      if (first)
-	{
-	  outer++;
-	  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED)
-	      && !mark_present (TREE_TYPE (t)))
-	    {
-	      first++;
-	      inner++;
-	    }
-	}
-      dump () && dump ("+%u", first);
-    }
-  r.bflush ();
-  dump () && dump ("") && dump ("Read %u unique %u inner", outer, inner);
-
-  return r.checkpoint ();
+  /* Just reserve the tag space.  No need to actually insert them in
+     the map.  */
+  next (limit);
+  return true;
 }
 
 /* Item import
@@ -2723,8 +2692,8 @@ cpms_in::read_item ()
       return tag_binding ();
     case rt_definition:
       return tag_definition () != NULL_TREE;
-    case rt_trees:
-      return tag_trees ();
+    case rt_globals:
+      return tag_globals ();
 
     default:
       error (rt < rt_tree_base ? "unknown key %qd"
@@ -4523,15 +4492,21 @@ cpms_in::tree_node_special (unsigned tag)
 {
   if (tag >= rt_ref_base)
     {
-      tree *val = (tree *)tree_map.get (tag);
-      if (!val || !*val)
-	{
-	  error ("unknown tree reference %qd", tag);
-	  r.bad ();
-	  return NULL_TREE;
-	}
+      tree res;
 
-      tree res = *val;
+      if (tag - rt_ref_base < globals->length ())
+	res = (*globals)[tag - rt_ref_base];
+      else
+	{
+	  tree *val = (tree *)tree_map.get (tag);
+	  if (!val || !*val)
+	    {
+	      error ("unknown tree reference %qd", tag);
+	      r.bad ();
+	      return NULL_TREE;
+	    }
+	  res = *val;
+	}
       dump () && dump ("Read:%u found %C:%N%M", tag,
 		       TREE_CODE (res), res, res);
       return res;
@@ -4740,7 +4715,7 @@ cpms_in::tree_node ()
 	  r.bad ();
 	}
     }
-      
+
   if (res || r.error ())
     {
       unnest ();
@@ -5549,7 +5524,7 @@ write_module (FILE *stream, module_state *state)
   for (unsigned ix = modules->length (); --ix;)
     out.tag_import (ix, (*modules)[ix]);
 
-  out.tag_trees ();
+  out.tag_globals ();
 
   /* Write decls.  */
   out.bindings (global_namespace);

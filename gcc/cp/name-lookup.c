@@ -3552,11 +3552,11 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
 
 /* Given a namespace-level binding BINDING, initialize *VEC with the
    set of bindings that are visible to importers and implementations.
-   I.e. the exported decls, the module-linkage decls and the global
-   module external-linkage decls.  Any TYPE binding is pushed first.
-   If VEC is NULL, we are determining if there are any such entities
-   -- so bail as soon as we find one.  if VEC is non-null the target
-   vector must have at least 2 available slots.  */
+   I.e. the exported decls and module-linkage decls.  Any TYPE binding
+   is pushed first.  If VEC is NULL, we are determining if there are
+   any such entities -- so bail as soon as we find one.  if VEC is
+   non-null the target vector must have at least 2 available
+   slots.  */
 
 module_binding_vec *
 extract_module_bindings (module_binding_vec *vec, tree binding)
@@ -3585,9 +3585,10 @@ extract_module_bindings (module_binding_vec *vec, tree binding)
 	  && !MAYBE_DECL_MODULE_PURVIEW_P (res))
 	continue;
 
-      if (TREE_CODE (res) == VAR_DECL && DECL_TINFO_P (res))
+      if ((TREE_CODE (res) == VAR_DECL
+	   || TREE_CODE (res) == TYPE_DECL)
+	  && DECL_TINFO_P (res))
 	continue;
-
 
       if ((TREE_CODE (res) == FUNCTION_DECL
 	   || TREE_CODE (res) == VAR_DECL)

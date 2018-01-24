@@ -1,5 +1,15 @@
 2018-01-24  Nathan Sidwell  <nathan@acm.org>
 
+	Global tree via crc
+	gcc/cp/
+	* module.c (cpm_stream): Add globals & globals_crc.
+	(cpm_stream::next): Add default arg.
+	(cpm_stream::cpm_stream): Lazily init globals vector.
+	(cpms_{in,out}::mark_present, globals): Delete.
+	(cpms_{in,out}::tag_globals): Reimplement.
+	(cpms_in::tree_node_special): Read global tree directly.
+	* name-lookup.c (extract_module_bindings): Skip RTTI types.
+
 	gcc/cp/
 	* module.c (module_state): Replace direct_import with imported &
 	exported flags.
