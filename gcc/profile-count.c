@@ -345,3 +345,29 @@ profile_count::from_gcov_type (gcov_type v)
     return ret;
   }
 
+
+/* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
+   happens with COUNT2 probablity. Return probablity that either *THIS or
+   OTHER happens.  */
+
+profile_probability
+profile_probability::combine_with_count (profile_count count1,
+					 profile_probability other,
+					 profile_count count2) const
+{
+  /* If probabilities are same, we are done.
+     If counts are nonzero we can distribute accordingly. In remaining
+     cases just avreage the values and hope for the best.  */
+  if (*this == other || count1 == count2
+      || (count2 == profile_count::zero ()
+	  && !(count1 == profile_count::zero ())))
+    return *this;
+  if (count1 == profile_count::zero () && !(count2 == profile_count::zero ()))
+    return other;
+  else if (count1.nonzero_p () || count2.nonzero_p ())
+    return *this * count1.probability_in (count1 + count2)
+	   + other * count2.probability_in (count1 + count2);
+  else
+    return *this * profile_probability::even ()
+	   + other * profile_probability::even ();
+}

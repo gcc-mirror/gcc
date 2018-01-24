@@ -1,3 +1,22 @@
+2018-01-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfgcleanup.c (try_crossjump_to_edge): Use combine_with_count
+	to merge probabilities.
+	* predict.c (probably_never_executed): Also mark as cold functions
+	with global 0 profile and guessed local profile.
+	* profile-count.c (profile_probability::combine_with_count): New
+	member function.
+	* profile-count.h (profile_probability::operator*,
+	profile_probability::operator*=, profile_probability::operator/,
+	profile_probability::operator/=): Reduce precision to adjusted
+	and set value to guessed on contradictory divisions.
+	(profile_probability::combine_with_freq): Remove.
+	(profile_probability::combine_wiht_count): Declare.
+	(profile_count::force_nonzero):: Set to adjusted.
+	(profile_count::probability_in):: Set quality to adjusted.
+	* tree-ssa-tail-merge.c (replace_block_by): Use
+	combine_with_count.
+
 2018-01-23  Andrew Waterman  <andrew@sifive.com>
 	    Jim Wilson  <jimw@sifive.com>
 

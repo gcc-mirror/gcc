@@ -210,7 +210,7 @@ probably_never_executed (struct function *fun,
                          profile_count count)
 {
   gcc_checking_assert (fun);
-  if (count == profile_count::zero ())
+  if (count.ipa () == profile_count::zero ())
     return true;
   /* Do not trust adjusted counts.  This will make us to drop int cold section
      code with low execution count as a result of inlining. These low counts
