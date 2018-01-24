@@ -1,3 +1,10 @@
+2018-01-24  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/81352
+	* config/nvptx/nvptx.c (nvptx_single): Add exit insn after noreturn call
+	for neutered threads in warp.
+	* config/nvptx/nvptx.md (define_insn "exit"): New insn.
+
 2018-01-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83176

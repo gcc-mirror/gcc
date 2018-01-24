@@ -4062,7 +4062,12 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	if (tail_branch)
 	  before = emit_label_before (label, before);
 	else
-	  emit_label_after (label, tail);
+	  {
+	    rtx_insn *label_insn = emit_label_after (label, tail);
+	    if (mode == GOMP_DIM_VECTOR && CALL_P (tail)
+		&& find_reg_note (tail, REG_NORETURN, NULL))
+	      emit_insn_after (gen_exit (), label_insn);
+	  }
       }
 
   /* Now deal with propagating the branch condition.  */

@@ -994,6 +994,11 @@
   ""
   "")
 
+(define_insn "exit"
+  [(const_int 1)]
+  ""
+  "exit;")
+
 (define_insn "return"
   [(return)]
   ""
