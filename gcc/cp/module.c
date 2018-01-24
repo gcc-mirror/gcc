@@ -1109,7 +1109,6 @@ public:
     /* Module-specific records.  */
     rt_eof,		/* End Of File.  duh! */
     rt_conf,		/* Config info (baked in stuff like target-triplet) */
-    rt_stamp,		/* Date stamp etc.  */
     rt_flags,		/* Flags that affect AST compatibility.  */
     rt_import,		/* An import. */
     rt_binding,		/* A name-binding.  */
@@ -1228,6 +1227,9 @@ cpm_stream::cpm_stream (module_state *state_, cpm_stream *chain)
     {
       /* Construct the global tree array.  This is an array of unique
 	 global trees (& types).  */
+      // FIXME:Some slots are lazily allocated, we must move them to
+      // the end and not stream them here.  They must be locatable via
+      // some other means.
       unsigned crc = 0;
       hash_table<nofree_ptr_hash<tree_node> > hash (200);
       vec_alloc (globals, 200);
