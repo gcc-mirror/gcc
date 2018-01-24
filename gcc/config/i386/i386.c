@@ -11497,6 +11497,18 @@ static void warn_once_call_ms2sysv_xlogues (const char *feature)
     }
 }
 
+/* Return the probing interval for -fstack-clash-protection.  */
+
+static HOST_WIDE_INT
+get_probe_interval (void)
+{
+  if (flag_stack_clash_protection)
+    return (HOST_WIDE_INT_1U
+	    << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL));
+  else
+    return (HOST_WIDE_INT_1U << STACK_CHECK_PROBE_INTERVAL_EXP);
+}
+
 /* When using -fsplit-stack, the allocation routines set a field in
    the TCB to the bottom of the stack plus this much space, measured
    in bytes.  */
@@ -11773,7 +11785,14 @@ ix86_compute_frame_layout (void)
   to_allocate = offset - frame->sse_reg_save_offset;
 
   if ((!to_allocate && frame->nregs <= 1)
-      || (TARGET_64BIT && to_allocate >= HOST_WIDE_INT_C (0x80000000)))
+      || (TARGET_64BIT && to_allocate >= HOST_WIDE_INT_C (0x80000000))
+      /* If stack clash probing needs a loop, then it needs a
+	 scratch register.  But the returned register is only guaranteed
+	 to be safe to use after register saves are complete.  So if
+	 stack clash protections are enabled and the allocated frame is
+	 larger than the probe interval, then use pushes to save
+	 callee saved registers.  */
+      || (flag_stack_clash_protection && to_allocate > get_probe_interval ()))
     frame->save_regs_using_mov = false;
 
   if (ix86_using_red_zone ()
@@ -12565,18 +12584,6 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
       m->fs.sp_offset -= UNITS_PER_WORD;
     }
-}
-
-/* Return the probing interval for -fstack-clash-protection.  */
-
-static HOST_WIDE_INT
-get_probe_interval (void)
-{
-  if (flag_stack_clash_protection)
-    return (HOST_WIDE_INT_1U
-	    << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL));
-  else
-    return (HOST_WIDE_INT_1U << STACK_CHECK_PROBE_INTERVAL_EXP);
 }
 
 /* Emit code to adjust the stack pointer by SIZE bytes while probing it.
@@ -13726,12 +13733,11 @@ ix86_expand_prologue (void)
       && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
 	  || flag_stack_clash_protection))
     {
-      /* This assert wants to verify that integer registers were saved
-	 prior to probing.  This is necessary when probing may be implemented
-	 as a function call (Windows).  It is not necessary for stack clash
-	 protection probing.  */
-      if (!flag_stack_clash_protection)
-	gcc_assert (int_registers_saved);
+      /* We expect the GP registers to be saved when probes are used
+	 as the probing sequences might need a scratch register and
+	 the routine to allocate one assumes the integer registers
+	 have already been saved.  */
+      gcc_assert (int_registers_saved);
 
       if (flag_stack_clash_protection)
 	{
