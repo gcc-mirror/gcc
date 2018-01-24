@@ -2761,16 +2761,19 @@ bool
 Lex::is_exported_name(const std::string& name)
 {
   unsigned char c = name[0];
-  if (c != '$')
+  if (c != '.')
     return c >= 'A' && c <= 'Z';
   else
     {
       const char* p = name.data();
       size_t len = name.length();
-      if (len < 2 || p[1] != 'U')
+      if (len < 4 || p[1] != '.' || (p[2] != 'u' && p[2] != 'U'))
 	return false;
       unsigned int ci = 0;
-      for (size_t i = 2; i < len && p[i] != '$'; ++i)
+      size_t want = (p[2] == 'u' ? 4 : 8);
+      if (len < want + 3)
+	return false;
+      for (size_t i = 3; i < want; ++i)
 	{
 	  c = p[i];
 	  if (!Lex::is_hex_digit(c))

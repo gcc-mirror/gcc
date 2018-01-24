@@ -425,7 +425,7 @@ func TestPanicTraceback(t *testing.T) {
 	// Check functions in the traceback.
 	fns := []string{"main.pt1.func1", "panic", "main.pt2.func1", "panic", "main.pt2", "main.pt1"}
 	if runtime.Compiler == "gccgo" {
-		fns = []string{"main.$nested", "panic", "main.$nested", "panic", "main.pt2", "main.pt1"}
+		fns = []string{"main.pt1..func1", "panic", "main.pt2..func1", "panic", "main.pt2", "main.pt1"}
 	}
 	for _, fn := range fns {
 		var re *regexp.Regexp
@@ -570,7 +570,7 @@ func TestPanicInlined(t *testing.T) {
 		buf = buf[:n]
 		want := []byte("(*point).negate(")
 		if runtime.Compiler == "gccgo" {
-			want = []byte("negate.pN18_runtime_test.point")
+			want = []byte("point.negate")
 		}
 		if !bytes.Contains(buf, want) {
 			t.Logf("%s", buf)

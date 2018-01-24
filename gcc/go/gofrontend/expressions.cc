@@ -1310,6 +1310,16 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
       && Linemap::is_predeclared_location(no->location()))
     is_descriptor = true;
 
+  // The runtime package implements some functions defined in the
+  // syscall package.  Let the syscall package define the descriptor
+  // in this case.
+  if (gogo->compiling_runtime()
+      && gogo->package_name() == "runtime"
+      && no->is_function()
+      && !no->func_value()->asm_name().empty()
+      && no->func_value()->asm_name().compare(0, 8, "syscall.") == 0)
+    is_descriptor = true;
+
   Btype* btype = this->type()->get_backend(gogo);
 
   Bvariable* bvar;
@@ -6845,7 +6855,8 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
 
   if (orig_fntype == NULL || !orig_fntype->is_method())
     {
-      ins.first->second = Named_object::make_erroneous_name(Gogo::thunk_name());
+      ins.first->second =
+	Named_object::make_erroneous_name(gogo->thunk_name());
       return ins.first->second;
     }
 
@@ -6853,8 +6864,8 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
   // The type here is wrong--it should be the C function type.  But it
   // doesn't really matter.
   Type* vt = Type::make_pointer_type(Type::make_void_type());
-  sfl->push_back(Struct_field(Typed_identifier("fn.0", vt, loc)));
-  sfl->push_back(Struct_field(Typed_identifier("val.1",
+  sfl->push_back(Struct_field(Typed_identifier("fn", vt, loc)));
+  sfl->push_back(Struct_field(Typed_identifier("val",
 					       orig_fntype->receiver()->type(),
 					       loc)));
   Struct_type* st = Type::make_struct_type(sfl, loc);
@@ -6863,7 +6874,7 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
 
   Function_type* new_fntype = orig_fntype->copy_with_names();
 
-  std::string thunk_name = Gogo::thunk_name();
+  std::string thunk_name = gogo->thunk_name();
   Named_object* new_no = gogo->start_function(thunk_name, new_fntype,
 					      false, loc);
 
@@ -7009,10 +7020,10 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
   // away with this.
 
   Struct_field_list* fields = new Struct_field_list();
-  fields->push_back(Struct_field(Typed_identifier("fn.0",
+  fields->push_back(Struct_field(Typed_identifier("fn",
 						  thunk->func_value()->type(),
 						  loc)));
-  fields->push_back(Struct_field(Typed_identifier("val.1", val->type(), loc)));
+  fields->push_back(Struct_field(Typed_identifier("val", val->type(), loc)));
   Struct_type* st = Type::make_struct_type(fields, loc);
   st->set_is_struct_incomparable();
 
@@ -11889,25 +11900,25 @@ Interface_field_reference_expression::create_thunk(Gogo* gogo,
 
   const Typed_identifier* method_id = type->find_method(name);
   if (method_id == NULL)
-    return Named_object::make_erroneous_name(Gogo::thunk_name());
+    return Named_object::make_erroneous_name(gogo->thunk_name());
 
   Function_type* orig_fntype = method_id->type()->function_type();
   if (orig_fntype == NULL)
-    return Named_object::make_erroneous_name(Gogo::thunk_name());
+    return Named_object::make_erroneous_name(gogo->thunk_name());
 
   Struct_field_list* sfl = new Struct_field_list();
   // The type here is wrong--it should be the C function type.  But it
   // doesn't really matter.
   Type* vt = Type::make_pointer_type(Type::make_void_type());
-  sfl->push_back(Struct_field(Typed_identifier("fn.0", vt, loc)));
-  sfl->push_back(Struct_field(Typed_identifier("val.1", type, loc)));
+  sfl->push_back(Struct_field(Typed_identifier("fn", vt, loc)));
+  sfl->push_back(Struct_field(Typed_identifier("val", type, loc)));
   Struct_type* st = Type::make_struct_type(sfl, loc);
   st->set_is_struct_incomparable();
   Type* closure_type = Type::make_pointer_type(st);
 
   Function_type* new_fntype = orig_fntype->copy_with_names();
 
-  std::string thunk_name = Gogo::thunk_name();
+  std::string thunk_name = gogo->thunk_name();
   Named_object* new_no = gogo->start_function(thunk_name, new_fntype,
 					      false, loc);
 
@@ -11995,10 +12006,10 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
   Location loc = this->location();
 
   Struct_field_list* fields = new Struct_field_list();
-  fields->push_back(Struct_field(Typed_identifier("fn.0",
+  fields->push_back(Struct_field(Typed_identifier("fn",
 						  thunk->func_value()->type(),
 						  loc)));
-  fields->push_back(Struct_field(Typed_identifier("val.1",
+  fields->push_back(Struct_field(Typed_identifier("val",
 						  this->expr_->type(),
 						  loc)));
   Struct_type* st = Type::make_struct_type(fields, loc);
@@ -12247,7 +12258,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
       return f;
     }
 
-  Named_object* no = gogo->start_function(Gogo::thunk_name(), fntype, false,
+  Named_object* no = gogo->start_function(gogo->thunk_name(), fntype, false,
 					  location);
 
   Named_object* vno = gogo->lookup(receiver_name, NULL);
