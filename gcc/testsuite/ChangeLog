@@ -1,3 +1,12 @@
+2018-01-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83921
+	* g++.dg/cpp1y/constexpr-83921-1.C: New.
+	* g++.dg/cpp1y/constexpr-83921-2.C: Likewise.
+	* g++.dg/cpp1y/constexpr-83921-3.C: Likewise.
+	* g++.dg/ext/stmtexpr20.C: Likewise.
+	* g++.dg/ext/stmtexpr21.C: Likewise.
+
 2018-01-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/83974
