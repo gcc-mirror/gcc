@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PROFILE_COUNT_H
 
 struct function;
+class profile_count;
 
 /* Quality of the profile count.  Because gengtype does not support enums
    inside of classes, this is in global namespace.  */
@@ -350,7 +351,7 @@ public:
 	return profile_probability::uninitialized ();
       profile_probability ret;
       ret.m_val = RDIV ((uint64_t)m_val * other.m_val, max_probability);
-      ret.m_quality = MIN (m_quality, other.m_quality);
+      ret.m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
       return ret;
     }
   profile_probability &operator*= (const profile_probability &other)
@@ -363,7 +364,7 @@ public:
       else
 	{
 	  m_val = RDIV ((uint64_t)m_val * other.m_val, max_probability);
-	  m_quality = MIN (m_quality, other.m_quality);
+	  m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
 	}
       return *this;
     }
@@ -374,8 +375,14 @@ public:
       if (!initialized_p () || !other.initialized_p ())
 	return profile_probability::uninitialized ();
       profile_probability ret;
+      /* If we get probability above 1, mark it as unreliable and return 1. */
       if (m_val >= other.m_val)
-	ret.m_val = max_probability;
+	{
+	  ret.m_val = max_probability;
+          ret.m_quality = MIN (MIN (m_quality, other.m_quality),
+			       profile_guessed);
+	  return ret;
+	}
       else if (!m_val)
 	ret.m_val = 0;
       else
@@ -385,7 +392,7 @@ public:
 				 other.m_val),
 			   max_probability);
 	}
-      ret.m_quality = MIN (m_quality, other.m_quality);
+      ret.m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
       return ret;
     }
   profile_probability &operator/= (const profile_probability &other)
@@ -396,8 +403,15 @@ public:
 	return *this = profile_probability::uninitialized ();
       else
 	{
+          /* If we get probability above 1, mark it as unreliable
+	     and return 1. */
 	  if (m_val > other.m_val)
-	    m_val = max_probability;
+	    {
+	      m_val = max_probability;
+              m_quality = MIN (MIN (m_quality, other.m_quality),
+			       profile_guessed);
+	      return *this;
+	    }
 	  else if (!m_val)
 	    ;
 	  else
@@ -407,7 +421,7 @@ public:
 				 other.m_val),
 			   max_probability);
 	    }
-	  m_quality = MIN (m_quality, other.m_quality);
+	  m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
 	}
       return *this;
     }
@@ -462,27 +476,6 @@ public:
     {
       profile_probability ret = *this;
       ret.m_quality = profile_afdo;
-      return ret;
-    }
-
-  profile_probability combine_with_freq (int freq1, profile_probability other,
-					 int freq2) const
-    {
-      profile_probability ret;
-
-      if (*this == profile_probability::uninitialized ()
-	  || other == profile_probability::uninitialized ())
-	return profile_probability::uninitialized ();
-
-      gcc_checking_assert (freq1 >= 0 && freq2 >= 0);
-      if (!freq1 && !freq2)
-	{
-	  ret.m_val = (m_val + other.m_val) / 2;
-	}
-      else
-	ret.m_val = RDIV (m_val * (uint64_t) freq1
-			  + other.m_val * (uint64_t) freq2, freq1 + freq2);
-      ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
     }
 
@@ -569,6 +562,12 @@ public:
   bool differs_from_p (profile_probability other) const;
   /* Return if difference is greater than 50%.  */
   bool differs_lot_from_p (profile_probability other) const;
+  /* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
+     happens with COUNT2 probablity. Return probablity that either *THIS or
+     OTHER happens.  */
+  profile_probability combine_with_count (profile_count count1,
+					  profile_probability other,
+					  profile_count count2) const;
 
   /* LTO streaming support.  */
   static profile_probability stream_in (struct lto_input_block *);
@@ -906,7 +905,10 @@ public:
 	return *this;
       profile_count ret = *this;
       if (ret.m_val == 0)
-	ret.m_val = 1;
+	{
+	  ret.m_val = 1;
+          ret.m_quality = MIN (m_quality, profile_adjusted);
+	}
       return ret;
     }
 
@@ -1062,20 +1064,28 @@ public:
      OVERALL.  */
   profile_probability probability_in (const profile_count overall) const
     {
-      if (*this == profile_count::zero ())
+      if (*this == profile_count::zero ()
+	  && !(overall == profile_count::zero ()))
 	return profile_probability::never ();
       if (!initialized_p () || !overall.initialized_p ()
 	  || !overall.m_val)
 	return profile_probability::uninitialized ();
+      if (*this == overall && m_quality == profile_precise)
+	return profile_probability::always ();
       profile_probability ret;
       gcc_checking_assert (compatible_p (overall));
 
       if (overall.m_val < m_val)
-	ret.m_val = profile_probability::max_probability;
+	{
+	  ret.m_val = profile_probability::max_probability;
+	  ret.m_quality = profile_guessed;
+	  return ret;
+	}
       else
 	ret.m_val = RDIV (m_val * profile_probability::max_probability,
 			  overall.m_val);
-      ret.m_quality = MAX (MIN (m_quality, overall.m_quality), profile_guessed);
+      ret.m_quality = MIN (MAX (MIN (m_quality, overall.m_quality),
+				profile_guessed), profile_adjusted);
       return ret;
     }
 

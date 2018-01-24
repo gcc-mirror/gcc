@@ -2130,11 +2130,9 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
       if (FORWARDER_BLOCK_P (s2->dest))
 	s2->dest->count -= s->count ();
 
-      /* FIXME: Is this correct? Should be rewritten to count API.  */
-      if (redirect_edges_to->count.nonzero_p () && src1->count.nonzero_p ())
-	s->probability = s->probability.combine_with_freq
-			   (redirect_edges_to->count.to_frequency (cfun),
-			    s2->probability, src1->count.to_frequency (cfun));
+      s->probability = s->probability.combine_with_count
+			  (redirect_edges_to->count,
+			   s2->probability, src1->count);
     }
 
   /* Adjust count for the block.  An earlier jump
