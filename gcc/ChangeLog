@@ -1,5 +1,11 @@
 2018-01-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/83176
+	* tree-chrec.c (chrec_fold_plus_1): Handle (signed T){(T) .. }
+	operands.
+
+2018-01-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82819
 	* graphite-isl-ast-to-gimple.c (binary_op_to_tree): Avoid
 	code generating pluses that are no-ops in the target precision.
