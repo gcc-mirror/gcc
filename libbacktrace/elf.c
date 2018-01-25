@@ -997,7 +997,6 @@ elf_open_debugfile_by_debuglink (struct backtrace_state *state,
 				 void *data)
 {
   int ddescriptor;
-  uint32_t got_crc;
 
   ddescriptor = elf_find_debugfile_by_debuglink (state, filename,
 						 debuglink_name,
@@ -1005,11 +1004,16 @@ elf_open_debugfile_by_debuglink (struct backtrace_state *state,
   if (ddescriptor < 0)
     return -1;
 
-  got_crc = elf_crc32_file (state, ddescriptor, error_callback, data);
-  if (got_crc != debuglink_crc)
+  if (debuglink_crc != 0)
     {
-      backtrace_close (ddescriptor, error_callback, data);
-      return -1;
+      uint32_t got_crc;
+
+      got_crc = elf_crc32_file (state, ddescriptor, error_callback, data);
+      if (got_crc != debuglink_crc)
+	{
+	  backtrace_close (ddescriptor, error_callback, data);
+	  return -1;
+	}
     }
 
   return ddescriptor;
@@ -2634,8 +2638,11 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   unsigned int using_debug_view;
   uint16_t *zdebug_table;
 
-  *found_sym = 0;
-  *found_dwarf = 0;
+  if (!debuginfo)
+    {
+      *found_sym = 0;
+      *found_dwarf = 0;
+    }
 
   shdrs_view_valid = 0;
   names_view_valid = 0;

@@ -1,5 +1,11 @@
 2018-01-25  Ian Lance Taylor  <iant@golang.org>
 
+	* elf.c (elf_open_debugfile_by_debuglink): Don't check CRC if the
+	desired CRC is zero.
+	(elf_add): Don't clear *found_sym and *found_dwarf if debuginfo.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
 	* pecoff.c (coff_add): Only release syms_view if it is valid.
 
 2018-01-25  Ian Lance Taylor  <iant@golang.org>
