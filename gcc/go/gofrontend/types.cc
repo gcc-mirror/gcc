@@ -107,6 +107,34 @@ Type::forwarded() const
   return t;
 }
 
+// Skip alias definitions.
+
+Type*
+Type::unalias()
+{
+  Type* t = this->forwarded();
+  Named_type* nt = t->named_type();
+  while (nt != NULL && nt->is_alias())
+    {
+      t = nt->real_type()->forwarded();
+      nt = t->named_type();
+    }
+  return t;
+}
+
+const Type*
+Type::unalias() const
+{
+  const Type* t = this->forwarded();
+  const Named_type* nt = t->named_type();
+  while (nt != NULL && nt->is_alias())
+    {
+      t = nt->real_type()->forwarded();
+      nt = t->named_type();
+    }
+  return t;
+}
+
 // If this is a named type, return it.  Otherwise, return NULL.
 
 Named_type*
@@ -333,15 +361,9 @@ Type::are_identical_cmp_tags(const Type* t1, const Type* t2, Cmp_tags cmp_tags,
       return errors_are_identical ? true : t1 == t2;
     }
 
-  // Skip defined forward declarations.
-  t1 = t1->forwarded();
-  t2 = t2->forwarded();
-
-  // Ignore aliases for purposes of type identity.
-  while (t1->named_type() != NULL && t1->named_type()->is_alias())
-    t1 = t1->named_type()->real_type()->forwarded();
-  while (t2->named_type() != NULL && t2->named_type()->is_alias())
-    t2 = t2->named_type()->real_type()->forwarded();
+  // Skip defined forward declarations.  Ignore aliases.
+  t1 = t1->unalias();
+  t2 = t2->unalias();
 
   if (t1 == t2)
     return true;
@@ -1197,9 +1219,7 @@ Type::finish_backend(Gogo* gogo, Btype *placeholder)
 Bexpression*
 Type::type_descriptor_pointer(Gogo* gogo, Location location)
 {
-  Type* t = this->forwarded();
-  while (t->named_type() != NULL && t->named_type()->is_alias())
-    t = t->named_type()->real_type()->forwarded();
+  Type* t = this->unalias();
   if (t->type_descriptor_var_ == NULL)
     {
       t->make_type_descriptor_var(gogo);
@@ -1648,10 +1668,10 @@ Type::type_functions(Gogo* gogo, Named_type* name, Function_type* hash_fntype,
 		     Function_type* equal_fntype, Named_object** hash_fn,
 		     Named_object** equal_fn)
 {
-  // If this loop leaves NAME as NULL, then the type does not have a
-  // name after all.
-  while (name != NULL && name->is_alias())
-    name = name->real_type()->named_type();
+  // If the unaliased type is not a named type, then the type does not
+  // have a name after all.
+  if (name != NULL)
+    name = name->unalias()->named_type();
 
   if (!this->is_comparable())
     {
@@ -2370,9 +2390,7 @@ static const int64_t max_ptrmask_bytes = 2048;
 Bexpression*
 Type::gc_symbol_pointer(Gogo* gogo)
 {
-  Type* t = this->forwarded();
-  while (t->named_type() != NULL && t->named_type()->is_alias())
-    t = t->named_type()->real_type()->forwarded();
+  Type* t = this->unalias();
 
   if (!t->has_pointer())
     return gogo->backend()->nil_pointer_expression();
@@ -11494,9 +11512,9 @@ Type::find_field_or_method(const Type* type,
 			   std::string* ambig2)
 {
   // Named types can have locally defined methods.
-  const Named_type* nt = type->named_type();
+  const Named_type* nt = type->unalias()->named_type();
   if (nt == NULL && type->points_to() != NULL)
-    nt = type->points_to()->named_type();
+    nt = type->points_to()->unalias()->named_type();
   if (nt != NULL)
     {
       Named_object* no = nt->find_local_method(name);
