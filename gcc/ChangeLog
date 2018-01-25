@@ -1,3 +1,10 @@
+2018-01-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83055
+	* predict.c (drop_profile): Do not push/pop cfun; update also
+	node->count.
+	(handle_missing_profiles): Fix logic looking for zero profiles.
+
 2018-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83977
