@@ -1,3 +1,7 @@
+2018-01-25  Release Manager
+
+	* GCC 7.3.0 released.
+
 2017-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* elf.c: Fix typo in the last commit, SFH_COMPRESSED vs SHF_COMPRESSED.

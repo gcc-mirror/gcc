@@ -1,3 +1,7 @@
+2018-01-25  Release Manager
+
+	* GCC 7.3.0 released.
+
 2017-12-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83550

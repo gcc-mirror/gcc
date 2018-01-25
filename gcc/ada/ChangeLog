@@ -1,3 +1,7 @@
+2018-01-25  Release Manager
+
+	* GCC 7.3.0 released.
+
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_field): Do not set the alignment
