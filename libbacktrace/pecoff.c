@@ -727,7 +727,7 @@ coff_add (struct backtrace_state *state, int descriptor,
 	goto fail;
       syms_view_valid = 1;
 
-      memcpy (&str_size, syms_view.data + syms_size, 4);
+      str_size = coff_read4 (syms_view.data + syms_size);
 
       str_off = syms_off + syms_size;
 
