@@ -631,10 +631,10 @@ coff_add (struct backtrace_state *state, int descriptor,
     goto fail;
 
   {
-    const char *vptr = (const char *)fhdr_view.data;
+    const unsigned char *vptr = fhdr_view.data;
 
     if (vptr[0] == 'M' && vptr[1] == 'Z')
-      memcpy (&fhdr_off, vptr + 0x3c, 4);
+      fhdr_off = coff_read4 (vptr + 0x3c);
     else
       fhdr_off = 0;
   }

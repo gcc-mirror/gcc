@@ -1,3 +1,7 @@
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_add): Another memcpy -> coff_read4 fix.
+
 2018-01-24  Ian Lance Taylor  <iant@golang.org>
 
 	* pecoff.c (coff_add): Use coff_read4, not memcpy.
