@@ -66,9 +66,10 @@ get_scalar_to_descriptor_type (tree scalar, symbol_attribute attr)
 tree
 gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
 {
-  tree desc, type;
+  tree desc, type, etype;
 
   type = get_scalar_to_descriptor_type (scalar, attr);
+  etype = TREE_TYPE (scalar);
   desc = gfc_create_var (type, "desc");
   DECL_ARTIFICIAL (desc) = 1;
 
@@ -81,8 +82,10 @@ gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
     }
   if (!POINTER_TYPE_P (TREE_TYPE (scalar)))
     scalar = gfc_build_addr_expr (NULL_TREE, scalar);
+  else if (TREE_TYPE (etype) && TREE_CODE (TREE_TYPE (etype)) == ARRAY_TYPE)
+    etype = TREE_TYPE (etype);
   gfc_add_modify (&se->pre, gfc_conv_descriptor_dtype (desc),
-		  gfc_get_dtype (type));
+		  gfc_get_dtype_rank_type (0, etype));
   gfc_conv_descriptor_data_set (&se->pre, desc, scalar);
 
   /* Copy pointer address back - but only if it could have changed and
@@ -5323,7 +5326,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    {
 		      tmp = parmse.expr;
 		      if (TREE_CODE (tmp) == ADDR_EXPR
-			  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp, 0))))
+			   && (POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp, 0)))
+			       || e->expr_type == EXPR_CONSTANT))
 			tmp = TREE_OPERAND (tmp, 0);
 		      parmse.expr = gfc_conv_scalar_to_descriptor (&parmse, tmp,
 								   fsym->attr);
@@ -7611,8 +7615,8 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 		rank = 1;
 	      size = integer_zero_node;
 	      desc = field;
-	      gfc_add_modify (&block, gfc_conv_descriptor_dtype (desc),
-			      build_int_cst (gfc_array_index_type, rank));
+	      gfc_add_modify (&block, gfc_conv_descriptor_rank (desc),
+			      build_int_cst (signed_char_type_node, rank));
 	    }
 	  else
 	    {

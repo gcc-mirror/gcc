@@ -1,3 +1,13 @@
+2018-25-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37577
+	* gfortran.dg/coarray_18.f90: Allow dimension 15 for F2008.
+	* gfortran.dg/coarray_lib_this_image_2.f90: Change 'array1' to
+	'array01' in the tree dump comparison.
+	* gfortran.dg/coarray_lib_token_4.f90: Likewise.
+	* gfortran.dg/inline_sum_1.f90: Similar - allow two digits.
+	* gfortran.dg/rank_1.f90: Allow dimension 15 for F2008.
+
 2018-01-25  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83055

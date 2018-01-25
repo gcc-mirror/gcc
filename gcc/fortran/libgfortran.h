@@ -150,15 +150,13 @@ typedef enum
 #define GFC_STDOUT_UNIT_NUMBER 6
 #define GFC_STDERR_UNIT_NUMBER 0
 
+/* F2003 onward. For std < F2003, error caught in array.c(gfc_match_array_ref).  */
+#define GFC_MAX_DIMENSIONS 15
 
-/* FIXME: Increase to 15 for Fortran 2008. Also needs changes to
-   GFC_DTYPE_RANK_MASK. See PR 36825.  */
-#define GFC_MAX_DIMENSIONS 7
-
-#define GFC_DTYPE_RANK_MASK 0x07
-#define GFC_DTYPE_TYPE_SHIFT 3
-#define GFC_DTYPE_TYPE_MASK 0x38
-#define GFC_DTYPE_SIZE_SHIFT 6
+#define GFC_DTYPE_RANK_MASK 0x0F
+#define GFC_DTYPE_TYPE_SHIFT 4
+#define GFC_DTYPE_TYPE_MASK 0x70
+#define GFC_DTYPE_SIZE_SHIFT 7
 
 /* Basic types.  BT_VOID is used by ISO C Binding so funcs like c_f_pointer
    can take any arg with the pointer attribute as a param.  These are also

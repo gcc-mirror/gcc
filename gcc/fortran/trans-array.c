@@ -239,7 +239,8 @@ gfc_conv_descriptor_dtype (tree desc)
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
-  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
+  gcc_assert (field != NULL_TREE
+	      && TREE_TYPE (field) == get_dtype_type_node ());
 
   return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
 			  desc, field, NULL_TREE);
@@ -283,10 +284,11 @@ gfc_conv_descriptor_rank (tree desc)
   tree dtype;
 
   dtype = gfc_conv_descriptor_dtype (desc);
-  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
-  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
-			 dtype, tmp);
-  return fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
+  tmp = gfc_advance_chain (TYPE_FIELDS (TREE_TYPE (dtype)), GFC_DTYPE_RANK);
+  gcc_assert (tmp!= NULL_TREE
+	      && TREE_TYPE (tmp) == signed_char_type_node);
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (tmp),
+			  dtype, tmp, NULL_TREE);
 }
 
 
@@ -8205,7 +8207,7 @@ duplicate_allocatable_coarray (tree dest, tree dest_tok, tree src,
   else
     {
       /* Set the rank or unitialized memory access may be reported.  */
-      tmp = gfc_conv_descriptor_dtype (dest);
+      tmp = gfc_conv_descriptor_rank (dest);
       gfc_add_modify (&globalblock, tmp, build_int_cst (TREE_TYPE (tmp), rank));
 
       if (rank)
