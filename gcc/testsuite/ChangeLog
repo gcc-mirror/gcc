@@ -1,5 +1,8 @@
 2018-01-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84031
+	* g++.dg/cpp1z/decomp36.C: New test.
+
 	PR middle-end/83977
 	* c-c++-common/gomp/pr83977-1.c: Add -w to dg-options.
 
