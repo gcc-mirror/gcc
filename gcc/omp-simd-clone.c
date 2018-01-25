@@ -1574,10 +1574,6 @@ expand_simd_clones (struct cgraph_node *node)
   tree attr = lookup_attribute ("omp declare simd",
 				DECL_ATTRIBUTES (node->decl));
   if (attr == NULL_TREE
-      /* Ignore artificial decls with an abstract origin, results of function
-	 cloning, versioning etc.  We want to handle certain builtins
-	 with simd attribute, like __builtin_sin.  */
-      || (DECL_ARTIFICIAL (node->decl) && DECL_ABSTRACT_ORIGIN (node->decl))
       || node->global.inlined_to
       || lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
     return;

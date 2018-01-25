@@ -1,6 +1,6 @@
 /* PR middle-end/83977 */
 /* { dg-do compile } */
-/* { dg-additional-options "-O2" } */
+/* { dg-additional-options "-O2 -w" } */
 
 struct S { int a, b, c; };
 

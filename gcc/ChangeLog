@@ -1,3 +1,13 @@
+2018-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83977
+	* ipa-fnsummary.c (compute_fn_summary): Clear can_change_signature
+	on functions with #pragma omp declare simd or functions with simd
+	attribute.
+	* omp-simd-clone.c (expand_simd_clones): Revert 2018-01-24 change.
+	* config/i386/i386.c (ix86_simd_clone_compute_vecsize_and_simdlen):
+	Remove trailing \n from warning_at calls.
+
 2018-01-25  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/84028
