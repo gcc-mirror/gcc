@@ -741,6 +741,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  {
 	  default:
 	    break;
+	  case UNSPEC_VBPERMQ:
 	  case UNSPEC_VMRGH_DIRECT:
 	  case UNSPEC_VMRGL_DIRECT:
 	  case UNSPEC_VPACK_SIGN_SIGN_SAT:
@@ -762,8 +763,14 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VSUMSWS:
 	  case UNSPEC_VSUMSWS_DIRECT:
 	  case UNSPEC_VSX_CONCAT:
+	  case UNSPEC_VSX_CVDPSPN:
+	  case UNSPEC_VSX_CVSPDP:
+	  case UNSPEC_VSX_CVSPDPN:
+	  case UNSPEC_VSX_EXTRACT:
 	  case UNSPEC_VSX_SET:
 	  case UNSPEC_VSX_SLDWI:
+	  case UNSPEC_VSX_VEC_INIT:
+	  case UNSPEC_VSX_VSLO:
 	  case UNSPEC_VUNPACK_HI_SIGN:
 	  case UNSPEC_VUNPACK_HI_SIGN_DIRECT:
 	  case UNSPEC_VUNPACK_LO_SIGN:
@@ -774,12 +781,6 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
 	  case UNSPEC_VUPKLPX:
 	  case UNSPEC_VUPKLS_V4SF:
 	  case UNSPEC_VUPKLU_V4SF:
-	  case UNSPEC_VSX_CVDPSPN:
-	  case UNSPEC_VSX_CVSPDP:
-	  case UNSPEC_VSX_CVSPDPN:
-	  case UNSPEC_VSX_EXTRACT:
-	  case UNSPEC_VSX_VSLO:
-	  case UNSPEC_VSX_VEC_INIT:
 	    return 0;
 	  case UNSPEC_VSPLT_DIRECT:
 	  case UNSPEC_VSX_XXSPLTD:
