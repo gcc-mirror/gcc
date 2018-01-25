@@ -73,6 +73,7 @@ void gfc_init_kinds (void);
 void gfc_init_types (void);
 void gfc_init_c_interop_kinds (void);
 
+tree get_dtype_type_node (void);
 tree gfc_get_int_type (int);
 tree gfc_get_real_type (int);
 tree gfc_get_complex_type (int);

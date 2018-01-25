@@ -197,6 +197,11 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
 	}
     }
 
+  if (ar->dimen >= 7
+      && !gfc_notify_std (GFC_STD_F2008,
+			  "Array reference at %C has more than 7 dimensions"))
+    return MATCH_ERROR;
+
   gfc_error ("Array reference at %C cannot have more than %d dimensions",
 	     GFC_MAX_DIMENSIONS);
   return MATCH_ERROR;

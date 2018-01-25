@@ -327,14 +327,23 @@ typedef struct descriptor_dimension
   index_type lower_bound;
   index_type _ubound;
 }
-
 descriptor_dimension;
+
+typedef struct dtype_type
+{
+  size_t elem_len;
+  int version;
+  signed char rank;
+  signed char type;
+  signed short attribute;
+}
+dtype_type;
 
 #define GFC_ARRAY_DESCRIPTOR(r, type) \
 struct {\
   type *base_addr;\
   size_t offset;\
-  index_type dtype;\
+  dtype_type dtype;\
   index_type span;\
   descriptor_dimension dim[r];\
 }
@@ -375,10 +384,9 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 typedef gfc_array_i1 gfc_array_s1;
 typedef gfc_array_i4 gfc_array_s4;
 
-#define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype & GFC_DTYPE_RANK_MASK)
-#define GFC_DESCRIPTOR_TYPE(desc) (((desc)->dtype & GFC_DTYPE_TYPE_MASK) \
-                                   >> GFC_DTYPE_TYPE_SHIFT)
-#define GFC_DESCRIPTOR_SIZE(desc) ((desc)->dtype >> GFC_DTYPE_SIZE_SHIFT)
+#define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype.rank)
+#define GFC_DESCRIPTOR_TYPE(desc) ((desc)->dtype.type)
+#define GFC_DESCRIPTOR_SIZE(desc) ((desc)->dtype.elem_len)
 #define GFC_DESCRIPTOR_DATA(desc) ((desc)->base_addr)
 #define GFC_DESCRIPTOR_DTYPE(desc) ((desc)->dtype)
 
@@ -411,18 +419,24 @@ typedef gfc_array_i4 gfc_array_s4;
 #define GFC_DTYPE_SIZE_MASK (-((index_type) 1 << GFC_DTYPE_SIZE_SHIFT))
 #define GFC_DTYPE_TYPE_SIZE_MASK (GFC_DTYPE_SIZE_MASK | GFC_DTYPE_TYPE_MASK)
 
-#define GFC_DTYPE_TYPE_SIZE(desc) ((desc)->dtype & GFC_DTYPE_TYPE_SIZE_MASK)
+#define GFC_DTYPE_TYPE_SIZE(desc) (( ((desc)->dtype.type << GFC_DTYPE_TYPE_SHIFT) \
+    | ((desc)->dtype.elem_len << GFC_DTYPE_SIZE_SHIFT) ) & GFC_DTYPE_TYPE_SIZE_MASK)
 
 /* Macros to set size and type information.  */
 
 #define GFC_DTYPE_COPY(a,b) do { (a)->dtype = (b)->dtype; } while(0)
 #define GFC_DTYPE_COPY_SETRANK(a,b,n) \
   do { \
-  (a)->dtype = (((b)->dtype & ~GFC_DTYPE_RANK_MASK) | n ); \
+  (a)->dtype.rank = ((b)->dtype.rank | n ); \
   } while (0)
 
-#define GFC_DTYPE_IS_UNSET(a) (unlikely((a)->dtype == 0))
-#define GFC_DTYPE_CLEAR(a) do { (a)->dtype = 0; } while(0)
+#define GFC_DTYPE_IS_UNSET(a) (unlikely((a)->dtype.elem_len == 0))
+#define GFC_DTYPE_CLEAR(a) do { (a)->dtype.elem_len = 0; \
+				(a)->dtype.version = 0; \
+				(a)->dtype.rank = 0; \
+				(a)->dtype.type = 0; \
+				(a)->dtype.attribute = 0; \
+} while(0)
 
 #define GFC_DTYPE_INTEGER_1 ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT) \
    | (sizeof(GFC_INTEGER_1) << GFC_DTYPE_SIZE_SHIFT))

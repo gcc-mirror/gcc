@@ -1,3 +1,20 @@
+2018-25-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37577
+	* caf/single.c (_gfortran_caf_failed_images): Access the 'type'
+	and 'elem_len' fields of the dtype instead of the shifts.
+	(_gfortran_caf_stopped_images): Likewise.
+	* intrinsics/associated.c (associated): Compare the 'type' and
+	'elem_len' fields instead of the dtype.
+	* caf/date_and_time.c : Access the dtype fields rather using
+	shifts and masks.
+	* io/transfer.c (transfer_array ): Comment on item count.
+	(set_nml_var,st_set_nml_var): Change dtype type and use fields.
+	(st_set_nml_dtio_var): Likewise.
+	* libgfortran.h : Change definition of GFC_ARRAY_DESCRIPTOR and
+	add a typedef for the dtype_type. Change the GFC_DTYPE_* macros
+	to access the dtype fields.
+
 2018-01-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54613

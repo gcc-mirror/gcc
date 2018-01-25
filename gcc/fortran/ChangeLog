@@ -1,3 +1,46 @@
+2018-25-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37577
+	* array.c (gfc_match_array_ref): If standard earlier than F2008
+	it is an error if the reference dimension is greater than 7.
+	libgfortran.h : Increase GFC_MAX_DIMENSIONS to 15. Change the
+	dtype masks and shifts accordingly.
+	* trans-array.c (gfc_conv_descriptor_dtype): Use the dtype
+	type node to check the field.
+	(gfc_conv_descriptor_dtype): Access the rank field of dtype.
+	(duplicate_allocatable_coarray): Access the rank field of the
+	dtype descriptor rather than the dtype itself.
+	* trans-expr.c (get_scalar_to_descriptor_type): Store the type
+	of 'scalar' on entry and use its TREE_TYPE if it is ARRAY_TYPE
+	(ie. a character).
+	(gfc_conv_procedure_call): Pass TREE_OPERAND (tmp,0) to
+	get_scalar_to_descriptor_type if the actual expression is a
+	constant.
+	(gfc_trans_structure_assign): Assign the rank directly to the
+	dtype rank field.
+	* trans-intrinsic.c (gfc_conv_intrinsic_rank): Cast the result
+	to default integer kind.
+	(gfc_conv_intrinsic_sizeof): Obtain the element size from the
+	'elem_len' field of the dtype.
+	* trans-io.c (gfc_build_io_library_fndecls): Replace
+	gfc_int4_type_node with dtype_type_node where necessary.
+	(transfer_namelist_element): Use gfc_get_dtype_rank_type for
+	scalars.
+	* trans-types.c : Provide 'get_dtype_type_node' to acces the
+	dtype_type_node and, if necessary, build it.
+	The maximum size of an array element is now determined by the
+	maximum value of size_t.
+	Update the description of the array descriptor, including the
+	type def for the dtype_type.
+	(gfc_get_dtype_rank_type): Build a constructor for the dtype.
+	Distinguish RECORD_TYPEs that are BT_DERIVED or BT_CLASS.
+	(gfc_get_array_descriptor_base): Change the type of the dtype
+	field to dtype_type_node.
+	(gfc_get_array_descr_info): Get the offset to the rank field of
+	the dtype.
+	* trans-types.h : Add a prototype for 'get_dtype_type_node ()'.
+	* trans.h : Define the indices of the dtype fields.
+
 2018-23-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83866

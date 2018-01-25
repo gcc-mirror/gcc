@@ -2602,6 +2602,8 @@ gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
   gfc_add_block_to_block (&se->post, &argse.post);
 
   se->expr = gfc_conv_descriptor_rank (argse.expr);
+  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
+			   se->expr);
 }
 
 
@@ -6783,6 +6785,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   tree lower;
   tree upper;
   tree byte_size;
+  tree field;
   int n;
 
   gfc_init_se (&argse, NULL);
@@ -6805,10 +6808,13 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	    ? GFC_DECL_SAVED_DESCRIPTOR (tmp) : tmp;
       if (POINTER_TYPE_P (TREE_TYPE (tmp)))
 	tmp = build_fold_indirect_ref_loc (input_location, tmp);
-      tmp = fold_convert (size_type_node, gfc_conv_descriptor_dtype (tmp));
-      tmp = fold_build2_loc (input_location, RSHIFT_EXPR, TREE_TYPE (tmp), tmp,
-			     build_int_cst (TREE_TYPE (tmp),
-					    GFC_DTYPE_SIZE_SHIFT));
+
+      tmp = gfc_conv_descriptor_dtype (tmp);
+      field = gfc_advance_chain (TYPE_FIELDS (get_dtype_type_node ()),
+				 GFC_DTYPE_ELEM_LEN);
+      tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
+			     tmp, field, NULL_TREE);
+
       byte_size = fold_convert (gfc_array_index_type, tmp);
     }
   else if (arg->ts.type == BT_CLASS)
