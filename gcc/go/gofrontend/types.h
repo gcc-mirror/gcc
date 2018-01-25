@@ -676,6 +676,15 @@ class Type
   const Type*
   forwarded() const;
 
+  // Return the type skipping any alias definitions and any defined
+  // forward declarations.  This is like forwarded, but also
+  // recursively expands alias definitions to the aliased type.
+  Type*
+  unalias();
+
+  const Type*
+  unalias() const;
+
   // Return true if this is a basic type: a type which is not composed
   // of other types, and is not void.
   bool
