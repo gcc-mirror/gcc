@@ -3311,32 +3311,28 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
     }
 
   basic_block bb;
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-  if (flag_guess_branch_prob)
+  if (opt_for_fn (node->decl, flag_guess_branch_prob))
     {
       bool clear_zeros
-	 = ENTRY_BLOCK_PTR_FOR_FN
-		 (DECL_STRUCT_FUNCTION (node->decl))->count.nonzero_p ();
+	 = !ENTRY_BLOCK_PTR_FOR_FN (fn)->count.nonzero_p ();
       FOR_ALL_BB_FN (bb, fn)
 	if (clear_zeros || !(bb->count == profile_count::zero ()))
 	  bb->count = bb->count.guessed_local ();
-      DECL_STRUCT_FUNCTION (node->decl)->cfg->count_max =
-        DECL_STRUCT_FUNCTION (node->decl)->cfg->count_max.guessed_local ();
+      fn->cfg->count_max = fn->cfg->count_max.guessed_local ();
     }
   else
     {
       FOR_ALL_BB_FN (bb, fn)
 	bb->count = profile_count::uninitialized ();
-      DECL_STRUCT_FUNCTION (node->decl)->cfg->count_max
-	 = profile_count::uninitialized ();
+      fn->cfg->count_max = profile_count::uninitialized ();
     }
-  pop_cfun ();
 
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
     e->count = gimple_bb (e->call_stmt)->count;
   for (e = node->indirect_calls; e; e = e->next_callee)
     e->count = gimple_bb (e->call_stmt)->count;
+  node->count = ENTRY_BLOCK_PTR_FOR_FN (fn)->count;
   
   profile_status_for_fn (fn)
       = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);
@@ -3373,12 +3369,12 @@ handle_missing_profiles (void)
       gcov_type max_tp_first_run = 0;
       struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
 
-      if (!(node->count == profile_count::zero ()))
+      if (node->count.ipa ().nonzero_p ())
         continue;
       for (e = node->callers; e; e = e->next_caller)
-	if (e->count.initialized_p () && e->count > 0)
+	if (e->count.ipa ().initialized_p () && e->count.ipa () > 0)
 	  {
-            call_count = call_count + e->count;
+            call_count = call_count + e->count.ipa ();
 
 	    if (e->caller->tp_first_run > max_tp_first_run)
 	      max_tp_first_run = e->caller->tp_first_run;
@@ -3411,7 +3407,8 @@ handle_missing_profiles (void)
           struct cgraph_node *callee = e->callee;
           struct function *fn = DECL_STRUCT_FUNCTION (callee->decl);
 
-          if (callee->count > 0)
+          if (!(e->count.ipa () == profile_count::zero ())
+	      && callee->count.ipa ().nonzero_p ())
             continue;
           if ((DECL_COMDAT (callee->decl) || DECL_EXTERNAL (callee->decl))
 	      && fn && fn->cfg

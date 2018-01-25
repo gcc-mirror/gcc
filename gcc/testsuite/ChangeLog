@@ -1,3 +1,8 @@
+2018-01-25  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83055
+	* gcc.dg/torture/pr83055.c: New testcase.
+
 2018-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84031
