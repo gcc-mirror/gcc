@@ -108,3 +108,17 @@ void test01()
   static_assert(test_category<has_unique_object_representations,
 		Aligned[][1]>(false), "");
 }
+
+void
+test02()
+{
+  using std::has_unique_object_representations;
+  using std::has_unique_object_representations_v;
+
+  static_assert(has_unique_object_representations_v<int>
+		== has_unique_object_representations<int>::value);
+  static_assert(has_unique_object_representations_v<void>
+		== has_unique_object_representations<void>::value);
+  static_assert(has_unique_object_representations_v<float>
+		== has_unique_object_representations<float>::value);
+}
