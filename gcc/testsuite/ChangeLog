@@ -1,3 +1,10 @@
+2018-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/82846
+	* jit.dg/test-alignment.c (create_aligned_code): Fix return type
+	of "fn_type" typedef.
+	* jit.dg/test-alignment.cc (verify_aligned_code): Likewise.
+
 2018-01-24  Ian Lance Taylor  <iant@golang.org>
 
 	* go.go-torture/execute/names-1.go: New test.

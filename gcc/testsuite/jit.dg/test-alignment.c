@@ -166,7 +166,7 @@ create_aligned_code (gcc_jit_context *ctxt, const char *struct_name,
 				   gcc_jit_result *result,		\
 				   const char *writer_fn_name)		\
   {									\
-  typedef int (*fn_type) (struct TYPENAME *);				\
+  typedef char (*fn_type) (struct TYPENAME *);				\
   CHECK_NON_NULL (result);						\
 									\
   struct TYPENAME tmp;							\
