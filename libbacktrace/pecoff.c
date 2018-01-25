@@ -804,8 +804,11 @@ coff_add (struct backtrace_state *state, int descriptor,
 
   backtrace_release_view (state, &sects_view, error_callback, data);
   sects_view_valid = 0;
-  backtrace_release_view (state, &syms_view, error_callback, data);
-  syms_view_valid = 0;
+  if (syms_view_valid)
+    {
+      backtrace_release_view (state, &syms_view, error_callback, data);
+      syms_view_valid = 0;
+    }
 
   /* Read all the debug sections in a single view, since they are
      probably adjacent in the file.  We never release this view.  */
