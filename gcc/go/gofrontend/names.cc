@@ -213,7 +213,7 @@ Gogo::function_asm_name(const std::string& go_name, const Package* package,
 {
   std::string ret;
   if (rtype != NULL)
-    ret = rtype->mangled_name(this);
+    ret = rtype->deref()->mangled_name(this);
   else if (package == NULL)
     ret = this->pkgpath_symbol();
   else
@@ -892,14 +892,7 @@ Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
 	  const Typed_identifier* rcvr =
 	    this->in_function_->func_value()->type()->receiver();
 	  if (rcvr != NULL)
-	    {
-	      std::string m = rcvr->type()->mangled_name(gogo);
-	      // Turn a leading ".1" back into "*" since we are going
-	      // to type-mangle this name again.
-	      if (m.compare(0, 2, ".1") == 0)
-		m = "*" + m.substr(2);
-	      ret->append(m);
-	    }
+	    ret->append(rcvr->type()->deref()->mangled_name(gogo));
 	  else if (this->in_function_->package() == NULL)
 	    ret->append(gogo->pkgpath_symbol());
 	  else
@@ -956,7 +949,7 @@ Gogo::type_descriptor_name(Type* type, Named_type* nt)
 	  const Typed_identifier* rcvr =
 	    in_function->func_value()->type()->receiver();
 	  if (rcvr != NULL)
-	    ret.append(rcvr->type()->mangled_name(this));
+	    ret.append(rcvr->type()->deref()->mangled_name(this));
 	  else if (in_function->package() == NULL)
 	    ret.append(this->pkgpath_symbol());
 	  else
