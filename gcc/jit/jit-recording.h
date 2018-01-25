@@ -932,10 +932,6 @@ public:
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
-
-private:
-  location *m_loc;
-  string *m_name;
 };
 
 /* An abstract base class for operations that visit all rvalues within an
