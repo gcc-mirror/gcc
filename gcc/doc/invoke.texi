@@ -22333,13 +22333,19 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
 @samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8},
 @samp{power9}, @samp{powerpc}, @samp{powerpc64}, @samp{powerpc64le},
-and @samp{rs64}.
+@samp{rs64}, and @samp{native}.
 
 @option{-mcpu=powerpc}, @option{-mcpu=powerpc64}, and
 @option{-mcpu=powerpc64le} specify pure 32-bit PowerPC (either
 endian), 64-bit big endian PowerPC and 64-bit little endian PowerPC
 architecture machine types, with an appropriate, generic processor
 model assumed for scheduling purposes.
+
+Specifying @samp{native} as cpu type detects and selects the
+architecture option that corresponds to the host processor of the
+system performing the compilation.
+@option{-march=native} has no effect if GCC does not recognize the
+processor.
 
 The other options specify a specific processor.  Code generated under
 those options runs best on that processor, and may not run at all on
