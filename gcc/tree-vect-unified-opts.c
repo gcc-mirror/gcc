@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "params.h"
 #include "pretty-print.h"
-#include "pretty-print.h"
 #else
 # include "errors.h"
 #include "machmode.h"
@@ -78,8 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "target.h"
 #include "tree-core.h"
-#include "tree-vect-unified.h"
-
 #endif
 
 #include "tree-vect-unified.h"
@@ -116,12 +113,13 @@ ILV_arity_reduction (struct primop_tree *root, int from_arity, int to_arity)
 #endif
 
   new_root = create_primTree_combine (POP_ILV, NULL, to_arity,
-	 new_iter_count, PT_PARENT (root));
+	 new_iter_count, PT_PARENT (root), PT_VEC_TYPE (root));
 
   for (i = 0; i < to_arity; i++)
     {
       new_child = create_primTree_combine (POP_ILV, NULL,
-	 from_arity / to_arity, PT_ITER_COUNT (root), new_root);
+	 from_arity / to_arity, PT_ITER_COUNT (root), new_root,
+	 PT_VEC_TYPE (root));
 
       for (j = 0; j < from_arity / to_arity; j++)
 	{
@@ -173,11 +171,11 @@ EXTR_arity_reduction (struct primop_tree *root, int from_arity, int to_arity)
 
   new_root = create_primTree_partition (POP_EXTR, NULL, to_arity,
 		(PT_OPERAND_SELECTOR (root) * to_arity / from_arity) % to_arity,
-		new_iter_count, PT_PARENT (root));
+		new_iter_count, PT_PARENT (root), PT_VEC_TYPE (root));
 
   new_child = create_primTree_partition (POP_EXTR, NULL, from_arity/to_arity,
 		PT_OPERAND_SELECTOR (root) % (from_arity / to_arity),
-		PT_ITER_COUNT (root), new_root);
+		PT_ITER_COUNT (root), new_root, PT_VEC_TYPE (root));
 
   add_child_at_index (new_child, PT_CHILD (root, 0), 0);
 
@@ -258,14 +256,14 @@ ILV_arity_promotion (struct primop_tree *root, int from_arity, int to_arity)
 #endif
 
   new_root = create_primTree_combine (POP_ILV, NULL, to_arity,
-		new_iter_count, PT_PARENT (root));
+		new_iter_count, PT_PARENT (root), PT_VEC_TYPE (root));
   for (i = 0; i < to_arity / from_arity; i++)
     {
       for (j = 0; j < from_arity; j++)
 	{
 	  new_child = create_primTree_partition (POP_EXTR, NULL,
 			 to_arity / from_arity, i, PT_ITER_COUNT (root),
-			 new_root);
+			 new_root, PT_VEC_TYPE (root));
 	  add_child_at_index (new_child, PT_CHILD (root, j), 0);
 	  tmp = k_arity_promotion_reduction (new_child, to_arity);
 	  if (tmp != NULL)
@@ -313,7 +311,8 @@ merge_EXTR_nodes (struct primop_tree *root, int to_arity)
   if (iter_node != PT_CHILD (root, 0))
     {
       tmp = create_primTree_partition (POP_EXTR, NULL, parts, selector,
-			     	       iter_count, PT_PARENT (root));
+			     	       iter_count, PT_PARENT (root),
+				       PT_VEC_TYPE (root));
       add_child_at_index (tmp, iter_node, 0);
       return tmp;
     }
@@ -520,8 +519,8 @@ int
 annotate_tree_nodes (struct primop_tree *ptree, int *end,
 				struct primop_tree **leaves)
 {
-  int key;
-  long long int idx;
+  long long int key;
+  int idx;
   int length = 0;
   int i, j;
   struct primop_tree *temp[150];
@@ -541,8 +540,8 @@ annotate_tree_nodes (struct primop_tree *ptree, int *end,
 
   for (i = 0; i < ptree->children.length (); i++)
     {
-      key = (key | annotate_tree_nodes (PT_CHILD (ptree, i),
-			&length, temp)) << 12;
+      key = (key << 12)
+	     | annotate_tree_nodes (PT_CHILD (ptree, i), &length, temp);
       for (j = 0; j < length; j++)
 	{
 	  leaves[(*end)++] = temp[j];
@@ -575,7 +574,11 @@ unity_redundancy_elimination_2 (struct primop_tree *ptree,
   bool changed = false;
   int to_be_matched;
   struct primop_tree *temp_ptree;
-  int i;
+  int i, j;
+  long long int key;
+  int idx, end;
+  struct primop_tree *leaves[150];
+  struct primtree_hash_table *new_hash;
 
   *new_ptree = ptree;
 
@@ -612,13 +615,52 @@ unity_redundancy_elimination_2 (struct primop_tree *ptree,
 	}
     }
 
+  key = PT_NODE_OP (ptree) << 10;
+  end = 0;
   for (i = 0; i < (*new_ptree)->children.length (); i++)
     {
       changed |= unity_redundancy_elimination_2 (PT_CHILD (*new_ptree, i),
 			 &temp_ptree);
       PT_CHILD (*new_ptree, i) = temp_ptree;
       PT_PARENT (temp_ptree) = *new_ptree;
+      if (PT_NODE_OP (temp_ptree) == POP_MEMREF
+	  || PT_NODE_OP (temp_ptree) == POP_PH
+	  || PT_NODE_OP (temp_ptree) == POP_CONST)
+	{
+	  key = (key | 0xfff) << 12;
+	  leaves[end++] = temp_ptree; 
+	}
+      else
+	{
+      	  key = (key << 12) | PT_AUX(temp_ptree);
+      
+      	  for (j = 0;
+	       j < primop_hash[PT_AUX(temp_ptree)]->leaves.length ();
+	       j++)
+	    {
+      	      leaves[end + j] = primop_hash[PT_AUX(temp_ptree)]->leaves[j];
+	    }
+
+          end = end + j;
+	}
+
     }
+
+  idx = lookup_key_in_table (key, leaves, end);
+
+  if (idx == -1)
+    {
+      // Create new entry.
+      new_hash = (struct primtree_hash_table *) xcalloc (1,
+      sizeof (struct primtree_hash_table));
+      new_hash->key = key;
+      new_hash->leaves = vNULL;
+      for (i = 0; i < end; i++)
+	new_hash->leaves.safe_insert (new_hash->leaves.length (), leaves[i]);
+      idx = primop_hash.length ();
+      primop_hash.safe_insert (idx, new_hash);
+    }
+  PT_AUX (*new_ptree) = idx;
 
     return changed;
 }
@@ -640,13 +682,12 @@ unity_redundancy_elimination (struct primop_tree *ptree)
   bool changed;
 
   annotate_tree_nodes (ptree, &end, dummy);
-
   changed = false;
 
   do {
     changed = unity_redundancy_elimination_2 (ptree, &new_ptree);
-    if (ptree == new_ptree)
-      break;
+    //if (ptree == new_ptree)
+    //  break;
     ptree = new_ptree;
   } while (changed == true);
 

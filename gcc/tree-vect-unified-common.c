@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "params.h"
 #include "pretty-print.h"
-#include "pretty-print.h"
 #else
 #include "errors.h"
 #include "machmode.h"
@@ -78,9 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "is-a.h"
 #include "target.h"
 #include "tree-core.h"
-#include "tree-vect-unified.h"
-
-
 #endif
 
 #include "tree-vect-unified.h"
@@ -128,7 +124,7 @@ init_primop_node (void)
 
 struct primop_tree *
 populate_prim_node (enum primop_code pcode, tree iter_count,
-		    struct primop_tree *parent, gimple *stmt)
+		    struct primop_tree *parent, gimple *stmt, tree vec_type)
 {
   struct primop_tree *ptree;
   ptree = init_primop_node ();
@@ -136,7 +132,7 @@ populate_prim_node (enum primop_code pcode, tree iter_count,
   PT_NODE_OP (ptree) = (int) pcode;
   PT_PARENT (ptree) = parent;
   PT_ITER_COUNT (ptree) = iter_count;
-
+  PT_VEC_TYPE (ptree) = vec_type;
 #ifndef GENERATOR_FILE
   if (stmt)
     {
@@ -154,11 +150,12 @@ populate_prim_node (enum primop_code pcode, tree iter_count,
    which primtree is being created.  */
 struct primop_tree *
 create_primTree_combine (enum primop_code pcode, gimple *stmt, int parts,
-			 tree iter_count, struct primop_tree *parent)
+			 tree iter_count, struct primop_tree *parent,
+			 tree vec_type)
 {
   struct primop_tree * ptree;
 
-  ptree = populate_prim_node (pcode, iter_count, parent, stmt);
+  ptree = populate_prim_node (pcode, iter_count, parent, stmt, vec_type);
   PT_OPERAND_SELECTOR (ptree) = -1;
   PT_DIVISION (ptree) = parts;
   PT_VAR_STRIDE (ptree) = NULL;
@@ -183,11 +180,11 @@ create_primTree_combine (enum primop_code pcode, gimple *stmt, int parts,
 struct primop_tree *
 create_primTree_partition (enum primop_code pcode, gimple *stmt, int parts,
 			   int selector, tree iter_count,
-			   struct primop_tree *parent)
+			   struct primop_tree *parent, tree vec_type)
 {
   struct primop_tree * ptree;
 
-  ptree = populate_prim_node (pcode, iter_count, parent, stmt);
+  ptree = populate_prim_node (pcode, iter_count, parent, stmt, vec_type);
   PT_OPERAND_SELECTOR (ptree) = selector;
   PT_DIVISION (ptree) = parts;
   PT_VAR_STRIDE (ptree) = NULL;

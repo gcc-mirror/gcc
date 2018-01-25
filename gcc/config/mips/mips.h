@@ -3468,4 +3468,37 @@ struct GTY(())  machine_function {
   (TARGET_LOAD_STORE_PAIRS && (TUNE_P5600 || TUNE_I6400) \
    && !TARGET_MICROMIPS && !TARGET_FIX_24K)
 
+#define TARGET_VEC_PERM_CONST_ORDER \
+{ \
+  {2, 2, 2, "DI", (int[2]){0,2}, 1, "PCKEV.D", "RRR", NULL, NULL}, \
+  {2, 2, 2, "DI", (int[2]){1,3}, 1, "PCKOD.D", "RRR", NULL, NULL}, \
+\
+  {2, 4, 4, "SI", (int[4]){0,4,2,6}, 1, "ILVEV.W", "RRR", NULL, NULL}, \
+  {2, 4, 4, "SI", (int[4]){1,5,3,7}, 1, "ILVOD.W", "RRR", NULL, NULL}, \
+  {2, 4, 4, "SI", (int[4]){0,2,4,6}, 1, "PCKEV.W", "RRR", NULL, NULL}, \
+  {2, 4, 4, "SI", (int[4]){1,3,5,7}, 1, "PCKOD.W", "RRR", NULL, NULL}, \
+  {2, 4, 4, "SI", (int[4]){2,6,3,7}, 1, "ILVL.W", "RRR", NULL, NULL}, \
+  {2, 4, 4, "SI", (int[4]){0,4,1,5}, 1, "ILVR.W", "RRR", NULL, NULL}, \
+\
+  {2, 8, 8, "HI", (int[8]){0,8,2,10,4,12,6,14}, 1, "ILVEV.H", "RRR", NULL, NULL}, \
+  {2, 8, 8, "HI", (int[8]){1,9,3,11,5,13,7,15}, 1, "ILVOD.H", "RRR", NULL, NULL}, \
+  {2, 8, 8, "HI", (int[8]){0,2,4,6,8,10,12,14}, 1, "PCKEV.H", "RRR", NULL, NULL}, \
+  {2, 8, 8, "HI", (int[8]){1,3,5,7,9,11,13,15}, 1, "PCKOD.H", "RRR", NULL, NULL}, \
+  {2, 8, 8, "HI", (int[8]){0,8,1,9,2,10,3,11}, 1, "ILVR.H", "RRR", NULL, NULL}, \
+  {2, 8, 8, "HI", (int[8]){4,12,5,13,6,14,7,15}, 1, "ILVL.H", "RRR", NULL, NULL}, \
+\
+  /*{2, 16, 16, "QI", (int[16]){0,16,2,18,4,20,6,22,8,24,10,26,12,28,14,30}, 1, \
+	 "ILVEV.Q", "RRR", NULL, NULL}, \
+  {2, 16, 16, "QI", (int[16]){1,17,3,19,5,21,7,23,9,25,11,27,13,29,15,31}, 1, \
+	 "ILVOD.Q", "RRR", NULL, NULL}, \
+  {2, 16, 16, "QI", (int[16]){0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30}, 1, \
+	 "PCKEV.Q", "RRR", NULL, NULL}, \
+  {2, 16, 16, "QI", (int[16]){1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31}, 1, \
+	 "PCKOD.Q", "RRR", NULL, NULL}, \
+  {2, 16, 16, "QI", (int[16]){8,24,9,25,10,26,11,27,12,28,13,29,14,30,15,31}, 1, \
+	 "ILVL.Q", "RRR", NULL, NULL}, \
+  {2, 16, 16, "QI", (int[16]){0,16,1,17,2,18,3,19,4,20,5,21,6,22,7,23}, 1, \
+	 "ILVR.Q", "RRR", NULL, NULL}, */\
+}
+
 #define MAX_VECTOR_SIZE 16

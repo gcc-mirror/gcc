@@ -486,7 +486,7 @@ public:
   static size_t embedded_size (unsigned);
   void embedded_init (unsigned, unsigned = 0, unsigned = 0);
   void quick_grow (unsigned len);
-  void quick_grow_cleared (unsigned len);
+  void quick_grow_cleared (unsigned len, int = 0);
 
   /* vec class can access our internal data and functions.  */
   template <typename, typename, typename> friend struct vec;
@@ -1089,13 +1089,13 @@ vec<T, A, vl_embed>::quick_grow (unsigned len)
 
 template<typename T, typename A>
 inline void
-vec<T, A, vl_embed>::quick_grow_cleared (unsigned len)
+vec<T, A, vl_embed>::quick_grow_cleared (unsigned len, int val)
 {
   unsigned oldlen = length ();
   size_t sz = sizeof (T) * (len - oldlen);
   quick_grow (len);
   if (sz != 0)
-    memset (&(address ()[oldlen]), 0, sz);
+    memset (&(address ()[oldlen]), val, sz);
 }
 
 
@@ -1235,9 +1235,9 @@ public:
   T &pop (void);
   void truncate (unsigned);
   void safe_grow (unsigned CXX_MEM_STAT_INFO);
-  void safe_grow_cleared (unsigned CXX_MEM_STAT_INFO);
+  void safe_grow_cleared (unsigned CXX_MEM_STAT_INFO, int = 0);
   void quick_grow (unsigned);
-  void quick_grow_cleared (unsigned);
+  void quick_grow_cleared (unsigned, int = 0);
   void quick_insert (unsigned, const T &);
   void safe_insert (unsigned, const T & CXX_MEM_STAT_INFO);
   void ordered_remove (unsigned);
@@ -1604,13 +1604,13 @@ vec<T, va_heap, vl_ptr>::safe_grow (unsigned len MEM_STAT_DECL)
 
 template<typename T>
 inline void
-vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL)
+vec<T, va_heap, vl_ptr>::safe_grow_cleared (unsigned len MEM_STAT_DECL, int val)
 {
   unsigned oldlen = length ();
   size_t sz = sizeof (T) * (len - oldlen);
   safe_grow (len PASS_MEM_STAT);
   if (sz != 0)
-    memset (&(address ()[oldlen]), 0, sz);
+    memset (&(address ()[oldlen]), val, sz);
 }
 
 
@@ -1632,10 +1632,10 @@ vec<T, va_heap, vl_ptr>::quick_grow (unsigned len)
 
 template<typename T>
 inline void
-vec<T, va_heap, vl_ptr>::quick_grow_cleared (unsigned len)
+vec<T, va_heap, vl_ptr>::quick_grow_cleared (unsigned len, int val)
 {
   gcc_checking_assert (m_vec);
-  m_vec->quick_grow_cleared (len);
+  m_vec->quick_grow_cleared (len, val);
 }
 
 

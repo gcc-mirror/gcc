@@ -1,3 +1,27 @@
+2017-02-13  Sameera Deshpande <sameera.deshpande@imgtec.com>
+
+	* Makefile.in: Add tree-vect-unified-opts.o in OBJS.
+	* tree-vect-unified-opts.c (ILV_arity_reduction): New function.
+	  (EXTR_arity_reduction): Likewise
+	  (k_arity_reduction): Likewise
+	  (ILV_arity_promotion): Likewise
+	  (merge_EXTR_nodes): Likewise
+	  (k_arity_promotion): Likewise
+	  (k_arity_promotion_reduction): Likewise
+	* tree-vect-unified.c (tree_code_name): Move up in the file.
+	* tree-vect-unified.h (init_stmt_attr_vec): Move to...
+	* tree-vect-unified.c (init_stmt_attr_vec): ...here.
+	* tree-vect-unified.h (free_stmt_attr_vec): Move to...
+	* tree-vect-unified.c (free_stmt_attr_vec): ...here
+	* tree-vect-unified.h (set_stmt_attr): Move to...
+	* tree-vect-unified.c (set_stmt_attr): ...here
+	* tree-vect-unified.h (get_stmt_attr): Move to...
+	* tree-vect-unified.c (get_stmt_attr): ...here
+	  (populate_prim_node): Change 2nd argument.
+	  (duplicate_prim_node): New function
+	  (print_primtree): Likewise.
+	  (dump_primtree_node): Likewise. 
+
 2016-07-08  Sameera Deshpande <sameera.deshpande@imgtec.com>
 
 	* Makefile.in: Add tree-vect-unified.o in OBJS.

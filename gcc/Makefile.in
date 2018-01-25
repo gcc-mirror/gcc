@@ -1067,7 +1067,12 @@ BUILD_RTL = build/rtl.o build/read-rtl.o build/ggc-none.o \
 	    build/print-rtl.o build/hash-table.o
 BUILD_MD = build/read-md.o
 BUILD_ERRORS = build/errors.o
+BUILD_UNITED = build/vec.o build/hash-table.o build/errors.o \
+	       build/ggc-none.o \
+	       build/tree-vect-unified-common.o build/tree-vect-unified-opts.o
 
+build/tree-vect-unified-common.o : tree-vect-unified-common.c gtype-desc.h insn-codes.h
+build/tree-vect-unified-opts.o : tree-vect-unified-opts.c gtype-desc.h insn-codes.h
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
 # so that *config.h will be found in the compilation
@@ -1206,6 +1211,7 @@ OBJS = \
 	insn-preds.o \
 	insn-recog.o \
 	insn-enums.o \
+	insn-vect-inst-tiles.o \
 	ggc-page.o \
 	alias.o \
 	alloc-pool.o \
@@ -2207,7 +2213,7 @@ $(common_out_object_file): $(common_out_file)
   insn-emit.c insn-recog.c insn-extract.c insn-output.c insn-peep.c \
   insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
   insn-latencytab.c insn-preds.c gimple-match.c generic-match.c \
-  insn-target-def.h
+  insn-target-def.h insn-vect-inst-tiles.c
 
 # Dependencies for the md file.  The first time through, we just assume
 # the md file itself and the generated dependency file (in order to get
@@ -2232,9 +2238,10 @@ simple_rtl_generated_h	= insn-attr.h insn-attr-common.h insn-codes.h \
 
 simple_rtl_generated_c	= insn-automata.c insn-emit.c \
 			  insn-extract.c insn-output.c \
-			  insn-peep.c insn-recog.c
+			  insn-peep.c insn-recog.c \
+			  insn-vect-inst-tiles.c
 
-simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h
+simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h 
 
 simple_generated_c	= $(simple_rtl_generated_c) insn-enums.c
 
@@ -2602,6 +2609,8 @@ build/read-rtl.o: read-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(GENSUPPORT_H)
 build/rtl.o: rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
   $(RTL_H) $(GGC_H) errors.h
+build/tree.o: tree.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H)	\
+  $(RTL_H) $(GGC_H) errors.h
 build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H)	\
    $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/hash-table.o : hash-table.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h  \
@@ -2655,6 +2664,9 @@ build/gentarget-def.o : gentarget-def.c $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) $(RTL_BASE_H) errors.h $(READ_MD_H) $(GENSUPPORT_H)	\
   $(HASH_TABLE_H) target-insns.def
 build/gengenrtl.o : gengenrtl.c $(BCONFIG_H) $(SYSTEM_H) rtl.def
+build/genvect-inst-tiles.o : genvect-inst-tiles.c $(RTL_BASE_H) $(BCONFIG_H)    \
+  $(SYSTEM_H) coretypes.h $(GTM_H) errors.h tree-vect-unified.h \
+  tree-vect-unified-opts.o tree-vect-unified-common.o
 
 # The gengtype generator program is special: Two versions are built.
 # One is for the build machine, and one is for the host to allow
@@ -2732,8 +2744,11 @@ $(genprogmd:%=build/gen%$(build_exeext)): $(BUILD_MD)
 genprogerr = $(genprogmd) genrtl modes gtype hooks cfn-macros
 $(genprogerr:%=build/gen%$(build_exeext)): $(BUILD_ERRORS)
 
+genprogunited = vect-inst-tiles
+$(genprogunited:%=build/gen%$(build_exeext)): $(BUILD_UNITED) 
+
 # Remaining build programs.
-genprog = $(genprogerr) check checksum condmd match
+genprog = $(genprogerr) $(genprogunited) check checksum condmd match
 
 # These programs need libs over and above what they get from the above list.
 build/genautomata$(build_exeext) : BUILD_LIBS += -lm

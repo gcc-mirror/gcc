@@ -224,6 +224,7 @@ struct primop_tree {
     } phval;
   } u;
   int aux;
+//  vec<int> aux1;
 };
 
 #define PT_PID(x) (x)->pid
@@ -250,6 +251,7 @@ struct primop_tree {
 #define PT_MEMVAL_MULT_IDX(x) (x)->u.memval.mult_idx
 #define PT_MEMVAL_IS_READ(x) (x)->u.memval.is_read
 #define PT_AUX(x) (x)->aux
+//#define PT_AUX1(x) (x)->aux1
 #define PT_PH_IDX(x) (x)->u.phval.index
 #define PT_PH_TYPE(x) (x)->u.phval.type
 //struct ITER_node *iter_node;
@@ -285,6 +287,51 @@ static const char *const tree_code_name[] = {
 #undef DEFTREECODE
 #undef END_OF_BASE_TREE_CODES
 
+/* TARGET_VEC_PERM_CONST_ORDER - If defined, this target hook points to an array
+   of "struct vec_perm_order_spec" specifying various permute orders supported
+   by the target architecture.  */
+
+struct vec_perm_order_spec
+{
+  /* Number of operands in permute order specified.  */
+  int num_opd;
+
+  /* Vector size of input permute order.  */
+  int in_vec_size;
+
+  /* Vector size of resultant permute order.  It can be identified from the size
+     of perm_order, however, if by mistake, this field is not defined properly,
+     can lead to errors.  Hence, taking that as input.  */
+  int out_vec_size;
+
+  /* Input type name.  */
+  char *type;
+
+  /* Permute order of operands.  */
+  int *perm_order;
+
+  /* Cost of permute operation.  */
+  int cost;
+
+  /* Name of permute operation for debugging purpose.  */
+  char *op_name;
+
+  /* The constraints on input and output operands of this instruction.
+     Restricting these to R,M or I for register, memory and integer constant
+     respectively.  This is needed for reduction rules to be generated for BURS
+     tree.  It should have comma separated list - with num_opd + 1 listings.  */
+  char * opd_constraint;
+
+  /* Condition under which the instruction can be emitted.  Thinking of
+     something like condition part in define_insn.  */
+  char * cond;
+
+  /* PRIMOP_TREE constructed after tile construction.  */
+  struct primop_tree *ptree;
+};
+
+
+
 extern unsigned int vectorize_loops_using_uniop (void);
 extern struct primop_tree * analyze_and_create_ptree (struct primop_tree *,
 		 		gimple *, struct ITER_node *);
@@ -295,16 +342,16 @@ extern struct primop_tree * k_arity_promotion_reduction (struct primop_tree *,
 				int);
 extern struct primop_tree * init_primop_node (void);
 extern struct primop_tree * populate_prim_node (enum primop_code, tree,
-				struct primop_tree *, gimple *);
+				struct primop_tree *, gimple *, tree);
 extern struct primop_tree * exists_primTree_with_memref (tree, tree, bool,
 				struct ITER_node *);
 extern struct primop_tree * create_primTree_memref (tree, tree, bool, int, tree,
-				 struct primop_tree *);
+				 struct primop_tree *, tree);
 extern struct primop_tree * create_primTree_combine (enum primop_code, gimple *,
-				 int, tree, struct primop_tree *);
+				 int, tree, struct primop_tree *, tree);
 extern struct primop_tree * create_primTree_partition (enum primop_code,
 				 gimple *, int, int, tree,
-				 struct primop_tree *);
+				 struct primop_tree *, tree);
 extern void add_child_at_index (struct primop_tree *, struct primop_tree *,
 				int);
 extern struct primop_tree * get_child_at_index (struct primop_tree *, int);
@@ -316,6 +363,16 @@ extern void free_stmt_attr_vec (void);
 extern inline void set_stmt_attr (gimple *, struct stmt_attr *);
 extern inline struct stmt_attr *get_stmt_attr (gimple *);
 extern struct primop_tree * unity_redundancy_elimination (struct primop_tree *);
-
+extern void unif_vect_init_funct (void);
+extern vec<int> transition_state_for_extr (int, int, int);
+extern vec<int> transition_state_for_ilv (int, vec<int>);
+extern int get_REG_terminal_state (int);
+extern bool is_NT2T_rule (int);
+extern int get_CONST_terminal_state ();
+extern int get_MEM_terminal_state ();
+//extern int get_goal_nonterminal_state (int);
+extern int get_rule_number (struct primop_tree *, int);
+extern void print_permute_order (int);
+extern int get_child_nt (int, int, int);
 #endif
 

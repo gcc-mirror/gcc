@@ -1559,16 +1559,17 @@ exists_primTree_with_memref (tree base, tree step, bool is_read,
 
 struct primop_tree *
 create_primTree_memref (tree base, tree step, bool is_read, int num,
-			tree iter_count, struct primop_tree *parent)
+			tree iter_count, struct primop_tree *parent,
+			tree vec_type)
 {
   struct primop_tree * ptree;
 
-  ptree = populate_prim_node (POP_MEMREF, iter_count, parent, NULL);
+  ptree = populate_prim_node (POP_MEMREF, iter_count, parent, NULL, vec_type);
 
   PT_MEMVAL_BASE (ptree) = unshare_expr (base);
   PT_MEMVAL_MULT_IDX (ptree) = unshare_expr (step);
   PT_MEMVAL_IS_READ (ptree) = is_read;
-
+  PT_VEC_TYPE (ptree) = vec_type;
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location,
@@ -1726,18 +1727,19 @@ vectorizable_store (gimple *stmt, struct ITER_node *inode,
   if (pnode == NULL)
     {
       pnode = create_primTree_memref (base, step, false, num,
-		ITER_NODE_NITERS (inode), NULL);
+		ITER_NODE_NITERS (inode), NULL, vec_type);
       ITER_NODE_LOOP_BODY (inode).safe_insert (
 			ITER_NODE_LOOP_BODY (inode).length (),
 			pnode);
       pchild1 =  create_primTree_combine (POP_ILV, stmt,
 			tree_to_uhwi (step) / num, ITER_NODE_NITERS (inode),
-			pnode);
+			pnode, vec_type);
       add_child_at_index (pnode, pchild1, 0);
     }
   else
     {
       pchild1 = get_child_at_index (pnode, 0);
+      gcc_assert (PT_VEC_TYPE (pchild1) == vec_type);
     }
     if (def_stmt)
       {
@@ -1765,7 +1767,7 @@ vectorizable_store (gimple *stmt, struct ITER_node *inode,
       }
 
     add_child_at_index (pchild1, pchild2, tree_to_uhwi (offset) / num);
-
+  gcc_assert (PT_VEC_TYPE (pchild2));
     return pnode;
 }
 
@@ -1843,9 +1845,9 @@ vectorizable_load (gimple *stmt, struct ITER_node *inode,
 
   pnode = create_primTree_partition (POP_EXTR, stmt,
 		tree_to_uhwi (step) / num,
-		tree_to_uhwi (offset) / num, ITER_NODE_NITERS (inode), parent);
+		tree_to_uhwi (offset) / num, ITER_NODE_NITERS (inode), parent, vec_type);
   pchild1 = create_primTree_memref (base, step, true, num,
-		 ITER_NODE_NITERS (inode), pnode);
+		 ITER_NODE_NITERS (inode), pnode, vec_type);
   add_child_at_index (pnode, pchild1, 0);
   return pnode;
 }
@@ -2390,6 +2392,158 @@ dump_iter_node (struct ITER_node *inode, FILE *fp)
   pp_flush (&pp);
 }
 
+static void
+reset_aux_field (struct primop_tree *ptree)
+{
+  int i;
+  PT_AUX (ptree) = -1;
+  if (PT_ARITY (ptree) == 0)
+    return;
+
+  for (i = 0; i < ptree->children.length (); i++)
+    reset_aux_field (get_child_at_index (ptree, i));
+}
+
+static int
+get_transition_state (struct primop_tree *ptree)
+{
+  int i;
+  vec<int> idx = vNULL;
+
+  /* If the node is non-permute operation, return the state of terminal 'REG' as
+     state of this tree, because non-permute operations are evaluated in
+     registers.  */
+  if (PT_NODE_OP (ptree) < MAX_TREE_CODES) 
+  {
+    return get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (ptree))));
+  }
+
+  /* We need not handle POP_PH as it is only for tile construction.  POP_CONCAT
+     and POP_SPLT are now represented using POP_ILV and POP_EXTR for now.  Hence
+     these operators need not be handled here.  POP_MEMREF and POP_CONST are
+     leaf nodes, and won't be passed to this function.  POP_INV for loop
+     invariants, POP_COLLAPSE for reduction operation and POP_ITER for loop or
+     vec_size_reduction operation need TODO.  */
+
+  switch (PT_NODE_OP (ptree))
+    {
+      case POP_ILV:
+  	for (i = 0; i < ptree->children.length (); i++)
+    	  {
+      	    idx.safe_insert(idx.length (),
+			PT_AUX (get_child_at_index (ptree, i)));
+    	  }
+
+        return transition_state_for_ilv (PT_DIVISION (ptree), idx);
+
+      case POP_EXTR:
+	return transition_state_for_extr (PT_DIVISION (ptree),
+				 PT_OPERAND_SELECTOR (ptree),
+				 PT_AUX (get_child_at_index (ptree, 0)));
+
+      default:
+        gcc_assert (!"Operator not handled.");
+    }
+  return -1;
+}
+
+static bool
+label_permute_tree (struct primop_tree *ptree)
+{
+  bool ret = true;
+  int i;
+
+  if (PT_ARITY (ptree) == 0)
+    {
+      switch (PT_NODE_OP (ptree))
+	{
+	  case POP_MEMREF:
+	    PT_AUX (ptree) = get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (ptree))));
+	    printf ("tree : %d >> state : %d\n", PT_PID (ptree), PT_AUX (ptree));
+	    break;
+	  case POP_CONST:
+	    PT_AUX (ptree) = get_CONST_terminal_state ();
+	    printf ("tree : %d >> state : %d\n", PT_PID (ptree), PT_AUX (ptree));
+	    break;
+	  default:
+	    gcc_assert (0);
+	}
+      return true;
+    }
+
+  for (i = 0; i < ptree->children.length (); i++)
+    {
+      ret |= label_permute_tree (get_child_at_index (ptree, i));
+      if (ret == false)
+	return false;
+    }
+
+  if (PT_NODE_OP (ptree) == POP_MEMREF)
+    PT_AUX (ptree) = PT_AUX (get_child_at_index (ptree, 0));
+  else
+    PT_AUX (ptree) = get_transition_state (ptree);
+  printf ("tree : %d >> state : %d\n", PT_PID (ptree), PT_AUX (ptree));
+
+  if (PT_AUX (ptree) == -1)
+    {
+      printf ("\n labeled to REG\n");
+      PT_AUX (ptree) = (get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (ptree)))));
+    }
+  else
+    {
+      printf ("%d\t", PT_AUX (ptree));
+    }
+
+  return true;
+}
+
+static bool
+reduce_permute_tree (struct primop_tree *ptree, int goal_nt)
+{
+  int rule_no;
+  int i;
+
+//  if (PT_AUX (ptree) == get_REG_terminal_state ())
+//    reduce_permute_tree(ptree, 0);
+  rule_no = get_rule_number (ptree, goal_nt);
+  if (rule_no == -1) {
+    printf ("\n Matched to default rule : %d\n", PT_PID (ptree));
+  } else if (is_NT2T_rule (rule_no)) {
+    printf ("Terminal matched.\n");
+  } else {
+    printf ("\n Rule matched: %d.\t State matched: %d.\n", rule_no, PT_AUX (ptree));
+    print_permute_order (rule_no);
+    if (PT_ARITY (ptree) != 0 && PT_NODE_OP (ptree) == POP_MEMREF)
+	return reduce_permute_tree (PT_CHILD (ptree, 0), goal_nt);
+    for (i = 0; i < PT_ARITY (ptree); i++)
+      {
+	reduce_permute_tree (PT_CHILD (ptree, i), get_child_nt (PT_AUX (ptree), rule_no, i));
+      }
+  }
+
+  return true;//(rule_no >= 0);
+
+}
+
+static bool
+unified_perm_tree_code_generation (struct ITER_node *inode)
+{
+  int i;
+  bool ret = false;
+  struct primop_tree *tmp_tree;
+
+  for (i = 0; i < (ITER_NODE_LOOP_BODY (inode)).length (); i++)
+    {
+      tmp_tree = (ITER_NODE_LOOP_BODY (inode))[i];
+      reset_aux_field (tmp_tree);
+      ret = label_permute_tree (tmp_tree);
+      if (ret == true)
+        ret = reduce_permute_tree (tmp_tree, get_REG_terminal_state (GET_MODE_SIZE (TYPE_MODE (PT_VEC_TYPE (tmp_tree)))));
+
+      return ret;
+    }
+}
+
 /* Function vectorize_loops_using_uniop.
 
    Entry point to autovectorization using unified representation:
@@ -2420,6 +2574,7 @@ vectorize_loops_using_uniop (void)
   //iter_node = NULL;
 
   init_stmt_attr_vec ();
+  unif_vect_init_funct ();
 
   FOR_EACH_LOOP (loop, 0)
     if (loop->dont_vectorize)
@@ -2527,6 +2682,35 @@ vectorize_loops_using_uniop (void)
 	      dump_iter_node (tmp_iter_node, alt_dump_file);
 	  }
 
+	worklist = vNULL;
+	worklist = (ITER_NODE_LOOP_BODY (tmp_iter_node)).copy ();
+	for (i = 0;  i < worklist.length (); i++)
+	  {
+	    gcc_assert (worklist.iterate (i, &tmp_tree));
+	    tmp_tree = unity_redundancy_elimination (tmp_tree);
+
+	    ITER_NODE_LOOP_BODY (tmp_iter_node)[i] = tmp_tree;
+	  }
+
+	if (dump_enabled_p ())
+	  {
+	    dump_printf (MSG_NOTE, "\nUnity redundancy elimination applied.\n");
+	    if (dump_file)
+	      dump_iter_node (tmp_iter_node, dump_file);
+	    if (alt_dump_file)
+	      dump_iter_node (tmp_iter_node, alt_dump_file);
+	  }
+
+	//unified_vecsize_reduction (tmp_iter_node);
+
+	if (dump_enabled_p ())
+	  {
+	    dump_printf (MSG_NOTE, "\nVector size reduction applied.\n");
+	    if (dump_file)
+	      dump_iter_node (tmp_iter_node, dump_file);
+	    if (alt_dump_file)
+	      dump_iter_node (tmp_iter_node, alt_dump_file);
+	  }
 	gimple *loop_vectorized_call = vect_loop_vectorized_call (loop);
 	/* If the loop is vectorized, set uid of stmts within scalar loop to
 	   0.  This change is needed if transform phase uses this loop info.  */
@@ -2534,6 +2718,8 @@ vectorize_loops_using_uniop (void)
 	  set_uid_loop_bbs (loop_vinfo, loop_vectorized_call);*/
 
 	/* TODO: Insert call to transformation entry point.  */
+
+	unified_perm_tree_code_generation (tmp_iter_node);
 
 	num_vectorized_loops++;
 	/* Now that the loop has been vectorized, allow it to be unrolled
