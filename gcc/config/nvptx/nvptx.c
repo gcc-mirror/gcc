@@ -4065,8 +4065,8 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	else
 	  {
 	    rtx_insn *label_insn = emit_label_after (label, tail);
-	    if (mode == GOMP_DIM_VECTOR && CALL_P (tail)
-		&& find_reg_note (tail, REG_NORETURN, NULL))
+	    if ((mode == GOMP_DIM_VECTOR || mode == GOMP_DIM_WORKER)
+		&& CALL_P (tail) && find_reg_note (tail, REG_NORETURN, NULL))
 	      emit_insn_after (gen_exit (), label_insn);
 	  }
       }
