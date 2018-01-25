@@ -1,3 +1,9 @@
+2018-01-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/81672
+	* jit-recording.h (gcc::jit::recording::union_): Remove fields
+	"m_loc" and "m_name".
+
 2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.
