@@ -1,5 +1,9 @@
 2018-01-25  Ian Lance Taylor  <iant@golang.org>
 
+	* pecoff.c (coff_add): Only release syms_view if it is valid.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
 	* pecoff.c (coff_add): Another memcpy -> coff_read4 fix.
 
 2018-01-24  Ian Lance Taylor  <iant@golang.org>
