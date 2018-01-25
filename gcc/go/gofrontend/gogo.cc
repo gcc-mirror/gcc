@@ -4633,7 +4633,9 @@ Gogo::write_c_header()
 
       if (no->is_type() && no->type_value()->struct_type() != NULL)
 	types.push_back(no);
-      if (no->is_const() && no->const_value()->type()->integer_type() != NULL)
+      if (no->is_const()
+	  && no->const_value()->type()->integer_type() != NULL
+	  && !no->const_value()->is_sink())
 	{
 	  Numeric_constant nc;
 	  unsigned long val;
