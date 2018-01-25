@@ -1,3 +1,11 @@
+2018-01-25  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Back port from mainline
+	2018-01-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83399
+	* gcc.target/powerpc/pr83399.c: New test.
+
 2018-01-25  Release Manager
 
 	* GCC 7.3.0 released.
