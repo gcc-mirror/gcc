@@ -78,7 +78,7 @@ func lfstackUnpack(val uint64) *lfnode {
 		return (*lfnode)(unsafe.Pointer(uintptr(int64(val) >> sparcLinuxCntBits << 3)))
 	}
 	if GOARCH == "ia64" {
-		return (*lfnode)(unsafe.Pointer(uintptr((val>>ia64CntBits<<3)&(1<<(64-3)-1) | val&^(1<<(64-3)-1))))
+		return (*lfnode)(unsafe.Pointer(uintptr(((val & (1<<(64-3) - 1)) >> ia64CntBits << 3) | val&^(1<<(64-3)-1))))
 	}
 	if GOARCH == "ppc64" && GOOS == "aix" {
 		if val&(1<<63) != 0 {
