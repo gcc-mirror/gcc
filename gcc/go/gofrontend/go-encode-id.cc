@@ -104,6 +104,14 @@ go_encode_id(const std::string &id)
   std::string ret;
   const char* p = id.c_str();
   const char* pend = p + id.length();
+
+  // A leading ".0" is a space introduced before a mangled type name
+  // that starts with a 'u' or 'U', to avoid confusion with the
+  // mangling used here.  We don't need a leading ".0", and we don't
+  // want symbols that start with '.', so remove it.
+  if (p[0] == '.' && p[1] == '0')
+    p += 2;
+
   while (p < pend)
     {
       unsigned int c;
@@ -115,16 +123,19 @@ go_encode_id(const std::string &id)
 	  go_assert(!char_needs_encoding(c));
 	  ret += c;
 	}
-      else if (c < 0x10000)
-	{
-	  char buf[16];
-	  snprintf(buf, sizeof buf, "..u%04x", c);
-	  ret += buf;
-	}
       else
 	{
 	  char buf[16];
-	  snprintf(buf, sizeof buf, "..U%08x", c);
+	  if (c < 0x10000)
+	    snprintf(buf, sizeof buf, "..u%04x", c);
+	  else
+	    snprintf(buf, sizeof buf, "..U%08x", c);
+
+	  // We don't want a symbol to start with '.', so add a prefix
+	  // if needed.
+	  if (ret.empty())
+	    ret += '_';
+
 	  ret += buf;
 	}
       p += len;
