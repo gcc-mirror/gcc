@@ -1,3 +1,7 @@
+2018-01-25  Release Manager
+
+	* GCC 7.3.0 released.
+
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/82595
