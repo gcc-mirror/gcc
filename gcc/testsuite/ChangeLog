@@ -1,3 +1,8 @@
+2018-01-26  Alan Modra  <amodra@gmail.com>
+
+	PR target/84033
+	* gcc.target/powerpc/swaps-p8-46.c: New.
+
 2018-25-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37577
