@@ -1,5 +1,9 @@
 2018-01-24  Ian Lance Taylor  <iant@golang.org>
 
+	* pecoff.c (coff_add): Use coff_read4, not memcpy.
+
+2018-01-24  Ian Lance Taylor  <iant@golang.org>
+
 	PR other/68239
 	* mmap.c (backtrace_free_locked): Don't put more than 16 entries
 	on the free list.
