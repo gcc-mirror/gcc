@@ -2467,7 +2467,11 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	 info->inlinable = tree_inlinable_function_p (node->decl);
 
        /* Type attributes can use parameter indices to describe them.  */
-       if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
+       if (TYPE_ATTRIBUTES (TREE_TYPE (node->decl))
+	   /* Likewise for #pragma omp declare simd functions or functions
+	      with simd attribute.  */
+	   || lookup_attribute ("omp declare simd",
+				DECL_ATTRIBUTES (node->decl)))
 	 node->local.can_change_signature = false;
        else
 	 {

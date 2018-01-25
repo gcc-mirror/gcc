@@ -1,3 +1,8 @@
+2018-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83977
+	* c-c++-common/gomp/pr83977-1.c: Add -w to dg-options.
+
 2018-01-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/vect/vect-reduc-or_1.c: Require whole_vector_shift for
