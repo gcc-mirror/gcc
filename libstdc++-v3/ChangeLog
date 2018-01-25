@@ -1,7 +1,13 @@
+2018-01-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81076
+	* include/c_global/cstddef (__byte_operand): Define primary template.
+	* testsuite/18_support/byte/81076.cc: New test.
+
 2018-01-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* testsuite/ext/special_functions/airy_ai/check_nan.cc: Fix
-          dg-options and dg-add-options order.
+	dg-options and dg-add-options order.
 	* testsuite/ext/special_functions/airy_bi/check_nan.cc: Likewise.
 	* testsuite/ext/special_functions/conf_hyperg/check_nan.cc:
 	Likewise.
