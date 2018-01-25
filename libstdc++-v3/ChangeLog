@@ -1,5 +1,9 @@
 2018-01-25  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81076
+	* include/c_global/cstddef (__byte_operand): Define primary template.
+	* testsuite/18_support/byte/81076.cc: New test.
+
 	Backport from mainline
 	2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
