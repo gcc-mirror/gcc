@@ -1,3 +1,9 @@
+2018-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/84003
+	* dse.c (record_store): Only record redundant stores when
+	the earlier store aliases at least all accesses the later one does.
+
 2018-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/83985
