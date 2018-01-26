@@ -2,8 +2,8 @@
    inputs produce the right results.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -O2" } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-options "-mpower9-vector -O2 -mcpu=power9" } */
 
 #include <altivec.h>
 
@@ -13,4 +13,5 @@ test3 (vector signed long long x)
   return vec_abs (x);
 }
 
-/* scan-assembler stanzas moved to fold-vec-abs-longlong.p*.c . */
+/* { dg-final { scan-assembler-times "vnegd" 1 } } */
+/* { dg-final { scan-assembler-times "vmaxsd" 1 } } */
