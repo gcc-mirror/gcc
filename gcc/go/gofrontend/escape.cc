@@ -131,7 +131,7 @@ Node::ast_format(Gogo* gogo) const
       Named_object* no = this->object();
       if (no->is_function() && no->func_value()->enclosing() != NULL)
 	return "func literal";
-      ss << no->name();
+      ss << no->message_name();
     }
   else if (this->expr() != NULL)
     {

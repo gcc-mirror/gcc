@@ -783,7 +783,7 @@ Var_expression::do_get_backend(Translate_context* context)
 void
 Var_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
-  ast_dump_context->ostream() << this->variable_->name() ;
+  ast_dump_context->ostream() << this->variable_->message_name() ;
 }
 
 // Make a reference to a variable in an expression.
@@ -859,7 +859,7 @@ Enclosed_var_expression::do_address_taken(bool escapes)
 void
 Enclosed_var_expression::do_dump_expression(Ast_dump_context* adc) const
 {
-  adc->ostream() << this->variable_->name();
+  adc->ostream() << this->variable_->message_name();
 }
 
 // Make a reference to a variable within an enclosing function.
