@@ -523,3 +523,7 @@ Enum(arc_lpc) String(28) Value(28)
 
 EnumValue
 Enum(arc_lpc) String(32) Value(32)
+
+mrf16
+Target Report Mask(RF16)
+Enable 16-entry register file.

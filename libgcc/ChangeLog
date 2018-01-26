@@ -1,3 +1,10 @@
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib1funcs.S (__udivmodsi4): Use safe version for RF16
+	option.
+	(__divsi3): Use RF16 safe registers.
+	(__modsi3): Likewise.
+
 2018-01-23  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/ieee754-df.S (__addsf3, __subsf3, __mulsf3)

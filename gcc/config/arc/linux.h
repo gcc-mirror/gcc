@@ -100,3 +100,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_EH_SPEC
 #define LINK_EH_SPEC "--eh-frame-hdr"
 #endif
+
+#undef SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC "\
+   %{pthread:-D_REENTRANT} \
+"
+
+/* Build attribute: procedure call standard.  */
+#undef ATTRIBUTE_PCS
+#define ATTRIBUTE_PCS 3

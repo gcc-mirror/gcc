@@ -1781,6 +1781,19 @@ arc_conditional_register_usage (void)
 	reg_alloc_order [i] = i;
     }
 
+  /* Reduced configuration: don't use r4-r9, r16-r25.  */
+  if (TARGET_RF16)
+    {
+      for (i = 4; i <= 9; i++)
+	{
+	  fixed_regs[i] = call_used_regs[i] = 1;
+	}
+      for (i = 16; i <= 25; i++)
+	{
+	  fixed_regs[i] = call_used_regs[i] = 1;
+	}
+    }
+
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (!call_used_regs[regno])
       CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
@@ -5183,6 +5196,20 @@ static void arc_file_start (void)
 {
   default_file_start ();
   fprintf (asm_out_file, "\t.cpu %s\n", arc_cpu_string);
+
+  /* Set some want to have build attributes.  */
+  asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_PCS_config, %d\n",
+	       ATTRIBUTE_PCS);
+  asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_ABI_rf16, %d\n",
+	       TARGET_RF16 ? 1 : 0);
+  asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_ABI_pic, %d\n",
+	       flag_pic ? 2 : 0);
+  asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_ABI_tls, %d\n",
+	       (arc_tp_regno != -1) ? 1 : 0);
+  asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_ABI_sda, %d\n",
+	       TARGET_NO_SDATA_SET ? 0 : 2);
+  asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_ABI_exceptions, %d\n",
+	       TARGET_OPTFPE ? 1 : 0);
 }
 
 /* Implement `TARGET_ASM_FILE_END'.  */
