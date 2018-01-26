@@ -1,5 +1,28 @@
 2018-01-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-abs-int.c: Remove scan-assembler stanzas.
+	* gcc.target/powerpc/fold-vec-abs-int-fwrap.c: Same.
+	* gcc.target/powerpc/fold-vec-abs-int.p7.c: New.
+	* gcc.target/powerpc/fold-vec-abs-int.p8.c: New.
+	* gcc.target/powerpc/fold-vec-abs-int.p9.c: New.
+	* gcc.target/powerpc/fold-vec-abs-int-fwrapv.p7.c: New.
+	* gcc.target/powerpc/fold-vec-abs-int-fwrapv.p8.c: New.
+	* gcc.target/powerpc/fold-vec-abs-int-fwrapv.p9.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong.c: Remove scan-assembler
+	stanzas.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrap.c: Same.
+	* gcc.target/powerpc/fold-vec-abs-longlong.p7.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong.p8.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong.p9.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrapv.p7.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrapv.p8.c: New.
+	* gcc.target/powerpc/fold-vec-abs-longlong-fwrapv.p9.c: New.
+	* gcc.target/powerpc/fold-vec-abs-short.c: Add xxspltib to valid
+	instruction list.
+	* gcc.target/powerpc/fold-vec-abs-short-fwrapv.c: Same.
+
+2018-01-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-cmp-int.c: Delete.
 	* gcc.target/powerpc/fold-vec-cmp-int.h: New.
 	* gcc.target/powerpc/fold-vec-cmp-int.p7.c: New.
