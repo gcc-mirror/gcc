@@ -1,5 +1,8 @@
 2018-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/83985
+	* gcc.dg/pr83985.c: New test.
+
 	PR c/83989
 	* c-c++-common/Wrestrict-3.c: New test.
 
