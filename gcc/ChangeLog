@@ -1,3 +1,11 @@
+2018-01-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83896
+	* tree-ssa-strlen.c (get_string_len): Rename...
+	(get_string_cst_length): ...to this.  Return HOST_WIDE_INT.
+	Avoid assuming length is constant.
+	(handle_char_store): Use HOST_WIDE_INT for string length.
+
 2018-01-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81763
