@@ -1,3 +1,9 @@
+2018-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/83989
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): Don't
+	use SSA_NAME_VAR as base for SSA_NAMEs with non-NULL SSA_NAME_VAR.
+
 2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-arch.h (arc_tune_attr): Add ARC_TUNE_CORE_3.
