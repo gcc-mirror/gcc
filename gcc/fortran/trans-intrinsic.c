@@ -1846,11 +1846,11 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 
 static tree
 conv_caf_send (gfc_code *code) {
-  gfc_expr *lhs_expr, *rhs_expr, *tmp_stat;
+  gfc_expr *lhs_expr, *rhs_expr, *tmp_stat, *tmp_team;
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
   tree caf_decl, token, offset, image_index, tmp, lhs_kind, rhs_kind;
-  tree may_require_tmp, src_stat, dst_stat;
+  tree may_require_tmp, src_stat, dst_stat, dst_team;
   tree lhs_type = NULL_TREE;
   tree vec = null_pointer_node, rhs_vec = null_pointer_node;
   symbol_attribute lhs_caf_attr, rhs_caf_attr;
@@ -1866,6 +1866,7 @@ conv_caf_send (gfc_code *code) {
   lhs_caf_attr = gfc_caf_attr (lhs_expr);
   rhs_caf_attr = gfc_caf_attr (rhs_expr);
   src_stat = dst_stat = null_pointer_node;
+  dst_team = null_pointer_node;
 
   /* LHS.  */
   gfc_init_se (&lhs_se, NULL);
@@ -2077,6 +2078,18 @@ conv_caf_send (gfc_code *code) {
       gfc_add_block_to_block (&block, &stat_se.post);
     }
 
+  tmp_team = gfc_find_team_co (lhs_expr);
+
+  if (tmp_team)
+    {
+      gfc_se team_se;
+      gfc_init_se (&team_se, NULL);
+      gfc_conv_expr_reference (&team_se, tmp_team);
+      dst_team = team_se.expr;
+      gfc_add_block_to_block (&block, &team_se.pre);
+      gfc_add_block_to_block (&block, &team_se.post);
+    }
+
   if (!gfc_is_coindexed (rhs_expr))
     {
       if (lhs_caf_attr.alloc_comp || lhs_caf_attr.pointer_comp)
@@ -2092,10 +2105,10 @@ conv_caf_send (gfc_code *code) {
 				     may_require_tmp, dst_realloc, src_stat);
 	  }
       else
-	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 10,
+	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 11,
 				   token, offset, image_index, lhs_se.expr, vec,
 				   rhs_se.expr, lhs_kind, rhs_kind,
-				   may_require_tmp, src_stat);
+				   may_require_tmp, src_stat, dst_team);
     }
   else
     {
@@ -2432,6 +2445,48 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
   se->expr = tmp;
 }
 
+static void
+conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
+{
+  unsigned int num_args;
+
+  tree *args, tmp;
+
+  num_args = gfc_intrinsic_argument_list_length (expr);
+  args = XALLOCAVEC (tree, num_args);
+  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
+
+  if (flag_coarray ==
+      GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
+    {
+      tree arg;
+
+      arg = gfc_evaluate_now (args[0], &se->pre);
+      tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+      			     fold_convert (integer_type_node, arg),
+      			     integer_one_node);
+      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
+      			     tmp, integer_zero_node,
+      			     build_int_cst (integer_type_node,
+      					    GFC_STAT_STOPPED_IMAGE));
+    }
+  else if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      // the value -1 represents that no team has been created yet
+      tmp = build_int_cst (integer_type_node, -1);
+    }
+  else if (flag_coarray == GFC_FCOARRAY_LIB && expr->value.function.actual->expr)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
+			       args[0], build_int_cst (integer_type_node, -1));
+  else if (flag_coarray == GFC_FCOARRAY_LIB)
+    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
+		integer_zero_node, build_int_cst (integer_type_node, -1));
+  else
+    gcc_unreachable ();
+
+  se->expr = tmp;
+}
+
 
 static void
 trans_image_index (gfc_se * se, gfc_expr *expr)
@@ -2553,7 +2608,6 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 			      build_int_cst (type, 0), tmp);
 }
 
-
 static void
 trans_num_images (gfc_se * se, gfc_expr *expr)
 {
@@ -2581,7 +2635,6 @@ trans_num_images (gfc_se * se, gfc_expr *expr)
     }
   else
     failed = build_int_cst (integer_type_node, -1);
-
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
 			     distance, failed);
   se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
@@ -2999,7 +3052,6 @@ conv_intrinsic_stride (gfc_se * se, gfc_expr * expr)
 			 argse.expr, gfc_index_one_node);
   se->expr = gfc_conv_descriptor_stride_get (desc, tmp);
 }
-
 
 static void
 gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
@@ -4584,7 +4636,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   /* Special case for character maxloc.  Remove unneeded actual
      arguments, then call a library function.  */
-  
+
   if (arrayexpr->ts.type == BT_CHARACTER)
     {
       gfc_actual_arglist *a, *b;
@@ -6098,7 +6150,6 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
 			  append_args);
   gfc_free_symbol (sym);
 }
-
 
 /* The length of a character string.  */
 static void
@@ -8662,7 +8713,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	    case GFC_ISYM_MINLOC:
 	      gfc_conv_intrinsic_minmaxloc (se, expr, LT_EXPR);
 	      break;
-	      
+
 	    case GFC_ISYM_MAXLOC:
 	      gfc_conv_intrinsic_minmaxloc (se, expr, GT_EXPR);
 	      break;
@@ -9190,6 +9241,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_arith (se, expr, PLUS_EXPR, false);
       break;
 
+    case GFC_ISYM_TEAM_NUMBER:
+      conv_intrinsic_team_number (se, expr);
+      break;
+
     case GFC_ISYM_TRANSFER:
       if (se->ss && se->ss->info->useflags)
 	/* Access the previously obtained result.  */
@@ -9587,6 +9642,7 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
 
     case GFC_ISYM_CSHIFT:
     case GFC_ISYM_EOSHIFT:
+    case GFC_ISYM_GET_TEAM:
     case GFC_ISYM_FAILED_IMAGES:
     case GFC_ISYM_STOPPED_IMAGES:
     case GFC_ISYM_PACK:

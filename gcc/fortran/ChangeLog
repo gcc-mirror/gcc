@@ -1,3 +1,49 @@
+2018-01-26  Damian Rouson  <damian@sourceryinstitute.org>
+	Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	Soren Rasmussen  <s.c.rasmussen@gmail.com>
+
+	Partial support for Fortran 2018 teams features.
+
+	* array.c (gfc_match_array_ref): add team attribute in coarray
+	transfers.
+	* check.c (gfc_check_get_team, gfc_check_team_number): add new
+	functions for get_team and team_number.
+	* dump-parse-tree.c (show_code_node): add new statements: form team,
+	change team, end team, and sync team.
+	* expr.c (gfc_find_team_co): add new function.
+	* gfortran.h: add new statements.
+	* intrinsic.c (add_functions): add get_team and team_number functions.
+	* intrinsic.h: add get_team and team_number prototypes for check,
+	simplify, and resolve.
+	* iresolve.c (gfc_resolve_get_team, gfc_resolve_team_number): add new
+	functions.
+	* iso-fortran-env.def: add the team_type derived type.
+	* match.c (gfc_match_if, gfc_match_form_team, gfc_match_team_number)
+	(gfc_match_end_team, gfc_match_sync_team, gfc_match_change_team):
+	add change team, end team, form team, sync team match and functions.
+	* match.h: add new prototypes for change team, end team, form team,
+	and sync team.
+	* parse.c (decode_statement): add cases for change team, end team,
+	form team, and sync team.
+	* resolve.c: add cases for exec form team, change team, end team, and
+	sync team.
+	* simplify.c (gfc_simplify_get_team): add new function for get team.
+	* st.c (gfc_free_statement): add cases exec for change team, end team,
+	form team, sync team.
+	* trans-decl.c (gfor_fndecl_caf_form_team)
+	(gfor_fndecl_caf_change_team, gfor_fndecl_caf_end_team)
+	(gfor_fndecl_caf_sync_team, gfor_fndecl_caf_get_team)
+	(gfor_fndecl_caf_team_number): add functions and definitions.
+	* trans-intrinsic.c (conv_caf_send, conv_intrinsic_team_number): add
+	new function and team_type argument support.
+	* trans-stmt.c (gfc_trans_form_team, gfc_trans_change_team)
+	(gfc_trans_end_team, gfc_trans_sync_team): add new functions.
+	* trans-stmt.h: add new prototypes.
+	* trans-types.c (gfc_get_derived_type): check condition for team_type.
+	* trans.c (trans_code): new exec cases for form team, change team, end
+	team, and sync team.
+	* trans.h: add new prototypes.
+
 2018-01-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83998

@@ -2893,6 +2893,30 @@ gfc_simplify_failed_or_stopped_images (gfc_expr *team ATTRIBUTE_UNUSED,
 
 
 gfc_expr *
+gfc_simplify_get_team (gfc_expr *level ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_current_locus = *gfc_current_intrinsic_where;
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return &gfc_bad_expr;
+    }
+
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      gfc_expr *result;
+      result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind, &gfc_current_locus);
+      result->rank = 0;
+      return result;
+    }
+
+  /* For fcoarray = lib no simplification is possible, because it is not known
+     what images failed or are stopped at compile time.  */
+  return NULL;
+}
+
+
+gfc_expr *
 gfc_simplify_float (gfc_expr *a)
 {
   gfc_expr *result;
@@ -3058,7 +3082,7 @@ gfc_simplify_fraction (gfc_expr *x)
 
 #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
 
-  /* MPFR versions before 3.1.0 do not include mpfr_frexp.  
+  /* MPFR versions before 3.1.0 do not include mpfr_frexp.
      TODO: remove the kludge when MPFR 3.1.0 or newer will be required */
 
   if (mpfr_sgn (x->value.real) == 0)
@@ -7348,7 +7372,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	|| !gfc_is_constant_expr (size))
     return NULL;
 
-  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size, 
+  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size,
 				     &result_size, &result_length))
     return NULL;
 

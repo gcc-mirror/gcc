@@ -157,6 +157,12 @@ tree gfor_fndecl_caf_fail_image;
 tree gfor_fndecl_caf_failed_images;
 tree gfor_fndecl_caf_image_status;
 tree gfor_fndecl_caf_stopped_images;
+tree gfor_fndecl_caf_form_team;
+tree gfor_fndecl_caf_change_team;
+tree gfor_fndecl_caf_end_team;
+tree gfor_fndecl_caf_sync_team;
+tree gfor_fndecl_caf_get_team;
+tree gfor_fndecl_caf_team_number;
 tree gfor_fndecl_co_broadcast;
 tree gfor_fndecl_co_max;
 tree gfor_fndecl_co_min;
@@ -3363,7 +3369,7 @@ gfc_build_intrinsic_function_decls (void)
 	    jtype = gfc_get_int_type (ikinds[jkind]);
 	    if (itype && jtype)
 	      {
-		sprintf(name, PREFIX("pow_i%d_i%d"), ikinds[ikind],
+		sprintf (name, PREFIX("pow_i%d_i%d"), ikinds[ikind],
 			ikinds[jkind]);
 		gfor_fndecl_math_powi[jkind][ikind].integer =
 		  gfc_build_library_function_decl (get_identifier (name),
@@ -3378,7 +3384,7 @@ gfc_build_intrinsic_function_decls (void)
 	    rtype = gfc_get_real_type (rkinds[rkind]);
 	    if (rtype && itype)
 	      {
-		sprintf(name, PREFIX("pow_r%d_i%d"), rkinds[rkind],
+		sprintf (name, PREFIX("pow_r%d_i%d"), rkinds[rkind],
 			ikinds[ikind]);
 		gfor_fndecl_math_powi[rkind][ikind].real =
 		  gfc_build_library_function_decl (get_identifier (name),
@@ -3390,7 +3396,7 @@ gfc_build_intrinsic_function_decls (void)
 	    ctype = gfc_get_complex_type (rkinds[rkind]);
 	    if (ctype && itype)
 	      {
-		sprintf(name, PREFIX("pow_c%d_i%d"), rkinds[rkind],
+		sprintf (name, PREFIX("pow_c%d_i%d"), rkinds[rkind],
 			ikinds[ikind]);
 		gfor_fndecl_math_powi[rkind][ikind].cmplx =
 		  gfc_build_library_function_decl (get_identifier (name),
@@ -3642,10 +3648,10 @@ gfc_build_builtin_function_decls (void)
 	boolean_type_node, pint_type);
 
       gfor_fndecl_caf_send = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_send")), ".R.RRRRRRW", void_type_node, 10,
+	get_identifier (PREFIX("caf_send")), ".R.RRRRRRWR", void_type_node, 11,
 	pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
 	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node,
-	boolean_type_node, pint_type);
+	boolean_type_node, pint_type, pvoid_type_node);
 
       gfor_fndecl_caf_sendget = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_sendget")), ".R.RRRR.RRRRRR",
@@ -3768,6 +3774,38 @@ gfc_build_builtin_function_decls (void)
 	    get_identifier (PREFIX("caf_failed_images")), "WRR",
 	    void_type_node, 3, pvoid_type_node, ppvoid_type_node,
 	    integer_type_node);
+
+      gfor_fndecl_caf_form_team
+	= gfc_build_library_function_decl_with_spec (
+	    get_identifier (PREFIX("caf_form_team")), "RWR",
+	    void_type_node, 3, integer_type_node, ppvoid_type_node,
+	    integer_type_node);
+
+      gfor_fndecl_caf_change_team
+	= gfc_build_library_function_decl_with_spec (
+	    get_identifier (PREFIX("caf_change_team")), "RR",
+	    void_type_node, 2, ppvoid_type_node,
+	    integer_type_node);
+
+      gfor_fndecl_caf_end_team
+	= gfc_build_library_function_decl (
+	    get_identifier (PREFIX("caf_end_team")), void_type_node, 0);
+
+      gfor_fndecl_caf_get_team
+	= gfc_build_library_function_decl_with_spec (
+	    get_identifier (PREFIX("caf_get_team")), "R",
+	    void_type_node, 1, integer_type_node);
+
+      gfor_fndecl_caf_sync_team
+	= gfc_build_library_function_decl_with_spec (
+	    get_identifier (PREFIX("caf_sync_team")), "RR",
+	    void_type_node, 2, ppvoid_type_node,
+	    integer_type_node);
+
+      gfor_fndecl_caf_team_number
+      	= gfc_build_library_function_decl_with_spec (
+      	    get_identifier (PREFIX("caf_team_number")), "R",
+      	    integer_type_node, 1, integer_type_node);
 
       gfor_fndecl_caf_image_status
 	= gfc_build_library_function_decl_with_spec (

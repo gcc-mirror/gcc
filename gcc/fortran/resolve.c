@@ -11101,6 +11101,10 @@ start:
 	  break;
 
 	case EXEC_FAIL_IMAGE:
+	case EXEC_FORM_TEAM:
+	case EXEC_CHANGE_TEAM:
+	case EXEC_END_TEAM:
+	case EXEC_SYNC_TEAM:
 	  break;
 
 	case EXEC_ENTRY:
