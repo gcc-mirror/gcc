@@ -542,8 +542,8 @@
 	* config/rl78/rl78.md: New define_expand "umaxdi3".
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
-	
-	* config/rl78/rl78.c (rl78_note_reg_set): fixed dead reg check 
+
+	* config/rl78/rl78.c (rl78_note_reg_set): fixed dead reg check
 	for non-QImode registers
 
 2018-01-22  Richard Biener  <rguenther@suse.de>
@@ -746,32 +746,32 @@
 
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
-        PR other/70268
-        * common.opt: (-ffile-prefix-map): New option.
-        * opts.c (common_handle_option): Defer it.
-        * opts-global.c (handle_common_deferred_options): Handle it.
-        * debug.h (remap_debug_filename, add_debug_prefix_map): Move to...
-        * file-prefix-map.h: New file.
-        (remap_debug_filename, add_debug_prefix_map): ...here.
-        (add_macro_prefix_map, add_file_prefix_map, remap_macro_filename): New.
-        * final.c (debug_prefix_map, add_debug_prefix_map
-        remap_debug_filename): Move to...
-        * file-prefix-map.c: New file.
-        (file_prefix_map, add_prefix_map, remap_filename) ...here and rename,
-        generalize, get rid of alloca(), use strrchr() instead of strchr().
-        (add_macro_prefix_map, add_debug_prefix_map, add_file_prefix_map):
-        Implement in terms of add_prefix_map().
-        (remap_macro_filename, remap_debug_filename): Implement in term of
-        remap_filename().
-        * Makefile.in (OBJS, PLUGIN_HEADERS): Add new files.
-        * builtins.c (fold_builtin_FILE): Call remap_macro_filename().
-        * dbxout.c: Include file-prefix-map.h.
-        * varasm.c: Likewise.
-        * vmsdbgout.c: Likewise.
-        * xcoffout.c: Likewise.
-        * dwarf2out.c: Likewise plus omit new options from DW_AT_producer.
-        * doc/cppopts.texi (-fmacro-prefix-map): Document.
-        * doc/invoke.texi (-ffile-prefix-map): Document.
+	PR other/70268
+	* common.opt: (-ffile-prefix-map): New option.
+	* opts.c (common_handle_option): Defer it.
+	* opts-global.c (handle_common_deferred_options): Handle it.
+	* debug.h (remap_debug_filename, add_debug_prefix_map): Move to...
+	* file-prefix-map.h: New file.
+	(remap_debug_filename, add_debug_prefix_map): ...here.
+	(add_macro_prefix_map, add_file_prefix_map, remap_macro_filename): New.
+	* final.c (debug_prefix_map, add_debug_prefix_map
+	remap_debug_filename): Move to...
+	* file-prefix-map.c: New file.
+	(file_prefix_map, add_prefix_map, remap_filename) ...here and rename,
+	generalize, get rid of alloca(), use strrchr() instead of strchr().
+	(add_macro_prefix_map, add_debug_prefix_map, add_file_prefix_map):
+	Implement in terms of add_prefix_map().
+	(remap_macro_filename, remap_debug_filename): Implement in term of
+	remap_filename().
+	* Makefile.in (OBJS, PLUGIN_HEADERS): Add new files.
+	* builtins.c (fold_builtin_FILE): Call remap_macro_filename().
+	* dbxout.c: Include file-prefix-map.h.
+	* varasm.c: Likewise.
+	* vmsdbgout.c: Likewise.
+	* xcoffout.c: Likewise.
+	* dwarf2out.c: Likewise plus omit new options from DW_AT_producer.
+	* doc/cppopts.texi (-fmacro-prefix-map): Document.
+	* doc/invoke.texi (-ffile-prefix-map): Document.
 	(-fdebug-prefix-map): Update description.
 
 2018-01-18  Martin Liska  <mliska@suse.cz>
@@ -968,7 +968,7 @@
 
 2018-01-16  Artyom Skrobov tyomitch@gmail.com
 
-        * caller-save.c (insert_save): Drop unnecessary parameter.  All
+	* caller-save.c (insert_save): Drop unnecessary parameter.  All
 	callers updated.
 
 2018-01-16  Jakub Jelinek  <jakub@redhat.com>
@@ -1199,9 +1199,9 @@
 
 2018-01-14  Nathan Rossi  <nathan@nathanrossi.com>
 
-        PR target/83013
-        * config/microblaze/microblaze.c (microblaze_asm_output_ident):
-        Use .pushsection/.popsection.
+	PR target/83013
+	* config/microblaze/microblaze.c (microblaze_asm_output_ident):
+	Use .pushsection/.popsection.
 
 2018-01-14  Martin Sebor  <msebor@redhat.com>
 
