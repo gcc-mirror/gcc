@@ -1,3 +1,8 @@
+2018-01-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83998
+	* gfortran.dg/dot_product_4.f90
+
 2018-01-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83896
