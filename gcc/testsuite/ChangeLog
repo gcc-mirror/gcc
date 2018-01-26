@@ -1,3 +1,14 @@
+2018-01-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-neg-longlong.h:  New.
+	* gcc.target/powerpc/fold-vec-neg-longlong.p8.c:  New.
+	* gcc.target/powerpc/fold-vec-neg-longlong.p9.c:  New.
+	* gcc.target/powerpc/fold-vec-neg-longlong.c:  Delete.
+	* gcc.target/powerpc/fold-vec-neg-int.c: Remove scan-assembler stanzas.
+	* gcc.target/powerpc/fold-vec-neg-int.p7.c: New.
+	* gcc.target/powerpc/fold-vec-neg-int.p8.c: New.
+	* gcc.target/powerpc/fold-vec-neg-int.p9.c: New.
+
 2018-01-26  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/84003
