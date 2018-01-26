@@ -354,9 +354,14 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 {
   gfc_expr *result, *a, *b, *c;
 
-  result = gfc_get_constant_expr (matrix_a->ts.type, matrix_a->ts.kind,
-				  &matrix_a->where);
-  init_result_expr (result, 0, NULL);
+  /* Set result to an INTEGER(1) 0 for numeric types and .false. for 
+     LOGICAL.  Mixed-mode math in the loop will promote result to the
+     correct type and kind.  */
+  if (matrix_a->ts.type == BT_LOGICAL)
+    result = gfc_get_logical_expr (gfc_default_logical_kind, NULL, false);
+  else
+    result = gfc_get_int_expr (1, NULL, 0);
+  result->where = matrix_a->where;
 
   a = gfc_constructor_lookup_expr (matrix_a->value.constructor, offset_a);
   b = gfc_constructor_lookup_expr (matrix_b->value.constructor, offset_b);
@@ -2253,22 +2258,19 @@ gfc_simplify_dim (gfc_expr *x, gfc_expr *y)
 gfc_expr*
 gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 {
-
-  gfc_expr temp;
+  /* If vector_a is a zero-sized array, the result is 0 for INTEGER, 
+     REAL, and COMPLEX types and .false. for LOGICAL.  */
+  if (vector_a->shape && mpz_get_si (vector_a->shape[0]) == 0)
+    {
+      if (vector_a->ts.type == BT_LOGICAL)
+	return gfc_get_logical_expr (gfc_default_logical_kind, NULL, false);
+      else
+	return gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
+    }
 
   if (!is_constant_array_expr (vector_a)
       || !is_constant_array_expr (vector_b))
     return NULL;
-
-  gcc_assert (vector_a->rank == 1);
-  gcc_assert (vector_b->rank == 1);
-
-  temp.expr_type = EXPR_OP;
-  gfc_clear_ts (&temp.ts);
-  temp.value.op.op = INTRINSIC_NONE;
-  temp.value.op.op1 = vector_a;
-  temp.value.op.op2 = vector_b;
-  gfc_type_convert_binary (&temp, 1);
 
   return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0, true);
 }

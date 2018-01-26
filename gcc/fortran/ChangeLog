@@ -1,3 +1,10 @@
+2018-01-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83998
+	* simplify.c (compute_dot_product):  Initialize result to INTEGER(1) 0
+	or .false.  The summation does the correct type conversion.
+	(gfc_simplify_dot_product): Special case zero-sized arrays.
+
 2018-25-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37577
