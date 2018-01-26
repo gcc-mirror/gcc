@@ -535,8 +535,19 @@ public:
   {
     size_t size;
     char buffer[1];
+
+  private:
+    unsigned calc_crc () const;
+
+  public:
+    unsigned set_crc ();
+    bool check_crc () const;
+    unsigned get_crc () const
+    {
+      return *(unsigned const *)buffer;
+    }
+    static data *extend (data *, size_t);
   };
-  static data *extend (data *, size_t);
 
 protected:
   FILE *stream;
@@ -566,7 +577,33 @@ public:
   }
 };
 
-elf::data *elf::extend (data *c, size_t a)
+unsigned
+elf::data::calc_crc () const
+{
+  unsigned crc = 0;
+  for (size_t ix = 4; ix < size; ix++)
+    crc = crc32_byte (crc, buffer[ix]);
+  return crc;
+}
+
+unsigned
+elf::data::set_crc ()
+{
+  gcc_checking_assert (size >= 4);
+  unsigned crc = calc_crc ();
+  *(unsigned *)buffer = crc;
+  return crc;
+}
+
+bool
+elf::data::check_crc () const
+{
+  unsigned crc = calc_crc ();
+
+  return size >= 4 && crc == get_crc ();
+}
+
+elf::data *elf::data::extend (data *c, size_t a)
 {
   if (!c || a > c->size)
     {
@@ -648,7 +685,7 @@ elf_in::read (unsigned snum)
       return NULL;
     }
 
-  data *b = extend (NULL, sec->size);
+  data *b = data::extend (NULL, sec->size);
   if (read (b->buffer, b->size))
     return b;
   free (b);
@@ -906,25 +943,20 @@ elf_out::end ()
 /* Byte serializer base.  */
 class cpm_serial {
 protected:
+public://FIXME
   elf::data *data;
+protected:
   size_t pos;
   unsigned bit_val;
   unsigned bit_pos;
-  unsigned crc;
 
 public:
   cpm_serial ()
-    :data (NULL), pos (0), bit_val (0), bit_pos (0), crc (0)
+    :data (NULL), pos (0), bit_val (0), bit_pos (0)
   {}
   ~cpm_serial () 
   {
     gcc_checking_assert (!data);
-  }
-
-public:
-  unsigned get_crc () const
-  {
-    return crc;
   }
 
 protected:
@@ -935,39 +967,11 @@ protected:
     gcc_assert (bit_pos);
     unsigned bytes = (bit_pos + 7) / 8;
     pos -= 4 - bytes;
-    crc_unsigned_n (bit_val, bytes);
     bit_pos = 0;
     bit_val = 0;
     return bytes;
   }
-
-protected:
-  void crc_unsigned_n (unsigned v, unsigned n)
-  {
-    crc = crc32_unsigned_n (crc, v, n);
-  }
-  void crc_buffer (const char *ptr, size_t l);
-
-  template<typename T> void crc_unsigned (T v)
-  {
-    unsigned bytes = sizeof (T);
-    while (bytes > 4)
-      {
-	bytes -= 4;
-	crc_unsigned_n (unsigned (v >> (bytes * 8)), 4);
-      }
-    crc_unsigned_n (unsigned (v), bytes);
-  }
 };
-
-void
-cpm_serial::crc_buffer (const char *ptr, size_t l)
-{
-  unsigned c = crc;
-  for (size_t ix = 0; ix != l; ix++)
-    c = crc32_byte (c, ptr[ix]);
-  crc = c;
-}
 
 class cpm_stream;
 
@@ -999,21 +1003,12 @@ private:
 public:
   void seek (unsigned);
   unsigned tell ();
+  void checkpoint () {}
 
 public:
   void raw (unsigned);
 
 public:
-  bool done ()
-  {
-    elf::data *d = data;
-    data = NULL;
-    // FIXME data leak
-    return sink->write (elf::SHT_GXX_MODULE, 0, d);
-  }
-
-public:
-  void checkpoint ();
   void instrument (cpm_stream *d);
 
 public:
@@ -1040,10 +1035,30 @@ public:
     : cpm_serial (), source (source)
   {
     data = source->find (elf::SHT_GXX_MODULE);
+    if (data && !data->check_crc ())
+      {
+	/* Map checksum error onto a reasonably specific errno.  */
+#if defined (EPROTO)
+	source->bad (EPROTO);
+#elif defined (EBADMSG)
+	source->bad (EBADMSG);
+#elif defined (EIO)
+	source->bad (EIO);
+#else
+	source->bad ();
+#endif
+      }
+    pos = 4;
   }
   ~cpm_reader ()
   {
     data = NULL;
+  }
+
+public:
+  unsigned crc () const
+  {
+    return data->get_crc ();
   }
 
 private:
@@ -1085,29 +1100,10 @@ public:
 
 /* Checkpoint a crc.  */
 
-inline void
-cpm_writer::checkpoint ()
-{
-  checksums++;
-  raw (crc);
-}
-
 bool
 cpm_reader::checkpoint ()
 {
-  if (raw () != crc)
-    {
-      /* Map checksum error onto a reasonably specific errno.  */
-#if defined (EPROTO)
-      source->bad (EPROTO);
-#elif defined (EBADMSG)
-      source->bad (EBADMSG);
-#elif defined (EIO)
-      source->bad (EIO);
-#else
-      source->bad ();
-#endif
-    }
+  // FIXME
   return !source->get_error ();
 }
 
@@ -1224,7 +1220,6 @@ cpm_writer::c (unsigned char v)
 {
   reserve (1);
   data->buffer[pos++] = v;
-  crc_unsigned (v);
 }
 
 int
@@ -1235,7 +1230,6 @@ cpm_reader::c ()
     v = (unsigned char)data->buffer[pos++];
   else
     source->bad ();
-  crc_unsigned (v);
   return v;
 }
 
@@ -1245,7 +1239,6 @@ cpm_reader::c ()
 void
 cpm_writer::i (int v)
 {
-  crc_unsigned (v);
   reserve ((sizeof (v) * 8 + 6) / 7);
 
   int end = v < 0 ? -1 : 0;
@@ -1285,7 +1278,6 @@ cpm_reader::i ()
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(unsigned)0 << bit;
-  crc_unsigned (v);
   return v;
 }
 
@@ -1294,7 +1286,6 @@ cpm_reader::i ()
 void
 cpm_writer::u (unsigned v)
 {
-  crc_unsigned (v);
   reserve ((sizeof (v) * 8 + 6) / 7);
 
   bool more;
@@ -1328,7 +1319,6 @@ cpm_reader::u ()
       bit += 7;
     }
   while (byte & 128);
-  crc_unsigned (v);
 
   return v;
 }
@@ -1336,7 +1326,6 @@ cpm_reader::u ()
 void
 cpm_writer::wi (HOST_WIDE_INT v)
 {
-  crc_unsigned (v);
   reserve ((sizeof (v) * 8 + 6) / 7);
 
   int end = v < 0 ? -1 : 0;
@@ -1376,7 +1365,6 @@ cpm_reader::wi ()
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(unsigned HOST_WIDE_INT)0 << bit;
-  crc_unsigned (v);
   return v;
 }
 
@@ -1413,7 +1401,6 @@ cpm_reader::s ()
 void
 cpm_writer::buf (const char *buf, size_t len)
 {
-  crc_buffer (buf, len);
   reserve (len);
   memcpy (data->buffer + pos, buf, len);
   pos += len;
@@ -1430,7 +1417,6 @@ cpm_reader::buf (size_t len)
       source->bad ();
     }
   pos += have;
-  crc_buffer (buf, len);
   return buf;
 }
 
@@ -1538,8 +1524,13 @@ cpm_writer::reserve (size_t want)
   size_t have = alloc - pos;
   if (have < want)
     {
+      if (!data)
+	{
+	  alloc += 4;
+	  pos = 4;
+	}
       alloc = (alloc + want) * 3/2;
-      data = elf::extend (data, alloc);
+      data = elf::data::extend (data, alloc);
       have = data->size - pos;
     }
   return have;
@@ -1951,8 +1942,9 @@ cpm_stream::ident ()
 
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
+public: // FIXME
   cpm_writer w;
-
+private:
   ptr_uint_hash_map tree_map; /* trees to ids  */
 
   unsigned crc_tell;
@@ -1978,10 +1970,6 @@ public:
   void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
-  bool done ()
-  {
-    return w.done ();
-  }
 
 private:
   void tag (record_tag rt)
@@ -2057,8 +2045,9 @@ cpms_out::instrument ()
 
 /* Cpm_Stream in.  */
 class cpms_in : public cpm_stream {
+public: // FIXME
   cpm_reader r;
-
+private:
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
   unsigned mod_ix; /* Module index.  */
@@ -2226,7 +2215,8 @@ cpms_in::header ()
     }
   dump () && dump  ("Expecting %V found %V", ver, v);
 
-  unsigned crc = r.raw ();
+  r.raw (); // FIXME
+  unsigned crc = r.crc ();
   dump () && dump ("Reading CRC=%x", crc);
   if (!state->set_crc (crc))
     return false;
@@ -2251,14 +2241,9 @@ cpms_out::tag_eof ()
   tag (rt_eof);
   w.checkpoint ();
 
-  unsigned crc = w.get_crc ();
-  dump () && dump ("Writing eof, CRC=%x", crc);
+  dump () && dump ("Writing eof");
 
   instrument ();
-
-  /* Rewind and write checksum in slot we saved for it.  */
-  w.seek (crc_tell);
-  w.raw (crc);
 }
 
 int
@@ -2267,11 +2252,6 @@ cpms_in::tag_eof ()
   dump () && dump ("Read eof");
   if (!r.checkpoint ())
     return false;
-
-  /* Record the crc.  */
-  unsigned crc = r.get_crc ();
-  gcc_assert (!state->crc || state->crc == crc);
-  state->crc = crc;
 
   return -1; /* Denote EOF.  */
 }
@@ -5468,9 +5448,16 @@ read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
 
       ok = in.header ();
       if (ok)
-	do
-	  ok = in.read_item ();
-	while (ok > 0);
+	{
+	  do
+	    ok = in.read_item ();
+	  while (ok > 0);
+
+	  /* Record the crc.  */
+	  unsigned crc = in.r.crc ();
+	  state->set_crc (crc);
+	}
+
       mod = in.get_mod ();
     }
 
@@ -5968,9 +5955,13 @@ write_module (FILE *stream, module_state *state)
       out.bindings (global_namespace);
 
       out.tag_eof ();
-      out.done ();
+
+      unsigned crc = out.w.data->set_crc ();
+      out.dump () && out.dump ("Writing eof, CRC=%x", crc);
+      elf.write (elf::SHT_GXX_MODULE, 0, out.w.data);
+      out.w.data = NULL; // FIXME leak
     }
-  
+
   if (int e = elf.end ())
     error ("failed to write module %qE (%qs): %s",
 	   state->name, state->filename,

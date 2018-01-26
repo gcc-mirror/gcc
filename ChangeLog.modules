@@ -1,5 +1,12 @@
 2018-01-26  Nathan Sidwell  <nathan@acm.org>
 
+	CRC at section level
+	gcc/cp/
+	* module.c (elf::data): Add crc routines.
+	(cpm_serial): Remove crc routines.
+	(cpm_in, cpm_out): Don't calculate crcs.
+	(read_module, write_module): Adjust (incomplete).
+
 	BMI is ELF
 	gcc/cp/
 	* module.c (get_version): Moved from cpm_stream::version.
