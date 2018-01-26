@@ -9567,68 +9567,55 @@ arc_legitimize_address (rtx orig_x, rtx oldx, machine_mode mode)
 }
 
 static rtx
-arc_delegitimize_address_0 (rtx x)
+arc_delegitimize_address_0 (rtx op)
 {
-  rtx u, gp, p;
-
-  if (GET_CODE (x) == CONST && GET_CODE (u = XEXP (x, 0)) == UNSPEC)
+  switch (GET_CODE (op))
     {
-      if (XINT (u, 1) == ARC_UNSPEC_GOT
-	  || XINT (u, 1) == ARC_UNSPEC_GOTOFFPC)
-	return XVECEXP (u, 0, 0);
+    case CONST:
+      return arc_delegitimize_address_0 (XEXP (op, 0));
+
+    case UNSPEC:
+      switch (XINT (op, 1))
+	{
+	case ARC_UNSPEC_GOT:
+	case ARC_UNSPEC_GOTOFFPC:
+	  return XVECEXP (op, 0, 0);
+	default:
+	  break;
+	}
+      break;
+
+    case PLUS:
+      {
+	rtx t1 = arc_delegitimize_address_0 (XEXP (op, 0));
+	rtx t2 = XEXP (op, 1);
+
+	if (t1 && t2)
+	  return gen_rtx_PLUS (GET_MODE (op), t1, t2);
+	break;
+      }
+
+    default:
+      break;
     }
-  else if (GET_CODE (x) == CONST && GET_CODE (p = XEXP (x, 0)) == PLUS
-	   && GET_CODE (u = XEXP (p, 0)) == UNSPEC
-	   && (XINT (u, 1) == ARC_UNSPEC_GOT
-	       || XINT (u, 1) == ARC_UNSPEC_GOTOFFPC))
-    return gen_rtx_CONST
-	    (GET_MODE (x),
-	     gen_rtx_PLUS (GET_MODE (p), XVECEXP (u, 0, 0), XEXP (p, 1)));
-  else if (GET_CODE (x) == PLUS
-	   && ((REG_P (gp = XEXP (x, 0))
-		&& REGNO (gp) == PIC_OFFSET_TABLE_REGNUM)
-	       || (GET_CODE (gp) == CONST
-		   && GET_CODE (u = XEXP (gp, 0)) == UNSPEC
-		   && XINT (u, 1) == ARC_UNSPEC_GOT
-		   && GET_CODE (XVECEXP (u, 0, 0)) == SYMBOL_REF
-		   && !strcmp (XSTR (XVECEXP (u, 0, 0), 0), "_DYNAMIC")))
-	   && GET_CODE (XEXP (x, 1)) == CONST
-	   && GET_CODE (u = XEXP (XEXP (x, 1), 0)) == UNSPEC
-	   && XINT (u, 1) == ARC_UNSPEC_GOTOFF)
-    return XVECEXP (u, 0, 0);
-  else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 0)) == PLUS
-	   && ((REG_P (gp = XEXP (XEXP (x, 0), 1))
-		&& REGNO (gp) == PIC_OFFSET_TABLE_REGNUM)
-	       || (GET_CODE (gp) == CONST
-		   && GET_CODE (u = XEXP (gp, 0)) == UNSPEC
-		   && XINT (u, 1) == ARC_UNSPEC_GOT
-		   && GET_CODE (XVECEXP (u, 0, 0)) == SYMBOL_REF
-		   && !strcmp (XSTR (XVECEXP (u, 0, 0), 0), "_DYNAMIC")))
-	   && GET_CODE (XEXP (x, 1)) == CONST
-	   && GET_CODE (u = XEXP (XEXP (x, 1), 0)) == UNSPEC
-	   && XINT (u, 1) == ARC_UNSPEC_GOTOFF)
-    return gen_rtx_PLUS (GET_MODE (x), XEXP (XEXP (x, 0), 0),
-			 XVECEXP (u, 0, 0));
-  else if (GET_CODE (x) == PLUS
-	   && (u = arc_delegitimize_address_0 (XEXP (x, 1))))
-    return gen_rtx_PLUS (GET_MODE (x), XEXP (x, 0), u);
   return NULL_RTX;
 }
 
 static rtx
-arc_delegitimize_address (rtx x)
+arc_delegitimize_address (rtx orig_x)
 {
-  rtx orig_x = x = delegitimize_mem_from_attrs (x);
-  if (GET_CODE (x) == MEM)
+  rtx x = orig_x;
+
+  if (MEM_P (x))
     x = XEXP (x, 0);
+
   x = arc_delegitimize_address_0 (x);
-  if (x)
-    {
-      if (MEM_P (orig_x))
-	x = replace_equiv_address_nv (orig_x, x);
-      return x;
-    }
-  return orig_x;
+  if (!x)
+    return orig_x;
+
+  if (MEM_P (orig_x))
+    x = replace_equiv_address_nv (orig_x, x);
+  return x;
 }
 
 /* Return a REG rtx for acc1.  N.B. the gcc-internal representation may

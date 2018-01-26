@@ -1,5 +1,11 @@
 2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_delegitimize_address_0): Refactored to
+	recognize new pic like addresses.
+	(arc_delegitimize_address): Clean up.
+
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-arches.def: Option mrf16 valid for all
 	architectures.
 	* config/arc/arc-c.def (__ARC_RF16__): New predefined macro.
