@@ -1,5 +1,21 @@
 2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-arch.h (arc_tune_attr): Add ARC_TUNE_CORE_3.
+	* config/arc/arc.c (arc_sched_issue_rate): Use ARC_TUNE_... .
+	(arc_init): Likewise.
+	(arc_override_options): Likewise.
+	(arc_file_start): Choose Tag_ARC_CPU_variation based on arc_tune
+	value.
+	(hwloop_fail): Use TARGET_DBNZ when we want to check for dbnz insn
+	support.
+	* config/arc/arc.h (TARGET_DBNZ): Define.
+	* config/arc/arc.md (attr tune): Add core_3, use ARC_TUNE_... to
+	properly set the tune attribute.
+	(dbnz): Use TARGET_DBNZ guard.
+	* config/arc/arc.opt (mtune): Add core3 option.
+
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_delegitimize_address_0): Refactored to
 	recognize new pic like addresses.
 	(arc_delegitimize_address): Clean up.

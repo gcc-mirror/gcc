@@ -249,29 +249,33 @@ mmultcost=
 Target RejectNegative Joined UInteger Var(arc_multcost) Init(-1)
 Cost to assume for a multiply instruction, with 4 being equal to a normal insn.
 
-mtune=ARC600
-Target RejectNegative Var(arc_tune, TUNE_ARC600)
-Tune for ARC600 cpu.
+mtune=
+Target RejectNegative ToLower Joined Var(arc_tune) Enum(arc_tune_attr) Init(ARC_TUNE_NONE)
+-mcpu=TUNE Tune code for given ARC variant.
 
-mtune=ARC601
-Target RejectNegative Var(arc_tune, TUNE_ARC600)
-Tune for ARC601 cpu.
+Enum
+Name(arc_tune_attr) Type(int)
 
-mtune=ARC700
-Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_STD)
-Tune for ARC700 R4.2 Cpu with standard multiplier block.
+EnumValue
+Enum(arc_tune_attr) String(arc600) Value(ARC_TUNE_ARC600)
 
-mtune=ARC700-xmac
-Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_XMAC)
-Tune for ARC700 R4.2 Cpu with XMAC block.
+EnumValue
+Enum(arc_tune_attr) String(arc601) Value(ARC_TUNE_ARC600)
 
-mtune=ARC725D
-Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_XMAC)
-Tune for ARC700 R4.2 Cpu with XMAC block.
+EnumValue
+Enum(arc_tune_attr) String(arc700) Value(ARC_TUNE_ARC700_4_2_STD)
 
-mtune=ARC750D
-Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_XMAC)
-Tune for ARC700 R4.2 Cpu with XMAC block.
+EnumValue
+Enum(arc_tune_attr) String(arc700-xmac) Value(ARC_TUNE_ARC700_4_2_XMAC)
+
+EnumValue
+Enum(arc_tune_attr) String(arc725d) Value(ARC_TUNE_ARC700_4_2_XMAC)
+
+EnumValue
+Enum(arc_tune_attr) String(arc750d) Value(ARC_TUNE_ARC700_4_2_XMAC)
+
+EnumValue
+Enum(arc_tune_attr) String(core3) Value(ARC_TUNE_CORE_3)
 
 mindexed-loads
 Target Var(TARGET_INDEXED_LOADS) Init(TARGET_INDEXED_LOADS_DEFAULT)
