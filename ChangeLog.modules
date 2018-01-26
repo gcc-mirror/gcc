@@ -1,5 +1,15 @@
 2018-01-26  Nathan Sidwell  <nathan@acm.org>
 
+	Simplify buffer filling & drainging
+	gcc/cp/
+	* module.c (cpm_serial): Add begin, end, use, unuse.
+	(cpm_writer): Add use, unuse, begin, end.  Delete reserve, flush,
+	seek, tell, checkpoint.
+	(cpm_reader): Add overrun, use, begin, overran.  Delete fill,
+	checkpoint.
+	(cpm_{reader,writer}): Update all seralizers.
+	(cpms_{in,out}): Remove checkpointing.
+
 	CRC at section level
 	gcc/cp/
 	* module.c (elf::data): Add crc routines.

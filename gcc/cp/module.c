@@ -947,7 +947,7 @@ public://FIXME
   elf::data *data;
 protected:
   size_t pos;
-  unsigned bit_val;
+  uint32_t bit_val;
   unsigned bit_pos;
 
 public:
@@ -960,16 +960,41 @@ public:
   }
 
 protected:
-  /* Finish bit packet.  Compute crc of bits used, rewind the bytes
-     not used.  */
+  void begin ()
+  {
+    gcc_checking_assert (!data);
+    pos = 4;
+  }
+public:
+  void end ()
+  {
+    free (data);
+    data = NULL;
+    pos = 0;
+  }
+
+protected:
+  /* Finish bit packet.  Rewind the bytes not used.  */
   unsigned bit_flush ()
   {
     gcc_assert (bit_pos);
     unsigned bytes = (bit_pos + 7) / 8;
-    pos -= 4 - bytes;
+    unuse (4 - bytes);
     bit_pos = 0;
     bit_val = 0;
     return bytes;
+  }
+
+protected:
+  char *use (unsigned bytes)
+  {
+    char *res = &data->buffer[pos];
+    pos += bytes;
+    return res;
+  }
+  void unuse (unsigned bytes)
+  {
+    pos -= bytes;
   }
 };
 
@@ -982,7 +1007,6 @@ class cpm_writer : public cpm_serial {
   unsigned spans[3];
   unsigned lengths[3];
   int is_set;
-  unsigned checksums;
 
 public:
   cpm_writer (elf_out *sink)
@@ -991,19 +1015,17 @@ public:
     spans[0] = spans[1] = spans[2] = 0;
     lengths[0] = lengths[1] = lengths[2] = 0;
     is_set = -1;
-    checksums = 0;
   }
   ~cpm_writer ()
   {
   }
 
 private:
-  size_t reserve (size_t);
-  void flush ();
+  char *use (unsigned);
+
 public:
-  void seek (unsigned);
-  unsigned tell ();
-  void checkpoint () {}
+  void begin ();
+  unsigned end (elf_out *, unsigned, unsigned);
 
 public:
   void raw (unsigned);
@@ -1029,31 +1051,21 @@ public:
 
 /* Byte stream reader.  */
 class cpm_reader : public cpm_serial {
+public:// FIXME
   elf_in *source;
+  bool overrun;
+
 public:
   cpm_reader (elf_in *source)
-    : cpm_serial (), source (source)
+    : cpm_serial (), source (source), overrun (false)
   {
-    data = source->find (elf::SHT_GXX_MODULE);
-    if (data && !data->check_crc ())
-      {
-	/* Map checksum error onto a reasonably specific errno.  */
-#if defined (EPROTO)
-	source->bad (EPROTO);
-#elif defined (EBADMSG)
-	source->bad (EBADMSG);
-#elif defined (EIO)
-	source->bad (EIO);
-#else
-	source->bad ();
-#endif
-      }
-    pos = 4;
   }
   ~cpm_reader ()
   {
-    data = NULL;
   }
+
+public:
+  bool begin (elf_in *src, unsigned type);
 
 public:
   unsigned crc () const
@@ -1062,7 +1074,29 @@ public:
   }
 
 private:
-  size_t fill (size_t);
+  const char *use (unsigned bytes, unsigned *avail = NULL)
+  {
+    unsigned space = data->size - pos;
+    if (space < bytes)
+      {
+	bytes = space;
+	if (!avail)
+	  {
+	    overrun = true;
+	    return NULL;
+	  }
+      }
+    if (avail)
+      *avail = bytes;
+    return cpm_serial::use (bytes);
+  }
+
+public:
+  bool overran () const
+  {
+    return overrun;
+  }
+
 public:
   unsigned raw ();
 
@@ -1076,9 +1110,6 @@ public:
   {
     return source->get_error ();
   }
-
-public:
-  bool checkpoint ();
 
 public:
   bool b ();
@@ -1097,15 +1128,6 @@ public:
   tree module_name ();
   const char *buf (size_t);
 };
-
-/* Checkpoint a crc.  */
-
-bool
-cpm_reader::checkpoint ()
-{
-  // FIXME
-  return !source->get_error ();
-}
 
 /* Finish a set of bools.  */
 
@@ -1189,25 +1211,23 @@ cpm_reader::b ()
 void
 cpm_writer::raw (unsigned val)
 {
-  reserve (4);
-  data->buffer[pos++] = val;
-  data->buffer[pos++] = val >> 8;
-  data->buffer[pos++] = val >> 16;
-  data->buffer[pos++] = val >> 24;
+  char *ptr = use (4);
+  ptr[0] = val;
+  ptr[1] = val >> 8;
+  ptr[2] = val >> 16;
+  ptr[3] = val >> 24;
 }
 
 unsigned
 cpm_reader::raw ()
 {
   unsigned val = 0;
-  if (fill (4) != 4)
-    source->bad ();
-  else
+  if (const char *ptr = use (4))
     {
-      val |= (unsigned char)data->buffer[pos++];
-      val |= (unsigned char)data->buffer[pos++] << 8;
-      val |= (unsigned char)data->buffer[pos++] << 16;
-      val |= (unsigned char)data->buffer[pos++] << 24;
+      val |= (unsigned char)ptr[0];
+      val |= (unsigned char)ptr[1] << 8;
+      val |= (unsigned char)ptr[2] << 16;
+      val |= (unsigned char)ptr[3] << 24;
     }
 
   return val;
@@ -1218,66 +1238,68 @@ cpm_reader::raw ()
 void
 cpm_writer::c (unsigned char v)
 {
-  reserve (1);
-  data->buffer[pos++] = v;
+  *use (1) = v;
 }
 
 int
 cpm_reader::c ()
 {
   int v = 0;
-  if (fill (1))
-    v = (unsigned char)data->buffer[pos++];
-  else
-    source->bad ();
+  if (const char *ptr = use (1))
+    v = (unsigned char)ptr[0];
   return v;
 }
 
-/* Ints are written as sleb128.  I suppose we could pack the first
-   few bits into any partially-filled bool buffer.  */
+/* Ints are written as sleb128.  */
 
 void
 cpm_writer::i (int v)
 {
-  reserve ((sizeof (v) * 8 + 6) / 7);
+  unsigned max = (sizeof (v) * 8 + 6) / 7; 
+  char *ptr = use (max);
+  unsigned count = 0;
 
   int end = v < 0 ? -1 : 0;
   bool more;
-
   do
     {
       unsigned byte = v & 127;
       v >>= 6; /* Signed shift.  */
       more = v != end;
-      data->buffer[pos++] = byte | (more << 7);
+      ptr[count++] = byte | (more << 7);
       v >>= 1; /* Signed shift.  */
     }
   while (more);
+  unuse (max - count);
 }
 
 int
 cpm_reader::i ()
 {
   int v = 0;
-  unsigned bit = 0;
-  size_t bytes = fill ((sizeof (v) * 8 + 6) / 7);
-  unsigned byte;
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  const char *ptr = use (max, &max);
+  unsigned count = 0;
 
+  unsigned bit = 0;
+  unsigned byte;
   do
     {
-      if (!bytes--)
+      if (count == max)
 	{
-	  source->bad ();
-	  return v;
+	  overrun = true;
+	  return 0;
 	}
-      byte = data->buffer[pos++];
+      byte = ptr[count++];
       v |= (byte & 127) << bit;
       bit += 7;
     }
   while (byte & 128);
+  unuse (max - count);
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(unsigned)0 << bit;
+
   return v;
 }
 
@@ -1286,7 +1308,9 @@ cpm_reader::i ()
 void
 cpm_writer::u (unsigned v)
 {
-  reserve ((sizeof (v) * 8 + 6) / 7);
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  char *ptr = use (max);
+  unsigned count = 0;
 
   bool more;
   do
@@ -1294,31 +1318,35 @@ cpm_writer::u (unsigned v)
       unsigned byte = v & 127;
       v >>= 7;
       more = v != 0;
-      data->buffer[pos++] = byte | (more << 7);
+      ptr[count++] = byte | (more << 7);
     }
   while (more);
+  unuse (max - count);
 }
 
 unsigned
 cpm_reader::u ()
 {
   unsigned v = 0;
-  unsigned bit = 0;
-  size_t bytes = fill ((sizeof (v) * 8 + 6) / 7);
-  unsigned byte;
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  const char *ptr = use (max, &max);
+  unsigned count = 0;
 
+  unsigned bit = 0;
+  unsigned byte;
   do
     {
-      if (!bytes--)
+      if (count == max)
 	{
-	  source->bad ();
-	  return v;
+	  overrun = true;
+	  return 0;
 	}
-      byte = data->buffer[pos++];
+      byte = ptr[count++];
       v |= (byte & 127) << bit;
       bit += 7;
     }
   while (byte & 128);
+  unuse (max - count);
 
   return v;
 }
@@ -1326,42 +1354,47 @@ cpm_reader::u ()
 void
 cpm_writer::wi (HOST_WIDE_INT v)
 {
-  reserve ((sizeof (v) * 8 + 6) / 7);
+  unsigned max = (sizeof (v) * 8 + 6) / 7; 
+  char *ptr = use (max);
+  unsigned count = 0;
 
   int end = v < 0 ? -1 : 0;
   bool more;
-
   do
     {
       unsigned byte = v & 127;
       v >>= 6; /* Signed shift.  */
       more = v != end;
-      data->buffer[pos++] = byte | (more << 7);
+      ptr[count++] = byte | (more << 7);
       v >>= 1; /* Signed shift.  */
     }
   while (more);
+  unuse (max - count);
 }
 
 HOST_WIDE_INT
 cpm_reader::wi ()
 {
   HOST_WIDE_INT v = 0;
-  unsigned bit = 0;
-  size_t bytes = fill ((sizeof (v) * 8 + 6) / 7);
-  unsigned byte;
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  const char *ptr = use (max, &max);
+  unsigned count = 0;
 
+  unsigned bit = 0;
+  unsigned byte;
   do
     {
-      if (!bytes--)
+      if (count == max)
 	{
-	  source->bad ();
-	  return v;
+	  overrun = true;
+	  return 0;
 	}
-      byte = data->buffer[pos++];
+      byte = ptr[count++];
       v |= (unsigned HOST_WIDE_INT)(byte & 127) << bit;
       bit += 7;
     }
   while (byte & 128);
+  unuse (max - count);
 
   if (byte & 0x40 && bit < sizeof (v) * 8)
     v |= ~(unsigned HOST_WIDE_INT)0 << bit;
@@ -1401,28 +1434,19 @@ cpm_reader::s ()
 void
 cpm_writer::buf (const char *buf, size_t len)
 {
-  reserve (len);
-  memcpy (data->buffer + pos, buf, len);
-  pos += len;
+  memcpy (use (len), buf, len);
 }
 
 const char *
 cpm_reader::buf (size_t len)
 {
-  size_t have = fill (len);
-  char *buf = &data->buffer[pos];
-  if (have < len)
-    {
-      memset (buf + have, 0, len - have);
-      source->bad ();
-    }
-  pos += have;
-  return buf;
+  const char *ptr = use (len);
+
+  return ptr;
 }
 
 /* Strings:
    u:length
-   checkpoint
    buf:bytes
 */
 
@@ -1430,7 +1454,6 @@ void
 cpm_writer::str (const char *string, size_t len)
 {
   s (len);
-  checkpoint ();
   buf (string, len + 1);
 }
 
@@ -1440,15 +1463,14 @@ cpm_reader::str (size_t *len_p)
   size_t len = s ();
 
   /* We're about to trust some user data.  */
-  if (!checkpoint ())
+  if (overrun)
     len = 0;
   *len_p = len;
   const char *str = buf (len + 1);
   if (str[len])
     {
-      /* Force read string to be not totally broken.  */
-      data->buffer[pos-1] = 0;
-      source->bad ();
+      overrun = true;
+      str = "";
     }
   return str;
 }
@@ -1480,9 +1502,10 @@ cpm_reader::module_name ()
   /* If it ends in NUL, it was a string name.  */
   bool ident_name = l ? mod[l-1] : flag_modules == 1;
   int code = validate_module_name (ident_name, mod, l);
+
   if (code > -2)
     {
-      ::error ("module name %qs is malformed", mod);
+      ::error ("module name %qs is malformed", mod ? mod : "");
       return NULL_TREE;
     }
 
@@ -1498,49 +1521,57 @@ cpm_reader::module_name ()
   return name;
 }
 
-// FIXME: Incomplete transition
+bool
+cpm_reader::begin (elf_in *source, unsigned type)
+{
+  cpm_serial::begin ();
+
+  data = source->find (type);
+
+  if (!data || !data->check_crc ())
+    {
+      /* Map checksum error onto a reasonably specific errno.  */
+#if defined (EPROTO)
+      source->bad (EPROTO);
+#elif defined (EBADMSG)
+      source->bad (EBADMSG);
+#elif defined (EIO)
+      source->bad (EIO);
+#else
+      source->bad ();
+#endif
+      free (data);
+      data = NULL;
+      return false;
+    }
+  return true;
+}
+
 void
-cpm_writer::flush ()
+cpm_writer::begin ()
+{
+  cpm_serial::begin ();
+  data = elf::data::extend (0, 200);
+}
+
+// FIXME: Incomplete transition
+unsigned
+cpm_writer::end (elf_out *sink, unsigned type, unsigned name)
 {
   data->size = pos;
+  unsigned crc = data->set_crc ();
+  sink->write (type, name, data);
+  cpm_serial::end ();
+  
+  return crc;
 }
 
-void
-cpm_writer::seek (unsigned loc)
+char *
+cpm_writer::use (unsigned bytes)
 {
-  pos = loc;
-}
-
-unsigned
-cpm_writer::tell ()
-{
-  return pos;
-}
-
-size_t
-cpm_writer::reserve (size_t want)
-{
-  size_t alloc = data ? data->size : 0;
-  size_t have = alloc - pos;
-  if (have < want)
-    {
-      if (!data)
-	{
-	  alloc += 4;
-	  pos = 4;
-	}
-      alloc = (alloc + want) * 3/2;
-      data = elf::data::extend (data, alloc);
-      have = data->size - pos;
-    }
-  return have;
-}
-
-size_t
-cpm_reader::fill (size_t want)
-{
-  size_t have = data->size - pos;
-  return have < want ? have : want;
+  if (data->size < pos + bytes)
+    data = elf::data::extend (data, (pos + bytes) * 3/2);
+  return cpm_serial::use (bytes);
 }
 
 /* Module cpm_stream base.  */
@@ -1947,8 +1978,6 @@ public: // FIXME
 private:
   ptr_uint_hash_map tree_map; /* trees to ids  */
 
-  unsigned crc_tell;
-
   /* Tree instrumentation. */
   unsigned unique;
   unsigned refs;
@@ -2004,7 +2033,6 @@ public:
 cpms_out::cpms_out (elf_out *s, module_state *state)
   :cpm_stream (state), w (s)
 {
-  crc_tell = ~0;
   unique = refs = nulls = 0;
   records = 0;
   dump () && dump ("Writing module %I", state->name);
@@ -2025,7 +2053,6 @@ cpm_writer::instrument (cpm_stream *d)
 	     ix ? "one" : "zero", lengths[ix], spans[ix]);
   d->dump ("  %u blocks with %R bits padding", spans[2],
 	   lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
-  d->dump ("Wrote %u checksums", checksums);
 }
 
 void
@@ -2157,10 +2184,6 @@ cpms_out::header (tree name)
   w.buf (id, strlen (id));
   w.raw (unsigned (v));
 
-  /* Reserve space for the CRC.  */
-  crc_tell = w.tell ();
-  w.raw (0);
-
   w.module_name (name);
 }
 
@@ -2215,7 +2238,6 @@ cpms_in::header ()
     }
   dump () && dump  ("Expecting %V found %V", ver, v);
 
-  r.raw (); // FIXME
   unsigned crc = r.crc ();
   dump () && dump ("Reading CRC=%x", crc);
   if (!state->set_crc (crc))
@@ -2239,7 +2261,6 @@ void
 cpms_out::tag_eof ()
 {
   tag (rt_eof);
-  w.checkpoint ();
 
   dump () && dump ("Writing eof");
 
@@ -2250,7 +2271,7 @@ int
 cpms_in::tag_eof ()
 {
   dump () && dump ("Read eof");
-  if (!r.checkpoint ())
+  if (r.source->get_error ())
     return false;
 
   return -1; /* Denote EOF.  */
@@ -2269,7 +2290,6 @@ cpms_out::tag_conf ()
   tag (rt_conf);
   w.str (TARGET_MACHINE, strlen (TARGET_MACHINE));
   w.str (HOST_MACHINE, strlen (HOST_MACHINE));
-  w.checkpoint ();
 }
 
 bool
@@ -2289,7 +2309,7 @@ cpms_in::tag_conf ()
       return false;
     }
 
-  if (!r.checkpoint ())
+  if (r.source->get_error ())
     return false;
 
   dump () && dump ("Read target='%s', host='%s'",
@@ -2305,7 +2325,6 @@ cpms_out::tag_globals ()
   tag (rt_globals);
   w.u (limit);
   w.u (globals_crc);
-  w.checkpoint ();
 
   for (unsigned ix = 0; ix != limit; ix++)
     {
@@ -2322,7 +2341,7 @@ cpms_in::tag_globals ()
 {
   unsigned limit = r.u ();
   unsigned crc = r.u ();
-  if (!r.checkpoint ())
+  if (r.source->get_error ())
     return false;
   if (limit != globals->length () || crc != globals_crc)
     {
@@ -2364,7 +2383,6 @@ cpms_out::tag_import (unsigned ix, const module_state *state)
   w.u (ix);
   w.u (state->crc);
   w.module_name (state->name);
-  w.checkpoint ();
 }
 
 bool
@@ -2392,7 +2410,7 @@ cpms_in::tag_import ()
   if (!imp)
     return false;
 
-  if (!r.checkpoint ())
+  if (r.source->get_error ())
     return false;
 
   /* Not designed to import after having assigned our number. */
@@ -2464,7 +2482,6 @@ cpms_out::tag_binding (tree ns, tree name, module_binding_vec *binding)
       tree_node (decl);
     }
   tree_node (NULL_TREE);
-  w.checkpoint ();
 
   // FIXME:Write during binding?
   while (binding->length ())
@@ -2510,7 +2527,7 @@ cpms_in::tag_binding ()
 	decls = decl;
     }
 
-  if (!r.checkpoint ())
+  if (r.source->get_error ())
     return false;
 
   if (!decls && !type)
@@ -4701,8 +4718,7 @@ cpms_in::lang_type_vals (tree t)
 
 /* The raw tree node.  We've already dealt with the code, and in the
    case of decls, determining name, context & module.  Stream the
-   bools and vals without post-processing.  Caller is responsible for
-   checkpointing.  */
+   bools and vals without post-processing.  */
 
 void
 cpms_out::tree_node_raw (tree_code code, tree t)
@@ -4733,7 +4749,6 @@ cpms_out::tree_node_raw (tree_code code, tree t)
 	lang_decl_bools (t);
     }
   w.bflush ();
-  w.checkpoint ();
 
   core_vals (t);
   if (specific)
@@ -4772,7 +4787,7 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 	lied = true;
     }
   r.bflush ();
-  if (lied || !r.checkpoint ())
+  if (lied || r.source->get_error ())
     return false;
 
   if (klass == tcc_declaration)
@@ -5084,8 +5099,6 @@ cpms_out::tree_node (tree t)
       w.u (existed);
     }
 
-  w.checkpoint ();
-
   unnest ();
 }
 
@@ -5202,7 +5215,7 @@ cpms_in::tree_node ()
 		       TREE_CODE (type), type, type);
     }
 
-  if (!r.checkpoint ())
+  if (r.source->get_error ())
     {
     barf:
       tree_map.put (tag, NULL_TREE);
@@ -5446,7 +5459,8 @@ read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
     {
       cpms_in in (&elf, state, from);
 
-      ok = in.header ();
+      ok = (in.r.begin (&elf, elf::SHT_GXX_MODULE)
+	    && in.header ());
       if (ok)
 	{
 	  do
@@ -5457,6 +5471,7 @@ read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
 	  unsigned crc = in.r.crc ();
 	  state->set_crc (crc);
 	}
+      in.r.end();
 
       mod = in.get_mod ();
     }
@@ -5940,6 +5955,7 @@ write_module (FILE *stream, module_state *state)
     {
       cpms_out out (&elf, state);
 
+      out.w.begin ();
       out.header (state->name);
       out.tag_conf ();
       // FIXME:Write 'important' flags etc
@@ -5956,10 +5972,9 @@ write_module (FILE *stream, module_state *state)
 
       out.tag_eof ();
 
-      unsigned crc = out.w.data->set_crc ();
+      unsigned crc = out.w.end (&elf, elf::SHT_GXX_MODULE, 0);
+      state->set_crc (crc);
       out.dump () && out.dump ("Writing eof, CRC=%x", crc);
-      elf.write (elf::SHT_GXX_MODULE, 0, out.w.data);
-      out.w.data = NULL; // FIXME leak
     }
 
   if (int e = elf.end ())
