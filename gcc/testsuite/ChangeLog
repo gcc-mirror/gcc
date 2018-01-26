@@ -1,3 +1,8 @@
+2018-01-26  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83896
+	* gcc.dg/strlenopt-43.c: New.
+
 2018-01-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-abs-int.c: Remove scan-assembler stanzas.
