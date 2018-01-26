@@ -1,3 +1,14 @@
+2018-01-26  Damian Rouson  <damian@sourceryinstitute.org>
+	Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	Soren Rasmussen  <s.c.rasmussen@gmail.com>
+
+	Fortran 2018 teams tests.
+
+	* gfortran.dg/team_number_1.f90: new test for team_number.
+	* gfortran.dg/team_change_1.f90: new test for change team.
+	* gfortran.dg/team_end_1.f90: new test for end team.
+	* gfortran.dg/team_form_1.f90: new test for form team.
+
 2018-01-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83998
