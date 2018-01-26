@@ -1,3 +1,8 @@
+2018-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/83985
+	* gcc.dg/pr83985.c: New test.
+
 2018-01-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
