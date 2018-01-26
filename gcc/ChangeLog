@@ -1,3 +1,10 @@
+2018-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (USE_HIDDEN_LINKONCE): Remove.
+	* configure.ac (hidden_linkonce): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2018-01-26  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/avx512bitalgintrin.h (_mm512_bitshuffle_epi64_mask,
