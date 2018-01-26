@@ -1,5 +1,10 @@
 2018-01-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84036 - ICE with variadic capture.
+	PR c++/82249
+	* pt.c (tsubst_pack_expansion): When optimizing a simple
+	substitution, pull a single pack expansion out of its pack.
+
 	PR c++/82514 - ICE with local class in generic lambda.
 	* pt.c (regenerated_lambda_fn_p): Remove.
 	(enclosing_instantiation_of): Don't use it.

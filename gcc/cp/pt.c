@@ -11575,6 +11575,12 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       && TREE_PURPOSE (packs) == pattern)
     {
       tree args = ARGUMENT_PACK_ARGS (TREE_VALUE (packs));
+
+      /* If the argument pack is a single pack expansion, pull it out.  */
+      if (TREE_VEC_LENGTH (args) == 1
+	  && pack_expansion_args_count (args))
+	return TREE_VEC_ELT (args, 0);
+
       /* Types need no adjustment, nor does sizeof..., and if we still have
 	 some pack expansion args we won't do anything yet.  */
       if (TREE_CODE (t) == TYPE_PACK_EXPANSION
