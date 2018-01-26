@@ -1,3 +1,9 @@
+2018-01-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81763
+	* config/i386/i386.md (*andndi3_doubleword): Add earlyclobber
+	to (=&r,r,rm) alternative. Add (=r,0,rm) and (=r,r,0) alternatives.
+
 2018-01-26  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/84003
