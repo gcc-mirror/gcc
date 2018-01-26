@@ -611,7 +611,7 @@ Objective-C and Objective-C++ Dialects}.
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
 @emph{ARC Options}
-@gccoptlist{-mbarrel-shifter @gol
+@gccoptlist{-mbarrel-shifter -mjli-always @gol
 -mcpu=@var{cpu}  -mA6  -mARC600  -mA7  -mARC700 @gol
 -mdpfp  -mdpfp-compact  -mdpfp-fast  -mno-dpfp-lrsr @gol
 -mea  -mno-mpy  -mmul32x16  -mmul64  -matomic @gol
@@ -14873,6 +14873,11 @@ is being compiled:
 @opindex mbarrel-shifter
 Generate instructions supported by barrel shifter.  This is the default
 unless @option{-mcpu=ARC601} or @samp{-mcpu=ARCEM} is in effect.
+
+@item -mjli-always
+@opindex mjli-alawys
+Force to call a function using jli_s instruction.  This option is
+valid only for ARCv2 architecture.
 
 @item -mcpu=@var{cpu}
 @opindex mcpu

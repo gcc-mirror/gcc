@@ -53,6 +53,10 @@ mARC700
 Target Report
 Same as -mA7.
 
+mjli-always
+Target Report Mask(JLI_ALWAYS)
+Force all calls to be made via a jli instruction.
+
 mmpy-option=
 Target RejectNegative Joined Enum(arc_mpy) Var(arc_mpy_option) Init(DEFAULT_arc_mpy_option)
 -mmpy-option=MPY Compile ARCv2 code with a multiplier design option.

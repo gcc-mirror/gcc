@@ -1,3 +1,8 @@
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/jli-1.c: New file.
+	* gcc.target/arc/jli-2.c: Likewise.
+
 2018-01-26  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gcc.target/aarch64/sve/peel_ind_1.c: Match (adrp|adr) in scan-assembler.
