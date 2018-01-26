@@ -1,4 +1,4 @@
-2018-01-25  Sebastian Perta  <sebastian.perta@renesas.com>
+2018-01-26  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.c: if operand 2 is const avoid addition with 0
 	and use incw and decw where possible
