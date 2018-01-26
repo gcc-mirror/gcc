@@ -3775,6 +3775,12 @@ which are addressed using this instruction.
 Identical like the above one, but the location of the function in the
 @code{jli} table is known and given as an attribute parameter.
 
+@item secure_call
+@cindex @code{secure_call} function attribute, ARC
+This attribute allows one to mark secure-code functions that are
+callable from normal mode.  The location of the secure call function
+into the @code{sjli} table needs to be passed as argument.
+
 @end table
 
 @node ARM Function Attributes
