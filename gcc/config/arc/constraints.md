@@ -401,6 +401,12 @@
 	    (match_test "arc_is_shortcall_p (op)"))
        (match_code "label_ref")))
 
+(define_constraint "Cji"
+  "JLI call"
+  (and (match_code "symbol_ref")
+       (match_test "TARGET_CODE_DENSITY")
+       (match_test "arc_is_jli_call_p (op)")))
+
 (define_constraint "Cpc"
   "pc-relative constant"
   (match_test "arc_legitimate_pic_addr_p (op)"))

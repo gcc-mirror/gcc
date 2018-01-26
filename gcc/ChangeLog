@@ -1,3 +1,67 @@
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+	    John Eric Martin <John.Martin@emmicro-us.com>
+
+	* config/arc/arc-protos.h: Add arc_is_jli_call_p proto.
+	* config/arc/arc.c (_arc_jli_section): New struct.
+	(arc_jli_section): New type.
+	(rc_jli_sections): New static variable.
+	(arc_handle_jli_attribute): New function.
+	(arc_attribute_table): Add jli_always and jli_fixed attribute.
+	(arc_file_end): New function.
+	(TARGET_ASM_FILE_END): Define.
+	(arc_print_operand): Reuse 'S' letter for JLI output instruction.
+	(arc_add_jli_section): New function.
+	(jli_call_scan): Likewise.
+	(arc_reorg): Call jli_call_scan.
+	(arc_output_addsi): Remove 'S' from printing asm operand.
+	(arc_is_jli_call_p): New function.
+	* config/arc/arc.md (movqi_insn): Remove 'S' from printing asm
+	operand.
+	(movhi_insn): Likewise.
+	(movsi_insn): Likewise.
+	(movsi_set_cc_insn): Likewise.
+	(loadqi_update): Likewise.
+	(load_zeroextendqisi_update): Likewise.
+	(load_signextendqisi_update): Likewise.
+	(loadhi_update): Likewise.
+	(load_zeroextendhisi_update): Likewise.
+	(load_signextendhisi_update): Likewise.
+	(loadsi_update): Likewise.
+	(loadsf_update): Likewise.
+	(movsicc_insn): Likewise.
+	(bset_insn): Likewise.
+	(bxor_insn): Likewise.
+	(bclr_insn): Likewise.
+	(bmsk_insn): Likewise.
+	(bicsi3_insn): Likewise.
+	(cmpsi_cc_c_insn): Likewise.
+	(movsi_ne): Likewise.
+	(movsi_cond_exec): Likewise.
+	(clrsbsi2): Likewise.
+	(norm_f): Likewise.
+	(normw): Likewise.
+	(swap): Likewise.
+	(divaw): Likewise.
+	(flag): Likewise.
+	(sr): Likewise.
+	(kflag): Likewise.
+	(ffs): Likewise.
+	(ffs_f): Likewise.
+	(fls): Likewise.
+	(call_i): Remove 'S' asm letter, add jli instruction.
+	(call_value_i): Likewise.
+	* config/arc/arc.op (mjli-always): New option.
+	* config/arc/constraints.md (Cji): New constraint.
+	* config/arc/fpx.md (addsf3_fpx): Remove 'S' from printing asm
+	operand.
+	(subsf3_fpx): Likewise.
+	(mulsf3_fpx): Likewise.
+	* config/arc/simdext.md (vendrec_insn): Remove 'S' from printing
+	asm operand.
+	* doc/extend.texi (ARC): Document 'jli-always' and 'jli-fixed'
+	function attrbutes.
+	* doc/invoke.texi (ARC): Document mjli-always option.
+
 2018-01-26  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.c: if operand 2 is const avoid addition with 0

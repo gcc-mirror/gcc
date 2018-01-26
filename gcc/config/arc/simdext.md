@@ -1190,7 +1190,7 @@
 (define_insn "vendrec_insn"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand"  "r")] UNSPEC_ARC_SIMD_VENDREC)]
   "TARGET_SIMD_SET"
-  "vendrec %S0"
+  "vendrec %0"
   [(set_attr "type" "simd_vcontrol")
    (set_attr "length" "4")
    (set_attr "cond" "nocond")])
