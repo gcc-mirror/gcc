@@ -1,5 +1,10 @@
 2018-01-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/83956 - wrong dtor error with anonymous union
+	* method.c (walk_field_subobs): Variant members only affect
+	deletedness.
+	(maybe_explain_implicit_delete): Pass &deleted_p for diagnostic.
+
 	PR c++/84036 - ICE with variadic capture.
 	PR c++/82249
 	* pt.c (tsubst_pack_expansion): When optimizing a simple

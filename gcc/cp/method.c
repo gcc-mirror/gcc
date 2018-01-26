@@ -1305,6 +1305,15 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  || DECL_ARTIFICIAL (field))
 	continue;
 
+      /* Variant members only affect deletedness.  In particular, they don't
+	 affect the exception-specification of a user-provided destructor,
+	 which we're figuring out via get_defaulted_eh_spec.  So if we aren't
+	 asking if this is deleted, don't even look up the function; we don't
+	 want an error about a deleted function we aren't actually calling.  */
+      if (sfk == sfk_destructor && deleted_p == NULL
+	  && TREE_CODE (DECL_CONTEXT (field)) == UNION_TYPE)
+	break;
+
       mem_type = strip_array_types (TREE_TYPE (field));
       if (assign_p)
 	{
@@ -1850,7 +1859,7 @@ maybe_explain_implicit_delete (tree decl)
 		      "%q#D is implicitly deleted because the default "
 		      "definition would be ill-formed:", decl);
 	      synthesized_method_walk (ctype, sfk, const_p,
-				       NULL, NULL, NULL, NULL, true,
+				       NULL, NULL, &deleted_p, NULL, true,
 				       &inh, parms);
 	    }
 	  else if (!comp_except_specs
