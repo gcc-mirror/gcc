@@ -1,3 +1,8 @@
+2018-01-26  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/elf.h (LIB_SPEC): Don't include -lgloss when nosys.specs
+	specified.
+
 2018-01-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md: Add peepholes for CMP + SUB -> SUBS
