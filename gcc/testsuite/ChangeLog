@@ -1,3 +1,8 @@
+2018-01-26  Martin Liska  <mliska@suse.cz>
+
+	* lib/target-supports.exp: Return a value, otherwise -Wreturn-type
+	warning is seen.
+
 2018-01-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-neg-longlong.h:  New.
