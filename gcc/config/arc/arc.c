@@ -848,21 +848,21 @@ arc_init (void)
   if (arc_multcost < 0)
     switch (arc_tune)
       {
-      case TUNE_ARC700_4_2_STD:
+      case ARC_TUNE_ARC700_4_2_STD:
 	/* latency 7;
 	   max throughput (1 multiply + 4 other insns) / 5 cycles.  */
 	arc_multcost = COSTS_N_INSNS (4);
 	if (TARGET_NOMPY_SET)
 	  arc_multcost = COSTS_N_INSNS (30);
 	break;
-      case TUNE_ARC700_4_2_XMAC:
+      case ARC_TUNE_ARC700_4_2_XMAC:
 	/* latency 5;
 	   max throughput (1 multiply + 2 other insns) / 3 cycles.  */
 	arc_multcost = COSTS_N_INSNS (3);
 	if (TARGET_NOMPY_SET)
 	  arc_multcost = COSTS_N_INSNS (30);
 	break;
-      case TUNE_ARC600:
+      case ARC_TUNE_ARC600:
 	if (TARGET_MUL64_SET)
 	  {
 	    arc_multcost = COSTS_N_INSNS (4);
@@ -1202,8 +1202,8 @@ arc_override_options (void)
 #undef ARC_OPT
 
   /* Set Tune option.  */
-  if (arc_tune == TUNE_NONE)
-    arc_tune = (enum attr_tune) arc_selected_cpu->tune;
+  if (arc_tune == ARC_TUNE_NONE)
+    arc_tune = (enum arc_tune_attr) arc_selected_cpu->tune;
 
   if (arc_size_opt_level == 3)
     optimize_size = 1;
@@ -5210,6 +5210,9 @@ static void arc_file_start (void)
 	       TARGET_NO_SDATA_SET ? 0 : 2);
   asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_ABI_exceptions, %d\n",
 	       TARGET_OPTFPE ? 1 : 0);
+  if (TARGET_V2)
+    asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_CPU_variation, %d\n",
+		 arc_tune == ARC_TUNE_CORE_3 ? 3 : 2);
 }
 
 /* Implement `TARGET_ASM_FILE_END'.  */
@@ -7388,11 +7391,11 @@ hwloop_fail (hwloop_info loop)
   rtx test;
   rtx insn = loop->loop_end;
 
-  if (TARGET_V2
+  if (TARGET_DBNZ
       && (loop->length && (loop->length <= ARC_MAX_LOOP_LENGTH))
       && REG_P (loop->iter_reg))
     {
-      /* TARGET_V2 has dbnz instructions.  */
+      /* TARGET_V2 core3 has dbnz instructions.  */
       test = gen_dbnz (loop->iter_reg, loop->start_label);
       insn = emit_jump_insn_before (test, loop->loop_end);
     }

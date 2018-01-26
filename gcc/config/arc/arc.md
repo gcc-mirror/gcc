@@ -595,14 +595,16 @@
 ;;   somehow modify them to become inelegible for delay slots if a decision
 ;;   is made that makes conditional execution required.
 
-(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac"
+(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac, core_3"
   (const
    (cond [(symbol_ref "arc_tune == TUNE_ARC600")
 	  (const_string "arc600")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_STD")
 	  (const_string "arc700_4_2_std")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_XMAC")
-	  (const_string "arc700_4_2_xmac")]
+	  (const_string "arc700_4_2_xmac")
+	  (symbol_ref "arc_tune == ARC_TUNE_CORE_3")
+	  (const_string "core_3")]
 	 (const_string "none"))))
 
 (define_attr "tune_arc700" "false,true"
@@ -5182,11 +5184,11 @@
 	(plus:SI (match_dup 0)
 		 (const_int -1)))
    (clobber (match_scratch:SI 2 "=X,r"))]
-  "TARGET_V2"
+  "TARGET_DBNZ"
   "@
    dbnz%#\\t%0,%l1
    #"
-  "TARGET_V2 && reload_completed && memory_operand (operands[0], SImode)"
+  "TARGET_DBNZ && reload_completed && memory_operand (operands[0], SImode)"
   [(set (match_dup 2) (match_dup 0))
    (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))
    (set (reg:CC CC_REG) (compare:CC (match_dup 2) (const_int 0)))
