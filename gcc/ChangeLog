@@ -1,5 +1,11 @@
 2018-01-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/83985
+	* dce.c (deletable_insn_p): Return false for separate shrink wrapping
+	REG_CFA_RESTORE insns.
+	(delete_unmarked_insns): Don't ignore separate shrink wrapping
+	REG_CFA_RESTORE insns here.
+
 	PR c/83989
 	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): Don't
 	use SSA_NAME_VAR as base for SSA_NAMEs with non-NULL SSA_NAME_VAR.
