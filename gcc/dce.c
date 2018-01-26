@@ -131,6 +131,12 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
 	     && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
       return false;
 
+  /* Callee-save restores are needed.  */
+  if (RTX_FRAME_RELATED_P (insn)
+      && crtl->shrink_wrapped_separate
+      && find_reg_note (insn, REG_CFA_RESTORE, NULL))
+    return false;
+
   body = PATTERN (insn);
   switch (GET_CODE (body))
     {
@@ -588,15 +594,6 @@ delete_unmarked_insns (void)
 	     miscompile.  */
 	  if (!dbg_cnt (dce))
 	    continue;
-
-	  if (crtl->shrink_wrapped_separate
-	      && find_reg_note (insn, REG_CFA_RESTORE, NULL))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "DCE: NOT deleting insn %d, it's a "
-				    "callee-save restore\n", INSN_UID (insn));
-	      continue;
-	    }
 
 	  if (dump_file)
 	    fprintf (dump_file, "DCE: Deleting insn %d\n", INSN_UID (insn));
