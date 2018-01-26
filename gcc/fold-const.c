@@ -7097,7 +7097,7 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
 
   /* Same may be zero and thus the operation 'code' may overflow.  Likewise
      same may be minus one and thus the multiplication may overflow.  Perform
-     the operations in an unsigned type.  */
+     the sum operation in an unsigned type.  */
   tree utype = unsigned_type_for (type);
   tree tem = fold_build2_loc (loc, code, utype,
 			      fold_convert_loc (loc, utype, alt0),
@@ -7110,9 +7110,9 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
     return fold_build2_loc (loc, MULT_EXPR, type,
 			    fold_convert (type, tem), same);
 
-  return fold_convert_loc (loc, type,
-			   fold_build2_loc (loc, MULT_EXPR, utype, tem,
-					    fold_convert_loc (loc, utype, same)));
+  /* Do not resort to unsigned multiplication because
+     we lose the no-overflow property of the expression.  */
+  return NULL_TREE;
 }
 
 /* Subroutine of native_encode_expr.  Encode the INTEGER_CST
