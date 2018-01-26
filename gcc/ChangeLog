@@ -1,3 +1,17 @@
+2018-01-26  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/avx512bitalgintrin.h (_mm512_bitshuffle_epi64_mask,
+	_mm512_mask_bitshuffle_epi64_mask, _mm256_bitshuffle_epi64_mask,
+	_mm256_mask_bitshuffle_epi64_mask, _mm_bitshuffle_epi64_mask,
+	_mm_mask_bitshuffle_epi64_mask): Fix type.
+	* config/i386/i386-builtin-types.def (UHI_FTYPE_V2DI_V2DI_UHI,
+	USI_FTYPE_V4DI_V4DI_USI): Remove.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpshufbitqmb512_mask,
+	__builtin_ia32_vpshufbitqmb256_mask,
+	__builtin_ia32_vpshufbitqmb128_mask): Fix types.
+	* config/i386/i386.c (ix86_expand_args_builtin): Remove old types.
+	* config/i386/sse.md (VI1_AVX512VLBW): Change types.
+
 2018-01-26  Alan Modra  <amodra@gmail.com>
 
 	PR target/84033

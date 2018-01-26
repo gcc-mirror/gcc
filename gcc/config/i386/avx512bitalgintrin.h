@@ -100,8 +100,8 @@ extern __inline __mmask64
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_bitshuffle_epi64_mask (__m512i __A, __m512i __B)
 {
-  return (__mmask64) __builtin_ia32_vpshufbitqmb512_mask ((__v8di) __A,
-						 (__v8di) __B,
+  return (__mmask64) __builtin_ia32_vpshufbitqmb512_mask ((__v64qi) __A,
+						 (__v64qi) __B,
 						 (__mmask64) -1);
 }
 
@@ -109,8 +109,8 @@ extern __inline __mmask64
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_bitshuffle_epi64_mask (__mmask8 __M, __m512i __A, __m512i __B)
 {
-  return (__mmask64) __builtin_ia32_vpshufbitqmb512_mask ((__v8di) __A,
-						 (__v8di) __B,
+  return (__mmask64) __builtin_ia32_vpshufbitqmb512_mask ((__v64qi) __A,
+						 (__v64qi) __B,
 						 (__mmask64) __M);
 }
 
@@ -148,8 +148,8 @@ extern __inline __mmask32
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_bitshuffle_epi64_mask (__m256i __A, __m256i __B)
 {
-  return (__mmask32) __builtin_ia32_vpshufbitqmb256_mask ((__v4di) __A,
-						 (__v4di) __B,
+  return (__mmask32) __builtin_ia32_vpshufbitqmb256_mask ((__v32qi) __A,
+						 (__v32qi) __B,
 						 (__mmask32) -1);
 }
 
@@ -157,8 +157,8 @@ extern __inline __mmask32
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_bitshuffle_epi64_mask (__mmask32 __M, __m256i __A, __m256i __B)
 {
-  return (__mmask32) __builtin_ia32_vpshufbitqmb256_mask ((__v4di) __A,
-						 (__v4di) __B,
+  return (__mmask32) __builtin_ia32_vpshufbitqmb256_mask ((__v32qi) __A,
+						 (__v32qi) __B,
 						 (__mmask32) __M);
 }
 
@@ -178,8 +178,8 @@ extern __inline __mmask16
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_bitshuffle_epi64_mask (__m128i __A, __m128i __B)
 {
-  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v2di) __A,
-						 (__v2di) __B,
+  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v16qi) __A,
+						 (__v16qi) __B,
 						 (__mmask16) -1);
 }
 
@@ -187,8 +187,8 @@ extern __inline __mmask16
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_bitshuffle_epi64_mask (__mmask16 __M, __m128i __A, __m128i __B)
 {
-  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v2di) __A,
-						 (__v2di) __B,
+  return (__mmask16) __builtin_ia32_vpshufbitqmb128_mask ((__v16qi) __A,
+						 (__v16qi) __B,
 						 (__mmask16) __M);
 }
 
