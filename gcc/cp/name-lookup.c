@@ -6451,7 +6451,8 @@ do_pushtag (tree name, tree type, tag_scope scope)
 		 template instantiation rather than in some nested context.  */
 	      add_decl_expr (decl);
 	    }
-	  else
+	  /* Lambdas use LAMBDA_EXPR_DISCRIMINATOR instead.  */
+	  else if (!LAMBDA_TYPE_P (type))
 	    vec_safe_push (local_classes, type);
 	}
     }

@@ -1,3 +1,13 @@
+2018-01-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82514 - ICE with local class in generic lambda.
+	* pt.c (regenerated_lambda_fn_p): Remove.
+	(enclosing_instantiation_of): Don't use it.
+	(tsubst_function_decl): Call enclosing_instantiation_of.
+
+	* pt.c (lookup_template_class_1): Add sanity check.
+	* name-lookup.c (do_pushtag): Don't add closures to local_classes.
+
 2018-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84031
