@@ -1,3 +1,19 @@
+2018-01-26  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-cmp-int.c: Delete.
+	* gcc.target/powerpc/fold-vec-cmp-int.h: New.
+	* gcc.target/powerpc/fold-vec-cmp-int.p7.c: New.
+	* gcc.target/powerpc/fold-vec-cmp-int.p8.c: New.
+	* gcc.target/powerpc/fold-vec-cmp-int.p9.c: New.
+	* gcc.target/powerpc/fold-vec-cmp-short.c: Delete.
+	* gcc.target/powerpc/fold-vec-cmp-short.h: New.
+	* gcc.target/powerpc/fold-vec-cmp-short.p8.c: New.
+	* gcc.target/powerpc/fold-vec-cmp-short.p9.c: New.
+	* gcc.target/powerpc/fold-vec-cmp-char.c: Delete.
+	* gcc.target/powerpc/fold-vec-cmp-char.h: New.
+	* gcc.target/powerpc/fold-vec-cmp-char.p8.c: New.
+	* gcc.target/powerpc/fold-vec-cmp-char.p9.c: New.
+
 2018-01-26  Martin Liska  <mliska@suse.cz>
 
 	* lib/target-supports.exp: Return a value, otherwise -Wreturn-type
