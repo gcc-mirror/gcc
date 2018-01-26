@@ -628,7 +628,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmixed-code  -mq-class  -mRcq  -mRcw  -msize-level=@var{level} @gol
 -mtune=@var{cpu}  -mmultcost=@var{num} @gol
 -munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo} @gol
--mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu}}
+-mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu} -mrf16}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -14963,6 +14963,10 @@ instructions enabled.
 @item nps400
 Compile for ARC 700 on NPS400 chip.
 
+@item em_mini
+Compile for ARC EM minimalist configuration featuring reduced register
+set.
+
 @end table
 
 @item -mdpfp
@@ -15220,6 +15224,12 @@ hold the required loop-counter value.  Depending on the width
 specified, the compiler and run-time library might continue to use the
 loop mechanism for various needs.  This option defines macro
 @code{__ARC_LPC_WIDTH__} with the value of @var{width}.
+
+@item -mrf16
+@opindex mrf16
+This option instructs the compiler to generate code for a 16-entry
+register file.  This option defines the @code{__ARC_RF16__}
+preprocessor macro.
 
 @end table
 

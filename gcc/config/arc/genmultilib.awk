@@ -130,6 +130,8 @@ BEGIN {
 	    line = line "/spfp"
 	  else if (cpu_flg[i] == "FL_DPFP")
 	    line = line "/dpfp"
+	  else if (cpu_flg[i] == "FL_RF16")
+	    line = line "/mrf16"
 	  else
 	    {
 	      print "Don't know the flag " cpu_flg[i] > "/dev/stderr"

@@ -46,6 +46,7 @@
    TUNE	  Tune value for the given configuration, otherwise NONE.  */
 
 ARC_CPU (em,	    em, 0, NONE)
+ARC_CPU (em_mini,   em, FL_RF16, NONE)
 ARC_CPU (arcem,	    em, FL_MPYOPT_2|FL_CD|FL_BS, NONE)
 ARC_CPU (em4,	    em, FL_CD, NONE)
 ARC_CPU (em4_dmips, em, FL_MPYOPT_2|FL_CD|FL_DIVREM|FL_NORM|FL_SWAP|FL_BS, NONE)

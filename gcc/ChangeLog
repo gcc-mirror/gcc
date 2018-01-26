@@ -1,5 +1,25 @@
 2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-arches.def: Option mrf16 valid for all
+	architectures.
+	* config/arc/arc-c.def (__ARC_RF16__): New predefined macro.
+	* config/arc/arc-cpus.def (em_mini): New cpu with rf16 on.
+	* config/arc/arc-options.def (FL_RF16): Add mrf16 option.
+	* config/arc/arc-tables.opt: Regenerate.
+	* config/arc/arc.c (arc_conditional_register_usage): Handle
+	reduced register file case.
+	(arc_file_start): Set must have build attributes.
+	* config/arc/arc.h (MAX_ARC_PARM_REGS): Conditional define using
+	mrf16 option value.
+	* config/arc/arc.opt (mrf16): Add new option.
+	* config/arc/elf.h (ATTRIBUTE_PCS): Define.
+	* config/arc/genmultilib.awk: Handle new mrf16 option.
+	* config/arc/linux.h (ATTRIBUTE_PCS): Define.
+	* config/arc/t-multilib: Regenerate.
+	* doc/invoke.texi (ARC Options): Document mrf16 option.
+
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-protos.h: Add arc_is_secure_call_p proto.
 	* config/arc/arc.c (arc_handle_secure_attribute): New function.
 	(arc_attribute_table): Add 'secure_call' attribute.

@@ -727,7 +727,7 @@ arc_return_addr_rtx(COUNT,FRAME)
   ((CUM) = 0)
 
 /* The number of registers used for parameter passing.  Local to this file.  */
-#define MAX_ARC_PARM_REGS 8
+#define MAX_ARC_PARM_REGS (TARGET_RF16 ? 4 : 8)
 
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(N) \
