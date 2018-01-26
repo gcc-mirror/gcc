@@ -1,3 +1,9 @@
+2018-01-26  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/82878
+	* g++.dg/cpp0x/pr82878.C: New.
+	* g++.dg/cpp1z/inh-ctor38.C: Check moves too.
+
 2018-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/83985
