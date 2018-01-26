@@ -1,3 +1,9 @@
+2018-01-26  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/sve/peel_ind_1.c: Match (adrp|adr) in scan-assembler.
+	* gcc.target/aarch64/sve/peel_ind_2.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_3.c: Likewise.
+
 2018-01-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81082
