@@ -1,3 +1,9 @@
+2018-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/mcount_pic.c: Only xfail get_pc_thunk scan on
+	Solaris 10.
+	* gcc.target/i386/pr63620.c: Likewise.
+
 2018-01-26  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/avx512bitalg-vpshufbitqmb-1.c: Add -mavx512f -mavx512bw.

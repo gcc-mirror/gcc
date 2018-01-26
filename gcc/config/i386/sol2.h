@@ -253,9 +253,3 @@ along with GCC; see the file COPYING3.  If not see
 /* We do not need NT_VERSION notes.  */
 #undef X86_FILE_START_VERSION_DIRECTIVE
 #define X86_FILE_START_VERSION_DIRECTIVE false
-
-/* Only recent versions of Solaris 11 ld properly support hidden .gnu.linkonce
-   sections, so don't use them.  */
-#ifndef USE_GLD
-#define USE_HIDDEN_LINKONCE 0
-#endif

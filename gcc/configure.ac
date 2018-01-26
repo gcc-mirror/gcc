@@ -3070,6 +3070,31 @@ AC_DEFINE_UNQUOTED(HAVE_COMDAT_GROUP,
     || test $gcc_cv_as_comdat_group_group = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler and linker support COMDAT groups.])
 
+# Restrict this test to Solaris/x86: other targets define this statically.
+case "${target}" in
+  i?86-*-solaris2* | x86_64-*-solaris2*)
+    AC_MSG_CHECKING(support for hidden thunks in linkonce sections)
+    if test $in_tree_ld = yes || echo "$ld_ver" | grep GNU > /dev/null; then
+      hidden_linkonce=yes
+    else
+      case "${target}" in
+	# Full support for hidden thunks in linkonce sections only appeared in
+	# Solaris 11/OpenSolaris.
+        *-*-solaris2.1[[1-9]]*)
+	  hidden_linkonce=yes
+	  ;;
+	*)
+	  hidden_linkonce=no
+	  ;;
+      esac
+    fi
+    AC_MSG_RESULT($hidden_linkonce)
+    AC_DEFINE_UNQUOTED(USE_HIDDEN_LINKONCE,
+      [`if test $hidden_linkonce = yes; then echo 1; else echo 0; fi`],
+    [Define 0/1 if your linker supports hidden thunks in linkonce sections.])
+  ;;
+esac
+
 gcc_GAS_CHECK_FEATURE([line table discriminator support],
  gcc_cv_as_discriminator,
  [2,19,51],,
