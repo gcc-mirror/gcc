@@ -80,6 +80,9 @@ static const char * const word_regnames[] =
   "sp", "ap", "psw", "es", "cs"
 };
 
+/* used by rl78_addsi3_internal for formatting insns output */
+static char fmt_buffer[1024];
+
 /* Structure for G13 MDUC registers.  */
 struct mduc_reg_type
 {
@@ -4788,6 +4791,8 @@ rl78_flags_already_set (rtx op, rtx operand)
 const char *
 rl78_addsi3_internal (rtx * operands, unsigned int alternative)
 {
+  const char *addH2 = "addw ax, %H2\n\t";
+
   /* If we are adding in a constant symbolic address when -mes0
      is active then we know that the address must be <64K and
      that it is invalid to access anything above 64K relative to
@@ -4799,16 +4804,38 @@ rl78_addsi3_internal (rtx * operands, unsigned int alternative)
       && ! TREE_SIDE_EFFECTS (SYMBOL_REF_DECL (operands[2])))
     return "movw ax, %h1\n\taddw ax, %h2\n\tmovw %h0, ax";
 
+  if(CONST_INT_P(operands[2]))
+  {
+    if((INTVAL(operands[2]) & 0xFFFF0000) == 0)
+    {
+        addH2 = "";
+    }
+    else if((INTVAL(operands[2]) & 0xFFFF0000) == 0x00010000)
+    {
+        addH2 = "incw ax\n\t";
+    }
+    else if((INTVAL(operands[2]) & 0xFFFF0000) == 0xFFFF0000)
+    {
+        addH2 = "decw ax\n\t";
+    }
+  }
+
   switch (alternative)
     {
     case 0:
     case 1:
-      return "movw ax, %h1\n\taddw ax, %h2\n\tmovw %h0, ax\n\tmovw ax, %H1\n\tsknc\n\tincw ax\n\taddw ax, %H2\n\tmovw %H0, ax";
+	  snprintf(fmt_buffer, sizeof(fmt_buffer),
+               "movw ax, %%h1\n\taddw ax, %%h2\n\tmovw %%h0, ax\n\tmovw ax, %%H1\n\tsknc\n\tincw ax\n\t%smovw %%H0,ax", addH2);
+	  break;
     case 2:
-      return "movw ax, %h1\n\taddw ax,%h2\n\tmovw bc, ax\n\tmovw ax, %H1\n\tsknc\n\tincw ax\n\taddw ax, %H2\n\tmovw %H0, ax\n\tmovw ax, bc\n\tmovw %h0, ax";
+	  snprintf(fmt_buffer, sizeof(fmt_buffer),
+               "movw ax, %%h1\n\taddw ax, %%h2\n\tmovw bc, ax\n\tmovw ax, %%H1\n\tsknc\n\tincw ax\n\t%smovw %%H0, ax\n\tmovw ax, bc\n\tmovw %%h0, ax", addH2);
+ 	  break;
     default:
       gcc_unreachable ();
     }
+
+  return fmt_buffer;
 }
 
 rtx

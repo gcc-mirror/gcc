@@ -1,3 +1,9 @@
+2018-01-25  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78.c: if operand 2 is const avoid addition with 0
+	and use incw and decw where possible
+	* testsuite/gcc.target/rl78/test_addsi3_internal.c: new file
+
 2018-01-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81082
