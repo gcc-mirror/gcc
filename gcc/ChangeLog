@@ -1,3 +1,8 @@
+2018-01-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md: Add peepholes for CMP + SUB -> SUBS
+	and CMP + SUB-immediate -> SUBS.
+
 2018-01-26  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83896

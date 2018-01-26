@@ -2430,6 +2430,26 @@
   }
 )
 
+;; Same as the above peephole but with the compare and minus in
+;; swapped order.  The restriction on overlap between operand 0
+;; and operands 1 and 2 doesn't apply here.
+(define_peephole2
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_operand:GPI 1 "aarch64_reg_or_zero")
+	  (match_operand:GPI 2 "aarch64_reg_or_zero")))
+   (set (match_operand:GPI 0 "register_operand")
+	(minus:GPI (match_dup 1)
+		   (match_dup 2)))]
+  ""
+  [(const_int 0)]
+  {
+    emit_insn (gen_sub<mode>3_compare1 (operands[0], operands[1],
+					 operands[2]));
+    DONE;
+  }
+)
+
 (define_peephole2
   [(set (match_operand:GPI 0 "register_operand")
 	(plus:GPI (match_operand:GPI 1 "register_operand")
@@ -2440,6 +2460,26 @@
 	  (match_operand:GPI 3 "const_int_operand")))]
   "!reg_overlap_mentioned_p (operands[0], operands[1])
    && INTVAL (operands[3]) == -INTVAL (operands[2])"
+  [(const_int 0)]
+  {
+    emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
+					 operands[2], operands[3]));
+    DONE;
+  }
+)
+
+;; Same as the above peephole but with the compare and minus in
+;; swapped order.  The restriction on overlap between operand 0
+;; and operands 1 doesn't apply here.
+(define_peephole2
+  [(set (reg:CC CC_REGNUM)
+	(compare:CC
+	  (match_operand:GPI 1 "register_operand")
+	  (match_operand:GPI 3 "const_int_operand")))
+   (set (match_operand:GPI 0 "register_operand")
+	(plus:GPI (match_dup 1)
+		  (match_operand:GPI 2 "aarch64_sub_immediate")))]
+  "INTVAL (operands[3]) == -INTVAL (operands[2])"
   [(const_int 0)]
   {
     emit_insn (gen_sub<mode>3_compare1_imm (operands[0], operands[1],
