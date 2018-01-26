@@ -90,6 +90,23 @@ int module_dump_id;
 #define MODULE_INDEX_IMPORTING (~0U)  /* Currently being imported.  */
 #define MODULE_INDEX_ERROR (~0U - 1)  /* Previously failed to import.  */
 
+static int
+get_version ()
+{
+  /* If the on-disk format changes, update the version number.  */
+  int version = 20180101;
+
+#if defined (MODULE_STAMP)
+  /* MODULE_STAMP is a decimal encoding YYYYMMDDhhmm or YYYYMMDD in
+     local timezone.  Using __TIME__ doesn't work very well with
+     boostrapping!  */
+  version = -(MODULE_STAMP > 2000LL * 10000 * 10000
+	      ? int (MODULE_STAMP - 2000LL * 10000 * 10000)
+	      : int (MODULE_STAMP - 2000LL * 10000) * 10000);
+#endif
+  return version;
+}
+
 /* State of a particular module. */
 struct GTY(()) module_state {
   /* We always import & export ourselves.  */
@@ -398,45 +415,516 @@ module_state::do_import (unsigned index, bool is_export)
     bitmap_ior_into (exports, other->exports);
 }
 
+struct non_null_hash : pointer_hash <void> {
+  static bool is_deleted (value_type) {return false;}
+  static void remove (value_type) {}
+};
+typedef simple_hashmap_traits<non_null_hash, unsigned> ptr_uint_traits;
+typedef hash_map<void *,unsigned,ptr_uint_traits> ptr_uint_hash_map;
+
+typedef simple_hashmap_traits<int_hash<unsigned,0>,void *> uint_ptr_traits;
+typedef hash_map<unsigned,void *,uint_ptr_traits> uint_ptr_hash_map;
+
+/* Module Encapsulated Ledger File.  mELF for short.
+   header
+   note-section with version info
+   string-section
+   other-sections
+   section-table
+ */
+
+class elf
+{
+protected:
+  enum private_constants
+    {
+      /* File kind. */
+      ET_NONE = 0,
+      EM_NONE = 0,
+      OSABI_NONE = 0,
+
+      /* File format. */
+      EV_CURRENT = 1,
+      CLASS32 = 1,
+      DATA2LSB = 1,
+      DATA2MSB = 2,
+      /* It is host endianness that is relevant.  */
+#ifdef WORDS_BIGENDIAN
+      DATA2END = DATA2MSB,
+#else
+      DATA2END = DATA2LSB,
+#endif
+      /* Section numbering.  */
+      SHN_UNDEF = 0,
+      SHN_LORESERVE = 0xff00,
+      SHN_XINDEX = 0xffff,
+      SHN_HIRESERVE = 0xffff,
+
+      /* Section flags.  */
+      SHF_NONE = 0x00,
+      SHF_STRINGS = 0x20,
+    };
+public:
+  enum public_constants
+    {
+      /* Section types.  */
+      SHT_NONE = 0,
+      SHT_STRTAB = 3,
+      SHT_NOTE = 7,
+      SHT_LOUSER = 0x80000000,
+      SHT_HIUSER = 0xffffffff,
+
+      /* The following are random numbers. */
+      SHT_GXX_MODULE = SHT_LOUSER | 0x791d54
+    };
+protected:
+  struct ident
+  /* On-disk representation.  */
+  {
+    uint8_t magic[4];
+    uint8_t klass; /* 4:CLASS32 */
+    uint8_t data; /* 5:DATA2[LM]SB */
+    uint8_t version; /* 6:EV_CURRENT  */
+    uint8_t osabi; /* 7:OSABI_NONE */
+    uint8_t abiver; /* 8: 0 */
+    uint8_t pad[7]; /* 9-15 */
+  };
+  struct header
+  /* On-disk representation.  */
+  {
+    struct ident ident;
+    uint16_t type; /* ET_NONE */
+    uint16_t machine; /* EM_NONE */
+    uint32_t version; /* EV_CURRENT */
+    uint32_t entry; /* 0 */
+    uint32_t phoff; /* 0 */
+    uint32_t shoff; /* TBD */
+    uint32_t flags; 
+    uint16_t ehsize; /* sizeof (header) */
+    uint16_t phentsize; /* 0 */
+    uint16_t phnum;    /* 0 */
+    uint16_t shentsize; /* sizeof (section) */
+    uint16_t shnum;  /* TBD */
+    uint16_t shstrndx; /* TBD */
+  };
+  struct section
+  /* On-disk representation.  */
+  {
+    uint32_t name; /* String table offset.  */
+    uint32_t type; /* TBD */
+    uint32_t flags;
+    uint32_t addr; /* 0 */
+    uint32_t off;  /* TBD */
+    uint32_t size; /* TBD */
+    uint32_t link; /* TBD */
+    uint32_t info;
+    uint32_t addralign; /* 0 */
+    uint32_t entsize; /* 0, except SHT_STRTAB */
+  };
+  struct isection
+  {
+    /* Not the on-file representation. */
+    unsigned type;
+    unsigned name;   /* Index into string section.  */
+    unsigned offset; /* File offset.  */
+    unsigned size;   /* Size of data.  */
+    unsigned link;   /* Linked-to section.  */
+  };
+public:
+  struct data
+  {
+    size_t size;
+    char buffer[1];
+  };
+  static data *extend (data *, size_t);
+
+protected:
+  FILE *stream;
+
+protected:
+  int err;
+  vec<isection, va_heap, vl_embed> *sections;
+
+public:
+  elf (FILE *stream)
+    :stream (stream), err (0), sections (NULL)
+  {}
+  ~elf ()
+  {
+    free (sections);
+  }
+
+public:
+  int get_error ()
+  {
+    return err;
+  }
+  void bad (int e = -1)
+  {
+    if (!err)
+      err = e;
+  }
+};
+
+elf::data *elf::extend (data *c, size_t a)
+{
+  if (!c || a > c->size)
+    {
+      c = XRESIZEVAR (data, c, offsetof (data, buffer) + a);
+      c->size = a;
+    }
+
+  return c;
+}
+
+class elf_in : public elf
+{
+protected:
+  data *strings;
+
+  public:
+  elf_in (FILE *s)
+    :elf (s), strings (NULL)
+  {
+  }
+
+protected:
+  bool read (void *, size_t);
+
+public:
+  data *read (unsigned snum);
+public:
+  data *find (unsigned type, bool atend = false);
+
+public:
+  bool begin ();
+  int end ()
+  {
+    return get_error ();
+  }
+};
+
+class elf_out : public elf
+{
+public:
+  elf_out (FILE *s)
+    :elf (s)
+  {
+  }
+
+protected:
+  uint32_t pad ();
+  bool write (const void *, size_t);
+public:
+  /* Write and allocate a section.  */
+  unsigned write (unsigned section_type, unsigned name, const data *);
+
+public:
+  bool begin ();
+  int end ();
+};
+
+
+bool
+elf_in::read (void *buffer, size_t size)
+{
+  if (fread (buffer, 1, size, stream) != size)
+    {
+      bad (errno);
+      return false;
+    }
+  return true;
+}
+
+elf::data *
+elf_in::read (unsigned snum)
+{
+  if (snum >= sections->length ())
+    return NULL;
+  const isection *sec = &(*sections)[snum];
+  if (fseek (stream, sec->offset, SEEK_SET))
+    {
+      bad (errno);
+      return NULL;
+    }
+
+  data *b = extend (NULL, sec->size);
+  if (read (b->buffer, b->size))
+    return b;
+  free (b);
+  return NULL;
+}
+
+elf::data *
+elf_in::find (unsigned type, bool at_end)
+{
+  unsigned snum = 1;
+  int dir = +1;
+  unsigned end = sections->length ();
+
+  if (at_end)
+    {
+      dir = -1;
+      snum = end + dir;
+      end = 0;
+    }
+
+  while ((*sections)[snum].type != type)
+    {
+      snum += dir;
+      if (snum == end)
+	return NULL;
+    }
+  
+  return read (snum);
+}
+
+bool
+elf_in::begin ()
+{
+  gcc_checking_assert (!sections);
+
+  header header;
+  if (fseek (stream, 0, SEEK_SET)
+      || !read (&header, sizeof (header)))
+    return false;
+  if (header.ident.magic[0] != 0x7f
+      || header.ident.magic[1] != 'E'
+      || header.ident.magic[2] != 'L'
+      || header.ident.magic[3] != 'F')
+    {
+      error ("not Encapsulated Ledger File");
+      return false;
+    }
+
+  /* We expect a particular format -- the ELF is not intended to be
+     distributable.  */
+  if (header.ident.klass != CLASS32
+      || header.ident.data != DATA2END
+      || header.ident.version != EV_CURRENT)
+    {
+      error ("unexpected encapsulation format");
+      return false;
+    }
+
+  /* And the versioning isn't target-specific.  */
+  if (header.type != ET_NONE
+      || header.machine != EM_NONE
+      || header.ident.osabi != OSABI_NONE)
+    {
+      error ("unexpected encapsulation type");
+      return false;
+    }
+
+  if (!header.shoff || !header.shnum
+      || header.shentsize != sizeof (section))
+    {
+      error ("section table missing or wrong format");
+      return false;
+    }
+  if (fseek (stream, header.shoff, SEEK_SET))
+    {
+    section_table_fail:
+      bad (errno);
+      error ("cannot read section table");
+      return false;
+    }
+
+  unsigned shnum = header.shnum;
+  vec_alloc (sections, shnum);
+  for (unsigned ix = 0; ix != shnum; ix++)
+    {
+      section section;
+      if (fread (&section, 1, sizeof (section), stream) != sizeof (section))
+	goto section_table_fail;
+      isection isection;
+      isection.type = section.type;
+      isection.name = section.name;
+      isection.offset = section.off;
+      isection.size = section.size;
+      isection.link = section.link;
+      if (!ix && shnum == SHN_XINDEX)
+	{
+	  shnum = isection.size;
+	  isection.size = 0;
+	  if (!shnum)
+	    goto section_table_fail;
+	  vec_safe_reserve (sections, shnum, true);
+	}
+      sections->quick_push (isection);
+    }
+
+  if (header.shstrndx)
+    {
+      unsigned strindx = header.shstrndx;
+      if (strindx == SHN_XINDEX)
+	strindx = (*sections)[0].link;
+      strings = read (strindx);
+    }
+
+  return true;
+}
+
+bool
+elf_out::write (const void *data, size_t size)
+{
+  if (fwrite (data, 1, size, stream) == size)
+    return true;
+  bad (errno);
+  return false;
+}
+
+unsigned
+elf_out::write (unsigned type, unsigned name, const data *data)
+{
+  uint32_t off = pad ();
+
+  if (!off || fwrite (data->buffer, 1, data->size, stream) != data->size)
+    {
+      bad (errno);
+      return 0;
+    }
+
+  isection sec;
+  sec.type = type;
+  sec.name = name;
+  sec.offset = off;
+  sec.size = data->size;
+  sec.link = 0;
+  unsigned snum = sections->length ();
+  vec_safe_push (sections, sec);
+  return snum;
+}
+
+bool
+elf_out::begin ()
+{
+  gcc_checking_assert (!sections);
+  vec_alloc (sections, 10);
+
+  /* Create the UNDEF section.  */
+  isection section;
+  section.type = SHT_NONE;
+  section.name = 0;
+  section.offset = 0;
+  section.size = 0;
+  section.link = 0;
+  sections->quick_push (section);
+
+  /* Write an empty header.  */
+  header header;
+  memset (&header, 0, sizeof (header));
+  return write (&header, sizeof (header));
+}
+
+uint32_t elf_out::pad ()
+{
+  long off = ftell (stream);
+  if (off < 0)
+    return 0;
+
+  if (unsigned padding = off & 3)
+    {
+      /* Align the section on disk, should help the necessary copies.  */
+      unsigned zero = 0;
+      padding = 4 - padding;
+      off += padding;
+      if (fwrite (&zero, 1, padding, stream) != padding)
+	return 0;
+    }
+
+  return (uint32_t)off;
+}
+
+int
+elf_out::end ()
+{
+  uint32_t shoff = pad ();
+
+  unsigned strndx = (*sections)[0].link;
+  if (strndx >= SHN_LORESERVE)
+    strndx = SHN_XINDEX;
+  else
+    (*sections)[0].link = 0;
+  unsigned shnum = sections->length ();
+  if (shnum >= SHN_LORESERVE)
+    {
+      (*sections)[0].size = shnum;
+      shnum = SHN_XINDEX;
+    }
+
+  /* Write section table */
+  for (unsigned ix = 0; ix != sections->length (); ix++)
+    {
+      const isection *isec = &(*sections)[ix];
+      section section;
+      memset (&section, 0, sizeof (section));
+      section.name = isec->name;
+      section.type = isec->type;
+      section.flags = isec->type == SHT_STRTAB ? SHF_STRINGS : SHF_NONE;
+      section.off = isec->offset;
+      section.size = isec->size;
+      section.link = isec->link;
+      section.entsize = isec->type == SHT_STRTAB ? 1 : 0;
+
+      if (!write (&section, sizeof (section)))
+	goto out;
+    }
+
+  /* Write header.  */
+  if (fseek (stream, 0, SEEK_SET))
+    {
+      bad (errno);
+      goto out;
+    }
+
+  header header;
+  memset (&header, 0, sizeof (header));
+  header.ident.magic[0] = 0x7f;
+  header.ident.magic[1] = 'E';
+  header.ident.magic[2] = 'L';
+  header.ident.magic[3] = 'F';
+  header.ident.klass = CLASS32;
+  header.ident.data =  DATA2END;
+  header.ident.version = EV_CURRENT;
+  header.ident.osabi = OSABI_NONE;
+  header.type = ET_NONE;
+  header.machine = EM_NONE;
+  header.version = EV_CURRENT;
+  header.shoff = shoff;
+  header.ehsize = sizeof (header);
+  header.shentsize = sizeof (section);
+  header.shnum = shnum;
+  header.shstrndx = strndx;
+
+  write (&header, sizeof (header));
+
+ out:
+  return get_error ();
+}
+
 /* Byte serializer base.  */
 class cpm_serial {
 protected:
-  FILE *stream;
-public:
-  const char *name;
-protected:
-  char *buffer;
+  elf::data *data;
   size_t pos;
-  size_t len;
-  size_t alloc;
-  int err;
   unsigned bit_val;
   unsigned bit_pos;
   unsigned crc;
 
 public:
-  cpm_serial (FILE *, const char *);
-  ~cpm_serial ();
-
-public:
-  int error ()
+  cpm_serial ()
+    :data (NULL), pos (0), bit_val (0), bit_pos (0), crc (0)
+  {}
+  ~cpm_serial () 
   {
-    return err;
+    gcc_checking_assert (!data);
   }
-
 
 public:
   unsigned get_crc () const
   {
     return crc;
-  }
-
-public:
-  /* Set an error.  We store the first errno.  */
-  void bad (int e = -1)
-  {
-    if (!err)
-      err = e;
   }
 
 protected:
@@ -459,6 +947,7 @@ protected:
     crc = crc32_unsigned_n (crc, v, n);
   }
   void crc_buffer (const char *ptr, size_t l);
+
   template<typename T> void crc_unsigned (T v)
   {
     unsigned bytes = sizeof (T);
@@ -470,21 +959,6 @@ protected:
     crc_unsigned_n (unsigned (v), bytes);
   }
 };
-
-cpm_serial::cpm_serial (FILE *s, const char *n)
-  :stream (s), name (n), pos (0), len (0),
-   /* Force testing of buffer extension. */
-   alloc (MODULE_STAMP ? 1 : 32768),
-   err (0), bit_val (0), bit_pos (0), crc (0)
-{
-  buffer = XNEWVEC (char, alloc);
-}
-
-cpm_serial::~cpm_serial ()
-{
-  gcc_assert (pos == len || err);
-  XDELETEVEC (buffer);
-}
 
 void
 cpm_serial::crc_buffer (const char *ptr, size_t l)
@@ -499,6 +973,7 @@ class cpm_stream;
 
 /* Byte stream writer.  */
 class cpm_writer : public cpm_serial {
+  elf_out *sink;
   /* Bit instrumentation.  */
   unsigned spans[3];
   unsigned lengths[3];
@@ -506,8 +981,8 @@ class cpm_writer : public cpm_serial {
   unsigned checksums;
 
 public:
-  cpm_writer (FILE *s, const char *n)
-    : cpm_serial (s, n)
+  cpm_writer (elf_out *sink)
+    : cpm_serial (), sink (sink)
   {
     spans[0] = spans[1] = spans[2] = 0;
     lengths[0] = lengths[1] = lengths[2] = 0;
@@ -529,12 +1004,12 @@ public:
   void raw (unsigned);
 
 public:
-  int done ()
+  bool done ()
   {
-    flush ();
-    if (fflush (stream))
-      bad (errno);
-    return error ();
+    elf::data *d = data;
+    data = NULL;
+    // FIXME data leak
+    return sink->write (elf::SHT_GXX_MODULE, 0, d);
   }
 
 public:
@@ -559,13 +1034,16 @@ public:
 
 /* Byte stream reader.  */
 class cpm_reader : public cpm_serial {
+  elf_in *source;
 public:
-  cpm_reader (FILE *s, const char *n)
-    : cpm_serial (s, n)
+  cpm_reader (elf_in *source)
+    : cpm_serial (), source (source)
   {
+    data = source->find (elf::SHT_GXX_MODULE);
   }
   ~cpm_reader ()
   {
+    data = NULL;
   }
 
 private:
@@ -574,11 +1052,14 @@ public:
   unsigned raw ();
 
 public:
-  int done (bool atend = true)
+  // FIXME in transition
+  void bad ()
   {
-    if (atend && fill (1))
-      bad ();
-    return error ();
+    source->bad ();
+  }
+  bool error ()
+  {
+    return source->get_error ();
   }
 
 public:
@@ -618,16 +1099,16 @@ cpm_reader::checkpoint ()
     {
       /* Map checksum error onto a reasonably specific errno.  */
 #if defined (EPROTO)
-      bad (EPROTO);
+      source->bad (EPROTO);
 #elif defined (EBADMSG)
-      bad (EBADMSG);
+      source->bad (EBADMSG);
 #elif defined (EIO)
-      bad (EIO);
+      source->bad (EIO);
 #else
-      bad ();
+      source->bad ();
 #endif
     }
-  return !error ();
+  return !source->get_error ();
 }
 
 /* Finish a set of bools.  */
@@ -713,10 +1194,10 @@ void
 cpm_writer::raw (unsigned val)
 {
   reserve (4);
-  buffer[pos++] = val;
-  buffer[pos++] = val >> 8;
-  buffer[pos++] = val >> 16;
-  buffer[pos++] = val >> 24;
+  data->buffer[pos++] = val;
+  data->buffer[pos++] = val >> 8;
+  data->buffer[pos++] = val >> 16;
+  data->buffer[pos++] = val >> 24;
 }
 
 unsigned
@@ -724,13 +1205,13 @@ cpm_reader::raw ()
 {
   unsigned val = 0;
   if (fill (4) != 4)
-    bad ();
+    source->bad ();
   else
     {
-      val |= (unsigned char)buffer[pos++];
-      val |= (unsigned char)buffer[pos++] << 8;
-      val |= (unsigned char)buffer[pos++] << 16;
-      val |= (unsigned char)buffer[pos++] << 24;
+      val |= (unsigned char)data->buffer[pos++];
+      val |= (unsigned char)data->buffer[pos++] << 8;
+      val |= (unsigned char)data->buffer[pos++] << 16;
+      val |= (unsigned char)data->buffer[pos++] << 24;
     }
 
   return val;
@@ -742,7 +1223,7 @@ void
 cpm_writer::c (unsigned char v)
 {
   reserve (1);
-  buffer[pos++] = v;
+  data->buffer[pos++] = v;
   crc_unsigned (v);
 }
 
@@ -751,9 +1232,9 @@ cpm_reader::c ()
 {
   int v = 0;
   if (fill (1))
-    v = (unsigned char)buffer[pos++];
+    v = (unsigned char)data->buffer[pos++];
   else
-    bad ();
+    source->bad ();
   crc_unsigned (v);
   return v;
 }
@@ -775,7 +1256,7 @@ cpm_writer::i (int v)
       unsigned byte = v & 127;
       v >>= 6; /* Signed shift.  */
       more = v != end;
-      buffer[pos++] = byte | (more << 7);
+      data->buffer[pos++] = byte | (more << 7);
       v >>= 1; /* Signed shift.  */
     }
   while (more);
@@ -793,10 +1274,10 @@ cpm_reader::i ()
     {
       if (!bytes--)
 	{
-	  bad ();
+	  source->bad ();
 	  return v;
 	}
-      byte = buffer[pos++];
+      byte = data->buffer[pos++];
       v |= (byte & 127) << bit;
       bit += 7;
     }
@@ -822,7 +1303,7 @@ cpm_writer::u (unsigned v)
       unsigned byte = v & 127;
       v >>= 7;
       more = v != 0;
-      buffer[pos++] = byte | (more << 7);
+      data->buffer[pos++] = byte | (more << 7);
     }
   while (more);
 }
@@ -839,10 +1320,10 @@ cpm_reader::u ()
     {
       if (!bytes--)
 	{
-	  bad ();
+	  source->bad ();
 	  return v;
 	}
-      byte = buffer[pos++];
+      byte = data->buffer[pos++];
       v |= (byte & 127) << bit;
       bit += 7;
     }
@@ -866,7 +1347,7 @@ cpm_writer::wi (HOST_WIDE_INT v)
       unsigned byte = v & 127;
       v >>= 6; /* Signed shift.  */
       more = v != end;
-      buffer[pos++] = byte | (more << 7);
+      data->buffer[pos++] = byte | (more << 7);
       v >>= 1; /* Signed shift.  */
     }
   while (more);
@@ -884,10 +1365,10 @@ cpm_reader::wi ()
     {
       if (!bytes--)
 	{
-	  bad ();
+	  source->bad ();
 	  return v;
 	}
-      byte = buffer[pos++];
+      byte = data->buffer[pos++];
       v |= (unsigned HOST_WIDE_INT)(byte & 127) << bit;
       bit += 7;
     }
@@ -934,7 +1415,7 @@ cpm_writer::buf (const char *buf, size_t len)
 {
   crc_buffer (buf, len);
   reserve (len);
-  memcpy (buffer + pos, buf, len);
+  memcpy (data->buffer + pos, buf, len);
   pos += len;
 }
 
@@ -942,11 +1423,11 @@ const char *
 cpm_reader::buf (size_t len)
 {
   size_t have = fill (len);
-  char *buf = &buffer[pos];
+  char *buf = &data->buffer[pos];
   if (have < len)
     {
       memset (buf + have, 0, len - have);
-      bad ();
+      source->bad ();
     }
   pos += have;
   crc_buffer (buf, len);
@@ -980,8 +1461,8 @@ cpm_reader::str (size_t *len_p)
   if (str[len])
     {
       /* Force read string to be not totally broken.  */
-      buffer[pos-1] = 0;
-      bad ();
+      data->buffer[pos-1] = 0;
+      source->bad ();
     }
   return str;
 }
@@ -1031,43 +1512,35 @@ cpm_reader::module_name ()
   return name;
 }
 
+// FIXME: Incomplete transition
 void
 cpm_writer::flush ()
 {
-  size_t bytes = fwrite (buffer, 1, pos, stream);
-
-  if (bytes != pos)
-    bad (errno);
-  pos = 0;
+  data->size = pos;
 }
 
 void
 cpm_writer::seek (unsigned loc)
 {
-  flush ();
-  fseek (stream, long (loc), SEEK_SET);
+  pos = loc;
 }
 
 unsigned
 cpm_writer::tell ()
 {
-  flush ();
-  return unsigned (ftell (stream));
+  return pos;
 }
 
 size_t
 cpm_writer::reserve (size_t want)
 {
+  size_t alloc = data ? data->size : 0;
   size_t have = alloc - pos;
   if (have < want)
     {
-      flush ();
-      if (alloc < want)
-	{
-	  alloc = want + (want / 8); /* Some hysteresis.  */
-	  buffer = XRESIZEVEC (char, buffer, alloc);
-	}
-      have = alloc;
+      alloc = (alloc + want) * 3/2;
+      data = elf::extend (data, alloc);
+      have = data->size - pos;
     }
   return have;
 }
@@ -1075,28 +1548,7 @@ cpm_writer::reserve (size_t want)
 size_t
 cpm_reader::fill (size_t want)
 {
-  size_t have = len - pos;
-  if (have < want)
-    {
-      memmove (buffer, buffer + pos, len - pos);
-      len -= pos;
-      pos = 0;
-      if (alloc < want)
-	{
-	  alloc = want + (want / 8); /* Some hysteresis.  */
-	  buffer = XRESIZEVEC (char, buffer, alloc);
-	}
-      if (size_t bytes = fread (buffer + len, 1, alloc - len, stream))
-	{
-	  len += bytes;
-	  have = len;
-	}
-      else if (ferror (stream))
-	{
-	  clearerr (stream);
-	  bad (errno);
-	}
-    }
+  size_t have = data->size - pos;
   return have < want ? have : want;
 }
 
@@ -1159,7 +1611,6 @@ protected:
 
 public:
   static const char *ident ();
-  static int version ();
 
   /* Version to date. */
   static unsigned v2d (int v)
@@ -1498,33 +1949,11 @@ cpm_stream::ident ()
   return "g++m";
 }
 
-int
-cpm_stream::version ()
-{
-  /* If the on-disk format changes, update the version number.  */
-  int version = 20170210;
-
-#if defined (MODULE_STAMP)
-  /* MODULE_STAMP is a decimal encoding YYYYMMDDhhmm or YYYYMMDD in
-     local timezone.  Using __TIME__ doesnt work very well with
-     boostrapping!  */
-  version = -(MODULE_STAMP > 2000LL * 10000 * 10000
-	      ? int (MODULE_STAMP - 2000LL * 10000 * 10000)
-	      : int (MODULE_STAMP - 2000LL * 10000) * 10000);
-#endif
-  return version;
-}
-
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
   cpm_writer w;
 
-  struct non_null : pointer_hash <void> {
-    static bool is_deleted (value_type) {return false;}
-    static void remove (value_type) {}
-  };
-  typedef simple_hashmap_traits<non_null, unsigned> traits;
-  hash_map<void *,unsigned,traits> tree_map; /* trees to ids  */
+  ptr_uint_hash_map tree_map; /* trees to ids  */
 
   unsigned crc_tell;
 
@@ -1535,7 +1964,7 @@ class cpms_out : public cpm_stream {
   unsigned records;
 
 public:
-  cpms_out (FILE *, module_state *);
+  cpms_out (elf_out *, module_state *);
   ~cpms_out ();
 
   void instrument ();
@@ -1549,7 +1978,7 @@ public:
   void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
-  int done ()
+  bool done ()
   {
     return w.done ();
   }
@@ -1584,8 +2013,8 @@ public:
   void bindings (tree ns);
 };
 
-cpms_out::cpms_out (FILE *s, module_state *state)
-  :cpm_stream (state), w (s, state->filename)
+cpms_out::cpms_out (elf_out *s, module_state *state)
+  :cpm_stream (state), w (s)
 {
   crc_tell = ~0;
   unique = refs = nulls = 0;
@@ -1600,7 +2029,7 @@ cpms_out::~cpms_out ()
 void
 cpm_writer::instrument (cpm_stream *d)
 {
-  d->dump ("Wrote %U bytes", ftell (stream));
+  d->dump ("Wrote %U bytes", data->size);
   d->dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1],
 	   lengths[2]);
   for (unsigned ix = 0; ix < 2; ix++)
@@ -1630,8 +2059,7 @@ cpms_out::instrument ()
 class cpms_in : public cpm_stream {
   cpm_reader r;
 
-  typedef simple_hashmap_traits<int_hash<unsigned,0>,void *> traits;
-  hash_map<unsigned,void *,traits> tree_map; /* ids to trees  */
+  uint_ptr_hash_map tree_map; /* ids to trees  */
 
   unsigned mod_ix; /* Module index.  */
   unsigned crc;    /* Expected crc.  */
@@ -1641,7 +2069,7 @@ class cpms_in : public cpm_stream {
   unsigned *remap_vec;
 
 public:
-  cpms_in (FILE *, module_state *, cpms_in *);
+  cpms_in (elf_in *, module_state *, cpms_in *);
   ~cpms_in ();
 
 public:
@@ -1653,10 +2081,6 @@ public:
   tree tag_definition ();
   bool tag_globals ();
   int read_item ();
-  int done ()
-  {
-    return r.done ();
-  }
   unsigned get_mod () const
   {
     return mod_ix;
@@ -1691,8 +2115,8 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (FILE *s, module_state *state, cpms_in *from)
-  :cpm_stream (state, from), r (s, state->filename),
+cpms_in::cpms_in (elf_in *s, module_state *state, cpms_in *from)
+  :cpm_stream (state, from), r (s),
    mod_ix (MODULE_INDEX_IMPORTING), remap_num (0), remap_vec (NULL)
 {
   dump () && dump ("Importing %I", state->name);
@@ -1736,7 +2160,7 @@ void
 cpms_out::header (tree name)
 {
   char const *id = ident ();
-  int v = version ();
+  int v = get_version ();
 
   gcc_assert (v < 0); /* Not ready for prime-time.  */
   dump () && dump ("Writing \"%s\" version=%V", id, v);
@@ -1767,7 +2191,7 @@ cpms_in::header ()
     }
 
   /* Check version.  */
-  int ver = version ();
+  int ver = get_version ();
   int v = int (r.raw ());
   if (v != ver)
     {
@@ -5034,15 +5458,23 @@ module_interface_p ()
 static unsigned
 read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
 {
-  cpms_in in (stream, state, from);
+  unsigned mod = 0;
+  elf_in elf (stream);
+  int ok = false;
 
-  int ok = in.header ();
-  if (ok)
-    do
-      ok = in.read_item ();
-    while (ok > 0);
+  if (elf.begin ())
+    {
+      cpms_in in (&elf, state, from);
 
-  if (int e = in.done ())
+      ok = in.header ();
+      if (ok)
+	do
+	  ok = in.read_item ();
+	while (ok > 0);
+      mod = in.get_mod ();
+    }
+
+  if (int e = elf.end ())
     {
       /* strerror and friends returns capitalized strings.  */
       char const *err = e >= 0 ? xstrerror (e) : "Bad file data";
@@ -5059,7 +5491,7 @@ read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
       gcc_unreachable ();
     }
 
-  return in.get_mod ();
+  return mod;
 }
 
 static int
@@ -5515,24 +5947,31 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 static void
 write_module (FILE *stream, module_state *state)
 {
-  cpms_out out (stream, state);
+  elf_out elf (stream);
 
-  out.header (state->name);
-  out.tag_conf ();
-  // FIXME:Write 'important' flags etc
+  if (elf.begin ())
+    {
+      cpms_out out (&elf, state);
 
-  /* Write the direct imports.  Write in reverse order, so that when
-     checking an indirect import we should have already read it.  */
-  for (unsigned ix = modules->length (); --ix;)
-    out.tag_import (ix, (*modules)[ix]);
+      out.header (state->name);
+      out.tag_conf ();
+      // FIXME:Write 'important' flags etc
 
-  out.tag_globals ();
+      /* Write the direct imports.  Write in reverse order, so that when
+	 checking an indirect import we should have already read it.  */
+      for (unsigned ix = modules->length (); --ix;)
+	out.tag_import (ix, (*modules)[ix]);
 
-  /* Write decls.  */
-  out.bindings (global_namespace);
+      out.tag_globals ();
 
-  out.tag_eof ();
-  if (int e = out.done ())
+      /* Write decls.  */
+      out.bindings (global_namespace);
+
+      out.tag_eof ();
+      out.done ();
+    }
+  
+  if (int e = elf.end ())
     error ("failed to write module %qE (%qs): %s",
 	   state->name, state->filename,
 	   e >= 0 ? xstrerror (errno) : "Bad file data");
@@ -5587,7 +6026,6 @@ finish_module ()
      remove the BMI file in the case of previous errors.  */
   if (FILE *stream = make_module_file (filename, filename_len))
     {
-      state->set_location (filename);
       if (!errorcount)
 	write_module (stream, state);
       fclose (stream);
