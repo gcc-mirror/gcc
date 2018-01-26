@@ -1072,7 +1072,6 @@ maybe_add_lambda_conv_op (tree type)
       }
   }
 
-
   if (generic_lambda_p)
     {
       if (decltype_call)
