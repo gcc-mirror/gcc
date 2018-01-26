@@ -118,3 +118,4 @@ extern bool arc_store_addr_hazard_p (rtx_insn *, rtx_insn *);
 extern rtx arc_eh_return_address_location (void);
 extern bool arc_is_jli_call_p (rtx);
 extern void arc_file_end (void);
+extern bool arc_is_secure_call_p (rtx);

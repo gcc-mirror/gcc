@@ -1,4 +1,17 @@
 2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h: Add arc_is_secure_call_p proto.
+	* config/arc/arc.c (arc_handle_secure_attribute): New function.
+	(arc_attribute_table): Add 'secure_call' attribute.
+	(arc_print_operand): Print secure call operand.
+	(arc_function_ok_for_sibcall): Don't optimize tail calls when
+	secure.
+	(arc_is_secure_call_p): New function.  * config/arc/arc.md
+	(call_i): Add support for sjli instruction.
+	(call_value_i): Likewise.
+	* config/arc/constraints.md (Csc): New constraint.
+
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
 	    John Eric Martin <John.Martin@emmicro-us.com>
 
 	* config/arc/arc-protos.h: Add arc_is_jli_call_p proto.
