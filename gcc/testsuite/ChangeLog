@@ -1,3 +1,10 @@
+2018-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81082
+	* gcc.dg/vect/pr81082.c: New testcase.
+	* gcc.dg/tree-ssa/loop-15.c: XFAIL the (int)((unsigned)n + -1U) * n + n
+	simplification to n * n.
+
 2018-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/mcount_pic.c: Only xfail get_pc_thunk scan on

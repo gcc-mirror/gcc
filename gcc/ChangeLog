@@ -1,3 +1,12 @@
+2018-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81082
+	* fold-const.c (fold_plusminus_mult_expr): Do not perform the
+	association if it requires casting to unsigned.
+	* match.pd ((A * C) +- (B * C) -> (A+-B)): New patterns derived
+	from fold_plusminus_mult_expr to catch important cases late when
+	range info is available.
+
 2018-01-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (USE_HIDDEN_LINKONCE): Remove.
