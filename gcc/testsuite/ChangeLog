@@ -1,6 +1,13 @@
+2018-01-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/safe-indirect-jump-1.c: Build on all targets.
+	Make expected output depend on whether we expect sibcalls or not.
+	* gcc.target/powerpc/safe-indirect-jump-8.c: Delete (merged into
+	safe-indirect-jump-1.c).
+
 2018-01-26  Damian Rouson  <damian@sourceryinstitute.org>
-	Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
-	Soren Rasmussen  <s.c.rasmussen@gmail.com>
+	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Soren Rasmussen  <s.c.rasmussen@gmail.com>
 
 	Fortran 2018 teams tests.
 
