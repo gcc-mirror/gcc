@@ -1,3 +1,8 @@
+2018-01-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x2.c: Make float64
+	tests specific to aarch64.  XFAIL test on arm.
+
 2018-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/83985
