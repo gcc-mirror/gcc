@@ -1,5 +1,7 @@
 2018-01-26  Jim Wilson  <jimw@sifive.com>
 
+	* config/riscv/riscv.h (MAX_FIXED_MODE_SIZE): New.
+
 	* config/riscv/elf.h (LIB_SPEC): Don't include -lgloss when nosys.specs
 	specified.
 
