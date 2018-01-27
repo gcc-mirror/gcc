@@ -2834,10 +2834,16 @@ static void
 sched_macro_fuse_insns (rtx_insn *insn)
 {
   rtx_insn *prev;
+  /* No target hook would return true for debug insn as any of the
+     hook operand, and with very large sequences of only debug insns
+     where on each we call sched_macro_fuse_insns it has quadratic
+     compile time complexity.  */
+  if (DEBUG_INSN_P (insn))
+    return;
   prev = prev_nonnote_nondebug_insn (insn);
   if (!prev)
     return;
- 
+
   if (any_condjump_p (insn))
     {
       unsigned int condreg1, condreg2;
