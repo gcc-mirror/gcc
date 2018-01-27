@@ -1124,8 +1124,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	       floatn_nx_types[i].extended ? "X" : "");
       sprintf (csuffix, "F%d%s", floatn_nx_types[i].n,
 	       floatn_nx_types[i].extended ? "x" : "");
-      builtin_define_float_constants (prefix, csuffix, "%s", csuffix,
-				      FLOATN_NX_TYPE_NODE (i));
+      builtin_define_float_constants (prefix, ggc_strdup (csuffix), "%s",
+				      csuffix, FLOATN_NX_TYPE_NODE (i));
     }
 
   /* For decfloat.h.  */
@@ -1571,7 +1571,14 @@ struct GTY(()) lazy_hex_fp_value_struct
   int digits;
   const char *fp_suffix;
 };
-static GTY(()) struct lazy_hex_fp_value_struct lazy_hex_fp_values[12];
+/* Number of the expensive to compute macros we should evaluate lazily.
+   Each builtin_define_float_constants invocation calls
+   builtin_define_with_hex_fp_value 4 times and builtin_define_float_constants
+   is called for FLT, DBL, LDBL and up to NUM_FLOATN_NX_TYPES times for
+   FLTNN*.  */ 
+#define LAZY_HEX_FP_VALUES_CNT (4 * (3 + NUM_FLOATN_NX_TYPES))
+static GTY(()) struct lazy_hex_fp_value_struct
+  lazy_hex_fp_values[LAZY_HEX_FP_VALUES_CNT];
 static GTY(()) int lazy_hex_fp_value_count;
 
 static bool
@@ -1616,7 +1623,7 @@ builtin_define_with_hex_fp_value (const char *macro,
   char dec_str[64], buf[256], buf1[128], buf2[64];
 
   /* This is very expensive, so if possible expand them lazily.  */
-  if (lazy_hex_fp_value_count < 12
+  if (lazy_hex_fp_value_count < LAZY_HEX_FP_VALUES_CNT
       && flag_dump_macros == 0
       && !cpp_get_options (parse_in)->traditional)
     {

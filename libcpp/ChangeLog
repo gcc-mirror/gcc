@@ -1,8 +1,13 @@
+2018-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (enum cpp_builtin_type): Change BT_LAST_USER from
+	BT_FIRST_USER + 31 to BT_FIRST_USER + 63.
+
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
         PR other/70268
         * include/cpplib.h (cpp_callbacks::remap_filename): New callback.
-        * libcpp/macro.c (_cpp_builtin_macro_text): Call remap_filename for
+        * macro.c (_cpp_builtin_macro_text): Call remap_filename for
         __FILE__ and __BASE_FILE__.
 
 2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
