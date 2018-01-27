@@ -1,6 +1,12 @@
+2018-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84065
+	* decl.c (add_init_expr_to_sym): Ignore initializers for too large
+	lengths.
+
 2018-01-26  Damian Rouson  <damian@sourceryinstitute.org>
-	Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
-	Soren Rasmussen  <s.c.rasmussen@gmail.com>
+	    Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Soren Rasmussen  <s.c.rasmussen@gmail.com>
 
 	Partial support for Fortran 2018 teams features.
 
