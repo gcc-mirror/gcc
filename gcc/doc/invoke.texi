@@ -1211,7 +1211,7 @@ See RS/6000 and PowerPC Options.
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mmitigate-rop  -mgeneral-regs-only @gol
--mindirect-branch=@var{choice} -mfunction-return==@var{choice} @gol
+-mindirect-branch=@var{choice} -mfunction-return=@var{choice} @gol
 -mindirect-branch-register}
 
 @emph{x86 Windows Options}

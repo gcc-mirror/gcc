@@ -1,6 +1,14 @@
 2018-01-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
+	2018-01-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.texi: Replace -mfunction-return==@var{choice} with
+	-mfunction-return=@var{choice}.
+
+2018-01-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
 	2018-01-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/83905
