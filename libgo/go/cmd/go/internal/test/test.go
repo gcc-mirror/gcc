@@ -6,6 +6,7 @@ package test
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"go/ast"
@@ -79,39 +80,51 @@ finds any problems, go test reports those and does not run the test binary.
 Only a high-confidence subset of the default go vet checks are used.
 To disable the running of go vet, use the -vet=off flag.
 
-Go test runs in two different modes: local directory mode when invoked with
-no package arguments (for example, 'go test'), and package list mode when
-invoked with package arguments (for example 'go test math', 'go test ./...',
-and even 'go test .').
+All test output and summary lines are printed to the go command's
+standard output, even if the test printed them to its own standard
+error. (The go command's standard error is reserved for printing
+errors building the tests.)
 
-In local directory mode, go test compiles and tests the package sources
-found in the current directory and then runs the resulting test binary.
-In this mode, caching (discussed below) is disabled. After the package test
-finishes, go test prints a summary line showing the test status ('ok' or 'FAIL'),
-package name, and elapsed time.
+Go test runs in two different modes:
 
-In package list mode, go test compiles and tests each of the packages
-listed on the command line. If a package test passes, go test prints only
-the final 'ok' summary line. If a package test fails, go test prints the
-full test output. If invoked with the -bench or -v flag, go test prints
-the full output even for passing package tests, in order to display the
+The first, called local directory mode, occurs when go test is
+invoked with no package arguments (for example, 'go test' or 'go
+test -v'). In this mode, go test compiles the package sources and
+tests found in the current directory and then runs the resulting
+test binary. In this mode, caching (discussed below) is disabled.
+After the package test finishes, go test prints a summary line
+showing the test status ('ok' or 'FAIL'), package name, and elapsed
+time.
+
+The second, called package list mode, occurs when go test is invoked
+with explicit package arguments (for example 'go test math', 'go
+test ./...', and even 'go test .'). In this mode, go test compiles
+and tests each of the packages listed on the command line. If a
+package test passes, go test prints only the final 'ok' summary
+line. If a package test fails, go test prints the full test output.
+If invoked with the -bench or -v flag, go test prints the full
+output even for passing package tests, in order to display the
 requested benchmark results or verbose logging.
 
-All test output and summary lines are printed to the go command's standard
-output, even if the test printed them to its own standard error.
-(The go command's standard error is reserved for printing errors building
-the tests.)
+In package list mode only, go test caches successful package test
+results to avoid unnecessary repeated running of tests. When the
+result of a test can be recovered from the cache, go test will
+redisplay the previous output instead of running the test binary
+again. When this happens, go test prints '(cached)' in place of the
+elapsed time in the summary line.
 
-In package list mode, go test also caches successful package test results.
-If go test has cached a previous test run using the same test binary and
-the same command line consisting entirely of cacheable test flags
-(defined as -cpu, -list, -parallel, -run, -short, and -v),
-go test will redisplay the previous output instead of running the test
-binary again. In the summary line, go test prints '(cached)' in place of
-the elapsed time. To disable test caching, use any test flag or argument
-other than the cacheable flags. The idiomatic way to disable test caching
-explicitly is to use -count=1. A cached result is treated as executing in
-no time at all, so a successful package test result will be cached and reused
+The rule for a match in the cache is that the run involves the same
+test binary and the flags on the command line come entirely from a
+restricted set of 'cacheable' test flags, defined as -cpu, -list,
+-parallel, -run, -short, and -v. If a run of go test has any test
+or non-test flags outside this set, the result is not cached. To
+disable test caching, use any test flag or argument other than the
+cacheable flags. The idiomatic way to disable test caching explicitly
+is to use -count=1. Tests that open files within the package's source
+root (usually $GOPATH) or that consult environment variables only
+match future runs in which the files and environment variables are unchanged.
+A cached test result is treated as executing in no time at all,
+so a successful package test result will be cached and reused
 regardless of -timeout setting.
 
 ` + strings.TrimSpace(testFlag1) + ` See 'go help testflag' for details.
@@ -167,7 +180,7 @@ func Usage() {
 
 var HelpTestflag = &base.Command{
 	UsageLine: "testflag",
-	Short:     "description of testing flags",
+	Short:     "testing flags",
 	Long: `
 The 'go test' command takes both flags that apply to 'go test' itself
 and flags that apply to the resulting test binary.
@@ -401,7 +414,7 @@ binary, instead of being interpreted as the package list.
 
 var HelpTestfunc = &base.Command{
 	UsageLine: "testfunc",
-	Short:     "description of testing functions",
+	Short:     "testing functions",
 	Long: `
 The 'go test' command expects to find test, benchmark, and example functions
 in the "*_test.go" files corresponding to the package under test.
@@ -771,62 +784,12 @@ func builderTest(b *work.Builder, p *load.Package) (buildAction, runAction, prin
 	//	pmain - pkg.test binary
 	var ptest, pxtest, pmain *load.Package
 
-	var imports, ximports []*load.Package
-	var stk load.ImportStack
-	stk.Push(p.ImportPath + " (test)")
-	rawTestImports := str.StringList(p.TestImports)
-	for i, path := range p.TestImports {
-		p1 := load.LoadImport(path, p.Dir, p, &stk, p.Internal.Build.TestImportPos[path], load.UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
-		if p1.Error != nil {
-			return nil, nil, nil, p1.Error
-		}
-		if len(p1.DepsErrors) > 0 {
-			err := p1.DepsErrors[0]
-			err.Pos = "" // show full import stack
-			return nil, nil, nil, err
-		}
-		if str.Contains(p1.Deps, p.ImportPath) || p1.ImportPath == p.ImportPath {
-			// Same error that loadPackage returns (via reusePackage) in pkg.go.
-			// Can't change that code, because that code is only for loading the
-			// non-test copy of a package.
-			err := &load.PackageError{
-				ImportStack:   testImportStack(stk[0], p1, p.ImportPath),
-				Err:           "import cycle not allowed in test",
-				IsImportCycle: true,
-			}
-			return nil, nil, nil, err
-		}
-		p.TestImports[i] = p1.ImportPath
-		imports = append(imports, p1)
+	localCover := testCover && testCoverPaths == nil
+
+	ptest, pxtest, err = load.GetTestPackagesFor(p, localCover || p.Name == "main")
+	if err != nil {
+		return nil, nil, nil, err
 	}
-	stk.Pop()
-	stk.Push(p.ImportPath + "_test")
-	pxtestNeedsPtest := false
-	rawXTestImports := str.StringList(p.XTestImports)
-	for i, path := range p.XTestImports {
-		p1 := load.LoadImport(path, p.Dir, p, &stk, p.Internal.Build.XTestImportPos[path], load.UseVendor)
-		if cfg.BuildToolchainName == "gccgo" && p1.Standard {
-			continue
-		}
-		if p1.Error != nil {
-			return nil, nil, nil, p1.Error
-		}
-		if len(p1.DepsErrors) > 0 {
-			err := p1.DepsErrors[0]
-			err.Pos = "" // show full import stack
-			return nil, nil, nil, err
-		}
-		if p1.ImportPath == p.ImportPath {
-			pxtestNeedsPtest = true
-		} else {
-			ximports = append(ximports, p1)
-		}
-		p.XTestImports[i] = p1.ImportPath
-	}
-	stk.Pop()
 
 	// Use last element of import path, not package name.
 	// They differ when package name is "main".
@@ -844,81 +807,12 @@ func builderTest(b *work.Builder, p *load.Package) (buildAction, runAction, prin
 	// only for this package and only for this test?
 	// Yes, if -cover is on but -coverpkg has not specified
 	// a list of packages for global coverage.
-	localCover := testCover && testCoverPaths == nil
-
-	// Test package.
-	if len(p.TestGoFiles) > 0 || localCover || p.Name == "main" {
-		ptest = new(load.Package)
-		*ptest = *p
-		ptest.GoFiles = nil
-		ptest.GoFiles = append(ptest.GoFiles, p.GoFiles...)
-		ptest.GoFiles = append(ptest.GoFiles, p.TestGoFiles...)
-		ptest.Target = ""
-		// Note: The preparation of the vet config requires that common
-		// indexes in ptest.Imports, ptest.Internal.Imports, and ptest.Internal.RawImports
-		// all line up (but RawImports can be shorter than the others).
-		// That is, for 0 ≤ i < len(RawImports),
-		// RawImports[i] is the import string in the program text,
-		// Imports[i] is the expanded import string (vendoring applied or relative path expanded away),
-		// and Internal.Imports[i] is the corresponding *Package.
-		// Any implicitly added imports appear in Imports and Internal.Imports
-		// but not RawImports (because they were not in the source code).
-		// We insert TestImports, imports, and rawTestImports at the start of
-		// these lists to preserve the alignment.
-		ptest.Imports = str.StringList(p.TestImports, p.Imports)
-		ptest.Internal.Imports = append(imports, p.Internal.Imports...)
-		ptest.Internal.RawImports = str.StringList(rawTestImports, p.Internal.RawImports)
-		ptest.Internal.ForceLibrary = true
-		ptest.Internal.Build = new(build.Package)
-		*ptest.Internal.Build = *p.Internal.Build
-		m := map[string][]token.Position{}
-		for k, v := range p.Internal.Build.ImportPos {
-			m[k] = append(m[k], v...)
-		}
-		for k, v := range p.Internal.Build.TestImportPos {
-			m[k] = append(m[k], v...)
-		}
-		ptest.Internal.Build.ImportPos = m
-
-		if localCover {
-			ptest.Internal.CoverMode = testCoverMode
-			var coverFiles []string
-			coverFiles = append(coverFiles, ptest.GoFiles...)
-			coverFiles = append(coverFiles, ptest.CgoFiles...)
-			ptest.Internal.CoverVars = declareCoverVars(ptest.ImportPath, coverFiles...)
-		}
-	} else {
-		ptest = p
-	}
-
-	// External test package.
-	if len(p.XTestGoFiles) > 0 {
-		pxtest = &load.Package{
-			PackagePublic: load.PackagePublic{
-				Name:       p.Name + "_test",
-				ImportPath: p.ImportPath + "_test",
-				Root:       p.Root,
-				Dir:        p.Dir,
-				GoFiles:    p.XTestGoFiles,
-				Imports:    p.XTestImports,
-			},
-			Internal: load.PackageInternal{
-				LocalPrefix: p.Internal.LocalPrefix,
-				Build: &build.Package{
-					ImportPos: p.Internal.Build.XTestImportPos,
-				},
-				Imports:    ximports,
-				RawImports: rawXTestImports,
-
-				Asmflags:   p.Internal.Asmflags,
-				Gcflags:    p.Internal.Gcflags,
-				Ldflags:    p.Internal.Ldflags,
-				Gccgoflags: p.Internal.Gccgoflags,
-			},
-		}
-		if pxtestNeedsPtest {
-			pxtest.Internal.Imports = append(pxtest.Internal.Imports, ptest)
-		}
+	if localCover {
+		ptest.Internal.CoverMode = testCoverMode
+		var coverFiles []string
+		coverFiles = append(coverFiles, ptest.GoFiles...)
+		coverFiles = append(coverFiles, ptest.CgoFiles...)
+		ptest.Internal.CoverVars = declareCoverVars(ptest.ImportPath, coverFiles...)
 	}
 
 	testDir := b.NewObjdir()
@@ -948,6 +842,7 @@ func builderTest(b *work.Builder, p *load.Package) (buildAction, runAction, prin
 
 	// The generated main also imports testing, regexp, and os.
 	// Also the linker introduces implicit dependencies reported by LinkerDeps.
+	var stk load.ImportStack
 	stk.Push("testmain")
 	deps := testMainDeps // cap==len, so safe for append
 	for _, d := range load.LinkerDeps(p) {
@@ -1153,24 +1048,6 @@ func addTestVet(b *work.Builder, p *load.Package, runAction, installAction *work
 	}
 }
 
-func testImportStack(top string, p *load.Package, target string) []string {
-	stk := []string{top, p.ImportPath}
-Search:
-	for p.ImportPath != target {
-		for _, p1 := range p.Internal.Imports {
-			if p1.ImportPath == target || str.Contains(p1.Deps, target) {
-				stk = append(stk, p1.ImportPath)
-				p = p1
-				continue Search
-			}
-		}
-		// Can't happen, but in case it does...
-		stk = append(stk, "<lost path to cycle>")
-		break
-	}
-	return stk
-}
-
 func recompileForTest(pmain, preal, ptest, pxtest *load.Package) {
 	// The "test copy" of preal is ptest.
 	// For each package that depends on preal, make a "test copy"
@@ -1221,13 +1098,21 @@ func isTestFile(file string) bool {
 func declareCoverVars(importPath string, files ...string) map[string]*load.CoverVar {
 	coverVars := make(map[string]*load.CoverVar)
 	coverIndex := 0
+	// We create the cover counters as new top-level variables in the package.
+	// We need to avoid collisions with user variables (GoCover_0 is unlikely but still)
+	// and more importantly with dot imports of other covered packages,
+	// so we append 12 hex digits from the SHA-256 of the import path.
+	// The point is only to avoid accidents, not to defeat users determined to
+	// break things.
+	sum := sha256.Sum256([]byte(importPath))
+	h := fmt.Sprintf("%x", sum[:6])
 	for _, file := range files {
 		if isTestFile(file) {
 			continue
 		}
 		coverVars[file] = &load.CoverVar{
 			File: filepath.Join(importPath, file),
-			Var:  fmt.Sprintf("GoCover_%d", coverIndex),
+			Var:  fmt.Sprintf("GoCover_%d_%x", coverIndex, h),
 		}
 		coverIndex++
 	}

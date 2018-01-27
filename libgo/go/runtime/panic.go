@@ -403,12 +403,15 @@ func preprintpanics(p *_panic) {
 }
 
 // Print all currently active panics. Used when crashing.
+// Should only be called after preprintpanics.
 func printpanics(p *_panic) {
 	if p.link != nil {
 		printpanics(p.link)
 		print("\t")
 	}
 	print("panic: ")
+	// Because of preprintpanics, p.arg cannot be an error or
+	// stringer, so this won't call into user code.
 	printany(p.arg)
 	if p.recovered {
 		print(" [recovered]")
@@ -833,7 +836,7 @@ var panicking uint32
 // so that two concurrent panics don't overlap their output.
 var paniclk mutex
 
-// startpanic_m implements unrecoverable panic.
+// startpanic_m prepares for an unrecoverable panic.
 //
 // It can have write barriers because the write barrier explicitly
 // ignores writes once dying > 0.
@@ -841,14 +844,14 @@ var paniclk mutex
 //go:yeswritebarrierrec
 func startpanic() {
 	_g_ := getg()
-	// Uncomment when mheap_ is in Go.
-	// if mheap_.cachealloc.size == 0 { // very early
-	//	print("runtime: panic before malloc heap initialized\n")
-	//	_g_.m.mallocing = 1 // tell rest of panic not to try to malloc
-	// } else
-	if _g_.m.mcache == nil { // can happen if called from signal handler or throw
-		_g_.m.mcache = allocmcache()
+	if mheap_.cachealloc.size == 0 { // very early
+		print("runtime: panic before malloc heap initialized\n")
 	}
+	// Disallow malloc during an unrecoverable panic. A panic
+	// could happen in a signal handler, or in a throw, or inside
+	// malloc itself. We want to catch if an allocation ever does
+	// happen (even if we're not in one of these situations).
+	_g_.m.mallocing++
 
 	switch _g_.m.dying {
 	case 0:
@@ -934,6 +937,9 @@ func dopanic(unused int) {
 	exit(2)
 }
 
+// canpanic returns false if a signal should throw instead of
+// panicking.
+//
 //go:nosplit
 func canpanic(gp *g) bool {
 	// Note that g is m->gsignal, different from gp.
