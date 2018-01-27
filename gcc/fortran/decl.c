@@ -1757,22 +1757,32 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      if (!gfc_specification_expr (sym->ts.u.cl->length))
 		return false;
 
-	      HOST_WIDE_INT len = gfc_mpz_get_hwi (sym->ts.u.cl->length->value.integer);
-
-	      if (init->expr_type == EXPR_CONSTANT)
-		gfc_set_constant_character_len (len, init, -1);
-	      else if (init->expr_type == EXPR_ARRAY)
+	      int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind,
+					 false);
+	      /* resolve_charlen will complain later on if the length
+		 is too large.  Just skeep the initialization in that case.  */
+	      if (mpz_cmp (sym->ts.u.cl->length->value.integer,
+			   gfc_integer_kinds[k].huge) <= 0)
 		{
-		  gfc_constructor *c;
+		  HOST_WIDE_INT len
+		    = gfc_mpz_get_hwi (sym->ts.u.cl->length->value.integer);
 
-		  /* Build a new charlen to prevent simplification from
-		     deleting the length before it is resolved.  */
-		  init->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-		  init->ts.u.cl->length = gfc_copy_expr (sym->ts.u.cl->length);
+		  if (init->expr_type == EXPR_CONSTANT)
+		    gfc_set_constant_character_len (len, init, -1);
+		  else if (init->expr_type == EXPR_ARRAY)
+		    {
+		      gfc_constructor *c;
 
-		  for (c = gfc_constructor_first (init->value.constructor);
-		       c; c = gfc_constructor_next (c))
-		    gfc_set_constant_character_len (len, c->expr, -1);
+		      /* Build a new charlen to prevent simplification from
+			 deleting the length before it is resolved.  */
+		      init->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+		      init->ts.u.cl->length
+			= gfc_copy_expr (sym->ts.u.cl->length);
+
+		      for (c = gfc_constructor_first (init->value.constructor);
+			   c; c = gfc_constructor_next (c))
+			gfc_set_constant_character_len (len, c->expr, -1);
+		    }
 		}
 	    }
 	}
