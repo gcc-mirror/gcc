@@ -639,7 +639,7 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   while (result > 0)
     {
       char ch = line[result - 1];
-      if (ch == ' ' || ch == '\t')
+      if (ch == ' ' || ch == '\t' || ch == '\r')
 	result--;
       else
 	break;
@@ -648,7 +648,8 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   gcc_assert (result <= line_width);
   gcc_assert (result == 0 ||
 	      (line[result - 1] != ' '
-	       && line[result -1] != '\t'));
+	       && line[result -1] != '\t'
+	       && line[result -1] != '\r'));
   return result;
 }
 
@@ -673,9 +674,11 @@ test_get_line_width_without_trailing_whitespace ()
   assert_eq ("", 0);
   assert_eq (" ", 0);
   assert_eq ("\t", 0);
+  assert_eq ("\r", 0);
   assert_eq ("hello world", 11);
   assert_eq ("hello world     ", 11);
   assert_eq ("hello world     \t\t  ", 11);
+  assert_eq ("hello world\r", 11);
 }
 
 #endif /* #if CHECKING_P */
@@ -1176,8 +1179,8 @@ layout::print_source_line (int row, const char *line, int line_width,
 	  else
 	    m_colorizer.set_normal_text ();
 	}
-      char c = *line == '\t' ? ' ' : *line;
-      if (c == '\0')
+      char c = *line;
+      if (c == '\0' || c == '\t' || c == '\r')
 	c = ' ';
       if (c != ' ')
 	{
