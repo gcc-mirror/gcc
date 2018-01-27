@@ -1,3 +1,11 @@
+2018-01-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR diagnostic/84034
+	* diagnostic-show-locus.c (get_line_width_without_trailing_whitespace):
+	Handle CR like TAB.
+	(layout::print_source_line): Likewise.
+	(test_get_line_width_without_trailing_whitespace): Add test cases.
+
 2018-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/84040
