@@ -1,10 +1,19 @@
+2018-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use ggc_strdup for the fp_suffix
+	argument.
+	(LAZY_HEX_FP_VALUES_CNT): Define.
+	(lazy_hex_fp_values): Allow up to LAZY_HEX_FP_VALUES_CNT lazy hex fp
+	values rather than just 12.
+	(builtin_define_with_hex_fp_value): Likewise.
+
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
         PR other/70268
-        * c-family/c.opt (-fmacro-prefix-map): New option.
-        * c-family/c-opts.c (c_common_handle_option): Handle it.
-        * c-family/c-lex.c (init_c_lex): Set remap_filename cpp callback.
-        * c-family/c-ppoutput.c (init_pp_output): Likewise.
+        * c.opt (-fmacro-prefix-map): New option.
+        * c-opts.c (c_common_handle_option): Handle it.
+        * c-lex.c (init_c_lex): Set remap_filename cpp callback.
+        * c-ppoutput.c (init_pp_output): Likewise.
 
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
