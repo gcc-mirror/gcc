@@ -2461,6 +2461,17 @@ func TestCoverageRuns(t *testing.T) {
 	checkCoverage(tg, data)
 }
 
+func TestCoverageDotImport(t *testing.T) {
+	skipIfGccgo(t, "gccgo has no cover tool")
+	tg := testgo(t)
+	defer tg.cleanup()
+	tg.parallel()
+	tg.setenv("GOPATH", filepath.Join(tg.pwd(), "testdata"))
+	tg.run("test", "-coverpkg=coverdot1,coverdot2", "coverdot2")
+	data := tg.getStdout() + tg.getStderr()
+	checkCoverage(tg, data)
+}
+
 // Check that coverage analysis uses set mode.
 // Also check that coverage profiles merge correctly.
 func TestCoverageUsesSetMode(t *testing.T) {
@@ -3241,6 +3252,16 @@ func TestGoVetWithFlagsOff(t *testing.T) {
 	tg.makeTempdir()
 	tg.setenv("GOPATH", filepath.Join(tg.pwd(), "testdata"))
 	tg.run("vet", "-printf=false", "vetpkg")
+}
+
+// Issue 23395.
+func TestGoVetWithOnlyTestFiles(t *testing.T) {
+	tg := testgo(t)
+	defer tg.cleanup()
+	tg.parallel()
+	tg.tempFile("src/p/p_test.go", "package p; import \"testing\"; func TestMe(*testing.T) {}")
+	tg.setenv("GOPATH", tg.path("."))
+	tg.run("vet", "p")
 }
 
 // Issue 9767, 19769.
