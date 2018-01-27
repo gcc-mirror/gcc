@@ -1,3 +1,9 @@
+2018-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/84040
+	* sched-deps.c (sched_macro_fuse_insns): Return immediately for
+	debug insns.
+
 2018-01-26  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.h (MAX_FIXED_MODE_SIZE): New.
