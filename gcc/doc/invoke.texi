@@ -1232,7 +1232,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-offset=@var{offset} @gol
 -mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
 -mgeneral-regs-only -mcall-ms2sysv-xlogues @gol
--mindirect-branch=@var{choice} -mfunction-return==@var{choice} @gol
+-mindirect-branch=@var{choice} -mfunction-return=@var{choice} @gol
 -mindirect-branch-register}
 
 @emph{x86 Windows Options}

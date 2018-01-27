@@ -1,3 +1,8 @@
+2018-01-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.texi: Replace -mfunction-return==@var{choice} with
+	-mfunction-return=@var{choice}.
+
 2018-01-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR diagnostic/84034
