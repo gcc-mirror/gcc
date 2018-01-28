@@ -1,3 +1,8 @@
+2018-01-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83924
+	* g++.dg/warn/Wduplicated-branches5.C: New.
+
 2018-01-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/safe-indirect-jump-1.c: Build on all targets.
