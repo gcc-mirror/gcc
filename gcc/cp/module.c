@@ -90,6 +90,13 @@ int module_dump_id;
 #define MODULE_INDEX_IMPORTING (~0U)  /* Currently being imported.  */
 #define MODULE_INDEX_ERROR (~0U - 1)  /* Previously failed to import.  */
 
+/* Mangling for module files.  */
+#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
+#define MOD_FNAME_DOT '-' /* Dots convert to ... */
+
+/* Prefix for section names.  */
+#define MOD_SNAME_PFX ".gnu.c++"
+
 static int
 get_version ()
 {
@@ -212,8 +219,6 @@ static cpp_dir *module_path;
 
 /* Longest module path.  */
 static size_t module_path_max;
-
-static int validate_module_name (bool, const char *, size_t);
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
@@ -1187,7 +1192,6 @@ public:
   void wi (HOST_WIDE_INT);
   void wu (unsigned HOST_WIDE_INT);
   void str (const char *, size_t);
-  void module_name (tree);
   void buf (const char *, size_t);
   void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
 };
@@ -1266,7 +1270,6 @@ public:
   HOST_WIDE_INT wi ();
   unsigned HOST_WIDE_INT wu ();
   const char *str (size_t * = NULL);
-  tree module_name ();
   const char *buf (size_t);
 };
 
@@ -1634,52 +1637,6 @@ bytes_out::printf (const char *format, ...)
       goto again;
     }
   unuse (len - actual);
-}
-
-void
-bytes_out::module_name (tree name)
-{
-  size_t len;
-  const char *ptr;
-  if (identifier_p (name))
-    {
-      ptr = IDENTIFIER_POINTER (name);
-      len = IDENTIFIER_LENGTH (name);
-    }
-  else
-    {
-      ptr = TREE_STRING_POINTER (name);
-      len = TREE_STRING_LENGTH (name);
-    }
-  str (ptr, len);
-}
-
-tree
-bytes_in::module_name ()
-{
-  size_t l;
-  const char *mod = str (&l);
-
-  /* If it ends in NUL, it was a string name.  */
-  bool ident_name = l ? mod[l-1] : flag_modules == 1;
-  int code = validate_module_name (ident_name, mod, l);
-
-  if (code > -2)
-    {
-      ::error ("module name %qs is malformed", mod ? mod : "");
-      return NULL_TREE;
-    }
-
-  tree name;
-  if (ident_name)
-    name = get_identifier_with_length (mod, l);
-  else
-    {
-      name = build_string (l, mod);
-      TREE_TYPE (name) = char_array_type_node;
-      name = fix_string_type (name);
-    }
-  return name;
 }
 
 bool
@@ -2325,7 +2282,7 @@ cpms_out::header (tree name)
   w.buf (id, strlen (id));
   w.raw (unsigned (v));
 
-  w.module_name (name);
+  w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
 }
 
 // FIXME: What we really want to do at this point is read the header
@@ -2381,9 +2338,9 @@ cpms_in::header ()
     return false;
 
   /* Check module name.  */
-  tree name = r.module_name ();
-  if (!name)
-    return false;
+  size_t l;
+  const char *n = r.str (&l);
+  tree name = get_identifier_with_length (n, l);
 
   if (!module_state_hash::equal (state, name))
     {
@@ -2516,7 +2473,7 @@ cpms_out::tag_import (unsigned ix, const module_state *state)
   w.bflush ();
   w.u (ix);
   w.u (state->crc);
-  w.module_name (state->name);
+  w.str (IDENTIFIER_POINTER (state->name), IDENTIFIER_LENGTH (state->name));
 }
 
 bool
@@ -2539,13 +2496,13 @@ cpms_in::tag_import ()
   r.bflush ();
   unsigned ix = r.u ();
   unsigned crc = r.u ();
-  tree imp = r.module_name ();
-
-  if (!imp)
-    return false;
+  size_t l;
+  const char *n = r.str (&l);
 
   if (r.get_overrun ())
     return false;
+
+  tree imp = get_identifier_with_length (n, l);
 
   /* Not designed to import after having assigned our number. */
   if (mod_ix != MODULE_INDEX_IMPORTING)
@@ -5526,18 +5483,16 @@ cpms_out::write ()
 {
   elf_out::strings strings;
 
-  // FIXME:Kill string names
-  if (identifier_p (state->name))
-    {
-      bytes_out w;
-      w.begin ();
-      w.printf ("module:%s\n", IDENTIFIER_POINTER (state->name));
-      version_string string;
-      version2string (get_version (), string);
-      w.printf ("version:%s\n", string);
-      w.end (&elf, elf::SHT_PROGBITS, strings.add (".gnu.c++.README"));
-    }
-
+  /* Write README.  */
+  {
+    w.begin ();
+    w.printf ("module:%s\n", IDENTIFIER_POINTER (state->name));
+    version_string string;
+    version2string (get_version (), string);
+    w.printf ("version:%s\n", string);
+    w.end (&elf, elf::SHT_PROGBITS, strings.add (MOD_SNAME_PFX ".README"));
+  }
+  
   w.begin (true);
   header (state->name);
   tag_conf ();
@@ -5604,10 +5559,6 @@ cpms_in::read ()
   r.end (&elf);
   return get_mod ();
 }
-
-/* Mangling for module files.  */
-#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
-#define MOD_FNAME_DOT '-'
 
 static GTY(()) tree proclaimer;
 static int export_depth; /* -1 for singleton export.  */
@@ -5680,92 +5631,14 @@ module_interface_p ()
   return modules && (*modules)[0]->exported;
 }
 
-static int
-validate_module_name (bool from_ident, const char *ptr, size_t len)
-{
-  char sep = from_ident ? '.' : DIR_SEPARATOR;
-  len += from_ident;
-
-  for (size_t frag = 0; len--; ptr++)
-    if (!len || *ptr == sep)
-      {
-	if (!frag)
-	  return -1;
-	frag = 0;
-      }
-    else if (!ISGRAPH (*ptr))
-      return (unsigned char)*ptr;
-    else if (from_ident
-	     && !(ISALPHA (*ptr) || *ptr == '_' || (frag && ISDIGIT (*ptr))))
-      return (unsigned char)*ptr;
-    else
-      frag++;
-  return -2;
-}
-
-/* Validate that the name is ok.  */
-
-tree
-validate_module_name (const cp_expr &name)
-{
-  tree id = *name;
-
-  if (!id)
-    ;
-  else if (identifier_p (id))
-    ;
-  else if (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (id)))
-	   != TYPE_PRECISION (char_type_node))
-    {
-      error_at (name.get_location (),
-		"module name is not a simple string literal");
-      id = NULL_TREE;
-    }
-  else if (TREE_STRING_LENGTH (id) > FILENAME_MAX)
-    {
-      error_at (name.get_location (), "module name is too long");
-      id = NULL_TREE;
-    }
-  else
-    {
-      int code = validate_module_name (false, TREE_STRING_POINTER (id),
-				       TREE_STRING_LENGTH (id));
-      if (code >= 0)
-	{
-	  error_at (name.get_location (),
-		      "module name contains %qc> character", code);
-	  id = NULL_TREE;
-	}
-      else if (code == -1)
-	{
-	  error_at (name.get_location (),
-		    "module name contains empty component");
-	  id = NULL_TREE;
-	}
-    }
-
-  return id;
-}
-
 /* Convert a module name into a file name.  The name is malloced.
  */
 
 static char *
 module_to_filename (tree id, size_t &len)
 {
-  size_t id_len;
-  const char *id_chars;
-
-  if (identifier_p (id))
-    {
-      id_len = IDENTIFIER_LENGTH (id);
-      id_chars = IDENTIFIER_POINTER (id);
-    }
-  else
-    {
-      id_len = TREE_STRING_LENGTH (id) - 1;
-      id_chars = TREE_STRING_POINTER (id);
-    }
+  size_t id_len = IDENTIFIER_LENGTH (id);
+  const char *id_chars = IDENTIFIER_POINTER (id);
 
   size_t sfx_len = strlen (MOD_FNAME_SFX);
   len = id_len + sfx_len;
@@ -5774,14 +5647,11 @@ module_to_filename (tree id, size_t &len)
   memcpy (buffer, id_chars, id_len);
   memcpy (buffer + id_len, MOD_FNAME_SFX, sfx_len + 1);
 
-  if (identifier_p (id))
-    {
-      char dot = MOD_FNAME_DOT;
-      if (dot != '.')
-	for (char *ptr = buffer; id_len--; ptr++)
-	  if (*ptr == '.')
-	    *ptr = dot;
-    }
+  char dot = MOD_FNAME_DOT;
+  if (dot != '.')
+    for (char *ptr = buffer; id_len--; ptr++)
+      if (*ptr == '.')
+	*ptr = dot;
 
   return buffer;
 }

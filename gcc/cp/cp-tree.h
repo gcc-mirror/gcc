@@ -6527,7 +6527,6 @@ extern int module_exporting_level ();
 extern void decl_set_module (tree);
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
-extern tree validate_module_name (const cp_expr &);
 extern void declare_module (const cp_expr &, bool, tree);
 extern void init_module_processing ();
 extern void finish_module ();

@@ -1,5 +1,16 @@
 2018-01-29  Nathan Sidwell  <nathan@acm.org>
 
+	Remove string-literal module names :(
+	gcc/cp/
+	* cp-tree.h (validate_module_name): Remove.
+	* module.c (validate_module_name): Delete.
+	(bytes_{in,out}::module_name): Delete, adjust callers.
+	* parser.c (cp_parser_module_name): Adjust.
+	(cp_parser_module_declaration, cp_parser_import_declaration)
+	(cp_parser_module_proclamation): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/mod++-decl-3_[ab].C: Delete.
+
 	{read,write}_module become member fns
 	gcc/cp/
 	* module.c (cpms_{in,out}::elf}: Direct member. Adjust ctors.
