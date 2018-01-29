@@ -1,3 +1,9 @@
+2018-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84057
+	* tree-ssa-loop-ivcanon.c (unloop_loops): Deal with already
+	removed paths when removing edges.
+
 2018-01-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Replace -mfunction-return==@var{choice} with
