@@ -460,12 +460,8 @@ private:
   unsigned calc_crc () const;
 
 public:
-  unsigned set_crc ();
-  bool check_crc () const;
-  unsigned get_crc () const
-  {
-    return *(unsigned const *)buffer;
-  }
+  void set_crc (unsigned *crc_ptr);
+  bool check_crc (unsigned *crc_ptr) const;
 
 public:
   /* new & delete semantics don't quite work.  */
@@ -485,21 +481,33 @@ data::calc_crc () const
   return crc;
 }
 
-unsigned
-data::set_crc ()
+void
+data::set_crc (unsigned *crc_ptr)
 {
-  gcc_checking_assert (size >= 4);
-  unsigned crc = calc_crc ();
-  *(unsigned *)buffer = crc;
-  return crc;
+  if (crc_ptr)
+    {
+      gcc_checking_assert (size >= 4);
+      unsigned crc = calc_crc ();
+      *(unsigned *)buffer = crc;
+      *crc_ptr = crc32_unsigned (*crc_ptr, crc);
+    }
 }
 
 bool
-data::check_crc () const
+data::check_crc (unsigned *crc_p) const
 {
-  unsigned crc = calc_crc ();
+  if (crc_p)
+    {
+      if (size < 4)
+	return false;
 
-  return size >= 4 && crc == get_crc ();
+      unsigned c_crc = calc_crc ();
+      if (c_crc != *(unsigned const *)buffer)
+	return false;
+      *crc_p = crc32_unsigned (*crc_p, c_crc);
+    }
+
+  return true;
 }
 
 data *data::extend (data *c, size_t a)
@@ -555,6 +563,10 @@ protected:
       /* Section flags.  */
       SHF_NONE = 0x00,
       SHF_STRINGS = 0x20,
+
+      /* symbol types.  */
+      STT_NOTYPE = 0,
+      STB_GLOBAL = 1,
     };
 public:
   enum public_constants
@@ -564,11 +576,6 @@ public:
       SHT_PROGBITS = 1,
       SHT_SYMTAB = 2,
       SHT_STRTAB = 3,
-      SHT_LOUSER = 0x80000000,
-      SHT_HIUSER = 0xffffffff,
-
-      /* The following are random numbers. */
-      SHT_GXX_MODULE = SHT_LOUSER | 0x791d54
     };
 protected:
   struct ident
@@ -614,9 +621,20 @@ protected:
     uint32_t addralign; /* 0 */
     uint32_t entsize; /* 0, except SHT_STRTAB */
   };
-  struct isection
+  struct symbol
+  /* On-disk representation.  */
   {
-    /* Not the on-file representation. */
+    uint32_t name;
+    uint32_t offset;
+    uint32_t size;
+    unsigned char info;
+    unsigned char other;
+    uint16_t shndx;
+  };
+  
+  struct isection
+  /* Not the on-disk representation. */
+  {
     unsigned type;   /* Type of section.  */
     unsigned name;   /* Index into string section.  */
     unsigned offset; /* File offset.  */
@@ -696,7 +714,7 @@ public:
     unsigned size;			/* Next offset.  */
 
   public:
-    strtab (unsigned size)
+    strtab (unsigned size = 50)
       :ident_map (size), idents (NULL), literals (NULL), size (0)
     {
       vec_safe_reserve (idents, size);
@@ -705,12 +723,36 @@ public:
     }
     ~strtab ()
     {
+      vec_free (idents);
+      vec_free (literals);
     }
-    
+
   public:
     unsigned name (const_tree ident);
     unsigned name (const char *literal);
     unsigned write (elf_out *out);
+  };
+public:
+  /* Builder for symbol table. */
+  class symtab
+  {
+    vec<unsigned, va_gc> *names;
+
+  public:
+    symtab (unsigned size = 50)
+      :names (NULL)
+    {
+      vec_safe_reserve (names, size);
+      names->quick_push (0); /* The undef symbol.  */
+    }
+    ~symtab ()
+    {
+      vec_free (names);
+    }
+
+  public:
+    void add (unsigned name);
+    unsigned write (elf_out *out, unsigned shnum);
   };
 
 private:
@@ -736,9 +778,10 @@ public:
   {
     return strings.name (n);
   }
+
 public:
-  /* Write and allocate a section.  */
-  unsigned write (unsigned type, unsigned name, const data *);
+  /* Add a section.  */
+  unsigned add (unsigned type, unsigned name, const data *);
 
 public:
   bool begin ();
@@ -933,20 +976,51 @@ elf_out::strtab::write (elf_out *elf)
 
       if (const_tree ident = (*idents)[ix])
 	{
-	  len = IDENTIFIER_LENGTH (ident) + 1;
+	  len = IDENTIFIER_LENGTH (ident);
 	  ptr = IDENTIFIER_POINTER (ident);
 	}
       else
 	{
 	  ptr = (*literals)[lit_ix++];
-	  len = strlen (ptr) + 1;
+	  len = strlen (ptr);
 	}
-      if (!elf->write (ptr, len))
+      if (!elf->write (ptr, len + 1))
 	return 0;
     }
 
   gcc_assert (lit_ix == literals->length ());
   return elf->add (SHT_STRTAB, shname, off, size);
+}
+
+void
+elf_out::symtab::add (unsigned offset)
+{
+  vec_safe_push (names, offset);
+}
+
+unsigned
+elf_out::symtab::write (elf_out *elf, unsigned snum)
+{
+  unsigned off = elf->pad ();
+  unsigned shname = elf->name (".symtab");
+
+  /* Have not implemented SHT_SYMTAB_SHNDX. */
+  gcc_assert (snum < SHN_XINDEX);
+  for (unsigned ix = 0; ix != names->length (); ix++)
+    {
+      symbol sym;
+      memset (&sym, 0, sizeof (sym));
+
+      sym.name = (*names)[ix];
+      sym.info = STT_NOTYPE;
+      if (ix)
+	sym.info |= STB_GLOBAL << 4;
+      if (ix == 1)
+	sym.shndx = snum;
+      if (!elf->write (&sym, sizeof (sym)))
+	return 0;
+    }
+  return elf->add (SHT_SYMTAB, shname, off, names->length () * sizeof (symbol));
 }
 
 unsigned
@@ -974,7 +1048,7 @@ elf_out::write (const void *data, size_t size)
 }
 
 unsigned
-elf_out::write (unsigned type, unsigned name, const data *data)
+elf_out::add (unsigned type, unsigned name, const data *data)
 {
   uint32_t off = pad ();
 
@@ -1052,18 +1126,19 @@ elf_out::end ()
 	  section.flags = SHF_STRINGS;
 	  section.entsize = 1;
 	}
+      else if (isec->type == SHT_SYMTAB)
+	{
+	  section.entsize = sizeof (symbol);
+	  section.info = section.size / section.entsize;
+	  section.link = strndx;
+	}
+
       if (!ix)
 	{
 	  if (strndx >= SHN_LORESERVE)
-	    {
-	      section.link = strndx;
-	      strndx = SHN_XINDEX;
-	    }
+	    section.link = strndx;
 	  if (shnum >= SHN_LORESERVE)
-	    {
-	      section.size = shnum;
-	      shnum = SHN_XINDEX;
-	    }
+	    section.size = shnum;
 	}
 
       if (!write (&section, sizeof (section)))
@@ -1093,8 +1168,8 @@ elf_out::end ()
   header.shoff = shoff;
   header.ehsize = sizeof (header);
   header.shentsize = sizeof (section);
-  header.shnum = shnum;
-  header.shstrndx = strndx;
+  header.shnum = shnum >= SHN_LORESERVE ? unsigned (SHN_XINDEX) : shnum;
+  header.shstrndx = strndx >= SHN_LORESERVE ? unsigned (SHN_XINDEX) : strndx;
 
   write (&header, sizeof (header));
 
@@ -1120,7 +1195,7 @@ public:
   }
 
 protected:
-  void begin (bool crc = true)
+  void begin (bool crc)
   {
     gcc_checking_assert (!data);
     pos = crc ? 4 : 0;
@@ -1223,7 +1298,7 @@ public:
   }
 
 public:
-  bool begin (elf_in *src, const char *name, bool crc_p = true);
+  bool begin (elf_in *src, const char *name, unsigned *crc_p = NULL);
   bool end (elf_in *src)
   {
     if (overrun)
@@ -1234,12 +1309,6 @@ public:
   bool more_p () const
   {
     return pos != data->size;
-  }
-
-public:
-  unsigned crc () const
-  {
-    return data->get_crc ();
   }
 
 private:
@@ -1657,13 +1726,13 @@ bytes_out::printf (const char *format, ...)
 }
 
 bool
-bytes_in::begin (elf_in *source, const char *name, bool crc_p)
+bytes_in::begin (elf_in *source, const char *name, unsigned *crc_p)
 {
   bytes::begin (crc_p);
 
   data = source->find (elf::SHT_PROGBITS, name);
 
-  if (!data || (crc_p && !data->check_crc ()))
+  if (!data || !data->check_crc (crc_p))
     {
       data::release (data);
       data = NULL;
@@ -1685,9 +1754,8 @@ unsigned
 bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 {
   data->size = pos;
-  if (crc_ptr)
-    *crc_ptr = data->set_crc ();
-  unsigned sec_num = sink->write (elf::SHT_PROGBITS, name, data);
+  data->set_crc (crc_ptr);
+  unsigned sec_num = sink->add (elf::SHT_PROGBITS, name, data);
   bytes::end ();
   
   return sec_num;
@@ -1710,7 +1778,6 @@ public:
     /* Module-specific records.  */
     rt_conf,		/* Config info (baked in stuff like target-triplet) */
     rt_flags,		/* Flags that affect AST compatibility.  */
-    rt_import,		/* An import. */
     rt_binding,		/* A name-binding.  */
     rt_definition,	/* A definition. */
     rt_identifier,	/* An identifier node.  */
@@ -2080,10 +2147,10 @@ public:
 private:
   void instrument ();
   void header (unsigned crc);
+  void imports (unsigned *crc_p);
 
 public:
   void tag_conf ();
-  void tag_import (unsigned ix, const module_state *);
   void tag_globals ();
   void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
@@ -2131,10 +2198,12 @@ cpms_out::~cpms_out ()
 {
 }
 
+// FIXME collate
 void
 bytes_out::instrument (cpm_stream *d)
 {
-  d->dump ("Wrote %U bytes", data->size);
+  if (data)
+    d->dump ("Wrote %U bytes", data->size);
   d->dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1],
 	   lengths[2]);
   for (unsigned ix = 0; ix < 2; ix++)
@@ -2185,10 +2254,10 @@ public:
 
 private:
   bool header ();
+  bool imports (unsigned *crc_p);
 
 public:
   bool tag_conf ();
-  bool tag_import ();
   bool tag_binding ();
   tree tag_definition ();
   bool tag_globals ();
@@ -2203,7 +2272,6 @@ private:
   tree finish_type (tree);
 
 private:
-  bool alloc_remap_vec (unsigned limit);
   tree start (tree_code);
   tree finish (tree);
   location_t loc ();
@@ -2284,7 +2352,7 @@ cpms_out::header (unsigned crc)
 bool
 cpms_in::header ()
 {
-  if (!r.begin (&elf, MOD_SNAME_PFX ".ident", false))
+  if (!r.begin (&elf, MOD_SNAME_PFX ".ident"))
     return false;
 
   unsigned crc;
@@ -2423,96 +2491,98 @@ cpms_in::tag_globals ()
   return true;
 }
 
-/* Item import
-   b:imported
-   b:exported
-   u:index
-   u:crc
-   wu:stamp
-   str:module_name  */
+/* Imports
+   {
+     b:imported
+     b:exported
+     u:index
+     u:crc
+     u:name
+   } imports[N]
+
+   Write the direct imports.  Write in reverse order, so that when
+   checking an indirect import we should have already read it.  */
 
 // FIXME: Should we stream the pathname to the import?
 
-/* We need to write out indirect imports, in order to build up the
-   mapping between module-indices in this TU and that in the TU we get
-   read into.  */
-
 void
-cpms_out::tag_import (unsigned ix, const module_state *state)
+cpms_out::imports (unsigned *crc_p)
 {
-  dump () && dump ("Writing %simport %I (crc=%x)",
-		   state->exported ? "export " :
-		   state->imported ? "" : "indirect ",
-		   state->name, state->crc);
-  tag (rt_import);
-  w.b (state->imported);
-  w.b (state->exported);
-  w.bflush ();
-  w.u (ix);
-  w.u (state->crc);
-  w.str (IDENTIFIER_POINTER (state->name), IDENTIFIER_LENGTH (state->name));
-}
+  elf_out::symtab syms;
 
-bool
-cpms_in::alloc_remap_vec (unsigned limit)
-{
-  if (!remap_num && limit < MODULE_INDEX_LIMIT)
+  syms.add (elf.name (state->name));
+
+  w.begin (true);
+  w.u (modules->length ());
+  for (unsigned ix = modules->length (); ix-- > MODULE_INDEX_IMPORT_BASE;)
     {
-      remap_num = limit + 1;
-      remap_vec = XNEWVEC (unsigned, remap_num);
-      memset (remap_vec, 0, sizeof (unsigned) * remap_num);
+      module_state *state = (*modules)[ix];
+      dump () && dump ("Writing %simport %I (crc=%x)",
+		       state->exported ? "export " :
+		       state->imported ? "" : "indirect ",
+		       state->name, state->crc);
+      w.b (state->imported);
+      w.b (state->exported);
+      w.bflush ();
+      w.u (state->crc);
+      unsigned name = elf.name (state->name);
+      w.u (name);
+      syms.add (name);
     }
-  return limit < remap_num;
+  unsigned shnum = w.end (&elf, elf.name (MOD_SNAME_PFX ".imports"), crc_p);
+  syms.write (&elf, shnum);
 }
 
 bool
-cpms_in::tag_import ()
+cpms_in::imports (unsigned *crc_p)
 {
-  bool imported = r.b ();
-  bool exported = r.b ();
-  r.bflush ();
-  unsigned ix = r.u ();
-  unsigned crc = r.u ();
-  size_t l;
-  const char *n = r.str (&l);
-
-  if (r.get_overrun ())
+  if (!r.begin (&elf, MOD_SNAME_PFX ".imports", crc_p))
     return false;
 
-  tree imp = get_identifier_with_length (n, l);
-
   /* Not designed to import after having assigned our number. */
-  if (mod_ix != MODULE_INDEX_IMPORTING)
-    {
-      error ("misordered import %qE", imp);
-      return false;
-    }
-  if (!alloc_remap_vec (ix))
-    {
-      error ("import %u is out of range", ix);
-      return false;
-    }
+  gcc_assert (mod_ix == MODULE_INDEX_IMPORTING);
 
-  dump () && dump ("Begin nested %simport %I",
-		   exported ? "export " : imported ? "" : "indirect ", imp);
-  unsigned imp_ix = do_module_import (UNKNOWN_LOCATION, imp,
-				      /*unit_p=*/false, /*import_p=*/imported,
-				      this, crc);
-  bool ok = imp_ix != MODULE_INDEX_ERROR;
-  if (ok)
+  unsigned imports = r.u ();
+  remap_num = imports;
+  remap_vec = XNEWVEC (unsigned, imports);
+  memset (remap_vec, 0, sizeof (unsigned) * imports);
+
+  for (unsigned ix = imports; ix-- > MODULE_INDEX_IMPORT_BASE;)
     {
-      remap_vec[ix] = imp_ix;
-      if (imported)
+      bool imported = r.b ();
+      bool exported = r.b ();
+      r.bflush ();
+      unsigned crc = r.u ();
+      tree name = get_identifier (elf.name (r.u ()));
+
+      dump () && dump ("Begin nested %simport %I",
+		       exported ? "export " : imported ? "" : "indirect ", name);
+      unsigned new_ix = do_module_import (UNKNOWN_LOCATION, name,
+					  /*unit_p=*/false, /*import_p=*/imported,
+					  this, crc);
+      bool ok = new_ix != MODULE_INDEX_ERROR;
+      if (ok)
 	{
-	  dump () && dump ("Direct %simport %I %u",
-			   exported ? "export " : "", imp, imp_ix);
-	  state->do_import (imp_ix, exported);
+	  remap_vec[ix] = new_ix;
+	  if (imported)
+	    {
+	      dump () && dump ("Direct %simport %I %u",
+			       exported ? "export " : "", name, new_ix);
+	      state->do_import (new_ix, exported);
+	    }
 	}
+      else
+	{
+	  r.set_overrun ();
+	  break;
+	}
+      dump () && dump ("Completed nested import %I #%u", name, new_ix);
     }
 
-  dump () && dump ("Completed nested import %I #%u %s", imp,
-		   imp_ix, ok ? "ok" : "failed");
-  return ok;
+  if (r.more_p ())
+    r.set_overrun ();
+
+  return r.end (&elf);
 }
 
 /* BINDING is a vector of decls bound in namespace NS.  Write out the
@@ -3146,8 +3216,6 @@ cpms_in::read_item ()
     {
     case rt_conf:
       return tag_conf ();
-    case rt_import:
-      return tag_import ();
 
     default:
       break;
@@ -3169,7 +3237,7 @@ cpms_in::read_item ()
 	  state->set_index (ix);
 	}
       mod_ix = ix;
-      alloc_remap_vec (0);
+      gcc_assert (remap_vec);
       remap_vec[0] = ix;
 
       dump () && dump ("Assigning %N module index %u", state->name, mod_ix);
@@ -5465,30 +5533,28 @@ cpms_out::write ()
     w.printf ("version:%s\n", string);
     w.end (&elf, elf.name (MOD_SNAME_PFX ".README"));
   }
+
+  unsigned crc = 0;
+  imports (&crc); /* Import table. */
   
   w.begin (true);
   tag_conf ();
   // FIXME:Write 'important' flags etc
-
-  /* Write the direct imports.  Write in reverse order, so that when
-     checking an indirect import we should have already read it.  */
-  for (unsigned ix = modules->length (); --ix;)
-    tag_import (ix, (*modules)[ix]);
 
   tag_globals ();
 
   /* Write decls.  */
   bindings (global_namespace);
 
+  // FIXME: blob not good name
+  w.end (&elf, elf.name (MOD_SNAME_PFX ".blob"), &crc);
+
+
+  state->set_crc (crc);
   instrument ();
 
-  // FIXME: blob not good name
-  unsigned crc;
-  w.end (&elf, elf.name (MOD_SNAME_PFX ".blob"), &crc);
-  state->set_crc (crc);
-  dump () && dump ("Writing eof, CRC=%x", crc);
-
   header (crc);
+  dump () && dump ("Writing eof, CRC=%x", crc);
 }
 
 bool
@@ -5515,8 +5581,12 @@ unsigned
 cpms_in::read ()
 {
   bool ok = header ();
+  unsigned crc = 0;
 
-  if (!r.begin (&elf, MOD_SNAME_PFX ".blob"))
+  if (ok)
+    ok = imports (&crc);
+
+  if (!r.begin (&elf, MOD_SNAME_PFX ".blob", &crc))
     return MODULE_INDEX_ERROR;
 
   while (ok && r.more_p ())
@@ -5526,6 +5596,7 @@ cpms_in::read ()
     r.set_overrun ();
 
   r.end (&elf);
+  // FIXME:calculated CRC should match file's
   return get_mod ();
 }
 

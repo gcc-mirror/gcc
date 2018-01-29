@@ -1,5 +1,16 @@
 2018-01-29  Nathan Sidwell  <nathan@acm.org>
 
+	Import table is separate section
+	gcc/cp/
+	* module.c (bytes): Reorganize CRC calcs.
+	(struct elf::symbol): New.
+	(struct elf_out::symtab): New.
+	(elf_out::end): Deal with symbol table.
+	(bytes_{in,out}::{begin,end}): Adjust crc calcs.
+	(cpms_{in,out}::imports): New.
+	(cpms_{in,out}::tag_import): Delete.
+	(cpms_in::read, cpms_out::write): Adjust.
+
 	Header is separate section
 	gcc/cp/
 	* module.c (module_state_hash::equal): Remove string names.
