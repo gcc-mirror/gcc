@@ -1,5 +1,9 @@
 2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83833
+	* testsuite/26_numerics/random/chi_squared_distribution/83833.cc:
+	Add -ffloat-store to options for m68k and ia32.
+
 	* doc/xml/faq.xml: Update copyright years.
 	* doc/html/*: Regenerate.
 
