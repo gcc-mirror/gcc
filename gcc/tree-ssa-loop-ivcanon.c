@@ -660,14 +660,21 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
   loops_to_unloop.release ();
   loops_to_unloop_nunroll.release ();
 
-  /* Remove edges in peeled copies.  */
+  /* Remove edges in peeled copies.  Given remove_path removes dominated
+     regions we need to cope with removal of already removed paths.  */
   unsigned i;
   edge e;
+  auto_vec<int, 20> src_bbs;
+  src_bbs.reserve_exact (edges_to_remove.length ());
   FOR_EACH_VEC_ELT (edges_to_remove, i, e)
-    {
-      bool ok = remove_path (e, irred_invalidated, loop_closed_ssa_invalidated);
-      gcc_assert (ok);
-    }
+    src_bbs.quick_push (e->src->index);
+  FOR_EACH_VEC_ELT (edges_to_remove, i, e)
+    if (BASIC_BLOCK_FOR_FN (cfun, src_bbs[i]))
+      {
+	bool ok = remove_path (e, irred_invalidated,
+			       loop_closed_ssa_invalidated);
+	gcc_assert (ok);
+      }
   edges_to_remove.release ();
 }
 

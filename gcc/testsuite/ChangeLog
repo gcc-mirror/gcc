@@ -1,3 +1,8 @@
+2018-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84057
+	* gcc.dg/graphite/pr84057.c: New testcase.
+
 2017-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84073
