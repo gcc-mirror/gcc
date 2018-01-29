@@ -107,6 +107,34 @@ get_version ()
   return version;
 }
 
+/* Version to date. */
+static unsigned version2date (int v)
+{
+  if (MODULE_STAMP && v < 0)
+    return -v / 10000 + 20000000;
+  else
+    return v;
+}
+
+/* Version to time. */
+static unsigned version2time (int v)
+{
+  if (MODULE_STAMP && v < 0)
+    return -v % 10000;
+  else
+    return 0;
+}
+
+typedef char version_string[32];
+static void version2string (unsigned version, version_string &out)
+{
+  unsigned date = version2date (version);
+  unsigned time = version2time (version);
+  sprintf (out, MODULE_STAMP ? "%04u/%02u/%02u-%02u:%02u" : "%04u/%02u/%02u",
+	   date / 10000, (date / 100) % 100, (date % 100),
+	   time / 100, time % 100);
+}
+
 /* State of a particular module. */
 struct GTY(()) module_state {
   /* We always import & export ourselves.  */
@@ -425,12 +453,80 @@ typedef hash_map<void *,unsigned,ptr_uint_traits> ptr_uint_hash_map;
 typedef simple_hashmap_traits<int_hash<unsigned,0>,void *> uint_ptr_traits;
 typedef hash_map<unsigned,void *,uint_ptr_traits> uint_ptr_hash_map;
 
-/* Module Encapsulated Ledger File.  mELF for short.
-   header
-   note-section with version info
-   string-section
-   other-sections
-   section-table
+/* A data buffer, using trailing array hack.  */
+
+struct data
+{
+  size_t size;
+  char buffer[1];
+
+private:
+  unsigned calc_crc () const;
+
+public:
+  unsigned set_crc ();
+  bool check_crc () const;
+  unsigned get_crc () const
+  {
+    return *(unsigned const *)buffer;
+  }
+
+public:
+  /* new & delete semantics don't quite work.  */
+  static data *extend (data *, size_t);
+  static void release (data *d)
+  {
+    free (d);
+  }
+};
+
+unsigned
+data::calc_crc () const
+{
+  unsigned crc = 0;
+  for (size_t ix = 4; ix < size; ix++)
+    crc = crc32_byte (crc, buffer[ix]);
+  return crc;
+}
+
+unsigned
+data::set_crc ()
+{
+  gcc_checking_assert (size >= 4);
+  unsigned crc = calc_crc ();
+  *(unsigned *)buffer = crc;
+  return crc;
+}
+
+bool
+data::check_crc () const
+{
+  unsigned crc = calc_crc ();
+
+  return size >= 4 && crc == get_crc ();
+}
+
+data *data::extend (data *c, size_t a)
+{
+  if (!c || a > c->size)
+    {
+      c = XRESIZEVAR (data, c, offsetof (data, buffer) + a);
+      c->size = a;
+    }
+
+  return c;
+}
+
+/* Encapsulated Lazy Records Of Named Declarations.
+   Header: Sg1
+   tunningly Elf32_Ehdr-like
+   Sections: Sectional data
+     1:Notes -- human readable
+     N:Decls -- decls bound to a name
+     1:Bindings -- bindings of namespace names
+     1:Strings -- strings, stunningly 
+     1:Symbols -- symbols, stunningly ELF32_Sym-like
+   Index: Section table, stunningly ELF32_Shdr-like.
  */
 
 class elf
@@ -469,8 +565,9 @@ public:
     {
       /* Section types.  */
       SHT_NONE = 0,
+      SHT_PROGBITS = 1,
+      SHT_SYMTAB = 2,
       SHT_STRTAB = 3,
-      SHT_NOTE = 7,
       SHT_LOUSER = 0x80000000,
       SHT_HIUSER = 0xffffffff,
 
@@ -524,29 +621,10 @@ protected:
   struct isection
   {
     /* Not the on-file representation. */
-    unsigned type;
+    unsigned type;   /* Type of section.  */
     unsigned name;   /* Index into string section.  */
     unsigned offset; /* File offset.  */
     unsigned size;   /* Size of data.  */
-    unsigned link;   /* Linked-to section.  */
-  };
-public:
-  struct data
-  {
-    size_t size;
-    char buffer[1];
-
-  private:
-    unsigned calc_crc () const;
-
-  public:
-    unsigned set_crc ();
-    bool check_crc () const;
-    unsigned get_crc () const
-    {
-      return *(unsigned const *)buffer;
-    }
-    static data *extend (data *, size_t);
   };
 
 protected:
@@ -576,43 +654,6 @@ public:
       err = e;
   }
 };
-
-unsigned
-elf::data::calc_crc () const
-{
-  unsigned crc = 0;
-  for (size_t ix = 4; ix < size; ix++)
-    crc = crc32_byte (crc, buffer[ix]);
-  return crc;
-}
-
-unsigned
-elf::data::set_crc ()
-{
-  gcc_checking_assert (size >= 4);
-  unsigned crc = calc_crc ();
-  *(unsigned *)buffer = crc;
-  return crc;
-}
-
-bool
-elf::data::check_crc () const
-{
-  unsigned crc = calc_crc ();
-
-  return size >= 4 && crc == get_crc ();
-}
-
-elf::data *elf::data::extend (data *c, size_t a)
-{
-  if (!c || a > c->size)
-    {
-      c = XRESIZEVAR (data, c, offsetof (data, buffer) + a);
-      c->size = a;
-    }
-
-  return c;
-}
 
 class elf_in : public elf
 {
@@ -644,6 +685,31 @@ public:
 class elf_out : public elf
 {
 public:
+  /* Builder for string table.  */
+  class strings
+  {
+    ptr_uint_hash_map ident_map;	/* Map of IDENTIFIERS to offsets. */
+    vec<tree, va_gc> *idents;		/* Ordered vector.  */
+    vec<const char *, va_gc> *literals; /* Ordered vector.  */
+    unsigned size;			/* Next offset.  */
+
+  public:
+    strings ()
+      :ident_map (100), idents (NULL), literals (NULL), size (0)
+    {
+      add ("");
+    }
+    ~strings ()
+    {
+    }
+    
+  public:
+    unsigned add (const_tree ident);
+    unsigned add (const char *literal);
+    unsigned write (elf_out *out);
+  };
+
+public:
   elf_out (FILE *s)
     :elf (s)
   {
@@ -651,16 +717,17 @@ public:
 
 protected:
   uint32_t pad ();
+  unsigned add (unsigned type, unsigned name, unsigned off, unsigned size);
   bool write (const void *, size_t);
+
 public:
   /* Write and allocate a section.  */
-  unsigned write (unsigned section_type, unsigned name, const data *);
+  unsigned write (unsigned type, unsigned name, const data *);
 
 public:
   bool begin ();
   int end ();
 };
-
 
 bool
 elf_in::read (void *buffer, size_t size)
@@ -673,7 +740,7 @@ elf_in::read (void *buffer, size_t size)
   return true;
 }
 
-elf::data *
+data *
 elf_in::read (unsigned snum)
 {
   if (snum >= sections->length ())
@@ -688,11 +755,11 @@ elf_in::read (unsigned snum)
   data *b = data::extend (NULL, sec->size);
   if (read (b->buffer, b->size))
     return b;
-  free (b);
+  data::release (b);
   return NULL;
 }
 
-elf::data *
+data *
 elf_in::find (unsigned type, bool at_end)
 {
   unsigned snum = 1;
@@ -767,6 +834,7 @@ elf_in::begin ()
       return false;
     }
 
+  unsigned strndx = header.shstrndx;
   unsigned shnum = header.shnum;
   vec_alloc (sections, shnum);
   for (unsigned ix = 0; ix != shnum; ix++)
@@ -779,27 +847,101 @@ elf_in::begin ()
       isection.name = section.name;
       isection.offset = section.off;
       isection.size = section.size;
-      isection.link = section.link;
-      if (!ix && shnum == SHN_XINDEX)
+      if (!ix)
 	{
-	  shnum = isection.size;
-	  isection.size = 0;
-	  if (!shnum)
-	    goto section_table_fail;
+	  if (strndx == SHN_XINDEX)
+	    strndx = section.link;
+	  if (shnum == SHN_XINDEX)
+	    {
+	      shnum = isection.size;
+	      isection.size = 0;
+	      if (!shnum)
+		goto section_table_fail;
+	    }
 	  vec_safe_reserve (sections, shnum, true);
 	}
       sections->quick_push (isection);
     }
 
-  if (header.shstrndx)
-    {
-      unsigned strindx = header.shstrndx;
-      if (strindx == SHN_XINDEX)
-	strindx = (*sections)[0].link;
-      strings = read (strindx);
-    }
+  if (strndx)
+    strings = read (strndx);
 
   return true;
+}
+
+unsigned
+elf_out::strings::add (const_tree ident)
+{
+  unsigned result;
+  bool existed;
+  unsigned *slot
+    = &ident_map.get_or_insert (const_cast <tree> (ident), &existed);
+  if (existed)
+    result = *slot;
+  else
+    {
+      *slot = size;
+      vec_safe_push (idents, const_cast <tree> (ident));
+      result = size;
+      size += IDENTIFIER_LENGTH (ident) + 1;
+    }
+  return result;
+}
+
+unsigned
+elf_out::strings::add (const char *literal)
+{
+  vec_safe_push (idents, NULL_TREE);
+  vec_safe_push (literals, literal);
+  unsigned result = size;
+  size += strlen (literal) + 1;
+  return result;
+}
+
+unsigned
+elf_out::strings::write (elf_out *elf)
+{
+  unsigned off = elf->pad ();
+  unsigned name = add (".strtab");
+
+  unsigned lit_ix = 0;
+  for (unsigned ix = 0; ix != idents->length (); ix++)
+    {
+      unsigned len;
+      const char *ptr;
+
+      if (const_tree ident = (*idents)[ix])
+	{
+	  len = IDENTIFIER_LENGTH (ident) + 1;
+	  ptr = IDENTIFIER_POINTER (ident);
+	}
+      else
+	{
+	  ptr = (*literals)[lit_ix++];
+	  len = strlen (ptr) + 1;
+	}
+      if (!elf->write (ptr, len))
+	return 0;
+    }
+
+  gcc_assert (lit_ix == literals->length ());
+
+  return elf->add (SHT_STRTAB, name, off, size);
+}
+
+unsigned
+elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size)
+{
+  isection sec;
+
+  sec.type = type;
+  sec.name = name;
+  sec.offset = off;
+  sec.size = size;
+
+  unsigned snum = sections->length ();
+  vec_safe_push (sections, sec);
+  return snum;
 }
 
 bool
@@ -822,15 +964,7 @@ elf_out::write (unsigned type, unsigned name, const data *data)
       return 0;
     }
 
-  isection sec;
-  sec.type = type;
-  sec.name = name;
-  sec.offset = off;
-  sec.size = data->size;
-  sec.link = 0;
-  unsigned snum = sections->length ();
-  vec_safe_push (sections, sec);
-  return snum;
+  return add (type, name, off, data->size);
 }
 
 bool
@@ -845,7 +979,6 @@ elf_out::begin ()
   section.name = 0;
   section.offset = 0;
   section.size = 0;
-  section.link = 0;
   sections->quick_push (section);
 
   /* Write an empty header.  */
@@ -878,17 +1011,12 @@ elf_out::end ()
 {
   uint32_t shoff = pad ();
 
-  unsigned strndx = (*sections)[0].link;
-  if (strndx >= SHN_LORESERVE)
-    strndx = SHN_XINDEX;
-  else
-    (*sections)[0].link = 0;
   unsigned shnum = sections->length ();
-  if (shnum >= SHN_LORESERVE)
-    {
-      (*sections)[0].size = shnum;
-      shnum = SHN_XINDEX;
-    }
+  unsigned strndx = sections->length ();
+  /* Assume there is exactly one SHT_STRTAB, and that it's near the
+     end.  (Which it is for our use.)   */
+  while ((*sections)[--strndx].type != SHT_STRTAB)
+    continue;
 
   /* Write section table */
   for (unsigned ix = 0; ix != sections->length (); ix++)
@@ -898,11 +1026,28 @@ elf_out::end ()
       memset (&section, 0, sizeof (section));
       section.name = isec->name;
       section.type = isec->type;
-      section.flags = isec->type == SHT_STRTAB ? SHF_STRINGS : SHF_NONE;
       section.off = isec->offset;
       section.size = isec->size;
-      section.link = isec->link;
-      section.entsize = isec->type == SHT_STRTAB ? 1 : 0;
+      section.flags = SHF_NONE;
+      section.entsize = 0;
+      if (isec->type == SHT_STRTAB)
+	{
+	  section.flags = SHF_STRINGS;
+	  section.entsize = 1;
+	}
+      if (!ix)
+	{
+	  if (strndx >= SHN_LORESERVE)
+	    {
+	      section.link = strndx;
+	      strndx = SHN_XINDEX;
+	    }
+	  if (shnum >= SHN_LORESERVE)
+	    {
+	      section.size = shnum;
+	      shnum = SHN_XINDEX;
+	    }
+	}
 
       if (!write (&section, sizeof (section)))
 	goto out;
@@ -943,12 +1088,10 @@ elf_out::end ()
 /* Byte serializer base.  */
 class bytes {
 protected:
-public://FIXME
-  elf::data *data;
-protected:
-  size_t pos;
-  uint32_t bit_val;
-  unsigned bit_pos;
+  struct data *data;	/* Buffer being read/written.  */
+  size_t pos;		/* Position in buffer.  */
+  uint32_t bit_val;	/* Bit buffer.  */
+  unsigned bit_pos;	/* Next bit in bit buffer.  */
 
 public:
   bytes ()
@@ -960,15 +1103,15 @@ public:
   }
 
 protected:
-  void begin ()
+  void begin (bool crc = true)
   {
     gcc_checking_assert (!data);
-    pos = 4;
+    pos = crc ? 4 : 0;
   }
 public:
   void end ()
   {
-    free (data);
+    data::release (data);
     data = NULL;
     pos = 0;
   }
@@ -1023,8 +1166,8 @@ private:
   char *use (unsigned);
 
 public:
-  void begin ();
-  unsigned end (elf_out *, unsigned, unsigned);
+  void begin (bool crc_p = false);
+  unsigned end (elf_out *, unsigned, unsigned, unsigned *crc_ptr = NULL);
 
 public:
   void raw (unsigned);
@@ -1046,11 +1189,12 @@ public:
   void str (const char *, size_t);
   void module_name (tree);
   void buf (const char *, size_t);
+  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
 };
 
 /* Byte stream reader.  */
 class bytes_in : public bytes {
-public:// FIXME
+protected:
   bool overrun;
 
 public:
@@ -1473,6 +1617,26 @@ bytes_in::str (size_t *len_p)
 }
 
 void
+bytes_out::printf (const char *format, ...)
+{
+  va_list args;
+  size_t len = 500;
+
+ again:
+  va_start (args, format);
+  char *ptr = use (len);
+  size_t actual = vsnprintf (ptr, len, format, args);
+  va_end (args);
+  if (actual > len)
+    {
+      unuse (len);
+      len = actual;
+      goto again;
+    }
+  unuse (len - actual);
+}
+
+void
 bytes_out::module_name (tree name)
 {
   size_t len;
@@ -1537,7 +1701,7 @@ bytes_in::begin (elf_in *source, unsigned type)
 #else
       source->set_error ();
 #endif
-      free (data);
+      data::release (data);
       data = NULL;
       return false;
     }
@@ -1545,29 +1709,30 @@ bytes_in::begin (elf_in *source, unsigned type)
 }
 
 void
-bytes_out::begin ()
+bytes_out::begin (bool crc_p)
 {
-  bytes::begin ();
-  data = elf::data::extend (0, 200);
+  bytes::begin (crc_p);
+  data = data::extend (0, 200);
 }
 
 // FIXME: Incomplete transition
 unsigned
-bytes_out::end (elf_out *sink, unsigned type, unsigned name)
+bytes_out::end (elf_out *sink, unsigned type, unsigned name, unsigned *crc_ptr)
 {
   data->size = pos;
-  unsigned crc = data->set_crc ();
-  sink->write (type, name, data);
+  if (crc_ptr)
+    *crc_ptr = data->set_crc ();
+  unsigned sec_num = sink->write (type, name, data);
   bytes::end ();
   
-  return crc;
+  return sec_num;
 }
 
 char *
 bytes_out::use (unsigned bytes)
 {
   if (data->size < pos + bytes)
-    data = elf::data::extend (data, (pos + bytes) * 3/2);
+    data = data::extend (data, (pos + bytes) * 3/2);
   return bytes::use (bytes);
 }
 
@@ -1630,28 +1795,6 @@ protected:
 
 public:
   static const char *ident ();
-
-  /* Version to date. */
-  static unsigned v2d (int v)
-  {
-    if (MODULE_STAMP && v < 0)
-      return -v / 10000 + 20000000;
-    else
-      return v;
-  }
-
-  /* Version to time. */
-  static unsigned v2t (int v)
-  {
-    if (MODULE_STAMP && v < 0)
-      return -v % 10000;
-    else
-      return 0;
-  }
-  typedef char tbuf[8];
-  typedef char dbuf[16];
-  void t2s (unsigned, tbuf &);
-  void d2s (unsigned, dbuf &);
 
 public:
   FILE *dumps () const
@@ -1759,18 +1902,6 @@ cpm_stream::~cpm_stream ()
 {
   if (!depth && d)
     dump_end (module_dump_id, d);
-}
-
-void
-cpm_stream::t2s (unsigned t, tbuf &buf)
-{
-  sprintf (buf, "%02u:%02u", t / 100, t % 100);
-}
-
-void
-cpm_stream::d2s (unsigned d, dbuf &buf)
-{
-  sprintf (buf, "%04u/%02u/%02u", d / 10000, (d / 100) % 100, (d % 100));
 }
 
 static bool
@@ -1917,11 +2048,10 @@ cpm_stream::dump (const char *format, ...)
 	case 'V': /* Verson.  */
 	  {
 	    unsigned v = va_arg (args, unsigned);
-	    tbuf time;
-	    dbuf date;
-	    t2s (v2t (v), time);
-	    d2s (v2d (v), date);
-	    fprintf (d, "%s-%s", date, time);
+	    version_string string;
+
+	    version2string (v, string);
+	    fputs (string, d);
 	    break;
 	  }
 	case 'p': /* Pointer. */
@@ -2204,40 +2334,36 @@ cpms_in::header ()
     }
 
   /* Check version.  */
-  int ver = get_version ();
-  int v = int (r.raw ());
-  if (v != ver)
+  int my_ver = get_version ();
+  int their_ver = int (r.raw ());
+  if (their_ver != my_ver)
     {
-      int ver_date = v2d (ver);
-      int v_date = v2d (v);
-      dbuf v_dform, ver_dform;
-      d2s (v_date, v_dform);
-      d2s (ver_date, ver_dform);
-      int ver_time = v2t (ver);
-      int v_time = v2t (v);
+      int my_date = version2date (my_ver);
+      int their_date = version2date (their_ver);
+      int my_time = version2time (my_ver);
+      int their_time = version2time (their_ver);
 
-      if (ver_date != v_date)
+      if (my_date != their_date || their_time != my_time)
 	{
-	  /* Dates differ, decline.  */
-	  error ("built by version %s, this is version %s",
-		 v_dform, ver_dform);
-	  return false;
-	}
-      else if (ver_time == v_time)
-	/* This only happens with non-MODULE_STAMP (i.e. stable)
-           builds, and the condition allows the inliner to remove the
-           else block as unreachable.  */;
-      else
-	{
-	  /* Times differ, give it a go.  */
-	  tbuf v_tform, ver_tform;
-	  t2s (v_time, v_tform);
-	  t2s (ver_time, ver_tform);
-	  warning (0, "version %s, but build time was %s, not %s",
-		   v_dform, v_tform, ver_tform);
+	  version_string my_string, their_string;
+
+	  version2string (my_ver, my_string);
+	  version2string (their_ver, their_string);
+
+	  if (my_date != their_date)
+	    {
+	      /* Dates differ, decline.  */
+	      error ("file is version %s, this is version %s",
+		     their_string, my_string);
+	      return false;
+	    }
+	  else
+	    /* Times differ, give it a go.  */
+	    warning (0, "file is version %s, this_is_version %s, close enough",
+		     their_string, my_string);
 	}
     }
-  dump () && dump  ("Expecting %V found %V", ver, v);
+  dump () && dump  ("Expecting %V found %V", my_ver, their_ver);
 
   unsigned crc = r.crc ();
   dump () && dump ("Reading CRC=%x", crc);
@@ -5951,9 +6077,22 @@ write_module (FILE *stream, module_state *state)
 
   if (elf.begin ())
     {
+      elf_out::strings strings;
+
+      if (identifier_p (state->name))
+	{
+	  bytes_out w;
+	  w.begin ();
+	  w.printf ("module:%s\n", IDENTIFIER_POINTER (state->name));
+	  version_string string;
+	  version2string (get_version (), string);
+	  w.printf ("version:%s\n", string);
+	  w.end (&elf, elf::SHT_PROGBITS, strings.add (".gnu.c++.README"));
+	}
+
       cpms_out out (&elf, state);
 
-      out.w.begin ();
+      out.w.begin (true);
       out.header (state->name);
       out.tag_conf ();
       // FIXME:Write 'important' flags etc
@@ -5970,9 +6109,12 @@ write_module (FILE *stream, module_state *state)
 
       out.tag_eof ();
 
-      unsigned crc = out.w.end (&elf, elf::SHT_GXX_MODULE, 0);
+      unsigned crc;
+      out.w.end (&elf, elf::SHT_GXX_MODULE, 0, &crc);
       state->set_crc (crc);
       out.dump () && out.dump ("Writing eof, CRC=%x", crc);
+
+      strings.write (&elf);
     }
 
   if (int e = elf.end ())

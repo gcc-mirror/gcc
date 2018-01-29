@@ -1,5 +1,17 @@
 2018-01-29  Nathan Sidwell  <nathan@acm.org>
 
+	README section
+	gcc/cp/
+	* module.c (version2date, version2time, version2string): Moved
+	from cpm_serial.
+	(struct_data): Broken out of elf.
+	(struct elf::isection): Remove link field.  Adjust all uses.
+	(class elf_out::strings): New.
+	(elf_out::add): New.
+	(bytes_out::printf): New.
+	(cpm_stream::dump, cpms_in::header): Adjust version handling.
+	(write_module): Write README section.
+
 	Fix layering violation
 	gcc/cp/
 	* module.c (elf): Rename bad -> set_error.
