@@ -18970,16 +18970,16 @@ vector __uint128_t vec_vsubcuq (vector __uint128_t, vector __uint128_t);
 __int128_t vec_vsubuqm (__int128_t, __int128_t);
 __uint128_t vec_vsubuqm (__uint128_t, __uint128_t);
 
-vector __int128_t __builtin_bcdadd (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_lt (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_eq (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_gt (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_ov (vector __int128_t, vector__int128_t);
-vector __int128_t bcdsub (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_lt (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_eq (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_gt (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_ov (vector __int128_t, vector__int128_t);
+vector __int128_t __builtin_bcdadd (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_lt (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_eq (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_gt (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_ov (vector __int128_t, vector __int128_t);
+vector __int128_t bcdsub (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_lt (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_eq (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_gt (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_ov (vector __int128_t, vector __int128_t);
 @end smallexample
 
 If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
