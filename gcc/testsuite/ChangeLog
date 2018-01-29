@@ -3,6 +3,9 @@
 	PR c/83966
 	* gcc.dg/format/Wsuggest-attribute-1.c: New test.
 
+	PR c++/83996
+	* g++.dg/ext/pr83996.C: New test.
+
 2018-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84057
