@@ -1,5 +1,12 @@
 2018-01-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84086
+	* tree-ssanames.c: Include cfgloop.h and tree-scalar-evolution.h.
+	(flush_ssaname_freelist): When SSA names were released reset
+	the SCEV hash table.
+
+2018-01-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84057
 	* tree-ssa-loop-ivcanon.c (unloop_loops): Deal with already
 	removed paths when removing edges.
