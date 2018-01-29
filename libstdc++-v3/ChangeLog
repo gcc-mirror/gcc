@@ -1,3 +1,14 @@
+2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83833
+	* include/bits/random.h (chi_squared_distribution::param): Update
+	gamma distribution parameter.
+	* testsuite/26_numerics/random/chi_squared_distribution/83833.cc: New
+	test.
+
 2018-01-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81076
