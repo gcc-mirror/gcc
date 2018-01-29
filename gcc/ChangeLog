@@ -1,7 +1,7 @@
 2018-01-29  Alan Modra  <amodra@gmail.com>
 
 	Backport from mainline
-	2018-01-29  Alan Modra  <amodra@gmail.com>
+	2018-01-26  Alan Modra  <amodra@gmail.com>
 	PR target/84033
 	* config/rs6000/rs6000.c (rtx_is_swappable_p): Exclude
 	UNSPEC_VBPERMQ.
