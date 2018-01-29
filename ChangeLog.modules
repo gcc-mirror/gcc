@@ -1,5 +1,13 @@
 2018-01-29  Nathan Sidwell  <nathan@acm.org>
 
+	{read,write}_module become member fns
+	gcc/cp/
+	* module.c (cpms_{in,out}::elf}: Direct member. Adjust ctors.
+	(cpms_{in,out}::{begin,end}): New.
+	(cpms_in::read, cpms_out::write): New.
+	(read_module, write_module): Delete.
+	(do_module_import, finish_module): Adjust.
+
 	README section
 	gcc/cp/
 	* module.c (version2date, version2time, version2string): Moved

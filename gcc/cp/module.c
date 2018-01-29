@@ -2101,7 +2101,7 @@ cpm_stream::ident ()
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
 public: // FIXME
-  elf_out *elf;
+  elf_out elf;
   bytes_out w;
 
 private:
@@ -2114,8 +2114,13 @@ private:
   unsigned records;
 
 public:
-  cpms_out (elf_out *, module_state *);
+  cpms_out (FILE *, module_state *);
   ~cpms_out ();
+
+public:
+  bool begin ();
+  bool end ();
+  void write ();
 
   void instrument ();
 
@@ -2159,7 +2164,7 @@ public:
   void bindings (tree ns);
 };
 
-cpms_out::cpms_out (elf_out *s, module_state *state)
+cpms_out::cpms_out (FILE *s, module_state *state)
   :cpm_stream (state), elf (s), w ()
 {
   unique = refs = nulls = 0;
@@ -2202,7 +2207,7 @@ cpms_out::instrument ()
 /* Cpm_Stream in.  */
 class cpms_in : public cpm_stream {
 public: // FIXME
-  elf_in *elf;
+  elf_in elf;
   bytes_in r;
 
 private:
@@ -2216,8 +2221,13 @@ private:
   unsigned *remap_vec;
 
 public:
-  cpms_in (elf_in *, module_state *, cpms_in *);
+  cpms_in (FILE *, module_state *, cpms_in *);
   ~cpms_in ();
+
+public:
+  bool begin ();
+  unsigned read ();
+  bool end ();
 
 public:
   bool header ();
@@ -2262,7 +2272,7 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (elf_in *s, module_state *state, cpms_in *from)
+cpms_in::cpms_in (FILE *s, module_state *state, cpms_in *from)
   :cpm_stream (state, from), elf (s), r (),
    mod_ix (MODULE_INDEX_IMPORTING), remap_num (0), remap_vec (NULL)
 {
@@ -5366,52 +5376,6 @@ cpms_in::tree_node ()
   return t;
 }
 
-/* Walk the bindings of NS, writing out the bindings for the current
-   TU.   */
-
-void
-cpms_out::bindings (tree ns)
-{
-  dump () && dump ("Walking namespace %N", ns);
-
-  module_binding_vec *module_bindings = NULL;
-  vec_alloc (module_bindings, 10);
-  hash_table<named_decl_hash>::iterator end
-    (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_table<named_decl_hash>::iterator iter
-	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    {
-      tree binding = *iter;
-
-      if (TREE_CODE (binding) == MODULE_VECTOR)
-	binding = MODULE_VECTOR_CLUSTER (binding, 0).slots[0];
-
-      if (!binding)
-	continue;
-
-      module_bindings = extract_module_bindings (module_bindings, binding);
-      if (module_bindings->length ())
-	{
-	  tree first = (*module_bindings)[0];
-	  if (TREE_CODE (first) == NAMESPACE_DECL
-	      && !DECL_NAMESPACE_ALIAS (first))
-	    bindings (module_bindings->pop ());
-	  else
-	    tag_binding (ns, DECL_NAME (first), module_bindings);
-	  gcc_checking_assert (!module_bindings->length ());
-	}
-    }
-  vec_free (module_bindings);
-  dump () && dump ("Walked namespace %N", ns);
-}
-
-/* Mangling for module files.  */
-#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
-#define MOD_FNAME_DOT '-'
-
-static GTY(()) tree proclaimer;
-static int export_depth; /* -1 for singleton export.  */
-
 /* Rebuild a streamed in type.  */
 // FIXME: c++-specific types are not in the canonical type hash.
 // Perhaps that should be changed?
@@ -5501,6 +5465,153 @@ cpms_in::finish_type (tree type)
   return type;
 }
 
+/* Walk the bindings of NS, writing out the bindings for the current
+   TU.   */
+
+void
+cpms_out::bindings (tree ns)
+{
+  dump () && dump ("Walking namespace %N", ns);
+
+  module_binding_vec *module_bindings = NULL;
+  vec_alloc (module_bindings, 10);
+  hash_table<named_decl_hash>::iterator end
+    (DECL_NAMESPACE_BINDINGS (ns)->end ());
+  for (hash_table<named_decl_hash>::iterator iter
+	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
+    {
+      tree binding = *iter;
+
+      if (TREE_CODE (binding) == MODULE_VECTOR)
+	binding = MODULE_VECTOR_CLUSTER (binding, 0).slots[0];
+
+      if (!binding)
+	continue;
+
+      module_bindings = extract_module_bindings (module_bindings, binding);
+      if (module_bindings->length ())
+	{
+	  tree first = (*module_bindings)[0];
+	  if (TREE_CODE (first) == NAMESPACE_DECL
+	      && !DECL_NAMESPACE_ALIAS (first))
+	    bindings (module_bindings->pop ());
+	  else
+	    tag_binding (ns, DECL_NAME (first), module_bindings);
+	  gcc_checking_assert (!module_bindings->length ());
+	}
+    }
+  vec_free (module_bindings);
+  dump () && dump ("Walked namespace %N", ns);
+}
+
+bool
+cpms_out::begin ()
+{
+  return elf.begin ();
+}
+
+bool
+cpms_out::end ()
+{
+  int e = elf.end ();
+  if (e)
+    error ("failed to write module %qE (%qs): %s",
+	   state->name, state->filename,
+	   e >= 0 ? xstrerror (e) : "Bad file data");
+  return e == 0;
+}
+
+void
+cpms_out::write ()
+{
+  elf_out::strings strings;
+
+  // FIXME:Kill string names
+  if (identifier_p (state->name))
+    {
+      bytes_out w;
+      w.begin ();
+      w.printf ("module:%s\n", IDENTIFIER_POINTER (state->name));
+      version_string string;
+      version2string (get_version (), string);
+      w.printf ("version:%s\n", string);
+      w.end (&elf, elf::SHT_PROGBITS, strings.add (".gnu.c++.README"));
+    }
+
+  w.begin (true);
+  header (state->name);
+  tag_conf ();
+  // FIXME:Write 'important' flags etc
+
+  /* Write the direct imports.  Write in reverse order, so that when
+     checking an indirect import we should have already read it.  */
+  for (unsigned ix = modules->length (); --ix;)
+    tag_import (ix, (*modules)[ix]);
+
+  tag_globals ();
+
+  /* Write decls.  */
+  bindings (global_namespace);
+
+  tag_eof ();
+
+  unsigned crc;
+  w.end (&elf, elf::SHT_GXX_MODULE, 0, &crc);
+  state->set_crc (crc);
+  dump () && dump ("Writing eof, CRC=%x", crc);
+  
+  strings.write (&elf);
+}
+
+bool
+cpms_in::begin ()
+{
+  return elf.begin ();
+}
+
+bool
+cpms_in::end ()
+{
+  int e = elf.end ();
+  if (e)
+    {
+      /* strerror and friends returns capitalized strings.  */
+      char const *err = e >= 0 ? xstrerror (e) : "Bad file data";
+      char c = TOLOWER (err[0]);
+      error ("%c%s", c, err + 1);
+    }
+  return e == 0;
+}
+
+unsigned
+cpms_in::read ()
+{
+  int ok = (r.begin (&elf, elf::SHT_GXX_MODULE) && header ());
+
+  if (ok)
+    {
+      do
+	ok = read_item ();
+      while (ok > 0);
+
+      /* Record the crc.  */
+      unsigned crc = r.crc ();
+      state->set_crc (crc);
+    }
+  else
+    r.set_overrun ();
+
+  r.end (&elf);
+  return get_mod ();
+}
+
+/* Mangling for module files.  */
+#define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
+#define MOD_FNAME_DOT '-'
+
+static GTY(()) tree proclaimer;
+static int export_depth; /* -1 for singleton export.  */
+
 /* Nest a module export level.  Return true if we were already in a
    level.  */
 
@@ -5567,57 +5678,6 @@ bool
 module_interface_p ()
 {
   return modules && (*modules)[0]->exported;
-}
-
-/* Read a module NAME file name FNAME on STREAM.  Returns its module
-   index (or fatally exits). */
-
-static unsigned
-read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
-{
-  unsigned mod = 0;
-  elf_in elf (stream);
-  int ok = false;
-
-  if (elf.begin ())
-    {
-      cpms_in in (&elf, state, from);
-
-      ok = (in.r.begin (&elf, elf::SHT_GXX_MODULE)
-	    && in.header ());
-      if (ok)
-	{
-	  do
-	    ok = in.read_item ();
-	  while (ok > 0);
-
-	  /* Record the crc.  */
-	  unsigned crc = in.r.crc ();
-	  state->set_crc (crc);
-	}
-      in.r.end (&elf);
-
-      mod = in.get_mod ();
-    }
-
-  if (int e = elf.end ())
-    {
-      /* strerror and friends returns capitalized strings.  */
-      char const *err = e >= 0 ? xstrerror (e) : "Bad file data";
-      char c = TOLOWER (err[0]);
-      error ("%c%s", c, err + 1);
-      ok = false;
-    }
-
-  if (!ok)
-    {
-      /* Failure to read a module is going to cause big problems, so
-	 bail out now.  */
-      fatal_error (input_location, "failed to read module %qE", state->name);
-      gcc_unreachable ();
-    }
-
-  return mod;
 }
 
 static int
@@ -6007,8 +6067,17 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 
 	      /* Note, read_module succeeds or never returns.  */
 	      state->mod = MODULE_INDEX_IMPORTING;
-	      index = read_module (stream, state, from);
-	      gcc_assert (state->mod == MODULE_INDEX_IMPORTING);
+	      {
+		cpms_in in (stream, state, from);
+		if (in.begin ())
+		  index = in.read ();
+		if (!in.end ())
+		  /* Failure to read a module is going to cause big
+		     problems, so bail out now.  */
+		  fatal_error (input_location, "failed to read module %qE",
+			       state->name);
+		gcc_assert (state->mod == MODULE_INDEX_IMPORTING);
+	      }
 
 	      if (!quiet_flag)
 		{
@@ -6070,59 +6139,6 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
   gcc_assert (!index || index == MODULE_INDEX_ERROR);
 }
 
-static void
-write_module (FILE *stream, module_state *state)
-{
-  elf_out elf (stream);
-
-  if (elf.begin ())
-    {
-      elf_out::strings strings;
-
-      if (identifier_p (state->name))
-	{
-	  bytes_out w;
-	  w.begin ();
-	  w.printf ("module:%s\n", IDENTIFIER_POINTER (state->name));
-	  version_string string;
-	  version2string (get_version (), string);
-	  w.printf ("version:%s\n", string);
-	  w.end (&elf, elf::SHT_PROGBITS, strings.add (".gnu.c++.README"));
-	}
-
-      cpms_out out (&elf, state);
-
-      out.w.begin (true);
-      out.header (state->name);
-      out.tag_conf ();
-      // FIXME:Write 'important' flags etc
-
-      /* Write the direct imports.  Write in reverse order, so that when
-	 checking an indirect import we should have already read it.  */
-      for (unsigned ix = modules->length (); --ix;)
-	out.tag_import (ix, (*modules)[ix]);
-
-      out.tag_globals ();
-
-      /* Write decls.  */
-      out.bindings (global_namespace);
-
-      out.tag_eof ();
-
-      unsigned crc;
-      out.w.end (&elf, elf::SHT_GXX_MODULE, 0, &crc);
-      state->set_crc (crc);
-      out.dump () && out.dump ("Writing eof, CRC=%x", crc);
-
-      strings.write (&elf);
-    }
-
-  if (int e = elf.end ())
-    error ("failed to write module %qE (%qs): %s",
-	   state->name, state->filename,
-	   e >= 0 ? xstrerror (errno) : "Bad file data");
-}
-
 /* Convert the module search path.  */
 
 void
@@ -6173,7 +6189,13 @@ finish_module ()
   if (FILE *stream = make_module_file (filename, filename_len))
     {
       if (!errorcount)
-	write_module (stream, state);
+	{
+	  cpms_out out (stream, state);
+
+	  if (out.begin ())
+	    out.write ();
+	  out.end ();
+	}
       fclose (stream);
     }
   else
