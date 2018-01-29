@@ -691,7 +691,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 
   /* FIXME remove when moving to c_fully_fold model.  */
   if (!CLASS_TYPE_P (type))
-    e = scalar_constant_value (e);
+    {
+      e = mark_rvalue_use (e);
+      e = scalar_constant_value (e);
+    }
   if (error_operand_p (e))
     return error_mark_node;
 

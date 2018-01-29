@@ -1,3 +1,8 @@
+2018-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83942 - wrong unused warning with static_cast.
+	* cvt.c (ocp_convert): Call mark_rvalue_use.
+
 2018-01-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/83956 - wrong dtor error with anonymous union
