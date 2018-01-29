@@ -187,16 +187,7 @@ struct module_state_hash : ggc_remove <module_state *>
   }
   static bool equal (const value_type existing, compare_type candidate)
   {
-    if (TREE_CODE (candidate) != TREE_CODE (existing->name))
-      return false;
-    else if (identifier_p (candidate))
-      return existing->name == candidate;
-    else
-      return (TREE_STRING_LENGTH (existing->name)
-	      == TREE_STRING_LENGTH (candidate))
-	&& !memcmp (TREE_STRING_POINTER (existing->name),
-		    TREE_STRING_POINTER (candidate),
-		    TREE_STRING_LENGTH (candidate));
+    return existing->name == candidate;
   }
 
   static inline void mark_empty (value_type &p) {p = NULL;}
@@ -677,7 +668,7 @@ protected:
 public:
   data *read (unsigned snum);
 public:
-  data *find (unsigned type, bool atend = false);
+  data *find (unsigned type, const char *name);
 
 public:
   bool begin ();
@@ -685,13 +676,19 @@ public:
   {
     return get_error ();
   }
+
+public:
+  const char *name (unsigned offset)
+  {
+    return &strings->buffer[offset < strings->size ? offset : 0];
+  }
 };
 
 class elf_out : public elf
 {
 public:
   /* Builder for string table.  */
-  class strings
+  class strtab
   {
     ptr_uint_hash_map ident_map;	/* Map of IDENTIFIERS to offsets. */
     vec<tree, va_gc> *idents;		/* Ordered vector.  */
@@ -699,24 +696,29 @@ public:
     unsigned size;			/* Next offset.  */
 
   public:
-    strings ()
-      :ident_map (100), idents (NULL), literals (NULL), size (0)
+    strtab (unsigned size)
+      :ident_map (size), idents (NULL), literals (NULL), size (0)
     {
-      add ("");
+      vec_safe_reserve (idents, size);
+      vec_safe_reserve (literals, 10);
+      name ("");
     }
-    ~strings ()
+    ~strtab ()
     {
     }
     
   public:
-    unsigned add (const_tree ident);
-    unsigned add (const char *literal);
+    unsigned name (const_tree ident);
+    unsigned name (const char *literal);
     unsigned write (elf_out *out);
   };
 
+private:
+  strtab strings;
+
 public:
   elf_out (FILE *s)
-    :elf (s)
+    :elf (s), strings (500)
   {
   }
 
@@ -725,6 +727,15 @@ protected:
   unsigned add (unsigned type, unsigned name, unsigned off, unsigned size);
   bool write (const void *, size_t);
 
+public:
+  unsigned name (const_tree ident)
+  {
+    return strings.name (ident);
+  }
+  unsigned name (const char *n)
+  {
+    return strings.name (n);
+  }
 public:
   /* Write and allocate a section.  */
   unsigned write (unsigned type, unsigned name, const data *);
@@ -765,27 +776,18 @@ elf_in::read (unsigned snum)
 }
 
 data *
-elf_in::find (unsigned type, bool at_end)
+elf_in::find (unsigned type, const char *n)
 {
-  unsigned snum = 1;
-  int dir = +1;
-  unsigned end = sections->length ();
-
-  if (at_end)
+  unsigned snum = sections->length ();
+  while (--snum)
     {
-      dir = -1;
-      snum = end + dir;
-      end = 0;
+      const isection *isec = &(*sections)[snum];
+
+      if (isec->type == type && !strcmp (n, name (isec->name)))
+	return read (snum);
     }
 
-  while ((*sections)[snum].type != type)
-    {
-      snum += dir;
-      if (snum == end)
-	return NULL;
-    }
-  
-  return read (snum);
+  return NULL;
 }
 
 bool
@@ -869,13 +871,28 @@ elf_in::begin ()
     }
 
   if (strndx)
-    strings = read (strndx);
+    {
+      strings = read (strndx);
+      /* The string table should be at least one byte, with NUL chars
+	 at either end.  */
+      if (strings && !(strings->size && !strings->buffer[0]
+		       && !strings->buffer[strings->size - 1]))
+	{
+	  data::release (strings);
+	  strings = NULL;
+	}
+    }
+  if (!strings)
+    {
+      strings = data::extend (NULL, 1);
+      strings->buffer[0] = 0;
+    }
 
   return true;
 }
 
 unsigned
-elf_out::strings::add (const_tree ident)
+elf_out::strtab::name (const_tree ident)
 {
   unsigned result;
   bool existed;
@@ -894,7 +911,7 @@ elf_out::strings::add (const_tree ident)
 }
 
 unsigned
-elf_out::strings::add (const char *literal)
+elf_out::strtab::name (const char *literal)
 {
   vec_safe_push (idents, NULL_TREE);
   vec_safe_push (literals, literal);
@@ -904,11 +921,10 @@ elf_out::strings::add (const char *literal)
 }
 
 unsigned
-elf_out::strings::write (elf_out *elf)
+elf_out::strtab::write (elf_out *elf)
 {
   unsigned off = elf->pad ();
-  unsigned name = add (".strtab");
-
+  unsigned shname = name (".strtab");
   unsigned lit_ix = 0;
   for (unsigned ix = 0; ix != idents->length (); ix++)
     {
@@ -930,8 +946,7 @@ elf_out::strings::write (elf_out *elf)
     }
 
   gcc_assert (lit_ix == literals->length ());
-
-  return elf->add (SHT_STRTAB, name, off, size);
+  return elf->add (SHT_STRTAB, shname, off, size);
 }
 
 unsigned
@@ -1014,14 +1029,11 @@ uint32_t elf_out::pad ()
 int
 elf_out::end ()
 {
-  uint32_t shoff = pad ();
+  /* Write the string table.  */
+  unsigned strndx = strings.write (this);
 
+  uint32_t shoff = pad ();
   unsigned shnum = sections->length ();
-  unsigned strndx = sections->length ();
-  /* Assume there is exactly one SHT_STRTAB, and that it's near the
-     end.  (Which it is for our use.)   */
-  while ((*sections)[--strndx].type != SHT_STRTAB)
-    continue;
 
   /* Write section table */
   for (unsigned ix = 0; ix != sections->length (); ix++)
@@ -1172,7 +1184,7 @@ private:
 
 public:
   void begin (bool crc_p = false);
-  unsigned end (elf_out *, unsigned, unsigned, unsigned *crc_ptr = NULL);
+  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL);
 
 public:
   void raw (unsigned);
@@ -1211,12 +1223,17 @@ public:
   }
 
 public:
-  bool begin (elf_in *src, unsigned type);
-  void end (elf_in *src)
+  bool begin (elf_in *src, const char *name, bool crc_p = true);
+  bool end (elf_in *src)
   {
     if (overrun)
       src->set_error ();
     bytes::end ();
+    return !overrun;
+  }
+  bool more_p () const
+  {
+    return pos != data->size;
   }
 
 public:
@@ -1640,26 +1657,18 @@ bytes_out::printf (const char *format, ...)
 }
 
 bool
-bytes_in::begin (elf_in *source, unsigned type)
+bytes_in::begin (elf_in *source, const char *name, bool crc_p)
 {
-  bytes::begin ();
+  bytes::begin (crc_p);
 
-  data = source->find (type);
+  data = source->find (elf::SHT_PROGBITS, name);
 
-  if (!data || !data->check_crc ())
+  if (!data || (crc_p && !data->check_crc ()))
     {
-      /* Map checksum error onto a reasonably specific errno.  */
-#if defined (EPROTO)
-      source->set_error (EPROTO);
-#elif defined (EBADMSG)
-      source->set_error (EBADMSG);
-#elif defined (EIO)
-      source->set_error (EIO);
-#else
-      source->set_error ();
-#endif
       data::release (data);
       data = NULL;
+      set_overrun ();
+      error ("section %qs is missing or corrupted", name);
       return false;
     }
   return true;
@@ -1672,14 +1681,13 @@ bytes_out::begin (bool crc_p)
   data = data::extend (0, 200);
 }
 
-// FIXME: Incomplete transition
 unsigned
-bytes_out::end (elf_out *sink, unsigned type, unsigned name, unsigned *crc_ptr)
+bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 {
   data->size = pos;
   if (crc_ptr)
     *crc_ptr = data->set_crc ();
-  unsigned sec_num = sink->write (type, name, data);
+  unsigned sec_num = sink->write (elf::SHT_PROGBITS, name, data);
   bytes::end ();
   
   return sec_num;
@@ -1700,7 +1708,6 @@ public:
   enum record_tag
   {
     /* Module-specific records.  */
-    rt_eof,		/* End Of File.  duh! */
     rt_conf,		/* Config info (baked in stuff like target-triplet) */
     rt_flags,		/* Flags that affect AST compatibility.  */
     rt_import,		/* An import. */
@@ -1749,9 +1756,6 @@ protected:
     tag += count;
     return res;
   }
-
-public:
-  static const char *ident ();
 
 public:
   FILE *dumps () const
@@ -2049,12 +2053,6 @@ cpm_stream::dump (const char *format, ...)
   return true;
 }
 
-const char *
-cpm_stream::ident ()
-{
-  return "g++m";
-}
-
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
 public: // FIXME
@@ -2079,11 +2077,11 @@ public:
   bool end ();
   void write ();
 
+private:
   void instrument ();
+  void header (unsigned crc);
 
 public:
-  void header (tree);
-  void tag_eof ();
   void tag_conf ();
   void tag_import (unsigned ix, const module_state *);
   void tag_globals ();
@@ -2163,7 +2161,6 @@ cpms_out::instrument ()
 
 /* Cpm_Stream in.  */
 class cpms_in : public cpm_stream {
-public: // FIXME
   elf_in elf;
   bytes_in r;
 
@@ -2186,9 +2183,10 @@ public:
   unsigned read ();
   bool end ();
 
-public:
+private:
   bool header ();
-  int tag_eof ();
+
+public:
   bool tag_conf ();
   bool tag_import ();
   bool tag_binding ();
@@ -2264,25 +2262,19 @@ static unsigned do_module_import (location_t, tree, bool module_unit_p,
 				  cpms_in * = NULL, unsigned = 0);
 
 /* File header
-   buf:ident
-   raw:version
-   raw:CRC -- not checksummed
-   str:module
+   u:version
+   u:CRC
+   u:module-name
 */
 
 void
-cpms_out::header (tree name)
+cpms_out::header (unsigned crc)
 {
-  char const *id = ident ();
-  int v = get_version ();
-
-  gcc_assert (v < 0); /* Not ready for prime-time.  */
-  dump () && dump ("Writing \"%s\" version=%V", id, v);
-
-  w.buf (id, strlen (id));
-  w.raw (unsigned (v));
-
-  w.str (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
+  w.begin (false);
+  w.u (unsigned (get_version ()));
+  w.u (crc);
+  w.u (elf.name (state->name));
+  w.end (&elf, elf.name (MOD_SNAME_PFX ".ident"));
 }
 
 // FIXME: What we really want to do at this point is read the header
@@ -2292,17 +2284,15 @@ cpms_out::header (tree name)
 bool
 cpms_in::header ()
 {
-  const char *id = ident ();
-  const char *i = r.buf (strlen (id));
-  if (memcmp (id, i, strlen (id)))
-    {
-      error ("not a module file");
-      return false;
-    }
+  if (!r.begin (&elf, MOD_SNAME_PFX ".ident", false))
+    return false;
+
+  unsigned crc;
+  const char *name;
 
   /* Check version.  */
   int my_ver = get_version ();
-  int their_ver = int (r.raw ());
+  int their_ver = int (r.u ());
   if (their_ver != my_ver)
     {
       int my_date = version2date (my_ver);
@@ -2322,7 +2312,7 @@ cpms_in::header ()
 	      /* Dates differ, decline.  */
 	      error ("file is version %s, this is version %s",
 		     their_string, my_string);
-	      return false;
+	      goto fail;
 	    }
 	  else
 	    /* Times differ, give it a go.  */
@@ -2330,42 +2320,29 @@ cpms_in::header ()
 		     their_string, my_string);
 	}
     }
-  dump () && dump  ("Expecting %V found %V", my_ver, their_ver);
+  dump () && dump  (my_ver == their_ver ? "Version %V"
+		    : "Expecting %V found %V", my_ver, their_ver);
 
-  unsigned crc = r.crc ();
+  crc = r.u ();
+  name = elf.name (r.u ());
+  if (r.more_p ())
+    goto fail;
+
   dump () && dump ("Reading CRC=%x", crc);
   if (!state->set_crc (crc))
-    return false;
+    goto fail;
 
   /* Check module name.  */
-  size_t l;
-  const char *n = r.str (&l);
-  tree name = get_identifier_with_length (n, l);
-
-  if (!module_state_hash::equal (state, name))
+  if (strlen (name) != IDENTIFIER_LENGTH (state->name)
+      || memcmp (name, IDENTIFIER_POINTER (state->name),
+		 IDENTIFIER_LENGTH (state->name)))
     {
-      error ("module %qE found, expected module %qE", name, state->name);
-      return false;
+      error ("module %qs found, expected module %qE", name, state->name);
+    fail:
+      r.set_overrun ();
     }
 
-  return true;
-}
-
-void
-cpms_out::tag_eof ()
-{
-  tag (rt_eof);
-
-  dump () && dump ("Writing eof");
-
-  instrument ();
-}
-
-int
-cpms_in::tag_eof ()
-{
-  dump () && dump ("Read eof");
-  return -1; /* Denote EOF.  */
+  return r.end (&elf);
 }
 
 /* Record config info
@@ -3200,8 +3177,6 @@ cpms_in::read_item ()
 
   switch (rt)
     {
-    case rt_eof:
-      return tag_eof ();
     case rt_binding:
       return tag_binding ();
     case rt_definition:
@@ -5481,8 +5456,6 @@ cpms_out::end ()
 void
 cpms_out::write ()
 {
-  elf_out::strings strings;
-
   /* Write README.  */
   {
     w.begin ();
@@ -5490,11 +5463,10 @@ cpms_out::write ()
     version_string string;
     version2string (get_version (), string);
     w.printf ("version:%s\n", string);
-    w.end (&elf, elf::SHT_PROGBITS, strings.add (MOD_SNAME_PFX ".README"));
+    w.end (&elf, elf.name (MOD_SNAME_PFX ".README"));
   }
   
   w.begin (true);
-  header (state->name);
   tag_conf ();
   // FIXME:Write 'important' flags etc
 
@@ -5508,14 +5480,15 @@ cpms_out::write ()
   /* Write decls.  */
   bindings (global_namespace);
 
-  tag_eof ();
+  instrument ();
 
+  // FIXME: blob not good name
   unsigned crc;
-  w.end (&elf, elf::SHT_GXX_MODULE, 0, &crc);
+  w.end (&elf, elf.name (MOD_SNAME_PFX ".blob"), &crc);
   state->set_crc (crc);
   dump () && dump ("Writing eof, CRC=%x", crc);
-  
-  strings.write (&elf);
+
+  header (crc);
 }
 
 bool
@@ -5541,19 +5514,15 @@ cpms_in::end ()
 unsigned
 cpms_in::read ()
 {
-  int ok = (r.begin (&elf, elf::SHT_GXX_MODULE) && header ());
+  bool ok = header ();
 
-  if (ok)
-    {
-      do
-	ok = read_item ();
-      while (ok > 0);
+  if (!r.begin (&elf, MOD_SNAME_PFX ".blob"))
+    return MODULE_INDEX_ERROR;
 
-      /* Record the crc.  */
-      unsigned crc = r.crc ();
-      state->set_crc (crc);
-    }
-  else
+  while (ok && r.more_p ())
+    ok = read_item ();
+
+  if (!ok)
     r.set_overrun ();
 
   r.end (&elf);

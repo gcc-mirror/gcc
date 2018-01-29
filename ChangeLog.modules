@@ -1,5 +1,19 @@
 2018-01-29  Nathan Sidwell  <nathan@acm.org>
 
+	Header is separate section
+	gcc/cp/
+	* module.c (module_state_hash::equal): Remove string names.
+	(elf_in::find): Find by name.
+	(elf_in::name): New.
+	(class elf_out::strtab): Rename type.
+	(elf_out::strings): New member.
+	(elf_in::begin): Veriy string table.  Create default.
+	(elf_out::end): Write string table here.
+	(bytes_in::begin, bytes_out::end): Always PROGBITS.
+	(cpm_stream::rt_eof): Delete.
+	(cpms_{in,out}::header): Repimlement.
+	(cpms_in::read, cpms_out::write): Adjust.
+
 	Remove string-literal module names :(
 	gcc/cp/
 	* cp-tree.h (validate_module_name): Remove.
