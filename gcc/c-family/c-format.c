@@ -1110,7 +1110,9 @@ check_function_format (tree attrs, int nargs, tree *argarray,
 	     from the format attribute if the called function is decorated
 	     with it.  Avoid using calls with string literal formats for
 	     guidance since those are unlikely to be viable candidates.  */
-	  if (warn_suggest_attribute_format && info.first_arg_num == 0
+	  if (warn_suggest_attribute_format
+	      && current_function_decl != NULL_TREE
+	      && info.first_arg_num == 0
 	      && (format_types[info.format_type].flags
 		  & (int) FMT_FLAG_ARG_CONVERT)
 	      /* c_strlen will fail for a function parameter but succeed

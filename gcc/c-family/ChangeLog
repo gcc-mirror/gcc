@@ -1,3 +1,8 @@
+2018-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/83966
+	* c-format.c (check_function_format): Check current_function_decl.
+
 2018-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Use ggc_strdup for the fp_suffix

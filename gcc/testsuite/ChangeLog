@@ -1,3 +1,8 @@
+2018-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/83966
+	* gcc.dg/format/Wsuggest-attribute-1.c: New test.
+
 2018-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84057
