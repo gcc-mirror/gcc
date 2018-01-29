@@ -1,3 +1,13 @@
+2018-01-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81550
+	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): If DFmode
+	and SFmode can go in Altivec registers (-mcpu=power7 for DFmode,
+	-mcpu=power8 for SFmode) don't set the PRE_INCDEC or PRE_MODIFY
+	flags.  This restores the settings used before the 2017-07-24.
+	Turning off pre increment/decrement/modify allows IVOPTS to
+	optimize DF/SF loops where the index is an int.
+
 2018-01-29  Richard Biener <rguenther@suse.de>
 	    Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
