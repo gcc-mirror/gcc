@@ -1,3 +1,8 @@
+2018-01-29  Alan Modra  <amodra@gmail.com>
+
+	PR target/84033
+	* gcc.target/powerpc/swaps-p8-46.c: New.
+
 2018-01-23  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Back port from mainline
