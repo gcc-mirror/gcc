@@ -26,5 +26,5 @@ void test01()
   using std::any_cast;
 
   const any y(1);
-  any_cast<int&>(y); // { dg-error "invalid static_cast" "" { target { *-*-* } } 461 }
+  any_cast<int&>(y); // { dg-error "invalid static_cast" "" { target { *-*-* } } 460 }
 }

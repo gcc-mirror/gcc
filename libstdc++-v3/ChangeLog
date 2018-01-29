@@ -1,5 +1,11 @@
 2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83658
+	* include/std/any (any::__do_emplace): Only set _M_manager after
+	constructing the contained object.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Adjust dg-error line.
+	* testsuite/20_util/any/modifiers/83658.cc: New test.
+
 	Backport from mainline
 	2018-01-15  Jonathan Wakely  <jwakely@redhat.com>
 
