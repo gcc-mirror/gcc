@@ -566,11 +566,11 @@ public:
   }
 
 public:
-  int get_error ()
+  int get_error () const
   {
     return err;
   }
-  void bad (int e = -1)
+  void set_error (int e = -1)
   {
     if (!err)
       err = e;
@@ -667,7 +667,7 @@ elf_in::read (void *buffer, size_t size)
 {
   if (fread (buffer, 1, size, stream) != size)
     {
-      bad (errno);
+      set_error (errno);
       return false;
     }
   return true;
@@ -681,7 +681,7 @@ elf_in::read (unsigned snum)
   const isection *sec = &(*sections)[snum];
   if (fseek (stream, sec->offset, SEEK_SET))
     {
-      bad (errno);
+      set_error (errno);
       return NULL;
     }
 
@@ -762,7 +762,7 @@ elf_in::begin ()
   if (fseek (stream, header.shoff, SEEK_SET))
     {
     section_table_fail:
-      bad (errno);
+      set_error (errno);
       error ("cannot read section table");
       return false;
     }
@@ -807,7 +807,7 @@ elf_out::write (const void *data, size_t size)
 {
   if (fwrite (data, 1, size, stream) == size)
     return true;
-  bad (errno);
+  set_error (errno);
   return false;
 }
 
@@ -818,7 +818,7 @@ elf_out::write (unsigned type, unsigned name, const data *data)
 
   if (!off || fwrite (data->buffer, 1, data->size, stream) != data->size)
     {
-      bad (errno);
+      set_error (errno);
       return 0;
     }
 
@@ -911,7 +911,7 @@ elf_out::end ()
   /* Write header.  */
   if (fseek (stream, 0, SEEK_SET))
     {
-      bad (errno);
+      set_error (errno);
       goto out;
     }
 
@@ -941,7 +941,7 @@ elf_out::end ()
 }
 
 /* Byte serializer base.  */
-class cpm_serial {
+class bytes {
 protected:
 public://FIXME
   elf::data *data;
@@ -951,10 +951,10 @@ protected:
   unsigned bit_pos;
 
 public:
-  cpm_serial ()
+  bytes ()
     :data (NULL), pos (0), bit_val (0), bit_pos (0)
   {}
-  ~cpm_serial () 
+  ~bytes () 
   {
     gcc_checking_assert (!data);
   }
@@ -1001,22 +1001,21 @@ protected:
 class cpm_stream;
 
 /* Byte stream writer.  */
-class cpm_writer : public cpm_serial {
-  elf_out *sink;
+class bytes_out : public bytes {
   /* Bit instrumentation.  */
   unsigned spans[3];
   unsigned lengths[3];
   int is_set;
 
 public:
-  cpm_writer (elf_out *sink)
-    : cpm_serial (), sink (sink)
+  bytes_out ()
+    : bytes ()
   {
     spans[0] = spans[1] = spans[2] = 0;
     lengths[0] = lengths[1] = lengths[2] = 0;
     is_set = -1;
   }
-  ~cpm_writer ()
+  ~bytes_out ()
   {
   }
 
@@ -1050,22 +1049,27 @@ public:
 };
 
 /* Byte stream reader.  */
-class cpm_reader : public cpm_serial {
+class bytes_in : public bytes {
 public:// FIXME
-  elf_in *source;
   bool overrun;
 
 public:
-  cpm_reader (elf_in *source)
-    : cpm_serial (), source (source), overrun (false)
+  bytes_in ()
+    : bytes (), overrun (false)
   {
   }
-  ~cpm_reader ()
+  ~bytes_in ()
   {
   }
 
 public:
   bool begin (elf_in *src, unsigned type);
+  void end (elf_in *src)
+  {
+    if (overrun)
+      src->set_error ();
+    bytes::end ();
+  }
 
 public:
   unsigned crc () const
@@ -1088,28 +1092,21 @@ private:
       }
     if (avail)
       *avail = bytes;
-    return cpm_serial::use (bytes);
+    return bytes::use (bytes);
   }
 
 public:
-  bool overran () const
+  bool get_overrun () const
   {
     return overrun;
+  }
+  void set_overrun ()
+  {
+    overrun = true;
   }
 
 public:
   unsigned raw ();
-
-public:
-  // FIXME in transition
-  void bad ()
-  {
-    source->bad ();
-  }
-  bool error ()
-  {
-    return source->get_error ();
-  }
 
 public:
   bool b ();
@@ -1132,7 +1129,7 @@ public:
 /* Finish a set of bools.  */
 
 void
-cpm_writer::bflush ()
+bytes_out::bflush ()
 {
   if (bit_pos)
     {
@@ -1144,7 +1141,7 @@ cpm_writer::bflush ()
 }
 
 void
-cpm_reader::bflush ()
+bytes_in::bflush ()
 {
   if (bit_pos)
     bit_flush ();
@@ -1155,12 +1152,12 @@ cpm_reader::bflush ()
    all.  */
 
 void
-cpm_reader::bfill ()
+bytes_in::bfill ()
 {
   bit_val = raw ();
 }
 
-/* Low level cpm_readers and cpm_writers.  I did think about making these
+/* Low level bytes_ins and bytes_outs.  I did think about making these
    templatized, but that started to look error prone, so went with
    type-specific names.
    b - bools,
@@ -1178,7 +1175,7 @@ cpm_reader::bfill ()
    run-length encoding?  */
 
 void
-cpm_writer::b (bool x)
+bytes_out::b (bool x)
 {
   if (is_set != x)
     {
@@ -1195,7 +1192,7 @@ cpm_writer::b (bool x)
 }
 
 bool
-cpm_reader::b ()
+bytes_in::b ()
 {
   if (!bit_pos)
     bfill ();
@@ -1209,7 +1206,7 @@ cpm_reader::b ()
    transfer -- hence no crc here.  */
 
 void
-cpm_writer::raw (unsigned val)
+bytes_out::raw (unsigned val)
 {
   char *ptr = use (4);
   ptr[0] = val;
@@ -1219,7 +1216,7 @@ cpm_writer::raw (unsigned val)
 }
 
 unsigned
-cpm_reader::raw ()
+bytes_in::raw ()
 {
   unsigned val = 0;
   if (const char *ptr = use (4))
@@ -1236,13 +1233,13 @@ cpm_reader::raw ()
 /* Chars are unsigned and written as single bytes. */
 
 void
-cpm_writer::c (unsigned char v)
+bytes_out::c (unsigned char v)
 {
   *use (1) = v;
 }
 
 int
-cpm_reader::c ()
+bytes_in::c ()
 {
   int v = 0;
   if (const char *ptr = use (1))
@@ -1253,7 +1250,7 @@ cpm_reader::c ()
 /* Ints are written as sleb128.  */
 
 void
-cpm_writer::i (int v)
+bytes_out::i (int v)
 {
   unsigned max = (sizeof (v) * 8 + 6) / 7; 
   char *ptr = use (max);
@@ -1274,7 +1271,7 @@ cpm_writer::i (int v)
 }
 
 int
-cpm_reader::i ()
+bytes_in::i ()
 {
   int v = 0;
   unsigned max = (sizeof (v) * 8 + 6) / 7;
@@ -1306,7 +1303,7 @@ cpm_reader::i ()
 /* Unsigned are written as uleb128.  */
 
 void
-cpm_writer::u (unsigned v)
+bytes_out::u (unsigned v)
 {
   unsigned max = (sizeof (v) * 8 + 6) / 7;
   char *ptr = use (max);
@@ -1325,7 +1322,7 @@ cpm_writer::u (unsigned v)
 }
 
 unsigned
-cpm_reader::u ()
+bytes_in::u ()
 {
   unsigned v = 0;
   unsigned max = (sizeof (v) * 8 + 6) / 7;
@@ -1352,7 +1349,7 @@ cpm_reader::u ()
 }
 
 void
-cpm_writer::wi (HOST_WIDE_INT v)
+bytes_out::wi (HOST_WIDE_INT v)
 {
   unsigned max = (sizeof (v) * 8 + 6) / 7; 
   char *ptr = use (max);
@@ -1373,7 +1370,7 @@ cpm_writer::wi (HOST_WIDE_INT v)
 }
 
 HOST_WIDE_INT
-cpm_reader::wi ()
+bytes_in::wi ()
 {
   HOST_WIDE_INT v = 0;
   unsigned max = (sizeof (v) * 8 + 6) / 7;
@@ -1402,19 +1399,19 @@ cpm_reader::wi ()
 }
 
 inline void
-cpm_writer::wu (unsigned HOST_WIDE_INT v)
+bytes_out::wu (unsigned HOST_WIDE_INT v)
 {
   wi ((HOST_WIDE_INT) v);
 }
 
 inline unsigned HOST_WIDE_INT
-cpm_reader::wu ()
+bytes_in::wu ()
 {
   return (unsigned HOST_WIDE_INT) wi ();
 }
 
 inline void
-cpm_writer::s (size_t s)
+bytes_out::s (size_t s)
 {
   if (sizeof (s) == sizeof (unsigned))
     u (s);
@@ -1423,7 +1420,7 @@ cpm_writer::s (size_t s)
 }
 
 inline size_t
-cpm_reader::s ()
+bytes_in::s ()
 {
   if (sizeof (size_t) == sizeof (unsigned))
     return u ();
@@ -1432,13 +1429,13 @@ cpm_reader::s ()
 }
 
 void
-cpm_writer::buf (const char *buf, size_t len)
+bytes_out::buf (const char *buf, size_t len)
 {
   memcpy (use (len), buf, len);
 }
 
 const char *
-cpm_reader::buf (size_t len)
+bytes_in::buf (size_t len)
 {
   const char *ptr = use (len);
 
@@ -1451,14 +1448,14 @@ cpm_reader::buf (size_t len)
 */
 
 void
-cpm_writer::str (const char *string, size_t len)
+bytes_out::str (const char *string, size_t len)
 {
   s (len);
   buf (string, len + 1);
 }
 
 const char *
-cpm_reader::str (size_t *len_p)
+bytes_in::str (size_t *len_p)
 {
   size_t len = s ();
 
@@ -1476,7 +1473,7 @@ cpm_reader::str (size_t *len_p)
 }
 
 void
-cpm_writer::module_name (tree name)
+bytes_out::module_name (tree name)
 {
   size_t len;
   const char *ptr;
@@ -1494,7 +1491,7 @@ cpm_writer::module_name (tree name)
 }
 
 tree
-cpm_reader::module_name ()
+bytes_in::module_name ()
 {
   size_t l;
   const char *mod = str (&l);
@@ -1522,9 +1519,9 @@ cpm_reader::module_name ()
 }
 
 bool
-cpm_reader::begin (elf_in *source, unsigned type)
+bytes_in::begin (elf_in *source, unsigned type)
 {
-  cpm_serial::begin ();
+  bytes::begin ();
 
   data = source->find (type);
 
@@ -1532,13 +1529,13 @@ cpm_reader::begin (elf_in *source, unsigned type)
     {
       /* Map checksum error onto a reasonably specific errno.  */
 #if defined (EPROTO)
-      source->bad (EPROTO);
+      source->set_error (EPROTO);
 #elif defined (EBADMSG)
-      source->bad (EBADMSG);
+      source->set_error (EBADMSG);
 #elif defined (EIO)
-      source->bad (EIO);
+      source->set_error (EIO);
 #else
-      source->bad ();
+      source->set_error ();
 #endif
       free (data);
       data = NULL;
@@ -1548,30 +1545,30 @@ cpm_reader::begin (elf_in *source, unsigned type)
 }
 
 void
-cpm_writer::begin ()
+bytes_out::begin ()
 {
-  cpm_serial::begin ();
+  bytes::begin ();
   data = elf::data::extend (0, 200);
 }
 
 // FIXME: Incomplete transition
 unsigned
-cpm_writer::end (elf_out *sink, unsigned type, unsigned name)
+bytes_out::end (elf_out *sink, unsigned type, unsigned name)
 {
   data->size = pos;
   unsigned crc = data->set_crc ();
   sink->write (type, name, data);
-  cpm_serial::end ();
+  bytes::end ();
   
   return crc;
 }
 
 char *
-cpm_writer::use (unsigned bytes)
+bytes_out::use (unsigned bytes)
 {
   if (data->size < pos + bytes)
     data = elf::data::extend (data, (pos + bytes) * 3/2);
-  return cpm_serial::use (bytes);
+  return bytes::use (bytes);
 }
 
 /* Module cpm_stream base.  */
@@ -1974,7 +1971,9 @@ cpm_stream::ident ()
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
 public: // FIXME
-  cpm_writer w;
+  elf_out *elf;
+  bytes_out w;
+
 private:
   ptr_uint_hash_map tree_map; /* trees to ids  */
 
@@ -2031,7 +2030,7 @@ public:
 };
 
 cpms_out::cpms_out (elf_out *s, module_state *state)
-  :cpm_stream (state), w (s)
+  :cpm_stream (state), elf (s), w ()
 {
   unique = refs = nulls = 0;
   records = 0;
@@ -2043,7 +2042,7 @@ cpms_out::~cpms_out ()
 }
 
 void
-cpm_writer::instrument (cpm_stream *d)
+bytes_out::instrument (cpm_stream *d)
 {
   d->dump ("Wrote %U bytes", data->size);
   d->dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1],
@@ -2073,7 +2072,9 @@ cpms_out::instrument ()
 /* Cpm_Stream in.  */
 class cpms_in : public cpm_stream {
 public: // FIXME
-  cpm_reader r;
+  elf_in *elf;
+  bytes_in r;
+
 private:
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
@@ -2132,7 +2133,7 @@ public:
 };
 
 cpms_in::cpms_in (elf_in *s, module_state *state, cpms_in *from)
-  :cpm_stream (state, from), r (s),
+  :cpm_stream (state, from), elf (s), r (),
    mod_ix (MODULE_INDEX_IMPORTING), remap_num (0), remap_vec (NULL)
 {
   dump () && dump ("Importing %I", state->name);
@@ -2271,9 +2272,6 @@ int
 cpms_in::tag_eof ()
 {
   dump () && dump ("Read eof");
-  if (r.source->get_error ())
-    return false;
-
   return -1; /* Denote EOF.  */
 }
 
@@ -2309,7 +2307,7 @@ cpms_in::tag_conf ()
       return false;
     }
 
-  if (r.source->get_error ())
+  if (r.get_overrun ())
     return false;
 
   dump () && dump ("Read target='%s', host='%s'",
@@ -2341,7 +2339,7 @@ cpms_in::tag_globals ()
 {
   unsigned limit = r.u ();
   unsigned crc = r.u ();
-  if (r.source->get_error ())
+  if (r.get_overrun ())
     return false;
   if (limit != globals->length () || crc != globals_crc)
     {
@@ -2410,7 +2408,7 @@ cpms_in::tag_import ()
   if (!imp)
     return false;
 
-  if (r.source->get_error ())
+  if (r.get_overrun ())
     return false;
 
   /* Not designed to import after having assigned our number. */
@@ -2507,7 +2505,7 @@ cpms_in::tag_binding ()
       if (TREE_CODE (decl) == TYPE_DECL)
 	{
 	  if (type)
-	    r.bad ();
+	    r.set_overrun ();
 	  type = decl;
 	}
       else if (decls
@@ -2518,7 +2516,7 @@ cpms_in::tag_binding ()
 	      || (decls
 		  && TREE_CODE (decls) != OVERLOAD
 		  && TREE_CODE (decls) != FUNCTION_DECL))
-	    r.bad ();
+	    r.set_overrun ();
 	  decls = ovl_make (decl, decls);
 	  if (DECL_MODULE_EXPORT_P (decl))
 	    OVL_EXPORT_P (decls) = true;
@@ -2527,7 +2525,7 @@ cpms_in::tag_binding ()
 	decls = decl;
     }
 
-  if (r.source->get_error ())
+  if (r.get_overrun ())
     return false;
 
   if (!decls && !type)
@@ -2557,7 +2555,7 @@ cpms_in::define_function (tree decl, tree maybe_template)
   tree constexpr_body = (DECL_DECLARED_CONSTEXPR_P (decl)
 			 ? tree_node () : NULL_TREE);
 
-  if (r.error ())
+  if (r.get_overrun ())
     return NULL_TREE;
 
   if (TREE_CODE (CP_DECL_CONTEXT (maybe_template)) == NAMESPACE_DECL)
@@ -2566,7 +2564,7 @@ cpms_in::define_function (tree decl, tree maybe_template)
       if (mod != mod_ix)
 	{
 	  error ("unexpected definition of %q#D", decl);
-	  r.bad ();
+	  r.set_overrun ();
 	  return NULL_TREE;
 	}
       if (!MAYBE_DECL_MODULE_PURVIEW_P (maybe_template)
@@ -2610,7 +2608,7 @@ cpms_in::define_var (tree decl, tree)
 {
   tree init = tree_node ();
 
-  if (r.error ())
+  if (r.get_overrun ())
     return NULL;
 
   DECL_INITIAL (decl) = init;
@@ -2632,11 +2630,11 @@ tree
 cpms_in::chained_decls ()
 {
   tree decls = NULL_TREE;
-  for (tree *chain = &decls; chain && !r.error ();)
+  for (tree *chain = &decls; chain && !r.get_overrun ();)
     if (tree decl = tree_node ())
       {
 	if (!DECL_P (decl))
-	  r.bad ();
+	  r.set_overrun ();
 	else
 	  {
 	    gcc_assert (!DECL_CHAIN (decl));
@@ -2812,7 +2810,7 @@ cpms_in::define_class (tree type, tree maybe_template)
 
   // FIXME: Sanity check stuff
 
-  if (r.error ())
+  if (r.get_overrun ())
     return NULL_TREE;
 
   TYPE_FIELDS (type) = fields;
@@ -2852,7 +2850,7 @@ cpms_in::define_class (tree type, tree maybe_template)
 
   /* Now define all the members.  */
   while (tree_node ())
-    if (r.error ())
+    if (r.get_overrun ())
       break;
 
   return type;
@@ -2879,7 +2877,7 @@ cpms_in::define_enum (tree type, tree)
   tree min = tree_node ();
   tree max = tree_node ();
 
-  if (r.error ())
+  if (r.get_overrun ())
     return NULL_TREE;
 
   TYPE_VALUES (type) = values;
@@ -3020,7 +3018,7 @@ cpms_in::tag_definition ()
   tree t = tree_node ();
   dump () && dump ("Reading definition for %C:%N%M", TREE_CODE (t), t, t);
 
-  if (r.error ())
+  if (r.get_overrun ())
     return NULL_TREE;
 
   tree maybe_template = t;
@@ -3069,7 +3067,7 @@ cpms_in::tag_definition ()
 int
 cpms_in::read_item ()
 {
-  if (r.error ())
+  if (r.get_overrun ())
     return false;
 
   unsigned rt = r.u ();
@@ -3094,7 +3092,7 @@ cpms_in::read_item ()
 	  if (ix == MODULE_INDEX_LIMIT)
 	    {
 	      sorry ("too many modules loaded (limit is %u)", ix);
-	      r.bad ();
+	      r.set_overrun ();
 	      return -1;
 	    }
 	  vec_safe_push (modules, state);
@@ -3122,7 +3120,7 @@ cpms_in::read_item ()
       error (rt < rt_tree_base ? "unknown key %qd"
 	     : rt < rt_ref_base ? "unexpected tree code %qd"
 	     : "unexpected tree reference %qd",rt);
-      r.bad ();
+      r.set_overrun ();
       return false;
     }
 }
@@ -3615,7 +3613,7 @@ cpms_in::core_bools (tree t)
       RB (t->function_decl.versioned_function);
     }
 #undef RB
-  return !r.error ();
+  return !r.get_overrun ();
 }
 
 void
@@ -3723,7 +3721,7 @@ cpms_in::lang_decl_bools (tree t)
       gcc_unreachable ();
     }
 #undef RB
-  return !r.error ();
+  return !r.get_overrun ();
 }
 
 void
@@ -3853,7 +3851,7 @@ cpms_in::lang_type_bools (tree t)
   RB (lang->unique_obj_representations);
   RB (lang->unique_obj_representations_set);
 #undef RB
-  return !r.error ();
+  return !r.get_overrun ();
 }
 
 /* Read & write the core values and pointers.  */
@@ -4427,7 +4425,7 @@ cpms_in::core_vals (tree t)
 	      && t->type_non_common.minval != t)
 	    {
 	      t->type_non_common.minval = NULL_TREE;
-	      r.bad ();
+	      r.set_overrun ();
 	    }
 	  RT (t->type_non_common.maxval);
 	}
@@ -4601,7 +4599,7 @@ cpms_in::core_vals (tree t)
 #undef RT
 #undef RM
 #undef RU
-  return !r.error ();
+  return !r.get_overrun ();
 }
 
 void
@@ -4659,7 +4657,7 @@ cpms_in::lang_decl_vals (tree t)
 	    if (code >= OVL_OP_MAX
 		|| (ovl_op_info[IDENTIFIER_ASSIGN_OP_P (DECL_NAME (t))][code]
 		    .ovl_op_code) == OVL_OP_ERROR_MARK)
-	      r.bad ();
+	      r.set_overrun ();
 	    else
 	      lang->u.fn.ovl_op_code = code;
 	  }
@@ -4685,7 +4683,7 @@ cpms_in::lang_decl_vals (tree t)
     }
 #undef RU
 #undef RT
-  return !r.error ();
+  return !r.get_overrun ();
 }
 
 /* Most of the value contents of lang_type is streamed in
@@ -4713,7 +4711,7 @@ cpms_in::lang_type_vals (tree t)
   RT (lang->befriending_classes);
 #undef RU
 #undef RT
-  return !r.error ();
+  return !r.get_overrun ();
 }
 
 /* The raw tree node.  We've already dealt with the code, and in the
@@ -4787,7 +4785,7 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 	lied = true;
     }
   r.bflush ();
-  if (lied || r.source->get_error ())
+  if (lied || r.get_overrun ())
     return false;
 
   if (klass == tcc_declaration)
@@ -4923,7 +4921,7 @@ cpms_in::tree_node_special (unsigned tag)
 	  if (!val || !*val)
 	    {
 	      error ("unknown tree reference %qd", tag);
-	      r.bad ();
+	      r.set_overrun ();
 	      return NULL_TREE;
 	    }
 	  res = *val;
@@ -4939,7 +4937,7 @@ cpms_in::tree_node_special (unsigned tag)
 	 over.  */
       tree name = tree_node ();
       if (!name || TREE_CODE (name) != TYPE_DECL)
-	r.bad ();
+	r.set_overrun ();
       else
 	dump () && dump ("Read interstitial type name %C:%N%M",
 			 TREE_CODE (name), name, name);
@@ -4951,7 +4949,7 @@ cpms_in::tree_node_special (unsigned tag)
       /* A typeinfo.  Get the type and recreate the var decl.  */
       tree var = NULL_TREE, type = tree_node ();
       if (!type || !TYPE_P (type))
-	r.bad ();
+	r.set_overrun ();
       else
 	{
 	  var = get_tinfo_decl (type);
@@ -4969,7 +4967,7 @@ cpms_in::tree_node_special (unsigned tag)
       tree type = NULL_TREE;
 
       if (ix >= 1000)
-	r.bad ();
+	r.set_overrun ();
       else
 	type = get_pseudo_tinfo_type (ix);
 
@@ -4986,7 +4984,7 @@ cpms_in::tree_node_special (unsigned tag)
 	dump () && dump ("Read immediate definition %C:%N%M",
 			 TREE_CODE (res), res, res);
       else
-	gcc_assert (r.error ());
+	gcc_assert (r.get_overrun ());
       return res;
     }
 
@@ -5006,7 +5004,7 @@ cpms_in::tree_node_special (unsigned tag)
       if (!t || !TYPE_P (t))
 	{
 	  error ("bad conversion operator");
-	  r.bad ();
+	  r.set_overrun ();
 	  t = void_type_node;
 	}
       tree id = make_conv_op_name (t);
@@ -5119,7 +5117,7 @@ cpms_in::tree_node ()
   nest ();
  again:
   tree res = tree_node_special (tag);
-  if (!res && !r.error ())
+  if (!res && !r.get_overrun ())
     {
       if (tag == rt_type_name)
 	{
@@ -5131,11 +5129,11 @@ cpms_in::tree_node ()
 	{
 	  error (tag < rt_tree_base ? "unexpected key %qd"
 		 : "unknown tree code %qd" , tag);
-	  r.bad ();
+	  r.set_overrun ();
 	}
     }
 
-  if (res || r.error ())
+  if (res || r.get_overrun ())
     {
       unnest ();
       return res;
@@ -5155,7 +5153,7 @@ cpms_in::tree_node ()
 
       ctx = tree_node ();
       name = tree_node ();
-      if (!r.error ())
+      if (!r.get_overrun ())
 	{
 	  unsigned incoming = r.u ();
 
@@ -5164,10 +5162,10 @@ cpms_in::tree_node ()
 
 	  if (incoming >= remap_num
 	      || ((incoming != 0) != (node_module != mod_ix)))
-	    r.bad ();
+	    r.set_overrun ();
 	}
 
-      if (r.error ())
+      if (r.get_overrun ())
 	{
 	  unnest ();
 	  return NULL_TREE;
@@ -5215,11 +5213,11 @@ cpms_in::tree_node ()
 		       TREE_CODE (type), type, type);
     }
 
-  if (r.source->get_error ())
+  if (r.get_overrun ())
     {
     barf:
       tree_map.put (tag, NULL_TREE);
-      r.bad ();
+      r.set_overrun ();
       unnest ();
       return NULL_TREE;
     }
@@ -5471,7 +5469,7 @@ read_module (FILE *stream, module_state *state, cpms_in *from = NULL)
 	  unsigned crc = in.r.crc ();
 	  state->set_crc (crc);
 	}
-      in.r.end();
+      in.r.end (&elf);
 
       mod = in.get_mod ();
     }

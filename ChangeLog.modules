@@ -1,3 +1,16 @@
+2018-01-29  Nathan Sidwell  <nathan@acm.org>
+
+	Fix layering violation
+	gcc/cp/
+	* module.c (elf): Rename bad -> set_error.
+	(elf_out, elf_in): Update.
+	(cpm_serial, cpm_writer, cpm_reader): Rename to ...
+	(bytes, bytes_out, bytes_in): ... here.
+	(bytes_{in,out}): Remove source, sink members.
+	(bytes_in): Rename overran -> get_overrun.  Add end, set_overrun.
+	Delete bad, get_error.  Adjust users.
+	(cpms_in, cpms_out): Add elf field.  Adjust.
+
 2018-01-26  Nathan Sidwell  <nathan@acm.org>
 
 	Simplify buffer filling & drainging
