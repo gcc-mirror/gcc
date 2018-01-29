@@ -13557,6 +13557,17 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       return false;
     }
 
+  /* F2003, 15.2.1 - length has to be one.  */
+  if (sym->attr.is_bind_c && c->ts.type == BT_CHARACTER
+      && (c->ts.u.cl == NULL || c->ts.u.cl->length == NULL
+	  || !gfc_is_constant_expr (c->ts.u.cl->length)
+	  || mpz_cmp_si (c->ts.u.cl->length->value.integer, 1) != 0))
+    {
+      gfc_error ("Component %qs of BIND(C) type at %L must have length one",
+		 c->name, &c->loc);
+      return false;
+    }
+
   if (c->attr.proc_pointer && c->ts.interface)
     {
       gfc_symbol *ifc = c->ts.interface;
@@ -14802,6 +14813,15 @@ resolve_symbol (gfc_symbol *sym)
 	  gfc_error ("Variable %qs at %L cannot be BIND(C) because it "
 		     "is neither a COMMON block nor declared at the "
 		     "module level scope", sym->name, &(sym->declared_at));
+	  t = false;
+	}
+      else if (sym->ts.type == BT_CHARACTER
+	       && (sym->ts.u.cl == NULL || sym->ts.u.cl->length == NULL
+		   || !gfc_is_constant_expr (sym->ts.u.cl->length)
+		   || mpz_cmp_si (sym->ts.u.cl->length->value.integer, 1) != 0))
+	{
+	  gfc_error ("BIND(C) Variable %qs at %L must have length one",
+		     sym->name, &sym->declared_at);
 	  t = false;
 	}
       else if (sym->common_head != NULL && sym->attr.implicit_type == 0)
