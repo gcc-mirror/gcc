@@ -1,3 +1,10 @@
+2017-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84073
+	* resolve.c (resolve_component): Ensure BIND(C) character
+	components have length one.
+	(resolve_symbol): Likewise for variables.
+
 2018-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/84065
