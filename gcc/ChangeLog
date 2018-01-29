@@ -1,3 +1,11 @@
+2018-01-29  Richard Biener <rguenther@suse.de>
+	    Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR bootstrap/80867
+	* tree-vect-stmts.c (vectorizable_call): Don't call
+	targetm.vectorize_builtin_md_vectorized_function if callee is
+	NULL.
+
 2018-01-22 Carl Love <cel@us.ibm.com>
 
 	* doc/extend.tex: Fix typo in second arg in
