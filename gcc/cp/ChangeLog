@@ -1,3 +1,9 @@
+2018-01-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/68810 - wrong location for reinterpret_cast error.
+	* cvt.c (cp_convert_to_pointer): Always build a CONVERT_EXPR when
+	!dofold.
+
 2018-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/83996
