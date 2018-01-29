@@ -1,3 +1,8 @@
+2018-01-22 Carl Love <cel@us.ibm.com>
+
+	* doc/extend.tex: Fix typo in second arg in
+	__builtin_bcdadd_{lt|eq|gt|ov} and __builtin_bcdsub_{lt|eq|gt|ov}.
+
 2018-01-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84086
