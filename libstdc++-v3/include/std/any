@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A type-safe container of any type.
-   * 
+   *
    *  An @c any object's state is either empty or it stores a contained object
    *  of CopyConstructible type.
    */
@@ -114,8 +114,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void __do_emplace(_Args&&... __args)
       {
 	reset();
-	_M_manager = &_Mgr::_S_manage;
         _Mgr::_S_create(_M_storage, std::forward<_Args>(__args)...);
+	_M_manager = &_Mgr::_S_manage;
       }
 
     /// Emplace with an object created from @p __il and @p __args as
@@ -125,8 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void __do_emplace(initializer_list<_Up> __il, _Args&&... __args)
       {
 	reset();
-	_M_manager = &_Mgr::_S_manage;
         _Mgr::_S_create(_M_storage, __il, std::forward<_Args>(__args)...);
+	_M_manager = &_Mgr::_S_manage;
       }
 
   public:
@@ -272,8 +272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   _Decay<_ValueType>, _Args&&...>::type
       emplace(_Args&&... __args)
       {
-	__do_emplace<_Decay<_ValueType>>
-	  (std::forward<_Args>(__args)...);
+	__do_emplace<_Decay<_ValueType>>(std::forward<_Args>(__args)...);
 	any::_Arg __arg;
 	this->_M_manager(any::_Op_access, this, &__arg);
 	return *static_cast<_Decay<_ValueType>*>(__arg._M_obj);
@@ -288,8 +287,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   _Args&&...>::type
       emplace(initializer_list<_Up> __il, _Args&&... __args)
       {
-	__do_emplace<_Decay<_ValueType>, _Up>
-	  (__il, std::forward<_Args>(__args)...);
+	__do_emplace<_Decay<_ValueType>, _Up>(__il,
+					      std::forward<_Args>(__args)...);
 	any::_Arg __arg;
 	this->_M_manager(any::_Op_access, this, &__arg);
 	return *static_cast<_Decay<_ValueType>*>(__arg._M_obj);
@@ -624,7 +623,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /// @}
-  
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
