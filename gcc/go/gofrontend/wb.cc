@@ -410,6 +410,9 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 void
 Gogo::add_write_barriers()
 {
+  if (saw_errors())
+    return;
+
   Mark_address_taken mat(this);
   this->traverse(&mat);
 
