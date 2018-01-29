@@ -2982,7 +2982,15 @@ rs6000_setup_reg_addr_masks (void)
 
 	      /* Figure out if we can do PRE_INC, PRE_DEC, or PRE_MODIFY
 		 addressing.  If we allow scalars into Altivec registers,
-		 don't allow PRE_INC, PRE_DEC, or PRE_MODIFY.  */
+		 don't allow PRE_INC, PRE_DEC, or PRE_MODIFY.
+
+		 For VSX systems, we don't allow update addressing for
+		 DFmode/SFmode if those registers can go in both the
+		 traditional floating point registers and Altivec registers.
+		 The load/store instructions for the Altivec registers do not
+		 have update forms.  If we allowed update addressing, it seems
+		 to break IV-OPT code using floating point if the index type is
+		 int instead of long (PR target/81550 and target/84042).  */
 
 	      if (TARGET_UPDATE
 		  && (rc == RELOAD_REG_GPR || rc == RELOAD_REG_FPR)
@@ -2990,6 +2998,8 @@ rs6000_setup_reg_addr_masks (void)
 		  && !VECTOR_MODE_P (m2)
 		  && !FLOAT128_VECTOR_P (m2)
 		  && !complex_p
+		  && (m != E_DFmode || !TARGET_VSX)
+		  && (m != E_SFmode || !TARGET_P8_VECTOR)
 		  && !small_int_vsx_p)
 		{
 		  addr_mask |= RELOAD_REG_PRE_INCDEC;
