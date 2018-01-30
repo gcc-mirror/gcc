@@ -1,3 +1,8 @@
+2018-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84133
+	* gfortran.dg/inline_matmul_21.f90: New test case.
+
 2018-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/torture/pr81360.C: Add -fdump-ipa-icf to dg-options.

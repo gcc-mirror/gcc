@@ -2763,7 +2763,7 @@ matmul_to_var_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   if (forall_level > 0 || iterator_level > 0 || in_omp_workshare
-      || in_where)
+      || in_where || in_assoc_list)
     return 0;
 
   /* Check if this is already in the form c = matmul(a,b).  */
@@ -3728,7 +3728,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (co->op != EXEC_ASSIGN)
     return 0;
 
-  if (in_where)
+  if (in_where || in_assoc_list)
     return 0;
 
   /* The BLOCKS generated for the temporary variables and FORALL don't

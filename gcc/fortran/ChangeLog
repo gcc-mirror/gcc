@@ -1,3 +1,10 @@
+2018-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84133
+	* frontend-passes (matmul_to_var_expr): Return early if
+	in association list.
+	(inline_matmul_assign): Likewise.
+
 2017-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84073
