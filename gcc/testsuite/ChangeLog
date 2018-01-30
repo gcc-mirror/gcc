@@ -1,5 +1,10 @@
 2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/81360
+	* g++.dg/torture/pr81360.C: New testcase.
+
+2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/83954
 	* gcc.dg/lto/pr83954.h: New testcase.
 	* gcc.dg/lto/pr83954_0.c: New testcase.
