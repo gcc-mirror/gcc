@@ -1,5 +1,12 @@
 2018-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (module_state): Remove name_hash, crc_known, set_crc,
+	set_location.
+	(cpms_in::{read,header}): Add crc_ptr arg.
+	(do_module_import): Expected CRC is a pointer.
+	(cpms_in::imports): Adjust.
+
 	Push remaps as they happen.
 	gcc/cp/
 	* module.c (cpms_{in,out}::imports): Write in ascending order.

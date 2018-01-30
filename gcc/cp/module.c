@@ -151,8 +151,6 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
 
-  hashval_t name_hash;  /* Name hash. */ // FIXME:KIll
-
   unsigned mod;		/* Module index.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
@@ -161,7 +159,6 @@ struct GTY(()) module_state {
 
   vec<unsigned, va_gc> *remap; /* module no remapping.  */
 
-  bool crc_known : 1; //FIXME: Kill?
   bool imported : 1;	/* Imported via import declaration.  */
   bool exported : 1;	/* The import is exported.  */
 
@@ -172,9 +169,7 @@ struct GTY(()) module_state {
 
  public:
   void set_index (unsigned index);
-  void set_name (tree name, hashval_t);
-  bool set_crc (unsigned crc_);
-  void set_location (const char *filename);
+  void set_name (tree name);
   void push_location (const char *filename);
   void pop_location () const;
   void do_import (unsigned index, bool is_export);
@@ -192,7 +187,7 @@ struct module_state_hash : ggc_remove <module_state *>
 
   static hashval_t hash (const value_type m)
   {
-    return m->name_hash;
+    return IDENTIFIER_HASH_VALUE (m->name);
   }
   static bool equal (const value_type existing, compare_type candidate)
   {
@@ -227,7 +222,6 @@ module_state::module_state ()
     filename (NULL), loc (UNKNOWN_LOCATION),
     remap (NULL)
 {
-  crc_known = false;
   imported = exported = false;
 }
 
@@ -267,10 +261,9 @@ module_state::set_index (unsigned index)
    again.  */
 // FIXME  Perhaps a TREE_VEC of identifiers would be better? Oh well.
 void
-module_state::set_name (tree name_, hashval_t hash_)
+module_state::set_name (tree name_)
 {
   name = name_;
-  name_hash = hash_;
 
   size_t len = IDENTIFIER_LENGTH (name);
   const char *ptr = IDENTIFIER_POINTER (name);
@@ -301,34 +294,10 @@ module_state::set_name (tree name_, hashval_t hash_)
   XDELETEVEC (buffer);
 }
 
-/* Set the CRC, return false on mismatch.  */
-
-bool
-module_state::set_crc (unsigned crc_)
-{
-  if (!crc_known)
-    {
-      crc = crc_;
-      crc_known = true;
-    }
-  if (crc_ != crc)
-    {
-      error ("module %qE CRC mismatch", name);
-      return false;
-    }
-  return true;
-}
-
-void
-module_state::set_location (const char *name)
-{
-  filename = name;
-  loc = input_location;
-}
-
 void
 module_state::push_location (const char *name)
 {
+  // FIXME:We want LC_MODULE_ENTER really.
   filename = name;
   linemap_add (line_table, LC_ENTER, false, filename, 0);
   loc = linemap_line_start (line_table, 0, 0);
@@ -2157,12 +2126,12 @@ public:
 
 public:
   bool begin ();
-  unsigned read ();
+  unsigned read (unsigned *crc_ptr);
   bool end ();
 
 private:
-  bool header ();
-  bool imports (unsigned *crc_p);
+  bool header (unsigned *crc_ptr);
+  bool imports (unsigned *crc_ptr);
 
 public:
   bool tag_binding ();
@@ -2231,7 +2200,7 @@ cpms_in::insert (tree t)
 
 static unsigned do_module_import (location_t, tree, bool module_unit_p,
 				  bool import_export_p,
-				  cpms_in * = NULL, unsigned = 0);
+				  cpms_in * = NULL, unsigned * = NULL);
 
 /* Header section.  This determines if the current compilation is
    compatible with the serialized module.  I.e. the contents are just
@@ -2285,7 +2254,7 @@ cpms_out::header (unsigned inner_crc)
   unsigned crc = 0;
   w.end (&elf, elf.name (MOD_SNAME_PFX ".ident"), &crc);
   dump () && dump ("Writing CRC=%x", crc);
-  state->set_crc (crc);
+  state->crc = crc;
 }
 
 // FIXME: What we really want to do at this point is read the header
@@ -2293,19 +2262,21 @@ cpms_out::header (unsigned inner_crc)
 // checksum/version mismatches.  Other errors should barf.
 
 bool
-cpms_in::header ()
+cpms_in::header (unsigned *crc_ptr)
 {
   unsigned crc = 0;
   if (!r.begin (&elf, MOD_SNAME_PFX ".ident", &crc))
     return false;
 
   dump () && dump ("Reading CRC=%x", crc);
-  if (!state->set_crc (crc))
+  if (crc_ptr && crc != *crc_ptr)
     {
+      error ("module %qE CRC mismatch", state->name);
     fail:
       r.set_overrun ();
       return r.end (&elf);
     }
+  state->crc = crc;
 
   /* Check version.  */
   int my_ver = get_version ();
@@ -2444,7 +2415,7 @@ cpms_in::imports (unsigned *crc_p)
 		       exported ? "export " : imported ? "" : "indirect ", name);
       unsigned new_ix = do_module_import (UNKNOWN_LOCATION, name,
 					  /*unit_p=*/false,
-					  /*import_p=*/imported, this, crc);
+					  /*import_p=*/imported, this, &crc);
       if (new_ix == MODULE_INDEX_ERROR)
 	goto fail;
       state->remap->quick_push (new_ix);
@@ -5477,9 +5448,9 @@ cpms_in::end ()
 }
 
 unsigned
-cpms_in::read ()
+cpms_in::read (unsigned *crc_ptr)
 {
-  bool ok = header ();
+  bool ok = header (crc_ptr);
   unsigned crc = 0;
 
   if (ok)
@@ -5802,7 +5773,7 @@ make_module_file (char *&name, size_t name_len)
 
 unsigned
 do_module_import (location_t loc, tree name, bool module_unit_p,
-		  bool import_export_p, cpms_in *from, unsigned crc)
+		  bool import_export_p, cpms_in *from, unsigned *crc_ptr)
 {
   if (!module_hash)
     {
@@ -5812,8 +5783,9 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       modules->quick_push (current);
     }
 
-  hashval_t hash = IDENTIFIER_HASH_VALUE (name);
-  module_state **slot = module_hash->find_slot_with_hash (name, hash, INSERT);
+  module_state **slot
+    = module_hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
+					INSERT);
   unsigned index = 0;
   module_state *state = *slot;
 
@@ -5855,9 +5827,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	  return MODULE_INDEX_ERROR;
 	}
 
-      state->set_name (name, hash);
-      if (from)
-	state->set_crc (crc);
+      state->set_name (name);
       *slot = state;
 
       if (module_unit_p && import_export_p)
@@ -5913,7 +5883,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	      {
 		cpms_in in (stream, state, from);
 		if (in.begin ())
-		  index = in.read ();
+		  index = in.read (crc_ptr);
 		if (!in.end ())
 		  /* Failure to read a module is going to cause big
 		     problems, so bail out now.  */
@@ -5943,12 +5913,6 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	      XDELETE (filename);
 	    }
 	}
-    }
-
-  if (index != MODULE_INDEX_ERROR && crc && crc != state->crc)
-    {
-      error ("module %qE crc mismatch", name);
-      index = MODULE_INDEX_ERROR;
     }
 
   state->mod = index;
