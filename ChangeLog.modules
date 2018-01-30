@@ -1,5 +1,10 @@
 2018-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	Reorder source
+	gcc/cp/
+	* module.c (struct data): First.
+	(class elf, elf_in & elf_out): Next.
+
 	gcc/cp/
 	* module.c (module_state): Remove name_hash, crc_known, set_crc,
 	set_location.

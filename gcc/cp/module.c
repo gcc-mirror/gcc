@@ -142,252 +142,16 @@ static void version2string (unsigned version, version_string &out)
 	   time / 100, time % 100);
 }
 
-/* State of a particular module. */
-struct GTY(()) module_state {
-  /* We always import & export ourselves.  */
-  bitmap imports;	/* Transitive modules we're importing.  */
-  bitmap exports;	/* Subset of that, that we're exporting.  */
-
-  tree name;		/* Name of the module.  */
-  vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
-
-  unsigned mod;		/* Module index.  */
-  unsigned crc;		/* CRC we saw reading it in. */
-
-  const char *filename;	/* Filename */
-  location_t loc;	/* Its location.  */
-
-  vec<unsigned, va_gc> *remap; /* module no remapping.  */
-
-  bool imported : 1;	/* Imported via import declaration.  */
-  bool exported : 1;	/* The import is exported.  */
-
- public:
-  module_state ();
-  ~module_state ();
-  void release (bool = true);
-
- public:
-  void set_index (unsigned index);
-  void set_name (tree name);
-  void push_location (const char *filename);
-  void pop_location () const;
-  void do_import (unsigned index, bool is_export);
-
- public:
-  void dump (FILE *, bool);
-};
-
-/* Hash module state by name.  */
-
-struct module_state_hash : ggc_remove <module_state *>
-{
-  typedef module_state *value_type;
-  typedef tree compare_type; /* An identifier.  */
-
-  static hashval_t hash (const value_type m)
-  {
-    return IDENTIFIER_HASH_VALUE (m->name);
-  }
-  static bool equal (const value_type existing, compare_type candidate)
-  {
-    return existing->name == candidate;
-  }
-
-  static inline void mark_empty (value_type &p) {p = NULL;}
-  static inline bool is_empty (value_type p) {return !p;}
-
-  /* Nothing is deletable.  Everything is insertable.  */
-  static bool is_deleted (value_type) { return false; }
-  static void mark_deleted (value_type) { gcc_unreachable (); }
-};
-
-/* Vector of module state.  If this is non-null, index 0 is
-   occupied.  */
-static GTY(()) vec<module_state *, va_gc> *modules;
-
-/* Map from identifier to module index. */
-static GTY(()) hash_table<module_state_hash> *module_hash;
-
-/* Module search path.  */
-static cpp_dir *module_path;
-
-/* Longest module path.  */
-static size_t module_path_max;
-
-module_state::module_state ()
-  : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), name_parts (NULL),
-    mod (0), crc (0),
-    filename (NULL), loc (UNKNOWN_LOCATION),
-    remap (NULL)
-{
-  imported = exported = false;
-}
-
-module_state::~module_state ()
-{
-  release ();
-}
-
-/* Free up state.  If ALL is true, we're completely done.  If ALL is
-   false, we've completed reading in the module (but have not
-   completed parsing).  */
-
-void
-module_state::release (bool all)
-{
-  if (all)
-    {
-      imports = NULL;
-      exports = NULL;
-    }
-
-  vec_free (remap);
-}
-
-/* We've been assigned INDEX.  Mark the self-import-export bits.  */
-
-void
-module_state::set_index (unsigned index)
-{
-  gcc_checking_assert (mod == ~0u);
-  bitmap_set_bit (imports, index);
-  bitmap_set_bit (exports, index);
-}
-
-/* Set NAME and PARTS fields from incoming NAME.  We glued all the
-   identifiers together when parsing, and now we split them up
-   again.  */
-// FIXME  Perhaps a TREE_VEC of identifiers would be better? Oh well.
-void
-module_state::set_name (tree name_)
-{
-  name = name_;
-
-  size_t len = IDENTIFIER_LENGTH (name);
-  const char *ptr = IDENTIFIER_POINTER (name);
-  char *buffer = NULL;
-
-  const char *dot;
-  do
-    {
-      dot = (const char *)memchr (ptr, '.', len);
-      size_t l = dot ? dot - ptr : len;
-
-      gcc_assert (l);
-
-      size_t id_l = l;
-      const char *id_p = ptr;
-
-      vec_safe_reserve (name_parts,
-			vec_safe_length (name_parts) + 1,
-			!name_parts && !dot);
-      name_parts->quick_push (get_identifier_with_length (id_p, id_l));
-      if (dot)
-	l++;
-      ptr += l;
-      len -= l;
-    }
-  while (dot);
-
-  XDELETEVEC (buffer);
-}
-
-void
-module_state::push_location (const char *name)
-{
-  // FIXME:We want LC_MODULE_ENTER really.
-  filename = name;
-  linemap_add (line_table, LC_ENTER, false, filename, 0);
-  loc = linemap_line_start (line_table, 0, 0);
-  input_location = loc;
-}
-
-void
-module_state::pop_location () const
-{
-  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-}
-
-/* Return the IDENTIFIER_NODE naming module IX.  This is the name
-   including dots.  */
-
-tree
-module_name (unsigned ix)
-{
-  return (*modules)[ix]->name;
-}
-
-/* Return the vector of IDENTIFIER_NODES naming module IX.  These are
-   individual identifers per sub-module component.  */
-
-vec<tree, va_gc> *
-module_name_parts (unsigned ix)
-{
-  return (*modules)[ix]->name_parts;
-}
-
-/* Return the bitmap describing what modules are imported into
-   MODULE.  Remember, we always import ourselves.  */
-
-bitmap
-module_import_bitmap (unsigned ix)
-{
-  const module_state *state = (*modules)[ix];
-
-  return state ? state->imports : NULL;
-}
-
-/* Return the context that controls what module DECL is in.  That is
-   the outermost non-namespace context.  */
-
-tree
-module_context (tree decl)
-{
-  for (;;)
-    {
-      tree outer = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (outer))
-	{
-	  if (tree name = TYPE_NAME (outer))
-	    outer = name;
-	  else
-	    return NULL_TREE;
-	}
-      if (TREE_CODE (outer) == NAMESPACE_DECL)
-	break;
-      decl = outer;
-    }
-  return decl;
-}
-
-/* We've just directly imported INDEX.  Update our import/export
-   bitmaps.  IS_EXPORT is true if we're reexporting the module.  */
-
-void
-module_state::do_import (unsigned index, bool is_export)
-{
-  module_state *other = (*modules)[index];
-
-  if (this == (*modules)[0])
-    {
-      other->imported = true;
-      other->exported = is_export;
-    }
-  bitmap_ior_into (imports, other->exports);
-  if (is_export)
-    bitmap_ior_into (exports, other->exports);
-}
-
+/* Map from pointer to unsigned and vice-versa.  Entries are
+   non-deletable.  */
 struct non_null_hash : pointer_hash <void> {
   static bool is_deleted (value_type) {return false;}
   static void remove (value_type) {}
 };
 typedef simple_hashmap_traits<non_null_hash, unsigned> ptr_uint_traits;
-typedef hash_map<void *,unsigned,ptr_uint_traits> ptr_uint_hash_map;
-
 typedef simple_hashmap_traits<int_hash<unsigned,0>,void *> uint_ptr_traits;
+
+typedef hash_map<void *,unsigned,ptr_uint_traits> ptr_uint_hash_map;
 typedef hash_map<unsigned,void *,uint_ptr_traits> uint_ptr_hash_map;
 
 /* A data buffer, using trailing array hack.  */
@@ -463,14 +227,14 @@ data *data::extend (data *c, size_t a)
 }
 
 /* Encapsulated Lazy Records Of Named Declarations.
-   Header: Sg1
-   tunningly Elf32_Ehdr-like
+   Header: Stunningly Elf32_Ehdr-like
    Sections: Sectional data
-     1:Notes -- human readable
-     N:Decls -- decls bound to a name
-     1:Bindings -- bindings of namespace names
-     1:Strings -- strings, stunningly 
-     1:Symbols -- symbols, stunningly ELF32_Sym-like
+     1     .README   : human readable, stunningly STRTAB-like
+     2     .imports  : import table
+     [3-N) .decls    : decls bound to a name
+     N     .bindings : bindings of namespace names
+     N+1   .ident    : config data
+     N+2    .strtab  : strings, stunningly STRTAB-like
    Index: Section table, stunningly ELF32_Shdr-like.
  */
 
@@ -1059,6 +823,244 @@ elf_out::end ()
 
  out:
   return get_error ();
+}
+
+/* State of a particular module. */
+struct GTY(()) module_state {
+  /* We always import & export ourselves.  */
+  bitmap imports;	/* Transitive modules we're importing.  */
+  bitmap exports;	/* Subset of that, that we're exporting.  */
+
+  tree name;		/* Name of the module.  */
+  vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
+
+  unsigned mod;		/* Module index.  */
+  unsigned crc;		/* CRC we saw reading it in. */
+
+  const char *filename;	/* Filename */
+  location_t loc;	/* Its location.  */
+
+  vec<unsigned, va_gc> *remap; /* module no remapping.  */
+
+  bool imported : 1;	/* Imported via import declaration.  */
+  bool exported : 1;	/* The import is exported.  */
+
+ public:
+  module_state ();
+  ~module_state ();
+  void release (bool = true);
+
+ public:
+  void set_index (unsigned index);
+  void set_name (tree name);
+  void push_location (const char *filename);
+  void pop_location () const;
+  void do_import (unsigned index, bool is_export);
+
+ public:
+  void dump (FILE *, bool);
+};
+
+/* Hash module state by name.  */
+
+struct module_state_hash : ggc_remove <module_state *>
+{
+  typedef module_state *value_type;
+  typedef tree compare_type; /* An identifier.  */
+
+  static hashval_t hash (const value_type m)
+  {
+    return IDENTIFIER_HASH_VALUE (m->name);
+  }
+  static bool equal (const value_type existing, compare_type candidate)
+  {
+    return existing->name == candidate;
+  }
+
+  static inline void mark_empty (value_type &p) {p = NULL;}
+  static inline bool is_empty (value_type p) {return !p;}
+
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (value_type) { return false; }
+  static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
+/* Vector of module state.  If this is non-null, index 0 is
+   occupied.  */
+static GTY(()) vec<module_state *, va_gc> *modules;
+
+/* Map from identifier to module index. */
+static GTY(()) hash_table<module_state_hash> *module_hash;
+
+/* Module search path.  */
+static cpp_dir *module_path;
+
+/* Longest module path.  */
+static size_t module_path_max;
+
+module_state::module_state ()
+  : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
+    name (NULL_TREE), name_parts (NULL),
+    mod (0), crc (0),
+    filename (NULL), loc (UNKNOWN_LOCATION),
+    remap (NULL)
+{
+  imported = exported = false;
+}
+
+module_state::~module_state ()
+{
+  release ();
+}
+
+/* Free up state.  If ALL is true, we're completely done.  If ALL is
+   false, we've completed reading in the module (but have not
+   completed parsing).  */
+
+void
+module_state::release (bool all)
+{
+  if (all)
+    {
+      imports = NULL;
+      exports = NULL;
+    }
+
+  vec_free (remap);
+}
+
+/* We've been assigned INDEX.  Mark the self-import-export bits.  */
+
+void
+module_state::set_index (unsigned index)
+{
+  gcc_checking_assert (mod == ~0u);
+  bitmap_set_bit (imports, index);
+  bitmap_set_bit (exports, index);
+}
+
+/* Set NAME and PARTS fields from incoming NAME.  We glued all the
+   identifiers together when parsing, and now we split them up
+   again.  */
+// FIXME  Perhaps a TREE_VEC of identifiers would be better? Oh well.
+void
+module_state::set_name (tree name_)
+{
+  name = name_;
+
+  size_t len = IDENTIFIER_LENGTH (name);
+  const char *ptr = IDENTIFIER_POINTER (name);
+  char *buffer = NULL;
+
+  const char *dot;
+  do
+    {
+      dot = (const char *)memchr (ptr, '.', len);
+      size_t l = dot ? dot - ptr : len;
+
+      gcc_assert (l);
+
+      size_t id_l = l;
+      const char *id_p = ptr;
+
+      vec_safe_reserve (name_parts,
+			vec_safe_length (name_parts) + 1,
+			!name_parts && !dot);
+      name_parts->quick_push (get_identifier_with_length (id_p, id_l));
+      if (dot)
+	l++;
+      ptr += l;
+      len -= l;
+    }
+  while (dot);
+
+  XDELETEVEC (buffer);
+}
+
+void
+module_state::push_location (const char *name)
+{
+  // FIXME:We want LC_MODULE_ENTER really.
+  filename = name;
+  linemap_add (line_table, LC_ENTER, false, filename, 0);
+  loc = linemap_line_start (line_table, 0, 0);
+  input_location = loc;
+}
+
+void
+module_state::pop_location () const
+{
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+}
+
+/* Return the IDENTIFIER_NODE naming module IX.  This is the name
+   including dots.  */
+
+tree
+module_name (unsigned ix)
+{
+  return (*modules)[ix]->name;
+}
+
+/* Return the vector of IDENTIFIER_NODES naming module IX.  These are
+   individual identifers per sub-module component.  */
+
+vec<tree, va_gc> *
+module_name_parts (unsigned ix)
+{
+  return (*modules)[ix]->name_parts;
+}
+
+/* Return the bitmap describing what modules are imported into
+   MODULE.  Remember, we always import ourselves.  */
+
+bitmap
+module_import_bitmap (unsigned ix)
+{
+  const module_state *state = (*modules)[ix];
+
+  return state ? state->imports : NULL;
+}
+
+/* Return the context that controls what module DECL is in.  That is
+   the outermost non-namespace context.  */
+
+tree
+module_context (tree decl)
+{
+  for (;;)
+    {
+      tree outer = CP_DECL_CONTEXT (decl);
+      if (TYPE_P (outer))
+	{
+	  if (tree name = TYPE_NAME (outer))
+	    outer = name;
+	  else
+	    return NULL_TREE;
+	}
+      if (TREE_CODE (outer) == NAMESPACE_DECL)
+	break;
+      decl = outer;
+    }
+  return decl;
+}
+
+/* We've just directly imported INDEX.  Update our import/export
+   bitmaps.  IS_EXPORT is true if we're reexporting the module.  */
+
+void
+module_state::do_import (unsigned index, bool is_export)
+{
+  module_state *other = (*modules)[index];
+
+  if (this == (*modules)[0])
+    {
+      other->imported = true;
+      other->exported = is_export;
+    }
+  bitmap_ior_into (imports, other->exports);
+  if (is_export)
+    bitmap_ior_into (exports, other->exports);
 }
 
 /* Byte serializer base.  */
