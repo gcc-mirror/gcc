@@ -1,5 +1,11 @@
 2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/83179
+	* gcc.dg/ipa/inline-2.c: Fix template.
+	* gcc.dg/ipa/inline-3.c: Fix template.
+	
+2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/81360
 	* g++.dg/torture/pr81360.C: New testcase.
 
