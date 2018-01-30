@@ -1,3 +1,9 @@
+2018-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/84017
+	* configure.ac (gcc_cv_as_shf_merge): Disable on Solaris 10/x86.
+	* configure: Regenerate.
+
 2018-01-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64-sve.md (*vec_extract<mode><Vel>_0): New
