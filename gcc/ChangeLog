@@ -1,3 +1,8 @@
+2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* profile-count.c (profile_count::combine_with_ipa_count): Handle
+	zeros correctly.
+
 2018-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83008
