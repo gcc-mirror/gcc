@@ -1,5 +1,17 @@
 2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR ipa/81360
+	* ipa-inline.c (can_inline_edge_p): Break out late tests to...
+	(can_inline_edge_by_limits_p): ... here.
+	(can_early_inline_edge_p, check_callers,
+	update_caller_keys, update_callee_keys, recursive_inlining,
+	add_new_edges_to_heap, speculation_useful_p,
+	inline_small_functions,
+	inline_small_functions, flatten_function,
+	inline_to_all_callers_1): Update.
+
+2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	* profile-count.c (profile_count::combine_with_ipa_count): Handle
 	zeros correctly.
 
