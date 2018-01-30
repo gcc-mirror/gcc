@@ -230,90 +230,30 @@ module_state::set_index (unsigned index)
   bitmap_set_bit (exports, index);
 }
 
-/* Set NAME and PARTS fields from incoming NAME.  The name must have
-   already been checked for well-formedness.  */
-
+/* Set NAME and PARTS fields from incoming NAME.  We glued all the
+   identifiers together when parsing, and now we split them up
+   again.  */
+// FIXME  Perhaps a TREE_VEC of identifiers would be better? Oh well.
 void
 module_state::set_name (tree name_, hashval_t hash_)
 {
   name = name_;
   name_hash = hash_;
 
-  size_t len;
-  const char *ptr;
-  char sep;
+  size_t len = IDENTIFIER_LENGTH (name);
+  const char *ptr = IDENTIFIER_POINTER (name);
   char *buffer = NULL;
-
-  if (identifier_p (name))
-    {
-      len = IDENTIFIER_LENGTH (name);
-      ptr = IDENTIFIER_POINTER (name);
-      sep = '.';
-    }
-  else
-    {
-      len = TREE_STRING_LENGTH (name) - 1;
-      ptr = TREE_STRING_POINTER (name);
-      sep = DIR_SEPARATOR;
-    }
 
   const char *dot;
   do
     {
-      dot = (const char *)memchr (ptr, sep, len);
+      dot = (const char *)memchr (ptr, '.', len);
       size_t l = dot ? dot - ptr : len;
 
       gcc_assert (l);
 
       size_t id_l = l;
       const char *id_p = ptr;
-
-      if (sep != '.')
-	{
-	  /* Look for identfier-veboten characters and escape them.
-	     That is leading digits, non-alphanumeric chars and _.
-	     Escape as _<esc>
-	       0x21-0x2f (14) _A->_O
-	       0x30-0x3a (11) _P->_Z
-	       0x3b-0x3f (5)  _g->_k
-	       0x40	 (1)  _l
-	       0x5B-0x5f (5)  _m->_q
-	       0x60	 (1)  _r
-	       0x7b-0x7f (5)  _s->_w
-	     Notice _0-_9, _a-_f are not used.	  */
-	  bool escape = ISDIGIT (*ptr);
-	  for (size_t frag = l; !escape && frag--;)
-	    if (!ISALNUM (ptr[frag]))
-	      escape = true;
-	  if (escape)
-	    {
-	      if (!buffer)
-		buffer = XNEWVEC (char, len * 2);
-	      id_p = buffer;
-	      id_l = 0;
-	      for (size_t frag = 0; frag != l; frag++)
-		{
-		  unsigned char c = ptr[frag];
-		  if (!(ISALPHA (c) || (frag && ISDIGIT (c))))
-		    {
-		      if (c >= 0x21 && c <= 0x2f)
-			c = 'A' + (c - 0x21);
-		      else if (c >= 0x30 && c <= 0x3a)
-			c = 'P' + (c - 0x30);
-		      else if (c >= 0x3b && c <= 0x40)
-			c = 'g' + (c - 0x3b);
-		      else if (c >= 0x5b && c <= 0x60)
-			c = 'm' + (c - 0x5b);
-		      else if (c >= 0x7b && c <= 0x7f)
-			c = 's' + (c - 0x7b);
-		      else
-			gcc_unreachable ();
-		      buffer[id_l++] = '_';
-		    }
-		  buffer[id_l++] = c;
-		}
-	    }
-	}
 
       vec_safe_reserve (name_parts,
 			vec_safe_length (name_parts) + 1,
@@ -1782,7 +1722,6 @@ public:
     rt_definition,	/* A definition. */
     rt_identifier,	/* An identifier node.  */
     rt_conv_identifier,	/* A conversion operator name.  */
-    rt_globals,		/* Global trees.  */
     rt_type_name,	/* A type name.  */
     rt_typeinfo_var,	/* A typeinfo object.  */
     rt_typeinfo_pseudo, /* A typeinfo pseudo type.  */
@@ -2151,7 +2090,6 @@ private:
 
 public:
   void tag_conf ();
-  void tag_globals ();
   void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
@@ -2260,7 +2198,6 @@ public:
   bool tag_conf ();
   bool tag_binding ();
   tree tag_definition ();
-  bool tag_globals ();
   int read_item ();
   unsigned get_mod () const
   {
@@ -2331,18 +2268,28 @@ static unsigned do_module_import (location_t, tree, bool module_unit_p,
 
 /* File header
    u:version
-   u:CRC
+   u:crc
    u:module-name
+   u:globals_length
 */
 
 void
-cpms_out::header (unsigned crc)
+cpms_out::header (unsigned inner_crc)
 {
-  w.begin (false);
+  w.begin (true);
   w.u (unsigned (get_version ()));
-  w.u (crc);
+  w.u (inner_crc);
   w.u (elf.name (state->name));
-  w.end (&elf, elf.name (MOD_SNAME_PFX ".ident"));
+  w.u (globals->length ());
+  /* We write the globals crc separately, rather than mix it directly
+     into the overall crc, as it is used to ensure data match between
+     instances of the compiler, not integrity of the file.  */
+  w.u (globals_crc);
+
+  unsigned crc = 0;
+  w.end (&elf, elf.name (MOD_SNAME_PFX ".ident"), &crc);
+  dump () && dump ("Writing CRC=%x", crc);
+  state->set_crc (crc);
 }
 
 // FIXME: What we really want to do at this point is read the header
@@ -2352,11 +2299,17 @@ cpms_out::header (unsigned crc)
 bool
 cpms_in::header ()
 {
-  if (!r.begin (&elf, MOD_SNAME_PFX ".ident"))
+  unsigned crc = 0;
+  if (!r.begin (&elf, MOD_SNAME_PFX ".ident", &crc))
     return false;
 
-  unsigned crc;
-  const char *name;
+  dump () && dump ("Reading CRC=%x", crc);
+  if (!state->set_crc (crc))
+    {
+    fail:
+      r.set_overrun ();
+      return r.end (&elf);
+    }
 
   /* Check version.  */
   int my_ver = get_version ();
@@ -2367,47 +2320,48 @@ cpms_in::header ()
       int their_date = version2date (their_ver);
       int my_time = version2time (my_ver);
       int their_time = version2time (their_ver);
+      version_string my_string, their_string;
 
-      if (my_date != their_date || their_time != my_time)
+      version2string (my_ver, my_string);
+      version2string (their_ver, their_string);
+
+      if (my_date != their_date)
 	{
-	  version_string my_string, their_string;
-
-	  version2string (my_ver, my_string);
-	  version2string (their_ver, their_string);
-
-	  if (my_date != their_date)
-	    {
-	      /* Dates differ, decline.  */
-	      error ("file is version %s, this is version %s",
-		     their_string, my_string);
-	      goto fail;
-	    }
-	  else
-	    /* Times differ, give it a go.  */
-	    warning (0, "file is version %s, this_is_version %s, close enough",
-		     their_string, my_string);
+	  /* Dates differ, decline.  */
+	  error ("file is version %s, this is version %s",
+		 their_string, my_string);
+	  goto fail;
 	}
+      else if (my_time != their_time)
+	/* Times differ, give it a go.  */
+	warning (0, "file is version %s, this_is_version %s,"
+		 " perhaps close enough", their_string, my_string);
     }
   dump () && dump  (my_ver == their_ver ? "Version %V"
 		    : "Expecting %V found %V", my_ver, their_ver);
 
-  crc = r.u ();
-  name = elf.name (r.u ());
+  /* Read and ignore the inner crc.  We only wrote it to mix it into
+     the crc.  */
+  r.u ();
+  const char *their_name = elf.name (r.u ());
+  unsigned their_glength = r.u ();
+  unsigned their_gcrc = r.u ();
   if (r.more_p ())
     goto fail;
 
-  dump () && dump ("Reading CRC=%x", crc);
-  if (!state->set_crc (crc))
-    goto fail;
-
   /* Check module name.  */
-  if (strlen (name) != IDENTIFIER_LENGTH (state->name)
-      || memcmp (name, IDENTIFIER_POINTER (state->name),
+  if (strlen (their_name) != IDENTIFIER_LENGTH (state->name)
+      || memcmp (their_name, IDENTIFIER_POINTER (state->name),
 		 IDENTIFIER_LENGTH (state->name)))
     {
-      error ("module %qs found, expected module %qE", name, state->name);
-    fail:
-      r.set_overrun ();
+      error ("module %qs found, expected module %qE", their_name, state->name);
+      goto fail;
+    }
+  if (their_glength != globals->length ()
+      || their_gcrc != globals_crc)
+    {
+      error ("global tree mismatch");
+      goto fail;
     }
 
   return r.end (&elf);
@@ -2454,43 +2408,6 @@ cpms_in::tag_conf ()
   return true;
 }
 
-void
-cpms_out::tag_globals ()
-{
-  unsigned limit = globals->length ();
-  tag (rt_globals);
-  w.u (limit);
-  w.u (globals_crc);
-
-  for (unsigned ix = 0; ix != limit; ix++)
-    {
-      tree val = (*globals)[ix];
-      bool existed;
-      unsigned *slot = &tree_map.get_or_insert (val, &existed);
-      gcc_checking_assert (!existed);
-      *slot = next ();
-    }
-}
-
-bool
-cpms_in::tag_globals ()
-{
-  unsigned limit = r.u ();
-  unsigned crc = r.u ();
-  if (r.get_overrun ())
-    return false;
-  if (limit != globals->length () || crc != globals_crc)
-    {
-      error ("global tree mismatch");
-      return false;
-    }
-
-  /* Just reserve the tag space.  No need to actually insert them in
-     the map.  */
-  next (limit);
-  return true;
-}
-
 /* Imports
    {
      b:imported
@@ -2510,6 +2427,7 @@ cpms_out::imports (unsigned *crc_p)
 {
   elf_out::symtab syms;
 
+  /* Define a symbol for this module.  */
   syms.add (elf.name (state->name));
 
   w.begin (true);
@@ -2527,7 +2445,11 @@ cpms_out::imports (unsigned *crc_p)
       w.u (state->crc);
       unsigned name = elf.name (state->name);
       w.u (name);
-      syms.add (name);
+
+      /* Record symbols for the direct imports.  We do not use this
+	 data, but it may be useful for tooling.  */
+      if (state->imported)
+	syms.add (name);
     }
   unsigned shnum = w.end (&elf, elf.name (MOD_SNAME_PFX ".imports"), crc_p);
   syms.write (&elf, shnum);
@@ -3249,8 +3171,6 @@ cpms_in::read_item ()
       return tag_binding ();
     case rt_definition:
       return tag_definition () != NULL_TREE;
-    case rt_globals:
-      return tag_globals ();
 
     default:
       error (rt < rt_tree_base ? "unknown key %qd"
@@ -5536,12 +5456,23 @@ cpms_out::write ()
 
   unsigned crc = 0;
   imports (&crc); /* Import table. */
-  
+
+  /* Prepare the globals. */
+  {
+    unsigned limit = globals->length ();
+    for (unsigned ix = 0; ix != limit; ix++)
+      {
+	tree val = (*globals)[ix];
+	bool existed;
+	unsigned *slot = &tree_map.get_or_insert (val, &existed);
+	gcc_checking_assert (!existed);
+	*slot = next ();
+      }
+  }
+
   w.begin (true);
   tag_conf ();
   // FIXME:Write 'important' flags etc
-
-  tag_globals ();
 
   /* Write decls.  */
   bindings (global_namespace);
@@ -5549,12 +5480,9 @@ cpms_out::write ()
   // FIXME: blob not good name
   w.end (&elf, elf.name (MOD_SNAME_PFX ".blob"), &crc);
 
-
-  state->set_crc (crc);
-  instrument ();
-
   header (crc);
-  dump () && dump ("Writing eof, CRC=%x", crc);
+
+  instrument ();
 }
 
 bool
@@ -5583,20 +5511,70 @@ cpms_in::read ()
   bool ok = header ();
   unsigned crc = 0;
 
+  // FIXME: in transition
+  if (!ok)
+    return MODULE_INDEX_ERROR;
   if (ok)
     ok = imports (&crc);
+
+  /* Just reserve the tag space.  No need to actually insert them in
+     the map.  */
+  next (globals->length ());
 
   if (!r.begin (&elf, MOD_SNAME_PFX ".blob", &crc))
     return MODULE_INDEX_ERROR;
 
+  unsigned rt = r.u ();
+  gcc_assert (rt == rt_conf); // FIXME:partial
+  ok = tag_conf ();
+
+  unsigned ix = 0;
+  if (state != (*modules)[0])
+    {
+      ix = modules->length ();
+      if (ix == MODULE_INDEX_LIMIT)
+	{
+	  sorry ("too many modules loaded (limit is %u)", ix);
+	  r.set_overrun ();
+	  // FIXME: where to?
+	  return -1;
+	}
+      vec_safe_push (modules, state);
+      state->set_index (ix);
+    }
+  mod_ix = ix;
+  gcc_assert (remap_vec);
+  remap_vec[0] = ix;
+
+  dump () && dump ("Assigning %N module index %u", state->name, mod_ix);
+
   while (ok && r.more_p ())
-    ok = read_item ();
+    {
+      rt = r.u ();
+
+      switch (rt)
+	{
+	case rt_binding:
+	  ok = tag_binding ();
+	  break;
+	case rt_definition:
+	  ok = tag_definition () != NULL_TREE;
+	  break;
+
+	default:
+	  error (rt < rt_tree_base ? "unknown key %qd"
+		 : rt < rt_ref_base ? "unexpected tree code %qd"
+		 : "unexpected tree reference %qd",rt);
+	  ok = false;
+	  break;
+	}
+    }
 
   if (!ok)
     r.set_overrun ();
 
   r.end (&elf);
-  // FIXME:calculated CRC should match file's
+
   return get_mod ();
 }
 
@@ -5737,8 +5715,7 @@ search_module_path (char *&name, size_t name_len, tree mname)
 
   once = true;
 
-  const char *str_name = (identifier_p (mname) ? IDENTIFIER_POINTER (mname)
-			  : TREE_STRING_POINTER (mname));
+  const char *str_name = IDENTIFIER_POINTER (mname);
   // FIXME: reference main source file here?  See below too.
   inform (UNKNOWN_LOCATION, "invoking module wrapper to install %qs",
 	  str_name);
@@ -5869,12 +5846,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       modules->quick_push (current);
     }
 
-  hashval_t hash;
-  if (identifier_p (name))
-    hash = IDENTIFIER_HASH_VALUE (name);
-  else
-    hash = hashval_t (crc32_string (TREE_STRING_LENGTH (name),
-				    TREE_STRING_POINTER (name)));
+  hashval_t hash = IDENTIFIER_HASH_VALUE (name);
   module_state **slot = module_hash->find_slot_with_hash (name, hash, INSERT);
   unsigned index = 0;
   module_state *state = *slot;
@@ -5942,9 +5914,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
           char *filename = NULL;
 	  size_t filename_len;
 
-	  if (!identifier_p (name))
-	    ;
-	  else if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
+	  if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
 	    {
 	      filename_len = strlen (*slot);
 	      filename = XNEWVEC (char, filename_len + 1);
@@ -5957,10 +5927,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	  if (FILE *stream = search_module_path (filename, filename_len, name))
 	    {
 	      gcc_assert (global_namespace == current_scope ());
-	      const char *str_name
-		= (identifier_p (state->name)
-		   ? IDENTIFIER_POINTER (state->name)
-		   : TREE_STRING_POINTER (state->name));
+	      const char *str_name = IDENTIFIER_POINTER (state->name);
 	      location_t saved_loc = input_location;
 
 	      state->push_location (filename);

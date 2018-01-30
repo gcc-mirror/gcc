@@ -1,3 +1,13 @@
+2018-01-30  Nathan Sidwell  <nathan@acm.org>
+
+	Globals in header
+	gcc/cp/
+	* module.c (module_state::set_name): Kill string names.
+	(cpms_{in,out}::tag_globals): Delete.
+	(cpms_{in,out}::header): Do globals.  Add outer crc.
+	(cpms_in::read): Absorb cpms_in::read_item.
+	(search_module_path, do_module_import): Kill string names.
+
 2018-01-29  Nathan Sidwell  <nathan@acm.org>
 
 	Import table is separate section
