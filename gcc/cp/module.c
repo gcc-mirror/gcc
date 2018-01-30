@@ -147,19 +147,28 @@ struct GTY(()) module_state {
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
+
   tree name;		/* Name of the module.  */
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
-  hashval_t name_hash;  /* Name hash. */
+
+  hashval_t name_hash;  /* Name hash. */ // FIXME:KIll
+
   unsigned mod;		/* Module index.  */
   unsigned crc;		/* CRC we saw reading it in. */
+
   const char *filename;	/* Filename */
   location_t loc;	/* Its location.  */
-  bool crc_known : 1;
+
+  vec<unsigned, va_gc> *remap; /* module no remapping.  */
+
+  bool crc_known : 1; //FIXME: Kill?
   bool imported : 1;	/* Imported via import declaration.  */
   bool exported : 1;	/* The import is exported.  */
 
  public:
   module_state ();
+  ~module_state ();
+  void release (bool = true);
 
  public:
   void set_index (unsigned index);
@@ -213,11 +222,34 @@ static size_t module_path_max;
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), name_parts (NULL), mod (0),
-    crc (0), filename (NULL), loc (UNKNOWN_LOCATION)
+    name (NULL_TREE), name_parts (NULL),
+    mod (0), crc (0),
+    filename (NULL), loc (UNKNOWN_LOCATION),
+    remap (NULL)
 {
   crc_known = false;
   imported = exported = false;
+}
+
+module_state::~module_state ()
+{
+  release ();
+}
+
+/* Free up state.  If ALL is true, we're completely done.  If ALL is
+   false, we've completed reading in the module (but have not
+   completed parsing).  */
+
+void
+module_state::release (bool all)
+{
+  if (all)
+    {
+      imports = NULL;
+      exports = NULL;
+    }
+
+  vec_free (remap);
 }
 
 /* We've been assigned INDEX.  Mark the self-import-export bits.  */
@@ -2119,10 +2151,6 @@ private:
   unsigned mod_ix; /* Module index.  */
   unsigned crc;    /* Expected crc.  */
 
-  /* Remapping from incoming module indices to current TU. */
-  unsigned remap_num;
-  unsigned *remap_vec;
-
 public:
   cpms_in (FILE *, module_state *, cpms_in *);
   ~cpms_in ();
@@ -2174,14 +2202,13 @@ public:
 
 cpms_in::cpms_in (FILE *s, module_state *state, cpms_in *from)
   :cpm_stream (state, from), elf (s), r (),
-   mod_ix (MODULE_INDEX_IMPORTING), remap_num (0), remap_vec (NULL)
+   mod_ix (MODULE_INDEX_IMPORTING)
 {
   dump () && dump ("Importing %I", state->name);
 }
 
 cpms_in::~cpms_in ()
 {
-  XDELETE (remap_vec);
 }
 
 unsigned
@@ -2206,7 +2233,10 @@ static unsigned do_module_import (location_t, tree, bool module_unit_p,
 				  bool import_export_p,
 				  cpms_in * = NULL, unsigned = 0);
 
-/* File header
+/* Header section.  This determines if the current compilation is
+   compatible with the serialized module.  I.e. the contents are just
+   confirming things we already know (or failing to match).
+
    raw:version
    raw:crc
    u:module-name
@@ -2395,9 +2425,12 @@ cpms_in::imports (unsigned *crc_p)
   gcc_assert (mod_ix == MODULE_INDEX_IMPORTING);
 
   unsigned imports = r.u ();
-  remap_num = imports;
-  remap_vec = XNEWVEC (unsigned, imports);
-  memset (remap_vec, 0, sizeof (unsigned) * imports);
+  gcc_assert (!state->remap);
+  state->remap = NULL;
+  vec_safe_reserve (state->remap, imports);
+  //FIXME: Can we push as we import?
+  for (unsigned j = imports; j--;)
+    state->remap->quick_push (0);
 
   for (unsigned ix = imports; ix-- > MODULE_INDEX_IMPORT_BASE;)
     {
@@ -2410,12 +2443,12 @@ cpms_in::imports (unsigned *crc_p)
       dump () && dump ("Begin nested %simport %I",
 		       exported ? "export " : imported ? "" : "indirect ", name);
       unsigned new_ix = do_module_import (UNKNOWN_LOCATION, name,
-					  /*unit_p=*/false, /*import_p=*/imported,
-					  this, crc);
+					  /*unit_p=*/false,
+					  /*import_p=*/imported, this, crc);
       bool ok = new_ix != MODULE_INDEX_ERROR;
       if (ok)
 	{
-	  remap_vec[ix] = new_ix;
+	  (*state->remap)[ix] = new_ix;
 	  if (imported)
 	    {
 	      dump () && dump ("Direct %simport %I %u",
@@ -5088,10 +5121,11 @@ cpms_in::tree_node ()
 	{
 	  unsigned incoming = r.u ();
 
-	  if (incoming < remap_num)
-	    node_module = remap_vec[incoming];
+	  // FIXME:and here 
+	  if (incoming < state->remap->length ())
+	    node_module = (*state->remap)[incoming];
 
-	  if (incoming >= remap_num
+	  if (incoming >= state->remap->length ()
 	      || ((incoming != 0) != (node_module != mod_ix)))
 	    r.set_overrun ();
 	}
@@ -5473,7 +5507,7 @@ cpms_in::read ()
     }
   mod_ix = ix;
   if (ok)
-    remap_vec[0] = ix;
+    (*state->remap)[0] = ix;
 
   dump () && dump ("Assigning %N module index %u", state->name, mod_ix);
 
@@ -5975,8 +6009,13 @@ init_module_processing ()
 void
 finish_module ()
 {
-  /* GC can clean up the detritus.  */
-  module_hash = NULL;
+  if (modules)
+    {
+      /* GC can clean up the detritus.  */
+      module_hash = NULL;
+      for (unsigned ix = modules->length (); --ix >= MODULE_INDEX_IMPORT_BASE;)
+	(*modules)[ix]->release ();
+    }
 
   if (!module_interface_p ())
     {
@@ -6018,7 +6057,14 @@ finish_module ()
   if (errorcount)
     unlink (filename);
 
+  // FIXME filename is in module state?
   XDELETE (filename);
+  (*modules)[0]->release ();
 }
 
 #include "gt-cp-module.h"
+
+/* Use of vec<unsigned, va_gc> caused these fns to be needed.  */
+void gt_ggc_mx (unsigned int &) {}
+void gt_pch_nx (unsigned int &) {}
+void gt_pch_nx (unsigned int *, void (*)(void *, void *), void *) {}

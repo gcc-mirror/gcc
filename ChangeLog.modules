@@ -1,5 +1,13 @@
 2018-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	Move remap vector into module state.
+	gcc/cp/
+	* module.c (module_state): Add remap;
+	(cpms_in): Remove remap_num, remap_vec.
+	(module_state::release): New.
+	(cpms_in::{imports,tree_node,read}): Adjust.
+	(finish_module): Release module state.
+
 	gcc/cp/
 	* module.c (bytes_out::end): Create PROGBITS or STRTAB.
 	(cpms_out::write): README is a STRTAB.
