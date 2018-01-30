@@ -1,5 +1,10 @@
 2018-01-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* lra-constraints.c (match_reload): Use subreg_lowpart_offset
+	rather than 0 when creating partial subregs.
+
+2018-01-30  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* vec-perm-indices.c (vec_perm_indices::series_p): Give examples
 	of usage.
 

@@ -945,7 +945,10 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	  if (SCALAR_INT_MODE_P (inmode))
 	    new_out_reg = gen_lowpart_SUBREG (outmode, reg);
 	  else
-	    new_out_reg = gen_rtx_SUBREG (outmode, reg, 0);
+	    {
+	      poly_uint64 offset = subreg_lowpart_offset (outmode, inmode);
+	      new_out_reg = gen_rtx_SUBREG (outmode, reg, offset);
+	    }
 	  LRA_SUBREG_P (new_out_reg) = 1;
 	  /* If the input reg is dying here, we can use the same hard
 	     register for REG and IN_RTX.  We do it only for original
@@ -965,7 +968,10 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	  if (SCALAR_INT_MODE_P (outmode))
 	    new_in_reg = gen_lowpart_SUBREG (inmode, reg);
 	  else
-	    new_in_reg = gen_rtx_SUBREG (inmode, reg, 0);
+	    {
+	      poly_uint64 offset = subreg_lowpart_offset (inmode, outmode);
+	      new_in_reg = gen_rtx_SUBREG (inmode, reg, offset);
+	    }
 	  /* NEW_IN_REG is non-paradoxical subreg.  We don't want
 	     NEW_OUT_REG living above.  We add clobber clause for
 	     this.  This is just a temporary clobber.  We can remove
