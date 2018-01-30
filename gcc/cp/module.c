@@ -515,7 +515,6 @@ public:
       /* Section types.  */
       SHT_NONE = 0,
       SHT_PROGBITS = 1,
-      SHT_SYMTAB = 2,
       SHT_STRTAB = 3,
 
       /* Section flags.  */
@@ -678,28 +677,6 @@ public:
     unsigned name (const_tree ident);
     unsigned name (const char *literal);
     unsigned write (elf_out *out);
-  };
-public:
-  /* Builder for symbol table. */
-  class symtab
-  {
-    vec<unsigned, va_gc> *names;
-
-  public:
-    symtab (unsigned size = 50)
-      :names (NULL)
-    {
-      vec_safe_reserve (names, size);
-      names->quick_push (0); /* The undef symbol.  */
-    }
-    ~symtab ()
-    {
-      vec_free (names);
-    }
-
-  public:
-    void add (unsigned name);
-    unsigned write (elf_out *out, unsigned shnum);
   };
 
 private:
@@ -941,37 +918,6 @@ elf_out::strtab::write (elf_out *elf)
   return elf->add (SHT_STRTAB, shname, off, size, SHF_STRINGS);
 }
 
-void
-elf_out::symtab::add (unsigned offset)
-{
-  vec_safe_push (names, offset);
-}
-
-unsigned
-elf_out::symtab::write (elf_out *elf, unsigned snum)
-{
-  unsigned off = elf->pad ();
-  unsigned shname = elf->name (".symtab");
-
-  /* Have not implemented SHT_SYMTAB_SHNDX. */
-  gcc_assert (snum < SHN_XINDEX);
-  for (unsigned ix = 0; ix != names->length (); ix++)
-    {
-      symbol sym;
-      memset (&sym, 0, sizeof (sym));
-
-      sym.name = (*names)[ix];
-      sym.info = STT_NOTYPE;
-      if (ix)
-	sym.info |= STB_GLOBAL << 4;
-      if (ix == 1)
-	sym.shndx = snum;
-      if (!elf->write (&sym, sizeof (sym)))
-	return 0;
-    }
-  return elf->add (SHT_SYMTAB, shname, off, names->length () * sizeof (symbol));
-}
-
 unsigned
 elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 	      unsigned flags)
@@ -1069,12 +1015,6 @@ elf_out::end ()
       section.entsize = 0;
       if (isec->flags & SHF_STRINGS)
 	section.entsize = 1;
-      else if (isec->type == SHT_SYMTAB)
-	{
-	  section.entsize = sizeof (symbol);
-	  section.info = section.size / section.entsize;
-	  section.link = strndx;
-	}
 
       if (!ix)
 	{
@@ -2424,11 +2364,6 @@ cpms_in::header ()
 void
 cpms_out::imports (unsigned *crc_p)
 {
-  elf_out::symtab syms;
-
-  /* Define a symbol for this module.  */
-  syms.add (elf.name (state->name));
-
   w.begin (true);
   w.u (modules->length ());
   for (unsigned ix = modules->length (); ix-- > MODULE_INDEX_IMPORT_BASE;)
@@ -2444,14 +2379,8 @@ cpms_out::imports (unsigned *crc_p)
       w.u (state->crc);
       unsigned name = elf.name (state->name);
       w.u (name);
-
-      /* Record symbols for the direct imports.  We do not use this
-	 data, but it may be useful for tooling.  */
-      if (state->imported)
-	syms.add (name);
     }
-  unsigned shnum = w.end (&elf, elf.name (MOD_SNAME_PFX ".imports"), crc_p);
-  syms.write (&elf, shnum);
+  w.end (&elf, elf.name (MOD_SNAME_PFX ".imports"), crc_p);
 }
 
 bool
