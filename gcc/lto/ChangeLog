@@ -1,3 +1,9 @@
+2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/83954
+	* lto-symtab.c (warn_type_compatibility_p): Silence false positive
+	for type match warning on arrays of pointers.
+
 2018-01-23  Martin Liska  <mliska@suse.cz>
 
 	PR lto/81440

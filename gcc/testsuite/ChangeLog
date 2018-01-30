@@ -1,3 +1,10 @@
+2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/83954
+	* gcc.dg/lto/pr83954.h: New testcase.
+	* gcc.dg/lto/pr83954_0.c: New testcase.
+	* gcc.dg/lto/pr83954_1.c: New testcase.
+
 2018-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/84017
