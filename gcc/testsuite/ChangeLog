@@ -1,3 +1,11 @@
+2018-01-30  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR 58684
+	* gcc/testsuite/gcc.dg/torture/inf-compare-1.c: Add xfail.
+	* gcc/testsuite/gcc.dg/torture/inf-compare-2.c: Add xfail.
+	* gcc/testsuite/gcc.dg/torture/inf-compare-3.c: Add xfail.
+	* gcc/testsuite/gcc.dg/torture/inf-compare-4.c: Add xfail.
+
 2018-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84111
