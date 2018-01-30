@@ -321,7 +321,7 @@ profile_count::combine_with_ipa_count (profile_count ipa)
   ipa = ipa.ipa ();
   if (ipa.nonzero_p ())
     return ipa;
-  if (!ipa.initialized_p ())
+  if (!ipa.initialized_p () || *this == profile_count::zero ())
     return *this;
   if (ipa == profile_count::zero ())
     return this->global0 ();
