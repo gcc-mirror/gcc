@@ -10,7 +10,7 @@
 2018-01-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/84112
-	* pr84112.c: New.
+	* gcc.target/powerpc/pr84112.c: New.
 
 2018-01-30  Jakub Jelinek  <jakub@redhat.com>
 
