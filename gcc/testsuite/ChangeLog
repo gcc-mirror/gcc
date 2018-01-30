@@ -1,3 +1,11 @@
+2018-01-30  Kirill Yukhin  <kirill.yukhin@gmail.com>
+
+        PR target/83828
+	* gcc.target/i386/avx512bitalg-vpopcntb-1.c: Fix test.
+	* gcc.target/i386/avx512bitalg-vpopcntw-1.c: Ditto.
+	* gcc.target/i386/avx512bitalgvl-vpopcntb-1.c: Ditto.
+	* gcc.target/i386/avx512bitalgvl-vpopcntw-1.c: Ditto.
+
 2018-01-19  Jeff Law  <law@redhat.com>
 
 	PR testsuite/81010
