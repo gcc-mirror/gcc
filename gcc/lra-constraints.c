@@ -4216,7 +4216,17 @@ curr_insn_transform (bool check_only_p)
 				GET_MODE_SIZE (GET_MODE (op)));
 	  else if (get_reload_reg (OP_IN, Pmode, *loc, rclass, FALSE,
 				   "offsetable address", &new_reg))
-	    lra_emit_move (new_reg, *loc);
+	    {
+	      rtx addr = *loc;
+	      enum rtx_code code = GET_CODE (addr);
+	      
+	      if (code == AND && CONST_INT_P (XEXP (addr, 1)))
+		/* (and ... (const_int -X)) is used to align to X bytes.  */
+		addr = XEXP (*loc, 0);
+	      lra_emit_move (new_reg, addr);
+	      if (addr != *loc)
+		emit_move_insn (new_reg, gen_rtx_AND (GET_MODE (new_reg), new_reg, XEXP (*loc, 1)));
+	    }
 	  before = get_insns ();
 	  end_sequence ();
 	  *loc = new_reg;
