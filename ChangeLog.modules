@@ -1,5 +1,9 @@
 2018-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (bytes_out::end): Create PROGBITS or STRTAB.
+	(cpms_out::write): README is a STRTAB.
+
 	Remove SYMTAB knowledge, the README is better.
 	gcc/cp/
 	* module.c (elf_out::symtab): Delete.

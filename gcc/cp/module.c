@@ -1142,7 +1142,7 @@ private:
 
 public:
   void begin (bool crc_p = false);
-  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, unsigned = 0);
+  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, bool = false);
 
 public:
   void raw (unsigned);
@@ -1634,13 +1634,15 @@ bytes_out::begin (bool crc_p)
 }
 
 unsigned
-bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr, unsigned flags)
+bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr, bool string_p)
 {
   data->size = pos;
   data->set_crc (crc_ptr);
-  unsigned sec_num = sink->add (elf::SHT_PROGBITS, name, data, flags);
+  unsigned sec_num = sink->add (string_p ? elf::SHT_STRTAB : elf::SHT_PROGBITS,
+				name, data,
+				string_p ? elf::SHF_STRINGS : elf::SHF_NONE);
   bytes::end ();
-  
+
   return sec_num;
 }
 
@@ -2300,8 +2302,8 @@ cpms_in::header ()
 	}
       else if (my_time != their_time)
 	/* Times differ, give it a go.  */
-	warning (0, "file is version %s, this_is_version %s,"
-		 " perhaps close enough", their_string, my_string);
+	warning (0, "file is version %s, compiler is version %s,"
+		 " perhaps close enough?", their_string, my_string);
     }
 
   /* Read and ignore the inner crc.  We only wrote it to mix it into
@@ -5382,10 +5384,10 @@ cpms_out::write ()
 	if (state->imported)
 	  w.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
       }
-    /* Set SHF_STRINGS so that:
+    /* Create as STRTAB so that:
          readelf -p.gnu.c++.README X.nms
        works.  */
-    w.end (&elf, elf.name (MOD_SNAME_PFX ".README"), NULL, elf::SHF_STRINGS);
+    w.end (&elf, elf.name (MOD_SNAME_PFX ".README"), NULL, /*strings=*/true);
   }
 
   unsigned crc = 0;
