@@ -490,19 +490,6 @@ typedef gfc_array_i4 gfc_array_s4;
    | (sizeof(GFC_COMPLEX_16) << GFC_DTYPE_SIZE_SHIFT))
 #endif
 
-#define GFC_DTYPE_DERIVED_1 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_1) << GFC_DTYPE_SIZE_SHIFT))
-#define GFC_DTYPE_DERIVED_2 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_2) << GFC_DTYPE_SIZE_SHIFT))
-#define GFC_DTYPE_DERIVED_4 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_4) << GFC_DTYPE_SIZE_SHIFT))
-#define GFC_DTYPE_DERIVED_8 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_8) << GFC_DTYPE_SIZE_SHIFT))
-#ifdef HAVE_GFC_INTEGER_16
-#define GFC_DTYPE_DERIVED_16 ((BT_DERIVED << GFC_DTYPE_TYPE_SHIFT) \
-   | (sizeof(GFC_INTEGER_16) << GFC_DTYPE_SIZE_SHIFT))
-#endif
-
 /* Macros to determine the alignment of pointers.  */
 
 #define GFC_UNALIGNED_2(x) (((uintptr_t)(x)) & \

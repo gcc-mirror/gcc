@@ -54,7 +54,6 @@ internal_unpack (gfc_array_char * d, const void * s)
     {
     case GFC_DTYPE_INTEGER_1:
     case GFC_DTYPE_LOGICAL_1:
-    case GFC_DTYPE_DERIVED_1:
       internal_unpack_1 ((gfc_array_i1 *) d, (const GFC_INTEGER_1 *) s);
       return;
 
@@ -136,7 +135,17 @@ internal_unpack (gfc_array_char * d, const void * s)
 # endif
 #endif
 
-    case GFC_DTYPE_DERIVED_2:
+    default:
+      break;
+    }
+
+  switch (GFC_DESCRIPTOR_SIZE(d))
+    {
+    case 1:
+      internal_unpack_1 ((gfc_array_i1 *) d, (const GFC_INTEGER_1 *) s);
+      return;
+
+    case 2:
       if (GFC_UNALIGNED_2(d->base_addr) || GFC_UNALIGNED_2(s))
 	break;
       else
@@ -144,7 +153,8 @@ internal_unpack (gfc_array_char * d, const void * s)
 	  internal_unpack_2 ((gfc_array_i2 *) d, (const GFC_INTEGER_2 *) s);
 	  return;
 	}
-    case GFC_DTYPE_DERIVED_4:
+      
+    case 4:
       if (GFC_UNALIGNED_4(d->base_addr) || GFC_UNALIGNED_4(s))
 	break;
       else
@@ -153,7 +163,7 @@ internal_unpack (gfc_array_char * d, const void * s)
 	  return;
 	}
 
-    case GFC_DTYPE_DERIVED_8:
+    case 8:
       if (GFC_UNALIGNED_8(d->base_addr) || GFC_UNALIGNED_8(s))
 	break;
       else
@@ -163,7 +173,7 @@ internal_unpack (gfc_array_char * d, const void * s)
 	}
 
 #ifdef HAVE_GFC_INTEGER_16
-    case GFC_DTYPE_DERIVED_16:
+    case 16:
       if (GFC_UNALIGNED_16(d->base_addr) || GFC_UNALIGNED_16(s))
 	break;
       else
@@ -172,7 +182,6 @@ internal_unpack (gfc_array_char * d, const void * s)
 	  return;
 	}
 #endif
-
     default:
       break;
     }

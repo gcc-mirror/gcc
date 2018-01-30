@@ -1,4 +1,23 @@
-2018-25-01  Paul Thomas  <pault@gcc.gnu.org>
+2018-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37577
+	* libgfortran.h: Remove GFC_DTYPE_DERIVED_1, GFC_DTYPE_DERIVED_2,
+	GFC_DTYPE_DERIVED_4, GFC_DTYPE_DERIVED_8 and GFC_DTYPE_DERIVED_16.
+	* m4/cshift1.m4: Remove GFC_DTYPE_DERIVED_1.
+	* generated/cshift1_16.c: Regenerated.
+	* generated/cshift1_4.c: Regenerated.
+	* generated/cshift1_8.c: Regenerated.
+	* intrinsics/cshift0.c: Remove GFC_DTYPE_DERIVED_1.
+	* intrinsics/pack_generic.c (pack): Move handling of other types
+	into separate switch statement.
+	* intrinsics/spread_generic.c (spread): Likewise.
+	(spread_scalar): Likewise.
+	* intrinsics/unpack_generic.c (unpack1): Likewise.
+	(unpack0): Likewise.
+	* runtime/in_pack_generic.c (internal_pack): Likewise.
+	* runtime/in_unpack_generic.c (internal_unpack): Likewise.
+
+2018-01-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37577
 	* caf/single.c (_gfortran_caf_failed_images): Access the 'type'
