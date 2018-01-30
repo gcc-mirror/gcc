@@ -29602,8 +29602,9 @@ rs6000_internal_arg_pointer (void)
 	  emit_insn_after (pat, get_insns ());
 	  pop_topmost_sequence ();
 	}
-      return plus_constant (Pmode, cfun->machine->split_stack_arg_pointer,
-			    FIRST_PARM_OFFSET (current_function_decl));
+      rtx ret = plus_constant (Pmode, cfun->machine->split_stack_arg_pointer,
+			       FIRST_PARM_OFFSET (current_function_decl));
+      return copy_to_reg (ret);
     }
   return virtual_incoming_args_rtx;
 }
