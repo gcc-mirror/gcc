@@ -1,3 +1,8 @@
+2018-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_internal_arg_pointer): Only return
+	a reg rtx.
+
 2018-01-30  Richard Biener  <rguenther@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
