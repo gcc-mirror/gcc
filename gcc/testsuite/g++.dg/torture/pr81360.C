@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-early-inlining"  } */
+/* { dg-options "-O2 -fno-early-inlining -fdump-ipa-icf"  } */
 
 template <int dim> class B;
 template <int, int dim> class TriaObjectAccessor;

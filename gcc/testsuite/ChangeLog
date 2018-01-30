@@ -1,3 +1,7 @@
+2018-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/torture/pr81360.C: Add -fdump-ipa-icf to dg-options.
+
 2018-01-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/84112
@@ -26,7 +30,7 @@
 	PR ipa/83179
 	* gcc.dg/ipa/inline-2.c: Fix template.
 	* gcc.dg/ipa/inline-3.c: Fix template.
-	
+
 2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/81360
