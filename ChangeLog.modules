@@ -1,5 +1,15 @@
 2018-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	Section structure completish.
+	gcc/cp/
+	* module.c (elf::isection): Add flags.
+	(elf_out::add): Add section flags.
+	(bytes_out::end): Likewise,
+	(elf_out::end): Adjust.
+	(cpms_out::bindings): Generate bindings section too.
+	(cpms_out::write): Add imports to README.  Make string section.
+	(cpms_in::read): Adjust.
+
 	Config in header
 	gcc/cp/
 	* module.c (cpms_{in,out}::tag_conf): Delete.
@@ -38,7 +48,7 @@
 	(elf_out::end): Write string table here.
 	(bytes_in::begin, bytes_out::end): Always PROGBITS.
 	(cpm_stream::rt_eof): Delete.
-	(cpms_{in,out}::header): Repimlement.
+	(cpms_{in,out}::header): Reimplement.
 	(cpms_in::read, cpms_out::write): Adjust.
 
 	Remove string-literal module names :(

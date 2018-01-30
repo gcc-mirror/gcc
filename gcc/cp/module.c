@@ -488,26 +488,27 @@ protected:
       CLASS32 = 1,
       DATA2LSB = 1,
       DATA2MSB = 2,
-      /* It is host endianness that is relevant.  */
-#ifdef WORDS_BIGENDIAN
-      DATA2END = DATA2MSB,
-#else
-      DATA2END = DATA2LSB,
-#endif
+
       /* Section numbering.  */
       SHN_UNDEF = 0,
       SHN_LORESERVE = 0xff00,
       SHN_XINDEX = 0xffff,
       SHN_HIRESERVE = 0xffff,
 
-      /* Section flags.  */
-      SHF_NONE = 0x00,
-      SHF_STRINGS = 0x20,
-
-      /* symbol types.  */
+      /* Symbol types.  */
       STT_NOTYPE = 0,
       STB_GLOBAL = 1,
+
+      /* I really hope we do not get BMI files larger than 4GB.  */
+      MY_CLASS = CLASS32,
+      /* It is host endianness that is relevant.  */
+#ifdef WORDS_BIGENDIAN
+      MY_ENDIAN = DATA2MSB,
+#else
+      MY_ENDIAN = DATA2LSB,
+#endif
     };
+
 public:
   enum public_constants
     {
@@ -516,6 +517,11 @@ public:
       SHT_PROGBITS = 1,
       SHT_SYMTAB = 2,
       SHT_STRTAB = 3,
+
+      /* Section flags.  */
+      SHF_NONE = 0x00,
+      SHF_ALLOC = 0x02,
+      SHF_STRINGS = 0x20,
     };
 protected:
   struct ident
@@ -575,7 +581,8 @@ protected:
   struct isection
   /* Not the on-disk representation. */
   {
-    unsigned type;   /* Type of section.  */
+    unsigned short type;   /* Type of section.  */
+    unsigned short flags;  /* Section flags.  */
     unsigned name;   /* Index into string section.  */
     unsigned offset; /* File offset.  */
     unsigned size;   /* Size of data.  */
@@ -706,7 +713,8 @@ public:
 
 protected:
   uint32_t pad ();
-  unsigned add (unsigned type, unsigned name, unsigned off, unsigned size);
+  unsigned add (unsigned type, unsigned name = 0,
+		unsigned off = 0, unsigned size = 0, unsigned flags = SHF_NONE);
   bool write (const void *, size_t);
 
 public:
@@ -721,7 +729,8 @@ public:
 
 public:
   /* Add a section.  */
-  unsigned add (unsigned type, unsigned name, const data *);
+  unsigned add (unsigned type, unsigned name, const data *,
+		unsigned flags = SHF_NONE);
 
 public:
   bool begin ();
@@ -793,8 +802,8 @@ elf_in::begin ()
 
   /* We expect a particular format -- the ELF is not intended to be
      distributable.  */
-  if (header.ident.klass != CLASS32
-      || header.ident.data != DATA2END
+  if (header.ident.klass != MY_CLASS
+      || header.ident.data != MY_ENDIAN
       || header.ident.version != EV_CURRENT)
     {
       error ("unexpected encapsulation format");
@@ -929,7 +938,7 @@ elf_out::strtab::write (elf_out *elf)
     }
 
   gcc_assert (lit_ix == literals->length ());
-  return elf->add (SHT_STRTAB, shname, off, size);
+  return elf->add (SHT_STRTAB, shname, off, size, SHF_STRINGS);
 }
 
 void
@@ -964,11 +973,13 @@ elf_out::symtab::write (elf_out *elf, unsigned snum)
 }
 
 unsigned
-elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size)
+elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
+	      unsigned flags)
 {
   isection sec;
 
   sec.type = type;
+  sec.flags = flags;
   sec.name = name;
   sec.offset = off;
   sec.size = size;
@@ -988,7 +999,7 @@ elf_out::write (const void *data, size_t size)
 }
 
 unsigned
-elf_out::add (unsigned type, unsigned name, const data *data)
+elf_out::add (unsigned type, unsigned name, const data *data, unsigned flags)
 {
   uint32_t off = pad ();
 
@@ -998,7 +1009,7 @@ elf_out::add (unsigned type, unsigned name, const data *data)
       return 0;
     }
 
-  return add (type, name, off, data->size);
+  return add (type, name, off, data->size, flags);
 }
 
 bool
@@ -1008,12 +1019,7 @@ elf_out::begin ()
   vec_alloc (sections, 10);
 
   /* Create the UNDEF section.  */
-  isection section;
-  section.type = SHT_NONE;
-  section.name = 0;
-  section.offset = 0;
-  section.size = 0;
-  sections->quick_push (section);
+  add (SHT_NONE);
 
   /* Write an empty header.  */
   header header;
@@ -1059,13 +1065,10 @@ elf_out::end ()
       section.type = isec->type;
       section.off = isec->offset;
       section.size = isec->size;
-      section.flags = SHF_NONE;
+      section.flags = isec->flags;
       section.entsize = 0;
-      if (isec->type == SHT_STRTAB)
-	{
-	  section.flags = SHF_STRINGS;
-	  section.entsize = 1;
-	}
+      if (isec->flags & SHF_STRINGS)
+	section.entsize = 1;
       else if (isec->type == SHT_SYMTAB)
 	{
 	  section.entsize = sizeof (symbol);
@@ -1098,8 +1101,8 @@ elf_out::end ()
   header.ident.magic[1] = 'E';
   header.ident.magic[2] = 'L';
   header.ident.magic[3] = 'F';
-  header.ident.klass = CLASS32;
-  header.ident.data =  DATA2END;
+  header.ident.klass = MY_CLASS;
+  header.ident.data =  MY_ENDIAN;
   header.ident.version = EV_CURRENT;
   header.ident.osabi = OSABI_NONE;
   header.type = ET_NONE;
@@ -1199,7 +1202,7 @@ private:
 
 public:
   void begin (bool crc_p = false);
-  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL);
+  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, unsigned = 0);
 
 public:
   void raw (unsigned);
@@ -1691,11 +1694,11 @@ bytes_out::begin (bool crc_p)
 }
 
 unsigned
-bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
+bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr, unsigned flags)
 {
   data->size = pos;
   data->set_crc (crc_ptr);
-  unsigned sec_num = sink->add (elf::SHT_PROGBITS, name, data);
+  unsigned sec_num = sink->add (elf::SHT_PROGBITS, name, data, flags);
   bytes::end ();
   
   return sec_num;
@@ -2118,7 +2121,7 @@ private:
 
 public:
   void tree_node (tree);
-  void bindings (tree ns);
+  vec<tree, va_gc> *bindings (bytes_out *, vec<tree, va_gc> *nest, tree ns);
 };
 
 cpms_out::cpms_out (FILE *s, module_state *state)
@@ -2290,8 +2293,11 @@ cpms_out::header (unsigned inner_crc)
   /* Configuration. */
   dump () && dump ("Writing target='%s', host='%s'",
 		   TARGET_MACHINE, HOST_MACHINE);
-  w.u (elf.name (TARGET_MACHINE));
-  w.u (elf.name (HOST_MACHINE));
+  unsigned target = elf.name (TARGET_MACHINE);
+  unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
+		   ? target : elf.name (HOST_MACHINE));
+  w.u (target);
+  w.u (host);
 
   /* Global tree information.  We write the globals crc separately,
      rather than mix it directly into the overall crc, as it is used
@@ -5326,10 +5332,25 @@ cpms_in::finish_type (tree type)
 /* Walk the bindings of NS, writing out the bindings for the current
    TU.   */
 
-void
-cpms_out::bindings (tree ns)
+// FIXME: There's a problem with namespaces themselves.  We need to
+// know whether the namespace itself is exported, which happens if
+// it's explicitly opened in the purview.  (It may exist because of
+// being opened in the global module.)  Need flag on namespace,
+// perhaps simple as DECL_MODULE_EXPORT.
+
+/* The binding section is a serialized tree.  Each non-namespace
+   binding is a <stroff,shnum> tuple.  Each namespace contains a list
+   of non-namespace bindings, zero, a list of namespace bindings,
+   zero. */
+
+vec<tree, va_gc> *
+cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
 {
   dump () && dump ("Walking namespace %N", ns);
+
+  gcc_checking_assert (!LOOKUP_FOUND_P (ns));
+  vec<tree, va_gc> *inner = NULL;
+  vec_alloc (inner, 10);
 
   module_binding_vec *module_bindings = NULL;
   vec_alloc (module_bindings, 10);
@@ -5347,19 +5368,56 @@ cpms_out::bindings (tree ns)
 	continue;
 
       module_bindings = extract_module_bindings (module_bindings, binding);
-      if (module_bindings->length ())
+      if (!module_bindings->length ())
+	continue;
+
+      tree first = (*module_bindings)[0];
+      if (TREE_CODE (first) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (first))
+	vec_safe_push (inner, module_bindings->pop ());
+      else
 	{
-	  tree first = (*module_bindings)[0];
-	  if (TREE_CODE (first) == NAMESPACE_DECL
-	      && !DECL_NAMESPACE_ALIAS (first))
-	    bindings (module_bindings->pop ());
-	  else
-	    tag_binding (ns, DECL_NAME (first), module_bindings);
-	  gcc_checking_assert (!module_bindings->length ());
+	  /* Emit open scopes.  */
+	  if (!LOOKUP_FOUND_P (ns))
+	    {
+	      LOOKUP_FOUND_P (ns) = true;
+	      for (unsigned ix = 0; ix != nest->length (); ix++)
+		{
+		  tree outer = (*nest)[ix];
+		  if (!LOOKUP_FOUND_P (outer))
+		    {
+		      LOOKUP_FOUND_P (outer) = true;
+		      bind->u (elf.name (DECL_NAME (outer)));
+		      bind->u (0); /* It had no bindings of its own.  */
+		    }
+		}
+	      
+	      bind->u (elf.name (DECL_NAME (ns)));
+	    }
+	  bind->u (elf.name (DECL_NAME (first)));
+	  tag_binding (ns, DECL_NAME (first), module_bindings);
+	  // FIXME, here we'd emit the section number containing the
+	  // declaration.
 	}
+      gcc_checking_assert (!module_bindings->length ());
     }
   vec_free (module_bindings);
+  /* Mark end of non-namespace bindings.  */
+  if (LOOKUP_FOUND_P (ns))
+    bind->u (0);
+  vec_safe_push (nest, ns);
+  while (inner->length ())
+    nest = bindings (bind, nest, inner->pop ());
+  vec_free (inner);
+  nest->pop ();
+  /* Mark end of namespace bindings.  */
+  if (LOOKUP_FOUND_P (ns))
+    {
+      LOOKUP_FOUND_P (ns) = false;
+      bind->u (0);
+    }
   dump () && dump ("Walked namespace %N", ns);
+  return nest;
 }
 
 bool
@@ -5385,11 +5443,20 @@ cpms_out::write ()
   /* Write README.  */
   {
     w.begin ();
-    w.printf ("module:%s\n", IDENTIFIER_POINTER (state->name));
     version_string string;
     version2string (get_version (), string);
-    w.printf ("version:%s\n", string);
-    w.end (&elf, elf.name (MOD_SNAME_PFX ".README"));
+    w.printf ("version:%s%c", string, 0);
+    w.printf ("module:%s%c", IDENTIFIER_POINTER (state->name), 0);
+    for (unsigned ix = modules->length (); ix-- > MODULE_INDEX_IMPORT_BASE;)
+      {
+	module_state *state = (*modules)[ix];
+	if (state->imported)
+	  w.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
+      }
+    /* Set SHF_STRINGS so that:
+         readelf -p.gnu.c++.README X.nms
+       works.  */
+    w.end (&elf, elf.name (MOD_SNAME_PFX ".README"), NULL, elf::SHF_STRINGS);
   }
 
   unsigned crc = 0;
@@ -5408,13 +5475,20 @@ cpms_out::write ()
       }
   }
 
+  bytes_out bind;
+  bind.begin (true);
+
   w.begin (true);
 
   /* Write decls.  */
-  bindings (global_namespace);
+  vec<tree, va_gc> *nest = NULL;
+  vec_alloc (nest, 30);
+  nest = bindings (&bind, nest, global_namespace);
+  gcc_assert (!nest->length ());
+  vec_free (nest);
 
-  // FIXME: blob not good name
-  w.end (&elf, elf.name (MOD_SNAME_PFX ".blob"), &crc);
+  w.end (&elf, elf.name (MOD_SNAME_PFX ".decls"), &crc);
+  bind.end (&elf, elf.name (MOD_SNAME_PFX ".bindings"), &crc);
 
   header (crc);
 
@@ -5447,18 +5521,8 @@ cpms_in::read ()
   bool ok = header ();
   unsigned crc = 0;
 
-  // FIXME: in transition
-  if (!ok)
-    return MODULE_INDEX_ERROR;
   if (ok)
     ok = imports (&crc);
-
-  /* Just reserve the tag space.  No need to actually insert them in
-     the map.  */
-  next (globals->length ());
-
-  if (!r.begin (&elf, MOD_SNAME_PFX ".blob", &crc))
-    return MODULE_INDEX_ERROR;
 
   unsigned ix = 0;
   if (state != (*modules)[0])
@@ -5467,18 +5531,27 @@ cpms_in::read ()
       if (ix == MODULE_INDEX_LIMIT)
 	{
 	  sorry ("too many modules loaded (limit is %u)", ix);
-	  r.set_overrun ();
-	  // FIXME: where to?
-	  return -1;
+	  ok = false;
+	  ix = 0;
 	}
-      vec_safe_push (modules, state);
-      state->set_index (ix);
+      else
+	{
+	  vec_safe_push (modules, state);
+	  state->set_index (ix);
+	}
     }
   mod_ix = ix;
-  gcc_assert (remap_vec);
-  remap_vec[0] = ix;
+  if (ok)
+    remap_vec[0] = ix;
 
   dump () && dump ("Assigning %N module index %u", state->name, mod_ix);
+
+  /* Just reserve the tag space.  No need to actually insert them in
+     the map.  */
+  next (globals->length ());
+
+  if (!r.begin (&elf, MOD_SNAME_PFX ".decls", &crc))
+    return MODULE_INDEX_ERROR;
 
   while (ok && r.more_p ())
     {
