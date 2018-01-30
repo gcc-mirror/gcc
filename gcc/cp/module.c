@@ -2388,8 +2388,8 @@ cpms_in::header ()
      u:name
    } imports[N]
 
-   Write the direct imports.  Write in reverse order, so that when
-   checking an indirect import we should have already read it.  */
+   We need the complete set, so that we can build up the remapping
+   vector on subsequent import.  */
 
 // FIXME: Should we stream the pathname to the import?
 
@@ -2397,8 +2397,9 @@ void
 cpms_out::imports (unsigned *crc_p)
 {
   w.begin (true);
+
   w.u (modules->length ());
-  for (unsigned ix = modules->length (); ix-- > MODULE_INDEX_IMPORT_BASE;)
+  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
       dump () && dump ("Writing %simport %I (crc=%x)",
@@ -2428,11 +2429,10 @@ cpms_in::imports (unsigned *crc_p)
   gcc_assert (!state->remap);
   state->remap = NULL;
   vec_safe_reserve (state->remap, imports);
-  //FIXME: Can we push as we import?
-  for (unsigned j = imports; j--;)
-    state->remap->quick_push (0);
 
-  for (unsigned ix = imports; ix-- > MODULE_INDEX_IMPORT_BASE;)
+  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix--;)
+    state->remap->quick_push (0);
+  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < imports; ix++)
     {
       bool imported = r.b ();
       bool exported = r.b ();
@@ -2445,27 +2445,23 @@ cpms_in::imports (unsigned *crc_p)
       unsigned new_ix = do_module_import (UNKNOWN_LOCATION, name,
 					  /*unit_p=*/false,
 					  /*import_p=*/imported, this, crc);
-      bool ok = new_ix != MODULE_INDEX_ERROR;
-      if (ok)
-	{
-	  (*state->remap)[ix] = new_ix;
-	  if (imported)
-	    {
-	      dump () && dump ("Direct %simport %I %u",
-			       exported ? "export " : "", name, new_ix);
-	      state->do_import (new_ix, exported);
-	    }
-	}
-      else
-	{
-	  r.set_overrun ();
-	  break;
-	}
+      if (new_ix == MODULE_INDEX_ERROR)
+	goto fail;
+      state->remap->quick_push (new_ix);
       dump () && dump ("Completed nested import %I #%u", name, new_ix);
+      if (imported)
+	{
+	  dump () && dump ("Direct %simport %I %u",
+			   exported ? "export " : "", name, new_ix);
+	  state->do_import (new_ix, exported);
+	}
     }
 
   if (r.more_p ())
-    r.set_overrun ();
+    {
+    fail:
+      r.set_overrun ();
+    }
 
   return r.end (&elf);
 }

@@ -1,5 +1,9 @@
 2018-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	Push remaps as they happen.
+	gcc/cp/
+	* module.c (cpms_{in,out}::imports): Write in ascending order.
+
 	Move remap vector into module state.
 	gcc/cp/
 	* module.c (module_state): Add remap;
