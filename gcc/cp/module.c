@@ -1716,8 +1716,6 @@ public:
   enum record_tag
   {
     /* Module-specific records.  */
-    rt_conf,		/* Config info (baked in stuff like target-triplet) */
-    rt_flags,		/* Flags that affect AST compatibility.  */
     rt_binding,		/* A name-binding.  */
     rt_definition,	/* A definition. */
     rt_identifier,	/* An identifier node.  */
@@ -2089,7 +2087,6 @@ private:
   void imports (unsigned *crc_p);
 
 public:
-  void tag_conf ();
   void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
@@ -2195,10 +2192,8 @@ private:
   bool imports (unsigned *crc_p);
 
 public:
-  bool tag_conf ();
   bool tag_binding ();
   tree tag_definition ();
-  int read_item ();
   unsigned get_mod () const
   {
     return mod_ix;
@@ -2267,25 +2262,48 @@ static unsigned do_module_import (location_t, tree, bool module_unit_p,
 				  cpms_in * = NULL, unsigned = 0);
 
 /* File header
-   u:version
-   u:crc
+   raw:version
+   raw:crc
    u:module-name
+   u:<target-triplet>
+   u:<host-triplet>
    u:globals_length
+   raw:globals_crc
+   // FIXME CPU,ABI and similar tags
+   // FIXME Optimization and similar tags
 */
 
 void
 cpms_out::header (unsigned inner_crc)
 {
   w.begin (true);
-  w.u (unsigned (get_version ()));
-  w.u (inner_crc);
-  w.u (elf.name (state->name));
-  w.u (globals->length ());
-  /* We write the globals crc separately, rather than mix it directly
-     into the overall crc, as it is used to ensure data match between
-     instances of the compiler, not integrity of the file.  */
-  w.u (globals_crc);
 
+  /* Write version and inner crc as raw values, for easier
+     debug inspection.  */
+  dump () && dump ("Writing version=%u, inner_crc=%x",
+		   get_version (), inner_crc);
+  w.raw (unsigned (get_version ()));
+  w.raw (inner_crc);
+
+  w.u (elf.name (state->name));
+
+  /* Configuration. */
+  dump () && dump ("Writing target='%s', host='%s'",
+		   TARGET_MACHINE, HOST_MACHINE);
+  w.u (elf.name (TARGET_MACHINE));
+  w.u (elf.name (HOST_MACHINE));
+
+  /* Global tree information.  We write the globals crc separately,
+     rather than mix it directly into the overall crc, as it is used
+     to ensure data match between instances of the compiler, not
+     integrity of the file.  */
+  dump () && dump ("Writing globals=%u, crc=%x",
+		   globals->length (), globals_crc);
+  w.u (globals->length ());
+  w.raw (globals_crc);
+
+  /* Now generate CRC, we'll have incorporated the inner CRC because
+     of its serialization above.  */
   unsigned crc = 0;
   w.end (&elf, elf.name (MOD_SNAME_PFX ".ident"), &crc);
   dump () && dump ("Writing CRC=%x", crc);
@@ -2313,7 +2331,9 @@ cpms_in::header ()
 
   /* Check version.  */
   int my_ver = get_version ();
-  int their_ver = int (r.u ());
+  int their_ver = int (r.raw ());
+  dump () && dump  (my_ver == their_ver ? "Version %V"
+		    : "Expecting %V found %V", my_ver, their_ver);
   if (their_ver != my_ver)
     {
       int my_date = version2date (my_ver);
@@ -2337,19 +2357,13 @@ cpms_in::header ()
 	warning (0, "file is version %s, this_is_version %s,"
 		 " perhaps close enough", their_string, my_string);
     }
-  dump () && dump  (my_ver == their_ver ? "Version %V"
-		    : "Expecting %V found %V", my_ver, their_ver);
 
   /* Read and ignore the inner crc.  We only wrote it to mix it into
      the crc.  */
-  r.u ();
-  const char *their_name = elf.name (r.u ());
-  unsigned their_glength = r.u ();
-  unsigned their_gcrc = r.u ();
-  if (r.more_p ())
-    goto fail;
+  r.raw ();
 
   /* Check module name.  */
+  const char *their_name = elf.name (r.u ());
   if (strlen (their_name) != IDENTIFIER_LENGTH (state->name)
       || memcmp (their_name, IDENTIFIER_POINTER (state->name),
 		 IDENTIFIER_LENGTH (state->name)))
@@ -2357,6 +2371,23 @@ cpms_in::header ()
       error ("module %qs found, expected module %qE", their_name, state->name);
       goto fail;
     }
+
+  /* Check target & host.  */
+  const char *their_target = elf.name (r.u ());
+  const char *their_host = elf.name (r.u ());
+  dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
+  if (strcmp (their_target, TARGET_MACHINE)
+      || strcmp (their_host, HOST_MACHINE))
+    {
+      error ("target & host is %qs:%qs, expected %qs:%qs",
+	     their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
+      goto fail;
+    }
+
+  /* Check global trees.  */
+  unsigned their_glength = r.u ();
+  unsigned their_gcrc = r.raw ();
+  dump () && dump ("Read globals=%u, crc=%x", their_glength, their_gcrc);
   if (their_glength != globals->length ()
       || their_gcrc != globals_crc)
     {
@@ -2364,48 +2395,10 @@ cpms_in::header ()
       goto fail;
     }
 
+  if (r.more_p ())
+    goto fail;
+
   return r.end (&elf);
-}
-
-/* Record config info
-   str:<target-triplet>
-   str:<host-triplet>  ; lock this for now.
-*/
-
-void
-cpms_out::tag_conf ()
-{
-  dump () && dump ("Writing target='%s', host='%s'",
-		   TARGET_MACHINE, HOST_MACHINE);
-  tag (rt_conf);
-  w.str (TARGET_MACHINE, strlen (TARGET_MACHINE));
-  w.str (HOST_MACHINE, strlen (HOST_MACHINE));
-}
-
-bool
-cpms_in::tag_conf ()
-{
-  size_t l;
-  const char *targ = r.str (&l);
-  if (strcmp (targ, TARGET_MACHINE))
-    {
-      error ("target is %qs, expected %qs", targ, TARGET_MACHINE);
-      return false;
-    }
-  const char *host = r.str (&l);
-  if (strcmp (host, HOST_MACHINE))
-    {
-      error ("host is %qs, expected %qs", host, HOST_MACHINE);
-      return false;
-    }
-
-  if (r.get_overrun ())
-    return false;
-
-  dump () && dump ("Read target='%s', host='%s'",
-		   TARGET_MACHINE, HOST_MACHINE);
-
-  return true;
 }
 
 /* Imports
@@ -3124,61 +3117,6 @@ cpms_in::tag_definition ()
     }
 
   return t;
-}
-
-int
-cpms_in::read_item ()
-{
-  if (r.get_overrun ())
-    return false;
-
-  unsigned rt = r.u ();
-
-  switch (rt)
-    {
-    case rt_conf:
-      return tag_conf ();
-
-    default:
-      break;
-    }
-
-  if (mod_ix == MODULE_INDEX_IMPORTING)
-    {
-      unsigned ix = 0;
-      if (state != (*modules)[0])
-	{
-	  ix = modules->length ();
-	  if (ix == MODULE_INDEX_LIMIT)
-	    {
-	      sorry ("too many modules loaded (limit is %u)", ix);
-	      r.set_overrun ();
-	      return -1;
-	    }
-	  vec_safe_push (modules, state);
-	  state->set_index (ix);
-	}
-      mod_ix = ix;
-      gcc_assert (remap_vec);
-      remap_vec[0] = ix;
-
-      dump () && dump ("Assigning %N module index %u", state->name, mod_ix);
-    }
-
-  switch (rt)
-    {
-    case rt_binding:
-      return tag_binding ();
-    case rt_definition:
-      return tag_definition () != NULL_TREE;
-
-    default:
-      error (rt < rt_tree_base ? "unknown key %qd"
-	     : rt < rt_ref_base ? "unexpected tree code %qd"
-	     : "unexpected tree reference %qd",rt);
-      r.set_overrun ();
-      return false;
-    }
 }
 
 /* Read & write locations.  */
@@ -5471,8 +5409,6 @@ cpms_out::write ()
   }
 
   w.begin (true);
-  tag_conf ();
-  // FIXME:Write 'important' flags etc
 
   /* Write decls.  */
   bindings (global_namespace);
@@ -5524,10 +5460,6 @@ cpms_in::read ()
   if (!r.begin (&elf, MOD_SNAME_PFX ".blob", &crc))
     return MODULE_INDEX_ERROR;
 
-  unsigned rt = r.u ();
-  gcc_assert (rt == rt_conf); // FIXME:partial
-  ok = tag_conf ();
-
   unsigned ix = 0;
   if (state != (*modules)[0])
     {
@@ -5550,7 +5482,7 @@ cpms_in::read ()
 
   while (ok && r.more_p ())
     {
-      rt = r.u ();
+      int rt = r.u ();
 
       switch (rt)
 	{
