@@ -10527,6 +10527,11 @@ instantiate_class_template_1 (tree type)
 	{
 	  if (TYPE_P (t))
 	    {
+	      if (LAMBDA_TYPE_P (t))
+		/* A closure type for a lambda in an NSDMI or default argument.
+		   Ignore it; it will be regenerated when needed.  */
+		continue;
+
 	      /* Build new CLASSTYPE_NESTED_UTDS.  */
 
 	      tree newtag;
@@ -10594,11 +10599,10 @@ instantiate_class_template_1 (tree type)
 		  && DECL_OMP_DECLARE_REDUCTION_P (r))
 		cp_check_omp_declare_reduction (r);
 	    }
-	  else if (DECL_CLASS_TEMPLATE_P (t)
+	  else if ((DECL_CLASS_TEMPLATE_P (t) || DECL_IMPLICIT_TYPEDEF_P (t))
 		   && LAMBDA_TYPE_P (TREE_TYPE (t)))
-	    /* A closure type for a lambda in a default argument for a
-	       member template.  Ignore it; it will be instantiated with
-	       the default argument.  */;
+	    /* A closure type for a lambda in an NSDMI or default argument.
+	       Ignore it; it will be regenerated when needed.  */;
 	  else
 	    {
 	      /* Build new TYPE_FIELDS.  */
