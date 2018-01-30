@@ -1,5 +1,12 @@
 2018-01-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64-sve.md (*vec_extract<mode><Vel>_0): New
+	pattern.
+	(*vec_extract<mode><Vel>_v128): Require a nonzero lane number.
+	Use gen_rtx_REG rather than gen_lowpart.
+
+2018-01-30  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* lra-constraints.c (match_reload): Use subreg_lowpart_offset
 	rather than 0 when creating partial subregs.
 
