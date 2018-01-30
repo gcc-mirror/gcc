@@ -1373,13 +1373,17 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
   bool changed = false;
   struct loop *inner;
   enum unroll_level ul;
+  unsigned num = number_of_loops (cfun);
 
-  /* Process inner loops first.  */
+  /* Process inner loops first.  Don't walk loops added by the recursive
+     calls because SSA form is not up-to-date.  They can be handled in the
+     next iteration.  */
   for (inner = loop->inner; inner != NULL; inner = inner->next)
-    changed |= tree_unroll_loops_completely_1 (may_increase_size,
-					       unroll_outer, father_bbs,
-					       inner);
- 
+    if ((unsigned) inner->num < num)
+      changed |= tree_unroll_loops_completely_1 (may_increase_size,
+						 unroll_outer, father_bbs,
+						 inner);
+
   /* If we changed an inner loop we cannot process outer loops in this
      iteration because SSA form is not up-to-date.  Continue with
      siblings of outer loops instead.  */

@@ -1,3 +1,11 @@
+2018-01-30  Richard Biener  <rguenther@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84111
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1): Skip
+	inner loops added during recursion, as they don't have up-to-date
+	SSA form.
+
 2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/81360
