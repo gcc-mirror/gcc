@@ -1,3 +1,7 @@
+2018-01-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.dg/pr68318_1.f90: Add closing bracket in dejagnu directive.
+
 2018-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84133
