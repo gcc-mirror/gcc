@@ -1,3 +1,9 @@
+2018-01-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/84112
+	* lra-constraints.c (curr_insn_transform): Process AND in the
+	address.
+
 2018-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/83986
