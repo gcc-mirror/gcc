@@ -1276,8 +1276,11 @@ record_equality (tree x, tree y, class const_and_copies *const_and_copies)
 /* Returns true when STMT is a simple iv increment.  It detects the
    following situation:
 
-   i_1 = phi (..., i_2)
-   i_2 = i_1 +/- ...  */
+   i_1 = phi (..., i_k)
+   [...]
+   i_j = i_{j-1}  for each j : 2 <= j <= k-1
+   [...]
+   i_k = i_{k-1} +/- ...  */
 
 bool
 simple_iv_increment_p (gimple *stmt)
@@ -1305,8 +1308,15 @@ simple_iv_increment_p (gimple *stmt)
     return false;
 
   phi = SSA_NAME_DEF_STMT (preinc);
-  if (gimple_code (phi) != GIMPLE_PHI)
-    return false;
+  while (gimple_code (phi) != GIMPLE_PHI)
+    {
+      /* Follow trivial copies, but not the DEF used in a back edge,
+	 so that we don't prevent coalescing.  */
+      if (!gimple_assign_ssa_name_copy_p (phi))
+	return false;
+      preinc = gimple_assign_rhs1 (phi);
+      phi = SSA_NAME_DEF_STMT (preinc);
+    }
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     if (gimple_phi_arg_def (phi, i) == lhs)
