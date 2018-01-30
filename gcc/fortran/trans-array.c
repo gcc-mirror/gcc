@@ -511,7 +511,7 @@ gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
   tree type;
 
   type = TYPE_MAIN_VARIANT (desc_type);
-  field = gfc_advance_chain (TYPE_FIELDS (type), OFFSET_FIELD);
+  field = gfc_advance_chain (TYPE_FIELDS (type), DATA_FIELD);
   *data_off = byte_position (field);
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
   *dtype_off = byte_position (field);

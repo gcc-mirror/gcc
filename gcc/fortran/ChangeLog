@@ -1,3 +1,9 @@
+2018-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/84131
+	* trans-array.c (gfc_get_descriptor_offsets_for_info): Set *data_off
+	to DATA_FIELD's offset rather than OFFSET_FIELD's offset.
+
 2017-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84134
