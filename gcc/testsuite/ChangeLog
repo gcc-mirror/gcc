@@ -1,3 +1,10 @@
+2018-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/84017
+	* gcc.dg/debug/dwarf2/prod-options.c: Add -fno-merge-debug-strings
+	to dg-options.
+	Simplify DW_AT_producer scan.
+
 2018-01-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: XFAIL on !arm_neon arm targets.
