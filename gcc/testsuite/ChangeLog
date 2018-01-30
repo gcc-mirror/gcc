@@ -1,3 +1,10 @@
+2018-01-19  Jeff Law  <law@redhat.com>
+
+	PR testsuite/81010
+	* gcc.target/powerpc/pr56605.c: Update various dg- directives to
+	better match other tests which require vsx.  Verify the zero
+	extension is part of the test in the combiner dump.
+
 2018-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/83966
