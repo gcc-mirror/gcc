@@ -284,11 +284,22 @@ warn_type_compatibility_p (tree prevailing_type, tree type,
       alias_set_type set1 = get_alias_set (type);
       alias_set_type set2 = get_alias_set (prevailing_type);
 
-      if (set1 && set2 && set1 != set2 
-          && (!POINTER_TYPE_P (type) || !POINTER_TYPE_P (prevailing_type)
+      if (set1 && set2 && set1 != set2)
+	{
+          tree t1 = type, t2 = prevailing_type;
+
+	  /* Alias sets of arrays are the same as alias sets of the inner
+	     types.  */
+	  while (TREE_CODE (t1) == ARRAY_TYPE && TREE_CODE (t2) == ARRAY_TYPE)
+	    {
+	      t1 = TREE_TYPE (t1);
+	      t2 = TREE_TYPE (t2);
+	    }
+          if ((!POINTER_TYPE_P (t1) || !POINTER_TYPE_P (t2))
 	      || (set1 != TYPE_ALIAS_SET (ptr_type_node)
-		  && set2 != TYPE_ALIAS_SET (ptr_type_node))))
-        lev |= 5;
+		  && set2 != TYPE_ALIAS_SET (ptr_type_node)))
+             lev |= 5;
+	}
     }
 
   return lev;
