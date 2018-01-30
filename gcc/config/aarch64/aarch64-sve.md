@@ -484,18 +484,52 @@
   }
 )
 
+;; Extract element zero.  This is a special case because we want to force
+;; the registers to be the same for the second alternative, and then
+;; split the instruction into nothing after RA.
+(define_insn_and_split "*vec_extract<mode><Vel>_0"
+  [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
+	(vec_select:<VEL>
+	  (match_operand:SVE_ALL 1 "register_operand" "w, 0, w")
+	  (parallel [(const_int 0)])))]
+  "TARGET_SVE"
+  {
+    operands[1] = gen_rtx_REG (<V128>mode, REGNO (operands[1]));
+    switch (which_alternative)
+      {
+	case 0:
+	  return "umov\\t%<vwcore>0, %1.<Vetype>[0]";
+	case 1:
+	  return "#";
+	case 2:
+	  return "st1\\t{%1.<Vetype>}[0], %0";
+	default:
+	  gcc_unreachable ();
+      }
+  }
+  "&& reload_completed
+   && REG_P (operands[0])
+   && REGNO (operands[0]) == REGNO (operands[1])"
+  [(const_int 0)]
+  {
+    emit_note (NOTE_INSN_DELETED);
+    DONE;
+  }
+  [(set_attr "type" "neon_to_gp_q, untyped, neon_store1_one_lane_q")]
+)
+
 ;; Extract an element from the Advanced SIMD portion of the register.
 ;; We don't just reuse the aarch64-simd.md pattern because we don't
-;; want any chnage in lane number on big-endian targets.
+;; want any change in lane number on big-endian targets.
 (define_insn "*vec_extract<mode><Vel>_v128"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
 	(vec_select:<VEL>
 	  (match_operand:SVE_ALL 1 "register_operand" "w, w, w")
 	  (parallel [(match_operand:SI 2 "const_int_operand")])))]
   "TARGET_SVE
-   && IN_RANGE (INTVAL (operands[2]) * GET_MODE_SIZE (<VEL>mode), 0, 15)"
+   && IN_RANGE (INTVAL (operands[2]) * GET_MODE_SIZE (<VEL>mode), 1, 15)"
   {
-    operands[1] = gen_lowpart (<V128>mode, operands[1]);
+    operands[1] = gen_rtx_REG (<V128>mode, REGNO (operands[1]));
     switch (which_alternative)
       {
 	case 0:
