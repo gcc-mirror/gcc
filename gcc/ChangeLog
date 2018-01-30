@@ -1,3 +1,10 @@
+2018-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/83986
+	* sched-deps.c (sched_analyze_insn): For frame related insns, add anti
+	dependence against last_pending_memory_flush in addition to
+	pending_jump_insns.
+
 2018-01-30  Alexandre Oliva <aoliva@redhat.com>
 
 	PR tree-optimization/81611
