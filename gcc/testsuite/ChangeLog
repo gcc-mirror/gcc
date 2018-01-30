@@ -1,3 +1,7 @@
+2018-01-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: XFAIL on !arm_neon arm targets.
+
 2018-01-30  Kirill Yukhin  <kirill.yukhin@gmail.com>
 
         PR target/83828
