@@ -1,5 +1,9 @@
 2018-01-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84091 - ICE with local class in lambda in template.
+	* decl2.c (determine_visibility): Look for outer containing template
+	instantiation.
+
 	PR c++/84098 - ICE with lambda in template NSDMI.
 	* pt.c (instantiate_class_template_1): Ignore more lambdas.
 

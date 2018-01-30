@@ -2418,6 +2418,16 @@ determine_visibility (tree decl)
 	     by that.  */
 	  if (DECL_LANG_SPECIFIC (fn) && DECL_USE_TEMPLATE (fn))
 	    template_decl = fn;
+	  else if (template_decl)
+	    {
+	      /* FN must be a regenerated lambda function, since they don't
+		 have template arguments.  Find a containing non-lambda
+		 template instantiation.  */
+	      tree ctx = fn;
+	      while (ctx && !get_template_info (ctx))
+		ctx = get_containing_scope (ctx);
+	      template_decl = ctx;
+	    }
 	}
       else if (VAR_P (decl) && DECL_TINFO_P (decl)
 	       && flag_visibility_ms_compat)
