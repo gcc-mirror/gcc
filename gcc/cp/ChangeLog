@@ -1,3 +1,8 @@
+2018-01-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84098 - ICE with lambda in template NSDMI.
+	* pt.c (instantiate_class_template_1): Ignore more lambdas.
+
 2018-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/68810 - wrong location for reinterpret_cast error.
