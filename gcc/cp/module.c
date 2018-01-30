@@ -171,9 +171,10 @@ public:
 public:
   /* new & delete semantics don't quite work.  */
   static data *extend (data *, size_t);
-  static void release (data *d)
+  static data *release (data *d)
   {
     free (d);
+    return NULL;
   }
 };
 
@@ -287,6 +288,7 @@ public:
       SHF_ALLOC = 0x02,
       SHF_STRINGS = 0x20,
     };
+
 protected:
   struct ident
   /* On-disk representation.  */
@@ -341,7 +343,8 @@ protected:
     unsigned char other;
     uint16_t shndx;
   };
-  
+
+protected:
   struct isection
   /* Not the on-disk representation. */
   {
@@ -365,7 +368,7 @@ public:
   {}
   ~elf ()
   {
-    free (sections);
+    vec_free (sections);
   }
 
 public:
@@ -379,6 +382,8 @@ public:
       err = e;
   }
 };
+
+/* ELF reader.  */
 
 class elf_in : public elf
 {
@@ -396,8 +401,11 @@ protected:
 
 public:
   data *read (unsigned snum);
-public:
   data *find (unsigned type, const char *name);
+  void release ()
+  {
+    strings = data::release (strings);
+  }
 
 public:
   bool begin ();
@@ -412,6 +420,8 @@ public:
     return &strings->buffer[offset < strings->size ? offset : 0];
   }
 };
+
+/* Elf writer.  */
 
 class elf_out : public elf
 {
@@ -505,7 +515,7 @@ elf_in::read (unsigned snum)
   data *b = data::extend (NULL, sec->size);
   if (read (b->buffer, b->size))
     return b;
-  data::release (b);
+  b = data::release (b);
   return NULL;
 }
 
@@ -611,13 +621,12 @@ elf_in::begin ()
 	 at either end.  */
       if (strings && !(strings->size && !strings->buffer[0]
 		       && !strings->buffer[strings->size - 1]))
-	{
-	  data::release (strings);
-	  strings = NULL;
-	}
+	strings = data::release (strings);
     }
+
   if (!strings)
     {
+      /* Create a default string table.  */
       strings = data::extend (NULL, 1);
       strings->buffer[0] = 0;
     }
@@ -1089,8 +1098,7 @@ protected:
 public:
   void end ()
   {
-    data::release (data);
-    data = NULL;
+    data = data::release (data);
     pos = 0;
   }
 
@@ -1620,8 +1628,7 @@ bytes_in::begin (elf_in *source, const char *name, unsigned *crc_p)
 
   if (!data || !data->check_crc (crc_p))
     {
-      data::release (data);
-      data = NULL;
+      data = data::release (data);
       set_overrun ();
       error ("section %qs is missing or corrupted", name);
       return false;
@@ -2119,9 +2126,6 @@ class cpms_in : public cpm_stream {
 private:
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
-  unsigned mod_ix; /* Module index.  */
-  unsigned crc;    /* Expected crc.  */
-
 public:
   cpms_in (FILE *, module_state *, cpms_in *);
   ~cpms_in ();
@@ -2138,10 +2142,6 @@ private:
 public:
   bool tag_binding ();
   tree tag_definition ();
-  unsigned get_mod () const
-  {
-    return mod_ix;
-  }
 
 private:
   unsigned insert (tree);
@@ -2172,8 +2172,7 @@ public:
 };
 
 cpms_in::cpms_in (FILE *s, module_state *state, cpms_in *from)
-  :cpm_stream (state, from), elf (s), r (),
-   mod_ix (MODULE_INDEX_IMPORTING)
+  :cpm_stream (state, from), elf (s), r ()
 {
   dump () && dump ("Importing %I", state->name);
 }
@@ -2395,9 +2394,6 @@ cpms_in::imports (unsigned *crc_p)
   if (!r.begin (&elf, MOD_SNAME_PFX ".imports", crc_p))
     return false;
 
-  /* Not designed to import after having assigned our number. */
-  gcc_assert (mod_ix == MODULE_INDEX_IMPORTING);
-
   unsigned imports = r.u ();
   gcc_assert (!state->remap);
   state->remap = NULL;
@@ -2525,7 +2521,7 @@ cpms_in::tag_binding ()
   if (!decls && !type)
     return true;
 
-  return push_module_binding (ns, name, mod_ix, decls, type);
+  return push_module_binding (ns, name, state->mod, decls, type);
 }
 
 /* Stream a function definition.  */
@@ -2555,7 +2551,7 @@ cpms_in::define_function (tree decl, tree maybe_template)
   if (TREE_CODE (CP_DECL_CONTEXT (maybe_template)) == NAMESPACE_DECL)
     {
       unsigned mod = MAYBE_DECL_MODULE_INDEX (maybe_template);
-      if (mod != mod_ix)
+      if (mod != state->mod)
 	{
 	  error ("unexpected definition of %q#D", decl);
 	  r.set_overrun ();
@@ -3222,7 +3218,7 @@ cpms_in::finish (tree t)
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	{
 	  /* A global-module decl.  See if there's already a duplicate.  */
-	  tree old = merge_global_decl (ctx, mod_ix, t);
+	  tree old = merge_global_decl (ctx, state->mod, t);
 
 	  if (!old)
 	    error ("failed to merge %#qD", t);
@@ -4728,7 +4724,7 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
       if (ctx && (TREE_CODE (ctx) == NAMESPACE_DECL
 		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL))
 	// FIXME:maybe retrofit lang_decl?
-	DECL_MODULE_INDEX (t) = mod_ix;
+	DECL_MODULE_INDEX (t) = state->mod;
     }
 
   if (!core_vals (t))
@@ -5095,7 +5091,7 @@ cpms_in::tree_node ()
 	    node_module = (*state->remap)[incoming];
 
 	  if (incoming >= state->remap->length ()
-	      || ((incoming != 0) != (node_module != mod_ix)))
+	      || ((incoming != 0) != (node_module != state->mod)))
 	    r.set_overrun ();
 	}
 
@@ -5105,9 +5101,9 @@ cpms_in::tree_node ()
 	  return NULL_TREE;
 	}
 
-      gcc_assert (node_module || !mod_ix);
+      gcc_assert (node_module || !state->mod);
 
-      if (node_module != mod_ix)
+      if (node_module != state->mod)
 	{
 	  tree type = tree_node ();
 
@@ -5474,11 +5470,11 @@ cpms_in::read (unsigned *crc_ptr)
 	  state->set_index (ix);
 	}
     }
-  mod_ix = ix;
+  state->mod = ix;
   if (ok)
     (*state->remap)[0] = ix;
 
-  dump () && dump ("Assigning %N module index %u", state->name, mod_ix);
+  dump () && dump ("Assigning %N module index %u", state->name, ix);
 
   /* Just reserve the tag space.  No need to actually insert them in
      the map.  */
@@ -5514,7 +5510,7 @@ cpms_in::read (unsigned *crc_ptr)
 
   r.end (&elf);
 
-  return get_mod ();
+  return state->mod;
 }
 
 static GTY(()) tree proclaimer;
@@ -5788,7 +5784,6 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
   module_state **slot
     = module_hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
 					INSERT);
-  unsigned index = 0;
   module_state *state = *slot;
 
   if (state)
@@ -5813,7 +5808,6 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	    error_at (loc, "module %qE already imported", name);
 	    return MODULE_INDEX_ERROR;
 	  }
-	index = state->mod;
       }
   else
     {
@@ -5835,7 +5829,6 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       if (module_unit_p && import_export_p)
 	{
 	  /* We're the exporting module unit, so not loading anything.  */
-	  index = 0;
 	  state->exported = true;
 	}
       else if (!module_unit_p && !import_export_p)
@@ -5843,7 +5836,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	  /* The ordering of the import table implies that indirect
 	     imports should have already been loaded.  */
 	  error ("indirect import %qE not present", name);
-	  index = MODULE_INDEX_ERROR;
+	  return MODULE_INDEX_ERROR;
 	}
       else
 	{
@@ -5885,18 +5878,18 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	      {
 		cpms_in in (stream, state, from);
 		if (in.begin ())
-		  index = in.read (crc_ptr);
+		  in.read (crc_ptr);
 		if (!in.end ())
 		  /* Failure to read a module is going to cause big
 		     problems, so bail out now.  */
 		  fatal_error (input_location, "failed to read module %qE",
 			       state->name);
-		gcc_assert (state->mod == MODULE_INDEX_IMPORTING);
+		gcc_assert (state->mod <= modules->length ());
 	      }
 
 	      if (!quiet_flag)
 		{
-		  fprintf (stderr, " imported:%s(#%d)", str_name, index);
+		  fprintf (stderr, " imported:%s(#%d)", str_name, state->mod);
 		  fflush (stderr);
 		  pp_needs_newline (global_dc->printer) = true;
 		  diagnostic_set_last_function (global_dc,
@@ -5917,9 +5910,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	}
     }
 
-  state->mod = index;
-
-  return index;
+  return state->mod;
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */

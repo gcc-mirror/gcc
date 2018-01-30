@@ -1,5 +1,9 @@
 2018-01-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (data::release): Return NULL, update users.
+	(cpms_in::{mod_ix,crc}): Delete, adjust users.
+
 	Reorder source
 	gcc/cp/
 	* module.c (struct data): First.
