@@ -1,5 +1,9 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Reorder class declarations
+	gcc/cp/
+	* module.c (bytes, bytes_in, bytes_out): Move before module_state.
+
 	Simplify import interface
 	gcc/cp/
 	* module.c (MODULE_INDEX_IMPORTING, MODULE_INDEX_ERROR): Delete.

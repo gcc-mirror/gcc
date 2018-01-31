@@ -117,7 +117,7 @@ get_version ()
 /* Version to date. */
 static unsigned version2date (int v)
 {
-  if (MODULE_STAMP && v < 0)
+  if (v < 0)
     return -v / 10000 + 20000000;
   else
     return v;
@@ -844,6 +844,603 @@ elf_out::end ()
   return parent::end ();
 }
 
+/* Byte serializer base.  */
+class bytes {
+protected:
+  struct data *data;	/* Buffer being read/written.  */
+  size_t pos;		/* Position in buffer.  */
+  uint32_t bit_val;	/* Bit buffer.  */
+  unsigned bit_pos;	/* Next bit in bit buffer.  */
+
+public:
+  bytes ()
+    :data (NULL), pos (0), bit_val (0), bit_pos (0)
+  {}
+  ~bytes () 
+  {
+    gcc_checking_assert (!data);
+  }
+
+protected:
+  void begin (bool crc)
+  {
+    gcc_checking_assert (!data);
+    pos = crc ? 4 : 0;
+  }
+public:
+  void end ()
+  {
+    data = data::release (data);
+    pos = 0;
+  }
+
+protected:
+  /* Finish bit packet.  Rewind the bytes not used.  */
+  unsigned bit_flush ()
+  {
+    gcc_assert (bit_pos);
+    unsigned bytes = (bit_pos + 7) / 8;
+    unuse (4 - bytes);
+    bit_pos = 0;
+    bit_val = 0;
+    return bytes;
+  }
+
+protected:
+  char *use (unsigned bytes)
+  {
+    char *res = &data->buffer[pos];
+    pos += bytes;
+    return res;
+  }
+  void unuse (unsigned bytes)
+  {
+    pos -= bytes;
+  }
+};
+
+/* Byte stream writer.  */
+class bytes_out : public bytes {
+  typedef bytes parent;
+  /* Instrumentation.  */
+  static unsigned spans[4];
+  static unsigned lengths[4];
+  static int is_set;
+
+public:
+  bytes_out ()
+    : bytes ()
+  {
+  }
+  ~bytes_out ()
+  {
+  }
+
+private:
+  char *use (unsigned);
+
+public:
+  void begin (bool crc_p = false);
+  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, bool = false);
+
+public:
+  void raw (unsigned);
+
+public:
+  static void instrument ();
+
+public:
+  void b (bool);
+  void bflush ();
+
+public:
+  void c (unsigned char);
+  void i (int);
+  void u (unsigned);
+  void s (size_t s);
+  void wi (HOST_WIDE_INT);
+  void wu (unsigned HOST_WIDE_INT);
+  void str (const char *, size_t);
+  void buf (const char *, size_t);
+  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
+};
+
+unsigned bytes_out::spans[4];
+unsigned bytes_out::lengths[4];
+int bytes_out::is_set = -1;
+
+/* Byte stream reader.  */
+class bytes_in : public bytes {
+  typedef bytes parent;
+
+protected:
+  bool overrun;
+
+public:
+  bytes_in ()
+    : bytes (), overrun (false)
+  {
+  }
+  ~bytes_in ()
+  {
+  }
+
+public:
+  bool begin (elf_in *src, const char *name, unsigned *crc_p = NULL);
+  bool end (elf_in *src)
+  {
+    if (overrun)
+      src->set_error ();
+    parent::end ();
+    return !overrun;
+  }
+  bool more_p () const
+  {
+    return pos != data->size;
+  }
+
+private:
+  const char *use (unsigned bytes, unsigned *avail = NULL)
+  {
+    unsigned space = data->size - pos;
+    if (space < bytes)
+      {
+	bytes = space;
+	if (!avail)
+	  {
+	    overrun = true;
+	    return NULL;
+	  }
+      }
+    if (avail)
+      *avail = bytes;
+    return parent::use (bytes);
+  }
+
+public:
+  bool get_overrun () const
+  {
+    return overrun;
+  }
+  void set_overrun ()
+  {
+    overrun = true;
+  }
+
+public:
+  unsigned raw ();
+
+public:
+  bool b ();
+  void bflush ();
+private:
+  void bfill ();
+
+public:
+  int c ();
+  int i ();
+  unsigned u ();
+  size_t s ();
+  HOST_WIDE_INT wi ();
+  unsigned HOST_WIDE_INT wu ();
+  const char *str (size_t * = NULL);
+  const char *buf (size_t);
+};
+
+/* Finish a set of bools.  */
+
+void
+bytes_out::bflush ()
+{
+  if (bit_pos)
+    {
+      raw (bit_val);
+      lengths[2] += bit_flush ();
+    }
+  spans[2]++;
+  is_set = -1;
+}
+
+void
+bytes_in::bflush ()
+{
+  if (bit_pos)
+    bit_flush ();
+}
+
+/* When reading, we don't know how many bools we'll read in.  So read
+   4 bytes-worth, and then rewind when flushing if we didn't need them
+   all.  */
+
+void
+bytes_in::bfill ()
+{
+  bit_val = raw ();
+}
+
+/* Low level bytes_ins and bytes_outs.  I did think about making these
+   templatized, but that started to look error prone, so went with
+   type-specific names.
+   b - bools,
+   i, u - ints/unsigned
+   wi/wu - wide ints/unsigned
+   s - size_t
+   buf - fixed size buffer
+   str - variable length string  */
+
+/* Bools are packed into bytes.  You cannot mix bools and non-bools.
+   You must call bflush before emitting another type.  So batch your
+   bools.
+
+   It may be worth optimizing for most bools being zero.  some kind of
+   run-length encoding?  */
+
+void
+bytes_out::b (bool x)
+{
+  if (is_set != x)
+    {
+      is_set = x;
+      spans[x]++;
+    }
+  lengths[x]++;
+  bit_val |= unsigned (x) << bit_pos++;
+  if (bit_pos == 32)
+    {
+      raw (bit_val);
+      lengths[2] += bit_flush ();
+    }
+}
+
+bool
+bytes_in::b ()
+{
+  if (!bit_pos)
+    bfill ();
+  bool v = (bit_val >> bit_pos++) & 1;
+  if (bit_pos == 32)
+    bit_flush ();
+  return v;
+}
+
+/* Exactly 4 bytes.  Used internally for bool packing and crc
+   transfer -- hence no crc here.  */
+
+void
+bytes_out::raw (unsigned val)
+{
+  char *ptr = use (4);
+  ptr[0] = val;
+  ptr[1] = val >> 8;
+  ptr[2] = val >> 16;
+  ptr[3] = val >> 24;
+}
+
+unsigned
+bytes_in::raw ()
+{
+  unsigned val = 0;
+  if (const char *ptr = use (4))
+    {
+      val |= (unsigned char)ptr[0];
+      val |= (unsigned char)ptr[1] << 8;
+      val |= (unsigned char)ptr[2] << 16;
+      val |= (unsigned char)ptr[3] << 24;
+    }
+
+  return val;
+}
+
+/* Chars are unsigned and written as single bytes. */
+
+void
+bytes_out::c (unsigned char v)
+{
+  *use (1) = v;
+}
+
+int
+bytes_in::c ()
+{
+  int v = 0;
+  if (const char *ptr = use (1))
+    v = (unsigned char)ptr[0];
+  return v;
+}
+
+/* Ints are written as sleb128.  */
+
+void
+bytes_out::i (int v)
+{
+  unsigned max = (sizeof (v) * 8 + 6) / 7; 
+  char *ptr = use (max);
+  unsigned count = 0;
+
+  int end = v < 0 ? -1 : 0;
+  bool more;
+  do
+    {
+      unsigned byte = v & 127;
+      v >>= 6; /* Signed shift.  */
+      more = v != end;
+      ptr[count++] = byte | (more << 7);
+      v >>= 1; /* Signed shift.  */
+    }
+  while (more);
+  unuse (max - count);
+}
+
+int
+bytes_in::i ()
+{
+  int v = 0;
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  const char *ptr = use (max, &max);
+  unsigned count = 0;
+
+  unsigned bit = 0;
+  unsigned byte;
+  do
+    {
+      if (count == max)
+	{
+	  overrun = true;
+	  return 0;
+	}
+      byte = ptr[count++];
+      v |= (byte & 127) << bit;
+      bit += 7;
+    }
+  while (byte & 128);
+  unuse (max - count);
+
+  if (byte & 0x40 && bit < sizeof (v) * 8)
+    v |= ~(unsigned)0 << bit;
+
+  return v;
+}
+
+/* Unsigned are written as uleb128.  */
+
+void
+bytes_out::u (unsigned v)
+{
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  char *ptr = use (max);
+  unsigned count = 0;
+
+  bool more;
+  do
+    {
+      unsigned byte = v & 127;
+      v >>= 7;
+      more = v != 0;
+      ptr[count++] = byte | (more << 7);
+    }
+  while (more);
+  unuse (max - count);
+}
+
+unsigned
+bytes_in::u ()
+{
+  unsigned v = 0;
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  const char *ptr = use (max, &max);
+  unsigned count = 0;
+
+  unsigned bit = 0;
+  unsigned byte;
+  do
+    {
+      if (count == max)
+	{
+	  overrun = true;
+	  return 0;
+	}
+      byte = ptr[count++];
+      v |= (byte & 127) << bit;
+      bit += 7;
+    }
+  while (byte & 128);
+  unuse (max - count);
+
+  return v;
+}
+
+void
+bytes_out::wi (HOST_WIDE_INT v)
+{
+  unsigned max = (sizeof (v) * 8 + 6) / 7; 
+  char *ptr = use (max);
+  unsigned count = 0;
+
+  int end = v < 0 ? -1 : 0;
+  bool more;
+  do
+    {
+      unsigned byte = v & 127;
+      v >>= 6; /* Signed shift.  */
+      more = v != end;
+      ptr[count++] = byte | (more << 7);
+      v >>= 1; /* Signed shift.  */
+    }
+  while (more);
+  unuse (max - count);
+}
+
+HOST_WIDE_INT
+bytes_in::wi ()
+{
+  HOST_WIDE_INT v = 0;
+  unsigned max = (sizeof (v) * 8 + 6) / 7;
+  const char *ptr = use (max, &max);
+  unsigned count = 0;
+
+  unsigned bit = 0;
+  unsigned byte;
+  do
+    {
+      if (count == max)
+	{
+	  overrun = true;
+	  return 0;
+	}
+      byte = ptr[count++];
+      v |= (unsigned HOST_WIDE_INT)(byte & 127) << bit;
+      bit += 7;
+    }
+  while (byte & 128);
+  unuse (max - count);
+
+  if (byte & 0x40 && bit < sizeof (v) * 8)
+    v |= ~(unsigned HOST_WIDE_INT)0 << bit;
+  return v;
+}
+
+inline void
+bytes_out::wu (unsigned HOST_WIDE_INT v)
+{
+  wi ((HOST_WIDE_INT) v);
+}
+
+inline unsigned HOST_WIDE_INT
+bytes_in::wu ()
+{
+  return (unsigned HOST_WIDE_INT) wi ();
+}
+
+inline void
+bytes_out::s (size_t s)
+{
+  if (sizeof (s) == sizeof (unsigned))
+    u (s);
+  else
+    wu (s);
+}
+
+inline size_t
+bytes_in::s ()
+{
+  if (sizeof (size_t) == sizeof (unsigned))
+    return u ();
+  else
+    return wu ();
+}
+
+void
+bytes_out::buf (const char *buf, size_t len)
+{
+  memcpy (use (len), buf, len);
+}
+
+const char *
+bytes_in::buf (size_t len)
+{
+  const char *ptr = use (len);
+
+  return ptr;
+}
+
+/* Strings:
+   u:length
+   buf:bytes
+*/
+
+void
+bytes_out::str (const char *string, size_t len)
+{
+  s (len);
+  buf (string, len + 1);
+}
+
+const char *
+bytes_in::str (size_t *len_p)
+{
+  size_t len = s ();
+
+  /* We're about to trust some user data.  */
+  if (overrun)
+    len = 0;
+  *len_p = len;
+  const char *str = buf (len + 1);
+  if (str[len])
+    {
+      overrun = true;
+      str = "";
+    }
+  return str;
+}
+
+void
+bytes_out::printf (const char *format, ...)
+{
+  va_list args;
+  size_t len = 500;
+
+ again:
+  va_start (args, format);
+  char *ptr = use (len);
+  size_t actual = vsnprintf (ptr, len, format, args);
+  va_end (args);
+  if (actual > len)
+    {
+      unuse (len);
+      len = actual;
+      goto again;
+    }
+  unuse (len - actual);
+}
+
+bool
+bytes_in::begin (elf_in *source, const char *name, unsigned *crc_p)
+{
+  parent::begin (crc_p);
+
+  data = source->find (elf::SHT_PROGBITS, name);
+
+  if (!data || !data->check_crc (crc_p))
+    {
+      data = data::release (data);
+      set_overrun ();
+      error ("section %qs is missing or corrupted", name);
+      return false;
+    }
+  return true;
+}
+
+void
+bytes_out::begin (bool crc_p)
+{
+  parent::begin (crc_p);
+  data = data::extend (0, 200);
+}
+
+unsigned
+bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr, bool string_p)
+{
+  lengths[3] += pos;
+  spans[3]++;
+
+  data->size = pos;
+  data->set_crc (crc_ptr);
+  unsigned sec_num = sink->add (string_p ? elf::SHT_STRTAB : elf::SHT_PROGBITS,
+				name, data,
+				string_p ? elf::SHF_STRINGS : elf::SHF_NONE);
+  parent::end ();
+
+  return sec_num;
+}
+
+char *
+bytes_out::use (unsigned bytes)
+{
+  if (data->size < pos + bytes)
+    data = data::extend (data, (pos + bytes) * 3/2);
+  return parent::use (bytes);
+}
+
 /* State of a particular module. */
 struct GTY(()) module_state {
   /* We always import & export ourselves.  */
@@ -1399,613 +1996,6 @@ module_state::do_import (unsigned index, bool is_export)
     bitmap_ior_into (exports, other->exports);
 }
 
-/* Byte serializer base.  */
-class bytes {
-protected:
-  struct data *data;	/* Buffer being read/written.  */
-  size_t pos;		/* Position in buffer.  */
-  uint32_t bit_val;	/* Bit buffer.  */
-  unsigned bit_pos;	/* Next bit in bit buffer.  */
-
-public:
-  bytes ()
-    :data (NULL), pos (0), bit_val (0), bit_pos (0)
-  {}
-  ~bytes () 
-  {
-    gcc_checking_assert (!data);
-  }
-
-protected:
-  void begin (bool crc)
-  {
-    gcc_checking_assert (!data);
-    pos = crc ? 4 : 0;
-  }
-public:
-  void end ()
-  {
-    data = data::release (data);
-    pos = 0;
-  }
-
-protected:
-  /* Finish bit packet.  Rewind the bytes not used.  */
-  unsigned bit_flush ()
-  {
-    gcc_assert (bit_pos);
-    unsigned bytes = (bit_pos + 7) / 8;
-    unuse (4 - bytes);
-    bit_pos = 0;
-    bit_val = 0;
-    return bytes;
-  }
-
-protected:
-  char *use (unsigned bytes)
-  {
-    char *res = &data->buffer[pos];
-    pos += bytes;
-    return res;
-  }
-  void unuse (unsigned bytes)
-  {
-    pos -= bytes;
-  }
-};
-
-/* Byte stream writer.  */
-class bytes_out : public bytes {
-
-  /* Instrumentation.  */
-  static unsigned spans[4];
-  static unsigned lengths[4];
-  static int is_set;
-
-public:
-  bytes_out ()
-    : bytes ()
-  {
-  }
-  ~bytes_out ()
-  {
-  }
-
-private:
-  char *use (unsigned);
-
-public:
-  void begin (bool crc_p = false);
-  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, bool = false);
-
-public:
-  void raw (unsigned);
-
-public:
-  static void instrument ();
-
-public:
-  void b (bool);
-  void bflush ();
-
-public:
-  void c (unsigned char);
-  void i (int);
-  void u (unsigned);
-  void s (size_t s);
-  void wi (HOST_WIDE_INT);
-  void wu (unsigned HOST_WIDE_INT);
-  void str (const char *, size_t);
-  void buf (const char *, size_t);
-  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
-};
-
-unsigned bytes_out::spans[4];
-unsigned bytes_out::lengths[4];
-int bytes_out::is_set = -1;
-
-/* Byte stream reader.  */
-class bytes_in : public bytes {
-protected:
-  bool overrun;
-
-public:
-  bytes_in ()
-    : bytes (), overrun (false)
-  {
-  }
-  ~bytes_in ()
-  {
-  }
-
-public:
-  bool begin (elf_in *src, const char *name, unsigned *crc_p = NULL);
-  bool end (elf_in *src)
-  {
-    if (overrun)
-      src->set_error ();
-    bytes::end ();
-    return !overrun;
-  }
-  bool more_p () const
-  {
-    return pos != data->size;
-  }
-
-private:
-  const char *use (unsigned bytes, unsigned *avail = NULL)
-  {
-    unsigned space = data->size - pos;
-    if (space < bytes)
-      {
-	bytes = space;
-	if (!avail)
-	  {
-	    overrun = true;
-	    return NULL;
-	  }
-      }
-    if (avail)
-      *avail = bytes;
-    return bytes::use (bytes);
-  }
-
-public:
-  bool get_overrun () const
-  {
-    return overrun;
-  }
-  void set_overrun ()
-  {
-    overrun = true;
-  }
-
-public:
-  unsigned raw ();
-
-public:
-  bool b ();
-  void bflush ();
-private:
-  void bfill ();
-
-public:
-  int c ();
-  int i ();
-  unsigned u ();
-  size_t s ();
-  HOST_WIDE_INT wi ();
-  unsigned HOST_WIDE_INT wu ();
-  const char *str (size_t * = NULL);
-  const char *buf (size_t);
-};
-
-/* Finish a set of bools.  */
-
-void
-bytes_out::bflush ()
-{
-  if (bit_pos)
-    {
-      raw (bit_val);
-      lengths[2] += bit_flush ();
-    }
-  spans[2]++;
-  is_set = -1;
-}
-
-void
-bytes_in::bflush ()
-{
-  if (bit_pos)
-    bit_flush ();
-}
-
-/* When reading, we don't know how many bools we'll read in.  So read
-   4 bytes-worth, and then rewind when flushing if we didn't need them
-   all.  */
-
-void
-bytes_in::bfill ()
-{
-  bit_val = raw ();
-}
-
-/* Low level bytes_ins and bytes_outs.  I did think about making these
-   templatized, but that started to look error prone, so went with
-   type-specific names.
-   b - bools,
-   i, u - ints/unsigned
-   wi/wu - wide ints/unsigned
-   s - size_t
-   buf - fixed size buffer
-   str - variable length string  */
-
-/* Bools are packed into bytes.  You cannot mix bools and non-bools.
-   You must call bflush before emitting another type.  So batch your
-   bools.
-
-   It may be worth optimizing for most bools being zero.  some kind of
-   run-length encoding?  */
-
-void
-bytes_out::b (bool x)
-{
-  if (is_set != x)
-    {
-      is_set = x;
-      spans[x]++;
-    }
-  lengths[x]++;
-  bit_val |= unsigned (x) << bit_pos++;
-  if (bit_pos == 32)
-    {
-      raw (bit_val);
-      lengths[2] += bit_flush ();
-    }
-}
-
-bool
-bytes_in::b ()
-{
-  if (!bit_pos)
-    bfill ();
-  bool v = (bit_val >> bit_pos++) & 1;
-  if (bit_pos == 32)
-    bit_flush ();
-  return v;
-}
-
-/* Exactly 4 bytes.  Used internally for bool packing and crc
-   transfer -- hence no crc here.  */
-
-void
-bytes_out::raw (unsigned val)
-{
-  char *ptr = use (4);
-  ptr[0] = val;
-  ptr[1] = val >> 8;
-  ptr[2] = val >> 16;
-  ptr[3] = val >> 24;
-}
-
-unsigned
-bytes_in::raw ()
-{
-  unsigned val = 0;
-  if (const char *ptr = use (4))
-    {
-      val |= (unsigned char)ptr[0];
-      val |= (unsigned char)ptr[1] << 8;
-      val |= (unsigned char)ptr[2] << 16;
-      val |= (unsigned char)ptr[3] << 24;
-    }
-
-  return val;
-}
-
-/* Chars are unsigned and written as single bytes. */
-
-void
-bytes_out::c (unsigned char v)
-{
-  *use (1) = v;
-}
-
-int
-bytes_in::c ()
-{
-  int v = 0;
-  if (const char *ptr = use (1))
-    v = (unsigned char)ptr[0];
-  return v;
-}
-
-/* Ints are written as sleb128.  */
-
-void
-bytes_out::i (int v)
-{
-  unsigned max = (sizeof (v) * 8 + 6) / 7; 
-  char *ptr = use (max);
-  unsigned count = 0;
-
-  int end = v < 0 ? -1 : 0;
-  bool more;
-  do
-    {
-      unsigned byte = v & 127;
-      v >>= 6; /* Signed shift.  */
-      more = v != end;
-      ptr[count++] = byte | (more << 7);
-      v >>= 1; /* Signed shift.  */
-    }
-  while (more);
-  unuse (max - count);
-}
-
-int
-bytes_in::i ()
-{
-  int v = 0;
-  unsigned max = (sizeof (v) * 8 + 6) / 7;
-  const char *ptr = use (max, &max);
-  unsigned count = 0;
-
-  unsigned bit = 0;
-  unsigned byte;
-  do
-    {
-      if (count == max)
-	{
-	  overrun = true;
-	  return 0;
-	}
-      byte = ptr[count++];
-      v |= (byte & 127) << bit;
-      bit += 7;
-    }
-  while (byte & 128);
-  unuse (max - count);
-
-  if (byte & 0x40 && bit < sizeof (v) * 8)
-    v |= ~(unsigned)0 << bit;
-
-  return v;
-}
-
-/* Unsigned are written as uleb128.  */
-
-void
-bytes_out::u (unsigned v)
-{
-  unsigned max = (sizeof (v) * 8 + 6) / 7;
-  char *ptr = use (max);
-  unsigned count = 0;
-
-  bool more;
-  do
-    {
-      unsigned byte = v & 127;
-      v >>= 7;
-      more = v != 0;
-      ptr[count++] = byte | (more << 7);
-    }
-  while (more);
-  unuse (max - count);
-}
-
-unsigned
-bytes_in::u ()
-{
-  unsigned v = 0;
-  unsigned max = (sizeof (v) * 8 + 6) / 7;
-  const char *ptr = use (max, &max);
-  unsigned count = 0;
-
-  unsigned bit = 0;
-  unsigned byte;
-  do
-    {
-      if (count == max)
-	{
-	  overrun = true;
-	  return 0;
-	}
-      byte = ptr[count++];
-      v |= (byte & 127) << bit;
-      bit += 7;
-    }
-  while (byte & 128);
-  unuse (max - count);
-
-  return v;
-}
-
-void
-bytes_out::wi (HOST_WIDE_INT v)
-{
-  unsigned max = (sizeof (v) * 8 + 6) / 7; 
-  char *ptr = use (max);
-  unsigned count = 0;
-
-  int end = v < 0 ? -1 : 0;
-  bool more;
-  do
-    {
-      unsigned byte = v & 127;
-      v >>= 6; /* Signed shift.  */
-      more = v != end;
-      ptr[count++] = byte | (more << 7);
-      v >>= 1; /* Signed shift.  */
-    }
-  while (more);
-  unuse (max - count);
-}
-
-HOST_WIDE_INT
-bytes_in::wi ()
-{
-  HOST_WIDE_INT v = 0;
-  unsigned max = (sizeof (v) * 8 + 6) / 7;
-  const char *ptr = use (max, &max);
-  unsigned count = 0;
-
-  unsigned bit = 0;
-  unsigned byte;
-  do
-    {
-      if (count == max)
-	{
-	  overrun = true;
-	  return 0;
-	}
-      byte = ptr[count++];
-      v |= (unsigned HOST_WIDE_INT)(byte & 127) << bit;
-      bit += 7;
-    }
-  while (byte & 128);
-  unuse (max - count);
-
-  if (byte & 0x40 && bit < sizeof (v) * 8)
-    v |= ~(unsigned HOST_WIDE_INT)0 << bit;
-  return v;
-}
-
-inline void
-bytes_out::wu (unsigned HOST_WIDE_INT v)
-{
-  wi ((HOST_WIDE_INT) v);
-}
-
-inline unsigned HOST_WIDE_INT
-bytes_in::wu ()
-{
-  return (unsigned HOST_WIDE_INT) wi ();
-}
-
-inline void
-bytes_out::s (size_t s)
-{
-  if (sizeof (s) == sizeof (unsigned))
-    u (s);
-  else
-    wu (s);
-}
-
-inline size_t
-bytes_in::s ()
-{
-  if (sizeof (size_t) == sizeof (unsigned))
-    return u ();
-  else
-    return wu ();
-}
-
-void
-bytes_out::buf (const char *buf, size_t len)
-{
-  memcpy (use (len), buf, len);
-}
-
-const char *
-bytes_in::buf (size_t len)
-{
-  const char *ptr = use (len);
-
-  return ptr;
-}
-
-/* Strings:
-   u:length
-   buf:bytes
-*/
-
-void
-bytes_out::str (const char *string, size_t len)
-{
-  s (len);
-  buf (string, len + 1);
-}
-
-const char *
-bytes_in::str (size_t *len_p)
-{
-  size_t len = s ();
-
-  /* We're about to trust some user data.  */
-  if (overrun)
-    len = 0;
-  *len_p = len;
-  const char *str = buf (len + 1);
-  if (str[len])
-    {
-      overrun = true;
-      str = "";
-    }
-  return str;
-}
-
-void
-bytes_out::printf (const char *format, ...)
-{
-  va_list args;
-  size_t len = 500;
-
- again:
-  va_start (args, format);
-  char *ptr = use (len);
-  size_t actual = vsnprintf (ptr, len, format, args);
-  va_end (args);
-  if (actual > len)
-    {
-      unuse (len);
-      len = actual;
-      goto again;
-    }
-  unuse (len - actual);
-}
-
-bool
-bytes_in::begin (elf_in *source, const char *name, unsigned *crc_p)
-{
-  bytes::begin (crc_p);
-
-  data = source->find (elf::SHT_PROGBITS, name);
-
-  if (!data || !data->check_crc (crc_p))
-    {
-      data = data::release (data);
-      set_overrun ();
-      error ("section %qs is missing or corrupted", name);
-      return false;
-    }
-  return true;
-}
-
-void
-bytes_out::begin (bool crc_p)
-{
-  bytes::begin (crc_p);
-  data = data::extend (0, 200);
-}
-
-unsigned
-bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr, bool string_p)
-{
-  lengths[3] += pos;
-  spans[3]++;
-
-  data->size = pos;
-  data->set_crc (crc_ptr);
-  unsigned sec_num = sink->add (string_p ? elf::SHT_STRTAB : elf::SHT_PROGBITS,
-				name, data,
-				string_p ? elf::SHF_STRINGS : elf::SHF_NONE);
-  bytes::end ();
-
-  return sec_num;
-}
-
-char *
-bytes_out::use (unsigned bytes)
-{
-  if (data->size < pos + bytes)
-    data = data::extend (data, (pos + bytes) * 3/2);
-  return bytes::use (bytes);
-}
-
-void
-bytes_out::instrument ()
-{
-  dump ("Wrote %u bytes in %u blocks", lengths[3], spans[3]);
-  dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1], lengths[2]);
-  for (unsigned ix = 0; ix < 2; ix++)
-    dump ("  %u %s spans of %R bits", spans[ix],
-	  ix ? "one" : "zero", lengths[ix], spans[ix]);
-  dump ("  %u blocks with %R bits padding", spans[2],
-	lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
-}
-
 /* Module cpm_stream base.  */
 class cpm_stream {
 public:
@@ -2220,6 +2210,18 @@ cpms_out::cpms_out (module_state *state)
 
 cpms_out::~cpms_out ()
 {
+}
+
+void
+bytes_out::instrument ()
+{
+  dump ("Wrote %u bytes in %u blocks", lengths[3], spans[3]);
+  dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1], lengths[2]);
+  for (unsigned ix = 0; ix < 2; ix++)
+    dump ("  %u %s spans of %R bits", spans[ix],
+	  ix ? "one" : "zero", lengths[ix], spans[ix]);
+  dump ("  %u blocks with %R bits padding", spans[2],
+	lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
 }
 
 void
