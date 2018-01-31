@@ -21,7 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Comments in this file have a non-negligible chance of being wrong
    or at least inaccurate.  Due to (a) my misunderstanding, (b)
    ambiguities that I have interpretted differently to original intent
-   (c) changes in the specification, (d) my poor wording.  */
+   (c) changes in the specification, (d) my poor wording, (e) source
+   changes.  */
 
 /* (Incomplete) Design Notes
 
@@ -60,6 +61,25 @@ along with GCC; see the file COPYING3.  If not see
    The MODULE_PURVIEW_P is an explicit flag in the decl.  We could do
    it implicitly by location, as all global module entities must come
    before all module-specific entities.  */
+
+/* Classes used:
+
+   data - buffer with CRC capability
+
+   dumper - logger
+
+   elf - simple ELF
+   elf_in : elf - ELF reader
+   elf_out : elf - ELF writer
+
+   bytes - simple data streamer
+   bytes_in : bytes - scalar reader
+   bytes_out : bytes - scalar writer
+
+   trees_in : bytes_in - tree reader
+   trees_out : bytes_out - tree writer
+
+   module_state - module object   */
 
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
@@ -899,56 +919,6 @@ protected:
   }
 };
 
-/* Byte stream writer.  */
-class bytes_out : public bytes {
-  typedef bytes parent;
-  /* Instrumentation.  */
-  static unsigned spans[4];
-  static unsigned lengths[4];
-  static int is_set;
-
-public:
-  bytes_out ()
-    : bytes ()
-  {
-  }
-  ~bytes_out ()
-  {
-  }
-
-private:
-  char *use (unsigned);
-
-public:
-  void begin (bool crc_p = false);
-  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, bool = false);
-
-public:
-  void raw (unsigned);
-
-public:
-  static void instrument ();
-
-public:
-  void b (bool);
-  void bflush ();
-
-public:
-  void c (unsigned char);
-  void i (int);
-  void u (unsigned);
-  void s (size_t s);
-  void wi (HOST_WIDE_INT);
-  void wu (unsigned HOST_WIDE_INT);
-  void str (const char *, size_t);
-  void buf (const char *, size_t);
-  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
-};
-
-unsigned bytes_out::spans[4];
-unsigned bytes_out::lengths[4];
-int bytes_out::is_set = -1;
-
 /* Byte stream reader.  */
 class bytes_in : public bytes {
   typedef bytes parent;
@@ -958,7 +928,7 @@ protected:
 
 public:
   bytes_in ()
-    : bytes (), overrun (false)
+    : parent (), overrun (false)
   {
   }
   ~bytes_in ()
@@ -1026,6 +996,56 @@ public:
   const char *str (size_t * = NULL);
   const char *buf (size_t);
 };
+
+/* Byte stream writer.  */
+class bytes_out : public bytes {
+  typedef bytes parent;
+  /* Instrumentation.  */
+  static unsigned spans[4];
+  static unsigned lengths[4];
+  static int is_set;
+
+public:
+  bytes_out ()
+    : parent ()
+  {
+  }
+  ~bytes_out ()
+  {
+  }
+
+private:
+  char *use (unsigned);
+
+public:
+  void begin (bool crc_p = false);
+  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, bool = false);
+
+public:
+  void raw (unsigned);
+
+public:
+  static void instrument ();
+
+public:
+  void b (bool);
+  void bflush ();
+
+public:
+  void c (unsigned char);
+  void i (int);
+  void u (unsigned);
+  void s (size_t s);
+  void wi (HOST_WIDE_INT);
+  void wu (unsigned HOST_WIDE_INT);
+  void str (const char *, size_t);
+  void buf (const char *, size_t);
+  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
+};
+
+unsigned bytes_out::spans[4];
+unsigned bytes_out::lengths[4];
+int bytes_out::is_set = -1;
 
 /* Finish a set of bools.  */
 
@@ -1558,8 +1578,77 @@ enum record_tag
     rt_ref_base = 0x1000	/* Back-reference indices.  */
   };
 
-/* cpm_stream cpms_out.  */
-class cpms_out : public bytes_out {
+/* Tree stream reader.  */
+class trees_in : public bytes_in {
+  typedef bytes_in parent;
+
+private:
+  module_state *state;
+  unsigned count;
+  vec<tree, va_gc> *global_vec;
+  uint_ptr_hash_map tree_map; /* ids to trees  */
+
+public:
+  trees_in (module_state *, vec<tree, va_gc> *globals);
+  ~trees_in ();
+
+  /* Allocate a new reference index.  */
+private:
+  unsigned next ()
+  {
+    return count++;
+  }
+
+public:
+  void read ();
+
+public:
+  bool tag_binding ();
+  tree tag_definition ();
+
+private:
+  unsigned insert (tree);
+  tree finish_type (tree);
+
+private:
+  tree start (tree_code);
+  tree finish (tree);
+  location_t loc ();
+  bool core_bools (tree);
+  bool core_vals (tree);
+  bool lang_type_bools (tree);
+  bool lang_type_vals (tree);
+  bool lang_decl_bools (tree);
+  bool lang_decl_vals (tree);
+  bool tree_node_raw (tree_code, tree, tree, tree);
+  tree tree_node_special (unsigned);
+  tree chained_decls ();
+  vec<tree, va_gc> *tree_vec ();
+  vec<tree_pair_s, va_gc> *tree_pair_vec ();
+  tree define_function (tree, tree);
+  tree define_var (tree, tree);
+  tree define_class (tree, tree);
+  tree define_enum (tree, tree);
+
+public:
+  tree tree_node ();
+};
+
+trees_in::trees_in (module_state *state, vec<tree, va_gc> *globals)
+  :parent (), state (state), count (rt_ref_base), global_vec (globals),
+   tree_map (500)
+{
+  /* Just reserve the tag space.  No need to actually insert them in
+     the map.  */
+  count += globals->length ();
+}
+
+trees_in::~trees_in ()
+{
+}
+
+/* Tree stream writer.  */
+class trees_out : public bytes_out {
   typedef bytes_out parent;
 
 private:
@@ -1575,8 +1664,8 @@ private:
   static unsigned records;
 
 public:
-  cpms_out (module_state *, vec<tree, va_gc> *globals);
-  ~cpms_out ();
+  trees_out (module_state *, vec<tree, va_gc> *globals);
+  ~trees_out ();
 
   /* Allocate a new reference index.  */
 private:
@@ -1627,12 +1716,12 @@ public:
 			      vec<tree, va_gc> *nest, tree ns);
 };
 
-unsigned cpms_out::unique;
-unsigned cpms_out::refs;
-unsigned cpms_out::nulls;
-unsigned cpms_out::records;
+unsigned trees_out::unique;
+unsigned trees_out::refs;
+unsigned trees_out::nulls;
+unsigned trees_out::records;
 
-cpms_out::cpms_out (module_state *state, vec<tree, va_gc> *globals)
+trees_out::trees_out (module_state *state, vec<tree, va_gc> *globals)
   :parent (), state (state), count (rt_ref_base), tree_map (500)
 {
   gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
@@ -1648,76 +1737,7 @@ cpms_out::cpms_out (module_state *state, vec<tree, va_gc> *globals)
     }
 }
 
-cpms_out::~cpms_out ()
-{
-}
-
-/* Cpm_Stream in.  */
-class cpms_in : public bytes_in {
-  typedef bytes_in parent;
-
-private:
-  module_state *state;
-  unsigned count;
-  vec<tree, va_gc> *global_vec;
-  uint_ptr_hash_map tree_map; /* ids to trees  */
-
-public:
-  cpms_in (module_state *, vec<tree, va_gc> *globals);
-  ~cpms_in ();
-
-  /* Allocate a new reference index.  */
-private:
-  unsigned next ()
-  {
-    return count++;
-  }
-
-public:
-  void read ();
-
-public:
-  bool tag_binding ();
-  tree tag_definition ();
-
-private:
-  unsigned insert (tree);
-  tree finish_type (tree);
-
-private:
-  tree start (tree_code);
-  tree finish (tree);
-  location_t loc ();
-  bool core_bools (tree);
-  bool core_vals (tree);
-  bool lang_type_bools (tree);
-  bool lang_type_vals (tree);
-  bool lang_decl_bools (tree);
-  bool lang_decl_vals (tree);
-  bool tree_node_raw (tree_code, tree, tree, tree);
-  tree tree_node_special (unsigned);
-  tree chained_decls ();
-  vec<tree, va_gc> *tree_vec ();
-  vec<tree_pair_s, va_gc> *tree_pair_vec ();
-  tree define_function (tree, tree);
-  tree define_var (tree, tree);
-  tree define_class (tree, tree);
-  tree define_enum (tree, tree);
-
-public:
-  tree tree_node ();
-};
-
-cpms_in::cpms_in (module_state *state, vec<tree, va_gc> *globals)
-  :parent (), state (state), count (rt_ref_base), global_vec (globals),
-   tree_map (500)
-{
-  /* Just reserve the tag space.  No need to actually insert them in
-     the map.  */
-  count += globals->length ();
-}
-
-cpms_in::~cpms_in ()
+trees_out::~trees_out ()
 {
 }
 
@@ -2454,7 +2474,7 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   bytes_out bind;
   bind.begin (true);
   
-  cpms_out out (this, global_vec);
+  trees_out out (this, global_vec);
   out.begin (true);
   out.write (bind, to);
 
@@ -2478,7 +2498,7 @@ module_state::read_bindings (elf_in *from)
 bool
 module_state::read_decls (elf_in *from)
 {
-  cpms_in in (this, global_vec);
+  trees_in in (this, global_vec);
   unsigned crc = 0;
 
   // FIXME not yet lazy
@@ -2502,7 +2522,7 @@ module_state::write (elf_out *to)
 
   write_config (to, crc);
 
-  cpms_out::instrument ();
+  trees_out::instrument ();
 }
 
 void
@@ -2625,7 +2645,7 @@ bytes_out::instrument ()
 }
 
 void
-cpms_out::instrument ()
+trees_out::instrument ()
 {
   if (dump (""))
     {
@@ -2639,7 +2659,7 @@ cpms_out::instrument ()
 }
 
 unsigned
-cpms_out::insert (tree t)
+trees_out::insert (tree t)
 {
   unsigned tag = next ();
   bool existed = tree_map.put (t, tag);
@@ -2648,7 +2668,7 @@ cpms_out::insert (tree t)
 }
 
 unsigned
-cpms_in::insert (tree t)
+trees_in::insert (tree t)
 {
   unsigned tag = next ();
   bool existed = tree_map.put (tag, t);
@@ -2667,7 +2687,7 @@ cpms_in::insert (tree t)
 */
 
 void
-cpms_out::tag_binding (tree ns, tree name, module_binding_vec *binding)
+trees_out::tag_binding (tree ns, tree name, module_binding_vec *binding)
 {
   dump () && dump ("Writing %N bindings for %N", ns, name);
   tag (rt_binding);
@@ -2702,7 +2722,7 @@ cpms_out::tag_binding (tree ns, tree name, module_binding_vec *binding)
 }
 
 bool
-cpms_in::tag_binding ()
+trees_in::tag_binding ()
 {
   tree ns = tree_node ();
   tree name = tree_node ();
@@ -2748,7 +2768,7 @@ cpms_in::tag_binding ()
 /* Stream a function definition.  */
 
 void
-cpms_out::define_function (tree decl, tree)
+trees_out::define_function (tree decl, tree)
 {
   tree_node (DECL_RESULT (decl));
   tree_node (DECL_INITIAL (decl));
@@ -2758,7 +2778,7 @@ cpms_out::define_function (tree decl, tree)
 }
 
 tree
-cpms_in::define_function (tree decl, tree maybe_template)
+trees_in::define_function (tree decl, tree maybe_template)
 {
   tree result = tree_node ();
   tree initial = tree_node ();
@@ -2809,13 +2829,13 @@ cpms_in::define_function (tree decl, tree maybe_template)
 /* Stream a variable definition.  */
 
 void
-cpms_out::define_var (tree decl, tree)
+trees_out::define_var (tree decl, tree)
 {
   tree_node (DECL_INITIAL (decl));
 }
 
 tree
-cpms_in::define_var (tree decl, tree)
+trees_in::define_var (tree decl, tree)
 {
   tree init = tree_node ();
 
@@ -2830,7 +2850,7 @@ cpms_in::define_var (tree decl, tree)
 /* A chained set of decls.  */
 
 void
-cpms_out::chained_decls (tree decls)
+trees_out::chained_decls (tree decls)
 {
   for (; decls; decls = DECL_CHAIN (decls))
     tree_node (decls);
@@ -2838,7 +2858,7 @@ cpms_out::chained_decls (tree decls)
 }
 
 tree
-cpms_in::chained_decls ()
+trees_in::chained_decls ()
 {
   tree decls = NULL_TREE;
   for (tree *chain = &decls; chain && !get_overrun ();)
@@ -2861,7 +2881,7 @@ cpms_in::chained_decls ()
 /* A vector of trees.  */
 
 void
-cpms_out::tree_vec (vec<tree, va_gc> *v)
+trees_out::tree_vec (vec<tree, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
   u (len);
@@ -2871,7 +2891,7 @@ cpms_out::tree_vec (vec<tree, va_gc> *v)
 }
 
 vec<tree, va_gc> *
-cpms_in::tree_vec ()
+trees_in::tree_vec ()
 {
   vec<tree, va_gc> *v = NULL;
   if (unsigned len = u ())
@@ -2886,7 +2906,7 @@ cpms_in::tree_vec ()
 /* A vector of tree pairs.  */
 
 void
-cpms_out::tree_pair_vec (vec<tree_pair_s, va_gc> *v)
+trees_out::tree_pair_vec (vec<tree_pair_s, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
   u (len);
@@ -2900,7 +2920,7 @@ cpms_out::tree_pair_vec (vec<tree_pair_s, va_gc> *v)
 }
 
 vec<tree_pair_s, va_gc> *
-cpms_in::tree_pair_vec ()
+trees_in::tree_pair_vec ()
 {
   vec<tree_pair_s, va_gc> *v = NULL;
   if (unsigned len = u ())
@@ -2920,7 +2940,7 @@ cpms_in::tree_pair_vec ()
 /* Stream a class definition.  */
 
 void
-cpms_out::define_class (tree type, tree maybe_template)
+trees_out::define_class (tree type, tree maybe_template)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
@@ -2975,7 +2995,7 @@ nop (void *, void *)
 }
 
 tree
-cpms_in::define_class (tree type, tree maybe_template)
+trees_in::define_class (tree type, tree maybe_template)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
@@ -3070,7 +3090,7 @@ cpms_in::define_class (tree type, tree maybe_template)
 /* Stream an enum definition.  */
 
 void
-cpms_out::define_enum (tree type, tree)
+trees_out::define_enum (tree type, tree)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
@@ -3080,7 +3100,7 @@ cpms_out::define_enum (tree type, tree)
 }
 
 tree
-cpms_in::define_enum (tree type, tree)
+trees_in::define_enum (tree type, tree)
 {
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
@@ -3123,7 +3143,7 @@ cpms_in::define_enum (tree type, tree)
 /* Write out DECL's definition, if importers need it.  */
 
 void
-cpms_out::maybe_tag_definition (tree t)
+trees_out::maybe_tag_definition (tree t)
 {
   tree maybe_template = NULL_TREE;
 
@@ -3177,7 +3197,7 @@ cpms_out::maybe_tag_definition (tree t)
 /* Write out T's definition  */
 
 void
-cpms_out::tag_definition (tree t, tree maybe_template)
+trees_out::tag_definition (tree t, tree maybe_template)
 {
   dump () && dump ("Writing%s definition for %C:%N%S",
 		   maybe_template ? " template" : "", TREE_CODE (t), t, t);
@@ -3224,7 +3244,7 @@ cpms_out::tag_definition (tree t, tree maybe_template)
 }
 
 tree
-cpms_in::tag_definition ()
+trees_in::tag_definition ()
 {
   tree t = tree_node ();
   dump () && dump ("Reading definition for %C:%N%S", TREE_CODE (t), t, t);
@@ -3278,13 +3298,13 @@ cpms_in::tag_definition ()
 /* Read & write locations.  */
 
 void
-cpms_out::loc (location_t)
+trees_out::loc (location_t)
 {
   // FIXME:Do something
 }
 
 location_t
-cpms_in::loc ()
+trees_in::loc ()
 {
   // FIXME:Do something^-1
   return UNKNOWN_LOCATION;
@@ -3294,7 +3314,7 @@ cpms_in::loc ()
    node.  */
 
 void
-cpms_out::start (tree_code code, tree t)
+trees_out::start (tree_code code, tree t)
 {
   switch (code)
     {
@@ -3331,7 +3351,7 @@ cpms_out::start (tree_code code, tree t)
 /* Start tree read.  Allocate the receiving node.  */
 
 tree
-cpms_in::start (tree_code code)
+trees_in::start (tree_code code)
 {
   tree t = NULL_TREE;
 
@@ -3385,7 +3405,7 @@ cpms_in::start (tree_code code)
    possibly-remapped tree.  */
 
 tree
-cpms_in::finish (tree t)
+trees_in::finish (tree t)
 {
   if (TYPE_P (t))
     {
@@ -3473,7 +3493,7 @@ cpms_in::finish (tree t)
 /* Read & write the core boolean flags.  */
 
 void
-cpms_out::core_bools (tree t)
+trees_out::core_bools (tree t)
 {
 #define WB(X) (b (X))
   tree_code code = TREE_CODE (t);
@@ -3621,7 +3641,7 @@ cpms_out::core_bools (tree t)
 }
 
 bool
-cpms_in::core_bools (tree t)
+trees_in::core_bools (tree t)
 {
 #define RB(X) ((X) = b ())
   tree_code code = TREE_CODE (t);
@@ -3767,7 +3787,7 @@ cpms_in::core_bools (tree t)
 }
 
 void
-cpms_out::lang_decl_bools (tree t)
+trees_out::lang_decl_bools (tree t)
 {
 #define WB(X) (b (X))
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
@@ -3822,7 +3842,7 @@ cpms_out::lang_decl_bools (tree t)
 }
 
 bool
-cpms_in::lang_decl_bools (tree t)
+trees_in::lang_decl_bools (tree t)
 {
 #define RB(X) ((X) = b ())
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
@@ -3875,7 +3895,7 @@ cpms_in::lang_decl_bools (tree t)
 }
 
 void
-cpms_out::lang_type_bools (tree t)
+trees_out::lang_type_bools (tree t)
 {
 #define WB(X) (b (X))
   const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
@@ -3938,7 +3958,7 @@ cpms_out::lang_type_bools (tree t)
 }
 
 bool
-cpms_in::lang_type_bools (tree t)
+trees_in::lang_type_bools (tree t)
 {
 #define RB(X) ((X) = b ())
   struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
@@ -4007,7 +4027,7 @@ cpms_in::lang_type_bools (tree t)
 /* Read & write the core values and pointers.  */
 
 void
-cpms_out::core_vals (tree t)
+trees_out::core_vals (tree t)
 {
 #define WU(X) (u (X))
 #define WT(X) (tree_node (X))
@@ -4383,7 +4403,7 @@ cpms_out::core_vals (tree t)
 }
 
 bool
-cpms_in::core_vals (tree t)
+trees_in::core_vals (tree t)
 {
 #define RU(X) ((X) = u ())
 #define RUC(T,X) ((X) = T (u ()))
@@ -4597,7 +4617,7 @@ cpms_in::core_vals (tree t)
     for (unsigned ix = VL_EXP_OPERAND_LENGTH (t); --ix;)
       RT (TREE_OPERAND (t, ix));
   else if (CODE_CONTAINS_STRUCT (code, TS_EXP)
-	   /* See comment in cpms_out::core_vals.  */
+	   /* See comment in trees_out::core_vals.  */
 	   || TREE_CODE_CLASS (code) == tcc_expression
 	   || TREE_CODE_CLASS (code) == tcc_binary
 	   || TREE_CODE_CLASS (code) == tcc_unary)
@@ -4753,7 +4773,7 @@ cpms_in::core_vals (tree t)
 }
 
 void
-cpms_out::lang_decl_vals (tree t)
+trees_out::lang_decl_vals (tree t)
 {
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define WU(X) (u (X))
@@ -4787,7 +4807,7 @@ cpms_out::lang_decl_vals (tree t)
 }
 
 bool
-cpms_in::lang_decl_vals (tree t)
+trees_in::lang_decl_vals (tree t)
 {
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 #define RU(X) ((X) = u ())
@@ -4840,7 +4860,7 @@ cpms_in::lang_decl_vals (tree t)
    define_class.  */
 
 void
-cpms_out::lang_type_vals (tree t)
+trees_out::lang_type_vals (tree t)
 {
   const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
 #define WU(X) (u (X))
@@ -4852,7 +4872,7 @@ cpms_out::lang_type_vals (tree t)
 }
 
 bool
-cpms_in::lang_type_vals (tree t)
+trees_in::lang_type_vals (tree t)
 {
   struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
 #define RU(X) ((X) = u ())
@@ -4869,7 +4889,7 @@ cpms_in::lang_type_vals (tree t)
    bools and vals without post-processing.  */
 
 void
-cpms_out::tree_node_raw (tree_code code, tree t)
+trees_out::tree_node_raw (tree_code code, tree t)
 {
   tree_code_class klass = TREE_CODE_CLASS (code);
   bool specific = false;
@@ -4909,7 +4929,7 @@ cpms_out::tree_node_raw (tree_code code, tree t)
 }
 
 bool
-cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
+trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 {
   tree_code_class klass = TREE_CODE_CLASS (code);
   bool specific = false;
@@ -4974,7 +4994,7 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 /* If tree has special streaming semantics, do that.  */
 
 int
-cpms_out::tree_node_special (tree t)
+trees_out::tree_node_special (tree t)
 {
   if (unsigned *val = tree_map.get (t))
     {
@@ -5057,7 +5077,7 @@ cpms_out::tree_node_special (tree t)
 }
 
 tree
-cpms_in::tree_node_special (unsigned tag)
+trees_in::tree_node_special (unsigned tag)
 {
   if (tag >= rt_ref_base)
     {
@@ -5174,7 +5194,7 @@ cpms_in::tree_node_special (unsigned tag)
 */
 
 void
-cpms_out::tree_node (tree t)
+trees_out::tree_node (tree t)
 {
   if (!t)
     {
@@ -5257,7 +5277,7 @@ cpms_out::tree_node (tree t)
    error_mark_node if TAG is totally bogus.  */
 
 tree
-cpms_in::tree_node ()
+trees_in::tree_node ()
 {
   unsigned tag = u ();
 
@@ -5396,7 +5416,7 @@ cpms_in::tree_node ()
 // Perhaps that should be changed?
 
 tree
-cpms_in::finish_type (tree type)
+trees_in::finish_type (tree type)
 {
   tree main = TYPE_MAIN_VARIANT (type);
 
@@ -5495,7 +5515,7 @@ cpms_in::finish_type (tree type)
    zero. */
 
 vec<tree, va_gc> *
-cpms_out::bindings (bytes_out *bind, elf_out *to,
+trees_out::bindings (bytes_out *bind, elf_out *to,
 		    vec<tree, va_gc> *nest, tree ns)
 {
   dump () && dump ("Walking namespace %N", ns);
@@ -5573,7 +5593,7 @@ cpms_out::bindings (bytes_out *bind, elf_out *to,
 }
 
 void
-cpms_out::write (bytes_out &bind, elf_out *to)
+trees_out::write (bytes_out &bind, elf_out *to)
 {
   /* Write decls.  */
   vec<tree, va_gc> *nest = NULL;
@@ -5584,7 +5604,7 @@ cpms_out::write (bytes_out &bind, elf_out *to)
 }
 
 void
-cpms_in::read ()
+trees_in::read ()
 {
   bool ok = true;
   while (ok && more_p ())

@@ -1,6 +1,10 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (cpms_{in,out}): Rename to ...
+	(trees_in, trees_out): ... here.
+
+	gcc/cp/
 	* module.c (module_state::global_{trees,vec,crc}): New, moved from ...
 	(globals{,_arys,_crc}): ... these globale scope vars.
 	(cpms_in): Add global_vec member.
