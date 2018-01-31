@@ -1462,6 +1462,12 @@ struct GTY(()) module_state {
   bool imported : 1;	/* Imported via import declaration.  */
   bool exported : 1;	/* The import is exported.  */
 
+ private:
+  /* Global tree context.  */
+  static const std::pair<tree *, unsigned> global_trees[];
+  static vec<tree, va_gc> GTY (()) *global_vec;
+  static unsigned global_crc;
+
  public:
   module_state ();
   ~module_state ();
@@ -1489,6 +1495,18 @@ struct GTY(()) module_state {
   bool read_bindings (elf_in *from);
   bool read_decls (elf_in *from);
 };
+
+/* Global trees.  */
+const std::pair<tree *, unsigned> module_state::global_trees[] =
+  {
+    std::pair<tree *, unsigned> (sizetype_tab, stk_type_kind_last),
+    std::pair<tree *, unsigned> (integer_types, itk_none),
+    std::pair<tree *, unsigned> (::global_trees, TI_MAX),
+    std::pair<tree *, unsigned> (cp_global_trees, CPTI_MAX),
+    std::pair<tree *, unsigned> (NULL, 0)
+  };
+vec<tree, va_gc> GTY (()) *module_state::global_vec;
+unsigned module_state::global_crc;
 
 // FIXME:member of module_state?
 static module_state *do_module_import (location_t, tree, bool module_unit_p,
@@ -1641,6 +1659,7 @@ class cpms_in : public bytes_in {
 private:
   module_state *state;
   unsigned count;
+  vec<tree, va_gc> *global_vec;
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
 public:
@@ -1690,7 +1709,8 @@ public:
 };
 
 cpms_in::cpms_in (module_state *state, vec<tree, va_gc> *globals)
-  :parent (), state (state), count (rt_ref_base), tree_map (500)
+  :parent (), state (state), count (rt_ref_base), global_vec (globals),
+   tree_map (500)
 {
   /* Just reserve the tag space.  No need to actually insert them in
      the map.  */
@@ -2024,27 +2044,10 @@ module_state::~module_state ()
   release ();
 }
 
-// FIXME:static members of module_state
-/* Global trees.  */
-struct gtp {
-  const tree *ptr;
-  unsigned num;
-};
-static const gtp globals_arys[] =
-  {
-    {sizetype_tab, stk_type_kind_last},
-    {integer_types, itk_none},
-    {global_trees, TI_MAX},
-    {cp_global_trees, CPTI_MAX},
-    {NULL, 0}
-  };
-static vec<tree, va_gc> GTY (()) *globals;
-static unsigned globals_crc;
-
 void
 module_state::lazy_init ()
 {
-  gcc_checking_assert (!globals);
+  gcc_checking_assert (!global_vec);
 
   dump.push (NULL);
   /* Construct the global tree array.  This is an array of unique
@@ -2054,19 +2057,19 @@ module_state::lazy_init ()
   // some other means.
   unsigned crc = 0;
   hash_table<nofree_ptr_hash<tree_node> > hash (200);
-  vec_alloc (globals, 200);
+  vec_alloc (global_vec, 200);
 
   dump () && dump ("+Creating globals");
   /* Insert the TRANSLATION_UNIT_DECL.  */
   *hash.find_slot (DECL_CONTEXT (global_namespace), INSERT)
     = DECL_CONTEXT (global_namespace);
-  globals->quick_push (DECL_CONTEXT (global_namespace));
-  
-  for (unsigned jx = 0; globals_arys[jx].ptr; jx++)
+  global_vec->quick_push (DECL_CONTEXT (global_namespace));
+
+  for (unsigned jx = 0; global_trees[jx].first; jx++)
     {
-      const tree *ptr = globals_arys[jx].ptr;
-      unsigned limit = globals_arys[jx].num;
-	  
+      const tree *ptr = global_trees[jx].first;
+      unsigned limit = global_trees[jx].second;
+
       for (unsigned ix = 0; ix != limit; ix++, ptr++)
 	{
 	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx,ix);
@@ -2077,8 +2080,8 @@ module_state::lazy_init ()
 	      if (!*slot)
 		{
 		  *slot = val;
-		  crc = crc32_unsigned (crc, globals->length ());
-		  vec_safe_push (globals, val);
+		  crc = crc32_unsigned (crc, global_vec->length ());
+		  vec_safe_push (global_vec, val);
 		  v++;
 		  if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
 		    {
@@ -2089,8 +2092,8 @@ module_state::lazy_init ()
 			  if (!*slot)
 			    {
 			      *slot = val;
-			      crc = crc32_unsigned (crc, globals->length ());
-			      vec_safe_push (globals, val);
+			      crc = crc32_unsigned (crc, global_vec->length ());
+			      vec_safe_push (global_vec, val);
 			      v++;
 			    }
 			}
@@ -2100,10 +2103,10 @@ module_state::lazy_init ()
 	  dump () && dump ("+%u", v);
 	}
     }
-  gcc_checking_assert (hash.elements () == globals->length ());
-  globals_crc = crc32_unsigned (crc, globals->length ());
+  gcc_checking_assert (hash.elements () == global_vec->length ());
+  global_crc = crc32_unsigned (crc, global_vec->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
-		     globals->length (), globals_crc);
+		     global_vec->length (), global_crc);
   dump.pop (0);
 }
 
@@ -2310,8 +2313,8 @@ module_state::read_context (elf_in *from)
    u:module-name
    u:<target-triplet>
    u:<host-triplet>
-   u:globals_length
-   raw:globals_crc
+   u:global_vec->length()
+   raw:global_crc
    // FIXME CPU,ABI and similar tags
    // FIXME Optimization and similar tags
 */
@@ -2346,9 +2349,9 @@ module_state::write_config (elf_out *to, unsigned inner_crc)
      to ensure data match between instances of the compiler, not
      integrity of the file.  */
   dump () && dump ("Writing globals=%u, crc=%x",
-		   globals->length (), globals_crc);
-  cfg.u (globals->length ());
-  cfg.raw (globals_crc);
+		   global_vec->length (), global_crc);
+  cfg.u (global_vec->length ());
+  cfg.raw (global_crc);
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
@@ -2432,8 +2435,8 @@ module_state::read_config (elf_in *from, unsigned *crc_ptr)
   unsigned their_glength = cfg.u ();
   unsigned their_gcrc = cfg.raw ();
   dump () && dump ("Read globals=%u, crc=%x", their_glength, their_gcrc);
-  if (their_glength != globals->length ()
-      || their_gcrc != globals_crc)
+  if (their_glength != global_vec->length ()
+      || their_gcrc != global_crc)
     {
       error ("global tree mismatch");
       goto fail;
@@ -2451,7 +2454,7 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   bytes_out bind;
   bind.begin (true);
   
-  cpms_out out (this, globals);
+  cpms_out out (this, global_vec);
   out.begin (true);
   out.write (bind, to);
 
@@ -2475,7 +2478,7 @@ module_state::read_bindings (elf_in *from)
 bool
 module_state::read_decls (elf_in *from)
 {
-  cpms_in in (this, globals);
+  cpms_in in (this, global_vec);
   unsigned crc = 0;
 
   // FIXME not yet lazy
@@ -5060,8 +5063,8 @@ cpms_in::tree_node_special (unsigned tag)
     {
       tree res;
 
-      if (tag - rt_ref_base < globals->length ())
-	res = (*globals)[tag - rt_ref_base];
+      if (tag - rt_ref_base < global_vec->length ())
+	res = (*global_vec)[tag - rt_ref_base];
       else
 	{
 	  tree *val = (tree *)tree_map.get (tag);
