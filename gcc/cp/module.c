@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
    experimental right now.  */
 #ifndef MODULE_STAMP
 #error "Stahp! What are you doing? This is not ready yet."
+#define MODULE_STAMP 0
 #endif
 
 #include "config.h"
@@ -103,7 +104,7 @@ get_version ()
   /* If the on-disk format changes, update the version number.  */
   int version = 20180101;
 
-#if defined (MODULE_STAMP)
+#if MODULE_STAMP
   /* MODULE_STAMP is a decimal encoding YYYYMMDDhhmm or YYYYMMDD in
      local timezone.  Using __TIME__ doesn't work very well with
      boostrapping!  */
@@ -862,9 +863,6 @@ struct GTY(()) module_state {
   void push_location (const char *filename);
   void pop_location () const;
   void do_import (unsigned index, bool is_export);
-
- public:
-  void dump (FILE *, bool);
 };
 
 /* Hash module state by name.  */
@@ -897,6 +895,302 @@ static GTY(()) vec<module_state *, va_gc> *modules;
 
 /* Map from identifier to module index. */
 static GTY(()) hash_table<module_state_hash> *module_hash;
+
+/* A dumping machinery.  */
+class dumper {
+private:
+  struct impl {
+    typedef vec<module_state *, va_heap, vl_embed> stack_t;
+
+    FILE *stream;	/* Dump stream.  */
+    unsigned indent; 	/* Local indentation.  */
+    bool bol; 		/* Beginning of line.  */
+    stack_t stack;	/* Trailing array of module_state.  */
+
+    bool nested_name (tree);
+  };
+
+public:
+  impl *dumps;
+
+public:
+  /* Push/pop module state dumping.  */
+  unsigned push (module_state *);
+  void pop (unsigned);
+
+  /* Change local indentation.  */
+  void indent ()
+  {
+    if (dumps)
+      dumps->indent++;
+  }
+  void outdent ()
+  {
+    if (dumps)
+      dumps->indent--;
+  }
+
+  /* Dump information.  */
+  bool operator () ()
+  {
+    return dumps && dumps->stream;
+  }
+  bool operator () (const char *, ...);
+};
+
+static dumper dump = {0};
+
+unsigned
+dumper::push (module_state *m)
+{
+  FILE *stream = NULL;
+  if (!dumps || !dumps->stack.length ())
+    {
+      stream = dump_begin (module_dump_id, NULL);
+      if (!stream)
+	return 0;
+    }
+
+  if (!dumps || !dumps->stack.space (1))
+    {
+      bool current = dumps ? dumps->stack.length () : 0;
+      unsigned count = current ? current *2 : MODULE_STAMP ? 1 : 20;
+      size_t alloc = (offsetof (impl, impl::stack)
+		      + impl::stack_t::embedded_size (count));
+      dumps = XRESIZEVAR (impl, dumps, alloc);
+      dumps->stack.embedded_init (count, current);
+    }
+  if (stream)
+    dumps->stream = stream;
+
+  unsigned n = dumps->indent;
+  dumps->indent = 0;
+  dumps->bol = true;
+  dumps->stack.quick_push (m);
+  module_state *from = (dumps->stack.length () > 1
+			? dumps->stack[dumps->stack.length () - 2] : NULL);
+  dump (from ? "Starting module %M (from %M)"
+	: "Starting module %M", m, from);
+
+  return n;
+}
+
+void dumper::pop (unsigned n)
+{
+  if (dumps)
+    {
+      gcc_checking_assert (dump () && !dumps->indent);
+      module_state *m = dumps->stack[dumps->stack.length () - 1];
+      module_state *from = (dumps->stack.length () > 1
+			    ? dumps->stack[dumps->stack.length () - 2] : NULL);
+      dump (from ? "Finishing module %M (returning to %M)"
+	    : "Finishing module %M", m, from);
+      dumps->stack.pop ();
+      dumps->indent = n;
+      if (!from)
+	{
+	  dump_end (module_dump_id, dumps->stream);
+	  dumps->stream = NULL;
+	}
+    }
+}
+
+bool
+dumper::impl::nested_name (tree t)
+{
+  if (t && TYPE_P (t))
+    t = TYPE_NAME (t);
+
+  if (t && DECL_P (t))
+    {
+      if (t == global_namespace)
+	;
+      else if (tree ctx = DECL_CONTEXT (t))
+	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
+	    || nested_name (ctx))
+	  fputs ("::", stream);
+      t = DECL_NAME (t);
+    }
+
+  if (t)
+    switch (TREE_CODE (t))
+      {
+      case IDENTIFIER_NODE:
+	fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), stream);
+	return true;
+
+      case STRING_CST:
+	fwrite (TREE_STRING_POINTER (t), 1, TREE_STRING_LENGTH (t) - 1, stream);
+	return true;
+
+      case INTEGER_CST:
+	print_hex (wi::to_wide (t), stream);
+	return true;
+
+      default:
+	break;
+      }
+
+  return false;
+}
+
+bool
+dumper::operator () (const char *format, ...)
+{
+  if (!(*this) ())
+    return false;
+
+  bool no_nl = format[0] == '+';
+  format += no_nl;
+
+  if (dumps->bol)
+    {
+      if (unsigned depth = dumps->stack.length () - 1)
+	{
+	  /* Module import indenting.  */
+	  const char *indent = ">>>>";
+	  const char *dots   = ">...>";
+	  if (depth > strlen (indent))
+	    indent = dots;
+	  else
+	    indent += strlen (indent) - depth;
+	  fputs (indent, dumps->stream);
+	}
+      if (unsigned indent = dumps->indent)
+	{
+	  /* Tree indenting.  */
+	  const char *spaces = "      ";
+	  const char *dots  =  "   ... ";
+
+	  fputs (indent > strlen (spaces) ? dots
+		 : &spaces[strlen (spaces) - indent], dumps->stream);
+	}
+      dumps->bol = false;
+    }
+
+  va_list args;
+  va_start (args, format);
+  while (const char *esc = strchr (format, '%'))
+    {
+      fwrite (format, 1, (size_t)(esc - format), dumps->stream);
+      format = ++esc;
+      switch (*format++)
+	{
+	case 'C': /* Code */
+	  {
+	    tree_code code = (tree_code)va_arg (args, unsigned);
+	    fputs (get_tree_code_name (code), dumps->stream);
+	    break;
+	  }
+	case 'I': /* Identifier.  */
+	  {
+	    tree t = va_arg (args, tree);
+	    dumps->nested_name (t);
+	    break;
+	  }
+	case 'M': /* Module. */
+	  {
+	    module_state *m = va_arg (args, module_state *);
+	    if (m)
+	      dumps->nested_name (m->name);
+	    else
+	      fputs ("(none)", dumps->stream);
+	    break;
+	  }
+	case 'N': /* Name.  */
+	  {
+	    tree t = va_arg (args, tree);
+	    fputc ('\'', dumps->stream);
+	    dumps->nested_name (t);
+	    fputc ('\'', dumps->stream);
+	    break;
+	  }
+	case 'P': /* Pair.  */
+	  {
+	    tree ctx = va_arg (args, tree);
+	    tree name = va_arg (args, tree);
+	    fputc ('\'', dumps->stream);
+	    dumps->nested_name (ctx);
+	    if (ctx && ctx != global_namespace)
+	      fputs ("::", dumps->stream);
+	    dumps->nested_name (name);
+	    fputc ('\'', dumps->stream);
+	    break;
+	  }
+	case 'R': /* Ratio */
+	  {
+	    unsigned a = va_arg (args, unsigned);
+	    unsigned b = va_arg (args, unsigned);
+	    fprintf (dumps->stream, "%.1f", (float) a / (b + !b));
+	    break;
+	  }
+	case 'S': /* Symbol name */
+	  {
+	    tree t = va_arg (args, tree);
+	    if (t && TYPE_P (t))
+	      t = TYPE_NAME (t);
+	    if (t && HAS_DECL_ASSEMBLER_NAME_P (t)
+		&& DECL_ASSEMBLER_NAME_SET_P (t))
+	      {
+		fputc ('(', dumps->stream);
+		fputs (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t)),
+		       dumps->stream);
+		fputc (')', dumps->stream);
+	      }
+	    break;
+	  }
+	case 'U': /* long unsigned.  */
+	  {
+	    unsigned long u = va_arg (args, unsigned long);
+	    fprintf (dumps->stream, "%lu", u);
+	    break;
+	  }
+	case 'V': /* Verson.  */
+	  {
+	    unsigned v = va_arg (args, unsigned);
+	    version_string string;
+
+	    version2string (v, string);
+	    fputs (string, dumps->stream);
+	    break;
+	  }
+	case 'p': /* Pointer. */
+	  {
+	    void *p = va_arg (args, void *);
+	    fprintf (dumps->stream, "%p", p);
+	    break;
+	  }
+	case 's': /* String. */
+	  {
+	    const char *s = va_arg (args, char *);
+	    fputs (s, dumps->stream);
+	    break;
+	  }
+	case 'u': /* Unsigned.  */
+	  {
+	    unsigned u = va_arg (args, unsigned);
+	    fprintf (dumps->stream, "%u", u);
+	    break;
+	  }
+	case 'x': /* Hex. */
+	  {
+	    unsigned x = va_arg (args, unsigned);
+	    fprintf (dumps->stream, "%x", x);
+	    break;
+	  }
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  fputs (format, dumps->stream);
+  va_end (args);
+  if (!no_nl)
+    {
+      dumps->bol = true;
+      fputc ('\n', dumps->stream);
+    }
+  return true;
+}
 
 /* Module search path.  */
 static cpp_dir *module_path;
@@ -1128,8 +1422,6 @@ protected:
   }
 };
 
-class cpm_stream;
-
 /* Byte stream writer.  */
 class bytes_out : public bytes {
   /* Bit instrumentation.  */
@@ -1160,7 +1452,7 @@ public:
   void raw (unsigned);
 
 public:
-  void instrument (cpm_stream *d);
+  void instrument ();
 
 public:
   void b (bool);
@@ -1698,15 +1990,14 @@ public:
 private:
   unsigned tag;
 
-private:
-  FILE *d;
-  unsigned depth;
-  unsigned nesting;
-  bool bol;
+public:
+  cpm_stream (module_state *);
+  ~cpm_stream ()
+  {
+  }
 
 public:
-  cpm_stream (module_state *, cpm_stream *chain = NULL);
-  ~cpm_stream ();
+  static void lazy_globals ();
 
 protected:
   /* Allocate a new reference index.  */
@@ -1715,25 +2006,6 @@ protected:
     unsigned res = tag;
     tag += count;
     return res;
-  }
-
-public:
-  FILE *dumps () const
-  {
-    return d;
-  }
-  bool dump () const 
-  {
-    return d != NULL;
-  }
-  bool dump (const char *, ...);
-  void nest ()
-  {
-    nesting++;
-  }
-  void unnest ()
-  {
-    nesting--;
   }
 };
 
@@ -1749,268 +2021,75 @@ const cpm_stream::gtp cpm_stream::globals_arys[] =
 vec<tree, va_gc> GTY(()) *cpm_stream::globals;
 unsigned cpm_stream::globals_crc;
 
-cpm_stream::cpm_stream (module_state *state_, cpm_stream *chain)
-  : state (state_), tag (rt_ref_base), d (chain ? chain->d : NULL),
-    depth (chain ? chain->depth + 1 : 0), nesting (0), bol (true)
+cpm_stream::cpm_stream (module_state *state_)
+  : state (state_), tag (rt_ref_base)
 {
   gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
-  if (!chain)
-    d = dump_begin (module_dump_id, NULL);
+}
 
-  if (!globals)
+void
+cpm_stream::lazy_globals ()
+{
+  if (globals)
+    return;
+  
+  /* Construct the global tree array.  This is an array of unique
+     global trees (& types).  */
+  // FIXME:Some slots are lazily allocated, we must move them to
+  // the end and not stream them here.  They must be locatable via
+  // some other means.
+  unsigned crc = 0;
+  hash_table<nofree_ptr_hash<tree_node> > hash (200);
+  vec_alloc (globals, 200);
+
+  dump () && dump ("+Creating globals");
+  /* Insert the TRANSLATION_UNIT_DECL.  */
+  *hash.find_slot (DECL_CONTEXT (global_namespace), INSERT)
+    = DECL_CONTEXT (global_namespace);
+  globals->quick_push (DECL_CONTEXT (global_namespace));
+  
+  for (unsigned jx = 0; globals_arys[jx].ptr; jx++)
     {
-      /* Construct the global tree array.  This is an array of unique
-	 global trees (& types).  */
-      // FIXME:Some slots are lazily allocated, we must move them to
-      // the end and not stream them here.  They must be locatable via
-      // some other means.
-      unsigned crc = 0;
-      hash_table<nofree_ptr_hash<tree_node> > hash (200);
-      vec_alloc (globals, 200);
-
-      dump () && dump ("+Creating globals");
-      /* Insert the TRANSLATION_UNIT_DECL.  */
-      *hash.find_slot (DECL_CONTEXT (global_namespace), INSERT)
-	= DECL_CONTEXT (global_namespace);
-      globals->quick_push (DECL_CONTEXT (global_namespace));
-
-      for (unsigned jx = 0; globals_arys[jx].ptr; jx++)
-	{
-	  const tree *ptr = globals_arys[jx].ptr;
-	  unsigned limit = globals_arys[jx].num;
+      const tree *ptr = globals_arys[jx].ptr;
+      unsigned limit = globals_arys[jx].num;
 	  
-	  for (unsigned ix = 0; ix != limit; ix++, ptr++)
+      for (unsigned ix = 0; ix != limit; ix++, ptr++)
+	{
+	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx,ix);
+	  unsigned v = 0;
+	  if (tree val = *ptr)
 	    {
-	      dump () && !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx,ix);
-	      unsigned v = 0;
-	      if (tree val = *ptr)
+	      tree *slot = hash.find_slot (val, INSERT);
+	      if (!*slot)
 		{
-		  tree *slot = hash.find_slot (val, INSERT);
-		  if (!*slot)
+		  *slot = val;
+		  crc = crc32_unsigned (crc, globals->length ());
+		  vec_safe_push (globals, val);
+		  v++;
+		  if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
 		    {
-		      *slot = val;
-		      crc = crc32_unsigned (crc, globals->length ());
-		      vec_safe_push (globals, val);
-		      v++;
-		      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+		      val = TREE_TYPE (val);
+		      if (val)
 			{
-			  val = TREE_TYPE (val);
-			  if (val)
+			  slot = hash.find_slot (val, INSERT);
+			  if (!*slot)
 			    {
-			      slot = hash.find_slot (val, INSERT);
-			      if (!*slot)
-				{
-				  *slot = val;
-				  crc = crc32_unsigned (crc, globals->length ());
-				  vec_safe_push (globals, val);
-				  v++;
-				}
+			      *slot = val;
+			      crc = crc32_unsigned (crc, globals->length ());
+			      vec_safe_push (globals, val);
+			      v++;
 			    }
 			}
 		    }
 		}
-	      dump () && dump ("+%u", v);
 	    }
-	}
-      gcc_checking_assert (hash.elements () == globals->length ());
-      globals_crc = crc32_unsigned (crc, globals->length ());
-      dump () && dump ("") &&dump ("Created %u unique globals, crc=%x",
-				   globals->length (), globals_crc);
-    }
-}
-
-cpm_stream::~cpm_stream ()
-{
-  if (!depth && d)
-    dump_end (module_dump_id, d);
-}
-
-static bool
-dump_nested_name (tree t, FILE *d)
-{
-  if (t && TYPE_P (t))
-    t = TYPE_NAME (t);
-
-  if (t && DECL_P (t))
-    {
-      if (t == global_namespace)
-	;
-      else if (tree ctx = DECL_CONTEXT (t))
-	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
-	    || dump_nested_name (ctx, d))
-	  fputs ("::", d);
-      t = DECL_NAME (t);
-    }
-
-  if (t)
-    switch (TREE_CODE (t))
-      {
-      case IDENTIFIER_NODE:
-	fwrite (IDENTIFIER_POINTER (t), 1, IDENTIFIER_LENGTH (t), d);
-	return true;
-
-      case STRING_CST:
-	fwrite (TREE_STRING_POINTER (t), 1, TREE_STRING_LENGTH (t) - 1, d);
-	return true;
-
-      case INTEGER_CST:
-	print_hex (wi::to_wide (t), d);
-	return true;
-
-      default:
-	break;
-      }
-
-  return false;
-}
-
-/* Specialized printfy thing.  */
-
-bool
-cpm_stream::dump (const char *format, ...)
-{
-  va_list args;
-  bool no_nl = format[0] == '+';
-  format += no_nl;
-
-  if (bol)
-    {
-      if (depth)
-	{
-	  /* Module import indenting.  */
-	  const char *indent = ">>>>";
-	  const char *dots   = ">...>";
-	  if (depth > strlen (indent))
-	    indent = dots;
-	  else
-	    indent += strlen (indent) - depth;
-	  fputs (indent, d);
-	}
-      if (nesting)
-	{
-	  /* Tree indenting.  */
-	  const char *indent = "      ";
-	  const char *dots  =  "   ... ";
-	  if (nesting > strlen (indent))
-	    indent = dots;
-	  else
-	    indent += strlen (indent) - nesting;
-	  fputs (indent, d);
-	}
-      bol = false;
-    }
-
-  va_start (args, format);
-  while (const char *esc = strchr (format, '%'))
-    {
-      fwrite (format, 1, (size_t)(esc - format), d);
-      format = ++esc;
-      switch (*format++)
-	{
-	case 'C': /* Code */
-	  {
-	    tree_code code = (tree_code)va_arg (args, unsigned);
-	    fputs (get_tree_code_name (code), d);
-	    break;
-	  }
-	case 'I': /* Identifier.  */
-	  {
-	    tree t = va_arg (args, tree);
-	    dump_nested_name (t, d);
-	    break;
-	  }
-	case 'N': /* Name.  */
-	  {
-	    tree t = va_arg (args, tree);
-	    fputc ('\'', d);
-	    dump_nested_name (t, d);
-	    fputc ('\'', d);
-	    break;
-	  }
-	case 'M': /* Mangled name */
-	  {
-	    tree t = va_arg (args, tree);
-	    if (t && TYPE_P (t))
-	      t = TYPE_NAME (t);
-	    if (t && HAS_DECL_ASSEMBLER_NAME_P (t)
-		&& DECL_ASSEMBLER_NAME_SET_P (t))
-	      {
-		fputc ('(', d);
-		fputs (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t)), d);
-		fputc (')', d);
-	      }
-	    break;
-	  }
-	case 'P': /* Pair.  */
-	  {
-	    tree ctx = va_arg (args, tree);
-	    tree name = va_arg (args, tree);
-	    fputc ('\'', d);
-	    dump_nested_name (ctx, d);
-	    if (ctx && ctx != global_namespace)
-	      fputs ("::", d);
-	    dump_nested_name (name, d);
-	    fputc ('\'', d);
-	    break;
-	  }
-	case 'R': /* Ratio */
-	  {
-	    unsigned a = va_arg (args, unsigned);
-	    unsigned b = va_arg (args, unsigned);
-	    fprintf (d, "%.1f", (float) a / (b + !b));
-	    break;
-	  }
-	case 'U': /* long unsigned.  */
-	  {
-	    unsigned long u = va_arg (args, unsigned long);
-	    fprintf (d, "%lu", u);
-	    break;
-	  }
-	case 'V': /* Verson.  */
-	  {
-	    unsigned v = va_arg (args, unsigned);
-	    version_string string;
-
-	    version2string (v, string);
-	    fputs (string, d);
-	    break;
-	  }
-	case 'p': /* Pointer. */
-	  {
-	    void *p = va_arg (args, void *);
-	    fprintf (d, "%p", p);
-	    break;
-	  }
-	case 's': /* String. */
-	  {
-	    const char *s = va_arg (args, char *);
-	    fputs (s, d);
-	    break;
-	  }
-	case 'u': /* Unsigned.  */
-	  {
-	    unsigned u = va_arg (args, unsigned);
-	    fprintf (d, "%u", u);
-	    break;
-	  }
-	case 'x': /* Hex. */
-	  {
-	    unsigned x = va_arg (args, unsigned);
-	    fprintf (d, "%x", x);
-	    break;
-	  }
-	default:
-	  gcc_unreachable ();
+	  dump () && dump ("+%u", v);
 	}
     }
-  fputs (format, d);
-  va_end (args);
-  if (!no_nl)
-    {
-      bol = true;
-      fputc ('\n', d);
-    }
-  return true;
+  gcc_checking_assert (hash.elements () == globals->length ());
+  globals_crc = crc32_unsigned (crc, globals->length ());
+  dump ("") && dump ("Created %u unique globals, crc=%x",
+		     globals->length (), globals_crc);
 }
 
 /* cpm_stream cpms_out.  */
@@ -2087,7 +2166,6 @@ cpms_out::cpms_out (elf_out *s, module_state *state)
 {
   unique = refs = nulls = 0;
   records = 0;
-  dump () && dump ("Writing module %I", state->name);
 }
 
 cpms_out::~cpms_out ()
@@ -2096,26 +2174,25 @@ cpms_out::~cpms_out ()
 
 // FIXME collate
 void
-bytes_out::instrument (cpm_stream *d)
+bytes_out::instrument ()
 {
   if (data)
-    d->dump ("Wrote %U bytes", data->size);
-  d->dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1],
-	   lengths[2]);
+    dump ("Wrote %U bytes", data->size);
+  dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1],
+	lengths[2]);
   for (unsigned ix = 0; ix < 2; ix++)
-    d->dump ("  %u %s spans of %R bits", spans[ix],
-	     ix ? "one" : "zero", lengths[ix], spans[ix]);
-  d->dump ("  %u blocks with %R bits padding", spans[2],
-	   lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
+    dump ("  %u %s spans of %R bits", spans[ix],
+	  ix ? "one" : "zero", lengths[ix], spans[ix]);
+  dump ("  %u blocks with %R bits padding", spans[2],
+	lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
 }
 
 void
 cpms_out::instrument ()
 {
-  if (dump ())
+  if (dump (""))
     {
-      dump ("");
-      w.instrument (this);
+      w.instrument ();
       dump ("Wrote %u trees", unique + refs + nulls);
       dump ("  %u unique", unique);
       dump ("  %u references", refs);
@@ -2133,7 +2210,7 @@ private:
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
 public:
-  cpms_in (elf_in *, module_state *, cpms_in *);
+  cpms_in (elf_in *, module_state *);
   ~cpms_in ();
 
 public:
@@ -2183,10 +2260,9 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (elf_in *s, module_state *state, cpms_in *from)
-  :cpm_stream (state, from), elf (s), r ()
+cpms_in::cpms_in (elf_in *s, module_state *state)
+  :cpm_stream (state), elf (s), r ()
 {
-  dump () && dump ("Importing %I", state->name);
 }
 
 cpms_in::~cpms_in ()
@@ -2212,8 +2288,7 @@ cpms_in::insert (tree t)
 }
 
 static unsigned do_module_import (location_t, tree, bool module_unit_p,
-				  bool import_export_p,
-				  cpms_in * = NULL, unsigned * = NULL);
+				  bool import_export_p, unsigned * = NULL);
 
 /* Header section.  This determines if the current compilation is
    compatible with the serialized module.  I.e. the contents are just
@@ -2421,15 +2496,14 @@ cpms_in::imports (unsigned *crc_p)
       unsigned crc = r.u ();
       tree name = get_identifier (get_elf ()->name (r.u ()));
 
-      dump () && dump ("Begin nested %simport %I",
+      dump () && dump ("Nested %simport %I",
 		       exported ? "export " : imported ? "" : "indirect ", name);
       unsigned new_ix = do_module_import (UNKNOWN_LOCATION, name,
 					  /*unit_p=*/false,
-					  /*import_p=*/imported, this, &crc);
+					  /*import_p=*/imported, &crc);
       if (new_ix == MODULE_INDEX_ERROR)
 	goto fail;
       state->remap->quick_push (new_ix);
-      dump () && dump ("Completed nested import %I #%u", name, new_ix);
       if (imported)
 	{
 	  dump () && dump ("Direct %simport %I %u",
@@ -2970,7 +3044,7 @@ cpms_out::maybe_tag_definition (tree t)
 void
 cpms_out::tag_definition (tree t, tree maybe_template)
 {
-  dump () && dump ("Writing%s definition for %C:%N%M",
+  dump () && dump ("Writing%s definition for %C:%N%S",
 		   maybe_template ? " template" : "", TREE_CODE (t), t, t);
 
   if (!maybe_template)
@@ -3018,7 +3092,7 @@ tree
 cpms_in::tag_definition ()
 {
   tree t = tree_node ();
-  dump () && dump ("Reading definition for %C:%N%M", TREE_CODE (t), t, t);
+  dump () && dump ("Reading definition for %C:%N%S", TREE_CODE (t), t, t);
 
   if (r.get_overrun ())
     return NULL_TREE;
@@ -3235,7 +3309,7 @@ cpms_in::finish (tree t)
 	  if (!old)
 	    error ("failed to merge %#qD", t);
 	  else
-	    dump () && dump ("%s decl %N%M, (%p)",
+	    dump () && dump ("%s decl %N%S, (%p)",
 			     old == t ? "New" : "Existing",
 			     old, old, (void *)old);
 
@@ -4771,7 +4845,7 @@ cpms_out::tree_node_special (tree t)
     {
       refs++;
       w.u (*val);
-      dump () && dump ("Wrote:%u referenced %C:%N%M", *val,
+      dump () && dump ("Wrote:%u referenced %C:%N%S", *val,
 		       TREE_CODE (t), t, t);
       return true;
     }
@@ -4797,7 +4871,7 @@ cpms_out::tree_node_special (tree t)
 	{
 	  /* T is a named type whose name we have not met yet.  Write the
 	     type name as an interstitial, and then start over.  */
-	  dump () && dump ("Writing interstitial type name %C:%N%M",
+	  dump () && dump ("Writing interstitial type name %C:%N%S",
 			   TREE_CODE (name), name, name);
 	  /* Make sure this is not a named builtin. We should find
 	     those some other way to be canonically correct.  */
@@ -4805,7 +4879,7 @@ cpms_out::tree_node_special (tree t)
 		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
 	  w.u (rt_type_name);
 	  tree_node (name);
-	  dump () && dump ("Wrote interstitial type name %C:%N%M",
+	  dump () && dump ("Wrote interstitial type name %C:%N%S",
 			   TREE_CODE (name), name, name);
 	  /* The type could be a variant of TREE_TYPE (name).  */
 	  return -1;
@@ -4817,12 +4891,12 @@ cpms_out::tree_node_special (tree t)
       /* T is a typeinfo object.  These need recreating by the loader.
 	 The type it is for is stashed on the name's TREE_TYPE.  */
       tree type = TREE_TYPE (DECL_NAME (t));
-      dump () && dump ("Writing typeinfo %M for %N", t, type);
+      dump () && dump ("Writing typeinfo %S for %N", t, type);
       w.u (rt_typeinfo_var);
       tree_node (type);
       unsigned tag = insert (t);
-      dump () && dump ("Wrote:%u typeinfo %M for %N", tag, t, type);
-      unnest ();
+      dump () && dump ("Wrote:%u typeinfo %S for %N", tag, t, type);
+      dump.outdent ();
       return true;
     }
 
@@ -4867,7 +4941,7 @@ cpms_in::tree_node_special (unsigned tag)
 	    }
 	  res = *val;
 	}
-      dump () && dump ("Read:%u found %C:%N%M", tag,
+      dump () && dump ("Read:%u found %C:%N%S", tag,
 		       TREE_CODE (res), res, res);
       return res;
     }
@@ -4880,7 +4954,7 @@ cpms_in::tree_node_special (unsigned tag)
       if (!name || TREE_CODE (name) != TYPE_DECL)
 	r.set_overrun ();
       else
-	dump () && dump ("Read interstitial type name %C:%N%M",
+	dump () && dump ("Read interstitial type name %C:%N%S",
 			 TREE_CODE (name), name, name);
       return NULL_TREE;
     }
@@ -4895,7 +4969,7 @@ cpms_in::tree_node_special (unsigned tag)
 	{
 	  var = get_tinfo_decl (type);
 	  unsigned tag = insert (var);
-	  dump () && dump ("Created:%u typeinfo var %M for %N",
+	  dump () && dump ("Created:%u typeinfo var %S for %N",
 			   tag, var, type);
 	}
       return var;
@@ -4922,7 +4996,7 @@ cpms_in::tree_node_special (unsigned tag)
       /* An immediate definition.  */
       tree res = tag_definition ();
       if (res)
-	dump () && dump ("Read immediate definition %C:%N%M",
+	dump () && dump ("Read immediate definition %C:%N%S",
 			 TREE_CODE (res), res, res);
       else
 	gcc_assert (r.get_overrun ());
@@ -4974,13 +5048,13 @@ cpms_out::tree_node (tree t)
       return;
     }
 
-  nest ();
+  dump.indent ();
  again:
   if (int special = tree_node_special (t))
     {
       if (special < 0)
 	goto again;
-      unnest ();
+      dump.outdent ();
       return;
     }
 
@@ -5017,7 +5091,7 @@ cpms_out::tree_node (tree t)
     start (code, t);
 
   unsigned tag = insert (t);
-  dump () && dump ("Writing:%u %C:%N%M%s", tag, TREE_CODE (t), t, t,
+  dump () && dump ("Writing:%u %C:%N%S%s", tag, TREE_CODE (t), t, t,
 		   klass == tcc_declaration && DECL_MODULE_EXPORT_P (t)
 		   ? " (exported)": "");
 
@@ -5032,13 +5106,13 @@ cpms_out::tree_node (tree t)
 	{
 	  tag = next ();
 	  *val = tag;
-	  dump () && dump ("Writing:%u %C:%N%M imported type", tag,
+	  dump () && dump ("Writing:%u %C:%N%S imported type", tag,
 			   TREE_CODE (type), type, type);
 	}
       w.u (existed);
     }
 
-  unnest ();
+  dump.outdent ();
 }
 
 /* Read in a tree using TAG.  TAG is either a back reference, or a
@@ -5055,7 +5129,7 @@ cpms_in::tree_node ()
   if (!tag)
     return NULL_TREE;
 
-  nest ();
+  dump.indent ();
  again:
   tree res = tree_node_special (tag);
   if (!res && !r.get_overrun ())
@@ -5076,7 +5150,7 @@ cpms_in::tree_node ()
 
   if (res || r.get_overrun ())
     {
-      unnest ();
+      dump.outdent ();
       return res;
     }
 
@@ -5109,7 +5183,7 @@ cpms_in::tree_node ()
 
       if (r.get_overrun ())
 	{
-	  unnest ();
+	  dump.outdent ();
 	  return NULL_TREE;
 	}
 
@@ -5151,7 +5225,7 @@ cpms_in::tree_node ()
     {
       tree type = TREE_TYPE (t);
       tag = insert (type);
-      dump () && dump ("Read:%u %C:%N%M imported type", tag,
+      dump () && dump ("Read:%u %C:%N%S imported type", tag,
 		       TREE_CODE (type), type, type);
     }
 
@@ -5160,7 +5234,7 @@ cpms_in::tree_node ()
     barf:
       tree_map.put (tag, NULL_TREE);
       r.set_overrun ();
-      unnest ();
+      dump.outdent ();
       return NULL_TREE;
     }
 
@@ -5173,12 +5247,12 @@ cpms_in::tree_node ()
 	  /* Update the mapping.  */
 	  t = found;
 	  tree_map.put (tag, t);
-	  dump () && dump ("Index %u remapping %C:%N%M", tag,
+	  dump () && dump ("Index %u remapping %C:%N%S", tag,
 			   t ? TREE_CODE (t) : ERROR_MARK, t, t);
 	}
     }
 
-  unnest ();
+  dump.outdent ();
   return t;
 }
 
@@ -5549,7 +5623,7 @@ push_module_export (bool singleton, tree proclaiming)
   return previous;
 }
 
-/* Unnest a module export level.  */
+/* Outdent a module export level.  */
 
 void
 pop_module_export (int previous)
@@ -5784,7 +5858,7 @@ make_module_file (char *&name, size_t name_len)
 
 unsigned
 do_module_import (location_t loc, tree name, bool module_unit_p,
-		  bool import_export_p, cpms_in *from, unsigned *crc_ptr)
+		  bool import_export_p, unsigned *crc_ptr)
 {
   if (!module_hash)
     {
@@ -5890,9 +5964,12 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	      state->mod = MODULE_INDEX_IMPORTING;
 	      {
 		elf_in elf (stream);
-		cpms_in in (&elf, state, from);
+		cpms_in in (&elf, state);
+		unsigned n = dump.push (state);
+		in.lazy_globals ();
 		if (in.begin ())
 		  in.read (crc_ptr);
+		dump.pop (n);
 		if (!in.end ())
 		  /* Failure to read a module is going to cause big
 		     problems, so bail out now.  */
@@ -6011,9 +6088,12 @@ finish_module ()
 	{
 	  elf_out elf (stream);
 	  cpms_out out (&elf, state);
+	  unsigned n = dump.push (state);
+	  out.lazy_globals ();
 
 	  if (out.begin ())
 	    out.write ();
+	  dump.pop (n);
 	  out.end ();
 	}
       fclose (stream);

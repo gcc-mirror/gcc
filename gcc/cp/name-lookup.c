@@ -4366,8 +4366,7 @@ debug (cp_binding_level *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
-
-void
+static void
 print_other_binding_stack (cp_binding_level *stack)
 {
   cp_binding_level *level;
@@ -4378,7 +4377,7 @@ print_other_binding_stack (cp_binding_level *stack)
     }
 }
 
-void
+DEBUG_FUNCTION void
 print_binding_stack (void)
 {
   cp_binding_level *b;

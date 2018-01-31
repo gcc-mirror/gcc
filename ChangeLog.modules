@@ -1,5 +1,14 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Separate dumper object
+	gcc/cp/
+	* cp-tree.h (dump, print_other_binding_stack): Undeclare.
+	* name-lookup.c (print_other_binding_stack): Make static.
+	* module.c (class dumper): New.
+	(cpm_serial): Remove dumping machinery here.  Adjust all uses.
+	gcc/testsuite/
+	* g++.dg/modules/mod-imp-1_[abcd].C: Adjust dump scans.
+
 	Start refactoring cpm_serial
 	gcc/cp/
 	* module.c (cpms_{in,out}::elf): Pointer to elf object,

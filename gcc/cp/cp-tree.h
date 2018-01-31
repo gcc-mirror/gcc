@@ -6192,9 +6192,6 @@ extern tree strip_fnptr_conv			(tree);
 extern void maybe_push_cleanup_level		(tree);
 extern tree make_anon_name			(void);
 extern tree check_for_out_of_scope_variable	(tree);
-extern void dump				(cp_binding_level &ref);
-extern void dump				(cp_binding_level *ptr);
-extern void print_other_binding_stack		(cp_binding_level *);
 extern tree maybe_push_decl			(tree);
 extern tree current_decl_namespace		(void);
 
