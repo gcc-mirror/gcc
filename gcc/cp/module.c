@@ -1486,6 +1486,9 @@ struct GTY(()) module_state {
   bool read_context (elf_in *from);
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
+  void write_bindings (elf_out *to, unsigned *crc_ptr);
+  bool read_bindings (elf_in *from);
+  bool read_decls (elf_in *from);
 };
 
 // FIXME:member of module_state?
@@ -1571,6 +1574,7 @@ cpm_stream::cpm_stream (module_state *state_)
 
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
+public: // FIXME
   bytes_out w;
 
 private:
@@ -1588,13 +1592,7 @@ public:
   ~cpms_out ();
 
 public:
-  elf_out *get_elf () const 
-  {
-    return static_cast <elf_out *> (state->elf);
-  }
-
-public:
-  void write (unsigned *);
+  void write (bytes_out &, elf_out *);
 
 public:
   static void instrument ();
@@ -1631,7 +1629,8 @@ private:
 
 public:
   void tree_node (tree);
-  vec<tree, va_gc> *bindings (bytes_out *, vec<tree, va_gc> *nest, tree ns);
+  vec<tree, va_gc> *bindings (bytes_out *, elf_out *,
+			      vec<tree, va_gc> *nest, tree ns);
 };
 
 unsigned cpms_out::unique;
@@ -1650,6 +1649,7 @@ cpms_out::~cpms_out ()
 
 /* Cpm_Stream in.  */
 class cpms_in : public cpm_stream {
+public://FIXME
   bytes_in r;
 
 private:
@@ -1658,12 +1658,6 @@ private:
 public:
   cpms_in (module_state *);
   ~cpms_in ();
-
-public:
-  elf_in *get_elf () const
-  {
-    return static_cast <elf_in *> (state->elf);
-  }
 
 public:
   void read ();
@@ -2455,15 +2449,52 @@ module_state::read_config (elf_in *from, unsigned *crc_ptr)
 }
 
 void
+module_state::write_bindings (elf_out *to, unsigned *crc_p)
+{
+  bytes_out bind;
+  bind.begin (true);
+  
+  cpms_out out (this);
+  out.w.begin (true);
+  out.write (bind, to);
+
+  out.w.end (to, to->name (MOD_SNAME_PFX ".decls"), crc_p);
+  bind.end (to, to->name (MOD_SNAME_PFX ".bindings"), crc_p);
+}
+
+bool
+module_state::read_bindings (elf_in *from)
+{
+  bytes_in bind;
+  unsigned crc = 0;
+
+  if (!bind.begin (from, MOD_SNAME_PFX ".bindings", &crc))
+    return false;
+  // FIXME: process the bindings
+  return bind.end (from);
+}
+
+bool
+module_state::read_decls (elf_in *from)
+{
+  cpms_in in (this);
+  unsigned crc = 0;
+
+  if (!in.r.begin (from, MOD_SNAME_PFX ".decls", &crc))
+    return false;
+
+  in.read ();
+
+  return in.r.end (from);
+}
+
+void
 module_state::write (elf_out *to)
 {
   unsigned crc = 0;
   write_context (to, &crc);
 
-  elf = to;
-  cpms_out out (this);
-  out.write (&crc);
-  elf = NULL;
+  write_bindings (to, &crc);
 
   write_config (to, crc);
 
@@ -2500,10 +2531,11 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   (*remap)[0] = ix;
   dump () && dump ("Assigning %N module index %u", name, ix);
 
-  elf = from;
-  cpms_in in (this);
-  in.read ();
-  elf = NULL;
+  if (!read_bindings (from))
+    return;
+
+  // FIXME: At this point we would do lazy decl reading
+  read_decls (from);
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -5459,7 +5491,8 @@ cpms_in::finish_type (tree type)
    zero. */
 
 vec<tree, va_gc> *
-cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
+cpms_out::bindings (bytes_out *bind, elf_out *to,
+		    vec<tree, va_gc> *nest, tree ns)
 {
   dump () && dump ("Walking namespace %N", ns);
 
@@ -5502,14 +5535,14 @@ cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
 		  if (!LOOKUP_FOUND_P (outer))
 		    {
 		      LOOKUP_FOUND_P (outer) = true;
-		      bind->u (get_elf ()->name (DECL_NAME (outer)));
+		      bind->u (to->name (DECL_NAME (outer)));
 		      bind->u (0); /* It had no bindings of its own.  */
 		    }
 		}
 	      
-	      bind->u (get_elf ()->name (DECL_NAME (ns)));
+	      bind->u (to->name (DECL_NAME (ns)));
 	    }
-	  bind->u (get_elf ()->name (DECL_NAME (first)));
+	  bind->u (to->name (DECL_NAME (first)));
 	  tag_binding (ns, DECL_NAME (first), module_bindings);
 	  // FIXME, here we'd emit the section number containing the
 	  // declaration.
@@ -5522,7 +5555,7 @@ cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
     bind->u (0);
   vec_safe_push (nest, ns);
   while (inner->length ())
-    nest = bindings (bind, nest, inner->pop ());
+    nest = bindings (bind, to, nest, inner->pop ());
   vec_free (inner);
   nest->pop ();
   /* Mark end of namespace bindings.  */
@@ -5536,7 +5569,7 @@ cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
 }
 
 void
-cpms_out::write (unsigned *crc_p)
+cpms_out::write (bytes_out &bind, elf_out *to)
 {
   /* Prepare the globals. */
   {
@@ -5551,29 +5584,17 @@ cpms_out::write (unsigned *crc_p)
       }
   }
 
-  bytes_out bind;
-  bind.begin (true);
-
-  w.begin (true);
-
   /* Write decls.  */
   vec<tree, va_gc> *nest = NULL;
   vec_alloc (nest, 30);
-  nest = bindings (&bind, nest, global_namespace);
+  nest = bindings (&bind, to, nest, global_namespace);
   gcc_assert (!nest->length ());
   vec_free (nest);
-
-  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".decls"), crc_p);
-  bind.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".bindings"), crc_p);
 }
 
 void
 cpms_in::read ()
 {
-  unsigned crc = 0;
-  if (!r.begin (get_elf (), MOD_SNAME_PFX ".decls", &crc))
-    return;
-
   /* Just reserve the tag space.  No need to actually insert them in
      the map.  */
   next (globals->length ());
@@ -5603,8 +5624,6 @@ cpms_in::read ()
 
   if (!ok)
     r.set_overrun ();
-
-  r.end (get_elf ());
 }
 
 static GTY(()) tree proclaimer;

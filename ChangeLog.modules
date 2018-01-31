@@ -1,5 +1,13 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Move elf out of cpms_in, cpms_out.
+	gcc/cp/
+	* module.c (module_state::{read,write}_bindings): New.
+	(module_stste::read_decls): New.
+	(cpms_{in,out}::get_elf): Delete.
+	(cpms_out::{write,bindings}): Adjust.
+	(cpms_in::read): Adjust.
+
 	Add module_stat read & write
 	gcc/cp/
 	* module.c (module_state::{read,write}): New.
