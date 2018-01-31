@@ -2751,6 +2751,14 @@ Lower_parse_tree::expression(Expression** pexpr)
 	return TRAVERSE_EXIT;
       *pexpr = enew;
     }
+
+  // Lower the type of this expression before the parent looks at it,
+  // in case the type contains an array that has expressions in its
+  // length.  Skip an Unknown_expression, as at this point that means
+  // a composite literal key that does not have a type.
+  if ((*pexpr)->unknown_expression() == NULL)
+    Type::traverse((*pexpr)->type(), this);
+
   return TRAVERSE_SKIP_COMPONENTS;
 }
 
@@ -6854,6 +6862,16 @@ Result_variable::get_backend_variable(Gogo* gogo, Named_object* function,
 }
 
 // Class Named_constant.
+
+// Set the type of a named constant.  This is only used to set the
+// type to an error type.
+
+void
+Named_constant::set_type(Type* t)
+{
+  go_assert(this->type_ == NULL || t->is_error_type());
+  this->type_ = t;
+}
 
 // Traverse the initializer expression.
 

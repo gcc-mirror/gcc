@@ -2147,6 +2147,9 @@ class Named_constant
   type() const
   { return this->type_; }
 
+  void
+  set_type(Type* t);
+
   Expression*
   expr() const
   { return this->expr_; }
