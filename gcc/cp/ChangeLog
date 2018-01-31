@@ -1,3 +1,11 @@
+2018-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83993
+	* constexpr.c (diag_array_subscript): Emit different diagnostics
+	if TYPE_DOMAIN (arraytype) is NULL.
+	(cxx_eval_array_reference, cxx_eval_store_expression): For arrays
+	with NULL TYPE_DOMAIN use size_zero_node as nelts.
+
 2018-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84092
