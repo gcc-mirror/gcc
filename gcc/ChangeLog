@@ -1,3 +1,15 @@
+2018-01-31  Richard Biener <rguenther@suse.de>
+	    Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	Backport from mainline
+	2018-01-29  Richard Biener <rguenther@suse.de>
+		    Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	PR bootstrap/80867
+	* tree-vect-stmts.c (vectorizable_call): Don't call
+	targetm.vectorize_builtin_md_vectorized_function if callee is
+	NULL.
+
 2018-01-29  Alan Modra  <amodra@gmail.com>
 
 	Backport from mainline
