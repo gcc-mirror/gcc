@@ -3976,9 +3976,8 @@ analyze_miv_subscript (tree chrec_a,
     }
 
   else if (evolution_function_is_constant_p (difference)
-	   /* For the moment, the following is verified:
-	      evolution_function_is_affine_multivariate_p (chrec_a,
-	      loop_nest->num) */
+	   && evolution_function_is_affine_multivariate_p (chrec_a,
+							   loop_nest->num)
 	   && !gcd_of_steps_may_divide_p (chrec_a, difference))
     {
       /* testsuite/.../ssa-chrec-33.c
