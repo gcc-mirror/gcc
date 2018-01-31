@@ -1,3 +1,9 @@
+2018-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81779
+	* c-parser.c (c_parser_compound_statement_nostart): Call
+	expansion_point_location_if_in_system_header.
+
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/83814
