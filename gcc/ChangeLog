@@ -1,3 +1,9 @@
+2018-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/84071
+	* combine.c (record_dead_and_set_regs_1): Record the source unmodified
+	for a paradoxical SUBREG on a WORD_REGISTER_OPERATIONS target.
+
 2018-01-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_handle_aux_attribute): New function.
