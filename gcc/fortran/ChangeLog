@@ -1,3 +1,11 @@
+2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78534
+	* trans-expr.c (fill_with_spaces): Use memset instead of
+	generating loop.
+	(gfc_trans_string_copy): Improve opportunity to use builtins with
+	constant lengths.
+
 2018-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/84131

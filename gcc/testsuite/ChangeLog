@@ -1,3 +1,11 @@
+2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/78534
+	* gfortran.dg/allocate_deferred_char_scalar_1.f03: Prune
+	-Wstringop-overflow warnings due to spurious warning with -O1.
+	* gfortran.dg/char_cast_1.f90: Update dump scan pattern.
+	* gfortran.dg/transfer_intrinsic_1.f90: Likewise.
+
 2018-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84132

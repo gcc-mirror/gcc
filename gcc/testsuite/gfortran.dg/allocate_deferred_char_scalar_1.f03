@@ -265,3 +265,5 @@ contains
      if(len(p4) /= 3) call abort()
   end subroutine source3
 end program test
+! Spurious -Wstringop-overflow warning with -O1
+! { dg-prune-output "\\\[-Wstringop-overflow=]" } 
