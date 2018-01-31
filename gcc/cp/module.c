@@ -230,10 +230,10 @@ data *data::extend (data *c, size_t a)
    Header: Stunningly Elf32_Ehdr-like
    Sections: Sectional data
      1     .README   : human readable, stunningly STRTAB-like
-     2     .imports  : import table
+     2     .context  : context data
      [3-N) .decls    : decls bound to a name
      N     .bindings : bindings of namespace names
-     N+1   .ident    : config data
+     N+1   .config   : config data
      N+2    .strtab  : strings, stunningly STRTAB-like
    Index: Section table, stunningly ELF32_Shdr-like.   */
 
@@ -1478,6 +1478,15 @@ struct GTY(()) module_state {
   void pop_location (location_t) const;
   void do_import (unsigned index, bool is_export);
   void announce (const char *) const;
+
+ public:
+  void read (elf_in *from);
+  void write (elf_out *to);
+  //private:
+  void write_context (elf_out *to, unsigned *crc_ptr);
+  void write_config (elf_out *to, unsigned crc);
+  
+  
 };
 
 /* Hash module state by name.  */
@@ -2017,6 +2026,113 @@ module_state::pop_location (location_t saved) const
   input_location = saved;
 }
 
+/* Context of the compilation.
+
+   u:import_size
+   {
+     b:imported
+     b:exported
+     raw:crc
+     u:name
+   } imports[N]
+
+   We need the complete set, so that we can build up the remapping
+   vector on subsequent import.
+
+   The README section is intended for human consumption.  It is a
+   STRTAB that may be extracted with:
+     readelf -p.gnu.c++.README X.nms   */
+
+void
+module_state::write_context (elf_out *to, unsigned *crc_p)
+{
+  bytes_out ctx;
+  bytes_out me;
+
+  me.begin ();
+  ctx.begin (true);
+
+  version_string string;
+  version2string (get_version (), string);
+  me.printf ("version:%s%c", string, 0);
+  me.printf ("module:%s%c", IDENTIFIER_POINTER (name), 0);
+
+  ctx.u (modules->length ());
+  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < modules->length (); ix++)
+    {
+      module_state *state = (*modules)[ix];
+      dump () && dump ("Writing %simport %I (crc=%x)",
+		       state->exported ? "export " :
+		       state->imported ? "" : "indirect ",
+		       state->name, state->crc);
+      ctx.b (state->imported);
+      ctx.b (state->exported);
+      ctx.bflush ();
+      ctx.raw (state->crc);
+      unsigned name = to->name (state->name);
+      ctx.u (name);
+      if (state->imported)
+	me.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
+    }
+  ctx.end (to, to->name (MOD_SNAME_PFX ".context"), crc_p);
+  me.end (to, to->name (MOD_SNAME_PFX ".README"), NULL, /*strings=*/true);
+}
+
+/* Tool configuration.  This determines if the current compilation is
+   compatible with the serialized module.  I.e. the contents are just
+   confirming things we already know (or failing to match).
+
+   raw:version
+   raw:crc
+   u:module-name
+   u:<target-triplet>
+   u:<host-triplet>
+   u:globals_length
+   raw:globals_crc
+   // FIXME CPU,ABI and similar tags
+   // FIXME Optimization and similar tags
+*/
+
+void
+module_state::write_config (elf_out *to, unsigned inner_crc)
+{
+  bytes_out cfg;
+
+  cfg.begin (true);
+
+  /* Write version and inner crc as raw values, for easier
+     debug inspection.  */
+  dump () && dump ("Writing version=%u, inner_crc=%x",
+		   get_version (), inner_crc);
+  cfg.raw (unsigned (get_version ()));
+  cfg.raw (inner_crc);
+
+  cfg.u (to->name (name));
+
+  /* Configuration. */
+  dump () && dump ("Writing target='%s', host='%s'",
+		   TARGET_MACHINE, HOST_MACHINE);
+  unsigned target = to->name (TARGET_MACHINE);
+  unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
+		   ? target : to->name (HOST_MACHINE));
+  cfg.u (target);
+  cfg.u (host);
+
+  /* Global tree information.  We write the globals crc separately,
+     rather than mix it directly into the overall crc, as it is used
+     to ensure data match between instances of the compiler, not
+     integrity of the file.  */
+  dump () && dump ("Writing globals=%u, crc=%x",
+		   globals->length (), globals_crc);
+  cfg.u (globals->length ());
+  cfg.raw (globals_crc);
+
+  /* Now generate CRC, we'll have incorporated the inner CRC because
+     of its serialization above.  */
+  cfg.end (to, to->name (MOD_SNAME_PFX ".config"), &crc);
+  dump () && dump ("Writing CRC=%x", crc);
+}
+
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
    including dots.  */
 
@@ -2158,12 +2274,10 @@ public:
   }
 
 public:
-  void write ();
+  void write (unsigned *);
 
-private:
+public:
   static void instrument ();
-  void header (unsigned crc);
-  void imports (unsigned *crc_p);
 
 public:
   void tag_binding (tree ns, tree name, module_binding_vec *);
@@ -2341,46 +2455,6 @@ static module_state *do_module_import (location_t, tree, bool module_unit_p,
    // FIXME Optimization and similar tags
 */
 
-void
-cpms_out::header (unsigned inner_crc)
-{
-  w.begin (true);
-
-  /* Write version and inner crc as raw values, for easier
-     debug inspection.  */
-  dump () && dump ("Writing version=%u, inner_crc=%x",
-		   get_version (), inner_crc);
-  w.raw (unsigned (get_version ()));
-  w.raw (inner_crc);
-
-  w.u (get_elf ()->name (state->name));
-
-  /* Configuration. */
-  dump () && dump ("Writing target='%s', host='%s'",
-		   TARGET_MACHINE, HOST_MACHINE);
-  unsigned target = get_elf ()->name (TARGET_MACHINE);
-  unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
-		   ? target : get_elf ()->name (HOST_MACHINE));
-  w.u (target);
-  w.u (host);
-
-  /* Global tree information.  We write the globals crc separately,
-     rather than mix it directly into the overall crc, as it is used
-     to ensure data match between instances of the compiler, not
-     integrity of the file.  */
-  dump () && dump ("Writing globals=%u, crc=%x",
-		   globals->length (), globals_crc);
-  w.u (globals->length ());
-  w.raw (globals_crc);
-
-  /* Now generate CRC, we'll have incorporated the inner CRC because
-     of its serialization above.  */
-  unsigned crc = 0;
-  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".ident"), &crc);
-  dump () && dump ("Writing CRC=%x", crc);
-  state->crc = crc;
-}
-
 // FIXME: What we really want to do at this point is read the header
 // and then allow hooking out to rebuild it if there are
 // checksum/version mismatches.  Other errors should barf.
@@ -2389,7 +2463,7 @@ bool
 cpms_in::header (unsigned *crc_ptr)
 {
   unsigned crc = 0;
-  if (!r.begin (get_elf (), MOD_SNAME_PFX ".ident", &crc))
+  if (!r.begin (get_elf (), MOD_SNAME_PFX ".config", &crc))
     return false;
 
   dump () && dump ("Reading CRC=%x", crc);
@@ -2488,33 +2562,10 @@ cpms_in::header (unsigned *crc_ptr)
 
 // FIXME: Should we stream the pathname to the import?
 
-void
-cpms_out::imports (unsigned *crc_p)
-{
-  w.begin (true);
-
-  w.u (modules->length ());
-  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < modules->length (); ix++)
-    {
-      module_state *state = (*modules)[ix];
-      dump () && dump ("Writing %simport %I (crc=%x)",
-		       state->exported ? "export " :
-		       state->imported ? "" : "indirect ",
-		       state->name, state->crc);
-      w.b (state->imported);
-      w.b (state->exported);
-      w.bflush ();
-      w.u (state->crc);
-      unsigned name = get_elf ()->name (state->name);
-      w.u (name);
-    }
-  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".imports"), crc_p);
-}
-
 bool
 cpms_in::imports (unsigned *crc_p)
 {
-  if (!r.begin (get_elf (), MOD_SNAME_PFX ".imports", crc_p))
+  if (!r.begin (get_elf (), MOD_SNAME_PFX ".context", crc_p))
     return false;
 
   unsigned imports = r.u ();
@@ -2529,7 +2580,7 @@ cpms_in::imports (unsigned *crc_p)
       bool imported = r.b ();
       bool exported = r.b ();
       r.bflush ();
-      unsigned crc = r.u ();
+      unsigned crc = r.raw ();
       tree name = get_identifier (get_elf ()->name (r.u ()));
 
       dump () && dump ("Nested %simport %I",
@@ -5473,31 +5524,8 @@ cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
 }
 
 void
-cpms_out::write ()
+cpms_out::write (unsigned *crc_p)
 {
-  /* Write README.  */
-  {
-    w.begin ();
-    version_string string;
-    version2string (get_version (), string);
-    w.printf ("version:%s%c", string, 0);
-    w.printf ("module:%s%c", IDENTIFIER_POINTER (state->name), 0);
-    for (unsigned ix = modules->length (); ix-- > MODULE_INDEX_IMPORT_BASE;)
-      {
-	module_state *state = (*modules)[ix];
-	if (state->imported)
-	  w.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
-      }
-    /* Create as STRTAB so that:
-         readelf -p.gnu.c++.README X.nms
-       works.  */
-    w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".README"),
-	   NULL, /*strings=*/true);
-  }
-
-  unsigned crc = 0;
-  imports (&crc); /* Import table. */
-
   /* Prepare the globals. */
   {
     unsigned limit = globals->length ();
@@ -5523,12 +5551,8 @@ cpms_out::write ()
   gcc_assert (!nest->length ());
   vec_free (nest);
 
-  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".decls"), &crc);
-  bind.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".bindings"), &crc);
-
-  header (crc);
-
-  instrument ();
+  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".decls"), crc_p);
+  bind.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".bindings"), crc_p);
 }
 
 void
@@ -6075,22 +6099,27 @@ finish_module ()
       unsigned n = dump.push (state);
       state->announce ("creating");
 
-      elf_out *elf = new elf_out (stream, e);
-      state->elf = elf;
+      elf_out *to = new elf_out (stream, e);
+      if (to->begin ())
+	{
+	  unsigned crc = 0;
+	  state->write_context (to, &crc);
 
-      if (elf->begin ())
-	{
+	  state->elf = to;
 	  cpms_out out (state);
-	  out.write ();
+	  out.write (&crc);
+
+	  state->elf = NULL;
+	  state->write_config (to, crc);
+	  cpms_out::instrument ();
 	}
-      if (!elf->end ())
+      if (!to->end ())
 	{
-	  int e = elf->get_error ();
+	  int e = to->get_error ();
 	  error_at (state->loc, "failed to write module %qE: %s", state->name,
 		    e >= 0 ? xstrerror (e) : "Bad file data");
 	}
-      delete elf;
-      state->elf = NULL;
+      delete to;
 
       dump.pop (n);
       input_location = saved_loc;

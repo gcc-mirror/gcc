@@ -1,5 +1,12 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Move some writing to module_state.
+	gcc/cp/
+	* module.c (module_state::write_{context,config}): New, swallow ...
+	(cpms_out::imports,header): ... these.  Delete.
+	(cpms_out::write): Adjust.
+	(finish_module): Adjust.
+
 	Move global tree init.
 	gcc/cp/
 	* module.c (module_state::lazy_init): New, swallow ...
