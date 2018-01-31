@@ -1,5 +1,10 @@
 2018-01-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/taux-1.c: New test.
+	* gcc.target/arc/taux-2.c: Likewise.
+
+2018-01-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/uncached.c: New test.
 
 2018-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
