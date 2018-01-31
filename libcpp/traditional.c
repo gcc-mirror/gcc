@@ -119,8 +119,11 @@ check_output_buffer (cpp_reader *pfile, size_t n)
 }
 
 /* Skip a C-style block comment in a macro as a result of -CC.
-   Buffer->cur points to the initial asterisk of the comment.  */
-static void
+   PFILE->buffer->cur points to the initial asterisk of the comment,
+   change it to point to after the '*' and '/' characters that terminate it.
+   Return true if the macro has not been termined, in that case set
+   PFILE->buffer->cur to the end of the buffer.  */
+static bool
 skip_macro_block_comment (cpp_reader *pfile)
 {
   const uchar *cur = pfile->buffer->cur;
@@ -131,10 +134,15 @@ skip_macro_block_comment (cpp_reader *pfile)
 
   /* People like decorating comments with '*', so check for '/'
      instead for efficiency.  */
-  while(! (*cur++ == '/' && cur[-2] == '*') )
-    ;
+  while (! (*cur++ == '/' && cur[-2] == '*'))
+    if (cur[-1] == '\n')
+      {
+	pfile->buffer->cur = cur - 1;
+	return true;
+      }
 
   pfile->buffer->cur = cur;
+  return false;
 }
 
 /* CUR points to the asterisk introducing a comment in the current
@@ -158,7 +166,7 @@ copy_comment (cpp_reader *pfile, const uchar *cur, int in_define)
 
   buffer->cur = cur;
   if (pfile->context->prev)
-    unterminated = false, skip_macro_block_comment (pfile);
+    unterminated = skip_macro_block_comment (pfile);
   else
     unterminated = _cpp_skip_block_comment (pfile);
     
