@@ -1,5 +1,12 @@
 2018-01-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	Revert
+	2018-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.md (vxworks_load_got): Set the GOT register.
+
+2018-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR rtl-optimization/84071
 	* combine.c (record_dead_and_set_regs_1): Record the source unmodified
 	for a paradoxical SUBREG on a WORD_REGISTER_OPERATIONS target.
