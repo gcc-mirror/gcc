@@ -1472,7 +1472,6 @@ struct GTY(()) module_state {
   void release (bool = true);
 
  public:
-  void set_index (unsigned index);
   void set_name (tree name);
   location_t push_location (char *filename);
   void pop_location (location_t) const;
@@ -1480,15 +1479,13 @@ struct GTY(()) module_state {
   void announce (const char *) const;
 
  public:
-  void read (elf_in *from);
   void write (elf_out *to);
-  //private:
+  void read (elf_in *from, unsigned *crc_ptr);
+ private:
   void write_context (elf_out *to, unsigned *crc_ptr);
   bool read_context (elf_in *from);
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
-  
-  
 };
 
 // FIXME:member of module_state?
@@ -2151,16 +2148,6 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
-/* We've been assigned INDEX.  Mark the self-import-export bits.  */
-
-void
-module_state::set_index (unsigned index)
-{
-  gcc_checking_assert (mod == MODULE_INDEX_UNKNOWN);
-  bitmap_set_bit (imports, index);
-  bitmap_set_bit (exports, index);
-}
-
 /* Set NAME and PARTS fields from incoming NAME.  We glued all the
    identifiers together when parsing, and now we split them up
    again.  */
@@ -2465,6 +2452,58 @@ module_state::read_config (elf_in *from, unsigned *crc_ptr)
     goto fail;
 
   return cfg.end (from);
+}
+
+void
+module_state::write (elf_out *to)
+{
+  unsigned crc = 0;
+  write_context (to, &crc);
+
+  elf = to;
+  cpms_out out (this);
+  out.write (&crc);
+  elf = NULL;
+
+  write_config (to, crc);
+
+  cpms_out::instrument ();
+}
+
+void
+module_state::read (elf_in *from, unsigned *crc_ptr)
+{
+  if (!read_config (from, crc_ptr))
+    return;
+
+  if (!read_context (from))
+    return;
+
+  unsigned ix = 0;
+  if (this != (*modules)[0])
+    {
+      ix = modules->length ();
+      if (ix == MODULE_INDEX_LIMIT)
+	{
+	  sorry ("too many modules loaded (limit is %u)", ix);
+	  from->set_error ();
+	  return;
+	}
+      else
+	{
+	  vec_safe_push (modules, this);
+	  bitmap_set_bit (imports, ix);
+	  bitmap_set_bit (exports, ix);
+	}
+    }
+  mod = ix;
+  (*remap)[0] = ix;
+  dump () && dump ("Assigning %N module index %u", name, ix);
+
+  elf = from;
+  cpms_in in (this);
+  in.read ();
+  elf = NULL;
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -5531,35 +5570,15 @@ cpms_out::write (unsigned *crc_p)
 void
 cpms_in::read ()
 {
-  unsigned ix = 0;
-  bool ok = true;
-  if (state != (*modules)[0])
-    {
-      ix = modules->length ();
-      if (ix == MODULE_INDEX_LIMIT)
-	{
-	  sorry ("too many modules loaded (limit is %u)", ix);
-	  ix = 0;
-	  ok = false;
-	}
-      else
-	{
-	  vec_safe_push (modules, state);
-	  state->set_index (ix);
-	}
-    }
-  state->mod = ix;
-  (*state->remap)[0] = ix;
-  dump () && dump ("Assigning %N module index %u", state->name, ix);
+  unsigned crc = 0;
+  if (!r.begin (get_elf (), MOD_SNAME_PFX ".decls", &crc))
+    return;
 
   /* Just reserve the tag space.  No need to actually insert them in
      the map.  */
   next (globals->length ());
 
-  unsigned crc = 0;
-  if (!r.begin (get_elf (), MOD_SNAME_PFX ".decls", &crc))
-    return;
-
+  bool ok = true;
   while (ok && r.more_p ())
     {
       int rt = r.u ();
@@ -5934,18 +5953,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 
 	  elf_in *from = new elf_in (stream, e);
 	  if (from->begin ())
-	    {
-	      bool ok = state->read_config (from, crc_ptr);
-	      if (ok)
-		ok = state->read_context (from);
-	      if (ok)
-		{
-		  state->elf = from;
-		  cpms_in in (state);
-		  in.read ();
-		  state->elf = NULL;
-		}
-	    }
+	    state->read (from, crc_ptr);
 	  if (!from->end ())
 	    {
 	      /* Failure to read a module is going to cause big
@@ -6074,18 +6082,7 @@ finish_module ()
 
       elf_out *to = new elf_out (stream, e);
       if (to->begin ())
-	{
-	  unsigned crc = 0;
-	  state->write_context (to, &crc);
-
-	  state->elf = to;
-	  cpms_out out (state);
-	  out.write (&crc);
-
-	  state->elf = NULL;
-	  state->write_config (to, crc);
-	  cpms_out::instrument ();
-	}
+	state->write (to);
       if (!to->end ())
 	{
 	  int e = to->get_error ();

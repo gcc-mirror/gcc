@@ -1,5 +1,11 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Add module_stat read & write
+	gcc/cp/
+	* module.c (module_state::{read,write}): New.
+	(cpms_in::read): Adjust.
+	(do_import_module, finish_module): Adjust.
+
 	gcc/cp/
 	* module.c: Move cpm_stream, cpms_in, cpms_out earlier.
 
