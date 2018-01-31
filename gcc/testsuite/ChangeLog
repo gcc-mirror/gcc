@@ -1,5 +1,8 @@
 2018-01-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/84116
+	* gfortran.dg/gomp/pr84116.f90: New test.
+
 	PR c++/83993
 	* g++.dg/init/pr83993-2.C: New test.
 

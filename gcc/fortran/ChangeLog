@@ -1,3 +1,10 @@
+2018-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84116
+	* openmp.c (gfc_match_omp_clauses): If all the linear
+	gfc_match_omp_variable_list calls failed, don't gfc_free_omp_namelist
+	nor set *head = NULL.  Formatting fixes.
+
 2018-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84088
