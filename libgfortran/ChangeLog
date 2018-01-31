@@ -1,3 +1,91 @@
+2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* generated/cshift1_16.c (cshift1): Regenerated.
+	* generated/cshift1_4.c (cshift1): Regenerated.
+	* generated/cshift1_8.c (cshift1): Regenerated.
+	* generated/eoshift1_16.c (eoshift1): Regenerated.
+	* generated/eoshift1_4.c (eoshift1): Regenerated.
+	* generated/eoshift1_8.c (eoshift1): Regenerated.
+	* generated/eoshift3_16.c (eoshift3): Regenerated.
+	* generated/eoshift3_4.c (eoshift3): Regenerated.
+	* generated/eoshift3_8.c (eoshift3): Regenerated.
+	* generated/in_pack_c10.c (internal_pack_c10): Regenerated.
+	* generated/in_pack_c16.c (internal_pack_c16): Regenerated.
+	* generated/in_pack_c4.c (internal_pack_c4): Regenerated.
+	* generated/in_pack_c8.c (internal_pack_c8): Regenerated.
+	* generated/in_pack_i1.c (internal_pack_1): Regenerated.
+	* generated/in_pack_i16.c (internal_pack_16): Regenerated.
+	* generated/in_pack_i2.c (internal_pack_2): Regenerated.
+	* generated/in_pack_i4.c (internal_pack_4): Regenerated.
+	* generated/in_pack_i8.c (internal_pack_8): Regenerated.
+	* generated/in_pack_r10.c (internal_pack_r10): Regenerated.
+	* generated/in_pack_r16.c (internal_pack_r16): Regenerated.
+	* generated/in_pack_r4.c (internal_pack_r4): Regenerated.
+	* generated/in_pack_r8.c (internal_pack_r8): Regenerated.
+	* generated/in_unpack_c10.c (internal_unpack_c10): Regenerated.
+	* generated/in_unpack_c16.c (internal_unpack_c16): Regenerated.
+	* generated/in_unpack_c4.c (internal_unpack_c4): Regenerated.
+	* generated/in_unpack_c8.c (internal_unpack_c8): Regenerated.
+	* generated/in_unpack_i1.c (internal_unpack_1): Regenerated.
+	* generated/in_unpack_i16.c (internal_unpack_16): Regenerated.
+	* generated/in_unpack_i2.c (internal_unpack_2): Regenerated.
+	* generated/in_unpack_i4.c (internal_unpack_4): Regenerated.
+	* generated/in_unpack_i8.c (internal_unpack_8): Regenerated.
+	* generated/in_unpack_r10.c (internal_unpack_r10): Regenerated.
+	* generated/in_unpack_r16.c (internal_unpack_r16): Regenerated.
+	* generated/in_unpack_r4.c (internal_unpack_r4): Regenerated.
+	* generated/in_unpack_r8.c (internal_unpack_r8): Regenerated.
+	* generated/reshape_c10.c (reshape_c10): Regenerated.
+	* generated/reshape_c16.c (reshape_c16): Regenerated.
+	* generated/reshape_c4.c (reshape_c4): Regenerated.
+	* generated/reshape_c8.c (reshape_c8): Regenerated.
+	* generated/reshape_i16.c (reshape_16): Regenerated.
+	* generated/reshape_i4.c (reshape_4): Regenerated.
+	* generated/reshape_i8.c (reshape_8): Regenerated.
+	* generated/reshape_r10.c (reshape_r10): Regenerated.
+	* generated/reshape_r16.c (reshape_r16): Regenerated.
+	* generated/reshape_r4.c (reshape_r4): Regenerated.
+	* generated/reshape_r8.c (reshape_r8): Regenerated.
+	* generated/shape_i1.c (shape_1): Regenerated.
+	* generated/shape_i16.c (shape_16): Regenerated.
+	* generated/shape_i2.c (shape_2): Regenerated.
+	* generated/shape_i4.c (shape_4): Regenerated.
+	* generated/shape_i8.c (shape_8): Regenerated.
+	* generated/spread_c10.c (spread_scalar_c10): Regenerated.
+	* generated/spread_c16.c (spread_scalar_c16): Regenerated.
+	* generated/spread_c4.c (spread_scalar_c4): Regenerated.
+	* generated/spread_c8.c (spread_scalar_c8): Regenerated.
+	* generated/spread_i1.c (spread_scalar_i1): Regenerated.
+	* generated/spread_i16.c (spread_scalar_i16): Regenerated.
+	* generated/spread_i2.c (spread_scalar_i2): Regenerated.
+	* generated/spread_i4.c (spread_scalar_i4): Regenerated.
+	* generated/spread_i8.c (spread_scalar_i8): Regenerated.
+	* generated/spread_r10.c (spread_scalar_r10): Regenerated.
+	* generated/spread_r16.c (spread_scalar_r16): Regenerated.
+	* generated/spread_r4.c (spread_scalar_r4): Regenerated.
+	* generated/spread_r8.c (spread_scalar_r8): Regenerated.
+	* intrinsics/random.c (jump): Use size_t for array index in loop.
+	(getosrandom): Likewise.
+	(arandom_r4): Make n an index_type.
+	(arandom_r8): Likewise.
+	(arandom_r10): Likewise.
+	(arandom_r16): Likewise.
+	(scramble_seed): Use size_t for array index in loop.
+	* m4/cshift1.m4: Make i an index_type.
+	* m4/eoshift1.m4: Likewise.
+	* m4/eoshift3.m4: Likewise.
+	* m4/in_pack.m4: Make n an index_type.
+	* m4/in_unpack.m4: Likewise.
+	* m4/reshape.m4: Make n and dim index_type's.
+	* m4/shape.m4: Make n an index_type.
+	* m4/spread.m4: Likewise, use index_type argument rather than
+	copying to int.
+	* runtime/bounds.c (bounds_ifunction_return): Make n an
+	index_type.
+	* runtime/in_pack_generic.c (internal_pack): Likewise.
+	* runtime/in_unpack_generic.c (internal_unpack): Make n and size
+	index_type's.
+
 2018-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37577

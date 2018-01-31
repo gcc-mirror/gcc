@@ -41,7 +41,6 @@ internal_pack (gfc_array_char * source)
   const char *src;
   char *dest;
   void *destptr;
-  int n;
   int packed;
   index_type size;
   index_type type_size;
@@ -163,7 +162,7 @@ internal_pack (gfc_array_char * source)
   dim = GFC_DESCRIPTOR_RANK (source);
   ssize = 1;
   packed = 1;
-  for (n = 0; n < dim; n++)
+  for (index_type n = 0; n < dim; n++)
     {
       count[n] = 0;
       stride[n] = GFC_DESCRIPTOR_STRIDE(source,n);
@@ -199,7 +198,7 @@ internal_pack (gfc_array_char * source)
       src += stride0;
       count[0]++;
       /* Advance to the next source element.  */
-      n = 0;
+      index_type n = 0;
       while (count[n] == extent[n])
         {
           /* When we get to the end of a dimension, reset it and increment

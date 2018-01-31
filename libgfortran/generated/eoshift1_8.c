@@ -84,11 +84,9 @@ eoshift1 (gfc_array_char * const restrict ret,
   arraysize = size0 ((array_t *) array);
   if (ret->base_addr == NULL)
     {
-      int i;
-
       ret->offset = 0;
       GFC_DTYPE_COPY(ret,array);
-      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+      for (index_type i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
 
