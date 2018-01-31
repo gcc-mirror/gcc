@@ -1,3 +1,8 @@
+2018-01-30  Jeff Law  <law@redhat.com>
+
+	PR target/84064
+	* gcc.target/i386/pr84064: New test.
+
 2017-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84134
@@ -76,7 +81,7 @@
 	* gcc.target/i386/avx512bitalgvl-vpopcntb-1.c: Ditto.
 	* gcc.target/i386/avx512bitalgvl-vpopcntw-1.c: Ditto.
 
-2018-01-19  Jeff Law  <law@redhat.com>
+2018-01-29  Jeff Law  <law@redhat.com>
 
 	PR testsuite/81010
 	* gcc.target/powerpc/pr56605.c: Update various dg- directives to

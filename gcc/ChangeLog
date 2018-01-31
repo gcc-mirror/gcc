@@ -1,3 +1,13 @@
+2017-01-30  Jeff Law  <law@redhat.com>
+
+	PR target/84064
+	* i386.c (ix86_adjust_stack_and_probe_stack_clash): New argument
+	INT_REGISTERS_SAVED.  Check it prior to calling
+	get_scratch_register_on_entry.
+	(ix86_adjust_stack_and_probe): Similarly.
+	(ix86_emit_probe_stack_range): Similarly.
+	(ix86_expand_prologue): Corresponding changes.
+
 2018-01-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/40411
@@ -376,7 +386,7 @@
 	* config/m68k/m68k.c (m68k_promote_function_mode): New function.
 	(TARGET_PROMOTE_FUNCTION_MODE): New macro.
 
-2017-01-08  Jeff Law  <law@redhat.com>
+2017-01-24  Jeff Law  <law@redhat.com>
 
 	PR target/83994
 	* i386.c (get_probe_interval): Move to earlier point.
