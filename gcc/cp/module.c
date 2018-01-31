@@ -1526,7 +1526,194 @@ static GTY(()) vec<module_state *, va_gc> *modules;
 /* Map from identifier to module index. */
 static GTY(()) hash_table<module_state_hash> *module_hash;
 
+/* Module cpm_stream base.  */
+class cpm_stream {
+public:
+  /* Record tags.  */
+  enum record_tag
+  {
+    /* Module-specific records.  */
+    rt_binding,		/* A name-binding.  */
+    rt_definition,	/* A definition. */
+    rt_identifier,	/* An identifier node.  */
+    rt_conv_identifier,	/* A conversion operator name.  */
+    rt_type_name,	/* A type name.  */
+    rt_typeinfo_var,	/* A typeinfo object.  */
+    rt_typeinfo_pseudo, /* A typeinfo pseudo type.  */
+    rt_tree_base = 0x100,	/* Tree codes.  */
+    rt_ref_base = 0x1000	/* Back-reference indices.  */
+  };
+
+public:
+  module_state *state;
+
+private:
+  unsigned tag;
+
+public:
+  cpm_stream (module_state *);
+  ~cpm_stream ()
+  {
+  }
+
+protected:
+  /* Allocate a new reference index.  */
+  unsigned next (unsigned count = 1)
+  {
+    unsigned res = tag;
+    tag += count;
+    return res;
+  }
+};
+
+cpm_stream::cpm_stream (module_state *state_)
+  : state (state_), tag (rt_ref_base)
+{
+  gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
+}
+
+/* cpm_stream cpms_out.  */
+class cpms_out : public cpm_stream {
+  bytes_out w;
+
+private:
+  ptr_uint_hash_map tree_map; /* trees to ids  */
+
+  /* Tree instrumentation. */
+private:
+  static unsigned unique;
+  static unsigned refs;
+  static unsigned nulls;
+  static unsigned records;
+
+public:
+  cpms_out (module_state *);
+  ~cpms_out ();
+
+public:
+  elf_out *get_elf () const 
+  {
+    return static_cast <elf_out *> (state->elf);
+  }
+
+public:
+  void write (unsigned *);
+
+public:
+  static void instrument ();
+
+public:
+  void tag_binding (tree ns, tree name, module_binding_vec *);
+  void maybe_tag_definition (tree decl);
+  void tag_definition (tree node, tree maybe_template);
+
+private:
+  void tag (record_tag rt)
+  {
+    records++;
+    w.u (rt);
+  }
+  unsigned insert (tree);
+  void start (tree_code, tree);
+  void loc (location_t);
+  void core_bools (tree);
+  void core_vals (tree);
+  void lang_type_bools (tree);
+  void lang_type_vals (tree);
+  void lang_decl_bools (tree);
+  void lang_decl_vals (tree);
+  void tree_node_raw (tree_code, tree);
+  int tree_node_special (tree);
+  void chained_decls (tree);
+  void tree_vec (vec<tree, va_gc> *);
+  void tree_pair_vec (vec<tree_pair_s, va_gc> *);
+  void define_function (tree, tree);
+  void define_var (tree, tree);
+  void define_class (tree, tree);
+  void define_enum (tree, tree);
+
+public:
+  void tree_node (tree);
+  vec<tree, va_gc> *bindings (bytes_out *, vec<tree, va_gc> *nest, tree ns);
+};
+
+unsigned cpms_out::unique;
+unsigned cpms_out::refs;
+unsigned cpms_out::nulls;
+unsigned cpms_out::records;
+
+cpms_out::cpms_out (module_state *state)
+  :cpm_stream (state), w ()
+{
+}
+
+cpms_out::~cpms_out ()
+{
+}
+
+/* Cpm_Stream in.  */
+class cpms_in : public cpm_stream {
+  bytes_in r;
+
+private:
+  uint_ptr_hash_map tree_map; /* ids to trees  */
+
+public:
+  cpms_in (module_state *);
+  ~cpms_in ();
+
+public:
+  elf_in *get_elf () const
+  {
+    return static_cast <elf_in *> (state->elf);
+  }
+
+public:
+  void read ();
+
+public:
+  bool tag_binding ();
+  tree tag_definition ();
+
+private:
+  unsigned insert (tree);
+  tree finish_type (tree);
+
+private:
+  tree start (tree_code);
+  tree finish (tree);
+  location_t loc ();
+  bool core_bools (tree);
+  bool core_vals (tree);
+  bool lang_type_bools (tree);
+  bool lang_type_vals (tree);
+  bool lang_decl_bools (tree);
+  bool lang_decl_vals (tree);
+  bool tree_node_raw (tree_code, tree, tree, tree);
+  tree tree_node_special (unsigned);
+  tree chained_decls ();
+  vec<tree, va_gc> *tree_vec ();
+  vec<tree_pair_s, va_gc> *tree_pair_vec ();
+  tree define_function (tree, tree);
+  tree define_var (tree, tree);
+  tree define_class (tree, tree);
+  tree define_enum (tree, tree);
+
+public:
+  tree tree_node ();
+};
+
+cpms_in::cpms_in (module_state *state)
+  :cpm_stream (state), r ()
+{
+}
+
+cpms_in::~cpms_in ()
+{
+}
+
 /* A dumping machinery.  */
+
 class dumper {
 private:
   struct impl {
@@ -2350,131 +2537,6 @@ module_state::do_import (unsigned index, bool is_export)
     bitmap_ior_into (exports, other->exports);
 }
 
-/* Module cpm_stream base.  */
-class cpm_stream {
-public:
-  /* Record tags.  */
-  enum record_tag
-  {
-    /* Module-specific records.  */
-    rt_binding,		/* A name-binding.  */
-    rt_definition,	/* A definition. */
-    rt_identifier,	/* An identifier node.  */
-    rt_conv_identifier,	/* A conversion operator name.  */
-    rt_type_name,	/* A type name.  */
-    rt_typeinfo_var,	/* A typeinfo object.  */
-    rt_typeinfo_pseudo, /* A typeinfo pseudo type.  */
-    rt_tree_base = 0x100,	/* Tree codes.  */
-    rt_ref_base = 0x1000	/* Back-reference indices.  */
-  };
-
-public:
-  module_state *state;
-
-private:
-  unsigned tag;
-
-public:
-  cpm_stream (module_state *);
-  ~cpm_stream ()
-  {
-  }
-
-protected:
-  /* Allocate a new reference index.  */
-  unsigned next (unsigned count = 1)
-  {
-    unsigned res = tag;
-    tag += count;
-    return res;
-  }
-};
-
-cpm_stream::cpm_stream (module_state *state_)
-  : state (state_), tag (rt_ref_base)
-{
-  gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
-}
-
-/* cpm_stream cpms_out.  */
-class cpms_out : public cpm_stream {
-  bytes_out w;
-
-private:
-  ptr_uint_hash_map tree_map; /* trees to ids  */
-
-  /* Tree instrumentation. */
-private:
-  static unsigned unique;
-  static unsigned refs;
-  static unsigned nulls;
-  static unsigned records;
-
-public:
-  cpms_out (module_state *);
-  ~cpms_out ();
-
-public:
-  elf_out *get_elf () const 
-  {
-    return static_cast <elf_out *> (state->elf);
-  }
-
-public:
-  void write (unsigned *);
-
-public:
-  static void instrument ();
-
-public:
-  void tag_binding (tree ns, tree name, module_binding_vec *);
-  void maybe_tag_definition (tree decl);
-  void tag_definition (tree node, tree maybe_template);
-
-private:
-  void tag (record_tag rt)
-  {
-    records++;
-    w.u (rt);
-  }
-  unsigned insert (tree);
-  void start (tree_code, tree);
-  void loc (location_t);
-  void core_bools (tree);
-  void core_vals (tree);
-  void lang_type_bools (tree);
-  void lang_type_vals (tree);
-  void lang_decl_bools (tree);
-  void lang_decl_vals (tree);
-  void tree_node_raw (tree_code, tree);
-  int tree_node_special (tree);
-  void chained_decls (tree);
-  void tree_vec (vec<tree, va_gc> *);
-  void tree_pair_vec (vec<tree_pair_s, va_gc> *);
-  void define_function (tree, tree);
-  void define_var (tree, tree);
-  void define_class (tree, tree);
-  void define_enum (tree, tree);
-
-public:
-  void tree_node (tree);
-  vec<tree, va_gc> *bindings (bytes_out *, vec<tree, va_gc> *nest, tree ns);
-};
-
-unsigned cpms_out::unique;
-unsigned cpms_out::refs;
-unsigned cpms_out::nulls;
-unsigned cpms_out::records;
-
-cpms_out::cpms_out (module_state *state)
-  :cpm_stream (state), w ()
-{
-}
-
-cpms_out::~cpms_out ()
-{
-}
-
 void
 bytes_out::instrument ()
 {
@@ -2499,67 +2561,6 @@ cpms_out::instrument ()
       dump ("  %u nulls", nulls);
       dump ("Wrote %u records", records);
     }
-}
-
-/* Cpm_Stream in.  */
-class cpms_in : public cpm_stream {
-  bytes_in r;
-
-private:
-  uint_ptr_hash_map tree_map; /* ids to trees  */
-
-public:
-  cpms_in (module_state *);
-  ~cpms_in ();
-
-public:
-  elf_in *get_elf () const
-  {
-    return static_cast <elf_in *> (state->elf);
-  }
-
-public:
-  void read ();
-
-public:
-  bool tag_binding ();
-  tree tag_definition ();
-
-private:
-  unsigned insert (tree);
-  tree finish_type (tree);
-
-private:
-  tree start (tree_code);
-  tree finish (tree);
-  location_t loc ();
-  bool core_bools (tree);
-  bool core_vals (tree);
-  bool lang_type_bools (tree);
-  bool lang_type_vals (tree);
-  bool lang_decl_bools (tree);
-  bool lang_decl_vals (tree);
-  bool tree_node_raw (tree_code, tree, tree, tree);
-  tree tree_node_special (unsigned);
-  tree chained_decls ();
-  vec<tree, va_gc> *tree_vec ();
-  vec<tree_pair_s, va_gc> *tree_pair_vec ();
-  tree define_function (tree, tree);
-  tree define_var (tree, tree);
-  tree define_class (tree, tree);
-  tree define_enum (tree, tree);
-
-public:
-  tree tree_node ();
-};
-
-cpms_in::cpms_in (module_state *state)
-  :cpm_stream (state), r ()
-{
-}
-
-cpms_in::~cpms_in ()
-{
 }
 
 unsigned
