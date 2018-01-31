@@ -217,6 +217,10 @@
   if (MEM_VOLATILE_P (op) && !TARGET_VOLATILE_CACHE_SET)
      return 0;
 
+  /* likewise for uncached types.  */
+  if (arc_is_uncached_mem_p (op))
+     return 0;
+
   size = GET_MODE_SIZE (mode);
 
   /* dword operations really put out 2 instructions, so eliminate them.  */
@@ -412,7 +416,8 @@
 ;; and only the standard movXX patterns are set up to handle them.
 (define_predicate "nonvol_nonimm_operand"
   (and (match_code "subreg, reg, mem")
-       (match_test "(GET_CODE (op) != MEM || !MEM_VOLATILE_P (op)) && nonimmediate_operand (op, mode)"))
+       (match_test "(GET_CODE (op) != MEM || !MEM_VOLATILE_P (op)) && nonimmediate_operand (op, mode)")
+       (match_test "!arc_is_uncached_mem_p (op)"))
 )
 
 ;; Return 1 if OP is a comparison operator valid for the mode of CC.

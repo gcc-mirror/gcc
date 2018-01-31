@@ -6817,6 +6817,7 @@ attributes.
 
 @menu
 * Common Type Attributes::
+* ARC Type Attributes::
 * ARM Type Attributes::
 * MeP Type Attributes::
 * PowerPC Type Attributes::
@@ -7249,6 +7250,16 @@ typeinfo node and exception handling will break.
 To specify multiple attributes, separate them by commas within the
 double parentheses: for example, @samp{__attribute__ ((aligned (16),
 packed))}.
+
+@node ARC Type Attributes
+@subsection ARC Type Attributes
+
+@cindex @code{uncached} type attribute, ARC
+Declaring objects with @code{uncached} allows you to exclude
+data-cache participation in load and store operations on those objects
+without involving the additional semantic implications of
+@code{volatile}.  The @code{.di} instruction suffix is used for all
+loads and stores of data declared @code{uncached}.
 
 @node ARM Type Attributes
 @subsection ARM Type Attributes
