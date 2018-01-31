@@ -1,5 +1,17 @@
 2018-01-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_handle_aux_attribute): New function.
+	(arc_attribute_table): Add 'aux' attribute.
+	(arc_in_small_data_p): Consider aux like variables.
+	(arc_is_aux_reg_p): New function.
+	(arc_asm_output_aligned_decl_local): Ignore 'aux' like variables.
+	(arc_get_aux_arg): New function.
+	(prepare_move_operands): Handle aux-register access.
+	(arc_handle_aux_attribute): New function.
+	* doc/extend.texi (ARC Variable attributes): Add subsection.
+
+2018-01-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-protos.h (arc_is_uncached_mem_p): Function proto.
 	* config/arc/arc.c (arc_handle_uncached_attribute): New function.
 	(arc_attribute_table): Add 'uncached' attribute.

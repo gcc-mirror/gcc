@@ -5894,6 +5894,7 @@ attributes.
 
 @menu
 * Common Variable Attributes::
+* ARC Variable Attributes::
 * AVR Variable Attributes::
 * Blackfin Variable Attributes::
 * H8/300 Variable Attributes::
@@ -6264,6 +6265,18 @@ The @code{visibility} attribute is described in
 @cindex @code{weak} variable attribute
 The @code{weak} attribute is described in
 @ref{Common Function Attributes}.
+
+@end table
+
+@node ARC Variable Attributes
+@subsection ARC Variable Attributes
+
+@table @code
+@item aux
+@cindex @code{aux} variable attribute, ARC
+The @code{aux} attribute is used to directly access the ARC's
+auxiliary register space from C.  The auxilirary register number is
+given via attribute argument.
 
 @end table
 
