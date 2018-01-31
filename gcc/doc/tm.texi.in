@@ -7581,8 +7581,12 @@ is in effect.
 
 @defmac WORD_REGISTER_OPERATIONS
 Define this macro to 1 if operations between registers with integral mode
-smaller than a word are always performed on the entire register.
-Most RISC machines have this property and most CISC machines do not.
+smaller than a word are always performed on the entire register.  To be
+more explicit, if you start with a pair of @code{word_mode} registers with
+known values and you do a subword, for example @code{QImode}, addition on
+the low part of the registers, then the compiler may consider that the
+result has a known value in @code{word_mode} too if the macro is defined
+to 1.  Most RISC machines have this property and most CISC machines do not.
 @end defmac
 
 @hook TARGET_MIN_ARITHMETIC_PRECISION
