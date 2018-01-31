@@ -1,5 +1,10 @@
 2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* trans-const.c (gfc_conv_string_init): Use gfc_charlen_t instead
+	of int for slen.
+
+2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/78534
 	* trans-expr.c (fill_with_spaces): Use memset instead of
 	generating loop.

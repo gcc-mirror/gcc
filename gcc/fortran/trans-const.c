@@ -141,7 +141,7 @@ gfc_conv_string_init (tree length, gfc_expr * expr)
 {
   gfc_char_t *s;
   HOST_WIDE_INT len;
-  int slen;
+  gfc_charlen_t slen;
   tree str;
   bool free_s = false;
 
