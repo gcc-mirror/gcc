@@ -36736,6 +36736,29 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
     case IX86_BUILTIN_NANSQ:
       return expand_call (exp, target, ignore);
 
+    case IX86_BUILTIN_RDPID:
+
+      op0 = gen_reg_rtx (TARGET_64BIT ? DImode : SImode);
+
+      if (TARGET_64BIT)
+	{
+	  insn = gen_rdpid_rex64 (op0);
+	  op0 = convert_to_mode (SImode, op0, 1);
+	}
+      else
+	insn = gen_rdpid (op0);
+      emit_insn (insn);
+
+      if (target == 0)
+	{
+	  /* mode is VOIDmode if __builtin_rdpid has been called
+	     without lhs.  */
+	  if (mode == VOIDmode)
+	    return target;
+	  target = gen_reg_rtx (mode);
+	}
+      emit_move_insn (target, op0);
+      return target;
     case IX86_BUILTIN_RDPMC:
     case IX86_BUILTIN_RDTSC:
     case IX86_BUILTIN_RDTSCP:
