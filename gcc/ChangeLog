@@ -1,3 +1,9 @@
+2018-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/84071
+	* doc/tm.texi.in (WORD_REGISTER_OPERATIONS): Add explicit case.
+	* doc/tm.texi: Regenerate.
+
 2018-01-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84132
