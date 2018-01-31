@@ -1,5 +1,12 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Staticize instrumentation
+	gcc/cp/
+	* module.c (bytes_out): Staticize spans, lengths, is_set.
+	(bytes_out::instrument): Make static.
+	(cpms_out): Staticize unique, refs, nulls, records.
+	(cpms_out::instrument): Make static.  Adjust.
+
 	Separate dumper object
 	gcc/cp/
 	* cp-tree.h (dump, print_other_binding_stack): Undeclare.

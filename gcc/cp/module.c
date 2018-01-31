@@ -1424,18 +1424,16 @@ protected:
 
 /* Byte stream writer.  */
 class bytes_out : public bytes {
-  /* Bit instrumentation.  */
-  unsigned spans[3];
-  unsigned lengths[3];
-  int is_set;
+
+  /* Instrumentation.  */
+  static unsigned spans[4];
+  static unsigned lengths[4];
+  static int is_set;
 
 public:
   bytes_out ()
     : bytes ()
   {
-    spans[0] = spans[1] = spans[2] = 0;
-    lengths[0] = lengths[1] = lengths[2] = 0;
-    is_set = -1;
   }
   ~bytes_out ()
   {
@@ -1452,7 +1450,7 @@ public:
   void raw (unsigned);
 
 public:
-  void instrument ();
+  static void instrument ();
 
 public:
   void b (bool);
@@ -1469,6 +1467,10 @@ public:
   void buf (const char *, size_t);
   void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
 };
+
+unsigned bytes_out::spans[4];
+unsigned bytes_out::lengths[4];
+int bytes_out::is_set = -1;
 
 /* Byte stream reader.  */
 class bytes_in : public bytes {
@@ -1939,6 +1941,9 @@ bytes_out::begin (bool crc_p)
 unsigned
 bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr, bool string_p)
 {
+  lengths[3] += pos;
+  spans[3]++;
+
   data->size = pos;
   data->set_crc (crc_ptr);
   unsigned sec_num = sink->add (string_p ? elf::SHT_STRTAB : elf::SHT_PROGBITS,
@@ -1955,6 +1960,18 @@ bytes_out::use (unsigned bytes)
   if (data->size < pos + bytes)
     data = data::extend (data, (pos + bytes) * 3/2);
   return bytes::use (bytes);
+}
+
+void
+bytes_out::instrument ()
+{
+  dump ("Wrote %u bytes in %u blocks", lengths[3], spans[3]);
+  dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1], lengths[2]);
+  for (unsigned ix = 0; ix < 2; ix++)
+    dump ("  %u %s spans of %R bits", spans[ix],
+	  ix ? "one" : "zero", lengths[ix], spans[ix]);
+  dump ("  %u blocks with %R bits padding", spans[2],
+	lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
 }
 
 /* Module cpm_stream base.  */
@@ -2101,10 +2118,11 @@ private:
   ptr_uint_hash_map tree_map; /* trees to ids  */
 
   /* Tree instrumentation. */
-  unsigned unique;
-  unsigned refs;
-  unsigned nulls;
-  unsigned records;
+private:
+  static unsigned unique;
+  static unsigned refs;
+  static unsigned nulls;
+  static unsigned records;
 
 public:
   cpms_out (elf_out *, module_state *);
@@ -2122,7 +2140,7 @@ public:
   void write ();
 
 private:
-  void instrument ();
+  static void instrument ();
   void header (unsigned crc);
   void imports (unsigned *crc_p);
 
@@ -2161,30 +2179,18 @@ public:
   vec<tree, va_gc> *bindings (bytes_out *, vec<tree, va_gc> *nest, tree ns);
 };
 
+unsigned cpms_out::unique;
+unsigned cpms_out::refs;
+unsigned cpms_out::nulls;
+unsigned cpms_out::records;
+
 cpms_out::cpms_out (elf_out *s, module_state *state)
   :cpm_stream (state), elf (s), w ()
 {
-  unique = refs = nulls = 0;
-  records = 0;
 }
 
 cpms_out::~cpms_out ()
 {
-}
-
-// FIXME collate
-void
-bytes_out::instrument ()
-{
-  if (data)
-    dump ("Wrote %U bytes", data->size);
-  dump ("Wrote %u bits in %u bytes", lengths[0] + lengths[1],
-	lengths[2]);
-  for (unsigned ix = 0; ix < 2; ix++)
-    dump ("  %u %s spans of %R bits", spans[ix],
-	  ix ? "one" : "zero", lengths[ix], spans[ix]);
-  dump ("  %u blocks with %R bits padding", spans[2],
-	lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
 }
 
 void
@@ -2192,7 +2198,7 @@ cpms_out::instrument ()
 {
   if (dump (""))
     {
-      w.instrument ();
+      bytes_out::instrument ();
       dump ("Wrote %u trees", unique + refs + nulls);
       dump ("  %u unique", unique);
       dump ("  %u references", refs);
