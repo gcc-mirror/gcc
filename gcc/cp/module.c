@@ -1466,6 +1466,9 @@ struct GTY(()) module_state {
  public:
   module_state ();
   ~module_state ();
+
+ public:
+  static void lazy_init ();
   void release (bool = true);
 
  public:
@@ -1579,31 +1582,36 @@ dumper::push (module_state *m)
   dumps->indent = 0;
   dumps->bol = true;
   dumps->stack.quick_push (m);
-  module_state *from = (dumps->stack.length () > 1
-			? dumps->stack[dumps->stack.length () - 2] : NULL);
-  dump (from ? "Starting module %M (from %M)"
-	: "Starting module %M", m, from);
+  if (m)
+    {
+      module_state *from = (dumps->stack.length () > 1
+			    ? dumps->stack[dumps->stack.length () - 2] : NULL);
+      dump (from ? "Starting module %M (from %M)"
+	    : "Starting module %M", m, from);
+    }
 
   return n;
 }
 
 void dumper::pop (unsigned n)
 {
-  if (dumps)
+  if (!dumps)
+    return;
+
+  gcc_checking_assert (dump () && !dumps->indent);
+  if (module_state *m = dumps->stack[dumps->stack.length () - 1])
     {
-      gcc_checking_assert (dump () && !dumps->indent);
-      module_state *m = dumps->stack[dumps->stack.length () - 1];
       module_state *from = (dumps->stack.length () > 1
 			    ? dumps->stack[dumps->stack.length () - 2] : NULL);
       dump (from ? "Finishing module %M (returning to %M)"
 	    : "Finishing module %M", m, from);
-      dumps->stack.pop ();
-      dumps->indent = n;
-      if (!from)
-	{
-	  dump_end (module_dump_id, dumps->stream);
-	  dumps->stream = NULL;
-	}
+    }
+  dumps->stack.pop ();
+  dumps->indent = n;
+  if (!dumps->stack.length ())
+    {
+      dump_end (module_dump_id, dumps->stream);
+      dumps->stream = NULL;
     }
 }
 
@@ -1825,6 +1833,89 @@ module_state::~module_state ()
   release ();
 }
 
+// FIXME:static members of module_state
+/* Global trees.  */
+struct gtp {
+  const tree *ptr;
+  unsigned num;
+};
+static const gtp globals_arys[] =
+  {
+    {sizetype_tab, stk_type_kind_last},
+    {integer_types, itk_none},
+    {global_trees, TI_MAX},
+    {cp_global_trees, CPTI_MAX},
+    {NULL, 0}
+  };
+static vec<tree, va_gc> GTY (()) *globals;
+static unsigned globals_crc;
+
+void
+module_state::lazy_init ()
+{
+  gcc_checking_assert (!globals);
+
+  dump.push (NULL);
+  /* Construct the global tree array.  This is an array of unique
+     global trees (& types).  */
+  // FIXME:Some slots are lazily allocated, we must move them to
+  // the end and not stream them here.  They must be locatable via
+  // some other means.
+  unsigned crc = 0;
+  hash_table<nofree_ptr_hash<tree_node> > hash (200);
+  vec_alloc (globals, 200);
+
+  dump () && dump ("+Creating globals");
+  /* Insert the TRANSLATION_UNIT_DECL.  */
+  *hash.find_slot (DECL_CONTEXT (global_namespace), INSERT)
+    = DECL_CONTEXT (global_namespace);
+  globals->quick_push (DECL_CONTEXT (global_namespace));
+  
+  for (unsigned jx = 0; globals_arys[jx].ptr; jx++)
+    {
+      const tree *ptr = globals_arys[jx].ptr;
+      unsigned limit = globals_arys[jx].num;
+	  
+      for (unsigned ix = 0; ix != limit; ix++, ptr++)
+	{
+	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx,ix);
+	  unsigned v = 0;
+	  if (tree val = *ptr)
+	    {
+	      tree *slot = hash.find_slot (val, INSERT);
+	      if (!*slot)
+		{
+		  *slot = val;
+		  crc = crc32_unsigned (crc, globals->length ());
+		  vec_safe_push (globals, val);
+		  v++;
+		  if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+		    {
+		      val = TREE_TYPE (val);
+		      if (val)
+			{
+			  slot = hash.find_slot (val, INSERT);
+			  if (!*slot)
+			    {
+			      *slot = val;
+			      crc = crc32_unsigned (crc, globals->length ());
+			      vec_safe_push (globals, val);
+			      v++;
+			    }
+			}
+		    }
+		}
+	    }
+	  dump () && dump ("+%u", v);
+	}
+    }
+  gcc_checking_assert (hash.elements () == globals->length ());
+  globals_crc = crc32_unsigned (crc, globals->length ());
+  dump ("") && dump ("Created %u unique globals, crc=%x",
+		     globals->length (), globals_crc);
+  dump.pop (0);
+}
+
 /* Free up state.  If ALL is true, we're completely done.  If ALL is
    false, we've completed reading in the module (but have not
    completed parsing).  */
@@ -2013,15 +2104,6 @@ public:
     rt_tree_base = 0x100,	/* Tree codes.  */
     rt_ref_base = 0x1000	/* Back-reference indices.  */
   };
-  struct gtp {
-    const tree *ptr;
-    unsigned num;
-  };
-
-public:
-  static const gtp globals_arys[];
-  static vec<tree, va_gc> *globals;
-  static unsigned globals_crc;
 
 public:
   module_state *state;
@@ -2035,9 +2117,6 @@ public:
   {
   }
 
-public:
-  static void lazy_globals ();
-
 protected:
   /* Allocate a new reference index.  */
   unsigned next (unsigned count = 1)
@@ -2048,87 +2127,10 @@ protected:
   }
 };
 
-/* Global trees.  */
-const cpm_stream::gtp cpm_stream::globals_arys[] =
-  {
-    {sizetype_tab, stk_type_kind_last},
-    {integer_types, itk_none},
-    {global_trees, TI_MAX},
-    {cp_global_trees, CPTI_MAX},
-    {NULL, 0}
-  };
-vec<tree, va_gc> GTY(()) *cpm_stream::globals;
-unsigned cpm_stream::globals_crc;
-
 cpm_stream::cpm_stream (module_state *state_)
   : state (state_), tag (rt_ref_base)
 {
   gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
-}
-
-void
-cpm_stream::lazy_globals ()
-{
-  if (globals)
-    return;
-  
-  /* Construct the global tree array.  This is an array of unique
-     global trees (& types).  */
-  // FIXME:Some slots are lazily allocated, we must move them to
-  // the end and not stream them here.  They must be locatable via
-  // some other means.
-  unsigned crc = 0;
-  hash_table<nofree_ptr_hash<tree_node> > hash (200);
-  vec_alloc (globals, 200);
-
-  dump () && dump ("+Creating globals");
-  /* Insert the TRANSLATION_UNIT_DECL.  */
-  *hash.find_slot (DECL_CONTEXT (global_namespace), INSERT)
-    = DECL_CONTEXT (global_namespace);
-  globals->quick_push (DECL_CONTEXT (global_namespace));
-  
-  for (unsigned jx = 0; globals_arys[jx].ptr; jx++)
-    {
-      const tree *ptr = globals_arys[jx].ptr;
-      unsigned limit = globals_arys[jx].num;
-	  
-      for (unsigned ix = 0; ix != limit; ix++, ptr++)
-	{
-	  !(ix & 31) && dump ("") && dump ("+\t%u:%u:", jx,ix);
-	  unsigned v = 0;
-	  if (tree val = *ptr)
-	    {
-	      tree *slot = hash.find_slot (val, INSERT);
-	      if (!*slot)
-		{
-		  *slot = val;
-		  crc = crc32_unsigned (crc, globals->length ());
-		  vec_safe_push (globals, val);
-		  v++;
-		  if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
-		    {
-		      val = TREE_TYPE (val);
-		      if (val)
-			{
-			  slot = hash.find_slot (val, INSERT);
-			  if (!*slot)
-			    {
-			      *slot = val;
-			      crc = crc32_unsigned (crc, globals->length ());
-			      vec_safe_push (globals, val);
-			      v++;
-			    }
-			}
-		    }
-		}
-	    }
-	  dump () && dump ("+%u", v);
-	}
-    }
-  gcc_checking_assert (hash.elements () == globals->length ());
-  globals_crc = crc32_unsigned (crc, globals->length ());
-  dump ("") && dump ("Created %u unique globals, crc=%x",
-		     globals->length (), globals_crc);
 }
 
 /* cpm_stream cpms_out.  */
@@ -5857,6 +5859,8 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       vec_safe_reserve (modules, 20);
       module_state *current = new (ggc_alloc <module_state> ()) module_state ();
       modules->quick_push (current);
+      current->mod = 0;
+      module_state::lazy_init ();
     }
 
   module_state **slot
@@ -5942,7 +5946,6 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	  if (elf->begin ())
 	    {
 	      cpms_in in (state);
-	      in.lazy_globals ();
 	      in.read (crc_ptr);
 	    }
 	  if (!elf->end ())
@@ -6078,7 +6081,6 @@ finish_module ()
       if (elf->begin ())
 	{
 	  cpms_out out (state);
-	  out.lazy_globals ();
 	  out.write ();
 	}
       if (!elf->end ())
