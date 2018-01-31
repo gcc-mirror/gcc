@@ -1,3 +1,8 @@
+2018-01-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/torture/pr81360.C: Drop unintended -O2 from dg-options and
+	dg-final scan.
+
 2018-01-31  Julia Koval  <julia.koval@intel.com>
 
 	PR target/83618

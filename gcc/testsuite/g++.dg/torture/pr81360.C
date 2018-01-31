@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-early-inlining -fdump-ipa-icf"  } */
+/* { dg-options "-fno-early-inlining"  } */
 
 template <int dim> class B;
 template <int, int dim> class TriaObjectAccessor;
@@ -76,4 +76,3 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "Equal symbols: 0" "icf"  } } */
