@@ -1,3 +1,8 @@
+2018-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84092
+	* g++.dg/cpp1y/var-templ57.C: New.
+
 2018-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84138

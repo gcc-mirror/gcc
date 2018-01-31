@@ -1,3 +1,9 @@
+2018-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84092
+	* semantics.c (finish_qualified_id_expr): When handling an
+	UNBOUND_CLASS_TEMPLATE only adjust qualifying_class and expr.
+
 2018-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84138
