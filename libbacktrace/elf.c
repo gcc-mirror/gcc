@@ -2929,12 +2929,19 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 					 error_callback, data);
       if (d >= 0)
 	{
+	  int ret;
+
 	  backtrace_release_view (state, &buildid_view, error_callback, data);
 	  if (debuglink_view_valid)
 	    backtrace_release_view (state, &debuglink_view, error_callback,
 				    data);
-	  return elf_add (state, NULL, d, base_address, error_callback, data,
-			  fileline_fn, found_sym, found_dwarf, 0, 1);
+	  ret = elf_add (state, NULL, d, base_address, error_callback, data,
+			 fileline_fn, found_sym, found_dwarf, 0, 1);
+	  if (ret < 0)
+	    backtrace_close (d, error_callback, data);
+	  else
+	    backtrace_close (descriptor, error_callback, data);
+	  return ret;
 	}
     }
 
@@ -2953,10 +2960,17 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 					   data);
       if (d >= 0)
 	{
+	  int ret;
+
 	  backtrace_release_view (state, &debuglink_view, error_callback,
 				  data);
-	  return elf_add (state, NULL, d, base_address, error_callback, data,
-			  fileline_fn, found_sym, found_dwarf, 0, 1);
+	  ret = elf_add (state, NULL, d, base_address, error_callback, data,
+			 fileline_fn, found_sym, found_dwarf, 0, 1);
+	  if (ret < 0)
+	    backtrace_close (d, error_callback, data);
+	  else
+	    backtrace_close(descriptor, error_callback, data);
+	  return ret;
 	}
     }
 
