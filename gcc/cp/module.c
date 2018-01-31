@@ -156,8 +156,7 @@ typedef hash_map<unsigned,void *,uint_ptr_traits> uint_ptr_hash_map;
 
 /* A data buffer, using trailing array hack.  */
 
-struct data
-{
+struct data {
   size_t size;
   char buffer[1];
 
@@ -236,11 +235,9 @@ data *data::extend (data *c, size_t a)
      N     .bindings : bindings of namespace names
      N+1   .ident    : config data
      N+2    .strtab  : strings, stunningly STRTAB-like
-   Index: Section table, stunningly ELF32_Shdr-like.
- */
+   Index: Section table, stunningly ELF32_Shdr-like.   */
 
-class elf
-{
+class elf {
 protected:
   enum private_constants
     {
@@ -385,8 +382,7 @@ public:
 
 /* ELF reader.  */
 
-class elf_in : public elf
-{
+class elf_in : public elf {
 protected:
   data *strings;
 
@@ -423,8 +419,7 @@ public:
 
 /* Elf writer.  */
 
-class elf_out : public elf
-{
+class elf_out : public elf {
 public:
   /* Builder for string table.  */
   class strtab
@@ -843,13 +838,15 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
 
-  unsigned mod;		/* Module index.  */
-  unsigned crc;		/* CRC we saw reading it in. */
+  vec<unsigned, va_gc> *remap; /* module no remapping.  */
+  class elf *GTY((skip)) elf;	/* Either elf_in or elf_out.  Context
+				   distinguishes. */
 
   const char *filename;	/* Filename */
   location_t loc;	/* Its location.  */
 
-  vec<unsigned, va_gc> *remap; /* module no remapping.  */
+  unsigned mod;		/* Module index.  */
+  unsigned crc;		/* CRC we saw reading it in. */
 
   bool imported : 1;	/* Imported via import declaration.  */
   bool exported : 1;	/* The import is exported.  */
@@ -910,9 +907,9 @@ static size_t module_path_max;
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (NULL_TREE), name_parts (NULL),
-    mod (0), crc (0),
+    remap (NULL), elf (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
-    remap (NULL)
+    mod (0), crc (0)
 {
   imported = exported = false;
 }
@@ -935,7 +932,11 @@ module_state::release (bool all)
       exports = NULL;
     }
 
-  vec_free (remap);
+  if (remap)
+    {
+      vec_free (remap);
+      // FIXME      delete (elf_in *)elf;
+    }
 }
 
 /* We've been assigned INDEX.  Mark the self-import-export bits.  */
@@ -2014,8 +2015,7 @@ cpm_stream::dump (const char *format, ...)
 
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
-public: // FIXME
-  elf_out elf;
+  elf_out *elf;
   bytes_out w;
 
 private:
@@ -2028,8 +2028,14 @@ private:
   unsigned records;
 
 public:
-  cpms_out (FILE *, module_state *);
+  cpms_out (elf_out *, module_state *);
   ~cpms_out ();
+
+public:
+  elf_out *get_elf () const 
+  {
+    return elf;
+  }
 
 public:
   bool begin ();
@@ -2076,7 +2082,7 @@ public:
   vec<tree, va_gc> *bindings (bytes_out *, vec<tree, va_gc> *nest, tree ns);
 };
 
-cpms_out::cpms_out (FILE *s, module_state *state)
+cpms_out::cpms_out (elf_out *s, module_state *state)
   :cpm_stream (state), elf (s), w ()
 {
   unique = refs = nulls = 0;
@@ -2120,15 +2126,21 @@ cpms_out::instrument ()
 
 /* Cpm_Stream in.  */
 class cpms_in : public cpm_stream {
-  elf_in elf;
+  elf_in *elf;
   bytes_in r;
 
 private:
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
 public:
-  cpms_in (FILE *, module_state *, cpms_in *);
+  cpms_in (elf_in *, module_state *, cpms_in *);
   ~cpms_in ();
+
+public:
+  elf_in *get_elf () const
+  {
+    return elf;
+  }
 
 public:
   bool begin ();
@@ -2171,7 +2183,7 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (FILE *s, module_state *state, cpms_in *from)
+cpms_in::cpms_in (elf_in *s, module_state *state, cpms_in *from)
   :cpm_stream (state, from), elf (s), r ()
 {
   dump () && dump ("Importing %I", state->name);
@@ -2230,14 +2242,14 @@ cpms_out::header (unsigned inner_crc)
   w.raw (unsigned (get_version ()));
   w.raw (inner_crc);
 
-  w.u (elf.name (state->name));
+  w.u (get_elf ()->name (state->name));
 
   /* Configuration. */
   dump () && dump ("Writing target='%s', host='%s'",
 		   TARGET_MACHINE, HOST_MACHINE);
-  unsigned target = elf.name (TARGET_MACHINE);
+  unsigned target = get_elf ()->name (TARGET_MACHINE);
   unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
-		   ? target : elf.name (HOST_MACHINE));
+		   ? target : get_elf ()->name (HOST_MACHINE));
   w.u (target);
   w.u (host);
 
@@ -2253,7 +2265,7 @@ cpms_out::header (unsigned inner_crc)
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
   unsigned crc = 0;
-  w.end (&elf, elf.name (MOD_SNAME_PFX ".ident"), &crc);
+  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".ident"), &crc);
   dump () && dump ("Writing CRC=%x", crc);
   state->crc = crc;
 }
@@ -2266,7 +2278,7 @@ bool
 cpms_in::header (unsigned *crc_ptr)
 {
   unsigned crc = 0;
-  if (!r.begin (&elf, MOD_SNAME_PFX ".ident", &crc))
+  if (!r.begin (get_elf (), MOD_SNAME_PFX ".ident", &crc))
     return false;
 
   dump () && dump ("Reading CRC=%x", crc);
@@ -2275,7 +2287,7 @@ cpms_in::header (unsigned *crc_ptr)
       error ("module %qE CRC mismatch", state->name);
     fail:
       r.set_overrun ();
-      return r.end (&elf);
+      return r.end (get_elf ());
     }
   state->crc = crc;
 
@@ -2313,7 +2325,7 @@ cpms_in::header (unsigned *crc_ptr)
   r.raw ();
 
   /* Check module name.  */
-  const char *their_name = elf.name (r.u ());
+  const char *their_name = get_elf ()->name (r.u ());
   if (strlen (their_name) != IDENTIFIER_LENGTH (state->name)
       || memcmp (their_name, IDENTIFIER_POINTER (state->name),
 		 IDENTIFIER_LENGTH (state->name)))
@@ -2323,8 +2335,8 @@ cpms_in::header (unsigned *crc_ptr)
     }
 
   /* Check target & host.  */
-  const char *their_target = elf.name (r.u ());
-  const char *their_host = elf.name (r.u ());
+  const char *their_target = get_elf ()->name (r.u ());
+  const char *their_host = get_elf ()->name (r.u ());
   dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
   if (strcmp (their_target, TARGET_MACHINE)
       || strcmp (their_host, HOST_MACHINE))
@@ -2348,7 +2360,7 @@ cpms_in::header (unsigned *crc_ptr)
   if (r.more_p ())
     goto fail;
 
-  return r.end (&elf);
+  return r.end (get_elf ());
 }
 
 /* Imports
@@ -2382,16 +2394,16 @@ cpms_out::imports (unsigned *crc_p)
       w.b (state->exported);
       w.bflush ();
       w.u (state->crc);
-      unsigned name = elf.name (state->name);
+      unsigned name = get_elf ()->name (state->name);
       w.u (name);
     }
-  w.end (&elf, elf.name (MOD_SNAME_PFX ".imports"), crc_p);
+  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".imports"), crc_p);
 }
 
 bool
 cpms_in::imports (unsigned *crc_p)
 {
-  if (!r.begin (&elf, MOD_SNAME_PFX ".imports", crc_p))
+  if (!r.begin (get_elf (), MOD_SNAME_PFX ".imports", crc_p))
     return false;
 
   unsigned imports = r.u ();
@@ -2407,7 +2419,7 @@ cpms_in::imports (unsigned *crc_p)
       bool exported = r.b ();
       r.bflush ();
       unsigned crc = r.u ();
-      tree name = get_identifier (elf.name (r.u ()));
+      tree name = get_identifier (get_elf ()->name (r.u ()));
 
       dump () && dump ("Begin nested %simport %I",
 		       exported ? "export " : imported ? "" : "indirect ", name);
@@ -2432,7 +2444,7 @@ cpms_in::imports (unsigned *crc_p)
       r.set_overrun ();
     }
 
-  return r.end (&elf);
+  return r.end (get_elf ());
 }
 
 /* BINDING is a vector of decls bound in namespace NS.  Write out the
@@ -5317,14 +5329,14 @@ cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
 		  if (!LOOKUP_FOUND_P (outer))
 		    {
 		      LOOKUP_FOUND_P (outer) = true;
-		      bind->u (elf.name (DECL_NAME (outer)));
+		      bind->u (get_elf ()->name (DECL_NAME (outer)));
 		      bind->u (0); /* It had no bindings of its own.  */
 		    }
 		}
 	      
-	      bind->u (elf.name (DECL_NAME (ns)));
+	      bind->u (get_elf ()->name (DECL_NAME (ns)));
 	    }
-	  bind->u (elf.name (DECL_NAME (first)));
+	  bind->u (get_elf ()->name (DECL_NAME (first)));
 	  tag_binding (ns, DECL_NAME (first), module_bindings);
 	  // FIXME, here we'd emit the section number containing the
 	  // declaration.
@@ -5353,13 +5365,13 @@ cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
 bool
 cpms_out::begin ()
 {
-  return elf.begin ();
+  return get_elf ()->begin ();
 }
 
 bool
 cpms_out::end ()
 {
-  int e = elf.end ();
+  int e = get_elf ()->end ();
   if (e)
     error ("failed to write module %qE (%qs): %s",
 	   state->name, state->filename,
@@ -5386,7 +5398,8 @@ cpms_out::write ()
     /* Create as STRTAB so that:
          readelf -p.gnu.c++.README X.nms
        works.  */
-    w.end (&elf, elf.name (MOD_SNAME_PFX ".README"), NULL, /*strings=*/true);
+    w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".README"),
+	   NULL, /*strings=*/true);
   }
 
   unsigned crc = 0;
@@ -5417,8 +5430,8 @@ cpms_out::write ()
   gcc_assert (!nest->length ());
   vec_free (nest);
 
-  w.end (&elf, elf.name (MOD_SNAME_PFX ".decls"), &crc);
-  bind.end (&elf, elf.name (MOD_SNAME_PFX ".bindings"), &crc);
+  w.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".decls"), &crc);
+  bind.end (get_elf (), get_elf ()->name (MOD_SNAME_PFX ".bindings"), &crc);
 
   header (crc);
 
@@ -5428,13 +5441,13 @@ cpms_out::write ()
 bool
 cpms_in::begin ()
 {
-  return elf.begin ();
+  return get_elf ()->begin ();
 }
 
 bool
 cpms_in::end ()
 {
-  int e = elf.end ();
+  int e = get_elf ()->end ();
   if (e)
     {
       /* strerror and friends returns capitalized strings.  */
@@ -5480,7 +5493,7 @@ cpms_in::read (unsigned *crc_ptr)
      the map.  */
   next (globals->length ());
 
-  if (!r.begin (&elf, MOD_SNAME_PFX ".decls", &crc))
+  if (!r.begin (get_elf (), MOD_SNAME_PFX ".decls", &crc))
     return MODULE_INDEX_ERROR;
 
   while (ok && r.more_p ())
@@ -5508,7 +5521,7 @@ cpms_in::read (unsigned *crc_ptr)
   if (!ok)
     r.set_overrun ();
 
-  r.end (&elf);
+  r.end (get_elf ());
 
   return state->mod;
 }
@@ -5876,7 +5889,8 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	      /* Note, read_module succeeds or never returns.  */
 	      state->mod = MODULE_INDEX_IMPORTING;
 	      {
-		cpms_in in (stream, state, from);
+		elf_in elf (stream);
+		cpms_in in (&elf, state, from);
 		if (in.begin ())
 		  in.read (crc_ptr);
 		if (!in.end ())
@@ -5995,7 +6009,8 @@ finish_module ()
     {
       if (!errorcount)
 	{
-	  cpms_out out (stream, state);
+	  elf_out elf (stream);
+	  cpms_out out (&elf, state);
 
 	  if (out.begin ())
 	    out.write ();
