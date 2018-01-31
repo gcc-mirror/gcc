@@ -1,3 +1,8 @@
+2018-01-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.c (write_proc): Use sym_name (which may
+	be sym->binding_label) instead of sym->name.
+
 2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans-const.c (gfc_conv_string_init): Use gfc_charlen_t instead
@@ -17,7 +22,7 @@
 	* trans-array.c (gfc_get_descriptor_offsets_for_info): Set *data_off
 	to DATA_FIELD's offset rather than OFFSET_FIELD's offset.
 
-2017-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2018-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84134
 	* array.c (gfc_ref_dimen_size): Whitespace fixes.  If stride is

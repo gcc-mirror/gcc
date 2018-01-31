@@ -3227,7 +3227,7 @@ write_proc (gfc_symbol *sym)
       fputs (sym_name, dumpfile);
     }
   else
-    write_decl (&(sym->ts), sym->as, sym->name, true, &sym->declared_at);
+    write_decl (&(sym->ts), sym->as, sym_name, true, &sym->declared_at);
 
   fputs (" (", dumpfile);
 
