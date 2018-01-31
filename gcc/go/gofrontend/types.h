@@ -2074,6 +2074,11 @@ class Function_type : public Type
   Btype*
   get_backend_fntype(Gogo*);
 
+  // Return whether this is a Backend_function_type.
+  virtual bool
+  is_backend_function_type() const
+  { return false; }
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2166,6 +2171,12 @@ class Backend_function_type : public Function_type
                         Typed_identifier_list* results, Location location)
       : Function_type(receiver, parameters, results, location)
   { }
+
+  // Return whether this is a Backend_function_type. This overrides
+  // Function_type::is_backend_function_type.
+  bool
+  is_backend_function_type() const
+  { return true; }
 
  protected:
   Btype*
