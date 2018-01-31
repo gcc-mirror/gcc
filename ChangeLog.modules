@@ -1,5 +1,14 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Commonize module location
+	gcc/cp/
+	* module.c (module_state::{push,pop}_location): Set and restore
+	input_location.
+	(make_module_file): Lose module_root prepending.
+	(do_module_import): Always set module location.
+	(declare_module): Create location and filename.
+	(finish_module): Adjust.
+
 	Staticize instrumentation
 	gcc/cp/
 	* module.c (bytes_out): Staticize spans, lengths, is_set.

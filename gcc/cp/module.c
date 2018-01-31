@@ -843,7 +843,7 @@ struct GTY(()) module_state {
   class elf *GTY((skip)) elf;	/* Either elf_in or elf_out.  Context
 				   distinguishes. */
 
-  const char *filename;	/* Filename */
+  char *filename;	/* Filename */
   location_t loc;	/* Its location.  */
 
   unsigned mod;		/* Module index.  */
@@ -860,8 +860,8 @@ struct GTY(()) module_state {
  public:
   void set_index (unsigned index);
   void set_name (tree name);
-  void push_location (const char *filename);
-  void pop_location () const;
+  location_t push_location (char *filename);
+  void pop_location (location_t) const;
   void do_import (unsigned index, bool is_export);
 };
 
@@ -1281,20 +1281,24 @@ module_state::set_name (tree name_)
   XDELETEVEC (buffer);
 }
 
-void
-module_state::push_location (const char *name)
+location_t
+module_state::push_location (char *name)
 {
   // FIXME:We want LC_MODULE_ENTER really.
   filename = name;
   linemap_add (line_table, LC_ENTER, false, filename, 0);
   loc = linemap_line_start (line_table, 0, 0);
+
+  location_t result = input_location;
   input_location = loc;
+  return result;
 }
 
 void
-module_state::pop_location () const
+module_state::pop_location (location_t saved) const
 {
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
+  input_location = saved;
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -5811,51 +5815,45 @@ search_module_path (char *&name, size_t name_len, tree mname)
 }
 
 static FILE *
-make_module_file (char *&name, size_t name_len)
+make_module_file (char *name)
 {
-  size_t root_len = 0;
-  if (flag_module_root)
-    {
-      root_len = strlen (flag_module_root);
-
-      char *buffer = XNEWVEC (char, root_len + name_len + 2);
-      memcpy (buffer, flag_module_root, root_len);
-      buffer[root_len] = DIR_SEPARATOR;
-      memcpy (buffer + root_len + 1, name, name_len + 1);
-
-      XDELETE (name);
-      name = buffer;
-    }
-
   FILE *stream = fopen (name, "wb");
-  if (!stream && root_len && errno == ENOENT)
+  if (stream)
+    return stream;
+
+  if (errno != ENOENT)
+    return stream;
+
+  if (!flag_module_root || !flag_module_root[0])
+    return stream;
+
+  /* Try and create the missing directories.  */
+  size_t root_len = strlen (flag_module_root);
+  size_t name_len = strlen (name);
+
+  char *base = name + root_len + 1;
+  char *end = base + name_len;
+
+  for (;; base++)
     {
-      /* Try and create the missing directories.  */
-      char *base = name + root_len + 1;
-      char *end = base + name_len;
+      /* There can only be one dir separator!  */
+      base = (char *)memchr (base, DIR_SEPARATOR, end - base);
+      if (!base)
+	break;
 
-      for (;; base++)
-	{
-	  /* There can only be one dir separator!  */
-	  base = (char *)memchr (base, DIR_SEPARATOR, end - base);
-	  if (!base)
-	    break;
+      *base = 0;
+      int failed = mkdir (name, S_IRWXU | S_IRWXG | S_IRWXO);
+      *base = DIR_SEPARATOR;
 
-	  *base = 0;
-	  int failed = mkdir (name, S_IRWXU | S_IRWXG | S_IRWXO);
-	  *base = DIR_SEPARATOR;
-	  if (failed
-	      /* Maybe racing with another creator (of a *different*
-		 submodule).  */
-	      && errno != EEXIST)
-	    return NULL;
-	}
-
-      /* Have another go.  */
-      stream = fopen (name, "wb");
+      if (failed
+	  /* Maybe racing with another creator (of a *different*
+	     submodule).  */
+	  && errno != EEXIST)
+	return stream;
     }
 
-  return stream;
+  /* Have another go.  */
+  return fopen (name, "wb");
 }
 
 /* Import the module NAME into the current TU.  This includes the TU's
@@ -5948,25 +5946,22 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
           if (!filename)
             filename = module_to_filename (name, filename_len);
 
-	  if (FILE *stream = search_module_path (filename, filename_len, name))
+	  FILE *stream = search_module_path (filename, filename_len, name);
+	  location_t saved_loc = state->push_location (filename);
+	  if (stream)
 	    {
 	      gcc_assert (global_namespace == current_scope ());
-	      const char *str_name = IDENTIFIER_POINTER (state->name);
-	      location_t saved_loc = input_location;
-
-	      state->push_location (filename);
 
 	      if (!quiet_flag)
 		{
-		  fprintf (stderr, " importing:%s(%s)",
-			   str_name, state->filename);
+		  fprintf (stderr, " importing:%s",
+			   IDENTIFIER_POINTER (state->name));
 		  fflush (stderr);
 		  pp_needs_newline (global_dc->printer) = true;
 		  diagnostic_set_last_function (global_dc,
 						(diagnostic_info *) NULL);
 		}
 
-	      /* Note, read_module succeeds or never returns.  */
 	      state->mod = MODULE_INDEX_IMPORTING;
 	      {
 		elf_in elf (stream);
@@ -5986,24 +5981,19 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 
 	      if (!quiet_flag)
 		{
-		  fprintf (stderr, " imported:%s(#%d)", str_name, state->mod);
+		  fprintf (stderr, " imported:%s(#%d)",
+			   IDENTIFIER_POINTER (state->name), state->mod);
 		  fflush (stderr);
 		  pp_needs_newline (global_dc->printer) = true;
 		  diagnostic_set_last_function (global_dc,
 						(diagnostic_info *) NULL);
 		}
 
-	      state->pop_location ();
-	      input_location = saved_loc;
-
 	      fclose (stream);
 	    }
 	  else
-	    {
-	      error_at (loc, "cannot find module %qE (%qs): %m",
-			name, filename);
-	      XDELETE (filename);
-	    }
+	    error_at (state->loc, "cannot find module %qE: %m", name);
+	  state->pop_location (saved_loc);
 	}
     }
 
@@ -6034,6 +6024,37 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
   unsigned index = do_module_import
     (name.get_location (), *name, true, exporting_p);
   gcc_assert (!index || index == MODULE_INDEX_ERROR);
+
+  module_state *state = (*modules)[0];
+  if (index != MODULE_INDEX_ERROR && !state->filename)
+    {
+      char *filename;
+      size_t filename_len;
+
+      if (module_output)
+	{
+	  filename_len = strlen (module_output);
+	  filename = XNEWVEC (char, filename_len + 1);
+	  memcpy (filename, module_output, filename_len + 1);
+	}
+      else
+	filename = module_to_filename (state->name, filename_len);
+
+      if (flag_module_root && flag_module_root[0])
+	{
+	  size_t root_len = strlen (flag_module_root);
+	  char *buffer = XNEWVEC (char, root_len + filename_len + 2);
+	  memcpy (buffer, flag_module_root, root_len);
+	  buffer[root_len] = DIR_SEPARATOR;
+	  memcpy (buffer + root_len + 1, name, filename_len + 1);
+
+	  XDELETE (filename);
+	  filename = buffer;
+	}
+
+      /* Create the module's location now.  */
+      state->pop_location (state->push_location (filename));
+    }
 }
 
 /* Convert the module search path.  */
@@ -6070,28 +6091,31 @@ finish_module ()
   if (!module_interface_p ())
     {
       if (module_output)
-	error ("-fmodule-output specified for non-module interface compilation");
+	error ("%<-fmodule-output%> specified for"
+	       " non-module interface compilation");
       return;
     }
 
   module_state *state = (*modules)[0];
-  char *filename;
-  size_t filename_len;
-  if (module_output)
-    {
-      filename_len = strlen (module_output);
-      filename = XNEWVEC (char, filename_len + 1);
-      memcpy (filename, module_output, filename_len + 1);
-    }
-  else
-    filename = module_to_filename (state->name, filename_len);
 
-  /* We don't bail out early with errorcount, because we want to
-     remove the BMI file in the case of previous errors.  */
-  if (FILE *stream = make_module_file (filename, filename_len))
+  if (errorcount)
+    ;
+  else if (FILE *stream = make_module_file (state->filename))
     {
+      location_t saved_loc = input_location;
+      input_location = state->loc;
+
       if (!errorcount)
 	{
+	  if (!quiet_flag)
+	    {
+	      fprintf (stderr, " writing:%s", IDENTIFIER_POINTER (state->name));
+	      fflush (stderr);
+	      pp_needs_newline (global_dc->printer) = true;
+	      diagnostic_set_last_function (global_dc,
+					    (diagnostic_info *) NULL);
+	    }
+
 	  elf_out elf (stream);
 	  cpms_out out (&elf, state);
 	  unsigned n = dump.push (state);
@@ -6102,17 +6126,16 @@ finish_module ()
 	  dump.pop (n);
 	  out.end ();
 	}
+      input_location = saved_loc;
+
       fclose (stream);
     }
   else
-    error_at (state->loc, "cannot open module interface %qE (%qs): %m",
-	      state->name, filename);
+    error_at (state->loc, "cannot open module interface %qE: %m", state->name);
 
   if (errorcount)
-    unlink (filename);
+    unlink (state->filename);
 
-  // FIXME filename is in module state?
-  XDELETE (filename);
   (*modules)[0]->release ();
 }
 
