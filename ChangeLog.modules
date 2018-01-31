@@ -1,5 +1,14 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Module_state owns elf and elf owns stream
+	gcc/cp/
+	* module.c (elf): Add begin, end members.
+	(elf_in, elf_out): Adjust.
+	(module_state::announce): New.
+	(cpms_{in,out}::get_elf): Adjust.
+	(cpms_{in,out}::{begin,end}): Delete.
+	(do_module_import, finish_module): Adjust.
+
 	Commonize module location
 	gcc/cp/
 	* module.c (module_state::{push,pop}_location): Set and restore

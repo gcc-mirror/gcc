@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 int module_dump_id;
 
 /* We have a few more special module indices.  */
+#define MODULE_INDEX_UNKNOWN (~0U)    /* Not yet known.  */
 #define MODULE_INDEX_IMPORTING (~0U)  /* Currently being imported.  */
 #define MODULE_INDEX_ERROR (~0U - 1)  /* Previously failed to import.  */
 
@@ -361,8 +362,8 @@ protected:
   vec<isection, va_heap, vl_embed> *sections;
 
 public:
-  elf (FILE *stream)
-    :stream (stream), err (0), sections (NULL)
+  elf (FILE *stream, int e)
+    :stream (stream), err (stream ? 0 : e), sections (NULL)
   {}
   ~elf ()
   {
@@ -379,17 +380,32 @@ public:
     if (!err)
       err = e;
   }
+
+public:
+  bool begin () const
+  {
+    gcc_checking_assert (!sections);
+    return !get_error ();
+  }
+  bool end ()
+  {
+    if (stream && fclose (stream))
+      set_error (errno);
+    stream = NULL;
+    return !get_error ();
+  }
 };
 
 /* ELF reader.  */
 
 class elf_in : public elf {
+  typedef elf parent;
 protected:
   data *strings;
 
   public:
-  elf_in (FILE *s)
-    :elf (s), strings (NULL)
+  elf_in (FILE *s, int e)
+    :parent (s, e), strings (NULL)
   {
   }
 
@@ -406,10 +422,6 @@ public:
 
 public:
   bool begin ();
-  int end ()
-  {
-    return get_error ();
-  }
 
 public:
   const char *name (unsigned offset)
@@ -421,6 +433,7 @@ public:
 /* Elf writer.  */
 
 class elf_out : public elf {
+  typedef elf parent;
 public:
   /* Builder for string table.  */
   class strtab
@@ -454,8 +467,8 @@ private:
   strtab strings;
 
 public:
-  elf_out (FILE *s)
-    :elf (s), strings (500)
+  elf_out (FILE *s, int e)
+    :parent (s, e), strings (500)
   {
   }
 
@@ -482,7 +495,7 @@ public:
 
 public:
   bool begin ();
-  int end ();
+  bool end ();
 };
 
 bool
@@ -533,7 +546,8 @@ elf_in::find (unsigned type, const char *n)
 bool
 elf_in::begin ()
 {
-  gcc_checking_assert (!sections);
+  if (!parent::begin ())
+    return false;
 
   header header;
   if (fseek (stream, 0, SEEK_SET)
@@ -731,7 +745,9 @@ elf_out::add (unsigned type, unsigned name, const data *data, unsigned flags)
 bool
 elf_out::begin ()
 {
-  gcc_checking_assert (!sections);
+  if (!parent::begin ())
+    return false;
+
   vec_alloc (sections, 10);
 
   /* Create the UNDEF section.  */
@@ -762,7 +778,7 @@ uint32_t elf_out::pad ()
   return (uint32_t)off;
 }
 
-int
+bool
 elf_out::end ()
 {
   /* Write the string table.  */
@@ -827,7 +843,7 @@ elf_out::end ()
   write (&header, sizeof (header));
 
  out:
-  return get_error ();
+  return parent::end ();
 }
 
 /* State of a particular module. */
@@ -863,6 +879,7 @@ struct GTY(()) module_state {
   location_t push_location (char *filename);
   void pop_location (location_t) const;
   void do_import (unsigned index, bool is_export);
+  void announce (const char *) const;
 };
 
 /* Hash module state by name.  */
@@ -1203,7 +1220,7 @@ module_state::module_state ()
     name (NULL_TREE), name_parts (NULL),
     remap (NULL), elf (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
-    mod (0), crc (0)
+    mod (0), crc (0) // FIXME:mod should be UNKNOWN
 {
   imported = exported = false;
 }
@@ -1233,12 +1250,25 @@ module_state::release (bool all)
     }
 }
 
+void
+module_state::announce (const char *what) const
+{
+  if (quiet_flag)
+    return;
+
+  fprintf (stderr, mod < MODULE_INDEX_LIMIT ? " %s:%s:%u" : " %s:%s",
+	   what, IDENTIFIER_POINTER (name), mod);
+  fflush (stderr);
+  pp_needs_newline (global_dc->printer) = true;
+  diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
+}
+
 /* We've been assigned INDEX.  Mark the self-import-export bits.  */
 
 void
 module_state::set_index (unsigned index)
 {
-  gcc_checking_assert (mod == ~0u);
+  gcc_checking_assert (mod == MODULE_INDEX_UNKNOWN);
   bitmap_set_bit (imports, index);
   bitmap_set_bit (exports, index);
 }
@@ -2115,7 +2145,6 @@ cpm_stream::lazy_globals ()
 
 /* cpm_stream cpms_out.  */
 class cpms_out : public cpm_stream {
-  elf_out *elf;
   bytes_out w;
 
 private:
@@ -2129,18 +2158,16 @@ private:
   static unsigned records;
 
 public:
-  cpms_out (elf_out *, module_state *);
+  cpms_out (module_state *);
   ~cpms_out ();
 
 public:
   elf_out *get_elf () const 
   {
-    return elf;
+    return static_cast <elf_out *> (state->elf);
   }
 
 public:
-  bool begin ();
-  bool end ();
   void write ();
 
 private:
@@ -2188,8 +2215,8 @@ unsigned cpms_out::refs;
 unsigned cpms_out::nulls;
 unsigned cpms_out::records;
 
-cpms_out::cpms_out (elf_out *s, module_state *state)
-  :cpm_stream (state), elf (s), w ()
+cpms_out::cpms_out (module_state *state)
+  :cpm_stream (state), w ()
 {
 }
 
@@ -2213,26 +2240,23 @@ cpms_out::instrument ()
 
 /* Cpm_Stream in.  */
 class cpms_in : public cpm_stream {
-  elf_in *elf;
   bytes_in r;
 
 private:
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
 public:
-  cpms_in (elf_in *, module_state *);
+  cpms_in (module_state *);
   ~cpms_in ();
 
 public:
   elf_in *get_elf () const
   {
-    return elf;
+    return static_cast <elf_in *> (state->elf);
   }
 
 public:
-  bool begin ();
   unsigned read (unsigned *crc_ptr);
-  bool end ();
 
 private:
   bool header (unsigned *crc_ptr);
@@ -2270,8 +2294,8 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (elf_in *s, module_state *state)
-  :cpm_stream (state), elf (s), r ()
+cpms_in::cpms_in (module_state *state)
+  :cpm_stream (state), r ()
 {
 }
 
@@ -5446,23 +5470,6 @@ cpms_out::bindings (bytes_out *bind, vec<tree, va_gc> *nest, tree ns)
   return nest;
 }
 
-bool
-cpms_out::begin ()
-{
-  return get_elf ()->begin ();
-}
-
-bool
-cpms_out::end ()
-{
-  int e = get_elf ()->end ();
-  if (e)
-    error ("failed to write module %qE (%qs): %s",
-	   state->name, state->filename,
-	   e >= 0 ? xstrerror (e) : "Bad file data");
-  return e == 0;
-}
-
 void
 cpms_out::write ()
 {
@@ -5520,26 +5527,6 @@ cpms_out::write ()
   header (crc);
 
   instrument ();
-}
-
-bool
-cpms_in::begin ()
-{
-  return get_elf ()->begin ();
-}
-
-bool
-cpms_in::end ()
-{
-  int e = get_elf ()->end ();
-  if (e)
-    {
-      /* strerror and friends returns capitalized strings.  */
-      char const *err = e >= 0 ? xstrerror (e) : "Bad file data";
-      char c = TOLOWER (err[0]);
-      error ("%c%s", c, err + 1);
-    }
-  return e == 0;
 }
 
 unsigned
@@ -5864,6 +5851,8 @@ unsigned
 do_module_import (location_t loc, tree name, bool module_unit_p,
 		  bool import_export_p, unsigned *crc_ptr)
 {
+  gcc_assert (global_namespace == current_scope ());
+
   if (!module_hash)
     {
       module_hash = hash_table<module_state_hash>::create_ggc (31);
@@ -5947,52 +5936,36 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
             filename = module_to_filename (name, filename_len);
 
 	  FILE *stream = search_module_path (filename, filename_len, name);
+	  int e = errno;
 	  location_t saved_loc = state->push_location (filename);
-	  if (stream)
+	  unsigned n = dump.push (state);
+	  state->announce ("importing");
+
+	  elf_in *elf = new elf_in (stream, e);
+	  state->elf = elf;
+	  state->mod = MODULE_INDEX_IMPORTING; // FIXME
+	  if (elf->begin ())
 	    {
-	      gcc_assert (global_namespace == current_scope ());
-
-	      if (!quiet_flag)
-		{
-		  fprintf (stderr, " importing:%s",
-			   IDENTIFIER_POINTER (state->name));
-		  fflush (stderr);
-		  pp_needs_newline (global_dc->printer) = true;
-		  diagnostic_set_last_function (global_dc,
-						(diagnostic_info *) NULL);
-		}
-
-	      state->mod = MODULE_INDEX_IMPORTING;
-	      {
-		elf_in elf (stream);
-		cpms_in in (&elf, state);
-		unsigned n = dump.push (state);
-		in.lazy_globals ();
-		if (in.begin ())
-		  in.read (crc_ptr);
-		dump.pop (n);
-		if (!in.end ())
-		  /* Failure to read a module is going to cause big
-		     problems, so bail out now.  */
-		  fatal_error (input_location, "failed to read module %qE",
-			       state->name);
-		gcc_assert (state->mod <= modules->length ());
-	      }
-
-	      if (!quiet_flag)
-		{
-		  fprintf (stderr, " imported:%s(#%d)",
-			   IDENTIFIER_POINTER (state->name), state->mod);
-		  fflush (stderr);
-		  pp_needs_newline (global_dc->printer) = true;
-		  diagnostic_set_last_function (global_dc,
-						(diagnostic_info *) NULL);
-		}
-
-	      fclose (stream);
+	      cpms_in in (state);
+	      in.lazy_globals ();
+	      in.read (crc_ptr);
 	    }
-	  else
-	    error_at (state->loc, "cannot find module %qE: %m", name);
+	  if (!elf->end ())
+	    {
+	      /* Failure to read a module is going to cause big
+		 problems, so bail out now.  */
+	      int e = elf->get_error ();
+	      fatal_error (state->loc,
+			   "failed to read module %qE: %s", state->name,
+			   e >= 0 ? xstrerror (e) : "Bad file data");
+	      gcc_unreachable ();
+	    }
+	  gcc_assert (state->mod <= modules->length ());
+	  delete elf;
+	  state->elf = NULL;
+
+	  state->announce ("imported");
+	  dump.pop (n);
 	  state->pop_location (saved_loc);
 	}
     }
@@ -6098,40 +6071,36 @@ finish_module ()
 
   module_state *state = (*modules)[0];
 
-  if (errorcount)
-    ;
-  else if (FILE *stream = make_module_file (state->filename))
+  if (!errorcount)
     {
+      FILE *stream = make_module_file (state->filename);
+      int e = errno;
       location_t saved_loc = input_location;
       input_location = state->loc;
+      unsigned n = dump.push (state);
+      state->announce ("creating");
 
-      if (!errorcount)
+      elf_out *elf = new elf_out (stream, e);
+      state->elf = elf;
+
+      if (elf->begin ())
 	{
-	  if (!quiet_flag)
-	    {
-	      fprintf (stderr, " writing:%s", IDENTIFIER_POINTER (state->name));
-	      fflush (stderr);
-	      pp_needs_newline (global_dc->printer) = true;
-	      diagnostic_set_last_function (global_dc,
-					    (diagnostic_info *) NULL);
-	    }
-
-	  elf_out elf (stream);
-	  cpms_out out (&elf, state);
-	  unsigned n = dump.push (state);
+	  cpms_out out (state);
 	  out.lazy_globals ();
-
-	  if (out.begin ())
-	    out.write ();
-	  dump.pop (n);
-	  out.end ();
+	  out.write ();
 	}
-      input_location = saved_loc;
+      if (!elf->end ())
+	{
+	  int e = elf->get_error ();
+	  error_at (state->loc, "failed to write module %qE: %s", state->name,
+		    e >= 0 ? xstrerror (e) : "Bad file data");
+	}
+      delete elf;
+      state->elf = NULL;
 
-      fclose (stream);
+      dump.pop (n);
+      input_location = saved_loc;
     }
-  else
-    error_at (state->loc, "cannot open module interface %qE: %m", state->name);
 
   if (errorcount)
     unlink (state->filename);
