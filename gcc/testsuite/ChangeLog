@@ -1,3 +1,8 @@
+2018-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR lto/83954
+	* gnat.dg/lto20.adb: Remove dg-excess-errors.
+
 2018-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/69869
