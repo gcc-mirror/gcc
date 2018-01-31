@@ -78,12 +78,10 @@ cshift1 (gfc_array_char * const restrict ret,
 
   if (ret->base_addr == NULL)
     {
-      int i;
-
       ret->base_addr = xmallocarray (arraysize, size);
       ret->offset = 0;
       GFC_DTYPE_COPY(ret,array);
-      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+      for (index_type i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
 	  index_type ub, str;
 
