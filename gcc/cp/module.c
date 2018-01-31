@@ -89,8 +89,6 @@ int module_dump_id;
 
 /* We have a few more special module indices.  */
 #define MODULE_INDEX_UNKNOWN (~0U)    /* Not yet known.  */
-#define MODULE_INDEX_IMPORTING (~0U)  /* Currently being imported.  */
-#define MODULE_INDEX_ERROR (~0U - 1)  /* Previously failed to import.  */
 
 /* Mangling for module files.  */
 #define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
@@ -855,7 +853,7 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
 
-  vec<unsigned, va_gc> *remap; /* module no remapping.  */
+  vec<unsigned, va_gc_atomic> *remap; /* module num remapping.  */
   class elf *GTY((skip)) elf;	/* Either elf_in or elf_out.  Context
 				   distinguishes. */
 
@@ -1220,7 +1218,7 @@ module_state::module_state ()
     name (NULL_TREE), name_parts (NULL),
     remap (NULL), elf (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
-    mod (0), crc (0) // FIXME:mod should be UNKNOWN
+    mod (MODULE_INDEX_UNKNOWN), crc (0)
 {
   imported = exported = false;
 }
@@ -2256,7 +2254,7 @@ public:
   }
 
 public:
-  unsigned read (unsigned *crc_ptr);
+  void read (unsigned *crc_ptr);
 
 private:
   bool header (unsigned *crc_ptr);
@@ -2321,8 +2319,8 @@ cpms_in::insert (tree t)
   return tag;
 }
 
-static unsigned do_module_import (location_t, tree, bool module_unit_p,
-				  bool import_export_p, unsigned * = NULL);
+static module_state *do_module_import (location_t, tree, bool module_unit_p,
+				       bool import_export_p, unsigned * = NULL);
 
 /* Header section.  This determines if the current compilation is
    compatible with the serialized module.  I.e. the contents are just
@@ -2532,17 +2530,17 @@ cpms_in::imports (unsigned *crc_p)
 
       dump () && dump ("Nested %simport %I",
 		       exported ? "export " : imported ? "" : "indirect ", name);
-      unsigned new_ix = do_module_import (UNKNOWN_LOCATION, name,
-					  /*unit_p=*/false,
-					  /*import_p=*/imported, &crc);
-      if (new_ix == MODULE_INDEX_ERROR)
+      module_state *imp = do_module_import (UNKNOWN_LOCATION, name,
+					    /*unit_p=*/false,
+					    /*import_p=*/imported, &crc);
+      if (!imp)
 	goto fail;
-      state->remap->quick_push (new_ix);
+      state->remap->quick_push (imp->mod);
       if (imported)
 	{
 	  dump () && dump ("Direct %simport %I %u",
-			   exported ? "export " : "", name, new_ix);
-	  state->do_import (new_ix, exported);
+			   exported ? "export " : "", name, imp->mod);
+	  state->do_import (imp->mod, exported);
 	}
     }
 
@@ -5529,7 +5527,7 @@ cpms_out::write ()
   instrument ();
 }
 
-unsigned
+void
 cpms_in::read (unsigned *crc_ptr)
 {
   bool ok = header (crc_ptr);
@@ -5565,7 +5563,7 @@ cpms_in::read (unsigned *crc_ptr)
   next (globals->length ());
 
   if (!r.begin (get_elf (), MOD_SNAME_PFX ".decls", &crc))
-    return MODULE_INDEX_ERROR;
+    return;
 
   while (ok && r.more_p ())
     {
@@ -5593,8 +5591,6 @@ cpms_in::read (unsigned *crc_ptr)
     r.set_overrun ();
 
   r.end (get_elf ());
-
-  return state->mod;
 }
 
 static GTY(()) tree proclaimer;
@@ -5844,10 +5840,10 @@ make_module_file (char *name)
 }
 
 /* Import the module NAME into the current TU.  This includes the TU's
-   interface and as implementation.  Returns index of imported
-   module (or MODULE_INDEX_ERROR).  */
+   interface and as implementation.  Returns the imported module object
+   (or NULL).  */
 
-unsigned
+module_state *
 do_module_import (location_t loc, tree name, bool module_unit_p,
 		  bool import_export_p, unsigned *crc_ptr)
 {
@@ -5870,23 +5866,20 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
     /* We already know a module called NAME.  */
     switch (state->mod)
       {
-      case MODULE_INDEX_IMPORTING:
+      case MODULE_INDEX_UNKNOWN:
 	error_at (loc, "circular dependency of module %qE", name);
-	return MODULE_INDEX_ERROR;
-      case MODULE_INDEX_ERROR:
-	error_at (loc, "already failed to read module %qE", name);
-	return MODULE_INDEX_ERROR;
+	return NULL;
       case 0:
 	/* Cannot import the current module.  */
 	error_at (loc, "already declared as module %qE", name);
-	return MODULE_INDEX_ERROR;
+	return NULL;
       default:
 	if (module_unit_p)
 	  {
 	    /* Cannot be interface/implementation of an imported
 	       module.  */
 	    error_at (loc, "module %qE already imported", name);
-	    return MODULE_INDEX_ERROR;
+	    return NULL;
 	  }
       }
   else
@@ -5900,7 +5893,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	{
 	  /* Already declared the module.  */
 	  error_at (loc, "already declared as module %qE", state->name);
-	  return MODULE_INDEX_ERROR;
+	  return NULL;
 	}
 
       state->set_name (name);
@@ -5910,13 +5903,14 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	{
 	  /* We're the exporting module unit, so not loading anything.  */
 	  state->exported = true;
+	  state->mod = 0;
 	}
       else if (!module_unit_p && !import_export_p)
 	{
 	  /* The ordering of the import table implies that indirect
 	     imports should have already been loaded.  */
 	  error ("indirect import %qE not present", name);
-	  return MODULE_INDEX_ERROR;
+	  return NULL;
 	}
       else
 	{
@@ -5943,7 +5937,6 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 
 	  elf_in *elf = new elf_in (stream, e);
 	  state->elf = elf;
-	  state->mod = MODULE_INDEX_IMPORTING; // FIXME
 	  if (elf->begin ())
 	    {
 	      cpms_in in (state);
@@ -5970,7 +5963,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	}
     }
 
-  return state->mod;
+  return state;
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */
@@ -5979,10 +5972,9 @@ void
 import_module (const cp_expr &name, tree)
 {
   gcc_assert (global_namespace == current_scope ());
-  unsigned index = do_module_import (name.get_location (), *name,
-				     /*unit_p=*/false, /*import_p=*/true);
-  if (index != MODULE_INDEX_ERROR)
-    (*modules)[0]->do_import (index, export_depth != 0);
+  if (module_state *imp = do_module_import (name.get_location (), *name,
+					    /*unit_p=*/false, /*import_p=*/true))
+    (*modules)[0]->do_import (imp->mod, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
 }
 
@@ -5994,12 +5986,10 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  unsigned index = do_module_import
+  module_state *state = do_module_import
     (name.get_location (), *name, true, exporting_p);
-  gcc_assert (!index || index == MODULE_INDEX_ERROR);
 
-  module_state *state = (*modules)[0];
-  if (index != MODULE_INDEX_ERROR && !state->filename)
+  if (state && !state->filename)
     {
       char *filename;
       size_t filename_len;
@@ -6105,12 +6095,11 @@ finish_module ()
   if (errorcount)
     unlink (state->filename);
 
-  (*modules)[0]->release ();
+  state->release ();
 }
 
 #include "gt-cp-module.h"
 
-/* Use of vec<unsigned, va_gc> caused these fns to be needed.  */
-void gt_ggc_mx (unsigned int &) {}
+/* Use of vec<unsigned, va_gc_atomic> caused these fns to be needed.  */
 void gt_pch_nx (unsigned int &) {}
 void gt_pch_nx (unsigned int *, void (*)(void *, void *), void *) {}

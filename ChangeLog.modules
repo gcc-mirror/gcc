@@ -1,5 +1,15 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Simplify import interface
+	gcc/cp/
+	* module.c (MODULE_INDEX_IMPORTING, MODULE_INDEX_ERROR): Delete.
+	(MODULE_INDEX_UNKNOWN): New.
+	(module_state): Initialize mod to MODULE_INDEX_UNKNOWN.
+	(cpms_in::read): Return void.
+	(do_module_import): Return pointer to module object.
+	(cpms_in::imports): Adjust.
+	(import_module, declare_module, finish_module): Adjust.
+
 	Module_state owns elf and elf owns stream
 	gcc/cp/
 	* module.c (elf): Add begin, end members.
