@@ -2847,8 +2847,16 @@ Const_expression::do_type()
 
   if (this->seen_ || nc->lowering())
     {
-      this->report_error(_("constant refers to itself"));
+      if (nc->type() == NULL || !nc->type()->is_error_type())
+	{
+	  Location loc = this->location();
+	  if (!this->seen_)
+	    loc = nc->location();
+	  go_error_at(loc, "constant refers to itself");
+	}
+      this->set_is_error();
       this->type_ = Type::make_error_type();
+      nc->set_type(this->type_);
       return this->type_;
     }
 
@@ -2867,6 +2875,9 @@ Const_expression::do_type()
   ret = nc->expr()->type();
 
   this->seen_ = false;
+
+  if (ret->is_error_type())
+    nc->set_type(ret);
 
   return ret;
 }
