@@ -1,3 +1,8 @@
+2018-01-31  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/82444
+	* ira.c (ira_init_register_move_cost): Remove assert.
+
 2018-01-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/84071
