@@ -1,5 +1,8 @@
 2018-01-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/69869
+	* gcc.dg/cpp/trad/pr69869.c: New test.
+
 	PR c/84100
 	* gcc.dg/pr84100.c: New test.
 
