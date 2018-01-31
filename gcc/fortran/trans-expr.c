@@ -5325,10 +5325,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      && fsym->ts.type != BT_CLASS && e->expr_type != EXPR_NULL)
 		    {
 		      tmp = parmse.expr;
-		      if (TREE_CODE (tmp) == ADDR_EXPR
-			   && (POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp, 0)))
-			       || e->expr_type == EXPR_CONSTANT))
-			tmp = TREE_OPERAND (tmp, 0);
+		      if (TREE_CODE (tmp) == ADDR_EXPR)
+			tmp = build_fold_indirect_ref_loc (input_location, tmp);
 		      parmse.expr = gfc_conv_scalar_to_descriptor (&parmse, tmp,
 								   fsym->attr);
 		      parmse.expr = gfc_build_addr_expr (NULL_TREE,

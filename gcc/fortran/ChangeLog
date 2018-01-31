@@ -1,3 +1,10 @@
+2018-01-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84088
+	* trans-expr.c (gfc_conv_procedure_call): If the parm expr is
+	an address expression passed to an assumed rank dummy, convert
+	to an indirect reference.
+
 2018-01-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (write_proc): Use sym_name (which may
