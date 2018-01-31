@@ -1,5 +1,12 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Move some reading to module_state.
+	gcc/cp/
+	* module.c (module_state::read_{context,config}): New, swallow ...
+	(cpms_in::imports,header): ... these.  Delete.
+	(cpms_in::read): Adjust.
+	(do_import_module): Adjust.
+
 	Move some writing to module_state.
 	gcc/cp/
 	* module.c (module_state::write_{context,config}): New, swallow ...

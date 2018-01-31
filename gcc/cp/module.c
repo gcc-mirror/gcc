@@ -1484,10 +1484,16 @@ struct GTY(()) module_state {
   void write (elf_out *to);
   //private:
   void write_context (elf_out *to, unsigned *crc_ptr);
+  bool read_context (elf_in *from);
   void write_config (elf_out *to, unsigned crc);
+  bool read_config (elf_in *from, unsigned *crc_ptr);
   
   
 };
+
+// FIXME:member of module_state?
+static module_state *do_module_import (location_t, tree, bool module_unit_p,
+				       bool import_export_p, unsigned * = NULL);
 
 /* Hash module state by name.  */
 
@@ -2078,6 +2084,58 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
   me.end (to, to->name (MOD_SNAME_PFX ".README"), NULL, /*strings=*/true);
 }
 
+bool
+module_state::read_context (elf_in *from)
+{
+  bytes_in ctx;
+  unsigned crc = 0;
+
+  if (!ctx.begin (from, MOD_SNAME_PFX ".context", &crc))
+    return false;
+
+  unsigned imports = ctx.u ();
+  gcc_assert (!remap);
+  remap = NULL;
+  vec_safe_reserve (remap, imports);
+
+  /* Allocate the reserved slots.  */
+  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix--;)
+    remap->quick_push (0);
+
+  /* Read the import table.  */
+  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < imports; ix++)
+    {
+      bool imported = ctx.b ();
+      bool exported = ctx.b ();
+      ctx.bflush ();
+      unsigned crc = ctx.raw ();
+      tree name = get_identifier (from->name (ctx.u ()));
+
+      dump () && dump ("Nested %simport %I",
+		       exported ? "export " : imported ? "" : "indirect ", name);
+      module_state *imp = do_module_import (UNKNOWN_LOCATION, name,
+					    /*unit_p=*/false,
+					    /*import_p=*/imported, &crc);
+      if (!imp)
+	goto fail;
+      remap->quick_push (imp->mod);
+      if (imported)
+	{
+	  dump () && dump ("Direct %simport %I %u",
+			   exported ? "export " : "", name, imp->mod);
+	  do_import (imp->mod, exported);
+	}
+    }
+
+  if (ctx.more_p ())
+    {
+    fail:
+      ctx.set_overrun ();
+    }
+
+  return ctx.end (from);
+}
+
 /* Tool configuration.  This determines if the current compilation is
    compatible with the serialized module.  I.e. the contents are just
    confirming things we already know (or failing to match).
@@ -2131,6 +2189,95 @@ module_state::write_config (elf_out *to, unsigned inner_crc)
      of its serialization above.  */
   cfg.end (to, to->name (MOD_SNAME_PFX ".config"), &crc);
   dump () && dump ("Writing CRC=%x", crc);
+}
+
+bool
+module_state::read_config (elf_in *from, unsigned *crc_ptr)
+{
+  bytes_in cfg;
+
+  if (!cfg.begin (from, MOD_SNAME_PFX ".config", &crc))
+    return false;
+
+  dump () && dump ("Reading CRC=%x", crc);
+  if (crc_ptr && crc != *crc_ptr)
+    {
+      error ("module %qE CRC mismatch", name);
+    fail:
+      cfg.set_overrun ();
+      return cfg.end (from);
+    }
+
+  /* Check version.  */
+  int my_ver = get_version ();
+  int their_ver = int (cfg.raw ());
+  dump () && dump  (my_ver == their_ver ? "Version %V"
+		    : "Expecting %V found %V", my_ver, their_ver);
+  if (their_ver != my_ver)
+    {
+      int my_date = version2date (my_ver);
+      int their_date = version2date (their_ver);
+      int my_time = version2time (my_ver);
+      int their_time = version2time (their_ver);
+      version_string my_string, their_string;
+
+      version2string (my_ver, my_string);
+      version2string (their_ver, their_string);
+
+      if (my_date != their_date)
+	{
+	  /* Dates differ, decline.  */
+	  error ("file is version %s, this is version %s",
+		 their_string, my_string);
+	  goto fail;
+	}
+      else if (my_time != their_time)
+	/* Times differ, give it a go.  */
+	warning (0, "file is version %s, compiler is version %s,"
+		 " perhaps close enough?", their_string, my_string);
+    }
+
+  /* Read and ignore the inner crc.  We only wrote it to mix it into
+     the crc.  */
+  cfg.raw ();
+
+  /* Check module name.  */
+  const char *their_name = from->name (cfg.u ());
+  if (strlen (their_name) != IDENTIFIER_LENGTH (name)
+      || memcmp (their_name, IDENTIFIER_POINTER (name),
+		 IDENTIFIER_LENGTH (name)))
+    {
+      error ("module %qs found, expected module %qE", their_name, name);
+      goto fail;
+    }
+
+  /* Check target & host.  */
+  const char *their_target = from->name (cfg.u ());
+  const char *their_host = from->name (cfg.u ());
+  dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
+  if (strcmp (their_target, TARGET_MACHINE)
+      || strcmp (their_host, HOST_MACHINE))
+    {
+      error ("target & host is %qs:%qs, expected %qs:%qs",
+	     their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
+      goto fail;
+    }
+
+  /* Check global trees.  */
+  unsigned their_glength = cfg.u ();
+  unsigned their_gcrc = cfg.raw ();
+  dump () && dump ("Read globals=%u, crc=%x", their_glength, their_gcrc);
+  if (their_glength != globals->length ()
+      || their_gcrc != globals_crc)
+    {
+      error ("global tree mismatch");
+      goto fail;
+    }
+
+  if (cfg.more_p ())
+    goto fail;
+
+  return cfg.end (from);
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -2372,11 +2519,7 @@ public:
   }
 
 public:
-  void read (unsigned *crc_ptr);
-
-private:
-  bool header (unsigned *crc_ptr);
-  bool imports (unsigned *crc_ptr);
+  void read ();
 
 public:
   bool tag_binding ();
@@ -2435,177 +2578,6 @@ cpms_in::insert (tree t)
   bool existed = tree_map.put (tag, t);
   gcc_assert (!existed);
   return tag;
-}
-
-static module_state *do_module_import (location_t, tree, bool module_unit_p,
-				       bool import_export_p, unsigned * = NULL);
-
-/* Header section.  This determines if the current compilation is
-   compatible with the serialized module.  I.e. the contents are just
-   confirming things we already know (or failing to match).
-
-   raw:version
-   raw:crc
-   u:module-name
-   u:<target-triplet>
-   u:<host-triplet>
-   u:globals_length
-   raw:globals_crc
-   // FIXME CPU,ABI and similar tags
-   // FIXME Optimization and similar tags
-*/
-
-// FIXME: What we really want to do at this point is read the header
-// and then allow hooking out to rebuild it if there are
-// checksum/version mismatches.  Other errors should barf.
-
-bool
-cpms_in::header (unsigned *crc_ptr)
-{
-  unsigned crc = 0;
-  if (!r.begin (get_elf (), MOD_SNAME_PFX ".config", &crc))
-    return false;
-
-  dump () && dump ("Reading CRC=%x", crc);
-  if (crc_ptr && crc != *crc_ptr)
-    {
-      error ("module %qE CRC mismatch", state->name);
-    fail:
-      r.set_overrun ();
-      return r.end (get_elf ());
-    }
-  state->crc = crc;
-
-  /* Check version.  */
-  int my_ver = get_version ();
-  int their_ver = int (r.raw ());
-  dump () && dump  (my_ver == their_ver ? "Version %V"
-		    : "Expecting %V found %V", my_ver, their_ver);
-  if (their_ver != my_ver)
-    {
-      int my_date = version2date (my_ver);
-      int their_date = version2date (their_ver);
-      int my_time = version2time (my_ver);
-      int their_time = version2time (their_ver);
-      version_string my_string, their_string;
-
-      version2string (my_ver, my_string);
-      version2string (their_ver, their_string);
-
-      if (my_date != their_date)
-	{
-	  /* Dates differ, decline.  */
-	  error ("file is version %s, this is version %s",
-		 their_string, my_string);
-	  goto fail;
-	}
-      else if (my_time != their_time)
-	/* Times differ, give it a go.  */
-	warning (0, "file is version %s, compiler is version %s,"
-		 " perhaps close enough?", their_string, my_string);
-    }
-
-  /* Read and ignore the inner crc.  We only wrote it to mix it into
-     the crc.  */
-  r.raw ();
-
-  /* Check module name.  */
-  const char *their_name = get_elf ()->name (r.u ());
-  if (strlen (their_name) != IDENTIFIER_LENGTH (state->name)
-      || memcmp (their_name, IDENTIFIER_POINTER (state->name),
-		 IDENTIFIER_LENGTH (state->name)))
-    {
-      error ("module %qs found, expected module %qE", their_name, state->name);
-      goto fail;
-    }
-
-  /* Check target & host.  */
-  const char *their_target = get_elf ()->name (r.u ());
-  const char *their_host = get_elf ()->name (r.u ());
-  dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
-  if (strcmp (their_target, TARGET_MACHINE)
-      || strcmp (their_host, HOST_MACHINE))
-    {
-      error ("target & host is %qs:%qs, expected %qs:%qs",
-	     their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
-      goto fail;
-    }
-
-  /* Check global trees.  */
-  unsigned their_glength = r.u ();
-  unsigned their_gcrc = r.raw ();
-  dump () && dump ("Read globals=%u, crc=%x", their_glength, their_gcrc);
-  if (their_glength != globals->length ()
-      || their_gcrc != globals_crc)
-    {
-      error ("global tree mismatch");
-      goto fail;
-    }
-
-  if (r.more_p ())
-    goto fail;
-
-  return r.end (get_elf ());
-}
-
-/* Imports
-   {
-     b:imported
-     b:exported
-     u:index
-     u:crc
-     u:name
-   } imports[N]
-
-   We need the complete set, so that we can build up the remapping
-   vector on subsequent import.  */
-
-// FIXME: Should we stream the pathname to the import?
-
-bool
-cpms_in::imports (unsigned *crc_p)
-{
-  if (!r.begin (get_elf (), MOD_SNAME_PFX ".context", crc_p))
-    return false;
-
-  unsigned imports = r.u ();
-  gcc_assert (!state->remap);
-  state->remap = NULL;
-  vec_safe_reserve (state->remap, imports);
-
-  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix--;)
-    state->remap->quick_push (0);
-  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < imports; ix++)
-    {
-      bool imported = r.b ();
-      bool exported = r.b ();
-      r.bflush ();
-      unsigned crc = r.raw ();
-      tree name = get_identifier (get_elf ()->name (r.u ()));
-
-      dump () && dump ("Nested %simport %I",
-		       exported ? "export " : imported ? "" : "indirect ", name);
-      module_state *imp = do_module_import (UNKNOWN_LOCATION, name,
-					    /*unit_p=*/false,
-					    /*import_p=*/imported, &crc);
-      if (!imp)
-	goto fail;
-      state->remap->quick_push (imp->mod);
-      if (imported)
-	{
-	  dump () && dump ("Direct %simport %I %u",
-			   exported ? "export " : "", name, imp->mod);
-	  state->do_import (imp->mod, exported);
-	}
-    }
-
-  if (r.more_p ())
-    {
-    fail:
-      r.set_overrun ();
-    }
-
-  return r.end (get_elf ());
 }
 
 /* BINDING is a vector of decls bound in namespace NS.  Write out the
@@ -5556,23 +5528,18 @@ cpms_out::write (unsigned *crc_p)
 }
 
 void
-cpms_in::read (unsigned *crc_ptr)
+cpms_in::read ()
 {
-  bool ok = header (crc_ptr);
-  unsigned crc = 0;
-
-  if (ok)
-    ok = imports (&crc);
-
   unsigned ix = 0;
+  bool ok = true;
   if (state != (*modules)[0])
     {
       ix = modules->length ();
       if (ix == MODULE_INDEX_LIMIT)
 	{
 	  sorry ("too many modules loaded (limit is %u)", ix);
-	  ok = false;
 	  ix = 0;
+	  ok = false;
 	}
       else
 	{
@@ -5581,15 +5548,14 @@ cpms_in::read (unsigned *crc_ptr)
 	}
     }
   state->mod = ix;
-  if (ok)
-    (*state->remap)[0] = ix;
-
+  (*state->remap)[0] = ix;
   dump () && dump ("Assigning %N module index %u", state->name, ix);
 
   /* Just reserve the tag space.  No need to actually insert them in
      the map.  */
   next (globals->length ());
 
+  unsigned crc = 0;
   if (!r.begin (get_elf (), MOD_SNAME_PFX ".decls", &crc))
     return;
 
@@ -5965,26 +5931,32 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	  unsigned n = dump.push (state);
 	  state->announce ("importing");
 
-	  elf_in *elf = new elf_in (stream, e);
-	  state->elf = elf;
-	  if (elf->begin ())
+	  elf_in *from = new elf_in (stream, e);
+	  if (from->begin ())
 	    {
-	      cpms_in in (state);
-	      in.read (crc_ptr);
+	      bool ok = state->read_config (from, crc_ptr);
+	      if (ok)
+		ok = state->read_context (from);
+	      if (ok)
+		{
+		  state->elf = from;
+		  cpms_in in (state);
+		  in.read ();
+		  state->elf = NULL;
+		}
 	    }
-	  if (!elf->end ())
+	  if (!from->end ())
 	    {
 	      /* Failure to read a module is going to cause big
 		 problems, so bail out now.  */
-	      int e = elf->get_error ();
+	      int e = from->get_error ();
 	      fatal_error (state->loc,
 			   "failed to read module %qE: %s", state->name,
 			   e >= 0 ? xstrerror (e) : "Bad file data");
 	      gcc_unreachable ();
 	    }
 	  gcc_assert (state->mod <= modules->length ());
-	  delete elf;
-	  state->elf = NULL;
+	  delete from;
 
 	  state->announce ("imported");
 	  dump.pop (n);
