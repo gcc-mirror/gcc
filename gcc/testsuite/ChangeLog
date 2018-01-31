@@ -1,6 +1,9 @@
 2018-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83993
+	* g++.dg/init/pr83993-2.C: New test.
+
+	PR c++/83993
 	* g++.dg/init/pr83993-1.C: New test.
 	* g++.dg/cpp0x/pr83993.C: New test.
 
