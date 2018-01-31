@@ -2001,12 +2001,12 @@ finish_qualified_id_expr (tree qualifying_class,
   if (template_p)
     {
       if (TREE_CODE (expr) == UNBOUND_CLASS_TEMPLATE)
-	/* cp_parser_lookup_name thought we were looking for a type,
-	   but we're actually looking for a declaration.  */
-	expr = build_qualified_name (/*type*/NULL_TREE,
-				     TYPE_CONTEXT (expr),
-				     TYPE_IDENTIFIER (expr),
-				     /*template_p*/true);
+	{
+	  /* cp_parser_lookup_name thought we were looking for a type,
+	     but we're actually looking for a declaration.  */
+	  qualifying_class = TYPE_CONTEXT (expr);
+	  expr = TYPE_IDENTIFIER (expr);
+	}
       else
 	check_template_keyword (expr);
     }
