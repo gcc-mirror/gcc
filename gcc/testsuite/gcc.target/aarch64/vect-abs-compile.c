@@ -6,7 +6,8 @@
 
 #include "vect-abs.x"
 
-/* { dg-final { scan-assembler "abs\\tv\[0-9\]+\.16b" } } */
-/* { dg-final { scan-assembler "abs\\tv\[0-9\]+\.8h" } } */
+/* XFAIL due to PR tree-optimization/64946.  */
+/* { dg-final { scan-assembler "abs\\tv\[0-9\]+\.16b" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "abs\\tv\[0-9\]+\.8h" { xfail *-*-* } } } */
 /* { dg-final { scan-assembler "abs\\tv\[0-9\]+\.4s" } } */
 /* { dg-final { scan-assembler "abs\\tv\[0-9\]+\.2d" } } */
