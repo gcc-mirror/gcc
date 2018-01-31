@@ -1,3 +1,9 @@
+2018-01-31  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): Close descriptor if we use a debugfile.
+	* btest.c (check_open_files): New static function.
+	(main): Call check_open_files.
+
 2018-01-25  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_open_debugfile_by_debuglink): Don't check CRC if the
