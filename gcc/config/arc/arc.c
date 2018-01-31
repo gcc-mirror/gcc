@@ -227,7 +227,7 @@ static tree arc_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
 static tree arc_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree arc_handle_jli_attribute (tree *, tree, tree, int, bool *);
 static tree arc_handle_secure_attribute (tree *, tree, tree, int, bool *);
-
+static tree arc_handle_uncached_attribute (tree *, tree, tree, int, bool *);
 
 /* Initialized arc_attribute_table to NULL since arc doesnot have any
    machine specific supported attributes.  */
@@ -253,13 +253,16 @@ const struct attribute_spec arc_attribute_table[] =
     NULL },
   /* Functions calls made using jli instruction.  The pointer in JLI
      table is found latter.  */
-  { "jli_always",    0, 0, false, true,  true,  NULL, NULL },
+  { "jli_always",    0, 0, false, true,  true, false,  NULL, NULL },
   /* Functions calls made using jli instruction.  The pointer in JLI
      table is given as input parameter.  */
-  { "jli_fixed",    1, 1, false, true,  true,  arc_handle_jli_attribute,
+  { "jli_fixed",    1, 1, false, true,  true, false, arc_handle_jli_attribute,
     NULL },
   /* Call a function using secure-mode.  */
-  { "secure_call",  1, 1, false, true, true, arc_handle_secure_attribute,
+  { "secure_call",  1, 1, false, true, true, false, arc_handle_secure_attribute,
+    NULL },
+   /* Bypass caches using .di flag.  */
+  { "uncached", 0, 0, false, true, false, false, arc_handle_uncached_attribute,
     NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
@@ -4193,7 +4196,8 @@ arc_print_operand (FILE *file, rtx x, int code)
 	 refs are defined to use the cache bypass mechanism.  */
       if (GET_CODE (x) == MEM)
 	{
-	  if (MEM_VOLATILE_P (x) && !TARGET_VOLATILE_CACHE_SET )
+	  if ((MEM_VOLATILE_P (x) && !TARGET_VOLATILE_CACHE_SET)
+	      || arc_is_uncached_mem_p (x))
 	    fputs (".di", file);
 	}
       else
@@ -8102,6 +8106,7 @@ static bool
 arc_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
+  tree attr;
 
   /* Only variables are going into small data area.  */
   if (TREE_CODE (decl) != VAR_DECL)
@@ -8123,6 +8128,11 @@ arc_in_small_data_p (const_tree decl)
      gp-relative variant.  */
   if (!TARGET_VOLATILE_CACHE_SET
       && TREE_THIS_VOLATILE (decl))
+    return false;
+
+  /* Likewise for uncached data.  */
+  attr = TYPE_ATTRIBUTES (TREE_TYPE (decl));
+  if (lookup_attribute ("uncached", attr))
     return false;
 
   if (DECL_SECTION_NAME (decl) != 0)
@@ -11127,6 +11137,57 @@ arc_is_secure_call_p (rtx pat)
   if (lookup_attribute ("secure_call", attrs))
     return true;
 
+  return false;
+}
+
+/* Handle "uncached" qualifier.  */
+
+static tree
+arc_handle_uncached_attribute (tree *node,
+			       tree name, tree args,
+			       int flags ATTRIBUTE_UNUSED,
+			       bool *no_add_attrs)
+{
+  if (DECL_P (*node) && TREE_CODE (*node) != TYPE_DECL)
+    {
+      error ("%qE attribute only applies to types",
+	     name);
+      *no_add_attrs = true;
+    }
+  else if (args)
+    {
+      warning (OPT_Wattributes, "argument of %qE attribute ignored", name);
+    }
+  return NULL_TREE;
+}
+
+/* Return TRUE if PAT is a memory addressing an uncached data.  */
+
+bool
+arc_is_uncached_mem_p (rtx pat)
+{
+  tree attrs;
+  tree ttype;
+  struct mem_attrs *refattrs;
+
+  if (!MEM_P (pat))
+    return false;
+
+  /* Get the memory attributes.  */
+  refattrs = MEM_ATTRS (pat);
+  if (!refattrs
+      || !refattrs->expr)
+    return false;
+
+  /* Get the type declaration.  */
+  ttype = TREE_TYPE (refattrs->expr);
+  if (!ttype)
+    return false;
+
+  /* Get the type attributes.  */
+  attrs = TYPE_ATTRIBUTES (ttype);
+  if (lookup_attribute ("uncached", attrs))
+    return true;
   return false;
 }
 
