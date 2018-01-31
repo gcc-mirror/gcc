@@ -1541,9 +1541,8 @@ enum record_tag
   };
 
 /* cpm_stream cpms_out.  */
-class cpms_out {
-public: // FIXME
-  bytes_out w;
+class cpms_out : public bytes_out {
+  typedef bytes_out parent;
 
 private:
   module_state *state;
@@ -1583,7 +1582,7 @@ private:
   void tag (record_tag rt)
   {
     records++;
-    w.u (rt);
+    u (rt);
   }
   unsigned insert (tree);
   void start (tree_code, tree);
@@ -1616,7 +1615,7 @@ unsigned cpms_out::nulls;
 unsigned cpms_out::records;
 
 cpms_out::cpms_out (module_state *state, vec<tree, va_gc> *globals)
-  :w (), state (state), count (rt_ref_base), tree_map (500)
+  :parent (), state (state), count (rt_ref_base), tree_map (500)
 {
   gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
 
@@ -1636,9 +1635,8 @@ cpms_out::~cpms_out ()
 }
 
 /* Cpm_Stream in.  */
-class cpms_in {
-public://FIXME
-  bytes_in r;
+class cpms_in : public bytes_in {
+  typedef bytes_in parent;
 
 private:
   module_state *state;
@@ -1692,7 +1690,7 @@ public:
 };
 
 cpms_in::cpms_in (module_state *state, vec<tree, va_gc> *globals)
-  :r (), state (state), count (rt_ref_base), tree_map (500)
+  :parent (), state (state), count (rt_ref_base), tree_map (500)
 {
   /* Just reserve the tag space.  No need to actually insert them in
      the map.  */
@@ -2454,10 +2452,10 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   bind.begin (true);
   
   cpms_out out (this, globals);
-  out.w.begin (true);
+  out.begin (true);
   out.write (bind, to);
 
-  out.w.end (to, to->name (MOD_SNAME_PFX ".decls"), crc_p);
+  out.end (to, to->name (MOD_SNAME_PFX ".decls"), crc_p);
   bind.end (to, to->name (MOD_SNAME_PFX ".bindings"), crc_p);
 }
 
@@ -2470,6 +2468,7 @@ module_state::read_bindings (elf_in *from)
   if (!bind.begin (from, MOD_SNAME_PFX ".bindings", &crc))
     return false;
   // FIXME: process the bindings
+  // FIXME: don't forget to free the string table now
   return bind.end (from);
 }
 
@@ -2479,15 +2478,15 @@ module_state::read_decls (elf_in *from)
   cpms_in in (this, globals);
   unsigned crc = 0;
 
-  if (!in.r.begin (from, MOD_SNAME_PFX ".decls", &crc))
+  // FIXME not yet lazy
+  if (!in.begin (from, MOD_SNAME_PFX ".decls", &crc))
     return false;
 
-  // FIXME not yet lazy
   in.read ();
 
   release (false);
 
-  return in.r.end (from);
+  return in.end (from);
 }
 
 void
@@ -2714,7 +2713,7 @@ cpms_in::tag_binding ()
       if (TREE_CODE (decl) == TYPE_DECL)
 	{
 	  if (type)
-	    r.set_overrun ();
+	    set_overrun ();
 	  type = decl;
 	}
       else if (decls
@@ -2725,7 +2724,7 @@ cpms_in::tag_binding ()
 	      || (decls
 		  && TREE_CODE (decls) != OVERLOAD
 		  && TREE_CODE (decls) != FUNCTION_DECL))
-	    r.set_overrun ();
+	    set_overrun ();
 	  decls = ovl_make (decl, decls);
 	  if (DECL_MODULE_EXPORT_P (decl))
 	    OVL_EXPORT_P (decls) = true;
@@ -2734,7 +2733,7 @@ cpms_in::tag_binding ()
 	decls = decl;
     }
 
-  if (r.get_overrun ())
+  if (get_overrun ())
     return false;
 
   if (!decls && !type)
@@ -2764,7 +2763,7 @@ cpms_in::define_function (tree decl, tree maybe_template)
   tree constexpr_body = (DECL_DECLARED_CONSTEXPR_P (decl)
 			 ? tree_node () : NULL_TREE);
 
-  if (r.get_overrun ())
+  if (get_overrun ())
     return NULL_TREE;
 
   if (TREE_CODE (CP_DECL_CONTEXT (maybe_template)) == NAMESPACE_DECL)
@@ -2773,7 +2772,7 @@ cpms_in::define_function (tree decl, tree maybe_template)
       if (mod != state->mod)
 	{
 	  error ("unexpected definition of %q#D", decl);
-	  r.set_overrun ();
+	  set_overrun ();
 	  return NULL_TREE;
 	}
       if (!MAYBE_DECL_MODULE_PURVIEW_P (maybe_template)
@@ -2817,7 +2816,7 @@ cpms_in::define_var (tree decl, tree)
 {
   tree init = tree_node ();
 
-  if (r.get_overrun ())
+  if (get_overrun ())
     return NULL;
 
   DECL_INITIAL (decl) = init;
@@ -2839,11 +2838,11 @@ tree
 cpms_in::chained_decls ()
 {
   tree decls = NULL_TREE;
-  for (tree *chain = &decls; chain && !r.get_overrun ();)
+  for (tree *chain = &decls; chain && !get_overrun ();)
     if (tree decl = tree_node ())
       {
 	if (!DECL_P (decl))
-	  r.set_overrun ();
+	  set_overrun ();
 	else
 	  {
 	    gcc_assert (!DECL_CHAIN (decl));
@@ -2862,7 +2861,7 @@ void
 cpms_out::tree_vec (vec<tree, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
-  w.u (len);
+  u (len);
   if (len)
     for (unsigned ix = 0; ix != len; ix++)
       tree_node ((*v)[ix]);
@@ -2872,7 +2871,7 @@ vec<tree, va_gc> *
 cpms_in::tree_vec ()
 {
   vec<tree, va_gc> *v = NULL;
-  if (unsigned len = r.u ())
+  if (unsigned len = u ())
     {
       vec_alloc (v, len);
       for (unsigned ix = 0; ix != len; ix++)
@@ -2887,7 +2886,7 @@ void
 cpms_out::tree_pair_vec (vec<tree_pair_s, va_gc> *v)
 {
   unsigned len = vec_safe_length (v);
-  w.u (len);
+  u (len);
   if (len)
     for (unsigned ix = 0; ix != len; ix++)
       {
@@ -2901,7 +2900,7 @@ vec<tree_pair_s, va_gc> *
 cpms_in::tree_pair_vec ()
 {
   vec<tree_pair_s, va_gc> *v = NULL;
-  if (unsigned len = r.u ())
+  if (unsigned len = u ())
     {
       vec_alloc (v, len);
       for (unsigned ix = 0; ix != len; ix++)
@@ -3019,7 +3018,7 @@ cpms_in::define_class (tree type, tree maybe_template)
 
   // FIXME: Sanity check stuff
 
-  if (r.get_overrun ())
+  if (get_overrun ())
     return NULL_TREE;
 
   TYPE_FIELDS (type) = fields;
@@ -3059,7 +3058,7 @@ cpms_in::define_class (tree type, tree maybe_template)
 
   /* Now define all the members.  */
   while (tree_node ())
-    if (r.get_overrun ())
+    if (get_overrun ())
       break;
 
   return type;
@@ -3086,7 +3085,7 @@ cpms_in::define_enum (tree type, tree)
   tree min = tree_node ();
   tree max = tree_node ();
 
-  if (r.get_overrun ())
+  if (get_overrun ())
     return NULL_TREE;
 
   TYPE_VALUES (type) = values;
@@ -3227,7 +3226,7 @@ cpms_in::tag_definition ()
   tree t = tree_node ();
   dump () && dump ("Reading definition for %C:%N%S", TREE_CODE (t), t, t);
 
-  if (r.get_overrun ())
+  if (get_overrun ())
     return NULL_TREE;
 
   tree maybe_template = t;
@@ -3298,28 +3297,28 @@ cpms_out::start (tree_code code, tree t)
     {
     default:
       if (TREE_CODE_CLASS (code) == tcc_vl_exp)
-	w.u (VL_EXP_OPERAND_LENGTH (t));
+	u (VL_EXP_OPERAND_LENGTH (t));
       break;
     case IDENTIFIER_NODE:
       gcc_unreachable ();
       break;
     case TREE_BINFO:
-      w.u (BINFO_N_BASE_BINFOS (t));
+      u (BINFO_N_BASE_BINFOS (t));
       break;
     case TREE_VEC:
-      w.u (TREE_VEC_LENGTH (t));
+      u (TREE_VEC_LENGTH (t));
       break;
     case STRING_CST:
-      w.str (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
+      str (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
       break;
     case VECTOR_CST:
-      w.u (VECTOR_CST_LOG2_NPATTERNS (t));
-      w.u (VECTOR_CST_NELTS_PER_PATTERN (t));
+      u (VECTOR_CST_LOG2_NPATTERNS (t));
+      u (VECTOR_CST_NELTS_PER_PATTERN (t));
       break;
     case INTEGER_CST:
-      w.u (TREE_INT_CST_NUNITS (t));
-      w.u (TREE_INT_CST_EXT_NUNITS (t));
-      w.u (TREE_INT_CST_OFFSET_NUNITS (t));
+      u (TREE_INT_CST_NUNITS (t));
+      u (TREE_INT_CST_EXT_NUNITS (t));
+      u (TREE_INT_CST_OFFSET_NUNITS (t));
       break;
     case OMP_CLAUSE:
       gcc_unreachable (); // FIXME:
@@ -3339,7 +3338,7 @@ cpms_in::start (tree_code code)
     default:
       if (TREE_CODE_CLASS (code) == tcc_vl_exp)
 	{
-	  unsigned ops = r.u ();
+	  unsigned ops = u ();
 	  t = build_vl_exp (code, ops);
 	}
       else
@@ -3351,25 +3350,25 @@ cpms_in::start (tree_code code)
     case STRING_CST:
       {
 	size_t l;
-	const char *str = r.str (&l);
-	t = build_string (l, str);
+	const char *chars = str (&l);
+	t = build_string (l, chars);
       }
       break;
     case TREE_BINFO:
-      t = make_tree_binfo (r.u ());
+      t = make_tree_binfo (u ());
       break;
     case TREE_VEC:
-      t = make_tree_vec (r.u ());
+      t = make_tree_vec (u ());
       break;
     case VECTOR_CST:
-      t = make_vector (r.u (), r.u ());
+      t = make_vector (u (), u ());
       break;
     case INTEGER_CST:
       {
-	unsigned n = r.u ();
-	unsigned e = r.u ();
+	unsigned n = u ();
+	unsigned e = u ();
 	t = make_int_cst (n, e);
-	TREE_INT_CST_OFFSET_NUNITS(t) = r.u ();
+	TREE_INT_CST_OFFSET_NUNITS(t) = u ();
       }
       break;
     case OMP_CLAUSE:
@@ -3473,7 +3472,7 @@ cpms_in::finish (tree t)
 void
 cpms_out::core_bools (tree t)
 {
-#define WB(X) (w.b (X))
+#define WB(X) (b (X))
   tree_code code = TREE_CODE (t);
 
   WB (t->base.side_effects_flag);
@@ -3621,7 +3620,7 @@ cpms_out::core_bools (tree t)
 bool
 cpms_in::core_bools (tree t)
 {
-#define RB(X) ((X) = r.b ())
+#define RB(X) ((X) = b ())
   tree_code code = TREE_CODE (t);
 
   RB (t->base.side_effects_flag);
@@ -3761,13 +3760,13 @@ cpms_in::core_bools (tree t)
       RB (t->function_decl.versioned_function);
     }
 #undef RB
-  return !r.get_overrun ();
+  return !get_overrun ();
 }
 
 void
 cpms_out::lang_decl_bools (tree t)
 {
-#define WB(X) (w.b (X))
+#define WB(X) (b (X))
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 
   WB (lang->u.base.language == lang_cplusplus);
@@ -3822,13 +3821,13 @@ cpms_out::lang_decl_bools (tree t)
 bool
 cpms_in::lang_decl_bools (tree t)
 {
-#define RB(X) ((X) = r.b ())
+#define RB(X) ((X) = b ())
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
 
-  lang->u.base.language = r.b () ? lang_cplusplus : lang_c;
+  lang->u.base.language = b () ? lang_cplusplus : lang_c;
   unsigned v;
-  v = r.b () << 0;
-  v |= r.b () << 1;
+  v = b () << 0;
+  v |= b () << 1;
   lang->u.base.use_template = v;
   RB (lang->u.base.not_really_extern);
   RB (lang->u.base.initialized_in_class);
@@ -3869,13 +3868,13 @@ cpms_in::lang_decl_bools (tree t)
       gcc_unreachable ();
     }
 #undef RB
-  return !r.get_overrun ();
+  return !get_overrun ();
 }
 
 void
 cpms_out::lang_type_bools (tree t)
 {
-#define WB(X) (w.b (X))
+#define WB(X) (b (X))
   const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
 
   WB (lang->has_type_conversion);
@@ -3938,7 +3937,7 @@ cpms_out::lang_type_bools (tree t)
 bool
 cpms_in::lang_type_bools (tree t)
 {
-#define RB(X) ((X) = r.b ())
+#define RB(X) ((X) = b ())
   struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
 
   RB (lang->has_type_conversion);
@@ -3948,8 +3947,8 @@ cpms_in::lang_type_bools (tree t)
   RB (lang->ref_needs_init);
   RB (lang->has_const_copy_assign);
   unsigned v;
-  v = r.b () << 0;
-  v |= r.b () << 1;
+  v = b () << 0;
+  v |= b () << 1;
   lang->use_template = v;
 
   RB (lang->has_mutable);
@@ -3960,8 +3959,8 @@ cpms_in::lang_type_bools (tree t)
   RB (lang->has_copy_assign);
   RB (lang->has_new);
   RB (lang->has_array_new);
-  v = r.b () << 0;
-  v |= r.b () << 1;
+  v = b () << 0;
+  v |= b () << 1;
   lang->gets_delete = v;
   // lang->interface_only
   // lang->interface_unknown
@@ -3999,7 +3998,7 @@ cpms_in::lang_type_bools (tree t)
   RB (lang->unique_obj_representations);
   RB (lang->unique_obj_representations_set);
 #undef RB
-  return !r.get_overrun ();
+  return !get_overrun ();
 }
 
 /* Read & write the core values and pointers.  */
@@ -4007,7 +4006,7 @@ cpms_in::lang_type_bools (tree t)
 void
 cpms_out::core_vals (tree t)
 {
-#define WU(X) (w.u (X))
+#define WU(X) (u (X))
 #define WT(X) (tree_node (X))
   tree_code code = TREE_CODE (t);
 
@@ -4046,7 +4045,7 @@ cpms_out::core_vals (tree t)
     {
       unsigned num = TREE_INT_CST_EXT_NUNITS (t);
       for (unsigned ix = 0; ix != num; ix++)
-	w.wu (TREE_INT_CST_ELT (t, ix));
+	wu (TREE_INT_CST_ELT (t, ix));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
@@ -4383,8 +4382,8 @@ cpms_out::core_vals (tree t)
 bool
 cpms_in::core_vals (tree t)
 {
-#define RU(X) ((X) = r.u ())
-#define RUC(T,X) ((X) = T (r.u ()))
+#define RU(X) ((X) = u ())
+#define RUC(T,X) ((X) = T (u ()))
 #define RT(X) ((X) = tree_node ())
   tree_code code = TREE_CODE (t);
 
@@ -4423,7 +4422,7 @@ cpms_in::core_vals (tree t)
     {
       unsigned num = TREE_INT_CST_EXT_NUNITS (t);
       for (unsigned ix = 0; ix != num; ix++)
-	TREE_INT_CST_ELT (t, ix) = r.wu ();
+	TREE_INT_CST_ELT (t, ix) = wu ();
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
@@ -4573,7 +4572,7 @@ cpms_in::core_vals (tree t)
 	      && t->type_non_common.minval != t)
 	    {
 	      t->type_non_common.minval = NULL_TREE;
-	      r.set_overrun ();
+	      set_overrun ();
 	    }
 	  RT (t->type_non_common.maxval);
 	}
@@ -4643,7 +4642,7 @@ cpms_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
     {
-      if (unsigned len = r.u ())
+      if (unsigned len = u ())
 	{
 	  vec_alloc (t->constructor.elts, len);
 	  for (unsigned ix = 0; ix != len; ix++)
@@ -4747,14 +4746,14 @@ cpms_in::core_vals (tree t)
 #undef RT
 #undef RM
 #undef RU
-  return !r.get_overrun ();
+  return !get_overrun ();
 }
 
 void
 cpms_out::lang_decl_vals (tree t)
 {
   const struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
-#define WU(X) (w.u (X))
+#define WU(X) (u (X))
 #define WT(X) (tree_node (X))
   /* Module index already written.  */
   switch (lang->u.base.selector)
@@ -4763,7 +4762,7 @@ cpms_out::lang_decl_vals (tree t)
       if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
 	WU (lang->u.fn.ovl_op_code);
       if (lang->u.fn.thunk_p)
-	w.wi (lang->u.fn.u5.fixed_offset);
+	wi (lang->u.fn.u5.fixed_offset);
       else
 	WT (lang->u.fn.u5.cloned_function);
       /* FALLTHROUGH.  */
@@ -4788,7 +4787,7 @@ bool
 cpms_in::lang_decl_vals (tree t)
 {
   struct lang_decl *lang = DECL_LANG_SPECIFIC (t);
-#define RU(X) ((X) = r.u ())
+#define RU(X) ((X) = u ())
 #define RT(X) ((X) = tree_node ())
 
   /* Module index already read.  */
@@ -4799,19 +4798,19 @@ cpms_in::lang_decl_vals (tree t)
       {
 	if (DECL_NAME (t) && IDENTIFIER_OVL_OP_P (DECL_NAME (t)))
 	  {
-	    unsigned code = r.u ();
+	    unsigned code = u ();
 
 	    /* Check consistency.  */
 	    if (code >= OVL_OP_MAX
 		|| (ovl_op_info[IDENTIFIER_ASSIGN_OP_P (DECL_NAME (t))][code]
 		    .ovl_op_code) == OVL_OP_ERROR_MARK)
-	      r.set_overrun ();
+	      set_overrun ();
 	    else
 	      lang->u.fn.ovl_op_code = code;
 	  }
 
 	if (lang->u.fn.thunk_p)
-	  lang->u.fn.u5.fixed_offset = r.wi ();
+	  lang->u.fn.u5.fixed_offset = wi ();
 	else
 	  RT (lang->u.fn.u5.cloned_function);
       }
@@ -4831,7 +4830,7 @@ cpms_in::lang_decl_vals (tree t)
     }
 #undef RU
 #undef RT
-  return !r.get_overrun ();
+  return !get_overrun ();
 }
 
 /* Most of the value contents of lang_type is streamed in
@@ -4841,7 +4840,7 @@ void
 cpms_out::lang_type_vals (tree t)
 {
   const struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
-#define WU(X) (w.u (X))
+#define WU(X) (u (X))
 #define WT(X) (tree_node (X))
   WU (lang->align);
   WT (lang->befriending_classes);
@@ -4853,13 +4852,13 @@ bool
 cpms_in::lang_type_vals (tree t)
 {
   struct lang_type *lang = TYPE_LANG_SPECIFIC (t);
-#define RU(X) ((X) = r.u ())
+#define RU(X) ((X) = u ())
 #define RT(X) ((X) = tree_node ())
   RU (lang->align);
   RT (lang->befriending_classes);
 #undef RU
 #undef RT
-  return !r.get_overrun ();
+  return !get_overrun ();
 }
 
 /* The raw tree node.  We've already dealt with the code, and in the
@@ -4881,9 +4880,9 @@ cpms_out::tree_node_raw (tree_code code, tree t)
       else
 	gcc_assert (TYPE_LANG_SPECIFIC (t)
 		    == TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
-      w.b (specific);
+      b (specific);
       if (specific && code == VAR_DECL)
-	w.b (DECL_DECOMPOSITION_P (t));
+	b (DECL_DECOMPOSITION_P (t));
     }
 
   core_bools (t);
@@ -4894,7 +4893,7 @@ cpms_out::tree_node_raw (tree_code code, tree t)
       else
 	lang_decl_bools (t);
     }
-  w.bflush ();
+  bflush ();
 
   core_vals (t);
   if (specific)
@@ -4915,11 +4914,11 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 
   if (klass == tcc_type || klass == tcc_declaration)
     {
-      specific = r.b ();
+      specific = b ();
       if (specific
 	  &&  (klass == tcc_type
 	       ? !maybe_add_lang_type_raw (t)
-	       : !maybe_add_lang_decl_raw (t, code == VAR_DECL && r.b ())))
+	       : !maybe_add_lang_decl_raw (t, code == VAR_DECL && b ())))
 	  lied = true;
     }
 
@@ -4932,8 +4931,8 @@ cpms_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 	  : !lang_decl_bools (t))
 	lied = true;
     }
-  r.bflush ();
-  if (lied || r.get_overrun ())
+  bflush ();
+  if (lied || get_overrun ())
     return false;
 
   if (klass == tcc_declaration)
@@ -4977,7 +4976,7 @@ cpms_out::tree_node_special (tree t)
   if (unsigned *val = tree_map.get (t))
     {
       refs++;
-      w.u (*val);
+      u (*val);
       dump () && dump ("Wrote:%u referenced %C:%N%S", *val,
 		       TREE_CODE (t), t, t);
       return true;
@@ -4994,8 +4993,8 @@ cpms_out::tree_node_special (tree t)
 
 	  /* Make sure we're identifying this exact variant.  */
 	  gcc_assert (get_pseudo_tinfo_type (ix) == t);
-	  w.u (rt_typeinfo_pseudo);
-	  w.u (ix);
+	  u (rt_typeinfo_pseudo);
+	  u (ix);
 	  unsigned tag = insert (t);
 	  dump () && dump ("Wrote:%u typeinfo pseudo %u %N", tag, ix, t);
 	  return true;
@@ -5010,7 +5009,7 @@ cpms_out::tree_node_special (tree t)
 	     those some other way to be canonically correct.  */
 	  gcc_assert (TREE_TYPE (DECL_NAME (name)) != t
 		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-	  w.u (rt_type_name);
+	  u (rt_type_name);
 	  tree_node (name);
 	  dump () && dump ("Wrote interstitial type name %C:%N%S",
 			   TREE_CODE (name), name, name);
@@ -5025,7 +5024,7 @@ cpms_out::tree_node_special (tree t)
 	 The type it is for is stashed on the name's TREE_TYPE.  */
       tree type = TREE_TYPE (DECL_NAME (t));
       dump () && dump ("Writing typeinfo %S for %N", t, type);
-      w.u (rt_typeinfo_var);
+      u (rt_typeinfo_var);
       tree_node (type);
       unsigned tag = insert (t);
       dump () && dump ("Wrote:%u typeinfo %S for %N", tag, t, type);
@@ -5038,11 +5037,11 @@ cpms_out::tree_node_special (tree t)
       /* An identifier node.  Stream the name or type.  */
       bool conv_op = IDENTIFIER_CONV_OP_P (t);
 
-      w.u (conv_op ? rt_conv_identifier : rt_identifier);
+      u (conv_op ? rt_conv_identifier : rt_identifier);
       if (conv_op)
 	tree_node (TREE_TYPE (t));
       else
-	w.str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
+	str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
 
       unsigned tag = insert (t);
       dump () && dump ("Written:%u %sidentifier:%N",
@@ -5069,7 +5068,7 @@ cpms_in::tree_node_special (unsigned tag)
 	  if (!val || !*val)
 	    {
 	      error ("unknown tree reference %qd", tag);
-	      r.set_overrun ();
+	      set_overrun ();
 	      return NULL_TREE;
 	    }
 	  res = *val;
@@ -5085,7 +5084,7 @@ cpms_in::tree_node_special (unsigned tag)
 	 over.  */
       tree name = tree_node ();
       if (!name || TREE_CODE (name) != TYPE_DECL)
-	r.set_overrun ();
+	set_overrun ();
       else
 	dump () && dump ("Read interstitial type name %C:%N%S",
 			 TREE_CODE (name), name, name);
@@ -5097,7 +5096,7 @@ cpms_in::tree_node_special (unsigned tag)
       /* A typeinfo.  Get the type and recreate the var decl.  */
       tree var = NULL_TREE, type = tree_node ();
       if (!type || !TYPE_P (type))
-	r.set_overrun ();
+	set_overrun ();
       else
 	{
 	  var = get_tinfo_decl (type);
@@ -5111,11 +5110,11 @@ cpms_in::tree_node_special (unsigned tag)
   if (tag == rt_typeinfo_pseudo)
     {
       /* A pseuto typeinfo.  Get the index and recreate the pseudo.  */
-      unsigned ix = r.u ();
+      unsigned ix = u ();
       tree type = NULL_TREE;
 
       if (ix >= 1000)
-	r.set_overrun ();
+	set_overrun ();
       else
 	type = get_pseudo_tinfo_type (ix);
 
@@ -5132,15 +5131,15 @@ cpms_in::tree_node_special (unsigned tag)
 	dump () && dump ("Read immediate definition %C:%N%S",
 			 TREE_CODE (res), res, res);
       else
-	gcc_assert (r.get_overrun ());
+	gcc_assert (get_overrun ());
       return res;
     }
 
   if (tag == rt_identifier)
     {
       size_t l;
-      const char *str = r.str (&l);
-      tree id = get_identifier_with_length (str, l);
+      const char *chars = str (&l);
+      tree id = get_identifier_with_length (chars, l);
       tag = insert (id);
       dump () && dump ("Read:%u identifier:%N", tag, id);
       return id;
@@ -5152,7 +5151,7 @@ cpms_in::tree_node_special (unsigned tag)
       if (!t || !TYPE_P (t))
 	{
 	  error ("bad conversion operator");
-	  r.set_overrun ();
+	  set_overrun ();
 	  t = void_type_node;
 	}
       tree id = make_conv_op_name (t);
@@ -5177,7 +5176,7 @@ cpms_out::tree_node (tree t)
   if (!t)
     {
       nulls++;
-      w.u (0);
+      u (0);
       return;
     }
 
@@ -5197,7 +5196,7 @@ cpms_out::tree_node (tree t)
   gcc_assert (rt_tree_base + code < rt_ref_base);
 
   unique++;
-  w.u (rt_tree_base + code);
+  u (rt_tree_base + code);
 
   bool body = true;
   if (klass == tcc_declaration)
@@ -5210,7 +5209,7 @@ cpms_out::tree_node (tree t)
       unsigned node_module = 0;
       if (module_ctx)
 	node_module = MAYBE_DECL_MODULE_INDEX (module_ctx);
-      w.u (node_module);
+      u (node_module);
       if (node_module)
 	{
 	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
@@ -5242,7 +5241,7 @@ cpms_out::tree_node (tree t)
 	  dump () && dump ("Writing:%u %C:%N%S imported type", tag,
 			   TREE_CODE (type), type, type);
 	}
-      w.u (existed);
+      u (existed);
     }
 
   dump.outdent ();
@@ -5257,7 +5256,7 @@ cpms_out::tree_node (tree t)
 tree
 cpms_in::tree_node ()
 {
-  unsigned tag = r.u ();
+  unsigned tag = u ();
 
   if (!tag)
     return NULL_TREE;
@@ -5265,11 +5264,11 @@ cpms_in::tree_node ()
   dump.indent ();
  again:
   tree res = tree_node_special (tag);
-  if (!res && !r.get_overrun ())
+  if (!res && !get_overrun ())
     {
       if (tag == rt_type_name)
 	{
-	  tag = r.u ();
+	  tag = u ();
 	  goto again;
 	}
 
@@ -5277,11 +5276,11 @@ cpms_in::tree_node ()
 	{
 	  error (tag < rt_tree_base ? "unexpected key %qd"
 		 : "unknown tree code %qd" , tag);
-	  r.set_overrun ();
+	  set_overrun ();
 	}
     }
 
-  if (res || r.get_overrun ())
+  if (res || get_overrun ())
     {
       dump.outdent ();
       return res;
@@ -5301,9 +5300,9 @@ cpms_in::tree_node ()
 
       ctx = tree_node ();
       name = tree_node ();
-      if (!r.get_overrun ())
+      if (!get_overrun ())
 	{
-	  unsigned incoming = r.u ();
+	  unsigned incoming = u ();
 
 	  // FIXME:and here 
 	  if (incoming < state->remap->length ())
@@ -5311,10 +5310,10 @@ cpms_in::tree_node ()
 
 	  if (incoming >= state->remap->length ()
 	      || ((incoming != 0) != (node_module != state->mod)))
-	    r.set_overrun ();
+	    set_overrun ();
 	}
 
-      if (r.get_overrun ())
+      if (get_overrun ())
 	{
 	  dump.outdent ();
 	  return NULL_TREE;
@@ -5354,7 +5353,7 @@ cpms_in::tree_node ()
     }
   else if (!t)
     goto barf;
-  else if (TREE_TYPE (t) && !r.u ())
+  else if (TREE_TYPE (t) && !u ())
     {
       tree type = TREE_TYPE (t);
       tag = insert (type);
@@ -5362,11 +5361,11 @@ cpms_in::tree_node ()
 		       TREE_CODE (type), type, type);
     }
 
-  if (r.get_overrun ())
+  if (get_overrun ())
     {
     barf:
       tree_map.put (tag, NULL_TREE);
-      r.set_overrun ();
+      set_overrun ();
       dump.outdent ();
       return NULL_TREE;
     }
@@ -5585,9 +5584,9 @@ void
 cpms_in::read ()
 {
   bool ok = true;
-  while (ok && r.more_p ())
+  while (ok && more_p ())
     {
-      int rt = r.u ();
+      int rt = u ();
 
       switch (rt)
 	{
@@ -5608,7 +5607,7 @@ cpms_in::read ()
     }
 
   if (!ok)
-    r.set_overrun ();
+    set_overrun ();
 }
 
 static GTY(()) tree proclaimer;

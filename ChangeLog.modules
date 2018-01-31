@@ -1,5 +1,10 @@
 2018-01-31  Nathan Sidwell  <nathan@acm.org>
 
+	Derive cpm_{in,out} from bytes_{in,out}
+	gcc/cp/
+	* module.c (cpms_{in,out}): Derive from bytes_{in,out}.  Adjust
+	all uses of r & w.
+
 	Kill cpm_stream.
 	gcc/cp/
 	* module.c (class cpm_stream): Delete.
