@@ -4442,6 +4442,9 @@ Function_type::is_identical(const Function_type* t, bool ignore_receiver,
 			    Cmp_tags cmp_tags, bool errors_are_identical,
 			    std::string* reason) const
 {
+  if (this->is_backend_function_type() != t->is_backend_function_type())
+    return false;
+
   if (!ignore_receiver)
     {
       const Typed_identifier* r1 = this->receiver();
