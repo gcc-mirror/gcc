@@ -1,3 +1,10 @@
+2018-01-30  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::convert_tree): New private method.
+	(Gcc_backend::constructor_expression): Call it.
+	(Gcc_backend::assignment_statement): Likewise.
+	(Gcc_backend::temporary_variable): Likewise.
+
 2018-01-09  Cherry Zhang  <cherryyz@google.com>
 
 	* go-gcc.cc (local_variable): Add decl_var parameter.
