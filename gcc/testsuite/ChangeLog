@@ -1,3 +1,8 @@
+2018-01-31  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/altivec-13.c: Remove VSX-requiring built-ins.
+	* gcc.target/powerpc/vsx-13.c: New.
+
 2018-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84092
