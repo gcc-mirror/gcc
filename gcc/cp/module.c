@@ -1451,8 +1451,7 @@ struct GTY(()) module_state {
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
 
   vec<unsigned, va_gc_atomic> *remap; /* module num remapping.  */
-  class elf *GTY((skip)) elf;	/* Either elf_in or elf_out.  Context
-				   distinguishes. */
+  elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
 
   char *filename;	/* Filename */
   location_t loc;	/* Its location.  */
@@ -1526,11 +1525,8 @@ static GTY(()) vec<module_state *, va_gc> *modules;
 /* Map from identifier to module index. */
 static GTY(()) hash_table<module_state_hash> *module_hash;
 
-/* Module cpm_stream base.  */
-class cpm_stream {
-public:
-  /* Record tags.  */
-  enum record_tag
+/* Record tags.  */
+enum record_tag
   {
     /* Module-specific records.  */
     rt_binding,		/* A name-binding.  */
@@ -1544,40 +1540,14 @@ public:
     rt_ref_base = 0x1000	/* Back-reference indices.  */
   };
 
-public:
-  module_state *state;
-
-private:
-  unsigned tag;
-
-public:
-  cpm_stream (module_state *);
-  ~cpm_stream ()
-  {
-  }
-
-protected:
-  /* Allocate a new reference index.  */
-  unsigned next (unsigned count = 1)
-  {
-    unsigned res = tag;
-    tag += count;
-    return res;
-  }
-};
-
-cpm_stream::cpm_stream (module_state *state_)
-  : state (state_), tag (rt_ref_base)
-{
-  gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
-}
-
 /* cpm_stream cpms_out.  */
-class cpms_out : public cpm_stream {
+class cpms_out {
 public: // FIXME
   bytes_out w;
 
 private:
+  module_state *state;
+  unsigned count;
   ptr_uint_hash_map tree_map; /* trees to ids  */
 
   /* Tree instrumentation. */
@@ -1588,8 +1558,15 @@ private:
   static unsigned records;
 
 public:
-  cpms_out (module_state *);
+  cpms_out (module_state *, vec<tree, va_gc> *globals);
   ~cpms_out ();
+
+  /* Allocate a new reference index.  */
+private:
+  unsigned next ()
+  {
+    return count++;
+  }
 
 public:
   void write (bytes_out &, elf_out *);
@@ -1638,9 +1615,20 @@ unsigned cpms_out::refs;
 unsigned cpms_out::nulls;
 unsigned cpms_out::records;
 
-cpms_out::cpms_out (module_state *state)
-  :cpm_stream (state), w ()
+cpms_out::cpms_out (module_state *state, vec<tree, va_gc> *globals)
+  :w (), state (state), count (rt_ref_base), tree_map (500)
 {
+  gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
+
+  unsigned limit = globals->length ();
+  for (unsigned ix = 0; ix != limit; ix++)
+    {
+      tree val = (*globals)[ix];
+      bool existed;
+      unsigned *slot = &tree_map.get_or_insert (val, &existed);
+      gcc_checking_assert (!existed);
+      *slot = next ();
+    }
 }
 
 cpms_out::~cpms_out ()
@@ -1648,16 +1636,25 @@ cpms_out::~cpms_out ()
 }
 
 /* Cpm_Stream in.  */
-class cpms_in : public cpm_stream {
+class cpms_in {
 public://FIXME
   bytes_in r;
 
 private:
+  module_state *state;
+  unsigned count;
   uint_ptr_hash_map tree_map; /* ids to trees  */
 
 public:
-  cpms_in (module_state *);
+  cpms_in (module_state *, vec<tree, va_gc> *globals);
   ~cpms_in ();
+
+  /* Allocate a new reference index.  */
+private:
+  unsigned next ()
+  {
+    return count++;
+  }
 
 public:
   void read ();
@@ -1694,9 +1691,12 @@ public:
   tree tree_node ();
 };
 
-cpms_in::cpms_in (module_state *state)
-  :cpm_stream (state), r ()
+cpms_in::cpms_in (module_state *state, vec<tree, va_gc> *globals)
+  :r (), state (state), count (rt_ref_base), tree_map (500)
 {
+  /* Just reserve the tag space.  No need to actually insert them in
+     the map.  */
+  count += globals->length ();
 }
 
 cpms_in::~cpms_in ()
@@ -2014,7 +2014,7 @@ static size_t module_path_max;
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (NULL_TREE), name_parts (NULL),
-    remap (NULL), elf (NULL),
+    remap (NULL), from (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
     mod (MODULE_INDEX_UNKNOWN), crc (0)
 {
@@ -2125,7 +2125,7 @@ module_state::release (bool all)
   if (remap)
     {
       vec_free (remap);
-      // FIXME      delete (elf_in *)elf;
+      delete from;
     }
 }
 
@@ -2220,11 +2220,10 @@ module_state::pop_location (location_t saved) const
 void
 module_state::write_context (elf_out *to, unsigned *crc_p)
 {
-  bytes_out ctx;
-  bytes_out me;
+  bytes_out ctx, me;
 
-  me.begin ();
   ctx.begin (true);
+  me.begin ();
 
   version_string string;
   version2string (get_version (), string);
@@ -2248,8 +2247,8 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
       if (state->imported)
 	me.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
     }
-  ctx.end (to, to->name (MOD_SNAME_PFX ".context"), crc_p);
   me.end (to, to->name (MOD_SNAME_PFX ".README"), NULL, /*strings=*/true);
+  ctx.end (to, to->name (MOD_SNAME_PFX ".context"), crc_p);
 }
 
 bool
@@ -2454,7 +2453,7 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   bytes_out bind;
   bind.begin (true);
   
-  cpms_out out (this);
+  cpms_out out (this, globals);
   out.w.begin (true);
   out.write (bind, to);
 
@@ -2477,13 +2476,16 @@ module_state::read_bindings (elf_in *from)
 bool
 module_state::read_decls (elf_in *from)
 {
-  cpms_in in (this);
+  cpms_in in (this, globals);
   unsigned crc = 0;
 
   if (!in.r.begin (from, MOD_SNAME_PFX ".decls", &crc))
     return false;
 
+  // FIXME not yet lazy
   in.read ();
+
+  release (false);
 
   return in.r.end (from);
 }
@@ -5571,19 +5573,6 @@ cpms_out::bindings (bytes_out *bind, elf_out *to,
 void
 cpms_out::write (bytes_out &bind, elf_out *to)
 {
-  /* Prepare the globals. */
-  {
-    unsigned limit = globals->length ();
-    for (unsigned ix = 0; ix != limit; ix++)
-      {
-	tree val = (*globals)[ix];
-	bool existed;
-	unsigned *slot = &tree_map.get_or_insert (val, &existed);
-	gcc_checking_assert (!existed);
-	*slot = next ();
-      }
-  }
-
   /* Write decls.  */
   vec<tree, va_gc> *nest = NULL;
   vec_alloc (nest, 30);
@@ -5595,10 +5584,6 @@ cpms_out::write (bytes_out &bind, elf_out *to)
 void
 cpms_in::read ()
 {
-  /* Just reserve the tag space.  No need to actually insert them in
-     the map.  */
-  next (globals->length ());
-
   bool ok = true;
   while (ok && r.more_p ())
     {
