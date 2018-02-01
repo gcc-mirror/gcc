@@ -1,3 +1,10 @@
+2018-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81661
+	PR tree-optimization/84117
+	* gcc.dg/pr81661.c: New test.
+	* gfortran.dg/pr84117.f90: New test.
+
 2018-02-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/83705

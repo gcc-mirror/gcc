@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "tree-eh.h"
 
 /* Loop Vectorization Pass.
 
@@ -1063,7 +1064,8 @@ vect_get_loop_niters (struct loop *loop, tree *assumptions,
 							  may_be_zero));
 	  else
 	    niter = fold_build3 (COND_EXPR, TREE_TYPE (niter), may_be_zero,
-				 build_int_cst (TREE_TYPE (niter), 0), niter);
+				 build_int_cst (TREE_TYPE (niter), 0),
+				 rewrite_to_non_trapping_overflow (niter));
 
 	  may_be_zero = NULL_TREE;
 	}
