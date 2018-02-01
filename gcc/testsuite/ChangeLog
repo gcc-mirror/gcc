@@ -1,3 +1,8 @@
+2018-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84125
+	* g++.dg/cpp1y/lambda-generic-84125.C:New test.
+
 2018-01-30  Jeff Law  <law@redhat.com>
 
 	PR target/84128
