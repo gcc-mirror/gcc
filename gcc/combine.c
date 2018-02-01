@@ -11483,7 +11483,7 @@ change_zero_ext (rtx pat)
 
 	  if (mode != inner_mode)
 	    {
-	      if (HARD_REGISTER_P (x)
+	      if (REG_P (x) && HARD_REGISTER_P (x)
 		  && !can_change_dest_mode (x, 0, mode))
 		continue;
 
@@ -11501,7 +11501,7 @@ change_zero_ext (rtx pat)
 	  x = SUBREG_REG (XEXP (x, 0));
 	  if (GET_MODE (x) != mode)
 	    {
-	      if (HARD_REGISTER_P (x)
+	      if (REG_P (x) && HARD_REGISTER_P (x)
 		  && !can_change_dest_mode (x, 0, mode))
 		continue;
 
