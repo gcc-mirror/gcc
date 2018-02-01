@@ -6417,11 +6417,11 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
       if (p != this->fields_->begin())
 	ret->push_back(';');
       ret->push_back(' ');
-      if (p->is_anonymous())
-	ret->push_back('?');
-      else
-	ret->append(Gogo::unpack_hidden_name(p->field_name()));
-      ret->push_back(' ');
+      if (!p->is_anonymous())
+	{
+	  ret->append(Gogo::unpack_hidden_name(p->field_name()));
+	  ret->push_back(' ');
+	}
       if (p->is_anonymous()
 	  && p->type()->named_type() != NULL
 	  && p->type()->named_type()->is_alias())
