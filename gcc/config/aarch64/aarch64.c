@@ -2824,10 +2824,18 @@ aarch64_expand_sve_const_vector (rtx dest, rtx src)
       /* The constant is a repeating seqeuence of at least two elements,
 	 where the repeating elements occupy no more than 128 bits.
 	 Get an integer representation of the replicated value.  */
-      unsigned int int_bits = GET_MODE_UNIT_BITSIZE (mode) * npatterns;
-      gcc_assert (int_bits <= 128);
-
-      scalar_int_mode int_mode = int_mode_for_size (int_bits, 0).require ();
+      scalar_int_mode int_mode;
+      if (BYTES_BIG_ENDIAN)
+	/* For now, always use LD1RQ to load the value on big-endian
+	   targets, since the handling of smaller integers includes a
+	   subreg that is semantically an element reverse.  */
+	int_mode = TImode;
+      else
+	{
+	  unsigned int int_bits = GET_MODE_UNIT_BITSIZE (mode) * npatterns;
+	  gcc_assert (int_bits <= 128);
+	  int_mode = int_mode_for_size (int_bits, 0).require ();
+	}
       rtx int_value = simplify_gen_subreg (int_mode, src, mode, 0);
       if (int_value
 	  && aarch64_expand_sve_widened_duplicate (dest, int_mode, int_value))

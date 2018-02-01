@@ -1,5 +1,10 @@
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_vector): Prefer
+	the TImode handling for big-endian targets.
+
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/aarch64-sve.md (sve_ld1rq): Replace with...
 	(*sve_ld1rq<Vesize>): ... this new pattern.  Handle all element sizes,
 	not just bytes.

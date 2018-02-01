@@ -32,9 +32,12 @@ vec_slp_##TYPE (TYPE *restrict a, int n)			\
 TEST_ALL (VEC_PERM)
 
 /* 1 for each 8-bit type.  */
-/* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, } 2 } } */
+/* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, } 2 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tld1rqb\tz[0-9]+\.b, } 2 { target aarch64_big_endian } } } */
 /* 1 for each 16-bit type and 4 for double.  */
-/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 7 } } */
+/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 7 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {\tld1rqh\tz[0-9]+\.h, } 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 4 { target aarch64_big_endian } } } */
 /* 1 for each 32-bit type.  */
 /* { dg-final { scan-assembler-times {\tld1rqw\tz[0-9]+\.s, } 3 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #41\n} 2 } } */
