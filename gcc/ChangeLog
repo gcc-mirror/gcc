@@ -1,3 +1,16 @@
+2018-02-01  Jeff Law  <law@redhat.com>
+
+	PR target/84128
+	* config/i386/i386.c (release_scratch_register_on_entry): Add new
+	OFFSET and RELEASE_VIA_POP arguments.  Use SP+OFFSET to restore
+	the scratch if RELEASE_VIA_POP is false.
+	(ix86_adjust_stack_and_probe_stack_clash): Un-constify SIZE.
+	If we have to save a temporary register, decrement SIZE appropriately.
+	Pass new arguments to release_scratch_register_on_entry.
+	(ix86_adjust_stack_and_probe): Likewise.
+	(ix86_emit_probe_stack_range): Pass new arguments to
+	release_scratch_register_on_entry.
+
 2018-02-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/84157
@@ -180,7 +193,7 @@
 	* common.opt (falign-functions=, falign-jumps=, falign-labels=,
 	falign-loops=): Add Optimization flag.
 
-2017-01-30  Jeff Law  <law@redhat.com>
+2018-01-30  Jeff Law  <law@redhat.com>
 
 	PR target/84064
 	* i386.c (ix86_adjust_stack_and_probe_stack_clash): New argument
@@ -568,7 +581,7 @@
 	* config/m68k/m68k.c (m68k_promote_function_mode): New function.
 	(TARGET_PROMOTE_FUNCTION_MODE): New macro.
 
-2017-01-24  Jeff Law  <law@redhat.com>
+2018-01-24  Jeff Law  <law@redhat.com>
 
 	PR target/83994
 	* i386.c (get_probe_interval): Move to earlier point.
@@ -3173,7 +3186,7 @@
 	* doc/sourcebuild.texi (arm_fp16fml_neon_ok, arm_fp16fml_neon):
 	Document new effective target and option set.
 
-2017-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cpus.in (armv8_4): New feature.
 	(ARMv8_4a): New fgroup.
@@ -3932,7 +3945,7 @@
 	of first and second elements in UNSPEC_VPERMR vector.
 	(altivec_expand_vec_perm_le): Likewise.
 
-2017-01-08  Jeff Law  <law@redhat.com>
+2018-01-08  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimizatin/81308
 	* tree-switch-conversion.c (cfg_altered): New file scoped static.
@@ -4200,7 +4213,7 @@
 	range_int_cst_p rather than !symbolic_range_p before calling
 	extract_range_from_multiplicative_op_1.
 
-2017-01-04  Jeff Law  <law@redhat.com>
+2018-01-04  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-math-opts.c (execute_cse_reciprocals_1): Remove
 	redundant test in assertion.
@@ -4815,7 +4828,7 @@
 	* expmed.c (make_tree): Build VECTOR_CSTs directly from the
 	CONST_VECTOR encoding.
 
-2017-01-03  Jakub Jelinek  <jakub@redhat.com>
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
 	PR target/83641
@@ -4873,7 +4886,7 @@
 	(sprintf_dom_walker::compute_format_length): Same.
 	(try_substitute_return_value): Same.
 
-2017-01-03  Jeff Law  <law@redhat.com>
+2018-01-03  Jeff Law  <law@redhat.com>
 
 	PR middle-end/83654
 	* explow.c (anti_adjust_stack_and_probe_stack_clash): Test a
