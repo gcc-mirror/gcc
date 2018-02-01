@@ -11322,8 +11322,15 @@ change_zero_ext (rtx pat)
 	    x = gen_rtx_LSHIFTRT (inner_mode, XEXP (x, 0), GEN_INT (start));
 	  else
 	    x = XEXP (x, 0);
+
 	  if (mode != inner_mode)
-	    x = gen_lowpart_SUBREG (mode, x);
+	    {
+	      if (REG_P (x) && HARD_REGISTER_P (x)
+		  && !can_change_dest_mode (x, 0, mode))
+		continue;
+
+	      x = gen_lowpart_SUBREG (mode, x);
+	    }
 	}
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && SCALAR_INT_MODE_P (mode)
@@ -11335,7 +11342,13 @@ change_zero_ext (rtx pat)
 	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
 	  x = SUBREG_REG (XEXP (x, 0));
 	  if (GET_MODE (x) != mode)
-	    x = gen_lowpart_SUBREG (mode, x);
+	    {
+	      if (REG_P (x) && HARD_REGISTER_P (x)
+		  && !can_change_dest_mode (x, 0, mode))
+		continue;
+
+	      x = gen_lowpart_SUBREG (mode, x);
+	    }
 	}
       else if (GET_CODE (x) == ZERO_EXTEND
 	       && SCALAR_INT_MODE_P (mode)
