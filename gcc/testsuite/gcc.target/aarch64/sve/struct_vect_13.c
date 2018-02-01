@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -ftree-vectorize --save-temps" } */
 
 #define TYPE double
-#define ITYPE long
+#define ITYPE int64_t
 #include "struct_vect_7.c"
 
 /* { dg-final { scan-assembler {\tld2d\t{z[0-9]+.d - z[0-9]+.d}, p[0-7]/z, \[x[0-9]+\]\n} } } */

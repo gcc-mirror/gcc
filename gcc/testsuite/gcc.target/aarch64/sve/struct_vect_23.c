@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize" } */
 
+#include <stdint.h>
+
 #define TEST_LOOP(NAME, TYPE)					\
   void __attribute__ ((noinline, noclone))			\
   NAME (TYPE *restrict dest, TYPE *restrict src, int n)		\
@@ -10,8 +12,8 @@
   }
 
 #define TEST(NAME) \
-  TEST_LOOP (NAME##_i8, signed char) \
-  TEST_LOOP (NAME##_i16, unsigned short) \
+  TEST_LOOP (NAME##_i8, int8_t) \
+  TEST_LOOP (NAME##_i16, uint16_t) \
   TEST_LOOP (NAME##_f32, float) \
   TEST_LOOP (NAME##_f64, double)
 
