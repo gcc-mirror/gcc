@@ -7249,9 +7249,14 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			  machine_mode mode,
 			  secondary_reload_info *sri)
 {
+  /* Use aarch64_sve_reload_be for SVE reloads that cannot be handled
+     directly by the *aarch64_sve_mov<mode>_be move pattern.  See the
+     comment at the head of aarch64-sve.md for more details about the
+     big-endian handling.  */
   if (BYTES_BIG_ENDIAN
       && reg_class_subset_p (rclass, FP_REGS)
-      && (MEM_P (x) || (REG_P (x) && !HARD_REGISTER_P (x)))
+      && !((REG_P (x) && HARD_REGISTER_P (x))
+	   || aarch64_simd_valid_immediate (x, NULL))
       && aarch64_sve_data_mode_p (mode))
     {
       sri->icode = CODE_FOR_aarch64_sve_reload_be;
