@@ -11439,7 +11439,20 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   pattern = PACK_EXPANSION_PATTERN (t);
 
   /* Add in any args remembered from an earlier partial instantiation.  */
-  args = add_to_template_args (PACK_EXPANSION_EXTRA_ARGS (t), args);
+  tree extra = PACK_EXPANSION_EXTRA_ARGS (t);
+  if (extra && TREE_CODE (extra) == TREE_LIST)
+    {
+      /* The partial instantiation involved function parameter packs; map
+         from the general template to our current context.  */
+      for (tree fns = TREE_CHAIN (extra); fns; fns = TREE_CHAIN (fns))
+	{
+	  tree fn = TREE_PURPOSE (fns);
+	  tree inst = enclosing_instantiation_of (fn);
+	  register_parameter_specializations (fn, inst);
+	}
+      extra = TREE_VALUE (extra);
+    }
+  args = add_to_template_args (extra, args);
 
   levels = TMPL_ARGS_DEPTH (args);
 
@@ -11610,7 +11623,28 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	 have values for all the packs.  So remember these until then.  */
 
       t = make_pack_expansion (pattern, complain);
-      PACK_EXPANSION_EXTRA_ARGS (t) = args;
+      tree extra = args;
+      if (unsubstituted_fn_pack)
+	{
+	  /* For function parameter packs it's more complicated; we need to
+	     remember which enclosing function(s) provided them to this pack
+	     expansion so we can map their parameters to the parameters of a
+	     later full instantiation.  */
+	  tree fns = NULL_TREE;
+	  for (tree p = packs; p; p = TREE_CHAIN (p))
+	    {
+	      tree parm = TREE_PURPOSE (p);
+	      if (TREE_CODE (parm) != PARM_DECL)
+		continue;
+	      parm = DECL_CONTEXT (parm);
+	      if (purpose_member (parm, fns))
+		continue;
+	      fns = tree_cons (parm, NULL_TREE, fns);
+	    }
+	  if (fns)
+	    extra = tree_cons (NULL_TREE, extra, fns);
+	}
+      PACK_EXPANSION_EXTRA_ARGS (t) = extra;
       return t;
     }
   else if (unsubstituted_packs)
