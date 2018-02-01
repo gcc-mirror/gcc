@@ -1,3 +1,15 @@
+2018-02-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/56010
+	PR target/83743
+	* config/rs6000/driver-rs6000.c: #include "diagnostic.h".
+	#include "opts.h".
+	(rs6000_supported_cpu_names): New static variable.
+	(linux_cpu_translation_table): Likewise.
+	(elf_platform) <cpu>: Define new static variable and use it.
+	Translate kernel AT_PLATFORM name to canonical name if needed.
+	Error if platform name is unknown.
+
 2018-02-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR target/84089
