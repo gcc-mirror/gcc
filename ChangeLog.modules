@@ -1,5 +1,14 @@
 2018-02-01  Nathan Sidwell  <nathan@acm.org>
 
+	Alloc a slot for global module
+	gcc/cp/
+	* cp-tree.h (MODULE_INDEX_NONE, MODULE_INDEX_PURVIEW): New.
+	(MODULE_SLOT_TU, MODULE_SLOT_GLOBALS): New.
+	(MODULE_INDEX_IMPORT_BASE): Increment.
+	* module.c (do_module_import): Push reserved slot.
+	* name-lookup.c (module_binding_slot): Reserve slots below
+	MODULE_INDEX_IMPORT_BASE.
+
 	Bindings point to decls
 	gcc/cp/
 	* module.c (data::check_crc): Only check.
