@@ -943,6 +943,17 @@ order_drefs (const void *a, const void *b)
   return (*da)->pos - (*db)->pos;
 }
 
+/* Compares two drefs A and B by their position.  Callback for qsort.  */
+
+static int
+order_drefs_by_pos (const void *a, const void *b)
+{
+  const dref *const da = (const dref *) a;
+  const dref *const db = (const dref *) b;
+
+  return (*da)->pos - (*db)->pos;
+}
+
 /* Returns root of the CHAIN.  */
 
 static inline dref
@@ -2250,7 +2261,6 @@ combine_chains (chain_p ch1, chain_p ch2)
   bool swap = false;
   chain_p new_chain;
   unsigned i;
-  gimple *root_stmt;
   tree rslt_type = NULL_TREE;
 
   if (ch1 == ch2)
@@ -2292,31 +2302,55 @@ combine_chains (chain_p ch1, chain_p ch2)
       new_chain->refs.safe_push (nw);
     }
 
-  new_chain->has_max_use_after = false;
-  root_stmt = get_chain_root (new_chain)->stmt;
-  for (i = 1; new_chain->refs.iterate (i, &nw); i++)
-    {
-      if (nw->distance == new_chain->length
-	  && !stmt_dominates_stmt_p (nw->stmt, root_stmt))
-	{
-	  new_chain->has_max_use_after = true;
-	  break;
-	}
-    }
-
   ch1->combined = true;
   ch2->combined = true;
   return new_chain;
 }
 
-/* Try to combine the CHAINS.  */
+/* Recursively update position information of all offspring chains to ROOT
+   chain's position information.  */
 
 static void
-try_combine_chains (vec<chain_p> *chains)
+update_pos_for_combined_chains (chain_p root)
+{
+  chain_p ch1 = root->ch1, ch2 = root->ch2;
+  dref ref, ref1, ref2;
+  for (unsigned j = 0; (root->refs.iterate (j, &ref)
+			&& ch1->refs.iterate (j, &ref1)
+			&& ch2->refs.iterate (j, &ref2)); ++j)
+    ref1->pos = ref2->pos = ref->pos;
+
+  if (ch1->type == CT_COMBINATION)
+    update_pos_for_combined_chains (ch1);
+  if (ch2->type == CT_COMBINATION)
+    update_pos_for_combined_chains (ch2);
+}
+
+/* Returns true if statement S1 dominates statement S2.  */
+
+static bool
+pcom_stmt_dominates_stmt_p (gimple *s1, gimple *s2)
+{
+  basic_block bb1 = gimple_bb (s1), bb2 = gimple_bb (s2);
+
+  if (!bb1 || s1 == s2)
+    return true;
+
+  if (bb1 == bb2)
+    return gimple_uid (s1) < gimple_uid (s2);
+
+  return dominated_by_p (CDI_DOMINATORS, bb2, bb1);
+}
+
+/* Try to combine the CHAINS in LOOP.  */
+
+static void
+try_combine_chains (struct loop *loop, vec<chain_p> *chains)
 {
   unsigned i, j;
   chain_p ch1, ch2, cch;
   auto_vec<chain_p> worklist;
+  bool combined_p = false;
 
   FOR_EACH_VEC_ELT (*chains, i, ch1)
     if (chain_can_be_combined_p (ch1))
@@ -2338,6 +2372,78 @@ try_combine_chains (vec<chain_p> *chains)
 	    {
 	      worklist.safe_push (cch);
 	      chains->safe_push (cch);
+	      combined_p = true;
+	      break;
+	    }
+	}
+    }
+  if (!combined_p)
+    return;
+
+  /* Setup UID for all statements in dominance order.  */
+  basic_block *bbs = get_loop_body (loop);
+  renumber_gimple_stmt_uids_in_blocks (bbs, loop->num_nodes);
+  free (bbs);
+
+  /* Re-association in combined chains may generate statements different to
+     order of references of the original chain.  We need to keep references
+     of combined chain in dominance order so that all uses will be inserted
+     after definitions.  Note:
+       A) This is necessary for all combined chains.
+       B) This is only necessary for ZERO distance references because other
+	  references inherit value from loop carried PHIs.
+
+     We first update position information for all combined chains.  */
+  dref ref;
+  for (i = 0; chains->iterate (i, &ch1); ++i)
+    {
+      if (ch1->type != CT_COMBINATION || ch1->combined)
+	continue;
+
+      for (j = 0; ch1->refs.iterate (j, &ref); ++j)
+	ref->pos = gimple_uid (ref->stmt);
+
+      update_pos_for_combined_chains (ch1);
+    }
+  /* Then sort references according to newly updated position information.  */
+  for (i = 0; chains->iterate (i, &ch1); ++i)
+    {
+      if (ch1->type != CT_COMBINATION && !ch1->combined)
+	continue;
+
+      /* Find the first reference with non-ZERO distance.  */
+      if (ch1->length == 0)
+	j = ch1->refs.length();
+      else
+	{
+	  for (j = 0; ch1->refs.iterate (j, &ref); ++j)
+	    if (ref->distance != 0)
+	      break;
+	}
+
+      /* Sort all ZERO distance references by position.  */
+      qsort (&ch1->refs[0], j, sizeof (ch1->refs[0]), order_drefs_by_pos);
+
+      if (ch1->combined)
+	continue;
+
+      /* For ZERO length chain, has_max_use_after must be true since root
+	 combined stmt must dominates others.  */
+      if (ch1->length == 0)
+	{
+	  ch1->has_max_use_after = true;
+	  continue;
+	}
+      /* Check if there is use at max distance after root for combined chains
+	 and set flag accordingly.  */
+      ch1->has_max_use_after = false;
+      gimple *root_stmt = get_chain_root (ch1)->stmt;
+      for (j = 1; ch1->refs.iterate (j, &ref); ++j)
+	{
+	  if (ref->distance == ch1->length
+	      && !pcom_stmt_dominates_stmt_p (ref->stmt, root_stmt))
+	    {
+	      ch1->has_max_use_after = true;
 	      break;
 	    }
 	}
@@ -2490,7 +2596,7 @@ tree_predictive_commoning_loop (struct loop *loop)
   prepare_initializers (loop, chains);
 
   /* Try to combine the chains that are always worked with together.  */
-  try_combine_chains (&chains);
+  try_combine_chains (loop, &chains);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
