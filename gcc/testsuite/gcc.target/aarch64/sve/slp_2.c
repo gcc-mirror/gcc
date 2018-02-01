@@ -32,7 +32,7 @@ TEST_ALL (VEC_PERM)
 /* { dg-final { scan-assembler-times {\tld1rh\tz[0-9]+\.h, } 2 } } */
 /* { dg-final { scan-assembler-times {\tld1rw\tz[0-9]+\.s, } 3 } } */
 /* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 3 } } */
-/* { dg-final { scan-assembler-times {\tld1rqb\tz[0-9]+\.b, } 3 } } */
+/* { dg-final { scan-assembler-times {\tld1rqd\tz[0-9]+\.d, } 3 } } */
 /* { dg-final { scan-assembler-not {\tzip1\t} } } */
 /* { dg-final { scan-assembler-not {\tzip2\t} } } */
 

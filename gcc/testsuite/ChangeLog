@@ -1,3 +1,9 @@
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/aarch64/sve/slp_2.c: Expect LD1RQD rather than LD1RQB.
+	* gcc.target/aarch64/sve/slp_3.c: Expect LD1RQW rather than LD1RQB.
+	* gcc.target/aarch64/sve/slp_4.c: Expect LD1RQH rather than LD1RQB.
+
 2018-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81661
