@@ -6121,12 +6121,16 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   len = e->value.character.length;
   gfc_charlen_t nlen = ncop * len;
 
-  /* Here's a semi-arbitrary limit. If the string is longer than 32 MB
-     (8 * 2**20 elements * 4 bytes (wide chars) per element) defer to
+  /* Here's a semi-arbitrary limit. If the string is longer than 1 GB
+     (2**28 elements * 4 bytes (wide chars) per element) defer to
      runtime instead of consuming (unbounded) memory and CPU at
      compile time.  */
-  if (nlen > 8388608)
-    return NULL;
+  if (nlen > 268435456)
+    {
+      gfc_warning_now (0, "Evaluation of string longer than 2**28 at %L"
+		       " deferred to runtime, expect bugs", &e->where);
+      return NULL;
+    }
 
   result = gfc_get_character_expr (e->ts.kind, &e->where, NULL, nlen);
   for (size_t i = 0; i < (size_t) ncop; i++)

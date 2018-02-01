@@ -4,5 +4,5 @@
 ! compile time.
 program p
   character, parameter :: z = 'z'
-  print *, repeat(z, huge(1_4))
+  print *, repeat(z, huge(1_4)) ! { dg-warning "Evaluation of string" }
 end program p

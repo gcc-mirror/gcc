@@ -1,3 +1,9 @@
+2018-02-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/83705
+	* simplify.c (gfc_simplify_repeat): Increase limit for deferring
+	to runtime, print a warning message.
+
 2018-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/84116
