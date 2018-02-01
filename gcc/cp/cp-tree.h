@@ -1528,8 +1528,13 @@ check_constraint_info (tree t)
 
 /* Module defines.  */
 
-/* Indices for modules.  */
-#define MODULE_INDEX_IMPORT_BASE 1
+/* Numbering for modules.   */
+// FIXME: Rename from INDEX
+#define MODULE_INDEX_NONE 0 /* Not in a module.  */
+#define MODULE_INDEX_PURVIEW 1  /* In current purview.  */
+#define MODULE_SLOT_TU 0  /* Slot for current TU.  */
+#define MODULE_SLOT_GLOBALS 1 /* Slot for merged globals. */
+#define MODULE_INDEX_IMPORT_BASE 2
 #define MODULE_INDEX_LIMIT (1<<MODULE_INDEX_BITS)
 
 /* The owning module of a DECL.  */
@@ -1544,10 +1549,9 @@ check_constraint_info (tree t)
 #define DECL_MODULE_EXPORT_P(NODE) \
   TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
 
-/* Any namespace-scope decl lacking lang-specific is in the current
-   TU.  */
+/* Any namespace-scope decl lacking lang-specific is in no module.  */
 #define MAYBE_DECL_MODULE_INDEX(N)				\
-  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_INDEX (N) : 0)
+  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_INDEX (N) : MODULE_INDEX_NONE)
 
 /* Any namespace-scope decl lacking lang-specific is not in the
    purview of a module.  */

@@ -120,16 +120,22 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
   module_cluster *cluster = NULL;
   unsigned offset = 0;
 
+  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
+		       >= MODULE_INDEX_IMPORT_BASE);
+
+  // FIXME:we'll shortly be using slot one for the global module unionization.
+  gcc_assert (ix != 1);
+
   if (*slot && TREE_CODE (*slot) == MODULE_VECTOR)
     {
       clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
       cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
 
-      if (!ix)
+      if (ix < MODULE_INDEX_IMPORT_BASE)
 	{
-	  /* There must always be a current TU slot.  */
-	  gcc_assert (cluster->indices[ix].span
-		      && !cluster->indices[ix].base);
+	  /* There must always be slots for these indices  */
+	  gcc_assert (cluster->indices[ix].span == 1
+		      && cluster->indices[ix].base == ix);
 
 	  return &cluster->slots[ix];
 	}
@@ -141,9 +147,9 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
       unsigned probe = clusters;
       for (cluster += clusters; cluster--, probe--;)
 	{
-	  /* The first slot must be occupied.  */
+	  /* The first slot must be allocated.  */
 	  gcc_checking_assert (cluster->indices[0].span);
-	  for (offset = MODULE_VECTOR_SLOTS_PER_CLUSTER - 1; offset; offset--)
+	  for (offset = MODULE_VECTOR_SLOTS_PER_CLUSTER; offset--;)
 	    if (cluster->indices[offset].span)
 	      {
 		if (cluster->indices[offset].base
@@ -178,7 +184,7 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	cluster = NULL;
       else
 	/* Can use slot in last cluster.  */
-	clusters--;
+	clusters = 0;
     }
   else if (!ix)
     /* The current TU can just use slot directly.  */
@@ -188,26 +194,37 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 
   if (!offset)
     {
-      tree new_vec = make_module_vec (name, clusters + 1);
+      bool extra = MODULE_INDEX_IMPORT_BASE == MODULE_VECTOR_SLOTS_PER_CLUSTER;
+      tree new_vec = make_module_vec (name, clusters + 1 + (!clusters && extra));
       cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
       if (clusters)
 	memcpy (cluster, MODULE_VECTOR_CLUSTER_BASE (*slot),
 		clusters * sizeof (module_cluster));
       else
 	{
-	  /* Initialize the current TU slot.  */
-	  cluster->indices[0].base = 0;
-	  cluster->indices[0].span = 1;
+	  /* Initialize the fixed slots.  */
+	  for (unsigned jx = MODULE_INDEX_IMPORT_BASE; jx--;)
+	    {
+	      cluster->indices[jx].base = jx;
+	      cluster->indices[jx].span = 1;
+	      cluster->slots[jx] = NULL_TREE;
+	    }
 	  cluster->slots[0] = *slot;
-	  offset = 1;
+	  offset = MODULE_INDEX_IMPORT_BASE;
+	  if (offset == MODULE_VECTOR_SLOTS_PER_CLUSTER)
+	    {
+	      /* Move to the next cluster.  */
+	      clusters++;
+	      offset = 0;
+	    }
 	}
       *slot = new_vec;
     }
 
   /* Fill the free slot of the cluster.  */
   cluster += clusters;
-  cluster->indices[offset].span = 1;
   cluster->indices[offset].base = ix;
+  cluster->indices[offset].span = 1;
   cluster->slots[offset] = NULL_TREE;
   return &cluster->slots[offset];
 }

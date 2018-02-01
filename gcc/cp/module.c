@@ -5985,6 +5985,8 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       modules->quick_push (current);
       current->mod = 0;
       module_state::lazy_init ();
+      for (unsigned ix = MODULE_INDEX_IMPORT_BASE; --ix;)
+	modules->quick_push (NULL);
     }
 
   module_state **slot
