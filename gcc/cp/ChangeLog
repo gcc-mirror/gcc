@@ -1,3 +1,9 @@
+2018-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84125
+	* typeck.c (build_address): Relax the assert when
+	processing_template_decl.
+
 2018-02-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84126 - ICE with variadic generic lambda

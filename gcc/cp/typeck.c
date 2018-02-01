@@ -5735,7 +5735,8 @@ build_address (tree t)
 {
   if (error_operand_p (t) || !cxx_mark_addressable (t))
     return error_mark_node;
-  gcc_checking_assert (TREE_CODE (t) != CONSTRUCTOR);
+  gcc_checking_assert (TREE_CODE (t) != CONSTRUCTOR
+		       || processing_template_decl);
   t = build_fold_addr_expr_loc (EXPR_LOCATION (t), t);
   if (TREE_CODE (t) != ADDR_EXPR)
     t = rvalue (t);
