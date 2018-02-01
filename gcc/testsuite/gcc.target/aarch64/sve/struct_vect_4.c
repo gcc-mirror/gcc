@@ -1,7 +1,7 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O2 -ftree-vectorize --save-temps" } */
 
-#define TYPE unsigned long
+#define TYPE uint64_t
 #include "struct_vect_1.c"
 
 /* { dg-final { scan-assembler {\tld2d\t{z[0-9]+.d - z[0-9]+.d}, p[0-7]/z, \[x[0-9]+\]\n} } } */

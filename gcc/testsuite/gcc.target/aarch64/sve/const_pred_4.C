@@ -1,7 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msve-vector-bits=256" } */
 
-typedef long long vnx2di __attribute__((vector_size(32)));
+#include <stdint.h>
+
+typedef int64_t vnx2di __attribute__((vector_size(32)));
 
 vnx2di
 foo (vnx2di x, vnx2di y)

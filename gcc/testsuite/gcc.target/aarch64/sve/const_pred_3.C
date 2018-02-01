@@ -1,7 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msve-vector-bits=256" } */
 
-typedef int vnx4si __attribute__((vector_size(32)));
+#include <stdint.h>
+
+typedef int32_t vnx4si __attribute__((vector_size(32)));
 
 vnx4si
 foo (vnx4si x, vnx4si y)

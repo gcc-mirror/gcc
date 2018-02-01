@@ -1,8 +1,10 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O2 -ftree-vectorize --save-temps" } */
 
+#include <stdint.h>
+
 #ifndef TYPE
-#define TYPE unsigned char
+#define TYPE uint8_t
 #endif
 
 #ifndef NAME

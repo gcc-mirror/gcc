@@ -1,5 +1,65 @@
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR testsuite/83846
+	* gcc.target/aarch64/sve/aarch64-sve.exp: Only do *_run tests
+	for ILP32.
+	* gcc.target/aarch64/sve/clastb_2_run.c (main): Use TYPE instead
+	of hard-coding the choice.
+	* gcc.target/aarch64/sve/clastb_4_run.c (main): Likewise.
+	* gcc.target/aarch64/sve/clastb_5_run.c (main): Likewise.
+	* gcc.target/aarch64/sve/clastb_3_run.c (main): Likewise.  Generalize
+	memset call.
+	* gcc.target/aarch64/sve/const_pred_1.C: Include stdint.h and use
+	stdint.h types.
+	* gcc.target/aarch64/sve/const_pred_2.C: Likewise.
+	* gcc.target/aarch64/sve/const_pred_3.C: Likewise.
+	* gcc.target/aarch64/sve/const_pred_4.C: Likewise.
+	* gcc.target/aarch64/sve/load_const_offset_2.c: Likewise.
+	* gcc.target/aarch64/sve/logical_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_4.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_5.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_7.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_load_8.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_1.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_3.c: Likewise.
+	* gcc.target/aarch64/sve/mask_struct_store_4.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_1.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_2.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_2_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_3.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_3_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_4.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_4_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_7.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_8.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_8_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_9.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_9_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_10.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_10_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_11.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_11_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_12.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_12_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_13.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_13_run.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_14.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_18.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_20.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_21.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_22.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_23.c: Likewise.
+	* gcc.target/aarch64/sve/popcount_1.c (popcount_64): Use
+	__builtin_popcountll rather than __builtin_popcountl.
+
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gcc.target/aarch64/sve/slp_2.c: Expect LD1RQ to be used instead
 	of LD1R[HWD] for multi-element constants on big-endian targets.
 	* gcc.target/aarch64/sve/slp_3.c: Likewise.

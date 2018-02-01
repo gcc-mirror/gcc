@@ -14,7 +14,7 @@ void __attribute__ ((noinline, noclone))
 popcount_64 (unsigned int *restrict dst, uint64_t *restrict src, int size)
 {
   for (int i = 0; i < size; ++i)
-    dst[i] = __builtin_popcountl (src[i]);
+    dst[i] = __builtin_popcountll (src[i]);
 }
 
 /* { dg-final { scan-assembler-times {\tcnt\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s\n} 1 } } */
