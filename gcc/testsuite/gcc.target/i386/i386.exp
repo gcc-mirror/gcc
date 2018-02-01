@@ -255,18 +255,6 @@ proc check_effective_target_rtm { } {
     } "-mrtm" ]
 }
 
-# Return 1 if avx512f instructions can be compiled.
-proc check_effective_target_avx512f { } {
-    return [check_no_compiler_messages avx512f object {
-	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
-	__v8di
-	mm512_and_epi64  (__v8di __X, __v8di __Y)
-	{
-            return __builtin_ia32_pandq512_mask (__X, __Y, __X, -1);
-	}
-    } "-mavx512f" ]
-}
-
 # Return 1 if avx512vl instructions can be compiled.
 proc check_effective_target_avx512vl { } {
     return [check_no_compiler_messages avx512vl object {
