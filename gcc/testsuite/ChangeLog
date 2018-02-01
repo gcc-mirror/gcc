@@ -1,5 +1,11 @@
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/81635
+	* gcc.dg/vect/bb-slp-pr81635-1.c: New test.
+	* gcc.dg/vect/bb-slp-pr81635-2.c: Likewise.
+
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR target/83370
 	* gcc.target/aarch64/pr83370.c: New.
 
