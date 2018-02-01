@@ -1,3 +1,8 @@
+2018-02-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR target/84089
+	* config/pa/predicates.md (base14_operand): Handle E_VOIDmode.
+
 2018-02-01  Jeff Law  <law@redhat.com>
 
 	PR target/84128
