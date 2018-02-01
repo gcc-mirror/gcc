@@ -1,3 +1,14 @@
+2018-02-01  Richard Biener  <rguenther@suse.de>
+
+	* domwalk.h (dom_walker::dom_walker): Add additional constructor
+	for specifying RPO order and allow NULL for that.
+	* domwalk.c (dom_walker::dom_walker): Likewise.
+	(dom_walker::walk): Handle NULL RPO order.
+	* tree-into-ssa.c (rewrite_dom_walker): Do not walk dom children
+	in RPO order.
+	(rewrite_update_dom_walker): Likewise.
+	(mark_def_dom_walker): Likewise.
+
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/aarch64-protos.h (aarch64_split_sve_subreg_move)

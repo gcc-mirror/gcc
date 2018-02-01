@@ -191,13 +191,41 @@ dom_walker::dom_walker (cdi_direction direction,
 			int *bb_index_to_rpo)
   : m_dom_direction (direction),
     m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
-    m_user_bb_to_rpo (bb_index_to_rpo != NULL),
+    m_user_bb_to_rpo (true),
     m_unreachable_dom (NULL),
     m_bb_to_rpo (bb_index_to_rpo)
 {
-  /* Compute the basic-block index to RPO mapping if not provided by
-     the user.  */
-  if (! m_bb_to_rpo && direction == CDI_DOMINATORS)
+  /* Set up edge flags if need be.  */
+  switch (reachability)
+    {
+    default:
+      gcc_unreachable ();
+    case ALL_BLOCKS:
+      /* No need to touch edge flags.  */
+      break;
+
+    case REACHABLE_BLOCKS:
+      set_all_edges_as_executable (cfun);
+      break;
+
+    case REACHABLE_BLOCKS_PRESERVING_FLAGS:
+      /* Preserve the edge flags.  */
+      break;
+    }
+}
+
+/* Constructor for a dom walker.  */
+
+dom_walker::dom_walker (cdi_direction direction,
+			enum reachability reachability)
+  : m_dom_direction (direction),
+    m_skip_unreachable_blocks (reachability != ALL_BLOCKS),
+    m_user_bb_to_rpo (false),
+    m_unreachable_dom (NULL),
+    m_bb_to_rpo (NULL)
+{
+  /* Compute the basic-block index to RPO mapping.  */
+  if (direction == CDI_DOMINATORS)
     {
       int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
       int postorder_num = pre_and_rev_post_order_compute (NULL, postorder,
@@ -348,7 +376,10 @@ dom_walker::walk (basic_block bb)
 	      for (dest = first_dom_son (m_dom_direction, bb);
 		   dest; dest = next_dom_son (m_dom_direction, dest))
 		worklist[sp++] = dest;
-	      if (sp - saved_sp > 1 && m_dom_direction == CDI_DOMINATORS)
+	      /* Sort worklist after RPO order if requested.  */
+	      if (sp - saved_sp > 1
+		  && m_dom_direction == CDI_DOMINATORS
+		  && m_bb_to_rpo)
 		sort_bbs_postorder (&worklist[saved_sp], sp - saved_sp);
 	    }
 	}
