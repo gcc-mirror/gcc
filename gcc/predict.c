@@ -210,9 +210,14 @@ probably_never_executed (struct function *fun,
                          profile_count count)
 {
   gcc_checking_assert (fun);
-  if (count == profile_count::zero ())
+  if (count.ipa () == profile_count::zero ())
     return true;
-  if (count.initialized_p () && profile_status_for_fn (fun) == PROFILE_READ)
+  /* Do not trust adjusted counts.  This will make us to drop int cold section
+     code with low execution count as a result of inlining. These low counts
+     are not safe even with read profile and may lead us to dropping
+     code which actually gets executed into cold section of binary that is not
+     desirable.  */
+  if (count.precise_p () && profile_status_for_fn (fun) == PROFILE_READ)
     {
       int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
       if (count.apply_scale (unlikely_count_fraction, 1) >= profile_info->runs)
@@ -3306,32 +3311,28 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
     }
 
   basic_block bb;
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
-  if (flag_guess_branch_prob)
+  if (opt_for_fn (node->decl, flag_guess_branch_prob))
     {
       bool clear_zeros
-	 = ENTRY_BLOCK_PTR_FOR_FN
-		 (DECL_STRUCT_FUNCTION (node->decl))->count.nonzero_p ();
+	 = !ENTRY_BLOCK_PTR_FOR_FN (fn)->count.nonzero_p ();
       FOR_ALL_BB_FN (bb, fn)
 	if (clear_zeros || !(bb->count == profile_count::zero ()))
 	  bb->count = bb->count.guessed_local ();
-      DECL_STRUCT_FUNCTION (node->decl)->cfg->count_max =
-        DECL_STRUCT_FUNCTION (node->decl)->cfg->count_max.guessed_local ();
+      fn->cfg->count_max = fn->cfg->count_max.guessed_local ();
     }
   else
     {
       FOR_ALL_BB_FN (bb, fn)
 	bb->count = profile_count::uninitialized ();
-      DECL_STRUCT_FUNCTION (node->decl)->cfg->count_max
-	 = profile_count::uninitialized ();
+      fn->cfg->count_max = profile_count::uninitialized ();
     }
-  pop_cfun ();
 
   struct cgraph_edge *e;
   for (e = node->callees; e; e = e->next_callee)
     e->count = gimple_bb (e->call_stmt)->count;
   for (e = node->indirect_calls; e; e = e->next_callee)
     e->count = gimple_bb (e->call_stmt)->count;
+  node->count = ENTRY_BLOCK_PTR_FOR_FN (fn)->count;
   
   profile_status_for_fn (fn)
       = (flag_guess_branch_prob ? PROFILE_GUESSED : PROFILE_ABSENT);
@@ -3368,12 +3369,12 @@ handle_missing_profiles (void)
       gcov_type max_tp_first_run = 0;
       struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
 
-      if (!(node->count == profile_count::zero ()))
+      if (node->count.ipa ().nonzero_p ())
         continue;
       for (e = node->callers; e; e = e->next_caller)
-	if (e->count.initialized_p () && e->count > 0)
+	if (e->count.ipa ().initialized_p () && e->count.ipa () > 0)
 	  {
-            call_count = call_count + e->count;
+            call_count = call_count + e->count.ipa ();
 
 	    if (e->caller->tp_first_run > max_tp_first_run)
 	      max_tp_first_run = e->caller->tp_first_run;
@@ -3406,7 +3407,8 @@ handle_missing_profiles (void)
           struct cgraph_node *callee = e->callee;
           struct function *fn = DECL_STRUCT_FUNCTION (callee->decl);
 
-          if (callee->count > 0)
+          if (!(e->count.ipa () == profile_count::zero ())
+	      && callee->count.ipa ().nonzero_p ())
             continue;
           if ((DECL_COMDAT (callee->decl) || DECL_EXTERNAL (callee->decl))
 	      && fn && fn->cfg
@@ -3759,15 +3761,10 @@ compute_function_frequency (void)
       return;
     }
 
-  /* Only first time try to drop function into unlikely executed.
-     After inlining the roundoff errors may confuse us.
-     Ipa-profile pass will drop functions only called from unlikely
-     functions to unlikely and that is most of what we care about.  */
-  if (!cfun->after_inlining)
-    {
-      node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-      warn_function_cold (current_function_decl);
-    }
+  node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+  warn_function_cold (current_function_decl);
+  if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa() == profile_count::zero ())
+    return;
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (maybe_hot_bb_p (cfun, bb))
@@ -4216,7 +4213,7 @@ test_prediction_value_range ()
 	continue;
 
       unsigned p = 100 * predictors[i].probability / REG_BR_PROB_BASE;
-      ASSERT_TRUE (p > 50 && p <= 100);
+      ASSERT_TRUE (p >= 50 && p <= 100);
     }
 }
 

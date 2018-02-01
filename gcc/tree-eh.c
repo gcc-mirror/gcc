@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "gimplify.h"
 
 /* In some instances a tree and a gimple need to be stored in a same table,
    i.e. in hash tables. This is a structure to do this. */
@@ -2720,6 +2721,91 @@ tree_could_trap_p (tree expr)
     }
 }
 
+/* Return non-NULL if there is an integer operation with trapping overflow
+   we can rewrite into non-trapping.  Called via walk_tree from
+   rewrite_to_non_trapping_overflow.  */
+
+static tree
+find_trapping_overflow (tree *tp, int *walk_subtrees, void *data)
+{
+  if (EXPR_P (*tp)
+      && !operation_no_trapping_overflow (TREE_TYPE (*tp), TREE_CODE (*tp)))
+    return *tp;
+  if (IS_TYPE_OR_DECL_P (*tp)
+      || (TREE_CODE (*tp) == SAVE_EXPR && data == NULL))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+/* Rewrite selected operations into unsigned arithmetics, so that they
+   don't trap on overflow.  */
+
+static tree
+replace_trapping_overflow (tree *tp, int *walk_subtrees, void *data)
+{
+  if (find_trapping_overflow (tp, walk_subtrees, data))
+    {
+      tree type = TREE_TYPE (*tp);
+      tree utype = unsigned_type_for (type);
+      *walk_subtrees = 0;
+      int len = TREE_OPERAND_LENGTH (*tp);
+      for (int i = 0; i < len; ++i)
+	walk_tree (&TREE_OPERAND (*tp, i), replace_trapping_overflow,
+		   data, (hash_set<tree> *) data);
+
+      if (TREE_CODE (*tp) == ABS_EXPR)
+	{
+	  tree op = TREE_OPERAND (*tp, 0);
+	  op = save_expr (op);
+	  /* save_expr skips simple arithmetics, which is undesirable
+	     here, if it might trap due to flag_trapv.  We need to
+	     force a SAVE_EXPR in the COND_EXPR condition, to evaluate
+	     it before the comparison.  */
+	  if (EXPR_P (op)
+	      && TREE_CODE (op) != SAVE_EXPR
+	      && walk_tree (&op, find_trapping_overflow, NULL, NULL))
+	    {
+	      op = build1_loc (EXPR_LOCATION (op), SAVE_EXPR, type, op);
+	      TREE_SIDE_EFFECTS (op) = 1;
+	    }
+	  /* Change abs (op) to op < 0 ? -op : op and handle the NEGATE_EXPR
+	     like other signed integer trapping operations.  */
+	  tree cond = fold_build2 (LT_EXPR, boolean_type_node,
+				   op, build_int_cst (type, 0));
+	  tree neg = fold_build1 (NEGATE_EXPR, utype,
+				  fold_convert (utype, op));
+	  *tp = fold_build3 (COND_EXPR, type, cond,
+			     fold_convert (type, neg), op);
+	}
+      else
+	{
+	  TREE_TYPE (*tp) = utype;
+	  len = TREE_OPERAND_LENGTH (*tp);
+	  for (int i = 0; i < len; ++i)
+	    TREE_OPERAND (*tp, i)
+	      = fold_convert (utype, TREE_OPERAND (*tp, i));
+	  *tp = fold_convert (type, *tp);
+	}
+    }
+  return NULL_TREE;
+}
+
+/* If any subexpression of EXPR can trap due to -ftrapv, rewrite it
+   using unsigned arithmetics to avoid traps in it.  */
+
+tree
+rewrite_to_non_trapping_overflow (tree expr)
+{
+  if (!flag_trapv)
+    return expr;
+  hash_set<tree> pset;
+  if (!walk_tree (&expr, find_trapping_overflow, &pset, &pset))
+    return expr;
+  expr = unshare_expr (expr);
+  pset.empty ();
+  walk_tree (&expr, replace_trapping_overflow, &pset, &pset);
+  return expr;
+}
 
 /* Helper for stmt_could_throw_p.  Return true if STMT (assumed to be a
    an assignment or a conditional) may throw.  */

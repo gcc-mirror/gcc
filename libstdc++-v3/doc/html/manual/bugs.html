@@ -418,6 +418,9 @@
 	<span class="emphasis"><em><code class="code">std::addressof</code> should be constexpr</em></span>
     </span></dt><dd><p>Use <code class="code">__builtin_addressof</code> and add
     <code class="code">constexpr</code> to <code class="code">addressof</code> for C++17 and later.
+    </p></dd><dt><a id="manual.bugs.dr2306"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2306" target="_top">2306</a>:
+	<span class="emphasis"><em><code class="code">match_results::reference</code> should be <code class="code">value_type&amp;</code>, not <code class="code">const value_type&amp;</code></em></span>
+    </span></dt><dd><p>Change typedef.
     </p></dd><dt><a id="manual.bugs.dr2313"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2313" target="_top">2313</a>:
 	<span class="emphasis"><em><code class="code">tuple_size</code> should always derive from <code class="code">integral_constant&lt;size_t, N&gt;</code></em></span>
     </span></dt><dd><p>Update definitions of the partial specializations for const and volatile types.

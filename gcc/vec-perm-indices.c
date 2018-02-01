@@ -114,7 +114,18 @@ vec_perm_indices::rotate_inputs (int delta)
 }
 
 /* Return true if index OUT_BASE + I * OUT_STEP selects input
-   element IN_BASE + I * IN_STEP.  */
+   element IN_BASE + I * IN_STEP.  For example, the call to test
+   whether a permute reverses a vector of N elements would be:
+
+     series_p (0, 1, N - 1, -1)
+
+   which would return true for { N - 1, N - 2, N - 3, ... }.
+   The calls to test for an interleaving of elements starting
+   at N1 and N2 would be:
+
+     series_p (0, 2, N1, 1) && series_p (1, 2, N2, 1).
+
+   which would return true for { N1, N2, N1 + 1, N2 + 1, ... }.  */
 
 bool
 vec_perm_indices::series_p (unsigned int out_base, unsigned int out_step,

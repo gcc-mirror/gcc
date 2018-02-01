@@ -1570,17 +1570,8 @@ replace_block_by (basic_block bb1, basic_block bb2)
 	/* If probabilities are same, we are done.
 	   If counts are nonzero we can distribute accordingly. In remaining
 	   cases just avreage the values and hope for the best.  */
-	if (e1->probability == e2->probability)
-	  ;
-	else if (bb1->count.nonzero_p () || bb2->count.nonzero_p ())
-	  e2->probability
-	     = e2->probability
-		 * bb2->count.probability_in (bb1->count + bb2->count)
-	       + e1->probability
-		 * bb1->count.probability_in (bb1->count + bb2->count);
-	else
-	  e2->probability = e2->probability * profile_probability::even ()
-			    + e1->probability * profile_probability::even ();
+	e2->probability = e1->probability.combine_with_count
+	                     (bb1->count, e2->probability, bb2->count);
       }
   bb2->count += bb1->count;
 

@@ -98,6 +98,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
+#include "tree-eh.h"
 
 static struct datadep_stats
 {
@@ -1790,7 +1791,8 @@ get_segment_min_max (const dr_with_seg_len &d, tree *seg_min_out,
   tree addr_base = fold_build_pointer_plus (DR_BASE_ADDRESS (d.dr),
 					    DR_OFFSET (d.dr));
   addr_base = fold_build_pointer_plus (addr_base, DR_INIT (d.dr));
-  tree seg_len = fold_convert (sizetype, d.seg_len);
+  tree seg_len
+    = fold_convert (sizetype, rewrite_to_non_trapping_overflow (d.seg_len));
 
   tree min_reach = fold_build3 (COND_EXPR, sizetype, neg_step,
 				seg_len, size_zero_node);
@@ -3976,9 +3978,8 @@ analyze_miv_subscript (tree chrec_a,
     }
 
   else if (evolution_function_is_constant_p (difference)
-	   /* For the moment, the following is verified:
-	      evolution_function_is_affine_multivariate_p (chrec_a,
-	      loop_nest->num) */
+	   && evolution_function_is_affine_multivariate_p (chrec_a,
+							   loop_nest->num)
 	   && !gcd_of_steps_may_divide_p (chrec_a, difference))
     {
       /* testsuite/.../ssa-chrec-33.c

@@ -17,6 +17,6 @@ foo (void)
 }
 
 /* We should operate on aligned vectors.  */
-/* { dg-final { scan-assembler {\tadrp\tx[0-9]+, x\n} } } */
+/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, x\n} } } */
 /* We should unroll the loop three times.  */
 /* { dg-final { scan-assembler-times "\tst1w\t" 3 } } */

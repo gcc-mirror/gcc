@@ -21,7 +21,7 @@ foo (void)
 }
 
 /* We should operate on aligned vectors.  */
-/* { dg-final { scan-assembler {\tadrp\tx[0-9]+, x\n} } } */
+/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, x\n} } } */
 /* We should use an induction that starts at -5, with only the last
    7 elements of the first iteration being active.  */
 /* { dg-final { scan-assembler {\tindex\tz[0-9]+\.s, #-5, #5\n} } } */

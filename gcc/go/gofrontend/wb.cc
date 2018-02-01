@@ -151,7 +151,7 @@ Check_escape::variable(Named_object* no)
           && no->result_var_value()->is_in_heap()))
     go_error_at(no->location(),
                 "%s escapes to heap, not allowed in runtime",
-                no->name().c_str());
+                no->message_name().c_str());
   return TRAVERSE_CONTINUE;
 }
 
@@ -410,6 +410,9 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
 void
 Gogo::add_write_barriers()
 {
+  if (saw_errors())
+    return;
+
   Mark_address_taken mat(this);
   this->traverse(&mat);
 

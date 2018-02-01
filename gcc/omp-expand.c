@@ -3156,6 +3156,9 @@ expand_omp_for_generic (struct omp_region *region,
 	      gphi *nphi;
 	      gphi *exit_phi = psi.phi ();
 
+	      if (virtual_operand_p (gimple_phi_result (exit_phi)))
+		continue;
+
 	      edge l2_to_l3 = find_edge (l2_bb, l3_bb);
 	      tree exit_res = PHI_ARG_DEF_FROM_EDGE (exit_phi, l2_to_l3);
 
@@ -3178,7 +3181,7 @@ expand_omp_for_generic (struct omp_region *region,
 	      add_phi_arg (nphi, exit_res, l2_to_l0, UNKNOWN_LOCATION);
 
 	      add_phi_arg (inner_phi, new_res, l0_to_l1, UNKNOWN_LOCATION);
-	    };
+	    }
 	}
 
       set_immediate_dominator (CDI_DOMINATORS, l2_bb,

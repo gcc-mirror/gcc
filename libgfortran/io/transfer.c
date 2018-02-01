@@ -2406,6 +2406,8 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   char *data;
   bt iotype;
 
+  /* Adjust item_count before emitting error message.  */
+ 
   if ((dtp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
     return;
 
@@ -2413,6 +2415,7 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   size = iotype == BT_CHARACTER ? (index_type) charlen : GFC_DESCRIPTOR_SIZE (desc);
 
   rank = GFC_DESCRIPTOR_RANK (desc);
+
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
@@ -4208,7 +4211,7 @@ st_wait (st_parameter_wait *wtp __attribute__((unused)))
 static void
 set_nml_var (st_parameter_dt *dtp, void *var_addr, char *var_name,
 	     GFC_INTEGER_4 len, gfc_charlen_type string_length,
-	     GFC_INTEGER_4 dtype, void *dtio_sub, void *vtable)
+	     dtype_type dtype, void *dtio_sub, void *vtable)
 {
   namelist_info *t1 = NULL;
   namelist_info *nml;
@@ -4227,9 +4230,9 @@ set_nml_var (st_parameter_dt *dtp, void *var_addr, char *var_name,
   nml->len = (int) len;
   nml->string_length = (index_type) string_length;
 
-  nml->var_rank = (int) (dtype & GFC_DTYPE_RANK_MASK);
-  nml->size = (index_type) (dtype >> GFC_DTYPE_SIZE_SHIFT);
-  nml->type = (bt) ((dtype & GFC_DTYPE_TYPE_MASK) >> GFC_DTYPE_TYPE_SHIFT);
+  nml->var_rank = (int) (dtype.rank);
+  nml->size = (index_type) (dtype.elem_len);
+  nml->type = (bt) (dtype.type);
 
   if (nml->var_rank > 0)
     {
@@ -4259,13 +4262,13 @@ set_nml_var (st_parameter_dt *dtp, void *var_addr, char *var_name,
 }
 
 extern void st_set_nml_var (st_parameter_dt *dtp, void *, char *,
-			    GFC_INTEGER_4, gfc_charlen_type, GFC_INTEGER_4);
+			    GFC_INTEGER_4, gfc_charlen_type, dtype_type);
 export_proto(st_set_nml_var);
 
 void
 st_set_nml_var (st_parameter_dt *dtp, void *var_addr, char *var_name,
 		GFC_INTEGER_4 len, gfc_charlen_type string_length,
-		GFC_INTEGER_4 dtype)
+		dtype_type dtype)
 {
   set_nml_var (dtp, var_addr, var_name, len, string_length,
 	       dtype, NULL, NULL);
@@ -4275,7 +4278,7 @@ st_set_nml_var (st_parameter_dt *dtp, void *var_addr, char *var_name,
 /* Essentially the same as previous but carrying the dtio procedure
    and the vtable as additional arguments.  */
 extern void st_set_nml_dtio_var (st_parameter_dt *dtp, void *, char *,
-				 GFC_INTEGER_4, gfc_charlen_type, GFC_INTEGER_4,
+				 GFC_INTEGER_4, gfc_charlen_type, dtype_type,
 				 void *, void *);
 export_proto(st_set_nml_dtio_var);
 
@@ -4283,7 +4286,7 @@ export_proto(st_set_nml_dtio_var);
 void
 st_set_nml_dtio_var (st_parameter_dt *dtp, void *var_addr, char *var_name,
 		     GFC_INTEGER_4 len, gfc_charlen_type string_length,
-		     GFC_INTEGER_4 dtype, void *dtio_sub, void *vtable)
+		     dtype_type dtype, void *dtio_sub, void *vtable)
 {
   set_nml_var (dtp, var_addr, var_name, len, string_length,
 	       dtype, dtio_sub, vtable);

@@ -2787,16 +2787,7 @@ aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
       return true;
     }
 
-  /* The bytes are loaded in little-endian order, so do a byteswap on
-     big-endian targets.  */
-  if (BYTES_BIG_ENDIAN)
-    {
-      src = simplify_unary_operation (BSWAP, src_mode, src, src_mode);
-      if (!src)
-	return NULL_RTX;
-    }
-
-  /* Use LD1RQ to load the 128 bits from memory.  */
+  /* Use LD1RQ[BHWD] to load the 128 bits from memory.  */
   src = force_const_mem (src_mode, src);
   if (!src)
     return false;
@@ -2808,8 +2799,12 @@ aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
       src = replace_equiv_address (src, addr);
     }
 
-  rtx ptrue = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
-  emit_insn (gen_sve_ld1rq (gen_lowpart (VNx16QImode, dest), ptrue, src));
+  machine_mode mode = GET_MODE (dest);
+  unsigned int elem_bytes = GET_MODE_UNIT_SIZE (mode);
+  machine_mode pred_mode = aarch64_sve_pred_mode (elem_bytes).require ();
+  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  src = gen_rtx_UNSPEC (mode, gen_rtvec (2, ptrue, src), UNSPEC_LD1RQ);
+  emit_insn (gen_rtx_SET (dest, src));
   return true;
 }
 
@@ -2829,10 +2824,18 @@ aarch64_expand_sve_const_vector (rtx dest, rtx src)
       /* The constant is a repeating seqeuence of at least two elements,
 	 where the repeating elements occupy no more than 128 bits.
 	 Get an integer representation of the replicated value.  */
-      unsigned int int_bits = GET_MODE_UNIT_BITSIZE (mode) * npatterns;
-      gcc_assert (int_bits <= 128);
-
-      scalar_int_mode int_mode = int_mode_for_size (int_bits, 0).require ();
+      scalar_int_mode int_mode;
+      if (BYTES_BIG_ENDIAN)
+	/* For now, always use LD1RQ to load the value on big-endian
+	   targets, since the handling of smaller integers includes a
+	   subreg that is semantically an element reverse.  */
+	int_mode = TImode;
+      else
+	{
+	  unsigned int int_bits = GET_MODE_UNIT_BITSIZE (mode) * npatterns;
+	  gcc_assert (int_bits <= 128);
+	  int_mode = int_mode_for_size (int_bits, 0).require ();
+	}
       rtx int_value = simplify_gen_subreg (int_mode, src, mode, 0);
       if (int_value
 	  && aarch64_expand_sve_widened_duplicate (dest, int_mode, int_value))
@@ -3069,6 +3072,120 @@ aarch64_expand_sve_mem_move (rtx dest, rtx src, machine_mode pred_mode)
       src = tmp;
     }
   aarch64_emit_sve_pred_move (dest, ptrue, src);
+}
+
+/* Called only on big-endian targets.  See whether an SVE vector move
+   from SRC to DEST is effectively a REV[BHW] instruction, because at
+   least one operand is a subreg of an SVE vector that has wider or
+   narrower elements.  Return true and emit the instruction if so.
+
+   For example:
+
+     (set (reg:VNx8HI R1) (subreg:VNx8HI (reg:VNx16QI R2) 0))
+
+   represents a VIEW_CONVERT between the following vectors, viewed
+   in memory order:
+
+     R2: { [0].high, [0].low,  [1].high, [1].low, ... }
+     R1: { [0],      [1],      [2],      [3],     ... }
+
+   The high part of lane X in R2 should therefore correspond to lane X*2
+   of R1, but the register representations are:
+
+         msb                                      lsb
+     R2: ...... [1].high  [1].low   [0].high  [0].low
+     R1: ...... [3]       [2]       [1]       [0]
+
+   where the low part of lane X in R2 corresponds to lane X*2 in R1.
+   We therefore need a reverse operation to swap the high and low values
+   around.
+
+   This is purely an optimization.  Without it we would spill the
+   subreg operand to the stack in one mode and reload it in the
+   other mode, which has the same effect as the REV.  */
+
+bool
+aarch64_maybe_expand_sve_subreg_move (rtx dest, rtx src)
+{
+  gcc_assert (BYTES_BIG_ENDIAN);
+  if (GET_CODE (dest) == SUBREG)
+    dest = SUBREG_REG (dest);
+  if (GET_CODE (src) == SUBREG)
+    src = SUBREG_REG (src);
+
+  /* The optimization handles two single SVE REGs with different element
+     sizes.  */
+  if (!REG_P (dest)
+      || !REG_P (src)
+      || aarch64_classify_vector_mode (GET_MODE (dest)) != VEC_SVE_DATA
+      || aarch64_classify_vector_mode (GET_MODE (src)) != VEC_SVE_DATA
+      || (GET_MODE_UNIT_SIZE (GET_MODE (dest))
+	  == GET_MODE_UNIT_SIZE (GET_MODE (src))))
+    return false;
+
+  /* Generate *aarch64_sve_mov<mode>_subreg_be.  */
+  rtx ptrue = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (dest), gen_rtvec (2, ptrue, src),
+			       UNSPEC_REV_SUBREG);
+  emit_insn (gen_rtx_SET (dest, unspec));
+  return true;
+}
+
+/* Return a copy of X with mode MODE, without changing its other
+   attributes.  Unlike gen_lowpart, this doesn't care whether the
+   mode change is valid.  */
+
+static rtx
+aarch64_replace_reg_mode (rtx x, machine_mode mode)
+{
+  if (GET_MODE (x) == mode)
+    return x;
+
+  x = shallow_copy_rtx (x);
+  set_mode_and_regno (x, mode, REGNO (x));
+  return x;
+}
+
+/* Split a *aarch64_sve_mov<mode>_subreg_be pattern with the given
+   operands.  */
+
+void
+aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
+{
+  /* Decide which REV operation we need.  The mode with narrower elements
+     determines the mode of the operands and the mode with the wider
+     elements determines the reverse width.  */
+  machine_mode mode_with_wider_elts = GET_MODE (dest);
+  machine_mode mode_with_narrower_elts = GET_MODE (src);
+  if (GET_MODE_UNIT_SIZE (mode_with_wider_elts)
+      < GET_MODE_UNIT_SIZE (mode_with_narrower_elts))
+    std::swap (mode_with_wider_elts, mode_with_narrower_elts);
+
+  unsigned int wider_bytes = GET_MODE_UNIT_SIZE (mode_with_wider_elts);
+  unsigned int unspec;
+  if (wider_bytes == 8)
+    unspec = UNSPEC_REV64;
+  else if (wider_bytes == 4)
+    unspec = UNSPEC_REV32;
+  else if (wider_bytes == 2)
+    unspec = UNSPEC_REV16;
+  else
+    gcc_unreachable ();
+  machine_mode pred_mode = aarch64_sve_pred_mode (wider_bytes).require ();
+
+  /* Emit:
+
+       (set DEST (unspec [PTRUE (unspec [SRC] UNSPEC_REV<nn>)]
+			 UNSPEC_MERGE_PTRUE))
+
+     with the appropriate modes.  */
+  ptrue = gen_lowpart (pred_mode, ptrue);
+  dest = aarch64_replace_reg_mode (dest, mode_with_narrower_elts);
+  src = aarch64_replace_reg_mode (src, mode_with_narrower_elts);
+  src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (1, src), unspec);
+  src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (2, ptrue, src),
+			UNSPEC_MERGE_PTRUE);
+  emit_insn (gen_rtx_SET (dest, src));
 }
 
 static bool
@@ -7249,9 +7366,14 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			  machine_mode mode,
 			  secondary_reload_info *sri)
 {
+  /* Use aarch64_sve_reload_be for SVE reloads that cannot be handled
+     directly by the *aarch64_sve_mov<mode>_be move pattern.  See the
+     comment at the head of aarch64-sve.md for more details about the
+     big-endian handling.  */
   if (BYTES_BIG_ENDIAN
       && reg_class_subset_p (rclass, FP_REGS)
-      && (MEM_P (x) || (REG_P (x) && !HARD_REGISTER_P (x)))
+      && !((REG_P (x) && HARD_REGISTER_P (x))
+	   || aarch64_simd_valid_immediate (x, NULL))
       && aarch64_sve_data_mode_p (mode))
     {
       sri->icode = CODE_FOR_aarch64_sve_reload_be;
@@ -13159,10 +13281,11 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
     return false;
 
   scalar_mode elt_mode = GET_MODE_INNER (mode);
-  rtx elt = NULL, base, step;
+  rtx base, step;
   unsigned int n_elts;
-  if (const_vec_duplicate_p (op, &elt))
-    n_elts = 1;
+  if (GET_CODE (op) == CONST_VECTOR
+      && CONST_VECTOR_DUPLICATE_P (op))
+    n_elts = CONST_VECTOR_NPATTERNS (op);
   else if ((vec_flags & VEC_SVE_DATA)
 	   && const_vec_series_p (op, &base, &step))
     {
@@ -13187,14 +13310,17 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 	    || op == CONSTM1_RTX (mode));
 
   scalar_float_mode elt_float_mode;
-  if (elt
-      && is_a <scalar_float_mode> (elt_mode, &elt_float_mode)
-      && (aarch64_float_const_zero_rtx_p (elt)
-	  || aarch64_float_const_representable_p (elt)))
+  if (n_elts == 1
+      && is_a <scalar_float_mode> (elt_mode, &elt_float_mode))
     {
-      if (info)
-	*info = simd_immediate_info (elt_float_mode, elt);
-      return true;
+      rtx elt = CONST_VECTOR_ENCODED_ELT (op, 0);
+      if (aarch64_float_const_zero_rtx_p (elt)
+	  || aarch64_float_const_representable_p (elt))
+	{
+	  if (info)
+	    *info = simd_immediate_info (elt_float_mode, elt);
+	  return true;
+	}
     }
 
   unsigned int elt_size = GET_MODE_SIZE (elt_mode);
@@ -13209,11 +13335,11 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
   bytes.reserve (n_elts * elt_size);
   for (unsigned int i = 0; i < n_elts; i++)
     {
-      if (!elt || n_elts != 1)
-	/* The vector is provided in gcc endian-neutral fashion.
-	   For aarch64_be, it must be laid out in the vector register
-	   in reverse order.  */
-	elt = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? (n_elts - 1 - i) : i);
+      /* The vector is provided in gcc endian-neutral fashion.
+	 For aarch64_be Advanced SIMD, it must be laid out in the vector
+	 register in reverse order.  */
+      bool swap_p = ((vec_flags & VEC_ADVSIMD) != 0 && BYTES_BIG_ENDIAN);
+      rtx elt = CONST_VECTOR_ELT (op, swap_p ? (n_elts - 1 - i) : i);
 
       if (elt_mode != elt_int_mode)
 	elt = gen_lowpart (elt_int_mode, elt);
@@ -17185,10 +17311,27 @@ static bool
 aarch64_can_change_mode_class (machine_mode from,
 			       machine_mode to, reg_class_t)
 {
-  /* See the comment at the head of aarch64-sve.md for details.  */
-  if (BYTES_BIG_ENDIAN
-      && (aarch64_sve_data_mode_p (from) != aarch64_sve_data_mode_p (to)))
-    return false;
+  if (BYTES_BIG_ENDIAN)
+    {
+      bool from_sve_p = aarch64_sve_data_mode_p (from);
+      bool to_sve_p = aarch64_sve_data_mode_p (to);
+
+      /* Don't allow changes between SVE data modes and non-SVE modes.
+	 See the comment at the head of aarch64-sve.md for details.  */
+      if (from_sve_p != to_sve_p)
+	return false;
+
+      /* Don't allow changes in element size: lane 0 of the new vector
+	 would not then be lane 0 of the old vector.  See the comment
+	 above aarch64_maybe_expand_sve_subreg_move for a more detailed
+	 description.
+
+	 In the worst case, this forces a register to be spilled in
+	 one mode and reloaded in the other, which handles the
+	 endianness correctly.  */
+      if (from_sve_p && GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to))
+	return false;
+    }
   return true;
 }
 

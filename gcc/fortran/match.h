@@ -74,6 +74,10 @@ match gfc_match_event_post (void);
 match gfc_match_event_wait (void);
 match gfc_match_critical (void);
 match gfc_match_fail_image (void);
+match gfc_match_change_team (void);
+match gfc_match_end_team (void);
+match gfc_match_form_team (void);
+match gfc_match_sync_team (void);
 match gfc_match_block (void);
 match gfc_match_associate (void);
 match gfc_match_do (void);
@@ -230,7 +234,8 @@ match gfc_match_type (gfc_statement *);
 match gfc_match_implicit_none (void);
 match gfc_match_implicit (void);
 
-void gfc_set_constant_character_len (int, gfc_expr *, int);
+void gfc_set_constant_character_len (gfc_charlen_t, gfc_expr *,
+				     gfc_charlen_t);
 
 /* Matchers for attribute declarations.  */
 match gfc_match_allocatable (void);

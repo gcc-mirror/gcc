@@ -1,3 +1,48 @@
+2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib1funcs.S (__udivmodsi4): Use safe version for RF16
+	option.
+	(__divsi3): Use RF16 safe registers.
+	(__modsi3): Likewise.
+
+2018-01-23  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__addsf3, __subsf3, __mulsf3)
+	(__divsf3): Make NaN return value quiet.
+	* config/xtensa/ieee754-sf.S (__adddf3, __subdf3, __muldf3)
+	(__divdf3): Make NaN return value quiet.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/anddi3.S: New assembly file.
+	* config/rl78/t-rl78: Added anddi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/umindi3.S: New assembly file.
+	* config/rl78/t-rl78: Added umindi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/smindi3.S: New assembly file.
+	* config/rl78/t-rl78: Added smindi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+ 
+	* config/rl78/smaxdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added smaxdi3.S to LIB2ADD.
+
+2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
+ 
+	* config/rl78/umaxdi3.S: New assembly file.
+	* config/rl78/t-rl78: Added umaxdi3.S to LIB2ADD.
+	
+2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR lto/83452
+	* config/pa/stublib.c (L_gnu_lto_v1): New stub definition.
+	* config/pa/t-stublib (gnu_lto_v1-stub.o): Add make fragment.
+	
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/value-unwind.h (aarch64_vg): New function.

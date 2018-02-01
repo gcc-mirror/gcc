@@ -227,10 +227,8 @@ spread_r10 (gfc_array_r10 *ret, const gfc_array_r10 *source,
 
 void
 spread_scalar_r10 (gfc_array_r10 *ret, const GFC_REAL_10 *source,
-			const index_type along, const index_type pncopies)
+			const index_type along, const index_type ncopies)
 {
-  int n;
-  int ncopies = pncopies;
   GFC_REAL_10 * restrict dest;
   index_type stride;
 
@@ -256,7 +254,7 @@ spread_scalar_r10 (gfc_array_r10 *ret, const GFC_REAL_10 *source,
   dest = ret->base_addr;
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  for (n = 0; n < ncopies; n++)
+  for (index_type n = 0; n < ncopies; n++)
     {
       *dest = *source;
       dest += stride;

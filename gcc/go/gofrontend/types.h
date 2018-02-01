@@ -676,6 +676,15 @@ class Type
   const Type*
   forwarded() const;
 
+  // Return the type skipping any alias definitions and any defined
+  // forward declarations.  This is like forwarded, but also
+  // recursively expands alias definitions to the aliased type.
+  Type*
+  unalias();
+
+  const Type*
+  unalias() const;
+
   // Return true if this is a basic type: a type which is not composed
   // of other types, and is not void.
   bool
@@ -2065,6 +2074,11 @@ class Function_type : public Type
   Btype*
   get_backend_fntype(Gogo*);
 
+  // Return whether this is a Backend_function_type.
+  virtual bool
+  is_backend_function_type() const
+  { return false; }
+
  protected:
   int
   do_traverse(Traverse*);
@@ -2157,6 +2171,12 @@ class Backend_function_type : public Function_type
                         Typed_identifier_list* results, Location location)
       : Function_type(receiver, parameters, results, location)
   { }
+
+  // Return whether this is a Backend_function_type. This overrides
+  // Function_type::is_backend_function_type.
+  bool
+  is_backend_function_type() const
+  { return true; }
 
  protected:
   Btype*

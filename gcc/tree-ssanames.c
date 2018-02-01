@@ -29,6 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-into-ssa.h"
 #include "tree-ssa.h"
+#include "cfgloop.h"
+#include "tree-scalar-evolution.h"
 
 /* Rewriting a function into SSA form can create a huge number of SSA_NAMEs,
    many of which may be thrown away shortly after their creation if jumps
@@ -241,6 +243,9 @@ verify_ssaname_freelists (struct function *fun)
 void
 flush_ssaname_freelist (void)
 {
+  /* If there were any SSA names released reset the SCEV cache.  */
+  if (! vec_safe_is_empty (FREE_SSANAMES_QUEUE (cfun)))
+    scev_reset_htab ();
   vec_safe_splice (FREE_SSANAMES (cfun), FREE_SSANAMES_QUEUE (cfun));
   vec_safe_truncate (FREE_SSANAMES_QUEUE (cfun), 0);
 }

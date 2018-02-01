@@ -2728,7 +2728,13 @@ setup_min_max_allocno_live_range_point (void)
 	    ira_object_t parent_obj;
 
 	    if (OBJECT_MAX (obj) < 0)
-	      continue;
+	      {
+		/* The object is not used and hence does not live.  */
+		ira_assert (OBJECT_LIVE_RANGES (obj) == NULL);
+		OBJECT_MAX (obj) = 0;
+		OBJECT_MIN (obj) = 1;
+		continue;
+	      }
 	    ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
 	    /* Accumulation of range info.  */
 	    if (ALLOCNO_CAP (a) != NULL)

@@ -209,8 +209,16 @@ EOF
     # on at least one platform.
     inform "Building compiler"
     OBJECT_DIRECTORY=../objdir
+    num_cpus=1
+    if type -p getconf 2>/dev/null; then
+      num_cpus=`getconf _NPROCESSORS_ONLN 2>/dev/null`
+      case "$num_cpus" in
+	'' | 0* | *[!0-9]*) num_cpus=1;;
+      esac
+    fi
     contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} \
-      -c "--enable-generated-files-in-srcdir --disable-multilib" build || \
+      -c "--enable-generated-files-in-srcdir --disable-multilib" \
+      -m "-j$num_cpus" build || \
       error "Could not rebuild GCC"
   fi
 

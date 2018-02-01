@@ -17,5 +17,5 @@ foo (int start)
 }
 
 /* We should operate on aligned vectors.  */
-/* { dg-final { scan-assembler {\tadrp\tx[0-9]+, x\n} } } */
+/* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, x\n} } } */
 /* { dg-final { scan-assembler {\tubfx\t} } } */

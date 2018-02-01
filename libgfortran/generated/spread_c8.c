@@ -227,10 +227,8 @@ spread_c8 (gfc_array_c8 *ret, const gfc_array_c8 *source,
 
 void
 spread_scalar_c8 (gfc_array_c8 *ret, const GFC_COMPLEX_8 *source,
-			const index_type along, const index_type pncopies)
+			const index_type along, const index_type ncopies)
 {
-  int n;
-  int ncopies = pncopies;
   GFC_COMPLEX_8 * restrict dest;
   index_type stride;
 
@@ -256,7 +254,7 @@ spread_scalar_c8 (gfc_array_c8 *ret, const GFC_COMPLEX_8 *source,
   dest = ret->base_addr;
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  for (n = 0; n < ncopies; n++)
+  for (index_type n = 0; n < ncopies; n++)
     {
       *dest = *source;
       dest += stride;

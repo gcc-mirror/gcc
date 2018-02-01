@@ -80,8 +80,3 @@ test6_ne (vector unsigned short x, vector unsigned short y)
   return vec_cmpne (x, y);
 }
 
-/* { dg-final { scan-assembler-times "vcmpequh" 4 } } */
-/* { dg-final { scan-assembler-times "vcmpgtsh" 4 } } */
-/* { dg-final { scan-assembler-times "vcmpgtuh" 4 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 6 } } */
-

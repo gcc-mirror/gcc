@@ -1,3 +1,5 @@
+/* We haven't implemented these intrinsics for arm yet.  */
+/* { dg-xfail-if "" { arm*-*-* } } */
 /* { dg-do run } */
 /* { dg-options "-O3" } */
 
@@ -26,7 +28,7 @@ test_vld##SUFFIX##_x2 ()			\
   return 0;					\
 }
 
-#define VARIANTS(VARIANT)	\
+#define VARIANTS_1(VARIANT)	\
 VARIANT (uint8, 8, _u8)		\
 VARIANT (uint16, 4, _u16)	\
 VARIANT (uint32, 2, _u32)	\
@@ -39,7 +41,6 @@ VARIANT (poly8, 8, _p8)		\
 VARIANT (poly16, 4, _p16)	\
 VARIANT (float16, 4, _f16)	\
 VARIANT (float32, 2, _f32)	\
-VARIANT (float64, 1, _f64)	\
 VARIANT (uint8, 16, q_u8)	\
 VARIANT (uint16, 8, q_u16)	\
 VARIANT (uint32, 4, q_u32)	\
@@ -51,8 +52,15 @@ VARIANT (int64, 2, q_s64)	\
 VARIANT (poly8, 16, q_p8)	\
 VARIANT (poly16, 8, q_p16)	\
 VARIANT (float16, 8, q_f16)	\
-VARIANT (float32, 4, q_f32)	\
+VARIANT (float32, 4, q_f32)
+
+#ifdef __aarch64__
+#define VARIANTS(VARIANT) VARIANTS_1(VARIANT)	\
+VARIANT (float64, 1, _f64)			\
 VARIANT (float64, 2, q_f64)
+#else
+#define VARIANTS(VARIANT) VARIANTS_1(VARIANT)
+#endif
 
 /* Tests of vld1_x2 and vld1q_x2.  */
 VARIANTS (TESTMETH)

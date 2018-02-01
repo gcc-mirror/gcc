@@ -994,6 +994,20 @@
   ""
   "")
 
+(define_insn "exit"
+  [(const_int 1)]
+  ""
+  "exit;")
+
+(define_insn "fake_nop"
+  [(const_int 2)]
+  ""
+  "{
+     .reg .u32 %%nop_src;
+     .reg .u32 %%nop_dst;
+     mov.u32 %%nop_dst, %%nop_src;
+   }")
+
 (define_insn "return"
   [(return)]
   ""

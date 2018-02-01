@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-mmovbe" { target i?86-*-* x86_64-*-* } } */
+/* { dg-additional-options "-fno-common" { target hppa*-*-hpux* } } */
 
 unsigned short __attribute__ ((__vector_size__ (16))) x;
 

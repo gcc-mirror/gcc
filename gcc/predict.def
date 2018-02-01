@@ -118,15 +118,11 @@ DEF_PREDICTOR (PRED_TREE_FPOPCODE, "fp_opcode (on trees)", HITRATE (90), 0)
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (67), 0)
 
-/* PRED_CALL is not very reliable predictor and it turns out to be even
-   less reliable for indirect calls and polymorphic calls.  For spec2k6
-   the predictio nis slightly in the direction of taking the call.  */
-DEF_PREDICTOR (PRED_INDIR_CALL, "indirect call", HITRATE (86), 0)
-DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", HITRATE (59), 0)
-
-/* Recursive calls are usually not taken or the function will recurse
-   indefinitely.  */
-DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", HITRATE (75), 0)
+/* Call predictors are for now ignored, lets leave the predictor
+   to measure its benefit.  */
+DEF_PREDICTOR (PRED_INDIR_CALL, "indirect call", PROB_EVEN, 0)
+DEF_PREDICTOR (PRED_POLYMORPHIC_CALL, "polymorphic call", PROB_EVEN, 0)
+DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", PROB_EVEN, 0)
 
 /* Branch causing function to terminate is probably not taken.  */
 DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (66),

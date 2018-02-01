@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #define IN_TARGET_CODE 1
 
 #include "config.h"
+#define INCLUDE_ALGORITHM
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -28,9 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "cfgrtl.h"
 #include "tree-pass.h"
-
-#include <vector>
-#include <algorithm>
 
 /*
 This pass tries to eliminate unnecessary sett or clrt instructions in cases

@@ -1911,18 +1911,56 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
       enum vect_def_type dt;
       if (!op || op == lhs)
 	continue;
-      if (vect_is_simple_use (op, stmt_info->vinfo, &def_stmt, &dt))
+      if (vect_is_simple_use (op, stmt_info->vinfo, &def_stmt, &dt)
+	  && (dt == vect_constant_def || dt == vect_external_def))
 	{
 	  /* Without looking at the actual initializer a vector of
 	     constants can be implemented as load from the constant pool.
-	     ???  We need to pass down stmt_info for a vector type
-	     even if it points to the wrong stmt.  */
-	  if (dt == vect_constant_def)
-	    record_stmt_cost (prologue_cost_vec, 1, vector_load,
-			      stmt_info, 0, vect_prologue);
-	  else if (dt == vect_external_def)
-	    record_stmt_cost (prologue_cost_vec, 1, vec_construct,
-			      stmt_info, 0, vect_prologue);
+	     When all elements are the same we can use a splat.  */
+	  tree vectype = get_vectype_for_scalar_type (TREE_TYPE (op));
+	  unsigned group_size = SLP_TREE_SCALAR_STMTS (node).length ();
+	  unsigned num_vects_to_check;
+	  unsigned HOST_WIDE_INT const_nunits;
+	  unsigned nelt_limit;
+	  if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
+	      && ! multiple_p (const_nunits, group_size))
+	    {
+	      num_vects_to_check = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+	      nelt_limit = const_nunits;
+	    }
+	  else
+	    {
+	      /* If either the vector has variable length or the vectors
+	         are composed of repeated whole groups we only need to
+		 cost construction once.  All vectors will be the same.  */
+	      num_vects_to_check = 1;
+	      nelt_limit = group_size;
+	    }
+	  tree elt = NULL_TREE;
+	  unsigned nelt = 0;
+	  for (unsigned j = 0; j < num_vects_to_check * nelt_limit; ++j)
+	    {
+	      unsigned si = j % group_size;
+	      if (nelt == 0)
+		elt = gimple_op (SLP_TREE_SCALAR_STMTS (node)[si], i);
+	      /* ???  We're just tracking whether all operands of a single
+		 vector initializer are the same, ideally we'd check if
+		 we emitted the same one already.  */
+	      else if (elt != gimple_op (SLP_TREE_SCALAR_STMTS (node)[si], i))
+		elt = NULL_TREE;
+	      nelt++;
+	      if (nelt == nelt_limit)
+		{
+		  /* ???  We need to pass down stmt_info for a vector type
+		     even if it points to the wrong stmt.  */
+		  record_stmt_cost (prologue_cost_vec, 1,
+				    dt == vect_external_def
+				    ? (elt ? scalar_to_vec : vec_construct)
+				    : vector_load,
+				    stmt_info, 0, vect_prologue);
+		  nelt = 0;
+		}
+	    }
 	}
     }
 

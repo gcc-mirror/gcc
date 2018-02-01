@@ -52,6 +52,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef INCOMING_RETURN_ADDR_RTX
 #define INCOMING_RETURN_ADDR_RTX  (gcc_unreachable (), NULL_RTX)
 #endif
+
+#ifndef DEFAULT_INCOMING_FRAME_SP_OFFSET
+#define DEFAULT_INCOMING_FRAME_SP_OFFSET INCOMING_FRAME_SP_OFFSET
+#endif
 
 /* A collected description of an entire row of the abstract CFI table.  */
 struct GTY(()) dw_cfi_row
@@ -2484,7 +2488,7 @@ scan_insn_after (rtx_insn *insn)
    instructions therein.  */
 
 static void
-scan_trace (dw_trace_info *trace)
+scan_trace (dw_trace_info *trace, bool entry)
 {
   rtx_insn *prev, *insn = trace->head;
   dw_cfa_location this_cfa;
@@ -2502,6 +2506,17 @@ scan_trace (dw_trace_info *trace)
 
   this_cfa = cur_row->cfa;
   cur_cfa = &this_cfa;
+
+  /* If the current function starts with a non-standard incoming frame
+     sp offset, emit a note before the first instruction.  */
+  if (entry
+      && DEFAULT_INCOMING_FRAME_SP_OFFSET != INCOMING_FRAME_SP_OFFSET)
+    {
+      add_cfi_insn = insn;
+      gcc_assert (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_DELETED);
+      this_cfa.offset = INCOMING_FRAME_SP_OFFSET;
+      def_cfa_1 (&this_cfa);
+    }
 
   for (prev = insn, insn = NEXT_INSN (insn);
        insn;
@@ -2671,12 +2686,12 @@ create_cfi_notes (void)
 
   /* Always begin at the entry trace.  */
   ti = &trace_info[0];
-  scan_trace (ti);
+  scan_trace (ti, true);
 
   while (!trace_work_list.is_empty ())
     {
       ti = trace_work_list.pop ();
-      scan_trace (ti);
+      scan_trace (ti, false);
     }
 
   queued_reg_saves.release ();
@@ -2980,7 +2995,12 @@ create_cie_data (void)
   /* On entry, the Canonical Frame Address is at SP.  */
   memset (&loc, 0, sizeof (loc));
   loc.reg = dw_stack_pointer_regnum;
-  loc.offset = INCOMING_FRAME_SP_OFFSET;
+  /* create_cie_data is called just once per TU, and when using .cfi_startproc
+     is even done by the assembler rather than the compiler.  If the target
+     has different incoming frame sp offsets depending on what kind of
+     function it is, use a single constant offset for the target and
+     if needed, adjust before the first instruction in insn stream.  */
+  loc.offset = DEFAULT_INCOMING_FRAME_SP_OFFSET;
   def_cfa_1 (&loc);
 
   if (targetm.debug_unwind_info () == UI_DWARF2

@@ -275,7 +275,7 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
   else if (e && e->expr_type == EXPR_CONSTANT)
     {
       int i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
-      int length;
+      HOST_WIDE_INT length;
       gfc_char_t *string;
 
       switch (e->ts.type)
@@ -313,14 +313,14 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 	    if (init == INT_MIN)
 	      {
 		gfc_expr *len = gfc_simplify_len (array, NULL);
-		gfc_extract_int (len, &length);
+		gfc_extract_hwi (len, &length);
 		string = gfc_get_wide_string (length + 1);
 		gfc_wide_memset (string, 0, length);
 	      }
 	    else if (init == INT_MAX)
 	      {
 		gfc_expr *len = gfc_simplify_len (array, NULL);
-		gfc_extract_int (len, &length);
+		gfc_extract_hwi (len, &length);
 		string = gfc_get_wide_string (length + 1);
 		gfc_wide_memset (string, 255, length);
 	      }
@@ -354,9 +354,14 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 {
   gfc_expr *result, *a, *b, *c;
 
-  result = gfc_get_constant_expr (matrix_a->ts.type, matrix_a->ts.kind,
-				  &matrix_a->where);
-  init_result_expr (result, 0, NULL);
+  /* Set result to an INTEGER(1) 0 for numeric types and .false. for 
+     LOGICAL.  Mixed-mode math in the loop will promote result to the
+     correct type and kind.  */
+  if (matrix_a->ts.type == BT_LOGICAL)
+    result = gfc_get_logical_expr (gfc_default_logical_kind, NULL, false);
+  else
+    result = gfc_get_int_expr (1, NULL, 0);
+  result->where = matrix_a->where;
 
   a = gfc_constructor_lookup_expr (matrix_a->value.constructor, offset_a);
   b = gfc_constructor_lookup_expr (matrix_b->value.constructor, offset_b);
@@ -2253,22 +2258,19 @@ gfc_simplify_dim (gfc_expr *x, gfc_expr *y)
 gfc_expr*
 gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 {
-
-  gfc_expr temp;
+  /* If vector_a is a zero-sized array, the result is 0 for INTEGER, 
+     REAL, and COMPLEX types and .false. for LOGICAL.  */
+  if (vector_a->shape && mpz_get_si (vector_a->shape[0]) == 0)
+    {
+      if (vector_a->ts.type == BT_LOGICAL)
+	return gfc_get_logical_expr (gfc_default_logical_kind, NULL, false);
+      else
+	return gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
+    }
 
   if (!is_constant_array_expr (vector_a)
       || !is_constant_array_expr (vector_b))
     return NULL;
-
-  gcc_assert (vector_a->rank == 1);
-  gcc_assert (vector_b->rank == 1);
-
-  temp.expr_type = EXPR_OP;
-  gfc_clear_ts (&temp.ts);
-  temp.value.op.op = INTRINSIC_NONE;
-  temp.value.op.op1 = vector_a;
-  temp.value.op.op2 = vector_b;
-  gfc_type_convert_binary (&temp, 1);
 
   return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0, true);
 }
@@ -2891,6 +2893,30 @@ gfc_simplify_failed_or_stopped_images (gfc_expr *team ATTRIBUTE_UNUSED,
 
 
 gfc_expr *
+gfc_simplify_get_team (gfc_expr *level ATTRIBUTE_UNUSED)
+{
+  if (flag_coarray == GFC_FCOARRAY_NONE)
+    {
+      gfc_current_locus = *gfc_current_intrinsic_where;
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      return &gfc_bad_expr;
+    }
+
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    {
+      gfc_expr *result;
+      result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind, &gfc_current_locus);
+      result->rank = 0;
+      return result;
+    }
+
+  /* For fcoarray = lib no simplification is possible, because it is not known
+     what images failed or are stopped at compile time.  */
+  return NULL;
+}
+
+
+gfc_expr *
 gfc_simplify_float (gfc_expr *a)
 {
   gfc_expr *result;
@@ -3056,7 +3082,7 @@ gfc_simplify_fraction (gfc_expr *x)
 
 #if MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)
 
-  /* MPFR versions before 3.1.0 do not include mpfr_frexp.  
+  /* MPFR versions before 3.1.0 do not include mpfr_frexp.
      TODO: remove the kludge when MPFR 3.1.0 or newer will be required */
 
   if (mpfr_sgn (x->value.real) == 0)
@@ -4415,7 +4441,7 @@ gfc_expr *
 gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
 {
   gfc_expr *result;
-  int count, len, i;
+  size_t count, len, i;
   int k = get_kind (BT_INTEGER, kind, "LEN_TRIM", gfc_default_integer_kind);
 
   if (k == -1)
@@ -4590,10 +4616,23 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       || !is_constant_array_expr (matrix_b))
     return NULL;
 
-  gcc_assert (gfc_compare_types (&matrix_a->ts, &matrix_b->ts));
-  result = gfc_get_array_expr (matrix_a->ts.type,
-			       matrix_a->ts.kind,
-			       &matrix_a->where);
+  /* MATMUL should do mixed-mode arithmetic.  Set the result type.  */
+  if (matrix_a->ts.type != matrix_b->ts.type)
+    {
+      gfc_expr e;
+      e.expr_type = EXPR_OP;
+      gfc_clear_ts (&e.ts);
+      e.value.op.op = INTRINSIC_NONE;
+      e.value.op.op1 = matrix_a;
+      e.value.op.op2 = matrix_b;
+      gfc_type_convert_binary (&e, 1);
+      result = gfc_get_array_expr (e.ts.type, e.ts.kind, &matrix_a->where);
+    }
+  else
+    {
+      result = gfc_get_array_expr (matrix_a->ts.type, matrix_a->ts.kind,
+				   &matrix_a->where);
+    }
 
   if (matrix_a->rank == 1 && matrix_b->rank == 2)
     {
@@ -6082,12 +6121,16 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
   len = e->value.character.length;
   gfc_charlen_t nlen = ncop * len;
 
-  /* Here's a semi-arbitrary limit. If the string is longer than 32 MB
-     (8 * 2**20 elements * 4 bytes (wide chars) per element) defer to
+  /* Here's a semi-arbitrary limit. If the string is longer than 1 GB
+     (2**28 elements * 4 bytes (wide chars) per element) defer to
      runtime instead of consuming (unbounded) memory and CPU at
      compile time.  */
-  if (nlen > 8388608)
-    return NULL;
+  if (nlen > 268435456)
+    {
+      gfc_warning_now (0, "Evaluation of string longer than 2**28 at %L"
+		       " deferred to runtime, expect bugs", &e->where);
+      return NULL;
+    }
 
   result = gfc_get_character_expr (e->ts.kind, &e->where, NULL, nlen);
   for (size_t i = 0; i < (size_t) ncop; i++)
@@ -7333,7 +7376,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	|| !gfc_is_constant_expr (size))
     return NULL;
 
-  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size, 
+  if (!gfc_calculate_transfer_sizes (source, mold, size, &source_size,
 				     &result_size, &result_length))
     return NULL;
 

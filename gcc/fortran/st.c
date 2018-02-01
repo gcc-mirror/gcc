@@ -121,6 +121,10 @@ gfc_free_statement (gfc_code *p)
     case EXEC_EVENT_POST:
     case EXEC_EVENT_WAIT:
     case EXEC_FAIL_IMAGE:
+    case EXEC_CHANGE_TEAM:
+    case EXEC_END_TEAM:
+    case EXEC_FORM_TEAM:
+    case EXEC_SYNC_TEAM:
       break;
 
     case EXEC_BLOCK:

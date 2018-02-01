@@ -1,4 +1,4 @@
-/* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect_float_strict } */
 /* { dg-additional-options "-fno-fast-math" } */
 
 #include <stdarg.h>

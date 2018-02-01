@@ -725,6 +725,11 @@ split_nonconstant_init_1 (tree dest, tree init)
 
   /* The rest of the initializer is now a constant. */
   TREE_CONSTANT (init) = 1;
+
+  /* We didn't split out anything.  */
+  if (num_split_elts == 0)
+    return false;
+
   return complete_p && complete_ctor_at_level_p (TREE_TYPE (init),
 						 num_split_elts, inner_type);
 }

@@ -1,7 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msve-vector-bits=256" } */
 
-typedef short vnx8hi __attribute__((vector_size(32)));
+#include <stdint.h>
+
+typedef int16_t vnx8hi __attribute__((vector_size(32)));
 
 vnx8hi
 foo (vnx8hi x, vnx8hi y)

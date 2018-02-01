@@ -10117,8 +10117,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   bool rval = false;
   gfc_expr *lhs;
   gfc_expr *rhs;
-  int llen = 0;
-  int rlen = 0;
   int n;
   gfc_ref *ref;
   symbol_attribute attr;
@@ -10200,10 +10198,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   if (lhs->ts.type == BT_CHARACTER
 	&& warn_character_truncation)
     {
+      HOST_WIDE_INT llen = 0, rlen = 0;
       if (lhs->ts.u.cl != NULL
 	    && lhs->ts.u.cl->length != NULL
 	    && lhs->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	llen = mpz_get_si (lhs->ts.u.cl->length->value.integer);
+	llen = gfc_mpz_get_hwi (lhs->ts.u.cl->length->value.integer);
 
       if (rhs->expr_type == EXPR_CONSTANT)
  	rlen = rhs->value.character.length;
@@ -10211,13 +10210,13 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       else if (rhs->ts.u.cl != NULL
 		 && rhs->ts.u.cl->length != NULL
 		 && rhs->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	rlen = mpz_get_si (rhs->ts.u.cl->length->value.integer);
+	rlen = gfc_mpz_get_hwi (rhs->ts.u.cl->length->value.integer);
 
       if (rlen && llen && rlen > llen)
 	gfc_warning_now (OPT_Wcharacter_truncation,
 			 "CHARACTER expression will be truncated "
-			 "in assignment (%d/%d) at %L",
-			 llen, rlen, &code->loc);
+			 "in assignment (%ld/%ld) at %L",
+			 (long) llen, (long) rlen, &code->loc);
     }
 
   /* Ensure that a vector index expression for the lvalue is evaluated
@@ -11102,6 +11101,10 @@ start:
 	  break;
 
 	case EXEC_FAIL_IMAGE:
+	case EXEC_FORM_TEAM:
+	case EXEC_CHANGE_TEAM:
+	case EXEC_END_TEAM:
+	case EXEC_SYNC_TEAM:
 	  break;
 
 	case EXEC_ENTRY:
@@ -13554,6 +13557,17 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       return false;
     }
 
+  /* F2003, 15.2.1 - length has to be one.  */
+  if (sym->attr.is_bind_c && c->ts.type == BT_CHARACTER
+      && (c->ts.u.cl == NULL || c->ts.u.cl->length == NULL
+	  || !gfc_is_constant_expr (c->ts.u.cl->length)
+	  || mpz_cmp_si (c->ts.u.cl->length->value.integer, 1) != 0))
+    {
+      gfc_error ("Component %qs of BIND(C) type at %L must have length one",
+		 c->name, &c->loc);
+      return false;
+    }
+
   if (c->attr.proc_pointer && c->ts.interface)
     {
       gfc_symbol *ifc = c->ts.interface;
@@ -14799,6 +14813,15 @@ resolve_symbol (gfc_symbol *sym)
 	  gfc_error ("Variable %qs at %L cannot be BIND(C) because it "
 		     "is neither a COMMON block nor declared at the "
 		     "module level scope", sym->name, &(sym->declared_at));
+	  t = false;
+	}
+      else if (sym->ts.type == BT_CHARACTER
+	       && (sym->ts.u.cl == NULL || sym->ts.u.cl->length == NULL
+		   || !gfc_is_constant_expr (sym->ts.u.cl->length)
+		   || mpz_cmp_si (sym->ts.u.cl->length->value.integer, 1) != 0))
+	{
+	  gfc_error ("BIND(C) Variable %qs at %L must have length one",
+		     sym->name, &sym->declared_at);
 	  t = false;
 	}
       else if (sym->common_head != NULL && sym->attr.implicit_type == 0)

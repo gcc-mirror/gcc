@@ -1,25 +1,25 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O2 -ftree-vectorize -msve-vector-bits=256 --save-temps" } */
 
-#define TYPE unsigned char
+#define TYPE uint8_t
 #define NAME(X) qi_##X
 #include "struct_vect_1.c"
 #undef NAME
 #undef TYPE
 
-#define TYPE unsigned short
+#define TYPE uint16_t
 #define NAME(X) hi_##X
 #include "struct_vect_1.c"
 #undef NAME
 #undef TYPE
 
-#define TYPE unsigned int
+#define TYPE uint32_t
 #define NAME(X) si_##X
 #include "struct_vect_1.c"
 #undef NAME
 #undef TYPE
 
-#define TYPE unsigned long
+#define TYPE uint64_t
 #define NAME(X) di_##X
 #include "struct_vect_1.c"
 #undef NAME

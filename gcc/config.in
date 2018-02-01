@@ -2207,6 +2207,12 @@
 #endif
 
 
+/* Define 0/1 if your linker supports hidden thunks in linkonce sections. */
+#ifndef USED_FOR_TARGET
+#undef USE_HIDDEN_LINKONCE
+#endif
+
+
 /* Define to 1 if the 'long long' type is wider than 'long' but still
    efficiently supported by the host hardware. */
 #ifndef USED_FOR_TARGET

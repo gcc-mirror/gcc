@@ -215,6 +215,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "binfo", BASELINK_BINFO (node), indent + 4);
       print_node (file, "access_binfo", BASELINK_ACCESS_BINFO (node),
 		  indent + 4);
+      print_node (file, "optype", BASELINK_OPTYPE (node), indent + 4);
       break;
     case OVERLOAD:
       print_node (file, "function", OVL_FUNCTION (node), indent+4);

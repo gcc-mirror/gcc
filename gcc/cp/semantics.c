@@ -931,7 +931,7 @@ tree
 begin_for_scope (tree *init)
 {
   tree scope = NULL_TREE;
-  if (flag_new_for_scope > 0)
+  if (flag_new_for_scope)
     scope = do_pushlevel (sk_for);
 
   if (processing_template_decl)
@@ -956,7 +956,7 @@ begin_for_stmt (tree scope, tree init)
 
   if (scope == NULL_TREE)
     {
-      gcc_assert (!init || !(flag_new_for_scope > 0));
+      gcc_assert (!init || !flag_new_for_scope);
       if (!init)
 	scope = begin_for_scope (&init);
     }
@@ -1053,7 +1053,7 @@ finish_for_stmt (tree for_stmt)
     FOR_BODY (for_stmt) = do_poplevel (FOR_BODY (for_stmt));
 
   /* Pop the scope for the body of the loop.  */
-  if (flag_new_for_scope > 0)
+  if (flag_new_for_scope)
     {
       tree scope;
       tree *scope_ptr = (TREE_CODE (for_stmt) == RANGE_FOR_STMT
@@ -1082,7 +1082,7 @@ begin_range_for_stmt (tree scope, tree init)
 
   if (scope == NULL_TREE)
     {
-      gcc_assert (!init || !(flag_new_for_scope > 0));
+      gcc_assert (!init || !flag_new_for_scope);
       if (!init)
 	scope = begin_for_scope (&init);
     }
@@ -2001,12 +2001,12 @@ finish_qualified_id_expr (tree qualifying_class,
   if (template_p)
     {
       if (TREE_CODE (expr) == UNBOUND_CLASS_TEMPLATE)
-	/* cp_parser_lookup_name thought we were looking for a type,
-	   but we're actually looking for a declaration.  */
-	expr = build_qualified_name (/*type*/NULL_TREE,
-				     TYPE_CONTEXT (expr),
-				     TYPE_IDENTIFIER (expr),
-				     /*template_p*/true);
+	{
+	  /* cp_parser_lookup_name thought we were looking for a type,
+	     but we're actually looking for a declaration.  */
+	  qualifying_class = TYPE_CONTEXT (expr);
+	  expr = TYPE_IDENTIFIER (expr);
+	}
       else
 	check_template_keyword (expr);
     }

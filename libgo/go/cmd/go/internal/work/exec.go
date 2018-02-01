@@ -308,7 +308,7 @@ func (b *Builder) build(a *Action) (err error) {
 			// Need to look for install header actions depending on this action,
 			// or depending on a link that depends on this action.
 			needHeader := false
-			if (a.Package.UsesCgo() || a.Package.UsesSwig()) && (cfg.BuildBuildmode == "c-archive" || cfg.BuildBuildmode == "c-header") {
+			if (a.Package.UsesCgo() || a.Package.UsesSwig()) && (cfg.BuildBuildmode == "c-archive" || cfg.BuildBuildmode == "c-shared") {
 				for _, t1 := range a.triggers {
 					if t1.Mode == "install header" {
 						needHeader = true
@@ -629,6 +629,16 @@ func (b *Builder) build(a *Action) (err error) {
 		switch cfg.Goos {
 		case "android", "dragonfly", "freebsd", "linux", "netbsd", "openbsd", "solaris":
 			asmfile, err := b.gccgoBuildIDELFFile(a)
+			if err != nil {
+				return err
+			}
+			ofiles, err := BuildToolchain.asm(b, a, []string{asmfile})
+			if err != nil {
+				return err
+			}
+			objects = append(objects, ofiles...)
+		case "aix":
+			asmfile, err := b.gccgoBuildIDXCOFFFile(a)
 			if err != nil {
 				return err
 			}

@@ -1,3 +1,40 @@
+2018-01-31  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_add): Close descriptor if we use a debugfile.
+	* btest.c (check_open_files): New static function.
+	(main): Call check_open_files.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_open_debugfile_by_debuglink): Don't check CRC if the
+	desired CRC is zero.
+	(elf_add): Don't clear *found_sym and *found_dwarf if debuginfo.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_add): Only release syms_view if it is valid.
+
+2018-01-25  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_add): Another memcpy -> coff_read4 fix.
+
+2018-01-24  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_add): Use coff_read4, not memcpy.
+
+2018-01-24  Ian Lance Taylor  <iant@golang.org>
+
+	PR other/68239
+	* mmap.c (backtrace_free_locked): Don't put more than 16 entries
+	on the free list.
+
+2018-01-19  Tony Reix  <tony.reix@atos.net>
+
+	* xcoff.c (xcoff_incl_compare): New function.
+	(xcoff_incl_search): New function.
+	(xcoff_process_linenos): Use bsearch to find include file.
+	(xcoff_initialize_fileline): Sort include file information.
+
 2018-01-16  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (codes) [GENERATE_FIXED_HUFFMAN_TABLE]: Fix size to be

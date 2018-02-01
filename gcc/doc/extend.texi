@@ -3762,6 +3762,25 @@ the call site.  A function marked with the @code{short_call}
 attribute will always be close enough to be called with a conditional
 branch-and-link instruction, which has a 21-bit offset from
 the call site.
+
+@item jli_always
+@cindex @code{jli_always} function attribute, ARC
+Forces a particular function to be called using @code{jli}
+instruction.  The @code{jli} instruction makes use of a table stored
+into @code{.jlitab} section, which holds the location of the functions
+which are addressed using this instruction.
+
+@item jli_fixed
+@cindex @code{jli_fixed} function attribute, ARC
+Identical like the above one, but the location of the function in the
+@code{jli} table is known and given as an attribute parameter.
+
+@item secure_call
+@cindex @code{secure_call} function attribute, ARC
+This attribute allows one to mark secure-code functions that are
+callable from normal mode.  The location of the secure call function
+into the @code{sjli} table needs to be passed as argument.
+
 @end table
 
 @node ARM Function Attributes
@@ -5875,6 +5894,7 @@ attributes.
 
 @menu
 * Common Variable Attributes::
+* ARC Variable Attributes::
 * AVR Variable Attributes::
 * Blackfin Variable Attributes::
 * H8/300 Variable Attributes::
@@ -6245,6 +6265,18 @@ The @code{visibility} attribute is described in
 @cindex @code{weak} variable attribute
 The @code{weak} attribute is described in
 @ref{Common Function Attributes}.
+
+@end table
+
+@node ARC Variable Attributes
+@subsection ARC Variable Attributes
+
+@table @code
+@item aux
+@cindex @code{aux} variable attribute, ARC
+The @code{aux} attribute is used to directly access the ARC's
+auxiliary register space from C.  The auxilirary register number is
+given via attribute argument.
 
 @end table
 
@@ -6798,6 +6830,7 @@ attributes.
 
 @menu
 * Common Type Attributes::
+* ARC Type Attributes::
 * ARM Type Attributes::
 * MeP Type Attributes::
 * PowerPC Type Attributes::
@@ -7230,6 +7263,16 @@ typeinfo node and exception handling will break.
 To specify multiple attributes, separate them by commas within the
 double parentheses: for example, @samp{__attribute__ ((aligned (16),
 packed))}.
+
+@node ARC Type Attributes
+@subsection ARC Type Attributes
+
+@cindex @code{uncached} type attribute, ARC
+Declaring objects with @code{uncached} allows you to exclude
+data-cache participation in load and store operations on those objects
+without involving the additional semantic implications of
+@code{volatile}.  The @code{.di} instruction suffix is used for all
+loads and stores of data declared @code{uncached}.
 
 @node ARM Type Attributes
 @subsection ARM Type Attributes
@@ -18951,16 +18994,16 @@ vector __uint128_t vec_vsubcuq (vector __uint128_t, vector __uint128_t);
 __int128_t vec_vsubuqm (__int128_t, __int128_t);
 __uint128_t vec_vsubuqm (__uint128_t, __uint128_t);
 
-vector __int128_t __builtin_bcdadd (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_lt (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_eq (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_gt (vector __int128_t, vector__int128_t);
-int __builtin_bcdadd_ov (vector __int128_t, vector__int128_t);
-vector __int128_t bcdsub (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_lt (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_eq (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_gt (vector __int128_t, vector__int128_t);
-int __builtin_bcdsub_ov (vector __int128_t, vector__int128_t);
+vector __int128_t __builtin_bcdadd (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_lt (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_eq (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_gt (vector __int128_t, vector __int128_t);
+int __builtin_bcdadd_ov (vector __int128_t, vector __int128_t);
+vector __int128_t bcdsub (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_lt (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_eq (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_gt (vector __int128_t, vector __int128_t);
+int __builtin_bcdsub_ov (vector __int128_t, vector __int128_t);
 @end smallexample
 
 If the ISA 3.0 instruction set additions (@option{-mcpu=power9})

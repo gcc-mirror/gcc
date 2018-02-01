@@ -611,7 +611,7 @@ Objective-C and Objective-C++ Dialects}.
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
 @emph{ARC Options}
-@gccoptlist{-mbarrel-shifter @gol
+@gccoptlist{-mbarrel-shifter -mjli-always @gol
 -mcpu=@var{cpu}  -mA6  -mARC600  -mA7  -mARC700 @gol
 -mdpfp  -mdpfp-compact  -mdpfp-fast  -mno-dpfp-lrsr @gol
 -mea  -mno-mpy  -mmul32x16  -mmul64  -matomic @gol
@@ -628,7 +628,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmixed-code  -mq-class  -mRcq  -mRcw  -msize-level=@var{level} @gol
 -mtune=@var{cpu}  -mmultcost=@var{num} @gol
 -munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo} @gol
--mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu}}
+-mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu} -mrf16}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -992,6 +992,7 @@ See RS/6000 and PowerPC Options.
 -mdiv  -mno-div @gol
 -march=@var{ISA-string} @gol
 -mtune=@var{processor-string} @gol
+-mpreferred-stack-boundary=@var{num} @gol
 -msmall-data-limit=@var{N-bytes} @gol
 -msave-restore  -mno-save-restore @gol
 -mstrict-align -mno-strict-align @gol
@@ -1231,7 +1232,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-offset=@var{offset} @gol
 -mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
 -mgeneral-regs-only -mcall-ms2sysv-xlogues @gol
--mindirect-branch=@var{choice} -mfunction-return==@var{choice} @gol
+-mindirect-branch=@var{choice} -mfunction-return=@var{choice} @gol
 -mindirect-branch-register}
 
 @emph{x86 Windows Options}
@@ -2467,9 +2468,8 @@ a @i{for-init-statement} extends to the end of the enclosing scope,
 as was the case in old versions of G++, and other (traditional)
 implementations of C++.
 
-If neither flag is given, the default is to follow the standard,
-but to allow and give a warning for old-style code that would
-otherwise be invalid, or have different behavior.
+This option is deprecated and the associated non-standard
+functionality will be removed.
 
 @item -fno-gnu-keywords
 @opindex fno-gnu-keywords
@@ -14920,6 +14920,11 @@ is being compiled:
 Generate instructions supported by barrel shifter.  This is the default
 unless @option{-mcpu=ARC601} or @samp{-mcpu=ARCEM} is in effect.
 
+@item -mjli-always
+@opindex mjli-alawys
+Force to call a function using jli_s instruction.  This option is
+valid only for ARCv2 architecture.
+
 @item -mcpu=@var{cpu}
 @opindex mcpu
 Set architecture type, register usage, and instruction scheduling
@@ -15003,6 +15008,10 @@ instructions enabled.
 
 @item nps400
 Compile for ARC 700 on NPS400 chip.
+
+@item em_mini
+Compile for ARC EM minimalist configuration featuring reduced register
+set.
 
 @end table
 
@@ -15261,6 +15270,12 @@ hold the required loop-counter value.  Depending on the width
 specified, the compiler and run-time library might continue to use the
 loop mechanism for various needs.  This option defines macro
 @code{__ARC_LPC_WIDTH__} with the value of @var{width}.
+
+@item -mrf16
+@opindex mrf16
+This option instructs the compiler to generate code for a 16-entry
+register file.  This option defines the @code{__ARC_RF16__}
+preprocessor macro.
 
 @end table
 
@@ -22119,6 +22134,16 @@ lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, and @samp{rv32imaf}.
 Optimize the output for the given processor, specified by microarchitecture
 name.
 
+@item -mpreferred-stack-boundary=@var{num}
+@opindex mpreferred-stack-boundary
+Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
+byte boundary.  If @option{-mpreferred-stack-boundary} is not specified,
+the default is 4 (16 bytes or 128-bits).
+
+@strong{Warning:} If you use this switch, then you must build all modules with
+the same value, including any libraries.  This includes the system libraries
+and startup modules.
+
 @item -msmall-data-limit=@var{n}
 @opindex msmall-data-limit
 Put global and static data smaller than @var{n} bytes into a special section
@@ -22369,13 +22394,19 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
 @samp{power6}, @samp{power6x}, @samp{power7}, @samp{power8},
 @samp{power9}, @samp{powerpc}, @samp{powerpc64}, @samp{powerpc64le},
-and @samp{rs64}.
+@samp{rs64}, and @samp{native}.
 
 @option{-mcpu=powerpc}, @option{-mcpu=powerpc64}, and
 @option{-mcpu=powerpc64le} specify pure 32-bit PowerPC (either
 endian), 64-bit big endian PowerPC and 64-bit little endian PowerPC
 architecture machine types, with an appropriate, generic processor
 model assumed for scheduling purposes.
+
+Specifying @samp{native} as cpu type detects and selects the
+architecture option that corresponds to the host processor of the
+system performing the compilation.
+@option{-mcpu=native} has no effect if GCC does not recognize the
+processor.
 
 The other options specify a specific processor.  Code generated under
 those options runs best on that processor, and may not run at all on

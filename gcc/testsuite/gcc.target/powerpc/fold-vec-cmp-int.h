@@ -79,8 +79,3 @@ test6_ne (vector unsigned int x, vector unsigned int y)
   return vec_cmpne (x, y);
 }
 
-/* { dg-final { scan-assembler-times "vcmpequw" 4 } } */
-/* { dg-final { scan-assembler-times "vcmpgtsw" 4 } } */
-/* { dg-final { scan-assembler-times "vcmpgtuw" 4 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 6 } } */
-

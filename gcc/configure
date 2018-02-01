@@ -23573,6 +23573,14 @@ $as_echo "$gcc_cv_as_shf_merge" >&6; }
 
 
 fi
+case "$target" in
+  i?86-*-solaris2.10* | x86_64-*-solaris2.10*)
+    # SHF_MERGE support in Solaris 10/x86 ld is broken.
+    if test x"$gnu_ld" = xno; then
+      gcc_cv_as_shf_merge=no
+    fi
+    ;;
+esac
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_GAS_SHF_MERGE `if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`
@@ -23799,6 +23807,35 @@ cat >>confdefs.h <<_ACEOF
     || test $gcc_cv_as_comdat_group_group = yes; then echo 1; else echo 0; fi`
 _ACEOF
 
+
+# Restrict this test to Solaris/x86: other targets define this statically.
+case "${target}" in
+  i?86-*-solaris2* | x86_64-*-solaris2*)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking support for hidden thunks in linkonce sections" >&5
+$as_echo_n "checking support for hidden thunks in linkonce sections... " >&6; }
+    if test $in_tree_ld = yes || echo "$ld_ver" | grep GNU > /dev/null; then
+      hidden_linkonce=yes
+    else
+      case "${target}" in
+	# Full support for hidden thunks in linkonce sections only appeared in
+	# Solaris 11/OpenSolaris.
+        *-*-solaris2.1[1-9]*)
+	  hidden_linkonce=yes
+	  ;;
+	*)
+	  hidden_linkonce=no
+	  ;;
+      esac
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $hidden_linkonce" >&5
+$as_echo "$hidden_linkonce" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define USE_HIDDEN_LINKONCE `if test $hidden_linkonce = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+  ;;
+esac
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for line table discriminator support" >&5
 $as_echo_n "checking assembler for line table discriminator support... " >&6; }

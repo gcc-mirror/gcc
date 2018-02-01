@@ -541,6 +541,9 @@ class Gcc_backend : public Backend
   tree
   non_zero_size_type(tree);
 
+  tree
+  convert_tree(tree, tree, Location);
+
 private:
   void
   define_builtin(built_in_function bcode, const char* name, const char* libname,
@@ -1785,8 +1788,7 @@ Gcc_backend::constructor_expression(Btype* btype,
       constructor_elt empty = {NULL, NULL};
       constructor_elt* elt = init->quick_push(empty);
       elt->index = field;
-      elt->value = fold_convert_loc(location.gcc_location(), TREE_TYPE(field),
-                                    val);
+      elt->value = this->convert_tree(TREE_TYPE(field), val, location);
       if (!TREE_CONSTANT(elt->value))
 	is_constant = false;
     }
@@ -2055,29 +2057,7 @@ Gcc_backend::assignment_statement(Bfunction* bfn, Bexpression* lhs,
     return this->compound_statement(this->expression_statement(bfn, lhs),
 				    this->expression_statement(bfn, rhs));
 
-  // Sometimes the same unnamed Go type can be created multiple times
-  // and thus have multiple tree representations.  Make sure this does
-  // not confuse the middle-end.
-  if (TREE_TYPE(lhs_tree) != TREE_TYPE(rhs_tree))
-    {
-      tree lhs_type_tree = TREE_TYPE(lhs_tree);
-      gcc_assert(TREE_CODE(lhs_type_tree) == TREE_CODE(TREE_TYPE(rhs_tree)));
-      if (POINTER_TYPE_P(lhs_type_tree)
-	  || INTEGRAL_TYPE_P(lhs_type_tree)
-	  || SCALAR_FLOAT_TYPE_P(lhs_type_tree)
-	  || COMPLEX_FLOAT_TYPE_P(lhs_type_tree))
-	rhs_tree = fold_convert_loc(location.gcc_location(), lhs_type_tree,
-				    rhs_tree);
-      else if (TREE_CODE(lhs_type_tree) == RECORD_TYPE
-	       || TREE_CODE(lhs_type_tree) == ARRAY_TYPE)
-	{
-	  gcc_assert(int_size_in_bytes(lhs_type_tree)
-		     == int_size_in_bytes(TREE_TYPE(rhs_tree)));
-	  rhs_tree = fold_build1_loc(location.gcc_location(),
-				     VIEW_CONVERT_EXPR,
-				     lhs_type_tree, rhs_tree);
-	}
-    }
+  rhs_tree = this->convert_tree(TREE_TYPE(lhs_tree), rhs_tree, location);
 
   return this->make_statement(fold_build2_loc(location.gcc_location(),
                                               MODIFY_EXPR,
@@ -2507,6 +2487,43 @@ Gcc_backend::non_zero_size_type(tree type)
   gcc_unreachable();
 }
 
+// Convert EXPR_TREE to TYPE_TREE.  Sometimes the same unnamed Go type
+// can be created multiple times and thus have multiple tree
+// representations.  Make sure this does not confuse the middle-end.
+
+tree
+Gcc_backend::convert_tree(tree type_tree, tree expr_tree, Location location)
+{
+  if (type_tree == TREE_TYPE(expr_tree))
+    return expr_tree;
+
+  if (type_tree == error_mark_node
+      || expr_tree == error_mark_node
+      || TREE_TYPE(expr_tree) == error_mark_node)
+    return error_mark_node;
+
+  gcc_assert(TREE_CODE(type_tree) == TREE_CODE(TREE_TYPE(expr_tree)));
+  if (POINTER_TYPE_P(type_tree)
+      || INTEGRAL_TYPE_P(type_tree)
+      || SCALAR_FLOAT_TYPE_P(type_tree)
+      || COMPLEX_FLOAT_TYPE_P(type_tree))
+    return fold_convert_loc(location.gcc_location(), type_tree, expr_tree);
+  else if (TREE_CODE(type_tree) == RECORD_TYPE
+	   || TREE_CODE(type_tree) == ARRAY_TYPE)
+    {
+      gcc_assert(int_size_in_bytes(type_tree)
+		 == int_size_in_bytes(TREE_TYPE(expr_tree)));
+      if (TYPE_MAIN_VARIANT(type_tree)
+	  == TYPE_MAIN_VARIANT(TREE_TYPE(expr_tree)))
+	return fold_build1_loc(location.gcc_location(), NOP_EXPR,
+			       type_tree, expr_tree);
+      return fold_build1_loc(location.gcc_location(), VIEW_CONVERT_EXPR,
+			     type_tree, expr_tree);
+    }
+
+  gcc_unreachable();
+}
+
 // Make a global variable.
 
 Bvariable*
@@ -2717,8 +2734,7 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
     }
 
   if (this->type_size(btype) != 0 && init_tree != NULL_TREE)
-    DECL_INITIAL(var) = fold_convert_loc(location.gcc_location(), type_tree,
-                                         init_tree);
+    DECL_INITIAL(var) = this->convert_tree(type_tree, init_tree, location);
 
   if (is_address_taken)
     TREE_ADDRESSABLE(var) = 1;

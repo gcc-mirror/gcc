@@ -954,7 +954,7 @@ Common Report Var(align_functions,0) Optimization UInteger
 Align the start of functions.
 
 falign-functions=
-Common RejectNegative Joined UInteger Var(align_functions)
+Common RejectNegative Joined UInteger Var(align_functions) Optimization
 
 flimit-function-alignment
 Common Report Var(flag_limit_function_alignment) Optimization Init(0)
@@ -964,21 +964,21 @@ Common Report Var(align_jumps,0) Optimization UInteger
 Align labels which are only reached by jumping.
 
 falign-jumps=
-Common RejectNegative Joined UInteger Var(align_jumps)
+Common RejectNegative Joined UInteger Var(align_jumps) Optimization
 
 falign-labels
 Common Report Var(align_labels,0) Optimization UInteger
 Align all labels.
 
 falign-labels=
-Common RejectNegative Joined UInteger Var(align_labels)
+Common RejectNegative Joined UInteger Var(align_labels) Optimization
 
 falign-loops
 Common Report Var(align_loops,0) Optimization UInteger
 Align the start of loops.
 
 falign-loops=
-Common RejectNegative Joined UInteger Var(align_loops)
+Common RejectNegative Joined UInteger Var(align_loops) Optimization
 
 fargument-alias
 Common Ignore

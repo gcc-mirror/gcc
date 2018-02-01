@@ -13,6 +13,6 @@ test3 (vector signed short x)
   return vec_abs (x);
 }
 
-/* { dg-final { scan-assembler-times "vspltisw|vxor" 1 } } */
+/* { dg-final { scan-assembler-times "vspltisw|xxspltib|vxor" 1 } } */
 /* { dg-final { scan-assembler-times "vsubuhm" 1 } } */
 /* { dg-final { scan-assembler-times "vmaxsh" 1 } } */

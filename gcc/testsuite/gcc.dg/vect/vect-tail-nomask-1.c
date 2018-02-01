@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-require-weak "" } */
 /* { dg-skip-if "No undefined weak" { hppa*-*-hpux* && { ! lp64 } } } */
 /* { dg-skip-if "No undefined weak" { nvptx-*-* } } */

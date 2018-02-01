@@ -373,9 +373,6 @@ builtin_memref::builtin_memref (tree expr, tree size)
 		  offrange[1] += off;
 		}
 	    }
-
-	if (TREE_CODE (base) == SSA_NAME && SSA_NAME_VAR (base))
-	  base = SSA_NAME_VAR (base);
       }
 
   if (size)

@@ -289,18 +289,16 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
       (opts_for_fn (caller->decl)->x_##flag		\
        != opts_for_fn (callee->decl)->x_##flag)
 
- /* Decide if we can inline the edge and possibly update
+/* Decide if we can inline the edge and possibly update
    inline_failed reason.  
    We check whether inlining is possible at all and whether
    caller growth limits allow doing so.  
 
-   if REPORT is true, output reason to the dump file.  
-
-   if DISREGARD_LIMITS is true, ignore size limits.*/
+   if REPORT is true, output reason to the dump file. */
 
 static bool
 can_inline_edge_p (struct cgraph_edge *e, bool report,
-		   bool disregard_limits = false, bool early = false)
+		   bool early = false)
 {
   gcc_checking_assert (e->inline_failed);
 
@@ -316,9 +314,6 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
   cgraph_node *caller = e->caller->global.inlined_to
 		        ? e->caller->global.inlined_to : e->caller;
   cgraph_node *callee = e->callee->ultimate_alias_target (&avail, caller);
-  tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller->decl);
-  tree callee_tree
-    = callee ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee->decl) : NULL;
 
   if (!callee->definition)
     {
@@ -379,12 +374,47 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_ATTRIBUTE_MISMATCH;
       inlinable = false;
     }
+  if (!inlinable && report)
+    report_inline_failed_reason (e);
+  return inlinable;
+}
+
+/* Decide if we can inline the edge and possibly update
+   inline_failed reason.  
+   We check whether inlining is possible at all and whether
+   caller growth limits allow doing so.  
+
+   if REPORT is true, output reason to the dump file.
+
+   if DISREGARD_LIMITS is true, ignore size limits.  */
+
+static bool
+can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
+		             bool disregard_limits = false, bool early = false)
+{
+  gcc_checking_assert (e->inline_failed);
+
+  if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
+    {
+      if (report)
+        report_inline_failed_reason (e);
+      return false;
+    }
+
+  bool inlinable = true;
+  enum availability avail;
+  cgraph_node *caller = e->caller->global.inlined_to
+		        ? e->caller->global.inlined_to : e->caller;
+  cgraph_node *callee = e->callee->ultimate_alias_target (&avail, caller);
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (caller->decl);
+  tree callee_tree
+    = callee ? DECL_FUNCTION_SPECIFIC_OPTIMIZATION (callee->decl) : NULL;
   /* Check if caller growth allows the inlining.  */
-  else if (!DECL_DISREGARD_INLINE_LIMITS (callee->decl)
-	   && !disregard_limits
-	   && !lookup_attribute ("flatten",
-				 DECL_ATTRIBUTES (caller->decl))
-           && !caller_growth_limits (e))
+  if (!DECL_DISREGARD_INLINE_LIMITS (callee->decl)
+      && !disregard_limits
+      && !lookup_attribute ("flatten",
+     		 DECL_ATTRIBUTES (caller->decl))
+      && !caller_growth_limits (e))
     inlinable = false;
   /* Don't inline a function with a higher optimization level than the
      caller.  FIXME: this is really just tip of iceberg of handling
@@ -541,7 +571,8 @@ can_early_inline_edge_p (struct cgraph_edge *e)
 	fprintf (dump_file, "  edge not inlinable: not in SSA form\n");
       return false;
     }
-  if (!can_inline_edge_p (e, true, false, true))
+  if (!can_inline_edge_p (e, true, true)
+      || !can_inline_edge_by_limits_p (e, true, false, true))
     return false;
   return true;
 }
@@ -925,6 +956,8 @@ check_callers (struct cgraph_node *node, void *has_hot_call)
          return true;
        if (e->recursive_p ())
 	 return true;
+       if (!can_inline_edge_by_limits_p (e, true))
+         return true;
        if (!(*(bool *)has_hot_call) && e->maybe_hot_p ())
 	 *(bool *)has_hot_call = true;
      }
@@ -1317,8 +1350,9 @@ update_caller_keys (edge_heap_t *heap, struct cgraph_node *node,
         if (!check_inlinablity_for
 	    || check_inlinablity_for == edge)
 	  {
-	    if (want_inline_small_function_p (edge, false)
-		&& can_inline_edge_p (edge, false))
+	    if (can_inline_edge_p (edge, false)
+		&& want_inline_small_function_p (edge, false)
+		&& can_inline_edge_by_limits_p (edge, false))
 	      update_edge_key (heap, edge);
 	    else if (edge->aux)
 	      {
@@ -1361,8 +1395,9 @@ update_callee_keys (edge_heap_t *heap, struct cgraph_node *node,
 	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
 	  {
-	    if (want_inline_small_function_p (e, false)
-		&& can_inline_edge_p (e, false))
+	    if (can_inline_edge_p (e, false)
+		&& want_inline_small_function_p (e, false)
+		&& can_inline_edge_by_limits_p (e, false))
 	      update_edge_key (heap, e);
 	    else if (e->aux)
 	      {
@@ -1449,7 +1484,8 @@ recursive_inlining (struct cgraph_edge *edge,
       struct cgraph_edge *curr = heap.extract_min ();
       struct cgraph_node *cnode, *dest = curr->callee;
 
-      if (!can_inline_edge_p (curr, true))
+      if (!can_inline_edge_p (curr, true)
+	  || can_inline_edge_by_limits_p (curr, true))
 	continue;
 
       /* MASTER_CLONE is produced in the case we already started modified
@@ -1569,7 +1605,8 @@ add_new_edges_to_heap (edge_heap_t *heap, vec<cgraph_edge *> new_edges)
       gcc_assert (!edge->aux);
       if (edge->inline_failed
 	  && can_inline_edge_p (edge, true)
-	  && want_inline_small_function_p (edge, true))
+	  && want_inline_small_function_p (edge, true)
+	  && can_inline_edge_by_limits_p (edge, true))
         edge->aux = heap->insert (edge_badness (edge, false), edge);
     }
 }
@@ -1630,7 +1667,9 @@ speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
   if (!anticipate_inlining && e->inline_failed && !target->local.local)
     return false;
   /* For overwritable targets there is not much to do.  */
-  if (e->inline_failed && !can_inline_edge_p (e, false, true))
+  if (e->inline_failed
+      && (!can_inline_edge_p (e, false)
+	  || !can_inline_edge_by_limits_p (e, false, true)))
     return false;
   /* OK, speculation seems interesting.  */
   return true;
@@ -1790,6 +1829,7 @@ inline_small_functions (void)
 	      && !edge->aux
 	      && can_inline_edge_p (edge, true)
 	      && want_inline_small_function_p (edge, true)
+	      && can_inline_edge_by_limits_p (edge, true)
 	      && edge->inline_failed)
 	    {
 	      gcc_assert (!edge->aux);
@@ -1890,7 +1930,8 @@ inline_small_functions (void)
 	    badness = current_badness;
 	}
 
-      if (!can_inline_edge_p (edge, true))
+      if (!can_inline_edge_p (edge, true)
+	  || !can_inline_edge_by_limits_p (edge, true))
 	{
 	  resolve_noninline_speculation (&edge_heap, edge);
 	  continue;
@@ -2101,6 +2142,7 @@ flatten_function (struct cgraph_node *node, bool early)
 	 too.  */
       if (!early
 	  ? !can_inline_edge_p (e, true)
+	    && !can_inline_edge_by_limits_p (e, true)
 	  : !can_early_inline_edge_p (e))
 	continue;
 
@@ -2155,6 +2197,7 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
       struct cgraph_node *caller = node->callers->caller;
 
       if (!can_inline_edge_p (node->callers, true)
+	  || !can_inline_edge_by_limits_p (node->callers, true)
 	  || node->callers->recursive_p ())
 	{
 	  if (dump_file)

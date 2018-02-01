@@ -37,7 +37,9 @@ associated (const gfc_array_void *pointer, const gfc_array_void *target)
     return 0;
   if (GFC_DESCRIPTOR_DATA (pointer) != GFC_DESCRIPTOR_DATA (target))
     return 0;
-  if (GFC_DESCRIPTOR_DTYPE (pointer) != GFC_DESCRIPTOR_DTYPE (target))
+  if (GFC_DESCRIPTOR_DTYPE (pointer).elem_len != GFC_DESCRIPTOR_DTYPE (target).elem_len)
+    return 0;
+  if (GFC_DESCRIPTOR_DTYPE (pointer).type != GFC_DESCRIPTOR_DTYPE (target).type)
     return 0;
 
   rank = GFC_DESCRIPTOR_RANK (pointer);

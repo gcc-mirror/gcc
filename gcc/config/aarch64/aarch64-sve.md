@@ -84,6 +84,32 @@
 				      gen_vec_duplicate<mode>);
 	DONE;
       }
+
+    /* Optimize subregs on big-endian targets: we can use REV[BHW]
+       instead of going through memory.  */
+    if (BYTES_BIG_ENDIAN
+        && aarch64_maybe_expand_sve_subreg_move (operands[0], operands[1]))
+      DONE;
+  }
+)
+
+;; A pattern for optimizing SUBREGs that have a reinterpreting effect
+;; on big-endian targets; see aarch64_maybe_expand_sve_subreg_move
+;; for details.  We use a special predicate for operand 2 to reduce
+;; the number of patterns.
+(define_insn_and_split "*aarch64_sve_mov<mode>_subreg_be"
+  [(set (match_operand:SVE_ALL 0 "aarch64_sve_nonimmediate_operand" "=w")
+	(unspec:SVE_ALL
+          [(match_operand:VNx16BI 1 "register_operand" "Upl")
+	   (match_operand 2 "aarch64_any_register_operand" "w")]
+	  UNSPEC_REV_SUBREG))]
+  "TARGET_SVE && BYTES_BIG_ENDIAN"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_split_sve_subreg_move (operands[0], operands[1], operands[2]);
+    DONE;
   }
 )
 
@@ -484,18 +510,52 @@
   }
 )
 
+;; Extract element zero.  This is a special case because we want to force
+;; the registers to be the same for the second alternative, and then
+;; split the instruction into nothing after RA.
+(define_insn_and_split "*vec_extract<mode><Vel>_0"
+  [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
+	(vec_select:<VEL>
+	  (match_operand:SVE_ALL 1 "register_operand" "w, 0, w")
+	  (parallel [(const_int 0)])))]
+  "TARGET_SVE"
+  {
+    operands[1] = gen_rtx_REG (<V128>mode, REGNO (operands[1]));
+    switch (which_alternative)
+      {
+	case 0:
+	  return "umov\\t%<vwcore>0, %1.<Vetype>[0]";
+	case 1:
+	  return "#";
+	case 2:
+	  return "st1\\t{%1.<Vetype>}[0], %0";
+	default:
+	  gcc_unreachable ();
+      }
+  }
+  "&& reload_completed
+   && REG_P (operands[0])
+   && REGNO (operands[0]) == REGNO (operands[1])"
+  [(const_int 0)]
+  {
+    emit_note (NOTE_INSN_DELETED);
+    DONE;
+  }
+  [(set_attr "type" "neon_to_gp_q, untyped, neon_store1_one_lane_q")]
+)
+
 ;; Extract an element from the Advanced SIMD portion of the register.
 ;; We don't just reuse the aarch64-simd.md pattern because we don't
-;; want any chnage in lane number on big-endian targets.
+;; want any change in lane number on big-endian targets.
 (define_insn "*vec_extract<mode><Vel>_v128"
   [(set (match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "=r, w, Utv")
 	(vec_select:<VEL>
 	  (match_operand:SVE_ALL 1 "register_operand" "w, w, w")
 	  (parallel [(match_operand:SI 2 "const_int_operand")])))]
   "TARGET_SVE
-   && IN_RANGE (INTVAL (operands[2]) * GET_MODE_SIZE (<VEL>mode), 0, 15)"
+   && IN_RANGE (INTVAL (operands[2]) * GET_MODE_SIZE (<VEL>mode), 1, 15)"
   {
-    operands[1] = gen_lowpart (<V128>mode, operands[1]);
+    operands[1] = gen_rtx_REG (<V128>mode, REGNO (operands[1]));
     switch (which_alternative)
       {
 	case 0:
@@ -618,14 +678,14 @@
 ;; Load 128 bits from memory and duplicate to fill a vector.  Since there
 ;; are so few operations on 128-bit "elements", we don't define a VNx1TI
 ;; and simply use vectors of bytes instead.
-(define_insn "sve_ld1rq"
-  [(set (match_operand:VNx16QI 0 "register_operand" "=w")
-	(unspec:VNx16QI
-	  [(match_operand:VNx16BI 1 "register_operand" "Upl")
+(define_insn "*sve_ld1rq<Vesize>"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
 	   (match_operand:TI 2 "aarch64_sve_ld1r_operand" "Uty")]
 	  UNSPEC_LD1RQ))]
   "TARGET_SVE"
-  "ld1rqb\t%0.b, %1/z, %2"
+  "ld1rq<Vesize>\t%0.<Vetype>, %1/z, %2"
 )
 
 ;; Implement a predicate broadcast by shifting the low bit of the scalar

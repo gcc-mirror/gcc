@@ -180,7 +180,10 @@ along with GCC; see the file COPYING3.  If not see
    The values-X[ac].o objects set the variable _lib_version.  The Studio C
    compilers use values-Xc.o with either -Xc or (since Studio 12.6)
    -pedantic to select strictly conformant ISO C behaviour, otherwise
-   values-Xa.o.
+   values-Xa.o.  Since -pedantic is a diagnostic option only in GCC, we
+   need to specifiy the -std=c* options and -std=iso9899:199409.  We
+   traditionally include -ansi, which affects C and C++, and also -std=c++*
+   for consistency.
 
    The values-xpg[46].o objects define either or both __xpg[46] variables,
    selecting XPG4 mode (__xpg4) and conforming C99/SUSv3 behavior (__xpg6).
@@ -195,7 +198,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef STARTFILE_ARCH_SPEC
 #define STARTFILE_ARCH_SPEC \
   "%{!shared:%{!symbolic: \
-     %{pedantic:values-Xc.o%s; :values-Xa.o%s} \
+     %{ansi|std=c*|std=iso9899\\:199409:values-Xc.o%s; :values-Xa.o%s} \
      %{std=c90|std=gnu90:values-xpg4.o%s; :values-xpg6.o%s}}}"
 
 #if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)

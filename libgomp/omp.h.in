@@ -101,7 +101,7 @@ extern void omp_unset_lock (omp_lock_t *) __GOMP_NOTHROW;
 extern int omp_test_lock (omp_lock_t *) __GOMP_NOTHROW;
 
 extern void omp_init_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
-extern void omp_init_nest_lock_with_hint (omp_lock_t *, omp_lock_hint_t)
+extern void omp_init_nest_lock_with_hint (omp_nest_lock_t *, omp_lock_hint_t)
   __GOMP_NOTHROW;
 extern void omp_destroy_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;
 extern void omp_set_nest_lock (omp_nest_lock_t *) __GOMP_NOTHROW;

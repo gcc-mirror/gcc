@@ -326,7 +326,8 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   /* From our constraint generation we may get modulo operations that
      we cannot represent explicitely but that are no-ops for TYPE.
      Elide those.  */
-  if (expr_type == isl_ast_op_pdiv_r
+  if ((expr_type == isl_ast_op_pdiv_r
+       || expr_type == isl_ast_op_add)
       && isl_ast_expr_get_type (arg_expr) == isl_ast_expr_int
       && (wi::exact_log2 (widest_int_from_isl_expr_int (arg_expr))
 	  >= TYPE_PRECISION (type)))

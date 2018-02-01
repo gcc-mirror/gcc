@@ -60,7 +60,7 @@
 ARC_OPT (FL_CD,	      (1ULL << 0), MASK_CODE_DENSITY,	   "code density")
 ARC_OPT (FL_DIVREM,   (1ULL << 1), MASK_DIVREM,		   "div/rem")
 ARC_OPT (FL_NORM,     (1ULL << 2), MASK_NORM_SET,	   "norm")
-
+ARC_OPT (FL_RF16,     (1ULL << 3), MASK_RF16,              "rf16")
 ARC_OPT (FL_ATOMIC,   (1ULL << 4), MASK_ATOMIC,		   "atomic")
 ARC_OPT (FL_LL64,     (1ULL << 5), MASK_LL64,		   "double load/store")
 ARC_OPT (FL_BS,	      (1ULL << 6), MASK_BARREL_SHIFTER,	   "barrel shifter")

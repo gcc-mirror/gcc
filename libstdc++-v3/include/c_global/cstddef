@@ -65,7 +65,7 @@ namespace std
   /// std::byte
   enum class byte : unsigned char {};
 
-  template<typename _IntegerType> struct __byte_operand;
+  template<typename _IntegerType> struct __byte_operand { };
   template<> struct __byte_operand<bool> { using __type = byte; };
   template<> struct __byte_operand<char> { using __type = byte; };
   template<> struct __byte_operand<signed char> { using __type = byte; };

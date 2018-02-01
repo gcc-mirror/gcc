@@ -66,9 +66,10 @@ get_scalar_to_descriptor_type (tree scalar, symbol_attribute attr)
 tree
 gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
 {
-  tree desc, type;
+  tree desc, type, etype;
 
   type = get_scalar_to_descriptor_type (scalar, attr);
+  etype = TREE_TYPE (scalar);
   desc = gfc_create_var (type, "desc");
   DECL_ARTIFICIAL (desc) = 1;
 
@@ -81,8 +82,10 @@ gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
     }
   if (!POINTER_TYPE_P (TREE_TYPE (scalar)))
     scalar = gfc_build_addr_expr (NULL_TREE, scalar);
+  else if (TREE_TYPE (etype) && TREE_CODE (TREE_TYPE (etype)) == ARRAY_TYPE)
+    etype = TREE_TYPE (etype);
   gfc_add_modify (&se->pre, gfc_conv_descriptor_dtype (desc),
-		  gfc_get_dtype (type));
+		  gfc_get_dtype_rank_type (0, etype));
   gfc_conv_descriptor_data_set (&se->pre, desc, scalar);
 
   /* Copy pointer address back - but only if it could have changed and
@@ -5322,9 +5325,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      && fsym->ts.type != BT_CLASS && e->expr_type != EXPR_NULL)
 		    {
 		      tmp = parmse.expr;
-		      if (TREE_CODE (tmp) == ADDR_EXPR
-			  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (tmp, 0))))
-			tmp = TREE_OPERAND (tmp, 0);
+		      if (TREE_CODE (tmp) == ADDR_EXPR)
+			tmp = build_fold_indirect_ref_loc (input_location, tmp);
 		      parmse.expr = gfc_conv_scalar_to_descriptor (&parmse, tmp,
 								   fsym->attr);
 		      parmse.expr = gfc_build_addr_expr (NULL_TREE,
@@ -6407,8 +6409,6 @@ fill_with_spaces (tree start, tree type, tree size)
   tree i, el, exit_label, cond, tmp;
 
   /* For a simple char type, we can call memset().  */
-  /* TODO: This code does work and is potentially more efficient, but
-     causes spurious -Wstringop-overflow warnings.
   if (compare_tree_int (TYPE_SIZE_UNIT (type), 1) == 0)
     return build_call_expr_loc (input_location,
 			    builtin_decl_explicit (BUILT_IN_MEMSET),
@@ -6416,7 +6416,6 @@ fill_with_spaces (tree start, tree type, tree size)
 			    build_int_cst (gfc_get_int_type (gfc_c_int_kind),
 					   lang_hooks.to_target_charset (' ')),
 				fold_convert (size_type_node, size));
-  */
 
   /* Otherwise, we use a loop:
 	for (el = start, i = size; i > 0; el--, i+= TYPE_SIZE_UNIT (type))
@@ -6522,11 +6521,20 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
 
   /* The string copy algorithm below generates code like
 
-     if (dlen > 0) {
-         memmove (dest, src, min(dlen, slen));
-         if (slen < dlen)
-             memset(&dest[slen], ' ', dlen - slen);
-     }
+     if (destlen > 0)
+       {
+         if (srclen < destlen)
+           {
+             memmove (dest, src, srclen);
+             // Pad with spaces.
+             memset (&dest[srclen], ' ', destlen - srclen);
+           }
+         else
+           {
+             // Truncate if too long.
+             memmove (dest, src, destlen);
+           }
+       }
   */
 
   /* Do nothing if the destination length is zero.  */
@@ -6555,20 +6563,15 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   else
     src = gfc_build_addr_expr (pvoid_type_node, src);
 
-  /* First do the memmove. */
-  tmp2 = fold_build2_loc (input_location, MIN_EXPR, TREE_TYPE (dlen), dlen,
-			  slen);
-  tmp2 = build_call_expr_loc (input_location,
-			      builtin_decl_explicit (BUILT_IN_MEMMOVE),
-			      3, dest, src,
-			      fold_convert (size_type_node, tmp2));
-  stmtblock_t tmpblock2;
-  gfc_init_block (&tmpblock2);
-  gfc_add_expr_to_block (&tmpblock2, tmp2);
-
-  /* If the destination is longer, fill the end with spaces.  */
+  /* Truncate string if source is too long.  */
   cond2 = fold_build2_loc (input_location, LT_EXPR, logical_type_node, slen,
 			   dlen);
+
+  /* Copy and pad with spaces.  */
+  tmp3 = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_MEMMOVE),
+			      3, dest, src,
+			      fold_convert (size_type_node, slen));
 
   /* Wstringop-overflow appears at -O3 even though this warning is not
      explicitly available in fortran nor can it be switched off. If the
@@ -6584,14 +6587,19 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   tmp4 = fill_with_spaces (tmp4, chartype, tmp);
 
   gfc_init_block (&tempblock);
+  gfc_add_expr_to_block (&tempblock, tmp3);
   gfc_add_expr_to_block (&tempblock, tmp4);
   tmp3 = gfc_finish_block (&tempblock);
 
+  /* The truncated memmove if the slen >= dlen.  */
+  tmp2 = build_call_expr_loc (input_location,
+			      builtin_decl_explicit (BUILT_IN_MEMMOVE),
+			      3, dest, src,
+			      fold_convert (size_type_node, dlen));
+
   /* The whole copy_string function is there.  */
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond2,
-			 tmp3, build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&tmpblock2, tmp);
-  tmp = gfc_finish_block (&tmpblock2);
+			 tmp3, tmp2);
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond, tmp,
 			 build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
@@ -7611,8 +7619,8 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 		rank = 1;
 	      size = integer_zero_node;
 	      desc = field;
-	      gfc_add_modify (&block, gfc_conv_descriptor_dtype (desc),
-			      build_int_cst (gfc_array_index_type, rank));
+	      gfc_add_modify (&block, gfc_conv_descriptor_rank (desc),
+			      build_int_cst (signed_char_type_node, rank));
 	    }
 	  else
 	    {

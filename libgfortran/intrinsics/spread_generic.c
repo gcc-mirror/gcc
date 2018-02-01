@@ -274,7 +274,6 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
   type_size = GFC_DTYPE_TYPE_SIZE(ret);
   switch(type_size)
     {
-    case GFC_DTYPE_DERIVED_1:
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:
       spread_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) source,
@@ -371,7 +370,16 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 # endif
 #endif
 
-    case GFC_DTYPE_DERIVED_2:
+    }
+  
+  switch (GFC_DESCRIPTOR_SIZE (ret))
+    {
+    case 1:
+      spread_i1 ((gfc_array_i1 *) ret, (gfc_array_i1 *) source,
+		 *along, *pncopies);
+      return;
+
+    case 2:
       if (GFC_UNALIGNED_2(ret->base_addr) || GFC_UNALIGNED_2(source->base_addr))
 	break;
       else
@@ -381,7 +389,7 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 	  return;
 	}
 
-    case GFC_DTYPE_DERIVED_4:
+    case 4:
       if (GFC_UNALIGNED_4(ret->base_addr) || GFC_UNALIGNED_4(source->base_addr))
 	break;
       else
@@ -391,7 +399,7 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 	  return;
 	}
 
-    case GFC_DTYPE_DERIVED_8:
+    case 8:
       if (GFC_UNALIGNED_8(ret->base_addr) || GFC_UNALIGNED_8(source->base_addr))
 	break;
       else
@@ -400,9 +408,8 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 		     *along, *pncopies);
 	  return;
 	}
-
 #ifdef HAVE_GFC_INTEGER_16
-    case GFC_DTYPE_DERIVED_16:
+    case 16:
       if (GFC_UNALIGNED_16(ret->base_addr)
 	  || GFC_UNALIGNED_16(source->base_addr))
 	break;
@@ -411,8 +418,9 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 	  spread_i16 ((gfc_array_i16 *) ret, (gfc_array_i16 *) source,
 		      *along, *pncopies);
 	  return;
-	}
+	    }
 #endif
+
     }
 
   spread_internal (ret, source, along, pncopies);
@@ -470,7 +478,6 @@ spread_scalar (gfc_array_char *ret, const char *source,
   type_size = GFC_DTYPE_TYPE_SIZE(ret);
   switch(type_size)
     {
-    case GFC_DTYPE_DERIVED_1:
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:
       spread_scalar_i1 ((gfc_array_i1 *) ret, (GFC_INTEGER_1 *) source,
@@ -567,7 +574,16 @@ spread_scalar (gfc_array_char *ret, const char *source,
 # endif
 #endif
 
-    case GFC_DTYPE_DERIVED_2:
+    }
+
+  switch (GFC_DESCRIPTOR_SIZE(ret))
+    {
+    case 1:
+      spread_scalar_i1 ((gfc_array_i1 *) ret, (GFC_INTEGER_1 *) source,
+			*along, *pncopies);
+      return;
+
+    case 2:
       if (GFC_UNALIGNED_2(ret->base_addr) || GFC_UNALIGNED_2(source))
 	break;
       else
@@ -577,7 +593,7 @@ spread_scalar (gfc_array_char *ret, const char *source,
 	  return;
 	}
 
-    case GFC_DTYPE_DERIVED_4:
+    case 4:
       if (GFC_UNALIGNED_4(ret->base_addr) || GFC_UNALIGNED_4(source))
 	break;
       else
@@ -587,7 +603,7 @@ spread_scalar (gfc_array_char *ret, const char *source,
 	  return;
 	}
 
-    case GFC_DTYPE_DERIVED_8:
+    case 8:
       if (GFC_UNALIGNED_8(ret->base_addr) || GFC_UNALIGNED_8(source))
 	break;
       else
@@ -597,7 +613,7 @@ spread_scalar (gfc_array_char *ret, const char *source,
 	  return;
 	}
 #ifdef HAVE_GFC_INTEGER_16
-    case GFC_DTYPE_DERIVED_16:
+    case 16:
       if (GFC_UNALIGNED_16(ret->base_addr) || GFC_UNALIGNED_16(source))
 	break;
       else
@@ -607,6 +623,8 @@ spread_scalar (gfc_array_char *ret, const char *source,
 	  return;
 	}
 #endif
+    default:
+      break;
     }
 
   spread_internal_scalar (ret, source, along, pncopies);

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx512bitalg" } */
+/* { dg-options "-O2 -mavx512bitalg -mavx512f -mavx512bw" } */
 /* { dg-require-effective-target avx512bitalg } */
 
 #include "avx512f-helper.h"

@@ -80,6 +80,9 @@ static const char * const word_regnames[] =
   "sp", "ap", "psw", "es", "cs"
 };
 
+/* used by rl78_addsi3_internal for formatting insns output */
+static char fmt_buffer[1024];
+
 /* Structure for G13 MDUC registers.  */
 struct mduc_reg_type
 {
@@ -596,6 +599,18 @@ rl78_split_movsi (rtx *operands, machine_mode omode)
       operands[3] = op02;
       operands[5] = op12;
     }
+}
+
+void
+rl78_split_movdi (rtx *operands, enum machine_mode omode)
+{
+    rtx op00, op04, op10, op14;
+    op00 = rl78_subreg (SImode, operands[0], omode, 0);
+    op04 = rl78_subreg (SImode, operands[0], omode, 4);
+    op10 = rl78_subreg (SImode, operands[1], omode, 0);
+    op14 = rl78_subreg (SImode, operands[1], omode, 4);
+    emit_insn (gen_movsi (op00, op10));
+    emit_insn (gen_movsi (op04, op14));
 }
 
 /* Used by various two-operand expanders which cannot accept all
@@ -3792,16 +3807,21 @@ static void
 rl78_note_reg_set (char *dead, rtx d, rtx insn)
 {
   int r, i;
-
+  bool is_dead;
   if (GET_CODE (d) == MEM)
     rl78_note_reg_uses (dead, XEXP (d, 0), insn);
 
   if (GET_CODE (d) != REG)
     return;
 
+  /* Do not mark the reg unused unless all QImode parts of it are dead.  */
   r = REGNO (d);
-  if (dead [r])
-    add_reg_note (insn, REG_UNUSED, gen_rtx_REG (GET_MODE (d), r));
+  is_dead = true;
+  for (i = 0; i < GET_MODE_SIZE (GET_MODE (d)); i ++)
+	  if (!dead [r + i])
+		  is_dead = false;
+  if(is_dead)
+	add_reg_note (insn, REG_UNUSED, gen_rtx_REG (GET_MODE (d), r));
   if (dump_file)
     fprintf (dump_file, "note set reg %d size %d\n", r, GET_MODE_SIZE (GET_MODE (d)));
   for (i = 0; i < GET_MODE_SIZE (GET_MODE (d)); i ++)
@@ -4771,6 +4791,8 @@ rl78_flags_already_set (rtx op, rtx operand)
 const char *
 rl78_addsi3_internal (rtx * operands, unsigned int alternative)
 {
+  const char *addH2 = "addw ax, %H2\n\t";
+
   /* If we are adding in a constant symbolic address when -mes0
      is active then we know that the address must be <64K and
      that it is invalid to access anything above 64K relative to
@@ -4782,16 +4804,38 @@ rl78_addsi3_internal (rtx * operands, unsigned int alternative)
       && ! TREE_SIDE_EFFECTS (SYMBOL_REF_DECL (operands[2])))
     return "movw ax, %h1\n\taddw ax, %h2\n\tmovw %h0, ax";
 
+  if(CONST_INT_P(operands[2]))
+  {
+    if((INTVAL(operands[2]) & 0xFFFF0000) == 0)
+    {
+        addH2 = "";
+    }
+    else if((INTVAL(operands[2]) & 0xFFFF0000) == 0x00010000)
+    {
+        addH2 = "incw ax\n\t";
+    }
+    else if((INTVAL(operands[2]) & 0xFFFF0000) == 0xFFFF0000)
+    {
+        addH2 = "decw ax\n\t";
+    }
+  }
+
   switch (alternative)
     {
     case 0:
     case 1:
-      return "movw ax, %h1\n\taddw ax, %h2\n\tmovw %h0, ax\n\tmovw ax, %H1\n\tsknc\n\tincw ax\n\taddw ax, %H2\n\tmovw %H0, ax";
+	  snprintf(fmt_buffer, sizeof(fmt_buffer),
+               "movw ax, %%h1\n\taddw ax, %%h2\n\tmovw %%h0, ax\n\tmovw ax, %%H1\n\tsknc\n\tincw ax\n\t%smovw %%H0,ax", addH2);
+	  break;
     case 2:
-      return "movw ax, %h1\n\taddw ax,%h2\n\tmovw bc, ax\n\tmovw ax, %H1\n\tsknc\n\tincw ax\n\taddw ax, %H2\n\tmovw %H0, ax\n\tmovw ax, bc\n\tmovw %h0, ax";
+	  snprintf(fmt_buffer, sizeof(fmt_buffer),
+               "movw ax, %%h1\n\taddw ax, %%h2\n\tmovw bc, ax\n\tmovw ax, %%H1\n\tsknc\n\tincw ax\n\t%smovw %%H0, ax\n\tmovw ax, bc\n\tmovw %%h0, ax", addH2);
+ 	  break;
     default:
       gcc_unreachable ();
     }
+
+  return fmt_buffer;
 }
 
 rtx

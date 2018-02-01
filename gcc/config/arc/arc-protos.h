@@ -47,6 +47,7 @@ extern void arc_expand_compare_and_swap (rtx *);
 extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
 extern int arc_return_address_register (unsigned int);
 extern unsigned int arc_compute_function_type (struct function *);
+extern bool arc_is_uncached_mem_p (rtx);
 #endif /* RTX_CODE */
 
 extern unsigned int arc_compute_frame_size (int);
@@ -116,3 +117,6 @@ extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
 extern void arc_cpu_cpp_builtins (cpp_reader *);
 extern bool arc_store_addr_hazard_p (rtx_insn *, rtx_insn *);
 extern rtx arc_eh_return_address_location (void);
+extern bool arc_is_jli_call_p (rtx);
+extern void arc_file_end (void);
+extern bool arc_is_secure_call_p (rtx);

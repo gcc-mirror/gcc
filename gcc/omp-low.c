@@ -1585,6 +1585,23 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_INITIAL (decl) = make_node (BLOCK);
   BLOCK_SUPERCONTEXT (DECL_INITIAL (decl)) = decl;
   DECL_ATTRIBUTES (decl) = DECL_ATTRIBUTES (current_function_decl);
+  /* Remove omp declare simd attribute from the new attributes.  */
+  if (tree a = lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (decl)))
+    {
+      while (tree a2 = lookup_attribute ("omp declare simd", TREE_CHAIN (a)))
+	a = a2;
+      a = TREE_CHAIN (a);
+      for (tree *p = &DECL_ATTRIBUTES (decl); *p != a;)
+	if (is_attribute_p ("omp declare simd", get_attribute_name (*p)))
+	  *p = TREE_CHAIN (*p);
+	else
+	  {
+	    tree chain = TREE_CHAIN (*p);
+	    *p = copy_node (*p);
+	    p = &TREE_CHAIN (*p);
+	    *p = chain;
+	  }
+    }
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
     = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (current_function_decl);
   DECL_FUNCTION_SPECIFIC_TARGET (decl)

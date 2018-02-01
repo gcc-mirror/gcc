@@ -239,6 +239,11 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
       gcc_assert (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (expr)))
 		  == GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)));
 
+      /* FIXME needed because convert_to_pointer_maybe_fold still folds
+	 conversion of constants.  */
+      if (!dofold)
+	return build1 (CONVERT_EXPR, type, expr);
+
       return convert_to_pointer_maybe_fold (type, expr, dofold);
     }
 
@@ -691,7 +696,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 
   /* FIXME remove when moving to c_fully_fold model.  */
   if (!CLASS_TYPE_P (type))
-    e = scalar_constant_value (e);
+    {
+      e = mark_rvalue_use (e);
+      e = scalar_constant_value (e);
+    }
   if (error_operand_p (e))
     return error_mark_node;
 

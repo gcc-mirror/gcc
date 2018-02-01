@@ -28,6 +28,9 @@ EnumValue
 Enum(processor_type) String(em) Value(PROCESSOR_em)
 
 EnumValue
+Enum(processor_type) String(em_mini) Value(PROCESSOR_em_mini)
+
+EnumValue
 Enum(processor_type) String(arcem) Value(PROCESSOR_arcem)
 
 EnumValue

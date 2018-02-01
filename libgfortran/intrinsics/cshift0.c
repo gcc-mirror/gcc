@@ -95,7 +95,6 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
     {
     case GFC_DTYPE_LOGICAL_1:
     case GFC_DTYPE_INTEGER_1:
-    case GFC_DTYPE_DERIVED_1:
       cshift0_i1 ((gfc_array_i1 *)ret, (gfc_array_i1 *) array, shift, which);
       return;
 

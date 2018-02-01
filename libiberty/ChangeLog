@@ -1,3 +1,8 @@
+2018-01-20  Eli Zaretskii  <eliz@gnu.org>
+
+	* simple-object-xcoff.c (simple_object_xcoff_find_sections): Use
+	ulong_type to avoid warning about 32-bit shift.
+
 2018-01-11  Richard Biener  <rguenther@suse.de>
 	Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

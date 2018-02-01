@@ -478,12 +478,12 @@ gfc_build_io_library_fndecls (void)
   iocall[IOCALL_SET_NML_VAL] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("st_set_nml_var")), ".w.R",
 	void_type_node, 6, dt_parm_type, pvoid_type_node, pvoid_type_node,
-	gfc_int4_type_node, gfc_charlen_type_node, gfc_int4_type_node);
+	gfc_int4_type_node, gfc_charlen_type_node, get_dtype_type_node());
 
   iocall[IOCALL_SET_NML_DTIO_VAL] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("st_set_nml_dtio_var")), ".w.R",
 	void_type_node, 8, dt_parm_type, pvoid_type_node, pvoid_type_node,
-	gfc_int4_type_node, gfc_charlen_type_node, gfc_int4_type_node,
+	gfc_int4_type_node, gfc_charlen_type_node, get_dtype_type_node(),
 	pvoid_type_node, pvoid_type_node);
 
   iocall[IOCALL_SET_NML_VAL_DIM] = gfc_build_library_function_decl_with_spec (
@@ -1662,7 +1662,6 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
   tree dtio_proc = null_pointer_node;
   tree vtable = null_pointer_node;
   int n_dim;
-  int itype;
   int rank = 0;
 
   gcc_assert (sym || c);
@@ -1699,8 +1698,8 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
     }
   else
     {
-      itype = ts->type;
-      dtype = IARG (itype << GFC_DTYPE_TYPE_SHIFT);
+      dt =  gfc_typenode_for_spec (ts);
+      dtype = gfc_get_dtype_rank_type (0, dt);
     }
 
   /* Build up the arguments for the transfer call.

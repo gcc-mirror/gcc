@@ -4769,7 +4769,7 @@ class sccvn_dom_walker : public dom_walker
 {
 public:
   sccvn_dom_walker ()
-    : dom_walker (CDI_DOMINATORS, true), cond_stack (0) {}
+    : dom_walker (CDI_DOMINATORS, REACHABLE_BLOCKS), cond_stack (0) {}
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);

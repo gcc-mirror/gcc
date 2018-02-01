@@ -59,9 +59,9 @@
   "@
    fadd %0,%1,%2
    fadd %0,%1,%2
-   fadd   %0,%S1,%2
-   fadd   %0,%1,%S2
-   fadd%? %0,%1,%S2"
+   fadd   %0,%1,%2
+   fadd   %0,%1,%2
+   fadd%? %0,%1,%2"
   [(set_attr "type" "spfp")
   (set_attr "length" "4,4,8,8,8")])
 
@@ -74,9 +74,9 @@
   "@
    fsub %0,%1,%2
    fsub %0,%1,%2
-   fsub   %0,%S1,%2
-   fsub   %0,%1,%S2
-   fsub%? %0,%1,%S2"
+   fsub   %0,%1,%2
+   fsub   %0,%1,%2
+   fsub%? %0,%1,%2"
   [(set_attr "type" "spfp")
   (set_attr "length" "4,4,8,8,8")])
 
@@ -89,9 +89,9 @@
   "@
    fmul %0,%1,%2
    fmul %0,%1,%2
-   fmul   %0,%S1,%2
-   fmul   %0,%1,%S2
-   fmul%? %0,%1,%S2"
+   fmul   %0,%1,%2
+   fmul   %0,%1,%2
+   fmul%? %0,%1,%2"
   [(set_attr "type" "spfp")
   (set_attr "length" "4,4,8,8,8")])
 

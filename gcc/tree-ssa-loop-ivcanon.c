@@ -660,14 +660,21 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
   loops_to_unloop.release ();
   loops_to_unloop_nunroll.release ();
 
-  /* Remove edges in peeled copies.  */
+  /* Remove edges in peeled copies.  Given remove_path removes dominated
+     regions we need to cope with removal of already removed paths.  */
   unsigned i;
   edge e;
+  auto_vec<int, 20> src_bbs;
+  src_bbs.reserve_exact (edges_to_remove.length ());
   FOR_EACH_VEC_ELT (edges_to_remove, i, e)
-    {
-      bool ok = remove_path (e, irred_invalidated, loop_closed_ssa_invalidated);
-      gcc_assert (ok);
-    }
+    src_bbs.quick_push (e->src->index);
+  FOR_EACH_VEC_ELT (edges_to_remove, i, e)
+    if (BASIC_BLOCK_FOR_FN (cfun, src_bbs[i]))
+      {
+	bool ok = remove_path (e, irred_invalidated,
+			       loop_closed_ssa_invalidated);
+	gcc_assert (ok);
+      }
   edges_to_remove.release ();
 }
 
@@ -1366,13 +1373,17 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
   bool changed = false;
   struct loop *inner;
   enum unroll_level ul;
+  unsigned num = number_of_loops (cfun);
 
-  /* Process inner loops first.  */
+  /* Process inner loops first.  Don't walk loops added by the recursive
+     calls because SSA form is not up-to-date.  They can be handled in the
+     next iteration.  */
   for (inner = loop->inner; inner != NULL; inner = inner->next)
-    changed |= tree_unroll_loops_completely_1 (may_increase_size,
-					       unroll_outer, father_bbs,
-					       inner);
- 
+    if ((unsigned) inner->num < num)
+      changed |= tree_unroll_loops_completely_1 (may_increase_size,
+						 unroll_outer, father_bbs,
+						 inner);
+
   /* If we changed an inner loop we cannot process outer loops in this
      iteration because SSA form is not up-to-date.  Continue with
      siblings of outer loops instead.  */

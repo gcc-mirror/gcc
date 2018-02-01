@@ -10090,7 +10090,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       else if (warn)
 	{
 	  tree source = source_type (w->convs[0]);
-	  if (! DECL_CONSTRUCTOR_P (w->fn))
+	  if (POINTER_TYPE_P (source))
 	    source = TREE_TYPE (source);
 	  if (warning (OPT_Wconversion, "choosing %qD over %qD", w->fn, l->fn)
 	      && warning (OPT_Wconversion, "  for conversion from %qH to %qI",

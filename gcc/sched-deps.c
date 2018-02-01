@@ -2834,10 +2834,16 @@ static void
 sched_macro_fuse_insns (rtx_insn *insn)
 {
   rtx_insn *prev;
+  /* No target hook would return true for debug insn as any of the
+     hook operand, and with very large sequences of only debug insns
+     where on each we call sched_macro_fuse_insns it has quadratic
+     compile time complexity.  */
+  if (DEBUG_INSN_P (insn))
+    return;
   prev = prev_nonnote_nondebug_insn (insn);
   if (!prev)
     return;
- 
+
   if (any_condjump_p (insn))
     {
       unsigned int condreg1, condreg2;
@@ -2916,6 +2922,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx_insn *insn)
 	= alloc_INSN_LIST (insn, deps->sched_before_next_jump);
 
       /* Make sure epilogue insn is scheduled after preceding jumps.  */
+      add_dependence_list (insn, deps->last_pending_memory_flush, 1,
+			   REG_DEP_ANTI, true);
       add_dependence_list (insn, deps->pending_jump_insns, 1, REG_DEP_ANTI,
 			   true);
     }

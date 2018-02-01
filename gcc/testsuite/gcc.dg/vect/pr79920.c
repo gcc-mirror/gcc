@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3 -fno-fast-math" } */
 
 #include "tree-vect.h"

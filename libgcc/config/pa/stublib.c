@@ -115,3 +115,7 @@ pthread_once (void)
   return 0;
 }
 #endif
+
+#ifdef L_gnu_lto_v1
+char gnu_lto_v1;
+#endif

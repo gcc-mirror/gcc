@@ -8,9 +8,12 @@
    while not in the Motorola AltiVec PIM, have nevertheless crept
    into the AltiVec vernacular over the years.  */
 
+/* Tests requiring VSX support (vector long long and vector double) have
+   been moved over to vsx-13.c.  */
+
 #include <altivec.h>
 
-void foo (void) 
+void foo (void)
 {
   vector bool int boolVec1 = (vector bool int) vec_splat_u32(3);
   vector bool short boolVec2 = (vector bool short) vec_splat_u16(3);
@@ -21,12 +24,8 @@ void foo (void)
   vector signed int vsi1, vsi2, vsiz;
   vector unsigned int vui1, vui2, vuiz;
   vector unsigned short int vusi1, vusi2, vusiz;
-  vector bool long long vubll1, vubll2, vubllz;
-  vector signed int long long vsill1, vsill2, vsillz;
-  vector unsigned int long long vuill1, vuill2, vuillz;
   vector pixel vp1, vp2, vpz;
   vector float vf1, vf2, vfz;
-  vector double vd1, vd2, vdz;
   
   boolVec1 = vec_sld( boolVec1, boolVec1, 4 );
   boolVec2 = vec_sld( boolVec2, boolVec2, 2 );
@@ -36,22 +35,16 @@ void foo (void)
   vucz = vec_sld( vuc1, vuc2, 1 );
   vsiz = vec_sld( vsi1, vsi2, 1 );
   vuiz = vec_sld( vui1, vui2, 1 );
-  vubllz = vec_sld( vubll1, vubll2, 1 );
-  vsillz = vec_sld( vsill1, vsill2, 1 );
-  vuillz = vec_sld( vuill1, vuill2, 1 );
   vssiz = vec_sld( vssi1, vssi2, 1 );
   vusiz = vec_sld( vusi1, vusi2, 1 );
   
   vfz = vec_sld( vf1, vf2, 1 );
-  vdz = vec_sld( vd1, vd2, 1 );
 
   vpz = vec_sld( vp1, vp2, 1 );
 
   vucz = vec_srl(vuc1, vuc2);
   vsiz = vec_srl(vsi1, vuc2);
   vuiz = vec_srl(vui1, vuc2);
-  vsillz = vec_srl(vsill1, vuc2);
-  vuillz = vec_srl(vuill1, vuc2);
   vpz = vec_srl(vp1, vuc2);
   vssiz = vec_srl(vssi1, vuc2);
   vusiz = vec_srl(vusi1, vuc2);
@@ -64,10 +57,6 @@ void foo (void)
   vsiz = vec_sro(vsi1, vuc2);
   vuiz = vec_sro(vui1, vsc2);
   vuiz = vec_sro(vui1, vuc2);
-  vsillz = vec_sro(vsill1, vsc2);
-  vsillz = vec_sro(vsill1, vuc2);
-  vuillz = vec_sro(vuill1, vsc2);
-  vuillz = vec_sro(vuill1, vuc2);
   vpz = vec_sro(vp1, vsc2);
   vpz = vec_sro(vp1, vuc2);
   vssiz = vec_sro(vssi1, vsc2);
@@ -83,6 +72,6 @@ void foo (void)
    vec_srl          vsr
    vec_sro          vsro  */
 
-/* { dg-final { scan-assembler-times "vsldoi" 15 } } */
-/* { dg-final { scan-assembler-times "vsr " 8 } } */
-/* { dg-final { scan-assembler-times "vsro" 20 } } */
+/* { dg-final { scan-assembler-times "vsldoi" 11 } } */
+/* { dg-final { scan-assembler-times "vsr " 6 } } */
+/* { dg-final { scan-assembler-times "vsro" 16 } } */

@@ -1,7 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msve-vector-bits=256" } */
 
-typedef signed char vnx16qi __attribute__((vector_size(32)));
+#include <stdint.h>
+
+typedef int8_t vnx16qi __attribute__((vector_size(32)));
 
 vnx16qi
 foo (vnx16qi x, vnx16qi y)

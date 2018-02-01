@@ -1,6 +1,8 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
 /* { dg-options "-O3 --save-temps" } */
 
+#include <stdint.h>
+
 #define DO_CONSTANT(VALUE, TYPE, OP, NAME)			\
 void vlogical_imm_##NAME##_##TYPE (TYPE *dst, int count)	\
 {								\
@@ -78,12 +80,12 @@ void vlogical_imm_##NAME##_##TYPE (TYPE *dst, int count)	\
   DO_CONSTANT (-8, TYPE, OP, NAME ## minus8)			\
   DO_CONSTANT (-9, TYPE, OP, NAME ## minus9)
 
-DO_LOGICAL_OPS_BRIEF (char, &, and)
-DO_LOGICAL_OPS_BRIEF (long, &, and)
+DO_LOGICAL_OPS_BRIEF (int8_t, &, and)
+DO_LOGICAL_OPS_BRIEF (int64_t, &, and)
 
-DO_LOGICAL_OPS (int, &, and)
-DO_LOGICAL_OPS (int, |, or)
-DO_LOGICAL_OPS (int, ^, xor)
+DO_LOGICAL_OPS (int32_t, &, and)
+DO_LOGICAL_OPS (int32_t, |, or)
+DO_LOGICAL_OPS (int32_t, ^, xor)
 
 /* { dg-final { scan-assembler-times {\tand\tz[0-9]+\.d, z[0-9]+\.d, #0x1\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tand\tz[0-9]+\.s, z[0-9]+\.s, #0x1\n} 1 } } */

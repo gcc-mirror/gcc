@@ -617,3 +617,7 @@
 (define_predicate "aarch64_gather_scale_operand_d"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 1 || INTVAL (op) == 8")))
+
+;; A special predicate that doesn't match a particular mode.
+(define_special_predicate "aarch64_any_register_operand"
+  (match_code "reg"))

@@ -595,14 +595,16 @@
 ;;   somehow modify them to become inelegible for delay slots if a decision
 ;;   is made that makes conditional execution required.
 
-(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac"
+(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac, core_3"
   (const
    (cond [(symbol_ref "arc_tune == TUNE_ARC600")
 	  (const_string "arc600")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_STD")
 	  (const_string "arc700_4_2_std")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_XMAC")
-	  (const_string "arc700_4_2_xmac")]
+	  (const_string "arc700_4_2_xmac")
+	  (symbol_ref "arc_tune == ARC_TUNE_CORE_3")
+	  (const_string "core_3")]
 	 (const_string "none"))))
 
 (define_attr "tune_arc700" "false,true"
@@ -641,7 +643,7 @@
    mov%? %0,%1
    mov%? %0,%1
    mov%? %0,%1
-   mov%? %0,%S1
+   mov%? %0,%1
    ldb%? %0,%1%&
    stb%? %1,%0%&
    ldb%? %0,%1%&
@@ -682,9 +684,9 @@
    mov%? %0,%1
    mov%? %0,%1
    mov%? %0,%1
-   mov%? %0,%S1%&
-   mov%? %0,%S1
-   mov%? %0,%S1
+   mov%? %0,%1%&
+   mov%? %0,%1
+   mov%? %0,%1
    ld%_%? %0,%1%&
    st%_%? %1,%0%&
    xld%_%U1 %0,%1
@@ -692,8 +694,8 @@
    xst%_%U0 %1,%0
    st%_%U0%V0 %1,%0
    st%_%U0%V0 %1,%0
-   st%_%U0%V0 %S1,%0
-   st%_%U0%V0 %S1,%0"
+   st%_%U0%V0 %1,%0
+   st%_%U0%V0 %1,%0"
   [(set_attr "type" "move,move,move,move,move,move,move,move,move,move,move,load,store,load,load,store,store,store,store,store")
    (set_attr "iscompact" "maybe,maybe,maybe,true,true,false,false,false,maybe_limm,maybe_limm,false,true,true,false,false,false,false,false,false,false")
    (set_attr "predicable" "yes,no,yes,no,no,yes,no,yes,yes,yes,yes,no,no,no,no,no,no,no,no,no")
@@ -738,12 +740,12 @@
    movh.cl %0,%L1>>16   ;9
    * return INTVAL (operands[1]) & 0xffffff ? \"movbi.cl %0,%1 >> %p1,%p1,8;10\" : \"movbi.cl %0,%L1 >> 24,24,8;10\";
    mov%? %0,%1		;11
-   add %0,%S1		;12
+   add %0,%1		;12
    add %0,pcl,%1@pcl    ;13
-   mov%? %0,%1  	;14
-   mov%? %0,%1		;15
-   mov%? %0,%1		;16
-   ld%?%U1 %0,%1	;17
+   mov%? %0,%j1 	;14
+   mov%? %0,%j1		;15
+   mov%? %0,%j1		;16
+   ld%? %0,%1		;17
    st%? %1,%0%&		;18
    * return arc_short_long (insn, \"push%? %1%&\", \"st%U0 %1,%0%&\");
    * return arc_short_long (insn, \"pop%? %0%&\",  \"ld%U1 %0,%1%&\");
@@ -799,7 +801,7 @@
    (set (match_operand:SI 0 "register_operand" "=w,w,w")
 	(match_dup 1))]
   ""
-  "mov%?.f %0,%S1"
+  "mov%?.f %0,%1"
   ; splitting to 'tst' allows short insns and combination into brcc.
   "reload_completed && operands_match_p (operands[0], operands[1])"
   [(set (match_dup 2) (match_dup 3))]
@@ -1287,7 +1289,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldb.a%V4 %3,[%0,%S2]"
+  "ldb.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1299,7 +1301,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldb.a%V4 %3,[%0,%S2]"
+  "ldb.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1311,7 +1313,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldb.x.a%V4 %3,[%0,%S2]"
+  "ldb.x.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1337,7 +1339,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ld%_.a%V4 %3,[%0,%S2]"
+  "ld%_.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1349,7 +1351,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ld%_.a%V4 %3,[%0,%S2]"
+  "ld%_.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1362,7 +1364,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ld%_.x.a%V4 %3,[%0,%S2]"
+  "ld%_.x.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1387,7 +1389,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ld.a%V4 %3,[%0,%S2]"
+  "ld.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1411,7 +1413,7 @@
    (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ld.a%V4 %3,[%0,%S2]"
+  "ld.a%V4 %3,[%0,%2]"
   [(set_attr "type" "load,load")
    (set_attr "length" "4,8")])
 
@@ -1479,7 +1481,7 @@
       && rtx_equal_p (operands[1], constm1_rtx)
       && GET_CODE (operands[3]) == LTU)
     return "sbc.cs %0,%0,%0";
-  return "mov.%d3 %0,%S1";
+  return "mov.%d3 %0,%1";
 }
   [(set_attr "type" "cmove,cmove")
    (set_attr "length" "4,8")])
@@ -3144,7 +3146,7 @@
   "@
      bset%? %0,%1,%2 ;;peep2, constr 1
      bset %0,%1,%2 ;;peep2, constr 2
-     bset %0,%S1,%2 ;;peep2, constr 3"
+     bset %0,%1,%2 ;;peep2, constr 3"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3160,7 +3162,7 @@
   "@
      bxor%? %0,%1,%2
      bxor %0,%1,%2
-     bxor %0,%S1,%2"
+     bxor %0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3176,7 +3178,7 @@
   "@
      bclr%? %0,%1,%2
      bclr %0,%1,%2
-     bclr %0,%S1,%2"
+     bclr %0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3192,9 +3194,9 @@
 			 (const_int -1))))]
   ""
   "@
-     bmsk%? %0,%S1,%2
+     bmsk%? %0,%1,%2
      bmsk %0,%1,%2
-     bmsk %0,%S1,%2"
+     bmsk %0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
    (set_attr "cond" "canuse,nocond,nocond")]
@@ -3306,10 +3308,10 @@
    bic%? %0, %2, %1%& ;;constraint 0
    bic%? %0,%2,%1  ;;constraint 1
    bic %0,%2,%1    ;;constraint 2, FIXME: will it ever get generated ???
-   bic%? %0,%2,%S1 ;;constraint 3, FIXME: will it ever get generated ???
+   bic%? %0,%2,%1  ;;constraint 3, FIXME: will it ever get generated ???
    bic %0,%2,%1    ;;constraint 4
-   bic %0,%2,%S1   ;;constraint 5, FIXME: will it ever get generated ???
-   bic %0,%S2,%1   ;;constraint 6"
+   bic %0,%2,%1    ;;constraint 5, FIXME: will it ever get generated ???
+   bic %0,%2,%1    ;;constraint 6"
   [(set_attr "length" "*,4,4,8,4,8,8")
   (set_attr "iscompact" "maybe, false, false, false, false, false, false")
   (set_attr "predicable" "no,yes,no,yes,no,no,no")
@@ -3640,7 +3642,7 @@
 	(compare:CC_C (match_operand:SI 0 "register_operand"  "Rcqq,Rcqq,  h, c,Rcqq,  c")
 		      (match_operand:SI 1 "nonmemory_operand"   "cO,  hO,Cm1,cI, Cal,Cal")))]
   ""
-  "cmp%? %0,%S1%&"
+  "cmp%? %0,%1%&"
   [(set_attr "type" "compare")
    (set_attr "iscompact" "true,true,true,false,true_limm,false")
    (set_attr "cond" "set")
@@ -3747,7 +3749,7 @@
 	* current_insn_predicate = 0; return \"mov%?.ne %0,%1\";
 	* current_insn_predicate = 0; return \"mov%?.ne %0,%1\";
 	mov.ne %0,%1
-	mov.ne %0,%S1"
+	mov.ne %0,%1"
   [(set_attr "type" "cmove")
    (set_attr "iscompact" "true,true,true_limm,false,false")
    (set_attr "length" "2,2,6,4,8")
@@ -3760,7 +3762,7 @@
      (set (match_operand:SI 0 "dest_reg_operand" "=w,w")
 	  (match_operand:SI 1 "nonmemory_operand" "LRac,?Cal")))]
   ""
-  "mov.%d3 %0,%S1"
+  "mov.%d3 %0,%1"
   [(set_attr "type" "cmove")
    (set_attr "length" "4,8")])
 
@@ -4228,13 +4230,12 @@
   }
 ")
 
-
 ; Rcq, which is used in alternative 0, checks for conditional execution.
 ; At instruction output time, if it doesn't match and we end up with
 ; alternative 1 ("q"), that means that we can't use the short form.
 (define_insn "*call_i"
   [(call (mem:SI (match_operand:SI 0
-		  "call_address_operand" "Rcq,q,c,Cbp,Cbr,L,I,Cal"))
+		  "call_address_operand" "Rcq,q,c,Cji,Csc,Cbp,Cbr,L,I,Cal"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 31))]
   ""
@@ -4242,15 +4243,17 @@
    jl%!%* [%0]%&
    jl%!%* [%0]%&
    jl%!%* [%0]
+   jli_s %S0
+   sjli  %S0
    bl%!%* %P0
    bl%!%* %P0
-   jl%!%* %S0
-   jl%* %S0
-   jl%! %S0"
-  [(set_attr "type" "call,call,call,call,call,call,call,call_no_delay_slot")
-   (set_attr "iscompact" "maybe,false,*,*,*,*,*,*")
-   (set_attr "predicable" "no,no,yes,yes,no,yes,no,yes")
-   (set_attr "length" "*,*,4,4,4,4,4,8")])
+   jl%!%* %0
+   jl%* %0
+   jl%! %0"
+  [(set_attr "type" "call,call,call,call_no_delay_slot,call_no_delay_slot,call,call,call,call,call_no_delay_slot")
+   (set_attr "iscompact" "maybe,false,*,true,*,*,*,*,*,*")
+   (set_attr "predicable" "no,no,yes,no,no,yes,no,yes,no,yes")
+   (set_attr "length" "*,*,4,2,4,4,4,4,4,8")])
 
 (define_expand "call_value"
   ;; operand 2 is stack_size_rtx
@@ -4272,14 +4275,13 @@
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
   }")
 
-
 ; Rcq, which is used in alternative 0, checks for conditional execution.
 ; At instruction output time, if it doesn't match and we end up with
 ; alternative 1 ("q"), that means that we can't use the short form.
 (define_insn "*call_value_i"
-  [(set (match_operand 0 "dest_reg_operand"  "=Rcq,q,w,  w,  w,w,w,  w")
+  [(set (match_operand 0 "dest_reg_operand"  "=Rcq,q,w,  w,  w,  w,  w,w,w,  w")
 	(call (mem:SI (match_operand:SI 1
-		       "call_address_operand" "Rcq,q,c,Cbp,Cbr,L,I,Cal"))
+		       "call_address_operand" "Rcq,q,c,Cji,Csc,Cbp,Cbr,L,I,Cal"))
 	      (match_operand 2 "" "")))
    (clobber (reg:SI 31))]
   ""
@@ -4287,15 +4289,17 @@
    jl%!%* [%1]%&
    jl%!%* [%1]%&
    jl%!%* [%1]
+   jli_s %S1
+   sjli  %S1
    bl%!%* %P1;1
    bl%!%* %P1;1
-   jl%!%* %S1
-   jl%* %S1
-   jl%! %S1"
-  [(set_attr "type" "call,call,call,call,call,call,call,call_no_delay_slot")
-   (set_attr "iscompact" "maybe,false,*,*,*,*,*,*")
-   (set_attr "predicable" "no,no,yes,yes,no,yes,no,yes")
-   (set_attr "length" "*,*,4,4,4,4,4,8")])
+   jl%!%* %1
+   jl%* %1
+   jl%! %1"
+  [(set_attr "type" "call,call,call,call_no_delay_slot,call_no_delay_slot,call,call,call,call,call_no_delay_slot")
+   (set_attr "iscompact" "maybe,false,*,true,false,*,*,*,*,*")
+   (set_attr "predicable" "no,no,yes,no,no,yes,no,yes,no,yes")
+   (set_attr "length" "*,*,4,2,4,4,4,4,4,8")])
 
 ; There is a bl_s instruction (16 bit opcode branch-and-link), but we can't
 ; use it for lack of inter-procedural branch shortening.
@@ -4467,7 +4471,7 @@
   "TARGET_NORM"
   "@
    norm \t%0, %1
-   norm \t%0, %S1"
+   norm \t%0, %1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
@@ -4479,7 +4483,7 @@
   "TARGET_NORM"
   "@
    norm.f\t%0, %1
-   norm.f\t%0, %S1"
+   norm.f\t%0, %1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
@@ -4499,7 +4503,7 @@
   "TARGET_NORM"
   "@
    norm%_ \t%0, %1
-   norm%_ \t%0, %S1"
+   norm%_ \t%0, %1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
@@ -4588,7 +4592,7 @@
   "TARGET_SWAP"
   "@
    swap \t%0, %1
-   swap \t%0, %S1
+   swap \t%0, %1
    swap \t%0, %1"
   [(set_attr "length" "4,8,4")
    (set_attr "type" "two_cycle_core,two_cycle_core,two_cycle_core")])
@@ -4601,8 +4605,8 @@
   "TARGET_ARC700 || TARGET_EA_SET"
   "@
    divaw \t%0, %1, %2
-   divaw \t%0, %S1, %2
-   divaw \t%0, %1, %S2"
+   divaw \t%0, %1, %2
+   divaw \t%0, %1, %2"
   [(set_attr "length" "4,8,8")
    (set_attr "type" "divaw,divaw,divaw")])
 
@@ -4613,7 +4617,7 @@
   "@
     flag%? %0
     flag %0
-    flag%? %S0"
+    flag%? %0"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "misc,misc,misc")
    (set_attr "predicable" "yes,no,yes")
@@ -4707,7 +4711,7 @@
 		     (match_operand:SI 1 "general_operand" "Ir,I,HCal,r")]
 		   VUNSPEC_ARC_SR)]
   ""
-  "sr\t%S0, [%1]"
+  "sr\t%0, [%1]"
   [(set_attr "length" "8,4,8,4")
    (set_attr "type" "sr,sr,sr,sr")])
 
@@ -5180,11 +5184,11 @@
 	(plus:SI (match_dup 0)
 		 (const_int -1)))
    (clobber (match_scratch:SI 2 "=X,r"))]
-  "TARGET_V2"
+  "TARGET_DBNZ"
   "@
    dbnz%#\\t%0,%l1
    #"
-  "TARGET_V2 && reload_completed && memory_operand (operands[0], SImode)"
+  "TARGET_DBNZ && reload_completed && memory_operand (operands[0], SImode)"
   [(set (match_dup 2) (match_dup 0))
    (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))
    (set (reg:CC CC_REG) (compare:CC (match_dup 2) (const_int 0)))
@@ -5283,7 +5287,7 @@
 ;; ??? Should this use arc_output_libcall and set is_sfunc?
 (define_insn "*millicode_thunk_st"
   [(match_parallel 0 "millicode_store_operation"
-     [(set (mem:SI (reg:SI SP_REG)) (reg:SI 13))])]
+		   [(set (mem:SI (reg:SI SP_REG)) (reg:SI 13))])]
   ""
 {
   output_asm_insn ("bl%* __st_r13_to_%0",
@@ -5295,7 +5299,7 @@
 
 (define_insn "*millicode_thunk_ld"
   [(match_parallel 0 "millicode_load_clob_operation"
-     [(set (reg:SI 13) (mem:SI (reg:SI SP_REG)))])]
+		   [(set (reg:SI 13) (mem:SI (reg:SI SP_REG)))])]
   ""
 {
   output_asm_insn ("bl%* __ld_r13_to_%0",
@@ -5308,9 +5312,9 @@
 ; the sibthunk restores blink, so we use the return rtx.
 (define_insn "*millicode_sibthunk_ld"
   [(match_parallel 0 "millicode_load_operation"
-     [(return)
-      (set (reg:SI SP_REG) (plus:SI (reg:SI SP_REG) (reg:SI 12)))
-      (set (reg:SI 13) (mem:SI (reg:SI SP_REG)))])]
+		   [(return)
+		    (set (reg:SI SP_REG) (plus:SI (reg:SI SP_REG) (reg:SI 12)))
+		    (set (reg:SI 13) (mem:SI (reg:SI SP_REG)))])]
   ""
 {
   output_asm_insn ("b%* __ld_r13_to_%0_ret",
@@ -5629,7 +5633,7 @@
   "@
     kflag%? %0
     kflag %0
-    kflag%? %S0"
+    kflag%? %0"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "misc,misc,misc")
    (set_attr "predicable" "yes,no,yes")
@@ -5651,7 +5655,7 @@
   "TARGET_NORM && TARGET_V2"
   "@
    ffs \t%0, %1
-   ffs \t%0, %S1"
+   ffs \t%0, %1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
@@ -5664,7 +5668,7 @@
   "TARGET_NORM && TARGET_V2"
   "@
    ffs.f\t%0, %1
-   ffs.f\t%0, %S1"
+   ffs.f\t%0, %1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
@@ -5691,7 +5695,7 @@
   "TARGET_NORM && TARGET_V2"
   "@
    fls \t%0, %1
-   fls \t%0, %S1"
+   fls \t%0, %1"
   [(set_attr "length" "4,8")
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 

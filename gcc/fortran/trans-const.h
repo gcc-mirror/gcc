@@ -44,8 +44,8 @@ tree gfc_conv_constant_to_tree (gfc_expr *);
    structures.  Also sets the length of CHARACTER strings in the gfc_se.  */
 void gfc_conv_constant (gfc_se *, gfc_expr *);
 
-tree gfc_build_string_const (int, const char *);
-tree gfc_build_wide_string_const (int, int, const gfc_char_t *);
+tree gfc_build_string_const (size_t, const char *);
+tree gfc_build_wide_string_const (int, size_t, const gfc_char_t *);
 tree gfc_build_cstring_const (const char *);
 tree gfc_build_localized_cstring_const (const char *);
 

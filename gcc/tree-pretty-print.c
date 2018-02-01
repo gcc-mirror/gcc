@@ -1822,7 +1822,9 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	    pp_string (pp, "<null method basetype>");
 	  pp_colon_colon (pp);
 	}
-      if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
+      if (TYPE_IDENTIFIER (node))
+	dump_generic_node (pp, TYPE_NAME (node), spc, flags, false);
+      else if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
 	dump_decl_name (pp, TYPE_NAME (node), flags);
       else if (flags & TDF_NOUID)
 	pp_printf (pp, "<Txxxx>");

@@ -727,7 +727,7 @@ arc_return_addr_rtx(COUNT,FRAME)
   ((CUM) = 0)
 
 /* The number of registers used for parameter passing.  Local to this file.  */
-#define MAX_ARC_PARM_REGS 8
+#define MAX_ARC_PARM_REGS (TARGET_RF16 ? 4 : 8)
 
 /* 1 if N is a possible register number for function argument passing.  */
 #define FUNCTION_ARG_REGNO_P(N) \
@@ -1630,5 +1630,7 @@ enum
 /* Custom FP instructions used by QuarkSE EM cpu.  */
 #define TARGET_FPX_QUARK    (TARGET_EM && TARGET_SPFP		\
 			     && (arc_fpu_build == FPX_QK))
+/* DBNZ support is available for ARCv2 core3 cpus.  */
+#define TARGET_DBNZ (TARGET_V2 && (arc_tune == ARC_TUNE_CORE_3))
 
 #endif /* GCC_ARC_H */

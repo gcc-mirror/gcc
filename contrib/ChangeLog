@@ -1,3 +1,7 @@
+2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* download_prerequisites: Use shasum for FreeBSD and DragonFly.
+
 2018-01-19  Martin Liska  <mliska@suse.cz>
 
 	* analyze_brprob.py: Support new format that can be easily
