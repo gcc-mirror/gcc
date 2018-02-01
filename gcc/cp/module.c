@@ -1461,6 +1461,10 @@ bytes_out::use (unsigned bytes)
   return parent::use (bytes);
 }
 
+// FIXME:Forward declare, until module_state::walk_namespace doesn't
+// need it
+class trees_out;
+
 /* State of a particular module. */
 struct GTY(()) module_state {
   /* We always import & export ourselves.  */
@@ -1468,6 +1472,7 @@ struct GTY(()) module_state {
   bitmap exports;	/* Subset of that, that we're exporting.  */
 
   tree name;		/* Name of the module.  */
+  // FIXME:represent as TREE_VEC of IDENTIFIERS
   vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
 
   vec<unsigned, va_gc_atomic> *remap; /* module num remapping.  */
@@ -1506,11 +1511,14 @@ struct GTY(()) module_state {
  public:
   void write (elf_out *to);
   void read (elf_in *from, unsigned *crc_ptr);
+
  private:
   void write_context (elf_out *to, unsigned *crc_ptr);
   bool read_context (elf_in *from);
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
+  void walk_namespace (elf_out *to, bytes_out &bind, trees_out &trees, tree ns,
+		       auto_vec<tree> &stack, auto_vec<tree> &decls);
   void write_bindings (elf_out *to, unsigned *crc_ptr);
   bool read_bindings (elf_in *from);
   bool read_decls (elf_in *from);
@@ -1675,13 +1683,12 @@ private:
   }
 
 public:
-  void write (bytes_out &, elf_out *);
+  void write (auto_vec<tree> &decls);
 
 public:
   static void instrument ();
 
 public:
-  void tag_binding (tree ns, tree name, module_binding_vec *);
   void maybe_tag_definition (tree decl);
   void tag_definition (tree node, tree maybe_template);
 
@@ -2468,17 +2475,129 @@ module_state::read_config (elf_in *from, unsigned *crc_ptr)
   return cfg.end (from);
 }
 
+/* Walk the bindings of NS, writing out the bindings for the current
+   TU.   */
+
+// FIXME: There's a problem with namespaces themselves.  We need to
+// know whether the namespace itself is exported, which happens if
+// it's explicitly opened in the purview.  (It may exist because of
+// being opened in the global module.)  Need flag on namespace,
+// perhaps simple as DECL_MODULE_EXPORT.
+
+/* The binding section is a serialized tree.  Each non-namespace
+   binding is a <stroff,shnum> tuple.  Each namespace contains a list
+   of non-namespace bindings, zero, a list of namespace bindings,
+   zero. */
+
+void
+module_state::walk_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
+			      tree ns,
+			      auto_vec<tree> &stack, auto_vec<tree> &decls)
+{
+  dump () && dump ("Walking namespace %N", ns);
+
+  gcc_checking_assert (!LOOKUP_FOUND_P (ns));
+  auto_vec<tree> inner;
+  inner.reserve (10);
+
+  hash_table<named_decl_hash>::iterator end
+    (DECL_NAMESPACE_BINDINGS (ns)->end ());
+  for (hash_table<named_decl_hash>::iterator iter
+	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
+    {
+      tree binding = *iter;
+
+      if (TREE_CODE (binding) == MODULE_VECTOR)
+	binding = MODULE_VECTOR_CLUSTER (binding, 0).slots[0];
+
+      if (!binding)
+	continue;
+
+      // FIXME:slightly awkward for now.
+      decls.safe_push (ns);
+      decls.safe_push (NULL);
+      unsigned hwm = decls.length ();
+      tree name = extract_module_decls (binding, decls);
+      if (!name)
+	{
+	  decls.pop ();
+	  decls.pop ();
+	  continue;
+	}
+
+      tree first = decls[hwm];
+      if (TREE_CODE (first) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (first))
+	{
+	  inner.safe_push (decls.pop ());
+	  gcc_assert (decls.length () == hwm);
+	  decls.pop ();
+	  decls.pop ();
+	}
+      else
+	{
+	  // FIXME:mark end of this binding
+	  decls[hwm-1] = name;
+	  decls.safe_push (NULL_TREE);
+
+	  /* Emit open scopes.  */
+	  if (!LOOKUP_FOUND_P (ns))
+	    {
+	      LOOKUP_FOUND_P (ns) = true;
+	      for (unsigned ix = 0; ix != stack.length (); ix++)
+		{
+		  tree outer = stack[ix];
+		  if (!LOOKUP_FOUND_P (outer))
+		    {
+		      LOOKUP_FOUND_P (outer) = true;
+		      // FIXME: register with trees
+		      bind.u (to->name (DECL_NAME (outer)));
+		      bind.u (0); /* It had no bindings of its own.  */
+		    }
+		}
+	      bind.u (to->name (DECL_NAME (ns)));
+	    }
+	  // FIXME: register with trees
+	  bind.u (to->name (name));
+	  // FIXME, here we'd emit the section number containing the
+	  // declaration.
+	}
+    }
+
+  /* Mark end of non-namespace bindings.  */
+  if (LOOKUP_FOUND_P (ns))
+    bind.u (0);
+  stack.safe_push (ns);
+  while (inner.length ())
+    walk_namespace (to, bind, trees, inner.pop (), stack, decls);
+  stack.pop ();
+  /* Mark end of namespace bindings.  */
+  if (LOOKUP_FOUND_P (ns))
+    {
+      LOOKUP_FOUND_P (ns) = false;
+      bind.u (0);
+    }
+  dump () && dump ("Walked namespace %N", ns);
+}
+
 void
 module_state::write_bindings (elf_out *to, unsigned *crc_p)
 {
   bytes_out bind;
   bind.begin (true);
   
-  trees_out out (this, global_vec);
-  out.begin (true);
-  out.write (bind, to);
+  trees_out trees (this, global_vec);
+  auto_vec<tree> stack;
+  auto_vec<tree> decls;
+  stack.reserve (20);
+  decls.reserve (20);
 
-  out.end (to, to->name (MOD_SNAME_PFX ".decls"), crc_p);
+  walk_namespace (to, bind, trees, global_namespace, stack, decls);
+  
+  trees.begin (true);
+  trees.write (decls);
+
+  // FIXME:write snum linky
+  trees.end (to, to->name (MOD_SNAME_PFX ".decls"), crc_p);
   bind.end (to, to->name (MOD_SNAME_PFX ".bindings"), crc_p);
 }
 
@@ -2685,41 +2804,6 @@ trees_in::insert (tree t)
    tree:binding*
    tree:NULL
 */
-
-void
-trees_out::tag_binding (tree ns, tree name, module_binding_vec *binding)
-{
-  dump () && dump ("Writing %N bindings for %N", ns, name);
-  tag (rt_binding);
-  tree_node (ns);
-  tree_node (name);
-
-  for (unsigned ix = binding->length (); ix--;)
-    {
-      tree decl = (*binding)[ix];
-
-      if (DECL_IS_BUILTIN (decl))
-	// FIXME: write the builtin
-	continue;
-
-      if (TREE_CODE (decl) == CONST_DECL)
-	{
-	  gcc_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == ENUMERAL_TYPE);
-	  continue;
-	}
-
-      tree_node (decl);
-    }
-  tree_node (NULL_TREE);
-
-  // FIXME:Write during binding?
-  while (binding->length ())
-    {
-      tree decl = binding->pop ();
-      if (!DECL_IS_BUILTIN (decl) && TREE_CODE (decl) != CONST_DECL)
-	maybe_tag_definition (decl);
-    }
-}
 
 bool
 trees_in::tag_binding ()
@@ -5500,107 +5584,36 @@ trees_in::finish_type (tree type)
   return type;
 }
 
-/* Walk the bindings of NS, writing out the bindings for the current
-   TU.   */
-
-// FIXME: There's a problem with namespaces themselves.  We need to
-// know whether the namespace itself is exported, which happens if
-// it's explicitly opened in the purview.  (It may exist because of
-// being opened in the global module.)  Need flag on namespace,
-// perhaps simple as DECL_MODULE_EXPORT.
-
-/* The binding section is a serialized tree.  Each non-namespace
-   binding is a <stroff,shnum> tuple.  Each namespace contains a list
-   of non-namespace bindings, zero, a list of namespace bindings,
-   zero. */
-
-vec<tree, va_gc> *
-trees_out::bindings (bytes_out *bind, elf_out *to,
-		    vec<tree, va_gc> *nest, tree ns)
-{
-  dump () && dump ("Walking namespace %N", ns);
-
-  gcc_checking_assert (!LOOKUP_FOUND_P (ns));
-  vec<tree, va_gc> *inner = NULL;
-  vec_alloc (inner, 10);
-
-  module_binding_vec *module_bindings = NULL;
-  vec_alloc (module_bindings, 10);
-  hash_table<named_decl_hash>::iterator end
-    (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_table<named_decl_hash>::iterator iter
-	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
-    {
-      tree binding = *iter;
-
-      if (TREE_CODE (binding) == MODULE_VECTOR)
-	binding = MODULE_VECTOR_CLUSTER (binding, 0).slots[0];
-
-      if (!binding)
-	continue;
-
-      module_bindings = extract_module_bindings (module_bindings, binding);
-      if (!module_bindings->length ())
-	continue;
-
-      tree first = (*module_bindings)[0];
-      if (TREE_CODE (first) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (first))
-	vec_safe_push (inner, module_bindings->pop ());
-      else
-	{
-	  /* Emit open scopes.  */
-	  if (!LOOKUP_FOUND_P (ns))
-	    {
-	      LOOKUP_FOUND_P (ns) = true;
-	      for (unsigned ix = 0; ix != nest->length (); ix++)
-		{
-		  tree outer = (*nest)[ix];
-		  if (!LOOKUP_FOUND_P (outer))
-		    {
-		      LOOKUP_FOUND_P (outer) = true;
-		      bind->u (to->name (DECL_NAME (outer)));
-		      bind->u (0); /* It had no bindings of its own.  */
-		    }
-		}
-	      
-	      bind->u (to->name (DECL_NAME (ns)));
-	    }
-	  bind->u (to->name (DECL_NAME (first)));
-	  tag_binding (ns, DECL_NAME (first), module_bindings);
-	  // FIXME, here we'd emit the section number containing the
-	  // declaration.
-	}
-      gcc_checking_assert (!module_bindings->length ());
-    }
-  vec_free (module_bindings);
-  /* Mark end of non-namespace bindings.  */
-  if (LOOKUP_FOUND_P (ns))
-    bind->u (0);
-  vec_safe_push (nest, ns);
-  while (inner->length ())
-    nest = bindings (bind, to, nest, inner->pop ());
-  vec_free (inner);
-  nest->pop ();
-  /* Mark end of namespace bindings.  */
-  if (LOOKUP_FOUND_P (ns))
-    {
-      LOOKUP_FOUND_P (ns) = false;
-      bind->u (0);
-    }
-  dump () && dump ("Walked namespace %N", ns);
-  return nest;
-}
-
 void
-trees_out::write (bytes_out &bind, elf_out *to)
+trees_out::write (auto_vec<tree> &decls)
 {
-  /* Write decls.  */
-  vec<tree, va_gc> *nest = NULL;
-  vec_alloc (nest, 30);
-  nest = bindings (&bind, to, nest, global_namespace);
-  gcc_assert (!nest->length ());
-  vec_free (nest);
+  for (unsigned ix = 0; ix != decls.length ();)
+    {
+      tree ns = decls[ix++];
+      tree name = decls[ix++];
+      dump () && dump ("Writing %N bindings for %N", ns, name);
+
+      tag (rt_binding);
+      tree_node (ns);
+      tree_node (name);
+      tree decl;
+      for (unsigned jx = ix; (decl = decls[jx++]) != NULL_TREE;)
+	{
+	  gcc_assert (!DECL_IS_BUILTIN (decl));
+	  if (TREE_CODE (decl) == CONST_DECL)
+	    {
+	      gcc_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == ENUMERAL_TYPE);
+	      continue;
+	    }
+	  tree_node (decl);
+	}
+      tree_node (NULL_TREE);
+
+      // FIXME:Write during binding?
+      while ((decl = decls[ix++]) != NULL_TREE)
+	if (!DECL_IS_BUILTIN (decl) && TREE_CODE (decl) != CONST_DECL)
+	  maybe_tag_definition (decl);
+    }
 }
 
 void

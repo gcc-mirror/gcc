@@ -1,5 +1,15 @@
 2018-02-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.h (extract_module_decls): Renamed from
+	extract_module_bindings.  Adjust signature.
+	* name-lookup.c (extract_module_decls): Likewise.
+	* module.c (module_state::walk_namespace): New, absorb ...
+	(trees_out::walk_namespace): ... this.  Delete.
+	(trees_out::write): Reimplement, absorb ...
+	(trees_out::{tag_binding,bindings}): ... these.  Delete.
+	(module_state::write_bindings): Adjust.
+
 	Merge trunk r257292.
 
 2018-01-31  Nathan Sidwell  <nathan@acm.org>

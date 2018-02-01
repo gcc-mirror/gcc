@@ -3550,57 +3550,55 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   return old;
 }
 
-/* Given a namespace-level binding BINDING, initialize *VEC with the
+/* Given a namespace-level binding BINDING, initialize DECLS with the
    set of bindings that are visible to importers and implementations.
    I.e. the exported decls and module-linkage decls.  Any TYPE binding
-   is pushed first.  If VEC is NULL, we are determining if there are
-   any such entities -- so bail as soon as we find one.  if VEC is
-   non-null the target vector must have at least 2 available
-   slots.  */
+   is pushed first.  Return the DECL_NAME of the binding, or
+   NULL_TREE if there are none.  */
 
-module_binding_vec *
-extract_module_bindings (module_binding_vec *vec, tree binding)
+tree
+extract_module_decls (tree binding, auto_vec<tree> &decls)
 {
-  if (tree type = MAYBE_STAT_TYPE (binding))
+  tree name = NULL_TREE;
+
+  if (tree tdecl = MAYBE_STAT_TYPE (binding))
     {
-      if (DECL_MODULE_EXPORT_P (type) || MAYBE_DECL_MODULE_PURVIEW_P (type))
+      if (DECL_MODULE_EXPORT_P (tdecl) || MAYBE_DECL_MODULE_PURVIEW_P (tdecl))
 	{
-	  if (!vec)
-	    return (module_binding_vec *)1;
-	  vec->quick_push (type);
+	  name = DECL_NAME (tdecl);
+	  decls.safe_push (tdecl);
 	}
     }
 
-  tree decls = MAYBE_STAT_DECL (binding);
-  gcc_assert (decls);
-  for (ovl_iterator iter (decls); iter; ++iter)
+  tree ovl = MAYBE_STAT_DECL (binding);
+  gcc_assert (ovl);
+  for (ovl_iterator iter (ovl); iter; ++iter)
     {
       tree decl = *iter;
+
       // FIXME using decls, hidden decls
-      tree res = decl;
-      if (TREE_CODE (res) == TEMPLATE_DECL)
-	res = DECL_TEMPLATE_RESULT (res);
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	decl = DECL_TEMPLATE_RESULT (decl);
 
-      if (!DECL_MODULE_EXPORT_P (res)
-	  && !MAYBE_DECL_MODULE_PURVIEW_P (res))
+      if (!DECL_MODULE_EXPORT_P (decl)
+	  && !MAYBE_DECL_MODULE_PURVIEW_P (decl))
 	continue;
 
-      if ((TREE_CODE (res) == VAR_DECL
-	   || TREE_CODE (res) == TYPE_DECL)
-	  && DECL_TINFO_P (res))
+      if ((TREE_CODE (decl) == VAR_DECL
+	   || TREE_CODE (decl) == TYPE_DECL)
+	  && DECL_TINFO_P (decl))
 	continue;
 
-      if ((TREE_CODE (res) == FUNCTION_DECL
-	   || TREE_CODE (res) == VAR_DECL)
-	  && !TREE_PUBLIC (res))
+      if ((TREE_CODE (decl) == FUNCTION_DECL
+	   || TREE_CODE (decl) == VAR_DECL)
+	  && !TREE_PUBLIC (decl))
 	continue;
 
-      if (!vec)
-	return (module_binding_vec *)1;
-      vec_safe_push (vec, decl);
+      name = DECL_NAME (*iter);
+      decls.safe_push (*iter);
     }
 
-  return vec;
+  return name;
 }
 
 /* During an import NAME is being bound within namespace NS and

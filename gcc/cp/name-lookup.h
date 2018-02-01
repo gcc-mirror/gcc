@@ -347,8 +347,6 @@ extern bool push_module_binding (tree ctx, tree name, unsigned mod,
 				 tree value, tree type);
 extern tree lookup_by_ident (tree ctx, unsigned mod,
 			     tree name, tree type, unsigned code);
-typedef vec<tree, va_heap, vl_embed> module_binding_vec;
-extern module_binding_vec *extract_module_bindings (module_binding_vec *vec,
-						    tree binding);
+extern tree extract_module_decls (tree binding, auto_vec<tree> &);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */
