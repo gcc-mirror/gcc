@@ -1,5 +1,11 @@
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Handle
+	all CONST_VECTOR_DUPLICATE_P vectors, not just those with a single
+	duplicated element.
+
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tearget/83845
 	* config/aarch64/aarch64.c (aarch64_secondary_reload): Tighten
 	check for operands that need to go through aarch64_sve_reload_be.
