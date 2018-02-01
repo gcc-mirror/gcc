@@ -1,5 +1,14 @@
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64-sve.md (sve_ld1rq): Replace with...
+	(*sve_ld1rq<Vesize>): ... this new pattern.  Handle all element sizes,
+	not just bytes.
+	* config/aarch64/aarch64.c (aarch64_expand_sve_widened_duplicate):
+	Remove BSWAP handing for big-endian targets and use the form of
+	LD1RQ appropariate for the mode.
+
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Handle
 	all CONST_VECTOR_DUPLICATE_P vectors, not just those with a single
 	duplicated element.

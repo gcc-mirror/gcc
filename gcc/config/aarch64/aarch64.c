@@ -2787,16 +2787,7 @@ aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
       return true;
     }
 
-  /* The bytes are loaded in little-endian order, so do a byteswap on
-     big-endian targets.  */
-  if (BYTES_BIG_ENDIAN)
-    {
-      src = simplify_unary_operation (BSWAP, src_mode, src, src_mode);
-      if (!src)
-	return NULL_RTX;
-    }
-
-  /* Use LD1RQ to load the 128 bits from memory.  */
+  /* Use LD1RQ[BHWD] to load the 128 bits from memory.  */
   src = force_const_mem (src_mode, src);
   if (!src)
     return false;
@@ -2808,8 +2799,12 @@ aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
       src = replace_equiv_address (src, addr);
     }
 
-  rtx ptrue = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
-  emit_insn (gen_sve_ld1rq (gen_lowpart (VNx16QImode, dest), ptrue, src));
+  machine_mode mode = GET_MODE (dest);
+  unsigned int elem_bytes = GET_MODE_UNIT_SIZE (mode);
+  machine_mode pred_mode = aarch64_sve_pred_mode (elem_bytes).require ();
+  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  src = gen_rtx_UNSPEC (mode, gen_rtvec (2, ptrue, src), UNSPEC_LD1RQ);
+  emit_insn (gen_rtx_SET (dest, src));
   return true;
 }
 

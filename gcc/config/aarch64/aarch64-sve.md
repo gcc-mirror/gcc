@@ -652,14 +652,14 @@
 ;; Load 128 bits from memory and duplicate to fill a vector.  Since there
 ;; are so few operations on 128-bit "elements", we don't define a VNx1TI
 ;; and simply use vectors of bytes instead.
-(define_insn "sve_ld1rq"
-  [(set (match_operand:VNx16QI 0 "register_operand" "=w")
-	(unspec:VNx16QI
-	  [(match_operand:VNx16BI 1 "register_operand" "Upl")
+(define_insn "*sve_ld1rq<Vesize>"
+  [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
 	   (match_operand:TI 2 "aarch64_sve_ld1r_operand" "Uty")]
 	  UNSPEC_LD1RQ))]
   "TARGET_SVE"
-  "ld1rqb\t%0.b, %1/z, %2"
+  "ld1rq<Vesize>\t%0.<Vetype>, %1/z, %2"
 )
 
 ;; Implement a predicate broadcast by shifting the low bit of the scalar

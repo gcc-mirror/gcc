@@ -36,7 +36,7 @@ TEST_ALL (VEC_PERM)
 /* 1 for each 16-bit type and 4 for double.  */
 /* { dg-final { scan-assembler-times {\tld1rd\tz[0-9]+\.d, } 7 } } */
 /* 1 for each 32-bit type.  */
-/* { dg-final { scan-assembler-times {\tld1rqb\tz[0-9]+\.b, } 3 } } */
+/* { dg-final { scan-assembler-times {\tld1rqw\tz[0-9]+\.s, } 3 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #41\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #25\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tmov\tz[0-9]+\.d, #31\n} 2 } } */
