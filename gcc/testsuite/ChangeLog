@@ -1,3 +1,8 @@
+2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/tree-ssa/vrp111.c (dg-options): Add
+	-fdelete-null-pointer-checks.
+
 2018-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/83796

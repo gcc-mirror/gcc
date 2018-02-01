@@ -1,3 +1,10 @@
+2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_option_override): Move disabling of
+	-fdelete-null-pointer-checks to...
+	* common/config/avr/avr-common.c (avr_option_optimization_table):
+	...here.
+
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/81635

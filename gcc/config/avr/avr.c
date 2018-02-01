@@ -730,14 +730,6 @@ avr_set_core_architecture (void)
 static void
 avr_option_override (void)
 {
-  /* Disable -fdelete-null-pointer-checks option for AVR target.
-     This option compiler assumes that dereferencing of a null pointer
-     would halt the program.  For AVR this assumption is not true and
-     programs can safely dereference null pointers.  Changes made by this
-     option may not work properly for AVR.  So disable this option. */
-
-  flag_delete_null_pointer_checks = 0;
-
   /* caller-save.c looks for call-clobbered hard registers that are assigned
      to pseudos that cross calls and tries so save-restore them around calls
      in order to reduce the number of stack slots needed.
