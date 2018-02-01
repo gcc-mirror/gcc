@@ -3074,6 +3074,120 @@ aarch64_expand_sve_mem_move (rtx dest, rtx src, machine_mode pred_mode)
   aarch64_emit_sve_pred_move (dest, ptrue, src);
 }
 
+/* Called only on big-endian targets.  See whether an SVE vector move
+   from SRC to DEST is effectively a REV[BHW] instruction, because at
+   least one operand is a subreg of an SVE vector that has wider or
+   narrower elements.  Return true and emit the instruction if so.
+
+   For example:
+
+     (set (reg:VNx8HI R1) (subreg:VNx8HI (reg:VNx16QI R2) 0))
+
+   represents a VIEW_CONVERT between the following vectors, viewed
+   in memory order:
+
+     R2: { [0].high, [0].low,  [1].high, [1].low, ... }
+     R1: { [0],      [1],      [2],      [3],     ... }
+
+   The high part of lane X in R2 should therefore correspond to lane X*2
+   of R1, but the register representations are:
+
+         msb                                      lsb
+     R2: ...... [1].high  [1].low   [0].high  [0].low
+     R1: ...... [3]       [2]       [1]       [0]
+
+   where the low part of lane X in R2 corresponds to lane X*2 in R1.
+   We therefore need a reverse operation to swap the high and low values
+   around.
+
+   This is purely an optimization.  Without it we would spill the
+   subreg operand to the stack in one mode and reload it in the
+   other mode, which has the same effect as the REV.  */
+
+bool
+aarch64_maybe_expand_sve_subreg_move (rtx dest, rtx src)
+{
+  gcc_assert (BYTES_BIG_ENDIAN);
+  if (GET_CODE (dest) == SUBREG)
+    dest = SUBREG_REG (dest);
+  if (GET_CODE (src) == SUBREG)
+    src = SUBREG_REG (src);
+
+  /* The optimization handles two single SVE REGs with different element
+     sizes.  */
+  if (!REG_P (dest)
+      || !REG_P (src)
+      || aarch64_classify_vector_mode (GET_MODE (dest)) != VEC_SVE_DATA
+      || aarch64_classify_vector_mode (GET_MODE (src)) != VEC_SVE_DATA
+      || (GET_MODE_UNIT_SIZE (GET_MODE (dest))
+	  == GET_MODE_UNIT_SIZE (GET_MODE (src))))
+    return false;
+
+  /* Generate *aarch64_sve_mov<mode>_subreg_be.  */
+  rtx ptrue = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
+  rtx unspec = gen_rtx_UNSPEC (GET_MODE (dest), gen_rtvec (2, ptrue, src),
+			       UNSPEC_REV_SUBREG);
+  emit_insn (gen_rtx_SET (dest, unspec));
+  return true;
+}
+
+/* Return a copy of X with mode MODE, without changing its other
+   attributes.  Unlike gen_lowpart, this doesn't care whether the
+   mode change is valid.  */
+
+static rtx
+aarch64_replace_reg_mode (rtx x, machine_mode mode)
+{
+  if (GET_MODE (x) == mode)
+    return x;
+
+  x = shallow_copy_rtx (x);
+  set_mode_and_regno (x, mode, REGNO (x));
+  return x;
+}
+
+/* Split a *aarch64_sve_mov<mode>_subreg_be pattern with the given
+   operands.  */
+
+void
+aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
+{
+  /* Decide which REV operation we need.  The mode with narrower elements
+     determines the mode of the operands and the mode with the wider
+     elements determines the reverse width.  */
+  machine_mode mode_with_wider_elts = GET_MODE (dest);
+  machine_mode mode_with_narrower_elts = GET_MODE (src);
+  if (GET_MODE_UNIT_SIZE (mode_with_wider_elts)
+      < GET_MODE_UNIT_SIZE (mode_with_narrower_elts))
+    std::swap (mode_with_wider_elts, mode_with_narrower_elts);
+
+  unsigned int wider_bytes = GET_MODE_UNIT_SIZE (mode_with_wider_elts);
+  unsigned int unspec;
+  if (wider_bytes == 8)
+    unspec = UNSPEC_REV64;
+  else if (wider_bytes == 4)
+    unspec = UNSPEC_REV32;
+  else if (wider_bytes == 2)
+    unspec = UNSPEC_REV16;
+  else
+    gcc_unreachable ();
+  machine_mode pred_mode = aarch64_sve_pred_mode (wider_bytes).require ();
+
+  /* Emit:
+
+       (set DEST (unspec [PTRUE (unspec [SRC] UNSPEC_REV<nn>)]
+			 UNSPEC_MERGE_PTRUE))
+
+     with the appropriate modes.  */
+  ptrue = gen_lowpart (pred_mode, ptrue);
+  dest = aarch64_replace_reg_mode (dest, mode_with_narrower_elts);
+  src = aarch64_replace_reg_mode (src, mode_with_narrower_elts);
+  src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (1, src), unspec);
+  src = gen_rtx_UNSPEC (mode_with_narrower_elts, gen_rtvec (2, ptrue, src),
+			UNSPEC_MERGE_PTRUE);
+  emit_insn (gen_rtx_SET (dest, src));
+}
+
 static bool
 aarch64_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 				 tree exp ATTRIBUTE_UNUSED)
@@ -17197,10 +17311,27 @@ static bool
 aarch64_can_change_mode_class (machine_mode from,
 			       machine_mode to, reg_class_t)
 {
-  /* See the comment at the head of aarch64-sve.md for details.  */
-  if (BYTES_BIG_ENDIAN
-      && (aarch64_sve_data_mode_p (from) != aarch64_sve_data_mode_p (to)))
-    return false;
+  if (BYTES_BIG_ENDIAN)
+    {
+      bool from_sve_p = aarch64_sve_data_mode_p (from);
+      bool to_sve_p = aarch64_sve_data_mode_p (to);
+
+      /* Don't allow changes between SVE data modes and non-SVE modes.
+	 See the comment at the head of aarch64-sve.md for details.  */
+      if (from_sve_p != to_sve_p)
+	return false;
+
+      /* Don't allow changes in element size: lane 0 of the new vector
+	 would not then be lane 0 of the old vector.  See the comment
+	 above aarch64_maybe_expand_sve_subreg_move for a more detailed
+	 description.
+
+	 In the worst case, this forces a register to be spilled in
+	 one mode and reloaded in the other, which handles the
+	 endianness correctly.  */
+      if (from_sve_p && GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to))
+	return false;
+    }
   return true;
 }
 
