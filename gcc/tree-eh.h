@@ -37,6 +37,7 @@ extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
 					   bool, tree, bool *);
 extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
 extern bool tree_could_trap_p (tree);
+extern tree rewrite_to_non_trapping_overflow (tree);
 extern bool stmt_could_throw_p (gimple *);
 extern bool tree_could_throw_p (tree);
 extern bool stmt_can_throw_external (gimple *);
