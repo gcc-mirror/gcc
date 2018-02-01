@@ -21,8 +21,8 @@
 (define_register_constraint "k" "STACK_REG"
   "@internal The stack register.")
 
-(define_register_constraint "Ucs" "CALLER_SAVE_REGS"
-  "@internal The caller save registers.")
+(define_register_constraint "Ucs" "TAILCALL_ADDR_REGS"
+  "@internal Registers suitable for an indirect tail call")
 
 (define_register_constraint "w" "FP_REGS"
   "Floating point and SIMD vector registers.")
