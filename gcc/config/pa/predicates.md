@@ -277,6 +277,9 @@
     case E_HImode:
       return true;
 
+    case E_VOIDmode:
+      return false;
+
     default:
       return (INTVAL (op) % GET_MODE_SIZE (mode)) == 0;
     }
