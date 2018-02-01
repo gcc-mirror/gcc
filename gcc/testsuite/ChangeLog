@@ -1,3 +1,8 @@
+2018-01-30  Jeff Law  <law@redhat.com>
+
+	PR target/84128
+	* gcc.target/i386/pr84128.c: New test.
+
 2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.dg/tree-ssa/vrp111.c (dg-options): Add
@@ -218,7 +223,7 @@
 	PR target/84064
 	* gcc.target/i386/pr84064: New test.
 
-2017-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2018-01-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84134
 	* gfortran.dg/data_implied_do_2.f90: New test.
@@ -316,7 +321,7 @@
 	PR tree-optimization/84057
 	* gcc.dg/graphite/pr84057.c: New testcase.
 
-2017-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2018-01-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84073
 	* gfortran.dg/bind_c_usage_31.f90: New test.
@@ -2489,7 +2494,7 @@
 	check_effective_target_arm_fp16fml_neon_ok,
 	add_options_for_arm_fp16fml_neon): New procedures.
 
-2017-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+2018-01-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/multilib.exp: Add some -march=armv8.4-a
 	combination tests.
@@ -2747,7 +2752,7 @@
 	PR c++/83734
 	* g++.dg/cpp0x/pr83734.C: New test.
 
-2017-01-09 Carl Love  <cel@us.ibm.com>
+2018-01-09 Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-1.c (main): Add tests for vec_mergee and
 	vec_mergeo builtins with float, double, long long, unsigned long long,

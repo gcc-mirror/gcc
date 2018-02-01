@@ -12567,22 +12567,39 @@ get_scratch_register_on_entry (struct scratch_reg *sr)
     }
 }
 
-/* Release a scratch register obtained from the preceding function.  */
+/* Release a scratch register obtained from the preceding function.
+
+   If RELEASE_VIA_POP is true, we just pop the register off the stack
+   to release it.  This is what non-Linux systems use with -fstack-check.
+
+   Otherwise we use OFFSET to locate the saved register and the
+   allocated stack space becomes part of the local frame and is
+   deallocated by the epilogue.  */
 
 static void
-release_scratch_register_on_entry (struct scratch_reg *sr)
+release_scratch_register_on_entry (struct scratch_reg *sr, HOST_WIDE_INT offset,
+				   bool release_via_pop)
 {
   if (sr->saved)
     {
-      struct machine_function *m = cfun->machine;
-      rtx x, insn = emit_insn (gen_pop (sr->reg));
+      if (release_via_pop)
+	{
+	  struct machine_function *m = cfun->machine;
+	  rtx x, insn = emit_insn (gen_pop (sr->reg));
 
-      /* The RTX_FRAME_RELATED_P mechanism doesn't know about pop.  */
-      RTX_FRAME_RELATED_P (insn) = 1;
-      x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
-      x = gen_rtx_SET (stack_pointer_rtx, x);
-      add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
-      m->fs.sp_offset -= UNITS_PER_WORD;
+	  /* The RX FRAME_RELATED_P mechanism doesn't know about pop.  */
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (UNITS_PER_WORD));
+	  x = gen_rtx_SET (stack_pointer_rtx, x);
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, x);
+	  m->fs.sp_offset -= UNITS_PER_WORD;
+	}
+      else
+	{
+	  rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+	  x = gen_rtx_SET (sr->reg, gen_rtx_MEM (word_mode, x));
+	  emit_insn (x);
+	}
     }
 }
 
@@ -12597,7 +12614,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
    pushed on the stack.  */
 
 static void
-ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size,
+ix86_adjust_stack_and_probe_stack_clash (HOST_WIDE_INT size,
 					 const bool int_registers_saved)
 {
   struct machine_function *m = cfun->machine;
@@ -12713,6 +12730,12 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size,
       struct scratch_reg sr;
       get_scratch_register_on_entry (&sr);
 
+      /* If we needed to save a register, then account for any space
+	 that was pushed (we are not going to pop the register when
+	 we do the restore).  */
+      if (sr.saved)
+	size -= UNITS_PER_WORD;
+
       /* Step 1: round SIZE down to a multiple of the interval.  */
       HOST_WIDE_INT rounded_size = size & -probe_interval;
 
@@ -12761,7 +12784,9 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size,
 				   m->fs.cfa_reg == stack_pointer_rtx);
       dump_stack_clash_frame_info (PROBE_LOOP, size != rounded_size);
 
-      release_scratch_register_on_entry (&sr);
+      /* This does not deallocate the space reserved for the scratch
+	 register.  That will be deallocated in the epilogue.  */
+      release_scratch_register_on_entry (&sr, size, false);
     }
 
   /* Make sure nothing is scheduled before we are done.  */
@@ -12774,7 +12799,7 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size,
    pushed on the stack.  */
 
 static void
-ix86_adjust_stack_and_probe (const HOST_WIDE_INT size,
+ix86_adjust_stack_and_probe (HOST_WIDE_INT size,
 			     const bool int_registers_saved)
 {
   /* We skip the probe for the first interval + a small dope of 4 words and
@@ -12847,6 +12872,11 @@ ix86_adjust_stack_and_probe (const HOST_WIDE_INT size,
 
       get_scratch_register_on_entry (&sr);
 
+      /* If we needed to save a register, then account for any space
+	 that was pushed (we are not going to pop the register when
+	 we do the restore).  */
+      if (sr.saved)
+	size -= UNITS_PER_WORD;
 
       /* Step 1: round SIZE to the previous multiple of the interval.  */
 
@@ -12906,7 +12936,9 @@ ix86_adjust_stack_and_probe (const HOST_WIDE_INT size,
 						    (get_probe_interval ()
 						     + dope))));
 
-      release_scratch_register_on_entry (&sr);
+      /* This does not deallocate the space reserved for the scratch
+	 register.  That will be deallocated in the epilogue.  */
+      release_scratch_register_on_entry (&sr, size, false);
     }
 
   /* Even if the stack pointer isn't the CFA register, we need to correctly
@@ -13055,7 +13087,7 @@ ix86_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size,
 						       sr.reg),
 					 rounded_size - size));
 
-      release_scratch_register_on_entry (&sr);
+      release_scratch_register_on_entry (&sr, size, true);
     }
 
   /* Make sure nothing is scheduled before we are done.  */
