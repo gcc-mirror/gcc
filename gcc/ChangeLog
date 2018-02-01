@@ -1,3 +1,9 @@
+2018-02-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/84157
+	* combine.c (change_zero_ext): Use REG_P predicate in
+	front of HARD_REGISTER_P predicate.
+
 2018-02-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_option_override): Move disabling of
