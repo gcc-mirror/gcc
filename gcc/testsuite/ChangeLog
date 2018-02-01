@@ -1,5 +1,12 @@
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* gcc.target/aarch64/sve/slp_2.c: Expect LD1RQ to be used instead
+	of LD1R[HWD] for multi-element constants on big-endian targets.
+	* gcc.target/aarch64/sve/slp_3.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gcc.target/aarch64/sve/slp_2.c: Expect LD1RQD rather than LD1RQB.
 	* gcc.target/aarch64/sve/slp_3.c: Expect LD1RQW rather than LD1RQB.
 	* gcc.target/aarch64/sve/slp_4.c: Expect LD1RQH rather than LD1RQB.
