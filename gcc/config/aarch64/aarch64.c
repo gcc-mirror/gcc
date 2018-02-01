@@ -13164,10 +13164,11 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
     return false;
 
   scalar_mode elt_mode = GET_MODE_INNER (mode);
-  rtx elt = NULL, base, step;
+  rtx base, step;
   unsigned int n_elts;
-  if (const_vec_duplicate_p (op, &elt))
-    n_elts = 1;
+  if (GET_CODE (op) == CONST_VECTOR
+      && CONST_VECTOR_DUPLICATE_P (op))
+    n_elts = CONST_VECTOR_NPATTERNS (op);
   else if ((vec_flags & VEC_SVE_DATA)
 	   && const_vec_series_p (op, &base, &step))
     {
@@ -13192,14 +13193,17 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
 	    || op == CONSTM1_RTX (mode));
 
   scalar_float_mode elt_float_mode;
-  if (elt
-      && is_a <scalar_float_mode> (elt_mode, &elt_float_mode)
-      && (aarch64_float_const_zero_rtx_p (elt)
-	  || aarch64_float_const_representable_p (elt)))
+  if (n_elts == 1
+      && is_a <scalar_float_mode> (elt_mode, &elt_float_mode))
     {
-      if (info)
-	*info = simd_immediate_info (elt_float_mode, elt);
-      return true;
+      rtx elt = CONST_VECTOR_ENCODED_ELT (op, 0);
+      if (aarch64_float_const_zero_rtx_p (elt)
+	  || aarch64_float_const_representable_p (elt))
+	{
+	  if (info)
+	    *info = simd_immediate_info (elt_float_mode, elt);
+	  return true;
+	}
     }
 
   unsigned int elt_size = GET_MODE_SIZE (elt_mode);
@@ -13214,11 +13218,11 @@ aarch64_simd_valid_immediate (rtx op, simd_immediate_info *info,
   bytes.reserve (n_elts * elt_size);
   for (unsigned int i = 0; i < n_elts; i++)
     {
-      if (!elt || n_elts != 1)
-	/* The vector is provided in gcc endian-neutral fashion.
-	   For aarch64_be, it must be laid out in the vector register
-	   in reverse order.  */
-	elt = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? (n_elts - 1 - i) : i);
+      /* The vector is provided in gcc endian-neutral fashion.
+	 For aarch64_be Advanced SIMD, it must be laid out in the vector
+	 register in reverse order.  */
+      bool swap_p = ((vec_flags & VEC_ADVSIMD) != 0 && BYTES_BIG_ENDIAN);
+      rtx elt = CONST_VECTOR_ELT (op, swap_p ? (n_elts - 1 - i) : i);
 
       if (elt_mode != elt_int_mode)
 	elt = gen_lowpart (elt_int_mode, elt);
