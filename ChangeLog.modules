@@ -1,5 +1,20 @@
 2018-02-01  Nathan Sidwell  <nathan@acm.org>
 
+	Read and parse the binding section in module_state.
+	gcc/cp/
+	* module.c (modules_state::record_namespace): New.
+	(module_state::write_namespace): Adjust, renamed from ...
+	(module_state::walk_namespace): ... here.
+	(module_state::read_namespace): New.
+	(module_state::{read,write}_bindings): Adjust.
+	(module_state::finish_module): Adjust.
+	* name-lookup.h (set_module_namespace): Declare.
+	* name-lookup.c (merge_global_decl): Adjust.
+	(create_namespace): New.
+	(set_module_namespace): New, use it.
+	(push_namespace): Use create_namespace.
+
+	Write binding section in module_state.
 	gcc/cp/
 	* name-lookup.h (extract_module_decls): Renamed from
 	extract_module_bindings.  Adjust signature.

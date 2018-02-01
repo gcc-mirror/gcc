@@ -3519,14 +3519,19 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
 	 consistent with the global module, even if it didn't
 	 explicitly mention it.  So push it now.  It can't be hiding
 	 in some other module.  */
-      gcc_assert (!find_namespace_partition (*slot));
+      old = find_namespace_partition (*slot);
 
-      /* Creating a new namespace.  */
-      SCOPE_DEPTH (decl) = SCOPE_DEPTH (ctx) + 1;
-      if (ctx == global_namespace)
-	DECL_CONTEXT (decl) = DECL_CONTEXT (global_namespace);
+      if (old)
+	decl = old;
+      else
+	{
+	  /* Creating a new namespace.  */
+	  SCOPE_DEPTH (decl) = SCOPE_DEPTH (ctx) + 1;
+	  if (ctx == global_namespace)
+	    DECL_CONTEXT (decl) = DECL_CONTEXT (global_namespace);
+	}
       old = update_binding (NAMESPACE_LEVEL (ctx), NULL,
-			    mslot, old, decl, false);
+			    mslot, NULL_TREE, decl, false);
       if (old == decl)
 	{
 	  if (DECL_NAMESPACE_INLINE_P (old))
@@ -3674,6 +3679,82 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
     }
 
   return true;
+}
+
+/* Create a namespace NAME inside CTX.  */
+
+static tree
+create_namespace (tree ctx, tree name, bool inline_p)
+{
+  tree ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+  SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
+  if (!SCOPE_DEPTH (ns))
+    /* We only allow depth 255. */
+    sorry ("cannot nest more than %d namespaces", SCOPE_DEPTH (ctx));
+  DECL_CONTEXT (ns) = FROB_CONTEXT (ctx);
+
+  if (inline_p)
+    DECL_NAMESPACE_INLINE_P (ns) = true;
+
+  if (!name)
+    SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
+  else if (TREE_PUBLIC (ctx))
+    {
+      TREE_PUBLIC (ns) = true;
+      DECL_MODULE_EXPORT_P (ns) = true;
+    }
+
+  return ns;
+}
+
+tree
+set_module_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
+{
+  tree *slot = find_namespace_slot (ctx, name, true);
+  tree *mslot = module_binding_slot (slot, name, mod, -1);
+  tree decl = *mslot;
+
+  if (decl && TREE_CODE (decl) == NAMESPACE_DECL)
+    {
+      if (tree alias = DECL_NAMESPACE_ALIAS (decl))
+	{
+	  error ("expected %qD to be a namespace, not an alias for %qD",
+		 decl, alias);
+	  decl = alias;
+	}
+      if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
+	error (inline_p ? "expected %qD to be an inline namespace"
+	       : "expected %qD to not be an inline namespace", decl);
+      return decl;
+    }
+
+  tree new_decl = find_namespace_partition (*slot);
+  bool new_ns = false;
+  if (!new_decl)
+    {
+      new_decl = create_namespace (ctx, name, inline_p);
+      if (inline_p)
+	vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), new_decl);
+      /* Create its scope -- but don't push it.  */
+      cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
+      scope->this_entity = new_decl;
+      scope->more_cleanups_ok = true;
+      scope->kind = sk_namespace;
+      scope->level_chain = NAMESPACE_LEVEL (ctx);
+      NAMESPACE_LEVEL (new_decl) = scope;
+      new_ns = true;
+    }
+
+  if (decl)
+    error ("expected %qD to be a namespace", new_decl);
+  else
+    {
+      if (new_ns)
+	newbinding_bookkeeping (name, new_decl, NAMESPACE_LEVEL (ctx));
+      *mslot = new_decl;
+    }
+
+  return new_decl;
 }
 
 /* CTX contains a module MOD binding for NAME.  Use TYPE & CODE to
@@ -7342,8 +7423,9 @@ do_push_nested_namespace (tree ns)
   else
     {
       do_push_nested_namespace (CP_DECL_CONTEXT (ns));
-      gcc_checking_assert
-	(find_namespace_value (current_namespace, DECL_NAME (ns)) == ns);
+      // FIXME This assert is only true in the correct module context
+      // gcc_checking_assert
+      //(find_namespace_value (current_namespace, DECL_NAME (ns)) == ns);
       resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
     }
@@ -7541,15 +7623,7 @@ push_namespace (tree name, bool make_inline)
 
       if (!ns)
 	{
-	  ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
-	  SCOPE_DEPTH (ns) = SCOPE_DEPTH (current_namespace) + 1;
-	  if (!SCOPE_DEPTH (ns))
-	    /* We only allow depth 255. */
-	    sorry ("cannot nest more than %d namespaces",
-		   SCOPE_DEPTH (current_namespace));
-	  DECL_CONTEXT (ns) = FROB_CONTEXT (current_namespace);
-	  /* Namespaces are always exported. */
-	  DECL_MODULE_EXPORT_P (ns) = true;
+	  ns = create_namespace (current_namespace, name, make_inline);
 	  new_ns = true;
 	}
 
@@ -7557,22 +7631,10 @@ push_namespace (tree name, bool make_inline)
 	ns = NULL_TREE;
       else if (new_ns)
 	{
-	  if (!name)
-	    {
-	      SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
-
-	      if (!make_inline)
-		add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
-				     ns);
-	    }
-	  else if (TREE_PUBLIC (current_namespace))
-	    TREE_PUBLIC (ns) = 1;
-
 	  if (make_inline)
-	    {
-	      DECL_NAMESPACE_INLINE_P (ns) = true;
-	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
-	    }
+	    vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
+	  else if (!name)
+	    add_using_namespace (DECL_NAMESPACE_USING (current_namespace), ns);
 
 	  if (!name || make_inline)
 	    emit_debug_info_using_namespace (current_namespace, ns, true);

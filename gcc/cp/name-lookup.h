@@ -348,5 +348,6 @@ extern bool push_module_binding (tree ctx, tree name, unsigned mod,
 extern tree lookup_by_ident (tree ctx, unsigned mod,
 			     tree name, tree type, unsigned code);
 extern tree extract_module_decls (tree binding, auto_vec<tree> &);
-
+extern tree set_module_namespace (tree ctx, unsigned mod,
+				  tree name, bool inline_p);
 #endif /* GCC_CP_NAME_LOOKUP_H */

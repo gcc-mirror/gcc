@@ -1517,8 +1517,11 @@ struct GTY(()) module_state {
   bool read_context (elf_in *from);
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
-  void walk_namespace (elf_out *to, bytes_out &bind, trees_out &trees, tree ns,
-		       auto_vec<tree> &stack, auto_vec<tree> &decls);
+  void record_namespace (elf_out *to, bytes_out &bind,
+			 trees_out &trees, tree ns);
+  void write_namespace (elf_out *to, bytes_out &bind, trees_out &trees, tree ns,
+			auto_vec<tree> &stack, auto_vec<tree> &decls);
+  void read_namespace (elf_in *from, bytes_in &bind, tree ctx);
   void write_bindings (elf_out *to, unsigned *crc_ptr);
   bool read_bindings (elf_in *from);
   bool read_decls (elf_in *from);
@@ -1780,7 +1783,10 @@ public:
   void outdent ()
   {
     if (dumps)
-      dumps->indent--;
+      {
+	gcc_checking_assert (dumps->indent);
+	dumps->indent--;
+      }
   }
 
   /* Dump information.  */
@@ -2475,6 +2481,19 @@ module_state::read_config (elf_in *from, unsigned *crc_ptr)
   return cfg.end (from);
 }
 
+void
+module_state::record_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
+			       tree ns)
+{
+  dump () && dump ("Recording namespace %N", ns);
+  LOOKUP_FOUND_P (ns) = true;
+  // FIXME: register with trees
+  bind.u (to->name (DECL_NAME (ns)));
+  bind.b (DECL_MODULE_EXPORT_P (ns));
+  bind.b (DECL_NAMESPACE_INLINE_P (ns));
+  bind.bflush ();
+}
+
 /* Walk the bindings of NS, writing out the bindings for the current
    TU.   */
 
@@ -2490,15 +2509,22 @@ module_state::read_config (elf_in *from, unsigned *crc_ptr)
    zero. */
 
 void
-module_state::walk_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
-			      tree ns,
-			      auto_vec<tree> &stack, auto_vec<tree> &decls)
+module_state::write_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
+			       tree ns,
+			       auto_vec<tree> &stack, auto_vec<tree> &decls)
 {
-  dump () && dump ("Walking namespace %N", ns);
+  dump () && dump ("Writing namespace %N", ns);
 
-  gcc_checking_assert (!LOOKUP_FOUND_P (ns));
   auto_vec<tree> inner;
   inner.reserve (10);
+
+  gcc_checking_assert ((ns == global_namespace) == LOOKUP_FOUND_P (ns));
+  if (!LOOKUP_FOUND_P (ns) && DECL_MODULE_EXPORT_P (ns))
+    {
+      gcc_checking_assert (!stack.length () || LOOKUP_FOUND_P (stack.last ()));
+      record_namespace (to, bind, trees, ns);
+    }
+  stack.safe_push (ns);
 
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
@@ -2532,30 +2558,30 @@ module_state::walk_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
 	  gcc_assert (decls.length () == hwm);
 	  decls.pop ();
 	  decls.pop ();
+	  if (!DECL_MODULE_EXPORT_P (first))
+	    continue;
+	  first = NULL_TREE;
 	}
-      else
+
+      /* Emit open scopes.  */
+      if (!LOOKUP_FOUND_P (ns))
+	for (unsigned ix = 0; ix != stack.length (); ix++)
+	  {
+	    tree outer = stack[ix];
+	    if (!LOOKUP_FOUND_P (outer))
+	      {
+		record_namespace (to, bind, trees, outer);
+		if (ix < stack.length () - 1)
+		  bind.u (0); /* It had no bindings of its own.  */
+	      }
+	  }
+
+      if (first)
 	{
 	  // FIXME:mark end of this binding
 	  decls[hwm-1] = name;
 	  decls.safe_push (NULL_TREE);
 
-	  /* Emit open scopes.  */
-	  if (!LOOKUP_FOUND_P (ns))
-	    {
-	      LOOKUP_FOUND_P (ns) = true;
-	      for (unsigned ix = 0; ix != stack.length (); ix++)
-		{
-		  tree outer = stack[ix];
-		  if (!LOOKUP_FOUND_P (outer))
-		    {
-		      LOOKUP_FOUND_P (outer) = true;
-		      // FIXME: register with trees
-		      bind.u (to->name (DECL_NAME (outer)));
-		      bind.u (0); /* It had no bindings of its own.  */
-		    }
-		}
-	      bind.u (to->name (DECL_NAME (ns)));
-	    }
 	  // FIXME: register with trees
 	  bind.u (to->name (name));
 	  // FIXME, here we'd emit the section number containing the
@@ -2566,17 +2592,44 @@ module_state::walk_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
   /* Mark end of non-namespace bindings.  */
   if (LOOKUP_FOUND_P (ns))
     bind.u (0);
-  stack.safe_push (ns);
   while (inner.length ())
-    walk_namespace (to, bind, trees, inner.pop (), stack, decls);
-  stack.pop ();
+    write_namespace (to, bind, trees, inner.pop (), stack, decls);
   /* Mark end of namespace bindings.  */
   if (LOOKUP_FOUND_P (ns))
     {
-      LOOKUP_FOUND_P (ns) = false;
       bind.u (0);
+      LOOKUP_FOUND_P (ns) = false;
     }
-  dump () && dump ("Walked namespace %N", ns);
+  stack.pop ();
+
+  dump () && dump ("Wrote namespace %N", ns);
+}
+
+void
+module_state::read_namespace (elf_in *from, bytes_in &bind, tree ns)
+{
+  dump () && dump ("Reading namespace %N", ns);
+
+  /* Read the non-namespace bound names.  */
+  while (unsigned off = bind.u ())
+    {
+      tree name = get_identifier (from->name (off));
+      // FIXME:insert?
+    }
+
+  /* Read the inner namespaces.  */
+  while (unsigned off = bind.u ())
+    {
+      bool exported_p = bind.b (); // FIXME:do something with this
+      bool inline_p = bind.b ();
+      bind.bflush ();
+
+      tree name = get_identifier (from->name (off));
+      tree inner = set_module_namespace (ns, mod, name, inline_p);
+      read_namespace (from, bind, inner);
+    }
+
+  dump () && dump ("Read namespace %N", ns);
 }
 
 void
@@ -2591,8 +2644,9 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   stack.reserve (20);
   decls.reserve (20);
 
-  walk_namespace (to, bind, trees, global_namespace, stack, decls);
-  
+  LOOKUP_FOUND_P (global_namespace) = true;
+  write_namespace (to, bind, trees, global_namespace, stack, decls);
+
   trees.begin (true);
   trees.write (decls);
 
@@ -2609,6 +2663,9 @@ module_state::read_bindings (elf_in *from)
 
   if (!bind.begin (from, MOD_SNAME_PFX ".bindings", &crc))
     return false;
+
+  read_namespace (from, bind, global_namespace);
+  
   // FIXME: process the bindings
   // FIXME: don't forget to free the string table now
   return bind.end (from);
@@ -5135,7 +5192,6 @@ trees_out::tree_node_special (tree t)
       tree_node (type);
       unsigned tag = insert (t);
       dump () && dump ("Wrote:%u typeinfo %S for %N", tag, t, type);
-      dump.outdent ();
       return true;
     }
 
@@ -6119,16 +6175,15 @@ finish_module ()
       unsigned n = dump.push (state);
       state->announce ("creating");
 
-      elf_out *to = new elf_out (stream, e);
-      if (to->begin ())
-	state->write (to);
-      if (!to->end ())
+      elf_out to (stream, e);
+      if (to.begin ())
+	state->write (&to);
+      if (!to.end ())
 	{
-	  int e = to->get_error ();
+	  int e = to.get_error ();
 	  error_at (state->loc, "failed to write module %qE: %s", state->name,
 		    e >= 0 ? xstrerror (e) : "Bad file data");
 	}
-      delete to;
 
       dump.pop (n);
       input_location = saved_loc;
