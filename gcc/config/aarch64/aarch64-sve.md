@@ -84,6 +84,32 @@
 				      gen_vec_duplicate<mode>);
 	DONE;
       }
+
+    /* Optimize subregs on big-endian targets: we can use REV[BHW]
+       instead of going through memory.  */
+    if (BYTES_BIG_ENDIAN
+        && aarch64_maybe_expand_sve_subreg_move (operands[0], operands[1]))
+      DONE;
+  }
+)
+
+;; A pattern for optimizing SUBREGs that have a reinterpreting effect
+;; on big-endian targets; see aarch64_maybe_expand_sve_subreg_move
+;; for details.  We use a special predicate for operand 2 to reduce
+;; the number of patterns.
+(define_insn_and_split "*aarch64_sve_mov<mode>_subreg_be"
+  [(set (match_operand:SVE_ALL 0 "aarch64_sve_nonimmediate_operand" "=w")
+	(unspec:SVE_ALL
+          [(match_operand:VNx16BI 1 "register_operand" "Upl")
+	   (match_operand 2 "aarch64_any_register_operand" "w")]
+	  UNSPEC_REV_SUBREG))]
+  "TARGET_SVE && BYTES_BIG_ENDIAN"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    aarch64_split_sve_subreg_move (operands[0], operands[1], operands[2]);
+    DONE;
   }
 )
 

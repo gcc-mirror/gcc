@@ -168,6 +168,7 @@
     UNSPEC_INSR
     UNSPEC_CLASTB
     UNSPEC_FADDA
+    UNSPEC_REV_SUBREG
 ])
 
 (define_c_enum "unspecv" [

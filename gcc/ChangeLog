@@ -1,5 +1,21 @@
 2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64-protos.h (aarch64_split_sve_subreg_move)
+	(aarch64_maybe_expand_sve_subreg_move): Declare.
+	* config/aarch64/aarch64.md (UNSPEC_REV_SUBREG): New unspec.
+	* config/aarch64/predicates.md (aarch64_any_register_operand): New
+	predicate.
+	* config/aarch64/aarch64-sve.md (mov<mode>): Optimize subreg moves
+	that are semantically a reverse operation.
+	(*aarch64_sve_mov<mode>_subreg_be): New pattern.
+	* config/aarch64/aarch64.c (aarch64_maybe_expand_sve_subreg_move):
+	(aarch64_replace_reg_mode, aarch64_split_sve_subreg_move): New
+	functions.
+	(aarch64_can_change_mode_class): For big-endian, forbid changes
+	between two SVE modes if they have different element sizes.
+
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_expand_sve_const_vector): Prefer
 	the TImode handling for big-endian targets.
 
