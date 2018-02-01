@@ -15076,10 +15076,9 @@ fi
 $as_echo "$libgo_cv_c_fancymath" >&6; }
 MATH_FLAG=
 if test "$libgo_cv_c_fancymath" = yes; then
-  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations -fno-math-errno"
-else
-  MATH_FLAG="-ffp-contract=off"
+  MATH_FLAG="-mfancy-math-387"
 fi
+MATH_FLAG="${MATH_FLAG} -ffp-contract=off -fno-math-errno -fno-trapping-math"
 
 
 CFLAGS_hold=$CFLAGS

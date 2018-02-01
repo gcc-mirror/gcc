@@ -1138,6 +1138,7 @@ $(foreach package,$(GOTOOL_PACKAGES),$(eval $(call PACKAGE_template,$(package)))
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.
 math_lo_GOCFLAGS = $(MATH_FLAG)
+math_check_GOCFLAGS = $(MATH_FLAG)
 
 # Add the generated file runtime_sysinfo.go to the runtime package.
 extra_go_files_runtime = runtime_sysinfo.go sigtab.go
