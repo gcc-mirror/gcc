@@ -185,7 +185,11 @@ private:
 
 public:
   void set_crc (unsigned *crc_ptr);
-  bool check_crc (unsigned *crc_ptr) const;
+  bool check_crc (bool) const;
+  unsigned get_crc () const
+  {
+    return *(const unsigned *)&buffer[0];
+  }
 
 public:
   /* new & delete semantics don't quite work.  */
@@ -219,17 +223,16 @@ data::set_crc (unsigned *crc_ptr)
 }
 
 bool
-data::check_crc (unsigned *crc_p) const
+data::check_crc (bool check_p) const
 {
-  if (crc_p)
+  if (check_p)
     {
       if (size < 4)
 	return false;
 
       unsigned c_crc = calc_crc ();
-      if (c_crc != *(unsigned const *)buffer)
+      if (c_crc != get_crc ())
 	return false;
-      *crc_p = crc32_unsigned (*crc_p, c_crc);
     }
 
   return true;
@@ -432,7 +435,7 @@ protected:
 
 public:
   data *read (unsigned snum);
-  data *find (unsigned type, const char *name);
+  unsigned find (unsigned type, const char *name);
   void release ()
   {
     strings = data::release (strings);
@@ -546,7 +549,7 @@ elf_in::read (unsigned snum)
   return NULL;
 }
 
-data *
+unsigned
 elf_in::find (unsigned type, const char *n)
 {
   unsigned snum = sections->length ();
@@ -555,10 +558,10 @@ elf_in::find (unsigned type, const char *n)
       const isection *isec = &(*sections)[snum];
 
       if (isec->type == type && !strcmp (n, name (isec->name)))
-	return read (snum);
+	return snum;
     }
 
-  return NULL;
+  return 0;
 }
 
 bool
@@ -936,9 +939,13 @@ public:
   }
 
 public:
-  bool begin (elf_in *src, const char *name, unsigned *crc_p = NULL);
+  bool begin (elf_in *src, const char *name, bool check_crc = false);
+  bool begin (elf_in *src, unsigned, bool check_crc = false,
+	      const char * = NULL);
   bool end (elf_in *src)
   {
+    if (more_p ())
+      set_overrun ();
     if (overrun)
       src->set_error ();
     parent::end ();
@@ -948,6 +955,10 @@ public:
   {
     return pos != data->size;
   }
+  unsigned get_crc () const
+  {
+    return data->get_crc ();
+  }  
 
 private:
   const char *use (unsigned bytes, unsigned *avail = NULL)
@@ -1414,17 +1425,29 @@ bytes_out::printf (const char *format, ...)
 }
 
 bool
-bytes_in::begin (elf_in *source, const char *name, unsigned *crc_p)
+bytes_in::begin (elf_in *source, const char *name, bool check_crc)
 {
-  parent::begin (crc_p);
+  unsigned snum = source->find (elf::SHT_PROGBITS, name);
 
-  data = source->find (elf::SHT_PROGBITS, name);
+  return begin (source, snum, check_crc, name);
+}
 
-  if (!data || !data->check_crc (crc_p))
+bool
+bytes_in::begin (elf_in *source, unsigned snum,
+		 bool check_crc, const char *name)
+{
+  parent::begin (check_crc);
+
+  data = source->read (snum);
+
+  if (!data || !data->check_crc (check_crc))
     {
       data = data::release (data);
       set_overrun ();
-      error ("section %qs is missing or corrupted", name);
+      if (name)
+	error ("section %qs is missing or corrupted", name);
+      else
+	error ("section #%u is missing or corrupted", snum);
       return false;
     }
   return true;
@@ -1461,7 +1484,7 @@ bytes_out::use (unsigned bytes)
   return parent::use (bytes);
 }
 
-// FIXME:Forward declare, until module_state::walk_namespace doesn't
+// FIXME:Forward declare, until module_state::{read,write}_namespace don't
 // need it
 class trees_out;
 
@@ -1480,6 +1503,8 @@ struct GTY(()) module_state {
 
   char *filename;	/* Filename */
   location_t loc;	/* Its location.  */
+
+  unsigned lazy;	/* Number of lazy sections yet to read.  */
 
   unsigned mod;		/* Module index.  */
   unsigned crc;		/* CRC we saw reading it in. */
@@ -1524,7 +1549,6 @@ struct GTY(()) module_state {
   void read_namespace (elf_in *from, bytes_in &bind, tree ctx);
   void write_bindings (elf_out *to, unsigned *crc_ptr);
   bool read_bindings (elf_in *from);
-  bool read_decls (elf_in *from);
 };
 
 /* Global trees.  */
@@ -2067,7 +2091,7 @@ module_state::module_state ()
     name (NULL_TREE), name_parts (NULL),
     remap (NULL), from (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
-    mod (MODULE_INDEX_UNKNOWN), crc (0)
+    lazy (0), mod (MODULE_INDEX_UNKNOWN), crc (0)
 {
   imported = exported = false;
 }
@@ -2289,9 +2313,8 @@ bool
 module_state::read_context (elf_in *from)
 {
   bytes_in ctx;
-  unsigned crc = 0;
 
-  if (!ctx.begin (from, MOD_SNAME_PFX ".context", &crc))
+  if (!ctx.begin (from, MOD_SNAME_PFX ".context", true))
     return false;
 
   unsigned imports = ctx.u ();
@@ -2393,15 +2416,16 @@ module_state::write_config (elf_out *to, unsigned inner_crc)
 }
 
 bool
-module_state::read_config (elf_in *from, unsigned *crc_ptr)
+module_state::read_config (elf_in *from, unsigned *expected_crc)
 {
   bytes_in cfg;
 
-  if (!cfg.begin (from, MOD_SNAME_PFX ".config", &crc))
+  if (!cfg.begin (from, MOD_SNAME_PFX ".config", true))
     return false;
 
+  crc = cfg.get_crc ();
   dump () && dump ("Reading CRC=%x", crc);
-  if (crc_ptr && crc != *crc_ptr)
+  if (expected_crc && crc != *expected_crc)
     {
       error ("module %qE CRC mismatch", name);
     fail:
@@ -2650,8 +2674,9 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   trees.begin (true);
   trees.write (decls);
 
-  // FIXME:write snum linky
-  trees.end (to, to->name (MOD_SNAME_PFX ".decls"), crc_p);
+  // FIXME: For now, there's only one blob holding all the decls
+  unsigned snum = trees.end (to, to->name (DECL_NAME (global_namespace)), crc_p);
+  bind.u (snum);
   bind.end (to, to->name (MOD_SNAME_PFX ".bindings"), crc_p);
 }
 
@@ -2659,33 +2684,28 @@ bool
 module_state::read_bindings (elf_in *from)
 {
   bytes_in bind;
-  unsigned crc = 0;
 
-  if (!bind.begin (from, MOD_SNAME_PFX ".bindings", &crc))
+  if (!bind.begin (from, MOD_SNAME_PFX ".bindings", true))
     return false;
+
+  trees_in trees (this, global_vec);
 
   read_namespace (from, bind, global_namespace);
-  
-  // FIXME: process the bindings
-  // FIXME: don't forget to free the string table now
-  return bind.end (from);
-}
 
-bool
-module_state::read_decls (elf_in *from)
-{
-  trees_in in (this, global_vec);
-  unsigned crc = 0;
+  unsigned snum = bind.u ();
 
-  // FIXME not yet lazy
-  if (!in.begin (from, MOD_SNAME_PFX ".decls", &crc))
+  if (!bind.end (from))
     return false;
 
-  in.read ();
+  /* We're done with the string table now.  */
+  from->release ();
 
-  release (false);
+  if (!trees.begin (from, snum, true))
+    return false;
 
-  return in.end (from);
+  trees.read ();
+
+  return trees.end (from);
 }
 
 void
@@ -2734,8 +2754,7 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   if (!read_bindings (from))
     return;
 
-  // FIXME: At this point we would do lazy decl reading
-  read_decls (from);
+  return;
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -6049,6 +6068,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	  elf_in *from = new elf_in (stream, e);
 	  if (from->begin ())
 	    state->read (from, crc_ptr);
+	  gcc_assert (!state->lazy);
 	  if (!from->end ())
 	    {
 	      /* Failure to read a module is going to cause big

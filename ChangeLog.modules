@@ -1,5 +1,16 @@
 2018-02-01  Nathan Sidwell  <nathan@acm.org>
 
+	Bindings point to decls
+	gcc/cp/
+	* module.c (data::check_crc): Only check.
+	(data::get_crc): New.
+	(elf_in::find): Return section index.
+	(bytes_in::begin): Add by-section-number variant.
+	(module_state): Add lazy counter (unused).
+	(module_state::write_bindings): Emit decl section number.
+	(module_state::read_bindings): Adjust, swallow ...
+	(module_state::read_decls): ... this.  Delete.
+
 	Read and parse the binding section in module_state.
 	gcc/cp/
 	* module.c (modules_state::record_namespace): New.
