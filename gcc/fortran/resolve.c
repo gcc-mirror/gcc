@@ -8634,11 +8634,16 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
-      if (!sym->ts.u.cl->length && !sym->ts.deferred
-	  && target->expr_type == EXPR_CONSTANT)
-	sym->ts.u.cl->length
-	  = gfc_get_int_expr (gfc_charlen_int_kind,
-			      NULL, target->value.character.length);
+      if (!sym->ts.u.cl->length && !sym->ts.deferred)
+	{
+	  if (target->expr_type == EXPR_CONSTANT)
+	    sym->ts.u.cl->length =
+	      gfc_get_int_expr (gfc_charlen_int_kind, NULL,
+				target->value.character.length);
+	  else
+	    gfc_error ("Not Implemented: Associate target with type character"
+		       " and non-constant length at %L", &target->where);
+	}
     }
 
   /* If the target is a good class object, so is the associate variable.  */

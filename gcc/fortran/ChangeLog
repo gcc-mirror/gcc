@@ -1,5 +1,12 @@
 2018-02-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR 83975
+	PR 83344
+	* resolve.c (resolve_assoc_var): Generate an error if
+	target length unknown.
+
+2018-02-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR fortran/83705
 	* simplify.c (gfc_simplify_repeat): Increase limit for deferring
 	to runtime, print a warning message.
