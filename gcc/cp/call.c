@@ -6765,6 +6765,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    && TYPE_HAS_DEFAULT_CONSTRUCTOR (totype))
 	  {
 	    bool direct = CONSTRUCTOR_IS_DIRECT_INIT (expr);
+	    if (abstract_virtuals_error_sfinae (NULL_TREE, totype, complain))
+	      return error_mark_node;
 	    expr = build_value_init (totype, complain);
 	    expr = get_target_expr_sfinae (expr, complain);
 	    if (expr != error_mark_node)
