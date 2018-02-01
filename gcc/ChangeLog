@@ -1,3 +1,16 @@
+2018-02-01  Renlin Li  <renlin.li@arm.com>
+
+	PR target/83370
+	* config/aarch64/aarch64.c (aarch64_class_max_nregs): Handle
+	TAILCALL_ADDR_REGS.
+	(aarch64_register_move_cost): Likewise.
+	* config/aarch64/aarch64.h (reg_class): Rename CALLER_SAVE_REGS to
+	TAILCALL_ADDR_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Rename CALLER_SAVE_REGS to
+	TAILCALL_ADDR_REGS. Remove IP registers.
+	* config/aarch64/aarch64.md (Ucs): Update register constraint.
+
 2018-02-01  Richard Biener  <rguenther@suse.de>
 
 	* domwalk.h (dom_walker::dom_walker): Add additional constructor

@@ -1,3 +1,8 @@
+2018-02-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR target/83370
+	* gcc.target/aarch64/pr83370.c: New.
+
 2018-02-01  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/graphite/pr35356-1.c: Adjust.
