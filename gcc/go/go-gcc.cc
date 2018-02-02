@@ -1197,6 +1197,8 @@ Gcc_backend::type_size(Btype* btype)
   tree t = btype->get_tree();
   if (t == error_mark_node)
     return 1;
+  if (t == void_type_node)
+    return 0;
   t = TYPE_SIZE_UNIT(t);
   gcc_assert(tree_fits_uhwi_p (t));
   unsigned HOST_WIDE_INT val_wide = TREE_INT_CST_LOW(t);
@@ -1466,7 +1468,8 @@ Gcc_backend::convert_expression(Btype* type, Bexpression* expr,
     return this->error_expression();
 
   tree ret;
-  if (this->type_size(type) == 0)
+  if (this->type_size(type) == 0
+      || TREE_TYPE(expr_tree) == void_type_node)
     {
       // Do not convert zero-sized types.
       ret = expr_tree;
@@ -1894,9 +1897,18 @@ Gcc_backend::array_index_expression(Bexpression* array, Bexpression* index,
       || index_tree == error_mark_node)
     return this->error_expression();
 
-  tree ret = build4_loc(location.gcc_location(), ARRAY_REF,
-			TREE_TYPE(TREE_TYPE(array_tree)), array_tree,
-                        index_tree, NULL_TREE, NULL_TREE);
+  // A function call that returns a zero sized object will have been
+  // changed to return void.  If we see void here, assume we are
+  // dealing with a zero sized type and just evaluate the operands.
+  tree ret;
+  if (TREE_TYPE(array_tree) != void_type_node)
+    ret = build4_loc(location.gcc_location(), ARRAY_REF,
+		     TREE_TYPE(TREE_TYPE(array_tree)), array_tree,
+		     index_tree, NULL_TREE, NULL_TREE);
+  else
+    ret = fold_build2_loc(location.gcc_location(), COMPOUND_EXPR,
+			  void_type_node, array_tree, index_tree);
+
   return this->make_expression(ret);
 }
 
@@ -2020,6 +2032,7 @@ Gcc_backend::init_statement(Bfunction*, Bvariable* var, Bexpression* init)
   // initializer.  Such initializations don't mean anything anyhow.
   if (int_size_in_bytes(TREE_TYPE(var_tree)) != 0
       && init_tree != NULL_TREE
+      && TREE_TYPE(init_tree) != void_type_node
       && int_size_in_bytes(TREE_TYPE(init_tree)) != 0)
     {
       DECL_INITIAL(var_tree) = init_tree;
@@ -2052,7 +2065,9 @@ Gcc_backend::assignment_statement(Bfunction* bfn, Bexpression* lhs,
   // expression; avoid crashes here by avoiding assignments of
   // zero-sized expressions.  Such assignments don't really mean
   // anything anyhow.
-  if (int_size_in_bytes(TREE_TYPE(lhs_tree)) == 0
+  if (TREE_TYPE(lhs_tree) == void_type_node
+      || int_size_in_bytes(TREE_TYPE(lhs_tree)) == 0
+      || TREE_TYPE(rhs_tree) == void_type_node
       || int_size_in_bytes(TREE_TYPE(rhs_tree)) == 0)
     return this->compound_statement(this->expression_statement(bfn, lhs),
 				    this->expression_statement(bfn, rhs));
@@ -2733,7 +2748,9 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
       BIND_EXPR_VARS(bind_tree) = BLOCK_VARS(block_tree);
     }
 
-  if (this->type_size(btype) != 0 && init_tree != NULL_TREE)
+  if (this->type_size(btype) != 0
+      && init_tree != NULL_TREE
+      && TREE_TYPE(init_tree) != void_type_node)
     DECL_INITIAL(var) = this->convert_tree(type_tree, init_tree, location);
 
   if (is_address_taken)
@@ -2743,9 +2760,11 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
                                                 DECL_EXPR,
 						void_type_node, var));
 
-  // Don't initialize VAR with BINIT, but still evaluate BINIT for
-  // its side effects.
-  if (this->type_size(btype) == 0 && init_tree != NULL_TREE)
+  // For a zero sized type, don't initialize VAR with BINIT, but still
+  // evaluate BINIT for its side effects.
+  if (init_tree != NULL_TREE
+      && (this->type_size(btype) == 0
+	  || TREE_TYPE(init_tree) == void_type_node))
     *pstatement =
       this->compound_statement(this->expression_statement(function, binit),
 			       *pstatement);
