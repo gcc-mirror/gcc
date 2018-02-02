@@ -940,6 +940,10 @@ extern void c_parse_final_cleanups (void);
 #define CLEAR_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
 
+/* True if the decl was an unnamed bitfield.  */
+#define DECL_UNNAMED_BIT_FIELD(NODE) \
+  (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
+
 extern tree do_case (location_t, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
