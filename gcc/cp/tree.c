@@ -1773,7 +1773,7 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 
   gcc_assert (EXPR_P (t));
 
-  n = TREE_OPERAND_LENGTH (t);
+  n = cp_tree_operand_length (t);
   ops = XALLOCAVEC (tree, n);
   type = TREE_TYPE (t);
 
