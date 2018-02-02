@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target size32plus } } */
 /* { dg-options "-O3 -ftree-loop-distribute-patterns -fdump-tree-ldist-details" } */
 /* { dg-skip-if "too big data segment" { visium-*-* } } */
 

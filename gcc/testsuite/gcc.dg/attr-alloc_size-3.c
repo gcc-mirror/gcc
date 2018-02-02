@@ -5,7 +5,7 @@
    functions decorated with attribute alloc_size that either overflow or
    exceed the default maximum object size (with -Walloc-size-larger-than
    not explicitly specified).  */
-/* { dg-do compile } */
+/* { dg-do compile { target size32plus } } */
 /* { dg-options "-O2 -Wall" } */
 
 #define SCHAR_MAX  __SCHAR_MAX__

@@ -1,5 +1,5 @@
 /* PR c/83844 */
-/* { dg-do compile } */
+/* { dg-do compile { target int32plus } } */
 /* { dg-options "-O0 -Wall" } */
 
 typedef unsigned long long __u64 __attribute__((aligned(4),warn_if_not_aligned(8)));

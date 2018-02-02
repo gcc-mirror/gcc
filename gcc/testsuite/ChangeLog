@@ -1,3 +1,27 @@
+2018-02-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/pr83362.c: Make work for int16.
+	* gcc.dg/Wsign-conversion.c: Dito.
+	* gcc.dg/attr-alloc_size-4.c: Dito.
+	* gcc.dg/pr81020.c: Dito.
+	* gcc.dg/pr81192.c: Dito.
+	* gcc.dg/pr83463.c (dg-options): Add -Wno-pointer-to-int-cast.
+	* gcc.dg/attr-alloc_size-11.c: Also special-case avr.
+	* gcc.dg/pr83844.c: Restrict to int32plus.
+	* gcc.dg/attr-alloc_size-3.c: Restrict to size32plus.
+	* gcc.dg/tree-ssa/ldist-25.c: Dito.
+	* gcc.dg/tree-ssa/ldist-27.c: Dito.
+	* gcc.dg/tree-ssa/ldist-28.c: Dito.
+	* gcc.dg/tree-ssa/ldist-29.c: Dito.
+	* gcc.dg/tree-ssa/ldist-30.c: Dito.
+	* gcc.dg/tree-ssa/ldist-31.c: Dito.
+	* gcc.dg/tree-ssa/ldist-32.c: Dito.
+	* gcc.dg/tree-ssa/ldist-33.c: Dito.
+	* gcc.dg/tree-ssa/ldist-34.c: Dito.
+	* gcc.dg/tree-ssa/ldist-35.c: Dito.
+	* gcc.dg/tree-ssa/ldist-36.c: Dito.
+
 2018-02-02  Julia Koval  <julia.koval@intel.com>
 
 	* gcc.target/i386/funcspec-56.inc: Handle new march.
