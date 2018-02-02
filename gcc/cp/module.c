@@ -162,14 +162,17 @@ static void version2string (unsigned version, version_string &out)
 	   time / 100, time % 100);
 }
 
-/* Map from pointer to unsigned and vice-versa.  Entries are
-   non-deletable.  */
-struct non_null_hash : pointer_hash <void> {
-  static bool is_deleted (value_type) {return false;}
-  static void remove (value_type) {}
+template <typename T>
+struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *>
+{
+  /* Nothing is deletable.  Everything is insertable.  */
+  static bool is_deleted (T *) { return false; }
+  static void mark_deleted (T *) { gcc_unreachable (); }
 };
-typedef simple_hashmap_traits<non_null_hash, unsigned> ptr_uint_traits;
-typedef simple_hashmap_traits<int_hash<unsigned,0>,void *> uint_ptr_traits;
+
+/* Map from pointer to unsigned and vice-versa.   */
+typedef simple_hashmap_traits<nodel_ptr_hash<void>, unsigned> ptr_uint_traits;
+typedef simple_hashmap_traits<int_hash<unsigned,0>, void *> uint_ptr_traits;
 
 typedef hash_map<void *,unsigned,ptr_uint_traits> ptr_uint_hash_map;
 typedef hash_map<unsigned,void *,uint_ptr_traits> uint_ptr_hash_map;
@@ -1531,7 +1534,7 @@ struct GTY(()) module_state {
  private:
   /* Global tree context.  */
   static const std::pair<tree *, unsigned> global_trees[];
-  static vec<tree, va_gc> GTY (()) *global_vec;
+  static vec<tree, va_gc> *global_vec;
   static unsigned global_crc;
 
  public:
@@ -1592,9 +1595,8 @@ unsigned module_state::global_crc;
 
 /* Hash module state by name.  */
 
-struct module_state_hash : ggc_remove <module_state *>
+struct module_state_hash : nodel_ptr_hash<module_state>
 {
-  typedef module_state *value_type;
   typedef tree compare_type; /* An identifier.  */
 
   static hashval_t hash (const value_type m)
@@ -1605,13 +1607,6 @@ struct module_state_hash : ggc_remove <module_state *>
   {
     return existing->name == candidate;
   }
-
-  static inline void mark_empty (value_type &p) {p = NULL;}
-  static inline bool is_empty (value_type p) {return !p;}
-
-  /* Nothing is deletable.  Everything is insertable.  */
-  static bool is_deleted (value_type) { return false; }
-  static void mark_deleted (value_type) { gcc_unreachable (); }
 };
 
 /* Vector of module state.  If this is non-null, index 0 is
@@ -1619,7 +1614,7 @@ struct module_state_hash : ggc_remove <module_state *>
 static GTY(()) vec<module_state *, va_gc> *modules;
 
 /* Map from identifier to module index. */
-static GTY(()) hash_table<module_state_hash> *module_hash;
+static hash_table<module_state_hash> *module_hash;
 
 /* Record tags.  */
 enum record_tag
@@ -5997,9 +5992,9 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 {
   gcc_assert (global_namespace == current_scope ());
 
-  if (!module_hash)
+  if (!global_vec)
     {
-      module_hash = hash_table<module_state_hash>::create_ggc (31);
+      module_hash = new hash_table<module_state_hash> (30);
       vec_safe_reserve (modules, 20);
       module_state *current = new (ggc_alloc <module_state> ()) module_state ();
       modules->quick_push (current);
@@ -6227,7 +6222,7 @@ finish_module ()
 {
   if (modules)
     {
-      /* GC can clean up the detritus.  */
+      delete module_hash;
       module_hash = NULL;
       for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
 	(*modules)[ix]->release ();

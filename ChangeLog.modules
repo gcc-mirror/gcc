@@ -1,5 +1,13 @@
 2018-02-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (nodel_ptr_hash): New.
+	(non_null_hash): Delete.
+	(ptr_uint_traits, uint_ptr_traits): Adjust.
+	(module_state_hash): Use nodel_ptr_hash.
+	(module_hash): Do not GTY.
+	(module_state::do_import, finish_module): Adjust.
+
 	Use TREE_VEC for structured module names.
 	gcc/cp/
 	* cp-tree.h (module_name_parts): Replace with ...
