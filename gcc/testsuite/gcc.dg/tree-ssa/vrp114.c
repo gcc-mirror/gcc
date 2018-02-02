@@ -1,4 +1,4 @@
-/* { dg-do link } */
+/* { dg-do link { target int32plus } } */
 /* { dg-options "-O2 -fdump-tree-fre1 -fdump-tree-evrp" } */
 
 extern void link_error ();
