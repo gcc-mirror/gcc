@@ -58,7 +58,7 @@ Go Joined RejectNegative
 -fgo-dump-<type>	Dump Go frontend internal information.
 
 fgo-optimize-
-Go Joined RejectNegative
+Go Joined
 -fgo-optimize-<type>	Turn on optimization passes in the frontend.
 
 fgo-pkgpath=
