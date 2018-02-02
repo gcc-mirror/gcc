@@ -1,3 +1,8 @@
+2018-02-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (array_type_has_nonaliased_component): Return
+	false if the component type is a pointer.
+
 2018-01-11  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb (Default_Initialize_Object): Call New_Copy_Tree on the
