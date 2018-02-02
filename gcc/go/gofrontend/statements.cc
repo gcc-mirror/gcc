@@ -5307,19 +5307,33 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
       return Statement::make_error_statement(this->location());
     }
 
+  // If there is only one iteration variable, and len(this->range_) is
+  // constant, then we do not evaluate the range variable.  len(x) is
+  // a contant if x is a string constant or if x is an array.  If x is
+  // a constant then evaluating it won't make any difference, so the
+  // only case to consider is when x is an array.
+  bool eval = true;
+  if (this->value_var_ == NULL
+      && range_type->array_type() != NULL
+      && !range_type->is_slice_type())
+    eval = false;
+
   Location loc = this->location();
   Block* temp_block = new Block(enclosing, loc);
 
   Named_object* range_object = NULL;
   Temporary_statement* range_temp = NULL;
-  Var_expression* ve = this->range_->var_expression();
-  if (ve != NULL)
-    range_object = ve->named_object();
-  else
+  if (eval)
     {
-      range_temp = Statement::make_temporary(NULL, this->range_, loc);
-      temp_block->add_statement(range_temp);
-      this->range_ = NULL;
+      Var_expression* ve = this->range_->var_expression();
+      if (ve != NULL)
+	range_object = ve->named_object();
+      else
+	{
+	  range_temp = Statement::make_temporary(NULL, this->range_, loc);
+	  temp_block->add_statement(range_temp);
+	  this->range_ = NULL;
+	}
     }
 
   Temporary_statement* index_temp = Statement::make_temporary(index_type,
@@ -5474,12 +5488,22 @@ For_range_statement::lower_range_array(Gogo* gogo,
 
   Block* init = new Block(enclosing, loc);
 
-  Expression* ref = this->make_range_ref(range_object, range_temp, loc);
-  range_temp = Statement::make_temporary(NULL, ref, loc);
-  Expression* len_call = this->call_builtin(gogo, "len", ref, loc);
+  Expression* len_arg;
+  if (range_object == NULL && range_temp == NULL)
+    {
+      // Don't evaluate this->range_, just get its length.
+      len_arg = this->range_;
+    }
+  else
+    {
+      Expression* ref = this->make_range_ref(range_object, range_temp, loc);
+      range_temp = Statement::make_temporary(NULL, ref, loc);
+      init->add_statement(range_temp);
+      len_arg = ref;
+    }
+  Expression* len_call = this->call_builtin(gogo, "len", len_arg, loc);
   Temporary_statement* len_temp = Statement::make_temporary(index_temp->type(),
 							    len_call, loc);
-  init->add_statement(range_temp);
   init->add_statement(len_temp);
 
   Expression* zexpr = Expression::make_integer_ul(0, NULL, loc);
@@ -5495,7 +5519,7 @@ For_range_statement::lower_range_array(Gogo* gogo,
   // Set *PCOND to
   //   index_temp < len_temp
 
-  ref = Expression::make_temporary_reference(index_temp, loc);
+  Expression* ref = Expression::make_temporary_reference(index_temp, loc);
   Expression* ref2 = Expression::make_temporary_reference(len_temp, loc);
   Expression* lt = Expression::make_binary(OPERATOR_LT, ref, ref2, loc);
 
