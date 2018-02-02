@@ -1,3 +1,11 @@
+2018-02-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-abs-int.p9.c: Add powerpc_p9vector_ok
+	requirement.
+	* gcc.target/powerpc/fold-vec-abs-int-fwrapv.p9.c: Same.
+	* gcc.target/powerpc/fold-vec-cmp-char.p9.c: Same.
+	* gcc.target/powerpc/fold-vec-neg-int.p9.c: Same.
+
 2018-02-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR testsuite/52641

@@ -2,7 +2,7 @@
    char inputs produce the right code when -mcpu=power9 is specified.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-options "-mpower8-vector -mcpu=power9  -O2" } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 
