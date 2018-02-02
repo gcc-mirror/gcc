@@ -1,5 +1,10 @@
 2018-02-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/vec-cmpne-long.c: Add p8vector_hw require to
+	dg-do run stanza.
+
+2018-02-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-abs-int.p9.c: Add powerpc_p9vector_ok
 	requirement.
 	* gcc.target/powerpc/fold-vec-abs-int-fwrapv.p9.c: Same.
