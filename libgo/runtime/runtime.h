@@ -437,6 +437,23 @@ void	runtime_check(void)
 // the stacks are allocated by the splitstack library.
 extern uintptr runtime_stacks_sys;
 
+/*
+ * ia64's register file is spilled to a separate stack, the register backing
+ * store, on window overflow, and must also be scanned. This occupies the other
+ * end of the normal stack allocation, growing upwards.
+ * We also need to ensure all register windows are flushed to the backing
+ * store, as unlike SPARC, __builtin_unwind_init doesn't do this on ia64.
+ */
+#ifdef __ia64__
+# define secondary_stack_pointer() __builtin_ia64_bsp()
+# define initial_secondary_stack_pointer(stack_alloc) (stack_alloc)
+# define flush_registers_to_secondary_stack() __builtin_ia64_flushrs()
+#else
+# define secondary_stack_pointer() nil
+# define initial_secondary_stack_pointer(stack_alloc) nil
+# define flush_registers_to_secondary_stack()
+#endif
+
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
 extern _Bool __go_file_line(uintptr, int, String*, String*, intgo *);
