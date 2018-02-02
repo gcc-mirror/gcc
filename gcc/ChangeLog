@@ -1,3 +1,10 @@
+2018-02-02  Andrew Jenner  <andrew@codesourcery.com>
+
+	* config/powerpcspe/powerpcspe.opt: Add Undocumented to irrelevant
+	options.
+	* config/powerpcspe/powerpcspe-tables.opt (rs6000_cpu_opt_value):
+	Remove all values except native, 8540 and 8548.
+
 2018-02-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_output_function_return): Pass
