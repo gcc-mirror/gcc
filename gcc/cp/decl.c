@@ -5634,7 +5634,7 @@ next_initializable_field (tree field)
 {
   while (field
 	 && (TREE_CODE (field) != FIELD_DECL
-	     || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
+	     || DECL_UNNAMED_BIT_FIELD (field)
 	     || (DECL_ARTIFICIAL (field)
 		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field)))))
     field = DECL_CHAIN (field);
@@ -7208,7 +7208,7 @@ find_decomp_class_base (location_t loc, tree type, tree ret)
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) != FIELD_DECL
 	|| DECL_ARTIFICIAL (field)
-	|| (DECL_C_BIT_FIELD (field) && !DECL_NAME (field)))
+	|| DECL_UNNAMED_BIT_FIELD (field))
       continue;
     else if (ret)
       return type;
@@ -7646,7 +7646,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       for (tree field = TYPE_FIELDS (btype); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) != FIELD_DECL
 	    || DECL_ARTIFICIAL (field)
-	    || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field)))
+	    || DECL_UNNAMED_BIT_FIELD (field))
 	  continue;
 	else
 	  eltscnt++;
@@ -7663,7 +7663,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
       for (tree field = TYPE_FIELDS (btype); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) != FIELD_DECL
 	    || DECL_ARTIFICIAL (field)
-	    || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field)))
+	    || DECL_UNNAMED_BIT_FIELD (field))
 	  continue;
 	else
 	  {

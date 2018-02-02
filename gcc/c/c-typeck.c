@@ -7955,8 +7955,7 @@ really_start_incremental_init (tree type)
       constructor_fields = TYPE_FIELDS (constructor_type);
       /* Skip any nameless bit fields at the beginning.  */
       while (constructor_fields != NULL_TREE
-	     && DECL_C_BIT_FIELD (constructor_fields)
-	     && DECL_NAME (constructor_fields) == NULL_TREE)
+	     && DECL_UNNAMED_BIT_FIELD (constructor_fields))
 	constructor_fields = DECL_CHAIN (constructor_fields);
 
       constructor_unfilled_fields = constructor_fields;
@@ -8161,8 +8160,7 @@ push_init_level (location_t loc, int implicit,
       constructor_fields = TYPE_FIELDS (constructor_type);
       /* Skip any nameless bit fields at the beginning.  */
       while (constructor_fields != NULL_TREE
-	     && DECL_C_BIT_FIELD (constructor_fields)
-	     && DECL_NAME (constructor_fields) == NULL_TREE)
+	     && DECL_UNNAMED_BIT_FIELD (constructor_fields))
 	constructor_fields = DECL_CHAIN (constructor_fields);
 
       constructor_unfilled_fields = constructor_fields;
@@ -8930,8 +8928,7 @@ set_nonincremental_init (struct obstack * braced_init_obstack)
       constructor_unfilled_fields = TYPE_FIELDS (constructor_type);
       /* Skip any nameless bit fields at the beginning.  */
       while (constructor_unfilled_fields != NULL_TREE
-	     && DECL_C_BIT_FIELD (constructor_unfilled_fields)
-	     && DECL_NAME (constructor_unfilled_fields) == NULL_TREE)
+	     && DECL_UNNAMED_BIT_FIELD (constructor_unfilled_fields))
 	constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
 
     }
@@ -9300,8 +9297,7 @@ output_init_element (location_t loc, tree value, tree origtype,
 
       /* Skip any nameless bit fields.  */
       while (constructor_unfilled_fields != NULL_TREE
-	     && DECL_C_BIT_FIELD (constructor_unfilled_fields)
-	     && DECL_NAME (constructor_unfilled_fields) == NULL_TREE)
+	     && DECL_UNNAMED_BIT_FIELD (constructor_unfilled_fields))
 	constructor_unfilled_fields =
 	  DECL_CHAIN (constructor_unfilled_fields);
     }
@@ -9665,8 +9661,8 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		  constructor_unfilled_fields = DECL_CHAIN (constructor_fields);
 		  /* Skip any nameless bit fields.  */
 		  while (constructor_unfilled_fields != 0
-			 && DECL_C_BIT_FIELD (constructor_unfilled_fields)
-			 && DECL_NAME (constructor_unfilled_fields) == 0)
+			 && (DECL_UNNAMED_BIT_FIELD
+			     (constructor_unfilled_fields)))
 		    constructor_unfilled_fields =
 		      DECL_CHAIN (constructor_unfilled_fields);
 		}
@@ -9675,8 +9671,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	  constructor_fields = DECL_CHAIN (constructor_fields);
 	  /* Skip any nameless bit fields at the beginning.  */
 	  while (constructor_fields != NULL_TREE
-		 && DECL_C_BIT_FIELD (constructor_fields)
-		 && DECL_NAME (constructor_fields) == NULL_TREE)
+		 && DECL_UNNAMED_BIT_FIELD (constructor_fields))
 	    constructor_fields = DECL_CHAIN (constructor_fields);
 	}
       else if (TREE_CODE (constructor_type) == UNION_TYPE)

@@ -1395,12 +1395,12 @@ process_init_constructor_record (tree type, tree init, int nested,
       tree next;
       tree type;
 
-      if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
-	continue;
-
       if (TREE_CODE (field) != FIELD_DECL
 	  || (DECL_ARTIFICIAL (field)
 	      && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field))))
+	continue;
+
+      if (DECL_UNNAMED_BIT_FIELD (field))
 	continue;
 
       /* If this is a bitfield, first convert to the declared type.  */
@@ -1547,12 +1547,13 @@ process_init_constructor_record (tree type, tree init, int nested,
 	      for (field = TYPE_FIELDS (type);
 		   field; field = DECL_CHAIN (field))
 		{
-		  if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
-		    continue;
 		  if (TREE_CODE (field) != FIELD_DECL
 		      || (DECL_ARTIFICIAL (field)
 			  && !(cxx_dialect >= cxx17
 			       && DECL_FIELD_IS_BASE (field))))
+		    continue;
+
+		  if (DECL_UNNAMED_BIT_FIELD (field))
 		    continue;
 
 		  if (ce->index == field || ce->index == DECL_NAME (field))
