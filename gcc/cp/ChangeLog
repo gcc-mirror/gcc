@@ -1,3 +1,13 @@
+2018-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84160 - ICE with nested variadic capture.
+	* lambda.c (is_capture_proxy_with_ref): New.
+	(insert_capture_proxy): Don't set DECL_CAPTURED_VARIABLE from a
+	COMPONENT_REF.
+	* expr.c (mark_use): Use is_capture_proxy_with_ref.
+	* constexpr.c (potential_constant_expression_1): Likewise.
+	* semantics.c (process_outer_var_ref): Likewise.
+
 2018-02-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84125
