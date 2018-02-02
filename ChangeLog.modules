@@ -1,3 +1,21 @@
+2018-02-02  Nathan Sidwell  <nathan@acm.org>
+
+	Fix circularity detection, and other errors
+	gcc/cp/
+	* module.c (elf::E_BAD_DATA, elf::E_BAD_IMPORT): New.
+	(elf::set_error): Default to E_BAD_DATA.
+	(elf::end, elf_out::end): Return error string.
+	(module_state::set_location): New.
+	(module_state::{push,pop}_location): Adjust.
+	(do_module_import): Fixup circularity and other errors.
+	(declare_module, finish_module): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/circ-1_[abcd].C: New.
+	* g++.dg/modules/mod-decl-1.C: Adjust errors.
+	* g++.dg/modules/mod-decl-2_b.C: Adjust errors.
+	* g++.dg/modules/mod-decl-5_b.C: Adjust errors.
+	* g++.dg/modules/mod-stamp-1-d.C: Adjust errors.
+
 2018-02-01  Nathan Sidwell  <nathan@acm.org>
 
 	Alloc a slot for global module

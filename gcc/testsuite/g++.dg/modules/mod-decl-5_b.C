@@ -4,7 +4,7 @@ import thing.baz;
 
 export int foo (); // { dg-error "after an interface" }
 
-export module thing.baz; // { dg-error "already imported" }
+export module thing.baz; // { dg-error "cannot declare module after import" }
 
 import thing.baz;
 

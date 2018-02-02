@@ -1,7 +1,7 @@
 
 module bob;
 
-import bob; // { dg-error "already declared" }
+import bob; // { dg-error "cannot import module in its own purview" }
 
 // module linkage
 void Baz ()

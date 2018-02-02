@@ -3,7 +3,7 @@ module;  // { dg-error "expected" }
 export module frist;
 // { dg-module-bmi "!frist" }
 
-module foo.second; // { dg-error "already declared" }
+module foo.second; // { dg-error "cannot declare module in purview" }
 
 namespace Foo 
 {
@@ -22,4 +22,4 @@ void Bink ()
 
 module a.; // { dg-error "expected" }
 
-import frist; // { dg-error "already declared" }
+import frist; // { dg-error "cannot import module in its own purview" }

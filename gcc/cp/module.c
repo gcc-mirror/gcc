@@ -307,6 +307,10 @@ public:
       SHF_NONE = 0x00,
       SHF_ALLOC = 0x02,
       SHF_STRINGS = 0x20,
+
+      /* Special error codes. */
+      E_BAD_DATA = -1,
+      E_BAD_IMPORT = -2
     };
 
 protected:
@@ -396,7 +400,7 @@ public:
   {
     return err;
   }
-  void set_error (int e = -1)
+  void set_error (int e = E_BAD_DATA)
   {
     if (!err)
       err = e;
@@ -408,14 +412,27 @@ public:
     gcc_checking_assert (!sections);
     return !get_error ();
   }
-  bool end ()
-  {
-    if (stream && fclose (stream))
-      set_error (errno);
-    stream = NULL;
-    return !get_error ();
-  }
+  const char *end ();
 };
+
+const char *
+elf::end ()
+{
+  if (stream && fclose (stream))
+    set_error (errno);
+  stream = NULL;
+  switch (get_error ())
+    {
+    case 0:
+      return NULL;
+    case E_BAD_DATA:
+      return "Bad file data";
+    case E_BAD_IMPORT:
+      return "Bad import dependency";
+    default:
+      return xstrerror (get_error ());
+    }
+}
 
 /* ELF reader.  */
 
@@ -516,7 +533,7 @@ public:
 
 public:
   bool begin ();
-  bool end ();
+  const char *end ();
 };
 
 bool
@@ -799,7 +816,7 @@ uint32_t elf_out::pad ()
   return (uint32_t)off;
 }
 
-bool
+const char *
 elf_out::end ()
 {
   /* Write the string table.  */
@@ -1528,8 +1545,13 @@ struct GTY(()) module_state {
 
  public:
   void set_name (tree name);
-  location_t push_location (char *filename);
-  void pop_location (location_t) const;
+  void push_location (char *filename);
+  void pop_location ();
+  void set_location (char *name)
+  {
+    filename = name;
+    loc = input_location;
+  }
   void do_import (unsigned index, bool is_export);
   void announce (const char *) const;
 
@@ -2238,24 +2260,21 @@ module_state::set_name (tree name_)
   XDELETEVEC (buffer);
 }
 
-location_t
+void
 module_state::push_location (char *name)
 {
-  // FIXME:We want LC_MODULE_ENTER really.
-  filename = name;
-  linemap_add (line_table, LC_ENTER, false, filename, 0);
-  loc = linemap_line_start (line_table, 0, 0);
+  set_location (name);
 
-  location_t result = input_location;
-  input_location = loc;
-  return result;
+  // FIXME:We want LC_MODULE_ENTER really.
+  linemap_add (line_table, LC_ENTER, false, filename, 0);
+  input_location = linemap_line_start (line_table, 0, 0);
 }
 
 void
-module_state::pop_location (location_t saved) const
+module_state::pop_location ()
 {
-  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-  input_location = saved;
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);  
+  input_location = linemap_line_start (line_table, 0, 0);
 }
 
 /* Context of the compilation.
@@ -2337,11 +2356,14 @@ module_state::read_context (elf_in *from)
 
       dump () && dump ("Nested %simport %I",
 		       exported ? "export " : imported ? "" : "indirect ", name);
-      module_state *imp = do_module_import (UNKNOWN_LOCATION, name,
+      module_state *imp = do_module_import (input_location, name,
 					    /*unit_p=*/false,
 					    /*import_p=*/imported, &crc);
       if (!imp)
-	goto fail;
+	{
+	  from->set_error (elf::E_BAD_IMPORT);
+	  goto fail;
+	}
       remap->quick_push (imp->mod);
       if (imported)
 	{
@@ -2351,12 +2373,7 @@ module_state::read_context (elf_in *from)
 	}
     }
 
-  if (ctx.more_p ())
-    {
-    fail:
-      ctx.set_overrun ();
-    }
-
+ fail:
   return ctx.end (from);
 }
 
@@ -5994,39 +6011,21 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 					INSERT);
   module_state *state = *slot;
 
-  if (state)
-    /* We already know a module called NAME.  */
-    switch (state->mod)
-      {
-      case MODULE_INDEX_UNKNOWN:
-	error_at (loc, "circular dependency of module %qE", name);
-	return NULL;
-      case 0:
-	/* Cannot import the current module.  */
-	error_at (loc, "already declared as module %qE", name);
-	return NULL;
-      default:
-	if (module_unit_p)
-	  {
-	    /* Cannot be interface/implementation of an imported
-	       module.  */
-	    error_at (loc, "module %qE already imported", name);
-	    return NULL;
-	  }
-      }
-  else
+  if (!state)
     {
       if (module_unit_p)
-	state = (*modules)[0];
+	{
+	  state = (*modules)[0];
+	  if (state->name)
+	    {
+	      /* Already declared the module.  */
+	      error_at (loc, "cannot declare module in purview of module %qE",
+			state->name);
+	      return NULL;
+	    }
+	}
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
-
-      if (state->name)
-	{
-	  /* Already declared the module.  */
-	  error_at (loc, "already declared as module %qE", state->name);
-	  return NULL;
-	}
 
       state->set_name (name);
       *slot = state;
@@ -6063,7 +6062,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 
 	  FILE *stream = search_module_path (filename, filename_len, name);
 	  int e = errno;
-	  location_t saved_loc = state->push_location (filename);
+	  state->push_location (filename);
 	  unsigned n = dump.push (state);
 	  state->announce ("importing");
 
@@ -6071,22 +6070,47 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	  if (from->begin ())
 	    state->read (from, crc_ptr);
 	  gcc_assert (!state->lazy);
-	  if (!from->end ())
+	  const char *err = from->end ();
+	  if (err)
 	    {
 	      /* Failure to read a module is going to cause big
-		 problems, so bail out now.  */
-	      int e = from->get_error ();
-	      fatal_error (state->loc,
-			   "failed to read module %qE: %s", state->name,
-			   e >= 0 ? xstrerror (e) : "Bad file data");
-	      gcc_unreachable ();
+		 problems, so bail out, if this is the top level.
+		 Otherwise return NULL to let our importer know (and
+		 fail).  */
+	      (module_unit_p || import_export_p ? fatal_error
+	       : (void (*)(location_t, const char *, ...))error_at)
+		(state->loc, "failed to import module %qE: %s",
+		 state->name, err);
 	    }
-	  gcc_assert (state->mod <= modules->length ());
+	  else
+	    gcc_assert (state->mod <= modules->length ());
 	  delete from;
-
 	  state->announce ("imported");
 	  dump.pop (n);
-	  state->pop_location (saved_loc);
+	  state->pop_location ();
+	  if (err)
+	    state = NULL;
+	}
+    }
+  else if (!state->mod)
+    {
+      /* Cannot import the current module.  */
+      error_at (loc, "cannot import module in its own purview");
+      inform (state->loc, "module %qE declared here", state->name);
+      return NULL;
+    }
+  else
+    {
+      /* A circular dependency cannot exist solely in the imported
+         unit graph, it must go via the current TU, and we discover
+         that differently.  */
+      gcc_assert (state->mod != MODULE_INDEX_UNKNOWN);
+      if (module_unit_p)
+	{
+	  /* Cannot be module unit of an imported module.  */
+	  error_at (loc, "cannot declare module after import");
+	  inform (state->loc, "module %qE imported here", state->name);
+	  return NULL;
 	}
     }
 
@@ -6142,8 +6166,8 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 	  filename = buffer;
 	}
 
-      /* Create the module's location now.  */
-      state->pop_location (state->push_location (filename));
+      /* Set the module's location.  */
+      state->set_location (filename);
     }
 }
 
@@ -6200,12 +6224,9 @@ finish_module ()
       elf_out to (stream, e);
       if (to.begin ())
 	state->write (&to);
-      if (!to.end ())
-	{
-	  int e = to.get_error ();
-	  error_at (state->loc, "failed to write module %qE: %s", state->name,
-		    e >= 0 ? xstrerror (e) : "Bad file data");
-	}
+      if (const char *err = to.end ())
+	error_at (state->loc, "failed to export module %qE: %s", state->name,
+		  err);
 
       dump.pop (n);
       input_location = saved_loc;
