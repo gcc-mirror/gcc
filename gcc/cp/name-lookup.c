@@ -120,11 +120,9 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
   module_cluster *cluster = NULL;
   unsigned offset = 0;
 
+  /* An assumption is that the fixed slots all reside in one cluster.  */
   gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
 		       >= MODULE_INDEX_IMPORT_BASE);
-
-  // FIXME:we'll shortly be using slot one for the global module unionization.
-  gcc_assert (ix != 1);
 
   if (*slot && TREE_CODE (*slot) == MODULE_VECTOR)
     {
@@ -209,7 +207,14 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	      cluster->indices[jx].span = 1;
 	      cluster->slots[jx] = NULL_TREE;
 	    }
-	  cluster->slots[0] = *slot;
+	  cluster->slots[MODULE_SLOT_CURRENT] = *slot;
+
+	  /* Propagate a non-internal namespace to the global slot.  */
+	  if (*slot && TREE_PUBLIC (*slot)
+	      && TREE_CODE (*slot) == NAMESPACE_DECL
+	      && !DECL_NAMESPACE_ALIAS (*slot))
+	    cluster->slots[MODULE_SLOT_GLOBAL] = *slot;
+
 	  offset = MODULE_INDEX_IMPORT_BASE;
 	  if (offset == MODULE_VECTOR_SLOTS_PER_CLUSTER)
 	    {
@@ -2781,7 +2786,11 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	  else if (TREE_CODE (to_add) == OVERLOAD)
 	    to_add = build_tree_list (NULL_TREE, to_add);
 
-	  add_decl_to_level (level, to_add);
+	  /* Don't add namespaces here.  They're done in
+	     push_namespace.  */
+	  if (TREE_CODE (decl) != NAMESPACE_DECL
+	      || DECL_NAMESPACE_ALIAS (decl))
+	    add_decl_to_level (level, to_add);
 	}
 
       if (slot)
@@ -3320,7 +3329,7 @@ do_pushdecl (tree decl, bool is_friend)
 		? CP_DECL_CONTEXT (decl) : current_namespace);
 	  /* Create the binding, if this is current namespace, because
 	     that's where we'll be pushing anyway.  */
-	  slot = find_namespace_slot (ns, name,ns == current_namespace);
+	  slot = find_namespace_slot (ns, name, ns == current_namespace);
 	  if (slot)
 	    {
 	      gcc_assert (!current_module);
@@ -3452,6 +3461,7 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
+// FIXME:KILL
 /* SLOT_VAL is the value of a binding.  Look in the module partitions
    to see if there's a namespace already.  We don't have to consider
    the STAT_HACK, because a namepace and an elaborated type cannot
@@ -3696,82 +3706,6 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
     }
 
   return true;
-}
-
-/* Create a namespace NAME inside CTX.  */
-
-static tree
-create_namespace (tree ctx, tree name, bool inline_p)
-{
-  tree ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
-  SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
-  if (!SCOPE_DEPTH (ns))
-    /* We only allow depth 255. */
-    sorry ("cannot nest more than %d namespaces", SCOPE_DEPTH (ctx));
-  DECL_CONTEXT (ns) = FROB_CONTEXT (ctx);
-
-  if (inline_p)
-    DECL_NAMESPACE_INLINE_P (ns) = true;
-
-  if (!name)
-    SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
-  else if (TREE_PUBLIC (ctx))
-    {
-      TREE_PUBLIC (ns) = true;
-      DECL_MODULE_EXPORT_P (ns) = true;
-    }
-
-  return ns;
-}
-
-tree
-set_module_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
-{
-  tree *slot = find_namespace_slot (ctx, name, true);
-  tree *mslot = module_binding_slot (slot, name, mod, -1);
-  tree decl = *mslot;
-
-  if (decl && TREE_CODE (decl) == NAMESPACE_DECL)
-    {
-      if (tree alias = DECL_NAMESPACE_ALIAS (decl))
-	{
-	  error ("expected %qD to be a namespace, not an alias for %qD",
-		 decl, alias);
-	  decl = alias;
-	}
-      if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
-	error (inline_p ? "expected %qD to be an inline namespace"
-	       : "expected %qD to not be an inline namespace", decl);
-      return decl;
-    }
-
-  tree new_decl = find_namespace_partition (*slot);
-  bool new_ns = false;
-  if (!new_decl)
-    {
-      new_decl = create_namespace (ctx, name, inline_p);
-      if (inline_p)
-	vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), new_decl);
-      /* Create its scope -- but don't push it.  */
-      cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
-      scope->this_entity = new_decl;
-      scope->more_cleanups_ok = true;
-      scope->kind = sk_namespace;
-      scope->level_chain = NAMESPACE_LEVEL (ctx);
-      NAMESPACE_LEVEL (new_decl) = scope;
-      new_ns = true;
-    }
-
-  if (decl)
-    error ("expected %qD to be a namespace", new_decl);
-  else
-    {
-      if (new_ns)
-	newbinding_bookkeeping (name, new_decl, NAMESPACE_LEVEL (ctx));
-      *mslot = new_decl;
-    }
-
-  return new_decl;
 }
 
 /* CTX contains a module MOD binding for NAME.  Use TYPE & CODE to
@@ -7586,6 +7520,101 @@ push_inline_namespaces (tree ns)
   return count;
 }
 
+/* SLOT is the (possibly empty) binding slot for NAME in CTX.
+   Reuse or create a namespace NAME.  NAME is null for the anonymous
+   namespace.  */
+
+static tree
+reuse_namespace (tree *slot, tree ctx, tree name)
+{
+  if (flag_modules && *slot && TREE_PUBLIC (ctx) && name)
+    {
+      /* Public namespace.  Shared.  */
+      tree *global_slot
+	= TREE_CODE (*slot) == MODULE_VECTOR
+	?  module_binding_slot (slot, name, MODULE_SLOT_GLOBAL, false)
+	: slot;
+      if (tree decl = *global_slot)
+	if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
+	  return decl;
+    }
+  return NULL_TREE;
+}
+
+static tree
+make_namespace (tree ctx, tree name, bool inline_p)
+{
+  /* Create the namespace.  */
+  tree ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+  SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
+  if (!SCOPE_DEPTH (ns))
+    /* We only allow depth 255. */
+    sorry ("cannot nest more than %d namespaces", SCOPE_DEPTH (ctx));
+  DECL_CONTEXT (ns) = FROB_CONTEXT (ctx);
+
+  if (!name)
+    SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
+  else if (TREE_PUBLIC (ctx))
+    {
+      TREE_PUBLIC (ns) = true;
+      // FIXME:Only export in module purview, fix in push_namespace
+      DECL_MODULE_EXPORT_P (ns) = true;
+    }
+
+  if (inline_p)
+    DECL_NAMESPACE_INLINE_P (ns) = true;
+
+  return ns;
+}
+
+void
+make_namespace_finish (tree ns, tree *slot, bool inline_p,
+		       bool from_import = false)
+{
+  if (flag_modules && TREE_PUBLIC (ns) && (from_import || *slot != ns))
+    {
+      slot = module_binding_slot (slot, DECL_NAME (ns),
+				  MODULE_SLOT_GLOBAL, true);
+      if (*slot && *slot != ns)
+	{
+	  /* Something was already bound there.  */
+	  error ("%q#D conflicts with global module declaration", ns);
+	  inform (DECL_SOURCE_LOCATION (OVL_FIRST (*slot)),
+		  "global module declaration %qD", OVL_FIRST (*slot));
+	}
+      *slot = ns;
+    }
+
+  tree ctx = CP_DECL_CONTEXT (ns);
+  if (!from_import)
+    add_decl_to_level (NAMESPACE_LEVEL (ctx), ns);
+
+  if (from_import || *slot == ns)
+    {
+      /* NS was newly created, finish off making it.  */
+      cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
+      scope->this_entity = ns;
+      scope->more_cleanups_ok = true;
+      scope->kind = sk_namespace;
+      scope->level_chain = NAMESPACE_LEVEL (ctx);
+      NAMESPACE_LEVEL (ns) = scope;
+
+      if (DECL_NAMESPACE_INLINE_P (ns))
+	vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), ns);
+
+      if (DECL_NAMESPACE_INLINE_P (ns) || !DECL_NAME (ns))
+	emit_debug_info_using_namespace (ctx, ns, true);
+    }
+  else if (DECL_NAMESPACE_INLINE_P (ns) != inline_p)
+    {
+      error (from_import ? inline_p ? "expected %qD to be an inline namespace"
+	     : "expected %qD to not be an inline namespace"
+	     : inline_p ? "already imported %qD as a non-inline namespace"
+	     : "already imported %qD as an inline namespace", ns);
+      inform (DECL_SOURCE_LOCATION (ns), "namespace introduced here");
+    }
+}
+
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
    then we enter an anonymous namespace.  If MAKE_INLINE is true, then
    we create an inline namespace (it is up to the caller to check upon
@@ -7626,7 +7655,6 @@ push_namespace (tree name, bool make_inline)
       ns = lookup.value;
   }
 
-  bool new_ns = false;
   if (ns)
     /* DR2061.  NS might be a member of an inline namespace.  We
        need to push into those namespaces.  */
@@ -7635,26 +7663,22 @@ push_namespace (tree name, bool make_inline)
     {
       /* Before making a new namespace, see if we already have one in
 	 the existing partitions of the current namespace.  */
-      if (tree *slot = find_namespace_slot (current_namespace, name))
-	ns = find_namespace_partition (*slot);
-
+      tree *slot = find_namespace_slot (current_namespace, name, true);
+      ns = reuse_namespace (slot, current_namespace, name);
       if (!ns)
-	{
-	  ns = create_namespace (current_namespace, name, make_inline);
-	  new_ns = true;
-	}
+	ns = make_namespace (current_namespace, name, make_inline);
 
       if (pushdecl (ns) == error_mark_node)
 	ns = NULL_TREE;
-      else if (new_ns)
+      else
 	{
-	  if (make_inline)
-	    vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
-	  else if (!name)
-	    add_using_namespace (DECL_NAMESPACE_USING (current_namespace), ns);
+	  /* finish up making the namespace.  */
+	  make_namespace_finish (ns, slot, make_inline);
 
-	  if (!name || make_inline)
-	    emit_debug_info_using_namespace (current_namespace, ns, true);
+	  /* Add the anon using-directive here, we don't do it in
+	     make_namespace_finish.  */
+	  if (!DECL_NAMESPACE_INLINE_P (ns) && !name)
+	    add_using_namespace (DECL_NAMESPACE_USING (current_namespace), ns);
 	}
     }
 
@@ -7665,10 +7689,7 @@ push_namespace (tree name, bool make_inline)
 	  error ("inline namespace must be specified at initial definition");
 	  inform (DECL_SOURCE_LOCATION (ns), "%qD defined here", ns);
 	}
-      if (new_ns)
-	begin_scope (sk_namespace, ns);
-      else
-	resume_scope (NAMESPACE_LEVEL (ns));
+      resume_scope (NAMESPACE_LEVEL (ns));
       current_namespace = ns;
       count++;
     }
@@ -7690,6 +7711,47 @@ pop_namespace (void)
   leave_scope ();
 
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
+}
+
+tree
+add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
+{
+  /* Does not deal with anonymous namespaces.  */
+  gcc_assert (name && TREE_PUBLIC (ctx));
+
+  tree *slot = find_namespace_slot (ctx, name, true);
+  tree decl = reuse_namespace (slot, ctx, name);
+  if (!decl)
+    {
+      decl = make_namespace (ctx, name, inline_p);
+      make_namespace_finish (decl, slot, inline_p, true);
+    }
+
+  /* Now insert.  */
+  if (mod && TREE_CODE (*slot) == MODULE_VECTOR)
+    {
+      /* See if we can extend the final slot.  */
+      module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
+      gcc_checking_assert (last->indices[0].span);
+      unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER;
+
+      while (--jx)
+	if (last->indices[jx].span)
+	  break;
+      if (last->slots[jx] == decl
+	  && last->indices[jx].base + last->indices[jx].span == mod)
+	{
+	  last->indices[jx].span++;
+	  return decl;
+	}
+    }
+
+  tree *mslot = module_binding_slot (slot, name, mod, true);
+
+  gcc_assert (!*mslot || *mslot == decl);
+  *mslot = decl;
+
+  return decl;
 }
 
 /* External entry points for do_{push_to/pop_from}_top_level.  */

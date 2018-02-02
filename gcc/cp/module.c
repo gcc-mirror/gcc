@@ -2666,7 +2666,7 @@ module_state::read_namespace (elf_in *from, bytes_in &bind, tree ns)
       bind.bflush ();
 
       tree name = get_identifier (from->name (off));
-      tree inner = set_module_namespace (ns, mod, name, inline_p);
+      tree inner = add_imported_namespace (ns, mod, name, inline_p);
       read_namespace (from, bind, inner);
     }
 

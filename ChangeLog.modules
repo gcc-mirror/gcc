@@ -1,5 +1,25 @@
 2018-02-02  Nathan Sidwell  <nathan@acm.org>
 
+	Keep namespaces on global slot.
+	gcc/cp/
+	* cp-tree.h (MODULE_SLOT_CURRENT, MODULE_SLOT_GLOBAL): Renamed
+	from MODULE_SLOT_TU, MODULE_SLOT_GLOBALS.
+	* name-lookup.h (set_module_namespace): Undeclare.
+	(add_imported_namespace): Declare.
+	* name-lookup.c (module_binding_slot): Remove assert, propagate
+	external namespace to GLOBAL slot on creation.
+	(update_binding): Don't add namespaces to level.
+	(reuse_namespace): New.
+	(make_namespace): New, absorb ...
+	(create_namespace): ... this. Delete.
+	(make_namespace_finish): New.
+	(push_namespace): Adjust.
+	(add_imported_namespace): New.  Absorb ...
+	(set_module_namespace): ... this. Delete.
+	* module.c (module_state::read_namespace): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/namespace-1_[abc].C: New.
+
 	Fix circularity detection, and other errors
 	gcc/cp/
 	* module.c (elf::E_BAD_DATA, elf::E_BAD_IMPORT): New.

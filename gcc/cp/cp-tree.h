@@ -1530,10 +1530,10 @@ check_constraint_info (tree t)
 
 /* Numbering for modules.   */
 // FIXME: Rename from INDEX
-#define MODULE_INDEX_NONE 0 /* Not in a module.  */
+#define MODULE_INDEX_NONE 0	/* Not in a module.  */
 #define MODULE_INDEX_PURVIEW 1  /* In current purview.  */
-#define MODULE_SLOT_TU 0  /* Slot for current TU.  */
-#define MODULE_SLOT_GLOBALS 1 /* Slot for merged globals. */
+#define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
+#define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
 #define MODULE_INDEX_IMPORT_BASE 2
 #define MODULE_INDEX_LIMIT (1<<MODULE_INDEX_BITS)
 
