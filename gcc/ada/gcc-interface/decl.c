@@ -6113,6 +6113,11 @@ array_type_has_nonaliased_component (tree gnu_type, Entity_Id gnat_type)
       return TYPE_NONALIASED_COMPONENT (gnu_parent_type);
     }
 
+  /* Consider that an array of pointers has an aliased component, which is
+     sort of logical and helps with Taft Amendment types in LTO mode.  */
+  if (POINTER_TYPE_P (TREE_TYPE (gnu_type)))
+    return false;
+
   /* Otherwise, rely exclusively on properties of the element type.  */
   return type_for_nonaliased_component_p (TREE_TYPE (gnu_type));
 }
