@@ -146,6 +146,7 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_KNM (1U<<PROCESSOR_KNM)
 #define m_SKYLAKE_AVX512 (1U<<PROCESSOR_SKYLAKE_AVX512)
 #define m_CANNONLAKE (1U<<PROCESSOR_CANNONLAKE)
+#define m_ICELAKE (1U<<PROCESSOR_ICELAKE)
 #define m_INTEL (1U<<PROCESSOR_INTEL)
 
 #define m_GEODE (1U<<PROCESSOR_GEODE)
@@ -858,7 +859,8 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
   {"knm", &slm_cost, 16, 15, 16, 7, 16},
   {"skylake-avx512", &skylake_cost, 16, 10, 16, 10, 16},
-  {"cannonlake", &core_cost, 16, 10, 16, 10, 16},
+  {"cannonlake", &skylake_cost, 16, 10, 16, 10, 16},
+  {"icelake", &skylake_cost, 16, 10, 16, 10, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
   {"k6", &k6_cost, 32, 7, 32, 7, 32},
@@ -3446,6 +3448,13 @@ ix86_option_override_internal (bool main_args_p,
   const wide_int_bitmask PTA_AVX5124FMAPS (HOST_WIDE_INT_1U << 61);
   const wide_int_bitmask PTA_AVX512VPOPCNTDQ (HOST_WIDE_INT_1U << 62);
   const wide_int_bitmask PTA_SGX (HOST_WIDE_INT_1U << 63);
+  const wide_int_bitmask PTA_AVX512VNNI (0, HOST_WIDE_INT_1U);
+  const wide_int_bitmask PTA_GFNI (0, HOST_WIDE_INT_1U << 1);
+  const wide_int_bitmask PTA_VAES (0, HOST_WIDE_INT_1U << 2);
+  const wide_int_bitmask PTA_AVX512VBMI2 (0, HOST_WIDE_INT_1U << 3);
+  const wide_int_bitmask PTA_VPCLMULQDQ (0, HOST_WIDE_INT_1U << 4);
+  const wide_int_bitmask PTA_AVX512BITALG (0, HOST_WIDE_INT_1U << 5);
+  const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
 
   const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
     | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -3467,6 +3476,9 @@ ix86_option_override_internal (bool main_args_p,
     | PTA_CLWB;
   const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE_AVX512 | PTA_AVX512VBMI
     | PTA_AVX512IFMA | PTA_SHA;
+  const wide_int_bitmask PTA_ICELAKE = PTA_CANNONLAKE | PTA_AVX512VNNI
+    | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
+    | PTA_RDPID;
   const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
     | PTA_AVX512F | PTA_AVX512CD;
   const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
@@ -3537,7 +3549,8 @@ ix86_option_override_internal (bool main_args_p,
       {"skylake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_SKYLAKE},
       {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
         PTA_SKYLAKE_AVX512},
-      {"cannonlake", PROCESSOR_HASWELL, CPU_HASWELL, PTA_CANNONLAKE},
+      {"cannonlake", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_CANNONLAKE},
+      {"icelake", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL, PTA_ICELAKE},
       {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
@@ -4107,6 +4120,23 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_AVX512IFMA) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512IFMA))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512IFMA;
+	if (((processor_alias_table[i].flags & PTA_AVX512VNNI) != 0)
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512VNNI))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VNNI;
+	if (((processor_alias_table[i].flags & PTA_GFNI) != 0)
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_GFNI))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_GFNI;
+	if (((processor_alias_table[i].flags & PTA_AVX512VBMI2) != 0)
+	    && !(opts->x_ix86_isa_flags_explicit
+	    & OPTION_MASK_ISA_AVX512VBMI2))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512VBMI2;
+	if (((processor_alias_table[i].flags & PTA_VPCLMULQDQ) != 0)
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_VPCLMULQDQ))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_VPCLMULQDQ;
+	if (((processor_alias_table[i].flags & PTA_AVX512BITALG) != 0)
+	    && !(opts->x_ix86_isa_flags_explicit
+	    & OPTION_MASK_ISA_AVX512BITALG))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512BITALG;
 
 	if (((processor_alias_table[i].flags & PTA_AVX5124VNNIW) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
@@ -4123,6 +4153,12 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_SGX) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_SGX))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_SGX;
+	if (((processor_alias_table[i].flags & PTA_VAES) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_VAES))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_VAES;
+	if (((processor_alias_table[i].flags & PTA_RDPID) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_RDPID))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_RDPID;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
@@ -32124,7 +32160,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_HASWELL:
 	    case PROCESSOR_SKYLAKE_AVX512:
-	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VBMI)
+	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_GFNI)
+		arg_str = "icelake";
+	      else if (new_target->x_ix86_isa_flags
+			& OPTION_MASK_ISA_AVX512VBMI)
 		arg_str = "cannonlake";
 	      else if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512VL)
 	        arg_str = "skylake-avx512";
@@ -32849,7 +32888,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7_BROADWELL,
     M_INTEL_COREI7_SKYLAKE,
     M_INTEL_COREI7_SKYLAKE_AVX512,
-    M_INTEL_COREI7_CANNONLAKE
+    M_INTEL_COREI7_CANNONLAKE,
+    M_INTEL_COREI7_ICELAKE
   };
 
   static struct _arch_names_table
@@ -32874,6 +32914,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"skylake", M_INTEL_COREI7_SKYLAKE},
       {"skylake-avx512", M_INTEL_COREI7_SKYLAKE_AVX512},
       {"cannonlake", M_INTEL_COREI7_CANNONLAKE},
+      {"icelake", M_INTEL_COREI7_ICELAKE},
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},
