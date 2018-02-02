@@ -1,3 +1,27 @@
+2018-02-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/pr81913.c: Use types that also work for int16.
+	* gcc.c-torture/execute/20180112-1.c: Dito.
+	* gcc.c-torture/execute/pr81503.c: Dito.
+	* gcc.dg/store_merging_12.c: Dito.
+	* gcc.dg/tree-ssa/loop-niter-1.c: Dito.
+	* gcc.dg/tree-ssa/loop-niter-2.c: Dito.
+	* gcc.dg/tree-ssa/pr80898.c: Dito.
+	* gcc.dg/tree-ssa/pr82363.c: Dito.
+	* gcc.dg/utf16-4.c: Also allow "short unsigned int" in dg-warning.
+	* gcc.dg/tree-ssa/pr81346-5.c: Special-case int16.
+	* gcc.dg/tree-ssa/ssa-sink-11.c: Dito.
+	* gcc.dg/tree-ssa/ssa-sink-12.c: Dito.
+	* gcc.dg/torture/pr81814.c: Restrict to int32plus.
+	* gcc.dg/tree-ssa/pr80803.c: Dito.
+	* gcc.dg/tree-ssa/pr80898-2.c: Dito.
+	* gcc.dg/tree-ssa/pr81346-4.c: Dito.
+	* gcc.dg/tree-ssa/vrp114.c: Dito.
+	* gcc.dg/tree-ssa/pr82574.c: Restrict to size32plus.
+	* gcc.dg/tree-ssa/ssa-dom-thread-13.c: Dito.
+	* gcc.dg/tree-ssa/ssa-sink-15.c: Dito.
+
 2018-02-02  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84066

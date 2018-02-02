@@ -3,7 +3,7 @@
 
 extern void abort (void);
 
-typedef unsigned int u32;
+typedef __UINT32_TYPE__ u32;
 
 u32 bug (u32 * result) __attribute__((noinline));
 u32 bug (u32 * result)
