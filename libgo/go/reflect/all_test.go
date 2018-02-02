@@ -6162,9 +6162,6 @@ func TestPtrToMethods(t *testing.T) {
 }
 
 func TestMapAlloc(t *testing.T) {
-	if runtime.Compiler == "gccgo" {
-		t.Skip("skipping on gccgo until we have escape analysis")
-	}
 	m := ValueOf(make(map[int]int, 10))
 	k := ValueOf(5)
 	v := ValueOf(7)
@@ -6195,9 +6192,6 @@ func TestMapAlloc(t *testing.T) {
 }
 
 func TestChanAlloc(t *testing.T) {
-	if runtime.Compiler == "gccgo" {
-		t.Skip("skipping on gccgo until we have escape analysis")
-	}
 	// Note: for a chan int, the return Value must be allocated, so we
 	// use a chan *int instead.
 	c := ValueOf(make(chan *int, 1))
