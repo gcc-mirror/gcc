@@ -1,5 +1,16 @@
 2018-02-02  Nathan Sidwell  <nathan@acm.org>
 
+	MODULE_PURVIEW bug fixing.
+	gcc/cp/
+	* decl2.c (c_parse_final_cleanups): Reset current_module.
+	* module.c (module_state::do_import): New, swallow ...
+	(do_module_import): ... this.  Update callers.
+	* name-lookup.c (name_lookup::search_namespace_only): Fix search
+	of SLOT_CURRENT.
+	(do_pushdecl): Fix assert.
+	(merge_global_decl, push_module_binding, lookup_by_ident): Fix
+	module remap thinko.
+
 	Module purview has MODULE_PURVIEW number.
 	gcc/cp/
 	* module.c (module_state::read): Use MODULE_PURVIEW.

@@ -1539,8 +1539,10 @@ struct GTY(()) module_state {
   module_state ();
   ~module_state ();
 
- public:
+ private:
   static void lazy_init ();
+
+ public:
   void release (bool = true);
 
  public:
@@ -1571,6 +1573,10 @@ struct GTY(()) module_state {
   void read_namespace (elf_in *from, bytes_in &bind, tree ctx);
   void write_bindings (elf_out *to, unsigned *crc_ptr);
   bool read_bindings (elf_in *from);
+
+ public:
+  static module_state *do_import (location_t, tree, bool module_unit_p,
+				  bool import_export_p, unsigned * = NULL);
 };
 
 /* Global trees.  */
@@ -1584,10 +1590,6 @@ const std::pair<tree *, unsigned> module_state::global_trees[] =
   };
 vec<tree, va_gc> GTY (()) *module_state::global_vec;
 unsigned module_state::global_crc;
-
-// FIXME:member of module_state?
-static module_state *do_module_import (location_t, tree, bool module_unit_p,
-				       bool import_export_p, unsigned * = NULL);
 
 /* Hash module state by name.  */
 
@@ -2356,9 +2358,8 @@ module_state::read_context (elf_in *from)
 
       dump () && dump ("Nested %simport %I",
 		       exported ? "export " : imported ? "" : "indirect ", name);
-      module_state *imp = do_module_import (input_location, name,
-					    /*unit_p=*/false,
-					    /*import_p=*/imported, &crc);
+      module_state *imp = do_import (input_location, name, /*unit_p=*/false,
+				     /*import_p=*/imported, &crc);
       if (!imp)
 	{
 	  from->set_error (elf::E_BAD_IMPORT);
@@ -2575,7 +2576,11 @@ module_state::write_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
       tree binding = *iter;
 
       if (TREE_CODE (binding) == MODULE_VECTOR)
-	binding = MODULE_VECTOR_CLUSTER (binding, 0).slots[0];
+	binding = (MODULE_VECTOR_CLUSTER
+		   (binding, (MODULE_SLOT_CURRENT
+			      / MODULE_VECTOR_SLOTS_PER_CLUSTER))
+		   .slots[MODULE_SLOT_CURRENT
+			  % MODULE_VECTOR_SLOTS_PER_CLUSTER]);
 
       if (!binding)
 	continue;
@@ -5983,13 +5988,19 @@ make_module_file (char *name)
   return fopen (name, "wb");
 }
 
-/* Import the module NAME into the current TU.  This includes the TU's
-   interface and as implementation.  Returns the imported module object
-   (or NULL).  */
+/* Import the module NAME into the current TU.  If MODULE_P is
+   true, we're part of module NAME, and EXPORT_P indicates if
+   we're the exporting init (true), or not (false).  If MODULE_P
+   is false, NAME is a regular import.  EXPORT_P tells us if
+   we're a direct import of the current TU (true), or an indirect
+   import (false).  Returns the imported module object (or NULL).
+
+   We don't actually import anything when MODULE_P and IMPORT_EXPORT_P
+   are both true.  */
 
 module_state *
-do_module_import (location_t loc, tree name, bool module_unit_p,
-		  bool import_export_p, unsigned *crc_ptr)
+module_state::do_import (location_t loc, tree name, bool module_p,
+			 bool export_p, unsigned *crc_ptr)
 {
   gcc_assert (global_namespace == current_scope ());
 
@@ -6001,9 +6012,9 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       modules->quick_push (current);
       current->mod = MODULE_NONE;
       bitmap_set_bit (current->imports, MODULE_NONE);
-      module_state::lazy_init ();
       for (unsigned ix = MODULE_IMPORT_BASE; --ix;)
 	modules->quick_push (NULL);
+      lazy_init ();
     }
 
   module_state **slot
@@ -6013,7 +6024,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 
   if (!state)
     {
-      if (module_unit_p)
+      if (module_p)
 	{
 	  state = (*modules)[MODULE_PURVIEW];
 	  if (state)
@@ -6031,13 +6042,13 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       state->set_name (name);
       *slot = state;
 
-      if (module_unit_p && import_export_p)
+      if (module_p && export_p)
 	{
 	  /* We're the exporting module unit, so not loading anything.  */
 	  state->exported = true;
 	  state->mod = MODULE_PURVIEW;
 	}
-      else if (!module_unit_p && !import_export_p)
+      else if (!module_p && !export_p)
 	{
 	  /* The ordering of the import table implies that indirect
 	     imports should have already been loaded.  */
@@ -6078,7 +6089,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 		 problems, so bail out, if this is the top level.
 		 Otherwise return NULL to let our importer know (and
 		 fail).  */
-	      (module_unit_p || import_export_p ? fatal_error
+	      (module_p || export_p ? fatal_error
 	       : (void (*)(location_t, const char *, ...))error_at)
 		(state->loc, "failed to import module %qE: %s",
 		 state->name, err);
@@ -6106,7 +6117,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
          unit graph, it must go via the current TU, and we discover
          that differently.  */
       gcc_assert (state->mod != MODULE_UNKNOWN);
-      if (module_unit_p)
+      if (module_p)
 	{
 	  /* Cannot be module unit of an imported module.  */
 	  error_at (loc, "cannot declare module after import");
@@ -6115,8 +6126,12 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	}
     }
 
-  if (state && module_purview_p)
-    (*modules)[MODULE_PURVIEW] = state;
+  if (state && module_p)
+    {
+      (*modules)[MODULE_PURVIEW] = state;
+      current_module = MODULE_PURVIEW;
+    }
+
   return state;
 }
 
@@ -6126,8 +6141,9 @@ void
 import_module (const cp_expr &name, tree)
 {
   gcc_assert (global_namespace == current_scope ());
-  if (module_state *imp = do_module_import (name.get_location (), *name,
-					    /*unit_p=*/false, /*import_p=*/true))
+  if (module_state *imp
+      = module_state::do_import (name.get_location (), *name,
+				 /*unit_p=*/false, /*import_p=*/true))
     (*modules)[MODULE_NONE]->do_import (imp->mod, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
 }
@@ -6140,8 +6156,8 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  module_state *state = do_module_import
-    (name.get_location (), *name, true, exporting_p);
+  module_state *state
+    = module_state::do_import (name.get_location (), *name, true, exporting_p);
 
   if (state && !state->filename)
     {

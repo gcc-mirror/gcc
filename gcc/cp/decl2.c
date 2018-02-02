@@ -4635,7 +4635,7 @@ c_parse_final_cleanups (void)
   int retries = 0;
   tree decl;
 
-  current_module = 0;
+  current_module = MODULE_NONE;
   locus_at_end_of_parsing = input_location;
   at_eof = 1;
 

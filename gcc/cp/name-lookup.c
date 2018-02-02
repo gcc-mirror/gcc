@@ -734,11 +734,7 @@ name_lookup::search_namespace_only (tree scope)
   if (tree *binding = find_namespace_slot (scope, name))
     {
       tree val = *binding;
-      if (TREE_CODE (val) != MODULE_VECTOR)
-	/* Only a global module binding, visible from anywhere.  */
-	found |= process_binding (MAYBE_STAT_DECL (val),
-				  MAYBE_STAT_TYPE (val));
-      else
+      if (TREE_CODE (val) == MODULE_VECTOR)
 	{
 	  /* I presume the binding list is going to be sparser than
 	     the import bitmap.  Hence iterate over the former
@@ -746,7 +742,17 @@ name_lookup::search_namespace_only (tree scope)
 	  bitmap imports = module_import_bitmap (current_module);
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
-	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ix--; cluster++)
+
+	  // FIXME: namespaces are simpler, just use process_binding
+	  if (cluster->slots[MODULE_SLOT_CURRENT])
+	    marker = process_module_binding (imports, marker,
+					     cluster->slots[MODULE_SLOT_CURRENT],
+					     MODULE_SLOT_CURRENT, 1);
+
+	  /* Scan the imported bindings.  */
+	  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
+			       == MODULE_IMPORT_BASE);
+	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ++cluster, --ix;)
 	    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
 	      if (cluster->slots[jx])
 		marker = process_module_binding
@@ -754,6 +760,9 @@ name_lookup::search_namespace_only (tree scope)
 		   cluster->indices[jx].base, cluster->indices[jx].span);
 	  found |= marker & 1;
 	}
+      else if (current_module <= MODULE_IMPORT_BASE)
+	/* Only a current module binding, visible from the current module.  */
+	found |= process_binding (MAYBE_STAT_DECL (val), MAYBE_STAT_TYPE (val));
     }
 
   return found;
@@ -3332,7 +3341,7 @@ do_pushdecl (tree decl, bool is_friend)
 	  slot = find_namespace_slot (ns, name, ns == current_namespace);
 	  if (slot)
 	    {
-	      gcc_assert (!current_module);
+	      gcc_assert (current_module <= MODULE_IMPORT_BASE);
 	      mslot = module_binding_slot (slot, name, MODULE_SLOT_CURRENT,
 					   ns == current_namespace);
 	      old = MAYBE_STAT_DECL (*mslot);
@@ -3519,7 +3528,7 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
   tree *mslot = module_binding_slot
     (slot, DECL_NAME (decl),
-     mod_ix == MODULE_PURVIEW ? mod_ix : MODULE_SLOT_CURRENT, is_ns);
+     mod_ix == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod_ix, is_ns);
   tree old = NULL_TREE;
 
   if (!mslot)
@@ -3649,7 +3658,7 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 
   tree *slot = find_namespace_slot (ns, name, true);
   tree *mslot = module_binding_slot
-    (slot, name, mod == MODULE_PURVIEW ? mod : MODULE_SLOT_CURRENT,
+    (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
      is_ns ? -1 : 1);
 
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
@@ -3728,7 +3737,7 @@ lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
 	 untrustworthy data, so check for NULL.  */
       if (tree *slot = find_namespace_slot (ctx, name))
 	if (tree *mslot = module_binding_slot
-	    (slot, name, mod == MODULE_PURVIEW ? mod : MODULE_SLOT_CURRENT,
+	    (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
 	     false))
 	  binding = *mslot;
       break;
