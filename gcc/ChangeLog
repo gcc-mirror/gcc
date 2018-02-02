@@ -1,3 +1,9 @@
+2018-02-02  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84066
+	* config/i386/i386.md: Replace Pmode with word_mode in
+	builtin_setjmp_setup and builtin_longjmp to support x32.
+
 2018-02-01  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/56010
