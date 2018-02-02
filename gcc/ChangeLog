@@ -1,3 +1,9 @@
+2018-02-02  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Change flags type
+	to wide_int_bitmask.
+	* wide-int-bitmask.h: New.
+
 2018-02-02  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84066

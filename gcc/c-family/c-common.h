@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "tree.h"
 #include "fold-const.h"
+#include "wide-int-bitmask.h"
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before
@@ -1111,126 +1112,7 @@ extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
 
 /* In c-omp.c  */
-struct omp_clause_mask
-{
-  inline omp_clause_mask ();
-  inline omp_clause_mask (uint64_t l);
-  inline omp_clause_mask (uint64_t l, uint64_t h);
-  inline omp_clause_mask &operator &= (omp_clause_mask);
-  inline omp_clause_mask &operator |= (omp_clause_mask);
-  inline omp_clause_mask operator ~ () const;
-  inline omp_clause_mask operator & (omp_clause_mask) const;
-  inline omp_clause_mask operator | (omp_clause_mask) const;
-  inline omp_clause_mask operator >> (int);
-  inline omp_clause_mask operator << (int);
-  inline bool operator == (omp_clause_mask) const;
-  inline bool operator != (omp_clause_mask) const;
-  uint64_t low, high;
-};
-
-inline
-omp_clause_mask::omp_clause_mask ()
-{
-}
-
-inline
-omp_clause_mask::omp_clause_mask (uint64_t l)
-: low (l), high (0)
-{
-}
-
-inline
-omp_clause_mask::omp_clause_mask (uint64_t l, uint64_t h)
-: low (l), high (h)
-{
-}
-
-inline omp_clause_mask &
-omp_clause_mask::operator &= (omp_clause_mask b)
-{
-  low &= b.low;
-  high &= b.high;
-  return *this;
-}
-
-inline omp_clause_mask &
-omp_clause_mask::operator |= (omp_clause_mask b)
-{
-  low |= b.low;
-  high |= b.high;
-  return *this;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator ~ () const
-{
-  omp_clause_mask ret (~low, ~high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator | (omp_clause_mask b) const
-{
-  omp_clause_mask ret (low | b.low, high | b.high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator & (omp_clause_mask b) const
-{
-  omp_clause_mask ret (low & b.low, high & b.high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator << (int amount)
-{
-  omp_clause_mask ret;
-  if (amount >= 64)
-    {
-      ret.low = 0;
-      ret.high = low << (amount - 64);
-    }
-  else if (amount == 0)
-    ret = *this;
-  else
-    {
-      ret.low = low << amount;
-      ret.high = (low >> (64 - amount)) | (high << amount);
-    }
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator >> (int amount)
-{
-  omp_clause_mask ret;
-  if (amount >= 64)
-    {
-      ret.low = high >> (amount - 64);
-      ret.high = 0;
-    }
-  else if (amount == 0)
-    ret = *this;
-  else
-    {
-      ret.low = (high << (64 - amount)) | (low >> amount);
-      ret.high = high >> amount;
-    }
-  return ret;
-}
-
-inline bool
-omp_clause_mask::operator == (omp_clause_mask b) const
-{
-  return low == b.low && high == b.high;
-}
-
-inline bool
-omp_clause_mask::operator != (omp_clause_mask b) const
-{
-  return low != b.low || high != b.high;
-}
+typedef wide_int_bitmask omp_clause_mask;
 
 #define OMP_CLAUSE_MASK_1 omp_clause_mask (1)
 
