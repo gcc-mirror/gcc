@@ -1,5 +1,33 @@
 2018-02-02  Georg-Johann Lay  <avr@gjlay.de>
 
+	* lib/target-supports.exp
+	(check_effective_target_keeps_null_pointer_checks): No more
+	special-case avr.
+	* gcc.dg/tree-ssa/pr21086.c (dg-final): Special-case avr.
+	* gcc.dg/ifcvt-4.c: Skip avr.
+	* gcc.dg/pr53037-1.c: Dito.
+	* gcc.dg/pr53037-2.c: Dito.
+	* gcc.dg/pr53037-3.c: Dito.
+	* gcc.dg/pr63387-2.c: Dito.
+	* gcc.dg/pr63387.c: Dito.
+	* gcc.dg/sancov/cmp0.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-1.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-10.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-11.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-1b.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-2.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-3.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-4.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-5.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-6.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-7.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-8.c: Dito.
+	* gcc.dg/tree-ssa/loop-interchange-9.c: Dito.
+	* gcc.dg/tree-ssa/pr82059.c: Dito.
+	* gcc.c-torture/execute/pr70460.c: Dito.
+
+2018-02-02  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR testsuite/52641
 	* gcc.c-torture/execute/pr81913.c: Use types that also work for int16.
 	* gcc.c-torture/execute/20180112-1.c: Dito.

@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -floop-interchange -fdump-tree-linterchange-details" } */
 /* { dg-require-stack-size "8*111*1111" } */
-/* { dg-skip-if "too big stack" { visium-*-* } } */
+/* { dg-skip-if "too big stack" { avr-*-* visium-*-* } } */
 
 /* Copied from graphite/interchange-7.c */
 
