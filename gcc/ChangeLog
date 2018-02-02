@@ -1,5 +1,21 @@
 2018-02-02  Julia Koval  <julia.koval@intel.com>
 
+	* config.gcc: Add -march=icelake.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect icelake.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle icelake.
+	* config/i386/i386.c (processor_costs): Add m_ICELAKE.
+	(PTA_ICELAKE, PTA_AVX512VNNI, PTA_GFNI, PTA_VAES, PTA_AVX512VBMI2,
+	PTA_VPCLMULQDQ, PTA_RDPID, PTA_AVX512BITALG): New.
+	(processor_target_table): Add icelake.
+	(ix86_option_override_internal): Handle new PTAs.
+	(get_builtin_code_for_version): Handle icelake.
+	(M_INTEL_COREI7_ICELAKE): New.
+	(fold_builtin_cpu): Handle icelake.
+	* config/i386/i386.h (TARGET_ICELAKE, PROCESSOR_ICELAKE): New.
+	* doc/invoke.texi: Add -march=icelake.
+
+2018-02-02  Julia Koval  <julia.koval@intel.com>
+
 	* config/i386/i386.c (ix86_option_override_internal): Change flags type
 	to wide_int_bitmask.
 	* wide-int-bitmask.h: New.

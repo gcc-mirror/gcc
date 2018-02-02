@@ -1,3 +1,8 @@
+2018-02-02  Julia Koval  <julia.koval@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+	* g++.dg/ext/mv16.C: Ditto.
+
 2018-02-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	* lib/target-supports.exp
