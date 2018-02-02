@@ -2747,14 +2747,14 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   if (!read_context (from))
     return;
 
-  unsigned ix = 0;
-  if (this != (*modules)[0])
+  unsigned ix = MODULE_PURVIEW;
+  if (this != (*modules)[MODULE_NONE])
     {
       ix = modules->length ();
       if (ix == MODULE_LIMIT)
 	{
 	  sorry ("too many modules loaded (limit is %u)", ix);
-	  from->set_error ();
+	  from->set_error (elf::E_BAD_IMPORT);
 	  return;
 	}
       else
@@ -2765,7 +2765,7 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
 	}
     }
   mod = ix;
-  (*remap)[0] = ix;
+  (*remap)[MODULE_PURVIEW] = ix;
   dump () && dump ("Assigning %N module index %u", name, ix);
 
   if (!read_bindings (from))
@@ -5405,11 +5405,11 @@ trees_out::tree_node (tree t)
       tree_node (DECL_NAME (t));
 
       tree module_ctx = module_context (t);
-      unsigned node_module = 0;
+      unsigned node_module = MODULE_NONE;
       if (module_ctx)
 	node_module = MAYBE_DECL_MODULE_OWNER (module_ctx);
       u (node_module);
-      if (node_module)
+      if (node_module >= MODULE_IMPORT_BASE)
 	{
 	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
 	  dump () && dump ("Writing imported %N@%I", t,
@@ -5508,7 +5508,8 @@ trees_in::tree_node ()
 	    node_module = (*state->remap)[incoming];
 
 	  if (incoming >= state->remap->length ()
-	      || ((incoming != 0) != (node_module != state->mod)))
+	      || ((incoming == MODULE_NONE) != (node_module == MODULE_NONE))
+	      || ((incoming == MODULE_PURVIEW) != (node_module == state->mod)))
 	    set_overrun ();
 	}
 
@@ -5518,9 +5519,7 @@ trees_in::tree_node ()
 	  return NULL_TREE;
 	}
 
-      gcc_assert (node_module || !state->mod);
-
-      if (node_module != state->mod)
+      if (node_module != MODULE_NONE && node_module != state->mod)
 	{
 	  tree type = tree_node ();
 
@@ -6000,7 +5999,8 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       vec_safe_reserve (modules, 20);
       module_state *current = new (ggc_alloc <module_state> ()) module_state ();
       modules->quick_push (current);
-      current->mod = 0;
+      current->mod = MODULE_NONE;
+      bitmap_set_bit (current->imports, MODULE_NONE);
       module_state::lazy_init ();
       for (unsigned ix = MODULE_IMPORT_BASE; --ix;)
 	modules->quick_push (NULL);
@@ -6015,14 +6015,15 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
     {
       if (module_unit_p)
 	{
-	  state = (*modules)[0];
-	  if (state->name)
+	  state = (*modules)[MODULE_PURVIEW];
+	  if (state)
 	    {
 	      /* Already declared the module.  */
 	      error_at (loc, "cannot declare module in purview of module %qE",
 			state->name);
 	      return NULL;
 	    }
+	  state = (*modules)[MODULE_NONE];
 	}
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
@@ -6034,7 +6035,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	{
 	  /* We're the exporting module unit, so not loading anything.  */
 	  state->exported = true;
-	  state->mod = 0;
+	  state->mod = MODULE_PURVIEW;
 	}
       else if (!module_unit_p && !import_export_p)
 	{
@@ -6092,7 +6093,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	    state = NULL;
 	}
     }
-  else if (!state->mod)
+  else if (state->mod == MODULE_PURVIEW)
     {
       /* Cannot import the current module.  */
       error_at (loc, "cannot import module in its own purview");
@@ -6114,6 +6115,8 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
 	}
     }
 
+  if (state && module_purview_p)
+    (*modules)[MODULE_PURVIEW] = state;
   return state;
 }
 
@@ -6125,7 +6128,7 @@ import_module (const cp_expr &name, tree)
   gcc_assert (global_namespace == current_scope ());
   if (module_state *imp = do_module_import (name.get_location (), *name,
 					    /*unit_p=*/false, /*import_p=*/true))
-    (*modules)[0]->do_import (imp->mod, export_depth != 0);
+    (*modules)[MODULE_NONE]->do_import (imp->mod, export_depth != 0);
   gcc_assert (global_namespace == current_scope ());
 }
 

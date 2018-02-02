@@ -184,7 +184,7 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	/* Can use slot in last cluster.  */
 	clusters = 0;
     }
-  else if (!ix)
+  else if (ix == MODULE_SLOT_CURRENT)
     /* The current TU can just use slot directly.  */
     return slot;
   else if (!create)
@@ -3333,7 +3333,7 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (slot)
 	    {
 	      gcc_assert (!current_module);
-	      mslot = module_binding_slot (slot, name, 0,
+	      mslot = module_binding_slot (slot, name, MODULE_SLOT_CURRENT,
 					   ns == current_namespace);
 	      old = MAYBE_STAT_DECL (*mslot);
 	    }
@@ -3428,7 +3428,7 @@ do_pushdecl (tree decl, bool is_friend)
 	{
 	  ns = current_namespace;
 	  slot = find_namespace_slot (ns, name, true);
-	  mslot = module_binding_slot (slot, name, current_module, true);
+	  mslot = module_binding_slot (slot, name, MODULE_SLOT_CURRENT, true);
 	  /* Update OLD to reflect the namespace we're going to be
 	     pushing into.  */
 	  old = MAYBE_STAT_DECL (*mslot);
@@ -3517,8 +3517,9 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   /* We know we'll eventually insert the decl, so we can create the
      slot now.  */
   tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
-  tree *mslot = module_binding_slot (slot, DECL_NAME (decl),
-				     mod_ix, is_ns);
+  tree *mslot = module_binding_slot
+    (slot, DECL_NAME (decl),
+     mod_ix == MODULE_PURVIEW ? mod_ix : MODULE_SLOT_CURRENT, is_ns);
   tree old = NULL_TREE;
 
   if (!mslot)
@@ -3647,7 +3648,9 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 		&& !DECL_NAMESPACE_ALIAS (value));
 
   tree *slot = find_namespace_slot (ns, name, true);
-  tree *mslot = module_binding_slot (slot, name, mod, is_ns ? -1 : 1);
+  tree *mslot = module_binding_slot
+    (slot, name, mod == MODULE_PURVIEW ? mod : MODULE_SLOT_CURRENT,
+     is_ns ? -1 : 1);
 
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
 
@@ -3724,7 +3727,9 @@ lookup_by_ident (tree ctx, unsigned mod, tree name, tree type, unsigned code)
       /* Although there must be a binding, we're dealing with
 	 untrustworthy data, so check for NULL.  */
       if (tree *slot = find_namespace_slot (ctx, name))
-	if (tree *mslot = module_binding_slot (slot, name, mod, 0))
+	if (tree *mslot = module_binding_slot
+	    (slot, name, mod == MODULE_PURVIEW ? mod : MODULE_SLOT_CURRENT,
+	     false))
 	  binding = *mslot;
       break;
 
@@ -7728,7 +7733,9 @@ add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
     }
 
   /* Now insert.  */
-  if (mod && TREE_CODE (*slot) == MODULE_VECTOR)
+  if (mod < MODULE_IMPORT_BASE)
+    mod = MODULE_SLOT_CURRENT;
+  else if (TREE_CODE (*slot) == MODULE_VECTOR)
     {
       /* See if we can extend the final slot.  */
       module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
