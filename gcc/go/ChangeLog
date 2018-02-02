@@ -1,3 +1,18 @@
+2018-02-02  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::type_size): Return 0 for
+	void_type_node.
+	(Gcc_backend::convert_expression): Don't convert if the type of
+	expr_tree is void_type_node.
+	(Gcc_backend::array_index_expression): Don't index if the type of
+	the array expression is void_type_node.
+	(Gcc_backend::init_statement): Don't initialize if the type of the
+	initializer expression is void_type_node.
+	(Gcc_backend::assignment_statement): Don't assign if the type of
+	either the left or right hand side is void_type_node.
+	(Gcc_backend::temporary_variable): Don't initialize if the type of
+	the initializer expression is void_type_node.
+
 2018-02-01  Cherry Zhang  <cherryyz@google.com>
 
 	* lang.opt (fgo-optimize): Remove RejectNegative.
