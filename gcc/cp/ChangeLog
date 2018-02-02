@@ -1,3 +1,8 @@
+2018-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84181 - ICE with lambda parm in template argument.
+	* tree.c (strip_typedefs_expr): Use cp_tree_operand_length.
+
 2018-02-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84160 - ICE with nested variadic capture.
