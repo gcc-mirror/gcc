@@ -6535,7 +6535,7 @@ extern void init_module_processing ();
 extern void finish_module ();
 extern void import_module (const cp_expr &, tree);
 extern tree module_name (unsigned);
-extern vec<tree, va_gc> *module_name_parts (unsigned);
+extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern tree module_context (tree);
 

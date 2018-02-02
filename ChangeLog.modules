@@ -1,5 +1,19 @@
 2018-02-02  Nathan Sidwell  <nathan@acm.org>
 
+	Use TREE_VEC for structured module names.
+	gcc/cp/
+	* cp-tree.h (module_name_parts): Replace with ...
+	(module_vec_name): ... this.
+	* mangle.c (maybe_write_modules): Adjust.
+	* module.c (module_state): Replace name_parts with vec_name.
+	(module_state::set_name): Add maybe_vec parm, construct TREE_VEC.
+	(module_vec_name): Replace ...
+	(module_name_parts): ... this.
+	(module_state::do_import): Construct flat name.
+	* parser.c (cp_parser_module_name): Construct TREE_VEC.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-1.C: Add error.
+
 	MODULE_PURVIEW bug fixing.
 	gcc/cp/
 	* decl2.c (c_parse_final_cleanups): Reset current_module.

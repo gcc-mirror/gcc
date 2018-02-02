@@ -878,11 +878,11 @@ maybe_write_module (tree decl)
   write_char ('W');
 
   /* Mangle the module.  */
-  vec<tree, va_gc> *parts = module_name_parts (mod_ix);
+  tree vec_name = module_vec_name (mod_ix);
 
   // FIXME: back-references?
-  for (unsigned ix = 0; ix < parts->length (); ix++)
-    write_source_name ((*parts)[ix]);
+  for (unsigned ix = 0; ix < TREE_VEC_LENGTH (vec_name); ix++)
+    write_source_name (TREE_VEC_ELT (vec_name, ix));
 
   // FIXME: promoted linkage?
 

@@ -1512,8 +1512,7 @@ struct GTY(()) module_state {
   bitmap exports;	/* Subset of that, that we're exporting.  */
 
   tree name;		/* Name of the module.  */
-  // FIXME:represent as TREE_VEC of IDENTIFIERS
-  vec<tree, va_gc> *name_parts;  /* Split parts of name.  */
+  tree vec_name;  	/* Name as a vector, if structured.  */
 
   vec<unsigned, va_gc_atomic> *remap; /* module num remapping.  */
   elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
@@ -1546,7 +1545,7 @@ struct GTY(()) module_state {
   void release (bool = true);
 
  public:
-  void set_name (tree name);
+  void set_name (tree name, tree sname);
   void push_location (char *filename);
   void pop_location ();
   void set_location (char *name)
@@ -2112,7 +2111,7 @@ static size_t module_path_max;
 
 module_state::module_state ()
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), name_parts (NULL),
+    name (NULL_TREE), vec_name (NULL),
     remap (NULL), from (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
     lazy (0), mod (MODULE_UNKNOWN), crc (0)
@@ -2224,42 +2223,36 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
-/* Set NAME and PARTS fields from incoming NAME.  We glued all the
-   identifiers together when parsing, and now we split them up
-   again.  */
-// FIXME  Perhaps a TREE_VEC of identifiers would be better? Oh well.
+/* Set NAME and VEC_NAME fields from incoming NAME & optional
+   vec_name.  */
+
 void
-module_state::set_name (tree name_)
+module_state::set_name (tree name_, tree maybe_vec)
 {
   name = name_;
 
-  size_t len = IDENTIFIER_LENGTH (name);
-  const char *ptr = IDENTIFIER_POINTER (name);
-  char *buffer = NULL;
-
-  const char *dot;
-  do
+  if (identifier_p (maybe_vec))
     {
-      dot = (const char *)memchr (ptr, '.', len);
-      size_t l = dot ? dot - ptr : len;
+      auto_vec<tree,5> ids;
+      size_t len = IDENTIFIER_LENGTH (maybe_vec);
+      const char *ptr = IDENTIFIER_POINTER (maybe_vec);
 
-      gcc_assert (l);
-
-      size_t id_l = l;
-      const char *id_p = ptr;
-
-      vec_safe_reserve (name_parts,
-			vec_safe_length (name_parts) + 1,
-			!name_parts && !dot);
-      name_parts->quick_push (get_identifier_with_length (id_p, id_l));
-      if (dot)
-	l++;
-      ptr += l;
-      len -= l;
+      while (const char *dot = (const char *)memchr (ptr, '.', len))
+	{
+	  tree id = get_identifier_with_length (ptr, dot - ptr);
+	  len -= dot - ptr + 1;
+	  ptr = dot + 1;
+	  ids.safe_push (id);
+	}
+      tree id = (ids.length () ? get_identifier_with_length (ptr, len)
+		 : maybe_vec);
+      ids.safe_push (id);
+      maybe_vec = make_tree_vec (ids.length ());
+      for (unsigned ix = ids.length (); ix--;)
+	TREE_VEC_ELT (maybe_vec, ix) = ids.pop ();
     }
-  while (dot);
 
-  XDELETEVEC (buffer);
+  vec_name = maybe_vec;
 }
 
 void
@@ -2791,10 +2784,10 @@ module_name (unsigned ix)
 /* Return the vector of IDENTIFIER_NODES naming module IX.  These are
    individual identifers per sub-module component.  */
 
-vec<tree, va_gc> *
-module_name_parts (unsigned ix)
+tree
+module_vec_name (unsigned ix)
 {
-  return (*modules)[ix]->name_parts;
+  return (*modules)[ix]->vec_name;
 }
 
 /* Return the bitmap describing what modules are imported into
@@ -6017,6 +6010,25 @@ module_state::do_import (location_t loc, tree name, bool module_p,
       lazy_init ();
     }
 
+  tree sname = name;
+  if (TREE_CODE (name) == TREE_VEC)
+    {
+      /* Create the flat name */
+      auto_vec<char> buffer;
+      for (int ix = 0; ix < TREE_VEC_LENGTH (name); ix++)
+	{
+	  tree elt = TREE_VEC_ELT (name, ix);
+	  size_t l = IDENTIFIER_LENGTH (elt);
+	  buffer.reserve (l + 2);
+	  if (ix)
+	    buffer.quick_push ('.');
+	  size_t len = buffer.length ();
+	  buffer.quick_grow (len + l);
+	  memcpy (&buffer[len], IDENTIFIER_POINTER (elt), l);
+	}
+      name = get_identifier_with_length (&buffer[0], buffer.length ());
+    }
+
   module_state **slot
     = module_hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
 					INSERT);
@@ -6039,7 +6051,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
       else
 	state = new (ggc_alloc<module_state> ()) module_state ();
 
-      state->set_name (name);
+      state->set_name (name, sname);
       *slot = state;
 
       if (module_p && export_p)

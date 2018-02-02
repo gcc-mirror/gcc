@@ -12553,11 +12553,7 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
    identifier
    module-name . identifier
 
-   Returns an identifer, concatenating the components, or NULL.
-
-   If it turns out that flattening the module names this way is too
-   expensive, we'll have to use a vector of identifiers, and a trie to
-   hash the imported set.  */
+   Returns an identifer or TREE_VEC of identifiers, or NULL.   */
 
 static cp_expr
 cp_parser_module_name (cp_parser *parser)
@@ -12569,32 +12565,22 @@ cp_parser_module_name (cp_parser *parser)
   if (cp_lexer_next_token_is (parser->lexer, CPP_DOT))
     {
       /* Concatenate dotted identifiers.  */
-      auto_vec<char> buffer;
-      size_t len = 0;
+      auto_vec<tree,5> ids;
 
       for (;;)
 	{
-	  size_t l = IDENTIFIER_LENGTH (name);
-
-	  buffer.reserve (len + l + 2);
-	  if (len)
-	    {
-	      buffer.quick_push ('.');
-	      len++;
-	    }
-	  buffer.quick_grow (len + l);
-	  memcpy (&buffer[len], IDENTIFIER_POINTER (name), l);
-	  len += l;
+	  ids.safe_push (name);
 	  if (!cp_lexer_next_token_is (parser->lexer, CPP_DOT))
 	    break;
 	  cp_lexer_consume_token (parser->lexer);
-	  token = cp_parser_require (parser, CPP_NAME, RT_NAME);
-	  if (!token)
-	    return NULL;
-	  name = token->u.value;
+	  cp_token *tok = cp_parser_require (parser, CPP_NAME, RT_NAME);
+	  if (!tok)
+	    break;
+	  name = tok->u.value;
 	}
-      buffer.quick_push (0);
-      name = get_identifier_with_length (&buffer[0], len);
+      name = make_tree_vec (ids.length ());
+      for (unsigned ix = ids.length (); ix--;)
+	TREE_VEC_ELT (name, ix) = ids.pop ();
     }
   return cp_expr (name, token->location);
 }
