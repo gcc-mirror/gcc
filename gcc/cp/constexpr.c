@@ -5369,7 +5369,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
 	{
-	  if (now && is_normal_capture_proxy (t))
+	  if (now && is_capture_proxy_with_ref (t))
 	    {
 	      /* -- in a lambda-expression, a reference to this or to a
 		 variable with automatic storage duration defined outside that
