@@ -194,7 +194,7 @@ static bool
 go_langhook_handle_option (
     size_t scode,
     const char *arg,
-    int value ATTRIBUTE_UNUSED,
+    int value,
     int kind ATTRIBUTE_UNUSED,
     location_t loc ATTRIBUTE_UNUSED,
     const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
@@ -251,7 +251,7 @@ go_langhook_handle_option (
       break;
 
     case OPT_fgo_optimize_:
-      ret = go_enable_optimize (arg) ? true : false;
+      ret = go_enable_optimize (arg, value) ? true : false;
       break;
 
     case OPT_fgo_pkgpath_:

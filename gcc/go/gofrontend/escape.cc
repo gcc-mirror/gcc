@@ -825,7 +825,7 @@ Escape_note::parse_tag(std::string* tag)
 
 // The -fgo-optimize-alloc flag activates this escape analysis.
 
-Go_optimize optimize_allocation_flag("allocs");
+Go_optimize optimize_allocation_flag("allocs", true);
 
 // A helper function to compute whether a function name has a
 // matching hash value.

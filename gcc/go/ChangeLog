@@ -1,3 +1,12 @@
+2018-02-01  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (fgo-optimize): Remove RejectNegative.
+	* go-c.h (go_enable_optimize): Update declaration to take value
+	argument.
+	* go-lang.c (go_langhook_handle_option): Pass value to
+	go_enable_optimize.
+	* gccgo.texi (Invoking gccgo): Update -fgo-optimize-allocs doc.
+
 2018-01-30  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::convert_tree): New private method.
