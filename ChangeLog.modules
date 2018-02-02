@@ -1,5 +1,14 @@
 2018-02-02  Nathan Sidwell  <nathan@acm.org>
 
+	Rename MODULE_INDEX->MODULE_OWNER
+	gcc/cp/
+	* cp-tree.h (MODULE_NONE, MODULE_PURVIEW, MODULE_IMPORT_BASE)
+	(MODULE_LIMIT): New, renamed from MODULE_INDEX_$FOO.
+	(DECL_MODULE_OWNER): New, renamed from DECL_MODULE_INDEX.
+	(MAYBE_DECL_MODULE_OWNER): Likewise.
+	(struct lang_decl_base): Rename module_index to module_owner.
+	* error.c, mangle.c, module.c, name-lookup.c, pt.c: Adjust.
+
 	Keep namespaces on global slot.
 	gcc/cp/
 	* cp-tree.h (MODULE_SLOT_CURRENT, MODULE_SLOT_GLOBAL): Renamed

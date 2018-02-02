@@ -1009,7 +1009,7 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
     {
       pp_character (pp, '@');
       pp->padding = pp_none;
-      dump_expr (pp, module_name (DECL_MODULE_INDEX (ctx)), 0);
+      dump_expr (pp, module_name (DECL_MODULE_OWNER (ctx)), 0);
     }
 }
 

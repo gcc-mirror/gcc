@@ -1529,17 +1529,18 @@ check_constraint_info (tree t)
 /* Module defines.  */
 
 /* Numbering for modules.   */
-// FIXME: Rename from INDEX
-#define MODULE_INDEX_NONE 0	/* Not in a module.  */
-#define MODULE_INDEX_PURVIEW 1  /* In current purview.  */
+#define MODULE_NONE 0		/* Not in a module.  */
+#define MODULE_PURVIEW 1	/* In current purview.  */
+#define MODULE_IMPORT_BASE 2	/* An import.  */
+#define MODULE_LIMIT (1 << MODULE_BITS)
+
+/* Slots in MODULE_VEC.   These differ from module numbering.  */
 #define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
 #define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
-#define MODULE_INDEX_IMPORT_BASE 2
-#define MODULE_INDEX_LIMIT (1<<MODULE_INDEX_BITS)
 
 /* The owning module of a DECL.  */
-#define DECL_MODULE_INDEX(N) \
-  (DECL_LANG_SPECIFIC (N)->u.base.module_index)
+#define DECL_MODULE_OWNER(N) \
+  (DECL_LANG_SPECIFIC (N)->u.base.module_owner)
 
 /* In module purview.  */
 #define DECL_MODULE_PURVIEW_P(N) \
@@ -1550,8 +1551,8 @@ check_constraint_info (tree t)
   TREE_LANG_FLAG_3 (DECL_CHECK (NODE))
 
 /* Any namespace-scope decl lacking lang-specific is in no module.  */
-#define MAYBE_DECL_MODULE_INDEX(N)				\
-  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_INDEX (N) : MODULE_INDEX_NONE)
+#define MAYBE_DECL_MODULE_OWNER(N)				\
+  (DECL_LANG_SPECIFIC (N) ? DECL_MODULE_OWNER (N) : MODULE_NONE)
 
 /* Any namespace-scope decl lacking lang-specific is not in the
    purview of a module.  */
@@ -2548,8 +2549,8 @@ struct GTY(()) lang_decl_base {
   unsigned var_declared_inline_p : 1;	   /* var */
 
   unsigned dependent_init_p : 1;	   /* var */
-#define MODULE_INDEX_BITS (14)
-  unsigned module_index : MODULE_INDEX_BITS;	/* Module index. */
+#define MODULE_BITS (14)
+  unsigned module_owner : MODULE_BITS;     /* Owning module. */
   unsigned module_purview_p : 1;	   /* In module purview. */
   /* No spare bits.  */
 };

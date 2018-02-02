@@ -122,14 +122,14 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 
   /* An assumption is that the fixed slots all reside in one cluster.  */
   gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
-		       >= MODULE_INDEX_IMPORT_BASE);
+		       >= MODULE_IMPORT_BASE);
 
   if (*slot && TREE_CODE (*slot) == MODULE_VECTOR)
     {
       clusters = MODULE_VECTOR_NUM_CLUSTERS (*slot);
       cluster = MODULE_VECTOR_CLUSTER_BASE (*slot);
 
-      if (ix < MODULE_INDEX_IMPORT_BASE)
+      if (ix < MODULE_IMPORT_BASE)
 	{
 	  /* There must always be slots for these indices  */
 	  gcc_assert (cluster->indices[ix].span == 1
@@ -192,7 +192,7 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 
   if (!offset)
     {
-      bool extra = MODULE_INDEX_IMPORT_BASE == MODULE_VECTOR_SLOTS_PER_CLUSTER;
+      bool extra = MODULE_IMPORT_BASE == MODULE_VECTOR_SLOTS_PER_CLUSTER;
       tree new_vec = make_module_vec (name, clusters + 1 + (!clusters && extra));
       cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
       if (clusters)
@@ -201,7 +201,7 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
       else
 	{
 	  /* Initialize the fixed slots.  */
-	  for (unsigned jx = MODULE_INDEX_IMPORT_BASE; jx--;)
+	  for (unsigned jx = MODULE_IMPORT_BASE; jx--;)
 	    {
 	      cluster->indices[jx].base = jx;
 	      cluster->indices[jx].span = 1;
@@ -215,7 +215,7 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
 	      && !DECL_NAMESPACE_ALIAS (*slot))
 	    cluster->slots[MODULE_SLOT_GLOBAL] = *slot;
 
-	  offset = MODULE_INDEX_IMPORT_BASE;
+	  offset = MODULE_IMPORT_BASE;
 	  if (offset == MODULE_VECTOR_SLOTS_PER_CLUSTER)
 	    {
 	      /* Move to the next cluster.  */

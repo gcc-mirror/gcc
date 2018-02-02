@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* (Incomplete) Design Notes
 
-   Each namespace-scope decl has a MODULE_INDEX and a MODULE_PURVIEW_P
+   Each namespace-scope decl has a MODULE_OWNER and a MODULE_PURVIEW_P
    flag.  The symbols for a particular module are held located in a
    sparse array hanging off the ns-level binding.  Both global module
    and module-specific are on the same slot.  The current TU is slot
@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
    have a smaller index than any module importing it (direct imports
    of course have a higher index than zero).  This scheme has the nice
    property that builtins and the global module get the expected
-   MODULE_INDEX of zero and MODULE_PURVIEW_P of false, without needing
+   MODULE_OWNER of zero and MODULE_PURVIEW_P of false, without needing
    special handling.
 
    I have not yet decided how to represent the decls for the same
@@ -107,8 +107,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Id for dumping module information.  */
 int module_dump_id;
 
-/* We have a few more special module indices.  */
-#define MODULE_INDEX_UNKNOWN (~0U)    /* Not yet known.  */
+/* We have a few more special module owners.  */
+#define MODULE_UNKNOWN (~0U)    /* Not yet known.  */
 
 /* Mangling for module files.  */
 #define MOD_FNAME_SFX ".nms" /* New Module System.  Honest.  */
@@ -2113,7 +2113,7 @@ module_state::module_state ()
     name (NULL_TREE), name_parts (NULL),
     remap (NULL), from (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
-    lazy (0), mod (MODULE_INDEX_UNKNOWN), crc (0)
+    lazy (0), mod (MODULE_UNKNOWN), crc (0)
 {
   imported = exported = false;
 }
@@ -2215,7 +2215,7 @@ module_state::announce (const char *what) const
   if (quiet_flag)
     return;
 
-  fprintf (stderr, mod < MODULE_INDEX_LIMIT ? " %s:%s:%u" : " %s:%s",
+  fprintf (stderr, mod < MODULE_LIMIT ? " %s:%s:%u" : " %s:%s",
 	   what, IDENTIFIER_POINTER (name), mod);
   fflush (stderr);
   pp_needs_newline (global_dc->printer) = true;
@@ -2308,7 +2308,7 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
   me.printf ("module:%s%c", IDENTIFIER_POINTER (name), 0);
 
   ctx.u (modules->length ());
-  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < modules->length (); ix++)
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
       dump () && dump ("Writing %simport %I (crc=%x)",
@@ -2342,11 +2342,11 @@ module_state::read_context (elf_in *from)
   vec_safe_reserve (remap, imports);
 
   /* Allocate the reserved slots.  */
-  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix--;)
+  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
     remap->quick_push (0);
 
   /* Read the import table.  */
-  for (unsigned ix = MODULE_INDEX_IMPORT_BASE; ix < imports; ix++)
+  for (unsigned ix = MODULE_IMPORT_BASE; ix < imports; ix++)
     {
       bool imported = ctx.b ();
       bool exported = ctx.b ();
@@ -2751,7 +2751,7 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
   if (this != (*modules)[0])
     {
       ix = modules->length ();
-      if (ix == MODULE_INDEX_LIMIT)
+      if (ix == MODULE_LIMIT)
 	{
 	  sorry ("too many modules loaded (limit is %u)", ix);
 	  from->set_error ();
@@ -2968,7 +2968,7 @@ trees_in::define_function (tree decl, tree maybe_template)
 
   if (TREE_CODE (CP_DECL_CONTEXT (maybe_template)) == NAMESPACE_DECL)
     {
-      unsigned mod = MAYBE_DECL_MODULE_INDEX (maybe_template);
+      unsigned mod = MAYBE_DECL_MODULE_OWNER (maybe_template);
       if (mod != state->mod)
 	{
 	  error ("unexpected definition of %q#D", decl);
@@ -3296,7 +3296,7 @@ trees_in::define_enum (tree type, tree)
     {
       /* Inject the members into the containing scope.  */
       tree ctx = CP_DECL_CONTEXT (TYPE_NAME (type));
-      unsigned mod_ix = DECL_MODULE_INDEX (TYPE_NAME (type));
+      unsigned mod_ix = DECL_MODULE_OWNER (TYPE_NAME (type));
 
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	for (; values; values = TREE_CHAIN (values))
@@ -5142,7 +5142,7 @@ trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
       if (ctx && (TREE_CODE (ctx) == NAMESPACE_DECL
 		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL))
 	// FIXME:maybe retrofit lang_decl?
-	DECL_MODULE_INDEX (t) = state->mod;
+	DECL_MODULE_OWNER (t) = state->mod;
     }
 
   if (!core_vals (t))
@@ -5407,7 +5407,7 @@ trees_out::tree_node (tree t)
       tree module_ctx = module_context (t);
       unsigned node_module = 0;
       if (module_ctx)
-	node_module = MAYBE_DECL_MODULE_INDEX (module_ctx);
+	node_module = MAYBE_DECL_MODULE_OWNER (module_ctx);
       u (node_module);
       if (node_module)
 	{
@@ -6002,7 +6002,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       modules->quick_push (current);
       current->mod = 0;
       module_state::lazy_init ();
-      for (unsigned ix = MODULE_INDEX_IMPORT_BASE; --ix;)
+      for (unsigned ix = MODULE_IMPORT_BASE; --ix;)
 	modules->quick_push (NULL);
     }
 
@@ -6104,7 +6104,7 @@ do_module_import (location_t loc, tree name, bool module_unit_p,
       /* A circular dependency cannot exist solely in the imported
          unit graph, it must go via the current TU, and we discover
          that differently.  */
-      gcc_assert (state->mod != MODULE_INDEX_UNKNOWN);
+      gcc_assert (state->mod != MODULE_UNKNOWN);
       if (module_unit_p)
 	{
 	  /* Cannot be module unit of an imported module.  */
@@ -6198,7 +6198,7 @@ finish_module ()
     {
       /* GC can clean up the detritus.  */
       module_hash = NULL;
-      for (unsigned ix = modules->length (); --ix >= MODULE_INDEX_IMPORT_BASE;)
+      for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
 	(*modules)[ix]->release ();
     }
 

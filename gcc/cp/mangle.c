@@ -873,7 +873,7 @@ maybe_write_module (tree decl)
   if (!MAYBE_DECL_MODULE_PURVIEW_P (ctx))
     return;
 
-  unsigned mod_ix = DECL_MODULE_INDEX (ctx);
+  unsigned mod_ix = DECL_MODULE_OWNER (ctx);
 
   write_char ('W');
 
