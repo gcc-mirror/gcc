@@ -962,6 +962,13 @@ Gcc_backend::fill_in_struct(Btype* fill,
     }
   TYPE_FIELDS(fill_tree) = field_trees;
   layout_type(fill_tree);
+
+  // Because Go permits converting between named struct types and
+  // equivalent struct types, for which we use VIEW_CONVERT_EXPR, and
+  // because we don't try to maintain TYPE_CANONICAL for struct types,
+  // we need to tell the middle-end to use structural equality.
+  SET_TYPE_STRUCTURAL_EQUALITY(fill_tree);
+
   return fill;
 }
 
