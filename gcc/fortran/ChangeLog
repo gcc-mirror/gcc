@@ -1,3 +1,10 @@
+2018-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84141
+	PR fortran/84155
+	* trans-array.c (gfc_array_init_size): Instead of gfc_get_dtype
+	use gfc_get_dtype_rank_type.
+
 2018-02-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR 83975

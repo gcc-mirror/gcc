@@ -1,3 +1,9 @@
+2018-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84141
+	PR fortran/84155
+	* gfortran.dg/pr84155.f90 : New test.
+
 2017-02-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/dec_parameter_1.f (sub1): Remove statement with no effect.
