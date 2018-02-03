@@ -1,3 +1,13 @@
+2018-02-03  Nathan Sidwell  <nathan@acm.org>
+
+	Deserializing uses an array (Nathan is a dumbass)
+	gcc/cp/
+	* module.c (trees_in): Delete count and tree_map. Add back_refs.
+	(trees_in::next): Delete.
+	(trees_in::insert): Append to array.
+	(trees_in::tree_node_special): Adjust.
+	(trees_in::tree_node): Likewise.
+
 2018-02-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -1637,20 +1637,12 @@ class trees_in : public bytes_in {
 
 private:
   module_state *state;
-  unsigned count;
-  vec<tree, va_gc> *global_vec;
-  uint_ptr_hash_map tree_map; /* ids to trees  */
+  vec<tree, va_gc> *fixed_refs;	/* Fixed trees. */
+  auto_vec<tree> back_refs;	/* Back references. */
 
 public:
   trees_in (module_state *, vec<tree, va_gc> *globals);
   ~trees_in ();
-
-  /* Allocate a new reference index.  */
-private:
-  unsigned next ()
-  {
-    return count++;
-  }
 
 public:
   void read ();
@@ -1688,12 +1680,8 @@ public:
 };
 
 trees_in::trees_in (module_state *state, vec<tree, va_gc> *globals)
-  :parent (), state (state), count (rt_ref_base), global_vec (globals),
-   tree_map (500)
+  :parent (), state (state), fixed_refs (globals), back_refs (500)
 {
-  /* Just reserve the tag space.  No need to actually insert them in
-     the map.  */
-  count += globals->length ();
 }
 
 trees_in::~trees_in ()
@@ -2875,9 +2863,8 @@ trees_out::insert (tree t)
 unsigned
 trees_in::insert (tree t)
 {
-  unsigned tag = next ();
-  bool existed = tree_map.put (tag, t);
-  gcc_assert (!existed);
+  unsigned tag = rt_ref_base + fixed_refs->length () + back_refs.length ();
+  back_refs.safe_push (t);
   return tag;
 }
 
@@ -5251,22 +5238,24 @@ trees_in::tree_node_special (unsigned tag)
   if (tag >= rt_ref_base)
     {
       tree res;
+      unsigned index = tag - rt_ref_base;
 
-      if (tag - rt_ref_base < global_vec->length ())
-	res = (*global_vec)[tag - rt_ref_base];
+      if (index  < fixed_refs->length ())
+	res = (*fixed_refs)[index];
       else
 	{
-	  tree *val = (tree *)tree_map.get (tag);
-	  if (!val || !*val)
+	  index -= fixed_refs->length ();
+	  if (index < back_refs.length ())
+	    res = back_refs[index];
+	  else
 	    {
 	      error ("unknown tree reference %qd", tag);
 	      set_overrun ();
-	      return NULL_TREE;
 	    }
-	  res = *val;
 	}
-      dump () && dump ("Read:%u found %C:%N%S", tag,
-		       TREE_CODE (res), res, res);
+      if (res)
+	dump () && dump ("Read:%u found %C:%N%S", tag,
+			 TREE_CODE (res), res, res);
       return res;
     }
 
@@ -5555,7 +5544,7 @@ trees_in::tree_node ()
   if (get_overrun ())
     {
     barf:
-      tree_map.put (tag, NULL_TREE);
+      back_refs[tag - fixed_refs->length () - rt_ref_base] = NULL_TREE;
       set_overrun ();
       dump.outdent ();
       return NULL_TREE;
@@ -5569,7 +5558,7 @@ trees_in::tree_node ()
 	{
 	  /* Update the mapping.  */
 	  t = found;
-	  tree_map.put (tag, t);
+	  back_refs[tag - fixed_refs->length () - rt_ref_base] = t;
 	  dump () && dump ("Index %u remapping %C:%N%S", tag,
 			   t ? TREE_CODE (t) : ERROR_MARK, t, t);
 	}
