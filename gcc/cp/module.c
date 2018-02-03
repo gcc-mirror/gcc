@@ -5778,7 +5778,7 @@ decl_set_module (tree decl)
 bool
 module_purview_p ()
 {
-  return modules && (*modules)[0]->name;
+  return modules && (*modules)[MODULE_PURVIEW];
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
@@ -5787,7 +5787,8 @@ module_purview_p ()
 bool
 module_interface_p ()
 {
-  return modules && (*modules)[0]->exported;
+  return (modules && (*modules)[MODULE_PURVIEW]
+	  && (*modules)[MODULE_PURVIEW]->exported);
 }
 
 /* Convert a module name into a file name.  The name is malloced.

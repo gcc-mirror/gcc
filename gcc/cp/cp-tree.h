@@ -1528,13 +1528,13 @@ check_constraint_info (tree t)
 
 /* Module defines.  */
 
-/* Numbering for modules.   */
-#define MODULE_NONE 0		/* Not in a module.  */
-#define MODULE_PURVIEW 1	/* In current purview.  */
+/* Module ownder numbers.   */
+#define MODULE_NONE 0		/* The global module.  */
+#define MODULE_PURVIEW 1	/* Current TU purview.  */
 #define MODULE_IMPORT_BASE 2	/* An import.  */
 #define MODULE_LIMIT (1 << MODULE_BITS)
 
-/* Slots in MODULE_VEC.   These differ from module numbering.  */
+/* Slots in MODULE_VEC.   These differ from module owner numbers.  */
 #define MODULE_SLOT_CURRENT 0	/* Slot for current TU.  */
 #define MODULE_SLOT_GLOBAL 1	/* Slot for merged global module. */
 
@@ -1630,7 +1630,7 @@ struct GTY(()) saved_scope {
   tree x_current_class_ptr;
   tree x_current_class_ref;
 
-  /* Current module index. */
+  /* Current module owner. */
   unsigned this_module;
 
   int x_processing_template_decl;
