@@ -7057,7 +7057,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	  DECL_ANTICIPATED (tdef) = 1;
 	  DECL_FRIEND_P (tdef) = 1;
 	}
-      else
+      else if (TREE_CODE (context) == NAMESPACE_DECL)
 	decl_set_module (tdef);
 
       decl = maybe_process_template_type_declaration

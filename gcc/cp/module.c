@@ -5762,6 +5762,9 @@ module_exporting_level ()
 void
 decl_set_module (tree decl)
 {
+  /* We should only be setting moduleness on namespace-scope things.  */
+  gcc_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL);
+
   // FIXME: check ill-formed linkage
   if (export_depth)
     DECL_MODULE_EXPORT_P (decl) = true;

@@ -8718,7 +8718,8 @@ grokfndecl (tree ctype,
       DECL_CONTEXT (decl) = ctype;
     }
 
-  decl_set_module (decl);
+  if (in_namespace || !ctype)
+    decl_set_module (decl);
 
   if (deletedp)
     DECL_DELETED_FN (decl) = 1;

@@ -1,4 +1,15 @@
+2018-02-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl.c (grokfndecl): Protect decl_set_module call.
+	* name-lookup,c (do_pushtag): Likewise.
+	* module.c (decl_set_module): Assert namespace context.
+
 2018-02-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h: Adjust comments.
+	* module.c (module_purview_p, module_interface_p): Adjust.
 
 	Deserializing uses an array (Nathan is a dumbass)
 	gcc/cp/
