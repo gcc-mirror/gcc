@@ -1,3 +1,11 @@
+2018-02-04  Dominique d'Humieres <dominiq@gcc.gnu.org>
+
+	PR fortran/84094
+	* gfortran.dg/associate_23.f90: Fix invalid code.
+	* gfortran.dg/intrinsic_actual_4.f90: Likewise.
+	* gfortran.dg/matmul_3.f90: Likewise.
+	* gfortran.dg/transfer_array_intrinsic_2.f90: Likewise.
+
 2018-02-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84115
