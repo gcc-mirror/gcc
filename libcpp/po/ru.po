@@ -2,13 +2,13 @@
 # Copyright (C) 2011 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
-# Yuri Kozlov <yuray@komyakino.ru>, 2011, 2012, 2013, 2014, 2015, 2016, 2017.
+# Yuri Kozlov <yuray@komyakino.ru>, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 7.1-b20170101\n"
+"Project-Id-Version: cpplib 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2017-01-04 09:30+0300\n"
+"PO-Revision-Date: 2018-02-04 10:01+0300\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <gnu@d07.ru>\n"
 "Language: ru\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Lokalize 1.5\n"
+"X-Generator: Lokalize 2.0\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: charset.c:674
@@ -439,10 +439,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "неверный префикс «0b» в плавающей константе"
 
 #: expr.c:666
-#, fuzzy
-#| msgid "use of C++1z hexadecimal floating constant"
 msgid "use of C++17 hexadecimal floating constant"
-msgstr "использование шестнадцатеричной константы с плавающей точкой согласно C++1z"
+msgstr "использование шестнадцатеричной константы с плавающей точкой согласно C++17"
 
 #: expr.c:669
 msgid "use of C99 hexadecimal floating constant"
@@ -696,13 +694,11 @@ msgstr "«%.*s» не является NFC"
 
 #: lex.c:1365
 msgid "__VA_OPT__ is not available until C++2a"
-msgstr ""
+msgstr "__VA_OPT__ недоступна до C++2a"
 
 #: lex.c:1372
-#, fuzzy
-#| msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
-msgstr "__VA_ARGS__ может появляться только в расширении вариативного макроса C++11"
+msgstr "__VA_OPT__ может появляться только в расширении вариативного макроса C++2a"
 
 #: lex.c:1403 lex.c:1495
 #, c-format
@@ -778,10 +774,8 @@ msgid "unspellable token %s"
 msgstr "неразбираемый токен %s"
 
 #: macro.c:93
-#, fuzzy
-#| msgid "'##' cannot appear at either end of a macro expansion"
 msgid "'##' cannot appear at either end of __VA_OPT__"
-msgstr "«##» не может указываться в конце макрорасширения"
+msgstr "«##» не может указываться в конце __VA_OPT__"
 
 #: macro.c:352
 #, c-format
