@@ -13,6 +13,7 @@
 
       implicit none
       integer i
+      intrinsic len
       i = len ("123")
       call sub (len, "abcdef")
       end

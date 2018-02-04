@@ -27,7 +27,7 @@ program test_this
 
 ! Found to be failing during debugging
   ASSOCIATE(should_work=>char_var_dim(1:2))
-    should_work = ["test SUCCESFUL", "test_SUCCESFUL", "test.SUCCESFUL"]
+    should_work = ["test SUCCESFUL", "test_SUCCESFUL"]
     write (buffer, *) should_work(:)(5:14)
   END ASSOCIATE
 
