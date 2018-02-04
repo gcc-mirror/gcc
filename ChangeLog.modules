@@ -1,6 +1,10 @@
 2018-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (decl_set_module): Set DECL_MODULE_OWNER.
+	* rtti.c (tinfo_base_init): Clear DECL_MODULE_OWNER.
+
+	gcc/cp/
 	* decl.c (grokfndecl): Protect decl_set_module call.
 	* name-lookup,c (do_pushtag): Likewise.
 	* module.c (decl_set_module): Assert namespace context.

@@ -5769,10 +5769,11 @@ decl_set_module (tree decl)
   if (export_depth)
     DECL_MODULE_EXPORT_P (decl) = true;
 
-  if (modules && (*modules)[0]->name)
+  if (modules && (*modules)[MODULE_PURVIEW])
     {
       retrofit_lang_decl (decl);
       DECL_MODULE_PURVIEW_P (decl) = true;
+      DECL_MODULE_OWNER (decl) = MODULE_PURVIEW;
     }
 }
 
