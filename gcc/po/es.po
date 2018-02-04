@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2018-01-30 08:06+0100\n"
+"PO-Revision-Date: 2018-02-05 14:05+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -9789,10 +9789,8 @@ msgid "Convert function return to call and return thunk."
 msgstr "el tipo de devolución de función no puede ser función"
 
 #: config/i386/i386.opt:1035
-#, fuzzy
-#| msgid "Known data alignment choices (for use with the -malign-data= option):"
 msgid "Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):"
-msgstr "Las opciones conocidas para alineamiento de datos (para usar con la opción -malign-data=):"
+msgstr "Opciones conocidas para ramificación indirecta (para usar con las opciones -mindirect-branch=/-mfunction-return=):"
 
 #: config/i386/i386.opt:1051
 msgid "Force indirect call and jump via register."
@@ -10684,10 +10682,8 @@ msgid "-mmcu=MCU\tSelect the target MCU."
 msgstr "-mmcu=MCU\tSelecciona el MCU destino."
 
 #: config/avr/avr.opt:31
-#, fuzzy
-#| msgid "Use subroutines for function prologues and epilogues."
 msgid "Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues."
-msgstr "Usa subrutinas para los prólogos y epílogos de función."
+msgstr "Permite el uso de pseudoinstrucciones __gcc_isr para los prólogos y epílogos de ISR."
 
 #: config/avr/avr.opt:35
 msgid "Set the number of 64 KiB flash segments."
@@ -11066,10 +11062,8 @@ msgid "Permit scheduling of a function's prologue sequence."
 msgstr "Permite la planificación de la secuencia de prólogo de funciones."
 
 #: config/arm/arm.opt:195
-#, fuzzy
-#| msgid "Specify the minimum bit alignment of structures."
 msgid "Specify the minimum bit alignment of structures. (Deprecated)."
-msgstr "Especifica la alineación mínima de bit de las estructuras."
+msgstr "Especifica la alineación mínima de bit de las estructuras. (Obsoleta)."
 
 #: config/arm/arm.opt:199
 msgid "Generate code for Thumb state."
@@ -11225,10 +11219,8 @@ msgid "Use UltraSPARC Fused Multiply-Add extensions."
 msgstr "Usa las extensiones Multiplicación-Adición de Corto Circuito de UltraSPARC."
 
 #: config/sparc/sparc.opt:98
-#, fuzzy
-#| msgid "Generate floating-point multiply-add instructions"
 msgid "Use Floating-point Multiply Single to Double (FsMULd) instruction."
-msgstr "Genera instrucciones multiply-add de coma flotante"
+msgstr "Usa instrucción de multiplicación de precisión sencilla a doble de coma flotante (FsMULd)."
 
 #: config/sparc/sparc.opt:102
 msgid "Use UltraSPARC Population-Count instruction."
@@ -11313,10 +11305,8 @@ msgid "Enable early gimple folding of builtins."
 msgstr "Desactiva la ubicación temprana de bits de paro"
 
 #: config/rs6000/rs6000.opt:188
-#, fuzzy
-#| msgid "%qs is deprecated"
 msgid "%<-mstring%> is deprecated"
-msgstr "%qs es obsoleto"
+msgstr "%<-mstring%> es obsoleto"
 
 #: config/rs6000/rs6000.opt:338
 msgid "Specify the maximum number of bytes to compare inline with non-looping code. If this is set to 0, all inline expansion (non-loop and loop) of memcmp is disabled."
@@ -12443,16 +12433,12 @@ msgid "Generate performance extension instructions."
 msgstr "Genera instrucciones de extensión del rendimiento."
 
 #: config/nds32/nds32.opt:66
-#, fuzzy
-#| msgid "Generate performance extension instructions."
 msgid "Generate performance extension version 2 instructions."
-msgstr "Genera instrucciones de extensión del rendimiento."
+msgstr "Genera instrucciones de la versión 2 de la extensión del rendimiento."
 
 #: config/nds32/nds32.opt:70
-#, fuzzy
-#| msgid "Generate performance extension instructions."
 msgid "Generate string extension instructions."
-msgstr "Genera instrucciones de extensión del rendimiento."
+msgstr "Genera instrucciones de extensión de cadenas."
 
 #: config/nds32/nds32.opt:74
 msgid "Generate v3 push25/pop25 instructions."
@@ -13544,16 +13530,12 @@ msgid "Enable use of NPS400 xld/xst extension."
 msgstr "Activa el uso de la extensión xld/xst del NPS400."
 
 #: config/arc/arc.opt:500
-#, fuzzy
-#| msgid "Specifies the number of registers to reserve for interrupt handlers."
 msgid "Specifies the registers that the processor saves on an interrupt entry and exit."
-msgstr "Especifica el número de registros a reservar para los manejadores de interrupciones."
+msgstr "Especifica los registros que guarda el procesador con la entrada y la salida de una interrupción."
 
 #: config/arc/arc.opt:504
-#, fuzzy
-#| msgid "Specifies the number of registers to reserve for interrupt handlers."
 msgid "Specifies the number of registers replicated in second register bank on entry to fast interrupt."
-msgstr "Especifica el número de registros a reservar para los manejadores de interrupciones."
+msgstr "Especifica el número de registros replicados en el segundo banco de registros con la entrada de interrupciones rápidas."
 
 #: config/arc/arc.opt:508
 msgid "Sets LP_COUNT register width.  Possible values are 8, 16, 20, 24, 28, and 32."
@@ -13561,7 +13543,7 @@ msgstr ""
 
 #: config/arc/arc.opt:533
 msgid "Enable 16-entry register file."
-msgstr ""
+msgstr "Activa fichero de registros de 16 entradas."
 
 #: lto/lang.opt:28
 #, c-format
@@ -13781,10 +13763,8 @@ msgid "Warn about optimizations that assume that signed overflow is undefined."
 msgstr "Desactiva las optimizaciones que asumen que un desbordamiento con signo está indefinido."
 
 #: common.opt:730
-#, fuzzy
-#| msgid "Warn about functions which might be candidates for __attribute__((const))."
 msgid "Warn about functions which might be candidates for __attribute__((cold))."
-msgstr "Avisa sobre funciones que pueden ser candidatas para __attribute__((const))."
+msgstr "Avisa sobre funciones que pueden ser candidatas para __attribute__((cold))."
 
 #: common.opt:734
 msgid "Warn about functions which might be candidates for __attribute__((const))."
@@ -13799,10 +13779,8 @@ msgid "Warn about functions which might be candidates for __attribute__((noretur
 msgstr "Avisa sobre funciones que pueden ser candidatas para __attribute((noreturn))."
 
 #: common.opt:746
-#, fuzzy
-#| msgid "Warn about functions which might be candidates for __attribute__((const))."
 msgid "Warn about functions which might be candidates for __attribute__((malloc))."
-msgstr "Avisa sobre funciones que pueden ser candidatas para __attribute__((const))."
+msgstr "Avisa sobre funciones que pueden ser candidatas para __attribute__((malloc))."
 
 #: common.opt:750
 msgid "Warn about C++ polymorphic types where adding final keyword would improve code quality."
