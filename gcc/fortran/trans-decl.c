@@ -1774,7 +1774,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Associate names can use the hidden string length variable
      of their associated target.  */
   if (sym->ts.type == BT_CHARACTER
-      && TREE_CODE (length) != INTEGER_CST)
+      && TREE_CODE (length) != INTEGER_CST
+      && TREE_CODE (sym->ts.u.cl->backend_decl) != INDIRECT_REF)
     {
       gfc_finish_var_decl (length, sym);
       gcc_assert (!sym->value);

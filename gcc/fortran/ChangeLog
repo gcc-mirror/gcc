@@ -1,3 +1,9 @@
+2018-02-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84115
+	* trans-decl.c (gfc_get_symbol_decl): Do not finish the decl of
+	'length' if the symbol charlen backend_decl is an indirect ref.
+
 2018-02-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84141

@@ -1,3 +1,9 @@
+2018-02-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84115
+	* gfortran.dg/associate_34.f90: New test.
+	* gfortran.dg/associate_35.f90: New test.
+
 2018-02-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84141
