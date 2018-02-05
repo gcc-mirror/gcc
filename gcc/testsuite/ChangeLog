@@ -1,3 +1,17 @@
+2018-02-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lib/lto.exp (lto_handle_diagnostics): Remove messages_by_file
+	argument and use dg-messages-by-file instead.  Expect it to be
+	an array rather than a dict.
+	(lto-link-and-maybe-run): Remove messages_by_file argument and
+	use an upvar for dg-messages-by-file.  Update call to
+	lto_handle_diagnostics.
+	(lt-get-options): Treat dg-messages-by-file as an array
+	rather than a dict.
+	(lto-get-options-main): Likewise.  Set the entry rather than appending.
+	(lto-execute): Treat dg-messages-by-file as an array rather than
+	a dict.  Update call to lto-link-and-maybe-run.
+
 2018-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82782
