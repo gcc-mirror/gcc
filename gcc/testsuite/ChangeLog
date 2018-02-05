@@ -1,3 +1,8 @@
+2018-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83369
+	gcc.dg/Wnonnull.c: New test.
+
 2018-02-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* lib/lto.exp (lto_handle_diagnostics): Remove messages_by_file
