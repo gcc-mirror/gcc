@@ -5311,11 +5311,12 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   // constant, then we do not evaluate the range variable.  len(x) is
   // a contant if x is a string constant or if x is an array.  If x is
   // a constant then evaluating it won't make any difference, so the
-  // only case to consider is when x is an array.
+  // only case to consider is when x is an array whose length is constant.
   bool eval = true;
-  if (this->value_var_ == NULL
+  if ((this->value_var_ == NULL || this->value_var_->is_sink_expression())
       && range_type->array_type() != NULL
-      && !range_type->is_slice_type())
+      && !range_type->is_slice_type()
+      && Builtin_call_expression::array_len_is_constant(this->range_))
     eval = false;
 
   Location loc = this->location();
@@ -5341,7 +5342,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   temp_block->add_statement(index_temp);
 
   Temporary_statement* value_temp = NULL;
-  if (this->value_var_ != NULL)
+  if (this->value_var_ != NULL && !this->value_var_->is_sink_expression())
     {
       value_temp = Statement::make_temporary(value_type, NULL, loc);
       temp_block->add_statement(value_temp);
@@ -5393,7 +5394,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
       Statement* assign;
       Expression* index_ref =
 	Expression::make_temporary_reference(index_temp, loc);
-      if (this->value_var_ == NULL)
+      if (this->value_var_ == NULL || this->value_var_->is_sink_expression())
 	assign = Statement::make_assignment(this->index_var_, index_ref, loc);
       else
 	{

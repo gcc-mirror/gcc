@@ -2406,6 +2406,11 @@ class Builtin_call_expression : public Call_expression
   is_builtin()
   { return true; }
 
+  // Return whether EXPR, of array type, is a constant if passed to
+  // len or cap.
+  static bool
+  array_len_is_constant(Expression* expr);
+
  protected:
   // This overrides Call_expression::do_lower.
   Expression*
