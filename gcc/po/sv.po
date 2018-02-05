@@ -1,8 +1,8 @@
 # Swedish messages for GCC.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018
 #
 # Reminder to translator: GCC team does not want RCS keywords in the header!
 #
@@ -21,10 +21,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 7.1.0\n"
+"Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2017-10-17 14:31+0200\n"
+"PO-Revision-Date: 2018-02-05 17:57+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -471,12 +471,12 @@ msgid "  -o <file>                Place the output into <file>.\n"
 msgstr "  -o <fil>                 Placera utdata i <fil>.\n"
 
 #: gcc.c:3478
-#, fuzzy
-#| msgid "  -pie                     Create a position independent executable.\n"
 msgid ""
 "  -pie                     Create a dynamically linked position independent\n"
 "                           executable.\n"
-msgstr "  -pie                     Skapa ett positionsoberoende körbart program.\n"
+msgstr ""
+"  -pie                     Skapa ett dynamiskt länkat positionsoberoende\n"
+"                           körbart program.\n"
 
 #: gcc.c:3480
 msgid "  -shared                  Create a shared library.\n"
@@ -767,10 +767,9 @@ msgstr ""
 "Fel på översättningen rapporteras till <tp-sv@listor.tp-sv.se>\n"
 
 #: gcov-tool.c:529
-#, fuzzy, c-format
-#| msgid "Copyright %s 2014-2017 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2018 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2014-2017 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2018 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:532 gcov.c:849
 #, c-format
@@ -843,16 +842,14 @@ msgid "  -i, --intermediate-format       Output .gcov file in intermediate text 
 msgstr "  -i, --intermediate-format       Skriv .gcov-filer i intermediärt textformat\n"
 
 #: gcov.c:821
-#, fuzzy, c-format
-#| msgid "  -m, --demangled-names           Output demangled function names\n"
+#, c-format
 msgid "  -j, --human-readable            Output human readable numbers\n"
-msgstr "  -m, --demangled-names           Skriv ut avmanglade funktionsnamn\n"
+msgstr "  -j, --human-readable            Skriv ut mänskligt läsbara tal\n"
 
 #: gcov.c:822
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -k, --use-colors                Emit colored output\n"
-msgstr "  -n, --no-output                 Skapa ingen utdatafil\n"
+msgstr "  -k, --use-colors                Mata ut färgad utdata\n"
 
 #: gcov.c:823
 #, c-format
@@ -906,10 +903,9 @@ msgid "  -v, --version                   Print version number, then exit\n"
 msgstr "  -v, --version                   Skriv ut versionsnummer, avsluta sedan\n"
 
 #: gcov.c:833
-#, fuzzy, c-format
-#| msgid "    -v, --verbose                       Verbose mode\n"
+#, c-format
 msgid "  -w, --verbose                   Print verbose informations\n"
-msgstr "    -v, --verbose                       Utförligt läge\n"
+msgstr "  -w, --verbose                   Skriv utförlig information\n"
 
 #: gcov.c:834
 #, c-format
@@ -947,10 +943,9 @@ msgid "\n"
 msgstr "\n"
 
 #: gcov.c:1300
-#, fuzzy, c-format
-#| msgid "cannot open intermediate ptx file"
+#, c-format
 msgid "Cannot open intermediate output file %s\n"
-msgstr "kan inte öppna intermediär ptx-fil"
+msgstr "Kan inte öppna intermediär utdatafil %s\n"
 
 #: gcov.c:1506
 #, c-format
@@ -1112,7 +1107,7 @@ msgstr "gren %2d aldrig utförd\n"
 #: gcov.c:2701
 #, c-format
 msgid " (BB %d)"
-msgstr ""
+msgstr " (GB %d)"
 
 #: gcov.c:2708
 #, c-format
@@ -1516,7 +1511,7 @@ msgstr "deklarationer som inte stämmer överens under optimeringar vid länktil
 
 #: cif-code.def:100
 msgid "variadic thunk call"
-msgstr ""
+msgstr "variadiskt snuttanrop"
 
 #: cif-code.def:104
 msgid "originally indirect function call not considered for inlining"
@@ -1738,12 +1733,12 @@ msgstr "Maximal storleksökning på stackram på grund av inline:ing (i procent)
 #: params.def:218
 #, no-c-format
 msgid "Size of the stack guard expressed as a power of two."
-msgstr ""
+msgstr "Storleken på stackvakten uttryckt som en potens av två."
 
 #: params.def:223
 #, no-c-format
 msgid "Interval in which to probe the stack expressed as a power of two."
-msgstr ""
+msgstr "Intervall inom vilket stacken skall testas uttryckt som en potens av två."
 
 #: params.def:230
 #, no-c-format
@@ -2201,7 +2196,7 @@ msgstr "Det maximala antalet instruktioner för att överväga att rulle ut i en
 #: params.def:804
 #, no-c-format
 msgid "The minimum stride ratio for loop interchange to be profitable"
-msgstr ""
+msgstr "Minimala stegförhållandet för att slingutväxling skall vara lönsamt"
 
 #: params.def:815
 #, no-c-format
@@ -2276,7 +2271,7 @@ msgstr "maximala antalet isl-operationer, 0 betyder obegränsat"
 #: params.def:907
 #, no-c-format
 msgid "whether codegen errors should be ICEs when -fchecking."
-msgstr ""
+msgstr "huruvida kodgenereringsfel skall vara ICE:er med -fchecking."
 
 #: params.def:913
 #, no-c-format
@@ -2331,7 +2326,7 @@ msgstr "Maximal storlek på loc-listan för vilken omvända operationer skall l�
 #: params.def:985
 #, no-c-format
 msgid "Max. count of debug markers to expand or inline."
-msgstr ""
+msgstr "Maximalt antal felsökningsmarkörer att expandera eller inline:a."
 
 #: params.def:992
 #, no-c-format
@@ -2619,12 +2614,12 @@ msgstr "Aktivera vektorisering av slingepiloger med mindre vektorstorlek."
 #: params.def:1321
 #, no-c-format
 msgid "Minimum percentage of memrefs that must go away for unroll-and-jam to be considered profitable."
-msgstr ""
+msgstr "Minimal procent av minnesreferenser som måste försvinna för att unroll-and-jam skall betraktas som lönsamt."
 
 #: params.def:1326
 #, no-c-format
 msgid "Maximum unroll factor for the unroll-and-jam transformation."
-msgstr ""
+msgstr "Maximal utrullningsfaktor för transformationen unroll-and-jam."
 
 #: params.def:1331
 #, fuzzy, no-c-format
@@ -4894,7 +4889,7 @@ msgstr "Fortran 2008: förlegad funktion:"
 
 #: fortran/error.c:874
 msgid "Fortran 2018:"
-msgstr ""
+msgstr "Fortran 2018:"
 
 #: fortran/error.c:880
 msgid "Fortran 2008 obsolescent feature:"
@@ -5320,7 +5315,7 @@ msgstr "Heltalsspill vid beräkning av mängden minne att allokera"
 #: fortran/trans-array.c:9258
 #, c-format
 msgid "The value of the PDT LEN parameter '%s' does not agree with that in the dummy declaration"
-msgstr ""
+msgstr "Värdet på PDT LEN-parametern ”%s” stämmer inte överens med den i atrappdeklarationen"
 
 #: fortran/trans-decl.c:5856
 #, c-format
@@ -5771,7 +5766,7 @@ msgstr "Varna för eventuellt saknade parenteser."
 
 #: fortran/lang.opt:250
 msgid "Warn if loops have been interchanged."
-msgstr ""
+msgstr "Varna om slingar har bytt plats."
 
 #: fortran/lang.opt:254
 msgid "Warn about function call elimination."
@@ -6033,7 +6028,7 @@ msgstr "-ffree-line-length-<n>\tAnvänd radlängd med n tecken i fri form."
 
 #: fortran/lang.opt:557
 msgid "Try to interchange loops if profitable."
-msgstr ""
+msgstr "För sök att byta plats på slingor om det lönar sig."
 
 #: fortran/lang.opt:561
 msgid "Enable front end optimization."
@@ -6732,7 +6727,7 @@ msgstr "Varna för saknade fält i postinitierare."
 
 #: c-family/c.opt:711
 msgid "Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for."
-msgstr ""
+msgstr "Varna för när osäkra makron som expanderar till flera satser används som kroppen i en klausul som if, else, while, switch eller for."
 
 #: c-family/c.opt:715
 msgid "Warn on direct multiple inheritance."
@@ -6744,7 +6739,7 @@ msgstr "Varna vid namnrymdsdefinition."
 
 #: c-family/c.opt:723
 msgid "Warn when fields in a struct with the packed attribute are misaligned."
-msgstr ""
+msgstr "Varna när fält i en post med attributet packed är feljusterade."
 
 #: c-family/c.opt:727
 msgid "Warn about missing sized deallocation functions."
@@ -6752,7 +6747,7 @@ msgstr "Varna för saknade storleksbestämda deallokeringsfunktioner."
 
 #: c-family/c.opt:731
 msgid "Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers."
-msgstr ""
+msgstr "Farna för misstänkta divisioner av två sizeof-uttryck som inte fungerar korrekt med pekare."
 
 #: c-family/c.opt:735
 msgid "Warn about suspicious length parameters to certain string functions if the argument uses sizeof."
@@ -6856,7 +6851,7 @@ msgstr "Varna när en vänfunktion som inte är en mall deklareras inuti en mall
 
 #: c-family/c.opt:829
 msgid "Warn for unsafe raw memory writes to objects of class types."
-msgstr ""
+msgstr "Varna för osäkra råa minnesskrivningar till objekt av klasstyper."
 
 #: c-family/c.opt:833
 msgid "Warn about non-virtual destructors."
@@ -7300,7 +7295,7 @@ msgstr "Faktorisera komplexa konstruerare och destruerare till förmån för utr
 
 #: c-family/c.opt:1383
 msgid "Print hierarchical comparisons when template types are mismatched."
-msgstr ""
+msgstr "Skriv ut hierarkiska jämförelser när malltyper inte stämmer överens."
 
 #: c-family/c.opt:1387
 msgid "Preprocess directives only."
@@ -7312,7 +7307,7 @@ msgstr "Tillåt ”$” som ett identifierartecken."
 
 #: c-family/c.opt:1395
 msgid "-fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE()."
-msgstr ""
+msgstr "-fmacro-prefix-map=<gammal>=<ny> Översätt ett katalognamn till ett annat i __FILE__, __BASE_FILE__ och __builtin_FILE()."
 
 #: c-family/c.opt:1399
 msgid "Write all declarations as Ada code transitively."
@@ -7324,7 +7319,7 @@ msgstr "Skriv alla deklarationer som Adakod endast för den angivna filen."
 
 #: c-family/c.opt:1410
 msgid "-fno-elide-type Do not elide common elements in template comparisons."
-msgstr ""
+msgstr "-fno-elide-type Utelämna inte gemensamma element i malljämförelser."
 
 #: c-family/c.opt:1414
 msgid "Generate code to check exception specifications."
@@ -7923,7 +7918,7 @@ msgstr "Mata ut felsökningsinformation relaterad till flyktanalyspasset när k�
 
 #: go/lang.opt:86
 msgid "-fgo-debug-escape-hash=<string>\tHash value to debug escape analysis."
-msgstr ""
+msgstr "-fgo-debug-escape-hash=<sträng>\tHashvärde för att felsöka flyktanalys."
 
 #: config/vms/vms.opt:27
 msgid "Malloc data into P2 space."
@@ -8610,7 +8605,7 @@ msgstr "De möjliga TLS-dialekterna:"
 
 #: config/aarch64/aarch64.opt:212
 msgid "-msve-vector-bits=N\tSet the number of bits in an SVE vector register to N."
-msgstr ""
+msgstr "-msve-vector-bits=N\tAnge antalet bitar i ett SVE-vektorregister till N."
 
 #: config/aarch64/aarch64.opt:216
 msgid "Enables verbose cost model dumping in the debug dump files."
@@ -8962,7 +8957,7 @@ msgstr "Undvik att använda instruktionerna DIV och MOD"
 
 #: config/ft32/ft32.opt:35
 msgid "target the FT32B architecture"
-msgstr ""
+msgstr "ha FT32B-arkitekturen som mål"
 
 #: config/ft32/ft32.opt:39
 #, fuzzy
@@ -8972,7 +8967,7 @@ msgstr "Aktivera kodhissning."
 
 #: config/ft32/ft32.opt:43
 msgid "Avoid placing any readable data in program memory"
-msgstr ""
+msgstr "Undvik att placera några läsbara data i programminnet"
 
 #: config/h8300/h8300.opt:23
 msgid "Generate H8S code."
@@ -9396,7 +9391,7 @@ msgstr "Kända ABI:er (att användas med flaggan -mabi=):"
 
 #: config/i386/i386.opt:547
 msgid "Use libgcc stubs to save and restore registers clobbered by 64-bit Microsoft to System V ABI calls."
-msgstr ""
+msgstr "Använd libgcc-stubbar för att spara och återställa register som skrivs över av 64-bitars Microsoft till System V ABI-anrop."
 
 #: config/i386/i386.opt:551 config/powerpcspe/powerpcspe.opt:189
 #: config/rs6000/rs6000.opt:208
@@ -9838,15 +9833,15 @@ msgstr "Stöd inbyggda MMX- och SSE-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:1008
 msgid "Specifically enables an indirect branch tracking feature from Control-flow Enforcment Technology (CET)."
-msgstr ""
+msgstr "Aktiverar specifikt en funktion för indirekt grenspårning från Control-flow Enforcement Technology (CET)."
 
 #: config/i386/i386.opt:1013
 msgid "Specifically enables an shadow stack support feature from Control-flow Enforcment Technology (CET)."
-msgstr ""
+msgstr "Aktiverar specifikt en funktion för stöd för skuggstack från Control-flow Enforcment Technology (CET)."
 
 #: config/i386/i386.opt:1018
 msgid "Turn on CET instrumentation for switch statements, which use jump table and indirect jump."
-msgstr ""
+msgstr "Slå på CET-instrumentering för switch-satser, som använder hopptabeller och indirekt hopp."
 
 #: config/i386/i386.opt:1023
 #, fuzzy
@@ -9856,7 +9851,7 @@ msgstr "Varna för eliminering av funktionsanrop."
 
 #: config/i386/i386.opt:1027
 msgid "Convert indirect call and jump to call and return thunks."
-msgstr ""
+msgstr "Konvertera indirekta anrop och hopp till anrop- och retursnuttar."
 
 #: config/i386/i386.opt:1031
 #, fuzzy
@@ -9872,7 +9867,7 @@ msgstr "Kända val av datajustering (att användas med flaggan -malign-data=):"
 
 #: config/i386/i386.opt:1051
 msgid "Force indirect call and jump via register."
-msgstr ""
+msgstr "Tvinga indirekta anrop och hopp via register."
 
 #: config/pa/pa64-hpux.opt:23
 msgid "Assume code will be linked by GNU ld."
@@ -10778,7 +10773,7 @@ msgstr "Aktivera stöd/användning av Läs-Ändra-Skriv- (RMW-)instruktioner."
 
 #: config/avr/avr.opt:53
 msgid "Use RJMP / RCALL even though CALL / JMP are available."
-msgstr ""
+msgstr "Använd RJMP/RCALL även om CALL/JMP är tillgängliga."
 
 #: config/avr/avr.opt:57
 msgid "Use an 8-bit 'int' type."
@@ -10794,7 +10789,7 @@ msgstr "Ställ in grenkostnaden för villkorliga greninstruktioner.  Rimliga vä
 
 #: config/avr/avr.opt:69
 msgid "Treat main as if it had attribute OS_task."
-msgstr ""
+msgstr "Behandla main som om den hade attributet OS_task."
 
 #: config/avr/avr.opt:79
 msgid "Change only the low 8 bits of the stack pointer."
@@ -11192,7 +11187,7 @@ msgstr "Använd Neons dubbelords- (snarare än quad-ords-)register för vektoris
 
 #: config/arm/arm.opt:259
 msgid "Enable more verbose RTX cost dumps during debug.  For GCC developers use only."
-msgstr ""
+msgstr "Aktivera mer utförliga RTX-kostnadsdumpar under felsökning.  Endast för GCC-utvecklare."
 
 #: config/arm/arm.opt:263
 msgid "Only generate absolute relocations on word sized values."
@@ -11228,11 +11223,11 @@ msgstr "Tillåt inte konstant data att placeras i kodsektioner."
 
 #: config/arm/arm.opt:296
 msgid "When linking for big-endian targets, generate a BE8 format image."
-msgstr ""
+msgstr "Vid länkning för mål med rak byteordning, generera en avbild i BE8-format."
 
 #: config/arm/arm.opt:300
 msgid "When linking for big-endian targets, generate a legacy BE32 format image."
-msgstr ""
+msgstr "Vid länkning för mål med rak byteordning, generera gammaldags avbild i BE32-format."
 
 #: config/arm/arm.opt:304 config/sh/sh.opt:195
 msgid "Cost to assume for a branch insn."
@@ -11393,11 +11388,11 @@ msgstr "%qs bör undvikas"
 
 #: config/rs6000/rs6000.opt:338
 msgid "Specify the maximum number of bytes to compare inline with non-looping code. If this is set to 0, all inline expansion (non-loop and loop) of memcmp is disabled."
-msgstr ""
+msgstr "Ange det maximala antalet byte att jämföra inline med icke-slingkod.  Om detta är satt till 0 är all inline-expansion (icke-slinga och slinga) av memcmp avaktiverad."
 
 #: config/rs6000/rs6000.opt:342
 msgid "Specify the maximum number of bytes to compare inline with loop code generation.  If the length is not known at compile time, memcmp will be called after this many bytes are compared. By default, a length will be picked depending on the tuning target."
-msgstr ""
+msgstr "Ange det maximala antalet byte att jämföra inline med slingkodgenerering.  OM längden inte är känd vid kompileringstillfället kommer memcmp att anropas efter att detta antal byte har jämförts.  Som standard kommer en längd att väljas beroende på trimningsmålet."
 
 #: config/alpha/alpha.opt:27
 msgid "Use fp registers."
@@ -12071,11 +12066,11 @@ msgstr "Använd generering av R2 CDX-instruktioner."
 
 #: config/nios2/nios2.opt:592
 msgid "Regular expression matching additional GP-addressible section names."
-msgstr ""
+msgstr "Reguljärt uttryck som matchar ytterligare GP-adresserbara sektionsnamn."
 
 #: config/nios2/nios2.opt:596
 msgid "Regular expression matching section names for r0-relative addressing."
-msgstr ""
+msgstr "Reguljärt uttryck som matchar sektionsnamn för r0-relativ adressering."
 
 #: config/rx/rx.opt:29
 msgid "Store doubles in 64 bits."
@@ -13349,7 +13344,7 @@ msgstr "Samma som -mA7."
 
 #: config/arc/arc.opt:58
 msgid "Force all calls to be made via a jli instruction."
-msgstr ""
+msgstr "Tvinga alla anrop att göras via en jli-instruktion."
 
 #: config/arc/arc.opt:62
 msgid "-mmpy-option=MPY Compile ARCv2 code with a multiplier design option."
@@ -13634,11 +13629,11 @@ msgstr "Anger antalet register som skall reserveras för avbrottshanterare."
 
 #: config/arc/arc.opt:508
 msgid "Sets LP_COUNT register width.  Possible values are 8, 16, 20, 24, 28, and 32."
-msgstr ""
+msgstr "Sätter LP_COUNT-registerbredd.  Möjliga värden är 8, 16, 20, 24, 28 och 32."
 
 #: config/arc/arc.opt:533
 msgid "Enable 16-entry register file."
-msgstr ""
+msgstr "Aktivera 16-posters registerfil."
 
 #: lto/lang.opt:28
 #, c-format
@@ -14493,7 +14488,7 @@ msgstr "Inline:a __atomic-operationer när en låsningsfri instruktionssekvens �
 
 #: common.opt:1636
 msgid "-fcf-protection=[full|branch|return|none]\tInstrument functions with checks to verify jump/call/return control-flow transfer instructions have valid targets."
-msgstr ""
+msgstr "-fcf-protection=[full|branch|return|none]\tInstrumentera funktioner med kontroller för att verifiera att jump/call/return-instruktioner för styrflödesövergångar har giltiga mål."
 
 #: common.opt:1640
 #, fuzzy, c-format
@@ -15114,7 +15109,7 @@ msgstr "Lägg in stackkontrollkod i programmet.  Samma som -fstack-check=specifi
 
 #: common.opt:2371
 msgid "Insert code to probe each page of stack space as it is allocated to protect from stack-clash style attacks."
-msgstr ""
+msgstr "Infoga kod för att prova varje sida av stackutrymme när den allokeras för att skydda från attacker av typen stackkollision."
 
 #: common.opt:2379
 msgid "-fstack-limit-register=<register>\tTrap if the stack goes past <register>."
@@ -15558,7 +15553,7 @@ msgstr "Generera felsökningsinformation i utökat STABS-format."
 
 #: common.opt:2949
 msgid "Emit progressive recommended breakpoint locations."
-msgstr ""
+msgstr "Mata ut progressiva rekommenderade brytpunktsplatser."
 
 #: common.opt:2953
 msgid "Don't emit DWARF additions beyond selected version."
@@ -16088,7 +16083,7 @@ msgstr "metoden %s%s%s är märkt go:nointerface"
 #: attribs.c:421
 #, gcc-internal-format
 msgid "ignoring attribute %qE in declaration of a built-in function %qD because it conflicts with attribute %qs"
-msgstr ""
+msgstr "ignorerar attributet %qE i deklarationen av en inbyggd funktion %qD för att det står i konflikt med attributet %qs"
 
 #: attribs.c:427
 #, fuzzy, gcc-internal-format
@@ -16626,7 +16621,7 @@ msgstr "i ett anrop av allokeringsfunktionen %qD deklarerad här"
 #: calls.c:1711
 #, gcc-internal-format
 msgid "%qD argument %i declared attribute %<nonstring%> is smaller than the specified bound %E"
-msgstr ""
+msgstr "Argument %2$i till %1$qD som är deklarerad med attributet %<nonstring%> är mindre än den angivna gränsen %3$E"
 
 #: calls.c:1716
 #, fuzzy, gcc-internal-format
@@ -17247,7 +17242,7 @@ msgstr "aux-fält satt för båge %s->%s"
 #: cgraph.c:3142
 #, gcc-internal-format
 msgid "cgraph count invalid"
-msgstr ""
+msgstr "cgraph-antalet är felaktigt"
 
 #: cgraph.c:3147
 #, gcc-internal-format
@@ -18662,11 +18657,11 @@ msgstr "argumentet %qE är inte en funktion"
 
 #: gimple-fold.c:1658
 msgid "%G%qD destination unchanged after copying no bytes from a string of length %E"
-msgstr ""
+msgstr "Destinationen för %G%qD är oförändrad efter att inga byte kopierades från en sträng av längden %E"
 
 #: gimple-fold.c:1663
 msgid "%G%qD destination unchanged after copying no bytes"
-msgstr ""
+msgstr "Destinationen för %G%qD är oförändrad efter att inga byte kopierades"
 
 #: gimple-fold.c:1699
 #, fuzzy
@@ -18682,11 +18677,11 @@ msgstr "utdata från direktivet %<%.*s%> avhugget när %wu byte skrevs till en r
 
 #: gimple-fold.c:1712
 msgid "%G%qD output truncated before terminating nul copying %E byte from a string of the same length"
-msgstr ""
+msgstr "Utdata för %G%qD avhuggen före avslutande null vid kopiering av %E byte från en sträng av samma längd"
 
 #: gimple-fold.c:1715
 msgid "%G%qD output truncated before terminating nul copying %E bytes from a string of the same length"
-msgstr ""
+msgstr "Utdata för %G%qD avhuggen före avslutande null vid kopiering av %E byte från en sträng av samma längd"
 
 #: gimple-fold.c:2060
 #, fuzzy
@@ -19107,35 +19102,35 @@ msgstr "argumentet till %<alloca%> är noll"
 
 #: gimple-ssa-warn-restrict.c:1296
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1298
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1302
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1304
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1312
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1315
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1324
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1326
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1338
 #, fuzzy
@@ -19157,55 +19152,55 @@ msgstr "direktivet %<%.*s%> skrev mellan %wu och %wu byte till en region med sto
 
 #: gimple-ssa-warn-restrict.c:1356
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av mellan %wu och %wu byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1370
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1372
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1378
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar mellan %wu och %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1385
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s överlappar %wu eller fler byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1407
 msgid "%G%qD accessing %wu byte may overlap %wu byte"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte kan överlappa %wu byte"
 
 #: gimple-ssa-warn-restrict.c:1409
 msgid "%G%qD accessing %wu bytes may overlap %wu byte"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte kan överlappa %wu byte"
 
 #: gimple-ssa-warn-restrict.c:1415
 msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1417
 msgid "%G%qD accessing %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1427
 msgid "%G%qD accessing %wu byte may overlap up to %wu bytes"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte kan överlappa upp till %wu byte"
 
 #: gimple-ssa-warn-restrict.c:1429
 msgid "%G%qD accessing %wu bytes may overlap up to %wu bytes"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte kan överlappa upp till %wu byte"
 
 #: gimple-ssa-warn-restrict.c:1435
 msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1437
 msgid "%G%qD accessing %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1449
 #, fuzzy
@@ -19227,19 +19222,19 @@ msgstr "%K%qD: att skriva mellan %wu och %wu byte till en region av storlek %wu 
 
 #: gimple-ssa-warn-restrict.c:1460
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av mellan %wu och %wu byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1470
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan överlappa %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1472
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD åtkomst av %wu eller fler byte på avstånden %s och %s kan överlappa upp till %wu byte på avståndet %s"
 
 #: gimple-ssa-warn-restrict.c:1530
 msgid "%G%qD pointer overflow between offset %s and size %s accessing array %qD with type %qT"
-msgstr ""
+msgstr "%G%qD pekarspill mellan avstånd %s och storlek %s vid åtkomst av vektorn %qD av typ %qT"
 
 #: gimple-ssa-warn-restrict.c:1534
 #, fuzzy, gcc-internal-format
@@ -19249,19 +19244,19 @@ msgstr "vektormedlem %q#D är deklarerad här"
 
 #: gimple-ssa-warn-restrict.c:1537 gimple-ssa-warn-restrict.c:1543
 msgid "%G%qD pointer overflow between offset %s and size %s"
-msgstr ""
+msgstr "%G%qD pekarspill mellan avstånd %s och storlek %s"
 
 #: gimple-ssa-warn-restrict.c:1561
 msgid "%G%qD forming offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
-msgstr ""
+msgstr "%G%qD formande avstånd %s är utanför gränserna [0, %wu] för objekt %qD med typen %qT"
 
 #: gimple-ssa-warn-restrict.c:1564
 msgid "%G%qD offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
-msgstr ""
+msgstr "%G%qD avstånd %s är utanför gränserna [0, %wu] för objekt %qD med typen %qT"
 
 #: gimple-ssa-warn-restrict.c:1570
 msgid "%G%qD forming offset %s is out of the bounds of object %qD with type %qT"
-msgstr ""
+msgstr "%G%qD formande avstånd %s är utanför gränserna för objekt %qD med typen %qT"
 
 #: gimple-ssa-warn-restrict.c:1572
 #, fuzzy
@@ -19280,11 +19275,11 @@ msgstr "%qD är deklarerad här"
 
 #: gimple-ssa-warn-restrict.c:1582
 msgid "%G%qD forming offset %s is out of the bounds [0, %wu]"
-msgstr ""
+msgstr "%G%qD formande avstånd %s är utanför gränserna [0, %wu]"
 
 #: gimple-ssa-warn-restrict.c:1584
 msgid "%G%qD offset %s is out of the bounds [0, %wu]"
-msgstr ""
+msgstr "%G%qD avstånd %s är utanför gränserna [0, %wu]"
 
 #: gimple-ssa-warn-restrict.c:1589
 #, fuzzy
@@ -19300,11 +19295,11 @@ msgstr "DIM-argument vid %L är utanför gränsen"
 
 #: gimple-ssa-warn-restrict.c:1601
 msgid "%G%qD offset %s from the object at %qE is out of the bounds of %qT"
-msgstr ""
+msgstr "%G%qD avstånd %s från objektet vid %qE är utanför gränserna] för %qT"
 
 #: gimple-ssa-warn-restrict.c:1610
 msgid "%G%qD offset %s from the object at %qE is out of the bounds of referenced subobject %qD with type %qT at offset %wu"
-msgstr ""
+msgstr "%G%qD avstånd %s från objektet vid %qE är utanför gränserna för refererat underobjekt %qD med typen %qT på avståndet %wu"
 
 #: gimple-ssa-warn-restrict.c:1783
 #, fuzzy
@@ -20680,7 +20675,7 @@ msgstr "-fsanitize=address är inkompatibel med -fsanitize=kernel-address"
 #: opts.c:977
 #, gcc-internal-format
 msgid "%<-fsanitize=pointer-subtract%> must be combined with %<-fsanitize=address%> or %<-fsanitize=kernel-address%>"
-msgstr ""
+msgstr "%<-fsanitize=pointer-subtract%> måste kombineras med %<-fsanitize=address%> eller %<-fsanitize=kernel-address%>"
 
 #: opts.c:985
 #, fuzzy, gcc-internal-format
@@ -21379,12 +21374,12 @@ msgstr "begärd minnesjustering %d är större än %d"
 #: stor-layout.c:1157
 #, gcc-internal-format
 msgid "%q+D offset %E in %qT isn%'t aligned to %u"
-msgstr ""
+msgstr "%q+D avstånd %E i %qT är inte justerad mot %u"
 
 #: stor-layout.c:1160
 #, gcc-internal-format
 msgid "%q+D offset %E in %qT may not be aligned to %u"
-msgstr ""
+msgstr "%q+D avstånd %E i %qT kan inte justeras mot %u"
 
 #: stor-layout.c:1292
 #, gcc-internal-format
@@ -21818,12 +21813,12 @@ msgstr "-fassociative-math avslagen, andra flaggor går före"
 #: toplev.c:1637
 #, gcc-internal-format
 msgid "%<-fstack-clash-protection%> is not supported on targets where the stack grows from lower to higher addresses"
-msgstr ""
+msgstr "%<-fstack-clash-protection%> stödjs inte på mål där stacken växer från lägre mot högre adresser"
 
 #: toplev.c:1647
 #, gcc-internal-format
 msgid "%<-fstack-check=%> and %<-fstack-clash_protection%> are mutually exclusive.  Disabling %<-fstack-check=%>"
-msgstr ""
+msgstr "%<-fstack-check=%> och %<-fstack-clash_protection%> är ömsesidigt uteslutand.  Avaktiverar %<-fstack-check=%>"
 
 #: toplev.c:1665
 #, gcc-internal-format
@@ -22281,7 +22276,7 @@ msgstr "ogiltiga typer i konvertering till heltal"
 #: tree-cfg.c:3935
 #, gcc-internal-format
 msgid "vec_duplicate should be from a scalar to a like vector"
-msgstr ""
+msgstr "vec_duplicate skall vara från en skalär till en liknande vektor"
 
 #: tree-cfg.c:3949
 #, gcc-internal-format
@@ -23795,7 +23790,7 @@ msgstr "registernamn angivet icke-registervariabel %q+D"
 #: varasm.c:1870
 #, gcc-internal-format
 msgid "Patchable function entry > size"
-msgstr ""
+msgstr "Patchbar funktionsingång > storlek"
 
 #: varasm.c:2069
 #, gcc-internal-format
@@ -23891,22 +23886,22 @@ msgstr "synlighetsattribut stödjs inte för denna konfiguration, ignoreras"
 #: vec.c:189
 #, gcc-internal-format, gfc-internal-format
 msgid "qsort comparator not anti-commutative: %d, %d"
-msgstr ""
+msgstr "qsort-jämförelse är inte antikommutativ: %d, %d"
 
 #: vec.c:194
 #, gcc-internal-format, gfc-internal-format
 msgid "qsort comparator non-negative on sorted output: %d"
-msgstr ""
+msgstr "qsort-jämförelsen är icke-negativ vid sorterad utdata: %d"
 
 #: vec.c:199
 #, gcc-internal-format, gfc-internal-format
 msgid "qsort comparator not transitive: %d, %d, %d"
-msgstr ""
+msgstr "qsort-jämförelse är inte transitiv: %d, %d, %d"
 
 #: vec.c:201
 #, gcc-internal-format
 msgid "qsort checking failed"
-msgstr ""
+msgstr "qsort-kontroll misslyckades"
 
 #: vr-values.c:2396
 #, gcc-internal-format
@@ -25105,12 +25100,12 @@ msgstr "%1$s stödjer inte %2$s med %4$s-formatet %<%%%3$c%>"
 #: c-family/c-format.c:1953
 #, gcc-internal-format, gfc-internal-format
 msgid "%s used within a quoted sequence"
-msgstr ""
+msgstr "%s använd inom en citerad sekvens"
 
 #: c-family/c-format.c:1966
 #, gcc-internal-format
 msgid "%qc conversion used unquoted"
-msgstr ""
+msgstr "%qc-konvertering använd utan citationstecken"
 
 #: c-family/c-format.c:2084 c-family/c-format.c:2415
 #, gcc-internal-format, gfc-internal-format
@@ -25226,22 +25221,22 @@ msgstr "Hantera #ident-direktiv."
 #: c-family/c-format.c:2902
 #, gcc-internal-format
 msgid "unmatched quoting directive"
-msgstr ""
+msgstr "omatchat citationsdirektiv"
 
 #: c-family/c-format.c:2917
 #, gcc-internal-format
 msgid "%qc directive redundant after prior occurence of the same"
-msgstr ""
+msgstr "%qc-direktiv är överflödigt efter tidigare förekomst av detsamma"
 
 #: c-family/c-format.c:2923
 #, gcc-internal-format
 msgid "unmatched color reset directive"
-msgstr ""
+msgstr "omatchat färgåterställningsdirektiv"
 
 #: c-family/c-format.c:2935
 #, gcc-internal-format
 msgid "%qc conversion used within a quoted sequence"
-msgstr ""
+msgstr "%qc-konvertering använt inuti en citerad sekvens"
 
 #: c-family/c-format.c:2975
 #, gcc-internal-format
@@ -26709,7 +26704,7 @@ msgstr "jämförelse mellan typer %qT och %qT"
 #: c-family/c-warn.c:1988
 #, gcc-internal-format
 msgid "comparison of integer expressions of different signedness: %qT and %qT"
-msgstr ""
+msgstr "jämförelse av heltalsuttryck av olika teckenläge: %qT och %qT"
 
 #: c-family/c-warn.c:2041
 #, gcc-internal-format
@@ -26787,12 +26782,12 @@ msgstr "detta villkor har identiska grenar"
 #: c-family/c-warn.c:2575
 #, gcc-internal-format
 msgid "macro expands to multiple statements"
-msgstr ""
+msgstr "makrot expanderar till flera satser"
 
 #: c-family/c-warn.c:2576
 #, gcc-internal-format
 msgid "some parts of macro expansion are not guarded by this %qs clause"
-msgstr ""
+msgstr "några delar av makroexpansionen är inte skyddad av denna %qs-klausul"
 
 #: c-family/cppspec.c:93
 #, gcc-internal-format
@@ -26827,12 +26822,12 @@ msgstr "Ej stött värde till mmpy-option"
 #: common/config/arm/arm-common.c:259
 #, gcc-internal-format, gfc-internal-format
 msgid "%%:target_mode_check takes an even number of parameters"
-msgstr ""
+msgstr "%%:target_mode_check tar ett jämnt antal parametrar"
 
 #: common/config/arm/arm-common.c:269
 #, gcc-internal-format, gfc-internal-format
 msgid "unrecognized option passed to %%:target_mode_check"
-msgstr ""
+msgstr "okänd flagga skickad till %%:target_mode_check"
 
 #: common/config/arm/arm-common.c:315 common/config/arm/arm-common.c:359
 #: common/config/arm/arm-common.c:402 config/aarch64/aarch64.c:10497
@@ -26886,7 +26881,7 @@ msgstr "%qD är inte namnet på en uppräkningstyp i %qT"
 #: common/config/arm/arm-common.c:572
 #, gcc-internal-format, gfc-internal-format
 msgid "%%:canon_for_mlib takes 1 or more pairs of parameters"
-msgstr ""
+msgstr "%%:canon_for_mlib tar 1 eller fler par med parametrar"
 
 #: common/config/arm/arm-common.c:586
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -27352,7 +27347,7 @@ msgstr "funktionsmodifieraren %qs är inkompatibel med %s %s"
 #: config/aarch64/aarch64.c:3654
 #, gcc-internal-format
 msgid "stack probes for SVE frames"
-msgstr ""
+msgstr "stackprov för SVE-ramar"
 
 #: config/aarch64/aarch64.c:10152
 #, gcc-internal-format, gfc-internal-format
@@ -27646,17 +27641,17 @@ msgstr "%s-%s är ett tomt intervall"
 #: config/arc/arc.c:1053
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid number in -mrgf-banked-regs=%s valid values are 0, 4, 8, 16, or 32"
-msgstr ""
+msgstr "felaktigt antal i -mrgf-banked-regs=%s giltiga värden är 0, 4, 8, 16 eller 32"
 
 #: config/arc/arc.c:1114
 #, gcc-internal-format
 msgid "option -mirq-ctrl-saved valid only for ARC v2 processors"
-msgstr ""
+msgstr "flaggan -mirq-ctrl-saved är giltig endast för ARC v2-processorer"
 
 #: config/arc/arc.c:1121
 #, gcc-internal-format
 msgid "option -mrgf-banked-regs valid only for ARC v2 processors"
-msgstr ""
+msgstr "flaggan -mrgf-banked-regs är giltigt endast för ARC v2-processorer"
 
 #. Check options against architecture options.  Throw an error if
 #. option is not allowed.
@@ -28083,7 +28078,7 @@ msgstr "APCS-återanropsbar kod stödjs inte.  Ignoreras"
 #: config/arm/arm.c:3438
 #, gcc-internal-format
 msgid "option %<-mstructure-size-boundary%> is deprecated"
-msgstr ""
+msgstr "flaggan %<-mstructure-size-boundary%> bör undvikas"
 
 #: config/arm/arm.c:3446
 #, gcc-internal-format
@@ -28158,7 +28153,7 @@ msgstr "målprocessorn stödjer inte ARMv8-M:s säkerhetstillägg"
 #: config/arm/arm.c:3745
 #, gcc-internal-format
 msgid "ARMv8-M Security Extensions incompatible with selected FPU"
-msgstr ""
+msgstr "ARMv8-M Security Extensions är inkompatibelt med den valda FPU:n"
 
 #: config/arm/arm.c:3756
 #, gcc-internal-format
@@ -29221,7 +29216,7 @@ msgstr "-mno-fentry är inte kompatibelt med SEH"
 #: config/i386/i386.c:4696
 #, gcc-internal-format
 msgid "-mcall-ms2sysv-xlogues isn%'t currently supported with SEH"
-msgstr ""
+msgstr "-mcall-ms2sysv-xlogues stödjs inte för närvarande med SEH"
 
 #: config/i386/i386.c:4761 config/powerpcspe/powerpcspe.c:5663
 #, gcc-internal-format, gfc-internal-format
@@ -29537,7 +29532,7 @@ msgstr "avbrottshanteringsrutiner kan inte anropas direkt"
 #: config/i386/i386.c:29761
 #, gcc-internal-format
 msgid "empty class %qT parameter passing ABI changes in -fabi-version=12 (GCC 8)"
-msgstr ""
+msgstr "den tomma klassen %qT parameterskickande ABI ändras i -fabi-version=12 (GCC 8)"
 
 #: config/i386/i386.c:32138
 #, gcc-internal-format
@@ -32258,7 +32253,7 @@ msgstr "-mfloat128 behöver VSX-stöd"
 #: config/rs6000/rs6000.c:4634
 #, gcc-internal-format
 msgid "The -mfloat128 option may not be fully supported"
-msgstr ""
+msgstr "Flaggan -mfloat128 kan inte stödjas helt"
 
 #: config/rs6000/rs6000.c:4657
 #, fuzzy, gcc-internal-format
@@ -32804,7 +32799,7 @@ msgstr "argumentet till %qs är för stort (max. %d)"
 #: config/s390/s390.c:15413
 #, gcc-internal-format
 msgid "-mno-pic-data-is-text-relative cannot be used without -fpic/-fPIC"
-msgstr ""
+msgstr "-mno-pic-data-is-text-relative kan inte användas utan -fpic/-fPIC"
 
 #. Value is not allowed for the target attribute.
 #: config/s390/s390.c:15594
@@ -35452,7 +35447,7 @@ msgstr "ISO C förbjuder utelämnande av den mittersta termen i ett ?: uttryck"
 #: c/c-parser.c:6866 cp/typeck.c:4452
 #, gcc-internal-format
 msgid "division %<sizeof (%T) / sizeof (%T)%> does not compute the number of array elements"
-msgstr ""
+msgstr "divisionen %<sizeof (%T) / sizeof (%T)%> beräknar inte antalet vektorelement"
 
 #: c/c-parser.c:6871 cp/typeck.c:4457
 #, fuzzy, gcc-internal-format
