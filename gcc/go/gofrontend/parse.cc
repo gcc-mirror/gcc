@@ -50,7 +50,6 @@ Parse::Parse(Lex* lex, Gogo* gogo)
     gogo_(gogo),
     break_stack_(NULL),
     continue_stack_(NULL),
-    iota_(0),
     enclosing_vars_()
 {
 }
@@ -1407,19 +1406,20 @@ Parse::const_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_CONST));
   this->advance_token();
-  this->reset_iota();
 
+  int iota = 0;
   Type* last_type = NULL;
   Expression_list* last_expr_list = NULL;
 
   if (!this->peek_token()->is_op(OPERATOR_LPAREN))
-    this->const_spec(&last_type, &last_expr_list);
+    this->const_spec(iota, &last_type, &last_expr_list);
   else
     {
       this->advance_token();
       while (!this->peek_token()->is_op(OPERATOR_RPAREN))
 	{
-	  this->const_spec(&last_type, &last_expr_list);
+	  this->const_spec(iota, &last_type, &last_expr_list);
+	  ++iota;
 	  if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	    this->advance_token();
 	  else if (!this->peek_token()->is_op(OPERATOR_RPAREN))
@@ -1440,7 +1440,7 @@ Parse::const_decl()
 // ConstSpec = IdentifierList [ [ CompleteType ] "=" ExpressionList ] .
 
 void
-Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
+Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
 {
   Typed_identifier_list til;
   this->identifier_list(&til);
@@ -1492,7 +1492,7 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
 	pi->set_type(type);
 
       if (!Gogo::is_sink_name(pi->name()))
-	this->gogo_->add_constant(*pi, *pe, this->iota_value());
+	this->gogo_->add_constant(*pi, *pe, iota);
       else
 	{
 	  static int count;
@@ -1500,14 +1500,12 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
 	  snprintf(buf, sizeof buf, ".$sinkconst%d", count);
 	  ++count;
 	  Typed_identifier ti(std::string(buf), type, pi->location());
-	  Named_object* no = this->gogo_->add_constant(ti, *pe, this->iota_value());
+	  Named_object* no = this->gogo_->add_constant(ti, *pe, iota);
 	  no->const_value()->set_is_sink();
 	}
     }
   if (pe != expr_list->end())
     go_error_at(this->location(), "too many initializers");
-
-  this->increment_iota();
 
   return;
 }
@@ -5836,30 +5834,6 @@ Parse::program()
 	  this->skip_past_error(OPERATOR_INVALID);
 	}
     }
-}
-
-// Reset the current iota value.
-
-void
-Parse::reset_iota()
-{
-  this->iota_ = 0;
-}
-
-// Return the current iota value.
-
-int
-Parse::iota_value()
-{
-  return this->iota_;
-}
-
-// Increment the current iota value.
-
-void
-Parse::increment_iota()
-{
-  ++this->iota_;
 }
 
 // Skip forward to a semicolon or OP.  OP will normally be

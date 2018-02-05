@@ -1928,10 +1928,16 @@ class Integer_expression : public Expression
   do_copy()
   {
     if (this->is_character_constant_)
-      return Expression::make_character(&this->val_, this->type_,
+      return Expression::make_character(&this->val_,
+					(this->type_ == NULL
+					 ? NULL
+					 : this->type_->copy_expressions()),
 					this->location());
     else
-      return Expression::make_integer_z(&this->val_, this->type_,
+      return Expression::make_integer_z(&this->val_,
+					(this->type_ == NULL
+					 ? NULL
+					 : this->type_->copy_expressions()),
 					this->location());
   }
 
@@ -2323,7 +2329,10 @@ class Float_expression : public Expression
 
   Expression*
   do_copy()
-  { return Expression::make_float(&this->val_, this->type_,
+  { return Expression::make_float(&this->val_,
+				  (this->type_ == NULL
+				   ? NULL
+				   : this->type_->copy_expressions()),
 				  this->location()); }
 
   Bexpression*
@@ -2514,7 +2523,10 @@ class Complex_expression : public Expression
   Expression*
   do_copy()
   {
-    return Expression::make_complex(&this->val_, this->type_,
+    return Expression::make_complex(&this->val_,
+				    (this->type_ == NULL
+				     ? NULL
+				     : this->type_->copy_expressions()),
 				    this->location());
   }
 
@@ -3420,6 +3432,16 @@ Type_conversion_expression::do_check_types(Gogo*)
   this->set_is_error();
 }
 
+// Copy.
+
+Expression*
+Type_conversion_expression::do_copy()
+{
+  return new Type_conversion_expression(this->type_->copy_expressions(),
+					this->expr_->copy(),
+					this->location());
+}
+
 // Get the backend representation for a type conversion.
 
 Bexpression*
@@ -3619,6 +3641,16 @@ Unsafe_type_conversion_expression::do_is_static_initializer() const
     return true;
 
   return false;
+}
+
+// Copy.
+
+Expression*
+Unsafe_type_conversion_expression::do_copy()
+{
+  return new Unsafe_type_conversion_expression(this->type_->copy_expressions(),
+					       this->expr_->copy(),
+					       this->location());
 }
 
 // Convert to backend representation.
@@ -12401,7 +12433,8 @@ Expression*
 Allocation_expression::do_copy()
 {
   Allocation_expression* alloc =
-    new Allocation_expression(this->type_, this->location());
+    new Allocation_expression(this->type_->copy_expressions(),
+			      this->location());
   if (this->allocate_on_stack_)
     alloc->set_allocate_on_stack();
   return alloc;
@@ -12639,6 +12672,22 @@ Struct_construction_expression::do_check_types(Gogo*)
 	}
     }
   go_assert(pv == this->vals()->end());
+}
+
+// Copy.
+
+Expression*
+Struct_construction_expression::do_copy()
+{
+  Struct_construction_expression* ret =
+    new Struct_construction_expression(this->type_->copy_expressions(),
+				       (this->vals() == NULL
+					? NULL
+					: this->vals()->copy()),
+				       this->location());
+  if (this->traverse_order() != NULL)
+    ret->set_traverse_order(this->traverse_order());
+  return ret;
 }
 
 // Flatten a struct construction expression.  Store the values into
@@ -13032,6 +13081,20 @@ Fixed_array_construction_expression::Fixed_array_construction_expression(
 				  type, indexes, vals, location)
 { go_assert(type->array_type() != NULL && !type->is_slice_type()); }
 
+
+// Copy.
+
+Expression*
+Fixed_array_construction_expression::do_copy()
+{
+  Type* t = this->type()->copy_expressions();
+  return new Fixed_array_construction_expression(t, this->indexes(),
+						 (this->vals() == NULL
+						  ? NULL
+						  : this->vals()->copy()),
+						 this->location());
+}
+
 // Return the backend representation for constructing a fixed array.
 
 Bexpression*
@@ -13164,6 +13227,19 @@ dump_slice_storage_expression(Ast_dump_context* ast_dump_context) const
     return;
   ast_dump_context->ostream() << "storage=" ;
   ast_dump_context->dump_expression(this->slice_storage_);
+}
+
+// Copy.
+
+Expression*
+Slice_construction_expression::do_copy()
+{
+  return new Slice_construction_expression(this->type()->copy_expressions(),
+					   this->indexes(),
+					   (this->vals() == NULL
+					    ? NULL
+					    : this->vals()->copy()),
+					   this->location());
 }
 
 // Return the backend representation for constructing a slice.
@@ -13377,6 +13453,18 @@ Map_construction_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	}
     }
+}
+
+// Copy.
+
+Expression*
+Map_construction_expression::do_copy()
+{
+  return new Map_construction_expression(this->type_->copy_expressions(),
+					 (this->vals_ == NULL
+					  ? NULL
+					  : this->vals_->copy()),
+					 this->location());
 }
 
 // Return the backend representation for constructing a map.
@@ -14058,6 +14146,23 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
   return new Map_construction_expression(type, this->vals_, location);
 }
 
+// Copy.
+
+Expression*
+Composite_literal_expression::do_copy()
+{
+  Composite_literal_expression* ret =
+    new Composite_literal_expression(this->type_->copy_expressions(),
+				     this->depth_, this->has_keys_,
+				     (this->vals_ == NULL
+				      ? NULL
+				      : this->vals_->copy()),
+				     this->all_are_names_,
+				     this->location());
+  ret->key_path_ = this->key_path_;
+  return ret;
+}
+
 // Dump ast representation for a composite literal expression.
 
 void
@@ -14232,6 +14337,16 @@ Type_guard_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	}
     }
+}
+
+// Copy.
+
+Expression*
+Type_guard_expression::do_copy()
+{
+  return new Type_guard_expression(this->expr_->copy(),
+				   this->type_->copy_expressions(),
+				   this->location());
 }
 
 // Return the backend representation for a type guard expression.
@@ -14961,7 +15076,8 @@ class Slice_value_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Slice_value_expression(this->type_, this->valptr_->copy(),
+    return new Slice_value_expression(this->type_->copy_expressions(),
+				      this->valptr_->copy(),
                                       this->len_->copy(), this->cap_->copy(),
                                       this->location());
   }
@@ -15222,7 +15338,7 @@ class Interface_value_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Interface_value_expression(this->type_,
+    return new Interface_value_expression(this->type_->copy_expressions(),
                                           this->first_field_->copy(),
                                           this->obj_->copy(), this->location());
   }
@@ -15317,7 +15433,9 @@ class Interface_mtable_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Interface_mtable_expression(this->itype_, this->type_,
+    Interface_type* itype = this->itype_->copy_expressions()->interface_type();
+    return new Interface_mtable_expression(itype,
+					   this->type_->copy_expressions(),
                                            this->is_pointer_, this->location());
   }
 
@@ -15803,6 +15921,13 @@ int
 Backend_expression::do_traverse(Traverse*)
 {
   return TRAVERSE_CONTINUE;
+}
+
+Expression*
+Backend_expression::do_copy()
+{
+  return new Backend_expression(this->bexpr_, this->type_->copy_expressions(),
+				this->location());
 }
 
 void
