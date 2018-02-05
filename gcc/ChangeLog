@@ -1,3 +1,29 @@
+2018-02-05  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/avx512dqintrin.h (_mm_mask_range_sd, _mm_maskz_range_sd,
+	_mm_mask_range_round_sd, _mm_maskz_range_round_sd, _mm_mask_range_ss,
+	_mm_maskz_range_ss, _mm_mask_range_round_ss,
+	_mm_maskz_range_round_ss): New intrinsics.
+	(__builtin_ia32_rangesd128_round)
+	(__builtin_ia32_rangess128_round): Remove.
+	(__builtin_ia32_rangesd128_mask_round,
+	__builtin_ia32_rangess128_mask_round): New builtins.
+	* config/i386/i386-builtin.def (__builtin_ia32_rangesd128_round,
+	__builtin_ia32_rangess128_round): Remove.
+	(__builtin_ia32_rangesd128_mask_round,
+	__builtin_ia32_rangess128_mask_round): New builtins.
+	* config/i386/sse.md (ranges<mode><round_saeonly_name>): Renamed to ...
+	(ranges<mode><mask_scalar_name><round_saeonly_scalar_name>): ... this.
+	((match_operand:VF_128 2 "<round_saeonly_nimm_predicate>"
+	"<round_saeonly_constraint>")): Changed to ...
+	((match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>"
+	"<round_saeonly_scalar_constraint>")): ... this.
+	("vrange<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|
+	%0, %1, %2<round_saeonly_op4>, %3}"): Changed to ...
+	("vrange<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2,
+	%1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1,
+	%2<round_saeonly_scalar_mask_op4>, %3}"): ... this.
+
 2018-02-02  Andrew Jenner  <andrew@codesourcery.com>
 
 	* config/powerpcspe/powerpcspe.opt: Add Undocumented to irrelevant
