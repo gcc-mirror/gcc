@@ -16158,16 +16158,10 @@ Numeric_constant::set_float(Type* type, const mpfr_t val)
   this->clear();
   this->classification_ = NC_FLOAT;
   this->type_ = type;
-
   // Numeric constants do not have negative zero values, so remove
   // them here.  They also don't have infinity or NaN values, but we
   // should never see them here.
-  int bits = 0;
-  if (type != NULL
-      && type->float_type() != NULL
-      && !type->float_type()->is_abstract())
-    bits = type->float_type()->bits();
-  if (Numeric_constant::is_float_zero(val, bits))
+  if (mpfr_zero_p(val))
     mpfr_init_set_ui(this->u_.float_val, 0, GMP_RNDN);
   else
     mpfr_init_set(this->u_.float_val, val, GMP_RNDN);
@@ -16181,50 +16175,8 @@ Numeric_constant::set_complex(Type* type, const mpc_t val)
   this->clear();
   this->classification_ = NC_COMPLEX;
   this->type_ = type;
-
-  // Avoid negative zero as in set_float.
-  int bits = 0;
-  if (type != NULL
-      && type->complex_type() != NULL
-      && !type->complex_type()->is_abstract())
-    bits = type->complex_type()->bits() / 2;
-
-  mpfr_t real;
-  mpfr_init_set(real, mpc_realref(val), GMP_RNDN);
-  if (Numeric_constant::is_float_zero(real, bits))
-    mpfr_set_ui(real, 0, GMP_RNDN);
-
-  mpfr_t imag;
-  mpfr_init_set(imag, mpc_imagref(val), GMP_RNDN);
-  if (Numeric_constant::is_float_zero(imag, bits))
-    mpfr_set_ui(imag, 0, GMP_RNDN);
-
   mpc_init2(this->u_.complex_val, mpc_precision);
-  mpc_set_fr_fr(this->u_.complex_val, real, imag, MPC_RNDNN);
-
-  mpfr_clear(real);
-  mpfr_clear(imag);
-}
-
-// Return whether VAL, at a precision of BITS, is zero.  BITS may be
-// zero in which case it is ignored.
-
-bool
-Numeric_constant::is_float_zero(const mpfr_t val, int bits)
-{
-  if (mpfr_zero_p(val))
-    return true;
-  switch (bits)
-    {
-    case 0:
-      return false;
-    case 32:
-      return mpfr_get_flt(val, GMP_RNDN) == 0;
-    case 64:
-      return mpfr_get_d(val, GMP_RNDN) == 0;
-    default:
-      go_unreachable();
-    }
+  mpc_set(this->u_.complex_val, val, MPC_RNDNN);
 }
 
 // Get an int value.
