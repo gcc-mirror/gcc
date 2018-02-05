@@ -3,9 +3,8 @@
    the build not reproducible.  Other skipped options could be tested here
    as well.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -gdwarf -dA -fdebug-prefix-map=a=b" } */
-/* { dg-final { scan-assembler "DW_AT_producer: \"GNU C" { target { { { ! *-*-solaris2* } || gas } && { ! hppa*64*-*-* } } } } } */
-/* { dg-final { scan-assembler "\"GNU C\[^\\n\\r\]+ DW_AT_producer" { target { { *-*-solaris2* && { ! gas } } || { hppa*64*-*-* } } } } } */
+/* { dg-options "-O2 -gdwarf -dA -fno-merge-debug-strings -fdebug-prefix-map=a=b" } */
+/* { dg-final { scan-assembler "\"GNU C\[^\\n\\r\]+ DW_AT_producer" } } */
 /* { dg-final { scan-assembler-not "debug-prefix-map" } } */
 
 void func (void)
