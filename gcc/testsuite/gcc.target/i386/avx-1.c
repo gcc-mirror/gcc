@@ -416,8 +416,10 @@
 #define __builtin_ia32_reducesd_mask(A, B, F, W, U) __builtin_ia32_reducesd_mask(A, B, 1, W, U)
 #define __builtin_ia32_reduceps512_mask(A, E, C, D) __builtin_ia32_reduceps512_mask(A, 1, C, D)
 #define __builtin_ia32_reducepd512_mask(A, E, C, D) __builtin_ia32_reducepd512_mask(A, 1, C, D)
-#define __builtin_ia32_rangess128_round(A, B, I, F) __builtin_ia32_rangess128_round(A, B, 1, 8)
-#define __builtin_ia32_rangesd128_round(A, B, I, F) __builtin_ia32_rangesd128_round(A, B, 1, 8)
+#define __builtin_ia32_rangess128_mask_round(A, B, I, D, E, F) \
+    __builtin_ia32_rangess128_mask_round(A, B, 1, D, E, 8)
+#define __builtin_ia32_rangesd128_mask_round(A, B, I, D, E, F) \
+    __builtin_ia32_rangesd128_mask_round(A, B, 1, D, E, 8)
 #define __builtin_ia32_rangeps512_mask(A, B, I, D, E, F) __builtin_ia32_rangeps512_mask(A, B, 1, D, E, 8)
 #define __builtin_ia32_rangepd512_mask(A, B, I, D, E, F) __builtin_ia32_rangepd512_mask(A, B, 1, D, E, 8)
 #define __builtin_ia32_inserti64x2_512_mask(A, B, F, D, E) __builtin_ia32_inserti64x2_512_mask(A, B, 1, D, E)
