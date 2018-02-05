@@ -1,3 +1,9 @@
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/83879
+	* doc/gcov.texi: Document necessity of --dynamic-list-data when
+	using dlopen functionality.
+
 2018-02-05  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* config/i386/avx512dqintrin.h (_mm_mask_range_sd, _mm_maskz_range_sd,
