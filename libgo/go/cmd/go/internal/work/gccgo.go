@@ -258,6 +258,9 @@ func (tools gccgoToolchain) link(b *Builder, root *Action, out, importcfg string
 					nl = append(nl, b)
 					start = false
 				}
+				if len(nl) > 0 {
+					cgoldflags = append(cgoldflags, string(nl))
+				}
 			}
 		}
 		return nil
