@@ -1,3 +1,9 @@
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_flags.inc: Cherry-pick upstream r323995.
+	* asan/asan_report.cc (CheckForInvalidPointerPair):
+	Cherry-pick upstream r323995.
+
 2018-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR sanitizer/82825

@@ -1,3 +1,14 @@
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/pointer-compare-1.c: Adjust ASAN_OPTIONS
+	options.
+	* c-c++-common/asan/pointer-compare-2.c: Likewise.
+	* c-c++-common/asan/pointer-subtract-1.c: Likewise.
+	* c-c++-common/asan/pointer-subtract-2.c: Likewise.
+	* c-c++-common/asan/pointer-subtract-3.c: Likewise.
+	* c-c++-common/asan/pointer-subtract-4.c: Likewise.
+	* c-c++-common/asan/pointer-compare-3.c: New test.
+
 2018-02-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.target/aarch64/sve/vcond_4.c: Remove XFAILs.

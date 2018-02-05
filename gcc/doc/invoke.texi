@@ -11165,8 +11165,9 @@ The option must be combined with either @option{-fsanitize=kernel-address} or
 The option cannot be combined with @option{-fsanitize=thread}
 and/or @option{-fcheck-pointer-bounds}.
 Note: By default the check is disabled at run time.  To enable it,
-add @code{detect_invalid_pointer_pairs=1} to the environment variable
-@env{ASAN_OPTIONS}.
+add @code{detect_invalid_pointer_pairs=2} to the environment variable
+@env{ASAN_OPTIONS}. Using @code{detect_invalid_pointer_pairs=1} detects
+invalid operation only when both pointers are non-null.
 
 @item -fsanitize=pointer-subtract
 @opindex fsanitize=pointer-subtract
@@ -11176,8 +11177,9 @@ The option must be combined with either @option{-fsanitize=kernel-address} or
 The option cannot be combined with @option{-fsanitize=thread}
 and/or @option{-fcheck-pointer-bounds}.
 Note: By default the check is disabled at run time.  To enable it,
-add @code{detect_invalid_pointer_pairs=1} to the environment variable
-@env{ASAN_OPTIONS}.
+add @code{detect_invalid_pointer_pairs=2} to the environment variable
+@env{ASAN_OPTIONS}. Using @code{detect_invalid_pointer_pairs=1} detects
+invalid operation only when both pointers are non-null.
 
 @item -fsanitize=thread
 @opindex fsanitize=thread
