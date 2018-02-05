@@ -1,3 +1,7 @@
+2018-02-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* ira.c (ira_init_register_move_cost): Adjust comment.
+
 2018-02-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84137

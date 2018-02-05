@@ -1578,8 +1578,10 @@ ira_init_register_move_cost (machine_mode mode)
   ira_assert (ira_register_move_cost[mode] == NULL
 	      && ira_may_move_in_cost[mode] == NULL
 	      && ira_may_move_out_cost[mode] == NULL);
-  /* have_regs_of_mode[mode] might be false because it might be
-     E_<mode> (see genmodes) of pseudo with <mode>.  */
+  /* Note that we might be asked about the move costs of modes that
+     cannot be stored in any hard register, for example if an inline
+     asm tries to create a register operand with an impossible mode.
+     We therefore can't assert have_regs_of_mode[mode] here.  */
   for (cl1 = 0; cl1 < N_REG_CLASSES; cl1++)
     for (cl2 = 0; cl2 < N_REG_CLASSES; cl2++)
       {
