@@ -1,3 +1,11 @@
+2018-02-05  Marek Polacek  <polacek@redhat.com>
+
+	* class.c: Remove unused global variables.
+	(build_primary_vtable): Don't gather statistics.
+	(print_class_statistics): Remove.
+	* cp-tree.h (print_class_statistics): Remove.
+	* tree.c (cxx_print_statistics): Don't call print_class_statistics.
+
 2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* class.c (is_really_empty_class): Use DECL_UNNAMED_BIT_FIELD.
