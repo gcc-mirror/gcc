@@ -2831,7 +2831,6 @@ extern int depth_reached;
 void
 cxx_print_statistics (void)
 {
-  print_class_statistics ();
   print_template_statistics ();
   if (GATHER_STATISTICS)
     fprintf (stderr, "maximum template instantiation depth reached: %d\n",
