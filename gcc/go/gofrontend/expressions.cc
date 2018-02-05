@@ -7497,6 +7497,11 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
     {
       len_arg = *parg;
       len_arg->determine_type(&int_context);
+      if (len_arg->type()->integer_type() == NULL)
+	{
+	  go_error_at(len_arg->location(), "non-integer len argument in make");
+	  return Expression::make_error(this->location());
+	}
       if (!this->check_int_value(len_arg, true, &len_small))
 	return Expression::make_error(this->location());
       ++parg;
@@ -7512,6 +7517,11 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
     {
       cap_arg = *parg;
       cap_arg->determine_type(&int_context);
+      if (cap_arg->type()->integer_type() == NULL)
+	{
+	  go_error_at(cap_arg->location(), "non-integer cap argument in make");
+	  return Expression::make_error(this->location());
+	}
       if (!this->check_int_value(cap_arg, false, &cap_small))
 	return Expression::make_error(this->location());
 
@@ -8306,12 +8316,19 @@ Builtin_call_expression::do_type()
       return Type::make_error_type();
 
     case BUILTIN_NEW:
-    case BUILTIN_MAKE:
       {
 	const Expression_list* args = this->args();
 	if (args == NULL || args->empty())
 	  return Type::make_error_type();
 	return Type::make_pointer_type(args->front()->type());
+      }
+
+    case BUILTIN_MAKE:
+      {
+	const Expression_list* args = this->args();
+	if (args == NULL || args->empty())
+	  return Type::make_error_type();
+	return args->front()->type();
       }
 
     case BUILTIN_CAP:
