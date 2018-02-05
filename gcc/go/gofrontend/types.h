@@ -916,6 +916,15 @@ class Type
   is_unsafe_pointer_type() const
   { return this->points_to() != NULL && this->points_to()->is_void_type(); }
 
+  // Return a version of this type with any expressions copied, but
+  // only if copying the expressions will affect the size of the type.
+  // If there are no such expressions in the type (expressions can
+  // only occur in array types), just return the same type.  If any
+  // expressions can not affect the size of the type, just return the
+  // same type.
+  Type*
+  copy_expressions();
+
   // Look for field or method NAME for TYPE.  Return an expression for
   // it, bound to EXPR.
   static Expression*
@@ -2443,6 +2452,11 @@ class Struct_type : public Type
   size_t
   field_count() const
   { return this->fields_->size(); }
+
+  // Location of struct definition.
+  Location
+  location() const
+  { return this->location_; }
 
   // Push a new field onto the end of the struct.  This is used when
   // building a closure variable.

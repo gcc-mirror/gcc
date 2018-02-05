@@ -1664,11 +1664,7 @@ class Type_conversion_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Type_conversion_expression(this->type_, this->expr_->copy(),
-					  this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context* context);
@@ -1720,12 +1716,7 @@ class Unsafe_type_conversion_expression : public Expression
   { this->expr_->determine_type_no_context(); }
 
   Expression*
-  do_copy()
-  {
-    return new Unsafe_type_conversion_expression(this->type_,
-						 this->expr_->copy(),
-						 this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3430,19 +3421,7 @@ class Composite_literal_expression : public Parser_expression
   do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Expression*
-  do_copy()
-  {
-    Composite_literal_expression *ret =
-      new Composite_literal_expression(this->type_, this->depth_,
-				       this->has_keys_,
-				       (this->vals_ == NULL
-					? NULL
-					: this->vals_->copy()),
-				       this->all_are_names_,
-				       this->location());
-    ret->key_path_ = this->key_path_;
-    return ret;
-  }
+  do_copy();
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3556,18 +3535,7 @@ class Struct_construction_expression : public Expression,
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    Struct_construction_expression* ret =
-      new Struct_construction_expression(this->type_,
-					 (this->vals() == NULL
-					  ? NULL
-					  : this->vals()->copy()),
-					 this->location());
-    if (this->traverse_order() != NULL)
-      ret->set_traverse_order(this->traverse_order());
-    return ret;
-  }
+  do_copy();
 
   Expression*
   do_flatten(Gogo*, Named_object*, Statement_inserter*);
@@ -3671,15 +3639,7 @@ class Fixed_array_construction_expression :
 
  protected:
   Expression*
-  do_copy()
-  {
-    return new Fixed_array_construction_expression(this->type(),
-						   this->indexes(),
-						   (this->vals() == NULL
-						    ? NULL
-						    : this->vals()->copy()),
-						   this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3712,14 +3672,7 @@ class Slice_construction_expression : public Array_construction_expression
   do_traverse(Traverse* traverse);
 
   Expression*
-  do_copy()
-  {
-    return new Slice_construction_expression(this->type(), this->indexes(),
-					     (this->vals() == NULL
-					      ? NULL
-					      : this->vals()->copy()),
-					     this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3778,14 +3731,7 @@ class Map_construction_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Map_construction_expression(this->type_,
-					   (this->vals_ == NULL
-					    ? NULL
-					    : this->vals_->copy()),
-					   this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -3846,11 +3792,7 @@ class Type_guard_expression : public Expression
   do_check_types(Gogo*);
 
   Expression*
-  do_copy()
-  {
-    return new Type_guard_expression(this->expr_->copy(), this->type_,
-				     this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*);
@@ -4102,10 +4044,7 @@ class Backend_expression : public Expression
   { }
 
   Expression*
-  do_copy()
-  {
-    return new Backend_expression(this->bexpr_, this->type_, this->location());
-  }
+  do_copy();
 
   Bexpression*
   do_get_backend(Translate_context*)
