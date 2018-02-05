@@ -1,3 +1,13 @@
+2018-02-05  Nathan Sidwell  <nathan@acm.org>
+
+	Fix bootstrap
+	gcc/cp/
+	* module.c (elf): Clean up consts.
+	(module_state::record_namespace): Comment args.
+	(module_state::read_namespace): Comment unused vars.
+	(trees_in::finish_tree): Fix logic error.
+	(trees_in::tree_node_special): Fix undefined var.
+
 2018-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	Module purview is implicit.

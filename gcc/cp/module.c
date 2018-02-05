@@ -291,10 +291,9 @@ protected:
       /* I really hope we do not get BMI files larger than 4GB.  */
       MY_CLASS = CLASS32,
       /* It is host endianness that is relevant.  */
+      MY_ENDIAN = DATA2LSB
 #ifdef WORDS_BIGENDIAN
-      MY_ENDIAN = DATA2MSB,
-#else
-      MY_ENDIAN = DATA2LSB,
+		  ^ DATA2LSB ^ DATA2MSB
 #endif
     };
 
@@ -308,7 +307,6 @@ public:
 
       /* Section flags.  */
       SHF_NONE = 0x00,
-      SHF_ALLOC = 0x02,
       SHF_STRINGS = 0x20,
 
       /* Special error codes. */
@@ -2500,7 +2498,7 @@ module_state::read_config (elf_in *from, unsigned *expected_crc)
 }
 
 void
-module_state::record_namespace (elf_out *to, bytes_out &bind, trees_out &trees,
+module_state::record_namespace (elf_out *to, bytes_out &bind, trees_out &/*trees*/,
 			       tree ns)
 {
   dump () && dump ("Recording namespace %N", ns);
@@ -2635,14 +2633,14 @@ module_state::read_namespace (elf_in *from, bytes_in &bind, tree ns)
   /* Read the non-namespace bound names.  */
   while (unsigned off = bind.u ())
     {
-      tree name = get_identifier (from->name (off));
+      /* tree name =*/ get_identifier (from->name (off));
       // FIXME:insert?
     }
 
   /* Read the inner namespaces.  */
   while (unsigned off = bind.u ())
     {
-      bool exported_p = bind.b (); // FIXME:do something with this
+      /*bool exported_p =*/ bind.b (); // FIXME:do something with this
       bool inline_p = bind.b ();
       bind.bflush ();
 
@@ -3608,7 +3606,7 @@ trees_in::finish (tree t)
       return remap;
     }
 
-  if (DECL_P (t) && MAYBE_DECL_MODULE_PURVIEW_P (t) < MODULE_IMPORT_BASE)
+  if (DECL_P (t) && MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE)
     {
       // FIXME:Revisit
       tree ctx = CP_DECL_CONTEXT (t);
@@ -5249,6 +5247,7 @@ trees_in::tree_node_special (unsigned tag)
 	    {
 	      error ("unknown tree reference %qd", tag);
 	      set_overrun ();
+	      res = NULL_TREE;
 	    }
 	}
       if (res)
