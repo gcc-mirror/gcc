@@ -5459,8 +5459,7 @@ Parse::range_clause_decl(const Typed_identifier_list* til,
 	no->var_value()->set_type_from_range_value();
       if (is_new)
 	any_new = true;
-      if (!Gogo::is_sink_name(pti->name()))
-        p_range_clause->value = Expression::make_var_reference(no, location);
+      p_range_clause->value = Expression::make_var_reference(no, location);
     }
 
   if (!any_new)

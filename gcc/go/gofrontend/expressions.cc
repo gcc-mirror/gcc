@@ -7957,13 +7957,33 @@ class Find_call_expression : public Traverse
 int
 Find_call_expression::expression(Expression** pexpr)
 {
-  if ((*pexpr)->call_expression() != NULL
-      || (*pexpr)->receive_expression() != NULL)
+  Expression* expr = *pexpr;
+  if (!expr->is_constant()
+      && (expr->call_expression() != NULL
+	  || expr->receive_expression() != NULL))
     {
       this->found_ = true;
       return TRAVERSE_EXIT;
     }
   return TRAVERSE_CONTINUE;
+}
+
+// Return whether calling len or cap on EXPR, of array type, is a
+// constant.  The language spec says "the expressions len(s) and
+// cap(s) are constants if the type of s is an array or pointer to an
+// array and the expression s does not contain channel receives or
+// (non-constant) function calls."
+
+bool
+Builtin_call_expression::array_len_is_constant(Expression* expr)
+{
+  go_assert(expr->type()->deref()->array_type() != NULL
+	    && !expr->type()->deref()->is_slice_type());
+  if (expr->is_constant())
+    return true;
+  Find_call_expression find_call;
+  Expression::traverse(&expr, &find_call);
+  return !find_call.found();
 }
 
 // Return whether this is constant: len of a string constant, or len
@@ -7993,19 +8013,9 @@ Builtin_call_expression::do_is_constant() const
 	    && !arg_type->points_to()->is_slice_type())
 	  arg_type = arg_type->points_to();
 
-	// The len and cap functions are only constant if there are no
-	// function calls or channel operations in the arguments.
-	// Otherwise we have to make the call.
-	if (!arg->is_constant())
-	  {
-	    Find_call_expression find_call;
-	    Expression::traverse(&arg, &find_call);
-	    if (find_call.found())
-	      return false;
-	  }
-
 	if (arg_type->array_type() != NULL
-	    && arg_type->array_type()->length() != NULL)
+	    && arg_type->array_type()->length() != NULL
+	    && Builtin_call_expression::array_len_is_constant(arg))
 	  return true;
 
 	if (this->code_ == BUILTIN_LEN && arg_type->is_string_type())
