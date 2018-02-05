@@ -4667,11 +4667,26 @@ Parse::expr_case_clause(Case_clauses* clauses, bool* saw_default)
     {
       Location fallthrough_loc = this->location();
       is_fallthrough = true;
-      if (this->advance_token()->is_op(OPERATOR_SEMICOLON))
-	this->advance_token();
+      while (this->advance_token()->is_op(OPERATOR_SEMICOLON))
+	;
       if (this->peek_token()->is_op(OPERATOR_RCURLY))
 	go_error_at(fallthrough_loc,
 		    _("cannot fallthrough final case in switch"));
+      else if (!this->peek_token()->is_keyword(KEYWORD_CASE)
+	       && !this->peek_token()->is_keyword(KEYWORD_DEFAULT))
+	{
+	  go_error_at(fallthrough_loc, "fallthrough statement out of place");
+	  while (!this->peek_token()->is_keyword(KEYWORD_CASE)
+		 && !this->peek_token()->is_keyword(KEYWORD_DEFAULT)
+		 && !this->peek_token()->is_op(OPERATOR_RCURLY)
+		 && !this->peek_token()->is_eof())
+	    {
+	      if (this->statement_may_start_here())
+		this->statement_list();
+	      else
+		this->advance_token();
+	    }
+	}
     }
 
   if (is_default)
