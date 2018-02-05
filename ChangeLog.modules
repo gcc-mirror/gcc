@@ -1,6 +1,10 @@
 2018-02-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (make_namespace_finish): Always create the scope.
+	(add_imported_namespace): Check namespace inlineness here.
+
+	gcc/cp/
 	* module.c (decl_set_module): Set DECL_MODULE_OWNER.
 	* rtti.c (tinfo_base_init): Clear DECL_MODULE_OWNER.
 

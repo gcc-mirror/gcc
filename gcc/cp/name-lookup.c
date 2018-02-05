@@ -7603,30 +7603,19 @@ make_namespace_finish (tree ns, tree *slot, bool inline_p,
   if (!from_import)
     add_decl_to_level (NAMESPACE_LEVEL (ctx), ns);
 
-  if (from_import || *slot == ns)
-    {
-      /* NS was newly created, finish off making it.  */
-      cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
-      scope->this_entity = ns;
-      scope->more_cleanups_ok = true;
-      scope->kind = sk_namespace;
-      scope->level_chain = NAMESPACE_LEVEL (ctx);
-      NAMESPACE_LEVEL (ns) = scope;
+  /* NS was newly created, finish off making it.  */
+  cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
+  scope->this_entity = ns;
+  scope->more_cleanups_ok = true;
+  scope->kind = sk_namespace;
+  scope->level_chain = NAMESPACE_LEVEL (ctx);
+  NAMESPACE_LEVEL (ns) = scope;
 
-      if (DECL_NAMESPACE_INLINE_P (ns))
-	vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), ns);
+  if (DECL_NAMESPACE_INLINE_P (ns))
+    vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), ns);
 
-      if (DECL_NAMESPACE_INLINE_P (ns) || !DECL_NAME (ns))
-	emit_debug_info_using_namespace (ctx, ns, true);
-    }
-  else if (DECL_NAMESPACE_INLINE_P (ns) != inline_p)
-    {
-      error (from_import ? inline_p ? "expected %qD to be an inline namespace"
-	     : "expected %qD to not be an inline namespace"
-	     : inline_p ? "already imported %qD as a non-inline namespace"
-	     : "already imported %qD as an inline namespace", ns);
-      inform (DECL_SOURCE_LOCATION (ns), "namespace introduced here");
-    }
+  if (DECL_NAMESPACE_INLINE_P (ns) || !DECL_NAME (ns))
+    emit_debug_info_using_namespace (ctx, ns, true);
 }
 
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
@@ -7739,6 +7728,12 @@ add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
     {
       decl = make_namespace (ctx, name, inline_p);
       make_namespace_finish (decl, slot, inline_p, true);
+    }
+  else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
+    {
+      error (inline_p ? "expected %qD to be an inline namespace"
+	     : "expected %qD to not be an inline namespace", decl);
+      inform (DECL_SOURCE_LOCATION (decl), "namespace introduced here");
     }
 
   /* Now insert.  */
