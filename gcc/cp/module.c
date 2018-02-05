@@ -3608,7 +3608,7 @@ trees_in::finish (tree t)
       return remap;
     }
 
-  if (DECL_P (t) && !MAYBE_DECL_MODULE_PURVIEW_P (t))
+  if (DECL_P (t) && MAYBE_DECL_MODULE_PURVIEW_P (t) < MODULE_IMPORT_BASE)
     {
       // FIXME:Revisit
       tree ctx = CP_DECL_CONTEXT (t);
@@ -3964,7 +3964,6 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.odr_used);
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
-  WB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
     case lds_fn:  /* lang_decl_fn.  */
@@ -4018,7 +4017,6 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.odr_used);
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
-  RB (lang->u.base.module_purview_p);
   switch (lang->u.base.selector)
     {
     case lds_fn:  /* lang_decl_fn.  */
@@ -5772,7 +5770,6 @@ decl_set_module (tree decl)
   if (modules && (*modules)[MODULE_PURVIEW])
     {
       retrofit_lang_decl (decl);
-      DECL_MODULE_PURVIEW_P (decl) = true;
       DECL_MODULE_OWNER (decl) = MODULE_PURVIEW;
     }
 }

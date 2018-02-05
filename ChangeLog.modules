@@ -1,5 +1,17 @@
 2018-02-04  Nathan Sidwell  <nathan@acm.org>
 
+	Module purview is implicit.
+	gcc/cp/
+	* cp-tree.h (lang_decl): Remove module_purview_p field.
+	* mangle.c (maybe_write_module): Fix signed/unsigned mismatch.
+	* module.c (trees_in::finish): Adjust.
+	(trees{in,out}::lang_decl_bools): Drom module_purview_p field.
+	(decl_set_module): Done set DECL_MODULE_PURVIEW_P.
+	* name-lookup.c (extract_module_decls): check MODULE_PURVIEW_P.
+	(make_namespace_finish): Remove inline_p arg.  Adjust callers.
+	* pt.c (build_template_decl): Don't copy MODULE_PURVIEW_P.
+	* rtti.c (tinfo_base_init): Don't clear MODULE_PURVIEW_P.
+
 	gcc/cp/
 	* name-lookup.c (make_namespace_finish): Always create the scope.
 	(add_imported_namespace): Check namespace inlineness here.

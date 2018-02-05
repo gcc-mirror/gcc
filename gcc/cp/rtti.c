@@ -946,10 +946,7 @@ tinfo_base_init (tinfo_s *ti, tree target)
       DECL_SOURCE_LOCATION (real_decl) = BUILTINS_LOCATION;
       DECL_MODULE_EXPORT_P (real_decl) = false;
       if (DECL_LANG_SPECIFIC (real_decl))
-	{
-	  DECL_MODULE_PURVIEW_P (real_decl) = false;
-	  DECL_MODULE_OWNER (real_decl) = MODULE_NONE;
-	}
+	DECL_MODULE_OWNER (real_decl) = MODULE_NONE;
       pop_abi_namespace ();
 
       if (!COMPLETE_TYPE_P (real_type))

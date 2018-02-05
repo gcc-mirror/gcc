@@ -1544,7 +1544,7 @@ check_constraint_info (tree t)
 
 /* In module purview.  */
 #define DECL_MODULE_PURVIEW_P(N) \
-  (DECL_LANG_SPECIFIC (N)->u.base.module_purview_p)
+  (DECL_MODULE_OWNER (N) != MODULE_NONE)
 
 /* Whether this is an exported DECL.  */
 #define DECL_MODULE_EXPORT_P(NODE) \
@@ -2549,9 +2549,8 @@ struct GTY(()) lang_decl_base {
   unsigned var_declared_inline_p : 1;	   /* var */
 
   unsigned dependent_init_p : 1;	   /* var */
-#define MODULE_BITS (14)
+#define MODULE_BITS (15)
   unsigned module_owner : MODULE_BITS;     /* Owning module. */
-  unsigned module_purview_p : 1;	   /* In module purview. */
   /* No spare bits.  */
 };
 

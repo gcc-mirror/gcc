@@ -3605,7 +3605,10 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
 
   if (tree tdecl = MAYBE_STAT_TYPE (binding))
     {
-      if (DECL_MODULE_EXPORT_P (tdecl) || MAYBE_DECL_MODULE_PURVIEW_P (tdecl))
+      if (!DECL_MODULE_EXPORT_P (tdecl)
+	  && MAYBE_DECL_MODULE_PURVIEW_P (tdecl) == MODULE_NONE)
+	;
+      else
 	{
 	  name = DECL_NAME (tdecl);
 	  decls.safe_push (tdecl);
@@ -3623,7 +3626,7 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
 	decl = DECL_TEMPLATE_RESULT (decl);
 
       if (!DECL_MODULE_EXPORT_P (decl)
-	  && !MAYBE_DECL_MODULE_PURVIEW_P (decl))
+	  && MAYBE_DECL_MODULE_PURVIEW_P (decl) == MODULE_NONE)
 	continue;
 
       if ((TREE_CODE (decl) == VAR_DECL
@@ -7581,9 +7584,8 @@ make_namespace (tree ctx, tree name, bool inline_p)
   return ns;
 }
 
-void
-make_namespace_finish (tree ns, tree *slot, bool inline_p,
-		       bool from_import = false)
+static void
+make_namespace_finish (tree ns, tree *slot, bool from_import = false)
 {
   if (flag_modules && TREE_PUBLIC (ns) && (from_import || *slot != ns))
     {
@@ -7676,7 +7678,7 @@ push_namespace (tree name, bool make_inline)
       else
 	{
 	  /* finish up making the namespace.  */
-	  make_namespace_finish (ns, slot, make_inline);
+	  make_namespace_finish (ns, slot);
 
 	  /* Add the anon using-directive here, we don't do it in
 	     make_namespace_finish.  */
@@ -7727,7 +7729,7 @@ add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
   if (!decl)
     {
       decl = make_namespace (ctx, name, inline_p);
-      make_namespace_finish (decl, slot, inline_p, true);
+      make_namespace_finish (decl, slot, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
     {
