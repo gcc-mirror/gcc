@@ -1,3 +1,8 @@
+2018-02-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82782
+	* g++.dg/cpp1z/inline-var4.C: New.
+
 2018-02-05  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/asan/pointer-compare-1.c: Adjust ASAN_OPTIONS
