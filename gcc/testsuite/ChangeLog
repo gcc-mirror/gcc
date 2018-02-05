@@ -1,3 +1,8 @@
+2018-02-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/aarch64/sve/vcond_4.c: Remove XFAILs.
+	* gcc.target/aarch64/sve/vcond_5.c: Likewise.
+
 2018-02-05  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* gcc.target/i386/avx512dq-vrangesd-1.c (_mm_mask_range_sd,
