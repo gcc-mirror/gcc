@@ -1,5 +1,19 @@
 2018-02-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* decl2 (c_parse_final_cleanups): Only finish_module if we started
+	it.
+	* module.c (module_hash_state): Move earlier.
+	(module_state): Add hash and modules static members.
+	(module_state::set_import): Replace do_import.
+	(module_state::lazy_init): Create the hash table and default
+	module.
+	(trees_in::tree_node_raw): Don't remap a public namespace.
+	(module_purview_p, module_interface_p): Adjust.
+	(module_state::do_import): Move more stuff to lazy_init.
+	(import_module): Deal with setting current module flags.
+	(finish_module): Adjust.
+
 	Fix bootstrap
 	gcc/cp/
 	* module.c (elf): Clean up consts.

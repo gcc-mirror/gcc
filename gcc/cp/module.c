@@ -1506,6 +1506,18 @@ bytes_out::use (unsigned bytes)
 // need it
 class trees_out;
 
+struct module_state;
+
+/* Hash module state by name.  This cannot be a member of
+   module_state, because of GTY restrictions.  */
+
+struct module_state_hash : nodel_ptr_hash<module_state> {
+  typedef tree compare_type; /* An identifier.  */
+
+  static inline hashval_t hash (const value_type m);
+  static inline bool equal (const value_type existing, compare_type candidate);
+};
+
 /* State of a particular module. */
 struct GTY(()) module_state {
   /* We always import & export ourselves.  */
@@ -1534,13 +1546,17 @@ struct GTY(()) module_state {
   static const std::pair<tree *, unsigned> global_trees[];
   static vec<tree, va_gc> *global_vec;
   static unsigned global_crc;
+  static hash_table<module_state_hash> *hash;
+ public:
+  static vec<module_state *, va_gc> *modules;
 
  public:
   module_state ();
   ~module_state ();
 
- private:
+ public:
   static void lazy_init ();
+  static void lazy_fini ();
 
  public:
   void release (bool = true);
@@ -1554,7 +1570,7 @@ struct GTY(()) module_state {
     filename = name;
     loc = input_location;
   }
-  void do_import (unsigned index, bool is_export);
+  void set_import (module_state const *, bool is_export);
   void announce (const char *) const;
 
  public:
@@ -1579,6 +1595,16 @@ struct GTY(()) module_state {
 				  bool import_export_p, unsigned * = NULL);
 };
 
+/* Hash module state by name.  */
+hashval_t module_state_hash::hash (const value_type m)
+{
+  return IDENTIFIER_HASH_VALUE (m->name);
+}
+bool module_state_hash::equal (const value_type existing, compare_type candidate)
+{
+  return existing->name == candidate;
+}
+
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
   {
@@ -1591,28 +1617,11 @@ const std::pair<tree *, unsigned> module_state::global_trees[] =
 vec<tree, va_gc> GTY (()) *module_state::global_vec;
 unsigned module_state::global_crc;
 
-/* Hash module state by name.  */
-
-struct module_state_hash : nodel_ptr_hash<module_state>
-{
-  typedef tree compare_type; /* An identifier.  */
-
-  static hashval_t hash (const value_type m)
-  {
-    return IDENTIFIER_HASH_VALUE (m->name);
-  }
-  static bool equal (const value_type existing, compare_type candidate)
-  {
-    return existing->name == candidate;
-  }
-};
-
-/* Vector of module state.  If this is non-null, index 0 is
-   occupied.  */
-static GTY(()) vec<module_state *, va_gc> *modules;
+/* Vector of module state.  Always has 2 slots.  */
+vec<module_state *, va_gc> GTY(()) *module_state::modules;
 
 /* Map from identifier to module index. */
-static hash_table<module_state_hash> *module_hash;
+hash_table<module_state_hash> *module_state::hash;
 
 /* Record tags.  */
 enum record_tag
@@ -2110,6 +2119,8 @@ module_state::lazy_init ()
 {
   gcc_checking_assert (!global_vec);
 
+  hash = new hash_table<module_state_hash> (30);
+
   dump.push (NULL);
   /* Construct the global tree array.  This is an array of unique
      global trees (& types).  */
@@ -2137,6 +2148,8 @@ module_state::lazy_init ()
 	  unsigned v = 0;
 	  if (tree val = *ptr)
 	    {
+	      if (identifier_p (val))
+		continue;
 	      tree *slot = hash.find_slot (val, INSERT);
 	      if (!*slot)
 		{
@@ -2169,6 +2182,19 @@ module_state::lazy_init ()
   dump ("") && dump ("Created %u unique globals, crc=%x",
 		     global_vec->length (), global_crc);
   dump.pop (0);
+
+  /* Create module for current TU.  */
+  module_state *current = new (ggc_alloc <module_state> ()) module_state ();
+  current->mod = MODULE_NONE;
+  bitmap_set_bit (current->imports, MODULE_NONE);
+  (*modules)[MODULE_NONE] = current;
+}
+
+void
+module_state::lazy_fini ()
+{
+  delete hash;
+  hash = NULL;
 }
 
 /* Free up state.  If ALL is true, we're completely done.  If ALL is
@@ -2344,7 +2370,7 @@ module_state::read_context (elf_in *from)
 	{
 	  dump () && dump ("Direct %simport %I %u",
 			   exported ? "export " : "", name, imp->mod);
-	  do_import (imp->mod, exported);
+	  set_import (imp, exported);
 	}
     }
 
@@ -2759,7 +2785,7 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
 tree
 module_name (unsigned ix)
 {
-  return (*modules)[ix]->name;
+  return (*module_state::modules)[ix]->name;
 }
 
 /* Return the vector of IDENTIFIER_NODES naming module IX.  These are
@@ -2768,7 +2794,7 @@ module_name (unsigned ix)
 tree
 module_vec_name (unsigned ix)
 {
-  return (*modules)[ix]->vec_name;
+  return (*module_state::modules)[ix]->vec_name;
 }
 
 /* Return the bitmap describing what modules are imported into
@@ -2777,9 +2803,7 @@ module_vec_name (unsigned ix)
 bitmap
 module_import_bitmap (unsigned ix)
 {
-  const module_state *state = (*modules)[ix];
-
-  return state ? state->imports : NULL;
+  return (*module_state::modules)[ix]->imports;
 }
 
 /* Return the context that controls what module DECL is in.  That is
@@ -2805,19 +2829,13 @@ module_context (tree decl)
   return decl;
 }
 
-/* We've just directly imported INDEX.  Update our import/export
-   bitmaps.  IS_EXPORT is true if we're reexporting the module.  */
+/* We've just directly imported OTHER.  Update our import/export
+   bitmaps.  IS_EXPORT is true if we're reexporting the OTHER.  */
 
 void
-module_state::do_import (unsigned index, bool is_export)
+module_state::set_import (module_state const *other, bool is_export)
 {
-  module_state *other = (*modules)[index];
-
-  if (this == (*modules)[0])
-    {
-      other->imported = true;
-      other->exported = is_export;
-    }
+  gcc_checking_assert (this != other);
   bitmap_ior_into (imports, other->exports);
   if (is_export)
     bitmap_ior_into (exports, other->exports);
@@ -5116,7 +5134,9 @@ trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
       DECL_CONTEXT (t) = ctx;
       DECL_NAME (t) = name;
       if (ctx && (TREE_CODE (ctx) == NAMESPACE_DECL
-		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL))
+		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL)
+	  && (TREE_CODE (t) != NAMESPACE_DECL
+	      || !TREE_PUBLIC (t)))
 	// FIXME:maybe retrofit lang_decl?
 	DECL_MODULE_OWNER (t) = state->mod;
     }
@@ -5762,12 +5782,16 @@ decl_set_module (tree decl)
   /* We should only be setting moduleness on namespace-scope things.  */
   gcc_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL);
 
-  // FIXME: check ill-formed linkage
-  if (export_depth)
-    DECL_MODULE_EXPORT_P (decl) = true;
+  if (!module_state::modules)
+    /* We can be called when modules are not enabled.  */
+    return;
 
-  if (modules && (*modules)[MODULE_PURVIEW])
+  // FIXME: check ill-formed linkage
+
+  if ((*module_state::modules)[MODULE_PURVIEW])
     {
+      if (export_depth)
+	DECL_MODULE_EXPORT_P (decl) = true;
       retrofit_lang_decl (decl);
       DECL_MODULE_OWNER (decl) = MODULE_PURVIEW;
     }
@@ -5778,7 +5802,7 @@ decl_set_module (tree decl)
 bool
 module_purview_p ()
 {
-  return modules && (*modules)[MODULE_PURVIEW];
+  return (*module_state::modules)[MODULE_PURVIEW];
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
@@ -5787,8 +5811,8 @@ module_purview_p ()
 bool
 module_interface_p ()
 {
-  return (modules && (*modules)[MODULE_PURVIEW]
-	  && (*modules)[MODULE_PURVIEW]->exported);
+  return ((*module_state::modules)[MODULE_PURVIEW]
+	  && (*module_state::modules)[MODULE_PURVIEW]->exported);
 }
 
 /* Convert a module name into a file name.  The name is malloced.
@@ -5983,17 +6007,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
   gcc_assert (global_namespace == current_scope ());
 
   if (!global_vec)
-    {
-      module_hash = new hash_table<module_state_hash> (30);
-      vec_safe_reserve (modules, 20);
-      module_state *current = new (ggc_alloc <module_state> ()) module_state ();
-      modules->quick_push (current);
-      current->mod = MODULE_NONE;
-      bitmap_set_bit (current->imports, MODULE_NONE);
-      for (unsigned ix = MODULE_IMPORT_BASE; --ix;)
-	modules->quick_push (NULL);
-      lazy_init ();
-    }
+    lazy_init ();
 
   tree sname = name;
   if (TREE_CODE (name) == TREE_VEC)
@@ -6015,8 +6029,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
     }
 
   module_state **slot
-    = module_hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name),
-					INSERT);
+    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), INSERT);
   module_state *state = *slot;
 
   if (!state)
@@ -6141,7 +6154,12 @@ import_module (const cp_expr &name, tree)
   if (module_state *imp
       = module_state::do_import (name.get_location (), *name,
 				 /*unit_p=*/false, /*import_p=*/true))
-    (*modules)[MODULE_NONE]->do_import (imp->mod, export_depth != 0);
+    {
+      imp->imported = true;
+      if (export_depth != 0)
+	imp->exported = true;
+      (*module_state::modules)[MODULE_NONE]->set_import (imp, export_depth != 0);
+    }
   gcc_assert (global_namespace == current_scope ());
 }
 
@@ -6203,6 +6221,10 @@ init_module_processing ()
       if (!flag_module_wrapper)
 	flag_module_wrapper = "false";
     }
+
+  vec_safe_reserve (module_state::modules, 20);
+  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+    module_state::modules->quick_push (NULL);
 }
 
 /* Finalize the module at end of parsing.  */
@@ -6210,23 +6232,22 @@ init_module_processing ()
 void
 finish_module ()
 {
-  if (modules)
+  if (module_state::modules)
     {
-      delete module_hash;
-      module_hash = NULL;
-      for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
-	(*modules)[ix]->release ();
+      module_state::lazy_fini ();
+      for (unsigned ix = module_state::modules->length ();
+	   --ix >= MODULE_IMPORT_BASE;)
+	(*module_state::modules)[ix]->release ();
     }
 
-  if (!module_interface_p ())
+  module_state *state = (*module_state::modules)[MODULE_PURVIEW];
+  if (!state || !state->exported)
     {
       if (module_output)
 	error ("%<-fmodule-output%> specified for"
 	       " non-module interface compilation");
       return;
     }
-
-  module_state *state = (*modules)[0];
 
   if (!errorcount)
     {
