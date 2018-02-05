@@ -6199,9 +6199,15 @@ Bindings_snapshot::check_goto_defs(Location loc, const Block* block,
 	}
       go_assert(p != block->bindings()->end_definitions());
 
-      std::string n = (*p)->message_name();
-      go_error_at(loc, "goto jumps over declaration of %qs", n.c_str());
-      go_inform((*p)->location(), "%qs defined here", n.c_str());
+      for (; p != block->bindings()->end_definitions(); ++p)
+	{
+	  if ((*p)->is_variable())
+	    {
+	      std::string n = (*p)->message_name();
+	      go_error_at(loc, "goto jumps over declaration of %qs", n.c_str());
+	      go_inform((*p)->location(), "%qs defined here", n.c_str());
+	    }
+	}
     }
 }
 
