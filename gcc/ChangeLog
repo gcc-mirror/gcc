@@ -1,5 +1,10 @@
 2018-02-05  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/84137
+	* doc/gcov.texi: Fix typo in documentation.
+
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/83879
 	* doc/gcov.texi: Document necessity of --dynamic-list-data when
 	using dlopen functionality.
