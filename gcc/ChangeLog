@@ -1,3 +1,9 @@
+2018-02-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83369
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Use %G to print
+	inlining context.
+
 2018-02-05  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Cherry-pick upstream r323995.
