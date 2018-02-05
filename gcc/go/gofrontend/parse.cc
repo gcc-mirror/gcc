@@ -5160,7 +5160,18 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 
   Expression* e;
   if (saw_comma || !this->peek_token()->is_op(OPERATOR_CHANOP))
-    e = this->expression(PRECEDENCE_NORMAL, true, true, NULL, NULL);
+    {
+      e = this->expression(PRECEDENCE_NORMAL, true, true, NULL, NULL);
+      if (e->receive_expression() != NULL)
+	{
+	  *is_send = false;
+	  *channel = e->receive_expression()->channel();
+	  // This is 'case (<-c):'.  We now expect ':'.  If we see
+	  // '<-', then we have case (<-c)<-v:
+	  if (!this->peek_token()->is_op(OPERATOR_CHANOP))
+	    return true;
+	}
+    }
   else
     {
       // case <-c:
@@ -5189,14 +5200,17 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 
   if (this->peek_token()->is_op(OPERATOR_EQ))
     {
-      if (!this->advance_token()->is_op(OPERATOR_CHANOP))
-	{
-	  go_error_at(this->location(), "missing %<<-%>");
-	  return false;
-	}
       *is_send = false;
       this->advance_token();
-      *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL, NULL);
+      Location recvloc = this->location();
+      Expression* recvexpr = this->expression(PRECEDENCE_NORMAL, false,
+					      true, NULL, NULL);
+      if (recvexpr->receive_expression() == NULL)
+	{
+	  go_error_at(recvloc, "missing %<<-%>");
+	  return false;
+	}
+      *channel = recvexpr->receive_expression()->channel();
       if (saw_comma)
 	{
 	  // case v, e = <-c:
