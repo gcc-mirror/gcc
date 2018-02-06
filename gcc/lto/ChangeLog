@@ -1,3 +1,15 @@
+2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/81004
+	* lto.c: Include builtins.h
+	(register_resolution): Merge resolutions in case trees was
+	merged across units.
+	(lto_maybe_register_decl): Break out from ...
+	(lto_read_decls): ... here.
+	(unify_scc): Also register decls here.
+	(read_cgraph_and_symbols): Sanity check that all resolutions was
+	read.
+
 2018-02-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/83954
