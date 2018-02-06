@@ -362,7 +362,7 @@
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_THUMB2 && !arm_restrict_it"
   "#"   ; "ite\\t%D1\;mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
-  "TARGET_THUMB2"
+  "&& true"
   [(set (match_dup 0)
         (if_then_else:SI (match_dup 1)
                          (match_dup 3)
@@ -410,7 +410,7 @@
 		 [(match_operand 2 "cc_register" "") (const_int 0)])))]
   "TARGET_THUMB2 && !arm_restrict_it"
   "#"   ; "ite\\t%D1\;mvn%D1\\t%0, #0\;mvn%d1\\t%0, #1"
-  "TARGET_THUMB2"
+  "&& true"
   [(set (match_dup 0)
         (if_then_else:SI (match_dup 1)
                          (match_dup 3)

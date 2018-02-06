@@ -1,3 +1,7 @@
+2018-02-06  Michael Collison  <michael.collison@arm.com>
+
+	* gcc.target/arm/pr7676.c: New testcase for incorrect splitting.
+
 2018-02-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/safe-indirect-jump-1.c: Detect deprecation
