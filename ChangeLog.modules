@@ -1,5 +1,13 @@
 2018-02-06  Nathan Sidwell  <nathan@acm.org>
 
+	Imports use special tags
+	gcc/cp/
+	* module.c (module_context): Cope with C++ anon types.
+	(trees_{in,out}::tree_node_special): Deal with imports here ...
+	(trees_{in,out}::tree_node): ... not here.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[bd].C: Adjust.
+
 	Kill namespace module slot hackery
 	gcc/cp/
 	* name-lookup.c (module_binding_slot): Make CREATE a bool.  Remove

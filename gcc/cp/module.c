@@ -1629,13 +1629,13 @@ enum tree_tag
     tt_null,		/* NULL_TREE.  */
     tt_fixed,		/* Fixed vector index.  */
     tt_node,		/* New node.  */
-    tt_import,  	/* Import from another module. */
     tt_id,  		/* Identifier node.  */
     tt_conv_id,		/* Conversion operator name.  */
-    tt_namespace,	/* Namespace.  */
     tt_tinfo_var,	/* Typeinfo object. */
     tt_tinfo_pseudo,	/* Typeinfo pseudo type.  */
     tt_type_name,	/* TYPE_DECL for type.  */
+    tt_namespace,	/* Namespace.  */
+    tt_import,  	/* Import from another module. */
 
     tt_binding,
     tt_definition,
@@ -2818,10 +2818,12 @@ module_context (tree decl)
   for (;;)
     {
       tree outer = CP_DECL_CONTEXT (decl);
-      if (TYPE_P (outer))
+      while (TYPE_P (outer))
 	{
 	  if (tree name = TYPE_NAME (outer))
 	    outer = name;
+	  else if (tree ctx = TYPE_CONTEXT (outer))
+	    outer = ctx;
 	  else
 	    return NULL_TREE;
 	}
@@ -5242,11 +5244,10 @@ trees_out::tree_node_special (tree t)
       /* T is a typeinfo object.  These need recreating by the loader.
 	 The type it is for is stashed on the name's TREE_TYPE.  */
       tree type = TREE_TYPE (DECL_NAME (t));
-      dump () && dump ("Writing typeinfo %S for %N", t, type);
       s (tt_tinfo_var);
       tree_node (type);
-      unsigned tag = insert (t);
-      dump () && dump ("Wrote:%d typeinfo %S for %N", tag, t, type);
+      int tag = insert (t);
+      dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
       return true;
     }
 
@@ -5266,6 +5267,38 @@ trees_out::tree_node_special (tree t)
 		       tag, conv_op ? "conv_op_" : "",
 		       conv_op ? TREE_TYPE (t) : t);
       return true;
+    }
+
+  if (DECL_P (t))
+    {
+      tree module_ctx = module_context (t);
+      unsigned owner = MAYBE_DECL_MODULE_OWNER (module_ctx);
+      if (owner >= MODULE_IMPORT_BASE)
+	{
+	  s (tt_import);
+	  u (TREE_CODE (t));
+	  tree_node (CP_DECL_CONTEXT (t));
+	  u (owner);
+	  tree_node (DECL_NAME (t));
+	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
+	  int tag = insert (t);
+	  dump () && dump ("Wrote import:%d %N@%I", tag, t, module_name (owner));
+	  tree type = TREE_TYPE (t);
+	  if (type)
+	    {
+	      bool existed;
+	      int *val = &tree_map.get_or_insert (type, &existed);
+	      if (!existed)
+		{
+		  tag = --ref_num;
+		  *val = tag;
+		  dump () && dump ("Wrote imported type:%d %C:%N%S", tag,
+				   TREE_CODE (type), type, type);
+		}
+	      u (existed);
+	    }
+	  return true;
+	}
     }
 
   return false;  /* Not a special snowflake. */
@@ -5373,6 +5406,38 @@ trees_in::tree_node_special (int tag)
       }
       break;
 
+    case tt_import:
+      {
+	unsigned code = u ();
+	tree ctx = tree_node ();
+	unsigned owner = u ();
+	tree name = tree_node ();
+	unsigned remapped = (owner < state->remap->length ()
+			     ? (*state->remap)[owner] : MODULE_NONE);
+	tree type = tree_node ();
+	if (remapped != MODULE_NONE && remapped != state->mod
+	    && !get_overrun ())
+	  res = lookup_by_ident (ctx, remapped, name, type, code);
+	if (!res)
+	  {
+	    error ("failed to find %<%E%s%E@%E%>",
+		   ctx, &"::"[2 * (ctx == global_namespace)],
+		   name, module_name (remapped));
+	    set_overrun ();
+	  }
+	int tag = insert (res);
+	dump () && dump ("Imported:%d %P@%I", tag,
+			 ctx, name, module_name (remapped));
+	if (res && TREE_TYPE (res) && !u ())
+	  {
+	    tree type = TREE_TYPE (res);
+	    tag = insert (type);
+	    dump () && dump ("Read imported type:%d %C:%N%S", tag,
+			     TREE_CODE (type), type, type);
+	  }
+      }
+      break;
+
     case tt_definition:
       /* An immediate definition.  */
       res = tag_definition ();
@@ -5433,6 +5498,7 @@ trees_out::tree_node (tree t)
       u (node_module);
       if (node_module >= MODULE_IMPORT_BASE)
 	{
+	  gcc_unreachable ();
 	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
 	  dump () && dump ("Writing imported %N@%I", t,
 			   module_name (node_module));
@@ -5452,6 +5518,7 @@ trees_out::tree_node (tree t)
     tree_node_raw (code, t);
   else if (TREE_TYPE (t))
     {
+      gcc_unreachable ();
       tree type = TREE_TYPE (t);
       bool existed;
       int *val = &tree_map.get_or_insert (type, &existed);
@@ -5575,6 +5642,7 @@ trees_in::tree_node ()
     goto barf;
   else if (TREE_TYPE (t) && !u ())
     {
+      gcc_unreachable ();
       tree type = TREE_TYPE (t);
       tag = insert (type);
       dump () && dump ("Read:%d %C:%N%S imported type", tag,
