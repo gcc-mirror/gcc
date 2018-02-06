@@ -3631,6 +3631,9 @@ trees_in::finish (tree t)
       // FIXME:Revisit
       tree ctx = CP_DECL_CONTEXT (t);
 
+      // We should have dealt with namespaces elsewhere
+      gcc_assert (TREE_CODE (t) != NAMESPACE_DECL || DECL_NAMESPACE_ALIAS (t));
+
       if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	{
 	  /* A global-module decl.  See if there's already a duplicate.  */
@@ -5186,6 +5189,18 @@ trees_out::tree_node_special (tree t)
       return true;
     }
 
+  if (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (t))
+    {
+      // FIXME: anonymous
+      gcc_assert (TREE_PUBLIC (t));
+      s (tt_namespace);
+      tree_node (CP_DECL_CONTEXT (t));
+      tree_node (DECL_NAME (t));
+      unsigned tag = insert (t);
+      dump () && dump ("Wrote:%d namespace %N", tag, t);
+      return true;
+    }
+
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t))
     {
       tree name = TYPE_NAME (t);
@@ -5291,6 +5306,20 @@ trees_in::tree_node_special (int tag)
 	  set_overrun ();
 	break;
       }
+
+    case tt_namespace:
+      {
+	tree ctx = tree_node ();
+	tree name = tree_node ();
+
+	gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+	res = find_imported_namespace (ctx, state->mod, name);
+	if (!res)
+	  set_overrun ();
+	int tag = insert (res);
+	dump () && dump ("Created:%d namespace %N", tag, res);
+      }
+      break;
 
     case tt_type_name:
       /* An interstitial type name.  Read the name and then start
