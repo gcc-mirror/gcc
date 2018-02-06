@@ -1,3 +1,7 @@
+2018-02-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-plugin.m4 (GCC_ENABLE_PLUGINS): Remove -q option passed to grep.
+
 2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
 
 	* gcc-plugin.m4: Add support for MinGW.
