@@ -5141,10 +5141,7 @@ trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
       DECL_CONTEXT (t) = ctx;
       DECL_NAME (t) = name;
       if (ctx && (TREE_CODE (ctx) == NAMESPACE_DECL
-		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL)
-	  && (TREE_CODE (t) != NAMESPACE_DECL
-	      || !TREE_PUBLIC (t)))
-	// FIXME:maybe retrofit lang_decl?
+		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL))
 	DECL_MODULE_OWNER (t) = state->mod;
     }
 
@@ -5484,53 +5481,21 @@ trees_out::tree_node (tree t)
   s (tt_node);
   u (code);
 
-  bool body = true;
   if (klass == tcc_declaration)
     {
       /* Write out ctx, name & maybe import reference info.  */
       tree_node (DECL_CONTEXT (t));
       tree_node (DECL_NAME (t));
-
-      tree module_ctx = module_context (t);
-      unsigned node_module = MODULE_NONE;
-      if (module_ctx)
-	node_module = MAYBE_DECL_MODULE_OWNER (module_ctx);
-      u (node_module);
-      if (node_module >= MODULE_IMPORT_BASE)
-	{
-	  gcc_unreachable ();
-	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
-	  dump () && dump ("Writing imported %N@%I", t,
-			   module_name (node_module));
-	  body = false;
-	}
     }
 
-  if (body)
-    start (code, t);
+  start (code, t);
 
   int tag = insert (t);
   dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
 		   klass == tcc_declaration && DECL_MODULE_EXPORT_P (t)
 		   ? " (exported)": "");
 
-  if (body)
-    tree_node_raw (code, t);
-  else if (TREE_TYPE (t))
-    {
-      gcc_unreachable ();
-      tree type = TREE_TYPE (t);
-      bool existed;
-      int *val = &tree_map.get_or_insert (type, &existed);
-      if (!existed)
-	{
-	  tag = --ref_num;
-	  *val = tag;
-	  dump () && dump ("Writing:%d %C:%N%S imported type", tag,
-			   TREE_CODE (type), type, type);
-	}
-      u (existed);
-    }
+  tree_node_raw (code, t);
 
   dump.outdent ();
 }
@@ -5578,76 +5543,23 @@ trees_in::tree_node ()
   tree_code_class klass = TREE_CODE_CLASS (code);
   tree t = NULL_TREE;
 
-  bool body = true;
   tree name = NULL_TREE;
   tree ctx = NULL_TREE;
 
   if (klass == tcc_declaration)
     {
-      unsigned node_module;
-
       ctx = tree_node ();
       name = tree_node ();
-      if (!get_overrun ())
-	{
-	  unsigned incoming = u ();
-
-	  // FIXME:and here 
-	  if (incoming < state->remap->length ())
-	    node_module = (*state->remap)[incoming];
-
-	  if (incoming >= state->remap->length ()
-	      || ((incoming == MODULE_NONE) != (node_module == MODULE_NONE))
-	      || ((incoming == MODULE_PURVIEW) != (node_module == state->mod)))
-	    set_overrun ();
-	}
-
-      if (get_overrun ())
-	{
-	  dump.outdent ();
-	  return NULL_TREE;
-	}
-
-      if (node_module != MODULE_NONE && node_module != state->mod)
-	{
-	  tree type = tree_node ();
-
-	  if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL)
-	    ctx = global_namespace;
-	  t = lookup_by_ident (ctx, node_module, name, type, code);
-	  if (!t)
-	    error ("failed to find %<%E%s%E@%E%>",
-		   ctx, &"::"[2 * (ctx == global_namespace)],
-		   name, module_name (node_module));
-	  dump () && dump ("Importing %P@%I",
-			   ctx, name, module_name (node_module));
-	  body = false;
-	}
     }
 
-  if (body)
-    t = start (code);
+  t = start (code);
 
   /* Insert into map.  */
   tag = insert (t);
-  dump () && dump ("%s:%d %C:%N", body ? "Reading" : "Imported", tag,
-		   code, name);
+  dump () && dump ("Reading:%d %C:%N", tag, code, name);
 
-  if (body)
-    {
-      if (!tree_node_raw (code, t, name, ctx))
-	goto barf;
-    }
-  else if (!t)
+  if (!tree_node_raw (code, t, name, ctx))
     goto barf;
-  else if (TREE_TYPE (t) && !u ())
-    {
-      gcc_unreachable ();
-      tree type = TREE_TYPE (t);
-      tag = insert (type);
-      dump () && dump ("Read:%d %C:%N%S imported type", tag,
-		       TREE_CODE (type), type, type);
-    }
 
   if (get_overrun ())
     {
@@ -5658,18 +5570,15 @@ trees_in::tree_node ()
       return NULL_TREE;
     }
 
-  if (body)
-    {
-      tree found = finish (t);
+  tree found = finish (t);
 
-      if (found != t)
-	{
-	  /* Update the mapping.  */
-	  t = found;
-	  back_refs[tt_backref - tag] = t;
-	  dump () && dump ("Index %d remapping %C:%N%S", tag,
-			   t ? TREE_CODE (t) : ERROR_MARK, t, t);
-	}
+  if (found != t)
+    {
+      /* Update the mapping.  */
+      t = found;
+      back_refs[tt_backref - tag] = t;
+      dump () && dump ("Index %d remapping %C:%N%S", tag,
+		       t ? TREE_CODE (t) : ERROR_MARK, t, t);
     }
 
   dump.outdent ();

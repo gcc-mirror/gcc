@@ -1,5 +1,10 @@
 2018-02-06  Nathan Sidwell  <nathan@acm.org>
 
+	Remove old import machinery.
+	gcc/cp/
+	* module.c (trees_in::tree_node_raw): Set module owner.
+	(trees_{in,out}::tree_node): Remove importing here.
+
 	Imports use special tags
 	gcc/cp/
 	* module.c (module_context): Cope with C++ anon types.
