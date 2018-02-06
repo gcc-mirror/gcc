@@ -8,7 +8,7 @@
 
 	PR sanitizer/82825
 	* sanitizer_common/sanitizer_internal_defs.h: Cherry-pick upstream
-	r??????.
+	r324284.
 
 2018-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
