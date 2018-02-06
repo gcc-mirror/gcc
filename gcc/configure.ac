@@ -2754,6 +2754,13 @@ L2:],
   [AC_DEFINE(HAVE_AS_LEB128, 0,
     [Define if your assembler supports .sleb128 and .uleb128.])])
 
+# Determine if an .eh_frame section is read-only.
+gcc_fn_eh_frame_ro () {
+  $gcc_cv_as $1 -o conftest.o conftest.s > /dev/null 2>&1 && \
+    $gcc_cv_objdump -h conftest.o 2>/dev/null | \
+    sed -e '/.eh_frame/!d' -e N | grep READONLY > /dev/null
+}
+
 # Check if we have assembler support for unwind directives.
 gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
   ,,
@@ -2769,41 +2776,41 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
     # If the linker used on Solaris (like Sun ld) isn't capable of merging
     # read-only and read-write sections, we need to make sure that the
     # assembler used emits read-write .eh_frame sections.
-    if test "x$gcc_cv_ld_ro_rw_mix" != xread-write; then
-      if test "x$gcc_cv_objdump" != x; then
-	if $gcc_cv_objdump -h conftest.o 2>/dev/null | \
-		sed -e /.eh_frame/!d -e N | grep READONLY > /dev/null; then
-	  gcc_cv_as_cfi_directive=no
-	else
-	  case "$target" in
-	    i?86-*-solaris2.1[[0-9]]* | x86_64-*-solaris2.1[[0-9]]*)
-	      # On Solaris/x86, make sure that GCC and assembler agree on using
-	      # read-only .eh_frame sections for 64-bit.
-	      if test x$gas = xyes; then
-	         as_ix86_64_opt="--64"
-	      else
-	         as_ix86_64_opt="-xarch=amd64"
-	      fi
-	      if $gcc_cv_as $as_ix86_64_opt -o conftest.o conftest.s > /dev/null 2>&1 && \
-		$gcc_cv_objdump -h conftest.o 2>/dev/null | \
-			sed -e /.eh_frame/!d -e N | \
-			grep READONLY > /dev/null; then
-		gcc_cv_as_cfi_directive=yes
-	      else
-		gcc_cv_as_cfi_directive=no
-	      fi
-	      ;;
-	    *)
-	      gcc_cv_as_cfi_directive=yes
-	      ;;
-	  esac 
-	fi
-      else
-        # no objdump, err on the side of caution
-	gcc_cv_as_cfi_directive=no
-      fi
-    else
+    if test "x$gcc_cv_ld_ro_rw_mix" = xread-write; then
       gcc_cv_as_cfi_directive=yes
+    elif test "x$gcc_cv_objdump" = x; then
+      # No objdump, err on the side of caution.
+      gcc_cv_as_cfi_directive=no
+    else
+      if test x$gas = xyes; then
+	as_32_opt="--32"
+	as_64_opt="--64"
+      else
+	as_32_opt="-m32"
+	as_64_opt="-m64"
+      fi
+      case "$target" in
+	sparc*-*-solaris2.*)
+	  # On Solaris/SPARC, .eh_frame sections should always be read-write.
+	  if gcc_fn_eh_frame_ro $as_32_opt \
+	     || gcc_fn_eh_frame_ro $as_64_opt; then
+	    gcc_cv_as_cfi_directive=no
+	  else
+	    gcc_cv_as_cfi_directive=yes
+	  fi
+	  ;;
+	i?86-*-solaris2.* | x86_64-*-solaris2.*)
+	  # On Solaris/x86, make sure that GCC and assembler agree on using
+	  # read-only .eh_frame sections for 64-bit.
+	  if gcc_fn_eh_frame_ro $as_32_opt; then
+	    gcc_cv_as_cfi_directive=no
+	  elif gcc_fn_eh_frame_ro $as_64_opt; then
+	    gcc_cv_as_cfi_directive=yes
+	  else
+	    gcc_cv_as_cfi_directive=no
+	  fi
+	  ;;
+      esac
     fi
     ;;
   *-*-*)

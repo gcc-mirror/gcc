@@ -1,6 +1,14 @@
+2018-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_fn_eh_frame_ro): New function.
+	(gcc_cv_as_cfi_directive): Check both 32 and 64-bit assembler for
+	correct .eh_frame permissions.
+	* configure: Regenerate.
+
 2018-02-06  Andrew Jenner  <andrew@codeourcery.com>
 
-	* doc/invoke.texi: Add section for the PowerPC SPE backend. Remove irrelevant options.
+	* doc/invoke.texi: Add section for the PowerPC SPE backend. Remove
+	irrelevant options.
 
 2018-02-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
