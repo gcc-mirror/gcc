@@ -1,6 +1,9 @@
 2018-02-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_out::tree_node_special): Move into tree_node.
+
+	gcc/cp/
 	* module.c (trees_{in,out}::core_vals): Serialize decl name &
 	context here.
 	(trees_in::tree_node_raw): Don't set name & context here.

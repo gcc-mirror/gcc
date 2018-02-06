@@ -1746,7 +1746,6 @@ private:
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
   void tree_node_raw (tree_code, tree);
-  bool tree_node_special (tree);
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
@@ -5165,14 +5164,25 @@ trees_in::tree_node_raw (tree_code code, tree t)
   return true;
 }
 
-/* If tree has special streaming semantics, do that.  */
+/* Stream out tree node T.  We automatically create local back
+   references, which is essentially the lisp self-referential
+   structure pretty-printer.  */
 
-bool
-trees_out::tree_node_special (tree t)
+void
+trees_out::tree_node (tree t)
 {
+  if (!t)
+    {
+      nulls++;
+      s (tt_null);
+      return;
+    }
+
+  dump.indent ();
  again:
   if (int *val_p = tree_map.get (t))
     {
+      /* A back ref or fixed ref.  */
       refs++;
       int val = *val_p;
       if (val <= tt_backref)
@@ -5182,7 +5192,7 @@ trees_out::tree_node_special (tree t)
 	/* Fixed reference. */
 	s (tt_fixed), u (val);
       dump () && dump ("Wrote:%d referenced %C:%N%S", val, TREE_CODE (t), t, t);
-      return true;
+      goto done;
     }
 
   if (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (t))
@@ -5194,11 +5204,42 @@ trees_out::tree_node_special (tree t)
       tree_node (DECL_NAME (t));
       unsigned tag = insert (t);
       dump () && dump ("Wrote:%d namespace %N", tag, t);
-      return true;
+      goto done;
+    }
+
+  if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
+    {
+      /* T is a typeinfo object.  These need recreating by the loader.
+	 The type it is for is stashed on the name's TREE_TYPE.  */
+      tree type = TREE_TYPE (DECL_NAME (t));
+      s (tt_tinfo_var);
+      tree_node (type);
+      int tag = insert (t);
+      dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
+      goto done;
+    }
+
+  if (TREE_CODE (t) == IDENTIFIER_NODE)
+    {
+      /* An identifier node.  Stream the name or type.  */
+      bool conv_op = IDENTIFIER_CONV_OP_P (t);
+
+      s (conv_op ? tt_conv_id : tt_id);
+      if (conv_op)
+	tree_node (TREE_TYPE (t));
+      else
+	str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
+
+      int tag = insert (t);
+      dump () && dump ("Written:%d %sidentifier:%N",
+		       tag, conv_op ? "conv_op_" : "",
+		       conv_op ? TREE_TYPE (t) : t);
+      goto done;
     }
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t))
     {
+      /* A named type.  */
       tree name = TYPE_NAME (t);
 
       gcc_assert (TREE_CODE (name) == TYPE_DECL);
@@ -5212,9 +5253,10 @@ trees_out::tree_node_special (tree t)
 	  u (ix);
 	  unsigned tag = insert (t);
 	  dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
-	  return true;
+	  goto done;
 	}
-      else if (!tree_map.get (name))
+
+      if (!tree_map.get (name))
 	{
 	  /* T is a named type whose name we have not met yet.  Write the
 	     type name as an interstitial, and then start over.  */
@@ -5233,37 +5275,7 @@ trees_out::tree_node_special (tree t)
 	}
     }
 
-  if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
-    {
-      /* T is a typeinfo object.  These need recreating by the loader.
-	 The type it is for is stashed on the name's TREE_TYPE.  */
-      tree type = TREE_TYPE (DECL_NAME (t));
-      s (tt_tinfo_var);
-      tree_node (type);
-      int tag = insert (t);
-      dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
-      return true;
-    }
-
-  if (TREE_CODE (t) == IDENTIFIER_NODE)
-    {
-      /* An identifier node.  Stream the name or type.  */
-      bool conv_op = IDENTIFIER_CONV_OP_P (t);
-
-      s (conv_op ? tt_conv_id : tt_id);
-      if (conv_op)
-	tree_node (TREE_TYPE (t));
-      else
-	str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
-
-      unsigned tag = insert (t);
-      dump () && dump ("Written:%d %sidentifier:%N",
-		       tag, conv_op ? "conv_op_" : "",
-		       conv_op ? TREE_TYPE (t) : t);
-      return true;
-    }
-
-  if (DECL_P (t))
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     {
       tree module_ctx = module_context (t);
       unsigned owner = MAYBE_DECL_MODULE_OWNER (module_ctx);
@@ -5291,11 +5303,29 @@ trees_out::tree_node_special (tree t)
 		}
 	      u (existed);
 	    }
-	  return true;
+	  goto done;
 	}
     }
 
-  return false;  /* Not a special snowflake. */
+  {
+    /* Generic node streaming.  */    
+    tree_code code = TREE_CODE (t);
+
+    unique++;
+    s (tt_node);
+    u (code);
+
+    start (code, t);
+
+    int tag = insert (t);
+    dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
+		     TREE_CODE_CLASS (code) == tcc_declaration
+		     && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
+    tree_node_raw (code, t);
+    dump () && dump ("Written:%d %N", tag, t);
+  }
+ done:
+  dump.outdent ();
 }
 
 tree
@@ -5446,50 +5476,6 @@ trees_in::tree_node_special (int tag)
   return res;
 }
 
-/* Write either the decl (as a declaration) itself (and create a
-   mapping for it), or write the existing mapping or write null.  This
-   is essentially the lisp self-referential structure pretty-printer,
-   except that we implicitly number every node, so need neither two
-   passes, nor explicit labelling.
-*/
-
-void
-trees_out::tree_node (tree t)
-{
-  if (!t)
-    {
-      nulls++;
-      s (tt_null);
-      return;
-    }
-
-  dump.indent ();
-  if (tree_node_special (t))
-    {
-      dump.outdent ();
-      return;
-    }
-
-  /* Generic node streaming.  */    
-  tree_code code = TREE_CODE (t);
-  tree_code_class klass = TREE_CODE_CLASS (code);
-
-  unique++;
-  s (tt_node);
-  u (code);
-
-  start (code, t);
-
-  int tag = insert (t);
-  dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
-		   klass == tcc_declaration && DECL_MODULE_EXPORT_P (t)
-		   ? " (exported)": "");
-
-  tree_node_raw (code, t);
-
-  dump.outdent ();
-}
-
 /* Read in a tree using TAG.  TAG is either a back reference, or a
    TREE_CODE for a new TREE.  For any tree that is a DECL, this does
    not read in a definition (initial value, class defn, function body,
@@ -5530,7 +5516,6 @@ trees_in::tree_node ()
       set_overrun ();
     }
   tree_code code = tree_code (c);
-  tree_code_class klass = TREE_CODE_CLASS (code);
   tree t = start (code);
 
   /* Insert into map.  */
