@@ -4220,6 +4220,9 @@ class Numeric_constant
   bool
   check_complex_type(Complex_type*, bool, Location);
 
+  static bool
+  is_float_neg_zero(const mpfr_t, int bits);
+
   // The kinds of constants.
   enum Classification
   {
