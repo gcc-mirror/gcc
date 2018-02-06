@@ -1,3 +1,9 @@
+2018-02-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/84154
+	* config/rs6000/rs6000.md (su code attribute): Use "u" for
+	unsigned_fix, not "s".
+
 2018-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_fn_eh_frame_ro): New function.
