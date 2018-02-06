@@ -1,3 +1,8 @@
+2018-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84146
+	* gcc.target/i386/pr84146.c: New test.
+
 2018-02-06  Michael Collison  <michael.collison@arm.com>
 
 	* gcc.target/arm/pr7676.c: New testcase for incorrect splitting.

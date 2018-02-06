@@ -2612,31 +2612,27 @@ rest_of_insert_endbranch (void)
       for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
-	  if (INSN_P (insn) && GET_CODE (insn) == CALL_INSN)
+	  if (CALL_P (insn))
 	    {
 	      if (find_reg_note (insn, REG_SETJMP, NULL) == NULL)
 		continue;
 	      /* Generate ENDBRANCH after CALL, which can return more than
 		 twice, setjmp-like functions.  */
 
-	      /* Skip notes and debug insns that must be next to the
-		 call insn.  ??? This might skip a lot more than
-		 that...  ??? Skipping barriers and emitting code
-		 after them surely looks like a mistake; we probably
-		 won't ever hit it, for we'll hit BB_END first.  */
+	      /* Skip notes that must immediately follow the call insn.  */
 	      rtx_insn *next_insn = insn;
-	      while ((next_insn != BB_END (bb))
-		      && (DEBUG_INSN_P (NEXT_INSN (next_insn))
-			  || NOTE_P (NEXT_INSN (next_insn))
-			  || BARRIER_P (NEXT_INSN (next_insn))))
-		next_insn = NEXT_INSN (next_insn);
+	      if (NEXT_INSN (insn)
+		  && NOTE_P (NEXT_INSN (insn))
+		  && (NOTE_KIND (NEXT_INSN (insn))
+		      == NOTE_INSN_CALL_ARG_LOCATION))
+		next_insn = NEXT_INSN (insn);
 
 	      cet_eb = gen_nop_endbr ();
 	      emit_insn_after_setloc (cet_eb, next_insn, INSN_LOCATION (insn));
 	      continue;
 	    }
 
-	  if (INSN_P (insn) && JUMP_P (insn) && flag_cet_switch)
+	  if (JUMP_P (insn) && flag_cet_switch)
 	    {
 	      rtx target = JUMP_LABEL (insn);
 	      if (target == NULL_RTX || ANY_RETURN_P (target))
@@ -2671,7 +2667,7 @@ rest_of_insert_endbranch (void)
 	  if ((LABEL_P (insn) && LABEL_PRESERVE_P (insn))
 	      || (NOTE_P (insn)
 		  && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))
-/* TODO.  Check /s bit also.  */
+	    /* TODO.  Check /s bit also.  */
 	    {
 	      cet_eb = gen_nop_endbr ();
 	      emit_insn_after (cet_eb, insn);

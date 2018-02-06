@@ -1,3 +1,12 @@
+2018-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84146
+	* config/i386/i386.c (rest_of_insert_endbranch): Only skip
+	NOTE_INSN_CALL_ARG_LOCATION after a call, not anything else,
+	and skip it regardless of bb boundaries.  Use CALL_P macro,
+	don't test INSN_P (insn) together with CALL_P or JUMP_P check
+	unnecessarily, formatting fix.
+
 2018-02-06  Michael Collison  <michael.collison@arm.com>
 
 	* config/arm/thumb2.md:
