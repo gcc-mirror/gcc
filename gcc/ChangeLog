@@ -1,3 +1,9 @@
+2018-02-06  Andrew Jenner  <andrew@codesourcery.com>
+
+	* config/powerpcspe/powerpcspe.opt: (msimple-fpu, mfpu) Add
+	Undocumented.
+	* config/powerpcspe/sysv4.opt (mbit-align): Likewise.
+
 2018-02-06  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/84225

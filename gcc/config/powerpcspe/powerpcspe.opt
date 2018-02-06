@@ -516,11 +516,11 @@ Target RejectNegative Var(rs6000_double_float) Save
 Double-precision floating point unit.
 
 msimple-fpu
-Target RejectNegative Var(rs6000_simple_fpu) Save
+Target Undocumented RejectNegative Var(rs6000_simple_fpu) Save
 Floating point unit does not support divide & sqrt.
 
 mfpu=
-Target RejectNegative Joined Enum(fpu_type_t) Var(rs6000_fpu_type) Init(FPU_NONE)
+Target Undocumented RejectNegative Joined Enum(fpu_type_t) Var(rs6000_fpu_type) Init(FPU_NONE)
 -mfpu=	Specify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu).
 
 Enum

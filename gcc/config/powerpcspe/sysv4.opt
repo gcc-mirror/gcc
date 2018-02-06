@@ -44,7 +44,7 @@ EnumValue
 Enum(rs6000_tls_size) String(64) Value(64)
 
 mbit-align
-Target Report Var(TARGET_NO_BITFIELD_TYPE) Save
+Target Undocumented Report Var(TARGET_NO_BITFIELD_TYPE) Save
 Align to the base type of the bit-field.
 
 mstrict-align
