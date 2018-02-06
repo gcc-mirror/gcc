@@ -1,3 +1,10 @@
+2018-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/84243
+	* c-c++-common/fcf-protection-6.c: Only pass -mshstk on x86
+	targets.
+	* c-c++-common/fcf-protection-7.c: Likewise for -mibt.
+
 2018-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84146
