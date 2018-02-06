@@ -5295,6 +5295,11 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_LINK_STACK == -1)
     SET_TARGET_LINK_STACK (rs6000_tune == PROCESSOR_PPC476 && flag_pic);
 
+  /* Deprecate use of -mno-speculate-indirect-jumps.  */
+  if (!rs6000_speculate_indirect_jumps)
+    warning (0, "%qs is deprecated and not recommended in any circumstances",
+	     "-mno-speculate-indirect-jumps");
+
   return ret;
 }
 
