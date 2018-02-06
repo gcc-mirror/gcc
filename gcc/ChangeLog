@@ -1,3 +1,8 @@
+2018-02-06  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c (print_reg): Fix typo.
+	(ix86_loop_unroll_adjust): Do not unroll beyond the original nunroll.
+
 2018-02-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure: Regenerate.
