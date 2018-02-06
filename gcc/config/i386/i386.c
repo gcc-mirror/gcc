@@ -4915,30 +4915,43 @@ ix86_option_override_internal (bool main_args_p,
   /* Do not support control flow instrumentation if CET is not enabled.  */
   if (opts->x_flag_cf_protection != CF_NONE)
     {
-      if (!(TARGET_IBT_P (opts->x_ix86_isa_flags2)
-	    || TARGET_SHSTK_P (opts->x_ix86_isa_flags)))
+      switch (flag_cf_protection)
 	{
-	  if (flag_cf_protection == CF_FULL)
+	case CF_NONE:
+	  break;
+	case CF_BRANCH:
+	  if (! TARGET_IBT_P (opts->x_ix86_isa_flags2))
 	    {
-	      error ("%<-fcf-protection=full%> requires CET support "
-		     "on this target. Use -mcet or one of -mibt, "
-		     "-mshstk options to enable CET");
+	      error ("%<-fcf-protection=branch%> requires Intel CET "
+		     "support. Use -mcet or -mibt option to enable CET");
+	      flag_cf_protection = CF_NONE;
+	      return false;
 	    }
-	  else if (flag_cf_protection == CF_BRANCH)
+	  break;
+	case CF_RETURN:
+	  if (! TARGET_SHSTK_P (opts->x_ix86_isa_flags))
 	    {
-	      error ("%<-fcf-protection=branch%> requires CET support "
-		     "on this target. Use -mcet or one of -mibt, "
-		     "-mshstk options to enable CET");
+	      error ("%<-fcf-protection=return%> requires Intel CET "
+		     "support. Use -mcet or -mshstk option to enable CET");
+	      flag_cf_protection = CF_NONE;
+	      return false;
 	    }
-	  else if (flag_cf_protection == CF_RETURN)
+	  break;
+	case CF_FULL:
+	  if (   ! TARGET_IBT_P (opts->x_ix86_isa_flags2)
+		 || ! TARGET_SHSTK_P (opts->x_ix86_isa_flags))
 	    {
-	      error ("%<-fcf-protection=return%> requires CET support "
-		     "on this target. Use -mcet or one of -mibt, "
+	      error ("%<-fcf-protection=full%> requires Intel CET "
+		     "support. Use -mcet or both of -mibt and "
 		     "-mshstk options to enable CET");
+	      flag_cf_protection = CF_NONE;
+	      return false;
 	    }
-	  flag_cf_protection = CF_NONE;
-	  return false;
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
+
       opts->x_flag_cf_protection =
 	(cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
     }

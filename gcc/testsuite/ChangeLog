@@ -1,3 +1,13 @@
+2018-02-06  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84145
+	* c-c++-common/fcf-protection-1.c: Change a compared message.
+	* c-c++-common/fcf-protection-2.c: Likewise.
+	* c-c++-common/fcf-protection-3.c: Likewise.
+	* c-c++-common/fcf-protection-5.c: Likewise.
+	* c-c++-common/fcf-protection-6.c: New test.
+	* c-c++-common/fcf-protection-7.c: Likewise.
+
 2018-02-06  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/84228
