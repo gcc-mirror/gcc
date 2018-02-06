@@ -1,3 +1,19 @@
+2018-02-06  Nathan Sidwell  <nathan@acm.org>
+
+	Less implicit tree numbering, negative indices for back refs
+	gcc/cp/
+	* module.c (ptr_uint_traits, ptr_uint_hash_map): Rename ...
+	(ptr_int_traits, ptr_int_hash_map): ... here.  Map to ints.
+	(uint_ptr_traits, uint_ptr_hash_map): Delete.
+	(enum record_tag): Delete.
+	(enum tree_tag): New.
+	(trees_{in,out}::insert): Return int.
+	(trees_{in,out}::tree_node_special): Adjust.
+	(trees_{in,out}::tree_node): Adjust.
+	(trees_out::write, trees_in::read): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_[bd].C: Adjust.
+
 2018-02-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

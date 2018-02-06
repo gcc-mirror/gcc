@@ -170,12 +170,9 @@ struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *>
   static void mark_deleted (T *) { gcc_unreachable (); }
 };
 
-/* Map from pointer to unsigned and vice-versa.   */
-typedef simple_hashmap_traits<nodel_ptr_hash<void>, unsigned> ptr_uint_traits;
-typedef simple_hashmap_traits<int_hash<unsigned,0>, void *> uint_ptr_traits;
-
-typedef hash_map<void *,unsigned,ptr_uint_traits> ptr_uint_hash_map;
-typedef hash_map<unsigned,void *,uint_ptr_traits> uint_ptr_hash_map;
+/* Map from pointer to integer.   */
+typedef simple_hashmap_traits<nodel_ptr_hash<void>, int> ptr_int_traits;
+typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
 /* A data buffer, using trailing array hack.  */
 
@@ -187,12 +184,13 @@ private:
   unsigned calc_crc () const;
 
 public:
-  void set_crc (unsigned *crc_ptr);
-  bool check_crc (bool) const;
+  /* We store the CRC in the first 4 bytes, using host endianness.  */
   unsigned get_crc () const
   {
     return *(const unsigned *)&buffer[0];
   }
+  void set_crc (unsigned *crc_ptr);
+  bool check_crc (bool) const;
 
 public:
   /* new & delete semantics don't quite work.  */
@@ -221,7 +219,9 @@ data::set_crc (unsigned *crc_ptr)
       gcc_checking_assert (size >= 4);
       unsigned crc = calc_crc ();
       *(unsigned *)buffer = crc;
-      *crc_ptr = crc32_unsigned (*crc_ptr, crc);
+      if (*crc_ptr)
+	crc = crc32_unsigned (*crc_ptr, crc);
+      *crc_ptr = crc;
     }
 }
 
@@ -477,7 +477,7 @@ public:
   /* Builder for string table.  */
   class strtab
   {
-    ptr_uint_hash_map ident_map;	/* Map of IDENTIFIERS to offsets. */
+    ptr_int_hash_map ident_map;		/* Map of IDENTIFIERS to offsets. */
     vec<tree, va_gc> *idents;		/* Ordered vector.  */
     vec<const char *, va_gc> *literals; /* Ordered vector.  */
     unsigned size;			/* Next offset.  */
@@ -688,13 +688,12 @@ elf_out::strtab::name (const_tree ident)
 {
   unsigned result;
   bool existed;
-  unsigned *slot
-    = &ident_map.get_or_insert (const_cast <tree> (ident), &existed);
+  int *slot = &ident_map.get_or_insert (const_cast <tree> (ident), &existed);
   if (existed)
     result = *slot;
   else
     {
-      *slot = size;
+      *slot = (int)size;
       vec_safe_push (idents, const_cast <tree> (ident));
       result = size;
       size += IDENTIFIER_LENGTH (ident) + 1;
@@ -1623,19 +1622,25 @@ vec<module_state *, va_gc> GTY(()) *module_state::modules;
 /* Map from identifier to module index. */
 hash_table<module_state_hash> *module_state::hash;
 
-/* Record tags.  */
-enum record_tag
+/* Tree tags.  */
+enum tree_tag
   {
-    /* Module-specific records.  */
-    rt_binding,		/* A name-binding.  */
-    rt_definition,	/* A definition. */
-    rt_identifier,	/* An identifier node.  */
-    rt_conv_identifier,	/* A conversion operator name.  */
-    rt_type_name,	/* A type name.  */
-    rt_typeinfo_var,	/* A typeinfo object.  */
-    rt_typeinfo_pseudo, /* A typeinfo pseudo type.  */
-    rt_tree_base = 0x100,	/* Tree codes.  */
-    rt_ref_base = 0x1000	/* Back-reference indices.  */
+    tt_backref = -1,	/* Back references.  Must be first.  */
+    tt_null,		/* NULL_TREE.  */
+    tt_fixed,		/* Fixed vector index.  */
+    tt_node,		/* New node.  */
+    tt_import,  	/* Import from another module. */
+    tt_id,  		/* Identifier node.  */
+    tt_conv_id,		/* Conversion operator name.  */
+    tt_namespace,	/* Namespace.  */
+    tt_tinfo_var,	/* Typeinfo object. */
+    tt_tinfo_pseudo,	/* Typeinfo pseudo type.  */
+    tt_type_name,	/* TYPE_DECL for type.  */
+
+    tt_binding,
+    tt_definition,
+
+    tt_decl		/* Declaration reference.  Must be last.  */
   };
 
 /* Tree stream reader.  */
@@ -1659,7 +1664,7 @@ public:
   tree tag_definition ();
 
 private:
-  unsigned insert (tree);
+  int insert (tree);
   tree finish_type (tree);
 
 private:
@@ -1673,7 +1678,7 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   bool tree_node_raw (tree_code, tree, tree, tree);
-  tree tree_node_special (unsigned);
+  tree tree_node_special (int);
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
@@ -1701,8 +1706,8 @@ class trees_out : public bytes_out {
 
 private:
   module_state *state;
-  unsigned count;
-  ptr_uint_hash_map tree_map; /* trees to ids  */
+  int ref_num;
+  ptr_int_hash_map tree_map; /* trees to ids  */
 
   /* Tree instrumentation. */
 private:
@@ -1715,13 +1720,6 @@ public:
   trees_out (module_state *, vec<tree, va_gc> *globals);
   ~trees_out ();
 
-  /* Allocate a new reference index.  */
-private:
-  unsigned next ()
-  {
-    return count++;
-  }
-
 public:
   void write (auto_vec<tree> &decls);
 
@@ -1733,12 +1731,12 @@ public:
   void tag_definition (tree node, tree maybe_template);
 
 private:
-  void tag (record_tag rt)
+  void tag (int rt)
   {
     records++;
-    u (rt);
+    s (rt);
   }
-  unsigned insert (tree);
+  int insert (tree);
   void start (tree_code, tree);
   void loc (location_t);
   void core_bools (tree);
@@ -1748,7 +1746,7 @@ private:
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
   void tree_node_raw (tree_code, tree);
-  int tree_node_special (tree);
+  bool tree_node_special (tree);
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
@@ -1769,18 +1767,17 @@ unsigned trees_out::nulls;
 unsigned trees_out::records;
 
 trees_out::trees_out (module_state *state, vec<tree, va_gc> *globals)
-  :parent (), state (state), count (rt_ref_base), tree_map (500)
+  :parent (), state (state), ref_num (tt_backref + 1), tree_map (500)
 {
-  gcc_assert (MAX_TREE_CODES <= rt_ref_base - rt_tree_base);
-
+  /* Install the global trees, with +ve references.  */
   unsigned limit = globals->length ();
   for (unsigned ix = 0; ix != limit; ix++)
     {
       tree val = (*globals)[ix];
       bool existed;
-      unsigned *slot = &tree_map.get_or_insert (val, &existed);
+      int *slot = &tree_map.get_or_insert (val, &existed);
       gcc_checking_assert (!existed);
-      *slot = next ();
+      *slot = ix;
     }
 }
 
@@ -2053,6 +2050,12 @@ dumper::operator () (const char *format, ...)
 
 	    version2string (v, string);
 	    fputs (string, dumps->stream);
+	    break;
+	  }
+	case 'd': /* Decimal Int.  */
+	  {
+	    int d = va_arg (args, int);
+	    fprintf (dumps->stream, "%d", d);
 	    break;
 	  }
 	case 'p': /* Pointer. */
@@ -2402,7 +2405,7 @@ module_state::write_config (elf_out *to, unsigned inner_crc)
 
   /* Write version and inner crc as raw values, for easier
      debug inspection.  */
-  dump () && dump ("Writing version=%u, inner_crc=%x",
+  dump () && dump ("Writing version=%V, inner_crc=%x",
 		   get_version (), inner_crc);
   cfg.raw (unsigned (get_version ()));
   cfg.raw (inner_crc);
@@ -2867,21 +2870,20 @@ trees_out::instrument ()
     }
 }
 
-unsigned
+int
 trees_out::insert (tree t)
 {
-  unsigned tag = next ();
-  bool existed = tree_map.put (t, tag);
+  --ref_num;
+  bool existed = tree_map.put (t, ref_num);
   gcc_assert (!existed);
-  return tag;
+  return ref_num;
 }
 
-unsigned
+int
 trees_in::insert (tree t)
 {
-  unsigned tag = rt_ref_base + fixed_refs->length () + back_refs.length ();
   back_refs.safe_push (t);
-  return tag;
+  return -(int)back_refs.length ();
 }
 
 /* BINDING is a vector of decls bound in namespace NS.  Write out the
@@ -3377,7 +3379,7 @@ trees_out::tag_definition (tree t, tree maybe_template)
 
   if (!maybe_template)
     maybe_template = t;
-  tag (rt_definition);
+  tag (tt_definition);
   tree_node (maybe_template);
 
  again:
@@ -5166,15 +5168,21 @@ trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 
 /* If tree has special streaming semantics, do that.  */
 
-int
+bool
 trees_out::tree_node_special (tree t)
 {
-  if (unsigned *val = tree_map.get (t))
+ again:
+  if (int *val_p = tree_map.get (t))
     {
       refs++;
-      u (*val);
-      dump () && dump ("Wrote:%u referenced %C:%N%S", *val,
-		       TREE_CODE (t), t, t);
+      int val = *val_p;
+      if (val <= tt_backref)
+	/* Back reference.  */
+	s (val);
+      else
+	/* Fixed reference. */
+	s (tt_fixed), u (val);
+      dump () && dump ("Wrote:%d referenced %C:%N%S", val, TREE_CODE (t), t, t);
       return true;
     }
 
@@ -5189,10 +5197,10 @@ trees_out::tree_node_special (tree t)
 
 	  /* Make sure we're identifying this exact variant.  */
 	  gcc_assert (get_pseudo_tinfo_type (ix) == t);
-	  u (rt_typeinfo_pseudo);
+	  s (tt_tinfo_pseudo);
 	  u (ix);
 	  unsigned tag = insert (t);
-	  dump () && dump ("Wrote:%u typeinfo pseudo %u %N", tag, ix, t);
+	  dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
 	  return true;
 	}
       else if (!tree_map.get (name))
@@ -5205,12 +5213,12 @@ trees_out::tree_node_special (tree t)
 	     those some other way to be canonically correct.  */
 	  gcc_assert (TREE_TYPE (DECL_NAME (name)) != t
 		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-	  u (rt_type_name);
+	  s (tt_type_name);
 	  tree_node (name);
 	  dump () && dump ("Wrote interstitial type name %C:%N%S",
 			   TREE_CODE (name), name, name);
 	  /* The type could be a variant of TREE_TYPE (name).  */
-	  return -1;
+	  goto again;
 	}
     }
 
@@ -5220,10 +5228,10 @@ trees_out::tree_node_special (tree t)
 	 The type it is for is stashed on the name's TREE_TYPE.  */
       tree type = TREE_TYPE (DECL_NAME (t));
       dump () && dump ("Writing typeinfo %S for %N", t, type);
-      u (rt_typeinfo_var);
+      s (tt_tinfo_var);
       tree_node (type);
       unsigned tag = insert (t);
-      dump () && dump ("Wrote:%u typeinfo %S for %N", tag, t, type);
+      dump () && dump ("Wrote:%d typeinfo %S for %N", tag, t, type);
       return true;
     }
 
@@ -5232,14 +5240,14 @@ trees_out::tree_node_special (tree t)
       /* An identifier node.  Stream the name or type.  */
       bool conv_op = IDENTIFIER_CONV_OP_P (t);
 
-      u (conv_op ? rt_conv_identifier : rt_identifier);
+      s (conv_op ? tt_conv_id : tt_id);
       if (conv_op)
 	tree_node (TREE_TYPE (t));
       else
 	str (IDENTIFIER_POINTER (t), IDENTIFIER_LENGTH (t));
 
       unsigned tag = insert (t);
-      dump () && dump ("Written:%u %sidentifier:%N",
+      dump () && dump ("Written:%d %sidentifier:%N",
 		       tag, conv_op ? "conv_op_" : "",
 		       conv_op ? TREE_TYPE (t) : t);
       return true;
@@ -5249,116 +5257,105 @@ trees_out::tree_node_special (tree t)
 }
 
 tree
-trees_in::tree_node_special (unsigned tag)
+trees_in::tree_node_special (int tag)
 {
-  if (tag >= rt_ref_base)
+  tree res = NULL_TREE;
+  switch (tag)
     {
-      tree res;
-      unsigned index = tag - rt_ref_base;
+    case tt_node:
+      break;
 
-      if (index  < fixed_refs->length ())
-	res = (*fixed_refs)[index];
+    default:
+      if (tag <= tt_backref && unsigned (tt_backref - tag) < back_refs.length ())
+	res = back_refs[tt_backref - tag];
       else
 	{
-	  index -= fixed_refs->length ();
-	  if (index < back_refs.length ())
-	    res = back_refs[index];
-	  else
-	    {
-	      error ("unknown tree reference %qd", tag);
-	      set_overrun ();
-	      res = NULL_TREE;
-	    }
+	  error ("unknown tree reference %qd", tag);
+	  set_overrun ();
 	}
       if (res)
-	dump () && dump ("Read:%u found %C:%N%S", tag,
+	dump () && dump ("Read backref:%d found %C:%N%S", tag,
 			 TREE_CODE (res), res, res);
-      return res;
-    }
+      break;
 
-  if (tag == rt_type_name)
-    {
+    case tt_fixed:
+      {
+	unsigned fix = u ();
+	if (fix < (*fixed_refs).length ())
+	  {
+	    res = (*fixed_refs)[fix];
+	    dump () && dump ("Read fixed:%u %C:%N%S", fix,
+			     TREE_CODE (res), res, res);
+	  }
+	else
+	  set_overrun ();
+	break;
+      }
+
+    case tt_type_name:
       /* An interstitial type name.  Read the name and then start
 	 over.  */
-      tree name = tree_node ();
-      if (!name || TREE_CODE (name) != TYPE_DECL)
+      res = tree_node ();
+      if (!res || TREE_CODE (res) != TYPE_DECL)
 	set_overrun ();
       else
 	dump () && dump ("Read interstitial type name %C:%N%S",
-			 TREE_CODE (name), name, name);
-      return NULL_TREE;
-    }
+			 TREE_CODE (res), res, res);
+      res = NULL_TREE;
+      break;
 
-  if (tag == rt_typeinfo_var)
-    {
-      /* A typeinfo.  Get the type and recreate the var decl.  */
-      tree var = NULL_TREE, type = tree_node ();
-      if (!type || !TYPE_P (type))
-	set_overrun ();
-      else
-	{
-	  var = get_tinfo_decl (type);
-	  unsigned tag = insert (var);
-	  dump () && dump ("Created:%u typeinfo var %S for %N",
-			   tag, var, type);
-	}
-      return var;
-    }
+    case tt_tinfo_var:
+    case tt_conv_id:
+      /* A typeinfo var or conversion operator.  Get the type and
+	 recreate the var decl or identifier.  */
+      {
+	bool is_tinfo = tag == tt_tinfo_var;
+	tree type = tree_node ();
+	if (!type || !TYPE_P (type))
+	  set_overrun ();
+	else
+	  {
+	    res = is_tinfo ? get_tinfo_decl (type) : make_conv_op_name (type);
+	    int tag = insert (res);
+	    dump () && dump ("Created %s:%d %S for %N",
+			     is_tinfo ? "tinfo_var" : "conv_op", tag, res, type);
+	  }
+      }
+      break;
 
-  if (tag == rt_typeinfo_pseudo)
-    {
-      /* A pseuto typeinfo.  Get the index and recreate the pseudo.  */
-      unsigned ix = u ();
-      tree type = NULL_TREE;
+    case tt_tinfo_pseudo:
+      {
+	/* A pseuto typeinfo.  Get the index and recreate the pseudo.  */
+	unsigned ix = u ();
 
-      if (ix >= 1000)
-	set_overrun ();
-      else
-	type = get_pseudo_tinfo_type (ix);
+	res = get_pseudo_tinfo_type (ix);
+	int tag = insert (res);
+	dump () && dump ("Created tinfo_pseudo:%d %u %N", tag, ix, res);
+      }
+      break;
 
-      unsigned tag = insert (type);
-      dump () && dump ("Created:%u typeinfo pseudo %u %N", tag, ix, type);
-      return type;
-    }
+    case tt_id:
+      {
+	size_t l;
+	const char *chars = str (&l);
+	res = get_identifier_with_length (chars, l);
+	int tag = insert (res);
+	dump () && dump ("Read identifier:%d%N", tag, res);
+      }
+      break;
 
-  if (tag == rt_definition)
-    {
+    case tt_definition:
       /* An immediate definition.  */
-      tree res = tag_definition ();
+      res = tag_definition ();
       if (res)
 	dump () && dump ("Read immediate definition %C:%N%S",
 			 TREE_CODE (res), res, res);
       else
 	gcc_assert (get_overrun ());
-      return res;
+      break;
     }
 
-  if (tag == rt_identifier)
-    {
-      size_t l;
-      const char *chars = str (&l);
-      tree id = get_identifier_with_length (chars, l);
-      tag = insert (id);
-      dump () && dump ("Read:%u identifier:%N", tag, id);
-      return id;
-    }
-
-  if (tag == rt_conv_identifier)
-    {
-      tree t = tree_node ();
-      if (!t || !TYPE_P (t))
-	{
-	  error ("bad conversion operator");
-	  set_overrun ();
-	  t = void_type_node;
-	}
-      tree id = make_conv_op_name (t);
-      tag = insert (id);
-      dump () && dump ("Read:%u conv_op_identifier:%N", tag, t);
-      return id;
-    }
-
-  return NULL_TREE;
+  return res;
 }
 
 /* Write either the decl (as a declaration) itself (and create a
@@ -5374,16 +5371,13 @@ trees_out::tree_node (tree t)
   if (!t)
     {
       nulls++;
-      u (0);
+      s (tt_null);
       return;
     }
 
   dump.indent ();
- again:
-  if (int special = tree_node_special (t))
+  if (tree_node_special (t))
     {
-      if (special < 0)
-	goto again;
       dump.outdent ();
       return;
     }
@@ -5391,10 +5385,10 @@ trees_out::tree_node (tree t)
   /* Generic node streaming.  */    
   tree_code code = TREE_CODE (t);
   tree_code_class klass = TREE_CODE_CLASS (code);
-  gcc_assert (rt_tree_base + code < rt_ref_base);
 
   unique++;
-  u (rt_tree_base + code);
+  s (tt_node);
+  u (code);
 
   bool body = true;
   if (klass == tcc_declaration)
@@ -5420,8 +5414,8 @@ trees_out::tree_node (tree t)
   if (body)
     start (code, t);
 
-  unsigned tag = insert (t);
-  dump () && dump ("Writing:%u %C:%N%S%s", tag, TREE_CODE (t), t, t,
+  int tag = insert (t);
+  dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
 		   klass == tcc_declaration && DECL_MODULE_EXPORT_P (t)
 		   ? " (exported)": "");
 
@@ -5431,12 +5425,12 @@ trees_out::tree_node (tree t)
     {
       tree type = TREE_TYPE (t);
       bool existed;
-      unsigned *val = &tree_map.get_or_insert (type, &existed);
+      int *val = &tree_map.get_or_insert (type, &existed);
       if (!existed)
 	{
-	  tag = next ();
+	  tag = --ref_num;
 	  *val = tag;
-	  dump () && dump ("Writing:%u %C:%N%S imported type", tag,
+	  dump () && dump ("Writing:%d %C:%N%S imported type", tag,
 			   TREE_CODE (type), type, type);
 	}
       u (existed);
@@ -5454,9 +5448,9 @@ trees_out::tree_node (tree t)
 tree
 trees_in::tree_node ()
 {
-  unsigned tag = u ();
+  int tag = s ();
 
-  if (!tag)
+  if (tag == tt_null)
     return NULL_TREE;
 
   dump.indent ();
@@ -5464,17 +5458,10 @@ trees_in::tree_node ()
   tree res = tree_node_special (tag);
   if (!res && !get_overrun ())
     {
-      if (tag == rt_type_name)
+      if (tag == tt_type_name)
 	{
-	  tag = u ();
+	  tag = s ();
 	  goto again;
-	}
-
-      if (tag < rt_tree_base || tag >= rt_tree_base + MAX_TREE_CODES)
-	{
-	  error (tag < rt_tree_base ? "unexpected key %qd"
-		 : "unknown tree code %qd" , tag);
-	  set_overrun ();
 	}
     }
 
@@ -5484,7 +5471,14 @@ trees_in::tree_node ()
       return res;
     }
 
-  tree_code code = tree_code (tag - rt_tree_base);
+  gcc_checking_assert (tag == tt_node);
+  unsigned c = u ();
+  if (c >= MAX_TREE_CODES)
+    {
+      error ("unknown tree code %qd" , c);
+      set_overrun ();
+    }
+  tree_code code = tree_code (c);
   tree_code_class klass = TREE_CODE_CLASS (code);
   tree t = NULL_TREE;
 
@@ -5540,7 +5534,7 @@ trees_in::tree_node ()
 
   /* Insert into map.  */
   tag = insert (t);
-  dump () && dump ("%s:%u %C:%N", body ? "Reading" : "Imported", tag,
+  dump () && dump ("%s:%d %C:%N", body ? "Reading" : "Imported", tag,
 		   code, name);
 
   if (body)
@@ -5554,14 +5548,14 @@ trees_in::tree_node ()
     {
       tree type = TREE_TYPE (t);
       tag = insert (type);
-      dump () && dump ("Read:%u %C:%N%S imported type", tag,
+      dump () && dump ("Read:%d %C:%N%S imported type", tag,
 		       TREE_CODE (type), type, type);
     }
 
   if (get_overrun ())
     {
     barf:
-      back_refs[tag - fixed_refs->length () - rt_ref_base] = NULL_TREE;
+      back_refs[tt_backref - tag] = NULL_TREE;
       set_overrun ();
       dump.outdent ();
       return NULL_TREE;
@@ -5575,8 +5569,8 @@ trees_in::tree_node ()
 	{
 	  /* Update the mapping.  */
 	  t = found;
-	  back_refs[tag - fixed_refs->length () - rt_ref_base] = t;
-	  dump () && dump ("Index %u remapping %C:%N%S", tag,
+	  back_refs[tt_backref - tag] = t;
+	  dump () && dump ("Index %d remapping %C:%N%S", tag,
 			   t ? TREE_CODE (t) : ERROR_MARK, t, t);
 	}
     }
@@ -5683,7 +5677,7 @@ trees_out::write (auto_vec<tree> &decls)
       tree name = decls[ix++];
       dump () && dump ("Writing %N bindings for %N", ns, name);
 
-      tag (rt_binding);
+      tag (tt_binding);
       tree_node (ns);
       tree_node (name);
       tree decl;
@@ -5712,21 +5706,20 @@ trees_in::read ()
   bool ok = true;
   while (ok && more_p ())
     {
-      int rt = u ();
+      int tag = s ();
 
-      switch (rt)
+      switch (tag)
 	{
-	case rt_binding:
+	case tt_binding:
 	  ok = tag_binding ();
 	  break;
-	case rt_definition:
+	case tt_definition:
 	  ok = tag_definition () != NULL_TREE;
 	  break;
 
 	default:
-	  error (rt < rt_tree_base ? "unknown key %qd"
-		 : rt < rt_ref_base ? "unexpected tree code %qd"
-		 : "unexpected tree reference %qd",rt);
+	  error (tag >= 0 ? "unexpected key %qd"
+		 : "unexpected tree reference %qd", tag);
 	  ok = false;
 	  break;
 	}
