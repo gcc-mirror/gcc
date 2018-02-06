@@ -1849,7 +1849,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 
   /* Look for dst[i] = '\0'; after the stxncpy() call and if found
      avoid the truncation warning.  */
-  gsi_next (&gsi);
+  gsi_next_nondebug (&gsi);
   gimple *next_stmt = gsi_stmt (gsi);
 
   if (!gsi_end_p (gsi) && is_gimple_assign (next_stmt))

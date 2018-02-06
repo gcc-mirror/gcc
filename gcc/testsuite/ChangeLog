@@ -1,3 +1,8 @@
+2018-02-06  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/84228
+	* c-c++-common/Wstringop-truncation-3.c: New test.
+
 2018-02-06  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641
