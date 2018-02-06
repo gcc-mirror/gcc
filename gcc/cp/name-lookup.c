@@ -107,14 +107,13 @@ find_namespace_value (tree ns, tree name)
 }
 
 /* *SLOT is a namespace binding slot.  Find or create the
-   module-specific slot.  If CREATE is 0, we return NULL on
-   not-found.  If CREATE < 0, we're creating a slot for a namespace,
-   and try and extend an existing trailing binding span.  Otherwise
-   we're just creating a regular slot.  By construction, one can only
-   create new binding slots at the end of the array.  */
+   module-specific slot.  If CREATE is false, we return NULL on
+   not-found.  If CREATE is true we're creating a slot.  By
+   construction, one can only create new binding slots at the end of
+   the array.  */
 
 static tree *
-module_binding_slot (tree *slot, tree name, unsigned ix, int create)
+module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 {
   unsigned clusters = 0;
   module_cluster *cluster = NULL;
@@ -166,15 +165,6 @@ module_binding_slot (tree *slot, tree name, unsigned ix, int create)
       gcc_assert (probe + 1 == clusters
 		  && (offset + 1 == MODULE_VECTOR_SLOTS_PER_CLUSTER
 		      || !cluster->indices[offset+1].span));
-
-      /* If we're binding a namespace, see if we can extend the span
-	 of the final element.  */
-      if (create < 0
-	  && cluster->indices[offset].base + cluster->indices[offset].span == ix)
-	{
-	  cluster->indices[offset].span++;
-	  return &cluster->slots[offset];
-	}
 
       offset = (offset + 1) & (MODULE_VECTOR_SLOTS_PER_CLUSTER - 1);
       if (!offset)
@@ -3470,44 +3460,6 @@ pushdecl (tree x, bool is_friend)
   return ret;
 }
 
-// FIXME:KILL
-/* SLOT_VAL is the value of a binding.  Look in the module partitions
-   to see if there's a namespace already.  We don't have to consider
-   the STAT_HACK, because a namepace and an elaborated type cannot
-   reside in the same binding.  */
-
-static tree
-find_namespace_partition (tree slot_val)
-{
-  if (!slot_val)
-    ;
-  else if (TREE_CODE (slot_val) == MODULE_VECTOR)
-    {
-      module_cluster *cluster
-	= &MODULE_VECTOR_CLUSTER (slot_val,
-				  MODULE_VECTOR_NUM_CLUSTERS (slot_val));
-      do
-	{
-	  cluster--;
-	  if (tree second = cluster->slots[1])
-	    if (TREE_CODE (second) == NAMESPACE_DECL
-		&& !DECL_NAMESPACE_ALIAS (second))
-	      return second;
-
-	  if (tree first = cluster->slots[0])
-	    if (TREE_CODE (first) == NAMESPACE_DECL
-		&& !DECL_NAMESPACE_ALIAS (first))
-	      return first;
-	}
-      while (cluster != MODULE_VECTOR_CLUSTER_BASE (slot_val));
-    }
-  else if (TREE_CODE (slot_val) == NAMESPACE_DECL
-	   && !DECL_NAMESPACE_ALIAS (slot_val))
-    return slot_val;
-
-  return NULL_TREE;
-}
-
 /* DECL is a newly read in global-module _DECL, residing in CTX.
    Merge it with an already matching declaration.  If DECL is a
    namespace, insert it.Return the matched or new decl, or NULL
@@ -3516,19 +3468,19 @@ find_namespace_partition (tree slot_val)
 tree
 merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
 {
+  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL || DECL_NAMESPACE_ALIAS (decl));
+  gcc_assert (CP_DECL_CONTEXT (decl) == ctx);
+
   // FIXME: need to properly think about artificial decls.  See rtti.c
   // comment about abi_namespace too.
   if (DECL_ARTIFICIAL (decl))
     mod_ix = 0;
-  bool is_ns = (TREE_CODE (decl) == NAMESPACE_DECL
-		&& !DECL_NAMESPACE_ALIAS (decl));
-  gcc_assert (CP_DECL_CONTEXT (decl) == ctx);
   /* We know we'll eventually insert the decl, so we can create the
      slot now.  */
   tree *slot = find_namespace_slot (ctx, DECL_NAME (decl), true);
   tree *mslot = module_binding_slot
     (slot, DECL_NAME (decl),
-     mod_ix == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod_ix, is_ns);
+     mod_ix == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod_ix, false);
   tree old = NULL_TREE;
 
   if (!mslot)
@@ -3546,48 +3498,8 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
     old = NULL_TREE;
   else if (old)
     ;
-  else if (!is_ns)
-    old = decl;
   else
-    {
-      // FIXME: this comment is not correct.
-      /* Namespaces are always exported, and everything's exported
-	 from the global module.  Thus this namespace must be
-	 consistent with the global module, even if it didn't
-	 explicitly mention it.  So push it now.  It can't be hiding
-	 in some other module.  */
-      old = find_namespace_partition (*slot);
-
-      if (old)
-	decl = old;
-      else
-	{
-	  /* Creating a new namespace.  */
-	  SCOPE_DEPTH (decl) = SCOPE_DEPTH (ctx) + 1;
-	  if (ctx == global_namespace)
-	    DECL_CONTEXT (decl) = DECL_CONTEXT (global_namespace);
-	}
-      old = update_binding (NAMESPACE_LEVEL (ctx), NULL,
-			    mslot, NULL_TREE, decl, false);
-      if (old == decl)
-	{
-	  if (DECL_NAMESPACE_INLINE_P (old))
-	    vec_safe_push (DECL_NAMESPACE_INLINEES (ctx), old);
-	  /* Create its scope -- but don't push it.  */
-	  cp_binding_level *scope = ggc_cleared_alloc<cp_binding_level> ();
-	  scope->this_entity = old;
-	  scope->more_cleanups_ok = true;
-	  scope->kind = sk_namespace;
-	  scope->level_chain = NAMESPACE_LEVEL (ctx);
-	  NAMESPACE_LEVEL (old) = scope;
-	}
-      else
-	old = NULL_TREE;
-    }
-
-  if (is_ns && old
-      && DECL_NAMESPACE_INLINE_P (old) != DECL_NAMESPACE_INLINE_P (decl))
-    old = NULL_TREE;
+    old = decl;
 
   return old;
 }
@@ -3656,13 +3568,13 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
   gcc_assert (!value || !type); // FIXME stat hack
   if (!value)
     value = type;
-  bool is_ns = (TREE_CODE (value) == NAMESPACE_DECL
-		&& !DECL_NAMESPACE_ALIAS (value));
+  gcc_assert (TREE_CODE (value) != NAMESPACE_DECL
+	      || DECL_NAMESPACE_ALIAS (value));
 
   tree *slot = find_namespace_slot (ns, name, true);
   tree *mslot = module_binding_slot
     (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
-     is_ns ? -1 : 1);
+     true);
 
   gcc_assert (!*mslot || !MAYBE_STAT_TYPE (*mslot)); // FIXME
 
@@ -3694,7 +3606,7 @@ push_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 		found = true;
 	    }
 	}
-      else if (!iter.using_p () && !is_ns)
+      else if (!iter.using_p ())
 	{
 	  gcc_assert (!DECL_CHAIN (decl));
 	  export_tail = iter.export_tail (export_tail);

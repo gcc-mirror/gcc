@@ -1,5 +1,14 @@
 2018-02-06  Nathan Sidwell  <nathan@acm.org>
 
+	Kill namespace module slot hackery
+	gcc/cp/
+	* name-lookup.c (module_binding_slot): Make CREATE a bool.  Remove
+	namespace hackery.
+	(find_namespace_partition): Delete.
+	(merge_global_decl): Do not expect a namespace.  Remove such
+	handling.
+	(push_module_binding): Likewise.
+
 	Namespaces use special tags
 	gcc/cp/
 	* module.c (trees_{in,out}::tree_node_special): Deal with
