@@ -1677,7 +1677,7 @@ private:
   bool lang_type_vals (tree);
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
-  bool tree_node_raw (tree_code, tree, tree, tree);
+  bool tree_node_raw (tree_code, tree);
   tree tree_node_special (int);
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
@@ -4269,8 +4269,9 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
-      /* decl_minimal.name & decl_minimal.context already read in.  */
       loc (t->decl_minimal.locus);
+      WT (t->decl_minimal.name);
+      WT (t->decl_minimal.context);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
@@ -4646,11 +4647,12 @@ trees_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
     {
-      /* decl_minimal.name & decl_minimal.context already read in.  */
       /* Don't zap the locus just yet, we don't record it correctly
 	 and thus lose all location information.  */
       /* t->decl_minimal.locus = */
       loc ();
+      RT (t->decl_minimal.name);
+      RT (t->decl_minimal.context);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
@@ -5107,7 +5109,7 @@ trees_out::tree_node_raw (tree_code code, tree t)
 }
 
 bool
-trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
+trees_in::tree_node_raw (tree_code code, tree t)
 {
   tree_code_class klass = TREE_CODE_CLASS (code);
   bool specific = false;
@@ -5136,15 +5138,6 @@ trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
   if (lied || get_overrun ())
     return false;
 
-  if (klass == tcc_declaration)
-    {
-      DECL_CONTEXT (t) = ctx;
-      DECL_NAME (t) = name;
-      if (ctx && (TREE_CODE (ctx) == NAMESPACE_DECL
-		  || TREE_CODE (ctx) == TRANSLATION_UNIT_DECL))
-	DECL_MODULE_OWNER (t) = state->mod;
-    }
-
   if (!core_vals (t))
     return false;
 
@@ -5158,6 +5151,10 @@ trees_in::tree_node_raw (tree_code code, tree t, tree name, tree ctx)
 	}
       else
 	{
+	  if (DECL_CONTEXT (t)
+	      && (TREE_CODE (DECL_CONTEXT (t)) == NAMESPACE_DECL
+		  || TREE_CODE (DECL_CONTEXT (t)) == TRANSLATION_UNIT_DECL))
+	    DECL_MODULE_OWNER (t) = state->mod;
 	  if (!lang_decl_vals (t))
 	    return false;
 	}
@@ -5481,13 +5478,6 @@ trees_out::tree_node (tree t)
   s (tt_node);
   u (code);
 
-  if (klass == tcc_declaration)
-    {
-      /* Write out ctx, name & maybe import reference info.  */
-      tree_node (DECL_CONTEXT (t));
-      tree_node (DECL_NAME (t));
-    }
-
   start (code, t);
 
   int tag = insert (t);
@@ -5541,24 +5531,13 @@ trees_in::tree_node ()
     }
   tree_code code = tree_code (c);
   tree_code_class klass = TREE_CODE_CLASS (code);
-  tree t = NULL_TREE;
-
-  tree name = NULL_TREE;
-  tree ctx = NULL_TREE;
-
-  if (klass == tcc_declaration)
-    {
-      ctx = tree_node ();
-      name = tree_node ();
-    }
-
-  t = start (code);
+  tree t = start (code);
 
   /* Insert into map.  */
   tag = insert (t);
-  dump () && dump ("Reading:%d %C:%N", tag, code, name);
+  dump () && dump ("Reading:%d %C", tag, code);
 
-  if (!tree_node_raw (code, t, name, ctx))
+  if (!tree_node_raw (code, t))
     goto barf;
 
   if (get_overrun ())
@@ -5570,6 +5549,7 @@ trees_in::tree_node ()
       return NULL_TREE;
     }
 
+  dump () && dump ("Read:%d %C:%N", tag, code, t);
   tree found = finish (t);
 
   if (found != t)
