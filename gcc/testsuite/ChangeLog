@@ -1,7 +1,12 @@
+2018-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/79975
+	* gcc.dg/rtl/x86_64/final.c: Add -fdwarf2-cfi-asm to dg-options.
+
 2018-02-05  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83369
-	gcc.dg/Wnonnull.c: New test.
+	* gcc.dg/Wnonnull.c: New test.
 
 2018-02-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
