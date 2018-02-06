@@ -1,3 +1,14 @@
+2018-02-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/safe-indirect-jump-1.c: Detect deprecation
+	warning for -mno-speculate-indirect-jumps.
+	* gcc.target/powerpc/safe-indirect-jump-2.c: Likewise.
+	* gcc.target/powerpc/safe-indirect-jump-3.c: Likewise.
+	* gcc.target/powerpc/safe-indirect-jump-4.c: Likewise.
+	* gcc.target/powerpc/safe-indirect-jump-5.c: Likewise.
+	* gcc.target/powerpc/safe-indirect-jump-6.c: Likewise.
+	* gcc.target/powerpc/safe-indirect-jump-7.c: Likewise.
+
 2018-02-06  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84145
