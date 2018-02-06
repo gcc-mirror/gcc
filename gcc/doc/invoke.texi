@@ -984,6 +984,46 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PowerPC Options}
 See RS/6000 and PowerPC Options.
 
+@emph{PowerPC SPE Options}
+@gccoptlist{-mcpu=@var{cpu-type} @gol
+-mtune=@var{cpu-type} @gol
+-mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb @gol
+-mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
+-m32  -mxl-compat  -mno-xl-compat @gol
+-malign-power  -malign-natural @gol
+-msoft-float  -mhard-float  -mmultiple  -mno-multiple @gol
+-msingle-float  -mdouble-float @gol
+-mupdate  -mno-update @gol
+-mavoid-indexed-addresses  -mno-avoid-indexed-addresses @gol
+-mstrict-align  -mno-strict-align  -mrelocatable @gol
+-mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
+-mtoc  -mno-toc  -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
+-msingle-pic-base @gol
+-mprioritize-restricted-insns=@var{priority} @gol
+-msched-costly-dep=@var{dependence_type} @gol
+-minsert-sched-nops=@var{scheme} @gol
+-mcall-sysv  -mcall-netbsd @gol
+-maix-struct-return  -msvr4-struct-return @gol
+-mabi=@var{abi-type}  -msecure-plt  -mbss-plt @gol
+-mblock-move-inline-limit=@var{num} @gol
+-misel  -mno-isel @gol
+-misel=yes  -misel=no @gol
+-mspe  -mno-spe @gol
+-mspe=yes  -mspe=no @gol
+-mfloat-gprs=yes  -mfloat-gprs=no  -mfloat-gprs=single  -mfloat-gprs=double @gol
+-mprototype  -mno-prototype @gol
+-msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
+-msdata=@var{opt}  -mvxworks  -G @var{num} @gol
+-mrecip  -mrecip=@var{opt}  -mno-recip  -mrecip-precision @gol
+-mno-recip-precision @gol
+-mpointers-to-nested-functions  -mno-pointers-to-nested-functions @gol
+-msave-toc-indirect  -mno-save-toc-indirect @gol
+-mcompat-align-parm  -mno-compat-align-parm @gol
+-mfloat128  -mno-float128 @gol
+-mgnu-attribute  -mno-gnu-attribute @gol
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
+-mstack-protector-guard-offset=@var{offset}}
+
 @emph{RISC-V Options}
 @gccoptlist{-mbranch-cost=@var{N-instruction} @gol
 -mplt  -mno-plt @gol
@@ -1036,13 +1076,10 @@ See RS/6000 and PowerPC Options.
 -mblock-move-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
 -misel=yes  -misel=no @gol
--mspe  -mno-spe @gol
--mspe=yes  -mspe=no @gol
 -mpaired @gol
 -mvrsave  -mno-vrsave @gol
 -mmulhw  -mno-mulhw @gol
 -mdlmzb  -mno-dlmzb @gol
--mfloat-gprs=yes  -mfloat-gprs=no  -mfloat-gprs=single  -mfloat-gprs=double @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
 -msdata=@var{opt}  -mvxworks  -G @var{num} @gol
@@ -14356,6 +14393,7 @@ platform.
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
+* PowerPC SPE Options::
 * RISC-V Options::
 * RL78 Options::
 * RS/6000 and PowerPC Options::
@@ -22028,6 +22066,804 @@ these warnings.
 
 These are listed under @xref{RS/6000 and PowerPC Options}.
 
+@node PowerPC SPE Options
+@subsection PowerPC SPE Options
+@cindex PowerPC SPE options
+
+These @samp{-m} options are defined for PowerPC SPE:
+@table @gcctabopt
+@item -mmfcrf
+@itemx -mno-mfcrf
+@itemx -mpopcntb
+@itemx -mno-popcntb
+@opindex mmfcrf
+@opindex mno-mfcrf
+@opindex mpopcntb
+@opindex mno-popcntb
+You use these options to specify which instructions are available on the
+processor you are using.  The default value of these options is
+determined when configuring GCC@.  Specifying the
+@option{-mcpu=@var{cpu_type}} overrides the specification of these
+options.  We recommend you use the @option{-mcpu=@var{cpu_type}} option
+rather than the options listed above.
+
+The @option{-mmfcrf} option allows GCC to generate the move from
+condition register field instruction implemented on the POWER4
+processor and other processors that support the PowerPC V2.01
+architecture.
+The @option{-mpopcntb} option allows GCC to generate the popcount and
+double-precision FP reciprocal estimate instruction implemented on the
+POWER5 processor and other processors that support the PowerPC V2.02
+architecture.
+
+@item -mcpu=@var{cpu_type}
+@opindex mcpu
+Set architecture type, register usage, and
+instruction scheduling parameters for machine type @var{cpu_type}.
+Supported values for @var{cpu_type} are @samp{8540}, @samp{8548},
+and @samp{native}.
+
+@option{-mcpu=powerpc} specifies pure 32-bit PowerPC (either
+endian), with an appropriate, generic processor model assumed for
+scheduling purposes.
+
+Specifying @samp{native} as cpu type detects and selects the
+architecture option that corresponds to the host processor of the
+system performing the compilation.
+@option{-mcpu=native} has no effect if GCC does not recognize the
+processor.
+
+The other options specify a specific processor.  Code generated under
+those options runs best on that processor, and may not run at all on
+others.
+
+The @option{-mcpu} options automatically enable or disable the
+following options:
+
+@gccoptlist{-mhard-float  -mmfcrf  -mmultiple @gol
+-mpopcntb -mpopcntd @gol
+-msingle-float -mdouble-float @gol
+-mfloat128}
+
+The particular options set for any particular CPU varies between
+compiler versions, depending on what setting seems to produce optimal
+code for that CPU; it doesn't necessarily reflect the actual hardware's
+capabilities.  If you wish to set an individual option to a particular
+value, you may specify it after the @option{-mcpu} option, like
+@option{-mcpu=8548}.
+
+@item -mtune=@var{cpu_type}
+@opindex mtune
+Set the instruction scheduling parameters for machine type
+@var{cpu_type}, but do not set the architecture type or register usage,
+as @option{-mcpu=@var{cpu_type}} does.  The same
+values for @var{cpu_type} are used for @option{-mtune} as for
+@option{-mcpu}.  If both are specified, the code generated uses the
+architecture and registers set by @option{-mcpu}, but the
+scheduling parameters set by @option{-mtune}.
+
+@item -msecure-plt
+@opindex msecure-plt
+Generate code that allows @command{ld} and @command{ld.so}
+to build executables and shared
+libraries with non-executable @code{.plt} and @code{.got} sections.
+This is a PowerPC
+32-bit SYSV ABI option.
+
+@item -mbss-plt
+@opindex mbss-plt
+Generate code that uses a BSS @code{.plt} section that @command{ld.so}
+fills in, and
+requires @code{.plt} and @code{.got}
+sections that are both writable and executable.
+This is a PowerPC 32-bit SYSV ABI option.
+
+@item -misel
+@itemx -mno-isel
+@opindex misel
+@opindex mno-isel
+This switch enables or disables the generation of ISEL instructions.
+
+@item -misel=@var{yes/no}
+This switch has been deprecated.  Use @option{-misel} and
+@option{-mno-isel} instead.
+
+@item -mspe
+@itemx -mno-spe
+@opindex mspe
+@opindex mno-spe
+This switch enables or disables the generation of SPE simd
+instructions.
+
+@item -mspe=@var{yes/no}
+This option has been deprecated.  Use @option{-mspe} and
+@option{-mno-spe} instead.
+
+@item -mfloat128
+@itemx -mno-float128
+@opindex mfloat128
+@opindex mno-float128
+Enable/disable the @var{__float128} keyword for IEEE 128-bit floating point
+and use either software emulation for IEEE 128-bit floating point or
+hardware instructions.
+
+@item -mfloat-gprs=@var{yes/single/double/no}
+@itemx -mfloat-gprs
+@opindex mfloat-gprs
+This switch enables or disables the generation of floating-point
+operations on the general-purpose registers for architectures that
+support it.
+
+The argument @samp{yes} or @samp{single} enables the use of
+single-precision floating-point operations.
+
+The argument @samp{double} enables the use of single and
+double-precision floating-point operations.
+
+The argument @samp{no} disables floating-point operations on the
+general-purpose registers.
+
+This option is currently only available on the MPC854x.
+
+@item -mfull-toc
+@itemx -mno-fp-in-toc
+@itemx -mno-sum-in-toc
+@itemx -mminimal-toc
+@opindex mfull-toc
+@opindex mno-fp-in-toc
+@opindex mno-sum-in-toc
+@opindex mminimal-toc
+Modify generation of the TOC (Table Of Contents), which is created for
+every executable file.  The @option{-mfull-toc} option is selected by
+default.  In that case, GCC allocates at least one TOC entry for
+each unique non-automatic variable reference in your program.  GCC
+also places floating-point constants in the TOC@.  However, only
+16,384 entries are available in the TOC@.
+
+If you receive a linker error message that saying you have overflowed
+the available TOC space, you can reduce the amount of TOC space used
+with the @option{-mno-fp-in-toc} and @option{-mno-sum-in-toc} options.
+@option{-mno-fp-in-toc} prevents GCC from putting floating-point
+constants in the TOC and @option{-mno-sum-in-toc} forces GCC to
+generate code to calculate the sum of an address and a constant at
+run time instead of putting that sum into the TOC@.  You may specify one
+or both of these options.  Each causes GCC to produce very slightly
+slower and larger code at the expense of conserving TOC space.
+
+If you still run out of space in the TOC even when you specify both of
+these options, specify @option{-mminimal-toc} instead.  This option causes
+GCC to make only one TOC entry for every file.  When you specify this
+option, GCC produces code that is slower and larger but which
+uses extremely little TOC space.  You may wish to use this option
+only on files that contain less frequently-executed code.
+
+@item -maix32
+@opindex maix32
+Disables the 64-bit ABI.  GCC defaults to @option{-maix32}.
+
+@item -mxl-compat
+@itemx -mno-xl-compat
+@opindex mxl-compat
+@opindex mno-xl-compat
+Produce code that conforms more closely to IBM XL compiler semantics
+when using AIX-compatible ABI@.  Pass floating-point arguments to
+prototyped functions beyond the register save area (RSA) on the stack
+in addition to argument FPRs.  Do not assume that most significant
+double in 128-bit long double value is properly rounded when comparing
+values and converting to double.  Use XL symbol names for long double
+support routines.
+
+The AIX calling convention was extended but not initially documented to
+handle an obscure K&R C case of calling a function that takes the
+address of its arguments with fewer arguments than declared.  IBM XL
+compilers access floating-point arguments that do not fit in the
+RSA from the stack when a subroutine is compiled without
+optimization.  Because always storing floating-point arguments on the
+stack is inefficient and rarely needed, this option is not enabled by
+default and only is necessary when calling subroutines compiled by IBM
+XL compilers without optimization.
+
+@item -malign-natural
+@itemx -malign-power
+@opindex malign-natural
+@opindex malign-power
+On AIX, 32-bit Darwin, and 64-bit PowerPC GNU/Linux, the option
+@option{-malign-natural} overrides the ABI-defined alignment of larger
+types, such as floating-point doubles, on their natural size-based boundary.
+The option @option{-malign-power} instructs GCC to follow the ABI-specified
+alignment rules.  GCC defaults to the standard alignment defined in the ABI@.
+
+On 64-bit Darwin, natural alignment is the default, and @option{-malign-power}
+is not supported.
+
+@item -msoft-float
+@itemx -mhard-float
+@opindex msoft-float
+@opindex mhard-float
+Generate code that does not use (uses) the floating-point register set.
+Software floating-point emulation is provided if you use the
+@option{-msoft-float} option, and pass the option to GCC when linking.
+
+@item -msingle-float
+@itemx -mdouble-float
+@opindex msingle-float
+@opindex mdouble-float
+Generate code for single- or double-precision floating-point operations.
+@option{-mdouble-float} implies @option{-msingle-float}.
+
+@item -mmultiple
+@itemx -mno-multiple
+@opindex mmultiple
+@opindex mno-multiple
+Generate code that uses (does not use) the load multiple word
+instructions and the store multiple word instructions.  These
+instructions are generated by default on POWER systems, and not
+generated on PowerPC systems.  Do not use @option{-mmultiple} on little-endian
+PowerPC systems, since those instructions do not work when the
+processor is in little-endian mode.  The exceptions are PPC740 and
+PPC750 which permit these instructions in little-endian mode.
+
+@item -mupdate
+@itemx -mno-update
+@opindex mupdate
+@opindex mno-update
+Generate code that uses (does not use) the load or store instructions
+that update the base register to the address of the calculated memory
+location.  These instructions are generated by default.  If you use
+@option{-mno-update}, there is a small window between the time that the
+stack pointer is updated and the address of the previous frame is
+stored, which means code that walks the stack frame across interrupts or
+signals may get corrupted data.
+
+@item -mavoid-indexed-addresses
+@itemx -mno-avoid-indexed-addresses
+@opindex mavoid-indexed-addresses
+@opindex mno-avoid-indexed-addresses
+Generate code that tries to avoid (not avoid) the use of indexed load
+or store instructions. These instructions can incur a performance
+penalty on Power6 processors in certain situations, such as when
+stepping through large arrays that cross a 16M boundary.  This option
+is enabled by default when targeting Power6 and disabled otherwise.
+
+@item -mfused-madd
+@itemx -mno-fused-madd
+@opindex mfused-madd
+@opindex mno-fused-madd
+Generate code that uses (does not use) the floating-point multiply and
+accumulate instructions.  These instructions are generated by default
+if hardware floating point is used.  The machine-dependent
+@option{-mfused-madd} option is now mapped to the machine-independent
+@option{-ffp-contract=fast} option, and @option{-mno-fused-madd} is
+mapped to @option{-ffp-contract=off}.
+
+@item -mno-strict-align
+@itemx -mstrict-align
+@opindex mno-strict-align
+@opindex mstrict-align
+On System V.4 and embedded PowerPC systems do not (do) assume that
+unaligned memory references are handled by the system.
+
+@item -mrelocatable
+@itemx -mno-relocatable
+@opindex mrelocatable
+@opindex mno-relocatable
+Generate code that allows (does not allow) a static executable to be
+relocated to a different address at run time.  A simple embedded
+PowerPC system loader should relocate the entire contents of
+@code{.got2} and 4-byte locations listed in the @code{.fixup} section,
+a table of 32-bit addresses generated by this option.  For this to
+work, all objects linked together must be compiled with
+@option{-mrelocatable} or @option{-mrelocatable-lib}.
+@option{-mrelocatable} code aligns the stack to an 8-byte boundary.
+
+@item -mrelocatable-lib
+@itemx -mno-relocatable-lib
+@opindex mrelocatable-lib
+@opindex mno-relocatable-lib
+Like @option{-mrelocatable}, @option{-mrelocatable-lib} generates a
+@code{.fixup} section to allow static executables to be relocated at
+run time, but @option{-mrelocatable-lib} does not use the smaller stack
+alignment of @option{-mrelocatable}.  Objects compiled with
+@option{-mrelocatable-lib} may be linked with objects compiled with
+any combination of the @option{-mrelocatable} options.
+
+@item -mno-toc
+@itemx -mtoc
+@opindex mno-toc
+@opindex mtoc
+On System V.4 and embedded PowerPC systems do not (do) assume that
+register 2 contains a pointer to a global area pointing to the addresses
+used in the program.
+
+@item -mlittle
+@itemx -mlittle-endian
+@opindex mlittle
+@opindex mlittle-endian
+On System V.4 and embedded PowerPC systems compile code for the
+processor in little-endian mode.  The @option{-mlittle-endian} option is
+the same as @option{-mlittle}.
+
+@item -mbig
+@itemx -mbig-endian
+@opindex mbig
+@opindex mbig-endian
+On System V.4 and embedded PowerPC systems compile code for the
+processor in big-endian mode.  The @option{-mbig-endian} option is
+the same as @option{-mbig}.
+
+@item -mdynamic-no-pic
+@opindex mdynamic-no-pic
+On Darwin and Mac OS X systems, compile code so that it is not
+relocatable, but that its external references are relocatable.  The
+resulting code is suitable for applications, but not shared
+libraries.
+
+@item -msingle-pic-base
+@opindex msingle-pic-base
+Treat the register used for PIC addressing as read-only, rather than
+loading it in the prologue for each function.  The runtime system is
+responsible for initializing this register with an appropriate value
+before execution begins.
+
+@item -mprioritize-restricted-insns=@var{priority}
+@opindex mprioritize-restricted-insns
+This option controls the priority that is assigned to
+dispatch-slot restricted instructions during the second scheduling
+pass.  The argument @var{priority} takes the value @samp{0}, @samp{1},
+or @samp{2} to assign no, highest, or second-highest (respectively)
+priority to dispatch-slot restricted
+instructions.
+
+@item -msched-costly-dep=@var{dependence_type}
+@opindex msched-costly-dep
+This option controls which dependences are considered costly
+by the target during instruction scheduling.  The argument
+@var{dependence_type} takes one of the following values:
+
+@table @asis
+@item @samp{no}
+No dependence is costly.
+
+@item @samp{all}
+All dependences are costly.
+
+@item @samp{true_store_to_load}
+A true dependence from store to load is costly.
+
+@item @samp{store_to_load}
+Any dependence from store to load is costly.
+
+@item @var{number}
+Any dependence for which the latency is greater than or equal to
+@var{number} is costly.
+@end table
+
+@item -minsert-sched-nops=@var{scheme}
+@opindex minsert-sched-nops
+This option controls which NOP insertion scheme is used during
+the second scheduling pass.  The argument @var{scheme} takes one of the
+following values:
+
+@table @asis
+@item @samp{no}
+Don't insert NOPs.
+
+@item @samp{pad}
+Pad with NOPs any dispatch group that has vacant issue slots,
+according to the scheduler's grouping.
+
+@item @samp{regroup_exact}
+Insert NOPs to force costly dependent insns into
+separate groups.  Insert exactly as many NOPs as needed to force an insn
+to a new group, according to the estimated processor grouping.
+
+@item @var{number}
+Insert NOPs to force costly dependent insns into
+separate groups.  Insert @var{number} NOPs to force an insn to a new group.
+@end table
+
+@item -mcall-sysv
+@opindex mcall-sysv
+On System V.4 and embedded PowerPC systems compile code using calling
+conventions that adhere to the March 1995 draft of the System V
+Application Binary Interface, PowerPC processor supplement.  This is the
+default unless you configured GCC using @samp{powerpc-*-eabiaix}.
+
+@item -mcall-sysv-eabi
+@itemx -mcall-eabi
+@opindex mcall-sysv-eabi
+@opindex mcall-eabi
+Specify both @option{-mcall-sysv} and @option{-meabi} options.
+
+@item -mcall-sysv-noeabi
+@opindex mcall-sysv-noeabi
+Specify both @option{-mcall-sysv} and @option{-mno-eabi} options.
+
+@item -mcall-aixdesc
+@opindex m
+On System V.4 and embedded PowerPC systems compile code for the AIX
+operating system.
+
+@item -mcall-linux
+@opindex mcall-linux
+On System V.4 and embedded PowerPC systems compile code for the
+Linux-based GNU system.
+
+@item -mcall-freebsd
+@opindex mcall-freebsd
+On System V.4 and embedded PowerPC systems compile code for the
+FreeBSD operating system.
+
+@item -mcall-netbsd
+@opindex mcall-netbsd
+On System V.4 and embedded PowerPC systems compile code for the
+NetBSD operating system.
+
+@item -mcall-openbsd
+@opindex mcall-netbsd
+On System V.4 and embedded PowerPC systems compile code for the
+OpenBSD operating system.
+
+@item -maix-struct-return
+@opindex maix-struct-return
+Return all structures in memory (as specified by the AIX ABI)@.
+
+@item -msvr4-struct-return
+@opindex msvr4-struct-return
+Return structures smaller than 8 bytes in registers (as specified by the
+SVR4 ABI)@.
+
+@item -mabi=@var{abi-type}
+@opindex mabi
+Extend the current ABI with a particular extension, or remove such extension.
+Valid values are @samp{altivec}, @samp{no-altivec}, @samp{spe},
+@samp{no-spe}, @samp{ibmlongdouble}, @samp{ieeelongdouble},
+@samp{elfv1}, @samp{elfv2}@.
+
+@item -mabi=spe
+@opindex mabi=spe
+Extend the current ABI with SPE ABI extensions.  This does not change
+the default ABI, instead it adds the SPE ABI extensions to the current
+ABI@.
+
+@item -mabi=no-spe
+@opindex mabi=no-spe
+Disable Book-E SPE ABI extensions for the current ABI@.
+
+@item -mabi=ibmlongdouble
+@opindex mabi=ibmlongdouble
+Change the current ABI to use IBM extended-precision long double.
+This is not likely to work if your system defaults to using IEEE
+extended-precision long double.  If you change the long double type
+from IEEE extended-precision, the compiler will issue a warning unless
+you use the @option{-Wno-psabi} option.
+
+@item -mabi=ieeelongdouble
+@opindex mabi=ieeelongdouble
+Change the current ABI to use IEEE extended-precision long double.
+This is not likely to work if your system defaults to using IBM
+extended-precision long double.  If you change the long double type
+from IBM extended-precision, the compiler will issue a warning unless
+you use the @option{-Wno-psabi} option.
+
+@item -mabi=elfv1
+@opindex mabi=elfv1
+Change the current ABI to use the ELFv1 ABI.
+This is the default ABI for big-endian PowerPC 64-bit Linux.
+Overriding the default ABI requires special system support and is
+likely to fail in spectacular ways.
+
+@item -mabi=elfv2
+@opindex mabi=elfv2
+Change the current ABI to use the ELFv2 ABI.
+This is the default ABI for little-endian PowerPC 64-bit Linux.
+Overriding the default ABI requires special system support and is
+likely to fail in spectacular ways.
+
+@item -mgnu-attribute
+@itemx -mno-gnu-attribute
+@opindex mgnu-attribute
+@opindex mno-gnu-attribute
+Emit .gnu_attribute assembly directives to set tag/value pairs in a
+.gnu.attributes section that specify ABI variations in function
+parameters or return values.
+
+@item -mprototype
+@itemx -mno-prototype
+@opindex mprototype
+@opindex mno-prototype
+On System V.4 and embedded PowerPC systems assume that all calls to
+variable argument functions are properly prototyped.  Otherwise, the
+compiler must insert an instruction before every non-prototyped call to
+set or clear bit 6 of the condition code register (@code{CR}) to
+indicate whether floating-point values are passed in the floating-point
+registers in case the function takes variable arguments.  With
+@option{-mprototype}, only calls to prototyped variable argument functions
+set or clear the bit.
+
+@item -msim
+@opindex msim
+On embedded PowerPC systems, assume that the startup module is called
+@file{sim-crt0.o} and that the standard C libraries are @file{libsim.a} and
+@file{libc.a}.  This is the default for @samp{powerpc-*-eabisim}
+configurations.
+
+@item -mmvme
+@opindex mmvme
+On embedded PowerPC systems, assume that the startup module is called
+@file{crt0.o} and the standard C libraries are @file{libmvme.a} and
+@file{libc.a}.
+
+@item -mads
+@opindex mads
+On embedded PowerPC systems, assume that the startup module is called
+@file{crt0.o} and the standard C libraries are @file{libads.a} and
+@file{libc.a}.
+
+@item -myellowknife
+@opindex myellowknife
+On embedded PowerPC systems, assume that the startup module is called
+@file{crt0.o} and the standard C libraries are @file{libyk.a} and
+@file{libc.a}.
+
+@item -mvxworks
+@opindex mvxworks
+On System V.4 and embedded PowerPC systems, specify that you are
+compiling for a VxWorks system.
+
+@item -memb
+@opindex memb
+On embedded PowerPC systems, set the @code{PPC_EMB} bit in the ELF flags
+header to indicate that @samp{eabi} extended relocations are used.
+
+@item -meabi
+@itemx -mno-eabi
+@opindex meabi
+@opindex mno-eabi
+On System V.4 and embedded PowerPC systems do (do not) adhere to the
+Embedded Applications Binary Interface (EABI), which is a set of
+modifications to the System V.4 specifications.  Selecting @option{-meabi}
+means that the stack is aligned to an 8-byte boundary, a function
+@code{__eabi} is called from @code{main} to set up the EABI
+environment, and the @option{-msdata} option can use both @code{r2} and
+@code{r13} to point to two separate small data areas.  Selecting
+@option{-mno-eabi} means that the stack is aligned to a 16-byte boundary,
+no EABI initialization function is called from @code{main}, and the
+@option{-msdata} option only uses @code{r13} to point to a single
+small data area.  The @option{-meabi} option is on by default if you
+configured GCC using one of the @samp{powerpc*-*-eabi*} options.
+
+@item -msdata=eabi
+@opindex msdata=eabi
+On System V.4 and embedded PowerPC systems, put small initialized
+@code{const} global and static data in the @code{.sdata2} section, which
+is pointed to by register @code{r2}.  Put small initialized
+non-@code{const} global and static data in the @code{.sdata} section,
+which is pointed to by register @code{r13}.  Put small uninitialized
+global and static data in the @code{.sbss} section, which is adjacent to
+the @code{.sdata} section.  The @option{-msdata=eabi} option is
+incompatible with the @option{-mrelocatable} option.  The
+@option{-msdata=eabi} option also sets the @option{-memb} option.
+
+@item -msdata=sysv
+@opindex msdata=sysv
+On System V.4 and embedded PowerPC systems, put small global and static
+data in the @code{.sdata} section, which is pointed to by register
+@code{r13}.  Put small uninitialized global and static data in the
+@code{.sbss} section, which is adjacent to the @code{.sdata} section.
+The @option{-msdata=sysv} option is incompatible with the
+@option{-mrelocatable} option.
+
+@item -msdata=default
+@itemx -msdata
+@opindex msdata=default
+@opindex msdata
+On System V.4 and embedded PowerPC systems, if @option{-meabi} is used,
+compile code the same as @option{-msdata=eabi}, otherwise compile code the
+same as @option{-msdata=sysv}.
+
+@item -msdata=data
+@opindex msdata=data
+On System V.4 and embedded PowerPC systems, put small global
+data in the @code{.sdata} section.  Put small uninitialized global
+data in the @code{.sbss} section.  Do not use register @code{r13}
+to address small data however.  This is the default behavior unless
+other @option{-msdata} options are used.
+
+@item -msdata=none
+@itemx -mno-sdata
+@opindex msdata=none
+@opindex mno-sdata
+On embedded PowerPC systems, put all initialized global and static data
+in the @code{.data} section, and all uninitialized data in the
+@code{.bss} section.
+
+@item -mblock-move-inline-limit=@var{num}
+@opindex mblock-move-inline-limit
+Inline all block moves (such as calls to @code{memcpy} or structure
+copies) less than or equal to @var{num} bytes.  The minimum value for
+@var{num} is 32 bytes on 32-bit targets and 64 bytes on 64-bit
+targets.  The default value is target-specific.
+
+@item -G @var{num}
+@opindex G
+@cindex smaller data references (PowerPC)
+@cindex .sdata/.sdata2 references (PowerPC)
+On embedded PowerPC systems, put global and static items less than or
+equal to @var{num} bytes into the small data or BSS sections instead of
+the normal data or BSS section.  By default, @var{num} is 8.  The
+@option{-G @var{num}} switch is also passed to the linker.
+All modules should be compiled with the same @option{-G @var{num}} value.
+
+@item -mregnames
+@itemx -mno-regnames
+@opindex mregnames
+@opindex mno-regnames
+On System V.4 and embedded PowerPC systems do (do not) emit register
+names in the assembly language output using symbolic forms.
+
+@item -mlongcall
+@itemx -mno-longcall
+@opindex mlongcall
+@opindex mno-longcall
+By default assume that all calls are far away so that a longer and more
+expensive calling sequence is required.  This is required for calls
+farther than 32 megabytes (33,554,432 bytes) from the current location.
+A short call is generated if the compiler knows
+the call cannot be that far away.  This setting can be overridden by
+the @code{shortcall} function attribute, or by @code{#pragma
+longcall(0)}.
+
+Some linkers are capable of detecting out-of-range calls and generating
+glue code on the fly.  On these systems, long calls are unnecessary and
+generate slower code.  As of this writing, the AIX linker can do this,
+as can the GNU linker for PowerPC/64.  It is planned to add this feature
+to the GNU linker for 32-bit PowerPC systems as well.
+
+In the future, GCC may ignore all longcall specifications
+when the linker is known to generate glue.
+
+@item -mtls-markers
+@itemx -mno-tls-markers
+@opindex mtls-markers
+@opindex mno-tls-markers
+Mark (do not mark) calls to @code{__tls_get_addr} with a relocation
+specifying the function argument.  The relocation allows the linker to
+reliably associate function call with argument setup instructions for
+TLS optimization, which in turn allows GCC to better schedule the
+sequence.
+
+@item -mrecip
+@itemx -mno-recip
+@opindex mrecip
+This option enables use of the reciprocal estimate and
+reciprocal square root estimate instructions with additional
+Newton-Raphson steps to increase precision instead of doing a divide or
+square root and divide for floating-point arguments.  You should use
+the @option{-ffast-math} option when using @option{-mrecip} (or at
+least @option{-funsafe-math-optimizations},
+@option{-ffinite-math-only}, @option{-freciprocal-math} and
+@option{-fno-trapping-math}).  Note that while the throughput of the
+sequence is generally higher than the throughput of the non-reciprocal
+instruction, the precision of the sequence can be decreased by up to 2
+ulp (i.e.@: the inverse of 1.0 equals 0.99999994) for reciprocal square
+roots.
+
+@item -mrecip=@var{opt}
+@opindex mrecip=opt
+This option controls which reciprocal estimate instructions
+may be used.  @var{opt} is a comma-separated list of options, which may
+be preceded by a @code{!} to invert the option:
+
+@table @samp
+
+@item all
+Enable all estimate instructions.
+
+@item default
+Enable the default instructions, equivalent to @option{-mrecip}.
+
+@item none
+Disable all estimate instructions, equivalent to @option{-mno-recip}.
+
+@item div
+Enable the reciprocal approximation instructions for both
+single and double precision.
+
+@item divf
+Enable the single-precision reciprocal approximation instructions.
+
+@item divd
+Enable the double-precision reciprocal approximation instructions.
+
+@item rsqrt
+Enable the reciprocal square root approximation instructions for both
+single and double precision.
+
+@item rsqrtf
+Enable the single-precision reciprocal square root approximation instructions.
+
+@item rsqrtd
+Enable the double-precision reciprocal square root approximation instructions.
+
+@end table
+
+So, for example, @option{-mrecip=all,!rsqrtd} enables
+all of the reciprocal estimate instructions, except for the
+@code{FRSQRTE}, @code{XSRSQRTEDP}, and @code{XVRSQRTEDP} instructions
+which handle the double-precision reciprocal square root calculations.
+
+@item -mrecip-precision
+@itemx -mno-recip-precision
+@opindex mrecip-precision
+Assume (do not assume) that the reciprocal estimate instructions
+provide higher-precision estimates than is mandated by the PowerPC
+ABI.  Selecting @option{-mcpu=power6}, @option{-mcpu=power7} or
+@option{-mcpu=power8} automatically selects @option{-mrecip-precision}.
+The double-precision square root estimate instructions are not generated by
+default on low-precision machines, since they do not provide an
+estimate that converges after three steps.
+
+@item -mpointers-to-nested-functions
+@itemx -mno-pointers-to-nested-functions
+@opindex mpointers-to-nested-functions
+Generate (do not generate) code to load up the static chain register
+(@code{r11}) when calling through a pointer on AIX and 64-bit Linux
+systems where a function pointer points to a 3-word descriptor giving
+the function address, TOC value to be loaded in register @code{r2}, and
+static chain value to be loaded in register @code{r11}.  The
+@option{-mpointers-to-nested-functions} is on by default.  You cannot
+call through pointers to nested functions or pointers
+to functions compiled in other languages that use the static chain if
+you use @option{-mno-pointers-to-nested-functions}.
+
+@item -msave-toc-indirect
+@itemx -mno-save-toc-indirect
+@opindex msave-toc-indirect
+Generate (do not generate) code to save the TOC value in the reserved
+stack location in the function prologue if the function calls through
+a pointer on AIX and 64-bit Linux systems.  If the TOC value is not
+saved in the prologue, it is saved just before the call through the
+pointer.  The @option{-mno-save-toc-indirect} option is the default.
+
+@item -mcompat-align-parm
+@itemx -mno-compat-align-parm
+@opindex mcompat-align-parm
+Generate (do not generate) code to pass structure parameters with a
+maximum alignment of 64 bits, for compatibility with older versions
+of GCC.
+
+Older versions of GCC (prior to 4.9.0) incorrectly did not align a
+structure parameter on a 128-bit boundary when that structure contained
+a member requiring 128-bit alignment.  This is corrected in more
+recent versions of GCC.  This option may be used to generate code
+that is compatible with functions compiled with older versions of
+GCC.
+
+The @option{-mno-compat-align-parm} option is the default.
+
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-reg=@var{reg}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@itemx -mstack-protector-guard-symbol=@var{symbol}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-reg
+@opindex mstack-protector-guard-offset
+@opindex mstack-protector-guard-symbol
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @samp{global} for global canary or @samp{tls} for per-thread
+canary in the TLS block (the default with GNU libc version 2.4 or later).
+
+With the latter choice the options
+@option{-mstack-protector-guard-reg=@var{reg}} and
+@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
+which register to use as base register for reading the canary, and from what
+offset from that base register. The default for those is as specified in the
+relevant ABI.  @option{-mstack-protector-guard-symbol=@var{symbol}} overrides
+the offset with a symbol reference to a canary in the TLS block.
+@end table
+
+
 @node RISC-V Options
 @subsection RISC-V Options
 @cindex RISC-V Options
@@ -22492,23 +23328,12 @@ This switch enables or disables the generation of ISEL instructions.
 This switch has been deprecated.  Use @option{-misel} and
 @option{-mno-isel} instead.
 
-@item -mspe
-@itemx -mno-spe
-@opindex mspe
-@opindex mno-spe
-This switch enables or disables the generation of SPE simd
-instructions.
-
 @item -mpaired
 @itemx -mno-paired
 @opindex mpaired
 @opindex mno-paired
 This switch enables or disables the generation of PAIRED simd
 instructions.
-
-@item -mspe=@var{yes/no}
-This option has been deprecated.  Use @option{-mspe} and
-@option{-mno-spe} instead.
 
 @item -mvsx
 @itemx -mno-vsx
@@ -22609,24 +23434,6 @@ Enable/disable using ISA 3.0 hardware instructions to support the
 The default for @option{-mfloat128-hardware} is enabled on PowerPC
 Linux systems using the ISA 3.0 instruction set, and disabled on other
 systems.
-
-@item -mfloat-gprs=@var{yes/single/double/no}
-@itemx -mfloat-gprs
-@opindex mfloat-gprs
-This switch enables or disables the generation of floating-point
-operations on the general-purpose registers for architectures that
-support it.
-
-The argument @samp{yes} or @samp{single} enables the use of
-single-precision floating-point operations.
-
-The argument @samp{double} enables the use of single and
-double-precision floating-point operations.
-
-The argument @samp{no} disables floating-point operations on the
-general-purpose registers.
-
-This option is currently only available on the MPC854x.
 
 @item -m32
 @itemx -m64

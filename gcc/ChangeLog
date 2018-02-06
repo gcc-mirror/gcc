@@ -1,3 +1,7 @@
+2018-02-06  Andrew Jenner  <andrew@codeourcery.com>
+
+	* doc/invoke.texi: Add section for the PowerPC SPE backend. Remove irrelevant options.
+
 2018-02-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal):
@@ -95,6 +99,7 @@
 	%1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1,
 	%2<round_saeonly_scalar_mask_op4>, %3}"): ... this.
 
+>>>>>>> .r257416
 2018-02-02  Andrew Jenner  <andrew@codesourcery.com>
 
 	* config/powerpcspe/powerpcspe.opt: Add Undocumented to irrelevant
