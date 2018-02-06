@@ -1,3 +1,9 @@
+2018-02-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/84225
+	* tree-eh.c (find_trapping_overflow): Only call
+	operation_no_trapping_overflow when ANY_INTEGRAL_TYPE_P.
+
 2018-02-06  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84145

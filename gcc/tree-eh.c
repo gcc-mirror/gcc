@@ -2729,6 +2729,7 @@ static tree
 find_trapping_overflow (tree *tp, int *walk_subtrees, void *data)
 {
   if (EXPR_P (*tp)
+      && ANY_INTEGRAL_TYPE_P (TREE_TYPE (*tp))
       && !operation_no_trapping_overflow (TREE_TYPE (*tp), TREE_CODE (*tp)))
     return *tp;
   if (IS_TYPE_OR_DECL_P (*tp)
