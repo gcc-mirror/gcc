@@ -1,3 +1,11 @@
+2018-02-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* config/arm/arm.c (arm_print_asm_arch_directives): Record already
+	emitted arch directives.
+	* config/arm/arm-c.c (arm_cpu_builtins): Undefine __ARM_ARCH and
+	__ARM_FEATURE_COPROC before changing architectures.
+
 2018-02-06  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386.c (print_reg): Fix typo.

@@ -113,7 +113,10 @@ arm_cpu_builtins (struct cpp_reader* pfile)
      consistency with armcc.  */
   builtin_define ("__arm__");
   if (TARGET_ARM_ARCH)
-    builtin_define_with_int_value ("__ARM_ARCH", TARGET_ARM_ARCH);
+    {
+      cpp_undef (pfile, "__ARM_ARCH");
+      builtin_define_with_int_value ("__ARM_ARCH", TARGET_ARM_ARCH);
+    }
   if (arm_arch_notm)
     builtin_define ("__ARM_ARCH_ISA_ARM");
   builtin_define ("__APCS_32__");
@@ -204,6 +207,7 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
   def_or_undef_macro (pfile, "__ARM_ASM_SYNTAX_UNIFIED__", inline_asm_unified);
 
+  cpp_undef (pfile, "__ARM_FEATURE_COPROC");
   if (TARGET_32BIT && arm_arch4 && !(arm_arch8 && arm_arch_notm))
     {
       int coproc_level = 0x1;
@@ -217,8 +221,6 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
       builtin_define_with_int_value ("__ARM_FEATURE_COPROC", coproc_level);
     }
-  else
-      cpp_undef (pfile, "__ARM_FEATURE_COPROC");
 }
 
 void
