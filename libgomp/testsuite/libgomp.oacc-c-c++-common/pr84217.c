@@ -1,4 +1,8 @@
-extern void abort (void);
+extern
+#ifdef __cplusplus
+"C"
+#endif
+void abort (void);
 
 #define N 10
 
