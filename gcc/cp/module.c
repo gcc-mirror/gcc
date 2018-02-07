@@ -1678,7 +1678,6 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   bool tree_node_raw (tree_code, tree);
-  tree tree_node_special (int);
   tree chained_decls ();
   vec<tree, va_gc> *tree_vec ();
   vec<tree_pair_s, va_gc> *tree_pair_vec ();
@@ -5343,9 +5342,14 @@ trees_out::tree_node (tree t)
   dump.outdent ();
 }
 
+/* Stream in a tree node.  */
+
 tree
-trees_in::tree_node_special (int tag)
+trees_in::tree_node ()
 {
+  dump.indent ();
+ again:
+  int tag = s ();
   tree res = NULL_TREE;
   switch (tag)
     {
@@ -5401,12 +5405,11 @@ trees_in::tree_node_special (int tag)
       /* An interstitial type name.  Read the name and then start
 	 over.  */
       res = tree_node ();
-      if (!res || TREE_CODE (res) != TYPE_DECL)
-	set_overrun ();
-      else
-	dump () && dump ("Read interstitial type name %C:%N%S",
-			 TREE_CODE (res), res, res);
-      res = NULL_TREE;
+      dump () && dump ("Read interstitial type name %C:%N%S",
+		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
+      if (res && TREE_CODE (res) == TYPE_DECL)
+	goto again;
+      set_overrun ();
       break;
 
     case tt_tinfo_var:
@@ -5416,15 +5419,15 @@ trees_in::tree_node_special (int tag)
       {
 	bool is_tinfo = tag == tt_tinfo_var;
 	tree type = tree_node ();
-	if (!type || !TYPE_P (type))
-	  set_overrun ();
-	else
+	if (type && TYPE_P (type))
 	  {
 	    res = is_tinfo ? get_tinfo_decl (type) : make_conv_op_name (type);
 	    int tag = insert (res);
 	    dump () && dump ("Created %s:%d %S for %N",
 			     is_tinfo ? "tinfo_var" : "conv_op", tag, res, type);
 	  }
+	else
+	  set_overrun ();
       }
       break;
 
@@ -5535,35 +5538,6 @@ trees_in::tree_node_special (int tag)
       else
 	gcc_assert (get_overrun ());
       break;
-    }
-
-  return res;
-}
-
-/* Read in a tree using TAG.  TAG is either a back reference, or a
-   TREE_CODE for a new TREE.  For any tree that is a DECL, this does
-   not read in a definition (initial value, class defn, function body,
-   instantiations, whatever).  Return true on success.  Sets *TP to
-   error_mark_node if TAG is totally bogus.  */
-
-tree
-trees_in::tree_node ()
-{
-  int tag = s ();
-
-  if (tag == tt_null)
-    return NULL_TREE;
-
-  dump.indent ();
- again:
-  tree res = tree_node_special (tag);
-  if (!res && !get_overrun ())
-    {
-      if (tag == tt_type_name)
-	{
-	  tag = s ();
-	  goto again;
-	}
     }
 
   dump.outdent ();
