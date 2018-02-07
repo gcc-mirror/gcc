@@ -3015,7 +3015,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr);
     }
 
-  cond_expr = force_gimple_operand_1 (cond_expr, &gimplify_stmt_list,
+  cond_expr = force_gimple_operand_1 (unshare_expr (cond_expr),
+				      &gimplify_stmt_list,
 				      is_gimple_condexpr, NULL_TREE);
   gimple_seq_add_seq (&cond_expr_stmt_list, gimplify_stmt_list);
 

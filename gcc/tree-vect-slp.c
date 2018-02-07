@@ -188,7 +188,7 @@ vect_free_oprnd_info (vec<slp_oprnd_info> &oprnds_info)
 /* Find the place of the data-ref in STMT in the interleaving chain that starts
    from FIRST_STMT.  Return -1 if the data-ref is not a part of the chain.  */
 
-static int
+int
 vect_get_place_in_interleaving_chain (gimple *stmt, gimple *first_stmt)
 {
   gimple *next_stmt = first_stmt;

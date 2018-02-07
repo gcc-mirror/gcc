@@ -1128,6 +1128,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in)
     unaligned_dr (NULL),
     peeling_for_alignment (0),
     ptr_mask (0),
+    ivexpr_map (NULL),
     slp_unrolling_factor (1),
     single_scalar_iteration_cost (0),
     vectorizable (false),
@@ -1251,8 +1252,36 @@ _loop_vec_info::~_loop_vec_info ()
   free (bbs);
 
   release_vec_loop_masks (&masks);
+  delete ivexpr_map;
 
   loop->aux = NULL;
+}
+
+/* Return an invariant or register for EXPR and emit necessary
+   computations in the LOOP_VINFO loop preheader.  */
+
+tree
+cse_and_gimplify_to_preheader (loop_vec_info loop_vinfo, tree expr)
+{
+  if (is_gimple_reg (expr)
+      || is_gimple_min_invariant (expr))
+    return expr;
+
+  if (! loop_vinfo->ivexpr_map)
+    loop_vinfo->ivexpr_map = new hash_map<tree_operand_hash, tree>;
+  tree &cached = loop_vinfo->ivexpr_map->get_or_insert (expr);
+  if (! cached)
+    {
+      gimple_seq stmts = NULL;
+      cached = force_gimple_operand (unshare_expr (expr),
+				     &stmts, true, NULL_TREE);
+      if (stmts)
+	{
+	  edge e = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
+	  gsi_insert_seq_on_edge_immediate (e, stmts);
+	}
+    }
+  return cached;
 }
 
 /* Return true if we can use CMP_TYPE as the comparison type to produce
