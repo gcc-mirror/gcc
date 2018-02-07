@@ -1,3 +1,11 @@
+2018-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/81610
+	PR c++/80567
+	* name-lookup.c (suggest_rid_p): New function.
+	(lookup_name_fuzzy): Replace enum-rid-filtering logic with call to
+	suggest_rid_p.
+
 2018-02-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84182 - ICE with captured lambda

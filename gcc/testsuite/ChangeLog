@@ -1,3 +1,11 @@
+2018-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/81610
+	PR c++/80567
+	* g++.dg/spellcheck-reswords.C: New test case.
+	* g++.dg/spellcheck-stdlib.C: Remove xfail from dg-bogus
+	suggestion of "if".
+
 2018-02-07  Martin Liska  <mliska@suse.cz>
 
 	PR c++/84059.
