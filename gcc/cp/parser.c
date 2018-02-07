@@ -7387,6 +7387,60 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
   return postfix_expression;
 }
 
+/* A subroutine of cp_parser_postfix_dot_deref_expression.  Handle dot
+   dereference of incomplete type, returns true if error_mark_node should
+   be returned from caller, otherwise adjusts *SCOPE, *POSTFIX_EXPRESSION
+   and *DEPENDENT_P.  */
+
+bool
+cp_parser_dot_deref_incomplete (tree *scope, cp_expr *postfix_expression,
+				bool *dependent_p)
+{
+  /* In a template, be permissive by treating an object expression
+     of incomplete type as dependent (after a pedwarn).  */
+  diagnostic_t kind = (processing_template_decl
+		       && MAYBE_CLASS_TYPE_P (*scope) ? DK_PEDWARN : DK_ERROR);
+
+  switch (TREE_CODE (*postfix_expression))
+    {
+    case CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case DYNAMIC_CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
+    case VIEW_CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      kind = DK_ERROR;
+      break;
+    case OVERLOAD:
+      /* Don't emit any diagnostic for OVERLOADs.  */
+      kind = DK_IGNORED;
+      break;
+    default:
+      /* Avoid clobbering e.g. DECLs.  */
+      if (!EXPR_P (*postfix_expression))
+	kind = DK_ERROR;
+      break;
+    }
+
+  if (kind == DK_IGNORED)
+    return false;
+
+  location_t exploc = location_of (*postfix_expression);
+  cxx_incomplete_type_diagnostic (exploc, *postfix_expression, *scope, kind);
+  if (!MAYBE_CLASS_TYPE_P (*scope))
+    return true;
+  if (kind == DK_ERROR)
+    *scope = *postfix_expression = error_mark_node;
+  else if (processing_template_decl)
+    {
+      *dependent_p = true;
+      *scope = TREE_TYPE (*postfix_expression) = NULL_TREE;
+    }
+  return false;
+}
+
 /* A subroutine of cp_parser_postfix_expression that also gets hijacked
    by cp_parser_builtin_offsetof.  We're looking for
 
@@ -7451,26 +7505,9 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	{
 	  scope = complete_type (scope);
 	  if (!COMPLETE_TYPE_P (scope)
-	      /* Avoid clobbering e.g. OVERLOADs or DECLs.  */
-	      && EXPR_P (postfix_expression))
-	    {
-	      /* In a template, be permissive by treating an object expression
-		 of incomplete type as dependent (after a pedwarn).  */
-	      diagnostic_t kind = (processing_template_decl
-				   && MAYBE_CLASS_TYPE_P (scope)
-				   ? DK_PEDWARN
-				   : DK_ERROR);
-	      cxx_incomplete_type_diagnostic
-		(location_of (postfix_expression),
-		 postfix_expression, scope, kind);
-	      if (!MAYBE_CLASS_TYPE_P (scope))
-		return error_mark_node;
-	      if (processing_template_decl)
-		{
-		  dependent_p = true;
-		  scope = TREE_TYPE (postfix_expression) = NULL_TREE;
-		}
-	    }
+	      && cp_parser_dot_deref_incomplete (&scope, &postfix_expression,
+						 &dependent_p))
+	    return error_mark_node;
 	}
 
       if (!dependent_p)

@@ -1,3 +1,9 @@
+2018-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84082
+	* parser.c (cp_parser_dot_deref_incomplete): New function.
+	(cp_parser_postfix_dot_deref_expression): Use it.
+
 2018-02-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/81610
