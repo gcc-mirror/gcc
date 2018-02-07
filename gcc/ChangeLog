@@ -6,6 +6,10 @@
 
 2018-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
+	* doc/install.texi (Configuration): Document the
+	--with-long-double-format={ibm,ieee} PowerPC configuration
+	options.
+
 	PR target/84154
 	* config/rs6000/rs6000.md (fix_trunc<SFDF:mode><QHI:mode>2):
 	Convert from define_expand to be define_insn_and_split.  Rework
