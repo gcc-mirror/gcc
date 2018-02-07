@@ -1,3 +1,8 @@
+2018-02-07  Christophe Lyon <christophe.lyon@linaro.org>
+
+	PR tree-optimization/83008
+	* gcc.dg/cse_recip.c: Add -fno-tree-slp-vectorize.
+
 2018-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84235
