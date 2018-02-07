@@ -5593,6 +5593,22 @@ gfc_conv_intrinsic_ibits (gfc_se * se, gfc_expr * expr)
 }
 
 static void
+gfc_conv_intrinsic_shape (gfc_se *se, gfc_expr *expr)
+{
+  gfc_actual_arglist *s, *k;
+  gfc_expr *e;
+
+  /* Remove the KIND argument, if present. */
+  s = expr->value.function.actual;
+  k = s->next;
+  e = k->expr;
+  gfc_free_expr (e);
+  k->expr = NULL;
+
+  gfc_conv_intrinsic_funcall (se, expr);
+}
+
+static void
 gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
 			  bool arithmetic)
 {
@@ -8716,6 +8732,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
 	    case GFC_ISYM_MAXLOC:
 	      gfc_conv_intrinsic_minmaxloc (se, expr, GT_EXPR);
+	      break;
+
+	    case GFC_ISYM_SHAPE:
+	      gfc_conv_intrinsic_shape (se, expr);
 	      break;
 
 	    default:
