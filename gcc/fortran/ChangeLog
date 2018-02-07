@@ -1,3 +1,8 @@
+2018-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82994
+	* match.c (gfc_match_deallocate): Check for NULL pointer.
+
 2018-02-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/68560

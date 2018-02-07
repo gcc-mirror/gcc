@@ -1,3 +1,9 @@
+2018-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82994
+	* gfortran.dg/deallocate_error_3.f90: New test.
+	* gfortran.dg/deallocate_error_4.f90: New test.
+
 2018-02-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/68560
