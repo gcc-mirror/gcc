@@ -1,3 +1,8 @@
+2018-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84235
+	* gcc.c-torture/execute/ieee/pr84235.c: New test.
+
 2018-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/84243

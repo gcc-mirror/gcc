@@ -182,8 +182,15 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		      case BIT_AND_EXPR:
 			return gimple_assign_rhs1 (stmt);
 
-		      case BIT_XOR_EXPR:
 		      case MINUS_EXPR:
+			/* This is unsafe for certain floats even in non-IEEE
+			   formats.  In IEEE, it is unsafe because it does
+			   wrong for NaNs.  */
+			if (FLOAT_TYPE_P (result_type)
+			    && HONOR_NANS (result_type))
+			  break;
+			/* FALLTHRU */
+		      case BIT_XOR_EXPR:
 		      case TRUNC_MOD_EXPR:
 		      case CEIL_MOD_EXPR:
 		      case FLOOR_MOD_EXPR:
@@ -195,6 +202,9 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		      case FLOOR_DIV_EXPR:
 		      case ROUND_DIV_EXPR:
 		      case EXACT_DIV_EXPR:
+			/* Avoid _Fract types where we can't build 1.  */
+			if (ALL_FRACT_MODE_P (TYPE_MODE (result_type)))
+			  break;
 			return build_one_cst (result_type);
 
 		      default:
@@ -204,8 +214,8 @@ avail_exprs_stack::simplify_binary_operation (gimple *stmt,
 		break;
 	      }
 
-	      default:
-		break;
+	    default:
+	      break;
 	    }
 	}
     }
