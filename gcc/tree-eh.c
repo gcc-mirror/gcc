@@ -2436,7 +2436,7 @@ operation_could_trap_helper_p (enum tree_code op,
     case ROUND_MOD_EXPR:
     case TRUNC_MOD_EXPR:
     case RDIV_EXPR:
-      if (honor_snans || honor_trapv)
+      if (honor_snans)
 	return true;
       if (fp_operation)
 	return flag_trapping_math;

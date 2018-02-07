@@ -1,3 +1,8 @@
+2018-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-eh.c (operation_could_trap_helper_p): Ignore honor_trapv for
+	*DIV_EXPR and *MOD_EXPR.
+
 2018-02-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/84248
