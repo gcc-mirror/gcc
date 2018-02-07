@@ -1,3 +1,8 @@
+2018-02-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/84217
+	* testsuite/libgomp.oacc-c-c++-common/pr84217.c: New test.
+
 2018-01-29  Christoph Spiel  <cspiel@freenet.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,3 +1,9 @@
+2018-02-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR libgomp/84217
+	* omp-expand.c (expand_oacc_collapse_init): Ensure diff_type is large
+	enough.
+
 2018-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84204
