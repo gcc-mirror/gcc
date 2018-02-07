@@ -839,7 +839,6 @@ register_resolution (struct lto_file_decl_data *file_data, tree decl,
       = new hash_map<tree, ld_plugin_symbol_resolution>;
   ld_plugin_symbol_resolution_t &res
      = file_data->resolution_map->get_or_insert (decl, &existed);
-  gcc_assert (!existed || res == resolution);
   if (!existed
       || resolution == LDPR_PREVAILING_DEF_IRONLY
       || resolution == LDPR_PREVAILING_DEF
