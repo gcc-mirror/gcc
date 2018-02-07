@@ -1453,18 +1453,19 @@ gather_bbs::before_dom_children (basic_block bb)
 	}
     }
 
-  gcond *stmt = single_pred_cond_non_loop_exit (bb);
-
-  if (stmt)
+  if (gcond *stmt = single_pred_cond_non_loop_exit (bb))
     {
       edge e = single_pred_edge (bb);
-
-      conditions.safe_push (stmt);
-
-      if (e->flags & EDGE_TRUE_VALUE)
-	cases.safe_push (stmt);
-      else
-	cases.safe_push (NULL);
+      /* Make sure the condition is in the region and thus was verified
+         to be handled.  */
+      if (e != region->region.entry)
+	{
+	  conditions.safe_push (stmt);
+	  if (e->flags & EDGE_TRUE_VALUE)
+	    cases.safe_push (stmt);
+	  else
+	    cases.safe_push (NULL);
+	}
     }
 
   scop->scop_info->bbs.safe_push (bb);
@@ -1509,8 +1510,12 @@ gather_bbs::after_dom_children (basic_block bb)
 
   if (single_pred_cond_non_loop_exit (bb))
     {
-      conditions.pop ();
-      cases.pop ();
+      edge e = single_pred_edge (bb);
+      if (e != scop->scop_info->region.entry)
+	{
+	  conditions.pop ();
+	  cases.pop ();
+	}
     }
 }
 
