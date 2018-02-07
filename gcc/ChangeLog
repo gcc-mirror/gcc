@@ -1,3 +1,10 @@
+2018-02-07  Alan Hayward  <alan.hayward@arm.com>
+
+	* genextract.c (push_pathstr_operand): New function to support
+	[a-zA-Z].
+	(walk_rtx): Call push_pathstr_operand.
+	(print_path): Support [a-zA-Z].
+
 2018-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84037
