@@ -1,3 +1,11 @@
+2018-02-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2018-02-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Display warning message for -mno-speculate-indirect-jumps.
+
 2018-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline
