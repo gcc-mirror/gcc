@@ -1433,6 +1433,8 @@ expand_oacc_collapse_init (const struct omp_for_data *fd,
 	plus_type = sizetype;
       if (POINTER_TYPE_P (diff_type) || TYPE_UNSIGNED (diff_type))
 	diff_type = signed_type_for (diff_type);
+      if (TYPE_PRECISION (diff_type) < TYPE_PRECISION (integer_type_node))
+	diff_type = integer_type_node;
 
       if (tiling)
 	{
