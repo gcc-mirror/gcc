@@ -16,7 +16,7 @@ void test_cstdio (void)
   FILE *f; // { dg-error "'FILE' was not declared in this scope" }
   // { dg-message "'FILE' is defined in header '<cstdio>'; did you forget to '#include <cstdio>'?" "" { target *-*-* } .-1 }
   // { dg-error "'f' was not declared in this scope" "" { target *-*-* } .-2 }
-  // { dg-bogus "suggested alternative: 'if'" "PR c++/80567" { xfail *-*-* } .-3 }
+  // { dg-bogus "suggested alternative: 'if'" "PR c++/80567" { target *-*-* } .-3 }
 
   char buf[BUFSIZ]; // { dg-error "'BUFSIZ' was not declared" }
   // { dg-message "'BUFSIZ' is defined in header '<cstdio>'; did you forget to '#include <cstdio>'?" "" { target *-*-* } .-1 }
