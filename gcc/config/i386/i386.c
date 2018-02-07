@@ -4909,12 +4909,12 @@ ix86_option_override_internal (bool main_args_p,
       = build_target_option_node (opts);
 
   /* Do not support control flow instrumentation if CET is not enabled.  */
-  if (opts->x_flag_cf_protection != CF_NONE)
+  cf_protection_level cf_protection
+    = (cf_protection_level) (opts->x_flag_cf_protection & ~CF_SET);
+  if (cf_protection != CF_NONE)
     {
-      switch (flag_cf_protection)
+      switch (cf_protection)
 	{
-	case CF_NONE:
-	  break;
 	case CF_BRANCH:
 	  if (! TARGET_IBT_P (opts->x_ix86_isa_flags2))
 	    {
@@ -4949,7 +4949,7 @@ ix86_option_override_internal (bool main_args_p,
 	}
 
       opts->x_flag_cf_protection =
-	(cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+	(cf_protection_level) (cf_protection | CF_SET);
     }
 
   if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])

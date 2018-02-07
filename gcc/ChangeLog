@@ -1,3 +1,9 @@
+2018-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84248
+	* config/i386/i386.c (ix86_option_override_internal): Mask out
+	the CF_SET bit when checking -fcf-protection.
+
 2018-02-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/84217
@@ -165,7 +171,6 @@
 	%1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1,
 	%2<round_saeonly_scalar_mask_op4>, %3}"): ... this.
 
->>>>>>> .r257416
 2018-02-02  Andrew Jenner  <andrew@codesourcery.com>
 
 	* config/powerpcspe/powerpcspe.opt: Add Undocumented to irrelevant
