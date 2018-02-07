@@ -1,3 +1,12 @@
+2018-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84235
+	* tree-ssa-scopedtables.c
+	(avail_exprs_stack::simplify_binary_operation): Fir MINUS_EXPR, punt
+	if the subtraction is performed in floating point type where NaNs are
+	honored.  For *DIV_EXPR, punt for ALL_FRACT_MODE_Ps where we can't
+	build 1.  Formatting fix.
+
 2018-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84146
