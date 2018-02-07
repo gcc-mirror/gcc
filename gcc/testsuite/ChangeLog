@@ -1,3 +1,8 @@
+2018-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82049
+	* gfortran.dg/assumed_charlen_parameter.f90: New test.
+
 2018-02-07  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/81610
