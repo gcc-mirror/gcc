@@ -3185,6 +3185,20 @@ class Interface_type : public Type
   bool
   assume_identical(const Interface_type*, const Interface_type*) const;
 
+  struct Bmethods_map_entry
+  {
+    Btype *btype;
+    bool is_placeholder;
+  };
+
+  // A mapping from Interface_type to the backend type of its bmethods_,
+  // used to ensure that the backend representation of identical types
+  // is identical.
+  typedef Unordered_map_hash(const Interface_type*, Bmethods_map_entry,
+                             Type_hash_identical, Type_identical) Bmethods_map;
+
+  static Bmethods_map bmethods_map;
+
   // The list of methods associated with the interface from the
   // parser.  This will be NULL for the empty interface.  This may
   // include unnamed interface types.

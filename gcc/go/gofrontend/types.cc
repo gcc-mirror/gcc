@@ -9096,6 +9096,8 @@ Interface_type::get_backend_empty_interface_type(Gogo* gogo)
   return empty_interface_type;
 }
 
+Interface_type::Bmethods_map Interface_type::bmethods_map;
+
 // Return a pointer to the backend representation of the method table.
 
 Btype*
@@ -9103,6 +9105,21 @@ Interface_type::get_backend_methods(Gogo* gogo)
 {
   if (this->bmethods_ != NULL && !this->bmethods_is_placeholder_)
     return this->bmethods_;
+
+  std::pair<Interface_type*, Bmethods_map_entry> val;
+  val.first = this;
+  val.second.btype = NULL;
+  val.second.is_placeholder = false;
+  std::pair<Bmethods_map::iterator, bool> ins =
+    Interface_type::bmethods_map.insert(val);
+  if (!ins.second
+      && ins.first->second.btype != NULL
+      && !ins.first->second.is_placeholder)
+    {
+      this->bmethods_ = ins.first->second.btype;
+      this->bmethods_is_placeholder_ = false;
+      return this->bmethods_;
+    }
 
   Location loc = this->location();
 
@@ -9160,10 +9177,14 @@ Interface_type::get_backend_methods(Gogo* gogo)
   Btype* st = gogo->backend()->struct_type(mfields);
   Btype* ret = gogo->backend()->pointer_type(st);
 
-  if (this->bmethods_ != NULL && this->bmethods_is_placeholder_)
-    gogo->backend()->set_placeholder_pointer_type(this->bmethods_, ret);
+  if (ins.first->second.btype != NULL
+      && ins.first->second.is_placeholder)
+    gogo->backend()->set_placeholder_pointer_type(ins.first->second.btype,
+                                                  ret);
   this->bmethods_ = ret;
+  ins.first->second.btype = ret;
   this->bmethods_is_placeholder_ = false;
+  ins.first->second.is_placeholder = false;
   return ret;
 }
 
@@ -9174,10 +9195,25 @@ Interface_type::get_backend_methods_placeholder(Gogo* gogo)
 {
   if (this->bmethods_ == NULL)
     {
+      std::pair<Interface_type*, Bmethods_map_entry> val;
+      val.first = this;
+      val.second.btype = NULL;
+      val.second.is_placeholder = false;
+      std::pair<Bmethods_map::iterator, bool> ins =
+        Interface_type::bmethods_map.insert(val);
+      if (!ins.second && ins.first->second.btype != NULL)
+        {
+          this->bmethods_ = ins.first->second.btype;
+          this->bmethods_is_placeholder_ = ins.first->second.is_placeholder;
+          return this->bmethods_;
+        }
+
       Location loc = this->location();
-      this->bmethods_ = gogo->backend()->placeholder_pointer_type("", loc,
-								  false);
+      Btype* bt = gogo->backend()->placeholder_pointer_type("", loc, false);
+      this->bmethods_ = bt;
+      ins.first->second.btype = bt;
       this->bmethods_is_placeholder_ = true;
+      ins.first->second.is_placeholder = true;
     }
   return this->bmethods_;
 }
