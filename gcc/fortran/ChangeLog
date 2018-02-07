@@ -1,3 +1,9 @@
+2018-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/82049
+	* match.c (gfc_match_type_spec): If the charlen is non-NULL, then
+	try to resolve it.  While here return early if possible.
+
 2018-02-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84115
