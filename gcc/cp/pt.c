@@ -11415,6 +11415,34 @@ tsubst_binary_right_fold (tree t, tree args, tsubst_flags_t complain,
   return expand_right_fold (t, vec, complain);
 }
 
+/* Walk through the pattern of a pack expansion, adding everything in
+   local_specializations to a list.  */
+
+static tree
+extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data)
+{
+  tree *extra = reinterpret_cast<tree*>(data);
+  if (tree spec = retrieve_local_specialization (*tp))
+    {
+      if (TREE_CODE (spec) == NONTYPE_ARGUMENT_PACK)
+	{
+	  /* Pull out the actual PARM_DECL for the partial instantiation.  */
+	  tree args = ARGUMENT_PACK_ARGS (spec);
+	  gcc_assert (TREE_VEC_LENGTH (args) == 1);
+	  tree arg = TREE_VEC_ELT (args, 0);
+	  spec = PACK_EXPANSION_PATTERN (arg);
+	}
+      *extra = tree_cons (*tp, spec, *extra);
+    }
+  return NULL_TREE;
+}
+static tree
+extract_local_specs (tree pattern)
+{
+  tree extra = NULL_TREE;
+  cp_walk_tree_without_duplicates (&pattern, extract_locals_r, &extra);
+  return extra;
+}
 
 /* Substitute ARGS into T, which is an pack expansion
    (i.e. TYPE_PACK_EXPANSION or EXPR_PACK_EXPANSION). Returns a
@@ -11442,14 +11470,17 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   tree extra = PACK_EXPANSION_EXTRA_ARGS (t);
   if (extra && TREE_CODE (extra) == TREE_LIST)
     {
-      /* The partial instantiation involved function parameter packs; map
-         from the general template to our current context.  */
-      for (tree fns = TREE_CHAIN (extra); fns; fns = TREE_CHAIN (fns))
+      for (tree elt = TREE_CHAIN (extra); elt; elt = TREE_CHAIN (elt))
 	{
-	  tree fn = TREE_PURPOSE (fns);
-	  tree inst = enclosing_instantiation_of (fn);
-	  register_parameter_specializations (fn, inst);
+	  /* The partial instantiation involved local declarations collected in
+	     extract_local_specs; map from the general template to our local
+	     context.  */
+	  tree gen = TREE_PURPOSE (elt);
+	  tree partial = TREE_VALUE (elt);
+	  tree inst = retrieve_local_specialization (partial);
+	  register_local_specialization (inst, gen);
 	}
+      gcc_assert (!TREE_PURPOSE (extra));
       extra = TREE_VALUE (extra);
     }
   args = add_to_template_args (extra, args);
@@ -11625,25 +11656,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       t = make_pack_expansion (pattern, complain);
       tree extra = args;
       if (unsubstituted_fn_pack)
-	{
-	  /* For function parameter packs it's more complicated; we need to
-	     remember which enclosing function(s) provided them to this pack
-	     expansion so we can map their parameters to the parameters of a
-	     later full instantiation.  */
-	  tree fns = NULL_TREE;
-	  for (tree p = packs; p; p = TREE_CHAIN (p))
-	    {
-	      tree parm = TREE_PURPOSE (p);
-	      if (TREE_CODE (parm) != PARM_DECL)
-		continue;
-	      parm = DECL_CONTEXT (parm);
-	      if (purpose_member (parm, fns))
-		continue;
-	      fns = tree_cons (parm, NULL_TREE, fns);
-	    }
-	  if (fns)
-	    extra = tree_cons (NULL_TREE, extra, fns);
-	}
+	if (tree locals = extract_local_specs (pattern))
+	  extra = tree_cons (NULL_TREE, extra, locals);
       PACK_EXPANSION_EXTRA_ARGS (t) = extra;
       return t;
     }
