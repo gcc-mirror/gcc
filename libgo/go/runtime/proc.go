@@ -3369,7 +3369,9 @@ var lostAtomic64Count uint64
 
 var _SystemPC = funcPC(_System)
 var _ExternalCodePC = funcPC(_ExternalCode)
+var _LostExternalCodePC = funcPC(_LostExternalCode)
 var _GCPC = funcPC(_GC)
+var _LostSIGPROFDuringAtomic64PC = funcPC(_LostSIGPROFDuringAtomic64)
 
 // Called if we receive a SIGPROF signal.
 // Called by the signal handler, may run during STW.
@@ -3469,7 +3471,7 @@ func sigprofNonGoPC(pc uintptr) {
 	if prof.hz != 0 {
 		stk := []uintptr{
 			pc,
-			funcPC(_ExternalCode) + sys.PCQuantum,
+			_ExternalCodePC + sys.PCQuantum,
 		}
 		cpuprof.addNonGo(stk)
 	}

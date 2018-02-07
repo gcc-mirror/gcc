@@ -245,7 +245,7 @@ func setProcessCPUProfiler(hz int32) {
 		// Enable the Go signal handler if not enabled.
 		if atomic.Cas(&handlingSig[_SIGPROF], 0, 1) {
 			atomic.Storeuintptr(&fwdSig[_SIGPROF], getsig(_SIGPROF))
-			setsig(_SIGPROF, funcPC(sighandler))
+			setsig(_SIGPROF, getSigtramp())
 		}
 	} else {
 		// If the Go signal handler should be disabled by default,
