@@ -1,3 +1,10 @@
+2018-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/84154
+	* gcc.target/powerpc/pr84154-1.c: New tests.
+	* gcc.target/powerpc/pr84154-2.c: Likewise.
+	* gcc.target/powerpc/pr84154-3.c: Likewise.
+
 2018-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-mergew-mergeow.c:  Update dg-requires.
