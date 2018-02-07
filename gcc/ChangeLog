@@ -1,3 +1,20 @@
+2018-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84037
+	* tree-vectorizer.h (struct _loop_vec_info): Add ivexpr_map member.
+	(cse_and_gimplify_to_preheader): Declare.
+	(vect_get_place_in_interleaving_chain): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	ivexpr_map.
+	(_loop_vec_info::~_loop_vec_info): Delete it.
+	(cse_and_gimplify_to_preheader): New function.
+	* tree-vect-slp.c (vect_get_place_in_interleaving_chain): Export.
+	* tree-vect-stmts.c (vectorizable_store): CSE base and steps.
+	(vectorizable_load): Likewise.  For grouped stores always base
+	the IV on the first element.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Unshare versioning
+	condition before gimplifying.
+
 2018-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-eh.c (operation_could_trap_helper_p): Ignore honor_trapv for

@@ -6455,7 +6455,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       tree offvar;
       tree ivstep;
       tree running_off;
-      gimple_seq stmts = NULL;
       tree stride_base, stride_step, alias_off;
       tree vec_oprnd;
       unsigned int g;
@@ -6467,11 +6466,11 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       stride_base
 	= fold_build_pointer_plus
-	    (unshare_expr (DR_BASE_ADDRESS (first_dr)),
+	    (DR_BASE_ADDRESS (first_dr),
 	     size_binop (PLUS_EXPR,
-			 convert_to_ptrofftype (unshare_expr (DR_OFFSET (first_dr))),
+			 convert_to_ptrofftype (DR_OFFSET (first_dr)),
 			 convert_to_ptrofftype (DR_INIT (first_dr))));
-      stride_step = fold_convert (sizetype, unshare_expr (DR_STEP (first_dr)));
+      stride_step = fold_convert (sizetype, DR_STEP (first_dr));
 
       /* For a store with loop-invariant (but other than power-of-2)
          stride (i.e. not a grouped access) like so:
@@ -6563,15 +6562,15 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
+      stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
+      ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
       create_iv (stride_base, ivstep, NULL,
 		 loop, &incr_gsi, insert_after,
 		 &offvar, NULL);
       incr = gsi_stmt (incr_gsi);
       set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo));
 
-      stride_step = force_gimple_operand (stride_step, &stmts, true, NULL_TREE);
-      if (stmts)
-	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+      stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
 
       prev_stmt_info = NULL;
       alias_off = build_int_cst (ref_type, 0);
@@ -7484,27 +7483,37 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       tree ivstep;
       tree running_off;
       vec<constructor_elt, va_gc> *v = NULL;
-      gimple_seq stmts = NULL;
       tree stride_base, stride_step, alias_off;
       /* Checked by get_load_store_type.  */
       unsigned int const_nunits = nunits.to_constant ();
+      unsigned HOST_WIDE_INT cst_offset = 0;
 
       gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop);
 
-      if (slp && grouped_load)
+      if (grouped_load)
 	{
 	  first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
 	  first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (first_stmt));
-	  group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
-	  ref_type = get_group_alias_ptr_type (first_stmt);
 	}
       else
 	{
 	  first_stmt = stmt;
 	  first_dr = dr;
+	}
+      if (slp && grouped_load)
+	{
+	  group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
+	  ref_type = get_group_alias_ptr_type (first_stmt);
+	}
+      else
+	{
+	  if (grouped_load)
+	    cst_offset
+	      = (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (vectype)))
+		 * vect_get_place_in_interleaving_chain (stmt, first_stmt));
 	  group_size = 1;
-	  ref_type = reference_alias_ptr_type (DR_REF (first_dr));
+	  ref_type = reference_alias_ptr_type (DR_REF (dr));
 	}
 
       stride_base
@@ -7536,16 +7545,15 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
-      create_iv (unshare_expr (stride_base), unshare_expr (ivstep), NULL,
+      stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
+      ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
+      create_iv (stride_base, ivstep, NULL,
 		 loop, &incr_gsi, insert_after,
 		 &offvar, NULL);
       incr = gsi_stmt (incr_gsi);
       set_vinfo_for_stmt (incr, new_stmt_vec_info (incr, loop_vinfo));
 
-      stride_step = force_gimple_operand (unshare_expr (stride_step),
-					  &stmts, true, NULL_TREE);
-      if (stmts)
-	gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
+      stride_step = cse_and_gimplify_to_preheader (loop_vinfo, stride_step);
 
       prev_stmt_info = NULL;
       running_off = offvar;
@@ -7634,7 +7642,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  for (i = 0; i < nloads; i++)
 	    {
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
-					     group_el * elsz);
+					     group_el * elsz + cst_offset);
 	      new_stmt = gimple_build_assign (make_ssa_name (ltype),
 					      build2 (MEM_REF, ltype,
 						      running_off, this_off));
