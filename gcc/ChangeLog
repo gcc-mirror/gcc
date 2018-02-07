@@ -1,3 +1,39 @@
+2018-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/84154
+	* config/rs6000/rs6000.md (fix_trunc<SFDF:mode><QHI:mode>2):
+	Convert from define_expand to be define_insn_and_split.  Rework
+	float/double/_Float128 conversions to QI/HI/SImode to work with
+	both ISA 2.07 (power8) or ISA 3.0 (power9).  Fix regression where
+	conversions to QI/HImode types did a store and then a load to
+	truncate the value.  For conversions to VSX registers, don't split
+	the insn, instead emit the code directly.  Use the code iterator
+	any_fix to combine signed and unsigned conversions.
+	(fix<uns>_trunc<SFDF:mode>si2_p8): Likewise.
+	(fixuns_trunc<SFDF:mode><QHI:mode>2): Likewise.
+	(fix_trunc<IEEE128:mode><QHI:mode>2): Likewise.
+	(fix<uns>_trunc<SFDF:mode><QHI:mode>2): Likewise.
+	(fix_<mode>di2_hw): Likewise.
+	(fixuns_<mode>di2_hw): Likewise.
+	(fix_<mode>si2_hw): Likewise.
+	(fixuns_<mode>si2_hw): Likewise.
+	(fix<uns>_<IEEE128:mode><SDI:mode>2_hw): Likewise.
+	(fix<uns>_trunc<IEEE128:mode><QHI:mode>2): Likewise.
+	(fctiw<u>z_<mode>_smallint): Rename fctiw<u>z_<mode>_smallint to
+	fix<uns>_trunc<SFDF:mode>si2_p8.
+	(fix_trunc<SFDF:mode><QHI:mode>2_internal): Delete, no longer
+	used.
+	(fixuns_trunc<SFDF:mode><QHI:mode>2_internal): Likewise.
+	(fix<uns>_<mode>_mem): Likewise.
+	(fctiw<u>z_<mode>_mem): Likewise.
+	(fix<uns>_<mode>_mem): Likewise.
+	(fix<uns>_trunc<SFDF:mode><QHSI:mode>2_mem): On ISA 3.0, prevent
+	the register allocator from doing a direct move to the GPRs to do
+	a store, and instead use the ISA 3.0 store byte/half-word from
+	vector register instruction.  For IEEE 128-bit floating point,
+	also optimize stores of 32-bit ints.
+	(fix<uns>_trunc<IEEE128:mode><QHSI:mode>2_mem): Likewise.
+
 2018-02-07  Alan Hayward  <alan.hayward@arm.com>
 
 	* genextract.c (push_pathstr_operand): New function to support
