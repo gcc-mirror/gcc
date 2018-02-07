@@ -5171,25 +5171,27 @@ trees_in::tree_node_raw (tree_code code, tree t)
 void
 trees_out::tree_node (tree t)
 {
-  if (!t)
-    {
-      nulls++;
-      s (tt_null);
-      return;
-    }
 
   dump.indent ();
  again:
+  if (!t)
+    {
+      /* NULL_TREE -> tt_null.  */
+      nulls++;
+      s (tt_null);
+      goto done;
+    }
+
   if (int *val_p = tree_map.get (t))
     {
-      /* A back ref or fixed ref.  */
+      /* A back ref or fixed ref -> -ve num, or tt_fixed.  */
       refs++;
       int val = *val_p;
       if (val <= tt_backref)
-	/* Back reference.  */
+	/* Back reference -> -ve number  */
 	s (val);
       else
-	/* Fixed reference. */
+	/* Fixed reference -> tt_fixed */
 	s (tt_fixed), u (val);
       dump () && dump ("Wrote:%d referenced %C:%N%S", val, TREE_CODE (t), t, t);
       goto done;
@@ -5197,6 +5199,7 @@ trees_out::tree_node (tree t)
 
   if (TREE_CODE (t) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (t))
     {
+      /* A Namespace -> tt_namespace.  */
       // FIXME: anonymous
       gcc_assert (TREE_PUBLIC (t));
       s (tt_namespace);
@@ -5209,8 +5212,9 @@ trees_out::tree_node (tree t)
 
   if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
     {
-      /* T is a typeinfo object.  These need recreating by the loader.
-	 The type it is for is stashed on the name's TREE_TYPE.  */
+      /* A typeinfo object -> tt_tinfo_var.
+	 These need recreating by the loader.  The type it is for is
+	 stashed on the name's TREE_TYPE.  */
       tree type = TREE_TYPE (DECL_NAME (t));
       s (tt_tinfo_var);
       tree_node (type);
@@ -5221,7 +5225,7 @@ trees_out::tree_node (tree t)
 
   if (TREE_CODE (t) == IDENTIFIER_NODE)
     {
-      /* An identifier node.  Stream the name or type.  */
+      /* An identifier node -> tt_id or, tt_conv_id.  */
       bool conv_op = IDENTIFIER_CONV_OP_P (t);
 
       s (conv_op ? tt_conv_id : tt_id);
@@ -5245,6 +5249,7 @@ trees_out::tree_node (tree t)
       gcc_assert (TREE_CODE (name) == TYPE_DECL);
       if (DECL_TINFO_P (name))
 	{
+	  /* A typeinfo pseudo type -> tt_tinfo_pseudo.  */
 	  unsigned ix = get_pseudo_tinfo_index (t);
 
 	  /* Make sure we're identifying this exact variant.  */
@@ -5258,8 +5263,10 @@ trees_out::tree_node (tree t)
 
       if (!tree_map.get (name))
 	{
-	  /* T is a named type whose name we have not met yet.  Write the
-	     type name as an interstitial, and then start over.  */
+	  /* A new named type -> tt_type_name.
+
+	     Write the type name as an interstitial, and then start
+	     over.  We need to stream the DECL_NAME first.  */
 	  dump () && dump ("Writing interstitial type name %C:%N%S",
 			   TREE_CODE (name), name, name);
 	  /* Make sure this is not a named builtin. We should find
@@ -5270,17 +5277,21 @@ trees_out::tree_node (tree t)
 	  tree_node (name);
 	  dump () && dump ("Wrote interstitial type name %C:%N%S",
 			   TREE_CODE (name), name, name);
-	  /* The type could be a variant of TREE_TYPE (name).  */
+	  /* The type itself could be a variant of TREE_TYPE (name),
+	     so stream it out in its own right.  We'll find the name
+	     in the map, so not end up here.  */
 	  goto again;
 	}
     }
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     {
+      /* A DECL.  */
       tree module_ctx = module_context (t);
       unsigned owner = MAYBE_DECL_MODULE_OWNER (module_ctx);
       if (owner >= MODULE_IMPORT_BASE)
 	{
+	  /* An imported decl -> tt_import.  */
 	  s (tt_import);
 	  u (TREE_CODE (t));
 	  tree_node (CP_DECL_CONTEXT (t));
@@ -5292,6 +5303,7 @@ trees_out::tree_node (tree t)
 	  tree type = TREE_TYPE (t);
 	  if (type)
 	    {
+	      /* Make sure the imported type is in the map too.  */
 	      bool existed;
 	      int *val = &tree_map.get_or_insert (type, &existed);
 	      if (!existed)
@@ -5307,8 +5319,9 @@ trees_out::tree_node (tree t)
 	}
     }
 
+  /* else */
   {
-    /* Generic node streaming.  */    
+    /* A new node -> tt_node.  */
     tree_code code = TREE_CODE (t);
 
     unique++;
@@ -5324,7 +5337,9 @@ trees_out::tree_node (tree t)
     tree_node_raw (code, t);
     dump () && dump ("Written:%d %N", tag, t);
   }
+
  done:
+  /* And, breath out.  */
   dump.outdent ();
 }
 
@@ -5334,10 +5349,12 @@ trees_in::tree_node_special (int tag)
   tree res = NULL_TREE;
   switch (tag)
     {
-    case tt_node:
+    case tt_null:
+      /* NULL_TREE.  */
       break;
 
     default:
+      /* backref, pull it out of the map.  */
       if (tag <= tt_backref && unsigned (tt_backref - tag) < back_refs.length ())
 	res = back_refs[tt_backref - tag];
       else
@@ -5352,6 +5369,7 @@ trees_in::tree_node_special (int tag)
 
     case tt_fixed:
       {
+	/* A fixed ref, find it in the fixed_ref array.   */
 	unsigned fix = u ();
 	if (fix < (*fixed_refs).length ())
 	  {
@@ -5366,6 +5384,7 @@ trees_in::tree_node_special (int tag)
 
     case tt_namespace:
       {
+	/* A namespace, find it in the symbol table.  */
 	tree ctx = tree_node ();
 	tree name = tree_node ();
 
@@ -5422,6 +5441,7 @@ trees_in::tree_node_special (int tag)
 
     case tt_id:
       {
+	/* An identifier node.  */
 	size_t l;
 	const char *chars = str (&l);
 	res = get_identifier_with_length (chars, l);
@@ -5432,6 +5452,7 @@ trees_in::tree_node_special (int tag)
 
     case tt_import:
       {
+	/* An imported decl.  */
 	unsigned code = u ();
 	tree ctx = tree_node ();
 	unsigned owner = u ();
@@ -5454,6 +5475,7 @@ trees_in::tree_node_special (int tag)
 			 ctx, name, module_name (remapped));
 	if (res && TREE_TYPE (res) && !u ())
 	  {
+	    /* Insert the type too.  */
 	    tree type = TREE_TYPE (res);
 	    tag = insert (type);
 	    dump () && dump ("Read imported type:%d %C:%N%S", tag,
@@ -5462,6 +5484,48 @@ trees_in::tree_node_special (int tag)
       }
       break;
 
+    case tt_node:
+      {
+	/* A new node.  Stream it in.  */
+	unsigned c = u ();
+	if (c >= MAX_TREE_CODES)
+	  {
+	    error ("unknown tree code %qd" , c);
+	    set_overrun ();
+	  }
+	tree_code code = tree_code (c);
+	res = start (code);
+
+	/* Insert into map.  */
+	tag = insert (res);
+	dump () && dump ("Reading:%d %C", tag, code);
+
+	if (!tree_node_raw (code, res))
+	  goto barf;
+
+	if (get_overrun ())
+	  {
+	  barf:
+	    back_refs[tt_backref - tag] = NULL_TREE;
+	    set_overrun ();
+	    res = NULL_TREE;
+	    break;
+	  }
+
+	dump () && dump ("Read:%d %C:%N", tag, code, res);
+	tree found = finish (res);
+
+	if (found != res)
+	  {
+	    /* Update the mapping.  */
+	    res = found;
+	    back_refs[tt_backref - tag] = res;
+	    dump () && dump ("Remapping:%d to %C:%N%S", tag,
+			     res ? TREE_CODE (res) : ERROR_MARK, res, res);
+	  }
+	break;
+      }
+      
     case tt_definition:
       /* An immediate definition.  */
       res = tag_definition ();
@@ -5502,52 +5566,8 @@ trees_in::tree_node ()
 	}
     }
 
-  if (res || get_overrun ())
-    {
-      dump.outdent ();
-      return res;
-    }
-
-  gcc_checking_assert (tag == tt_node);
-  unsigned c = u ();
-  if (c >= MAX_TREE_CODES)
-    {
-      error ("unknown tree code %qd" , c);
-      set_overrun ();
-    }
-  tree_code code = tree_code (c);
-  tree t = start (code);
-
-  /* Insert into map.  */
-  tag = insert (t);
-  dump () && dump ("Reading:%d %C", tag, code);
-
-  if (!tree_node_raw (code, t))
-    goto barf;
-
-  if (get_overrun ())
-    {
-    barf:
-      back_refs[tt_backref - tag] = NULL_TREE;
-      set_overrun ();
-      dump.outdent ();
-      return NULL_TREE;
-    }
-
-  dump () && dump ("Read:%d %C:%N", tag, code, t);
-  tree found = finish (t);
-
-  if (found != t)
-    {
-      /* Update the mapping.  */
-      t = found;
-      back_refs[tt_backref - tag] = t;
-      dump () && dump ("Index %d remapping %C:%N%S", tag,
-		       t ? TREE_CODE (t) : ERROR_MARK, t, t);
-    }
-
   dump.outdent ();
-  return t;
+  return res;
 }
 
 /* Rebuild a streamed in type.  */
