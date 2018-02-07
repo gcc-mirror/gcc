@@ -1,3 +1,7 @@
+2018-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-mergew-mergeow.c:  Update dg-requires.
+
 2018-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84082

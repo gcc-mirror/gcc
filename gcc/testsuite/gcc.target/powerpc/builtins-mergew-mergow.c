@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-require-effective-target vsx_hw } */
-/* { dg-options "-maltivec -mvsx" } */
+/* { dg-require-effective-target p8vector_hw } */
+/* { dg-options "-mpower8-vector" } */
 
 #include <altivec.h> // vector
 #include <stdlib.h>
