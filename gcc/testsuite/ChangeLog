@@ -1,3 +1,9 @@
+2018-02-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84243
+	* gcc.target/i386/cet-intrin-4.c (dg-options): Use
+	-fcf-protection=return.
+
 2018-02-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR libgomp/84217
