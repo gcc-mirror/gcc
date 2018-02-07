@@ -1,3 +1,7 @@
+2018-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/vsxcopy.c: Update scan-assembler stanzas.
+
 2018-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/84154
