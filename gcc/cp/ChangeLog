@@ -1,3 +1,10 @@
+2018-02-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84182 - ICE with captured lambda
+	PR c++/84181
+	* pt.c (extract_locals_r, extract_local_specs): New.
+	(tsubst_pack_expansion): Use them.
+
 2018-02-07  Martin Liska  <mliska@suse.cz>
 
 	PR c++/84059.
