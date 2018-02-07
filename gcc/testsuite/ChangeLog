@@ -1,3 +1,7 @@
+2018-02-07  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/torture/pr83055.c: Require effective target global_constructor.
+
 2018-02-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/84243
