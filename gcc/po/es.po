@@ -14049,16 +14049,12 @@ msgid "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tSet the debug counte
 msgstr "-fdbg-cnt=<contador>:<límite>[,<contador>:<límite>,...]\tEstablece el límite del contador de depuración."
 
 #: common.opt:1178
-#, fuzzy
-#| msgid "Map one directory name to another in debug information."
 msgid "-fdebug-prefix-map=<old>=<new> Map one directory name to another in debug information."
-msgstr "Mapea un nombre de directorio a otro en la información de depuración."
+msgstr "-fdebug-prefix-map=<antiguo>=<nuevo> Asocia un nombre de directorio a otro en la información de depuración."
 
 #: common.opt:1182
-#, fuzzy
-#| msgid "Map one directory name to another in debug information."
 msgid "-ffile-prefix-map=<old>=<new> Map one directory name to another in compilation result."
-msgstr "Mapea un nombre de directorio a otro en la información de depuración."
+msgstr "-ffile-prefix-map=<antiguo>=<nuevo> Asocia un nombre de directorio a otro en la información de depuración."
 
 #: common.opt:1186
 msgid "Output .debug_types section when using DWARF v4 debuginfo."
@@ -14105,10 +14101,8 @@ msgid "-fdiagnostics-color=[never|always|auto]\tColorize diagnostics."
 msgstr "-fdiagnostics-color=[never|always|auto]\tColorea los diagnósticos."
 
 #: common.opt:1265
-#, fuzzy
-#| msgid "Print fixit hints in machine-readable form."
 msgid "Print fix-it hints in machine-readable form."
-msgstr "Imprime indicaciones fixit (arreglar) en formato legible por una máquina."
+msgstr "Imprime indicaciones fix-it (arreglar) en formato legible por una máquina."
 
 #: common.opt:1269
 msgid "Print fix-it hints to stderr in unified diff format."
@@ -14298,10 +14292,8 @@ msgid "Enable loop nest transforms.  Same as -floop-nest-optimize."
 msgstr "Activa las transformaciones anidadas de bucle.  Igual que -floop-nest-optimize."
 
 #: common.opt:1512
-#, fuzzy
-#| msgid "Enable loop header copying on trees."
 msgid "Enable loop interchange on trees."
-msgstr "Activa la copia de encabezado de bucles en árboles."
+msgstr "Activa el intercambio de bucles en árboles."
 
 #: common.opt:1520
 #, fuzzy
@@ -14722,10 +14714,8 @@ msgid "Enable basic program profiling code."
 msgstr "Activa el código básico de análisis de perfil del programa."
 
 #: common.opt:2030
-#, fuzzy
-#| msgid "Generate bounds passing for calls."
 msgid "Generate absolute source path names for gcov."
-msgstr "Genera paso de límites para llamadas."
+msgstr "Genera nombres de ruta de fuentes absolutos para gcov."
 
 #: common.opt:2034
 msgid "Insert arc-based program profiling code."
@@ -14777,10 +14767,8 @@ msgid "Enable function reordering that improves code placement."
 msgstr "Activa reordenación de funciones que mejora ubicación de código."
 
 #: common.opt:2091
-#, fuzzy
-#| msgid "Generate cld instruction in the function prologue."
 msgid "Insert NOP instructions at each function entry."
-msgstr "Genera la instrucción cld en el prólogo de función."
+msgstr "Inserta instrucciones NOP en cada entrada de función."
 
 #: common.opt:2098
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>."
@@ -15387,10 +15375,8 @@ msgstr "Realiza optimizaciones del programa completo."
 
 # wraps around? No entiendo bien. cfuga
 #: common.opt:2869
-#, fuzzy
-#| msgid "Assume signed arithmetic overflow wraps around."
 msgid "Assume pointer overflow wraps around."
-msgstr "Asume que el desbordamiento aritmético con signo se envuelve."
+msgstr "Asume que el desbordamiento de punteros se envuelve."
 
 # wraps around? No entiendo bien. cfuga
 #: common.opt:2873
@@ -15406,14 +15392,13 @@ msgid "Generate debug information in default format."
 msgstr "Genera información de depuración en el formato por defecto."
 
 #: common.opt:2884 common.opt:2888 common.opt:2892 common.opt:2896
-#, fuzzy, c-format
-#| msgid "switch %qs is no longer supported"
+#, c-format
 msgid "switch %qs no longer supported"
 msgstr "la opción %qs ya no se admite"
 
 #: common.opt:2901
 msgid "Record DW_AT_decl_column and DW_AT_call_column in DWARF."
-msgstr ""
+msgstr "Registro DW_AT_decl_column y DW_AT_call_column en DWARF."
 
 #: common.opt:2905
 msgid "Generate debug information in default version of DWARF format."
@@ -15528,22 +15513,16 @@ msgid "Create a shared library."
 msgstr "Crea una biblioteca compartida."
 
 #: common.opt:3173
-#, fuzzy
-#| msgid "Don't create a position independent executable."
 msgid "Don't create a dynamically linked position independent executable."
-msgstr "No genera un ejecutable independiente de posición."
+msgstr "No genera un ejecutable independiente de posición enlazado dinámicamente."
 
 #: common.opt:3177
-#, fuzzy
-#| msgid "Create a position independent executable."
 msgid "Create a dynamically linked position independent executable."
-msgstr "Genera un ejecutable independiente de posición."
+msgstr "Genera un ejecutable independiente de posición enlazado dinámicamente."
 
 #: common.opt:3181
-#, fuzzy
-#| msgid "Create a position independent executable."
 msgid "Create a static position independent executable."
-msgstr "Genera un ejecutable independiente de posición."
+msgstr "Genera un ejecutable independiente de posición estático."
 
 #: common.opt:3188
 msgid "Use caller save register across calls if possible."
@@ -15990,17 +15969,15 @@ msgid "ignoring attribute %qE in declaration of a built-in function %qD because 
 msgstr ""
 
 #: attribs.c:427
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored due to conflict with attribute %qs"
+#, gcc-internal-format
 msgid "ignoring attribute %qE because it conflicts with attribute %qs"
 msgstr "Se hace caso omiso del atributo %qE debido a un conflicto con el atributo %qs"
 
 #: attribs.c:433 c-family/c-attribs.c:1893 cp/decl.c:13547 cp/friend.c:302
 #: cp/tree.c:4471
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration %q+#D here"
+#, gcc-internal-format
 msgid "previous declaration here"
-msgstr "declaración previa de %q+#D aquí"
+msgstr "declaración previa aquí"
 
 #. Warn about and ignore all others for now, but store them.
 #: attribs.c:548 c-family/c-attribs.c:2716 objc/objc-act.c:4963
@@ -16087,17 +16064,15 @@ msgid "%qE attribute ignored"
 msgstr "se descarta el atributo %qE"
 
 #: attribs.c:973
-#, fuzzy, gcc-internal-format
-#| msgid "missing %<target%> attribute for multi-versioned %D"
+#, gcc-internal-format
 msgid "missing %<target%> attribute for multi-versioned %qD"
-msgstr "falta el atributo %<target%> para %D multiversionado"
+msgstr "falta el atributo %<target%> para %qD multiversionado"
 
 #: attribs.c:976 cp/decl.c:1218 cp/decl.c:1944 cp/decl.c:1954 cp/decl.c:2516
 #: cp/decl.c:2935
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration of %q+D"
+#, gcc-internal-format
 msgid "previous declaration of %qD"
-msgstr "declaración previa de %q+D"
+msgstr "declaración previa de %qD"
 
 #: attribs.c:1119
 #, gcc-internal-format
@@ -16215,46 +16190,39 @@ msgid "invalid third argument to %<__builtin_prefetch%>; using zero"
 msgstr "el tercer argumento para %<__builtin_prefetch%> es no válido; se usa cero"
 
 #: builtins.c:3132
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified size %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified size %E exceeds maximum object size %E"
-msgstr "%K%qD: el tamaño especificado %wu excede el tamaño máximo %wu del objeto"
+msgstr "%K%qD: el tamaño especificado %E excede el tamaño máximo %E del objeto"
 
 #: builtins.c:3137
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified size between %wu and %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified size between %E and %E exceeds maximum object size %E"
-msgstr "%K%qD: el tamaño especificado entre %wu y %wu excede el tamaño de objeto máximo %wu"
+msgstr "%K%qD: el tamaño especificado entre %E y %E excede el tamaño de objeto máximo %E"
 
 #: builtins.c:3170 builtins.c:3186
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %wu bytes into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E or more bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: escribir %wu bytes en una región de tamaño %wu desborda el destino"
+msgstr "%K%qD: escribir %E bytes o más en una región de tamaño %E desborda el destino"
 
 #: builtins.c:3177
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: writing %wu byte into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
-msgstr "%K%qD: escribir %wu byte en una región de tamaño %wu desborda el destino"
+msgstr "%K%qD: escribir %E byte en una región de tamaño %E desborda el destino"
 
 #: builtins.c:3179
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %wu bytes into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: escribir %wu bytes en una región de tamaño %wu desborda el destino"
+msgstr "%K%qD: escribir %E bytes en una región de tamaño %E desborda el destino"
 
 #: builtins.c:3192
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing between %E and %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: escribir entre %wu y %wu bytes en una región de tamaño %wu desborda el destino"
+msgstr "%K%qD: escribir entre %E y %E bytes en una región de tamaño %E desborda el destino"
 
 #: builtins.c:3228
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified bound %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E exceeds maximum object size %E"
-msgstr "%K%qD: el límite %wu especificado excede el tamaño de objeto máximo %wu"
+msgstr "%K%qD: el límite %E especificado excede el tamaño de objeto máximo %E"
 
 #: builtins.c:3234
 #, fuzzy, gcc-internal-format
