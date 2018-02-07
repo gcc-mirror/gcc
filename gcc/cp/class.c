@@ -1083,7 +1083,7 @@ add_method (tree type, tree method, bool via_using)
 	  /* If these are versions of the same function, process and
 	     move on.  */
 	  if (TREE_CODE (fn) == FUNCTION_DECL
-	      && maybe_version_functions (method, fn))
+	      && maybe_version_functions (method, fn, true))
 	    continue;
 
 	  if (DECL_INHERITED_CTOR (method))

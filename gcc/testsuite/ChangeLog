@@ -1,3 +1,8 @@
+2018-02-07  Martin Liska  <mliska@suse.cz>
+
+	PR c++/84059.
+	* g++.dg/ext/mv26.C: New test.
+
 2018-02-07  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/pr83844.c: Require effective target alloca.

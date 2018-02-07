@@ -1,3 +1,12 @@
+2018-02-07  Martin Liska  <mliska@suse.cz>
+
+	PR c++/84059.
+	* class.c (add_method): Append argument value.
+	* cp-tree.h (maybe_version_functions): Add new argument.
+	* decl.c (decls_match): Call it if a declaration does not
+	have DECL_FUNCTION_VERSIONED.
+	(maybe_version_functions): record argument is added.
+
 2018-02-05  Marek Polacek  <polacek@redhat.com>
 
 	* class.c: Remove unused global variables.
