@@ -375,12 +375,10 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 
 	default:
 	  {
-	    int size = 0;
-	    if ((tree_contains_chrecs (op0, &size)
-		 || tree_contains_chrecs (op1, &size))
-		&& size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	    if (tree_contains_chrecs (op0, NULL)
+		|| tree_contains_chrecs (op1, NULL))
 	      return build2 (code, type, op0, op1);
-	    else if (size < PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+	    else
 	      {
 		if (code == POINTER_PLUS_EXPR)
 		  return fold_build_pointer_plus (fold_convert (type, op0),
@@ -390,8 +388,6 @@ chrec_fold_plus_1 (enum tree_code code, tree type,
 				      fold_convert (type, op0),
 				      fold_convert (type, op1));
 	      }
-	    else
-	      return chrec_dont_know;
 	  }
 	}
     }

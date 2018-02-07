@@ -1,3 +1,14 @@
+2018-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84204
+	* gcc.dg/graphite/pr84204.c: New testcase.
+
+	PR tree-optimization/84205
+	* gcc.dg/graphite/pr84205.c: New testcase.
+
+	PR tree-optimization/84223
+	* gfortran.dg/graphite/pr84223.f90: New testcase.
+
 2018-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71662
