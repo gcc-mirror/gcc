@@ -2001,11 +2001,16 @@ gfc_match_type_spec (gfc_typespec *ts)
 {
   match m;
   locus old_locus;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  char c, name[GFC_MAX_SYMBOL_LEN + 1];
 
   gfc_clear_ts (ts);
   gfc_gobble_whitespace ();
   old_locus = gfc_current_locus;
+
+  /* If c isn't [a-z], then return immediately.  */
+  c = gfc_peek_ascii_char ();
+  if (!ISALPHA(c))
+    return MATCH_NO;
 
   if (match_derived_type_spec (ts) == MATCH_YES)
     {
@@ -2045,6 +2050,8 @@ gfc_match_type_spec (gfc_typespec *ts)
       ts->type = BT_CHARACTER;
 
       m = gfc_match_char_spec (ts);
+      if (ts->u.cl && ts->u.cl->length)
+	gfc_resolve_expr (ts->u.cl->length);
 
       if (m == MATCH_NO)
 	m = MATCH_YES;
