@@ -1899,7 +1899,10 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
     {
       tree range[2];
       get_range_strlen (src, range);
-      if (range[0])
+      if (range[0] != NULL_TREE
+	  && TREE_CODE (range[0]) == INTEGER_CST
+	  && range[1] != NULL_TREE
+	  && TREE_CODE (range[1]) == INTEGER_CST)
 	{
 	  lenrange[0] = wi::to_wide (range[0], prec);
 	  lenrange[1] = wi::to_wide (range[1], prec);
