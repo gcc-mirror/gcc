@@ -1,3 +1,9 @@
+2018-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84233
+	* tree-ssa-phiprop.c (propagate_with_phi): Use separate
+	changed flag instead of boguously re-using phi_inserted.
+
 2018-02-08  Martin Jambor  <mjambor@suse.cz>
 
 	* hsa-gen.c (get_symbol_for_decl): Set program allocation for
