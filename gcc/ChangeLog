@@ -1,3 +1,10 @@
+2018-02-08  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/84113
+	* config/rs6000/altivec.md (*restore_world): Remove LR use.
+	* config/rs6000/predicates.md (restore_world_operation): Adjust op
+	count, remove one USE.
+
 2018-02-08  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline
