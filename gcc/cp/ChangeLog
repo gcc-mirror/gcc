@@ -1,3 +1,8 @@
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83204
+	* pt.c (tsubst_copy_and_build): Use force_paren_expr for INDIRECT_REF.
+
 2018-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84082
