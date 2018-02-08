@@ -1468,12 +1468,11 @@
   rtx elt;
   int count = XVECLEN (op, 0);
 
-  if (count != 59)
+  if (count != 58)
     return 0;
 
   index = 0;
   if (GET_CODE (XVECEXP (op, 0, index++)) != RETURN
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE
       || GET_CODE (XVECEXP (op, 0, index++)) != USE
       || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER)
     return 0;
