@@ -40402,6 +40402,10 @@ ix86_multiplication_cost (const struct processor_costs *cost,
 			   ? cost->mulsd : cost->mulss, true);
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
     {
+      /* vpmullq is used in this case. No emulation is needed.  */
+      if (TARGET_AVX512DQ)
+	return ix86_vec_cost (mode, cost->mulss, true);
+
       /* V*QImode is emulated with 7-13 insns.  */
       if (mode == V16QImode || mode == V32QImode)
 	{
