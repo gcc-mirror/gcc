@@ -7062,7 +7062,7 @@ finish_struct (tree t, tree attributes)
       /* People keep complaining that the compiler crashes on an invalid
 	 definition of initializer_list, so I guess we should explicitly
 	 reject it.  What the compiler internals care about is that it's a
-	 template and has a pointer field followed by an integer field.  */
+	 template and has a pointer field followed by size_type field.  */
       bool ok = false;
       if (processing_template_decl)
 	{
@@ -7075,9 +7075,8 @@ finish_struct (tree t, tree attributes)
 	    }
 	}
       if (!ok)
-	fatal_error (input_location,
-		     "definition of std::initializer_list does not match "
-		     "#include <initializer_list>");
+	fatal_error (input_location, "definition of %qD does not match "
+		     "%<#include <initializer_list>%>", TYPE_NAME (t));
     }
 
   input_location = saved_loc;
