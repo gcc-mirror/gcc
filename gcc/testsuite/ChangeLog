@@ -1,3 +1,9 @@
+2018-02-08  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/84068
+	PR rtl-optimization/83459
+	* gcc.dg/pr84068.c: New test.
+
 2018-02-08  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/vect/slp-pr56812.cc: Allow either basic-block or
