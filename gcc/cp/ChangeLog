@@ -1,5 +1,13 @@
 2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* constexpr.c (cxx_eval_component_reference): Use INDIRECT_REF_P.
+	* lambda.c (build_capture_proxy): Likewise.
+	* search.c (field_access_p): Likewise.
+	* semantics.c (omp_clause_decl, omp_privatize_field,
+	finish_omp_clauses): Likewise.
+
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/83806
 	* typeck.c (decay_conversion): Use mark_rvalue_use for the special
 	case of nullptr too.

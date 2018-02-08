@@ -2463,7 +2463,7 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
   tree whole = cxx_eval_constant_expression (ctx, orig_whole,
 					     lval,
 					     non_constant_p, overflow_p);
-  if (TREE_CODE (whole) == INDIRECT_REF
+  if (INDIRECT_REF_P (whole)
       && integer_zerop (TREE_OPERAND (whole, 0))
       && !ctx->quiet)
     error ("dereferencing a null pointer in %qE", orig_whole);
