@@ -1,3 +1,8 @@
+2018-02-08  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/81143
+	* gcc.target/powerpc/pr79799-2.c: Use __LITTLE_ENDIAN__.
+
 2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/83806
