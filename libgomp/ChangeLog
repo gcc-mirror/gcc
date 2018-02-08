@@ -1,5 +1,10 @@
 2018-02-08  Martin Jambor  <mjambor@suse.cz>
 
+	* testsuite/libgomp.hsa.c/pr82416.c: Make the function with target
+	clonable.
+
+2018-02-08  Martin Jambor  <mjambor@suse.cz>
+
 	* testsuite/libgomp.hsa.c/staticvar.c: New test.
 
 2018-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
