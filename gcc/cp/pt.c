@@ -17224,8 +17224,8 @@ tsubst_copy_and_build (tree t,
 	  r = build_x_indirect_ref (input_location, r, RO_UNARY_STAR,
 				    complain|decltype_flag);
 
-	if (TREE_CODE (r) == INDIRECT_REF)
-	  REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (t);
+	if (REF_PARENTHESIZED_P (t))
+	  r = force_paren_expr (r);
 
 	RETURN (r);
       }

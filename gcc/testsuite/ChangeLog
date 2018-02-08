@@ -1,3 +1,8 @@
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83204
+	* g++.dg/cpp0x/lambda/lambda-ice25.C: New.
+
 2018-02-07  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/vsxcopy.c: Update scan-assembler stanzas.
