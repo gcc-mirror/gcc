@@ -1,3 +1,14 @@
+2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81360
+	* cgraph.h (symtab_node::output_to_lto_symbol_table_p): Declare
+	* symtab.c: Include builtins.h
+	(symtab_node::output_to_lto_symbol_table_p): Move here
+	from lto-streamer-out.c:output_symbol_p.
+	* lto-streamer-out.c (write_symbol): Turn early exit to assert.
+	(output_symbol_p): Move all logic to symtab.c
+	(produce_symtab): Update.
+
 2018-02-08  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/s390-opts.h (enum indirect_branch): Define.
