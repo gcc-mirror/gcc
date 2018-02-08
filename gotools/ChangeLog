@@ -1,3 +1,9 @@
+2018-02-08  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (check-gccgo, check-gcc): Add options to pick up
+	target libstdc++, to permit tests that use C++.
+	* Makefile.in: Rebuild.
+
 2018-01-18  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (GOTOOLS_TEST_TIMEOUT): Define.

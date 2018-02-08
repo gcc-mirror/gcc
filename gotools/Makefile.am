@@ -179,22 +179,22 @@ check-head:
 	@echo >> gotools.head
 
 # check-gccgo is a little shell script that executes gccgo with the
-# options to pick up the newly built libgo.
+# options to pick up the newly built libgo and libstdc++.
 check-gccgo: Makefile
 	rm -f $@ $@.tmp
 	echo "#!/bin/sh" > $@.tmp
 	abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
-	echo "$(GOCOMPILE)" '"$$@"' "-I $${abs_libgodir} -L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@.tmp
+	echo "$(GOCOMPILE)" '"$$@"' "-I $${abs_libgodir} -L $${abs_libgodir} -L $${abs_libgodir}/.libs -B$${abs_libgodir}/../libstdc++-v3/src/.libs -B$${abs_libgodir}/../libstdc++-v3/libsupc++/.libs" >> $@.tmp
 	chmod +x $@.tmp
 	mv -f $@.tmp $@
 
 # check-gcc is a little shell script that executes the newly built gcc
-# with the options to pick up the newly built libgo.
+# with the options to pick up the newly built libgo and libstdc++.
 check-gcc: Makefile
 	rm -f $@ $@.tmp
 	echo "#!/bin/sh" > $@.tmp
 	abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
-	echo "$(GCC_FOR_TARGET)" '"$$@"' "-L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@.tmp
+	echo "$(GCC_FOR_TARGET)" '"$$@"' "-L $${abs_libgodir} -L $${abs_libgodir}/.libs -B$${abs_libgodir}/../libstdc++-v3/src/.libs -B$${abs_libgodir}/../libstdc++-v3/libsupc++/.libs" >> $@.tmp
 	chmod +x $@.tmp
 	mv -f $@.tmp $@
 
