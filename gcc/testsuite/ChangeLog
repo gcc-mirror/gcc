@@ -1,3 +1,9 @@
+2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/81635
+	* gcc.dg/vect/bb-slp-pr81635-3.c: New test.
+	* gcc.dg/vect/bb-slp-pr81635-4.c: Likewise.
+
 2018-02-08  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.target/s390/nobp-function-pointer-attr.c: New test.

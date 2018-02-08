@@ -171,6 +171,53 @@ vrp_val_is_min (const_tree val)
 	      && operand_equal_p (val, type_min, 0)));
 }
 
+/* VR_TYPE describes a range with mininum value *MIN and maximum
+   value *MAX.  Restrict the range to the set of values that have
+   no bits set outside NONZERO_BITS.  Update *MIN and *MAX and
+   return the new range type.
+
+   SGN gives the sign of the values described by the range.  */
+
+enum value_range_type
+intersect_range_with_nonzero_bits (enum value_range_type vr_type,
+				   wide_int *min, wide_int *max,
+				   const wide_int &nonzero_bits,
+				   signop sgn)
+{
+  if (vr_type == VR_RANGE)
+    {
+      *max = wi::round_down_for_mask (*max, nonzero_bits);
+
+      /* Check that the range contains at least one valid value.  */
+      if (wi::gt_p (*min, *max, sgn))
+	return VR_UNDEFINED;
+
+      *min = wi::round_up_for_mask (*min, nonzero_bits);
+      gcc_checking_assert (wi::le_p (*min, *max, sgn));
+    }
+  if (vr_type == VR_ANTI_RANGE)
+    {
+      *max = wi::round_up_for_mask (*max, nonzero_bits);
+
+      /* If the calculation wrapped, we now have a VR_RANGE whose
+	 lower bound is *MAX and whose upper bound is *MIN.  */
+      if (wi::gt_p (*min, *max, sgn))
+	{
+	  std::swap (*min, *max);
+	  *max = wi::round_down_for_mask (*max, nonzero_bits);
+	  gcc_checking_assert (wi::le_p (*min, *max, sgn));
+	  return VR_RANGE;
+	}
+
+      *min = wi::round_down_for_mask (*min, nonzero_bits);
+      gcc_checking_assert (wi::le_p (*min, *max, sgn));
+
+      /* Check whether we now have an empty set of values.  */
+      if (*min - 1 == *max)
+	return VR_UNDEFINED;
+    }
+  return vr_type;
+}
 
 /* Set value range VR to VR_UNDEFINED.  */
 

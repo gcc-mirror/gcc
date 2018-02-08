@@ -61,6 +61,8 @@ extern void extract_range_from_unary_expr (value_range *vr,
 					   tree op0_type);
 
 extern bool vrp_operand_equal_p (const_tree, const_tree);
+extern enum value_range_type intersect_range_with_nonzero_bits
+  (enum value_range_type, wide_int *, wide_int *, const wide_int &, signop);
 
 struct assert_info
 {
