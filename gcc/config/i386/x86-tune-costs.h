@@ -1557,7 +1557,7 @@ struct processor_costs skylake_cost = {
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {6, 6, 6},				/* cost of storing integer registers */
+  {6, 6, 3},				/* cost of storing integer registers */
   2,					/* cost of reg,reg fld/fst */
   {6, 6, 8},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
@@ -1572,7 +1572,7 @@ struct processor_costs skylake_cost = {
   {6, 6, 6, 10, 20},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
   {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
-  {8, 8, 8, 8, 16},			/* cost of storing SSE registers
+  {8, 8, 8, 12, 24},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
   2, 2,					/* SSE->integer and integer->SSE moves */
