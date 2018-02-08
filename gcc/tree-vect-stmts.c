@@ -6214,7 +6214,8 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     }
 
   grouped_store = (STMT_VINFO_GROUPED_ACCESS (stmt_info)
-		   && memory_access_type != VMAT_GATHER_SCATTER);
+		   && memory_access_type != VMAT_GATHER_SCATTER
+		   && (slp || memory_access_type != VMAT_CONTIGUOUS));
   if (grouped_store)
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
@@ -7708,7 +7709,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       return true;
     }
 
-  if (memory_access_type == VMAT_GATHER_SCATTER)
+  if (memory_access_type == VMAT_GATHER_SCATTER
+      || (!slp && memory_access_type == VMAT_CONTIGUOUS))
     grouped_load = false;
 
   if (grouped_load)

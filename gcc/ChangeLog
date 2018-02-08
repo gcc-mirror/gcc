@@ -1,5 +1,12 @@
 2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/84265
+	* tree-vect-stmts.c (vectorizable_store): Don't treat
+	VMAT_CONTIGUOUS accesses as grouped.
+	(vectorizable_load): Likewise.
+
+2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	PR tree-optimization/81635
 	* wide-int.h (wi::round_down_for_mask, wi::round_up_for_mask): Declare.
 	* wide-int.cc (wi::round_down_for_mask, wi::round_up_for_mask)
