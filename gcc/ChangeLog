@@ -1,3 +1,10 @@
+2018-02-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/84224
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Remove assert.
+	* calls.c (gimple_alloca_call_p): Only return TRUE when we have
+	non-zero arguments.
+
 2018-02-07  Iain Sandoe  <iain@codesourcery.com>
 
 	* config/rs6000/altivec.md (*restore_world): Remove LR use.

@@ -730,7 +730,7 @@ gimple_alloca_call_p (const gimple *stmt)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       CASE_BUILT_IN_ALLOCA:
-        return true;
+	return gimple_call_num_args (stmt) > 0;
       default:
 	break;
       }
