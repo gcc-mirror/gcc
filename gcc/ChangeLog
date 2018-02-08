@@ -1,3 +1,9 @@
+2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* lra-constraints.c (match_reload): Unconditionally use
+	gen_lowpart_SUBREG, rather than selecting between that
+	and equivalent gen_rtx_SUBREG code.
+
 2018-02-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84233
