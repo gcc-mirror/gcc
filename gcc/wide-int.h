@@ -3308,6 +3308,8 @@ namespace wi
   wide_int set_bit_in_zero (unsigned int, unsigned int);
   wide_int insert (const wide_int &x, const wide_int &y, unsigned int,
 		   unsigned int);
+  wide_int round_down_for_mask (const wide_int &, const wide_int &);
+  wide_int round_up_for_mask (const wide_int &, const wide_int &);
 
   template <typename T>
   T mask (unsigned int, bool);

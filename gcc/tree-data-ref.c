@@ -721,7 +721,13 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		if (TREE_CODE (tmp_var) != SSA_NAME)
 		  return false;
 		wide_int var_min, var_max;
-		if (get_range_info (tmp_var, &var_min, &var_max) != VR_RANGE)
+		value_range_type vr_type = get_range_info (tmp_var, &var_min,
+							   &var_max);
+		wide_int var_nonzero = get_nonzero_bits (tmp_var);
+		signop sgn = TYPE_SIGN (itype);
+		if (intersect_range_with_nonzero_bits (vr_type, &var_min,
+						       &var_max, var_nonzero,
+						       sgn) != VR_RANGE)
 		  return false;
 
 		/* See whether the range of OP0 (i.e. TMP_VAR + TMP_OFF)
@@ -729,7 +735,6 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		   operations done in ITYPE.  The addition must overflow
 		   at both ends of the range or at neither.  */
 		bool overflow[2];
-		signop sgn = TYPE_SIGN (itype);
 		unsigned int prec = TYPE_PRECISION (itype);
 		wide_int woff = wi::to_wide (tmp_off, prec);
 		wide_int op0_min = wi::add (var_min, woff, sgn, &overflow[0]);

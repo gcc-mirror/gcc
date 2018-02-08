@@ -1,3 +1,15 @@
+2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/81635
+	* wide-int.h (wi::round_down_for_mask, wi::round_up_for_mask): Declare.
+	* wide-int.cc (wi::round_down_for_mask, wi::round_up_for_mask)
+	(test_round_for_mask): New functions.
+	(wide_int_cc_tests): Call test_round_for_mask.
+	* tree-vrp.h (intersect_range_with_nonzero_bits): Declare.
+	* tree-vrp.c (intersect_range_with_nonzero_bits): New function.
+	* tree-data-ref.c (split_constant_offset_1): Use it to refine the
+	range returned by get_range_info.
+
 2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/81360
