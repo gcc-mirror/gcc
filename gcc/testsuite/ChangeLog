@@ -1,3 +1,8 @@
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83806
+	* g++.dg/warn/Wunused-parm-11.C: New.
+
 2018-02-08  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/84238

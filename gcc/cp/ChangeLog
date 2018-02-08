@@ -1,3 +1,9 @@
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83806
+	* typeck.c (decay_conversion): Use mark_rvalue_use for the special
+	case of nullptr too.
+
 2018-02-08  Nathan Sidwell  <nathan@acm.org>
 
 	* class.c (finish_struct): Fix std:initializer_list diagnostic
