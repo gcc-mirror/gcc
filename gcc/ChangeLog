@@ -1,3 +1,79 @@
+2018-02-08  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/s390-opts.h (enum indirect_branch): Define.
+	* config/s390/s390-protos.h (s390_return_addr_from_memory)
+	(s390_indirect_branch_via_thunk)
+	(s390_indirect_branch_via_inline_thunk): Add function prototypes.
+	(enum s390_indirect_branch_type): Define.
+	* config/s390/s390.c (struct s390_frame_layout, struct
+	machine_function): Remove.
+	(indirect_branch_prez10thunk_mask, indirect_branch_z10thunk_mask)
+	(indirect_branch_table_label_no, indirect_branch_table_name):
+	Define variables.
+	(INDIRECT_BRANCH_NUM_OPTIONS): Define macro.
+	(enum s390_indirect_branch_option): Define.
+	(s390_return_addr_from_memory): New function.
+	(s390_handle_string_attribute): New function.
+	(s390_attribute_table): Add new attribute handler.
+	(s390_execute_label): Handle UNSPEC_EXECUTE_JUMP patterns.
+	(s390_indirect_branch_via_thunk): New function.
+	(s390_indirect_branch_via_inline_thunk): New function.
+	(s390_function_ok_for_sibcall): When jumping via thunk disallow
+	sibling call optimization for non z10 compiles.
+	(s390_emit_call): Force indirect branch target to be a single
+	register.  Add r1 clobber for non-z10 compiles.
+	(s390_emit_epilogue): Emit return jump via return_use expander.
+	(s390_reorg): Handle JUMP_INSNs as execute targets.
+	(s390_option_override_internal): Perform validity checks for the
+	new command line options.
+	(s390_indirect_branch_attrvalue): New function.
+	(s390_indirect_branch_settings): New function.
+	(s390_set_current_function): Invoke s390_indirect_branch_settings.
+	(s390_output_indirect_thunk_function):  New function.
+	(s390_code_end): Implement target hook.
+	(s390_case_values_threshold): Implement target hook.
+	(TARGET_ASM_CODE_END, TARGET_CASE_VALUES_THRESHOLD): Define target
+	macros.
+	* config/s390/s390.h (struct s390_frame_layout)
+	(struct	machine_function): Move here from s390.c.
+	(TARGET_INDIRECT_BRANCH_NOBP_RET)
+	(TARGET_INDIRECT_BRANCH_NOBP_JUMP)
+	(TARGET_INDIRECT_BRANCH_NOBP_JUMP_THUNK)
+	(TARGET_INDIRECT_BRANCH_NOBP_JUMP_INLINE_THUNK)
+	(TARGET_INDIRECT_BRANCH_NOBP_CALL)
+	(TARGET_DEFAULT_INDIRECT_BRANCH_TABLE)
+	(TARGET_INDIRECT_BRANCH_THUNK_NAME_EXRL)
+	(TARGET_INDIRECT_BRANCH_THUNK_NAME_EX)
+	(TARGET_INDIRECT_BRANCH_TABLE): Define macros.
+	* config/s390/s390.md (UNSPEC_EXECUTE_JUMP)
+	(INDIRECT_BRANCH_THUNK_REGNUM): Define constants.
+	(mnemonic attribute): Add values which aren't recognized
+	automatically.
+	("*cjump_long", "*icjump_long", "*basr", "*basr_r"): Disable
+	pattern for branch conversion.  Fix mnemonic attribute.
+	("*c<code>", "*sibcall_br", "*sibcall_value_br", "*return"): Emit
+	indirect branch via thunk if requested.
+	("indirect_jump", "<code>"): Expand patterns for branch conversion.
+	("*indirect_jump"): Disable for branch conversion using out of
+	line thunks.
+	("indirect_jump_via_thunk<mode>_z10")
+	("indirect_jump_via_thunk<mode>")
+	("indirect_jump_via_inlinethunk<mode>_z10")
+	("indirect_jump_via_inlinethunk<mode>", "*casesi_jump")
+	("casesi_jump_via_thunk<mode>_z10", "casesi_jump_via_thunk<mode>")
+	("casesi_jump_via_inlinethunk<mode>_z10")
+	("casesi_jump_via_inlinethunk<mode>", "*basr_via_thunk<mode>_z10")
+	("*basr_via_thunk<mode>", "*basr_r_via_thunk_z10")
+	("*basr_r_via_thunk", "return<mode>_prez10"): New pattern.
+	("*indirect2_jump"): Disable for branch conversion.
+	("casesi_jump"): Turn into expander and expand patterns for branch
+	conversion.
+	("return_use"): New expander.
+	("*return"): Emit return via thunk and rename it to ...
+	("*return<mode>"): ... this one.
+	* config/s390/s390.opt: Add new options and and enum for the
+	option values.
+
 2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* lra-constraints.c (match_reload): Unconditionally use
