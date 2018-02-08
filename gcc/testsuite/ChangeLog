@@ -1,3 +1,8 @@
+2018-02-08  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/vect/slp-pr56812.cc: Allow either basic-block or
+	loop vectorization to happen.
+
 2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/83204

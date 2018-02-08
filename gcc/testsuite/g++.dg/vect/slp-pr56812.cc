@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
 /* { dg-require-effective-target vect_hw_misalign } */
-/* { dg-additional-options "-O3 -funroll-loops -fvect-cost-model=dynamic" } */
+/* { dg-additional-options "-O3 -funroll-loops -fvect-cost-model=dynamic -fopt-info-vec" } */
 
 class mydata {
 public:
@@ -13,10 +13,7 @@ public:
 
 void mydata::Set (float x)
 {
-  for (int i=0; i<upper(); i++)
+  /* We want to vectorize this either as loop or basic-block.  */
+  for (int i=0; i<upper(); i++) /* { dg-message "note: \[^\n\]* vectorized" } */
     data[i] = x;
 }
-
-/* For targets without vector loop peeling the loop becomes cheap
-   enough to be vectorized.  */
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" { xfail { ! vect_peeling_profitable } } } } */
