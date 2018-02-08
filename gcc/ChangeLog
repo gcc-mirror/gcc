@@ -155,6 +155,7 @@
 
 2018-02-07  Iain Sandoe  <iain@codesourcery.com>
 
+	PR target/84113
 	* config/rs6000/altivec.md (*restore_world): Remove LR use.
 	* config/rs6000/predicates.md (restore_world_operation): Adjust op
 	count, remove one USE.
