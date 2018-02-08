@@ -1648,13 +1648,16 @@ unify_scc (struct data_in *data_in, unsigned from,
 		{
 		  map2[i*2] = (tree)(uintptr_t)(from + i);
 		  map2[i*2+1] = scc->entries[i];
-		  lto_maybe_register_decl (data_in, scc->entries[i], from + i);
 		}
 	      qsort (map2, len, 2 * sizeof (tree), cmp_tree);
 	      qsort (map, len, 2 * sizeof (tree), cmp_tree);
 	      for (unsigned i = 0; i < len; ++i)
-		streamer_tree_cache_replace_tree (cache, map[2*i],
-						  (uintptr_t)map2[2*i]);
+		{
+		  lto_maybe_register_decl (data_in, map[2*i],
+					   (uintptr_t)map2[2*i]);
+		  streamer_tree_cache_replace_tree (cache, map[2*i],
+						    (uintptr_t)map2[2*i]);
+		}
 	    }
 
 	  /* Free the tree nodes from the read SCC.  */
@@ -2901,8 +2904,12 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
 	res = snode->lto_file_data->resolution_map->get (snode->decl);
 	if (!res || *res == LDPR_UNKNOWN)
-	  fatal_error (input_location, "missing resolution data for %s",
-		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (snode->decl)));
+	  {
+	    if (snode->output_to_lto_symbol_table_p ())
+	      fatal_error (input_location, "missing resolution data for %s",
+		           IDENTIFIER_POINTER
+			     (DECL_ASSEMBLER_NAME (snode->decl)));
+	  }
 	else
           snode->resolution = *res;
       }
