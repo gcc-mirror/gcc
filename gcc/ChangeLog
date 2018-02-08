@@ -1,3 +1,11 @@
+2018-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84278
+	* tree-vect-stmts.c (vectorizable_store): When looking for
+	smaller vector types to perform grouped strided loads/stores
+	make sure the mode is supported by the target.
+	(vectorizable_load): Likewise.
+
 2018-02-08  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_components_for_bb):
