@@ -1,3 +1,9 @@
+2018-02-08  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR rtl-optimization/84068
+	PR rtl-optimization/83459
+	* haifa-sched.c (rank_for_schedule): Fix SCHED_PRESSURE_MODEL sorting.
+
 2018-02-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/84224

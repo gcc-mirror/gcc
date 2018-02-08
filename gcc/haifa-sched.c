@@ -2783,12 +2783,11 @@ rank_for_schedule (const void *x, const void *y)
     }
 
   /* Prefer instructions that occur earlier in the model schedule.  */
-  if (sched_pressure == SCHED_PRESSURE_MODEL
-      && INSN_BB (tmp) == target_bb && INSN_BB (tmp2) == target_bb)
+  if (sched_pressure == SCHED_PRESSURE_MODEL)
     {
       diff = model_index (tmp) - model_index (tmp2);
-      gcc_assert (diff != 0);
-      return rfs_result (RFS_PRESSURE_INDEX, diff, tmp, tmp2);
+      if (diff != 0)
+	return rfs_result (RFS_PRESSURE_INDEX, diff, tmp, tmp2);
     }
 
   /* Prefer the insn which has more later insns that depend on it.
