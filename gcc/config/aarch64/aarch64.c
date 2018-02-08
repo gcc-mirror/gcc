@@ -4552,7 +4552,22 @@ aarch64_components_for_bb (basic_block bb)
        && (bitmap_bit_p (in, regno)
 	   || bitmap_bit_p (gen, regno)
 	   || bitmap_bit_p (kill, regno)))
-	  bitmap_set_bit (components, regno);
+      {
+	unsigned regno2, offset, offset2;
+	bitmap_set_bit (components, regno);
+
+	/* If there is a callee-save at an adjacent offset, add it too
+	   to increase the use of LDP/STP.  */
+	offset = cfun->machine->frame.reg_offset[regno];
+	regno2 = ((offset & 8) == 0) ? regno + 1 : regno - 1;
+
+	if (regno2 <= LAST_SAVED_REGNUM)
+	  {
+	    offset2 = cfun->machine->frame.reg_offset[regno2];
+	    if ((offset & ~8) == (offset2 & ~8))
+	      bitmap_set_bit (components, regno2);
+	  }
+      }
 
   return components;
 }
