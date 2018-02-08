@@ -2009,7 +2009,10 @@ decay_conversion (tree exp,
     return error_mark_node;
 
   if (NULLPTR_TYPE_P (type) && !TREE_SIDE_EFFECTS (exp))
-    return nullptr_node;
+    {
+      mark_rvalue_use (exp, loc, reject_builtin);
+      return nullptr_node;
+    }
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
