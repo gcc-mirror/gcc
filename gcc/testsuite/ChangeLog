@@ -1,3 +1,8 @@
+2018-02-08  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/84238
+	* gcc.dg/Wstringop-overflow-3.c: New test.
+
 2018-02-08  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/cpp0x/initlist93.C: Adjust diagnostic.
