@@ -37,6 +37,7 @@ C::C ()
 
 bool Ok (C &c)
 {
+  return true;
 }
 
 int main ()

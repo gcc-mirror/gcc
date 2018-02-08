@@ -14,7 +14,7 @@
        __asm__ volatile ("mov.u32 %0,%%ctaid.x;" : "=r" (__r));	\
        __r; }) : (I))
 
-int
+void
 test_static(int *a, int num_gangs, int sarg)
 {
   int i, j;
@@ -27,7 +27,7 @@ test_static(int *a, int num_gangs, int sarg)
       assert (a[i*sarg+j] == i % num_gangs);
 }
 
-int
+void
 test_nonstatic(int *a, int gangs)
 {
   int i, j;

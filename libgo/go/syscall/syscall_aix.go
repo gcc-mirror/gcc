@@ -6,6 +6,14 @@ package syscall
 
 import "unsafe"
 
+func (ts *StTimespec) Unix() (sec int64, nsec int64) {
+	return int64(ts.Sec), int64(ts.Nsec)
+}
+
+func (ts *StTimespec) Nano() int64 {
+	return int64(ts.Sec)*1e9 + int64(ts.Nsec)
+}
+
 func direntIno(buf []byte) (uint64, bool) {
 	return readInt(buf, unsafe.Offsetof(Dirent{}.Ino), unsafe.Sizeof(Dirent{}.Ino))
 }

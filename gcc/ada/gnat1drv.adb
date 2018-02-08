@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,6 +136,13 @@ procedure Gnat1drv is
    --  Start of processing for Adjust_Global_Switches
 
    begin
+      --  Define pragma GNAT_Annotate as an alias of pragma Annotate, to be
+      --  able to work around bootstrap limitations with the old syntax of
+      --  pragma Annotate, and use pragma GNAT_Annotate in compiler sources
+      --  when needed.
+
+      Map_Pragma_Name (From => Name_Gnat_Annotate, To => Name_Annotate);
+
       --  -gnatd.M enables Relaxed_RM_Semantics
 
       if Debug_Flag_Dot_MM then
@@ -159,7 +166,9 @@ procedure Gnat1drv is
       if Generate_C_Code then
          Modify_Tree_For_C := True;
          Unnest_Subprogram_Mode := True;
+         Building_Static_Dispatch_Tables := False;
          Minimize_Expression_With_Actions := True;
+         Expand_Nonbinary_Modular_Ops := True;
 
          --  Set operating mode to Generate_Code to benefit from full front-end
          --  expansion (e.g. generics).
@@ -383,6 +392,15 @@ procedure Gnat1drv is
 
          Relaxed_RM_Semantics := True;
 
+         if not Generate_CodePeer_Messages then
+
+            --  Suppress compiler warnings by default when generating SCIL for
+            --  CodePeer, except when combined with -gnateC where we do want to
+            --  emit GNAT warnings.
+
+            Warning_Mode := Suppress;
+         end if;
+
          --  Disable all simple value propagation. This is an optimization
          --  which is valuable for code optimization, and also for generation
          --  of compiler warnings, but these are being turned off by default,
@@ -581,7 +599,7 @@ procedure Gnat1drv is
       --  problems with subtypes of type Ada.Tags.Dispatch_Table_Wrapper. ???
 
       if Debug_Flag_Dot_T then
-         Static_Dispatch_Tables := False;
+         Building_Static_Dispatch_Tables := False;
       end if;
 
       --  Flip endian mode if -gnatd8 set
@@ -1180,6 +1198,7 @@ begin
       if Compilation_Errors then
          Treepr.Tree_Dump;
          Post_Compilation_Validation_Checks;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Namet.Finalize;
 
@@ -1190,7 +1209,6 @@ begin
             Tree_Gen;
          end if;
 
-         Errout.Finalize (Last_Call => True);
          Exit_Program (E_Errors);
       end if;
 

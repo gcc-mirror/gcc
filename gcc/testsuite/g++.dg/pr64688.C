@@ -24,7 +24,10 @@ template <typename> struct F;
 template <typename> struct G;
 template <typename, typename, int> struct H;
 template <typename Element, typename Layout> struct H<Element, Layout, 3> {};
-template <int, typename E, typename L, int N> unsigned char at_c(H<E, L, N>) {}
+template <int, typename E, typename L, int N> unsigned char at_c(H<E, L, N>)
+{
+  return 0;
+}
 template <typename> class I;
 template <typename> class J;
 template <typename> class K;

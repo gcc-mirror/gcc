@@ -1,5 +1,5 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> 
    Zdenek Dvorak <dvorakz@suse.cz> and Razya Ladelsky <razya@il.ibm.com>.
 
@@ -184,7 +184,7 @@ parloop
 
 /* Minimal number of iterations of a loop that should be executed in each
    thread.  */
-#define MIN_PER_THREAD 100
+#define MIN_PER_THREAD PARAM_VALUE (PARAM_PARLOOPS_MIN_PER_THREAD)
 
 /* Element of the hashtable, representing a
    reduction in the current loop.  */
@@ -2336,7 +2336,7 @@ gen_parallel_loop (struct loop *loop,
       gcc_checking_assert (n_threads != 0);
       many_iterations_cond =
 	fold_build2 (GE_EXPR, boolean_type_node,
-		     nit, build_int_cst (type, m_p_thread * n_threads));
+		     nit, build_int_cst (type, m_p_thread * n_threads - 1));
 
       many_iterations_cond
 	= fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
@@ -2531,6 +2531,19 @@ set_reduc_phi_uids (reduction_info **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
+/* Return true if the type of reduction performed by STMT is suitable
+   for this pass.  */
+
+static bool
+valid_reduction_p (gimple *stmt)
+{
+  /* Parallelization would reassociate the operation, which isn't
+     allowed for in-order reductions.  */
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vect_reduction_type reduc_type = STMT_VINFO_REDUC_TYPE (stmt_info);
+  return reduc_type != FOLD_LEFT_REDUCTION;
+}
+
 /* Detect all reductions in the LOOP, insert them into REDUCTION_LIST.  */
 
 static void
@@ -2564,7 +2577,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
       gimple *reduc_stmt
 	= vect_force_simple_reduction (simple_loop_info, phi,
 				       &double_reduc, true);
-      if (!reduc_stmt)
+      if (!reduc_stmt || !valid_reduction_p (reduc_stmt))
 	continue;
 
       if (double_reduc)
@@ -2610,7 +2623,8 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 		= vect_force_simple_reduction (simple_loop_info, inner_phi,
 					       &double_reduc, true);
 	      gcc_assert (!double_reduc);
-	      if (inner_reduc_stmt == NULL)
+	      if (inner_reduc_stmt == NULL
+		  || !valid_reduction_p (inner_reduc_stmt))
 		continue;
 
 	      build_new_reduction (reduction_list, double_reduc_stmts[i], phi);
@@ -3299,15 +3313,6 @@ parallelize_loops (bool oacc_kernels_p)
 	  fprintf (dump_file, "loop %d is innermost\n",loop->num);
       }
 
-      /* If we use autopar in graphite pass, we use its marked dependency
-      checking results.  */
-      if (flag_loop_parallelize_all && !loop->can_be_parallel)
-      {
-        if (dump_file && (dump_flags & TDF_DETAILS))
-	   fprintf (dump_file, "loop is not parallel according to graphite\n");
-	continue;
-      }
-
       if (!single_dom_exit (loop))
       {
 
@@ -3325,15 +3330,17 @@ parallelize_loops (bool oacc_kernels_p)
 	  || loop_has_vector_phi_nodes (loop))
 	continue;
 
-      estimated = estimated_stmt_executions_int (loop);
+      estimated = estimated_loop_iterations_int (loop);
       if (estimated == -1)
-	estimated = likely_max_stmt_executions_int (loop);
+	estimated = get_likely_max_loop_iterations_int (loop);
       /* FIXME: Bypass this check as graphite doesn't update the
 	 count and frequency correctly now.  */
       if (!flag_loop_parallelize_all
 	  && !oacc_kernels_p
 	  && ((estimated != -1
-	       && estimated <= (HOST_WIDE_INT) n_threads * MIN_PER_THREAD)
+	       && (estimated
+		   < ((HOST_WIDE_INT) n_threads
+		      * (loop->inner ? 2 : MIN_PER_THREAD) - 1)))
 	      /* Do not bother with loops in cold areas.  */
 	      || optimize_loop_nest_for_size_p (loop)))
 	continue;
@@ -3347,7 +3354,7 @@ parallelize_loops (bool oacc_kernels_p)
       if (loop_has_phi_with_address_arg (loop))
 	continue;
 
-      if (!flag_loop_parallelize_all
+      if (!loop->can_be_parallel
 	  && !loop_parallel_p (loop, &parloop_obstack))
 	continue;
 

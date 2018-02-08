@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -231,10 +232,10 @@ package body Sem_Attr is
       E1      : Node_Id;
       E2      : Node_Id;
 
-      P_Type : Entity_Id;
+      P_Type : Entity_Id := Empty;
       --  Type of prefix after analysis
 
-      P_Base_Type : Entity_Id;
+      P_Base_Type : Entity_Id := Empty;
       --  Base type of prefix after analysis
 
       -----------------------
@@ -419,7 +420,7 @@ package body Sem_Attr is
       --  required error messages.
 
       procedure Error_Attr_P (Msg : String);
-      pragma No_Return (Error_Attr);
+      pragma No_Return (Error_Attr_P);
       --  Like Error_Attr, but error is posted at the start of the prefix
 
       procedure Legal_Formal_Attribute;
@@ -446,7 +447,9 @@ package body Sem_Attr is
       --  node in the aspect case).
 
       procedure Unexpected_Argument (En : Node_Id);
-      --  Signal unexpected attribute argument (En is the argument)
+      pragma No_Return (Unexpected_Argument);
+      --  Signal unexpected attribute argument (En is the argument), and then
+      --  raises Bad_Attribute to avoid any further semantic processing.
 
       procedure Validate_Non_Static_Attribute_Function_Call;
       --  Called when processing an attribute that is a function call to a
@@ -873,6 +876,17 @@ package body Sem_Attr is
                Kill_Current_Values;
             end if;
 
+            --  In the static elaboration model, treat the attribute reference
+            --  as a subprogram call for elaboration purposes. Suppress this
+            --  treatment under debug flag. In any case, we are all done.
+
+            if Legacy_Elaboration_Checks
+              and not Dynamic_Elaboration_Checks
+              and not Debug_Flag_Dot_UU
+            then
+               Check_Elab_Call (N);
+            end if;
+
             return;
 
          --  Component is an operation of a protected type
@@ -1108,8 +1122,10 @@ package body Sem_Attr is
          --  node Nod is within enclosing node Encl_Nod.
 
          procedure Placement_Error;
+         pragma No_Return (Placement_Error);
          --  Emit a general error when the attributes does not appear in a
-         --  postcondition-like aspect or pragma.
+         --  postcondition-like aspect or pragma, and then raises Bad_Attribute
+         --  to avoid any further semantic processing.
 
          ------------------------------
          -- Check_Placement_In_Check --
@@ -11095,7 +11111,7 @@ package body Sem_Attr is
               and then not (Nkind (P) = N_Selected_Component
                              and then
                                Is_Overloadable (Entity (Selector_Name (P))))
-              and then not Is_Aliased_View (P)
+              and then not Is_Aliased_View (Original_Node (P))
               and then not In_Instance
               and then not In_Inlined_Body
               and then Comes_From_Source (N)

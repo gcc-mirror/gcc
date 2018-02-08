@@ -1,5 +1,5 @@
 /* Diagnostic routines shared by all languages that are variants of C.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -179,6 +179,9 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   int in0_p, in1_p, in_p;
   tree low0, low1, low, high0, high1, high, lhs, rhs, tem;
   bool strict_overflow_p = false;
+
+  if (!warn_logical_op)
+    return;
 
   if (code != TRUTH_ANDIF_EXPR
       && code != TRUTH_AND_EXPR
@@ -496,8 +499,8 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       rich_location richloc (line_table, lhs_loc);
       richloc.add_fixit_insert_before (lhs_loc, "(");
       richloc.add_fixit_insert_after (lhs_loc, ")");
-      inform_at_rich_loc (&richloc, "add parentheses around left hand side "
-			  "expression to silence this warning");
+      inform (&richloc, "add parentheses around left hand side "
+	      "expression to silence this warning");
     }
 }
 
@@ -693,7 +696,8 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
       || vec_safe_length (params) <= 1)
     return;
 
-  switch (DECL_FUNCTION_CODE (callee))
+  enum built_in_function fncode = DECL_FUNCTION_CODE (callee);
+  switch (fncode)
     {
     case BUILT_IN_STRNCMP:
     case BUILT_IN_STRNCASECMP:
@@ -775,8 +779,27 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
 
   type = TYPE_P (sizeof_arg[idx])
 	 ? sizeof_arg[idx] : TREE_TYPE (sizeof_arg[idx]);
+
   if (!POINTER_TYPE_P (type))
-    return;
+    {
+      /* The argument type may be an array.  Diagnose bounded string
+	 copy functions that specify the bound in terms of the source
+	 argument rather than the destination.  */
+      if (strop && !cmp && fncode != BUILT_IN_STRNDUP && src)
+	{
+	  tem = tree_strip_nop_conversions (src);
+	  if (TREE_CODE (tem) == ADDR_EXPR)
+	    tem = TREE_OPERAND (tem, 0);
+	  if (operand_equal_p (tem, sizeof_arg[idx], OEP_ADDRESS_OF))
+	    warning_at (sizeof_arg_loc[idx], OPT_Wsizeof_pointer_memaccess,
+			"argument to %<sizeof%> in %qD call is the same "
+			"expression as the source; did you mean to use "
+			"the size of the destination?",
+			callee);
+	}
+
+      return;
+    }
 
   if (dest
       && (tem = tree_strip_nop_conversions (dest))
@@ -1845,6 +1868,9 @@ void
 warn_for_memset (location_t loc, tree arg0, tree arg2,
 		 int literal_zero_mask)
 {
+  arg0 = fold_for_warn (arg0);
+  arg2 = fold_for_warn (arg2);
+
   if (warn_memset_transposed_args
       && integer_zerop (arg2)
       && (literal_zero_mask & (1 << 2)) != 0
@@ -2210,36 +2236,19 @@ diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 		       newdecl);
 
   /* Diagnose inline __attribute__ ((noinline)) which is silly.  */
+  const char *noinline = "noinline";
+
   if (DECL_DECLARED_INLINE_P (newdecl)
       && DECL_UNINLINABLE (olddecl)
-      && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
+      && lookup_attribute (noinline, DECL_ATTRIBUTES (olddecl)))
     warned |= warning (OPT_Wattributes, "inline declaration of %qD follows "
-		       "declaration with attribute noinline", newdecl);
+		       "declaration with attribute %qs", newdecl, noinline);
   else if (DECL_DECLARED_INLINE_P (olddecl)
 	   && DECL_UNINLINABLE (newdecl)
 	   && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
     warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "noinline follows inline declaration ", newdecl);
-  else if (lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("always_inline", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "noinline", "always_inline");
-  else if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "always_inline", "noinline");
-  else if (lookup_attribute ("cold", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("hot", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "cold", "hot");
-  else if (lookup_attribute ("hot", DECL_ATTRIBUTES (newdecl))
-	   && lookup_attribute ("cold", DECL_ATTRIBUTES (olddecl)))
-    warned |= warning (OPT_Wattributes, "declaration of %q+D with attribute "
-		       "%qs follows declaration with attribute %qs",
-		       newdecl, "hot", "cold");
+		       "%qs follows inline declaration ", newdecl, noinline);
+
   return warned;
 }
 
@@ -2391,13 +2400,13 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 	richloc.add_range (EXPR_LOCATION (arg), false);
     }
 
-  warning_at_rich_loc_n (&richloc, OPT_Wrestrict, arg_positions.length (),
-			 "passing argument %i to restrict-qualified parameter"
-			 " aliases with argument %Z",
-			 "passing argument %i to restrict-qualified parameter"
-			 " aliases with arguments %Z",
-			 param_pos + 1, arg_positions.address (),
-			 arg_positions.length ());
+  warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
+	     "passing argument %i to restrict-qualified parameter"
+	     " aliases with argument %Z",
+	     "passing argument %i to restrict-qualified parameter"
+	     " aliases with arguments %Z",
+	     param_pos + 1, arg_positions.address (),
+	     arg_positions.length ());
 }
 
 /* Callback function to determine whether an expression TP or one of its

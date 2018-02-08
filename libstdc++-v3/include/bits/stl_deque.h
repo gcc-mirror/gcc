@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001-2017 Free Software Foundation, Inc.
+// Copyright (C) 2001-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -838,6 +838,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
 # endif
       __glibcxx_class_requires2(_Tp, _Alloc_value_type, _SameTypeConcept)
+#endif
+
+#if __cplusplus >= 201103L
+      static_assert(is_same<typename remove_cv<_Tp>::type, _Tp>::value,
+	  "std::deque must have a non-const, non-volatile value_type");
+# ifdef __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, _Tp>::value,
+	  "std::deque must have the same value_type as its allocator");
+# endif
 #endif
 
       typedef _Deque_base<_Tp, _Alloc>			_Base;

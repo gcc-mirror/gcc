@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -422,11 +422,11 @@ inline namespace fundamentals_v1
       static constexpr int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
-	return difference_type{__n1 - __n2} > std::numeric_limits<int>::max()
+	return difference_type(__n1 - __n2) > std::numeric_limits<int>::max()
 	     ? std::numeric_limits<int>::max()
-	     : difference_type{__n1 - __n2} < std::numeric_limits<int>::min()
+	     : difference_type(__n1 - __n2) < std::numeric_limits<int>::min()
 	     ? std::numeric_limits<int>::min()
-	     : static_cast<int>(difference_type{__n1 - __n2});
+	     : static_cast<int>(difference_type(__n1 - __n2));
       }
 
       size_t	    _M_len;
@@ -644,6 +644,8 @@ namespace experimental
   {
   inline namespace string_view_literals
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
     inline constexpr basic_string_view<char>
     operator""sv(const char* __str, size_t __len) noexcept
     { return basic_string_view<char>{__str, __len}; }
@@ -663,6 +665,7 @@ namespace experimental
     operator""sv(const char32_t* __str, size_t __len) noexcept
     { return basic_string_view<char32_t>{__str, __len}; }
 #endif
+#pragma GCC diagnostic pop
   } // namespace string_literals
   } // namespace literals
 } // namespace experimental

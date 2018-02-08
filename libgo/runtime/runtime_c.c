@@ -33,21 +33,6 @@ runtime_atoi(const byte *p, intgo len)
 	return n;
 }
 
-uint32
-runtime_fastrand(void)
-{
-	M *m;
-	uint32 x;
-
-	m = runtime_m();
-	x = m->fastrand;
-	x += x;
-	if(x & 0x80000000L)
-		x ^= 0x88888eefUL;
-	m->fastrand = x;
-	return x;
-}
-
 int64
 runtime_cputicks(void)
 {

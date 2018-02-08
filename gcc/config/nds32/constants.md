@@ -1,5 +1,5 @@
 ;; Constant defintions of Andes NDS32 cpu for GNU compiler
-;; Copyright (C) 2012-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2018 Free Software Foundation, Inc.
 ;; Contributed by Andes Technology Corporation.
 ;;
 ;; This file is part of GCC.
@@ -32,7 +32,6 @@
 
 ;; The unspec_volatile operation index.
 (define_c_enum "unspec_volatile_element" [
-  UNSPEC_VOLATILE_FUNC_RETURN
   UNSPEC_VOLATILE_ISYNC
   UNSPEC_VOLATILE_ISB
   UNSPEC_VOLATILE_MFSR

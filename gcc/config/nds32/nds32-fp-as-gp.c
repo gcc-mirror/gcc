@@ -1,5 +1,5 @@
 /* The fp-as-gp pass of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -19,6 +19,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* ------------------------------------------------------------------------ */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"

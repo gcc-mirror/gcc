@@ -60,10 +60,12 @@ const fakeDBName = "foo"
 var chrisBirthday = time.Unix(123456789, 0)
 
 func newTestDB(t testing.TB, name string) *DB {
-	db, err := Open("test", fakeDBName)
-	if err != nil {
-		t.Fatalf("Open: %v", err)
-	}
+	return newTestDBConnector(t, &fakeConnector{name: fakeDBName}, name)
+}
+
+func newTestDBConnector(t testing.TB, fc *fakeConnector, name string) *DB {
+	fc.name = fakeDBName
+	db := OpenDB(fc)
 	if _, err := db.Exec("WIPE"); err != nil {
 		t.Fatalf("exec wipe: %v", err)
 	}
@@ -79,6 +81,13 @@ func newTestDB(t testing.TB, name string) *DB {
 		exec(t, db, "INSERT|magicquery|op=sleep,millis=10")
 	}
 	return db
+}
+
+func TestOpenDB(t *testing.T) {
+	db := OpenDB(dsnConnector{dsn: fakeDBName, driver: fdriver})
+	if db.Driver() != fdriver {
+		t.Fatalf("OpenDB should return the driver of the Connector")
+	}
 }
 
 func TestDriverPanic(t *testing.T) {
@@ -439,6 +448,20 @@ func TestTxContextWait(t *testing.T) {
 	waitForFree(t, db, 5*time.Second, 0)
 }
 
+// TestUnsupportedOptions checks that the database fails when a driver that
+// doesn't implement ConnBeginTx is used with non-default options and an
+// un-cancellable context.
+func TestUnsupportedOptions(t *testing.T) {
+	db := newTestDB(t, "people")
+	defer closeDB(t, db)
+	_, err := db.BeginTx(context.Background(), &TxOptions{
+		Isolation: LevelSerializable, ReadOnly: true,
+	})
+	if err == nil {
+		t.Fatal("expected error when using unsupported options, got nil")
+	}
+}
+
 func TestMultiResultSetQuery(t *testing.T) {
 	db := newTestDB(t, "people")
 	defer closeDB(t, db)
@@ -564,24 +587,46 @@ func TestPoolExhaustOnCancel(t *testing.T) {
 	if testing.Short() {
 		t.Skip("long test")
 	}
-	db := newTestDB(t, "people")
-	defer closeDB(t, db)
 
 	max := 3
+	var saturate, saturateDone sync.WaitGroup
+	saturate.Add(max)
+	saturateDone.Add(max)
+
+	donePing := make(chan bool)
+	state := 0
+
+	// waiter will be called for all queries, including
+	// initial setup queries. The state is only assigned when no
+	// no queries are made.
+	//
+	// Only allow the first batch of queries to finish once the
+	// second batch of Ping queries have finished.
+	waiter := func(ctx context.Context) {
+		switch state {
+		case 0:
+			// Nothing. Initial database setup.
+		case 1:
+			saturate.Done()
+			select {
+			case <-ctx.Done():
+			case <-donePing:
+			}
+		case 2:
+		}
+	}
+	db := newTestDBConnector(t, &fakeConnector{waiter: waiter}, "people")
+	defer closeDB(t, db)
 
 	db.SetMaxOpenConns(max)
 
 	// First saturate the connection pool.
 	// Then start new requests for a connection that is cancelled after it is requested.
 
-	var saturate, saturateDone sync.WaitGroup
-	saturate.Add(max)
-	saturateDone.Add(max)
-
+	state = 1
 	for i := 0; i < max; i++ {
 		go func() {
-			saturate.Done()
-			rows, err := db.Query("WAIT|500ms|SELECT|people|name,photo|")
+			rows, err := db.Query("SELECT|people|name,photo|")
 			if err != nil {
 				t.Fatalf("Query: %v", err)
 			}
@@ -591,6 +636,7 @@ func TestPoolExhaustOnCancel(t *testing.T) {
 	}
 
 	saturate.Wait()
+	state = 2
 
 	// Now cancel the request while it is waiting.
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -607,50 +653,13 @@ func TestPoolExhaustOnCancel(t *testing.T) {
 			t.Fatalf("PingContext (Exhaust): %v", err)
 		}
 	}
-
+	close(donePing)
 	saturateDone.Wait()
 
 	// Now try to open a normal connection.
 	err := db.PingContext(ctx)
 	if err != nil {
 		t.Fatalf("PingContext (Normal): %v", err)
-	}
-}
-
-func TestByteOwnership(t *testing.T) {
-	db := newTestDB(t, "people")
-	defer closeDB(t, db)
-	rows, err := db.Query("SELECT|people|name,photo|")
-	if err != nil {
-		t.Fatalf("Query: %v", err)
-	}
-	type row struct {
-		name  []byte
-		photo RawBytes
-	}
-	got := []row{}
-	for rows.Next() {
-		var r row
-		err = rows.Scan(&r.name, &r.photo)
-		if err != nil {
-			t.Fatalf("Scan: %v", err)
-		}
-		got = append(got, r)
-	}
-	corruptMemory := []byte("\xffPHOTO")
-	want := []row{
-		{name: []byte("Alice"), photo: corruptMemory},
-		{name: []byte("Bob"), photo: corruptMemory},
-		{name: []byte("Chris"), photo: corruptMemory},
-	}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("mismatch.\n got: %#v\nwant: %#v", got, want)
-	}
-
-	var photo RawBytes
-	err = db.QueryRow("SELECT|people|photo|name=?", "Alice").Scan(&photo)
-	if err == nil {
-		t.Error("want error scanning into RawBytes from QueryRow")
 	}
 }
 
@@ -705,15 +714,15 @@ func TestRowsColumnTypes(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to scan values in %v", err)
 		}
-		ct++
-		if ct == 0 {
-			if values[0].(string) != "Bob" {
-				t.Errorf("Expected Bob, got %v", values[0])
+		if ct == 1 {
+			if age := *values[0].(*int32); age != 2 {
+				t.Errorf("Expected 2, got %v", age)
 			}
-			if values[1].(int) != 2 {
-				t.Errorf("Expected 2, got %v", values[1])
+			if name := *values[1].(*string); name != "Bob" {
+				t.Errorf("Expected Bob, got %v", name)
 			}
 		}
+		ct++
 	}
 	if ct != 3 {
 		t.Errorf("expected 3 rows, got %d", ct)
@@ -1311,6 +1320,7 @@ func TestConnQuery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	conn.dc.ci.(*fakeConn).skipDirtySession = true
 	defer conn.Close()
 
 	var name string
@@ -1338,6 +1348,7 @@ func TestConnTx(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	conn.dc.ci.(*fakeConn).skipDirtySession = true
 	defer conn.Close()
 
 	tx, err := conn.BeginTx(ctx, nil)
@@ -1658,7 +1669,7 @@ func TestIssue4902(t *testing.T) {
 	db := newTestDB(t, "people")
 	defer closeDB(t, db)
 
-	driver := db.driver.(*fakeDriver)
+	driver := db.Driver().(*fakeDriver)
 	opens0 := driver.openCount
 
 	var stmt *Stmt
@@ -1751,7 +1762,7 @@ func TestMaxOpenConns(t *testing.T) {
 	db := newTestDB(t, "magicquery")
 	defer closeDB(t, db)
 
-	driver := db.driver.(*fakeDriver)
+	driver := db.Driver().(*fakeDriver)
 
 	// Force the number of open connections to 0 so we can get an accurate
 	// count for the test
@@ -2043,7 +2054,7 @@ func TestConnMaxLifetime(t *testing.T) {
 	db := newTestDB(t, "magicquery")
 	defer closeDB(t, db)
 
-	driver := db.driver.(*fakeDriver)
+	driver := db.Driver().(*fakeDriver)
 
 	// Force the number of open connections to 0 so we can get an accurate
 	// count for the test
@@ -2132,7 +2143,7 @@ func TestStmtCloseDeps(t *testing.T) {
 	db := newTestDB(t, "magicquery")
 	defer closeDB(t, db)
 
-	driver := db.driver.(*fakeDriver)
+	driver := db.Driver().(*fakeDriver)
 
 	driver.mu.Lock()
 	opens0 := driver.openCount
@@ -2363,7 +2374,9 @@ func TestManyErrBadConn(t *testing.T) {
 			t.Fatalf("unexpected len(db.freeConn) %d (was expecting %d)", len(db.freeConn), nconn)
 		}
 		for _, conn := range db.freeConn {
+			conn.Lock()
 			conn.ci.(*fakeConn).stickyBad = true
+			conn.Unlock()
 		}
 		return db
 	}
@@ -2453,6 +2466,7 @@ func TestManyErrBadConn(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	conn.dc.ci.(*fakeConn).skipDirtySession = true
 	err = conn.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -3057,7 +3071,7 @@ func TestIssue6081(t *testing.T) {
 	db := newTestDB(t, "people")
 	defer closeDB(t, db)
 
-	drv := db.driver.(*fakeDriver)
+	drv := db.Driver().(*fakeDriver)
 	drv.mu.Lock()
 	opens0 := drv.openCount
 	closes0 := drv.closeCount
@@ -3106,6 +3120,9 @@ func TestIssue6081(t *testing.T) {
 // In the test, a context is canceled while the query is in process so
 // the internal rollback will run concurrently with the explicitly called
 // Tx.Rollback.
+//
+// The addition of calling rows.Next also tests
+// Issue 21117.
 func TestIssue18429(t *testing.T) {
 	db := newTestDB(t, "people")
 	defer closeDB(t, db)
@@ -3138,6 +3155,12 @@ func TestIssue18429(t *testing.T) {
 			// reported.
 			rows, _ := tx.QueryContext(ctx, "WAIT|"+qwait+"|SELECT|people|name|")
 			if rows != nil {
+				var name string
+				// Call Next to test Issue 21117 and check for races.
+				for rows.Next() {
+					// Scan the buffer so it is read and checked for races.
+					rows.Scan(&name)
+				}
 				rows.Close()
 			}
 			// This call will race with the context cancel rollback to complete
@@ -3217,9 +3240,8 @@ func TestIssue18719(t *testing.T) {
 
 	// This call will grab the connection and cancel the context
 	// after it has done so. Code after must deal with the canceled state.
-	rows, err := tx.QueryContext(ctx, "SELECT|people|name|")
+	_, err = tx.QueryContext(ctx, "SELECT|people|name|")
 	if err != nil {
-		rows.Close()
 		t.Fatalf("expected error %v but got %v", nil, err)
 	}
 
@@ -3242,6 +3264,7 @@ func TestIssue20647(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	conn.dc.ci.(*fakeConn).skipDirtySession = true
 	defer conn.Close()
 
 	stmt, err := conn.PrepareContext(ctx, "SELECT|people|name|")
@@ -3312,7 +3335,7 @@ func TestConnectionLeak(t *testing.T) {
 	// Now we have defaultMaxIdleConns busy connections. Open
 	// a new one, but wait until the busy connections are released
 	// before returning control to DB.
-	drv := db.driver.(*fakeDriver)
+	drv := db.Driver().(*fakeDriver)
 	drv.waitCh = make(chan struct{}, 1)
 	drv.waitingCh = make(chan struct{}, 1)
 	var wg sync.WaitGroup
@@ -3376,7 +3399,7 @@ func (c *nvcConn) CheckNamedValue(nv *driver.NamedValue) error {
 	case Out:
 		switch ov := v.Dest.(type) {
 		default:
-			return errors.New("unkown NameValueCheck OUTPUT type")
+			return errors.New("unknown NameValueCheck OUTPUT type")
 		case *string:
 			*ov = "from-server"
 			nv.Value = "OUT:*string"
@@ -3463,6 +3486,141 @@ func TestNamedValueCheckerSkip(t *testing.T) {
 	_, err = db.ExecContext(ctx, "INSERT|keys|dec1=?A", Named("A", decimal{123}))
 	if err == nil {
 		t.Fatalf("expected error with bad argument, got %v", err)
+	}
+}
+
+func TestOpenConnector(t *testing.T) {
+	Register("testctx", &fakeDriverCtx{})
+	db, err := Open("testctx", "people")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	if _, is := db.connector.(*fakeConnector); !is {
+		t.Fatal("not using *fakeConnector")
+	}
+}
+
+type ctxOnlyDriver struct {
+	fakeDriver
+}
+
+func (d *ctxOnlyDriver) Open(dsn string) (driver.Conn, error) {
+	conn, err := d.fakeDriver.Open(dsn)
+	if err != nil {
+		return nil, err
+	}
+	return &ctxOnlyConn{fc: conn.(*fakeConn)}, nil
+}
+
+var (
+	_ driver.Conn           = &ctxOnlyConn{}
+	_ driver.QueryerContext = &ctxOnlyConn{}
+	_ driver.ExecerContext  = &ctxOnlyConn{}
+)
+
+type ctxOnlyConn struct {
+	fc *fakeConn
+
+	queryCtxCalled bool
+	execCtxCalled  bool
+}
+
+func (c *ctxOnlyConn) Begin() (driver.Tx, error) {
+	return c.fc.Begin()
+}
+
+func (c *ctxOnlyConn) Close() error {
+	return c.fc.Close()
+}
+
+// Prepare is still part of the Conn interface, so while it isn't used
+// must be defined for compatibility.
+func (c *ctxOnlyConn) Prepare(q string) (driver.Stmt, error) {
+	panic("not used")
+}
+
+func (c *ctxOnlyConn) PrepareContext(ctx context.Context, q string) (driver.Stmt, error) {
+	return c.fc.PrepareContext(ctx, q)
+}
+
+func (c *ctxOnlyConn) QueryContext(ctx context.Context, q string, args []driver.NamedValue) (driver.Rows, error) {
+	c.queryCtxCalled = true
+	return c.fc.QueryContext(ctx, q, args)
+}
+
+func (c *ctxOnlyConn) ExecContext(ctx context.Context, q string, args []driver.NamedValue) (driver.Result, error) {
+	c.execCtxCalled = true
+	return c.fc.ExecContext(ctx, q, args)
+}
+
+// TestQueryExecContextOnly ensures drivers only need to implement QueryContext
+// and ExecContext methods.
+func TestQueryExecContextOnly(t *testing.T) {
+	// Ensure connection does not implment non-context interfaces.
+	var connType driver.Conn = &ctxOnlyConn{}
+	if _, ok := connType.(driver.Execer); ok {
+		t.Fatalf("%T must not implement driver.Execer", connType)
+	}
+	if _, ok := connType.(driver.Queryer); ok {
+		t.Fatalf("%T must not implement driver.Queryer", connType)
+	}
+
+	Register("ContextOnly", &ctxOnlyDriver{})
+	db, err := Open("ContextOnly", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		t.Fatal("db.Conn", err)
+	}
+	defer conn.Close()
+	coc := conn.dc.ci.(*ctxOnlyConn)
+	coc.fc.skipDirtySession = true
+
+	_, err = conn.ExecContext(ctx, "WIPE")
+	if err != nil {
+		t.Fatal("exec wipe", err)
+	}
+
+	_, err = conn.ExecContext(ctx, "CREATE|keys|v1=string")
+	if err != nil {
+		t.Fatal("exec create", err)
+	}
+	expectedValue := "value1"
+	_, err = conn.ExecContext(ctx, "INSERT|keys|v1=?", expectedValue)
+	if err != nil {
+		t.Fatal("exec insert", err)
+	}
+	rows, err := conn.QueryContext(ctx, "SELECT|keys|v1|")
+	if err != nil {
+		t.Fatal("query select", err)
+	}
+	v1 := ""
+	for rows.Next() {
+		err = rows.Scan(&v1)
+		if err != nil {
+			t.Fatal("rows scan", err)
+		}
+	}
+	rows.Close()
+
+	if v1 != expectedValue {
+		t.Fatalf("expected %q, got %q", expectedValue, v1)
+	}
+
+	if !coc.execCtxCalled {
+		t.Error("ExecContext not called")
+	}
+	if !coc.queryCtxCalled {
+		t.Error("QueryContext not called")
 	}
 }
 

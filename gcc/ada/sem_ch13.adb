@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1360,6 +1360,8 @@ package body Sem_Ch13 is
    -----------------------------------
 
    procedure Analyze_Aspect_Specifications (N : Node_Id; E : Entity_Id) is
+      pragma Assert (Present (E));
+
       procedure Decorate (Asp : Node_Id; Prag : Node_Id);
       --  Establish linkages between an aspect and its corresponding pragma
 
@@ -1578,6 +1580,7 @@ package body Sem_Ch13 is
       Ent    : Node_Id;
 
       L : constant List_Id := Aspect_Specifications (N);
+      pragma Assert (Present (L));
 
       Ins_Node : Node_Id := N;
       --  Insert pragmas/attribute definition clause after this node when no
@@ -1604,8 +1607,6 @@ package body Sem_Ch13 is
       --  about delay issues, since the pragmas themselves deal with delay
       --  of visibility for the expression analysis. Thus, we just insert
       --  the pragma after the node N.
-
-      pragma Assert (Present (L));
 
       --  Loop through aspects
 
@@ -1906,9 +1907,6 @@ package body Sem_Ch13 is
             -----------------------------------------
 
             procedure Analyze_Aspect_Implicit_Dereference is
-               Disc        : Entity_Id;
-               Parent_Disc : Entity_Id;
-
             begin
                if not Is_Type (E) or else not Has_Discriminants (E) then
                   Error_Msg_N
@@ -1924,45 +1922,56 @@ package body Sem_Ch13 is
 
                   --  Missing synchronized types???
 
-                  Disc := First_Discriminant (E);
-                  while Present (Disc) loop
-                     if Chars (Expr) = Chars (Disc)
-                       and then Ekind_In (Etype (Disc),
-                                          E_Anonymous_Access_Subprogram_Type,
-                                          E_Anonymous_Access_Type)
-                     then
-                        Set_Has_Implicit_Dereference (E);
-                        Set_Has_Implicit_Dereference (Disc);
-                        exit;
+                  declare
+                     Disc : Entity_Id := First_Discriminant (E);
+                  begin
+                     while Present (Disc) loop
+                        if Chars (Expr) = Chars (Disc)
+                          and then Ekind_In
+                            (Etype (Disc),
+                             E_Anonymous_Access_Subprogram_Type,
+                             E_Anonymous_Access_Type)
+                        then
+                           Set_Has_Implicit_Dereference (E);
+                           Set_Has_Implicit_Dereference (Disc);
+                           exit;
+                        end if;
+
+                        Next_Discriminant (Disc);
+                     end loop;
+
+                     --  Error if no proper access discriminant
+
+                     if Present (Disc) then
+                        --  For a type extension, check whether parent has
+                        --  a reference discriminant, to verify that use is
+                        --  proper.
+
+                        if Is_Derived_Type (E)
+                          and then Has_Discriminants (Etype (E))
+                        then
+                           declare
+                              Parent_Disc : constant Entity_Id :=
+                                Get_Reference_Discriminant (Etype (E));
+                           begin
+                              if Present (Parent_Disc)
+                                and then Corresponding_Discriminant (Disc) /=
+                                           Parent_Disc
+                              then
+                                 Error_Msg_N
+                                   ("reference discriminant does not match "
+                                      & "discriminant of parent type", Expr);
+                              end if;
+                           end;
+                        end if;
+
+                     else
+                        Error_Msg_NE
+                          ("not an access discriminant of&", Expr, E);
                      end if;
-
-                     Next_Discriminant (Disc);
-                  end loop;
-
-                  --  Error if no proper access discriminant
-
-                  if No (Disc) then
-                     Error_Msg_NE ("not an access discriminant of&", Expr, E);
-                     return;
-                  end if;
+                  end;
                end if;
 
-               --  For a type extension, check whether parent has a
-               --  reference discriminant, to verify that use is proper.
-
-               if Is_Derived_Type (E)
-                 and then Has_Discriminants (Etype (E))
-               then
-                  Parent_Disc := Get_Reference_Discriminant (Etype (E));
-
-                  if Present (Parent_Disc)
-                    and then Corresponding_Discriminant (Disc) /= Parent_Disc
-                  then
-                     Error_Msg_N
-                       ("reference discriminant does not match discriminant "
-                        & "of parent type", Expr);
-                  end if;
-               end if;
             end Analyze_Aspect_Implicit_Dereference;
 
             -----------------------
@@ -2201,7 +2210,6 @@ package body Sem_Ch13 is
                   | Aspect_Output
                   | Aspect_Read
                   | Aspect_Scalar_Storage_Order
-                  | Aspect_Secondary_Stack_Size
                   | Aspect_Simple_Storage_Pool
                   | Aspect_Size
                   | Aspect_Small
@@ -2380,6 +2388,10 @@ package body Sem_Ch13 is
                   elsif Is_Incomplete_Type (E) then
                      Error_Msg_N
                        ("predicate cannot apply to incomplete view", Aspect);
+
+                  elsif Is_Generic_Type (E) then
+                     Error_Msg_N
+                       ("predicate cannot apply to formal type", Aspect);
                      goto Continue;
                   end if;
 
@@ -3191,6 +3203,27 @@ package body Sem_Ch13 is
                         goto Continue;
                      end;
                   end if;
+
+               --  Secondary_Stack_Size
+
+               --  Aspect Secondary_Stack_Size needs to be converted into a
+               --  pragma for two reasons: the attribute is not analyzed until
+               --  after the expansion of the task type declaration and the
+               --  attribute does not have visibility on the discriminant.
+
+               when Aspect_Secondary_Stack_Size =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  =>
+                       Name_Secondary_Stack_Size);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Volatile_Function
 
                --  Aspect Volatile_Function is never delayed because it is
                --  equivalent to a source pragma which appears after the
@@ -5838,46 +5871,6 @@ package body Sem_Ch13 is
                Set_SSO_Set_High_By_Default (Base_Type (U_Ent), False);
             end if;
 
-         --------------------------
-         -- Secondary_Stack_Size --
-         --------------------------
-
-         when Attribute_Secondary_Stack_Size =>
-
-            --  Secondary_Stack_Size attribute definition clause not allowed
-            --  except from aspect specification.
-
-            if From_Aspect_Specification (N) then
-               if not Is_Task_Type (U_Ent) then
-                  Error_Msg_N
-                    ("Secondary Stack Size can only be defined for task", Nam);
-
-               elsif Duplicate_Clause then
-                  null;
-
-               else
-                  Check_Restriction (No_Secondary_Stack, Expr);
-
-                  --  The expression must be analyzed in the special manner
-                  --  described in "Handling of Default and Per-Object
-                  --  Expressions" in sem.ads.
-
-                  --  The visibility to the discriminants must be restored
-
-                  Push_Scope_And_Install_Discriminants (U_Ent);
-                  Preanalyze_Spec_Expression (Expr, Any_Integer);
-                  Uninstall_Discriminants_And_Pop_Scope (U_Ent);
-
-                  if not Is_OK_Static_Expression (Expr) then
-                     Check_Restriction (Static_Storage_Size, Expr);
-                  end if;
-               end if;
-
-            else
-               Error_Msg_N
-                 ("attribute& cannot be set with definition clause", N);
-            end if;
-
          ----------
          -- Size --
          ----------
@@ -6529,7 +6522,7 @@ package body Sem_Ch13 is
       Max : Uint;
       --  Minimum and maximum values of entries
 
-      Max_Node : Node_Id;
+      Max_Node : Node_Id := Empty; -- init to avoid warning
       --  Pointer to node for literal providing max value
 
    begin
@@ -8346,15 +8339,15 @@ package body Sem_Ch13 is
    -- Build_Predicate_Functions --
    -------------------------------
 
-   --  The procedures that are constructed here have the form:
+   --  The functions that are constructed here have the form:
 
    --    function typPredicate (Ixxx : typ) return Boolean is
    --    begin
    --       return
    --          typ1Predicate (typ1 (Ixxx))
    --          and then typ2Predicate (typ2 (Ixxx))
-   --          and then ...;
-   --          exp1 and then exp2 and then ...
+   --          and then ...
+   --          and then exp1 and then exp2 and then ...;
    --    end typPredicate;
 
    --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that
@@ -8384,7 +8377,7 @@ package body Sem_Ch13 is
       --  This is the expression for the result of the function. It is
       --  is build by connecting the component predicates with AND THEN.
 
-      Expr_M : Node_Id;
+      Expr_M : Node_Id := Empty; -- init to avoid warning
       --  This is the corresponding return expression for the Predicate_M
       --  function. It differs in that raise expressions are marked for
       --  special expansion (see Process_REs).
@@ -9774,6 +9767,15 @@ package body Sem_Ch13 is
                then
                   Check_At_Constant_Address (Prefix (Nod));
 
+               --  Normally, System'To_Address will have been transformed into
+               --  an Unchecked_Conversion, but in -gnatc mode, it will not,
+               --  and we don't want to give an error, because the whole point
+               --  of 'To_Address is that it is static.
+
+               elsif Attribute_Name (Nod) = Name_To_Address then
+                  pragma Assert (Operating_Mode = Check_Semantics);
+                  null;
+
                else
                   Check_Expr_Constants (Prefix (Nod));
                   Check_List_Constants (Expressions (Nod));
@@ -9925,7 +9927,7 @@ package body Sem_Ch13 is
       --  this tagged type and the parent component. Tagged_Parent will point
       --  to this parent type. For all other cases, Tagged_Parent is Empty.
 
-      Parent_Last_Bit : Uint;
+      Parent_Last_Bit : Uint := No_Uint; -- init to avoid warning
       --  Relevant only if Tagged_Parent is set, Parent_Last_Bit indicates the
       --  last bit position for any field in the parent type. We only need to
       --  check overlap for fields starting below this point.
@@ -11897,6 +11899,12 @@ package body Sem_Ch13 is
       then
          return True;
 
+      elsif Is_Entity_Name (Expr)
+        and then Entity (Expr) = Standard_True
+      then
+         Error_Msg_N ("predicate is redundant (always True)?", Expr);
+         return True;
+
       --  That's an exhaustive list of tests, all other cases are not
       --  predicate-static, so we return False.
 
@@ -12676,17 +12684,26 @@ package body Sem_Ch13 is
                return Skip;
             end if;
 
-         --  Case of selected component (which is what a qualification looks
-         --  like in the unanalyzed tree, which is what we have.
+         --  Case of selected component, which may be a subcomponent of the
+         --  current instance, or an expanded name which is still unanalyzed.
 
          elsif Nkind (N) = N_Selected_Component then
 
             --  If selector name is not our type, keep going (we might still
-            --  have an occurrence of the type in the prefix).
+            --  have an occurrence of the type in the prefix). If it is a
+            --  subcomponent of the current entity, add prefix.
 
             if Nkind (Selector_Name (N)) /= N_Identifier
               or else Chars (Selector_Name (N)) /= TName
             then
+               if Nkind (Prefix (N)) = N_Identifier then
+                  Comp := Visible_Component (Chars (Prefix (N)));
+
+                  if Present (Comp) then
+                     Add_Prefix (Prefix (N), Comp);
+                  end if;
+               end if;
+
                return OK;
 
             --  Selector name is our type, check qualification
@@ -14317,7 +14334,7 @@ package body Sem_Ch13 is
                if Source_Siz /= Target_Siz then
                   Error_Msg
                     ("?z?types for unchecked conversion have different sizes!",
-                     Eloc);
+                     Eloc, Act_Unit);
 
                   if All_Errors_Mode then
                      Error_Msg_Name_1 := Chars (Source);
@@ -14353,17 +14370,17 @@ package body Sem_Ch13 is
                            if Bytes_Big_Endian then
                               Error_Msg
                                 ("\?z?target value will include ^ undefined "
-                                 & "low order bits!", Eloc);
+                                 & "low order bits!", Eloc, Act_Unit);
                            else
                               Error_Msg
                                 ("\?z?target value will include ^ undefined "
-                                 & "high order bits!", Eloc);
+                                 & "high order bits!", Eloc, Act_Unit);
                            end if;
 
                         else
                            Error_Msg
                              ("\?z?^ trailing bits of target value will be "
-                              & "undefined!", Eloc);
+                              & "undefined!", Eloc, Act_Unit);
                         end if;
 
                      else pragma Assert (Source_Siz > Target_Siz);
@@ -14371,17 +14388,17 @@ package body Sem_Ch13 is
                            if Bytes_Big_Endian then
                               Error_Msg
                                 ("\?z?^ low order bits of source will be "
-                                 & "ignored!", Eloc);
+                                 & "ignored!", Eloc, Act_Unit);
                            else
                               Error_Msg
                                 ("\?z?^ high order bits of source will be "
-                                 & "ignored!", Eloc);
+                                 & "ignored!", Eloc, Act_Unit);
                            end if;
 
                         else
                            Error_Msg
                              ("\?z?^ trailing bits of source will be "
-                              & "ignored!", Eloc);
+                              & "ignored!", Eloc, Act_Unit);
                         end if;
                      end if;
                   end if;
@@ -14435,10 +14452,10 @@ package body Sem_Ch13 is
                            Error_Msg_Node_2 := D_Source;
                            Error_Msg
                              ("?z?alignment of & (^) is stricter than "
-                              & "alignment of & (^)!", Eloc);
+                              & "alignment of & (^)!", Eloc, Act_Unit);
                            Error_Msg
                              ("\?z?resulting access value may have invalid "
-                              & "alignment!", Eloc);
+                              & "alignment!", Eloc, Act_Unit);
                         end if;
                      end;
                   end if;

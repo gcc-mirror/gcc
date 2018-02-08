@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,34 +49,6 @@ package body System.Parameters is
          return Size;
       end if;
    end Adjust_Storage_Size;
-
-   ----------------------------
-   -- Default_Sec_Stack_Size --
-   ----------------------------
-
-   function Default_Sec_Stack_Size return Size_Type is
-      Default_SS_Size : Integer;
-      pragma Import (C, Default_SS_Size,
-                     "__gnat_default_ss_size");
-   begin
-      --  There are two situations where the default secondary stack size is
-      --  set to zero:
-      --
-      --    * The user sets it to zero erroneously thinking it will disable
-      --      the secondary stack.
-      --
-      --    * Or more likely, we are building with an old compiler and
-      --      Default_SS_Size is never set.
-      --
-      --  In both case set the default secondary stack size to the run-time
-      --  default.
-
-      if Default_SS_Size > 0 then
-         return Size_Type (Default_SS_Size);
-      else
-         return Runtime_Default_Sec_Stack_Size;
-      end if;
-   end Default_Sec_Stack_Size;
 
    ------------------------
    -- Default_Stack_Size --

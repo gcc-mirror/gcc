@@ -1,6 +1,6 @@
 /* Gimple IR support functions.
 
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -77,8 +77,8 @@ EXPORTED_CONST enum gimple_statement_structure_enum gss_for_code_[] = {
 
 /* Gimple stats.  */
 
-int gimple_alloc_counts[(int) gimple_alloc_kind_all];
-int gimple_alloc_sizes[(int) gimple_alloc_kind_all];
+uint64_t gimple_alloc_counts[(int) gimple_alloc_kind_all];
+uint64_t gimple_alloc_sizes[(int) gimple_alloc_kind_all];
 
 /* Keep in sync with gimple.h:enum gimple_alloc_kind.  */
 static const char * const gimple_alloc_kind_names[] = {
@@ -361,6 +361,7 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
     gimple_call_set_arg (call, i, CALL_EXPR_ARG (t, i));
 
   gimple_set_block (call, TREE_BLOCK (t));
+  gimple_set_location (call, EXPR_LOCATION (t));
 
   /* Carry all the CALL_EXPR flags to the new GIMPLE_CALL.  */
   gimple_call_set_chain (call, CALL_EXPR_STATIC_CHAIN (t));
@@ -847,6 +848,27 @@ gimple_build_debug_source_bind (tree var, tree value,
   gimple_debug_source_bind_set_value (p, value);
   if (stmt)
     gimple_set_location (p, gimple_location (stmt));
+
+  return p;
+}
+
+
+/* Build a new GIMPLE_DEBUG_BEGIN_STMT statement in BLOCK at
+   LOCATION.  */
+
+gdebug *
+gimple_build_debug_begin_stmt (tree block, location_t location
+				    MEM_STAT_DECL)
+{
+  gdebug *p
+    = as_a <gdebug *> (
+        gimple_build_with_ops_stat (GIMPLE_DEBUG,
+				    (unsigned)GIMPLE_DEBUG_BEGIN_STMT, 0
+				    PASS_MEM_STAT));
+
+  gimple_set_location (p, location);
+  gimple_set_block (p, block);
+  cfun->debug_marker_count++;
 
   return p;
 }
@@ -1914,6 +1936,9 @@ gimple_copy (gimple *stmt)
       gimple_set_modified (copy, true);
     }
 
+  if (gimple_debug_nonbind_marker_p (stmt))
+    cfun->debug_marker_count++;
+
   return copy;
 }
 
@@ -2032,11 +2057,12 @@ gimple_assign_rhs_could_trap_p (gimple *s)
 void
 dump_gimple_statistics (void)
 {
-  int i, total_tuples = 0, total_bytes = 0;
+  int i;
+  uint64_t total_tuples = 0, total_bytes = 0;
 
   if (! GATHER_STATISTICS)
     {
-      fprintf (stderr, "No gimple statistics\n");
+      fprintf (stderr, "No GIMPLE statistics\n");
       return;
     }
 
@@ -2045,13 +2071,15 @@ dump_gimple_statistics (void)
   fprintf (stderr, "---------------------------------------\n");
   for (i = 0; i < (int) gimple_alloc_kind_all; ++i)
     {
-      fprintf (stderr, "%-20s %7d %10d\n", gimple_alloc_kind_names[i],
-	  gimple_alloc_counts[i], gimple_alloc_sizes[i]);
+      fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n",
+	       gimple_alloc_kind_names[i], gimple_alloc_counts[i],
+	       gimple_alloc_sizes[i]);
       total_tuples += gimple_alloc_counts[i];
       total_bytes += gimple_alloc_sizes[i];
     }
   fprintf (stderr, "---------------------------------------\n");
-  fprintf (stderr, "%-20s %7d %10d\n", "Total", total_tuples, total_bytes);
+  fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n", "Total",
+	   total_tuples, total_bytes);
   fprintf (stderr, "---------------------------------------\n");
 }
 

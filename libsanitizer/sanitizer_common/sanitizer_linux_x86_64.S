@@ -10,12 +10,14 @@
 #if defined(__linux__) && defined(__x86_64__)
 
 #include "../builtins/assembly.h"
+#include "cet.h"
 
 // If the "naked" function attribute were supported for x86 we could
 // do this via inline asm.
 .text
 .balign 4
 DEFINE_COMPILERRT_FUNCTION(internal_sigreturn)
+	_CET_ENDBR
         mov           $0xf,             %eax    // 0xf == SYS_rt_sigreturn
         mov           %rcx,             %r10
         syscall

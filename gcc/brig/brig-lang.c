@@ -1,5 +1,5 @@
 /* brig-lang.c -- brig (HSAIL) input gcc interface.
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -280,9 +280,9 @@ brig_langhook_type_for_mode (machine_mode mode, int unsignedp)
 
   scalar_int_mode imode;
   scalar_float_mode fmode;
-  if (is_int_mode (mode, &imode))
+  if (is_float_mode (mode, &fmode))
     {
-      switch (GET_MODE_BITSIZE (imode))
+      switch (GET_MODE_BITSIZE (fmode))
 	{
 	case 32:
 	  return float_type_node;
@@ -291,15 +291,15 @@ brig_langhook_type_for_mode (machine_mode mode, int unsignedp)
 	default:
 	  /* We have to check for long double in order to support
 	     i386 excess precision.  */
-	  if (imode == TYPE_MODE (long_double_type_node))
+	  if (fmode == TYPE_MODE (long_double_type_node))
 	    return long_double_type_node;
 
 	  gcc_unreachable ();
 	  return NULL_TREE;
 	}
     }
-  else if (is_float_mode (mode, &fmode))
-    return brig_langhook_type_for_size (GET_MODE_BITSIZE (fmode), unsignedp);
+  else if (is_int_mode (mode, &imode))
+    return brig_langhook_type_for_size (GET_MODE_BITSIZE (imode), unsignedp);
   else
     {
       /* E.g., build_common_builtin_nodes () asks for modes/builtins
@@ -447,19 +447,19 @@ brig_localize_identifier (const char *ident)
 /* Table of machine-independent attributes supported in GIMPLE.  */
 const struct attribute_spec brig_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       do_diagnostic } */
-  { "leaf",		      0, 0, true,  false, false,
-			      handle_leaf_attribute, false },
-  { "const",                  0, 0, true,  false, false,
-			      handle_const_attribute, false },
-  { "pure",                   0, 0, true,  false, false,
-			      handle_pure_attribute, false },
-  { "nothrow",                0, 0, true,  false, false,
-			      handle_nothrow_attribute, false },
-  { "returns_twice",          0, 0, true,  false, false,
-			      handle_returns_twice_attribute, false },
-  { NULL,                     0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "leaf",		      0, 0, true,  false, false, false,
+			      handle_leaf_attribute, NULL },
+  { "const",                  0, 0, true,  false, false, false,
+			      handle_const_attribute, NULL },
+  { "pure",                   0, 0, true,  false, false, false,
+			      handle_pure_attribute, NULL },
+  { "nothrow",                0, 0, true,  false, false, false,
+			      handle_nothrow_attribute, NULL },
+  { "returns_twice",          0, 0, true,  false, false, false,
+			      handle_returns_twice_attribute, NULL },
+  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Attribute handlers.  */

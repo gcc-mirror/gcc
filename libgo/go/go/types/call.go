@@ -90,11 +90,48 @@ func (check *Checker) call(x *operand, e *ast.CallExpr) exprKind {
 // use type-checks each argument.
 // Useful to make sure expressions are evaluated
 // (and variables are "used") in the presence of other errors.
+// The arguments may be nil.
 func (check *Checker) use(arg ...ast.Expr) {
 	var x operand
 	for _, e := range arg {
-		if e != nil { // be safe
+		// The nil check below is necessary since certain AST fields
+		// may legally be nil (e.g., the ast.SliceExpr.High field).
+		if e != nil {
 			check.rawExpr(&x, e, nil)
+		}
+	}
+}
+
+// useLHS is like use, but doesn't "use" top-level identifiers.
+// It should be called instead of use if the arguments are
+// expressions on the lhs of an assignment.
+// The arguments must not be nil.
+func (check *Checker) useLHS(arg ...ast.Expr) {
+	var x operand
+	for _, e := range arg {
+		// If the lhs is an identifier denoting a variable v, this assignment
+		// is not a 'use' of v. Remember current value of v.used and restore
+		// after evaluating the lhs via check.rawExpr.
+		var v *Var
+		var v_used bool
+		if ident, _ := unparen(e).(*ast.Ident); ident != nil {
+			// never type-check the blank name on the lhs
+			if ident.Name == "_" {
+				continue
+			}
+			if _, obj := check.scope.LookupParent(ident.Name, token.NoPos); obj != nil {
+				// It's ok to mark non-local variables, but ignore variables
+				// from other packages to avoid potential race conditions with
+				// dot-imported variables.
+				if w, _ := obj.(*Var); w != nil && w.pkg == check.pkg {
+					v = w
+					v_used = v.used
+				}
+			}
+		}
+		check.rawExpr(&x, e, nil)
+		if v != nil {
+			v.used = v_used // restore v.used
 		}
 	}
 }
@@ -134,47 +171,46 @@ type getter func(x *operand, i int)
 // the incoming getter with that i.
 //
 func unpack(get getter, n int, allowCommaOk bool) (getter, int, bool) {
-	if n == 1 {
-		// possibly result of an n-valued function call or comma,ok value
-		var x0 operand
-		get(&x0, 0)
-		if x0.mode == invalid {
-			return nil, 0, false
-		}
+	if n != 1 {
+		// zero or multiple values
+		return get, n, false
+	}
+	// possibly result of an n-valued function call or comma,ok value
+	var x0 operand
+	get(&x0, 0)
+	if x0.mode == invalid {
+		return nil, 0, false
+	}
 
-		if t, ok := x0.typ.(*Tuple); ok {
-			// result of an n-valued function call
+	if t, ok := x0.typ.(*Tuple); ok {
+		// result of an n-valued function call
+		return func(x *operand, i int) {
+			x.mode = value
+			x.expr = x0.expr
+			x.typ = t.At(i).typ
+		}, t.Len(), false
+	}
+
+	if x0.mode == mapindex || x0.mode == commaok {
+		// comma-ok value
+		if allowCommaOk {
+			a := [2]Type{x0.typ, Typ[UntypedBool]}
 			return func(x *operand, i int) {
 				x.mode = value
 				x.expr = x0.expr
-				x.typ = t.At(i).typ
-			}, t.Len(), false
+				x.typ = a[i]
+			}, 2, true
 		}
-
-		if x0.mode == mapindex || x0.mode == commaok {
-			// comma-ok value
-			if allowCommaOk {
-				a := [2]Type{x0.typ, Typ[UntypedBool]}
-				return func(x *operand, i int) {
-					x.mode = value
-					x.expr = x0.expr
-					x.typ = a[i]
-				}, 2, true
-			}
-			x0.mode = value
-		}
-
-		// single value
-		return func(x *operand, i int) {
-			if i != 0 {
-				unreachable()
-			}
-			*x = x0
-		}, 1, false
+		x0.mode = value
 	}
 
-	// zero or multiple values
-	return get, n, false
+	// single value
+	return func(x *operand, i int) {
+		if i != 0 {
+			unreachable()
+		}
+		*x = x0
+	}, 1, false
 }
 
 // arguments checks argument passing for the call with the given signature.

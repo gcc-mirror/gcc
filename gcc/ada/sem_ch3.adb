@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,6 +61,7 @@ with Sem_Ch13;  use Sem_Ch13;
 with Sem_Dim;   use Sem_Dim;
 with Sem_Disp;  use Sem_Disp;
 with Sem_Dist;  use Sem_Dist;
+with Sem_Elab;  use Sem_Elab;
 with Sem_Elim;  use Sem_Elim;
 with Sem_Eval;  use Sem_Eval;
 with Sem_Mech;  use Sem_Mech;
@@ -1731,6 +1732,9 @@ package body Sem_Ch3 is
                   --  nonconforming preconditions in both an ancestor and
                   --  a progenitor operation.
 
+                  --  If the operation is a primitive wrapper it is an explicit
+                  --  (overriding) operqtion and all is fine.
+
                   if Present (Anc)
                     and then Has_Non_Trivial_Precondition (Anc)
                     and then Has_Non_Trivial_Precondition (Iface_Prim)
@@ -1741,10 +1745,11 @@ package body Sem_Ch3 is
                            and then Nkind (Parent (Prim)) =
                                       N_Procedure_Specification
                            and then Null_Present (Parent (Prim)))
+                       or else Is_Primitive_Wrapper (Prim)
                      then
                         null;
 
-                     --  The inherited operation must be overridden
+                     --  The operation is inherited and must be overridden
 
                      elsif not Comes_From_Source (Prim) then
                         Error_Msg_NE
@@ -2818,19 +2823,23 @@ package body Sem_Ch3 is
       if Present (L) then
          Context := Parent (L);
 
-         --  Analyze the contracts of packages and their bodies
+         --  Certain contract annocations have forward visibility semantics and
+         --  must be analyzed after all declarative items have been processed.
+         --  This timing ensures that entities referenced by such contracts are
+         --  visible.
 
-         if Nkind (Context) = N_Package_Specification
-           and then L = Visible_Declarations (Context)
-         then
-            Analyze_Package_Contract (Defining_Entity (Context));
+         --  Analyze the contract of an immediately enclosing package spec or
+         --  body first because other contracts may depend on its information.
 
-         elsif Nkind (Context) = N_Package_Body then
+         if Nkind (Context) = N_Package_Body then
             Analyze_Package_Body_Contract (Defining_Entity (Context));
+
+         elsif Nkind (Context) = N_Package_Specification then
+            Analyze_Package_Contract (Defining_Entity (Context));
          end if;
 
-         --  Analyze the contracts of various constructs now due to the delayed
-         --  visibility needs of their aspects and pragmas.
+         --  Analyze the contracts of various constructs in the declarative
+         --  list.
 
          Analyze_Contracts (L);
 
@@ -2848,13 +2857,13 @@ package body Sem_Ch3 is
             Remove_Visible_Refinements (Corresponding_Spec (Context));
             Remove_Partial_Visible_Refinements (Corresponding_Spec (Context));
 
-         elsif Nkind (Context) = N_Package_Declaration then
+         elsif Nkind (Context) = N_Package_Specification then
 
             --  Partial state refinements are visible up to the end of the
             --  package spec declarations. Hide the partial state refinements
             --  from visibility to restore the original state conditions.
 
-            Remove_Partial_Visible_Refinements (Corresponding_Spec (Context));
+            Remove_Partial_Visible_Refinements (Defining_Entity (Context));
          end if;
 
          --  Verify that all abstract states found in any package declared in
@@ -3116,6 +3125,11 @@ package body Sem_Ch3 is
       if not Analyzed (T) then
          Set_Analyzed (T);
 
+         --  Set the SPARK mode from the current context
+
+         Set_SPARK_Pragma           (T, SPARK_Mode_Pragma);
+         Set_SPARK_Pragma_Inherited (T);
+
          case Nkind (Def) is
             when N_Access_To_Subprogram_Definition =>
                Access_Subprogram_Declaration (T, Def);
@@ -3162,6 +3176,11 @@ package body Sem_Ch3 is
                if Is_Type (T) and then Has_Predicates (T) then
                   Set_Has_Predicates (Def_Id);
                end if;
+
+               --  Save the scenario for examination by the ABE Processing
+               --  phase.
+
+               Record_Elaboration_Scenario (N);
 
             when N_Enumeration_Type_Definition =>
                Enumeration_Type_Declaration (T, Def);
@@ -3358,10 +3377,15 @@ package body Sem_Ch3 is
 
       T := Find_Type_Name (N);
 
-      Set_Ekind (T, E_Incomplete_Type);
-      Init_Size_Align (T);
-      Set_Is_First_Subtype (T, True);
-      Set_Etype (T, T);
+      Set_Ekind            (T, E_Incomplete_Type);
+      Set_Etype            (T, T);
+      Set_Is_First_Subtype (T);
+      Init_Size_Align      (T);
+
+      --  Set the SPARK mode from the current context
+
+      Set_SPARK_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (T);
 
       --  Ada 2005 (AI-326): Minimum decoration to give support to tagged
       --  incomplete types.
@@ -5061,6 +5085,11 @@ package body Sem_Ch3 is
       Set_Is_First_Subtype (T);
       Make_Class_Wide_Type (T);
 
+      --  Set the SPARK mode from the current context
+
+      Set_SPARK_Pragma           (T, SPARK_Mode_Pragma);
+      Set_SPARK_Pragma_Inherited (T);
+
       if Unknown_Discriminants_Present (N) then
          Set_Discriminant_Constraint (T, No_Elist);
       end if;
@@ -6639,7 +6668,7 @@ package body Sem_Ch3 is
       Tdef          : constant Node_Id    := Type_Definition (N);
       Indic         : constant Node_Id    := Subtype_Indication (Tdef);
       Parent_Base   : constant Entity_Id  := Base_Type (Parent_Type);
-      Implicit_Base : Entity_Id;
+      Implicit_Base : Entity_Id           := Empty;
       New_Indic     : Node_Id;
 
       procedure Make_Implicit_Base;
@@ -6751,7 +6780,7 @@ package body Sem_Ch3 is
                                                           N_Subtype_Indication;
 
       D_Constraint   : Node_Id;
-      New_Constraint : Elist_Id;
+      New_Constraint : Elist_Id := No_Elist;
       Old_Disc       : Entity_Id;
       New_Disc       : Entity_Id;
       New_N          : Node_Id;
@@ -8489,16 +8518,16 @@ package body Sem_Ch3 is
          Parent_Base := Base_Type (Parent_Type);
       end if;
 
-      --  AI05-0115 : if this is a derivation from a private type in some
+      --  AI05-0115: if this is a derivation from a private type in some
       --  other scope that may lead to invisible components for the derived
       --  type, mark it accordingly.
 
       if Is_Private_Type (Parent_Type) then
-         if Scope (Parent_Type) = Scope (Derived_Type) then
+         if Scope (Parent_Base) = Scope (Derived_Type) then
             null;
 
-         elsif In_Open_Scopes (Scope (Parent_Type))
-           and then In_Private_Part (Scope (Parent_Type))
+         elsif In_Open_Scopes (Scope (Parent_Base))
+           and then In_Private_Part (Scope (Parent_Base))
          then
             null;
 
@@ -9101,7 +9130,7 @@ package body Sem_Ch3 is
          elsif Has_Unknown_Discriminants (Parent_Type)
            and then
             (not Has_Discriminants (Parent_Type)
-              or else not In_Open_Scopes (Scope (Parent_Type)))
+              or else not In_Open_Scopes (Scope (Parent_Base)))
          then
             Set_Has_Unknown_Discriminants (Derived_Type);
          end if;
@@ -21313,6 +21342,16 @@ package body Sem_Ch3 is
 
       if Nkind (S) /= N_Subtype_Indication then
          Find_Type (S);
+
+         --  No way to proceed if the subtype indication is malformed. This
+         --  will happen for example when the subtype indication in an object
+         --  declaration is missing altogether and the expression is analyzed
+         --  as if it were that indication.
+
+         if not Is_Entity_Name (S) then
+            return Any_Type;
+         end if;
+
          Check_Incomplete (S);
          P := Parent (S);
 

@@ -111,6 +111,13 @@ func (check *Checker) declarePkgObj(ident *ast.Ident, obj Object, d *declInfo) {
 		return
 	}
 
+	// spec: "The main package must have package name main and declare
+	// a function main that takes no arguments and returns no value."
+	if ident.Name == "main" && check.pkg.name == "main" {
+		check.errorf(ident.Pos(), "cannot declare main - must be func")
+		return
+	}
+
 	check.declare(check.pkg.scope, ident, obj, token.NoPos)
 	check.objMap[obj] = d
 	obj.setOrder(uint32(len(check.objMap)))
@@ -303,7 +310,6 @@ func (check *Checker) collectObjects() {
 									// via Config.Packages - may be dot-imported in
 									// another package!)
 									check.declare(fileScope, nil, obj, token.NoPos)
-									check.recordImplicit(s, obj)
 								}
 							}
 							// add position to set of dot-import positions for this file
@@ -411,9 +417,9 @@ func (check *Checker) collectObjects() {
 					// receiver name. They will be type-checked later, with regular
 					// functions.
 					if list := d.Recv.List; len(list) > 0 {
-						typ := list[0].Type
+						typ := unparen(list[0].Type)
 						if ptr, _ := typ.(*ast.StarExpr); ptr != nil {
-							typ = ptr.X
+							typ = unparen(ptr.X)
 						}
 						if base, _ := typ.(*ast.Ident); base != nil && base.Name != "_" {
 							check.assocMethod(base.Name, obj)

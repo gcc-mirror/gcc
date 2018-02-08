@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -59,8 +59,7 @@ bool inline_account_function_p (struct cgraph_node *node);
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge *> *, int *, bool,
 		  bool *callee_removed = NULL);
 unsigned int inline_transform (struct cgraph_node *);
-void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *,
-			  int freq_scale);
+void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
 
 extern int ncalls_inlined;
 extern int nfunctions_inlined;

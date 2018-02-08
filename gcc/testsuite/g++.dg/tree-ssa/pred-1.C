@@ -2,6 +2,8 @@
 /* { dg-options "-O2 -fdump-tree-profile_estimate" } */
 int a[100];
 void foo(int);
+
+int
 main()
 {
   int i;
@@ -11,5 +13,7 @@ main()
 	continue;
        foo(i);
     }
+
+  return 0;
 }
 // { dg-final { scan-tree-dump "continue heuristics" "profile_estimate" } }

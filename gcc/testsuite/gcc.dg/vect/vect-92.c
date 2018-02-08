@@ -17,12 +17,18 @@ float pc[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0,1,2,3,4,5,
    can use this information (generate prolog and epilog loops
    with known number of iterations, and only if needed).  */
 
+#if VECTOR_BITS > 128
+#define NITER (VECTOR_BITS * 3 / 32)
+#else
+#define NITER 12
+#endif
+
 __attribute__ ((noinline)) int
 main1 ()
 {
   int i;
 
-  for (i = 0; i < 10; i++)
+  for (i = 0; i < NITER - 2; i++)
     {
       pa[i+1] = pb[i+1] * pc[i+1];
     }
@@ -42,7 +48,7 @@ main2 ()
 {
   int i;
 
-  for (i = 0; i < 12; i++)
+  for (i = 0; i < NITER; i++)
     {
       pa[i+1] = pb[i+1] * pc[i+1];
     }
@@ -92,4 +98,4 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail vect_element_align_preferred } } } */

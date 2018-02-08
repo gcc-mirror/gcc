@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2014-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,6 +67,10 @@ package Ghost is
       Constit_Id : Entity_Id);
    --  Verify that the Ghost policy of constituent Constit_Id is compatible
    --  with the Ghost policy of abstract state State_I.
+
+   procedure Check_Ghost_Type (Typ : Entity_Id);
+   --  Verify that Ghost type Typ is neither concurrent, nor effectively
+   --  volatile.
 
    function Implements_Ghost_Interface (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ implements at least one Ghost interface

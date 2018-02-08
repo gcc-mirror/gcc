@@ -5,7 +5,7 @@
 
 /* The branch cost setting prevents the return value from being
    calculated with arithmetic instead of doing a compare.  */
-/* { dg-additional-options "-mbranch-cost=0" { target s390x-*-* } } */
+/* { dg-additional-options "-mbranch-cost=0" { target branch_cost } } */
 
 #include <stdint.h>
 

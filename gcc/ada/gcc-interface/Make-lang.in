@@ -322,7 +322,6 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/g-spchge.o	\
  ada/libgnat/g-speche.o	\
  ada/libgnat/g-u3spch.o	\
- ada/get_spark_xrefs.o	\
  ada/get_targ.o	\
  ada/ghost.o	\
  ada/libgnat/gnat.o	\
@@ -352,7 +351,6 @@ GNAT_ADA_OBJS =	\
  ada/par_sco.o	\
  ada/prep.o	\
  ada/prepcomp.o	\
- ada/put_spark_xrefs.o	\
  ada/put_scos.o	\
  ada/repinfo.o	\
  ada/restrict.o	\

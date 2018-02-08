@@ -1,6 +1,7 @@
 // PR lto/78211
 // { dg-do compile { target { lto && c++11 } } }
 // { dg-options "-fcompare-debug -fno-printf-return-value -flto -fno-use-linker-plugin -O3" }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std {
   typedef __SIZE_TYPE__ size_t;
@@ -37,7 +38,7 @@ namespace __gnu_cxx {
     reference operator*() const noexcept { }
   };
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline bool operator!=(const __normal_iterator<_IteratorL, _Container>& __lhs, const __normal_iterator<_IteratorR, _Container>& __rhs) noexcept { }
+  inline bool operator!=(const __normal_iterator<_IteratorL, _Container>& __lhs, const __normal_iterator<_IteratorR, _Container>& __rhs) noexcept { return true; }
 }
 namespace std {
   template<typename _CharT> struct char_traits;

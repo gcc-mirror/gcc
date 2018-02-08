@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1056,7 +1056,7 @@ resolve_common_blocks (gfc_symtree *common_root)
 			       common_root->n.common->binding_label);
       if (gsym && gsym->type != GSYM_COMMON)
 	{
-	  gfc_error ("COMMON block at %L with binding label %s uses the same "
+	  gfc_error ("COMMON block at %L with binding label %qs uses the same "
 		     "global identifier as entity at %L",
 		     &common_root->n.common->where,
 		     common_root->n.common->binding_label, &gsym->where);
@@ -1174,7 +1174,7 @@ static bool
 get_pdt_constructor (gfc_expr *expr, gfc_constructor **constr,
 		     gfc_symbol *derived)
 {
-  gfc_constructor *cons;
+  gfc_constructor *cons = NULL;
   gfc_component *comp;
   bool t = true;
 
@@ -1289,7 +1289,9 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	}
 
       rank = comp->as ? comp->as->rank : 0;
-      if (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->as)
+      if (comp->ts.type == BT_CLASS
+	  && !comp->ts.u.derived->attr.unlimited_polymorphic
+	  && CLASS_DATA (comp)->as)
  	rank = CLASS_DATA (comp)->as->rank;
 
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
@@ -4901,7 +4903,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   if (char_ref->u.ss.start)
     start = gfc_copy_expr (char_ref->u.ss.start);
   else
-    start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+    start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
 
   if (char_ref->u.ss.end)
     end = gfc_copy_expr (char_ref->u.ss.end);
@@ -4924,7 +4926,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   /* Length = (end - start + 1).  */
   e->ts.u.cl->length = gfc_subtract (end, start);
   e->ts.u.cl->length = gfc_add (e->ts.u.cl->length,
-				gfc_get_int_expr (gfc_default_integer_kind,
+				gfc_get_int_expr (gfc_charlen_int_kind,
 						  NULL, 1));
 
   /* F2008, 6.4.1:  Both the starting point and the ending point shall
@@ -5690,13 +5692,13 @@ gfc_resolve_character_operator (gfc_expr *e)
   if (op1->ts.u.cl && op1->ts.u.cl->length)
     e1 = gfc_copy_expr (op1->ts.u.cl->length);
   else if (op1->expr_type == EXPR_CONSTANT)
-    e1 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+    e1 = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 			   op1->value.character.length);
 
   if (op2->ts.u.cl && op2->ts.u.cl->length)
     e2 = gfc_copy_expr (op2->ts.u.cl->length);
   else if (op2->expr_type == EXPR_CONSTANT)
-    e2 = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+    e2 = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 			   op2->value.character.length);
 
   e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
@@ -5834,7 +5836,9 @@ update_compcall_arglist (gfc_expr* e)
       return true;
     }
 
-  gcc_assert (tbp->pass_arg_num > 0);
+  if (tbp->pass_arg_num <= 0)
+    return false;
+
   e->value.compcall.actual = update_arglist_pass (e->value.compcall.actual, po,
 						  tbp->pass_arg_num,
 						  tbp->pass_arg);
@@ -7482,8 +7486,13 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
   if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred
       && !UNLIMITED_POLY (e))
     {
-      int cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
-				      code->ext.alloc.ts.u.cl->length);
+      int cmp;
+
+      if (!e->ts.u.cl->length)
+	goto failure;
+
+      cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
+				  code->ext.alloc.ts.u.cl->length);
       if (cmp == 1 || cmp == -1 || cmp == -3)
 	{
 	  gfc_error ("Allocating %s at %L with type-spec requires the same "
@@ -8626,9 +8635,15 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	sym->ts.u.cl = target->ts.u.cl;
 
       if (!sym->ts.u.cl->length && !sym->ts.deferred)
-	sym->ts.u.cl->length
-	  = gfc_get_int_expr (gfc_default_integer_kind,
-			      NULL, target->value.character.length);
+	{
+	  if (target->expr_type == EXPR_CONSTANT)
+	    sym->ts.u.cl->length =
+	      gfc_get_int_expr (gfc_charlen_int_kind, NULL,
+				target->value.character.length);
+	  else
+	    gfc_error ("Not Implemented: Associate target with type character"
+		       " and non-constant length at %L", &target->where);
+	}
     }
 
   /* If the target is a good class object, so is the associate variable.  */
@@ -8712,7 +8727,6 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_namespace *ns;
   int error = 0;
-  int charlen = 0;
   int rank = 0;
   gfc_ref* ref = NULL;
   gfc_expr *selector_expr = NULL;
@@ -8737,6 +8751,9 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
       if (code->expr1->symtree->n.sym->attr.untyped)
 	code->expr1->symtree->n.sym->ts = code->expr2->ts;
       selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
+
+      if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
+	CLASS_DATA (code->expr1)->as->rank = code->expr2->rank;
 
       /* F2008: C803 The selector expression must not be coindexed.  */
       if (gfc_is_coindexed (code->expr2))
@@ -8960,11 +8977,13 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	sprintf (name, "__tmp_type_%s", c->ts.u.derived->name);
       else if (c->ts.type == BT_CHARACTER)
 	{
+	  HOST_WIDE_INT charlen = 0;
 	  if (c->ts.u.cl && c->ts.u.cl->length
 	      && c->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	    charlen = mpz_get_si (c->ts.u.cl->length->value.integer);
-	  sprintf (name, "__tmp_%s_%d_%d", gfc_basic_typename (c->ts.type),
-	           charlen, c->ts.kind);
+	    charlen = gfc_mpz_get_hwi (c->ts.u.cl->length->value.integer);
+	  snprintf (name, sizeof (name),
+		    "__tmp_%s_" HOST_WIDE_INT_PRINT_DEC "_%d",
+		    gfc_basic_typename (c->ts.type), charlen, c->ts.kind);
 	}
       else
 	sprintf (name, "__tmp_%s_%d", gfc_basic_typename (c->ts.type),
@@ -9181,24 +9200,14 @@ resolve_transfer (gfc_code *code)
   if (dt && dt->dt_io_kind->value.iokind != M_INQUIRE
       && (ts->type == BT_DERIVED || ts->type == BT_CLASS))
     {
-      if (ts->type == BT_DERIVED)
+      if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
 	derived = ts->u.derived;
       else
 	derived = ts->u.derived->components->ts.u.derived;
 
-      if (dt->format_expr)
-	{
-	  char *fmt;
-	  fmt = gfc_widechar_to_char (dt->format_expr->value.character.string,
-				      -1);
-	  if (strtok (fmt, "DT") != NULL)
-	    formatted = true;
-	}
-      else if (dt->format_label == &format_asterisk)
-	{
-	  /* List directed io must call the formatted DTIO procedure.  */
-	  formatted = true;
-	}
+      /* Determine when to use the formatted DTIO procedure.  */
+      if (dt && (dt->format_expr || dt->format_label))
+	formatted = true;
 
       write = dt->dt_io_kind->value.iokind == M_WRITE
 	      || dt->dt_io_kind->value.iokind == M_PRINT;
@@ -10113,8 +10122,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   bool rval = false;
   gfc_expr *lhs;
   gfc_expr *rhs;
-  int llen = 0;
-  int rlen = 0;
   int n;
   gfc_ref *ref;
   symbol_attribute attr;
@@ -10196,10 +10203,11 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   if (lhs->ts.type == BT_CHARACTER
 	&& warn_character_truncation)
     {
+      HOST_WIDE_INT llen = 0, rlen = 0;
       if (lhs->ts.u.cl != NULL
 	    && lhs->ts.u.cl->length != NULL
 	    && lhs->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	llen = mpz_get_si (lhs->ts.u.cl->length->value.integer);
+	llen = gfc_mpz_get_hwi (lhs->ts.u.cl->length->value.integer);
 
       if (rhs->expr_type == EXPR_CONSTANT)
  	rlen = rhs->value.character.length;
@@ -10207,13 +10215,13 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       else if (rhs->ts.u.cl != NULL
 		 && rhs->ts.u.cl->length != NULL
 		 && rhs->ts.u.cl->length->expr_type == EXPR_CONSTANT)
-	rlen = mpz_get_si (rhs->ts.u.cl->length->value.integer);
+	rlen = gfc_mpz_get_hwi (rhs->ts.u.cl->length->value.integer);
 
       if (rlen && llen && rlen > llen)
 	gfc_warning_now (OPT_Wcharacter_truncation,
 			 "CHARACTER expression will be truncated "
-			 "in assignment (%d/%d) at %L",
-			 llen, rlen, &code->loc);
+			 "in assignment (%ld/%ld) at %L",
+			 (long) llen, (long) rlen, &code->loc);
     }
 
   /* Ensure that a vector index expression for the lvalue is evaluated
@@ -10324,7 +10332,8 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   /* Assign the 'data' of a class object to a derived type.  */
   if (lhs->ts.type == BT_DERIVED
-      && rhs->ts.type == BT_CLASS)
+      && rhs->ts.type == BT_CLASS
+      && rhs->expr_type != EXPR_ARRAY)
     gfc_add_data_component (rhs);
 
   bool caf_convert_to_send = flag_coarray == GFC_FCOARRAY_LIB
@@ -11097,6 +11106,10 @@ start:
 	  break;
 
 	case EXEC_FAIL_IMAGE:
+	case EXEC_FORM_TEAM:
+	case EXEC_CHANGE_TEAM:
+	case EXEC_END_TEAM:
+	case EXEC_SYNC_TEAM:
 	  break;
 
 	case EXEC_ENTRY:
@@ -11536,7 +11549,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       || sym->attr.flavor == FL_DERIVED || !sym->binding_label)
     return;
 
-  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
+  gsym = gfc_find_case_gsymbol (gfc_gsym_root, sym->binding_label);
 
   if (sym->module)
     module = sym->module;
@@ -11572,7 +11585,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
 
   if (sym->attr.flavor == FL_VARIABLE && gsym->type != GSYM_UNKNOWN)
     {
-      gfc_error ("Variable %s with binding label %s at %L uses the same global "
+      gfc_error ("Variable %qs with binding label %qs at %L uses the same global "
 		 "identifier as entity at %L", sym->name,
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       /* Clear the binding label to prevent checking multiple times.  */
@@ -11585,8 +11598,8 @@ gfc_verify_binding_labels (gfc_symbol *sym)
     {
       /* This can only happen if the variable is defined in a module - if it
 	 isn't the same module, reject it.  */
-      gfc_error ("Variable %s from module %s with binding label %s at %L uses "
-		   "the same global identifier as entity at %L from module %s",
+      gfc_error ("Variable %qs from module %qs with binding label %qs at %L "
+		 "uses the same global identifier as entity at %L from module %qs",
 		 sym->name, module, sym->binding_label,
 		 &sym->declared_at, &gsym->where, gsym->mod_name);
       sym->binding_label = NULL;
@@ -11602,7 +11615,7 @@ gfc_verify_binding_labels (gfc_symbol *sym)
       /* Print an error if the procedure is defined multiple times; we have to
 	 exclude references to the same procedure via module association or
 	 multiple checks for the same procedure.  */
-      gfc_error ("Procedure %s with binding label %s at %L uses the same "
+      gfc_error ("Procedure %qs with binding label %qs at %L uses the same "
 		 "global identifier as entity at %L", sym->name,
 		 sym->binding_label, &sym->declared_at, &gsym->where);
       sym->binding_label = NULL;
@@ -11633,7 +11646,7 @@ resolve_index_expr (gfc_expr *e)
 static bool
 resolve_charlen (gfc_charlen *cl)
 {
-  int i, k;
+  int k;
   bool saved_specification_expr;
 
   if (cl->resolved)
@@ -11656,10 +11669,17 @@ resolve_charlen (gfc_charlen *cl)
 	  specification_expr = saved_specification_expr;
 	  return false;
 	}
+
+      /* cl->length has been resolved.  It should have an integer type.  */
+      if (cl->length->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("Scalar INTEGER expression expected at %L",
+		     &cl->length->where);
+	  return false;
+	}
     }
   else
     {
-
       if (!resolve_index_expr (cl->length))
 	{
 	  specification_expr = saved_specification_expr;
@@ -11669,9 +11689,10 @@ resolve_charlen (gfc_charlen *cl)
 
   /* F2008, 4.4.3.2:  If the character length parameter value evaluates to
      a negative value, the length of character entities declared is zero.  */
-  if (cl->length && !gfc_extract_int (cl->length, &i) && i < 0)
+  if (cl->length && cl->length->expr_type == EXPR_CONSTANT
+      && mpz_sgn (cl->length->value.integer) < 0)
     gfc_replace_expr (cl->length,
-		      gfc_get_int_expr (gfc_default_integer_kind, NULL, 0));
+		      gfc_get_int_expr (gfc_charlen_int_kind, NULL, 0));
 
   /* Check that the character length is not too large.  */
   k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
@@ -13496,6 +13517,13 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   if (c->attr.artificial)
     return true;
 
+  /* Do not allow vtype components to be resolved in nameless namespaces
+     such as block data because the procedure pointers will cause ICEs
+     and vtables are not needed in these contexts.  */
+  if (sym->attr.vtype && sym->attr.use_assoc
+      && sym->ns->proc_name == NULL)
+    return true;
+
   /* F2008, C442.  */
   if ((!sym->attr.is_class || c != sym->components)
       && c->attr.codimension
@@ -13531,6 +13559,17 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     {
       gfc_error ("Component %qs at %L has the CONTIGUOUS attribute but "
                  "is not an array pointer", c->name, &c->loc);
+      return false;
+    }
+
+  /* F2003, 15.2.1 - length has to be one.  */
+  if (sym->attr.is_bind_c && c->ts.type == BT_CHARACTER
+      && (c->ts.u.cl == NULL || c->ts.u.cl->length == NULL
+	  || !gfc_is_constant_expr (c->ts.u.cl->length)
+	  || mpz_cmp_si (c->ts.u.cl->length->value.integer, 1) != 0))
+    {
+      gfc_error ("Component %qs of BIND(C) type at %L must have length one",
+		 c->name, &c->loc);
       return false;
     }
 
@@ -13979,6 +14018,31 @@ resolve_fl_derived0 (gfc_symbol *sym)
   if (!success)
     return false;
 
+  /* Now add the caf token field, where needed.  */
+  if (flag_coarray != GFC_FCOARRAY_NONE
+      && !sym->attr.is_class && !sym->attr.vtype)
+    {
+      for (c = sym->components; c; c = c->next)
+	if (!c->attr.dimension && !c->attr.codimension
+	    && (c->attr.allocatable || c->attr.pointer))
+	  {
+	    char name[GFC_MAX_SYMBOL_LEN+9];
+	    gfc_component *token;
+	    sprintf (name, "_caf_%s", c->name);
+	    token = gfc_find_component (sym, name, true, true, NULL);
+	    if (token == NULL)
+	      {
+		if (!gfc_add_component (sym, name, &token))
+		  return false;
+		token->ts.type = BT_VOID;
+		token->ts.kind = gfc_default_integer_kind;
+		token->attr.access = ACCESS_PRIVATE;
+		token->attr.artificial = 1;
+		token->attr.caf_token = 1;
+	      }
+	  }
+    }
+
   check_defined_assignments (sym);
 
   if (!sym->attr.defined_assign_comp && super_type)
@@ -13997,6 +14061,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
     {
       for (f = sym->formal; f; f = f->next)
 	{
+	  if (!f->sym)
+	    continue;
 	  c = gfc_find_component (sym, f->sym->name, true, true, NULL);
 	  if (c == NULL)
 	    {
@@ -14074,6 +14140,20 @@ resolve_fl_derived (gfc_symbol *sym)
   /* Resolve the type-bound procedures.  */
   if (!resolve_typebound_procedures (sym))
     return false;
+
+  /* Generate module vtables subject to their accessibility and their not
+     being vtables or pdt templates. If this is not done class declarations
+     in external procedures wind up with their own version and so SELECT TYPE
+     fails because the vptrs do not have the same address.  */
+  if (gfc_option.allow_std & GFC_STD_F2003
+      && sym->ns->proc_name
+      && sym->ns->proc_name->attr.flavor == FL_MODULE
+      && sym->attr.access != ACCESS_PRIVATE
+      && !(sym->attr.use_assoc || sym->attr.vtype || sym->attr.pdt_template))
+    {
+      gfc_symbol *vtab = gfc_find_derived_vtab (sym);
+      gfc_set_sym_referenced (vtab);
+    }
 
   return true;
 }
@@ -14256,7 +14336,7 @@ resolve_fl_parameter (gfc_symbol *sym)
 }
 
 
-/* Called by resolve_symbol to chack PDTs.  */
+/* Called by resolve_symbol to check PDTs.  */
 
 static void
 resolve_pdt (gfc_symbol* sym)
@@ -14266,11 +14346,18 @@ resolve_pdt (gfc_symbol* sym)
   gfc_component *c;
   bool const_len_exprs = true;
   bool assumed_len_exprs = false;
+  symbol_attribute *attr;
 
   if (sym->ts.type == BT_DERIVED)
-    derived = sym->ts.u.derived;
+    {
+      derived = sym->ts.u.derived;
+      attr = &(sym->attr);
+    }
   else if (sym->ts.type == BT_CLASS)
-    derived = CLASS_DATA (sym)->ts.u.derived;
+    {
+      derived = CLASS_DATA (sym)->ts.u.derived;
+      attr = &(CLASS_DATA (sym)->attr);
+    }
   else
     gcc_unreachable ();
 
@@ -14288,6 +14375,14 @@ resolve_pdt (gfc_symbol* sym)
 	const_len_exprs = false;
       else if (param->spec_type == SPEC_ASSUMED)
 	assumed_len_exprs = true;
+
+      if (param->spec_type == SPEC_DEFERRED
+	  && !attr->allocatable && !attr->pointer)
+	gfc_error ("The object %qs at %L has a deferred LEN "
+		   "parameter %qs and is neither allocatable "
+		   "nor a pointer", sym->name, &sym->declared_at,
+		   param->name);
+
     }
 
   if (!const_len_exprs
@@ -14723,6 +14818,15 @@ resolve_symbol (gfc_symbol *sym)
 	  gfc_error ("Variable %qs at %L cannot be BIND(C) because it "
 		     "is neither a COMMON block nor declared at the "
 		     "module level scope", sym->name, &(sym->declared_at));
+	  t = false;
+	}
+      else if (sym->ts.type == BT_CHARACTER
+	       && (sym->ts.u.cl == NULL || sym->ts.u.cl->length == NULL
+		   || !gfc_is_constant_expr (sym->ts.u.cl->length)
+		   || mpz_cmp_si (sym->ts.u.cl->length->value.integer, 1) != 0))
+	{
+	  gfc_error ("BIND(C) Variable %qs at %L must have length one",
+		     sym->name, &sym->declared_at);
 	  t = false;
 	}
       else if (sym->common_head != NULL && sym->attr.implicit_type == 0)
@@ -15266,7 +15370,7 @@ check_data_variable (gfc_data_variable *var, locus *where)
       if (!gfc_array_size (e, &size))
 	{
 	  gfc_error ("Nonconstant array section at %L in DATA statement",
-		     &e->where);
+		     where);
 	  mpz_clear (offset);
 	  return false;
 	}
@@ -15892,7 +15996,7 @@ resolve_equivalence (gfc_equiv *eq)
 		{
 		  ref->type = REF_SUBSTRING;
 		  if (start == NULL)
-		    start = gfc_get_int_expr (gfc_default_integer_kind,
+		    start = gfc_get_int_expr (gfc_charlen_int_kind,
 					      NULL, 1);
 		  ref->u.ss.start = start;
 		  if (end == NULL && e->ts.u.cl)
@@ -15936,9 +16040,22 @@ resolve_equivalence (gfc_equiv *eq)
 	  && sym->ns->proc_name->attr.pure
 	  && sym->attr.in_common)
 	{
-	  gfc_error ("Common block member %qs at %L cannot be an EQUIVALENCE "
-		     "object in the pure procedure %qs",
-		     sym->name, &e->where, sym->ns->proc_name->name);
+	  /* Need to check for symbols that may have entered the pure
+	     procedure via a USE statement.  */
+	  bool saw_sym = false;
+	  if (sym->ns->use_stmts)
+	    {
+	      gfc_use_rename *r;
+	      for (r = sym->ns->use_stmts->rename; r; r = r->next)
+		if (strcmp(r->use_name, sym->name) == 0) saw_sym = true;
+	    }
+	  else
+	    saw_sym = true;
+
+	  if (saw_sym)
+	    gfc_error ("COMMON block member %qs at %L cannot be an "
+		       "EQUIVALENCE object in the pure procedure %qs",
+		       sym->name, &e->where, sym->ns->proc_name->name);
 	  break;
 	}
 

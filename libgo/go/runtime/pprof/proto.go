@@ -202,7 +202,7 @@ func (b *profileBuilder) locForPC(addr uintptr) uint64 {
 	// the stack and we have return PCs anyway.
 	frames := runtime.CallersFrames([]uintptr{addr})
 	frame, more := frames.Next()
-	if frame.Function == "runtime.goexit" {
+	if frame.Function == "runtime.goexit" || frame.Function == "runtime.kickoff" {
 		// Short-circuit if we see runtime.goexit so the loop
 		// below doesn't allocate a useless empty location.
 		return 0
@@ -228,7 +228,7 @@ func (b *profileBuilder) locForPC(addr uintptr) uint64 {
 	start := b.pb.startMessage()
 	b.pb.uint64Opt(tagLocation_ID, id)
 	b.pb.uint64Opt(tagLocation_Address, uint64(frame.PC))
-	for frame.Function != "runtime.goexit" {
+	for frame.Function != "runtime.goexit" && frame.Function != "runtime.kickoff" {
 		// Write out each line in frame expansion.
 		funcID := uint64(b.funcs[frame.Function])
 		if funcID == 0 {

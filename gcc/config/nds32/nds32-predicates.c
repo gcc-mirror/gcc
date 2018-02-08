@@ -1,5 +1,5 @@
 /* Predicate functions of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -19,6 +19,8 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* ------------------------------------------------------------------------ */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -335,7 +337,7 @@ nds32_can_use_bclr_p (int ival)
   one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (~ival));
 
   /* 'bclr' is a performance extension instruction.  */
-  return (TARGET_PERF_EXT && (one_bit_count == 1));
+  return (TARGET_EXT_PERF && (one_bit_count == 1));
 }
 
 /* Function to check if 'bset' instruction can be used with IVAL.  */
@@ -350,7 +352,7 @@ nds32_can_use_bset_p (int ival)
   one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (ival));
 
   /* 'bset' is a performance extension instruction.  */
-  return (TARGET_PERF_EXT && (one_bit_count == 1));
+  return (TARGET_EXT_PERF && (one_bit_count == 1));
 }
 
 /* Function to check if 'btgl' instruction can be used with IVAL.  */
@@ -365,7 +367,7 @@ nds32_can_use_btgl_p (int ival)
   one_bit_count = popcount_hwi ((unsigned HOST_WIDE_INT) (ival));
 
   /* 'btgl' is a performance extension instruction.  */
-  return (TARGET_PERF_EXT && (one_bit_count == 1));
+  return (TARGET_EXT_PERF && (one_bit_count == 1));
 }
 
 /* Function to check if 'bitci' instruction can be used with IVAL.  */

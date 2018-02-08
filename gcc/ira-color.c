@@ -1,5 +1,5 @@
 /* IRA allocation based on graph coloring.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -300,8 +300,7 @@ allocno_hard_regs_compare (const void *v1p, const void *v2p)
     return 1;
   else if (hv2->cost < hv1->cost)
     return -1;
-  else
-    return 0;
+  return SORTGT (allocno_hard_regs_hasher::hash(hv2), allocno_hard_regs_hasher::hash(hv1));
 }
 
 
@@ -1367,15 +1366,14 @@ update_costs_from_allocno (ira_allocno_t allocno, int hard_regno,
 	      || ALLOCNO_ASSIGNED_P (another_allocno))
 	    continue;
 
-	  if (GET_MODE_SIZE (ALLOCNO_MODE (cp->second)) < GET_MODE_SIZE (mode))
-	    /* If we have different modes use the smallest one.  It is
-	       a sub-register move.  It is hard to predict what LRA
-	       will reload (the pseudo or its sub-register) but LRA
-	       will try to minimize the data movement.  Also for some
-	       register classes bigger modes might be invalid,
-	       e.g. DImode for AREG on x86.  For such cases the
-	       register move cost will be maximal. */
-	    mode = ALLOCNO_MODE (cp->second);
+	  /* If we have different modes use the smallest one.  It is
+	     a sub-register move.  It is hard to predict what LRA
+	     will reload (the pseudo or its sub-register) but LRA
+	     will try to minimize the data movement.  Also for some
+	     register classes bigger modes might be invalid,
+	     e.g. DImode for AREG on x86.  For such cases the
+	     register move cost will be maximal.  */
+	  mode = narrower_subreg_mode (mode, ALLOCNO_MODE (cp->second));
 	  
 	  cost = (cp->second == allocno
 		  ? ira_register_move_cost[mode][rclass][aclass]
@@ -1906,6 +1904,18 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 /* An array used to sort copies.  */
 static ira_copy_t *sorted_copies;
 
+/* If allocno A is a cap, return non-cap allocno from which A is
+   created.  Otherwise, return A.  */
+static ira_allocno_t
+get_cap_member (ira_allocno_t a)
+{
+  ira_allocno_t member;
+  
+  while ((member = ALLOCNO_CAP_MEMBER (a)) != NULL)
+    a = member;
+  return a;
+}
+
 /* Return TRUE if live ranges of allocnos A1 and A2 intersect.  It is
    used to find a conflict for new allocnos or allocnos with the
    different allocno classes.  */
@@ -1925,6 +1935,10 @@ allocnos_conflict_by_live_ranges_p (ira_allocno_t a1, ira_allocno_t a2)
       && ORIGINAL_REGNO (reg1) == ORIGINAL_REGNO (reg2))
     return false;
 
+  /* We don't keep live ranges for caps because they can be quite big.
+     Use ranges of non-cap allocno from which caps are created.  */
+  a1 = get_cap_member (a1);
+  a2 = get_cap_member (a2);
   for (i = 0; i < n1; i++)
     {
       ira_object_t c1 = ALLOCNO_OBJECT (a1, i);
@@ -3940,7 +3954,8 @@ coalesced_pseudo_reg_slot_compare (const void *v1p, const void *v2p)
 			     regno_max_ref_mode[regno1]);
   mode2 = wider_subreg_mode (PSEUDO_REGNO_MODE (regno2),
 			     regno_max_ref_mode[regno2]);
-  if ((diff = GET_MODE_SIZE (mode2) - GET_MODE_SIZE (mode1)) != 0)
+  if ((diff = compare_sizes_for_sort (GET_MODE_SIZE (mode2),
+				      GET_MODE_SIZE (mode1))) != 0)
     return diff;
   return regno1 - regno2;
 }
@@ -4027,7 +4042,7 @@ slot_coalesced_allocno_live_ranges_intersect_p (ira_allocno_t allocno, int n)
     {
       int i;
       int nr = ALLOCNO_NUM_OBJECTS (a);
-
+      gcc_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
       for (i = 0; i < nr; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
@@ -4057,6 +4072,7 @@ setup_slot_coalesced_allocno_live_ranges (ira_allocno_t allocno)
        a = ALLOCNO_COALESCE_DATA (a)->next)
     {
       int nr = ALLOCNO_NUM_OBJECTS (a);
+      gcc_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
       for (i = 0; i < nr; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
@@ -4229,9 +4245,10 @@ ira_sort_regnos_for_alter_reg (int *pseudo_regnos, int n,
 	      machine_mode mode = wider_subreg_mode
 		(PSEUDO_REGNO_MODE (ALLOCNO_REGNO (a)),
 		 reg_max_ref_mode[ALLOCNO_REGNO (a)]);
-	      fprintf (ira_dump_file, " a%dr%d(%d,%d)",
-		       ALLOCNO_NUM (a), ALLOCNO_REGNO (a), ALLOCNO_FREQ (a),
-		       GET_MODE_SIZE (mode));
+	      fprintf (ira_dump_file, " a%dr%d(%d,",
+		       ALLOCNO_NUM (a), ALLOCNO_REGNO (a), ALLOCNO_FREQ (a));
+	      print_dec (GET_MODE_SIZE (mode), ira_dump_file, SIGNED);
+	      fprintf (ira_dump_file, ")\n");
 	    }
 
 	  if (a == allocno)
@@ -4495,8 +4512,8 @@ ira_reassign_pseudos (int *spilled_pseudo_regs, int num,
    TOTAL_SIZE.  In the case of failure to find a slot which can be
    used for REGNO, the function returns NULL.  */
 rtx
-ira_reuse_stack_slot (int regno, unsigned int inherent_size,
-		      unsigned int total_size)
+ira_reuse_stack_slot (int regno, poly_uint64 inherent_size,
+		      poly_uint64 total_size)
 {
   unsigned int i;
   int slot_num, best_slot_num;
@@ -4509,8 +4526,8 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
 
   ira_assert (! ira_use_lra_p);
 
-  ira_assert (inherent_size == PSEUDO_REGNO_BYTES (regno)
-	      && inherent_size <= total_size
+  ira_assert (known_eq (inherent_size, PSEUDO_REGNO_BYTES (regno))
+	      && known_le (inherent_size, total_size)
 	      && ALLOCNO_HARD_REGNO (allocno) < 0);
   if (! flag_ira_share_spill_slots)
     return NULL_RTX;
@@ -4533,8 +4550,8 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
 	  slot = &ira_spilled_reg_stack_slots[slot_num];
 	  if (slot->mem == NULL_RTX)
 	    continue;
-	  if (slot->width < total_size
-	      || GET_MODE_SIZE (GET_MODE (slot->mem)) < inherent_size)
+	  if (maybe_lt (slot->width, total_size)
+	      || maybe_lt (GET_MODE_SIZE (GET_MODE (slot->mem)), inherent_size))
 	    continue;
 
 	  EXECUTE_IF_SET_IN_BITMAP (&slot->spilled_regs,
@@ -4586,7 +4603,7 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
     }
   if (x != NULL_RTX)
     {
-      ira_assert (slot->width >= total_size);
+      ira_assert (known_ge (slot->width, total_size));
 #ifdef ENABLE_IRA_CHECKING
       EXECUTE_IF_SET_IN_BITMAP (&slot->spilled_regs,
 				FIRST_PSEUDO_REGISTER, i, bi)
@@ -4615,7 +4632,7 @@ ira_reuse_stack_slot (int regno, unsigned int inherent_size,
    TOTAL_SIZE was allocated for REGNO.  We store this info for
    subsequent ira_reuse_stack_slot calls.  */
 void
-ira_mark_new_stack_slot (rtx x, int regno, unsigned int total_size)
+ira_mark_new_stack_slot (rtx x, int regno, poly_uint64 total_size)
 {
   struct ira_spilled_reg_stack_slot *slot;
   int slot_num;
@@ -4623,7 +4640,7 @@ ira_mark_new_stack_slot (rtx x, int regno, unsigned int total_size)
 
   ira_assert (! ira_use_lra_p);
 
-  ira_assert (PSEUDO_REGNO_BYTES (regno) <= total_size);
+  ira_assert (known_le (PSEUDO_REGNO_BYTES (regno), total_size));
   allocno = ira_regno_allocno_map[regno];
   slot_num = -ALLOCNO_HARD_REGNO (allocno) - 2;
   if (slot_num == -1)

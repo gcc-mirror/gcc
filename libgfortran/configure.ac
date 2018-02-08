@@ -147,6 +147,13 @@ if test "x$GCC" = "xyes"; then
   ## that we'll encounter when compiling our own source files.
   CFLAGS="-std=gnu11 $CFLAGS"
 fi
+
+# Add CET specific flags if CET is enabled
+GCC_CET_FLAGS(CET_FLAGS)
+AM_FCFLAGS="$AM_FCFLAGS $CET_FLAGS"
+AM_CFLAGS="$AM_CFLAGS $CET_FLAGS"
+CFLAGS="$CFLAGS $CET_FLAGS"
+
 AC_SUBST(AM_FCFLAGS)
 AC_SUBST(AM_CFLAGS)
 AC_SUBST(CFLAGS)

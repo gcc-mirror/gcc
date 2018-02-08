@@ -5,13 +5,13 @@
 !
 ! Contributed by Tobias Burnus <burnus@gcc.gnu.org>
 
-module m                                                                        
-type st                                                                         
-  integer , allocatable :: a1                                                   
-end type st                                                                     
-type at                                                                         
-  integer , allocatable :: a2(:)                                                
-end type at                                                                     
+module m
+type st
+  integer , allocatable :: a1
+end type st
+type at
+  integer , allocatable :: a2(:)
+end type at
 
 type t1
   type(st), allocatable :: b1
@@ -52,4 +52,4 @@ if(allocated(na4%b4)) call abort()
 end block
 end
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 32 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 54 "original" } }

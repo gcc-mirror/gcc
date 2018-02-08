@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 
@@ -50,6 +50,7 @@ extern void s390_set_has_landing_pad_p (bool);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
 extern bool s390_function_arg_vector (machine_mode, const_tree);
+extern bool s390_return_addr_from_memory(void);
 #if S390_USE_TARGET_ATTRIBUTE
 extern tree s390_valid_target_attribute_tree (tree args,
 					      struct gcc_options *opts,
@@ -145,6 +146,17 @@ extern int s390_compare_and_branch_condition_mask (rtx);
 extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);
 extern void s390_asm_output_function_label (FILE *, const char *, tree);
 
+enum s390_indirect_branch_type
+  {
+    s390_indirect_branch_type_jump = 0,
+    s390_indirect_branch_type_call,
+    s390_indirect_branch_type_return
+  };
+extern void s390_indirect_branch_via_thunk (unsigned int regno,
+					    unsigned int return_addr_regno,
+					    rtx comparison_operator,
+					    enum s390_indirect_branch_type type);
+extern void s390_indirect_branch_via_inline_thunk (rtx execute_target);
 #endif /* RTX_CODE */
 
 /* s390-c.c routines */

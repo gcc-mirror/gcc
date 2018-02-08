@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,9 @@ package Exp_Util is
 
    --    For an expression occurring in a declaration (declarations always
    --    appear in lists), the actions are similarly inserted into the list
-   --    just before the associated declaration.
+   --    just before the associated declaration. ???Declarations do not always
+   --    appear in lists; in particular, a library unit declaration does not
+   --    appear in a list, and Insert_Action will crash in that case.
 
    --  The following special cases arise:
 

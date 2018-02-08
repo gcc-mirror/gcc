@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -167,8 +167,11 @@ package body Fname is
    is
    begin
       --  Definitely false if longer than 12 characters (8.3)
+      --  except for the Interfaces packages
 
-      if Fname'Length > 12 then
+      if Fname'Length > 12
+        and then Fname (Fname'First .. Fname'First + 1) /= "i-"
+      then
          return False;
       end if;
 

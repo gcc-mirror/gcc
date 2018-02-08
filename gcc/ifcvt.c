@@ -1,5 +1,5 @@
 /* If-conversion support.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -894,7 +894,7 @@ noce_emit_move_insn (rtx x, rtx y)
 {
   machine_mode outmode;
   rtx outer, inner;
-  int bitpos;
+  poly_int64 bitpos;
 
   if (GET_CODE (x) != STRICT_LOW_PART)
     {
@@ -1287,7 +1287,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
   HOST_WIDE_INT itrue, ifalse, diff, tmp;
   int normalize;
   bool can_reverse;
-  machine_mode mode = GET_MODE (if_info->x);;
+  machine_mode mode = GET_MODE (if_info->x);
   rtx common = NULL_RTX;
 
   rtx a = if_info->a;
@@ -1724,12 +1724,12 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
     {
       rtx reg_vtrue = SUBREG_REG (vtrue);
       rtx reg_vfalse = SUBREG_REG (vfalse);
-      unsigned int byte_vtrue = SUBREG_BYTE (vtrue);
-      unsigned int byte_vfalse = SUBREG_BYTE (vfalse);
+      poly_uint64 byte_vtrue = SUBREG_BYTE (vtrue);
+      poly_uint64 byte_vfalse = SUBREG_BYTE (vfalse);
       rtx promoted_target;
 
       if (GET_MODE (reg_vtrue) != GET_MODE (reg_vfalse)
-	  || byte_vtrue != byte_vfalse
+	  || maybe_ne (byte_vtrue, byte_vfalse)
 	  || (SUBREG_PROMOTED_VAR_P (vtrue)
 	      != SUBREG_PROMOTED_VAR_P (vfalse))
 	  || (SUBREG_PROMOTED_GET (vtrue)
@@ -5445,6 +5445,10 @@ if_convert (bool after_combine)
 
   if (optimize == 1)
     df_remove_problem (df_live);
+
+  /* Some non-cold blocks may now be only reachable from cold blocks.
+     Fix that up.  */
+  fixup_partitions ();
 
   checking_verify_flow_info ();
 }

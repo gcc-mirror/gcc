@@ -5,7 +5,7 @@
 
 extern void callme (void) throw();
 
-int
+void
 bar (int i)
 {
   try {

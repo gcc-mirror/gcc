@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -542,6 +542,7 @@ package Rtsfind is
 
      RE_Null,
 
+     RO_CA_Clock_Time,                   -- Ada.Calendar
      RO_CA_Time,                         -- Ada.Calendar
 
      RO_CA_Delay_For,                    -- Ada.Calendar.Delays
@@ -582,6 +583,7 @@ package Rtsfind is
      RE_Names,                           -- Ada.Interrupts.Names
 
      RE_Clock,                           -- Ada.Real_Time
+     RE_Clock_Time,                      -- Ada.Real_Time
      RE_Time_Span,                       -- Ada.Real_Time
      RE_Time_Span_Zero,                  -- Ada.Real_Time
      RO_RT_Time,                         -- Ada.Real_Time
@@ -631,6 +633,7 @@ package Rtsfind is
      RE_Get_Offset_Index,                -- Ada.Tags
      RE_Get_Prim_Op_Kind,                -- Ada.Tags
      RE_Get_Tagged_Kind,                 -- Ada.Tags
+     RE_HT_Link,                         -- Ada.Tags
      RE_Idepth,                          -- Ada.Tags
      RE_Interfaces_Array,                -- Ada.Tags
      RE_Interfaces_Table,                -- Ada.Tags
@@ -1777,6 +1780,7 @@ package Rtsfind is
 
      RE_Null                             => RTU_Null,
 
+     RO_CA_Clock_Time                    => Ada_Calendar,
      RO_CA_Time                          => Ada_Calendar,
 
      RO_CA_Delay_For                     => Ada_Calendar_Delays,
@@ -1817,6 +1821,7 @@ package Rtsfind is
      RE_Names                            => Ada_Interrupts_Names,
 
      RE_Clock                            => Ada_Real_Time,
+     RE_Clock_Time                       => Ada_Real_Time,
      RE_Time_Span                        => Ada_Real_Time,
      RE_Time_Span_Zero                   => Ada_Real_Time,
      RO_RT_Time                          => Ada_Real_Time,
@@ -1866,6 +1871,7 @@ package Rtsfind is
      RE_Get_Offset_Index                 => Ada_Tags,
      RE_Get_Prim_Op_Kind                 => Ada_Tags,
      RE_Get_Tagged_Kind                  => Ada_Tags,
+     RE_HT_Link                          => Ada_Tags,
      RE_Idepth                           => Ada_Tags,
      RE_Interfaces_Array                 => Ada_Tags,
      RE_Interfaces_Table                 => Ada_Tags,

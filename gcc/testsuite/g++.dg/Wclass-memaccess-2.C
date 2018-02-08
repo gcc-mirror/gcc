@@ -53,9 +53,7 @@ void c_cast_uchar (NonTrivial *p)
   __builtin_memset ((unsigned char*)p, 0, sizeof *p);
 }
 
-// A cast to void* does not suppress the warning.  That is (or can be)
-// considered a feature.
 void c_cast_void (NonTrivial *p)
 {
-  __builtin_memset ((void*)p, 0, sizeof *p);   // { dg-warning "\\\[-Wclass-memaccess]" }
+  __builtin_memset ((void*)p, 0, sizeof *p);   // { dg-bogus "\\\[-Wclass-memaccess]" }
 }

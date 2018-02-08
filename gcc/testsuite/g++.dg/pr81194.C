@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O2 -std=c++17 -fno-exceptions" }
+// { dg-additional-options "-Wno-return-type" }
 
 template <class a> struct b { typedef a *c; };
 class e {};

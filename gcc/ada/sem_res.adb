@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,13 +116,6 @@ package body Sem_Res is
    --  subprogram being called, determines whether it is a detectable case of
    --  an infinite recursion, and if so, outputs appropriate messages. Returns
    --  True if an infinite recursion is detected, and False otherwise.
-
-   procedure Check_Initialization_Call (N : Entity_Id; Nam : Entity_Id);
-   --  If the type of the object being initialized uses the secondary stack
-   --  directly or indirectly, create a transient scope for the call to the
-   --  init proc. This is because we do not create transient scopes for the
-   --  initialization of individual components within the init proc itself.
-   --  Could be optimized away perhaps?
 
    procedure Check_No_Direct_Boolean_Operators (N : Node_Id);
    --  N is the node for a logical operator. If the operator is predefined, and
@@ -858,92 +851,6 @@ package body Sem_Res is
       return True;
    end Check_Infinite_Recursion;
 
-   -------------------------------
-   -- Check_Initialization_Call --
-   -------------------------------
-
-   procedure Check_Initialization_Call (N : Entity_Id; Nam : Entity_Id) is
-      Typ : constant Entity_Id := Etype (First_Formal (Nam));
-
-      function Uses_SS (T : Entity_Id) return Boolean;
-      --  Check whether the creation of an object of the type will involve
-      --  use of the secondary stack. If T is a record type, this is true
-      --  if the expression for some component uses the secondary stack, e.g.
-      --  through a call to a function that returns an unconstrained value.
-      --  False if T is controlled, because cleanups occur elsewhere.
-
-      -------------
-      -- Uses_SS --
-      -------------
-
-      function Uses_SS (T : Entity_Id) return Boolean is
-         Comp      : Entity_Id;
-         Expr      : Node_Id;
-         Full_Type : Entity_Id := Underlying_Type (T);
-
-      begin
-         --  Normally we want to use the underlying type, but if it's not set
-         --  then continue with T.
-
-         if not Present (Full_Type) then
-            Full_Type := T;
-         end if;
-
-         if Is_Controlled (Full_Type) then
-            return False;
-
-         elsif Is_Array_Type (Full_Type) then
-            return Uses_SS (Component_Type (Full_Type));
-
-         elsif Is_Record_Type (Full_Type) then
-            Comp := First_Component (Full_Type);
-            while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Nkind (Parent (Comp)) = N_Component_Declaration
-               then
-                  --  The expression for a dynamic component may be rewritten
-                  --  as a dereference, so retrieve original node.
-
-                  Expr := Original_Node (Expression (Parent (Comp)));
-
-                  --  Return True if the expression is a call to a function
-                  --  (including an attribute function such as Image, or a
-                  --  user-defined operator) with a result that requires a
-                  --  transient scope.
-
-                  if (Nkind (Expr) = N_Function_Call
-                       or else Nkind (Expr) in N_Op
-                       or else (Nkind (Expr) = N_Attribute_Reference
-                                 and then Present (Expressions (Expr))))
-                    and then Requires_Transient_Scope (Etype (Expr))
-                  then
-                     return True;
-
-                  elsif Uses_SS (Etype (Comp)) then
-                     return True;
-                  end if;
-               end if;
-
-               Next_Component (Comp);
-            end loop;
-
-            return False;
-
-         else
-            return False;
-         end if;
-      end Uses_SS;
-
-   --  Start of processing for Check_Initialization_Call
-
-   begin
-      --  Establish a transient scope if the type needs it
-
-      if Uses_SS (Typ) then
-         Establish_Transient_Scope (First_Actual (N), Sec_Stack => True);
-      end if;
-   end Check_Initialization_Call;
-
    ---------------------------------------
    -- Check_No_Direct_Boolean_Operators --
    ---------------------------------------
@@ -1030,7 +937,7 @@ package body Sem_Res is
          if Nkind (N) in N_Has_Etype and then Etype (N) = Any_Type then
             return;
          elsif Nkind (N) in N_Has_Chars
-           and then Chars (N) in Error_Name_Or_No_Name
+           and then not Is_Valid_Name (Chars (N))
          then
             return;
          end if;
@@ -1212,7 +1119,7 @@ package body Sem_Res is
       Func      : constant Entity_Id := Entity (Name (N));
       Is_Binary : constant Boolean   := Present (Act2);
       Op_Node   : Node_Id;
-      Opnd_Type : Entity_Id;
+      Opnd_Type : Entity_Id := Empty;
       Orig_Type : Entity_Id := Empty;
       Pack      : Entity_Id;
 
@@ -1523,6 +1430,7 @@ package body Sem_Res is
             --  Operator may be defined in an extension of System
 
             elsif Present (System_Aux_Id)
+              and then Present (Opnd_Type)
               and then Scope (Opnd_Type) = System_Aux_Id
             then
                null;
@@ -2439,22 +2347,27 @@ package body Sem_Res is
                   Set_Entity (N, Seen);
                   Generate_Reference (Seen, N);
 
-               elsif Nkind (N) = N_Case_Expression then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_Character_Literal then
-                  Set_Etype (N, Expr_Type);
-
-               elsif Nkind (N) = N_If_Expression then
+               elsif Nkind_In (N, N_Case_Expression,
+                                  N_Character_Literal,
+                                  N_Delta_Aggregate,
+                                  N_If_Expression)
+               then
                   Set_Etype (N, Expr_Type);
 
                --  AI05-0139-2: Expression is overloaded because type has
                --  implicit dereference. If type matches context, no implicit
-               --  dereference is involved.
+               --  dereference is involved. If the expression is an entity,
+               --  generate a reference to it, as this is not done for an
+               --  overloaded construct during analysis.
 
                elsif Has_Implicit_Dereference (Expr_Type) then
                   Set_Etype (N, Expr_Type);
                   Set_Is_Overloaded (N, False);
+
+                  if Is_Entity_Name (N) then
+                     Generate_Reference (Entity (N), N);
+                  end if;
+
                   exit Interp_Loop;
 
                elsif Is_Overloaded (N)
@@ -2991,6 +2904,13 @@ package body Sem_Res is
             when N_Real_Literal =>
                Resolve_Real_Literal              (N, Ctx_Type);
 
+            when N_Reduction_Expression =>
+               null;
+               --  Resolve (Expression (N),              Ctx_Type);
+
+            when N_Reduction_Expression_Parameter =>
+               null;
+
             when N_Reference =>
                Resolve_Reference                 (N, Ctx_Type);
 
@@ -3138,12 +3058,12 @@ package body Sem_Res is
       Loc    : constant Source_Ptr := Sloc (N);
       A      : Node_Id;
       A_Id   : Entity_Id;
-      A_Typ  : Entity_Id;
+      A_Typ  : Entity_Id := Empty; -- init to avoid warning
       F      : Entity_Id;
       F_Typ  : Entity_Id;
       Prev   : Node_Id := Empty;
       Orig_A : Node_Id;
-      Real_F : Entity_Id;
+      Real_F : Entity_Id := Empty; -- init to avoid warning
 
       Real_Subp : Entity_Id;
       --  If the subprogram being called is an inherited operation for
@@ -3744,6 +3664,21 @@ package body Sem_Res is
            and then Is_Entity_Name (A)
            and then Comes_From_Source (A)
          then
+            --  Annotate the tree by creating a variable reference marker when
+            --  the actual denotes a variable reference, in case the reference
+            --  is folded or optimized away. The variable reference marker is
+            --  automatically saved for later examination by the ABE Processing
+            --  phase. The status of the reference is set as follows:
+
+            --    status   mode
+            --    read     IN, IN OUT
+            --    write    IN OUT, OUT
+
+            Build_Variable_Reference_Marker
+              (N     => A,
+               Read  => Ekind (F) /= E_Out_Parameter,
+               Write => Ekind (F) /= E_In_Parameter);
+
             Orig_A := Entity (A);
 
             if Present (Orig_A) then
@@ -3905,13 +3840,14 @@ package body Sem_Res is
             --  transient scope for it, so that it can receive the proper
             --  finalization list.
 
-            elsif Nkind (A) = N_Function_Call
+            elsif Expander_Active
+              and then Nkind (A) = N_Function_Call
               and then Is_Limited_Record (Etype (F))
               and then not Is_Constrained (Etype (F))
-              and then Expander_Active
-              and then (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
+              and then (Needs_Finalization (Etype (F))
+                         or else Has_Task (Etype (F)))
             then
-               Establish_Transient_Scope (A, Sec_Stack => False);
+               Establish_Transient_Scope (A, Manage_Sec_Stack => False);
                Resolve (A, Etype (F));
 
             --  A small optimization: if one of the actuals is a concatenation
@@ -3922,15 +3858,14 @@ package body Sem_Res is
             --  static string, and we want to preserve warnings involving
             --  sequences of such statements.
 
-            elsif Nkind (A) = N_Op_Concat
+            elsif Expander_Active
+              and then Nkind (A) = N_Op_Concat
               and then Nkind (N) = N_Procedure_Call_Statement
-              and then Expander_Active
-              and then
-                not (Is_Intrinsic_Subprogram (Nam)
-                      and then Chars (Nam) = Name_Asm)
+              and then not (Is_Intrinsic_Subprogram (Nam)
+                             and then Chars (Nam) = Name_Asm)
               and then not Static_Concatenation (A)
             then
-               Establish_Transient_Scope (A, Sec_Stack => False);
+               Establish_Transient_Scope (A, Manage_Sec_Stack => False);
                Resolve (A, Etype (F));
 
             else
@@ -3938,12 +3873,12 @@ package body Sem_Res is
                  and then Is_Array_Type (Etype (F))
                  and then not Same_Ancestor (Etype (F), Etype (Expression (A)))
                  and then
-                  (Is_Limited_Type (Etype (F))
-                    or else Is_Limited_Type (Etype (Expression (A))))
+                   (Is_Limited_Type (Etype (F))
+                     or else Is_Limited_Type (Etype (Expression (A))))
                then
                   Error_Msg_N
-                    ("conversion between unrelated limited array types "
-                     & "not allowed ('A'I-00246)", A);
+                    ("conversion between unrelated limited array types not "
+                     & "allowed ('A'I-00246)", A);
 
                   if Is_Limited_Type (Etype (F)) then
                      Explain_Limited_Type (Etype (F), A);
@@ -3986,10 +3921,12 @@ package body Sem_Res is
                      --  enabled only, otherwise the transient scope will not
                      --  be removed in the expansion of the wrapped construct.
 
-                     if (Is_Controlled (DDT) or else Has_Task (DDT))
-                       and then Expander_Active
+                     if Expander_Active
+                       and then (Needs_Finalization (DDT)
+                                  or else Has_Task (DDT))
                      then
-                        Establish_Transient_Scope (A, Sec_Stack => False);
+                        Establish_Transient_Scope
+                          (A, Manage_Sec_Stack => False);
                      end if;
                   end;
 
@@ -5096,47 +5033,94 @@ package body Sem_Res is
 
       if Nkind (N) = N_Allocator then
 
-         --  An anonymous access discriminant is the definition of a
-         --  coextension.
+         --  Avoid coextension processing for an allocator that is the
+         --  expansion of a build-in-place function call.
 
-         if Ekind (Typ) = E_Anonymous_Access_Type
-           and then Nkind (Associated_Node_For_Itype (Typ)) =
-                      N_Discriminant_Specification
+         if Nkind (Original_Node (N)) = N_Allocator
+           and then Nkind (Expression (Original_Node (N))) =
+                      N_Qualified_Expression
+           and then Nkind (Expression (Expression (Original_Node (N)))) =
+                      N_Function_Call
+           and then Is_Expanded_Build_In_Place_Call
+                      (Expression (Expression (Original_Node (N))))
          then
-            declare
-               Discr : constant Entity_Id :=
-                         Defining_Identifier (Associated_Node_For_Itype (Typ));
-
-            begin
-               Check_Restriction (No_Coextensions, N);
-
-               --  Ada 2012 AI05-0052: If the designated type of the allocator
-               --  is limited, then the allocator shall not be used to define
-               --  the value of an access discriminant unless the discriminated
-               --  type is immutably limited.
-
-               if Ada_Version >= Ada_2012
-                 and then Is_Limited_Type (Desig_T)
-                 and then not Is_Limited_View (Scope (Discr))
-               then
-                  Error_Msg_N
-                    ("only immutably limited types can have anonymous "
-                     & "access discriminants designating a limited type", N);
-               end if;
-            end;
-
-            --  Avoid marking an allocator as a dynamic coextension if it is
-            --  within a static construct.
-
-            if not Is_Static_Coextension (N) then
-               Set_Is_Dynamic_Coextension (N);
-            end if;
-
-         --  Cleanup for potential static coextensions
+            null; -- b-i-p function call case
 
          else
-            Set_Is_Dynamic_Coextension (N, False);
-            Set_Is_Static_Coextension  (N, False);
+            --  An anonymous access discriminant is the definition of a
+            --  coextension.
+
+            if Ekind (Typ) = E_Anonymous_Access_Type
+              and then Nkind (Associated_Node_For_Itype (Typ)) =
+                         N_Discriminant_Specification
+            then
+               declare
+                  Discr : constant Entity_Id :=
+                    Defining_Identifier (Associated_Node_For_Itype (Typ));
+
+               begin
+                  Check_Restriction (No_Coextensions, N);
+
+                  --  Ada 2012 AI05-0052: If the designated type of the
+                  --  allocator is limited, then the allocator shall not
+                  --  be used to define the value of an access discriminant
+                  --  unless the discriminated type is immutably limited.
+
+                  if Ada_Version >= Ada_2012
+                    and then Is_Limited_Type (Desig_T)
+                    and then not Is_Limited_View (Scope (Discr))
+                  then
+                     Error_Msg_N
+                       ("only immutably limited types can have anonymous "
+                        & "access discriminants designating a limited type",
+                        N);
+                  end if;
+               end;
+
+               --  Avoid marking an allocator as a dynamic coextension if it is
+               --  within a static construct.
+
+               if not Is_Static_Coextension (N) then
+                  Set_Is_Dynamic_Coextension (N);
+
+                  --  Finalization and deallocation of coextensions utilizes an
+                  --  approximate implementation which does not directly adhere
+                  --  to the semantic rules. Warn on potential issues involving
+                  --  coextensions.
+
+                  if Is_Controlled (Desig_T) then
+                     Error_Msg_N
+                       ("??coextension will not be finalized when its "
+                        & "associated owner is deallocated or finalized", N);
+                  else
+                     Error_Msg_N
+                       ("??coextension will not be deallocated when its "
+                        & "associated owner is deallocated", N);
+                  end if;
+               end if;
+
+            --  Cleanup for potential static coextensions
+
+            else
+               Set_Is_Dynamic_Coextension (N, False);
+               Set_Is_Static_Coextension  (N, False);
+
+               --  Anonymous access-to-controlled objects are not finalized on
+               --  time because this involves run-time ownership and currently
+               --  this property is not available. In rare cases the object may
+               --  not be finalized at all. Warn on potential issues involving
+               --  anonymous access-to-controlled objects.
+
+               if Ekind (Typ) = E_Anonymous_Access_Type
+                 and then Is_Controlled_Active (Desig_T)
+               then
+                  Error_Msg_N
+                    ("??object designated by anonymous access object might "
+                     & "not be finalized until its enclosing library unit "
+                     & "goes out of scope", N);
+                  Error_Msg_N ("\use named access type instead", N);
+               end if;
+            end if;
          end if;
       end if;
 
@@ -5780,9 +5764,10 @@ package body Sem_Res is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
 
       --  The context imposes a unique interpretation with type Typ on a
       --  procedure or function call. Find the entity of the subprogram that
@@ -5843,6 +5828,10 @@ package body Sem_Res is
                   and then Ekind_In (Entity (Subp), E_Entry, E_Entry_Family))
       then
          Resolve_Entry_Call (N, Typ);
+
+         if Legacy_Elaboration_Checks then
+            Check_Elab_Call (N);
+         end if;
 
          --  Annotate the tree by creating a call marker in case the original
          --  call is transformed by expansion. The call marker is automatically
@@ -6127,6 +6116,10 @@ package body Sem_Res is
                   Set_Etype (N, Typ);
                   Resolve_Indexed_Component (N, Typ);
 
+                  if Legacy_Elaboration_Checks then
+                     Check_Elab_Call (Prefix (N));
+                  end if;
+
                   --  Annotate the tree by creating a call marker in case
                   --  the original call is transformed by expansion. The call
                   --  marker is automatically saved for later examination by
@@ -6362,11 +6355,6 @@ package body Sem_Res is
       --  is already present. It may not be available if e.g. the subprogram is
       --  declared in a child instance.
 
-      --  If this is an initialization call for a type whose construction
-      --  uses the secondary stack, and it is not a nested call to initialize
-      --  a component, we do need to create a transient scope for it. We
-      --  check for this by traversing the type in Check_Initialization_Call.
-
       if Is_Inlined (Nam)
         and then Has_Pragma_Inline (Nam)
         and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
@@ -6382,26 +6370,17 @@ package body Sem_Res is
          null;
 
       elsif Expander_Active
-        and then Is_Type (Etype (Nam))
+        and then Ekind (Nam) = E_Function
         and then Requires_Transient_Scope (Etype (Nam))
-        and then
-          (not Within_Init_Proc
-            or else
-              (not Is_Init_Proc (Nam) and then Ekind (Nam) /= E_Function))
       then
-         Establish_Transient_Scope (N, Sec_Stack => True);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => True);
 
-         --  If the call appears within the bounds of a loop, it will
-         --  be rewritten and reanalyzed, nothing left to do here.
+         --  If the call appears within the bounds of a loop, it will be
+         --  rewritten and reanalyzed, nothing left to do here.
 
          if Nkind (N) /= N_Function_Call then
             return;
          end if;
-
-      elsif Is_Init_Proc (Nam)
-        and then not Within_Init_Proc
-      then
-         Check_Initialization_Call (N, Nam);
       end if;
 
       --  A protected function cannot be called within the definition of the
@@ -6643,6 +6622,10 @@ package body Sem_Res is
       --  All done, evaluate call and deal with elaboration issues
 
       Eval_Call (N);
+
+      if Legacy_Elaboration_Checks then
+         Check_Elab_Call (N);
+      end if;
 
       --  Annotate the tree by creating a call marker in case the original call
       --  is transformed by expansion. The call marker is automatically saved
@@ -7210,9 +7193,13 @@ package body Sem_Res is
       elsif Ekind (E) = E_Generic_Function then
          Error_Msg_N ("illegal use of generic function", N);
 
-      --  In Ada 83 an OUT parameter cannot be read
+      --  In Ada 83 an OUT parameter cannot be read, but attributes of
+      --  array types (i.e. bounds and length) are legal.
 
       elsif Ekind (E) = E_Out_Parameter
+        and then (Nkind (Parent (N)) /= N_Attribute_Reference
+                   or else Is_Scalar_Type (Etype (E)))
+
         and then (Nkind (Parent (N)) in N_Op
                    or else Nkind (Parent (N)) = N_Explicit_Dereference
                    or else Is_Assignment_Or_Object_Expression
@@ -7284,14 +7271,26 @@ package body Sem_Res is
                   & "(SPARK RM 7.1.3(12))", N);
             end if;
 
-            --  The variable may eventually become a constituent of a single
-            --  protected/task type. Record the reference now and verify its
-            --  legality when analyzing the contract of the variable
-            --  (SPARK RM 9.3).
+            --  Check for possible elaboration issues with respect to reads of
+            --  variables. The act of renaming the variable is not considered a
+            --  read as it simply establishes an alias.
 
-            if Ekind (E) = E_Variable then
-               Record_Possible_Part_Of_Reference (E, N);
+            if Legacy_Elaboration_Checks
+              and then Ekind (E) = E_Variable
+              and then Dynamic_Elaboration_Checks
+              and then Nkind (Par) /= N_Object_Renaming_Declaration
+            then
+               Check_Elab_Call (N);
             end if;
+         end if;
+
+         --  The variable may eventually become a constituent of a single
+         --  protected/task type. Record the reference now and verify its
+         --  legality when analyzing the contract of the variable
+         --  (SPARK RM 9.3).
+
+         if Ekind (E) = E_Variable then
+            Record_Possible_Part_Of_Reference (E, N);
          end if;
 
          --  A Ghost entity must appear in a specific context
@@ -7779,6 +7778,9 @@ package body Sem_Res is
             Set_Is_Elaboration_Checks_OK_Node
               (Entry_Call, Is_Elaboration_Checks_OK_Node (N));
 
+            Set_Is_Elaboration_Warnings_OK_Node
+              (Entry_Call, Is_Elaboration_Warnings_OK_Node (N));
+
             Set_Is_SPARK_Mode_On_Node
               (Entry_Call, Is_SPARK_Mode_On_Node (N));
 
@@ -7786,13 +7788,13 @@ package body Sem_Res is
             Set_Analyzed (N, True);
          end;
 
-      --  Protected functions can return on the secondary stack, in which
-      --  case we must trigger the transient scope mechanism.
+      --  Protected functions can return on the secondary stack, in which case
+      --  we must trigger the transient scope mechanism.
 
       elsif Expander_Active
         and then Requires_Transient_Scope (Etype (Nam))
       then
-         Establish_Transient_Scope (N, Sec_Stack => True);
+         Establish_Transient_Scope (N, Manage_Sec_Stack => True);
       end if;
    end Resolve_Entry_Call;
 
@@ -8978,6 +8980,20 @@ package body Sem_Res is
                   Alt := Next (Alt);
                end loop;
             end;
+         end if;
+
+         --  RM 4.5.2 (28.1/3) specifies that for types other than records or
+         --  limited types, evaluation of a membership test uses the predefined
+         --  equality for the type. This may be confusing to users, and the
+         --  following warning appears useful for the most common case.
+
+         if Is_Scalar_Type (Ltyp)
+           and then Present (Get_User_Defined_Eq (Ltyp))
+         then
+            Error_Msg_NE
+              ("membership test on& uses predefined equality?", N, Ltyp);
+            Error_Msg_N
+              ("\even if user-defined equality exists (RM 4.5.2 (28.1/3)?", N);
          end if;
       end Resolve_Set_Membership;
 

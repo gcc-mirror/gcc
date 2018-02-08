@@ -11,7 +11,8 @@ void f1() { auto [ x ] = a1; }	// { dg-error "is not an integral constant expres
 
 struct A2 { int i,j; } a2;
 template<> struct std::tuple_size<A2> { enum { value = 5 }; };
-void f2() { auto [ x ] = a2; }	// { dg-error "decomposes into 5" }
+void f2() { auto [ x ] = a2; }	// { dg-error "only 1 name provided" }
+			        // { dg-message "decomposes into 5" "" { target *-*-* } .-1 }
 
 struct A3 { int i,j; } a3;
 template<> struct std::tuple_size<A3> { enum { value = 1 }; };

@@ -1,5 +1,5 @@
 /* brig-code-entry-handler.h -- a gccbrig base class
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
    Contributed by Pekka Jaaskelainen <pekka.jaaskelainen@parmance.com>
    for General Processor Tech.
 
@@ -89,6 +89,7 @@ protected:
   tree build_h2f_conversion (tree source);
 
   tree_stl_vec build_operands (const BrigInstBase &brig_inst);
+  void analyze_operands (const BrigInstBase &brig_inst);
   tree build_output_assignment (const BrigInstBase &brig_inst, tree output,
 				tree inst_expr);
 
@@ -102,6 +103,11 @@ protected:
   /* HSAIL-specific builtin functions not yet integrated to gcc.  */
 
   static builtin_map s_custom_builtins;
+
+private:
+
+  tree_stl_vec build_or_analyze_operands (const BrigInstBase &brig_inst,
+					  bool analyze);
 };
 
 /* Implement the Visitor software pattern for performing various actions on

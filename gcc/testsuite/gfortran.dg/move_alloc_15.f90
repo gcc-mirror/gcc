@@ -84,5 +84,5 @@ contains
     end do
   end subroutine
 end program name
-! { dg-final { scan-tree-dump-times "__builtin_malloc" 11 "original" } }
-! { dg-final { scan-tree-dump-times "__builtin_free" 11 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc" 14 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 14 "original" } }

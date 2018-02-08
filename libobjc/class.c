@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup and Dennis Glatting.
 
    Lock-free class table code designed and written from scratch by
@@ -153,14 +153,16 @@ static objc_mutex_t __class_table_lock = NULL;
    string, and HASH the computed hash of the string; CLASS_NAME is
    untouched.  */
 
-#define CLASS_TABLE_HASH(INDEX, HASH, CLASS_NAME)          \
-  HASH = 0;                                                  \
-  for (INDEX = 0; CLASS_NAME[INDEX] != '\0'; INDEX++)        \
-    {                                                        \
-      HASH = (HASH << 4) ^ (HASH >> 28) ^ CLASS_NAME[INDEX]; \
-    }                                                        \
-                                                             \
-  HASH = (HASH ^ (HASH >> 10) ^ (HASH >> 20)) & CLASS_TABLE_MASK;
+#define CLASS_TABLE_HASH(INDEX, HASH, CLASS_NAME)			\
+  do {									\
+    HASH = 0;								\
+    for (INDEX = 0; CLASS_NAME[INDEX] != '\0'; INDEX++)			\
+      {									\
+	HASH = (HASH << 4) ^ (HASH >> 28) ^ CLASS_NAME[INDEX];		\
+      }									\
+									\
+    HASH = (HASH ^ (HASH >> 10) ^ (HASH >> 20)) & CLASS_TABLE_MASK;	\
+  } while (0)
 
 /* Setup the table.  */
 static void

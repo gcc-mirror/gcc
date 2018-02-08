@@ -1,5 +1,5 @@
 /* simple-object-common.h -- common structs for object file manipulation.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -145,7 +145,7 @@ struct simple_object_functions
   /* Copy LTO debug sections.  */
   const char *(*copy_lto_debug_sections) (simple_object_read *sobj,
 					  simple_object_write *dobj,
-					  int (*pfn) (const char **),
+					  char *(*pfn) (const char *),
 					  int *err);
 };
 

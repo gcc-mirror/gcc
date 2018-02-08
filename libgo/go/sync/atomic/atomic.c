@@ -26,7 +26,7 @@ int64_t
 SwapInt64 (int64_t *addr, int64_t new)
 {
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -48,7 +48,7 @@ uint64_t
 SwapUint64 (uint64_t *addr, uint64_t new)
 {
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -215,7 +215,7 @@ LoadInt64 (int64_t *addr)
   int64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, v))
     v = *addr;
@@ -247,7 +247,7 @@ LoadUint64 (uint64_t *addr)
   uint64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, v))
     v = *addr;
@@ -308,7 +308,7 @@ StoreInt64 (int64_t *addr, int64_t val)
   int64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, val))
     v = *addr;
@@ -338,7 +338,7 @@ StoreUint64 (uint64_t *addr, uint64_t val)
   uint64_t v;
 
   if (((uintptr_t) addr & 7) != 0)
-    addr = NULL;
+    panicmem ();
   v = *addr;
   while (! __sync_bool_compare_and_swap (addr, v, val))
     v = *addr;

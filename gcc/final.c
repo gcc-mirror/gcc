@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,8 +91,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef DBX_DEBUGGING_INFO
 #include "dbxout.h"
 #endif
-
-#include "sdbout.h"
 
 /* Most ports that aren't using cc0 don't need to define CC_STATUS_INIT.
    So define a null default for it to save conditionalization later.  */
@@ -198,7 +196,7 @@ static int dialect_number;
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
 rtx current_insn_predicate;
 
-/* True if printing into -fdump-final-insns= dump.  */   
+/* True if printing into -fdump-final-insns= dump.  */
 bool final_insns_dump_p;
 
 /* True if profile_function should be called, but hasn't been called yet.  */
@@ -663,16 +661,13 @@ insn_current_reference_address (rtx_insn *branch)
     }
 }
 
-/* Compute branch alignments based on frequency information in the
-   CFG.  */
+/* Compute branch alignments based on CFG profile.  */
 
 unsigned int
 compute_alignments (void)
 {
   int log, max_skip, max_log;
   basic_block bb;
-  int freq_max = 0;
-  int freq_threshold = 0;
 
   if (label_align)
     {
@@ -695,17 +690,19 @@ compute_alignments (void)
       flow_loops_dump (dump_file, NULL, 1);
     }
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-  FOR_EACH_BB_FN (bb, cfun)
-    if (bb->frequency > freq_max)
-      freq_max = bb->frequency;
-  freq_threshold = freq_max / PARAM_VALUE (PARAM_ALIGN_THRESHOLD);
+  profile_count count_threshold = cfun->cfg->count_max.apply_scale
+		 (1, PARAM_VALUE (PARAM_ALIGN_THRESHOLD));
 
   if (dump_file)
-    fprintf (dump_file, "freq_max: %i\n",freq_max);
+    {
+      fprintf (dump_file, "count_max: ");
+      cfun->cfg->count_max.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
   FOR_EACH_BB_FN (bb, cfun)
     {
       rtx_insn *label = BB_HEAD (bb);
-      int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
+      bool has_fallthru = 0;
       edge e;
       edge_iterator ei;
 
@@ -714,34 +711,41 @@ compute_alignments (void)
 	{
 	  if (dump_file)
 	    fprintf (dump_file,
-		     "BB %4i freq %4i loop %2i loop_depth %2i skipped.\n",
-		     bb->index, bb->frequency, bb->loop_father->num,
+		     "BB %4i loop %2i loop_depth %2i skipped.\n",
+		     bb->index,
+		     bb->loop_father->num,
 		     bb_loop_depth (bb));
 	  continue;
 	}
       max_log = LABEL_ALIGN (label);
       max_skip = targetm.asm_out.label_align_max_skip (label);
+      profile_count fallthru_count = profile_count::zero ();
+      profile_count branch_count = profile_count::zero ();
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  if (e->flags & EDGE_FALLTHRU)
-	    has_fallthru = 1, fallthru_frequency += EDGE_FREQUENCY (e);
+	    has_fallthru = 1, fallthru_count += e->count ();
 	  else
-	    branch_frequency += EDGE_FREQUENCY (e);
+	    branch_count += e->count ();
 	}
       if (dump_file)
 	{
-	  fprintf (dump_file, "BB %4i freq %4i loop %2i loop_depth"
-		   " %2i fall %4i branch %4i",
-		   bb->index, bb->frequency, bb->loop_father->num,
-		   bb_loop_depth (bb),
-		   fallthru_frequency, branch_frequency);
+	  fprintf (dump_file, "BB %4i loop %2i loop_depth"
+		   " %2i fall ",
+		   bb->index, bb->loop_father->num,
+		   bb_loop_depth (bb));
+	  fallthru_count.dump (dump_file);
+	  fprintf (dump_file, " branch ");
+	  branch_count.dump (dump_file);
 	  if (!bb->loop_father->inner && bb->loop_father->num)
 	    fprintf (dump_file, " inner_loop");
 	  if (bb->loop_father->header == bb)
 	    fprintf (dump_file, " loop_header");
 	  fprintf (dump_file, "\n");
 	}
+      if (!fallthru_count.initialized_p () || !branch_count.initialized_p ())
+	continue;
 
       /* There are two purposes to align block with no fallthru incoming edge:
 	 1) to avoid fetch stalls when branch destination is near cache boundary
@@ -754,10 +758,11 @@ compute_alignments (void)
 	 when function is called.  */
 
       if (!has_fallthru
-	  && (branch_frequency > freq_threshold
-	      || (bb->frequency > bb->prev_bb->frequency * 10
-		  && (bb->prev_bb->frequency
-		      <= ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency / 2))))
+	  && (branch_count > count_threshold
+	      || (bb->count > bb->prev_bb->count.apply_scale (10, 1)
+		  && (bb->prev_bb->count
+		      <= ENTRY_BLOCK_PTR_FOR_FN (cfun)
+			   ->count.apply_scale (1, 2)))))
 	{
 	  log = JUMP_ALIGN (label);
 	  if (dump_file)
@@ -774,9 +779,10 @@ compute_alignments (void)
 	  && !(single_succ_p (bb)
 	       && single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	  && optimize_bb_for_speed_p (bb)
-	  && branch_frequency + fallthru_frequency > freq_threshold
-	  && (branch_frequency
-	      > fallthru_frequency * PARAM_VALUE (PARAM_ALIGN_LOOP_ITERATIONS)))
+	  && branch_count + fallthru_count > count_threshold
+	  && (branch_count
+	      > fallthru_count.apply_scale
+		    (PARAM_VALUE (PARAM_ALIGN_LOOP_ITERATIONS), 1)))
 	{
 	  log = LOOP_ALIGN (label);
 	  if (dump_file)
@@ -798,7 +804,7 @@ compute_alignments (void)
 
 /* Grow the LABEL_ALIGN array after new labels are created.  */
 
-static void 
+static void
 grow_label_align (void)
 {
   int old = max_labelno;
@@ -1501,72 +1507,6 @@ asm_str_count (const char *templ)
   return count;
 }
 
-/* ??? This is probably the wrong place for these.  */
-/* Structure recording the mapping from source file and directory
-   names at compile time to those to be embedded in debug
-   information.  */
-struct debug_prefix_map
-{
-  const char *old_prefix;
-  const char *new_prefix;
-  size_t old_len;
-  size_t new_len;
-  struct debug_prefix_map *next;
-};
-
-/* Linked list of such structures.  */
-static debug_prefix_map *debug_prefix_maps;
-
-
-/* Record a debug file prefix mapping.  ARG is the argument to
-   -fdebug-prefix-map and must be of the form OLD=NEW.  */
-
-void
-add_debug_prefix_map (const char *arg)
-{
-  debug_prefix_map *map;
-  const char *p;
-
-  p = strchr (arg, '=');
-  if (!p)
-    {
-      error ("invalid argument %qs to -fdebug-prefix-map", arg);
-      return;
-    }
-  map = XNEW (debug_prefix_map);
-  map->old_prefix = xstrndup (arg, p - arg);
-  map->old_len = p - arg;
-  p++;
-  map->new_prefix = xstrdup (p);
-  map->new_len = strlen (p);
-  map->next = debug_prefix_maps;
-  debug_prefix_maps = map;
-}
-
-/* Perform user-specified mapping of debug filename prefixes.  Return
-   the new name corresponding to FILENAME.  */
-
-const char *
-remap_debug_filename (const char *filename)
-{
-  debug_prefix_map *map;
-  char *s;
-  const char *name;
-  size_t name_len;
-
-  for (map = debug_prefix_maps; map; map = map->next)
-    if (filename_ncmp (filename, map->old_prefix, map->old_len) == 0)
-      break;
-  if (!map)
-    return filename;
-  name = filename + map->old_len;
-  name_len = strlen (name) + 1;
-  s = (char *) alloca (name_len + map->new_len);
-  memcpy (s, map->new_prefix, map->new_len);
-  memcpy (s + map->new_len, name, name_len);
-  return ggc_strdup (s);
-}
-
 /* Return true if DWARF2 debug info can be emitted for DECL.  */
 
 static bool
@@ -1646,7 +1586,6 @@ reemit_insn_block_notes (void)
 {
   tree cur_block = DECL_INITIAL (cfun->decl);
   rtx_insn *insn;
-  rtx_note *note;
 
   insn = get_insns ();
   for (; insn; insn = NEXT_INSN (insn))
@@ -1654,17 +1593,29 @@ reemit_insn_block_notes (void)
       tree this_block;
 
       /* Prevent lexical blocks from straddling section boundaries.  */
-      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
-        {
-          for (tree s = cur_block; s != DECL_INITIAL (cfun->decl);
-               s = BLOCK_SUPERCONTEXT (s))
-            {
-              rtx_note *note = emit_note_before (NOTE_INSN_BLOCK_END, insn);
-              NOTE_BLOCK (note) = s;
-              note = emit_note_after (NOTE_INSN_BLOCK_BEG, insn);
-              NOTE_BLOCK (note) = s;
-            }
-        }
+      if (NOTE_P (insn))
+	switch (NOTE_KIND (insn))
+	  {
+	  case NOTE_INSN_SWITCH_TEXT_SECTIONS:
+	    {
+	      for (tree s = cur_block; s != DECL_INITIAL (cfun->decl);
+		   s = BLOCK_SUPERCONTEXT (s))
+		{
+		  rtx_note *note = emit_note_before (NOTE_INSN_BLOCK_END, insn);
+		  NOTE_BLOCK (note) = s;
+		  note = emit_note_after (NOTE_INSN_BLOCK_BEG, insn);
+		  NOTE_BLOCK (note) = s;
+		}
+	    }
+	    break;
+
+	  case NOTE_INSN_BEGIN_STMT:
+	    this_block = LOCATION_BLOCK (NOTE_MARKER_LOCATION (insn));
+	    goto set_cur_block_to_this_block;
+
+	  default:
+	    continue;
+	}
 
       if (!active_insn_p (insn))
         continue;
@@ -1685,6 +1636,7 @@ reemit_insn_block_notes (void)
 	    this_block = choose_inner_scope (this_block,
 					     insn_scope (body->insn (i)));
 	}
+    set_cur_block_to_this_block:
       if (! this_block)
 	{
 	  if (INSN_LOCATION (insn) == UNKNOWN_LOCATION)
@@ -1701,7 +1653,7 @@ reemit_insn_block_notes (void)
     }
 
   /* change_scope emits before the insn, not after.  */
-  note = emit_note (NOTE_INSN_DELETED);
+  rtx_note *note = emit_note (NOTE_INSN_DELETED);
   change_scope (note, cur_block, DECL_INITIAL (cfun->decl));
   delete_insn (note);
 
@@ -1828,14 +1780,15 @@ final_start_function (rtx_insn *first, FILE *file,
       TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
     }
 
+  HOST_WIDE_INT min_frame_size = constant_lower_bound (get_frame_size ());
   if (warn_frame_larger_than
-    && get_frame_size () > frame_larger_than_size)
-  {
+      && min_frame_size > frame_larger_than_size)
+    {
       /* Issue a warning */
       warning (OPT_Wframe_larger_than_,
-               "the frame size of %wd bytes is larger than %wd bytes",
-               get_frame_size (), frame_larger_than_size);
-  }
+	       "the frame size of %wd bytes is larger than %wd bytes",
+	       min_frame_size, frame_larger_than_size);
+    }
 
   /* First output the function prologue: code to set up the stack frame.  */
   targetm.asm_out.function_prologue (file);
@@ -1944,8 +1897,6 @@ dump_basic_block_info (FILE *file, rtx_insn *insn, basic_block *start_to_bb,
       edge_iterator ei;
 
       fprintf (file, "%s BLOCK %d", ASM_COMMENT_START, bb->index);
-      if (bb->frequency)
-        fprintf (file, " freq:%d", bb->frequency);
       if (bb->count.initialized_p ())
 	{
           fprintf (file, ", count:");
@@ -2206,8 +2157,17 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	  in_cold_section_p = !in_cold_section_p;
 
+	  if (in_cold_section_p)
+	    cold_function_name
+	      = clone_function_name (current_function_decl, "cold");
+
 	  if (dwarf2out_do_frame ())
-	    dwarf2out_switch_text_section ();
+	    {
+	      dwarf2out_switch_text_section ();
+	      if (!dwarf2_debug_info_emitted_p (current_function_decl)
+		  && !DECL_IGNORED_P (current_function_decl))
+		debug_hooks->switch_text_section ();
+	    }
 	  else if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->switch_text_section ();
 
@@ -2219,8 +2179,6 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	     suffixing "cold" to the original function's name.  */
 	  if (in_cold_section_p)
 	    {
-	      cold_function_name
-		= clone_function_name (current_function_decl, "cold");
 #ifdef ASM_DECLARE_COLD_FUNCTION_NAME
 	      ASM_DECLARE_COLD_FUNCTION_NAME (asm_out_file,
 					      IDENTIFIER_POINTER
@@ -2328,8 +2286,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
 	      BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn)) = in_cold_section_p;
 	    }
-	  if (write_symbols == DBX_DEBUG
-	      || write_symbols == SDB_DEBUG)
+	  if (write_symbols == DBX_DEBUG)
 	    {
 	      location_t *locus_ptr
 		= block_nonartificial_location (NOTE_BLOCK (insn));
@@ -2363,8 +2320,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      gcc_assert (BLOCK_IN_COLD_SECTION_P (NOTE_BLOCK (insn))
 			  == in_cold_section_p);
 	    }
-	  if (write_symbols == DBX_DEBUG
-	      || write_symbols == SDB_DEBUG)
+	  if (write_symbols == DBX_DEBUG)
 	    {
 	      tree outer_block = BLOCK_SUPERCONTEXT (NOTE_BLOCK (insn));
 	      location_t *locus_ptr
@@ -2402,6 +2358,17 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_CALL_ARG_LOCATION:
 	  if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->var_location (insn);
+	  break;
+
+	case NOTE_INSN_BEGIN_STMT:
+	  gcc_checking_assert (cfun->debug_nonbind_markers);
+	  if (!DECL_IGNORED_P (current_function_decl)
+	      && notice_source_line (insn, NULL))
+	    {
+	      (*debug_hooks->source_line) (last_linenum, last_columnnum,
+					   last_filename, last_discriminator,
+					   true);
+	    }
 	  break;
 
 	default:
@@ -2490,7 +2457,15 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	rtx body = PATTERN (insn);
 	int insn_code_number;
 	const char *templ;
-	bool is_stmt;
+	bool is_stmt, *is_stmt_p;
+
+	if (MAY_HAVE_DEBUG_MARKER_INSNS && cfun->debug_nonbind_markers)
+	  {
+	    is_stmt = false;
+	    is_stmt_p = NULL;
+	  }
+	else
+	  is_stmt_p = &is_stmt;
 
 	/* Reset this early so it is correct for ASM statements.  */
 	current_insn_predicate = NULL_RTX;
@@ -2593,7 +2568,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	/* Output this line note if it is the first or the last line
 	   note in a row.  */
 	if (!DECL_IGNORED_P (current_function_decl)
-	    && notice_source_line (insn, &is_stmt))
+	    && notice_source_line (insn, is_stmt_p))
 	  {
 	    if (flag_verbose_asm)
 	      asm_show_source (last_filename, last_linenum);
@@ -3086,7 +3061,22 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
   const char *filename;
   int linenum, columnnum;
 
-  if (override_filename)
+  if (NOTE_MARKER_P (insn))
+    {
+      location_t loc = NOTE_MARKER_LOCATION (insn);
+      expanded_location xloc = expand_location (loc);
+      if (xloc.line == 0)
+	{
+	  gcc_checking_assert (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION
+			       || LOCATION_LOCUS (loc) == BUILTINS_LOCATION);
+	  return false;
+	}
+      filename = xloc.file;
+      linenum = xloc.line;
+      columnnum = xloc.column;
+      force_source_line = true;
+    }
+  else if (override_filename)
     {
       filename = override_filename;
       linenum = override_linenum;
@@ -3119,7 +3109,8 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       last_linenum = linenum;
       last_columnnum = columnnum;
       last_discriminator = discriminator;
-      *is_stmt = true;
+      if (is_stmt)
+	*is_stmt = true;
       high_block_linenum = MAX (last_linenum, high_block_linenum);
       high_function_linenum = MAX (last_linenum, high_function_linenum);
       return true;
@@ -3131,7 +3122,8 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
          output the line table entry with is_stmt false so the
          debugger does not treat this as a breakpoint location.  */
       last_discriminator = discriminator;
-      *is_stmt = false;
+      if (is_stmt)
+	*is_stmt = false;
       return true;
     }
 
@@ -3194,7 +3186,7 @@ alter_subreg (rtx *xp, bool final_p)
      We are required to.  */
   if (MEM_P (y))
     {
-      int offset = SUBREG_BYTE (x);
+      poly_int64 offset = SUBREG_BYTE (x);
 
       /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
 	 contains 0 instead of the proper offset.  See simplify_subreg.  */
@@ -3217,7 +3209,7 @@ alter_subreg (rtx *xp, bool final_p)
 	{
 	  /* Simplify_subreg can't handle some REG cases, but we have to.  */
 	  unsigned int regno;
-	  HOST_WIDE_INT offset;
+	  poly_int64 offset;
 
 	  regno = subreg_regno (x);
 	  if (subreg_lowpart_p (x))
@@ -3460,16 +3452,20 @@ output_asm_name (void)
 {
   if (debug_insn)
     {
-      int num = INSN_CODE (debug_insn);
-      fprintf (asm_out_file, "\t%s %d\t%s",
-	       ASM_COMMENT_START, INSN_UID (debug_insn),
-	       insn_data[num].name);
-      if (insn_data[num].n_alternatives > 1)
-	fprintf (asm_out_file, "/%d", which_alternative + 1);
+      fprintf (asm_out_file, "\t%s %d\t",
+	       ASM_COMMENT_START, INSN_UID (debug_insn));
 
+      fprintf (asm_out_file, "[c=%d",
+	       insn_cost (debug_insn, optimize_insn_for_speed_p ()));
       if (HAVE_ATTR_length)
-	fprintf (asm_out_file, "\t[length = %d]",
+	fprintf (asm_out_file, " l=%d",
 		 get_attr_length (debug_insn));
+      fprintf (asm_out_file, "]  ");
+
+      int num = INSN_CODE (debug_insn);
+      fprintf (asm_out_file, "%s", insn_data[num].name);
+      if (insn_data[num].n_alternatives > 1)
+	fprintf (asm_out_file, "/%d", which_alternative);
 
       /* Clear this so only the first assembler insn
 	 of any rtl insn will get the special comment for -dp.  */
@@ -3814,6 +3810,10 @@ output_asm_insn (const char *templ, rtx *operands)
       default:
 	putc (c, asm_out_file);
       }
+
+  /* Try to keep the asm a bit more readable.  */
+  if ((flag_verbose_asm || flag_print_asm_name) && strlen (templ) < 9)
+    putc ('\t', asm_out_file);
 
   /* Write out the variable names for operands, if we know them.  */
   if (flag_verbose_asm)
@@ -4448,11 +4448,9 @@ leaf_renumber_regs_insn (rtx in_rtx)
 	break;
 
       case 'E':
-	if (NULL != XVEC (in_rtx, i))
-	  {
-	    for (j = 0; j < XVECLEN (in_rtx, i); j++)
-	      leaf_renumber_regs_insn (XVECEXP (in_rtx, i, j));
-	  }
+	if (XVEC (in_rtx, i) != NULL)
+	  for (j = 0; j < XVECLEN (in_rtx, i); j++)
+	    leaf_renumber_regs_insn (XVECEXP (in_rtx, i, j));
 	break;
 
       case 'S':
@@ -4460,6 +4458,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
       case '0':
       case 'i':
       case 'w':
+      case 'p':
       case 'n':
       case 'u':
 	break;
@@ -4475,6 +4474,11 @@ static unsigned int
 rest_of_handle_final (void)
 {
   const char *fnname = get_fnname_from_decl (current_function_decl);
+
+  /* Turn debug markers into notes if the var-tracking pass has not
+     been invoked.  */
+  if (!flag_var_tracking && MAY_HAVE_DEBUG_MARKER_INSNS)
+    delete_vta_debug_insns (false);
 
   assemble_start_function (current_function_decl, fnname);
   final_start_function (get_insns (), asm_out_file, optimize);
@@ -4633,7 +4637,7 @@ rest_of_clean_state (void)
 	{
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  if (flag_compare_debug_opt || flag_compare_debug)
-	    dump_flags |= TDF_NOUID;
+	    dump_flags |= TDF_NOUID | TDF_COMPARE_DEBUG;
 	  dump_function_header (final_output, current_function_decl,
 				dump_flags);
 	  final_insns_dump_p = true;
@@ -4663,6 +4667,7 @@ rest_of_clean_state (void)
       if (final_output
 	  && (!NOTE_P (insn) ||
 	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
+	       && NOTE_KIND (insn) != NOTE_INSN_BEGIN_STMT
 	       && NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
@@ -4683,12 +4688,6 @@ rest_of_clean_state (void)
 	  flag_dump_final_insns = NULL;
 	}
     }
-
-  /* In case the function was not output,
-     don't leave any temporary anonymous types
-     queued up for sdb output.  */
-  if (SDB_DEBUGGING_INFO && write_symbols == SDB_DEBUG)
-    sdbout_types (NULL_TREE);
 
   flag_rerun_cse_after_global_opts = 0;
   reload_completed = 0;

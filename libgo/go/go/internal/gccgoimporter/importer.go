@@ -104,12 +104,14 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		// TODO(pcc): Read the archive directly instead of using "ar".
 		f.Close()
 		closer = nil
+		var cmd *exec.Cmd
 
-		cmd := exec.Command("ar", "p", fpath)
 		if runtime.GOOS == "aix" && runtime.GOARCH == "ppc64" {
 			// AIX puts both 32-bit and 64-bit objects in the same archive.
 			// Tell the AIX "ar" command to only care about 64-bit objects.
-			cmd.Env = append(os.Environ(), "OBJECT_MODE=64")
+			cmd = exec.Command("ar", "-X64", "p", fpath)
+		} else {
+			cmd = exec.Command("ar", "p", fpath)
 		}
 		var out []byte
 		out, err = cmd.Output()
@@ -155,25 +157,53 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 // the map entry. Otherwise, the importer must load the package data for the
 // given path into a new *Package, record it in imports map, and return the
 // package.
-type Importer func(imports map[string]*types.Package, path string) (*types.Package, error)
+type Importer func(imports map[string]*types.Package, path, srcDir string, lookup func(string) (io.ReadCloser, error)) (*types.Package, error)
 
 func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Importer {
-	return func(imports map[string]*types.Package, pkgpath string) (pkg *types.Package, err error) {
+	return func(imports map[string]*types.Package, pkgpath, srcDir string, lookup func(string) (io.ReadCloser, error)) (pkg *types.Package, err error) {
+		// TODO(gri): Use srcDir.
+		// Or not. It's possible that srcDir will fade in importance as
+		// the go command and other tools provide a translation table
+		// for relative imports (like ./foo or vendored imports).
 		if pkgpath == "unsafe" {
 			return types.Unsafe, nil
 		}
 
-		fpath, err := findExportFile(searchpaths, pkgpath)
-		if err != nil {
-			return
+		var reader io.ReadSeeker
+		var fpath string
+		if lookup != nil {
+			if p := imports[pkgpath]; p != nil && p.Complete() {
+				return p, nil
+			}
+			rc, err := lookup(pkgpath)
+			if err == nil {
+				defer rc.Close()
+				rs, ok := rc.(io.ReadSeeker)
+				if !ok {
+					return nil, fmt.Errorf("gccgo importer requires lookup to return an io.ReadSeeker, have %T", rc)
+				}
+				reader = rs
+				fpath = "<lookup " + pkgpath + ">"
+				// Take name from Name method (like on os.File) if present.
+				if n, ok := rc.(interface{ Name() string }); ok {
+					fpath = n.Name()
+				}
+			}
 		}
+		if reader == nil {
+			fpath, err = findExportFile(searchpaths, pkgpath)
+			if err != nil {
+				return nil, err
+			}
 
-		reader, closer, err := openExportFile(fpath)
-		if err != nil {
-			return
-		}
-		if closer != nil {
-			defer closer.Close()
+			r, closer, err := openExportFile(fpath)
+			if err != nil {
+				return nil, err
+			}
+			if closer != nil {
+				defer closer.Close()
+			}
+			reader = r
 		}
 
 		var magic [4]byte

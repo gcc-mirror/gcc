@@ -50,7 +50,7 @@ contains
     m%k%i = 45
   end subroutine
 
-end module 
+end module
 
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 4 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 10 "original" } }

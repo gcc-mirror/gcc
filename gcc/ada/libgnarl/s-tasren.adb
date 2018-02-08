@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1138,7 +1138,7 @@ package body System.Tasking.Rendezvous is
                      Parent.Awake_Count := Parent.Awake_Count + 1;
 
                      if Parent.Common.State = Master_Completion_Sleep
-                       and then Acceptor.Master_of_Task = Parent.Master_Within
+                       and then Acceptor.Master_Of_Task = Parent.Master_Within
                      then
                         Parent.Common.Wait_Count :=
                           Parent.Common.Wait_Count + 1;

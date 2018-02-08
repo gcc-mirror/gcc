@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -19,6 +19,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -1114,7 +1116,9 @@ nios2_initial_elimination_offset (int from, int to)
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
-      offset = cfun->machine->args_size;
+      /* This is the high end of the local variable storage, not the
+	 hard frame pointer.  */
+      offset = cfun->machine->args_size + cfun->machine->var_size;
       break;
 
     case ARG_POINTER_REGNUM:
@@ -1326,7 +1330,7 @@ nios2_handle_custom_fpu_insn_option (int fpu_insn_index)
 {
   int param = N2FPU_N (fpu_insn_index);
 
-  if (0 <= param && param <= 255)
+  if (param >= 0 && param <= 255)
     nios2_register_custom_code (param, CCS_FPU, fpu_insn_index);
 
   /* Valid values are 0-255, but also allow -1 so that the
@@ -2007,12 +2011,13 @@ nios2_validate_compare (machine_mode mode, rtx *cmp, rtx *op1, rtx *op2)
 
 /* Addressing modes and constants.  */
 
-/* Symbolic constants are split into high/lo_sum pairs during the 
-   split1 pass.  After that, they are not considered legitimate addresses.
+/* Symbol references and other 32-bit constants are split into
+   high/lo_sum pairs during the split1 pass.  After that, they are not
+   considered legitimate addresses.
    This function returns true if in a pre-split context where these
    constants are allowed.  */
 static bool
-nios2_symbolic_constant_allowed (void)
+nios2_large_constant_allowed (void)
 {
   /* The reload_completed check is for the benefit of
      nios2_asm_output_mi_thunk and perhaps other places that try to
@@ -2044,13 +2049,13 @@ nios2_symbolic_constant_p (rtx x)
 }
 
 /* Return true if X is an expression of the form 
-   (PLUS reg symbolic_constant).  */
+   (PLUS reg large_constant).  */
 static bool
-nios2_plus_symbolic_constant_p (rtx x)
+nios2_plus_large_constant_p (rtx x)
 {
   return (GET_CODE (x) == PLUS
 	  && REG_P (XEXP (x, 0))
-	  && nios2_symbolic_constant_p (XEXP (x, 1)));
+	  && nios2_large_constant_p (XEXP (x, 1)));
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */
@@ -2120,7 +2125,7 @@ nios2_valid_addr_expr_p (rtx base, rtx offset, bool strict_p)
 	  && nios2_regno_ok_for_base_p (REGNO (base), strict_p)
 	  && (offset == NULL_RTX
 	      || nios2_valid_addr_offset_p (offset)
-	      || (nios2_symbolic_constant_allowed () 
+	      || (nios2_large_constant_allowed () 
 		  && nios2_symbolic_constant_p (offset))
 	      || nios2_unspec_reloc_p (offset)));
 }
@@ -2144,12 +2149,16 @@ nios2_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 
       /* Else, fall through.  */
     case LABEL_REF:
-      if (nios2_symbolic_constant_allowed () 
+      if (nios2_large_constant_allowed () 
 	  && nios2_symbolic_constant_p (operand))
 	return true;
+      return false;
 
-      /* Else, fall through.  */
     case CONST_INT:
+      if (r0rel_constant_p (operand))
+	return true;
+      return nios2_large_constant_allowed ();
+
     case CONST_DOUBLE:
       return false;
 
@@ -2211,9 +2220,9 @@ nios2_address_cost (rtx address,
 		    addr_space_t as ATTRIBUTE_UNUSED, 
 		    bool speed ATTRIBUTE_UNUSED)
 {
-  if (nios2_plus_symbolic_constant_p (address))
+  if (nios2_plus_large_constant_p (address))
     return COSTS_N_INSNS (1);
-  if (nios2_symbolic_constant_p (address))
+  if (nios2_large_constant_p (address))
     {
       if (GET_CODE (address) == CONST)
 	return COSTS_N_INSNS (1);
@@ -2223,10 +2232,10 @@ nios2_address_cost (rtx address,
   return COSTS_N_INSNS (0);
 }
 
-/* Return true if X is a MEM whose address expression involves a symbolic
+/* Return true if X is a MEM whose address expression involves a large (32-bit)
    constant.  */
 bool
-nios2_symbolic_memory_operand_p (rtx x)
+nios2_large_constant_memory_operand_p (rtx x)
 {
   rtx addr;
 
@@ -2234,8 +2243,8 @@ nios2_symbolic_memory_operand_p (rtx x)
     return false;
   addr = XEXP (x, 0);
 
-  return (nios2_symbolic_constant_p (addr)
-	  || nios2_plus_symbolic_constant_p (addr));
+  return (nios2_large_constant_p (addr)
+	  || nios2_plus_large_constant_p (addr));
 }
 
 
@@ -2245,15 +2254,36 @@ bool
 nios2_large_constant_p (rtx x)
 {
   return (nios2_symbolic_constant_p (x)
-	  || nios2_large_unspec_reloc_p (x));
+	  || nios2_large_unspec_reloc_p (x)
+	  || (CONST_INT_P (x) && !SMALL_INT (INTVAL (x))));
 }
 
 /* Given an RTX X that satisfies nios2_large_constant_p, split it into
    high and lo_sum parts using TEMP as a scratch register.  Emit the high 
-   instruction and return the lo_sum expression.  */
+   instruction and return the lo_sum expression.  
+   Also handle special cases involving constant integers.  */
 rtx
 nios2_split_large_constant (rtx x, rtx temp)
 {
+  if (CONST_INT_P (x))
+    {
+      HOST_WIDE_INT val = INTVAL (x);
+      if (SMALL_INT (val))
+	return x;
+      else if (SMALL_INT_UNSIGNED (val) || UPPER16_INT (val))
+	{
+	  emit_move_insn (temp, x);
+	  return temp;
+	}
+      else
+	{
+	  HOST_WIDE_INT high = (val + 0x8000) & ~0xffff;
+	  HOST_WIDE_INT low = val - high;
+	  emit_move_insn (temp, gen_int_mode (high, Pmode));
+	  return gen_rtx_PLUS (Pmode, temp, gen_int_mode (low, Pmode));
+	}
+    }
+  
   emit_insn (gen_rtx_SET (temp, gen_rtx_HIGH (Pmode, copy_rtx (x))));
   return gen_rtx_LO_SUM (Pmode, temp, copy_rtx (x));
 }
@@ -2276,16 +2306,17 @@ nios2_split_plus_large_constant (rtx op0, rtx op1)
   return gen_rtx_LO_SUM (Pmode, temp, copy_rtx (op1));
 }
 
-/* Given a MEM OP with an address that includes a splittable symbol,
-   emit some instructions to do the split and return a new MEM.  */
+/* Given a MEM OP with an address that includes a splittable symbol or
+   other large constant, emit some instructions to do the split and 
+   return a new MEM.  */
 rtx
-nios2_split_symbolic_memory_operand (rtx op)
+nios2_split_large_constant_memory_operand (rtx op)
 {
   rtx addr = XEXP (op, 0);
 
-  if (nios2_symbolic_constant_p (addr))
+  if (nios2_large_constant_p (addr))
     addr = nios2_split_large_constant (addr, gen_reg_rtx (Pmode));
-  else if (nios2_plus_symbolic_constant_p (addr))
+  else if (nios2_plus_large_constant_p (addr))
     addr = nios2_split_plus_large_constant (XEXP (addr, 0), XEXP (addr, 1));
   else
     gcc_unreachable ();
@@ -2531,9 +2562,19 @@ nios2_legitimize_constant_address (rtx addr)
     base = nios2_legitimize_tls_address (base);
   else if (flag_pic)
     base = nios2_load_pic_address (base, UNSPEC_PIC_SYM, NULL_RTX);
-  else if (!nios2_symbolic_constant_allowed () 
+  else if (!nios2_large_constant_allowed () 
 	   && nios2_symbolic_constant_p (addr))
     return nios2_split_large_constant (addr, gen_reg_rtx (Pmode));
+  else if (CONST_INT_P (addr))
+    {
+      HOST_WIDE_INT val = INTVAL (addr);
+      if (SMALL_INT (val))
+	/* Use r0-relative addressing.  */
+	return addr;
+      else if (!nios2_large_constant_allowed ())
+	/* Split into high/lo pair.  */
+	return nios2_split_large_constant (addr, gen_reg_rtx (Pmode));
+    }
   else
     return addr;
 
@@ -2577,7 +2618,7 @@ nios2_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   /* We may need to split symbolic constants now.  */
   else if (nios2_symbolic_constant_p (op1))
     {
-      if (nios2_symbolic_constant_allowed ())
+      if (nios2_large_constant_allowed ())
 	return gen_rtx_PLUS (Pmode, force_reg (Pmode, op0), copy_rtx (op1));
       else
 	return nios2_split_plus_large_constant (op0, op1);
@@ -2687,7 +2728,7 @@ nios2_emit_move_sequence (rtx *operands, machine_mode mode)
 	   representing a 32-bit offset.  We split the former 
 	   only conditionally and the latter always.  */
 	{
-	  if (!nios2_symbolic_constant_allowed () 
+	  if (!nios2_large_constant_allowed () 
 	      || nios2_large_unspec_reloc_p (from))
 	    {
 	      rtx lo = nios2_split_large_constant (from, to);
@@ -3040,6 +3081,9 @@ r0rel_constant_p (rtx op)
   else if (GET_CODE (op) == CONST
            && GET_CODE (XEXP (op, 0)) == PLUS)
     return r0rel_constant_p (XEXP (XEXP (op, 0), 0));
+  else if (GET_CODE (op) == CONST_INT
+	   && SMALL_INT (INTVAL (op)))
+    return true;
 
   return false;
 }
@@ -3110,11 +3154,20 @@ nios2_print_operand_address (FILE *file, machine_mode mode, rtx op)
         }
       else if (r0rel_constant_p (op))
         {
-          fprintf (file, "%%lo(");
-          output_addr_const (file, op);
-          fprintf (file, ")(r0)");
-          return;
-        }
+	  if (CONST_INT_P (op))
+	    {
+	      output_addr_const (file, op);
+	      fprintf (file, "(r0)");
+	      return;
+	    }
+	  else
+	    {
+	      fprintf (file, "%%lo(");
+	      output_addr_const (file, op);
+	      fprintf (file, ")(r0)");
+	      return;
+	    }
+	}
       break;
 
     case PLUS:
@@ -5078,7 +5131,7 @@ static bool
 can_use_cdx_ldstw (int regno, int basereg, int offset)
 {
   if (CDX_REG_P (regno) && CDX_REG_P (basereg)
-      && (offset & 0x3) == 0 && 0 <= offset && offset < 0x40)
+      && (offset & 0x3) == 0 && offset >= 0 && offset < 0x40)
     return true;
   else if (basereg == SP_REGNO
 	   && offset >= 0 && offset < 0x80 && (offset & 0x3) == 0)

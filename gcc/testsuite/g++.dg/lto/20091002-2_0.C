@@ -4,7 +4,7 @@
 // { dg-extra-ld-options "-fPIC -r -nostdlib" }
 
 class DataArray {
-    int max() const    { }
+    int max() const    { return 0; }
 };
 template < class HashItem > 
 class DataHashTable {

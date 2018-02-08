@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -366,10 +366,13 @@ package body Sem_Ch6 is
 
             procedure Check_And_Freeze_Type (Typ : Entity_Id) is
             begin
-               --  Skip Itypes created by the preanalysis
+               --  Skip Itypes created by the preanalysis, and itypes whose
+               --  scope is another type (i.e. component subtypes that depend
+               --  on a discriminant),
 
                if Is_Itype (Typ)
-                 and then Scope_Within_Or_Same (Scope (Typ), Def_Id)
+                 and then (Scope_Within_Or_Same (Scope (Typ), Def_Id)
+                            or else Is_Type (Scope (Typ)))
                then
                   return;
                end if;
@@ -416,6 +419,20 @@ package body Sem_Ch6 is
             elsif Nkind (Node) = N_Type_Conversion
               and then Is_Access_Type (Etype (Node))
               and then Is_Interface (Designated_Type (Etype (Node)))
+            then
+               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
+            end if;
+
+            --  An implicit dereference freezes the designated type. In the
+            --  case of a dispatching call whose controlling argument is an
+            --  access type, the dereference is not made explicit, so we must
+            --  check for such a call and freeze the designated type.
+
+            if Nkind (Node) in N_Has_Etype
+              and then Present (Etype (Node))
+              and then Is_Access_Type (Etype (Node))
+              and then Nkind (Parent (Node)) = N_Function_Call
+              and then Node = Controlling_Argument (Parent (Node))
             then
                Check_And_Freeze_Type (Designated_Type (Etype (Node)));
             end if;
@@ -1039,7 +1056,7 @@ package body Sem_Ch6 is
       ---------------------
 
       Expr     : Node_Id;
-      Obj_Decl : Node_Id;
+      Obj_Decl : Node_Id := Empty;
 
    --  Start of processing for Analyze_Function_Return
 
@@ -1190,13 +1207,16 @@ package body Sem_Ch6 is
 
       --  Case of Expr present
 
-      if Present (Expr)
+      if Present (Expr) then
 
-        --  Defend against previous errors
+         --  Defend against previous errors
 
-        and then Nkind (Expr) /= N_Empty
-        and then Present (Etype (Expr))
-      then
+         if Nkind (Expr) = N_Empty
+           or else No (Etype (Expr))
+         then
+            return;
+         end if;
+
          --  Apply constraint check. Note that this is done before the implicit
          --  conversion of the expression done for anonymous access types to
          --  ensure correct generation of the null-excluding check associated
@@ -1510,6 +1530,7 @@ package body Sem_Ch6 is
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Current_Scope);
       Update_Use_Clause_Chain;
+      Validate_Categorization_Dependency (N, Gen_Id);
       End_Scope;
       Check_Subprogram_Order (N);
 
@@ -3456,7 +3477,7 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Body_Helper
 
    begin
-      --  A [generic] subprogram body "freezes" the contract of the nearest
+      --  A [generic] subprogram body freezes the contract of the nearest
       --  enclosing package body and all other contracts encountered in the
       --  same declarative part up to and excluding the subprogram body:
 
@@ -3469,17 +3490,17 @@ package body Sem_Ch6 is
       --         with Refined_Depends => (Input => Constit) ...
 
       --  This ensures that any annotations referenced by the contract of the
-      --  [generic] subprogram body are available. This form of "freezing" is
+      --  [generic] subprogram body are available. This form of freezing is
       --  decoupled from the usual Freeze_xxx mechanism because it must also
       --  work in the context of generics where normal freezing is disabled.
 
-      --  Only bodies coming from source should cause this type of "freezing".
+      --  Only bodies coming from source should cause this type of freezing.
       --  Expression functions that act as bodies and complete an initial
       --  declaration must be included in this category, hence the use of
       --  Original_Node.
 
       if Comes_From_Source (Original_Node (N)) then
-         Analyze_Previous_Contracts (N);
+         Freeze_Previous_Contracts (N);
       end if;
 
       --  Generic subprograms are handled separately. They always have a
@@ -4354,7 +4375,7 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  A subprogram body "freezes" its own contract. Analyze the contract
+      --  A subprogram body freezes its own contract. Analyze the contract
       --  after the declarations of the body have been processed as pragmas
       --  are now chained on the contract of the subprogram body.
 
@@ -4442,6 +4463,12 @@ package body Sem_Ch6 is
             Set_First_Entity (Spec_Id, Empty);
             Set_Last_Entity  (Spec_Id, Empty);
          end if;
+
+      --  Otherwise the body does not complete a previous declaration. Check
+      --  the categorization of the body against the units it withs.
+
+      else
+         Validate_Categorization_Dependency (N, Body_Id);
       end if;
 
       Check_Missing_Return;
@@ -4898,7 +4925,7 @@ package body Sem_Ch6 is
 
       --  Proceed with analysis. Do not emit a cross-reference entry if the
       --  specification comes from an expression function, because it may be
-      --  the completion of a previous declaration. It is not, the cross-
+      --  the completion of a previous declaration. If it is not, the cross-
       --  reference entry will be emitted for the new subprogram declaration.
 
       if Nkind (Parent (N)) /= N_Expression_Function then
@@ -5818,20 +5845,32 @@ package body Sem_Ch6 is
    ------------------------------
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id) is
-      F : Entity_Id;
-
       procedure Possible_Freeze (T : Entity_Id);
-      --  T is the type of either a formal parameter or of the return type.
-      --  If T is not yet frozen and needs a delayed freeze, then the
-      --  subprogram itself must be delayed.
+      --  T is the type of either a formal parameter or of the return type. If
+      --  T is not yet frozen and needs a delayed freeze, then the subprogram
+      --  itself must be delayed.
 
       ---------------------
       -- Possible_Freeze --
       ---------------------
 
       procedure Possible_Freeze (T : Entity_Id) is
+         Scop : constant Entity_Id := Scope (Designator);
+
       begin
-         if Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
+         --  If the subprogram appears within a package instance (which may be
+         --  the wrapper package of a subprogram instance) the freeze node for
+         --  that package will freeze the subprogram at the proper place, so
+         --  do not emit a freeze node for the subprogram, given that it may
+         --  appear in the wrong scope.
+
+         if Ekind (Scop) = E_Package
+           and then not Comes_From_Source (Scop)
+           and then Is_Generic_Instance (Scop)
+         then
+            null;
+
+         elsif Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
             Set_Has_Delayed_Freeze (Designator);
 
          elsif Is_Access_Type (T)
@@ -5840,8 +5879,11 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Designator);
          end if;
-
       end Possible_Freeze;
+
+      --  Local variables
+
+      F : Entity_Id;
 
    --  Start of processing for Check_Delayed_Subprogram
 
@@ -5852,8 +5894,8 @@ package body Sem_Ch6 is
       Possible_Freeze (Etype (Designator));
       Possible_Freeze (Base_Type (Etype (Designator))); -- needed ???
 
-      --  Need delayed freeze if any of the formal types themselves need
-      --  a delayed freeze and are not yet frozen.
+      --  Need delayed freeze if any of the formal types themselves need a
+      --  delayed freeze and are not yet frozen.
 
       F := First_Formal (Designator);
       while Present (F) loop
@@ -5862,17 +5904,19 @@ package body Sem_Ch6 is
          Next_Formal (F);
       end loop;
 
-      --  Mark functions that return by reference. Note that it cannot be
-      --  done for delayed_freeze subprograms because the underlying
-      --  returned type may not be known yet (for private types)
+      --  Mark functions that return by reference. Note that it cannot be done
+      --  for delayed_freeze subprograms because the underlying returned type
+      --  may not be known yet (for private types).
 
       if not Has_Delayed_Freeze (Designator) and then Expander_Active then
          declare
             Typ  : constant Entity_Id := Etype (Designator);
             Utyp : constant Entity_Id := Underlying_Type (Typ);
+
          begin
             if Is_Limited_View (Typ) then
                Set_Returns_By_Ref (Designator);
+
             elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
                Set_Returns_By_Ref (Designator);
             end if;
@@ -7642,10 +7686,12 @@ package body Sem_Ch6 is
          return True;
 
       --  In Ada 2012, incomplete types (including limited views) can appear
-      --  as actuals in instantiations.
+      --  as actuals in instantiations, where they are conformant to the
+      --  corresponding incomplete formal.
 
       elsif Is_Incomplete_Type (Type_1)
         and then Is_Incomplete_Type (Type_2)
+        and then In_Instance
         and then (Used_As_Generic_Actual (Type_1)
                    or else Used_As_Generic_Actual (Type_2))
       then
@@ -7836,7 +7882,7 @@ package body Sem_Ch6 is
 
          if No (First_Extra) then
             First_Extra := EF;
-            Set_Extra_Formals (Scope, First_Extra);
+            Set_Extra_Formals (Scope, EF);
          end if;
 
          if Present (Last_Extra) then
@@ -7886,7 +7932,7 @@ package body Sem_Ch6 is
 
       --  If Extra_Formals were already created, don't do it again. This
       --  situation may arise for subprogram types created as part of
-      --  dispatching calls (see Expand_Dispatching_Call)
+      --  dispatching calls (see Expand_Dispatching_Call).
 
       if Present (Last_Extra) and then Present (Extra_Formal (Last_Extra)) then
          return;
@@ -8024,9 +8070,7 @@ package body Sem_Ch6 is
             Full_Subt   : constant Entity_Id := Available_View (Result_Subt);
             Formal_Typ  : Entity_Id;
             Subp_Decl   : Node_Id;
-
-            Discard : Entity_Id;
-            pragma Warnings (Off, Discard);
+            Discard     : Entity_Id;
 
          begin
             --  In the case of functions with unconstrained result subtypes,
@@ -8090,7 +8134,14 @@ package body Sem_Ch6 is
             Formal_Typ :=
               Create_Itype (E_Anonymous_Access_Type, E, Scope_Id => Scope (E));
 
-            Set_Directly_Designated_Type (Formal_Typ, Result_Subt);
+            --  Incomplete_View_From_Limited_With is needed here because
+            --  gigi gets confused if the designated type is the full view
+            --  coming from a limited-with'ed package. In the normal case,
+            --  (no limited with) Incomplete_View_From_Limited_With
+            --  returns Result_Subt.
+
+            Set_Directly_Designated_Type
+              (Formal_Typ, Incomplete_View_From_Limited_With (Result_Subt));
             Set_Etype (Formal_Typ, Formal_Typ);
             Set_Depends_On_Private
               (Formal_Typ, Has_Private_Component (Formal_Typ));
@@ -8130,6 +8181,13 @@ package body Sem_Ch6 is
               Add_Extra_Formal
                 (E, Formal_Typ, E, BIP_Formal_Suffix (BIP_Object_Access));
          end;
+      end if;
+
+      --  If this is an instance of a generic, we need to have extra formals
+      --  for the Alias.
+
+      if Is_Generic_Instance (E) and then Present (Alias (E)) then
+         Set_Extra_Formals (Alias (E), Extra_Formals (E));
       end if;
    end Create_Extra_Formals;
 
@@ -10118,7 +10176,6 @@ package body Sem_Ch6 is
 
          function Visible_Part_Type (T : Entity_Id) return Boolean is
             P : constant Node_Id := Unit_Declaration_Node (Scope (T));
-            N : Node_Id;
 
          begin
             --  If the entity is a private type, then it must be declared in a
@@ -10126,34 +10183,19 @@ package body Sem_Ch6 is
 
             if Ekind (T) in Private_Kind then
                return True;
+
+            elsif Is_Type (T) and then Has_Private_Declaration (T) then
+               return True;
+
+            elsif Is_List_Member (Declaration_Node (T))
+              and then List_Containing (Declaration_Node (T)) =
+                         Visible_Declarations (Specification (P))
+            then
+               return True;
+
+            else
+               return False;
             end if;
-
-            --  Otherwise, we traverse the visible part looking for its
-            --  corresponding declaration. We cannot use the declaration
-            --  node directly because in the private part the entity of a
-            --  private type is the one in the full view, which does not
-            --  indicate that it is the completion of something visible.
-
-            N := First (Visible_Declarations (Specification (P)));
-            while Present (N) loop
-               if Nkind (N) = N_Full_Type_Declaration
-                 and then Present (Defining_Identifier (N))
-                 and then T = Defining_Identifier (N)
-               then
-                  return True;
-
-               elsif Nkind_In (N, N_Private_Type_Declaration,
-                                  N_Private_Extension_Declaration)
-                 and then Present (Defining_Identifier (N))
-                 and then T = Full_View (Defining_Identifier (N))
-               then
-                  return True;
-               end if;
-
-               Next (N);
-            end loop;
-
-            return False;
          end Visible_Part_Type;
 
       --  Start of processing for Check_For_Primitive_Subprogram

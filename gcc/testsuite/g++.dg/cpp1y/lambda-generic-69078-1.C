@@ -2,8 +2,6 @@
 // { dg-do run { target c++14 } }
 // { dg-options "-Wall" }
 
-#include <cassert>
-
 struct Class {
     Class(void (*_param)()) : data(_param) {}
     void (*data)();
@@ -15,7 +13,7 @@ void funUser(void (*test)(int)) {
 
 void user(Class& c, int i) {
     (void)i;
-    assert (c.data);
+    if (!c.data) __builtin_abort();
 }
 
 void probe() {}

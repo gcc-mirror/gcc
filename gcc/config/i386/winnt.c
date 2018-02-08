@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Windows NT.
    Contributed by Douglas Rupp (drupp@cs.washington.edu)
-   Copyright (C) 1995-2017 Free Software Foundation, Inc.
+   Copyright (C) 1995-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -17,6 +17,8 @@ for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -1215,8 +1217,7 @@ void
 i386_pe_start_function (FILE *f, const char *name, tree decl)
 {
   i386_pe_maybe_record_exported_symbol (decl, name, 0);
-  if (write_symbols != SDB_DEBUG)
-    i386_pe_declare_function_type (f, name, TREE_PUBLIC (decl));
+  i386_pe_declare_function_type (f, name, TREE_PUBLIC (decl));
   /* In case section was altered by debugging output.  */
   if (decl != NULL_TREE)
     switch_to_section (function_section (decl));

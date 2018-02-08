@@ -1,6 +1,5 @@
 -- { dg-do run }
 -- { dg-options "-flto" { target lto } }
--- { dg-excess-errors "does not match original declaration" }
 
 with Lto20_Pkg;
 

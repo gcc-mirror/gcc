@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -754,8 +754,12 @@ compare_rank (gfc_symbol *s1, gfc_symbol *s2)
   if (s2->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
     return true;
 
-  as1 = (s1->ts.type == BT_CLASS) ? CLASS_DATA (s1)->as : s1->as;
-  as2 = (s2->ts.type == BT_CLASS) ? CLASS_DATA (s2)->as : s2->as;
+  as1 = (s1->ts.type == BT_CLASS
+	 && !s1->ts.u.derived->attr.unlimited_polymorphic)
+	? CLASS_DATA (s1)->as : s1->as;
+  as2 = (s2->ts.type == BT_CLASS
+	 && !s2->ts.u.derived->attr.unlimited_polymorphic)
+	? CLASS_DATA (s2)->as : s2->as;
 
   r1 = as1 ? as1->rank : 0;
   r2 = as2 ? as2->rank : 0;
@@ -1262,8 +1266,13 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 static int
 symbol_rank (gfc_symbol *sym)
 {
-  gfc_array_spec *as;
-  as = (sym->ts.type == BT_CLASS) ? CLASS_DATA (sym)->as : sym->as;
+  gfc_array_spec *as = NULL;
+
+  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym) && CLASS_DATA (sym)->as)
+    as = CLASS_DATA (sym)->as;
+  else
+    as = sym->as;
+
   return as ? as->rank : 0;
 }
 
@@ -2350,7 +2359,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (formal->attr.codimension)
     {
       /* F2008, 12.5.2.8 + Corrig 2 (IR F08/0048).  */
-      /* F2015, 12.5.2.8.  */
+      /* F2018, 12.5.2.8.  */
       if (formal->attr.dimension
 	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
 	  && actual_attr.dimension

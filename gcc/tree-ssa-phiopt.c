@@ -1,5 +1,5 @@
 /* Optimization of PHI nodes by converting them into straightline code.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -548,8 +548,12 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 
   /* Create the conversion stmt and insert it.  */
   if (convert_code == VIEW_CONVERT_EXPR)
-    temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
-  new_stmt = gimple_build_assign (result, convert_code, temp);
+    {
+      temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
+      new_stmt = gimple_build_assign (result, temp);
+    }
+  else
+    new_stmt = gimple_build_assign (result, convert_code, temp);
   gsi = gsi_after_labels (gimple_bb (phi));
   gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
 
@@ -672,7 +676,6 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, new_var);
-  reset_flow_sensitive_info_in_bb (cond_bb);
 
   /* Note that we optimized this PHI.  */
   return true;
@@ -690,12 +693,12 @@ jump_function_from_stmt (tree *arg, gimple *stmt)
     {
       /* For arg = &p->i transform it to p, if possible.  */
       tree rhs1 = gimple_assign_rhs1 (stmt);
-      HOST_WIDE_INT offset;
+      poly_int64 offset;
       tree tem = get_addr_base_and_unit_offset (TREE_OPERAND (rhs1, 0),
 						&offset);
       if (tem
 	  && TREE_CODE (tem) == MEM_REF
-	  && (mem_ref_offset (tem) + offset) == 0)
+	  && known_eq (mem_ref_offset (tem) + offset, 0))
 	{
 	  *arg = TREE_OPERAND (tem, 0);
 	  return true;
@@ -1138,22 +1141,22 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 					      cond_rhs, false, rhs2))))))
     {
       gsi = gsi_for_stmt (cond);
+      /* Moving ASSIGN might change VR of lhs, e.g. when moving u_6
+	 def-stmt in:
+	   if (n_5 != 0)
+	     goto <bb 3>;
+	   else
+	     goto <bb 4>;
+
+	   <bb 3>:
+	   # RANGE [0, 4294967294]
+	   u_6 = n_5 + 4294967295;
+
+	   <bb 4>:
+	   # u_3 = PHI <u_6(3), 4294967295(2)>  */
+      reset_flow_sensitive_info (lhs);
       if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
 	{
-	  /* Moving ASSIGN might change VR of lhs, e.g. when moving u_6
-	     def-stmt in:
-	     if (n_5 != 0)
-	       goto <bb 3>;
-	     else
-	       goto <bb 4>;
-
-	     <bb 3>:
-	     # RANGE [0, 4294967294]
-	     u_6 = n_5 + 4294967295;
-
-	     <bb 4>:
-	     # u_3 = PHI <u_6(3), 4294967295(2)>  */
-	  SSA_NAME_RANGE_INFO (lhs) = NULL;
 	  /* If available, we can use VR of phi result at least.  */
 	  tree phires = gimple_phi_result (phi);
 	  struct range_info_def *phires_range_info
@@ -1166,7 +1169,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       for (int i = prep_cnt - 1; i >= 0; --i)
 	{
 	  tree plhs = gimple_assign_lhs (prep_stmt[i]);
-	  SSA_NAME_RANGE_INFO (plhs) = NULL;
+	  reset_flow_sensitive_info (plhs);
 	  gsi_from = gsi_for_stmt (prep_stmt[i]);
 	  gsi_move_before (&gsi_from, &gsi);
 	}
@@ -1490,6 +1493,8 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
       /* Move the statement from the middle block.  */
       gsi = gsi_last_bb (cond_bb);
       gsi_from = gsi_last_nondebug_bb (middle_bb);
+      reset_flow_sensitive_info (SINGLE_SSA_TREE_OPERAND (gsi_stmt (gsi_from),
+							  SSA_OP_DEF));
       gsi_move_before (&gsi_from, &gsi);
     }
 
@@ -1508,7 +1513,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
-  reset_flow_sensitive_info_in_bb (cond_bb);
 
   return true;
 }
@@ -1636,7 +1640,6 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
-  reset_flow_sensitive_info_in_bb (cond_bb);
 
   /* Note that we optimized this PHI.  */
   return true;

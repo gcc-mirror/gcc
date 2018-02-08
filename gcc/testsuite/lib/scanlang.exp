@@ -1,4 +1,4 @@
-#   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+#   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@ load_lib scandump.exp
 proc scan-lang-dump { args } {
 
     if { [llength $args] < 2 } {
-	error "scan-tree-dump: too few arguments"
+	error "scan-lang-dump: too few arguments"
 	return
     }
     if { [llength $args] > 3 } {
-	error "scan-tree-dump: too many arguments"
+	error "scan-lang-dump: too many arguments"
 	return
     }
     if { [llength $args] >= 3 } {

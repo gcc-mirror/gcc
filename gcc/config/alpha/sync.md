@@ -1,5 +1,5 @@
 ;; GCC machine description for Alpha synchronization instructions.
-;; Copyright (C) 2005-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -24,7 +24,7 @@
   [(plus "add_operand") (minus "reg_or_8bit_operand")
    (ior "or_operand") (xor "or_operand") (and "and_operand")])
 (define_code_attr fetchop_constr
-  [(plus "rKL") (minus "rI") (ior "rIN") (xor "rIN") (and "riNM")])
+  [(plus "rKL") (minus "rI") (ior "rIN") (xor "rIN") (and "rINM")])
 
 
 (define_expand "memory_barrier"

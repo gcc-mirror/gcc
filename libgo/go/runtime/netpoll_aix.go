@@ -34,12 +34,15 @@ const _PS_DELETE = 0x2
 //extern pollset_create
 func pollset_create(maxfd int32) pollset_t
 
+//go:noescape
 //extern pollset_ctl
 func pollset_ctl(ps pollset_t, pollctl_array *poll_ctl, array_length int32) int32
 
+//go:noescape
 //extern pollset_poll
 func pollset_poll(ps pollset_t, polldata_array *pollfd, array_length int32, timeout int32) int32
 
+//go:noescape
 //extern pipe
 func libc_pipe(fd *int32) int32
 

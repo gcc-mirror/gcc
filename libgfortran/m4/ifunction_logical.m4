@@ -87,7 +87,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
         }
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

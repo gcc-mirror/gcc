@@ -1,5 +1,5 @@
 /* Definitions for C++ parsing and type checking.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -91,6 +91,12 @@ public:
   void set_range (location_t start, location_t finish)
   {
     set_location (make_location (m_loc, start, finish));
+  }
+
+  cp_expr& maybe_add_location_wrapper ()
+  {
+    m_value = maybe_wrap_with_location (m_value, m_loc);
+    return *this;
   }
 
  private:
@@ -217,7 +223,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    things) to iterate over their overloads defined by/for a type.  For
    example:
 
-     tree ovlid = cp_assignment_operator_id (NOP_EXPR);
+     tree ovlid = assign_op_identifier;
      tree overloads = get_class_binding (type, ovlid);
      for (ovl_iterator it (overloads); it; ++it) { ... }
 
@@ -244,21 +250,14 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of a destructor that destroys virtual base classes, and
    then deletes the entire object.  */
 #define deleting_dtor_identifier	cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
+
+#define ovl_op_identifier(ISASS, CODE)  (OVL_OP_INFO(ISASS, CODE)->identifier)
+#define assign_op_identifier (ovl_op_info[true][OVL_OP_NOP_EXPR].identifier)
+#define call_op_identifier (ovl_op_info[false][OVL_OP_CALL_EXPR].identifier)
 /* The name used for conversion operators -- but note that actual
    conversion functions use special identifiers outside the identifier
    table.  */
 #define conv_op_identifier		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
-
-/* The name of the identifier used internally to represent operator CODE.  */
-#define cp_operator_id(CODE) \
-  (operator_name_info[(int) (CODE)].identifier)
-
-/* The name of the identifier used to represent assignment operator CODE,
-   both simple (i.e., operator= with CODE == NOP_EXPR) and compound (e.g.,
-   operator+= with CODE == PLUS_EXPR).  Includes copy and move assignment.
-   Use copy_fn_p() to test specifically for copy assignment.  */
-#define cp_assignment_operator_id(CODE)				\
-  (assignment_operator_name_info[(int) (CODE)].identifier)
 
 #define delta_identifier		cp_global_trees[CPTI_DELTA_IDENTIFIER]
 #define in_charge_identifier		cp_global_trees[CPTI_IN_CHARGE_IDENTIFIER]
@@ -371,6 +370,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IF_STMT_CONSTEXPR_P (IF_STMT)
       TEMPLATE_TYPE_PARM_FOR_CLASS (TEMPLATE_TYPE_PARM)
       DECL_NAMESPACE_INLINE_P (in NAMESPACE_DECL)
+      SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -389,6 +389,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TINFO_USED_TEMPLATE_ID (in TEMPLATE_INFO)
       PACK_EXPANSION_SIZEOF_P (in *_PACK_EXPANSION)
       OVL_USING_P (in OVERLOAD)
+      IMPLICIT_CONV_EXPR_NONTYPE_ARG (in IMPLICIT_CONV_EXPR)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -401,14 +402,15 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       AGGR_INIT_ZERO_FIRST (in AGGR_INIT_EXPR)
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
+      SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
-      DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
+      DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
       CALL_EXPR_ORDERED_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
-      CONSTUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
+      CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
@@ -1003,9 +1005,9 @@ enum cp_identifier_kind {
   cik_dtor = 3,		/* Destructor (in-chg, deleting, complete or
 			   base).  */
   cik_simple_op = 4,	/* Non-assignment operator name.  */
-  cik_newdel_op = 5,	/* New or delete operator name.  */
-  cik_assign_op = 6,	/* An assignment operator name.  */
-  cik_conv_op = 7,	/* Conversion operator name.  */
+  cik_assign_op = 5,	/* An assignment operator name.  */
+  cik_conv_op = 6,	/* Conversion operator name.  */
+  cik_reserved_for_udlit = 7,	/* Not yet in use  */
   cik_max
 };
 
@@ -1060,24 +1062,38 @@ enum cp_identifier_kind {
 #define IDENTIFIER_ANY_OP_P(NODE)		\
   (IDENTIFIER_KIND_BIT_2 (NODE))
 
-/* True if this identifier is for new or delete operator.  Value 5.  */
-#define IDENTIFIER_NEWDEL_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
-   & (!IDENTIFIER_KIND_BIT_1 (NODE))		\
-   & IDENTIFIER_KIND_BIT_0 (NODE))
+/* True if this identifier is for an overloaded operator. Values 4, 5.  */
+#define IDENTIFIER_OVL_OP_P(NODE)		\
+  (IDENTIFIER_ANY_OP_P (NODE)			\
+   & (!IDENTIFIER_KIND_BIT_1 (NODE)))
 
-/* True if this identifier is for any assignment. Values 6.  */
+/* True if this identifier is for any assignment. Values 5.  */
 #define IDENTIFIER_ASSIGN_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
-   & IDENTIFIER_KIND_BIT_1 (NODE)		\
-   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+  (IDENTIFIER_OVL_OP_P (NODE)			\
+   & IDENTIFIER_KIND_BIT_0 (NODE))
 
 /* True if this identifier is the name of a type-conversion
    operator.  Value 7.  */
 #define IDENTIFIER_CONV_OP_P(NODE)		\
-  (IDENTIFIER_KIND_BIT_2 (NODE)			\
+  (IDENTIFIER_ANY_OP_P (NODE)			\
    & IDENTIFIER_KIND_BIT_1 (NODE)		\
-   & IDENTIFIER_KIND_BIT_0 (NODE))
+   & (!IDENTIFIER_KIND_BIT_0 (NODE)))
+
+/* True if this identifier is a new or delete operator.  */
+#define IDENTIFIER_NEWDEL_OP_P(NODE)		\
+  (IDENTIFIER_OVL_OP_P (NODE)			\
+   && IDENTIFIER_OVL_OP_FLAGS (NODE) & OVL_OP_FLAG_ALLOC)
+
+/* True if this identifier is a new operator.  */
+#define IDENTIFIER_NEW_OP_P(NODE)					\
+  (IDENTIFIER_OVL_OP_P (NODE)						\
+   && (IDENTIFIER_OVL_OP_FLAGS (NODE)					\
+       & (OVL_OP_FLAG_ALLOC | OVL_OP_FLAG_DELETE)) == OVL_OP_FLAG_ALLOC)
+
+/* Access a C++-specific index for identifier NODE.
+   Used to optimize operator mappings etc.  */
+#define IDENTIFIER_CP_INDEX(NODE)		\
+  (IDENTIFIER_NODE_CHECK(NODE)->base.u.bits.address_space)
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */
 #define C_TYPE_FIELDS_READONLY(TYPE) \
@@ -1203,9 +1219,10 @@ struct GTY (()) tree_trait_expr {
   (CLASS_TYPE_P (NODE) && CLASSTYPE_LAMBDA_EXPR (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
-#define LAMBDA_FUNCTION_P(FNDECL)			\
-  (DECL_DECLARES_FUNCTION_P (FNDECL)			\
-   && DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR	\
+#define LAMBDA_FUNCTION_P(FNDECL)				\
+  (DECL_DECLARES_FUNCTION_P (FNDECL)				\
+   && DECL_OVERLOADED_OPERATOR_P (FNDECL)			\
+   && DECL_OVERLOADED_OPERATOR_IS (FNDECL, CALL_EXPR)		\
    && LAMBDA_TYPE_P (CP_DECL_CONTEXT (FNDECL)))
 
 enum cp_lambda_default_capture_mode_type {
@@ -2438,7 +2455,8 @@ struct GTY(()) lang_decl_base {
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
-  /* 2 spare bits */
+  unsigned dependent_init_p : 1;	   /* var */
+  /* 1 spare bit */
 };
 
 /* True for DECL codes which have template info and access.  */
@@ -2480,26 +2498,24 @@ struct GTY(()) lang_decl_min {
 struct GTY(()) lang_decl_fn {
   struct lang_decl_min min;
 
-  /* In an overloaded operator, this is the value of
-     DECL_OVERLOADED_OPERATOR_P.
-     FIXME: We should really do better in compressing this.  */
-  ENUM_BITFIELD (tree_code) operator_code : 16;
-
+  /* In a overloaded operator, this is the compressed operator code.  */
+  unsigned ovl_op_code : 6;
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
+
   unsigned static_function : 1;
   unsigned pure_virtual : 1;
   unsigned defaulted_p : 1;
   unsigned has_in_charge_parm_p : 1;
   unsigned has_vtt_parm_p : 1;
   unsigned pending_inline_p : 1;
-
   unsigned nonconverting : 1;
   unsigned thunk_p : 1;
+
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  /* 3 spare bits.  */
+  unsigned spare : 13;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -2806,22 +2822,23 @@ struct GTY(()) lang_decl {
 #define SET_VAR_HAD_UNKNOWN_BOUND(NODE) \
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.unknown_bound_p = true)
 
-/* Set the overloaded operator code for NODE to CODE.  */
-#define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
-  (LANG_DECL_FN_CHECK (NODE)->operator_code = (CODE))
-
-/* If NODE is an overloaded operator, then this returns the TREE_CODE
-   associated with the overloaded operator.  If NODE is not an
-   overloaded operator, ERROR_MARK is returned.  Since the numerical
-   value of ERROR_MARK is zero, this macro can be used as a predicate
-   to test whether or not NODE is an overloaded operator.  */
+/* True iff decl NODE is for an overloaded operator.  */
 #define DECL_OVERLOADED_OPERATOR_P(NODE)		\
-  (IDENTIFIER_ANY_OP_P (DECL_NAME (NODE))		\
-   ? LANG_DECL_FN_CHECK (NODE)->operator_code : ERROR_MARK)
+  IDENTIFIER_ANY_OP_P (DECL_NAME (NODE))
 
 /* Nonzero if NODE is an assignment operator (including += and such).  */
-#define DECL_ASSIGNMENT_OPERATOR_P(NODE) \
+#define DECL_ASSIGNMENT_OPERATOR_P(NODE)		 \
   IDENTIFIER_ASSIGN_OP_P (DECL_NAME (NODE))
+
+/* NODE is a function_decl for an overloaded operator.  Return its
+   compressed (raw) operator code.  Note that this is not a TREE_CODE.  */
+#define DECL_OVERLOADED_OPERATOR_CODE_RAW(NODE)		\
+  (LANG_DECL_FN_CHECK (NODE)->ovl_op_code)
+
+/* DECL is an overloaded operator.  Test whether it is for TREE_CODE
+   (a literal constant).  */
+#define DECL_OVERLOADED_OPERATOR_IS(DECL, CODE)			\
+  (DECL_OVERLOADED_OPERATOR_CODE_RAW (DECL) == OVL_OP_##CODE)
 
 /* For FUNCTION_DECLs: nonzero means that this function is a
    constructor or a destructor with an extra in-charge parameter to
@@ -3460,7 +3477,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 /* Extracts the type or expression pattern from a TYPE_PACK_EXPANSION or
    EXPR_PACK_EXPANSION.  */
 #define PACK_EXPANSION_PATTERN(NODE)                            \
-  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION? TREE_TYPE (NODE)    \
+  (TREE_CODE (NODE) == TYPE_PACK_EXPANSION ? TREE_TYPE (NODE)    \
    : TREE_OPERAND (NODE, 0))
 
 /* Sets the type or expression pattern for a TYPE_PACK_EXPANSION or
@@ -3479,7 +3496,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
     : &TYPE_MIN_VALUE_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
 
 /* Any additional template args to be applied when substituting into
-   the pattern, set by tsubst_pack_expansion for partial instantiations.  */
+   the pattern, set by tsubst_pack_expansion for partial instantiations.
+   If this is a TREE_LIST, the TREE_VALUE of the first element is the
+   usual template argument TREE_VEC, and the TREE_PURPOSE of later elements
+   are enclosing functions that provided function parameter packs we'll need
+   to map appropriately.  */
 #define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
   *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
     ? &TYPE_MAX_VALUE_RAW (NODE)			\
@@ -3869,6 +3890,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.var_declared_inline_p \
    = true)
 
+/* True if NODE is a constant variable with a value-dependent initializer.  */
+#define DECL_DEPENDENT_INIT_P(NODE)				\
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))			\
+   && DECL_LANG_SPECIFIC (NODE)->u.base.dependent_init_p)
+#define SET_DECL_DEPENDENT_INIT_P(NODE, X) \
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.dependent_init_p = (X))
+
 /* Nonzero if NODE is an artificial VAR_DECL for a C++17 structured binding
    declaration or one of VAR_DECLs for the user identifiers in it.  */
 #define DECL_DECOMPOSITION_P(NODE) \
@@ -4118,6 +4146,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    template.  Set by perform_implicit_conversion_flags.  */
 #define IMPLICIT_CONV_EXPR_DIRECT_INIT(NODE) \
   (TREE_LANG_FLAG_0 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
+
+/* True if NODE represents a dependent conversion of a non-type template
+   argument.  Set by maybe_convert_nontype_argument.  */
+#define IMPLICIT_CONV_EXPR_NONTYPE_ARG(NODE) \
+  (TREE_LANG_FLAG_1 (IMPLICIT_CONV_EXPR_CHECK (NODE)))
 
 /* Nonzero means that an object of this type can not be initialized using
    an initializer list.  */
@@ -4821,12 +4854,21 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define RANGE_FOR_EXPR(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 1)
 #define RANGE_FOR_BODY(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 2)
 #define RANGE_FOR_SCOPE(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 3)
+#define RANGE_FOR_UNROLL(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 4)
 #define RANGE_FOR_IVDEP(NODE)	TREE_LANG_FLAG_6 (RANGE_FOR_STMT_CHECK (NODE))
 
 #define SWITCH_STMT_COND(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
 #define SWITCH_STMT_BODY(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
 #define SWITCH_STMT_TYPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 2)
 #define SWITCH_STMT_SCOPE(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 3)
+/* True if there are case labels for all possible values of switch cond, either
+   because there is a default: case label or because the case label ranges cover
+   all values.  */
+#define SWITCH_STMT_ALL_CASES_P(NODE) \
+  TREE_LANG_FLAG_0 (SWITCH_STMT_CHECK (NODE))
+/* True if the body of a switch stmt contains no BREAK_STMTs.  */
+#define SWITCH_STMT_NO_BREAK_P(NODE) \
+  TREE_LANG_FLAG_2 (SWITCH_STMT_CHECK (NODE))
 
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)	TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
@@ -5117,7 +5159,6 @@ extern GTY(()) vec<tree, va_gc> *static_decls;
 /* An array of vtable-needing types that have no key function, or have
    an emitted key function.  */
 extern GTY(()) vec<tree, va_gc> *keyed_classes;
-
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -5479,23 +5520,63 @@ enum auto_deduction_context
 
 extern void init_reswords (void);
 
-typedef struct GTY(()) operator_name_info_t {
+/* Various flags for the overloaded operator information.  */
+enum ovl_op_flags
+  {
+    OVL_OP_FLAG_NONE = 0,	/* Don't care.  */
+    OVL_OP_FLAG_UNARY = 1,	/* Is unary.  */
+    OVL_OP_FLAG_BINARY = 2,	/* Is binary.  */
+    OVL_OP_FLAG_AMBIARY = 3,	/* May be unary or binary.  */
+    OVL_OP_FLAG_ALLOC = 4,  	/* operator new or delete.  */
+    OVL_OP_FLAG_DELETE = 1,	/* operator delete.  */
+    OVL_OP_FLAG_VEC = 2		/* vector new or delete.  */
+  };
+
+/* Compressed operator codes.  Order is determined by operators.def
+   and does not match that of tree_codes.  */
+enum ovl_op_code
+  {
+    OVL_OP_ERROR_MARK,
+    OVL_OP_NOP_EXPR,
+#define DEF_OPERATOR(NAME, CODE, MANGLING, FLAGS) OVL_OP_##CODE,
+#define DEF_ASSN_OPERATOR(NAME, CODE, MANGLING) /* NOTHING */
+#include "operators.def"
+    OVL_OP_MAX
+  };
+
+struct GTY(()) ovl_op_info_t {
   /* The IDENTIFIER_NODE for the operator.  */
   tree identifier;
   /* The name of the operator.  */
   const char *name;
   /* The mangled name of the operator.  */
   const char *mangled_name;
-  /* The arity of the operator.  */
-  int arity;
-} operator_name_info_t;
+  /* The (regular) tree code.  */
+  enum tree_code tree_code : 16;
+  /* The (compressed) operator code.  */
+  enum ovl_op_code ovl_op_code : 8;
+  /* The ovl_op_flags of the operator */
+  unsigned flags : 8;
+};
 
-/* A mapping from tree codes to operator name information.  */
-extern GTY(()) operator_name_info_t operator_name_info
-  [(int) MAX_TREE_CODES];
-/* Similar, but for assignment operators.  */
-extern GTY(()) operator_name_info_t assignment_operator_name_info
-  [(int) MAX_TREE_CODES];
+/* Overloaded operator info indexed by ass_op_p & ovl_op_code.  */
+extern GTY(()) ovl_op_info_t ovl_op_info[2][OVL_OP_MAX];
+/* Mapping from tree_codes to ovl_op_codes.  */
+extern GTY(()) unsigned char ovl_op_mapping[MAX_TREE_CODES];
+/* Mapping for ambi-ary operators from the binary to the unary.  */
+extern GTY(()) unsigned char ovl_op_alternate[OVL_OP_MAX];
+
+/* Given an ass_op_p boolean and a tree code, return a pointer to its
+   overloaded operator info.  Tree codes for non-overloaded operators
+   map to the error-operator.  */
+#define OVL_OP_INFO(IS_ASS_P, TREE_CODE)			\
+  (&ovl_op_info[(IS_ASS_P) != 0][ovl_op_mapping[(TREE_CODE)]])
+/* Overloaded operator info for an identifier for which
+   IDENTIFIER_OVL_OP_P is true.  */
+#define IDENTIFIER_OVL_OP_INFO(NODE) \
+  (&ovl_op_info[IDENTIFIER_KIND_BIT_0 (NODE)][IDENTIFIER_CP_INDEX (NODE)])
+#define IDENTIFIER_OVL_OP_FLAGS(NODE) \
+  (IDENTIFIER_OVL_OP_INFO (NODE)->flags)
 
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */
@@ -5959,7 +6040,6 @@ extern int current_lang_depth			(void);
 extern void push_lang_context			(tree);
 extern void pop_lang_context			(void);
 extern tree instantiate_type			(tree, tree, tsubst_flags_t);
-extern void print_class_statistics		(void);
 extern void build_self_reference		(void);
 extern int same_signature_p			(const_tree, const_tree);
 extern void maybe_add_class_template_decl_list	(tree, tree, int);
@@ -6050,9 +6130,12 @@ enum cp_tree_node_structure_enum cp_tree_node_structure
 extern void finish_scope			(void);
 extern void push_switch				(tree);
 extern void pop_switch				(void);
+extern void note_break_stmt			(void);
+extern bool note_iteration_stmt_body_start	(void);
+extern void note_iteration_stmt_body_end	(bool);
 extern tree make_lambda_name			(void);
-extern int decls_match				(tree, tree);
-extern bool maybe_version_functions		(tree, tree);
+extern int decls_match				(tree, tree, bool = true);
+extern bool maybe_version_functions		(tree, tree, bool);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
 extern tree define_label			(location_t, tree);
@@ -6076,6 +6159,7 @@ extern void start_decl_1			(tree, bool);
 extern bool check_array_initializer		(tree, tree, tree);
 extern void cp_finish_decl			(tree, tree, bool, tree, int);
 extern tree lookup_decomp_type			(tree);
+extern void cp_maybe_mangle_decomp		(tree, tree, unsigned int);
 extern void cp_finish_decomp			(tree, tree, unsigned int);
 extern int cp_complete_array_type		(tree *, tree, bool);
 extern int cp_complete_array_type_or_error	(tree *, tree, bool, tsubst_flags_t);
@@ -6138,9 +6222,13 @@ extern bool require_deduced_type		(tree, tsubst_flags_t = tf_warning_or_error);
 
 extern tree finish_case_label			(location_t, tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
+extern bool check_array_designated_initializer  (constructor_elt *,
+						 unsigned HOST_WIDE_INT);
+extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
+extern void overwrite_mangling			(tree, tree);
 extern void note_mangling_alias			(tree, tree);
 extern void generate_mangling_aliases		(void);
 extern tree build_memfn_type			(tree, tree, cp_cv_quals, cp_ref_qualifier);
@@ -6244,9 +6332,12 @@ extern tree create_try_catch_expr               (tree, tree);
 
 /* in expr.c */
 extern tree cplus_expand_constant		(tree);
+extern tree mark_use (tree expr, bool rvalue_p, bool read_p,
+		      location_t = UNKNOWN_LOCATION,
+		      bool reject_builtin = true);
 extern tree mark_rvalue_use			(tree,
                                                  location_t = UNKNOWN_LOCATION,
-                                                 bool = true);
+                                                 bool reject_builtin = true);
 extern tree mark_lvalue_use			(tree);
 extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
@@ -6257,7 +6348,8 @@ extern void mark_exp_read			(tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend				(tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, bool);
+extern tree do_friend				(tree, tree, tree, tree,
+						 enum overload_flags, bool);
 
 extern void set_global_friend			(tree);
 extern bool is_global_friend			(tree);
@@ -6356,7 +6448,8 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 extern bool maybe_clone_body			(tree);
 
 /* In parser.c */
-extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool);
+extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool,
+				  unsigned short);
 extern bool parsing_nsdmi (void);
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
@@ -6415,7 +6508,6 @@ extern int uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
 extern bool need_generic_capture		(void);
-extern bool processing_nonlambda_template	(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
 extern tree fn_type_unification			(tree, tree, tree,
@@ -6435,7 +6527,7 @@ extern bool uses_parameter_packs                (tree);
 extern bool template_parameter_pack_p           (const_tree);
 extern bool function_parameter_pack_p		(const_tree);
 extern bool function_parameter_expanded_from_pack_p (tree, tree);
-extern tree make_pack_expansion                 (tree);
+extern tree make_pack_expansion                 (tree, tsubst_flags_t = tf_warning_or_error);
 extern bool check_for_bare_parameter_packs      (tree);
 extern tree build_template_info			(tree, tree);
 extern tree get_template_info			(const_tree);
@@ -6504,7 +6596,7 @@ extern void init_template_processing		(void);
 extern void print_template_statistics		(void);
 bool template_template_parameter_p		(const_tree);
 bool template_type_parameter_p                  (const_tree);
-extern bool primary_template_instantiation_p    (const_tree);
+extern bool primary_template_specialization_p   (const_tree);
 extern tree get_primary_template_innermost_parameters	(const_tree);
 extern tree get_template_parms_at_level (tree, int);
 extern tree get_template_innermost_arguments	(const_tree);
@@ -6642,16 +6734,16 @@ extern void begin_else_clause			(tree);
 extern void finish_else_clause			(tree);
 extern void finish_if_stmt			(tree);
 extern tree begin_while_stmt			(void);
-extern void finish_while_stmt_cond		(tree, tree, bool);
+extern void finish_while_stmt_cond	(tree, tree, bool, unsigned short);
 extern void finish_while_stmt			(tree);
 extern tree begin_do_stmt			(void);
 extern void finish_do_body			(tree);
-extern void finish_do_stmt			(tree, tree, bool);
+extern void finish_do_stmt		(tree, tree, bool, unsigned short);
 extern tree finish_return_stmt			(tree);
 extern tree begin_for_scope			(tree *);
 extern tree begin_for_stmt			(tree, tree);
 extern void finish_init_stmt			(tree);
-extern void finish_for_cond			(tree, tree, bool);
+extern void finish_for_cond		(tree, tree, bool, unsigned short);
 extern void finish_for_expr			(tree, tree);
 extern void finish_for_stmt			(tree);
 extern tree begin_range_for_stmt		(tree, tree);
@@ -6808,6 +6900,7 @@ extern void insert_capture_proxy		(tree);
 extern void insert_pending_capture_proxies	(void);
 extern bool is_capture_proxy			(tree);
 extern bool is_normal_capture_proxy             (tree);
+extern bool is_capture_proxy_with_ref           (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, bool);
 extern void maybe_generic_this_capture		(tree, tree);
@@ -7009,6 +7102,7 @@ extern tree build_x_indirect_ref		(location_t, tree,
 						 ref_operator, tsubst_flags_t);
 extern tree cp_build_indirect_ref		(tree, ref_operator,
                                                  tsubst_flags_t);
+extern tree cp_build_fold_indirect_ref		(tree);
 extern tree build_array_ref			(location_t, tree, tree);
 extern tree cp_build_array_ref			(location_t, tree, tree,
 						 tsubst_flags_t);
@@ -7305,11 +7399,6 @@ extern void vtv_save_class_info                 (tree);
 extern void vtv_recover_class_info              (void);
 extern void vtv_build_vtable_verify_fndecl      (void);
 
-/* In cp/cp-array-notations.c */
-extern tree expand_array_notation_exprs         (tree);
-bool cilkplus_an_triplet_types_ok_p             (location_t, tree, tree, tree,
-						 tree);
-
 /* In constexpr.c */
 extern void fini_constexpr			(void);
 extern bool literal_type_p                      (tree);
@@ -7341,21 +7430,12 @@ extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
 
-/* In c-family/cilk.c */
-extern bool cilk_valid_spawn                    (tree);
-
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);
 extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
-
-#if CHECKING_P
-namespace selftest {
-  extern void run_cp_tests (void);
-} // namespace selftest
-#endif /* #if CHECKING_P */
 
 /* Inline bodies.  */
 
@@ -7386,6 +7466,24 @@ named_decl_hash::equal (const value_type existing, compare_type candidate)
   tree name = OVL_NAME (existing);
   return candidate == name;
 }
+
+inline bool
+null_node_p (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+  return expr == null_node;
+}
+
+#if CHECKING_P
+namespace selftest {
+  extern void run_cp_tests (void);
+
+  /* Declarations for specific families of tests within cp,
+     by source file, in alphabetical order.  */
+  extern void cp_pt_c_tests ();
+  extern void cp_tree_c_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
 
 /* -- end of C++ */
 

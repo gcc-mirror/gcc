@@ -1,5 +1,5 @@
 /* A type-safe hash set.
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -80,6 +80,10 @@ public:
 
   size_t elements () const { return m_table.elements (); }
 
+  /* Clear the hash table.  */
+
+  void empty () { m_table.empty (); }
+
   class iterator
   {
   public:
@@ -122,6 +126,44 @@ private:
 
   hash_table<Traits> m_table;
 };
+
+/* Generic hash_set<TYPE> debug helper.
+
+   This needs to be instantiated for each hash_set<TYPE> used throughout
+   the compiler like this:
+
+    DEFINE_DEBUG_HASH_SET (TYPE)
+
+   The reason we have a debug_helper() is because GDB can't
+   disambiguate a plain call to debug(some_hash), and it must be called
+   like debug<TYPE>(some_hash).  */
+template<typename T>
+void
+debug_helper (hash_set<T> &ref)
+{
+  for (typename hash_set<T>::iterator it = ref.begin ();
+       it != ref.end (); ++it)
+    {
+      debug_slim (*it);
+      fputc ('\n', stderr);
+    }
+}
+
+#define DEFINE_DEBUG_HASH_SET(T) \
+  template void debug_helper (hash_set<T> &);		\
+  DEBUG_FUNCTION void					\
+  debug (hash_set<T> &ref)				\
+  {							\
+    debug_helper <T> (ref);				\
+  }							\
+  DEBUG_FUNCTION void					\
+  debug (hash_set<T> *ptr)				\
+  {							\
+    if (ptr)						\
+      debug (*ptr);					\
+    else						\
+      fprintf (stderr, "<nil>\n");			\
+  }
 
 /* ggc marking routines.  */
 

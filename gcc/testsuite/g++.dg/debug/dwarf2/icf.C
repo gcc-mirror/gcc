@@ -21,13 +21,13 @@ class B
   int j;
 };
 
-int
+void
 test1(A* a)
 {
   a->work();
 }
 
-int
+void
 test2(A* a)
 {
   if (a->p())

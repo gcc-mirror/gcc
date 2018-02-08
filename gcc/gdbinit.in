@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2017 Free Software Foundation, Inc.
+# Copyright (C) 2001-2018 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -130,14 +130,6 @@ document ptn
 Print the name of the type-node that is $.
 end
 
-define pvt
-set debug_vec_tree ($)
-end
-
-document pvt
-Print the VEC(tree) that is in $.
-end
-
 define pdd
 set debug_dwarf_die ($)
 end
@@ -208,6 +200,16 @@ document pcfun
 Print current function.
 end
 
+define break-on-diagnostic
+break diagnostic_show_locus
+end
+
+document break-on-diagnostic
+Put a breakpoint on diagnostic_show_locus, called whenever a diagnostic
+is emitted (as opposed to those warnings that are suppressed by
+command-line options).
+end
+
 # Define some macros helpful to gdb when it is expanding macros.
 macro define __FILE__ "gdb"
 macro define __LINE__ 1
@@ -251,6 +253,9 @@ skip file is-a.h
 
 # And line-map.h.
 skip file line-map.h
+
+# And timevar.h.
+skip file timevar.h
 
 # Likewise, skip various inline functions in rtl.h.
 skip rtx_expr_list::next

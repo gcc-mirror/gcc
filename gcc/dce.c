@@ -1,5 +1,5 @@
 /* RTL dead code elimination.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,6 +130,12 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
     else if (DF_REF_REG (def) == pic_offset_table_rtx
 	     && REGNO (pic_offset_table_rtx) >= FIRST_PSEUDO_REGISTER)
       return false;
+
+  /* Callee-save restores are needed.  */
+  if (RTX_FRAME_RELATED_P (insn)
+      && crtl->shrink_wrapped_separate
+      && find_reg_note (insn, REG_CFA_RESTORE, NULL))
+    return false;
 
   body = PATTERN (insn);
   switch (GET_CODE (body))
@@ -293,9 +299,8 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
       {
 	rtx mem = XEXP (XEXP (p, 0), 0), addr;
 	HOST_WIDE_INT off = 0, size;
-	if (!MEM_SIZE_KNOWN_P (mem))
+	if (!MEM_SIZE_KNOWN_P (mem) || !MEM_SIZE (mem).is_constant (&size))
 	  return false;
-	size = MEM_SIZE (mem);
 	addr = XEXP (mem, 0);
 	if (GET_CODE (addr) == PLUS
 	    && REG_P (XEXP (addr, 0))
@@ -360,7 +365,9 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	&& MEM_P (XEXP (XEXP (p, 0), 0)))
       {
 	rtx mem = XEXP (XEXP (p, 0), 0), addr;
-	HOST_WIDE_INT off = 0, byte;
+	HOST_WIDE_INT off = 0, byte, size;
+	/* Checked in the previous iteration.  */
+	size = MEM_SIZE (mem).to_constant ();
 	addr = XEXP (mem, 0);
 	if (GET_CODE (addr) == PLUS
 	    && REG_P (XEXP (addr, 0))
@@ -386,7 +393,7 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	    set = single_set (DF_REF_INSN (defs->ref));
 	    off += INTVAL (XEXP (SET_SRC (set), 1));
 	  }
-	for (byte = off; byte < off + MEM_SIZE (mem); byte++)
+	for (byte = off; byte < off + size; byte++)
 	  {
 	    if (!bitmap_set_bit (sp_bytes, byte - min_sp_off))
 	      gcc_unreachable ();
@@ -469,8 +476,10 @@ find_call_stack_args (rtx_call_insn *call_insn, bool do_mark, bool fast,
 	    break;
 	}
 
+      HOST_WIDE_INT size;
       if (!MEM_SIZE_KNOWN_P (mem)
-	  || !check_argument_store (MEM_SIZE (mem), off, min_sp_off,
+	  || !MEM_SIZE (mem).is_constant (&size)
+	  || !check_argument_store (size, off, min_sp_off,
 				    max_sp_off, sp_bytes))
 	break;
 
@@ -588,15 +597,6 @@ delete_unmarked_insns (void)
 	     miscompile.  */
 	  if (!dbg_cnt (dce))
 	    continue;
-
-	  if (crtl->shrink_wrapped_separate
-	      && find_reg_note (insn, REG_CFA_RESTORE, NULL))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "DCE: NOT deleting insn %d, it's a "
-				    "callee-save restore\n", INSN_UID (insn));
-	      continue;
-	    }
 
 	  if (dump_file)
 	    fprintf (dump_file, "DCE: Deleting insn %d\n", INSN_UID (insn));
@@ -777,7 +777,7 @@ rest_of_handle_ud_dce (void)
     }
   worklist.release ();
 
-  if (MAY_HAVE_DEBUG_INSNS)
+  if (MAY_HAVE_DEBUG_BIND_INSNS)
     reset_unmarked_insns_debug_uses ();
 
   /* Before any insns are deleted, we must remove the chains since
@@ -881,8 +881,8 @@ word_dce_process_block (basic_block bb, bool redo_out,
 	df_ref use;
 	FOR_EACH_INSN_USE (use, insn)
 	  if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER
-	      && (GET_MODE_SIZE (GET_MODE (DF_REF_REAL_REG (use)))
-		  == 2 * UNITS_PER_WORD)
+	      && known_eq (GET_MODE_SIZE (GET_MODE (DF_REF_REAL_REG (use))),
+			   2 * UNITS_PER_WORD)
 	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (use))
 	      && !bitmap_bit_p (local_live, 2 * DF_REF_REGNO (use) + 1))
 	    dead_debug_add (&debug, use, DF_REF_REGNO (use));

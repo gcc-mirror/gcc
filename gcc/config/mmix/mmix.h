@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -761,7 +761,7 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 /* (empty) */
 
 
-/* Node: SDB and DWARF */
+/* Node: DWARF */
 #define DWARF2_DEBUGGING_INFO 1
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 

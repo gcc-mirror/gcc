@@ -1,5 +1,5 @@
 /* Output routines for GCC for Renesas / SuperH SH.
-   Copyright (C) 1993-2017 Free Software Foundation, Inc.
+   Copyright (C) 1993-2018 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include <sstream>
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #define INCLUDE_VECTOR
@@ -267,7 +269,8 @@ static bool sh_legitimate_address_p (machine_mode, rtx, bool);
 static rtx sh_legitimize_address (rtx, rtx, machine_mode);
 static rtx sh_delegitimize_address (rtx);
 static bool sh_cannot_substitute_mem_equiv_p (rtx);
-static bool sh_legitimize_address_displacement (rtx *, rtx *, machine_mode);
+static bool sh_legitimize_address_displacement (rtx *, rtx *,
+						poly_int64, machine_mode);
 static int scavenge_reg (HARD_REG_SET *s);
 
 static rtx sh_struct_value_rtx (tree, int);
@@ -329,25 +332,25 @@ static bool sh_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "interrupt_handler", 0, 0, true,  false, false,
-    sh_handle_interrupt_handler_attribute, false },
-  { "sp_switch",         1, 1, true,  false, false,
-     sh_handle_sp_switch_attribute, false },
-  { "trap_exit",         1, 1, true,  false, false,
-    sh_handle_trap_exit_attribute, false },
-  { "renesas",           0, 0, false, true, false,
-    sh_handle_renesas_attribute, false },
-  { "trapa_handler",     0, 0, true,  false, false,
-    sh_handle_interrupt_handler_attribute, false },
-  { "nosave_low_regs",   0, 0, true,  false, false,
-    sh_handle_interrupt_handler_attribute, false },
-  { "resbank",           0, 0, true,  false, false,
-    sh_handle_resbank_handler_attribute, false },
-  { "function_vector",   1, 1, true,  false, false,
-    sh2a_handle_function_vector_handler_attribute, false },
-  { NULL,                0, 0, false, false, false, NULL, false }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "interrupt_handler", 0, 0, true,  false, false, false,
+    sh_handle_interrupt_handler_attribute, NULL },
+  { "sp_switch",         1, 1, true,  false, false, false,
+     sh_handle_sp_switch_attribute, NULL },
+  { "trap_exit",         1, 1, true,  false, false, false,
+    sh_handle_trap_exit_attribute, NULL },
+  { "renesas",           0, 0, false, true, false, false,
+    sh_handle_renesas_attribute, NULL },
+  { "trapa_handler",     0, 0, true,  false, false, false,
+    sh_handle_interrupt_handler_attribute, NULL },
+  { "nosave_low_regs",   0, 0, true,  false, false, false,
+    sh_handle_interrupt_handler_attribute, NULL },
+  { "resbank",           0, 0, true,  false, false, false,
+    sh_handle_resbank_handler_attribute, NULL },
+  { "function_vector",   1, 1, true,  false, false, false,
+    sh2a_handle_function_vector_handler_attribute, NULL },
+  { NULL,                0, 0, false, false, false, false, NULL, NULL }
 };
 
 /* Initialize the GCC target structure.  */
@@ -11393,20 +11396,21 @@ sh_cannot_substitute_mem_equiv_p (rtx)
   return true;
 }
 
-/* Return true if DISP can be legitimized.  */
+/* Implement TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT.  */
 static bool
-sh_legitimize_address_displacement (rtx *disp, rtx *offs,
+sh_legitimize_address_displacement (rtx *offset1, rtx *offset2,
+				    poly_int64 orig_offset,
 				    machine_mode mode)
 {
   if ((TARGET_FPU_DOUBLE && mode == DFmode)
       || (TARGET_SH2E && mode == SFmode))
     return false;
 
-  struct disp_adjust adj = sh_find_mov_disp_adjust (mode, INTVAL (*disp));
+  struct disp_adjust adj = sh_find_mov_disp_adjust (mode, orig_offset);
   if (adj.offset_adjust != NULL_RTX && adj.mov_disp != NULL_RTX)
     {
-      *disp = adj.mov_disp;
-      *offs = adj.offset_adjust;
+      *offset1 = adj.offset_adjust;
+      *offset2 = adj.mov_disp;
       return true;
     }
  
@@ -11896,8 +11900,8 @@ sh_is_logical_t_store_expr (rtx op, rtx_insn* insn)
 
       else
 	{
-	  set_of_reg op_set = sh_find_set_of_reg (ops[i], insn,
-						  prev_nonnote_insn_bb);
+	  set_of_reg op_set = sh_find_set_of_reg
+	    (ops[i], insn, prev_nonnote_nondebug_insn_bb);
 	  if (op_set.set_src == NULL_RTX)
 	    continue;
 
@@ -11929,7 +11933,8 @@ sh_try_omit_signzero_extend (rtx extended_op, rtx_insn* insn)
   if (GET_MODE (extended_op) != SImode)
     return NULL_RTX;
 
-  set_of_reg s = sh_find_set_of_reg (extended_op, insn, prev_nonnote_insn_bb);
+  set_of_reg s = sh_find_set_of_reg (extended_op, insn,
+				     prev_nonnote_nondebug_insn_bb);
   if (s.set_src == NULL_RTX)
     return NULL_RTX;
 
@@ -11965,10 +11970,10 @@ sh_split_movrt_negc_to_movt_xor (rtx_insn* curr_insn, rtx operands[])
   if (!can_create_pseudo_p ())
     return false;
 
-  set_of_reg t_before_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
-						 prev_nonnote_insn_bb);
-  set_of_reg t_after_negc = sh_find_set_of_reg (get_t_reg_rtx (), curr_insn,
-						next_nonnote_insn_bb);
+  set_of_reg t_before_negc = sh_find_set_of_reg
+    (get_t_reg_rtx (), curr_insn, prev_nonnote_nondebug_insn_bb);
+  set_of_reg t_after_negc = sh_find_set_of_reg
+    (get_t_reg_rtx (), curr_insn, next_nonnote_nondebug_insn_bb);
 
   if (t_before_negc.set_rtx != NULL_RTX && t_after_negc.set_rtx != NULL_RTX
       && rtx_equal_p (t_before_negc.set_rtx, t_after_negc.set_rtx)
@@ -12009,8 +12014,8 @@ sh_find_extending_set_of_reg (rtx reg, rtx_insn* curr_insn)
      Also try to look through the first extension that we hit.  There are some
      cases, where a zero_extend is followed an (implicit) sign_extend, and it
      fails to see the sign_extend.  */
-  sh_extending_set_of_reg result =
-	sh_find_set_of_reg (reg, curr_insn, prev_nonnote_insn_bb, true);
+  sh_extending_set_of_reg result = sh_find_set_of_reg
+    (reg, curr_insn, prev_nonnote_nondebug_insn_bb, true);
 
   if (result.set_src != NULL)
     {

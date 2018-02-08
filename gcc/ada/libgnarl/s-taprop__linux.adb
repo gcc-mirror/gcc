@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2018, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,9 +141,9 @@ package body System.Task_Primitives.Operations is
 
       function Monotonic_Clock return Duration;
       pragma Inline (Monotonic_Clock);
-      --  Returns "absolute" time, represented as an offset relative to "the
-      --  Epoch", which is Jan 1, 1970. This clock implementation is immune to
-      --  the system's clock changes.
+      --  Returns an absolute time, represented as an offset relative to some
+      --  unspecified starting point, typically system boot time. This clock is
+      --  not affected by discontinuous jumps in the system time.
 
       function RT_Resolution return Duration;
       pragma Inline (RT_Resolution);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -404,7 +404,7 @@ package body Sem_Disp is
       Func                   : Entity_Id;
       Subp_Entity            : Entity_Id;
       Indeterm_Ancestor_Call : Boolean := False;
-      Indeterm_Ctrl_Type     : Entity_Id;
+      Indeterm_Ctrl_Type     : Entity_Id := Empty; -- init to avoid warning
 
       Static_Tag : Node_Id := Empty;
       --  If a controlling formal has a statically tagged actual, the tag of
@@ -2371,16 +2371,26 @@ package body Sem_Disp is
    -----------------------------------
 
    function Is_Inherited_Public_Operation (Op : Entity_Id) return Boolean is
-      Prim      : constant Entity_Id := Alias (Op);
-      Scop      : constant Entity_Id := Scope (Prim);
       Pack_Decl : Node_Id;
+      Prim      : Entity_Id := Op;
+      Scop      : Entity_Id := Prim;
 
    begin
+      --  Locate the ultimate non-hidden alias entity
+
+      while Present (Alias (Prim)) and then not Is_Hidden (Alias (Prim)) loop
+         pragma Assert (Alias (Prim) /= Prim);
+         Prim := Alias (Prim);
+         Scop := Scope (Prim);
+      end loop;
+
       if Comes_From_Source (Prim) and then Ekind (Scop) = E_Package then
          Pack_Decl := Unit_Declaration_Node (Scop);
-         return Nkind (Pack_Decl) = N_Package_Declaration
-           and then List_Containing (Unit_Declaration_Node (Prim)) =
-                            Visible_Declarations (Specification (Pack_Decl));
+
+         return
+           Nkind (Pack_Decl) = N_Package_Declaration
+             and then List_Containing (Unit_Declaration_Node (Prim)) =
+                        Visible_Declarations (Specification (Pack_Decl));
 
       else
          return False;

@@ -1,5 +1,5 @@
 /* Primary expression subroutines
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -862,7 +862,7 @@ match_substring (gfc_charlen *cl, int init, gfc_ref **result, bool deferred)
 
       ref->type = REF_SUBSTRING;
       if (start == NULL)
-	start = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
+	start = gfc_get_int_expr (gfc_charlen_int_kind, NULL, 1);
       ref->u.ss.start = start;
       if (end == NULL && cl)
 	end = gfc_copy_expr (cl->length);
@@ -1006,7 +1006,8 @@ static match
 match_string_constant (gfc_expr **result)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1], peek;
-  int i, kind, length, save_warn_ampersand, ret;
+  size_t length;
+  int kind,save_warn_ampersand, ret;
   locus old_locus, start_locus;
   gfc_symbol *sym;
   gfc_expr *e;
@@ -1125,7 +1126,7 @@ got_delim:
   warn_ampersand = false;
 
   p = e->value.character.string;
-  for (i = 0; i < length; i++)
+  for (size_t i = 0; i < length; i++)
     {
       c = next_string_char (delimiter, &ret);
 

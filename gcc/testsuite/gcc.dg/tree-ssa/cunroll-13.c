@@ -19,5 +19,5 @@ t(struct a *a)
 /* { dg-final { scan-tree-dump-times "Loop 1 iterates 123454 times" 1 "cunroll" } } */
 /* { dg-final { scan-tree-dump-times "Last iteration exit edge was proved true" 1 "cunroll" } } */
 /* { dg-final { scan-tree-dump-times "Exit condition of peeled iterations was eliminated" 1 "cunroll" } } */
-/* { dg-final { scan-tree-dump-times "loop with 7 iterations completely unrolled" 1 "cunroll" } } */
+/* { dg-final { scan-tree-dump-times "loop with 6 iterations completely unrolled" 1 "cunroll" } } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "cunroll" } } */

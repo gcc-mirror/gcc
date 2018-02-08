@@ -1,5 +1,5 @@
 /* Compilation switch flag type definitions for GCC.
-   Copyright (C) 1987-2017 Free Software Foundation, Inc.
+   Copyright (C) 1987-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,7 +24,6 @@ enum debug_info_type
 {
   NO_DEBUG,	    /* Write no debug info.  */
   DBX_DEBUG,	    /* Write BSD .stabs for DBX (using dbxout.c).  */
-  SDB_DEBUG,	    /* Write COFF for (old) SDB (using sdbout.c).  */
   DWARF2_DEBUG,	    /* Write Dwarf v2 debug info (using dwarf2out.c).  */
   XCOFF_DEBUG,	    /* Write IBM/Xcoff debug info (using dbxout.c).  */
   VMS_DEBUG,        /* Write VMS debug info (using vmsdbgout.c).  */
@@ -247,6 +246,8 @@ enum sanitize_code {
   SANITIZE_BOUNDS_STRICT = 1UL << 23,
   SANITIZE_POINTER_OVERFLOW = 1UL << 24,
   SANITIZE_BUILTIN = 1UL << 25,
+  SANITIZE_POINTER_COMPARE = 1UL << 26,
+  SANITIZE_POINTER_SUBTRACT = 1UL << 27,
   SANITIZE_SHIFT = SANITIZE_SHIFT_BASE | SANITIZE_SHIFT_EXPONENT,
   SANITIZE_UNDEFINED = SANITIZE_SHIFT | SANITIZE_DIVIDE | SANITIZE_UNREACHABLE
 		       | SANITIZE_VLA | SANITIZE_NULL | SANITIZE_RETURN

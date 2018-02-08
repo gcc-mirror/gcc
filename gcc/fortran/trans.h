@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -837,6 +837,12 @@ extern GTY(()) tree gfor_fndecl_caf_fail_image;
 extern GTY(()) tree gfor_fndecl_caf_failed_images;
 extern GTY(()) tree gfor_fndecl_caf_image_status;
 extern GTY(()) tree gfor_fndecl_caf_stopped_images;
+extern GTY(()) tree gfor_fndecl_caf_form_team;
+extern GTY(()) tree gfor_fndecl_caf_change_team;
+extern GTY(()) tree gfor_fndecl_caf_end_team;
+extern GTY(()) tree gfor_fndecl_caf_get_team;
+extern GTY(()) tree gfor_fndecl_caf_sync_team;
+extern GTY(()) tree gfor_fndecl_caf_team_number;
 extern GTY(()) tree gfor_fndecl_co_broadcast;
 extern GTY(()) tree gfor_fndecl_co_max;
 extern GTY(()) tree gfor_fndecl_co_min;
@@ -913,6 +919,12 @@ extern GTY(()) tree gfor_fndecl_ieee_procedure_exit;
 
 /* gfortran-specific declaration information, the _CONT versions denote
    arrays with CONTIGUOUS attribute.  */
+
+#define GFC_DTYPE_ELEM_LEN 0
+#define GFC_DTYPE_VERSION 1
+#define GFC_DTYPE_RANK 2
+#define GFC_DTYPE_TYPE 3
+#define GFC_DTYPE_ATTRIBUTE 4
 
 enum gfc_array_kind
 {

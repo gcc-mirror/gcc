@@ -307,8 +307,6 @@ plugindir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/plugin
 cc1libdir = $(libdir)/$(libsuffix)
 @ENABLE_PLUGIN_TRUE@plugin_LTLIBRARIES = libcc1plugin.la libcp1plugin.la
 @ENABLE_PLUGIN_TRUE@cc1lib_LTLIBRARIES = libcc1.la
-BUILT_SOURCES = c-compiler-name.h cp-compiler-name.h
-MOSTLYCLEANFILES = c-compiler-name.h cp-compiler-name.h
 shared_source = callbacks.cc callbacks.hh connection.cc connection.hh \
     marshall.cc marshall.hh rpc.hh status.hh
 
@@ -344,7 +342,7 @@ libcc1_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(libcc1_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
-all: $(BUILT_SOURCES) cc1plugin-config.h
+all: cc1plugin-config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
@@ -567,15 +565,13 @@ GTAGS:
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
+check: check-am
 all-am: Makefile $(LTLIBRARIES) cc1plugin-config.h
 installdirs:
 	for dir in "$(DESTDIR)$(cc1libdir)" "$(DESTDIR)$(plugindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -595,7 +591,6 @@ install-strip:
 	    "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'" install; \
 	fi
 mostlyclean-generic:
-	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 
@@ -606,7 +601,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-cc1libLTLIBRARIES clean-generic clean-libtool \
@@ -681,7 +675,7 @@ ps-am:
 
 uninstall-am: uninstall-cc1libLTLIBRARIES uninstall-pluginLTLIBRARIES
 
-.MAKE: all check install install-am install-strip
+.MAKE: all install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
 	clean-cc1libLTLIBRARIES clean-generic clean-libtool \
@@ -701,21 +695,6 @@ uninstall-am: uninstall-cc1libLTLIBRARIES uninstall-pluginLTLIBRARIES
 
 override CXXFLAGS := $(filter-out -fsanitize=address,$(CXXFLAGS))
 override LDFLAGS := $(filter-out -fsanitize=address,$(LDFLAGS))
-
-# Put this in a header so we don't run sed for each compilation.  This
-# is also simpler to debug as one can easily see the constant.
-# FIXME: compute it in configure.ac and output it in config.status, or
-# introduce timestamp files for some indirection to avoid rebuilding it
-# every time.
-c-compiler-name.h: Makefile
-	-rm -f $@T
-	echo "#define C_COMPILER_NAME \"`echo gcc | sed '$(transform)'`\"" > $@T
-	mv $@T $@ # $(SHELL) $(srcdir)/../move-if-change $@T $@
-
-cp-compiler-name.h: Makefile
-	-rm -f $@T
-	echo "#define CP_COMPILER_NAME \"`echo g++ | sed '$(transform)'`\"" > $@T
-	mv $@T $@ # $(SHELL) $(srcdir)/../move-if-change $@T $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

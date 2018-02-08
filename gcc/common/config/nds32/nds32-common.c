@@ -1,5 +1,5 @@
 /* Common hooks of Andes NDS32 cpu for GNU compiler
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -97,14 +97,18 @@ static const struct default_options nds32_option_optimization_table[] =
 
    Other MASK_XXX flags are set individually.
    By default we enable
-     TARGET_16_BIT   : Generate 16/32 bit mixed length instruction.
-     TARGET_PERF_EXT : Generate performance extention instrcution.
-     TARGET_CMOV     : Generate conditional move instruction.  */
+     TARGET_16_BIT     : Generate 16/32 bit mixed length instruction.
+     TARGET_EXT_PERF   : Generate performance extention instrcution.
+     TARGET_EXT_PERF2  : Generate performance extention version 2 instrcution.
+     TARGET_EXT_STRING : Generate string extention instrcution.
+     TARGET_CMOV       : Generate conditional move instruction.  */
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
   (TARGET_CPU_DEFAULT				\
    | MASK_16_BIT				\
-   | MASK_PERF_EXT				\
+   | MASK_EXT_PERF				\
+   | MASK_EXT_PERF2				\
+   | MASK_EXT_STRING				\
    | MASK_CMOV)
 
 #undef TARGET_HANDLE_OPTION

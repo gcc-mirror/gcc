@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3110,6 +3110,28 @@ package body Sprint is
             Sprint_Indented_List (Component_Clauses (Node));
             Write_Indent_Str ("end record;");
 
+         when N_Reduction_Expression =>
+            Write_Str (" for");
+
+            if Present (Iterator_Specification (Node)) then
+               Sprint_Node (Iterator_Specification (Node));
+            else
+               Sprint_Node (Loop_Parameter_Specification (Node));
+            end if;
+
+            Write_Str (" => ");
+            Sprint_Node (Expression (Node));
+            null;
+
+         when N_Reduction_Expression_Parameter =>
+            Write_Char ('<');
+
+            if Present (Expression (Node)) then
+               Sprint_Node (Expression (Node));
+            end if;
+
+            Write_Char ('>');
+
          when N_Reference =>
             Sprint_Node (Prefix (Node));
             Write_Str_With_Col_Check_Sloc ("'reference");
@@ -3458,6 +3480,25 @@ package body Sprint is
             Write_Str (", ");
             Sprint_Node (Target_Type (Node));
             Write_Str (");");
+
+         when N_Variable_Reference_Marker =>
+            null;
+
+            --  Enable the following code for debugging purposes only
+
+            --  if Is_Read (Node) and then Is_Write (Node) then
+            --     Write_Indent_Str ("rw#");
+
+            --  elsif Is_Read (Node) then
+            --     Write_Indent_Str ("r#");
+
+            --  else
+            --     pragma Assert (Is_Write (Node));
+            --     Write_Indent_Str ("w#");
+            --  end if;
+
+            --  Write_Id (Target (Node));
+            --  Write_Char ('#');
 
          when N_Variant =>
             Write_Indent_Str_Sloc ("when ");

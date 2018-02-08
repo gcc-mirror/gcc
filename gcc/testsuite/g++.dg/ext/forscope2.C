@@ -16,7 +16,7 @@ struct A
 
 void Go( )
 {
-  for (int i = 1;;)	// { dg-warning "using obsolete binding" }
+  for (int i = 1;;)	// { dg-message "using obsolete binding" }
     {
       switch (1) {
       default: {}

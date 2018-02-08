@@ -1,5 +1,5 @@
 /* AddressSanitizer, a fast memory error detector.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    Contributed by Kostya Serebryany <kcc@google.com>
 
 This file is part of GCC.
@@ -1228,6 +1228,11 @@ asan_function_start (void)
 static unsigned HOST_WIDE_INT
 shadow_mem_size (unsigned HOST_WIDE_INT size)
 {
+  /* It must be possible to align stack variables to granularity
+     of shadow memory.  */
+  gcc_assert (BITS_PER_UNIT
+	      * ASAN_SHADOW_GRANULARITY <= MAX_SUPPORTED_STACK_ALIGNMENT);
+
   return ROUND_UP (size, ASAN_SHADOW_GRANULARITY) / ASAN_SHADOW_GRANULARITY;
 }
 
@@ -1386,7 +1391,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   TREE_ASM_WRITTEN (id) = 1;
   emit_move_insn (mem, expand_normal (build_fold_addr_expr (decl)));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
-			      GEN_INT (ASAN_SHADOW_SHIFT),
+			      gen_int_shift_amount (Pmode, ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   shadow_base
     = plus_constant (Pmode, shadow_base,
@@ -1605,7 +1610,7 @@ is_odr_indicator (tree decl)
    ASAN_RED_ZONE_SIZE bytes.  */
 
 bool
-asan_protect_global (tree decl)
+asan_protect_global (tree decl, bool ignore_decl_rtl_set_p)
 {
   if (!ASAN_GLOBALS)
     return false;
@@ -1627,7 +1632,13 @@ asan_protect_global (tree decl)
       || DECL_THREAD_LOCAL_P (decl)
       /* Externs will be protected elsewhere.  */
       || DECL_EXTERNAL (decl)
-      || !DECL_RTL_SET_P (decl)
+      /* PR sanitizer/81697: For architectures that use section anchors first
+	 call to asan_protect_global may occur before DECL_RTL (decl) is set.
+	 We should ignore DECL_RTL_SET_P then, because otherwise the first call
+	 to asan_protect_global will return FALSE and the following calls on the
+	 same decl after setting DECL_RTL (decl) will return TRUE and we'll end
+	 up with inconsistency at runtime.  */
+      || (!DECL_RTL_SET_P (decl) && !ignore_decl_rtl_set_p)
       /* Comdat vars pose an ABI problem, we can't know if
 	 the var that is selected by the linker will have
 	 padding or not.  */
@@ -1645,20 +1656,25 @@ asan_protect_global (tree decl)
 	  && !section_sanitized_p (DECL_SECTION_NAME (decl)))
       || DECL_SIZE (decl) == 0
       || ASAN_RED_ZONE_SIZE * BITS_PER_UNIT > MAX_OFILE_ALIGNMENT
+      || TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST
       || !valid_constant_size_p (DECL_SIZE_UNIT (decl))
       || DECL_ALIGN_UNIT (decl) > 2 * ASAN_RED_ZONE_SIZE
       || TREE_TYPE (decl) == ubsan_get_source_location_type ()
       || is_odr_indicator (decl))
     return false;
 
-  rtl = DECL_RTL (decl);
-  if (!MEM_P (rtl) || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF)
-    return false;
-  symbol = XEXP (rtl, 0);
+  if (!ignore_decl_rtl_set_p || DECL_RTL_SET_P (decl))
+    {
 
-  if (CONSTANT_POOL_ADDRESS_P (symbol)
-      || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
-    return false;
+      rtl = DECL_RTL (decl);
+      if (!MEM_P (rtl) || GET_CODE (XEXP (rtl, 0)) != SYMBOL_REF)
+	return false;
+      symbol = XEXP (rtl, 0);
+
+      if (CONSTANT_POOL_ADDRESS_P (symbol)
+	  || TREE_CONSTANT_POOL_ADDRESS_P (symbol))
+	return false;
+    }
 
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return false;
@@ -1801,6 +1817,7 @@ create_cond_insert_point (gimple_stmt_iterator *iter,
     ? profile_probability::very_unlikely ()
     : profile_probability::very_likely ();
   e->probability = fallthrough_probability.invert ();
+  then_bb->count = e->count ();
   if (create_then_fallthru_edge)
     make_single_succ_edge (then_bb, fallthru_bb, EDGE_FALLTHRU);
 
@@ -2064,7 +2081,7 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
   if (size_in_bytes <= 0)
     return;
 
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree offset;
   machine_mode mode;
   int unsignedp, reversep, volatilep = 0;
@@ -2082,19 +2099,19 @@ instrument_derefs (gimple_stmt_iterator *iter, tree t,
       return;
     }
 
-  if (bitpos % BITS_PER_UNIT
-      || bitsize != size_in_bytes * BITS_PER_UNIT)
+  if (!multiple_p (bitpos, BITS_PER_UNIT)
+      || maybe_ne (bitsize, size_in_bytes * BITS_PER_UNIT))
     return;
 
   if (VAR_P (inner) && DECL_HARD_REGISTER (inner))
     return;
 
+  poly_int64 decl_size;
   if (VAR_P (inner)
       && offset == NULL_TREE
-      && bitpos >= 0
       && DECL_SIZE (inner)
-      && tree_fits_shwi_p (DECL_SIZE (inner))
-      && bitpos + bitsize <= tree_to_shwi (DECL_SIZE (inner)))
+      && poly_int_tree_p (DECL_SIZE (inner), &decl_size)
+      && known_subrange_p (bitpos, bitsize, 0, decl_size))
     {
       if (DECL_THREAD_LOCAL_P (inner))
 	return;
@@ -2804,14 +2821,17 @@ initialize_sanitizer_builtins (void)
 #define ATTR_PURE_NOTHROW_LEAF_LIST ECF_PURE | ATTR_NOTHROW_LEAF_LIST
 #undef DEF_BUILTIN_STUB
 #define DEF_BUILTIN_STUB(ENUM, NAME)
-#undef DEF_SANITIZER_BUILTIN
-#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
+#undef DEF_SANITIZER_BUILTIN_1
+#define DEF_SANITIZER_BUILTIN_1(ENUM, NAME, TYPE, ATTRS)		\
   do {									\
     decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
 				 BUILT_IN_NORMAL, NAME, NULL_TREE);	\
     set_call_expr_flags (decl, ATTRS);					\
     set_builtin_decl (ENUM, decl, true);				\
-  } while (0);
+  } while (0)
+#undef DEF_SANITIZER_BUILTIN
+#define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
+  DEF_SANITIZER_BUILTIN_1 (ENUM, NAME, TYPE, ATTRS);
 
 #include "sanitizer.def"
 
@@ -2820,10 +2840,11 @@ initialize_sanitizer_builtins (void)
      DEF_SANITIZER_BUILTIN here only as a convenience macro.  */
   if ((flag_sanitize & SANITIZE_OBJECT_SIZE)
       && !builtin_decl_implicit_p (BUILT_IN_OBJECT_SIZE))
-    DEF_SANITIZER_BUILTIN (BUILT_IN_OBJECT_SIZE, "object_size",
-			   BT_FN_SIZE_CONST_PTR_INT,
-			   ATTR_PURE_NOTHROW_LEAF_LIST)
+    DEF_SANITIZER_BUILTIN_1 (BUILT_IN_OBJECT_SIZE, "object_size",
+			     BT_FN_SIZE_CONST_PTR_INT,
+			     ATTR_PURE_NOTHROW_LEAF_LIST);
 
+#undef DEF_SANITIZER_BUILTIN_1
 #undef DEF_SANITIZER_BUILTIN
 #undef DEF_BUILTIN_STUB
 }
@@ -2942,6 +2963,9 @@ asan_finish_file (void)
       TREE_CONSTANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (var) = ctor;
+      SET_DECL_ALIGN (var, MAX (DECL_ALIGN (var),
+				ASAN_SHADOW_GRANULARITY * BITS_PER_UNIT));
+
       varpool_node::finalize_decl (var);
 
       tree fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);

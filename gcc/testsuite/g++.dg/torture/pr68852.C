@@ -34,6 +34,7 @@ public:
 	c[2] = m_fn2(b);
 	c[3] = m_fn2(a);
 	c[ProjectRectBounds_next].m_fn1();
+	return 0;
     }
     D operator*(D p1) {
 	D d;

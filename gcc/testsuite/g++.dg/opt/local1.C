@@ -8,7 +8,7 @@ struct Outer {
 inline void h(const Outer &o)
 {
   struct Local : public Outer::Inner {
-    virtual bool f() {};
+    virtual bool f() { return true; };
   };
   Local l;
   o.g(l);

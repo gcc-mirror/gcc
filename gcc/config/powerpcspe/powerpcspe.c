@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991-2017 Free Software Foundation, Inc.
+   Copyright (C) 1991-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -17,6 +17,8 @@
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -77,6 +79,7 @@
 #endif
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
+#include "rtx-vector-builder.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1533,22 +1536,22 @@ static const char alt_reg_names[][8] =
 
 static const struct attribute_spec rs6000_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "altivec",   1, 1, false, true,  false, rs6000_handle_altivec_attribute,
-    false },
-  { "longcall",  0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
-  { "shortcall", 0, 0, false, true,  true,  rs6000_handle_longcall_attribute,
-    false },
-  { "ms_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
-  { "gcc_struct", 0, 0, false, false, false, rs6000_handle_struct_attribute,
-    false },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+       affects_type_identity, handler, exclude } */
+  { "altivec",   1, 1, false, true,  false, false,
+    rs6000_handle_altivec_attribute, NULL },
+  { "longcall",  0, 0, false, true,  true,  false,
+    rs6000_handle_longcall_attribute, NULL },
+  { "shortcall", 0, 0, false, true,  true,  false,
+    rs6000_handle_longcall_attribute, NULL },
+  { "ms_struct", 0, 0, false, false, false, false,
+    rs6000_handle_struct_attribute, NULL },
+  { "gcc_struct", 0, 0, false, false, false, false,
+    rs6000_handle_struct_attribute, NULL },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
-  { NULL,        0, 0, false, false, false, NULL, false }
+  { NULL,        0, 0, false, false, false, false, NULL, NULL }
 };
 
 #ifndef TARGET_PROFILE_KERNEL
@@ -1936,8 +1939,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P rs6000_legitimate_constant_p
 
-#undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
-#define TARGET_VECTORIZE_VEC_PERM_CONST_OK rs6000_vectorize_vec_perm_const_ok
+#undef TARGET_VECTORIZE_VEC_PERM_CONST
+#define TARGET_VECTORIZE_VEC_PERM_CONST rs6000_vectorize_vec_perm_const
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
@@ -38311,6 +38314,9 @@ rs6000_emit_parity (rtx dst, rtx src)
 }
 
 /* Expand an Altivec constant permutation for little endian mode.
+   OP0 and OP1 are the input vectors and TARGET is the output vector.
+   SEL specifies the constant permutation vector.
+
    There are two issues: First, the two input operands must be
    swapped so that together they form a double-wide array in LE
    order.  Second, the vperm instruction has surprising behavior
@@ -38352,22 +38358,18 @@ rs6000_emit_parity (rtx dst, rtx src)
 
    vr9  = 00000006 00000004 00000002 00000000.  */
 
-void
-altivec_expand_vec_perm_const_le (rtx operands[4])
+static void
+altivec_expand_vec_perm_const_le (rtx target, rtx op0, rtx op1,
+				  const vec_perm_indices &sel)
 {
   unsigned int i;
   rtx perm[16];
   rtx constv, unspec;
-  rtx target = operands[0];
-  rtx op0 = operands[1];
-  rtx op1 = operands[2];
-  rtx sel = operands[3];
 
   /* Unpack and adjust the constant selector.  */
   for (i = 0; i < 16; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      unsigned int elt = 31 - (INTVAL (e) & 31);
+      unsigned int elt = 31 - (sel[i] & 31);
       perm[i] = GEN_INT (elt);
     }
 
@@ -38449,10 +38451,14 @@ altivec_expand_vec_perm_le (rtx operands[4])
 }
 
 /* Expand an Altivec constant permutation.  Return true if we match
-   an efficient implementation; false to fall back to VPERM.  */
+   an efficient implementation; false to fall back to VPERM.
 
-bool
-altivec_expand_vec_perm_const (rtx operands[4])
+   OP0 and OP1 are the input vectors and TARGET is the output vector.
+   SEL specifies the constant permutation vector.  */
+
+static bool
+altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
+			       const vec_perm_indices &sel)
 {
   struct altivec_perm_insn {
     HOST_WIDE_INT mask;
@@ -38496,19 +38502,13 @@ altivec_expand_vec_perm_const (rtx operands[4])
 
   unsigned int i, j, elt, which;
   unsigned char perm[16];
-  rtx target, op0, op1, sel, x;
+  rtx x;
   bool one_vec;
-
-  target = operands[0];
-  op0 = operands[1];
-  op1 = operands[2];
-  sel = operands[3];
 
   /* Unpack the constant selector.  */
   for (i = which = 0; i < 16; ++i)
     {
-      rtx e = XVECEXP (sel, 0, i);
-      elt = INTVAL (e) & 31;
+      elt = sel[i] & 31;
       which |= (elt < 16 ? 1 : 2);
       perm[i] = elt;
     }
@@ -38664,7 +38664,7 @@ altivec_expand_vec_perm_const (rtx operands[4])
 
   if (!BYTES_BIG_ENDIAN)
     {
-      altivec_expand_vec_perm_const_le (operands);
+      altivec_expand_vec_perm_const_le (target, op0, op1, sel);
       return true;
     }
 
@@ -38724,60 +38724,54 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
   return true;
 }
 
-bool
-rs6000_expand_vec_perm_const (rtx operands[4])
-{
-  rtx target, op0, op1, sel;
-  unsigned char perm0, perm1;
-
-  target = operands[0];
-  op0 = operands[1];
-  op1 = operands[2];
-  sel = operands[3];
-
-  /* Unpack the constant selector.  */
-  perm0 = INTVAL (XVECEXP (sel, 0, 0)) & 3;
-  perm1 = INTVAL (XVECEXP (sel, 0, 1)) & 3;
-
-  return rs6000_expand_vec_perm_const_1 (target, op0, op1, perm0, perm1);
-}
-
-/* Test whether a constant permutation is supported.  */
+/* Implement TARGET_VECTORIZE_VEC_PERM_CONST.  */
 
 static bool
-rs6000_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
+rs6000_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
+				 rtx op1, const vec_perm_indices &sel)
 {
+  bool testing_p = !target;
+
   /* AltiVec (and thus VSX) can handle arbitrary permutations.  */
-  if (TARGET_ALTIVEC)
+  if (TARGET_ALTIVEC && testing_p)
     return true;
 
-  /* Check for ps_merge* or evmerge* insns.  */
-  if ((TARGET_PAIRED_FLOAT && vmode == V2SFmode)
-      || (TARGET_SPE && vmode == V2SImode))
+  /* Check for ps_merge*, evmerge* or xxperm* insns.  */
+  if ((vmode == V2SFmode && TARGET_PAIRED_FLOAT)
+      || (vmode == V2SImode && TARGET_SPE)
+      || ((vmode == V2DFmode || vmode == V2DImode)
+	  && VECTOR_MEM_VSX_P (vmode)))
     {
-      rtx op0 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 1);
-      rtx op1 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 2);
-      return rs6000_expand_vec_perm_const_1 (NULL, op0, op1, sel[0], sel[1]);
+      if (testing_p)
+	{
+	  op0 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 1);
+	  op1 = gen_raw_REG (vmode, LAST_VIRTUAL_REGISTER + 2);
+	}
+      if (rs6000_expand_vec_perm_const_1 (target, op0, op1, sel[0], sel[1]))
+	return true;
+    }
+
+  if (TARGET_ALTIVEC)
+    {
+      /* Force the target-independent code to lower to V16QImode.  */
+      if (vmode != V16QImode)
+	return false;
+      if (altivec_expand_vec_perm_const (target, op0, op1, sel))
+	return true;
     }
 
   return false;
 }
 
-/* A subroutine for rs6000_expand_extract_even & rs6000_expand_interleave.  */
+/* A subroutine for rs6000_expand_extract_even & rs6000_expand_interleave.
+   OP0 and OP1 are the input vectors and TARGET is the output vector.
+   PERM specifies the constant permutation vector.  */
 
 static void
 rs6000_do_expand_vec_perm (rtx target, rtx op0, rtx op1,
-			   machine_mode vmode, unsigned nelt, rtx perm[])
+			   machine_mode vmode, const vec_perm_builder &perm)
 {
-  machine_mode imode;
-  rtx x;
-
-  imode = vmode;
-  if (GET_MODE_CLASS (vmode) != MODE_VECTOR_INT)
-    imode = mode_for_int_vector (vmode).require ();
-
-  x = gen_rtx_CONST_VECTOR (imode, gen_rtvec_v (nelt, perm));
-  x = expand_vec_perm (vmode, op0, op1, x, target);
+  rtx x = expand_vec_perm_const (vmode, op0, op1, perm, BLKmode, target);
   if (x != target)
     emit_move_insn (target, x);
 }
@@ -38789,12 +38783,12 @@ rs6000_expand_extract_even (rtx target, rtx op0, rtx op1)
 {
   machine_mode vmode = GET_MODE (target);
   unsigned i, nelt = GET_MODE_NUNITS (vmode);
-  rtx perm[16];
+  vec_perm_builder perm (nelt, nelt, 1);
 
   for (i = 0; i < nelt; i++)
-    perm[i] = GEN_INT (i * 2);
+    perm.quick_push (i * 2);
 
-  rs6000_do_expand_vec_perm (target, op0, op1, vmode, nelt, perm);
+  rs6000_do_expand_vec_perm (target, op0, op1, vmode, perm);
 }
 
 /* Expand a vector interleave operation.  */
@@ -38804,16 +38798,16 @@ rs6000_expand_interleave (rtx target, rtx op0, rtx op1, bool highp)
 {
   machine_mode vmode = GET_MODE (target);
   unsigned i, high, nelt = GET_MODE_NUNITS (vmode);
-  rtx perm[16];
+  vec_perm_builder perm (nelt, nelt, 1);
 
   high = (highp ? 0 : nelt / 2);
   for (i = 0; i < nelt / 2; i++)
     {
-      perm[i * 2] = GEN_INT (i + high);
-      perm[i * 2 + 1] = GEN_INT (i + nelt + high);
+      perm.quick_push (i + high);
+      perm.quick_push (i + nelt + high);
     }
 
-  rs6000_do_expand_vec_perm (target, op0, op1, vmode, nelt, perm);
+  rs6000_do_expand_vec_perm (target, op0, op1, vmode, perm);
 }
 
 /* Scale a V2DF vector SRC by two to the SCALE and place in TGT.  */
@@ -42588,23 +42582,24 @@ mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
     }
 }
 
-/* OP is either a CONST_VECTOR or an expression containing one.
+/* *OP_PTR is either a CONST_VECTOR or an expression containing one.
    Swap the first half of the vector with the second in the first
    case.  Recurse to find it in the second.  */
 static void
-swap_const_vector_halves (rtx op)
+swap_const_vector_halves (rtx *op_ptr)
 {
   int i;
+  rtx op = *op_ptr;
   enum rtx_code code = GET_CODE (op);
   if (GET_CODE (op) == CONST_VECTOR)
     {
-      int half_units = GET_MODE_NUNITS (GET_MODE (op)) / 2;
-      for (i = 0; i < half_units; ++i)
-	{
-	  rtx temp = CONST_VECTOR_ELT (op, i);
-	  CONST_VECTOR_ELT (op, i) = CONST_VECTOR_ELT (op, i + half_units);
-	  CONST_VECTOR_ELT (op, i + half_units) = temp;
-	}
+      int units = GET_MODE_NUNITS (GET_MODE (op));
+      rtx_vector_builder builder (GET_MODE (op), units, 1);
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i + units / 2));
+      for (i = 0; i < units / 2; ++i)
+	builder.quick_push (CONST_VECTOR_ELT (op, i));
+      *op_ptr = builder.build ();
     }
   else
     {
@@ -42612,10 +42607,10 @@ swap_const_vector_halves (rtx op)
       const char *fmt = GET_RTX_FORMAT (code);
       for (i = 0; i < GET_RTX_LENGTH (code); ++i)
 	if (fmt[i] == 'e' || fmt[i] == 'u')
-	  swap_const_vector_halves (XEXP (op, i));
+	  swap_const_vector_halves (&XEXP (op, i));
 	else if (fmt[i] == 'E')
 	  for (j = 0; j < XVECLEN (op, i); ++j)
-	    swap_const_vector_halves (XVECEXP (op, i, j));
+	    swap_const_vector_halves (&XVECEXP (op, i, j));
     }
 }
 
@@ -42907,8 +42902,7 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
       {
 	/* A CONST_VECTOR will only show up somewhere in the RHS of a SET.  */
 	gcc_assert (GET_CODE (body) == SET);
-	rtx rhs = SET_SRC (body);
-	swap_const_vector_halves (rhs);
+	swap_const_vector_halves (&SET_SRC (body));
 	if (dump_file)
 	  fprintf (dump_file, "Swapping constant halves in insn %d\n", i);
 	break;

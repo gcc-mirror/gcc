@@ -56,4 +56,4 @@ program main
 1000 format (A2,100I4)
 end program main
 
-! { dg-final { scan-tree-dump-times "while" 7 "original" } }
+! { dg-final { scan-tree-dump-times "(?n)^\\s*while \\(1\\)$" 7 "original" } }

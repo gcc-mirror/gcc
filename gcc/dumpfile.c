@@ -1,5 +1,5 @@
 /* Dump infrastructure for optimizations and intermediate representation.
-   Copyright (C) 2012-2017 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -251,7 +251,7 @@ gcc::dump_manager::
 get_dump_file_info_by_switch (const char *swtch) const
 {
   for (unsigned i = 0; i < m_extra_dump_files_in_use; i++)
-    if (0 == strcmp (m_extra_dump_files[i].swtch, swtch))
+    if (strcmp (m_extra_dump_files[i].swtch, swtch) == 0)
       return &m_extra_dump_files[i];
 
   /* Not found.  */
@@ -472,6 +472,27 @@ dump_printf_loc (dump_flags_t dump_kind, source_location loc,
       va_end (ap);
     }
 }
+
+/* Output VALUE in decimal to appropriate dump streams.  */
+
+template<unsigned int N, typename C>
+void
+dump_dec (int dump_kind, const poly_int<N, C> &value)
+{
+  STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
+  signop sgn = poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED;
+  if (dump_file && (dump_kind & pflags))
+    print_dec (value, dump_file, sgn);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    print_dec (value, alt_dump_file, sgn);
+}
+
+template void dump_dec (int, const poly_uint16 &);
+template void dump_dec (int, const poly_int64 &);
+template void dump_dec (int, const poly_uint64 &);
+template void dump_dec (int, const poly_offset_int &);
+template void dump_dec (int, const poly_widest_int &);
 
 /* Start a dump for PHASE. Store user-supplied dump flags in
    *FLAG_PTR.  Return the number of streams opened.  Set globals

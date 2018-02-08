@@ -20,7 +20,7 @@ inline GVector& GVector::operator+= (const GVector& v)
   if (m_num != v.m_num)
     throw GException::vector_mismatch(m_num, v.m_num);
   for (int i = 0; i < m_num; ++i)  m_data[i] += v.m_data[i];
-};
+};	// { dg-warning "control reaches end of non-void function" }
 void eval(GVector* m_gradient, GVector* vect_cpy_grad, int n)
 {
 #pragma omp sections

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
 This file is part of GCC.
@@ -152,6 +152,9 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define WCHAR_TYPE_SIZE 16
 
 #define FIRST_PSEUDO_REGISTER 36
+
+#define GENERAL_REGNO_P(N)	IN_RANGE (N, 2, 31)
+#define GENERAL_REG_P(X)	(REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 
 #define FIXED_REGISTERS {\
   1,1,/* r0 r1 */\

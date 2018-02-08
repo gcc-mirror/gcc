@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -480,13 +480,6 @@ package Sem_Util is
    --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is
    --  False).
 
-   function Contains_Refined_State (Prag : Node_Id) return Boolean;
-   --  Determine whether pragma Prag contains a reference to the entity of an
-   --  abstract state with a visible refinement. Prag must denote one of the
-   --  following pragmas:
-   --    Depends
-   --    Global
-
    function Copy_Component_List
      (R_Typ : Entity_Id;
       Loc   : Source_Ptr) return List_Id;
@@ -768,6 +761,11 @@ package Sem_Util is
    --  to a discriminant carries the discriminant that it denotes when it is
    --  analyzed. Subsequent uses of this id on a different type denotes the
    --  discriminant at the same position in this new type.
+
+   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id;
+   --  Subsidiary to all Build_DIC_Procedure_xxx routines. Find the type which
+   --  defines the Default_Initial_Condition pragma of type Typ. This is either
+   --  Typ itself or a parent type when the pragma is inherited.
 
    function Find_Enclosing_Iterator_Loop (Id : Entity_Id) return Entity_Id;
    --  Find the nearest iterator loop which encloses arbitrary entity Id. If
@@ -1240,8 +1238,14 @@ package Sem_Util is
    --      either include a default expression or have a type which defines
    --      full default initialization. In the case of type extensions, the
    --      parent type defines full default initialization.
-   --   * A task type
-   --   * A private type whose Default_Initial_Condition is non-null
+   --    * A task type
+   --    * A private type with pragma Default_Initial_Condition that provides
+   --      full default initialization.
+
+   function Has_Fully_Default_Initializing_DIC_Pragma
+     (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ has a suitable Default_Initial_Condition
+   --  pragma which provides the full default initialization of the type.
 
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
@@ -1291,6 +1295,9 @@ package Sem_Util is
    --  Determine whether abstract state Id has a null refinement as expressed
    --  in pragma Refined_State. This function does not take into account the
    --  visible refinement region of abstract state Id.
+
+   function Has_Non_Null_Statements (L : List_Id) return Boolean;
+   --  Return True if L has non-null statements
 
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
@@ -1420,6 +1427,12 @@ package Sem_Util is
    --  partial view of the same entity. Note that Id may not have a partial
    --  view in which case the function returns Empty.
 
+   function Incomplete_View_From_Limited_With
+     (Typ : Entity_Id) return Entity_Id;
+   --  Typ is a type entity. This normally returns Typ. However, if there is
+   --  an incomplete view of this entity that comes from a limited-with'ed
+   --  package, then this returns that incomplete view.
+
    function Indexed_Component_Bit_Offset (N : Node_Id) return Uint;
    --  Given an N_Indexed_Component node, return the first bit position of the
    --  component if it is known at compile time. A value of No_Uint means that
@@ -1525,9 +1538,10 @@ package Sem_Util is
      (Ref_Id     : Entity_Id;
       Context_Id : Entity_Id) return Boolean;
    --  Subsidiary to the analysis of pragmas [Refined_]Depends and [Refined_]
-   --  Global. Determine whether entity Ref_Id (which must represent either
-   --  a protected type or a task type) denotes the current instance of a
-   --  concurrent type. Context_Id denotes the associated context where the
+   --  Global; also used when analyzing default expressions of protected and
+   --  record components. Determine whether entity Ref_Id (which must represent
+   --  either a protected type or a task type) denotes the current instance of
+   --  a concurrent type. Context_Id denotes the associated context where the
    --  pragma appears.
 
    function Is_Child_Or_Sibling
@@ -1547,11 +1561,39 @@ package Sem_Util is
    --  declarations. In Ada 2012 it also covers type and subtype declarations
    --  with aspects: Invariant, Predicate, and Default_Initial_Condition.
 
-   function Is_Declaration (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N denotes a declaration
-
-   function Is_Declaration_Other_Than_Renaming (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N denotes a non-renaming declaration
+   function Is_Declaration
+     (N                : Node_Id;
+      Body_OK          : Boolean := True;
+      Concurrent_OK    : Boolean := True;
+      Formal_OK        : Boolean := True;
+      Generic_OK       : Boolean := True;
+      Instantiation_OK : Boolean := True;
+      Renaming_OK      : Boolean := True;
+      Stub_OK          : Boolean := True;
+      Subprogram_OK    : Boolean := True;
+      Type_OK          : Boolean := True) return Boolean;
+   --  Determine whether arbitrary node N denotes a declaration depending
+   --  on the allowed subsets of declarations. Set the following flags to
+   --  consider specific subsets of declarations:
+   --
+   --    * Body_OK - body declarations
+   --
+   --    * Concurrent_OK - concurrent type declarations
+   --
+   --    * Formal_OK - formal declarations
+   --
+   --    * Generic_OK - generic declarations, including generic renamings
+   --
+   --    * Instantiation_OK - generic instantiations
+   --
+   --    * Renaming_OK - renaming declarations, including generic renamings
+   --
+   --    * Stub_OK - stub declarations
+   --
+   --    * Subprogram_OK - entry, expression function, and subprogram
+   --      declarations.
+   --
+   --    * Type_OK - type declarations, including concurrent types
 
    function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean;
    --  Returns True iff component Comp is declared within a variant part
@@ -1719,6 +1761,11 @@ package Sem_Util is
    --  without the need for a temporary, the typical example of an object not
    --  in this category being a function call.
 
+   function Is_Non_Preelaborable_Construct (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary construct N violates preelaborability as
+   --  defined in ARM 10.2.1 5-9/3. This routine takes into account both the
+   --  syntactic and semantic properties of the construct.
+
    function Is_Nontrivial_DIC_Procedure (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id denotes the procedure that verifies the
    --  assertion expression of pragma Default_Initial_Condition and if it does,
@@ -1796,7 +1843,9 @@ package Sem_Util is
 
    function Is_Preelaborable_Construct (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N violates the restrictions of
-   --  preelaborable constructs as defined in ARM 10.2.1(5-9).
+   --  preelaborable constructs as defined in ARM 10.2.1(5-9). Routine
+   --  Is_Non_Preelaborable_Construct takes into account the syntactic
+   --  and semantic properties of N for a more accurate diagnostic.
 
    function Is_Protected_Self_Reference (N : Node_Id) return Boolean;
    --  Return True if node N denotes a protected type name which represents
@@ -1965,10 +2014,6 @@ package Sem_Util is
    --  default is True since this routine is commonly invoked as part of the
    --  semantic analysis and it must not be disturbed by the rewriten nodes.
 
-   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
-   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
-   --  an assertion expression which should be verified at runtime.
-
    function Is_Visibly_Controlled (T : Entity_Id) return Boolean;
    --  Check whether T is derived from a visibly controlled type. This is true
    --  if the root type is declared in Ada.Finalization. If T is derived
@@ -2068,16 +2113,19 @@ package Sem_Util is
    --  cleaned up during resolution.
 
    procedure Mark_Elaboration_Attributes
-     (N_Id   : Node_Or_Entity_Id;
-      Checks : Boolean := False;
-      Level  : Boolean := False;
-      Modes  : Boolean := False);
+     (N_Id     : Node_Or_Entity_Id;
+      Checks   : Boolean := False;
+      Level    : Boolean := False;
+      Modes    : Boolean := False;
+      Warnings : Boolean := False);
    --  Preserve relevant elaboration-related properties of the context in
-   --  arbitrary entity or node N_Id. When flag Checks is set, the routine
-   --  saves the status of Elaboration_Check. When flag Level is set, the
-   --  routine captures the declaration level of N_Id if applicable. When
-   --  flag Modes is set, the routine saves the Ghost and SPARK modes in
-   --  effect if applicable.
+   --  arbitrary entity or node N_Id. The flags control the properties as
+   --  follows:
+   --
+   --    Checks   - Save the status of Elaboration_Check
+   --    Level    - Save the declaration level of N_Id (if appicable)
+   --    Modes    - Save the Ghost and SPARK modes in effect (if applicable)
+   --    Warnings - Save the status of Elab_Warnings
 
    function Matching_Static_Array_Bounds
      (L_Typ : Node_Id;
@@ -2734,6 +2782,10 @@ package Sem_Util is
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S
+
+   function Within_Subprogram_Call (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N appears in an entry, function, or
+   --  procedure call.
 
    procedure Wrong_Type (Expr : Node_Id; Expected_Type : Entity_Id);
    --  Output error message for incorrectly typed expression. Expr is the node

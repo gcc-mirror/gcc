@@ -1,5 +1,5 @@
 /* Combining of if-expressions on trees.
-   Copyright (C) 2007-2017 Free Software Foundation, Inc.
+   Copyright (C) 2007-2018 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -366,7 +366,6 @@ update_profile_after_ifcombine (basic_block inner_cond_bb,
 				 - inner_taken->probability;
 
   outer_to_inner->probability = profile_probability::always ();
-  inner_cond_bb->frequency = outer_cond_bb->frequency;
   outer2->probability = profile_probability::never ();
 }
 

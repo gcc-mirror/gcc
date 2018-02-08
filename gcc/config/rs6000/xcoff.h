@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -179,7 +179,7 @@
    `assemble_name' uses this.  */
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  asm_fprintf ((FILE), "%U%s", rs6000_xcoff_strip_dollar (NAME));
+  asm_fprintf ((FILE), "%U%s", rs6000_xcoff_strip_dollar (NAME))
 
 /* This is how to output an internal label prefix.  rs6000.c uses this
    when generating traceback tables.  */

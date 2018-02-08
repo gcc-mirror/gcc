@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-return-type" } */
 
 template <typename _Iterator> struct A;
 template <typename _Tp> struct A<_Tp *> {

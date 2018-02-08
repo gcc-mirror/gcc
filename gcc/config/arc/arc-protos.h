@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Synopsys DesignWare ARC cpu.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,6 +47,7 @@ extern void arc_expand_compare_and_swap (rtx *);
 extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
 extern int arc_return_address_register (unsigned int);
 extern unsigned int arc_compute_function_type (struct function *);
+extern bool arc_is_uncached_mem_p (rtx);
 #endif /* RTX_CODE */
 
 extern unsigned int arc_compute_frame_size (int);
@@ -111,8 +112,11 @@ extern bool arc_epilogue_uses (int regno);
 extern bool arc_eh_uses (int regno);
 /* insn-attrtab.c doesn't include reload.h, which declares regno_clobbered_p. */
 extern int regno_clobbered_p (unsigned int, rtx_insn *, machine_mode, int);
-extern int arc_return_slot_offset (void);
 extern bool arc_legitimize_reload_address (rtx *, machine_mode, int, int);
 extern void arc_secondary_reload_conv (rtx, rtx, rtx, bool);
 extern void arc_cpu_cpp_builtins (cpp_reader *);
 extern bool arc_store_addr_hazard_p (rtx_insn *, rtx_insn *);
+extern rtx arc_eh_return_address_location (void);
+extern bool arc_is_jli_call_p (rtx);
+extern void arc_file_end (void);
+extern bool arc_is_secure_call_p (rtx);

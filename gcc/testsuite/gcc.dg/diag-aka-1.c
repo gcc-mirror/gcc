@@ -10,7 +10,7 @@ typedef int IA[];
 typedef IA *IAP;
 extern IAP arr[];
 
-void fn1 (B *); /* { dg-message "expected .B \\* {aka struct A \\*}. but argument is of type .struct B \\*." } */
+void fn1 (B *); /* { dg-message "expected 'B \\*' {aka 'struct A \\*'} but argument is of type 'struct B \\*'" } */
 void fn2 (TFC *);
 
 void 
@@ -24,6 +24,6 @@ bar (B *b, int *i)
 int
 foo (void *a)
 {
-  T *t = a; /* { dg-warning "request for implicit conversion from .void \\*. to .T \\* {aka struct T \\*}. not" } */
+  T *t = a; /* { dg-warning "request for implicit conversion from 'void \\*' to 'T \\*' {aka 'struct T \\*'} not" } */
   return t->i;
 }

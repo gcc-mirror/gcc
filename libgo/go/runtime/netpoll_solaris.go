@@ -84,6 +84,7 @@ func port_associate(port, source int32, object uintptr, events uint32, user uint
 //extern port_dissociate
 func port_dissociate(port, source int32, object uintptr) int32
 
+//go:noescape
 //extern port_getn
 func port_getn(port int32, evs *portevent, max uint32, nget *uint32, timeout *timespec) int32
 

@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "toplev.h"
 #include "gimplify.h"
-#include "cp-cilkplus.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -201,7 +200,7 @@ lambda_function (tree lambda)
   if (CLASSTYPE_TEMPLATE_INSTANTIATION (type)
       && !COMPLETE_OR_OPEN_TYPE_P (type))
     return NULL_TREE;
-  lambda = lookup_member (type, cp_operator_id (CALL_EXPR),
+  lambda = lookup_member (type, call_op_identifier,
 			  /*protect=*/0, /*want_type=*/false,
 			  tf_warning_or_error);
   if (lambda)
@@ -245,7 +244,8 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
     {
       type = non_reference (unlowered_expr_type (expr));
 
-      if (!is_this && by_reference_p)
+      if (!is_this
+	  && (by_reference_p || TREE_CODE (type) == FUNCTION_TYPE))
 	type = build_reference_type (type);
     }
 
@@ -290,13 +290,24 @@ is_normal_capture_proxy (tree decl)
   return DECL_NORMAL_CAPTURE_P (val);
 }
 
+/* Returns true iff DECL is a capture proxy for which we can use
+   DECL_CAPTURED_VARIABLE.  In effect, this is a normal proxy other than a
+   nested capture of a function parameter pack.  */
+
+bool
+is_capture_proxy_with_ref (tree var)
+{
+  return (is_normal_capture_proxy (var) && DECL_LANG_SPECIFIC (var)
+	  && DECL_CAPTURED_VARIABLE (var));
+}
+
 /* VAR is a capture proxy created by build_capture_proxy; add it to the
    current function, which is the operator() for the appropriate lambda.  */
 
 void
 insert_capture_proxy (tree var)
 {
-  if (is_normal_capture_proxy (var))
+  if (is_capture_proxy_with_ref (var))
     {
       tree cap = DECL_CAPTURED_VARIABLE (var);
       if (CHECKING_P)
@@ -443,11 +454,20 @@ build_capture_proxy (tree member, tree init)
 	    init = TREE_OPERAND (init, 0);
 	  STRIP_NOPS (init);
 	}
-      gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
-      while (is_normal_capture_proxy (init))
-	init = DECL_CAPTURED_VARIABLE (init);
-      retrofit_lang_decl (var);
-      DECL_CAPTURED_VARIABLE (var) = init;
+
+      if (TREE_CODE (init) == COMPONENT_REF)
+	/* We're capturing a capture of a function parameter pack, and have
+	   lost track of the original variable.  It's not important to have
+	   DECL_CAPTURED_VARIABLE in this case, since a function parameter pack
+	   isn't a constant variable, so don't bother trying to set it.  */;
+      else
+	{
+	  gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
+	  while (is_normal_capture_proxy (init))
+	    init = DECL_CAPTURED_VARIABLE (init);
+	  retrofit_lang_decl (var);
+	  DECL_CAPTURED_VARIABLE (var) = init;
+	}
     }
 
   if (name == this_identifier)
@@ -557,8 +577,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	{
 	  gcc_assert (POINTER_TYPE_P (type));
 	  type = TREE_TYPE (type);
-	  initializer = cp_build_indirect_ref (initializer, RO_NULL,
-					       tf_warning_or_error);
+	  initializer = cp_build_fold_indirect_ref (initializer);
 	}
 
       if (dependent_type_p (type))
@@ -862,8 +881,7 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
   if (tree lam = resolvable_dummy_lambda (object))
     if (tree cap = lambda_expr_this_capture (lam, add_capture_p))
       if (cap != error_mark_node)
-	object = build_x_indirect_ref (EXPR_LOCATION (object), cap,
-				       RO_NULL, tf_warning_or_error);
+	object = build_fold_indirect_ref (cap);
 
   return object;
 }
@@ -922,7 +940,7 @@ nonlambda_method_basetype (void)
     return NULL_TREE;
 
   type = current_class_type;
-  if (!LAMBDA_TYPE_P (type))
+  if (!type || !LAMBDA_TYPE_P (type))
     return type;
 
   /* Find the nearest enclosing non-lambda function.  */
@@ -987,121 +1005,6 @@ generic_lambda_fn_p (tree callop)
 	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (callop)));
 }
 
-/* Returns true iff we need to consider default capture for an enclosing
-   generic lambda.  */
-
-bool
-need_generic_capture (void)
-{
-  if (!processing_template_decl)
-    return false;
-
-  tree outer_closure = NULL_TREE;
-  for (tree t = current_class_type; t;
-       t = decl_type_context (TYPE_MAIN_DECL (t)))
-    {
-      tree lam = CLASSTYPE_LAMBDA_EXPR (t);
-      if (!lam || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) == CPLD_NONE)
-	/* No default capture.  */
-	break;
-      outer_closure = t;
-    }
-
-  if (!outer_closure)
-    /* No lambda.  */
-    return false;
-  else if (dependent_type_p (outer_closure))
-    /* The enclosing context isn't instantiated.  */
-    return false;
-  else
-    return true;
-}
-
-/* A lambda-expression...is said to implicitly capture the entity...if the
-   compound-statement...names the entity in a potentially-evaluated
-   expression where the enclosing full-expression depends on a generic lambda
-   parameter declared within the reaching scope of the lambda-expression.  */
-
-static tree
-dependent_capture_r (tree *tp, int *walk_subtrees, void *data)
-{
-  hash_set<tree> *pset = (hash_set<tree> *)data;
-
-  if (TYPE_P (*tp))
-    *walk_subtrees = 0;
-
-  if (outer_automatic_var_p (*tp))
-    {
-      tree t = process_outer_var_ref (*tp, tf_warning_or_error, /*force*/true);
-      if (t != *tp
-	  && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE
-	  && TREE_CODE (TREE_TYPE (*tp)) != REFERENCE_TYPE)
-	t = convert_from_reference (t);
-      *tp = t;
-    }
-
-  if (pset->add (*tp))
-    *walk_subtrees = 0;
-
-  switch (TREE_CODE (*tp))
-    {
-      /* Don't walk into unevaluated context or another lambda.  */
-    case SIZEOF_EXPR:
-    case ALIGNOF_EXPR:
-    case TYPEID_EXPR:
-    case NOEXCEPT_EXPR:
-    case LAMBDA_EXPR:
-      *walk_subtrees = 0;
-      break;
-
-      /* Don't walk into statements whose subexpressions we already
-	 handled.  */
-    case TRY_BLOCK:
-    case EH_SPEC_BLOCK:
-    case HANDLER:
-    case IF_STMT:
-    case FOR_STMT:
-    case RANGE_FOR_STMT:
-    case WHILE_STMT:
-    case DO_STMT:
-    case SWITCH_STMT:
-    case STATEMENT_LIST:
-    case RETURN_EXPR:
-      *walk_subtrees = 0;
-      break;
-
-    case DECL_EXPR:
-      {
-	tree decl = DECL_EXPR_DECL (*tp);
-	if (VAR_P (decl))
-	  {
-	    /* walk_tree_1 won't step in here.  */
-	    cp_walk_tree (&DECL_INITIAL (decl),
-			  dependent_capture_r, &pset, NULL);
-	    *walk_subtrees = 0;
-	  }
-      }
-      break;
-
-    default:
-      break;
-    }
-
-  return NULL_TREE;
-}
-
-tree
-do_dependent_capture (tree expr, bool force)
-{
-  if (!need_generic_capture ()
-      || (!force && !instantiation_dependent_expression_p (expr)))
-    return expr;
-
-  hash_set<tree> pset;
-  cp_walk_tree (&expr, dependent_capture_r, &pset, NULL);
-  return expr;
-}
-
 /* If the closure TYPE has a static op(), also add a conversion to function
    pointer.  */
 
@@ -1154,8 +1057,7 @@ maybe_add_lambda_conv_op (tree type)
 	 return expression for a deduced return call op to allow for simple
 	 implementation of the conversion operator.  */
 
-      tree instance = cp_build_indirect_ref (thisarg, RO_NULL,
-					     tf_warning_or_error);
+      tree instance = cp_build_fold_indirect_ref (thisarg);
       tree objfn = build_min (COMPONENT_REF, NULL_TREE,
 			      instance, DECL_NAME (callop), NULL_TREE);
       int nargs = list_length (DECL_ARGUMENTS (callop)) - 1;
@@ -1220,7 +1122,6 @@ maybe_add_lambda_conv_op (tree type)
       }
   }
 
-
   if (generic_lambda_p)
     {
       if (decltype_call)
@@ -1258,7 +1159,6 @@ maybe_add_lambda_conv_op (tree type)
   tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   SET_DECL_ALIGN (fn, MINIMUM_METHOD_BOUNDARY);
-  SET_OVERLOADED_OPERATOR_CODE (fn, TYPE_EXPR);
   grokclassfn (type, fn, NO_SPECIAL);
   set_linkage_according_to_type (type, fn);
   rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);
@@ -1312,11 +1212,9 @@ maybe_add_lambda_conv_op (tree type)
     fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
 
   if (flag_sanitize & SANITIZE_NULL)
-    {
-      /* Don't UBsan this function; we're deliberately calling op() with a null
-	 object argument.  */
-      add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
-    }
+    /* Don't UBsan this function; we're deliberately calling op() with a null
+       object argument.  */
+    add_no_sanitize_value (fn, SANITIZE_UNDEFINED);
 
   add_method (type, fn, false);
 

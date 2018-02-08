@@ -39,8 +39,10 @@ package os
 import (
 	"errors"
 	"internal/poll"
+	"internal/testlog"
 	"io"
 	"syscall"
+	"time"
 )
 
 // Name returns the name of the file as presented to Open.
@@ -61,12 +63,14 @@ var (
 // Flags to OpenFile wrapping those of the underlying system. Not all
 // flags may be implemented on a given system.
 const (
+	// Exactly one of O_RDONLY, O_WRONLY, or O_RDWR must be specified.
 	O_RDONLY int = syscall.O_RDONLY // open the file read-only.
 	O_WRONLY int = syscall.O_WRONLY // open the file write-only.
 	O_RDWR   int = syscall.O_RDWR   // open the file read-write.
+	// The remaining values may be or'ed in to control behavior.
 	O_APPEND int = syscall.O_APPEND // append data to the file when writing.
 	O_CREATE int = syscall.O_CREAT  // create a new file if none exists.
-	O_EXCL   int = syscall.O_EXCL   // used with O_CREATE, file must not exist
+	O_EXCL   int = syscall.O_EXCL   // used with O_CREATE, file must not exist.
 	O_SYNC   int = syscall.O_SYNC   // open for synchronous I/O.
 	O_TRUNC  int = syscall.O_TRUNC  // if possible, truncate file when opened.
 )
@@ -204,7 +208,8 @@ func (f *File) WriteString(s string) (n int, err error) {
 	return f.Write([]byte(s))
 }
 
-// Mkdir creates a new directory with the specified name and permission bits.
+// Mkdir creates a new directory with the specified name and permission
+// bits (before umask).
 // If there is an error, it will be of type *PathError.
 func Mkdir(name string, perm FileMode) error {
 	e := syscall.Mkdir(fixLongPath(name), syscallMode(perm))
@@ -225,7 +230,14 @@ func Mkdir(name string, perm FileMode) error {
 // If there is an error, it will be of type *PathError.
 func Chdir(dir string) error {
 	if e := syscall.Chdir(dir); e != nil {
+		testlog.Open(dir) // observe likely non-existent directory
 		return &PathError{"chdir", dir, e}
+	}
+	if log := testlog.Logger(); log != nil {
+		wd, err := Getwd()
+		if err == nil {
+			log.Chdir(wd)
+		}
 	}
 	return nil
 }
@@ -245,6 +257,16 @@ func Open(name string) (*File, error) {
 // If there is an error, it will be of type *PathError.
 func Create(name string) (*File, error) {
 	return OpenFile(name, O_RDWR|O_CREATE|O_TRUNC, 0666)
+}
+
+// OpenFile is the generalized open call; most users will use Open
+// or Create instead. It opens the named file with specified flag
+// (O_RDONLY etc.) and perm (before umask), if applicable. If successful,
+// methods on the returned File can be used for I/O.
+// If there is an error, it will be of type *PathError.
+func OpenFile(name string, flag int, perm FileMode) (*File, error) {
+	testlog.Open(name)
+	return openFileNolog(name, flag, perm)
 }
 
 // lstat is overridden in tests.
@@ -316,3 +338,47 @@ func Chmod(name string, mode FileMode) error { return chmod(name, mode) }
 // Chmod changes the mode of the file to mode.
 // If there is an error, it will be of type *PathError.
 func (f *File) Chmod(mode FileMode) error { return f.chmod(mode) }
+
+// SetDeadline sets the read and write deadlines for a File.
+// It is equivalent to calling both SetReadDeadline and SetWriteDeadline.
+//
+// Only some kinds of files support setting a deadline. Calls to SetDeadline
+// for files that do not support deadlines will return ErrNoDeadline.
+// On most systems ordinary files do not support deadlines, but pipes do.
+//
+// A deadline is an absolute time after which I/O operations fail with an
+// error instead of blocking. The deadline applies to all future and pending
+// I/O, not just the immediately following call to Read or Write.
+// After a deadline has been exceeded, the connection can be refreshed
+// by setting a deadline in the future.
+//
+// An error returned after a timeout fails will implement the
+// Timeout method, and calling the Timeout method will return true.
+// The PathError and SyscallError types implement the Timeout method.
+// In general, call IsTimeout to test whether an error indicates a timeout.
+//
+// An idle timeout can be implemented by repeatedly extending
+// the deadline after successful Read or Write calls.
+//
+// A zero value for t means I/O operations will not time out.
+func (f *File) SetDeadline(t time.Time) error {
+	return f.setDeadline(t)
+}
+
+// SetReadDeadline sets the deadline for future Read calls and any
+// currently-blocked Read call.
+// A zero value for t means Read will not time out.
+// Not all files support setting deadlines; see SetDeadline.
+func (f *File) SetReadDeadline(t time.Time) error {
+	return f.setReadDeadline(t)
+}
+
+// SetWriteDeadline sets the deadline for any future Write calls and any
+// currently-blocked Write call.
+// Even if Write times out, it may return n > 0, indicating that
+// some of the data was successfully written.
+// A zero value for t means Write will not time out.
+// Not all files support setting deadlines; see SetDeadline.
+func (f *File) SetWriteDeadline(t time.Time) error {
+	return f.setWriteDeadline(t)
+}

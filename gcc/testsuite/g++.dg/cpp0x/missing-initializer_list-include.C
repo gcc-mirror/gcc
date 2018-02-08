@@ -7,7 +7,7 @@
 
 void test (int i)
 {
-  auto a = { &i }; // { dg-error "deducing from brace-enclosed initializer list requires #include <initializer_list>" }
+  auto a = { &i }; // { dg-error "deducing from brace-enclosed initializer list requires '#include <initializer_list>'" }
 }
 
 /* Verify the output from -fdiagnostics-generate-patch.
@@ -24,5 +24,6 @@ void test (int i)
 +#include <initializer_list>
  /* This is padding (to avoid the generated patch containing DejaGnu
     directives).  */
+ 
 { dg-end-multiline-output "" }
 #endif

@@ -22,7 +22,6 @@
           two = 2.0d0
           x = two * pi_1 * f_1 * t
           y = two * pi_2 * f_2 * t
-          z = two * pi_3 * f_3 * t
           return
         end subroutine
 

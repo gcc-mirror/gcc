@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2017, AdaCore                     --
+--                     Copyright (C) 1999-2018, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -132,10 +132,12 @@ package body System.Traceback.Symbolic is
       procedure Build_Cache_For_All_Modules;
       --  Create the cache for all current modules
 
-      function Get (Addr : access System.Address) return String;
-      --  Returns the module name for the given address, Addr may be updated
-      --  to be set relative to a shared library. This depends on the platform.
-      --  Returns an empty string for the main executable.
+      function Get (Addr : System.Address;
+                    Load_Addr : access System.Address) return String;
+      --  Returns the module name for the given address Addr, or an empty
+      --  string for the main executable.  Load_Addr is set to the shared
+      --  library load address if this information is available, or to
+      --  System.Null_Address otherwise.
 
       function Is_Supported return Boolean;
       pragma Inline (Is_Supported);
@@ -499,12 +501,14 @@ package body System.Traceback.Symbolic is
 
          --  Otherwise, try a shared library
          declare
-            Addr    : aliased System.Address := Traceback (F);
-            M_Name  : constant String        := Module_Name.Get (Addr'Access);
+            Load_Addr : aliased System.Address;
+            M_Name  : constant String :=
+              Module_Name.Get (Addr => Traceback (F),
+                               Load_Addr => Load_Addr'Access);
             Module  : Module_Cache;
             Success : Boolean;
          begin
-            Init_Module (Module, Success, M_Name, System.Null_Address);
+            Init_Module (Module, Success, M_Name, Load_Addr);
             if Success then
                Multi_Module_Symbolic_Traceback
                  (Traceback,

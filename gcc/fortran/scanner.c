@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000-2017 Free Software Foundation, Inc.
+   Copyright (C) 2000-2018 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -2057,7 +2057,7 @@ preprocessor_line (gfc_char_t *c)
       c++;
       i = wide_atoi (c);
 
-      if (1 <= i && i <= 4)
+      if (i >= 1 && i <= 4)
 	flag[i] = true;
     }
 

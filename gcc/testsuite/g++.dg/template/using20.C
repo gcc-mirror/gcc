@@ -15,4 +15,5 @@ int f(void)
 {
   G<int> a;
   a.f();
+  return 0;
 }

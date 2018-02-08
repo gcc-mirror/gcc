@@ -9,7 +9,7 @@ struct int_less_than {};
 
 void assert_fail (const char*);
 
-int f(const set<int, int_less_than>&)
+void f(const set<int, int_less_than>&)
 {
     assert_fail (__PRETTY_FUNCTION__);
 

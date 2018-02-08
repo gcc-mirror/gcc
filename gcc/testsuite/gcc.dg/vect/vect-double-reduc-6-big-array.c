@@ -9,8 +9,6 @@ int in[2*K][K] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 int out[K];
 int check_result[K];
 
-volatile int y = 0;
-
 __attribute__ ((noinline)) void
 foo ()
 {
@@ -24,9 +22,7 @@ foo ()
         for (i = 0; i < K; i++)
 	{
           sum *= in[i+k][j];
-	  /* Avoid vectorization.  */
-	  if (y)
-	    abort ();
+	  asm volatile ("" ::: "memory");
 	}
       check_result[k] = sum;
     }

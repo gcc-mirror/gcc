@@ -1,6 +1,6 @@
 // Filesystem operational functions -*- C++ -*-
 
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,31 +56,31 @@ namespace filesystem
   { copy(__from, __to, copy_options::none); }
 
   inline void
-  copy(const path& __from, const path& __to, error_code& __ec) noexcept
+  copy(const path& __from, const path& __to, error_code& __ec)
   { copy(__from, __to, copy_options::none, __ec); }
 
   void copy(const path& __from, const path& __to, copy_options __options);
   void copy(const path& __from, const path& __to, copy_options __options,
-	    error_code& __ec) noexcept;
+	    error_code& __ec);
 
   inline bool
   copy_file(const path& __from, const path& __to)
   { return copy_file(__from, __to, copy_options::none); }
 
   inline bool
-  copy_file(const path& __from, const path& __to, error_code& __ec) noexcept
+  copy_file(const path& __from, const path& __to, error_code& __ec)
   { return copy_file(__from, __to, copy_options::none, __ec); }
 
   bool copy_file(const path& __from, const path& __to, copy_options __option);
   bool copy_file(const path& __from, const path& __to, copy_options __option,
-		 error_code& __ec) noexcept;
+		 error_code& __ec);
 
   void copy_symlink(const path& __existing_symlink, const path& __new_symlink);
   void copy_symlink(const path& __existing_symlink, const path& __new_symlink,
 		    error_code& __ec) noexcept;
 
   bool create_directories(const path& __p);
-  bool create_directories(const path& __p, error_code& __ec) noexcept;
+  bool create_directories(const path& __p, error_code& __ec);
 
   bool create_directory(const path& __p);
   bool create_directory(const path& __p, error_code& __ec) noexcept;
@@ -125,8 +125,11 @@ namespace filesystem
   {
     auto __s = status(__p, __ec);
     if (status_known(__s))
-      __ec.clear();
-    return exists(__s);
+      {
+	__ec.clear();
+	return __s.type() != file_type::not_found;
+      }
+    return false;
   }
 
   uintmax_t file_size(const path& __p);
@@ -172,7 +175,7 @@ namespace filesystem
   { return is_directory(status(__p, __ec)); }
 
   bool is_empty(const path& __p);
-  bool is_empty(const path& __p, error_code& __ec) noexcept;
+  bool is_empty(const path& __p, error_code& __ec);
 
   inline bool
   is_fifo(file_status __s) noexcept
@@ -253,7 +256,7 @@ namespace filesystem
 
   void
   permissions(const path& __p, perms __prms, perm_options __opts,
-	      error_code& __ec);
+	      error_code& __ec) noexcept;
 
   inline path proximate(const path& __p, error_code& __ec)
   { return proximate(__p, current_path(), __ec); }
@@ -274,7 +277,7 @@ namespace filesystem
   bool remove(const path& __p, error_code& __ec) noexcept;
 
   uintmax_t remove_all(const path& __p);
-  uintmax_t remove_all(const path& __p, error_code& __ec) noexcept;
+  uintmax_t remove_all(const path& __p, error_code& __ec);
 
   void rename(const path& __from, const path& __to);
   void rename(const path& __from, const path& __to, error_code& __ec) noexcept;

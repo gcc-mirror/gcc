@@ -11,7 +11,7 @@ static int flag = 0;
 
 template <typename> struct A
 {
-  A &active ()  { flag++;}
+  A &active () { flag++; static A a; return a; }
   
   static void foo() {}
 

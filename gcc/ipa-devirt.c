@@ -1,6 +1,6 @@
 /* Basic IPA utilities for type inheritance graph construction and
    devirtualization.
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1844,7 +1844,12 @@ add_type_duplicate (odr_type val, tree type)
 	}
     }
 
-  /* Next compare memory layout.  */
+  /* Next compare memory layout.
+     The DECL_SOURCE_LOCATIONs in this invocation came from LTO streaming.
+     We must apply the location cache to ensure that they are valid
+     before we can pass them to odr_types_equivalent_p (PR lto/83121).  */
+  if (lto_location_cache::current_cache)
+    lto_location_cache::current_cache->apply_location_cache ();
   if (!odr_types_equivalent_p (val->type, type,
 			       !flag_ltrans && !val->odr_violated && !warned,
 			       &warned, &visited,
@@ -2901,10 +2906,27 @@ struct decl_warn_count
 
 struct final_warning_record
 {
+  /* If needed grow type_warnings vector and initialize new decl_warn_count
+     to have dyn_count set to profile_count::zero ().  */
+  void grow_type_warnings (unsigned newlen);
+
   profile_count dyn_count;
   auto_vec<odr_type_warn_count> type_warnings;
   hash_map<tree, decl_warn_count> decl_warnings;
 };
+
+void
+final_warning_record::grow_type_warnings (unsigned newlen)
+{
+  unsigned len = type_warnings.length ();
+  if (newlen > len)
+    {
+      type_warnings.safe_grow_cleared (newlen);
+      for (unsigned i = len; i < newlen; i++)
+	type_warnings[i].dyn_count = profile_count::zero ();
+    }
+}
+
 struct final_warning_record *final_warning_records;
 
 /* Return vector containing possible targets of polymorphic call of type
@@ -3176,9 +3198,8 @@ possible_polymorphic_call_targets (tree otr_type,
 		      && warn_suggest_final_types
 		      && !outer_type->derived_types.length ())
 		    {
-		      if (outer_type->id >= (int)final_warning_records->type_warnings.length ())
-			final_warning_records->type_warnings.safe_grow_cleared
-			  (odr_types.length ());
+		      final_warning_records->grow_type_warnings
+			(outer_type->id);
 		      final_warning_records->type_warnings[outer_type->id].count++;
 		      if (!final_warning_records->type_warnings
 				[outer_type->id].dyn_count.initialized_p ())
@@ -3545,8 +3566,7 @@ ipa_devirt (void)
     {
       final_warning_records = new (final_warning_record);
       final_warning_records->dyn_count = profile_count::zero ();
-      final_warning_records->type_warnings.safe_grow_cleared
-						 (odr_types.length ());
+      final_warning_records->grow_type_warnings (odr_types.length ());
       free_polymorphic_call_targets_hash ();
     }
 
@@ -3566,7 +3586,7 @@ ipa_devirt (void)
 	    bool final;
 
 	    if (final_warning_records)
-	      final_warning_records->dyn_count = e->count;
+	      final_warning_records->dyn_count = e->count.ipa ();
 
 	    vec <cgraph_node *>targets
 	       = possible_polymorphic_call_targets
@@ -3727,8 +3747,7 @@ ipa_devirt (void)
 		nconverted++;
 		update = true;
 		e->make_speculative
-		  (likely_target, e->count.apply_scale (8, 10),
-		   e->frequency * 8 / 10);
+		  (likely_target, e->count.apply_scale (8, 10));
 	      }
 	  }
       if (update)

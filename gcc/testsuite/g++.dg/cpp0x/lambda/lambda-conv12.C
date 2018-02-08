@@ -1,5 +1,6 @@
 // PR c++/80767
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wno-return-type" }
 
 template <typename T, typename U = T> struct A { using type = U; };
 template <typename F, typename... G> struct B : B<F>::type, B<G...>::type {

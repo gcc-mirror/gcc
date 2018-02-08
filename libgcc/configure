@@ -573,6 +573,7 @@ vis_hide
 real_host_noncanonical
 accel_dir_suffix
 force_explicit_eh_registry
+CET_FLAGS
 fixed_point
 enable_decimal_float
 decimal_float
@@ -675,6 +676,7 @@ with_build_libsubdir
 enable_largefile
 enable_decimal_float
 with_system_libunwind
+enable_cet
 enable_explicit_exception_frame_registration
 with_glibc_version
 enable_tls
@@ -1314,6 +1316,8 @@ Optional Features:
 			enable decimal float extension to C.  Selecting 'bid'
 			or 'dpd' choses which decimal floating point format
 			to use
+  --enable-cet            enable Intel CET in target libraries
+                          [default=default]
   --enable-explicit-exception-frame-registration
                           register exception tables explicitly at module
                           start, for use e.g. for compatibility with
@@ -4773,6 +4777,74 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sjlj_exceptions" >&5
 $as_echo "$ac_cv_sjlj_exceptions" >&6; }
 
+ # Check whether --enable-cet was given.
+if test "${enable_cet+set}" = set; then :
+  enableval=$enable_cet;
+      case "$enableval" in
+       yes|no|default) ;;
+       *) as_fn_error "Unknown argument to enable/disable cet" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_cet=default
+fi
+
+
+case "$host" in
+  i[34567]86-*-linux* | x86_64-*-linux*)
+    case "$enable_cet" in
+      default)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  enable_cet=yes
+else
+  enable_cet=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+      yes)
+	# Check if assembler supports CET.
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("setssbsy");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "assembler with CET support is required for --enable-cet" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	;;
+    esac
+    ;;
+  *)
+    enable_cet=no
+    ;;
+esac
+if test x$enable_cet = xyes; then
+  CET_FLAGS="-fcf-protection -mcet"
+fi
+
+
+
 # Check whether --enable-explicit-exception-frame-registration was given.
 if test "${enable_explicit_exception_frame_registration+set}" = set; then :
   enableval=$enable_explicit_exception_frame_registration;
@@ -4875,7 +4947,7 @@ esac
 
 case ${host} in
 *-*-solaris2*)
-  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
+  # Check for system-provided CRTs on Solaris 11.4.
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking system-provided CRTs on Solaris" >&5
 $as_echo_n "checking system-provided CRTs on Solaris... " >&6; }
 if test "${libgcc_cv_solaris_crts+set}" = set; then :

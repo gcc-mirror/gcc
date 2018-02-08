@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004-2017 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2018 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -600,7 +600,8 @@
 (define_predicate "constant_call_address_operand"
   (match_code "symbol_ref")
 {
-  if (ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC)
+  if (ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC
+      || flag_force_indirect_call)
     return false;
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES && SYMBOL_REF_DLLIMPORT_P (op))
     return false;
@@ -664,7 +665,8 @@
 ;; Test for a valid operand for indirect branch.
 (define_predicate "indirect_branch_operand"
   (ior (match_operand 0 "register_operand")
-       (and (not (match_test "TARGET_X32"))
+       (and (not (match_test "ix86_indirect_branch_register"))
+	    (not (match_test "TARGET_X32"))
 	    (match_operand 0 "memory_operand"))))
 
 ;; Return true if OP is a memory operands that can be used in sibcalls.
@@ -707,20 +709,22 @@
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "call_register_no_elim_operand")
-       (ior (and (not (match_test "TARGET_X32"))
-		 (match_operand 0 "memory_operand"))
-	    (and (match_test "TARGET_X32 && Pmode == DImode")
-		 (match_operand 0 "GOT_memory_operand")))))
+       (and (not (match_test "ix86_indirect_branch_register"))
+	    (ior (and (not (match_test "TARGET_X32"))
+		      (match_operand 0 "memory_operand"))
+		 (and (match_test "TARGET_X32 && Pmode == DImode")
+		      (match_operand 0 "GOT_memory_operand"))))))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
 (define_special_predicate "sibcall_insn_operand"
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "register_no_elim_operand")
-       (ior (and (not (match_test "TARGET_X32"))
-		 (match_operand 0 "sibcall_memory_operand"))
-	    (and (match_test "TARGET_X32 && Pmode == DImode")
-		 (match_operand 0 "GOT_memory_operand")))))
+       (and (not (match_test "ix86_indirect_branch_register"))
+	    (ior (and (not (match_test "TARGET_X32"))
+		      (match_operand 0 "sibcall_memory_operand"))
+		 (and (match_test "TARGET_X32 && Pmode == DImode")
+		      (match_operand 0 "GOT_memory_operand"))))))
 
 ;; Return true if OP is a 32-bit GOT symbol operand.
 (define_predicate "GOT32_symbol_operand"
@@ -1004,9 +1008,9 @@
   (match_code "mem")
 {
   unsigned n_elts;
-  op = maybe_get_pool_constant (op);
+  op = avoid_constant_pool_reference (op);
 
-  if (!(op && GET_CODE (op) == CONST_VECTOR))
+  if (GET_CODE (op) != CONST_VECTOR)
     return false;
 
   n_elts = CONST_VECTOR_NUNITS (op);
@@ -1301,7 +1305,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     {
       if (!ix86_trivial_fp_comparison_operator (op, mode))
 	return false;
@@ -1311,8 +1315,7 @@
   switch (code)
     {
     case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCFPmode || inmode == CCFPUmode
-	  || inmode == CCCmode)
+      if (inmode == CCmode || inmode == CCFPmode || inmode == CCCmode)
 	return true;
       return false;
     case ORDERED: case UNORDERED:
@@ -1348,7 +1351,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     return ix86_trivial_fp_comparison_operator (op, mode);
 
   switch (code)
@@ -1391,7 +1394,7 @@
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
-  if (inmode == CCFPmode || inmode == CCFPUmode)
+  if (inmode == CCFPmode)
     {
       if (!ix86_trivial_fp_comparison_operator (op, mode))
 	return false;

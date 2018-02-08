@@ -27,7 +27,7 @@ bar (int x)
     fn ();
 }
 
-__attribute__((noinline, noclone)) int
+__attribute__((noinline, noclone)) void
 baz (int x)
 {
   S s;

@@ -1,5 +1,5 @@
 /* Definitions for C++ name lookup routines.
-   Copyright (C) 2003-2017 Free Software Foundation, Inc.
+   Copyright (C) 2003-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -32,6 +33,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "spellcheck-tree.h"
 #include "parser.h"
+#include "c-family/name-hint.h"
+#include "c-family/known-headers.h"
+#include "c-family/c-spellcheck.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -707,6 +711,15 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
     done:;
       if (scope == global_namespace)
 	break;
+
+      /* If looking for hidden names, we only look in the innermost
+	 namespace scope.  [namespace.memdef]/3 If a friend
+	 declaration in a non-local class first declares a class,
+	 function, class template or function template the friend is a
+	 member of the innermost enclosing namespace.  See also
+	 [basic.lookup.unqual]/7 */
+      if (flags & LOOKUP_HIDDEN)
+	break;
     }
 
   vec_safe_truncate (queue, length);
@@ -1161,21 +1174,8 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	  && TREE_CODE (decl) == FIELD_DECL
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
 	{
-	  tree anon = TREE_TYPE (decl);
-	  gcc_assert (COMPLETE_TYPE_P (anon));
-	  tree temp;
-	  
-	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
-	    temp = member_vec_linear_search (member_vec, name);
-	  else
-	    temp = fields_linear_search (anon, name, want_type);
-
-	  if (temp)
-	    {
-	      /* Anon members can only contain fields.  */
-	      gcc_assert (!STAT_HACK_P (temp) && !DECL_DECLARES_TYPE_P (temp));
-	      return temp;
-	    }
+	  if (tree temp = search_anon_aggr (TREE_TYPE (decl), name))
+	    return temp;
 	}
 
       if (DECL_NAME (decl) != name)
@@ -1196,6 +1196,28 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	return decl;
     }
 
+  return NULL_TREE;
+}
+
+/* Look for NAME field inside of anonymous aggregate ANON.  */
+
+tree
+search_anon_aggr (tree anon, tree name)
+{
+  gcc_assert (COMPLETE_TYPE_P (anon));
+  tree ret;
+	  
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
+    ret = member_vec_linear_search (member_vec, name);
+  else
+    ret = fields_linear_search (anon, name, false);
+
+  if (ret)
+    {
+      /* Anon members can only contain fields.  */
+      gcc_assert (!STAT_HACK_P (ret) && !DECL_DECLARES_TYPE_P (ret));
+      return ret;
+    }
   return NULL_TREE;
 }
 
@@ -1299,7 +1321,7 @@ get_class_binding (tree klass, tree name, int type_or_fns)
 	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
 	    lazily_declare_fn (sfk_destructor, klass);
 	}
-      else if (name == cp_assignment_operator_id (NOP_EXPR))
+      else if (name == assign_op_identifier)
 	{
 	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
 	    lazily_declare_fn (sfk_copy_assignment, klass);
@@ -1457,7 +1479,10 @@ member_name_cmp (const void *a_p, const void *b_p)
      how we order these.  Use UID as a proxy for source ordering, so
      that identically-located decls still have a well-defined stable
      ordering.  */
-  return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
+  if (DECL_UID (a) != DECL_UID (b))
+    return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
+  gcc_assert (a == b);
+  return 0;
 }
 
 static struct {
@@ -1495,8 +1520,7 @@ resort_type_member_vec (void *obj, void */*orig_obj*/,
     {
       resort_data.new_value = new_value;
       resort_data.cookie = cookie;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), resort_member_name_cmp);
+      member_vec->qsort (resort_member_name_cmp);
     }
 }
 
@@ -1571,6 +1595,9 @@ member_vec_dedup (vec<tree, va_gc> *member_vec)
 {
   unsigned len = member_vec->length ();
   unsigned store = 0;
+
+  if (!len)
+    return;
 
   tree current = (*member_vec)[0], name = OVL_NAME (current);
   tree next = NULL_TREE, next_name = NULL_TREE;
@@ -1687,8 +1714,7 @@ set_class_bindings (tree klass, unsigned extra)
   if (member_vec)
     {
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), member_name_cmp);
+      member_vec->qsort (member_name_cmp);
       member_vec_dedup (member_vec);
     }
 }
@@ -1716,8 +1742,7 @@ insert_late_enum_def_bindings (tree klass, tree enumtype)
       else
 	member_vec_append_class_fields (member_vec, klass);
       CLASSTYPE_MEMBER_VEC (klass) = member_vec;
-      qsort (member_vec->address (), member_vec->length (),
-	     sizeof (tree), member_name_cmp);
+      member_vec->qsort (member_name_cmp);
       member_vec_dedup (member_vec);
     }
 }
@@ -3206,7 +3231,9 @@ push_local_binding (tree id, tree decl, bool is_using)
    standard.  If so, issue an error message.  If name lookup would
    work in both cases, but return a different result, this function
    returns the result of ANSI/ISO lookup.  Otherwise, it returns
-   DECL.  */
+   DECL.
+
+   FIXME: Scheduled for removal after GCC-8 is done.  */
 
 tree
 check_for_out_of_scope_variable (tree decl)
@@ -3227,16 +3254,16 @@ check_for_out_of_scope_variable (tree decl)
     shadowed = find_namespace_value (current_namespace, DECL_NAME (decl));
   if (shadowed)
     {
-      if (!DECL_ERROR_REPORTED (decl))
+      if (!DECL_ERROR_REPORTED (decl)
+	  && flag_permissive
+	  && warning (0, "name lookup of %qD changed", DECL_NAME (decl)))
 	{
-	  warning (0, "name lookup of %qD changed", DECL_NAME (decl));
-	  warning_at (DECL_SOURCE_LOCATION (shadowed), 0,
-		      "  matches this %qD under ISO standard rules",
-		      shadowed);
-	  warning_at (DECL_SOURCE_LOCATION (decl), 0,
-		      "  matches this %qD under old rules", decl);
-	  DECL_ERROR_REPORTED (decl) = 1;
+	  inform (DECL_SOURCE_LOCATION (shadowed),
+		  "matches this %qD under ISO standard rules", shadowed);
+	  inform (DECL_SOURCE_LOCATION (decl),
+		  "  matches this %qD under old rules", decl);
 	}
+      DECL_ERROR_REPORTED (decl) = 1;
       return shadowed;
     }
 
@@ -3254,26 +3281,25 @@ check_for_out_of_scope_variable (tree decl)
     {
       error ("name lookup of %qD changed for ISO %<for%> scoping",
 	     DECL_NAME (decl));
-      error ("  cannot use obsolete binding at %q+D because "
-	     "it has a destructor", decl);
+      inform (DECL_SOURCE_LOCATION (decl),
+	      "cannot use obsolete binding %qD because it has a destructor",
+	      decl);
       return error_mark_node;
     }
   else
     {
-      permerror (input_location, "name lookup of %qD changed for ISO %<for%> scoping",
+      permerror (input_location,
+		 "name lookup of %qD changed for ISO %<for%> scoping",
 	         DECL_NAME (decl));
       if (flag_permissive)
-        permerror (DECL_SOURCE_LOCATION (decl),
-		   "  using obsolete binding at %qD", decl);
-      else
-	{
-	  static bool hint;
-	  if (!hint)
-	    {
-	      inform (input_location, "(if you use %<-fpermissive%> G++ will accept your code)");
-	      hint = true;
-	    }
-	}
+        inform (DECL_SOURCE_LOCATION (decl),
+		"using obsolete binding %qD", decl);
+      static bool hint;
+      if (!hint)
+	inform (input_location, flag_permissive
+		? "this flexibility is deprecated and will be removed"
+		: "if you use %<-fpermissive%> G++ will accept your code");
+      hint = true;
     }
 
   return decl;
@@ -5371,13 +5397,14 @@ suggest_alternatives_for (location_t location, tree name,
     }
   else if (!suggest_misspellings)
     ;
-  else if (const char *fuzzy = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME))
+  else if (name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME,
+					       location))
     {
       /* Show a spelling correction.  */
       gcc_rich_location richloc (location);
 
-      richloc.add_fixit_replace (fuzzy);
-      inform_at_rich_loc (&richloc, "suggested alternative: %qs", fuzzy);
+      richloc.add_fixit_replace (hint.suggestion ());
+      inform (&richloc, "suggested alternative: %qs", hint.suggestion ());
     }
 }
 
@@ -5398,6 +5425,9 @@ get_std_name_hint (const char *name)
   static const std_name_hint hints[] = {
     /* <array>.  */
     {"array", "<array>"}, // C++11
+    /* <complex>.  */
+    {"complex", "<complex>"},
+    {"complex_literals", "<complex>"},
     /* <deque>.  */
     {"deque", "<deque>"},
     /* <forward_list>.  */
@@ -5456,7 +5486,7 @@ get_std_name_hint (const char *name)
   const size_t num_hints = sizeof (hints) / sizeof (hints[0]);
   for (size_t i = 0; i < num_hints; i++)
     {
-      if (0 == strcmp (name, hints[i].name))
+      if (strcmp (name, hints[i].name) == 0)
 	return hints[i].header;
     }
   return NULL;
@@ -5485,10 +5515,10 @@ maybe_suggest_missing_header (location_t location, tree name, tree scope)
 
   gcc_rich_location richloc (location);
   maybe_add_include_fixit (&richloc, header_hint);
-  inform_at_rich_loc (&richloc,
-		      "%<std::%s%> is defined in header %qs;"
-		      " did you forget to %<#include %s%>?",
-		      name_str, header_hint, header_hint);
+  inform (&richloc,
+	  "%<std::%s%> is defined in header %qs;"
+	  " did you forget to %<#include %s%>?",
+	  name_str, header_hint, header_hint);
   return true;
 }
 
@@ -5518,8 +5548,8 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
     {
       gcc_rich_location richloc (location);
       richloc.add_fixit_replace (fuzzy_name);
-      inform_at_rich_loc (&richloc, "suggested alternative: %qs",
-			  fuzzy_name);
+      inform (&richloc, "suggested alternative: %qs",
+	      fuzzy_name);
       return true;
     }
 
@@ -5597,6 +5627,10 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  bm.consider (IDENTIFIER_POINTER (best_matching_field));
       }
 
+  /* Only suggest names reserved for the implementation if NAME begins
+     with an underscore.  */
+  bool consider_implementation_names = (IDENTIFIER_POINTER (name)[0] == '_');
+
   for (tree t = lvl->names; t; t = TREE_CHAIN (t))
     {
       tree d = t;
@@ -5617,21 +5651,107 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 	  && DECL_ANTICIPATED (d))
 	continue;
 
-      if (tree name = DECL_NAME (d))
-	/* Ignore internal names with spaces in them.  */
-	if (!strchr (IDENTIFIER_POINTER (name), ' '))
-	  bm.consider (IDENTIFIER_POINTER (name));
+      tree suggestion = DECL_NAME (d);
+      if (!suggestion)
+	continue;
+
+      const char *suggestion_str = IDENTIFIER_POINTER (suggestion);
+
+      /* Ignore internal names with spaces in them.  */
+      if (strchr (suggestion_str, ' '))
+	continue;
+
+      /* Don't suggest names that are reserved for use by the
+	 implementation, unless NAME began with an underscore.  */
+      if (name_reserved_for_implementation_p (suggestion_str)
+	  && !consider_implementation_names)
+	continue;
+
+      bm.consider (suggestion_str);
+    }
+}
+
+/* Subclass of deferred_diagnostic.  Notify the user that the
+   given macro was used before it was defined.
+   This can be done in the C++ frontend since tokenization happens
+   upfront.  */
+
+class macro_use_before_def : public deferred_diagnostic
+{
+ public:
+  /* Ctor.  LOC is the location of the usage.  MACRO is the
+     macro that was used.  */
+  macro_use_before_def (location_t loc, cpp_hashnode *macro)
+  : deferred_diagnostic (loc), m_macro (macro)
+  {
+    gcc_assert (macro);
+  }
+
+  ~macro_use_before_def ()
+  {
+    if (is_suppressed_p ())
+      return;
+
+    source_location def_loc = cpp_macro_definition_location (m_macro);
+    if (def_loc != UNKNOWN_LOCATION)
+      {
+	inform (get_location (), "the macro %qs had not yet been defined",
+		(const char *)m_macro->ident.str);
+	inform (def_loc, "it was later defined here");
+      }
+  }
+
+ private:
+  cpp_hashnode *m_macro;
+};
+
+/* Determine if it can ever make sense to offer RID as a suggestion for
+   a misspelling.
+
+   Subroutine of lookup_name_fuzzy.  */
+
+static bool
+suggest_rid_p  (enum rid rid)
+{
+  switch (rid)
+    {
+    /* Support suggesting function-like keywords.  */
+    case RID_STATIC_ASSERT:
+      return true;
+
+    default:
+      /* Support suggesting the various decl-specifier words, to handle
+	 e.g. "singed" vs "signed" typos.  */
+      if (cp_keyword_starts_decl_specifier_p (rid))
+	return true;
+
+      /* Otherwise, don't offer it.  This avoids suggesting e.g. "if"
+	 and "do" for short misspellings, which are likely to lead to
+	 nonsensical results.  */
+      return false;
     }
 }
 
 /* Search for near-matches for NAME within the current bindings, and within
    macro names, returning the best match as a const char *, or NULL if
-   no reasonable match is found.  */
+   no reasonable match is found.
 
-const char *
-lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
+   Use LOC for any deferred diagnostics.  */
+
+name_hint
+lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+
+  /* First, try some well-known names in the C++ standard library, in case
+     the user forgot a #include.  */
+  const char *header_hint
+    = get_cp_stdlib_header_for_name (IDENTIFIER_POINTER (name));
+  if (header_hint)
+    return name_hint (NULL,
+		      new suggest_missing_header (loc,
+						  IDENTIFIER_POINTER (name),
+						  header_hint));
 
   best_match <tree, const char *> bm (name);
 
@@ -5659,6 +5779,15 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
   /* If a macro is the closest so far to NAME, consider it.  */
   if (best_macro)
     bm.consider ((const char *)best_macro->ident.str);
+  else if (bmm.get_best_distance () == 0)
+    {
+      /* If we have an exact match for a macro name, then the
+	 macro has been used before it was defined.  */
+      cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
+      if (macro && (macro->flags & NODE_BUILTIN) == 0)
+	return name_hint (NULL,
+			  new macro_use_before_def (loc, macro));
+    }
 
   /* Try the "starts_decl_specifier_p" keywords to detect
      "singed" vs "signed" typos.  */
@@ -5666,9 +5795,8 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
     {
       const c_common_resword *resword = &c_common_reswords[i];
 
-      if (kind == FUZZY_LOOKUP_TYPENAME)
-	if (!cp_keyword_starts_decl_specifier_p (resword->rid))
-	  continue;
+      if (!suggest_rid_p (resword->rid))
+	continue;
 
       tree resword_identifier = ridpointers [resword->rid];
       if (!resword_identifier)
@@ -5683,7 +5811,7 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind)
       bm.consider (IDENTIFIER_POINTER (resword_identifier));
     }
 
-  return bm.get_best_meaningful_candidate ();
+  return name_hint (bm.get_best_meaningful_candidate (), NULL);
 }
 
 /* Subroutine of outer_binding.
@@ -6242,9 +6370,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	    view of the language.  */
 	 || (b->kind == sk_template_parms
 	     && (b->explicit_spec_p || scope == ts_global))
-	 /* Pushing into a class is ok for lambdas or when we want current  */
 	 || (b->kind == sk_class
-	     && scope != ts_lambda
 	     && (scope != ts_current
 		 /* We may be defining a new type in the initializer
 		    of a static member variable. We allow this when
@@ -6267,7 +6393,6 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	  tree cs = current_scope ();
 
 	  if (scope == ts_current
-	      || scope == ts_lambda
 	      || (cs && TREE_CODE (cs) == FUNCTION_DECL))
 	    context = cs;
 	  else if (cs && TYPE_P (cs))
@@ -6304,8 +6429,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 
       if (b->kind == sk_class)
 	{
-	  if (!TYPE_BEING_DEFINED (current_class_type)
-	      && scope != ts_lambda)
+	  if (!TYPE_BEING_DEFINED (current_class_type))
 	    return error_mark_node;
 
 	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
@@ -6352,7 +6476,8 @@ do_pushtag (tree name, tree type, tag_scope scope)
 		 template instantiation rather than in some nested context.  */
 	      add_decl_expr (decl);
 	    }
-	  else
+	  /* Lambdas use LAMBDA_EXPR_DISCRIMINATOR instead.  */
+	  else if (!LAMBDA_TYPE_P (type))
 	    vec_safe_push (local_classes, type);
 	}
     }

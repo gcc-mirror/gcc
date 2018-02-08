@@ -1,5 +1,5 @@
 ;;- Machine description for Renesas / SuperH SH.
-;;  Copyright (C) 1993-2017 Free Software Foundation, Inc.
+;;  Copyright (C) 1993-2018 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -848,7 +848,7 @@
   /* FIXME: Maybe also search the predecessor basic blocks to catch
      more cases.  */
   set_of_reg op = sh_find_set_of_reg (operands[0], curr_insn,
-				      prev_nonnote_insn_bb);
+				      prev_nonnote_nondebug_insn_bb);
 
   if (op.set_src != NULL && GET_CODE (op.set_src) == AND
       && !sh_insn_operands_modified_between_p (op.insn, op.insn, curr_insn))
@@ -939,7 +939,7 @@
   if (dump_file)
     fprintf (dump_file, "cmpgesi_t: trying to optimize for const_int 0\n");
 
-  rtx_insn* i = next_nonnote_insn_bb (curr_insn);
+  rtx_insn* i = next_nonnote_nondebug_insn_bb (curr_insn);
 
   if (dump_file)
     {
@@ -2277,8 +2277,8 @@
   ""
 {
   rtx last;
+  rtx func_ptr = gen_reg_rtx (Pmode);
 
-  operands[3] = gen_reg_rtx (Pmode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
   if (TARGET_DIVIDE_CALL_TABLE)
     {
@@ -2298,16 +2298,16 @@
 	  emit_move_insn (operands[0], operands[2]);
 	  DONE;
 	}
-      function_symbol (operands[3], "__udivsi3_i4i", SFUNC_GOT);
-      last = gen_udivsi3_i4_int (operands[0], operands[3]);
+      function_symbol (func_ptr, "__udivsi3_i4i", SFUNC_GOT);
+      last = gen_udivsi3_i4_int (operands[0], func_ptr);
     }
   else if (TARGET_DIVIDE_CALL_FP)
     {
-      rtx lab = function_symbol (operands[3], "__udivsi3_i4", SFUNC_STATIC).lab;
+      rtx lab = function_symbol (func_ptr, "__udivsi3_i4", SFUNC_STATIC).lab;
       if (TARGET_FPU_SINGLE)
-	last = gen_udivsi3_i4_single (operands[0], operands[3], lab);
+	last = gen_udivsi3_i4_single (operands[0], func_ptr, lab);
       else
-	last = gen_udivsi3_i4 (operands[0], operands[3], lab);
+	last = gen_udivsi3_i4 (operands[0], func_ptr, lab);
     }
   else if (TARGET_SH2A)
     {
@@ -2318,8 +2318,8 @@
     }
   else
     {
-      rtx lab = function_symbol (operands[3], "__udivsi3", SFUNC_STATIC).lab;
-      last = gen_udivsi3_i1 (operands[0], operands[3], lab);
+      rtx lab = function_symbol (func_ptr, "__udivsi3", SFUNC_STATIC).lab;
+      last = gen_udivsi3_i1 (operands[0], func_ptr, lab);
     }
   emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
   emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
@@ -2405,22 +2405,22 @@
   ""
 {
   rtx last;
+  rtx func_ptr = gen_reg_rtx (Pmode);
 
-  operands[3] = gen_reg_rtx (Pmode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
   if (TARGET_DIVIDE_CALL_TABLE)
     {
-      function_symbol (operands[3], sh_divsi3_libfunc, SFUNC_GOT);
-      last = gen_divsi3_i4_int (operands[0], operands[3]);
+      function_symbol (func_ptr, sh_divsi3_libfunc, SFUNC_GOT);
+      last = gen_divsi3_i4_int (operands[0], func_ptr);
     }
   else if (TARGET_DIVIDE_CALL_FP)
     {
-      rtx lab = function_symbol (operands[3], sh_divsi3_libfunc,
+      rtx lab = function_symbol (func_ptr, sh_divsi3_libfunc,
 				 SFUNC_STATIC).lab;
       if (TARGET_FPU_SINGLE)
-	last = gen_divsi3_i4_single (operands[0], operands[3], lab);
+	last = gen_divsi3_i4_single (operands[0], func_ptr, lab);
       else
-	last = gen_divsi3_i4 (operands[0], operands[3], lab);
+	last = gen_divsi3_i4 (operands[0], func_ptr, lab);
     }
   else if (TARGET_SH2A)
     {
@@ -2431,8 +2431,8 @@
     }
   else
     {
-      function_symbol (operands[3], sh_divsi3_libfunc, SFUNC_GOT);
-      last = gen_divsi3_i1 (operands[0], operands[3]);
+      function_symbol (func_ptr, sh_divsi3_libfunc, SFUNC_GOT);
+      last = gen_divsi3_i1 (operands[0], func_ptr);
     }
   emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
   emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
@@ -3094,7 +3094,7 @@
 	  && ! sh_dynamicalize_shift_p (shift_count))
 	{
 	  if (prev_set_t_insn == NULL)
-	    prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+	    prev_set_t_insn = prev_nonnote_nondebug_insn_bb (curr_insn);
 
 	  /* Skip the nott insn, which was probably inserted by the splitter
 	     of *rotcr_neg_t.  Don't use one of the recog functions
@@ -3106,7 +3106,8 @@
 	      if (GET_CODE (pat) == SET
 		  && t_reg_operand (XEXP (pat, 0), SImode)
 		  && negt_reg_operand (XEXP (pat, 1), SImode))
-	      prev_set_t_insn = prev_nonnote_insn_bb (prev_set_t_insn);
+		prev_set_t_insn = prev_nonnote_nondebug_insn_bb
+		  (prev_set_t_insn);
 	    }
 
 	  if (! (prev_set_t_insn != NULL_RTX
@@ -3194,7 +3195,7 @@
       if (sh_ashlsi_clobbers_t_reg_p (shift_count)
 	  && ! sh_dynamicalize_shift_p (shift_count))
 	{
-	  prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+	  prev_set_t_insn = prev_nonnote_nondebug_insn_bb (curr_insn);
 
 	  /* Skip the nott insn, which was probably inserted by the splitter
 	     of *rotcl_neg_t.  Don't use one of the recog functions
@@ -3206,7 +3207,8 @@
 	      if (GET_CODE (pat) == SET
 		  && t_reg_operand (XEXP (pat, 0), SImode)
 		  && negt_reg_operand (XEXP (pat, 1), SImode))
-	      prev_set_t_insn = prev_nonnote_insn_bb (prev_set_t_insn);
+		prev_set_t_insn = prev_nonnote_nondebug_insn_bb
+		  (prev_set_t_insn);
 	    }
 
 	  if (! (prev_set_t_insn != NULL_RTX
@@ -4423,7 +4425,7 @@
    When we're here, the not:SI pattern obviously has been matched already
    and we only have to see whether the following insn is the left shift.  */
 
-  rtx_insn *i = next_nonnote_insn_bb (curr_insn);
+  rtx_insn *i = next_nonnote_nondebug_insn_bb (curr_insn);
   if (i == NULL_RTX || !NONJUMP_INSN_P (i))
     FAIL;
 
@@ -6519,6 +6521,7 @@
   [(call (mem (match_operand:SI 0 "symbol_ref_operand" ""))
 	 (match_operand 1 "" ""))
    (use (reg:SI FPSCR_MODES_REG))
+   (use (match_scratch 2))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2A && sh2a_is_function_vector_call (operands[0])"
 {
@@ -6629,6 +6632,7 @@
 	(call (mem:SI (match_operand:SI 1 "symbol_ref_operand" ""))
 	      (match_operand 2 "" "")))
    (use (reg:SI FPSCR_MODES_REG))
+   (use (match_scratch 3))
    (clobber (reg:SI PR_REG))]
   "TARGET_SH2A && sh2a_is_function_vector_call (operands[1])"
 {
@@ -7044,13 +7048,11 @@
   [(const_int 0)]
 {
   rtx lab = PATTERN (gen_call_site ());
-  rtx call_insn;
+  rtx tmp =  gen_rtx_REG (SImode, R1_REG);
 
-  operands[3] =  gen_rtx_REG (SImode, R1_REG);
-
-  sh_expand_sym_label2reg (operands[3], operands[1], lab, true);
-  call_insn = emit_call_insn (gen_sibcall_valuei_pcrel (operands[0],
-							operands[3],
+  sh_expand_sym_label2reg (tmp, operands[1], lab, true);
+  rtx call_insn = emit_call_insn (gen_sibcall_valuei_pcrel (operands[0],
+							tmp,
 							operands[2],
 							copy_rtx (lab)));
   SIBLING_CALL_P (call_insn) = 1;
@@ -7078,12 +7080,11 @@
   [(const_int 0)]
 {
   rtx lab = PATTERN (gen_call_site ());
+  rtx tmp = gen_rtx_REG (SImode, R1_REG);
 
-  operands[3] =  gen_rtx_REG (SImode, R1_REG);
-
-  sh_expand_sym_label2reg (operands[3], operands[1], lab, true);
+  sh_expand_sym_label2reg (tmp, operands[1], lab, true);
   rtx i = emit_call_insn (gen_sibcall_valuei_pcrel_fdpic (operands[0],
-							  operands[3],
+							  tmp,
 							  operands[2],
 							  copy_rtx (lab)));
   SIBLING_CALL_P (i) = 1;
@@ -10752,8 +10753,8 @@
 {
   rtx t_reg = get_t_reg_rtx ();
 
-  for (rtx_insn* i = prev_nonnote_insn_bb (curr_insn); i != NULL;
-       i = prev_nonnote_insn_bb (i))
+  for (rtx_insn* i = prev_nonnote_nondebug_insn_bb (curr_insn); i != NULL;
+       i = prev_nonnote_nondebug_insn_bb (i))
     {
       if (!INSN_P (i) || DEBUG_INSN_P (i))
 	continue;

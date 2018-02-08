@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall" } */
+/* { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
 #include "Wobjsize-1.h"
 

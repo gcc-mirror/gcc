@@ -4356,7 +4356,7 @@ how to import these C++ declarations from the Ada side:
 
        type Dog is new Animal and Carnivore and Domestic with record
          Tooth_Count : Natural;
-         Owner       : String (1 .. 30);
+         Owner       : Chars_Ptr;
        end record;
        pragma Import (C_Plus_Plus, Dog);
 

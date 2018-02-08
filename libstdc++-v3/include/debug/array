@@ -1,6 +1,6 @@
 // Debugging array implementation -*- C++ -*-
 
-// Copyright (C) 2012-2017 Free Software Foundation, Inc.
+// Copyright (C) 2012-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -305,6 +305,14 @@ namespace __debug
       static_assert(_Int < _Nm, "index is out of bounds");
       return _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::
 	_S_ref(__arr._M_elems, _Int);
+    }
+
+  template<std::size_t _Int, typename _Tp, std::size_t _Nm>
+    constexpr const _Tp&&
+    get(const array<_Tp, _Nm>&& __arr) noexcept
+    {
+      static_assert(_Int < _Nm, "index is out of bounds");
+      return std::move(__debug::get<_Int>(__arr));
     }
 } // namespace __debug
 

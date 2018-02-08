@@ -580,6 +580,15 @@ proc jit-dg-test { prog do_what extra_tool_flags } {
 	verbose "$name is not meant to generate a reproducer"
     }
 
+    # Normally we would return $comp_output and $output_file to the
+    # caller, which would delete $output_file, the generated executable.
+    # If we need to debug, it's handy to be able to suppress this behavior,
+    # keeping the executable around.
+    set preserve_executables [info exists env(PRESERVE_EXECUTABLES)]
+    if $preserve_executables {
+	set output_file ""
+    }
+    
     return [list $comp_output $output_file]
 }
 

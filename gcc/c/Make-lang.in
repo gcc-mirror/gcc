@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU C - C language.
-# Copyright (C) 1994-2017 Free Software Foundation, Inc.
+# Copyright (C) 1994-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -51,7 +51,7 @@ CFLAGS-c/gccspec.o += $(DRIVER_DEFINES)
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c/c-errors.o c/c-decl.o c/c-typeck.o \
   c/c-convert.o c/c-aux-info.o c/c-objc-common.o c/c-parser.o \
-  c/c-array-notation.o c/c-fold.o c/gimple-parser.o \
+  c/c-fold.o c/gimple-parser.o \
   $(C_COMMON_OBJS) $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
@@ -125,7 +125,14 @@ check-c : check-gcc
 
 c.install-common:
 c.install-man:
-c.install-plugin:
+
+c.install-plugin: installdirs
+# Install import library.
+ifeq ($(plugin_implib),yes)
+	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
+	$(INSTALL_DATA) cc1$(exeext).a $(DESTDIR)/$(plugin_resourcesdir)/cc1$(exeext).a
+endif
+
 c.uninstall:
 
 #

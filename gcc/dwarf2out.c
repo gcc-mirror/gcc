@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from GCC.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "md5.h"
 #include "tree-pretty-print.h"
+#include "print-rtl.h"
 #include "debug.h"
 #include "common/common-target.h"
 #include "langhooks.h"
@@ -94,6 +95,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "file-prefix-map.h" /* remap_debug_filename()  */
 
 static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
 				   int, bool);
@@ -263,7 +265,6 @@ static GTY(()) int dw2_string_counter;
 static GTY(()) bool have_multiple_function_sections = false;
 
 /* Whether the default text and cold text sections have been used at all.  */
-
 static GTY(()) bool text_section_used = false;
 static GTY(()) bool cold_text_section_used = false;
 
@@ -284,6 +285,9 @@ static void dwarf2out_note_section_used (void);
 /* Personality decl of current unit.  Used only when assembler does not support
    personality CFI.  */
 static GTY(()) rtx current_unit_personality;
+
+/* Whether an eh_frame section is required.  */
+static GTY(()) bool do_eh_frame = false;
 
 /* .debug_rnglists next index.  */
 static unsigned int rnglist_idx;
@@ -569,6 +573,9 @@ dw_cfi_oprnd2_desc (enum dwarf_call_frame_info cfi)
     case DW_CFA_expression:
     case DW_CFA_val_expression:
       return dw_cfi_oprnd_loc;
+
+    case DW_CFA_def_cfa_expression:
+      return dw_cfi_oprnd_cfa_loc;
 
     default:
       return dw_cfi_oprnd_unused;
@@ -961,9 +968,15 @@ dwarf2out_do_cfi_startproc (bool second)
 {
   int enc;
   rtx ref;
-  rtx personality = get_personality_function (current_function_decl);
 
   fprintf (asm_out_file, "\t.cfi_startproc\n");
+
+  /* .cfi_personality and .cfi_lsda are only relevant to DWARF2
+     eh unwinders.  */
+  if (targetm_common.except_unwind_info (&global_options) != UI_DWARF2)
+    return;
+
+  rtx personality = get_personality_function (current_function_decl);
 
   if (personality)
     {
@@ -1060,9 +1073,13 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
   dup_label = xstrdup (label);
   current_function_func_begin_label = dup_label;
 
-  /* We can elide the fde allocation if we're not emitting debug info.  */
+  /* We can elide FDE allocation if we're not emitting frame unwind info.  */
   if (!do_frame)
     return;
+
+  /* Unlike the debug version, the EH version of frame unwind info is a per-
+     function setting so we need to record whether we need it for the unit.  */
+  do_eh_frame |= dwarf2out_do_eh_frame ();
 
   /* Cater to the various TARGET_ASM_OUTPUT_MI_THUNK implementations that
      emit insns as rtx but bypass the bulk of rest_of_compilation, which
@@ -1180,8 +1197,7 @@ dwarf2out_frame_finish (void)
     output_call_frame_info (0);
 
   /* Output another copy for the unwinder.  */
-  if ((flag_unwind_tables || flag_exceptions)
-      && targetm_common.except_unwind_info (&global_options) == UI_DWARF2)
+  if (do_eh_frame)
     output_call_frame_info (1);
 }
 
@@ -1307,7 +1323,7 @@ typedef struct GTY(()) dw_loc_list_struct {
   bool force;
 } dw_loc_list_node;
 
-static dw_loc_descr_ref int_loc_descriptor (HOST_WIDE_INT);
+static dw_loc_descr_ref int_loc_descriptor (poly_int64);
 static dw_loc_descr_ref uint_loc_descriptor (unsigned HOST_WIDE_INT);
 
 /* Convert a DWARF stack opcode into its string name.  */
@@ -1342,19 +1358,6 @@ new_loc_descr (enum dwarf_location_atom op, unsigned HOST_WIDE_INT oprnd1,
   descr->dw_loc_oprnd2.v.val_unsigned = oprnd2;
 
   return descr;
-}
-
-/* Return a pointer to a newly allocated location description for
-   REG and OFFSET.  */
-
-static inline dw_loc_descr_ref
-new_reg_loc_descr (unsigned int reg,  unsigned HOST_WIDE_INT offset)
-{
-  if (reg <= 31)
-    return new_loc_descr ((enum dwarf_location_atom) (DW_OP_breg0 + reg),
-			  offset, 0);
-  else
-    return new_loc_descr (DW_OP_bregx, reg, offset);
 }
 
 /* Add a location description term to a location description expression.  */
@@ -1489,22 +1492,30 @@ loc_descr_equal_p (dw_loc_descr_ref a, dw_loc_descr_ref b)
 }
 
 
-/* Add a constant OFFSET to a location expression.  */
+/* Add a constant POLY_OFFSET to a location expression.  */
 
 static void
-loc_descr_plus_const (dw_loc_descr_ref *list_head, HOST_WIDE_INT offset)
+loc_descr_plus_const (dw_loc_descr_ref *list_head, poly_int64 poly_offset)
 {
   dw_loc_descr_ref loc;
   HOST_WIDE_INT *p;
 
   gcc_assert (*list_head != NULL);
 
-  if (!offset)
+  if (known_eq (poly_offset, 0))
     return;
 
   /* Find the end of the chain.  */
   for (loc = *list_head; loc->dw_loc_next != NULL; loc = loc->dw_loc_next)
     ;
+
+  HOST_WIDE_INT offset;
+  if (!poly_offset.is_constant (&offset))
+    {
+      loc->dw_loc_next = int_loc_descriptor (poly_offset);
+      add_loc_descr (&loc->dw_loc_next, new_loc_descr (DW_OP_plus, 0, 0));
+      return;
+    }
 
   p = NULL;
   if (loc->dw_loc_opc == DW_OP_fbreg
@@ -1531,10 +1542,33 @@ loc_descr_plus_const (dw_loc_descr_ref *list_head, HOST_WIDE_INT offset)
     }
 }
 
+/* Return a pointer to a newly allocated location description for
+   REG and OFFSET.  */
+
+static inline dw_loc_descr_ref
+new_reg_loc_descr (unsigned int reg, poly_int64 offset)
+{
+  HOST_WIDE_INT const_offset;
+  if (offset.is_constant (&const_offset))
+    {
+      if (reg <= 31)
+	return new_loc_descr ((enum dwarf_location_atom) (DW_OP_breg0 + reg),
+			      const_offset, 0);
+      else
+	return new_loc_descr (DW_OP_bregx, reg, const_offset);
+    }
+  else
+    {
+      dw_loc_descr_ref ret = new_reg_loc_descr (reg, 0);
+      loc_descr_plus_const (&ret, offset);
+      return ret;
+    }
+}
+
 /* Add a constant OFFSET to a location list.  */
 
 static void
-loc_list_plus_const (dw_loc_list_ref list_head, HOST_WIDE_INT offset)
+loc_list_plus_const (dw_loc_list_ref list_head, poly_int64 offset)
 {
   dw_loc_list_ref d;
   for (d = list_head; d != NULL; d = d->dw_loc_next)
@@ -2614,7 +2648,7 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
    expression.  */
 
 struct dw_loc_descr_node *
-build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
+build_cfa_loc (dw_cfa_location *cfa, poly_int64 offset)
 {
   struct dw_loc_descr_node *head, *tmp;
 
@@ -2627,11 +2661,7 @@ build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
       head->dw_loc_oprnd1.val_entry = NULL;
       tmp = new_loc_descr (DW_OP_deref, 0, 0);
       add_loc_descr (&head, tmp);
-      if (offset != 0)
-	{
-	  tmp = new_loc_descr (DW_OP_plus_uconst, offset, 0);
-	  add_loc_descr (&head, tmp);
-	}
+      loc_descr_plus_const (&head, offset);
     }
   else
     head = new_reg_loc_descr (cfa->reg, offset);
@@ -2645,7 +2675,7 @@ build_cfa_loc (dw_cfa_location *cfa, HOST_WIDE_INT offset)
 
 struct dw_loc_descr_node *
 build_cfa_aligned_loc (dw_cfa_location *cfa,
-		       HOST_WIDE_INT offset, HOST_WIDE_INT alignment)
+		       poly_int64 offset, HOST_WIDE_INT alignment)
 {
   struct dw_loc_descr_node *head;
   unsigned int dwarf_fp
@@ -2741,6 +2771,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_rtx_code_label,	/* label */
   debug_nothing_int,		/* handle_pch */
   dwarf2out_var_location,
+  debug_nothing_tree,		/* inline_entry */
   dwarf2out_size_function,	/* size_function */
   dwarf2out_switch_text_section,
   dwarf2out_set_name,
@@ -2781,6 +2812,7 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
   debug_nothing_rtx_code_label,	         /* label */
   debug_nothing_int,		         /* handle_pch */
   debug_nothing_rtx_insn,	         /* var_location */
+  debug_nothing_tree,	         	 /* inline_entry */
   debug_nothing_tree,			 /* size_function */
   debug_nothing_void,                    /* switch_text_section */
   debug_nothing_tree_tree,		 /* set_name */
@@ -3331,7 +3363,7 @@ static GTY(()) vec<tree, va_gc> *generic_type_instances;
 
 /* Offset from the "steady-state frame pointer" to the frame base,
    within the current function.  */
-static HOST_WIDE_INT frame_pointer_fb_offset;
+static poly_int64 frame_pointer_fb_offset;
 static bool frame_pointer_fb_offset_valid;
 
 static vec<dw_die_ref> base_types;
@@ -3505,7 +3537,7 @@ static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int,
 						enum var_init_status);
 static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx,
 						     enum var_init_status);
-static dw_loc_descr_ref based_loc_descr (rtx, HOST_WIDE_INT,
+static dw_loc_descr_ref based_loc_descr (rtx, poly_int64,
 					 enum var_init_status);
 static int is_based_loc (const_rtx);
 static bool resolve_one_addr (rtx *);
@@ -5097,21 +5129,6 @@ get_AT_file (dw_die_ref die, enum dwarf_attribute attr_kind)
   return a ? AT_file (a) : NULL;
 }
 
-/* Returns the ultimate TRANSLATION_UNIT_DECL context of DECL or NULL.  */
-
-static const_tree
-get_ultimate_context (const_tree decl)
-{
-  while (decl && TREE_CODE (decl) != TRANSLATION_UNIT_DECL)
-    {
-      if (TREE_CODE (decl) == BLOCK)
-	decl = BLOCK_SUPERCONTEXT (decl);
-      else
-	decl = get_containing_scope (decl);
-    }
-  return decl;
-}
-
 /* Return TRUE if the language is C++.  */
 
 static inline bool
@@ -5904,17 +5921,15 @@ add_var_loc_to_decl (tree decl, rtx loc_note, const char *label)
 	  || (TREE_CODE (realdecl) == MEM_REF
 	      && TREE_CODE (TREE_OPERAND (realdecl, 0)) == ADDR_EXPR))
 	{
-	  HOST_WIDE_INT maxsize;
 	  bool reverse;
-	  tree innerdecl
-	    = get_ref_base_and_extent (realdecl, &bitpos, &bitsize, &maxsize,
-				       &reverse);
-	  if (!DECL_P (innerdecl)
+	  tree innerdecl = get_ref_base_and_extent_hwi (realdecl, &bitpos,
+							&bitsize, &reverse);
+	  if (!innerdecl
+	      || !DECL_P (innerdecl)
 	      || DECL_IGNORED_P (innerdecl)
 	      || TREE_STATIC (innerdecl)
-	      || bitsize <= 0
-	      || bitpos + bitsize > 256
-	      || bitsize != maxsize)
+	      || bitsize == 0
+	      || bitpos + bitsize > 256)
 	    return NULL;
 	  decl = innerdecl;
 	}
@@ -11192,7 +11207,7 @@ index_rnglists (void)
 /* Emit .debug_rnglists section.  */
 
 static void
-output_rnglists (void)
+output_rnglists (unsigned generation)
 {
   unsigned i;
   dw_ranges *r;
@@ -11202,8 +11217,12 @@ output_rnglists (void)
 
   switch_to_section (debug_ranges_section);
   ASM_OUTPUT_LABEL (asm_out_file, ranges_section_label);
-  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_RANGES_SECTION_LABEL, 2);
-  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL, 3);
+  /* There are up to 4 unique ranges labels per generation.
+     See also init_sections_and_labels.  */
+  ASM_GENERATE_INTERNAL_LABEL (l1, DEBUG_RANGES_SECTION_LABEL,
+			       2 + generation * 4);
+  ASM_GENERATE_INTERNAL_LABEL (l2, DEBUG_RANGES_SECTION_LABEL,
+			       3 + generation * 4);
   if (DWARF_INITIAL_LENGTH_SIZE - DWARF_OFFSET_SIZE == 4)
     dw2_asm_output_data (4, 0xffffffff,
 			 "Initial length escape value indicating "
@@ -12481,7 +12500,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   dw_die_ref mod_scope;
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
-			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC);
+			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC | 
+			    ENCODE_QUAL_ADDR_SPACE(~0U));
   const bool reverse_base_type
     = need_endianity_attribute_p (reverse) && is_base_type (type);
 
@@ -13165,7 +13185,10 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
       gcc_assert ((unsigned) DBX_REGISTER_NUMBER (reg) == dbx_reg_number (rtl));
       nregs = REG_NREGS (rtl);
 
-      size = GET_MODE_SIZE (GET_MODE (rtl)) / nregs;
+      /* At present we only track constant-sized pieces.  */
+      if (!GET_MODE_SIZE (GET_MODE (rtl)).is_constant (&size))
+	return NULL;
+      size /= nregs;
 
       loc_result = NULL;
       while (nregs--)
@@ -13185,7 +13208,9 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 
   gcc_assert (GET_CODE (regs) == PARALLEL);
 
-  size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
+  /* At present we only track constant-sized pieces.  */
+  if (!GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0))).is_constant (&size))
+    return NULL;
   loc_result = NULL;
 
   for (i = 0; i < XVECLEN (regs, 0); ++i)
@@ -13218,12 +13243,57 @@ int_shift_loc_descriptor (HOST_WIDE_INT i, int shift)
   return ret;
 }
 
-/* Return a location descriptor that designates a constant.  */
+/* Return a location descriptor that designates constant POLY_I.  */
 
 static dw_loc_descr_ref
-int_loc_descriptor (HOST_WIDE_INT i)
+int_loc_descriptor (poly_int64 poly_i)
 {
   enum dwarf_location_atom op;
+
+  HOST_WIDE_INT i;
+  if (!poly_i.is_constant (&i))
+    {
+      /* Create location descriptions for the non-constant part and
+	 add any constant offset at the end.  */
+      dw_loc_descr_ref ret = NULL;
+      HOST_WIDE_INT constant = poly_i.coeffs[0];
+      for (unsigned int j = 1; j < NUM_POLY_INT_COEFFS; ++j)
+	{
+	  HOST_WIDE_INT coeff = poly_i.coeffs[j];
+	  if (coeff != 0)
+	    {
+	      dw_loc_descr_ref start = ret;
+	      unsigned int factor;
+	      int bias;
+	      unsigned int regno = targetm.dwarf_poly_indeterminate_value
+		(j, &factor, &bias);
+
+	      /* Add COEFF * ((REGNO / FACTOR) - BIAS) to the value:
+		 add COEFF * (REGNO / FACTOR) now and subtract
+		 COEFF * BIAS from the final constant part.  */
+	      constant -= coeff * bias;
+	      add_loc_descr (&ret, new_reg_loc_descr (regno, 0));
+	      if (coeff % factor == 0)
+		coeff /= factor;
+	      else
+		{
+		  int amount = exact_log2 (factor);
+		  gcc_assert (amount >= 0);
+		  add_loc_descr (&ret, int_loc_descriptor (amount));
+		  add_loc_descr (&ret, new_loc_descr (DW_OP_shr, 0, 0));
+		}
+	      if (coeff != 1)
+		{
+		  add_loc_descr (&ret, int_loc_descriptor (coeff));
+		  add_loc_descr (&ret, new_loc_descr (DW_OP_mul, 0, 0));
+		}
+	      if (start)
+		add_loc_descr (&ret, new_loc_descr (DW_OP_plus, 0, 0));
+	    }
+	}
+      loc_descr_plus_const (&ret, constant);
+      return ret;
+    }
 
   /* Pick the smallest representation of a constant, rather than just
      defaulting to the LEB encoding.  */
@@ -13590,7 +13660,7 @@ address_of_int_loc_descriptor (int size, HOST_WIDE_INT i)
 /* Return a location descriptor that designates a base+offset location.  */
 
 static dw_loc_descr_ref
-based_loc_descr (rtx reg, HOST_WIDE_INT offset,
+based_loc_descr (rtx reg, poly_int64 offset,
 		 enum var_init_status initialized)
 {
   unsigned int regno;
@@ -13609,11 +13679,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 
       if (elim != reg)
 	{
-	  if (GET_CODE (elim) == PLUS)
-	    {
-	      offset += INTVAL (XEXP (elim, 1));
-	      elim = XEXP (elim, 0);
-	    }
+	  elim = strip_offset_and_add (elim, &offset);
 	  gcc_assert ((SUPPORTS_STACK_ALIGNMENT
 		       && (elim == hard_frame_pointer_rtx
 			   || elim == stack_pointer_rtx))
@@ -13637,7 +13703,15 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 
 	  gcc_assert (frame_pointer_fb_offset_valid);
 	  offset += frame_pointer_fb_offset;
-	  return new_loc_descr (DW_OP_fbreg, offset, 0);
+	  HOST_WIDE_INT const_offset;
+	  if (offset.is_constant (&const_offset))
+	    return new_loc_descr (DW_OP_fbreg, const_offset, 0);
+	  else
+	    {
+	      dw_loc_descr_ref ret = new_loc_descr (DW_OP_fbreg, 0, 0);
+	      loc_descr_plus_const (&ret, offset);
+	      return ret;
+	    }
 	}
     }
 
@@ -13652,8 +13726,10 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 #endif
   regno = DWARF_FRAME_REGNUM (regno);
 
+  HOST_WIDE_INT const_offset;
   if (!optimize && fde
-      && (fde->drap_reg == regno || fde->vdrap_reg == regno))
+      && (fde->drap_reg == regno || fde->vdrap_reg == regno)
+      && offset.is_constant (&const_offset))
     {
       /* Use cfa+offset to represent the location of arguments passed
 	 on the stack when drap is used to align stack.
@@ -13661,14 +13737,10 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 	 is supposed to track where the arguments live and the register
 	 used as vdrap or drap in some spot might be used for something
 	 else in other part of the routine.  */
-      return new_loc_descr (DW_OP_fbreg, offset, 0);
+      return new_loc_descr (DW_OP_fbreg, const_offset, 0);
     }
 
-  if (regno <= 31)
-    result = new_loc_descr ((enum dwarf_location_atom) (DW_OP_breg0 + regno),
-			    offset, 0);
-  else
-    result = new_loc_descr (DW_OP_bregx, regno, offset);
+  result = new_reg_loc_descr (regno, offset);
 
   if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
     add_loc_descr (&result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
@@ -13709,7 +13781,7 @@ tls_mem_loc_descriptor (rtx mem)
   if (loc_result == NULL)
     return NULL;
 
-  if (MEM_OFFSET (mem))
+  if (maybe_ne (MEM_OFFSET (mem), 0))
     loc_descr_plus_const (&loc_result, MEM_OFFSET (mem));
 
   return loc_result;
@@ -13777,15 +13849,29 @@ const_ok_for_output_1 (rtx rtl)
       return false;
     }
 
+  if (CONST_POLY_INT_P (rtl))
+    return false;
+
+  if (targetm.const_not_ok_for_debug_p (rtl))
+    {
+      expansion_failed (NULL_TREE, rtl,
+			"Expression rejected for debug by the backend.\n");
+      return false;
+    }
+
   /* FIXME: Refer to PR60655. It is possible for simplification
      of rtl expressions in var tracking to produce such expressions.
      We should really identify / validate expressions
      enclosed in CONST that can be handled by assemblers on various
      targets and only handle legitimate cases here.  */
-  if (GET_CODE (rtl) != SYMBOL_REF)
+  switch (GET_CODE (rtl))
     {
-      if (GET_CODE (rtl) == NOT)
-	return false;
+    case SYMBOL_REF:
+      break;
+    case NOT:
+    case NEG:
+      return false;
+    default:
       return true;
     }
 
@@ -14547,8 +14633,7 @@ rotate_loc_descriptor (rtx rtl, scalar_int_mode mode,
   dw_loc_descr_ref op0, op1, ret, mask[2] = { NULL, NULL };
   int i;
 
-  if (GET_MODE (rtlop1) != VOIDmode
-      && GET_MODE_BITSIZE (GET_MODE (rtlop1)) < GET_MODE_BITSIZE (mode))
+  if (is_narrower_int_mode (GET_MODE (rtlop1), mode))
     rtlop1 = gen_rtx_ZERO_EXTEND (mode, rtlop1);
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
 			    VAR_INIT_STATUS_INITIALIZED);
@@ -14663,6 +14748,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
   enum dwarf_location_atom op;
   dw_loc_descr_ref op0, op1;
   rtx inner = NULL_RTX;
+  poly_int64 offset;
 
   if (mode == VOIDmode)
     mode = GET_MODE (rtl);
@@ -14717,7 +14803,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (is_a <scalar_int_mode> (mode, &int_mode)
 	  && is_a <scalar_int_mode> (GET_MODE (inner), &inner_mode)
 	  ? GET_MODE_SIZE (int_mode) <= GET_MODE_SIZE (inner_mode)
-	  : GET_MODE_SIZE (mode) == GET_MODE_SIZE (GET_MODE (inner)))
+	  : known_eq (GET_MODE_SIZE (mode), GET_MODE_SIZE (GET_MODE (inner))))
 	{
 	  dw_die_ref type_die;
 	  dw_loc_descr_ref cvt;
@@ -14733,8 +14819,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      mem_loc_result = NULL;
 	      break;
 	    }
-	  if (GET_MODE_SIZE (mode)
-	      != GET_MODE_SIZE (GET_MODE (inner)))
+	  if (maybe_ne (GET_MODE_SIZE (mode), GET_MODE_SIZE (GET_MODE (inner))))
 	    cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
 	  else
 	    cvt = new_loc_descr (dwarf_OP (DW_OP_reinterpret), 0, 0);
@@ -14895,15 +14980,17 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	    {
 	      dw_die_ref type_die;
 	      dw_loc_descr_ref deref;
+	      HOST_WIDE_INT size;
 
 	      if (dwarf_strict && dwarf_version < 5)
+		return NULL;
+	      if (!GET_MODE_SIZE (mode).is_constant (&size))
 		return NULL;
 	      type_die
 		= base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	      if (type_die == NULL)
 		return NULL;
-	      deref = new_loc_descr (dwarf_OP (DW_OP_deref_type),
-				     GET_MODE_SIZE (mode), 0);
+	      deref = new_loc_descr (dwarf_OP (DW_OP_deref_type), size, 0);
 	      deref->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
 	      deref->dw_loc_oprnd2.v.val_die_ref.die = type_die;
 	      deref->dw_loc_oprnd2.v.val_die_ref.external = 0;
@@ -14959,8 +15046,32 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (!const_ok_for_output (rtl))
 	{
 	  if (GET_CODE (rtl) == CONST)
-	    mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), int_mode,
-						 mem_mode, initialized);
+	    switch (GET_CODE (XEXP (rtl, 0)))
+	      {
+	      case NOT:
+		op = DW_OP_not;
+		goto try_const_unop;
+	      case NEG:
+		op = DW_OP_neg;
+		goto try_const_unop;
+	      try_const_unop:
+		rtx arg;
+		arg = XEXP (XEXP (rtl, 0), 0);
+		if (!CONSTANT_P (arg))
+		  arg = gen_rtx_CONST (int_mode, arg);
+		op0 = mem_loc_descriptor (arg, int_mode, mem_mode,
+					  initialized);
+		if (op0)
+		  {
+		    mem_loc_result = op0;
+		    add_loc_descr (&mem_loc_result, new_loc_descr (op, 0, 0));
+		  }
+		break;
+	      default:
+		mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), int_mode,
+						     mem_mode, initialized);
+		break;
+	      }
 	  break;
 	}
 
@@ -15291,7 +15402,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	     We output CONST_DOUBLEs as blocks.  */
 	  if (mode == VOIDmode
 	      || (GET_MODE (rtl) == VOIDmode
-		  && GET_MODE_BITSIZE (mode) != HOST_BITS_PER_DOUBLE_INT))
+		  && maybe_ne (GET_MODE_BITSIZE (mode),
+			       HOST_BITS_PER_DOUBLE_INT)))
 	    break;
 	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
@@ -15341,6 +15453,10 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  mem_loc_result->dw_loc_oprnd2.v.val_wide = ggc_alloc<wide_int> ();
 	  *mem_loc_result->dw_loc_oprnd2.v.val_wide = rtx_mode_t (rtl, mode);
 	}
+      break;
+
+    case CONST_POLY_INT:
+      mem_loc_result = int_loc_descriptor (rtx_to_poly_int64 (rtl));
       break;
 
     case EQ:
@@ -15572,6 +15688,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case VEC_SELECT:
     case VEC_CONCAT:
     case VEC_DUPLICATE:
+    case VEC_SERIES:
     case UNSPEC:
     case HIGH:
     case FMA:
@@ -15650,6 +15767,12 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 static dw_loc_descr_ref
 concat_loc_descriptor (rtx x0, rtx x1, enum var_init_status initialized)
 {
+  /* At present we only track constant-sized pieces.  */
+  unsigned int size0, size1;
+  if (!GET_MODE_SIZE (GET_MODE (x0)).is_constant (&size0)
+      || !GET_MODE_SIZE (GET_MODE (x1)).is_constant (&size1))
+    return 0;
+
   dw_loc_descr_ref cc_loc_result = NULL;
   dw_loc_descr_ref x0_ref
     = loc_descriptor (x0, VOIDmode, VAR_INIT_STATUS_INITIALIZED);
@@ -15660,10 +15783,10 @@ concat_loc_descriptor (rtx x0, rtx x1, enum var_init_status initialized)
     return 0;
 
   cc_loc_result = x0_ref;
-  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x0)));
+  add_loc_descr_op_piece (&cc_loc_result, size0);
 
   add_loc_descr (&cc_loc_result, x1_ref);
-  add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x1)));
+  add_loc_descr_op_piece (&cc_loc_result, size1);
 
   if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
     add_loc_descr (&cc_loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
@@ -15680,18 +15803,23 @@ concatn_loc_descriptor (rtx concatn, enum var_init_status initialized)
   unsigned int i;
   dw_loc_descr_ref cc_loc_result = NULL;
   unsigned int n = XVECLEN (concatn, 0);
+  unsigned int size;
 
   for (i = 0; i < n; ++i)
     {
       dw_loc_descr_ref ref;
       rtx x = XVECEXP (concatn, 0, i);
 
+      /* At present we only track constant-sized pieces.  */
+      if (!GET_MODE_SIZE (GET_MODE (x)).is_constant (&size))
+	return NULL;
+
       ref = loc_descriptor (x, VOIDmode, VAR_INIT_STATUS_INITIALIZED);
       if (ref == NULL)
 	return NULL;
 
       add_loc_descr (&cc_loc_result, ref);
-      add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x)));
+      add_loc_descr_op_piece (&cc_loc_result, size);
     }
 
   if (cc_loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
@@ -15810,7 +15938,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	rtvec par_elems = XVEC (rtl, 0);
 	int num_elem = GET_NUM_ELEM (par_elems);
 	machine_mode mode;
-	int i;
+	int i, size;
 
 	/* Create the first one, so we have something to add to.  */
 	loc_result = loc_descriptor (XEXP (RTVEC_ELT (par_elems, 0), 0),
@@ -15818,7 +15946,10 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	if (loc_result == NULL)
 	  return NULL;
 	mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, 0), 0));
-	add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
+	/* At present we only track constant-sized pieces.  */
+	if (!GET_MODE_SIZE (mode).is_constant (&size))
+	  return NULL;
+	add_loc_descr_op_piece (&loc_result, size);
 	for (i = 1; i < num_elem; i++)
 	  {
 	    dw_loc_descr_ref temp;
@@ -15829,7 +15960,10 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	      return NULL;
 	    add_loc_descr (&loc_result, temp);
 	    mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, i), 0));
-	    add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
+	    /* At present we only track constant-sized pieces.  */
+	    if (!GET_MODE_SIZE (mode).is_constant (&size))
+	      return NULL;
+	    add_loc_descr_op_piece (&loc_result, size);
 	  }
       }
       break;
@@ -15901,8 +16035,11 @@ loc_descriptor (rtx rtl, machine_mode mode,
 
       if (mode != VOIDmode && (dwarf_version >= 4 || !dwarf_strict))
 	{
+	  unsigned int length;
+	  if (!CONST_VECTOR_NUNITS (rtl).is_constant (&length))
+	    return NULL;
+
 	  unsigned int elt_size = GET_MODE_UNIT_SIZE (GET_MODE (rtl));
-	  unsigned int length = CONST_VECTOR_NUNITS (rtl);
 	  unsigned char *array
 	    = ggc_vec_alloc<unsigned char> (length * elt_size);
 	  unsigned int i;
@@ -16269,8 +16406,10 @@ dw_sra_loc_expr (tree decl, rtx loc)
 	     adjustment.  */
 	  if (MEM_P (varloc))
 	    {
-	      unsigned HOST_WIDE_INT memsize
-		= MEM_SIZE (varloc) * BITS_PER_UNIT;
+	      unsigned HOST_WIDE_INT memsize;
+	      if (!poly_uint64 (MEM_SIZE (varloc)).is_constant (&memsize))
+		goto discard_descr;
+	      memsize *= BITS_PER_UNIT;
 	      if (memsize != bitsize)
 		{
 		  if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
@@ -16333,92 +16472,111 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
      This means we have to special case the last node, and generate
      a range of [last location start, end of function label].  */
 
-  secname = secname_for_decl (decl);
+  if (cfun && crtl->has_bb_partition)
+    {
+      bool save_in_cold_section_p = in_cold_section_p;
+      in_cold_section_p = first_function_block_is_cold;
+      if (loc_list->last_before_switch == NULL)
+	in_cold_section_p = !in_cold_section_p;
+      secname = secname_for_decl (decl);
+      in_cold_section_p = save_in_cold_section_p;
+    }
+  else
+    secname = secname_for_decl (decl);
 
   for (node = loc_list->first; node; node = node->next)
-    if (GET_CODE (node->loc) == EXPR_LIST
-	|| NOTE_VAR_LOCATION_LOC (node->loc) != NULL_RTX)
-      {
-	if (GET_CODE (node->loc) == EXPR_LIST)
-	  {
-	    /* This requires DW_OP_{,bit_}piece, which is not usable
-	       inside DWARF expressions.  */
-	    if (want_address != 2)
-	      continue;
+    {
+      bool range_across_switch = false;
+      if (GET_CODE (node->loc) == EXPR_LIST
+	  || NOTE_VAR_LOCATION_LOC (node->loc) != NULL_RTX)
+	{
+	  if (GET_CODE (node->loc) == EXPR_LIST)
+	    {
+	      descr = NULL;
+	      /* This requires DW_OP_{,bit_}piece, which is not usable
+		 inside DWARF expressions.  */
+	      if (want_address == 2)
+		descr = dw_sra_loc_expr (decl, node->loc);
+	    }
+	  else
+	    {
+	      initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
+	      varloc = NOTE_VAR_LOCATION (node->loc);
+	      descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
+	    }
+	  if (descr)
+	    {
+	      /* If section switch happens in between node->label
+		 and node->next->label (or end of function) and
+		 we can't emit it as a single entry list,
+		 emit two ranges, first one ending at the end
+		 of first partition and second one starting at the
+		 beginning of second partition.  */
+	      if (node == loc_list->last_before_switch
+		  && (node != loc_list->first || loc_list->first->next)
+		  && current_function_decl)
+		{
+		  endname = cfun->fde->dw_fde_end;
+		  range_across_switch = true;
+		}
+	      /* The variable has a location between NODE->LABEL and
+		 NODE->NEXT->LABEL.  */
+	      else if (node->next)
+		endname = node->next->label;
+	      /* If the variable has a location at the last label
+		 it keeps its location until the end of function.  */
+	      else if (!current_function_decl)
+		endname = text_end_label;
+	      else
+		{
+		  ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+					       current_function_funcdef_no);
+		  endname = ggc_strdup (label_id);
+		}
+
+	      *listp = new_loc_list (descr, node->label, endname, secname);
+	      if (TREE_CODE (decl) == PARM_DECL
+		  && node == loc_list->first
+		  && NOTE_P (node->loc)
+		  && strcmp (node->label, endname) == 0)
+		(*listp)->force = true;
+	      listp = &(*listp)->dw_loc_next;
+	    }
+	}
+
+      if (cfun
+	  && crtl->has_bb_partition
+	  && node == loc_list->last_before_switch)
+	{
+	  bool save_in_cold_section_p = in_cold_section_p;
+	  in_cold_section_p = !first_function_block_is_cold;
+	  secname = secname_for_decl (decl);
+	  in_cold_section_p = save_in_cold_section_p;
+	}
+
+      if (range_across_switch)
+	{
+	  if (GET_CODE (node->loc) == EXPR_LIST)
 	    descr = dw_sra_loc_expr (decl, node->loc);
-	    if (descr == NULL)
-	      continue;
-	  }
-	else
-	  {
-	    initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
-	    varloc = NOTE_VAR_LOCATION (node->loc);
-	    descr = dw_loc_list_1 (decl, varloc, want_address, initialized);
-	  }
-	if (descr)
-	  {
-	    bool range_across_switch = false;
-	    /* If section switch happens in between node->label
-	       and node->next->label (or end of function) and
-	       we can't emit it as a single entry list,
-	       emit two ranges, first one ending at the end
-	       of first partition and second one starting at the
-	       beginning of second partition.  */
-	    if (node == loc_list->last_before_switch
-		&& (node != loc_list->first || loc_list->first->next)
-		&& current_function_decl)
-	      {
-		endname = cfun->fde->dw_fde_end;
-		range_across_switch = true;
-	      }
-	    /* The variable has a location between NODE->LABEL and
-	       NODE->NEXT->LABEL.  */
-	    else if (node->next)
-	      endname = node->next->label;
-	    /* If the variable has a location at the last label
-	       it keeps its location until the end of function.  */
-	    else if (!current_function_decl)
-	      endname = text_end_label;
-	    else
-	      {
-		ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
-					     current_function_funcdef_no);
-		endname = ggc_strdup (label_id);
-	      }
-
-	    *listp = new_loc_list (descr, node->label, endname, secname);
-	    if (TREE_CODE (decl) == PARM_DECL
-		&& node == loc_list->first
-		&& NOTE_P (node->loc)
-		&& strcmp (node->label, endname) == 0)
-	      (*listp)->force = true;
-	    listp = &(*listp)->dw_loc_next;
-
-	    if (range_across_switch)
-	      {
-		if (GET_CODE (node->loc) == EXPR_LIST)
-		  descr = dw_sra_loc_expr (decl, node->loc);
-		else
-		  {
-		    initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
-		    varloc = NOTE_VAR_LOCATION (node->loc);
-		    descr = dw_loc_list_1 (decl, varloc, want_address,
-					   initialized);
-		  }
-		gcc_assert (descr);
-		/* The variable has a location between NODE->LABEL and
-		   NODE->NEXT->LABEL.  */
-		if (node->next)
-		  endname = node->next->label;
-		else
-		  endname = cfun->fde->dw_fde_second_end;
-		*listp = new_loc_list (descr,
-				       cfun->fde->dw_fde_second_begin,
-				       endname, secname);
-		listp = &(*listp)->dw_loc_next;
-	      }
-	  }
-      }
+	  else
+	    {
+	      initialized = NOTE_VAR_LOCATION_STATUS (node->loc);
+	      varloc = NOTE_VAR_LOCATION (node->loc);
+	      descr = dw_loc_list_1 (decl, varloc, want_address,
+				     initialized);
+	    }
+	  gcc_assert (descr);
+	  /* The variable has a location between NODE->LABEL and
+	     NODE->NEXT->LABEL.  */
+	  if (node->next)
+	    endname = node->next->label;
+	  else
+	    endname = cfun->fde->dw_fde_second_end;
+	  *listp = new_loc_list (descr, cfun->fde->dw_fde_second_begin,
+				 endname, secname);
+	  listp = &(*listp)->dw_loc_next;
+	}
+    }
 
   /* Try to avoid the overhead of a location list emitting a location
      expression instead, but only if we didn't have more than one
@@ -16570,7 +16728,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev,
 						   loc_descr_context *context)
 {
   tree obj, offset;
-  HOST_WIDE_INT bitsize, bitpos, bytepos;
+  poly_int64 bitsize, bitpos, bytepos;
   machine_mode mode;
   int unsignedp, reversep, volatilep = 0;
   dw_loc_list_ref list_ret = NULL, list_ret1 = NULL;
@@ -16579,7 +16737,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev,
 			     &bitsize, &bitpos, &offset, &mode,
 			     &unsignedp, &reversep, &volatilep);
   STRIP_NOPS (obj);
-  if (bitpos % BITS_PER_UNIT)
+  if (!multiple_p (bitpos, BITS_PER_UNIT, &bytepos))
     {
       expansion_failed (loc, NULL_RTX, "bitfield access");
       return 0;
@@ -16590,7 +16748,7 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev,
 			NULL_RTX, "no indirect ref in inner refrence");
       return 0;
     }
-  if (!offset && !bitpos)
+  if (!offset && known_eq (bitpos, 0))
     list_ret = loc_list_from_tree (TREE_OPERAND (obj, 0), toplev ? 2 : 1,
 				   context);
   else if (toplev
@@ -16612,12 +16770,11 @@ loc_list_for_address_of_addr_expr_of_indirect_ref (tree loc, bool toplev,
 	  add_loc_descr_to_each (list_ret,
 				 new_loc_descr (DW_OP_plus, 0, 0));
 	}
-      bytepos = bitpos / BITS_PER_UNIT;
-      if (bytepos > 0)
+      HOST_WIDE_INT value;
+      if (bytepos.is_constant (&value) && value > 0)
 	add_loc_descr_to_each (list_ret,
-			       new_loc_descr (DW_OP_plus_uconst,
-					      bytepos, 0));
-      else if (bytepos < 0)
+			       new_loc_descr (DW_OP_plus_uconst, value, 0));
+      else if (maybe_ne (bytepos, 0))
 	loc_list_plus_const (list_ret, bytepos);
       add_loc_descr_to_each (list_ret,
 			     new_loc_descr (DW_OP_stack_value, 0, 0));
@@ -17587,7 +17744,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
     case IMAGPART_EXPR:
       {
 	tree obj, offset;
-	HOST_WIDE_INT bitsize, bitpos, bytepos;
+	poly_int64 bitsize, bitpos, bytepos;
 	machine_mode mode;
 	int unsignedp, reversep, volatilep = 0;
 
@@ -17598,13 +17755,15 @@ loc_list_from_tree_1 (tree loc, int want_address,
 
 	list_ret = loc_list_from_tree_1 (obj,
 					 want_address == 2
-					 && !bitpos && !offset ? 2 : 1,
+					 && known_eq (bitpos, 0)
+					 && !offset ? 2 : 1,
 					 context);
 	/* TODO: We can extract value of the small expression via shifting even
 	   for nonzero bitpos.  */
 	if (list_ret == 0)
 	  return 0;
-	if (bitpos % BITS_PER_UNIT != 0 || bitsize % BITS_PER_UNIT != 0)
+	if (!multiple_p (bitpos, BITS_PER_UNIT, &bytepos)
+	    || !multiple_p (bitsize, BITS_PER_UNIT))
 	  {
 	    expansion_failed (loc, NULL_RTX,
 			      "bitfield access");
@@ -17623,10 +17782,11 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	    add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_plus, 0, 0));
 	  }
 
-	bytepos = bitpos / BITS_PER_UNIT;
-	if (bytepos > 0)
-	  add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_plus_uconst, bytepos, 0));
-	else if (bytepos < 0)
+	HOST_WIDE_INT value;
+	if (bytepos.is_constant (&value) && value > 0)
+	  add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_plus_uconst,
+							  value, 0));
+	else if (maybe_ne (bytepos, 0))
 	  loc_list_plus_const (list_ret, bytepos);
 
 	have_address = 1;
@@ -18685,9 +18845,12 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 
     case CONST_VECTOR:
       {
+	unsigned int length;
+	if (!CONST_VECTOR_NUNITS (rtl).is_constant (&length))
+	  return false;
+
 	machine_mode mode = GET_MODE (rtl);
 	unsigned int elt_size = GET_MODE_UNIT_SIZE (mode);
-	unsigned int length = CONST_VECTOR_NUNITS (rtl);
 	unsigned char *array
 	  = ggc_vec_alloc<unsigned char> (length * elt_size);
 	unsigned int i;
@@ -19039,7 +19202,7 @@ rtl_for_decl_location (tree decl)
 	    rtl = DECL_INCOMING_RTL (decl);
 	  else if ((rtl == NULL_RTX || is_pseudo_reg (rtl))
 		   && SCALAR_INT_MODE_P (dmode)
-		   && GET_MODE_SIZE (dmode) <= GET_MODE_SIZE (pmode)
+		   && known_le (GET_MODE_SIZE (dmode), GET_MODE_SIZE (pmode))
 		   && DECL_INCOMING_RTL (decl))
 	    {
 	      rtx inc = DECL_INCOMING_RTL (decl);
@@ -19080,12 +19243,12 @@ rtl_for_decl_location (tree decl)
 	       /* Big endian correction check.  */
 	       && BYTES_BIG_ENDIAN
 	       && TYPE_MODE (TREE_TYPE (decl)) != GET_MODE (rtl)
-	       && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl)))
-		   < UNITS_PER_WORD))
+	       && known_lt (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))),
+			    UNITS_PER_WORD))
 	{
 	  machine_mode addr_mode = get_address_mode (rtl);
-	  int offset = (UNITS_PER_WORD
-			- GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
+	  poly_int64 offset = (UNITS_PER_WORD
+			       - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (decl))));
 
 	  rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
 			     plus_constant (addr_mode, XEXP (rtl, 0), offset));
@@ -19097,8 +19260,8 @@ rtl_for_decl_location (tree decl)
 	   && GET_MODE (rtl) != TYPE_MODE (TREE_TYPE (decl)))
     {
       machine_mode addr_mode = get_address_mode (rtl);
-      HOST_WIDE_INT offset = byte_lowpart_offset (TYPE_MODE (TREE_TYPE (decl)),
-						  GET_MODE (rtl));
+      poly_int64 offset = byte_lowpart_offset (TYPE_MODE (TREE_TYPE (decl)),
+					       GET_MODE (rtl));
 
       /* If a variable is declared "register" yet is smaller than
 	 a register, then if we store the variable to memory, it
@@ -19106,7 +19269,7 @@ rtl_for_decl_location (tree decl)
 	 fact we are not.  We need to adjust the offset of the
 	 storage location to reflect the actual value's bytes,
 	 else gdb will not be able to display it.  */
-      if (offset != 0)
+      if (maybe_ne (offset, 0))
 	rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (decl)),
 			   plus_constant (addr_mode, XEXP (rtl, 0), offset));
     }
@@ -19156,8 +19319,9 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
 {
   tree val_expr, cvar;
   machine_mode mode;
-  HOST_WIDE_INT bitsize, bitpos;
+  poly_int64 bitsize, bitpos;
   tree offset;
+  HOST_WIDE_INT cbitpos;
   int unsignedp, reversep, volatilep = 0;
 
   /* If the decl isn't a VAR_DECL, or if it isn't static, or if
@@ -19180,7 +19344,10 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
   if (cvar == NULL_TREE
       || !VAR_P (cvar)
       || DECL_ARTIFICIAL (cvar)
-      || !TREE_PUBLIC (cvar))
+      || !TREE_PUBLIC (cvar)
+      /* We don't expect to have to cope with variable offsets,
+	 since at present all static data must have a constant size.  */
+      || !bitpos.is_constant (&cbitpos))
     return NULL_TREE;
 
   *value = 0;
@@ -19190,8 +19357,8 @@ fortran_common (tree decl, HOST_WIDE_INT *value)
 	return NULL_TREE;
       *value = tree_to_shwi (offset);
     }
-  if (bitpos != 0)
-    *value += bitpos / BITS_PER_UNIT;
+  if (cbitpos != 0)
+    *value += cbitpos / BITS_PER_UNIT;
 
   return cvar;
 }
@@ -19648,7 +19815,7 @@ convert_cfa_to_fb_loc_list (HOST_WIDE_INT offset)
    before the latter is negated.  */
 
 static void
-compute_frame_pointer_to_fb_displacement (HOST_WIDE_INT offset)
+compute_frame_pointer_to_fb_displacement (poly_int64 offset)
 {
   rtx reg, elim;
 
@@ -19663,11 +19830,7 @@ compute_frame_pointer_to_fb_displacement (HOST_WIDE_INT offset)
   elim = (ira_use_lra_p
 	  ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
 	  : eliminate_regs (reg, VOIDmode, NULL_RTX));
-  if (GET_CODE (elim) == PLUS)
-    {
-      offset += INTVAL (XEXP (elim, 1));
-      elim = XEXP (elim, 0);
-    }
+  elim = strip_offset_and_add (elim, &offset);
 
   frame_pointer_fb_offset = -offset;
 
@@ -20709,7 +20872,7 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
     return;
 
   type_die = modified_type_die (type,
-				cv_quals | TYPE_QUALS_NO_ADDR_SPACE (type),
+				cv_quals | TYPE_QUALS (type),
 				reverse,
 				context_die);
 
@@ -20939,10 +21102,10 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_col_major);
 
 #if 0
-  /* We default the array ordering.  SDB will probably do
-     the right things even if DW_AT_ordering is not present.  It's not even
-     an issue until we start to get into multidimensional arrays anyway.  If
-     SDB is ever caught doing the Wrong Thing for multi-dimensional arrays,
+  /* We default the array ordering.  Debuggers will probably do the right
+     things even if DW_AT_ordering is not present.  It's not even an issue
+     until we start to get into multidimensional arrays anyway.  If a debugger
+     is ever caught doing the Wrong Thing for multi-dimensional arrays,
      then we'll have to put the DW_AT_ordering attribute back in.  (But if
      and when we find out that we need to put these in, we will only do so
      for multidimensional arrays.  */
@@ -21882,6 +22045,11 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   int declaration = (current_function_decl != decl
 		     || class_or_namespace_scope_p (context_die));
 
+  /* A declaration that has been previously dumped needs no
+     additional information.  */
+  if (old_die && declaration)
+    return;
+
   /* Now that the C++ front end lazily declares artificial member fns, we
      might need to retrofit the declaration into its class.  */
   if (!declaration && !origin && !old_die
@@ -21922,11 +22090,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
      much as possible.  */
   else if (old_die)
     {
-      /* A declaration that has been previously dumped needs no
-	 additional information.  */
-      if (declaration)
-	return;
-
       if (!get_AT_flag (old_die, DW_AT_declaration)
 	  /* We can have a normal definition following an inline one in the
 	     case of redefinition of GNU C extern inlines.
@@ -22808,10 +22971,8 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 	{
 	  /* If we will be creating an inlined instance, we need a
 	     new DIE that will get annotated with
-	     DW_AT_abstract_origin.  Clear things so we can get a
-	     new DIE.  */
+	     DW_AT_abstract_origin.  */
 	  gcc_assert (!DECL_ABSTRACT_P (decl));
-	  old_die = NULL;
 	}
       else
 	{
@@ -23375,6 +23536,9 @@ gen_producer_string (void)
       case OPT_fltrans_output_list_:
       case OPT_fresolution_:
       case OPT_fdebug_prefix_map_:
+      case OPT_fmacro_prefix_map_:
+      case OPT_ffile_prefix_map_:
+      case OPT_fcompare_debug:
 	/* Ignore these.  */
 	continue;
       default:
@@ -23434,6 +23598,8 @@ highest_c_language (const char *lang1, const char *lang2)
   if (strcmp ("GNU C++98", lang1) == 0 || strcmp ("GNU C++98", lang2) == 0)
     return "GNU C++98";
 
+  if (strcmp ("GNU C17", lang1) == 0 || strcmp ("GNU C17", lang2) == 0)
+    return "GNU C17";
   if (strcmp ("GNU C11", lang1) == 0 || strcmp ("GNU C11", lang2) == 0)
     return "GNU C11";
   if (strcmp ("GNU C99", lang1) == 0 || strcmp ("GNU C99", lang2) == 0)
@@ -23510,7 +23676,8 @@ gen_compile_unit_die (const char *filename)
 	    language = DW_LANG_C99;
 
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
-	    if (strcmp (language_string, "GNU C11") == 0)
+	    if (strcmp (language_string, "GNU C11") == 0
+		|| strcmp (language_string, "GNU C17") == 0)
 	      language = DW_LANG_C11;
 	}
     }
@@ -26158,6 +26325,22 @@ static bool maybe_at_text_label_p = true;
 /* One above highest N where .LVLN label might be equal to .Ltext0 label.  */
 static unsigned int first_loclabel_num_not_at_text_label;
 
+/* Look ahead for a real insn, or for a begin stmt marker.  */
+
+static rtx_insn *
+dwarf2out_next_real_insn (rtx_insn *loc_note)
+{
+  rtx_insn *next_real = NEXT_INSN (loc_note);
+
+  while (next_real)
+    if (INSN_P (next_real))
+      break;
+    else
+      next_real = NEXT_INSN (next_real);
+
+  return next_real;
+}
+
 /* Called by the final INSN scan whenever we see a var location.  We
    use it to drop labels in the right places, and throw the location in
    our lookup table.  */
@@ -26206,7 +26389,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
 		  loc_note = NULL;
 		  var_loc_p = false;
 
-		  next_real = next_real_insn (call_insn);
+		  next_real = dwarf2out_next_real_insn (call_insn);
 		  next_note = NULL;
 		  cached_next_real_insn = NULL;
 		  goto create_label;
@@ -26236,11 +26419,12 @@ dwarf2out_var_location (rtx_insn *loc_note)
       || next_note->deleted ()
       || ! NOTE_P (next_note)
       || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
+	  && NOTE_KIND (next_note) != NOTE_INSN_BEGIN_STMT
 	  && NOTE_KIND (next_note) != NOTE_INSN_CALL_ARG_LOCATION))
     next_note = NULL;
 
   if (! next_real)
-    next_real = next_real_insn (loc_note);
+    next_real = dwarf2out_next_real_insn (loc_note);
 
   if (next_note)
     {
@@ -26397,6 +26581,27 @@ create_label:
 	  last_postcall_label = ggc_strdup (loclabel);
 	}
       newloc->label = last_postcall_label;
+    }
+
+  if (var_loc_p && flag_debug_asm)
+    {
+      const char *name, *sep, *patstr;
+      if (decl && DECL_NAME (decl))
+	name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      else
+	name = "";
+      if (NOTE_VAR_LOCATION_LOC (loc_note))
+	{
+	  sep = " => ";
+	  patstr = str_pattern_slim (NOTE_VAR_LOCATION_LOC (loc_note));
+	}
+      else
+	{
+	  sep = " ";
+	  patstr = "RESET";
+	}
+      fprintf (asm_out_file, "\t%s DEBUG %s%s%s\n", ASM_COMMENT_START,
+	       name, sep, patstr);
     }
 
   last_var_location_insn = next_real;
@@ -27219,9 +27424,10 @@ output_macinfo (const char *debug_line_label, bool early_lto_debug)
 }
 
 /* Initialize the various sections and labels for dwarf output and prefix
-   them with PREFIX if non-NULL.  */
+   them with PREFIX if non-NULL.  Returns the generation (zero based
+   number of times function was called).  */
 
-static void
+static unsigned
 init_sections_and_labels (bool early_lto_debug)
 {
   /* As we may get called multiple times have a generation count for
@@ -27400,11 +27606,14 @@ init_sections_and_labels (bool early_lto_debug)
   info_section_emitted = false;
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, generation);
+  /* There are up to 4 unique ranges labels per generation.
+     See also output_rnglists.  */
   ASM_GENERATE_INTERNAL_LABEL (ranges_section_label,
-			       DEBUG_RANGES_SECTION_LABEL, generation);
+			       DEBUG_RANGES_SECTION_LABEL, generation * 4);
   if (dwarf_version >= 5 && dwarf_split_debug_info)
     ASM_GENERATE_INTERNAL_LABEL (ranges_base_label,
-				 DEBUG_RANGES_SECTION_LABEL, 2 + generation);
+				 DEBUG_RANGES_SECTION_LABEL,
+				 1 + generation * 4);
   ASM_GENERATE_INTERNAL_LABEL (debug_addr_section_label,
 			       DEBUG_ADDR_SECTION_LABEL, generation);
   ASM_GENERATE_INTERNAL_LABEL (macinfo_section_label,
@@ -27415,6 +27624,7 @@ init_sections_and_labels (bool early_lto_debug)
 			       generation);
 
   ++generation;
+  return generation - 1;
 }
 
 /* Set up for Dwarf output at the start of compilation.  */
@@ -27470,6 +27680,9 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 static void
 dwarf2out_assembly_start (void)
 {
+  if (text_section_line_info)
+    return;
+
 #ifndef DWARF2_LINENO_DEBUGGING_INFO
   ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
@@ -27491,8 +27704,7 @@ dwarf2out_assembly_start (void)
 
   if (HAVE_GAS_CFI_SECTIONS_DIRECTIVE
       && dwarf2out_do_cfi_asm ()
-      && (!(flag_unwind_tables || flag_exceptions)
-	  || targetm_common.except_unwind_info (&global_options) != UI_DWARF2))
+      && !dwarf2out_do_eh_frame ())
     fprintf (asm_out_file, "\t.cfi_sections\t.debug_frame\n");
 }
 
@@ -27589,8 +27801,9 @@ output_indirect_strings (void)
       unsigned int offset = 0;
       unsigned int cur_idx = 0;
 
-      skeleton_debug_str_hash->traverse<enum dwarf_form,
-					output_indirect_string> (DW_FORM_strp);
+      if (skeleton_debug_str_hash)
+        skeleton_debug_str_hash->traverse<enum dwarf_form,
+					  output_indirect_string> (DW_FORM_strp);
 
       switch_to_section (debug_str_offsets_section);
       debug_str_hash->traverse_noresize
@@ -29846,7 +30059,7 @@ dwarf2out_finish (const char *)
   move_marked_base_types ();
 
   /* Initialize sections and labels used for actual assembler output.  */
-  init_sections_and_labels (false);
+  unsigned generation = init_sections_and_labels (false);
 
   /* Traverse the DIE's and add sibling attributes to those DIE's that
      have children.  */
@@ -30135,7 +30348,7 @@ dwarf2out_finish (const char *)
   if (!vec_safe_is_empty (ranges_table))
     {
       if (dwarf_version >= 5)
-	output_rnglists ();
+	output_rnglists (generation);
       else
 	output_ranges ();
     }
@@ -30612,6 +30825,12 @@ dwarf2out_early_finish (const char *filename)
 		   macinfo_section_label);
 
   save_macinfo_strings ();
+
+  if (dwarf_split_debug_info)
+    {
+      unsigned int index = 0;
+      debug_str_hash->traverse_noresize<unsigned int *, index_string> (&index);
+    }
 
   /* Output all of the compilation units.  We put the main one last so that
      the offsets are available to output_pubnames.  */

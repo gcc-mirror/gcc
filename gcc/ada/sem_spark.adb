@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2017, Free Software Foundation, Inc.              --
+--          Copyright (C) 2017-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1376,6 +1376,12 @@ package body Sem_SPARK is
                Free_Env (Saved_Env);
             end;
 
+         when N_Reduction_Expression =>
+            null;
+
+         when N_Reduction_Expression_Parameter =>
+            null;
+
          --  Analyze the list of associations in the aggregate
 
          when N_Aggregate =>
@@ -2349,6 +2355,7 @@ package body Sem_SPARK is
             | N_With_Clause
             | N_Use_Type_Clause
             | N_Validate_Unchecked_Conversion
+            | N_Variable_Reference_Marker
          =>
             null;
 

@@ -1,6 +1,7 @@
 /* PR c/53037.  */
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
+/* { dg-skip-if "" { avr-*-* } } */
 
 typedef unsigned long long __u64
   __attribute__((aligned(4),warn_if_not_aligned(8)));

@@ -1,17 +1,10 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_arch_v8m_main_ok } */
-/* { dg-add-options arm_arch_v8m_main } */
+/* { dg-options "-mcmse -mfloat-abi=softfp -mfpu=fpv5-sp-d16" }  */
 /* { dg-skip-if "Do not combine float-abi= hard | soft | softfp" {*-*-*} {"-mfloat-abi=soft" -mfloat-abi=hard } {""} } */
 /* { dg-skip-if "Skip these if testing double precision" {*-*-*} {"-mfpu=fpv[4-5]-d16"} {""} } */
-/* { dg-options "-mcmse -mfloat-abi=softfp -mfpu=fpv5-sp-d16" }  */
 
-extern float bar (void);
+#include "../../cmse-5.x"
 
-float __attribute__ ((cmse_nonsecure_entry))
-foo (void)
-{
-  return bar ();
-}
 /* { dg-final { scan-assembler "__acle_se_foo:" } } */
 /* { dg-final { scan-assembler-not "mov\tr0, lr" } } */
 /* { dg-final { scan-assembler "mov\tr1, lr" } } */
@@ -33,8 +26,8 @@ foo (void)
 /* { dg-final { scan-assembler "vmov\.f32\ts13, #1\.0" } } */
 /* { dg-final { scan-assembler "vmov\.f32\ts14, #1\.0" } } */
 /* { dg-final { scan-assembler "vmov\.f32\ts15, #1\.0" } } */
-/* { dg-final { scan-assembler "msr\tAPSR_nzcvq, lr" { target { arm_arch_v8m_main_ok && { ! arm_dsp } } } } } */
-/* { dg-final { scan-assembler "msr\tAPSR_nzcvqg, lr" { target { arm_arch_v8m_main_ok && arm_dsp } } } } */
+/* { dg-final { scan-assembler "msr\tAPSR_nzcvq, lr" { target { ! arm_dsp } } } } */
+/* { dg-final { scan-assembler "msr\tAPSR_nzcvqg, lr" { target arm_dsp } } } */
 /* { dg-final { scan-assembler "push\t{r4}" } } */
 /* { dg-final { scan-assembler "vmrs\tip, fpscr" } } */
 /* { dg-final { scan-assembler "movw\tr4, #65376" } } */

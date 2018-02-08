@@ -1,4 +1,5 @@
 // { dg-lto-do link }
+// { dg-lto-options "-Wno-return-type" }
 
 typedef int size_t;
 template < size_t _Nw > struct _Base_bitset

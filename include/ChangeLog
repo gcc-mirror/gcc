@@ -1,3 +1,18 @@
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-11-20  Kito Cheng  <kito.cheng@gmail.com>
+
+	* longlong.h [__riscv] (__umulsidi3): Define.
+	[__riscv] (umul_ppmm): Likewise.
+	[__riscv] (__muluw3): Likewise.
+
+2017-11-10  Stephen Crane <sjc@immunant.com>
+
+	* plugin-api.h: Add plugin API for processing plugin-added
+	input files.
+
 2017-10-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* unique-ptr.h: Make include of <memory> conditional on C++11 or

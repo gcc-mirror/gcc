@@ -3,7 +3,7 @@
 /* { dg-final { scan-assembler-times "endbr32" 4 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "endbr64" 4 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "rdssp\[dq]" 2 } } */
-/* { dg-final { scan-assembler-times "incssp\[dq]" 1 } } */
+/* { dg-final { scan-assembler-times "incssp\[dq]" 2 } } */
 
 /* Based on gcc.dg/setjmp-3.c.  */
 

@@ -19,8 +19,21 @@ AC_DEFUN([GCC_ENABLE_PLUGINS],
    enable_plugin=yes; default_plugin=yes)
 
    pluginlibs=
+   plugin_check=yes
 
    case "${host}" in
+     *-*-mingw*)
+       # Since plugin support under MinGW is not as straightforward as on
+       # other platforms (e.g., we have to link import library, etc), we
+       # only enable it if explicitly requested.
+       if test x"$default_plugin" = x"yes"; then
+         enable_plugin=no
+       elif test x"$enable_plugin" = x"yes"; then
+         # Use make's target variable to derive import library name.
+         pluginlibs='-Wl,--export-all-symbols -Wl,--out-implib=[$]@.a'
+	 plugin_check=no
+       fi
+     ;;
      *-*-darwin*)
        if test x$build = x$host; then
 	 export_sym_check="nm${exeext} -g"
@@ -41,20 +54,20 @@ AC_DEFUN([GCC_ENABLE_PLUGINS],
      ;;
    esac
 
-   if test x"$enable_plugin" = x"yes"; then
+   if test x"$enable_plugin" = x"yes" -a x"$plugin_check" = x"yes"; then
 
      AC_MSG_CHECKING([for exported symbols])
      if test "x$export_sym_check" != x; then
        echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
        ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-       if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+       if $export_sym_check conftest$ac_exeext | grep foobar > /dev/null; then
 	 : # No need to use a flag
 	 AC_MSG_RESULT([yes])
        else
 	 AC_MSG_RESULT([yes])
 	 AC_MSG_CHECKING([for -rdynamic])
 	 ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-	 if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+	 if $export_sym_check conftest$ac_exeext | grep foobar > /dev/null; then
 	   plugin_rdynamic=yes
 	   pluginlibs="-rdynamic"
 	 else

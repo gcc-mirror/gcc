@@ -1,5 +1,5 @@
 /* Back-propagation of usage information to definitions.
-   Copyright (C) 2015-2017 Free Software Foundation, Inc.
+   Copyright (C) 2015-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -354,6 +354,7 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
       break;
 
     CASE_CFN_COPYSIGN:
+    CASE_CFN_COPYSIGN_FN:
       /* The sign of the first input is ignored.  */
       if (rhs != gimple_call_arg (call, 1))
 	info->flags.ignore_sign = true;
@@ -373,6 +374,7 @@ backprop::process_builtin_call_use (gcall *call, tree rhs, usage_info *info)
       }
 
     CASE_CFN_FMA:
+    CASE_CFN_FMA_FN:
       /* In X * X + Y, where Y is distinct from X, the sign of X doesn't
 	 matter.  */
       if (gimple_call_arg (call, 0) == rhs
@@ -689,6 +691,7 @@ strip_sign_op_1 (tree rhs)
     switch (gimple_call_combined_fn (call))
       {
       CASE_CFN_COPYSIGN:
+      CASE_CFN_COPYSIGN_FN:
 	return gimple_call_arg (call, 0);
 
       default:
@@ -726,7 +729,7 @@ strip_sign_op (tree rhs)
 void
 backprop::prepare_change (tree var)
 {
-  if (MAY_HAVE_DEBUG_STMTS)
+  if (MAY_HAVE_DEBUG_BIND_STMTS)
     insert_debug_temp_for_var_def (NULL, var);
   reset_flow_sensitive_info (var);
 }

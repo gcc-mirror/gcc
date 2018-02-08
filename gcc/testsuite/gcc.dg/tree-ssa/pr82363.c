@@ -1,6 +1,10 @@
 /* { dg-do run } */
 /* { dg-options "-O" } */
 
+#if __SIZEOF_INT__ == 2
+#define int __INT32_TYPE__
+#endif
+
 struct A
 {
   int b;
@@ -33,6 +37,8 @@ test_l (void)
   if (l != 1)
     __builtin_abort ();
 }
+
+#undef int
 
 int main ()
 {

@@ -9,8 +9,6 @@ unsigned char ub[N];
 unsigned char uc[N];
 unsigned char diff;
 
-volatile int y = 0;
-
 __attribute__ ((noinline)) void
 main1 (unsigned char x, unsigned char max_result, unsigned char min_result)
 {
@@ -33,9 +31,7 @@ main1 (unsigned char x, unsigned char max_result, unsigned char min_result)
     if (uc[i] < min_result)
       min_result = uc[i];
 
-    /* Avoid vectorization.  */
-    if (y)
-      abort ();
+    asm volatile ("" ::: "memory");
   }
   for (i = 0; i < N; i++) {
     udiff += (unsigned char) (ub[i] - uc[i]);

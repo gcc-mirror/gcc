@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -1470,7 +1470,7 @@ do {									\
 /* Likewise.  */
 
 
-/* Macros for SDB and Dwarf Output.  */
+/* Macros for Dwarf Output.  */
 
 /* Define this macro if GCC should produce dwarf version 2 format debugging
    output in response to the `-g' option.  */

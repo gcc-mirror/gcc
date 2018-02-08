@@ -1,5 +1,5 @@
 /* Handle exceptional things in C++.
-   Copyright (C) 1989-2017 Free Software Foundation, Inc.
+   Copyright (C) 1989-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
    initial re-implementation courtesy Tad Hunt.
@@ -577,7 +577,7 @@ build_throw (tree exp)
       return exp;
     }
 
-  if (exp == null_node)
+  if (exp && null_node_p (exp))
     warning (0, "throwing NULL, which has integral, not pointer type");
 
   if (exp != NULL_TREE)
@@ -664,7 +664,7 @@ build_throw (tree exp)
       CLEANUP_EH_ONLY (allocate_expr) = 1;
 
       object = build_nop (build_pointer_type (temp_type), ptr);
-      object = cp_build_indirect_ref (object, RO_NULL, tf_warning_or_error);
+      object = cp_build_fold_indirect_ref (object);
 
       /* And initialize the exception object.  */
       if (CLASS_TYPE_P (temp_type))

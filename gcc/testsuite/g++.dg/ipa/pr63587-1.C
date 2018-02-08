@@ -61,6 +61,7 @@ I<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::_M_get_insert_unique_pos (
   const key_type &p1)
 {
   _M_impl._M_key_compare (p1, 0);
+  return A<int>();
 }
 template <typename _Key, typename _Val, typename _KeyOfValue,
 	  typename _Compare, typename _Alloc>
@@ -69,6 +70,7 @@ I<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::_M_get_insert_hint_unique_pos (
   H &)
 {
   _M_get_insert_unique_pos (0);
+  return A<int>();
 }
 template <typename _Key, typename _Val, typename _KeyOfValue,
 	  typename _Compare, typename _Alloc>
@@ -78,6 +80,7 @@ I<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::_M_emplace_hint_unique (
   H p1, _Args &&...)
 {
   _M_get_insert_hint_unique_pos (p1);
+  return 0;
 }
 namespace {
 struct L;

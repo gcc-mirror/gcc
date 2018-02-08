@@ -1,5 +1,5 @@
 /* If-conversion for vectorizer.
-   Copyright (C) 2004-2017 Free Software Foundation, Inc.
+   Copyright (C) 2004-2018 Free Software Foundation, Inc.
    Contributed by Devang Patel <dpatel@apple.com>
 
 This file is part of GCC.
@@ -2229,7 +2229,10 @@ predicate_mem_writes (loop_p loop)
 	      tree ref, addr, ptr, mask;
 	      gcall *new_stmt;
 	      gimple_seq stmts = NULL;
-	      int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (lhs)));
+	      machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+	      /* We checked before setting GF_PLF_2 that an equivalent
+		 integer mode exists.  */
+	      int bitsize = GET_MODE_BITSIZE (mode).to_constant ();
 	      ref = TREE_CODE (lhs) == SSA_NAME ? rhs : lhs;
 	      mark_addressable (ref);
 	      addr = force_gimple_operand_gsi (&gsi, build_fold_addr_expr (ref),
@@ -2247,10 +2250,7 @@ predicate_mem_writes (loop_p loop)
 					 TREE_OPERAND (cond, 0),
 					 TREE_OPERAND (cond, 1));
 		  else
-		    {
-		      gcc_assert (TREE_CODE (cond) == SSA_NAME);
-		      mask = cond;
-		    }
+		    mask = cond;
 
 		  if (swap)
 		    {
@@ -2261,7 +2261,6 @@ predicate_mem_writes (loop_p loop)
 		    }
 		  gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
 
-		  mask = ifc_temp_var (TREE_TYPE (mask), mask, &gsi);
 		  /* Save mask and its size for further use.  */
 		  vect_sizes.safe_push (bitsize);
 		  vect_masks.safe_push (mask);
@@ -2961,6 +2960,12 @@ pass_if_conversion::execute (function *fun)
 	|| ((flag_tree_loop_vectorize || loop->force_vectorize)
 	    && !loop->dont_vectorize))
       todo |= tree_if_conversion (loop);
+
+  if (todo)
+    {
+      free_numbers_of_iterations_estimates (fun);
+      scev_reset ();
+    }
 
   if (flag_checking)
     {

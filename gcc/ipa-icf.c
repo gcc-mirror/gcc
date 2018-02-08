@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2017 Free Software Foundation, Inc.
+   Copyright (C) 2014-2018 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-icf.h"
 #include "stor-layout.h"
 #include "dbgcnt.h"
+#include "tree-vector-builder.h"
 
 using namespace ipa_icf_gimple;
 
@@ -1112,6 +1113,17 @@ sem_function::merge (sem_item *alias_item)
       return false;
     }
 
+  if (!original->in_same_comdat_group_p (alias)
+      || original->comdat_local_p ())
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Not unifying; alias nor wrapper cannot be created; "
+		 "across comdat group boundary\n\n");
+
+      return false;
+    }
+
   /* See if original is in a section that can be discarded if the main
      symbol is not used.  */
 
@@ -2024,17 +2036,17 @@ sem_variable::equals (tree t1, tree t2)
 						&TREE_REAL_CST (t2)));
     case VECTOR_CST:
       {
-	unsigned i;
+	if (maybe_ne (VECTOR_CST_NELTS (t1), VECTOR_CST_NELTS (t2)))
+	  return return_false_with_msg ("VECTOR_CST nelts mismatch");
 
-        if (VECTOR_CST_NELTS (t1) != VECTOR_CST_NELTS (t2))
-          return return_false_with_msg ("VECTOR_CST nelts mismatch");
+	unsigned int count
+	  = tree_vector_builder::binary_encoded_nelts (t1, t2);
+	for (unsigned int i = 0; i < count; ++i)
+	  if (!sem_variable::equals (VECTOR_CST_ENCODED_ELT (t1, i),
+				     VECTOR_CST_ENCODED_ELT (t2, i)))
+	    return false;
 
-	for (i = 0; i < VECTOR_CST_NELTS (t1); ++i)
-	  if (!sem_variable::equals (VECTOR_CST_ELT (t1, i),
-				     VECTOR_CST_ELT (t2, i)))
-	    return 0;
-
-	return 1;
+	return true;
       }
     case ARRAY_REF:
     case ARRAY_RANGE_REF:

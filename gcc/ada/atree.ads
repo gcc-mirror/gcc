@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -745,6 +745,33 @@ package Atree is
       V7 : Node_Kind;
       V8 : Node_Kind;
       V9 : Node_Kind) return Boolean;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind) return Boolean;
+
+   function Nkind_In
+     (N   : Node_Id;
+      V1  : Node_Kind;
+      V2  : Node_Kind;
+      V3  : Node_Kind;
+      V4  : Node_Kind;
+      V5  : Node_Kind;
+      V6  : Node_Kind;
+      V7  : Node_Kind;
+      V8  : Node_Kind;
+      V9  : Node_Kind;
+      V10 : Node_Kind;
+      V11 : Node_Kind) return Boolean;
 
    pragma Inline (Nkind_In);
    --  Inline all above functions

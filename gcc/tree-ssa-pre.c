@@ -1,5 +1,5 @@
 /* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
-   Copyright (C) 2001-2017 Free Software Foundation, Inc.
+   Copyright (C) 2001-2018 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "domwalk.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-dce.h"
 #include "tree-cfgcleanup.h"
 #include "alias.h"
 
@@ -398,15 +399,6 @@ static inline pre_expr
 expression_for_id (unsigned int id)
 {
   return expressions[id];
-}
-
-/* Free the expression id field in all of our expressions,
-   and then destroy the expressions array.  */
-
-static void
-clear_expression_ids (void)
-{
-  expressions.release ();
 }
 
 static object_allocator<pre_expr_d> pre_expr_pool ("pre_expr nodes");
@@ -1266,7 +1258,7 @@ get_expr_type (const pre_expr e)
   gcc_unreachable ();
 }
 
-/* Get a representative SSA_NAME for a given expression.
+/* Get a representative SSA_NAME for a given expression that is available in B.
    Since all of our sub-expressions are treated as values, we require
    them to be SSA_NAME's for simplicity.
    Prior versions of GVNPRE used to use "value handles" here, so that
@@ -1275,9 +1267,9 @@ get_expr_type (const pre_expr e)
    them to be usable without finding leaders).  */
 
 static tree
-get_representative_for (const pre_expr e)
+get_representative_for (const pre_expr e, basic_block b = NULL)
 {
-  tree name;
+  tree name, valnum = NULL_TREE;
   unsigned int value_id = get_expr_value_id (e);
 
   switch (e->kind)
@@ -1298,7 +1290,18 @@ get_representative_for (const pre_expr e)
 	  {
 	    pre_expr rep = expression_for_id (i);
 	    if (rep->kind == NAME)
-	      return VN_INFO (PRE_EXPR_NAME (rep))->valnum;
+	      {
+		tree name = PRE_EXPR_NAME (rep);
+		valnum = VN_INFO (name)->valnum;
+		gimple *def = SSA_NAME_DEF_STMT (name);
+		/* We have to return either a new representative or one
+		   that can be used for expression simplification and thus
+		   is available in B.  */
+		if (! b 
+		    || gimple_nop_p (def)
+		    || dominated_by_p (CDI_DOMINATORS, b, gimple_bb (def)))
+		  return name;
+	      }
 	    else if (rep->kind == CONSTANT)
 	      return PRE_EXPR_CONSTANT (rep);
 	  }
@@ -1314,7 +1317,7 @@ get_representative_for (const pre_expr e)
      to compute it.  */
   name = make_temp_ssa_name (get_expr_type (e), gimple_build_nop (), "pretmp");
   VN_INFO_GET (name)->value_id = value_id;
-  VN_INFO (name)->valnum = name;
+  VN_INFO (name)->valnum = valnum ? valnum : name;
   /* ???  For now mark this SSA name for release by SCCVN.  */
   VN_INFO (name)->needs_insertion = true;
   add_to_value (value_id, get_or_alloc_expr_for_name (name));
@@ -1329,7 +1332,6 @@ get_representative_for (const pre_expr e)
 
   return name;
 }
-
 
 
 static pre_expr
@@ -1366,7 +1368,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		leader = find_leader_in_sets (op_val_id, set1, set2);
                 result = phi_translate (leader, set1, set2, pred, phiblock);
 		if (result && result != leader)
-		  newnary->op[i] = get_representative_for (result);
+		  /* Force a leader as well as we are simplifying this
+		     expression.  */
+		  newnary->op[i] = get_representative_for (result, pred);
 		else if (!result)
 		  return NULL;
 
@@ -1408,6 +1412,10 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		  return constant;
 	      }
 
+	    /* vn_nary_* do not valueize operands.  */
+	    for (i = 0; i < newnary->length; ++i)
+	      if (TREE_CODE (newnary->op[i]) == SSA_NAME)
+		newnary->op[i] = VN_INFO (newnary->op[i])->valnum;
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
 						    newnary->opcode,
 						    newnary->type,
@@ -1424,45 +1432,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		PRE_EXPR_NARY (expr) = nary;
 		new_val_id = nary->value_id;
 		get_or_alloc_expression_id (expr);
-		/* When we end up re-using a value number make sure that
-		   doesn't have unrelated (which we can't check here)
-		   range or points-to info on it.  */
-		if (result
-		    && INTEGRAL_TYPE_P (TREE_TYPE (result))
-		    && SSA_NAME_RANGE_INFO (result)
-		    && ! SSA_NAME_IS_DEFAULT_DEF (result))
-		  {
-		    if (! VN_INFO (result)->info.range_info)
-		      {
-			VN_INFO (result)->info.range_info
-			  = SSA_NAME_RANGE_INFO (result);
-			VN_INFO (result)->range_info_anti_range_p
-			  = SSA_NAME_ANTI_RANGE_P (result);
-		      }
-		    if (dump_file && (dump_flags & TDF_DETAILS))
-		      {
-			fprintf (dump_file, "clearing range info of ");
-			print_generic_expr (dump_file, result);
-			fprintf (dump_file, "\n");
-		      }
-		    SSA_NAME_RANGE_INFO (result) = NULL;
-		  }
-		else if (result
-			 && POINTER_TYPE_P (TREE_TYPE (result))
-			 && SSA_NAME_PTR_INFO (result)
-			 && ! SSA_NAME_IS_DEFAULT_DEF (result))
-		  {
-		    if (! VN_INFO (result)->info.ptr_info)
-		      VN_INFO (result)->info.ptr_info
-			= SSA_NAME_PTR_INFO (result);
-		    if (dump_file && (dump_flags & TDF_DETAILS))
-		      {
-			fprintf (dump_file, "clearing points-to info of ");
-			print_generic_expr (dump_file, result);
-			fprintf (dump_file, "\n");
-		      }
-		    SSA_NAME_PTR_INFO (result) = NULL;
-		  }
 	      }
 	    else
 	      {
@@ -1566,7 +1535,6 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	if (changed || newvuse != vuse)
 	  {
 	    unsigned int new_val_id;
-	    pre_expr constant;
 
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
 						      ref->type,
@@ -1611,15 +1579,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    expr->id = 0;
 
 	    if (newref)
-	      {
-		PRE_EXPR_REFERENCE (expr) = newref;
-		constant = fully_constant_expression (expr);
-		if (constant != expr)
-		  return constant;
-
-		new_val_id = newref->value_id;
-		get_or_alloc_expression_id (expr);
-	      }
+	      new_val_id = newref->value_id;
 	    else
 	      {
 		if (changed || !same_valid)
@@ -1637,12 +1597,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						     newoperands,
 						     result, new_val_id);
 		newoperands = vNULL;
-		PRE_EXPR_REFERENCE (expr) = newref;
-		constant = fully_constant_expression (expr);
-		if (constant != expr)
-		  return constant;
-		get_or_alloc_expression_id (expr);
 	      }
+	    PRE_EXPR_REFERENCE (expr) = newref;
+	    get_or_alloc_expression_id (expr);
 	    add_to_value (new_val_id, expr);
 	  }
 	newoperands.release ();
@@ -2029,7 +1986,8 @@ static sbitmap has_abnormal_preds;
      ANTIC_OUT[BLOCK] = phi_translate (ANTIC_IN[succ(BLOCK)])
 
    ANTIC_IN[BLOCK] = clean(ANTIC_OUT[BLOCK] U EXP_GEN[BLOCK] - TMP_GEN[BLOCK])
-*/
+
+   Note that clean() is deferred until after the iteration.  */
 
 static bool
 compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
@@ -2165,7 +2123,8 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
     bitmap_value_insert_into_set (ANTIC_IN (block),
 				  expression_for_id (bii));
 
-  clean (ANTIC_IN (block));
+  /* clean (ANTIC_IN (block)) is defered to after the iteration converged
+     because it can cause non-convergence, see for example PR81181.  */
 
   if (!bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
@@ -2397,6 +2356,12 @@ compute_antic (void)
       gcc_checking_assert (num_iterations < 500);
     }
 
+  /* We have to clean after the dataflow problem converged as cleaning
+     can cause non-convergence because it is based on expressions
+     rather than values.  */
+  FOR_EACH_BB_FN (block, cfun)
+    clean (ANTIC_IN (block));
+
   statistics_histogram_event (cfun, "compute_antic iterations",
 			      num_iterations);
 
@@ -2448,7 +2413,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	if (TREE_CODE (baseop) == ADDR_EXPR
 	    && handled_component_p (TREE_OPERAND (baseop, 0)))
 	  {
-	    HOST_WIDE_INT off;
+	    poly_int64 off;
 	    tree base;
 	    base = get_addr_base_and_unit_offset (TREE_OPERAND (baseop, 0),
 						  &off);
@@ -2732,6 +2697,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
        that value numbering saw through.  */
     case NAME:
       folded = PRE_EXPR_NAME (expr);
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (folded))
+	return NULL_TREE;
       if (useless_type_conversion_p (exprtype, TREE_TYPE (folded)))
 	return folded;
       break;
@@ -3008,7 +2975,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
       gcc_assert (!(pred->flags & EDGE_ABNORMAL));
       if (!gimple_seq_empty_p (stmts))
 	{
-	  gsi_insert_seq_on_edge (pred, stmts);
+	  basic_block new_bb = gsi_insert_seq_on_edge_immediate (pred, stmts);
+	  gcc_assert (! new_bb);
 	  insertions = true;
 	}
       if (!builtexpr)
@@ -4030,64 +3998,6 @@ compute_avail (void)
   free (worklist);
 }
 
-/* Cheap DCE of a known set of possibly dead stmts.
-
-   Because we don't follow exactly the standard PRE algorithm, and decide not
-   to insert PHI nodes sometimes, and because value numbering of casts isn't
-   perfect, we sometimes end up inserting dead code.   This simple DCE-like
-   pass removes any insertions we made that weren't actually used.  */
-
-static void
-remove_dead_inserted_code (void)
-{
-  /* ???  Re-use inserted_exprs as worklist not only as initial set.
-     This may end up removing non-inserted code as well.  If we
-     keep inserted_exprs unchanged we could restrict new worklist
-     elements to members of inserted_exprs.  */
-  bitmap worklist = inserted_exprs;
-  while (! bitmap_empty_p (worklist))
-    {
-      /* Pop item.  */
-      unsigned i = bitmap_first_set_bit (worklist);
-      bitmap_clear_bit (worklist, i);
-
-      tree def = ssa_name (i);
-      /* Removed by somebody else or still in use.  */
-      if (! def || ! has_zero_uses (def))
-	continue;
-
-      gimple *t = SSA_NAME_DEF_STMT (def);
-      if (gimple_has_side_effects (t))
-	continue;
-
-      /* Add uses to the worklist.  */
-      ssa_op_iter iter;
-      use_operand_p use_p;
-      FOR_EACH_PHI_OR_STMT_USE (use_p, t, iter, SSA_OP_USE)
-	{
-	  tree use = USE_FROM_PTR (use_p);
-	  if (TREE_CODE (use) == SSA_NAME
-	      && ! SSA_NAME_IS_DEFAULT_DEF (use))
-	    bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
-	}
-
-      /* Remove stmt.  */
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Removing unnecessary insertion:");
-	  print_gimple_stmt (dump_file, t, 0);
-	}
-      gimple_stmt_iterator gsi = gsi_for_stmt (t);
-      if (gimple_code (t) == GIMPLE_PHI)
-	remove_phi_node (&gsi, true);
-      else
-	{
-	  gsi_remove (&gsi, true);
-	  release_defs (t);
-	}
-    }
-}
-
 
 /* Initialize data structures used by PRE.  */
 
@@ -4131,6 +4041,7 @@ static void
 fini_pre ()
 {
   value_expressions.release ();
+  expressions.release ();
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   bitmap_set_pool.release ();
@@ -4185,22 +4096,21 @@ pass_pre::execute (function *fun)
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
   split_critical_edges ();
+  scev_initialize ();
 
   run_scc_vn (VN_WALK);
 
   init_pre ();
-  scev_initialize ();
-
-  /* Collect and value number expressions computed in each basic block.  */
-  compute_avail ();
 
   /* Insert can get quite slow on an incredibly large number of basic
      blocks due to some quadratic behavior.  Until this behavior is
      fixed, don't run it when he have an incredibly large number of
      bb's.  If we aren't going to run insert, there is no point in
-     computing ANTIC, either, even though it's plenty fast.  */
+     computing ANTIC, either, even though it's plenty fast nor do
+     we require AVAIL.  */
   if (n_basic_blocks_for_fn (fun) < 4000)
     {
+      compute_avail ();
       compute_antic ();
       insert ();
     }
@@ -4215,19 +4125,23 @@ pass_pre::execute (function *fun)
      not keeping virtual operands up-to-date.  */
   gcc_assert (!need_ssa_update_p (fun));
 
-  /* Remove all the redundant expressions.  */
-  todo |= vn_eliminate (inserted_exprs);
-
   statistics_counter_event (fun, "Insertions", pre_stats.insertions);
   statistics_counter_event (fun, "PA inserted", pre_stats.pa_insert);
   statistics_counter_event (fun, "HOIST inserted", pre_stats.hoist_insert);
   statistics_counter_event (fun, "New PHIs", pre_stats.phis);
 
-  clear_expression_ids ();
+  /* Remove all the redundant expressions.  */
+  todo |= vn_eliminate (inserted_exprs);
+
+  /* Because we don't follow exactly the standard PRE algorithm, and decide not
+     to insert PHI nodes sometimes, and because value numbering of casts isn't
+     perfect, we sometimes end up inserting dead code.   This simple DCE-like
+     pass removes any insertions we made that weren't actually used.  */
+  simple_dce_from_worklist (inserted_exprs);
+
+  fini_pre ();
 
   scev_finalize ();
-  remove_dead_inserted_code ();
-  fini_pre ();
   loop_optimizer_finalize ();
 
   /* Restore SSA info before tail-merging as that resets it as well.  */

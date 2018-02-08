@@ -1,6 +1,6 @@
 /* Integer division routines for RISC-V.
 
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,6 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "riscv-asm.h"
+
   .text
   .align 2
 
@@ -33,8 +35,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __divdi3 __divsi3
 # define __moddi3 __modsi3
 #else
-  .globl __udivsi3
-__udivsi3:
+FUNC_BEGIN (__udivsi3)
   /* Compute __udivdi3(a0 << 32, a1 << 32); cast result to uint32_t.  */
   sll    a0, a0, 32
   sll    a1, a1, 32
@@ -42,9 +43,9 @@ __udivsi3:
   jal    __udivdi3
   sext.w a0, a0
   jr     t0
+FUNC_END (__udivsi3)
 
-  .globl __umodsi3
-__umodsi3:
+FUNC_BEGIN (__umodsi3)
   /* Compute __udivdi3((uint32_t)a0, (uint32_t)a1); cast a1 to uint32_t.  */
   sll    a0, a0, 32
   sll    a1, a1, 32
@@ -54,25 +55,22 @@ __umodsi3:
   jal    __udivdi3
   sext.w a0, a1
   jr     t0
+FUNC_END (__umodsi3)
 
-  .globl __modsi3
-  __modsi3 = __moddi3
+FUNC_ALIAS (__modsi3, __moddi3)
 
-  .globl __divsi3
-__divsi3:
+FUNC_BEGIN( __divsi3)
   /* Check for special case of INT_MIN/-1. Otherwise, fall into __divdi3.  */
   li    t0, -1
   beq   a1, t0, .L20
 #endif
 
-  .globl __divdi3
-__divdi3:
+FUNC_BEGIN (__divdi3)
   bltz  a0, .L10
   bltz  a1, .L11
   /* Since the quotient is positive, fall into __udivdi3.  */
 
-  .globl __udivdi3
-__udivdi3:
+FUNC_BEGIN (__udivdi3)
   mv    a2, a1
   mv    a1, a0
   li    a0, -1
@@ -96,14 +94,15 @@ __udivdi3:
   bnez  a3, .L3
 .L5:
   ret
+FUNC_END (__udivdi3)
 
-  .globl __umoddi3
-__umoddi3:
+FUNC_BEGIN (__umoddi3)
   /* Call __udivdi3(a0, a1), then return the remainder, which is in a1.  */
   move  t0, ra
   jal   __udivdi3
   move  a0, a1
   jr    t0
+FUNC_END (__umoddi3)
 
   /* Handle negative arguments to __divdi3.  */
 .L10:
@@ -118,9 +117,9 @@ __umoddi3:
   jal   __udivdi3
   neg   a0, a0
   jr    t0
+FUNC_END (__divdi3)
 
-  .globl __moddi3
-__moddi3:
+FUNC_BEGIN (__moddi3)
   move   t0, ra
   bltz   a1, .L31
   bltz   a0, .L32
@@ -136,6 +135,7 @@ __moddi3:
   jal    __udivdi3    /* The dividend is hella negative.  */
   neg    a0, a1
   jr     t0
+FUNC_END (__moddi3)
 
 #if __riscv_xlen == 64
   /* continuation of __divsi3 */
@@ -143,4 +143,5 @@ __moddi3:
   sll   t0, t0, 31
   bne   a0, t0, __divdi3
   ret
+FUNC_END (__divsi3)
 #endif

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -17,6 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
+
+#define IN_TARGET_CODE 1
 
 #include "config.h"
 #include "system.h"
@@ -3769,7 +3771,7 @@ set_reg_plus_d (int reg, int base, HOST_WIDE_INT disp, int note)
 }
 
 HOST_WIDE_INT
-pa_compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
+pa_compute_frame_size (poly_int64 size, int *fregs_live)
 {
   int freg_saved = 0;
   int i, j;
@@ -8653,9 +8655,6 @@ pa_asm_output_mi_thunk (FILE *file, tree thunk_fndecl, HOST_WIDE_INT delta,
 static bool
 pa_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
-  if (TARGET_PORTABLE_RUNTIME)
-    return false;
-
   /* Sibcalls are not ok because the arg pointer register is not a fixed
      register.  This prevents the sibcall optimization from occurring.  In
      addition, there are problems with stub placement using GNU ld.  This
@@ -8665,8 +8664,11 @@ pa_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   if (TARGET_64BIT)
     return false;
 
+  if (TARGET_PORTABLE_RUNTIME)
+    return false;
+
   /* Sibcalls are only ok within a translation unit.  */
-  return (decl && !TREE_PUBLIC (decl));
+  return decl && targetm.binds_local_p (decl);
 }
 
 /* ??? Addition is not commutative on the PA due to the weird implicit
@@ -9483,7 +9485,7 @@ pa_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			 const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
-  int arg_size = FUNCTION_ARG_SIZE (mode, type);
+  int arg_size = pa_function_arg_size (mode, type);
 
   cum->nargs_prototype--;
   cum->words += (arg_size
@@ -9515,7 +9517,7 @@ pa_function_arg (cumulative_args_t cum_v, machine_mode mode,
   if (mode == VOIDmode)
     return NULL_RTX;
 
-  arg_size = FUNCTION_ARG_SIZE (mode, type);
+  arg_size = pa_function_arg_size (mode, type);
 
   /* If this arg would be passed partially or totally on the stack, then
      this routine should return zero.  pa_arg_partial_bytes will
@@ -9722,10 +9724,10 @@ pa_arg_partial_bytes (cumulative_args_t cum_v, machine_mode mode,
   if (!TARGET_64BIT)
     return 0;
 
-  if (FUNCTION_ARG_SIZE (mode, type) > 1 && (cum->words & 1))
+  if (pa_function_arg_size (mode, type) > 1 && (cum->words & 1))
     offset = 1;
 
-  if (cum->words + offset + FUNCTION_ARG_SIZE (mode, type) <= max_arg_words)
+  if (cum->words + offset + pa_function_arg_size (mode, type) <= max_arg_words)
     /* Arg fits fully into registers.  */
     return 0;
   else if (cum->words + offset >= max_arg_words)
@@ -9794,7 +9796,7 @@ som_output_comdat_data_section_asm_op (const void *data)
   output_section_asm_op (data);
 }
 
-/* Implement TARGET_ASM_INITIALIZE_SECTIONS  */
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
 
 static void
 pa_som_asm_init_sections (void)
@@ -10544,9 +10546,16 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict)
 
       if (!TARGET_DISABLE_INDEXING
 	  && GET_CODE (index) == MULT
-	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
+	  /* Only accept base operands with the REG_POINTER flag prior to
+	     reload on targets with non-equivalent space registers.  */
+	  && (TARGET_NO_SPACE_REGS
+	      || (base == XEXP (x, 1)
+		  && (reload_completed
+		      || (reload_in_progress && HARD_REGISTER_P (base))
+		      || REG_POINTER (base))))
 	  && REG_P (XEXP (index, 0))
 	  && GET_MODE (XEXP (index, 0)) == Pmode
+	  && MODE_OK_FOR_SCALED_INDEXING_P (mode)
 	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (XEXP (index, 0))
 		     : REG_OK_FOR_INDEX_P (XEXP (index, 0)))
 	  && GET_CODE (XEXP (index, 1)) == CONST_INT
@@ -10824,6 +10833,19 @@ static HOST_WIDE_INT
 pa_starting_frame_offset (void)
 {
   return 8;
+}
+
+/* Figure out the size in words of the function argument.  The size
+   returned by this function should always be greater than zero because
+   we pass variable and zero sized objects by reference.  */
+
+HOST_WIDE_INT
+pa_function_arg_size (machine_mode mode, const_tree type)
+{
+  HOST_WIDE_INT size;
+
+  size = mode != BLKmode ? GET_MODE_SIZE (mode) : int_size_in_bytes (type); 
+  return CEIL (size, UNITS_PER_WORD);
 }
 
 #include "gt-pa.h"

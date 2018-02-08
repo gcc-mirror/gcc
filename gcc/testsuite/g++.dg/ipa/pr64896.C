@@ -5,9 +5,9 @@
 struct A { int a, b; };
 struct B { A c; int d; };
 struct C { virtual B fn1 () const; };
-struct D { B fn2 () const; int fn3 () const; C *fn4 () const; };
+struct D { B fn2 () const; void fn3 () const; C *fn4 () const; };
 
-int
+void
 D::fn3 () const
 {
   fn4 ()->fn1 ();

@@ -20,19 +20,19 @@ dnl Care should also be taken to avoid using the names defined in iparm.m4
 define(START_ARRAY_FUNCTION,
 `
 extern void name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict);
-export_proto(name`'rtype_qual`_'atype_code);
+	atype` * const restrict, const 'index_type` * const restrict'back_arg`);
+export_proto('name`'rtype_qual`_'atype_code);
 
 void
-name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
-	const index_type * const restrict pdim)
+name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array, 
+	const index_type * const restrict pdim'back_arg`)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  const atype_name * restrict base;
+  const 'atype_name * restrict base;
   rtype_name * restrict dest;
   index_type rank;
   index_type n;
@@ -41,9 +41,13 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
   index_type dim;
   int continue_loop;
 
+#ifdef HAVE_BACK_ARG
+  assert(back == 0);
+#endif
+
   /* Make dim zero based to avoid confusion.  */
-  dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
+  dim = (*pdim) - 1;
 
   if (unlikely (dim < 0 || dim > rank))
     {
@@ -90,7 +94,7 @@ name`'rtype_qual`_'atype_code (rtype * const restrict retarray,
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
@@ -181,23 +185,23 @@ define(FINISH_ARRAY_FUNCTION,
 }')dnl
 define(START_MASKED_ARRAY_FUNCTION,
 `
-extern void `m'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict,
-	gfc_array_l1 * const restrict);
-export_proto(`m'name`'rtype_qual`_'atype_code);
+extern void `m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict, 
+	'atype` * const restrict, const 'index_type` * const restrict,
+	gfc_array_l1 * const restrict'back_arg`);
+export_proto(m'name`'rtype_qual`_'atype_code`);
 
 void
-`m'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
+m'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array, 
 	const index_type * const restrict pdim, 
-	gfc_array_l1 * const restrict mask)
+	gfc_array_l1 * const restrict mask'back_arg`)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
   index_type mstride[GFC_MAX_DIMENSIONS];
-  rtype_name * restrict dest;
+  'rtype_name * restrict dest;
   const atype_name * restrict base;
   const GFC_LOGICAL_1 * restrict mbase;
   index_type rank;
@@ -208,6 +212,9 @@ void
   index_type mdelta;
   int mask_kind;
 
+#ifdef HAVE_BACK_ARG
+  assert (back == 0);
+#endif
   dim = (*pdim) - 1;
   rank = GFC_DESCRIPTOR_RANK (array) - 1;
 
@@ -277,7 +284,7 @@ void
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       if (alloc_size == 0)
 	{
@@ -366,21 +373,21 @@ define(FINISH_MASKED_ARRAY_FUNCTION,
 }')dnl
 define(SCALAR_ARRAY_FUNCTION,
 `
-extern void `s'name`'rtype_qual`_'atype_code (rtype * const restrict, 
-	atype * const restrict, const index_type * const restrict,
-	GFC_LOGICAL_4 *);
-export_proto(`s'name`'rtype_qual`_'atype_code);
+extern void `s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict, 
+	'atype` * const restrict, const index_type * const restrict,
+	GFC_LOGICAL_4 *'back_arg`);
+export_proto(s'name`'rtype_qual`_'atype_code);
 
 void
-`s'name`'rtype_qual`_'atype_code (rtype * const restrict retarray, 
-	atype * const restrict array, 
+`s'name`'rtype_qual`_'atype_code` ('rtype` * const restrict retarray, 
+	'atype` * const restrict array, 
 	const index_type * const restrict pdim, 
-	GFC_LOGICAL_4 * mask)
+	GFC_LOGICAL_4 * mask'back_arg`)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dstride[GFC_MAX_DIMENSIONS];
-  rtype_name * restrict dest;
+  'rtype_name * restrict dest;
   index_type rank;
   index_type n;
   index_type dim;
@@ -388,7 +395,11 @@ void
 
   if (*mask)
     {
+#ifdef HAVE_BACK_ARG
+      name`'rtype_qual`_'atype_code (retarray, array, pdim, back);
+#else
       name`'rtype_qual`_'atype_code (retarray, array, pdim);
+#endif
       return;
     }
   /* Make dim zero based to avoid confusion.  */
@@ -435,7 +446,7 @@ void
 	}
 
       retarray->offset = 0;
-      retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
+      GFC_DTYPE_COPY_SETRANK(retarray,array,rank);
 
       alloc_size = GFC_DESCRIPTOR_STRIDE(retarray,rank-1) * extent[rank-1];
 

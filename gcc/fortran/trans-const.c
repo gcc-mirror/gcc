@@ -1,5 +1,5 @@
 /* Translation of constants
-   Copyright (C) 2002-2017 Free Software Foundation, Inc.
+   Copyright (C) 2002-2018 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -69,7 +69,7 @@ gfc_build_const (tree type, tree intval)
 /* Build a string constant with C char type.  */
 
 tree
-gfc_build_string_const (int length, const char *s)
+gfc_build_string_const (size_t length, const char *s)
 {
   tree str;
   tree len;
@@ -89,7 +89,7 @@ gfc_build_string_const (int length, const char *s)
    non-default character kinds.  */
 
 tree
-gfc_build_wide_string_const (int kind, int length, const gfc_char_t *string)
+gfc_build_wide_string_const (int kind, size_t length, const gfc_char_t *string)
 {
   int i;
   tree str, len;
@@ -141,7 +141,7 @@ gfc_conv_string_init (tree length, gfc_expr * expr)
 {
   gfc_char_t *s;
   HOST_WIDE_INT len;
-  int slen;
+  gfc_charlen_t slen;
   tree str;
   bool free_s = false;
 
@@ -205,6 +205,18 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
   wide_int val = wi::from_mpz (gfc_get_int_type (kind), i, true);
   return wide_int_to_tree (gfc_get_int_type (kind), val);
 }
+
+
+/* Convert a GMP integer into a tree node of type given by the type
+   argument.  */
+
+tree
+gfc_conv_mpz_to_tree_type (mpz_t i, const tree type)
+{
+  const wide_int val = wi::from_mpz (type, i, true);
+  return wide_int_to_tree (type, val);
+}
+
 
 /* Converts a backend tree into a GMP integer.  */
 

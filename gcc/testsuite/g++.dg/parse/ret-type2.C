@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-return-type" }
+
 struct S {} f(); // { dg-error "return" "err" }
 // { dg-message "note" "note" { target *-*-* } .-1 }
 struct T {} *g(); // { dg-error "return" }

@@ -1,3 +1,329 @@
+2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-common.h (DECL_UNNAMED_BIT_FIELD): New.
+
+2018-02-02  Julia Koval  <julia.koval@intel.com>
+
+	* c-common.h (omp_clause_mask): Move to wide_int_bitmask.h.
+
+2018-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c/83966
+	* c-format.c (check_function_format): Check current_function_decl.
+
+2018-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use ggc_strdup for the fp_suffix
+	argument.
+	(LAZY_HEX_FP_VALUES_CNT): Define.
+	(lazy_hex_fp_values): Allow up to LAZY_HEX_FP_VALUES_CNT lazy hex fp
+	values rather than just 12.
+	(builtin_define_with_hex_fp_value): Likewise.
+
+2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
+
+        PR other/70268
+        * c.opt (-fmacro-prefix-map): New option.
+        * c-opts.c (c_common_handle_option): Handle it.
+        * c-lex.c (init_c_lex): Set remap_filename cpp callback.
+        * c-ppoutput.c (init_pp_output): Likewise.
+
+2018-01-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/83814
+	* c-common.c (fold_for_warn): Move to c/c-fold.c and cp/expr.c.
+
+2018-01-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_number): Add FLOAT_P parameter.
+	Skip 'f' and 'F' characters if it is true.
+	(store_ada_macro): Minor tweak.
+	(dump_ada_macros) <CPP_COMMENT>: Likewise.
+	<CPP_WSTRING>: Likewise.
+	<CPP_STRING>: Output '&' in the buffer if not the first string.
+	<CPP_NUMBER>: Adjust calls to dump_number.
+
+2018-01-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/43486
+	* c-common.c: Include "selftest.h".
+	(get_atomic_generic_size): Perform the test for integral type
+	before the range test for any integer constant, fixing indentation
+	of braces.  Call fold_for_warn before testing for an INTEGER_CST.
+	(reject_gcc_builtin): Strip any location wrapper from EXPR.
+	(selftest::test_fold_for_warn): New function.
+	(selftest::c_common_c_tests): New function.
+	(selftest::c_family_tests): Call it, and
+	selftest::c_pretty_print_c_tests.
+	* c-common.h (selftest::c_pretty_print_c_tests): New decl.
+	* c-format.c (check_format_arg): Convert VAR_P check to a
+	fold_for_warn.
+	* c-pretty-print.c: Include "selftest.h".
+	(pp_c_cast_expression): Don't print casts for location wrappers.
+	(selftest::assert_c_pretty_printer_output): New function.
+	(ASSERT_C_PRETTY_PRINTER_OUTPUT): New macro.
+	(selftest::test_location_wrappers): New function.
+	(selftest::c_pretty_print_c_tests): New function.
+	* c-warn.c (warn_for_memset): Call fold_for_warn on the arguments.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_type_for_mode): Handle MODE_VECTOR_BOOL.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-ubsan.c (ubsan_instrument_shift): Treat GET_MODE_BITSIZE
+	as polynomial.
+
+2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (vector_types_convertible_p, c_build_vec_perm_expr)
+	(convert_vector_to_array_for_subscript): Handle polynomial
+	TYPE_VECTOR_SUBPARTS.
+	(c_common_type_for_mode): Check valid_vector_subparts_p.
+	* c-pretty-print.c (pp_c_initializer_list): Handle polynomial
+	VECTOR_CST_NELTS.
+
+2018-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Update copyright years.
+
+2017-12-22  Mike Stump  <mikestump@comcast.net>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-pragma.c (init_pragma): Register pragma GCC unroll.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_UNROLL.
+
+2017-12-22  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/83527
+	PR debug/83419
+	* c-semantics.c (only_debug_stmts_after_p): New.
+	(pop_stmt_list): Clear side effects in debug-only stmt list.
+	Check for single nondebug stmt followed by debug stmts only.
+
+2017-12-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/83419
+	* c-semantics.c (pop_stmt_list): Propagate side effects from
+	single nondebug stmt to container list.
+
+2017-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* known-headers.cc (get_stdlib_header_for_name): Replace Yoda
+	conditions with typical order conditions.
+
+2017-12-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-warn.c (warn_logical_operator): Return early if -Wlogical-op is
+	not in effect.
+
+2017-12-17  Martin Sebor  <msebor@redhat.com>
+
+	* c-attribs.c (common_handle_aligned_attribute): Avoid issuing
+	an error for attribute warn_if_not_aligned.
+
+2017-12-16  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/78918
+	* c-common.c (check_function_restrict): Avoid checking built-ins.
+	* c.opt (-Wrestrict): Include in -Wall.
+
+2017-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table,
+	c_common_format_attribute_table): Swap affects_type_identity
+	and handler fields, adjust comments.
+
+2017-12-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c.opt (Wcast-function-type): New warning option.
+	* c-lex.c (get_fileinfo): Avoid warning.
+	* c-ppoutput.c (scan_translation_unit_directives_only): Remove cast.
+
+2017-12-14  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR middle_end/79538
+	* c-cppbuiltin.c (builtin_define_with_hex_fp_value):
+	Adjust the size of buf1 and buf2, add a new buf to avoid
+	format-overflow warning.
+
+2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+
+	* c-semantics.c (pop_stmt_list): Move begin stmt marker into
+	subsequent statement list.
+
+2017-12-07  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81544
+	PR c/81566
+	* c-attribs.c (attr_aligned_exclusions): New array.
+	(attr_alloc_exclusions, attr_cold_hot_exclusions): Same.
+	(attr_common_exclusions, attr_const_pure_exclusions): Same.
+	(attr_gnu_inline_exclusions, attr_inline_exclusions): Same.
+	(attr_noreturn_exclusions, attr_returns_twice_exclusions): Same.
+	(attr_warn_unused_result_exclusions): Same.
+	(handle_hot_attribute, handle_cold_attribute): Simplify.
+	(handle_const_attribute): Warn on function returning void.
+	(handle_pure_attribute): Same.
+	(handle_aligned_attribute): Diagnose conflicting attribute
+	specifications.
+	* c-warn.c (diagnose_mismatched_attributes): Simplify.
+
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/83236
+	* c-common.c (selftest::c_family_tests): Call
+	selftest::c_spellcheck_cc_tests.
+	* c-common.h (selftest::c_spellcheck_cc_tests): New decl.
+	* c-spellcheck.cc: Include "selftest.h".
+	(name_reserved_for_implementation_p): New function.
+	(should_suggest_as_macro_p): New function.
+	(find_closest_macro_cpp_cb): Move the check for NT_MACRO to
+	should_suggest_as_macro_p and call it.
+	(selftest::test_name_reserved_for_implementation_p): New function.
+	(selftest::c_spellcheck_cc_tests): New function.
+	* c-spellcheck.h (name_reserved_for_implementation_p): New decl.
+
+2017-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-spellcheck.cc: New file, taken from macro-handling code in
+	spellcheck-tree.c.
+	* c-spellcheck.h: New file, taken from macro-handling code in
+	spellcheck-tree.h.
+
+2017-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table): Remove "cilk simd function"
+	attribute.
+	(handle_simd_attribute): Don't check for "cilk simd function"
+	attribute.  Reindent, formatting changes.
+
+2017-11-30  Julia Koval  <julia.koval@intel.com>
+
+	* c-common.h (inv_list): Remove.
+
+2017-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81275
+	* c-common.c (c_switch_covers_all_cases_p_1,
+	c_switch_covers_all_cases_p): New functions.
+	* c-common.h (c_switch_covers_all_cases_p): Declare.
+
+2017-11-28  Julia Koval  <julia.koval@intel.com>
+            Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* array-notation-common.c: Delete.
+	* c-cilkplus.c: Ditto.
+	* c-common.c (_Cilk_spawn, _Cilk_sync, _Cilk_for): Remove.
+	* c-common.def (ARRAY_NOTATION_REF): Remove.
+	* c-common.h (RID_CILK_SPAWN, build_array_notation_expr,
+	build_array_notation_ref, C_ORT_CILK, c_check_cilk_loop,
+	c_validate_cilk_plus_loop, cilkplus_an_parts,
+	cilk_ignorable_spawn_rhs_op,
+	cilk_recognize_spawn): Remove.
+	* c-gimplify.c (CILK_SPAWN_STMT): Remove.
+	* c-omp.c: Remove CILK_SIMD check.
+	* c-pragma.c: Ditto.
+	* c-pragma.h: Remove CILK related pragmas.
+	* c-pretty-print.c (c_pretty_printer::postfix_expression): Remove
+	ARRAY_NOTATION_REF condition.
+	(c_pretty_printer::expression): Ditto.
+	* c.opt (fcilkplus): Remove.
+	* cilk.c: Delete.
+
+2017-11-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* c-pretty-print.c (pp_c_additive_expression,
+	c_pretty_printer::expression): Handle POINTER_DIFF_EXPR.
+
+2017-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (get_nonnull_operand): Use tree_to_uhwi.
+
+	PR c++/83059
+	* c-common.c (get_atomic_generic_size): Use TREE_INT_CST_LOW
+	instead of tree_to_uhwi, formatting fix.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/81404
+	* known-headers.cc: New file, based on material from c/c-decl.c.
+	(suggest_missing_header): Copied as-is.
+	(get_stdlib_header_for_name): New, based on get_c_name_hint but
+	heavily edited to add C++ support.  Add some knowledge about
+	<limits.h>, <stdint.h>, and <wchar.h>.
+	* known-headers.h: Likewise.
+
+2017-11-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.h (enum lookup_name_fuzzy_kind): Move to name-hint.h.
+	(lookup_name_fuzzy): Likewise.  Convert return type from
+	const char * to name_hint.  Add location_t param.
+	* name-hint.h: New header.
+
+2017-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/66618
+	PR c/69960
+	* c-common.h (c_fully_fold): Add LVAL argument defaulted to false.
+
+2017-11-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (-std=c17, std=gnu17, -std=iso9899:2017): Refer to 2018
+	expected publication date of C17.
+	(-std=c18, -std=gnu18, -std=iso9899:2018): New option aliases.
+
+2017-11-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/81156
+	* c-common.c (c_common_reswords): Add __builtin_tgmath.
+	* c-common.h (enum rid): Add RID_BUILTIN_TGMATH.
+
+2017-11-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-common.c (catenate_strings): Use memcpy instead of strncpy.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Handle arrays.
+	* c.opt (-Wstringop-truncation): New option.
+
+2017-11-06  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82404
+	* c-opts.c (c_common_post_options): Set -Wreturn-type for C++
+	FE.
+	* c.opt: Set default value of warn_return_type.
+
+2017-10-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (binary_op_error): Update for renaming of
+	error_at_rich_loc.
+	(c_parse_error): Likewise.
+	* c-warn.c (warn_logical_not_parentheses): Likewise for
+	renaming of inform_at_rich_loc.
+	(warn_for_restrict): Likewise for renaming of
+	warning_at_rich_loc_n.
+
+2017-10-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (std=c17, std=gnu17, std=iso9899:2017): New options.
+	* c-opts.c (set_std_c17): New function.
+	(c_common_init_options): Use gnu17 as default C version.
+	(c_common_handle_option): Handle -std=c17 and -std=gnu17.
+
+2017-10-27  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* c-cppbuiltin.c (mode_has_fma): Add support for PowerPC KFmode.
+	(c_cpp_builtins): If a machine has a fast fma _Float<N> and
+	_Float<N>X variant, define __FP_FAST_FMA<N> and/or
+	__FP_FAST_FMA<N>X.
+
 2017-10-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c/82681
@@ -167,7 +493,7 @@
 	(set_std_cxx17): ... this.
 	(c_common_handle_option): Rename OPT_std_c__1z to OPT_std_c__17
 	and OPT_std_gnu__1z to OPT_std_gnu__17.  Adjust set_std_cxx1z
-	caller.  
+	caller.
 	(c_common_post_options): Use cxx17 instead of cxx1z.  Adjust
 	comments.
 
@@ -1645,7 +1971,7 @@
 
 2016-08-22  Joseph Myers  <joseph@codesourcery.com>
 
-	* c-family/c-cppbuiltin.c (c_cpp_builtins): Check _FloatN and
+	* c-cppbuiltin.c (c_cpp_builtins): Check _FloatN and
 	_FloatNx types for suffixes for built-in functions.
 
 2016-08-19  Joseph Myers  <joseph@codesourcery.com>
@@ -2001,7 +2327,7 @@
 2016-06-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/71392
-	* gcc/c-family/c-common.c (handle_nonnull_attribute): Accept
+	* c-common.c (handle_nonnull_attribute): Accept
 	the nonnull attribute in type-generic builtins.
 
 2016-06-09  Martin Sebor  <msebor@redhat.com>
@@ -2134,7 +2460,7 @@
 	    Matthias Klose  <doko@debian.org>
 
 	* c-common.c (get_source_date_epoch): New function, gets the environment
-	variable SOURCE_DATE_EPOCH and parses it as long long with error 
+	variable SOURCE_DATE_EPOCH and parses it as long long with error
 	handling.
 	* c-common.h (get_source_date_epoch): Prototype.
 	* c-lex.c (c_lex_with_flags): set parse_in->source_date_epoch.
@@ -2605,7 +2931,7 @@
 2015-11-12  James Norris  <jnorris@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
-	* c-pragma.c (oacc_pragmas): Add entry for declare directive. 
+	* c-pragma.c (oacc_pragmas): Add entry for declare directive.
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OACC_DECLARE.
 	(enum pragma_omp_clause): Add PRAGMA_OACC_CLAUSE_DEVICE_RESIDENT and
 	PRAGMA_OACC_CLAUSE_LINK.
@@ -8393,7 +8719,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2017 Free Software Foundation, Inc.
+Copyright (C) 2010-2018 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

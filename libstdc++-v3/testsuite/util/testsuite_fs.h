@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Filesystem utils for the C++ library testsuite.
 //
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2014-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,7 @@ namespace __gnu_test
 {
 #define PATH_CHK(p1, p2, fn) \
     if ( p1.fn() != p2.fn() ) \
-      throw test_fs::filesystem_error( #fn, p1, p2, \
+      throw test_fs::filesystem_error("comparing '" #fn "' failed", p1, p2, \
 	  std::make_error_code(std::errc::invalid_argument) )
 
   void

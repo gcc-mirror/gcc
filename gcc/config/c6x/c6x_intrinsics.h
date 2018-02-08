@@ -1,6 +1,6 @@
 /* Intrinsics for TI C6X.
 
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by CodeSourcery.
 
    This file is part of GCC.

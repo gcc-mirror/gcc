@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2013-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -160,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		/ sizeof(value_type) / 4;
       }
 
-      constexpr bool
+      [[nodiscard]] constexpr bool
       empty() const noexcept
       { return this->_M_len == 0; }
 
@@ -323,7 +323,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->find(__c, __pos); }
 
       constexpr size_type
-      find_first_of(const _CharT* __str, size_type __pos, size_type __n) const;
+      find_first_of(const _CharT* __str, size_type __pos, size_type __n) const noexcept;
 
       constexpr size_type
       find_first_of(const _CharT* __str, size_type __pos = 0) const noexcept
@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr int
       _S_compare(size_type __n1, size_type __n2) noexcept
       {
-	const difference_type __diff{__n1 - __n2};
+	const difference_type __diff = __n1 - __n2;
 	if (__diff > std::numeric_limits<int>::max())
 	  return std::numeric_limits<int>::max();
 	if (__diff < std::numeric_limits<int>::min())
@@ -626,6 +626,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   inline namespace string_view_literals
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wliteral-suffix"
     inline constexpr basic_string_view<char>
     operator""sv(const char* __str, size_t __len) noexcept
     { return basic_string_view<char>{__str, __len}; }
@@ -645,6 +647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator""sv(const char32_t* __str, size_t __len) noexcept
     { return basic_string_view<char32_t>{__str, __len}; }
 #endif
+#pragma GCC diagnostic pop
   } // namespace string_literals
   } // namespace literals
 

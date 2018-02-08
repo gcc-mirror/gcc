@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -349,7 +349,7 @@ package body Exp_SPARK is
       Loc    : constant Source_Ptr := Sloc (N);
       Obj_Id : constant Entity_Id  := Defining_Entity (N);
       Nam    : constant Node_Id    := Name (N);
-      Typ    : constant Entity_Id  := Etype (Subtype_Mark (N));
+      Typ    : constant Entity_Id  := Etype (Obj_Id);
 
    begin
       --  Transform a renaming of the form

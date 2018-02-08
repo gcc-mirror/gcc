@@ -1,7 +1,7 @@
 /* Write and read the cgraph to the memory mapped representation of a
    .o file.
 
-   Copyright (C) 2009-2017 Free Software Foundation, Inc.
+   Copyright (C) 2009-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -266,7 +266,6 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_enum (&bp, cgraph_inline_failed_t,
 	        CIF_N_REASONS, edge->inline_failed);
   bp_pack_var_len_unsigned (&bp, uid);
-  bp_pack_var_len_unsigned (&bp, edge->frequency);
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
   bp_pack_value (&bp, edge->speculative, 1);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
@@ -1248,7 +1247,7 @@ input_node (struct lto_file_decl_data *file_data,
   if (clone_ref != LCC_NOT_FOUND)
     {
       node = dyn_cast<cgraph_node *> (nodes[clone_ref])->create_clone (fn_decl,
-	profile_count::uninitialized (), CGRAPH_FREQ_BASE, false,
+	profile_count::uninitialized (), false,
 	vNULL, false, NULL, NULL);
     }
   else
@@ -1464,7 +1463,6 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
   struct cgraph_edge *edge;
   unsigned int stmt_id;
   profile_count count;
-  int freq;
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d bp;
   int ecf_flags = 0;
@@ -1487,12 +1485,11 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
   bp = streamer_read_bitpack (ib);
   inline_failed = bp_unpack_enum (&bp, cgraph_inline_failed_t, CIF_N_REASONS);
   stmt_id = bp_unpack_var_len_unsigned (&bp);
-  freq = (int) bp_unpack_var_len_unsigned (&bp);
 
   if (indirect)
-    edge = caller->create_indirect_edge (NULL, 0, count, freq);
+    edge = caller->create_indirect_edge (NULL, 0, count);
   else
-    edge = caller->create_edge (callee, NULL, count, freq);
+    edge = caller->create_edge (callee, NULL, count);
 
   edge->indirect_inlining_edge = bp_unpack_value (&bp, 1);
   edge->speculative = bp_unpack_value (&bp, 1);
@@ -1823,8 +1820,13 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
 	if (scale == REG_BR_PROB_BASE)
 	  continue;
 	for (edge = node->callees; edge; edge = edge->next_callee)
-	  edge->count = edge->count.apply_scale (scale, REG_BR_PROB_BASE);
-	node->count = node->count.apply_scale (scale, REG_BR_PROB_BASE);
+	  if (edge->count.ipa ().nonzero_p ())
+	    edge->count = edge->count.apply_scale (scale, REG_BR_PROB_BASE);
+	for (edge = node->indirect_calls; edge; edge = edge->next_callee)
+	  if (edge->count.ipa ().nonzero_p ())
+	    edge->count = edge->count.apply_scale (scale, REG_BR_PROB_BASE);
+	if (node->count.ipa ().nonzero_p ())
+	  node->count = node->count.apply_scale (scale, REG_BR_PROB_BASE);
       }
 }
 
@@ -1956,7 +1958,7 @@ input_offload_tables (bool do_force_output)
 static int
 output_cgraph_opt_summary_p (struct cgraph_node *node)
 {
-  return (node->clone_of
+  return ((node->clone_of || node->former_clone_of)
 	  && (node->clone.tree_map
 	      || node->clone.args_to_skip
 	      || node->clone.combined_args_to_skip));

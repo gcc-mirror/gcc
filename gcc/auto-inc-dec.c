@@ -1,5 +1,5 @@
 /* Discovery of auto-inc and auto-dec instructions.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -152,14 +152,14 @@ enum gen_form
 static rtx mem_tmp;
 
 static enum inc_state
-set_inc_state (HOST_WIDE_INT val, int size)
+set_inc_state (HOST_WIDE_INT val, poly_int64 size)
 {
   if (val == 0)
     return INC_ZERO;
   if (val < 0)
-    return (val == -size) ? INC_NEG_SIZE : INC_NEG_ANY;
+    return known_eq (val, -size) ? INC_NEG_SIZE : INC_NEG_ANY;
   else
-    return (val == size) ? INC_POS_SIZE : INC_POS_ANY;
+    return known_eq (val, size) ? INC_POS_SIZE : INC_POS_ANY;
 }
 
 /* The DECISION_TABLE that describes what form, if any, the increment
@@ -601,7 +601,7 @@ try_merge (void)
     inc_insn.reg_res : mem_insn.reg0;
 
   /* The width of the mem being accessed.  */
-  int size = GET_MODE_SIZE (GET_MODE (mem));
+  poly_int64 size = GET_MODE_SIZE (GET_MODE (mem));
   rtx_insn *last_insn = NULL;
   machine_mode reg_mode = GET_MODE (inc_reg);
 

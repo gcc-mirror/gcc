@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -54,6 +54,7 @@ extern bool riscv_split_64bit_move_p (rtx, rtx);
 extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_gpr_save (unsigned);
+extern const char *riscv_output_return ();
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx);
 extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx);
@@ -67,7 +68,8 @@ extern HOST_WIDE_INT riscv_initial_elimination_offset (int, int);
 extern void riscv_expand_prologue (void);
 extern void riscv_expand_epilogue (bool);
 extern bool riscv_can_use_return_insn (void);
-extern rtx riscv_function_value (const_tree, const_tree, machine_mode);
+extern rtx riscv_function_value (const_tree, const_tree, enum machine_mode);
+extern bool riscv_expand_block_move (rtx, rtx, rtx);
 
 /* Routines implemented in riscv-c.c.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);

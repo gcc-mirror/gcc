@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2017 Free Software Foundation, Inc.
+// Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,14 +26,29 @@ test01()
   std::gcd(true, 1);    // { dg-error "from here" }
   std::gcd(1, true);    // { dg-error "from here" }
   std::gcd(true, true); // { dg-error "from here" }
+  std::gcd<const bool, int>(true, 1);    // { dg-error "from here" }
+  std::gcd<int, const bool>(1, true);    // { dg-error "from here" }
+  std::gcd<const bool, const bool>(true, true); // { dg-error "from here" }
+  std::gcd<const bool&, int>(true, 1);    // { dg-error "from here" }
+  std::gcd<int, const bool&>(1, true);    // { dg-error "from here" }
+  std::gcd<const bool&, const bool&>(true, true); // { dg-error "from here" }
+  std::gcd<const volatile bool, int>(true, 1);    // { dg-error "from here" }
+  std::gcd<int, const volatile bool>(1, true);    // { dg-error "from here" }
+  std::gcd<const volatile bool,
+	   const volatile bool>(true, true); // { dg-error "from here" }
+  std::gcd<volatile bool, int>(true, 1);    // { dg-error "from here" }
+  std::gcd<int, volatile bool>(1, true);    // { dg-error "from here" }
+  std::gcd<volatile bool,
+	   volatile bool>(true, true); // { dg-error "from here" }
   std::gcd(0.1, 1);     // { dg-error "from here" }
   std::gcd(1, 0.1);     // { dg-error "from here" }
   std::gcd(0.1, 0.1);   // { dg-error "from here" }
+  std::gcd<const int&, const int&>(0.1, 0.1);   // { dg-error "from here" }
 }
 
 // { dg-error "integers" "" { target *-*-* } 134 }
 // { dg-error "integers" "" { target *-*-* } 135 }
 // { dg-error "not bools" "" { target *-*-* } 136 }
-// { dg-error "not bools" "" { target *-*-* } 137 }
+// { dg-error "not bools" "" { target *-*-* } 138 }
 // { dg-prune-output "deleted function" }
 // { dg-prune-output "invalid operands" }

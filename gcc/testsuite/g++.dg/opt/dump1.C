@@ -2,6 +2,7 @@
 // { dg-options "-O2 -fno-inline -fdump-final-insns" }
 // { dg-do compile { target c++11 } }
 // { dg-final cleanup-final-insns-dump }
+// { dg-additional-options "-Wno-return-type" }
 
 namespace std
 {
@@ -348,7 +349,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
   template<typename _Tp>
     inline reference_wrapper<_Tp>
     ref(_Tp& __t) noexcept
-    {}
+    { return reference_wrapper<_Tp>(); }
   template<typename _Tp>
     struct _Maybe_wrap_member_pointer
     {

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -307,7 +307,7 @@ typedef struct GTY(()) machine_function
    POSIX types such as pthread_mutex_t require 16-byte alignment.  Again,
    this is non critical since 16-byte alignment is no longer needed for
    atomic operations.  */
-#define MALLOC_ABI_ALIGNMENT (TARGET_SOM ? 64 : 128)
+#define MALLOC_ABI_ALIGNMENT (TARGET_64BIT ? 128 : 64)
 
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
@@ -535,7 +535,7 @@ extern rtx hppa_pic_save_rtx (void);
    marker, although the runtime documentation only describes a 16
    byte marker.  For compatibility, we allocate 48 bytes.  */
 #define STACK_POINTER_OFFSET \
-  (TARGET_64BIT ? -(crtl->outgoing_args_size + 48): -32)
+  (TARGET_64BIT ? -(crtl->outgoing_args_size + 48) : poly_int64 (-32))
 
 #define STACK_DYNAMIC_OFFSET(FNDECL)	\
   (TARGET_64BIT				\
@@ -591,15 +591,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
   (CUM).incoming = 1,				\
   (CUM).indirect = 0,				\
   (CUM).nargs_prototype = 1000
-
-/* Figure out the size in words of the function argument.  The size
-   returned by this macro should always be greater than zero because
-   we pass variable and zero sized objects by reference.  */
-
-#define FUNCTION_ARG_SIZE(MODE, TYPE)	\
-  ((((MODE) != BLKmode \
-     ? (HOST_WIDE_INT) GET_MODE_SIZE (MODE) \
-     : int_size_in_bytes (TYPE)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -691,8 +682,8 @@ void hppa_profile_hook (int label_no);
 extern int may_call_alloca;
 
 #define EXIT_IGNORE_STACK	\
- (get_frame_size () != 0	\
-  || cfun->calls_alloca || crtl->outgoing_args_size)
+ (maybe_ne (get_frame_size (), 0)	\
+  || cfun->calls_alloca || maybe_ne (crtl->outgoing_args_size, 0))
 
 /* Length in units of the trampoline for entering a nested function.  */
 

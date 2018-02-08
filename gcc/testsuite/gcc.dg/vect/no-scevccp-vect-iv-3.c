@@ -4,7 +4,11 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
+#if VECTOR_BITS > 256
+#define N (VECTOR_BITS / 16 + 10)
+#else
 #define N 26
+#endif
  
 __attribute__ ((noinline))
 unsigned int main1 ()

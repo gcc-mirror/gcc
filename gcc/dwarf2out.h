@@ -1,5 +1,5 @@
 /* dwarf2out.h - Various declarations for functions found in dwarf2out.c
-   Copyright (C) 1998-2017 Free Software Foundation, Inc.
+   Copyright (C) 1998-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,7 +43,8 @@ enum dw_cfi_oprnd_type {
   dw_cfi_oprnd_reg_num,
   dw_cfi_oprnd_offset,
   dw_cfi_oprnd_addr,
-  dw_cfi_oprnd_loc
+  dw_cfi_oprnd_loc,
+  dw_cfi_oprnd_cfa_loc
 };
 
 typedef union GTY(()) {
@@ -51,6 +52,8 @@ typedef union GTY(()) {
   HOST_WIDE_INT GTY ((tag ("dw_cfi_oprnd_offset"))) dw_cfi_offset;
   const char * GTY ((tag ("dw_cfi_oprnd_addr"))) dw_cfi_addr;
   struct dw_loc_descr_node * GTY ((tag ("dw_cfi_oprnd_loc"))) dw_cfi_loc;
+  struct dw_cfa_location * GTY ((tag ("dw_cfi_oprnd_cfa_loc")))
+    dw_cfi_cfa_loc;
 } dw_cfi_oprnd;
 
 struct GTY(()) dw_cfi_node {
@@ -114,8 +117,8 @@ struct GTY(()) dw_fde_node {
    Instead of passing around REG and OFFSET, we pass a copy
    of this structure.  */
 struct GTY(()) dw_cfa_location {
-  HOST_WIDE_INT offset;
-  HOST_WIDE_INT base_offset;
+  poly_int64_pod offset;
+  poly_int64_pod base_offset;
   /* REG is in DWARF_FRAME_REGNUM space, *not* normal REGNO space.  */
   unsigned int reg;
   BOOL_BITFIELD indirect : 1;  /* 1 if CFA is accessed via a dereference.  */
@@ -267,9 +270,9 @@ struct GTY(()) dw_discr_list_node {
 
 /* Interface from dwarf2out.c to dwarf2cfi.c.  */
 extern struct dw_loc_descr_node *build_cfa_loc
-  (dw_cfa_location *, HOST_WIDE_INT);
+  (dw_cfa_location *, poly_int64);
 extern struct dw_loc_descr_node *build_cfa_aligned_loc
-  (dw_cfa_location *, HOST_WIDE_INT offset, HOST_WIDE_INT alignment);
+  (dw_cfa_location *, poly_int64, HOST_WIDE_INT);
 extern struct dw_loc_descr_node *mem_loc_descriptor
   (rtx, machine_mode mode, machine_mode mem_mode,
    enum var_init_status);

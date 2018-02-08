@@ -1,3 +1,69 @@
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_flags.inc: Cherry-pick upstream r323995.
+	* asan/asan_report.cc (CheckForInvalidPointerPair):
+	Cherry-pick upstream r323995.
+
+2018-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82825
+	* sanitizer_common/sanitizer_internal_defs.h: Cherry-pick upstream
+	r324284.
+
+2018-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/82824
+	* lsan/lsan_common_mac.cc: Cherry-pick upstream r322437.
+
+2017-12-05  Martin Liska  <mliska@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_descriptions.cc: Cherry-pick upstream r319668.
+	* asan/asan_descriptions.h: Likewise.
+	* asan/asan_report.cc: Likewise.
+	* asan/asan_thread.cc: Likewise.
+	* asan/asan_thread.h: Likewise.
+
+2017-11-17  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	* acinclude.m4: Add enable.m4 and cet.m4.
+	* Makefile.in: Regenerate.
+	* asan/Makefile.am: Update AM_CXXFLAGS.
+	* asan/Makefile.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Set CET_FLAGS. Update EXTRA_CFLAGS,
+	EXTRA_CXXFLAGS, EXTRA_ASFLAGS.
+	* interception/Makefile.am: Update AM_CXXFLAGS.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.am: Update AM_CFLAGS, AM_CXXFLAGS.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.am: Update AM_CXXFLAGS.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.am: Update AM_CXXFLAGS,
+	AM_CCASFLAGS.
+	* sanitizer_common/sanitizer_linux_x86_64.S: Include cet.h.
+	Add _CET_ENDBR macro.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.am: Update AM_CXXFLAGS.
+	* tsan/Makefile.in: Regenerate.
+	* tsan/tsan_rtl_amd64.S Include cet.h. Add _CET_ENDBR macro.
+	* ubsan/Makefile.am: Update AM_CXXFLAGS.
+	* ubsan/Makefile.in: Regenerate.
+
+2017-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/82670
+	* ubsan/Makefile.am (ubsan_files): Remove ubsan_init_standalone.cc
+	and ubsan_signals_standalone.cc.
+	* ubsan/Makefile.in: Regenerated.
+
+2017-11-05  Tom de Vries  <tom@codesourcery.com>
+
+	PR other/82784
+	* asan/asan_poisoning.cc (CHECK_SMALL_REGION): Remove semicolon after
+	"do {} while (0)".
+	* lsan/lsan_common.cc (LOG_POINTERS, LOG_THREADS): Same.
+
 2017-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/82595

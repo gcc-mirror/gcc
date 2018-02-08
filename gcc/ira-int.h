@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) intercommunication header file.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -604,7 +604,7 @@ struct ira_spilled_reg_stack_slot
   /* RTL representation of the stack slot.  */
   rtx mem;
   /* Size of the stack slot.  */
-  unsigned int width;
+  poly_uint64_pod width;
 };
 
 /* The number of elements in the following array.  */

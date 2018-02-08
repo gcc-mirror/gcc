@@ -1,11 +1,11 @@
 /* { dg-do compile { target { powerpc64le-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -O3 " } */
-/* { dg-final { scan-assembler-times "lxvw4x" 2 } } */
-/* { dg-final { scan-assembler "stxvw4x" } } */
+/* { dg-final { scan-assembler-times "lxvd2x" 2 } } */
+/* { dg-final { scan-assembler "stxvd2x" } } */
 /* { dg-final { scan-assembler-not "xxpermdi" } } */
 
-/* Verify that swap optimization does not interfere with element-reversing
+/* Verify that swap optimization does not interfere with unaligned
    loads and stores.  */
 
 /* Test case to resolve PR79044.  */

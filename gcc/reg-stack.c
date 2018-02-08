@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1560,12 +1560,6 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 
 	switch (GET_CODE (pat_src))
 	  {
-	  case COMPARE:
-	    /* `fcomi' insn can't pop two regs.  */
-	    compare_for_stack_reg (insn, regstack, pat_src,
-				   REGNO (*dest) != FLAGS_REG);
-	    break;
-
 	  case CALL:
 	    {
 	      int count;
@@ -1966,29 +1960,33 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 		replace_reg (src2, FIRST_STACK_REG + 1);
 		break;
 
-	      case UNSPEC_SAHF:
-		/* (unspec [(unspec [(compare)] UNSPEC_FNSTSW)] UNSPEC_SAHF)
-		   The combination matches the PPRO fcomi instruction.  */
-
-		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == UNSPEC);
-		gcc_assert (XINT (pat_src, 1) == UNSPEC_FNSTSW);
-		/* Fall through.  */
-
 	      case UNSPEC_FNSTSW:
 		/* Combined fcomp+fnstsw generated for doing well with
 		   CSE.  When optimizing this would have been broken
 		   up before now.  */
 
 		pat_src = XVECEXP (pat_src, 0, 0);
-		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		if (GET_CODE (pat_src) == COMPARE)
+		  goto do_compare;
 
-		compare_for_stack_reg (insn, regstack, pat_src, true);
-		break;
+		/* Fall through.  */
+
+	      case UNSPEC_NOTRAP:
+
+		pat_src = XVECEXP (pat_src, 0, 0);
+		gcc_assert (GET_CODE (pat_src) == COMPARE);
+		goto do_compare;
 
 	      default:
 		gcc_unreachable ();
 	      }
+	    break;
+
+	  case COMPARE:
+	  do_compare:
+	    /* `fcomi' insn can't pop two regs.  */
+	    compare_for_stack_reg (insn, regstack, pat_src,
+				   REGNO (*dest) != FLAGS_REG);
 	    break;
 
 	  case IF_THEN_ELSE:
@@ -2956,11 +2954,6 @@ better_edge (edge e1, edge e2)
   if (!e1)
     return e2;
 
-  if (EDGE_FREQUENCY (e1) > EDGE_FREQUENCY (e2))
-    return e1;
-  if (EDGE_FREQUENCY (e1) < EDGE_FREQUENCY (e2))
-    return e2;
-
   if (e1->count () > e2->count ())
     return e1;
   if (e1->count () < e2->count ())
@@ -3041,7 +3034,7 @@ convert_regs_1 (basic_block block)
 
       /* Don't bother processing unless there is a stack reg
 	 mentioned or if it's a CALL_INSN.  */
-      if (DEBUG_INSN_P (insn))
+      if (DEBUG_BIND_INSN_P (insn))
 	{
 	  if (starting_stack_p)
 	    debug_insns_with_starting_stack++;
@@ -3081,7 +3074,7 @@ convert_regs_1 (basic_block block)
       for (insn = BB_HEAD (block); debug_insns_with_starting_stack;
 	   insn = NEXT_INSN (insn))
 	{
-	  if (!DEBUG_INSN_P (insn))
+	  if (!DEBUG_BIND_INSN_P (insn))
 	    continue;
 
 	  debug_insns_with_starting_stack--;

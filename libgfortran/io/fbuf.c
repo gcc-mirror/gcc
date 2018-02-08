@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2017 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2018 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -33,7 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 void
-fbuf_init (gfc_unit *u, int len)
+fbuf_init (gfc_unit *u, size_t len)
 {
   if (len == 0)
     len = 512;			/* Default size.  */
@@ -64,9 +64,9 @@ fbuf_debug (gfc_unit *u, const char *format, ...)
   va_start(args, format);
   vfprintf(stderr, format, args);
   va_end(args);
-  fprintf (stderr, "fbuf_debug pos: %d, act: %d, buf: ''", 
-           u->fbuf->pos, u->fbuf->act);
-  for (int ii = 0; ii < u->fbuf->act; ii++)
+  fprintf (stderr, "fbuf_debug pos: %lu, act: %lu, buf: ''",
+           (long unsigned) u->fbuf->pos, (long unsigned) u->fbuf->act);
+  for (size_t ii = 0; ii < u->fbuf->act; ii++)
     {
       putc (u->fbuf->buf[ii], stderr);
     }
@@ -84,10 +84,10 @@ fbuf_debug (gfc_unit *u __attribute__ ((unused)),
    underlying device.  Returns how much the physical position was
    modified.  */
 
-int
+ptrdiff_t
 fbuf_reset (gfc_unit *u)
 {
-  int seekval = 0;
+  ptrdiff_t seekval = 0;
 
   if (!u->fbuf)
     return 0;
@@ -99,7 +99,7 @@ fbuf_reset (gfc_unit *u)
   if (u->mode == READING && u->fbuf->act > u->fbuf->pos)
     {
       seekval = - (u->fbuf->act - u->fbuf->pos);
-      fbuf_debug (u, "fbuf_reset seekval %d, ", seekval);
+      fbuf_debug (u, "fbuf_reset seekval %ld, ", (long) seekval);
     }
   u->fbuf->act = u->fbuf->pos = 0;
   return seekval;
@@ -111,11 +111,11 @@ fbuf_reset (gfc_unit *u)
    reallocating if necessary.  */
 
 char *
-fbuf_alloc (gfc_unit *u, int len)
+fbuf_alloc (gfc_unit *u, size_t len)
 {
-  int newlen;
+  size_t newlen;
   char *dest;
-  fbuf_debug (u, "fbuf_alloc len %d, ", len);
+  fbuf_debug (u, "fbuf_alloc len %lu, ", (long unsigned) len);
   if (u->fbuf->pos + len > u->fbuf->len)
     {
       /* Round up to nearest multiple of the current buffer length.  */
@@ -138,8 +138,6 @@ fbuf_alloc (gfc_unit *u, int len)
 int
 fbuf_flush (gfc_unit *u, unit_mode mode)
 {
-  int nwritten;
-
   if (!u->fbuf)
     return 0;
 
@@ -149,7 +147,7 @@ fbuf_flush (gfc_unit *u, unit_mode mode)
     {
       if (u->fbuf->pos > 0)
 	{
-	  nwritten = swrite (u->s, u->fbuf->buf, u->fbuf->pos);
+	  ptrdiff_t nwritten = swrite (u->s, u->fbuf->buf, u->fbuf->pos);
 	  if (nwritten < 0)
 	    return -1;
 	}
@@ -177,8 +175,6 @@ fbuf_flush (gfc_unit *u, unit_mode mode)
 int
 fbuf_flush_list (gfc_unit *u, unit_mode mode)
 {
-  int nwritten;
-
   if (!u->fbuf)
     return 0;
 
@@ -189,7 +185,7 @@ fbuf_flush_list (gfc_unit *u, unit_mode mode)
 
   if (mode == LIST_WRITING)
     {
-      nwritten = swrite (u->s, u->fbuf->buf, u->fbuf->pos);
+      ptrdiff_t nwritten = swrite (u->s, u->fbuf->buf, u->fbuf->pos);
       if (nwritten < 0)
 	return -1;
     }
@@ -206,8 +202,8 @@ fbuf_flush_list (gfc_unit *u, unit_mode mode)
 }
 
 
-int
-fbuf_seek (gfc_unit *u, int off, int whence)
+ptrdiff_t
+fbuf_seek (gfc_unit *u, ptrdiff_t off, int whence)
 {
   if (!u->fbuf)
     return -1;
@@ -226,7 +222,7 @@ fbuf_seek (gfc_unit *u, int off, int whence)
       return -1;
     }
 
-  fbuf_debug (u, "fbuf_seek, off %d ", off);
+  fbuf_debug (u, "fbuf_seek, off %ld ", (long) off);
   /* The start of the buffer is always equal to the left tab
      limit. Moving to the left past the buffer is illegal in C and
      would also imply moving past the left tab limit, which is never
@@ -234,7 +230,7 @@ fbuf_seek (gfc_unit *u, int off, int whence)
      is not possible, in that case the user must make sure to allocate
      space with fbuf_alloc().  So return error if that is
      attempted.  */
-  if (off < 0 || off > u->fbuf->act)
+  if (off < 0 || off > (ptrdiff_t) u->fbuf->act)
     return -1;
   u->fbuf->pos = off;
   return off;
@@ -248,21 +244,22 @@ fbuf_seek (gfc_unit *u, int off, int whence)
    of bytes actually processed. */
 
 char *
-fbuf_read (gfc_unit *u, int *len)
+fbuf_read (gfc_unit *u, size_t *len)
 {
   char *ptr;
-  int oldact, oldpos;
-  int readlen = 0;
+  size_t oldact, oldpos;
+  ptrdiff_t readlen = 0;
 
-  fbuf_debug (u, "fbuf_read, len %d: ", *len);
+  fbuf_debug (u, "fbuf_read, len %lu: ", (unsigned long) *len);
   oldact = u->fbuf->act;
   oldpos = u->fbuf->pos;
   ptr = fbuf_alloc (u, *len);
   u->fbuf->pos = oldpos;
   if (oldpos + *len > oldact)
     {
-      fbuf_debug (u, "reading %d bytes starting at %d ", 
-                  oldpos + *len - oldact, oldact);
+      fbuf_debug (u, "reading %lu bytes starting at %lu ",
+                  (long unsigned) oldpos + *len - oldact,
+		  (long unsigned) oldact);
       readlen = sread (u->s, u->fbuf->buf + oldact, oldpos + *len - oldact);
       if (readlen < 0)
 	return NULL;
@@ -281,7 +278,6 @@ fbuf_read (gfc_unit *u, int *len)
 int
 fbuf_getc_refill (gfc_unit *u)
 {
-  int nread;
   char *p;
 
   fbuf_debug (u, "fbuf_getc_refill ");
@@ -290,7 +286,7 @@ fbuf_getc_refill (gfc_unit *u)
      between not needing to call the read() syscall all the time and
      not having to memmove unnecessary stuff when switching to the
      next record.  */
-  nread = 80;
+  size_t nread = 80;
 
   p = fbuf_read (u, &nread);
 

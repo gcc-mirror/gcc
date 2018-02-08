@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -285,7 +285,7 @@ package System.Tasking.Stages is
      (From, To   : Activation_Chain_Access;
       New_Master : Master_ID);
    --  Compiler interface only. Do not call from within the RTS.
-   --  Move all tasks on From list to To list, and change their Master_of_Task
+   --  Move all tasks on From list to To list, and change their Master_Of_Task
    --  to be New_Master. This is used to implement build-in-place function
    --  returns. Tasks that are part of the return object are initially placed
    --  on an activation chain local to the return statement, and their master

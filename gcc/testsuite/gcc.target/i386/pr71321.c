@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-mtune=generic -O2" } */
 
 typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;

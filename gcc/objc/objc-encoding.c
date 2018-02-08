@@ -1,5 +1,5 @@
 /* Routines dealing with ObjC encoding of types
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -734,7 +734,7 @@ encode_type (tree type, int curtype, int format)
 
 	  /* Rewrite "in const" from "nr" to "rn".  */
 	  if (curtype >= 1 && !strncmp (enc - 1, "nr", 2))
-	    strncpy (enc - 1, "rn", 2);
+	    memcpy (enc - 1, "rn", 2);
 	}
     }
 }

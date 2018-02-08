@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2017 Free Software Foundation, Inc.
+# Copyright (C) 1997-2018 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -728,10 +728,10 @@ AC_ARG_ENABLE(coverage,
 		 default is noopt])],
 [case "${enableval}" in
   yes|noopt)
-    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O0"
+    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O0 -fkeep-static-functions"
     ;;
   opt)
-    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O2"
+    coverage_flags="-fprofile-arcs -ftest-coverage -frandom-seed=\$@ -O2 -fkeep-static-functions"
     ;;
   no)
     # a.k.a. --disable-coverage
@@ -2587,15 +2587,25 @@ if test $in_tree_ld != yes ; then
   else
     case "${target}" in
       *-*-solaris2*)
-	# See acinclude.m4 (gcc_SUN_LD_VERSION) for the version number
-	# format.
+	# Solaris 2 ld -V output looks like this for a regular version:
 	#
-	# Don't reuse gcc_gv_sun_ld_vers_* in case a linker other than
-	# /usr/ccs/bin/ld has been configured.
+	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1699
+	#
+	# but test versions add stuff at the end:
+	#
+	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
+	#
+	# In Solaris 11.4, this was changed to
+	#
+	# ld: Solaris ELF Utilities: 11.4-1.3123
+	#
+	# ld and ld.so.1 are guaranteed to be updated in lockstep, so ld version
+	# numbers can be used in ld.so.1 feature checks even if a different
+	# linker is configured.
 	ld_ver=`$gcc_cv_ld -V 2>&1`
-	if echo "$ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
+	if echo "$ld_ver" | $EGREP 'Solaris Link Editors|Solaris ELF Utilities' > /dev/null; then
 	  ld_vers=`echo $ld_ver | sed -n \
-	    -e 's,^.*: 5\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\1,p'`
+	    -e 's,^.*: \(5\|1[0-9]\)\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\2,p'`
 	  ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
 	  ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
 	fi
@@ -2744,6 +2754,13 @@ L2:],
   [AC_DEFINE(HAVE_AS_LEB128, 0,
     [Define if your assembler supports .sleb128 and .uleb128.])])
 
+# Determine if an .eh_frame section is read-only.
+gcc_fn_eh_frame_ro () {
+  $gcc_cv_as $1 -o conftest.o conftest.s > /dev/null 2>&1 && \
+    $gcc_cv_objdump -h conftest.o 2>/dev/null | \
+    sed -e '/.eh_frame/!d' -e N | grep READONLY > /dev/null
+}
+
 # Check if we have assembler support for unwind directives.
 gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
   ,,
@@ -2759,41 +2776,41 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,
     # If the linker used on Solaris (like Sun ld) isn't capable of merging
     # read-only and read-write sections, we need to make sure that the
     # assembler used emits read-write .eh_frame sections.
-    if test "x$gcc_cv_ld_ro_rw_mix" != xread-write; then
-      if test "x$gcc_cv_objdump" != x; then
-	if $gcc_cv_objdump -h conftest.o 2>/dev/null | \
-		sed -e /.eh_frame/!d -e N | grep READONLY > /dev/null; then
-	  gcc_cv_as_cfi_directive=no
-	else
-	  case "$target" in
-	    i?86-*-solaris2.1[[0-9]]* | x86_64-*-solaris2.1[[0-9]]*)
-	      # On Solaris/x86, make sure that GCC and assembler agree on using
-	      # read-only .eh_frame sections for 64-bit.
-	      if test x$gas = xyes; then
-	         as_ix86_64_opt="--64"
-	      else
-	         as_ix86_64_opt="-xarch=amd64"
-	      fi
-	      if $gcc_cv_as $as_ix86_64_opt -o conftest.o conftest.s > /dev/null 2>&1 && \
-		$gcc_cv_objdump -h conftest.o 2>/dev/null | \
-			sed -e /.eh_frame/!d -e N | \
-			grep READONLY > /dev/null; then
-		gcc_cv_as_cfi_directive=yes
-	      else
-		gcc_cv_as_cfi_directive=no
-	      fi
-	      ;;
-	    *)
-	      gcc_cv_as_cfi_directive=yes
-	      ;;
-	  esac 
-	fi
-      else
-        # no objdump, err on the side of caution
-	gcc_cv_as_cfi_directive=no
-      fi
-    else
+    if test "x$gcc_cv_ld_ro_rw_mix" = xread-write; then
       gcc_cv_as_cfi_directive=yes
+    elif test "x$gcc_cv_objdump" = x; then
+      # No objdump, err on the side of caution.
+      gcc_cv_as_cfi_directive=no
+    else
+      if test x$gas = xyes; then
+	as_32_opt="--32"
+	as_64_opt="--64"
+      else
+	as_32_opt="-m32"
+	as_64_opt="-m64"
+      fi
+      case "$target" in
+	sparc*-*-solaris2.*)
+	  # On Solaris/SPARC, .eh_frame sections should always be read-write.
+	  if gcc_fn_eh_frame_ro $as_32_opt \
+	     || gcc_fn_eh_frame_ro $as_64_opt; then
+	    gcc_cv_as_cfi_directive=no
+	  else
+	    gcc_cv_as_cfi_directive=yes
+	  fi
+	  ;;
+	i?86-*-solaris2.* | x86_64-*-solaris2.*)
+	  # On Solaris/x86, make sure that GCC and assembler agree on using
+	  # read-only .eh_frame sections for 64-bit.
+	  if gcc_fn_eh_frame_ro $as_32_opt; then
+	    gcc_cv_as_cfi_directive=no
+	  elif gcc_fn_eh_frame_ro $as_64_opt; then
+	    gcc_cv_as_cfi_directive=yes
+	  else
+	    gcc_cv_as_cfi_directive=no
+	  fi
+	  ;;
+      esac
     fi
     ;;
   *-*-*)
@@ -2944,6 +2961,14 @@ if test $gcc_cv_as_shf_merge = no; then
     [elf,2,12,0], [--fatal-warnings],
     [.section .rodata.str, "aMS", %progbits, 1])
 fi
+case "$target" in
+  i?86-*-solaris2.10* | x86_64-*-solaris2.10*)
+    # SHF_MERGE support in Solaris 10/x86 ld is broken.
+    if test x"$gnu_ld" = xno; then
+      gcc_cv_as_shf_merge=no
+    fi
+    ;;
+esac
 AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
   [`if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
@@ -3059,6 +3084,31 @@ AC_DEFINE_UNQUOTED(HAVE_COMDAT_GROUP,
     || test $gcc_cv_as_comdat_group_percent = yes \
     || test $gcc_cv_as_comdat_group_group = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler and linker support COMDAT groups.])
+
+# Restrict this test to Solaris/x86: other targets define this statically.
+case "${target}" in
+  i?86-*-solaris2* | x86_64-*-solaris2*)
+    AC_MSG_CHECKING(support for hidden thunks in linkonce sections)
+    if test $in_tree_ld = yes || echo "$ld_ver" | grep GNU > /dev/null; then
+      hidden_linkonce=yes
+    else
+      case "${target}" in
+	# Full support for hidden thunks in linkonce sections only appeared in
+	# Solaris 11/OpenSolaris.
+        *-*-solaris2.1[[1-9]]*)
+	  hidden_linkonce=yes
+	  ;;
+	*)
+	  hidden_linkonce=no
+	  ;;
+      esac
+    fi
+    AC_MSG_RESULT($hidden_linkonce)
+    AC_DEFINE_UNQUOTED(USE_HIDDEN_LINKONCE,
+      [`if test $hidden_linkonce = yes; then echo 1; else echo 0; fi`],
+    [Define 0/1 if your linker supports hidden thunks in linkonce sections.])
+  ;;
+esac
 
 gcc_GAS_CHECK_FEATURE([line table discriminator support],
  gcc_cv_as_discriminator,
@@ -5096,7 +5146,7 @@ elif test x$gcc_cv_ld != x; then
   else
     case "$target" in
       *-*-solaris2.1[[1-9]]*)
-	# Solaris 11.x and Solaris 12 added PIE support.
+	# Solaris 11.3 added PIE support.
 	if $gcc_cv_ld -z help 2>&1 | grep -- type.*pie > /dev/null; then
 	  gcc_cv_ld_pie=yes
 	fi
@@ -5756,10 +5806,25 @@ if test x$gcc_cv_solaris_crts = xyes; then
   	    [Define if the system-provided CRTs are present on Solaris.])
 fi
 
+AC_ARG_ENABLE(libssp,
+[AS_HELP_STRING([--enable-libssp], [enable linking against libssp])],
+[case "${enableval}" in
+  yes|no)
+    ;;
+  *)
+    AC_MSG_ERROR([unknown libssp setting $enableval])
+    ;;
+esac], [])
+
 # Test for stack protector support in target C library.
 AC_CACHE_CHECK(__stack_chk_fail in target C library,
-      gcc_cv_libc_provides_ssp,
-      [gcc_cv_libc_provides_ssp=no
+  gcc_cv_libc_provides_ssp,
+  [gcc_cv_libc_provides_ssp=no
+  if test "x$enable_libssp" = "xno"; then
+    gcc_cv_libc_provides_ssp=yes
+  elif test "x$enable_libssp" = "xyes"; then
+    gcc_cv_libc_provides_ssp=no
+  else
     case "$target" in
        *-*-musl*)
 	 # All versions of musl provide stack protector
@@ -5796,8 +5861,9 @@ AC_CACHE_CHECK(__stack_chk_fail in target C library,
 	 AC_CHECK_FUNC(__stack_chk_fail,[gcc_cv_libc_provides_ssp=yes],
            [echo "no __stack_chk_fail on this target"])
         ;;
-  *) gcc_cv_libc_provides_ssp=no ;;
-    esac])
+       *) gcc_cv_libc_provides_ssp=no ;;
+    esac
+  fi])
 
 if test x$gcc_cv_libc_provides_ssp = xyes; then
   AC_DEFINE(TARGET_LIBC_PROVIDES_SSP, 1,
@@ -5858,6 +5924,43 @@ if test x$gcc_cv_target_ldbl128 = xyes; then
   AC_DEFINE(TARGET_DEFAULT_LONG_DOUBLE_128, 1,
 	    [Define if TFmode long double should be the default])
 fi
+
+# Check if TFmode long double target should use the IBM extended double or IEEE
+# 128-bit floating point formats if long doubles are 128-bits long.  The long
+# double type can only be switched on powerpc64 bit Linux systems where VSX is
+# supported.  Other PowerPC systems do not build the IEEE 128-bit emulator in
+# libgcc.
+AC_ARG_WITH([long-double-format],
+  [AS_HELP_STRING([--with-long-double-format={ieee,ibm}]
+		  [Specify whether PowerPC long double uses IEEE or IBM format])],[
+case "$target:$with_long_double_format" in
+  powerpc64le-*-linux*:ieee | powerpc64le-*-linux*:ibm)
+    :
+    ;;
+  powerpc64-*-linux*:ieee | powerpc64-*-linux*:ibm)
+    # IEEE 128-bit emulation is only built on 64-bit VSX Linux systems
+    case "$with_cpu" in
+      power7 | power8 | power9 | power1*)
+	:
+	;;
+      *)
+	AC_MSG_ERROR([Configuration option --with-long-double-format is only \
+supported if the default cpu is power7 or newer])
+	with_long_double_format=""
+	;;
+      esac
+      ;;
+  xpowerpc64*-*-linux*:*)
+    AC_MSG_ERROR([--with-long-double-format argument should be ibm or ieee])
+    with_long_double_format=""
+    ;;
+  *)
+    AC_MSG_ERROR([Configure option --with-long-double-format is only supported \
+on 64-bit PowerPC VSX Linux systems])
+    with_long_double_format=""
+    ;;
+esac],
+  [])
 
 # Check if the target LIBC supports exporting the AT_PLATFORM and AT_HWCAP
 # values in the TCB.  Currently, only GLIBC 2.23 and later support this.

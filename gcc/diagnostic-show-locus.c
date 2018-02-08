@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2017 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "gcc-rich-location.h"
 #include "selftest.h"
+#include "selftest-diagnostic.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -638,7 +639,7 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   while (result > 0)
     {
       char ch = line[result - 1];
-      if (ch == ' ' || ch == '\t')
+      if (ch == ' ' || ch == '\t' || ch == '\r')
 	result--;
       else
 	break;
@@ -647,7 +648,8 @@ get_line_width_without_trailing_whitespace (const char *line, int line_width)
   gcc_assert (result <= line_width);
   gcc_assert (result == 0 ||
 	      (line[result - 1] != ' '
-	       && line[result -1] != '\t'));
+	       && line[result -1] != '\t'
+	       && line[result -1] != '\r'));
   return result;
 }
 
@@ -672,9 +674,11 @@ test_get_line_width_without_trailing_whitespace ()
   assert_eq ("", 0);
   assert_eq (" ", 0);
   assert_eq ("\t", 0);
+  assert_eq ("\r", 0);
   assert_eq ("hello world", 11);
   assert_eq ("hello world     ", 11);
   assert_eq ("hello world     \t\t  ", 11);
+  assert_eq ("hello world\r", 11);
 }
 
 #endif /* #if CHECKING_P */
@@ -1175,8 +1179,8 @@ layout::print_source_line (int row, const char *line, int line_width,
 	  else
 	    m_colorizer.set_normal_text ();
 	}
-      char c = *line == '\t' ? ' ' : *line;
-      if (c == '\0')
+      char c = *line;
+      if (c == '\0' || c == '\t' || c == '\r')
 	c = ' ';
       if (c != ' ')
 	{
@@ -1690,7 +1694,7 @@ layout::print_trailing_fixits (int row)
   /* Now print the corrections.  */
   unsigned i;
   correction *c;
-  int column = 0;
+  int column = m_x_offset;
 
   FOR_EACH_VEC_ELT (corrections.m_corrections, i, c)
     {
@@ -1844,7 +1848,7 @@ layout::move_to_column (int *column, int dest_column)
   if (*column > dest_column)
     {
       print_newline ();
-      *column = 0;
+      *column = m_x_offset;
     }
 
   while (*column < dest_column)
@@ -1865,7 +1869,7 @@ layout::show_ruler (int max_column) const
     {
       pp_space (m_pp);
       for (int column = 1 + m_x_offset; column <= max_column; column++)
-	if (0 == column % 10)
+	if (column % 10 == 0)
 	  pp_character (m_pp, '0' + (column / 100) % 10);
 	else
 	  pp_space (m_pp);
@@ -1875,7 +1879,7 @@ layout::show_ruler (int max_column) const
   /* Tens.  */
   pp_space (m_pp);
   for (int column = 1 + m_x_offset; column <= max_column; column++)
-    if (0 == column % 10)
+    if (column % 10 == 0)
       pp_character (m_pp, '0' + (column / 10) % 10);
     else
       pp_space (m_pp);
@@ -1986,34 +1990,6 @@ diagnostic_show_locus (diagnostic_context * context,
 namespace selftest {
 
 /* Selftests for diagnostic_show_locus.  */
-
-/* Convenience subclass of diagnostic_context for testing
-   diagnostic_show_locus.  */
-
-class test_diagnostic_context : public diagnostic_context
-{
- public:
-  test_diagnostic_context ()
-  {
-    diagnostic_initialize (this, 0);
-    show_caret = true;
-    show_column = true;
-    start_span = start_span_cb;
-  }
-  ~test_diagnostic_context ()
-  {
-    diagnostic_finish (this);
-  }
-
-  /* Implementation of diagnostic_start_span_fn, hiding the
-     real filename (to avoid printing the names of tempfiles).  */
-  static void
-  start_span_cb (diagnostic_context *context, expanded_location exploc)
-  {
-    exploc.file = "FILENAME";
-    default_diagnostic_start_span_fn (context, exploc);
-  }
-};
 
 /* Verify that diagnostic_show_locus works sanely on UNKNOWN_LOCATION.  */
 

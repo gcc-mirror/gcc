@@ -1,6 +1,6 @@
 /* Lower GIMPLE_SWITCH expressions to something more efficient than
    a jump table.
-   Copyright (C) 2006-2017 Free Software Foundation, Inc.
+   Copyright (C) 2006-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,6 +59,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    FIXME: This should be derived from PARAM_CASE_VALUES_THRESHOLD and
 	  targetm.case_values_threshold(), or be its own param.  */
 #define MAX_CASE_BIT_TESTS  3
+
+/* Track whether or not we have altered the CFG and thus may need to
+   cleanup the CFG when complete.  */
+bool cfg_altered;
 
 /* Split the basic block at the statement pointed to by GSIP, and insert
    a branch to the target basic block of E_TRUE conditional on tree
@@ -1443,10 +1447,10 @@ gen_inbound_check (gswitch *swtch, struct switch_conv_info *info)
     }
 
   /* frequencies of the new BBs */
-  bb1->frequency = EDGE_FREQUENCY (e01);
-  bb2->frequency = EDGE_FREQUENCY (e02);
+  bb1->count = e01->count ();
+  bb2->count = e02->count ();
   if (!info->default_case_nonstandard)
-    bbf->frequency = EDGE_FREQUENCY (e1f) + EDGE_FREQUENCY (e2f);
+    bbf->count = e1f->count () + e2f->count ();
 
   /* Tidy blocks that have become unreachable.  */
   prune_bbs (bbd, info->final_bb,
@@ -1492,7 +1496,7 @@ process_switch (gswitch *swtch)
 
   /* Group case labels so that we get the right results from the heuristics
      that decide on the code generation approach for this switch.  */
-  group_case_labels_stmt (swtch);
+  cfg_altered |= group_case_labels_stmt (swtch);
 
   /* If this switch is now a degenerate case with only a default label,
      there is nothing left for us to do.   */
@@ -1605,6 +1609,7 @@ pass_convert_switch::execute (function *fun)
 {
   basic_block bb;
 
+  cfg_altered = false;
   FOR_EACH_BB_FN (bb, fun)
   {
     const char *failure_reason;
@@ -1625,6 +1630,7 @@ pass_convert_switch::execute (function *fun)
 	failure_reason = process_switch (as_a <gswitch *> (stmt));
 	if (! failure_reason)
 	  {
+	    cfg_altered = true;
 	    if (dump_file)
 	      {
 		fputs ("Switch converted\n", dump_file);
@@ -1648,7 +1654,7 @@ pass_convert_switch::execute (function *fun)
       }
   }
 
-  return 0;
+  return cfg_altered ? TODO_cleanup_cfg : 0;
 }
 
 } // anon namespace

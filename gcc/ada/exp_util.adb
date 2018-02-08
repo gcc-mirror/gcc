@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -165,10 +165,9 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
-   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id;
-   --  Subsidiary to all Build_DIC_Procedure_xxx routines. Find the type which
-   --  defines the Default_Initial_Condition pragma of type Typ. This is either
-   --  Typ itself or a parent type when the pragma is inherited.
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean;
+   --  Determine whether pragma Default_Initial_Condition denoted by Prag has
+   --  an assertion expression that should be verified at run time.
 
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
@@ -1130,6 +1129,24 @@ package body Exp_Util is
             if Present (New_E) then
                Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
 
+               --  AI12-0166: a precondition for a protected operation
+               --  cannot include an internal call to a protected function
+               --  of the type. In the case of an inherited condition for an
+               --  overriding operation, both the operation and the function
+               --  are given by primitive wrappers.
+
+               if Ekind (New_E) = E_Function
+                 and then Is_Primitive_Wrapper (New_E)
+                 and then Is_Primitive_Wrapper (Subp)
+                 and then Scope (Subp) = Scope (New_E)
+               then
+                  Error_Msg_Node_2 := Wrapped_Entity (Subp);
+                  Error_Msg_NE
+                    ("internal call to& cannot appear in inherited "
+                     & "precondition of protected operation&",
+                     N, Wrapped_Entity (New_E));
+               end if;
+
                --  If the entity is an overridden primitive and we are not
                --  in GNATprove mode, we must build a wrapper for the current
                --  inherited operation. If the reference is the prefix of an
@@ -1505,6 +1522,7 @@ package body Exp_Util is
       --  Start of processing for Add_Own_DIC
 
       begin
+         pragma Assert (Present (DIC_Expr));
          Expr := New_Copy_Tree (DIC_Expr);
 
          --  Perform the following substitution:
@@ -1738,8 +1756,6 @@ package body Exp_Util is
          --  Produce an empty completing body in the following cases:
          --    * Assertions are disabled
          --    * The DIC Assertion_Policy is Ignore
-         --    * Pragma DIC appears without an argument
-         --    * Pragma DIC appears with argument "null"
 
          if No (Stmts) then
             Stmts := New_List (Make_Null_Statement (Loc));
@@ -3468,6 +3484,7 @@ package body Exp_Util is
       Set_Scope (Obj_Id, Proc_Id);
 
       Set_First_Entity (Proc_Id, Obj_Id);
+      Set_Last_Entity  (Proc_Id, Obj_Id);
 
       --  Generate:
       --    procedure <Work_Typ>[Partial_]Invariant (_object : <Obj_Typ>);
@@ -4996,7 +5013,7 @@ package body Exp_Util is
 
    --        is transformed into
 
-   --     Val : Constrained_Subtype_of_T := Maybe_Modified_Expr;
+   --     Val : Constrained_Subtype_Of_T := Maybe_Modified_Expr;
    --
    --  Here are the main cases :
    --
@@ -5389,66 +5406,6 @@ package body Exp_Util is
       return TSS (Utyp, TSS_Finalize_Address);
    end Finalize_Address;
 
-   -------------------
-   -- Find_DIC_Type --
-   -------------------
-
-   function Find_DIC_Type (Typ : Entity_Id) return Entity_Id is
-      Curr_Typ : Entity_Id;
-      --  The current type being examined in the parent hierarchy traversal
-
-      DIC_Typ : Entity_Id;
-      --  The type which carries the DIC pragma. This variable denotes the
-      --  partial view when private types are involved.
-
-      Par_Typ : Entity_Id;
-      --  The parent type of the current type. This variable denotes the full
-      --  view when private types are involved.
-
-   begin
-      --  The input type defines its own DIC pragma, therefore it is the owner
-
-      if Has_Own_DIC (Typ) then
-         DIC_Typ := Typ;
-
-      --  Otherwise the DIC pragma is inherited from a parent type
-
-      else
-         pragma Assert (Has_Inherited_DIC (Typ));
-
-         --  Climb the parent chain
-
-         Curr_Typ := Typ;
-         loop
-            --  Inspect the parent type. Do not consider subtypes as they
-            --  inherit the DIC attributes from their base types.
-
-            DIC_Typ := Base_Type (Etype (Curr_Typ));
-
-            --  Look at the full view of a private type because the type may
-            --  have a hidden parent introduced in the full view.
-
-            Par_Typ := DIC_Typ;
-
-            if Is_Private_Type (Par_Typ)
-              and then Present (Full_View (Par_Typ))
-            then
-               Par_Typ := Full_View (Par_Typ);
-            end if;
-
-            --  Stop the climb once the nearest parent type which defines a DIC
-            --  pragma of its own is encountered or when the root of the parent
-            --  chain is reached.
-
-            exit when Has_Own_DIC (DIC_Typ) or else Curr_Typ = Par_Typ;
-
-            Curr_Typ := Par_Typ;
-         end loop;
-      end if;
-
-      return DIC_Typ;
-   end Find_DIC_Type;
-
    ------------------------
    -- Find_Interface_ADT --
    ------------------------
@@ -5512,7 +5469,7 @@ package body Exp_Util is
      (T     : Entity_Id;
       Iface : Entity_Id) return Entity_Id
    is
-      AI_Tag : Entity_Id;
+      AI_Tag : Entity_Id := Empty;
       Found  : Boolean   := False;
       Typ    : Entity_Id := T;
 
@@ -7255,9 +7212,11 @@ package body Exp_Util is
                   null;
                end if;
 
-            --  Special case: a call marker
+            --  Special case: a marker
 
-            when N_Call_Marker =>
+            when N_Call_Marker
+               | N_Variable_Reference_Marker
+            =>
                if Is_List_Member (P) then
                   Insert_List_Before_And_Analyze (P, Ins_Actions);
                   return;
@@ -7390,6 +7349,8 @@ package body Exp_Util is
                | N_Real_Literal
                | N_Real_Range_Specification
                | N_Record_Definition
+               | N_Reduction_Expression
+               | N_Reduction_Expression_Parameter
                | N_Reference
                | N_SCIL_Dispatch_Table_Tag_Init
                | N_SCIL_Dispatching_Call
@@ -8778,6 +8739,21 @@ package body Exp_Util is
           and then Is_Itype (Full_Typ);
    end Is_Untagged_Private_Derivation;
 
+   ------------------------------
+   -- Is_Verifiable_DIC_Pragma --
+   ------------------------------
+
+   function Is_Verifiable_DIC_Pragma (Prag : Node_Id) return Boolean is
+      Args : constant List_Id := Pragma_Argument_Associations (Prag);
+
+   begin
+      --  To qualify as verifiable, a DIC pragma must have a non-null argument
+
+      return
+        Present (Args)
+          and then Nkind (Get_Pragma_Arg (First (Args))) /= N_Null;
+   end Is_Verifiable_DIC_Pragma;
+
    ---------------------------
    -- Is_Volatile_Reference --
    ---------------------------
@@ -9334,36 +9310,172 @@ package body Exp_Util is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id
    is
-      procedure Replace_Subtype_Reference (N : Node_Id);
-      --  Replace current occurrences of the subtype to which a dynamic
-      --  predicate applies, by the expression that triggers a predicate
-      --  check. This is needed for aspect Predicate_Failure, for which
-      --  we do not generate a wrapper procedure, but simply modify the
-      --  expression for the pragma of the predicate check.
+      Loc : constant Source_Ptr := Sloc (Expr);
 
-      --------------------------------
-      --  Replace_Subtype_Reference --
-      --------------------------------
+      procedure Add_Failure_Expression (Args : List_Id);
+      --  Add the failure expression of pragma Predicate_Failure (if any) to
+      --  list Args.
 
-      procedure Replace_Subtype_Reference (N : Node_Id) is
+      ----------------------------
+      -- Add_Failure_Expression --
+      ----------------------------
+
+      procedure Add_Failure_Expression (Args : List_Id) is
+         function Failure_Expression return Node_Id;
+         pragma Inline (Failure_Expression);
+         --  Find aspect or pragma Predicate_Failure that applies to type Typ
+         --  and return its expression. Return Empty if no such annotation is
+         --  available.
+
+         function Is_OK_PF_Aspect (Asp : Node_Id) return Boolean;
+         pragma Inline (Is_OK_PF_Aspect);
+         --  Determine whether aspect Asp is a suitable Predicate_Failure
+         --  aspect that applies to type Typ.
+
+         function Is_OK_PF_Pragma (Prag : Node_Id) return Boolean;
+         pragma Inline (Is_OK_PF_Pragma);
+         --  Determine whether pragma Prag is a suitable Predicate_Failure
+         --  pragma that applies to type Typ.
+
+         procedure Replace_Subtype_Reference (N : Node_Id);
+         --  Replace the current instance of type Typ denoted by N with
+         --  expression Expr.
+
+         ------------------------
+         -- Failure_Expression --
+         ------------------------
+
+         function Failure_Expression return Node_Id is
+            Item : Node_Id;
+
+         begin
+            --  The management of the rep item chain involves "inheritance" of
+            --  parent type chains. If a parent [sub]type is already subject to
+            --  pragma Predicate_Failure, then the pragma will also appear in
+            --  the chain of the child [sub]type, which in turn may possess a
+            --  pragma of its own. Avoid order-dependent issues by inspecting
+            --  the rep item chain directly. Note that routine Get_Pragma may
+            --  return a parent pragma.
+
+            Item := First_Rep_Item (Typ);
+            while Present (Item) loop
+
+               --  Predicate_Failure appears as an aspect
+
+               if Nkind (Item) = N_Aspect_Specification
+                 and then Is_OK_PF_Aspect (Item)
+               then
+                  return Expression (Item);
+
+               --  Predicate_Failure appears as a pragma
+
+               elsif Nkind (Item) = N_Pragma
+                 and then Is_OK_PF_Pragma (Item)
+               then
+                  return
+                    Get_Pragma_Arg
+                      (Next (First (Pragma_Argument_Associations (Item))));
+               end if;
+
+               Item := Next_Rep_Item (Item);
+            end loop;
+
+            return Empty;
+         end Failure_Expression;
+
+         ---------------------
+         -- Is_OK_PF_Aspect --
+         ---------------------
+
+         function Is_OK_PF_Aspect (Asp : Node_Id) return Boolean is
+         begin
+            --  To qualify, the aspect must apply to the type subjected to the
+            --  predicate check.
+
+            return
+              Chars (Identifier (Asp)) = Name_Predicate_Failure
+                and then Present (Entity (Asp))
+                and then Entity (Asp) = Typ;
+         end Is_OK_PF_Aspect;
+
+         ---------------------
+         -- Is_OK_PF_Pragma --
+         ---------------------
+
+         function Is_OK_PF_Pragma (Prag : Node_Id) return Boolean is
+            Args    : constant List_Id := Pragma_Argument_Associations (Prag);
+            Typ_Arg : Node_Id;
+
+         begin
+            --  Nothing to do when the pragma does not denote Predicate_Failure
+
+            if Pragma_Name (Prag) /= Name_Predicate_Failure then
+               return False;
+
+            --  Nothing to do when the pragma lacks arguments, in which case it
+            --  is illegal.
+
+            elsif No (Args) or else Is_Empty_List (Args) then
+               return False;
+            end if;
+
+            Typ_Arg := Get_Pragma_Arg (First (Args));
+
+            --  To qualify, the local name argument of the pragma must denote
+            --  the type subjected to the predicate check.
+
+            return
+              Is_Entity_Name (Typ_Arg)
+                and then Present (Entity (Typ_Arg))
+                and then Entity (Typ_Arg) = Typ;
+         end Is_OK_PF_Pragma;
+
+         --------------------------------
+         --  Replace_Subtype_Reference --
+         --------------------------------
+
+         procedure Replace_Subtype_Reference (N : Node_Id) is
+         begin
+            Rewrite (N, New_Copy_Tree (Expr));
+
+            --  We want to treat the node as if it comes from source, so that
+            --  ASIS will not ignore it.
+
+            Set_Comes_From_Source (N, True);
+         end Replace_Subtype_Reference;
+
+         procedure Replace_Subtype_References is
+           new Replace_Type_References_Generic (Replace_Subtype_Reference);
+
+         --  Local variables
+
+         PF_Expr : constant Node_Id := Failure_Expression;
+         Expr    : Node_Id;
+
+      --  Start of processing for Add_Failure_Expression
+
       begin
-         Rewrite (N, New_Copy_Tree (Expr));
+         if Present (PF_Expr) then
 
-         --  We want to treat the node as if it comes from source, so
-         --  that ASIS will not ignore it.
+            --  Replace any occurrences of the current instance of the type
+            --  with the object subjected to the predicate check.
 
-         Set_Comes_From_Source (N, True);
-      end Replace_Subtype_Reference;
+            Expr := New_Copy_Tree (PF_Expr);
+            Replace_Subtype_References (Expr, Typ);
 
-      procedure Replace_Subtype_References is
-        new Replace_Type_References_Generic (Replace_Subtype_Reference);
+            --  The failure expression appears as the third argument of the
+            --  Check pragma.
+
+            Append_To (Args,
+              Make_Pragma_Argument_Association (Loc,
+                Expression => Expr));
+         end if;
+      end Add_Failure_Expression;
 
       --  Local variables
 
-      Loc       : constant Source_Ptr := Sloc (Expr);
-      Arg_List  : List_Id;
-      Fail_Expr : Node_Id;
-      Nam       : Name_Id;
+      Args : List_Id;
+      Nam  : Name_Id;
 
    --  Start of processing for Make_Predicate_Check
 
@@ -9394,31 +9506,21 @@ package body Exp_Util is
          Nam := Name_Predicate;
       end if;
 
-      Arg_List := New_List (
+      Args := New_List (
         Make_Pragma_Argument_Association (Loc,
           Expression => Make_Identifier (Loc, Nam)),
         Make_Pragma_Argument_Association (Loc,
           Expression => Make_Predicate_Call (Typ, Expr)));
 
-      --  If subtype has Predicate_Failure defined, add the correponding
-      --  expression as an additional pragma parameter, after replacing
-      --  current instances with the expression being checked.
+      --  If the subtype is subject to pragma Predicate_Failure, add the
+      --  failure expression as an additional parameter.
 
-      if Has_Aspect (Typ, Aspect_Predicate_Failure) then
-         Fail_Expr :=
-           New_Copy_Tree
-             (Expression (Find_Aspect (Typ, Aspect_Predicate_Failure)));
-         Replace_Subtype_References (Fail_Expr, Typ);
-
-         Append_To (Arg_List,
-           Make_Pragma_Argument_Association (Loc,
-             Expression => Fail_Expr));
-      end if;
+      Add_Failure_Expression (Args);
 
       return
         Make_Pragma (Loc,
           Chars                        => Name_Check,
-          Pragma_Argument_Associations => Arg_List);
+          Pragma_Argument_Associations => Args);
    end Make_Predicate_Check;
 
    ----------------------------
@@ -10764,7 +10866,9 @@ package body Exp_Util is
               and then not Is_Empty_List (Then_Statements (N))
               and then not Are_Wrapped (Then_Statements (N))
               and then Requires_Cleanup_Actions
-                         (Then_Statements (N), False, False)
+                         (L                 => Then_Statements (N),
+                          Lib_Level         => False,
+                          Nested_Constructs => False)
             then
                Block := Wrap_Statements_In_Block (Then_Statements (N));
                Set_Then_Statements (N, New_List (Block));
@@ -10781,7 +10885,9 @@ package body Exp_Util is
               and then not Is_Empty_List (Else_Statements (N))
               and then not Are_Wrapped (Else_Statements (N))
               and then Requires_Cleanup_Actions
-                         (Else_Statements (N), False, False)
+                         (L                 => Else_Statements (N),
+                          Lib_Level         => False,
+                          Nested_Constructs => False)
             then
                Block := Wrap_Statements_In_Block (Else_Statements (N));
                Set_Else_Statements (N, New_List (Block));
@@ -10800,7 +10906,10 @@ package body Exp_Util is
          =>
             if not Is_Empty_List (Statements (N))
               and then not Are_Wrapped (Statements (N))
-              and then Requires_Cleanup_Actions (Statements (N), False, False)
+              and then Requires_Cleanup_Actions
+                         (L                 => Statements (N),
+                          Lib_Level         => False,
+                          Nested_Constructs => False)
             then
                if Nkind (N) = N_Loop_Statement
                  and then Present (Identifier (N))
@@ -11065,6 +11174,16 @@ package body Exp_Util is
         and then Side_Effect_Free (Exp, Name_Req, Variable_Ref)
       then
          return;
+
+      --  Generating C code we cannot remove side effect of function returning
+      --  class-wide types since there is no secondary stack (required to use
+      --  'reference).
+
+      elsif Modify_Tree_For_C
+        and then Nkind (Exp) = N_Function_Call
+        and then Is_Class_Wide_Type (Etype (Exp))
+      then
+         return;
       end if;
 
       --  The remaining processing is done with all checks suppressed
@@ -11074,11 +11193,11 @@ package body Exp_Util is
 
       Scope_Suppress.Suppress := (others => True);
 
-      --  If this is an elementary or a small not by-reference record type, and
+      --  If this is an elementary or a small not-by-reference record type, and
       --  we need to capture the value, just make a constant; this is cheap and
       --  objects of both kinds of types can be bit aligned, so it might not be
       --  possible to generate a reference to them. Likewise if this is not a
-      --  name reference, except for a type conversion because we would enter
+      --  name reference, except for a type conversion, because we would enter
       --  an infinite recursion with Checks.Apply_Predicate_Check if the target
       --  type has predicates (and type conversions need a specific treatment
       --  anyway, see below). Also do it if we have a volatile reference and
@@ -11878,24 +11997,46 @@ package body Exp_Util is
             | N_Task_Body
          =>
             return
-              Requires_Cleanup_Actions (Declarations (N), At_Lib_Level, True)
-                or else
-                  (Present (Handled_Statement_Sequence (N))
-                    and then
-                      Requires_Cleanup_Actions
-                        (Statements (Handled_Statement_Sequence (N)),
-                         At_Lib_Level, True));
+                Requires_Cleanup_Actions
+                  (L                 => Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True)
+              or else
+                (Present (Handled_Statement_Sequence (N))
+                  and then
+                    Requires_Cleanup_Actions
+                      (L                 =>
+                         Statements (Handled_Statement_Sequence (N)),
+                       Lib_Level         => At_Lib_Level,
+                       Nested_Constructs => True));
+
+         --  Extended return statements are the same as the above, except that
+         --  there is no Declarations field. We do not want to clean up the
+         --  Return_Object_Declarations.
+
+         when N_Extended_Return_Statement =>
+            return
+              Present (Handled_Statement_Sequence (N))
+                and then Requires_Cleanup_Actions
+                           (L                 =>
+                              Statements (Handled_Statement_Sequence (N)),
+                            Lib_Level         => At_Lib_Level,
+                            Nested_Constructs => True);
 
          when N_Package_Specification =>
             return
-              Requires_Cleanup_Actions
-                (Visible_Declarations (N), At_Lib_Level, True)
-                  or else
-              Requires_Cleanup_Actions
-                (Private_Declarations (N), At_Lib_Level, True);
+                Requires_Cleanup_Actions
+                  (L                 => Visible_Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True)
+              or else
+                Requires_Cleanup_Actions
+                  (L                 => Private_Declarations (N),
+                   Lib_Level         => At_Lib_Level,
+                   Nested_Constructs => True);
 
          when others =>
-            return False;
+            raise Program_Error;
       end case;
    end Requires_Cleanup_Actions;
 
@@ -12522,10 +12663,18 @@ package body Exp_Util is
 
          else
             Check_Restriction (No_Elaboration_Code, N);
+
             Asn :=
               Make_Assignment_Statement (Loc,
                 Name       => New_Occurrence_Of (Ent, Loc),
                 Expression => Make_Integer_Literal (Loc, Uint_1));
+
+            --  Mark the assignment statement as elaboration code. This allows
+            --  the early call region mechanism (see Sem_Elab) to properly
+            --  ignore such assignments even though they are non-preelaborable
+            --  code.
+
+            Set_Is_Elaboration_Code (Asn);
 
             if Nkind (Parent (N)) = N_Subunit then
                Insert_After (Corresponding_Stub (Parent (N)), Asn);

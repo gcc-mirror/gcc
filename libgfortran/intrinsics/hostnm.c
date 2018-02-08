@@ -1,5 +1,5 @@
 /* Implementation of the HOSTNM intrinsic.
-   Copyright (C) 2005-2017 Free Software Foundation, Inc.
+   Copyright (C) 2005-2018 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -88,8 +88,8 @@ w32_gethostname (char *name, size_t len)
 static int
 hostnm_0 (char *name, gfc_charlen_type name_len)
 {
-  int val, i;
   char p[HOST_NAME_MAX + 1];
+  int val;
 
   memset (name, ' ', name_len);
 
@@ -99,8 +99,7 @@ hostnm_0 (char *name, gfc_charlen_type name_len)
 
   if (val == 0)
   {
-    i = -1;
-    while (i < name_len && p[++i] != '\0')
+    for (gfc_charlen_type i = 0; i < name_len && p[i] != '\0'; i++)
       name[i] = p[i];
   }
 

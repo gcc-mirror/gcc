@@ -1,6 +1,6 @@
 // Special functions -*- C++ -*-
 
-// Copyright (C) 2006-2017 Free Software Foundation, Inc.
+// Copyright (C) 2006-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -377,8 +377,19 @@ namespace tr1
       const _Tp __absx = std::abs(__x);
       const _Tp __rootx = std::sqrt(__absx);
       const _Tp __z = _Tp(2) * __absx * __rootx / _Tp(3);
+      const _Tp _S_NaN = std::numeric_limits<_Tp>::quiet_NaN();
+      const _Tp _S_inf = std::numeric_limits<_Tp>::infinity();
 
-      if (__x > _Tp(0))
+      if (__isnan(__x))
+        __Bip = __Aip = __Bi = __Ai = std::numeric_limits<_Tp>::quiet_NaN();
+      else if (__z == _S_inf)
+        {
+	  __Aip = __Ai = _Tp(0);
+	  __Bip = __Bi = _S_inf;
+	}
+      else if (__z == -_S_inf)
+	__Bip = __Aip = __Bi = __Ai = _Tp(0);
+      else if (__x > _Tp(0))
         {
           _Tp __I_nu, __Ip_nu, __K_nu, __Kp_nu;
 

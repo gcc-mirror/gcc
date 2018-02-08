@@ -1,5 +1,5 @@
 /* Declarations for printing trees in human readable form
-   Copyright (C) 2013-2017 Free Software Foundation, Inc.
+   Copyright (C) 2013-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,6 @@ extern void debug_head (const tree_node &ref);
 extern void debug_head (const tree_node *ptr);
 extern void debug_body (const tree_node &ref);
 extern void debug_body (const tree_node *ptr);
-extern void debug_vec_tree (vec<tree, va_gc> *);
 extern void debug (vec<tree, va_gc> &ref);
 extern void debug (vec<tree, va_gc> *ptr);
 extern void debug_raw (vec<tree, va_gc> &ref);

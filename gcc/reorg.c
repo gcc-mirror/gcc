@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992-2017 Free Software Foundation, Inc.
+   Copyright (C) 1992-2018 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -3205,7 +3205,7 @@ relax_delay_slots (rtx_insn *first)
 	  && (other = prev_active_insn (insn)) != 0
 	  && any_condjump_p (other)
 	  && no_labels_between_p (other, insn)
-	  && 0 > mostly_true_jump (other))
+	  && mostly_true_jump (other) < 0)
 	{
 	  rtx other_target = JUMP_LABEL (other);
 	  target_label = JUMP_LABEL (insn);
@@ -3361,10 +3361,11 @@ relax_delay_slots (rtx_insn *first)
 	}
 
       /* See if we have a simple (conditional) jump that is useless.  */
-      if (! INSN_ANNULLED_BRANCH_P (delay_jump_insn)
-	  && ! condjump_in_parallel_p (delay_jump_insn)
+      if (!CROSSING_JUMP_P (delay_jump_insn)
+	  && !INSN_ANNULLED_BRANCH_P (delay_jump_insn)
+	  && !condjump_in_parallel_p (delay_jump_insn)
 	  && prev_active_insn (as_a<rtx_insn *> (target_label)) == insn
-	  && ! BARRIER_P (prev_nonnote_insn (as_a<rtx_insn *> (target_label)))
+	  && !BARRIER_P (prev_nonnote_insn (as_a<rtx_insn *> (target_label)))
 	  /* If the last insn in the delay slot sets CC0 for some insn,
 	     various code assumes that it is in a delay slot.  We could
 	     put it back where it belonged and delete the register notes,
@@ -3611,9 +3612,14 @@ make_return_insns (rtx_insn *first)
 
 	  delete_related_insns (insn);
 	  for (i = 1; i < XVECLEN (pat, 0); i++)
-	    prev = emit_insn_after (PATTERN (XVECEXP (pat, 0, i)), prev);
+	    {
+	      rtx_insn *in_seq_insn = as_a<rtx_insn *> (XVECEXP (pat, 0, i));
+	      prev = emit_insn_after_setloc (PATTERN (in_seq_insn), prev,
+					     INSN_LOCATION (in_seq_insn));
+	    }
 
-	  insn = emit_jump_insn_after (PATTERN (jump_insn), prev);
+	  insn = emit_jump_insn_after_setloc (PATTERN (jump_insn), prev,
+					      INSN_LOCATION (jump_insn));
 	  emit_barrier_after (insn);
 
 	  if (slots)

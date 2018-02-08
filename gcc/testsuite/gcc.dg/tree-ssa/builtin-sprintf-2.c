@@ -290,7 +290,7 @@ RNG (0,  6,   8, "%s%ls", "1", L"2");
 
 /*  Only conditional calls to must_not_eliminate must be made (with
     any probability):
-    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\] \\\[count: \[0-9INV\]*\\\]:\n *must_not_eliminate" 127 "optimized" { target { ilp32 || lp64 } } } }
-    { dg-final { scan-tree-dump-times "> \\\[\[0-9.\]+%\\\] \\\[count: \[0-9INV\]*\\\]:\n *must_not_eliminate" 96 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } }
+    { dg-final { scan-tree-dump-times "> \\\[local count: \[0-9INV\]*\\\]:\n *must_not_eliminate" 127 "optimized" { target { ilp32 || lp64 } } } }
+    { dg-final { scan-tree-dump-times "> \\\[local count: \[0-9INV\]*\\\]:\n *must_not_eliminate" 96 "optimized" { target { { ! ilp32 } && { ! lp64 } } } } }
     No unconditional calls to abort should be made:
     { dg-final { scan-tree-dump-not ";\n *must_not_eliminate" "optimized" } } */

@@ -5,8 +5,7 @@
 ! dimensions (normal + codimensions).
 !
 ! Fortran 2008 allows (co)arrays with 15 ranks
-! Currently, gfortran only supports 7, cf. PR 37577
-! Thus, the program is valid Fortran 2008 ...
+! Previously gfortran only supported 7, cf. PR 37577
 !
 ! See also general coarray PR 18918
 !
@@ -19,14 +18,20 @@ program ar
   integer :: ic(2)[*]
   integer :: id(2,2)[2,*]
   integer :: ie(2,2,2)[2,2,*]
-  integer :: ig(2,2,2,2)[2,2,2,*] ! { dg-error "has more than 7 dimensions" }
-  integer :: ih(2,2,2,2,2)[2,2,2,2,*] ! { dg-error "has more than 7 dimensions" }
-  integer :: ij(2,2,2,2,2,2)[2,2,2,2,2,*] ! { dg-error "has more than 7 dimensions" }
-  integer :: ik(2,2,2,2,2,2,2)[2,2,2,2,2,2,*] ! { dg-error "has more than 7 dimensions" }
-  integer :: il[2,2,2,2,2,2,2,*] ! { dg-error "has more than 7 dimensions" }
-  integer :: im[2,2,2,2,2,2,2,2,*] ! { dg-error "has more than 7 dimensions" }
-  integer :: in[2,2,2,2,2,2,2,2,2,*] ! { dg-error "has more than 7 dimensions" }
-  integer :: io[2,2,2,2,2,2,2,2,2,2,*] ! { dg-error "has more than 7 dimensions" }
+! Previously, these would give errors.
+  integer :: ig(2,2,2,2)[2,2,2,*]
+  integer :: ih(2,2,2,2,2)[2,2,2,2,*]
+  integer :: ij(2,2,2,2,2,2)[2,2,2,2,2,*]
+  integer :: ik(2,2,2,2,2,2,2)[2,2,2,2,2,2,*]
+  integer :: il[2,2,2,2,2,2,2,*] 
+  integer :: im[2,2,2,2,2,2,2,2,*]
+  integer :: in[2,2,2,2,2,2,2,2,2,*]
+  integer :: io[2,2,2,2,2,2,2,2,2,2,*]
+! Now with max dimensions 15.....
+  integer :: ip(2,2,2,2,2,2,2,2)[2,2,2,2,2,2,2,*] ! { dg-error "has more than 15 dimensions" }
+  integer :: iq[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,*] ! { dg-error "has more than 15 dimensions" }
+! Check a non-coarray
+  integer :: ir(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2) ! { dg-error "has more than 15 dimensions" }
    real :: x2(2,2,4)[2,*]
    complex :: c2(4,2)[2,*]
    double precision :: d2(1,5,9)[2,*]

@@ -7,8 +7,8 @@ toup (char X)
     return X;
 }
 
-char __attribute__ ((noipa))
-target_toup (char X)
+char
+target_toup_1 (char X)
 {
   char r;
 #pragma omp target map(to:X) map(from:r)
@@ -19,6 +19,12 @@ target_toup (char X)
       r = X;
   }
   return r;
+}
+
+char __attribute__ ((noipa))
+target_toup (char X)
+{
+  return target_toup_1 (X);
 }
 
 int main (int argc, char **argv)

@@ -1,5 +1,5 @@
 /* Single-image implementation of GNU Fortran Coarray Library
-   Copyright (C) 2011-2017 Free Software Foundation, Inc.
+   Copyright (C) 2011-2018 Free Software Foundation, Inc.
    Contributed by Tobias Burnus <burnus@net-b.de>
 
 This file is part of the GNU Fortran Coarray Runtime Library (libcaf).
@@ -332,8 +332,8 @@ _gfortran_caf_failed_images (gfc_descriptor_t *array,
   int local_kind = kind != NULL ? *kind : 4;
 
   array->base_addr = NULL;
-  array->dtype = ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT)
-		  | (local_kind << GFC_DTYPE_SIZE_SHIFT));
+  array->dtype.type = BT_INTEGER;
+  array->dtype.elem_len = local_kind;
    /* Setting lower_bound higher then upper_bound is what the compiler does to
       indicate an empty array.  */
   array->dim[0].lower_bound = 0;
@@ -354,8 +354,8 @@ _gfortran_caf_stopped_images (gfc_descriptor_t *array,
   int local_kind = kind != NULL ? *kind : 4;
 
   array->base_addr = NULL;
-  array->dtype =  ((BT_INTEGER << GFC_DTYPE_TYPE_SHIFT)
-		   | (local_kind << GFC_DTYPE_SIZE_SHIFT));
+  array->dtype.type =  BT_INTEGER;
+  array->dtype.elem_len =  local_kind;
   /* Setting lower_bound higher then upper_bound is what the compiler does to
      indicate an empty array.  */
   array->dim[0].lower_bound = 0;

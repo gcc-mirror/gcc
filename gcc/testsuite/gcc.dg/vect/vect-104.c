@@ -16,7 +16,6 @@ struct extraction
 static int a[N][N] = {{1,2,3},{4,5,6},{7,8,9}};
 static int b[N][N] = {{17,24,7},{0,2,3},{4,31,82}};
 static int c[N][N] = {{1,2,3},{4,5,5},{5,5,5}};
-volatile int foo;
 
 __attribute__ ((noinline))
 int main1 (int x) {
@@ -30,8 +29,7 @@ int main1 (int x) {
      {
        p->a[i][j] = a[i][j];
        p->b[i][j] = b[i][j];
-       if (foo == 135)
-	 abort (); /* to avoid vectorization  */
+       asm volatile ("" ::: "memory");
      }
    }
 
@@ -60,11 +58,10 @@ int main (void)
 { 
   check_vect ();
 
-  foo = 0;
   return main1 (N);
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 1 "vect" { target { ! vect_multiple_sizes } } } } */
-/* { dg-final { scan-tree-dump-times "possible dependence between data-refs" 2 "vect" { target vect_multiple_sizes } } } */
+/* { dg-final { scan-tree-dump "possible dependence between data-refs" "vect" { target vect_multiple_sizes } } } */
 

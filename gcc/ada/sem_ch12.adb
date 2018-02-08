@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1279,8 +1279,8 @@ package body Sem_Ch12 is
                if No (Formal) then
                   Error_Msg_Sloc := Sloc (Node (Elem));
                   Error_Msg_NE
-                    ("?instance does not use primitive operation&#",
-                      Actual, Node (Elem));
+                    ("?instance uses predefined operation, not primitive "
+                     & "operation&#", Actual, Node (Elem));
                end if;
             end if;
 
@@ -1717,7 +1717,16 @@ package body Sem_Ch12 is
                           (Formal, Match, Analyzed_Formal, Assoc_List),
                         Assoc_List);
 
-                     if Is_Fixed_Point_Type (Entity (Match)) then
+                     --  Warn when an actual is a fixed-point with user-
+                     --  defined promitives. The warning is superfluous
+                     --  if the fornal is private, because there can be
+                     --  no arithmetic operations in the generic so there
+                     --  no danger of confusion.
+
+                     if Is_Fixed_Point_Type (Entity (Match))
+                       and then not Is_Private_Type
+                                      (Defining_Identifier (Analyzed_Formal))
+                     then
                         Check_Fixed_Point_Actual (Match);
                      end if;
 
@@ -3466,9 +3475,9 @@ package body Sem_Ch12 is
    ------------------------------------------
 
    procedure Analyze_Generic_Package_Declaration (N : Node_Id) is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Decls       : constant List_Id :=
-                      Visible_Declarations (Specification (N));
+      Decls : constant List_Id    := Visible_Declarations (Specification (N));
+      Loc   : constant Source_Ptr := Sloc (N);
+
       Decl        : Node_Id;
       Id          : Entity_Id;
       New_N       : Node_Id;
@@ -3492,9 +3501,20 @@ package body Sem_Ch12 is
           Name               =>
             Make_Identifier (Loc, Chars (Defining_Entity (N))));
 
+      --  The declaration is inserted before other declarations, but before
+      --  pragmas that may be library-unit pragmas and must appear before other
+      --  declarations. The pragma Compile_Time_Error is not in this class, and
+      --  may contain an expression that includes such a qualified name, so the
+      --  renaming declaration must appear before it.
+
+      --  Are there other pragmas that require this special handling ???
+
       if Present (Decls) then
          Decl := First (Decls);
-         while Present (Decl) and then Nkind (Decl) = N_Pragma loop
+         while Present (Decl)
+           and then Nkind (Decl) = N_Pragma
+           and then Get_Pragma_Id (Decl) /= Pragma_Compile_Time_Error
+         loop
             Next (Decl);
          end loop;
 
@@ -3932,10 +3952,11 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Level  => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Level    => True,
+         Modes    => True,
+         Warnings => True);
 
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
@@ -4599,6 +4620,19 @@ package body Sem_Ch12 is
             Analyze (Act_Decl);
             Set_Unit (Parent (N), N);
             Set_Body_Required (Parent (N), False);
+
+            --  We never need elaboration checks on instantiations, since by
+            --  definition, the body instantiation is elaborated at the same
+            --  time as the spec instantiation.
+
+            if Legacy_Elaboration_Checks then
+               Set_Kill_Elaboration_Checks       (Act_Decl_Id);
+               Set_Suppress_Elaboration_Warnings (Act_Decl_Id);
+            end if;
+         end if;
+
+         if Legacy_Elaboration_Checks then
+            Check_Elab_Instantiation (N);
          end if;
 
          --  Save the scenario for later examination by the ABE Processing
@@ -4761,7 +4795,7 @@ package body Sem_Ch12 is
       Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
 
       Curr_Scope  : Entity_Id := Empty;
-      List        : Elist_Id;
+      List        : Elist_Id := No_Elist; -- init to avoid warning
       N_Instances : Nat := 0;
       Num_Inner   : Nat := 0;
       Num_Scopes  : Nat := 0;
@@ -5130,13 +5164,14 @@ package body Sem_Ch12 is
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Gen_Id : constant Node_Id    := Name (N);
+      Errs   : constant Nat        := Serious_Errors_Detected;
 
       Anon_Id : constant Entity_Id :=
                   Make_Defining_Identifier (Sloc (Defining_Entity (N)),
                     Chars => New_External_Name
                                (Chars (Defining_Entity (N)), 'R'));
 
-      Act_Decl_Id : Entity_Id;
+      Act_Decl_Id : Entity_Id := Empty; -- init to avoid warning
       Act_Decl    : Node_Id;
       Act_Spec    : Node_Id;
       Act_Tree    : Node_Id;
@@ -5287,9 +5322,17 @@ package body Sem_Ch12 is
          Set_Is_Eliminated (Anon_Id, Is_Eliminated (Act_Decl_Id));
 
          if Nkind (Parent (N)) = N_Compilation_Unit then
-            Set_Kill_Elaboration_Checks       (Act_Decl_Id);
-            Set_Is_Compilation_Unit (Anon_Id);
 
+            --  In compilation unit case, kill elaboration checks on the
+            --  instantiation, since they are never needed - the body is
+            --  instantiated at the same point as the spec.
+
+            if Legacy_Elaboration_Checks then
+               Set_Kill_Elaboration_Checks       (Act_Decl_Id);
+               Set_Suppress_Elaboration_Warnings (Act_Decl_Id);
+            end if;
+
+            Set_Is_Compilation_Unit (Anon_Id);
             Set_Cunit_Entity (Current_Sem_Unit, Pack_Id);
          end if;
 
@@ -5381,10 +5424,11 @@ package body Sem_Ch12 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id   => N,
-         Checks => True,
-         Level  => True,
-         Modes  => True);
+        (N_Id     => N,
+         Checks   => True,
+         Level    => True,
+         Modes    => True,
+         Warnings => True);
 
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
@@ -5638,6 +5682,12 @@ package body Sem_Ch12 is
             Set_Ignore_SPARK_Mode_Pragmas (Anon_Id);
          end if;
 
+         if Legacy_Elaboration_Checks
+           and then not Is_Intrinsic_Subprogram (Gen_Unit)
+         then
+            Check_Elab_Instantiation (N);
+         end if;
+
          --  Save the scenario for later examination by the ABE Processing
          --  phase.
 
@@ -5723,7 +5773,9 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) then
+      --  Analyze aspects in declaration if no errors appear in the instance.
+
+      if Has_Aspects (N) and then Serious_Errors_Detected = Errs then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
@@ -5895,8 +5947,7 @@ package body Sem_Ch12 is
                     Present (Next_Formal (First_Formal (Formal_Subp)));
 
       Decl    : Node_Id;
-      Expr    : Node_Id;
-      pragma Warnings (Off, Expr);
+      Expr    : Node_Id := Empty;
       F1, F2  : Entity_Id;
       Func    : Entity_Id;
       Op_Name : Name_Id;
@@ -9064,8 +9115,8 @@ package body Sem_Ch12 is
                   Clause := First (Current_Context);
                   OK := True;
                   while Present (Clause) loop
-                     if Nkind (Clause) = N_With_Clause and then
-                       Library_Unit (Clause) = Lib_Unit
+                     if Nkind (Clause) = N_With_Clause
+                       and then Library_Unit (Clause) = Lib_Unit
                      then
                         OK := False;
                         exit;
@@ -9076,8 +9127,8 @@ package body Sem_Ch12 is
 
                   if OK then
                      New_I := New_Copy (Item);
-                     Set_Implicit_With (New_I, True);
-                     Set_Implicit_With_From_Instantiation (New_I, True);
+                     Set_Implicit_With (New_I);
+
                      Append (New_I, Current_Context);
                   end if;
                end if;

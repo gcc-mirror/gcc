@@ -1,6 +1,6 @@
 /* Integer multiplication routines for RISC-V.
 
-   Copyright (C) 2016-2017 Free Software Foundation, Inc.
+   Copyright (C) 2016-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,6 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "riscv-asm.h"
+
   .text
   .align 2
 
@@ -31,8 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __muldi3 __mulsi3
 #endif
 
-  .globl __muldi3
-__muldi3:
+FUNC_BEGIN (__muldi3)
   mv     a2, a0
   li     a0, 0
 .L1:
@@ -44,3 +45,4 @@ __muldi3:
   slli   a2, a2, 1
   bnez   a1, .L1
   ret
+FUNC_END (__muldi3)

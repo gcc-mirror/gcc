@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2018, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -107,6 +107,11 @@ package body Sem_Ch5 is
       --  N is the node for the left hand side of an assignment, and it is not
       --  a variable. This routine issues an appropriate diagnostic.
 
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean;
+      --  Determine whether arbitrary node Nod denotes a Part_Of constituent of
+      --  a single protected type.
+
       procedure Kill_Lhs;
       --  This is called to kill current value settings of a simple variable
       --  on the left hand side. We call it if we find any error in analyzing
@@ -141,6 +146,10 @@ package body Sem_Ch5 is
       --  assignment statements that are really initializations. These are
       --  marked No_Ctrl_Actions.
 
+      function Within_Function return Boolean;
+      --  Determine whether the current scope is a function or appears within
+      --  one.
+
       -------------------------------
       -- Diagnose_Non_Variable_Lhs --
       -------------------------------
@@ -170,11 +179,7 @@ package body Sem_Ch5 is
                --  of single protected types, the private component appears
                --  directly.
 
-               elsif (Is_Prival (Ent)
-                       and then
-                         (Ekind (Current_Scope) = E_Function
-                           or else Ekind (Enclosing_Dynamic_Scope
-                                            (Current_Scope)) = E_Function))
+               elsif (Is_Prival (Ent) and then Within_Function)
                    or else
                      (Ekind (Ent) = E_Component
                        and then Is_Protected_Type (Scope (Ent)))
@@ -221,6 +226,39 @@ package body Sem_Ch5 is
 
          Error_Msg_N ("left hand side of assignment must be a variable", N);
       end Diagnose_Non_Variable_Lhs;
+
+      --------------------------------------
+      -- Is_Protected_Part_Of_Constituent --
+      --------------------------------------
+
+      function Is_Protected_Part_Of_Constituent
+        (Nod : Node_Id) return Boolean
+      is
+         Encap_Id : Entity_Id;
+         Var_Id   : Entity_Id;
+
+      begin
+         --  Abstract states and variables may act as Part_Of constituents of
+         --  single protected types, however only variables can be modified by
+         --  an assignment.
+
+         if Is_Entity_Name (Nod) then
+            Var_Id := Entity (Nod);
+
+            if Present (Var_Id) and then Ekind (Var_Id) = E_Variable then
+               Encap_Id := Encapsulating_State (Var_Id);
+
+               --  To qualify, the node must denote a reference to a variable
+               --  whose encapsulating state is a single protected object.
+
+               return
+                 Present (Encap_Id)
+                   and then Is_Single_Protected_Object (Encap_Id);
+            end if;
+         end if;
+
+         return False;
+      end Is_Protected_Part_Of_Constituent;
 
       --------------
       -- Kill_Lhs --
@@ -386,12 +424,31 @@ package body Sem_Ch5 is
          Insert_Action (N, Obj_Decl);
       end Transform_BIP_Assignment;
 
+      ---------------------
+      -- Within_Function --
+      ---------------------
+
+      function Within_Function return Boolean is
+         Scop_Id : constant Entity_Id := Current_Scope;
+
+      begin
+         if Ekind (Scop_Id) = E_Function then
+            return True;
+
+         elsif Ekind (Enclosing_Dynamic_Scope (Scop_Id)) = E_Function then
+            return True;
+         end if;
+
+         return False;
+      end Within_Function;
+
       --  Local variables
 
       T1 : Entity_Id;
       T2 : Entity_Id;
 
-      Save_Full_Analysis : Boolean;
+      Save_Full_Analysis : Boolean := False;
+      --  Force initialization to facilitate static analysis
 
       Saved_GM : constant Ghost_Mode_Type := Ghost_Mode;
       --  Save the Ghost mode to restore on exit
@@ -551,6 +608,46 @@ package body Sem_Ch5 is
       --  in-place.
 
       if Should_Transform_BIP_Assignment (Typ => T1) then
+
+         --  In certain cases involving user-defined concatenation operators,
+         --  we need to resolve the right-hand side before transforming the
+         --  assignment.
+
+         case Nkind (Unqual_Conv (Rhs)) is
+            when N_Function_Call =>
+               declare
+                  Actual     : Node_Id :=
+                    First (Parameter_Associations (Unqual_Conv (Rhs)));
+                  Actual_Exp : Node_Id;
+
+               begin
+                  while Present (Actual) loop
+                     if Nkind (Actual) = N_Parameter_Association then
+                        Actual_Exp := Explicit_Actual_Parameter (Actual);
+                     else
+                        Actual_Exp := Actual;
+                     end if;
+
+                     if Nkind (Actual_Exp) = N_Op_Concat then
+                        Resolve (Rhs, T1);
+                        exit;
+                     end if;
+
+                     Next (Actual);
+                  end loop;
+               end;
+
+            when N_Attribute_Reference
+               | N_Expanded_Name
+               | N_Identifier
+               | N_Op
+            =>
+               null;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
          Transform_BIP_Assignment (Typ => T1);
       end if;
 
@@ -670,6 +767,15 @@ package body Sem_Ch5 is
       elsif Is_Abstract_Type (T1) and then Comes_From_Source (N) then
          Error_Msg_N
            ("target of assignment operation must not be abstract", Lhs);
+      end if;
+
+      --  Variables which are Part_Of constituents of single protected types
+      --  behave in similar fashion to protected components. Such variables
+      --  cannot be modified by protected functions.
+
+      if Is_Protected_Part_Of_Constituent (Lhs) and then Within_Function then
+         Error_Msg_N
+           ("protected function cannot modify protected object", Lhs);
       end if;
 
       --  Resolution may have updated the subtype, in case the left-hand side
@@ -945,6 +1051,14 @@ package body Sem_Ch5 is
         and then (not Has_Size_Clause (T1) or else Esize (T1) > 64)
       then
          Error_Msg_CRT ("composite assignment", N);
+      end if;
+
+      --  Check elaboration warning for left side if not in elab code
+
+      if Legacy_Elaboration_Checks
+        and not In_Subprogram_Or_Concurrent_Unit
+      then
+         Check_Elab_Assign (Lhs);
       end if;
 
       --  Save the scenario for later examination by the ABE Processing phase

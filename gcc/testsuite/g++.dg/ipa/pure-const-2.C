@@ -15,7 +15,7 @@ static int b(void)
 {
   return a();
 }
-main()
+int main()
 {
   int aa;
   ptr = &barvar;

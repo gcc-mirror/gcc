@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2017 Free Software Foundation, Inc.
+   Copyright (C) 1988-2018 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,7 +52,7 @@ extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
 extern rtx standard_80387_constant_rtx (int);
 extern int standard_sse_constant_p (rtx, machine_mode);
-extern const char *standard_sse_constant_opcode (rtx_insn *, rtx);
+extern const char *standard_sse_constant_opcode (rtx_insn *, rtx *);
 extern bool ix86_standard_x87sse_constant_load_p (const rtx_insn *, rtx);
 extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
@@ -133,7 +133,6 @@ extern bool ix86_expand_fp_movcc (rtx[]);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_vec_perm (rtx[]);
-extern bool ix86_expand_vec_perm_const (rtx[]);
 extern bool ix86_expand_mask_vec_cmp (rtx[]);
 extern bool ix86_expand_int_vec_cmp (rtx[]);
 extern bool ix86_expand_fp_vec_cmp (rtx[]);
@@ -157,8 +156,6 @@ extern rtx assign_386_stack_local (machine_mode, enum ix86_stack_slot);
 extern int ix86_attr_length_immediate_default (rtx_insn *, bool);
 extern int ix86_attr_length_address_default (rtx_insn *);
 extern int ix86_attr_length_vex_default (rtx_insn *, bool, bool);
-
-extern machine_mode ix86_fp_compare_mode (enum rtx_code);
 
 extern rtx ix86_libcall_value (machine_mode);
 extern bool ix86_function_arg_regno_p (int);
@@ -277,8 +274,6 @@ extern bool i386_pe_type_dllexport_p (tree);
 
 extern int i386_pe_reloc_rw_mask (void);
 
-extern rtx maybe_get_pool_constant (rtx);
-
 extern char internal_label_prefix[16];
 extern int internal_label_prefix_len;
 
@@ -310,6 +305,8 @@ extern enum attr_cpu ix86_schedule;
 #endif
 
 extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
+extern const char * ix86_output_indirect_jmp (rtx call_op, bool ret_p);
+extern const char * ix86_output_function_return (bool long_p);
 extern bool ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
 						machine_mode mode);
 extern int ix86_min_insn_size (rtx_insn *);
@@ -327,6 +324,8 @@ extern void ix86_bd_do_dispatch (rtx_insn *insn, int mode);
 extern void ix86_core2i7_init_hooks (void);
 
 extern int ix86_atom_sched_reorder (FILE *, int, rtx_insn **, int *, int);
+
+extern poly_int64 ix86_push_rounding (poly_int64);
 
 #ifdef RTX_CODE
 /* Target data for multipass lookahead scheduling.

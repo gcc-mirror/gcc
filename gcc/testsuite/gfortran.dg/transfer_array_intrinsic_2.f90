@@ -88,7 +88,7 @@ contains
      ch(1:2) = transfer (y, ch, 2)
      if (any (ch(1:2) .ne. (/"ABCD","EFGH"/))) call abort ()
 
-     z = transfer (ch, y)
+     z = transfer (ch, y, 2)
      if (any (y(1:2) .ne. z)) call abort ()
 
    end subroutine test2

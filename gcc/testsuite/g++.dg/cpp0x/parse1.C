@@ -2,4 +2,4 @@
 // { dg-do compile { target c++11 } }
 
 typedef int B;			// { dg-message "" }
-B::B() {}			// { dg-error "" }
+B::B() { return 0; }		// { dg-error "" }

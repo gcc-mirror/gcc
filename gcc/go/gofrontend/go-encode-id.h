@@ -9,10 +9,9 @@
 
 #include "backend.h"
 
-// Given an identifier corresponding to a function or variable,
-// this helper returns TRUE if the identifier needs special
-// encoding to be used as an ASM name (symbol), FALSE if the name
-// is OK as is.
+// Given an identifier that will appear in assembly code, this helper
+// returns TRUE if the identifier needs special encoding to be used as
+// an ASM name, FALSE if the name is OK as is.
 extern bool
 go_id_needs_encoding(const std::string& str);
 
@@ -22,9 +21,12 @@ extern std::string
 go_encode_id(const std::string &id);
 
 // Returns the empty string if the specified name needs encoding,
-// otherwise invokes go_encode_id() on the name and returns the
-// result.
+// otherwise invokes go_encode_id on the name and returns the result.
 extern std::string
 go_selectively_encode_id(const std::string &id);
+
+// Encodes a struct tag that appears in a type literal encoding.
+extern std::string
+go_mangle_struct_tag(const std::string& tag);
 
 #endif // !defined(GO_ENCODE_ID_H)
