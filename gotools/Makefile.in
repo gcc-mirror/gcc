@@ -348,7 +348,7 @@ MOSTLYCLEANFILES = \
 @NATIVE_TRUE@GOTESTFLAGS = 
 
 # Number of seconds before tests time out.
-@NATIVE_TRUE@GOTOOLS_TEST_TIMEOUT = 240
+@NATIVE_TRUE@GOTOOLS_TEST_TIMEOUT = 480
 
 # CHECK_ENV sets up the environment to run the newly built go tool.
 # If you change this, change ECHO_ENV, below.
@@ -635,8 +635,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@NATIVE_FALSE@install-exec-local:
 @NATIVE_FALSE@uninstall-local:
+@NATIVE_FALSE@install-exec-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-noinstPROGRAMS \
