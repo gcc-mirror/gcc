@@ -1,5 +1,9 @@
 2018-02-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/84252
+	* var-tracking.c (vt_add_function_parameter): Punt for non-onepart
+	PARALLEL incoming that failed vt_get_decl_and_offset check.
+
 	PR middle-end/84237
 	* output.h (bss_initializer_p): Add NAMED argument, defaulted to false.
 	* varasm.c (bss_initializer_p): Add NAMED argument, if true, ignore

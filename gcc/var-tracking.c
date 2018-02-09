@@ -9653,6 +9653,7 @@ vt_add_function_parameter (tree parm)
   poly_int64 offset;
   dataflow_set *out;
   decl_or_value dv;
+  bool incoming_ok = true;
 
   if (TREE_CODE (parm) != PARM_DECL)
     return;
@@ -9743,6 +9744,7 @@ vt_add_function_parameter (tree parm)
 
   if (!vt_get_decl_and_offset (incoming, &decl, &offset))
     {
+      incoming_ok = false;
       if (MEM_P (incoming))
 	{
 	  /* This means argument is passed by invisible reference.  */
@@ -9861,6 +9863,10 @@ vt_add_function_parameter (tree parm)
     {
       int i;
 
+      /* The following code relies on vt_get_decl_and_offset returning true for
+	 incoming, which might not be always the case.  */
+      if (!incoming_ok)
+	return;
       for (i = 0; i < XVECLEN (incoming, 0); i++)
 	{
 	  rtx reg = XEXP (XVECEXP (incoming, 0, i), 0);
