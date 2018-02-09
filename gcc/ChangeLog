@@ -1,3 +1,98 @@
+2018-02-09  Alexandre Oliva <aoliva@redhat.com>
+
+	* common.opt (gvariable-location-views): New.
+	(gvariable-location-views=incompat5): New.
+	* config.in: Rebuilt.
+	* configure: Rebuilt.
+	* configure.ac: Test assembler for view support.
+	* dwarf2asm.c (dw2_asm_output_symname_uleb128): New.
+	* dwarf2asm.h (dw2_asm_output_symname_uleb128): Declare.
+	* dwarf2out.c (var_loc_view): New typedef.
+	(struct dw_loc_list_struct): Add vl_symbol, vbegin, vend.
+	(dwarf2out_locviews_in_attribute): New.
+	(dwarf2out_locviews_in_loclist): New.
+	(dw_val_equal_p): Compare val_view_list of dw_val_class_view_lists.
+	(enum dw_line_info_opcode): Add LI_adv_address.
+	(struct dw_line_info_table): Add view.
+	(RESET_NEXT_VIEW, RESETTING_VIEW_P): New macros.
+	(DWARF2_ASM_VIEW_DEBUG_INFO): Define default.
+	(zero_view_p): New variable.
+	(ZERO_VIEW_P): New macro.
+	(output_asm_line_debug_info): New.
+	(struct var_loc_node): Add view.
+	(add_AT_view_list, AT_loc_list): New.
+	(add_var_loc_to_decl): Add view param.  Test it against last.
+	(new_loc_list): Add view params.  Record them.
+	(AT_loc_list_ptr): Handle loc and view lists.
+	(view_list_to_loc_list_val_node): New.
+	(print_dw_val): Handle dw_val_class_view_list.
+	(size_of_die): Likewise.
+	(value_format): Likewise.
+	(loc_list_has_views): New.
+	(gen_llsym): Set vl_symbol too.
+	(maybe_gen_llsym, skip_loc_list_entry): New.
+	(dwarf2out_maybe_output_loclist_view_pair): New.
+	(output_loc_list): Output view list or entries too.
+	(output_view_list_offset): New.
+	(output_die): Handle dw_val_class_view_list.
+	(output_dwarf_version): New.
+	(output_compilation_unit_header): Use it.
+	(output_skeleton_debug_sections): Likewise.
+	(output_rnglists, output_line_info): Likewise.
+	(output_pubnames, output_aranges): Update version comments.
+	(output_one_line_info_table): Output view numbers in asm comments.
+	(dw_loc_list): Determine current endview, pass it to new_loc_list.
+	Call maybe_gen_llsym.
+	(loc_list_from_tree_1): Adjust.
+	(add_AT_location_description): Create view list attribute if
+	needed, check it's absent otherwise.
+	(convert_cfa_to_fb_loc_list): Adjust.
+	(maybe_emit_file): Call output_asm_line_debug_info for test.
+	(dwarf2out_var_location): Reset views as needed.  Precompute
+	add_var_loc_to_decl args.  Call get_attr_min_length only if we have the
+	attribute.  Set view.
+	(new_line_info_table): Reset next view.
+	(set_cur_line_info_table): Call output_asm_line_debug_info for test.
+	(dwarf2out_source_line): Likewise.  Output view resets and labels to
+	the assembler, or select appropriate line info opcodes.
+	(prune_unused_types_walk_attribs): Handle dw_val_class_view_list.
+	(optimize_string_length): Catch it.  Adjust.
+	(resolve_addr): Copy vl_symbol along with ll_symbol.  Handle
+	dw_val_class_view_list, and remove it if no longer needed.
+	(hash_loc_list): Hash view numbers.
+	(loc_list_hasher::equal): Compare them.
+	(optimize_location_lists): Check whether a view list symbol is
+	needed, and whether the locview attribute is present, and
+	whether they match.  Remove the locview attribute if no longer
+	needed.
+	(index_location_lists): Call skip_loc_list_entry for test.
+	(dwarf2out_finish): Call output_asm_line_debug_info for test.
+	Use output_dwarf_version.
+	* dwarf2out.h (enum dw_val_class): Add dw_val_class_view_list.
+	(struct dw_val_node): Add val_view_list.
+	* final.c (SEEN_NEXT_VIEW): New.
+	(set_next_view_needed): New.
+	(clear_next_view_needed): New.
+	(maybe_output_next_view): New.
+	(final_start_function): Rename to...
+	(final_start_function_1): ... this.  Take pointer to FIRST,
+	add SEEN parameter.  Emit param bindings in the initial view.
+	(final_start_function): Reintroduce SEEN-less interface.
+	(final): Rename to...
+	(final_1): ... this.  Take SEEN parameter.  Output final pending
+	next view at the end.
+	(final): Reintroduce seen-less interface.
+	(final_scan_insn): Output pending next view before switching
+	sections or ending a block.  Mark the next view as needed when
+	outputting variable locations.  Notify debug backend of section
+	changes, and of location view changes.
+	(rest_of_handle_final): Adjust.
+	* toplev.c (process_options): Autodetect value for debug variable
+	location views option.  Warn on incompat5 without -gdwarf-5.
+	* doc/invoke.texi (gvariable-location-views): New.
+	(gvariable-location-views=incompat5): New.
+	(gno-variable-location-views): New.
+
 2018-02-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/84136
