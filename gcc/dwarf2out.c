@@ -26235,6 +26235,23 @@ dwarf2out_early_global_decl (tree decl)
   symtab->global_info_ready = save;
 }
 
+/* Return whether EXPR is an expression with the following pattern:
+   INDIRECT_REF (NOP_EXPR (INTEGER_CST)).  */
+
+static bool
+is_trivial_indirect_ref (tree expr)
+{
+  if (expr == NULL_TREE || TREE_CODE (expr) != INDIRECT_REF)
+    return false;
+
+  tree nop = TREE_OPERAND (expr, 0);
+  if (nop == NULL_TREE || TREE_CODE (nop) != NOP_EXPR)
+    return false;
+
+  tree int_cst = TREE_OPERAND (nop, 0);
+  return int_cst != NULL_TREE && TREE_CODE (int_cst) == INTEGER_CST;
+}
+
 /* Output debug information for global decl DECL.  Called from
    toplev.c after compilation proper has finished.  */
 
@@ -26259,11 +26276,17 @@ dwarf2out_late_global_decl (tree decl)
       if (die)
 	{
 	  /* We get called via the symtab code invoking late_global_decl
-	     for symbols that are optimized out.  Do not add locations
-	     for those, except if they have a DECL_VALUE_EXPR, in which case
-	     they are relevant for debuggers.  */
+	     for symbols that are optimized out.
+
+	     Do not add locations for those, except if they have a
+	     DECL_VALUE_EXPR, in which case they are relevant for debuggers.
+	     Still don't add a location if the DECL_VALUE_EXPR is not a trivial
+	     INDIRECT_REF expression, as this could generate relocations to
+	     text symbols in LTO object files, which is invalid.  */
 	  varpool_node *node = varpool_node::get (decl);
-	  if ((! node || ! node->definition) && ! DECL_HAS_VALUE_EXPR_P (decl))
+	  if ((! node || ! node->definition)
+	      && ! (DECL_HAS_VALUE_EXPR_P (decl)
+		    && is_trivial_indirect_ref (DECL_VALUE_EXPR (decl))))
 	    tree_add_const_value_attribute_for_decl (die, decl);
 	  else
 	    add_location_or_const_value_attribute (die, decl, false);
