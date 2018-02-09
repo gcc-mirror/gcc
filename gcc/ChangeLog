@@ -1,3 +1,11 @@
+2018-02-09  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR lto/84213
+	* dwarf2out.c (is_trivial_indirect_ref): New function.
+	(dwarf2out_late_global_decl): Do not generate a location
+	attribute for variables that have a non-trivial DECL_VALUE_EXPR
+	and that are not defined in the current unit.
+
 2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* optabs.c (prepare_cmp_insn): Try harder to emit a direct comparison
