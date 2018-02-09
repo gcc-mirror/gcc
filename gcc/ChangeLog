@@ -1,3 +1,10 @@
+2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rx/constraints.md: added new constraint CALL_OP_SYMBOL_REF 
+	to allow or block "symbol_ref" depending on value of TARGET_JSR
+	* config/rx/rx.md: use CALL_OP_SYMBOL_REF in call_internal and 
+	call_value_internal insns
+
 2018-02-09  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR lto/84213
