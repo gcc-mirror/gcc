@@ -4902,9 +4902,25 @@ if test x"$insn" != x; then
 
  if test $gcc_cv_as_dwarf2_debug_line = yes \
  && test $gcc_cv_as_dwarf2_file_buggy = no; then
-	AC_DEFINE(HAVE_AS_DWARF2_DEBUG_LINE, 1,
+    AC_DEFINE(HAVE_AS_DWARF2_DEBUG_LINE, 1,
   [Define if your assembler supports dwarf2 .file/.loc directives,
    and preserves file table indices exactly as given.])
+
+    if test $gcc_cv_as_leb128 = yes; then
+	conftest_s="\
+	.file 1 \"conftest.s\"
+	.loc 1 3 0 view .LVU1
+	$insn
+	.data
+	.uleb128 .LVU1
+	.uleb128 .LVU1
+"
+	gcc_GAS_CHECK_FEATURE([dwarf2 debug_view support],
+	  gcc_cv_as_dwarf2_debug_view,
+	  [elf,2,27,0],,[$conftest_s],,
+	  [AC_DEFINE(HAVE_AS_DWARF2_DEBUG_VIEW, 1,
+  [Define if your assembler supports views in dwarf2 .loc directives.])])
+    fi
  fi
 
  gcc_GAS_CHECK_FEATURE([--gdwarf2 option],

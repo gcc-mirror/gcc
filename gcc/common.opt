@@ -2956,6 +2956,13 @@ gtoggle
 Common Driver Report Var(flag_gtoggle)
 Toggle debug information generation.
 
+gvariable-location-views
+Common Driver Var(debug_variable_location_views, 1) Init(2)
+Augment variable location lists with progressive views.
+
+gvariable-location-views=incompat5
+Common Driver RejectNegative Var(debug_variable_location_views, -1) Init(2)
+
 gvms
 Common Driver JoinedOrMissing Negative(gxcoff)
 Generate debug information in VMS format.

@@ -348,6 +348,7 @@ Objective-C and Objective-C++ Dialects}.
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
 -gcolumn-info  -gno-column-info @gol
 -gstatement-frontiers  -gno-statement-frontiers @gol
+-gvariable-location-views  -gno-variable-location-views @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
@@ -7254,6 +7255,34 @@ throughout compilation, using them to guide the output of @code{is_stmt}
 markers in the line number table.  This is enabled by default when
 compiling with optimization (@option{-Os}, @option{-O}, @option{-O2},
 @dots{}), and outputting DWARF 2 debug information at the normal level.
+
+@item -gvariable-location-views
+@item -gvariable-location-views=incompat5
+@item -gno-variable-location-views
+@opindex gvariable-location-views
+@opindex gvariable-location-views=incompat5
+@opindex gno-variable-location-views
+Augment variable location lists with progressive view numbers implied
+from the line number table.  This enables debug information consumers to
+inspect state at certain points of the program, even if no instructions
+associated with the corresponding source locations are present at that
+point.  If the assembler lacks support for view numbers in line number
+tables, this will cause the compiler to emit the line number table,
+which generally makes them somewhat less compact.  The augmented line
+number tables and location lists are fully backward-compatible, so they
+can be consumed by debug information consumers that are not aware of
+these augmentations, but they won't derive any benefit from them either.
+This is enabled by default when outputting DWARF 2 debug information at
+the normal level, as long as @option{-fvar-tracking-assignments} is
+enabled and @option{-gstrict-dwarf} is not.
+
+There is a proposed representation for view numbers that is not backward
+compatible with the location list format introduced in DWARF 5, that can
+be enabled with @option{-gvariable-location-views=incompat5}.  This
+option may be removed in the future, is only provided as a reference
+implementation of the proposed representation.  Debug information
+consumers are not expected to support this extended format, and they
+would be rendered unable to decode location lists using it.
 
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz
