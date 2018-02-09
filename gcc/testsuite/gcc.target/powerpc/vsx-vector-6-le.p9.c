@@ -1,18 +1,18 @@
 /* { dg-do compile { target { powerpc64le-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mvsx -O2 -mcpu=power8" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
+/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-options "-mvsx -O2 -mcpu=power9" } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 
-/* Expected instruction counts for Little Endian targeting Power8. */
+/* Expected instruction counts for Little Endian targeting Power9. */
 
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */
-/* { dg-final { scan-assembler-times "xxlnor" 8 } } */
-/* { dg-final { scan-assembler-times "xxlor" 30 } } */
+/* { dg-final { scan-assembler-times "xxlnor" 7 } } */
+/* { dg-final { scan-assembler-times "xxlor" 20 } } */
 /* { dg-final { scan-assembler-times "xvcmpeqdp" 5 } } */
 /* { dg-final { scan-assembler-times "xvcmpgtdp" 8 } } */
-/* { dg-final { scan-assembler-times "xvcmpgedp" 6 } } */
+/* { dg-final { scan-assembler-times "xvcmpgedp" 8 } } */
 /* { dg-final { scan-assembler-times "xvrdpim" 1 } } */
 /* { dg-final { scan-assembler-times "xvmaddadp" 1 } } */
 /* { dg-final { scan-assembler-times "xvmsubadp" 1 } } */
