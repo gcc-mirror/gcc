@@ -1,7 +1,20 @@
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84226
+	* config/rs6000/vsx.md (p9_xxbrq_v16qi): Change input operand
+	constraint from =wa to wa.  Avoid a subreg on the output operand,
+	instead use a pseudo and subreg it in a move.
+	(p9_xxbrd_<mode>): Changed to ...
+	(p9_xxbrd_v2di): ... this insn, without VSX_D iterator.
+	(p9_xxbrd_v2df): New expander.
+	(p9_xxbrw_<mode>): Changed to ...
+	(p9_xxbrw_v4si): ... this insn, without VSX_W iterator.
+	(p9_xxbrw_v4sf): New expander.
+
 2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	*config/rx.md: updated "movsicc" expand to be matched by GCC
-	*testsuite/gcc.target/rx/movsicc.c: new test case
+	* config/rx.md: updated "movsicc" expand to be matched by GCC
+	* testsuite/gcc.target/rx/movsicc.c: new test case
 
 2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 

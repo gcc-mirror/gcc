@@ -1,3 +1,8 @@
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84226
+	* gcc.target/powerpc/pr84226.c: New test.
+
 2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/builtins-1-be.c <vclzb>: Rename duplicate test
