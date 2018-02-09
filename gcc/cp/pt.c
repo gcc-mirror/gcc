@@ -10347,14 +10347,14 @@ instantiate_class_template_1 (tree type)
   templ = most_general_template (CLASSTYPE_TI_TEMPLATE (type));
   gcc_assert (TREE_CODE (templ) == TEMPLATE_DECL);
 
+  /* Mark the type as in the process of being defined.  */
+  TYPE_BEING_DEFINED (type) = 1;
+
   /* Determine what specialization of the original template to
      instantiate.  */
   t = most_specialized_partial_spec (type, tf_warning_or_error);
   if (t == error_mark_node)
-    {
-      TYPE_BEING_DEFINED (type) = 1;
-      return error_mark_node;
-    }
+    return error_mark_node;
   else if (t)
     {
       /* This TYPE is actually an instantiation of a partial
@@ -10379,15 +10379,15 @@ instantiate_class_template_1 (tree type)
   /* If the template we're instantiating is incomplete, then clearly
      there's nothing we can do.  */
   if (!COMPLETE_TYPE_P (pattern))
-    return type;
+    {
+      /* We can try again later.  */
+      TYPE_BEING_DEFINED (type) = 0;
+      return type;
+    }
 
   /* If we've recursively instantiated too many templates, stop.  */
   if (! push_tinst_level (type))
     return type;
-
-  /* Now we're really doing the instantiation.  Mark the type as in
-     the process of being defined.  */
-  TYPE_BEING_DEFINED (type) = 1;
 
   /* We may be in the middle of deferred access check.  Disable
      it now.  */
