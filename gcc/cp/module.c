@@ -26,53 +26,71 @@ along with GCC; see the file COPYING3.  If not see
 
 /* (Incomplete) Design Notes
 
-   Each namespace-scope decl has a MODULE_OWNER and a MODULE_PURVIEW_P
-   flag.  The symbols for a particular module are held located in a
-   sparse array hanging off the ns-level binding.  Both global module
-   and module-specific are on the same slot.  The current TU is slot
-   0.  Imports have non-zero indices, and any indirect import will
-   have a smaller index than any module importing it (direct imports
-   of course have a higher index than zero).  This scheme has the nice
-   property that builtins and the global module get the expected
-   MODULE_OWNER of zero and MODULE_PURVIEW_P of false, without needing
-   special handling.
+   Each namespace-scope decl has a MODULE_OWNER.  This is MODULE_NONE
+   for the global module, MODULE_PURVIEW for the current TU and >=
+   MODULE_IMPORT_BASE for imported modules.  During compilation, the
+   current module's owner will change from MODULE_NONE to
+   MODULE_PURVIEW at the module-declaration.  Any decl with
+   MODULE_OWNER != MODULE_NONE is in a module purview.  Builtins are
+   always MODULE_NONE. (Note that this is happenstance for decls
+   lacking DECL_LANG_SPECIFIC.)
 
-   I have not yet decided how to represent the decls for the same
-   global-module entity appearing in two different modules.  Two
-   distinct decls may get expensive, and we'd certainly need to know
-   about duplicates in the case of an inline fn or identical class
-   decl. (There is still C++ discussion about exacly how much global
-   module state needs dumping.)  I'm thinking every global module decl
-   gets a HIDDEN decl in the current TU -- unless it too declares it.
-   Such decls can have different default args in different modules,
-   but that is likely to be rare.
+   The decls for a particular module are held located in a sparse
+   array hanging off the ns-level binding of the name.  For imported
+   modules, the array slot is the same as the module owner.  For the
+   current TU, it is MODULE_SLOT_CURRENT.  To keep track of global
+   module entities made visible via multiple imports, we use
+   MODULE_SLOT_GLOBAL.  That slot is never searched during name
+   lookup.  The two reserved slots are always present.  If a name is
+   bound only in the current TU, there is a regular binding, not an
+   array.  We convert on demand.
 
-   A module interface compilation produces a BMI, which is essentially
-   a tree serialization using auto-numbered back references.  We can
-   generate this in a single pass, walking the namespace graph.
-   Inter-module references are by name.
+   There is only one instance of each extern-linkage namespace.  It
+   appears in every module slot that makes it visible.  It also
+   appears in MODULE_SLOT_GLOBAL. (it is an ODR violation if they
+   collide with some other global module entity.)
 
-   There is no lazy loading.  This will probably be needed later.  For
-   lazy loading, importing a module would populate the binding array
-   with markers.  When name-lookup encounters such a marker, it would
-   lazily load the entities of that name from that module.  This means
-   breaking the tree serialization.
+   A module import can bring in entities that cannot be found by name
+   lookup.  You use decltype tricks to get at it.  I am not sure
+   whether these should be DECL_HIDDEN for that import's binding, or
+   should just not be in the symbol table.
 
-   The MODULE_PURVIEW_P is an explicit flag in the decl.  We could do
-   it implicitly by location, as all global module entities must come
-   before all module-specific entities.  */
+   WARNING: Lazy loading not implemented:
 
-/* Classes used:
+   A module interface compilation produces a Binary Module Interface
+   (BMI).  I use ELROND format, which allows a bunch of named sections
+   containing arbitrary data.  Although I don't defend against
+   actively hostile BMIs, there is some checksumming involved to
+   veryify data integrity.  When dumping out an interface, we generate
+   a list of all the namespace-scope DECLS that are needed.  From that
+   we determine the strongly connected components (SCC) within this
+   TU.  Each SCC is dumped to a separate section of the BMI.  We
+   generate a binding table section, mapping each namespace&name to an
+   SCC.  This allows lazy loading.
+
+   References to imported decls are done via indexing the imported
+   module's decl list.
+
+   References to global-module decls are either via an index to an
+   imported module that happens to also make the decl available.  Or
+   by value if there is no such import.
+
+   There can be no SCCs containing both current-module and
+   global-module decls.  Construction of such an SCC would require the
+   global-module decl to reference the current-module decl, and that
+   is not possible.
+
+   Classes used:
 
    data - buffer with CRC capability
 
    dumper - logger
 
-   elf - simple ELF
-   elf_in : elf - ELF reader
-   elf_out : elf - ELF writer
+   elf - ELROND format
+   elf_in : elf - ELROND reader
+   elf_out : elf - ELROND writer
 
-   bytes - simple data streamer
+   bytes - data streamer
    bytes_in : bytes - scalar reader
    bytes_out : bytes - scalar writer
 
@@ -117,7 +135,9 @@ int module_dump_id;
 /* Prefix for section names.  */
 #define MOD_SNAME_PFX ".gnu.c++"
 
-static int
+/* Get the version of this compiler.  See above about MODULE_STAMP.  */
+
+static inline int
 get_version ()
 {
   /* If the on-disk format changes, update the version number.  */
@@ -134,34 +154,48 @@ get_version ()
   return version;
 }
 
-/* Version to date. */
-static unsigned version2date (int v)
+/* Version to date.  Understand both experimental and released
+   version dates.  */
+
+static inline int version2date (int v)
 {
   if (v < 0)
-    return -v / 10000 + 20000000;
+    return unsigned (-v) / 10000 + 20000000;
   else
     return v;
 }
 
-/* Version to time. */
-static unsigned version2time (int v)
+/* Version to time.  Only understand times when experimental.  */
+
+static inline unsigned version2time (int v)
 {
   if (MODULE_STAMP && v < 0)
-    return -v % 10000;
+    return unsigned (-v) % 10000;
   else
     return 0;
 }
 
+/* Format a version for user consumption.  Only attach time
+   information for experimental builds.  */
+
 typedef char version_string[32];
-static void version2string (unsigned version, version_string &out)
+static void version2string (int version, version_string &out)
 {
   unsigned date = version2date (version);
   unsigned time = version2time (version);
-  sprintf (out, MODULE_STAMP ? "%04u/%02u/%02u-%02u:%02u" : "%04u/%02u/%02u",
-	   date / 10000, (date / 100) % 100, (date % 100),
-	   time / 100, time % 100);
+  if (MODULE_STAMP)
+    sprintf (out, "%04u/%02u/%02u-%02u:%02u",
+	     date / 10000, (date / 100) % 100, (date % 100),
+	     time / 100, time % 100);
+  else
+    sprintf (out, "%04u/%02u/%02u%s",
+	     date / 10000, (date / 100) % 100, (date % 100),
+	     version < 0 ? " (experimental)": "");
 }
 
+/* Traits to has an arbitrary pointer into a hash table. Entries are
+   not deletable, and removal is a noop (removal needed upon
+   destruction).  */
 template <typename T>
 struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *>
 {
@@ -170,11 +204,12 @@ struct nodel_ptr_hash : pointer_hash<T>, typed_noop_remove <T *>
   static void mark_deleted (T *) { gcc_unreachable (); }
 };
 
-/* Map from pointer to integer.   */
+/* Map from pointer to signed integer.   */
 typedef simple_hashmap_traits<nodel_ptr_hash<void>, int> ptr_int_traits;
 typedef hash_map<void *,signed,ptr_int_traits> ptr_int_hash_map;
 
-/* A data buffer, using trailing array hack.  */
+/* A data buffer, using trailing array hack.  Provides CRC
+   capability & buffer extension.  */
 
 struct data {
   size_t size;
@@ -190,7 +225,7 @@ public:
     return *(const unsigned *)&buffer[0];
   }
   void set_crc (unsigned *crc_ptr);
-  bool check_crc (bool) const;
+  bool check_crc () const;
 
 public:
   /* new & delete semantics don't quite work.  */
@@ -202,6 +237,7 @@ public:
   }
 };
 
+/* Calculate the crc32 of the buffer.  */
 unsigned
 data::calc_crc () const
 {
@@ -211,43 +247,49 @@ data::calc_crc () const
   return crc;
 }
 
+/* If CRC_PTR non-null, set the CRC of the buffer.  Mix the CRC into
+   that pointed to by CRC_PTR.  Otherwise store some fixed data in
+   the CRC location.  */
+
 void
 data::set_crc (unsigned *crc_ptr)
 {
+  gcc_checking_assert (size >= 4);
   if (crc_ptr)
     {
-      gcc_checking_assert (size >= 4);
       unsigned crc = calc_crc ();
       *(unsigned *)buffer = crc;
       if (*crc_ptr)
+	/* Only mix the existing *CRC_PTR if it is non-zero.  */
 	crc = crc32_unsigned (*crc_ptr, crc);
       *crc_ptr = crc;
     }
+  else
+    strcpy (buffer, "GNU");
 }
 
-bool
-data::check_crc (bool check_p) const
-{
-  if (check_p)
-    {
-      if (size < 4)
-	return false;
+/* Verify the buffer's CRC is correct.  */
 
-      unsigned c_crc = calc_crc ();
-      if (c_crc != get_crc ())
-	return false;
-    }
+bool
+data::check_crc () const
+{
+  if (size < 4)
+    return false;
+
+  unsigned c_crc = calc_crc ();
+  if (c_crc != get_crc ())
+    return false;
 
   return true;
 }
 
+/* Extend the buffer to size A.  It is either not allocated, or
+   smaller than A.  Returns the new buffer object.  */
 data *data::extend (data *c, size_t a)
 {
-  if (!c || a > c->size)
-    {
-      c = XRESIZEVAR (data, c, offsetof (data, buffer) + a);
-      c->size = a;
-    }
+  gcc_checking_assert (!c || a > c->size);
+  c = XRESIZEVAR (data, c, offsetof (data, buffer) + a);
+  c->size = a;
 
   return c;
 }
@@ -255,16 +297,13 @@ data *data::extend (data *c, size_t a)
 /* Encapsulated Lazy Records Of Named Declarations.
    Header: Stunningly Elf32_Ehdr-like
    Sections: Sectional data
-     1     .README   : human readable, stunningly STRTAB-like
-     2     .context  : context data
-     [3-N) .decls    : decls bound to a name
-     N     .bindings : bindings of namespace names
-     N+1   .config   : config data
-     N+2    .strtab  : strings, stunningly STRTAB-like
+     [1-N) : User data sections
+     N .strtab  : strings, stunningly STRTAB-like
    Index: Section table, stunningly ELF32_Shdr-like.   */
 
 class elf {
 protected:
+  /* Constants used within the format.  */
   enum private_constants
     {
       /* File kind. */
@@ -282,11 +321,6 @@ protected:
       SHN_UNDEF = 0,
       SHN_LORESERVE = 0xff00,
       SHN_XINDEX = 0xffff,
-      SHN_HIRESERVE = 0xffff,
-
-      /* Symbol types.  */
-      STT_NOTYPE = 0,
-      STB_GLOBAL = 1,
 
       /* I really hope we do not get BMI files larger than 4GB.  */
       MY_CLASS = CLASS32,
@@ -298,25 +332,26 @@ protected:
     };
 
 public:
+  /* Constants visible to users.  */
   enum public_constants
     {
       /* Section types.  */
-      SHT_NONE = 0,
-      SHT_PROGBITS = 1,
-      SHT_STRTAB = 3,
+      SHT_NONE = 0,  /* No contents.  */
+      SHT_PROGBITS = 1, /* Random bytes.  */
+      SHT_STRTAB = 3,  /* A string table.  */
 
       /* Section flags.  */
-      SHF_NONE = 0x00,
-      SHF_STRINGS = 0x20,
+      SHF_NONE = 0x00, /* Nothing.  */
+      SHF_STRINGS = 0x20,  /* NUL-Terminated strings.  */
 
-      /* Special error codes. */
-      E_BAD_DATA = -1,
-      E_BAD_IMPORT = -2
+      /* Special error codes.  Breaking layering a bit.  */
+      E_BAD_DATA = -1,  /* Random unexpected data errors.  */
+      E_BAD_IMPORT = -2 /* A nested import failed.  */
     };
 
 protected:
+  /* File identification.  On-disk representation.  */
   struct ident
-  /* On-disk representation.  */
   {
     uint8_t magic[4];
     uint8_t klass; /* 4:CLASS32 */
@@ -326,8 +361,8 @@ protected:
     uint8_t abiver; /* 8: 0 */
     uint8_t pad[7]; /* 9-15 */
   };
+  /* File header.  On-disk representation.  */
   struct header
-  /* On-disk representation.  */
   {
     struct ident ident;
     uint16_t type; /* ET_NONE */
@@ -344,34 +379,24 @@ protected:
     uint16_t shnum;  /* TBD */
     uint16_t shstrndx; /* TBD */
   };
+  /* File section.  On-disk representation.  */
   struct section
-  /* On-disk representation.  */
   {
     uint32_t name; /* String table offset.  */
-    uint32_t type; /* TBD */
-    uint32_t flags;
+    uint32_t type; /* various */
+    uint32_t flags; /* various */
     uint32_t addr; /* 0 */
-    uint32_t off;  /* TBD */
-    uint32_t size; /* TBD */
-    uint32_t link; /* TBD */
-    uint32_t info;
+    uint32_t off;  /* various */
+    uint32_t size; /* various */
+    uint32_t link; /* various */
+    uint32_t info; /* 0 */
     uint32_t addralign; /* 0 */
     uint32_t entsize; /* 0, except SHT_STRTAB */
   };
-  struct symbol
-  /* On-disk representation.  */
-  {
-    uint32_t name;
-    uint32_t offset;
-    uint32_t size;
-    unsigned char info;
-    unsigned char other;
-    uint16_t shndx;
-  };
 
 protected:
+  /* Internal section.  NOT the on-disk representation. */
   struct isection
-  /* Not the on-disk representation. */
   {
     unsigned short type;   /* Type of section.  */
     unsigned short flags;  /* Section flags.  */
@@ -381,26 +406,27 @@ protected:
   };
 
 protected:
-  FILE *stream;
-
-protected:
-  int err;
-  vec<isection, va_heap, vl_embed> *sections;
+  FILE *stream;   /* File stream we're reading or writing.  */
+  vec<isection, va_heap, vl_embed> *sections;  /* Section table.  */
+  int err; 		/* Sticky error code.  */
 
 public:
+  /* Construct from STREAM.  E is errno if STREAM NULL.  */
   elf (FILE *stream, int e)
-    :stream (stream), err (stream ? 0 : e), sections (NULL)
+    :stream (stream), sections (NULL), err (stream ? 0 : e)
   {}
   ~elf ()
   {
-    vec_free (sections);
+    gcc_checking_assert (!stream && !sections);
   }
 
 public:
+  /* Return the current error.  Zero if there is none.  */
   int get_error () const
   {
     return err;
   }
+  /* Set the error, unless it's already been set.  */
   void set_error (int e = E_BAD_DATA)
   {
     if (!err)
@@ -408,13 +434,17 @@ public:
   }
 
 public:
+  /* Begin reading/writing file.  Return false on error.  */
   bool begin () const
   {
     gcc_checking_assert (!sections);
     return !get_error ();
   }
+  /* Finish reading/writing file.  Return NULL or error string.  */
   const char *end ();
 };
+
+/* Close the stream and return NULL, or error string.  */
 
 const char *
 elf::end ()
@@ -422,6 +452,8 @@ elf::end ()
   if (stream && fclose (stream))
     set_error (errno);
   stream = NULL;
+  vec_free (sections);
+  sections = NULL;
   switch (get_error ())
     {
     case 0:
@@ -435,25 +467,35 @@ elf::end ()
     }
 }
 
-/* ELF reader.  */
+/* ELROND reader.  */
 
 class elf_in : public elf {
   typedef elf parent;
+
 protected:
-  data *strings;
+  data *strings;  /* String table.  */
 
   public:
   elf_in (FILE *s, int e)
     :parent (s, e), strings (NULL)
   {
   }
+  ~elf_in ()
+  {
+    gcc_checking_assert (strings);
+  }
 
 protected:
   bool read (void *, size_t);
 
 public:
+  /* Read section by number.  */
   data *read (unsigned snum);
+  /* Find section by name.  */
   unsigned find (unsigned type, const char *name);
+
+public:
+  /* Release the string table, when we're done with it.  */
   void release ()
   {
     strings = data::release (strings);
@@ -461,15 +503,22 @@ public:
 
 public:
   bool begin ();
+  const char *end ()
+  {
+    release ();
+    return parent::end ();
+  }
 
 public:
+  /* Return string name at OFFSET.  Checks OFFSET range.  Always
+     returns non-NULL.  */
   const char *name (unsigned offset)
   {
     return &strings->buffer[offset < strings->size ? offset : 0];
   }
 };
 
-/* Elf writer.  */
+/* ELROND writer.  */
 
 class elf_out : public elf {
   typedef elf parent;
@@ -497,13 +546,16 @@ public:
     }
 
   public:
+    /* IDENTIFIER to offset.  */
     unsigned name (const_tree ident);
+    /* String literal to offset.  */
     unsigned name (const char *literal);
+    /* Write out the string table.  */
     unsigned write (elf_out *out);
   };
 
 private:
-  strtab strings;
+  strtab strings;   /* String table.  */
 
 public:
   elf_out (FILE *s, int e)
@@ -518,25 +570,29 @@ protected:
   bool write (const void *, size_t);
 
 public:
+  /* IDENTIFIER to strtab offset.  */
   unsigned name (const_tree ident)
   {
     return strings.name (ident);
   }
+  /* String literal to strtab offset.  */
   unsigned name (const char *n)
   {
     return strings.name (n);
   }
 
 public:
-  /* Add a section.  */
+  /* Add a section wit contents.  */
   unsigned add (unsigned type, unsigned name, const data *,
 		unsigned flags = SHF_NONE);
 
 public:
+  /* Begin and end writing.  */
   bool begin ();
   const char *end ();
 };
 
+/* Read at current position into BUFFER.  Return true on success.  */
 bool
 elf_in::read (void *buffer, size_t size)
 {
@@ -548,6 +604,7 @@ elf_in::read (void *buffer, size_t size)
   return true;
 }
 
+/* Read section SNUM.  Return data buffer, or NULL on error.  */
 data *
 elf_in::read (unsigned snum)
 {
@@ -567,20 +624,25 @@ elf_in::read (unsigned snum)
   return NULL;
 }
 
+/* Find a section NAME and TYPE.  Return section number or 0 on
+   failure.  */
 unsigned
-elf_in::find (unsigned type, const char *n)
+elf_in::find (unsigned type, const char *sname)
 {
   unsigned snum = sections->length ();
   while (--snum)
     {
       const isection *isec = &(*sections)[snum];
 
-      if (isec->type == type && !strcmp (n, name (isec->name)))
+      if (isec->type == type && !strcmp (sname, name (isec->name)))
 	return snum;
     }
 
   return 0;
 }
+
+/* Begin reading file.  Verify header.  Pull in section and string
+   tables.  Return true on success.  */
 
 bool
 elf_in::begin ()
@@ -597,7 +659,7 @@ elf_in::begin ()
       || header.ident.magic[2] != 'L'
       || header.ident.magic[3] != 'F')
     {
-      error ("not Encapsulated Ledger File");
+      error ("not Encapsulated Lazy Records of Named Declarations");
       return false;
     }
 
@@ -683,6 +745,9 @@ elf_in::begin ()
   return true;
 }
 
+/* Map IDENTIFIER IDENT to strtab offset.  Inserts into strtab if not
+   already there.  */
+
 unsigned
 elf_out::strtab::name (const_tree ident)
 {
@@ -701,6 +766,9 @@ elf_out::strtab::name (const_tree ident)
   return result;
 }
 
+/* Map LITERAL to strtab offset.  Does not detect duplicates and
+   expects LITERAL to remain live until strtab is written out.  */
+
 unsigned
 elf_out::strtab::name (const char *literal)
 {
@@ -711,10 +779,15 @@ elf_out::strtab::name (const char *literal)
   return result;
 }
 
+/* Write the string table to ELF.  section name is .strtab.  */
+
 unsigned
 elf_out::strtab::write (elf_out *elf)
 {
   unsigned off = elf->pad ();
+  if (!off)
+    return 0;
+
   unsigned shname = name (".strtab");
   unsigned lit_ix = 0;
   for (unsigned ix = 0; ix != idents->length (); ix++)
@@ -740,6 +813,34 @@ elf_out::strtab::write (elf_out *elf)
   return elf->add (SHT_STRTAB, shname, off, size, SHF_STRINGS);
 }
 
+/* Padd file to the next 4 byte boundary.  Return the file position or
+   zero on error.  (We never need this at the start of file.  */
+
+uint32_t
+elf_out::pad ()
+{
+  long off = ftell (stream);
+  if (off < 0)
+    off = 0;
+  else if (unsigned padding = off & 3)
+    {
+      /* Align the section on disk, should help the necessary copies.  */
+      unsigned zero = 0;
+      padding = 4 - padding;
+      off += padding;
+      if (fwrite (&zero, 1, padding, stream) != padding)
+	off = 0;
+    }
+  if (!off)
+    set_error (errno);
+
+  return (uint32_t)off;
+}
+
+/* Add section to file.  Return section number.  TYPE & NAME identify
+   the section.  OFF and SIZE identify the file location of its
+   data.  FLAGS contains additional info.  */
+
 unsigned
 elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
 	      unsigned flags)
@@ -757,28 +858,38 @@ elf_out::add (unsigned type, unsigned name, unsigned off, unsigned size,
   return snum;
 }
 
+/* Write DATA at current file position.  Return true on success.  */
+
 bool
 elf_out::write (const void *data, size_t size)
 {
-  if (fwrite (data, 1, size, stream) == size)
-    return true;
-  set_error (errno);
-  return false;
+  if (fwrite (data, 1, size, stream) != size)
+    {
+      set_error (errno);
+      return false;
+    }
+
+  return true;
 }
+
+/* Write data and add section.  TYPE & NAME identify the section.
+   DATA is the contents.  FLAGS is additional info.  Return section
+   number or 0 on failure.  */
 
 unsigned
 elf_out::add (unsigned type, unsigned name, const data *data, unsigned flags)
 {
   uint32_t off = pad ();
-
-  if (!off || fwrite (data->buffer, 1, data->size, stream) != data->size)
-    {
-      set_error (errno);
-      return 0;
-    }
+  if (!off)
+    return 0;
+  if (!write (data->buffer, data->size))
+    return 0;
 
   return add (type, name, off, data->size, flags);
 }
+
+/* Begin writing the file.  Initialize the section table and write an
+   empty header.  Return false on failure.  */
 
 bool
 elf_out::begin ()
@@ -797,24 +908,8 @@ elf_out::begin ()
   return write (&header, sizeof (header));
 }
 
-uint32_t elf_out::pad ()
-{
-  long off = ftell (stream);
-  if (off < 0)
-    return 0;
-
-  if (unsigned padding = off & 3)
-    {
-      /* Align the section on disk, should help the necessary copies.  */
-      unsigned zero = 0;
-      padding = 4 - padding;
-      off += padding;
-      if (fwrite (&zero, 1, padding, stream) != padding)
-	return 0;
-    }
-
-  return (uint32_t)off;
-}
+/* Finish writing the file.  Write out the string & section tables.
+   Fill in the header.  Return error string or NULL on success.  */
 
 const char *
 elf_out::end ()
@@ -884,7 +979,9 @@ elf_out::end ()
   return parent::end ();
 }
 
-/* Byte serializer base.  */
+/* Byte streamer base.   Buffer with read/write position and smarts
+   for single bits.  */
+
 class bytes {
 protected:
   struct data *data;	/* Buffer being read/written.  */
@@ -894,7 +991,7 @@ protected:
 
 public:
   bytes ()
-    :data (NULL), pos (0), bit_val (0), bit_pos (0)
+    :data (NULL), pos (4), bit_val (0), bit_pos (0)
   {}
   ~bytes () 
   {
@@ -902,16 +999,15 @@ public:
   }
 
 protected:
-  void begin (bool crc)
+  /* Begin streaming.  Set buffer postion for crc  */
+  void begin ()
   {
-    gcc_checking_assert (!data);
-    pos = crc ? 4 : 0;
+    gcc_checking_assert (!data && pos == 4);
   }
-public:
+  /* Complete streaming.  Release the buffer.  */
   void end ()
   {
     data = data::release (data);
-    pos = 0;
   }
 
 protected:
@@ -927,12 +1023,15 @@ protected:
   }
 
 protected:
+  /* Consume BYTES bytes.  Return pointer to start of used bytes.
+     Does NOT check if the bytes are available.  */
   char *use (unsigned bytes)
   {
     char *res = &data->buffer[pos];
     pos += bytes;
     return res;
   }
+  /* Rewind BYTES bytes.  */
   void unuse (unsigned bytes)
   {
     pos -= bytes;
@@ -944,7 +1043,7 @@ class bytes_in : public bytes {
   typedef bytes parent;
 
 protected:
-  bool overrun;
+  bool overrun;  /* Sticky read-too-much flag.  */
 
 public:
   bytes_in ()
@@ -956,9 +1055,12 @@ public:
   }
 
 public:
-  bool begin (elf_in *src, const char *name, bool check_crc = false);
-  bool begin (elf_in *src, unsigned, bool check_crc = false,
-	      const char * = NULL);
+  /* Begin reading a named section.  */
+  bool begin (elf_in *src, const char *name);
+  /* Begin reading a numbered section with optional name.  */
+  bool begin (elf_in *src, unsigned, const char * = NULL);
+  /* Complete reading a buffer.  Propagate errors and return true on
+     success.  */
   bool end (elf_in *src)
   {
     if (more_p ())
@@ -968,16 +1070,21 @@ public:
     parent::end ();
     return !overrun;
   }
+  /* Return true if there is unread data.  */
   bool more_p () const
   {
     return pos != data->size;
   }
+  /* Return the buffer's CRC.  */
   unsigned get_crc () const
   {
     return data->get_crc ();
-  }  
+  }
 
 private:
+  /* Consume BYTES bytes of data.  Check there is sufficient data.  if
+     AVAIL is non-NULL, allow consuming less data.  Update *AVAIL with
+     count of consumption.  Return pointer to consumed data.  */
   const char *use (unsigned bytes, unsigned *avail = NULL)
   {
     unsigned space = data->size - pos;
@@ -996,6 +1103,7 @@ private:
   }
 
 public:
+  /* Manipulate the overrun flag.  */
   bool get_overrun () const
   {
     return overrun;
@@ -1006,32 +1114,28 @@ public:
   }
 
 public:
-  unsigned raw ();
+  unsigned raw ();  	/* Read uncompressed integer.  */
 
 public:
-  bool b ();
-  void bflush ();
+bool b ();	    	/* Read a bool.  */
+  void bflush ();	/* Completed a block of bools.  */
 private:
-  void bfill ();
+  void bfill ();	/* Get the next block of bools.  */
 
 public:
-  int c ();
-  int i ();
-  unsigned u ();
-  size_t s ();
-  HOST_WIDE_INT wi ();
-  unsigned HOST_WIDE_INT wu ();
-  const char *str (size_t * = NULL);
-  const char *buf (size_t);
+  int c ();		/* Read a char.  */
+  int i ();		/* Read a signed int.  */
+  unsigned u ();	/* Read an unsigned int.  */
+  size_t z ();		/* Read a size_t.  */
+  HOST_WIDE_INT wi ();  /* Read a HOST_WIDE_INT.  */
+  unsigned HOST_WIDE_INT wu (); /* Read an unsigned HOST_WIDE_INT.  */
+  const char *str (size_t * = NULL); /* Read a string.  */
+  const char *buf (size_t); /* Read a fixed-length buffer.  */
 };
 
 /* Byte stream writer.  */
 class bytes_out : public bytes {
   typedef bytes parent;
-  /* Instrumentation.  */
-  static unsigned spans[4];
-  static unsigned lengths[4];
-  static int is_set;
 
 public:
   bytes_out ()
@@ -1042,33 +1146,44 @@ public:
   {
   }
 
+public:
+  /* Begin writing, reserve space for CRC.  */
+  void begin ();
+  /* Finish writing.  Spill to section by number.  */
+  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL);
+
 private:
-  char *use (unsigned);
+  /* Generate space for S bytes, return pointer to them.  */
+  char *use (unsigned S);
 
 public:
-  void begin (bool crc_p = false);
-  unsigned end (elf_out *, unsigned, unsigned *crc_ptr = NULL, bool = false);
+  void raw (unsigned);  /* Write uncompressed integer.  */
 
 public:
-  void raw (unsigned);
+  void b (bool);	/* Write bool.  */
+  void bflush ();	/* Finish block of bools.  */
 
 public:
+  void c (unsigned char); /* Write unsigned char.  */
+  void i (int);		/* Write signed int.  */
+  void u (unsigned);	/* Write unsigned int.  */
+  void z (size_t s);	/* Write size_t.  */
+  void wi (HOST_WIDE_INT); /* Write HOST_WIDE_INT.  */
+  void wu (unsigned HOST_WIDE_INT);  /* Write unsigned HOST_WIDE_INT.  */
+  void str (const char *, size_t);  /* Write string of known length.  */
+  void buf (const char *, size_t);  /* Write fixed length buffer.  */
+  /* Format a NUL-terminated raw string.  */
+  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
+
+public:
+  /* Dump instrumentation.  */
   static void instrument ();
 
-public:
-  void b (bool);
-  void bflush ();
-
-public:
-  void c (unsigned char);
-  void i (int);
-  void u (unsigned);
-  void s (size_t s);
-  void wi (HOST_WIDE_INT);
-  void wu (unsigned HOST_WIDE_INT);
-  void str (const char *, size_t);
-  void buf (const char *, size_t);
-  void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
+protected:
+  /* Instrumentation.  */
+  static unsigned spans[4];
+  static unsigned lengths[4];
+  static int is_set;
 };
 
 unsigned bytes_out::spans[4];
@@ -1106,21 +1221,22 @@ bytes_in::bfill ()
   bit_val = raw ();
 }
 
-/* Low level bytes_ins and bytes_outs.  I did think about making these
-   templatized, but that started to look error prone, so went with
-   type-specific names.
-   b - bools,
-   i, u - ints/unsigned
-   wi/wu - wide ints/unsigned
-   s - size_t
-   buf - fixed size buffer
-   str - variable length string  */
+/* Emit BYTES bytes.  Extend buffer as necessary and return pointer to
+   space.  */
+
+char *
+bytes_out::use (unsigned bytes)
+{
+  if (data->size < pos + bytes)
+    data = data::extend (data, (pos + bytes) * 3/2);
+  return parent::use (bytes);
+}
 
 /* Bools are packed into bytes.  You cannot mix bools and non-bools.
    You must call bflush before emitting another type.  So batch your
    bools.
 
-   It may be worth optimizing for most bools being zero.  some kind of
+   It may be worth optimizing for most bools being zero.  Some kind of
    run-length encoding?  */
 
 void
@@ -1151,8 +1267,7 @@ bytes_in::b ()
   return v;
 }
 
-/* Exactly 4 bytes.  Used internally for bool packing and crc
-   transfer -- hence no crc here.  */
+/* Exactly 4 bytes.  Used internally for bool packing and a few other places.  */
 
 void
 bytes_out::raw (unsigned val)
@@ -1196,7 +1311,8 @@ bytes_in::c ()
   return v;
 }
 
-/* Ints are written as sleb128.  */
+/* Ints are written as sleb128.  When reading we must be careful to
+   cope with slebs right at the end of the buffer.  */
 
 void
 bytes_out::i (int v)
@@ -1297,6 +1413,8 @@ bytes_in::u ()
   return v;
 }
 
+/* Wide Ints are written as sleb128.  */
+
 void
 bytes_out::wi (HOST_WIDE_INT v)
 {
@@ -1347,6 +1465,8 @@ bytes_in::wi ()
   return v;
 }
 
+/* unsigned wide ints are just written as signed wide ints.  */
+
 inline void
 bytes_out::wu (unsigned HOST_WIDE_INT v)
 {
@@ -1359,8 +1479,10 @@ bytes_in::wu ()
   return (unsigned HOST_WIDE_INT) wi ();
 }
 
+/* size_t written as unsigned or unsigned wide int.  */
+
 inline void
-bytes_out::s (size_t s)
+bytes_out::z (size_t s)
 {
   if (sizeof (s) == sizeof (unsigned))
     u (s);
@@ -1369,13 +1491,15 @@ bytes_out::s (size_t s)
 }
 
 inline size_t
-bytes_in::s ()
+bytes_in::z ()
 {
   if (sizeof (size_t) == sizeof (unsigned))
     return u ();
   else
     return wu ();
 }
+
+/* Buffer simply memcpied.  */
 
 void
 bytes_out::buf (const char *buf, size_t len)
@@ -1391,22 +1515,20 @@ bytes_in::buf (size_t len)
   return ptr;
 }
 
-/* Strings:
-   u:length
-   buf:bytes
-*/
+/* strings as an size_t length, followed by the buffer.  Make sure
+   there's a NUL terminator on read.  */
 
 void
 bytes_out::str (const char *string, size_t len)
 {
-  s (len);
+  z (len);
   buf (string, len + 1);
 }
 
 const char *
 bytes_in::str (size_t *len_p)
 {
-  size_t len = s ();
+  size_t len = z ();
 
   /* We're about to trust some user data.  */
   if (overrun)
@@ -1420,6 +1542,9 @@ bytes_in::str (size_t *len_p)
     }
   return str;
 }
+
+/* Format a string directly to the buffer, including a terminating
+   NUL.  Intended for human consumption.  */
 
 void
 bytes_out::printf (const char *format, ...)
@@ -1441,23 +1566,27 @@ bytes_out::printf (const char *format, ...)
   unuse (len - actual);
 }
 
+/* Begin reading section NAME (of type PROGBITS) from SOURCE.
+   Data always checked for CRC.  */
+
 bool
-bytes_in::begin (elf_in *source, const char *name, bool check_crc)
+bytes_in::begin (elf_in *source, const char *name)
 {
   unsigned snum = source->find (elf::SHT_PROGBITS, name);
 
-  return begin (source, snum, check_crc, name);
+  return begin (source, snum, name);
 }
 
+/* Begin reading section numbered SNUM with NAME (may be NULL).  */
+
 bool
-bytes_in::begin (elf_in *source, unsigned snum,
-		 bool check_crc, const char *name)
+bytes_in::begin (elf_in *source, unsigned snum, const char *name)
 {
-  parent::begin (check_crc);
+  parent::begin ();
 
   data = source->read (snum);
 
-  if (!data || !data->check_crc (check_crc))
+  if (!data || !data->check_crc ())
     {
       data = data::release (data);
       set_overrun ();
@@ -1470,35 +1599,33 @@ bytes_in::begin (elf_in *source, unsigned snum,
   return true;
 }
 
+/* Begin writing buffer.  */
+
 void
-bytes_out::begin (bool crc_p)
+bytes_out::begin ()
 {
-  parent::begin (crc_p);
+  parent::begin ();
   data = data::extend (0, 200);
 }
 
+/* Finish writing buffer.  Stream out to SINK as named section NAME.
+   Return section number or 0 on failure.  If CRC_PTR is true, crc
+   the data.  Otherwise it is a string section.  */
+
 unsigned
-bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr, bool string_p)
+bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 {
   lengths[3] += pos;
   spans[3]++;
 
   data->size = pos;
   data->set_crc (crc_ptr);
-  unsigned sec_num = sink->add (string_p ? elf::SHT_STRTAB : elf::SHT_PROGBITS,
+  unsigned sec_num = sink->add (crc_ptr ? elf::SHT_STRTAB : elf::SHT_PROGBITS,
 				name, data,
-				string_p ? elf::SHF_STRINGS : elf::SHF_NONE);
+				crc_ptr ? elf::SHF_STRINGS : elf::SHF_NONE);
   parent::end ();
 
   return sec_num;
-}
-
-char *
-bytes_out::use (unsigned bytes)
-{
-  if (data->size < pos + bytes)
-    data = data::extend (data, (pos + bytes) * 3/2);
-  return parent::use (bytes);
 }
 
 // FIXME:Forward declare, until module_state::{read,write}_namespace don't
@@ -1518,6 +1645,7 @@ struct module_state_hash : nodel_ptr_hash<module_state> {
 };
 
 /* State of a particular module. */
+
 struct GTY(()) module_state {
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
@@ -1526,7 +1654,7 @@ struct GTY(()) module_state {
   tree name;		/* Name of the module.  */
   tree vec_name;  	/* Name as a vector, if structured.  */
 
-  vec<unsigned, va_gc_atomic> *remap; /* module num remapping.  */
+  vec<unsigned, va_gc_atomic> *remap; /* Module owner remapping.  */
   elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
 
   char *filename;	/* Filename */
@@ -1534,18 +1662,12 @@ struct GTY(()) module_state {
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
 
-  unsigned mod;		/* Module index.  */
+  unsigned mod;		/* Module owner number.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
   bool imported : 1;	/* Imported via import declaration.  */
   bool exported : 1;	/* The import is exported.  */
 
- private:
-  /* Global tree context.  */
-  static const std::pair<tree *, unsigned> global_trees[];
-  static vec<tree, va_gc> *global_vec;
-  static unsigned global_crc;
-  static hash_table<module_state_hash> *hash;
  public:
   static vec<module_state *, va_gc> *modules;
 
@@ -1562,13 +1684,15 @@ struct GTY(()) module_state {
 
  public:
   void set_name (tree name, tree sname);
-  void push_location (char *filename);
-  void pop_location ();
   void set_location (char *name)
   {
     filename = name;
     loc = input_location;
   }
+  void push_location (char *filename);
+  void pop_location ();
+
+ public:
   void set_import (module_state const *, bool is_export);
   void announce (const char *) const;
 
@@ -1592,6 +1716,13 @@ struct GTY(()) module_state {
  public:
   static module_state *do_import (location_t, tree, bool module_unit_p,
 				  bool import_export_p, unsigned * = NULL);
+
+ private:
+  /* Global tree context.  */
+  static const std::pair<tree *, unsigned> global_trees[];
+  static vec<tree, va_gc> *global_vec;
+  static unsigned global_crc;
+  static hash_table<module_state_hash> *hash;
 };
 
 /* Hash module state by name.  */
@@ -1733,7 +1864,7 @@ private:
   void tag (int rt)
   {
     records++;
-    s (rt);
+    i (rt);
   }
   int insert (tree);
   void start (tree_code, tree);
@@ -2043,7 +2174,7 @@ dumper::operator () (const char *format, ...)
 	  }
 	case 'V': /* Verson.  */
 	  {
-	    unsigned v = va_arg (args, unsigned);
+	    int v = va_arg (args, unsigned);
 	    version_string string;
 
 	    version2string (v, string);
@@ -2300,15 +2431,15 @@ module_state::pop_location ()
 void
 module_state::write_context (elf_out *to, unsigned *crc_p)
 {
-  bytes_out ctx, me;
+  bytes_out ctx, readme;
 
-  ctx.begin (true);
-  me.begin ();
+  ctx.begin ();
+  readme.begin ();
 
   version_string string;
   version2string (get_version (), string);
-  me.printf ("version:%s%c", string, 0);
-  me.printf ("module:%s%c", IDENTIFIER_POINTER (name), 0);
+  readme.printf ("version:%s%c", string, 0);
+  readme.printf ("module:%s%c", IDENTIFIER_POINTER (name), 0);
 
   ctx.u (modules->length ());
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
@@ -2325,9 +2456,9 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
       unsigned name = to->name (state->name);
       ctx.u (name);
       if (state->imported)
-	me.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
+	readme.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
     }
-  me.end (to, to->name (MOD_SNAME_PFX ".README"), NULL, /*strings=*/true);
+  readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
   ctx.end (to, to->name (MOD_SNAME_PFX ".context"), crc_p);
 }
 
@@ -2336,7 +2467,7 @@ module_state::read_context (elf_in *from)
 {
   bytes_in ctx;
 
-  if (!ctx.begin (from, MOD_SNAME_PFX ".context", true))
+  if (!ctx.begin (from, MOD_SNAME_PFX ".context"))
     return false;
 
   unsigned imports = ctx.u ();
@@ -2399,7 +2530,7 @@ module_state::write_config (elf_out *to, unsigned inner_crc)
 {
   bytes_out cfg;
 
-  cfg.begin (true);
+  cfg.begin ();
 
   /* Write version and inner crc as raw values, for easier
      debug inspection.  */
@@ -2439,7 +2570,7 @@ module_state::read_config (elf_in *from, unsigned *expected_crc)
 {
   bytes_in cfg;
 
-  if (!cfg.begin (from, MOD_SNAME_PFX ".config", true))
+  if (!cfg.begin (from, MOD_SNAME_PFX ".config"))
     return false;
 
   crc = cfg.get_crc ();
@@ -2683,7 +2814,7 @@ void
 module_state::write_bindings (elf_out *to, unsigned *crc_p)
 {
   bytes_out bind;
-  bind.begin (true);
+  bind.begin ();
   
   trees_out trees (this, global_vec);
   auto_vec<tree> stack;
@@ -2694,7 +2825,7 @@ module_state::write_bindings (elf_out *to, unsigned *crc_p)
   LOOKUP_FOUND_P (global_namespace) = true;
   write_namespace (to, bind, trees, global_namespace, stack, decls);
 
-  trees.begin (true);
+  trees.begin ();
   trees.write (decls);
 
   // FIXME: For now, there's only one blob holding all the decls
@@ -2708,7 +2839,7 @@ module_state::read_bindings (elf_in *from)
 {
   bytes_in bind;
 
-  if (!bind.begin (from, MOD_SNAME_PFX ".bindings", true))
+  if (!bind.begin (from, MOD_SNAME_PFX ".bindings"))
     return false;
 
   trees_in trees (this, global_vec);
@@ -2723,13 +2854,24 @@ module_state::read_bindings (elf_in *from)
   /* We're done with the string table now.  */
   from->release ();
 
-  if (!trees.begin (from, snum, true))
+  if (!trees.begin (from, snum))
     return false;
 
   trees.read ();
 
   return trees.end (from);
 }
+
+/* Encapsulated Lazy Records Of Named Declarations.
+   Header: Stunningly Elf32_Ehdr-like
+   Sections: Sectional data
+     1     .README   : human readable, stunningly STRTAB-like
+     2     .context  : context data
+     [3-N) .decls    : decls bound to a name
+     N     .bindings : bindings of namespace names
+     N+1   .config   : config data
+     N+2    .strtab  : strings, stunningly STRTAB-like
+   Index: Section table, stunningly ELF32_Shdr-like.   */
 
 void
 module_state::write (elf_out *to)
@@ -5177,7 +5319,7 @@ trees_out::tree_node (tree t)
     {
       /* NULL_TREE -> tt_null.  */
       nulls++;
-      s (tt_null);
+      i (tt_null);
       goto done;
     }
 
@@ -5188,10 +5330,10 @@ trees_out::tree_node (tree t)
       int val = *val_p;
       if (val <= tt_backref)
 	/* Back reference -> -ve number  */
-	s (val);
+	i (val);
       else
 	/* Fixed reference -> tt_fixed */
-	s (tt_fixed), u (val);
+	i (tt_fixed), u (val);
       dump () && dump ("Wrote:%d referenced %C:%N%S", val, TREE_CODE (t), t, t);
       goto done;
     }
@@ -5201,7 +5343,7 @@ trees_out::tree_node (tree t)
       /* A Namespace -> tt_namespace.  */
       // FIXME: anonymous
       gcc_assert (TREE_PUBLIC (t));
-      s (tt_namespace);
+      i (tt_namespace);
       tree_node (CP_DECL_CONTEXT (t));
       tree_node (DECL_NAME (t));
       unsigned tag = insert (t);
@@ -5215,7 +5357,7 @@ trees_out::tree_node (tree t)
 	 These need recreating by the loader.  The type it is for is
 	 stashed on the name's TREE_TYPE.  */
       tree type = TREE_TYPE (DECL_NAME (t));
-      s (tt_tinfo_var);
+      i (tt_tinfo_var);
       tree_node (type);
       int tag = insert (t);
       dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
@@ -5227,7 +5369,7 @@ trees_out::tree_node (tree t)
       /* An identifier node -> tt_id or, tt_conv_id.  */
       bool conv_op = IDENTIFIER_CONV_OP_P (t);
 
-      s (conv_op ? tt_conv_id : tt_id);
+      i (conv_op ? tt_conv_id : tt_id);
       if (conv_op)
 	tree_node (TREE_TYPE (t));
       else
@@ -5253,7 +5395,7 @@ trees_out::tree_node (tree t)
 
 	  /* Make sure we're identifying this exact variant.  */
 	  gcc_assert (get_pseudo_tinfo_type (ix) == t);
-	  s (tt_tinfo_pseudo);
+	  i (tt_tinfo_pseudo);
 	  u (ix);
 	  unsigned tag = insert (t);
 	  dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
@@ -5272,7 +5414,7 @@ trees_out::tree_node (tree t)
 	     those some other way to be canonically correct.  */
 	  gcc_assert (TREE_TYPE (DECL_NAME (name)) != t
 		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-	  s (tt_type_name);
+	  i (tt_type_name);
 	  tree_node (name);
 	  dump () && dump ("Wrote interstitial type name %C:%N%S",
 			   TREE_CODE (name), name, name);
@@ -5291,7 +5433,7 @@ trees_out::tree_node (tree t)
       if (owner >= MODULE_IMPORT_BASE)
 	{
 	  /* An imported decl -> tt_import.  */
-	  s (tt_import);
+	  i (tt_import);
 	  u (TREE_CODE (t));
 	  tree_node (CP_DECL_CONTEXT (t));
 	  u (owner);
@@ -5324,7 +5466,7 @@ trees_out::tree_node (tree t)
     tree_code code = TREE_CODE (t);
 
     unique++;
-    s (tt_node);
+    i (tt_node);
     u (code);
 
     start (code, t);
@@ -5349,7 +5491,7 @@ trees_in::tree_node ()
 {
   dump.indent ();
  again:
-  int tag = s ();
+  int tag = i ();
   tree res = NULL_TREE;
   switch (tag)
     {
@@ -5671,7 +5813,7 @@ trees_in::read ()
   bool ok = true;
   while (ok && more_p ())
     {
-      int tag = s ();
+      int tag = i ();
 
       switch (tag)
 	{
