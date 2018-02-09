@@ -1,3 +1,9 @@
+2018-02-09  Martin Sebor  <msebor@redhat.com>
+
+	PR lto/84212
+	* gcc.dg/lto/pr84212_0.c: New test file.
+	* gcc.dg/lto/pr84212_1.c: Same.
+
 2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/83926
