@@ -1,3 +1,8 @@
+2018-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84278
+	* gcc.target/i386/pr84278.c: Adjust regex.
+
 2018-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84232
