@@ -3025,9 +3025,10 @@ cxx_eval_vec_init (const constexpr_ctx *ctx, tree t,
 static tree
 cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 {
-  tree sub, subtype;
+  tree sub = op0;
+  tree subtype;
+  poly_uint64 const_op01;
 
-  sub = op0;
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
   if (!POINTER_TYPE_P (subtype))
@@ -3082,7 +3083,8 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	{
 	  tree part_width = TYPE_SIZE (type);
 	  tree index = bitsize_int (0);
-	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width, index);
+	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width,
+				  index);
 	}
       /* Also handle conversion to an empty base class, which
 	 is represented with a NOP_EXPR.  */
@@ -3107,7 +3109,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	}
     }
   else if (TREE_CODE (sub) == POINTER_PLUS_EXPR
-	   && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
+	   && poly_int_tree_p (TREE_OPERAND (sub, 1), &const_op01))
     {
       tree op00 = TREE_OPERAND (sub, 0);
       tree op01 = TREE_OPERAND (sub, 1);
@@ -3121,29 +3123,37 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 
 	  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
 	  if (VECTOR_TYPE_P (op00type)
-	      && (same_type_ignoring_top_level_qualifiers_p
-		  (type, TREE_TYPE (op00type))))
+	      && same_type_ignoring_top_level_qualifiers_p
+						(type, TREE_TYPE (op00type))
+	      /* POINTER_PLUS_EXPR second operand is sizetype, unsigned,
+		 but we want to treat offsets with MSB set as negative.
+		 For the code below negative offsets are invalid and
+		 TYPE_SIZE of the element is something unsigned, so
+		 check whether op01 fits into poly_int64, which implies
+		 it is from 0 to INTTYPE_MAXIMUM (HOST_WIDE_INT), and
+		 then just use poly_uint64 because we want to treat the
+		 value as unsigned.  */
+	      && tree_fits_poly_int64_p (op01))
 	    {
-	      HOST_WIDE_INT offset = tree_to_shwi (op01);
 	      tree part_width = TYPE_SIZE (type);
-	      unsigned HOST_WIDE_INT part_widthi = tree_to_shwi (part_width)/BITS_PER_UNIT;
-	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
-	      tree index = bitsize_int (indexi);
-
-	      if (known_lt (offset / part_widthi,
-			    TYPE_VECTOR_SUBPARTS (op00type)))
-		return fold_build3_loc (loc,
-					BIT_FIELD_REF, type, op00,
-					part_width, index);
-
+	      poly_uint64 max_offset
+		= (tree_to_uhwi (part_width) / BITS_PER_UNIT
+		   * TYPE_VECTOR_SUBPARTS (op00type));
+	      if (known_lt (const_op01, max_offset))
+		{
+		  tree index = bitsize_int (const_op01 * BITS_PER_UNIT);
+		  return fold_build3_loc (loc,
+					  BIT_FIELD_REF, type, op00,
+					  part_width, index);
+		}
 	    }
 	  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
 	  else if (TREE_CODE (op00type) == COMPLEX_TYPE
 		   && (same_type_ignoring_top_level_qualifiers_p
 		       (type, TREE_TYPE (op00type))))
 	    {
-	      tree size = TYPE_SIZE_UNIT (type);
-	      if (tree_int_cst_equal (size, op01))
+	      if (known_eq (wi::to_poly_offset (TYPE_SIZE_UNIT (type)),
+			    const_op01))
 		return fold_build1_loc (loc, IMAGPART_EXPR, type, op00);
 	    }
 	  /* ((foo *)&fooarray)[1] => fooarray[1] */
@@ -3198,7 +3208,8 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
     {
       tree type_domain;
       tree min_val = size_zero_node;
-      tree newsub = cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
+      tree newsub
+	= cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
       if (newsub)
 	sub = newsub;
       else

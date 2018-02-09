@@ -1,3 +1,9 @@
+2018-02-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* g++.dg/torture/pr83659.C: New test.
+
 2018-02-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/84136

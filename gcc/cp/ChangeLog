@@ -1,3 +1,11 @@
+2018-02-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* constexpr.c (cxx_fold_indirect_ref): Sync some changes from
+	fold_indirect_ref_1, including poly_*int64.  Verify first that
+	tree_fits_poly_int64_p (op01).  Formatting fixes.
+
 2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* constexpr.c (cxx_eval_component_reference): Use INDIRECT_REF_P.
