@@ -9742,7 +9742,12 @@ bool
 Named_method::do_nointerface() const
 {
   Named_object* no = this->named_object_;
-  return no->is_function() && no->func_value()->nointerface();
+  if (no->is_function())
+    return no->func_value()->nointerface();
+  else if (no->is_function_declaration())
+    return no->func_declaration_value()->nointerface();
+  else
+    go_unreachable();
 }
 
 // Class Interface_method.
