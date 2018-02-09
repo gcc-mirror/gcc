@@ -482,7 +482,7 @@ protected:
   }
   ~elf_in ()
   {
-    gcc_checking_assert (strings);
+    gcc_checking_assert (!strings);
   }
 
 protected:
@@ -593,6 +593,7 @@ public:
 };
 
 /* Read at current position into BUFFER.  Return true on success.  */
+
 bool
 elf_in::read (void *buffer, size_t size)
 {
@@ -605,10 +606,11 @@ elf_in::read (void *buffer, size_t size)
 }
 
 /* Read section SNUM.  Return data buffer, or NULL on error.  */
+
 data *
 elf_in::read (unsigned snum)
 {
-  if (snum >= sections->length ())
+  if (!snum || snum >= sections->length ())
     return NULL;
   const isection *sec = &(*sections)[snum];
   if (fseek (stream, sec->offset, SEEK_SET))
@@ -1589,7 +1591,7 @@ bytes_in::begin (elf_in *source, unsigned snum, const char *name)
   if (!data || !data->check_crc ())
     {
       data = data::release (data);
-      set_overrun ();
+      source->set_error (elf::E_BAD_DATA);
       if (name)
 	error ("section %qs is missing or corrupted", name);
       else
@@ -1620,9 +1622,9 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 
   data->size = pos;
   data->set_crc (crc_ptr);
-  unsigned sec_num = sink->add (crc_ptr ? elf::SHT_STRTAB : elf::SHT_PROGBITS,
+  unsigned sec_num = sink->add (crc_ptr ? elf::SHT_PROGBITS : elf::SHT_STRTAB,
 				name, data,
-				crc_ptr ? elf::SHF_STRINGS : elf::SHF_NONE);
+				crc_ptr ? elf::SHF_NONE : elf::SHF_STRINGS);
   parent::end ();
 
   return sec_num;
@@ -1652,7 +1654,7 @@ struct GTY(()) module_state {
   bitmap exports;	/* Subset of that, that we're exporting.  */
 
   tree name;		/* Name of the module.  */
-  tree vec_name;  	/* Name as a vector, if structured.  */
+  tree vec_name;  	/* Name as a vector.  */
 
   vec<unsigned, va_gc_atomic> *remap; /* Module owner remapping.  */
   elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
@@ -1667,9 +1669,6 @@ struct GTY(()) module_state {
 
   bool imported : 1;	/* Imported via import declaration.  */
   bool exported : 1;	/* The import is exported.  */
-
- public:
-  static vec<module_state *, va_gc> *modules;
 
  public:
   module_state ();
@@ -1689,6 +1688,7 @@ struct GTY(()) module_state {
     filename = name;
     loc = input_location;
   }
+  /* Enter and leave the module's location.  */
   void push_location (char *filename);
   void pop_location ();
 
@@ -1697,14 +1697,18 @@ struct GTY(()) module_state {
   void announce (const char *) const;
 
  public:
+  /* Read and write module.  */
   void write (elf_out *to);
   void read (elf_in *from, unsigned *crc_ptr);
 
  private:
+  /* The context -- global state, imports etc.  */
   void write_context (elf_out *to, unsigned *crc_ptr);
   bool read_context (elf_in *from);
+  /* The configuration -- cmd args etc.  */
   void write_config (elf_out *to, unsigned crc);
   bool read_config (elf_in *from, unsigned *crc_ptr);
+  
   void record_namespace (elf_out *to, bytes_out &bind,
 			 trees_out &trees, tree ns);
   void write_namespace (elf_out *to, bytes_out &bind, trees_out &trees, tree ns,
@@ -1714,15 +1718,23 @@ struct GTY(()) module_state {
   bool read_bindings (elf_in *from);
 
  public:
+  /* Import a module.  Possibly ourselves.  */
   static module_state *do_import (location_t, tree, bool module_unit_p,
 				  bool import_export_p, unsigned * = NULL);
+
+ public:
+  /* Vector indexed by OWNER.  */
+  static vec<module_state *, va_gc> *modules;
+
+ private:
+  /* Hash, findable by NAME.  */
+  static hash_table<module_state_hash> *hash;
 
  private:
   /* Global tree context.  */
   static const std::pair<tree *, unsigned> global_trees[];
   static vec<tree, va_gc> *global_vec;
   static unsigned global_crc;
-  static hash_table<module_state_hash> *hash;
 };
 
 /* Hash module state by name.  */
@@ -1730,6 +1742,7 @@ hashval_t module_state_hash::hash (const value_type m)
 {
   return IDENTIFIER_HASH_VALUE (m->name);
 }
+/* Always lookup by IDENTIFIER_NODE.  */
 bool module_state_hash::equal (const value_type existing, compare_type candidate)
 {
   return existing->name == candidate;
@@ -1747,10 +1760,10 @@ const std::pair<tree *, unsigned> module_state::global_trees[] =
 vec<tree, va_gc> GTY (()) *module_state::global_vec;
 unsigned module_state::global_crc;
 
-/* Vector of module state.  Always has 2 slots.  */
+/* Vector of module state.  Indexed by OWNER.  Always has 2 slots.  */
 vec<module_state *, va_gc> GTY(()) *module_state::modules;
 
-/* Map from identifier to module index. */
+/* Has of module state, findable by NAME. */
 hash_table<module_state_hash> *module_state::hash;
 
 /* Tree tags.  */
@@ -1779,9 +1792,9 @@ class trees_in : public bytes_in {
   typedef bytes_in parent;
 
 private:
-  module_state *state;
-  vec<tree, va_gc> *fixed_refs;	/* Fixed trees. */
-  auto_vec<tree> back_refs;	/* Back references. */
+  module_state *state;		/* Module being imported.  */
+  vec<tree, va_gc> *fixed_refs;	/* Fixed trees.  */
+  auto_vec<tree> back_refs;	/* Back references.  */
 
 public:
   trees_in (module_state *, vec<tree, va_gc> *globals);
@@ -1802,22 +1815,33 @@ private:
   tree start (tree_code);
   tree finish (tree);
   location_t loc ();
+
+private:
+  /* Stream tree_core, lang_decl_specific and lang_type_specific
+     bits.  */
   bool core_bools (tree);
   bool core_vals (tree);
   bool lang_type_bools (tree);
   bool lang_type_vals (tree);
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
-  bool tree_node_raw (tree_code, tree);
-  tree chained_decls ();
-  vec<tree, va_gc> *tree_vec ();
-  vec<tree_pair_s, va_gc> *tree_pair_vec ();
+
+  /* All the bits of a tree.  */
+  bool tree_node_raw (tree);
+
+private:
+  tree chained_decls ();  /* Follow DECL_CHAIN.  */
+  vec<tree, va_gc> *tree_vec (); /* vec of tree.  */
+  vec<tree_pair_s, va_gc> *tree_pair_vec (); /* vec of tree_pair.  */
+
+private:
   tree define_function (tree, tree);
   tree define_var (tree, tree);
   tree define_class (tree, tree);
   tree define_enum (tree, tree);
 
 public:
+  /* Read a tree node.  */
   tree tree_node ();
 };
 
@@ -1835,16 +1859,9 @@ class trees_out : public bytes_out {
   typedef bytes_out parent;
 
 private:
-  module_state *state;
-  int ref_num;
-  ptr_int_hash_map tree_map; /* trees to ids  */
-
-  /* Tree instrumentation. */
-private:
-  static unsigned unique;
-  static unsigned refs;
-  static unsigned nulls;
-  static unsigned records;
+  module_state *state;	/* The module we are writing.  */
+  int ref_num;		/* Back reference number.  */
+  ptr_int_hash_map tree_map; /* Trees to references */
 
 public:
   trees_out (module_state *, vec<tree, va_gc> *globals);
@@ -1852,9 +1869,6 @@ public:
 
 public:
   void write (auto_vec<tree> &decls);
-
-public:
-  static void instrument ();
 
 public:
   void maybe_tag_definition (tree decl);
@@ -1869,16 +1883,22 @@ private:
   int insert (tree);
   void start (tree_code, tree);
   void loc (location_t);
+
+private:
   void core_bools (tree);
   void core_vals (tree);
   void lang_type_bools (tree);
   void lang_type_vals (tree);
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
-  void tree_node_raw (tree_code, tree);
+  void tree_node_raw (tree);
+
+private:
   void chained_decls (tree);
   void tree_vec (vec<tree, va_gc> *);
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
+
+private:
   void define_function (tree, tree);
   void define_var (tree, tree);
   void define_class (tree, tree);
@@ -1888,8 +1908,20 @@ public:
   void tree_node (tree);
   vec<tree, va_gc> *bindings (bytes_out *, elf_out *,
 			      vec<tree, va_gc> *nest, tree ns);
+
+public:
+  static void instrument ();
+
+private:
+  /* Tree instrumentation. */
+  static unsigned unique;
+  static unsigned refs;
+  static unsigned nulls;
+  static unsigned records;
+
 };
 
+/* Instrumentation counters.  */
 unsigned trees_out::unique;
 unsigned trees_out::refs;
 unsigned trees_out::nulls;
@@ -1926,10 +1958,11 @@ private:
     bool bol; 		/* Beginning of line.  */
     stack_t stack;	/* Trailing array of module_state.  */
 
-    bool nested_name (tree);
+    bool nested_name (tree);  /* Dump a name following DECL_CONTEXT.  */
   };
 
 public:
+  /* The dumper.  */
   impl *dumps;
 
 public:
@@ -1952,15 +1985,19 @@ public:
       }
   }
 
-  /* Dump information.  */
+  /* Is dump enabled?.  */
   bool operator () ()
   {
     return dumps && dumps->stream;
   }
+  /* Dump some information.  */
   bool operator () (const char *, ...);
 };
 
+/* The dumper.  */
 static dumper dump = {0};
+
+/* Push to dumping M.  Return previous indentation level.  */
 
 unsigned
 dumper::push (module_state *m)
@@ -1975,6 +2012,7 @@ dumper::push (module_state *m)
 
   if (!dumps || !dumps->stack.space (1))
     {
+      /* Create or extend the dump implementor.  */
       bool current = dumps ? dumps->stack.length () : 0;
       unsigned count = current ? current *2 : MODULE_STAMP ? 1 : 20;
       size_t alloc = (offsetof (impl, impl::stack)
@@ -2000,6 +2038,8 @@ dumper::push (module_state *m)
   return n;
 }
 
+/* Pop from dumping.  Restore indentation to N.  */
+
 void dumper::pop (unsigned n)
 {
   if (!dumps)
@@ -2021,6 +2061,9 @@ void dumper::pop (unsigned n)
       dumps->stream = NULL;
     }
 }
+
+/* Dump a nested name for arbitrary tree T.  Sometimes it won't have a
+   name.  */
 
 bool
 dumper::impl::nested_name (tree t)
@@ -2061,6 +2104,27 @@ dumper::impl::nested_name (tree t)
   return false;
 }
 
+/* Formatted dumping.  FORMAT begins with '+' do not emit a trailing
+   new line.  (Normally it is appended.)
+   Escapes:
+      %C - tree_code
+      %I - identifier
+      %M - module_state
+      %N - name -- DECL_NAME
+      %P - context:name pair
+      %R - unsigned:unsigned ratio
+      %S - symbol -- DECL_ASSEMBLER_NAME
+      %U - long unsigned
+      %V - version
+      --- the following are printf-like
+      %d - decimal int
+      %p - pointer
+      %s - string
+      %u - unsigned int
+      %x - hex int
+
+  We do not implement the printf modifiers.  */
+   
 bool
 dumper::operator () (const char *format, ...)
 {
@@ -2246,6 +2310,9 @@ module_state::~module_state ()
   release ();
 }
 
+/* Initialize module state.  Create the hash table, determine the
+   global trees.  Create the module for current TU.  */
+
 void
 module_state::lazy_init ()
 {
@@ -2322,6 +2389,8 @@ module_state::lazy_init ()
   (*modules)[MODULE_NONE] = current;
 }
 
+/* Delete post-parsing state.  */
+
 void
 module_state::lazy_fini ()
 {
@@ -2346,8 +2415,11 @@ module_state::release (bool all)
     {
       vec_free (remap);
       delete from;
+      from = NULL;
     }
 }
+
+/* Announce WHAT about the module.  */
 
 void
 module_state::announce (const char *what) const
@@ -2372,6 +2444,7 @@ module_state::set_name (tree name_, tree maybe_vec)
 
   if (identifier_p (maybe_vec))
     {
+      /* Create a TREE_VEC of components.  */
       auto_vec<tree,5> ids;
       size_t len = IDENTIFIER_LENGTH (maybe_vec);
       const char *ptr = IDENTIFIER_POINTER (maybe_vec);
@@ -2394,6 +2467,8 @@ module_state::set_name (tree name_, tree maybe_vec)
   vec_name = maybe_vec;
 }
 
+/* Set location to NAME, and then enter the module.  */
+
 void
 module_state::push_location (char *name)
 {
@@ -2411,7 +2486,9 @@ module_state::pop_location ()
   input_location = linemap_line_start (line_table, 0, 0);
 }
 
-/* Context of the compilation.
+/* Context of the compilation: MOD_SNAME_PFX .context   
+
+   This is data we need to read in to modify our state.
 
    u:import_size
    {
@@ -2426,7 +2503,7 @@ module_state::pop_location ()
 
    The README section is intended for human consumption.  It is a
    STRTAB that may be extracted with:
-     readelf -p.gnu.c++.README X.nms   */
+     readelf -p.gnu.c++.README $(module).nms   */
 
 void
 module_state::write_context (elf_out *to, unsigned *crc_p)
@@ -2436,12 +2513,15 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
   ctx.begin ();
   readme.begin ();
 
+  /* Write version and module name to readme.  */
   version_string string;
   version2string (get_version (), string);
   readme.printf ("version:%s%c", string, 0);
   readme.printf ("module:%s%c", IDENTIFIER_POINTER (name), 0);
 
+  /* Total number of modules.  */
   ctx.u (modules->length ());
+  /* Write the imports, in forward order.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
     {
       module_state *state = (*modules)[ix];
@@ -2455,7 +2535,9 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
       ctx.raw (state->crc);
       unsigned name = to->name (state->name);
       ctx.u (name);
+
       if (state->imported)
+	/* Write a direct import to README.  */
 	readme.printf ("import:%s%c", IDENTIFIER_POINTER (state->name), 0);
     }
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
@@ -2470,6 +2552,7 @@ module_state::read_context (elf_in *from)
   if (!ctx.begin (from, MOD_SNAME_PFX ".context"))
     return false;
 
+  /* Allocate the REMAP vector.  */
   unsigned imports = ctx.u ();
   gcc_assert (!remap);
   remap = NULL;
@@ -2479,7 +2562,7 @@ module_state::read_context (elf_in *from)
   for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
     remap->quick_push (0);
 
-  /* Read the import table.  */
+  /* Read the import table in forward order.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < imports; ix++)
     {
       bool imported = ctx.b ();
@@ -2510,9 +2593,9 @@ module_state::read_context (elf_in *from)
   return ctx.end (from);
 }
 
-/* Tool configuration.  This determines if the current compilation is
-   compatible with the serialized module.  I.e. the contents are just
-   confirming things we already know (or failing to match).
+/* Tool configuration:  MOD_SNAME_PFX .config
+
+   This is data that confirms current state (or fails).
 
    raw:version
    raw:crc
@@ -2810,6 +2893,10 @@ module_state::read_namespace (elf_in *from, bytes_in &bind, tree ns)
   dump () && dump ("Read namespace %N", ns);
 }
 
+/* Bindings: MOD_SNAME_PFX .bindings
+
+   flattened namespace record of which names are bound.  */
+
 void
 module_state::write_bindings (elf_out *to, unsigned *crc_p)
 {
@@ -2862,25 +2949,21 @@ module_state::read_bindings (elf_in *from)
   return trees.end (from);
 }
 
-/* Encapsulated Lazy Records Of Named Declarations.
-   Header: Stunningly Elf32_Ehdr-like
-   Sections: Sectional data
-     1     .README   : human readable, stunningly STRTAB-like
-     2     .context  : context data
-     [3-N) .decls    : decls bound to a name
-     N     .bindings : bindings of namespace names
-     N+1   .config   : config data
-     N+2    .strtab  : strings, stunningly STRTAB-like
-   Index: Section table, stunningly ELF32_Shdr-like.   */
+/* Use ELROND format to record the following sections:
+     1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
+     2     MOD_SNAME_PFX.context  : context data
+     [3-N) DECL_NAME() :binding value(s)
+     N     MOD_SNAME_PFX.bindings : bindings of namespace names
+     N+1   MOD_SNAME_PFX.config   : config data
+*/
 
 void
 module_state::write (elf_out *to)
 {
   unsigned crc = 0;
+
   write_context (to, &crc);
-
   write_bindings (to, &crc);
-
   write_config (to, crc);
 
   trees_out::instrument ();
@@ -2891,10 +2974,10 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
 {
   if (!read_config (from, crc_ptr))
     return;
-
   if (!read_context (from))
     return;
 
+  /* Determine the module's number.  */
   unsigned ix = MODULE_PURVIEW;
   if (this != (*modules)[MODULE_NONE])
     {
@@ -2914,7 +2997,7 @@ module_state::read (elf_in *from, unsigned *crc_ptr)
     }
   mod = ix;
   (*remap)[MODULE_PURVIEW] = ix;
-  dump () && dump ("Assigning %N module index %u", name, ix);
+  dump () && dump ("Assigning %N module number %u", name, ix);
 
   if (!read_bindings (from))
     return;
@@ -2986,6 +3069,8 @@ module_state::set_import (module_state const *other, bool is_export)
     bitmap_ior_into (exports, other->exports);
 }
 
+/* Instrumentation gathered writing bytes.  */
+
 void
 bytes_out::instrument ()
 {
@@ -2998,6 +3083,7 @@ bytes_out::instrument ()
 	lengths[2] * 8 - (lengths[0] + lengths[1]), spans[2]);
 }
 
+/* Instrumentation gathered writing trees.  */
 void
 trees_out::instrument ()
 {
@@ -3012,6 +3098,8 @@ trees_out::instrument ()
     }
 }
 
+/* Insert T into the map, return its back reference number.  */
+
 int
 trees_out::insert (tree t)
 {
@@ -3021,6 +3109,8 @@ trees_out::insert (tree t)
   return ref_num;
 }
 
+/* Insert T into the backreference array.  Return its back reference
+   number.  */
 int
 trees_in::insert (tree t)
 {
@@ -5209,9 +5299,9 @@ trees_in::lang_type_vals (tree t)
    bools and vals without post-processing.  */
 
 void
-trees_out::tree_node_raw (tree_code code, tree t)
+trees_out::tree_node_raw (tree t)
 {
-  tree_code_class klass = TREE_CODE_CLASS (code);
+  tree_code_class klass = TREE_CODE_CLASS (TREE_CODE (t));
   bool specific = false;
 
   if (klass == tcc_type || klass == tcc_declaration)
@@ -5224,7 +5314,7 @@ trees_out::tree_node_raw (tree_code code, tree t)
 	gcc_assert (TYPE_LANG_SPECIFIC (t)
 		    == TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
       b (specific);
-      if (specific && code == VAR_DECL)
+      if (specific && VAR_P (t))
 	b (DECL_DECOMPOSITION_P (t));
     }
 
@@ -5249,9 +5339,9 @@ trees_out::tree_node_raw (tree_code code, tree t)
 }
 
 bool
-trees_in::tree_node_raw (tree_code code, tree t)
+trees_in::tree_node_raw (tree t)
 {
-  tree_code_class klass = TREE_CODE_CLASS (code);
+  tree_code_class klass = TREE_CODE_CLASS (TREE_CODE (t));
   bool specific = false;
   bool lied = false;
 
@@ -5261,7 +5351,7 @@ trees_in::tree_node_raw (tree_code code, tree t)
       if (specific
 	  &&  (klass == tcc_type
 	       ? !maybe_add_lang_type_raw (t)
-	       : !maybe_add_lang_decl_raw (t, code == VAR_DECL && b ())))
+	       : !maybe_add_lang_decl_raw (t, VAR_P (t) && b ())))
 	  lied = true;
     }
 
@@ -5475,7 +5565,7 @@ trees_out::tree_node (tree t)
     dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
 		     TREE_CODE_CLASS (code) == tcc_declaration
 		     && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
-    tree_node_raw (code, t);
+    tree_node_raw (t);
     dump () && dump ("Written:%d %N", tag, t);
   }
 
@@ -5645,7 +5735,7 @@ trees_in::tree_node ()
 	tag = insert (res);
 	dump () && dump ("Reading:%d %C", tag, code);
 
-	if (!tree_node_raw (code, res))
+	if (!tree_node_raw (res))
 	  goto barf;
 
 	if (get_overrun ())

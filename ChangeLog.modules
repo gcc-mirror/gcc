@@ -1,6 +1,9 @@
 2018-02-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c: Update more comments.
+
+	gcc/cp/
 	* module.c: Update a lot of comments.
 
 2018-02-07  Nathan Sidwell  <nathan@acm.org>
