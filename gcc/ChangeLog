@@ -1,5 +1,10 @@
 2018-02-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/84285
+	* gcc.c (STATIC_LIBASAN_LIBS, STATIC_LIBTSAN_LIBS,
+	STATIC_LIBLSAN_LIBS, STATIC_LIBUBSAN_LIBS): Handle -static like
+	-static-lib*san.
+
 	PR debug/84252
 	* var-tracking.c (vt_add_function_parameter): Punt for non-onepart
 	PARALLEL incoming that failed vt_get_decl_and_offset check.
