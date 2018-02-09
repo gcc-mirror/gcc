@@ -1,3 +1,8 @@
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* optabs.c (prepare_cmp_insn): Try harder to emit a direct comparison
+	instead of a libcall for UNORDERED.
+
 2018-02-09  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641
