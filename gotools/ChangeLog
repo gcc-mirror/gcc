@@ -1,3 +1,7 @@
+2018-02-09  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (GOTOOLS_TEST_TIMEOUT): Double value.
+
 2018-02-08  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (check-gccgo, check-gcc): Add options to pick up
