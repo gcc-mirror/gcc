@@ -5273,16 +5273,6 @@ cp_free_lang_data (tree t)
     /* We do not need the leftover chaining of namespaces from the
        binding level.  */
     DECL_CHAIN (t) = NULL_TREE;
-  /* Set DECL_VALUE_EXPRs of OpenMP privatized member artificial
-     decls to error_mark_node.  These are DECL_IGNORED_P and after
-     OpenMP lowering they aren't useful anymore.  Clearing DECL_VALUE_EXPR
-     doesn't work, as expansion could then consider them as something
-     to be expanded.  */
-  if (VAR_P (t)
-      && DECL_LANG_SPECIFIC (t)
-      && DECL_OMP_PRIVATIZED_MEMBER (t)
-      && DECL_IGNORED_P (t))
-    SET_DECL_VALUE_EXPR (t, error_mark_node);
 }
 
 /* Stub for c-common.  Please keep in sync with c-decl.c.
