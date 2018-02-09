@@ -1,3 +1,12 @@
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83926
+	* config/rs6000/vsx.md (vsx_mul_v2di): Handle generating a 64-bit
+	multiply in 32-bit mode.
+	(vsx_div_v2di): Handle generating a 64-bit signed divide in 32-bit mode.
+	(vsx_udiv_v2di): Handle generating a 64-bit unsigned divide in 32-bit
+	mode.
+
 2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rx/constraints.md: added new constraint CALL_OP_SYMBOL_REF 

@@ -1,3 +1,10 @@
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83926
+	* gcc.target/powerpc/pr83926.c: New test.
+	* gcc.target/powerpc/builtins-1-be.c: Filter out gimple folding disabled
+	message.  Fix test for running in 32-bit mode.
+
 2018-02-09  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641
