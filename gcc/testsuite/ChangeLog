@@ -1,5 +1,8 @@
 2018-02-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/84252
+	* gcc.target/aarch64/pr84252.c: New test.
+
 	PR middle-end/84237
 	* gcc.dg/pr84237.c: New test.
 
