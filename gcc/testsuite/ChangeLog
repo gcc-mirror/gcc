@@ -1,3 +1,8 @@
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/84237
+	* gcc.dg/pr84237.c: New test.
+
 2018-02-09  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
