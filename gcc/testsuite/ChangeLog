@@ -1,5 +1,8 @@
 2018-02-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84232
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Add -mtune-generic on x86.
+
 	PR debug/84252
 	* gcc.target/aarch64/pr84252.c: New test.
 
