@@ -1371,6 +1371,19 @@ dump_gimple_debug (pretty_printer *buffer, gdebug *gs, int spc,
 	dump_gimple_fmt (buffer, spc, flags, "# DEBUG BEGIN_STMT");
       break;
 
+    case GIMPLE_DEBUG_INLINE_ENTRY:
+      if (flags & TDF_RAW)
+	dump_gimple_fmt (buffer, spc, flags, "%G INLINE_ENTRY %T", gs,
+			 gimple_block (gs)
+			 ? block_ultimate_origin (gimple_block (gs))
+			 : NULL_TREE);
+      else
+	dump_gimple_fmt (buffer, spc, flags, "# DEBUG INLINE_ENTRY %T",
+			 gimple_block (gs)
+			 ? block_ultimate_origin (gimple_block (gs))
+			 : NULL_TREE);
+      break;
+
     default:
       gcc_unreachable ();
     }

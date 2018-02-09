@@ -874,6 +874,27 @@ gimple_build_debug_begin_stmt (tree block, location_t location
 }
 
 
+/* Build a new GIMPLE_DEBUG_INLINE_ENTRY statement in BLOCK at
+   LOCATION.  The BLOCK links to the inlined function.  */
+
+gdebug *
+gimple_build_debug_inline_entry (tree block, location_t location
+				      MEM_STAT_DECL)
+{
+  gdebug *p
+    = as_a <gdebug *> (
+        gimple_build_with_ops_stat (GIMPLE_DEBUG,
+				    (unsigned)GIMPLE_DEBUG_INLINE_ENTRY, 0
+				    PASS_MEM_STAT));
+
+  gimple_set_location (p, location);
+  gimple_set_block (p, block);
+  cfun->debug_marker_count++;
+
+  return p;
+}
+
+
 /* Build a GIMPLE_OMP_CRITICAL statement.
 
    BODY is the sequence of statements for which only one thread can execute.

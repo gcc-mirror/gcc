@@ -1611,6 +1611,7 @@ reemit_insn_block_notes (void)
 	    break;
 
 	  case NOTE_INSN_BEGIN_STMT:
+	  case NOTE_INSN_INLINE_ENTRY:
 	    this_block = LOCATION_BLOCK (NOTE_MARKER_LOCATION (insn));
 	    goto set_cur_block_to_this_block;
 
@@ -2479,10 +2480,23 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  if (!DECL_IGNORED_P (current_function_decl)
 	      && notice_source_line (insn, NULL))
 	    {
+	    output_source_line:
 	      (*debug_hooks->source_line) (last_linenum, last_columnnum,
 					   last_filename, last_discriminator,
 					   true);
 	      clear_next_view_needed (seen);
+	    }
+	  break;
+
+	case NOTE_INSN_INLINE_ENTRY:
+	  gcc_checking_assert (cfun->debug_nonbind_markers);
+	  if (!DECL_IGNORED_P (current_function_decl))
+	    {
+	      if (!notice_source_line (insn, NULL))
+		break;
+	      (*debug_hooks->inline_entry) (LOCATION_BLOCK
+					    (NOTE_MARKER_LOCATION (insn)));
+	      goto output_source_line;
 	    }
 	  break;
 
@@ -3189,6 +3203,17 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
   if (NOTE_MARKER_P (insn))
     {
       location_t loc = NOTE_MARKER_LOCATION (insn);
+      /* The inline entry markers (gimple, insn, note) carry the
+	 location of the call, because that's what we want to carry
+	 during compilation, but the location we want to output in
+	 debug information for the inline entry point is the location
+	 of the function itself.  */
+      if (NOTE_KIND (insn) == NOTE_INSN_INLINE_ENTRY)
+	{
+	  tree block = LOCATION_BLOCK (loc);
+	  tree fn = block_ultimate_origin (block);
+	  loc = DECL_SOURCE_LOCATION (fn);
+	}
       expanded_location xloc = expand_location (loc);
       if (xloc.line == 0)
 	{
@@ -4795,6 +4820,7 @@ rest_of_clean_state (void)
 	  && (!NOTE_P (insn) ||
 	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
 	       && NOTE_KIND (insn) != NOTE_INSN_BEGIN_STMT
+	       && NOTE_KIND (insn) != NOTE_INSN_INLINE_ENTRY
 	       && NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
