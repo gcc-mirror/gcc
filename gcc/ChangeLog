@@ -1,3 +1,12 @@
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/84237
+	* output.h (bss_initializer_p): Add NAMED argument, defaulted to false.
+	* varasm.c (bss_initializer_p): Add NAMED argument, if true, ignore
+	TREE_READONLY bit.
+	(get_variable_section): For decls in named .bss* sections pass true as
+	second argument to bss_initializer_p.
+
 2018-02-09  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
