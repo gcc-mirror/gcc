@@ -1260,7 +1260,7 @@ extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
 extern bool warn_if_unused_value (const_tree, location_t);
-extern bool strict_aliasing_warning (tree, tree, tree);
+extern bool strict_aliasing_warning (location_t, tree, tree);
 extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      vec<tree, va_gc> *, tree *,
 					      bool (*) (tree, tree));

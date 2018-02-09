@@ -1,3 +1,11 @@
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* c-common.h (strict_aliasing_warning): Drop OTYPE arg, insert LOC
+	arg.
+	* c-warn.c (strict_aliasing_warning): Drop OTYPE arg, require LOC
+	arg.  Adjust.
+
 2018-02-09  Martin Sebor  <msebor@redhat.com>
 
 	PR lto/84212

@@ -2524,7 +2524,7 @@ build_indirect_ref (location_t loc, tree ptr, ref_operator errstring)
 	     the backend.  This only needs to be done at
 	     warn_strict_aliasing > 2.  */
 	  if (warn_strict_aliasing > 2)
-	    if (strict_aliasing_warning (TREE_TYPE (TREE_OPERAND (pointer, 0)),
+	    if (strict_aliasing_warning (EXPR_LOCATION (pointer),
 					 type, TREE_OPERAND (pointer, 0)))
 	      TREE_NO_WARNING (pointer) = 1;
 	}
@@ -5696,7 +5696,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 		    "of different size");
 
       if (warn_strict_aliasing <= 2)
-        strict_aliasing_warning (otype, type, expr);
+        strict_aliasing_warning (EXPR_LOCATION (value), type, expr);
 
       /* If pedantic, warn for conversions between function and object
 	 pointer types, except for converting a null pointer constant

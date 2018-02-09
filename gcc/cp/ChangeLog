@@ -1,3 +1,9 @@
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* typeck.c (cp_build_indirect_ref_1, build_reinterpret_cast_1):
+	Pass expr location to strict_aliasing_warning.
+
 2018-02-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84296 - ICE with qualified-id in template.

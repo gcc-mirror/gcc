@@ -599,17 +599,21 @@ warn_if_unused_value (const_tree exp, location_t locus)
     }
 }
 
-/* Print a warning about casts that might indicate violation
-   of strict aliasing rules if -Wstrict-aliasing is used and
-   strict aliasing mode is in effect. OTYPE is the original
-   TREE_TYPE of EXPR, and TYPE the type we're casting to. */
+/* Print a warning about casts that might indicate violation of strict
+   aliasing rules if -Wstrict-aliasing is used and strict aliasing
+   mode is in effect.  LOC is the location of the expression being
+   cast, EXPR might be from inside it.  TYPE is the type we're casting
+   to.  */
 
 bool
-strict_aliasing_warning (tree otype, tree type, tree expr)
+strict_aliasing_warning (location_t loc, tree type, tree expr)
 {
+  if (loc == UNKNOWN_LOCATION)
+    loc = input_location;
+
   /* Strip pointer conversion chains and get to the correct original type.  */
   STRIP_NOPS (expr);
-  otype = TREE_TYPE (expr);
+  tree otype = TREE_TYPE (expr);
 
   if (!(flag_strict_aliasing
 	&& POINTER_TYPE_P (type)
@@ -628,8 +632,9 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
 	 if the cast breaks type based aliasing.  */
       if (!COMPLETE_TYPE_P (TREE_TYPE (type)) && warn_strict_aliasing == 2)
 	{
-	  warning (OPT_Wstrict_aliasing, "type-punning to incomplete type "
-		   "might break strict-aliasing rules");
+	  warning_at (loc, OPT_Wstrict_aliasing,
+		      "type-punning to incomplete type "
+		      "might break strict-aliasing rules");
 	  return true;
 	}
       else
@@ -645,15 +650,17 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
 	      && !alias_set_subset_of (set2, set1)
 	      && !alias_sets_conflict_p (set1, set2))
 	    {
-	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-		       "pointer will break strict-aliasing rules");
+	      warning_at (loc, OPT_Wstrict_aliasing,
+			  "dereferencing type-punned "
+			  "pointer will break strict-aliasing rules");
 	      return true;
 	    }
 	  else if (warn_strict_aliasing == 2
 		   && !alias_sets_must_conflict_p (set1, set2))
 	    {
-	      warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-		       "pointer might break strict-aliasing rules");
+	      warning_at (loc, OPT_Wstrict_aliasing,
+			  "dereferencing type-punned "
+			  "pointer might break strict-aliasing rules");
 	      return true;
 	    }
 	}
@@ -669,8 +676,9 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
       if (!COMPLETE_TYPE_P (type)
 	  || !alias_sets_must_conflict_p (set1, set2))
 	{
-	  warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
-		   "pointer might break strict-aliasing rules");
+	  warning_at (loc, OPT_Wstrict_aliasing,
+		      "dereferencing type-punned "
+		      "pointer might break strict-aliasing rules");
 	  return true;
 	}
     }

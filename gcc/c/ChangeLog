@@ -1,3 +1,9 @@
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* c-typeck.c (build_indirect_ref, build_c_cast): Pass expr location
+	to strict_aliasing_warning.
+
 2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-typeck.c (really_start_incremental_init, push_init_level,
