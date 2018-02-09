@@ -2,8 +2,10 @@
 /* { dg-options "-O3 -fno-tree-fre -fno-tree-pre -fdump-tree-optimized --param sra-max-scalarization-size-Ospeed=32" } */
 /* System Z needs hardware vector support for this to work (the optimization
    gets too complex without it.
-   { dg-additional-options "-march=z13" { target { s390x-*-* } } } */
-
+   { dg-additional-options "-march=z13" { target s390x-*-* } } */
+/* Use generic tuning on x86 for the same reasons as why alpha, powerpc etc. are
+   xfailed below.
+   { dg-additional-options "-mtune=generic" { target i?86-*-* x86_64-*-* } } */
 
 int
 foo ()
