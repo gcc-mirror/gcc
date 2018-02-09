@@ -87,11 +87,10 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 	builtin_define ("__ARM_FEATURE_CMSE");
     }
 
+  cpp_undef (pfile, "__ARM_FEATURE_LDREX");
   if (TARGET_ARM_FEATURE_LDREX)
     builtin_define_with_int_value ("__ARM_FEATURE_LDREX",
 				   TARGET_ARM_FEATURE_LDREX);
-  else
-    cpp_undef (pfile, "__ARM_FEATURE_LDREX");
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_CLZ",
 		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)
@@ -105,6 +104,8 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
 				 flag_short_enums ? 1 : 4);
   builtin_define_type_sizeof ("__ARM_SIZEOF_WCHAR_T", wchar_type_node);
+
+  cpp_undef (pfile, "__ARM_ARCH_PROFILE");
   if (TARGET_ARM_ARCH_PROFILE)
     builtin_define_with_int_value ("__ARM_ARCH_PROFILE",
 				   TARGET_ARM_ARCH_PROFILE);
@@ -128,6 +129,7 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   else
     def_or_undef_macro (pfile, "__THUMBEL__", TARGET_THUMB);
 
+  cpp_undef (pfile, "__ARM_ARCH_ISA_THUMB");
   if (TARGET_ARM_ARCH_ISA_THUMB)
     builtin_define_with_int_value ("__ARM_ARCH_ISA_THUMB",
 				   TARGET_ARM_ARCH_ISA_THUMB);
@@ -147,10 +149,9 @@ arm_cpu_builtins (struct cpp_reader* pfile)
 
   builtin_define ("__VFP_FP__");
 
+  cpp_undef (pfile, "__ARM_FP");
   if (TARGET_ARM_FP)
     builtin_define_with_int_value ("__ARM_FP", TARGET_ARM_FP);
-  else
-    cpp_undef (pfile, "__ARM_FP");
 
   def_or_undef_macro (pfile, "__ARM_FP16_FORMAT_IEEE",
 		      arm_fp16_format == ARM_FP16_FORMAT_IEEE);
@@ -169,10 +170,9 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_NEON__", TARGET_NEON);
   def_or_undef_macro (pfile, "__ARM_NEON", TARGET_NEON);
 
+  cpp_undef (pfile, "__ARM_NEON_FP");
   if (TARGET_NEON_FP)
     builtin_define_with_int_value ("__ARM_NEON_FP", TARGET_NEON_FP);
-  else
-    cpp_undef (pfile, "__ARM_NEON_FP");
 
   /* Add a define for interworking. Needed when building libgcc.a.  */
   if (arm_cpp_interwork)

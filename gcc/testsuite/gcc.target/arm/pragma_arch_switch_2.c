@@ -2,16 +2,16 @@
 /* { dg-skip-if "instruction not valid on thumb" { *-*-* } { "-mthumb" } { "" } } */
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_arm_ok } */
-/* { dg-additional-options "-Wall -O2 -march=armv4t -std=gnu99 -marm" } */
+/* { dg-additional-options "-Wall -O2 -march=armv5t -std=gnu99 -marm" } */
 
-#pragma GCC target ("arch=armv5te")
-void cpu_has_iwmmxt (void)
+#pragma GCC target ("arch=armv6")
+int test_assembly (int hi, int lo)
 {
-   int lo;
-   int hi;
+   int res;
    __asm__ __volatile__ (
-      "mcrr   p0, 0, %2, %3, c0\n"
-      : "=r" (lo), "=r" (hi)
-      : "r" (0), "r" (0x100));
+      "uxtah   %0, %1, %2\n"
+      : "=r" (res)
+      : "r" (hi),  "r" (lo));
+   return res;
 }
 
