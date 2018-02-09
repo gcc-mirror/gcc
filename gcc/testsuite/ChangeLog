@@ -1,3 +1,9 @@
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83926
+	* gcc.target/powerpc/pr83926.c: Filter out gimple folding disabled
+	message.
+
 2018-02-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/vsx-vector-6-le.c:  Update CPU target.
