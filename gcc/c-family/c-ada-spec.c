@@ -3131,7 +3131,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    {
 	      pp_string (buffer, "aliased ");
 
-	      if (TREE_READONLY (t))
+	      if (TREE_READONLY (t) && TREE_CODE (t) != FIELD_DECL)
 		pp_string (buffer, "constant ");
 
 	      if (TYPE_NAME (TREE_TYPE (t)))
@@ -3147,7 +3147,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		      || TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE))
 		pp_string (buffer, "aliased ");
 
-	      if (TREE_READONLY (t))
+	      if (TREE_READONLY (t) && TREE_CODE (t) != FIELD_DECL)
 		pp_string (buffer, "constant ");
 
 	      dump_generic_ada_node
