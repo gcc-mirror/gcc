@@ -1,3 +1,8 @@
+2018-02-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57193
+	* gcc.target/i386/57193.c: New.
+
 2018-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84226
