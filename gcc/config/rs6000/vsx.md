@@ -1650,10 +1650,22 @@
   rtx op5 = gen_reg_rtx (DImode);
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  emit_insn (gen_muldi3 (op5, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_muldi3 (op5, op3, op4));
+  else
+    {
+      rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
+      emit_move_insn (op5, ret);
+    }
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  emit_insn (gen_muldi3 (op3, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_muldi3 (op3, op3, op4));
+  else
+    {
+      rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
+      emit_move_insn (op3, ret);
+    }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
 }"
@@ -1688,10 +1700,30 @@
   rtx op5 = gen_reg_rtx (DImode);
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  emit_insn (gen_divdi3 (op5, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_divdi3 (op5, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (sdiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op5, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op5, target);
+    }
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  emit_insn (gen_divdi3 (op3, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_divdi3 (op3, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (sdiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op3, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op3, target);
+    }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
 }"
@@ -1716,10 +1748,30 @@
   rtx op5 = gen_reg_rtx (DImode);
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  emit_insn (gen_udivdi3 (op5, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_udivdi3 (op5, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (udiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op5, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op5, target);
+    }
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  emit_insn (gen_udivdi3 (op3, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_udivdi3 (op3, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (udiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op3, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op3, target);
+    }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
 }"
