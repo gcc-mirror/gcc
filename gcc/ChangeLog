@@ -1,3 +1,9 @@
+2018-02-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* config/arm/arm-c.c (arm_cpu_builtins): Un-define __ARM_FEATURE_LDREX,
+	__ARM_ARCH_PROFILE, __ARM_ARCH_ISA_THUMB, __ARM_FP and __ARM_NEON_FP.
+
 2018-02-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/PR84295
