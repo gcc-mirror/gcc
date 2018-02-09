@@ -1,3 +1,8 @@
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration): Do not generate the 'constant'
+	keyword for components.
+
 2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-common.h (DECL_UNNAMED_BIT_FIELD): New.
