@@ -1,3 +1,11 @@
+2018-02-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* fold-const.c (fold_indirect_ref_1): Use VECTOR_TYPE_P macro.
+	Formatting fixes.  Verify first that tree_fits_poly_int64_p (op01).
+	Sync some changes from cxx_fold_indirect_ref.
+
 2018-02-09  Alexandre Oliva <aoliva@redhat.com>
 
 	* cfgexpand.c (expand_gimple_basic_block): Handle inline entry
