@@ -917,9 +917,13 @@ get_symbol_for_decl (tree decl)
 	  else if (lookup_attribute ("hsa_group_segment",
 				     DECL_ATTRIBUTES (decl)))
 	    segment = BRIG_SEGMENT_GROUP;
-	  else if (TREE_STATIC (decl)
-		   || lookup_attribute ("hsa_global_segment",
-					DECL_ATTRIBUTES (decl)))
+	  else if (TREE_STATIC (decl))
+	    {
+	      segment = BRIG_SEGMENT_GLOBAL;
+	      allocation = BRIG_ALLOCATION_PROGRAM;
+	    }
+	  else if (lookup_attribute ("hsa_global_segment",
+				     DECL_ATTRIBUTES (decl)))
 	    segment = BRIG_SEGMENT_GLOBAL;
 	  else
 	    segment = BRIG_SEGMENT_PRIVATE;
