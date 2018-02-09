@@ -71,6 +71,10 @@ INSN_NOTE (CALL_ARG_LOCATION)
 /* The beginning of a statement.  */
 INSN_NOTE (BEGIN_STMT)
 
+/* The entry point for an inlined function.  Its NOTE_BLOCK references
+   the lexical block whose abstract origin is the inlined function.  */
+INSN_NOTE (INLINE_ENTRY)
+
 /* Record the struct for the following basic block.  Uses
    NOTE_BASIC_BLOCK.  FIXME: Redundant with the basic block pointer
    now included in every insn.  NOTE: If there's no CFG anymore, in other words,

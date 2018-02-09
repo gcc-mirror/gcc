@@ -1,5 +1,55 @@
 2018-02-09  Alexandre Oliva <aoliva@redhat.com>
 
+	* cfgexpand.c (expand_gimple_basic_block): Handle inline entry
+	markers.
+	* dwarf2out.c (dwarf2_debug_hooks): Enable inline_entry hook.
+	(BLOCK_INLINE_ENTRY_LABEL): New.
+	(dwarf2out_var_location): Disregard inline entry markers.
+	(inline_entry_data): New struct.
+	(inline_entry_data_hasher): New hashtable type.
+	(inline_entry_data_hasher::hash): New.
+	(inline_entry_data_hasher::equal): New.
+	(inline_entry_data_table): New variable.
+	(add_high_low_attributes): Add DW_AT_entry_pc and
+	DW_AT_GNU_entry_view attributes if a pending entry is found
+	in inline_entry_data_table.  Add old entry_pc attribute only
+	if debug nonbinding markers are disabled.
+	(gen_inlined_subroutine_die): Set BLOCK_DIE if nonbinding
+	markers are enabled.
+	(block_within_block_p, dwarf2out_inline_entry): New.
+	(dwarf2out_finish): Check that no entries remained in
+	inline_entry_data_table.
+	* final.c (reemit_insn_block_notes): Handle inline entry notes.
+	(final_scan_insn, notice_source_line): Likewise.
+	(rest_of_clean_state): Skip inline entry markers.
+	* gimple-pretty-print.c (dump_gimple_debug): Handle inline entry
+	markers.
+	* gimple.c (gimple_build_debug_inline_entry): New.
+	* gimple.h (enum gimple_debug_subcode): Add
+	GIMPLE_DEBUG_INLINE_ENTRY.
+	(gimple_build_debug_inline_entry): Declare.
+	(gimple_debug_inline_entry_p): New.
+	(gimple_debug_nonbind_marker_p): Adjust.
+	* insn-notes.def (INLINE_ENTRY): New.
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_0): Handle
+	inline entry marker notes.
+	(print_insn): Likewise.
+	* rtl.h	(NOTE_MARKER_P): Add INLINE_ENTRY support.
+	(INSN_DEBUG_MARKER_KIND): Likewise.
+	(GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT): New.
+	* tree-inline.c	(expand_call_inline): Build and insert
+	debug_inline_entry stmt.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Preserve
+	inline entry blocks early, if nonbind markers are enabled.
+	(dump_scope_block): Dump fragment info.
+	* var-tracking.c (reemit_marker_as_note): Handle inline entry note.
+	* doc/gimple.texi (gimple_debug_inline_entry_p): New.
+	(gimple_build_debug_inline_entry): New.
+	* doc/invoke.texi (gstatement-frontiers, gno-statement-frontiers):
+	Enable/disable inline entry points too.
+	* doc/rtl.texi (NOTE_INSN_INLINE_ENTRY): New.
+	(DEBUG_INSN): Describe inline entry markers.
+
 	* common.opt (gvariable-location-views): New.
 	(gvariable-location-views=incompat5): New.
 	* config.in: Rebuilt.

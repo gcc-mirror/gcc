@@ -2747,6 +2747,7 @@ static void dwarf2out_imported_module_or_decl_1 (tree, tree, tree,
 						 dw_die_ref);
 static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx_insn *);
+static void dwarf2out_inline_entry (tree);
 static void dwarf2out_size_function (tree);
 static void dwarf2out_begin_function (tree);
 static void dwarf2out_end_function (unsigned int);
@@ -2800,7 +2801,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_rtx_code_label,	/* label */
   debug_nothing_int,		/* handle_pch */
   dwarf2out_var_location,
-  debug_nothing_tree,		/* inline_entry */
+  dwarf2out_inline_entry,	/* inline_entry */
   dwarf2out_size_function,	/* size_function */
   dwarf2out_switch_text_section,
   dwarf2out_set_name,
@@ -4067,6 +4068,9 @@ static char ranges_base_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 #ifndef BLOCK_BEGIN_LABEL
 #define BLOCK_BEGIN_LABEL	"LBB"
+#endif
+#ifndef BLOCK_INLINE_ENTRY_LABEL
+#define BLOCK_INLINE_ENTRY_LABEL "LBI"
 #endif
 #ifndef BLOCK_END_LABEL
 #define BLOCK_END_LABEL		"LBE"
@@ -23215,6 +23219,48 @@ block_die_hasher::equal (die_struct *x, die_struct *y)
   return x->decl_id == y->decl_id && x->die_parent == y->die_parent;
 }
 
+/* Hold information about markers for inlined entry points.  */
+struct GTY ((for_user)) inline_entry_data
+{
+  /* The block that's the inlined_function_outer_scope for an inlined
+     function.  */
+  tree block;
+
+  /* The label at the inlined entry point.  */
+  const char *label_pfx;
+  unsigned int label_num;
+
+  /* The view number to be used as the inlined entry point.  */
+  var_loc_view view;
+};
+
+struct inline_entry_data_hasher : ggc_ptr_hash <inline_entry_data>
+{
+  typedef tree compare_type;
+  static inline hashval_t hash (const inline_entry_data *);
+  static inline bool equal (const inline_entry_data *, const_tree);
+};
+
+/* Hash table routines for inline_entry_data.  */
+
+inline hashval_t
+inline_entry_data_hasher::hash (const inline_entry_data *data)
+{
+  return htab_hash_pointer (data->block);
+}
+
+inline bool
+inline_entry_data_hasher::equal (const inline_entry_data *data,
+				 const_tree block)
+{
+  return data->block == block;
+}
+
+/* Inlined entry points pending DIE creation in this compilation unit.  */
+
+static GTY(()) hash_table<inline_entry_data_hasher> *inline_entry_data_table;
+
+
 /* Return TRUE if DECL, which may have been previously generated as
    OLD_DIE, is a candidate for a DW_AT_specification.  DECLARATION is
    true if decl (or its origin) is either an extern declaration or a
@@ -23667,6 +23713,42 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
+  if (inline_entry_data **iedp
+      = !inline_entry_data_table ? NULL
+      : inline_entry_data_table->find_slot_with_hash (stmt,
+						      htab_hash_pointer (stmt),
+						      NO_INSERT))
+    {
+      inline_entry_data *ied = *iedp;
+      gcc_assert (MAY_HAVE_DEBUG_MARKER_INSNS);
+      gcc_assert (inlined_function_outer_scope_p (stmt));
+      ASM_GENERATE_INTERNAL_LABEL (label, ied->label_pfx, ied->label_num);
+      add_AT_lbl_id (die, DW_AT_entry_pc, label);
+
+      if (debug_variable_location_views && !ZERO_VIEW_P (ied->view))
+	{
+	  if (!output_asm_line_debug_info ())
+	    add_AT_unsigned (die, DW_AT_GNU_entry_view, ied->view);
+	  else
+	    {
+	      ASM_GENERATE_INTERNAL_LABEL (label, "LVU", ied->view);
+	      /* FIXME: this will resolve to a small number.  Could we
+		 possibly emit smaller data?  Ideally we'd emit a
+		 uleb128, but that would make the size of DIEs
+		 impossible for the compiler to compute, since it's
+		 the assembler that computes the value of the view
+		 label in this case.  Ideally, we'd have a single form
+		 encompassing both the address and the view, and
+		 indirecting them through a table might make things
+		 easier, but even that would be more wasteful,
+		 space-wise, than what we have now.  */
+	      add_AT_lbl_id (die, DW_AT_GNU_entry_view, label);
+	    }
+	}
+
+      inline_entry_data_table->clear_slot (iedp);
+    }
+
   if (BLOCK_FRAGMENT_CHAIN (stmt)
       && (dwarf_version >= 3 || !dwarf_strict))
     {
@@ -23674,7 +23756,7 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
       dw_die_ref pdie;
       dw_attr_node *attr = NULL;
 
-      if (inlined_function_outer_scope_p (stmt))
+      if (!MAY_HAVE_DEBUG_MARKER_INSNS && inlined_function_outer_scope_p (stmt))
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
 				       BLOCK_NUMBER (stmt));
@@ -23839,7 +23921,7 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
       dw_die_ref subr_die
 	= new_die (DW_TAG_inlined_subroutine, context_die, stmt);
 
-      if (call_arg_locations)
+      if (call_arg_locations || MAY_HAVE_DEBUG_MARKER_INSNS)
 	BLOCK_DIE (stmt) = subr_die;
       add_abstract_origin_attribute (subr_die, decl);
       if (TREE_ASM_WRITTEN (stmt))
@@ -26871,6 +26953,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
       || ! NOTE_P (next_note)
       || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
 	  && NOTE_KIND (next_note) != NOTE_INSN_BEGIN_STMT
+	  && NOTE_KIND (next_note) != NOTE_INSN_INLINE_ENTRY
 	  && NOTE_KIND (next_note) != NOTE_INSN_CALL_ARG_LOCATION))
     next_note = NULL;
 
@@ -27062,6 +27145,113 @@ create_label:
 
   last_var_location_insn = next_real;
   last_in_cold_section_p = in_cold_section_p;
+}
+
+/* Check whether BLOCK, a lexical block, is nested within OUTER, or is
+   OUTER itself.  If BOTHWAYS, check not only that BLOCK can reach
+   OUTER through BLOCK_SUPERCONTEXT links, but also that there is a
+   path from OUTER to BLOCK through BLOCK_SUBBLOCKs and
+   BLOCK_FRAGMENT_ORIGIN links.  */
+static bool
+block_within_block_p (tree block, tree outer, bool bothways)
+{
+  if (block == outer)
+    return true;
+
+  /* Quickly check that OUTER is up BLOCK's supercontext chain.  */
+  for (tree context = BLOCK_SUPERCONTEXT (block);
+       context != outer;
+       context = BLOCK_SUPERCONTEXT (context))
+    if (!context || TREE_CODE (context) != BLOCK)
+      return false;
+
+  if (!bothways)
+    return true;
+
+  /* Now check that each block is actually referenced by its
+     parent.  */
+  for (tree context = BLOCK_SUPERCONTEXT (block); ;
+       context = BLOCK_SUPERCONTEXT (context))
+    {
+      if (BLOCK_FRAGMENT_ORIGIN (context))
+	{
+	  gcc_assert (!BLOCK_SUBBLOCKS (context));
+	  context = BLOCK_FRAGMENT_ORIGIN (context);
+	}
+      for (tree sub = BLOCK_SUBBLOCKS (context);
+	   sub != block;
+	   sub = BLOCK_CHAIN (sub))
+	if (!sub)
+	  return false;
+      if (context == outer)
+	return true;
+      else
+	block = context;
+    }
+}
+
+/* Called during final while assembling the marker of the entry point
+   for an inlined function.  */
+
+static void
+dwarf2out_inline_entry (tree block)
+{
+  /* If we can't represent it, don't bother.  */
+  if (!(dwarf_version >= 3 || !dwarf_strict))
+    return;
+
+  gcc_assert (DECL_P (block_ultimate_origin (block)));
+
+  /* Sanity check the block tree.  This would catch a case in which
+     BLOCK got removed from the tree reachable from the outermost
+     lexical block, but got retained in markers.  It would still link
+     back to its parents, but some ancestor would be missing a link
+     down the path to the sub BLOCK.  If the block got removed, its
+     BLOCK_NUMBER will not be a usable value.  */
+  if (flag_checking)
+    gcc_assert (block_within_block_p (block,
+				      DECL_INITIAL (current_function_decl),
+				      true));
+
+  gcc_assert (inlined_function_outer_scope_p (block));
+  gcc_assert (!BLOCK_DIE (block));
+
+  if (BLOCK_FRAGMENT_ORIGIN (block))
+    block = BLOCK_FRAGMENT_ORIGIN (block);
+  /* Can the entry point ever not be at the beginning of an
+     unfragmented lexical block?  */
+  else if (!(BLOCK_FRAGMENT_CHAIN (block)
+	     || (cur_line_info_table
+		 && !ZERO_VIEW_P (cur_line_info_table->view))))
+    return;
+
+  if (!inline_entry_data_table)
+    inline_entry_data_table
+      = hash_table<inline_entry_data_hasher>::create_ggc (10);
+
+
+  inline_entry_data **iedp
+    = inline_entry_data_table->find_slot_with_hash (block,
+						    htab_hash_pointer (block),
+						    INSERT);
+  if (*iedp)
+    /* ??? Ideally, we'd record all entry points for the same inlined
+       function (some may have been duplicated by e.g. unrolling), but
+       we have no way to represent that ATM.  */
+    return;
+
+  inline_entry_data *ied = *iedp = ggc_cleared_alloc<inline_entry_data> ();
+  ied->block = block;
+  ied->label_pfx = BLOCK_INLINE_ENTRY_LABEL;
+  ied->label_num = BLOCK_NUMBER (block);
+  if (cur_line_info_table)
+    ied->view = cur_line_info_table->view;
+
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_INLINE_ENTRY_LABEL,
+			       BLOCK_NUMBER (block));
+  ASM_OUTPUT_LABEL (asm_out_file, label);
 }
 
 /* Called from finalize_size_functions for size functions so that their body
@@ -30559,6 +30749,9 @@ dwarf2out_finish (const char *)
 
   /* Flush out any latecomers to the limbo party.  */
   flush_limbo_die_list ();
+
+  if (inline_entry_data_table)
+    gcc_assert (inline_entry_data_table->elements () == 0);
 
   if (flag_checking)
     {
