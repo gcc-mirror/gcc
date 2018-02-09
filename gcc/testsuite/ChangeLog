@@ -1,3 +1,8 @@
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso8.adb: New test.
+	* gnat.dg/sso8_pkg.ads: New helper.
+
 2018-02-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84278
