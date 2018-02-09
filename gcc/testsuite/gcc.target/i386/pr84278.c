@@ -15,4 +15,4 @@ void foo(void)
     }
 }
 
-/* { dg-final { scan-assembler-not "\(%.sp\)" } } */
+/* { dg-final { scan-assembler-not "\\\(%.sp\\\)" } } */
