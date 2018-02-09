@@ -1,3 +1,9 @@
+2018-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/84136
+	* tree-cfg.c (find_taken_edge_computed_goto): Remove assertion
+	that the result of find_edge is non-NULL.
+
 2018-02-08  Sergey Shalnov  <sergey.shalnov@intel.com>
 
 	PR target/83008
