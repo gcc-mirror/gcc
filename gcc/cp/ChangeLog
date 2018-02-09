@@ -1,3 +1,11 @@
+2018-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84296 - ICE with qualified-id in template.
+	PR c++/83714
+	* pt.c (unknown_base_ref_p): New.
+	(instantiation_dependent_scope_ref_p): Use it instead of
+	any_dependent_bases_p.
+
 2018-02-09  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

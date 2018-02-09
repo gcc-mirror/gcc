@@ -24012,6 +24012,30 @@ dependent_scope_p (tree scope)
 	  && !currently_open_class (scope));
 }
 
+/* T is a SCOPE_REF.  Return whether it represents a non-static member of
+   an unknown base of 'this' (and is therefore instantiation-dependent).  */
+
+static bool
+unknown_base_ref_p (tree t)
+{
+  if (!current_class_ptr)
+    return false;
+
+  tree mem = TREE_OPERAND (t, 1);
+  if (shared_member_p (mem))
+    return false;
+
+  tree cur = current_nonlambda_class_type ();
+  if (!any_dependent_bases_p (cur))
+    return false;
+
+  tree ctx = TREE_OPERAND (t, 0);
+  if (DERIVED_FROM_P (ctx, cur))
+    return false;
+
+  return true;
+}
+
 /* T is a SCOPE_REF; return whether we need to consider it
     instantiation-dependent so that we can check access at instantiation
     time even though we know which member it resolves to.  */
@@ -24021,9 +24045,7 @@ instantiation_dependent_scope_ref_p (tree t)
 {
   if (DECL_P (TREE_OPERAND (t, 1))
       && CLASS_TYPE_P (TREE_OPERAND (t, 0))
-      /* A dependent base could make a member inaccessible in the current
-	 class.  */
-      && !any_dependent_bases_p ()
+      && !unknown_base_ref_p (t)
       && accessible_in_template_p (TREE_OPERAND (t, 0),
 				   TREE_OPERAND (t, 1)))
     return false;
