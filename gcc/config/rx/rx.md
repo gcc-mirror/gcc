@@ -438,7 +438,7 @@
 )
 
 (define_insn "call_internal"
-  [(call (mem:QI (match_operand:SI 0 "rx_call_operand" "r,Symbol"))
+  [(call (mem:QI (match_operand:SI 0 "rx_call_operand" "r,CALL_OP_SYMBOL_REF"))
 	 (const_int 0))
    (clobber (reg:CC CC_REG))]
   ""
@@ -466,7 +466,7 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand                  0 "register_operand" "=r,r")
-	(call (mem:QI (match_operand:SI 1 "rx_call_operand"   "r,Symbol"))
+	(call (mem:QI (match_operand:SI 1 "rx_call_operand"   "r,CALL_OP_SYMBOL_REF"))
 	      (const_int 0)))
    (clobber (reg:CC CC_REG))]
   ""
