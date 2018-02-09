@@ -1,3 +1,8 @@
+2018-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/84308
+	* shrink-wrap.c (spread_components): Release todo vector.
+
 2018-02-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57193
