@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-O2 -mcpu=power8 -mno-fold-gimple" } */
+/* { dg-prune-output "gimple folding of rs6000 builtins has been disabled." } */
 
 __attribute__ ((altivec(vector__))) long long
 sdiv (__attribute__ ((altivec(vector__))) long long a,
