@@ -1,3 +1,12 @@
+2018-02-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2018-02-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/PR84295
+	* config/s390/s390.c (s390_set_current_function): Invoke
+	s390_indirect_branch_settings also if fndecl didn't change.
+
 2018-02-08  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/84113
