@@ -42,7 +42,7 @@
 /* { dg-final { scan-assembler-times {\mxxland\M} 16 } } */
 /* { dg-final { scan-assembler-times {\mxxlandc\M} 13 } } */
 /* { dg-final { scan-assembler-times {\mvclzb\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mvclzb\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mvclzd\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvclzw\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvclzh\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mxvcpsgnsp\M} 1 } } */

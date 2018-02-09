@@ -1,3 +1,9 @@
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1-be.c <vclzb>: Rename duplicate test
+	from this to...
+	<vclzd>: ...this.
+
 2018-02-09  Martin Sebor  <msebor@redhat.com>
 
 	PR lto/84212
