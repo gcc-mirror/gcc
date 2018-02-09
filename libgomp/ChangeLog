@@ -1,3 +1,10 @@
+2018-02-09  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2018-02-08  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/libgomp.hsa.c/staticvar.c: New test.
+
 2018-01-25  Release Manager
 
 	* GCC 7.3.0 released.
