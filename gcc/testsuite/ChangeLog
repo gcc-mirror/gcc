@@ -1,3 +1,8 @@
+2018-02-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56691
+	* gfortran.dg/type_to_class_4.f03: New test.
+
 2018-02-10  Alan Modra  <amodra@gmail.com>
 
 	PR target/84300
