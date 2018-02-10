@@ -1,3 +1,11 @@
+2018-02-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2018-02-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR target/84089
+	* config/pa/predicates.md (base14_operand): Handle VOIDmode.
+
 2018-02-09  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
