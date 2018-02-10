@@ -4578,12 +4578,16 @@ hppa_profile_hook (int label_no)
      lcla2 and load_offset_label_address insn patterns.  */
   rtx reg = gen_reg_rtx (SImode);
   rtx_code_label *label_rtx = gen_label_rtx ();
-  rtx mcount = gen_rtx_MEM (Pmode, gen_rtx_SYMBOL_REF (Pmode, "_mcount"));
   int reg_parm_stack_space = REG_PARM_STACK_SPACE (NULL_TREE);
-  rtx arg_bytes, begin_label_rtx;
+  rtx arg_bytes, begin_label_rtx, mcount, sym;
   rtx_insn *call_insn;
   char begin_label_name[16];
   bool use_mcount_pcrel_call;
+
+  /* Set up call destination.  */
+  sym = gen_rtx_SYMBOL_REF (Pmode, "_mcount");
+  pa_encode_label (sym);
+  mcount = gen_rtx_MEM (Pmode, sym);
 
   /* If we can reach _mcount with a pc-relative call, we can optimize
      loading the address of the current function.  This requires linker
