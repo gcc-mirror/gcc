@@ -1593,9 +1593,6 @@ gfc_get_dtype (tree type)
 
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type));
 
-  if (GFC_TYPE_ARRAY_DTYPE (type))
-    return GFC_TYPE_ARRAY_DTYPE (type);
-
   rank = GFC_TYPE_ARRAY_RANK (type);
   etype = gfc_get_element_type (type);
   dtype = gfc_get_dtype_rank_type (rank, etype);

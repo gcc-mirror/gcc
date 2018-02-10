@@ -5354,8 +5354,8 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
     }
   else
     {
-      tmp = gfc_get_dtype_rank_type (rank, gfc_get_element_type (type));
-      gfc_add_modify (pblock, gfc_conv_descriptor_dtype (descriptor), tmp);
+      tmp = gfc_conv_descriptor_dtype (descriptor);
+      gfc_add_modify (pblock, tmp, gfc_get_dtype (type));
     }
 
   or_expr = logical_false_node;
@@ -7529,9 +7529,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	      : base;
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm, tmp);
 	}
-      else if (IS_CLASS_ARRAY (expr) && !se->data_not_needed
-	       && (!rank_remap || se->use_offset)
-	       && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
+      else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
+	       && !se->data_not_needed
+	       && (!rank_remap || se->use_offset))
 	{
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm,
 					 gfc_conv_descriptor_offset_get (desc));
