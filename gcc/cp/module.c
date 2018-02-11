@@ -1671,26 +1671,22 @@ struct GTY(()) module_state {
   bool exported : 1;	/* The import is exported.  */
 
  public:
-  module_state ();
+  module_state (tree name = NULL_TREE);
   ~module_state ();
-
- public:
-  static void maybe_early_init ();
-  static void lazy_init ();
-  static void lazy_fini ();
 
  public:
   void release (bool = true);
 
  public:
-  void set_name (tree name, tree sname);
-  void set_location (char *name)
+  /* Whether this module is currently unoccupied (i.e all we know is
+     the name and maybe filename.  */
+  bool empty_p () const
   {
-    filename = name;
-    loc = input_location;
+    return vec_name == NULL_TREE;
   }
+  void set_vec_name (tree vname);
   /* Enter and leave the module's location.  */
-  void push_location (char *filename);
+  void push_location ();
   void pop_location ();
 
  public:
@@ -1724,6 +1720,12 @@ struct GTY(()) module_state {
 				  bool import_export_p, unsigned * = NULL);
 
  public:
+  static void maybe_early_init ();
+  static void lazy_init ();
+  static void lazy_fini ();
+  static module_state *get_module (tree name, module_state * = NULL);
+
+ public:
   /* Vector indexed by OWNER.  */
   static vec<module_state *, va_gc> *modules;
 
@@ -1738,26 +1740,6 @@ struct GTY(()) module_state {
   static unsigned global_crc;
 };
 
-/* Binary module interface output file name. */
-
-static const char *module_output;
-
-/* Map of module names to binary interface files. */
-
-struct module_files_traits: string_hash {
-  static void remove (value_type) {}
-};
-
-typedef hash_map<
-  const char *,
-  char *,
-  simple_hashmap_traits<module_files_traits, char *> > module_files_map;
-
-/* Map of module names to binary interface files. */
-
-static module_files_map module_files;
-
-
 /* Hash module state by name.  */
 hashval_t module_state_hash::hash (const value_type m)
 {
@@ -1768,6 +1750,10 @@ bool module_state_hash::equal (const value_type existing, compare_type candidate
 {
   return existing->name == candidate;
 }
+
+/* Binary module interface output file name. */
+
+static const char *module_output;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -2316,9 +2302,9 @@ static cpp_dir *module_path;
 /* Longest module path.  */
 static size_t module_path_max;
 
-module_state::module_state ()
+module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    name (NULL_TREE), vec_name (NULL),
+    name (name), vec_name (NULL_TREE),
     remap (NULL), from (NULL),
     filename (NULL), loc (UNKNOWN_LOCATION),
     lazy (0), mod (MODULE_UNKNOWN), crc (0)
@@ -2350,6 +2336,48 @@ module_state::maybe_early_init ()
       bitmap_set_bit (current->imports, MODULE_NONE);
       (*modules)[MODULE_NONE] = current;
     }
+}
+
+/* Find or create module NAME in the hash table.  */
+
+module_state *
+module_state::get_module (tree name, module_state *dflt)
+{
+  module_state **slot
+    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), INSERT);
+  module_state *state = *slot;
+
+  if (dflt)
+    {
+      /* Don't overwrite non-empty default.  */
+      if (!dflt->empty_p ())
+	return NULL;
+
+      /* Don't copy a non-empty existing module.  */
+      if (state && !state->empty_p ())
+	return state;
+
+      /* Copy name and filename from the empty one we found.  */
+      if (state)
+	{
+	  if (!dflt->filename)
+	    dflt->filename = state->filename;
+	  else
+	    free (state->filename);
+	}
+
+      /* Use the default we were given, and put it back in the hash
+	 table.  */
+      dflt->name = name;
+      state = dflt;
+      *slot = state;
+    }
+  else if (!state)
+    {
+      state = new (ggc_alloc<module_state> ()) module_state (name);
+      *slot = state;
+    }
+  return state;
 }
 
 /* Initialize module state.  Create the hash table, determine the
@@ -2468,14 +2496,12 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
-/* Set NAME and VEC_NAME fields from incoming NAME & optional
-   vec_name.  */
+/* Set VEC_NAME fields from incoming VNAME, which may be a regular
+   IDENTIFIER.  */
 
 void
-module_state::set_name (tree name_, tree maybe_vec)
+module_state::set_vec_name (tree maybe_vec)
 {
-  name = name_;
-
   if (identifier_p (maybe_vec))
     {
       /* Create a TREE_VEC of components.  */
@@ -2504,10 +2530,8 @@ module_state::set_name (tree name_, tree maybe_vec)
 /* Set location to NAME, and then enter the module.  */
 
 void
-module_state::push_location (char *name)
+module_state::push_location ()
 {
-  set_location (name);
-
   // FIXME:We want LC_MODULE_ENTER really.
   linemap_add (line_table, LC_ENTER, false, filename, 0);
   input_location = linemap_line_start (line_table, 0, 0);
@@ -6252,35 +6276,30 @@ module_state::do_import (location_t loc, tree name, bool module_p,
       name = get_identifier_with_length (&buffer[0], buffer.length ());
     }
 
-  module_state **slot
-    = hash->find_slot_with_hash (name, IDENTIFIER_HASH_VALUE (name), INSERT);
-  module_state *state = *slot;
+  module_state *dflt = module_p ? (*modules)[MODULE_NONE] : NULL;
+  module_state *state = get_module (name, dflt);
 
   if (!state)
     {
-      if (module_p)
-	{
-	  state = (*modules)[MODULE_PURVIEW];
-	  if (state)
-	    {
-	      /* Already declared the module.  */
-	      error_at (loc, "cannot declare module in purview of module %qE",
-			state->name);
-	      return NULL;
-	    }
-	  state = (*modules)[MODULE_NONE];
-	}
-      else
-	state = new (ggc_alloc<module_state> ()) module_state ();
+      /* Already declared the module.  */
+      error_at (loc, "cannot declare module in purview of module %qE",
+		dflt->name);
+      return NULL;
+    }
 
-      state->set_name (name, sname);
-      *slot = state;
-
+  if (state->empty_p ())
+    {
       if (module_p && export_p)
 	{
 	  /* We're the exporting module unit, so not loading anything.  */
 	  state->exported = true;
 	  state->mod = MODULE_PURVIEW;
+	  if (module_output)
+	    {
+	      free (state->filename);
+	      state->filename = xstrdup (module_output);
+	      module_output = NULL;
+	    }
 	}
       else if (!module_p && !export_p)
 	{
@@ -6289,26 +6308,35 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  error ("indirect import %qE not present", name);
 	  return NULL;
 	}
+      state->loc = loc;
+      state->set_vec_name (sname);
+
+      char *fname = state->filename;
+      size_t fname_len;
+      FILE *stream = NULL;
+
+      if (!fname)
+	fname = module_to_filename (name, fname_len);
       else
+	fname_len = strlen (fname);
+      if (!module_p || !export_p)
+	stream = search_module_path (fname, fname_len, name);
+      else if (flag_module_root && flag_module_root[0])
 	{
-          /* First look in the module file map. If not found, fall back to the
-             default mapping. */
-          char *filename = NULL;
-	  size_t filename_len;
-
-	  if (char **slot = module_files.get (IDENTIFIER_POINTER (name)))
-	    {
-	      filename_len = strlen (*slot);
-	      filename = XNEWVEC (char, filename_len + 1);
-	      memcpy (filename, *slot, filename_len + 1);
-	    }
-
-          if (!filename)
-            filename = module_to_filename (name, filename_len);
-
-	  FILE *stream = search_module_path (filename, filename_len, name);
+	  size_t root_len = strlen (flag_module_root);
+	  char *buffer = XNEWVEC (char, root_len + fname_len + 2);
+	  memcpy (buffer, flag_module_root, root_len);
+	  buffer[root_len] = DIR_SEPARATOR;
+	  memcpy (buffer + root_len + 1, name, fname_len + 1);
+	  XDELETE (fname);
+	  fname = buffer;
+	}
+	
+      state->filename = fname;
+      if (!module_p || !export_p)
+	{
 	  int e = errno;
-	  state->push_location (filename);
+	  state->push_location ();
 	  unsigned n = dump.push (state);
 	  state->announce ("importing");
 
@@ -6335,7 +6363,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  dump.pop (n);
 	  state->pop_location ();
 	  if (err)
-	    state = NULL;
+	    return NULL;
 	}
     }
   else if (state->mod == MODULE_PURVIEW)
@@ -6360,7 +6388,8 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	}
     }
 
-  if (state && module_p)
+  gcc_assert (state);
+  if (module_p)
     {
       (*modules)[MODULE_PURVIEW] = state;
       current_module = MODULE_PURVIEW;
@@ -6395,38 +6424,7 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  module_state *state
-    = module_state::do_import (name.get_location (), *name, true, exporting_p);
-
-  if (state && !state->filename)
-    {
-      char *filename;
-      size_t filename_len;
-
-      if (module_output)
-	{
-	  filename_len = strlen (module_output);
-	  filename = XNEWVEC (char, filename_len + 1);
-	  memcpy (filename, module_output, filename_len + 1);
-	}
-      else
-	filename = module_to_filename (state->name, filename_len);
-
-      if (flag_module_root && flag_module_root[0])
-	{
-	  size_t root_len = strlen (flag_module_root);
-	  char *buffer = XNEWVEC (char, root_len + filename_len + 2);
-	  memcpy (buffer, flag_module_root, root_len);
-	  buffer[root_len] = DIR_SEPARATOR;
-	  memcpy (buffer + root_len + 1, name, filename_len + 1);
-
-	  XDELETE (filename);
-	  filename = buffer;
-	}
-
-      /* Set the module's location.  */
-      state->set_location (filename);
-    }
+  module_state::do_import (name.get_location (), *name, true, exporting_p);
 }
 
 /* Convert the module search path.  */
@@ -6499,50 +6497,25 @@ finish_module ()
 }
 
 /* Add a module name to binary interface file mapping (<name>=<file>). */
+
 static void
-add_module_file (const char *map)
+add_module_file (const char *arg)
 {
   /* Note: C++ module name cannot contain '='. */
-  const char *p = strchr (map, '=');
-  {
-    const char *e = NULL;
-
-    if (!p)
-      e = "missing equal sign in module mapping %qs";
-    else if (p == map)
-      e = "empty module name in module mapping %qs";
-    else if (p[1] == '\0')
-      e = "empty module file in module mapping %qs";
-
-    if (e)
-      {
-	error (e, map);
-	return;
-      }
-  }
-
-  /* Normally there will be no duplicates/overrides so we don't complicate
-     things with trying to reuse buffers, etc. */
-
-  size_t name_n = p - map;
-  char *name = (char *) xmalloc (name_n + 1);
-  memcpy (name, map, name_n);
-  name[name_n] = '\0';
-
-  char *file = xstrdup (p + 1);
-
-  char **slot = module_files.get (name);
-  if (slot)
+  const char *p = strchr (arg, '=');
+  if (!p || p == arg || !p[1])
     {
-      /* Override the mapping. Note that this can be intentional (e.g.,
-	 overriding a mapping specified in the file with an entry on
-	 the command line) so no error/warning. */
-      free (name);
-      free (*slot);
-      *slot = file;
+      error ("module-file %qs is mal-formed", arg);
+      return;
     }
-  else
-    module_files.put (name, file);
+
+  tree name = get_identifier_with_length (arg, p - arg);
+  module_state::maybe_early_init ();
+  module_state *state = module_state::get_module (name);
+
+  /* Overriding an already-defined mapping is accepted.  */
+  free (state->filename);
+  state->filename = xstrdup (p + 1);
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise

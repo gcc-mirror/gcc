@@ -12670,7 +12670,7 @@ cp_parser_module_export (cp_parser *parser)
 
   if (!module_interface_p ())
     error_at (token->location,
-	      "%qE may only occur after an interface module declaration",
+	      "%qE may only occur after a module interface declaration",
 	      token->u.value);
 
   bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);

@@ -1,5 +1,5 @@
 
-export void Foo (); // { dg-error "after an interface module" }
+export void Foo (); // { dg-error "after a module interface" }
 
 export module bob;
 // { dg-module-bmi "!bob" }

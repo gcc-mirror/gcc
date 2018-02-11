@@ -1,5 +1,14 @@
 2018-02-11  Nathan Sidwell  <nathan@acm.org>
 
+	Keep module-file map in module hash
+	gcc/cp/
+	* module.c (module_state): Add empty_p, get_module members.
+	Rename set_name, delete set_location.
+	(module_file_map, module_file): Delete.
+	(module_state::do_import): Use get_module, set filename here.
+	(declare_module): No need to set filename here.
+	(add_module_file): Use module_state::get_module.
+
 	Move module option processing into module.c.
 	gcc/cp/
 	* cp-objcp-common.c (add_module_file): Move to module.c
