@@ -1,3 +1,8 @@
+2018-02-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35299
+	* gfortran.dg/statement_function_3.f: New test.
+
 2018-02-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/54223

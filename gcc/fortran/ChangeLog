@@ -1,3 +1,8 @@
+2018-02-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35299
+	* resolve.c (resolve_formal_arglist): Update error message.
+
 2018-02-11  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.texi: Fix typos in documentation of caf_register ().
