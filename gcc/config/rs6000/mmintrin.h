@@ -854,7 +854,7 @@ _mm_cmpeq_pi32 (__m64 __m1, __m64 __m2)
 
   a = (__vector signed int)vec_splats (__m1);
   b = (__vector signed int)vec_splats (__m2);
-  c = (__vector signed short)vec_cmpeq (a, b);
+  c = (__vector signed int)vec_cmpeq (a, b);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)c, 0));
 #else
   __m64_union m1, m2, res;
@@ -883,7 +883,7 @@ _mm_cmpgt_pi32 (__m64 __m1, __m64 __m2)
 
   a = (__vector signed int)vec_splats (__m1);
   b = (__vector signed int)vec_splats (__m2);
-  c = (__vector signed short)vec_cmpgt (a, b);
+  c = (__vector signed int)vec_cmpgt (a, b);
   return (__builtin_unpack_vector_int128 ((__vector __int128_t)c, 0));
 #else
   __m64_union m1, m2, res;
