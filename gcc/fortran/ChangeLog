@@ -1,3 +1,14 @@
+2018-02-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54223
+	PR fortran/84276
+	* interface.c (compare_actual_formal): Add in_statement_function
+	bool parameter.  Skip check of INTENT attribute for statement
+	functions.  Arguments to a statement function cannot be optional,
+	issue error for missing argument.
+	(gfc_procedure_use, gfc_ppc_use, gfc_arglist_matches_symbol): Use
+	 in_statement_function.
+
 2018-02-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84074
