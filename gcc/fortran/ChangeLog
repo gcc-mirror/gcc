@@ -1,3 +1,9 @@
+2018-02-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.texi: Fix typos in documentation of caf_register ().
+	* trans-array.c (structure_alloc_comps): Only register a component of
+	a derived typed corray, not of an ultimate component coarray.
+
 2018-02-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/54223
