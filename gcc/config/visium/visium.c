@@ -3094,10 +3094,9 @@ output_branch (rtx label, const char *cond, rtx_insn *insn)
 	  if (final_sequence)
 	    {
 	      rtx_insn *delay = NEXT_INSN (insn);
-	      int seen;
 	      gcc_assert (delay);
 
-	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
 	    }

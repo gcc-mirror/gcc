@@ -2236,9 +2236,9 @@ asm_show_source (const char *filename, int linenum)
    debug information.  We force the emission of a line note after
    both NOTE_INSN_PROLOGUE_END and NOTE_INSN_FUNCTION_BEG.  */
 
-rtx_insn *
-final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
-		 int nopeepholes ATTRIBUTE_UNUSED, int *seen)
+static rtx_insn *
+final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
+		   int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
 #if HAVE_cc0
   rtx set;
@@ -3189,6 +3189,36 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
     }
   return NEXT_INSN (insn);
 }
+
+/* This is a wrapper around final_scan_insn_1 that allows ports to
+   call it recursively without a known value for SEEN.  The value is
+   saved at the outermost call, and recovered for recursive calls.
+   Recursive calls MUST pass NULL, or the same pointer if they can
+   otherwise get to it.  */
+
+rtx_insn *
+final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p,
+		 int nopeepholes, int *seen)
+{
+  static int *enclosing_seen;
+  static int recursion_counter;
+
+  gcc_assert (seen || recursion_counter);
+  gcc_assert (!recursion_counter || !seen || seen == enclosing_seen);
+
+  if (!recursion_counter++)
+    enclosing_seen = seen;
+  else if (!seen)
+    seen = enclosing_seen;
+
+  rtx_insn *ret = final_scan_insn_1 (insn, file, optimize_p, nopeepholes, seen);
+
+  if (!--recursion_counter)
+    enclosing_seen = NULL;
+
+  return ret;
+}
+
 
 /* Return whether a source line note needs to be emitted before INSN.
    Sets IS_STMT to TRUE if the line should be marked as a possible
