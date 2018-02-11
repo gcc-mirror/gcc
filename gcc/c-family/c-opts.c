@@ -124,7 +124,6 @@ static void add_prefixed_path (const char *, incpath_kind);
 static void push_command_line_include (void);
 static void cb_file_change (cpp_reader *, const line_map_ordinary *);
 static void cb_dir_change (cpp_reader *, const char *);
-static void add_module_file (const char *);
 static void c_finish_options (void);
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
@@ -611,22 +610,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	out_fname = arg;
       else
 	error ("output filename specified twice");
-      break;
-
-    case OPT_fmodules__:
-      flag_modules = 2;
-      break;
-
-    case OPT_fmodule_path_:
-      add_path (xstrdup (arg), INC_CXX_MPATH, true, true);
-      break;
-
-    case OPT_fmodule_output_:
-      module_output = arg;
-      break;
-
-    case OPT_fmodule_file_:
-      add_module_file (arg);
       break;
 
     case OPT_print_objc_runtime_info:
@@ -1381,53 +1364,6 @@ add_prefixed_path (const char *suffix, incpath_kind chain)
   path[prefix_len + suffix_len] = '\0';
 
   add_path (path, chain, 0, false);
-}
-
-/* Add a module name to binary interface file mapping (<name>=<file>). */
-static void
-add_module_file (const char *map)
-{
-  /* Note: C++ module name cannot contain '='. */
-  const char *p = strchr (map, '=');
-  {
-    const char *e = NULL;
-
-    if (!p)
-      e = "missing equal sign in module mapping %qs";
-    else if (p == map)
-      e = "empty module name in module mapping %qs";
-    else if (p[1] == '\0')
-      e = "empty module file in module mapping %qs";
-
-    if (e)
-      {
-	error (e, map);
-	return;
-      }
-  }
-
-  /* Normally there will be no duplicates/overrides so we don't complicate
-     things with trying to reuse buffers, etc. */
-
-  size_t name_n = p - map;
-  char *name = (char *) xmalloc (name_n + 1);
-  memcpy (name, map, name_n);
-  name[name_n] = '\0';
-
-  char *file = xstrdup (p + 1);
-
-  char **slot = module_files.get (name);
-  if (slot)
-    {
-      /* Override the mapping. Note that this can be intentional (e.g.,
-	 overriding a mapping specified in the file with an entry on
-	 the command line) so no error/warning. */
-      free (name);
-      free (*slot);
-      *slot = file;
-    }
-  else
-    module_files.put (name, file);
 }
 
 /* Handle -D, -U, -A, -imacros, and the first -include.  */

@@ -1,3 +1,22 @@
+2018-02-11  Nathan Sidwell  <nathan@acm.org>
+
+	Move module option processing out of c-common.
+	c-family/
+	* c-common.h (module_output, module_files_map, module_files): Move
+	to cp-tree.h.
+	* c-common.c (module_output, module_files): Move to module.c
+	* c-opts.c (add_module_file): Move to cp-objcp-common.c.
+	(c_common_handle_option): Move modules options to
+	cp-objcp-common.c.
+	cp/
+	* cp-objcp-common.c (add_module_file): Moved from c-opts.c.
+	(cp_handle_option): New, from c_common_handle_option.
+	* cp-objcp-common.h (LANG_HOOKS_HANDLE_OPTION): Point at
+	cp_handle_option.
+	* cp-tree.h (module_output, module_files_map, module_files): Moved
+	from c-common.h.
+	* cp-module.c (module_output, module_files): Moved from c-common.c.
+
 2018-02-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

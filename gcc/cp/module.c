@@ -1737,6 +1737,15 @@ struct GTY(()) module_state {
   static unsigned global_crc;
 };
 
+/* Binary module interface output file name. */
+
+const char *module_output;
+
+/* Map of module names to binary interface files. */
+
+module_files_map module_files;
+
+
 /* Hash module state by name.  */
 hashval_t module_state_hash::hash (const value_type m)
 {

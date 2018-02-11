@@ -6537,6 +6537,22 @@ extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern tree module_context (tree);
+/* Binary module interface output file name. */
+
+extern const char *module_output;
+
+/* Map of module names to binary interface files. */
+
+struct module_files_traits: string_hash {
+  static void remove (value_type) {}
+};
+
+typedef hash_map<
+  const char *,
+  char *,
+  simple_hashmap_traits<module_files_traits, char *> > module_files_map;
+
+extern module_files_map module_files;
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);

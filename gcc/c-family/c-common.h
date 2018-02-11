@@ -622,23 +622,6 @@ extern bool flag_pch_preprocess;
 
 extern const char *pch_file;
 
-/* Binary module interface output file name. */
-
-extern const char *module_output;
-
-/* Map of module names to binary interface files. */
-
-struct module_files_traits: string_hash {
-  static void remove (value_type) {}
-};
-
-typedef hash_map<
-  const char *,
-  char *,
-  simple_hashmap_traits<module_files_traits, char *> > module_files_map;
-
-extern module_files_map module_files;
-
 /* Nonzero if an ISO standard was selected.  It rejects macros in the
    user's namespace.  */
 

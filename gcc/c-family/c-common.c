@@ -190,14 +190,6 @@ bool flag_pch_preprocess;
 
 const char *pch_file;
 
-/* Binary module interface output file name. */
-
-const char *module_output;
-
-/* Map of module names to binary interface files. */
-
-module_files_map module_files;
-
 /* Nonzero if an ISO standard was selected.  It rejects macros in the
    user's namespace.  */
 int flag_iso;
