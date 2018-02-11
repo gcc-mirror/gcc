@@ -1684,7 +1684,9 @@ struct GTY(()) module_state {
   {
     return vec_name == NULL_TREE;
   }
-  void set_vec_name (tree vname);
+  void occupy (location_t loc, tree vname);
+
+ public:
   /* Enter and leave the module's location.  */
   void push_location ();
   void pop_location ();
@@ -2500,8 +2502,10 @@ module_state::announce (const char *what) const
    IDENTIFIER.  */
 
 void
-module_state::set_vec_name (tree maybe_vec)
+module_state::occupy (location_t l, tree maybe_vec)
 {
+  gcc_assert (!vec_name);
+  loc = l;
   if (identifier_p (maybe_vec))
     {
       /* Create a TREE_VEC of components.  */
@@ -6308,8 +6312,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	  error ("indirect import %qE not present", name);
 	  return NULL;
 	}
-      state->loc = loc;
-      state->set_vec_name (sname);
+      state->occupy (loc, sname);
 
       char *fname = state->filename;
       size_t fname_len;
@@ -6496,26 +6499,23 @@ finish_module ()
   state->release ();
 }
 
+
 /* Add a module name to binary interface file mapping (<name>=<file>). */
 
-static void
-add_module_file (const char *arg)
+static bool
+add_module_mapping (const char *name, const char *eq)
 {
   /* Note: C++ module name cannot contain '='. */
-  const char *p = strchr (arg, '=');
-  if (!p || p == arg || !p[1])
-    {
-      error ("module-file %qs is mal-formed", arg);
-      return;
-    }
+  if (!eq || eq == name || !eq[1])
+    return false;
 
-  tree name = get_identifier_with_length (arg, p - arg);
-  module_state::maybe_early_init ();
-  module_state *state = module_state::get_module (name);
+  tree id = get_identifier_with_length (name, eq - name);
+  module_state *state = module_state::get_module (id);
 
   /* Overriding an already-defined mapping is accepted.  */
   free (state->filename);
-  state->filename = xstrdup (p + 1);
+  state->filename = xstrdup (eq + 1);
+  return true;
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise
@@ -6539,7 +6539,48 @@ handle_module_option (unsigned code, const char *arg, int)
       return true;
 
     case OPT_fmodule_file_:
-      add_module_file (arg);
+      module_state::maybe_early_init ();
+      if (const char *eq = strchr (arg, '='))
+	{
+	  /* Single mapping.  */
+	  if (!add_module_mapping (arg, eq))
+	    error ("module-file %qs is malformed", arg);
+	}
+      else if (FILE *stream = fopen (arg, "r"))
+	{
+	  /* File of mappings.  */
+	  size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
+	  char *buffer = XNEWVEC (char, size);
+	  size_t pos = 0;
+	  unsigned line = 0;
+	  while (fgets (buffer + pos, size - pos, stream))
+	    {
+	      pos += strlen (buffer + pos);
+	      if (buffer[pos - 1] != '\n')
+		{
+		  size *= 2;
+		  buffer = XRESIZEVEC (char, buffer, size);
+		}
+	      else
+		{
+		  buffer[pos - 1] = 0;
+		  pos = 0;
+		  line++;
+		  if (!add_module_mapping (buffer, strchr (buffer, '=')))
+		    {
+		      error ("module-map %s:%d %qs is malformed",
+			     arg, line, buffer);
+		      break;
+		    }
+		}
+	    }
+	  if (ferror (stream))
+	    error ("failed to read module map file %qs: %m", arg);
+	  XDELETEVEC (buffer);
+	  fclose (stream);
+	}
+      else
+	error ("module-file %qs not found: %m", arg);
       return true;
 
     default:

@@ -2524,15 +2524,15 @@ can be used to determine the compiler command and compilation options.
 
 @item -fmodule-output=@var{file}
 @opindex fmodule-output
-Write the binary module interface into @var{file}. Note that this option is
+Write the binary module interface into @var{file}.  This option is
 only valid when compiling a module interface unit.
 
-@item -fmodule-file=@var{name}=@var{file}
+@item -fmodule-file={[}@var{name}={]}@var{file}
 @opindex fmodule-file
-Read the binary interface for module @var{name} from @var{file}. Note that
-this option itself does not cause the file to be loaded. Rather, this
-information is used if and when a module with this name is imported
-(directly or indirectly) by the translation unit being compiled.
+If the @var{name}=@var{file} form is used, then the binary interface
+for module @var{name} is in @var{file}.  If the @var{file} form is
+used, then read mappings of the form @var{name}=@var{file}, one per
+line, from @var{file}.
 
 @item -fms-extensions
 @opindex fms-extensions

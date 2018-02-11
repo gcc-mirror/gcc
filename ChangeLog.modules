@@ -1,6 +1,20 @@
 2018-02-11  Nathan Sidwell  <nathan@acm.org>
 
-	Keep module-file map in module hash
+	Add module map file reading.
+	gcc/cp/
+	* module.c (add_module_mapping): New, swallow ...
+	(add_module_file): ... insertion bits.  Move other bits to ...
+	(handle_module_option): ... here.  Read module map file.
+	gcc/c-family/
+	* c.opt (fmodule-file): Document new semantics.
+	gcc/
+	* doc/invoke.texi (fmodule-file): Document new semantics.
+	gcc/testsuite/
+	* g++.dg/modules/fmod-file-1_[ab].C: New.
+	* g++.dg/modules/fmod-out-1_[ab].C: New.
+	* g++.dg/modules/modules.exp (decode_mod_spec): Augment.
+
+	Keep module-file map in module hash.
 	gcc/cp/
 	* module.c (module_state): Add empty_p, get_module members.
 	Rename set_name, delete set_location.

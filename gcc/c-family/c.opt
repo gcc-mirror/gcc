@@ -1533,7 +1533,7 @@ C++ ObjC++ Joined MissingArgError(missing filename after %qs)
 
 fmodule-file=
 C++ ObjC++ Joined MissingArgError(missing module map after %qs)
--fmodule-file=<name>=<file> Read the binary interface for module <name> from <file>.
+-fmodule-file=[<name>=]<file> Map from <name> to <file>, or read mapping file <file>
 
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
