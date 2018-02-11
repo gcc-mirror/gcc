@@ -1675,6 +1675,7 @@ struct GTY(()) module_state {
   ~module_state ();
 
  public:
+  static void maybe_early_init ();
   static void lazy_init ();
   static void lazy_fini ();
 
@@ -1739,11 +1740,22 @@ struct GTY(()) module_state {
 
 /* Binary module interface output file name. */
 
-const char *module_output;
+static const char *module_output;
 
 /* Map of module names to binary interface files. */
 
-module_files_map module_files;
+struct module_files_traits: string_hash {
+  static void remove (value_type) {}
+};
+
+typedef hash_map<
+  const char *,
+  char *,
+  simple_hashmap_traits<module_files_traits, char *> > module_files_map;
+
+/* Map of module names to binary interface files. */
+
+static module_files_map module_files;
 
 
 /* Hash module state by name.  */
@@ -2319,6 +2331,27 @@ module_state::~module_state ()
   release ();
 }
 
+/* Initialize state that must exist at options-parsing time. */
+
+void
+module_state::maybe_early_init ()
+{
+  if (!hash)
+    {
+      hash = new hash_table<module_state_hash> (30);
+
+      vec_safe_reserve (modules, 20);
+      for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+	modules->quick_push (NULL);
+
+      /* Create module for current TU.  */
+      module_state *current = new (ggc_alloc <module_state> ()) module_state ();
+      current->mod = MODULE_NONE;
+      bitmap_set_bit (current->imports, MODULE_NONE);
+      (*modules)[MODULE_NONE] = current;
+    }
+}
+
 /* Initialize module state.  Create the hash table, determine the
    global trees.  Create the module for current TU.  */
 
@@ -2326,8 +2359,6 @@ void
 module_state::lazy_init ()
 {
   gcc_checking_assert (!global_vec);
-
-  hash = new hash_table<module_state_hash> (30);
 
   dump.push (NULL);
   /* Construct the global tree array.  This is an array of unique
@@ -2390,12 +2421,6 @@ module_state::lazy_init ()
   dump ("") && dump ("Created %u unique globals, crc=%x",
 		     global_vec->length (), global_crc);
   dump.pop (0);
-
-  /* Create module for current TU.  */
-  module_state *current = new (ggc_alloc <module_state> ()) module_state ();
-  current->mod = MODULE_NONE;
-  bitmap_set_bit (current->imports, MODULE_NONE);
-  (*modules)[MODULE_NONE] = current;
 }
 
 /* Delete post-parsing state.  */
@@ -6409,6 +6434,8 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 void
 init_module_processing ()
 {
+  module_state::maybe_early_init ();
+
   module_path = get_added_cpp_dirs (INC_CXX_MPATH);
   for (const cpp_dir *path = module_path; path; path = path->next)
     if (path->len > module_path_max)
@@ -6421,9 +6448,6 @@ init_module_processing ()
 	flag_module_wrapper = "false";
     }
 
-  vec_safe_reserve (module_state::modules, 20);
-  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
-    module_state::modules->quick_push (NULL);
 }
 
 /* Finalize the module at end of parsing.  */
@@ -6472,6 +6496,82 @@ finish_module ()
     unlink (state->filename);
 
   state->release ();
+}
+
+/* Add a module name to binary interface file mapping (<name>=<file>). */
+static void
+add_module_file (const char *map)
+{
+  /* Note: C++ module name cannot contain '='. */
+  const char *p = strchr (map, '=');
+  {
+    const char *e = NULL;
+
+    if (!p)
+      e = "missing equal sign in module mapping %qs";
+    else if (p == map)
+      e = "empty module name in module mapping %qs";
+    else if (p[1] == '\0')
+      e = "empty module file in module mapping %qs";
+
+    if (e)
+      {
+	error (e, map);
+	return;
+      }
+  }
+
+  /* Normally there will be no duplicates/overrides so we don't complicate
+     things with trying to reuse buffers, etc. */
+
+  size_t name_n = p - map;
+  char *name = (char *) xmalloc (name_n + 1);
+  memcpy (name, map, name_n);
+  name[name_n] = '\0';
+
+  char *file = xstrdup (p + 1);
+
+  char **slot = module_files.get (name);
+  if (slot)
+    {
+      /* Override the mapping. Note that this can be intentional (e.g.,
+	 overriding a mapping specified in the file with an entry on
+	 the command line) so no error/warning. */
+      free (name);
+      free (*slot);
+      *slot = file;
+    }
+  else
+    module_files.put (name, file);
+}
+
+/* If CODE is a module option, handle it & return true.  Otherwise
+   return false.  */
+
+bool
+handle_module_option (unsigned code, const char *arg, int)
+{
+  switch (opt_code (code))
+    {
+    case OPT_fmodules__:
+      flag_modules = 2;
+      return true;
+
+    case OPT_fmodule_path_:
+      add_path (xstrdup (arg), INC_CXX_MPATH, true, true);
+      return true;
+
+    case OPT_fmodule_output_:
+      module_output = arg;
+      return true;
+
+    case OPT_fmodule_file_:
+      add_module_file (arg);
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 #include "gt-cp-module.h"

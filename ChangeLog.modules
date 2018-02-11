@@ -1,14 +1,27 @@
 2018-02-11  Nathan Sidwell  <nathan@acm.org>
 
-	Move module option processing out of c-common.
-	c-family/
+	Move module option processing into module.c.
+	gcc/cp/
+	* cp-objcp-common.c (add_module_file): Move to module.c
+	(cp_handle_option): Call handle_module_option.
+	* cp-tree.h (module_output, module_files_map, module_files): Move
+	to module.c
+	* module.c (module_state::maybe_early_init): New.
+	(module_output, module_files): Make static.
+	(module_files_map): From cp-tree.h.
+	(init_module_processing): Call maybe_early_init.
+	(add_module): Moved from cp-objcp-common.c.
+	(handle_module_option): New.
+
+	Move module option processing out of c-common.c.
+	gcc/c-family/
 	* c-common.h (module_output, module_files_map, module_files): Move
 	to cp-tree.h.
 	* c-common.c (module_output, module_files): Move to module.c
 	* c-opts.c (add_module_file): Move to cp-objcp-common.c.
 	(c_common_handle_option): Move modules options to
 	cp-objcp-common.c.
-	cp/
+	gcc/cp/
 	* cp-objcp-common.c (add_module_file): Moved from c-opts.c.
 	(cp_handle_option): New, from c_common_handle_option.
 	* cp-objcp-common.h (LANG_HOOKS_HANDLE_OPTION): Point at

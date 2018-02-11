@@ -485,53 +485,6 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (BINARY_RIGHT_FOLD_EXPR);
 }
 
-/* Add a module name to binary interface file mapping (<name>=<file>). */
-static void
-add_module_file (const char *map)
-{
-  /* Note: C++ module name cannot contain '='. */
-  const char *p = strchr (map, '=');
-  {
-    const char *e = NULL;
-
-    if (!p)
-      e = "missing equal sign in module mapping %qs";
-    else if (p == map)
-      e = "empty module name in module mapping %qs";
-    else if (p[1] == '\0')
-      e = "empty module file in module mapping %qs";
-
-    if (e)
-      {
-	error (e, map);
-	return;
-      }
-  }
-
-  /* Normally there will be no duplicates/overrides so we don't complicate
-     things with trying to reuse buffers, etc. */
-
-  size_t name_n = p - map;
-  char *name = (char *) xmalloc (name_n + 1);
-  memcpy (name, map, name_n);
-  name[name_n] = '\0';
-
-  char *file = xstrdup (p + 1);
-
-  char **slot = module_files.get (name);
-  if (slot)
-    {
-      /* Override the mapping. Note that this can be intentional (e.g.,
-	 overriding a mapping specified in the file with an entry on
-	 the command line) so no error/warning. */
-      free (name);
-      free (*slot);
-      *slot = file;
-    }
-  else
-    module_files.put (name, file);
-}
-
 /* Handle C++-specficic options here.  Punt to c_common otherwise.  */
 
 bool
@@ -539,27 +492,9 @@ cp_handle_option (size_t scode, const char *arg, int value,
 		  int kind, location_t loc,
 		  const struct cl_option_handlers *handlers)
 {
-  switch (opt_code (scode))
-    {
-    case OPT_fmodules__:
-      flag_modules = 2;
-      return true;
-
-    case OPT_fmodule_path_:
-      add_path (xstrdup (arg), INC_CXX_MPATH, true, true);
-      return true;
-
-    case OPT_fmodule_output_:
-      module_output = arg;
-      return true;
-
-    case OPT_fmodule_file_:
-      add_module_file (arg);
-      return true;
-
-    default:
-      return c_common_handle_option (scode, arg, value, kind, loc, handlers);
-    }
+  if (handle_module_option (unsigned (scode), arg, value))
+    return true;
+  return c_common_handle_option (scode, arg, value, kind, loc, handlers);
 }
 
 #include "gt-cp-cp-objcp-common.h"
