@@ -1558,6 +1558,22 @@ process_options (void)
 	     || write_symbols == VMS_AND_DWARF2_DEBUG)
 	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
+  if (debug_variable_location_views == AUTODETECT_VALUE)
+    {
+      debug_variable_location_views = flag_var_tracking
+	&& debug_info_level >= DINFO_LEVEL_NORMAL
+	&& (write_symbols == DWARF2_DEBUG
+	    || write_symbols == VMS_AND_DWARF2_DEBUG)
+	&& !dwarf_strict;
+    }
+  else if (debug_variable_location_views == -1 && dwarf_version != 5)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "without -gdwarf-5, -gvariable-location-views=incompat5 "
+		  "is equivalent to -gvariable-location-views");
+      debug_variable_location_views = 1;
+    }
+
   if (flag_tree_cselim == AUTODETECT_VALUE)
     {
       if (HAVE_conditional_move)

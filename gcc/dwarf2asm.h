@@ -70,6 +70,10 @@ extern void dw2_asm_output_data_sleb128	(HOST_WIDE_INT,
 					 const char *, ...)
      ATTRIBUTE_NULL_PRINTF_2;
 
+extern void dw2_asm_output_symname_uleb128 (const char *,
+					    const char *, ...)
+     ATTRIBUTE_NULL_PRINTF_2;
+
 extern void dw2_asm_output_delta_uleb128 (const char *, const char *,
 					  const char *, ...)
      ATTRIBUTE_NULL_PRINTF_3;

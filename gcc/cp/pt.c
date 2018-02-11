@@ -10347,14 +10347,14 @@ instantiate_class_template_1 (tree type)
   templ = most_general_template (CLASSTYPE_TI_TEMPLATE (type));
   gcc_assert (TREE_CODE (templ) == TEMPLATE_DECL);
 
+  /* Mark the type as in the process of being defined.  */
+  TYPE_BEING_DEFINED (type) = 1;
+
   /* Determine what specialization of the original template to
      instantiate.  */
   t = most_specialized_partial_spec (type, tf_warning_or_error);
   if (t == error_mark_node)
-    {
-      TYPE_BEING_DEFINED (type) = 1;
-      return error_mark_node;
-    }
+    return error_mark_node;
   else if (t)
     {
       /* This TYPE is actually an instantiation of a partial
@@ -10379,15 +10379,15 @@ instantiate_class_template_1 (tree type)
   /* If the template we're instantiating is incomplete, then clearly
      there's nothing we can do.  */
   if (!COMPLETE_TYPE_P (pattern))
-    return type;
+    {
+      /* We can try again later.  */
+      TYPE_BEING_DEFINED (type) = 0;
+      return type;
+    }
 
   /* If we've recursively instantiated too many templates, stop.  */
   if (! push_tinst_level (type))
     return type;
-
-  /* Now we're really doing the instantiation.  Mark the type as in
-     the process of being defined.  */
-  TYPE_BEING_DEFINED (type) = 1;
 
   /* We may be in the middle of deferred access check.  Disable
      it now.  */
@@ -24012,6 +24012,30 @@ dependent_scope_p (tree scope)
 	  && !currently_open_class (scope));
 }
 
+/* T is a SCOPE_REF.  Return whether it represents a non-static member of
+   an unknown base of 'this' (and is therefore instantiation-dependent).  */
+
+static bool
+unknown_base_ref_p (tree t)
+{
+  if (!current_class_ptr)
+    return false;
+
+  tree mem = TREE_OPERAND (t, 1);
+  if (shared_member_p (mem))
+    return false;
+
+  tree cur = current_nonlambda_class_type ();
+  if (!any_dependent_bases_p (cur))
+    return false;
+
+  tree ctx = TREE_OPERAND (t, 0);
+  if (DERIVED_FROM_P (ctx, cur))
+    return false;
+
+  return true;
+}
+
 /* T is a SCOPE_REF; return whether we need to consider it
     instantiation-dependent so that we can check access at instantiation
     time even though we know which member it resolves to.  */
@@ -24021,9 +24045,7 @@ instantiation_dependent_scope_ref_p (tree t)
 {
   if (DECL_P (TREE_OPERAND (t, 1))
       && CLASS_TYPE_P (TREE_OPERAND (t, 0))
-      /* A dependent base could make a member inaccessible in the current
-	 class.  */
-      && !any_dependent_bases_p ()
+      && !unknown_base_ref_p (t)
       && accessible_in_template_p (TREE_OPERAND (t, 0),
 				   TREE_OPERAND (t, 1)))
     return false;

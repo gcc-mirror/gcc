@@ -1,3 +1,17 @@
+2018-02-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84141
+	PR fortran/84155
+	* trans-array.c (gfc_array_init_size): Revert the change made
+	in revision 257356 setting the dtype.
+	* trans-types.c (gfc_get_dtype): Do not use the cached dtype.
+	Call gfc_get_dtype_rank_type every time.
+
+	PR fortran/56691
+	* trans-array.c (gfc_conv_expr_descriptor): If the source array
+	is a descriptor type, use its offset, removing the condition
+	that is be a class expression.
+
 2018-02-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/82994

@@ -3670,7 +3670,10 @@ Refers to a parameter that was completely optimized out.
 @item (debug_marker:@var{mode})
 Marks a program location.  With @code{VOIDmode}, it stands for the
 beginning of a statement, a recommended inspection point logically after
-all prior side effects, and before any subsequent side effects.
+all prior side effects, and before any subsequent side effects.  With
+@code{BLKmode}, it indicates an inline entry point: the lexical block
+encoded in the @code{INSN_LOCATION} is the enclosing block that encloses
+the inlined function.
 
 @end table
 
@@ -3954,6 +3957,13 @@ This note is used to generate @code{is_stmt} markers in line number
 debuggign information.  It indicates the beginning of a user
 statement.
 
+@findex NOTE_INSN_INLINE_ENTRY
+@item NOTE_INSN_INLINE_ENTRY
+This note is used to generate @code{entry_pc} for inlined subroutines in
+debugging information.  It indicates an inspection point at which all
+arguments for the inlined function have been bound, and before its first
+statement.
+
 @end table
 
 These codes are printed symbolically when they appear in debugging dumps.
@@ -3971,8 +3981,12 @@ binds a user variable tree to an RTL representation of the
 it stands for the value bound to the corresponding
 @code{DEBUG_EXPR_DECL}.
 
-@code{GIMPLE_DEBUG_BEGIN_STMT} is expanded to RTL as a @code{DEBUG_INSN}
-with a @code{VOIDmode} @code{DEBUG_MARKER} @code{PATTERN}.  These
+@code{GIMPLE_DEBUG_BEGIN_STMT} and @code{GIMPLE_DEBUG_INLINE_ENTRY} are
+expanded to RTL as a @code{DEBUG_INSN} with a @code{DEBUG_MARKER}
+@code{PATTERN}; the difference is the RTL mode: the former's
+@code{DEBUG_MARKER} is @code{VOIDmode}, whereas the latter is
+@code{BLKmode}; information about the inlined function can be taken from
+the lexical block encoded in the @code{INSN_LOCATION}.  These
 @code{DEBUG_INSN}s, that do not carry @code{VAR_LOCATION} information,
 just @code{DEBUG_MARKER}s, can be detected by testing
 @code{DEBUG_MARKER_INSN_P}, whereas those that do can be recognized as
@@ -3983,8 +3997,8 @@ with respect to each other, particularly during scheduling.  Binding
 information is kept in pseudo-instruction form, so that, unlike notes,
 it gets the same treatment and adjustments that regular instructions
 would.  It is the variable tracking pass that turns these
-pseudo-instructions into @code{NOTE_INSN_VAR_LOCATION} and
-@code{NOTE_INSN_BEGIN_STMT} notes,
+pseudo-instructions into @code{NOTE_INSN_VAR_LOCATION},
+@code{NOTE_INSN_BEGIN_STMT} and @code{NOTE_INSN_INLINE_ENTRY} notes,
 analyzing control flow, value equivalences and changes to registers and
 memory referenced in value expressions, propagating the values of debug
 temporaries and determining expressions that can be used to compute the

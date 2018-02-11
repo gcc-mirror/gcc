@@ -160,7 +160,8 @@ enum dw_val_class
   dw_val_class_discr_list,
   dw_val_class_const_implicit,
   dw_val_class_unsigned_const_implicit,
-  dw_val_class_file_implicit
+  dw_val_class_file_implicit,
+  dw_val_class_view_list
 };
 
 /* Describe a floating point constant value, or a vector constant value.  */
@@ -203,6 +204,7 @@ struct GTY(()) dw_val_node {
       rtx GTY ((tag ("dw_val_class_addr"))) val_addr;
       unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_offset"))) val_offset;
       dw_loc_list_ref GTY ((tag ("dw_val_class_loc_list"))) val_loc_list;
+      dw_die_ref GTY ((tag ("dw_val_class_view_list"))) val_view_list;
       dw_loc_descr_ref GTY ((tag ("dw_val_class_loc"))) val_loc;
       HOST_WIDE_INT GTY ((default)) val_int;
       unsigned HOST_WIDE_INT

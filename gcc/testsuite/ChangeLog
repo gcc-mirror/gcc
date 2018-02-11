@@ -1,3 +1,135 @@
+2018-02-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56691
+	* gfortran.dg/type_to_class_4.f03: New test.
+
+2018-02-10  Alan Modra  <amodra@gmail.com>
+
+	PR target/84300
+	* gcc.dg/pr84300.c: New.
+
+2018-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* g++.dg/ubsan/pr83987-2.C: New test.
+
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83926
+	* gcc.target/powerpc/pr83926.c: Filter out gimple folding disabled
+	message.
+
+2018-02-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/vsx-vector-6-le.c:  Update CPU target.
+	* gcc.target/powerpc/vsx-vector-6-le.p9.c:  New.
+
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* c-c++-common/pr84293.h: New.
+	* c-c++-common/pr84293.c: New.
+
+2018-02-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57193
+	* gcc.target/i386/57193.c: New.
+
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84226
+	* gcc.target/powerpc/pr84226.c: New test.
+
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/builtins-1-be.c <vclzb>: Rename duplicate test
+	from this to...
+	<vclzd>: ...this.
+
+2018-02-09  Martin Sebor  <msebor@redhat.com>
+
+	PR lto/84212
+	* gcc.dg/lto/pr84212_0.c: New test file.
+	* gcc.dg/lto/pr84212_1.c: Same.
+
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83926
+	* gcc.target/powerpc/pr83926.c: New test.
+	* gcc.target/powerpc/builtins-1-be.c: Filter out gimple folding disabled
+	message.  Fix test for running in 32-bit mode.
+
+2018-02-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* gcc.target/arm/pragma_arch_switch_2.c: Use armv6 and armv5t.
+
+2018-02-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/PR84295
+	* gcc.target/s390/pr84295.c: New test.
+
+2018-02-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/77522
+	* g++.dg/cpp1y/lambda-init16.C: New.
+
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/sso8.adb: New test.
+	* gnat.dg/sso8_pkg.ads: New helper.
+
+2018-02-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84278
+	* gcc.target/i386/pr84278.c: Adjust regex.
+
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84232
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Add -mtune-generic on x86.
+
+	PR debug/84252
+	* gcc.target/aarch64/pr84252.c: New test.
+
+	PR middle-end/84237
+	* gcc.dg/pr84237.c: New test.
+
+2018-02-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* g++.dg/torture/pr83659.C: New test.
+
+2018-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/84136
+	* gcc.c-torture/compile/pr84136.c: New test.
+
+2018-02-08  Sergey Shalnov  <sergey.shalnov@intel.com>
+
+	PR target/83008
+	* gcc.target/i386/pr83008.c: New test.
+
+2018-02-08  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/81143
+	* gcc.target/powerpc/pr79799-2.c: Use __LITTLE_ENDIAN__.
+
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83806
+	* g++.dg/warn/Wunused-parm-11.C: New.
+
+2018-02-08  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/84238
+	* gcc.dg/Wstringop-overflow-3.c: New test.
+
+2018-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/cpp0x/initlist93.C: Adjust diagnostic.
+
 2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84265

@@ -3935,7 +3935,20 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   if (methods != OPTAB_LIB_WIDEN)
     goto fail;
 
-  if (!SCALAR_FLOAT_MODE_P (mode))
+  if (SCALAR_FLOAT_MODE_P (mode))
+    {
+      /* Small trick if UNORDERED isn't implemented by the hardware.  */
+      if (comparison == UNORDERED && rtx_equal_p (x, y))
+	{
+	  prepare_cmp_insn (x, y, UNLT, NULL_RTX, unsignedp, OPTAB_WIDEN,
+			    ptest, pmode);
+	  if (*ptest)
+	    return;
+	}
+
+      prepare_float_lib_cmp (x, y, comparison, ptest, pmode);
+    }
+  else
     {
       rtx result;
       machine_mode ret_mode;
@@ -3982,8 +3995,6 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       prepare_cmp_insn (x, y, comparison, NULL_RTX, unsignedp, methods,
 			ptest, pmode);
     }
-  else
-    prepare_float_lib_cmp (x, y, comparison, ptest, pmode);
 
   return;
 

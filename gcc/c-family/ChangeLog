@@ -1,3 +1,25 @@
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* c-common.h (strict_aliasing_warning): Drop OTYPE arg, insert LOC
+	arg.
+	* c-warn.c (strict_aliasing_warning): Drop OTYPE arg, require LOC
+	arg.  Adjust.
+
+2018-02-09  Martin Sebor  <msebor@redhat.com>
+
+	PR lto/84212
+	* c.opt (-Wstringop-overflow, -Warray-bounds): Add LTO.
+	(-Walloc-size-larger-than, -Wformat-truncation=): Same.
+	(-Wmaybe-uninitialized, -Wnonnull, -Wrestrict): Same.
+	(-Wstrict-overflow, -Wsuggest-attribute): Same.
+	(-Wuninitialized): Same.
+
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration): Do not generate the 'constant'
+	keyword for components.
+
 2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* c-common.h (DECL_UNNAMED_BIT_FIELD): New.

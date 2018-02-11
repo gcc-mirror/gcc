@@ -5189,16 +5189,23 @@ Function::defer_stack(Location location)
 void
 Function::export_func(Export* exp, const std::string& name) const
 {
-  Function::export_func_with_type(exp, name, this->type_);
+  Function::export_func_with_type(exp, name, this->type_,
+				  this->is_method() && this->nointerface());
 }
 
 // Export a function with a type.
 
 void
 Function::export_func_with_type(Export* exp, const std::string& name,
-				const Function_type* fntype)
+				const Function_type* fntype, bool nointerface)
 {
   exp->write_c_string("func ");
+
+  if (nointerface)
+    {
+      go_assert(fntype->is_method());
+      exp->write_c_string("/*nointerface*/ ");
+    }
 
   if (fntype->is_method())
     {
@@ -5280,9 +5287,20 @@ Function::import_func(Import* imp, std::string* pname,
 		      Typed_identifier** preceiver,
 		      Typed_identifier_list** pparameters,
 		      Typed_identifier_list** presults,
-		      bool* is_varargs)
+		      bool* is_varargs,
+		      bool* nointerface)
 {
   imp->require_c_string("func ");
+
+  *nointerface = false;
+  if (imp->match_c_string("/*"))
+    {
+      imp->require_c_string("/*nointerface*/ ");
+      *nointerface = true;
+
+      // Only a method can be nointerface.
+      go_assert(imp->peek_char() == '(');
+    }
 
   *preceiver = NULL;
   if (imp->peek_char() == '(')
@@ -6212,6 +6230,32 @@ Bindings_snapshot::check_goto_defs(Location loc, const Block* block,
 }
 
 // Class Function_declaration.
+
+// Whether this declares a method.
+
+bool
+Function_declaration::is_method() const
+{
+  return this->fntype_->is_method();
+}
+
+// Whether this method should not be included in the type descriptor.
+
+bool
+Function_declaration::nointerface() const
+{
+  go_assert(this->is_method());
+  return (this->pragmas_ & GOPRAGMA_NOINTERFACE) != 0;
+}
+
+// Record that this method should not be included in the type
+// descriptor.
+
+void
+Function_declaration::set_nointerface()
+{
+  this->pragmas_ |= GOPRAGMA_NOINTERFACE;
+}
 
 // Return the function descriptor.
 

@@ -438,7 +438,7 @@
 )
 
 (define_insn "call_internal"
-  [(call (mem:QI (match_operand:SI 0 "rx_call_operand" "r,Symbol"))
+  [(call (mem:QI (match_operand:SI 0 "rx_call_operand" "r,CALL_OP_SYMBOL_REF"))
 	 (const_int 0))
    (clobber (reg:CC CC_REG))]
   ""
@@ -466,7 +466,7 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand                  0 "register_operand" "=r,r")
-	(call (mem:QI (match_operand:SI 1 "rx_call_operand"   "r,Symbol"))
+	(call (mem:QI (match_operand:SI 1 "rx_call_operand"   "r,CALL_OP_SYMBOL_REF"))
 	      (const_int 0)))
    (clobber (reg:CC CC_REG))]
   ""
@@ -733,12 +733,17 @@
 (define_expand "movsicc"
   [(parallel
     [(set (match_operand:SI                  0 "register_operand")
-	  (if_then_else:SI (match_operand:SI 1 "comparison_operator")
+	  (if_then_else:SI (match_operand 1 "comparison_operator")
 			   (match_operand:SI 2 "nonmemory_operand")
 			   (match_operand:SI 3 "nonmemory_operand")))
      (clobber (reg:CC CC_REG))])]
   ""
 {
+  /* Make sure that we have an integer comparison...  */
+  if (GET_MODE (XEXP (operands[1], 0)) != CCmode
+      && GET_MODE (XEXP (operands[1], 0)) != SImode)
+    FAIL;
+
   /* One operand must be a constant or a register, the other must be a register.  */
   if (   ! CONSTANT_P (operands[2])
       && ! CONSTANT_P (operands[3])

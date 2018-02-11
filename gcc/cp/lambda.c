@@ -450,7 +450,7 @@ build_capture_proxy (tree member, tree init)
 	{
 	  if (PACK_EXPANSION_P (init))
 	    init = PACK_EXPANSION_PATTERN (init);
-	  if (TREE_CODE (init) == INDIRECT_REF)
+	  if (INDIRECT_REF_P (init))
 	    init = TREE_OPERAND (init, 0);
 	  STRIP_NOPS (init);
 	}

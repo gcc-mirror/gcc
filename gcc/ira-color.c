@@ -112,6 +112,9 @@ struct allocno_color_data
      available for the allocno allocation.  It is number of the
      profitable hard regs.  */
   int available_regs_num;
+  /* Sum of frequencies of hard register preferences of all
+     conflicting allocnos which are not the coloring stack yet.  */
+  int conflict_allocno_hard_prefs;
   /* Allocnos in a bucket (used in coloring) chained by the following
      two members.  */
   ira_allocno_t next_bucket_allocno;
@@ -1435,6 +1438,36 @@ update_costs_from_copies (ira_allocno_t allocno, bool decr_p, bool record_p)
   update_costs_from_allocno (allocno, hard_regno, 1, decr_p, record_p);
 }
 
+/* Update conflict_allocno_hard_prefs of allocnos conflicting with
+   ALLOCNO.  */
+static void
+update_conflict_allocno_hard_prefs (ira_allocno_t allocno)
+{
+  int l, nr = ALLOCNO_NUM_OBJECTS (allocno);
+  
+  for (l = 0; l < nr; l++)
+    {
+      ira_object_t conflict_obj, obj = ALLOCNO_OBJECT (allocno, l);
+      ira_object_conflict_iterator oci;
+      
+      FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
+	{
+	  ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
+	  allocno_color_data_t conflict_data = ALLOCNO_COLOR_DATA (conflict_a);
+	  ira_pref_t pref;
+
+	  if (!(hard_reg_set_intersect_p
+		(ALLOCNO_COLOR_DATA (allocno)->profitable_hard_regs,
+		 conflict_data->profitable_hard_regs)))
+	    continue;
+	  for (pref = ALLOCNO_PREFS (allocno);
+	       pref != NULL;
+	       pref = pref->next_pref)
+	    conflict_data->conflict_allocno_hard_prefs += pref->freq;
+	}
+    }
+}
+
 /* Restore costs of allocnos connected to ALLOCNO by copies as it was
    before updating costs of these allocnos from given allocno.  This
    is a wise thing to do as if given allocno did not get an expected
@@ -2223,7 +2256,7 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
 {
   ira_allocno_t a1 = *(const ira_allocno_t *) v1p;
   ira_allocno_t a2 = *(const ira_allocno_t *) v2p;
-  int diff, freq1, freq2, a1_num, a2_num;
+  int diff, freq1, freq2, a1_num, a2_num, pref1, pref2;
   ira_allocno_t t1 = ALLOCNO_COLOR_DATA (a1)->first_thread_allocno;
   ira_allocno_t t2 = ALLOCNO_COLOR_DATA (a2)->first_thread_allocno;
   int cl1 = ALLOCNO_CLASS (a1), cl2 = ALLOCNO_CLASS (a2);
@@ -2252,6 +2285,11 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
   a1_num = ALLOCNO_COLOR_DATA (a1)->available_regs_num;
   a2_num = ALLOCNO_COLOR_DATA (a2)->available_regs_num;
   if ((diff = a2_num - a1_num) != 0)
+    return diff;
+  /* Push allocnos with minimal conflict_allocno_hard_prefs first.  */
+  pref1 = ALLOCNO_COLOR_DATA (a1)->conflict_allocno_hard_prefs;
+  pref2 = ALLOCNO_COLOR_DATA (a2)->conflict_allocno_hard_prefs;
+  if ((diff = pref1 - pref2) != 0)
     return diff;
   return ALLOCNO_NUM (a2) - ALLOCNO_NUM (a1);
 }
@@ -2339,7 +2377,8 @@ delete_allocno_from_bucket (ira_allocno_t allocno, ira_allocno_t *bucket_ptr)
 /* Put allocno A onto the coloring stack without removing it from its
    bucket.  Pushing allocno to the coloring stack can result in moving
    conflicting allocnos from the uncolorable bucket to the colorable
-   one.  */
+   one.  Update conflict_allocno_hard_prefs of the conflicting
+   allocnos which are not on stack yet.  */
 static void
 push_allocno_to_stack (ira_allocno_t a)
 {
@@ -2369,14 +2408,18 @@ push_allocno_to_stack (ira_allocno_t a)
       FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
 	{
 	  ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
-	  
+	  ira_pref_t pref;
+
 	  conflict_data = ALLOCNO_COLOR_DATA (conflict_a);
-	  if (conflict_data->colorable_p
-	      || ! conflict_data->in_graph_p
+	  if (! conflict_data->in_graph_p
 	      || ALLOCNO_ASSIGNED_P (conflict_a)
 	      || !(hard_reg_set_intersect_p
 		   (ALLOCNO_COLOR_DATA (a)->profitable_hard_regs,
 		    conflict_data->profitable_hard_regs)))
+	    continue;
+	  for (pref = ALLOCNO_PREFS (a); pref != NULL; pref = pref->next_pref)
+	    conflict_data->conflict_allocno_hard_prefs -= pref->freq;
+	  if (conflict_data->colorable_p)
 	    continue;
 	  ira_assert (bitmap_bit_p (coloring_allocno_bitmap,
 				    ALLOCNO_NUM (conflict_a)));
@@ -3048,21 +3091,12 @@ color_allocnos (void)
   setup_profitable_hard_regs ();
   EXECUTE_IF_SET_IN_BITMAP (coloring_allocno_bitmap, 0, i, bi)
     {
-      int l, nr;
-      HARD_REG_SET conflict_hard_regs;
       allocno_color_data_t data;
       ira_pref_t pref, next_pref;
 
       a = ira_allocnos[i];
-      nr = ALLOCNO_NUM_OBJECTS (a);
-      CLEAR_HARD_REG_SET (conflict_hard_regs);
-      for (l = 0; l < nr; l++)
-	{
-	  ira_object_t obj = ALLOCNO_OBJECT (a, l);
-	  IOR_HARD_REG_SET (conflict_hard_regs,
-			    OBJECT_CONFLICT_HARD_REGS (obj));
-	}
       data = ALLOCNO_COLOR_DATA (a);
+      data->conflict_allocno_hard_prefs = 0;
       for (pref = ALLOCNO_PREFS (a); pref != NULL; pref = next_pref)
 	{
 	  next_pref = pref->next_pref;
@@ -3072,6 +3106,7 @@ color_allocnos (void)
 	    ira_remove_pref (pref);
 	}
     }
+  
   if (flag_ira_algorithm == IRA_ALGORITHM_PRIORITY)
     {
       n = 0;
@@ -3134,6 +3169,7 @@ color_allocnos (void)
 	    {
 	      ALLOCNO_COLOR_DATA (a)->in_graph_p = true;
 	      update_costs_from_prefs (a);
+	      update_conflict_allocno_hard_prefs (a);
 	    }
 	  else
 	    {

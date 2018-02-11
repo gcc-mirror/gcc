@@ -1,9 +1,10 @@
 /* { dg-do compile { target { powerpc64le-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mvsx -O2" } */
+/* { dg-options "-mvsx -O2 -mcpu=power8" } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 
-/* Expected instruction counts for Little Endian */
+/* Expected instruction counts for Little Endian targeting Power8. */
 
 /* { dg-final { scan-assembler-times "xvabsdp" 1 } } */
 /* { dg-final { scan-assembler-times "xvadddp" 1 } } */

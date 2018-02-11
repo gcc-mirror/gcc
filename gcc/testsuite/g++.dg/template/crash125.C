@@ -13,6 +13,4 @@ struct TraitCheckImpl<Swappable<T> > {
     typedef void Complete;
 };
 
-Swappable<int> s;  // { dg-error "depth" }
-
-// { dg-prune-output "compilation terminated" }
+Swappable<int> s;  // { dg-error "" }

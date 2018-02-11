@@ -1636,7 +1636,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
     return false;
 
   tree indirect_ref = TREE_OPERAND (component_ref, 0);
-  if (TREE_CODE (indirect_ref) != INDIRECT_REF)
+  if (!INDIRECT_REF_P (indirect_ref))
     return false;
 
   tree ptr = STRIP_NOPS (TREE_OPERAND (indirect_ref, 0));

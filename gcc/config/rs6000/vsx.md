@@ -1650,10 +1650,22 @@
   rtx op5 = gen_reg_rtx (DImode);
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  emit_insn (gen_muldi3 (op5, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_muldi3 (op5, op3, op4));
+  else
+    {
+      rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
+      emit_move_insn (op5, ret);
+    }
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  emit_insn (gen_muldi3 (op3, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_muldi3 (op3, op3, op4));
+  else
+    {
+      rtx ret = expand_mult (DImode, op3, op4, NULL, 0, false);
+      emit_move_insn (op3, ret);
+    }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
 }"
@@ -1688,10 +1700,30 @@
   rtx op5 = gen_reg_rtx (DImode);
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  emit_insn (gen_divdi3 (op5, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_divdi3 (op5, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (sdiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op5, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op5, target);
+    }
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  emit_insn (gen_divdi3 (op3, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_divdi3 (op3, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (sdiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op3, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op3, target);
+    }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
 }"
@@ -1716,10 +1748,30 @@
   rtx op5 = gen_reg_rtx (DImode);
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (0)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (0)));
-  emit_insn (gen_udivdi3 (op5, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_udivdi3 (op5, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (udiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op5, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op5, target);
+    }
   emit_insn (gen_vsx_extract_v2di (op3, op1, GEN_INT (1)));
   emit_insn (gen_vsx_extract_v2di (op4, op2, GEN_INT (1)));
-  emit_insn (gen_udivdi3 (op3, op3, op4));
+  if (TARGET_POWERPC64)
+    emit_insn (gen_udivdi3 (op3, op3, op4));
+  else
+    {
+      rtx libfunc = optab_libfunc (udiv_optab, DImode);
+      rtx target = emit_library_call_value (libfunc,
+					    op3, LCT_NORMAL, DImode,
+					    op3, DImode,
+					    op4, DImode);
+      emit_move_insn (op3, target);
+    }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
 }"
@@ -5311,35 +5363,60 @@
 
 (define_expand "p9_xxbrq_v16qi"
   [(use (match_operand:V16QI 0 "vsx_register_operand" "=wa"))
-   (use (match_operand:V16QI 1 "vsx_register_operand" "=wa"))]
+   (use (match_operand:V16QI 1 "vsx_register_operand" "wa"))]
   "TARGET_P9_VECTOR"
 {
-  rtx op0 = gen_lowpart (V1TImode, operands[0]);
+  rtx op0 = gen_reg_rtx (V1TImode);
   rtx op1 = gen_lowpart (V1TImode, operands[1]);
   emit_insn (gen_p9_xxbrq_v1ti (op0, op1));
+  emit_move_insn (operands[0], gen_lowpart (V16QImode, op0));
   DONE;
 })
 
 ;; Swap all bytes in each 64-bit element
-(define_insn "p9_xxbrd_<mode>"
-  [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wa")
-	(bswap:VSX_D (match_operand:VSX_D 1 "vsx_register_operand" "wa")))]
+(define_insn "p9_xxbrd_v2di"
+  [(set (match_operand:V2DI 0 "vsx_register_operand" "=wa")
+	(bswap:V2DI (match_operand:V2DI 1 "vsx_register_operand" "wa")))]
   "TARGET_P9_VECTOR"
   "xxbrd %x0,%x1"
   [(set_attr "type" "vecperm")])
 
+(define_expand "p9_xxbrd_v2df"
+  [(use (match_operand:V2DF 0 "vsx_register_operand" "=wa"))
+   (use (match_operand:V2DF 1 "vsx_register_operand" "wa"))]
+  "TARGET_P9_VECTOR"
+{
+  rtx op0 = gen_reg_rtx (V2DImode);
+  rtx op1 = gen_lowpart (V2DImode, operands[1]);
+  emit_insn (gen_p9_xxbrd_v2di (op0, op1));
+  emit_move_insn (operands[0], gen_lowpart (V2DFmode, op0));
+  DONE;
+})
+
 ;; Swap all bytes in each 32-bit element
-(define_insn "p9_xxbrw_<mode>"
-  [(set (match_operand:VSX_W 0 "vsx_register_operand" "=wa")
-	(bswap:VSX_W (match_operand:VSX_W 1 "vsx_register_operand" "wa")))]
+(define_insn "p9_xxbrw_v4si"
+  [(set (match_operand:V4SI 0 "vsx_register_operand" "=wa")
+	(bswap:V4SI (match_operand:V4SI 1 "vsx_register_operand" "wa")))]
   "TARGET_P9_VECTOR"
   "xxbrw %x0,%x1"
   [(set_attr "type" "vecperm")])
 
+(define_expand "p9_xxbrw_v4sf"
+  [(use (match_operand:V4SF 0 "vsx_register_operand" "=wa"))
+   (use (match_operand:V4SF 1 "vsx_register_operand" "wa"))]
+  "TARGET_P9_VECTOR"
+{
+  rtx op0 = gen_reg_rtx (V4SImode);
+  rtx op1 = gen_lowpart (V4SImode, operands[1]);
+  emit_insn (gen_p9_xxbrw_v4si (op0, op1));
+  emit_move_insn (operands[0], gen_lowpart (V4SFmode, op0));
+  DONE;
+})
+
 ;; Swap all bytes in each element of vector
 (define_expand "revb_<mode>"
-  [(set (match_operand:VEC_REVB 0 "vsx_register_operand")
-	(bswap:VEC_REVB (match_operand:VEC_REVB 1 "vsx_register_operand")))]
+  [(use (match_operand:VEC_REVB 0 "vsx_register_operand"))
+   (use (match_operand:VEC_REVB 1 "vsx_register_operand"))]
   ""
 {
   if (TARGET_P9_VECTOR)

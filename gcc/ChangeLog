@@ -1,3 +1,299 @@
+2018-02-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (hppa_profile_hook): Mark SYMBOL_REF for _mcount as
+	function label.
+
+2018-02-10  Alan Modra  <amodra@gmail.com>
+
+	PR target/84300
+	* config/rs6000/rs6000.md (split_stack_return): Remove (use ..).
+	Specify LR as an input.
+
+2018-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* omp-low.c (maybe_remove_omp_member_access_dummy_vars,
+	remove_member_access_dummy_vars): New functions.
+	(lower_omp_for, lower_omp_taskreg, lower_omp_target,
+	lower_omp_1, execute_lower_omp): Use them.
+
+	PR rtl-optimization/84308
+	* shrink-wrap.c (spread_components): Release todo vector.
+
+2018-02-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57193
+	* ira-color.c (struct allocno_color_data): Add member
+	conflict_allocno_hard_prefs.
+	(update_conflict_allocno_hard_prefs): New.
+	(bucket_allocno_compare_func): Add a preference based on
+	conflict_allocno_hard_prefs.
+	(push_allocno_to_stack): Update conflict_allocno_hard_prefs.
+	(color_allocnos): Remove a dead code.  Initiate
+	conflict_allocno_hard_prefs.  Call update_costs_from_prefs.
+
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84226
+	* config/rs6000/vsx.md (p9_xxbrq_v16qi): Change input operand
+	constraint from =wa to wa.  Avoid a subreg on the output operand,
+	instead use a pseudo and subreg it in a move.
+	(p9_xxbrd_<mode>): Changed to ...
+	(p9_xxbrd_v2di): ... this insn, without VSX_D iterator.
+	(p9_xxbrd_v2df): New expander.
+	(p9_xxbrw_<mode>): Changed to ...
+	(p9_xxbrw_v4si): ... this insn, without VSX_W iterator.
+	(p9_xxbrw_v4sf): New expander.
+
+2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rx.md: updated "movsicc" expand to be matched by GCC
+	* testsuite/gcc.target/rx/movsicc.c: new test case
+
+2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/83926
+	* config/rs6000/vsx.md (vsx_mul_v2di): Handle generating a 64-bit
+	multiply in 32-bit mode.
+	(vsx_div_v2di): Handle generating a 64-bit signed divide in 32-bit mode.
+	(vsx_udiv_v2di): Handle generating a 64-bit unsigned divide in 32-bit
+	mode.
+
+2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rx/constraints.md: added new constraint CALL_OP_SYMBOL_REF 
+	to allow or block "symbol_ref" depending on value of TARGET_JSR
+	* config/rx/rx.md: use CALL_OP_SYMBOL_REF in call_internal and 
+	call_value_internal insns
+
+2018-02-09  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR lto/84213
+	* dwarf2out.c (is_trivial_indirect_ref): New function.
+	(dwarf2out_late_global_decl): Do not generate a location
+	attribute for variables that have a non-trivial DECL_VALUE_EXPR
+	and that are not defined in the current unit.
+
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* optabs.c (prepare_cmp_insn): Try harder to emit a direct comparison
+	instead of a libcall for UNORDERED.
+
+2018-02-09  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* config/arm/arm-c.c (arm_cpu_builtins): Un-define __ARM_FEATURE_LDREX,
+	__ARM_ARCH_PROFILE, __ARM_ARCH_ISA_THUMB, __ARM_FP and __ARM_NEON_FP.
+
+2018-02-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/PR84295
+	* config/s390/s390.c (s390_set_current_function): Invoke
+	s390_indirect_branch_settings also if fndecl didn't change.
+
+2018-02-09  Alexandre Oliva <aoliva@redhat.com>
+
+	* config/rs6000/rs6000.md (blockage): Set length to zero.
+
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (optimize_bitfield_assignment_op): Remove obsolete assertion.
+
+2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/84285
+	* gcc.c (STATIC_LIBASAN_LIBS, STATIC_LIBTSAN_LIBS,
+	STATIC_LIBLSAN_LIBS, STATIC_LIBUBSAN_LIBS): Handle -static like
+	-static-lib*san.
+
+	PR debug/84252
+	* var-tracking.c (vt_add_function_parameter): Punt for non-onepart
+	PARALLEL incoming that failed vt_get_decl_and_offset check.
+
+	PR middle-end/84237
+	* output.h (bss_initializer_p): Add NAMED argument, defaulted to false.
+	* varasm.c (bss_initializer_p): Add NAMED argument, if true, ignore
+	TREE_READONLY bit.
+	(get_variable_section): For decls in named .bss* sections pass true as
+	second argument to bss_initializer_p.
+
+2018-02-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* fold-const.c (fold_indirect_ref_1): Use VECTOR_TYPE_P macro.
+	Formatting fixes.  Verify first that tree_fits_poly_int64_p (op01).
+	Sync some changes from cxx_fold_indirect_ref.
+
+2018-02-09  Alexandre Oliva <aoliva@redhat.com>
+
+	* cfgexpand.c (expand_gimple_basic_block): Handle inline entry
+	markers.
+	* dwarf2out.c (dwarf2_debug_hooks): Enable inline_entry hook.
+	(BLOCK_INLINE_ENTRY_LABEL): New.
+	(dwarf2out_var_location): Disregard inline entry markers.
+	(inline_entry_data): New struct.
+	(inline_entry_data_hasher): New hashtable type.
+	(inline_entry_data_hasher::hash): New.
+	(inline_entry_data_hasher::equal): New.
+	(inline_entry_data_table): New variable.
+	(add_high_low_attributes): Add DW_AT_entry_pc and
+	DW_AT_GNU_entry_view attributes if a pending entry is found
+	in inline_entry_data_table.  Add old entry_pc attribute only
+	if debug nonbinding markers are disabled.
+	(gen_inlined_subroutine_die): Set BLOCK_DIE if nonbinding
+	markers are enabled.
+	(block_within_block_p, dwarf2out_inline_entry): New.
+	(dwarf2out_finish): Check that no entries remained in
+	inline_entry_data_table.
+	* final.c (reemit_insn_block_notes): Handle inline entry notes.
+	(final_scan_insn, notice_source_line): Likewise.
+	(rest_of_clean_state): Skip inline entry markers.
+	* gimple-pretty-print.c (dump_gimple_debug): Handle inline entry
+	markers.
+	* gimple.c (gimple_build_debug_inline_entry): New.
+	* gimple.h (enum gimple_debug_subcode): Add
+	GIMPLE_DEBUG_INLINE_ENTRY.
+	(gimple_build_debug_inline_entry): Declare.
+	(gimple_debug_inline_entry_p): New.
+	(gimple_debug_nonbind_marker_p): Adjust.
+	* insn-notes.def (INLINE_ENTRY): New.
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_0): Handle
+	inline entry marker notes.
+	(print_insn): Likewise.
+	* rtl.h	(NOTE_MARKER_P): Add INLINE_ENTRY support.
+	(INSN_DEBUG_MARKER_KIND): Likewise.
+	(GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT): New.
+	* tree-inline.c	(expand_call_inline): Build and insert
+	debug_inline_entry stmt.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Preserve
+	inline entry blocks early, if nonbind markers are enabled.
+	(dump_scope_block): Dump fragment info.
+	* var-tracking.c (reemit_marker_as_note): Handle inline entry note.
+	* doc/gimple.texi (gimple_debug_inline_entry_p): New.
+	(gimple_build_debug_inline_entry): New.
+	* doc/invoke.texi (gstatement-frontiers, gno-statement-frontiers):
+	Enable/disable inline entry points too.
+	* doc/rtl.texi (NOTE_INSN_INLINE_ENTRY): New.
+	(DEBUG_INSN): Describe inline entry markers.
+
+	* common.opt (gvariable-location-views): New.
+	(gvariable-location-views=incompat5): New.
+	* config.in: Rebuilt.
+	* configure: Rebuilt.
+	* configure.ac: Test assembler for view support.
+	* dwarf2asm.c (dw2_asm_output_symname_uleb128): New.
+	* dwarf2asm.h (dw2_asm_output_symname_uleb128): Declare.
+	* dwarf2out.c (var_loc_view): New typedef.
+	(struct dw_loc_list_struct): Add vl_symbol, vbegin, vend.
+	(dwarf2out_locviews_in_attribute): New.
+	(dwarf2out_locviews_in_loclist): New.
+	(dw_val_equal_p): Compare val_view_list of dw_val_class_view_lists.
+	(enum dw_line_info_opcode): Add LI_adv_address.
+	(struct dw_line_info_table): Add view.
+	(RESET_NEXT_VIEW, RESETTING_VIEW_P): New macros.
+	(DWARF2_ASM_VIEW_DEBUG_INFO): Define default.
+	(zero_view_p): New variable.
+	(ZERO_VIEW_P): New macro.
+	(output_asm_line_debug_info): New.
+	(struct var_loc_node): Add view.
+	(add_AT_view_list, AT_loc_list): New.
+	(add_var_loc_to_decl): Add view param.  Test it against last.
+	(new_loc_list): Add view params.  Record them.
+	(AT_loc_list_ptr): Handle loc and view lists.
+	(view_list_to_loc_list_val_node): New.
+	(print_dw_val): Handle dw_val_class_view_list.
+	(size_of_die): Likewise.
+	(value_format): Likewise.
+	(loc_list_has_views): New.
+	(gen_llsym): Set vl_symbol too.
+	(maybe_gen_llsym, skip_loc_list_entry): New.
+	(dwarf2out_maybe_output_loclist_view_pair): New.
+	(output_loc_list): Output view list or entries too.
+	(output_view_list_offset): New.
+	(output_die): Handle dw_val_class_view_list.
+	(output_dwarf_version): New.
+	(output_compilation_unit_header): Use it.
+	(output_skeleton_debug_sections): Likewise.
+	(output_rnglists, output_line_info): Likewise.
+	(output_pubnames, output_aranges): Update version comments.
+	(output_one_line_info_table): Output view numbers in asm comments.
+	(dw_loc_list): Determine current endview, pass it to new_loc_list.
+	Call maybe_gen_llsym.
+	(loc_list_from_tree_1): Adjust.
+	(add_AT_location_description): Create view list attribute if
+	needed, check it's absent otherwise.
+	(convert_cfa_to_fb_loc_list): Adjust.
+	(maybe_emit_file): Call output_asm_line_debug_info for test.
+	(dwarf2out_var_location): Reset views as needed.  Precompute
+	add_var_loc_to_decl args.  Call get_attr_min_length only if we have the
+	attribute.  Set view.
+	(new_line_info_table): Reset next view.
+	(set_cur_line_info_table): Call output_asm_line_debug_info for test.
+	(dwarf2out_source_line): Likewise.  Output view resets and labels to
+	the assembler, or select appropriate line info opcodes.
+	(prune_unused_types_walk_attribs): Handle dw_val_class_view_list.
+	(optimize_string_length): Catch it.  Adjust.
+	(resolve_addr): Copy vl_symbol along with ll_symbol.  Handle
+	dw_val_class_view_list, and remove it if no longer needed.
+	(hash_loc_list): Hash view numbers.
+	(loc_list_hasher::equal): Compare them.
+	(optimize_location_lists): Check whether a view list symbol is
+	needed, and whether the locview attribute is present, and
+	whether they match.  Remove the locview attribute if no longer
+	needed.
+	(index_location_lists): Call skip_loc_list_entry for test.
+	(dwarf2out_finish): Call output_asm_line_debug_info for test.
+	Use output_dwarf_version.
+	* dwarf2out.h (enum dw_val_class): Add dw_val_class_view_list.
+	(struct dw_val_node): Add val_view_list.
+	* final.c (SEEN_NEXT_VIEW): New.
+	(set_next_view_needed): New.
+	(clear_next_view_needed): New.
+	(maybe_output_next_view): New.
+	(final_start_function): Rename to...
+	(final_start_function_1): ... this.  Take pointer to FIRST,
+	add SEEN parameter.  Emit param bindings in the initial view.
+	(final_start_function): Reintroduce SEEN-less interface.
+	(final): Rename to...
+	(final_1): ... this.  Take SEEN parameter.  Output final pending
+	next view at the end.
+	(final): Reintroduce seen-less interface.
+	(final_scan_insn): Output pending next view before switching
+	sections or ending a block.  Mark the next view as needed when
+	outputting variable locations.  Notify debug backend of section
+	changes, and of location view changes.
+	(rest_of_handle_final): Adjust.
+	* toplev.c (process_options): Autodetect value for debug variable
+	location views option.  Warn on incompat5 without -gdwarf-5.
+	* doc/invoke.texi (gvariable-location-views): New.
+	(gvariable-location-views=incompat5): New.
+	(gno-variable-location-views): New.
+
+2018-02-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/84136
+	* tree-cfg.c (find_taken_edge_computed_goto): Remove assertion
+	that the result of find_edge is non-NULL.
+
+2018-02-08  Sergey Shalnov  <sergey.shalnov@intel.com>
+
+	PR target/83008
+	* config/i386/x86-tune-costs.h (skylake_cost): Fix cost of
+	storing integer register in SImode.  Fix cost of 256 and 512
+	byte aligned SSE register store.
+
+2018-02-08  Sergey Shalnov  <sergey.shalnov@intel.com>
+
+	* config/i386/i386.c (ix86_multiplication_cost): Fix
+	multiplication cost for TARGET_AVX512DQ.
+
+2018-02-08  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/84238
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Verify the result of
+	get_range_strlen.
+
 2018-02-08  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84265
@@ -149,6 +445,7 @@
 
 2018-02-07  Iain Sandoe  <iain@codesourcery.com>
 
+	PR target/84113
 	* config/rs6000/altivec.md (*restore_world): Remove LR use.
 	* config/rs6000/predicates.md (restore_world_operation): Adjust op
 	count, remove one USE.

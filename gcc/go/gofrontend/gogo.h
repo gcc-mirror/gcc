@@ -1476,13 +1476,14 @@ class Function
   // Export a function with a type.
   static void
   export_func_with_type(Export*, const std::string& name,
-			const Function_type*);
+			const Function_type*, bool nointerface);
 
   // Import a function.
   static void
   import_func(Import*, std::string* pname, Typed_identifier** receiver,
 	      Typed_identifier_list** pparameters,
-	      Typed_identifier_list** presults, bool* is_varargs);
+	      Typed_identifier_list** presults, bool* is_varargs,
+	      bool* nointerface);
 
  private:
   // Type for mapping from label names to Label objects.
@@ -1607,6 +1608,10 @@ class Function_declaration
   location() const
   { return this->location_; }
 
+  // Return whether this function declaration is a method.
+  bool
+  is_method() const;
+
   const std::string&
   asm_name() const
   { return this->asm_name_; }
@@ -1627,6 +1632,16 @@ class Function_declaration
   {
     this->pragmas_ = pragmas;
   }
+
+  // Whether this method should not be included in the type
+  // descriptor.
+  bool
+  nointerface() const;
+
+  // Record that this method should not be included in the type
+  // descriptor.
+  void
+  set_nointerface();
 
   // Return an expression for the function descriptor, given the named
   // object for this function.  This may only be called for functions
@@ -1652,7 +1667,10 @@ class Function_declaration
   // Export a function declaration.
   void
   export_func(Export* exp, const std::string& name) const
-  { Function::export_func_with_type(exp, name, this->fntype_); }
+  {
+    Function::export_func_with_type(exp, name, this->fntype_,
+				    this->is_method() && this->nointerface());
+  }
 
   // Check that the types used in this declaration's signature are defined.
   void

@@ -4726,8 +4726,6 @@ optimize_bitfield_assignment_op (poly_uint64 pbitsize,
     }
   else if (!REG_P (str_rtx) && GET_CODE (str_rtx) != SUBREG)
     return false;
-  else
-    gcc_assert (!reverse);
 
   /* If the bit field covers the whole REG/MEM, store_field
      will likely generate better code.  */

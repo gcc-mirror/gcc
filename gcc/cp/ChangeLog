@@ -1,3 +1,55 @@
+2018-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* tree.c (cp_free_lang_data): Revert 2018-01-23 change.
+
+2018-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81917 - ICE with void_t and partial specialization.
+	* pt.c (instantiate_class_template_1): Set TYPE_BEING_DEFINED before
+	calling most_specialized_partial_spec.
+
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* typeck.c (cp_build_indirect_ref_1, build_reinterpret_cast_1):
+	Pass expr location to strict_aliasing_warning.
+
+2018-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84296 - ICE with qualified-id in template.
+	PR c++/83714
+	* pt.c (unknown_base_ref_p): New.
+	(instantiation_dependent_scope_ref_p): Use it instead of
+	any_dependent_bases_p.
+
+2018-02-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* constexpr.c (cxx_fold_indirect_ref): Sync some changes from
+	fold_indirect_ref_1, including poly_*int64.  Verify first that
+	tree_fits_poly_int64_p (op01).  Formatting fixes.
+
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* constexpr.c (cxx_eval_component_reference): Use INDIRECT_REF_P.
+	* lambda.c (build_capture_proxy): Likewise.
+	* search.c (field_access_p): Likewise.
+	* semantics.c (omp_clause_decl, omp_privatize_field,
+	finish_omp_clauses): Likewise.
+
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83806
+	* typeck.c (decay_conversion): Use mark_rvalue_use for the special
+	case of nullptr too.
+
+2018-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (finish_struct): Fix std:initializer_list diagnostic
+	formatting.
+
 2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/83204
