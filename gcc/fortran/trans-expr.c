@@ -547,6 +547,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
   tree ctree;
   tree var;
   tree tmp;
+  int dim;
 
   /* The derived type needs to be converted to a temporary
      CLASS object.  */
@@ -636,9 +637,33 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 	{
 	  stmtblock_t block;
 	  gfc_init_block (&block);
+	  gfc_ref *ref;
 
 	  parmse->ss = ss;
+	  parmse->use_offset = 1;
 	  gfc_conv_expr_descriptor (parmse, e);
+
+	  /* Detect any array references with vector subscripts.  */
+	  for (ref = e->ref; ref; ref = ref->next)
+	    if (ref->type == REF_ARRAY
+		&& ref->u.ar.type != AR_ELEMENT
+		&& ref->u.ar.type != AR_FULL)
+	      {
+		for (dim = 0; dim < ref->u.ar.dimen; dim++)
+		  if (ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
+		    break;
+		if (dim < ref->u.ar.dimen)
+		  break;
+	      }
+
+	  /* Array references with vector subscripts and non-variable expressions
+	     need be coverted to a one-based descriptor.  */
+	  if (ref || e->expr_type != EXPR_VARIABLE)
+	    {
+	      for (dim = 0; dim < e->rank; ++dim)
+		gfc_conv_shift_descriptor_lbound (&block, parmse->expr, dim,
+						  gfc_index_one_node);
+	    }
 
 	  if (e->rank != class_ts.u.derived->components->as->rank)
 	    {
@@ -10105,7 +10130,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 				   &expr1->where, msg);
 	}
 
-      /* Deallocate the lhs parameterized components if required.  */ 
+      /* Deallocate the lhs parameterized components if required.  */
       if (dealloc && expr2->expr_type == EXPR_FUNCTION
 	  && !expr1->symtree->n.sym->attr.associate_var)
 	{

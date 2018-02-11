@@ -1,3 +1,8 @@
+2018-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84074
+	* gfortran.dg/type_to_class_5.f03: New test.
+
 2018-02-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/56691

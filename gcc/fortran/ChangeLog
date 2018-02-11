@@ -1,3 +1,10 @@
+2018-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84074
+	* trans-expr.c (gfc_conv_derived_to_class): Set the use_offset
+	flag. If the is a vector subscript or the expression is not a
+	variable, make the descriptor one-based.
+
 2018-02-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84141
