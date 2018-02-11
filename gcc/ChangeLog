@@ -1,3 +1,12 @@
+2018-02-11  Alexandre Oliva <aoliva@redhat.com>
+
+	* final.c (final_scan_insn_1): Renamed from...
+	(final_scan_insn): ... this.  New wrapper, to recover
+	seen from the outermost call in recursive ones.
+	* config/sparc/sparc.c (output_return): Drop seen from call.
+	(output_sibcall): Likewise.
+	* config/visium/visium.c (output_branch): Likewise.
+
 2018-02-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (hppa_profile_hook): Mark SYMBOL_REF for _mcount as
