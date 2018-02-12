@@ -1,3 +1,21 @@
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512f-vsqrtsd-1.c (_mm_mask_sqrt_round_sd)
+	(_mm_maskz_sqrt_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vsqrtsd-2.c (_mm_sqrt_round_sd)
+	(_mm_mask_sqrt_round_sd, _mm_maskz_sqrt_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vsqrtss-1.c (_mm_mask_sqrt_round_ss)
+	(_mm_maskz_sqrt_round_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vsqrtss-2.c (_mm_sqrt_round_ss)
+	(_mm_mask_sqrt_round_ss,      _mm_maskz_sqrt_round_ss): Test new
+	intrinsics.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_sqrtsd_round)
+	(__builtin_ia32_sqrtss_round): Remove builtins.
+	(__builtin_ia32_sqrtsd_mask_round)
+	(__builtin_ia32_sqrtss_mask_round): Test new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2018-02-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/35299

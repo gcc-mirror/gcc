@@ -1955,18 +1955,66 @@ extern __inline __m128d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sqrt_round_sd (__m128d __A, __m128d __B, const int __R)
 {
-  return (__m128d) __builtin_ia32_sqrtsd_round ((__v2df) __B,
-						(__v2df) __A,
-						__R);
+  return (__m128d) __builtin_ia32_sqrtsd_mask_round ((__v2df) __B,
+						     (__v2df) __A,
+						     (__v2df)
+						     _mm_setzero_pd (),
+						     (__mmask8) -1, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_sqrt_round_sd (__m128d __W, __mmask8 __U, __m128d __A, __m128d __B,
+			const int __R)
+{
+  return (__m128d) __builtin_ia32_sqrtsd_mask_round ((__v2df) __B,
+						     (__v2df) __A,
+						     (__v2df) __W,
+						     (__mmask8) __U, __R);
+}
+
+extern __inline __m128d
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_sqrt_round_sd (__mmask8 __U, __m128d __A, __m128d __B, const int __R)
+{
+  return (__m128d) __builtin_ia32_sqrtsd_mask_round ((__v2df) __B,
+						     (__v2df) __A,
+						     (__v2df)
+						     _mm_setzero_pd (),
+						     (__mmask8) __U, __R);
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sqrt_round_ss (__m128 __A, __m128 __B, const int __R)
 {
-  return (__m128) __builtin_ia32_sqrtss_round ((__v4sf) __B,
-					       (__v4sf) __A,
-					       __R);
+  return (__m128) __builtin_ia32_sqrtss_mask_round ((__v4sf) __B,
+						    (__v4sf) __A,
+						    (__v4sf)
+						    _mm_setzero_ps (),
+						    (__mmask8) -1, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_sqrt_round_ss (__m128 __W, __mmask8 __U, __m128 __A, __m128 __B,
+			const int __R)
+{
+  return (__m128) __builtin_ia32_sqrtss_mask_round ((__v4sf) __B,
+						    (__v4sf) __A,
+						    (__v4sf) __W,
+						    (__mmask8) __U, __R);
+}
+
+extern __inline __m128
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_sqrt_round_ss (__mmask8 __U, __m128 __A, __m128 __B, const int __R)
+{
+  return (__m128) __builtin_ia32_sqrtss_mask_round ((__v4sf) __B,
+						    (__v4sf) __A,
+						    (__v4sf)
+						    _mm_setzero_ps (),
+						    (__mmask8) __U, __R);
 }
 #else
 #define _mm512_sqrt_round_pd(A, C)            \
@@ -1987,11 +2035,27 @@ _mm_sqrt_round_ss (__m128 __A, __m128 __B, const int __R)
 #define _mm512_maskz_sqrt_round_ps(U, A, C)   \
     (__m512)__builtin_ia32_sqrtps512_mask(A, (__v16sf)_mm512_setzero_ps(), U, C)
 
-#define _mm_sqrt_round_sd(A, B, C)            \
-    (__m128d)__builtin_ia32_sqrtsd_round(A, B, C)
+#define _mm_sqrt_round_sd(A, B, C)	      \
+    (__m128d)__builtin_ia32_sqrtsd_mask_round (B, A, \
+	(__v2df) _mm_setzero_pd (), -1, C)
 
-#define _mm_sqrt_round_ss(A, B, C)            \
-    (__m128)__builtin_ia32_sqrtss_round(A, B, C)
+#define _mm_mask_sqrt_round_sd(W, U, A, B, C) \
+    (__m128d)__builtin_ia32_sqrtsd_mask_round (B, A, W, U, C)
+
+#define _mm_maskz_sqrt_round_sd(U, A, B, C)   \
+    (__m128d)__builtin_ia32_sqrtsd_mask_round (B, A, \
+	(__v2df) _mm_setzero_pd (), U, C)
+
+#define _mm_sqrt_round_ss(A, B, C)	      \
+    (__m128)__builtin_ia32_sqrtss_mask_round (B, A, \
+	(__v4sf) _mm_setzero_ps (), -1, C)
+
+#define _mm_mask_sqrt_round_ss(W, U, A, B, C) \
+    (__m128)__builtin_ia32_sqrtss_mask_round (B, A, W, U, C)
+
+#define _mm_maskz_sqrt_round_ss(U, A, B, C)   \
+    (__m128)__builtin_ia32_sqrtss_mask_round (B, A, \
+	(__v4sf) _mm_setzero_ps (), U, C)
 #endif
 
 extern __inline __m512i
