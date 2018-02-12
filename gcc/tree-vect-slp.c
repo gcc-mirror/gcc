@@ -1308,37 +1308,65 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  && nops == 2
 	  && oprnds_info[1]->first_dt == vect_internal_def
 	  && is_gimple_assign (stmt)
-	  && commutative_tree_code (gimple_assign_rhs_code (stmt))
-	  && ! two_operators
 	  /* Do so only if the number of not successful permutes was nor more
 	     than a cut-ff as re-trying the recursive match on
 	     possibly each level of the tree would expose exponential
 	     behavior.  */
 	  && *npermutes < 4)
 	{
-	  /* Verify if we can safely swap or if we committed to a specific
-	     operand order already.  */
-	  for (j = 0; j < group_size; ++j)
-	    if (!matches[j]
-		&& (swap[j] != 0
-		    || STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmts[j]))))
-	      {
-		if (dump_enabled_p ())
-		  {
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: cannot swap operands "
-				     "of shared stmt ");
-		    dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				      stmts[j], 0);
-		  }
-		goto fail;
-	      }
+	  /* See whether we can swap the matching or the non-matching
+	     stmt operands.  */
+	  bool swap_not_matching = true;
+	  do
+	    {
+	      for (j = 0; j < group_size; ++j)
+		{
+		  if (matches[j] != !swap_not_matching)
+		    continue;
+		  gimple *stmt = stmts[j];
+		  /* Verify if we can swap operands of this stmt.  */
+		  if (!is_gimple_assign (stmt)
+		      || !commutative_tree_code (gimple_assign_rhs_code (stmt)))
+		    {
+		      if (!swap_not_matching)
+			goto fail;
+		      swap_not_matching = false;
+		      break;
+		    }
+		  /* Verify if we can safely swap or if we committed to a
+		     specific operand order already.
+		     ???  Instead of modifying GIMPLE stmts here we could
+		     record whether we want to swap operands in the SLP
+		     node and temporarily do that when processing it
+		     (or wrap operand accessors in a helper).  */
+		  else if (swap[j] != 0
+			   || STMT_VINFO_NUM_SLP_USES (vinfo_for_stmt (stmt)))
+		    {
+		      if (!swap_not_matching)
+			{
+			  if (dump_enabled_p ())
+			    {
+			      dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+					       vect_location,
+					       "Build SLP failed: cannot swap "
+					       "operands of shared stmt ");
+			      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION,
+						TDF_SLIM, stmts[j], 0);
+			    }
+			  goto fail;
+			}
+		      swap_not_matching = false;
+		      break;
+		    }
+		}
+	    }
+	  while (j != group_size);
 
 	  /* Swap mismatched definition stmts.  */
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "Re-trying with swapped operands of stmts ");
 	  for (j = 0; j < group_size; ++j)
-	    if (!matches[j])
+	    if (matches[j] == !swap_not_matching)
 	      {
 		std::swap (oprnds_info[0]->def_stmts[j],
 			   oprnds_info[1]->def_stmts[j]);
@@ -1367,7 +1395,7 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	      for (j = 0; j < group_size; ++j)
 		{
 		  gimple *stmt = stmts[j];
-		  if (!matches[j])
+		  if (matches[j] == !swap_not_matching)
 		    {
 		      /* Avoid swapping operands twice.  */
 		      if (gimple_plf (stmt, GF_PLF_1))
@@ -1382,7 +1410,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		for (j = 0; j < group_size; ++j)
 		  {
 		    gimple *stmt = stmts[j];
-		    gcc_assert (gimple_plf (stmt, GF_PLF_1) == ! matches[j]);
+		    gcc_assert (gimple_plf (stmt, GF_PLF_1)
+				== (matches[j] == !swap_not_matching));
 		  }
 
 	      /* If we have all children of child built up from scalars then
