@@ -1678,11 +1678,10 @@ struct GTY(()) module_state {
   void release (bool = true);
 
  public:
-  /* Whether this module is currently unoccupied (i.e all we know is
-     the name and maybe filename.  */
-  bool empty_p () const
+  /* Whether this module is currently occupied.  */
+  bool occupied () const
   {
-    return vec_name == NULL_TREE;
+    return vec_name != NULL_TREE;
   }
   void occupy (location_t loc, tree vname);
 
@@ -1789,6 +1788,7 @@ enum tree_tag
     tt_type_name,	/* TYPE_DECL for type.  */
     tt_namespace,	/* Namespace.  */
     tt_import,  	/* Import from another module. */
+    tt_binfo,		/* A BINFO.  */
 
     tt_binding,
     tt_definition,
@@ -1834,6 +1834,7 @@ private:
   bool lang_type_vals (tree);
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
+  bool tree_binfo (tree type);
 
   /* All the bits of a tree.  */
   bool tree_node_raw (tree);
@@ -1890,6 +1891,7 @@ private:
     i (rt);
   }
   int insert (tree);
+  int maybe_insert (tree);
   void start (tree_code, tree);
   void loc (location_t);
 
@@ -1900,6 +1902,7 @@ private:
   void lang_type_vals (tree);
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
+  void tree_binfo (tree type);
   void tree_node_raw (tree);
 
 private:
@@ -2011,9 +2014,11 @@ static dumper dump = {0};
 unsigned
 dumper::push (module_state *m)
 {
+  bool blank = false;
   FILE *stream = NULL;
   if (!dumps || !dumps->stack.length ())
     {
+      blank = dumps != NULL;
       stream = dump_begin (module_dump_id, NULL);
       if (!stream)
 	return 0;
@@ -2036,6 +2041,8 @@ dumper::push (module_state *m)
   dumps->indent = 0;
   dumps->bol = true;
   dumps->stack.quick_push (m);
+  if (blank)
+    dump ("");
   if (m)
     {
       module_state *from = (dumps->stack.length () > 1
@@ -2077,6 +2084,9 @@ void dumper::pop (unsigned n)
 bool
 dumper::impl::nested_name (tree t)
 {
+  if (t && TREE_CODE (t) == TREE_BINFO)
+    t = BINFO_TYPE (t);
+
   if (t && TYPE_P (t))
     t = TYPE_NAME (t);
 
@@ -2351,12 +2361,12 @@ module_state::get_module (tree name, module_state *dflt)
 
   if (dflt)
     {
-      /* Don't overwrite non-empty default.  */
-      if (!dflt->empty_p ())
+      /* Don't overwrite occupied default.  */
+      if (dflt->occupied ())
 	return NULL;
 
-      /* Don't copy a non-empty existing module.  */
-      if (state && !state->empty_p ())
+      /* Don't copy an occupied existing module.  */
+      if (state && state->occupied ())
 	return state;
 
       /* Copy name and filename from the empty one we found.  */
@@ -2754,7 +2764,8 @@ module_state::read_config (elf_in *from, unsigned *expected_crc)
       else if (my_time != their_time)
 	/* Times differ, give it a go.  */
 	warning (0, "file is version %s, compiler is version %s,"
-		 " perhaps close enough?", their_string, my_string);
+		 " perhaps close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
+		 their_string, my_string);
     }
 
   /* Read and ignore the inner crc.  We only wrote it to mix it into
@@ -3162,13 +3173,29 @@ trees_out::instrument ()
 
 /* Insert T into the map, return its back reference number.  */
 
-int
+inline int
 trees_out::insert (tree t)
 {
-  --ref_num;
-  bool existed = tree_map.put (t, ref_num);
-  gcc_assert (!existed);
-  return ref_num;
+  int tag = maybe_insert (t);
+  gcc_assert (tag);
+  return tag;
+}
+
+/* Insert T into the map, if it isn't already there.  Return the
+   inserted tag, or 0.  */
+
+int
+trees_out::maybe_insert (tree t)
+{
+  int tag = 0;
+  bool existed;
+  int *val = &tree_map.get_or_insert (t, &existed);
+  if (!existed)
+    {
+      tag = --ref_num;
+      *val = tag;
+    }
+  return tag;
 }
 
 /* Insert T into the backreference array.  Return its back reference
@@ -3415,11 +3442,8 @@ trees_out::define_class (tree type, tree maybe_template)
 
   chained_decls (TYPE_FIELDS (type));
   tree_node (TYPE_VFIELD (type));
-  tree_node (TYPE_BINFO (type));
   if (TYPE_LANG_SPECIFIC (type))
     {
-      tree_node (CLASSTYPE_PRIMARY_BINFO (type));
-      tree_vec (CLASSTYPE_VBASECLASSES (type));
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base && as_base != type)
 	tag_definition (CLASSTYPE_AS_BASE (type), NULL_TREE);
@@ -3435,7 +3459,24 @@ trees_out::define_class (tree type, tree maybe_template)
 	  tree_pair_vec (CLASSTYPE_VCALL_INDICES (type));
 	  tree_node (CLASSTYPE_KEY_METHOD (type));
 	}
+    }
 
+  /* Write the remaining BINFO contents. */
+  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
+    {
+      dump () && dump ("Writing binfo:%N of %N contents", binfo, type);
+#define WT(X) (tree_node (X))
+      WT (binfo->binfo.vtable);
+      WT (binfo->binfo.virtuals);
+      WT (binfo->binfo.vptr_field);
+      WT (binfo->binfo.vtt_subvtt);
+      WT (binfo->binfo.vtt_vptr);
+#undef WT
+      tree_vec (BINFO_BASE_ACCESSES (binfo));
+    }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
       tree vtables = CLASSTYPE_VTABLES (type);
       chained_decls (vtables);
       /* Write the vtable initializers.  */
@@ -3470,41 +3511,28 @@ trees_in::define_class (tree type, tree maybe_template)
 
   tree fields = chained_decls ();
   tree vfield = tree_node ();
-  tree binfo = tree_node ();
   vec<tree, va_gc> *member_vec = NULL;
-  tree primary = NULL_TREE;
   tree as_base = NULL_TREE;
-  vec<tree, va_gc> *vbases = NULL;
   vec<tree, va_gc> *pure_virts = NULL;
   vec<tree_pair_s, va_gc> *vcall_indices = NULL;
   tree key_method = NULL_TREE;
-  tree vtables = NULL_TREE;
   tree lambda = NULL_TREE;
   tree friends = NULL_TREE;
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      primary = tree_node ();
-      vbases = tree_vec ();
       as_base = tree_node ();
       member_vec = tree_vec ();
       friends = tree_node ();
       lambda = tree_node ();
 
-      /* TYPE_VBASECLASSES is not set yet, so TYPE_CONTAINS_VPTR will
-	 malfunction.  */
-      if (TYPE_POLYMORPHIC_P (type) || vbases)
+      if (TYPE_CONTAINS_VPTR_P (type))
 	{
 	  pure_virts = tree_vec ();
 	  vcall_indices = tree_pair_vec ();
 	  key_method = tree_node ();
 	}
-      vtables = chained_decls ();
     }
-
-  tree decl_list = NULL_TREE;
-  if (TREE_CODE (maybe_template) == TEMPLATE_DECL)
-    decl_list = tree_node ();
 
   // lang->nested_udts
 
@@ -3515,12 +3543,9 @@ trees_in::define_class (tree type, tree maybe_template)
 
   TYPE_FIELDS (type) = fields;
   TYPE_VFIELD (type) = vfield;
-  TYPE_BINFO (type) = binfo;
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      CLASSTYPE_PRIMARY_BINFO (type) = primary;
-      CLASSTYPE_VBASECLASSES (type) = vbases;
       CLASSTYPE_AS_BASE (type) = as_base;
 
       CLASSTYPE_FRIEND_CLASSES (type) = friends;
@@ -3534,16 +3559,39 @@ trees_in::define_class (tree type, tree maybe_template)
       if (!key_method && TYPE_CONTAINS_VPTR_P (type))
 	vec_safe_push (keyed_classes, type);
 
-      CLASSTYPE_VTABLES (type) = vtables;
-      /* Read the vtable initializers.  */
-      for (; vtables; vtables = TREE_CHAIN (vtables))
-	DECL_INITIAL (vtables) = tree_node ();
-
-      CLASSTYPE_DECL_LIST (type) = decl_list;
-
       /* Resort the member vector.  */
       resort_type_member_vec (member_vec, NULL, nop, NULL);
     }
+  
+  /* Read the remaining BINFO contents. */
+  for (tree binfo = TYPE_BINFO (type); binfo; binfo = TREE_CHAIN (binfo))
+    {
+      dump () && dump ("Reading binfo:%N of %N contents", binfo, type);
+#define RT(X) ((X) = tree_node ())
+      RT (binfo->binfo.vtable);
+      RT (binfo->binfo.virtuals);
+      RT (binfo->binfo.vptr_field);
+      RT (binfo->binfo.vtt_subvtt);
+      RT (binfo->binfo.vtt_vptr);
+#undef RT
+      BINFO_BASE_ACCESSES (binfo) = tree_vec ();
+      if (vec_safe_length (BINFO_BASE_ACCESSES (binfo))
+	  != BINFO_N_BASE_BINFOS (binfo))
+	set_overrun ();
+    }
+
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      /* Read the vtables.  */
+      tree vtables = chained_decls ();
+
+      CLASSTYPE_VTABLES (type) = vtables;
+      for (; vtables; vtables = TREE_CHAIN (vtables))
+	DECL_INITIAL (vtables) = tree_node ();
+    }
+
+  if (TREE_CODE (maybe_template) == TEMPLATE_DECL)
+    CLASSTYPE_DECL_LIST (type) = tree_node ();
 
   /* Propagate to all variants.  */
   fixup_type_variants (type);
@@ -3795,7 +3843,8 @@ trees_out::start (tree_code code, tree t)
       gcc_unreachable ();
       break;
     case TREE_BINFO:
-      u (BINFO_N_BASE_BINFOS (t));
+      /* BINFOs are streamed specially */
+      gcc_unreachable ();
       break;
     case TREE_VEC:
       u (TREE_VEC_LENGTH (t));
@@ -3824,7 +3873,6 @@ trees_in::start (tree_code code)
 {
   tree t = NULL_TREE;
 
-  // FIXME: should we checksum the numbers we use to allocate with?
   switch (code)
     {
     default:
@@ -3847,7 +3895,7 @@ trees_in::start (tree_code code)
       }
       break;
     case TREE_BINFO:
-      t = make_tree_binfo (u ());
+      /* We should never find a naked binfo.  */
       break;
     case TREE_VEC:
       t = make_tree_vec (u ());
@@ -4740,21 +4788,8 @@ trees_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
-      WT (t->binfo.offset);
-      WT (t->binfo.vtable);
-      WT (t->binfo.virtuals);
-      WT (t->binfo.vptr_field);
-      WT (t->binfo.inheritance);
-      WT (t->binfo.vtt_subvtt);
-      WT (t->binfo.vtt_vptr);
-      gcc_assert (BINFO_N_BASE_BINFOS (t)
-		  == vec_safe_length (BINFO_BASE_ACCESSES (t)));
-      tree_vec (BINFO_BASE_ACCESSES (t));
-      if (unsigned num = BINFO_N_BASE_BINFOS (t))
-	for (unsigned ix = 0; ix != num; ix++)
-	  WT (BINFO_BASE_BINFO (t, ix));
-    }
+    /* BINFOs are streamed specially.  */
+    gcc_unreachable ();
 
   if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
     {
@@ -5110,23 +5145,8 @@ trees_in::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
-    {
-      RT (t->binfo.offset);
-      RT (t->binfo.vtable);
-      RT (t->binfo.virtuals);
-      RT (t->binfo.vptr_field);
-      RT (t->binfo.inheritance);
-      RT (t->binfo.vtt_subvtt);
-      RT (t->binfo.vtt_vptr);
-      BINFO_BASE_ACCESSES (t) = tree_vec ();
-      if (BINFO_BASE_ACCESSES (t))
-	{
-	  unsigned num = BINFO_BASE_ACCESSES (t)->length ();
-	  for (unsigned ix = 0; ix != num; ix++)
-	    BINFO_BASE_APPEND (t, tree_node ());
-	}
-    }
-
+    /* We should never see a naked binfo.  */
+    gcc_unreachable ();
 
   if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
     {
@@ -5356,6 +5376,109 @@ trees_in::lang_type_vals (tree t)
   return !get_overrun ();
 }
 
+void
+trees_out::tree_binfo (tree type)
+{
+  /* Stream out types and sizes in DFS order, inserting each binfo
+     into the map.  */
+  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+    {
+      tree_node (BINFO_TYPE (child));
+      u (BINFO_N_BASE_BINFOS (child));
+
+      int tag = insert (child);
+      dump () && dump ("Wrote binfo:%d child %N", tag, BINFO_TYPE (child));
+    }
+  tree_node (NULL_TREE);
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
+      u (nvbases);
+      if (nvbases)
+	dump () && dump ("Type %N has %u vbases", type, nvbases);
+    }
+
+  /* Stream out some contents DFS order.  */
+  for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
+    {
+      core_bools (child);
+      bflush ();
+#define WT(X) (tree_node (X))
+      WT (child->binfo.offset);
+      WT (child->binfo.inheritance);
+#undef WT
+      unsigned num = BINFO_N_BASE_BINFOS (child);
+      u (num);
+      for (unsigned ix = 0; ix != num; ix++)
+	tree_node (BINFO_BASE_BINFO (child, ix));
+    }
+}
+
+bool
+trees_in::tree_binfo (tree type)
+{
+  tree binfo = NULL_TREE;
+
+  /* Stream in the types and sizes in DFS order.  */
+  while (tree t = tree_node ())
+    {
+      unsigned n_children = u ();
+      if (get_overrun ())
+	return false;
+      tree child = make_tree_binfo (n_children);
+      BINFO_TYPE (child) = t;
+
+      int tag = insert (child);
+      dump () && dump ("Read binfo:%d child %N", tag, BINFO_TYPE (child));
+      TREE_CHAIN (child) = binfo;
+      binfo = child;
+    }
+  binfo = nreverse (binfo);
+  TYPE_BINFO (type) = binfo;
+
+  unsigned nvbases = 0;
+  vec<tree, va_gc> *vbase_vec = NULL;
+  if (TYPE_LANG_SPECIFIC (type))
+    {
+      nvbases = u ();
+      if (nvbases)
+	{
+	  vec_alloc (vbase_vec, nvbases);
+	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
+	  dump () && dump ("Type %N has %u vbases", type, nvbases);
+	}
+    }
+
+  /* Stream in some contents in DFS order.  */
+  for (tree child = binfo; child; child = TREE_CHAIN (child))
+    {
+      core_bools (child);
+      bflush ();
+#define RT(X) ((X) = tree_node ())
+      RT (child->binfo.offset);
+      RT (child->binfo.inheritance);
+#undef RT
+      unsigned num = u ();
+      if (get_overrun ())
+	return false;
+      for (unsigned ix = 0; ix != num; ix++)
+	BINFO_BASE_APPEND (child, tree_node ());
+      if (get_overrun ())
+	return false;
+      if (BINFO_VIRTUAL_P (child))
+	{
+	  if (vec_safe_length (vbase_vec) == nvbases)
+	    {
+	      set_overrun ();
+	      return false;
+	    }
+	  vbase_vec->quick_push (child);
+	}
+    }
+
+  return true;
+}
+
 /* The raw tree node.  We've already dealt with the code, and in the
    case of decls, determining name, context & module.  Stream the
    bools and vals without post-processing.  */
@@ -5464,7 +5587,6 @@ trees_in::tree_node_raw (tree t)
 void
 trees_out::tree_node (tree t)
 {
-
   dump.indent ();
  again:
   if (!t)
@@ -5486,7 +5608,8 @@ trees_out::tree_node (tree t)
       else
 	/* Fixed reference -> tt_fixed */
 	i (tt_fixed), u (val);
-      dump () && dump ("Wrote:%d referenced %C:%N%S", val, TREE_CODE (t), t, t);
+      dump () && dump ("Wrote %s:%d %C:%N%S", val < 0 ? "backref" : "fixed",
+		       val, TREE_CODE (t), t, t);
       goto done;
     }
 
@@ -5577,6 +5700,59 @@ trees_out::tree_node (tree t)
 	}
     }
 
+  if (TREE_CODE (t) == TREE_BINFO)
+    {
+      /* A BINFO -> tt_binfo.
+	 We must do this by reference.  We stream the binfo tree
+	 itself when streaming its owning RECORD_TYPE.  */
+      i (tt_binfo);
+      tree inh = BINFO_INHERITANCE_CHAIN (t);
+      tree_node (inh);
+      if (!inh)
+	{
+	  /* Dominating binfo.  Find TYPE, then grab it's binfo.  */
+	  tree type = BINFO_TYPE (t);
+	  gcc_checking_assert (TYPE_BINFO (type) == t);
+	  tree_node (TYPE_NAME (t));
+	  dump () && dump ("Wrote dominating BINFO %N", t);
+	}
+      else
+	{
+	  /* Copied binfo.  Record which child we are.  */
+	  gcc_assert (TYPE_BINFO (BINFO_TYPE (t)) != t);
+	  vec<tree, va_gc> *binfo_vec;
+
+	  bool is_virt = BINFO_VIRTUAL_P (t);
+	  if (is_virt)
+	    {
+	      /* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
+	      while (BINFO_INHERITANCE_CHAIN (inh))
+		inh = BINFO_INHERITANCE_CHAIN (inh);
+
+	      binfo_vec = CLASSTYPE_VBASECLASSES (BINFO_TYPE (inh));
+	    }
+	  else
+	    /* Look along BINFO_BASE_BINFOS (inh).  */
+	    binfo_vec = BINFO_BASE_BINFOS (inh);
+
+	  gcc_assert (vec_safe_length (binfo_vec));
+	  unsigned ix;
+	  for (ix = 0; (*binfo_vec)[ix] != t; ix++)
+	    gcc_assert (ix + 1 < binfo_vec->length ());
+	  dump () && dump ("Wrote derived %sBINFO %u %N of %N",
+			   is_virt ? "virtual " : "", ix, t, inh);
+	  u (ix * 2 | is_virt);
+	}
+
+      /* If the dominating type was an import, we will not have put this
+	 in the map.  Do that now.  */
+      int tag = maybe_insert (t);
+      u (tag != 0);
+      if (tag)
+	dump () && dump ("Inserting binfo:%d %N", tag, t);
+      goto done;
+    }
+
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     {
       /* A DECL.  */
@@ -5597,16 +5773,11 @@ trees_out::tree_node (tree t)
 	  if (type)
 	    {
 	      /* Make sure the imported type is in the map too.  */
-	      bool existed;
-	      int *val = &tree_map.get_or_insert (type, &existed);
-	      if (!existed)
-		{
-		  tag = --ref_num;
-		  *val = tag;
-		  dump () && dump ("Wrote imported type:%d %C:%N%S", tag,
-				   TREE_CODE (type), type, type);
-		}
-	      u (existed);
+	      tag = maybe_insert (type);
+	      u (tag != 0);
+	      if (tag)
+		dump () && dump ("Wrote imported type:%d %C:%N%S", tag,
+				 TREE_CODE (type), type, type);
 	    }
 	  goto done;
 	}
@@ -5629,6 +5800,15 @@ trees_out::tree_node (tree t)
 		     && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
     tree_node_raw (t);
     dump () && dump ("Written:%d %N", tag, t);
+
+    if (RECORD_OR_UNION_CODE_P (TREE_CODE (t)) && TYPE_MAIN_VARIANT (t) == t)
+      {
+	/* Write out the binfo heirarchy.  */
+	tree_binfo (t);
+	if (TYPE_LANG_SPECIFIC (t))
+	  tree_node (CLASSTYPE_PRIMARY_BINFO (t));
+	// FIXME: AS_BASE too
+      }
   }
 
  done:
@@ -5641,6 +5821,9 @@ trees_out::tree_node (tree t)
 tree
 trees_in::tree_node ()
 {
+  if (get_overrun ())
+    return NULL_TREE;
+
   dump.indent ();
  again:
   int tag = i ();
@@ -5686,6 +5869,8 @@ trees_in::tree_node ()
 	tree ctx = tree_node ();
 	tree name = tree_node ();
 
+	if (get_overrun ())
+	  break;
 	gcc_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
 	res = find_imported_namespace (ctx, state->mod, name);
 	if (!res)
@@ -5770,13 +5955,66 @@ trees_in::tree_node ()
 	int tag = insert (res);
 	dump () && dump ("Imported:%d %P@%I", tag,
 			 ctx, name, module_name (remapped));
-	if (res && TREE_TYPE (res) && !u ())
+	if (res && TREE_TYPE (res) && u ())
 	  {
 	    /* Insert the type too.  */
 	    tree type = TREE_TYPE (res);
 	    tag = insert (type);
 	    dump () && dump ("Read imported type:%d %C:%N%S", tag,
 			     TREE_CODE (type), type, type);
+	  }
+      }
+      break;
+
+    case tt_binfo:
+      {
+	/* A BINFO.  Walk the tree of the dominating type.  */
+	tree inh = tree_node ();
+	if (!inh)
+	  {
+	    /* Dominating binfo.  Read the type and get its binfo.  */
+	    tree decl = tree_node ();
+	    if (get_overrun ())
+	      break;
+	    res = TYPE_BINFO (TREE_TYPE (decl));
+	    dump () && dump ("Read dominating binfo %N", res);
+	  }
+	else
+	  {
+	    /* Copied binfo.  Find it in our parent.  */
+	    unsigned key = u ();
+	    bool is_virt = key & 1;
+	    unsigned ix = key >> 1;
+	    vec<tree, va_gc> *binfo_vec;
+
+	    if (is_virt)
+	      {
+		/* A virtual base.  Look on the CLASSTYPE_VIRTUALS.  */
+		while (BINFO_INHERITANCE_CHAIN (inh))
+		  inh = BINFO_INHERITANCE_CHAIN (inh);
+
+		binfo_vec = CLASSTYPE_VBASECLASSES (BINFO_TYPE (inh));
+	      }
+	    else
+	      /* Look along BINFO_BASE_BINFOS (inh).  */
+	      binfo_vec = BINFO_BASE_BINFOS (inh);
+
+	    if (vec_safe_length (binfo_vec) < ix)
+	      set_overrun ();
+	    else
+	      res = (*binfo_vec)[ix];
+	    dump () && dump ("Read derived %sBINFO %u %N of %N",
+			     is_virt ? "virtual " : "", ix, res, inh);
+	  }
+
+	if (get_overrun ())
+	  break;
+
+	/* Maybe insert binfo into backreferences.  */
+	if (!u ())
+	  {
+	    tag = insert (res);
+	    dump () && dump ("Read binfo:%d %N", tag, res);
 	  }
       }
       break;
@@ -5792,6 +6030,11 @@ trees_in::tree_node ()
 	  }
 	tree_code code = tree_code (c);
 	res = start (code);
+	if (!res)
+	  {
+	    set_overrun ();
+	    break;
+	  }
 
 	/* Insert into map.  */
 	tag = insert (res);
@@ -5886,14 +6129,6 @@ trees_in::finish_type (tree type)
 		       (void *)type, (void *)main);
       TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
       TYPE_NEXT_VARIANT (main) = type;
-      if (RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
-	{
-	  /* The main variant might already have been defined, copy
-	     the bits of its definition that we need.  */
-	  TYPE_BINFO (type) = TYPE_BINFO (main);
-	  TYPE_VFIELD (type) = TYPE_VFIELD (main);
-	  TYPE_FIELDS (type) = TYPE_FIELDS (main);
-	}
 
       /* CANONICAL_TYPE is either already correctly remapped.  Or
          correctly already us.  */
@@ -5922,6 +6157,26 @@ trees_in::finish_type (tree type)
       // was already found.  See above.
       dump () && dump ("Adding type %p with canonical %p",
 		       (void *)main, (void *)type);
+    }
+
+  if (!RECORD_OR_UNION_CODE_P (TREE_CODE (type)))
+    ;
+  else if (main == type)
+    {
+      /* Read in the binfo heirarchy.  */
+      if (!tree_binfo (type))
+	set_overrun ();
+      if (TYPE_LANG_SPECIFIC (type))
+	CLASSTYPE_PRIMARY_BINFO (type) = tree_node ();
+      // FIXME:AS_BASE too
+    }
+  else
+    {
+      /* The main variant might already have been defined, copy
+	 the bits of its definition that we need.  */
+      TYPE_BINFO (type) = TYPE_BINFO (main);
+      TYPE_VFIELD (type) = TYPE_VFIELD (main);
+      TYPE_FIELDS (type) = TYPE_FIELDS (main);
     }
 
   return type;
@@ -6291,7 +6546,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
       return NULL;
     }
 
-  if (state->empty_p ())
+  if (!state->occupied ())
     {
       if (module_p && export_p)
 	{
@@ -6549,6 +6804,8 @@ handle_module_option (unsigned code, const char *arg, int)
       else if (FILE *stream = fopen (arg, "r"))
 	{
 	  /* File of mappings.  */
+	  // FIXME: Perhaps we should make this recursive and/or
+	  // interpret file names with as self-relative?
 	  size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
 	  char *buffer = XNEWVEC (char, size);
 	  size_t pos = 0;

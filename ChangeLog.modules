@@ -1,3 +1,17 @@
+2018-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	BINFOs imported by reference.
+	gcc/cp/
+	* module.c (trees_{in_out}::tree_binfo): New.
+	(trees_out::maybe_insert): New.
+	(trees_out::insert): Use it.
+	(trees_{in,out}::define_class): Stream remaining binfo contents.
+	(trees_{in,out}::start): Don't expect BINFOs.
+	(trees_{in,out}::core_vals): Likewise.
+	(trees_{in,out}::tree_node): Use tt_binfo.
+	(trees_out::tree_node): Stream a class's child binfos.
+	(trees_in::finish_type): Likewise.
+
 2018-02-11  Nathan Sidwell  <nathan@acm.org>
 
 	Add module map file reading.
