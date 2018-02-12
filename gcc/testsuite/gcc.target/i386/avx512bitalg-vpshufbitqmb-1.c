@@ -2,11 +2,10 @@
 /* { dg-options "-O2 -mavx512bitalg -mavx512f -mavx512bw" } */
 /* { dg-require-effective-target avx512bitalg } */
 
-#include "avx512f-helper.h"
-
 #define AVX512BITALG
 #define SIZE (AVX512F_LEN / 8)
 
+#include "avx512f-helper.h"
 #include "avx512f-mask-type.h"
 
 #define TYPE unsigned long long

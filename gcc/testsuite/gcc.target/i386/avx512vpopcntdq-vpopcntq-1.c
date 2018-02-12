@@ -2,11 +2,10 @@
 /* { dg-options "-O2 -mavx512vpopcntdq" } */
 /* { dg-require-effective-target avx512vpopcntdq } */
 
-#include "avx512f-helper.h"
-
 #define AVX512VPOPCNTDQ
 #define SIZE (AVX512F_LEN / 64)
 
+#include "avx512f-helper.h"
 #include "avx512f-mask-type.h"
 
 #define TYPE long long
