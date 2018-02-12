@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR67367
 program bug
    implicit none
