@@ -14049,12 +14049,7 @@ cp_parser_decltype_expr (cp_parser *parser,
 static tree
 cp_parser_decltype (cp_parser *parser)
 {
-  tree expr;
   bool id_expression_or_member_access_p = false;
-  const char *saved_message;
-  bool saved_integral_constant_expression_p;
-  bool saved_non_integral_constant_expression_p;
-  bool saved_greater_than_is_operator_p;
   cp_token *start_token = cp_lexer_peek_token (parser->lexer);
 
   if (start_token->type == CPP_DECLTYPE)
@@ -14073,77 +14068,83 @@ cp_parser_decltype (cp_parser *parser)
   if (!parens.require_open (parser))
     return error_mark_node;
 
-  /* decltype (auto) */
+  push_deferring_access_checks (dk_deferred);
+
+  tree expr = NULL_TREE;
+  
   if (cxx_dialect >= cxx14
       && cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
+    /* decltype (auto) */
+    cp_lexer_consume_token (parser->lexer);
+  else
     {
-      cp_lexer_consume_token (parser->lexer);
-      if (!parens.require_close (parser))
-	return error_mark_node;
-      expr = make_decltype_auto ();
-      AUTO_IS_DECLTYPE (expr) = true;
-      goto rewrite;
+      /* decltype (expression)  */
+
+      /* Types cannot be defined in a `decltype' expression.  Save away the
+	 old message and set the new one.  */
+      const char *saved_message = parser->type_definition_forbidden_message;
+      parser->type_definition_forbidden_message
+	= G_("types may not be defined in %<decltype%> expressions");
+
+      /* The restrictions on constant-expressions do not apply inside
+	 decltype expressions.  */
+      bool saved_integral_constant_expression_p
+	= parser->integral_constant_expression_p;
+      bool saved_non_integral_constant_expression_p
+	= parser->non_integral_constant_expression_p;
+      parser->integral_constant_expression_p = false;
+
+      /* Within a parenthesized expression, a `>' token is always
+	 the greater-than operator.  */
+      bool saved_greater_than_is_operator_p
+	= parser->greater_than_is_operator_p;
+      parser->greater_than_is_operator_p = true;
+
+      /* Do not actually evaluate the expression.  */
+      ++cp_unevaluated_operand;
+
+      /* Do not warn about problems with the expression.  */
+      ++c_inhibit_evaluation_warnings;
+
+      expr = cp_parser_decltype_expr (parser, id_expression_or_member_access_p);
+
+      /* Go back to evaluating expressions.  */
+      --cp_unevaluated_operand;
+      --c_inhibit_evaluation_warnings;
+
+      /* The `>' token might be the end of a template-id or
+	 template-parameter-list now.  */
+      parser->greater_than_is_operator_p
+	= saved_greater_than_is_operator_p;
+
+      /* Restore the old message and the integral constant expression
+	 flags.  */
+      parser->type_definition_forbidden_message = saved_message;
+      parser->integral_constant_expression_p
+	= saved_integral_constant_expression_p;
+      parser->non_integral_constant_expression_p
+	= saved_non_integral_constant_expression_p;
     }
-
-  /* Types cannot be defined in a `decltype' expression.  Save away the
-     old message.  */
-  saved_message = parser->type_definition_forbidden_message;
-
-  /* And create the new one.  */
-  parser->type_definition_forbidden_message
-    = G_("types may not be defined in %<decltype%> expressions");
-
-  /* The restrictions on constant-expressions do not apply inside
-     decltype expressions.  */
-  saved_integral_constant_expression_p
-    = parser->integral_constant_expression_p;
-  saved_non_integral_constant_expression_p
-    = parser->non_integral_constant_expression_p;
-  parser->integral_constant_expression_p = false;
-
-  /* Within a parenthesized expression, a `>' token is always
-     the greater-than operator.  */
-  saved_greater_than_is_operator_p
-    = parser->greater_than_is_operator_p;
-  parser->greater_than_is_operator_p = true;
-
-  /* Do not actually evaluate the expression.  */
-  ++cp_unevaluated_operand;
-
-  /* Do not warn about problems with the expression.  */
-  ++c_inhibit_evaluation_warnings;
-
-  expr = cp_parser_decltype_expr (parser, id_expression_or_member_access_p);
-
-  /* Go back to evaluating expressions.  */
-  --cp_unevaluated_operand;
-  --c_inhibit_evaluation_warnings;
-
-  /* The `>' token might be the end of a template-id or
-     template-parameter-list now.  */
-  parser->greater_than_is_operator_p
-    = saved_greater_than_is_operator_p;
-
-  /* Restore the old message and the integral constant expression
-     flags.  */
-  parser->type_definition_forbidden_message = saved_message;
-  parser->integral_constant_expression_p
-    = saved_integral_constant_expression_p;
-  parser->non_integral_constant_expression_p
-    = saved_non_integral_constant_expression_p;
 
   /* Parse to the closing `)'.  */
   if (!parens.require_close (parser))
     {
       cp_parser_skip_to_closing_parenthesis (parser, true, false,
 					     /*consume_paren=*/true);
+      pop_deferring_access_checks ();
       return error_mark_node;
     }
 
-  expr = finish_decltype_type (expr, id_expression_or_member_access_p,
-			       tf_warning_or_error);
+  if (!expr)
+    {
+      /* Build auto.  */
+      expr = make_decltype_auto ();
+      AUTO_IS_DECLTYPE (expr) = true;
+    }
+  else
+    expr = finish_decltype_type (expr, id_expression_or_member_access_p,
+				 tf_warning_or_error);
 
- rewrite:
   /* Replace the decltype with a CPP_DECLTYPE so we don't need to parse
      it again.  */
   start_token->type = CPP_DECLTYPE;
@@ -14153,6 +14154,8 @@ cp_parser_decltype (cp_parser *parser)
   start_token->keyword = RID_MAX;
   cp_lexer_purge_tokens_after (parser->lexer, start_token);
 
+  pop_to_parent_deferring_access_checks ();
+  
   return expr;
 }
 
