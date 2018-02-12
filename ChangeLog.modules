@@ -1,5 +1,11 @@
 2018-02-12  Nathan Sidwell  <nathan@acm.org>
 
+	AS_BASE is by reference.
+	gcc/cp/
+	* module.c (trees_out::define_class): Break AS_BASE loop during
+	streaming.
+	(trees_{in,out}::tree_node): Use tt_as_base.
+
 	Mapping files are recursive.
 	gcc/cp/
 	* module.c (maybe_prepend_dir): New.

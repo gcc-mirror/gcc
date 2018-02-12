@@ -1789,6 +1789,7 @@ enum tree_tag
     tt_namespace,	/* Namespace.  */
     tt_import,  	/* Import from another module. */
     tt_binfo,		/* A BINFO.  */
+    tt_as_base,		/* An As-Base type.  */
 
     tt_binding,
     tt_definition,
@@ -3446,7 +3447,13 @@ trees_out::define_class (tree type, tree maybe_template)
     {
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base && as_base != type)
-	tag_definition (CLASSTYPE_AS_BASE (type), NULL_TREE);
+	{
+	  /* A fake base class.  We must break the IS_FAKE_BASE loop,
+	     while streaming it out. */
+	  CLASSTYPE_AS_BASE (type) = NULL_TREE;
+	  tag_definition (as_base, NULL_TREE);
+	  CLASSTYPE_AS_BASE (type) = as_base;
+	}
       else
 	tree_node (as_base);
       tree_vec (CLASSTYPE_MEMBER_VEC (type));
@@ -5700,6 +5707,14 @@ trees_out::tree_node (tree t)
 	}
     }
 
+  if (IS_FAKE_BASE_TYPE (t))
+    {
+      /* A fake base type -> tt_as_base.  */
+      i (tt_as_base);
+      dump () && dump ("Writing as_base for %N", TYPE_CONTEXT (t));
+      tree_node (TYPE_NAME (TYPE_CONTEXT (t)));
+    }
+
   if (TREE_CODE (t) == TREE_BINFO)
     {
       /* A BINFO -> tt_binfo.
@@ -6018,6 +6033,16 @@ trees_in::tree_node ()
 	  }
       }
       break;
+
+    case tt_as_base:
+      {
+	/* A fake as base type. */
+	res = tree_node ();
+	dump () && dump ("Read as-base for %N", res);
+	if (res)
+	  res = CLASSTYPE_AS_BASE  (TREE_TYPE (res));
+      }
+      break
 
     case tt_node:
       {
@@ -6758,15 +6783,10 @@ static char *
 maybe_prepend_dir (const char *base, const char *rel, size_t len)
 {
   size_t flen = strlen (base);
-  size_t fop = 0;
-  if (len && !IS_ABSOLUTE_PATH (base))
-    fop = len + 1;
+  size_t fop = IS_ABSOLUTE_PATH (base) ? 0 : len;
   char *fname = XNEWVEC (char, fop + flen + 1);
   if (fop)
-    {
-      memcpy (fname, rel, len);
-      fname[len] = DIR_SEPARATOR;
-    }
+    memcpy (fname, rel, len);
   memcpy (&fname[fop], base, flen + 1);
 
   return fname;
