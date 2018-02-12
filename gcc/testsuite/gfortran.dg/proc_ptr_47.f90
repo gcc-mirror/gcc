@@ -21,12 +21,8 @@
 
 contains
   function foo(A)
-    class(AA), allocatable :: A
+    class(AA) :: A
     type(AA) foo
-
-    if (.not.allocated (A)) then
-      allocate (A, source = AA (2, foo))
-    endif
 
     select type (A)
       type is (AA)

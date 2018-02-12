@@ -13706,8 +13706,8 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
           return false;
         }
 
-      /* Check for C453.  */
-      if (me_arg->attr.dimension)
+      /* Check for F03:C453.  */
+      if (CLASS_DATA (me_arg)->attr.dimension)
         {
           gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
                      "must be scalar", me_arg->name, c->name, me_arg->name,
@@ -13716,7 +13716,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
           return false;
         }
 
-      if (me_arg->attr.pointer)
+      if (CLASS_DATA (me_arg)->attr.class_pointer)
         {
           gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
                      "may not have the POINTER attribute", me_arg->name,
@@ -13725,7 +13725,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
           return false;
         }
 
-      if (me_arg->attr.allocatable)
+      if (CLASS_DATA (me_arg)->attr.allocatable)
         {
           gfc_error ("Argument %qs of %qs with PASS(%s) at %L "
                      "may not be ALLOCATABLE", me_arg->name, c->name,
