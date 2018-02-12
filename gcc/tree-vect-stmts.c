@@ -826,8 +826,7 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
   int inside_cost = 0, prologue_cost = 0;
 
   /* The SLP costs were already calculated during SLP tree build.  */
-  if (PURE_SLP_STMT (stmt_info))
-    return;
+  gcc_assert (!PURE_SLP_STMT (stmt_info));
 
   /* Cost the "broadcast" of a scalar operand in to a vector operand.
      Use scalar_to_vec to cost the broadcast, as elsewhere in the vector
@@ -864,8 +863,7 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
   void *target_cost_data;
 
   /* The SLP costs were already calculated during SLP tree build.  */
-  if (PURE_SLP_STMT (stmt_info))
-    return;
+  gcc_assert (!PURE_SLP_STMT (stmt_info));
 
   if (loop_vinfo)
     target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
@@ -2891,7 +2889,7 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_bswap ==="
                          "\n");
-      if (! PURE_SLP_STMT (stmt_info))
+      if (! slp_node)
 	{
 	  add_stmt_cost (stmt_info->vinfo->target_cost_data,
 			 1, vector_stmt, stmt_info, 0, vect_prologue);
@@ -3210,10 +3208,13 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_call ==="
                          "\n");
-      vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
-      if (ifn != IFN_LAST && modifier == NARROW && !slp_node)
-	add_stmt_cost (stmt_info->vinfo->target_cost_data, ncopies / 2,
-		       vec_promote_demote, stmt_info, 0, vect_body);
+      if (!slp_node)
+	{
+	  vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
+	  if (ifn != IFN_LAST && modifier == NARROW && !slp_node)
+	    add_stmt_cost (stmt_info->vinfo->target_cost_data, ncopies / 2,
+			   vec_promote_demote, stmt_info, 0, vect_body);
+	}
 
       return true;
     }
@@ -4742,17 +4743,20 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
       if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
-	  vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
+	  if (!slp_node)
+	    vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
 	}
       else if (modifier == NARROW)
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
-	  vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt);
+	  if (!slp_node)
+	    vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt);
 	}
       else
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_promotion_vec_info_type;
-	  vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt);
+	  if (!slp_node)
+	    vect_model_promotion_demotion_cost (stmt_info, dt, multi_step_cvt);
 	}
       interm_types.release ();
       return true;
@@ -5149,7 +5153,8 @@ vectorizable_assignment (gimple *stmt, gimple_stmt_iterator *gsi,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "=== vectorizable_assignment ===\n");
-      vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
+      if (!slp_node)
+	vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
       return true;
     }
 
@@ -5513,7 +5518,8 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "=== vectorizable_shift ===\n");
-      vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
+      if (!slp_node)
+	vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
       return true;
     }
 
@@ -5836,7 +5842,8 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
                          "=== vectorizable_operation ===\n");
-      vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
+      if (!slp_node)
+	vect_model_simple_cost (stmt_info, ncopies, dt, ndts, NULL, NULL);
       return true;
     }
 
@@ -6240,7 +6247,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
       /* The SLP costs are calculated during SLP analysis.  */
-      if (!PURE_SLP_STMT (stmt_info))
+      if (!slp_node)
 	vect_model_store_cost (stmt_info, ncopies, memory_access_type,
 			       vls_type, NULL, NULL, NULL);
       return true;
@@ -7451,7 +7458,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
       /* The SLP costs are calculated during SLP analysis.  */
-      if (!PURE_SLP_STMT (stmt_info))
+      if (! slp_node)
 	vect_model_load_cost (stmt_info, ncopies, memory_access_type,
 			      NULL, NULL, NULL);
       return true;
@@ -8673,7 +8680,8 @@ vectorizable_condition (gimple *stmt, gimple_stmt_iterator *gsi,
       if (expand_vec_cond_expr_p (vectype, comp_vectype,
 				     cond_code))
 	{
-	  vect_model_simple_cost (stmt_info, ncopies, dts, ndts, NULL, NULL);
+	  if (!slp_node)
+	    vect_model_simple_cost (stmt_info, ncopies, dts, ndts, NULL, NULL);
 	  return true;
 	}
       return false;
@@ -9037,8 +9045,9 @@ vectorizable_comparison (gimple *stmt, gimple_stmt_iterator *gsi,
   if (!vec_stmt)
     {
       STMT_VINFO_TYPE (stmt_info) = comparison_vec_info_type;
-      vect_model_simple_cost (stmt_info, ncopies * (1 + (bitop2 != NOP_EXPR)),
-			      dts, ndts, NULL, NULL);
+      if (!slp_node)
+	vect_model_simple_cost (stmt_info, ncopies * (1 + (bitop2 != NOP_EXPR)),
+				dts, ndts, NULL, NULL);
       if (bitop1 == NOP_EXPR)
 	return expand_vec_cmp_expr_p (vectype, mask_type, code);
       else

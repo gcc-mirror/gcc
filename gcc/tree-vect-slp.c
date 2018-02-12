@@ -2003,16 +2003,12 @@ vect_analyze_slp_cost_1 (slp_instance instance, slp_tree node,
 /* Compute the cost for the SLP instance INSTANCE.  */
 
 static void
-vect_analyze_slp_cost (slp_instance instance, void *data)
+vect_analyze_slp_cost (slp_instance instance, void *data, scalar_stmts_set_t *visited)
 {
   stmt_vector_for_cost body_cost_vec, prologue_cost_vec;
   unsigned ncopies_for_cost;
   stmt_info_for_cost *si;
   unsigned i;
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "=== vect_analyze_slp_cost ===\n");
 
   /* Calculate the number of vector stmts to create based on the unrolling
      factor (number of vectors is 1 if NUNITS >= GROUP_SIZE, and is
@@ -2050,11 +2046,9 @@ vect_analyze_slp_cost (slp_instance instance, void *data)
 
   prologue_cost_vec.create (10);
   body_cost_vec.create (10);
-  scalar_stmts_set_t *visited = new scalar_stmts_set_t ();
   vect_analyze_slp_cost_1 (instance, SLP_INSTANCE_TREE (instance),
 			   &prologue_cost_vec, &body_cost_vec,
 			   ncopies_for_cost, visited);
-  delete visited;
 
   /* Record the prologue costs, which were delayed until we were
      sure that SLP was successful.  */
@@ -2871,12 +2865,18 @@ vect_slp_analyze_operations (vec_info *vinfo)
           vinfo->slp_instances.ordered_remove (i);
 	}
       else
-	{
-	  /* Compute the costs of the SLP instance.  */
-	  vect_analyze_slp_cost (instance, vinfo->target_cost_data);
-	  i++;
-	}
+	i++;
     }
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "=== vect_analyze_slp_cost ===\n");
+
+  /* Compute the costs of the SLP instances.  */
+  scalar_stmts_set_t *visited = new scalar_stmts_set_t ();
+  for (i = 0; vinfo->slp_instances.iterate (i, &instance); ++i)
+    vect_analyze_slp_cost (instance, vinfo->target_cost_data, visited);
+  delete visited;
 
   return !vinfo->slp_instances.is_empty ();
 }
@@ -4246,19 +4246,20 @@ vect_schedule_slp (vec_info *vinfo)
   unsigned int i;
   bool is_store = false;
 
+
+  scalar_stmts_to_slp_tree_map_t *bst_map
+    = new scalar_stmts_to_slp_tree_map_t ();
   slp_instances = vinfo->slp_instances;
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* Schedule the tree of INSTANCE.  */
-      scalar_stmts_to_slp_tree_map_t *bst_map
-	= new scalar_stmts_to_slp_tree_map_t ();
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
                                              instance, bst_map);
-      delete bst_map;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.\n");
     }
+  delete bst_map;
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
