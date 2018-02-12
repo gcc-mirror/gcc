@@ -94,6 +94,10 @@
 
 	PR sanitizer/83987
 	* g++.dg/ubsan/pr83987-2.C: New test.
+	
+2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* gcc.target/rx/movsicc.c: New test.
 
 2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -958,6 +962,10 @@
 
 	PR c++/83924
 	* g++.dg/warn/Wduplicated-branches5.C: New.
+
+2018-01-26  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* gcc.target/rl78/test_addsi3_internal.c: New test.
 
 2018-01-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
