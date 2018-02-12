@@ -1,3 +1,10 @@
+2018-02-12  Paolo Bonzini <bonzini@gnu.org>
+
+	PR sanitizer/84307
+	* internal-fn.def (ASAN_CHECK): Fix fnspec to account for return value.
+	(ASAN_MARK): Fix fnspec to account for return value, change pointer
+	argument from 'R' to 'W' so that the pointed-to datum is clobbered.
+
 2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR middle-end/83665
