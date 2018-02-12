@@ -1,3 +1,9 @@
+2018-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84263
+	* parser.c (cp_parser_decltype): Push and pop
+	deferring_access_checks.  Reorganize to avoid goto.
+
 2018-02-12  Richard Biener  <rguenther@suse.de>
 
 	PR c++/84281
