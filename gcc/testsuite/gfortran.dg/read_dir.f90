@@ -1,4 +1,3 @@
-! { dg-do run { xfail *-*-freebsd* *-*-dragonfly* hppa*-*-hpux* powerpc-ibm-aix* } }
 ! PR67367
 program bug
    implicit none
@@ -12,7 +11,7 @@ program bug
       call abort
    end if
    read(10, iostat=ios) c
-   if (ios.ne.21) then 
+   if (ios.ne.21.and.ios.ne.0) then 
       close(10, status='delete')
       call abort
    end if
