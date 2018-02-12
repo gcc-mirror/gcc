@@ -1,3 +1,29 @@
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_sqrt_round_sd)
+	(_mm_maskz_sqrt_round_sd, _mm_mask_sqrt_round_ss)
+	(_mm_maskz_sqrt_round_ss): New intrinsics.
+	(__builtin_ia32_sqrtsd_round, __builtin_ia32_sqrtss_round): Remove.
+	(__builtin_ia32_sqrtsd_mask_round)
+	(__builtin_ia32_sqrtss_mask_round): New builtins.
+	* config/i386/i386-builtin.def (__builtin_ia32_sqrtsd_round)
+	(__builtin_ia32_sqrtss_round): Remove.
+	(__builtin_ia32_sqrtsd_mask_round)
+	(__builtin_ia32_sqrtss_mask_round): New builtins.
+	* config/i386/sse.md (vmsqrt<mode>2<round_name>): Renamed to ...
+	(vmsqrt<mode>2<mask_scalar_name><round_scalar_name>): ... this.
+	((match_operand:VF_128 1 "vector_operand"
+	"xBm,<round_constraint>")): Changed to ...
+	((match_operand:VF_128 1 "vector_operand"
+	"xBm,<round_scalar_constraint>")): ... this.
+	(vsqrt<ssescalarmodesuffix>\t{<round_op3>%1, %2, %0|
+	%0, %2, %<iptr>1<round_op3>}): Changed to ...
+	(vsqrt<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%1, %2,
+	%0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2,
+	%<iptr>1<round_scalar_mask_op3>}): ... this.
+	((set_attr "prefix" "<round_prefix>")): Changed to ...
+	((set_attr "prefix" "<round_scalar_prefix>")): ... this.
+
 2018-02-11  Steven Munroe  <munroesj@gcc.gnu.org>
 
 	PR target/84266
