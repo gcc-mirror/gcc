@@ -9330,12 +9330,14 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
       if (no_toplevel_fold_p
 	  && lookahead_prec <= current.prec
 	  && sp == stack)
-	current.lhs = build2_loc (combined_loc,
-				  current.tree_type,
-				  TREE_CODE_CLASS (current.tree_type)
-				  == tcc_comparison
-				  ? boolean_type_node : TREE_TYPE (current.lhs),
-				  current.lhs, rhs);
+	{
+	  current.lhs
+	    = build_min (current.tree_type,
+			 TREE_CODE_CLASS (current.tree_type) == tcc_comparison
+			 ? boolean_type_node : TREE_TYPE (current.lhs),
+			 current.lhs.get_value (), rhs.get_value ());
+	  SET_EXPR_LOCATION (current.lhs, combined_loc);
+	}
       else
         {
           current.lhs = build_x_binary_op (combined_loc, current.tree_type,
