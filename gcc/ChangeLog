@@ -136,8 +136,7 @@
 
 2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rx.md: updated "movsicc" expand to be matched by GCC
-	* testsuite/gcc.target/rx/movsicc.c: new test case
+	* config/rx/rx.md (movsicc): Update expander to be matched by GCC.
 
 2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -150,10 +149,10 @@
 
 2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rx/constraints.md: added new constraint CALL_OP_SYMBOL_REF 
-	to allow or block "symbol_ref" depending on value of TARGET_JSR
-	* config/rx/rx.md: use CALL_OP_SYMBOL_REF in call_internal and 
-	call_value_internal insns
+	* config/rx/constraints.md (CALL_OP_SYMBOL_REF): Added new constraint
+	to allow or block "symbol_ref" depending on the value of TARGET_JSR.
+	* config/rx/rx.md (call_internal): Use CALL_OP_SYMBOL_REF.
+	* config/rx/rx.md (call_value_internal): Use CALL_OP_SYMBOL_REF.
 
 2018-02-09  Pierre-Marie de Rodat  <derodat@adacore.com>
 
@@ -1349,9 +1348,8 @@
 
 2018-01-26  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.c: if operand 2 is const avoid addition with 0
-	and use incw and decw where possible
-	* testsuite/gcc.target/rl78/test_addsi3_internal.c: new file
+	* config/rl78/rl78.c (rl78_addsi3_internal): If operand 2 is const 
+	avoid addition with 0 and use incw and decw where possible.
 
 2018-01-26  Richard Biener  <rguenther@suse.de>
 
@@ -1682,15 +1680,15 @@
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78-expand.md: New define_expand "bswaphi2"
-	* config/rl78/rl78-virt.md: New define_insn "*bswaphi2_virt"
-	* config/rl78/rl78-real.md: New define_insn "*bswaphi2_real"
+	* config/rl78/rl78-expand.md (bswaphi2): New define_expand.
+	* config/rl78/rl78-virt.md (*bswaphi2_virt): New define_insn.
+	* config/rl78/rl78-real.md (*bswaphi2_real): New define_insn.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78-protos.h: New function declaration rl78_split_movdi
-	* config/rl78/rl78.md: New define_expand "movdi"
-	* config/rl78/rl78.c: New function definition rl78_split_movdi
+	* config/rl78/rl78-protos.h (rl78_split_movdi): New function declaration.
+	* config/rl78/rl78.md (movdi): New define_expand.
+	* config/rl78/rl78.c (rl78_split_movdi): New function.
 
 2018-01-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -1713,19 +1711,19 @@
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "anddi3".
+	* config/rl78/rl78.md (anddi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "umindi3".
+	* config/rl78/rl78.md (umindi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "smindi3".
+	* config/rl78/rl78.md (smindi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "smaxdi3".
+	* config/rl78/rl78.md (smaxdi3): New define_expand.
 
 2018-01-22 Carl Love <cel@us.ibm.com>
 
@@ -1745,12 +1743,12 @@
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "umaxdi3".
+	* config/rl78/rl78.md (umaxdi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.c (rl78_note_reg_set): fixed dead reg check
-	for non-QImode registers
+	* config/rl78/rl78.c (rl78_note_reg_set): Fixed dead reg check
+	for non-QImode registers.
 
 2018-01-22  Richard Biener  <rguenther@suse.de>
 
