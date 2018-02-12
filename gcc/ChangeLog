@@ -1,3 +1,28 @@
+2018-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84037
+	* tree-vect-slp.c (vect_analyze_slp_cost): Add visited
+	parameter, move visited init to caller.
+	(vect_slp_analyze_operations): Separate cost from validity
+	check, initialize visited once for all instances.
+	(vect_schedule_slp): Analyze map to CSE vectorized nodes once
+	for all instances.
+	* tree-vect-stmts.c (vect_model_simple_cost): Make early
+	out an assert.
+	(vect_model_promotion_demotion_cost): Likewise.
+	(vectorizable_bswap): Guard cost modeling with !slp_node
+	instead of !PURE_SLP_STMT to avoid double-counting on hybrid
+	SLP stmts.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+
 2018-02-12  Paolo Bonzini <bonzini@gnu.org>
 
 	PR sanitizer/84307
