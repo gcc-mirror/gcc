@@ -1,3 +1,9 @@
+2018-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/68746
+	* gfortran.dg/read_dir.f90: Remove xfails. Also allow iostat
+	of zero for read.
+
 2018-02-12  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/reg-args-size.c: New test.
