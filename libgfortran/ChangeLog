@@ -1,3 +1,34 @@
+2018-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* libgfortran.h (GFC_ARRAY_DESCRIPTOR): Remove dimension
+	of descriptor to use vaiable members for dim.
+	Change usage of GFC_ARRAY_DESCRIPTOR accordingly.
+	(GFC_FILL_ARRAY_DESCRIPTOR): New macro.
+	(gfc_full_array_i4): New type.
+	* intrinsics/date_and_time.c (secnds): Use sizeof
+	(gfc_array_i4) + sizeof (descriptor_dimension) for memory
+	allocation.
+	* intrinsics/reshape_generic.c: Use GFC_FULL_ARRAY_DESCRIPTOR.
+	* io/format.c: Use sizeof (gfc_array_i4) + sizeof
+	(descriptor_dimension) for memoy allocation.
+	* io/list_read.c (list_formatted_read_scalar): Use
+	gfc_full_array_i4 for variable.
+	(nml_read_obj): Likewise.
+	* io/write.c (list_formatted_write_scalar): Likewise.
+	(nml_write_obj): Likewise.
+	* m4/reshape.m4: Use GFC_FULL_ARRAY_DESCRIPTOR.
+	* generated/reshape_c10.c: Regenerated.
+	* generated/reshape_c16.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_i16.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/reshape_r10.c: Regenerated.
+	* generated/reshape_r16.c: Regenerated.
+	* generated/reshape_r4.c: Regenerated.
+	* generated/reshape_r8.c: Regenerated.
+
 2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* generated/cshift1_16.c (cshift1): Regenerated.

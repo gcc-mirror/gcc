@@ -2198,7 +2198,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	  gfc_charlen_type child_iomsg_len;
 	  int noiostat;
 	  int *child_iostat = NULL;
-	  gfc_array_i4 vlist;
+	  gfc_full_array_i4 vlist;
 
 	  GFC_DESCRIPTOR_DATA(&vlist) = NULL;
 	  GFC_DIMENSION_SET(vlist.dim[0],1, 0, 0);
@@ -2996,7 +2996,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 		gfc_charlen_type child_iomsg_len;
 		int noiostat;
 		int *child_iostat = NULL;
-		gfc_array_i4 vlist;
+		gfc_full_array_i4 vlist;
 		formatted_dtio dtio_ptr = (formatted_dtio)nl->dtio_sub;
 
 		GFC_DESCRIPTOR_DATA(&vlist) = NULL;
