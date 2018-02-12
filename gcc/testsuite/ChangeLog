@@ -1,3 +1,7 @@
+2018-02-12  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/reg-args-size.c: New test.
+
 2018-02-12  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-4-runnable.c (main): Move int128 and

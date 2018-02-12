@@ -1,3 +1,8 @@
+2018-02-12  Jeff Law  <law@redhat.com>
+
+	* cse.c (try_back_substitute_reg): Move any REG_ARGS_SIZE note when
+	successfully back substituting a reg.
+
 2018-02-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84037
