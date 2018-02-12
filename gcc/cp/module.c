@@ -6754,23 +6754,100 @@ finish_module ()
   state->release ();
 }
 
+static char *
+maybe_prepend_dir (const char *base, const char *rel, size_t len)
+{
+  size_t flen = strlen (base);
+  size_t fop = 0;
+  if (len && !IS_ABSOLUTE_PATH (base))
+    fop = len + 1;
+  char *fname = XNEWVEC (char, fop + flen + 1);
+  if (fop)
+    {
+      memcpy (fname, rel, len);
+      fname[len] = DIR_SEPARATOR;
+    }
+  memcpy (&fname[fop], base, flen + 1);
 
-/* Add a module name to binary interface file mapping (<name>=<file>). */
+  return fname;
+}
+
+/* Add a module name to binary interface file mapping
+   <name>=<file> -> mapping
+   <file> -> file of mappings (recursive)
+
+   We don't detect loops. */
 
 static bool
-add_module_mapping (const char *name, const char *eq)
+add_module_mapping (const char *arg, const char *rel = NULL, size_t len = 0)
 {
-  /* Note: C++ module name cannot contain '='. */
-  if (!eq || eq == name || !eq[1])
-    return false;
+  if (const char *eq = strchr (arg, '='))
+    {
+      /* A single mapping.  */
+      if (eq == arg || !eq[1])
+	{
+	  error ("module file map %qs is malformed", arg);
+	  return false;
+	}
 
-  tree id = get_identifier_with_length (name, eq - name);
-  module_state *state = module_state::get_module (id);
+      tree name = get_identifier_with_length (arg, eq - arg);
+      module_state *state = module_state::get_module (name);
 
-  /* Overriding an already-defined mapping is accepted.  */
-  free (state->filename);
-  state->filename = xstrdup (eq + 1);
-  return true;
+      /* Overriding an already-defined mapping is accepted.  */
+      free (state->filename);
+      state->filename = maybe_prepend_dir (eq + 1, rel, len);
+      return true;
+    }
+
+  bool ok = false;
+  char *path = maybe_prepend_dir (arg, rel, len);
+  if (FILE *stream = fopen (path, "r"))
+    {
+      /* Find the directory component of PATH.  This will fail if we
+         give an absolute names in the root directory.  Why would you
+         do that?  */
+      size_t dir_sep = strlen (path);
+      while (dir_sep && !IS_DIR_SEPARATOR (path[dir_sep - 1]))
+	dir_sep--;
+
+      /* File of mappings.  */
+      size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
+      char *buffer = XNEWVEC (char, size);
+      size_t pos = 0;
+      unsigned line = 0;
+      while (fgets (buffer + pos, size - pos, stream))
+	{
+	  pos += strlen (buffer + pos);
+	  if (buffer[pos - 1] != '\n')
+	    {
+	      size *= 2;
+	      buffer = XRESIZEVEC (char, buffer, size);
+	    }
+	  else
+	    {
+	      buffer[pos - 1] = 0;
+	      pos = 0;
+	      line++;
+	      if (!add_module_mapping (buffer, path, dir_sep))
+		{
+		  inform (input_location, "from module map file %s:%d",
+			  path, line);
+		  goto fail;
+		}
+	    }
+	}
+      if (ferror (stream))
+	error ("failed to read module map file %qs: %m", path);
+      else
+	ok = true;
+    fail:
+      XDELETEVEC (buffer);
+      fclose (stream);
+    }
+  else
+    error ("module-file %qs not found: %m", path);
+  XDELETEVEC (path);
+  return ok;
 }
 
 /* If CODE is a module option, handle it & return true.  Otherwise
@@ -6795,49 +6872,7 @@ handle_module_option (unsigned code, const char *arg, int)
 
     case OPT_fmodule_file_:
       module_state::maybe_early_init ();
-      if (const char *eq = strchr (arg, '='))
-	{
-	  /* Single mapping.  */
-	  if (!add_module_mapping (arg, eq))
-	    error ("module-file %qs is malformed", arg);
-	}
-      else if (FILE *stream = fopen (arg, "r"))
-	{
-	  /* File of mappings.  */
-	  // FIXME: Perhaps we should make this recursive and/or
-	  // interpret file names with as self-relative?
-	  size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
-	  char *buffer = XNEWVEC (char, size);
-	  size_t pos = 0;
-	  unsigned line = 0;
-	  while (fgets (buffer + pos, size - pos, stream))
-	    {
-	      pos += strlen (buffer + pos);
-	      if (buffer[pos - 1] != '\n')
-		{
-		  size *= 2;
-		  buffer = XRESIZEVEC (char, buffer, size);
-		}
-	      else
-		{
-		  buffer[pos - 1] = 0;
-		  pos = 0;
-		  line++;
-		  if (!add_module_mapping (buffer, strchr (buffer, '=')))
-		    {
-		      error ("module-map %s:%d %qs is malformed",
-			     arg, line, buffer);
-		      break;
-		    }
-		}
-	    }
-	  if (ferror (stream))
-	    error ("failed to read module map file %qs: %m", arg);
-	  XDELETEVEC (buffer);
-	  fclose (stream);
-	}
-      else
-	error ("module-file %qs not found: %m", arg);
+      add_module_mapping (arg);
       return true;
 
     default:

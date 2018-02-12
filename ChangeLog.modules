@@ -1,5 +1,13 @@
 2018-02-12  Nathan Sidwell  <nathan@acm.org>
 
+	Mapping files are recursive.
+	gcc/cp/
+	* module.c (maybe_prepend_dir): New.
+	(add_module_mapping): Recurse.  Deal with relative paths.
+	(handle_module_option): Move file reading into add_module_mapping.
+	gcc/
+	* doc/invoke.texi (fmodule-file): Document.
+
 	BINFOs imported by reference.
 	gcc/cp/
 	* module.c (trees_{in_out}::tree_binfo): New.
