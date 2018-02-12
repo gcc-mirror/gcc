@@ -267,8 +267,10 @@ secnds (GFC_REAL_4 *x)
   GFC_INTEGER_4 values[VALUES_SIZE];
   GFC_REAL_4 temp1, temp2;
 
-  /* Make the INTEGER*4 array for passing to date_and_time.  */
-  gfc_array_i4 *avalues = xmalloc (sizeof (gfc_array_i4));
+  /* Make the INTEGER*4 array for passing to date_and_time, with enough space
+   for a rank-one array.  */
+  gfc_array_i4 *avalues = xmalloc (sizeof (gfc_array_i4)
+				   + sizeof (descriptor_dimension));
   avalues->base_addr = &values[0];
   GFC_DESCRIPTOR_DTYPE (avalues).type = BT_REAL;
   GFC_DESCRIPTOR_DTYPE (avalues).elem_len = 4;

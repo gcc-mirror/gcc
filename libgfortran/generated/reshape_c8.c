@@ -28,7 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined (HAVE_GFC_COMPLEX_8)
 
-typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 
 
 extern void reshape_c8 (gfc_array_c8 * const restrict, 
