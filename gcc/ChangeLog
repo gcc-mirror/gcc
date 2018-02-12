@@ -1,5 +1,28 @@
 2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
 
+	* config/i386/avx512fintrin.h (_mm_mask_scalef_round_sd,
+	_mm_maskz_scalef_round_sd, _mm_mask_scalef_round_ss,
+	_mm_maskz_scalef_round_ss): New intrinsics.
+	(__builtin_ia32_scalefsd_round, __builtin_ia32_scalefss_round): Fix.
+	* config/i386/i386-builtin.def (__builtin_ia32_scalefsd_round,
+	__builtin_ia32_scalefss_round): Remove.
+	(__builtin_ia32_scalefsd_mask_round,
+	__builtin_ia32_scalefss_mask_round): New intrinsics.
+	* config/i386/sse.md (vmscalef<mode><round_name>): Renamed to ...
+	(vmscalef<mode><mask_scalar_name><round_scalar_name>): ... this.
+	((match_operand:VF_128 2 "<round_nimm_predicate>"
+	"<round_constraint>")): Changed to ...
+	((match_operand:VF_128 2 "<round_scalar_nimm_predicate>"
+	"<round_scalar_constraint>")): ... this.
+	("vscalef<ssescalarmodesuffix>\t{<round_op3>%2, %1, %0|
+	%0, %1, %2<round_op3>}"): Changed to ...
+	("vscalef<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%2, %1,
+	%0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %1,
+	%2<round_scalar_mask_op3>}"): ... this.
+	* config/i386/subst.md (round_scalar_nimm_predicate): New.
+
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
 	* config/i386/avx512fintrin.h (_mm_mask_sqrt_round_sd)
 	(_mm_maskz_sqrt_round_sd, _mm_mask_sqrt_round_ss)
 	(_mm_maskz_sqrt_round_ss): New intrinsics.
