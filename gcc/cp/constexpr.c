@@ -2885,7 +2885,6 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   unsigned HOST_WIDE_INT max = tree_to_uhwi (array_type_nelts_top (atype));
   verify_ctor_sanity (ctx, atype);
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
-  vec_alloc (*p, max + 1);
   bool pre_init = false;
   unsigned HOST_WIDE_INT i;
 
@@ -2978,13 +2977,14 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	{
 	  if (new_ctx.ctor != ctx->ctor)
 	    eltinit = new_ctx.ctor;
-	  for (i = 1; i < max; ++i)
-	    {
-	      idx = build_int_cst (size_type_node, i);
-	      CONSTRUCTOR_APPEND_ELT (*p, idx, unshare_constructor (eltinit));
-	    }
+	  tree range = build2 (RANGE_EXPR, size_type_node,
+			       build_int_cst (size_type_node, 1),
+			       build_int_cst (size_type_node, max - 1));
+	  CONSTRUCTOR_APPEND_ELT (*p, range, unshare_constructor (eltinit));
 	  break;
 	}
+      else if (i == 0)
+	vec_safe_reserve (*p, max);
     }
 
   if (!*non_constant_p)

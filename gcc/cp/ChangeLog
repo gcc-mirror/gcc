@@ -1,3 +1,9 @@
+2018-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR c++/84281
+	* constexpr.c (cxx_eval_vec_init_1): Use a RANGE_EXPR to compact
+	uniform constructors and delay allocating them fully.
+
 2018-02-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84036 - ICE with variadic capture.
