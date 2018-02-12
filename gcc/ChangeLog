@@ -1,3 +1,9 @@
+2018-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84037
+	* tree-vect-slp.c (vect_build_slp_tree_2): Try swapping the
+	matched stmts if we cannot swap the non-matched ones.
+
 2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* config/i386/avx512fintrin.h (_mm_mask_scalef_round_sd,
