@@ -1,3 +1,8 @@
+2018-02-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* gcc.target/arm/pragma_arch_switch_2.c: Use armv5te.
+
 2018-02-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR sanitizer/84307
