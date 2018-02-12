@@ -8318,17 +8318,17 @@
   operands[1] = adjust_address (operands[1], DFmode, INTVAL (operands[2]) * 8);
 })
 
-(define_insn "avx512f_vmscalef<mode><round_name>"
+(define_insn "avx512f_vmscalef<mode><mask_scalar_name><round_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
 	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")]
+	     (match_operand:VF_128 2 "<round_scalar_nimm_predicate>" "<round_scalar_constraint>")]
 	    UNSPEC_SCALEF)
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_AVX512F"
-  "vscalef<ssescalarmodesuffix>\t{<round_op3>%2, %1, %0|%0, %1, %2<round_op3>}"
+  "vscalef<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %1, %2<round_scalar_mask_op3>}"
   [(set_attr "prefix" "evex")
    (set_attr "mode"  "<ssescalarmode>")])
 
