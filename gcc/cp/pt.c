@@ -3561,14 +3561,13 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 
       /* Look through a lambda capture proxy to the field pack.  */
     case VAR_DECL:
-      if (DECL_HAS_VALUE_EXPR_P (t))
-	{
-	  tree v = DECL_VALUE_EXPR (t);
-	  cp_walk_tree (&v,
-			&find_parameter_packs_r,
-			ppd, ppd->visited);
-	  *walk_subtrees = 0;
-	}
+      if (DECL_PACK_P (t))
+        {
+          /* We don't want to walk into the type of a variadic capture proxy,
+             because we don't want to see the type parameter pack.  */
+          *walk_subtrees = 0;
+	  parameter_pack_p = true;
+        }
       else if (variable_template_specialization_p (t))
 	{
 	  cp_walk_tree (&DECL_TI_ARGS (t),
@@ -10838,42 +10837,6 @@ instantiate_class_template_1 (tree type)
       c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
     }
 
-  if (tree expr = CLASSTYPE_LAMBDA_EXPR (type))
-    {
-      tree decl = lambda_function (type);
-      if (decl)
-	{
-	  if (cxx_dialect >= cxx17)
-	    CLASSTYPE_LITERAL_P (type) = true;
-
-	  if (!DECL_TEMPLATE_INFO (decl)
-	      || DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)) != decl)
-	    {
-	      /* Set function_depth to avoid garbage collection.  */
-	      ++function_depth;
-	      instantiate_decl (decl, /*defer_ok=*/false, false);
-	      --function_depth;
-	    }
-
-	  /* We need to instantiate the capture list from the template
-	     after we've instantiated the closure members, but before we
-	     consider adding the conversion op.  Also keep any captures
-	     that may have been added during instantiation of the op().  */
-	  tree tmpl_expr = CLASSTYPE_LAMBDA_EXPR (pattern);
-	  tree tmpl_cap
-	    = tsubst_copy_and_build (LAMBDA_EXPR_CAPTURE_LIST (tmpl_expr),
-				     args, tf_warning_or_error, NULL_TREE,
-				     false, false);
-
-	  LAMBDA_EXPR_CAPTURE_LIST (expr)
-	    = chainon (tmpl_cap, nreverse (LAMBDA_EXPR_CAPTURE_LIST (expr)));
-
-	  maybe_add_lambda_conv_op (type);
-	}
-      else
-	gcc_assert (errorcount);
-    }
-
   /* Set the file and line number information to whatever is given for
      the class itself.  This puts error messages involving generated
      implicit functions at a predictable point, and the same point
@@ -10970,12 +10933,7 @@ extract_fnparm_pack (tree tmpl_parm, tree *spec_p)
   parmvec = make_tree_vec (len);
   spec_parm = *spec_p;
   for (i = 0; i < len; i++, spec_parm = DECL_CHAIN (spec_parm))
-    {
-      tree elt = spec_parm;
-      if (DECL_PACK_P (elt))
-	elt = make_pack_expansion (elt);
-      TREE_VEC_ELT (parmvec, i) = elt;
-    }
+    TREE_VEC_ELT (parmvec, i) = spec_parm;
 
   /* Build the argument packs.  */
   SET_ARGUMENT_PACK_ARGS (argpack, parmvec);
@@ -11125,6 +11083,7 @@ gen_elem_of_pack_expansion_instantiation (tree pattern,
 
       /* Select the Ith argument from the pack.  */
       if (TREE_CODE (parm) == PARM_DECL
+	  || VAR_P (parm)
 	  || TREE_CODE (parm) == FIELD_DECL)
 	{
 	  if (index == 0)
@@ -11429,8 +11388,7 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data)
 	  /* Pull out the actual PARM_DECL for the partial instantiation.  */
 	  tree args = ARGUMENT_PACK_ARGS (spec);
 	  gcc_assert (TREE_VEC_LENGTH (args) == 1);
-	  tree arg = TREE_VEC_ELT (args, 0);
-	  spec = PACK_EXPANSION_PATTERN (arg);
+	  spec = TREE_VEC_ELT (args, 0);
 	}
       *extra = tree_cons (*tp, spec, *extra);
     }
@@ -11551,8 +11509,12 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	       where it isn't expected).  */
 	    unsubstituted_fn_pack = true;
 	}
-      else if (TREE_CODE (parm_pack) == FIELD_DECL)
-	arg_pack = tsubst_copy (parm_pack, args, complain, in_decl);
+      else if (is_normal_capture_proxy (parm_pack))
+	{
+	  arg_pack = retrieve_local_specialization (parm_pack);
+	  if (argument_pack_element_is_expansion_p (arg_pack, 0))
+	    unsubstituted_fn_pack = true;
+	}
       else
         {
 	  int idx;
@@ -11647,15 +11609,14 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 
   /* We cannot expand this expansion expression, because we don't have
      all of the argument packs we need.  */
-  if (use_pack_expansion_extra_args_p (packs, len, (unsubstituted_packs
-						    || unsubstituted_fn_pack)))
+  if (use_pack_expansion_extra_args_p (packs, len, unsubstituted_packs))
     {
       /* We got some full packs, but we can't substitute them in until we
 	 have values for all the packs.  So remember these until then.  */
 
       t = make_pack_expansion (pattern, complain);
       tree extra = args;
-      if (unsubstituted_fn_pack)
+      if (local_specializations)
 	if (tree locals = extract_local_specs (pattern))
 	  extra = tree_cons (NULL_TREE, extra, locals);
       PACK_EXPANSION_EXTRA_ARGS (t) = extra;
@@ -11713,6 +11674,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       tree parm = TREE_PURPOSE (pack);
 
       if (TREE_CODE (parm) == PARM_DECL
+	  || VAR_P (parm)
 	  || TREE_CODE (parm) == FIELD_DECL)
         register_local_specialization (TREE_TYPE (pack), parm);
       else
@@ -12866,9 +12828,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (PACK_EXPANSION_P (TREE_TYPE (t)))
 	  {
 	    /* This field is a lambda capture pack.  Return a TREE_VEC of
-	       the expanded fields to instantiate_class_template_1 and
-	       store them in the specializations hash table as a
-	       NONTYPE_ARGUMENT_PACK so that tsubst_copy can find them.  */
+	       the expanded fields to instantiate_class_template_1.  */
             expanded_types = tsubst_pack_expansion (TREE_TYPE (t), args,
 						    complain, in_decl);
             if (TREE_CODE (expanded_types) == TREE_VEC)
@@ -12930,12 +12890,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  }
 
 	if (vec)
-	  {
-	    r = vec;
-	    tree pack = make_node (NONTYPE_ARGUMENT_PACK);
-	    SET_ARGUMENT_PACK_ARGS (pack, vec);
-	    register_specialization (pack, t, args, false, 0);
-	  }
+	  r = vec;
       }
       break;
 
@@ -14827,31 +14782,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return t;
 
     case FIELD_DECL:
-      if (PACK_EXPANSION_P (TREE_TYPE (t)))
-	{
-	  /* Check for a local specialization set up by
-	     tsubst_pack_expansion.  */
-	  if (tree r = retrieve_local_specialization (t))
-	    {
-	      if (TREE_CODE (r) == ARGUMENT_PACK_SELECT)
-		r = ARGUMENT_PACK_SELECT_ARG (r);
-	      return r;
-	    }
-
-	  /* When retrieving a capture pack from a generic lambda, remove the
-	     lambda call op's own template argument list from ARGS.  Only the
-	     template arguments active for the closure type should be used to
-	     retrieve the pack specialization.  */
-	  if (LAMBDA_FUNCTION_P (current_function_decl)
-	      && (template_class_depth (DECL_CONTEXT (t))
-		  != TMPL_ARGS_DEPTH (args)))
-	    args = strip_innermost_template_args (args, 1);
-
-	  /* Otherwise return the full NONTYPE_ARGUMENT_PACK that
-	     tsubst_decl put in the hash table.  */
-	  return retrieve_specialization (t, args, 0);
-	}
-
       if (DECL_CONTEXT (t))
 	{
 	  tree ctx;
@@ -14935,6 +14865,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      if (local_specializations)
 		register_local_specialization (r, t);
 	    }
+	  if (TREE_CODE (r) == ARGUMENT_PACK_SELECT)
+	    r = ARGUMENT_PACK_SELECT_ARG (r);
 	}
       else
 	r = t;
@@ -16104,20 +16036,24 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    else
 	      finish_local_using_decl (decl, scope, name);
 	  }
-	else if (DECL_PACK_P (decl))
-	  {
-	    /* Don't build up decls for a variadic capture proxy, we'll
-	       instantiate the elements directly as needed.  */
-	    break;
-	  }
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
 	  {
 	    /* We're in tsubst_lambda_expr, we've already inserted a new
 	       capture proxy, so look it up and register it.  */
-	    tree inst = lookup_name_real (DECL_NAME (decl), 0, 0,
-					  /*block_p=*/true, 0, LOOKUP_HIDDEN);
-	    gcc_assert (inst != decl && is_capture_proxy (inst));
+	    tree inst;
+	    if (DECL_PACK_P (decl))
+	      {
+		inst = (retrieve_local_specialization
+			(DECL_CAPTURED_VARIABLE (decl)));
+		gcc_assert (TREE_CODE (inst) == NONTYPE_ARGUMENT_PACK);
+	      }
+	    else
+	      {
+		inst = lookup_name_real (DECL_NAME (decl), 0, 0,
+					 /*block_p=*/true, 0, LOOKUP_HIDDEN);
+		gcc_assert (inst != decl && is_capture_proxy (inst));
+	      }
 	    register_local_specialization (inst, decl);
 	    break;
 	  }
@@ -18265,14 +18201,6 @@ tsubst_copy_and_build (tree t,
     case VAR_DECL:
       if (!args)
 	RETURN (t);
-      else if (DECL_PACK_P (t))
-	{
-	  /* We don't build decls for an instantiation of a
-	     variadic capture proxy, we instantiate the elements
-	     when needed.  */
-	  gcc_assert (DECL_HAS_VALUE_EXPR_P (t));
-	  return RECUR (DECL_VALUE_EXPR (t));
-	}
       /* Fall through */
 
     case PARM_DECL:
