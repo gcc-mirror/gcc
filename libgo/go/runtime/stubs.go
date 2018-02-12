@@ -5,7 +5,6 @@
 package runtime
 
 import (
-	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -307,15 +306,6 @@ func setSupportAES(v bool) {
 	support_aes = v
 }
 
-// Here for gccgo until we port atomic_pointer.go and mgc.go.
-//go:nosplit
-func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
-	if !atomic.Casp1((*unsafe.Pointer)(noescape(unsafe.Pointer(ptr))), noescape(old), new) {
-		return false
-	}
-	return true
-}
-
 // Here for gccgo until we port lock_*.go.
 func lock(l *mutex)
 func unlock(l *mutex)
@@ -346,12 +336,6 @@ func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
 
 // Temporary for gccgo until we port mheap.go
 func setprofilebucket(p unsafe.Pointer, b *bucket)
-
-// Temporary for gccgo until we port atomic_pointer.go.
-//go:nosplit
-func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
-	atomic.StorepNoWB(noescape(ptr), new)
-}
 
 // Get signal trampoline, written in C.
 func getSigtramp() uintptr
