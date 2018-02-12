@@ -1,3 +1,9 @@
+2018-02-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84273
+	* gfortran.dg/proc_ptr_47.f90: Fix invalid test case.
+	* gfortran.dg/proc_ptr_comp_pass_4.f90: Fix and extend test case.
+
 2018-02-12  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/82641
