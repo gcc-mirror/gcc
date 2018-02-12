@@ -455,19 +455,11 @@ build_capture_proxy (tree member, tree init)
 	  STRIP_NOPS (init);
 	}
 
-      if (TREE_CODE (init) == COMPONENT_REF)
-	/* We're capturing a capture of a function parameter pack, and have
-	   lost track of the original variable.  It's not important to have
-	   DECL_CAPTURED_VARIABLE in this case, since a function parameter pack
-	   isn't a constant variable, so don't bother trying to set it.  */;
-      else
-	{
-	  gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
-	  while (is_normal_capture_proxy (init))
-	    init = DECL_CAPTURED_VARIABLE (init);
-	  retrofit_lang_decl (var);
-	  DECL_CAPTURED_VARIABLE (var) = init;
-	}
+      gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
+      while (is_normal_capture_proxy (init))
+	init = DECL_CAPTURED_VARIABLE (init);
+      retrofit_lang_decl (var);
+      DECL_CAPTURED_VARIABLE (var) = init;
     }
 
   if (name == this_identifier)
