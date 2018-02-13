@@ -1,3 +1,8 @@
+2018-02-13  Paolo Bonzini <bonzini@gnu.org>
+
+	PR sanitizer/84340
+	* internal-fn.def (ASAN_CHECK, ASAN_MARK): Revert changes to fnspec.
+
 2018-02-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/83990
