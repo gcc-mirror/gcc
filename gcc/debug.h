@@ -248,6 +248,8 @@ extern bool dwarf2out_do_eh_frame (void);
 extern bool dwarf2out_do_frame (void);
 extern bool dwarf2out_do_cfi_asm (void);
 extern void dwarf2out_switch_text_section (void);
+extern bool dwarf2out_default_as_loc_support (void);
+extern bool dwarf2out_default_as_locview_support (void);
 
 /* For -fdump-go-spec.  */
 

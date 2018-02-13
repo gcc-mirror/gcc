@@ -1,3 +1,41 @@
+2018-02-13  Alexandre Oliva <aoliva@redhat.com>
+
+	* common.opt (gas-loc-support, gas-locview-support): New.
+	(ginline-points, ginternal-reset-location-views): New.
+	* doc/invoke.texi: Document them.  Use @itemx where intended.
+	(gvariable-location-views): Adjust.
+	* target.def (reset_location_view): New.
+	* doc/tm.texi.in (DWARF2_ASM_VIEW_DEBUG_INFO): New.
+	(TARGET_RESET_LOCATION_VIEW): New.
+	* doc/tm.texi: Rebuilt.
+	* dwarf2out.c (dwarf2out_default_as_loc_support): New.
+	(dwarf2out_default_as_locview_support): New.
+	(output_asm_line_debug_info): Use option variables.
+	(dwarf2out_maybe_output_loclist_view_pair): Likewise.
+	(output_loc_list): Likewise.
+	(add_high_low_attributes): Check option variables.
+	Don't output entry view attribute in strict mode.
+	(gen_inlined_subroutine_die): Check option variables.
+	(dwarf2out_inline_entry): Likewise.
+	(init_sections_and_labels): Likewise.
+	(dwarf2out_early_finish): Likewise.
+	(maybe_reset_location_view): New, from...
+	(dwarf2out_var_location): ... here.  Call it.
+	* debug.h (dwarf2out_default_as_loc_support): Declare.
+	(dwarf2out_default_as_locview_support): Declare.
+	* hooks.c (hook_int_rtx_insn_0): New.
+	* hooks.h (hook_int_rtx_insn_0): Declare.
+	* toplev.c (process_options): Take -gas-loc-support and
+	-gas-locview-support from dwarf2out.  Enable
+	-gvariable-location-views by default only with locview
+	assembler support.  Enable -ginternal-reset-location-views by
+	default only if the target defines the corresponding hook.
+	Enable -ginline-points by default if location views are
+	enabled; force it disabled if statement frontiers are
+	disabled.
+	* tree-inline.c (expand_call_inline): Check option variables.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Likewise.
+
 2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84321
