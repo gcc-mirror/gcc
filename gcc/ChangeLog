@@ -1,5 +1,21 @@
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/84309
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Optimize instead into
+	exp2(log2(C)*x) if C is a power of 2 and c99 runtime is available.
+	* generic-match-head.c (canonicalize_math_after_vectorization_p): New
+	inline function.
+	* gimple-match-head.c (canonicalize_math_after_vectorization_p): New
+	inline function.
+	* omp-simd-clone.h: New file.
+	* omp-simd-clone.c: Include omp-simd-clone.h.
+	(expand_simd_clones): No longer static.
+	* tree-vect-patterns.c: Include fold-const-call.h, attribs.h,
+	cgraph.h and omp-simd-clone.h.
+	(vect_recog_pow_pattern): Optimize pow(C,x) to exp(log(C)*x).
+	(vect_recog_widen_shift_pattern): Formatting fix.
+	(vect_pattern_recog_1): Don't check optab for calls.
+
 	PR target/84336
 	* config/i386/sse.md (<avx512>_vpermi2var<mode>3_mask): Force
 	operands[2] into a REG before using gen_lowpart on it.

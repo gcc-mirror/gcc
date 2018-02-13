@@ -1,5 +1,9 @@
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/84309
+	* gcc.dg/pr84309.c: New test.
+	* gcc.target/i386/pr84309.c: New test.
+
 	PR target/84336
 	* gcc.target/i386/pr84336.c: New test.
 
