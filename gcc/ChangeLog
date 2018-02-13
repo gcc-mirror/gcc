@@ -1,5 +1,9 @@
 2018-02-12  Jeff Law  <law@redhat.com>
 
+	PR target/83760
+	* config/sh/sh.c (find_barrier): Consider a sibling call
+	a barrier as well.
+
 	* cse.c (try_back_substitute_reg): Move any REG_ARGS_SIZE note when
 	successfully back substituting a reg.
 
