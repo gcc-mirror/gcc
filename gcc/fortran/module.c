@@ -6080,8 +6080,10 @@ dump_module (const char *name, int dump_flag)
     gfc_fatal_error ("Can't open module file %qs for writing at %C: %s",
 		     filename_tmp, xstrerror (errno));
 
+  /* Use lbasename to ensure module files are reproducible regardless
+     of the build path (see the reproducible builds project).  */
   gzprintf (module_fp, "GFORTRAN module version '%s' created from %s\n",
-	    MOD_VERSION, gfc_source_file);
+	    MOD_VERSION, lbasename (gfc_source_file));
 
   /* Write the module itself.  */
   iomode = IO_OUTPUT;
