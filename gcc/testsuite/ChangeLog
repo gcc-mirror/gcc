@@ -1,3 +1,8 @@
+2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84279
+	* g++.dg/pr84279.C: New test.
+
 2018-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/84169
