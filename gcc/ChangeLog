@@ -1,3 +1,8 @@
+2018-02-13  Jeff Law  <law@redhat.com>
+
+	* config/rl78/rl78.c (rl78_handle_func_attribute): Mark
+	ARGS as unused.
+
 2018-02-13  Alexandre Oliva <aoliva@redhat.com>
 
 	* common.opt (gas-loc-support, gas-locview-support): New.
