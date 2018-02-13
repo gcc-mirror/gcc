@@ -1,3 +1,9 @@
+2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84365
+	* gcc.target/powerpc/altivec-7-le.c: Also match lxv when compiling
+	with -mcpu=power9.
+
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84364
