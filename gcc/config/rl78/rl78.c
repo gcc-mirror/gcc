@@ -905,8 +905,8 @@ const struct attribute_spec rl78_attribute_table[] =
     rl78_handle_naked_attribute, NULL },
   { "saddr",          0, 0, true, false, false, false,
     rl78_handle_saddr_attribute, NULL },
-  { "vector",         1, -1, true, false, false, 
-	rl78_handle_vector_attribute, false },
+  { "vector",         1, -1, true, false, false, false,
+	rl78_handle_vector_attribute, NULL },
   { NULL,             0, 0, false, false, false, false, NULL, NULL }
 };
 
