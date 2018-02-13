@@ -1,3 +1,9 @@
+2018-02-13  Alastair McKinstry  <alastair.mckinstry@sceal.ie>
+	    Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* module.c (dump_module): Use lbasename to ensure that module
+	files are reproducible.
+
 2018-02-12  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/84273
