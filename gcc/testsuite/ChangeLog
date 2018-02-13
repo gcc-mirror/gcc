@@ -1,5 +1,11 @@
 2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
 
+	PR target/84372
+	* gcc.target/powerpc/lvsl-lvsr.c: Also match lxv when compiling
+	with -mcpu=power9.
+
+2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
+
 	PR target/84279
 	* g++.dg/pr84279.C: New test.
 
