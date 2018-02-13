@@ -4021,7 +4021,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       /* As libmvec doesn't have a vectorized exp2, defer optimizing
 	 this until after vectorization.  */
       (if (canonicalize_math_after_vectorization_p ())
-	(exps (mult (logs @0) @1))))))))
+	(exp2s (mult (log2s @0) @1))))))))
 
  (for sqrts (SQRT)
       cbrts (CBRT)
