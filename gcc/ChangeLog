@@ -1,3 +1,10 @@
+2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84321
+	* tree-vrp.c (intersect_range_with_nonzero_bits): Fix VR_ANTI_RANGE
+	handling.  Also check whether the anti-range contains any values
+	that satisfy the mask; switch to a VR_RANGE if not.
+
 2018-02-13  Paolo Bonzini <bonzini@gnu.org>
 
 	PR sanitizer/84340
