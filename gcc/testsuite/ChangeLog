@@ -1,3 +1,8 @@
+2018-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/84169
+	* gcc.c-torture/execute/pr84169.c: New.
+
 2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/84370

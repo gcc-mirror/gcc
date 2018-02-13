@@ -2665,6 +2665,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   /* Notes that I1, I2 or I3 is a MULT operation.  */
   int have_mult = 0;
   int swap_i2i3 = 0;
+  int split_i2i3 = 0;
   int changed_i3_dest = 0;
 
   int maxreg;
@@ -4091,6 +4092,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	    }
 
 	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+
+	  if (insn_code_number >= 0)
+	    split_i2i3 = 1;
 	}
     }
 
@@ -4258,44 +4262,45 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   if (swap_i2i3)
     {
-      rtx_insn *insn;
-      struct insn_link *link;
-      rtx ni2dest;
-
       /* I3 now uses what used to be its destination and which is now
 	 I2's destination.  This requires us to do a few adjustments.  */
       PATTERN (i3) = newpat;
       adjust_for_new_dest (i3);
+    }
 
-      /* We need a LOG_LINK from I3 to I2.  But we used to have one,
-	 so we still will.
+  if (swap_i2i3 || split_i2i3)
+    {
+      /* We might need a LOG_LINK from I3 to I2.  But then we used to
+	 have one, so we still will.
 
 	 However, some later insn might be using I2's dest and have
-	 a LOG_LINK pointing at I3.  We must remove this link.
-	 The simplest way to remove the link is to point it at I1,
-	 which we know will be a NOTE.  */
+	 a LOG_LINK pointing at I3.  We should change it to point at
+	 I2 instead.  */
 
       /* newi2pat is usually a SET here; however, recog_for_combine might
 	 have added some clobbers.  */
-      if (GET_CODE (newi2pat) == PARALLEL)
-	ni2dest = SET_DEST (XVECEXP (newi2pat, 0, 0));
-      else
-	ni2dest = SET_DEST (newi2pat);
+      rtx x = newi2pat;
+      if (GET_CODE (x) == PARALLEL)
+	x = XVECEXP (newi2pat, 0, 0);
 
-      for (insn = NEXT_INSN (i3);
-	   insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-		    || insn != BB_HEAD (this_basic_block->next_bb));
+      unsigned int regno = REGNO (SET_DEST (x));
+
+      bool done = false;
+      for (rtx_insn *insn = NEXT_INSN (i3);
+	   !done
+	   && insn
+	   && NONDEBUG_INSN_P (insn)
+	   && BLOCK_FOR_INSN (insn) == this_basic_block;
 	   insn = NEXT_INSN (insn))
 	{
-	  if (NONDEBUG_INSN_P (insn)
-	      && reg_referenced_p (ni2dest, PATTERN (insn)))
-	    {
-	      FOR_EACH_LOG_LINK (link, insn)
-		if (link->insn == i3)
-		  link->insn = i1;
-
-	      break;
-	    }
+	  struct insn_link *link;
+	  FOR_EACH_LOG_LINK (link, insn)
+	    if (link->insn == i3 && link->regno == regno)
+	      {
+		link->insn = i2;
+		done = true;
+		break;
+	      }
 	}
     }
 
