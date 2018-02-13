@@ -1,5 +1,8 @@
 2018-02-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84080 - ICE with return type deduction and specialization.
+	* pt.c (determine_specialization): Check uses_template_parms.
+
 	Fix more variadic capture issues.
 	* pt.c (find_parameter_packs_r): Also look at explicit captures.
 	(check_for_bare_parameter_packs): Check current_class_type for
