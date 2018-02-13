@@ -804,7 +804,7 @@ is_brk_interrupt_func (const_tree decl)
 static tree
 rl78_handle_func_attribute (tree * node,
 			    tree   name,
-			    tree   args,
+			    tree   args ATTRIBUTE_UNUSED,
 			    int    flags ATTRIBUTE_UNUSED,
 			    bool * no_add_attrs)
 {
