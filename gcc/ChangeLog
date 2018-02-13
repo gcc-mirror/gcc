@@ -1,3 +1,9 @@
+2018-02-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/83990
+	* ipa-param-manipulation.c (ipa_modify_call_arguments): Use location
+	of call statements, also set location of a load to a temporary.
+
 2018-02-13  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.c (add_vector_labels): New function.
