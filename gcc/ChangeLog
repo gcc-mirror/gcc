@@ -1,4 +1,134 @@
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82210
+	* stor-layout.c (place_field): For variable length fields, adjust
+	offset_align afterwards not just based on the field's alignment,
+	but also on the size.
+
+	PR middle-end/84309
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Use exp2s and log2s instead
+	of exps and logs in the use_exp2 case.
+
+2018-02-13  Jeff Law  <law@redhat.com>
+
+ 	* config/rl/rl78.c (rl78_attribute_table): Fix terminator and
+	entry for "vector".
+
+	* config/rl78/rl78.c (rl78_handle_func_attribute): Mark
+	ARGS as unused.
+
+2018-02-13  Alexandre Oliva <aoliva@redhat.com>
+
+	* common.opt (gas-loc-support, gas-locview-support): New.
+	(ginline-points, ginternal-reset-location-views): New.
+	* doc/invoke.texi: Document them.  Use @itemx where intended.
+	(gvariable-location-views): Adjust.
+	* target.def (reset_location_view): New.
+	* doc/tm.texi.in (DWARF2_ASM_VIEW_DEBUG_INFO): New.
+	(TARGET_RESET_LOCATION_VIEW): New.
+	* doc/tm.texi: Rebuilt.
+	* dwarf2out.c (dwarf2out_default_as_loc_support): New.
+	(dwarf2out_default_as_locview_support): New.
+	(output_asm_line_debug_info): Use option variables.
+	(dwarf2out_maybe_output_loclist_view_pair): Likewise.
+	(output_loc_list): Likewise.
+	(add_high_low_attributes): Check option variables.
+	Don't output entry view attribute in strict mode.
+	(gen_inlined_subroutine_die): Check option variables.
+	(dwarf2out_inline_entry): Likewise.
+	(init_sections_and_labels): Likewise.
+	(dwarf2out_early_finish): Likewise.
+	(maybe_reset_location_view): New, from...
+	(dwarf2out_var_location): ... here.  Call it.
+	* debug.h (dwarf2out_default_as_loc_support): Declare.
+	(dwarf2out_default_as_locview_support): Declare.
+	* hooks.c (hook_int_rtx_insn_0): New.
+	* hooks.h (hook_int_rtx_insn_0): Declare.
+	* toplev.c (process_options): Take -gas-loc-support and
+	-gas-locview-support from dwarf2out.  Enable
+	-gvariable-location-views by default only with locview
+	assembler support.  Enable -ginternal-reset-location-views by
+	default only if the target defines the corresponding hook.
+	Enable -ginline-points by default if location views are
+	enabled; force it disabled if statement frontiers are
+	disabled.
+	* tree-inline.c (expand_call_inline): Check option variables.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Likewise.
+
+2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84321
+	* tree-vrp.c (intersect_range_with_nonzero_bits): Fix VR_ANTI_RANGE
+	handling.  Also check whether the anti-range contains any values
+	that satisfy the mask; switch to a VR_RANGE if not.
+
+2018-02-13  Paolo Bonzini <bonzini@gnu.org>
+
+	PR sanitizer/84340
+	* internal-fn.def (ASAN_CHECK, ASAN_MARK): Revert changes to fnspec.
+
+2018-02-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/83990
+	* ipa-param-manipulation.c (ipa_modify_call_arguments): Use location
+	of call statements, also set location of a load to a temporary.
+
+2018-02-13  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78.c (add_vector_labels): New function.
+	* config/rl78/rl78.c (rl78_handle_vector_attribute): New function.
+	* config/rl78/rl78.c (rl78_start_function): Call add_vector_labels.
+	* config/rl78/rl78.c (rl78_handle_func_attribute): Removed the assert 
+	which checks that no arguments are passed.
+	* config/rl78/rl78.c (rl78_attribute_table): Add "vector" attribute.
+	* doc/extend.texi: Documentation for the new attribute.
+
+2018-02-13  Andreas Schwab  <schwab@suse.de>
+
+	* config/riscv/linux.h (CPP_SPEC): Define.
+
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84335
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Pass
+	OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2 instead of
+	OPTION_MASK_ISA_AES as first argument to def_builtin_const
+	for AES builtins.  Pass OPTION_MASK_ISA_PCLMUL | OPTION_MASK_ISA_SSE2
+	instead of OPTION_MASK_ISA_PCLMUL as first argument to
+	def_builtin_const for __builtin_ia32_pclmulqdq128 builtin.
+	* config/i386/wmmintrin.h: If __SSE2__ is not defined, enable it
+	temporarily for AES and PCLMUL builtins.
+
+	PR tree-optimization/84339
+	* gimple-fold.c (get_range_strlen): Set *FLEXP to true when handling
+	ARRAY_REF where first operand is array_at_struct_end_p COMPONENT_REF.
+	Formatting fixes.
+
+	PR middle-end/84309
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Optimize instead into
+	exp2(log2(C)*x) if C is a power of 2 and c99 runtime is available.
+	* generic-match-head.c (canonicalize_math_after_vectorization_p): New
+	inline function.
+	* gimple-match-head.c (canonicalize_math_after_vectorization_p): New
+	inline function.
+	* omp-simd-clone.h: New file.
+	* omp-simd-clone.c: Include omp-simd-clone.h.
+	(expand_simd_clones): No longer static.
+	* tree-vect-patterns.c: Include fold-const-call.h, attribs.h,
+	cgraph.h and omp-simd-clone.h.
+	(vect_recog_pow_pattern): Optimize pow(C,x) to exp(log(C)*x).
+	(vect_recog_widen_shift_pattern): Formatting fix.
+	(vect_pattern_recog_1): Don't check optab for calls.
+
+	PR target/84336
+	* config/i386/sse.md (<avx512>_vpermi2var<mode>3_mask): Force
+	operands[2] into a REG before using gen_lowpart on it.
+
 2018-02-12  Jeff Law  <law@redhat.com>
+
+	PR target/83760
+	* config/sh/sh.c (find_barrier): Consider a sibling call
+	a barrier as well.
 
 	* cse.c (try_back_substitute_reg): Move any REG_ARGS_SIZE note when
 	successfully back substituting a reg.

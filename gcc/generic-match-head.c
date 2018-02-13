@@ -68,3 +68,12 @@ canonicalize_math_p ()
 {
   return true;
 }
+
+/* Return true if math operations that are beneficial only after
+   vectorization should be canonicalized.  */
+
+static inline bool
+canonicalize_math_after_vectorization_p ()
+{
+  return false;
+}

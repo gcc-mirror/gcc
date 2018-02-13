@@ -346,9 +346,13 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version} @gol
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches @gol
 -gstabs  -gstabs+  -gstrict-dwarf  -gno-strict-dwarf @gol
+-gas-loc-support  -gno-as-loc-support @gol
+-gas-locview-support  -gno-as-locview-support @gol
 -gcolumn-info  -gno-column-info @gol
 -gstatement-frontiers  -gno-statement-frontiers @gol
 -gvariable-location-views  -gno-variable-location-views @gol
+-ginternal-reset-location-views  -gno-internal-reset-location-views @gol
+-ginline-points  -gno-inline-points @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
@@ -4159,7 +4163,7 @@ result in false positives.
 
 @table @gcctabopt
 @item -Wformat-overflow
-@item -Wformat-overflow=1
+@itemx -Wformat-overflow=1
 @opindex Wformat-overflow
 @opindex Wno-format-overflow
 Level @var{1} of @option{-Wformat-overflow} enabled by @option{-Wformat}
@@ -4278,7 +4282,7 @@ logic @option{-Wformat-overflow}.
 
 @table @gcctabopt
 @item -Wformat-truncation
-@item -Wformat-truncation=1
+@itemx -Wformat-truncation=1
 @opindex Wformat-truncation
 @opindex Wno-format-overflow
 Level @var{1} of @option{-Wformat-truncation} enabled by @option{-Wformat}
@@ -5239,7 +5243,7 @@ Option @option{-Wstringop-overflow=2} is enabled by default.
 
 @table @gcctabopt
 @item -Wstringop-overflow
-@item -Wstringop-overflow=1
+@itemx -Wstringop-overflow=1
 @opindex Wstringop-overflow
 @opindex Wno-stringop-overflow
 The @option{-Wstringop-overflow=1} option uses type-zero Object Size Checking
@@ -7214,7 +7218,7 @@ and on some objects @code{.debug_types} produces larger instead of smaller
 debugging information.
 
 @item -grecord-gcc-switches
-@item -gno-record-gcc-switches
+@itemx -gno-record-gcc-switches
 @opindex grecord-gcc-switches
 @opindex gno-record-gcc-switches
 This switch causes the command-line options used to invoke the
@@ -7237,8 +7241,38 @@ DWARF extensions from later standard versions is allowed.
 Allow using extensions of later DWARF standard version than selected with
 @option{-gdwarf-@var{version}}.
 
+@item -gas-loc-support
+@opindex gas-loc-support
+Inform the compiler that the assembler supports @code{.loc} directives.
+It may then use them for the assembler to generate DWARF2+ line number
+tables.
+
+This is generally desirable, because assembler-generated line-number
+tables are a lot more compact than those the compiler can generate
+itself.
+
+This option will be enabled by default if, at GCC configure time, the
+assembler was found to support such directives.
+
+@item -gno-as-loc-support
+@opindex gno-as-loc-support
+Force GCC to generate DWARF2+ line number tables internally, if DWARF2+
+line number tables are to be generated.
+
+@item gas-locview-support
+@opindex gas-locview-support
+Inform the compiler that the assembler supports @code{view} assignment
+and reset assertion checking in @code{.loc} directives.
+
+This option will be enabled by default if, at GCC configure time, the
+assembler was found to support them.
+
+@item gno-as-locview-support
+Force GCC to assign view numbers internally, if
+@option{-gvariable-location-views} are explicitly requested.
+
 @item -gcolumn-info
-@item -gno-column-info
+@itemx -gno-column-info
 @opindex gcolumn-info
 @opindex gno-column-info
 Emit location column information into DWARF debugging information, rather
@@ -7246,7 +7280,7 @@ than just file and line.
 This option is enabled by default.
 
 @item -gstatement-frontiers
-@item -gno-statement-frontiers
+@itemx -gno-statement-frontiers
 @opindex gstatement-frontiers
 @opindex gno-statement-frontiers
 This option causes GCC to create markers in the internal representation
@@ -7257,8 +7291,8 @@ compiling with optimization (@option{-Os}, @option{-O}, @option{-O2},
 @dots{}), and outputting DWARF 2 debug information at the normal level.
 
 @item -gvariable-location-views
-@item -gvariable-location-views=incompat5
-@item -gno-variable-location-views
+@itemx -gvariable-location-views=incompat5
+@itemx -gno-variable-location-views
 @opindex gvariable-location-views
 @opindex gvariable-location-views=incompat5
 @opindex gno-variable-location-views
@@ -7272,9 +7306,15 @@ which generally makes them somewhat less compact.  The augmented line
 number tables and location lists are fully backward-compatible, so they
 can be consumed by debug information consumers that are not aware of
 these augmentations, but they won't derive any benefit from them either.
+
 This is enabled by default when outputting DWARF 2 debug information at
-the normal level, as long as @option{-fvar-tracking-assignments} is
-enabled and @option{-gstrict-dwarf} is not.
+the normal level, as long as there is assembler support,
+@option{-fvar-tracking-assignments} is enabled and
+@option{-gstrict-dwarf} is not.  When assembler support is not
+available, this may still be enabled, but it will force GCC to output
+internal line number tables, and if
+@option{-ginternal-reset-location-views} is not enabled, that will most
+certainly lead to silently mismatching location views.
 
 There is a proposed representation for view numbers that is not backward
 compatible with the location list format introduced in DWARF 5, that can
@@ -7283,6 +7323,30 @@ option may be removed in the future, is only provided as a reference
 implementation of the proposed representation.  Debug information
 consumers are not expected to support this extended format, and they
 would be rendered unable to decode location lists using it.
+
+@item -ginternal-reset-location-views
+@itemx -gnointernal-reset-location-views
+@opindex ginternal-reset-location-views
+@opindex gno-internal-reset-location-views
+Attempt to determine location views that can be omitted from location
+view lists.  This requires the compiler to have very accurate insn
+length estimates, which isn't always the case, and it may cause
+incorrect view lists to be generated silently when using an assembler
+that does not support location view lists.  The GNU assembler will flag
+any such error as a @code{view number mismatch}.  This is only enabled
+on ports that define a reliable estimation function.
+
+@item -ginline-points
+@itemx -gno-inline-points
+@opindex ginline-points
+@opindex gno-inline-points
+Generate extended debug information for inlined functions.  Location
+view tracking markers are inserted at inlined entry points, so that
+address and view numbers can be computed and output in debug
+information.  This can be enabled independently of location views, in
+which case the view numbers won't be output, but it can only be enabled
+along with statement frontiers, and it is only enabled by default if
+location views are enabled.
 
 @item -gz@r{[}=@var{type}@r{]}
 @opindex gz
@@ -10043,7 +10107,7 @@ also use other heuristics to decide whether if-conversion is likely to be
 profitable.
 
 @item max-rtl-if-conversion-predictable-cost
-@item max-rtl-if-conversion-unpredictable-cost
+@itemx max-rtl-if-conversion-unpredictable-cost
 RTL if-conversion will try to remove conditional branches around a block
 and replace them with conditionally executed instructions.  These parameters
 give the maximum permissible cost for the sequence that would be generated
@@ -10768,7 +10832,7 @@ parameters only when their cumulative size is less or equal to
 pointer parameter.
 
 @item sra-max-scalarization-size-Ospeed
-@item sra-max-scalarization-size-Osize
+@itemx sra-max-scalarization-size-Osize
 The two Scalar Reduction of Aggregates passes (SRA and IPA-SRA) aim to
 replace scalar parts of aggregates with uses of independent scalar
 variables.  These parameters control the maximum size, in storage units,
@@ -14545,7 +14609,7 @@ This erratum workaround is made at link time and this will only pass the
 corresponding flag to the linker.
 
 @item -mlow-precision-recip-sqrt
-@item -mno-low-precision-recip-sqrt
+@itemx -mno-low-precision-recip-sqrt
 @opindex mlow-precision-recip-sqrt
 @opindex mno-low-precision-recip-sqrt
 Enable or disable the reciprocal square root approximation.
@@ -14555,7 +14619,7 @@ precision of reciprocal square root results to about 16 bits for
 single precision and to 32 bits for double precision.
 
 @item -mlow-precision-sqrt
-@item -mno-low-precision-sqrt
+@itemx -mno-low-precision-sqrt
 @opindex -mlow-precision-sqrt
 @opindex -mno-low-precision-sqrt
 Enable or disable the square root approximation.
@@ -14566,7 +14630,7 @@ single precision and to 32 bits for double precision.
 If enabled, it implies @option{-mlow-precision-recip-sqrt}.
 
 @item -mlow-precision-div
-@item -mno-low-precision-div
+@itemx -mno-low-precision-div
 @opindex -mlow-precision-div
 @opindex -mno-low-precision-div
 Enable or disable the division approximation.
@@ -20194,7 +20258,7 @@ for regression testing of mixed MIPS16/non-MIPS16 code generation, and is
 not intended for ordinary use in compiling user code.
 
 @item -minterlink-compressed
-@item -mno-interlink-compressed
+@itemx -mno-interlink-compressed
 @opindex minterlink-compressed
 @opindex mno-interlink-compressed
 Require (do not require) that code using the standard (uncompressed) MIPS ISA
@@ -20775,7 +20839,7 @@ Tell the MIPS assembler to not run its preprocessor over user
 assembler files (with a @samp{.s} suffix) when assembling them.
 
 @item -mfix-24k
-@item -mno-fix-24k
+@itemx -mno-fix-24k
 @opindex mfix-24k
 @opindex mno-fix-24k
 Work around the 24K E48 (lost data on stores during refill) errata.
@@ -21535,7 +21599,7 @@ into the small data or BSS sections instead of the normal data or BSS
 sections.  The default value of @var{num} is 8.
 
 @item -mgpopt=@var{option}
-@item -mgpopt
+@itemx -mgpopt
 @itemx -mno-gpopt
 @opindex mgpopt
 @opindex mno-gpopt
@@ -23094,7 +23158,7 @@ or 32 bits (@option{-m32bit-doubles}) in size.  The default is
 @option{-m32bit-doubles}.
 
 @item -msave-mduc-in-interrupts
-@item -mno-save-mduc-in-interrupts
+@itemx -mno-save-mduc-in-interrupts
 @opindex msave-mduc-in-interrupts
 @opindex mno-save-mduc-in-interrupts
 Specifies that interrupt handler functions should preserve the
@@ -26727,13 +26791,13 @@ comparisons.  These correctly handle the case where the result of a
 comparison is unordered.
 
 @item -m80387
-@item -mhard-float
+@itemx -mhard-float
 @opindex 80387
 @opindex mhard-float
 Generate output containing 80387 instructions for floating point.
 
 @item -mno-80387
-@item -msoft-float
+@itemx -msoft-float
 @opindex no-80387
 @opindex msoft-float
 Generate output containing library calls for floating point.

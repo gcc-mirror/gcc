@@ -184,6 +184,51 @@ intersect_range_with_nonzero_bits (enum value_range_type vr_type,
 				   const wide_int &nonzero_bits,
 				   signop sgn)
 {
+  if (vr_type == VR_ANTI_RANGE)
+    {
+      /* The VR_ANTI_RANGE is equivalent to the union of the ranges
+	 A: [-INF, *MIN) and B: (*MAX, +INF].  First use NONZERO_BITS
+	 to create an inclusive upper bound for A and an inclusive lower
+	 bound for B.  */
+      wide_int a_max = wi::round_down_for_mask (*min - 1, nonzero_bits);
+      wide_int b_min = wi::round_up_for_mask (*max + 1, nonzero_bits);
+
+      /* If the calculation of A_MAX wrapped, A is effectively empty
+	 and A_MAX is the highest value that satisfies NONZERO_BITS.
+	 Likewise if the calculation of B_MIN wrapped, B is effectively
+	 empty and B_MIN is the lowest value that satisfies NONZERO_BITS.  */
+      bool a_empty = wi::ge_p (a_max, *min, sgn);
+      bool b_empty = wi::le_p (b_min, *max, sgn);
+
+      /* If both A and B are empty, there are no valid values.  */
+      if (a_empty && b_empty)
+	return VR_UNDEFINED;
+
+      /* If exactly one of A or B is empty, return a VR_RANGE for the
+	 other one.  */
+      if (a_empty || b_empty)
+	{
+	  *min = b_min;
+	  *max = a_max;
+	  gcc_checking_assert (wi::le_p (*min, *max, sgn));
+	  return VR_RANGE;
+	}
+
+      /* Update the VR_ANTI_RANGE bounds.  */
+      *min = a_max + 1;
+      *max = b_min - 1;
+      gcc_checking_assert (wi::le_p (*min, *max, sgn));
+
+      /* Now check whether the excluded range includes any values that
+	 satisfy NONZERO_BITS.  If not, switch to a full VR_RANGE.  */
+      if (wi::round_up_for_mask (*min, nonzero_bits) == b_min)
+	{
+	  unsigned int precision = min->get_precision ();
+	  *min = wi::min_value (precision, sgn);
+	  *max = wi::max_value (precision, sgn);
+	  vr_type = VR_RANGE;
+	}
+    }
   if (vr_type == VR_RANGE)
     {
       *max = wi::round_down_for_mask (*max, nonzero_bits);
@@ -194,27 +239,6 @@ intersect_range_with_nonzero_bits (enum value_range_type vr_type,
 
       *min = wi::round_up_for_mask (*min, nonzero_bits);
       gcc_checking_assert (wi::le_p (*min, *max, sgn));
-    }
-  if (vr_type == VR_ANTI_RANGE)
-    {
-      *max = wi::round_up_for_mask (*max, nonzero_bits);
-
-      /* If the calculation wrapped, we now have a VR_RANGE whose
-	 lower bound is *MAX and whose upper bound is *MIN.  */
-      if (wi::gt_p (*min, *max, sgn))
-	{
-	  std::swap (*min, *max);
-	  *max = wi::round_down_for_mask (*max, nonzero_bits);
-	  gcc_checking_assert (wi::le_p (*min, *max, sgn));
-	  return VR_RANGE;
-	}
-
-      *min = wi::round_down_for_mask (*min, nonzero_bits);
-      gcc_checking_assert (wi::le_p (*min, *max, sgn));
-
-      /* Check whether we now have an empty set of values.  */
-      if (*min - 1 == *max)
-	return VR_UNDEFINED;
     }
   return vr_type;
 }

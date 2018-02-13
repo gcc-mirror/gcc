@@ -18183,7 +18183,10 @@
 	  (match_dup 5)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
   "TARGET_AVX512F"
-  "operands[5] = gen_lowpart (<MODE>mode, operands[2]);")
+{
+  operands[2] = force_reg (<sseintvecmode>mode, operands[2]);
+  operands[5] = gen_lowpart (<MODE>mode, operands[2]);
+})
 
 (define_insn "*<avx512>_vpermi2var<mode>3_mask"
   [(set (match_operand:VPERMI2I 0 "register_operand" "=v")

@@ -1,3 +1,25 @@
+2018-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84080 - ICE with return type deduction and specialization.
+	* pt.c (determine_specialization): Check uses_template_parms.
+
+	Fix more variadic capture issues.
+	* pt.c (find_parameter_packs_r): Also look at explicit captures.
+	(check_for_bare_parameter_packs): Check current_class_type for
+	lambda context.
+	(extract_locals_r): Handle seeing a full instantiation of a pack.
+	(tsubst_pack_expansion): Likewise.  Force lambda capture.
+	* parser.c (cp_parser_lambda_introducer): Don't
+	check_for_bare_parameter_packs.
+
+	PR c++/84338 - wrong variadic sizeof.
+	* pt.c (argument_pack_select_arg): Like the macro, but look through
+	a pack expansion.
+	(tsubst, tsubst_copy, dependent_template_arg_p): Use it.
+	(extract_fnparm_pack): Do make_pack_expansion.
+	(extract_locals_r): Do strip a pack expansion.
+	* cp-tree.h (ARGUMENT_PACK_SELECT_ARG): Remove.
+
 2018-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84341

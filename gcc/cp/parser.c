@@ -10412,8 +10412,6 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	      cp_lexer_consume_token (parser->lexer);
 	      capture_init_expr = make_pack_expansion (capture_init_expr);
 	    }
-	  else
-	    check_for_bare_parameter_packs (capture_init_expr);
 	}
 
       if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE

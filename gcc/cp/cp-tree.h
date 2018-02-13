@@ -3558,12 +3558,6 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define ARGUMENT_PACK_SELECT_INDEX(NODE)				\
   (((struct tree_argument_pack_select *)ARGUMENT_PACK_SELECT_CHECK (NODE))->index)
   
-/* In an ARGUMENT_PACK_SELECT, the actual underlying argument that the
-   ARGUMENT_PACK_SELECT represents. */
-#define ARGUMENT_PACK_SELECT_ARG(NODE)					\
-  TREE_VEC_ELT (ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (NODE)), \
-	        ARGUMENT_PACK_SELECT_INDEX (NODE))
-
 #define FOLD_EXPR_CHECK(NODE)						\
   TREE_CHECK4 (NODE, UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR,	\
 	       BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)

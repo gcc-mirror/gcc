@@ -5233,10 +5233,22 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
 	 CALL_ARG_LOCATION note.  */
       if (CALL_P (from))
 	{
+	  bool sibcall_p = SIBLING_CALL_P (from);
+
 	  rtx_insn *next = NEXT_INSN (from);
 	  if (next && NOTE_P (next)
 	      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
 	    from = next;
+
+	  /* If FROM was a sibling call, then we know that control
+	     will not return.  In fact, we were guaranteed to hit
+	     a barrier before another real insn.
+
+	     The jump around the constant pool is unnecessary.  It
+	     costs space, but more importantly it confuses dwarf2cfi
+	     generation.  */
+	  if (sibcall_p)
+	    return emit_barrier_after (from);
 	}
 
       from = emit_jump_insn_after (gen_jump (label), from);
