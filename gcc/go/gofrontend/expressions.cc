@@ -1330,9 +1330,24 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
   else
     {
       Location bloc = Linemap::predeclared_location();
+
+      // The runtime package has hash/equality functions that are
+      // referenced by type descriptors outside of the runtime, so the
+      // function descriptors must be visible even though they are not
+      // exported.
+      bool is_exported_runtime = false;
+      if (gogo->compiling_runtime()
+	  && gogo->package_name() == "runtime"
+	  && (no->name().find("hash") != std::string::npos
+	      || no->name().find("equal") != std::string::npos))
+	is_exported_runtime = true;
+
       bool is_hidden = ((no->is_function()
 			 && no->func_value()->enclosing() != NULL)
+			|| (Gogo::is_hidden_name(no->name())
+			    && !is_exported_runtime)
 			|| Gogo::is_thunk(no));
+
       bvar = context->backend()->immutable_struct(var_name, asm_name,
                                                   is_hidden, false,
 						  btype, bloc);
