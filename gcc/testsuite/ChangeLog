@@ -1,3 +1,8 @@
+2018-02-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84321
+	* gcc.dg/pr84321.c: New test.
+
 2018-02-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/84359
