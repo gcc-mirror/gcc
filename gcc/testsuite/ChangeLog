@@ -1,3 +1,8 @@
+2018-02-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/84359
+	* gcc.target/i386/57193.c: Add -march=x86-64.
+
 2018-02-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR sanitizer/84340
