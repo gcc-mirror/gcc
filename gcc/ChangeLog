@@ -28,6 +28,7 @@
 
 2018-02-13  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/84342
 	* common.opt (gas-loc-support, gas-locview-support): New.
 	(ginline-points, ginternal-reset-location-views): New.
 	* doc/invoke.texi: Document them.  Use @itemx where intended.
