@@ -1,3 +1,8 @@
+2018-02-13  Maciej W. Rozycki  <macro@mips.com>
+
+	* configure.ac <wasm32-*-*> (noconfigdirs): Add `ld'.
+	* configure: Regenerate.
+
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
 	* MAINTAINERS (write after approval): Add myself.
