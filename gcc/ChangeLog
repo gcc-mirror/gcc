@@ -1,5 +1,8 @@
 2018-02-13  Jeff Law  <law@redhat.com>
 
+ 	* config/rl/rl78.c (rl78_attribute_table): Fix terminator and
+	entry for "vector".
+
 	* config/rl78/rl78.c (rl78_handle_func_attribute): Mark
 	ARGS as unused.
 
