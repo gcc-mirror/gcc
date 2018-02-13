@@ -3992,15 +3992,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (logs (pows @0 @1))
    (mult @1 (logs @0))))
 
- /* pow(C,x) -> exp(log(C)*x) if C > 0.  */
+ /* pow(C,x) -> exp(log(C)*x) if C > 0,
+    or if C is a positive power of 2,
+    pow(C,x) -> exp2(log2(C)*x).  */
  (for pows (POW)
       exps (EXP)
       logs (LOG)
+      exp2s (EXP2)
+      log2s (LOG2)
   (simplify
    (pows REAL_CST@0 @1)
-    (if (real_compare (GT_EXPR, TREE_REAL_CST_PTR (@0), &dconst0)
-	 && real_isfinite (TREE_REAL_CST_PTR (@0)))
-     (exps (mult (logs @0) @1)))))
+   (if (real_compare (GT_EXPR, TREE_REAL_CST_PTR (@0), &dconst0)
+	&& real_isfinite (TREE_REAL_CST_PTR (@0)))
+    (with {
+       const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (@0);
+       bool use_exp2 = false;
+       if (targetm.libc_has_function (function_c99_misc)
+	   && value->cl == rvc_normal)
+	 {
+	   REAL_VALUE_TYPE frac_rvt = *value;
+	   SET_REAL_EXP (&frac_rvt, 1);
+	   if (real_equal (&frac_rvt, &dconst1))
+	     use_exp2 = true;
+	 }
+     }
+     (if (!use_exp2)
+      (exps (mult (logs @0) @1))
+      /* As libmvec doesn't have a vectorized exp2, defer optimizing
+	 this until after vectorization.  */
+      (if (canonicalize_math_after_vectorization_p ())
+	(exps (mult (logs @0) @1))))))))
 
  (for sqrts (SQRT)
       cbrts (CBRT)

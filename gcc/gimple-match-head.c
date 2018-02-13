@@ -831,3 +831,12 @@ canonicalize_math_p ()
 {
   return !cfun || (cfun->curr_properties & PROP_gimple_opt_math) == 0;
 }
+
+/* Return true if math operations that are beneficial only after
+   vectorization should be canonicalized.  */
+
+static inline bool
+canonicalize_math_after_vectorization_p ()
+{
+  return !cfun || (cfun->curr_properties & PROP_gimple_lvec) != 0;
+}
