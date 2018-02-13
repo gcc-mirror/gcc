@@ -1,3 +1,9 @@
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/84309
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Use exp2s and log2s instead
+	of exps and logs in the use_exp2 case.
+
 2018-02-13  Jeff Law  <law@redhat.com>
 
  	* config/rl/rl78.c (rl78_attribute_table): Fix terminator and
