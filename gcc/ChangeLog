@@ -1,5 +1,10 @@
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/82210
+	* stor-layout.c (place_field): For variable length fields, adjust
+	offset_align afterwards not just based on the field's alignment,
+	but also on the size.
+
 	PR middle-end/84309
 	* match.pd (pow(C,x) -> exp(log(C)*x)): Use exp2s and log2s instead
 	of exps and logs in the use_exp2 case.
