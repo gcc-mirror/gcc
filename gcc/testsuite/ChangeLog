@@ -1,5 +1,8 @@
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84339
+	* gcc.c-torture/execute/pr84339.c: New test.
+
 	PR middle-end/84309
 	* gcc.dg/pr84309.c: New test.
 	* gcc.target/i386/pr84309.c: New test.
