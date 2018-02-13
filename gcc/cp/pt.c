@@ -2203,6 +2203,11 @@ determine_specialization (tree template_id,
 	       specialize TMPL will produce DECL.  */
 	    continue;
 
+	  if (uses_template_parms (targs))
+	    /* We deduced something involving 'auto', which isn't a valid
+	       template argument.  */
+	    continue;
+
           /* Remove, from the set of candidates, all those functions
              whose constraints are not satisfied. */
           if (flag_concepts && !constraints_satisfied_p (fn, targs))
