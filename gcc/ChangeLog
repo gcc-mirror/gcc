@@ -1,3 +1,9 @@
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84336
+	* config/i386/sse.md (<avx512>_vpermi2var<mode>3_mask): Force
+	operands[2] into a REG before using gen_lowpart on it.
+
 2018-02-12  Jeff Law  <law@redhat.com>
 
 	PR target/83760
