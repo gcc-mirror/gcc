@@ -1,3 +1,13 @@
+2018-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84338 - wrong variadic sizeof.
+	* pt.c (argument_pack_select_arg): Like the macro, but look through
+	a pack expansion.
+	(tsubst, tsubst_copy, dependent_template_arg_p): Use it.
+	(extract_fnparm_pack): Do make_pack_expansion.
+	(extract_locals_r): Do strip a pack expansion.
+	* cp-tree.h (ARGUMENT_PACK_SELECT_ARG): Remove.
+
 2018-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84341

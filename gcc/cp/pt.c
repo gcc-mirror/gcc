@@ -3394,6 +3394,34 @@ get_template_argument_pack_elems (const_tree t)
   return ARGUMENT_PACK_ARGS (t);
 }
 
+/* In an ARGUMENT_PACK_SELECT, the actual underlying argument that the
+   ARGUMENT_PACK_SELECT represents. */
+
+static tree
+argument_pack_select_arg (tree t)
+{
+  tree args = ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (t));
+  tree arg = TREE_VEC_ELT (args, ARGUMENT_PACK_SELECT_INDEX (t));
+
+  /* If the selected argument is an expansion E, that most likely means we were
+     called from gen_elem_of_pack_expansion_instantiation during the
+     substituting of an argument pack (of which the Ith element is a pack
+     expansion, where I is ARGUMENT_PACK_SELECT_INDEX) into a pack expansion.
+     In this case, the Ith element resulting from this substituting is going to
+     be a pack expansion, which pattern is the pattern of E.  Let's return the
+     pattern of E, and gen_elem_of_pack_expansion_instantiation will build the
+     resulting pack expansion from it.  */
+  if (PACK_EXPANSION_P (arg))
+    {
+      /* Make sure we aren't throwing away arg info.  */
+      gcc_assert (!PACK_EXPANSION_EXTRA_ARGS (arg));
+      arg = PACK_EXPANSION_PATTERN (arg);
+    }
+
+  return arg;
+}
+
+
 /* True iff FN is a function representing a built-in variadic parameter
    pack.  */
 
@@ -10933,7 +10961,12 @@ extract_fnparm_pack (tree tmpl_parm, tree *spec_p)
   parmvec = make_tree_vec (len);
   spec_parm = *spec_p;
   for (i = 0; i < len; i++, spec_parm = DECL_CHAIN (spec_parm))
-    TREE_VEC_ELT (parmvec, i) = spec_parm;
+    {
+      tree elt = spec_parm;
+      if (DECL_PACK_P (elt))
+	elt = make_pack_expansion (elt);
+      TREE_VEC_ELT (parmvec, i) = elt;
+    }
 
   /* Build the argument packs.  */
   SET_ARGUMENT_PACK_ARGS (argpack, parmvec);
@@ -11388,7 +11421,8 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data)
 	  /* Pull out the actual PARM_DECL for the partial instantiation.  */
 	  tree args = ARGUMENT_PACK_ARGS (spec);
 	  gcc_assert (TREE_VEC_LENGTH (args) == 1);
-	  spec = TREE_VEC_ELT (args, 0);
+	  tree arg = TREE_VEC_ELT (args, 0);
+	  spec = PACK_EXPANSION_PATTERN (arg);
 	}
       *extra = tree_cons (*tp, spec, *extra);
     }
@@ -13747,29 +13781,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  {
 	    arg = TMPL_ARG (args, level, idx);
 
+	    /* See through ARGUMENT_PACK_SELECT arguments. */
 	    if (arg && TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
-	      {
-		/* See through ARGUMENT_PACK_SELECT arguments. */
-		arg = ARGUMENT_PACK_SELECT_ARG (arg);
-		/* If the selected argument is an expansion E, that most
-		   likely means we were called from
-		   gen_elem_of_pack_expansion_instantiation during the
-		   substituting of pack an argument pack (which Ith
-		   element is a pack expansion, where I is
-		   ARGUMENT_PACK_SELECT_INDEX) into a pack expansion.
-		   In this case, the Ith element resulting from this
-		   substituting is going to be a pack expansion, which
-		   pattern is the pattern of E.  Let's return the
-		   pattern of E, and
-		   gen_elem_of_pack_expansion_instantiation will
-		   build the resulting pack expansion from it.  */
-		if (PACK_EXPANSION_P (arg))
-		  {
-		    /* Make sure we aren't throwing away arg info.  */
-		    gcc_assert (!PACK_EXPANSION_EXTRA_ARGS (arg));
-		    arg = PACK_EXPANSION_PATTERN (arg);
-		  }
-	      }
+	      arg = argument_pack_select_arg (arg);
 	  }
 
 	if (arg == error_mark_node)
@@ -14734,7 +14748,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	}
       
       if (TREE_CODE (r) == ARGUMENT_PACK_SELECT)
-	r = ARGUMENT_PACK_SELECT_ARG (r);
+	r = argument_pack_select_arg (r);
       if (!mark_used (r, complain) && !(complain & tf_error))
 	return error_mark_node;
       return r;
@@ -14866,7 +14880,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		register_local_specialization (r, t);
 	    }
 	  if (TREE_CODE (r) == ARGUMENT_PACK_SELECT)
-	    r = ARGUMENT_PACK_SELECT_ARG (r);
+	    r = argument_pack_select_arg (r);
 	}
       else
 	r = t;
@@ -24701,7 +24715,7 @@ dependent_template_arg_p (tree arg)
     return true;
 
   if (TREE_CODE (arg) == ARGUMENT_PACK_SELECT)
-    arg = ARGUMENT_PACK_SELECT_ARG (arg);
+    arg = argument_pack_select_arg (arg);
 
   if (TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
     return true;
