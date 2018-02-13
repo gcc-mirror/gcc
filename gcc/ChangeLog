@@ -1,3 +1,13 @@
+2018-02-13  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78.c (add_vector_labels): New function.
+	* config/rl78/rl78.c (rl78_handle_vector_attribute): New function.
+	* config/rl78/rl78.c (rl78_start_function): Call add_vector_labels.
+	* config/rl78/rl78.c (rl78_handle_func_attribute): Removed the assert 
+	which checks that no arguments are passed.
+	* config/rl78/rl78.c (rl78_attribute_table): Add "vector" attribute.
+	* doc/extend.texi: Documentation for the new attribute.
+
 2018-02-13  Andreas Schwab  <schwab@suse.de>
 
 	* config/riscv/linux.h (CPP_SPEC): Define.
