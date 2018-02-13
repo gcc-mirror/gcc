@@ -1,5 +1,14 @@
 2018-02-13  Jason Merrill  <jason@redhat.com>
 
+	Fix more variadic capture issues.
+	* pt.c (find_parameter_packs_r): Also look at explicit captures.
+	(check_for_bare_parameter_packs): Check current_class_type for
+	lambda context.
+	(extract_locals_r): Handle seeing a full instantiation of a pack.
+	(tsubst_pack_expansion): Likewise.  Force lambda capture.
+	* parser.c (cp_parser_lambda_introducer): Don't
+	check_for_bare_parameter_packs.
+
 	PR c++/84338 - wrong variadic sizeof.
 	* pt.c (argument_pack_select_arg): Like the macro, but look through
 	a pack expansion.

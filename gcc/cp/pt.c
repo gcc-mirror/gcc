@@ -3587,7 +3587,6 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
         }
       break;
 
-      /* Look through a lambda capture proxy to the field pack.  */
     case VAR_DECL:
       if (DECL_PACK_P (t))
         {
@@ -3707,6 +3706,12 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 
     case LAMBDA_EXPR:
       {
+	/* Look at explicit captures.  */
+	for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (t);
+	     cap; cap = TREE_CHAIN (cap))
+	  cp_walk_tree (&TREE_VALUE (cap), &find_parameter_packs_r, ppd,
+			ppd->visited);
+	/* Since we defer implicit capture, look in the body as well.  */
 	tree fn = lambda_function (t);
 	cp_walk_tree (&DECL_SAVED_TREE (fn), &find_parameter_packs_r, ppd,
 		      ppd->visited);
@@ -3907,7 +3912,7 @@ check_for_bare_parameter_packs (tree t)
     return false;
 
   /* A lambda might use a parameter pack from the containing context.  */
-  if (current_function_decl && LAMBDA_FUNCTION_P (current_function_decl))
+  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
     return false;
 
   if (TREE_CODE (t) == TYPE_DECL)
@@ -11410,30 +11415,72 @@ tsubst_binary_right_fold (tree t, tree args, tsubst_flags_t complain,
 /* Walk through the pattern of a pack expansion, adding everything in
    local_specializations to a list.  */
 
-static tree
-extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data)
+struct el_data
 {
-  tree *extra = reinterpret_cast<tree*>(data);
+  tree extra;
+  tsubst_flags_t complain;
+};
+static tree
+extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
+{
+  el_data &data = *reinterpret_cast<el_data*>(data_);
+  tree *extra = &data.extra;
+  tsubst_flags_t complain = data.complain;
   if (tree spec = retrieve_local_specialization (*tp))
     {
       if (TREE_CODE (spec) == NONTYPE_ARGUMENT_PACK)
 	{
-	  /* Pull out the actual PARM_DECL for the partial instantiation.  */
+	  /* Maybe pull out the PARM_DECL for a partial instantiation.  */
 	  tree args = ARGUMENT_PACK_ARGS (spec);
-	  gcc_assert (TREE_VEC_LENGTH (args) == 1);
-	  tree arg = TREE_VEC_ELT (args, 0);
-	  spec = PACK_EXPANSION_PATTERN (arg);
+	  if (TREE_VEC_LENGTH (args) == 1)
+	    {
+	      tree elt = TREE_VEC_ELT (args, 0);
+	      if (PACK_EXPANSION_P (elt))
+		elt = PACK_EXPANSION_PATTERN (elt);
+	      if (DECL_PACK_P (elt))
+		spec = elt;
+	    }
+	  if (TREE_CODE (spec) == NONTYPE_ARGUMENT_PACK)
+	    {
+	      /* Handle lambda capture here, since we aren't doing any
+		 substitution now, and so tsubst_copy won't call
+		 process_outer_var_ref.  */
+	      tree args = ARGUMENT_PACK_ARGS (spec);
+	      int len = TREE_VEC_LENGTH (args);
+	      for (int i = 0; i < len; ++i)
+		{
+		  tree arg = TREE_VEC_ELT (args, i);
+		  tree carg = arg;
+		  if (outer_automatic_var_p (arg))
+		    carg = process_outer_var_ref (arg, complain);
+		  if (carg != arg)
+		    {
+		      /* Make a new NONTYPE_ARGUMENT_PACK of the capture
+			 proxies.  */
+		      if (i == 0)
+			{
+			  spec = copy_node (spec);
+			  args = copy_node (args);
+			  SET_ARGUMENT_PACK_ARGS (spec, args);
+			  register_local_specialization (spec, *tp);
+			}
+		      TREE_VEC_ELT (args, i) = carg;
+		    }
+		}
+	    }
 	}
+      if (outer_automatic_var_p (spec))
+	spec = process_outer_var_ref (spec, complain);
       *extra = tree_cons (*tp, spec, *extra);
     }
   return NULL_TREE;
 }
 static tree
-extract_local_specs (tree pattern)
+extract_local_specs (tree pattern, tsubst_flags_t complain)
 {
-  tree extra = NULL_TREE;
-  cp_walk_tree_without_duplicates (&pattern, extract_locals_r, &extra);
-  return extra;
+  el_data data = { NULL_TREE, complain };
+  cp_walk_tree_without_duplicates (&pattern, extract_locals_r, &data);
+  return data.extra;
 }
 
 /* Substitute ARGS into T, which is an pack expansion
@@ -11468,8 +11515,10 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	     extract_local_specs; map from the general template to our local
 	     context.  */
 	  tree gen = TREE_PURPOSE (elt);
-	  tree partial = TREE_VALUE (elt);
-	  tree inst = retrieve_local_specialization (partial);
+	  tree inst = TREE_VALUE (elt);
+	  if (DECL_PACK_P (inst))
+	    inst = retrieve_local_specialization (inst);
+	  /* else inst is already a full instantiation of the pack.  */
 	  register_local_specialization (inst, gen);
 	}
       gcc_assert (!TREE_PURPOSE (extra));
@@ -11651,7 +11700,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       t = make_pack_expansion (pattern, complain);
       tree extra = args;
       if (local_specializations)
-	if (tree locals = extract_local_specs (pattern))
+	if (tree locals = extract_local_specs (pattern, complain))
 	  extra = tree_cons (NULL_TREE, extra, locals);
       PACK_EXPANSION_EXTRA_ARGS (t) = extra;
       return t;
