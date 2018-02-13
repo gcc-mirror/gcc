@@ -1,5 +1,8 @@
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/82210
+	* gcc.c-torture/execute/pr82210.c: New test.
+
 	PR middle-end/84309
 	* gcc.dg/pr84309-2.c: New test.
 
