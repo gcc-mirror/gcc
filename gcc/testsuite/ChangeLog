@@ -1,5 +1,10 @@
 2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
 
+	PR target/84370
+	* gcc.target/powerpc/builtins-3-p9-runnable.c: Remove deprecated option.
+
+2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
+
 	PR target/84365
 	* gcc.target/powerpc/altivec-7-le.c: Also match lxv when compiling
 	with -mcpu=power9.
