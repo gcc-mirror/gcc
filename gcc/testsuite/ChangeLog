@@ -1,3 +1,9 @@
+2018-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84333
+	* g++.dg/template/sizeof16.C: New.
+	* g++.dg/template/sizeof17.C: Likewise.
+
 2018-02-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/84313

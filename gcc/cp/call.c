@@ -4805,7 +4805,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       if (lvalue_p (arg1))
 	arg2 = arg1 = cp_stabilize_reference (arg1);
       else
-	arg2 = arg1 = save_expr (arg1);
+	arg2 = arg1 = cp_save_expr (arg1);
     }
 
   /* If something has already gone wrong, just pass that fact up the
