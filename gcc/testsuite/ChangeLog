@@ -1,3 +1,8 @@
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84364
+	* g++.dg/warn/effc4.C: New test.
+
 2018-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84333

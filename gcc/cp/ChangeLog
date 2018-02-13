@@ -1,3 +1,10 @@
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84364
+	* typeck.c (check_return_expr): Don't emit -Weffc++ warning
+	about return other than *this in assignment operators if
+	retval is type dependent expression.
+
 2018-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84333
