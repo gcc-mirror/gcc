@@ -1,3 +1,38 @@
+2018-02-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84273
+	* resolve.c (resolve_component): Fix checks of passed argument in
+	procedure-pointer components.
+
+2018-02-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35299
+	* resolve.c (resolve_formal_arglist): Update error message.
+
+2018-02-11  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.texi: Fix typos in documentation of caf_register ().
+	* trans-array.c (structure_alloc_comps): Only register a component of
+	a derived typed corray, not of an ultimate component coarray.
+
+2018-02-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54223
+	PR fortran/84276
+	* interface.c (compare_actual_formal): Add in_statement_function
+	bool parameter.  Skip check of INTENT attribute for statement
+	functions.  Arguments to a statement function cannot be optional,
+	issue error for missing argument.
+	(gfc_procedure_use, gfc_ppc_use, gfc_arglist_matches_symbol): Use
+	 in_statement_function.
+
+2018-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84074
+	* trans-expr.c (gfc_conv_derived_to_class): Set the use_offset
+	flag. If the is a vector subscript or the expression is not a
+	variable, make the descriptor one-based.
+
 2018-02-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84141

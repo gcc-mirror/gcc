@@ -4453,8 +4453,8 @@ is not used then.  On the contrary when
 @code{CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY} is specified, then the
 @var{token} needs to be registered by a previous call with regtype
 @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and either the memory specified
-in the @var{desc}'s data-ptr is registered or allocate when the data-ptr is
-NULL.
+in the @var{DESC}'s data-ptr is registered or allocate when the data-ptr is
+@code{NULL}.
 
 @item @emph{Syntax}:
 @code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
@@ -4468,24 +4468,24 @@ allocated; for lock types and event types, the number of elements.
 @item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
 @item @var{desc} @tab intent(inout) The (pseudo) array descriptor.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
-may be NULL
+may be @code{NULL}
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
+an error message; may be @code{NULL}
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
 @item @emph{NOTES}
-Nonalloatable coarrays have to be registered prior use from remote images.
+Nonallocatable coarrays have to be registered prior use from remote images.
 In order to guarantee this, they have to be registered before the main
 program. This can be achieved by creating constructor functions. That is what
-GCC does such that also nonallocatable coarrays the memory is allocated and no
-static memory is used.  The token permits to identify the coarray; to the
+GCC does such that also for nonallocatable coarrays the memory is allocated and
+no static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
 complicated struct.  The library may also store the array descriptor
 @var{DESC} when its rank is non-zero.
 
-For lock types, the value shall only used for checking the allocation
+For lock types, the value shall only be used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
 image; in the locking statement, the processor shall always pass an
 image index of one for critical-block lock variables

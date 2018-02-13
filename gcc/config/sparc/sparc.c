@@ -6422,7 +6422,6 @@ output_return (rtx_insn *insn)
 	{
 	  rtx_insn *delay;
 	  rtx pat;
-	  int seen;
 
 	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
@@ -6442,7 +6441,7 @@ output_return (rtx_insn *insn)
 		 Make sure to output its source location first.  */
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
-	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
 	      INSN_LOCATION (delay) = UNKNOWN_LOCATION;
 
 	      output_restore (pat);
@@ -6503,7 +6502,6 @@ output_sibcall (rtx_insn *insn, rtx call_operand)
 	{
 	  rtx_insn *delay;
 	  rtx pat;
-	  int seen;
 
 	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
@@ -6514,7 +6512,7 @@ output_sibcall (rtx_insn *insn, rtx call_operand)
 	     Make sure to output its source location first.  */
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
-	  final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	  final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
 	  INSN_LOCATION (delay) = UNKNOWN_LOCATION;
 
 	  output_restore (pat);

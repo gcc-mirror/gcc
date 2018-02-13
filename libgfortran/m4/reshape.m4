@@ -29,7 +29,7 @@ include(iparm.m4)dnl
 
 `#if defined (HAVE_'rtype_name`)
 
-typedef GFC_ARRAY_DESCRIPTOR(1, 'index_type`) 'shape_type`;'
+typedef GFC_FULL_ARRAY_DESCRIPTOR(1, 'index_type`) 'shape_type`;'
 
 dnl For integer routines, only the kind (ie size) is used to name the
 dnl function.  The same function will be used for integer and logical

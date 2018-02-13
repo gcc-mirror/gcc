@@ -10131,13 +10131,14 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
-The default value is 40.
+The default value is 30.
 
 @item inline-min-speedup
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
+The default value is 15.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this

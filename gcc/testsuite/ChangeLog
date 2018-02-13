@@ -1,3 +1,120 @@
+2018-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84341
+	* c-c++-common/gomp/pr84341.c: New test.
+
+2018-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/68746
+	* gfortran.dg/read_dir.f90: Re-add dg-do run.
+
+2018-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/68746
+	* gfortran.dg/read_dir.f90: Remove xfails. Also allow iostat
+	of zero for read.
+
+2018-02-12  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/reg-args-size.c: New test.
+
+2018-02-12  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-4-runnable.c (main): Move int128 and
+	uint128 tests to new testfile.
+	* gcc.target/powerpc/builtins-4-int128-runnable.c: New testfile for
+	int128 and uint128 tests.
+	* gcc.target/powerpc/powerpc.exp: Add builtins-4-int128-runnable.c to
+	list of torture tests.
+
+2018-02-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84273
+	* gfortran.dg/proc_ptr_47.f90: Fix invalid test case.
+	* gfortran.dg/proc_ptr_comp_pass_4.f90: Fix and extend test case.
+
+2018-02-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/82641
+	* gcc.target/arm/pragma_arch_switch_2.c: Use armv5te.
+
+2018-02-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR sanitizer/84307
+	* gcc.dg/asan/pr84307.c: New test.
+
+2018-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/parse/pr84263.C: New.
+
+2018-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79626
+	* g++.dg/template/crash129.C: New.
+
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
+	PR target/83828
+	* gcc.target/i386/avx512bitalg-vpopcntb-1.c: Fix test.
+	* gcc.target/i386/avx512bitalg-vpopcntw-1.c: Ditto.
+	* gcc.target/i386/avx512bitalg-vpshufbitqmb-1.c: Ditto.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd-1.c: Ditto.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq-1.c: Ditto.
+
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512f-vscalefsd-1.c (_mm_mask_scalef_round_sd,
+	_mm_maskz_scalef_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vscalefsd-2.c (_mm_scalef_round_sd,
+	(_mm_mask_scalef_round_sd, _mm_maskz_scalef_round_sd): Test new
+	intrinsics.
+	* gcc.target/i386/avx512f-vscalefss-1.c (_mm_mask_scalef_round_ss,
+	_mm_maskz_scalef_round_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vscalefss-2.c (_mm_scalef_round_ss,
+	_mm_mask_scalef_round_ss, _mm_maskz_scalef_round_ss): Test new
+	intrinsics.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_scalefsd_round,
+	__builtin_ia32_scalefss_round): Remove builtin.
+	(__builtin_ia32_scalefsd_mask_round,
+	__builtin_ia32_scalefss_mask_round): Test new builtin.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512f-vsqrtsd-1.c (_mm_mask_sqrt_round_sd)
+	(_mm_maskz_sqrt_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vsqrtsd-2.c (_mm_sqrt_round_sd)
+	(_mm_mask_sqrt_round_sd, _mm_maskz_sqrt_round_sd): Test new intrinsics.
+	* gcc.target/i386/avx512f-vsqrtss-1.c (_mm_mask_sqrt_round_ss)
+	(_mm_maskz_sqrt_round_ss): Test new intrinsics.
+	* gcc.target/i386/avx512f-vsqrtss-2.c (_mm_sqrt_round_ss)
+	(_mm_mask_sqrt_round_ss,      _mm_maskz_sqrt_round_ss): Test new
+	intrinsics.
+	* gcc.target/i386/avx-1.c (__builtin_ia32_sqrtsd_round)
+	(__builtin_ia32_sqrtss_round): Remove builtins.
+	(__builtin_ia32_sqrtsd_mask_round)
+	(__builtin_ia32_sqrtss_mask_round): Test new builtins.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2018-02-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/35299
+	* gfortran.dg/statement_function_3.f: New test.
+
+2018-02-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54223
+	PR fortran/84276
+	* gfortran.dg/statement_function_1.f90: New test.
+	* gfortran.dg/statement_function_2.f90: New test.
+
+2018-02-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84074
+	* gfortran.dg/type_to_class_5.f03: New test.
+
 2018-02-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/56691
@@ -12,6 +129,10 @@
 
 	PR sanitizer/83987
 	* g++.dg/ubsan/pr83987-2.C: New test.
+	
+2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* gcc.target/rx/movsicc.c: New test.
 
 2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -876,6 +997,10 @@
 
 	PR c++/83924
 	* g++.dg/warn/Wduplicated-branches5.C: New.
+
+2018-01-26  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* gcc.target/rl78/test_addsi3_internal.c: New test.
 
 2018-01-26  Segher Boessenkool  <segher@kernel.crashing.org>
 

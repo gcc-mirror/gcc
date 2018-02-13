@@ -7762,33 +7762,29 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
       go_unreachable();
 
     case Named_object::NAMED_OBJECT_FUNC:
-      if (new_object->is_function_declaration())
-	{
-	  if (!new_object->func_declaration_value()->asm_name().empty())
-	    go_error_at(Linemap::unknown_location(),
-			("sorry, not implemented: "
-			 "__asm__ for function definitions"));
-	  Function_type* old_type = old_object->func_value()->type();
-	  Function_type* new_type =
-	    new_object->func_declaration_value()->type();
-	  if (old_type->is_valid_redeclaration(new_type, &reason))
-	    return old_object;
-	}
       break;
 
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
       {
-	if (new_object->is_function())
+	// We declare the hash and equality functions before defining
+	// them, because we sometimes see that we need the declaration
+	// while we are in the middle of a different function.  We
+	// declare the main function before the user defines it, to
+	// give better error messages.
+	if (new_object->is_function()
+	    && ((Linemap::is_predeclared_location(old_object->location())
+		 && Linemap::is_predeclared_location(new_object->location()))
+		|| (Gogo::unpack_hidden_name(old_object->name()) == "main"
+		    && Linemap::is_unknown_location(old_object->location()))))
 	  {
             Function_type* old_type =
                 old_object->func_declaration_value()->type();
 	    Function_type* new_type = new_object->func_value()->type();
 	    if (old_type->is_valid_redeclaration(new_type, &reason))
 	      {
-		if (!old_object->func_declaration_value()->asm_name().empty())
-		  go_error_at(Linemap::unknown_location(),
-			      ("sorry, not implemented: "
-			       "__asm__ for function definitions"));
+		Function_declaration* fd =
+		  old_object->func_declaration_value();
+		go_assert(fd->asm_name().empty());
 		old_object->set_function_value(new_object->func_value());
 		this->named_objects_.push_back(old_object);
 		return old_object;
@@ -7810,8 +7806,10 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
   old_object->set_is_redefinition();
   new_object->set_is_redefinition();
 
-  go_inform(old_object->location(), "previous definition of %qs was here",
-            n.c_str());
+  if (!Linemap::is_unknown_location(old_object->location())
+      && !Linemap::is_predeclared_location(old_object->location()))
+    go_inform(old_object->location(), "previous definition of %qs was here",
+	      n.c_str());
 
   return old_object;
 }

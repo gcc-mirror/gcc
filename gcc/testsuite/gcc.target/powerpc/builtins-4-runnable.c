@@ -27,9 +27,6 @@ int main() {
 
   float data_f[100];
   double data_d[100];
-  __uint128_t data_u128[100];
-  __int128_t data_128[100];
-
   signed long long disp;
 
   vector signed char vec_c_expected1, vec_c_expected2, vec_c_result1, vec_c_result2;
@@ -47,8 +44,6 @@ int main() {
     vec_sll_result1, vec_sll_result2;
   vector unsigned long long vec_ull_expected1, vec_ull_expected2,
     vec_ull_result1, vec_ull_result2;
-  vector __int128_t vec_128_expected1, vec_128_result1;
-  vector __uint128_t vec_u128_expected1, vec_u128_result1;
   vector float vec_f_expected1, vec_f_expected2, vec_f_result1, vec_f_result2;
   vector double vec_d_expected1, vec_d_expected2, vec_d_result1, vec_d_result2;
   char buf[20];
@@ -66,8 +61,6 @@ int main() {
       data_ull[i] = i+1001;
       data_f[i] = i+100000.0;
       data_d[i] = i+1000000.0;
-      data_128[i] = i + 12800000;
-      data_u128[i] = i + 12800001;
     }
 
   // vec_xl() tests
@@ -314,39 +307,6 @@ int main() {
 #ifdef DEBUG
 	printf("Error: vec_xl(), vec_d_result2[%d] = %f; vec_f_expected2[%d] = %f\n",
 	       i,  vec_d_result2[i], i, vec_d_expected2[i]);
-#else
-	abort ();
-#endif
-    }
-
-  vec_128_expected1 = (vector __int128_t){12800000};
-  vec_128_result1 = vec_xl (zero, data_128);
-
-  if (vec_128_expected1[0] != vec_128_result1[0])
-    {
-#ifdef DEBUG
-	printf("Error: vec_xl(), vec_128_result1[0] = %lld %llu; ",
-	       vec_128_result1[0] >> 64,
-	       vec_128_result1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
-	printf("vec_128_expected1[0] = %lld %llu\n",
-	       vec_128_expected1[0] >> 64,
-	       vec_128_expected1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
-#else
-	abort ();
-#endif
-    }
-
-  vec_u128_result1 = vec_xl (zero, data_u128);
-  vec_u128_expected1 = (vector __uint128_t){12800001};
-  if (vec_u128_expected1[0] != vec_u128_result1[0])
-    {
-#ifdef DEBUG
-	printf("Error: vec_xl(), vec_u128_result1[0] = %lld; ",
-	       vec_u128_result1[0] >> 64,
-	       vec_u128_result1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
-	printf("vec_u128_expected1[0] = %lld\n",
-	       vec_u128_expected1[0] >> 64,
-	       vec_u128_expected1[0] & (__int128_t)0xFFFFFFFFFFFFFFFF);
 #else
 	abort ();
 #endif
@@ -708,50 +668,6 @@ int main() {
 	       i,  vec_d_result2[i], i, vec_d_expected2[i]);
 #else
 	abort ();
-#endif
-    }
-
-  disp = 0;
-  vec_128_result1 = vec_xl_be (zero, data_128);
-#ifdef __BIG_ENDIAN__
-  vec_128_expected1 = (vector __int128_t){ (__int128_t)12800000 };
-#else
-  vec_128_expected1 = (vector __int128_t){ (__int128_t)12800000 };
-#endif
-
-  if (vec_128_expected1[0] != vec_128_result1[0])
-    {
-#ifdef DEBUG
-	printf("Error: vec_xl_be(), vec_128_result1[0] = %llu %llu;",
-	       vec_128_result1[0] >> 64,
-	       vec_128_result1[0] & 0xFFFFFFFFFFFFFFFF);
-	printf(" vec_128_expected1[0] = %llu %llu\n",
-	       vec_128_expected1[0] >> 64,
-	       vec_128_expected1[0] & 0xFFFFFFFFFFFFFFFF);
-#else
-      abort ();
-#endif
-    }
-
-#ifdef __BIG_ENDIAN__
-  vec_u128_expected1 = (vector __uint128_t){ (__uint128_t)12800001 };
-#else
-  vec_u128_expected1 = (vector __uint128_t){ (__uint128_t)12800001 };
-#endif
-
-  vec_u128_result1 = vec_xl_be (zero, data_u128);
-
-  if (vec_u128_expected1[0] != vec_u128_result1[0])
-    {
-#ifdef DEBUG
-	printf("Error: vec_xl_be(), vec_u128_result1[0] = %llu %llu;",
-	       vec_u128_result1[0] >> 64,
-	       vec_u128_result1[0] & 0xFFFFFFFFFFFFFFFF);
-	printf(" vec_u128_expected1[0] = %llu %llu\n",
-	       vec_u128_expected1[0] >> 64,
-	       vec_u128_expected1[0] & 0xFFFFFFFFFFFFFFFF);
-#else
-      abort ();
 #endif
     }
 }

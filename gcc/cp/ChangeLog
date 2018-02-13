@@ -1,3 +1,38 @@
+2018-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84341
+	* parser.c (cp_parser_binary_expression): Use build_min instead of
+	build2_loc to build the no_toplevel_fold_p toplevel binary expression.
+
+2018-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84263
+	* parser.c (cp_parser_decltype): Push and pop
+	deferring_access_checks.  Reorganize to avoid goto.
+
+2018-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR c++/84281
+	* constexpr.c (cxx_eval_vec_init_1): Use a RANGE_EXPR to compact
+	uniform constructors and delay allocating them fully.
+
+2018-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84036 - ICE with variadic capture.
+	Handle variadic capture proxies more like non-variadic.
+	* lambda.c (build_capture_proxy): Remove workaround.
+	* pt.c (find_parameter_packs_r): The proxy is a pack.
+	(instantiate_class_template_1): Remove dead lambda code.
+	(extract_fnparm_pack): Don't make_pack_expansion.
+	(extract_locals_r): Don't strip a pack expansion.
+	(tsubst_pack_expansion): Handle proxy packs.  Use
+	PACK_EXPANSION_EXTRA_ARGS less.
+	(tsubst_decl) [FIELD_DECL]: Don't register_specialization.
+	(tsubst_copy) [FIELD_DECL]: Don't retrieve*_specialization.
+	[VAR_DECL]: Handle ARGUMENT_PACK_SELECT.
+	(tsubst_expr) [DECL_EXPR]: Handle proxy packs.
+	(tsubst_copy_and_build) [VAR_DECL]: Handle proxy packs normally.
+
 2018-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83987

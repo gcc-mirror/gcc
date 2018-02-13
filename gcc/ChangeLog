@@ -1,3 +1,122 @@
+2018-02-12  Jeff Law  <law@redhat.com>
+
+	* cse.c (try_back_substitute_reg): Move any REG_ARGS_SIZE note when
+	successfully back substituting a reg.
+
+2018-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84037
+	* tree-vect-slp.c (vect_analyze_slp_cost): Add visited
+	parameter, move visited init to caller.
+	(vect_slp_analyze_operations): Separate cost from validity
+	check, initialize visited once for all instances.
+	(vect_schedule_slp): Analyze map to CSE vectorized nodes once
+	for all instances.
+	* tree-vect-stmts.c (vect_model_simple_cost): Make early
+	out an assert.
+	(vect_model_promotion_demotion_cost): Likewise.
+	(vectorizable_bswap): Guard cost modeling with !slp_node
+	instead of !PURE_SLP_STMT to avoid double-counting on hybrid
+	SLP stmts.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+
+2018-02-12  Paolo Bonzini <bonzini@gnu.org>
+
+	PR sanitizer/84307
+	* internal-fn.def (ASAN_CHECK): Fix fnspec to account for return value.
+	(ASAN_MARK): Fix fnspec to account for return value, change pointer
+	argument from 'R' to 'W' so that the pointed-to datum is clobbered.
+
+2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/83665
+	* params.def (inline-min-speedup): Increase from 8 to 15.
+	(max-inline-insns-auto): Decrease from 40 to 30.
+	* ipa-split.c (consider_split): Add some buffer for function to
+	be considered inlining candidate.
+	* invoke.texi (max-inline-insns-auto, inline-min-speedup): UPdate
+	default values.
+
+2018-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84037
+	* tree-vect-slp.c (vect_build_slp_tree_2): Try swapping the
+	matched stmts if we cannot swap the non-matched ones.
+
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_scalef_round_sd,
+	_mm_maskz_scalef_round_sd, _mm_mask_scalef_round_ss,
+	_mm_maskz_scalef_round_ss): New intrinsics.
+	(__builtin_ia32_scalefsd_round, __builtin_ia32_scalefss_round): Fix.
+	* config/i386/i386-builtin.def (__builtin_ia32_scalefsd_round,
+	__builtin_ia32_scalefss_round): Remove.
+	(__builtin_ia32_scalefsd_mask_round,
+	__builtin_ia32_scalefss_mask_round): New intrinsics.
+	* config/i386/sse.md (vmscalef<mode><round_name>): Renamed to ...
+	(vmscalef<mode><mask_scalar_name><round_scalar_name>): ... this.
+	((match_operand:VF_128 2 "<round_nimm_predicate>"
+	"<round_constraint>")): Changed to ...
+	((match_operand:VF_128 2 "<round_scalar_nimm_predicate>"
+	"<round_scalar_constraint>")): ... this.
+	("vscalef<ssescalarmodesuffix>\t{<round_op3>%2, %1, %0|
+	%0, %1, %2<round_op3>}"): Changed to ...
+	("vscalef<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%2, %1,
+	%0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %1,
+	%2<round_scalar_mask_op3>}"): ... this.
+	* config/i386/subst.md (round_scalar_nimm_predicate): New.
+
+2018-02-12  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* config/i386/avx512fintrin.h (_mm_mask_sqrt_round_sd)
+	(_mm_maskz_sqrt_round_sd, _mm_mask_sqrt_round_ss)
+	(_mm_maskz_sqrt_round_ss): New intrinsics.
+	(__builtin_ia32_sqrtsd_round, __builtin_ia32_sqrtss_round): Remove.
+	(__builtin_ia32_sqrtsd_mask_round)
+	(__builtin_ia32_sqrtss_mask_round): New builtins.
+	* config/i386/i386-builtin.def (__builtin_ia32_sqrtsd_round)
+	(__builtin_ia32_sqrtss_round): Remove.
+	(__builtin_ia32_sqrtsd_mask_round)
+	(__builtin_ia32_sqrtss_mask_round): New builtins.
+	* config/i386/sse.md (vmsqrt<mode>2<round_name>): Renamed to ...
+	(vmsqrt<mode>2<mask_scalar_name><round_scalar_name>): ... this.
+	((match_operand:VF_128 1 "vector_operand"
+	"xBm,<round_constraint>")): Changed to ...
+	((match_operand:VF_128 1 "vector_operand"
+	"xBm,<round_scalar_constraint>")): ... this.
+	(vsqrt<ssescalarmodesuffix>\t{<round_op3>%1, %2, %0|
+	%0, %2, %<iptr>1<round_op3>}): Changed to ...
+	(vsqrt<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%1, %2,
+	%0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2,
+	%<iptr>1<round_scalar_mask_op3>}): ... this.
+	((set_attr "prefix" "<round_prefix>")): Changed to ...
+	((set_attr "prefix" "<round_scalar_prefix>")): ... this.
+
+2018-02-11  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	PR target/84266
+	* config/rs6000/mmintrin.h (_mm_cmpeq_pi32 [_ARCH_PWR9]):
+	Cast vec_cmpeq result to correct type.
+	* config/rs6000/mmintrin.h (_mm_cmpgt_pi32 [_ARCH_PWR9]):
+	Cast vec_cmpgt result to correct type.
+
+2018-02-11  Alexandre Oliva <aoliva@redhat.com>
+
+	* final.c (final_scan_insn_1): Renamed from...
+	(final_scan_insn): ... this.  New wrapper, to recover
+	seen from the outermost call in recursive ones.
+	* config/sparc/sparc.c (output_return): Drop seen from call.
+	(output_sibcall): Likewise.
+	* config/visium/visium.c (output_branch): Likewise.
+
 2018-02-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (hppa_profile_hook): Mark SYMBOL_REF for _mcount as
@@ -47,8 +166,7 @@
 
 2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rx.md: updated "movsicc" expand to be matched by GCC
-	* testsuite/gcc.target/rx/movsicc.c: new test case
+	* config/rx/rx.md (movsicc): Update expander to be matched by GCC.
 
 2018-02-09  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -61,10 +179,10 @@
 
 2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rx/constraints.md: added new constraint CALL_OP_SYMBOL_REF 
-	to allow or block "symbol_ref" depending on value of TARGET_JSR
-	* config/rx/rx.md: use CALL_OP_SYMBOL_REF in call_internal and 
-	call_value_internal insns
+	* config/rx/constraints.md (CALL_OP_SYMBOL_REF): Added new constraint
+	to allow or block "symbol_ref" depending on the value of TARGET_JSR.
+	* config/rx/rx.md (call_internal): Use CALL_OP_SYMBOL_REF.
+	* config/rx/rx.md (call_value_internal): Use CALL_OP_SYMBOL_REF.
 
 2018-02-09  Pierre-Marie de Rodat  <derodat@adacore.com>
 
@@ -1260,9 +1378,8 @@
 
 2018-01-26  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.c: if operand 2 is const avoid addition with 0
-	and use incw and decw where possible
-	* testsuite/gcc.target/rl78/test_addsi3_internal.c: new file
+	* config/rl78/rl78.c (rl78_addsi3_internal): If operand 2 is const 
+	avoid addition with 0 and use incw and decw where possible.
 
 2018-01-26  Richard Biener  <rguenther@suse.de>
 
@@ -1593,15 +1710,15 @@
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78-expand.md: New define_expand "bswaphi2"
-	* config/rl78/rl78-virt.md: New define_insn "*bswaphi2_virt"
-	* config/rl78/rl78-real.md: New define_insn "*bswaphi2_real"
+	* config/rl78/rl78-expand.md (bswaphi2): New define_expand.
+	* config/rl78/rl78-virt.md (*bswaphi2_virt): New define_insn.
+	* config/rl78/rl78-real.md (*bswaphi2_real): New define_insn.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78-protos.h: New function declaration rl78_split_movdi
-	* config/rl78/rl78.md: New define_expand "movdi"
-	* config/rl78/rl78.c: New function definition rl78_split_movdi
+	* config/rl78/rl78-protos.h (rl78_split_movdi): New function declaration.
+	* config/rl78/rl78.md (movdi): New define_expand.
+	* config/rl78/rl78.c (rl78_split_movdi): New function.
 
 2018-01-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
@@ -1624,19 +1741,19 @@
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "anddi3".
+	* config/rl78/rl78.md (anddi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "umindi3".
+	* config/rl78/rl78.md (umindi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "smindi3".
+	* config/rl78/rl78.md (smindi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "smaxdi3".
+	* config/rl78/rl78.md (smaxdi3): New define_expand.
 
 2018-01-22 Carl Love <cel@us.ibm.com>
 
@@ -1656,12 +1773,12 @@
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.md: New define_expand "umaxdi3".
+	* config/rl78/rl78.md (umaxdi3): New define_expand.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
 
-	* config/rl78/rl78.c (rl78_note_reg_set): fixed dead reg check
-	for non-QImode registers
+	* config/rl78/rl78.c (rl78_note_reg_set): Fixed dead reg check
+	for non-QImode registers.
 
 2018-01-22  Richard Biener  <rguenther@suse.de>
 

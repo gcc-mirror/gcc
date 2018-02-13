@@ -2835,7 +2835,8 @@ lookup_arg_fuzzy (const char *arg, gfc_formal_arglist *arguments)
 
 static bool
 compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
-	 	       int ranks_must_agree, int is_elemental, locus *where)
+	 	       int ranks_must_agree, int is_elemental,
+		       bool in_statement_function, locus *where)
 {
   gfc_actual_arglist **new_arg, *a, *actual;
   gfc_formal_arglist *f;
@@ -3204,8 +3205,9 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	}
 
       /* Check intent = OUT/INOUT for definable actual argument.  */
-      if ((f->sym->attr.intent == INTENT_OUT
-	  || f->sym->attr.intent == INTENT_INOUT))
+      if (!in_statement_function
+	  && (f->sym->attr.intent == INTENT_OUT
+	      || f->sym->attr.intent == INTENT_INOUT))
 	{
 	  const char* context = (where
 				 ? _("actual argument to INTENT = OUT/INOUT")
@@ -3310,7 +3312,8 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 		       "at %L", where);
 	  return false;
 	}
-      if (!f->sym->attr.optional)
+      if (!f->sym->attr.optional
+	  || (in_statement_function && f->sym->attr.optional))
 	{
 	  if (where)
 	    gfc_error ("Missing actual argument for argument %qs at %L",
@@ -3598,6 +3601,7 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 bool
 gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 {
+  gfc_actual_arglist *a;
   gfc_formal_arglist *dummy_args;
 
   /* Warn about calls with an implicit interface.  Special case
@@ -3631,8 +3635,6 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
   if (sym->attr.if_source == IFSRC_UNKNOWN)
     {
-      gfc_actual_arglist *a;
-
       if (sym->attr.pointer)
 	{
 	  gfc_error ("The pointer object %qs at %L must have an explicit "
@@ -3724,9 +3726,12 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 
   dummy_args = gfc_sym_get_dummy_args (sym);
 
-  if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental, where))
+  /* For a statement function, check that types and type parameters of actual
+     arguments and dummy arguments match.  */
+  if (!compare_actual_formal (ap, dummy_args, 0, sym->attr.elemental,
+			      sym->attr.proc == PROC_ST_FUNCTION, where))
     return false;
-
+ 
   if (!check_intents (dummy_args, *ap))
     return false;
 
@@ -3773,7 +3778,7 @@ gfc_ppc_use (gfc_component *comp, gfc_actual_arglist **ap, locus *where)
     }
 
   if (!compare_actual_formal (ap, comp->ts.interface->formal, 0,
-			      comp->attr.elemental, where))
+			      comp->attr.elemental, false, where))
     return;
 
   check_intents (comp->ts.interface->formal, *ap);
@@ -3798,7 +3803,7 @@ gfc_arglist_matches_symbol (gfc_actual_arglist** args, gfc_symbol* sym)
   dummy_args = gfc_sym_get_dummy_args (sym);
 
   r = !sym->attr.elemental;
-  if (compare_actual_formal (args, dummy_args, r, !r, NULL))
+  if (compare_actual_formal (args, dummy_args, r, !r, false, NULL))
     {
       check_intents (dummy_args, *args);
       if (warn_aliasing)

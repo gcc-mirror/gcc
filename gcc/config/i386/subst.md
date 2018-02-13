@@ -271,6 +271,7 @@
 (define_subst_attr "round_scalar_mask_op3" "round_scalar" "" "<round_scalar_mask_operand3>")
 (define_subst_attr "round_scalar_constraint" "round_scalar" "vm" "v")
 (define_subst_attr "round_scalar_prefix" "round_scalar" "vex" "evex")
+(define_subst_attr "round_scalar_nimm_predicate" "round_scalar" "vector_operand" "register_operand")
 
 (define_subst "round_scalar"
   [(set (match_operand:SUBST_V 0)

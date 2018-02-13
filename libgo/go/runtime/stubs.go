@@ -5,7 +5,6 @@
 package runtime
 
 import (
-	"runtime/internal/atomic"
 	"runtime/internal/sys"
 	"unsafe"
 )
@@ -307,19 +306,6 @@ func setSupportAES(v bool) {
 	support_aes = v
 }
 
-// Here for gccgo until we port atomic_pointer.go and mgc.go.
-//go:nosplit
-func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
-	if !atomic.Casp1((*unsafe.Pointer)(noescape(unsafe.Pointer(ptr))), noescape(old), new) {
-		return false
-	}
-	return true
-}
-
-// Here for gccgo until we port lock_*.go.
-func lock(l *mutex)
-func unlock(l *mutex)
-
 // Here for gccgo.
 func errno() int
 
@@ -327,30 +313,11 @@ func errno() int
 func entersyscall(int32)
 func entersyscallblock(int32)
 
-// Here for gccgo until we port mgc.go.
-func GC()
-
 // For gccgo to call from C code, so that the C code and the Go code
 // can share the memstats variable for now.
 //go:linkname getMstats runtime.getMstats
 func getMstats() *mstats {
 	return &memstats
-}
-
-// Temporary for gccgo until we port mem_GOOS.go.
-func sysAlloc(n uintptr, sysStat *uint64) unsafe.Pointer
-func sysFree(v unsafe.Pointer, n uintptr, sysStat *uint64)
-
-// Temporary for gccgo until we port malloc.go
-func persistentalloc(size, align uintptr, sysStat *uint64) unsafe.Pointer
-
-// Temporary for gccgo until we port mheap.go
-func setprofilebucket(p unsafe.Pointer, b *bucket)
-
-// Temporary for gccgo until we port atomic_pointer.go.
-//go:nosplit
-func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
-	atomic.StorepNoWB(noescape(ptr), new)
 }
 
 // Get signal trampoline, written in C.

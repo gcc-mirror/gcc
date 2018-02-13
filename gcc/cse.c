@@ -4256,6 +4256,15 @@ try_back_substitute_reg (rtx set, rtx_insn *insn)
 		  && (reg_mentioned_p (dest, XEXP (note, 0))
 		      || rtx_equal_p (src, XEXP (note, 0))))
 		remove_note (insn, note);
+
+	      /* If INSN has a REG_ARGS_SIZE note, move it to PREV.  */
+	      note = find_reg_note (insn, REG_ARGS_SIZE, NULL_RTX);
+	      if (note != 0)
+		{
+		  remove_note (insn, note);
+		  gcc_assert (!find_reg_note (prev, REG_ARGS_SIZE, NULL_RTX));
+		  set_unique_reg_note (prev, REG_ARGS_SIZE, XEXP (note, 0));
+		}
 	    }
 	}
     }

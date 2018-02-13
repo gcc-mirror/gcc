@@ -26,8 +26,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 
-typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
-typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(1, index_type) shape_type;
+typedef GFC_FULL_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
 
 static void
 reshape_internal (parray *ret, parray *source, shape_type *shape,
