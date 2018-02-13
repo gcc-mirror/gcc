@@ -1,3 +1,12 @@
+2018-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/84169
+	* combine.c (try_combine): New variable split_i2i3.  Set it to true if
+	we generated a parallel as new i3 and we split that to new i2 and i3
+	instructions.  Handle split_i2i3 similar to swap_i2i3: scan the
+	LOG_LINKs of i3 to see which of those need to link to i2 now.  Link
+	those to i2, not i1.  Partially rewrite this scan code.
+
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82210
