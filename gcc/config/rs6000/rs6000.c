@@ -8220,6 +8220,12 @@ mem_operand_gpr (rtx op, machine_mode mode)
   int extra;
   rtx addr = XEXP (op, 0);
 
+  /* Don't allow altivec type addresses like (mem (and (plus ...))).
+     See PR target/84279.  */
+
+  if (GET_CODE (addr) == AND)
+    return false;
+
   op = address_offset (addr);
   if (op == NULL_RTX)
     return true;
