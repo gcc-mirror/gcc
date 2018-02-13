@@ -2880,6 +2880,14 @@ g
 Common Driver RejectNegative JoinedOrMissing
 Generate debug information in default format.
 
+gas-loc-support
+Common Driver Var(dwarf2out_as_loc_support) Init(2)
+Assume assembler support for (DWARF2+) .loc directives
+
+gas-locview-support
+Common Driver Var(dwarf2out_as_locview_support) Init(2)
+Assume assembler support for view in (DWARF2+) .loc directives
+
 gcoff
 Common Driver Ignore Warn(switch %qs no longer supported)
 Does nothing.  Preserved for backward compatibility.
@@ -2911,6 +2919,14 @@ Generate debug information in DWARF v2 (or later) format.
 ggdb
 Common Driver JoinedOrMissing
 Generate debug information in default extended format.
+
+ginline-points
+Common Driver Var(debug_inline_points) Init(2)
+Generate extended entry point information for inlined functions
+
+ginternal-reset-location-views
+Common Driver Var(debug_internal_reset_location_views) Init(2)
+Compute locview reset points based on insn length estimates
 
 gno-
 RejectNegative Joined Undocumented

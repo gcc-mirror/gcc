@@ -236,6 +236,12 @@ hook_int_rtx_1 (rtx)
 }
 
 int
+hook_int_rtx_insn_0 (rtx_insn *)
+{
+  return 0;
+}
+
+int
 hook_int_rtx_insn_unreachable (rtx_insn *)
 {
   gcc_unreachable ();

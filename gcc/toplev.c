@@ -1558,13 +1558,23 @@ process_options (void)
 	     || write_symbols == VMS_AND_DWARF2_DEBUG)
 	 && !(flag_selective_scheduling || flag_selective_scheduling2));
 
+  if (dwarf2out_as_loc_support == AUTODETECT_VALUE)
+    dwarf2out_as_loc_support
+      = dwarf2out_default_as_loc_support ();
+  if (dwarf2out_as_locview_support == AUTODETECT_VALUE)
+    dwarf2out_as_locview_support
+      = dwarf2out_default_as_locview_support ();
+
   if (debug_variable_location_views == AUTODETECT_VALUE)
     {
-      debug_variable_location_views = flag_var_tracking
-	&& debug_info_level >= DINFO_LEVEL_NORMAL
-	&& (write_symbols == DWARF2_DEBUG
-	    || write_symbols == VMS_AND_DWARF2_DEBUG)
-	&& !dwarf_strict;
+      debug_variable_location_views
+	= (flag_var_tracking
+	   && debug_info_level >= DINFO_LEVEL_NORMAL
+	   && (write_symbols == DWARF2_DEBUG
+	       || write_symbols == VMS_AND_DWARF2_DEBUG)
+	   && !dwarf_strict
+	   && dwarf2out_as_loc_support
+	   && dwarf2out_as_locview_support);
     }
   else if (debug_variable_location_views == -1 && dwarf_version != 5)
     {
@@ -1572,6 +1582,31 @@ process_options (void)
 		  "without -gdwarf-5, -gvariable-location-views=incompat5 "
 		  "is equivalent to -gvariable-location-views");
       debug_variable_location_views = 1;
+    }
+
+  if (debug_internal_reset_location_views == 2)
+    {
+      debug_internal_reset_location_views
+	= (debug_variable_location_views
+	   && targetm.reset_location_view);
+    }
+  else if (debug_internal_reset_location_views
+	   && !debug_variable_location_views)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-ginternal-reset-location-views is forced disabled "
+		  "without -gvariable-location-views");
+      debug_internal_reset_location_views = 0;
+    }
+
+  if (debug_inline_points == AUTODETECT_VALUE)
+    debug_inline_points = debug_variable_location_views;
+  else if (debug_inline_points && !debug_nonbind_markers_p)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "-ginline-points is forced disabled without "
+		  "-gstatement-frontiers");
+      debug_inline_points = 0;
     }
 
   if (flag_tree_cselim == AUTODETECT_VALUE)

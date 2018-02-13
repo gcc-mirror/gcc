@@ -6447,6 +6447,23 @@ This will suppress generation of the normal debug frame unwind information.",
  enum unwind_info_type, (void),
  default_debug_unwind_info)
 
+DEFHOOK
+(reset_location_view, "\
+This hook, if defined, enables -ginternal-reset-location-views, and\n\
+uses its result to override cases in which the estimated min insn\n\
+length might be nonzero even when a PC advance (i.e., a view reset)\n\
+cannot be taken for granted.\n\
+\n\
+If the hook is defined, it must return a positive value to indicate\n\
+the insn definitely advances the PC, and so the view number can be\n\
+safely assumed to be reset; a negative value to mean the insn\n\
+definitely does not advance the PC, and os the view number must not\n\
+be reset; or zero to decide based on the estimated insn length.\n\
+\n\
+If insn length is to be regarded as reliable, set the hook to\n\
+@code{hook_int_rtx_insn_0}.",
+ int, (rtx_insn *), NULL)
+
 /* The code parameter should be of type enum rtx_code but this is not
    defined at this time.  */
 DEFHOOK
