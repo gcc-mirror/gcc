@@ -1380,9 +1380,15 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	      /* Set the minimum size to zero since the string in
 		 the array could have zero length.  */
 	      *minlen = ssize_int (0);
+
+	      if (TREE_CODE (TREE_OPERAND (arg, 0)) == COMPONENT_REF
+		  && type == TREE_TYPE (TREE_OPERAND (arg, 0))
+		  && array_at_struct_end_p (TREE_OPERAND (arg, 0)))
+		*flexp = true;
 	    }
 	  else if (TREE_CODE (arg) == COMPONENT_REF
-	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1))) == ARRAY_TYPE)
+		   && (TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1)))
+		       == ARRAY_TYPE))
 	    {
 	      /* Use the type of the member array to determine the upper
 		 bound on the length of the array.  This may be overly
@@ -1428,7 +1434,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		      || integer_zerop (val))
 		    return false;
 		  val = wide_int_to_tree (TREE_TYPE (val),
-					  wi::sub(wi::to_wide (val), 1));
+					  wi::sub (wi::to_wide (val), 1));
 		  /* Set the minimum size to zero since the string in
 		     the array could have zero length.  */
 		  *minlen = ssize_int (0);
