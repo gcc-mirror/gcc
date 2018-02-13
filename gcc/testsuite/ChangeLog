@@ -1,3 +1,8 @@
+2018-02-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR sanitizer/84340
+	* gcc.dg/asan/pr84307.c: Remove test.
+
 2018-02-13  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* gcc.target/rl78/test_auto_vector.c: New test.
