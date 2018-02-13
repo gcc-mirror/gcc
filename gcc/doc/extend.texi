@@ -5182,7 +5182,7 @@ that the specified function is an interrupt handler.  The compiler generates
 function entry and exit sequences suitable for use in an interrupt handler
 when this attribute is present.
 
-On RX targets, you may specify one or more vector numbers as arguments
+On RX and RL78 targets, you may specify one or more vector numbers as arguments
 to the attribute, as well as naming an alternate table name.
 Parameters are handled sequentially, so one handler can be assigned to
 multiple entries in multiple tables.  One may also pass the magic
