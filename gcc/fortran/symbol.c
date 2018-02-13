@@ -809,7 +809,9 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	    conf2 (threadprivate);
 	}
 
-      if (!attr->proc_pointer)
+      /* Procedure pointers in COMMON blocks are allowed in F03,
+       * but forbidden per F08:C5100.  */
+      if (!attr->proc_pointer || (gfc_option.allow_std & GFC_STD_F2008))
 	conf2 (in_common);
 
       conf2 (omp_declare_target_link);
