@@ -1,5 +1,15 @@
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84335
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Pass
+	OPTION_MASK_ISA_AES | OPTION_MASK_ISA_SSE2 instead of
+	OPTION_MASK_ISA_AES as first argument to def_builtin_const
+	for AES builtins.  Pass OPTION_MASK_ISA_PCLMUL | OPTION_MASK_ISA_SSE2
+	instead of OPTION_MASK_ISA_PCLMUL as first argument to
+	def_builtin_const for __builtin_ia32_pclmulqdq128 builtin.
+	* config/i386/wmmintrin.h: If __SSE2__ is not defined, enable it
+	temporarily for AES and PCLMUL builtins.
+
 	PR tree-optimization/84339
 	* gimple-fold.c (get_range_strlen): Set *FLEXP to true when handling
 	ARRAY_REF where first operand is array_at_struct_end_p COMPONENT_REF.
