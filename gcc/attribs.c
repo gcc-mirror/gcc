@@ -410,6 +410,22 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
 	  if (!lookup_attribute (excl->name, attrs[i]))
 	    continue;
 
+	  /* An exclusion may apply either to a function declaration,
+	     type declaration, or a field/variable declaration, or
+	     any subset of the three.  */
+	  if (TREE_CODE (node) == FUNCTION_DECL
+	      && !excl->function)
+	    continue;
+
+	  if (TREE_CODE (node) == TYPE_DECL
+	      && !excl->type)
+	    continue;
+
+	  if ((TREE_CODE (node) == FIELD_DECL
+	       || TREE_CODE (node) == VAR_DECL)
+	      && !excl->variable)
+	    continue;
+
 	  found = true;
 
 	  /* Print a note?  */
