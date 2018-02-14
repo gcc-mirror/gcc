@@ -1,3 +1,8 @@
+2018-02-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/84108
+	* gcc.dg/Wattributes-8.c: New test.
+
 2018-02-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/84385
