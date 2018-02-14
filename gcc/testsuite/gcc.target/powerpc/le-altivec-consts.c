@@ -1,5 +1,5 @@
-/* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
-/* { dg-do compile { target { powerpc*-*-* && { ! vmx_hw } } } } */
+/* { dg-do run { target vmx_hw } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec -O2" } */
 

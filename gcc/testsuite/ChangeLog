@@ -1,5 +1,10 @@
 2018-02-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/altivec-consts.c:  Update compile stanzas.
+	* gcc.target/powerpc/le-altivec-consts.c:  Same.
+
+2018-02-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	PR target/84220
 	* gcc.target/powerpc/pr84220-sld.c: New test.
 	* gcc.target/powerpc/pr84220-sld2.c: New test.
