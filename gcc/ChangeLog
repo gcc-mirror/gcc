@@ -1,3 +1,9 @@
+2018-02-14  Martin Jambor  <mjambor@suse.cz>
+
+        PR c++/83990
+        * ipa-prop.c (ipa_modify_call_arguments): Use location of call
+        statements, also set location of a load to a temporary.
+
 2018-02-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (hppa_profile_hook): Mark SYMBOL_REF for _mcount as
