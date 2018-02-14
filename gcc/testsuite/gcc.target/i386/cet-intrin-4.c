@@ -5,27 +5,4 @@
 /* { dg-final { scan-assembler "incssp\[dq]\[ \t]+(%|)\[re]di" { target { ! ia32 } } } } */
 
 #include <immintrin.h>
-
-unsigned int f1 ()
-{
-  unsigned int x = 0;
-  return _rdsspd (x);
-}
-
-void f3 (unsigned int _a)
-{
-  _incsspd (_a);
-}
-
-#ifdef __x86_64__
-unsigned long long f2 ()
-{
-  unsigned long long x = 0;
-  return _rdsspq (x);
-}
-
-void f4 (unsigned int _a)
-{
-  _incsspq (_a);
-}
-#endif
+#include "cet-intrin-3.c"

@@ -1,3 +1,12 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* gcc.target/i386/cet-intrin-3.c: Use new _get_ssp and
+	_inc_ssp intrinsics.
+	* gcc.target/i386/cet-intrin-4.c: Likewise.
+	* gcc.target/i386/cet-rdssp-1.c: Remove argument from
+	__builtin_ia32_rdssp[d|q].
+
 2018-02-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84357

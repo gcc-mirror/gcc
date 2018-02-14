@@ -35708,6 +35708,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case INT_FTYPE_VOID:
     case USHORT_FTYPE_VOID:
     case UINT64_FTYPE_VOID:
+    case UINT_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
       klass = load;
@@ -38497,7 +38498,7 @@ s4fma_expand:
       && fcode <= IX86_BUILTIN__BDESC_CET_NORMAL_LAST)
     {
       i = fcode - IX86_BUILTIN__BDESC_CET_NORMAL_FIRST;
-      return ix86_expand_args_builtin (bdesc_cet_rdssp + i, exp,
+      return ix86_expand_special_args_builtin (bdesc_cet_rdssp + i, exp,
 				       target);
     }
 
