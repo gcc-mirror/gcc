@@ -1,3 +1,8 @@
+2018-02-14  Carl Love  <cel@us.ibm.com>
+        * gcc.target/powerpc/builtins-4-int128-runnable.c
+	(dg-require-effective-target): Change vsx_hw to p8vector_hw.
+	(dg-options): Change -maltivec -mvsx to -mpower8-vector.
+
 2018-02-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c/84108

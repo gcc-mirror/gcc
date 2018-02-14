@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int128 } */
-/* { dg-require-effective-target vsx_hw } */
-/* { dg-options "-maltivec -mvsx" } */
+/* { dg-require-effective-target p8vector_hw } */
+/* { dg-options "-mpower8-vector" } */
 
 #include <inttypes.h>
 #include <altivec.h> // vector
