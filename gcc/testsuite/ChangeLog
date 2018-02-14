@@ -1,3 +1,12 @@
+2018-02-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/84220
+	* gcc.target/powerpc/pr84220-sld.c: New test.
+	* gcc.target/powerpc/pr84220-sld2.c: New test.
+	* gcc.target/powerpc/pr84220-sldw.c: New test.
+	* gcc.target/powerpc/pr84220-xxperm.c: New test.
+	* gcc.target/powerpc/pr84220-xxsld.c: New test.
+
 2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84239
