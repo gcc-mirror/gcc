@@ -1,3 +1,12 @@
+2018-02-14  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from GCC 7 branch
+	2018-02-14  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84390
+	* gcc.target/powerpc/vsxcopy.c: Also match lxv when compiling
+	with -mcpu=power9.
+
 2018-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/68560
