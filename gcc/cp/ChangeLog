@@ -1,3 +1,13 @@
+2018-02-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (do_auto_deduction (tree, tree, tree)): Remove.
+	(do_auto_deduction (tree, tree, tree, tsubst_flags_t,
+	auto_deduction_context, tree, int): Add defaults.
+	* pt.c (do_auto_deduction (tree, tree, tree)): Remove definition.
+	(tsubst_omp_for_iterator): Adjust do_auto_deduction call, forward
+	tsubst_flags_t argument.
+	* init.c (build_new): Likewise.
+
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84364
