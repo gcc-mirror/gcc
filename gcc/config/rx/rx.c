@@ -3439,6 +3439,88 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
     emit_insn (gen_mvtc (GEN_INT (CTRLREG_PSW), m_prev_psw_reg));
 }
 
+/* Given an insn and a reg number, tell whether the reg dies or is unused
+   after the insn.  */
+bool
+rx_reg_dead_or_unused_after_insn (const rtx_insn* i, int regno)
+{
+  return find_regno_note (i, REG_DEAD, regno) != NULL
+	 || find_regno_note (i, REG_UNUSED, regno) != NULL;
+}
+
+/* Copy dead and unused notes from SRC to DST for the specified REGNO.  */
+void
+rx_copy_reg_dead_or_unused_notes (rtx reg, const rtx_insn* src, rtx_insn* dst)
+{
+  int regno = REGNO (SUBREG_P (reg) ? SUBREG_REG (reg) : reg);
+
+  if (rtx note = find_regno_note (src, REG_DEAD, regno))
+    add_shallow_copy_of_reg_note (dst, note);
+
+  if (rtx note = find_regno_note (src, REG_UNUSED, regno))
+    add_shallow_copy_of_reg_note (dst, note);
+}
+
+/* Try to fuse the current bit-operation insn with the surrounding memory load
+   and store.  */
+bool
+rx_fuse_in_memory_bitop (rtx* operands, rtx_insn* curr_insn,
+			 rtx (*gen_insn)(rtx, rtx))
+{
+  rtx op2_reg = SUBREG_P (operands[2]) ? SUBREG_REG (operands[2]) : operands[2];
+
+  set_of_reg op2_def = rx_find_set_of_reg (op2_reg, curr_insn,
+					   prev_nonnote_nondebug_insn_bb);
+  if (op2_def.set_src == NULL_RTX
+      || !MEM_P (op2_def.set_src)
+      || GET_MODE (op2_def.set_src) != QImode
+      || !rx_is_restricted_memory_address (XEXP (op2_def.set_src, 0),
+					   GET_MODE (op2_def.set_src))
+      || reg_used_between_p (operands[2], op2_def.insn, curr_insn)
+      || !rx_reg_dead_or_unused_after_insn (curr_insn, REGNO (op2_reg))
+    )
+    return false;
+
+  /* The register operand originates from a memory load and the memory load
+     could be fused with the bitop insn.
+     Look for the following memory store with the same memory operand.  */
+  rtx mem = op2_def.set_src;
+
+  /* If the memory is an auto-mod address, it can't be fused.  */
+  if (GET_CODE (XEXP (mem, 0)) == POST_INC
+      || GET_CODE (XEXP (mem, 0)) == PRE_INC
+      || GET_CODE (XEXP (mem, 0)) == POST_DEC
+      || GET_CODE (XEXP (mem, 0)) == PRE_DEC)
+    return false;
+
+  rtx_insn* op0_use = rx_find_use_of_reg (operands[0], curr_insn,
+					  next_nonnote_nondebug_insn_bb);
+  if (op0_use == NULL
+      || !(GET_CODE (PATTERN (op0_use)) == SET
+	   && RX_REG_P (XEXP (PATTERN (op0_use), 1))
+	   && reg_overlap_mentioned_p (operands[0], XEXP (PATTERN (op0_use), 1))
+	   && rtx_equal_p (mem, XEXP (PATTERN (op0_use), 0)))
+      || !rx_reg_dead_or_unused_after_insn (op0_use, REGNO (operands[0]))
+      || reg_set_between_p (operands[2], curr_insn, op0_use))
+    return false;
+
+  /* If the load-modify-store operation is fused it could potentially modify
+     load/store ordering if there are other memory accesses between the load
+     and the store for this insn.  If there are volatile mems between the load
+     and store it's better not to change the ordering.  If there is a call
+     between the load and store, it's also not safe to fuse it.  */
+  for (rtx_insn* i = next_nonnote_nondebug_insn_bb (op2_def.insn);
+       i != NULL && i != op0_use;
+       i = next_nonnote_nondebug_insn_bb (i))
+    if (volatile_insn_p (PATTERN (i)) || CALL_P (i))
+      return false;
+
+  emit_insn (gen_insn (mem, operands[1]));
+  set_insn_deleted (op2_def.insn);
+  set_insn_deleted (op0_use);
+  return true;
+}
+
 /* Implement TARGET_HARD_REGNO_NREGS.  */
 
 static unsigned int
