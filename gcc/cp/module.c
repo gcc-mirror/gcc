@@ -1721,9 +1721,8 @@ struct GTY(()) module_state {
 				  bool import_export_p, unsigned * = NULL);
 
  public:
-  static void maybe_early_init ();
-  static void lazy_init ();
-  static void lazy_fini ();
+  static void init ();
+  static void fini ();
   static module_state *get_module (tree name, module_state * = NULL);
 
  public:
@@ -1747,7 +1746,8 @@ hashval_t module_state_hash::hash (const value_type m)
   return IDENTIFIER_HASH_VALUE (m->name);
 }
 /* Always lookup by IDENTIFIER_NODE.  */
-bool module_state_hash::equal (const value_type existing, compare_type candidate)
+bool module_state_hash::equal (const value_type existing,
+			       compare_type candidate)
 {
   return existing->name == candidate;
 }
@@ -1755,6 +1755,12 @@ bool module_state_hash::equal (const value_type existing, compare_type candidate
 /* Binary module interface output file name. */
 
 static const char *module_output;
+
+static const char *module_prefix;
+
+static vec<const char *, va_heap> module_file_args;
+
+static const char *module_wrapper;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -2330,27 +2336,6 @@ module_state::~module_state ()
   release ();
 }
 
-/* Initialize state that must exist at options-parsing time. */
-
-void
-module_state::maybe_early_init ()
-{
-  if (!hash)
-    {
-      hash = new hash_table<module_state_hash> (30);
-
-      vec_safe_reserve (modules, 20);
-      for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
-	modules->quick_push (NULL);
-
-      /* Create module for current TU.  */
-      module_state *current = new (ggc_alloc <module_state> ()) module_state ();
-      current->mod = MODULE_NONE;
-      bitmap_set_bit (current->imports, MODULE_NONE);
-      (*modules)[MODULE_NONE] = current;
-    }
-}
-
 /* Find or create module NAME in the hash table.  */
 
 module_state *
@@ -2397,8 +2382,20 @@ module_state::get_module (tree name, module_state *dflt)
    global trees.  Create the module for current TU.  */
 
 void
-module_state::lazy_init ()
+module_state::init ()
 {
+  hash = new hash_table<module_state_hash> (30);
+
+  vec_safe_reserve (modules, 20);
+  for (unsigned ix = MODULE_IMPORT_BASE; ix--;)
+    modules->quick_push (NULL);
+
+  /* Create module for current TU.  */
+  module_state *current = new (ggc_alloc <module_state> ()) module_state ();
+  current->mod = MODULE_NONE;
+  bitmap_set_bit (current->imports, MODULE_NONE);
+  (*modules)[MODULE_NONE] = current;
+
   gcc_checking_assert (!global_vec);
 
   dump.push (NULL);
@@ -2467,8 +2464,11 @@ module_state::lazy_init ()
 /* Delete post-parsing state.  */
 
 void
-module_state::lazy_fini ()
+module_state::fini ()
 {
+  for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
+    (*modules)[ix]->release ();
+
   delete hash;
   hash = NULL;
 }
@@ -2509,6 +2509,32 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
+static char *
+make_module_name (const char *name, size_t name_len, bool from_ident)
+{
+  size_t pfx_len = module_prefix ? strlen (module_prefix) : 0;
+  size_t sfx_len = from_ident ? strlen (MOD_FNAME_SFX) : 0;
+  char *res = XNEWVEC (char, name_len + sfx_len + pfx_len + (pfx_len != 0) + 1);
+  char *ptr = res;
+
+  if (pfx_len)
+    {
+      memcpy (ptr, module_prefix, pfx_len);
+      ptr += pfx_len;
+      *ptr++ = DIR_SEPARATOR;
+    }
+  memcpy (ptr, name, name_len + 1);
+  if (from_ident)
+    {
+      strcpy (ptr + name_len, MOD_FNAME_SFX);
+      if (MOD_FNAME_DOT != '.')
+	for (; name_len--; ptr++)
+	  if (*ptr == '.')
+	    *ptr = MOD_FNAME_DOT;
+    }
+  return res;
+}
+
 /* Set VEC_NAME fields from incoming VNAME, which may be a regular
    IDENTIFIER.  */
 
@@ -2540,6 +2566,10 @@ module_state::occupy (location_t l, tree maybe_vec)
     }
 
   vec_name = maybe_vec;
+
+  if (!filename)
+    filename = make_module_name (IDENTIFIER_POINTER (name),
+				 IDENTIFIER_LENGTH (name), true);
 }
 
 /* Set location to NAME, and then enter the module.  */
@@ -6042,7 +6072,7 @@ trees_in::tree_node ()
 	if (res)
 	  res = CLASSTYPE_AS_BASE  (TREE_TYPE (res));
       }
-      break
+      break;
 
     case tt_node:
       {
@@ -6347,88 +6377,68 @@ module_interface_p ()
 	  && (*module_state::modules)[MODULE_PURVIEW]->exported);
 }
 
-/* Convert a module name into a file name.  The name is malloced.
- */
-
-static char *
-module_to_filename (tree id, size_t &len)
-{
-  size_t id_len = IDENTIFIER_LENGTH (id);
-  const char *id_chars = IDENTIFIER_POINTER (id);
-
-  size_t sfx_len = strlen (MOD_FNAME_SFX);
-  len = id_len + sfx_len;
-
-  char *buffer = XNEWVEC (char, id_len + sfx_len + 1);
-  memcpy (buffer, id_chars, id_len);
-  memcpy (buffer + id_len, MOD_FNAME_SFX, sfx_len + 1);
-
-  char dot = MOD_FNAME_DOT;
-  if (dot != '.')
-    for (char *ptr = buffer; id_len--; ptr++)
-      if (*ptr == '.')
-	*ptr = dot;
-
-  return buffer;
-}
-
-/* Search the module path for a binary module file called NAME.
-   Updates NAME with path found.  */
-
 static FILE *
-search_module_path (char *&name, size_t name_len, tree mname)
+search_module_path (char *&name, size_t &name_len,
+		    const char *rel, size_t rel_len)
 {
-  char *buffer = XNEWVEC (char, module_path_max + name_len + 2);
-  bool once = false;
+  char *buffer = XNEWVEC (char, (rel_len > module_path_max
+				 ? rel_len : module_path_max) + name_len + 2);
+  char *ptr = buffer;
 
- again:
+  if (!IS_ABSOLUTE_PATH (name) && rel_len)
+    {
+      memcpy (ptr, rel, rel_len);
+      ptr += rel_len;
+    }
+  memcpy (ptr, name, name_len + 1);
+  if (FILE *stream = fopen (buffer, "r"))
+    {
+      name = buffer;
+      name_len += (ptr - buffer);
+      return stream;
+    }
+
   if (!IS_ABSOLUTE_PATH (name))
     for (const cpp_dir *dir = module_path; dir; dir = dir->next)
       {
-	size_t len = 0;
+	ptr = buffer;
 	/* Don't prepend '.'.  */
 	if (dir->len != 1 || dir->name[0] != '.')
 	  {
-	    memcpy (buffer, dir->name, dir->len);
-	    len = dir->len;
-	    buffer[len++] = DIR_SEPARATOR;
+	    memcpy (ptr, dir->name, dir->len);
+	    ptr += dir->len;
+	    *ptr++ = DIR_SEPARATOR;
 	  }
-	memcpy (buffer + len, name, name_len + 1);
-
-	if (FILE *stream = fopen (buffer, "rb"))
+	memcpy (ptr, name, name_len + 1);
+	if (FILE *stream = fopen (buffer, "r"))
 	  {
-	    XDELETE (name);
 	    name = buffer;
+	    name_len += (ptr - buffer);
 	    return stream;
 	  }
       }
-  else if (FILE *stream = fopen (buffer, "rb"))
+
+  XDELETEVEC (buffer);
+  return NULL;
+}
+
+static FILE *
+find_module_file (module_state *state)
+{
+  FILE *stream = fopen (state->filename, "rb");
+  if (stream || !module_wrapper)
     return stream;
 
-  if (once)
-    {
-      inform (input_location, "module wrapper failed to install BMI");
-      return NULL;
-    }
+  inform (state->loc, "invoking module wrapper to install %qE (%qs)",
+	  state->name, state->filename);
 
-  once = true;
-
-  const char *str_name = IDENTIFIER_POINTER (mname);
-  // FIXME: reference main source file here?  See below too.
-  inform (UNKNOWN_LOCATION, "invoking module wrapper to install %qs",
-	  str_name);
-
-  /* wrapper <module-name> <module-bmi-file> <source-file> <this-file>
-     We may want to pass the multilib directory fragment too.
-     We may want to provide entire chain of imports.  */
-
+  /* wrapper <module-name> <module-bmi-file>  <main_input_filename> */
   unsigned len = 0;
   const char *argv[6];
-  argv[len++] = flag_module_wrapper;
-  argv[len++] = str_name;
-  argv[len++] = name;
+  argv[len++] = module_wrapper;
+  argv[len++] = IDENTIFIER_POINTER (state->name);
+  argv[len++] = state->filename;
   argv[len++] = main_input_filename;
-  argv[len++] = expand_location (input_location).file;
 
   if (!quiet_flag)
     {
@@ -6462,64 +6472,100 @@ search_module_path (char *&name, size_t name_len, tree mname)
   if (errmsg)
     {
       errno = err;
-      error_at (UNKNOWN_LOCATION, "%s %qs %m", errmsg, argv[0]);
+      error_at (state->loc, "%s %qs %m", errmsg, argv[0]);
     }
   else if (WIFSIGNALED (status))
-    error_at (UNKNOWN_LOCATION, "module wrapper %qs died by signal %s",
+    error_at (state->loc, "module wrapper %qs died by signal %s",
 	      argv[0], strsignal (WTERMSIG (status)));
   else if (WIFEXITED (status) && WEXITSTATUS (status) != 0)
-    error_at (UNKNOWN_LOCATION, "module wrapper %qs exit status %d",
+    error_at (state->loc, "module wrapper %qs exit status %d",
 	      argv[0], WEXITSTATUS (status));
   else
-    {
-      inform (UNKNOWN_LOCATION, "completed module wrapper to install %qs",
-	      str_name); 
-      goto again;
-    }
+    inform (state->loc, "completed module wrapper to install %qE",
+	    state->name);
 
-  return NULL;
+  return fopen (state->filename, "rb");
 }
 
-static FILE *
-make_module_file (char *name)
+/* Add a module name to binary interface file mapping
+   <name>=<file> -> mapping
+   <file> -> file of mappings (recursive)
+
+   We don't detect loops. */
+
+static bool
+add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0)
 {
-  FILE *stream = fopen (name, "wb");
-  if (stream)
-    return stream;
-
-  if (errno != ENOENT)
-    return stream;
-
-  if (!flag_module_root || !flag_module_root[0])
-    return stream;
-
-  /* Try and create the missing directories.  */
-  size_t root_len = strlen (flag_module_root);
-  size_t name_len = strlen (name);
-
-  char *base = name + root_len + 1;
-  char *end = base + name_len;
-
-  for (;; base++)
+  if (const char *eq = strchr (arg, '='))
     {
-      /* There can only be one dir separator!  */
-      base = (char *)memchr (base, DIR_SEPARATOR, end - base);
-      if (!base)
-	break;
+      /* A single mapping.  */
+      if (eq == arg || !eq[1])
+	{
+	  error ("module file map %qs is malformed", arg);
+	  return false;
+	}
 
-      *base = 0;
-      int failed = mkdir (name, S_IRWXU | S_IRWXG | S_IRWXO);
-      *base = DIR_SEPARATOR;
+      tree name = get_identifier_with_length (arg, eq - arg);
+      module_state *state = module_state::get_module (name);
 
-      if (failed
-	  /* Maybe racing with another creator (of a *different*
-	     submodule).  */
-	  && errno != EEXIST)
-	return stream;
+      /* Do not override already set mappings.  */
+      if (!state->filename)
+	state->filename = make_module_name (eq + 1, strlen (eq + 1), false);
+      return true;
     }
 
-  /* Have another go.  */
-  return fopen (name, "wb");
+  bool ok = false;
+  char *name = const_cast <char *> (arg);
+  size_t name_len = strlen (name);
+  
+  if (FILE *stream = search_module_path (name, name_len, rel, rel_len))
+    {
+      /* Find the directory component of PATH.  This will fail if we
+         give an absolute names in the root directory.  Why would you
+         do that?  */
+      while (name_len && !IS_DIR_SEPARATOR (name[name_len - 1]))
+	name_len--;
+
+      /* File of mappings.  */
+      size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
+      char *buffer = XNEWVEC (char, size);
+      size_t pos = 0;
+      unsigned line = 0;
+      while (fgets (buffer + pos, size - pos, stream))
+	{
+	  pos += strlen (buffer + pos);
+	  if (buffer[pos - 1] != '\n')
+	    {
+	      size *= 2;
+	      buffer = XRESIZEVEC (char, buffer, size);
+	    }
+	  else
+	    {
+	      buffer[pos - 1] = 0;
+	      pos = 0;
+	      line++;
+	      if (!add_module_mapping (buffer, name, name_len))
+		{
+		  inform (input_location, "from module map file %s:%d",
+			  name, line);
+		  goto fail;
+		}
+	    }
+	}
+      if (ferror (stream))
+	error ("failed to read module map file %qs: %m", name);
+      else
+	ok = true;
+
+    fail:
+      fclose (stream);
+      XDELETEVEC (buffer);
+      XDELETEVEC (name);
+    }
+  else
+    error ("module-file %qs not found: %m", name);
+
+  return ok;
 }
 
 /* Import the module NAME into the current TU.  If MODULE_P is
@@ -6537,9 +6583,6 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 			 bool export_p, unsigned *crc_ptr)
 {
   gcc_assert (global_namespace == current_scope ());
-
-  if (!global_vec)
-    lazy_init ();
 
   tree sname = name;
   if (TREE_CODE (name) == TREE_VEC)
@@ -6594,30 +6637,9 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	}
       state->occupy (loc, sname);
 
-      char *fname = state->filename;
-      size_t fname_len;
-      FILE *stream = NULL;
-
-      if (!fname)
-	fname = module_to_filename (name, fname_len);
-      else
-	fname_len = strlen (fname);
-      if (!module_p || !export_p)
-	stream = search_module_path (fname, fname_len, name);
-      else if (flag_module_root && flag_module_root[0])
-	{
-	  size_t root_len = strlen (flag_module_root);
-	  char *buffer = XNEWVEC (char, root_len + fname_len + 2);
-	  memcpy (buffer, flag_module_root, root_len);
-	  buffer[root_len] = DIR_SEPARATOR;
-	  memcpy (buffer + root_len + 1, name, fname_len + 1);
-	  XDELETE (fname);
-	  fname = buffer;
-	}
-	
-      state->filename = fname;
       if (!module_p || !export_p)
 	{
+	  FILE *stream = find_module_file (state);
 	  int e = errno;
 	  state->push_location ();
 	  unsigned n = dump.push (state);
@@ -6715,20 +6737,22 @@ declare_module (const cp_expr &name, bool exporting_p, tree)
 void
 init_module_processing ()
 {
-  module_state::maybe_early_init ();
+  module_state::init ();
 
   module_path = get_added_cpp_dirs (INC_CXX_MPATH);
   for (const cpp_dir *path = module_path; path; path = path->next)
     if (path->len > module_path_max)
       module_path_max = path->len;
 
-  if (!flag_module_wrapper)
-    {
-      flag_module_wrapper = getenv ("CXX_MODULE_WRAPPER");
-      if (!flag_module_wrapper)
-	flag_module_wrapper = "false";
-    }
+  if (!module_wrapper)
+    module_wrapper = getenv ("CXX_MODULE_WRAPPER");
+  if (module_wrapper && !module_wrapper[0])
+    module_wrapper = NULL;
 
+  for (unsigned ix = 0; ix != module_file_args.length (); ix++)
+    if (!add_module_mapping (module_file_args[ix]))
+      break;
+  module_file_args.release ();
 }
 
 /* Finalize the module at end of parsing.  */
@@ -6736,13 +6760,7 @@ init_module_processing ()
 void
 finish_module ()
 {
-  if (module_state::modules)
-    {
-      module_state::lazy_fini ();
-      for (unsigned ix = module_state::modules->length ();
-	   --ix >= MODULE_IMPORT_BASE;)
-	(*module_state::modules)[ix]->release ();
-    }
+  module_state::fini ();
 
   module_state *state = (*module_state::modules)[MODULE_PURVIEW];
   if (!state || !state->exported)
@@ -6755,7 +6773,7 @@ finish_module ()
 
   if (!errorcount)
     {
-      FILE *stream = make_module_file (state->filename);
+      FILE *stream = fopen (state->filename, "wb");
       int e = errno;
       location_t saved_loc = input_location;
       input_location = state->loc;
@@ -6779,97 +6797,6 @@ finish_module ()
   state->release ();
 }
 
-static char *
-maybe_prepend_dir (const char *base, const char *rel, size_t len)
-{
-  size_t flen = strlen (base);
-  size_t fop = IS_ABSOLUTE_PATH (base) ? 0 : len;
-  char *fname = XNEWVEC (char, fop + flen + 1);
-  if (fop)
-    memcpy (fname, rel, len);
-  memcpy (&fname[fop], base, flen + 1);
-
-  return fname;
-}
-
-/* Add a module name to binary interface file mapping
-   <name>=<file> -> mapping
-   <file> -> file of mappings (recursive)
-
-   We don't detect loops. */
-
-static bool
-add_module_mapping (const char *arg, const char *rel = NULL, size_t len = 0)
-{
-  if (const char *eq = strchr (arg, '='))
-    {
-      /* A single mapping.  */
-      if (eq == arg || !eq[1])
-	{
-	  error ("module file map %qs is malformed", arg);
-	  return false;
-	}
-
-      tree name = get_identifier_with_length (arg, eq - arg);
-      module_state *state = module_state::get_module (name);
-
-      /* Overriding an already-defined mapping is accepted.  */
-      free (state->filename);
-      state->filename = maybe_prepend_dir (eq + 1, rel, len);
-      return true;
-    }
-
-  bool ok = false;
-  char *path = maybe_prepend_dir (arg, rel, len);
-  if (FILE *stream = fopen (path, "r"))
-    {
-      /* Find the directory component of PATH.  This will fail if we
-         give an absolute names in the root directory.  Why would you
-         do that?  */
-      size_t dir_sep = strlen (path);
-      while (dir_sep && !IS_DIR_SEPARATOR (path[dir_sep - 1]))
-	dir_sep--;
-
-      /* File of mappings.  */
-      size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
-      char *buffer = XNEWVEC (char, size);
-      size_t pos = 0;
-      unsigned line = 0;
-      while (fgets (buffer + pos, size - pos, stream))
-	{
-	  pos += strlen (buffer + pos);
-	  if (buffer[pos - 1] != '\n')
-	    {
-	      size *= 2;
-	      buffer = XRESIZEVEC (char, buffer, size);
-	    }
-	  else
-	    {
-	      buffer[pos - 1] = 0;
-	      pos = 0;
-	      line++;
-	      if (!add_module_mapping (buffer, path, dir_sep))
-		{
-		  inform (input_location, "from module map file %s:%d",
-			  path, line);
-		  goto fail;
-		}
-	    }
-	}
-      if (ferror (stream))
-	error ("failed to read module map file %qs: %m", path);
-      else
-	ok = true;
-    fail:
-      XDELETEVEC (buffer);
-      fclose (stream);
-    }
-  else
-    error ("module-file %qs not found: %m", path);
-  XDELETEVEC (path);
-  return ok;
-}
-
 /* If CODE is a module option, handle it & return true.  Otherwise
    return false.  */
 
@@ -6890,9 +6817,16 @@ handle_module_option (unsigned code, const char *arg, int)
       module_output = arg;
       return true;
 
+    case OPT_fmodule_prefix_:
+      module_prefix = arg;
+      return true;
+
+    case OPT_fmodule_wrapper_:
+      module_wrapper = arg;
+      return true;
+
     case OPT_fmodule_file_:
-      module_state::maybe_early_init ();
-      add_module_mapping (arg);
+      module_file_args.safe_push (arg);
       return true;
 
     default:

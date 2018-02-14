@@ -792,7 +792,7 @@ c_common_post_options (const char **pfilename)
 #endif
 
   if (flag_modules)
-    clean_cxx_module_path (parse_in, flag_module_root, imultilib, verbose);
+    clean_cxx_module_path (parse_in, verbose);
 
   /* Excess precision other than "fast" requires front-end
      support.  */

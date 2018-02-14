@@ -515,33 +515,11 @@ get_added_cpp_dirs (incpath_kind chain)
    if it is non-null.  */
 
 void
-clean_cxx_module_path (cpp_reader *pfile, const char *root,
-		       const char *imultilib, bool verbose)
+clean_cxx_module_path (cpp_reader *pfile, bool verbose)
 {
-  /* Append '.'.  */
-  add_path (xstrdup ("."), INC_CXX_MPATH, true, true);
   /* Append any environment path.  */
   add_env_var_paths ("CXX_MODULE_PATH", INC_CXX_MPATH);
-  if (root)
-    {
-      /* Prepend the root to the path.  */
-      cpp_dir *path = heads[INC_CXX_MPATH];
-
-      tails[INC_CXX_MPATH] = heads[INC_CXX_MPATH] = NULL;
-      add_path (xstrdup (root), INC_CXX_MPATH, true, true);
-      tails[INC_CXX_MPATH]->next = path;
-      path = heads[INC_CXX_MPATH];
-    }
   
-  if (imultilib)
-    /* Append multilib-dir.  */
-    for (cpp_dir *path = heads[INC_CXX_MPATH]; path; path = path->next)
-      {
-	path->name = reconcat (path->name, path->name,
-			       dir_separator_str, imultilib, NULL);
-	path->len += strlen (imultilib) + strlen (dir_separator_str);
-      }
-
   heads[INC_CXX_MPATH] = remove_duplicates (pfile, heads[INC_CXX_MPATH],
 					    NULL, NULL, verbose);
 

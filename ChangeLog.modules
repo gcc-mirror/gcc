@@ -1,3 +1,38 @@
+2018-02-13  Nathan Sidwell  <nathan@acm.org>
+
+	Module path is for mapping files. Replace -fmodule-root with
+	-fmodule-prefix.
+	gcc/cp/
+	* cxx-module-wrapper.sh: Adjust.
+	* module.c (module_state::lazy_{init,fini}): Drop the lazy.
+	(module_state::maybe_early_init): Move into init.
+	(module_prefix, module_file_args, module_wrapper): New.
+	(make_module_name): New.
+	(module_state::occupy): Call it.
+	(module_to_filename): Delete.
+	(search_module_path): Adjust for finding module-maps.
+	(find_module_file): New.
+	(add_module_mapping): Reimplement.
+	(init_module_processing): Process module_file_args array.
+	(module_state::do_import, finish_module): Adjust.
+	(maybe_prepend_dir): Delete.
+	(handle_module_option): Adjust.
+	gcc/c-family/
+	* c-opts.c (c_common_post_options): Adjust clean_cxx_module_path
+	call.
+	* c.opt (fmodule-root=): Delete.
+	(fmodule-prefix=): New.
+	gcc/
+	* doc/invoke.texi (fmodule-root): Replace with ...
+	(fmodule-prefix): ... this.
+	* incpath.c (clean_cxx_module_path): Drop root appending. Drop
+	multilib handling.
+	* incpath.h (clean_cxx_module_path): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/fmod-file-1_b.C: Adjust.
+	* g++.dg/modules/main_a.C: Adjust.
+	* g++.dg/modules/modules.exp: Adjust.
+
 2018-02-12  Nathan Sidwell  <nathan@acm.org>
 
 	AS_BASE is by reference.

@@ -2503,15 +2503,15 @@ errors if these functions are not inlined everywhere they are called.
 Enable experimental support for the Extensions to C++ for Modules
 extension.
 
-@item -fmodule-root=@var{dir}
-@opindex fmodule-root
+@item -fmodule-prefix=@var{dir}
+@opindex fmodule-prefix
 Option not fully baked.
 
 @item -fmodule-path=@var{dir}
 @opindex fmodule-path
-Append @var{dir} to the compiled module interface search path. The ':'
-separated directory list in @env{CXX_MODULE_PATH} is appended after
-explicitly specified directories.
+Append @var{dir} to the module-map search path. The ':' separated
+directory list in @env{CXX_MODULE_PATH} is appended after explicitly
+specified directories.
 
 @item -fmodule-wrapper=@var{program}
 @opindex fmodule-wrapper

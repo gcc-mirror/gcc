@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-file=frob=overwritten -fmodule-file=frob=plunk" }
+// { dg-additional-options "-fmodule-file=frob=plunk -fmodule-file=frob=preempted" }
 
 import frob;
 

@@ -1,5 +1,5 @@
 // { dg-module-do run { target *-*-* } "hello.o" }
-// { dg-options "-fmodules -fmodule-path=." }
+// { dg-options "-fmodules" }
 
 // Relies on CXX_MODULE_WRAPPER functionality
 import hello;

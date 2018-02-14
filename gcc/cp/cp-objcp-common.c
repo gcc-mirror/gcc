@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "cp-objcp-common.h"
 #include "dwarf2.h"
-#include "incpath.h"
 
 /* Special routine to get the alias set for C++.  */
 

@@ -2,7 +2,7 @@
 
 # Wrapper to rebuild a missing C++ module BMI
 
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017-2018 Free Software Foundation, Inc.
 # Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
 #This file is part of GCC.
@@ -33,15 +33,14 @@
 shopt -s extglob nullglob
 
 progname=${0##*/}
-if test "$#" -ne 4 ; then
-  echo "usage: ${progname} module-name bmi-file original-source importing-file" >&2
+if test "$#" -lt 2 ; then
+  echo "usage: ${progname} module-name bmi-file original-source" >&2
   exit 1
 fi
 
 module=$1
 bmi=$2
 source=$3
-importer=$4
 
 # If we're inside make and there's a Makefile, just invoke make for the bmi.
 if test ${MAKELEVEL:=0} -gt 0 -a -e Makefile ; then
