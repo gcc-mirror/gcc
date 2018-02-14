@@ -1,3 +1,8 @@
+2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr57193.c (dg-do): Remove target selector.
+	(dg-options): Use -O2 -msse2 -mno-sse3.
+
 2018-02-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.dg/vmx/extract-be-order.c: Disable -maltivec=be warning so
@@ -135,7 +140,7 @@
 2018-02-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/84359
-	* gcc.target/i386/57193.c: Add -march=x86-64.
+	* gcc.target/i386/pr57193.c: Add -march=x86-64.
 
 2018-02-13  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -322,7 +327,7 @@
 2018-02-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57193
-	* gcc.target/i386/57193.c: New.
+	* gcc.target/i386/pr57193.c: New.
 
 2018-02-09  Jakub Jelinek  <jakub@redhat.com>
 
