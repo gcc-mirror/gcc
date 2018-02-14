@@ -25975,7 +25975,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     /* C++17 class template argument deduction.  */
     return do_class_deduction (type, tmpl, init, flags, complain);
 
-  if (TREE_TYPE (init) == NULL_TREE)
+  if (init == NULL_TREE || TREE_TYPE (init) == NULL_TREE)
     /* Nothing we can do with this, even in deduction context.  */
     return type;
 
