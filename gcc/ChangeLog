@@ -1,3 +1,10 @@
+2018-02-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/84220
+	* config/rs6000/rs6000-c.c: Update definitions for
+	ALTIVEC_BUILTIN_VEC_SLD, ALTIVEC_BUILTIN_VEC_SLDW,
+	VEC_XXSLDWI and ALTIVEC_BUILTIN_VEC_XXPERMDI builtins.
+
 2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84239
