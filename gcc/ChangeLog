@@ -1,3 +1,14 @@
+2018-02-14  Jozef Lawrynowicz <jozefl.gcc@gmail.com>
+
+	PR target/79242
+	* machmode.def: Define a complex mode for PARTIAL_INT.
+	* genmodes.c (complex_class): Return MODE_COMPLEX_INT for
+	MODE_PARTIAL_INT.
+	* doc/rtl.texi: Document CSPImode.
+	* config/msp430/msp430.c (msp430_hard_regno_nregs): Add CPSImode
+	handling.
+	(msp430_hard_regno_nregs_with_padding): Likewise.
+
 2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/84279

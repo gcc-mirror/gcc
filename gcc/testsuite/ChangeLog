@@ -1,3 +1,8 @@
+2018-02-14  Jozef Lawrynowicz <jozefl.gcc@gmail.com>
+
+	PR target/79242
+	* gcc.target/msp430/pr79242.c: New test.
+
 2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/84372
