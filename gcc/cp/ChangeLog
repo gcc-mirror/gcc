@@ -1,3 +1,9 @@
+2018-02-14  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (mark_vtable_entries): Set input_location to decl's.
+	(c_parse_final_cleanups): Restore input_location after emitting
+	vtables.
+
 2018-02-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (do_auto_deduction (tree, tree, tree)): Remove.

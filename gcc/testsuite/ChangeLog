@@ -1,3 +1,7 @@
+2018-02-14  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/instantiate5.C: Adjust required-from loc.
+
 2018-02-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/altivec-consts.c:  Update compile stanzas.
