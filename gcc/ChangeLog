@@ -1,8 +1,16 @@
+2018-02-14  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Back port from mainline
+	2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84279
+	* config/rs6000/rs6000.c (mem_operand_gpr): Disallow altivec addresses.
+
 2018-02-14  Martin Jambor  <mjambor@suse.cz>
 
-        PR c++/83990
-        * ipa-prop.c (ipa_modify_call_arguments): Use location of call
-        statements, also set location of a load to a temporary.
+	PR c++/83990
+	* ipa-prop.c (ipa_modify_call_arguments): Use location of call
+	statements, also set location of a load to a temporary.
 
 2018-02-10  John David Anglin  <danglin@gcc.gnu.org>
 
