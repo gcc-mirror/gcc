@@ -1,3 +1,8 @@
+2018-02-14  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84357
+	* gcc.dg/vect/pr84357.c: New test.
+
 2018-02-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/83831
