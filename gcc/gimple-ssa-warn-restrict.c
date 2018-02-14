@@ -375,6 +375,14 @@ builtin_memref::builtin_memref (tree expr, tree size)
 	    }
       }
 
+  if (DECL_P (base) && TREE_CODE (TREE_TYPE (base)) == ARRAY_TYPE)
+    {
+      /* For array objects, where a negative offset wouldn't make
+	 sense, use zero instead if the upper bound is positive.  */
+      if (offrange[0] < 0 && offrange[1] > 0)
+	offrange[0] = 0;
+    }
+
   if (size)
     {
       tree range[2];
@@ -1070,14 +1078,35 @@ builtin_access::strcat_overlap ()
     return false;
 
   /* When strcat overlap is certain it is always a single byte:
-     the terminatinn NUL, regardless of offsets and sizes.  When
+     the terminating NUL, regardless of offsets and sizes.  When
      overlap is only possible its range is [0, 1].  */
   acs.ovlsiz[0] = dstref->sizrange[0] == dstref->sizrange[1] ? 1 : 0;
   acs.ovlsiz[1] = 1;
-  acs.ovloff[0] = (dstref->sizrange[0] + dstref->offrange[0]).to_shwi ();
-  acs.ovloff[1] = (dstref->sizrange[1] + dstref->offrange[1]).to_shwi ();
 
-  acs.sizrange[0] = wi::smax (acs.dstsiz[0], srcref->sizrange[0]).to_shwi ();
+  offset_int endoff = dstref->offrange[0] + dstref->sizrange[0];
+  if (endoff <= srcref->offrange[0])
+    acs.ovloff[0] = wi::smin (maxobjsize, srcref->offrange[0]).to_shwi ();
+  else
+    acs.ovloff[0] = wi::smin (maxobjsize, endoff).to_shwi ();
+
+  acs.sizrange[0] = wi::smax (wi::abs (endoff - srcref->offrange[0]) + 1,
+			      srcref->sizrange[0]).to_shwi ();
+  if (dstref->offrange[0] == dstref->offrange[1])
+    {
+      if (srcref->offrange[0] == srcref->offrange[1])
+	acs.ovloff[1] = acs.ovloff[0];
+      else
+	acs.ovloff[1]
+	  = wi::smin (maxobjsize,
+		      srcref->offrange[1] + srcref->sizrange[1]).to_shwi ();
+    }
+  else
+    acs.ovloff[1]
+      = wi::smin (maxobjsize,
+		  dstref->offrange[1] + dstref->sizrange[1]).to_shwi ();
+
+  if (acs.sizrange[0] == 0)
+    acs.sizrange[0] = 1;
   acs.sizrange[1] = wi::smax (acs.dstsiz[1], srcref->sizrange[1]).to_shwi ();
   return true;
 }
@@ -1215,8 +1244,12 @@ builtin_access::overlap ()
   /* Call the appropriate function to determine the overlap.  */
   if ((this->*detect_overlap) ())
     {
-      sizrange[0] = wi::smax (acs.dstsiz[0], srcref->sizrange[0]).to_shwi ();
-      sizrange[1] = wi::smax (acs.dstsiz[1], srcref->sizrange[1]).to_shwi ();
+      if (!sizrange[1])
+	{
+	  /* Unless the access size range has already been set, do so here.  */
+	  sizrange[0] = wi::smax (acs.dstsiz[0], srcref->sizrange[0]).to_shwi ();
+	  sizrange[1] = wi::smax (acs.dstsiz[1], srcref->sizrange[1]).to_shwi ();
+	}
       return true;
     }
 
@@ -1392,10 +1425,17 @@ maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
   /* Use more concise wording when one of the offsets is unbounded
      to avoid confusing the user with large and mostly meaningless
      numbers.  */
-  bool open_range = ((dstref.offrange[0] == -maxobjsize - 1
-		      && dstref.offrange[1] == maxobjsize)
-		     || (srcref.offrange[0] == -maxobjsize - 1
-			 && srcref.offrange[1] == maxobjsize));
+  bool open_range;
+  if (DECL_P (dstref.base) && TREE_CODE (TREE_TYPE (dstref.base)) == ARRAY_TYPE)
+    open_range = ((dstref.offrange[0] == 0
+		   && dstref.offrange[1] == maxobjsize)
+		  || (srcref.offrange[0] == 0
+		      && srcref.offrange[1] == maxobjsize));
+  else
+    open_range = ((dstref.offrange[0] == -maxobjsize - 1
+		   && dstref.offrange[1] == maxobjsize)
+		  || (srcref.offrange[0] == -maxobjsize - 1
+		      && srcref.offrange[1] == maxobjsize));
 
   if (sizrange[0] == sizrange[1] || sizrange[1] == 1)
     {

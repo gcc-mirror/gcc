@@ -616,10 +616,13 @@ void test_strcat_var (char *d, const char *s)
   } while (0)
 
   T (d, d);                       /* { dg-warning "source argument is the same as destination" "strcat" } */
-  T (d, d + 1);                   /* { dg-warning "accessing 0 or more bytes at offsets 0 and 1 may overlap 1 byte" "strcat" } */
-  T (d, d + 2);                   /* { dg-warning "accessing 0 or more bytes at offsets 0 and 2 may overlap 1 byte" "strcat" } */
-  T (d, d + 999);                 /* { dg-warning "accessing 0 or more bytes at offsets 0 and 999 may overlap 1 byte" "strcat" } */
-  T (d, d + -99);                 /* { dg-warning "accessing 0 or more bytes at offsets 0 and -99 may overlap 1 byte" "strcat" } */
+  T (d, d + 1);                   /* { dg-warning "accessing 2 or more bytes at offsets 0 and 1 may overlap 1 byte" "strcat" } */
+  T (d, d + 2);                   /* { dg-warning "accessing 3 or more bytes at offsets 0 and 2 may overlap 1 byte at offset 2" "strcat" } */
+  T (d, d + 999);                 /* { dg-warning "accessing 1000 or more bytes at offsets 0 and 999 may overlap 1 byte at offset 999" "strcat" } */
+
+  /* The source string must be at least 100 bytes in length for the copy
+     below to overlap.  */
+  T (d, d + -99);                 /* { dg-warning "accessing 100 or more bytes at offsets 0 and -99 may overlap 1 byte" "strcat" } */
 
   size_t n = unsigned_value ();
 

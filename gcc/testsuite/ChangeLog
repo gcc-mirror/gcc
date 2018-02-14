@@ -5,6 +5,13 @@
 
 2018-02-14  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/83698
+	* gcc.dg/Wrestrict-7.c: New test.
+	* c-c++-common/Wrestrict.c: Adjust expected values for strcat.
+	* gcc.target/i386/chkp-stropt-17.c: Same.
+
+2018-02-14  Martin Sebor  <msebor@redhat.com>
+
 	PR c/84108
 	* gcc.dg/Wattributes-8.c: New test.
 
