@@ -4352,8 +4352,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 
 	  gcc_checking_assert (adj->offset % BITS_PER_UNIT == 0);
 	  base = gimple_call_arg (stmt, adj->base_index);
-	  loc = DECL_P (base) ? DECL_SOURCE_LOCATION (base)
-			      : EXPR_LOCATION (base);
+	  loc = gimple_location (stmt);
 
 	  if (TREE_CODE (base) != ADDR_EXPR
 	      && POINTER_TYPE_P (TREE_TYPE (base)))
@@ -4445,6 +4444,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gcall *stmt,
 		  else
 		    expr = create_tmp_reg (TREE_TYPE (expr));
 		  gimple_assign_set_lhs (tem, expr);
+		  gimple_set_location (tem, loc);
 		  gsi_insert_before (&gsi, tem, GSI_SAME_STMT);
 		}
 	    }
