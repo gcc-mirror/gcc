@@ -1,3 +1,9 @@
+2018-02-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/83984
+	* config/pa/pa.md: Load address of PIC label using the linkage table
+	if the label is nonlocal.
+
 2018-02-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Issue
