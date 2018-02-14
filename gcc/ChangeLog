@@ -1,3 +1,21 @@
+2018-02-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/83831
+	* config/rx/rx-protos.h (rx_reg_dead_or_unused_after_insn,
+	rx_copy_reg_dead_or_unused_notes, rx_fuse_in_memory_bitop): New
+	declarations.
+	(set_of_reg): New struct.
+	(rx_find_set_of_reg, rx_find_use_of_reg): New functions.
+	* config/rx/rx.c (rx_reg_dead_or_unused_after_insn,
+	rx_copy_reg_dead_or_unused_notes, rx_fuse_in_memory_bitop): New
+	functions.
+	* config/rx/rx.md (andsi3, iorsi3, xorsi3): Convert to insn_and_split.
+	Split into bitclr, bitset, bitinvert patterns if appropriate.
+	(*bitset, *bitinvert, *bitclr): Convert to named insn_and_split and
+	use rx_fuse_in_memory_bitop.
+	(*bitset_in_memory, *bitinvert_in_memory, *bitclr_in_memory): Convert
+	to named insn, correct maximum insn length.
+
 2018-02-14  Jozef Lawrynowicz <jozefl.gcc@gmail.com>
 
 	PR target/79242
