@@ -1,3 +1,9 @@
+2018-02-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84385
+	* match.c (gfc_match_select_type): Fix check for selector in
+	SELECT TYPE statement.
+
 2018-02-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/84313

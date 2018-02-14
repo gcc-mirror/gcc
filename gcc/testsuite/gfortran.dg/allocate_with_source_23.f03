@@ -28,7 +28,7 @@ subroutine test_class_correct()
   allocate(b(1:4), source=a(1))
   if (size(b) /= 4) call abort()
   if (any(b(:)%i /= [ 1,1,1,1])) call abort()
-  select type (b(1))
+  select type (b1 => b(1))
     class is (tt)
       continue
     class default
@@ -46,7 +46,7 @@ subroutine test_class_fail()
   allocate(b(1:4), source=a) ! Fail expected: sizes do not conform
   if (size(b) /= 4) call abort()
   if (any(b(1:2)%i /= [ 1,2])) call abort()
-  select type (b(1))
+  select type (b1 => b(1))
     class is (tt)
       continue
     class default
