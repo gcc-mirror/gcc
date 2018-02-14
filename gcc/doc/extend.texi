@@ -12461,6 +12461,7 @@ instructions, but allow the compiler to schedule those calls.
 * TILEPro Built-in Functions::
 * x86 Built-in Functions::
 * x86 transactional memory intrinsics::
+* x86 control-flow protection intrinsics::
 @end menu
 
 @node AArch64 Built-in Functions
@@ -21772,13 +21773,17 @@ void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
 @end smallexample
 
-The following built-in functions are available when @option{-mcet} is used.
-They are used to support Intel Control-flow Enforcment Technology (CET).
-Each built-in function generates the  machine instruction that is part of the
-function's name.
+The following built-in functions are available when @option{-mcet} or
+@option{-mshstk} option is used.  They support shadow stack
+machine instructions from Intel Control-flow Enforcement Technology (CET).
+Each built-in function generates the  machine instruction that is part
+of the function's name.  These are the internal low-level functions.
+Normally the functions in @ref{x86 control-flow protection intrinsics}
+should be used instead.
+
 @smallexample
-unsigned int __builtin_ia32_rdsspd (unsigned int)
-unsigned long long __builtin_ia32_rdsspq (unsigned long long)
+unsigned int __builtin_ia32_rdsspd (void)
+unsigned long long __builtin_ia32_rdsspq (void)
 void __builtin_ia32_incsspd (unsigned int)
 void __builtin_ia32_incsspq (unsigned long long)
 void __builtin_ia32_saveprevssp(void);
@@ -21884,6 +21889,51 @@ else
 @noindent
 Note that, in most cases, the transactional and non-transactional code
 must synchronize together to ensure consistency.
+
+@node x86 control-flow protection intrinsics
+@subsection x86 Control-Flow Protection Intrinsics
+
+@deftypefn {CET Function} {ret_type} _get_ssp (void)
+Get the current value of shadow stack pointer if shadow stack support
+from Intel CET is enabled in the hardware or @code{0} otherwise.
+The @code{ret_type} is @code{unsigned long long} for 64-bit targets 
+and @code{unsigned int} for 32-bit targets.
+@end deftypefn
+
+@deftypefn {CET Function} void _inc_ssp (unsigned int)
+Increment the current shadow stack pointer by the size specified by the
+function argument.  The argument is masked to a byte value for security
+reasons, so to increment by more than 255 bytes you must call the function
+multiple times.
+@end deftypefn
+
+The shadow stack unwind code looks like:
+
+@smallexample
+#include <immintrin.h>
+
+/* Unwind the shadow stack for EH.  */
+#define _Unwind_Frames_Extra(x)       \
+  do                                  \
+    @{                                \
+      _Unwind_Word ssp = _get_ssp (); \
+      if (ssp != 0)                   \
+        @{                            \
+          _Unwind_Word tmp = (x);     \
+          while (tmp > 255)           \
+            @{                        \
+              _inc_ssp (tmp);         \
+              tmp -= 255;             \
+            @}                        \
+          _inc_ssp (tmp);             \
+        @}                            \
+    @}                                \
+    while (0)
+@end smallexample
+
+@noindent
+This code runs unconditionally on all 64-bit processors.  For 32-bit
+processors the code runs on those that support multi-byte NOP instructions.
 
 @node Target Format Checks
 @section Format Checks Specific to Particular Target Machines

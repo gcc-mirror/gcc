@@ -1,3 +1,19 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/cetintrin.h: Remove _rdssp[d|q] and
+	add _get_ssp intrinsics. Remove argument from
+	__builtin_ia32_rdssp[d|q].
+	* config/i386/i386-builtin-types.def: Add UINT_FTYPE_VOID.
+	* config/i386/i386-builtin.def: Remove argument from
+	__builtin_ia32_rdssp[d|q].
+	* config/i386/i386.c: Use UINT_FTYPE_VOID. Use
+	ix86_expand_special_args_builtin for _rdssp[d|q].
+	* config/i386/i386.md: Remove argument from rdssp[si|di] insn.
+	Clear register before usage.
+	* doc/extend.texi: Remove argument from __builtin_ia32_rdssp[d|q].
+	Add documentation for new _get_ssp and _inc_ssp intrinsics.
+
 2018-02-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84357
