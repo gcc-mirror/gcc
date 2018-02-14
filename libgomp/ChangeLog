@@ -1,3 +1,9 @@
+2018-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84313
+	* testsuite/libgomp.fortran/threadprivate4.f90: Add
+	-std=f2003 -fall-intrinsics into dg-additional-options.
+
 2018-02-08  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/libgomp.hsa.c/pr82416.c: Make the function with target
