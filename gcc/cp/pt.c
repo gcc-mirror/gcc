@@ -15785,7 +15785,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
   tree auto_node = type_uses_auto (TREE_TYPE (decl));
   if (auto_node && init)
     TREE_TYPE (decl)
-      = do_auto_deduction (TREE_TYPE (decl), init, auto_node);
+      = do_auto_deduction (TREE_TYPE (decl), init, auto_node, complain);
 
   gcc_assert (!type_dependent_expression_p (decl));
 
@@ -25938,17 +25938,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
   release_tree_vector (args);
 
   return cp_build_qualified_type (TREE_TYPE (call), cp_type_quals (ptype));
-}
-
-/* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
-   from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.  */
-
-tree
-do_auto_deduction (tree type, tree init, tree auto_node)
-{
-  return do_auto_deduction (type, init, auto_node,
-                            tf_warning_or_error,
-                            adc_unspecified);
 }
 
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
