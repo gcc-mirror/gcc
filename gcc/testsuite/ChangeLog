@@ -1,3 +1,10 @@
+2018-02-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84385
+	* gfortran.dg/allocate_with_source_22.f03: Fix invalid test case.
+	* gfortran.dg/allocate_with_source_23.f90: Ditto.
+	* gfortran.dg/select_type_1.f03: Extend test case.
+
 2017-02-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr57193.c (dg-do): Remove target selector.

@@ -27,7 +27,7 @@ subroutine test_class()
   ! with -fcheck=bounds.
   if (size(b) /= 4) call abort()
   if (any(b(1:2)%i /= [ 1,2])) call abort()
-  select type (b(1))
+  select type (b1 => b(1))
     class is (tt)
       continue
     class default

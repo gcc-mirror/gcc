@@ -6201,9 +6201,10 @@ gfc_match_select_type (void)
 		     || CLASS_DATA (expr1)->attr.codimension)
 		 && expr1->ref
 		 && expr1->ref->type == REF_ARRAY
+		 && expr1->ref->u.ar.type == AR_FULL
 		 && expr1->ref->next == NULL);
 
-  /* Check for F03:C811.  */
+  /* Check for F03:C811 (F08:C835).  */
   if (!expr2 && (expr1->expr_type != EXPR_VARIABLE
 		 || (!class_array && expr1->ref != NULL)))
     {
