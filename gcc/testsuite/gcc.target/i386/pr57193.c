@@ -1,5 +1,5 @@
-/* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -march=x86-64" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -msse2 -mno-sse3" } */
 /* { dg-final { scan-assembler-times "movdqa" 2 } } */
 
 #include <emmintrin.h>
