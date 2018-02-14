@@ -4028,6 +4028,13 @@ rs6000_option_override_internal (bool global_init_p)
   if (global_init_p)
     rs6000_isa_flags_explicit = global_options_set.x_rs6000_isa_flags;
 
+  /* We plan to deprecate the -maltivec=be option.  For now, just
+     issue a warning message.  */
+  if (global_init_p
+      && rs6000_altivec_element_order == 2)
+    warning (0, "%qs command-line option is deprecated",
+	     "-maltivec=be");
+
   /* On 64-bit Darwin, power alignment is ABI-incompatible with some C
      library functions, so warn about it. The flag may be useful for
      performance studies from time to time though, so don't disable it

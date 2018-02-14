@@ -1,3 +1,32 @@
+2018-02-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.dg/vmx/extract-be-order.c: Disable -maltivec=be warning so
+	this test case still works ok.
+	* gcc.dg/vmx/extract-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/insert-be-order.c: Likewise.
+	* gcc.dg/vmx/insert-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ld-be-order.c: Likewise.
+	* gcc.dg/vmx/ld-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/lde-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-be-order.c: Likewise.
+	* gcc.dg/vmx/ldl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-be-order.c: Likewise.
+	* gcc.dg/vmx/merge-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/mult-even-odd-be-order.c: Likewise.
+	* gcc.dg/vmx/pack-be-order.c: Likewise.
+	* gcc.dg/vmx/perm-be-order.c: Likewise.
+	* gcc.dg/vmx/splat-be-order.c: Likewise.
+	* gcc.dg/vmx/splat-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/st-be-order.c: Likewise.
+	* gcc.dg/vmx/st-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/ste-be-order.c: Likewise.
+	* gcc.dg/vmx/stl-be-order.c: Likewise.
+	* gcc.dg/vmx/stl-vsx-be-order.c: Likewise.
+	* gcc.dg/vmx/sum2s-be-order.c: Likewise.
+	* gcc.dg/vmx/unpack-be-order.c: Likewise.
+	* gcc.dg/vmx/vsums-be-order.c: Likewise.
+	* gcc.target/powerpc/vec-setup-be-long.c: Likewise.
+
 2018-02-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84350
