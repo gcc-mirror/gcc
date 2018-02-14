@@ -1,5 +1,16 @@
 2018-02-14  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/83698
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): For
+	arrays constrain the offset range to their bounds.
+	(builtin_access::strcat_overlap): Adjust the bounds of overlap offset.
+	(builtin_access::overlap): Avoid setting the size of overlap if it's
+	already been set.
+	(maybe_diag_overlap): Also consider arrays when deciding what values
+	of offsets to include in diagnostics.
+
+2018-02-14  Martin Sebor  <msebor@redhat.com>
+
 	PR c/84108
 	* attribs.c (diag_attr_exclusions): Consider the exclusion(s)
 	that correspond to the kind of a declaration.
