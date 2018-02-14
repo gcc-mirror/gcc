@@ -1,3 +1,9 @@
+2018-02-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Issue
+	warning message if user requests -maltivec=be.
+	* doc/invoke.texi: Document deprecation of -maltivec=be.
+
 2018-02-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR target/84220

@@ -1,4 +1,5 @@
-/* { dg-options "-maltivec=be -mabi=altivec -std=gnu99 -mno-vsx" } */
+/* Disable warnings to squelch deprecation message about -maltivec=be.  */
+/* { dg-options "-w -maltivec=be -mabi=altivec -std=gnu99 -mno-vsx" } */
 
 #include "harness.h"
 

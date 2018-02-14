@@ -1,6 +1,7 @@
 /* { dg-do run { target { powerpc64le*-*-linux* } } } */
 /* { dg-require-effective-target vsx_hw } */
-/* { dg-options "-O2 -mvsx -maltivec=be" } */
+/* Disable warnings to squelch deprecation message about -maltivec=be.  */
+/* { dg-options "-w -O2 -mvsx -maltivec=be" } */
 
 /* Test various ways of creating vectors with 2 double words and accessing the
    elements.  This test uses the long (on 64-bit systems) or long long datatype

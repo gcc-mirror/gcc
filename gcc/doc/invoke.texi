@@ -23371,7 +23371,9 @@ little-endian platform.
 @opindex maltivec=be
 Generate AltiVec instructions using big-endian element order,
 regardless of whether the target is big- or little-endian.  This is
-the default when targeting a big-endian platform.
+the default when targeting a big-endian platform.  Using this option
+is currently deprecated.  Support for this feature will be removed in
+GCC 9.
 
 The element order is used to interpret element numbers in AltiVec
 intrinsics such as @code{vec_splat}, @code{vec_extract}, and
