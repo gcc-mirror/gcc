@@ -1825,6 +1825,11 @@ mark_vtable_entries (tree decl)
 	 function, so we emit the thunks there instead.  */
       if (DECL_THUNK_P (fn))
 	use_thunk (fn, /*emit_p=*/0);
+      /* Set the location, as marking the function could cause
+         instantiation.  We do not need to preserve the incoming
+         location, as we're called from c_parse_final_cleanups, which
+         takes care of that.  */
+      input_location = DECL_SOURCE_LOCATION (fn);
       mark_used (fn);
     }
 }
@@ -4727,6 +4732,9 @@ c_parse_final_cleanups (void)
 	    reconsider = true;
 	    keyed_classes->unordered_remove (i);
 	  }
+      /* The input_location may have been changed during marking of
+	 vtable entries.  */
+      input_location = locus_at_end_of_parsing;
 
       /* Write out needed type info variables.  We have to be careful
 	 looping through unemitted decls, because emit_tinfo_decl may
