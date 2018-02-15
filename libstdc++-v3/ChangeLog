@@ -1,3 +1,12 @@
+2018-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81797
+	* configure.ac (INCLUDE_DIR_NOTPARALLEL): Define.
+	* configure: Regenerate.
+	* include/Makefile.am (INCLUDE_DIR_NOTPARALLEL): Add .NOTPARALLEL when
+	defined.
+	* include/Makefile.in: Regenerate.
+
 2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83833
