@@ -1,4 +1,10 @@
+2018-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84334
+	* gcc.dg/pr84334.c: New test.
+
 2018-02-14  Carl Love  <cel@us.ibm.com>
+
         * gcc.target/powerpc/builtins-4-int128-runnable.c
 	(dg-require-effective-target): Change vsx_hw to p8vector_hw.
 	(dg-options): Change -maltivec -mvsx to -mpower8-vector.
@@ -1558,6 +1564,7 @@
 	* gcc.target/powerpc/pr83862.c: New test.
 
 2018-01-22  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/powerpc.exp: Add torture tests for
 	builtins-4-runnable.c, builtins-6-runnable.c,
 	builtins-5-p9-runnable.c, builtins-6-p9-runnable.c.
@@ -3617,7 +3624,7 @@
 	PR c++/83734
 	* g++.dg/cpp0x/pr83734.C: New test.
 
-2018-01-09 Carl Love  <cel@us.ibm.com>
+2018-01-09  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-1.c (main): Add tests for vec_mergee and
 	vec_mergeo builtins with float, double, long long, unsigned long long,

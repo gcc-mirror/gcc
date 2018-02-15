@@ -1,3 +1,9 @@
+2018-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84334
+	* match.pd ((A +- CST1) +- CST2 -> A + CST3): If A is
+	also a CONSTANT_CLASS_P, punt.
+
 2018-02-14  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (riscv_first_stack_step): Move locals after
@@ -2336,6 +2342,7 @@
 	* config/aarch64/predicates.md (Uti): Add new constraint.
 
 2018-01-17 Carl Love  <cel@us.ibm.com>
+
 	* config/rs6000/vsx.md (define_expand xl_len_r,
 	define_expand stxvl, define_expand *stxvl): Add match_dup argument.
 	(define_insn): Add, match_dup 1 argument to define_insn stxvll and

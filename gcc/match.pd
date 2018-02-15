@@ -1733,9 +1733,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       CONSTANT_CLASS_P@2)
      /* If one of the types wraps, use that one.  */
      (if (!ANY_INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_WRAPS (type))
-      (if (outer_op == PLUS_EXPR)
-       (plus (view_convert @0) (inner_op @2 (view_convert @1)))
-       (minus (view_convert @0) (neg_inner_op @2 (view_convert @1))))
+      /* If all 3 captures are CONSTANT_CLASS_P, punt, as we might recurse
+	 forever if something doesn't simplify into a constant.  */
+      (if (!CONSTANT_CLASS_P (@0))
+       (if (outer_op == PLUS_EXPR)
+	(plus (view_convert @0) (inner_op @2 (view_convert @1)))
+	(minus (view_convert @0) (neg_inner_op @2 (view_convert @1)))))
       (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
        (if (outer_op == PLUS_EXPR)
