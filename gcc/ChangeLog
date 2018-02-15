@@ -1,3 +1,12 @@
+2018-02-15  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	Back port from mainline
+	2018-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/83758
+	* config/rs6000/rs6000.c (rs6000_internal_arg_pointer): Only return
+	a reg rtx.
+
 2018-02-14  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Back port from mainline
