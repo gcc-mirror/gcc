@@ -1,5 +1,9 @@
 2018-02-15  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/Wstringop-overflow-3.c: Require effective target alloca.
+
+2018-02-15  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.c-torture/compile/pr84136.c: Require effective target
 	indirect_jumps.
 
