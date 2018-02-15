@@ -248,24 +248,22 @@ data::calc_crc () const
 }
 
 /* If CRC_PTR non-null, set the CRC of the buffer.  Mix the CRC into
-   that pointed to by CRC_PTR.  Otherwise store some fixed data in
-   the CRC location.  */
+   that pointed to by CRC_PTR.  Otherwise store zero.  */
 
 void
 data::set_crc (unsigned *crc_ptr)
 {
   gcc_checking_assert (size >= 4);
+  unsigned crc = 0;
   if (crc_ptr)
     {
-      unsigned crc = calc_crc ();
-      *(unsigned *)buffer = crc;
-      if (*crc_ptr)
-	/* Only mix the existing *CRC_PTR if it is non-zero.  */
-	crc = crc32_unsigned (*crc_ptr, crc);
-      *crc_ptr = crc;
+      crc = calc_crc ();
+      unsigned accum = *crc_ptr;
+      /* Only mix the existing *CRC_PTR if it is non-zero.  */
+      accum = accum ? crc32_unsigned (accum, crc) : crc;
+      *crc_ptr = accum;
     }
-  else
-    strcpy (buffer, "GNU");
+  *(unsigned *)buffer = crc;
 }
 
 /* Verify the buffer's CRC is correct.  */
@@ -322,6 +320,15 @@ protected:
       SHN_LORESERVE = 0xff00,
       SHN_XINDEX = 0xffff,
 
+      /* Section types.  */
+      SHT_NONE = 0,  /* No contents.  */
+      SHT_PROGBITS = 1, /* Random bytes.  */
+      SHT_STRTAB = 3,  /* A string table.  */
+
+      /* Section flags.  */
+      SHF_NONE = 0x00, /* Nothing.  */
+      SHF_STRINGS = 0x20,  /* NUL-Terminated strings.  */
+
       /* I really hope we do not get BMI files larger than 4GB.  */
       MY_CLASS = CLASS32,
       /* It is host endianness that is relevant.  */
@@ -335,15 +342,6 @@ public:
   /* Constants visible to users.  */
   enum public_constants
     {
-      /* Section types.  */
-      SHT_NONE = 0,  /* No contents.  */
-      SHT_PROGBITS = 1, /* Random bytes.  */
-      SHT_STRTAB = 3,  /* A string table.  */
-
-      /* Section flags.  */
-      SHF_NONE = 0x00, /* Nothing.  */
-      SHF_STRINGS = 0x20,  /* NUL-Terminated strings.  */
-
       /* Special error codes.  Breaking layering a bit.  */
       E_BAD_DATA = -1,  /* Random unexpected data errors.  */
       E_BAD_IMPORT = -2 /* A nested import failed.  */
@@ -492,7 +490,7 @@ public:
   /* Read section by number.  */
   data *read (unsigned snum);
   /* Find section by name.  */
-  unsigned find (unsigned type, const char *name);
+  unsigned find (const char *name, unsigned type = SHT_PROGBITS);
 
 public:
   /* Release the string table, when we're done with it.  */
@@ -582,9 +580,8 @@ public:
   }
 
 public:
-  /* Add a section wit contents.  */
-  unsigned add (unsigned type, unsigned name, const data *,
-		unsigned flags = SHF_NONE);
+  /* Add a section with contents or strings.  */
+  unsigned add (bool strings_p, unsigned name, const data *);
 
 public:
   /* Begin and end writing.  */
@@ -629,7 +626,7 @@ elf_in::read (unsigned snum)
 /* Find a section NAME and TYPE.  Return section number or 0 on
    failure.  */
 unsigned
-elf_in::find (unsigned type, const char *sname)
+elf_in::find (const char *sname, unsigned type)
 {
   unsigned snum = sections->length ();
   while (--snum)
@@ -879,15 +876,18 @@ elf_out::write (const void *data, size_t size)
    number or 0 on failure.  */
 
 unsigned
-elf_out::add (unsigned type, unsigned name, const data *data, unsigned flags)
+elf_out::add (bool strings_p, unsigned name, const data *data)
 {
   uint32_t off = pad ();
   if (!off)
     return 0;
-  if (!write (data->buffer, data->size))
+  uint32_t disp = strings_p ? 4 : 0;
+  if (!write (data->buffer + disp, data->size - disp))
     return 0;
 
-  return add (type, name, off, data->size, flags);
+  return add (strings_p ? SHT_STRTAB : SHT_PROGBITS,
+	      name, off, data->size - disp,
+	      strings_p ? SHF_STRINGS : SHF_NONE);
 }
 
 /* Begin writing the file.  Initialize the section table and write an
@@ -1574,7 +1574,7 @@ bytes_out::printf (const char *format, ...)
 bool
 bytes_in::begin (elf_in *source, const char *name)
 {
-  unsigned snum = source->find (elf::SHT_PROGBITS, name);
+  unsigned snum = source->find (name);
 
   return begin (source, snum, name);
 }
@@ -1622,9 +1622,7 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
 
   data->size = pos;
   data->set_crc (crc_ptr);
-  unsigned sec_num = sink->add (crc_ptr ? elf::SHT_PROGBITS : elf::SHT_STRTAB,
-				name, data,
-				crc_ptr ? elf::SHF_NONE : elf::SHF_STRINGS);
+  unsigned sec_num = sink->add (!crc_ptr, name, data);
   parent::end ();
 
   return sec_num;
@@ -2644,6 +2642,7 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
   readme.begin ();
 
   /* Write version and module name to readme.  */
+  readme.printf ("GNU C++ Module Binary Interface%c", 0);
   version_string string;
   version2string (get_version (), string);
   readme.printf ("version:%s%c", string, 0);

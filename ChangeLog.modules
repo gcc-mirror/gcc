@@ -1,5 +1,12 @@
 2018-02-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.c (elf): Make more constants private.
+	(elf_in::find): Swap args, default to PROGBITS.
+	(elf_out::add): Replace type and flags with string_p arg.
+	(bytes_in::begin, bytes_out::end): Adjust.
+	(data::set_crc): Store zero for no-crc.
+
 	Module map files have more syntax
 	gcc/cp/
 	* cxx-module-wrapper.sh: Accept src filename, don't search
