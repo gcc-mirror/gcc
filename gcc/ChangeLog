@@ -1,3 +1,10 @@
+2018-02-14  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_first_stack_step): Move locals after
+	first SMALL_OPERAND check.  New local min_second_step.  Move assert
+	to where locals are set.  Add TARGET_RVC support.
+	* config/riscv/riscv.h (C_SxSP_BITS, SWSP_REACH, SDSP_REACH): New.
+
 2018-02-14  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* doc/invoke.texi: Correct -Wformat-overflow code sample.
