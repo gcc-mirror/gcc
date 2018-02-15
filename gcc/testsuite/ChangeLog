@@ -1,3 +1,7 @@
+2018-02-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/stop_shouldfail.f90: New test.
+
 2018-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84330
