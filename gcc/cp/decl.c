@@ -8718,9 +8718,6 @@ grokfndecl (tree ctype,
       DECL_CONTEXT (decl) = ctype;
     }
 
-  if (in_namespace || !ctype)
-    decl_set_module (decl);
-
   if (deletedp)
     DECL_DELETED_FN (decl) = 1;
 
@@ -8730,6 +8727,8 @@ grokfndecl (tree ctype,
       if (funcdef_flag)
 	check_class_member_definition_namespace (decl);
     }
+
+  set_module_owner (decl);
 
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
@@ -9154,7 +9153,7 @@ grokvardecl (tree type,
 				|| inlinep));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
 
-      decl_set_module (decl);
+      set_module_owner (decl);
     }
   /* Not at top level, only `static' makes a static definition.  */
   else
@@ -11671,7 +11670,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  if (!current_function_decl)
 	    {
 	      DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
-	      decl_set_module (decl);
+	      set_module_owner (decl);
 	    }
 	  else if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (current_function_decl)
 		   || (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P

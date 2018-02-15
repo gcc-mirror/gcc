@@ -3202,31 +3202,6 @@ module_import_bitmap (unsigned ix)
   return (*module_state::modules)[ix]->imports;
 }
 
-/* Return the context that controls what module DECL is in.  That is
-   the outermost non-namespace context.  */
-
-tree
-module_context (tree decl)
-{
-  for (;;)
-    {
-      tree outer = CP_DECL_CONTEXT (decl);
-      while (TYPE_P (outer))
-	{
-	  if (tree name = TYPE_NAME (outer))
-	    outer = name;
-	  else if (tree ctx = TYPE_CONTEXT (outer))
-	    outer = ctx;
-	  else
-	    return NULL_TREE;
-	}
-      if (TREE_CODE (outer) == NAMESPACE_DECL)
-	break;
-      decl = outer;
-    }
-  return decl;
-}
-
 /* We've just directly imported OTHER.  Update our import/export
    bitmaps.  IS_EXPORT is true if we're reexporting the OTHER.  */
 
@@ -3382,9 +3357,9 @@ trees_in::define_function (tree decl, tree maybe_template)
   if (get_overrun ())
     return NULL_TREE;
 
-  if (TREE_CODE (CP_DECL_CONTEXT (maybe_template)) == NAMESPACE_DECL)
+  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
     {
-      unsigned mod = MAYBE_DECL_MODULE_OWNER (maybe_template);
+      unsigned mod = MAYBE_DECL_MODULE_OWNER (decl);
       if (mod != state->mod)
 	{
 	  error ("unexpected definition of %q#D", decl);
@@ -4430,6 +4405,9 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.odr_used);
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
+  WB (lang->u.base.dependent_init_p);
+  gcc_checking_assert (lang->u.base.module_owner < MODULE_IMPORT_BASE);
+  WB (lang->u.base.module_owner != 0);
   switch (lang->u.base.selector)
     {
     case lds_fn:  /* lang_decl_fn.  */
@@ -4483,6 +4461,8 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.odr_used);
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
+  RB (lang->u.base.dependent_init_p);
+  lang->u.base.module_owner = b () ? state->mod : MODULE_NONE;
   switch (lang->u.base.selector)
     {
     case lds_fn:  /* lang_decl_fn.  */
@@ -5595,6 +5575,12 @@ trees_out::tree_node_raw (tree t)
   tree_code_class klass = TREE_CODE_CLASS (TREE_CODE (t));
   bool specific = false;
 
+  /* The only decls we should stream out are those from this module,
+     or the global module.  */
+  gcc_assert (klass != tcc_declaration
+	      || MAYBE_DECL_MODULE_OWNER (t) == MODULE_NONE
+	      || t != get_module_owner (t)
+	      || MAYBE_DECL_MODULE_OWNER (t) == MODULE_PURVIEW);
   if (klass == tcc_type || klass == tcc_declaration)
     {
       if (klass == tcc_declaration)
@@ -5672,10 +5658,6 @@ trees_in::tree_node_raw (tree t)
 	}
       else
 	{
-	  if (DECL_CONTEXT (t)
-	      && (TREE_CODE (DECL_CONTEXT (t)) == NAMESPACE_DECL
-		  || TREE_CODE (DECL_CONTEXT (t)) == TRANSLATION_UNIT_DECL))
-	    DECL_MODULE_OWNER (t) = state->mod;
 	  if (!lang_decl_vals (t))
 	    return false;
 	}
@@ -5870,8 +5852,8 @@ trees_out::tree_node (tree t)
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     {
       /* A DECL.  */
-      tree module_ctx = module_context (t);
-      unsigned owner = MAYBE_DECL_MODULE_OWNER (module_ctx);
+      tree owner_decl = get_module_owner (t);
+      unsigned owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
       if (owner >= MODULE_IMPORT_BASE)
 	{
 	  /* An imported decl -> tt_import.  */
@@ -6404,14 +6386,82 @@ module_exporting_level ()
   return export_depth;
 }
 
-/* Set the module EXPORT and INDEX fields on DECL.  */
+/* Return the decl that determines the owning module of DECL.  That
+   may be DECL itself, or it may DECL's context, or it may be some
+   other DECL (for instance an unscoped enum's CONST_DECLs are owned
+   by the TYPE_DECL).  */
+
+tree
+get_module_owner (tree decl)
+{
+ again:
+  gcc_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == tcc_declaration);
+
+  switch (TREE_CODE (decl))
+    {
+    case TEMPLATE_DECL:
+      decl = DECL_TEMPLATE_RESULT (decl);
+      goto again;
+
+    case NAMESPACE_DECL:
+    case FUNCTION_DECL:
+      /* Things that are containers hold their own module owner
+	 info.  */
+      return decl;
+
+    case TYPE_DECL:
+      /* The implicit typedef of a structured type has its own module
+	 owner.  */
+      if (DECL_IMPLICIT_TYPEDEF_P (decl))
+	return decl;
+      /* Fallthrough.  */
+
+    case VAR_DECL:
+      /* Things at namespace scope, have their own module owner ...  */
+      if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+	return decl;
+      break;
+
+    case CONST_DECL:
+      /* ... except enumeration constants.  */
+      if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
+	  && DECL_CONTEXT (decl) == DECL_CONTEXT (TYPE_NAME (TREE_TYPE (decl))))
+	/* An enumeration is controlled by its enum-decl.  Its
+	   enumerations may not have that as DECL_CONTEXT.  */
+	return TYPE_NAME (TREE_TYPE (decl));
+      break;
+
+    default:
+      break;
+    }
+
+  /* Otherwise, find this decl's context, which should itself have
+     the data.  */
+  tree ctx = CP_DECL_CONTEXT (decl);
+  gcc_assert (ctx && TREE_CODE (decl) != NAMESPACE_DECL);
+  while (TYPE_P (ctx))
+    {
+      if (TYPE_NAME (ctx))
+	ctx = TYPE_NAME (ctx);
+      else if (TYPE_CONTEXT (ctx))
+	ctx = TYPE_CONTEXT (ctx);
+      else
+	/* Always return something, global_namespace is a useful
+	   non-owning decl.  */
+	return global_namespace;
+    }
+  return ctx;
+}
+
+/* Set the module EXPORT and OWNER fields on DECL.  */
 
 void
-decl_set_module (tree decl)
+set_module_owner (tree decl)
 {
-  /* We should only be setting moduleness on namespace-scope things.  */
-  gcc_assert (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL);
-
+  /* We should only be setting moduleness on things that are their own
+     owners.  */
+  gcc_checking_assert (decl == get_module_owner (decl));
+  
   if (!module_state::modules)
     /* We can be called when modules are not enabled.  */
     return;
@@ -6421,9 +6471,31 @@ decl_set_module (tree decl)
   if ((*module_state::modules)[MODULE_PURVIEW])
     {
       if (export_depth)
-	DECL_MODULE_EXPORT_P (decl) = true;
+	{
+	  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
+	  DECL_MODULE_EXPORT_P (decl) = true;
+	}
       retrofit_lang_decl (decl);
       DECL_MODULE_OWNER (decl) = MODULE_PURVIEW;
+    }
+}
+
+/* DECL has been implicitly declared, set its module owner from
+   FROM.  */
+
+void
+set_implicit_module_owner (tree decl, tree from)
+{
+  gcc_checking_assert (decl == get_module_owner (decl));
+
+  if (!module_state::modules)
+    return;
+
+  if (unsigned owner = MAYBE_DECL_MODULE_OWNER (from))
+    {
+      DECL_MODULE_EXPORT_P (decl) = DECL_MODULE_EXPORT_P (from);
+      retrofit_lang_decl (decl);
+      DECL_MODULE_OWNER (decl) = owner;
     }
 }
 

@@ -1003,13 +1003,16 @@ dump_global_iord (cxx_pretty_printer *pp, tree t)
 static void
 dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 {
-  tree ctx = module_context (decl);
+  tree owner = get_module_owner (decl);
 
-  if (!DECL_MODULE_EXPORT_P (ctx) && MAYBE_DECL_MODULE_PURVIEW_P (ctx))
+  if (DECL_MODULE_EXPORT_P (owner))
+    return;
+
+  if (unsigned module = MAYBE_DECL_MODULE_OWNER (owner))
     {
       pp_character (pp, '@');
       pp->padding = pp_none;
-      dump_expr (pp, module_name (DECL_MODULE_OWNER (ctx)), 0);
+      dump_expr (pp, module_name (module), 0);
     }
 }
 

@@ -6526,7 +6526,9 @@ extern tree implicitly_declare_fn               (special_function_kind, tree,
 extern bool module_purview_p ();
 extern bool module_interface_p ();
 extern int module_exporting_level ();
-extern void decl_set_module (tree);
+extern tree get_module_owner (tree);
+extern void set_module_owner (tree);
+extern void set_implicit_module_owner (tree, tree);
 extern int push_module_export (bool, tree = NULL);
 extern void pop_module_export (int);
 extern void declare_module (const cp_expr &, bool, tree);
@@ -6536,7 +6538,6 @@ extern void import_module (const cp_expr &, tree);
 extern tree module_name (unsigned);
 extern tree module_vec_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
-extern tree module_context (tree);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.c */

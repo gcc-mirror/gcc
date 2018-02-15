@@ -2132,6 +2132,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   set_linkage_according_to_type (type, fn);
+  set_implicit_module_owner (fn, TYPE_NAME (type));
   if (TREE_PUBLIC (fn))
     DECL_COMDAT (fn) = 1;
   rest_of_decl_compilation (fn, namespace_bindings_p (), at_eof);

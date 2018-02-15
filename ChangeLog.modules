@@ -1,5 +1,26 @@
 2018-02-15  Nathan Sidwell  <nathan@acm.org>
 
+	Module ownership on containers
+	gcc/cp/
+	* cp-tree.h (decl_set_module, module_context): Delete.
+	(get_module_owner, set_module_owner)
+	(set_implicit_module_owner): Declare.
+	* decl.c (grokfndecl, grokvardecl, grokdeclarator): Call
+	set_module_owner.
+	* error.c (dump_module_suffix): Use get_module_owner.
+	* mangle.c (maybe_write_module): Likewise.
+	* method.c (implicitly_declare_fn): Use set_implicit_module_owner.
+	* module.c (module_context, decl_set_module): Delete.
+	(trees_in::define_function): Adjust.
+	(trees_{in,out}::lang_decl_bools): Set module_owner.
+	(trees_{in,out}::tree_node_raw): Adjust.
+	(trees_out::tree_node): Adjust.
+	(get_module_owner, set_module_owner)
+	(set_implicit_module_owner): Define.
+	* name-lookup.c (do_pushtag): Use set_module_owner.
+	* pt.c (lookup_template_class_1, instanitate_decl): Use
+	set_implicit_module_owner.
+
 	gcc/cp/
 	* module.c (trees_out::tree_node): Reorder. 
 

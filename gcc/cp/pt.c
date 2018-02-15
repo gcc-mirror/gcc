@@ -4509,9 +4509,10 @@ build_template_decl (tree decl, tree parms, bool member_template_p)
   DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
   DECL_MEMBER_TEMPLATE_P (tmpl) = member_template_p;
 
+  /* Propagate module informtion from the decl.  */
   DECL_MODULE_EXPORT_P (tmpl) = DECL_MODULE_EXPORT_P (decl);
-  if (unsigned ix = MAYBE_DECL_MODULE_OWNER (decl))
-    DECL_MODULE_OWNER (tmpl) = ix;
+  if (unsigned module = MAYBE_DECL_MODULE_OWNER (decl))
+    DECL_MODULE_OWNER (tmpl) = module;
 
   return tmpl;
 }
@@ -8987,6 +8988,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
 	  DECL_SOURCE_LOCATION (type_decl)
 	    = DECL_SOURCE_LOCATION (TYPE_STUB_DECL (template_type));
+	  set_implicit_module_owner (type_decl, gen_tmpl);
 	}
       else
 	type_decl = TYPE_NAME (t);
@@ -23148,6 +23150,10 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	}
       SET_DECL_IMPLICIT_INSTANTIATION (d);
     }
+
+  if (TREE_CODE (d) == FUNCTION_DECL
+      || TREE_CODE (CP_DECL_CONTEXT (d)) == NAMESPACE_DECL)
+    set_implicit_module_owner (d, gen_tmpl);
 
   /* Defer all other templates, unless we have been explicitly
      forbidden from doing so.  */

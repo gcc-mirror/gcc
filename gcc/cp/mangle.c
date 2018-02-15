@@ -865,20 +865,18 @@ write_encoding (const tree decl)
 static void
 maybe_write_module (tree decl)
 {
-  tree ctx = module_context (decl);
+  tree owner = get_module_owner (decl);
 
-  if (DECL_MODULE_EXPORT_P (ctx))
+  if (DECL_MODULE_EXPORT_P (owner))
     return;
 
-  if (!MAYBE_DECL_MODULE_PURVIEW_P (ctx))
+  if (!MAYBE_DECL_MODULE_PURVIEW_P (owner))
     return;
-
-  unsigned mod_ix = DECL_MODULE_OWNER (ctx);
-
-  write_char ('W');
 
   /* Mangle the module.  */
-  tree vec_name = module_vec_name (mod_ix);
+  tree vec_name = module_vec_name (DECL_MODULE_OWNER (owner));
+
+  write_char ('W');
 
   // FIXME: back-references?
   for (int ix = 0; ix < TREE_VEC_LENGTH (vec_name); ix++)
