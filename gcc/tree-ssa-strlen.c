@@ -1878,6 +1878,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
       poly_int64 lhsoff;
       tree lhsbase = get_addr_base_and_unit_offset (lhs, &lhsoff);
       if (lhsbase
+	  && dstbase
 	  && known_eq (dstoff, lhsoff)
 	  && operand_equal_p (dstbase, lhsbase, 0))
 	return false;
