@@ -1,5 +1,8 @@
 2018-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84045 - ICE with typedef and noexcept.
+	* except.c (build_noexcept_spec): Use strip_typedefs_expr.
+
 	PR c++/84376 - ICE with omitted template arguments.
 	* pt.c (dguide_name_p): Check for IDENTIFIER_NODE.
 
