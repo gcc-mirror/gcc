@@ -1,6 +1,9 @@
 2018-02-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c (trees_out::tree_node): Reorder. 
+
+	gcc/cp/
 	* module.c: Commenting and a few cleanups.
 
 	gcc/cp/

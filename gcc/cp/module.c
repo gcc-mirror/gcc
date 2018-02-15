@@ -5763,49 +5763,6 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t))
-    {
-      /* A named type.  */
-      tree name = TYPE_NAME (t);
-
-      gcc_assert (TREE_CODE (name) == TYPE_DECL);
-      if (DECL_TINFO_P (name))
-	{
-	  /* A typeinfo pseudo type -> tt_tinfo_pseudo.  */
-	  unsigned ix = get_pseudo_tinfo_index (t);
-
-	  /* Make sure we're identifying this exact variant.  */
-	  gcc_assert (get_pseudo_tinfo_type (ix) == t);
-	  i (tt_tinfo_pseudo);
-	  u (ix);
-	  unsigned tag = insert (t);
-	  dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
-	  goto done;
-	}
-
-      if (!tree_map.get (name))
-	{
-	  /* A new named type -> tt_type_name.
-
-	     Write the type name as an interstitial, and then start
-	     over.  We need to stream the DECL_NAME first.  */
-	  dump () && dump ("Writing interstitial type name %C:%N%S",
-			   TREE_CODE (name), name, name);
-	  /* Make sure this is not a named builtin. We should find
-	     those some other way to be canonically correct.  */
-	  gcc_assert (TREE_TYPE (DECL_NAME (name)) != t
-		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-	  i (tt_type_name);
-	  tree_node (name);
-	  dump () && dump ("Wrote interstitial type name %C:%N%S",
-			   TREE_CODE (name), name, name);
-	  /* The type itself could be a variant of TREE_TYPE (name),
-	     so stream it out in its own right.  We'll find the name
-	     in the map, so not end up here.  */
-	  goto again;
-	}
-    }
-
   if (IS_FAKE_BASE_TYPE (t))
     {
       /* A fake base type -> tt_as_base.  */
@@ -5867,6 +5824,49 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_type && TYPE_NAME (t))
+    {
+      /* A named type.  */
+      tree name = TYPE_NAME (t);
+
+      gcc_assert (TREE_CODE (name) == TYPE_DECL);
+      if (DECL_TINFO_P (name))
+	{
+	  /* A typeinfo pseudo type -> tt_tinfo_pseudo.  */
+	  unsigned ix = get_pseudo_tinfo_index (t);
+
+	  /* Make sure we're identifying this exact variant.  */
+	  gcc_assert (get_pseudo_tinfo_type (ix) == t);
+	  i (tt_tinfo_pseudo);
+	  u (ix);
+	  unsigned tag = insert (t);
+	  dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
+	  goto done;
+	}
+
+      if (!tree_map.get (name))
+	{
+	  /* A new named type -> tt_type_name.
+
+	     Write the type name as an interstitial, and then start
+	     over.  We need to stream the DECL_NAME first.  */
+	  dump () && dump ("Writing interstitial type name %C:%N%S",
+			   TREE_CODE (name), name, name);
+	  /* Make sure this is not a named builtin. We should find
+	     those some other way to be canonically correct.  */
+	  gcc_assert (TREE_TYPE (DECL_NAME (name)) != t
+		      || DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+	  i (tt_type_name);
+	  tree_node (name);
+	  dump () && dump ("Wrote interstitial type name %C:%N%S",
+			   TREE_CODE (name), name, name);
+	  /* The type itself could be a variant of TREE_TYPE (name),
+	     so stream it out in its own right.  We'll find the name
+	     in the map, so not end up here.  */
+	  goto again;
+	}
+    }
+
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     {
       /* A DECL.  */
@@ -5883,8 +5883,7 @@ trees_out::tree_node (tree t)
 	  tree_node (DECL_DECLARES_FUNCTION_P (t) ? TREE_TYPE (t) : NULL_TREE);
 	  int tag = insert (t);
 	  dump () && dump ("Wrote import:%d %N@%I", tag, t, module_name (owner));
-	  tree type = TREE_TYPE (t);
-	  if (type)
+	  if (tree type = TREE_TYPE (t))
 	    {
 	      /* Make sure the imported type is in the map too.  */
 	      tag = maybe_insert (type);
