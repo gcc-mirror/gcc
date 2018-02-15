@@ -105,8 +105,8 @@ class vaopt_state {
     : m_pfile (pfile),
     m_allowed (any_args),
     m_variadic (is_variadic),
-    m_state (0),
     m_last_was_paste (false),
+    m_state (0),
     m_paste_location (0),
     m_location (0)
   {
@@ -116,7 +116,9 @@ class vaopt_state {
   {
     ERROR,
     DROP,
-    INCLUDE
+    INCLUDE,
+    BEGIN,
+    END
   };
 
   /* Given a token, update the state of this tracker and return a
@@ -139,7 +141,7 @@ class vaopt_state {
 	  }
 	++m_state;
 	m_location = token->src_loc;
-	return DROP;
+	return BEGIN;
       }
     else if (m_state == 1)
       {
@@ -191,7 +193,7 @@ class vaopt_state {
 		    return ERROR;
 		  }
 
-		return DROP;
+		return END;
 	      }
 	  }
 	return m_allowed ? INCLUDE : DROP;
@@ -220,6 +222,9 @@ class vaopt_state {
   bool m_allowed;
   /* True if the macro is variadic.  */
   bool m_variadic;
+  /* If true, the previous token was ##.  This is used to detect when
+     a paste occurs at the end of the sequence.  */
+  bool m_last_was_paste;
 
   /* The state variable:
      0 means not parsing
@@ -228,9 +233,6 @@ class vaopt_state {
      >= 3 means looking for ")", the number encodes the paren depth.  */
   int m_state;
 
-  /* If true, the previous token was ##.  This is used to detect when
-     a paste occurs at the end of the sequence.  */
-  bool m_last_was_paste;
   /* The location of the paste token.  */
   source_location m_paste_location;
 
@@ -1701,6 +1703,30 @@ expanded_token_index (cpp_reader *pfile, cpp_macro *macro,
   return cur_replacement_token - macro->exp.tokens;
 }
 
+/* Copy whether PASTE_LEFT is set from SRC to *PASTE_FLAG.  */
+
+static void
+copy_paste_flag (cpp_reader *pfile, const cpp_token **paste_flag,
+		 const cpp_token *src)
+{
+  cpp_token *token = _cpp_temp_token (pfile);
+  token->type = (*paste_flag)->type;
+  token->val = (*paste_flag)->val;
+  if (src->flags & PASTE_LEFT)
+    token->flags = (*paste_flag)->flags | PASTE_LEFT;
+  else
+    token->flags = (*paste_flag)->flags & ~PASTE_LEFT;
+  *paste_flag = token;
+}
+
+/* True IFF the last token emitted into BUFF (if any) is PTR.  */
+
+static bool
+last_token_is (_cpp_buff *buff, const cpp_token **ptr)
+{
+  return (ptr && tokens_buff_last_token_ptr (buff) == ptr);
+}
+
 /* Replace the parameters in a function-like macro of NODE with the
    actual ARGS, and place the result in a newly pushed token context.
    Expand each argument before replacing, unless it is operated upon
@@ -1833,6 +1859,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
   i = 0;
   vaopt_state vaopt_tracker (pfile, macro->variadic,
 			     args[macro->paramc - 1].count > 0);
+  const cpp_token **vaopt_start = NULL;
   for (src = macro->exp.tokens; src < limit; src++)
     {
       unsigned int arg_tokens_count;
@@ -1841,8 +1868,58 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
       const cpp_token **tmp_token_ptr;
 
       /* __VA_OPT__ handling.  */
-      if (vaopt_tracker.update (src) != vaopt_state::INCLUDE)
-	continue;
+      vaopt_state::update_type vostate = vaopt_tracker.update (src);
+      if (vostate != vaopt_state::INCLUDE)
+	{
+	  if (vostate == vaopt_state::BEGIN)
+	    {
+	      /* Padding on the left of __VA_OPT__ (unless RHS of ##).  */
+	      if (src != macro->exp.tokens && !(src[-1].flags & PASTE_LEFT))
+		{
+		  const cpp_token *t = padding_token (pfile, src);
+		  unsigned index = expanded_token_index (pfile, macro, src, i);
+		  /* Allocate a virtual location for the padding token and
+		     append the token and its location to BUFF and
+		     VIRT_LOCS.   */
+		  tokens_buff_add_token (buff, virt_locs, t,
+					 t->src_loc, t->src_loc,
+					 map, index);
+		}
+	      vaopt_start = tokens_buff_last_token_ptr (buff);
+	    }
+	  else if (vostate == vaopt_state::END)
+	    {
+	      const cpp_token **start = vaopt_start;
+	      vaopt_start = NULL;
+
+	      /* Remove any tail padding from inside the __VA_OPT__.  */
+	      paste_flag = tokens_buff_last_token_ptr (buff);
+	      while (paste_flag && paste_flag != start
+		     && (*paste_flag)->type == CPP_PADDING)
+		{
+		  tokens_buff_remove_last_token (buff);
+		  paste_flag = tokens_buff_last_token_ptr (buff);
+		}
+
+	      if (src->flags & PASTE_LEFT)
+		{
+		  /* With a non-empty __VA_OPT__ on the LHS of ##, the last
+		     token should be flagged PASTE_LEFT.  */
+		  if (paste_flag && (*paste_flag)->type != CPP_PADDING)
+		    copy_paste_flag (pfile, paste_flag, src);
+		}
+	      else
+		{
+		  /* Otherwise, avoid paste on RHS, __VA_OPT__(c)d or
+		     __VA_OPT__(c)__VA_OPT__(d).  */
+		  const cpp_token *t = &pfile->avoid_paste;
+		  tokens_buff_add_token (buff, virt_locs,
+					 t, t->src_loc, t->src_loc,
+					 NULL, 0);
+		}
+	    }
+	  continue;
+	}
 
       if (src->type != CPP_MACRO_ARG)
 	{
@@ -1921,8 +1998,11 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		  else
 		    paste_flag = tmp_token_ptr;
 		}
-	      /* Remove the paste flag if the RHS is a placemarker.  */
-	      else if (arg_tokens_count == 0)
+	      /* Remove the paste flag if the RHS is a placemarker, unless the
+		 previous emitted token is at the beginning of __VA_OPT__;
+		 placemarkers within __VA_OPT__ are ignored in that case.  */
+	      else if (arg_tokens_count == 0
+		       && tmp_token_ptr != vaopt_start)
 		paste_flag = tmp_token_ptr;
 	    }
 	}
@@ -1934,11 +2014,26 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 						 track_macro_expansion),
 				     MACRO_ARG_TOKEN_EXPANDED,
 				     arg, arg->expanded);
+
+	  if (last_token_is (buff, vaopt_start))
+	    {
+	      /* We're expanding an arg at the beginning of __VA_OPT__.
+		 Skip padding. */
+	      while (arg_tokens_count)
+		{
+		  const cpp_token *t = macro_arg_token_iter_get_token (&from);
+		  if (t->type != CPP_PADDING)
+		    break;
+		  macro_arg_token_iter_forward (&from);
+		  --arg_tokens_count;
+		}
+	    }
 	}
 
       /* Padding on the left of an argument (unless RHS of ##).  */
       if ((!pfile->state.in_directive || pfile->state.directive_wants_padding)
-	  && src != macro->exp.tokens && !(src[-1].flags & PASTE_LEFT))
+	  && src != macro->exp.tokens && !(src[-1].flags & PASTE_LEFT)
+	  && !last_token_is (buff, vaopt_start))
 	{
 	  const cpp_token *t = padding_token (pfile, src);
 	  unsigned index = expanded_token_index (pfile, macro, src, i);
@@ -2023,7 +2118,8 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		     NODE_NAME (node), src->val.macro_arg.arg_no);
 
       /* Avoid paste on RHS (even case count == 0).  */
-      if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT))
+      if (!pfile->state.in_directive && !(src->flags & PASTE_LEFT)
+	  && !last_token_is (buff, vaopt_start))
 	{
 	  const cpp_token *t = &pfile->avoid_paste;
 	  tokens_buff_add_token (buff, virt_locs,
@@ -2033,16 +2129,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 
       /* Add a new paste flag, or remove an unwanted one.  */
       if (paste_flag)
-	{
-	  cpp_token *token = _cpp_temp_token (pfile);
-	  token->type = (*paste_flag)->type;
-	  token->val = (*paste_flag)->val;
-	  if (src->flags & PASTE_LEFT)
-	    token->flags = (*paste_flag)->flags | PASTE_LEFT;
-	  else
-	    token->flags = (*paste_flag)->flags & ~PASTE_LEFT;
-	  *paste_flag = token;
-	}
+	copy_paste_flag (pfile, paste_flag, src);
 
       i += arg_tokens_count;
     }
@@ -2213,6 +2300,8 @@ tokens_buff_count (_cpp_buff *buff)
 static const cpp_token **
 tokens_buff_last_token_ptr (_cpp_buff *buff)
 {
+  if (BUFF_FRONT (buff) == buff->base)
+    return NULL;
   return &((const cpp_token **) BUFF_FRONT (buff))[-1];
 }
 
