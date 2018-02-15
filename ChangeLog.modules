@@ -1,6 +1,9 @@
 2018-02-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.c: Commenting and a few cleanups.
+
+	gcc/cp/
 	* module.c (elf): Make more constants private.
 	(elf_in::find): Swap args, default to PROGBITS.
 	(elf_out::add): Replace type and flags with string_p arg.
