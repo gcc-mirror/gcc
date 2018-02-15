@@ -1,3 +1,12 @@
+2018-02-15  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	Back port from mainline
+	2018-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/83758
+	* config/rs6000/rs6000.c (rs6000_internal_arg_pointer): Only return
+	a reg rtx.
+
 2018-02-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (hppa_profile_hook): Mark SYMBOL_REF for _mcount as
