@@ -4673,7 +4673,7 @@ gfc_check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 
 /* The following three functions check that the formal arguments
    of user defined derived type IO procedures are compliant with
-   the requirements of the standard.  */
+   the requirements of the standard, see F03:9.5.3.7.2 (F08:9.6.4.8.3).  */
 
 static void
 check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
@@ -4701,6 +4701,10 @@ check_dtio_arg_TKR_intent (gfc_symbol *fsym, bool typebound, bt type,
 	   && (fsym->as == NULL || fsym->as->type != AS_ASSUMED_SHAPE))
     gfc_error ("DTIO dummy argument at %L must be an "
 	       "ASSUMED SHAPE ARRAY", &fsym->declared_at);
+
+  if (type == BT_CHARACTER && fsym->ts.u.cl->length != NULL)
+    gfc_error ("DTIO character argument at %L must have assumed length",
+               &fsym->declared_at);
 
   if (fsym->attr.intent != intent)
     gfc_error ("DTIO dummy argument at %L must have INTENT %s",

@@ -1,3 +1,9 @@
+2018-02-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84409
+	* interface.c (check_dtio_arg_TKR_intent): Add a check for character
+	length.
+
 2018-02-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/84385

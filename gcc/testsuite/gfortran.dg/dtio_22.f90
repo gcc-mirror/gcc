@@ -15,10 +15,10 @@ contains
   subroutine wf(this, unit, b, c, iostat, iomsg)
     class(t), intent(in) :: this
     integer, intent(in) :: unit
-    character, intent(in) :: b
+    character(*), intent(in) :: b
     integer, intent(in) :: c(:)
     integer, intent(out) :: iostat
-    character, intent(inout) :: iomsg
+    character(*), intent(inout) :: iomsg
     write (unit, "(i3)", IOSTAT=iostat, IOMSG=iomsg) this%i
   end subroutine
 end

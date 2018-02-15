@@ -1,3 +1,9 @@
+2018-02-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84409
+	* gfortran.dg/dtio_21.f03: Add an error message.
+	* gfortran.dg/dtio_22.f90: Fix invalid test case.
+
 2018-02-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84381
