@@ -1,5 +1,9 @@
 2018-02-15  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84383
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Don't look at
+	dstoff nor call operand_equal_p if dstbase is NULL.
+
 	PR tree-optimization/84334
 	* match.pd ((A +- CST1) +- CST2 -> A + CST3): If A is
 	also a CONSTANT_CLASS_P, punt.
