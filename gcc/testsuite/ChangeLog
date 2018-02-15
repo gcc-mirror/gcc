@@ -1,3 +1,8 @@
+2018-02-15  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.c-torture/compile/pr84136.c: Require effective target
+	indirect_jumps.
+
 2018-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84383
