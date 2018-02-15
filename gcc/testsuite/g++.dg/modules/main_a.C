@@ -1,9 +1,10 @@
 // { dg-module-do run { target *-*-* } "hello.o" }
-// { dg-options "-fmodules" }
+// { dg-options "-fmodules -fmodule-file=main-map" }
+// Relies on CXX_MODULE_WRAPPER functionality, setting options above
+// overrides the default -fmodule-wrapper=
 
-// Relies on CXX_MODULE_WRAPPER functionality
-import hello;
-// { dg-module-bmi "hello" }
+import helgen;
+// { dg-module-bmi "=hell.x" }
 int main (void)
 {
   greeter ("world");

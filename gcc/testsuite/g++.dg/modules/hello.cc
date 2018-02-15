@@ -1,7 +1,7 @@
 // Used by main.C
 
 extern "C" int printf (const char *, ...);
-export module hello;
+export module helgen;
 
 export void greeter (const char *name)
 {

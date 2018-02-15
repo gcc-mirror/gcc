@@ -1660,6 +1660,7 @@ struct GTY(()) module_state {
   elf_in *GTY((skip)) from;     /* Lazy loading info (not implemented) */
 
   char *filename;	/* Filename */
+  char *srcname;	/* Source name, if available.  */
   location_t loc;	/* Its location.  */
 
   unsigned lazy;	/* Number of lazy sections yet to read.  */
@@ -1724,6 +1725,7 @@ struct GTY(()) module_state {
   static void init ();
   static void fini ();
   static module_state *get_module (tree name, module_state * = NULL);
+  static void print_map ();
 
  public:
   /* Vector indexed by OWNER.  */
@@ -1761,6 +1763,8 @@ static const char *module_prefix;
 static vec<const char *, va_heap> module_file_args;
 
 static const char *module_wrapper;
+
+static bool module_map_dump;
 
 /* Global trees.  */
 const std::pair<tree *, unsigned> module_state::global_trees[] =
@@ -2325,7 +2329,7 @@ module_state::module_state (tree name)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
     name (name), vec_name (NULL_TREE),
     remap (NULL), from (NULL),
-    filename (NULL), loc (UNKNOWN_LOCATION),
+    filename (NULL), srcname (NULL), loc (UNKNOWN_LOCATION),
     lazy (0), mod (MODULE_UNKNOWN), crc (0)
 {
   imported = exported = false;
@@ -2486,11 +2490,29 @@ module_state::release (bool all)
       exports = NULL;
     }
 
+  XDELETEVEC (srcname);
+  srcname = NULL;
+
   if (remap)
     {
       vec_free (remap);
       delete from;
       from = NULL;
+    }
+}
+
+void
+module_state::print_map ()
+{
+  hash_table<module_state_hash>::iterator end (hash->end ());
+  for (hash_table<module_state_hash>::iterator iter (hash->begin ());
+       iter != end; ++iter)
+    {
+      module_state *state = *iter;
+      if (state->name)
+	fprintf (stdout, state->srcname ? "%s=%s ;%s\n" : "%s=%s\n",
+		 IDENTIFIER_POINTER (state->name), state->filename,
+		 state->srcname);
     }
 }
 
@@ -2509,8 +2531,12 @@ module_state::announce (const char *what) const
   diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
 }
 
+/* Create a module file name from NAME, length NAME_LEN.  NAME might
+   not be NUL-terminated.  FROM_IDENT is true if NAME is the
+   module-name, false if it is already filenamey.  */
+
 static char *
-make_module_name (const char *name, size_t name_len, bool from_ident)
+make_module_filename (const char *name, size_t name_len, bool from_ident)
 {
   size_t pfx_len = module_prefix ? strlen (module_prefix) : 0;
   size_t sfx_len = from_ident ? strlen (MOD_FNAME_SFX) : 0;
@@ -2523,7 +2549,8 @@ make_module_name (const char *name, size_t name_len, bool from_ident)
       ptr += pfx_len;
       *ptr++ = DIR_SEPARATOR;
     }
-  memcpy (ptr, name, name_len + 1);
+  memcpy (ptr, name, name_len);
+  ptr[name_len] = 0;
   if (from_ident)
     {
       strcpy (ptr + name_len, MOD_FNAME_SFX);
@@ -2568,8 +2595,8 @@ module_state::occupy (location_t l, tree maybe_vec)
   vec_name = maybe_vec;
 
   if (!filename)
-    filename = make_module_name (IDENTIFIER_POINTER (name),
-				 IDENTIFIER_LENGTH (name), true);
+    filename = make_module_filename (IDENTIFIER_POINTER (name),
+				     IDENTIFIER_LENGTH (name), true);
 }
 
 /* Set location to NAME, and then enter the module.  */
@@ -2621,6 +2648,7 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
   version2string (get_version (), string);
   readme.printf ("version:%s%c", string, 0);
   readme.printf ("module:%s%c", IDENTIFIER_POINTER (name), 0);
+  readme.printf ("source:%s%c", srcname, 0);
 
   /* Total number of modules.  */
   ctx.u (modules->length ());
@@ -6429,15 +6457,16 @@ find_module_file (module_state *state)
   if (stream || !module_wrapper)
     return stream;
 
-  inform (state->loc, "invoking module wrapper to install %qE (%qs)",
+  inform (state->loc, "installing module %qE (%qs)",
 	  state->name, state->filename);
 
-  /* wrapper <module-name> <module-bmi-file>  <main_input_filename> */
+  /* wrapper <module-name> <module-bmi-file> <srcname> <main_input_filename> */
   unsigned len = 0;
   const char *argv[6];
   argv[len++] = module_wrapper;
   argv[len++] = IDENTIFIER_POINTER (state->name);
   argv[len++] = state->filename;
+  argv[len++] = state->srcname ? state->srcname : "";
   argv[len++] = main_input_filename;
 
   if (!quiet_flag)
@@ -6449,7 +6478,7 @@ find_module_file (module_state *state)
 	}
       fprintf (stderr, "%s module wrapper:", progname);
       for (unsigned ix = 0; ix != len; ix++)
-	fprintf (stderr, "%s%s", &" "[!ix], argv[ix]);
+	fprintf (stderr, "%s'%s'", &" "[!ix], argv[ix]);
       fprintf (stderr, "\n");
       fflush (stderr);
     }
@@ -6481,10 +6510,76 @@ find_module_file (module_state *state)
     error_at (state->loc, "module wrapper %qs exit status %d",
 	      argv[0], WEXITSTATUS (status));
   else
-    inform (state->loc, "completed module wrapper to install %qE",
-	    state->name);
+    inform (state->loc, "installed module %qE", state->name);
 
   return fopen (state->filename, "rb");
+}
+
+static bool
+add_module_mapping (const char *arg, const char *rel, size_t rel_len,
+		    unsigned depth);
+
+/* File of mappings, another DSL.  Each line is ...
+   <ws>#*<ws>*G++Module <word> -- define marker <word>
+   <ws>#*<ws>*<word><ws><map> -- a map
+   <ws>#<anything>  -- comment ignored
+   <ws>*        -- ignored
+   <map>        -- if <word> not defined, a map else ignored
+*/
+
+// FIXME really need a cmdline loc
+#define MAP_LOC BUILTINS_LOCATION
+
+static bool
+parse_module_mapping (char *line, const char *rel, size_t rel_len,
+		      unsigned depth, char *&marker)
+{
+  bool comment = false;
+
+  /* Skip leading whitespace and comment markers.  */
+  while (*line == '#' ? (comment = true) : ISSPACE (*line))
+    line++;
+  if (comment)
+    {
+      /* A comment line, look for marker, otherwise ignore.  */
+      char *pos = line;
+      while (*pos && !ISSPACE (*pos))
+	pos++;
+      const char *tag = marker ? marker : "G++Module";
+      if (!strncmp (line, tag, pos - line)
+	  && size_t (pos - line) == strlen (tag))
+	{
+	  /* Seen the tag, either set marker or accept line  */
+	  line = pos;
+	  /* Skip whitespace.  */
+	  while (ISSPACE (*line))
+	    line++;
+	  if (!marker)
+	    {
+	      /* Define a marker string.  */
+	      pos = line;
+	      /* Scan word.  */
+	      while (*pos && !ISSPACE (*pos))
+		pos++;
+	      *pos = 0;
+	      marker = xstrdup (line);
+	      /* We're now done with the line.  */
+	      comment = true;
+	    }
+	  else
+	    /* We'll accept the line.  */
+	    comment = false;
+	}
+    }
+  else if (marker)
+    /* Non-comment, ignored if we have a marker defined.  */
+    comment = true;
+
+  if (comment || !*line)
+    return true;
+
+  /* Process line as a mapping.  */
+  return add_module_mapping (line, rel, rel_len, depth);
 }
 
 /* Add a module name to binary interface file mapping
@@ -6494,14 +6589,21 @@ find_module_file (module_state *state)
    We don't detect loops. */
 
 static bool
-add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0)
+add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0,
+		    unsigned depth = 0)
 {
+  if (++depth >= 15)
+    {
+      /* Possible loop.  I hope 15 levels is deep enough.  */
+      error_at (MAP_LOC, "module files too deeply nested");
+      return false;
+    }
   if (const char *eq = strchr (arg, '='))
     {
       /* A single mapping.  */
       if (eq == arg || !eq[1])
 	{
-	  error ("module file map %qs is malformed", arg);
+	  error_at (MAP_LOC, "module file map %qs is malformed", arg);
 	  return false;
 	}
 
@@ -6510,14 +6612,41 @@ add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0)
 
       /* Do not override already set mappings.  */
       if (!state->filename)
-	state->filename = make_module_name (eq + 1, strlen (eq + 1), false);
+	{
+	  const char *pos = eq + 1;
+	  while (*pos && !ISSPACE (*pos) && *pos != ';')
+	    pos++;
+	  state->filename = make_module_filename (eq + 1, pos - eq - 1, false);
+	  while (ISSPACE (*pos))
+	    pos++;
+	  if (*pos == ';')
+	    {
+	      while (ISSPACE (*++pos) && *pos)
+		pos++;
+	      size_t len = 0;
+	      while (pos[len] && !ISSPACE (pos[len]))
+		len++;
+	      state->srcname = XNEWVEC (char, len + 1);
+	      memcpy (state->srcname, pos, len);
+	      state->srcname[len] = 0;
+	      pos += len;
+	      while (ISSPACE (*pos))
+		pos++;
+	    }
+	  if (*pos)
+	    {
+	      error_at (MAP_LOC,
+			"module file map %qs has unexpected trailing junk", arg);
+	      return false;
+	    }
+	}
+
       return true;
     }
 
   bool ok = false;
   char *name = const_cast <char *> (arg);
   size_t name_len = strlen (name);
-  
   if (FILE *stream = search_module_path (name, name_len, rel, rel_len))
     {
       /* Find the directory component of PATH.  This will fail if we
@@ -6526,11 +6655,12 @@ add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0)
       while (name_len && !IS_DIR_SEPARATOR (name[name_len - 1]))
 	name_len--;
 
-      /* File of mappings.  */
+      /* Exercise buffer expansion.  */
       size_t size = MODULE_STAMP ? 3 : PATH_MAX + NAME_MAX;
       char *buffer = XNEWVEC (char, size);
       size_t pos = 0;
       unsigned line = 0;
+      char *marker = NULL;
       while (fgets (buffer + pos, size - pos, stream))
 	{
 	  pos += strlen (buffer + pos);
@@ -6544,26 +6674,26 @@ add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0)
 	      buffer[pos - 1] = 0;
 	      pos = 0;
 	      line++;
-	      if (!add_module_mapping (buffer, name, name_len))
+	      if (!parse_module_mapping (buffer, name, name_len, depth, marker))
 		{
-		  inform (input_location, "from module map file %s:%d",
-			  name, line);
+		  inform (MAP_LOC, "from module map file %s:%d", name, line);
 		  goto fail;
 		}
 	    }
 	}
       if (ferror (stream))
-	error ("failed to read module map file %qs: %m", name);
+	error_at (MAP_LOC, "failed to read module map file %qs: %m", name);
       else
 	ok = true;
 
     fail:
+      free (marker);
       fclose (stream);
       XDELETEVEC (buffer);
       XDELETEVEC (name);
     }
   else
-    error ("module-file %qs not found: %m", name);
+    error_at (MAP_LOC, "module-file %qs not found: %m", name);
 
   return ok;
 }
@@ -6627,6 +6757,7 @@ module_state::do_import (location_t loc, tree name, bool module_p,
 	      state->filename = xstrdup (module_output);
 	      module_output = NULL;
 	    }
+	  state->srcname = xstrdup (main_input_filename);
 	}
       else if (!module_p && !export_p)
 	{
@@ -6753,6 +6884,9 @@ init_module_processing ()
     if (!add_module_mapping (module_file_args[ix]))
       break;
   module_file_args.release ();
+
+  if (module_map_dump)
+    module_state::print_map ();
 }
 
 /* Finalize the module at end of parsing.  */
@@ -6827,6 +6961,10 @@ handle_module_option (unsigned code, const char *arg, int)
 
     case OPT_fmodule_file_:
       module_file_args.safe_push (arg);
+      return true;
+
+    case OPT_fmodule_map_dump:
+      module_map_dump = true;
       return true;
 
     default:

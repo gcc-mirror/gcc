@@ -2505,22 +2505,22 @@ extension.
 
 @item -fmodule-prefix=@var{dir}
 @opindex fmodule-prefix
-Option not fully baked.
+Prefix all relative compiled module interface filenames with @var{dir}.
 
 @item -fmodule-path=@var{dir}
 @opindex fmodule-path
-Append @var{dir} to the module-map search path. The ':' separated
+Append @var{dir} to the module-map search path.  The ':' separated
 directory list in @env{CXX_MODULE_PATH} is appended after explicitly
 specified directories.
 
 @item -fmodule-wrapper=@var{program}
 @opindex fmodule-wrapper
-If a compiled module interface file cannot be found on the module path,
-this program is invoked to build it.  After completion, the module path
-is re-searched.  If not specified, the value of @env{CXX_MODULE_WRAPPER}
-shall be used, which if not specified will default to a built-in wrapper
-program.  The values of @env{COLLECT_GCC} and @env{COLLECT_GCC_OPTIONS}
-can be used to determine the compiler command and compilation options.
+If a compiled module interface file is not present, this program is
+invoked to build it.  If not specified, the value of
+@env{CXX_MODULE_WRAPPER} shall be used, which if not specified will
+default to a built-in wrapper program.  The values of
+@env{COLLECT_GCC} and @env{COLLECT_GCC_OPTIONS} can be used to
+determine the compiler command and compilation options.
 
 @item -fmodule-output=@var{file}
 @opindex fmodule-output
@@ -2531,10 +2531,16 @@ only valid when compiling a module interface unit.
 @opindex fmodule-file
 If the @var{name}=@var{file} form is used, then the binary interface
 for module @var{name} is in @var{file}.  If the @var{file} form is
-used, then read mappings of either form, one per line, from
-@var{file}.  When reading mappings from a file, unless an absolute
-path is used, the mapping files are relative to the file being read
-from.
+used, then read mappings of either form, from @var{file}.  The
+module-path is used to find the mapping file.  The mapping file may
+contain commented lines beginning with @code{#}.  If a
+line begins with @code{G++Module}, even inside a comment, the next
+word is taken to be a marker word.  All lines not beginning with the
+marker are ignored.  Marker lines are taken to be a map, or a map
+file.  Without a marker, uncommented lines are used.  A line may have
+a trailing @code{;}@var{srcname} suffix, which is passed to the module
+wrapper.  FIXME: this should all go in a new Modules? How do they work?
+section.
 
 @item -fms-extensions
 @opindex fms-extensions

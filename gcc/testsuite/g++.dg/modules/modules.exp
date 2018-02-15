@@ -37,7 +37,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 }
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
 lappend DEFAULT_MODFLAGS "-std=c++14" "-fmodules" "-fmodule-wrapper="
-
+setenv CXX_MODULE_PATH "$srcdir/$subdir"
 dg-init
 
 global module_do

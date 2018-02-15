@@ -34,46 +34,56 @@ shopt -s extglob nullglob
 
 progname=${0##*/}
 if test "$#" -lt 2 ; then
-  echo "usage: ${progname} module-name bmi-file original-source" >&2
+  echo "usage: ${progname} module-name bmi-name src-name original-source" >&2
   exit 1
 fi
 
 module=$1
 bmi=$2
-source=$3
+src=$3
+main=$4
 
 # If we're inside make and there's a Makefile, just invoke make for the bmi.
 if test ${MAKELEVEL:=0} -gt 0 -a -e Makefile ; then
   exec make ${MAKEFLAGS} $bmi
 fi
 
+# process the orginal options, stripping out a few options we don't want.
 verbose=false
 ign=false
 cmd="$COLLECT_GCC"
+action=-c
 for arg in $(eval echo $COLLECT_GCC_OPTIONS)
 do
   $ign || case "$arg" in
-    ('-v') verbose=true ;;
-    ('-S') ign=true ;;
-    ('-c') ign=true ;;
-    ('-o') ign=true ;;
+    (-v) verbose=true ;;
+    (-S) action=-S ; ign=true ;;
+    (-c) ign=true ;;
+    (-o) ign=true ;;
+    (-fmodule-output=*) ign=true ;;
     (*)  ;;
   esac
   $ign || cmd+=" $arg"
   test "$arg" = '-o' || ign=false
 done
 
-module=${bmi%.nms}
-for root in $(dirname $source) . ${CXX_MODULE_PATH//:/\ } ; do
-  src=$(echo $root/$module.@(cc|C|ccm))
-  test $src && break
-done
-src=${src#./}
-if test $src ; then
+# find the source file.
+if test -z "$src" ; then
+    # look for something named by the module name
+    src=$(echo $(dirname $main)/$module.@(cc|C|ccm))
+elif ! test -e "$src" ; then
+    # see if it's in the originating source directory
+    src=$(dirname $main)/$src
+fi
+# dirname could have created ./ prefix
+src="${src#./}"
+
+if test -n "$src" -a -e "$src" ; then
     echo "$progname: note: compiling module interface $module ($src)" >&2
-    cmd+=" -fmodule-output=$bmi -c $src"
+    cmd+=" -fmodule-output=$bmi $action $src"
     $verbose && set -x
     exec $cmd
 fi
+
 echo "$progname: cannot find source for module $module" >&2
 exit 1

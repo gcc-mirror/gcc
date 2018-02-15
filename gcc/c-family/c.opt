@@ -1534,6 +1534,10 @@ fmodule-file=
 C++ ObjC++ Joined MissingArgError(missing module map after %qs)
 -fmodule-file=[<name>=]<file> Map from <name> to <file>, or read mapping file <file>
 
+fmodule-map-dump
+C++ ObjC++
+Print the module map
+
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions.

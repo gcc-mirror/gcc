@@ -1,3 +1,26 @@
+2018-02-15  Nathan Sidwell  <nathan@acm.org>
+
+	Module map files have more syntax
+	gcc/cp/
+	* cxx-module-wrapper.sh: Accept src filename, don't search
+	MODULE_PATH.
+	* module.c (module_state::srcname): New.
+	(module_state::print_map): New.
+	(make_module_name): Rename to ...
+	(make_module_filename): ... here.  Don't assume trailing NUL.
+	(find_module_file): Pass srcname.
+	(parse_module_mapping): New.
+	(add_module_mapping): Call it.  Detect too-deeply nested.
+	gcc/c-family/
+	* c.opt (fmodule-map-dump): New.
+	gcc/
+	doc/invoke.texi: Document new module-map file syntax
+	gcc/testsuite/
+	* g++.dg/modules/hello.c: Adjust.
+	* g++.dg/modules/main_a.c: Adjust.
+	* g++.dg/modules/main-map: New.
+	* g++.dg/modules/modules.exp: Set CXX_MODULE_PATH.
+
 2018-02-13  Nathan Sidwell  <nathan@acm.org>
 
 	Module path is for mapping files. Replace -fmodule-root with
