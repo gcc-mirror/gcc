@@ -170,6 +170,7 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef SHN_LORESERVE
 #undef SHN_XINDEX
 #undef SHN_UNDEF
+#undef SHT_PROGBITS
 #undef SHT_SYMTAB
 #undef SHT_STRTAB
 #undef SHT_DYNSYM
@@ -267,6 +268,7 @@ typedef struct {
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
 
+#define SHT_PROGBITS 1
 #define SHT_SYMTAB 2
 #define SHT_STRTAB 3
 #define SHT_DYNSYM 11
