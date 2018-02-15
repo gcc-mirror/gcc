@@ -1,3 +1,10 @@
+2018-02-15  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/84388
+	* gcc.target/powerpc/fold-vec-mult-int128-p8.c: Update dg-options
+	and scan-assembler stanzas.
+	* gcc.target/powerpc/fold-vec-mult-int128-p9.c: Same.
+
 2018-02-14  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/84390
