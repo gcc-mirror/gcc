@@ -11521,8 +11521,9 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	     context.  */
 	  tree gen = TREE_PURPOSE (elt);
 	  tree inst = TREE_VALUE (elt);
-	  if (DECL_PACK_P (inst))
-	    inst = retrieve_local_specialization (inst);
+	  if (DECL_P (inst))
+	    if (tree local = retrieve_local_specialization (inst))
+	      inst = local;
 	  /* else inst is already a full instantiation of the pack.  */
 	  register_local_specialization (inst, gen);
 	}

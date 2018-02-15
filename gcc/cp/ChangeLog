@@ -1,3 +1,9 @@
+2018-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84368 - wrong error with local variable in variadic lambda.
+	* pt.c (tsubst_pack_expansion): Fix handling of non-packs in
+	local_specializations.
+
 2018-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84330
