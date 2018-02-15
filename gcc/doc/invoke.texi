@@ -4184,7 +4184,7 @@ warning, though it may not be sufficient to avoid the overflow.
 @smallexample
 void f (int a, int b)
 @{
-  char buf [12];
+  char buf [13];
   sprintf (buf, "a = %i, b = %i\n", a, b);
 @}
 @end smallexample
