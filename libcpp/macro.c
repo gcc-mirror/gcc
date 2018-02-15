@@ -51,7 +51,7 @@ struct macro_arg
 enum macro_arg_token_kind {
   MACRO_ARG_TOKEN_NORMAL,
   /* This is a macro argument token that got transformed into a string
-     litteral, e.g. #foo.  */
+     literal, e.g. #foo.  */
   MACRO_ARG_TOKEN_STRINGIFIED,
   /* This is a token resulting from the expansion of a macro
      argument that was itself a macro.  */
@@ -1819,9 +1819,9 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	   multiple tokens. This is to save memory at the expense of
 	   accuracy.
 
-	   Suppose we have #define SQARE(A) A * A
+	   Suppose we have #define SQUARE(A) A * A
 
-	   And then we do SQARE(2+3)
+	   And then we do SQUARE(2+3)
 
 	   Then the tokens 2, +, 3, will have the same location,
 	   saying they come from the expansion of the argument A.  */
@@ -1962,9 +1962,9 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 		 save extra memory while tracking macro expansion
 		 locations.  So in that case here is what we do:
 
-		 Suppose we have #define SQARE(A) A * A
+		 Suppose we have #define SQUARE(A) A * A
 
-		 And then we do SQARE(2+3)
+		 And then we do SQUARE(2+3)
 
 		 Then the tokens 2, +, 3, will have the same location,
 		 saying they come from the expansion of the argument
@@ -1972,9 +1972,9 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 
 	      So that means we are going to ignore the COUNT tokens
 	      resulting from the expansion of the current macro
-	      arugment. In other words all the ARG_TOKENS_COUNT tokens
+	      argument. In other words all the ARG_TOKENS_COUNT tokens
 	      resulting from the expansion of the macro argument will
-	      have the index I. Normally, each of those token should
+	      have the index I.  Normally, each of those tokens should
 	      have index I+J.  */
 	      unsigned token_index = i;
 	      unsigned index;
@@ -1992,8 +1992,8 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro,
 	  /* With a non-empty argument on the LHS of ##, the last
 	     token should be flagged PASTE_LEFT.  */
 	  if (src->flags & PASTE_LEFT)
-	    paste_flag =
-	      (const cpp_token **) tokens_buff_last_token_ptr (buff);
+	    paste_flag
+	      = (const cpp_token **) tokens_buff_last_token_ptr (buff);
 	}
       else if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, c99)
 	       && ! macro->syshdr && ! cpp_in_system_header (pfile))
