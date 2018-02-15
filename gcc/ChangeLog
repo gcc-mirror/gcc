@@ -1354,6 +1354,7 @@
 
 2018-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
+	PR target/83758
 	* config/rs6000/rs6000.c (rs6000_internal_arg_pointer): Only return
 	a reg rtx.
 
