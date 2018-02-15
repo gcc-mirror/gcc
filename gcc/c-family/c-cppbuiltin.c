@@ -970,7 +970,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_capture_star_this=201603");
 	  cpp_define (pfile, "__cpp_inline_variables=201606");
 	  cpp_define (pfile, "__cpp_aggregate_bases=201603");
-	  cpp_define (pfile, "__cpp_deduction_guides=201606");
+	  cpp_define (pfile, "__cpp_deduction_guides=201611");
 	  cpp_define (pfile, "__cpp_noexcept_function_type=201510");
 	  cpp_define (pfile, "__cpp_template_auto=201606");
 	  cpp_define (pfile, "__cpp_structured_bindings=201606");
