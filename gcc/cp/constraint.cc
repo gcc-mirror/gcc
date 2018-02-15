@@ -1918,7 +1918,7 @@ tsubst_constraint_info (tree t, tree args,
 tree
 tsubst_constraint (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  if (t == NULL_TREE)
+  if (t == NULL_TREE || t == error_mark_node)
     return t;
   switch (TREE_CODE (t))
   {

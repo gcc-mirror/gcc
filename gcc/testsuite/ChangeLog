@@ -1,3 +1,8 @@
+2018-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84330
+	* g++.dg/concepts/pr84330.C: New.
+
 2018-02-15  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/Wstringop-overflow-3.c: Require effective target alloca.
