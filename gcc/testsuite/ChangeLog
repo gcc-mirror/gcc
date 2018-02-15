@@ -1,3 +1,8 @@
+2018-02-15  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/lto/README (dg-lto-warning, dg-lto-message): Document new
+	directives.	
+
 2018-02-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/84409
