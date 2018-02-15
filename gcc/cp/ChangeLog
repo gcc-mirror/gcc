@@ -1,5 +1,8 @@
 2018-02-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84376 - ICE with omitted template arguments.
+	* pt.c (dguide_name_p): Check for IDENTIFIER_NODE.
+
 	PR c++/84368 - wrong error with local variable in variadic lambda.
 	* pt.c (tsubst_pack_expansion): Fix handling of non-packs in
 	local_specializations.

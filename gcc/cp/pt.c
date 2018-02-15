@@ -25454,7 +25454,8 @@ dguide_name (tree tmpl)
 bool
 dguide_name_p (tree name)
 {
-  return (TREE_TYPE (name)
+  return (TREE_CODE (name) == IDENTIFIER_NODE
+	  && TREE_TYPE (name)
 	  && !strncmp (IDENTIFIER_POINTER (name), dguide_base,
 		       strlen (dguide_base)));
 }
