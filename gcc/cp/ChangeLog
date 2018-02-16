@@ -1,5 +1,8 @@
 2018-02-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84420 - ICE with structured binding in lambda.
+	* lambda.c (is_capture_proxy): Check DECL_DECOMPOSITION_P.
+
 	PR c++/83835 - C++17 error with constructor ctors.
 	* call.c (build_special_member_call): Set TARGET_EXPR_DIRECT_INIT_P.
 

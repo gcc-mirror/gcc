@@ -261,6 +261,7 @@ is_capture_proxy (tree decl)
   return (VAR_P (decl)
 	  && DECL_HAS_VALUE_EXPR_P (decl)
 	  && !DECL_ANON_UNION_VAR_P (decl)
+	  && !DECL_DECOMPOSITION_P (decl)
 	  && LAMBDA_FUNCTION_P (DECL_CONTEXT (decl)));
 }
 
