@@ -1,3 +1,8 @@
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84417
+	* gcc.dg/torture/pr84417.c: New testcase.
+
 2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84272

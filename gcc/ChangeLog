@@ -1,3 +1,10 @@
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84417
+	* tree-ssa.c (non_rewritable_mem_ref_base): Properly constrain
+	the MEM_REF offset when conversion to BIT_FIELD_REF is desired.
+	(non_rewritable_lvalue_p): Likewise, use poly-ints.
+
 2018-02-16  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/84307
