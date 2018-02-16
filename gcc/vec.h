@@ -490,8 +490,12 @@ template <typename T>
 inline void
 vec_default_construct (T *dst, unsigned n)
 {
+#ifndef BROKEN_VALUE_INITIALIZATION
   for ( ; n; ++dst, --n)
     ::new (static_cast<void*>(dst)) T ();
+#else
+  memset (dst, '\0', sizeof (T) * n);
+#endif
 }
 
 /* Copy-construct N elements in DST from *SRC.  */
