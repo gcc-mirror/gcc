@@ -731,6 +731,7 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 {
   cond = maybe_convert_cond (cond);
   if (IF_STMT_CONSTEXPR_P (if_stmt)
+      && !type_dependent_expression_p (cond)
       && require_constant_expression (cond)
       && !value_dependent_expression_p (cond))
     {
