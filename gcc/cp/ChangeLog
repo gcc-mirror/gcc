@@ -1,3 +1,10 @@
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	Deprecate -ffriend-injection.
+	* decl.c (cxx_init_decl_processing): Emit warning on option.
+	* name-lookup.c (do_pushdecl): Emit warning if we push a visible
+	friend.
+
 2018-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82468

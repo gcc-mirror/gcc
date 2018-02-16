@@ -4091,8 +4091,14 @@ cxx_init_decl_processing (void)
   pop_namespace ();
 
   flag_noexcept_type = (cxx_dialect >= cxx17);
+  /* There's no fixed location for <command-line>, the current
+     location is <builtins>, which is somewhat confusing.  */
   if (!flag_new_for_scope)
-    warning (OPT_Wdeprecated, "%<-fno-for-scope%> is deprecated");
+    warning_at (UNKNOWN_LOCATION, OPT_Wdeprecated,
+		"%<-fno-for-scope%> is deprecated");
+  if (flag_friend_injection)
+    warning_at (UNKNOWN_LOCATION, OPT_Wdeprecated,
+		"%<-ffriend-injection%> is deprecated");
 
   c_common_nodes_and_builtins ();
 

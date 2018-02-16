@@ -3071,6 +3071,7 @@ do_pushdecl (tree decl, bool is_friend)
 	old = OVL_CHAIN (old);
 
       check_template_shadow (decl);
+      bool visible_injection = false;
 
       if (DECL_DECLARES_FUNCTION_P (decl))
 	{
@@ -3091,6 +3092,8 @@ do_pushdecl (tree decl, bool is_friend)
 	      if (!flag_friend_injection)
 		/* Hide it from ordinary lookup.  */
 		DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
+	      else
+		visible_injection = true;
 	    }
 	}
 
@@ -3142,6 +3145,9 @@ do_pushdecl (tree decl, bool is_friend)
 	}
       else if (VAR_P (decl))
 	maybe_register_incomplete_var (decl);
+      else if (visible_injection)
+	warning (0, "injected friend %qD is visible"
+		" due to %<-ffriend-injection%>", decl);
 
       if ((VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
 	  && DECL_EXTERN_C_P (decl))

@@ -23881,10 +23881,22 @@ deprecated.   @xref{Deprecated Features}.
 
 @table @code
 @item For scope
-If a variable is declared at for scope, it used to remain in scope until
-the end of the scope that contained the for statement (rather than just
-within the for scope).  G++ retains this, but issues a warning, if such a
+If a variable is declared at for scope, it used to remain in scope
+until the end of the scope that contained the for statement (rather
+than just within the for scope).  The deprecated
+@option{-fno-for-scope} option enables this non-standard behaviour.
+Without the option, G++ retains this, but issues a warning, if such a
 variable is accessed outside the for scope.
+
+The behaviour is deprecated, only available with @option{-std=c++98}
+@option{-std=gnu++98} languages and you must use the
+@option{-fpermissive} option to enable it.  The behaviour will be
+removed.
+
+@item Friend Injection
+The @option{-ffriend-injection} option makes injected friends visible
+to regular name lookup, unlike standard C++.  This option is
+deprecated and will be removed.
 
 @item Implicit C language
 Old C system header files did not contain an @code{extern "C" @{@dots{}@}}
