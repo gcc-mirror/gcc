@@ -1,3 +1,14 @@
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/83723
+	* lra-int.h (lra_substitute_pseudo): Add DEBUG_P argument.
+	* lra.c (lra_substitute_pseudo): Likewise.  If true, use
+	gen_rtx_raw_SUBREG instead of gen_rtx_SUBREG.  Pass DEBUG_P to
+	recursive calls.
+	(lra_substitute_pseudo_within_insn): Adjust lra_substitute_pseudo
+	callers.
+	* lra-constraints.c (inherit_reload_reg, split_reg): Likewise.
+
 2018-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/81443

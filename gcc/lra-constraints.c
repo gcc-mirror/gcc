@@ -5287,7 +5287,8 @@ inherit_reload_reg (bool def_p, int original_regno,
 	  lra_assert (DEBUG_INSN_P (usage_insn));
 	  next_usage_insns = XEXP (next_usage_insns, 1);
 	}
-      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false);
+      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
+			     DEBUG_INSN_P (usage_insn));
       lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
       if (lra_dump_file != NULL)
 	{
@@ -5608,7 +5609,8 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       usage_insn = XEXP (next_usage_insns, 0);
       lra_assert (DEBUG_INSN_P (usage_insn));
       next_usage_insns = XEXP (next_usage_insns, 1);
-      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false);
+      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
+			     true);
       lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
       if (lra_dump_file != NULL)
 	{

@@ -1893,9 +1893,11 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 
 /* Replace all references to register OLD_REGNO in *LOC with pseudo
    register NEW_REG.  Try to simplify subreg of constant if SUBREG_P.
-   Return true if any change was made.  */
+   DEBUG_P is if LOC is within a DEBUG_INSN.  Return true if any
+   change was made.  */
 bool
-lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p)
+lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p,
+		       bool debug_p)
 {
   rtx x = *loc;
   bool result = false;
@@ -1931,11 +1933,14 @@ lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p)
       if (mode != inner_mode
 	  && ! (CONST_INT_P (new_reg) && SCALAR_INT_MODE_P (mode)))
 	{
-	  if (!partial_subreg_p (mode, inner_mode)
-	      || ! SCALAR_INT_MODE_P (inner_mode))
-	    new_reg = gen_rtx_SUBREG (mode, new_reg, 0);
+	  poly_uint64 offset = 0;
+	  if (partial_subreg_p (mode, inner_mode)
+	      && SCALAR_INT_MODE_P (inner_mode))
+	    offset = subreg_lowpart_offset (mode, inner_mode);
+	  if (debug_p)
+	    new_reg = gen_rtx_raw_SUBREG (mode, new_reg, offset);
 	  else
-	    new_reg = gen_lowpart_SUBREG (mode, new_reg);
+	    new_reg = gen_rtx_SUBREG (mode, new_reg, offset);
 	}
       *loc = new_reg;
       return true;
@@ -1948,14 +1953,14 @@ lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p)
       if (fmt[i] == 'e')
 	{
 	  if (lra_substitute_pseudo (&XEXP (x, i), old_regno,
-				     new_reg, subreg_p))
+				     new_reg, subreg_p, debug_p))
 	    result = true;
 	}
       else if (fmt[i] == 'E')
 	{
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (lra_substitute_pseudo (&XVECEXP (x, i, j), old_regno,
-				       new_reg, subreg_p))
+				       new_reg, subreg_p, debug_p))
 	      result = true;
 	}
     }
@@ -1970,7 +1975,8 @@ lra_substitute_pseudo_within_insn (rtx_insn *insn, int old_regno,
 				   rtx new_reg, bool subreg_p)
 {
   rtx loc = insn;
-  return lra_substitute_pseudo (&loc, old_regno, new_reg, subreg_p);
+  return lra_substitute_pseudo (&loc, old_regno, new_reg, subreg_p,
+				DEBUG_INSN_P (insn));
 }
 
 
