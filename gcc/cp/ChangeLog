@@ -1,3 +1,10 @@
+2018-02-16  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84192
+	* constexpr.c (cxx_eval_constant_expression) <case RETURN_EXPR>: Don't
+	set *jump_target to anything if jump_target is NULL.
+
 2018-02-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84151 - unnecessary volatile load with static member.
