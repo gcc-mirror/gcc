@@ -1,5 +1,13 @@
 2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/84405
+	* system.h (BROKEN_VALUE_INITIALIZATION): Define for GCC < 4.3.
+	* vec.h (vec_default_construct): Use memset instead of placement new
+	if BROKEN_VALUE_INITIALIZATION is defined.
+	* hash-table.h (hash_table<Descriptor, Allocator>::empty_slow): Use
+	memset instead of value initialization if BROKEN_VALUE_INITIALIZATION
+	is defined.
+
 	PR rtl-optimization/83723
 	* lra-int.h (lra_substitute_pseudo): Add DEBUG_P argument.
 	* lra.c (lra_substitute_pseudo): Likewise.  If true, use
