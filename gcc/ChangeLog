@@ -1,3 +1,9 @@
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84190
+	* tree-ssa.c (non_rewritable_mem_ref_base): Do not touch
+	volatile accesses if the decl isn't volatile.
+
 2018-02-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84314 - ICE with templates and fastcall attribute.

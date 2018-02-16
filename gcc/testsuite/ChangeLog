@@ -1,3 +1,8 @@
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84190
+	* g++.dg/torture/pr84190.C: New testcase.
+
 2018-02-15  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/lto/README (dg-lto-warning, dg-lto-message): Document new
