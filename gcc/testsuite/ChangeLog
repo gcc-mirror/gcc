@@ -1,5 +1,10 @@
 2018-02-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84399
+	* gcc.dg/graphite/pr84399.c: New testcase.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84190
 	* g++.dg/torture/pr84190.C: New testcase.
 

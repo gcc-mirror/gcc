@@ -1,5 +1,12 @@
 2018-02-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84399
+	* graphite-scop-detection.c (scop_detection::stmt_simple_for_scop_p):
+	For operands we can analyze at their definition make sure we can
+	analyze them at each use as well.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84190
 	* tree-ssa.c (non_rewritable_mem_ref_base): Do not touch
 	volatile accesses if the decl isn't volatile.
