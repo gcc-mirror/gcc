@@ -1,3 +1,8 @@
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84190
+	* g++.dg/torture/pr84190.C: New testcase.
+
 2018-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk

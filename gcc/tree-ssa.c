@@ -1423,7 +1423,8 @@ non_rewritable_mem_ref_base (tree ref)
       if (! DECL_P (decl))
 	return NULL_TREE;
       if (! is_gimple_reg_type (TREE_TYPE (base))
-	  || VOID_TYPE_P (TREE_TYPE (base)))
+	  || VOID_TYPE_P (TREE_TYPE (base))
+	  || TREE_THIS_VOLATILE (decl) != TREE_THIS_VOLATILE (base))
 	return decl;
       if ((TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
