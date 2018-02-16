@@ -1,3 +1,7 @@
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.jason/scoping15.C: Fix dg-warning.
+
 2018-02-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70023
