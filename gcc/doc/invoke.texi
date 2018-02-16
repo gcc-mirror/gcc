@@ -2451,8 +2451,7 @@ However, in ISO C++ a friend function that is not declared
 in an enclosing scope can only be found using argument dependent
 lookup.  GCC defaults to the standard behavior.
 
-This option is for compatibility, and may be removed in a future
-release of G++.
+This option is deprecated and will be removed.
 
 @item -fno-elide-constructors
 @opindex fno-elide-constructors
