@@ -1,3 +1,8 @@
+2018-02-16  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Remove PTA_CLWB
+	from PTA_CANNONLAKE.
+
 2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84272
