@@ -1,3 +1,9 @@
+2018-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84151 - unnecessary volatile load with static member.
+	* call.c (build_new_method_call_1): Avoid loading from a volatile
+	lvalue used as the object argument for a static member function.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
