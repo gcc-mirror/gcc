@@ -1,5 +1,10 @@
 2018-02-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82764 - C++17 ICE with empty base
+	* class.c (build_base_field_1): Set DECL_SIZE to zero for empty base.
+
+2018-02-16  Jason Merrill  <jason@redhat.com>
+
 	PR c++/84421 - type-dependent if constexpr
 	* semantics.c (finish_if_stmt_cond): Check type_dependent_expression_p.
 
