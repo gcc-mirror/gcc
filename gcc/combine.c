@@ -4283,7 +4283,12 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       if (GET_CODE (x) == PARALLEL)
 	x = XVECEXP (newi2pat, 0, 0);
 
-      unsigned int regno = REGNO (SET_DEST (x));
+      /* It can only be a SET of a REG or of a paradoxical SUBREG of a REG.  */
+      x = SET_DEST (x);
+      if (paradoxical_subreg_p (x))
+	x = SUBREG_REG (x);
+
+      unsigned int regno = REGNO (x);
 
       bool done = false;
       for (rtx_insn *insn = NEXT_INSN (i3);
