@@ -15743,6 +15743,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
     case P9V_BUILTIN_VEXTRACT4B:
     case P9V_BUILTIN_VEC_VEXTRACT4B:
+    case P9V_BUILTIN_VEC_EXTRACT4B:
       arg1 = CALL_EXPR_ARG (exp, 1);
       STRIP_NOPS (arg1);
 
@@ -15760,6 +15761,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case P9V_BUILTIN_VINSERT4B:
     case P9V_BUILTIN_VINSERT4B_DI:
     case P9V_BUILTIN_VEC_VINSERT4B:
+    case P9V_BUILTIN_VEC_INSERT4B:
       arg2 = CALL_EXPR_ARG (exp, 2);
       STRIP_NOPS (arg2);
 
