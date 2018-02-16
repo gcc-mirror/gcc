@@ -1,3 +1,12 @@
+2018-02-16  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	target/pr84371
+	* gcc.target/powerpc/builtins-3-p8.c: Update stanzas.
+	* gcc.target/powerpc/builtins-3-p9.c: Update stanzas, Enhance test.
+	* gcc.target/powerpc/builtins-3-runnable.c: Update stanzas.
+	* gcc.target/powerpc/builtins-3-vec_reve_runnable.c: Same.
+	* gcc.target/powerpc/builtins-3.c: Same.
+
 2018-02-16  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.jason/scoping15.C: Fix dg-warning.
