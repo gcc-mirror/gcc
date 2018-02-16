@@ -1,3 +1,11 @@
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Add BU_P8V_VSX_2 macro definition.
+	Change FLOAT2 expansions from BU_VSX_2 to BU_P8V_VSX_2 and
+	from BU_VSX_OVERLOAD_2 to BU_P8V_OVERLOAD_2.
+	* config/rs6000/rs6000-c.c: Changed macro VSX_BUILTIN_VEC_FLOAT2
+	expansion to P8V_BUILTIN_VEC_FLOAT2.
+
 2018-02-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/70023
