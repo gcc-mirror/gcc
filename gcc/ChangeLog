@@ -1,3 +1,9 @@
+2018-02-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/83831
+	* config/rx/rx.c (rx_fuse_in_memory_bitop): Convert shift operand
+	to QImode.
+
 2018-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84037

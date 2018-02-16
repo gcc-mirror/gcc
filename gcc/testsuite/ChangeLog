@@ -1,3 +1,8 @@
+2018-02-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/83831
+	* gcc.target/rx/pr83831.c (test_3, test_6): Adjust test cases.
+
 2018-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84417
