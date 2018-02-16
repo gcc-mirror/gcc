@@ -3079,12 +3079,16 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (is_friend)
 	    {
 	      if (level->kind != sk_namespace)
-		/* In a local class, a friend function declaration must
-		   find a matching decl in the innermost non-class scope.
-		   [class.friend/11] */
-		error ("friend declaration %qD in local class without "
-		       "prior local declaration", decl);
-	      else if (!flag_friend_injection)
+		{
+		  /* In a local class, a friend function declaration must
+		     find a matching decl in the innermost non-class scope.
+		     [class.friend/11] */
+		  error ("friend declaration %qD in local class without "
+			 "prior local declaration", decl);
+		  /* Don't attempt to push it.  */
+		  return error_mark_node;
+		}
+	      if (!flag_friend_injection)
 		/* Hide it from ordinary lookup.  */
 		DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
 	    }
