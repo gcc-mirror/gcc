@@ -1,3 +1,8 @@
+2018-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84045 - ICE with typedef and noexcept.
+	* except.c (build_noexcept_spec): Use strip_typedefs_expr.
+
 2018-01-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82461 - constexpr list-initialized member
