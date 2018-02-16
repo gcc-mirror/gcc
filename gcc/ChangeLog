@@ -1,3 +1,7 @@
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/extend.texi (Backwards Compatibility): Americanize 'behaviour'.
+
 2018-02-16  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Add BU_P8V_VSX_2 macro definition.
