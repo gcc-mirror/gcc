@@ -1,5 +1,12 @@
 2018-02-16  Nathan Sidwell  <nathan@acm.org>
 
+	Use TREE_VISITED
+	gcc/cp/
+	* module.c (trees_out::fixed_refs): New.
+	(trees_out::{begin,end}): New.
+	(module_state::init): Use TREE_VISITED.
+	(trees_out::{maybe_insert,tree_node}): Likewise.
+
 	gcc/cp/
 	* module.c: More commenting.
 	(trees_{in,out}::define_class): Don't do AsBase here.

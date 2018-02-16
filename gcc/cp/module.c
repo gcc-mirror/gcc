@@ -1922,12 +1922,17 @@ class trees_out : public bytes_out {
 
 private:
   module_state *state;	/* The module we are writing.  */
-  int ref_num;		/* Back reference number.  */
+  vec<tree, va_gc> *fixed_refs;	/* Fixed trees.  */
   ptr_int_hash_map tree_map; /* Trees to references */
+  int ref_num;		/* Back reference number.  */
 
 public:
   trees_out (module_state *, vec<tree, va_gc> *globals);
   ~trees_out ();
+
+public:
+  void begin ();
+  unsigned end (elf_out *sink, unsigned name, unsigned *crc_ptr);
 
 public:
   void write (auto_vec<tree> &decls);
@@ -1992,22 +1997,46 @@ unsigned trees_out::nulls;
 unsigned trees_out::records;
 
 trees_out::trees_out (module_state *state, vec<tree, va_gc> *globals)
-  :parent (), state (state), ref_num (tt_backref + 1), tree_map (500)
+  :parent (), state (state), fixed_refs (globals), tree_map (500),
+   ref_num (0)
 {
-  /* Install the global trees, with +ve references.  */
-  unsigned limit = globals->length ();
-  for (unsigned ix = 0; ix != limit; ix++)
-    {
-      tree val = (*globals)[ix];
-      bool existed;
-      int *slot = &tree_map.get_or_insert (val, &existed);
-      gcc_checking_assert (!existed);
-      *slot = ix;
-    }
 }
 
 trees_out::~trees_out ()
 {
+}
+
+/* Setup and teardown for a tree walk.  */
+
+void
+trees_out::begin ()
+{
+  gcc_assert (!tree_map.elements ());
+
+  /* Install the fixed trees, with +ve references.  */
+  unsigned limit = fixed_refs->length ();
+  for (unsigned ix = 0; ix != limit; ix++)
+    {
+      tree val = (*fixed_refs)[ix];
+      bool existed = tree_map.put (val, ix);
+      gcc_checking_assert (!TREE_VISITED (val) && !existed);
+      TREE_VISITED (val) = true;
+    }
+  parent::begin ();
+}
+
+unsigned
+trees_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
+{
+  /* Unmark all the trees.  */
+  ptr_int_hash_map::iterator end (tree_map.end ());
+  for (ptr_int_hash_map::iterator iter (tree_map.begin ()); iter != end; ++iter)
+    {
+      tree node = reinterpret_cast <tree> ((*iter).first);
+      gcc_checking_assert (TREE_VISITED (node));
+      TREE_VISITED (node) = false;
+    }
+  return parent::end (sink, name, crc_ptr);
 }
 
 /* A dumping machinery.  */
@@ -2446,15 +2475,12 @@ module_state::init ()
   // the end and not stream them here.  They must be locatable via
   // some other means.
   unsigned crc = 0;
-  hash_table<nofree_ptr_hash<tree_node> > hash (200);
   vec_alloc (global_vec, 200);
 
   dump () && dump ("+Creating globals");
   /* Insert the TRANSLATION_UNIT_DECL.  */
-  *hash.find_slot (DECL_CONTEXT (global_namespace), INSERT)
-    = DECL_CONTEXT (global_namespace);
+  TREE_VISITED (DECL_CONTEXT (global_namespace)) = true;
   global_vec->quick_push (DECL_CONTEXT (global_namespace));
-
   for (unsigned jx = 0; global_trees[jx].first; jx++)
     {
       const tree *ptr = global_trees[jx].first;
@@ -2468,37 +2494,32 @@ module_state::init ()
 	    {
 	      if (identifier_p (val))
 		continue;
-	      tree *slot = hash.find_slot (val, INSERT);
-	      if (!*slot)
+	      if (TREE_VISITED (val))
+		continue;
+	      TREE_VISITED (val) = true;
+	      crc = crc32_unsigned (crc, global_vec->length ());
+	      vec_safe_push (global_vec, val);
+	      v++;
+	      if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
 		{
-		  *slot = val;
-		  crc = crc32_unsigned (crc, global_vec->length ());
-		  vec_safe_push (global_vec, val);
-		  v++;
-		  if (CODE_CONTAINS_STRUCT (TREE_CODE (val), TS_TYPED))
+		  val = TREE_TYPE (val);
+		  if (val && !TREE_VISITED (val))
 		    {
-		      val = TREE_TYPE (val);
-		      if (val)
-			{
-			  slot = hash.find_slot (val, INSERT);
-			  if (!*slot)
-			    {
-			      *slot = val;
-			      crc = crc32_unsigned (crc, global_vec->length ());
-			      vec_safe_push (global_vec, val);
-			      v++;
-			    }
-			}
+		      TREE_VISITED (val) = true;
+		      crc = crc32_unsigned (crc, global_vec->length ());
+		      vec_safe_push (global_vec, val);
+		      v++;
 		    }
 		}
 	    }
 	  dump () && dump ("+%u", v);
 	}
     }
-  gcc_checking_assert (hash.elements () == global_vec->length ());
   global_crc = crc32_unsigned (crc, global_vec->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
 		     global_vec->length (), global_crc);
+  for (unsigned ix = global_vec->length (); ix--;)
+    TREE_VISITED ((*global_vec)[ix]) = false;
   dump.pop (0);
 }
 
@@ -3259,14 +3280,13 @@ trees_out::insert (tree t)
 int
 trees_out::maybe_insert (tree t)
 {
-  int tag = 0;
-  bool existed;
-  int *val = &tree_map.get_or_insert (t, &existed);
-  if (!existed)
-    {
-      tag = --ref_num;
-      *val = tag;
-    }
+  if (TREE_VISITED (t))
+    return 0;
+
+  TREE_VISITED (t) = true;
+  int tag = --ref_num;
+  bool existed = tree_map.put (t, tag);
+  gcc_assert (!existed);
   return tag;
 }
 
@@ -5670,11 +5690,12 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
-  if (int *val_p = tree_map.get (t))
+  if (TREE_VISITED (t))
     {
-      /* A back ref or fixed ref -> -ve num, or tt_fixed.  */
+      /* An already-visited tree.  It must be in the map.  */
+      int val = *tree_map.get (t);
+
       refs++;
-      int val = *val_p;
       if (val <= tt_backref)
 	/* Back reference -> -ve number  */
 	i (val);
