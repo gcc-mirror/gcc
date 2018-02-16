@@ -1,3 +1,13 @@
+2018-02-16  Yury Gribov  <tetra2005@gmail.com>
+
+	PR target/81535
+	* gcc.dg/pr56727-1.c: Prevent tailcalls and update for powerpc*-*-*.
+	* gcc.dg/pr56727-2.c: Ditto.
+	* gcc.target/powerpc/pr79439.c: Renamed to...
+	* gcc.target/powerpc/pr79439-1.c: ...this.
+	* gcc.target/powerpc/pr79439-2.c: New test.
+	* gcc.target/powerpc/pr79439-3.c: New test.
+
 2018-02-16  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	target/pr84371
