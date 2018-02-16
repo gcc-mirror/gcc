@@ -1,3 +1,17 @@
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h: Add builtin names vec_extract4b
+	vec_insert4b.
+	* config/rs6000/rs6000-builtin.def: Add INSERT4B and EXTRACT4B
+	definitions.
+	* config/rs6000/rs6000-c.c: Add the definitions for
+	P9V_BUILTIN_VEC_EXTRACT4B and P9V_BUILTIN_VEC_INSERT4B.
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Add
+	P9V_BUILTIN_EXTRACT4B and P9V_BUILTIN_INSERT4B case statements.
+	* config/rs6000/vsx.md: Add define_insn extract4b.  Add define_expand
+	definition for insert4b and define insn *insert3b_internal.
+	* doc/extend.texi: Add documentation for vec_extract4b.
+
 2018-02-16  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/extend.texi (Backwards Compatibility): Mention friend

@@ -1,3 +1,8 @@
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-7-p9-runnable.c: New runnable test file
+	for the ABI definitions for vec_extract4b and vec_insert4b.
+
 2018-02-16  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.jason/scoping15.C: Expect warnings.
