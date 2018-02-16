@@ -26,13 +26,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* (Incomplete) Design Notes
 
-   Each namespace-scope decl has a MODULE_OWNER.  This is MODULE_NONE
-   for the global module, MODULE_PURVIEW for the current TU and >=
-   MODULE_IMPORT_BASE for imported modules.  During compilation, the
-   current module's owner will change from MODULE_NONE to
-   MODULE_PURVIEW at the module-declaration.  Any decl with
-   MODULE_OWNER != MODULE_NONE is in a module purview.  Builtins are
-   always MODULE_NONE. (Note that this is happenstance for decls
+   Each namespace-scope and container-like decl has a MODULE_OWNER.
+   This is MODULE_NONE for the global module, MODULE_PURVIEW for the
+   current TU and >= MODULE_IMPORT_BASE for imported modules.  During
+   compilation, the current module's owner will change from
+   MODULE_NONE to MODULE_PURVIEW at the module-declaration.  Any decl
+   with MODULE_OWNER != MODULE_NONE is in a module purview.  Builtins
+   are always MODULE_NONE. (Note that this is happenstance for decls
    lacking DECL_LANG_SPECIFIC.)
 
    The decls for a particular module are held located in a sparse
@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    There is only one instance of each extern-linkage namespace.  It
    appears in every module slot that makes it visible.  It also
    appears in MODULE_SLOT_GLOBAL. (it is an ODR violation if they
-   collide with some other global module entity.)
+   collide with some other global module entity.) FIXME:Not yet implemented
 
    A module import can bring in entities that cannot be found by name
    lookup.  You use decltype tricks to get at it.  I am not sure
@@ -3516,17 +3516,6 @@ trees_out::define_class (tree type, tree maybe_template)
   tree_node (TYPE_VFIELD (type));
   if (TYPE_LANG_SPECIFIC (type))
     {
-      tree as_base = CLASSTYPE_AS_BASE (type);
-      if (as_base && as_base != type)
-	{
-	  /* A fake base class.  We must break the IS_FAKE_BASE loop,
-	     while streaming it out. */
-	  CLASSTYPE_AS_BASE (type) = NULL_TREE;
-	  tag_definition (as_base, NULL_TREE);
-	  CLASSTYPE_AS_BASE (type) = as_base;
-	}
-      else
-	tree_node (as_base);
       tree_vec (CLASSTYPE_MEMBER_VEC (type));
       tree_node (CLASSTYPE_FRIEND_CLASSES (type));
       tree_node (CLASSTYPE_LAMBDA_EXPR (type));
@@ -3590,7 +3579,6 @@ trees_in::define_class (tree type, tree maybe_template)
   tree fields = chained_decls ();
   tree vfield = tree_node ();
   vec<tree, va_gc> *member_vec = NULL;
-  tree as_base = NULL_TREE;
   vec<tree, va_gc> *pure_virts = NULL;
   vec<tree_pair_s, va_gc> *vcall_indices = NULL;
   tree key_method = NULL_TREE;
@@ -3599,7 +3587,6 @@ trees_in::define_class (tree type, tree maybe_template)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      as_base = tree_node ();
       member_vec = tree_vec ();
       friends = tree_node ();
       lambda = tree_node ();
@@ -3624,8 +3611,6 @@ trees_in::define_class (tree type, tree maybe_template)
 
   if (TYPE_LANG_SPECIFIC (type))
     {
-      CLASSTYPE_AS_BASE (type) = as_base;
-
       CLASSTYPE_FRIEND_CLASSES (type) = friends;
       CLASSTYPE_LAMBDA_EXPR (type) = lambda;
 
@@ -5901,8 +5886,20 @@ trees_out::tree_node (tree t)
 	/* Write out the binfo heirarchy.  */
 	tree_binfo (t);
 	if (TYPE_LANG_SPECIFIC (t))
-	  tree_node (CLASSTYPE_PRIMARY_BINFO (t));
-	// FIXME: AS_BASE too
+	  {
+	    tree_node (CLASSTYPE_PRIMARY_BINFO (t));
+	    tree as_base = CLASSTYPE_AS_BASE (t);
+	    if (as_base && as_base != t)
+	      {
+		/* A fake base class.  We must break the IS_FAKE_BASE loop,
+		   while streaming it out. */
+		CLASSTYPE_AS_BASE (t) = NULL_TREE;
+		tag_definition (as_base, NULL_TREE);
+		CLASSTYPE_AS_BASE (t) = as_base;
+	      }
+	    else
+	      tree_node (as_base);
+	  }
       }
   }
 
@@ -6272,8 +6269,10 @@ trees_in::finish_type (tree type)
       if (!tree_binfo (type))
 	set_overrun ();
       if (TYPE_LANG_SPECIFIC (type))
-	CLASSTYPE_PRIMARY_BINFO (type) = tree_node ();
-      // FIXME:AS_BASE too
+	{
+	  CLASSTYPE_PRIMARY_BINFO (type) = tree_node ();
+	  CLASSTYPE_AS_BASE (type) = tree_node ();
+	}
     }
   else
     {
@@ -6400,6 +6399,9 @@ get_module_owner (tree decl)
   switch (TREE_CODE (decl))
     {
     case TEMPLATE_DECL:
+      /* Although a template-decl has ownership, that's mainly for
+         namespace-scope name pushing.  Whether it has one depends on
+         the thing it's templating, so look at that directly.  */
       decl = DECL_TEMPLATE_RESULT (decl);
       goto again;
 
@@ -6439,16 +6441,20 @@ get_module_owner (tree decl)
      the data.  */
   tree ctx = CP_DECL_CONTEXT (decl);
   gcc_assert (ctx && TREE_CODE (decl) != NAMESPACE_DECL);
-  while (TYPE_P (ctx))
+  if (TYPE_P (ctx))
     {
-      if (TYPE_NAME (ctx))
-	ctx = TYPE_NAME (ctx);
-      else if (TYPE_CONTEXT (ctx))
-	ctx = TYPE_CONTEXT (ctx);
+    again_again:
+      if (tree tn = TYPE_NAME (ctx))
+	ctx = tn;
+      else if (tree tc = TYPE_CONTEXT (ctx))
+	{
+	  ctx = tc;
+	  goto again_again;
+	}
       else
 	/* Always return something, global_namespace is a useful
 	   non-owning decl.  */
-	return global_namespace;
+	ctx = global_namespace;
     }
   return ctx;
 }
