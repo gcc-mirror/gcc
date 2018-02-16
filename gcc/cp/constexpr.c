@@ -4726,6 +4726,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					jump_target);
       break;
 
+    case USING_STMT:
+      r = void_node;
+      break;
+
     default:
       if (STATEMENT_CODE_P (TREE_CODE (t)))
 	{
