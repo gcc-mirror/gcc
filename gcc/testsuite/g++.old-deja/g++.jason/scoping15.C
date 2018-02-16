@@ -13,7 +13,7 @@ public:
 
 class FComplex {
 public:
-  friend  float    imag(const FComplex& a); // { dg-warning "is visible"
+  friend  float    imag(const FComplex& a); // { dg-warning "is visible" }
 };
 
 void
@@ -22,4 +22,4 @@ scnrm2(FComplex cx[])
   int imag;
   ::imag( cx[0] );
 }
-// { dg-warning "ffriend-injection.* is deprecated" "" { target *-*-* } cc1plus: }
+// { dg-warning "ffriend-injection.* is deprecated" "cc1plus:" { target *-*-* } 0 }
