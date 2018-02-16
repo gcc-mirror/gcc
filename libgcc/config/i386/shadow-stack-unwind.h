@@ -22,7 +22,14 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <x86intrin.h>
+/* NB: We need _get_ssp and _inc_ssp from <cetintrin.h>.  But we can't
+   include <x86intrin.h> which ends up including <mm_malloc.h>, which
+   includes <stdlib.h> and <errno.h> unconditionally.  But we can't
+   include any libc system headers unconditionally from libgcc.  Avoid
+   including <mm_malloc.h> here by defining _IMMINTRIN_H_INCLUDED.  */
+#define _IMMINTRIN_H_INCLUDED
+#include <cetintrin.h>
+#undef _IMMINTRIN_H_INCLUDED
 
 /* Unwind the shadow stack for EH.  */
 #undef _Unwind_Frames_Extra
