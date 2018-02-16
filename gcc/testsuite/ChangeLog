@@ -1,5 +1,12 @@
 2018-02-16  Carl Love  <cel@us.ibm.com>
 
+	* gcc.target/powerpc/p9-vinsert4b-1.c: Remove test file for non-ABI
+	tests.
+	* gcc.target/powerpc/p9-vinsert4b-2.c: Remove test file for non-ABI
+	tests.
+
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/builtins-7-p9-runnable.c: New runnable test file
 	for the ABI definitions for vec_extract4b and vec_insert4b.
 
