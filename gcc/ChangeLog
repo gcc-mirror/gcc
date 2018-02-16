@@ -1,5 +1,16 @@
 2018-02-16  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84037
+	PR tree-optimization/84016
+	PR target/82862
+	* config/i386/i386.c (ix86_builtin_vectorization_cost):
+	Adjust vec_construct for the fact we need additional higher latency
+	128bit inserts for AVX256 and AVX512 vector builds.
+	(ix86_add_stmt_cost): Scale vector construction cost for
+	elementwise loads.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84417
 	* tree-ssa.c (non_rewritable_mem_ref_base): Properly constrain
 	the MEM_REF offset when conversion to BIT_FIELD_REF is desired.

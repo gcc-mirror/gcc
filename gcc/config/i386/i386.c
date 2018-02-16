@@ -45906,7 +45906,18 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 			      ix86_cost->sse_op, true);
 
       case vec_construct:
-	return ix86_vec_cost (mode, ix86_cost->sse_op, false);
+	{
+	  /* N element inserts.  */
+	  int cost = ix86_vec_cost (mode, ix86_cost->sse_op, false);
+	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
+	  if (GET_MODE_BITSIZE (mode) == 256)
+	    cost += ix86_vec_cost (mode, ix86_cost->addss, true);
+	  /* One vinserti64x4 and two vinserti128 for combining SSE
+	     and AVX256 vectors to AVX512.  */
+	  else if (GET_MODE_BITSIZE (mode) == 512)
+	    cost += 3 * ix86_vec_cost (mode, ix86_cost->addss, true);
+	  return cost;
+	}
 
       default:
         gcc_unreachable ();
@@ -50244,6 +50255,18 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	default:
 	  break;
 	}
+    }
+  /* If we do elementwise loads into a vector then we are bound by
+     latency and execution resources for the many scalar loads
+     (AGU and load ports).  Try to account for this by scaling the
+     construction cost by the number of elements involved.  */
+  if (kind == vec_construct
+      && stmt_info
+      && stmt_info->type == load_vec_info_type
+      && stmt_info->memory_access_type == VMAT_ELEMENTWISE)
+    {
+      stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+      stmt_cost *= TYPE_VECTOR_SUBPARTS (vectype);
     }
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
