@@ -1,3 +1,31 @@
+2018-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/84277
+	* gnat.dg/array11.adb (Array11): Tweak index and remove warning.
+	* gnat.dg/dispatch1.adb: Rename into...
+	* gnat.dg/disp1.adb: ...this.
+	* gnat.dg/dispatch1_p.ads: Rename into...
+	* gnat.dg/disp1_pkg.ads: ...this.
+	* gnat.dg/disp2.adb: Rename into...
+	* gnat.dg/dispatch2.adb: ...this.
+	* gnat.dg/dispatch2_p.ads: Rename into...
+	* gnat.dg/disp2_pkg.ads: ...this.
+	* gnat.dg/dispatch2_p.adb: Rename into...
+	* gnat.dg/disp2_pkg.adb: this.
+	* gnat.dg/generic_dispatch.adb: Rename into...
+	* gnat.dg/generic_disp.adb: this.
+	* gnat.dg/generic_dispatch_p.ads: Rename into...
+	* gnat.dg/generic_disp_pkg.ads: ...this.
+	* gnat.dg/generic_dispatch_p.adb: Rename into...
+	* gnat.dg/generic_disp_pkg.adb: ...this.
+	* gnat.dg/null_pointer_deref1.adb (Null_Pointer_Deref1): Robustify.
+	* gnat.dg/null_pointer_deref2.adb (Null_Pointer_Deref2): Likewise.
+	* gnat.dg/object_overflow1.adb: Tweak index.
+	* gnat.dg/object_overflow2.adb: Likewise.
+	* gnat.dg/object_overflow3.adb: Likewise.
+	* gnat.dg/object_overflow4.adb: Likewise.
+	* gnat.dg/object_overflow5.adb: Likewise.
+
 2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/84425
