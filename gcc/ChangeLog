@@ -1,3 +1,8 @@
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/84425
+	* ipa-inline.c (inline_small_functions): Fix a typo.
+
 2018-02-16  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/extend.texi (Backwards Compatibility): Americanize 'behaviour'.
