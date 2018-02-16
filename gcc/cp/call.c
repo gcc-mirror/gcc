@@ -9284,8 +9284,14 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
 		  && !is_dummy_object (instance)
 		  && TREE_SIDE_EFFECTS (instance))
-		call = build2 (COMPOUND_EXPR, TREE_TYPE (call),
-			       instance, call);
+		{
+		  /* But avoid the implicit lvalue-rvalue conversion when 'a'
+		     is volatile.  */
+		  tree a = instance;
+		  if (TREE_THIS_VOLATILE (a))
+		    a = build_this (a);
+		  call = build2 (COMPOUND_EXPR, TREE_TYPE (call), a, call);
+		}
 	      else if (call != error_mark_node
 		       && DECL_DESTRUCTOR_P (cand->fn)
 		       && !VOID_TYPE_P (TREE_TYPE (call)))

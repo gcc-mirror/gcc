@@ -1,5 +1,9 @@
 2018-02-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84151 - unnecessary volatile load with static member.
+	* call.c (build_new_method_call_1): Avoid loading from a volatile
+	lvalue used as the object argument for a static member function.
+
 	PR c++/81853 - using-directive and constexpr.
 	* constexpr.c (cxx_eval_constant_expression): Handle USING_STMT.
 
