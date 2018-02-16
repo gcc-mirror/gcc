@@ -1,8 +1,8 @@
 /* { dg-do compile }  */
 /* { dg-options "-O1" }  */
 /* { dg-final { scan-assembler-times "bclr" 6 } }  */
-/* { dg-final { scan-assembler-times "bset" 6 } }  */
-/* { dg-final { scan-assembler-times "bnot" 6 } }  */
+/* { dg-final { scan-assembler-times "bset" 7 } }  */
+/* { dg-final { scan-assembler-times "bnot" 7 } }  */
 
 void
 test_0 (char* x, unsigned int y)
@@ -29,13 +29,14 @@ test_2 (unsigned int x)
 }
 
 void
-test_3 (char* x, unsigned int y)
+test_3 (char* x, unsigned int y, unsigned int z)
 {
-  /* Expect 4x bset here.  */
+  /* Expect 5x bset here.  */
   x[0] |= 0x10;
   x[1] = y | (1 << 1);
   x[2] |= 0x10;
   x[65000] |= 0x10;
+  x[5] |= 1 << z;
 }
 
 unsigned int
@@ -53,13 +54,14 @@ test_5 (unsigned int x)
 }
 
 void
-test_6 (char* x, unsigned int y)
+test_6 (char* x, unsigned int y, unsigned int z)
 {
-  /* Expect 4x bnot here.  */
+  /* Expect 5x bnot here.  */
   x[0] ^= 0x10;
   x[1] = y ^ (1 << 1);
   x[2] ^= 0x10;
   x[65000] ^= 0x10;
+  x[5] ^= 1 << z;
 }
 
 unsigned int

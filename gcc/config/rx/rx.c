@@ -3515,7 +3515,7 @@ rx_fuse_in_memory_bitop (rtx* operands, rtx_insn* curr_insn,
     if (volatile_insn_p (PATTERN (i)) || CALL_P (i))
       return false;
 
-  emit_insn (gen_insn (mem, operands[1]));
+  emit_insn (gen_insn (mem, gen_lowpart (QImode, operands[1])));
   set_insn_deleted (op2_def.insn);
   set_insn_deleted (op0_use);
   return true;
