@@ -5886,6 +5886,18 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (tem != 0)
     return tem;
 
+  /* If one operand is constant, make it the second one.  Only do this
+     if the other operand is not constant as well.  */
+
+  if (swap_commutative_operands_p (op0, op1))
+    {
+      std::swap (op0, op1);
+      code = swap_condition (code);
+    }
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op0);
+
   if (!target)
     target = gen_reg_rtx (word_mode);
 
