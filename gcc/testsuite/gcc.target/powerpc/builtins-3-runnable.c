@@ -1,7 +1,7 @@
-/* { dg-do run { target { powerpc*-*-linux* } } } */
+/* { dg-do run { target { p8vector_hw } } } */
 /* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-O2 -mvsx -mcpu=power8" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=power8" } } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 
 #include <altivec.h> // vector
 
