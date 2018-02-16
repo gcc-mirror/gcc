@@ -1,3 +1,8 @@
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/84425
+	* gcc.c-torture/compile/pr84425.c: New test.
+
 2018-02-16  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
