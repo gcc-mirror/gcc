@@ -1,7 +1,8 @@
 -- { dg-do run }
 
-with dispatch1_p; use dispatch1_p;
-procedure dispatch1 is
+with Disp1_Pkg; use Disp1_Pkg;
+
+procedure Disp1 is
    O   : DT_I1;
    Ptr : access I1'Class;
 begin
