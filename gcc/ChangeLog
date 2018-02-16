@@ -1,3 +1,9 @@
+2018-02-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70023
+	* lra-constraints.c (inherit_in_ebb): Take hard reg mode of
+	src_regno into account.
+
 2018-02-16  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/altivec.h: Remove vec_vextract4b and vec_vinsert4b.

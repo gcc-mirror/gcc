@@ -6346,7 +6346,13 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 						 PSEUDO_REGNO_MODE (src_regno),
 						 reg_renumber[src_regno]);
 			}
-		      add_next_usage_insn (src_regno, use_insn, reloads_num);
+		      if (src_regno >= FIRST_PSEUDO_REGISTER)
+			add_next_usage_insn (src_regno, use_insn, reloads_num);
+		      else
+			{
+			  for (i = 0; i < hard_regno_nregs (src_regno, reg->biggest_mode); i++)
+			    add_next_usage_insn (src_regno + i, use_insn, reloads_num);
+			}
 		    }
 		}
 	  /* Process used call regs.  */
