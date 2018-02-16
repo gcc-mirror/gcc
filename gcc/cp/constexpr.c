@@ -4254,7 +4254,16 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
 					  lval,
 					  non_constant_p, overflow_p);
-      *jump_target = t;
+      if (jump_target)
+	*jump_target = t;
+      else
+	{
+	  /* Can happen with ({ return true; }) && false; passed to
+	     maybe_constant_value.  There is nothing to jump over in this
+	     case, and the bug will be diagnosed later.  */
+	  gcc_assert (ctx->quiet);
+	  *non_constant_p = true;
+	}
       break;
 
     case SAVE_EXPR:
