@@ -1,3 +1,9 @@
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/82939
+	* line-map.c (linemap_init): Avoid broken value-init when compiling
+	with GCC 4.2.
+
 2018-02-15  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
