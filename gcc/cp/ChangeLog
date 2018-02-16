@@ -1,5 +1,9 @@
 2018-02-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82664 - ICE with reference to function template parm.
+	* pt.c (convert_nontype_argument_function): Avoid obfuscationg
+	NOP_EXPRs.
+
 	PR c++/82764 - C++17 ICE with empty base
 	* class.c (build_base_field_1): Set DECL_SIZE to zero for empty base.
 
