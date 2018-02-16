@@ -1,7 +1,13 @@
+2018-02-16  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Include cetintrin.h not x86intrin.h.
+
 2018-02-08  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84239
-	* config/i386/shadow-stack-unwind.hi (_Unwind_Frames_Extra):
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
 	Use new _get_ssp and _inc_ssp intrinsics.
 
 2018-02-02  Julia Koval  <julia.koval@intel.com>
