@@ -1,3 +1,9 @@
+2018-02-16  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/84307
+	* internal-fn.def (ASAN_CHECK): Set proper flags.
+	(ASAN_MARK): Likewise.
+
 2018-02-16  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/i386.c (ix86_option_override_internal): Remove PTA_CLWB
