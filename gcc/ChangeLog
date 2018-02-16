@@ -1,3 +1,9 @@
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84190
+	* tree-ssa.c (non_rewritable_mem_ref_base): Do not touch
+	volatile accesses if the decl isn't volatile.
+
 2018-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
