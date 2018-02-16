@@ -356,6 +356,11 @@ func makemap(t *maptype, hint int, h *hmap) *hmap {
 // NOTE: The returned pointer may keep the whole map live, so don't
 // hold onto it for very long.
 func mapaccess1(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
+	}
+
 	if raceenabled && h != nil {
 		callerpc := getcallerpc()
 		pc := funcPC(mapaccess1)
@@ -409,6 +414,11 @@ func mapaccess1(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
 }
 
 func mapaccess2(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, bool) {
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
+	}
+
 	if raceenabled && h != nil {
 		callerpc := getcallerpc()
 		pc := funcPC(mapaccess2)
@@ -463,6 +473,11 @@ func mapaccess2(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, bool) 
 
 // returns both key and value. Used by map iterator
 func mapaccessK(t *maptype, h *hmap, key unsafe.Pointer) (unsafe.Pointer, unsafe.Pointer) {
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
+	}
+
 	if h == nil || h.count == 0 {
 		return nil, nil
 	}
@@ -521,6 +536,11 @@ func mapaccess2_fat(t *maptype, h *hmap, key, zero unsafe.Pointer) (unsafe.Point
 
 // Like mapaccess, but allocates a slot for the key if it is not present in the map.
 func mapassign(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
+	}
+
 	if h == nil {
 		panic(plainError("assignment to entry in nil map"))
 	}
@@ -772,6 +792,11 @@ func mapiterinit(t *maptype, h *hmap, it *hiter) {
 }
 
 func mapiternext(it *hiter) {
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
+	}
+
 	h := it.h
 	if raceenabled {
 		callerpc := getcallerpc()

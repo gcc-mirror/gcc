@@ -826,6 +826,7 @@ func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer {
 		}
 	}
 
+	// Check preemption, since unlike gc we don't check on every call.
 	if getg().preempt {
 		checkPreempt()
 	}
