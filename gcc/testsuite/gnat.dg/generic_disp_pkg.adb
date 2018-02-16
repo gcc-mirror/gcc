@@ -1,7 +1,9 @@
-package body generic_dispatch_p is
+package body Generic_Disp_Pkg is
+
    function Constructor (I : not null access Integer) return DT is
       R : DT; 
-  begin
+   begin
       return R;
    end Constructor;
-end;
+
+end Generic_Disp_Pkg;
