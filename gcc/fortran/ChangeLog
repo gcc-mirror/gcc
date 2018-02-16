@@ -1,4 +1,10 @@
-2018-02-16  Dominique d'Humieres <dominiq@gcc.gnu.org>
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84418
+	* trans-openmp.c (gfc_trans_omp_clauses): For OMP_CLAUSE_LINEAR_REF
+	kind set OMP_CLAUSE_LINEAR_STEP to TYPE_SIZE_UNIT times last_step.
+
+2018-02-16  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/84354
 	* decl.c (gfc_get_pdt_instance): Replace '%qs' with %qs.
@@ -390,7 +396,7 @@
 	* trans-io.c (get_dtio_proc): Likewise. (transfer_expr): Fix
 	whitespace.
 
-2018-01-13  Thomas Koenig <tkoenig@gcc.gnu.org>
+2018-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/83744
 	* dump-parse-tree.c (get_c_type_name): Remove extra line.
@@ -414,7 +420,7 @@
 	* trans-array.c (is_pointer_array): Remove unconditional return
 	of false for -fopenmp.
 
-2018-01-13  Thomas Koenig <tkoenig@gcc.gnu.org>
+2018-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	<emsr@gcc.gnu.org>
 
 	PR fortran/83803

@@ -1,3 +1,9 @@
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84418
+	* libgomp.fortran/pr84418-1.f90: New test.
+	* libgomp.fortran/pr84418-2.f90: New test.
+
 2018-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/84313
