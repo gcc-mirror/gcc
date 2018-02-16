@@ -1,5 +1,20 @@
 2018-02-16  Carl Love  <cel@us.ibm.com>
 
+	* config/rs6000/altivec.h: Remove vec_vextract4b and vec_vinsert4b.
+	* config/rs6000/rs6000-builtin.def: Remove macro expansion for
+	VEXTRACT4B, VINSERT4B, VINSERT4B_DI and VEXTRACT4B.
+	* config/rs6000/rs6000.c: Remove case statements for
+	P9V_BUILTIN_VEXTRACT4B, P9V_BUILTIN_VEC_VEXTRACT4B,
+	P9V_BUILTIN_VINSERT4B, P9V_BUILTIN_VINSERT4B_DI,
+	and P9V_BUILTIN_VEC_VINSERT4B.
+	* config/rs6000/rs6000-c.c (altivec_expand_builtin): Remove entries for
+	P9V_BUILTIN_VEC_VEXTRACT4B and P9V_BUILTIN_VEC_VINSERT4B.
+	* config/rs6000/vsx.md:
+	* doc/extend.texi: Remove vec_vextract4b, non ABI definitions for
+	vec_insert4b.
+
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
 	* config/rs6000/altivec.h: Add builtin names vec_extract4b
 	vec_insert4b.
 	* config/rs6000/rs6000-builtin.def: Add INSERT4B and EXTRACT4B
