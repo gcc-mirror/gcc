@@ -1,5 +1,8 @@
 2018-02-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81853 - using-directive and constexpr.
+	* constexpr.c (cxx_eval_constant_expression): Handle USING_STMT.
+
 	PR c++/84420 - ICE with structured binding in lambda.
 	* lambda.c (is_capture_proxy): Check DECL_DECOMPOSITION_P.
 
