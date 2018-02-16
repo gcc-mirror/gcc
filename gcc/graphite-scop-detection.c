@@ -1027,7 +1027,23 @@ scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
 
     case GIMPLE_ASSIGN:
     case GIMPLE_CALL:
-      return true;
+      {
+	tree op;
+	ssa_op_iter i;
+	/* Verify that if we can analyze operands at their def site we
+	   also can represent them when analyzed at their uses.  */
+	FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+	  if (scev_analyzable_p (op, scop)
+	      && !graphite_can_represent_expr (scop, bb->loop_father, op))
+	    {
+	      DEBUG_PRINT (dp << "[scop-detection-fail] "
+			   << "Graphite cannot represent stmt:\n";
+			   print_gimple_stmt (dump_file, stmt, 0,
+					      TDF_VOPS | TDF_MEMSYMS));
+	      return false;
+	    }
+	return true;
+      }
 
     default:
       /* These nodes cut a new scope.  */
