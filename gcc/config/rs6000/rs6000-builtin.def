@@ -403,6 +403,14 @@
 		     | RS6000_BTC_UNARY),				\
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
+#define BU_P8V_VSX_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 #define BU_P8V_OVERLOAD_1(ENUM, NAME)					\
   RS6000_BUILTIN_1 (P8V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
 		    "__builtin_vec_" NAME,		/* NAME */	\
@@ -1659,9 +1667,6 @@ BU_VSX_2 (CMPLE_U16QI,        "cmple_u16qi",    CONST,  vector_ngtuv16qi)
 BU_VSX_2 (CMPLE_U8HI,         "cmple_u8hi",     CONST,  vector_ngtuv8hi)
 BU_VSX_2 (CMPLE_U4SI,         "cmple_u4si",     CONST,  vector_ngtuv4si)
 BU_VSX_2 (CMPLE_U2DI,         "cmple_u2di",     CONST,  vector_ngtuv2di)
-BU_VSX_2 (FLOAT2_V2DF,        "float2_v2df",    CONST,  float2_v2df)
-BU_VSX_2 (FLOAT2_V2DI,        "float2_v2di",    CONST,  float2_v2di)
-BU_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
 
 BU_VSX_2 (VEC_VSIGNED2_V2DF,      "vsigned2_v2df",    CONST,  vsigned2_v2df)
 BU_VSX_2 (VEC_VUNSIGNED2_V2DF,    "vunsigned2_v2df",  CONST,  vunsigned2_v2df)
@@ -1856,8 +1861,6 @@ BU_VSX_OVERLOAD_2 (XXMRGHW,  "xxmrghw")
 BU_VSX_OVERLOAD_2 (XXMRGLW,  "xxmrglw")
 BU_VSX_OVERLOAD_2 (XXSPLTD,  "xxspltd")
 BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
-BU_VSX_OVERLOAD_2 (FLOAT2,   "float2")
-BU_VSX_OVERLOAD_2 (UNS_FLOAT2,   "uns_float2")
 BU_VSX_OVERLOAD_2 (VSIGNED2,     "vsigned2")
 BU_VSX_OVERLOAD_2 (VUNSIGNED2,   "vunsigned2")
 
@@ -1909,6 +1912,11 @@ BU_P8V_VSX_1 (REVB_V8HI,      "revb_v8hi",	CONST,	revb_v8hi)
 BU_P8V_VSX_1 (REVB_V16QI,     "revb_v16qi",	CONST,	revb_v16qi)
 BU_P8V_VSX_1 (REVB_V2DF,      "revb_v2df",	CONST,	revb_v2df)
 BU_P8V_VSX_1 (REVB_V4SF,      "revb_v4sf",	CONST,	revb_v4sf)
+
+/* 2 argument VSX instructions added in ISA 2.07.  */
+BU_P8V_VSX_2 (FLOAT2_V2DF,        "float2_v2df",	CONST,  float2_v2df)
+BU_P8V_VSX_2 (FLOAT2_V2DI,        "float2_v2di",	CONST,  float2_v2di)
+BU_P8V_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
 
 /* 1 argument altivec instructions added in ISA 2.07.  */
 BU_P8V_AV_1 (ABS_V2DI,	      "abs_v2di",	CONST,	absv2di2)
@@ -2052,6 +2060,8 @@ BU_P8V_OVERLOAD_2 (VSRD,	"vsrd")
 BU_P8V_OVERLOAD_2 (VSUBCUQ,	"vsubcuq")
 BU_P8V_OVERLOAD_2 (VSUBUDM,	"vsubudm")
 BU_P8V_OVERLOAD_2 (VSUBUQM,	"vsubuqm")
+BU_P8V_OVERLOAD_2 (FLOAT2,   "float2")
+BU_P8V_OVERLOAD_2 (UNS_FLOAT2,   "uns_float2")
 
 /* ISA 2.07 vector overloaded 3 argument functions.  */
 BU_P8V_OVERLOAD_3 (VADDECUQ,	"vaddecuq")
