@@ -1,3 +1,8 @@
+2018-02-16  Dominique d'Humieres <dominiq@gcc.gnu.org>
+
+	PR fortran/84354
+	* decl.c (gfc_get_pdt_instance): Replace '%qs' with %qs.
+
 2018-02-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/84409
