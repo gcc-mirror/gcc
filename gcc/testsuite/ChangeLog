@@ -1,5 +1,8 @@
 2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84272
+	* g++.dg/opt/pr84272.C: New test.
+
 	PR rtl-optimization/83723
 	* gcc.dg/pr83723.c: New test.
 

@@ -1,5 +1,12 @@
 2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84272
+	* config/aarch64/cortex-a57-fma-steering.c (fma_forest::merge_forest):
+	Use ++iter rather than iter++ for std::list iterators.
+	(func_fma_steering::dfs): Likewise.  Don't delete nodes right away,
+	defer deleting them until all nodes in the forest are processed.  Do
+	free even leaf nodes.  Change to_process into auto_vec.
+
 	PR bootstrap/84405
 	* system.h (BROKEN_VALUE_INITIALIZATION): Define for GCC < 4.3.
 	* vec.h (vec_default_construct): Use memset instead of placement new

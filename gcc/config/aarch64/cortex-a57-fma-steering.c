@@ -406,7 +406,7 @@ fma_forest::merge_forest (fma_forest *other_forest)
 
   /* Update root nodes' pointer to forest.  */
   for (other_root_iter = other_roots->begin ();
-       other_root_iter != other_roots->end (); other_root_iter++)
+       other_root_iter != other_roots->end (); ++other_root_iter)
     (*other_root_iter)->set_forest (this);
 
   /* Remove other_forest from the list of forests and move its tree roots in
@@ -847,14 +847,13 @@ func_fma_steering::dfs (void (*process_forest) (fma_forest *),
 			void (*process_node) (fma_forest *, fma_node *),
 			bool free)
 {
-  vec<fma_node *> to_process;
+  auto_vec<fma_node *> to_process;
+  auto_vec<fma_node *> to_free;
   std::list<fma_forest *>::iterator forest_iter;
-
-  to_process.create (0);
 
   /* For each forest.  */
   for (forest_iter = this->m_fma_forests.begin ();
-       forest_iter != this->m_fma_forests.end (); forest_iter++)
+       forest_iter != this->m_fma_forests.end (); ++forest_iter)
     {
       std::list<fma_root_node *>::iterator root_iter;
 
@@ -863,7 +862,7 @@ func_fma_steering::dfs (void (*process_forest) (fma_forest *),
 
       /* For each tree root in this forest.  */
       for (root_iter = (*forest_iter)->get_roots ()->begin ();
-	   root_iter != (*forest_iter)->get_roots ()->end (); root_iter++)
+	   root_iter != (*forest_iter)->get_roots ()->end (); ++root_iter)
 	{
 	  if (process_root)
 	    process_root (*forest_iter, *root_iter);
@@ -881,28 +880,30 @@ func_fma_steering::dfs (void (*process_forest) (fma_forest *),
 	  if (process_node)
 	    process_node (*forest_iter, node);
 
-	  /* Absence of children might indicate an alternate root of a *chain*.
-	     It's ok to skip it here as the chain will be renamed when
-	     processing the canonical root for that chain.  */
-	  if (node->get_children ()->empty ())
-	    continue;
-
 	  for (child_iter = node->get_children ()->begin ();
-	       child_iter != node->get_children ()->end (); child_iter++)
+	       child_iter != node->get_children ()->end (); ++child_iter)
 	    to_process.safe_push (*child_iter);
+
+	  /* Defer freeing so that the process_node callback can access the
+	     parent and children of the node being processed.  */
 	  if (free)
+	    to_free.safe_push (node);
+	}
+
+      if (free)
+	{
+	  delete *forest_iter;
+
+	  while (!to_free.is_empty ())
 	    {
+	      fma_node *node = to_free.pop ();
 	      if (node->root_p ())
 		delete static_cast<fma_root_node *> (node);
 	      else
 		delete node;
 	    }
 	}
-      if (free)
-	delete *forest_iter;
     }
-
-  to_process.release ();
 }
 
 /* Build the dependency trees of FMUL and FMADD/FMSUB instructions.  */
