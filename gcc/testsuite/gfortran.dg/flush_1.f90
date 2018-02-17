@@ -15,12 +15,12 @@ program flush_1
 
    write (10, *) 42
    flush(unit=10, iostat=ios)
-   if (ios /= 0) call abort
+   if (ios /= 0) STOP 1
 
    write (10, *) 42
    flush (unit=10, err=20)
    goto 30
-20 call abort
+20 STOP 2
 30 continue
 
    call flush(10)

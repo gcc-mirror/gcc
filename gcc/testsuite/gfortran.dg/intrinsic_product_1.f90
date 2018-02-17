@@ -16,14 +16,14 @@
 
       ida = -3
       IDA(NF1:NF2,NF1:NF3) = PRODUCT(IDA1,NF2, NF1 .LT. 0)  !fails
-      if (any(ida /= 1)) call abort
+      if (any(ida /= 1)) STOP 1
 
       ida = -3
       IDA(NF1:NF2,NF1:NF3) = PRODUCT(IDA1,NF2, .false. )    !fails
-      if (any(ida /= 1)) call abort
+      if (any(ida /= 1)) STOP 2
 
       ida = -3
       IDA(NF1:NF2,NF1:NF3) = PRODUCT(IDA1,NF2, ida1 .eq. 137 )    !works
-      if (any(ida /= 1)) call abort
+      if (any(ida /= 1)) STOP 3
 
       END SUBROUTINE

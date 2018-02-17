@@ -4,13 +4,13 @@ program test
 
    foo="hello"
 
-   if (llt(foo, "hello")) call abort
-   if (.not. lle(foo, "hello")) call abort
-   if (lgt("hello", foo)) call abort
-   if (.not. lge("hello", foo)) call abort
+   if (llt(foo, "hello")) STOP 1
+   if (.not. lle(foo, "hello")) STOP 2
+   if (lgt("hello", foo)) STOP 3
+   if (.not. lge("hello", foo)) STOP 4
 
-   if (.not. llt(foo, "world")) call abort
-   if (.not. lle(foo, "world")) call abort
-   if (lgt(foo, "world")) call abort
-   if (lge(foo, "world")) call abort
+   if (.not. llt(foo, "world")) STOP 5
+   if (.not. lle(foo, "world")) STOP 6
+   if (lgt(foo, "world")) STOP 7
+   if (lge(foo, "world")) STOP 8
 end

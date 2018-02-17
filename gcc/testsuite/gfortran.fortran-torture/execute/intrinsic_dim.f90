@@ -7,14 +7,14 @@ program intrinsic_dim
 
    i = 1
    j = 4
-   if (dim (i, j) .ne. 0) call abort
-   if (dim (j, i) .ne. 3) call abort
+   if (dim (i, j) .ne. 0) STOP 1
+   if (dim (j, i) .ne. 3) STOP 2
    r = 1.0
    s = 4.0
-   if (dim (r, s) .ne. 0.0) call abort
-   if (dim (s, r) .ne. 3.0) call abort
+   if (dim (r, s) .ne. 0.0) STOP 3
+   if (dim (s, r) .ne. 3.0) STOP 4
    p = 1.0
    q = 4.0
-   if (dim (p, q) .ne. 0.0) call abort
-   if (dim (q, p) .ne. 3.0) call abort
+   if (dim (p, q) .ne. 0.0) STOP 5
+   if (dim (q, p) .ne. 3.0) STOP 6
 end program

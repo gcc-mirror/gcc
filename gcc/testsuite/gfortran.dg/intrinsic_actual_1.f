@@ -9,7 +9,7 @@
         external proc
         real proc, z
         if ((proc(z) .ne. abs (z)) .and. 
-     &      (proc(z) .ne. alog10 (abs(z)))) call abort ()
+     &      (proc(z) .ne. alog10 (abs(z)))) STOP 1
         return
       end
 

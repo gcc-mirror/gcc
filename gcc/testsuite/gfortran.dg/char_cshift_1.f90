@@ -32,7 +32,7 @@ contains
         do i1 = 1, n1
           if (b (i1, i2, i3) .ne. a (mod (d1 + i1 - 1, n1) + 1, &
                                      mod (d2 + i2 - 1, n2) + 1, &
-                                     mod (d3 + i3 - 1, n3) + 1)) call abort
+                                     mod (d3 + i3 - 1, n3) + 1)) STOP 1
         end do
       end do
     end do

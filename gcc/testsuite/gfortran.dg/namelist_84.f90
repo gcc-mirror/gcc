@@ -20,7 +20,7 @@ program namelist_delim_none
    rewind(10)
    do i=1,5
      read(10,'(a)') internal_unit
-     if (i.eq.2 .and. internal_unit .ne. " MYSTRING=mon  tue  wed  thu  fri  ,") call abort
+     if (i.eq.2 .and. internal_unit .ne. " MYSTRING=mon  tue  wed  thu  fri  ,") STOP 1
      if (scan(internal_unit,"""'").ne.0) print *, internal_unit
    end do
    close(10)

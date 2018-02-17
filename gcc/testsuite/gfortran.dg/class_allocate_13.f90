@@ -26,6 +26,6 @@ program bug
   
   allocate(d%L(2)%B,source=b1)           ! wrong code
   
-  if (d%L(2)%B%fields/=5.) call abort()
+  if (d%L(2)%B%fields/=5.) STOP 1
 
 end program

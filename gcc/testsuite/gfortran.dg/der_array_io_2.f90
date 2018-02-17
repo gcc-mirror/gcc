@@ -27,5 +27,5 @@ program main
 
   write (buf1,*)  foo
   write (buf2,*) ((foo(i)%x(j),j=1,3), (foo(i)%y(j),j=1,4), (foo(i)%z(j),j=1,5), (foo(i)%a(j),j=1,3), i=1,2)
-  if (buf1.ne.buf2) call abort
+  if (buf1.ne.buf2) STOP 1
 end program main

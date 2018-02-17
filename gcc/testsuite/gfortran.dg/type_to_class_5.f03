@@ -22,7 +22,7 @@ contains
     integer :: iarray(4)
     integer :: i
     do i=1,size(a)
-        if (a(i)%n .ne. iarray(i)) call abort
+        if (a(i)%n .ne. iarray(i)) STOP 1
         a(i)%n = a(i)%n+1
     enddo
   end subroutine

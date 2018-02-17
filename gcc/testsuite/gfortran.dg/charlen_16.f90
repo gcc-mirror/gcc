@@ -5,5 +5,5 @@ program p
       character(2) :: c(1) = [character(3) :: 'abc']
    end type
    type(t) :: x
-   if (trim(x%c(1)) /= 'ab') call abort
+   if (trim(x%c(1)) /= 'ab') STOP 1
 end

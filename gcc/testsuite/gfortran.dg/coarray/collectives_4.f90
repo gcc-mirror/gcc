@@ -13,8 +13,8 @@ do i = 2, num_images()
   i4_2 = i4_2 * 21 * i
 end do
 call co_reduce(i4, op_i4, stat=stat)
-if (stat /= 0) call abort()
-if (i4_2 /= i4) call abort()
+if (stat /= 0) STOP 1
+if (i4_2 /= i4) STOP 2
 
 contains
   pure integer function op_i4(a,b)

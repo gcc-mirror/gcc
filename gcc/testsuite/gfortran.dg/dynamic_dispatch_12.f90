@@ -66,7 +66,7 @@ contains
     use TestResult_mod, only: TestResult
     class (TestResult) :: result
     call result%run()
-    if (result%numRun /= 1) call abort()
+    if (result%numRun /= 1) STOP 1
   end subroutine
 
 end

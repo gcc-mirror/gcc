@@ -22,5 +22,5 @@ end function x
 program test
   use modproc
   implicit none
-  if(x() /= -5) call abort()
+  if(x() /= -5) STOP 1
 end program test

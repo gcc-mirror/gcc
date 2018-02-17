@@ -5,7 +5,7 @@
 subroutine bar(r)
   implicit none
   integer(8) :: r
-  if(r /= 42) call abort()
+  if(r /= 42) STOP 1
   r = 13
 end subroutine bar
 
@@ -16,7 +16,7 @@ subroutine foo(a)
      character(len=3) :: c
   end type myT
   type(myT) :: a
-  if(a%c /= "xyz") call abort()
+  if(a%c /= "xyz") STOP 2
   a%c = "abc"
 end subroutine
 
@@ -28,7 +28,7 @@ subroutine new(a,b)
   end type gType
   real(8) :: a
   type(gType) :: b
-  if(a /= 99.0 .or. b%c /= 11) call abort()
+  if(a /= 99.0 .or. b%c /= 11) STOP 3
   a = -123.0
   b%c = -44
 end subroutine new
@@ -70,13 +70,13 @@ module modtest
     integer(dp) :: y
     y = 42
     call bar(y)
-    if(y /= 13) call abort()
+    if(y /= 13) STOP 4
   end subroutine test
   subroutine test2()
     type(myT) :: z
     z%c = "xyz"
     call foo(z)
-    if(z%c /= "abc") call abort()
+    if(z%c /= "abc") STOP 5
   end subroutine test2
 end module modtest
 
@@ -93,6 +93,6 @@ contains
     r   = 99.0
     t%c = 11
     call new(r,t)
-    if(r /= -123.0 .or. t%c /= -44) call abort()
+    if(r /= -123.0 .or. t%c /= -44) STOP 6
   end subroutine test3
 end program all

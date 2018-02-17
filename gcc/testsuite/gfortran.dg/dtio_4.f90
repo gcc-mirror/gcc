@@ -93,15 +93,15 @@ program test1
   result_array = (/ (i, i = 1, 15) /)
   more1%myarray = result_array
   read (10, fmt='(dt)', advance='no', iomsg=iomsg) udt1
-  if (iomsg.ne.'SUCCESS') call abort
-  if (any(udt1%myarray.ne.result_array)) call abort
+  if (iomsg.ne.'SUCCESS') STOP 1
+  if (any(udt1%myarray.ne.result_array)) STOP 1
   close(10)
   open (10, form='formatted', status='scratch')
   write (10, '(dt)') more1
   rewind(10)
   more1%myarray = 99
   read (10, '(dt)', iostat=ios, iomsg=iomsg) more1
-  if (iomsg.ne.'SUCCESS') call abort
-  if (any(more1%myarray.ne.result_array)) call abort
+  if (iomsg.ne.'SUCCESS') STOP 1
+  if (any(more1%myarray.ne.result_array)) STOP 1
   close (10)
 end program test1

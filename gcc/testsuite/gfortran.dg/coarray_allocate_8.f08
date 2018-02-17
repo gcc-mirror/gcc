@@ -29,10 +29,10 @@ program alloc_comp
   sync all
 
   ! Check the caf_get()-offset is computed correctly.
-  if(me == 1 .and. coo[np]%y(10) /= 11 ) call abort()
+  if(me == 1 .and. coo[np]%y(10) /= 11 ) STOP 1
 
   ! Check the whole array is correct.
-  if (me == 1 .and. any( coo[np]%y /= [(i, i=2, 101)] ) ) call abort()
+  if (me == 1 .and. any( coo[np]%y /= [(i, i=2, 101)] ) ) STOP 2
 
   deallocate(coo%x)
 

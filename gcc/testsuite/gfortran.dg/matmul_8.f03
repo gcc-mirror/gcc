@@ -8,5 +8,5 @@
   REAL, PARAMETER :: m2(2,2)    = RESHAPE([COS(theta), -SIN(theta), SIN(theta), COS(theta)], [2, 2])
   REAL, PARAMETER :: m(2,2)     = MATMUL(m1, m2)
 
-  IF (ANY(ABS(m - unity) > EPSILON(0.0))) CALL abort()
+  IF (ANY(ABS(m - unity) > EPSILON(0.0))) STOP 1
 END

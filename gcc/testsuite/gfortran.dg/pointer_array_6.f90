@@ -20,9 +20,9 @@
   pArray => pCellArray%Ele
   v_pointer => pArray(1,1)%v;
   v_pointer = v_real !OK %%%%%%%%%%%%
-  if (any (int (pArray(1,1)%v) .ne. 99)) call abort
+  if (any (int (pArray(1,1)%v) .ne. 99)) STOP 1
 
   v_real = 88
   pArray(1,1)%v = v_real !SEGFAULT %%%%%%%%%%%%%%%%%%%%%%%%
-  if (any (int (v_pointer) .ne. 88)) call abort
+  if (any (int (v_pointer) .ne. 88)) STOP 2
 end

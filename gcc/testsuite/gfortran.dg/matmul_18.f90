@@ -4,5 +4,5 @@ program p
    real, parameter :: b(2,3) = 2
    real d(3,3)
    d = 4
-   if (any(d /= matmul(a,b))) call abort
+   if (any(d /= matmul(a,b))) STOP 1
 end

@@ -14,17 +14,17 @@ program foo
    b_k = spread (a_k, 1, 2)
    if (any (b_k .ne. reshape ((/1_k, 1_k, 2_k, 2_k, 3_k, 3_k, 4_k, 4_k, 5_k, 5_k, 6_k, 6_k/), &
                             (/2, 2, 3/)))) &
-      call abort
+      STOP 1
    line1 = ' '
    write(line1, 9000) b_k
    line2 = ' '
    write(line2, 9000) spread (a_k, 1, 2)
-   if (line1 /= line2) call abort
+   if (line1 /= line2) STOP 2
    line3 = ' '
    write(line3, 9000) spread (a_k, 1, 2) + 0_k
-   if (line1 /= line3) call abort
+   if (line1 /= line3) STOP 3
    i_k = spread(1_k,1,10)
-   if (any(i_k /= 1_k)) call abort
+   if (any(i_k /= 1_k)) STOP 4
 
 9000 format(12I3)
 

@@ -28,9 +28,9 @@
 
   select type(bar => m%foo) ! { dg-error "part reference with nonzero rank" }
     type is(t0)
-      if (any (bar%j .ne. [99, 198, 297, 396])) call abort
+      if (any (bar%j .ne. [99, 198, 297, 396])) STOP 1
     type is(t1)
-      call abort
+      STOP 2
   end select
 
 end

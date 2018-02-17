@@ -16,40 +16,40 @@ program main
   b = 1/exp(1000.0)
 
   write(str,*) a
-  if (trim(adjustl(str)) .ne. 'Infinity') call abort
+  if (trim(adjustl(str)) .ne. 'Infinity') STOP 1
 
-  if (b .ne. 0.) call abort
+  if (b .ne. 0.) STOP 2
 
   write(str,*) -1.0/b
-  if (trim(adjustl(str)) .ne. '-Infinity') call abort
+  if (trim(adjustl(str)) .ne. '-Infinity') STOP 3
 
   write(str,*) b/0.0
-  if (trim(adjustl(str)) .ne. 'NaN') call abort
+  if (trim(adjustl(str)) .ne. 'NaN') STOP 4
 
   write(str,*) 0.0/0.0
-  if (trim(adjustl(str)) .ne. 'NaN') call abort
+  if (trim(adjustl(str)) .ne. 'NaN') STOP 5
 
   write(str,*) 1.0/(-0.)
-  if (trim(adjustl(str)) .ne. '-Infinity') call abort
+  if (trim(adjustl(str)) .ne. '-Infinity') STOP 6
 
   write(str,*) -2.0/0.
-  if (trim(adjustl(str)) .ne. '-Infinity') call abort
+  if (trim(adjustl(str)) .ne. '-Infinity') STOP 7
 
   write(str,*) 3.0/0.
-  if (trim(adjustl(str)) .ne. 'Infinity') call abort
+  if (trim(adjustl(str)) .ne. 'Infinity') STOP 8
 
   write(str,*)  nan
-  if (trim(adjustl(str)) .ne. 'NaN') call abort
+  if (trim(adjustl(str)) .ne. 'NaN') STOP 9
 
   write(str,*) z
-  if (trim(adjustl(str)) .ne. '(NaN,NaN)') call abort
+  if (trim(adjustl(str)) .ne. '(NaN,NaN)') STOP 10
 
   write(str,*) z2
-  if (trim(adjustl(str)) .ne. '(NaN,NaN)') call abort
+  if (trim(adjustl(str)) .ne. '(NaN,NaN)') STOP 11
 
   write(str,*) z3
-  if (trim(adjustl(str)) .ne. '(Inf,-Inf)') call abort
+  if (trim(adjustl(str)) .ne. '(Inf,-Inf)') STOP 12
 
   write(str,*) z4
-  if (trim(adjustl(str)) .ne. '(0.00000000,-0.00000000)') call abort
+  if (trim(adjustl(str)) .ne. '(0.00000000,-0.00000000)') STOP 13
 end program main

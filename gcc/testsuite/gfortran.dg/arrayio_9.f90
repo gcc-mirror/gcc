@@ -7,5 +7,5 @@ program pr29563
   real(kind=8), dimension(3,3) :: tmp
   tmp = 0.0
   read(arraydata,*,iostat=iostat)((tmp(i,j),j=1,3),i=1,3)
-  if (tmp(3,3)-9.0.gt.0.0000001) call abort()
+  if (tmp(3,3)-9.0.gt.0.0000001) STOP 1
 end program pr29563

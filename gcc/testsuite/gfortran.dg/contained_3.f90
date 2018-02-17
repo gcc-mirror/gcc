@@ -10,14 +10,14 @@ MODULE ksbin1_aux_mod
   SUBROUTINE nxtstg1()
     INTEGER :: i
     i = setbd()  ! available by host association.
-    if (setbd () .ne. 99 ) call abort ()
+    if (setbd () .ne. 99 ) STOP 1
   END SUBROUTINE nxtstg1
 
   SUBROUTINE nxtstg2()
     INTEGER :: i
     integer :: setbd  ! makes it external.
     i = setbd()       ! this is the PR
-    if (setbd () .ne. 42 ) call abort ()
+    if (setbd () .ne. 42 ) STOP 2
   END SUBROUTINE nxtstg2
 
   FUNCTION binden()
@@ -34,12 +34,12 @@ PROGRAM test
   integer setbd ! setbd is external, since not use assoc.
   CALL nxtstg1()
   CALL nxtstg2()
-  if (setbd () .ne. 42 ) call abort ()
+  if (setbd () .ne. 42 ) STOP 3
   call foo
 contains
   subroutine foo
     USE ksbin1_aux_mod ! module setbd is available
-    if (setbd () .ne. 99 ) call abort ()
+    if (setbd () .ne. 99 ) STOP 4
   end subroutine
 END PROGRAM test
 

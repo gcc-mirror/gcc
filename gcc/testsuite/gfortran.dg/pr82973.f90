@@ -22,10 +22,10 @@ program pr82973
   ifloor_result = nint(real(ai-floor(real(ai)/real(bi))*bi))
   do i=1,n
     if (modulo_result(i) /= floor_result(i)) then
-      call abort()
+      STOP 1
     end if
     if (imodulo_result(i) /= ifloor_result(i)) then
-      call abort ()
+      STOP 2
     end if
   end do
 end program pr82973

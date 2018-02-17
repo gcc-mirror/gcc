@@ -85,7 +85,7 @@ PROGRAM test_prog
       END WHERE
    END DO
 
-   if (any (ia .ne. (/1,-1,2,-2,0,0,0,0,5,-5,6,-6/))) call abort ()
+   if (any (ia .ne. (/1,-1,2,-2,0,0,0,0,5,-5,6,-6/))) STOP 1
 
 CONTAINS
 

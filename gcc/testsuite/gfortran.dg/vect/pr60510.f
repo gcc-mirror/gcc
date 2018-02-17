@@ -22,7 +22,7 @@
         y(i) = i+1
       enddo
       call foo(a,x,y,1024)
-      if (a.ne.359488000.0) call abort()
+      if (a.ne.359488000.0) STOP 1
       end
 ! If there's no longer a reduction chain detected this doesn't test what
 ! it was supposed to test, vectorizing a reduction chain w/o SLP.

@@ -27,5 +27,5 @@ program test_pdt
   type(vec(k=123)) :: u
 
   u%foo=1
-  if (total(u) .ne. u%k) call abort
+  if (total(u) .ne. u%k) STOP 1
 end program test_pdt

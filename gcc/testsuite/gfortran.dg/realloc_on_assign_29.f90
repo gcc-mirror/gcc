@@ -9,5 +9,5 @@ program test10
   !
   string = '1234567890'
   string = string(1:5) // string(7:)
-  if (string /= '123457890') call abort
+  if (string /= '123457890') STOP 1
 end program test10

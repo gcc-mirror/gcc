@@ -38,20 +38,20 @@ program test_modules
   use outer, outer1 => my1, outer4 => my4
   implicit none
 
-  if (len (inner1) /= len(inner4)) call abort
-  if (len (inner1) /= len_trim(inner1)) call abort
-  if (len (inner4) /= len_trim(inner4)) call abort
+  if (len (inner1) /= len(inner4)) STOP 1
+  if (len (inner1) /= len_trim(inner1)) STOP 2
+  if (len (inner4) /= len_trim(inner4)) STOP 3
 
-  if (len(middle1) /= len(inner1)) call abort
-  if (len(outer1) /= len(inner1)) call abort
-  if (len(middle4) /= len(inner4)) call abort
-  if (len(outer4) /= len(inner4)) call abort
+  if (len(middle1) /= len(inner1)) STOP 4
+  if (len(outer1) /= len(inner1)) STOP 5
+  if (len(middle4) /= len(inner4)) STOP 6
+  if (len(outer4) /= len(inner4)) STOP 7
 
   if (any (len_trim (middle1) /= reshape([len(middle1), 0, 3, 2], [2,2]))) &
-    call abort
+    STOP 8
   if (any (len_trim (middle4) /= reshape([len(middle4), 0, 3, 2], [2,2]))) &
-    call abort
-  if (any (len_trim (outer1) /= [len(outer1), 3])) call abort
-  if (any (len_trim (outer4) /= [len(outer4), 3])) call abort
+    STOP 9
+  if (any (len_trim (outer1) /= [len(outer1), 3])) STOP 10
+  if (any (len_trim (outer4) /= [len(outer4), 3])) STOP 11
 
 end program test_modules

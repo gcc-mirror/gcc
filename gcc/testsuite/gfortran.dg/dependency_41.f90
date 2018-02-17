@@ -14,6 +14,6 @@ program main
   ! Same result when assigning to a or b
   b(n+1:10:4) = a(n+2:8:2)
   a(n+1:10:4) = a(n+2:8:2)
-  if (any (a/=b)) call abort
+  if (any (a/=b)) STOP 1
 end program main
 

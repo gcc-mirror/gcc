@@ -25,8 +25,8 @@
                                              PRODUCT( rmatrix_prod_d1 ) == rmatrix_prod])
   LOGICAL, PARAMETER :: r_empty_prod = PRODUCT(rmatrix, mask=.FALSE.) == 1.0
 
-  IF (.NOT. ALL ([i_equal_prod, i_empty_prod])) CALL abort()
-  IF (.NOT. ALL ([r_equal_prod, r_empty_prod])) CALL abort()
+  IF (.NOT. ALL ([i_equal_prod, i_empty_prod])) STOP 1
+  IF (.NOT. ALL ([r_equal_prod, r_empty_prod])) STOP 2
 
   CALL ilib (imatrix, imatrix_prod)
   CALL ilib_with_dim (imatrix, 1, imatrix_prod_d1)
@@ -39,27 +39,27 @@ CONTAINS
   SUBROUTINE ilib (array, result)
     INTEGER, DIMENSION(:,:), INTENT(in) :: array
     INTEGER, INTENT(in) :: result
-    IF (PRODUCT(array) /= result) CALL abort()
+    IF (PRODUCT(array) /= result) STOP 3
   END SUBROUTINE
 
   SUBROUTINE ilib_with_dim (array, dim, result)
     INTEGER, DIMENSION(:,:), INTENT(in) :: array
     INTEGER, INTENT(iN)                 :: dim
     INTEGER, DIMENSION(:), INTENT(in)   :: result
-    IF (ANY (PRODUCT (array, dim=dim) /= result)) CALL abort()
+    IF (ANY (PRODUCT (array, dim=dim) /= result)) STOP 4
   END SUBROUTINE
 
   SUBROUTINE rlib (array, result)
     REAL, DIMENSION(:,:), INTENT(in) :: array
     REAL, INTENT(in) :: result
-    IF (ABS(PRODUCT(array) - result) > 2e-6) CALL abort()
+    IF (ABS(PRODUCT(array) - result) > 2e-6) STOP 5
   END SUBROUTINE
 
   SUBROUTINE rlib_with_dim (array, dim, result)
     REAL, DIMENSION(:,:), INTENT(in) :: array
     INTEGER, INTENT(iN)              :: dim
     REAL, DIMENSION(:), INTENT(in)   :: result
-    IF (ANY (ABS(PRODUCT (array, dim=dim) - result) > 2e-6)) CALL abort()
+    IF (ANY (ABS(PRODUCT (array, dim=dim) - result) > 2e-6)) STOP 6
   END SUBROUTINE
 END
 

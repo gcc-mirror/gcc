@@ -65,53 +65,53 @@
 
   ! Correct results in simple cases
   ax = sum(a,1)
-  if (any(ax /= px)) call abort
+  if (any(ax /= px)) STOP 1
 
   ay = sum(a,2)
-  if (any(ay /= py)) call abort
+  if (any(ay /= py)) STOP 2
 
   az = sum(a,3)
-  if (any(az /= pz)) call abort
+  if (any(az /= pz)) STOP 3
 
 
   ! Masks work
-  if (any(sum(a,1,.false.) /= 0))                    call abort
-  if (any(sum(a,2,.true.)  /= py))                   call abort
-  if (any(sum(a,3,m)       /= merge(pz,0,m(:,:,1)))) call abort
+  if (any(sum(a,1,.false.) /= 0))                    STOP 4
+  if (any(sum(a,2,.true.)  /= py))                   STOP 5
+  if (any(sum(a,3,m)       /= merge(pz,0,m(:,:,1)))) STOP 6
   if (any(sum(a,2,m)       /= merge(sum(a(:, ::2,:),2),&
                                     sum(a(:,2::2,:),2),&
-                                    m(:,1,:))))      call abort
+                                    m(:,1,:))))      STOP 7
 
 
   ! It works too with array constructors ...
   if (any(sum(                                      &
         reshape((/ (i*i,i=1,size(a)) /), shape(a)), &
         1,                                          &
-        true) /= ax)) call abort
+        true) /= ax)) STOP 8
 
   ! ... and with vector subscripts
   if (any(sum(               &
         a((/ (i,i=1,nx) /),  &
           (/ (i,i=1,ny) /),  &
           (/ (i,i=1,nz) /)), &
-        1) /= ax)) call abort
+        1) /= ax)) STOP 9
 
   if (any(sum(                &
         a(sum(onesx(:,:),1),  & ! unnecessary { dg-warning "Creating array temporary" }
           sum(onesy(:,:),1),  & ! unnecessary { dg-warning "Creating array temporary" }
           sum(onesz(:,:),1)), & ! unnecessary { dg-warning "Creating array temporary" }
-        1) /= ax)) call abort
+        1) /= ax)) STOP 10
 
 
   ! Nested sums work
-  if (sum(sum(sum(a,1),1),1) /= sum(a)) call abort
-  if (sum(sum(sum(a,1),2),1) /= sum(a)) call abort
-  if (sum(sum(sum(a,3),1),1) /= sum(a)) call abort
-  if (sum(sum(sum(a,3),2),1) /= sum(a)) call abort
+  if (sum(sum(sum(a,1),1),1) /= sum(a)) STOP 11
+  if (sum(sum(sum(a,1),2),1) /= sum(a)) STOP 12
+  if (sum(sum(sum(a,3),1),1) /= sum(a)) STOP 13
+  if (sum(sum(sum(a,3),2),1) /= sum(a)) STOP 14
 
-  if (any(sum(sum(a,1),1) /= sum(sum(a,2),1))) call abort
-  if (any(sum(sum(a,1),2) /= sum(sum(a,3),1))) call abort
-  if (any(sum(sum(a,2),2) /= sum(sum(a,3),2))) call abort
+  if (any(sum(sum(a,1),1) /= sum(sum(a,2),1))) STOP 15
+  if (any(sum(sum(a,1),2) /= sum(sum(a,3),1))) STOP 16
+  if (any(sum(sum(a,2),2) /= sum(sum(a,3),2))) STOP 17
 
 
   ! Temps are unavoidable here (function call's argument or result)
@@ -119,37 +119,37 @@
   ! Sums as part of a bigger expr work
   if (any(1+sum(eid(a),1)+ax+sum( &
         neid3(a), &            ! { dg-warning "Creating array temporary" }
-        1)+1  /= 3*ax+2))        call abort
+        1)+1  /= 3*ax+2))        STOP 18
   if (any(1+eid(sum(a,2))+ay+ &
         neid2( &               ! { dg-warning "Creating array temporary" }
         sum(a,2) &             ! { dg-warning "Creating array temporary" }
-        )+1  /= 3*ay+2))        call abort
+        )+1  /= 3*ay+2))        STOP 19
   if (any(sum(eid(sum(a,3))+az+2* &
         neid2(az) &            ! { dg-warning "Creating array temporary" }
-        ,1)+1 /= 4*sum(az,1)+1)) call abort
+        ,1)+1 /= 4*sum(az,1)+1)) STOP 20
 
-  if (any(sum(transpose(sum(a,1)),1)+sum(az,1) /= sum(ax,2)+sum(sum(a,3),1))) call abort
+  if (any(sum(transpose(sum(a,1)),1)+sum(az,1) /= sum(ax,2)+sum(sum(a,3),1))) STOP 21
 
 
   ! Creates a temp when needed. 
   a(1,:,:) = sum(a,1)                   ! unnecessary { dg-warning "Creating array temporary" }
-  if (any(a(1,:,:) /= ax)) call abort
+  if (any(a(1,:,:) /= ax)) STOP 22
 
   b = p(:,:,1)
   call set(b(2:,1), sum(b(:nx-1,:),2))  ! { dg-warning "Creating array temporary" }
-  if (any(b(2:,1) /= ay(1:nx-1,1))) call abort
+  if (any(b(2:,1) /= ay(1:nx-1,1))) STOP 23
 
   b = p(:,:,1)
   call set(b(:,1), sum(b,2))            ! unnecessary { dg-warning "Creating array temporary" }
-  if (any(b(:,1) /= ay(:,1))) call abort
+  if (any(b(:,1) /= ay(:,1))) STOP 24
 
   b = p(:,:,1)
   call tes(sum(eid(b(:nx-1,:)),2), b(2:,1))  ! { dg-warning "Creating array temporary" }
-  if (any(b(2:,1) /= ay(1:nx-1,1))) call abort
+  if (any(b(2:,1) /= ay(1:nx-1,1))) STOP 25
 
   b = p(:,:,1)
   call tes(eid(sum(b,2)), b(:,1))            ! unnecessary { dg-warning "Creating array temporary" }
-  if (any(b(:,1) /= ay(:,1))) call abort
+  if (any(b(:,1) /= ay(:,1))) STOP 26
 
 contains
 

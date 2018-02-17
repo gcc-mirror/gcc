@@ -5,7 +5,7 @@ subroutine integertest (ops, res)
    integer, dimension(2) :: res
 
    if ((mod(ops(1), ops(2)) .ne. res(1)) .or. &
-       (modulo(ops(1), ops(2)) .ne. res(2))) call abort
+       (modulo(ops(1), ops(2)) .ne. res(2))) STOP 1
 end subroutine
 
 subroutine real4test (ops, res)
@@ -14,7 +14,7 @@ subroutine real4test (ops, res)
    real(kind=4), dimension(2) :: res
 
    if (diff(mod(ops(1), ops(2)), res(1)) .or. &
-       diff(modulo(ops(1), ops(2)), res(2))) call abort
+       diff(modulo(ops(1), ops(2)), res(2))) STOP 2
 contains
 function diff(a, b)
   real(kind=4) :: a, b
@@ -30,7 +30,7 @@ subroutine real8test (ops, res)
    real(kind=8), dimension(2) :: res
 
    if (diff(mod(ops(1), ops(2)), res(1)) .or. &
-       diff(modulo(ops(1), ops(2)), res(2))) call abort
+       diff(modulo(ops(1), ops(2)), res(2))) STOP 3
 contains
 function diff(a, b)
   real(kind=8) :: a, b

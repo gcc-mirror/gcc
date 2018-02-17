@@ -14,26 +14,26 @@ program namelist_18
   rewind (10)
   read (10, '(a)', iostat = ier) buffer
   read (10, '(a)', iostat = ier) buffer
-  if (ier .ne. 0) call abort ()
+  if (ier .ne. 0) STOP 1
   close (10)
-  If ((buffer(6:6) /= "f") .or. (buffer(9:9) /= """")) call abort () 
+  If ((buffer(6:6) /= "f") .or. (buffer(9:9) /= """")) STOP 2 
 
   open (10, status = "scratch", delim ="quote")
   write (10, mynml)
   rewind (10)
   read (10, '(a)', iostat = ier) buffer
   read (10, '(a)', iostat = ier) buffer
-  if (ier .ne. 0) call abort ()
+  if (ier .ne. 0) STOP 3
   close (10)
-  If ((buffer(5:5) /= """") .or. (buffer(9:9) /= """")) call abort ()
+  If ((buffer(5:5) /= """") .or. (buffer(9:9) /= """")) STOP 4
 
   open (10, status = "scratch", delim ="apostrophe")
   write (10, mynml)
   rewind (10)
   read (10, '(a)', iostat = ier) buffer
   read (10, '(a)', iostat = ier) buffer
-  if (ier .ne. 0) call abort ()
+  if (ier .ne. 0) STOP 5
   close (10)
-  If ((buffer(5:5) /= "'") .or. (buffer(9:9) /= "'")) call abort ()
+  If ((buffer(5:5) /= "'") .or. (buffer(9:9) /= "'")) STOP 6
 
 end program namelist_18

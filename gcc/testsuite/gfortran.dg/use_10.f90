@@ -25,5 +25,5 @@ program test
 use a, only: operator(.op.), operator(.op.), &
 operator(.my.)=>operator(.op.),operator(.ops.)=>operator(.op.)
 implicit none
-if (.my.2 /= -2 .or. .op.3 /= -3 .or. .ops.7 /= -7) call abort()
+if (.my.2 /= -2 .or. .op.3 /= -3 .or. .ops.7 /= -7) STOP 1
 end

@@ -12,13 +12,13 @@ contains
     real, dimension(:,:) :: a
     s1 = (/1, 1/)
     write(testbuf,'(4F10.2)') cshift(a, shift=s1)
-    if (testbuf /= "      2.00      1.00      4.00      3.00") CALL abort
+    if (testbuf /= "      2.00      1.00      4.00      3.00") STOP 1
     write(testbuf,'(4F10.2)') cshift(a,shift=s1,dim=n2)
-    if (testbuf /= "      2.00      1.00      4.00      3.00") CALL abort
+    if (testbuf /= "      2.00      1.00      4.00      3.00") STOP 2
     write(testbuf,'(4F10.2)') eoshift(a,shift=s1,dim=n1)
-    if (testbuf /= "      2.00      0.00      4.00      0.00") CALL abort
+    if (testbuf /= "      2.00      0.00      4.00      0.00") STOP 3
     write(testbuf,'(4F10.2)') eoshift(a,shift=s1,dim=n2)
-    if (testbuf /= "      2.00      0.00      4.00      0.00") CALL abort
+    if (testbuf /= "      2.00      0.00      4.00      0.00") STOP 4
   end subroutine tst_optional
  subroutine sub(bound, dimmy)
    integer(kind=8), optional :: dimmy
@@ -28,12 +28,12 @@ contains
    lotto = .false.
    lotto = cshift((/.true.,.false.,.true.,.false./),1,dim=dimmy)
    write(testbuf,*) lotto
-   if (trim(testbuf).ne." F T F T") call abort
+   if (trim(testbuf).ne." F T F T") STOP 5
    lotto = .false.
    lotto = eoshift((/.true.,.true.,.true.,.true./),1,boundary=bound,dim=dimmy)
    lotto = eoshift(lotto,1,dim=dimmy)
    write(testbuf,*) lotto
-   if (trim(testbuf).ne." T T F F") call abort
+   if (trim(testbuf).ne." T T F F") STOP 6
  end subroutine
 end module tst_foo
 

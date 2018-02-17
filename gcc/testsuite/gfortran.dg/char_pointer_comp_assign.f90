@@ -17,15 +17,15 @@ program char_pointer_comp_assign
 ! Do assignments first
   allocate (a%scalar, a%array(2))
   a%scalar = scalar_t
-  if (a%scalar /= "abcd") call abort ()
+  if (a%scalar /= "abcd") STOP 1
   a%array = array_t
-  if (any(a%array /= (/"abcd","efgh"/))) call abort ()
+  if (any(a%array /= (/"abcd","efgh"/))) STOP 2
   deallocate (a%scalar, a%array)
 
 ! Now do pointer assignments.
   a%scalar => scalar_t
-  if (a%scalar /= "abcd") call abort ()
+  if (a%scalar /= "abcd") STOP 3
   a%array => array_t
-  if (any(a%array /= (/"abcd","efgh"/))) call abort ()
+  if (any(a%array /= (/"abcd","efgh"/))) STOP 4
 
 end program char_pointer_comp_assign

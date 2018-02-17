@@ -12,7 +12,7 @@ module m1
    end interface
 contains
   subroutine one1()
-    call abort
+    STOP 1
   end subroutine one1
 end module m1
 

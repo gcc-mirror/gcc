@@ -14,10 +14,10 @@ program test
  allocate(t2%point)
  t2%point = 42
  call nonpointer(t2)
- if(t2%point /= 7) call abort()
+ if(t2%point /= 7) STOP 1
  t2%point = 42
  call nonpointer2(t2)
- if(t2%point /= 66) call abort()
+ if(t2%point /= 66) STOP 2
 contains
   subroutine nonpointer(t)
      type(myT), intent(in) :: t

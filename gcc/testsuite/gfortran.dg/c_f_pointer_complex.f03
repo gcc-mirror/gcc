@@ -21,10 +21,10 @@ contains
     call c_f_pointer(my_c_double_complex, my_f03_double_complex)
     call c_f_pointer(my_c_long_double_complex, my_f03_long_double_complex)
 
-    if(my_f03_float_complex /= (1.0, 0.0)) call abort ()
-    if(my_f03_double_complex /= (2.0d0, 0.0d0)) call abort ()
+    if(my_f03_float_complex /= (1.0, 0.0)) STOP 1
+    if(my_f03_double_complex /= (2.0d0, 0.0d0)) STOP 2
     if(my_f03_long_double_complex /= (3.0_c_long_double, &
-         0.0_c_long_double)) call abort ()
+         0.0_c_long_double)) STOP 3
   end subroutine test_complex_scalars
 
   subroutine test_complex_arrays(float_complex_array, double_complex_array, &
@@ -49,11 +49,11 @@ contains
 
     do i = 1, num_elems
        if(f03_float_complex_array(i) &
-            /= (i*(1.0, 0.0))) call abort ()
+            /= (i*(1.0, 0.0))) STOP 4
        if(f03_double_complex_array(i) &
-            /= (i*(1.0d0, 0.0d0))) call abort ()
+            /= (i*(1.0d0, 0.0d0))) STOP 5
        if(f03_long_double_complex_array(i) &
-            /= (i*(1.0_c_long_double, 0.0_c_long_double))) call abort ()
+            /= (i*(1.0_c_long_double, 0.0_c_long_double))) STOP 6
     end do
   end subroutine test_complex_arrays
 end module c_f_pointer_complex

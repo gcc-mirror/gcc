@@ -7,7 +7,7 @@
   j = len ((/"abcdefghijk", chr1, chr2/))
   k = len ((/'hello  ','goodbye'/))
   l = foo ("yes siree, Bob")
-  if (any ((/11,11,7,14/) /= (/i,j,k,l/))) call abort ()
+  if (any ((/11,11,7,14/) /= (/i,j,k,l/))) STOP 1
 contains
   integer function foo (arg)
     character(*) :: arg

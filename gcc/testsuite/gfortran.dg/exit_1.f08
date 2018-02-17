@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2008 -fall-intrinsics" }
+! { dg-options "-std=f2008 " }
 
 ! PR fortran/44709
 ! Check that exit and cycle from within a BLOCK works for loops as expected.
@@ -15,7 +15,7 @@ PROGRAM main
     BLOCK
       EXIT
     END BLOCK
-    CALL abort ()
+    STOP 1
   END DO
 
   ! Cycle without loop name.
@@ -23,7 +23,7 @@ PROGRAM main
     BLOCK
       CYCLE
     END BLOCK
-    CALL abort ()
+    STOP 2
   END DO
 
   ! Exit loop by name from within a BLOCK.
@@ -32,9 +32,9 @@ PROGRAM main
       BLOCK
         EXIT loop1
       END BLOCK
-      CALL abort ()
+      STOP 3
     END DO
-    CALL abort ()
+    STOP 4
   END DO loop1
 
   ! Cycle loop by name from within a BLOCK.
@@ -43,8 +43,8 @@ PROGRAM main
       BLOCK
         CYCLE loop2
       END BLOCK
-      CALL abort ()
+      STOP 5
     END DO loop3
-    CALL abort ()
+    STOP 6
   END DO loop2
 END PROGRAM main

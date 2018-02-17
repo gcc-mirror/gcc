@@ -10,13 +10,13 @@
 	  j = 131
 	  s = 'This is a test string'
 	else
-	  if (i .ne. 26 .or. j .ne. 131) call abort
-	  if (s .ne. 'This is a test string') call abort
+	  if (i .ne. 26 .or. j .ne. 131) STOP 1
+	  if (s .ne. 'This is a test string') STOP 2
 	end if
       end subroutine foo
       subroutine bar (s)
 	character*42 s
-	if (s .ne. '0123456789012345678901234567890123456') call abort
+	if (s .ne. '0123456789012345678901234567890123456') STOP 3
 	call foo (.false.)
       end subroutine bar
       subroutine baz

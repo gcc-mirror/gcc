@@ -85,7 +85,7 @@ c     TANH - Section 13.13.106
       call c_r(TANH(1.0),0.76159416,'TANH(real)')
       call c_d(TANH(1.d0),0.76159416d0,'TANH(double)')
 
-      if ( fail ) call abort()
+      if ( fail ) STOP 1
       end
 
       subroutine failure(label)

@@ -17,11 +17,11 @@ subroutine check(a, x, gap)
   integer :: gap
   do i = 1, N - gap
      temp = a(i + gap) + x
-     if (a(i) /= temp) call abort
+     if (a(i) /= temp) STOP 1
   end do
   do i = N - gap + 1, N
      temp = TEST_VALUE(i)
-     if (a(i) /= temp) call abort
+     if (a(i) /= temp) STOP 2
   end do
 end subroutine
 

@@ -7,8 +7,8 @@
 
   varu(:) = ubound(f)
   varl(:) = lbound(f)
-  if (any (varu /= upper)) call abort
-  if (any (varl /= lower)) call abort
+  if (any (varu /= upper)) STOP 1
+  if (any (varl /= lower)) STOP 2
 
   call check (f, upper, lower)
   call check (f, ubound(f), lbound(f))
@@ -20,8 +20,8 @@ contains
     integer :: upper(5), lower(5)
     real :: f(:,:,:,:,:)
 
-    if (any (ubound(f) /= upper)) call abort
-    if (any (lbound(f) /= lower)) call abort
+    if (any (ubound(f) /= upper)) STOP 3
+    if (any (lbound(f) /= lower)) STOP 4
   end subroutine check
 
 end

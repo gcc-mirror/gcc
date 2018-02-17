@@ -10,7 +10,7 @@ program mod_large_1
   implicit none
   real :: r1
   r1 = mod (1e22, 1.7)
-  if (abs(r1 - 0.995928764) > 1e-5) call abort
+  if (abs(r1 - 0.995928764) > 1e-5) STOP 1
   r1 = modulo (1e22, -1.7)
-  if (abs(r1 + 0.704071283) > 1e-5) call abort
+  if (abs(r1 + 0.704071283) > 1e-5) STOP 2
 end program mod_large_1

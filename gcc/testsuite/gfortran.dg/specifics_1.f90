@@ -12,7 +12,7 @@ subroutine test_c(fn, val, res)
   complex fn
   complex val, res
 
-  if (diff(fn(val),res)) call abort
+  if (diff(fn(val),res)) STOP 1
 contains
 function diff(a,b)
   complex a,b
@@ -25,7 +25,7 @@ subroutine test_z(fn, val, res)
   double complex fn
   double complex val, res
 
-  if (diff(fn(val),res)) call abort
+  if (diff(fn(val),res)) STOP 2
 contains
 function diff(a,b)
   double complex a,b
@@ -38,7 +38,7 @@ subroutine test_cabs(fn, val, res)
   real fn, res
   complex val
 
-  if (diff(fn(val),res)) call abort
+  if (diff(fn(val),res)) STOP 3
 contains
 function diff(a,b)
   real a,b
@@ -51,7 +51,7 @@ subroutine test_cdabs(fn, val, res)
   double precision fn, res
   double complex val
 
-  if (diff(fn(val),res)) call abort
+  if (diff(fn(val),res)) STOP 4
 contains
 function diff(a,b)
   double precision a,b
@@ -64,7 +64,7 @@ subroutine test_r(fn, val, res)
   real fn
   real val, res
 
-  if (diff(fn(val), res)) call abort
+  if (diff(fn(val), res)) STOP 5
 contains
 function diff(a, b)
   real a, b
@@ -77,7 +77,7 @@ subroutine test_d(fn, val, res)
   double precision fn
   double precision val, res
 
-  if (diff(fn(val), res)) call abort
+  if (diff(fn(val), res)) STOP 6
 contains
 function diff(a, b)
   double precision a, b
@@ -90,7 +90,7 @@ subroutine test_r2(fn, val1, val2, res)
   real fn
   real val1, val2, res
 
-  if (diff(fn(val1, val2), res)) call abort
+  if (diff(fn(val1, val2), res)) STOP 7
 contains
 function diff(a, b)
   real a, b
@@ -103,7 +103,7 @@ subroutine test_d2(fn, val1, val2, res)
   double precision fn
   double precision val1, val2, res
 
-  if (diff(fn(val1, val2), res)) call abort
+  if (diff(fn(val1, val2), res)) STOP 8
 contains
 function diff(a, b)
   double precision a, b
@@ -114,41 +114,41 @@ end subroutine
 
 subroutine test_dprod(fn)
   double precision fn
-  if (abs (fn (2.0, 3.0) - 6d0) .gt. 0.00001) call abort
+  if (abs (fn (2.0, 3.0) - 6d0) .gt. 0.00001) STOP 9
 end subroutine
 
 subroutine test_nint(fn,val,res)
   integer fn, res
   real val
-  if (res .ne. fn(val)) call abort
+  if (res .ne. fn(val)) STOP 10
 end subroutine
 
 subroutine test_idnint(fn,val,res)
   integer fn, res
   double precision val
-  if (res .ne. fn(val)) call abort
+  if (res .ne. fn(val)) STOP 11
 end subroutine
 
 subroutine test_idim(fn,val1,val2,res)
   integer fn, res, val1, val2
-  if (res .ne. fn(val1,val2)) call abort
+  if (res .ne. fn(val1,val2)) STOP 12
 end subroutine
 
 subroutine test_iabs(fn,val,res)
   integer fn, res, val
-  if (res .ne. fn(val)) call abort
+  if (res .ne. fn(val)) STOP 13
 end subroutine
 
 subroutine test_len(fn,val,res)
   integer fn, res
   character(len=*) val
-  if (res .ne. fn(val)) call abort
+  if (res .ne. fn(val)) STOP 14
 end subroutine
 
 subroutine test_index(fn,val1,val2,res)
   integer fn, res
   character(len=*) val1, val2
-  if (fn(val1,val2) .ne. res) call abort
+  if (fn(val1,val2) .ne. res) STOP 15
 end subroutine
 
 program specifics

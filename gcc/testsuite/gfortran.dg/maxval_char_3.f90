@@ -18,33 +18,33 @@ program main
 
   r1 =  maxval(a,dim=1)
   write (unit=r2,fmt='(I6.6)') maxval(v,dim=1)
-  if (any (r1 /= r2)) call abort
+  if (any (r1 /= r2)) STOP 1
   r1 = 'x'
   write (unit=r1,fmt='(I6.6)') maxval(v,dim=1)
-  if (any (r1 /= r2)) call abort
+  if (any (r1 /= r2)) STOP 2
 
   r1 = 'y'
   r1 =  maxval(a,dim=2)
   write (unit=r2,fmt='(I6.6)') maxval(v,dim=2)
-  if (any (r1 /= r2)) call abort
+  if (any (r1 /= r2)) STOP 3
   r1 = 'z'
   write (unit=r1,fmt='(I6.6)') maxval(v,dim=2)
-  if (any (r1 /= r2)) call abort
+  if (any (r1 /= r2)) STOP 4
 
   allocate (a_alloc(0,1), v_alloc(0,1))
   ret = 'what'
   ret = maxval(a_alloc,dim=1)
-  if (ret(1) /= zero) call abort
+  if (ret(1) /= zero) STOP 5
   
   r1 = 'qq'
   r1 = maxval(a, dim=1, mask=a>"000200");
-  if (any(r1 /= zero .neqv. maxval(v,dim=1, mask=v>200) > 0)) call abort
-  if (any(maxval(a, dim=1, mask=a>"000200") /= zero .neqv. maxval(v,dim=1, mask=v>200) > 0)) call abort
+  if (any(r1 /= zero .neqv. maxval(v,dim=1, mask=v>200) > 0)) STOP 6
+  if (any(maxval(a, dim=1, mask=a>"000200") /= zero .neqv. maxval(v,dim=1, mask=v>200) > 0)) STOP 7
 
   r1 = 'rr'
   r1 = maxval(a, dim=2, mask=a>"000200");
-  if (any(r1 /= zero .neqv. maxval(v,dim=2, mask=v>200) > 0)) call abort
-  if (any(maxval(a, dim=2, mask=a>"000200") /= zero .neqv. maxval(v,dim=2, mask=v>200) > 0)) call abort
+  if (any(r1 /= zero .neqv. maxval(v,dim=2, mask=v>200) > 0)) STOP 8
+  if (any(maxval(a, dim=2, mask=a>"000200") /= zero .neqv. maxval(v,dim=2, mask=v>200) > 0)) STOP 9
 
   mask = .true.
   forall (i=1:n)
@@ -54,16 +54,16 @@ program main
   r1 = 'aa'
   r1 = maxval(a, dim=1, mask=mask)
   write(unit=r2,fmt='(I6.6)') maxval(v,dim=1, mask=mask)
-  if (any(r1 /= r2)) call abort
+  if (any(r1 /= r2)) STOP 10
 
   r1 = 'xyz'
   smask = .true.
   r1 = maxval(a, dim=1, mask=smask)
   write (unit=r2,fmt='(I6.6)') maxval(v,dim=1)
-  if (any (r1 /= r2)) call abort
+  if (any (r1 /= r2)) STOP 11
 
   smask = .false.
   r1 = 'foobar'
   r1 = maxval(a, dim=1, mask=smask)
-  if (any(r1 /= zero)) call abort
+  if (any(r1 /= zero)) STOP 12
 end program main

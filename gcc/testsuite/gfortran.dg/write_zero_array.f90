@@ -8,10 +8,10 @@ program zeros
  integer :: ics
  !This was OK
  write(msg,*) 'itemp(6:0) = ',itemp(6:0),'a'
- if (msg /= " itemp(6:0) = a") call abort()
+ if (msg /= " itemp(6:0) = a") STOP 1
  !This did not work before patch, segfaulted
  ics=6
  write(msg,*) 'itemp(ics:0) = ',itemp(ics:0),'a'
- if (msg /= " itemp(ics:0) = a") call abort()
+ if (msg /= " itemp(ics:0) = a") STOP 2
 end program zeros
 

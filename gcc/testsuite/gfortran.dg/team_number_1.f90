@@ -9,14 +9,14 @@
   integer, parameter :: standard_initial_value=-1
   integer new_team
 
-  if (team_number()/=standard_initial_value) call abort
+  if (team_number()/=standard_initial_value) STOP 1
 
   new_team = mod(this_image(),2)+1
   form team (new_team,team)
     change team (team)
-    if (team_number()/=new_team) call abort
+    if (team_number()/=new_team) STOP 2
   end team
 
-  if (team_number()/=standard_initial_value) call abort
+  if (team_number()/=standard_initial_value) STOP 3
 
 end

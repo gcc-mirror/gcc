@@ -5,6 +5,6 @@
       character(28) string
       write(string,1) 3742. , 0.3742
     1 format ( f14.0, 4pf14.0 )
-      if (string.ne."         3742.         3742.") call abort
+      if (string.ne."         3742.         3742.") STOP 1
       end program f_and_p
 

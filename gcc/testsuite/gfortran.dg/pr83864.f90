@@ -9,5 +9,5 @@ program p
      character :: c(3) = transfer('abc','z',3)
   end type t
   type(t) :: x
-  if (any (x%c /= ["a", "b", "c"])) call abort ()
+  if (any (x%c /= ["a", "b", "c"])) STOP 1
 end

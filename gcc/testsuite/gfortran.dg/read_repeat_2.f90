@@ -15,5 +15,5 @@ program test
    rewind (99)
    read (99,*) a(:)
    close (99)
-   if (any (a /= cmplx (1.0,2.0))) call abort()
+   if (any (a /= cmplx (1.0,2.0))) STOP 1
 end program test

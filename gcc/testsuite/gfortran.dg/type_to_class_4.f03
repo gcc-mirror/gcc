@@ -15,7 +15,7 @@ contains
     class(t_stv), intent(in) :: y(:)
     integer :: k
     do k=1,size(y)
-      if (int(y(k)%f1) .ne. k) call abort
+      if (int(y(k)%f1) .ne. k) STOP 1
     enddo
   end subroutine
 end module

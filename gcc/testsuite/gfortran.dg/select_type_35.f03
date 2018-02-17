@@ -28,13 +28,13 @@ contains
 
     select type(me)
       type is(t_Foo)
-      if (len(me%string) /= 9) call abort()
+      if (len(me%string) /= 9) STOP 1
     end select
 
     alias => me
     select type(alias)
       type is(t_Foo)
-        if (len(alias%string) /= 9) call abort()
+        if (len(alias%string) /= 9) STOP 2
     end select
   end subroutine bar
 end program foo

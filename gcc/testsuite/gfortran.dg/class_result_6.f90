@@ -10,7 +10,7 @@
   b => ptr()
   select type (b)
     type is (character(*))
-      if (a .ne. "bar") call abort
+      if (a .ne. "bar") STOP 1
   end select
 contains
   function ptr()

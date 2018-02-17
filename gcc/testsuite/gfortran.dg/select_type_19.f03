@@ -17,7 +17,7 @@
 
   select type (aa=>a)
   type is (t1)
-    if (allocated(aa%ja)) call abort()
+    if (allocated(aa%ja)) STOP 1
   end select
 
 end

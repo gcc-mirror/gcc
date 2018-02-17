@@ -13,7 +13,7 @@ contains
   subroutine foo (a)
     type (*), dimension (..), contiguous :: a
     integer(kind = 4) :: i
-    if(sizeof (a) .ne. sizeof (i)) call abort
+    if(sizeof (a) .ne. sizeof (i)) STOP 1
   end subroutine foo
 
 end program

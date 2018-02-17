@@ -7,6 +7,6 @@ program large_recl
   inquire(10, recl=r)
   close(10, status="delete")
   if (r /= 12345678901_8) then
-     call abort()
+     STOP 1
   end if
 end program large_recl

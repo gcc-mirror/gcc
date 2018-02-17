@@ -9,7 +9,7 @@
   CHARACTER(LEN = 8) :: str
   J = 3
   write (str,'(2A4)') (/( F(I, J), I = 1, 2)/)
-  IF (str .NE. " ODD EVE") call abort ()
+  IF (str .NE. " ODD EVE") STOP 1
 
 ! Comment #1 from F-X Coudert (noted by T. Burnus) that
 ! actually exercises a different part of the bug.
@@ -33,8 +33,8 @@ CONTAINS
   end function
   subroutine gee(a)
     character(*),dimension(1) :: a
-    if(len (a) /= 3) call abort ()
-    if(a(1) /= '123') call abort ()
+    if(len (a) /= 3) STOP 2
+    if(a(1) /= '123') STOP 3
   end subroutine gee
 
 END

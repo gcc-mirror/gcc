@@ -9,7 +9,7 @@ program bogus_matmul
   w = 7
   w = matmul(M,v)
   if( any(w .ne. 0) ) then
-    call abort
+    STOP 1
   end if
 end program bogus_matmul
 ! { dg-final { scan-tree-dump-times "matmul_r4" 0 "optimized" } }

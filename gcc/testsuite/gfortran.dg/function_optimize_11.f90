@@ -13,5 +13,5 @@ program test
   h1 = [(cos(2*pi*mod(i*k,N)/N),k=0,N/2), &
        & (sin(2*pi*mod(i*k,N)/N),k=1,N/2-1)]
   h2 = (/ 1._dp, 0._dp, -1._dp, 1._dp /)
-  if (any(abs(h1 - h2) > eps)) call abort
+  if (any(abs(h1 - h2) > eps)) STOP 1
 end program test

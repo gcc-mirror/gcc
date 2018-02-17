@@ -30,8 +30,8 @@ PROGRAM main
   ASSOCIATE (arr => func (4))
     ! func should only be called once here, not again for the bounds!
 
-    IF (LBOUND (arr, 1) /= 1 .OR. UBOUND (arr, 1) /= 4) CALL abort ()
-    IF (arr(1) /= 1 .OR. arr(4) /= 4) CALL abort ()
+    IF (LBOUND (arr, 1) /= 1 .OR. UBOUND (arr, 1) /= 4) STOP 1
+    IF (arr(1) /= 1 .OR. arr(4) /= 4) STOP 2
   END ASSOCIATE
 END PROGRAM main
 ! { dg-final { scan-tree-dump-times "func" 2 "original" } }

@@ -15,7 +15,7 @@ contains
     character(:), allocatable :: x
     character(*) :: carg
     associate (y => x)
-      if (y .ne. carg) call abort
+      if (y .ne. carg) STOP 1
     end associate
   end
 end

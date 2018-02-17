@@ -9,13 +9,13 @@
   character(len = 1)  :: string = "z"
   character(len = 20) :: tmp = ""
   tmp = Upper ("abcdefgh")
-  if (trim(tmp) .ne. "ab") call abort ()
+  if (trim(tmp) .ne. "ab") STOP 1
 contains
   Character (len = 20) Function Upper (string)
     Character(len = *) string
     integer :: ij
     i = size (transfer (string,"xy",len (string)))
-    if (i /= len (string)) call abort ()
+    if (i /= len (string)) STOP 2
     Upper = ""
     Upper(1:2) = &
     transfer (merge (transfer (string,"xy",len (string)),    &

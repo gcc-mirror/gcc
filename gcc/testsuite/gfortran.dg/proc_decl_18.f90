@@ -40,7 +40,7 @@ integer :: k,j(3),i(3) = (/1,2,3/)
 j = p(i,mysize)
 
 do k=1,mysize(i)
-  if (j(k) /= 2*i(k)) call abort()
+  if (j(k) /= 2*i(k)) STOP 1
 end do
 
 end

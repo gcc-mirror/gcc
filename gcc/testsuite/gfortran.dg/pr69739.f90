@@ -35,5 +35,5 @@ end module test
 
   use test
   type(sometype) :: a(2, 2, 2)
-  if (any(int (dosomething(a)) .ne. [1,2,3,4,5,6])) call abort
+  if (any(int (dosomething(a)) .ne. [1,2,3,4,5,6])) STOP 1
 end

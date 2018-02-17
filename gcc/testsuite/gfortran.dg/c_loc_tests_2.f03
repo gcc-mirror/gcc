@@ -36,10 +36,10 @@ contains
     my_c_ptr_1 = c_loc(xtar)
     my_c_ptr_2 = c_loc(xptr)
     if(test_scalar_address(my_c_ptr_1) .ne. 1) then
-       call abort()
+       STOP 1
     end if
     if(test_scalar_address(my_c_ptr_2) .ne. 1) then
-       call abort()
+       STOP 2
     end if
   end subroutine test0
 
@@ -51,7 +51,7 @@ contains
     int_array_tar = 100
     my_c_ptr_1 = c_loc(int_array_tar)
     if(test_array_address(my_c_ptr_1, 100) .ne. 1) then
-       call abort()
+       STOP 3
     end if
   end subroutine test1
 
@@ -71,10 +71,10 @@ contains
     my_c_ptr_1 = c_loc(type_tar)
     my_c_ptr_2 = c_loc(type_ptr)
     if(test_type_address(my_c_ptr_1) .ne. 1) then
-       call abort()
+       STOP 4
     end if
     if(test_type_address(my_c_ptr_2) .ne. 1) then
-       call abort()
+       STOP 5
     end if
   end subroutine test2
 end module c_loc_tests_2

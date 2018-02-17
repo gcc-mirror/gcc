@@ -55,49 +55,49 @@ PROGRAM Main
 
     ! Original testcase
     array = Nick(index,array)
-    If (any (array .ne. array(1))) call abort
+    If (any (array .ne. array(1))) STOP 1
 
     array = (/ (i+0.0, i = 1,5) /)
     ! This should not create a temporary
     array = Charles(array)
-    If (any (array .ne. index)) call abort
+    If (any (array .ne. index)) STOP 2
     ! { dg-final { scan-tree-dump-times "array\\\[\[^\\\]\]*\\\]\\s*=\\s*charles\\s*\\(&array\\\[\[^\\\]\]*\\\]\\);" 1 "original" } }
 
     ! Check use association of the function works correctly.
     arraym = Bill(index,arraym)
-    if (any (arraym .ne. arraym(1))) call abort
+    if (any (arraym .ne. arraym(1))) STOP 3
 
     ! Check siblings interact correctly.
     array = (/ (i+0.0, i = 1,5) /)
     array = Henry(index)
-    if (any (array .ne. array(1))) call abort
+    if (any (array .ne. array(1))) STOP 4
 
     array = (/ (i+0.0, i = 1,5) /)
     ! This should not create a temporary
     array = index + Henry2(0) - array
     ! { dg-final { scan-tree-dump-times "array\\\[\[^\\\]\]*\\\]\\s*=\\s*\\(\\(real\\(kind=4\\)\\)\\s*index\\\[\[^\\\]\]*\\\]\\s*\\+\\s*D.\\d*\\)\\s*-\\s*array\\\[\[^\\\]\]*\\\];" 1 "original" } }
-    if (any (array .ne. 15.0)) call abort
+    if (any (array .ne. 15.0)) STOP 5
 
     arraym = (/ (i+0.0, i = 1,5) /)
     arraym = Peter(index, arraym)
-    if (any (arraym .ne. 15.0)) call abort
+    if (any (arraym .ne. 15.0)) STOP 6
 
     array = (/ (i+0.0, i = 1,5) /)
     array = Robert(index)
-    if (any (arraym .ne. 15.0)) call abort
+    if (any (arraym .ne. 15.0)) STOP 7
 
     missme => Robert2
     array = (/ (i+0.0, i = 1,5) /)
     array = David(index)
-    if (any (arraym .ne. 15.0)) call abort
+    if (any (arraym .ne. 15.0)) STOP 8
 
     array = (/ (i+0.0, i = 1,5) /)
     array = James(index)
-    if (any (arraym .ne. 15.0)) call abort
+    if (any (arraym .ne. 15.0)) STOP 9
 
     array = (/ (i+0.0, i = 1,5) /)
     array = Romeo(index)
-    if (any (arraym .ne. 15.0)) call abort
+    if (any (arraym .ne. 15.0)) STOP 10
 
 CONTAINS
     ELEMENTAL FUNCTION Nick (n, x)

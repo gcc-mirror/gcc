@@ -40,7 +40,7 @@ subroutine writenml (astring)
   write (10, '(A)') "/"
   rewind (10)
   read (10, nml = mynml, iostat=ierror, iomsg=errmessage)
-  if (ierror == 0) call abort
+  if (ierror == 0) STOP 1
   print '(a)', trim(errmessage)
   close (10)
 

@@ -6,7 +6,7 @@
 subroutine pete(A)
   real(8) :: A
   print *, 'pete got ',A
-  if (A /= 3.0) call abort()
+  if (A /= 3.0) STOP 1
 end subroutine pete
 
        subroutine bob()

@@ -27,7 +27,7 @@ PROGRAM X
 contains
     subroutine check (lbnd, ubnd, lower, upper)
       integer :: lbnd, ubnd, lower, upper
-      if (lbnd .ne. lower) call abort
-      if (ubnd .ne. upper) call abort
+      if (lbnd .ne. lower) STOP 1
+      if (ubnd .ne. upper) STOP 2
     end subroutine
 END PROGRAM X

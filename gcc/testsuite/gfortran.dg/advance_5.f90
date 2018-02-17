@@ -13,5 +13,5 @@ close(10)
 open(10,file="fort.10",position="rewind")
 read(10,'(a)') b
 close(10, status="delete")
-if (b.ne."abcxxx") call abort()
+if (b.ne."abcxxx") STOP 1
 end
