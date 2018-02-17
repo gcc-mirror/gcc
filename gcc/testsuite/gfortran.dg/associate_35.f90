@@ -1,6 +1,6 @@
-! { dg-do compile }
+! { dg-do run }
 !
-! Test the fix for PR84115 comment #1 (except for s1(x)!).
+! Test the fix for PR84115 comment #1.
 !
 ! Contributed by G Steinmetz  <gscfq@t-online.de>
 !
@@ -14,22 +14,22 @@
 contains
   subroutine s1(x)
     character(:), allocatable :: x
-    associate (y => x//x)   ! { dg-error "type character and non-constant length" }
-      print *, y
+    associate (y => x//x)
+      if (y .ne. x//x) stop 1
     end associate
   end
 
   subroutine s2(x)
     character(:), allocatable :: x
     associate (y => [x])
-      print *, y
+      if (any(y .ne. [x])) stop 2
     end associate
   end
 
   subroutine s3(x)
     character(:), allocatable :: x
     associate (y => [x,x])
-      print *, y
+      if (any(y .ne. [x,x])) stop 3
     end associate
   end
 end

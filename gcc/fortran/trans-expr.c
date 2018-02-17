@@ -657,7 +657,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 	      }
 
 	  /* Array references with vector subscripts and non-variable expressions
-	     need be coverted to a one-based descriptor.  */
+	     need be converted to a one-based descriptor.  */
 	  if (ref || e->expr_type != EXPR_VARIABLE)
 	    {
 	      for (dim = 0; dim < e->rank; ++dim)

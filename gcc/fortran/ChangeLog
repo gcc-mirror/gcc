@@ -1,3 +1,15 @@
+2018-02-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84115
+	* resolve.c (resolve_assoc_var): If a non-constant target expr.
+	has no string length expression, make the associate variable
+	into a deferred length, allocatable symbol.
+	* trans-decl.c (gfc_is_reallocatable_lhs): Add and use a ptr to
+	the symbol.
+	* trans-stmt.c (trans_associate_var): Null and free scalar
+	associate names that are allocatable. After assignment, remove
+	the allocatable attribute to prevent reallocation.
+
 2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/84418

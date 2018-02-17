@@ -1,3 +1,9 @@
+2018-02-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84115
+	* gfortran.dg/associate_35.f90: Remove error, add STOP n and
+	change to dg-run.
+
 2018-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/84277
@@ -492,7 +498,7 @@
 
 	PR sanitizer/83987
 	* g++.dg/ubsan/pr83987-2.C: New test.
-	
+
 2018-02-09  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* gcc.target/rx/movsicc.c: New test.
