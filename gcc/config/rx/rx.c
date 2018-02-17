@@ -1644,6 +1644,20 @@ mark_frame_related (rtx insn)
     }
 }
 
+/* Create CFI notes for register pops.  */
+static void
+add_pop_cfi_notes (rtx_insn *insn, unsigned int high, unsigned int low)
+{
+  rtx t = plus_constant (Pmode, stack_pointer_rtx,
+                        (high - low + 1) * UNITS_PER_WORD);
+  t = gen_rtx_SET (stack_pointer_rtx, t);
+  add_reg_note (insn, REG_CFA_ADJUST_CFA, t);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  for (unsigned int i = low; i <= high; i++)
+    add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (word_mode, i));
+}
+
+
 static bool
 ok_for_max_constant (HOST_WIDE_INT val)
 {
@@ -2029,11 +2043,14 @@ rx_can_use_simple_return (void)
 static void
 pop_regs (unsigned int high, unsigned int low)
 {
+  rtx_insn *insn;
   if (high == low)
-    emit_insn (gen_stack_pop (gen_rtx_REG (SImode, low)));
+    insn = emit_insn (gen_stack_pop (gen_rtx_REG (SImode, low)));
   else
-    emit_insn (gen_stack_popm (GEN_INT (((high - low) + 1) * UNITS_PER_WORD),
-			       gen_rx_popm_vector (low, high)));
+    insn = emit_insn (gen_stack_popm (GEN_INT (((high - low) + 1)
+						* UNITS_PER_WORD),
+				      gen_rx_popm_vector (low, high)));
+  add_pop_cfi_notes (insn, high, low);
 }
 
 void
