@@ -8635,7 +8635,20 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   if (sym->ts.type == BT_CHARACTER && !sym->attr.select_type_temporary)
     {
       if (!sym->ts.u.cl)
-	sym->ts.u.cl = target->ts.u.cl;
+	{
+	  if (target->expr_type != EXPR_CONSTANT
+	      && !target->ts.u.cl->length)
+	    {
+	      sym->ts.u.cl = gfc_get_charlen();
+	      sym->ts.deferred = 1;
+
+	      /* This is reset in trans-stmt.c after the assignment
+		 of the target expression to the associate name.  */
+	      sym->attr.allocatable = 1;
+	    }
+	  else
+	    sym->ts.u.cl = target->ts.u.cl;
+	}
 
       if (!sym->ts.u.cl->length && !sym->ts.deferred)
 	{

@@ -9470,29 +9470,32 @@ bool
 gfc_is_reallocatable_lhs (gfc_expr *expr)
 {
   gfc_ref * ref;
+  gfc_symbol *sym;
 
   if (!expr->ref)
     return false;
 
+  sym = expr->symtree->n.sym;
+
   /* An allocatable class variable with no reference.  */
-  if (expr->symtree->n.sym->ts.type == BT_CLASS
-      && CLASS_DATA (expr->symtree->n.sym)->attr.allocatable
+  if (sym->ts.type == BT_CLASS
+      && CLASS_DATA (sym)->attr.allocatable
       && expr->ref && expr->ref->type == REF_COMPONENT
       && strcmp (expr->ref->u.c.component->name, "_data") == 0
       && expr->ref->next == NULL)
     return true;
 
   /* An allocatable variable.  */
-  if (expr->symtree->n.sym->attr.allocatable
+  if (sym->attr.allocatable
 	&& expr->ref
 	&& expr->ref->type == REF_ARRAY
 	&& expr->ref->u.ar.type == AR_FULL)
     return true;
 
   /* All that can be left are allocatable components.  */
-  if ((expr->symtree->n.sym->ts.type != BT_DERIVED
-       && expr->symtree->n.sym->ts.type != BT_CLASS)
-	|| !expr->symtree->n.sym->ts.u.derived->attr.alloc_comp)
+  if ((sym->ts.type != BT_DERIVED
+       && sym->ts.type != BT_CLASS)
+	|| !sym->ts.u.derived->attr.alloc_comp)
     return false;
 
   /* Find a component ref followed by an array reference.  */

@@ -2082,7 +2082,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
     {
       bool permissible;
 
-      /* These target expressions can ge resolved at any time.  */
+      /* These target expressions can be resolved at any time.  */
       permissible = tgt_expr && tgt_expr->symtree && tgt_expr->symtree->n.sym
 		    && (tgt_expr->symtree->n.sym->attr.use_assoc
 			|| tgt_expr->symtree->n.sym->attr.host_assoc

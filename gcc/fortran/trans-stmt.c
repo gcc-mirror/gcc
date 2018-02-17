@@ -1926,9 +1926,26 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
     {
       gfc_expr *lhs;
       tree res;
+      gfc_se se;
+
+      gfc_init_se (&se, NULL);
+
+      /* resolve.c converts some associate names to allocatable so that
+	 allocation can take place automatically in gfc_trans_assignment.
+	 The frontend prevents them from being either allocated,
+	 deallocated or reallocated.  */
+      if (sym->attr.allocatable)
+	{
+	  tmp = sym->backend_decl;
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+	    tmp = gfc_conv_descriptor_data_get (tmp);
+	  gfc_add_modify (&se.pre, tmp, fold_convert (TREE_TYPE (tmp),
+						    null_pointer_node));
+	}
 
       lhs = gfc_lval_expr_from_sym (sym);
       res = gfc_trans_assignment (lhs, e, false, true);
+      gfc_add_expr_to_block (&se.pre, res);
 
       tmp = sym->backend_decl;
       if (e->expr_type == EXPR_FUNCTION
@@ -1948,8 +1965,25 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  tmp = gfc_deallocate_pdt_comp (CLASS_DATA (sym)->ts.u.derived,
 					 tmp, 0);
 	}
+      else if (sym->attr.allocatable)
+	{
+	  tmp = sym->backend_decl;
 
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+	    tmp = gfc_conv_descriptor_data_get (tmp);
+
+	  /* A simple call to free suffices here.  */
+	  tmp = gfc_call_free (tmp);
+
+	  /* Make sure that reallocation on assignment cannot occur.  */
+	  sym->attr.allocatable = 0;
+	}
+      else
+	tmp = NULL_TREE;
+
+      res = gfc_finish_block (&se.pre);
       gfc_add_init_cleanup (block, res, tmp);
+      gfc_free_expr (lhs);
     }
 
   /* Set the stringlength, when needed.  */
