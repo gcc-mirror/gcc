@@ -1,3 +1,11 @@
+2018-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84270
+	* frontend-passes (scalarized_expr):  If the expression
+	is an assumed size array, leave in the last reference
+	and pass AR_SECTION instead of AR_FULL to gfc_resolve
+	in order to avoid an error.
+
 2018-02-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84115
