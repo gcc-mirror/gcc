@@ -1291,10 +1291,11 @@ point values.  The floating point values are in @code{QFmode},
 @findex CDImode
 @findex CTImode
 @findex COImode
-@item CQImode, CHImode, CSImode, CDImode, CTImode, COImode
+@findex CPSImode
+@item CQImode, CHImode, CSImode, CDImode, CTImode, COImode, CPSImode
 These modes stand for a complex number represented as a pair of integer
 values.  The integer values are in @code{QImode}, @code{HImode},
-@code{SImode}, @code{DImode}, @code{TImode}, and @code{OImode},
+@code{SImode}, @code{DImode}, @code{TImode}, @code{OImode}, and @code{PSImode},
 respectively.
 
 @findex BND32mode
