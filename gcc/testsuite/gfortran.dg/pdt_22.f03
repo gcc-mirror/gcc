@@ -19,5 +19,5 @@ program p
    type(t2(3)) :: x
    write (buffer,*) x
    read (buffer,*) i
-   if (any (i .ne. [3,1,1,1])) call abort
+   if (any (i .ne. [3,1,1,1])) STOP 1
 end

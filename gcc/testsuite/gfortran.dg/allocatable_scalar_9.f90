@@ -36,19 +36,19 @@ type(t4) :: na4, a4, aa4(:)
 
 allocatable :: a1, a2, a3, a4, aa1, aa2, aa3,aa4
 
-if(allocated(a1)) call abort()
-if(allocated(a2)) call abort()
-if(allocated(a3)) call abort()
-if(allocated(a4)) call abort()
-if(allocated(aa1)) call abort()
-if(allocated(aa2)) call abort()
-if(allocated(aa3)) call abort()
-if(allocated(aa4)) call abort()
+if(allocated(a1)) STOP 1
+if(allocated(a2)) STOP 2
+if(allocated(a3)) STOP 3
+if(allocated(a4)) STOP 4
+if(allocated(aa1)) STOP 5
+if(allocated(aa2)) STOP 6
+if(allocated(aa3)) STOP 7
+if(allocated(aa4)) STOP 8
 
-if(allocated(na1%b1)) call abort()
-if(allocated(na2%b2)) call abort()
-if(allocated(na3%b3)) call abort()
-if(allocated(na4%b4)) call abort()
+if(allocated(na1%b1)) STOP 9
+if(allocated(na2%b2)) STOP 10
+if(allocated(na3%b3)) STOP 11
+if(allocated(na4%b4)) STOP 12
 end block
 end
 

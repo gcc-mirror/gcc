@@ -15,7 +15,7 @@ implicit none
   x%i = reshape([( i, i = 1, 9 )], [3, 3])
   allocate(z(9), source=reshape(x, (/ 9 /)))
 
-  if (any( z%i /= [( i, i = 1, 9 )])) call abort()
+  if (any( z%i /= [( i, i = 1, 9 )])) STOP 1
   deallocate (x, z)
 end
 

@@ -18,7 +18,7 @@ program main
   a (foo (i1), 1, :) = b (2, :, foo (i1))
   do i1 = 1, 5
     do i2 = 1, 5
-      if (a (idx (i1), 1, i2) .ne. b (2, i1, idx (i2))) call abort
+      if (a (idx (i1), 1, i2) .ne. b (2, i1, idx (i2))) STOP 1
     end do
   end do
   a = 0
@@ -26,7 +26,7 @@ program main
   a (1, idx (1:4), 2:4) = b (2:5, idx (3:5), 2)
   do i1 = 1, 4
     do i2 = 1, 3
-      if (a (1, idx (i1), 1 + i2) .ne. b (1 + i1, idx (i2 + 2), 2)) call abort
+      if (a (1, idx (i1), 1 + i2) .ne. b (1 + i1, idx (i2 + 2), 2)) STOP 2
     end do
   end do
   a = 0

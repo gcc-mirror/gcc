@@ -6,11 +6,11 @@
       character(6)  :: str = "xyz"
       character(12) :: input = "1234abcdef"
       read(input,'(f4,a6)') aval, str
-      if (aval.ne.1234.0) call abort()
-      if (str.ne."abcdef") call abort()
+      if (aval.ne.1234.0) STOP 1
+      if (str.ne."abcdef") STOP 2
       aval = 0.0
       str = "xyz"
       read(input,'(d4,a6)') aval, str
-      if (aval.ne.1234.0) call abort()
-      if (str.ne."abcdef") call abort()
+      if (aval.ne.1234.0) STOP 3
+      if (str.ne."abcdef") STOP 4
       end

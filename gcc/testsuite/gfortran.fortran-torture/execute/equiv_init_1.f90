@@ -11,16 +11,16 @@ subroutine test0s
   equivalence (xs,ys)
   data xs /10*"abcdefghij"/
 
-  if (y.ne."abcdefghij") call abort
-  if (ys(1).ne."abcdefghij") call abort
-  if (ys(10).ne."abcdefghij") call abort
+  if (y.ne."abcdefghij") STOP 1
+  if (ys(1).ne."abcdefghij") STOP 2
+  if (ys(10).ne."abcdefghij") STOP 3
 end
   
 subroutine test0
   integer :: x = 123
   integer :: y
   equivalence (x,y)
-  if (y.ne.123) call abort
+  if (y.ne.123) STOP 4
 end
 
 subroutine test1
@@ -30,10 +30,10 @@ subroutine test1
   integer :: z = 3
   equivalence (a(1), x)
   equivalence (a(3), z)
-  if (x.ne.1) call abort
-  if (z.ne.3) call abort
-  if (a(1).ne.1) call abort
-  if (a(3).ne.3) call abort
+  if (x.ne.1) STOP 5
+  if (z.ne.3) STOP 6
+  if (a(1).ne.1) STOP 7
+  if (a(3).ne.3) STOP 8
 end
 
 subroutine test2
@@ -42,8 +42,8 @@ subroutine test2
   integer :: a(3) = 123
   equivalence (a(1), x)
   equivalence (a(3), z)
-  if (x.ne.123) call abort
-  if (z.ne.123) call abort
+  if (x.ne.123) STOP 9
+  if (z.ne.123) STOP 10
 end
 
 subroutine test3
@@ -53,9 +53,9 @@ subroutine test3
   integer :: a(3)
   equivalence (a(1),x), (a(2),y), (a(3),z)
   data a(1) /1/, a(3) /3/
-  if (x.ne.1) call abort
-!!$  if (y.ne.2) call abort
-  if (z.ne.3) call abort
+  if (x.ne.1) STOP 11
+!!$  if (y.ne.2) STOP 12
+  if (z.ne.3) STOP 13
 end
 
 subroutine test4
@@ -65,8 +65,8 @@ subroutine test4
   equivalence (a(2),b(1)), (b(2),c)
   data a/1,2/
   data c/3/
-  if (b(1).ne.2) call abort
-  if (b(2).ne.3) call abort
+  if (b(1).ne.2) STOP 14
+  if (b(2).ne.3) STOP 15
 end
 
 !!$subroutine test5
@@ -77,8 +77,8 @@ end
 !!$  data a(1)/1/
 !!$  data b(1)/2/
 !!$  data c/3/
-!!$  if (a(2).ne.2) call abort
-!!$  if (b(2).ne.3) call abort
+!!$  if (a(2).ne.2) STOP 16
+!!$  if (b(2).ne.3) STOP 17
 !!$  print *, "Passed test5"
 !!$end
   

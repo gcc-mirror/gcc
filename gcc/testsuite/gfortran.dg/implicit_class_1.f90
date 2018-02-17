@@ -23,17 +23,17 @@ program upimp
   allocate(aaf, source=foo(2))
   select type (aaf)
   type is (foo)
-    if (aaf%i /= 2) call abort
+    if (aaf%i /= 2) STOP 1
   class default
-    call abort
+    STOP 2
   end select
 
   allocate(caf, source=foo(3))
   select type (caf)
   type is (foo)
-    if (caf%i /= 3) call abort
+    if (caf%i /= 3) STOP 3
   class default
-    call abort
+    STOP 4
   end select
 
 contains

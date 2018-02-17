@@ -38,9 +38,9 @@ program main
   call printit(pc, s3)
 
   s1 = transfer(c_loc(a(2)%c),s1)
-  if (s1 /= s3) call abort
+  if (s1 /= s3) STOP 1
 
   s2 = transfer(c_loc(pc(2)),s2)
-  if (s2 /= s3) call abort
+  if (s2 /= s3) STOP 2
 
 end program main

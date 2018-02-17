@@ -14,11 +14,11 @@ program backspace_11
  !the file pointer is now at EOF
 
  read(10,*,end=2) str
- call abort
+ STOP 1
 2 backspace 10
  !the file pointer is now at EOF
 
  read(10,'(A)',end=3) str
- call abort
+ STOP 2
 3 continue
 end program backspace_11

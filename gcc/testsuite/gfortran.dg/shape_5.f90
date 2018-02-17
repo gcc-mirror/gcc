@@ -4,5 +4,5 @@
     integer, dimension(:), pointer     :: int1d_retrieved
 
     allocate(int1d_retrieved(10))
-    if (any(shape(int1d_retrieved) /= shape(INT1D))) call abort()
+    if (any(shape(int1d_retrieved) /= shape(INT1D))) STOP 1
     end

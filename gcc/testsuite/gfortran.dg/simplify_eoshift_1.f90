@@ -40,44 +40,44 @@ program main
   n2 = 2
   n3 = 3
 
-  if (any(b1 /= a)) call abort
-  if (any(b2 /= [2, 3, 0])) call abort
-  if (any(b3 /= [0, 0, 1])) call abort
-  if (any(b4 /= 42)) call abort
-  if (any(eoshift(c,shift=1,dim=n1,boundary=33) /= b5)) call abort
-  if (any(eoshift(c,shift=2,dim=1) /= b6)) call abort
-  if (any(eoshift(c,shift=-1,dim=2) /= b7)) call abort
-  if (any(eoshift(c,shift=-1,dim=n2,boundary=[-1,-2,-3]) /= b8)) call abort
-  if (any(eoshift(c,shift=-1) /= b9)) call abort
-  if (any(eoshift(r,shift=1,dim=n3) /= q1)) call abort
-  if (any(b10 /= reshape([ 0, 1, 2, 4, 5, 6, 8, 9, 0],shape(b10)))) call abort
-  if (any(b11 /= reshape([42, 42,  6, 42,  2,  9,  1,  5, 42],shape(b11)))) call abort
-  if (any(b12 /= reshape([ -3,  1,  2, -7, -7,  4,  7,  8,  9],shape(b11)))) call abort
+  if (any(b1 /= a)) STOP 1
+  if (any(b2 /= [2, 3, 0])) STOP 2
+  if (any(b3 /= [0, 0, 1])) STOP 3
+  if (any(b4 /= 42)) STOP 4
+  if (any(eoshift(c,shift=1,dim=n1,boundary=33) /= b5)) STOP 5
+  if (any(eoshift(c,shift=2,dim=1) /= b6)) STOP 6
+  if (any(eoshift(c,shift=-1,dim=2) /= b7)) STOP 7
+  if (any(eoshift(c,shift=-1,dim=n2,boundary=[-1,-2,-3]) /= b8)) STOP 8
+  if (any(eoshift(c,shift=-1) /= b9)) STOP 9
+  if (any(eoshift(r,shift=1,dim=n3) /= q1)) STOP 10
+  if (any(b10 /= reshape([ 0, 1, 2, 4, 5, 6, 8, 9, 0],shape(b10)))) STOP 11
+  if (any(b11 /= reshape([42, 42,  6, 42,  2,  9,  1,  5, 42],shape(b11)))) STOP 12
+  if (any(b12 /= reshape([ -3,  1,  2, -7, -7,  4,  7,  8,  9],shape(b11)))) STOP 13
   if (any(q1 /= reshape([169.,196.,225.,256.,289.,324.,361.,400.,441.,484.,529.,576.,625.,&
           676.,729.,784.,841.,900.,961.,1024.,1089.,1156.,1225.,1296.,1369.,1444.,1521.,&
           1600.,1681.,1764.,1849.,1936.,2025.,2116.,2209.,2304.,2401.,2500.,2601.,2704.,&
           2809.,2916.,3025.,3136.,3249.,3364.,3481.,3600.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.],&
-          shape(q1)))) call abort
+          shape(q1)))) STOP 14
   if (any(q2 /= reshape([0.,0.,9.,1600.,841.,0.,0.,0.,2025.,484.,0.,0.,1.,0.,225.,2704.,&
           1681.,0.,0.,0.,3249.,1156.,121.,0.,169.,4.,729.,0.,2809.,0.,0.,0.,0.,2116.,&
           529.,0.,625.,196.,1521.,0.,0.,0.,0.,0.,0.,3364.,1225.,0.,1369.,676.,2601.,&
-          0.,0.,0.,0.,0.,0.,0.,2209.,0.],shape(q2)))) call abort
+          0.,0.,0.,0.,0.,0.,0.,2209.,0.],shape(q2)))) STOP 15
   if (any(q3 /= reshape([-1.,-2.,9.,1600.,841.,-6.,-7.,-8.,2025.,484.,-11.,-12.,1.,&
           -2.,225.,2704.,1681.,-6.,-7.,-8.,3249.,1156.,121.,-12.,169.,4.,729.,-4.,&
           2809.,-6.,-7.,-8.,-9.,2116.,529.,-12.,625.,196.,1521.,-4.,-5.,-6.,-7.,-8.,&
           -9.,3364.,1225.,-12.,1369.,676.,2601.,-4.,-5.,-6.,-7.,-8.,-9.,-10.,2209.,-12.],&
-          shape(q3)))) call abort
+          shape(q3)))) STOP 16
   if (any(f1 /= reshape(["bbb","   ","ddd","   ","fff","   ","hhh","   ","jjj","   ","lll","   ",&
        "nnn","   ","ppp","   ","rrr","   ","ttt","   ","vvv","   ","xxx","   "], &
-       shape(f1)))) call abort
+       shape(f1)))) STOP 17
   if (any(f2 /= reshape(["AAA","BBB","aaa","bbb","ccc","ddd","CCC","DDD","ggg","hhh","iii","jjj",&
-       "EEE","FFF","mmm","nnn","ooo","ppp","GGG","HHH","sss","ttt","uuu","vvv"],shape(f2)))) call abort
+       "EEE","FFF","mmm","nnn","ooo","ppp","GGG","HHH","sss","ttt","uuu","vvv"],shape(f2)))) STOP 18
 
   e2 = e
-  if (any (f2 /= eoshift(e2,dim=2,shift=-1,boundary=bnd2))) call abort
+  if (any (f2 /= eoshift(e2,dim=2,shift=-1,boundary=bnd2))) STOP 19
   if (any (f3 /= reshape (["ggg","   ","ccc","jjj","qqq","   ","mmm","   ","iii","ppp",&
        "www","fff","sss","bbb","ooo","vvv","   ","lll","   ","hhh","uuu",&
-       "   ","   ","rrr"], shape(f3)))) call abort
-  if (size(empty) /=0) call abort
-  if (any(t /= (0.0_8, 0.0_8))) call abort
+       "   ","   ","rrr"], shape(f3)))) STOP 20
+  if (size(empty) /=0) STOP 21
+  if (any(t /= (0.0_8, 0.0_8))) STOP 22
 end program main

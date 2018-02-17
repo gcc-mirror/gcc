@@ -14,21 +14,21 @@ program tl_editting
 
 ! Character unit test
   write (line, '(a10,tl6,2x,a2)') aline, bline
-  if (line.ne.cline) call abort ()
+  if (line.ne.cline) STOP 1
 
 ! Character array unit test
   many = "0123456789"
   write(many(1:5:2), '(a10,tl6,2x,a2)') aline, bline, aline, bline, aline,&
   &bline
-  if (many(1).ne.cline) call abort ()
-  if (many(3).ne.cline) call abort ()
-  if (many(5).ne.cline) call abort ()
+  if (many(1).ne.cline) STOP 2
+  if (many(3).ne.cline) STOP 3
+  if (many(5).ne.cline) STOP 4
 
 ! File unit test
   write (10, '(a10,tl6,2x,a2)') aline, bline
   rewind(10)
   read(10, '(a)') s
-  if (s.ne.cline) call abort
+  if (s.ne.cline) STOP 1
   close(10, status='delete')
   
 end program tl_editting

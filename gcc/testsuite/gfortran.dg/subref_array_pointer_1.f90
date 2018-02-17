@@ -14,7 +14,7 @@ contains
     b=(/"bbbb","bbbb","bbbb"/) 
     a=>b(:)(2:3) 
     a="aa" 
-    IF (ANY(b.NE.(/"baab","baab","baab"/))) CALL ABORT() 
+    IF (ANY(b.NE.(/"baab","baab","baab"/))) STOP 1 
   END subroutine
 
   subroutine pr29606
@@ -30,7 +30,7 @@ contains
     ALLOCATE( array_holder%array(3) )
     array_holder%array = (/ foo(1), foo(2), foo(3) /)
     array_ptr => array_holder%array%value
-    if (any (array_ptr .ne. (/1,2,3/))) call abort ()
+    if (any (array_ptr .ne. (/1,2,3/))) STOP 2
   END subroutine
 
   subroutine pr30625
@@ -42,7 +42,7 @@ contains
     type(a), target :: dt(2)
     integer, pointer :: ip(:)
     ip => dt%i
-    if (any (ip .ne. 42)) call abort ()
+    if (any (ip .ne. 42)) STOP 3
   end subroutine
 
   subroutine pr30871
@@ -54,6 +54,6 @@ contains
     CHARACTER(LEN=1), DIMENSION(:), POINTER :: ptr
     Z(:)%A="123"
     ptr=>Z(:)%A(2:2)
-    if (any (ptr .ne. "2")) call abort ()
+    if (any (ptr .ne. "2")) STOP 4
   END subroutine
 end

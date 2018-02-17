@@ -20,13 +20,13 @@ program inquire_5
   unit1 = -1
   exist1 = .false.
   inquire (file = 'inquire_5.txt', number = unit8, exist = exist8)
-  if (unit8 .ne. 78 .or. .not. exist8) call abort
+  if (unit8 .ne. 78 .or. .not. exist8) STOP 1
   inquire (file = 'inquire_5.txt', number = unit4, exist = exist4)
-  if (unit4 .ne. 78 .or. .not. exist4) call abort
+  if (unit4 .ne. 78 .or. .not. exist4) STOP 2
   inquire (file = 'inquire_5.txt', number = unit2, exist = exist2)
-  if (unit2 .ne. 78 .or. .not. exist2) call abort
+  if (unit2 .ne. 78 .or. .not. exist2) STOP 3
   inquire (file = 'inquire_5.txt', number = unit1, exist = exist1)
-  if (unit1 .ne. 78 .or. .not. exist1) call abort
+  if (unit1 .ne. 78 .or. .not. exist1) STOP 4
   del = 'delete'
   close (unit = 78, status = del)
 end

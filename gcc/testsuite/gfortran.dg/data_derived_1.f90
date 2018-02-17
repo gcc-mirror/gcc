@@ -8,6 +8,6 @@ program main
   
   DATA e1 / t(1) /
   DATA e2 / t(1.0) /
-  if (abs(e1%r - 1.0) > 1e-6) call abort
-  if (abs(e2%r - 1.0) > 1e-6) call abort
+  if (abs(e1%r - 1.0) > 1e-6) STOP 1
+  if (abs(e2%r - 1.0) > 1e-6) STOP 2
 END

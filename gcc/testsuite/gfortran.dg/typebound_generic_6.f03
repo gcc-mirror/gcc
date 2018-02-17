@@ -58,10 +58,10 @@ program testd15
 
   allocate(foo2 :: afab)
   call af2%do()
-  if (af2%i .ne. 2) call abort
-  if (af2%get() .ne. 3) call abort
+  if (af2%i .ne. 2) STOP 1
+  if (af2%get() .ne. 3) STOP 2
   call afab%do()
-  if (afab%i .ne. 2) call abort
-  if (afab%get() .ne. 3) call abort
+  if (afab%i .ne. 2) STOP 3
+  if (afab%get() .ne. 3) STOP 4
 
 end program testd15

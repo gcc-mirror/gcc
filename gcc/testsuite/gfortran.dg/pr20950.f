@@ -5,5 +5,5 @@
 !
       character*20 c
       inquire (33, sequential = c)
-      if (c .ne. "UNKNOWN") call abort
+      if (c .ne. "UNKNOWN") STOP 1
       end

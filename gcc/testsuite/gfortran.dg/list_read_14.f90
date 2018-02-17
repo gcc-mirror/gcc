@@ -21,5 +21,5 @@ rewind(funit)
 a=0d0
 read(funit,*) (a(i),i=1,isize)
 close(funit)
-if (any(a /= res)) call abort
+if (any(a /= res)) STOP 1
 end

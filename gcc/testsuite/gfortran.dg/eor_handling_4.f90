@@ -12,6 +12,6 @@ program main
      read(5,'(80a1)') a
      if (a(1) == 's') goto 100
   end do
-  call abort
+  STOP 1
 100 continue
 end program main

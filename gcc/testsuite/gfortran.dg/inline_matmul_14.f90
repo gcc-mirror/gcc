@@ -33,14 +33,14 @@ contains
 
     write (unit=r1, fmt='(12F12.5)') matmul(a1,b1)
     write (unit=r2, fmt='(12F12.5)') cres1
-    if (r1 /= r2) call abort
+    if (r1 /= r2) STOP 1
 
     r = dot_product(matmul(a2,v1),v2)
-    if (abs(r+208320) > 1) call abort
+    if (abs(r+208320) > 1) STOP 2
 
     write (unit=r1,fmt='(1P,9E18.10)') matmul(matmul(a3,b3),matmul(c3,d3))
     write (unit=r2,fmt='(1P,9E18.10)') res3
-    if (r1 /= r2) call abort
+    if (r1 /= r2) STOP 3
     
   end subroutine test1
 
@@ -72,14 +72,14 @@ contains
 
     write (unit=r1, fmt='(12F12.5)') matmul(a1,b1)
     write (unit=r2, fmt='(12F12.5)') cres1
-    if (r1 /= r2) call abort
+    if (r1 /= r2) STOP 4
 
     r = dot_product(matmul(a2,v1),v2)
-    if (abs(r+208320) > 1) call abort
+    if (abs(r+208320) > 1) STOP 5
 
     write (unit=r1,fmt='(1P,9E18.10)') matmul(matmul(a3,b3),matmul(c3,d3))
     write (unit=r2,fmt='(1P,9E18.10)') res3
-    if (r1 /= r2) call abort
+    if (r1 /= r2) STOP 6
     
   end subroutine test2
 

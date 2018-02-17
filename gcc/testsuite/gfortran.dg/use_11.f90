@@ -13,5 +13,5 @@ use m, local1 => a
 use m, local2 => a
 local1 = 5
 local2 = 3
-if (local1 .ne. local2) call abort ()
+if (local1 .ne. local2) STOP 1
 end

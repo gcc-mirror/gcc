@@ -9,5 +9,5 @@ program read_internal
   source=[4_"  1   1  -1",4_"  1  -1   1",4_" -1   1   1"]
   !print *, (trim(source(i)), i=1,3)
   read(source,*) (x(i), i=1,9) ! This read fails for KIND=4 character
-  if (any(x /= y )) call abort
+  if (any(x /= y )) STOP 1
 end program read_internal

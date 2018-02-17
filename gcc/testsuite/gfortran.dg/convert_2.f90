@@ -11,10 +11,10 @@ program main
   close (20)
   open(20,file="convert.dat",form="unformatted",access="stream")
   read(20) i,c,j
-  if (i .ne. two_swap .or. j .ne. two_swap .or. c .ne. "ab") call abort
+  if (i .ne. two_swap .or. j .ne. two_swap .or. c .ne. "ab") STOP 1
   close (20)
   open(20,file="convert.dat",form="unformatted",convert="swap") ! { dg-warning "CONVERT" }
   read (20) d
   close (20,status="delete")
-  if (d .ne. "ab") call abort
+  if (d .ne. "ab") STOP 2
 end program main

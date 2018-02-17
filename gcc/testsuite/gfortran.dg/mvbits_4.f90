@@ -17,17 +17,17 @@
   ! Argument is already packed.
   call mvbits (ila1(INDEX_VECTOR), 2, 4, ila1, 3)
   write (*,'(10(I3))') ila1
-  if (any (ila1 /= SHOULD_BE)) call abort ()
+  if (any (ila1 /= SHOULD_BE)) STOP 1
 
   ! Argument is not packed.
   call mvbits (ila2(2*INDEX_VECTOR), 2, 4, ila2(2:20:2), 3)
   write (*,'(10(I3))') ila2(2:20:2)
-  if (any (ila2(2:20:2) /= SHOULD_BE)) call abort ()
+  if (any (ila2(2:20:2) /= SHOULD_BE)) STOP 2
 
   ! Pointer and target
   ila3_ptr => ila3
   call mvbits (ila3(INDEX_VECTOR), 2, 4, ila3_ptr, 3)
   write (*,'(10(I3))') ila3
-  if (any (ila3 /= SHOULD_BE)) call abort ()
+  if (any (ila3 /= SHOULD_BE)) STOP 3
 
   end 

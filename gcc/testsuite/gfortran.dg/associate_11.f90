@@ -13,7 +13,7 @@ program bug
     call foo(a)
   end associate
 ! write(*,*) i
-  if (i(1) /= 2) call abort
+  if (i(1) /= 2) STOP 1
 contains
   subroutine foo(v)
     integer, dimension(*) :: v

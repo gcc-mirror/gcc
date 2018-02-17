@@ -5,7 +5,7 @@
 real, dimension (3) :: a = (/1., 2., 3./), b, c
 equivalence (a(2), b), (a(1), c)
 b = a;
-if (any(b .ne. (/1., 2., 3./))) call abort ()
+if (any(b .ne. (/1., 2., 3./))) STOP 1
 b = c
-if (any(b .ne. (/1., 1., 2./))) call abort ()
+if (any(b .ne. (/1., 1., 2./))) STOP 2
 end

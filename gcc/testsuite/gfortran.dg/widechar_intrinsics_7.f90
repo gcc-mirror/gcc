@@ -104,21 +104,21 @@ contains
     character(kind=4, len=*) :: s4, t4
     integer :: res1(6), res4(6)
 
-    if (any (res1 /= res4)) call abort
+    if (any (res1 /= res4)) STOP 1
 
-    if (index  (s1, t1, .true.)  /= res1(1)) call abort
-    if (index  (s1, t1, .false.) /= res1(2)) call abort
-    if (scan   (s1, t1, .true.)  /= res1(3)) call abort
-    if (scan   (s1, t1, .false.) /= res1(4)) call abort
-    if (verify (s1, t1, .true.)  /= res1(5)) call abort
-    if (verify (s1, t1, .false.) /= res1(6)) call abort
+    if (index  (s1, t1, .true.)  /= res1(1)) STOP 2
+    if (index  (s1, t1, .false.) /= res1(2)) STOP 3
+    if (scan   (s1, t1, .true.)  /= res1(3)) STOP 4
+    if (scan   (s1, t1, .false.) /= res1(4)) STOP 5
+    if (verify (s1, t1, .true.)  /= res1(5)) STOP 6
+    if (verify (s1, t1, .false.) /= res1(6)) STOP 7
 
-    if (index  (s4, t4, .true.)  /= res4(1)) call abort
-    if (index  (s4, t4, .false.) /= res4(2)) call abort
-    if (scan   (s4, t4, .true.)  /= res4(3)) call abort
-    if (scan   (s4, t4, .false.) /= res4(4)) call abort
-    if (verify (s4, t4, .true.)  /= res4(5)) call abort
-    if (verify (s4, t4, .false.) /= res4(6)) call abort
+    if (index  (s4, t4, .true.)  /= res4(1)) STOP 8
+    if (index  (s4, t4, .false.) /= res4(2)) STOP 9
+    if (scan   (s4, t4, .true.)  /= res4(3)) STOP 10
+    if (scan   (s4, t4, .false.) /= res4(4)) STOP 11
+    if (verify (s4, t4, .true.)  /= res4(5)) STOP 12
+    if (verify (s4, t4, .false.) /= res4(6)) STOP 13
 
   end subroutine check1
 

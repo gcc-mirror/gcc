@@ -9,5 +9,5 @@ implicit none
                                           &402953FD', 8)
 
    if (real (z'00000000&
-              &402953FD', 8) /= rd) call abort
+              &402953FD', 8) /= rd) STOP 1
 end

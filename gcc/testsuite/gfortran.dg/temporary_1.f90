@@ -12,7 +12,7 @@ program pr27662
  z = matmul (x, transpose (test ()))
  do i = 1, size (x, 1)
    do j = 1, size (x, 2)
-     if (x (i, j) .ne. z (i, j)) call abort ()
+     if (x (i, j) .ne. z (i, j)) STOP 1
    end do
  end do
 

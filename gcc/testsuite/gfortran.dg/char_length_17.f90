@@ -8,7 +8,7 @@ program main
   i = 3
   c(i:i) = 'a'
   c(i+1:i+1) = 'b'
-  if (c(i:i) /= 'a') call abort ()
-  if (c(i+1:i+1) /= 'b') call abort ()
+  if (c(i:i) /= 'a') STOP 1
+  if (c(i+1:i+1) /= 'b') STOP 2
 end program main
 ! { dg-final { scan-tree-dump-times "gfortran_compare_string" 0 "original" } }

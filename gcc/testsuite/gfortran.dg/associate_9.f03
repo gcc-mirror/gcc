@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2003 -fall-intrinsics" }
+! { dg-options "-std=f2003 " }
 
 
 ! PR fortran/38936
@@ -38,10 +38,10 @@ PROGRAM main
   a = mynum (5)
 
   ASSOCIATE (x => add (a, a))
-    IF (x%comp /= 10) CALL abort ()
+    IF (x%comp /= 10) STOP 1
   END ASSOCIATE
 
   ASSOCIATE (x => a + a)
-    IF (x%comp /= 10) CALL abort ()
+    IF (x%comp /= 10) STOP 2
   END ASSOCIATE
 END PROGRAM main

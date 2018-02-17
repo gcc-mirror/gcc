@@ -5,6 +5,6 @@ contains
 subroutine x(a)
 character(8), intent(in) :: a(:)
 integer :: b(count(a < 'F'))
-if (size(b) /= 1) call abort()
+if (size(b) /= 1) STOP 1
 end subroutine x
 end

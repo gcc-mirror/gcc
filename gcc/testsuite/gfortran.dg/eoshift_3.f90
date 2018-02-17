@@ -152,7 +152,7 @@ program main
         call eoshift_0 (a, shift=shift, dim=dim, res=c)
         if (any (b /= c)) then
                 print *,"dim = ", dim, "shift = ", shift
-                call abort
+                STOP 1
         end if
      end do
   end do
@@ -171,7 +171,7 @@ program main
      do shift=-shift_lim, shift_lim
         b(1:n1:2,:,:) = eoshift(a(1:n1/2,:,:),shift,dim=dim)
         call eoshift_0 (a(1:n1/2,:,:), shift=shift, dim=dim, res=c(1:n1:2,:,:))
-        if (any (b /= c)) call abort
+        if (any (b /= c)) STOP 2
      end do
   end do
 

@@ -89,7 +89,7 @@ CONTAINS
         if (iotype .ne. "DTmembers") iostat = 4
 
       class default
-        call abort
+        STOP 1
     end select
   end subroutine
 END MODULE p
@@ -124,16 +124,16 @@ PROGRAM test
 
   rewind (7)
   read (7, "(DT'staff')", iostat = i) social_club%staff
-  if (i .ne. 0) call abort
+  if (i .ne. 0) STOP 2
 
   social_club%committee(2)%age = 33            ! Introduce an error
 
   read (7, "(DT'officers')", iostat = i) social_club%committee
-  if (i .ne. 2) call abort                     ! Pick up error
+  if (i .ne. 2) STOP 3! Pick up error
 
   do j = 1, size (social_club%membership, 1)
     read (7, "(DT'members')", iostat = i) social_club%membership(j)
-    if (i .ne. 0) call abort
+    if (i .ne. 0) STOP 4
   end do
   close (7)
 END PROGRAM test

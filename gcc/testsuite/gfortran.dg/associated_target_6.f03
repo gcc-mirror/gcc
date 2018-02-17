@@ -42,8 +42,8 @@ program p
    !.. create i with some value
    allocate (i, source=42)
    call foo%setptr (i)
-   if (.not.associated (i, foo%iptr())) call abort () ! Gave bad result.
-   if (.not.associated (foo%iptr(), i)) call abort () ! Was OK.
+   if (.not.associated (i, foo%iptr())) STOP 1 ! Gave bad result.
+   if (.not.associated (foo%iptr(), i)) STOP 2 ! Was OK.
    j => foo%iptr()
-   if (.not.associated (i, j)) call abort ! Was OK.
+   if (.not.associated (i, j)) STOP 1! Was OK.
 end program p

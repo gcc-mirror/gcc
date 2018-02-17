@@ -20,16 +20,16 @@
         idata(  datasize)   =  -5
        write(11)idata
        read(11,end=        1000 )idata
-       call abort()
+       STOP 1
  1000  continue
        backspace 11
        backspace 11
        backspace 11
        read(11,end=        1001 )idata
-       if(idata(1).ne.-3 .or. idata(datasize).ne.-4) call abort()
+       if(idata(1).ne.-3 .or. idata(datasize).ne.-4) STOP 2
        stop
  1001  continue
-       call abort()
+       STOP 3
  1010  stop
        end
 

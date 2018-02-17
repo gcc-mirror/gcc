@@ -10,7 +10,7 @@ contains
   subroutine test_globals() bind(c)
     ! the value of I is initialized above
     if(I .ne. 2) then
-       call abort()
+       STOP 1
     endif
   end subroutine test_globals
 end module global_vars_c_init

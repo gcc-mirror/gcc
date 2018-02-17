@@ -7,7 +7,7 @@ PROGRAM main
  CHARACTER(len=:), DIMENSION(:), POINTER :: cp
  INTEGER :: i
  ALLOCATE(CHARACTER(len=1) :: cp(1:6))
- if (SIZE(cp) /= 6 .or. LBOUND(cp,1) /= 1 .or. UBOUND(cp,1) /= 6) call abort()
+ if (SIZE(cp) /= 6 .or. LBOUND(cp,1) /= 1 .or. UBOUND(cp,1) /= 6) STOP 1
  cp(1)='1'
  cp(2)='2'
  cp(3)='3'
@@ -15,5 +15,5 @@ PROGRAM main
  cp(5)='5'
  cp(6)='6'
  write (res, *) cp
- if (res /= ' 123456') call abort()
+ if (res /= ' 123456') STOP 2
 END PROGRAM main

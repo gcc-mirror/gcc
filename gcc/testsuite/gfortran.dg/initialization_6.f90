@@ -15,8 +15,8 @@
   integer, parameter :: i(3) = index (ch, ch2)
   integer :: ic(1) = len_trim((/"a"/))
 
-  if (any (reshape (b, (/4/)) .ne. (/(sin(real(k)), k = 1,4)/))) call abort ()
-  if (any (ob .ne. (/5,6,5/))) call abort ()  ! Original PR29507
-  if (any (i .ne. (/2,3,4/))) call abort ()
-  if (ic(1) .ne. 1) call abort ()             ! Original PR31404
+  if (any (reshape (b, (/4/)) .ne. (/(sin(real(k)), k = 1,4)/))) STOP 1
+  if (any (ob .ne. (/5,6,5/))) STOP 2  ! Original PR29507
+  if (any (i .ne. (/2,3,4/))) STOP 3
+  if (ic(1) .ne. 1) STOP 4             ! Original PR31404
 end

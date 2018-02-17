@@ -13,7 +13,7 @@
     Type(t),Target :: x
     Call sub(x) ! { dg-error "Fortran 2008: Non-pointer actual argument" }
     Print *,x%c
-    if (x%c /= 3) call abort ()
+    if (x%c /= 3) STOP 1
   Contains
     Subroutine sub(p)
       Class(t),Pointer,Intent(In) :: p

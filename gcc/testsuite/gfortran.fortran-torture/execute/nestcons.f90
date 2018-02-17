@@ -5,5 +5,5 @@ program nestcons
    integer, dimension(6) :: w2
    
    w2 = (/ 1, 2, w1(3:1:-1), 3 /)
-   if (any (w2 .ne. (/ 1, 2, 7, 6, 5, 3/))) call abort
+   if (any (w2 .ne. (/ 1, 2, 7, 6, 5, 3/))) STOP 1
 end

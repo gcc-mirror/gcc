@@ -7,7 +7,7 @@
 !$OMP xPARALLEL
 !$ACC xPARALLEL COPYIN(ARGC)	! { dg-error "Unclassifiable OpenACC directive" }
       IF (ARGC .NE. 0) THEN
-         CALL ABORT
+         STOP 1
       END IF
 !$ACC END PARALLEL 	! { dg-error "Unexpected" }
 !$OMP END PARALLEL

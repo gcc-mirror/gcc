@@ -58,7 +58,7 @@ program init_flag_15
   call print(vsum)
 
   if (vsum%x .ne. 3 .or. vsum%y .ne. 3) then
-    call abort()
+    STOP 1
   endif
 
 end program

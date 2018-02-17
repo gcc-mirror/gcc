@@ -8,7 +8,7 @@ program test
   f = 1.0
   q=>f
   g = foo(q)
-  if (g .ne. 1.0) call abort
+  if (g .ne. 1.0) STOP 1
 contains
 function foo (p)
   real, pointer :: foo

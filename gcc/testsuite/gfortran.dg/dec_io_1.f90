@@ -12,7 +12,7 @@ subroutine check_cc (fd, cc)
   inquire(unit=fd, carriagecontrol=cc_inq)
   if (cc_inq .ne. cc) then
     print *, '(', fd, ') cc expected ', cc, ' was ', cc_inq
-    call abort()
+    STOP 1
   endif
 endsubroutine
 
@@ -24,7 +24,7 @@ subroutine check_share (fd, share)
   inquire(unit=fd, share=share_inq)
   if (share_inq .ne. share) then
     print *, '(', fd, ') share expected ', share, ' was ', share_inq
-    call abort()
+    STOP 2
   endif
 endsubroutine
 
@@ -36,7 +36,7 @@ subroutine check_action (fd, acc)
   inquire(unit=fd, action=acc_inq)
   if (acc_inq .ne. acc) then
     print *, '(', fd, ') access expected ', acc, ' was ', acc_inq
-    call abort()
+    STOP 3
   endif
 endsubroutine
 

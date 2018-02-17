@@ -11,6 +11,6 @@ program gfcbug79
   write(nnml,*) "/"
   rewind(nnml)
   read (nnml, nml=NML)
-  if (model /= 'foo') call abort
+  if (model /= 'foo') STOP 1
   close(nnml)
 end program gfcbug79

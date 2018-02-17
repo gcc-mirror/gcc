@@ -19,7 +19,7 @@ subroutine wrtout (iarray, nchrs)
   nwrds = (nchrs + icpw - 1) /icpw
   write(outstr,'(4(z8," "))') (iarray(i), i=1,nwrds)
   if (outstr.ne."4C4C4548 4F59204F 20202055" .and. &
- &    outstr.ne."48454C4C 4F20594F 55202020") call abort
+ &    outstr.ne."48454C4C 4F20594F 55202020") STOP 1
   return
 end
 ! { dg-warning "Hollerith constant" "" { target *-*-* } 6 }

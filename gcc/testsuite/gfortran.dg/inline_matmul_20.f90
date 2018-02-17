@@ -10,5 +10,5 @@ program gfcbug142
   allocate (b(n,n))
   call random_number (b)
   write (unit=line,fmt='(2I5)') shape (matmul (b, transpose (b)))
-  if (line /= '    5    5') call abort
+  if (line /= '    5    5') STOP 1
 end program gfcbug142

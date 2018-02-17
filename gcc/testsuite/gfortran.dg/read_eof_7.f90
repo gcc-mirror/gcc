@@ -12,9 +12,9 @@ program main
   i = 54321
   idum = 6789
   read (10,'(2i5,4x)') i, idum ! Trailing 4x was setting EOF condition
-  if (i /= 99999 .and. idum /= 9) call abort
+  if (i /= 99999 .and. idum /= 9) STOP 1
   j = 12345
   read (10,name) ! EOF condition tripped here.
-  if (j /= 73) call abort
+  if (j /= 73) STOP 2
 end program main
 

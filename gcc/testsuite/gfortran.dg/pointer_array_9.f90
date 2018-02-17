@@ -17,7 +17,7 @@ contains
       a = reshape ([cmplx(1, 1), cmplx(2, 2), cmplx(1, 2), cmplx(2, 1)], [2,2])
     else
       b = transpose(a)
-      if (merge("PASSED", "FAILED", all (transpose (a) .eq. b)) .eq. "FAILED") call abort
+      if (merge("PASSED", "FAILED", all (transpose (a) .eq. b)) .eq. "FAILED") STOP 1
     end if
   end subroutine s
 end program r187

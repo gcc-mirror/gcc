@@ -13,7 +13,7 @@
   rewind (10)
   do i = 0, 7
     read (10, *) a
-    if (any (a .ne. mod (i, 2))) call abort
+    if (any (a .ne. mod (i, 2))) STOP 1
   end do
   close (10)
 end

@@ -17,10 +17,10 @@ end module
   call poke (1)
   call poke (2)
   call poke (3)
-  if (top%index .ne. 3) call abort
+  if (top%index .ne. 3) STOP 1
   call output (top)
   call pop
-  if (top%index .ne. 2) call abort
+  if (top%index .ne. 2) STOP 2
   call output (top)
   deallocate (top)
 contains

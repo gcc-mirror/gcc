@@ -19,21 +19,21 @@
      $      action='readwrite')
 
 
-      if (istat /= 0) call abort
+      if (istat /= 0) STOP 1
 
       bda  = 'xxxxxxxxx'
       bda1 = 'yyyyyyyyy'
       write (48,iostat = istat, rec = 10) bda1(4:3)
       if ( istat .ne. 0) then
-        call abort
+        STOP 2
       endif
 
       istat = -314
       read (48,iostat = istat, rec=10) bda(4:3)
       if ( istat .ne. 0) then
-        call abort
+        STOP 3
       endif
-      if (any(bda1.ne.'yyyyyyyyy')) call abort
-      if (any(bda.ne.'xxxxxxxxx')) call abort
+      if (any(bda1.ne.'yyyyyyyyy')) STOP 4
+      if (any(bda.ne.'xxxxxxxxx')) STOP 5
       end
 

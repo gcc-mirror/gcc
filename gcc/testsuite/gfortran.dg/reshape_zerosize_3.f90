@@ -11,17 +11,17 @@ CONTAINS
     INTEGER, DIMENSION(:), INTENT(IN), &
          OPTIONAL                               :: DATA
     character(20) :: line
-    IF (.not. PRESENT(data)) call abort
+    IF (.not. PRESENT(data)) STOP 1
     write (unit=line,fmt='(I5)') size(data)
-    if (line /= '    0               ') call abort
+    if (line /= '    0               ') STOP 2
   END SUBROUTINE S1
 
   subroutine s_type(data)
     type(foo), dimension(:), intent(in), optional :: data
     character(20) :: line
-    IF (.not. PRESENT(data)) call abort
+    IF (.not. PRESENT(data)) STOP 3
     write (unit=line,fmt='(I5)') size(data)
-    if (line /= '    0               ') call abort
+    if (line /= '    0               ') STOP 4
   end subroutine s_type
 
   SUBROUTINE S2(N)

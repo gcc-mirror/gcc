@@ -31,7 +31,7 @@ contains
     class(trivial_vector_type), intent(inout) :: this
     class(vector_class),        intent(in)    :: v
     write (*,*) 'Oops in concrete_vector::my_assign'
-    call abort ()
+    STOP 1
   end subroutine
 end module concrete_vector
 

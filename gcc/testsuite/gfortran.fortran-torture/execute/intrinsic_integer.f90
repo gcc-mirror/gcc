@@ -13,6 +13,6 @@ subroutine test(val, res)
   integer, dimension(4) :: res
 
   if ((floor(val) .ne. res(1)) .or. (ceiling(val) .ne. res(2)) &
-      .or. (int(val) .ne. res(3)) .or. (nint(val) .ne. res(4))) call abort
+      .or. (int(val) .ne. res(3)) .or. (nint(val) .ne. res(4))) STOP 1
 end subroutine
 end program

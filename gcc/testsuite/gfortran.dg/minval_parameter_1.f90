@@ -29,23 +29,23 @@ program main
   character(len=3), parameter :: cm4 = minval (c, c>"g")
   character(len=3), dimension(3), parameter :: cm5 = minval(c,dim=1,mask=c>"g")
 
-  if (any (im1 /= [ -1, -3, -7])) call abort
-  if (im2 /= 5) call abort
-  if (any (im3 /= [ -7,2])) call abort
-  if (im4 /= 2) call abort
-  if (any (im5 /= [huge(im5), 5, 11])) call abort
-  if (any (im6 /= [huge(im6), 5])) call abort
+  if (any (im1 /= [ -1, -3, -7])) STOP 1
+  if (im2 /= 5) STOP 2
+  if (any (im3 /= [ -7,2])) STOP 3
+  if (im4 /= 2) STOP 4
+  if (any (im5 /= [huge(im5), 5, 11])) STOP 5
+  if (any (im6 /= [huge(im6), 5])) STOP 6
 
-  if (any (rm1 /= [ -1., -3., -7.])) call abort
-  if (rm2 /= 5) call abort
-  if (any (rm3 /= [ -7.,2.])) call abort
-  if (rm4 /= 2) call abort
-  if (any (rm5 /= [huge(rm5), 5., 11.])) call abort
-  if (any (rm6 /= [huge(rm6), 5.])) call abort
+  if (any (rm1 /= [ -1., -3., -7.])) STOP 7
+  if (rm2 /= 5) STOP 8
+  if (any (rm3 /= [ -7.,2.])) STOP 9
+  if (rm4 /= 2) STOP 10
+  if (any (rm5 /= [huge(rm5), 5., 11.])) STOP 11
+  if (any (rm6 /= [huge(rm6), 5.])) STOP 12
 
-  if (cm1 /= "asd") call abort
-  if (any (cm2 /= ["asd", "jkl", "ert" ])) call abort
-  if (any (cm3 /= ["asd", "fgh" ])) call abort
-  if (cm4 /= "jkl") call abort
-  if (any(cm5 /= [ maxv, "jkl", "zui" ] )) call abort
+  if (cm1 /= "asd") STOP 13
+  if (any (cm2 /= ["asd", "jkl", "ert" ])) STOP 14
+  if (any (cm3 /= ["asd", "fgh" ])) STOP 15
+  if (cm4 /= "jkl") STOP 16
+  if (any(cm5 /= [ maxv, "jkl", "zui" ] )) STOP 17
 end program main

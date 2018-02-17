@@ -36,7 +36,7 @@ program p_18_pos
      write(*,*) 'OK'
   else
      write(*,*) 'FAIL'
-     call abort
+     STOP 1
   end if
 end program p_18_pos
 

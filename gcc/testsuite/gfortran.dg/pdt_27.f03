@@ -15,8 +15,8 @@ program test_pdt
   use pdt_m
   implicit none
   type(vec) :: u,v
-  if (any (u%foo .ne. [1,2,3])) call abort
+  if (any (u%foo .ne. [1,2,3])) STOP 1
   u%foo = [7,8,9]
   v = u
-  if (any (v%foo .ne. [7,8,9])) call abort
+  if (any (v%foo .ne. [7,8,9])) STOP 2
 end program test_pdt

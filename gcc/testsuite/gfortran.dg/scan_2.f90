@@ -15,7 +15,7 @@ module m1
 
          iscan = scan('AA','A',back=A)
          iverify = verify('xx','A',back=A)
-         if (iscan /= 2 .or. iverify /= 2) call abort ()
+         if (iscan /= 2 .or. iverify /= 2) STOP 1
          print *, iverify, iscan
 !         write(*,'(a)') 'SCAN test: A = '//trim(tf(iscan)) ! should print true
 !         write(*,'(a)') 'VERIFY test: A = '//trim(tf(iverify)) ! should print true

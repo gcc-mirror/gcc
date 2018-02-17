@@ -10,5 +10,5 @@ end
 program strarray_2
   character c
   call foo(3,c)
-  if (c.ne.'3') call abort()
+  if (c.ne.'3') STOP 1
 end

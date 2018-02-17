@@ -19,6 +19,6 @@ program random_4
   call random_number(r8)
   call random_number (r8(10))
 
-  if (any ((r4 - r8) .gt. delta)) call abort
+  if (any ((r4 - r8) .gt. delta)) STOP 1
 end program
 

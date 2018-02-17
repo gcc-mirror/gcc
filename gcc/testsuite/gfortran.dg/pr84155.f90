@@ -34,7 +34,7 @@ contains
     rewind (unit)
     read (unit) check
     close (unit)
-    if (ival .ne. check) call abort
+    if (ival .ne. check) STOP 1
   end subroutine proc
 
   subroutine particle_write_raw (array, u)

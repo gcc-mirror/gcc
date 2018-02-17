@@ -20,7 +20,7 @@ use m
 implicit none
 type(t2), pointer :: a
 allocate(a)
-if (.not. associated(a,f(a))) call abort()
+if (.not. associated(a,f(a))) STOP 1
 call cmpPtr(a,f2(a))
 call cmpPtr(a,f(a))
 deallocate(a)
@@ -28,6 +28,6 @@ contains
   subroutine cmpPtr(a,b)
     type(t2), pointer :: a,b
 !    print *, associated(a,b)
-    if (.not. associated (a, b)) call abort()
+    if (.not. associated (a, b)) STOP 2
   end subroutine cmpPtr
 end

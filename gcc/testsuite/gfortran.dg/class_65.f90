@@ -26,9 +26,9 @@ Program p
   Type Is (t)
     Continue
   Class Is (t)
-    call abort
+    STOP 1
   Class Default
-    call abort
+    STOP 2
   End Select
 !  Print *, 'ok'
 End Program

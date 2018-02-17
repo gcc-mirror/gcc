@@ -2,46 +2,46 @@ LOGICAL :: L = .FALSE.
 
 SELECT CASE (L)
    CASE (.TRUE.)
-      CALL abort
+      STOP 1
    CASE (.FALSE.)
       CONTINUE
    CASE DEFAULT
-      CALL abort
+      STOP 2
 END SELECT
 
 SELECT CASE (L)
    CASE (.TRUE., .FALSE.)
       CONTINUE
    CASE DEFAULT
-      CALL abort                  
+      STOP 3
 END SELECT
 
 SELECT CASE (L)
    CASE (.FALSE.)
       CONTINUE
    CASE DEFAULT
-      CALL abort
+      STOP 4
 END SELECT
 
 SELECT CASE (L)
    CASE (.NOT. .TRUE.)
       CONTINUE
    CASE DEFAULT
-      CALL abort
+      STOP 5
 END SELECT
 
 SELECT CASE (.NOT. L)
    CASE (.TRUE.)
       CONTINUE
    CASE DEFAULT
-      CALL abort
+      STOP 6
 END SELECT
 
 SELECT CASE (Truth_or_Dare() .OR. L)
    CASE (.TRUE.)
       CONTINUE
    CASE DEFAULT
-      CALL abort
+      STOP 7
 END SELECT
 
 CONTAINS
