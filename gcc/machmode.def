@@ -243,6 +243,7 @@ UACCUM_MODE (UTA, 16, 64, 64); /* 64.64 */
 
 /* Complex modes.  */
 COMPLEX_MODES (INT);
+COMPLEX_MODES (PARTIAL_INT);
 COMPLEX_MODES (FLOAT);
 
 /* Decimal floating point modes.  */
