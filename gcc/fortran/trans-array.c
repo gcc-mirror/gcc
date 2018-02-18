@@ -7341,7 +7341,11 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       else
 	{
 	  /* Otherwise make a new one.  */
-	  parmtype = gfc_get_element_type (TREE_TYPE (desc));
+	  if (expr->ts.type == BT_CHARACTER && expr->ts.deferred)
+	    parmtype = gfc_typenode_for_spec (&expr->ts);
+	  else
+	    parmtype = gfc_get_element_type (TREE_TYPE (desc));
+
 	  parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen, codim,
 						loop.from, loop.to, 0,
 						GFC_ARRAY_UNKNOWN, false);

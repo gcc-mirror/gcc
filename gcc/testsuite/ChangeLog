@@ -1,3 +1,9 @@
+2018-02-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80945
+	* gfortran.dg/associate_35.f90: Remove error, add stop n's and
+	change to run.
+
 2018-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84270
