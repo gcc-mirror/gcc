@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2003 -fall-intrinsics" }
+! { dg-options "-std=f2003" }
 !
 ! PR fortran/36592
 !

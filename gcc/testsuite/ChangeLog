@@ -1,3 +1,14 @@
+2018-02-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/84381
+	* gfortran.dg/io_real_boz2.f90: Remove option "-fall-intrinsics".
+	* gfortran.dg/pointer_intent_3.f90: Ditto.
+	* gfortran.dg/proc_ptr_common_1.f90: Ditto.
+	* gfortran.dg/protected_3.f90: Ditto.
+	* gfortran.dg/protected_4.f90: Ditto.
+	* gfortran.dg/protected_5.f90: Ditto.
+	* gfortran.dg/protected_6.f90: Ditto.
+
 2018-02-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80945
