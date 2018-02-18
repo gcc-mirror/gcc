@@ -3987,6 +3987,10 @@ finalize_transfer (st_parameter_dt *dtp)
 
   if (dtp->u.p.unit_is_internal)
     {
+      /* The unit structure may be reused later so clear the
+	 internal unit kind.  */
+      dtp->u.p.current_unit->internal_unit_kind = 0;
+
       fbuf_destroy (dtp->u.p.current_unit);
       if (dtp->u.p.current_unit
 	  && (dtp->u.p.current_unit->child_dtio  == 0)
