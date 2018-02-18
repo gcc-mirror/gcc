@@ -1,3 +1,10 @@
+2018-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/84412
+	* io/transfer.c (finalize_transfer): After completng an internal unit
+	I/O operation, clear internal_unit_kind.
+
 2018-01-25  Release Manager
 
 	* GCC 7.3.0 released.
