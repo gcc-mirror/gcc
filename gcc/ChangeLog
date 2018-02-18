@@ -1,3 +1,9 @@
+2018-02-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	handle rs6000_single_float and rs6000_double_float specially for
+	e500 family CPUs.
+
 2018-02-16  Jeff Law  <law@redhat.com>
 
 	* config/rx/rx.c (add_pop_cfi_notes): New function.;

@@ -4820,25 +4820,6 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "after subtarget", rs6000_isa_flags);
 
-  /* For the E500 family of cores, reset the single/double FP flags to let us
-     check that they remain constant across attributes or pragmas.  */
-
-  switch (rs6000_cpu)
-    {
-    case PROCESSOR_PPC8540:
-    case PROCESSOR_PPC8548:
-    case PROCESSOR_PPCE500MC:
-    case PROCESSOR_PPCE500MC64:
-    case PROCESSOR_PPCE5500:
-    case PROCESSOR_PPCE6500:
-      rs6000_single_float = 0;
-      rs6000_double_float = 0;
-      break;
-
-    default:
-      break;
-    }
-
   if (main_target_opt)
     {
       if (main_target_opt->x_rs6000_single_float != rs6000_single_float)
