@@ -36,17 +36,18 @@ export LC_ALL=C
 
 tool=gxx
 
-tmp1=/tmp/$tool-testing.$$a
-tmp2=/tmp/$tool-testing.$$b
-now_s=/tmp/$tool-testing.$$d
-before_s=/tmp/$tool-testing.$$e
-lst1=/tmp/$tool-lst1.$$
-lst2=/tmp/$tool-lst2.$$
-lst3=/tmp/$tool-lst3.$$
-lst4=/tmp/$tool-lst4.$$
-lst5=/tmp/$tool-lst5.$$
-sum1=/tmp/$tool-sum1.$$
-sum2=/tmp/$tool-sum2.$$
+TMPDIR=${TMPDIR:-/tmp}
+tmp1=$TMPDIR/$tool-testing.$$a
+tmp2=$TMPDIR/$tool-testing.$$b
+now_s=$TMPDIR/$tool-testing.$$d
+before_s=$TMPDIR/$tool-testing.$$e
+lst1=$TMPDIR/$tool-lst1.$$
+lst2=$TMPDIR/$tool-lst2.$$
+lst3=$TMPDIR/$tool-lst3.$$
+lst4=$TMPDIR/$tool-lst4.$$
+lst5=$TMPDIR/$tool-lst5.$$
+sum1=$TMPDIR/$tool-sum1.$$
+sum2=$TMPDIR/$tool-sum2.$$
 tmps="$tmp1 $tmp2 $now_s $before_s $lst1 $lst2 $lst3 $lst4 $lst5 $sum1 $sum2"
 
 [ "$1" = "-strict" ] && strict=$1 && shift
