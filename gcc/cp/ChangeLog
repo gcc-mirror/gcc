@@ -1,3 +1,15 @@
+2018-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-08-29  Jason Merrill  <jason@redhat.com>
+
+	Fix lambdas in template default argument of inherited ctor.
+	* method.c (synthesized_method_base_walk): Replace an inherited
+	template with its specialization.
+	(synthesized_method_walk): Make inheriting_ctor a pointer.
+	(maybe_explain_implicit_delete, explain_implicit_non_constexpr)
+	(deduce_inheriting_ctor, implicitly_declare_fn): Adjust.
+
 2018-02-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84151 - unnecessary volatile load with static member.

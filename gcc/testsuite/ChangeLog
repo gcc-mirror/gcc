@@ -1,3 +1,11 @@
+2018-02-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2018-01-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81860
+	* g++.dg/cpp0x/inh-ctor30.C: New test.
+
 2018-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
