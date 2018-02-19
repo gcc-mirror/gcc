@@ -12141,7 +12141,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		error ("%qE is neither function nor member function; "
 		       "cannot be declared friend", unqualified_id);
-		friendp = 0;
+		return error_mark_node;
 	      }
 	    decl = NULL_TREE;
 	  }
