@@ -1,3 +1,9 @@
+2018-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_alloc_comp_6.f08: New test.
+	* gfortran.dg/coarray_alloc_comp_7.f08: New test.
+	* gfortran.dg/coarray_alloc_comp_8.f08: New test.
+
 2018-02-19  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-neg-int.p7.c: Remove test file.

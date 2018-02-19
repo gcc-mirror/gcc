@@ -226,15 +226,17 @@ void _gfortran_caf_sendget (caf_token_t, size_t, int, gfc_descriptor_t *,
 
 void _gfortran_caf_get_by_ref (caf_token_t token, int image_idx,
 	gfc_descriptor_t *dst, caf_reference_t *refs, int dst_kind,
-	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat);
+	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat,
+	int src_type);
 void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
 	gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind,
-	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat);
+	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat,
+	int dst_type);
 void _gfortran_caf_sendget_by_ref (
 	caf_token_t dst_token, int dst_image_index, caf_reference_t *dst_refs,
 	caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
 	int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
-	int *src_stat);
+	int *src_stat, int dst_type, int src_type);
 
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);

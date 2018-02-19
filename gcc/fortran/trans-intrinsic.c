@@ -1709,12 +1709,13 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 	  gfc_add_expr_to_block (&se->pre, tmp);
 
 	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get_by_ref,
-				     9, token, image_index, dst_var,
+				     10, token, image_index, dst_var,
 				     caf_reference, lhs_kind, kind,
 				     may_require_tmp,
 				     may_realloc ? boolean_true_node :
 						   boolean_false_node,
-				     stat);
+				     stat, build_int_cst (integer_type_node,
+							  array_expr->ts.type));
 
 	  gfc_add_expr_to_block (&se->pre, tmp);
 
@@ -2100,9 +2101,11 @@ conv_caf_send (gfc_code *code) {
 					     : boolean_false_node;
 	  tmp = build_call_expr_loc (input_location,
 				     gfor_fndecl_caf_send_by_ref,
-				     9, token, image_index, rhs_se.expr,
+				     10, token, image_index, rhs_se.expr,
 				     reference, lhs_kind, rhs_kind,
-				     may_require_tmp, dst_realloc, src_stat);
+				     may_require_tmp, dst_realloc, src_stat,
+				     build_int_cst (integer_type_node,
+						    lhs_expr->ts.type));
 	  }
       else
 	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 11,
@@ -2147,11 +2150,15 @@ conv_caf_send (gfc_code *code) {
 	  lhs_reference = conv_expr_ref_to_caf_ref (&block, lhs_expr);
 	  rhs_reference = conv_expr_ref_to_caf_ref (&block, rhs_expr);
 	  tmp = build_call_expr_loc (input_location,
-				     gfor_fndecl_caf_sendget_by_ref, 11,
+				     gfor_fndecl_caf_sendget_by_ref, 13,
 				     token, image_index, lhs_reference,
 				     rhs_token, rhs_image_index, rhs_reference,
 				     lhs_kind, rhs_kind, may_require_tmp,
-				     dst_stat, src_stat);
+				     dst_stat, src_stat,
+				     build_int_cst (integer_type_node,
+						    lhs_expr->ts.type),
+				     build_int_cst (integer_type_node,
+						    rhs_expr->ts.type));
 	}
       else
 	{
