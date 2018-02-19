@@ -1,3 +1,7 @@
+2018-02-19  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-neg-int.p7.c: Remove test file.
+
 2018-01-16  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	PR target/84460

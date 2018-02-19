@@ -1162,14 +1162,6 @@ BU_ALTIVEC_A (NABS_V16QI,     "nabs_v16qi",	CONST,	nabsv16qi2)
 BU_ALTIVEC_A (NABS_V4SF,      "nabs_v4sf",	CONST,	vsx_nabsv4sf2)
 BU_ALTIVEC_A (NABS_V2DF,      "nabs_v2df",	CONST,	vsx_nabsv2df2)
 
-/* Altivec NEG functions.  */
-BU_ALTIVEC_A (NEG_V2DI,      "neg_v2di",	CONST,	negv2di2)
-BU_ALTIVEC_A (NEG_V4SI,      "neg_v4si",	CONST,	negv4si2)
-BU_ALTIVEC_A (NEG_V8HI,      "neg_v8hi",	CONST,	negv8hi2)
-BU_ALTIVEC_A (NEG_V16QI,     "neg_v16qi",	CONST,	negv16qi2)
-BU_ALTIVEC_A (NEG_V4SF,      "neg_v4sf",	CONST,	negv4sf2)
-BU_ALTIVEC_A (NEG_V2DF,      "neg_v2df",	CONST,	negv2df2)
-
 /* 1 argument Altivec builtin functions.  */
 BU_ALTIVEC_1 (VEXPTEFP,	      "vexptefp",	FP,	altivec_vexptefp)
 BU_ALTIVEC_1 (VLOGEFP,	      "vlogefp",	FP,	altivec_vlogefp)
@@ -1469,7 +1461,6 @@ BU_ALTIVEC_OVERLOAD_1 (FLOOR,	   "floor")
 BU_ALTIVEC_OVERLOAD_1 (LOGE,	   "loge")
 BU_ALTIVEC_OVERLOAD_1 (MTVSCR,	   "mtvscr")
 BU_ALTIVEC_OVERLOAD_1 (NEARBYINT,  "nearbyint")
-BU_ALTIVEC_OVERLOAD_1 (NEG,	   "neg")
 BU_ALTIVEC_OVERLOAD_1 (RE,	   "re")
 BU_ALTIVEC_OVERLOAD_1 (RINT,       "rint")
 BU_ALTIVEC_OVERLOAD_1 (ROUND,	   "round")
@@ -1913,6 +1904,15 @@ BU_P8V_VSX_1 (REVB_V16QI,     "revb_v16qi",	CONST,	revb_v16qi)
 BU_P8V_VSX_1 (REVB_V2DF,      "revb_v2df",	CONST,	revb_v2df)
 BU_P8V_VSX_1 (REVB_V4SF,      "revb_v4sf",	CONST,	revb_v4sf)
 
+/* Power 8 Altivec NEG functions.  */
+BU_P8V_AV_1 (NEG_V2DI,      "neg_v2di",	CONST,	negv2di2)
+BU_P8V_AV_1 (NEG_V4SI,      "neg_v4si",	CONST,	negv4si2)
+BU_P8V_AV_1 (NEG_V8HI,      "neg_v8hi",	CONST,	negv8hi2)
+BU_P8V_AV_1 (NEG_V16QI,     "neg_v16qi",	CONST,	negv16qi2)
+BU_P8V_AV_1 (NEG_V4SF,      "neg_v4sf",	CONST,	negv4sf2)
+BU_P8V_AV_1 (NEG_V2DF,      "neg_v2df",	CONST,	negv2df2)
+
+
 /* 2 argument VSX instructions added in ISA 2.07.  */
 BU_P8V_VSX_2 (FLOAT2_V2DF,        "float2_v2df",	CONST,  float2_v2df)
 BU_P8V_VSX_2 (FLOAT2_V2DI,        "float2_v2di",	CONST,  float2_v2di)
@@ -2033,6 +2033,7 @@ BU_P8V_OVERLOAD_1 (VPOPCNTUW,	"vpopcntuw")
 BU_P8V_OVERLOAD_1 (VPOPCNTUD,	"vpopcntud")
 BU_P8V_OVERLOAD_1 (VGBBD,	"vgbbd")
 BU_P8V_OVERLOAD_1 (REVB,	"revb")
+BU_P8V_OVERLOAD_1 (NEG, 	"neg")
 
 /* ISA 2.07 vector overloaded 2 argument functions.  */
 BU_P8V_OVERLOAD_2 (EQV,		"eqv")
