@@ -6442,13 +6442,9 @@ get_base_constructor (tree base, poly_int64_pod *bit_offset,
 
   if (TREE_CODE (base) == MEM_REF)
     {
-      if (!integer_zerop (TREE_OPERAND (base, 1)))
-	{
-	  if (!tree_fits_shwi_p (TREE_OPERAND (base, 1)))
-	    return NULL_TREE;
-	  *bit_offset += (mem_ref_offset (base).force_shwi ()
-			  * BITS_PER_UNIT);
-	}
+      poly_offset_int boff = *bit_offset + mem_ref_offset (base) * BITS_PER_UNIT;
+      if (!boff.to_shwi (bit_offset))
+	return NULL_TREE;
 
       if (valueize
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
