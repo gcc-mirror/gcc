@@ -1,3 +1,10 @@
+2018-02-19  Martin Liska  <mliska@suse.cz>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/82491
+	* gimple-fold.c (get_base_constructor): Make earlier bail out
+	to prevent ubsan.
+
 2018-02-19  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Change NEG macro expansions from
