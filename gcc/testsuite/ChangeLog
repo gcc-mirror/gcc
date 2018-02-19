@@ -1,3 +1,8 @@
+2017-02-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr70023.c (dg-do): Compile only for target int128.
+	(dg-options): Use -mavx instead of -w.
+
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84444
