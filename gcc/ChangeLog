@@ -1,3 +1,11 @@
+2018-02-19  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Change NEG macro expansions from
+	BU_ALTIVEC_A to BU_P8V_AV_1 and BU_ALTIVEC_OVERLOAD_1 to
+	BU_P8V_OVERLOAD_1.
+	* config/rs6000/rs6000-c.c: Change ALTIVEC_BUILTIN_VEC_NEG to
+	P8V_BUILTIN_VEC_NEG.
+
 2018-02-19  Sebastian Perta  <sebastian.perta@renesas.com>
 
 	* config/rl78/rl78.md (movdf): New define expand.
