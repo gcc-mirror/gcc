@@ -1162,14 +1162,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 
   gcc_assert (curr->op == EXEC_TRANSFER);
 
-  /* FIXME: Workaround for PR 80945 - array slices with deferred character
-     lenghts do not work.  Remove this section when the PR is fixed.  */
   e = curr->expr1;
-  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
-      && e->ts.deferred)
-    return false;
-  /* End of section to be removed.  */
-
   ref = e->ref;
   if (!ref || ref->type != REF_ARRAY || ref->u.ar.codimen != 0 || ref->next)
     return false;
