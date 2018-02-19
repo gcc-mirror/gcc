@@ -1879,6 +1879,9 @@ $(ext_headers): ; @:
 $(experimental_headers): ; @:
 $(experimental_bits_headers): ; @:
 
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81797
+@INCLUDE_DIR_NOTPARALLEL_TRUE@.NOTPARALLEL:
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
