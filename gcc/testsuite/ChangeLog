@@ -1,3 +1,8 @@
+2018-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/79064
+	* g++.dg/template/overload15.C (f): Use 0u - 1ll instead of 0u - 1l.
+
 2018-02-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/35339
