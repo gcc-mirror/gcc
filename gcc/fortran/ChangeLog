@@ -1,3 +1,9 @@
+2018-02-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/35339
+	* frontend-passes.c (traverse_io_block): Remove workaround for
+	PR 80945.
+
 2018-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* gfortran.texi: Document additional src/dst_type.  Fix some typos.
