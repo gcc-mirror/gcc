@@ -1,4 +1,9 @@
 2018-02-19  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82183
+	* passes.def: Put pass_sancov_O0 before pass_lower_switch with -O0.
+
+2018-02-19  Martin Liska  <mliska@suse.cz>
 	    Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/82491
