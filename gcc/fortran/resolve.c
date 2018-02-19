@@ -8635,30 +8635,26 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   if (sym->ts.type == BT_CHARACTER && !sym->attr.select_type_temporary)
     {
       if (!sym->ts.u.cl)
-	{
-	  if (target->expr_type != EXPR_CONSTANT
-	      && !target->ts.u.cl->length)
-	    {
-	      sym->ts.u.cl = gfc_get_charlen();
-	      sym->ts.deferred = 1;
+	sym->ts.u.cl = target->ts.u.cl;
 
-	      /* This is reset in trans-stmt.c after the assignment
-		 of the target expression to the associate name.  */
-	      sym->attr.allocatable = 1;
-	    }
-	  else
-	    sym->ts.u.cl = target->ts.u.cl;
+      if (!sym->ts.u.cl->length
+	  && !sym->ts.deferred
+	  && target->expr_type == EXPR_CONSTANT)
+	{
+	  sym->ts.u.cl->length =
+		gfc_get_int_expr (gfc_charlen_int_kind, NULL,
+				  target->value.character.length);
 	}
-
-      if (!sym->ts.u.cl->length && !sym->ts.deferred)
+      else if ((!sym->ts.u.cl->length
+		|| sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+		&& target->expr_type != EXPR_VARIABLE)
 	{
-	  if (target->expr_type == EXPR_CONSTANT)
-	    sym->ts.u.cl->length =
-	      gfc_get_int_expr (gfc_charlen_int_kind, NULL,
-				target->value.character.length);
-	  else
-	    gfc_error ("Not Implemented: Associate target with type character"
-		       " and non-constant length at %L", &target->where);
+	  sym->ts.u.cl = gfc_get_charlen();
+	  sym->ts.deferred = 1;
+
+	  /* This is reset in trans-stmt.c after the assignment
+	     of the target expression to the associate name.  */
+	  sym->attr.allocatable = 1;
 	}
     }
 
