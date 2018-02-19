@@ -1,5 +1,5 @@
-/* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O -fno-sched-critical-path-heuristic -fschedule-insns -m8bit-idiv -w" } */
+/* { dg-do compile { target int128 } } */
+/* { dg-options "-O -fno-sched-critical-path-heuristic -fschedule-insns -mavx -m8bit-idiv" } */
 
 typedef int v8si __attribute__ ((vector_size (32)));
 typedef __int128 i128;
