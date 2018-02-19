@@ -1,3 +1,8 @@
+2018-02-19  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
 2018-02-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81797
