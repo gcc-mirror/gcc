@@ -1,5 +1,9 @@
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84444
+	* builtins.c (builtin_mathfn_code): Don't check if CALL_EXPR_FN (t)
+	is ADDR_EXPR.
+
 	PR tree-optimization/84452
 	* tree-vect-patterns.c (vect_recog_pow_pattern): Don't call
 	expand_simd_clones if targetm.simd_clone.compute_vecsize_and_simdlen
