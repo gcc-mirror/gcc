@@ -1,3 +1,15 @@
+2018-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add type parameters to the caf_*_by_ref prototypes.
+	* caf/single.c (get_for_ref): Simplifications and now respecting
+	the type argument.
+	(_gfortran_caf_get_by_ref): Added source type handing to get_for_ref().
+	(send_by_ref): Simplifications and respecting the dst_type now.
+	(_gfortran_caf_send_by_ref): Added destination type hand over to
+	send_by_ref().
+	(_gfortran_caf_sendget_by_ref): Added general support and fixed stack
+	corruption.  The function is now really usable.
+
 2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148
