@@ -2467,7 +2467,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_VAR_LOCATION:
-	case NOTE_INSN_CALL_ARG_LOCATION:
 	  if (!DECL_IGNORED_P (current_function_decl))
 	    {
 	      debug_hooks->var_location (insn);
@@ -4846,15 +4845,21 @@ rest_of_clean_state (void)
       SET_NEXT_INSN (insn) = NULL;
       SET_PREV_INSN (insn) = NULL;
 
+      if (CALL_P (insn))
+	{
+	  rtx note = find_reg_note (insn, REG_CALL_ARG_LOCATION, NULL_RTX);
+	  if (note)
+	    remove_note (insn, note);
+	}
+
       if (final_output
-	  && (!NOTE_P (insn) ||
-	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
-	       && NOTE_KIND (insn) != NOTE_INSN_BEGIN_STMT
-	       && NOTE_KIND (insn) != NOTE_INSN_INLINE_ENTRY
-	       && NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION
-	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
-	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
-	       && NOTE_KIND (insn) != NOTE_INSN_DELETED_DEBUG_LABEL)))
+	  && (!NOTE_P (insn)
+	      || (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
+		  && NOTE_KIND (insn) != NOTE_INSN_BEGIN_STMT
+		  && NOTE_KIND (insn) != NOTE_INSN_INLINE_ENTRY
+		  && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
+		  && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
+		  && NOTE_KIND (insn) != NOTE_INSN_DELETED_DEBUG_LABEL)))
 	print_rtl_single (final_output, insn);
     }
 

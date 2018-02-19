@@ -1,5 +1,45 @@
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84146
+	* reg-notes.def (REG_CALL_ARG_LOCATION): New reg note.
+	* insn-notes.def (NOTE_INSN_CALL_ARG_LOCATION): Remove.
+	* var-tracking.c (emit_note_insn_var_location): Remove all references
+	to NOTE_INSN_CALL_ARG_LOCATION.
+	(emit_notes_in_bb): Emit arguments as REG_CALL_ARG_LOCATION note on
+	the CALL_INSN rather than separate NOTE_INSN_CALL_ARG_LOCATION note.
+	Use copy_rtx_if_shared.
+	* dwarf2out.c (gen_subprogram_die): Use XEXP with 0 instead of
+	NOTE_VAR_LOCATION on ca_loc->call_arg_loc_note.
+	(dwarf2out_var_location): Remove handling of
+	NOTE_INSN_CALL_ARG_LOCATION, instead handle REG_CALL_ARG_LOCATION note
+	on call_insn.
+	* final.c (final_scan_insn): Remove all references to
+	NOTE_INSN_CALL_ARG_LOCATION.
+	(rest_of_clean_state): Likewise.  Remove REG_CALL_ARG_LOCATION notes
+	before dumping final insns.
+	* except.c (emit_note_eh_region_end): Remove all references to
+	NOTE_INSN_CALL_ARG_LOCATION.
+	* config/alpha/alpha.c (alpha_pad_function_end): Likewise.
+	* config/c6x/c6x.c (c6x_gen_bundles): Likewise.
+	* config/arc/arc.c (hwloop_optimize): Likewise.
+	* config/arm/arm.c (create_fix_barrier): Likewise.
+	* config/s390/s390.c (s390_chunkify_start): Likewise.
+	* config/sh/sh.c (find_barrier): Likewise.
+	* config/i386/i386.c (rest_of_insert_endbranch,
+	ix86_seh_fixup_eh_fallthru): Likewise.
+	* config/xtensa/xtensa.c (hwloop_optimize): Likewise.
+	* config/iq2000/iq2000.c (final_prescan_insn): Likewise.
+	* config/frv/frv.c (frv_function_prologue): Likewise.
+	* emit-rtl.c (try_split): Likewise.  Copy over REG_CALL_ARG_LOCATION
+	reg note.
+	(note_outside_basic_block_p): Remove all references to
+	NOTE_INSN_CALL_ARG_LOCATION.
+	* gengtype.c (adjust_field_rtx_def): Likewise.
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_0, print_insn):
+	Likewise.
+	* jump.c (cleanup_barriers, delete_related_insns): Likewise.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+
 	PR c++/84444
 	* builtins.c (builtin_mathfn_code): Don't check if CALL_EXPR_FN (t)
 	is ADDR_EXPR.

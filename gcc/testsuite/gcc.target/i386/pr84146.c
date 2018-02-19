@@ -1,6 +1,6 @@
 /* PR target/84146 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -g -mcet -fcf-protection=full" } */
+/* { dg-options "-O2 -g -mcet -fcf-protection=full -fcompare-debug" } */
 
 int __setjmp (void **);
 void *buf[64];

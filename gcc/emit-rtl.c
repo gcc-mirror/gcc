@@ -3866,15 +3866,12 @@ try_split (rtx pat, rtx_insn *trial, int last)
       for (insn = insn_last; insn ; insn = PREV_INSN (insn))
 	if (CALL_P (insn))
 	  {
-	    rtx_insn *next;
-	    rtx *p;
-
 	    gcc_assert (call_insn == NULL_RTX);
 	    call_insn = insn;
 
 	    /* Add the old CALL_INSN_FUNCTION_USAGE to whatever the
 	       target may have explicitly specified.  */
-	    p = &CALL_INSN_FUNCTION_USAGE (insn);
+	    rtx *p = &CALL_INSN_FUNCTION_USAGE (insn);
 	    while (*p)
 	      p = &XEXP (*p, 1);
 	    *p = CALL_INSN_FUNCTION_USAGE (trial);
@@ -3882,21 +3879,6 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	    /* If the old call was a sibling call, the new one must
 	       be too.  */
 	    SIBLING_CALL_P (insn) = SIBLING_CALL_P (trial);
-
-	    /* If the new call is the last instruction in the sequence,
-	       it will effectively replace the old call in-situ.  Otherwise
-	       we must move any following NOTE_INSN_CALL_ARG_LOCATION note
-	       so that it comes immediately after the new call.  */
-	    if (NEXT_INSN (insn))
-	      for (next = NEXT_INSN (trial);
-		   next && NOTE_P (next);
-		   next = NEXT_INSN (next))
-		if (NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-		  {
-		    remove_insn (next);
-		    add_insn_after (next, insn, NULL);
-		    break;
-		  }
 	  }
     }
 
@@ -3913,6 +3895,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	case REG_SETJMP:
 	case REG_TM:
 	case REG_CALL_NOCF_CHECK:
+	case REG_CALL_ARG_LOCATION:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (CALL_P (insn))
@@ -4777,7 +4760,6 @@ note_outside_basic_block_p (enum insn_note subtype, bool on_bb_boundary_p)
 	 inside basic blocks.  If the caller is emitting on the basic block
 	 boundary, do not set BLOCK_FOR_INSN on the new note.  */
       case NOTE_INSN_VAR_LOCATION:
-      case NOTE_INSN_CALL_ARG_LOCATION:
       case NOTE_INSN_EH_REGION_BEG:
       case NOTE_INSN_EH_REGION_END:
 	return on_bb_boundary_p;

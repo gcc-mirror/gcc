@@ -8860,14 +8860,12 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
       /* Make sure that the call related notes come first.  */
       while (NEXT_INSN (insn)
 	     && NOTE_P (insn)
-	     && ((NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
-		  && NOTE_DURING_CALL_P (insn))
-		 || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
+	     && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
+	     && NOTE_DURING_CALL_P (insn))
 	insn = NEXT_INSN (insn);
       if (NOTE_P (insn)
-	  && ((NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
-	       && NOTE_DURING_CALL_P (insn))
-	      || NOTE_KIND (insn) == NOTE_INSN_CALL_ARG_LOCATION))
+	  && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION
+	  && NOTE_DURING_CALL_P (insn))
 	note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
       else
 	note = emit_note_before (NOTE_INSN_VAR_LOCATION, insn);
@@ -9210,7 +9208,6 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	    emit_notes_for_changes (insn, EMIT_NOTE_AFTER_CALL_INSN, set->vars);
 	    {
 	      rtx arguments = mo->u.loc, *p = &arguments;
-	      rtx_note *note;
 	      while (*p)
 		{
 		  XEXP (XEXP (*p, 0), 1)
@@ -9218,7 +9215,11 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 				     shared_hash_htab (set->vars));
 		  /* If expansion is successful, keep it in the list.  */
 		  if (XEXP (XEXP (*p, 0), 1))
-		    p = &XEXP (*p, 1);
+		    {
+		      XEXP (XEXP (*p, 0), 1)
+			= copy_rtx_if_shared (XEXP (XEXP (*p, 0), 1));
+		      p = &XEXP (*p, 1);
+		    }
 		  /* Otherwise, if the following item is data_value for it,
 		     drop it too too.  */
 		  else if (XEXP (*p, 1)
@@ -9234,8 +9235,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 		  else
 		    *p = XEXP (*p, 1);
 		}
-	      note = emit_note_after (NOTE_INSN_CALL_ARG_LOCATION, insn);
-	      NOTE_VAR_LOCATION (note) = arguments;
+	      add_reg_note (insn, REG_CALL_ARG_LOCATION, arguments);
 	    }
 	    break;
 
