@@ -9331,12 +9331,18 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  && lookahead_prec <= current.prec
 	  && sp == stack)
 	{
-	  current.lhs
-	    = build_min (current.tree_type,
-			 TREE_CODE_CLASS (current.tree_type) == tcc_comparison
-			 ? boolean_type_node : TREE_TYPE (current.lhs),
-			 current.lhs.get_value (), rhs.get_value ());
-	  SET_EXPR_LOCATION (current.lhs, combined_loc);
+	  if (current.lhs == error_mark_node || rhs == error_mark_node)
+	    current.lhs = error_mark_node;
+	  else
+	    {
+	      current.lhs
+		= build_min (current.tree_type,
+			     TREE_CODE_CLASS (current.tree_type)
+			     == tcc_comparison
+			     ? boolean_type_node : TREE_TYPE (current.lhs),
+			     current.lhs.get_value (), rhs.get_value ());
+	      SET_EXPR_LOCATION (current.lhs, combined_loc);
+	    }
 	}
       else
         {

@@ -1,5 +1,10 @@
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84448
+	* parser.c (cp_parser_binary_expression): For no_toplevel_fold_p, if
+	either operand is error_mark_node, set current.lhs to that instead of
+	creating a binary op with error_mark_node operands.
+
 	PR c++/84430
 	* constexpr.c (potential_constant_expression_1): Handle OMP_SIMD.
 
