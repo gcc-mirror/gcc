@@ -1,3 +1,17 @@
+2018-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83344
+	PR fortran/83975
+	* resolve.c (resolve_assoc_var): Rearrange the logic for the
+	determination of the character length of associate names. If
+	the associate name is missing a length expression or the length
+	expression is not a constant and the target is not a variable,
+	make the associate name allocatable and deferred length.
+	* trans-decl.c (gfc_get_symbol_decl): Null the character length
+	backend_decl for deferred length associate names that are not
+	variables. Set 'length' to gfc_index_zero_node for character
+	associate names, whose character length is a PARM_DECL.
+
 2018-02-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/35339

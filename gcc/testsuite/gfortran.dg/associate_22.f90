@@ -24,11 +24,10 @@ program foo
    end associate
 
    ! This failed.
-   ! This still doesn't work correctly, see PR 83344
-!   a = trim(s) // 'abc'
-!   associate(w => trim(s) // 'abc')
-!      if (trim(w) /= trim(a)) STOP 4
-!   end associate
+   a = trim(s) // 'abc'
+   associate(w => trim(s) // 'abc')
+      if (trim(w) /= trim(a)) STOP 4
+   end associate
 
    ! This failed.
    associate(x => trim('abc'))

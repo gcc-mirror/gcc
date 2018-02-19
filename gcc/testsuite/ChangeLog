@@ -1,3 +1,10 @@
+2018-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83344
+	PR fortran/83975
+	* gfortran.dg/associate_22.f90: Enable commented out test.
+	* gfortran.dg/associate_36.f90: New test.
+
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84146
