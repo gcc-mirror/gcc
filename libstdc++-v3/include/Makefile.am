@@ -1474,3 +1474,8 @@ $(decimal_headers): ; @:
 $(ext_headers): ; @:
 $(experimental_headers): ; @:
 $(experimental_bits_headers): ; @:
+
+if INCLUDE_DIR_NOTPARALLEL
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81797
+.NOTPARALLEL:
+endif
