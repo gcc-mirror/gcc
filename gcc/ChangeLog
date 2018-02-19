@@ -1,3 +1,7 @@
+2018-02-19  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78.md (movdf): New define expand.
+
 2018-02-19  Martin Liska  <mliska@suse.cz>
 
 	PR other/80589
