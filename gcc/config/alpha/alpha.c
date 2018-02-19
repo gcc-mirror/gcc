@@ -9406,14 +9406,6 @@ alpha_pad_function_end (void)
 	       || find_reg_note (insn, REG_NORETURN, NULL_RTX)))
         continue;
 
-      /* Make sure we do not split a call and its corresponding
-	 CALL_ARG_LOCATION note.  */
-      next = NEXT_INSN (insn);
-      if (next == NULL)
-	continue;
-      if (NOTE_P (next) && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-	insn = next;
-
       next = next_active_insn (insn);
       if (next)
 	{

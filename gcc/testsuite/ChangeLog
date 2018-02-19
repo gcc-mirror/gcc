@@ -1,3 +1,8 @@
+2018-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84146
+	* gcc.target/i386/pr84146.c: Add -fcompare-debug to dg-options.
+
 2017-02-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr70023.c (dg-do): Compile only for target int128.

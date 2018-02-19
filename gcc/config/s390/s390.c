@@ -9259,7 +9259,6 @@ s390_chunkify_start (void)
 	    section_switch_p = true;
 	    break;
 	  case NOTE_INSN_VAR_LOCATION:
-	  case NOTE_INSN_CALL_ARG_LOCATION:
 	    continue;
 	  default:
 	    break;
@@ -9330,8 +9329,7 @@ s390_chunkify_start (void)
 		    }
 		  while (next
 			 && NOTE_P (next)
-			 && (NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION
-			     || NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION));
+			 && NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION);
 		}
 	      else
 		{

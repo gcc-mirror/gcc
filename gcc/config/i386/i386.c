@@ -2619,16 +2619,8 @@ rest_of_insert_endbranch (void)
 	      /* Generate ENDBRANCH after CALL, which can return more than
 		 twice, setjmp-like functions.  */
 
-	      /* Skip notes that must immediately follow the call insn.  */
-	      rtx_insn *next_insn = insn;
-	      if (NEXT_INSN (insn)
-		  && NOTE_P (NEXT_INSN (insn))
-		  && (NOTE_KIND (NEXT_INSN (insn))
-		      == NOTE_INSN_CALL_ARG_LOCATION))
-		next_insn = NEXT_INSN (insn);
-
 	      cet_eb = gen_nop_endbr ();
-	      emit_insn_after_setloc (cet_eb, next_insn, INSN_LOCATION (insn));
+	      emit_insn_after_setloc (cet_eb, insn, INSN_LOCATION (insn));
 	      continue;
 	    }
 
@@ -42128,9 +42120,7 @@ ix86_seh_fixup_eh_fallthru (void)
 
       /* Do not separate calls from their debug information.  */
       for (next = NEXT_INSN (insn); next != NULL; next = NEXT_INSN (next))
-	if (NOTE_P (next)
-            && (NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION
-                || NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION))
+	if (NOTE_P (next) && NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION)
 	  insn = next;
 	else
 	  break;

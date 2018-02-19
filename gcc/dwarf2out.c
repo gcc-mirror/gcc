@@ -23110,7 +23110,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      rtx arg, next_arg;
 
 	      for (arg = (ca_loc->call_arg_loc_note != NULL_RTX
-			  ? NOTE_VAR_LOCATION (ca_loc->call_arg_loc_note)
+			  ? XEXP (ca_loc->call_arg_loc_note, 0)
 			  : NULL_RTX);
 		   arg; arg = next_arg)
 		{
@@ -26975,6 +26975,17 @@ dwarf2out_var_location (rtx_insn *loc_note)
 	  call_site_count++;
 	  if (SIBLING_CALL_P (loc_note))
 	    tail_call_site_count++;
+	  if (find_reg_note (loc_note, REG_CALL_ARG_LOCATION, NULL_RTX))
+	    {
+	      call_insn = loc_note;
+	      loc_note = NULL;
+	      var_loc_p = false;
+
+	      next_real = dwarf2out_next_real_insn (call_insn);
+	      next_note = NULL;
+	      cached_next_real_insn = NULL;
+	      goto create_label;
+	    }
 	  if (optimize == 0 && !flag_var_tracking)
 	    {
 	      /* When the var-tracking pass is not running, there is no note
@@ -27034,8 +27045,7 @@ dwarf2out_var_location (rtx_insn *loc_note)
       || ! NOTE_P (next_note)
       || (NOTE_KIND (next_note) != NOTE_INSN_VAR_LOCATION
 	  && NOTE_KIND (next_note) != NOTE_INSN_BEGIN_STMT
-	  && NOTE_KIND (next_note) != NOTE_INSN_INLINE_ENTRY
-	  && NOTE_KIND (next_note) != NOTE_INSN_CALL_ARG_LOCATION))
+	  && NOTE_KIND (next_note) != NOTE_INSN_INLINE_ENTRY))
     next_note = NULL;
 
   if (! next_real)
@@ -27145,10 +27155,10 @@ create_label:
     {
       struct call_arg_loc_node *ca_loc
 	= ggc_cleared_alloc<call_arg_loc_node> ();
-      rtx_insn *prev
-        = loc_note != NULL_RTX ? prev_real_insn (loc_note) : call_insn;
+      rtx_insn *prev = call_insn;
 
-      ca_loc->call_arg_loc_note = loc_note;
+      ca_loc->call_arg_loc_note
+	= find_reg_note (call_insn, REG_CALL_ARG_LOCATION, NULL_RTX);
       ca_loc->next = NULL;
       ca_loc->label = last_label;
       gcc_assert (prev

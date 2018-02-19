@@ -4637,7 +4637,6 @@ static void
 c6x_gen_bundles (void)
 {
   basic_block bb;
-  rtx_insn *insn, *next, *last_call;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -4703,29 +4702,6 @@ c6x_gen_bundles (void)
 	  if (at_end)
 	    break;
 	}
-    }
-  /* Bundling, and emitting nops, can separate
-     NOTE_INSN_CALL_ARG_LOCATION from the corresponding calls.  Fix
-     that up here.  */
-  last_call = NULL;
-  for (insn = get_insns (); insn; insn = next)
-    {
-      next = NEXT_INSN (insn);
-      if (CALL_P (insn)
-	  || (INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE
-	      && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
-	last_call = insn;
-      if (!NOTE_P (insn) || NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION)
-	continue;
-      if (NEXT_INSN (last_call) == insn)
-	continue;
-      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
-      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
-      SET_PREV_INSN (insn) = last_call;
-      SET_NEXT_INSN (insn) = NEXT_INSN (last_call);
-      SET_PREV_INSN (NEXT_INSN (insn)) = insn;
-      SET_NEXT_INSN (PREV_INSN (insn)) = insn;
-      last_call = insn;
     }
 }
 
