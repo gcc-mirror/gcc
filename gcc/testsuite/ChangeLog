@@ -1,3 +1,8 @@
+2018-01-16  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	PR target/84460
+	* gcc.target/i386/pr57193.c: Add -mtune=generic.
+
 2018-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84348
