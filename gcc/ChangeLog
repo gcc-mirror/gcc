@@ -1,3 +1,10 @@
+2018-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84452
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Don't call
+	expand_simd_clones if targetm.simd_clone.compute_vecsize_and_simdlen
+	is NULL.
+
 2018-02-19  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82183

@@ -1,5 +1,8 @@
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84452
+	* gcc.dg/pr84452.c: New test.
+
 	PR c++/79064
 	* g++.dg/template/overload15.C (f): Use 0u - 1ll instead of 0u - 1l.
 
