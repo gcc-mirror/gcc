@@ -1,3 +1,11 @@
+2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR middle-end/84406
+	* optabs-query.c (find_widening_optab_handler_and_mode): If from_mode
+	is a scalar_int_mode, assert that to_mode is a scalar_int_mode with
+	greater precision.  If to_mode is a MODE_PARTIAL_INT, stop the
+	search at the associated MODE_INT.
+
 2018-02-20  Jeff Law  <law@redhat.com>
 
 	PR middle-end/82123
