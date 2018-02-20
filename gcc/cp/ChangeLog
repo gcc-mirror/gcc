@@ -1,3 +1,9 @@
+2018-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84455
+	* pt.c (tsubst_lambda_expr): If not nested, increment temporarily
+	function_depth to avoid GC during finish_lambda_function.
+
 2018-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84429 - ICE capturing VLA.
