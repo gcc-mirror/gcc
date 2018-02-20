@@ -3903,16 +3903,13 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	  /* Try to determine the range of values of the argument
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
-	  wide_int min, max;
-	  enum value_range_type range_type
-	    = get_range_info (size, &min, &max);
-	  if (range_type == VR_RANGE)
-	    {
-	      dstsize
-		= (warn_level < 2
-		   ? wi::fits_uhwi_p (max) ? max.to_uhwi () : max.to_shwi ()
-		   : wi::fits_uhwi_p (min) ? min.to_uhwi () : min.to_shwi ());
-	    }
+	  value_range *vr = evrp_range_analyzer.get_value_range (size);
+	  if (vr->type == VR_RANGE
+	      && TREE_CODE (vr->min) == INTEGER_CST
+	      && TREE_CODE (vr->max) == INTEGER_CST)
+	    dstsize = (warn_level < 2
+		       ? TREE_INT_CST_LOW (vr->max)
+		       : TREE_INT_CST_LOW (vr->min));
 
 	  /* The destination size is not constant.  If the function is
 	     bounded (e.g., snprintf) a lower bound of zero doesn't
