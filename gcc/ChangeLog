@@ -3,6 +3,13 @@
 	PR middle-end/82123
 	PR tree-optimization/81592
 	PR middle-end/79257
+	* gimple-ssa-sprintf.c: Include alloc-pool.h, vr-values.h and 
+	gimple-ssa-evrp-analyze.h
+	(class sprintf_dom_walker): Add after_dom_children member function.
+	Add evrp_range_analyzer member.
+	(sprintf_dom_walker::before_dom_children): Call into the EVRP
+	range analyzer as needed.
+	(sprintf_dom_walker::after_dom_children): New member function.
 	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::enter): Do nothing
 	if not optimizing.
 	(evrp_range_analyzer::record_ranges_from_stmt): Likewise.
