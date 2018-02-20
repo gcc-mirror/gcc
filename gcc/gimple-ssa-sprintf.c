@@ -1451,12 +1451,13 @@ format_integer (const directive &dir, tree arg, vr_values *vr_values)
     {
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
-      wide_int min, max;
-      enum value_range_type range_type = get_range_info (arg, &min, &max);
-      if (range_type == VR_RANGE)
+      value_range *vr = vr_values->get_value_range (arg);
+      if (vr->type == VR_RANGE
+	  && TREE_CODE (vr->min) == INTEGER_CST
+	  && TREE_CODE (vr->max) == INTEGER_CST)
 	{
-	  argmin = wide_int_to_tree (argtype, min);
-	  argmax = wide_int_to_tree (argtype, max);
+	  argmin = vr->min;
+	  argmax = vr->max;
 
 	  /* Set KNOWNRANGE if the argument is in a known subrange
 	     of the directive's type and neither width nor precision
@@ -1469,11 +1470,12 @@ format_integer (const directive &dir, tree arg, vr_values *vr_values)
 	  res.argmin = argmin;
 	  res.argmax = argmax;
 	}
-      else if (range_type == VR_ANTI_RANGE)
+      else if (vr->type == VR_ANTI_RANGE)
 	{
 	  /* Handle anti-ranges if/when bug 71690 is resolved.  */
 	}
-      else if (range_type == VR_VARYING)
+      else if (vr->type == VR_VARYING
+	       || vr->type == VR_UNDEFINED)
 	{
 	  /* The argument here may be the result of promoting the actual
 	     argument to int.  Try to determine the type of the actual
