@@ -1,3 +1,9 @@
+2018-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82004
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Delay all folding until
+	after vectorization.
+
 2018-02-20  Martin Liska  <mliska@suse.cz>
 
 	PR driver/83193

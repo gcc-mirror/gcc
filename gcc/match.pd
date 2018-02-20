@@ -4006,7 +4006,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (pows REAL_CST@0 @1)
    (if (real_compare (GT_EXPR, TREE_REAL_CST_PTR (@0), &dconst0)
-	&& real_isfinite (TREE_REAL_CST_PTR (@0)))
+	&& real_isfinite (TREE_REAL_CST_PTR (@0))
+	/* As libmvec doesn't have a vectorized exp2, defer optimizing
+	   the use_exp2 case until after vectorization.  It seems actually
+	   beneficial for all constants to postpone this until later,
+	   because exp(log(C)*x), while faster, will have worse precision
+	   and if x folds into a constant too, that is unnecessary
+	   pessimization.  */
+	&& canonicalize_math_after_vectorization_p ())
     (with {
        const REAL_VALUE_TYPE *const value = TREE_REAL_CST_PTR (@0);
        bool use_exp2 = false;
@@ -4021,10 +4028,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      }
      (if (!use_exp2)
       (exps (mult (logs @0) @1))
-      /* As libmvec doesn't have a vectorized exp2, defer optimizing
-	 this until after vectorization.  */
-      (if (canonicalize_math_after_vectorization_p ())
-	(exp2s (mult (log2s @0) @1))))))))
+      (exp2s (mult (log2s @0) @1)))))))
 
  (for sqrts (SQRT)
       cbrts (CBRT)
