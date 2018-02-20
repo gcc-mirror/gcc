@@ -1,3 +1,8 @@
+2018-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84488
+	* g++.dg/warn/Wunused-var-30.C: New test.
+
 2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84419
