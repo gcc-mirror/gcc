@@ -1,3 +1,10 @@
+2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84419
+	* internal-fn.c (expand_call_mem_ref): Create a TARGET_MEM_REF
+	with the required type if its current type is compatible but
+	different.
+
 2018-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82004
