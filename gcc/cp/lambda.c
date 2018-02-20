@@ -451,10 +451,11 @@ build_capture_proxy (tree member, tree init)
 	{
 	  if (PACK_EXPANSION_P (init))
 	    init = PACK_EXPANSION_PATTERN (init);
-	  if (INDIRECT_REF_P (init))
-	    init = TREE_OPERAND (init, 0);
-	  STRIP_NOPS (init);
 	}
+
+      if (INDIRECT_REF_P (init))
+	init = TREE_OPERAND (init, 0);
+      STRIP_NOPS (init);
 
       gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
       while (is_normal_capture_proxy (init))

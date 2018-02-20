@@ -1,3 +1,8 @@
+2018-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84429 - ICE capturing VLA.
+	* lambda.c (build_capture_proxy): Handle reference refs.
+
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84448
