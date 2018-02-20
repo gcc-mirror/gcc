@@ -3,6 +3,8 @@
 	PR middle-end/82123
 	PR tree-optimization/81592
 	PR middle-end/79257
+	* gimple-ssa-sprintf.c (get_int_range): Query EVRP range analyzer for
+	range data rather than using global data.
 	* gimple-ssa-sprintf.c (get_int_range): Accept vr_values parameter
 	pass it to children as needed.
 	(struct directive::fmtresult): Similarly.

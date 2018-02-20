@@ -1149,9 +1149,10 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	  && TYPE_PRECISION (argtype) <= TYPE_PRECISION (type))
 	{
 	  /* Try to determine the range of values of the integer argument.  */
-	  wide_int min, max;
-	  enum value_range_type range_type = get_range_info (arg, &min, &max);
-	  if (range_type == VR_RANGE)
+	  value_range *vr = vr_values->get_value_range (arg);
+	  if (vr->type == VR_RANGE
+	      && TREE_CODE (vr->min) == INTEGER_CST
+	      && TREE_CODE (vr->max) == INTEGER_CST)
 	    {
 	      HOST_WIDE_INT type_min
 		= (TYPE_UNSIGNED (argtype)
@@ -1160,8 +1161,8 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 
 	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (argtype));
 
-	      *pmin = min.to_shwi ();
-	      *pmax = max.to_shwi ();
+	      *pmin = TREE_INT_CST_LOW (vr->min);
+	      *pmax = TREE_INT_CST_LOW (vr->max);
 
 	      if (*pmin < *pmax)
 		{
