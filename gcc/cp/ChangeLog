@@ -1,3 +1,8 @@
+2018-02-20  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* cp-objcp-common.c (cxx_block_may_fallthru): Add case for
+	IF_STMT.
+
 2018-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84446
