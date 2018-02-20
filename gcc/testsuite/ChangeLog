@@ -1,3 +1,10 @@
+2018-02-20  Jeff Law  <law@redhat.com>
+
+        PR middle-end/82123
+        PR tree-optimization/81592
+        PR middle-end/79257
+	* gcc.dg/builtin-unreachable-6.c: Turn off VRP.
+
 2018-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84488
