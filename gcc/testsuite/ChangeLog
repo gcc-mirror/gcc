@@ -9,6 +9,8 @@
         PR middle-end/82123
         PR tree-optimization/81592
         PR middle-end/79257
+	* gcc.dg/pr81592.c: New test.
+	* gcc.dg/pr82123.c: New test.
 	* gcc.dg/builtin-unreachable-6.c: Turn off VRP.
 
 2018-02-20  Jakub Jelinek  <jakub@redhat.com>
