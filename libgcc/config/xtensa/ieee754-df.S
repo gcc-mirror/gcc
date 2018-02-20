@@ -55,6 +55,7 @@ __negdf2:
 
 #ifdef L_addsubdf3
 
+	.literal_position
 	/* Addition */
 __adddf3_aux:
 	
