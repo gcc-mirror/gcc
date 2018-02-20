@@ -158,6 +158,14 @@ struct builtin_memref
   builtin_memref (tree, tree);
 
   tree offset_out_of_bounds (int, offset_int[2]) const;
+
+private:
+
+  /* Ctor helper to set or extend OFFRANGE based on argument.  */
+  void extend_offset_range (tree);
+
+  /*  Ctor helper to determine BASE and OFFRANGE from argument.  */
+  void set_base_and_offset (tree);
 };
 
 /* Description of a memory access by a raw memory or string built-in
@@ -235,153 +243,9 @@ builtin_memref::builtin_memref (tree expr, tree size)
 
   const offset_int maxobjsize = tree_to_shwi (max_object_size ());
 
-  if (TREE_CODE (expr) == SSA_NAME)
-    {
-      /* Try to tease the offset out of the pointer.  */
-      gimple *stmt = SSA_NAME_DEF_STMT (expr);
-      if (gimple_assign_single_p (stmt)
-	  && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
-	expr = gimple_assign_rhs1 (stmt);
-      else if (is_gimple_assign (stmt))
-	{
-	  tree_code code = gimple_assign_rhs_code (stmt);
-	  if (code == NOP_EXPR)
-	    {
-	      tree rhs = gimple_assign_rhs1 (stmt);
-	      if (POINTER_TYPE_P (TREE_TYPE (rhs)))
-		expr = gimple_assign_rhs1 (stmt);
-	    }
-	  else if (code == POINTER_PLUS_EXPR)
-	    {
-	      expr = gimple_assign_rhs1 (stmt);
-
-	      tree offset = gimple_assign_rhs2 (stmt);
-	      if (TREE_CODE (offset) == INTEGER_CST)
-		{
-		  offset_int off = int_cst_value (offset);
-		  offrange[0] = off;
-		  offrange[1] = off;
-
-		  if (TREE_CODE (expr) == SSA_NAME)
-		    {
-		      gimple *stmt = SSA_NAME_DEF_STMT (expr);
-		      if (gimple_assign_single_p (stmt)
-			  && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
-			expr = gimple_assign_rhs1 (stmt);
-		    }
-		}
-	      else if (TREE_CODE (offset) == SSA_NAME)
-		{
-		  wide_int min, max;
-		  value_range_type rng = get_range_info (offset, &min, &max);
-		  if (rng == VR_RANGE)
-		    {
-		      offrange[0] = offset_int::from (min, SIGNED);
-		      offrange[1] = offset_int::from (max, SIGNED);
-		    }
-		  else if (rng == VR_ANTI_RANGE)
-		    {
-		      offrange[0] = offset_int::from (max + 1, SIGNED);
-		      offrange[1] = offset_int::from (min - 1, SIGNED);
-		    }
-		  else
-		    {
-		      gimple *stmt = SSA_NAME_DEF_STMT (offset);
-		      tree type;
-		      if (is_gimple_assign (stmt)
-			  && gimple_assign_rhs_code (stmt) == NOP_EXPR
-			  && (type = TREE_TYPE (gimple_assign_rhs1 (stmt)))
-			  && INTEGRAL_TYPE_P (type))
-			{
-			  /* Use the bounds of the type of the NOP_EXPR operand
-			     even if it's signed.  The result doesn't trigger
-			     warnings but makes their output more readable.  */
-			  offrange[0] = wi::to_offset (TYPE_MIN_VALUE (type));
-			  offrange[1] = wi::to_offset (TYPE_MAX_VALUE (type));
-			}
-		      else
-			offrange[1] = maxobjsize;
-		    }
-		}
-	      else
-		offrange[1] = maxobjsize;
-	    }
-	}
-    }
-
-  if (TREE_CODE (expr) == ADDR_EXPR)
-    {
-      poly_int64 off;
-      tree op = TREE_OPERAND (expr, 0);
-
-      /* Determine the base object or pointer of the reference
-	 and its constant offset from the beginning of the base.  */
-      base = get_addr_base_and_unit_offset (op, &off);
-
-      HOST_WIDE_INT const_off;
-      if (base && off.is_constant (&const_off))
-	{
-	  offrange[0] += const_off;
-	  offrange[1] += const_off;
-
-	  /* Stash the reference for offset validation.  */
-	  ref = op;
-
-	  /* Also stash the constant offset for offset validation.  */
-	  if (TREE_CODE (op) == COMPONENT_REF)
-	    refoff = const_off;
-	}
-      else
-	{
-	  size = NULL_TREE;
-	  base = get_base_address (TREE_OPERAND (expr, 0));
-	}
-    }
-
-  if (!base)
-    base = build2 (MEM_REF, char_type_node, expr, null_pointer_node);
-
-  if (TREE_CODE (base) == MEM_REF)
-    {
-      offset_int off;
-      if (mem_ref_offset (base).is_constant (&off))
-	{
-	  refoff += off;
-	  offrange[0] += off;
-	  offrange[1] += off;
-	}
-      else
-	size = NULL_TREE;
-      base = TREE_OPERAND (base, 0);
-    }
-
-  if (TREE_CODE (base) == SSA_NAME)
-    if (gimple *stmt = SSA_NAME_DEF_STMT (base))
-      {
-	enum gimple_code code = gimple_code (stmt);
-	if (code == GIMPLE_ASSIGN)
-	  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
-	    {
-	      base = gimple_assign_rhs1 (stmt);
-
-	      tree offset = gimple_assign_rhs2 (stmt);
-	      if (TREE_CODE (offset) == INTEGER_CST)
-		{
-		  offset_int off = int_cst_value (offset);
-		  refoff += off;
-		  offrange[0] += off;
-		  offrange[1] += off;
-		}
-	    }
-      }
-
-  if (DECL_P (base) && TREE_CODE (TREE_TYPE (base)) == ARRAY_TYPE)
-    {
-      /* For array objects, where a negative offset wouldn't make
-	 sense, use zero instead if the upper bound is positive.  */
-      if (offrange[0] < 0 && offrange[1] > 0)
-	offrange[0] = 0;
-    }
+  /* Find the BASE object or pointer referenced by EXPR and set
+     the offset range OFFRANGE in the process.  */
+  set_base_and_offset (expr);
 
   if (size)
     {
@@ -398,6 +262,193 @@ builtin_memref::builtin_memref (tree expr, tree size)
     }
   else
     sizrange[1] = maxobjsize;
+
+  tree basetype = TREE_TYPE (base);
+  if (DECL_P (base) && TREE_CODE (basetype) == ARRAY_TYPE)
+    {
+      /* If the offset could be in range of the referenced object
+	 constrain its bounds so neither exceeds those of the object.  */
+      if (offrange[0] < 0 && offrange[1] > 0)
+	offrange[0] = 0;
+
+      offset_int maxoff = maxobjsize;
+      if (ref && array_at_struct_end_p (ref))
+	;   /* Use the maximum possible offset for last member arrays.  */
+      else if (tree basesize = TYPE_SIZE_UNIT (basetype))
+	maxoff = wi::to_offset (basesize);
+
+      if (offrange[0] >= 0)
+	{
+	  if (offrange[1] < 0)
+	    offrange[1] = offrange[0] <= maxoff ? maxoff : maxobjsize;
+	  else if (offrange[0] <= maxoff && offrange[1] > maxoff)
+	    offrange[1] = maxoff;
+	}
+    }
+}
+
+/* Ctor helper to set or extend OFFRANGE based on the OFFSET argument.  */
+
+void
+builtin_memref::extend_offset_range (tree offset)
+{
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+
+  if (TREE_CODE (offset) == INTEGER_CST)
+    {
+      offset_int off = int_cst_value (offset);
+      if (off != 0)
+	{
+	  offrange[0] += off;
+	  offrange[1] += off;
+	}
+      return;
+    }
+
+  if (TREE_CODE (offset) == SSA_NAME)
+    {
+      wide_int min, max;
+      value_range_type rng = get_range_info (offset, &min, &max);
+      if (rng == VR_RANGE)
+	{
+	  offrange[0] += offset_int::from (min, SIGNED);
+	  offrange[1] += offset_int::from (max, SIGNED);
+	}
+      else if (rng == VR_ANTI_RANGE)
+	{
+	  offrange[0] += offset_int::from (max + 1, SIGNED);
+	  offrange[1] += offset_int::from (min - 1, SIGNED);
+	}
+      else
+	{
+	  gimple *stmt = SSA_NAME_DEF_STMT (offset);
+	  tree type;
+	  if (is_gimple_assign (stmt)
+	      && gimple_assign_rhs_code (stmt) == NOP_EXPR
+	      && (type = TREE_TYPE (gimple_assign_rhs1 (stmt)))
+	      && INTEGRAL_TYPE_P (type))
+	    {
+	      /* Use the bounds of the type of the NOP_EXPR operand
+		 even if it's signed.  The result doesn't trigger
+		 warnings but makes their output more readable.  */
+	      offrange[0] += wi::to_offset (TYPE_MIN_VALUE (type));
+	      offrange[1] += wi::to_offset (TYPE_MAX_VALUE (type));
+	    }
+	  else
+	    offrange[1] += maxobjsize;
+	}
+      return;
+    }
+
+  offrange[1] += maxobjsize;
+}
+
+/* Determines the base object or pointer of the reference EXPR
+   and the offset range from the beginning of the base.  */
+
+void
+builtin_memref::set_base_and_offset (tree expr)
+{
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+
+  if (TREE_CODE (expr) == SSA_NAME)
+    {
+      /* Try to tease the offset out of the pointer.  */
+      gimple *stmt = SSA_NAME_DEF_STMT (expr);
+      if (!base
+	  && gimple_assign_single_p (stmt)
+	  && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+	expr = gimple_assign_rhs1 (stmt);
+      else if (is_gimple_assign (stmt))
+	{
+	  tree_code code = gimple_assign_rhs_code (stmt);
+	  if (code == NOP_EXPR)
+	    {
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      if (POINTER_TYPE_P (TREE_TYPE (rhs)))
+		expr = gimple_assign_rhs1 (stmt);
+	      else
+		{
+		  base = expr;
+		  return;
+		}
+	    }
+	  else if (code == POINTER_PLUS_EXPR)
+	    {
+	      expr = gimple_assign_rhs1 (stmt);
+
+	      tree offset = gimple_assign_rhs2 (stmt);
+	      extend_offset_range (offset);
+	    }
+	  else
+	    {
+	      base = expr;
+	      return;
+	    }
+	}
+      else
+	{
+	  base = expr;
+	  return;
+	}
+    }
+
+  if (TREE_CODE (expr) == ADDR_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  poly_int64 bitsize, bitpos;
+  tree var_off;
+  machine_mode mode;
+  int sign, reverse, vol;
+
+  /* Determine the base object or pointer of the reference and
+     the constant bit offset from the beginning of the base.
+     If the offset has a non-constant component, it will be in
+     VAR_OFF.  MODE, SIGN, REVERSE, and VOL are write only and
+     unused here.  */
+  base = get_inner_reference (expr, &bitsize, &bitpos, &var_off,
+			      &mode, &sign, &reverse, &vol);
+
+  poly_int64 bytepos = exact_div (bitpos, BITS_PER_UNIT);
+
+  HOST_WIDE_INT const_off;
+  if (!base || !bytepos.is_constant (&const_off))
+    {
+      base = get_base_address (TREE_OPERAND (expr, 0));
+      return;
+    }
+
+  offrange[0] += const_off;
+  offrange[1] += const_off;
+
+  if (var_off)
+    {
+      if (TREE_CODE (var_off) == INTEGER_CST)
+	{
+	  offset_int cstoff = wi::to_offset (var_off);
+	  offrange[0] += cstoff;
+	  offrange[1] += cstoff;
+	}
+      else
+	offrange[1] += maxobjsize;
+    }
+
+  /* Stash the reference for offset validation.  */
+  ref = expr;
+
+  /* Also stash the constant offset for offset validation.  */
+  if (TREE_CODE (expr) == COMPONENT_REF)
+    refoff = const_off;
+
+  if (TREE_CODE (base) == MEM_REF)
+    {
+      tree memrefoff = TREE_OPERAND (base, 1);
+      extend_offset_range (memrefoff);
+      base = TREE_OPERAND (base, 0);
+    }
+
+  if (TREE_CODE (base) == SSA_NAME)
+    set_base_and_offset (base);
 }
 
 /* Return error_mark_node if the signed offset exceeds the bounds
@@ -864,10 +915,18 @@ builtin_access::generic_overlap ()
      the other.  */
   bool depends_p = detect_overlap != &builtin_access::generic_overlap;
 
-  if (!overlap_certain
-      && !dstref->strbounded_p
-      && !depends_p)
-    return false;
+  if (!overlap_certain)
+    {
+      if (!dstref->strbounded_p && !depends_p)
+	return false;
+
+      /* There's no way to distinguish an access to the same member
+	 of a structure from one to two distinct members of the same
+	 structure.  Give up to avoid excessive false positives.  */
+      tree basetype = TREE_TYPE (TREE_TYPE (dstref->base));
+      if (RECORD_OR_UNION_TYPE_P (basetype))
+	return false;
+    }
 
   /* True for stpcpy and strcpy.  */
   bool stxcpy_p = (!dstref->strbounded_p
