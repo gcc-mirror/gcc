@@ -3,6 +3,15 @@
 	PR middle-end/82123
 	PR tree-optimization/81592
 	PR middle-end/79257
+	* gimple-ssa-sprintf.c (get_int_range): Accept vr_values parameter
+	pass it to children as needed.
+	(struct directive::fmtresult): Similarly.
+	(struct directive::set_width): Similarly.
+	(struct directive::set_precision): Similarly.
+	(format_integer, format_directive, parse_directive): Similarly.
+	(format_none): Accept unnamed vr_values parameter.
+	(format_percent, format_floating, format_character): Similarly.
+	(format_string, format_plain): Similarly.
 	* gimple-ssa-sprintf.c (sprintf_dom_walker::handle_gimple_call): Query
 	the EVRP range analyzer for range data rather than using global data.
 	* gimple-ssa-sprintf.c: Include alloc-pool.h, vr-values.h and 
