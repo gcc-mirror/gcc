@@ -2794,6 +2794,13 @@ func exitsyscall(dummy int32) {
 		exitsyscallclear(_g_)
 		_g_.m.locks--
 		_g_.throwsplit = false
+
+		// Check preemption, since unlike gc we don't check on
+		// every call.
+		if getg().preempt {
+			checkPreempt()
+		}
+
 		return
 	}
 
