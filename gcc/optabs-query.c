@@ -473,9 +473,23 @@ find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
 				      machine_mode from_mode,
 				      machine_mode *found_mode)
 {
-  gcc_checking_assert (GET_MODE_CLASS (from_mode) == GET_MODE_CLASS (to_mode));
-  gcc_checking_assert (from_mode < to_mode);
-  FOR_EACH_MODE (from_mode, from_mode, to_mode)
+  machine_mode limit_mode = to_mode;
+  if (is_a <scalar_int_mode> (from_mode))
+    {
+      gcc_checking_assert (is_a <scalar_int_mode> (to_mode)
+			   && known_lt (GET_MODE_PRECISION (from_mode),
+					GET_MODE_PRECISION (to_mode)));
+      /* The modes after FROM_MODE are all MODE_INT, so the only
+	 MODE_PARTIAL_INT mode we consider is FROM_MODE itself.
+	 If LIMIT_MODE is MODE_PARTIAL_INT, stop at the containing
+	 MODE_INT.  */
+      if (GET_MODE_CLASS (limit_mode) == MODE_PARTIAL_INT)
+	limit_mode = GET_MODE_WIDER_MODE (limit_mode).require ();
+    }
+  else
+    gcc_checking_assert (GET_MODE_CLASS (from_mode) == GET_MODE_CLASS (to_mode)
+			 && from_mode < to_mode);
+  FOR_EACH_MODE (from_mode, from_mode, limit_mode)
     {
       enum insn_code handler = convert_optab_handler (op, to_mode, from_mode);
 
