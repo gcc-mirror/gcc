@@ -1,3 +1,12 @@
+2018-02-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline
+	2018-02-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__adddf3_aux): Add
+	.literal_position directive.
+	* config/xtensa/ieee754-sf.S (__addsf3_aux): Likewise.
+
 2018-01-25  Release Manager
 
 	* GCC 7.3.0 released.
