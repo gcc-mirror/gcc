@@ -1,3 +1,8 @@
+2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84419
+	* gcc.dg/vect/pr84419.c: New test.
+
 2018-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82004
