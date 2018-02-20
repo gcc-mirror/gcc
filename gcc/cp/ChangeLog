@@ -1,5 +1,11 @@
 2018-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84449
+	* tree.c (bot_manip): If build_cplus_new or break_out_target_exprs
+	returns error_mark_node, return it immediately.
+	(break_out_target_exprs): If cp_walk_tree with bot_manip returns
+	error_mark_node, return error_mark_node.
+
 	PR c++/84455
 	* pt.c (tsubst_lambda_expr): If not nested, increment temporarily
 	function_depth to avoid GC during finish_lambda_function.
