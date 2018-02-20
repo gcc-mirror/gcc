@@ -1,3 +1,13 @@
+2018-02-20  Jeff Law  <law@redhat.com>
+
+	PR middle-end/82123
+	PR tree-optimization/81592
+	PR middle-end/79257
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::enter): Do nothing
+	if not optimizing.
+	(evrp_range_analyzer::record_ranges_from_stmt): Likewise.
+	(evrp_range_analyzer::pop_to_marker): Likewise.
+
 2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84419

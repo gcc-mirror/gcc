@@ -69,6 +69,8 @@ evrp_range_analyzer::push_marker ()
 void
 evrp_range_analyzer::enter (basic_block bb)
 {
+  if (!optimize)
+    return;
   push_marker ();
   record_ranges_from_incoming_edge (bb);
   record_ranges_from_phis (bb);
@@ -279,6 +281,9 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 {
   tree output = NULL_TREE;
 
+  if (!optimize)
+    return;
+
   if (dyn_cast <gcond *> (stmt))
     ;
   else if (stmt_interesting_for_vrp (stmt))
@@ -390,6 +395,8 @@ evrp_range_analyzer::pop_to_marker (void)
 void
 evrp_range_analyzer::leave (basic_block bb ATTRIBUTE_UNUSED)
 {
+  if (!optimize)
+    return;
   pop_to_marker ();
 }
 
