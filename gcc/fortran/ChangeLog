@@ -1,3 +1,11 @@
+2018-02-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/48890
+	PR fortran/83823
+	* primary.c (gfc_convert_to_structure_constructor):
+	For a constant string constructor, make sure the length
+	is correct.
+
 2018-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83344
