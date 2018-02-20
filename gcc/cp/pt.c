@@ -17070,6 +17070,10 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       bool nested = cfun;
       if (nested)
 	push_function_context ();
+      else
+	/* Still increment function_depth so that we don't GC in the
+	   middle of an expression.  */
+	++function_depth;
 
       local_specialization_stack s (lss_copy);
 
@@ -17084,6 +17088,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       if (nested)
 	pop_function_context ();
+      else
+	--function_depth;
 
       /* The capture list was built up in reverse order; fix that now.  */
       LAMBDA_EXPR_CAPTURE_LIST (r)
