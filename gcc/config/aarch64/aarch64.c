@@ -10633,6 +10633,9 @@ aarch64_print_hint_for_core_or_arch (const char *str, bool arch)
   if (hint)
     inform (input_location, "valid arguments are: %s;"
 			     " did you mean %qs?", s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
   XDELETEVEC (s);
 }
 
