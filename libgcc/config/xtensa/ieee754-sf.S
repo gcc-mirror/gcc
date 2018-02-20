@@ -55,6 +55,7 @@ __negsf2:
 
 #ifdef L_addsubsf3
 
+	.literal_position
 	/* Addition */
 __addsf3_aux:
 
