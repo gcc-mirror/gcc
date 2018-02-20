@@ -20,5 +20,5 @@ program gfcbug145
   write(line,'(20(a8,:,"|"))') pack (obstyp% name, mask)
   if (line /= 'SYNOP   |DRIBU   |TEMP    |RADAR') STOP 1
   write (line,'("|",A,"|")') x
-  if (line /= "|asdf    |") STOP 1
+  if (line /= "|asdf    |") STOP 2
 end program gfcbug145

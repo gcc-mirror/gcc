@@ -1,5 +1,9 @@
 2018-02-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* gfortran.dg/structure_constructor_14.f90: Adjust STOP number.
+
+2018-02-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/48890
 	PR fortran/83823
 	* gfortran.dg/structure_constructor_14.f90: New test.
