@@ -9159,6 +9159,7 @@ Some assemblers only support this flag when @var{n} is a power of two;
 in that case, it is rounded up.
 
 If @var{n} is not specified or is zero, use a machine-dependent default.
+The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -9184,6 +9185,7 @@ are greater than this value, then their values are used instead.
 
 If @var{n} is not specified or is zero, use a machine-dependent default
 which is very likely to be @samp{1}, meaning no alignment.
+The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
@@ -9197,6 +9199,7 @@ operations.
 
 @option{-fno-align-loops} and @option{-falign-loops=1} are
 equivalent and mean that loops are not aligned.
+The maximum allowed @var{n} option value is 65536.
 
 If @var{n} is not specified or is zero, use a machine-dependent default.
 
@@ -9214,6 +9217,7 @@ need be executed.
 equivalent and mean that loops are not aligned.
 
 If @var{n} is not specified or is zero, use a machine-dependent default.
+The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 

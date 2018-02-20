@@ -1,3 +1,10 @@
+2018-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR c/84310
+	PR target/79747
+	* gcc.target/i386/pr84310.c: New test.
+	* gcc.target/i386/pr84310-2.c: Likewise.
+
 2018-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84446

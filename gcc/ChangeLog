@@ -1,3 +1,15 @@
+2018-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR c/84310
+	PR target/79747
+	* final.c (shorten_branches): Build align_tab array with one
+	more element.
+	* opts.c (finish_options): Add alignment option limit check.
+	(MAX_CODE_ALIGN): Likewise.
+	(MAX_CODE_ALIGN_VALUE): Likewise.
+	* doc/invoke.texi: Document maximum allowed option value for
+	all -falign-* options.
+
 2018-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84146
