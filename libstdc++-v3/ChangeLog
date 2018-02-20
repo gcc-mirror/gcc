@@ -1,3 +1,8 @@
+2018-02-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/ext/aligned_buffer.h [_GLIBCXX_INLINE_VERSION]
+	(template<> __aligned_buffer): Define as __aligned_membuf alias.
+
 2018-02-19  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148
