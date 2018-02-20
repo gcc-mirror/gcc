@@ -1,3 +1,11 @@
+2018-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/84095
+	* gimple-ssa-warn-restrict.c (builtin_memref::extend_offset_range): New.
+	(builtin_memref::set_base_and_offset): Same.  Handle inner references.
+	(builtin_memref::builtin_memref): Factor out parts into
+	set_base_and_offset and call it.
+
 2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR middle-end/84406

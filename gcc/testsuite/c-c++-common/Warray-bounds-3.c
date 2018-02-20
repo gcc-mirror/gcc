@@ -61,7 +61,7 @@ void test_memcpy_bounds (char *d, const char *s, size_t n)
      they appear as large positive in the source.  It would be nice
      if they retained their type but unfortunately that's not how
      it works so be prepared for both in case it even gets fixed.  */
-  T (char, 1, a + UR (3, SIZE_MAX - 1), s, n);   /* { dg-warning "offset \\\[3, -2] is out of the bounds \\\[0, 1] of object" "memcpy" } */
+  T (char, 1, a + UR (3, SIZE_MAX - 1), s, n);   /* { dg-warning "offset \\\[3, -?\[0-9\]+] is out of the bounds \\\[0, 1] of object" "memcpy" } */
 
   /* Verify that invalid offsets into an array of unknown size are
      detected.  */
@@ -226,7 +226,7 @@ T (char, 1, a + SR (-2, -1), s, n);     /* { dg-warning "offset \\\[-2, -1] is o
      they appear as large positive in the source.  It would be nice
      if they retained their type but unfortunately that's not how
      it works so be prepared for both in case it ever gets fixed.  */
-  T (char, 1, a + UR (3, SIZE_MAX), s, n);   /* { dg-warning "offset \\\[3, -1] is out of the bounds \\\[0, 1] of object "  "mempcpy" } */
+  T (char, 1, a + UR (3, SIZE_MAX), s, n);   /* { dg-warning "offset \\\[3, -?\[0-9\]+] is out of the bounds \\\[0, 1] of object "  "mempcpy" } */
 
   /* Verify that invalid offsets into an array of unknown size are
      detected.  */

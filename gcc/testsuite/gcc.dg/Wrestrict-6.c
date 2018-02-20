@@ -21,7 +21,7 @@ void warn_2_smax_p2 (void)
 
   ptrdiff_t i = UR (2, DIFF_MAX + (size_t)2);
 
-  strcpy (d, d + i);          /* { dg-warning "accessing between 0 and 4 bytes at offsets 0 and \\\[2, -\[0-9\]+] may overlap up to 2 bytes at offset 2" } */
+  strcpy (d, d + i);          /* { dg-warning "accessing between 0 and 4 bytes at offsets 0 and \\\[2, 7] may overlap up to 2 bytes at offset 2" } */
 
   sink (d);
 }
@@ -47,7 +47,7 @@ void warn_2u_smax_p2 (void)
 
   size_t i = UR (2, DIFF_MAX + (size_t)2);
 
-  strcpy (d, d + i);          /* { dg-warning "accessing between 0 and 4 bytes at offsets 0 and \\\[2, -\[0-9\]+] may overlap up to 2 bytes at offset 2" } */
+  strcpy (d, d + i);          /* { dg-warning "accessing between 0 and 4 bytes at offsets 0 and \\\[2, 7] may overlap up to 2 bytes at offset 2" } */
 
   sink (d);
 }
