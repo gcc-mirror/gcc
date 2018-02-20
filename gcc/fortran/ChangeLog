@@ -1,3 +1,13 @@
+2018-02-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/82007
+	* resolve.c (resolve_transfer): Delete code looking for 'DT'
+	format specifiers in format strings. Set formatted to true if a
+	format string or format label is present.
+	* trans-io.c (get_dtio_proc): Likewise. (transfer_expr): Fix
+	whitespace.
+
 2018-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
