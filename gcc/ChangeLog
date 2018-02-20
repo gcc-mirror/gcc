@@ -1,5 +1,11 @@
 2018-02-20  Martin Liska  <mliska@suse.cz>
 
+	PR driver/83193
+	* config/aarch64/aarch64.c (aarch64_print_hint_for_core_or_arch): Print
+	possible values if we don't have a hint.
+
+2018-02-20  Martin Liska  <mliska@suse.cz>
+
 	PR c/84310
 	PR target/79747
 	* final.c (shorten_branches): Build align_tab array with one
