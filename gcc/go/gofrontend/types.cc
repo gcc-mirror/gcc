@@ -597,10 +597,10 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	  return false;
 	}
 
-      if (t1->named_type() != NULL)
-	return t1->named_type()->named_type_is_comparable(reason);
-      else if (t2->named_type() != NULL)
-	return t2->named_type()->named_type_is_comparable(reason);
+      if (t1->unalias()->named_type() != NULL)
+	return t1->unalias()->named_type()->named_type_is_comparable(reason);
+      else if (t2->unalias()->named_type() != NULL)
+	return t2->unalias()->named_type()->named_type_is_comparable(reason);
       else if (t1->struct_type() != NULL)
 	{
 	  if (t1->struct_type()->is_struct_incomparable())
@@ -678,6 +678,12 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
   if (Type::are_identical(lhs, rhs, true, reason))
     return true;
 
+  // Ignore aliases, except for error messages.
+  const Type* lhs_orig = lhs;
+  const Type* rhs_orig = rhs;
+  lhs = lhs->unalias();
+  rhs = rhs->unalias();
+
   // The types are assignable if they have identical underlying types
   // and either LHS or RHS is not a named type.
   if (((lhs->named_type() != NULL && rhs->named_type() == NULL)
@@ -740,15 +746,16 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
     {
       if (rhs->interface_type() != NULL)
 	reason->assign(_("need explicit conversion"));
-      else if (lhs->named_type() != NULL && rhs->named_type() != NULL)
+      else if (lhs_orig->named_type() != NULL
+	       && rhs_orig->named_type() != NULL)
 	{
-	  size_t len = (lhs->named_type()->name().length()
-			+ rhs->named_type()->name().length()
+	  size_t len = (lhs_orig->named_type()->name().length()
+			+ rhs_orig->named_type()->name().length()
 			+ 100);
 	  char* buf = new char[len];
 	  snprintf(buf, len, _("cannot use type %s as type %s"),
-		   rhs->named_type()->message_name().c_str(),
-		   lhs->named_type()->message_name().c_str());
+		   rhs_orig->named_type()->message_name().c_str(),
+		   lhs_orig->named_type()->message_name().c_str());
 	  reason->assign(buf);
 	  delete[] buf;
 	}
@@ -767,6 +774,10 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
   // The types are convertible if they are assignable.
   if (Type::are_assignable(lhs, rhs, reason))
     return true;
+
+  // Ignore aliases.
+  lhs = lhs->unalias();
+  rhs = rhs->unalias();
 
   // A pointer to a regular type may not be converted to a pointer to
   // a type that may not live in the heap, except when converting from
