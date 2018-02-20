@@ -1,3 +1,7 @@
+2018-02-20  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* g++.dg/warn/Wimplicit-fallthrough-3.C: New test case.
+
 2018-02-20  Martin Liska  <mliska@suse.cz>
 
 	PR c/84310
