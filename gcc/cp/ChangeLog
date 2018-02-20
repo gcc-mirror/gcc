@@ -1,5 +1,9 @@
 2018-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84445
+	* class.c (fixed_type_or_null) <case CALL_EXPR>: Only test
+	TREE_HAS_CONSTRUCTOR if instance is not an internal function call.
+
 	PR c++/84449
 	* tree.c (bot_manip): If build_cplus_new or break_out_target_exprs
 	returns error_mark_node, return it immediately.

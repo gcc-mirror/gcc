@@ -1,5 +1,8 @@
 2018-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84445
+	* g++.dg/cpp1z/launder7.C: New test.
+
 	PR c++/84449
 	* g++.dg/cpp0x/constexpr-84449.C: New test.
 
