@@ -1,3 +1,8 @@
+2018-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84454 - ICE with pack expansion in signature.
+	* error.c (find_typenames_r): Also stop on EXPR_PACK_EXPANSION.
+
 2018-02-20  Siddhesh Poyarekar  <siddhesh@sourceware.org>
 
 	* cp-objcp-common.c (cxx_block_may_fallthru): Add case for
