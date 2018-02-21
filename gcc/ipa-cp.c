@@ -631,9 +631,9 @@ determine_versionability (struct cgraph_node *node,
     }
 
   /* Functions calling BUILT_IN_VA_ARG_PACK and BUILT_IN_VA_ARG_PACK_LEN
-     works only when inlined.  Cloning them may still lead to better code
-     becuase ipa-cp will not give up on cloning further.  If the function is
-     external this however leads to wrong code becuase we may end up producing
+     work only when inlined.  Cloning them may still lead to better code
+     because ipa-cp will not give up on cloning further.  If the function is
+     external this however leads to wrong code because we may end up producing
      offline copy of the function.  */
   if (DECL_EXTERNAL (node->decl))
     for (cgraph_edge *edge = node->callees; !reason && edge;

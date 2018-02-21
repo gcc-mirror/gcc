@@ -1,5 +1,9 @@
 2018-02-21  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-cp.c (determine_versionability): Fix comment typos.
+
+2018-02-21  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR c/84229
 	* ipa-cp.c (determine_versionability): Do not version functions caling
 	va_arg_pack.
