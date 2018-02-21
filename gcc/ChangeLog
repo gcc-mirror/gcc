@@ -1,6 +1,14 @@
 2018-02-21  Martin Liska  <mliska@suse.cz>
 
 	PR driver/83193
+	* config/aarch64/aarch64.c (aarch64_print_hint_for_core_or_arch):
+	Add "native" as a possible value.
+	* config/aarch64/aarch64.h (HAVE_LOCAL_CPU_DETECT):  Define
+	the macro when native cpu detection is available.
+
+2018-02-21  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
 	* common/config/arm/arm-common.c (arm_print_hint_for_arch_option):
 	Add "native" as a possible value.
 	* config/arm/arm.h (HAVE_LOCAL_CPU_DETECT): Define the macro
