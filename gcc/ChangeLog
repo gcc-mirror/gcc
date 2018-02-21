@@ -1,3 +1,8 @@
+2018-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84314 - ICE with templates and fastcall attribute.
+	* attribs.c (build_type_attribute_qual_variant): Remove assert.
+
 2018-02-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.c (determine_versionability): Fix comment typos.
