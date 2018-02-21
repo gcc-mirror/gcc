@@ -1,3 +1,8 @@
+2018-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84478
+	* gcc.c-torture/execute/pr84478.c: New test.
+
 2018-02-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/84095
