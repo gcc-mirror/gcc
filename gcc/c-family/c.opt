@@ -397,7 +397,7 @@ C++ ObjC++ Warning Alias(Wcatch-value=, 1, 0)
 Warn about catch handlers of non-reference type.
 
 Wcatch-value=
-C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger LangEnabledBy(C++ ObjC++,Wall, 1, 0)
+C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger LangEnabledBy(C++ ObjC++,Wall, 1, 0) IntegerRange(0, 3)
 Warn about catch handlers of non-reference type.
 
 Wchar-subscripts
