@@ -1155,17 +1155,14 @@ build_type_attribute_qual_variant (tree otype, tree attribute, int quals)
 	   TYPE_CANONICAL.  */;
       else if (TYPE_STRUCTURAL_EQUALITY_P (ttype)
 	       || !comp_type_attributes (ntype, ttype))
-	{
-	  /* If the target-dependent attributes make NTYPE different from
-	     its canonical type, we will need to use structural equality
-	     checks for this type.
+	/* If the target-dependent attributes make NTYPE different from
+	   its canonical type, we will need to use structural equality
+	   checks for this type.
 
-	     But make sure we don't get here for stripping attributes from a
-	     type; the no-attribute type might not need structural comparison,
-	     and it should have been in the hash table already.  */
-	  gcc_assert (attribute);
-	  SET_TYPE_STRUCTURAL_EQUALITY (ntype);
-	}
+	   We shouldn't get here for stripping attributes from a type;
+	   the no-attribute type might not need structural comparison.  But
+	   we can if was discarded from type_hash_table.  */
+	SET_TYPE_STRUCTURAL_EQUALITY (ntype);
       else if (TYPE_CANONICAL (ntype) == ntype)
 	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
 
