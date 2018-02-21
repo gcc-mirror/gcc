@@ -1,3 +1,17 @@
+2018-02-21  Sudakshina Das  <sudi.das@arm.com>
+
+	Backport from trunk
+	2018-01-12  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.c-torture/compile/pr82096.c: Add dg-skip-if
+	directive.
+
+	Backport from trunk
+	2018-01-10  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82096
+	* gcc.c-torture/compile/pr82096.c: New test.
+
 2018-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/84277

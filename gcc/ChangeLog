@@ -1,3 +1,12 @@
+2018-02-21  Sudakshina Das  <sudi.das@arm.com>
+
+	Backport from trunk
+	2018-01-10  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/82096
+	* expmed.c (emit_store_flag_force): Swap if const op0
+	and change VOIDmode to mode of op0.
+
 2018-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
