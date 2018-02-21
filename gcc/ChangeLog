@@ -1,3 +1,20 @@
+2018-02-21  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84478
+	* gimple-fold.h (get_range_strlen): Add a bool argument defaulted to
+	false.
+	* gimple-fold.c (get_range_strlen): Make minlen const and assume it
+	can't be NULL.  Change FUZZY from bool to int, for 1 add PHI/COND_EXPR
+	support which is conservatively correct, for 2 only stay conservative
+	for maxlen.  Formatting and comment capitalization fixes.  Add STRICT
+	argument to the 2 argument get_range_strlen, adjust 6 arg
+	get_range_strlen caller and clear minmaxlen[0] and [1] if it returned
+	false.
+	(get_maxval_strlen): Adjust 6 arg get_range_strlen caller.
+	(gimple_fold_builtin_strlen): Pass true as last argument to
+	get_range_strlen.
+
 2018-02-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/84095
