@@ -1002,6 +1002,7 @@ extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
 
 #if defined(__aarch64__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define HAVE_LOCAL_CPU_DETECT
 # define EXTRA_SPEC_FUNCTIONS						\
   { "local_cpu_detect", host_detect_local_cpu },			\
   MCPU_TO_MARCH_SPEC_FUNCTIONS
