@@ -2993,6 +2993,62 @@ rx_address_cost (rtx addr, machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 static bool
+rx_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
+	      int opno ATTRIBUTE_UNUSED, int* total, bool speed)
+{
+  if (x == const0_rtx)
+    {
+      *total = 0;
+      return true;
+    }
+
+  switch (GET_CODE (x))
+    {
+    case MULT:
+      if (mode == DImode)
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      /* fall through */
+
+    case PLUS:
+    case MINUS:
+    case AND:
+    case COMPARE:
+    case IOR:
+    case XOR:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case DIV:
+      if (speed)
+	/* This is the worst case for a division.  Pessimize divisions when
+	   not optimizing for size and allow reciprocal optimizations which
+	   produce bigger code.  */
+	*total = COSTS_N_INSNS (20);
+      else
+	*total = COSTS_N_INSNS (3);
+      return true;
+
+    case UDIV:
+      if (speed)
+	/* This is the worst case for a division.  Pessimize divisions when
+	   not optimizing for size and allow reciprocal optimizations which
+	   produce bigger code.  */
+	*total = COSTS_N_INSNS (18);
+      else
+	*total = COSTS_N_INSNS (3);
+      return true;
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
+static bool
 rx_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
   /* We can always eliminate to the frame pointer.
@@ -3725,6 +3781,9 @@ rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P			rx_modes_tieable_p
+
+#undef  TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS rx_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
