@@ -1,3 +1,8 @@
+2018-02-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/59781
+	* gfortran.dg/derived_init_5.f90: New test.
+
 2018-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82851
