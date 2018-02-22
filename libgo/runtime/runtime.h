@@ -456,7 +456,8 @@ extern uintptr runtime_stacks_sys;
 
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
-extern _Bool __go_file_line(uintptr, int, String*, String*, intgo *);
+extern void __go_syminfo_fnname_callback(void*, uintptr_t, const char*,
+					 uintptr_t, uintptr_t);
 extern void runtime_main(void*)
   __asm__(GOSYM_PREFIX "runtime.main");
 
