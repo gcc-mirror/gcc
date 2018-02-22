@@ -1,3 +1,9 @@
+2018-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84493
+	* parser.c (cp_parser_braced_list): Use require_open instead of
+	consume_open.
+
 2018-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84454 - ICE with pack expansion in signature.

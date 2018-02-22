@@ -21925,7 +21925,7 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
 
   /* Consume the `{' token.  */
   matching_braces braces;
-  braces.consume_open (parser);
+  braces.require_open (parser);
   /* Create a CONSTRUCTOR to represent the braced-initializer.  */
   initializer = make_node (CONSTRUCTOR);
   /* If it's not a `}', then there is a non-trivial initializer.  */
