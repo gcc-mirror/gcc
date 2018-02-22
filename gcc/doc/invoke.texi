@@ -27837,6 +27837,11 @@ Note that @option{-mcmodel=large} is incompatible with
 @option{-mindirect-branch=thunk-extern} since the thunk function may
 not be reachable in large code model.
 
+Note that @option{-mindirect-branch=thunk-extern} is incompatible with
+@option{-fcf-protection=branch} and @option{-fcheck-pointer-bounds}
+since the external thunk can not be modified to disable control-flow
+check.
+
 @item -mfunction-return=@var{choice}
 @opindex -mfunction-return
 Convert function return with @var{choice}.  The default is @samp{keep},
