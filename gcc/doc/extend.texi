@@ -11042,6 +11042,7 @@ the built-in function returns -1.
 @findex __builtin_alloca_with_align
 @findex __builtin_alloca_with_align_and_max
 @findex __builtin_call_with_static_chain
+@findex __builtin_extend_pointer
 @findex __builtin_fpclassify
 @findex __builtin_isfinite
 @findex __builtin_isnormal
@@ -12417,6 +12418,15 @@ are 32 bit.
 @deftypefn {Built-in Function} uint64_t __builtin_bswap64 (uint64_t x)
 Similar to @code{__builtin_bswap32}, except the argument and return types
 are 64 bit.
+@end deftypefn
+
+@deftypefn {Built-in Function} Pmode __builtin_extend_pointer (void * x)
+On targets where the user visible pointer size is smaller than the size
+of an actual hardware address this function returns the extended user
+pointer.  Targets where this is true included ILP32 mode on x86_64 or
+Aarch64.  This function is mainly useful when writing inline assembly
+code.
+@var{addr}
 @end deftypefn
 
 @node Target Builtins
