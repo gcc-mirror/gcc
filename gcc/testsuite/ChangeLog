@@ -1,3 +1,9 @@
+2018-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84503
+	* gcc.dg/pr84503-1.c: New test.
+	* gcc.dg/pr84503-2.c: New test.
+
 2018-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84478

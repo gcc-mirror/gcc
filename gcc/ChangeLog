@@ -1,3 +1,16 @@
+2018-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84503
+	* gimple-ssa-store-merging.c (merged_store_group::merge_into): Compute
+	width as info->bitpos + info->bitsize - start.
+	(merged_store_group::merge_overlapping): Simplify width computation.
+	(check_no_overlap): New function.
+	(imm_store_chain_info::try_coalesce_bswap): Compute expected
+	start + width and last_order of the group, fail if check_no_overlap
+	fails.
+	(imm_store_chain_info::coalesce_immediate_stores): Don't merge info
+	to group if check_no_overlap fails.
+
 2018-02-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/altivec.md: Delete contraint arguments to
