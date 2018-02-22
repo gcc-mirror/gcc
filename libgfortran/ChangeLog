@@ -1,5 +1,13 @@
 2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR 78534
+	PR 84509
+	* runtime/pause.c (pause_numeric): Modify to take GFC_INTEGER_8
+	argument.
+	(pause_string): Modify to take size_t character length argument.
+
+2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* libgfortran.h (stop_string): Use size_t for character length.
 	* runtime/stop.c (stop_string): Likewise.
 	(error_stop_string): Likewise.

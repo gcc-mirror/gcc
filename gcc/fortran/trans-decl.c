@@ -3499,7 +3499,7 @@ gfc_build_intrinsic_function_decls (void)
 void
 gfc_build_builtin_function_decls (void)
 {
-  tree gfc_int4_type_node = gfc_get_int_type (4);
+  tree gfc_int8_type_node = gfc_get_int_type (8);
 
   gfor_fndecl_stop_numeric = gfc_build_library_function_decl (
 	get_identifier (PREFIX("stop_numeric")),
@@ -3527,11 +3527,11 @@ gfc_build_builtin_function_decls (void)
 
   gfor_fndecl_pause_numeric = gfc_build_library_function_decl (
 	get_identifier (PREFIX("pause_numeric")),
-	void_type_node, 1, gfc_int4_type_node);
+	void_type_node, 1, gfc_int8_type_node);
 
   gfor_fndecl_pause_string = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("pause_string")), ".R.",
-	void_type_node, 2, pchar_type_node, gfc_int4_type_node);
+	void_type_node, 2, pchar_type_node, size_type_node);
 
   gfor_fndecl_runtime_error = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("runtime_error")), ".R",
