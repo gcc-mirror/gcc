@@ -443,7 +443,6 @@
         (vec_select:<MODE>
           (match_dup 2)
           (parallel [(const_int 1) (const_int 0)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -475,7 +474,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -495,7 +493,6 @@
           (match_dup 2)
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -527,7 +524,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -551,7 +547,6 @@
                      (const_int 6) (const_int 7)
                      (const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -583,7 +578,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -615,7 +609,6 @@
                      (const_int 2) (const_int 3)
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -647,7 +640,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -1037,7 +1029,6 @@
    #"
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(const_int 0)]
-  "
 {
   rtx tmp = (can_create_pseudo_p ()
 	     ? gen_reg_rtx_and_attrs (operands[0])
@@ -1046,7 +1037,6 @@
   rs6000_emit_le_vsx_permute (operands[0], tmp, <MODE>mode);
   DONE;
 }
-  "
   [(set_attr "type" "vecload,load")
    (set_attr "length" "8,8")])
 
@@ -1640,7 +1630,6 @@
   "#"
   "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -1668,7 +1657,7 @@
     }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
-}"
+}
   [(set_attr "type" "mul")])
 
 (define_insn "*vsx_div<mode>3"
@@ -1690,7 +1679,6 @@
   "#"
   "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -1726,7 +1714,7 @@
     }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
-}"
+}
   [(set_attr "type" "div")])
 
 (define_insn_and_split "vsx_udiv_v2di"
@@ -1738,7 +1726,6 @@
   "#"
   "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -1774,7 +1761,7 @@
     }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
-}"
+}
   [(set_attr "type" "div")])
 
 ;; *tdiv* instruction returning the FG flag
@@ -4328,7 +4315,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx tmp = (GET_CODE (operands[2]) == SCRATCH)
 	     ? gen_reg_rtx (V2DFmode)
@@ -4336,7 +4322,7 @@
   emit_insn (gen_vsx_xxsldwi_v2df (tmp, operands[1], operands[1], const2_rtx));
   emit_insn (gen_<VEC_reduc_rtx>v2df3 (operands[0], tmp, operands[1]));
   DONE;
-}"
+}
   [(set_attr "length" "8")
    (set_attr "type" "veccomplex")])
 
@@ -4351,7 +4337,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -4375,7 +4360,7 @@
   emit_insn (gen_vsx_xxsldwi_v4sf (tmp4, tmp3, tmp3, GEN_INT (3)));
   emit_insn (gen_<VEC_reduc_rtx>v4sf3 (op0, tmp4, tmp3));
   DONE;
-}"
+}
   [(set_attr "length" "16")
    (set_attr "type" "veccomplex")])
 
@@ -4400,7 +4385,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx hi = gen_highpart (DFmode, operands[1]);
   rtx lo = (GET_CODE (operands[2]) == SCRATCH)
@@ -4410,7 +4394,7 @@
   emit_insn (gen_vsx_extract_v2df (lo, operands[1], const1_rtx));
   emit_insn (gen_<VEC_reduc_rtx>df3 (operands[0], hi, lo));
   DONE;
-}"
+}
   [(set_attr "length" "8")
    (set_attr "type" "veccomplex")])
 
@@ -4428,7 +4412,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -4455,7 +4438,7 @@
   emit_insn (gen_<VEC_reduc_rtx>v4sf3 (tmp5, tmp4, tmp3));
   emit_insn (gen_vsx_xscvspdp_scalar2 (op0, tmp5));
   DONE;
-}"
+}
   [(set_attr "length" "20")
    (set_attr "type" "veccomplex")])
 
