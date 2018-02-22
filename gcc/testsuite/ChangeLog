@@ -1,3 +1,7 @@
+2018-02-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add tests for Armv8-R multilib mappings.
+
 2018-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84493
