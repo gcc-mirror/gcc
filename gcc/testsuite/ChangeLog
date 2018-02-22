@@ -1,3 +1,7 @@
+2018-02-22  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.c-torture/execute/pr82210.c: Require effective target alloca.
+
 2018-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/77655
