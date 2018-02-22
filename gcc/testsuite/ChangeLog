@@ -1,3 +1,8 @@
+2018-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/77655
+	* g++.dg/cpp0x/pr77655.C: New.
+
 2018-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84496
