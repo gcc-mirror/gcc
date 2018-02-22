@@ -7059,7 +7059,8 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
   unsigned int size;
 
   /* Check all addresses are Pmode - including ILP32.  */
-  gcc_assert (GET_MODE (x) == Pmode);
+  if (GET_MODE (x) != Pmode)
+    output_operand_lossage ("invalid address mode");
 
   if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)

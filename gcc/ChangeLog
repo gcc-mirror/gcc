@@ -1,5 +1,11 @@
 2018-02-22  Steve Ellcey  <sellcey@cavium.com>
 
+	PR target/83335
+	* config/aarch64/aarch64.c (aarch64_print_address_internal):
+	Change gcc_assert call to output_operand_lossage.
+
+2018-02-22  Steve Ellcey  <sellcey@cavium.com>
+
 	* doc/extend.texi (__builtin_extend_pointer): Document builtin.
 
 2018-02-22  DJ Delorie  <dj@redhat.com>
