@@ -4,7 +4,7 @@
 
 // GNU/Linux library ustat call.
 // This is not supported on some kernels, such as arm64.
-// +build !arm64
+// +build !arm64,!riscv64
 
 package syscall
 
