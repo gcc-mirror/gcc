@@ -1,3 +1,8 @@
+2018-02-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/81572
+	* gcc.target/powerpc/pr81572.c: New.
+
 2018-02-22  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* go.test/go-test.exp (go-set-goarch): Recognize riscv64-*-*.
