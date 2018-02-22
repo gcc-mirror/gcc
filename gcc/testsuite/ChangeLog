@@ -1,3 +1,17 @@
+2018-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84176
+	* gcc.target/i386/indirect-thunk-11.c: New test.
+	* gcc.target/i386/indirect-thunk-12.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-12.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-13.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-14.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-15.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-16.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-10.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-8.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-9.c: Likewise.
+
 2018-02-22  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/83335

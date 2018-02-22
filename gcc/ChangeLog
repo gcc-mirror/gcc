@@ -1,3 +1,25 @@
+2018-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84176
+	* config/i386/i386.c (ix86_set_indirect_branch_type): Issue an
+	error when -mindirect-branch=thunk-extern, -fcf-protection=branch
+	and -fcheck-pointer-bounds are used together.
+	(indirect_thunk_prefix): New enum.
+	(indirect_thunk_need_prefix): New function.
+	(indirect_thunk_name): Replace need_bnd_p with need_prefix.  Use
+	"_nt" instead of "_bnd" for NOTRACK prefix.
+	(output_indirect_thunk): Replace need_bnd_p with need_prefix.
+	(output_indirect_thunk_function): Likewise.
+	(): Likewise.
+	(ix86_code_end): Update output_indirect_thunk_function calls.
+	(ix86_output_indirect_branch_via_reg): Replace
+	ix86_bnd_prefixed_insn_p with indirect_thunk_need_prefix.
+	(ix86_output_indirect_branch_via_push): Likewise.
+	(ix86_output_function_return): Likewise.
+	* doc/invoke.texi: Document -mindirect-branch=thunk-extern is
+	incompatible with -fcf-protection=branch and
+	-fcheck-pointer-bounds.
+
 2018-02-22  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/83335
