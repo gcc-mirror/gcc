@@ -1,3 +1,19 @@
+2018-02-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/81572
+	* lra-int.h (LRA_UNKNOWN_ALT, LRA_NON_CLOBBERED_ALT): New macros.
+	* lra.c (lra_set_insn_recog_data, lra_update_insn_recog_data): Use
+	LRA_UNKNOWN_ALT.
+	* lra-constraints.c (curr_insn_transform): Set up
+	LRA_NON_CLOBBERED_ALT for moves processed on the fast path.  Use
+	LRA_UNKNOWN_ALT.
+	(remove_inheritance_pseudos): Use LRA_UNKNOWN_ALT.
+	* lra-eliminations.c (spill_pseudos): Ditto.
+	(process_insn_for_elimination): Ditto.
+	* lra-lives.c (reg_early_clobber_p): Use the new macros.
+	* lra-spills.c (spill_pseudos): Use LRA_UNKNOWN_ALT and
+	LRA_NON_CLOBBERED_ALT.
+
 2018-02-22  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84480

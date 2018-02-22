@@ -1175,7 +1175,7 @@ spill_pseudos (HARD_REG_SET set)
     if (bitmap_bit_p (&to_process, INSN_UID (insn)))
       {
 	lra_push_insn (insn);
-	lra_set_used_insn_alternative (insn, -1);
+	lra_set_used_insn_alternative (insn, LRA_UNKNOWN_ALT);
       }
   bitmap_clear (&to_process);
 }
@@ -1408,7 +1408,7 @@ process_insn_for_elimination (rtx_insn *insn, bool final_p, bool first_p)
 	}
       lra_update_insn_regno_info (insn);
       lra_push_insn (insn);
-      lra_set_used_insn_alternative (insn, -1);
+      lra_set_used_insn_alternative (insn, LRA_UNKNOWN_ALT);
     }
 }
 
