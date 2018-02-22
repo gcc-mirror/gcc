@@ -1,5 +1,9 @@
 2018-02-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84502
+	* stor-layout.c (finalize_type_size): Propagate TYPE_EMPTY_P flag
+	to all type variants.
+
 	PR tree-optimization/84503
 	* gimple-ssa-store-merging.c (merged_store_group::merge_into): Compute
 	width as info->bitpos + info->bitsize - start.
