@@ -14209,7 +14209,7 @@ if test "${libgo_cv_lib_pthread+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -pthread"
+CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int i;
@@ -14226,7 +14226,8 @@ fi
 $as_echo "$libgo_cv_lib_pthread" >&6; }
 PTHREAD_CFLAGS=
 if test "$libgo_cv_lib_pthread" = yes; then
-  PTHREAD_CFLAGS=-pthread
+  # RISC-V apparently adds -latomic when using -pthread.
+  PTHREAD_CFLAGS="-pthread -L../libatomic/.libs"
 fi
 
 
