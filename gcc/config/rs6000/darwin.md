@@ -171,8 +171,8 @@ You should have received a copy of the GNU General Public License
 
 ;; Mach-O PIC trickery.
 (define_expand "macho_high"
-  [(set (match_operand 0 "" "")
-	(high (match_operand 1 "" "")))]
+  [(set (match_operand 0 "")
+	(high (match_operand 1 "")))]
   "TARGET_MACHO"
 {
   if (TARGET_64BIT)
@@ -197,9 +197,9 @@ You should have received a copy of the GNU General Public License
   "lis %0,ha16(%1)")
 
 (define_expand "macho_low"
-  [(set (match_operand 0 "" "")
-	(lo_sum (match_operand 1 "" "")
-		   (match_operand 2 "" "")))]
+  [(set (match_operand 0 "")
+	(lo_sum (match_operand 1 "")
+		   (match_operand 2 "")))]
    "TARGET_MACHO"
 {
   if (TARGET_64BIT)
@@ -225,10 +225,10 @@ You should have received a copy of the GNU General Public License
    "la %0,lo16(%2)(%1)")
 
 (define_split
-  [(set (mem:V4SI (plus:DI (match_operand:DI 0 "gpc_reg_operand" "")
-			 (match_operand:DI 1 "short_cint_operand" "")))
-	(match_operand:V4SI 2 "register_operand" ""))
-   (clobber (match_operand:DI 3 "gpc_reg_operand" ""))]
+  [(set (mem:V4SI (plus:DI (match_operand:DI 0 "gpc_reg_operand")
+			 (match_operand:DI 1 "short_cint_operand")))
+	(match_operand:V4SI 2 "register_operand"))
+   (clobber (match_operand:DI 3 "gpc_reg_operand"))]
   "TARGET_MACHO && TARGET_64BIT"
   [(set (match_dup 3) (plus:DI (match_dup 0) (match_dup 1)))
    (set (mem:V4SI (match_dup 3))
@@ -237,7 +237,7 @@ You should have received a copy of the GNU General Public License
 
 (define_expand "load_macho_picbase"
   [(set (reg:SI LR_REGNO)
-        (unspec [(match_operand 0 "" "")]
+        (unspec [(match_operand 0 "")]
                    UNSPEC_LD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
 {
@@ -284,10 +284,10 @@ You should have received a copy of the GNU General Public License
    (set_attr "length" "4")])
 
 (define_expand "macho_correct_pic"
-  [(set (match_operand 0 "" "")
-	(plus (match_operand 1 "" "")
-		 (unspec [(match_operand 2 "" "")
-			     (match_operand 3 "" "")]
+  [(set (match_operand 0 "")
+	(plus (match_operand 1 "")
+		 (unspec [(match_operand 2 "")
+			     (match_operand 3 "")]
 			    UNSPEC_MPIC_CORRECT)))]
   "DEFAULT_ABI == ABI_DARWIN"
 {
@@ -383,7 +383,7 @@ You should have received a copy of the GNU General Public License
 
 (define_expand "reload_macho_picbase"
   [(set (reg:SI LR_REGNO)
-        (unspec [(match_operand 0 "" "")]
+        (unspec [(match_operand 0 "")]
                    UNSPEC_RELD_MPIC))]
   "(DEFAULT_ABI == ABI_DARWIN) && flag_pic"
 {
