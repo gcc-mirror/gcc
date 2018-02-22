@@ -1,5 +1,8 @@
 2018-02-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84496
+	* g++.dg/cpp1y/pr84496.C: New test.
+
 	PR target/84502
 	* g++.dg/torture/pr84502.C: New test.
 
