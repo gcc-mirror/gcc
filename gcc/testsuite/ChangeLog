@@ -1,3 +1,10 @@
+2018-02-22  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/83335
+	* gcc/testsuite/gcc.target/aarch64/asm-2.c: Add dg-error for
+	ILP32 mode.
+	* gcc/testsuite/gcc.target/aarch64/asm-4.c: New test.
+
 2018-02-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* gcc.target/arm/multilib.exp: Add tests for Armv8-R multilib mappings.
