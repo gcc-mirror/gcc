@@ -309,6 +309,12 @@ arm_print_hint_for_cpu_option (const char *target,
   auto_vec<const char*> candidates;
   for (; list->common.name != NULL; list++)
     candidates.safe_push (list->common.name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+  /* Add also "native" as possible value.  */
+  candidates.safe_push ("native");
+#endif
+
   char *s;
   const char *hint = candidates_list_and_hint (target, s, candidates);
   if (hint)
