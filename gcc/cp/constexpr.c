@@ -1763,7 +1763,13 @@ reduced_constant_expression_p (tree t)
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree idx, val, field; unsigned HOST_WIDE_INT i;
       if (CONSTRUCTOR_NO_IMPLICIT_ZERO (t))
-	field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+	{
+	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+	    /* An initialized vector would have a VECTOR_CST.  */
+	    return false;
+	  else
+	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+	}
       else
 	field = NULL_TREE;
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
