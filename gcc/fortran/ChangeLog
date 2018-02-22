@@ -1,5 +1,14 @@
 2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR 78534
+	PR 84509
+	* trans-decl.c (gfc_build_builtin_function_decls): Pass
+	gfc_int8_type node to pause_numeric, size_type_node to
+	pause_string.
+	* trans-stmt.c (gfc_trans_pause): Likewise.
+
+2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* gfortran.texi: Update Coarray API description.
 	* trans-decl.c (gfc_build_builtin_function_decls): Use size_t for
 	character lengths, int for exit codes.

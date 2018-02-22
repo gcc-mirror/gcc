@@ -578,7 +578,7 @@ gfc_trans_return (gfc_code * code)
 tree
 gfc_trans_pause (gfc_code * code)
 {
-  tree gfc_int4_type_node = gfc_get_int_type (4);
+  tree gfc_int8_type_node = gfc_get_int_type (8);
   gfc_se se;
   tree tmp;
 
@@ -589,7 +589,7 @@ gfc_trans_pause (gfc_code * code)
 
   if (code->expr1 == NULL)
     {
-      tmp = build_int_cst (gfc_int4_type_node, 0);
+      tmp = build_int_cst (size_type_node, 0);
       tmp = build_call_expr_loc (input_location,
 				 gfor_fndecl_pause_string, 2,
 				 build_int_cst (pchar_type_node, 0), tmp);
@@ -599,14 +599,15 @@ gfc_trans_pause (gfc_code * code)
       gfc_conv_expr (&se, code->expr1);
       tmp = build_call_expr_loc (input_location,
 				 gfor_fndecl_pause_numeric, 1,
-				 fold_convert (gfc_int4_type_node, se.expr));
+				 fold_convert (gfc_int8_type_node, se.expr));
     }
   else
     {
       gfc_conv_expr_reference (&se, code->expr1);
       tmp = build_call_expr_loc (input_location,
 			     gfor_fndecl_pause_string, 2,
-			     se.expr, se.string_length);
+				 se.expr, fold_convert (size_type_node,
+							se.string_length));
     }
 
   gfc_add_expr_to_block (&se.pre, tmp);
