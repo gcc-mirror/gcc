@@ -1,3 +1,10 @@
+2018-02-22  DJ Delorie  <dj@redhat.com>
+	    Sebastian Perta  <sebastian.perta@renesas.com>
+	    Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/rx/rx.c (rx_rtx_costs): New function.
+	(TARGET_RTX_COSTS): Override to use rx_rtx_costs.
+
 2018-02-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/t-multilib: Map Armv8-R to Armv7 multilibs.
