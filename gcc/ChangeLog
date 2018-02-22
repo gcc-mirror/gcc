@@ -1,3 +1,7 @@
+2018-02-22  Steve Ellcey  <sellcey@cavium.com>
+
+	* doc/extend.texi (__builtin_extend_pointer): Document builtin.
+
 2018-02-22  DJ Delorie  <dj@redhat.com>
 	    Sebastian Perta  <sebastian.perta@renesas.com>
 	    Oleg Endo  <olegendo@gcc.gnu.org>
