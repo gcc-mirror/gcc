@@ -1,3 +1,7 @@
+2018-02-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* go.test/go-test.exp (go-set-goarch): Recognize riscv64-*-*.
+
 2018-02-22  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84480
