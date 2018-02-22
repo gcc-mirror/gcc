@@ -1,3 +1,9 @@
+2018-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82851
+	* gcc.target/i386/avx2-vpaddq-3.c: Add -mtune=generic to dg-options.
+	* gcc.target/i386/avx2-vpsubq-3.c: Likewise.
+
 2018-02-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/81572
