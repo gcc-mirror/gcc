@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "tree-ssa-alias.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-strlen.h"
 #include "params.h"
 #include "ipa-chkp.h"
 #include "tree-hash-traits.h"
@@ -1780,11 +1781,12 @@ is_strlen_related_p (tree src, tree len)
   return false;
 }
 
-/* A helper of handle_builtin_stxncpy.  Check to see if the specified
-   bound is a) equal to the size of the destination DST and if so, b)
-   if it's immediately followed by DST[CNT - 1] = '\0'.  If a) holds
-   and b) does not, warn.  Otherwise, do nothing.  Return true if
-   diagnostic has been issued.
+/* Called by handle_builtin_stxncpy and by gimple_fold_builtin_strncpy
+   in gimple-fold.c.
+   Check to see if the specified bound is a) equal to the size of
+   the destination DST and if so, b) if it's immediately followed by
+   DST[CNT - 1] = '\0'.  If a) holds and b) does not, warn.  Otherwise,
+   do nothing.  Return true if diagnostic has been issued.
 
    The purpose is to diagnose calls to strncpy and stpncpy that do
    not nul-terminate the copy while allowing for the idiom where
@@ -1795,7 +1797,7 @@ is_strlen_related_p (tree src, tree len)
      a[sizeof a - 1] = '\0';
 */
 
-static bool
+bool
 maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 {
   gimple *stmt = gsi_stmt (gsi);
@@ -1831,8 +1833,11 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
     return false;
 
   /* Negative value is the constant string length.  If it's less than
-     the lower bound there is no truncation.  */
-  int sidx = get_stridx (src);
+     the lower bound there is no truncation.  Avoid calling get_stridx()
+     when ssa_ver_to_stridx is empty.  That implies the caller isn't
+     running under the control of this pass and ssa_ver_to_stridx hasn't
+     been created yet.  */
+  int sidx = ssa_ver_to_stridx.length () ? get_stridx (src) : 0;
   if (sidx < 0 && wi::gtu_p (cntrange[0], ~sidx))
     return false;
 
@@ -1935,23 +1940,35 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	  lenrange[0] = wi::shwi (0, prec);
 	}
 
-      if (wi::geu_p (lenrange[0], cntrange[1]))
+      gcall *call = as_a <gcall *> (stmt);
+
+      if (lenrange[0] == cntrange[1] && cntrange[0] == cntrange[1])
+	return warning_at (callloc, OPT_Wstringop_truncation,
+			   (integer_onep (cnt)
+			    ? G_("%G%qD output truncated before terminating "
+				 "nul copying %E byte from a string of the "
+				 "same length")
+			    : G_("%G%qD output truncated before terminating nul "
+				 "copying %E bytes from a string of the same "
+				 "length")),
+			   call, func, cnt);
+      else if (wi::geu_p (lenrange[0], cntrange[1]))
 	{
 	  /* The shortest string is longer than the upper bound of
 	     the count so the truncation is certain.  */
 	  if (cntrange[0] == cntrange[1])
 	    return warning_at (callloc, OPT_Wstringop_truncation,
 			       integer_onep (cnt)
-			       ? G_("%qD output truncated copying %E byte "
+			       ? G_("%G%qD output truncated copying %E byte "
 				    "from a string of length %wu")
-			       : G_("%qD output truncated copying %E bytes "
+			       : G_("%G%qD output truncated copying %E bytes "
 				    "from a string of length %wu"),
-			       func, cnt, lenrange[0].to_uhwi ());
+			       call, func, cnt, lenrange[0].to_uhwi ());
 
 	  return warning_at (callloc, OPT_Wstringop_truncation,
-			     "%qD output truncated copying between %wu "
+			     "%G%qD output truncated copying between %wu "
 			     "and %wu bytes from a string of length %wu",
-			     func, cntrange[0].to_uhwi (),
+			     call, func, cntrange[0].to_uhwi (),
 			     cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	}
       else if (wi::geu_p (lenrange[1], cntrange[1]))
@@ -1961,16 +1978,16 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	  if (cntrange[0] == cntrange[1])
 	    return warning_at (callloc, OPT_Wstringop_truncation,
 			       integer_onep (cnt)
-			       ? G_("%qD output may be truncated copying %E "
+			       ? G_("%G%qD output may be truncated copying %E "
 				    "byte from a string of length %wu")
-			       : G_("%qD output may be truncated copying %E "
+			       : G_("%G%qD output may be truncated copying %E "
 				    "bytes from a string of length %wu"),
-			       func, cnt, lenrange[1].to_uhwi ());
+			       call, func, cnt, lenrange[1].to_uhwi ());
 
 	  return warning_at (callloc, OPT_Wstringop_truncation,
-			     "%qD output may be truncated copying between %wu "
+			     "%G%qD output may be truncated copying between %wu "
 			     "and %wu bytes from a string of length %wu",
-			     func, cntrange[0].to_uhwi (),
+			     call, func, cntrange[0].to_uhwi (),
 			     cntrange[1].to_uhwi (), lenrange[1].to_uhwi ());
 	}
 
@@ -1982,9 +1999,9 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	     the lower bound of the specified count but shorter than the
 	     upper bound the copy may (but need not) be truncated.  */
 	  return warning_at (callloc, OPT_Wstringop_truncation,
-			     "%qD output may be truncated copying between %wu "
-			     "and %wu bytes from a string of length %wu",
-			     func, cntrange[0].to_uhwi (),
+			     "%G%qD output may be truncated copying between "
+			     "%wu and %wu bytes from a string of length %wu",
+			     call, func, cntrange[0].to_uhwi (),
 			     cntrange[1].to_uhwi (), lenrange[0].to_uhwi ());
 	}
     }
@@ -2003,8 +2020,8 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 
       if (cntrange[0] == cntrange[1])
 	return warning_at (callloc, OPT_Wstringop_truncation,
-			   "%qD specified bound %E equals destination size",
-			   func, cnt);
+			   "%G%qD specified bound %E equals destination size",
+			   as_a <gcall *> (stmt), func, cnt);
     }
 
   return false;
@@ -2103,14 +2120,15 @@ handle_builtin_stxncpy (built_in_function, gimple_stmt_iterator *gsi)
   if (sisrc == silen
       && is_strlen_related_p (src, len)
       && warning_at (callloc, OPT_Wstringop_truncation,
-		     "%qD output truncated before terminating nul "
+		     "%G%qD output truncated before terminating nul "
 		     "copying as many bytes from a string as its length",
-		     func))
+		     as_a <gcall *>(stmt), func))
     warned = true;
   else if (silen && is_strlen_related_p (src, silen->ptr))
     warned = warning_at (callloc, OPT_Wstringop_overflow_,
-			 "%qD specified bound depends on the length "
-			 "of the source argument", func);
+			 "%G%qD specified bound depends on the length "
+			 "of the source argument",
+			 as_a <gcall *>(stmt), func);
   if (warned)
     {
       location_t strlenloc = pss->second;
