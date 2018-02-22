@@ -1,3 +1,9 @@
+2018-02-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* config/i386/i386.c (ix86_option_override_internal):
+	Add "native" as a possible value for -march and -mtune.
+
 2018-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84502
