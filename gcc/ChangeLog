@@ -1,3 +1,12 @@
+2018-02-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md: Write output control strings as braced
+	blocks instead of double-quoted strings.
+	* config/rs6000/darwin.md: Ditto.
+	* config/rs6000/rs6000.md: Ditto.
+	* config/rs6000/vector.md: Ditto.
+	* config/rs6000/vsx.md: Ditto.
+
 2018-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84314 - ICE with templates and fastcall attribute.
