@@ -1,3 +1,16 @@
+2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.texi: Update Coarray API description.
+	* trans-decl.c (gfc_build_builtin_function_decls): Use size_t for
+	character lengths, int for exit codes.
+	(generate_coarray_sym_init): Use size_t for character length.
+	* trans-intrinsic.c (conv_co_collective): Likewise.
+	* trans-stmt.c (gfc_trans_lock_unlock): Likewise.
+	(gfc_trans_event_post_wait): Likewise.
+	(gfc_trans_sync): Likewise.
+        (gfc_trans_stop): Use size_t for character lengths, int for exit
+	codes.
+
 2018-02-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/48890

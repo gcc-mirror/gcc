@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h> /* For exit and malloc.  */
 #include <string.h> /* For memcpy and memset.  */
 #include <stdarg.h> /* For variadic arguments.  */
+#include <stdint.h>
 #include <assert.h>
 
 /* Define GFC_CAF_CHECK to enable run-time checking.  */
@@ -74,7 +75,7 @@ caf_runtime_error (const char *message, ...)
 /* Error handling is similar everytime.  */
 static void
 caf_internal_error (const char *msg, int *stat, char *errmsg,
-		    int errmsg_len, ...)
+		    size_t errmsg_len, ...)
 {
   va_list args;
   va_start (args, errmsg_len);
@@ -83,8 +84,8 @@ caf_internal_error (const char *msg, int *stat, char *errmsg,
       *stat = 1;
       if (errmsg_len > 0)
 	{
-	  size_t len = snprintf (errmsg, errmsg_len, msg, args);
-	  if ((size_t)errmsg_len > len)
+	  int len = snprintf (errmsg, errmsg_len, msg, args);
+	  if (len >= 0 && errmsg_len > (size_t) len)
 	    memset (&errmsg[len], ' ', errmsg_len - len);
 	}
       va_end (args);
@@ -134,7 +135,7 @@ _gfortran_caf_num_images (int distance __attribute__ ((unused)),
 void
 _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 			gfc_descriptor_t *data, int *stat, char *errmsg,
-			int errmsg_len)
+			size_t errmsg_len)
 {
   const char alloc_fail_msg[] = "Failed to allocate coarray";
   void *local;
@@ -195,7 +196,7 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 void
 _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type, int *stat,
 			  char *errmsg __attribute__ ((unused)),
-			  int errmsg_len __attribute__ ((unused)))
+			  size_t errmsg_len __attribute__ ((unused)))
 {
   caf_single_token_t single_token = TOKEN (*token);
 
@@ -221,7 +222,7 @@ _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type, int *stat,
 void
 _gfortran_caf_sync_all (int *stat,
 			char *errmsg __attribute__ ((unused)),
-			int errmsg_len __attribute__ ((unused)))
+			size_t errmsg_len __attribute__ ((unused)))
 {
   __asm__ __volatile__ ("":::"memory");
   if (stat)
@@ -232,7 +233,7 @@ _gfortran_caf_sync_all (int *stat,
 void
 _gfortran_caf_sync_memory (int *stat,
 			   char *errmsg __attribute__ ((unused)),
-			   int errmsg_len __attribute__ ((unused)))
+			   size_t errmsg_len __attribute__ ((unused)))
 {
   __asm__ __volatile__ ("":::"memory");
   if (stat)
@@ -245,7 +246,7 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 			   int images[] __attribute__ ((unused)),
 			   int *stat,
 			   char *errmsg __attribute__ ((unused)),
-			   int errmsg_len __attribute__ ((unused)))
+			   size_t errmsg_len __attribute__ ((unused)))
 {
 #ifdef GFC_CAF_CHECK
   int i;
@@ -266,7 +267,7 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 
 
 void
-_gfortran_caf_stop_numeric(int32_t stop_code)
+_gfortran_caf_stop_numeric(int stop_code)
 {
   fprintf (stderr, "STOP %d\n", stop_code);
   exit (0);
@@ -274,7 +275,7 @@ _gfortran_caf_stop_numeric(int32_t stop_code)
 
 
 void
-_gfortran_caf_stop_str(const char *string, int32_t len)
+_gfortran_caf_stop_str(const char *string, size_t len)
 {
   fputs ("STOP ", stderr);
   while (len--)
@@ -286,7 +287,7 @@ _gfortran_caf_stop_str(const char *string, int32_t len)
 
 
 void
-_gfortran_caf_error_stop_str (const char *string, int32_t len)
+_gfortran_caf_error_stop_str (const char *string, size_t len)
 {
   fputs ("ERROR STOP ", stderr);
   while (len--)
@@ -366,7 +367,7 @@ _gfortran_caf_stopped_images (gfc_descriptor_t *array,
 
 
 void
-_gfortran_caf_error_stop (int32_t error)
+_gfortran_caf_error_stop (int error)
 {
   fprintf (stderr, "ERROR STOP %d\n", error);
   exit (error);
@@ -377,7 +378,7 @@ void
 _gfortran_caf_co_broadcast (gfc_descriptor_t *a __attribute__ ((unused)),
 			    int source_image __attribute__ ((unused)),
 			    int *stat, char *errmsg __attribute__ ((unused)),
-			    int errmsg_len __attribute__ ((unused)))
+			    size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -387,7 +388,7 @@ void
 _gfortran_caf_co_sum (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
-		      int errmsg_len __attribute__ ((unused)))
+		      size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -398,7 +399,7 @@ _gfortran_caf_co_min (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
 		      int a_len __attribute__ ((unused)),
-		      int errmsg_len __attribute__ ((unused)))
+		      size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -409,7 +410,7 @@ _gfortran_caf_co_max (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
 		      int a_len __attribute__ ((unused)),
-		      int errmsg_len __attribute__ ((unused)))
+		      size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -424,7 +425,7 @@ _gfortran_caf_co_reduce (gfc_descriptor_t *a __attribute__ ((unused)),
                         int result_image __attribute__ ((unused)),
                         int *stat, char *errmsg __attribute__ ((unused)),
                         int a_len __attribute__ ((unused)),
-                        int errmsg_len __attribute__ ((unused)))
+                        size_t errmsg_len __attribute__ ((unused)))
  {
    if (stat)
      *stat = 0;
@@ -2910,7 +2911,7 @@ void
 _gfortran_caf_event_post (caf_token_t token, size_t index, 
 			  int image_index __attribute__ ((unused)), 
 			  int *stat, char *errmsg __attribute__ ((unused)), 
-			  int errmsg_len __attribute__ ((unused)))
+			  size_t errmsg_len __attribute__ ((unused)))
 {
   uint32_t value = 1;
   uint32_t *event = (uint32_t *) ((char *) MEMTOK (token) + index
@@ -2925,7 +2926,7 @@ void
 _gfortran_caf_event_wait (caf_token_t token, size_t index, 
 			  int until_count, int *stat,
 			  char *errmsg __attribute__ ((unused)), 
-			  int errmsg_len __attribute__ ((unused)))
+			  size_t errmsg_len __attribute__ ((unused)))
 {
   uint32_t *event = (uint32_t *) ((char *) MEMTOK (token) + index
 				  * sizeof (uint32_t));
@@ -2952,7 +2953,7 @@ _gfortran_caf_event_query (caf_token_t token, size_t index,
 void
 _gfortran_caf_lock (caf_token_t token, size_t index,
 		    int image_index __attribute__ ((unused)),
-		    int *aquired_lock, int *stat, char *errmsg, int errmsg_len)
+		    int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)
 {
   const char *msg = "Already locked";
   bool *lock = &((bool *) MEMTOK (token))[index];
@@ -2981,22 +2982,22 @@ _gfortran_caf_lock (caf_token_t token, size_t index,
       *stat = 1;
       if (errmsg_len > 0)
 	{
-	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
-						      : (int) sizeof (msg);
+	  size_t len = (sizeof (msg) > errmsg_len) ? errmsg_len
+						      : sizeof (msg);
 	  memcpy (errmsg, msg, len);
 	  if (errmsg_len > len)
 	    memset (&errmsg[len], ' ', errmsg_len-len);
 	}
       return;
     }
-  _gfortran_caf_error_stop_str (msg, (int32_t) strlen (msg));
+  _gfortran_caf_error_stop_str (msg, strlen (msg));
 }
 
 
 void
 _gfortran_caf_unlock (caf_token_t token, size_t index,
 		      int image_index __attribute__ ((unused)),
-		      int *stat, char *errmsg, int errmsg_len)
+		      int *stat, char *errmsg, size_t errmsg_len)
 {
   const char *msg = "Variable is not locked";
   bool *lock = &((bool *) MEMTOK (token))[index];
@@ -3014,15 +3015,15 @@ _gfortran_caf_unlock (caf_token_t token, size_t index,
       *stat = 1;
       if (errmsg_len > 0)
 	{
-	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
-						      : (int) sizeof (msg);
+	  size_t len = (sizeof (msg) > errmsg_len) ? errmsg_len
+	    : sizeof (msg);
 	  memcpy (errmsg, msg, len);
 	  if (errmsg_len > len)
 	    memset (&errmsg[len], ' ', errmsg_len-len);
 	}
       return;
     }
-  _gfortran_caf_error_stop_str (msg, (int32_t) strlen (msg));
+  _gfortran_caf_error_stop_str (msg, strlen (msg));
 }
 
 int
