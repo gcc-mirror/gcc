@@ -1,3 +1,9 @@
+2018-02-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84424 - ICE with constexpr and __builtin_shuffle.
+	* constexpr.c (reduced_constant_expression_p): Handle CONSTRUCTOR of
+	VECTOR_TYPE.
+
 2018-02-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84493
