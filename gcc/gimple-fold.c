@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "calls.h"
 #include "tree-vector-builder.h"
+#include "tree-ssa-strlen.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -1710,37 +1711,8 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   if (tree_int_cst_lt (ssize, len))
     return false;
 
-  if (!nonstring)
-    {
-      if (tree_int_cst_lt (len, slen))
-	{
-	  tree fndecl = gimple_call_fndecl (stmt);
-	  gcall *call = as_a <gcall *> (stmt);
-
-	  warning_at (loc, OPT_Wstringop_truncation,
-		      (tree_int_cst_equal (size_one_node, len)
-		       ? G_("%G%qD output truncated copying %E byte "
-			    "from a string of length %E")
-		       : G_("%G%qD output truncated copying %E bytes "
-			    "from a string of length %E")),
-		      call, fndecl, len, slen);
-	}
-      else if (tree_int_cst_equal (len, slen))
-	{
-	  tree fndecl = gimple_call_fndecl (stmt);
-	  gcall *call = as_a <gcall *> (stmt);
-
-	  warning_at (loc, OPT_Wstringop_truncation,
-		      (tree_int_cst_equal (size_one_node, len)
-		       ? G_("%G%qD output truncated before terminating nul "
-			    "copying %E byte from a string of the same "
-			    "length")
-		       : G_("%G%qD output truncated before terminating nul "
-			    "copying %E bytes from a string of the same "
-			    "length")),
-		      call, fndecl, len);
-	}
-    }
+  /* Diagnose truncation that leaves the copy unterminated.  */
+  maybe_diag_stxncpy_trunc (*gsi, src, len);
 
   /* OK transform into builtin memcpy.  */
   tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);

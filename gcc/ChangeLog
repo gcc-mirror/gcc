@@ -1,3 +1,13 @@
+2018-02-22  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84480
+	* gimple-fold.c (gimple_fold_builtin_strcpy): Move warnings
+	to maybe_diag_stxncpy_trunc.  Call it.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Integrate warnings
+	from gimple_fold_builtin_strcpy.  Print inlining stack.
+	(handle_builtin_stxncpy): Print inlining stack.
+	* tree-ssa-strlen.h (maybe_diag_stxncpy_trunc): Declare.
+
 2018-02-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/84176
