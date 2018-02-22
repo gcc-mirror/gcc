@@ -1,3 +1,11 @@
+2017-02-22  Sudakshina Das  <sudi.das@arm.com>
+
+	Backport from mainline:
+	2017-12-14  Sudakshina Das  <sudi.das@arm.com>
+
+	PR target/81228
+	* gcc.dg/pr81228.c: New.
+
 2018-02-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline

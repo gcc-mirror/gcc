@@ -2490,6 +2490,7 @@
     case UNEQ:
     case ORDERED:
     case UNORDERED:
+    case LTGT:
       break;
     default:
       gcc_unreachable ();
@@ -2542,6 +2543,15 @@
       emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
       emit_insn (gen_ior<v_cmp_result>3 (operands[0], operands[0], tmp));
       emit_insn (gen_one_cmpl<v_cmp_result>2 (operands[0], operands[0]));
+      break;
+
+    case LTGT:
+      /* LTGT is not guranteed to not generate a FP exception.  So let's
+	 go the faster way : ((a > b) || (b > a)).  */
+      emit_insn (gen_aarch64_cmgt<mode> (operands[0],
+					 operands[2], operands[3]));
+      emit_insn (gen_aarch64_cmgt<mode> (tmp, operands[3], operands[2]));
+      emit_insn (gen_ior<v_cmp_result>3 (operands[0], operands[0], tmp));
       break;
 
     case UNORDERED:
