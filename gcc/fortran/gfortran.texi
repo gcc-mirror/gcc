@@ -4458,7 +4458,7 @@ in the @var{DESC}'s data-ptr is registered or allocate when the data-ptr is
 
 @item @emph{Syntax}:
 @code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
-gfc_descriptor_t *desc, int *stat, char *errmsg, int errmsg_len)}
+gfc_descriptor_t *desc, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4510,7 +4510,7 @@ during a call to @code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
 @code{void caf_deregister (caf_token_t *token, caf_deregister_t type,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4949,7 +4949,7 @@ which has already been locked by the same image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
-int *aquired_lock, int *stat, char *errmsg, int errmsg_len)}
+int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4984,7 +4984,7 @@ which is unlocked or has been locked by a different image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5016,7 +5016,7 @@ Increment the event count of the specified event variable.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_event_post (caf_token_t token, size_t index,
-int image_index, int *stat, char *errmsg, int errmsg_len)}
+int image_index, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5053,7 +5053,7 @@ amount and return.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_event_wait (caf_token_t token, size_t index,
-int until_count, int *stat, char *errmsg, int errmsg_len)}
+int until_count, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5131,7 +5131,7 @@ current team.  Additionally, it ensures that all pending data transfers of
 previous segment have completed.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, int errmsg_len)}
+@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5159,7 +5159,7 @@ transfers of previous segments have completed.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_sync_images (int count, int images[], int *stat,
-char *errmsg, int errmsg_len)}
+char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5187,7 +5187,7 @@ Acts as optimization barrier between different segments. It also ensures that
 all pending memory operations of this image have been completed.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, int errmsg_len)}
+@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5214,7 +5214,7 @@ function should terminate the program with the specified exit code.
 
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (int32_t error)}
+@code{void _gfortran_caf_error_stop (int error)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5234,7 +5234,7 @@ Invoked for an @code{ERROR STOP} statement which has a string as argument.  The
 function should terminate the program with a nonzero-exit code.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (const char *string, int32_t len)}
+@code{void _gfortran_caf_error_stop (const char *string, size_t len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5412,7 +5412,7 @@ be called collectively.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_broadcast (gfc_descriptor_t *a,
-int source_image, int *stat, char *errmsg, int errmsg_len)}
+int source_image, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5443,7 +5443,7 @@ strings.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_max (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5480,7 +5480,7 @@ strings.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_min (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5516,7 +5516,7 @@ specified image.  This function operates on numeric values only.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_sum (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5561,7 +5561,7 @@ string lengths shall be specified as hidden arguments;
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_reduce (gfc_descriptor_t *a,
 void * (*opr) (void *, void *), int opr_flags, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

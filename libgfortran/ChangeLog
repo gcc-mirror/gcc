@@ -1,3 +1,56 @@
+2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h (stop_string): Use size_t for character length.
+	* runtime/stop.c (stop_string): Likewise.
+	(error_stop_string): Likewise.
+	(stop_numeric): Use int for exit code.
+	(error_stop_numeric): Likewise.
+	* caf/libcaf.h: Remove stdint.h include.
+	(_gfortran_caf_register): Use size_t for character length.
+	(_gfortran_caf_deregister): Likewise.
+	(_gfortran_caf_sync_all): Likewise.
+	(_gfortran_caf_sync_memory): Likewise.
+	(_gfortran_caf_sync_images): Likewise.
+	(_gfortran_caf_stop_numeric): Use int for exit code.
+	(_gfortran_caf_stop_str): Use size_t for character length.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Use int for exit code.
+	(_gfortran_caf_co_broadcast): Use size_t for character length.
+	(_gfortran_caf_co_sum): Likewise.
+	(_gfortran_caf_co_min): Likewise.
+	(_gfortran_caf_co_max): Likewise.
+	(_gfortran_caf_co_reduce): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+	(_gfortran_caf_event_post): Likewise.
+	(_gfortran_caf_event_wait): Likewise.
+	* caf/mpi.c (_gfortran_caf_register): Update implementation to
+	match prototype.
+	(_gfortran_caf_deregister): Likewise.
+	(_gfortran_caf_sync_all): Likewise.
+	(_gfortran_caf_sync_images): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	* caf/single.c (caf_internal_error): Likewise.
+	(_gfortran_caf_register): Likewise.
+	(_gfortran_caf_deregister): Likewise.
+	(_gfortran_caf_sync_all): Likewise.
+	(_gfortran_caf_sync_memory): Likewise.
+	(_gfortran_caf_sync_images): Likewise.
+	(_gfortran_caf_stop_numeric): Likewise.
+	(_gfortran_caf_stop_str): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	(_gfortran_caf_co_broadcast): Likewise.
+	(_gfortran_caf_co_sum): Likewise.
+	(_gfortran_caf_co_min): Likewise.
+	(_gfortran_caf_co_max): Likewise.
+	(_gfortran_caf_co_reduce): Likewise.
+	(_gfortran_caf_event_post): Likewise.
+	(_gfortran_caf_event_wait): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+
 2018-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/libcaf.h: Add type parameters to the caf_*_by_ref prototypes.
