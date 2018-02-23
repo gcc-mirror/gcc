@@ -1,3 +1,11 @@
+2018-02-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84532
+	* include/std/thread (thread::__make_invoker): Construct tuple
+	directly instead of using make_tuple.
+	* testsuite/30_threads/async/84532.cc: New.
+	* testsuite/30_threads/thread/84532.cc: New.
+
 2018-02-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/ext/aligned_buffer.h [_GLIBCXX_INLINE_VERSION]

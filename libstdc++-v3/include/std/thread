@@ -243,21 +243,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return _M_invoke(_Indices()); }
       };
 
-    // Alias for _Invoker<tuple<DECAY_COPY(_Tp)...>>
     template<typename... _Tp>
-      using __invoker_type
-	= _Invoker<decltype(std::make_tuple(std::declval<_Tp>()...))>;
+      using __decayed_tuple = tuple<typename std::decay<_Tp>::type...>;
 
   public:
-    // Returns a call wrapper that does
-    // INVOKE(DECAY_COPY(__callable), DECAY_COPY(__args)).
+    // Returns a call wrapper that stores
+    // tuple{DECAY_COPY(__callable), DECAY_COPY(__args)...}.
     template<typename _Callable, typename... _Args>
-      static __invoker_type<_Callable, _Args...>
+      static _Invoker<__decayed_tuple<_Callable, _Args...>>
       __make_invoker(_Callable&& __callable, _Args&&... __args)
       {
-	return { {
-	    std::make_tuple(std::forward<_Callable>(__callable),
-			    std::forward<_Args>(__args)...)
+	return { __decayed_tuple<_Callable, _Args...>{
+	    std::forward<_Callable>(__callable), std::forward<_Args>(__args)...
 	} };
       }
   };
