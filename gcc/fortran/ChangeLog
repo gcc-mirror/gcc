@@ -1,5 +1,10 @@
 2018-02-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/84511
+	* trans-io.c (transfer_expr): Deal with C_LOC in transfer statement.
+
+2018-02-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/84346
 	* interface.c (compare_actual_formal): Issue error if keyword is
 	used in a statement function.
