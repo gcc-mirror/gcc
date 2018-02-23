@@ -1113,7 +1113,8 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
 	      cgraph_node *node = cgraph_node::get_create (exp_decl);
 	      if (node->simd_clones == NULL)
 		{
-		  if (node->definition)
+		  if (targetm.simd_clone.compute_vecsize_and_simdlen == NULL
+		      || node->definition)
 		    return NULL;
 		  expand_simd_clones (node);
 		  if (node->simd_clones == NULL)

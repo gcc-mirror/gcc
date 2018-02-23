@@ -9,6 +9,6 @@
   integer(8) :: q(4) = (/2,4,1,3/)
   p(p) = (/(i, i = 1, 4)/)
   q(q) = (/(i, i = 1, 4)/)
-  if (any(p .ne. q)) call abort ()
+  if (any(p .ne. q)) STOP 1
 end
 

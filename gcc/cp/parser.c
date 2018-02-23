@@ -9331,12 +9331,18 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  && lookahead_prec <= current.prec
 	  && sp == stack)
 	{
-	  current.lhs
-	    = build_min (current.tree_type,
-			 TREE_CODE_CLASS (current.tree_type) == tcc_comparison
-			 ? boolean_type_node : TREE_TYPE (current.lhs),
-			 current.lhs.get_value (), rhs.get_value ());
-	  SET_EXPR_LOCATION (current.lhs, combined_loc);
+	  if (current.lhs == error_mark_node || rhs == error_mark_node)
+	    current.lhs = error_mark_node;
+	  else
+	    {
+	      current.lhs
+		= build_min (current.tree_type,
+			     TREE_CODE_CLASS (current.tree_type)
+			     == tcc_comparison
+			     ? boolean_type_node : TREE_TYPE (current.lhs),
+			     current.lhs.get_value (), rhs.get_value ());
+	      SET_EXPR_LOCATION (current.lhs, combined_loc);
+	    }
 	}
       else
         {
@@ -19644,12 +19650,12 @@ cp_parser_init_declarator (cp_parser* parser,
 	     member templates.  The former involves deferring
 	     parsing of the initializer until end of class as with default
 	     arguments.  So right here we only handle the latter.  */
-	  if (!member_p && processing_template_decl)
+	  if (!member_p && processing_template_decl && decl != error_mark_node)
 	    start_lambda_scope (decl);
 	  initializer = cp_parser_initializer (parser,
 					       &is_direct_init,
 					       &is_non_constant_init);
-	  if (!member_p && processing_template_decl)
+	  if (!member_p && processing_template_decl && decl != error_mark_node)
 	    finish_lambda_scope ();
 	  if (initializer == error_mark_node)
 	    cp_parser_skip_to_end_of_statement (parser);
@@ -21919,7 +21925,7 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
 
   /* Consume the `{' token.  */
   matching_braces braces;
-  braces.consume_open (parser);
+  braces.require_open (parser);
   /* Create a CONSTRUCTOR to represent the braced-initializer.  */
   initializer = make_node (CONSTRUCTOR);
   /* If it's not a `}', then there is a non-trivial initializer.  */

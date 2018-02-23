@@ -145,16 +145,17 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 
 /* Syminfo callback.  */
 
-static void
-syminfo_fnname_callback (void *data, uintptr_t pc __attribute__ ((unused)),
-			 const char *symname,
-			 uintptr_t address __attribute__ ((unused)),
-			 uintptr_t size __attribute__ ((unused)))
+void
+__go_syminfo_fnname_callback (void *data,
+			      uintptr_t pc __attribute__ ((unused)),
+			      const char *symname,
+			      uintptr_t address __attribute__ ((unused)),
+			      uintptr_t size __attribute__ ((unused)))
 {
-  Location* locptr = (Location*) data;
+  String* strptr = (String*) data;
 
   if (symname != NULL)
-    locptr->function = runtime_gostringnocopy ((const byte *) symname);
+    *strptr = runtime_gostringnocopy ((const byte *) symname);
 }
 
 /* Error callback.  */
@@ -228,8 +229,8 @@ runtime_callers (int32 skip, Location *locbuf, int32 m, bool keep_thunks)
   for (i = 0; i < data.index; ++i)
     {
       if (locbuf[i].function.len == 0 && locbuf[i].pc != 0)
-	backtrace_syminfo (state, locbuf[i].pc, syminfo_fnname_callback,
-			   error_callback, &locbuf[i]);
+	backtrace_syminfo (state, locbuf[i].pc, __go_syminfo_fnname_callback,
+			   error_callback, &locbuf[i].function);
     }
 
   return data.index;

@@ -16,12 +16,12 @@ interface runtime_poppar
 end interface
 
 #define CHECK(val,res) \
-  if (popcnt(val) /= res) call abort ; \
-  if (runtime_popcnt(val) /= res) call abort
+  if (popcnt(val) /= res) STOP 1; \
+  if (runtime_popcnt(val) /= res) STOP 2
 
 #define CHECK2(val) \
-  if (poppar(val) /= modulo(popcnt(val),2)) call abort ; \
-  if (runtime_poppar(val) /= poppar(val)) call abort
+  if (poppar(val) /= modulo(popcnt(val),2)) STOP 3; \
+  if (runtime_poppar(val) /= poppar(val)) STOP 4
 
   CHECK(0_1, 0)
   CHECK(0_2, 0)

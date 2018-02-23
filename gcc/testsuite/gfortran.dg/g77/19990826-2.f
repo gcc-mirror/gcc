@@ -31,6 +31,6 @@ c
       a = f1(one) 
       if ( abs(a-1.0) .gt. 1.0e-5 ) then
          write(6,*) 'A should be 1.0 but it is',a
-         call abort()
+         STOP 1
       end if
       end

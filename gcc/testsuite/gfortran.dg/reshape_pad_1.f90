@@ -15,11 +15,11 @@ program main
 
   A1(1:N,1:N)=reshape(A1(1:0,1),(/N,N/),b1)
   write(unit=line,fmt='(100i1)') A1
-  if (line .ne. "122212221") call abort
+  if (line .ne. "122212221") STOP 1
 
   b4 = (/ 3, 4, 4, 4 /)
 
   a4 = reshape(a4(:0,1),(/n,n/),b4)
   write(unit=line,fmt='(100i1)') a4
-  if (line .ne. "344434443") call abort
+  if (line .ne. "344434443") STOP 2
 end program main

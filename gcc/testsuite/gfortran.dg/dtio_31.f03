@@ -42,6 +42,6 @@ program test_dollar
    type(dollar_type), parameter :: wage = dollar_type(15.10)
    character(len=10) str
    write (str, fmt="(DT)") wage
-   if(trim(adjustl(str)) /= '15.10') call abort
+   if(trim(adjustl(str)) /= '15.10') STOP 1
 
 end program test_dollar

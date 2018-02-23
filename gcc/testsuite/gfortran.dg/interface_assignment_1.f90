@@ -33,6 +33,6 @@ D=D
 E%I=4
 CALL set(E,(E))
 
-IF (D%I.NE.4) call abort ()
-IF (4.NE.E%I) call abort ()
+IF (D%I.NE.4) STOP 1
+IF (4.NE.E%I) STOP 2
 END

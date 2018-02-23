@@ -838,6 +838,26 @@ fix = {
     test_text = "#define valloc __linux_valloc";
 };
 
+fix = {
+    hackname  = aix_stdlib_vec_malloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+malloc[ \t]+vec_malloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *malloc(size_t) __asm__(\"vec_malloc\");";
+    test_text = "#define malloc vec_malloc";
+};
+
+fix = {
+    hackname  = aix_stdlib_vec_calloc;
+    mach      = "*-*-aix*";
+    files     = stdlib.h;
+    select    = "#define[ \t]+calloc[ \t]+vec_calloc";
+    c_fix     = format;
+    c_fix_arg = "extern void *calloc(size_t, size_t) __asm__(\"vec_calloc\");";
+    test_text = "#define calloc vec_calloc";
+};
+
 /*
  * stdlib.h on AIX 4.3 declares strtof() with a non-const first argument.
  */

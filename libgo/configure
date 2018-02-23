@@ -13653,10 +13653,10 @@ esac
 #   - libgo/go/syscall/endian_XX.go
 #   - possibly others
 # - possibly update files in libgo/go/internal/syscall/unix
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sh shbe sparc sparc64"
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv64 s390 s390x sh shbe sparc sparc64"
 
 # All known GOARCH family values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SH SPARC SPARC64"
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 RISCV64 S390 S390X SH SPARC SPARC64"
 
 GOARCH=unknown
 case ${host} in
@@ -13772,6 +13772,9 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    ;;
+  riscv64-*-*)
+    GOARCH=riscv64
     ;;
   s390*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -14209,7 +14212,7 @@ if test "${libgo_cv_lib_pthread+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -pthread"
+CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 int i;
@@ -14226,7 +14229,8 @@ fi
 $as_echo "$libgo_cv_lib_pthread" >&6; }
 PTHREAD_CFLAGS=
 if test "$libgo_cv_lib_pthread" = yes; then
-  PTHREAD_CFLAGS=-pthread
+  # RISC-V apparently adds -latomic when using -pthread.
+  PTHREAD_CFLAGS="-pthread -L../libatomic/.libs"
 fi
 
 

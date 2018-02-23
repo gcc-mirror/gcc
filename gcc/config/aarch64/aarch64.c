@@ -7059,7 +7059,8 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
   unsigned int size;
 
   /* Check all addresses are Pmode - including ILP32.  */
-  gcc_assert (GET_MODE (x) == Pmode);
+  if (GET_MODE (x) != Pmode)
+    output_operand_lossage ("invalid address mode");
 
   if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
@@ -10628,11 +10629,21 @@ aarch64_print_hint_for_core_or_arch (const char *str, bool arch)
   const struct processor *entry = arch ? all_architectures : all_cores;
   for (; entry->name != NULL; entry++)
     candidates.safe_push (entry->name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+  /* Add also "native" as possible value.  */
+  if (arch)
+    candidates.safe_push ("native");
+#endif
+
   char *s;
   const char *hint = candidates_list_and_hint (str, s, candidates);
   if (hint)
     inform (input_location, "valid arguments are: %s;"
 			     " did you mean %qs?", s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
   XDELETEVEC (s);
 }
 

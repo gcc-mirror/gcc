@@ -44,20 +44,20 @@ c { dg-do run }
       double precision d1, d2, d3
       integer i1, i2, i3
 
-      if (r1(1) .ne. 1.) call abort
-      if (d1 .ne. 10.) call abort
-      if (r1(4) .ne. 1.) call abort
-      if (r1(5) .ne. 1.) call abort
-      if (i1 .ne. 1) call abort
-      if (r2(1) .ne. 2.) call abort
-      if (d2 .ne. 20.) call abort
-      if (r2(4) .ne. 2.) call abort
-      if (r2(5) .ne. 2.) call abort
-      if (i2 .ne. 2) call abort
-      if (r3(1) .ne. 3.) call abort
-      if (d3 .ne. 30.) call abort
-      if (r3(4) .ne. 3.) call abort
-      if (r3(5) .ne. 3.) call abort
-      if (i3 .ne. 3) call abort
+      if (r1(1) .ne. 1.) STOP 1
+      if (d1 .ne. 10.) STOP 2
+      if (r1(4) .ne. 1.) STOP 3
+      if (r1(5) .ne. 1.) STOP 4
+      if (i1 .ne. 1) STOP 5
+      if (r2(1) .ne. 2.) STOP 6
+      if (d2 .ne. 20.) STOP 7
+      if (r2(4) .ne. 2.) STOP 8
+      if (r2(5) .ne. 2.) STOP 9
+      if (i2 .ne. 2) STOP 10
+      if (r3(1) .ne. 3.) STOP 11
+      if (d3 .ne. 30.) STOP 12
+      if (r3(4) .ne. 3.) STOP 13
+      if (r3(5) .ne. 3.) STOP 14
+      if (i3 .ne. 3) STOP 15
 
       end

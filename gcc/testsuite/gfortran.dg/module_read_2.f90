@@ -23,6 +23,6 @@ use m_string
 type(t_string) :: str
 allocate(str%string(5))
 str%string = ['H','e','l','l','o']
-if (len (string_to_char (str)) /= 5) call abort ()
-if (string_to_char (str) /= "Hello") call abort ()
+if (len (string_to_char (str)) /= 5) STOP 1
+if (string_to_char (str) /= "Hello") STOP 2
 end

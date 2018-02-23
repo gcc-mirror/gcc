@@ -6,5 +6,5 @@ program common_size
    equivalence (a(1), b(2))
    b = 100
    c = 200 
-   if ((a (4) .ne. 100) .or. (a(5) .ne. 200)) call abort
+   if ((a (4) .ne. 100) .or. (a(5) .ne. 200)) STOP 1
 end

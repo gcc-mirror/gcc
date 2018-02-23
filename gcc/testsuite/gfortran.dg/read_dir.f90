@@ -9,12 +9,12 @@ program bug
    open(unit=10, file='junko.dir',iostat=ios,action='read',access='stream')
    if (ios.ne.0) then
       call system('rmdir junko.dir')
-      call abort
+      STOP 1
    end if
    read(10, iostat=ios) c
    if (ios.ne.21.and.ios.ne.0) then 
       close(10, status='delete')
-      call abort
+      STOP 2
    end if
    close(10, status='delete')
 end program bug

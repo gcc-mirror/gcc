@@ -122,7 +122,7 @@ contains
     rewind (10)
     read (10, z, iostat = ier)
     close(10)
-    if (ier == 0) call abort ()
+    if (ier == 0) STOP 1
 
 ! Check that right namelist input gives no error
 
@@ -131,7 +131,7 @@ contains
     rewind (10)
     read (10, z, iostat = ier)
     close(10)
-    if (ier /= 0) call abort ()
+    if (ier /= 0) STOP 2
   end subroutine test_err
   
 end program namelist_19

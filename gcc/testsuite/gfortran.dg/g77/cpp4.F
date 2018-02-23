@@ -5,7 +5,7 @@ C which contain apostrophes.
       character(4) j
       data i /4hbla'/
       write (j, '(4a)') i
-      if (j .ne. "bla'") call abort
+      if (j .ne. "bla'") STOP 1
       end
 
       ! { dg-warning "Hollerith constant" "const" { target *-*-* } 6 }

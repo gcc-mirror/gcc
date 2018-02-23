@@ -46,6 +46,6 @@ contains
   subroutine test (string, length)
     character (len = *) :: string
     integer, intent (in) :: length
-    if (len (string) .ne. length) call abort
+    if (len (string) .ne. length) STOP 1
   end subroutine test
 end program main

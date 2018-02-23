@@ -38,16 +38,16 @@ module c_f_pointer_tests
     call c_f_pointer(myCDerived, myF90Type)
     ! make sure numbers are ok.  initialized in c_f_tests_driver.c
     if(myF90Type%cInt .ne. 1) then
-       call abort()
+       STOP 1
     endif
     if(myF90Type%cDouble .ne. 2.0d0) then
-       call abort()
+       STOP 2
     endif
     if(myF90Type%cFloat .ne. 3.0) then
-       call abort()
+       STOP 3
     endif
     if(myF90Type%cShort .ne. 4) then
-       call abort()
+       STOP 4
     endif
 
     shapeArray(1) = arrayLen
@@ -62,7 +62,7 @@ module c_f_pointer_tests
          (derivedArray2D(dim1, dim2)%cDouble .ne. 4.0d0) .or. &
          (derivedArray2D(dim1, dim2)%cFloat .ne. 4.0) .or. &
          (derivedArray2D(dim1, dim2)%cShort .ne. 4)) then
-       call abort()
+       STOP 5
     endif
   end subroutine testDerivedPtrs
 end module c_f_pointer_tests

@@ -13,6 +13,6 @@ program p
    type(t(8, :)), allocatable :: x
    real(x%a) :: y         ! Used to die here because initializers were mixed up.
    allocate(t(8, 2) :: x)
-   if (kind(y) .ne. x%a) call abort
+   if (kind(y) .ne. x%a) STOP 1
    deallocate(x)
 end

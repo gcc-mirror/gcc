@@ -29,5 +29,5 @@ program p
    integer :: istat
    character(len=256) :: imsg = ""
    write( msg, "(DT)", iostat=istat) s
-   if (istat /= 5018) call abort
+   if (istat /= 5018) STOP 1
 end program p

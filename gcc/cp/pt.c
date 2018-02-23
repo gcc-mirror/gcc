@@ -6143,7 +6143,12 @@ convert_nontype_argument_function (tree type, tree expr,
 
  accept:
   if (TREE_CODE (type) == REFERENCE_TYPE)
-    fn = build_address (fn);
+    {
+      if (REFERENCE_REF_P (fn))
+	fn = TREE_OPERAND (fn, 0);
+      else
+	fn = build_address (fn);
+    }
   if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (fn)))
     fn = build_nop (type, fn);
 
@@ -11521,8 +11526,9 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	     context.  */
 	  tree gen = TREE_PURPOSE (elt);
 	  tree inst = TREE_VALUE (elt);
-	  if (DECL_PACK_P (inst))
-	    inst = retrieve_local_specialization (inst);
+	  if (DECL_P (inst))
+	    if (tree local = retrieve_local_specialization (inst))
+	      inst = local;
 	  /* else inst is already a full instantiation of the pack.  */
 	  register_local_specialization (inst, gen);
 	}
@@ -15785,7 +15791,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree orig_declv,
   tree auto_node = type_uses_auto (TREE_TYPE (decl));
   if (auto_node && init)
     TREE_TYPE (decl)
-      = do_auto_deduction (TREE_TYPE (decl), init, auto_node);
+      = do_auto_deduction (TREE_TYPE (decl), init, auto_node, complain);
 
   gcc_assert (!type_dependent_expression_p (decl));
 
@@ -17064,6 +17070,10 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       bool nested = cfun;
       if (nested)
 	push_function_context ();
+      else
+	/* Still increment function_depth so that we don't GC in the
+	   middle of an expression.  */
+	++function_depth;
 
       local_specialization_stack s (lss_copy);
 
@@ -17078,6 +17088,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       if (nested)
 	pop_function_context ();
+      else
+	--function_depth;
 
       /* The capture list was built up in reverse order; fix that now.  */
       LAMBDA_EXPR_CAPTURE_LIST (r)
@@ -23546,6 +23558,7 @@ static tree
 tsubst_initializer_list (tree t, tree argvec)
 {
   tree inits = NULL_TREE;
+  tree target_ctor = error_mark_node;
 
   for (; t; t = TREE_CHAIN (t))
     {
@@ -23661,6 +23674,28 @@ tsubst_initializer_list (tree t, tree argvec)
 		init = void_type_node;
               in_base_initializer = 0;
             }
+
+	  if (target_ctor != error_mark_node
+	      && init != error_mark_node)
+	    {
+	      error ("mem-initializer for %qD follows constructor delegation",
+		     decl);
+	      return inits;
+	    }
+	  /* Look for a target constructor. */
+	  if (init != error_mark_node
+	      && decl && CLASS_TYPE_P (decl)
+	      && same_type_p (decl, current_class_type))
+	    {
+	      maybe_warn_cpp0x (CPP0X_DELEGATING_CTORS);
+	      if (inits)
+		{
+		  error ("constructor delegation follows mem-initializer for %qD",
+			 TREE_PURPOSE (inits));
+		  continue;
+		}
+	      target_ctor = init;
+	    }
 
           if (decl)
             {
@@ -25453,7 +25488,8 @@ dguide_name (tree tmpl)
 bool
 dguide_name_p (tree name)
 {
-  return (TREE_TYPE (name)
+  return (TREE_CODE (name) == IDENTIFIER_NODE
+	  && TREE_TYPE (name)
 	  && !strncmp (IDENTIFIER_POINTER (name), dguide_base,
 		       strlen (dguide_base)));
 }
@@ -25941,17 +25977,6 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
 }
 
 /* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
-   from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.  */
-
-tree
-do_auto_deduction (tree type, tree init, tree auto_node)
-{
-  return do_auto_deduction (type, init, auto_node,
-                            tf_warning_or_error,
-                            adc_unspecified);
-}
-
-/* Replace occurrences of 'auto' in TYPE with the appropriate type deduced
    from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.
    The CONTEXT determines the context in which auto deduction is performed
    and is used to control error diagnostics.  FLAGS are the LOOKUP_* flags.
@@ -25986,7 +26011,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     /* C++17 class template argument deduction.  */
     return do_class_deduction (type, tmpl, init, flags, complain);
 
-  if (TREE_TYPE (init) == NULL_TREE)
+  if (init == NULL_TREE || TREE_TYPE (init) == NULL_TREE)
     /* Nothing we can do with this, even in deduction context.  */
     return type;
 

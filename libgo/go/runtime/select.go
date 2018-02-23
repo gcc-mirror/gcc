@@ -584,6 +584,13 @@ retc:
 	if cas.releasetime > 0 {
 		blockevent(cas.releasetime-t0, 1)
 	}
+
+	// Check preemption, since unlike gc we don't check on every call.
+	// A test case for this one is BenchmarkPingPongHog in proc_test.go.
+	if dfl != nil && getg().preempt {
+		checkPreempt()
+	}
+
 	return casi
 
 sclose:

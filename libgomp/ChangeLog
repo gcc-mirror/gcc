@@ -1,3 +1,20 @@
+2018-02-19  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84418
+	* libgomp.fortran/pr84418-1.f90: New test.
+	* libgomp.fortran/pr84418-2.f90: New test.
+
+2018-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84313
+	* testsuite/libgomp.fortran/threadprivate4.f90: Add
+	-std=f2003 -fall-intrinsics into dg-additional-options.
+
 2018-02-08  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/libgomp.hsa.c/pr82416.c: Make the function with target

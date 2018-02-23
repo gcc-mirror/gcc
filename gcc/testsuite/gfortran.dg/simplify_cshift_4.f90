@@ -19,19 +19,19 @@ program main
   integer, parameter, dimension(3,4,5) :: c3 = cshift(c,shift=sh3,dim=3)
 
   b = a
-  if (any(cshift(a,1) /= cshift(b,1))) call abort
-  if (any(cshift(a,2) /= cshift(b,2))) call abort
-  if (any(cshift(a,1,dim=2) /= cshift(b,1,dim=2))) call abort
+  if (any(cshift(a,1) /= cshift(b,1))) STOP 1
+  if (any(cshift(a,2) /= cshift(b,2))) STOP 2
+  if (any(cshift(a,1,dim=2) /= cshift(b,1,dim=2))) STOP 3
   d = c
-  if (any(cshift(c,1) /= cshift(d,1))) call abort
-  if (any(cshift(c,2) /= cshift(d,2))) call abort
-  if (any(cshift(c,3) /= cshift(d,3))) call abort
+  if (any(cshift(c,1) /= cshift(d,1))) STOP 4
+  if (any(cshift(c,2) /= cshift(d,2))) STOP 5
+  if (any(cshift(c,3) /= cshift(d,3))) STOP 6
 
-  if (any(cshift(c,1,dim=2) /= cshift(d,1,dim=2))) call abort
-  if (any(cshift(c,2,dim=2) /= cshift(d,2,dim=2))) call abort
-  if (any(cshift(c,3,dim=3) /= cshift(d,3,dim=3))) call abort
+  if (any(cshift(c,1,dim=2) /= cshift(d,1,dim=2))) STOP 7
+  if (any(cshift(c,2,dim=2) /= cshift(d,2,dim=2))) STOP 8
+  if (any(cshift(c,3,dim=3) /= cshift(d,3,dim=3))) STOP 9
 
-  if (any(cshift(d,shift=sh1,dim=1) /= c1)) call abort
-  if (any(cshift(d,shift=sh2,dim=2) /= c2)) call abort
-  if (any(cshift(d,shift=sh3,dim=3) /= c3)) call abort
+  if (any(cshift(d,shift=sh1,dim=1) /= c1)) STOP 10
+  if (any(cshift(d,shift=sh2,dim=2) /= c2)) STOP 11
+  if (any(cshift(d,shift=sh3,dim=3) /= c3)) STOP 12
 end program main

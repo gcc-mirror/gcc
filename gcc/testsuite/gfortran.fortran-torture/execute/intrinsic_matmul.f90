@@ -16,17 +16,17 @@ program intrinsic_matmul
    y = (/1, 2, 3/)
 
    r = matmul(a, b)
-   if (any(r .ne. reshape((/14, 20, 26, 38/), (/2, 2/)))) call abort
+   if (any(r .ne. reshape((/14, 20, 26, 38/), (/2, 2/)))) STOP 1
 
    v = matmul(x, a)
-   if (any(v .ne. (/5, 8, 11/))) call abort
+   if (any(v .ne. (/5, 8, 11/))) STOP 2
 
    v(1:2) = matmul(a, y)
-   if (any(v(1:2) .ne. (/14, 20/))) call abort
+   if (any(v(1:2) .ne. (/14, 20/))) STOP 3
 
   aa = reshape((/ 1.0, 1.0, 0.0, 1.0/), shape(aa))
   cc = 42.
   cc(1:2,1:2) = matmul(aa, transpose(aa))
-  if (any(cc(1:2,1:2) .ne. reshape((/ 1.0, 1.0, 1.0, 2.0 /), (/2,2/)))) call abort
-  if (any(cc(3:4,1:2) .ne. 42.)) call abort
+  if (any(cc(1:2,1:2) .ne. reshape((/ 1.0, 1.0, 1.0, 2.0 /), (/2,2/)))) STOP 4
+  if (any(cc(3:4,1:2) .ne. 42.)) STOP 5
 end program

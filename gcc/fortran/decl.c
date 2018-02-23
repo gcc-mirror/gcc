@@ -3302,7 +3302,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 		kind_expr = gfc_copy_expr (c1->initializer);
 	      else if (!(actual_param && param->attr.pdt_len))
 		{
-		  gfc_error ("The derived parameter '%qs' at %C does not "
+		  gfc_error ("The derived parameter %qs at %C does not "
 			     "have a default value", param->name);
 		  goto error_return;
 		}
@@ -3362,14 +3362,14 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  && (actual_param->spec_type == SPEC_ASSUMED
 	      || actual_param->spec_type == SPEC_DEFERRED))
 	{
-	  gfc_error ("The KIND parameter '%qs' at %C cannot either be "
+	  gfc_error ("The KIND parameter %qs at %C cannot either be "
 		     "ASSUMED or DEFERRED", param->name);
 	  goto error_return;
 	}
 
       if (!kind_expr || !gfc_is_constant_expr (kind_expr))
 	{
-	  gfc_error ("The value for the KIND parameter '%qs' at %C does not "
+	  gfc_error ("The value for the KIND parameter %qs at %C does not "
 		     "reduce to a constant expression", param->name);
 	  goto error_return;
 	}

@@ -2444,11 +2444,14 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
 	  && types_compatible_p (TREE_TYPE (mem), type))
 	{
 	  tree offset = TMR_OFFSET (mem);
-	  if (alias_ptr_type != TREE_TYPE (offset) || !integer_zerop (offset))
+	  if (type != TREE_TYPE (mem)
+	      || alias_ptr_type != TREE_TYPE (offset)
+	      || !integer_zerop (offset))
 	    {
 	      mem = copy_node (mem);
 	      TMR_OFFSET (mem) = wide_int_to_tree (alias_ptr_type,
 						   wi::to_poly_wide (offset));
+	      TREE_TYPE (mem) = type;
 	    }
 	  return mem;
 	}

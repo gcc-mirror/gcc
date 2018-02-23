@@ -20,7 +20,7 @@
       UDA(1)%IA(1:9) = UDA(1)%IA(9:1:-1)+1
 
       DO J1 = 1,9
-         if (UDA1R%IA(10-J1)+1 /=  Uda(1)%IA(J1)) call abort()
+         if (UDA1R%IA(10-J1)+1 /=  Uda(1)%IA(J1)) STOP 1
       ENDDO
 
       end

@@ -891,9 +891,13 @@ extern unsigned riscv_stack_boundary;
 #define SHIFT_RS1 15
 #define SHIFT_IMM 20
 #define IMM_BITS 12
+#define C_SxSP_BITS 6
 
 #define IMM_REACH (1LL << IMM_BITS)
 #define CONST_HIGH_PART(VALUE) (((VALUE) + (IMM_REACH/2)) & ~(IMM_REACH-1))
 #define CONST_LOW_PART(VALUE) ((VALUE) - CONST_HIGH_PART (VALUE))
+
+#define SWSP_REACH (4LL << C_SxSP_BITS)
+#define SDSP_REACH (8LL << C_SxSP_BITS)
 
 #endif /* ! GCC_RISCV_H */

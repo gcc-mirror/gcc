@@ -6,6 +6,6 @@ program us_recl
   integer :: istatus
   open(unit=10, form="unformatted", access="sequential", RECL=16)
   write(10, iostat=istatus) array
-  if (istatus == 0) call abort()
+  if (istatus == 0) STOP 1
   close(10, status="delete")
 end program us_recl

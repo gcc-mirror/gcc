@@ -6470,10 +6470,11 @@ extern tree make_auto				(void);
 extern tree make_decltype_auto			(void);
 extern tree make_template_placeholder		(tree);
 extern bool template_placeholder_p		(tree);
-extern tree do_auto_deduction                   (tree, tree, tree);
 extern tree do_auto_deduction                   (tree, tree, tree,
-                                                 tsubst_flags_t,
-                                                 auto_deduction_context,
+                                                 tsubst_flags_t
+						 = tf_warning_or_error,
+                                                 auto_deduction_context
+						 = adc_unspecified,
 						 tree = NULL_TREE,
 						 int = LOOKUP_NORMAL);
 extern tree type_uses_auto			(tree);

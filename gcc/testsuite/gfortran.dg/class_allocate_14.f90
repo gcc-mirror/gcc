@@ -11,12 +11,12 @@ contains
 subroutine sub
   type(t), save, allocatable :: x
   class(t), save,allocatable :: y
-  if (.not. same_type_as(x,y)) call abort()
+  if (.not. same_type_as(x,y)) STOP 1
 end subroutine sub
 subroutine sub2
   type(t), save, allocatable :: a(:)
   class(t), save,allocatable :: b(:)
-  if (.not. same_type_as(a,b)) call abort()
+  if (.not. same_type_as(a,b)) STOP 2
 end subroutine sub2
 end module m
 

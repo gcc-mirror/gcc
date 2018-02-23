@@ -8,5 +8,5 @@ program main
   c(2) = '1234'
   c(3) = 'wxyz'
   c(:)(1:2) = c(2)(2:3)   ! { dg-warning "array temporary" }
-  if (c(3) .ne. '23yz') call abort
+  if (c(3) .ne. '23yz') STOP 1
 end program main

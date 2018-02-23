@@ -6,6 +6,6 @@
 !
 program p
    associate (x => ['1','2'])
-      if (any (x .ne. ['1','2'])) call abort
+      if (any (x .ne. ['1','2'])) STOP 1
    end associate
 end

@@ -5101,7 +5101,7 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  if (WORD_REGISTER_OPERATIONS
 	      && load_extend_op (inner_mode) == SIGN_EXTEND
 	      && paradoxical_subreg_p (x)
-	      && (MEM_P (SUBREG_REG (x)) || REG_P (SUBREG_REG (x))))
+	      && MEM_P (SUBREG_REG (x)))
 	    return cached_num_sign_bit_copies (SUBREG_REG (x), mode,
 					       known_x, known_mode, known_ret);
 	}

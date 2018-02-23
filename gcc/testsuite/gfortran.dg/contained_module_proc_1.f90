@@ -34,5 +34,5 @@ end module chk_gfortran
 program fire
    use chk_gfortran
    implicit none
-   if(.not. is_gfortran()) call abort()
+   if(.not. is_gfortran()) STOP 1
 end program fire

@@ -77,9 +77,9 @@ end module
   allocate (cz, source = mytype(ftype, :, 0, matrix)) ! { dg-error "Syntax error" }
   select type (cz)
     type is (mytype(ftype, d_dim))  ! { dg-error "must be ASSUMED" }
-      if (int (sum (cz%d)) .ne. 136) call abort ! { dg-error "Expected TYPE IS" }
+      if (int (sum (cz%d)) .ne. 136) STOP 1! { dg-error "Expected TYPE IS" }
     type is (thytype(ftype, *, 8))
-      call abort
+      STOP 2
   end select
   deallocate (cz)
 
@@ -87,9 +87,9 @@ end module
   cz%d = reshape ([(i*10, i = 1, cz%b**2)], [cz%b,cz%b])
   select type (cz)
     type is (mytype(4, *))        !  { dg-error "must be an extension" }
-      call abort
+      STOP 3
     type is (thytype(ftype, *, 8))
-      if (int (sum (cz%d)) .ne. 20800) call abort
+      if (int (sum (cz%d)) .ne. 20800) STOP 4
   end select
   deallocate (cz)
 contains

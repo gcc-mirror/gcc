@@ -2794,6 +2794,13 @@ func exitsyscall(dummy int32) {
 		exitsyscallclear(_g_)
 		_g_.m.locks--
 		_g_.throwsplit = false
+
+		// Check preemption, since unlike gc we don't check on
+		// every call.
+		if getg().preempt {
+			checkPreempt()
+		}
+
 		return
 	}
 
@@ -4084,8 +4091,9 @@ func preemptone(_p_ *p) bool {
 	// setting a global variable and figuring out a way to efficiently
 	// check that global variable.
 	//
-	// For now we check gp.preempt in schedule and mallocgc,
-	// which is at least better than doing nothing at all.
+	// For now we check gp.preempt in schedule, mallocgc, selectgo,
+	// and a few other places, which is at least better than doing
+	// nothing at all.
 
 	return true
 }

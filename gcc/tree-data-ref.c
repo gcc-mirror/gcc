@@ -2200,13 +2200,10 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
     {
       if (TREE_CODE (obj) == ARRAY_REF)
 	{
-	  /* Index of the ARRAY_REF was zeroed in analyze_indices, thus we only
-	     need to check the stride and the lower bound of the reference.  */
-	  if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (obj, 2),
-						      loop->num)
-	      || chrec_contains_symbols_defined_in_loop (TREE_OPERAND (obj, 3),
-							 loop->num))
-	    return false;
+	  for (int i = 1; i < 4; ++i)
+	    if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (obj, i),
+							loop->num))
+	      return false;
 	}
       else if (TREE_CODE (obj) == COMPONENT_REF)
 	{

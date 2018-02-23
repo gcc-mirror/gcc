@@ -1,3 +1,23 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/82368
+	* elf.c (SHT_PROGBITS): Undefine and define.
+
+2018-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/82368
+	* elf.c (EM_PPC64, EF_PPC64_ABI): Undefine and define.
+	(struct elf_ppc64_opd_data): New type.
+	(elf_initialize_syminfo): Add opd argument, handle symbols
+	pointing into the PowerPC64 ELFv1 .opd section.
+	(elf_add): Read .opd section on PowerPC64 ELFv1, pass pointer
+	to structure with .opd data to elf_initialize_syminfo.
+
 2018-01-31  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_add): Close descriptor if we use a debugfile.

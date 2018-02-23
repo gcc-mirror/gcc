@@ -3,5 +3,5 @@
        integer I, A(10)
        A = 2
        I=A(1.0) ! { dg-warning "Extension" }
-       if (i/=2) call abort ()
+       if (i/=2) STOP 1
        end

@@ -56,7 +56,7 @@ write(*,'(4D18.5)') t, x2, y2, z2
 if (x1 .ne. x2 .or. y1 .ne. y2 &
     .or. x1 .ne. y1 .or. x2 .ne. y2 &
     .or. y2 .ne. z2) then
-  call abort()
+  STOP 1
 endif
 
 end

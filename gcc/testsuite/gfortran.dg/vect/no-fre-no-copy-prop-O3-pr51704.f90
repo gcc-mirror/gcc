@@ -18,18 +18,18 @@
         &       i=0,nx-1), j=0,ny-1) /), shape(pz))
   integer, dimension(nx,ny,nz) :: a
   integer, dimension(nx,ny   ) :: az
-  if (sum(sum(sum(a,1),2),1) /= sum(a)) call abort
-  if (sum(sum(sum(a,3),1),1) /= sum(a)) call abort
+  if (sum(sum(sum(a,1),2),1) /= sum(a)) STOP 1
+  if (sum(sum(sum(a,3),1),1) /= sum(a)) STOP 2
   if (any(1+sum(eid(a),1)+ax+sum( &
         neid3(a), &
-        1)+1  /= 3*ax+2))        call abort
+        1)+1  /= 3*ax+2))        STOP 3
   if (any(1+eid(sum(a,2))+ay+ &
         neid2( &
         sum(a,2) &
-        )+1  /= 3*ay+2))        call abort
+        )+1  /= 3*ay+2))        STOP 4
   if (any(sum(eid(sum(a,3))+az+2* &
         neid2(az) &
-        ,1)+1 /= 4*sum(az,1)+1)) call abort
+        ,1)+1 /= 4*sum(az,1)+1)) STOP 5
 contains
   elemental function eid (x)
     integer, intent(in) :: x

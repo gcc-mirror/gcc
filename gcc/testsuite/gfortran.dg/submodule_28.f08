@@ -48,5 +48,5 @@ program hello
   use my_mod
   implicit none
   call routine1(2)
-  if (answer .ne. 4) call abort
+  if (answer .ne. 4) STOP 1
 end program

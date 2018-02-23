@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2008 -fall-intrinsics" }
+! { dg-options "-std=f2008 " }
 
 ! PR fortran/45197
 ! Check that IMPURE and IMPURE ELEMENTAL in particular works.
@@ -42,18 +42,18 @@ PROGRAM main
   ! Traverse in forward order.
   s = 0
   b = accumulate (a, s)
-  IF (ANY (b /= (/ 1, 3, 6, 10, 15 /))) CALL abort ()
+  IF (ANY (b /= (/ 1, 3, 6, 10, 15 /))) STOP 1
 
   ! And now backward.
   s = 0
   b = accumulate (a(n:1:-1), s)
-  IF (ANY (b /= (/ 5, 9, 12, 14, 15 /))) CALL abort ()
+  IF (ANY (b /= (/ 5, 9, 12, 14, 15 /))) STOP 2
 
   ! Use subroutine.
   i = 1
   arr = 0
   CALL impureSub (a)
-  IF (ANY (arr /= a)) CALL abort ()
+  IF (ANY (arr /= a)) STOP 3
 
 CONTAINS
 

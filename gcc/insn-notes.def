@@ -65,9 +65,6 @@ INSN_NOTE (EH_REGION_END)
 /* The location of a variable.  */
 INSN_NOTE (VAR_LOCATION)
 
-/* The values passed to callee.  */
-INSN_NOTE (CALL_ARG_LOCATION)
-
 /* The beginning of a statement.  */
 INSN_NOTE (BEGIN_STMT)
 

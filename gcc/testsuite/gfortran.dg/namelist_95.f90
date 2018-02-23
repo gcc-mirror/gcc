@@ -19,5 +19,5 @@ close(UNIT)
 open(UNIT, file=FILE)
 read(UNIT, nml=complex_namelist)
 close(UNIT, status="delete")
-if (any(a.ne.(/ (0.0, 0.0), (0.0, 0.0), (3.0, 4.0) /))) call abort
+if (any(a.ne.(/ (0.0, 0.0), (0.0, 0.0), (3.0, 4.0) /))) STOP 1
 end program test

@@ -16,7 +16,7 @@ subroutine test_real4 (orig, i)
   x = orig
   y = x * (2.0 ** i)
   x = scale (x, i)
-  if (abs (x - y) .gt. abs(x * 1e-6)) call abort
+  if (abs (x - y) .gt. abs(x * 1e-6)) STOP 1
 end
 
 subroutine test_real8 (orig, i)
@@ -25,5 +25,5 @@ subroutine test_real8 (orig, i)
   x = orig
   y = x * (2.0 ** i)
   x = scale (x, i)
-  if (abs (x - y) .gt. abs(x * 1e-6)) call abort
+  if (abs (x - y) .gt. abs(x * 1e-6)) STOP 2
 end

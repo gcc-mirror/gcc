@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2003 -fall-intrinsics" }
+! { dg-options "-std=f2003 " }
 ! PR fortran/23994
 !
 ! Test PROTECTED attribute. Within the module everything is allowed.
@@ -25,7 +25,7 @@ contains
     allocate(ap)
     ap = 73
     call increment(a,ap,at)
-    if(a /= 44 .or. ap /= 74 .or. at /= 4) call abort()
+    if(a /= 44 .or. ap /= 74 .or. at /= 4) STOP 1
   end subroutine setValue
   subroutine increment(a1,a2,a3)
     integer, intent(inout) :: a1, a2, a3
@@ -43,9 +43,9 @@ program main
   bp = 4
   bt = 7
   call setValue()
-  if(a /= 44 .or. ap /= 74 .or. at /= 4) call abort()
+  if(a /= 44 .or. ap /= 74 .or. at /= 4) STOP 2
   call plus5(ap)
-  if(a /= 44 .or. ap /= 79 .or. at /= 4) call abort()
+  if(a /= 44 .or. ap /= 79 .or. at /= 4) STOP 3
   call checkVal(a,ap,at)
 contains
   subroutine plus5(j)
@@ -54,6 +54,6 @@ contains
   end subroutine plus5
   subroutine checkVal(x,y,z)
     integer, intent(in) :: x, y, z
-    if(a /= 44 .or. ap /= 79 .or. at /= 4) call abort()
+    if(a /= 44 .or. ap /= 79 .or. at /= 4) STOP 4
   end subroutine
 end program main

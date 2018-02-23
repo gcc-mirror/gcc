@@ -5,8 +5,8 @@ program a
  character(len=42), allocatable :: f
  character(len=22), allocatable :: ff
  call alloc(f, ff)
- if (len(f) .ne. 42) call abort
- if (len(ff) .ne. 22) call abort
+ if (len(f) .ne. 42) STOP 1
+ if (len(ff) .ne. 22) STOP 2
 contains
  subroutine alloc( a, b )
   character(len=*), allocatable  :: a

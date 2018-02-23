@@ -43,7 +43,7 @@ contains
     m=iachar('a')
     do k=1,size(a)
       do l=1,size(my_message)
-        if (c(k)(l:l) /= achar(m)) call abort()
+        if (c(k)(l:l) /= achar(m)) STOP 1
         m = m + 1
       end do
     end do

@@ -31,14 +31,14 @@ program pmup
           !WRITE(*,*) 'OK'
         ELSE
           WRITE(*,*) 'FAIL'
-          call abort()
+          STOP 1
         END IF
       TYPE IS (t)
         ii = a(1)[1]%a
-        call abort()
+        STOP 2
       CLASS IS (t)
         ii = a(1)[1]%a
-        call abort()
+        STOP 3
     END SELECT
   END IF
 
@@ -57,17 +57,17 @@ program pmup
     SELECT TYPE (a)
    TYPE IS (real)
       ii = a(1)[1]
-      call abort()
+      STOP 4
     TYPE IS (t)
       IF (ALL(A(:)[1]%a == 4.0)) THEN
         !WRITE(*,*) 'OK'
       ELSE
         WRITE(*,*) 'FAIL'
-        call abort()
+        STOP 5
       END IF
     CLASS IS (t)
       ii = a(1)[1]%a
-      call abort()
+      STOP 6
     END SELECT
   END IF
 end program

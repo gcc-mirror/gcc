@@ -24,6 +24,6 @@ program foo
 
    p = [real(kind=4) :: x,  y]
    q = [real(kind=8) :: x,  y]
-   if (any(p .ne. r2)) call abort
-   if (any(q .ne. r3)) call abort
+   if (any(p .ne. r2)) STOP 1
+   if (any(q .ne. r3)) STOP 2
 end program foo

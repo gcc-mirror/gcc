@@ -2619,16 +2619,8 @@ rest_of_insert_endbranch (void)
 	      /* Generate ENDBRANCH after CALL, which can return more than
 		 twice, setjmp-like functions.  */
 
-	      /* Skip notes that must immediately follow the call insn.  */
-	      rtx_insn *next_insn = insn;
-	      if (NEXT_INSN (insn)
-		  && NOTE_P (NEXT_INSN (insn))
-		  && (NOTE_KIND (NEXT_INSN (insn))
-		      == NOTE_INSN_CALL_ARG_LOCATION))
-		next_insn = NEXT_INSN (insn);
-
 	      cet_eb = gen_nop_endbr ();
-	      emit_insn_after_setloc (cet_eb, next_insn, INSN_LOCATION (insn));
+	      emit_insn_after_setloc (cet_eb, insn, INSN_LOCATION (insn));
 	      continue;
 	    }
 
@@ -3470,8 +3462,9 @@ ix86_option_override_internal (bool main_args_p,
   const wide_int_bitmask PTA_SKYLAKE_AVX512 = PTA_SKYLAKE | PTA_AVX512F
     | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
     | PTA_CLWB;
-  const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE_AVX512 | PTA_AVX512VBMI
-    | PTA_AVX512IFMA | PTA_SHA;
+  const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
+    | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
+    | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
   const wide_int_bitmask PTA_ICELAKE = PTA_CANNONLAKE | PTA_AVX512VNNI
     | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
     | PTA_RDPID;
@@ -4200,6 +4193,11 @@ ix86_option_override_internal (bool main_args_p,
 		|| ((processor_alias_table[i].flags & PTA_64BIT) != 0)))
 	  candidates.safe_push (processor_alias_table[i].name);
 
+#ifdef HAVE_LOCAL_CPU_DETECT
+      /* Add also "native" as possible value.  */
+      candidates.safe_push ("native");
+#endif
+
       char *s;
       const char *hint
 	= candidates_list_and_hint (opts->x_ix86_arch_string, s, candidates);
@@ -4271,6 +4269,11 @@ ix86_option_override_internal (bool main_args_p,
 	if (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
 	    || ((processor_alias_table[i].flags & PTA_64BIT) != 0))
 	  candidates.safe_push (processor_alias_table[i].name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+      /* Add also "native" as possible value.  */
+      candidates.safe_push ("native");
+#endif
 
       char *s;
       const char *hint
@@ -5895,6 +5898,16 @@ ix86_set_indirect_branch_type (tree fndecl)
 	       ((cfun->machine->indirect_branch_type
 		 == indirect_branch_thunk_extern)
 		? "thunk-extern" : "thunk"));
+
+      /* -mindirect-branch=thunk-extern, -fcf-protection=branch and
+	 -fcheck-pointer-bounds are not compatible.  */
+      if ((cfun->machine->indirect_branch_type
+	   == indirect_branch_thunk_extern)
+	  && flag_check_pointer_bounds
+	  && (flag_cf_protection & CF_BRANCH) != 0)
+	error ("%<-mindirect-branch=thunk-extern%>, "
+	       "%<-fcf-protection=branch%> and "
+	       "%<-fcheck-pointer-bounds%> are not compatible");
     }
 
   if (cfun->machine->function_return_type == indirect_branch_unset)
@@ -10803,18 +10816,62 @@ static int indirect_thunks_bnd_used;
 # define INDIRECT_LABEL "LIND"
 #endif
 
+/* Indicate what prefix is needed for an indirect branch.  */
+enum indirect_thunk_prefix
+{
+  indirect_thunk_prefix_none,
+  indirect_thunk_prefix_bnd,
+  indirect_thunk_prefix_nt
+};
+
+/* Return the prefix needed for an indirect branch INSN.  */
+
+enum indirect_thunk_prefix
+indirect_thunk_need_prefix (rtx_insn *insn)
+{
+  enum indirect_thunk_prefix need_prefix;
+  if (ix86_bnd_prefixed_insn_p (insn))
+    need_prefix = indirect_thunk_prefix_bnd;
+  else if ((cfun->machine->indirect_branch_type
+	    == indirect_branch_thunk_extern)
+	   && ix86_notrack_prefixed_insn_p (insn))
+    {
+      /* NOTRACK prefix is only used with external thunk so that it
+	 can be properly updated to support CET at run-time.  */
+      need_prefix = indirect_thunk_prefix_nt;
+    }
+  else
+    need_prefix = indirect_thunk_prefix_none;
+  return need_prefix;
+}
+
 /* Fills in the label name that should be used for the indirect thunk.  */
 
 static void
 indirect_thunk_name (char name[32], unsigned int regno,
-		     bool need_bnd_p, bool ret_p)
+		     enum indirect_thunk_prefix need_prefix,
+		     bool ret_p)
 {
   if (regno != INVALID_REGNUM && ret_p)
     gcc_unreachable ();
 
   if (USE_HIDDEN_LINKONCE)
     {
-      const char *bnd = need_bnd_p ? "_bnd" : "";
+      const char *prefix;
+
+      if (need_prefix == indirect_thunk_prefix_bnd)
+	prefix = "_bnd";
+      else if (need_prefix == indirect_thunk_prefix_nt
+	       && regno != INVALID_REGNUM)
+	{
+	  /* NOTRACK prefix is only used with external thunk via
+	     register so that NOTRACK prefix can be added to indirect
+	     branch via register to support CET at run-time.  */
+	  prefix = "_nt";
+	}
+      else
+	prefix = "";
+
       if (regno != INVALID_REGNUM)
 	{
 	  const char *reg_prefix;
@@ -10823,19 +10880,19 @@ indirect_thunk_name (char name[32], unsigned int regno,
 	  else
 	    reg_prefix = "";
 	  sprintf (name, "__x86_indirect_thunk%s_%s%s",
-		   bnd, reg_prefix, reg_names[regno]);
+		   prefix, reg_prefix, reg_names[regno]);
 	}
       else
 	{
 	  const char *ret = ret_p ? "return" : "indirect";
-	  sprintf (name, "__x86_%s_thunk%s", ret, bnd);
+	  sprintf (name, "__x86_%s_thunk%s", ret, prefix);
 	}
     }
   else
     {
       if (regno != INVALID_REGNUM)
 	{
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    ASM_GENERATE_INTERNAL_LABEL (name, "LITBR", regno);
 	  else
 	    ASM_GENERATE_INTERNAL_LABEL (name, "LITR", regno);
@@ -10844,14 +10901,14 @@ indirect_thunk_name (char name[32], unsigned int regno,
 	{
 	  if (ret_p)
 	    {
-	      if (need_bnd_p)
+	      if (need_prefix == indirect_thunk_prefix_bnd)
 		ASM_GENERATE_INTERNAL_LABEL (name, "LRTB", 0);
 	      else
 		ASM_GENERATE_INTERNAL_LABEL (name, "LRT", 0);
 	    }
 	  else
 	    {
-	      if (need_bnd_p)
+	      if (need_prefix == indirect_thunk_prefix_bnd)
 		ASM_GENERATE_INTERNAL_LABEL (name, "LITB", 0);
 	      else
 		ASM_GENERATE_INTERNAL_LABEL (name, "LIT", 0);
@@ -10887,7 +10944,8 @@ indirect_thunk_name (char name[32], unsigned int regno,
  */
 
 static void
-output_indirect_thunk (bool need_bnd_p, unsigned int regno)
+output_indirect_thunk (enum indirect_thunk_prefix need_prefix,
+		       unsigned int regno)
 {
   char indirectlabel1[32];
   char indirectlabel2[32];
@@ -10898,7 +10956,7 @@ output_indirect_thunk (bool need_bnd_p, unsigned int regno)
 			       indirectlabelno++);
 
   /* Call */
-  if (need_bnd_p)
+  if (need_prefix == indirect_thunk_prefix_bnd)
     fputs ("\tbnd call\t", asm_out_file);
   else
     fputs ("\tcall\t", asm_out_file);
@@ -10935,7 +10993,7 @@ output_indirect_thunk (bool need_bnd_p, unsigned int regno)
       output_asm_insn ("lea\t{%E1, %0|%0, %E1}", xops);
     }
 
-  if (need_bnd_p)
+  if (need_prefix == indirect_thunk_prefix_bnd)
     fputs ("\tbnd ret\n", asm_out_file);
   else
     fputs ("\tret\n", asm_out_file);
@@ -10947,13 +11005,14 @@ output_indirect_thunk (bool need_bnd_p, unsigned int regno)
    on the top of stack.  */
 
 static void
-output_indirect_thunk_function (bool need_bnd_p, unsigned int regno)
+output_indirect_thunk_function (enum indirect_thunk_prefix need_prefix,
+				unsigned int regno)
 {
   char name[32];
   tree decl;
 
   /* Create __x86_indirect_thunk/__x86_indirect_thunk_bnd.  */
-  indirect_thunk_name (name, regno, need_bnd_p, false);
+  indirect_thunk_name (name, regno, need_prefix, false);
   decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
 		     get_identifier (name),
 		     build_function_type_list (void_type_node, NULL_TREE));
@@ -11001,7 +11060,7 @@ output_indirect_thunk_function (bool need_bnd_p, unsigned int regno)
       /* Create alias for __x86.return_thunk/__x86.return_thunk_bnd.  */
       char alias[32];
 
-      indirect_thunk_name (alias, regno, need_bnd_p, true);
+      indirect_thunk_name (alias, regno, need_prefix, true);
 #if TARGET_MACHO
       if (TARGET_MACHO)
 	{
@@ -11037,7 +11096,7 @@ output_indirect_thunk_function (bool need_bnd_p, unsigned int regno)
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), asm_out_file, 1);
 
-  output_indirect_thunk (need_bnd_p, regno);
+  output_indirect_thunk (need_prefix, regno);
 
   final_end_function ();
   init_insn_lengths ();
@@ -11073,18 +11132,22 @@ ix86_code_end (void)
   unsigned int regno;
 
   if (indirect_thunk_needed)
-    output_indirect_thunk_function (false, INVALID_REGNUM);
+    output_indirect_thunk_function (indirect_thunk_prefix_none,
+				    INVALID_REGNUM);
   if (indirect_thunk_bnd_needed)
-    output_indirect_thunk_function (true, INVALID_REGNUM);
+    output_indirect_thunk_function (indirect_thunk_prefix_bnd,
+				    INVALID_REGNUM);
 
   for (regno = FIRST_REX_INT_REG; regno <= LAST_REX_INT_REG; regno++)
     {
       unsigned int i = regno - FIRST_REX_INT_REG + LAST_INT_REG + 1;
       if ((indirect_thunks_used & (1 << i)))
-	output_indirect_thunk_function (false, regno);
+	output_indirect_thunk_function (indirect_thunk_prefix_none,
+					regno);
 
       if ((indirect_thunks_bnd_used & (1 << i)))
-	output_indirect_thunk_function (true, regno);
+	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
+					regno);
     }
 
   for (regno = FIRST_INT_REG; regno <= LAST_INT_REG; regno++)
@@ -11093,10 +11156,12 @@ ix86_code_end (void)
       tree decl;
 
       if ((indirect_thunks_used & (1 << regno)))
-	output_indirect_thunk_function (false, regno);
+	output_indirect_thunk_function (indirect_thunk_prefix_none,
+					regno);
 
       if ((indirect_thunks_bnd_used & (1 << regno)))
-	output_indirect_thunk_function (true, regno);
+	output_indirect_thunk_function (indirect_thunk_prefix_bnd,
+					regno);
 
       if (!(pic_labels_used & (1 << regno)))
 	continue;
@@ -28673,7 +28738,8 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 {
   char thunk_name_buf[32];
   char *thunk_name;
-  bool need_bnd_p = ix86_bnd_prefixed_insn_p (current_output_insn);
+  enum indirect_thunk_prefix need_prefix
+    = indirect_thunk_need_prefix (current_output_insn);
   int regno = REGNO (call_op);
 
   if (cfun->machine->indirect_branch_type
@@ -28684,12 +28750,12 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 	  int i = regno;
 	  if (i >= FIRST_REX_INT_REG)
 	    i -= (FIRST_REX_INT_REG - LAST_INT_REG - 1);
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    indirect_thunks_bnd_used |= 1 << i;
 	  else
 	    indirect_thunks_used |= 1 << i;
 	}
-      indirect_thunk_name (thunk_name_buf, regno, need_bnd_p, false);
+      indirect_thunk_name (thunk_name_buf, regno, need_prefix, false);
       thunk_name = thunk_name_buf;
     }
   else
@@ -28699,19 +28765,19 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
     {
       if (thunk_name != NULL)
 	{
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
 	  else
 	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_bnd_p, regno);
+	output_indirect_thunk (need_prefix, regno);
     }
   else
     {
       if (thunk_name != NULL)
 	{
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    fprintf (asm_out_file, "\tbnd call\t%s\n", thunk_name);
 	  else
 	    fprintf (asm_out_file, "\tcall\t%s\n", thunk_name);
@@ -28729,7 +28795,7 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 				   indirectlabelno++);
 
       /* Jump.  */
-      if (need_bnd_p)
+      if (need_prefix == indirect_thunk_prefix_bnd)
 	fputs ("\tbnd jmp\t", asm_out_file);
       else
 	fputs ("\tjmp\t", asm_out_file);
@@ -28740,18 +28806,18 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
 
       if (thunk_name != NULL)
 	{
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
 	  else
 	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_bnd_p, regno);
+	output_indirect_thunk (need_prefix, regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
       /* Call.  */
-      if (need_bnd_p)
+      if (need_prefix == indirect_thunk_prefix_bnd)
 	fputs ("\tbnd call\t", asm_out_file);
       else
 	fputs ("\tcall\t", asm_out_file);
@@ -28785,7 +28851,8 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
   char thunk_name_buf[32];
   char *thunk_name;
   char push_buf[64];
-  bool need_bnd_p = ix86_bnd_prefixed_insn_p (current_output_insn);
+  enum indirect_thunk_prefix need_prefix
+    = indirect_thunk_need_prefix (current_output_insn);
   int regno = -1;
 
   if (cfun->machine->indirect_branch_type
@@ -28793,12 +28860,12 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
     {
       if (cfun->machine->indirect_branch_type == indirect_branch_thunk)
 	{
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    indirect_thunk_bnd_needed = true;
 	  else
 	    indirect_thunk_needed = true;
 	}
-      indirect_thunk_name (thunk_name_buf, regno, need_bnd_p, false);
+      indirect_thunk_name (thunk_name_buf, regno, need_prefix, false);
       thunk_name = thunk_name_buf;
     }
   else
@@ -28812,13 +28879,13 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
       output_asm_insn (push_buf, &call_op);
       if (thunk_name != NULL)
 	{
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
 	  else
 	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_bnd_p, regno);
+	output_indirect_thunk (need_prefix, regno);
     }
   else
     {
@@ -28833,7 +28900,7 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
 				   indirectlabelno++);
 
       /* Jump.  */
-      if (need_bnd_p)
+      if (need_prefix == indirect_thunk_prefix_bnd)
 	fputs ("\tbnd jmp\t", asm_out_file);
       else
 	fputs ("\tjmp\t", asm_out_file);
@@ -28879,18 +28946,18 @@ ix86_output_indirect_branch_via_push (rtx call_op, const char *xasm,
 
       if (thunk_name != NULL)
 	{
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
 	  else
 	    fprintf (asm_out_file, "\tjmp\t%s\n", thunk_name);
 	}
       else
-	output_indirect_thunk (need_bnd_p, regno);
+	output_indirect_thunk (need_prefix, regno);
 
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
       /* Call.  */
-      if (need_bnd_p)
+      if (need_prefix == indirect_thunk_prefix_bnd)
 	fputs ("\tbnd call\t", asm_out_file);
       else
 	fputs ("\tcall\t", asm_out_file);
@@ -28942,16 +29009,17 @@ ix86_output_function_return (bool long_p)
   if (cfun->machine->function_return_type != indirect_branch_keep)
     {
       char thunk_name[32];
-      bool need_bnd_p = ix86_bnd_prefixed_insn_p (current_output_insn);
+      enum indirect_thunk_prefix need_prefix
+	= indirect_thunk_need_prefix (current_output_insn);
 
       if (cfun->machine->function_return_type
 	  != indirect_branch_thunk_inline)
 	{
 	  bool need_thunk = (cfun->machine->function_return_type
 			     == indirect_branch_thunk);
-	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_bnd_p,
+	  indirect_thunk_name (thunk_name, INVALID_REGNUM, need_prefix,
 			       true);
-	  if (need_bnd_p)
+	  if (need_prefix == indirect_thunk_prefix_bnd)
 	    {
 	      indirect_thunk_bnd_needed |= need_thunk;
 	      fprintf (asm_out_file, "\tbnd jmp\t%s\n", thunk_name);
@@ -28963,7 +29031,7 @@ ix86_output_function_return (bool long_p)
 	    }
 	}
       else
-	output_indirect_thunk (need_bnd_p, INVALID_REGNUM);
+	output_indirect_thunk (need_prefix, INVALID_REGNUM);
 
       return "";
     }
@@ -35708,6 +35776,7 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
     case INT_FTYPE_VOID:
     case USHORT_FTYPE_VOID:
     case UINT64_FTYPE_VOID:
+    case UINT_FTYPE_VOID:
     case UNSIGNED_FTYPE_VOID:
       nargs = 0;
       klass = load;
@@ -38497,7 +38566,7 @@ s4fma_expand:
       && fcode <= IX86_BUILTIN__BDESC_CET_NORMAL_LAST)
     {
       i = fcode - IX86_BUILTIN__BDESC_CET_NORMAL_FIRST;
-      return ix86_expand_args_builtin (bdesc_cet_rdssp + i, exp,
+      return ix86_expand_special_args_builtin (bdesc_cet_rdssp + i, exp,
 				       target);
     }
 
@@ -42126,9 +42195,7 @@ ix86_seh_fixup_eh_fallthru (void)
 
       /* Do not separate calls from their debug information.  */
       for (next = NEXT_INSN (insn); next != NULL; next = NEXT_INSN (next))
-	if (NOTE_P (next)
-            && (NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION
-                || NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION))
+	if (NOTE_P (next) && NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION)
 	  insn = next;
 	else
 	  break;
@@ -45904,7 +45971,18 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 			      ix86_cost->sse_op, true);
 
       case vec_construct:
-	return ix86_vec_cost (mode, ix86_cost->sse_op, false);
+	{
+	  /* N element inserts.  */
+	  int cost = ix86_vec_cost (mode, ix86_cost->sse_op, false);
+	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
+	  if (GET_MODE_BITSIZE (mode) == 256)
+	    cost += ix86_vec_cost (mode, ix86_cost->addss, true);
+	  /* One vinserti64x4 and two vinserti128 for combining SSE
+	     and AVX256 vectors to AVX512.  */
+	  else if (GET_MODE_BITSIZE (mode) == 512)
+	    cost += 3 * ix86_vec_cost (mode, ix86_cost->addss, true);
+	  return cost;
+	}
 
       default:
         gcc_unreachable ();
@@ -50242,6 +50320,18 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	default:
 	  break;
 	}
+    }
+  /* If we do elementwise loads into a vector then we are bound by
+     latency and execution resources for the many scalar loads
+     (AGU and load ports).  Try to account for this by scaling the
+     construction cost by the number of elements involved.  */
+  if (kind == vec_construct
+      && stmt_info
+      && stmt_info->type == load_vec_info_type
+      && stmt_info->memory_access_type == VMAT_ELEMENTWISE)
+    {
+      stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+      stmt_cost *= TYPE_VECTOR_SUBPARTS (vectype);
     }
   if (stmt_cost == -1)
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);

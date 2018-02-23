@@ -11,13 +11,13 @@ program where_19
      c = b
    endwhere
    if (any (a .ne. (/1, 2, 2, 3/))) &
-     call abort ()
+     STOP 1
 
    a = (/1, 2, 3, 4/)
    where (c .gt. 1)
      b = c
    endwhere
    if (any (a .ne. (/2, 3, 4, 4/))) &
-     call abort ()
+     STOP 2
 end program
 

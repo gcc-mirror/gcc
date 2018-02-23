@@ -1,5 +1,9 @@
 2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto-partition.c (lto_balanced_map): Watch overflow.
+
+2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/81360
 	* lto.c (unify_scc): Register prevailing trees, not trees to be freed.
 	(read_cgraph_and_symbols): Use

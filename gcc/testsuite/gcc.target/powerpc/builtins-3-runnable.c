@@ -1,7 +1,6 @@
-/* { dg-do run { target { powerpc*-*-linux* } } } */
+/* { dg-do run { target { vsx_hw } } } */
 /* { dg-require-effective-target vsx_hw } */
-/* { dg-options "-O2 -mvsx -mcpu=power8" } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=power8" } } */
+/* { dg-options "-maltivec -mvsx" } */
 
 #include <altivec.h> // vector
 
@@ -257,19 +256,6 @@ int main()
 	vec_flt_result = vec_float (vec_unint);
 	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
 
-	/* conversion of two double precision vectors to single precision vector */
-	vec_flt_expected = (vector float){-12.00, -12345678901234.00, 12.00, 9876543210.00};
-	vec_flt_result = vec_float2 (vec_ll_int0, vec_ll_int1);
-	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
-
-	vec_flt_expected = (vector float){102.00, 9753108642.00, 23.00, 29.00};
-	vec_flt_result = vec_float2 (vec_ll_uns_int0, vec_ll_uns_int1);
-	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
-
-	vec_flt_expected = (vector float){34.0, 97.0, 214.0, -5.5};
-	vec_flt_result = vec_float2 (vec_dble0, vec_dble1);
-	test_result_sp(ALL, vec_flt_result, vec_flt_expected);
-
 	/* conversion of even words in double precision vector to single precision vector */
 	vec_flt_expected = (vector float){-12.00, 00.00, -12345678901234.00, 0.00};
 	vec_flt_result = vec_floate (vec_ll_int0);
@@ -308,13 +294,6 @@ int main()
 	vec_ll_int_result = vec_signed (vec_dble0);
 	test_ll_int_result (vec_ll_int_result, vec_ll_int_expected);
 
-	/* Convert two double precision vector float to vector int */
-	vec_dble0 = (vector double){-124.930, 81234.49};
-	vec_dble1 = (vector double){-24.370, 8354.99};
-	vec_int_expected = (vector signed int){-124, 81234, -24, 8354};
-	vec_int_result = vec_signed2 (vec_dble0, vec_dble1);
-	test_int_result (ALL, vec_int_result, vec_int_expected);
-
 	/* Convert double precision vector float to vector int, even words */
 	vec_dble0 = (vector double){-124.930, 81234.49};
 	vec_int_expected = (vector signed int){-124, 0, 81234, 0};
@@ -333,14 +312,6 @@ int main()
 	vec_ll_uns_int_result = vec_unsigned (vec_dble0);
 	test_ll_unsigned_int_result (vec_ll_uns_int_result,
 				     vec_ll_uns_int_expected);
-
-	/* Convert two double precision vector float to vector unsigned int */
-	vec_dble0 = (vector double){124.930, 8134.49};
-	vec_dble1 = (vector double){24.370, 834.99};
-	vec_uns_int_expected = (vector unsigned int){124, 8134, 24, 834};
-	vec_uns_int_result = vec_unsigned2 (vec_dble0, vec_dble1);
-	test_unsigned_int_result (ALL, vec_uns_int_result,
-				  vec_uns_int_expected);
 
 	/* Convert double precision vector float to vector unsigned int,
 	   even words */

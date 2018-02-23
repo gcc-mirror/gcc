@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=f2003 -fall-intrinsics" }
+! { dg-options "-std=f2003 " }
 ! Pointer intent test
 ! PR fortran/29624
 !
@@ -25,21 +25,21 @@ program test
  allocate(t2%point)
  t2%point = 42
  call nonpointer(t2)
- if(t2%point /= 7) call abort()
+ if(t2%point /= 7) STOP 1
 contains
   subroutine a(p,t)
     integer, pointer,intent(in)    :: p
     type(myT), pointer, intent(in) :: t
     integer, pointer :: tmp
     if(.not.associated(p)) return
-    if(p /= 33) call abort()
+    if(p /= 33) STOP 2
     p = 7
     if (associated(t)) then
       ! allocating is valid as we don't change the status
       ! of the pointer "t", only of it's target
       t%x = -15
-      if(.not.associated(t%point)) call abort()
-      if(t%point /= 55) call abort()
+      if(.not.associated(t%point)) STOP 3
+      if(t%point /= 55) STOP 4
       nullify(t%point)
       allocate(tmp)
       t%point => tmp
@@ -48,14 +48,14 @@ contains
       tmp => null(tmp)
       allocate(t%point)
       t%point = 27
-      if(t%point /= 27) call abort()
-      if(t%x     /= -15) call abort()
+      if(t%point /= 27) STOP 5
+      if(t%x     /= -15) STOP 6
       call foo(t)
-      if(t%x     /=  32) call abort()
-      if(t%point /= -98) call abort()
+      if(t%x     /=  32) STOP 7
+      if(t%point /= -98) STOP 8
     end if
     call b(p)
-    if(p /= 5) call abort()
+    if(p /= 5) STOP 9
   end subroutine
   subroutine b(v)
     integer, intent(out) :: v
@@ -63,15 +63,15 @@ contains
   end subroutine b
   subroutine foo(comp)
     type(myT), intent(inout) :: comp
-    if(comp%x     /= -15) call abort()
-    if(comp%point /=  27) call abort()
+    if(comp%x     /= -15) STOP 10
+    if(comp%point /=  27) STOP 11
     comp%x     = 32
     comp%point = -98
   end subroutine foo
   subroutine nonpointer(t)
      type(myT), intent(in) :: t
-     if(t%x     /= 5 ) call abort()
-     if(t%point /= 42) call abort()
+     if(t%x     /= 5 ) STOP 12
+     if(t%point /= 42) STOP 13
      t%point = 7
   end subroutine nonpointer
 end program

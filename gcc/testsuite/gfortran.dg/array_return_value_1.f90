@@ -10,9 +10,9 @@
     INTEGER :: Array(2, 3) = reshape ((/1,4,2,5,3,6/),(/2,3/))
     integer :: Brray(2, 3) = 0
     Brray(1,:) = Function_Test (Array(1,:))
-    if (any(reshape (Brray, (/6/)) .ne. (/11, 0, 12, 0, 13, 0/))) call abort ()
+    if (any(reshape (Brray, (/6/)) .ne. (/11, 0, 12, 0, 13, 0/))) STOP 1
     Array(1,:) = Function_Test (Array(1,:))
-    if (any(reshape (Array, (/6/)) .ne. (/11, 4, 12, 5, 13, 6/))) call abort ()
+    if (any(reshape (Array, (/6/)) .ne. (/11, 4, 12, 5, 13, 6/))) STOP 2
 
   contains
       FUNCTION Function_Test (Input)

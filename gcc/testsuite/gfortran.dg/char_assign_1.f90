@@ -12,12 +12,12 @@ character(len=3), dimension(5) :: q
 
 y(:)%c = "abcdef" ! { dg-warning "in assignment \\(5/6\\)" }
 p(1) = y(1)%c(3:) ! { dg-warning "in assignment \\(2/3\\)" }
-if (p(1).ne."cd") call abort()
+if (p(1).ne."cd") STOP 1
 
 p(1) = y(1)%c  ! { dg-warning "in assignment \\(2/5\\)" }
-if (p(1).ne."ab") call abort()
+if (p(1).ne."ab") STOP 2
 
 q = "xyz"
 p = q ! { dg-warning "CHARACTER expression will be truncated in assignment \\(2/3\\)" }
-if (any (p.ne.q(:)(1:2))) call abort()
+if (any (p.ne.q(:)(1:2))) STOP 3
 end

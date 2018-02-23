@@ -4,9 +4,9 @@
 program sign1
   integer :: i
   i = 1
-  if (sign(foo(i), 1) /= 1) call abort
+  if (sign(foo(i), 1) /= 1) STOP 1
   i = 1
-  if (sign(foo(i), -1) /= -1) call abort
+  if (sign(foo(i), -1) /= -1) STOP 2
 contains
   integer function foo(i)
     integer :: i

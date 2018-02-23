@@ -911,7 +911,7 @@ shorten_branches (rtx_insn *first)
   char *varying_length;
   rtx body;
   int uid;
-  rtx align_tab[MAX_CODE_ALIGN];
+  rtx align_tab[MAX_CODE_ALIGN + 1];
 
   /* Compute maximum UID and allocate label_align / uid_shuid.  */
   max_uid = get_max_uid ();
@@ -1016,7 +1016,7 @@ shorten_branches (rtx_insn *first)
      alignment of n.  */
   uid_align = XCNEWVEC (rtx, max_uid);
 
-  for (i = MAX_CODE_ALIGN; --i >= 0;)
+  for (i = MAX_CODE_ALIGN + 1; --i >= 0;)
     align_tab[i] = NULL_RTX;
   seq = get_last_insn ();
   for (; seq; seq = PREV_INSN (seq))
@@ -2467,7 +2467,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_VAR_LOCATION:
-	case NOTE_INSN_CALL_ARG_LOCATION:
 	  if (!DECL_IGNORED_P (current_function_decl))
 	    {
 	      debug_hooks->var_location (insn);
@@ -4846,15 +4845,21 @@ rest_of_clean_state (void)
       SET_NEXT_INSN (insn) = NULL;
       SET_PREV_INSN (insn) = NULL;
 
+      if (CALL_P (insn))
+	{
+	  rtx note = find_reg_note (insn, REG_CALL_ARG_LOCATION, NULL_RTX);
+	  if (note)
+	    remove_note (insn, note);
+	}
+
       if (final_output
-	  && (!NOTE_P (insn) ||
-	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
-	       && NOTE_KIND (insn) != NOTE_INSN_BEGIN_STMT
-	       && NOTE_KIND (insn) != NOTE_INSN_INLINE_ENTRY
-	       && NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION
-	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
-	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
-	       && NOTE_KIND (insn) != NOTE_INSN_DELETED_DEBUG_LABEL)))
+	  && (!NOTE_P (insn)
+	      || (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
+		  && NOTE_KIND (insn) != NOTE_INSN_BEGIN_STMT
+		  && NOTE_KIND (insn) != NOTE_INSN_INLINE_ENTRY
+		  && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
+		  && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
+		  && NOTE_KIND (insn) != NOTE_INSN_DELETED_DEBUG_LABEL)))
 	print_rtl_single (final_output, insn);
     }
 

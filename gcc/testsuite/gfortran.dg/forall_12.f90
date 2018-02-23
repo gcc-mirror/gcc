@@ -14,15 +14,15 @@
   forall(i=1:1) b(i:i) = b(i:i)         ! The rest were found to be broken
   forall(i=1:1) b(:)(i:i) = b(:)(i:i)
   forall(i=1:1) b(1:3)(i:i) = b(2:4)(i:i)
-  if (any (b .ne. (/"2","3","4","4"/))) call abort ()
+  if (any (b .ne. (/"2","3","4","4"/))) STOP 1
   b = c
   forall(i=1:1) b(2:4)(i:i) = b(1:3)(i:i)
-  if (any (b .ne. (/"1","1","2","3"/))) call abort ()
+  if (any (b .ne. (/"1","1","2","3"/))) STOP 2
   b = c
   do i = 1, 1
     b(2:4)(i:i) = b(1:3)(i:i)           ! This was PR33811 and Paul's bit
   end do
-  if (any (b .ne. (/"1","1","2","3"/))) call abort ()
+  if (any (b .ne. (/"1","1","2","3"/))) STOP 3
   call foo
 contains
   subroutine foo
@@ -30,11 +30,11 @@ contains
     character(LEN=12) :: b = "123456789012"
 ! These are Dominique's
     forall (i = 3:10) a(:)(i:i+2) = a(:)(i-2:i)
-    IF (a(1) .ne. "121234567890") CALL abort ()
+    IF (a(1) .ne. "121234567890") STOP 4
     forall (i = 3:10) a(2)(i:i+2) = a(1)(i-2:i)
-    IF (a(2) .ne. "121212345678") call abort ()
+    IF (a(2) .ne. "121212345678") STOP 5
     forall (i = 3:10) b(i:i+2) = b(i-2:i)
-    IF (b .ne. "121234567890") CALL abort ()
+    IF (b .ne. "121234567890") STOP 6
   end subroutine
 end
 

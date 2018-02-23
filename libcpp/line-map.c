@@ -344,7 +344,12 @@ void
 linemap_init (struct line_maps *set,
 	      source_location builtin_location)
 {
+#if __GNUC__ == 4 && __GNUC_MINOR__ == 2 && !defined (__clang__)
+  /* PR33916, needed to fix PR82939.  */
+  memset (set, 0, sizeof (struct line_maps));
+#else
   *set = line_maps ();
+#endif
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =

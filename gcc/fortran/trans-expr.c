@@ -657,7 +657,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 	      }
 
 	  /* Array references with vector subscripts and non-variable expressions
-	     need be coverted to a one-based descriptor.  */
+	     need be converted to a one-based descriptor.  */
 	  if (ref || e->expr_type != EXPR_VARIABLE)
 	    {
 	      for (dim = 0; dim < e->rank; ++dim)
@@ -6868,6 +6868,8 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 
       /* The derived symbol has already been converted to a (void *).  Use
 	 its kind.  */
+      if (derived->ts.kind == 0)
+	derived->ts.kind = gfc_default_integer_kind;
       expr = gfc_get_int_expr (derived->ts.kind, NULL, 0);
       expr->ts.f90_type = derived->ts.f90_type;
 

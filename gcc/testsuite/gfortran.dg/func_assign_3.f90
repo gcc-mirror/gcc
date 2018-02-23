@@ -27,5 +27,5 @@ program bugTest
   double precision, dimension(2,2):: testCatch
   type( boundTest ):: testObj
   testCatch = testObj%test(2,2)  ! This would cause an ICE
-  if (any (testCatch .ne. dble (reshape ([(i, i = 1, 4)],[2,2])))) call abort
+  if (any (testCatch .ne. dble (reshape ([(i, i = 1, 4)],[2,2])))) STOP 1
 end program bugTest

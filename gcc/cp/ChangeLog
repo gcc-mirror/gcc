@@ -1,3 +1,183 @@
+2018-02-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70468 - ICE with constructor delegation via typedef.
+	* pt.c (tsubst_initializer_list): Check for other mem-initializers
+	with constructor delegation.
+
+2018-02-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84424 - ICE with constexpr and __builtin_shuffle.
+	* constexpr.c (reduced_constant_expression_p): Handle CONSTRUCTOR of
+	VECTOR_TYPE.
+
+2018-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84493
+	* parser.c (cp_parser_braced_list): Use require_open instead of
+	consume_open.
+
+2018-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84454 - ICE with pack expansion in signature.
+	* error.c (find_typenames_r): Also stop on EXPR_PACK_EXPANSION.
+
+2018-02-20  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* cp-objcp-common.c (cxx_block_may_fallthru): Add case for
+	IF_STMT.
+
+2018-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84446
+	* parser.c (cp_parser_init_declarator): Don't call start_lambda_scope
+	on error_mark_node.
+
+2018-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84445
+	* class.c (fixed_type_or_null) <case CALL_EXPR>: Only test
+	TREE_HAS_CONSTRUCTOR if instance is not an internal function call.
+
+	PR c++/84449
+	* tree.c (bot_manip): If build_cplus_new or break_out_target_exprs
+	returns error_mark_node, return it immediately.
+	(break_out_target_exprs): If cp_walk_tree with bot_manip returns
+	error_mark_node, return error_mark_node.
+
+	PR c++/84455
+	* pt.c (tsubst_lambda_expr): If not nested, increment temporarily
+	function_depth to avoid GC during finish_lambda_function.
+
+2018-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84429 - ICE capturing VLA.
+	* lambda.c (build_capture_proxy): Handle reference refs.
+
+2018-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84448
+	* parser.c (cp_parser_binary_expression): For no_toplevel_fold_p, if
+	either operand is error_mark_node, set current.lhs to that instead of
+	creating a binary op with error_mark_node operands.
+
+	PR c++/84430
+	* constexpr.c (potential_constant_expression_1): Handle OMP_SIMD.
+
+2018-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84348
+	* decl.c (grokdeclarator): Early return error_mark_node upon
+	ill-formed friend declaration.
+
+2018-02-16  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84192
+	* constexpr.c (cxx_eval_constant_expression) <case RETURN_EXPR>: Don't
+	set *jump_target to anything if jump_target is NULL.
+
+2018-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84151 - unnecessary volatile load with static member.
+	* call.c (build_new_method_call_1): Avoid loading from a volatile
+	lvalue used as the object argument for a static member function.
+
+	PR c++/81853 - using-directive and constexpr.
+	* constexpr.c (cxx_eval_constant_expression): Handle USING_STMT.
+
+	PR c++/84420 - ICE with structured binding in lambda.
+	* lambda.c (is_capture_proxy): Check DECL_DECOMPOSITION_P.
+
+	PR c++/83835 - C++17 error with constructor ctors.
+	* call.c (build_special_member_call): Set TARGET_EXPR_DIRECT_INIT_P.
+
+	PR c++/82664 - ICE with reference to function template parm.
+	* pt.c (convert_nontype_argument_function): Avoid obfuscationg
+	NOP_EXPRs.
+
+	PR c++/82764 - C++17 ICE with empty base
+	* class.c (build_base_field_1): Set DECL_SIZE to zero for empty base.
+
+2018-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84421 - type-dependent if constexpr
+	* semantics.c (finish_if_stmt_cond): Check type_dependent_expression_p.
+
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	Deprecate -ffriend-injection.
+	* decl.c (cxx_init_decl_processing): Emit warning on option.
+	* name-lookup.c (do_pushdecl): Emit warning if we push a visible
+	friend.
+
+2018-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82468
+	* decl.c (check_special_function_return_type): Reject template
+	template parameter in deduction guide.
+
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84375
+	* name-lookup.c (do_pushdecl): Bail out on bad local friend injection.
+
+2018-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83227 - C++17 ICE with init-list derived-to-base conversion.
+	* call.c (convert_like_real): Don't use the copy-list-initialization
+	shortcut for ck_base.
+
+	PR c++/84045 - ICE with typedef and noexcept.
+	* except.c (build_noexcept_spec): Use strip_typedefs_expr.
+
+	PR c++/84376 - ICE with omitted template arguments.
+	* pt.c (dguide_name_p): Check for IDENTIFIER_NODE.
+
+	PR c++/84368 - wrong error with local variable in variadic lambda.
+	* pt.c (tsubst_pack_expansion): Fix handling of non-packs in
+	local_specializations.
+
+2018-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84330
+	* constraint.cc (tsubst_constraint_info): Handle an error_mark_node
+	as first argument.
+
+2018-02-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84350
+	* pt.c (do_auto_deduction): Don't check the TREE_TYPE of a null
+	init, early return.
+
+2018-02-14  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (mark_vtable_entries): Set input_location to decl's.
+	(c_parse_final_cleanups): Restore input_location after emitting
+	vtables.
+
+2018-02-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (do_auto_deduction (tree, tree, tree)): Remove.
+	(do_auto_deduction (tree, tree, tree, tsubst_flags_t,
+	auto_deduction_context, tree, int): Add defaults.
+	* pt.c (do_auto_deduction (tree, tree, tree)): Remove definition.
+	(tsubst_omp_for_iterator): Adjust do_auto_deduction call, forward
+	tsubst_flags_t argument.
+	* init.c (build_new): Likewise.
+
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84364
+	* typeck.c (check_return_expr): Don't emit -Weffc++ warning
+	about return other than *this in assignment operators if
+	retval is type dependent expression.
+
+2018-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84333
+	* call.c (build_conditional_expr_1): Use cp_save_expr instead of
+	save_expr for the G++ extension.
+
 2018-02-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84080 - ICE with return type deduction and specialization.

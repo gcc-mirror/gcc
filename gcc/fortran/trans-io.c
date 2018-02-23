@@ -639,12 +639,12 @@ set_parameter_value_inquire (stmtblock_t *block, tree var,
       /* Don't evaluate the UNIT number multiple times.  */
       se.expr = gfc_evaluate_now (se.expr, &se.pre);
 
-      /* UNIT numbers should be greater than zero.  */
+      /* UNIT numbers should be greater than the min.  */
       i = gfc_validate_kind (BT_INTEGER, 4, false);
+      val = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].pedantic_min_int, 4);
       cond1 = build2_loc (input_location, LT_EXPR, logical_type_node,
 			  se.expr,
-			  fold_convert (TREE_TYPE (se.expr),
-			  integer_zero_node));
+			  fold_convert (TREE_TYPE (se.expr), val));
       /* UNIT numbers should be less than the max.  */
       val = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].huge, 4);
       cond2 = build2_loc (input_location, GT_EXPR, logical_type_node,
@@ -2284,6 +2284,16 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
   if ((ts->type == BT_DERIVED || ts->type == BT_INTEGER)
       && ts->u.derived != NULL
       && (ts->is_iso_c == 1 || ts->u.derived->ts.is_iso_c == 1))
+    {
+      ts->type = BT_INTEGER;
+      ts->kind = gfc_index_integer_kind;
+    }
+
+  /* gfortran reaches here for "print *, c_loc(xxx)".  */
+  if (ts->type == BT_VOID
+      && code->expr1 && code->expr1->ts.type == BT_VOID
+      && code->expr1->symtree
+      && strcmp (code->expr1->symtree->name, "c_loc") == 0)
     {
       ts->type = BT_INTEGER;
       ts->kind = gfc_index_integer_kind;

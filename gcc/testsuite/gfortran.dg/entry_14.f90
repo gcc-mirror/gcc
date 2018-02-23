@@ -77,25 +77,25 @@ contains
   subroutine test1()
     use m1
     implicit none
-    if(func(3) /= 12) call abort()
-    if(abs(ent(7) + 14.0) > tiny(1.0)) call abort()
+    if(func(3) /= 12) STOP 1
+    if(abs(ent(7) + 14.0) > tiny(1.0)) STOP 2
   end subroutine test1
   subroutine test2()
     use m2
     implicit none
-    if(func(9) /= 72) call abort()
-    if(abs(ent(11) + 44.0) > tiny(1.0)) call abort()
+    if(func(9) /= 72) STOP 3
+    if(abs(ent(11) + 44.0) > tiny(1.0)) STOP 4
   end subroutine test2
   subroutine test3()
     use m3
     implicit none
-    if(func(13) /= 156) call abort()
-    if(abs(ent(17) + 102.0) > tiny(1.0)) call abort()
+    if(func(13) /= 156) STOP 5
+    if(abs(ent(17) + 102.0) > tiny(1.0)) STOP 6
   end subroutine test3
   subroutine test4()
     use m4
     implicit none
-    if(func(23) /= 368) call abort()
-    if(abs(ent(27) + 216.0) > tiny(1.0)) call abort()
+    if(func(23) /= 368) STOP 7
+    if(abs(ent(27) + 216.0) > tiny(1.0)) STOP 8
   end subroutine test4
 end program main

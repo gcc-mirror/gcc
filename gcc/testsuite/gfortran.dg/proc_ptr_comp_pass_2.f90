@@ -16,14 +16,14 @@ contains
   subroutine print_me (arg, lun)
     class(t), intent(in) :: arg
     integer, intent(in) :: lun
-    if (abs(arg%a-2.718)>1E-6) call abort()
+    if (abs(arg%a-2.718)>1E-6) STOP 1
     write (lun,*) arg%a
   end subroutine print_me
 
   subroutine print_my_square (arg, lun)
     class(t), intent(in) :: arg
     integer, intent(in) :: lun
-    if (abs(arg%a-2.718)>1E-6) call abort()
+    if (abs(arg%a-2.718)>1E-6) STOP 2
     write (lun,*) arg%a**2
   end subroutine print_my_square
 

@@ -148,6 +148,11 @@ func chansend1(c *hchan, elem unsafe.Pointer) {
  * the operation; we'll see that it's now closed.
  */
 func chansend(c *hchan, ep unsafe.Pointer, block bool, callerpc uintptr) bool {
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
+	}
+
 	if c == nil {
 		if !block {
 			return false
@@ -428,6 +433,11 @@ func chanrecv(c *hchan, ep unsafe.Pointer, block bool) (selected, received bool)
 
 	if debugChan {
 		print("chanrecv: chan=", c, "\n")
+	}
+
+	// Check preemption, since unlike gc we don't check on every call.
+	if getg().preempt {
+		checkPreempt()
 	}
 
 	if c == nil {

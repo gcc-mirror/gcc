@@ -1472,7 +1472,7 @@ find_typenames_r (tree *tp, int *walk_subtrees, void *data)
     /* Add the typename without any cv-qualifiers.  */
     mv = TYPE_MAIN_VARIANT (*tp);
 
-  if (TREE_CODE (*tp) == TYPE_PACK_EXPANSION)
+  if (PACK_EXPANSION_P (*tp))
     {
       /* Don't mess with parameter packs since we don't remember
 	 the pack expansion context for a particular typename.  */

@@ -1,3 +1,632 @@
+2018-02-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix71.h (TARGET_DEFAULT): Change to
+	ISA_2_5_MASKS_EMBEDDED.
+
+2018-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-prop.c (ipa_vr_ggc_hash_traits::hash): Hash p->min and
+	p->max as pointers rather than using iterative_hash_expr.
+
+2018-02-23  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Change VSIGNED2 and VUNSIGNED2
+	macro expansions from BU_VSX_2 to BU_P8V_VSX_2 and BU_VSX_OVERLOAD_2 to
+	BU_P8V_OVERLOAD_2.
+	* config/rs6000/rs6000-c.c: Change VSX_BUILTIN_VEC_VSIGNED2 to
+	P8V_BUILTIN_VEC_VSIGNED2.  Change VSX_BUILTIN_VEC_VUNSIGNED2 to
+	P8V_BUILTIN_VEC_VUNSIGNED2.
+
+2018-02-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/81572
+	* lra-int.h (LRA_UNKNOWN_ALT, LRA_NON_CLOBBERED_ALT): New macros.
+	* lra.c (lra_set_insn_recog_data, lra_update_insn_recog_data): Use
+	LRA_UNKNOWN_ALT.
+	* lra-constraints.c (curr_insn_transform): Set up
+	LRA_NON_CLOBBERED_ALT for moves processed on the fast path.  Use
+	LRA_UNKNOWN_ALT.
+	(remove_inheritance_pseudos): Use LRA_UNKNOWN_ALT.
+	* lra-eliminations.c (spill_pseudos): Ditto.
+	(process_insn_for_elimination): Ditto.
+	* lra-lives.c (reg_early_clobber_p): Use the new macros.
+	* lra-spills.c (spill_pseudos): Use LRA_UNKNOWN_ALT and
+	LRA_NON_CLOBBERED_ALT.
+
+2018-02-22  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84480
+	* gimple-fold.c (gimple_fold_builtin_strcpy): Move warnings
+	to maybe_diag_stxncpy_trunc.  Call it.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Integrate warnings
+	from gimple_fold_builtin_strcpy.  Print inlining stack.
+	(handle_builtin_stxncpy): Print inlining stack.
+	* tree-ssa-strlen.h (maybe_diag_stxncpy_trunc): Declare.
+
+2018-02-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84176
+	* config/i386/i386.c (ix86_set_indirect_branch_type): Issue an
+	error when -mindirect-branch=thunk-extern, -fcf-protection=branch
+	and -fcheck-pointer-bounds are used together.
+	(indirect_thunk_prefix): New enum.
+	(indirect_thunk_need_prefix): New function.
+	(indirect_thunk_name): Replace need_bnd_p with need_prefix.  Use
+	"_nt" instead of "_bnd" for NOTRACK prefix.
+	(output_indirect_thunk): Replace need_bnd_p with need_prefix.
+	(output_indirect_thunk_function): Likewise.
+	(): Likewise.
+	(ix86_code_end): Update output_indirect_thunk_function calls.
+	(ix86_output_indirect_branch_via_reg): Replace
+	ix86_bnd_prefixed_insn_p with indirect_thunk_need_prefix.
+	(ix86_output_indirect_branch_via_push): Likewise.
+	(ix86_output_function_return): Likewise.
+	* doc/invoke.texi: Document -mindirect-branch=thunk-extern is
+	incompatible with -fcf-protection=branch and
+	-fcheck-pointer-bounds.
+
+2018-02-22  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/83335
+	* config/aarch64/aarch64.c (aarch64_print_address_internal):
+	Change gcc_assert call to output_operand_lossage.
+
+2018-02-22  Steve Ellcey  <sellcey@cavium.com>
+
+	* doc/extend.texi (__builtin_extend_pointer): Document builtin.
+
+2018-02-22  DJ Delorie  <dj@redhat.com>
+	    Sebastian Perta  <sebastian.perta@renesas.com>
+	    Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/rx/rx.c (rx_rtx_costs): New function.
+	(TARGET_RTX_COSTS): Override to use rx_rtx_costs.
+
+2018-02-22  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/t-multilib: Map Armv8-R to Armv7 multilibs.
+
+2018-02-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* common/config/arm/arm-common.c (arm_print_hint_for_cpu_option):
+	Add "native" as a possible value.
+
+2018-02-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* config/i386/i386.c (ix86_option_override_internal):
+	Add "native" as a possible value for -march and -mtune.
+
+2018-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84502
+	* stor-layout.c (finalize_type_size): Propagate TYPE_EMPTY_P flag
+	to all type variants.
+
+	PR tree-optimization/84503
+	* gimple-ssa-store-merging.c (merged_store_group::merge_into): Compute
+	width as info->bitpos + info->bitsize - start.
+	(merged_store_group::merge_overlapping): Simplify width computation.
+	(check_no_overlap): New function.
+	(imm_store_chain_info::try_coalesce_bswap): Compute expected
+	start + width and last_order of the group, fail if check_no_overlap
+	fails.
+	(imm_store_chain_info::coalesce_immediate_stores): Don't merge info
+	to group if check_no_overlap fails.
+
+2018-02-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md: Delete contraint arguments to
+	define_expand, define_split, and define_peephole2, and in
+	define_insn_and_split if always unused.
+	* config/rs6000/darwin.md: Ditto.
+	* config/rs6000/dfp.md: Ditto.
+	* config/rs6000/rs6000.md: Ditto.
+	* config/rs6000/sync.md: Ditto.
+	* config/rs6000/vector.md: Ditto.
+	* config/rs6000/vsx.md: Ditto.
+
+2018-02-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md: Write output control strings as braced
+	blocks instead of double-quoted strings.
+	* config/rs6000/darwin.md: Ditto.
+	* config/rs6000/rs6000.md: Ditto.
+	* config/rs6000/vector.md: Ditto.
+	* config/rs6000/vsx.md: Ditto.
+
+2018-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84314 - ICE with templates and fastcall attribute.
+	* attribs.c (build_type_attribute_qual_variant): Remove assert.
+
+2018-02-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.c (determine_versionability): Fix comment typos.
+
+2018-02-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c/84229
+	* ipa-cp.c (determine_versionability): Do not version functions caling
+	va_arg_pack.
+
+2018-02-21  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* config/aarch64/aarch64.c (aarch64_print_hint_for_core_or_arch):
+	Add "native" as a possible value.
+	* config/aarch64/aarch64.h (HAVE_LOCAL_CPU_DETECT):  Define
+	the macro when native cpu detection is available.
+
+2018-02-21  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* common/config/arm/arm-common.c (arm_print_hint_for_arch_option):
+	Add "native" as a possible value.
+	* config/arm/arm.h (HAVE_LOCAL_CPU_DETECT): Define the macro
+	when native cpu detection is available.
+
+2018-02-21  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84478
+	* gimple-fold.h (get_range_strlen): Add a bool argument defaulted to
+	false.
+	* gimple-fold.c (get_range_strlen): Make minlen const and assume it
+	can't be NULL.  Change FUZZY from bool to int, for 1 add PHI/COND_EXPR
+	support which is conservatively correct, for 2 only stay conservative
+	for maxlen.  Formatting and comment capitalization fixes.  Add STRICT
+	argument to the 2 argument get_range_strlen, adjust 6 arg
+	get_range_strlen caller and clear minmaxlen[0] and [1] if it returned
+	false.
+	(get_maxval_strlen): Adjust 6 arg get_range_strlen caller.
+	(gimple_fold_builtin_strlen): Pass true as last argument to
+	get_range_strlen.
+
+2018-02-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/84095
+	* gimple-ssa-warn-restrict.c (builtin_memref::extend_offset_range): New.
+	(builtin_memref::set_base_and_offset): Same.  Handle inner references.
+	(builtin_memref::builtin_memref): Factor out parts into
+	set_base_and_offset and call it.
+
+2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR middle-end/84406
+	* optabs-query.c (find_widening_optab_handler_and_mode): If from_mode
+	is a scalar_int_mode, assert that to_mode is a scalar_int_mode with
+	greater precision.  If to_mode is a MODE_PARTIAL_INT, stop the
+	search at the associated MODE_INT.
+
+2018-02-20  Jeff Law  <law@redhat.com>
+
+	PR middle-end/82123
+	PR tree-optimization/81592
+	PR middle-end/79257
+	* gimple-ssa-sprintf.c (format_integer): Query EVRP range analyzer
+	for range data rather than using global data.
+	* gimple-ssa-sprintf.c (get_int_range): Query EVRP range analyzer for
+	range data rather than using global data.
+	* gimple-ssa-sprintf.c (get_int_range): Accept vr_values parameter
+	pass it to children as needed.
+	(struct directive::fmtresult): Similarly.
+	(struct directive::set_width): Similarly.
+	(struct directive::set_precision): Similarly.
+	(format_integer, format_directive, parse_directive): Similarly.
+	(format_none): Accept unnamed vr_values parameter.
+	(format_percent, format_floating, format_character): Similarly.
+	(format_string, format_plain): Similarly.
+	* gimple-ssa-sprintf.c (sprintf_dom_walker::handle_gimple_call): Query
+	the EVRP range analyzer for range data rather than using global data.
+	* gimple-ssa-sprintf.c: Include alloc-pool.h, vr-values.h and 
+	gimple-ssa-evrp-analyze.h
+	(class sprintf_dom_walker): Add after_dom_children member function.
+	Add evrp_range_analyzer member.
+	(sprintf_dom_walker::before_dom_children): Call into the EVRP
+	range analyzer as needed.
+	(sprintf_dom_walker::after_dom_children): New member function.
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::enter): Do nothing
+	if not optimizing.
+	(evrp_range_analyzer::record_ranges_from_stmt): Likewise.
+	(evrp_range_analyzer::pop_to_marker): Likewise.
+
+2018-02-20  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84419
+	* internal-fn.c (expand_call_mem_ref): Create a TARGET_MEM_REF
+	with the required type if its current type is compatible but
+	different.
+
+2018-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82004
+	* match.pd (pow(C,x) -> exp(log(C)*x)): Delay all folding until
+	after vectorization.
+
+2018-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* config/aarch64/aarch64.c (aarch64_print_hint_for_core_or_arch): Print
+	possible values if we don't have a hint.
+
+2018-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR c/84310
+	PR target/79747
+	* final.c (shorten_branches): Build align_tab array with one
+	more element.
+	* opts.c (finish_options): Add alignment option limit check.
+	(MAX_CODE_ALIGN): Likewise.
+	(MAX_CODE_ALIGN_VALUE): Likewise.
+	* doc/invoke.texi: Document maximum allowed option value for
+	all -falign-* options.
+
+2018-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84146
+	* reg-notes.def (REG_CALL_ARG_LOCATION): New reg note.
+	* insn-notes.def (NOTE_INSN_CALL_ARG_LOCATION): Remove.
+	* var-tracking.c (emit_note_insn_var_location): Remove all references
+	to NOTE_INSN_CALL_ARG_LOCATION.
+	(emit_notes_in_bb): Emit arguments as REG_CALL_ARG_LOCATION note on
+	the CALL_INSN rather than separate NOTE_INSN_CALL_ARG_LOCATION note.
+	Use copy_rtx_if_shared.
+	* dwarf2out.c (gen_subprogram_die): Use XEXP with 0 instead of
+	NOTE_VAR_LOCATION on ca_loc->call_arg_loc_note.
+	(dwarf2out_var_location): Remove handling of
+	NOTE_INSN_CALL_ARG_LOCATION, instead handle REG_CALL_ARG_LOCATION note
+	on call_insn.
+	* final.c (final_scan_insn): Remove all references to
+	NOTE_INSN_CALL_ARG_LOCATION.
+	(rest_of_clean_state): Likewise.  Remove REG_CALL_ARG_LOCATION notes
+	before dumping final insns.
+	* except.c (emit_note_eh_region_end): Remove all references to
+	NOTE_INSN_CALL_ARG_LOCATION.
+	* config/alpha/alpha.c (alpha_pad_function_end): Likewise.
+	* config/c6x/c6x.c (c6x_gen_bundles): Likewise.
+	* config/arc/arc.c (hwloop_optimize): Likewise.
+	* config/arm/arm.c (create_fix_barrier): Likewise.
+	* config/s390/s390.c (s390_chunkify_start): Likewise.
+	* config/sh/sh.c (find_barrier): Likewise.
+	* config/i386/i386.c (rest_of_insert_endbranch,
+	ix86_seh_fixup_eh_fallthru): Likewise.
+	* config/xtensa/xtensa.c (hwloop_optimize): Likewise.
+	* config/iq2000/iq2000.c (final_prescan_insn): Likewise.
+	* config/frv/frv.c (frv_function_prologue): Likewise.
+	* emit-rtl.c (try_split): Likewise.  Copy over REG_CALL_ARG_LOCATION
+	reg note.
+	(note_outside_basic_block_p): Remove all references to
+	NOTE_INSN_CALL_ARG_LOCATION.
+	* gengtype.c (adjust_field_rtx_def): Likewise.
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_0, print_insn):
+	Likewise.
+	* jump.c (cleanup_barriers, delete_related_insns): Likewise.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+
+	PR c++/84444
+	* builtins.c (builtin_mathfn_code): Don't check if CALL_EXPR_FN (t)
+	is ADDR_EXPR.
+
+	PR tree-optimization/84452
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Don't call
+	expand_simd_clones if targetm.simd_clone.compute_vecsize_and_simdlen
+	is NULL.
+
+2018-02-19  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82183
+	* passes.def: Put pass_sancov_O0 before pass_lower_switch with -O0.
+
+2018-02-19  Martin Liska  <mliska@suse.cz>
+	    Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/82491
+	* gimple-fold.c (get_base_constructor): Make earlier bail out
+	to prevent ubsan.
+
+2018-02-19  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Change NEG macro expansions from
+	BU_ALTIVEC_A to BU_P8V_AV_1 and BU_ALTIVEC_OVERLOAD_1 to
+	BU_P8V_OVERLOAD_1.
+	* config/rs6000/rs6000-c.c: Change ALTIVEC_BUILTIN_VEC_NEG to
+	P8V_BUILTIN_VEC_NEG.
+
+2018-02-19  Sebastian Perta  <sebastian.perta@renesas.com>
+
+	* config/rl78/rl78.md (movdf): New define expand.
+
+2018-02-19  Martin Liska  <mliska@suse.cz>
+
+	PR other/80589
+	* doc/invoke.texi: Fix typo.
+	* params.def (PARAM_MAX_LOOP_HEADER_INSNS): Likewise.
+
+2018-02-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	handle rs6000_single_float and rs6000_double_float specially for
+	e500 family CPUs.
+
+2018-02-16  Jeff Law  <law@redhat.com>
+
+	* config/rx/rx.c (add_pop_cfi_notes): New function.;
+	(pop_regs): Use it.
+
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/84425
+	* ipa-inline.c (inline_small_functions): Fix a typo.
+
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/extend.texi (Backwards Compatibility): Americanize 'behaviour'.
+
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Add BU_P8V_VSX_2 macro definition.
+	Change FLOAT2 expansions from BU_VSX_2 to BU_P8V_VSX_2 and
+	from BU_VSX_OVERLOAD_2 to BU_P8V_OVERLOAD_2.
+	* config/rs6000/rs6000-c.c: Changed macro VSX_BUILTIN_VEC_FLOAT2
+	expansion to P8V_BUILTIN_VEC_FLOAT2.
+
+2018-02-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/70023
+	* lra-constraints.c (inherit_in_ebb): Take hard reg mode of
+	src_regno into account.
+
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h: Remove vec_vextract4b and vec_vinsert4b.
+	* config/rs6000/rs6000-builtin.def: Remove macro expansion for
+	VEXTRACT4B, VINSERT4B, VINSERT4B_DI and VEXTRACT4B.
+	* config/rs6000/rs6000.c: Remove case statements for
+	P9V_BUILTIN_VEXTRACT4B, P9V_BUILTIN_VEC_VEXTRACT4B,
+	P9V_BUILTIN_VINSERT4B, P9V_BUILTIN_VINSERT4B_DI,
+	and P9V_BUILTIN_VEC_VINSERT4B.
+	* config/rs6000/rs6000-c.c (altivec_expand_builtin): Remove entries for
+	P9V_BUILTIN_VEC_VEXTRACT4B and P9V_BUILTIN_VEC_VINSERT4B.
+	* config/rs6000/vsx.md:
+	* doc/extend.texi: Remove vec_vextract4b, non ABI definitions for
+	vec_insert4b.
+
+2018-02-16  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h: Add builtin names vec_extract4b
+	vec_insert4b.
+	* config/rs6000/rs6000-builtin.def: Add INSERT4B and EXTRACT4B
+	definitions.
+	* config/rs6000/rs6000-c.c: Add the definitions for
+	P9V_BUILTIN_VEC_EXTRACT4B and P9V_BUILTIN_VEC_INSERT4B.
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Add
+	P9V_BUILTIN_EXTRACT4B and P9V_BUILTIN_INSERT4B case statements.
+	* config/rs6000/vsx.md: Add define_insn extract4b.  Add define_expand
+	definition for insert4b and define insn *insert3b_internal.
+	* doc/extend.texi: Add documentation for vec_extract4b.
+
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/extend.texi (Backwards Compatibility): Mention friend
+	injection.  Note for-scope is deprecated.
+	* doc/invoke.texi (-ffriend-injection): Deprecate.
+
+2018-02-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* combine.c (try_combine): When adjusting LOG_LINKS for the destination
+	that moved to I2, also allow destinations that are a paradoxical
+	subreg (instead of a normal reg).
+
+2018-02-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/83831
+	* config/rx/rx.c (rx_fuse_in_memory_bitop): Convert shift operand
+	to QImode.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84037
+	PR tree-optimization/84016
+	PR target/82862
+	* config/i386/i386.c (ix86_builtin_vectorization_cost):
+	Adjust vec_construct for the fact we need additional higher latency
+	128bit inserts for AVX256 and AVX512 vector builds.
+	(ix86_add_stmt_cost): Scale vector construction cost for
+	elementwise loads.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84417
+	* tree-ssa.c (non_rewritable_mem_ref_base): Properly constrain
+	the MEM_REF offset when conversion to BIT_FIELD_REF is desired.
+	(non_rewritable_lvalue_p): Likewise, use poly-ints.
+
+2018-02-16  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/84307
+	* internal-fn.def (ASAN_CHECK): Set proper flags.
+	(ASAN_MARK): Likewise.
+
+2018-02-16  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Remove PTA_CLWB
+	from PTA_CANNONLAKE.
+
+2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84272
+	* config/aarch64/cortex-a57-fma-steering.c (fma_forest::merge_forest):
+	Use ++iter rather than iter++ for std::list iterators.
+	(func_fma_steering::dfs): Likewise.  Don't delete nodes right away,
+	defer deleting them until all nodes in the forest are processed.  Do
+	free even leaf nodes.  Change to_process into auto_vec.
+
+	PR bootstrap/84405
+	* system.h (BROKEN_VALUE_INITIALIZATION): Define for GCC < 4.3.
+	* vec.h (vec_default_construct): Use memset instead of placement new
+	if BROKEN_VALUE_INITIALIZATION is defined.
+	* hash-table.h (hash_table<Descriptor, Allocator>::empty_slow): Use
+	memset instead of value initialization if BROKEN_VALUE_INITIALIZATION
+	is defined.
+
+	PR rtl-optimization/83723
+	* lra-int.h (lra_substitute_pseudo): Add DEBUG_P argument.
+	* lra.c (lra_substitute_pseudo): Likewise.  If true, use
+	gen_rtx_raw_SUBREG instead of gen_rtx_SUBREG.  Pass DEBUG_P to
+	recursive calls.
+	(lra_substitute_pseudo_within_insn): Adjust lra_substitute_pseudo
+	callers.
+	* lra-constraints.c (inherit_reload_reg, split_reg): Likewise.
+
+2018-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/81443
+	* rtlanal.c (num_sign_bit_copies1) <SUBREG>: Do not propagate results
+	from inner REGs to paradoxical SUBREGs.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84399
+	* graphite-scop-detection.c (scop_detection::stmt_simple_for_scop_p):
+	For operands we can analyze at their definition make sure we can
+	analyze them at each use as well.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84190
+	* tree-ssa.c (non_rewritable_mem_ref_base): Do not touch
+	volatile accesses if the decl isn't volatile.
+
+2018-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84314 - ICE with templates and fastcall attribute.
+	* attribs.c (build_type_attribute_qual_variant): Don't clobber
+	TYPE_CANONICAL on an existing type.
+
+2018-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84383
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Don't look at
+	dstoff nor call operand_equal_p if dstbase is NULL.
+
+	PR tree-optimization/84334
+	* match.pd ((A +- CST1) +- CST2 -> A + CST3): If A is
+	also a CONSTANT_CLASS_P, punt.
+
+2018-02-14  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_first_stack_step): Move locals after
+	first SMALL_OPERAND check.  New local min_second_step.  Move assert
+	to where locals are set.  Add TARGET_RVC support.
+	* config/riscv/riscv.h (C_SxSP_BITS, SWSP_REACH, SDSP_REACH): New.
+
+2018-02-14  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* doc/invoke.texi: Correct -Wformat-overflow code sample.
+
+2018-02-14  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83698
+	* gimple-ssa-warn-restrict.c (builtin_memref::builtin_memref): For
+	arrays constrain the offset range to their bounds.
+	(builtin_access::strcat_overlap): Adjust the bounds of overlap offset.
+	(builtin_access::overlap): Avoid setting the size of overlap if it's
+	already been set.
+	(maybe_diag_overlap): Also consider arrays when deciding what values
+	of offsets to include in diagnostics.
+
+2018-02-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/84108
+	* attribs.c (diag_attr_exclusions): Consider the exclusion(s)
+	that correspond to the kind of a declaration.
+
+2018-02-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/83984
+	* config/pa/pa.md: Load address of PIC label using the linkage table
+	if the label is nonlocal.
+
+2018-02-14  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Issue
+	warning message if user requests -maltivec=be.
+	* doc/invoke.texi: Document deprecation of -maltivec=be.
+
+2018-02-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/84220
+	* config/rs6000/rs6000-c.c: Update definitions for
+	ALTIVEC_BUILTIN_VEC_SLD, ALTIVEC_BUILTIN_VEC_SLDW,
+	VEC_XXSLDWI and ALTIVEC_BUILTIN_VEC_XXPERMDI builtins.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/cetintrin.h: Remove _rdssp[d|q] and
+	add _get_ssp intrinsics. Remove argument from
+	__builtin_ia32_rdssp[d|q].
+	* config/i386/i386-builtin-types.def: Add UINT_FTYPE_VOID.
+	* config/i386/i386-builtin.def: Remove argument from
+	__builtin_ia32_rdssp[d|q].
+	* config/i386/i386.c: Use UINT_FTYPE_VOID. Use
+	ix86_expand_special_args_builtin for _rdssp[d|q].
+	* config/i386/i386.md: Remove argument from rdssp[si|di] insn.
+	Clear register before usage.
+	* doc/extend.texi: Remove argument from __builtin_ia32_rdssp[d|q].
+	Add documentation for new _get_ssp and _inc_ssp intrinsics.
+
+2018-02-14  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/84357
+	* tree-data-ref.c (object_address_invariant_in_loop_p): Check
+	operand 1 of an ARRAY_REF too.
+
+2018-02-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/83831
+	* config/rx/rx-protos.h (rx_reg_dead_or_unused_after_insn,
+	rx_copy_reg_dead_or_unused_notes, rx_fuse_in_memory_bitop): New
+	declarations.
+	(set_of_reg): New struct.
+	(rx_find_set_of_reg, rx_find_use_of_reg): New functions.
+	* config/rx/rx.c (rx_reg_dead_or_unused_after_insn,
+	rx_copy_reg_dead_or_unused_notes, rx_fuse_in_memory_bitop): New
+	functions.
+	* config/rx/rx.md (andsi3, iorsi3, xorsi3): Convert to insn_and_split.
+	Split into bitclr, bitset, bitinvert patterns if appropriate.
+	(*bitset, *bitinvert, *bitclr): Convert to named insn_and_split and
+	use rx_fuse_in_memory_bitop.
+	(*bitset_in_memory, *bitinvert_in_memory, *bitclr_in_memory): Convert
+	to named insn, correct maximum insn length.
+
+2018-02-14  Jozef Lawrynowicz <jozefl.gcc@gmail.com>
+
+	PR target/79242
+	* machmode.def: Define a complex mode for PARTIAL_INT.
+	* genmodes.c (complex_class): Return MODE_COMPLEX_INT for
+	MODE_PARTIAL_INT.
+	* doc/rtl.texi: Document CSPImode.
+	* config/msp430/msp430.c (msp430_hard_regno_nregs): Add CPSImode
+	handling.
+	(msp430_hard_regno_nregs_with_padding): Likewise.
+
+2018-02-13  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84279
+	* config/rs6000/rs6000.c (mem_operand_gpr): Disallow altivec addresses.
+
+2018-02-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/84169
+	* combine.c (try_combine): New variable split_i2i3.  Set it to true if
+	we generated a parallel as new i3 and we split that to new i2 and i3
+	instructions.  Handle split_i2i3 similar to swap_i2i3: scan the
+	LOG_LINKs of i3 to see which of those need to link to i2 now.  Link
+	those to i2, not i1.  Partially rewrite this scan code.
+
 2018-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82210
@@ -19,6 +648,8 @@
 
 2018-02-13  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/84342
+	PR debug/84319
 	* common.opt (gas-loc-support, gas-locview-support): New.
 	(ginline-points, ginternal-reset-location-views): New.
 	* doc/invoke.texi: Document them.  Use @itemx where intended.
@@ -1230,6 +1861,7 @@
 
 2018-01-30  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
+	PR target/83758
 	* config/rs6000/rs6000.c (rs6000_internal_arg_pointer): Only return
 	a reg rtx.
 
@@ -2222,6 +2854,7 @@
 	* config/aarch64/predicates.md (Uti): Add new constraint.
 
 2018-01-17 Carl Love  <cel@us.ibm.com>
+
 	* config/rs6000/vsx.md (define_expand xl_len_r,
 	define_expand stxvl, define_expand *stxvl): Add match_dup argument.
 	(define_insn): Add, match_dup 1 argument to define_insn stxvll and

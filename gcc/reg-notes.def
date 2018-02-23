@@ -239,3 +239,6 @@ REG_NOTE (CALL_DECL)
    when a called function has a 'notrack' attribute.  This note is used by the
    compiler when the option -fcf-protection=branch is specified.  */
 REG_NOTE (CALL_NOCF_CHECK)
+
+/* The values passed to callee, for debuginfo purposes.  */
+REG_NOTE (CALL_ARG_LOCATION)

@@ -11696,7 +11696,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   Location loc = this->location();
 
   std::string s = "fieldtrack \"";
-  Named_type* nt = this->expr_->type()->named_type();
+  Named_type* nt = this->expr_->type()->unalias()->named_type();
   if (nt == NULL || nt->named_object()->package() == NULL)
     s.append(gogo->pkgpath());
   else

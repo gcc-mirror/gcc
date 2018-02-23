@@ -443,7 +443,6 @@
         (vec_select:<MODE>
           (match_dup 2)
           (parallel [(const_int 1) (const_int 0)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -475,7 +474,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -495,7 +493,6 @@
           (match_dup 2)
           (parallel [(const_int 2) (const_int 3)
                      (const_int 0) (const_int 1)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -527,7 +524,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -551,7 +547,6 @@
                      (const_int 6) (const_int 7)
                      (const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -583,7 +578,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -615,7 +609,6 @@
                      (const_int 2) (const_int 3)
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
-  "
 {
   rtx mem = operands[1];
 
@@ -647,7 +640,6 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 }
-  "
   [(set_attr "type" "vecload")
    (set_attr "length" "8")])
 
@@ -660,8 +652,8 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand" "")
-        (match_operand:VSX_D 1 "vsx_register_operand" ""))]
+  [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand")
+        (match_operand:VSX_D 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:<MODE>
@@ -704,8 +696,8 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand" "")
-        (match_operand:VSX_D 1 "vsx_register_operand" ""))]
+  [(set (match_operand:VSX_D 0 "indexed_or_indirect_operand")
+        (match_operand:VSX_D 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:<MODE>
@@ -730,8 +722,8 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "")
-        (match_operand:VSX_W 1 "vsx_register_operand" ""))]
+  [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand")
+        (match_operand:VSX_W 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:<MODE>
@@ -776,8 +768,8 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand" "")
-        (match_operand:VSX_W 1 "vsx_register_operand" ""))]
+  [(set (match_operand:VSX_W 0 "indexed_or_indirect_operand")
+        (match_operand:VSX_W 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:<MODE>
@@ -805,8 +797,8 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:V8HI 0 "indexed_or_indirect_operand" "")
-        (match_operand:V8HI 1 "vsx_register_operand" ""))]
+  [(set (match_operand:V8HI 0 "indexed_or_indirect_operand")
+        (match_operand:V8HI 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:V8HI
@@ -855,8 +847,8 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:V8HI 0 "indexed_or_indirect_operand" "")
-        (match_operand:V8HI 1 "vsx_register_operand" ""))]
+  [(set (match_operand:V8HI 0 "indexed_or_indirect_operand")
+        (match_operand:V8HI 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:V8HI
@@ -890,8 +882,8 @@
    (set_attr "length" "12")])
 
 (define_split
-  [(set (match_operand:V16QI 0 "indexed_or_indirect_operand" "")
-        (match_operand:V16QI 1 "vsx_register_operand" ""))]
+  [(set (match_operand:V16QI 0 "indexed_or_indirect_operand")
+        (match_operand:V16QI 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && !reload_completed"
   [(set (match_dup 2)
         (vec_select:V16QI
@@ -948,8 +940,8 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:V16QI 0 "indexed_or_indirect_operand" "")
-        (match_operand:V16QI 1 "vsx_register_operand" ""))]
+  [(set (match_operand:V16QI 0 "indexed_or_indirect_operand")
+        (match_operand:V16QI 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR && reload_completed"
   [(set (match_dup 1)
         (vec_select:V16QI
@@ -1037,7 +1029,6 @@
    #"
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(const_int 0)]
-  "
 {
   rtx tmp = (can_create_pseudo_p ()
 	     ? gen_reg_rtx_and_attrs (operands[0])
@@ -1046,7 +1037,6 @@
   rs6000_emit_le_vsx_permute (operands[0], tmp, <MODE>mode);
   DONE;
 }
-  "
   [(set_attr "type" "vecload,load")
    (set_attr "length" "8,8")])
 
@@ -1061,8 +1051,8 @@
    (set_attr "length" "12,8")])
 
 (define_split
-  [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
-        (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
+  [(set (match_operand:VSX_LE_128 0 "memory_operand")
+        (match_operand:VSX_LE_128 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed && !TARGET_P9_VECTOR"
   [(const_int 0)]
 {
@@ -1103,10 +1093,10 @@
 ;; VSX registers on a little endian system.  The vector types and IEEE 128-bit
 ;; floating point are handled by the more generic swap elimination pass.
 (define_peephole2
-  [(set (match_operand:TI 0 "vsx_register_operand" "")
-	(rotate:TI (match_operand:TI 1 "vsx_register_operand" "")
+  [(set (match_operand:TI 0 "vsx_register_operand")
+	(rotate:TI (match_operand:TI 1 "vsx_register_operand")
 		   (const_int 64)))
-   (set (match_operand:TI 2 "vsx_register_operand" "")
+   (set (match_operand:TI 2 "vsx_register_operand")
 	(rotate:TI (match_dup 0)
 		   (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
@@ -1117,8 +1107,8 @@
 ;; The post-reload split requires that we re-permute the source
 ;; register in case it is still live.
 (define_split
-  [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
-        (match_operand:VSX_LE_128 1 "vsx_register_operand" ""))]
+  [(set (match_operand:VSX_LE_128 0 "memory_operand")
+        (match_operand:VSX_LE_128 1 "vsx_register_operand"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed && !TARGET_P9_VECTOR"
   [(const_int 0)]
 {
@@ -1266,8 +1256,8 @@
 
 ;; Explicit  load/store expanders for the builtin functions
 (define_expand "vsx_load_<mode>"
-  [(set (match_operand:VSX_M 0 "vsx_register_operand" "")
-	(match_operand:VSX_M 1 "memory_operand" ""))]
+  [(set (match_operand:VSX_M 0 "vsx_register_operand")
+	(match_operand:VSX_M 1 "memory_operand"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   /* Expand to swaps if needed, prior to swap optimization.  */
@@ -1279,8 +1269,8 @@
 })
 
 (define_expand "vsx_store_<mode>"
-  [(set (match_operand:VSX_M 0 "memory_operand" "")
-	(match_operand:VSX_M 1 "vsx_register_operand" ""))]
+  [(set (match_operand:VSX_M 0 "memory_operand")
+	(match_operand:VSX_M 1 "vsx_register_operand"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   /* Expand to swaps if needed, prior to swap optimization.  */
@@ -1640,7 +1630,6 @@
   "#"
   "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -1668,7 +1657,7 @@
     }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
-}"
+}
   [(set_attr "type" "mul")])
 
 (define_insn "*vsx_div<mode>3"
@@ -1690,7 +1679,6 @@
   "#"
   "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -1726,7 +1714,7 @@
     }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
-}"
+}
   [(set_attr "type" "div")])
 
 (define_insn_and_split "vsx_udiv_v2di"
@@ -1738,7 +1726,6 @@
   "#"
   "VECTOR_MEM_VSX_P (V2DImode) && !reload_completed"
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -1774,16 +1761,16 @@
     }
   emit_insn (gen_vsx_concat_v2di (op0, op5, op3));
   DONE;
-}"
+}
   [(set_attr "type" "div")])
 
 ;; *tdiv* instruction returning the FG flag
 (define_expand "vsx_tdiv<mode>3_fg"
   [(set (match_dup 3)
-	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand" "")
-		      (match_operand:VSX_B 2 "vsx_register_operand" "")]
+	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand")
+		      (match_operand:VSX_B 2 "vsx_register_operand")]
 		     UNSPEC_VSX_TDIV))
-   (set (match_operand:SI 0 "gpc_reg_operand" "")
+   (set (match_operand:SI 0 "gpc_reg_operand")
 	(gt:SI (match_dup 3)
 	       (const_int 0)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
@@ -1794,10 +1781,10 @@
 ;; *tdiv* instruction returning the FE flag
 (define_expand "vsx_tdiv<mode>3_fe"
   [(set (match_dup 3)
-	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand" "")
-		      (match_operand:VSX_B 2 "vsx_register_operand" "")]
+	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand")
+		      (match_operand:VSX_B 2 "vsx_register_operand")]
 		     UNSPEC_VSX_TDIV))
-   (set (match_operand:SI 0 "gpc_reg_operand" "")
+   (set (match_operand:SI 0 "gpc_reg_operand")
 	(eq:SI (match_dup 3)
 	       (const_int 0)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
@@ -1888,9 +1875,9 @@
 ;; *tsqrt* returning the fg flag
 (define_expand "vsx_tsqrt<mode>2_fg"
   [(set (match_dup 2)
-	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand" "")]
+	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand")]
 		     UNSPEC_VSX_TSQRT))
-   (set (match_operand:SI 0 "gpc_reg_operand" "")
+   (set (match_operand:SI 0 "gpc_reg_operand")
 	(gt:SI (match_dup 2)
 	       (const_int 0)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
@@ -1901,9 +1888,9 @@
 ;; *tsqrt* returning the fe flag
 (define_expand "vsx_tsqrt<mode>2_fe"
   [(set (match_dup 2)
-	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand" "")]
+	(unspec:CCFP [(match_operand:VSX_B 1 "vsx_register_operand")]
 		     UNSPEC_VSX_TSQRT))
-   (set (match_operand:SI 0 "gpc_reg_operand" "")
+   (set (match_operand:SI 0 "gpc_reg_operand")
 	(eq:SI (match_dup 2)
 	       (const_int 0)))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
@@ -2303,9 +2290,9 @@
 ;; Convert and scale (used by vec_ctf, vec_cts, vec_ctu for double/long long)
 
 (define_expand "vsx_xvcvsxddp_scale"
-  [(match_operand:V2DF 0 "vsx_register_operand" "")
-   (match_operand:V2DI 1 "vsx_register_operand" "")
-   (match_operand:QI 2 "immediate_operand" "")]
+  [(match_operand:V2DF 0 "vsx_register_operand")
+   (match_operand:V2DI 1 "vsx_register_operand")
+   (match_operand:QI 2 "immediate_operand")]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
 {
   rtx op0 = operands[0];
@@ -2326,9 +2313,9 @@
   [(set_attr "type" "vecdouble")])
 
 (define_expand "vsx_xvcvuxddp_scale"
-  [(match_operand:V2DF 0 "vsx_register_operand" "")
-   (match_operand:V2DI 1 "vsx_register_operand" "")
-   (match_operand:QI 2 "immediate_operand" "")]
+  [(match_operand:V2DF 0 "vsx_register_operand")
+   (match_operand:V2DI 1 "vsx_register_operand")
+   (match_operand:QI 2 "immediate_operand")]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
 {
   rtx op0 = operands[0];
@@ -2349,9 +2336,9 @@
   [(set_attr "type" "vecdouble")])
 
 (define_expand "vsx_xvcvdpsxds_scale"
-  [(match_operand:V2DI 0 "vsx_register_operand" "")
-   (match_operand:V2DF 1 "vsx_register_operand" "")
-   (match_operand:QI 2 "immediate_operand" "")]
+  [(match_operand:V2DI 0 "vsx_register_operand")
+   (match_operand:V2DF 1 "vsx_register_operand")
+   (match_operand:QI 2 "immediate_operand")]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
 {
   rtx op0 = operands[0];
@@ -2392,9 +2379,9 @@
 ;; convert vector of 64-bit floating point numbers to vector of
 ;; 64-bit unsigned integer
 (define_expand "vsx_xvcvdpuxds_scale"
-  [(match_operand:V2DI 0 "vsx_register_operand" "")
-   (match_operand:V2DF 1 "vsx_register_operand" "")
-   (match_operand:QI 2 "immediate_operand" "")]
+  [(match_operand:V2DI 0 "vsx_register_operand")
+   (match_operand:V2DF 1 "vsx_register_operand")
+   (match_operand:QI 2 "immediate_operand")]
   "VECTOR_UNIT_VSX_P (V2DFmode)"
 {
   rtx op0 = operands[0];
@@ -3161,10 +3148,10 @@
 
 ;; Convert a TImode value into V1TImode
 (define_expand "vsx_set_v1ti"
-  [(match_operand:V1TI 0 "nonimmediate_operand" "")
-   (match_operand:V1TI 1 "nonimmediate_operand" "")
-   (match_operand:TI 2 "input_operand" "")
-   (match_operand:QI 3 "u5bit_cint_operand" "")]
+  [(match_operand:V1TI 0 "nonimmediate_operand")
+   (match_operand:V1TI 1 "nonimmediate_operand")
+   (match_operand:TI 2 "input_operand")
+   (match_operand:QI 3 "u5bit_cint_operand")]
   "VECTOR_MEM_VSX_P (V1TImode)"
 {
   if (operands[3] != const0_rtx)
@@ -4078,9 +4065,9 @@
 
 ;; Expanders for builtins
 (define_expand "vsx_mergel_<mode>"
-  [(use (match_operand:VSX_D 0 "vsx_register_operand" ""))
-   (use (match_operand:VSX_D 1 "vsx_register_operand" ""))
-   (use (match_operand:VSX_D 2 "vsx_register_operand" ""))]
+  [(use (match_operand:VSX_D 0 "vsx_register_operand"))
+   (use (match_operand:VSX_D 1 "vsx_register_operand"))
+   (use (match_operand:VSX_D 2 "vsx_register_operand"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   rtvec v;
@@ -4104,9 +4091,9 @@
 })
 
 (define_expand "vsx_mergeh_<mode>"
-  [(use (match_operand:VSX_D 0 "vsx_register_operand" ""))
-   (use (match_operand:VSX_D 1 "vsx_register_operand" ""))
-   (use (match_operand:VSX_D 2 "vsx_register_operand" ""))]
+  [(use (match_operand:VSX_D 0 "vsx_register_operand"))
+   (use (match_operand:VSX_D 1 "vsx_register_operand"))
+   (use (match_operand:VSX_D 2 "vsx_register_operand"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   rtvec v;
@@ -4328,7 +4315,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx tmp = (GET_CODE (operands[2]) == SCRATCH)
 	     ? gen_reg_rtx (V2DFmode)
@@ -4336,7 +4322,7 @@
   emit_insn (gen_vsx_xxsldwi_v2df (tmp, operands[1], operands[1], const2_rtx));
   emit_insn (gen_<VEC_reduc_rtx>v2df3 (operands[0], tmp, operands[1]));
   DONE;
-}"
+}
   [(set_attr "length" "8")
    (set_attr "type" "veccomplex")])
 
@@ -4351,7 +4337,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -4375,7 +4360,7 @@
   emit_insn (gen_vsx_xxsldwi_v4sf (tmp4, tmp3, tmp3, GEN_INT (3)));
   emit_insn (gen_<VEC_reduc_rtx>v4sf3 (op0, tmp4, tmp3));
   DONE;
-}"
+}
   [(set_attr "length" "16")
    (set_attr "type" "veccomplex")])
 
@@ -4400,7 +4385,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx hi = gen_highpart (DFmode, operands[1]);
   rtx lo = (GET_CODE (operands[2]) == SCRATCH)
@@ -4410,7 +4394,7 @@
   emit_insn (gen_vsx_extract_v2df (lo, operands[1], const1_rtx));
   emit_insn (gen_<VEC_reduc_rtx>df3 (operands[0], hi, lo));
   DONE;
-}"
+}
   [(set_attr "length" "8")
    (set_attr "type" "veccomplex")])
 
@@ -4428,7 +4412,6 @@
   "#"
   ""
   [(const_int 0)]
-  "
 {
   rtx op0 = operands[0];
   rtx op1 = operands[1];
@@ -4455,28 +4438,28 @@
   emit_insn (gen_<VEC_reduc_rtx>v4sf3 (tmp5, tmp4, tmp3));
   emit_insn (gen_vsx_xscvspdp_scalar2 (op0, tmp5));
   DONE;
-}"
+}
   [(set_attr "length" "20")
    (set_attr "type" "veccomplex")])
 
 
 ;; Power8 Vector fusion.  The fused ops must be physically adjacent.
 (define_peephole
-  [(set (match_operand:P 0 "base_reg_operand" "")
-	(match_operand:P 1 "short_cint_operand" ""))
-   (set (match_operand:VSX_M 2 "vsx_register_operand" "")
+  [(set (match_operand:P 0 "base_reg_operand")
+	(match_operand:P 1 "short_cint_operand"))
+   (set (match_operand:VSX_M 2 "vsx_register_operand")
 	(mem:VSX_M (plus:P (match_dup 0)
-			   (match_operand:P 3 "int_reg_operand" ""))))]
+			   (match_operand:P 3 "int_reg_operand"))))]
   "TARGET_VSX && TARGET_P8_FUSION && !TARGET_P9_VECTOR"
   "li %0,%1\;lx<VSX_M:VSm>x %x2,%0,%3\t\t\t# vector load fusion"
   [(set_attr "length" "8")
    (set_attr "type" "vecload")])
 
 (define_peephole
-  [(set (match_operand:P 0 "base_reg_operand" "")
-	(match_operand:P 1 "short_cint_operand" ""))
-   (set (match_operand:VSX_M 2 "vsx_register_operand" "")
-	(mem:VSX_M (plus:P (match_operand:P 3 "int_reg_operand" "")
+  [(set (match_operand:P 0 "base_reg_operand")
+	(match_operand:P 1 "short_cint_operand"))
+   (set (match_operand:VSX_M 2 "vsx_register_operand")
+	(mem:VSX_M (plus:P (match_operand:P 3 "int_reg_operand")
 			   (match_dup 0))))]
   "TARGET_VSX && TARGET_P8_FUSION && !TARGET_P9_VECTOR"
   "li %0,%1\;lx<VSX_M:VSm>x %x2,%0,%3\t\t\t# vector load fusion"
@@ -5204,45 +5187,20 @@
 ;; Vector insert/extract word at arbitrary byte values.  Note, the little
 ;; endian version needs to adjust the byte number, and the V4SI element in
 ;; vinsert4b.
-(define_expand "vextract4b"
-  [(set (match_operand:DI 0 "gpc_reg_operand")
-	(unspec:DI [(match_operand:V16QI 1 "vsx_register_operand")
-		    (match_operand:QI 2 "const_0_to_12_operand")]
-		   UNSPEC_XXEXTRACTUW))]
+(define_insn "extract4b"
+  [(set (match_operand:V2DI 0 "vsx_register_operand")
+       (unspec:V2DI [(match_operand:V16QI 1 "vsx_register_operand" "wa")
+                     (match_operand:QI 2 "const_0_to_12_operand" "n")]
+                    UNSPEC_XXEXTRACTUW))]
   "TARGET_P9_VECTOR"
 {
   if (!VECTOR_ELT_ORDER_BIG)
     operands[2] = GEN_INT (12 - INTVAL (operands[2]));
+
+  return "xxextractuw %x0,%x1,%2";
 })
 
-(define_insn_and_split "*vextract4b_internal"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=wj,r")
-	(unspec:DI [(match_operand:V16QI 1 "vsx_register_operand" "wa,v")
-		    (match_operand:QI 2 "const_0_to_12_operand" "n,n")]
-		   UNSPEC_XXEXTRACTUW))]
-  "TARGET_P9_VECTOR"
-  "@
-   xxextractuw %x0,%x1,%2
-   #"
-  "&& reload_completed && int_reg_operand (operands[0], DImode)"
-  [(const_int 0)]
-{
-  rtx op0 = operands[0];
-  rtx op1 = operands[1];
-  rtx op2 = operands[2];
-  rtx op0_si = gen_rtx_REG (SImode, REGNO (op0));
-  rtx op1_v4si = gen_rtx_REG (V4SImode, REGNO (op1));
-
-  emit_move_insn (op0, op2);
-  if (VECTOR_ELT_ORDER_BIG)
-    emit_insn (gen_vextuwlx (op0_si, op0_si, op1_v4si));
-  else
-    emit_insn (gen_vextuwrx (op0_si, op0_si, op1_v4si));
-  DONE;
-}
-  [(set_attr "type" "vecperm")])
-
-(define_expand "vinsert4b"
+(define_expand "insert4b"
   [(set (match_operand:V16QI 0 "vsx_register_operand")
 	(unspec:V16QI [(match_operand:V4SI 1 "vsx_register_operand")
 		       (match_operand:V16QI 2 "vsx_register_operand")
@@ -5260,7 +5218,7 @@
     }
 })
 
-(define_insn "*vinsert4b_internal"
+(define_insn "*insert4b_internal"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
 	(unspec:V16QI [(match_operand:V4SI 1 "vsx_register_operand" "wa")
 		       (match_operand:V16QI 2 "vsx_register_operand" "0")
@@ -5270,27 +5228,6 @@
   "xxinsertw %x0,%x1,%3"
   [(set_attr "type" "vecperm")])
 
-(define_expand "vinsert4b_di"
-  [(set (match_operand:V16QI 0 "vsx_register_operand")
-	(unspec:V16QI [(match_operand:DI 1 "vsx_register_operand")
-		       (match_operand:V16QI 2 "vsx_register_operand")
-		       (match_operand:QI 3 "const_0_to_12_operand")]
-		   UNSPEC_XXINSERTW))]
-  "TARGET_P9_VECTOR"
-{
-  if (!VECTOR_ELT_ORDER_BIG)
-    operands[3] = GEN_INT (12 - INTVAL (operands[3]));
-})
-
-(define_insn "*vinsert4b_di_internal"
-  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
-	(unspec:V16QI [(match_operand:DI 1 "vsx_register_operand" "wj")
-		       (match_operand:V16QI 2 "vsx_register_operand" "0")
-		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
-		   UNSPEC_XXINSERTW))]
-  "TARGET_P9_VECTOR"
-  "xxinsertw %x0,%x1,%3"
-  [(set_attr "type" "vecperm")])
 
 ;; Generate vector extract four float 32 values from left four elements
 ;; of eight element vector of float 16 values.

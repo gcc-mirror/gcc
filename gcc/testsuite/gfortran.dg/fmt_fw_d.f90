@@ -127,5 +127,5 @@ subroutine errormsg(x, str, len, w, d, reason)
     fmt_len = len_trim(fmt)
     
     !print *, "print '", fmt(:fmt_len), "', ", x, " ! => ", str(:len), ": ", reason
-    call abort
+    STOP 1
 end subroutine

@@ -8,5 +8,5 @@ program main
   n = 3
   goto 100
 100 x = dble(n) + dble(n)
-  if (x /= 6.d0) call abort
+  if (x /= 6.d0) STOP 1
 end program main

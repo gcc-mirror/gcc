@@ -34,13 +34,13 @@ program test_pdt
   u%foo=[1,2,3]
   v%foo=[2,3,4]
   w=addvv(u,v)
-  if (any (w%foo .ne. [3,5,7])) call abort
+  if (any (w%foo .ne. [3,5,7])) STOP 1
   do i = 1 , a(1)%k
     a%foo(i) = i + 4
     b%foo(i) = i + 7
   end do
   c = addvv(a,b)
-  if (any (c(1)%foo .ne. [13,15,17])) call abort
+  if (any (c(1)%foo .ne. [13,15,17])) STOP 2
 end program test_pdt
 ! { dg-final { scan-tree-dump-times "__builtin_free" 8 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_malloc" 9 "original" } }

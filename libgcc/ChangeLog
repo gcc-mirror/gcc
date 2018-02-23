@@ -1,3 +1,26 @@
+2018-02-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__adddf3_aux): Add
+	.literal_position directive.
+	* config/xtensa/ieee754-sf.S (__addsf3_aux): Likewise.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-16  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Include cetintrin.h not x86intrin.h.
+
+2018-02-08  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Use new _get_ssp and _inc_ssp intrinsics.
+
 2018-02-02  Julia Koval  <julia.koval@intel.com>
 
 	* config/i386/cpuinfo.h (processor_subtypes): Add INTEL_COREI7_ICELAKE.

@@ -21,20 +21,20 @@ program main
   integer, parameter, dimension(2) :: b11 = maxloc(i2, dim=2)
   integer, parameter, dimension(3) :: b12 = maxloc(i2,dim=1,mask=i2<0)
   integer, parameter, dimension(2) :: b13 = maxloc(i2,dim=2, mask=i2<-10)
-  if (b /= 1) call abort
-  if (b2 /= 0) call abort
-  if (b3 /= 3) call abort
-  if (b4 /= 1) call abort
-  if (any(b5 /= [2,1])) call abort
-  if (any(b6 /= [0, 0])) call abort
-  if (any(b7 /= [1,1])) call abort
-  if (any(b8 /= b5)) call abort
-  if (any(b9 /= [0, 0])) call abort
+  if (b /= 1) STOP 1
+  if (b2 /= 0) STOP 2
+  if (b3 /= 3) STOP 3
+  if (b4 /= 1) STOP 4
+  if (any(b5 /= [2,1])) STOP 5
+  if (any(b6 /= [0, 0])) STOP 6
+  if (any(b7 /= [1,1])) STOP 7
+  if (any(b8 /= b5)) STOP 8
+  if (any(b9 /= [0, 0])) STOP 9
   d = 1
-  if (any(b10 /= maxloc(i2,dim=d))) call abort
+  if (any(b10 /= maxloc(i2,dim=d))) STOP 10
   d = 2
-  if (any(b11 /= maxloc(i2,dim=2))) call abort
+  if (any(b11 /= maxloc(i2,dim=2))) STOP 11
   d = 1
-  if (any(b12 /= maxloc(i2, dim=d,mask=i2<0))) call abort
-  if (any(b13 /= 0)) call abort
+  if (any(b12 /= maxloc(i2, dim=d,mask=i2<0))) STOP 12
+  if (any(b13 /= 0)) STOP 13
 end program main

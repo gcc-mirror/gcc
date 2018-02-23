@@ -22,30 +22,30 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifdef __x86_64__
-# define incssp(x) __builtin_ia32_incsspq ((x))
-# define rdssp(x) __builtin_ia32_rdsspq (x)
-#else
-# define incssp(x) __builtin_ia32_incsspd ((x))
-# define rdssp(x) __builtin_ia32_rdsspd (x)
-#endif
+/* NB: We need _get_ssp and _inc_ssp from <cetintrin.h>.  But we can't
+   include <x86intrin.h> which ends up including <mm_malloc.h>, which
+   includes <stdlib.h> and <errno.h> unconditionally.  But we can't
+   include any libc system headers unconditionally from libgcc.  Avoid
+   including <mm_malloc.h> here by defining _IMMINTRIN_H_INCLUDED.  */
+#define _IMMINTRIN_H_INCLUDED
+#include <cetintrin.h>
+#undef _IMMINTRIN_H_INCLUDED
 
 /* Unwind the shadow stack for EH.  */
 #undef _Unwind_Frames_Extra
 #define _Unwind_Frames_Extra(x)			\
   do						\
     {						\
-      unsigned long ssp = 0;			\
-      ssp = rdssp (ssp);			\
+      _Unwind_Word ssp = _get_ssp ();		\
       if (ssp != 0)				\
 	{					\
-	  unsigned long tmp = (x);		\
+	  _Unwind_Word tmp = (x);		\
 	  while (tmp > 255)			\
 	    {					\
-	      incssp (tmp);			\
+	      _inc_ssp (tmp);			\
 	      tmp -= 255;			\
 	    }					\
-	  incssp (tmp);				\
+	  _inc_ssp (tmp);			\
 	}					\
     }						\
     while (0)

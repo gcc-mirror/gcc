@@ -60,7 +60,7 @@ PROGRAM test
   close (unit = 71)
 
   write(line, "(I4)") chairman%id_no
-  if (trim (line) .ne. "   1") call abort
+  if (trim (line) .ne. "   1") STOP 1
   write(line, "(I4)") chairman%age
-  if (trim (line) .ne. "  62") call abort
+  if (trim (line) .ne. "  62") STOP 2
 end program

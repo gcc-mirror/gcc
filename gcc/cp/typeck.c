@@ -9232,7 +9232,8 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Effective C++ rule 15.  See also start_function.  */
   if (warn_ecpp
-      && DECL_NAME (current_function_decl) == assign_op_identifier)
+      && DECL_NAME (current_function_decl) == assign_op_identifier
+      && !type_dependent_expression_p (retval))
     {
       bool warn = true;
 

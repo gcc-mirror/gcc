@@ -36,7 +36,7 @@ program namelist_15
    
   rewind (10)
   read (10, nml = mynml, iostat = ier)
-  if (ier .ne. 0) call abort () 
+  if (ier .ne. 0) STOP 1 
   close (10)
 
   open (10, status = "scratch", delim='apostrophe')
@@ -44,7 +44,7 @@ program namelist_15
   rewind (10)
 
   read (10, nml = mynml, iostat = ier)
-  if (ier .ne. 0) call abort () 
+  if (ier .ne. 0) STOP 2 
   close(10)
 
   if (.not. ((x(1)%i(1) == 3)          .and. &
@@ -58,6 +58,6 @@ program namelist_15
              (x(2)%m(1)%ch(1) == "hz") .and. &
              (x(2)%m(1)%ch(2) == "qz") .and. &
              (x(2)%m(2)%ch(1) == "wz") .and. &
-             (x(2)%m(2)%ch(2) == "kz"))) call abort ()
+             (x(2)%m(2)%ch(2) == "kz"))) STOP 3
 
 end program namelist_15

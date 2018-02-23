@@ -165,9 +165,12 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 #undef ELFDATA2MSB
 #undef EV_CURRENT
 #undef ET_DYN
+#undef EM_PPC64
+#undef EF_PPC64_ABI
 #undef SHN_LORESERVE
 #undef SHN_XINDEX
 #undef SHN_UNDEF
+#undef SHT_PROGBITS
 #undef SHT_SYMTAB
 #undef SHT_STRTAB
 #undef SHT_DYNSYM
@@ -245,6 +248,9 @@ typedef struct {
 
 #define ET_DYN 3
 
+#define EM_PPC64 21
+#define EF_PPC64_ABI 3
+
 typedef struct {
   b_elf_word	sh_name;		/* Section name, index in string tbl */
   b_elf_word	sh_type;		/* Type of section */
@@ -262,6 +268,7 @@ typedef struct {
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
 
+#define SHT_PROGBITS 1
 #define SHT_SYMTAB 2
 #define SHT_STRTAB 3
 #define SHT_DYNSYM 11
@@ -403,6 +410,20 @@ struct elf_syminfo_data
   struct elf_symbol *symbols;
   /* The number of symbols.  */
   size_t count;
+};
+
+/* Information about PowerPC64 ELFv1 .opd section.  */
+
+struct elf_ppc64_opd_data
+{
+  /* Address of the .opd section.  */
+  b_elf_addr addr;
+  /* Section data.  */
+  const char *data;
+  /* Size of the .opd section.  */
+  size_t size;
+  /* Corresponding section view.  */
+  struct backtrace_view view;
 };
 
 /* Compute the CRC-32 of BUF/LEN.  This uses the CRC used for
@@ -569,7 +590,8 @@ elf_initialize_syminfo (struct backtrace_state *state,
 			const unsigned char *symtab_data, size_t symtab_size,
 			const unsigned char *strtab, size_t strtab_size,
 			backtrace_error_callback error_callback,
-			void *data, struct elf_syminfo_data *sdata)
+			void *data, struct elf_syminfo_data *sdata,
+			struct elf_ppc64_opd_data *opd)
 {
   size_t sym_count;
   const b_elf_sym *sym;
@@ -620,7 +642,17 @@ elf_initialize_syminfo (struct backtrace_state *state,
 	  return 0;
 	}
       elf_symbols[j].name = (const char *) strtab + sym->st_name;
-      elf_symbols[j].address = sym->st_value + base_address;
+      /* Special case PowerPC64 ELFv1 symbols in .opd section, if the symbol
+	 is a function descriptor, read the actual code address from the
+	 descriptor.  */
+      if (opd
+	  && sym->st_value >= opd->addr
+	  && sym->st_value < opd->addr + opd->size)
+	elf_symbols[j].address
+	  = *(const b_elf_addr *) (opd->data + (sym->st_value - opd->addr));
+      else
+	elf_symbols[j].address = sym->st_value;
+      elf_symbols[j].address += base_address;
       elf_symbols[j].size = sym->st_size;
       ++j;
     }
@@ -2637,6 +2669,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   int debug_view_valid;
   unsigned int using_debug_view;
   uint16_t *zdebug_table;
+  struct elf_ppc64_opd_data opd_data, *opd;
 
   if (!debuginfo)
     {
@@ -2655,6 +2688,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
   debuglink_name = NULL;
   debuglink_crc = 0;
   debug_view_valid = 0;
+  opd = NULL;
 
   if (!backtrace_get_view (state, descriptor, 0, sizeof ehdr, error_callback,
 			   data, &ehdr_view))
@@ -2857,6 +2891,23 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	      debuglink_crc = *(const uint32_t*)(debuglink_data + crc_offset);
 	    }
 	}
+
+      /* Read the .opd section on PowerPC64 ELFv1.  */
+      if (ehdr.e_machine == EM_PPC64
+	  && (ehdr.e_flags & EF_PPC64_ABI) < 2
+	  && shdr->sh_type == SHT_PROGBITS
+	  && strcmp (name, ".opd") == 0)
+	{
+	  if (!backtrace_get_view (state, descriptor, shdr->sh_offset,
+				   shdr->sh_size, error_callback, data,
+				   &opd_data.view))
+	    goto fail;
+
+	  opd = &opd_data;
+	  opd->addr = shdr->sh_addr;
+	  opd->data = (const char *) opd_data.view.data;
+	  opd->size = shdr->sh_size;
+	}
     }
 
   if (symtab_shndx == 0)
@@ -2898,7 +2949,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
       if (!elf_initialize_syminfo (state, base_address,
 				   symtab_view.data, symtab_shdr->sh_size,
 				   strtab_view.data, strtab_shdr->sh_size,
-				   error_callback, data, sdata))
+				   error_callback, data, sdata, opd))
 	{
 	  backtrace_free (state, sdata, sizeof *sdata, error_callback, data);
 	  goto fail;
@@ -2949,6 +3000,12 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
     {
       backtrace_release_view (state, &buildid_view, error_callback, data);
       buildid_view_valid = 0;
+    }
+
+  if (opd)
+    {
+      backtrace_release_view (state, &opd->view, error_callback, data);
+      opd = NULL;
     }
 
   if (debuglink_name != NULL)
@@ -3139,6 +3196,8 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
     backtrace_release_view (state, &buildid_view, error_callback, data);
   if (debug_view_valid)
     backtrace_release_view (state, &debug_view, error_callback, data);
+  if (opd)
+    backtrace_release_view (state, &opd->view, error_callback, data);
   if (descriptor != -1)
     backtrace_close (descriptor, error_callback, data);
   return 0;

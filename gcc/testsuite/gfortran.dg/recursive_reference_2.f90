@@ -27,6 +27,6 @@ END MODULE M1
 
 USE M1
 integer :: ans(5)
-IF (ANY(TEST(3).NE.(/5,5,5,5,5/))) CALL ABORT()
-IF (ANY(TEST(6).NE.(/0,0,0,0,0/))) CALL ABORT()
+IF (ANY(TEST(3).NE.(/5,5,5,5,5/))) STOP 1
+IF (ANY(TEST(6).NE.(/0,0,0,0,0/))) STOP 2
 END
