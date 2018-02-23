@@ -1,3 +1,9 @@
+2018-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/84506
+	* trans-io.c (set_parameter_value_inquire): Adjust range check of
+	negative unit values for kind=8 units to the kind=4 negative limit.
+
 2018-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83149
