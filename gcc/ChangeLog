@@ -1,3 +1,8 @@
+2018-02-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix71.h (TARGET_DEFAULT): Change to
+	ISA_2_5_MASKS_EMBEDDED.
+
 2018-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-prop.c (ipa_vr_ggc_hash_traits::hash): Hash p->min and
