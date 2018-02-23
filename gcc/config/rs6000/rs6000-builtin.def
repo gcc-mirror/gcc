@@ -1659,9 +1659,6 @@ BU_VSX_2 (CMPLE_U8HI,         "cmple_u8hi",     CONST,  vector_ngtuv8hi)
 BU_VSX_2 (CMPLE_U4SI,         "cmple_u4si",     CONST,  vector_ngtuv4si)
 BU_VSX_2 (CMPLE_U2DI,         "cmple_u2di",     CONST,  vector_ngtuv2di)
 
-BU_VSX_2 (VEC_VSIGNED2_V2DF,      "vsigned2_v2df",    CONST,  vsigned2_v2df)
-BU_VSX_2 (VEC_VUNSIGNED2_V2DF,    "vunsigned2_v2df",  CONST,  vunsigned2_v2df)
-
 /* VSX abs builtin functions.  */
 BU_VSX_A (XVABSDP,	      "xvabsdp",	CONST,	absv2df2)
 BU_VSX_A (XVNABSDP,	      "xvnabsdp",	CONST,	vsx_nabsv2df2)
@@ -1852,8 +1849,6 @@ BU_VSX_OVERLOAD_2 (XXMRGHW,  "xxmrghw")
 BU_VSX_OVERLOAD_2 (XXMRGLW,  "xxmrglw")
 BU_VSX_OVERLOAD_2 (XXSPLTD,  "xxspltd")
 BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
-BU_VSX_OVERLOAD_2 (VSIGNED2,     "vsigned2")
-BU_VSX_OVERLOAD_2 (VUNSIGNED2,   "vunsigned2")
 
 /* 1 argument VSX overloaded builtin functions.  */
 BU_VSX_OVERLOAD_1 (DOUBLE,   "double")
@@ -1917,6 +1912,9 @@ BU_P8V_AV_1 (NEG_V2DF,      "neg_v2df",	CONST,	negv2df2)
 BU_P8V_VSX_2 (FLOAT2_V2DF,        "float2_v2df",	CONST,  float2_v2df)
 BU_P8V_VSX_2 (FLOAT2_V2DI,        "float2_v2di",	CONST,  float2_v2di)
 BU_P8V_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
+BU_P8V_VSX_2 (VEC_VSIGNED2_V2DF,   "vsigned2_v2df",    CONST,  vsigned2_v2df)
+BU_P8V_VSX_2 (VEC_VUNSIGNED2_V2DF, "vunsigned2_v2df",  CONST,  vunsigned2_v2df)
+
 
 /* 1 argument altivec instructions added in ISA 2.07.  */
 BU_P8V_AV_1 (ABS_V2DI,	      "abs_v2di",	CONST,	absv2di2)
@@ -2063,6 +2061,8 @@ BU_P8V_OVERLOAD_2 (VSUBUDM,	"vsubudm")
 BU_P8V_OVERLOAD_2 (VSUBUQM,	"vsubuqm")
 BU_P8V_OVERLOAD_2 (FLOAT2,   "float2")
 BU_P8V_OVERLOAD_2 (UNS_FLOAT2,   "uns_float2")
+BU_P8V_OVERLOAD_2 (VSIGNED2,     "vsigned2")
+BU_P8V_OVERLOAD_2 (VUNSIGNED2,   "vunsigned2")
 
 /* ISA 2.07 vector overloaded 3 argument functions.  */
 BU_P8V_OVERLOAD_3 (VADDECUQ,	"vaddecuq")

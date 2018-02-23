@@ -1,3 +1,10 @@
+2018-02-23  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3-runnable.c: Move tests for vec_float2,
+	vec_signed2 and vec_unsigned2 to new Power 8 test file.
+	* gcc.target/powerpc/builtins-3-runnable-p8.c: New test file for
+	Power 8 tests.
+
 2018-02-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/pr80695-p9.c: Update dg-requires stanza.
