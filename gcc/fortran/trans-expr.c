@@ -6868,6 +6868,8 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 
       /* The derived symbol has already been converted to a (void *).  Use
 	 its kind.  */
+      if (derived->ts.kind == 0)
+	derived->ts.kind = gfc_default_integer_kind;
       expr = gfc_get_int_expr (derived->ts.kind, NULL, 0);
       expr->ts.f90_type = derived->ts.f90_type;
 
