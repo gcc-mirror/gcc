@@ -2251,6 +2251,7 @@ gfc_sym_type (gfc_symbol * sym)
   if (sym->attr.result
       && sym->ts.type == BT_CHARACTER
       && sym->ts.u.cl->backend_decl == NULL_TREE
+      && sym->ns->proc_name
       && sym->ns->proc_name->ts.u.cl->backend_decl != NULL_TREE)
     sym->ts.u.cl->backend_decl = sym->ns->proc_name->ts.u.cl->backend_decl;
 

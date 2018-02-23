@@ -1,6 +1,12 @@
 2018-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83149
+	* trans-types.c (gfc_sym_type): Test sym->ns->proc_name before
+	accessing its components.
+
+2018-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83149
 	* trans-decl.c (gfc_finish_var_decl): Test sym->ns->proc_name
 	before accessing its components.
 

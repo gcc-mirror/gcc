@@ -1,3 +1,9 @@
+2018-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83149
+	* gfortran.dg/pr83149_b.f90: New test.
+	* gfortran.dg/pr83149_a.f90: Additional source for previous.
+
 2018-02-23  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3-runnable.c: Move tests for vec_float2,
