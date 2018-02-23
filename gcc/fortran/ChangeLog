@@ -1,3 +1,11 @@
+2018-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83148
+	* trans-const.c : Clean up some whitespace issues.
+	* trans-expr.c (gfc_conv_initializer): If an iso_c_binding
+	derived type has a kind value of zero, set it to the default
+	integer kind.
+
 2018-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/84519
