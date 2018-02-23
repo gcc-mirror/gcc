@@ -1,5 +1,9 @@
 2018-02-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* intrinsic.texi: Arguments to MATMUL cannot both be rank one.
+
+2018-02-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/84511
 	* trans-io.c (transfer_expr): Deal with C_LOC in transfer statement.
 
