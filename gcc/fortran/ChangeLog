@@ -1,3 +1,9 @@
+2018-02-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/84346
+	* interface.c (compare_actual_formal): Issue error if keyword is
+	used in a statement function.
+
 2018-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/84506

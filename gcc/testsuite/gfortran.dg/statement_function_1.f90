@@ -19,10 +19,6 @@
       qofs(s, i) = i * s
       i = 42
       w = qofs(hh, i)
-!
-! The following line should cause an error, because keywords are not
-! allowed in a function with an implicit interface.
-!
-      w = qofs(i = i, s = hh)
+      w = qofs(i = i, s = hh) ! { dg-error "invalid in a statement function" }
       end subroutine step
 ! { dg-prune-output " Obsolescent feature" }
