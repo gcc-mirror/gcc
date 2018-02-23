@@ -40,7 +40,7 @@ do_pause (void)
 
   fgets(buff, 4, stdin);
   if (strncmp(buff, "go\n", 3) != 0)
-    stop_string ('\0', 0);
+    stop_string ('\0', 0, false);
   estr_write ("RESUMED\n");
 }
 

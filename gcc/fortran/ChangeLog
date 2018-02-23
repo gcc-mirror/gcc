@@ -1,3 +1,11 @@
+2018-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/84519
+	* trans-decl.c (gfc_build_builtin_function_decls): Add bool
+	argument to stop and error stop decls.
+	* trans-stmt.c (gfc_trans_stop): Add false value to argument
+	lists.
+
 2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR 78534
