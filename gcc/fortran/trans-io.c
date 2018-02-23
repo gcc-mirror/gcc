@@ -2289,6 +2289,16 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
       ts->kind = gfc_index_integer_kind;
     }
 
+  /* gfortran reaches here for "print *, c_loc(xxx)".  */
+  if (ts->type == BT_VOID
+      && code->expr1 && code->expr1->ts.type == BT_VOID
+      && code->expr1->symtree
+      && strcmp (code->expr1->symtree->name, "c_loc") == 0)
+    {
+      ts->type = BT_INTEGER;
+      ts->kind = gfc_index_integer_kind;
+    }
+
   kind = ts->kind;
   function = NULL;
   arg2 = NULL;
