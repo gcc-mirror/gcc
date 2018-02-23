@@ -1,3 +1,8 @@
+2018-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-prop.c (ipa_vr_ggc_hash_traits::hash): Hash p->min and
+	p->max as pointers rather than using iterative_hash_expr.
+
 2018-02-23  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Change VSIGNED2 and VUNSIGNED2
