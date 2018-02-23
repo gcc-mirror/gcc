@@ -1,3 +1,25 @@
+2018-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/84519
+	* caf/libcaf.h (_gfortran_caf_stop_numeric): Add bool argument.
+	(_gfortran_caf_stop_str): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	* caf/mpi.c (_gfortran_caf_error_stop_str): Handle new argument.
+	(_gfortran_caf_error_stop): Likewise.
+	* caf/single.c (_gfortran_caf_stop_numeric): Likewise.
+	(_gfortran_caf_stop_str): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+	* libgfortran.h (stop_string): Add bool argument.
+	* runtime/pause.c (do_pause): Add false argument.
+	* runtime/stop.c (stop_numeric): Handle new argument.
+	(stop_string): Likewise.
+	(error_stop_string): Likewise.
+	(error_stop_numeric): Likewise.
+
 2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR 78534
