@@ -9870,6 +9870,7 @@ one or two.
 type; otherwise, an array of @code{LOGICAL} type. The rank shall be one
 or two, and the first (or only) dimension of @var{MATRIX_B} shall be
 equal to the last (or only) dimension of @var{MATRIX_A}.
+@var{MATRIX_A} and @var{MATRIX_B} shall not both be rank one arrays.
 @end multitable
 
 @item @emph{Return value}:
