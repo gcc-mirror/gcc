@@ -1,3 +1,9 @@
+2018-02-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83149
+	* gfortran.dg/pr83149_1.f90: New test.
+	* gfortran.dg/pr83149.f90: Additional source for previous.
+
 2018-02-23  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR testsuite/80551
