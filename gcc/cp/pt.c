@@ -23558,6 +23558,7 @@ static tree
 tsubst_initializer_list (tree t, tree argvec)
 {
   tree inits = NULL_TREE;
+  tree target_ctor = error_mark_node;
 
   for (; t; t = TREE_CHAIN (t))
     {
@@ -23673,6 +23674,28 @@ tsubst_initializer_list (tree t, tree argvec)
 		init = void_type_node;
               in_base_initializer = 0;
             }
+
+	  if (target_ctor != error_mark_node
+	      && init != error_mark_node)
+	    {
+	      error ("mem-initializer for %qD follows constructor delegation",
+		     decl);
+	      return inits;
+	    }
+	  /* Look for a target constructor. */
+	  if (init != error_mark_node
+	      && decl && CLASS_TYPE_P (decl)
+	      && same_type_p (decl, current_class_type))
+	    {
+	      maybe_warn_cpp0x (CPP0X_DELEGATING_CTORS);
+	      if (inits)
+		{
+		  error ("constructor delegation follows mem-initializer for %qD",
+			 TREE_PURPOSE (inits));
+		  continue;
+		}
+	      target_ctor = init;
+	    }
 
           if (decl)
             {

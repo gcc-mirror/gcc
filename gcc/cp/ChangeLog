@@ -1,5 +1,11 @@
 2018-02-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70468 - ICE with constructor delegation via typedef.
+	* pt.c (tsubst_initializer_list): Check for other mem-initializers
+	with constructor delegation.
+
+2018-02-22  Jason Merrill  <jason@redhat.com>
+
 	PR c++/84424 - ICE with constexpr and __builtin_shuffle.
 	* constexpr.c (reduced_constant_expression_p): Handle CONSTRUCTOR of
 	VECTOR_TYPE.
