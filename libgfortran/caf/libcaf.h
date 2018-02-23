@@ -197,13 +197,13 @@ void _gfortran_caf_sync_all (int *, char *, size_t);
 void _gfortran_caf_sync_memory (int *, char *, size_t);
 void _gfortran_caf_sync_images (int, int[], int *, char *, size_t);
 
-void _gfortran_caf_stop_numeric (int)
+void _gfortran_caf_stop_numeric (int, bool)
      __attribute__ ((noreturn));
-void _gfortran_caf_stop_str (const char *, size_t)
+void _gfortran_caf_stop_str (const char *, size_t, bool)
      __attribute__ ((noreturn));
-void _gfortran_caf_error_stop_str (const char *, size_t)
+void _gfortran_caf_error_stop_str (const char *, size_t, bool)
      __attribute__ ((noreturn));
-void _gfortran_caf_error_stop (int) __attribute__ ((noreturn));
+void _gfortran_caf_error_stop (int, bool) __attribute__ ((noreturn));
 void _gfortran_caf_fail_image (void) __attribute__ ((noreturn));
 
 void _gfortran_caf_co_broadcast (gfc_descriptor_t *, int, int *, char *, size_t);

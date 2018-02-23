@@ -358,13 +358,15 @@ error_stop (int error)
 /* ERROR STOP function for string arguments.  */
 
 void
-_gfortran_caf_error_stop_str (const char *string, size_t len)
+_gfortran_caf_error_stop_str (const char *string, size_t len, bool quiet)
 {
-  fputs ("ERROR STOP ", stderr);
-  while (len--)
-    fputc (*(string++), stderr);
-  fputs ("\n", stderr);
-
+  if (!quiet)
+    {
+      fputs ("ERROR STOP ", stderr);
+      while (len--)
+	fputc (*(string++), stderr);
+      fputs ("\n", stderr);
+    }
   error_stop (1);
 }
 
@@ -372,8 +374,9 @@ _gfortran_caf_error_stop_str (const char *string, size_t len)
 /* ERROR STOP function for numerical arguments.  */
 
 void
-_gfortran_caf_error_stop (int error)
+_gfortran_caf_error_stop (int error, bool quiet)
 {
-  fprintf (stderr, "ERROR STOP %d\n", error);
+  if (!quiet)
+    fprintf (stderr, "ERROR STOP %d\n", error);
   error_stop (error);
 }

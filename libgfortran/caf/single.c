@@ -267,33 +267,38 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 
 
 void
-_gfortran_caf_stop_numeric(int stop_code)
+_gfortran_caf_stop_numeric(int stop_code, bool quiet)
 {
-  fprintf (stderr, "STOP %d\n", stop_code);
+  if (!quiet)
+    fprintf (stderr, "STOP %d\n", stop_code);
   exit (0);
 }
 
 
 void
-_gfortran_caf_stop_str(const char *string, size_t len)
+_gfortran_caf_stop_str(const char *string, size_t len, bool quiet)
 {
-  fputs ("STOP ", stderr);
-  while (len--)
-    fputc (*(string++), stderr);
-  fputs ("\n", stderr);
-
+  if (!quiet)
+    {
+      fputs ("STOP ", stderr);
+      while (len--)
+	fputc (*(string++), stderr);
+      fputs ("\n", stderr);
+    }
   exit (0);
 }
 
 
 void
-_gfortran_caf_error_stop_str (const char *string, size_t len)
+_gfortran_caf_error_stop_str (const char *string, size_t len, bool quiet)
 {
-  fputs ("ERROR STOP ", stderr);
-  while (len--)
-    fputc (*(string++), stderr);
-  fputs ("\n", stderr);
-
+  if (!quiet)
+    {
+      fputs ("ERROR STOP ", stderr);
+      while (len--)
+	fputc (*(string++), stderr);
+      fputs ("\n", stderr);
+    }
   exit (1);
 }
 
@@ -367,9 +372,10 @@ _gfortran_caf_stopped_images (gfc_descriptor_t *array,
 
 
 void
-_gfortran_caf_error_stop (int error)
+_gfortran_caf_error_stop (int error, bool quiet)
 {
-  fprintf (stderr, "ERROR STOP %d\n", error);
+  if (!quiet)
+    fprintf (stderr, "ERROR STOP %d\n", error);
   exit (error);
 }
 
@@ -2990,7 +2996,7 @@ _gfortran_caf_lock (caf_token_t token, size_t index,
 	}
       return;
     }
-  _gfortran_caf_error_stop_str (msg, strlen (msg));
+  _gfortran_caf_error_stop_str (msg, strlen (msg), false);
 }
 
 
@@ -3023,7 +3029,7 @@ _gfortran_caf_unlock (caf_token_t token, size_t index,
 	}
       return;
     }
-  _gfortran_caf_error_stop_str (msg, strlen (msg));
+  _gfortran_caf_error_stop_str (msg, strlen (msg), false);
 }
 
 int
