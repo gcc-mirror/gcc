@@ -1,3 +1,9 @@
+2018-02-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR testsuite/80551
+	* c-c++-common/tsan/race_on_mutex.c: Change regexp to allow
+	__GI___pthread_mutex_init as well.
+
 2018-02-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83148
