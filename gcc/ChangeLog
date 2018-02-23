@@ -1,3 +1,12 @@
+2018-02-23  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Change VSIGNED2 and VUNSIGNED2
+	macro expansions from BU_VSX_2 to BU_P8V_VSX_2 and BU_VSX_OVERLOAD_2 to
+	BU_P8V_OVERLOAD_2.
+	* config/rs6000/rs6000-c.c: Change VSX_BUILTIN_VEC_VSIGNED2 to
+	P8V_BUILTIN_VEC_VSIGNED2.  Change VSX_BUILTIN_VEC_VUNSIGNED2 to
+	P8V_BUILTIN_VEC_VUNSIGNED2.
+
 2018-02-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/81572
