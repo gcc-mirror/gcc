@@ -1,3 +1,9 @@
+2018-02-24  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/30792
+	* decl.c (gfc_match_data): Check for invalid substring in
+	data-implied-do
+
 2018-02-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* intrinsic.texi: Arguments to MATMUL cannot both be rank one.
