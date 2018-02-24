@@ -5123,8 +5123,8 @@ fold_non_dependent_expr (tree t)
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
    than wrapped in a TARGET_EXPR.  */
 
-tree
-maybe_constant_init (tree t, tree decl)
+static tree
+maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant)
 {
   if (!t)
     return t;
@@ -5139,10 +5139,10 @@ maybe_constant_init (tree t, tree decl)
     t = TARGET_EXPR_INITIAL (t);
   if (!is_nondependent_static_init_expression (t))
     /* Don't try to evaluate it.  */;
-  else if (CONSTANT_CLASS_P (t))
+  else if (CONSTANT_CLASS_P (t) && allow_non_constant)
     /* No evaluation needed.  */;
   else
-    t = cxx_eval_outermost_constant_expr (t, true, false, decl);
+    t = cxx_eval_outermost_constant_expr (t, allow_non_constant, false, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree init = TARGET_EXPR_INITIAL (t);
@@ -5150,6 +5150,22 @@ maybe_constant_init (tree t, tree decl)
 	t = init;
     }
   return t;
+}
+
+/* Wrapper for maybe_constant_init_1 which permits non constants.  */
+
+tree
+maybe_constant_init (tree t, tree decl)
+{
+  return maybe_constant_init_1 (t, decl, true);
+}
+
+/* Wrapper for maybe_constant_init_1 which does not permit non constants.  */
+
+tree
+cxx_constant_init (tree t, tree decl)
+{
+  return maybe_constant_init_1 (t, decl, false);
 }
 
 #if 0

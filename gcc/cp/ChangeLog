@@ -1,3 +1,13 @@
+2018-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83692
+	* constexpr.c (maybe_constant_init_1): New function.
+	(maybe_constant_init): Make it a wrapper around maybe_constant_init_1.
+	(cxx_constant_init): New function.
+	* cp-tree.h (cxx_constant_init): Declare.
+	* typeck2.c (store_init_value): Call cxx_constant_init instead of
+	cxx_constant_value.  Move the maybe_constant_init call under an 'else'.
+
 2018-02-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70468 - ICE with constructor delegation via typedef.
