@@ -1,3 +1,8 @@
+2018-02-24  Steven G. Kargl <kargl@gcc.gnu.org>
+
+	PR fortran/30792
+	* gfortran.dg/data_substring.f90: New test.
+
 2018-02-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/84346
