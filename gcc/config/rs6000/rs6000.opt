@@ -322,11 +322,11 @@ Target Report Var(TARGET_ALTIVEC_VRSAVE) Save
 Generate VRSAVE instructions when generating AltiVec code.
 
 mvrsave=no
-Target RejectNegative Alias(mvrsave) NegativeAlias
+Target RejectNegative Alias(mvrsave) NegativeAlias Warn(%<-mvrsave=no%> is deprecated; use %<-mno-vrsave%> instead)
 Deprecated option.  Use -mno-vrsave instead.
 
 mvrsave=yes
-Target RejectNegative Alias(mvrsave)
+Target RejectNegative Alias(mvrsave) Warn(%<-mvrsave=yes%> is deprecated; use %<-mvrsave%> instead)
 Deprecated option.  Use -mvrsave instead.
 
 mblock-move-inline-limit=
@@ -350,11 +350,11 @@ Target Report Mask(ISEL) Var(rs6000_isa_flags)
 Generate isel instructions.
 
 misel=no
-Target RejectNegative Alias(misel) NegativeAlias
+Target RejectNegative Alias(misel) NegativeAlias Warn(%<-misel=no%> is deprecated; use %<-mno-isel%> instead)
 Deprecated option.  Use -mno-isel instead.
 
 misel=yes
-Target RejectNegative Alias(misel)
+Target RejectNegative Alias(misel) Warn(%<-misel=yes%> is deprecated; use %<-misel%> instead)
 Deprecated option.  Use -misel instead.
 
 mpaired
