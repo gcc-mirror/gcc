@@ -8961,7 +8961,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	    {
 	      vtab = gfc_find_derived_vtab (c->ts.u.derived);
 	      gcc_assert (vtab);
-	      c->high = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+	      c->high = gfc_get_int_expr (gfc_integer_4_kind, NULL,
 					  c->ts.u.derived->hash_value);
 	    }
 	  else
@@ -8970,6 +8970,13 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	      gcc_assert (vtab && CLASS_DATA (vtab)->initializer);
 	      e = CLASS_DATA (vtab)->initializer;
 	      c->high = gfc_copy_expr (e);
+	      if (c->high->ts.kind != gfc_integer_4_kind)
+		{
+		  gfc_typespec ts;
+		  ts.kind = gfc_integer_4_kind;
+		  ts.type = BT_INTEGER;
+		  gfc_convert_type_warn (c->high, &ts, 2, 0);
+		}
 	    }
 
 	  e = gfc_lval_expr_from_sym (vtab);

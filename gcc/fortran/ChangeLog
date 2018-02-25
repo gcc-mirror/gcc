@@ -1,3 +1,10 @@
+2018-02-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/78238
+	* gfortran.h (gfc_integer_4_kind): Define.
+	* resolve.c (resolve_select_type): Make sure that the
+	kind of c->high is gfc_integer_4_kind.
+
 2018-02-24  Steven G. Kargl <kargl@gcc.gnu.org>
 
 	PR fortran/30792
