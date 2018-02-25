@@ -2304,7 +2304,10 @@ variable_decl (int elem)
   /* At this point, we know for sure if the symbol is PARAMETER and can thus
      determine (and check) whether it can be implied-shape.  If it
      was parsed as assumed-size, change it because PARAMETERs can not
-     be assumed-size.  */
+     be assumed-size.
+
+     An explicit-shape-array cannot appear under several conditions.
+     That check is done here as well.  */
   if (as)
     {
       if (as->type == AS_IMPLIED_SHAPE && current_attr.flavor != FL_PARAMETER)
@@ -2325,6 +2328,50 @@ variable_decl (int elem)
 	{
 	  m = MATCH_ERROR;
 	  goto cleanup;
+	}
+
+      /* F2018:C830 (R816) An explicit-shape-spec whose bounds are not
+	 constant expressions shall appear only in a subprogram, derived
+	 type definition, BLOCK construct, or interface body.  */
+      if (as->type == AS_EXPLICIT
+	  && gfc_current_state () != COMP_BLOCK
+	  && gfc_current_state () != COMP_DERIVED
+	  && gfc_current_state () != COMP_FUNCTION
+	  && gfc_current_state () != COMP_INTERFACE
+	  && gfc_current_state () != COMP_SUBROUTINE)
+	{
+	  gfc_expr *e;
+	  bool not_constant = false;
+
+	  for (int i = 0; i < as->rank; i++)
+	    {
+	      e = gfc_copy_expr (as->lower[i]);
+	      gfc_resolve_expr (e);
+	      gfc_simplify_expr (e, 0);
+	      if (e && (e->expr_type != EXPR_CONSTANT))
+		{
+		  not_constant = true;
+		  break;
+		}
+	      gfc_free_expr (e);
+
+	      e = gfc_copy_expr (as->upper[i]);
+	      gfc_resolve_expr (e);
+	      gfc_simplify_expr (e, 0);
+	      if (e && (e->expr_type != EXPR_CONSTANT))
+		{
+		  not_constant = true;
+		  break;
+		}
+	      gfc_free_expr (e);
+	    }
+
+	  if (not_constant)
+	    { 
+	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 	}
     }
 

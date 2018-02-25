@@ -1,3 +1,9 @@
+2018-02-25  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83633
+	* decl.c (variable_decl): Check that an explicit-shape-array with
+	nonconstant bounds is allowed.
+
 2018-02-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84523
