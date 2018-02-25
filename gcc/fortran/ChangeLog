@@ -1,3 +1,9 @@
+2018-02-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84523
+	* trans-intrinsic.c (gfc_conv_allocated): If the argument se
+	has a pre block, add it to the expression pre block.
+
 2018-02-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/78238
