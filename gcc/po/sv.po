@@ -24,7 +24,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2018-02-18 12:05+0100\n"
+"PO-Revision-Date: 2018-02-20 15:42+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -20440,22 +20440,19 @@ msgid "%<-fsanitize=address%> and %<-fsanitize=kernel-address%> are incompatible
 msgstr "%<-fsanitize=address%> och %<-fsanitize=kernel-address%> är inkompatibla med %<-fsanitize=thread%>"
 
 #: opts.c:998
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=leak is incompatible with -fsanitize=thread"
+#, gcc-internal-format
 msgid "%<-fsanitize=leak%> is incompatible with %<-fsanitize=thread%>"
-msgstr "-fsanitize=leak är inkompatibel med -fsanitize=thread"
+msgstr "%<-fsanitize=leak%> är inkompatibel med %<-fsanitize=thread%>"
 
 #: opts.c:1004
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize-recover=%s is not supported"
+#, gcc-internal-format
 msgid "%<-fsanitize-recover=%s%> is not supported"
-msgstr "-fsanitize-recover=%s stödjs inte"
+msgstr "%<-fsanitize-recover=%s%> stödjs inte"
 
 #: opts.c:1030
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize-address-use-after-scope requires -fstack-reuse=none option"
+#, gcc-internal-format
 msgid "%<-fsanitize-address-use-after-scope%> requires %<-fstack-reuse=none%> option"
-msgstr "-fsanitize-address-use-after-scope förutsätter flaggan -fstack-reuse=none"
+msgstr "%<-fsanitize-address-use-after-scope%> förutsätter flaggan %<-fstack-reuse=none%>"
 
 #: opts.c:1037
 #, gcc-internal-format
@@ -20473,10 +20470,9 @@ msgid "unrecognized include_flags 0x%x passed to print_specific_help"
 msgstr "okända include_flags 0x%x skickade till print_specific_help"
 
 #: opts.c:1673
-#, fuzzy, gcc-internal-format
-#| msgid "-fsanitize=all option is not valid"
+#, gcc-internal-format
 msgid "%<-fsanitize=all%> option is not valid"
-msgstr "flaggan -fsanitize=all är inte giltig"
+msgstr "flaggan %<-fsanitize=all%> är inte giltig"
 
 #: opts.c:1713
 #, gcc-internal-format
@@ -20489,10 +20485,9 @@ msgid "unrecognized argument to -f%ssanitize%s= option: %q.*s"
 msgstr "okänt argument till flaggan -f%ssanitize%s=: %q.*s"
 
 #: opts.c:1754
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute directive ignored"
+#, gcc-internal-format
 msgid "%<%s%> attribute directive ignored"
-msgstr "attributdirektivet %qE ignorerat"
+msgstr "attributdirektivet %<%s%> ignorerat"
 
 #: opts.c:1931
 #, gcc-internal-format
@@ -20510,10 +20505,9 @@ msgid "HSA has not been enabled during configuration"
 msgstr "HSA har inte aktiverats under konfigurationen"
 
 #: opts.c:2206
-#, fuzzy, gcc-internal-format
-#| msgid "-foffload-abi option can be specified only for offload compiler"
+#, gcc-internal-format
 msgid "%<-foffload-abi%> option can be specified only for offload compiler"
-msgstr "flaggan -foffload-abi kan anges endast för en avlastande kompilator"
+msgstr "flaggan %<-foffload-abi%> kan anges endast för en avlastande kompilator"
 
 #: opts.c:2214
 #, gcc-internal-format, gfc-internal-format
@@ -20521,10 +20515,9 @@ msgid "structure alignment must be a small power of two, not %d"
 msgstr "postjustering måste vara två upphöjt till ett litet tal, inte %d"
 
 #: opts.c:2300
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to built-in function %s"
+#, gcc-internal-format
 msgid "invalid arguments for %<-fpatchable_function_entry%>"
-msgstr "ogiltigt argument till den inbyggda funktionen %s"
+msgstr "ogiltigt argument till %<-fpatchable_function_entry%>"
 
 #: opts.c:2358
 #, gcc-internal-format
@@ -20781,10 +20774,9 @@ msgid "-iplugindir <dir> option not passed from the gcc driver"
 msgstr "flaggan -iplugindir <kat> skickas inte från gcc-drivrutin"
 
 #: predict.c:3309
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing counts for called function %s/%i"
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing counts for called function %s"
-msgstr "Räknare saknas för den anropade funktionen %s/%i"
+msgstr "Räknare saknas för den anropade funktionen %s"
 
 #: profile.c:456
 #, gcc-internal-format, gfc-internal-format
@@ -21116,10 +21108,9 @@ msgid "size of %q+D is larger than %wd bytes"
 msgstr "storleken på %q+D är större än %wd byte"
 
 #: stor-layout.c:1150
-#, fuzzy, gcc-internal-format
-#| msgid "requested alignment %d is larger than %d"
+#, gcc-internal-format
 msgid "alignment %u of %qT is less than %u"
-msgstr "begärd minnesjustering %d är större än %d"
+msgstr "minnesjustering %u för %qT är mindre än %u"
 
 #: stor-layout.c:1157
 #, gcc-internal-format
@@ -21187,10 +21178,9 @@ msgid "format string is defined here"
 msgstr "formatsträngen är definierad här"
 
 #: symtab.c:301
-#, fuzzy, gcc-internal-format
-#| msgid "%D renamed after being referenced in assembly"
+#, gcc-internal-format
 msgid "%qD renamed after being referenced in assembly"
-msgstr "%D byter namn efter att ha refererats i assembler"
+msgstr "%qD byter namn efter att ha refererats i assembler"
 
 #: symtab.c:991
 #, gcc-internal-format
@@ -21443,22 +21433,19 @@ msgid "Graphite loop optimizations cannot be used (isl is not available) (-fgrap
 msgstr "Graphite-slingoptimeringar kan inte användas (isl är inte tillgängligt) (-fgraphite, -fgraphite-identity, -floop-nest-optimize, -floop-parallelize-all)"
 
 #: toplev.c:1297
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fcheck-pointer-bounds%> is not supported for this target"
+#, gcc-internal-format
 msgid "%<-fcf-protection=full%> is not supported for this target"
-msgstr "%<-fcheck-pointer-bounds%> stödjs inte för denna målarkitektur"
+msgstr "%<-fcf-protection=full%> stödjs inte för denna målarkitektur"
 
 #: toplev.c:1304
-#, fuzzy, gcc-internal-format
-#| msgid "-fstack-protector not supported for this target"
+#, gcc-internal-format
 msgid "%<-fcf-protection=branch%> is not supported for this target"
-msgstr "-fstack-protector stödjs inte av denna målarkitektur"
+msgstr "%<-fcf-protection=branch%> stödjs inte av denna målarkitektur"
 
 #: toplev.c:1311
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fcheck-pointer-bounds%> is not supported for this target"
+#, gcc-internal-format
 msgid "%<-fcf-protection=return%> is not supported for this target"
-msgstr "%<-fcheck-pointer-bounds%> stödjs inte för denna målarkitektur"
+msgstr "%<-fcf-protection=return%> stödjs inte för denna målarkitektur"
 
 #: toplev.c:1322
 #, gcc-internal-format
@@ -21801,16 +21788,14 @@ msgid "invalid operand to plus/minus, type is a pointer"
 msgstr "ogiltig operand till plus/minus, typen är en pekare"
 
 #: tree-cfg.c:3269
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand to pointer plus, first operand is not a pointer"
+#, gcc-internal-format
 msgid "invalid operand to pointer diff, operand is not a pointer"
-msgstr "ogiltig operand till pekarplus, första operanden är inte en pekare"
+msgstr "ogiltig operand till pekarskillnad, första operanden är inte en pekare"
 
 #: tree-cfg.c:3277
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for property"
+#, gcc-internal-format
 msgid "invalid type for pointer diff"
-msgstr "ogiltigt typ på egenskap"
+msgstr "ogiltigt typ för pekarskillnad"
 
 #: tree-cfg.c:3288
 #, gcc-internal-format
@@ -22071,43 +22056,37 @@ msgstr "ogiltiga (pekar)operander till plus/minus"
 #: tree-cfg.c:4109
 #, gcc-internal-format
 msgid "type mismatch in pointer plus expression"
-msgstr "typfel i pekar-plus-uttryck"
+msgstr "typer stämmer inte i pekaradditionsuttryck"
 
 #: tree-cfg.c:4130
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in pointer plus expression"
+#, gcc-internal-format
 msgid "type mismatch in pointer diff expression"
-msgstr "typfel i pekar-plus-uttryck"
+msgstr "typer stämmer inte i pekarskillnadsuttryck"
 
 #: tree-cfg.c:4184
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in widening vector shift expression"
+#, gcc-internal-format
 msgid "type mismatch in widening sum reduction"
-msgstr "typfel i breddande vektorskiftuttryck"
+msgstr "typer stämmer inte i breddande summareduktion"
 
 #: tree-cfg.c:4204
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in widening multiply-accumulate expression"
+#, gcc-internal-format
 msgid "type mismatch in vector widening multiplication"
-msgstr "typer stämmer inte i vidgande multiplicera-ackumulera-uttryck"
+msgstr "typer stämmer inte i breddande multiplikation"
 
 #: tree-cfg.c:4238
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in vector permute expression"
+#, gcc-internal-format
 msgid "type mismatch in vector pack expression"
-msgstr "typfel i vektorpermuteringsuttryck"
+msgstr "typer stämmer inte i vektorpaketeringsuttryck"
 
 #: tree-cfg.c:4271
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in address expression"
+#, gcc-internal-format
 msgid "type mismatch in series expression"
-msgstr "typfel i adressuttryck"
+msgstr "typer stämmer inte i serieuttryck"
 
 #: tree-cfg.c:4279
-#, fuzzy, gcc-internal-format
-#| msgid "vector types expected in sad expression"
+#, gcc-internal-format
 msgid "vector type expected in series expression"
-msgstr "vektortyper förväntades i sad-uttryck"
+msgstr "vektortyper förväntades i serieuttryck"
 
 #: tree-cfg.c:4292
 #, gcc-internal-format
@@ -22200,10 +22179,9 @@ msgid "vector insertion not at element boundary"
 msgstr "vektorinsättning inte på elementgräns"
 
 #: tree-cfg.c:4539
-#, fuzzy, gcc-internal-format
-#| msgid "type mismatch in vector permute expression"
+#, gcc-internal-format
 msgid "type mismatch in dot product reduction"
-msgstr "typfel i vektorpermuteringsuttryck"
+msgstr "typ stämmer inte skalärproduktsreduktion"
 
 #: tree-cfg.c:4573
 #, gcc-internal-format
@@ -22774,64 +22752,54 @@ msgid "stmt volatile flag not up-to-date"
 msgstr "satsens volatile-flagga är inte aktuell"
 
 #: tree-ssa-strlen.c:1941
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size %wu"
+#, gcc-internal-format
 msgid "%qD output truncated copying %E byte from a string of length %wu"
-msgstr "utdata från direktivet %<%.*s%> avhugget när %wu byte skrevs till en region av storlek %wu"
+msgstr "utdata från %qD avhuggen vid kopiering av %E byte från en sträng med längden %wu"
 
 #: tree-ssa-strlen.c:1943
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%qD output truncated copying %E bytes from a string of length %wu"
-msgstr "utdata från direktivet %<%.*s%> avhugget när %wu byte skrevs till en region av storlek %wu"
+msgstr "utdata från %qD avhuggen vid kopiering av %E byte från en sträng med längden %wu"
 
 #: tree-ssa-strlen.c:1948
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output truncated writing between %wu and %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%qD output truncated copying between %wu and %wu bytes from a string of length %wu"
-msgstr "utdata från direktivet %<%.*s%> avhugget när mellan %wu och %wu byte skrevs till en region av storlek %wu"
+msgstr "utdata från %qD avhuggen vid kopiering mellan %wu och %wu byte från en sträng med längden %wu"
 
 #: tree-ssa-strlen.c:1960
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output may be truncated writing %wu byte into a region of size %wu"
+#, gcc-internal-format
 msgid "%qD output may be truncated copying %E byte from a string of length %wu"
-msgstr "utdata från direktivet %<%.*s%> kan ha huggits av när %wu byte skrevs till en region av storlek %wu"
+msgstr "utdata från %qD kan ha huggits av vid kopiering av %E byte från en sträng med längden %wu"
 
 #: tree-ssa-strlen.c:1962
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output may be truncated writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%qD output may be truncated copying %E bytes from a string of length %wu"
-msgstr "utdata från direktivet %<%.*s%> kan ha huggits av när %wu byte skrevs till en region med storlek %wu"
+msgstr "utdata från %qD kan ha huggits av vid kopiering av %E byte från en sträng med längden %wu"
 
 #: tree-ssa-strlen.c:1967 tree-ssa-strlen.c:1981
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive output may be truncated writing between %wu and %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%qD output may be truncated copying between %wu and %wu bytes from a string of length %wu"
-msgstr "utdata från direktivet %<%.*s%> kan ha huggits av när mellan %wu och %wu byte skrevs till en region av storlek %wu"
+msgstr "utdata från %qD kan ha huggits av vid kopiering mellan %wu och %wu byte från en sträng med längden %wu"
 
 #: tree-ssa-strlen.c:2002
-#, fuzzy, gcc-internal-format
-#| msgid "specified bound %wu equals the size of the destination"
+#, gcc-internal-format
 msgid "%qD specified bound %E equals destination size"
-msgstr "den angivna gränsen %wu är lika med storleken på destinationen"
+msgstr "den angivna gränsen %2$E för %1$qD är lika med storleken på destinationen"
 
 #: tree-ssa-strlen.c:2102
-#, fuzzy, gcc-internal-format
-#| msgid "%qE output truncated before the last format character"
+#, gcc-internal-format
 msgid "%qD output truncated before terminating nul copying as many bytes from a string as its length"
-msgstr "%qE-utdata trunkerades före det sista formattecknet"
+msgstr "utdata från %qD höggs av före avslutande nolla vid kopiering av så många byte från en sträng som dess längd"
 
 #: tree-ssa-strlen.c:2108
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified bound %wu exceeds the size %wu of the destination"
+#, gcc-internal-format
 msgid "%qD specified bound depends on the length of the source argument"
-msgstr "%K%qD: den angivna gränsen %wu överskrider storleken %wu på destinationen"
+msgstr "den angivna gränsen för %qD beror på längden av källargumentet"
 
 #: tree-ssa-strlen.c:2114
-#, fuzzy, gcc-internal-format
-#| msgid "length modifier"
+#, gcc-internal-format
 msgid "length computed here"
-msgstr "längdmodifierare"
+msgstr "längden beräknad här"
 
 #: tree-ssa-uninit.c:191 varasm.c:331
 #, gcc-internal-format
@@ -23039,34 +23007,29 @@ msgid "vectorization did not happen for a simd loop"
 msgstr "vektorisering hände inte för en simd-slinga"
 
 #: tree-vrp.c:4854 tree-vrp.c:4898
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is above array bounds"
+#, gcc-internal-format
 msgid "array subscript %E is above array bounds of %qT"
-msgstr "vektorindex är ovanför vektorgränsen"
+msgstr "vektorindex %E är ovanför vektorgränsen för %qT"
 
 #: tree-vrp.c:4880
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is outside array bounds"
+#, gcc-internal-format
 msgid "array subscript [%E, %E] is outside array bounds of %qT"
-msgstr "vektorindex är utanför vektorgränserna"
+msgstr "vektorindexen [%E, %E] är utanför vektorgränserna för %qT"
 
 #: tree-vrp.c:4912
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is below array bounds"
+#, gcc-internal-format
 msgid "array subscript %E is below array bounds of %qT"
-msgstr "vektorindex är under vektorgränsen"
+msgstr "vektorindex %E är under vektorgränsen för %qT"
 
 #: tree-vrp.c:4970
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is below array bounds"
+#, gcc-internal-format
 msgid "array subscript %wi is below array bounds of %qT"
-msgstr "vektorindex är under vektorgränsen"
+msgstr "vektorindex %wi är under vektorgränsen för %qT"
 
 #: tree-vrp.c:4984
-#, fuzzy, gcc-internal-format
-#| msgid "array subscript is above array bounds"
+#, gcc-internal-format
 msgid "array subscript %wu is above array bounds of %qT"
-msgstr "vektorindex är ovanför vektorgränsen"
+msgstr "vektorindex %wu är ovanför vektorgränsen för %qT"
 
 #: tree.c:2005
 #, gcc-internal-format
@@ -23339,10 +23302,9 @@ msgid "TYPE_ARRAY_MAX_SIZE not INTEGER_CST"
 msgstr "TYPE_ARRAY_MAX_SIZE inte INTEGER_CST"
 
 #: tree.c:13691
-#, fuzzy, gcc-internal-format
-#| msgid "TYPE_MAXVAL non-NULL"
+#, gcc-internal-format
 msgid "TYPE_MAX_VALUE_RAW non-NULL"
-msgstr "TYPE_MAXVAL icke-NULL"
+msgstr "TYPE_MAX_VALUE_RAW icke-NULL"
 
 #: tree.c:13698
 #, gcc-internal-format
@@ -23460,16 +23422,14 @@ msgid "variable tracking size limit exceeded"
 msgstr "storleksgräns på variabelspårning överskriden"
 
 #: varasm.c:326
-#, fuzzy, gcc-internal-format
-#| msgid "%+D causes a section type conflict with %D"
+#, gcc-internal-format
 msgid "%+qD causes a section type conflict with %qD"
-msgstr "%+D orsakar en sektionstypkonflikt med %D"
+msgstr "%+qD orsakar en sektionstypkonflikt med %qD"
 
 #: varasm.c:329
-#, fuzzy, gcc-internal-format
-#| msgid "section type conflict with %D"
+#, gcc-internal-format
 msgid "section type conflict with %qD"
-msgstr "sektionstypen står i konflikt med %D"
+msgstr "sektionstypen står i konflikt med %qD"
 
 #: varasm.c:334
 #, fuzzy, gcc-internal-format
