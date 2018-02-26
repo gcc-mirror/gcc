@@ -1,3 +1,9 @@
+2018-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84537
+	* name-lookup.c (suggest_alternative_in_explicit_scope): Return false
+	if name is error node.
+
 2018-02-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84015 - ICE with class deduction and auto template parm.
