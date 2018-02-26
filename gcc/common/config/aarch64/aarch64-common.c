@@ -47,6 +47,8 @@ static const struct default_options aarch_option_optimization_table[] =
   {
     /* Enable section anchors by default at -O1 or higher.  */
     { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
+    /* Disable fomit-frame-pointer by default.  */
+    { OPT_LEVELS_ALL, OPT_fomit_frame_pointer, NULL, 0 },
     /* Enable -fsched-pressure by default when optimizing.  */
     { OPT_LEVELS_1_PLUS, OPT_fsched_pressure, NULL, 1 },
     /* Enable redundant extension instructions removal at -O2 and higher.  */
