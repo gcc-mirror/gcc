@@ -1,3 +1,10 @@
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84557
+	* parser.c (cp_parser_omp_var_list_no_open): Only call
+	cp_parser_lookup_name_simple on names satisfying identifier_p.
+	(cp_parser_oacc_routine): Likewise.
+
 2018-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84551 - ICE with concepts and -g.
