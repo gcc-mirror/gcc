@@ -112,6 +112,13 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	      cp_function_chain->invalid_constexpr = true;
 	    }
 	}
+      else if (DECL_DECLARED_CONSTEXPR_P (decl)
+	       && variably_modified_type_p (type, NULL_TREE))
+	{
+	  error ("%<constexpr%> variable %qD has variably-modified type %qT",
+		 decl, type);
+	  decl = error_mark_node;
+	}
     }
   return decl;
 }
