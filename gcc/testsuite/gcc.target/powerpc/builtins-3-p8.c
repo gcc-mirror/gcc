@@ -180,6 +180,37 @@ test_vull_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
 	return vec_mulo (x, y);
 }
 
+vector signed char
+test_neg_char (vector signed char x)
+{
+	return vec_neg (x);
+}
+
+vector short
+test_neg_short (vector short x)
+{
+	return vec_neg (x);
+}
+
+vector int
+test_neg_int (vector int x)
+{
+	return vec_neg (x);
+}
+
+vector float
+test_neg_float (vector float x)
+{
+	return vec_neg (x);
+}
+
+vector double
+test_neg_double (vector double x)
+{
+	return vec_neg (x);
+}
+
+
 /* Expected test results:
 
      test_eq_long_long                         1 vcmpequd inst
@@ -200,6 +231,11 @@ test_vull_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
      test_vull_mulo_vui_vui                    1 vmulouw
      test_vsll_mule_vsi_vsi                    1 vmulesw
      test_vull_mule_vui_vui                    1 vmuleuw
+     test_neg_char                             1 vspltisw, 1 vsububm
+     test_neg_short                            1 vspltisw, 1 vsubuhm
+     test_neg_int                              1 vspltisw, 1 vsubuwm
+     test_neg_float                            1 xvnegsp
+     test_neg_float                            1 xvnegdp
  */
 
 /* { dg-final { scan-assembler-times "vcmpequd" 1 } } */
@@ -220,3 +256,10 @@ test_vull_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
 /* { dg-final { scan-assembler-times "vmulouw"  1 } } */
 /* { dg-final { scan-assembler-times "vmulesw"  1 } } */
 /* { dg-final { scan-assembler-times "vmuleuw"  1 } } */
+/* { dg-final { scan-assembler-times "vspltisw" 3 } } */
+/* { dg-final { scan-assembler-times "vsububm"  1 } } */
+/* { dg-final { scan-assembler-times "vsubuhm"  1 } } */
+/* { dg-final { scan-assembler-times "vsubuwm"  1 } } */
+/* { dg-final { scan-assembler-times "xvnegsp"  1 } } */
+/* { dg-final { scan-assembler-times "xvnegdp"  1 } } */
+

@@ -1,3 +1,15 @@
+2018-02-26  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: Move vec_neg builtin tests to
+	Power 8 test file.
+	* gcc.target/powerpc/builtins-3-p8.c: Add vec_neg builtin tests.
+	* gcc.target/powerpc/fold-vec-neg-char.c(dg-options): Add -mcpu=power8.
+	* gcc.target/powerpc/fold-vec-neg-floatdouble.c(dg-options): Add
+	-mcpu=power8.
+	* gcc.target/powerpc/fold-vec-neg-int.c(dg-options): Remove file.
+	* gcc.target/powerpc/fold-vec-neg-short.c(dg-options): Add
+	-mcpu=power8.
+
 2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/84039
