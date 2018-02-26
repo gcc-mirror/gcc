@@ -1,3 +1,9 @@
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84556
+	* g++.dg/gomp/pr84556.C: New test.
+	* g++.dg/vect/pr84556.cc: New test.
+
 2018-02-26  Dominique d'Humieres <dominiq@gcc.gnu.org>
 
 	PR fortran/32957
