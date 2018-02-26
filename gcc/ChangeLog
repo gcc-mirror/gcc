@@ -1,3 +1,15 @@
+2018-02-26  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/83965
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Assume
+	that grouped statements are part of a reduction chain.  Return
+	true if the statement is not marked as a reduction itself but
+	is part of a group.
+	(vect_recog_dot_prod_pattern): Don't check whether the statement
+	is part of a group here.
+	(vect_recog_sad_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+
 2018-02-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/84545

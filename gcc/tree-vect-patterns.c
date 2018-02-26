@@ -222,13 +222,16 @@ vect_recog_temp_ssa_var (tree type, gimple *stmt)
 }
 
 /* Return true if STMT_VINFO describes a reduction for which reassociation
-   is allowed.  */
+   is allowed.  If STMT_INFO is part of a group, assume that it's part of
+   a reduction chain and optimistically assume that all statements
+   except the last allow reassociation.  */
 
 static bool
 vect_reassociating_reduction_p (stmt_vec_info stmt_vinfo)
 {
   return (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
-	  && STMT_VINFO_REDUC_TYPE (stmt_vinfo) != FOLD_LEFT_REDUCTION);
+	  ? STMT_VINFO_REDUC_TYPE (stmt_vinfo) != FOLD_LEFT_REDUCTION
+	  : GROUP_FIRST_ELEMENT (stmt_vinfo) != NULL);
 }
 
 /* Function vect_recog_dot_prod_pattern
@@ -350,8 +353,7 @@ vect_recog_dot_prod_pattern (vec<gimple *> *stmts, tree *type_in,
     {
       gimple *def_stmt;
 
-      if (!vect_reassociating_reduction_p (stmt_vinfo)
-	  && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
+      if (!vect_reassociating_reduction_p (stmt_vinfo))
 	return NULL;
       oprnd0 = gimple_assign_rhs1 (last_stmt);
       oprnd1 = gimple_assign_rhs2 (last_stmt);
@@ -571,8 +573,7 @@ vect_recog_sad_pattern (vec<gimple *> *stmts, tree *type_in,
     {
       gimple *def_stmt;
 
-      if (!vect_reassociating_reduction_p (stmt_vinfo)
-	  && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
+      if (!vect_reassociating_reduction_p (stmt_vinfo))
 	return NULL;
       plus_oprnd0 = gimple_assign_rhs1 (last_stmt);
       plus_oprnd1 = gimple_assign_rhs2 (last_stmt);
@@ -1256,8 +1257,7 @@ vect_recog_widen_sum_pattern (vec<gimple *> *stmts, tree *type_in,
   if (gimple_assign_rhs_code (last_stmt) != PLUS_EXPR)
     return NULL;
 
-  if (!vect_reassociating_reduction_p (stmt_vinfo)
-      && ! STMT_VINFO_GROUP_FIRST_ELEMENT (stmt_vinfo))
+  if (!vect_reassociating_reduction_p (stmt_vinfo))
     return NULL;
 
   oprnd0 = gimple_assign_rhs1 (last_stmt);
