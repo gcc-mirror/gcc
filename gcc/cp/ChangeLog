@@ -1,5 +1,11 @@
 2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/84533
+	* decl.c (redeclaration_error_message): Don't try to use
+	DECL_DECLARED_CONSTEXPR_P on CONST_DECLs.
+
+2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* lambda.c (build_capture_proxy): Define static.
 	* cp-tree.h (build_capture_proxy): Remove.
 

@@ -2919,6 +2919,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 specifier is declaration rather than definition (and
 	 deprecated).  */
       if (cxx_dialect >= cxx17
+	  && VAR_P (olddecl)
 	  && DECL_CLASS_SCOPE_P (olddecl)
 	  && DECL_DECLARED_CONSTEXPR_P (olddecl)
 	  && !DECL_INITIAL (newdecl))
