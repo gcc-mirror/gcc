@@ -25596,7 +25596,7 @@ rewrite_template_parm (tree olddecl, unsigned index, unsigned level,
 	  // Substitute ttargs into ttparms to fix references to
 	  // other template parameters.
 	  ttparms = tsubst_template_parms_level (ttparms, ttargs,
-						 complain);
+						 complain|tf_partial);
 	  // Now substitute again with args based on tparms, to reduce
 	  // the level of the ttparms.
 	  ttargs = current_template_args ();
