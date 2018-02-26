@@ -10699,6 +10699,9 @@ add_debug_begin_stmt (location_t loc)
 {
   if (!MAY_HAVE_DEBUG_MARKER_STMTS)
     return;
+  if (DECL_DECLARED_CONCEPT_P (current_function_decl))
+    /* A concept is never expanded normally.  */
+    return;
 
   tree stmt = build0 (DEBUG_BEGIN_STMT, void_type_node);
   SET_EXPR_LOCATION (stmt, loc);
