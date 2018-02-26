@@ -2709,6 +2709,10 @@ extern void debug_dispatch_window (int);
 #define TARGET_PREFER_AVX256	(TARGET_PREFER_AVX128 \
 				 || prefer_vector_width_type == PVW_AVX256)
 
+#define TARGET_INDIRECT_BRANCH_REGISTER \
+  (ix86_indirect_branch_register \
+   || cfun->machine->indirect_branch_type != indirect_branch_keep)
+
 #define IX86_HLE_ACQUIRE (1 << 16)
 #define IX86_HLE_RELEASE (1 << 17)
 
