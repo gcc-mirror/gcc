@@ -1,3 +1,9 @@
+2018-02-26  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config.gcc: Add --with-cpu support for nds32 target.
+	* config/nds32/nds32-opts.h(nds32_cpu_type): New.
+	* config/nds32/nds32.opt: Add -mcpu= option.
+
 2018-02-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.opt (mvrsave=no, mvrsave=yes, isel=no,
