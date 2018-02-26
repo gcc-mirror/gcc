@@ -1,3 +1,8 @@
+2018-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84447 - ICE with deleted inherited ctor with default arg.
+	* call.c (build_over_call): Handle deleted functions in one place.
+
 2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84533
