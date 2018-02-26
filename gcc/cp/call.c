@@ -7665,8 +7665,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     deduce_inheriting_ctor (fn);
 
   /* Make =delete work with SFINAE.  */
-  if (DECL_DELETED_FN (fn) && !(complain & tf_error))
-    return error_mark_node;
+  if (DECL_DELETED_FN (fn))
+    {
+      if (complain & tf_error)
+	mark_used (fn);
+      return error_mark_node;
+    }
 
   if (DECL_FUNCTION_MEMBER_P (fn))
     {
@@ -7710,12 +7714,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      conversions.  */
   if (flags & LOOKUP_SPECULATIVE)
     {
-      if (DECL_DELETED_FN (fn))
-	{
-	  if (complain & tf_error)
-	    mark_used (fn);
-	  return error_mark_node;
-	}
       if (cand->viable == 1)
 	return fn;
       else if (!(complain & tf_error))
@@ -8090,7 +8088,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      if (!trivial || DECL_DELETED_FN (fn))
+      if (!trivial)
 	{
 	  if (!mark_used (fn, complain) && !(complain & tf_error))
 	    return error_mark_node;
@@ -8121,8 +8119,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
   else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
 	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR)
-	   && trivial_fn_p (fn)
-	   && !DECL_DELETED_FN (fn))
+	   && trivial_fn_p (fn))
     {
       tree to = cp_stabilize_reference
 	(cp_build_fold_indirect_ref (argarray[0]));
@@ -8166,8 +8163,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       return val;
     }
-  else if (!DECL_DELETED_FN (fn)
-	   && trivial_fn_p (fn))
+  else if (trivial_fn_p (fn))
     {
       if (DECL_DESTRUCTOR_P (fn))
 	return fold_convert (void_type_node, argarray[0]);
