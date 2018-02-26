@@ -18125,8 +18125,15 @@ vector int vec_vctzw (vector int);
 vector unsigned int vec_vctzw (vector int);
 
 long long vec_vextract4b (const vector signed char, const int);
+vector unsigned long long vec_extract4b (vector unsigned char,
+                                         const int);
+long long vec_extract4b (const vector signed char, const int);
 long long vec_vextract4b (const vector unsigned char, const int);
 
+vector unsigned char vec_insert4b (vector signed int, vector unsigned char,
+                                   const int);
+vector unsigned char vec_insert4b (vector unsigned int, vector unsigned char,
+                                   const int);
 vector signed char vec_insert4b (vector int, vector signed char, const int);
 vector unsigned char vec_insert4b (vector unsigned int, vector unsigned char,
                                    const int);
