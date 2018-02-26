@@ -1,3 +1,8 @@
+2018-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/84545
+	* final.c (rest_of_clean_state): Also look for calls inside sequences.
+
 2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/84530

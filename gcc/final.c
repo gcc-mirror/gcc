@@ -4845,11 +4845,19 @@ rest_of_clean_state (void)
       SET_NEXT_INSN (insn) = NULL;
       SET_PREV_INSN (insn) = NULL;
 
-      if (CALL_P (insn))
+      rtx_insn *call_insn = insn;
+      if (NONJUMP_INSN_P (call_insn)
+	  && GET_CODE (PATTERN (call_insn)) == SEQUENCE)
 	{
-	  rtx note = find_reg_note (insn, REG_CALL_ARG_LOCATION, NULL_RTX);
+	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (call_insn));
+	  call_insn = seq->insn (0);
+	}
+      if (CALL_P (call_insn))
+	{
+	  rtx note
+	    = find_reg_note (call_insn, REG_CALL_ARG_LOCATION, NULL_RTX);
 	  if (note)
-	    remove_note (insn, note);
+	    remove_note (call_insn, note);
 	}
 
       if (final_output
