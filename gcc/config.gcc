@@ -4265,7 +4265,7 @@ case "${target}" in
 		;;
 
 	nds32*-*-*)
-		supported_defaults="arch nds32_lib"
+		supported_defaults="arch cpu nds32_lib"
 
 		# process --with-arch
 		case "${with_arch}" in
@@ -4274,6 +4274,19 @@ case "${target}" in
 			;;
 		*)
 			echo "Cannot accept --with-arch=$with_arch, available values are: v2 v3 v3m" 1>&2
+			exit 1
+			;;
+		esac
+
+		case "${with_cpu}" in
+		"")
+			with_cpu=n9
+			;;
+		n9)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-cpu=$with_cpu, available values are: n9" 1>&2
 			exit 1
 			;;
 		esac

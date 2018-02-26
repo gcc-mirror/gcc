@@ -119,6 +119,17 @@ Enum(nds32_cmodel_type) String(medium) Value(CMODEL_MEDIUM)
 EnumValue
 Enum(nds32_cmodel_type) String(large) Value(CMODEL_LARGE)
 
+mcpu=
+Target RejectNegative Joined Enum(nds32_cpu_type) Var(nds32_cpu_option) Init(CPU_N9)
+Specify the cpu for pipeline model.
+
+Enum
+Name(nds32_cpu_type) Type(enum nds32_cpu_type)
+Known cpu types (for use with the -mcpu= option):
+
+EnumValue
+Enum(nds32_cpu_type) String(n9) Value(CPU_N9)
+
 mctor-dtor
 Target Report
 Enable constructor/destructor feature.
