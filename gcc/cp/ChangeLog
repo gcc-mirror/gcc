@@ -1,3 +1,9 @@
+2018-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84559 - ICE with constexpr VLA.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Check
+	for constexpr variable with VLA type.
+
 2018-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84558
