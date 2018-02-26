@@ -1,3 +1,7 @@
+2018-02-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* Makefile.in (lto-wrapper): Use ALL_LINKERFLAGS.
+
 2018-02-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/84521

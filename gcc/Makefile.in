@@ -2151,7 +2151,7 @@ CFLAGS-collect2.o += -DTARGET_MACHINE=\"$(target_noncanonical)\" \
 
 LTO_WRAPPER_OBJS = lto-wrapper.o collect-utils.o ggc-none.o
 lto-wrapper$(exeext): $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBDEPS)
-	+$(LINKER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ \
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o T$@ \
 	   $(LTO_WRAPPER_OBJS) libcommon-target.a $(LIBS)
 	mv -f T$@ $@
 
