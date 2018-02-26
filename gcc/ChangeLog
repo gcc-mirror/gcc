@@ -1,3 +1,28 @@
+2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84530
+	* config/i386/i386-protos.h (ix86_output_indirect_jmp): Remove
+	the bool argument.
+	(ix86_output_indirect_function_return): New prototype.
+	(ix86_split_simple_return_pop_internal): Likewise.
+	* config/i386/i386.c (indirect_return_via_cx): New.
+	(indirect_return_via_cx_bnd): Likewise.
+	(indirect_thunk_name): Handle return va CX_REG.
+	(output_indirect_thunk_function): Create alias for
+	__x86_return_thunk_[re]cx and __x86_return_thunk_[re]cx_bnd.
+	(ix86_output_indirect_jmp): Remove the bool argument.
+	(ix86_output_indirect_function_return): New function.
+	(ix86_split_simple_return_pop_internal): Likewise.
+	* config/i386/i386.md (*indirect_jump): Don't pass false
+	to ix86_output_indirect_jmp.
+	(*tablejump_1): Likewise.
+	(simple_return_pop_internal): Change it to define_insn_and_split.
+	Call ix86_split_simple_return_pop_internal to split it for
+	-mfunction-return=.
+	(simple_return_indirect_internal): Call
+	ix86_output_indirect_function_return instead of
+	ix86_output_indirect_jmp.
+
 2018-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/84405

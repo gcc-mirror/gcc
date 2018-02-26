@@ -1,3 +1,12 @@
+2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84530
+	* gcc.target/i386/ret-thunk-22.c: New test.
+	* gcc.target/i386/ret-thunk-23.c: Likewise.
+	* gcc.target/i386/ret-thunk-24.c: Likewise.
+	* gcc.target/i386/ret-thunk-25.c: Likewise.
+	* gcc.target/i386/ret-thunk-26.c: Likewise.
+
 2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84533
