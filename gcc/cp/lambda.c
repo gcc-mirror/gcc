@@ -388,7 +388,7 @@ lambda_proxy_type (tree ref)
    inside the operator(), build a placeholder var for future lookups and
    debugging.  */
 
-tree
+static tree
 build_capture_proxy (tree member, tree init)
 {
   tree var, object, fn, closure, name, lam, type;
