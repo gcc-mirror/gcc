@@ -27,7 +27,46 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define I386_ASM_H
 
 #include "auto-target.h"
+#undef PACKAGE_VERSION
+#undef PACKAGE_NAME
+#undef PACKAGE_STRING
+#undef PACKAGE_TARNAME
+#undef PACKAGE_URL
 #include "auto-host.h"
+
+#ifndef USE_GAS_CFI_DIRECTIVES
+# ifdef __GCC_HAVE_DWARF2_CFI_ASM
+#  define USE_GAS_CFI_DIRECTIVES 1
+# else
+#  define USE_GAS_CFI_DIRECTIVES 0
+# endif
+#endif
+#if USE_GAS_CFI_DIRECTIVES
+# define cfi_startproc()		.cfi_startproc
+# define cfi_endproc()			.cfi_endproc
+# define cfi_adjust_cfa_offset(X) 	.cfi_adjust_cfa_offset X
+# define cfi_def_cfa_register(X)	.cfi_def_cfa_register X
+# define cfi_def_cfa(R,O)		.cfi_def_cfa R, O
+# define cfi_register(D,S)		.cfi_register D, S
+# define cfi_offset(R,O)		.cfi_offset R, O
+# ifdef __x86_64__
+#  define cfi_push(X)		.cfi_adjust_cfa_offset 8; .cfi_rel_offset X, 0
+#  define cfi_pop(X)		.cfi_adjust_cfa_offset -8; .cfi_restore X
+# else
+#  define cfi_push(X)		.cfi_adjust_cfa_offset 4; .cfi_rel_offset X, 0
+#  define cfi_pop(X)		.cfi_adjust_cfa_offset -4; .cfi_restore X
+# endif
+#else
+# define cfi_startproc()
+# define cfi_endproc()
+# define cfi_adjust_cfa_offset(X)
+# define cfi_def_cfa_register(X)
+# define cfi_def_cfa(R,O)
+# define cfi_register(D,S)
+# define cfi_offset(R,O)
+# define cfi_push(X)
+# define cfi_pop(X)
+#endif
 
 #define PASTE2(a, b) PASTE2a(a, b)
 #define PASTE2a(a, b) a ## b
