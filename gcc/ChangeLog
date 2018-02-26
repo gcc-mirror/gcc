@@ -1,3 +1,9 @@
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/84405
+	* vec.h (vec_default_construct): For BROKEN_VALUE_INITIALIZATION use
+	memset and value initialization afterwards.
+
 2018-02-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Makefile.in (lto-wrapper): Use ALL_LINKERFLAGS.
