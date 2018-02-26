@@ -28999,8 +28999,7 @@ ix86_output_indirect_branch (rtx call_op, const char *xasm,
     ix86_output_indirect_branch_via_push (call_op, xasm, sibcall_p);
 }
 
-/* Output indirect jump.  CALL_OP is the jump target.  Jump is a
-   function return if RET_P is true.  */
+/* Output indirect jump.  CALL_OP is the jump target.  */
 
 const char *
 ix86_output_indirect_jmp (rtx call_op)

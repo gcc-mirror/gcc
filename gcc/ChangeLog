@@ -1,5 +1,9 @@
 2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_output_indirect_jmp): Update comments.
+
+2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/84039
 	* config/i386/constraints.md (Bs): Replace
 	ix86_indirect_branch_register with
