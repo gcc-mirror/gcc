@@ -1,3 +1,13 @@
+2018-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/83496
+	* reorg.c (steal_delay_list_from_target): Change REDUNDANT array from
+	booleans to RTX.  Call fix_reg_dead_note on every non-null element.
+	(steal_delay_list_from_fallthrough): Call fix_reg_dead_note on a
+	redundant insn, if any.
+	(relax_delay_slots): Likewise.
+	(update_reg_unused_notes): Rename REDUNDANT_INSN to OTHER_INSN.
+
 2018-02-26  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/83965
