@@ -2,7 +2,7 @@
 
 	PR rtl-optimization/83496
 	* reorg.c (steal_delay_list_from_target): Change REDUNDANT array from
-	booleans to RTX.  Call fix_reg_dead_note on every non-null element.
+	booleans to RTXes.  Call fix_reg_dead_note on every non-null element.
 	(steal_delay_list_from_fallthrough): Call fix_reg_dead_note on a
 	redundant insn, if any.
 	(relax_delay_slots): Likewise.
