@@ -1,3 +1,8 @@
+2018-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84015 - ICE with class deduction and auto template parm.
+	* pt.c (rewrite_template_parm): Use tf_partial in first tsubst.
+
 2018-02-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/83692
