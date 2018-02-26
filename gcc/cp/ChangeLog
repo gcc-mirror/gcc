@@ -1,3 +1,9 @@
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84558
+	* constexpr.c (cxx_eval_vec_init_1): For reuse, treat NULL eltinit like
+	a valid constant initializer.  Formatting fixes.
+
 2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84540

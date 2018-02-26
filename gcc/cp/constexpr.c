@@ -2959,9 +2959,8 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  if (!lvalue_p (init))
 	    eltinit = move (eltinit);
 	  eltinit = force_rvalue (eltinit, tf_warning_or_error);
-	  eltinit = (cxx_eval_constant_expression
-		     (&new_ctx, eltinit, lval,
-		      non_constant_p, overflow_p));
+	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
+						  non_constant_p, overflow_p);
 	}
       if (*non_constant_p && !ctx->quiet)
 	break;
@@ -2974,12 +2973,13 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       else
 	CONSTRUCTOR_APPEND_ELT (*p, idx, eltinit);
       /* Reuse the result of cxx_eval_constant_expression call
-	  from the first iteration to all others if it is a constant
-	  initializer that doesn't require relocations.  */
+	 from the first iteration to all others if it is a constant
+	 initializer that doesn't require relocations.  */
       if (reuse
 	  && max > 1
-	  && (initializer_constant_valid_p (eltinit, TREE_TYPE (eltinit))
-	      == null_pointer_node))
+	  && (eltinit == NULL_TREE
+	      || (initializer_constant_valid_p (eltinit, TREE_TYPE (eltinit))
+		  == null_pointer_node)))
 	{
 	  if (new_ctx.ctor != ctx->ctor)
 	    eltinit = new_ctx.ctor;
