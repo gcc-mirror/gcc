@@ -1,3 +1,9 @@
+2018-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84325
+	* tree.c (replace_placeholders_r): Only check TREE_CONSTANT on
+	non-types.
+
 2018-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84447 - ICE with deleted inherited ctor with default arg.
