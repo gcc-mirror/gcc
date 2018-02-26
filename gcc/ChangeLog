@@ -1,3 +1,25 @@
+2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84039
+	* config/i386/constraints.md (Bs): Replace
+	ix86_indirect_branch_register with
+	TARGET_INDIRECT_BRANCH_REGISTER.
+	(Bw): Likewise.
+	* config/i386/i386.md (indirect_jump): Likewise.
+	(tablejump): Likewise.
+	(*sibcall_memory): Likewise.
+	(*sibcall_value_memory): Likewise.
+	Peepholes of indirect call and jump via memory: Likewise.
+	(*sibcall_GOT_32): Disallowed for TARGET_INDIRECT_BRANCH_REGISTER.
+	(*sibcall_value_GOT_32): Likewise.
+	* config/i386/i386.opt: Likewise.
+	* config/i386/predicates.md (indirect_branch_operand): Likewise.
+	(GOT_memory_operand): Likewise.
+	(call_insn_operand): Likewise.
+	(sibcall_insn_operand): Likewise.
+	(GOT32_symbol_operand): Likewise.
+	* config/i386/i386.h (TARGET_INDIRECT_BRANCH_REGISTER): New.
+
 2018-02-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/83496

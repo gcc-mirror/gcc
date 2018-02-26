@@ -11,7 +11,7 @@ male_indirect_jump (long offset)
   dispatch[offset](offset);
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*_?dispatch" { target { { ! x32 } && *-*-linux* } } } } */
+/* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*_?dispatch" { target *-*-linux* } } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler {\tpause} } } */
