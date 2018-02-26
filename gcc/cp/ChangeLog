@@ -1,3 +1,9 @@
+2018-02-26  Jason Merrill  <jason@redhat.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/81589 - error with is_trivially_constructible.
+	* method.c (constructible_expr): Set cp_unevaluated.
+
 2018-02-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84015 - ICE with class deduction and auto template parm.

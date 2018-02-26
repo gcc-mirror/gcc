@@ -1165,6 +1165,7 @@ constructible_expr (tree to, tree from)
     {
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
+      cp_unevaluated cp_uneval_guard;
       if (TREE_CODE (to) != REFERENCE_TYPE)
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
