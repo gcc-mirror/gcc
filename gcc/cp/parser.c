@@ -31342,7 +31342,10 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	  if (name == error_mark_node)
 	    goto skip_comma;
 
-	  decl = cp_parser_lookup_name_simple (parser, name, token->location);
+	  if (identifier_p (name))
+	    decl = cp_parser_lookup_name_simple (parser, name, token->location);
+	  else
+	    decl = name;
 	  if (decl == error_mark_node)
 	    cp_parser_name_lookup_error (parser, name, decl, NLE_NULL,
 					 token->location);
@@ -37846,7 +37849,9 @@ cp_parser_oacc_routine (cp_parser *parser, cp_token *pragma_tok,
 					   /*template_p=*/NULL,
 					   /*declarator_p=*/false,
 					   /*optional_p=*/false);
-      tree decl = cp_parser_lookup_name_simple (parser, name, name_loc);
+      tree decl = (identifier_p (name)
+		   ? cp_parser_lookup_name_simple (parser, name, name_loc)
+		   : name);
       if (name != error_mark_node && decl == error_mark_node)
 	cp_parser_name_lookup_error (parser, name, decl, NLE_NULL, name_loc);
 
