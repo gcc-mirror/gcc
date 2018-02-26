@@ -10245,9 +10245,8 @@ tsubst_attributes (tree attributes, tree args,
 	    if (subst != t)
 	      {
 		*p = subst;
-		do
+		while (*p)
 		  p = &TREE_CHAIN (*p);
-		while (*p);
 		*p = TREE_CHAIN (t);
 		continue;
 	      }
@@ -10314,9 +10313,8 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	      *p = TREE_CHAIN (t);
 	      TREE_CHAIN (t) = NULL_TREE;
 	      *q = tsubst_attribute (t, decl_p, args, complain, in_decl);
-	      do
+	      while (*q)
 		q = &TREE_CHAIN (*q);
-	      while (*q);
 	    }
 	  else
 	    p = &TREE_CHAIN (t);
