@@ -2036,6 +2036,8 @@ BU_P9V_AV_2 (VEXTUWRX, "vextuwrx",		CONST,	vextuwrx)
 BU_P9V_VSX_2 (VEXTRACT4B,   "vextract4b",	CONST,	vextract4b)
 BU_P9V_VSX_3 (VINSERT4B,    "vinsert4b",	CONST,	vinsert4b)
 BU_P9V_VSX_3 (VINSERT4B_DI, "vinsert4b_di",	CONST,	vinsert4b_di)
+BU_P9V_VSX_3 (INSERT4B,    "insert4b",		CONST,  insert4b)
+BU_P9V_VSX_2 (EXTRACT4B,   "extract4b", 	CONST,  extract4b)
 
 /* 3 argument vector functions returning void, treated as SPECIAL,
    added in ISA 3.0 (power9).  */
@@ -2084,10 +2086,12 @@ BU_P9V_OVERLOAD_2 (LXVL,	"lxvl")
 BU_P9V_OVERLOAD_2 (VEXTULX,	"vextulx")
 BU_P9V_OVERLOAD_2 (VEXTURX,	"vexturx")
 BU_P9V_OVERLOAD_2 (VEXTRACT4B,	"vextract4b")
+BU_P9V_OVERLOAD_2 (EXTRACT4B,  "extract4b")
 
 /* ISA 3.0 Vector scalar overloaded 3 argument functions */
 BU_P9V_OVERLOAD_3 (STXVL,	"stxvl")
 BU_P9V_OVERLOAD_3 (VINSERT4B,	"vinsert4b")
+BU_P9V_OVERLOAD_3 (INSERT4B,    "insert4b")
 
 /* Overloaded CMPNE support was implemented prior to Power 9,
    so is not mentioned here.  */

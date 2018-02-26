@@ -400,6 +400,8 @@
 #define vec_vctzw __builtin_vec_vctzw
 #define vec_vextract4b __builtin_vec_vextract4b
 #define vec_vinsert4b __builtin_vec_vinsert4b
+#define vec_extract4b __builtin_vec_extract4b
+#define vec_insert4b __builtin_vec_insert4b
 #define vec_vprtyb __builtin_vec_vprtyb
 #define vec_vprtybd __builtin_vec_vprtybd
 #define vec_vprtybw __builtin_vec_vprtybw
