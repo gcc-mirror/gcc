@@ -1,3 +1,14 @@
+2018-02-26  Dominique d'Humieres <dominiq@gcc.gnu.org>
+
+	PR fortran/32957
+	* gfortran.dg/c_f_pointer_shape_tests_2.f03: Use explicit KIND c_int.
+	* gfortran.dg/c_f_pointer_shape_tests_4.f03: Likewise.
+	* gfortran.dg/c_funloc_tests_3.f03: Likewise.
+	* gfortran.dg/c_loc_test.f90: Likewise.
+	* gfortran.dg/c_loc_tests_2.f03: Likewise.
+	* gfortran.dg/proc_decl_17.f90: Likewise.
+	* gfortran.dg/proc_ptr_8.f90: Likewise.
+
 2018-02-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/84521
