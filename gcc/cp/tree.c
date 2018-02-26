@@ -3091,7 +3091,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
   replace_placeholders_t *d = static_cast<replace_placeholders_t*>(data_);
   tree obj = d->obj;
 
-  if (TREE_CONSTANT (*t))
+  if (TYPE_P (*t) || TREE_CONSTANT (*t))
     {
       *walk_subtrees = false;
       return NULL_TREE;

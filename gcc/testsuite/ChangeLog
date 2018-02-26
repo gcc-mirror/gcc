@@ -1,3 +1,8 @@
+2018-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84325
+	* g++.dg/cpp1z/pr84325.C: New test.
+
 2018-02-26  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c: Move vec_neg builtin tests to
