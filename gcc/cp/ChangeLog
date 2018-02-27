@@ -1,3 +1,8 @@
+2018-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84489 - dependent default template argument
+	* pt.c (type_unification_real): Handle early substitution failure.
+
 2018-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84560 - ICE capturing multi-dimensional VLA.
