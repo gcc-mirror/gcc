@@ -1,3 +1,9 @@
+2018-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84466
+	* graphite-scop-detection.c (scop_detection::stmt_simple_for_scop_p):
+	Adjust last change to less strictly validate use operands.
+
 2018-02-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84548

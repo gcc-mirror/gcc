@@ -1028,16 +1028,23 @@ scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
     case GIMPLE_ASSIGN:
     case GIMPLE_CALL:
       {
-	tree op;
+	tree op, lhs = gimple_get_lhs (stmt);
 	ssa_op_iter i;
+	/* If we are not going to instantiate the stmt do not require
+	   its operands to be instantiatable at this point.  */
+	if (lhs
+	    && TREE_CODE (lhs) == SSA_NAME
+	    && scev_analyzable_p (lhs, scop))
+	  return true;
 	/* Verify that if we can analyze operands at their def site we
 	   also can represent them when analyzed at their uses.  */
 	FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
 	  if (scev_analyzable_p (op, scop)
-	      && !graphite_can_represent_expr (scop, bb->loop_father, op))
+	      && chrec_contains_undetermined
+		   (scalar_evolution_in_region (scop, bb->loop_father, op)))
 	    {
 	      DEBUG_PRINT (dp << "[scop-detection-fail] "
-			   << "Graphite cannot represent stmt:\n";
+			   << "Graphite cannot code-gen stmt:\n";
 			   print_gimple_stmt (dump_file, stmt, 0,
 					      TDF_VOPS | TDF_MEMSYMS));
 	      return false;
