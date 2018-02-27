@@ -1943,27 +1943,27 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
       gcall *call = as_a <gcall *> (stmt);
 
       if (lenrange[0] == cntrange[1] && cntrange[0] == cntrange[1])
-	return warning_at (callloc, OPT_Wstringop_truncation,
-			   (integer_onep (cnt)
-			    ? G_("%G%qD output truncated before terminating "
-				 "nul copying %E byte from a string of the "
-				 "same length")
-			    : G_("%G%qD output truncated before terminating nul "
-				 "copying %E bytes from a string of the same "
-				 "length")),
-			   call, func, cnt);
+	return warning_n (callloc, OPT_Wstringop_truncation,
+			  cntrange[0].to_uhwi (),
+			  "%G%qD output truncated before terminating "
+			  "nul copying %E byte from a string of the "
+			  "same length",
+			  "%G%qD output truncated before terminating nul "
+			  "copying %E bytes from a string of the same "
+			  "length",
+			  call, func, cnt);
       else if (wi::geu_p (lenrange[0], cntrange[1]))
 	{
 	  /* The shortest string is longer than the upper bound of
 	     the count so the truncation is certain.  */
 	  if (cntrange[0] == cntrange[1])
-	    return warning_at (callloc, OPT_Wstringop_truncation,
-			       integer_onep (cnt)
-			       ? G_("%G%qD output truncated copying %E byte "
-				    "from a string of length %wu")
-			       : G_("%G%qD output truncated copying %E bytes "
-				    "from a string of length %wu"),
-			       call, func, cnt, lenrange[0].to_uhwi ());
+	    return warning_n (callloc, OPT_Wstringop_truncation,
+			      cntrange[0].to_uhwi (),
+			      "%G%qD output truncated copying %E byte "
+			      "from a string of length %wu",
+			      "%G%qD output truncated copying %E bytes "
+			      "from a string of length %wu",
+			      call, func, cnt, lenrange[0].to_uhwi ());
 
 	  return warning_at (callloc, OPT_Wstringop_truncation,
 			     "%G%qD output truncated copying between %wu "
@@ -1976,13 +1976,13 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 	  /* The longest string is longer than the upper bound of
 	     the count so the truncation is possible.  */
 	  if (cntrange[0] == cntrange[1])
-	    return warning_at (callloc, OPT_Wstringop_truncation,
-			       integer_onep (cnt)
-			       ? G_("%G%qD output may be truncated copying %E "
-				    "byte from a string of length %wu")
-			       : G_("%G%qD output may be truncated copying %E "
-				    "bytes from a string of length %wu"),
-			       call, func, cnt, lenrange[1].to_uhwi ());
+	    return warning_n (callloc, OPT_Wstringop_truncation,
+			      cntrange[0].to_uhwi (),
+			      "%G%qD output may be truncated copying %E "
+			      "byte from a string of length %wu",
+			      "%G%qD output may be truncated copying %E "
+			      "bytes from a string of length %wu",
+			      call, func, cnt, lenrange[1].to_uhwi ());
 
 	  return warning_at (callloc, OPT_Wstringop_truncation,
 			     "%G%qD output may be truncated copying between %wu "

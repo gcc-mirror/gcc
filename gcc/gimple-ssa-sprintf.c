@@ -2952,10 +2952,7 @@ format_directive (const sprintf_dom_walker::call_info &info,
       && fmtres.range.likely < fmtres.range.max)
     /* Some languages have special plural rules even for large values,
        but it is periodic with period of 10, 100, 1000 etc.  */
-    inform_n (info.fmtloc,
-	      fmtres.range.likely > INT_MAX
-	      ? (fmtres.range.likely % 1000000) + 1000000
-	      : fmtres.range.likely,
+    inform_n (info.fmtloc, fmtres.range.likely,
 	      "assuming directive output of %wu byte",
 	      "assuming directive output of %wu bytes",
 	      fmtres.range.likely);
