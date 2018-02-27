@@ -1,3 +1,9 @@
+2018-02-27  Martin Liska  <mliska@suse.cz>
+
+	* timevar.c (timer::print_row): Remove 'usr', 'sys', 'wall' and
+	'ggc' suffixes.  Change first column width.
+	(timer::print): Fix formatting of the column.
+
 2018-02-27  Alexandre Oliva <aoliva@redhat.com>
 
 	* tree-ssa-live.c (remove_unused_scope_block_p): Do not
