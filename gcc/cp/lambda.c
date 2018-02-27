@@ -665,11 +665,14 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
                                     lambda_stack);
 
 	  if (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)
+	      && !COMPLETE_TYPE_P (LAMBDA_EXPR_CLOSURE (tlambda))
 	      && TREE_CODE (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)) == FIELD_DECL)
 	    {
 	      /* In an NSDMI, we don't have a function to look up the decl in,
 		 but the fake 'this' pointer that we're using for parsing is
-		 in scope_chain.  */
+		 in scope_chain.  But if the closure is already complete, we're
+	         in an instantiation of a generic lambda, and the fake 'this'
+	         is gone.  */
 	      init = scope_chain->x_current_class_ptr;
 	      gcc_checking_assert
 		(init && (TREE_TYPE (TREE_TYPE (init))
