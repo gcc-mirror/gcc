@@ -1,3 +1,25 @@
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83871
+	PR c++/83503
+	* g++.dg/Wmissing-attributes.C: New test.
+	* g++.dg/ext/attr-const-pure.C: New test.
+	* g++.dg/ext/attr-const.C: New test.
+	* g++.dg/ext/attr-deprecated-2.C: New test.
+	* g++.dg/ext/attr-malloc-2.C: New test.
+	* g++.dg/ext/attr-malloc.C: New test.
+	* g++.dg/ext/attr-noinline-2.C: New test.
+	* g++.dg/ext/attr-noinline.C: New test.
+	* g++.dg/ext/attr-nonnull.C: New test.
+	* g++.dg/ext/attr-noreturn-2.C: New test.
+	* g++.dg/ext/attr-noreturn.C: New test.
+	* g++.dg/ext/attr-nothrow-2.C: New test.
+	* g++.dg/ext/attr-nothrow.C: New test.
+	* g++.dg/ext/attr-optimize.C: New test.
+	* g++.dg/ext/attr-pure.C: New test.
+	* g++.dg/ext/attr-returns-nonnull.C: New test.
+	* g++.dg/ext/attr-warning.C: New test.
+
 2018-02-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84426

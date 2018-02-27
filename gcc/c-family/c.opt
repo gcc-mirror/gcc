@@ -781,6 +781,11 @@ Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.
 
+Wmissing-attributes
+C ObjC C++ ObjC++ Var(warn_missing_attributes) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn about declarations of entities that may be missing attributes
+that related entities have been declared with it.
+
 Wmissing-format-attribute
 C ObjC C++ ObjC++ Warning Alias(Wsuggest-attribute=format)
 ;

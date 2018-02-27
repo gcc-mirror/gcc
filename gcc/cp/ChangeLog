@@ -1,3 +1,14 @@
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83871
+	PR c++/83503
+	* cp-tree.h (warn_spec_missing_attributes): New function.
+	((check_explicit_specialization): Add an argument.  Call the above
+	function.
+	* decl.c (duplicate_decls): Avoid applying primary function template's
+	attributes to its explicit specializations.
+	cp/pt.c (warn_spec_missing_attributes): Define.
+
 2018-02-27  Håkon Sandsmark  <hsandsmark@gmail.com>
 
 	PR c++/71546 - lambda init-capture with qualified-id.
