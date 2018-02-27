@@ -520,11 +520,6 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
    else if (!BLOCK_SUPERCONTEXT (scope)
             || TREE_CODE (BLOCK_SUPERCONTEXT (scope)) == FUNCTION_DECL)
      unused = false;
-   /* Preserve the block, it is referenced by at least the inline
-      entry point marker.  */
-   else if (debug_inline_points
-	    && inlined_function_outer_scope_p (scope))
-     unused = false;
    /* Innermost blocks with no live variables nor statements can be always
       eliminated.  */
    else if (!nsubblocks)
@@ -556,10 +551,8 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
    /* See if this block is important for representation of inlined
       function.  Inlined functions are always represented by block
       with block_ultimate_origin being set to FUNCTION_DECL and
-      DECL_SOURCE_LOCATION set, unless they expand to nothing...  But
-      see above for the case of statement frontiers.  */
-   else if (!debug_inline_points
-	    && inlined_function_outer_scope_p (scope))
+      DECL_SOURCE_LOCATION set, unless they expand to nothing...  */
+   else if (inlined_function_outer_scope_p (scope))
      unused = false;
    else
    /* Verfify that only blocks with source location set
@@ -741,6 +734,10 @@ remove_unused_locals (void)
 	  gimple *stmt = gsi_stmt (gsi);
 	  tree b = gimple_block (stmt);
 
+	  /* If we wanted to mark the block referenced by the inline
+	     entry point marker as used, this would be a good spot to
+	     do it.  If the block is not otherwise used, the stmt will
+	     be cleaned up in clean_unused_block_pointer.  */
 	  if (is_gimple_debug (stmt))
 	    continue;
 
