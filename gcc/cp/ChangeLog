@@ -1,3 +1,9 @@
+2018-02-27  Håkon Sandsmark  <hsandsmark@gmail.com>
+
+	PR c++/71546 - lambda init-capture with qualified-id.
+	* parser.c (cp_parser_lambda_introducer): Clear scope after
+	each lambda capture.
+
 2018-02-27  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84426
