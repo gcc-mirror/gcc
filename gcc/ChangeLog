@@ -1,3 +1,13 @@
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/84207
+	* diagnostic-core.h (warning_n, error_n, inform_n): Change
+	n argument to unsigned HOST_WIDE_INT.
+	* diagnostic.c (warning_n, error_n, inform_n): Ditto.
+	(diagnostic_n_impl): Ditto.  Handle arguments in excess of LONG_MAX.
+	* gimple-ssa-sprintf.c (format_directive): Simplify inform_n call.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Use warning_n.
+
 2018-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84512
