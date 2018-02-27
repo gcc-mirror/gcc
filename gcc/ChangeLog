@@ -1,5 +1,11 @@
 2018-02-27  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/83871
+	* gcc/doc/invoke.texi (-Wmissing-attributes): New option.
+	* gcc/print-tree.c (print_node): Handle DECL_UNINLINABLE.
+
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
 	PR translation/84207
 	* diagnostic-core.h (warning_n, error_n, inform_n): Change
 	n argument to unsigned HOST_WIDE_INT.
