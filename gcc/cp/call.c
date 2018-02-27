@@ -7580,6 +7580,15 @@ unsafe_copy_elision_p (tree target, tree exp)
   /* build_compound_expr pushes COMPOUND_EXPR inside TARGET_EXPR.  */
   while (TREE_CODE (init) == COMPOUND_EXPR)
     init = TREE_OPERAND (init, 1);
+  if (TREE_CODE (init) == COND_EXPR)
+    {
+      /* We'll end up copying from each of the arms of the COND_EXPR directly
+	 into the target, so look at them. */
+      if (tree op = TREE_OPERAND (init, 1))
+	if (unsafe_copy_elision_p (target, op))
+	  return true;
+      return unsafe_copy_elision_p (target, TREE_OPERAND (init, 2));
+    }
   return (TREE_CODE (init) == AGGR_INIT_EXPR
 	  && !AGGR_INIT_VIA_CTOR_P (init));
 }
