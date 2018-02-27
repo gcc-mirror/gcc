@@ -24070,20 +24070,20 @@ type_dependent_expression_p (tree expression)
 	  && (any_dependent_template_arguments_p
 	      (INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
 	return true;
+    }
 
-      /* Otherwise, if the decl isn't from a dependent scope, it can't be
-	 type-dependent.  Checking this is important for functions with auto
-	 return type, which looks like a dependent type.  */
-      if (TREE_CODE (expression) == FUNCTION_DECL
-	  && undeduced_auto_decl (expression)
-	  && (!DECL_CLASS_SCOPE_P (expression)
-	      || !dependent_type_p (DECL_CONTEXT (expression)))
-	  && (!DECL_FRIEND_CONTEXT (expression)
-	      || !dependent_type_p (DECL_FRIEND_CONTEXT (expression)))
-	  && !DECL_LOCAL_FUNCTION_P (expression))
-	{
-	  return false;
-	}
+  /* Otherwise, if the decl isn't from a dependent scope, it can't be
+     type-dependent.  Checking this is important for functions with auto
+     return type, which looks like a dependent type.  */
+  if (TREE_CODE (expression) == FUNCTION_DECL
+      && undeduced_auto_decl (expression)
+      && (!DECL_CLASS_SCOPE_P (expression)
+	  || !dependent_type_p (DECL_CONTEXT (expression)))
+      && (!DECL_FRIEND_CONTEXT (expression)
+	  || !dependent_type_p (DECL_FRIEND_CONTEXT (expression)))
+      && !DECL_LOCAL_FUNCTION_P (expression))
+    {
+      return false;
     }
 
   /* Always dependent, on the number of arguments if nothing else.  */
