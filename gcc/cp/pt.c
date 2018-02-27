@@ -24,8 +24,8 @@ along with GCC; see the file COPYING3.  If not see
      all methods must be provided in header files; can't use a source
      file that contains only the method templates and "just win".  */
 
-#include <string>
 #include "config.h"
+#define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
