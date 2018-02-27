@@ -1,5 +1,9 @@
 2018-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84520 - ICE with generic lambda in NSDMI.
+	* lambda.c (lambda_expr_this_capture): Don't look for fake NSDMI
+	'this' in a generic lambda instantiation.
+
 	PR c++/84559 - ICE with constexpr VLA.
 	* constexpr.c (ensure_literal_type_for_constexpr_object): Check
 	for constexpr variable with VLA type.
