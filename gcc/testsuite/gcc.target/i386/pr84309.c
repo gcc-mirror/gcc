@@ -1,6 +1,6 @@
 /* PR middle-end/84309 */
 /* { dg-do compile } */
-/* { dg-options "-Ofast -mavx" } */
+/* { dg-options "-Ofast -mavx -mno-avx2" } */
 
 double pow (double, double) __attribute__((simd));
 double exp (double) __attribute__((simd));
