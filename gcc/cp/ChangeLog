@@ -1,5 +1,8 @@
 2018-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84441 - ICE with base initialized from ?:
+	* call.c (unsafe_copy_elision_p): Handle COND_EXPR.
+
 	PR c++/84520 - ICE with generic lambda in NSDMI.
 	* lambda.c (lambda_expr_this_capture): Don't look for fake NSDMI
 	'this' in a generic lambda instantiation.
