@@ -1,3 +1,14 @@
+2018-02-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Implement the missing bits of LWG 2769
+	* include/std/any (any_cast(const any&)): Add static_assert.
+	(any_cast(any&)): Likewise.
+	(any_cast(any&&)): Likewise, and remove the handling
+	for copyable-but-not-movable type.
+	* testsuite/20_util/any/misc/any_cast.cc: Adjust.
+	* testsuite/20_util/any/misc/any_cast_neg.cc: Likewise, and
+	add new tests.
+
 2018-02-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84532
