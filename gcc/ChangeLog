@@ -1,3 +1,12 @@
+2018-02-27  Alexandre Oliva <aoliva@redhat.com>
+
+	* tree-ssa-live.c (remove_unused_scope_block_p): Do not
+	preserve inline entry blocks for the sake of debug inline
+	entry point markers alone.
+	(remove_unused_locals): Suggest in comments a better place to
+	force the preservation of inline entry blocks that are
+	otherwise unused, but do not preserve them.
+
 2018-02-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_output_indirect_jmp): Update comments.
