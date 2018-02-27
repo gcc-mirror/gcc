@@ -19831,21 +19831,28 @@ type_unification_real (tree tparms,
 	    continue;
 	  tree parm = TREE_VALUE (tparm);
 
-	  if (TREE_CODE (parm) == PARM_DECL
-	      && uses_template_parms (TREE_TYPE (parm))
-	      && saw_undeduced < 2)
-	    continue;
+	  tsubst_flags_t fcomplain = complain;
+	  if (saw_undeduced == 1)
+	    {
+	      /* When saw_undeduced == 1, substitution into parm and arg might
+		 fail or not replace all template parameters, and that's
+		 fine.  */
+	      fcomplain = tf_none;
+	      if (TREE_CODE (parm) == PARM_DECL
+		  && uses_template_parms (TREE_TYPE (parm)))
+		continue;
+	    }
 
 	  tree arg = TREE_PURPOSE (tparm);
 	  reopen_deferring_access_checks (*checks);
 	  location_t save_loc = input_location;
 	  if (DECL_P (parm))
 	    input_location = DECL_SOURCE_LOCATION (parm);
-	  arg = tsubst_template_arg (arg, full_targs, complain, NULL_TREE);
-	  if (!uses_template_parms (arg))
+	  arg = tsubst_template_arg (arg, full_targs, fcomplain, NULL_TREE);
+	  if (arg != error_mark_node && !uses_template_parms (arg))
 	    arg = convert_template_argument (parm, arg, full_targs, complain,
 					     i, NULL_TREE);
-	  else if (saw_undeduced < 2)
+	  else if (saw_undeduced == 1)
 	    arg = NULL_TREE;
 	  else
 	    arg = error_mark_node;
