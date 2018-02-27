@@ -1,3 +1,8 @@
+2018-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84512
+	* gcc.dg/tree-ssa/pr84512.c: New testcase.
+
 2018-02-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84548

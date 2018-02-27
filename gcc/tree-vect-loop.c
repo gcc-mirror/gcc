@@ -1384,16 +1384,10 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
-  int nbbs = loop->num_nodes, factor, scalar_single_iter_cost = 0;
+  int nbbs = loop->num_nodes, factor;
   int innerloop_iters, i;
 
-  /* Count statements in scalar loop.  Using this as scalar cost for a single
-     iteration for now.
-
-     TODO: Add outer loop support.
-
-     TODO: Consider assigning different costs to different scalar
-     statements.  */
+  /* Gather costs for statements in the scalar loop.  */
 
   /* FORNOW.  */
   innerloop_iters = 1;
@@ -1437,13 +1431,28 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
           else
             kind = scalar_stmt;
 
-	  scalar_single_iter_cost
-	    += record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
-				 factor, kind, stmt_info, 0, vect_prologue);
+	  record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+			    factor, kind, stmt_info, 0, vect_prologue);
         }
     }
-  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
-    = scalar_single_iter_cost;
+
+  /* Now accumulate cost.  */
+  void *target_cost_data = init_cost (loop);
+  stmt_info_for_cost *si;
+  int j;
+  FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+		    j, si)
+    {
+      struct _stmt_vec_info *stmt_info
+	= si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
+      (void) add_stmt_cost (target_cost_data, si->count,
+			    si->kind, stmt_info, si->misalign,
+			    vect_body);
+    }
+  unsigned dummy, body_cost = 0;
+  finish_cost (target_cost_data, &dummy, &body_cost, &dummy);
+  destroy_cost_data (target_cost_data);
+  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo) = body_cost;
 }
 
 
