@@ -1,5 +1,9 @@
 2018-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84560 - ICE capturing multi-dimensional VLA.
+	* tree.c (array_of_runtime_bound_p): False if the element is
+	variably-modified.
+
 	PR c++/84441 - ICE with base initialized from ?:
 	* call.c (unsafe_copy_elision_p): Handle COND_EXPR.
 
