@@ -1,3 +1,9 @@
+2018-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84496 - ICE with generic lambda in lambda.
+	* pt.c (type_dependent_expression_p): Fix dependency checking of
+	functions without DECL_TEMPLATE_INFO.
+
 2018-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84441 - ICE with base initialized from ?:
