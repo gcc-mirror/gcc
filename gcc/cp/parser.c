@@ -10440,6 +10440,12 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 		   capture_init_expr,
 		   /*by_reference_p=*/capture_kind == BY_REFERENCE,
 		   explicit_init_p);
+
+      /* If there is any qualification still in effect, clear it
+	 now; we will be starting fresh with the next capture.  */
+      parser->scope = NULL_TREE;
+      parser->qualifying_scope = NULL_TREE;
+      parser->object_scope = NULL_TREE;
     }
 
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
