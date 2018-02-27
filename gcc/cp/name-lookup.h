@@ -310,7 +310,8 @@ extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
 extern tree search_anon_aggr (tree, tree);
 extern tree get_class_binding_direct (tree, tree, int type_or_fns = -1);
 extern tree get_class_binding (tree, tree, int type_or_fns = -1);
-extern tree *get_member_slot (tree klass, tree name);
+extern tree *find_member_slot (tree klass, tree name);
+extern tree *add_member_slot (tree klass, tree name);
 extern void resort_type_member_vec (void *, void *,
 				    gt_pointer_operator, void *);
 extern void set_class_bindings (tree, unsigned extra = 0);

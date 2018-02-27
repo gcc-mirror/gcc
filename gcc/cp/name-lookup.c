@@ -1146,17 +1146,9 @@ static tree
 member_vec_linear_search (vec<tree, va_gc> *member_vec, tree name)
 {
   for (int ix = member_vec->length (); ix--;)
-    /* We can get a NULL binding during insertion of a new method
-       name, because the identifier_binding machinery performs a
-       lookup.  If we find such a NULL slot, that's the thing we were
-       looking for, so we might as well bail out immediately.  */
     if (tree binding = (*member_vec)[ix])
-      {
-	if (OVL_NAME (binding) == name)
-	  return binding;
-      }
-    else
-      break;
+      if (OVL_NAME (binding) == name)
+	return binding;
 
   return NULL_TREE;
 }
@@ -1334,15 +1326,15 @@ get_class_binding (tree klass, tree name, int type_or_fns)
 }
 
 /* Find the slot containing overloads called 'NAME'.  If there is no
-   such slot, create an empty one.  KLASS might be complete at this
-   point, in which case we need to preserve ordering.  Deals with
-   conv_op marker handling.  */
+   such slot and the class is complete, create an empty one, at the
+   correct point in the sorted member vector.  Otherwise return NULL.
+   Deals with conv_op marker handling.  */
 
 tree *
-get_member_slot (tree klass, tree name)
+find_member_slot (tree klass, tree name)
 {
   bool complete_p = COMPLETE_TYPE_P (klass);
-  
+
   vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
   if (!member_vec)
     {
@@ -1389,24 +1381,34 @@ get_member_slot (tree klass, tree name)
 	break;
     }
 
-  /* No slot found.  Create one at IX.  We know in this case that our
-     caller will succeed in adding the function.  */
+  /* No slot found, add one if the class is complete.  */
   if (complete_p)
     {
-      /* Do exact allocation when complete, as we don't expect to add
-	 many.  */
+      /* Do exact allocation, as we don't expect to add many.  */
+      gcc_assert (name != conv_op_identifier);
       vec_safe_reserve_exact (member_vec, 1);
+      CLASSTYPE_MEMBER_VEC (klass) = member_vec;
       member_vec->quick_insert (ix, NULL_TREE);
+      return &(*member_vec)[ix];
     }
-  else
-    {
-      gcc_checking_assert (ix == length);
-      vec_safe_push (member_vec, NULL_TREE);
-    }
+
+  return NULL;
+}
+
+/* KLASS is an incomplete class to which we're adding a method NAME.
+   Add a slot and deal with conv_op marker handling.  */
+
+tree *
+add_member_slot (tree klass, tree name)
+{
+  gcc_assert (!COMPLETE_TYPE_P (klass));
+
+  vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
+  vec_safe_push (member_vec, NULL_TREE);
   CLASSTYPE_MEMBER_VEC (klass) = member_vec;
 
-  tree *slot = &(*member_vec)[ix];
-  if (name == conv_op_identifier)
+  tree *slot = &member_vec->last ();
+  if (IDENTIFIER_CONV_OP_P (name))
     {
       /* Install the marker prefix.  */
       *slot = ovl_make (conv_op_marker, NULL_TREE);
