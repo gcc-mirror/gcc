@@ -1043,6 +1043,8 @@ array_of_runtime_bound_p (tree t)
 {
   if (!t || TREE_CODE (t) != ARRAY_TYPE)
     return false;
+  if (variably_modified_type_p (TREE_TYPE (t), NULL_TREE))
+    return false;
   tree dom = TYPE_DOMAIN (t);
   if (!dom)
     return false;
