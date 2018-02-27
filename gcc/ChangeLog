@@ -1,5 +1,12 @@
 2018-02-27  Martin Liska  <mliska@suse.cz>
 
+	PR gcov-profile/84548
+	* gcov.c (process_file): Allow partial overlap and consider it
+	also as group functions.
+	(output_lines): Properly calculate range of lines for a group.
+
+2018-02-27  Martin Liska  <mliska@suse.cz>
+
 	* timevar.c (timer::print_row): Remove 'usr', 'sys', 'wall' and
 	'ggc' suffixes.  Change first column width.
 	(timer::print): Fix formatting of the column.
