@@ -1,3 +1,18 @@
+2018-02-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84426
+	* name-lookup.h (get_member_slot): Rename ...
+	(find_member_slot): ... here.
+	(add_member_slot): New.
+	* name-lookup.c (member_vec_linear_search): No need to check for
+	NULL slot.
+	(get_member_slot): Rename ...
+	(find_member_slot): ... here.  Don't add slot for incomplete class.
+	(add_member_slot): New.
+	* class.c (add_method): Adjust get_member_slot rename.  Bail out
+	if push_class_level_binding fails.  Create slot and grok
+	properties once we're committed to insertion.
+
 2018-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84489 - dependent default template argument

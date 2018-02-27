@@ -993,13 +993,10 @@ add_method (tree type, tree method, bool via_using)
   if (method == error_mark_node)
     return false;
 
-  /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
-  grok_special_member_properties (method);
-
-  tree *slot = get_member_slot (type, DECL_NAME (method));
-  tree current_fns = *slot;
-
   gcc_assert (!DECL_EXTERN_C_P (method));
+
+  tree *slot = find_member_slot (type, DECL_NAME (method));
+  tree current_fns = slot ? *slot : NULL_TREE;
 
   /* Check to see if we've already got this method.  */
   for (ovl_iterator iter (current_fns); iter; ++iter)
@@ -1146,8 +1143,15 @@ add_method (tree type, tree method, bool via_using)
 
   current_fns = ovl_insert (method, current_fns, via_using);
 
-  if (!DECL_CONV_FN_P (method) && !COMPLETE_TYPE_P (type))
-    push_class_level_binding (DECL_NAME (method), current_fns);
+  if (!COMPLETE_TYPE_P (type) && !DECL_CONV_FN_P (method)
+      && !push_class_level_binding (DECL_NAME (method), current_fns))
+    return false;
+
+  if (!slot)
+    slot = add_member_slot (type, DECL_NAME (method));
+
+  /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
+  grok_special_member_properties (method);
 
   *slot = current_fns;
 
