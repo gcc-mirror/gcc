@@ -120,6 +120,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "incpath.h"
 #include "libiberty.h"
+#include "version.h"
 #include "tree-diagnostic.h"
 
 /* Id for dumping module information.  */
@@ -178,8 +179,8 @@ static inline unsigned version2time (int v)
 /* Format a version for user consumption.  Only attach time
    information for experimental builds.  */
 
-typedef char version_string[32];
-static void version2string (int version, version_string &out)
+typedef char verstr_t[32];
+static void version2string (int version, verstr_t &out)
 {
   unsigned date = version2date (version);
   unsigned time = version2time (version);
@@ -1666,6 +1667,18 @@ bytes_out::end (elf_out *sink, unsigned name, unsigned *crc_ptr)
   return sec_num;
 }
 
+class binding
+{
+  tree ns;
+  tree name;
+  vec<tree, va_heap> dependencies;
+  vec<tree, va_heap, vl_embed> decls;
+};
+
+class scc
+{
+};
+
 // FIXME:Forward declare, until module_state::{read,write}_namespace don't
 // need it
 class trees_out;
@@ -2341,7 +2354,7 @@ dumper::operator () (const char *format, ...)
 	case 'V': /* Verson.  */
 	  {
 	    int v = va_arg (args, unsigned);
-	    version_string string;
+	    verstr_t string;
 
 	    version2string (v, string);
 	    fputs (string, dumps->stream);
@@ -2702,8 +2715,9 @@ module_state::write_context (elf_out *to, unsigned *crc_p)
   readme.begin ();
 
   /* Write version and module name to readme.  */
-  readme.printf ("GNU C++ Module Binary Interface");
-  version_string string;
+  readme.printf ("GNU C++ Module");
+  readme.printf ("compiler:%s", version_string);
+  verstr_t string;
   version2string (get_version (), string);
   readme.printf ("version:%s", string);
   readme.printf ("module:%s", IDENTIFIER_POINTER (name));
@@ -2867,7 +2881,7 @@ module_state::read_config (elf_in *from, unsigned *expected_crc)
       int their_date = version2date (their_ver);
       int my_time = version2time (my_ver);
       int their_time = version2time (their_ver);
-      version_string my_string, their_string;
+      verstr_t my_string, their_string;
 
       version2string (my_ver, my_string);
       version2string (their_ver, their_string);
