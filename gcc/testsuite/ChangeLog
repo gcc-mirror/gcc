@@ -1,3 +1,8 @@
+2018-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84609
+	* g++.dg/cpp0x/pr84609.C: New test.
+
 2018-02-28  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/84617

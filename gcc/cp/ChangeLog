@@ -1,5 +1,14 @@
 2018-02-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84609
+	* parser.c (cp_parser_attributes_opt): Formatting fix.
+	(cp_parser_skip_balanced_tokens, cp_parser_skip_gnu_attributes_opt,
+	cp_parser_skip_std_attribute_spec_seq, cp_parser_skip_attributes_opt):
+	New functions.
+	(cp_parser_member_declaration): Use cp_parser_skip_attributes_opt
+	instead of tentative parse to peek over optional attribute tokens
+	to check for CPP_COLON after them.
+
 	PR c++/83871
 	PR c++/83503
 	* pt.c (INCLUDE_STRING): Remove define.

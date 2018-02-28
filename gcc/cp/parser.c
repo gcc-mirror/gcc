@@ -2393,6 +2393,8 @@ static tree cp_parser_std_attribute_spec
   (cp_parser *);
 static tree cp_parser_std_attribute_spec_seq
   (cp_parser *);
+static size_t cp_parser_skip_attributes_opt
+  (cp_parser *, size_t);
 static bool cp_parser_extension_opt
   (cp_parser *, int *);
 static void cp_parser_label_declaration
@@ -23628,7 +23630,6 @@ cp_parser_member_declaration (cp_parser* parser)
 	  tree attributes = NULL_TREE;
 	  tree first_attribute;
 	  tree initializer;
-	  bool is_bitfld = false;
 	  bool named_bitfld = false;
 
 	  /* Peek at the next token.  */
@@ -23636,26 +23637,22 @@ cp_parser_member_declaration (cp_parser* parser)
 
 	  /* The following code wants to know early if it is a bit-field
 	     or some other declaration.  Attributes can appear before
-	     the `:' token, but are hopefully rare enough that the
-	     simplicity of the tentative lookup pays off.  */
+	     the `:' token.  Skip over them without consuming any tokens
+	     to peek if they are followed by `:'.  */
 	  if (cp_next_tokens_can_be_attribute_p (parser)
 	      || (token->type == CPP_NAME
 		  && cp_nth_tokens_can_be_attribute_p (parser, 2)
 		  && (named_bitfld = true)))
 	    {
-	      cp_parser_parse_tentatively (parser);
-	      if (named_bitfld)
-		cp_lexer_consume_token (parser->lexer);
-	      cp_parser_attributes_opt (parser);
-	      token = cp_lexer_peek_token (parser->lexer);
-	      is_bitfld = cp_lexer_next_token_is (parser->lexer, CPP_COLON);
-	      cp_parser_abort_tentative_parse (parser);
+	      size_t n
+		= cp_parser_skip_attributes_opt (parser, 1 + named_bitfld);
+	      token = cp_lexer_peek_nth_token (parser->lexer, n);
 	    }
 
 	  /* Check for a bitfield declaration.  */
-	  if (is_bitfld
-	      || token->type == CPP_COLON
+	  if (token->type == CPP_COLON
 	      || (token->type == CPP_NAME
+		  && token == cp_lexer_peek_token (parser->lexer)
 		  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON)
 		  && (named_bitfld = true)))
 	    {
@@ -24919,7 +24916,7 @@ static tree
 cp_parser_attributes_opt (cp_parser *parser)
 {
   if (cp_next_tokens_can_be_gnu_attribute_p (parser))
-      return cp_parser_gnu_attributes_opt (parser);
+    return cp_parser_gnu_attributes_opt (parser);
   return cp_parser_std_attribute_spec_seq (parser);
 }
 
@@ -25460,6 +25457,115 @@ cp_parser_std_attribute_spec_seq (cp_parser *parser)
     }
 
   return attr_specs;
+}
+
+/* Skip a balanced-token starting at Nth token (with 1 as the next token),
+   return index of the first token after balanced-token, or N on failure.  */
+
+static size_t
+cp_parser_skip_balanced_tokens (cp_parser *parser, size_t n)
+{
+  size_t orig_n = n;
+  int nparens = 0, nbraces = 0, nsquares = 0;
+  do
+    switch (cp_lexer_peek_nth_token (parser->lexer, n++)->type)
+      {
+      case CPP_EOF:
+      case CPP_PRAGMA_EOL:
+	/* Ran out of tokens.  */
+	return orig_n;
+      case CPP_OPEN_PAREN:
+	++nparens;
+	break;
+      case CPP_OPEN_BRACE:
+	++nbraces;
+	break;
+      case CPP_OPEN_SQUARE:
+	++nsquares;
+	break;
+      case CPP_CLOSE_PAREN:
+	--nparens;
+	break;
+      case CPP_CLOSE_BRACE:
+	--nbraces;
+	break;
+      case CPP_CLOSE_SQUARE:
+	--nsquares;
+	break;
+      default:
+	break;
+      }
+  while (nparens || nbraces || nsquares);
+  return n;
+}
+
+/* Skip GNU attribute tokens starting at Nth token (with 1 as the next token),
+   return index of the first token after the GNU attribute tokens, or N on
+   failure.  */
+
+static size_t
+cp_parser_skip_gnu_attributes_opt (cp_parser *parser, size_t n)
+{
+  while (true)
+    {
+      if (!cp_lexer_nth_token_is_keyword (parser->lexer, n, RID_ATTRIBUTE)
+	  || !cp_lexer_nth_token_is (parser->lexer, n + 1, CPP_OPEN_PAREN)
+	  || !cp_lexer_nth_token_is (parser->lexer, n + 2, CPP_OPEN_PAREN))
+	break;
+
+      size_t n2 = cp_parser_skip_balanced_tokens (parser, n + 2);
+      if (n2 == n + 2)
+	break;
+      if (!cp_lexer_nth_token_is (parser->lexer, n2, CPP_CLOSE_PAREN))
+	break;
+      n = n2 + 1;
+    }
+  return n;
+}
+
+/* Skip standard C++11 attribute tokens starting at Nth token (with 1 as the
+   next token), return index of the first token after the standard C++11
+   attribute tokens, or N on failure.  */
+
+static size_t
+cp_parser_skip_std_attribute_spec_seq (cp_parser *parser, size_t n)
+{
+  while (true)
+    {
+      if (cp_lexer_nth_token_is (parser->lexer, n, CPP_OPEN_SQUARE)
+	  && cp_lexer_nth_token_is (parser->lexer, n + 1, CPP_OPEN_SQUARE))
+	{
+	  size_t n2 = cp_parser_skip_balanced_tokens (parser, n + 1);
+	  if (n2 == n + 1)
+	    break;
+	  if (!cp_lexer_nth_token_is (parser->lexer, n2, CPP_CLOSE_SQUARE))
+	    break;
+	  n = n2 + 1;
+	}
+      else if (cp_lexer_nth_token_is_keyword (parser->lexer, n, RID_ALIGNAS)
+	       && cp_lexer_nth_token_is (parser->lexer, n + 1, CPP_OPEN_PAREN))
+	{
+	  size_t n2 = cp_parser_skip_balanced_tokens (parser, n + 1);
+	  if (n2 == n + 1)
+	    break;
+	  n = n2;
+	}
+      else
+	break;
+    }
+  return n;
+}
+
+/* Skip standard C++11 or GNU attribute tokens starting at Nth token (with 1
+   as the next token), return index of the first token after the attribute
+   tokens, or N on failure.  */
+
+static size_t
+cp_parser_skip_attributes_opt (cp_parser *parser, size_t n)
+{
+  if (cp_nth_tokens_can_be_gnu_attribute_p (parser, n))
+    return cp_parser_skip_gnu_attributes_opt (parser, n);
+  return cp_parser_skip_std_attribute_spec_seq (parser, n);
 }
 
 /* Parse an optional `__extension__' keyword.  Returns TRUE if it is
