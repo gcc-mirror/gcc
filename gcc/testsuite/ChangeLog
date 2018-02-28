@@ -1,3 +1,8 @@
+2018-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84607
+	* gcc.dg/pr84607.c: New testcase.
+
 2018-02-28  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84602
