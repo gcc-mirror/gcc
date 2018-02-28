@@ -94,7 +94,7 @@ void test_keep_primary_3 (void)
 void test_elim_special_3 (void)
 {
   fnone_always_inline<Special>();
-// { dg-final { scan-tree-dump-not "fnone_always_inline<Special> *\\(\\);" optimized" } }
+// { dg-final { scan-tree-dump-not "fnone_always_inline<Special> *\\(\\);" "optimized" } }
 }
 
 
@@ -124,5 +124,5 @@ void test_keep_primary_4 (void)
 void test_elim_special_4 (void)
 {
   fnoinline_always_inline<Special>();
-// { dg-final { scan-tree-dump-not "fnoinline_always_inline<Special> *\\(\\);" optimized" } }
+// { dg-final { scan-tree-dump-not "fnoinline_always_inline<Special> *\\(\\);" "optimized" } }
 }

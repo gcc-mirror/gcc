@@ -4,7 +4,7 @@
 // "inherit" attribute warning from a primary template declared with
 // it.
 // { dg-do compile }
-// { dg-options "-Wall -fdump-tree-optimized" }
+// { dg-options "-Wall" }
 
 struct Special;
 

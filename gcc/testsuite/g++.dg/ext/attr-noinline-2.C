@@ -69,5 +69,5 @@ void test_elim_special_2 (void)
 {
   // Should be inlined.
   fnoinline_always_inline<Special>();
-// { dg-final { scan-tree-dump-not "fnoinline_always_inline<Special> *\\(\\);" optimized" } }
+// { dg-final { scan-tree-dump-not "fnoinline_always_inline<Special> *\\(\\);" "optimized" } }
 }
