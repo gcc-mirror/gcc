@@ -2266,11 +2266,8 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		{
 		  tree type_name = TYPE_NAME (TREE_TYPE (node));
 
-		  /* For now, handle access-to-access and access-to-incomplete
-		     as opaque System.Address.  */
-		  if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE
-		      || (RECORD_OR_UNION_TYPE_P (TREE_TYPE (node))
-			  && !COMPLETE_TYPE_P (TREE_TYPE (node))))
+		  /* For now, handle access-to-access as System.Address.  */
+		  if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE)
 		    {
 		      if (package_prefix)
 			{
@@ -2515,11 +2512,6 @@ dump_forward_type (pretty_printer *buffer, tree type, tree t, int spc)
   if (DECL_IS_BUILTIN (decl) || TREE_VISITED (decl))
     return;
 
-  /* We'll need to generate a completion at some point.  */
-  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
-      && !COMPLETE_TYPE_P (TREE_TYPE (decl)))
-    return;
-
   /* Forward declarations are only needed within a given file.  */
   if (DECL_SOURCE_FILE (decl) != DECL_SOURCE_FILE (t))
     return;
@@ -2743,23 +2735,15 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
 	      INDENT (spc);
 
-	      if (RECORD_OR_UNION_TYPE_P (typ) && !COMPLETE_TYPE_P (typ))
-		{
-		  pp_string (buffer, "--  skipped incomplete struct ");
-		  dump_ada_node (buffer, t, type, spc, false, true);
-		}
-	      else
-		{
-		  if (RECORD_OR_UNION_TYPE_P (typ))
-		    dump_forward_type (buffer, stub, t, spc);
+	      if (RECORD_OR_UNION_TYPE_P (typ))
+		dump_forward_type (buffer, stub, t, spc);
 
-		  pp_string (buffer, "subtype ");
-		  dump_ada_node (buffer, t, type, spc, false, true);
-		  pp_string (buffer, " is ");
-		  dump_ada_node (buffer, typ, type, spc, false, true);
-		  pp_string (buffer, ";  -- ");
-		  dump_sloc (buffer, t);
-		}
+	      pp_string (buffer, "subtype ");
+	      dump_ada_node (buffer, t, type, spc, false, true);
+	      pp_string (buffer, " is ");
+	      dump_ada_node (buffer, typ, type, spc, false, true);
+	      pp_string (buffer, ";  -- ");
+	      dump_sloc (buffer, t);
 
 	      TREE_VISITED (t) = 1;
 	      return 1;
@@ -2788,8 +2772,10 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  case UNION_TYPE:
 	    if (!COMPLETE_TYPE_P (TREE_TYPE (t)))
 	      {
-		pp_string (buffer, "--  skipped incomplete struct ");
+		pp_string (buffer, "type ");
 		dump_ada_node (buffer, t, type, spc, false, true);
+		pp_string (buffer, " is null record;   -- incomplete struct");
+		TREE_VISITED (t) = 1;
 		return 1;
 	      }
 

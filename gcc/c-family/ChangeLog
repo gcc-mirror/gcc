@@ -1,5 +1,13 @@
 2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-ada-spec.c (dump_ada_node) <POINTER_TYPE>: Do not use generic
+	address for incomplete structures.
+	(dump_forward_type): Do not bail out for incomplete structures.
+	(dump_ada_declaration): Do not special-case incomplete structures
+	for subtypes.  Dump them as null records for types.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-ada-spec.c (dump_ada_import): Use boolean and fix formatting.
 	(is_char_array): Fix formatting.
 	(dump_template_types): Likewise.
