@@ -6,7 +6,7 @@
 
 void sink (char*);
 
-long long integer_range (long long min, long long max)
+static long long integer_range (long long min, long long max)
 {
   extern long long integer_value (void);
   long long n = integer_value ();

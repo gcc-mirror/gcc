@@ -1,3 +1,36 @@
+2018-02-28  Martin Sebor  <msebor@redhat.com>
+
+	* c-c++-common/Warray-bounds-2.c: Declare helper static to avoid
+	-fpic test failures.
+	* c-c++-common/Wrestrict-2.c: Same.
+	* c-c++-common/Wstringop-truncation.c: Same.
+	* gcc.dg/Warray-bounds-22.c: Same.
+	* gcc.dg/Wstringop-overflow.c: Same.
+	* gcc.dg/attr-alloc_size-3.c (unsigned_range): Same.
+	(signed_range): Same.
+	(unsigned_anti_range): Same.
+	* gcc.dg/attr-alloc_size-4.c (unsigned_range): Same.
+	(signed_range): Same.
+	(unsigned_anti_range): Same.
+	* gcc.dg/attr-alloc_size-7.c: Same.
+	* gcc.dg/attr-alloc_size-8.c: Same.
+	* gcc.dg/builtin-alloc-size.c: Same.
+	* gcc.dg/builtin-stpncpy.c: Same.
+	* gcc.dg/builtins-nonnull.c: Same.
+	* gcc.dg/nonnull-4.c (g16_1_3_5_7_11_13): Same.
+	* gcc.dg/pr79214.c: Same.
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-snprintf-warn-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-5.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-11.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-12.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-13.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-14.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-15.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-19.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-3.c: Same.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-9.c: Same.
+
 2018-02-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/84014

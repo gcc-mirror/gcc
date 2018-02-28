@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-void wrap_memcpy (void *d, const void *s, size_t n)
+static void wrap_memcpy (void *d, const void *s, size_t n)
 {
   memcpy (d, s, n);   /* { dg-warning "source argument is the same as destination" "memcpy" } */
 }
@@ -22,7 +22,7 @@ void call_memcpy (void *d, size_t n)
 }
 
 
-void wrap_strcat (char *d, const char *s)
+static void wrap_strcat (char *d, const char *s)
 {
   strcat (d, s);   /* { dg-warning "source argument is the same as destination" "strcat" } */
 }
@@ -34,7 +34,7 @@ void call_strcat (char *d)
 }
 
 
-void wrap_strcpy (char *d, const char *s)
+static void wrap_strcpy (char *d, const char *s)
 {
   strcpy (d, s);   /* { dg-warning "source argument is the same as destination" "strcpy" } */
 }
@@ -46,7 +46,7 @@ void call_strcpy (char *d)
 }
 
 
-void wrap_strncat (char *d, const char *s, size_t n)
+static void wrap_strncat (char *d, const char *s, size_t n)
 {
   strncat (d, s, n);   /* { dg-warning "source argument is the same as destination" "strncat" } */
 }
@@ -58,7 +58,7 @@ void call_strncat (char *d, size_t n)
 }
 
 
-void wrap_strncpy (char *d, const char *s, size_t n)
+static void wrap_strncpy (char *d, const char *s, size_t n)
 {
   strncpy (d, s, n);   /* { dg-warning "source argument is the same as destination" "strncpy" } */
 }

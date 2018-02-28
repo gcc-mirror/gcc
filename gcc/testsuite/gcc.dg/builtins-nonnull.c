@@ -7,7 +7,7 @@
 
 typedef struct FILE FILE;
 
-char* null (void)
+static char* null (void)
 {
   return 0;
 }
