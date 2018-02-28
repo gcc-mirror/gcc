@@ -1,5 +1,11 @@
 2018-02-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* Makefile.in: Exec REVISION maybe.
+	* REVISION: New.
+	gcc/cp/
+	* Make-lang.in: Directly set MODULE_STAMP.
+
 	Map tag recognised in and out of comments
 	gcc/cp/
 	* module.c

@@ -56,19 +56,12 @@ CFLAGS-cp/g++spec.o += $(DRIVER_DEFINES)
 CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 	-DTARGET_MACHINE=\"$(target)\"
 
-# REVISION_DATESTAMP is set in parent Makefile, so g++ -v advertises itself
-ifdef REVISION_DATESTAMP
-CFLAGS-cp/module.o += -DMODULE_STAMP=$(subst -,,$(REVISION_DATESTAMP))LL
-# We want to rebuild module if the timestamp changes
-cp/module.o : $(REVISION)
-else
-# without that, we still want to make the version volatile, when in
-# development mode. 
+# We want to make the version volatile, when in development mode. 
 ifeq ($(DEVPHASE_c),experimental)
-CFLAGS-cp/module.o += -DMODULE_STAMP=$(shell date -r $(REVISION) '+%Y%m%d%H%M')LL
 # We want to rebuild module if the source dir changes
 cp/module.o : $(srcdir)/cp
-endif
+CFLAGS-cp/module.o += \
+	-DMODULE_STAMP=$(shell date -r $(srcdir)/cp '+%Y%m%d%H%M')LL
 endif
 
 # Create the compiler driver for g++.
@@ -234,7 +227,7 @@ c++.install-common: installdirs
 	    fi ; \
 	  fi; \
 	fi
-	rm -f $(DESTDIR)$(libexecdir)/cxx-module-wrapper;
+	rm -f $(DESTDIR)$(libexecdir)/cxx-module-wrapper
 	$(INSTALL_PROGRAM) cxx-module-wrapper $(DESTDIR)$(libexecdir)/cxx-module-wrapper
 	chmod a+x $(DESTDIR)$(libexecdir)/cxx-module-wrapper
 
