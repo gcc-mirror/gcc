@@ -1,5 +1,18 @@
 2018-02-28  Nathan Sidwell  <nathan@acm.org>
 
+	Using flags on overloads.
+	gcc/cp/
+	* cp-tree.h (OVL_HAS_USING_P): New.
+	* tree.c (alloc_ovl): New, broken out of ...
+	(ovl_make): ... this.  Use it.  Maybe set OVL_HAS_USING_P.
+	(ovl_copy): Use alloc_ovl.  Copy OVL_HAS_USING_P.
+	(ovl_insert): Set OVL_HAS_USING_P appropriately.
+	(lookup_maybe_add): Comment on OVL_HAS_USING_P.
+	* name-lookup.c (name_lookup::add_overload)
+	(get_class_binding_direct): Check OVL_HAS_USING_P.
+	gcc/testsuite/
+	* g++.dg/lookup/using60.C: New.
+
 	gcc/
 	* Makefile.in: Exec REVISION maybe.
 	* REVISION: New.

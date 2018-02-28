@@ -2126,10 +2126,8 @@ make_module_vec (tree name, unsigned clusters MEM_STAT_DECL)
 /* Cache of free ovl nodes.  Uses OVL_FUNCTION for chaining.  */
 static GTY((deletable)) tree ovl_cache;
 
-/* Make a raw overload node containing FN.  */
-
-tree
-ovl_make (tree fn, tree next)
+static tree
+alloc_ovl ()
 {
   tree result = ovl_cache;
 
@@ -2143,11 +2141,23 @@ ovl_make (tree fn, tree next)
   else
     result = make_node (OVERLOAD);
 
+  return result;
+}
+
+/* Make a raw overload node containing FN.  */
+
+tree
+ovl_make (tree fn, tree next)
+{
+  tree result = alloc_ovl ();
+
   if (TREE_CODE (fn) == OVERLOAD)
     OVL_NESTED_P (result) = true;
 
   TREE_TYPE (result) = (next || TREE_CODE (fn) == TEMPLATE_DECL
 			? unknown_type_node : TREE_TYPE (fn));
+  if (next && TREE_CODE (next) == OVERLOAD && OVL_HAS_USING_P (next))
+    OVL_HAS_USING_P (result) = true;
   OVL_FUNCTION (result) = fn;
   OVL_CHAIN (result) = next;
   return result;
@@ -2156,22 +2166,13 @@ ovl_make (tree fn, tree next)
 static tree
 ovl_copy (tree ovl)
 {
-  tree result = ovl_cache;
-
-  if (result)
-    {
-      ovl_cache = OVL_FUNCTION (result);
-      /* Zap the flags.  */
-      memset (result, 0, sizeof (tree_base));
-      TREE_SET_CODE (result, OVERLOAD);
-    }
-  else
-    result = make_node (OVERLOAD);
+  tree result = alloc_ovl ();
 
   gcc_checking_assert (!OVL_NESTED_P (ovl) && OVL_USED_P (ovl));
   TREE_TYPE (result) = TREE_TYPE (ovl);
   OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
   OVL_CHAIN (result) = OVL_CHAIN (ovl);
+  OVL_HAS_USING_P (result) = OVL_HAS_USING_P (ovl);
   OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
   OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
   OVL_USING_P (result) = OVL_USING_P (ovl);
@@ -2241,7 +2242,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p, tree *export_tail)
       if (hidden_p)
 	OVL_HIDDEN_P (trail) = true;
       if (using_p)
-	OVL_USING_P (trail) = true;
+	OVL_HAS_USING_P (trail) = OVL_USING_P (trail) = true;
       if (DECL_MODULE_EXPORT_P (fn))
 	OVL_EXPORT_P (trail) = true;
     }
@@ -2250,6 +2251,14 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p, tree *export_tail)
     {
       OVL_CHAIN (insert_after) = trail;
       TREE_TYPE (insert_after) = unknown_type_node;
+      if (using_p)
+	for (tree probe = result; !OVL_HAS_USING_P (probe);
+	     probe = OVL_CHAIN (probe))
+	  OVL_HAS_USING_P (probe) = true;
+      else
+	gcc_checking_assert (TREE_CODE (trail) != OVERLOAD
+			     || !OVL_HAS_USING_P (trail)
+			     || OVL_HAS_USING_P (insert_after));
     }
   else
     result = trail;
@@ -2399,7 +2408,8 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
 	    for (; fns != probe; fns = OVL_CHAIN (fns))
 	      {
 		lookup = lookup_add (OVL_FUNCTION (fns), lookup);
-		/* Propagate OVL_USING, but OVL_HIDDEN doesn't matter.  */
+		/* Propagate OVL_USING, but OVL_HIDDEN &
+		   OVL_HAS_USING_P don't matter.  */
 		if (OVL_USING_P (fns))
 		  OVL_USING_P (lookup) = true;
 	      }

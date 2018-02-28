@@ -426,6 +426,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
+      OVL_HAS_USING_P (in OVERLOAD)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       TYPE_MARKED_P (in _TYPE)
       DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
@@ -671,6 +672,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
+/* If set, this or a subsequent overload was via a using declaration.   */
+#define OVL_HAS_USING_P(NODE) TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
 /* If set, this is a persistant lookup. */
 #define OVL_USED_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 
