@@ -2126,6 +2126,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       pp_string (buffer, "--- unexpected node: TREE_VEC");
       return 0;
 
+    case NULLPTR_TYPE:
     case VOID_TYPE:
       if (package_prefix)
 	{
@@ -2151,8 +2152,20 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	dump_ada_enum_type (buffer, node, type, spc, true);
       break;
 
-    case INTEGER_TYPE:
     case REAL_TYPE:
+      if (TYPE_NAME (node)
+	  && TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
+	  && IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node))) [0] == '_'
+	  && (id_equal (DECL_NAME (TYPE_NAME (node)), "_Float128")
+	      || id_equal (DECL_NAME (TYPE_NAME (node)), "__float128")))
+	{
+	  append_withs ("Interfaces.C.Extensions", false);
+	  pp_string (buffer, "Extensions.Float_128");
+	  break;
+	}
+      /* fallthrough */
+
+    case INTEGER_TYPE:
     case FIXED_POINT_TYPE:
     case BOOLEAN_TYPE:
       if (TYPE_NAME (node))
@@ -2233,9 +2246,8 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	    {
 	      if (TREE_CODE (node) == POINTER_TYPE
 		  && TREE_CODE (TREE_TYPE (node)) == INTEGER_TYPE
-		  && !strcmp
-			(IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME
-			  (TREE_TYPE (node)))), "char"))
+		  && id_equal (DECL_NAME (TYPE_NAME (TREE_TYPE (node))),
+			       "char"))
 		{
 		  if (!name_only)
 		    pp_string (buffer, "new ");

@@ -1,3 +1,7 @@
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/i-cexten.ads (Float_128): New type.
+
 2018-02-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (array_type_has_nonaliased_component): Return
