@@ -863,7 +863,7 @@ ifeq (,$(wildcard $(REVISION)))
 REVISION_c  :=
 REVISION    :=
 else
-REVISION_c  := $(shell test -x $(REVISION) && $(REVISION) || cat $(REVISION))
+REVISION_c  := $(shell cat $(REVISION))
 endif
 
 version     := $(shell @get_gcc_base_ver@ $(BASEVER))

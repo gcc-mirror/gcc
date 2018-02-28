@@ -1,5 +1,13 @@
 2018-02-28  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* Makefile.in (REVISION_c): Don't exec REVISION.
+	* REVISION: Simple text file.
+	gcc/cp/
+	* Make-lang.in (MODULE_STAMP): New var.
+	(REVISION_s): Wedge stamp into it here.
+	(CFLAGS-cp/module.o): Adjust.
+
 	Using flags on overloads.
 	gcc/cp/
 	* cp-tree.h (OVL_HAS_USING_P): New.

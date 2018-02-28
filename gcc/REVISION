@@ -1,4 +1,1 @@
-#!/bin/sh
-# Use the modification date of the cp directory as a version stamp
-# doing that here means 'g++ -v' gives you a clue
-echo c++-modules:$(date -r $(dirname $0)/cp '+%Y%m%d-%H%M')
+c++-modules

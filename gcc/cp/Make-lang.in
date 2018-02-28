@@ -60,8 +60,13 @@ CFLAGS-cp/module.o += -DHOST_MACHINE=\"$(host)\" \
 ifeq ($(DEVPHASE_c),experimental)
 # We want to rebuild module if the source dir changes
 cp/module.o : $(srcdir)/cp
-CFLAGS-cp/module.o += \
-	-DMODULE_STAMP=$(shell date -r $(srcdir)/cp '+%Y%m%d%H%M')LL
+MODULE_STAMP := $(shell date -r $(srcdir)/cp '+%Y%m%d-%H%M')
+ifneq ($(REVISION_s),"\"\"")
+# Wedge the MODULE_STAMP into REVISION_s so that it turns up in -v invocations
+# Remember, Make thinks of REVISION_s as a set of space-separated words
+REVISION_s := $(patsubst %\"",%:$(MODULE_STAMP)\"",$(REVISION_s))
+endif
+CFLAGS-cp/module.o += -DMODULE_STAMP=$(subst -,,$(MODULE_STAMP))LL
 endif
 
 # Create the compiler driver for g++.
