@@ -72,6 +72,15 @@ package Interfaces.C.Extensions is
    pragma Convention (C_Pass_By_Copy, Signed_128);
    for Signed_128'Alignment use unsigned_long_long'Alignment * 2;
 
+   --  128-bit floating-point type available on x86:
+   --  typedef long_double float_128 __attribute__ ((mode (TF)));
+
+   type Float_128 is record
+      low, high : unsigned_long_long;
+   end record;
+   pragma Convention (C_Pass_By_Copy, Float_128);
+   for Float_128'Alignment use unsigned_long_long'Alignment * 2;
+
    --  Types for bitfields
 
    type Unsigned_1 is mod 2 ** 1;
