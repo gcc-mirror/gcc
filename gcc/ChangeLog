@@ -98,7 +98,6 @@
 	Peepholes of indirect call and jump via memory: Likewise.
 	(*sibcall_GOT_32): Disallowed for TARGET_INDIRECT_BRANCH_REGISTER.
 	(*sibcall_value_GOT_32): Likewise.
-	* config/i386/i386.opt: Likewise.
 	* config/i386/predicates.md (indirect_branch_operand): Likewise.
 	(GOT_memory_operand): Likewise.
 	(call_insn_operand): Likewise.
