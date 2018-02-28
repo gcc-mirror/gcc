@@ -1,3 +1,10 @@
+2018-02-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83901
+	* trans-stmt.c (trans_associate_var): Make sure that the se
+	expression is a pointer type before converting it to the symbol
+	backend_decl type.
+
 2018-02-25  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/83633
