@@ -10,7 +10,7 @@ typedef __SIZE_TYPE__ size_t;
 char d[3];
 char s[4];
 
-size_t range (void)
+static size_t range (void)
 {
   extern size_t size ();
   size_t n = size ();

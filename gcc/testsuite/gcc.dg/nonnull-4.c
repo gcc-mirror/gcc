@@ -25,7 +25,7 @@ g16_1_3_5_7_11_13 (void*, void*, void*, void*,
 		   void*, void*, void*, void*,
 		   void*, void*, void*, void*);
 
-void* null (void) { return 0; }
+static void* null (void) { return 0; }
 
 void test (void)
 {

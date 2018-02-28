@@ -15,13 +15,13 @@ extern char* strncpy (char*, const char*, size_t);
 
 void sink (void*);
 
-extern size_t unsigned_value (void)
+static size_t unsigned_value (void)
 {
   extern volatile size_t unsigned_value_source;
   return unsigned_value_source;
 }
 
-size_t unsigned_range (size_t min, size_t max)
+static size_t unsigned_range (size_t min, size_t max)
 {
   size_t val = unsigned_value ();
   return val < min || max < val ? min : val;
