@@ -1,5 +1,22 @@
 2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-ada-spec.c (dump_ada_double_name) <ENUMERAL_TYPE>: New case.
+	(is_char_array): Take a type instead of a declaration.
+	(dump_ada_array_type): Likewise.
+	(is_simple_enum): Minor tweak.
+	(dump_ada_enum_type): New function extracted from...
+	(dump_ada_node) <ENUMERAL_TYPE>: ...here.  Invoke it.
+	<INTEGER_TYPE>: Remove unreachable code.
+	<RECORD_TYPE>: Likewise.  Minor tweaks.
+	(dump_nested_type) <ARRAY_TYPE>: Adjust to above changes.
+	<ENUMERAL_TYPE>: New case.
+	<RECORD_TYPE>: Factor out common code.
+	(dump_ada_declaration) <ARRAY_TYPE>: Adjust to above changes.
+	Minor tweaks.  Deal with enumeral types.
+	(dump_ada_structure): Minor tweaks.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-ada-spec.c (dump_ada_node) <POINTER_TYPE>: Do not use generic
 	address for incomplete structures.
 	(dump_forward_type): Do not bail out for incomplete structures.
