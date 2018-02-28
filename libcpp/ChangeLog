@@ -1,3 +1,10 @@
+2018-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR preprocessor/84517
+	* lex.c (is_macro_not_literal_suffix): New function.
+	(lex_raw_string, lex_string): Use is_macro_not_literal_suffix to
+	decide when to issue -Wliteral-suffix warnings.
+
 2018-02-16  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/82939
