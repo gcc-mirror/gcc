@@ -1,5 +1,5 @@
 /* PR target/83399 */
-/* { dg-do compile } */
+/* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O1 -mabi=elfv2 -mlittle -mvsx" } */
 
