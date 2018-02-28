@@ -1,3 +1,9 @@
+2018-02-28  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/84597
+	* g++.dg/ext/timevar1.C: Fix pruned patterns.
+	* g++.dg/ext/timevar2.C: Likewise.
+
 2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/dump-ada-spec-8.c: New test.

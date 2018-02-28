@@ -641,27 +641,27 @@ timer::print_row (FILE *fp,
 
 #ifdef HAVE_USER_TIME
   /* Print user-mode time for this process.  */
-  fprintf (fp, "%7.2f (%2.0f%%)",
+  fprintf (fp, "%7.2f (%3.0f%%)",
 	   elapsed.user,
 	   (total->user == 0 ? 0 : elapsed.user / total->user) * 100);
 #endif /* HAVE_USER_TIME */
 
 #ifdef HAVE_SYS_TIME
   /* Print system-mode time for this process.  */
-  fprintf (fp, "%7.2f (%2.0f%%)",
+  fprintf (fp, "%7.2f (%3.0f%%)",
 	   elapsed.sys,
 	   (total->sys == 0 ? 0 : elapsed.sys / total->sys) * 100);
 #endif /* HAVE_SYS_TIME */
 
 #ifdef HAVE_WALL_TIME
   /* Print wall clock time elapsed.  */
-  fprintf (fp, "%7.2f (%2.0f%%)",
+  fprintf (fp, "%7.2f (%3.0f%%)",
 	   elapsed.wall,
 	   (total->wall == 0 ? 0 : elapsed.wall / total->wall) * 100);
 #endif /* HAVE_WALL_TIME */
 
   /* Print the amount of ggc memory allocated.  */
-  fprintf (fp, "%8u kB (%2.0f%%)",
+  fprintf (fp, "%8u kB (%3.0f%%)",
 	   (unsigned) (elapsed.ggc_mem >> 10),
 	   (total->ggc_mem == 0
 	    ? 0
@@ -712,7 +712,7 @@ timer::print (FILE *fp)
      TIMEVAR.  */
   m_start_time = now;
 
-  fprintf (fp, "\n%-35s%15s%13s%13s%17s\n", "Time variable", "usr", "sys",
+  fprintf (fp, "\n%-35s%16s%14s%14s%18s\n", "Time variable", "usr", "sys",
 	   "wall", "GGC");
   if (m_jit_client_items)
     fputs ("GCC items:\n", fp);
@@ -771,12 +771,12 @@ timer::print (FILE *fp)
   fprintf (fp, "%7.2f      ", total->user);
 #endif
 #ifdef HAVE_SYS_TIME
-  fprintf (fp, "%7.2f      ", total->sys);
+  fprintf (fp, "%8.2f      ", total->sys);
 #endif
 #ifdef HAVE_WALL_TIME
-  fprintf (fp, "%7.2f      ", total->wall);
+  fprintf (fp, "%8.2f      ", total->wall);
 #endif
-  fprintf (fp, "%8u kB\n", (unsigned) (total->ggc_mem >> 10));
+  fprintf (fp, "%9u kB\n", (unsigned) (total->ggc_mem >> 10));
 
   if (CHECKING_P || flag_checking)
     fprintf (fp, "Extra diagnostic checks enabled; compiler may run slowly.\n");

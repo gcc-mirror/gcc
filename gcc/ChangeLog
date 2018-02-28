@@ -1,3 +1,9 @@
+2018-02-28  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/84597
+	* timevar.c (timer::print): Fix format to properly print 100%
+	values.
+
 2018-02-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/84607
