@@ -1,3 +1,8 @@
+2018-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84584
+	* gcc.dg/graphite/pr84584.c: New testcase.
+
 2018-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR preprocessor/84517

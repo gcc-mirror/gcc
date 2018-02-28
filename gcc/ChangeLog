@@ -1,3 +1,9 @@
+2018-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84584
+	* graphite-scop-detection.c (scop_detection::add_scop): Discard
+	SCoPs with fake exit edge.
+
 2018-02-28  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/84597

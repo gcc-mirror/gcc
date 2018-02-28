@@ -590,6 +590,15 @@ scop_detection::add_scop (sese_l s)
 {
   gcc_assert (s);
 
+  /* If the exit edge is fake discard the SCoP for now as we're removing the
+     fake edges again after analysis.  */
+  if (s.exit->flags & EDGE_FAKE)
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] Discarding infinite loop SCoP: ";
+		   print_sese (dump_file, s));
+      return;
+    }
+
   /* Include the BB with the loop-closed SSA PHI nodes, we need this
      block in the region for code-generating out-of-SSA copies.
      canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
