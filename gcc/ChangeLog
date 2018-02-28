@@ -1,3 +1,8 @@
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/aarch64/aarch64.c (aarch64_emit_probe_stack_range): Remove
+	superfluous parentheses and trailing spaces.
+
 2018-02-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84584
