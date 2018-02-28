@@ -1,3 +1,9 @@
+2018-02-28  Alan Modra  <amodra@gmail.com>
+
+	* lib/prune.exp (prune_gcc_output): Match lower case "in function"
+	GNU ld message.
+	* g++.dg/other/anon5.C: Match lower case "bad value" GNU ld message.
+
 2018-02-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/83871
