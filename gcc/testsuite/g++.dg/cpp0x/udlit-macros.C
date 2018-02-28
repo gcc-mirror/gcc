@@ -16,7 +16,7 @@ int operator""_ID(const char*, size_t) { return 0; }
 int main()
 {
   long i64 = 123;
-  char buf[100];
+  char buf[] = "xxxxxx"__FILE__;      // { dg-warning "invalid suffix on literal" }
   sprintf(buf, "%"PRId64"abc", i64);  // { dg-warning "invalid suffix on literal" }
   return strcmp(buf, "123abc")
 	 + ""_zero
