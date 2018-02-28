@@ -2234,8 +2234,11 @@ next_arg:;
 	      TREE_NOTHROW (newdecl) |= TREE_NOTHROW (olddecl);
 	      TREE_NOTHROW (olddecl) |= TREE_NOTHROW (newdecl);
 	      TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
+	      TREE_READONLY (olddecl) |= TREE_READONLY (newdecl);
 	      DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
+	      DECL_IS_MALLOC (olddecl) |= DECL_IS_MALLOC (newdecl);
 	      DECL_PURE_P (newdecl) |= DECL_PURE_P (olddecl);
+	      DECL_PURE_P (olddecl) |= DECL_PURE_P (newdecl);
 	    }
 	  else
 	    {
