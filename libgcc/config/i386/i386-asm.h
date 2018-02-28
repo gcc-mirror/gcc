@@ -27,21 +27,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define I386_ASM_H
 
 #include "auto-target.h"
-#undef PACKAGE_VERSION
-#undef PACKAGE_NAME
-#undef PACKAGE_STRING
-#undef PACKAGE_TARNAME
-#undef PACKAGE_URL
-#include "auto-host.h"
 
-#ifndef USE_GAS_CFI_DIRECTIVES
-# ifdef __GCC_HAVE_DWARF2_CFI_ASM
-#  define USE_GAS_CFI_DIRECTIVES 1
-# else
-#  define USE_GAS_CFI_DIRECTIVES 0
-# endif
-#endif
-#if USE_GAS_CFI_DIRECTIVES
+#ifdef __GCC_HAVE_DWARF2_CFI_ASM
 # define cfi_startproc()		.cfi_startproc
 # define cfi_endproc()			.cfi_endproc
 # define cfi_adjust_cfa_offset(X) 	.cfi_adjust_cfa_offset X
@@ -76,8 +63,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __ELF__
 # define FN_TYPE(fn) .type fn,@function
 # define FN_SIZE(fn) .size fn,.-fn
-# ifdef HAVE_GAS_HIDDEN
-#  define FN_HIDDEN(fn) .hidden fn
+# ifdef AS_HIDDEN_DIRECTIVE
+#  define FN_HIDDEN(fn) AS_HIDDEN_DIRECTIVE fn
 # endif
 #else
 # define FN_TYPE(fn)

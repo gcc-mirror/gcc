@@ -1,3 +1,24 @@
+2018-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83917
+	* configure.ac (AS_HIDDEN_DIRECTIVE): AC_DEFINE_UNQUOTED this to
+	$asm_hidden_op if visibility ("hidden") attribute works.
+	(HAVE_AS_CFI_SECTIONS): New AC_DEFINE.
+	* config/i386/i386-asm.h: Don't include auto-host.h.
+	(PACKAGE_VERSION, PACKAGE_NAME, PACKAGE_STRING, PACKAGE_TARNAME,
+	PACKAGE_URL): Don't undefine.
+	(USE_GAS_CFI_DIRECTIVES): Don't use nor define this macro, instead
+	guard cfi_startproc only on ifdef __GCC_HAVE_DWARF2_CFI_ASM.
+	(FN_HIDDEN): Change guard from #ifdef HAVE_GAS_HIDDEN to
+	#ifdef AS_HIDDEN_DIRECTIVE, use AS_HIDDEN_DIRECTIVE macro in the
+	definition instead of hardcoded .hidden.
+	* config/i386/cygwin.S: Include i386-asm.h first before .cfi_sections
+	directive.  Use #ifdef HAVE_AS_CFI_SECTIONS rather than
+	#ifdef HAVE_GAS_CFI_SECTIONS_DIRECTIVE to guard .cfi_sections.
+	(USE_GAS_CFI_DIRECTIVES): Don't define.
+	* configure: Regenerated.
+	* config.in: Likewise.
+
 2018-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83917
