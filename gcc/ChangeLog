@@ -1,5 +1,9 @@
 2018-02-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimple-ssa-warn-restrict.c (maybe_diag_overlap): Use warning_n
+	instead of warning_at with conditional singular and plural messages
+	where possible.
+
 	PR target/52991
 	* stor-layout.c (update_alignment_for_field): For
 	targetm.ms_bitfield_layout_p (rli->t), if !is_bitfield
