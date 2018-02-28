@@ -1,3 +1,16 @@
+2018-02-28  Nathan Sidwell  <nathan@acm.org>
+
+	Map tag recognised in and out of comments
+	gcc/cp/
+	* module.c
+	gcc/testsuite/
+	* g++.dg/modules/hello.cc: Clone to ...
+	* g++.dg/modules/main{,-[123]}-aux.cc: ... here.
+	* g++.dg/modules/main-[123]_a.C: New.
+	* g++.dg/modules/main-[123]-map: New.
+	* g++.dg/modules/main-map: Delete.
+	* g++.dg/modules/main_a.C: Update.
+
 2018-02-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

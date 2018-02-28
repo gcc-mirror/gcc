@@ -1,10 +1,10 @@
-// { dg-module-do run { target *-*-* } "main-aux.s" }
-// { dg-options "-fmodules -fmodule-file=helgen=hell.x\\;main-aux.cc" }
+// { dg-module-do run { target *-*-* } "main-1-aux.s" }
+// { dg-options "-fmodules -fmodule-file=main-1-map" }
 // Relies on CXX_MODULE_WRAPPER functionality, setting options above
 // overrides the default -fmodule-wrapper=
 
 import helgen;
-// { dg-module-bmi "=hell.x" }
+// { dg-module-bmi "=wyes.x" }
 int main (void)
 {
   greeter ("world");

@@ -2575,6 +2575,7 @@ module_state::release (bool all)
 void
 module_state::print_map ()
 {
+  fprintf (stdout, "Module Map:\n");
   hash_table<module_state_hash>::iterator end (hash->end ());
   for (hash_table<module_state_hash>::iterator iter (hash->begin ());
        iter != end; ++iter)
@@ -6692,43 +6693,39 @@ parse_module_mapping (char *line, const char *rel, size_t rel_len,
   /* Skip leading whitespace and comment markers.  */
   while (*line == '#' ? (comment = true) : ISSPACE (*line))
     line++;
-  if (comment)
+
+  if (comment || marker)
     {
-      /* A comment line, look for marker, otherwise ignore.  */
+      /* Look for marker or definition.  */
       char *pos = line;
       while (*pos && !ISSPACE (*pos))
 	pos++;
       const char *tag = marker ? marker : "G++Module";
-      if (!strncmp (line, tag, pos - line)
-	  && size_t (pos - line) == strlen (tag))
+      if (strncmp (line, tag, pos - line)
+	  || size_t (pos - line) != strlen (tag))
+	/* Not interested.  */
+	return true;
+
+      /* Seen the tag, either set marker or accept line  */
+      line = pos;
+      /* Skip whitespace.  */
+      while (ISSPACE (*line))
+	line++;
+      if (!marker)
 	{
-	  /* Seen the tag, either set marker or accept line  */
-	  line = pos;
-	  /* Skip whitespace.  */
-	  while (ISSPACE (*line))
-	    line++;
-	  if (!marker)
-	    {
-	      /* Define a marker string.  */
-	      pos = line;
-	      /* Scan word.  */
-	      while (*pos && !ISSPACE (*pos))
-		pos++;
-	      *pos = 0;
-	      marker = xstrdup (line);
-	      /* We're now done with the line.  */
-	      comment = true;
-	    }
-	  else
-	    /* We'll accept the line.  */
-	    comment = false;
+	  /* Define a marker string.  */
+	  pos = line;
+	  /* Scan word.  */
+	  while (*pos && !ISSPACE (*pos))
+	    pos++;
+	  *pos = 0;
+	  marker = xstrdup (line);
+	  /* We're now done with the line.  */
+	  return true;
 	}
     }
-  else if (marker)
-    /* Non-comment, ignored if we have a marker defined.  */
-    comment = true;
 
-  if (comment || !*line)
+  if (!*line)
     return true;
 
   /* Process line as a mapping.  */
@@ -6742,8 +6739,8 @@ parse_module_mapping (char *line, const char *rel, size_t rel_len,
    We don't detect loops. */
 
 static bool
-add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0,
-		    unsigned depth = 0)
+add_module_mapping (const char *arg, const char *rel = NULL,
+		    size_t rel_len = 0, unsigned depth = 0)
 {
   if (++depth >= 15)
     {
@@ -6789,7 +6786,8 @@ add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0,
 	  if (*pos)
 	    {
 	      error_at (MAP_LOC,
-			"module file map %qs has unexpected trailing junk", arg);
+			"module file map %qs has unexpected trailing %qs",
+			arg, pos);
 	      return false;
 	    }
 	}
@@ -6827,7 +6825,8 @@ add_module_mapping (const char *arg, const char *rel = NULL, size_t rel_len = 0,
 	      buffer[pos - 1] = 0;
 	      pos = 0;
 	      line++;
-	      if (!parse_module_mapping (buffer, name, name_len, depth, marker))
+	      if (!parse_module_mapping (buffer, name, name_len,
+					 depth, marker))
 		{
 		  inform (MAP_LOC, "from module map file %s:%d", name, line);
 		  goto fail;
