@@ -1,3 +1,8 @@
+2018-02-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/84014
+	* gcc.target/powerpc/pr84014.c: Use ilp32, not -m32 option.
+
 2018-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84609
