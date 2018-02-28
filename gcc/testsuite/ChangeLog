@@ -1,3 +1,9 @@
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-c++-common/dump-ada-spec-8.c: New test.
+	* c-c++-common/dump-ada-spec-9.c: Likewise.
+	* c-c++-common/dump-ada-spec-10.c: Likewise.
+
 2018-02-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/84607
