@@ -3,7 +3,7 @@
     Test to verify that attributes noreturn on multiple declarations of
     the same function are merged.
     { dg-do compile }
-    { dg-options "-O -fdump-tree-eh" } */
+    { dg-options "-O -fdump-tree-optimized" } */
 
 int __attribute__ ((noreturn)) fnoreturn ();
 
