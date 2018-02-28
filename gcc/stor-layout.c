@@ -1038,7 +1038,7 @@ update_alignment_for_field (record_layout_info rli, tree field,
 	 the type, except that for zero-size bitfields this only
 	 applies if there was an immediately prior, nonzero-size
 	 bitfield.  (That's the way it is, experimentally.) */
-      if ((!is_bitfield && !DECL_PACKED (field))
+      if (!is_bitfield
 	  || ((DECL_SIZE (field) == NULL_TREE
 	       || !integer_zerop (DECL_SIZE (field)))
 	      ? !DECL_PACKED (field)
@@ -1047,7 +1047,10 @@ update_alignment_for_field (record_layout_info rli, tree field,
 		 && ! integer_zerop (DECL_SIZE (rli->prev_field)))))
 	{
 	  unsigned int type_align = TYPE_ALIGN (type);
-	  type_align = MAX (type_align, desired_align);
+	  if (!is_bitfield && DECL_PACKED (field))
+	    type_align = desired_align;
+	  else
+	    type_align = MAX (type_align, desired_align);
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
 	  rli->record_align = MAX (rli->record_align, type_align);
@@ -1303,7 +1306,9 @@ place_field (record_layout_info rli, tree field)
 
   /* Does this field automatically have alignment it needs by virtue
      of the fields that precede it and the record's own alignment?  */
-  if (known_align < desired_align)
+  if (known_align < desired_align
+      && (! targetm.ms_bitfield_layout_p (rli->t)
+	  || rli->prev_field == NULL))
     {
       /* No, we need to skip space before this field.
 	 Bump the cumulative size to multiple of field alignment.  */
@@ -1331,8 +1336,6 @@ place_field (record_layout_info rli, tree field)
 
       if (! TREE_CONSTANT (rli->offset))
 	rli->offset_align = desired_align;
-      if (targetm.ms_bitfield_layout_p (rli->t))
-	rli->prev_field = NULL;
     }
 
   /* Handle compatibility with PCC.  Note that if the record has any
@@ -1448,6 +1451,8 @@ place_field (record_layout_info rli, tree field)
       /* This is a bitfield if it exists.  */
       if (rli->prev_field)
 	{
+	  bool realign_p = known_align < desired_align;
+
 	  /* If both are bitfields, nonzero, and the same size, this is
 	     the middle of a run.  Zero declared size fields are special
 	     and handled as "end of run". (Note: it's nonzero declared
@@ -1481,7 +1486,10 @@ place_field (record_layout_info rli, tree field)
 		    rli->remaining_in_alignment = typesize - bitsize;
 		}
 	      else
-		rli->remaining_in_alignment -= bitsize;
+		{
+		  rli->remaining_in_alignment -= bitsize;
+		  realign_p = false;
+		}
 	    }
 	  else
 	    {
@@ -1512,6 +1520,31 @@ place_field (record_layout_info rli, tree field)
 		rli->prev_field = NULL;
 	    }
 
+	  /* Does this field automatically have alignment it needs by virtue
+	     of the fields that precede it and the record's own alignment?  */
+	  if (realign_p)
+	    {
+	      /* If the alignment is still within offset_align, just align
+		 the bit position.  */
+	      if (desired_align < rli->offset_align)
+		rli->bitpos = round_up (rli->bitpos, desired_align);
+	      else
+		{
+		  /* First adjust OFFSET by the partial bits, then align.  */
+		  tree d = size_binop (CEIL_DIV_EXPR, rli->bitpos,
+				       bitsize_unit_node);
+		  rli->offset = size_binop (PLUS_EXPR, rli->offset,
+					    fold_convert (sizetype, d));
+		  rli->bitpos = bitsize_zero_node;
+
+		  rli->offset = round_up (rli->offset,
+					  desired_align / BITS_PER_UNIT);
+		}
+
+	      if (! TREE_CONSTANT (rli->offset))
+		rli->offset_align = desired_align;
+	    }
+
 	  normalize_rli (rli);
         }
 
@@ -1530,7 +1563,7 @@ place_field (record_layout_info rli, tree field)
       if (!DECL_BIT_FIELD_TYPE (field)
 	  || (prev_saved != NULL
 	      ? !simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (prev_type))
-	      : !integer_zerop (DECL_SIZE (field)) ))
+	      : !integer_zerop (DECL_SIZE (field))))
 	{
 	  /* Never smaller than a byte for compatibility.  */
 	  unsigned int type_align = BITS_PER_UNIT;
@@ -1555,7 +1588,8 @@ place_field (record_layout_info rli, tree field)
 	    }
 
 	  /* Now align (conventionally) for the new type.  */
-	  type_align = TYPE_ALIGN (TREE_TYPE (field));
+	  if (! DECL_PACKED (field))
+	    type_align = TYPE_ALIGN (TREE_TYPE (field));
 
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
