@@ -1,3 +1,14 @@
+2018-02-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/81611
+	* auto-inc-dec.c (attempt_change): Move dead note from
+	mem_insn if it's the next use of regno
+	(find_address): Take address use of reg holding
+	non-incremented value.  Add parm to limit search to the named
+	reg only.
+	(merge_in_block): Attempt to use a mem insn that is the next
+	use of the original regno.
+
 2018-02-27  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/83871
