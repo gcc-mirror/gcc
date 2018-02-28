@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
      file that contains only the method templates and "just win".  */
 
 #include "config.h"
-#define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -2681,7 +2680,7 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
      template is declared with that the specialization is not, in case
      it's not apparent from the most recent declaration of the primary.  */
   unsigned nattrs = 0;
-  std::string str;
+  pretty_printer str;
 
   for (unsigned i = 0; i != sizeof blacklist / sizeof *blacklist; ++i)
     {
@@ -2695,11 +2694,11 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
 	      if (lookup_attribute (blacklist[i], spec_attrs[k]))
 		break;
 
-	      if (str.size ())
-		str += ", ";
-	      str += "%<";
-	      str += blacklist[i];
-	      str += "%>";
+	      if (nattrs)
+		pp_string (&str, ", ");
+	      pp_begin_quote (&str, pp_show_color (global_dc->printer));
+	      pp_string (&str, blacklist[i]);
+	      pp_end_quote (&str, pp_show_color (global_dc->printer));
 	      ++nattrs;
 	    }
 	}
@@ -2711,15 +2710,11 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
   if (warning_at (DECL_SOURCE_LOCATION (spec), OPT_Wmissing_attributes,
 		  "explicit specialization %q#D may be missing attributes",
 		  spec))
-    {
-      if (nattrs > 1)
-	str = G_("missing primary template attributes ") + str;
-      else
-	str = G_("missing primary template attribute ") + str;
-
-      inform (DECL_SOURCE_LOCATION (tmpl), str.c_str ());
-    }
-
+    inform (DECL_SOURCE_LOCATION (tmpl),
+	    nattrs > 1
+	    ? G_("missing primary template attributes %s")
+	    : G_("missing primary template attribute %s"),
+	    pp_formatted_text (&str));
 }
 
 /* Check to see if the function just declared, as indicated in
