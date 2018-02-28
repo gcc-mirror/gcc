@@ -53,7 +53,7 @@ contains
 
     character(len=100) :: buffer
     write(buffer,*) i
-    if (adjustl(buffer) /= adjustl(str)) call abort
+    if (adjustl(buffer) /= adjustl(str)) STOP 1
   end subroutine
 
 end

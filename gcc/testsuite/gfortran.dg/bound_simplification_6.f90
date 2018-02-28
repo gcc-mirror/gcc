@@ -18,8 +18,8 @@ MODULE qs_integrate_potential_low
     SUBROUTINE integrate_general_opt()
     REAL(KIND=dp) :: gp(3)
     INTEGER :: ng
-    if (any(lbound(cell%h_inv) /= 1)) call abort
-    if (any(ubound(cell%h_inv) /= 3)) call abort
+    if (any(lbound(cell%h_inv) /= 1)) STOP 1
+    if (any(ubound(cell%h_inv) /= 3)) STOP 2
     END SUBROUTINE integrate_general_opt
 END MODULE qs_integrate_potential_low
 ! { dg-final { scan-tree-dump-not "bound" "original" } }

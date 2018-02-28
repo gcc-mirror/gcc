@@ -15,7 +15,7 @@ subroutine test_real4(orig)
   p = 24
   y = abs (x * 2.0 ** (- exponent (x))) * (2.0 ** p)
   x = rrspacing(x)
-  if (abs (x - y) .gt. abs(x * 1e-6)) call abort
+  if (abs (x - y) .gt. abs(x * 1e-6)) STOP 1
 end
 
 subroutine test_real8(orig)
@@ -25,5 +25,5 @@ subroutine test_real8(orig)
   p = 53
   y = abs (x * 2.0 ** (- exponent (x))) * (2.0 ** p)
   x = rrspacing(x)
-  if (abs (x - y) .gt. abs(x * 1e-6)) call abort 
+  if (abs (x - y) .gt. abs(x * 1e-6)) STOP 2
 end

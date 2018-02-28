@@ -146,6 +146,10 @@ case $goarch in
 		;;
 	esac
 	;;
+    riscv64)
+	family=RISCV64
+	pcquantum=2
+	;;
     s390)
 	family=S390
 	bigendian=true

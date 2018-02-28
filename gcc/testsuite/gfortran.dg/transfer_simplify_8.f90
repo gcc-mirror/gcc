@@ -10,9 +10,9 @@
   character(8) :: a
   allocate(ptr(9))
   ptr = transfer('Sample#0'//achar(0),ptr) ! Causes ICE
-  if (any (ptr .ne. ['S','a','m','p','l','e','#','0',achar(0)])) call abort
+  if (any (ptr .ne. ['S','a','m','p','l','e','#','0',achar(0)])) STOP 1
   call test(a)
-  if (a .ne. 'Sample#2') call abort
+  if (a .ne. 'Sample#2') STOP 2
 contains
   subroutine test(a)
     character(len=*) :: a

@@ -14115,6 +14115,7 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
     {
       tree op = TREE_OPERAND (sub, 0);
       tree optype = TREE_TYPE (op);
+
       /* *&CONST_DECL -> to the value of the const decl.  */
       if (TREE_CODE (op) == CONST_DECL)
 	return DECL_INITIAL (op);
@@ -14148,12 +14149,13 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	       && type == TREE_TYPE (optype))
 	return fold_build1_loc (loc, REALPART_EXPR, type, op);
       /* *(foo *)&vectorfoo => BIT_FIELD_REF<vectorfoo,...> */
-      else if (TREE_CODE (optype) == VECTOR_TYPE
+      else if (VECTOR_TYPE_P (optype)
 	       && type == TREE_TYPE (optype))
 	{
 	  tree part_width = TYPE_SIZE (type);
 	  tree index = bitsize_int (0);
-	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width, index);
+	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width,
+				  index);
 	}
     }
 
@@ -14171,8 +14173,17 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 	  op00type = TREE_TYPE (op00);
 
 	  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
-	  if (TREE_CODE (op00type) == VECTOR_TYPE
-	      && type == TREE_TYPE (op00type))
+	  if (VECTOR_TYPE_P (op00type)
+	      && type == TREE_TYPE (op00type)
+	      /* POINTER_PLUS_EXPR second operand is sizetype, unsigned,
+		 but we want to treat offsets with MSB set as negative.
+		 For the code below negative offsets are invalid and
+		 TYPE_SIZE of the element is something unsigned, so
+		 check whether op01 fits into poly_int64, which implies
+		 it is from 0 to INTTYPE_MAXIMUM (HOST_WIDE_INT), and
+		 then just use poly_uint64 because we want to treat the
+		 value as unsigned.  */
+	      && tree_fits_poly_int64_p (op01))
 	    {
 	      tree part_width = TYPE_SIZE (type);
 	      poly_uint64 max_offset
@@ -14199,16 +14210,16 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 		   && type == TREE_TYPE (op00type))
 	    {
 	      tree type_domain = TYPE_DOMAIN (op00type);
-	      tree min = size_zero_node;
+	      tree min_val = size_zero_node;
 	      if (type_domain && TYPE_MIN_VALUE (type_domain))
-		min = TYPE_MIN_VALUE (type_domain);
+		min_val = TYPE_MIN_VALUE (type_domain);
 	      offset_int off = wi::to_offset (op01);
 	      offset_int el_sz = wi::to_offset (TYPE_SIZE_UNIT (type));
 	      offset_int remainder;
 	      off = wi::divmod_trunc (off, el_sz, SIGNED, &remainder);
-	      if (remainder == 0 && TREE_CODE (min) == INTEGER_CST)
+	      if (remainder == 0 && TREE_CODE (min_val) == INTEGER_CST)
 		{
-		  off = off + wi::to_offset (min);
+		  off = off + wi::to_offset (min_val);
 		  op01 = wide_int_to_tree (sizetype, off);
 		  return build4_loc (loc, ARRAY_REF, type, op00, op01,
 				     NULL_TREE, NULL_TREE);

@@ -60,10 +60,13 @@ public:
     REACHABLE_BLOCKS_PRESERVING_FLAGS
   };
 
+  dom_walker (cdi_direction direction, enum reachability = ALL_BLOCKS);
+
   /* You can provide a mapping of basic-block index to RPO if you
-     have that readily available or you do multiple walks.  */
-  dom_walker (cdi_direction direction, enum reachability = ALL_BLOCKS,
-	      int *bb_index_to_rpo = NULL);
+     have that readily available or you do multiple walks.  If you
+     specify NULL as BB_INDEX_TO_RPO dominator children will not be
+     walked in RPO order.  */
+  dom_walker (cdi_direction direction, enum reachability, int *bb_index_to_rpo);
 
   ~dom_walker ();
 

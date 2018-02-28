@@ -1,5 +1,5 @@
 /* { dg-do run { target pthread_h } } */
-/* { dg-set-target-env-var ASAN_OPTIONS "detect_invalid_pointer_pairs=1:halt_on_error=1" } */
+/* { dg-set-target-env-var ASAN_OPTIONS "detect_invalid_pointer_pairs=2:halt_on_error=1" } */
 /* { dg-options "-fsanitize=address,pointer-subtract" } */
 /* { dg-additional-options "-pthread" { target pthread } } */
 

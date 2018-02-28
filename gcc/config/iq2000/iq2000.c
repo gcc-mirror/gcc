@@ -1578,13 +1578,7 @@ final_prescan_insn (rtx_insn *insn, rtx opvec[] ATTRIBUTE_UNUSED,
        || (GET_CODE (PATTERN (insn)) == RETURN))
 	   && NEXT_INSN (PREV_INSN (insn)) == insn)
     {
-      rtx_insn *tmp = insn;
-      while (NEXT_INSN (tmp)
-	     && NOTE_P (NEXT_INSN (tmp))
-	     && NOTE_KIND (NEXT_INSN (tmp)) == NOTE_INSN_CALL_ARG_LOCATION)
-	tmp = NEXT_INSN (tmp);
-
-      rtx_insn *nop_insn = emit_insn_after (gen_nop (), tmp);
+      rtx_insn *nop_insn = emit_insn_after (gen_nop (), insn);
       INSN_ADDRESSES_NEW (nop_insn, -1);
     }
   

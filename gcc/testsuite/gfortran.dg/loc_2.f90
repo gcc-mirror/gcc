@@ -10,7 +10,7 @@ program test
   call testloc
   do i=1,12
      if (errors(i)) then
-        call abort()
+        STOP 1
      endif
   end do
 end program test

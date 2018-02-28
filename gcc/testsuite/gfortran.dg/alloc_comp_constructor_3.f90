@@ -12,5 +12,5 @@
 
   a = x ((/ 1, 2, 3 /))                             ! This is also pr31320.
   a = x ((/ a%a, 4 /))
-  if (any (a%a .ne. (/1,2,3,4/))) call abort ()
+  if (any (a%a .ne. (/1,2,3,4/))) STOP 1
 end

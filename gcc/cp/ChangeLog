@@ -1,3 +1,541 @@
+2018-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84609
+	* parser.c (cp_parser_attributes_opt): Formatting fix.
+	(cp_parser_skip_balanced_tokens, cp_parser_skip_gnu_attributes_opt,
+	cp_parser_skip_std_attribute_spec_seq, cp_parser_skip_attributes_opt):
+	New functions.
+	(cp_parser_member_declaration): Use cp_parser_skip_attributes_opt
+	instead of tentative parse to peek over optional attribute tokens
+	to check for CPP_COLON after them.
+
+	PR c++/83871
+	PR c++/83503
+	* pt.c (INCLUDE_STRING): Remove define.
+	(warn_spec_missing_attributes): Use pretty_printer instead of
+	std::string.  Fix up inform call so that the list of attributes
+	is in %s argument.
+
+2018-02-28  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/84617
+	* decl.c (duplicate_decls): Fully merge attributes const, pure,
+	and malloc.
+
+2018-02-28  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84602
+	* name-lookup.h (search_anon_aggr): Add defaulted WANT_TYPE arg.
+	* name-lookup.c (fields_linear_search): Look in an anon-aggr
+	regardless of want_type.
+	(search_anon_aggr): Just use get_class_binding_direct.
+
+2018-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (cp_finish_decomp): Don't adjust eltscnt when calling
+	inform_n.
+
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
+	* pt.c: Avoid including <string> directly.
+
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83871
+	PR c++/83503
+	* cp-tree.h (warn_spec_missing_attributes): New function.
+	((check_explicit_specialization): Add an argument.  Call the above
+	function.
+	* decl.c (duplicate_decls): Avoid applying primary function template's
+	attributes to its explicit specializations.
+	cp/pt.c (warn_spec_missing_attributes): Define.
+
+2018-02-27  Håkon Sandsmark  <hsandsmark@gmail.com>
+
+	PR c++/71546 - lambda init-capture with qualified-id.
+	* parser.c (cp_parser_lambda_introducer): Clear scope after
+	each lambda capture.
+
+2018-02-27  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84426
+	* name-lookup.h (get_member_slot): Rename ...
+	(find_member_slot): ... here.
+	(add_member_slot): New.
+	* name-lookup.c (member_vec_linear_search): No need to check for
+	NULL slot.
+	(get_member_slot): Rename ...
+	(find_member_slot): ... here.  Don't add slot for incomplete class.
+	(add_member_slot): New.
+	* class.c (add_method): Adjust get_member_slot rename.  Bail out
+	if push_class_level_binding fails.  Create slot and grok
+	properties once we're committed to insertion.
+
+2018-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84489 - dependent default template argument
+	* pt.c (type_unification_real): Handle early substitution failure.
+
+2018-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84560 - ICE capturing multi-dimensional VLA.
+	* tree.c (array_of_runtime_bound_p): False if the element is
+	variably-modified.
+
+	PR c++/84441 - ICE with base initialized from ?:
+	* call.c (unsafe_copy_elision_p): Handle COND_EXPR.
+
+	PR c++/84520 - ICE with generic lambda in NSDMI.
+	* lambda.c (lambda_expr_this_capture): Don't look for fake NSDMI
+	'this' in a generic lambda instantiation.
+
+	PR c++/84559 - ICE with constexpr VLA.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Check
+	for constexpr variable with VLA type.
+
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84558
+	* constexpr.c (cxx_eval_vec_init_1): For reuse, treat NULL eltinit like
+	a valid constant initializer.  Formatting fixes.
+
+2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84540
+	* pt.c (tsubst_attributes): Handle correctly tsubst_attribute
+	returning NULL_TREE.
+	(apply_late_template_attributes): Likewise.
+
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84557
+	* parser.c (cp_parser_omp_var_list_no_open): Only call
+	cp_parser_lookup_name_simple on names satisfying identifier_p.
+	(cp_parser_oacc_routine): Likewise.
+
+2018-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84551 - ICE with concepts and -g.
+	* parser.c (add_debug_begin_stmt): Do nothing in a concept.
+
+2018-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84325
+	* tree.c (replace_placeholders_r): Only check TREE_CONSTANT on
+	non-types.
+
+2018-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84447 - ICE with deleted inherited ctor with default arg.
+	* call.c (build_over_call): Handle deleted functions in one place.
+
+2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84533
+	* decl.c (redeclaration_error_message): Don't try to use
+	DECL_DECLARED_CONSTEXPR_P on CONST_DECLs.
+
+2018-02-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* lambda.c (build_capture_proxy): Define static.
+	* cp-tree.h (build_capture_proxy): Remove.
+
+2018-02-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84537
+	* name-lookup.c (suggest_alternative_in_explicit_scope): Return false
+	if name is error node.
+
+2018-02-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84015 - ICE with class deduction and auto template parm.
+	* pt.c (rewrite_template_parm): Use tf_partial in first tsubst.
+
+2018-02-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83692
+	* constexpr.c (maybe_constant_init_1): New function.
+	(maybe_constant_init): Make it a wrapper around maybe_constant_init_1.
+	(cxx_constant_init): New function.
+	* cp-tree.h (cxx_constant_init): Declare.
+	* typeck2.c (store_init_value): Call cxx_constant_init instead of
+	cxx_constant_value.  Move the maybe_constant_init call under an 'else'.
+
+2018-02-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70468 - ICE with constructor delegation via typedef.
+	* pt.c (tsubst_initializer_list): Check for other mem-initializers
+	with constructor delegation.
+
+2018-02-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84424 - ICE with constexpr and __builtin_shuffle.
+	* constexpr.c (reduced_constant_expression_p): Handle CONSTRUCTOR of
+	VECTOR_TYPE.
+
+2018-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84493
+	* parser.c (cp_parser_braced_list): Use require_open instead of
+	consume_open.
+
+2018-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84454 - ICE with pack expansion in signature.
+	* error.c (find_typenames_r): Also stop on EXPR_PACK_EXPANSION.
+
+2018-02-20  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+
+	* cp-objcp-common.c (cxx_block_may_fallthru): Add case for
+	IF_STMT.
+
+2018-02-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84446
+	* parser.c (cp_parser_init_declarator): Don't call start_lambda_scope
+	on error_mark_node.
+
+2018-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84445
+	* class.c (fixed_type_or_null) <case CALL_EXPR>: Only test
+	TREE_HAS_CONSTRUCTOR if instance is not an internal function call.
+
+	PR c++/84449
+	* tree.c (bot_manip): If build_cplus_new or break_out_target_exprs
+	returns error_mark_node, return it immediately.
+	(break_out_target_exprs): If cp_walk_tree with bot_manip returns
+	error_mark_node, return error_mark_node.
+
+	PR c++/84455
+	* pt.c (tsubst_lambda_expr): If not nested, increment temporarily
+	function_depth to avoid GC during finish_lambda_function.
+
+2018-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84429 - ICE capturing VLA.
+	* lambda.c (build_capture_proxy): Handle reference refs.
+
+2018-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84448
+	* parser.c (cp_parser_binary_expression): For no_toplevel_fold_p, if
+	either operand is error_mark_node, set current.lhs to that instead of
+	creating a binary op with error_mark_node operands.
+
+	PR c++/84430
+	* constexpr.c (potential_constant_expression_1): Handle OMP_SIMD.
+
+2018-02-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84348
+	* decl.c (grokdeclarator): Early return error_mark_node upon
+	ill-formed friend declaration.
+
+2018-02-16  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84192
+	* constexpr.c (cxx_eval_constant_expression) <case RETURN_EXPR>: Don't
+	set *jump_target to anything if jump_target is NULL.
+
+2018-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84151 - unnecessary volatile load with static member.
+	* call.c (build_new_method_call_1): Avoid loading from a volatile
+	lvalue used as the object argument for a static member function.
+
+	PR c++/81853 - using-directive and constexpr.
+	* constexpr.c (cxx_eval_constant_expression): Handle USING_STMT.
+
+	PR c++/84420 - ICE with structured binding in lambda.
+	* lambda.c (is_capture_proxy): Check DECL_DECOMPOSITION_P.
+
+	PR c++/83835 - C++17 error with constructor ctors.
+	* call.c (build_special_member_call): Set TARGET_EXPR_DIRECT_INIT_P.
+
+	PR c++/82664 - ICE with reference to function template parm.
+	* pt.c (convert_nontype_argument_function): Avoid obfuscationg
+	NOP_EXPRs.
+
+	PR c++/82764 - C++17 ICE with empty base
+	* class.c (build_base_field_1): Set DECL_SIZE to zero for empty base.
+
+2018-02-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84421 - type-dependent if constexpr
+	* semantics.c (finish_if_stmt_cond): Check type_dependent_expression_p.
+
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	Deprecate -ffriend-injection.
+	* decl.c (cxx_init_decl_processing): Emit warning on option.
+	* name-lookup.c (do_pushdecl): Emit warning if we push a visible
+	friend.
+
+2018-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82468
+	* decl.c (check_special_function_return_type): Reject template
+	template parameter in deduction guide.
+
+2018-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84375
+	* name-lookup.c (do_pushdecl): Bail out on bad local friend injection.
+
+2018-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/83227 - C++17 ICE with init-list derived-to-base conversion.
+	* call.c (convert_like_real): Don't use the copy-list-initialization
+	shortcut for ck_base.
+
+	PR c++/84045 - ICE with typedef and noexcept.
+	* except.c (build_noexcept_spec): Use strip_typedefs_expr.
+
+	PR c++/84376 - ICE with omitted template arguments.
+	* pt.c (dguide_name_p): Check for IDENTIFIER_NODE.
+
+	PR c++/84368 - wrong error with local variable in variadic lambda.
+	* pt.c (tsubst_pack_expansion): Fix handling of non-packs in
+	local_specializations.
+
+2018-02-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84330
+	* constraint.cc (tsubst_constraint_info): Handle an error_mark_node
+	as first argument.
+
+2018-02-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84350
+	* pt.c (do_auto_deduction): Don't check the TREE_TYPE of a null
+	init, early return.
+
+2018-02-14  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (mark_vtable_entries): Set input_location to decl's.
+	(c_parse_final_cleanups): Restore input_location after emitting
+	vtables.
+
+2018-02-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (do_auto_deduction (tree, tree, tree)): Remove.
+	(do_auto_deduction (tree, tree, tree, tsubst_flags_t,
+	auto_deduction_context, tree, int): Add defaults.
+	* pt.c (do_auto_deduction (tree, tree, tree)): Remove definition.
+	(tsubst_omp_for_iterator): Adjust do_auto_deduction call, forward
+	tsubst_flags_t argument.
+	* init.c (build_new): Likewise.
+
+2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84364
+	* typeck.c (check_return_expr): Don't emit -Weffc++ warning
+	about return other than *this in assignment operators if
+	retval is type dependent expression.
+
+2018-02-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84333
+	* call.c (build_conditional_expr_1): Use cp_save_expr instead of
+	save_expr for the G++ extension.
+
+2018-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84080 - ICE with return type deduction and specialization.
+	* pt.c (determine_specialization): Check uses_template_parms.
+
+	Fix more variadic capture issues.
+	* pt.c (find_parameter_packs_r): Also look at explicit captures.
+	(check_for_bare_parameter_packs): Check current_class_type for
+	lambda context.
+	(extract_locals_r): Handle seeing a full instantiation of a pack.
+	(tsubst_pack_expansion): Likewise.  Force lambda capture.
+	* parser.c (cp_parser_lambda_introducer): Don't
+	check_for_bare_parameter_packs.
+
+	PR c++/84338 - wrong variadic sizeof.
+	* pt.c (argument_pack_select_arg): Like the macro, but look through
+	a pack expansion.
+	(tsubst, tsubst_copy, dependent_template_arg_p): Use it.
+	(extract_fnparm_pack): Do make_pack_expansion.
+	(extract_locals_r): Do strip a pack expansion.
+	* cp-tree.h (ARGUMENT_PACK_SELECT_ARG): Remove.
+
+2018-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84341
+	* parser.c (cp_parser_binary_expression): Use build_min instead of
+	build2_loc to build the no_toplevel_fold_p toplevel binary expression.
+
+2018-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84263
+	* parser.c (cp_parser_decltype): Push and pop
+	deferring_access_checks.  Reorganize to avoid goto.
+
+2018-02-12  Richard Biener  <rguenther@suse.de>
+
+	PR c++/84281
+	* constexpr.c (cxx_eval_vec_init_1): Use a RANGE_EXPR to compact
+	uniform constructors and delay allocating them fully.
+
+2018-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84036 - ICE with variadic capture.
+	Handle variadic capture proxies more like non-variadic.
+	* lambda.c (build_capture_proxy): Remove workaround.
+	* pt.c (find_parameter_packs_r): The proxy is a pack.
+	(instantiate_class_template_1): Remove dead lambda code.
+	(extract_fnparm_pack): Don't make_pack_expansion.
+	(extract_locals_r): Don't strip a pack expansion.
+	(tsubst_pack_expansion): Handle proxy packs.  Use
+	PACK_EXPANSION_EXTRA_ARGS less.
+	(tsubst_decl) [FIELD_DECL]: Don't register_specialization.
+	(tsubst_copy) [FIELD_DECL]: Don't retrieve*_specialization.
+	[VAR_DECL]: Handle ARGUMENT_PACK_SELECT.
+	(tsubst_expr) [DECL_EXPR]: Handle proxy packs.
+	(tsubst_copy_and_build) [VAR_DECL]: Handle proxy packs normally.
+
+2018-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* tree.c (cp_free_lang_data): Revert 2018-01-23 change.
+
+2018-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81917 - ICE with void_t and partial specialization.
+	* pt.c (instantiate_class_template_1): Set TYPE_BEING_DEFINED before
+	calling most_specialized_partial_spec.
+
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* typeck.c (cp_build_indirect_ref_1, build_reinterpret_cast_1):
+	Pass expr location to strict_aliasing_warning.
+
+2018-02-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84296 - ICE with qualified-id in template.
+	PR c++/83714
+	* pt.c (unknown_base_ref_p): New.
+	(instantiation_dependent_scope_ref_p): Use it instead of
+	any_dependent_bases_p.
+
+2018-02-09  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* constexpr.c (cxx_fold_indirect_ref): Sync some changes from
+	fold_indirect_ref_1, including poly_*int64.  Verify first that
+	tree_fits_poly_int64_p (op01).  Formatting fixes.
+
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* constexpr.c (cxx_eval_component_reference): Use INDIRECT_REF_P.
+	* lambda.c (build_capture_proxy): Likewise.
+	* search.c (field_access_p): Likewise.
+	* semantics.c (omp_clause_decl, omp_privatize_field,
+	finish_omp_clauses): Likewise.
+
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83806
+	* typeck.c (decay_conversion): Use mark_rvalue_use for the special
+	case of nullptr too.
+
+2018-02-08  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (finish_struct): Fix std:initializer_list diagnostic
+	formatting.
+
+2018-02-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83204
+	* pt.c (tsubst_copy_and_build): Use force_paren_expr for INDIRECT_REF.
+
+2018-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84082
+	* parser.c (cp_parser_dot_deref_incomplete): New function.
+	(cp_parser_postfix_dot_deref_expression): Use it.
+
+2018-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/81610
+	PR c++/80567
+	* name-lookup.c (suggest_rid_p): New function.
+	(lookup_name_fuzzy): Replace enum-rid-filtering logic with call to
+	suggest_rid_p.
+
+2018-02-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84182 - ICE with captured lambda
+	PR c++/84181
+	* pt.c (extract_locals_r, extract_local_specs): New.
+	(tsubst_pack_expansion): Use them.
+
+2018-02-07  Martin Liska  <mliska@suse.cz>
+
+	PR c++/84059.
+	* class.c (add_method): Append argument value.
+	* cp-tree.h (maybe_version_functions): Add new argument.
+	* decl.c (decls_match): Call it if a declaration does not
+	have DECL_FUNCTION_VERSIONED.
+	(maybe_version_functions): record argument is added.
+
+2018-02-05  Marek Polacek  <polacek@redhat.com>
+
+	* class.c: Remove unused global variables.
+	(build_primary_vtable): Don't gather statistics.
+	(print_class_statistics): Remove.
+	* cp-tree.h (print_class_statistics): Remove.
+	* tree.c (cxx_print_statistics): Don't call print_class_statistics.
+
+2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* class.c (is_really_empty_class): Use DECL_UNNAMED_BIT_FIELD.
+	* constexpr.c (cx_check_missing_mem_inits): Likewise.
+	* decl.c (next_initializable_field, find_decomp_class_base,
+	cp_finish_decomp): Likewise.
+	* typeck2.c (process_init_constructor_record): Likewise.
+
+2018-02-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84181 - ICE with lambda parm in template argument.
+	* tree.c (strip_typedefs_expr): Use cp_tree_operand_length.
+
+2018-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84160 - ICE with nested variadic capture.
+	* lambda.c (is_capture_proxy_with_ref): New.
+	(insert_capture_proxy): Don't set DECL_CAPTURED_VARIABLE from a
+	COMPONENT_REF.
+	* expr.c (mark_use): Use is_capture_proxy_with_ref.
+	* constexpr.c (potential_constant_expression_1): Likewise.
+	* semantics.c (process_outer_var_ref): Likewise.
+
+2018-02-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84125
+	* typeck.c (build_address): Relax the assert when
+	processing_template_decl.
+
+2018-02-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84126 - ICE with variadic generic lambda
+	PR c++/84036
+	PR c++/82249
+	* pt.c (tsubst_pack_expansion): Handle function parameter_packs in
+	PACK_EXPANSION_EXTRA_ARGS.
+
+2018-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/83796
+	* call.c (convert_like_real): If w're initializing from {} explicitly
+	call abstract_virtuals_error_sfinae.
+
 2018-01-31  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -14,5 +14,5 @@
     end team
   end associate
 
-  if (team_number()/=standard_initial_value) call abort
+  if (team_number()/=standard_initial_value) STOP 1
 end

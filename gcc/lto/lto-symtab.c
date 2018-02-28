@@ -288,9 +288,12 @@ warn_type_compatibility_p (tree prevailing_type, tree type,
 	{
           tree t1 = type, t2 = prevailing_type;
 
-	  /* Alias sets of arrays are the same as alias sets of the inner
-	     types.  */
-	  while (TREE_CODE (t1) == ARRAY_TYPE && TREE_CODE (t2) == ARRAY_TYPE)
+	  /* Alias sets of arrays with aliased components are the same as alias
+	     sets of the inner types.  */
+	  while (TREE_CODE (t1) == ARRAY_TYPE
+		 && !TYPE_NONALIASED_COMPONENT (t1)
+		 && TREE_CODE (t2) == ARRAY_TYPE
+		 && !TYPE_NONALIASED_COMPONENT (t2))
 	    {
 	      t1 = TREE_TYPE (t1);
 	      t2 = TREE_TYPE (t2);

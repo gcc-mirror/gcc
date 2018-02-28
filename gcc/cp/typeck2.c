@@ -830,9 +830,10 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	  if (!require_constant_expression (value))
 	    value = error_mark_node;
 	  else
-	    value = cxx_constant_value (value, decl);
+	    value = cxx_constant_init (value, decl);
 	}
-      value = maybe_constant_init (value, decl);
+      else
+	value = maybe_constant_init (value, decl);
       if (TREE_CODE (value) == CONSTRUCTOR && cp_has_mutable_p (type))
 	/* Poison this CONSTRUCTOR so it can't be copied to another
 	   constexpr variable.  */
@@ -1395,12 +1396,12 @@ process_init_constructor_record (tree type, tree init, int nested,
       tree next;
       tree type;
 
-      if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
-	continue;
-
       if (TREE_CODE (field) != FIELD_DECL
 	  || (DECL_ARTIFICIAL (field)
 	      && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field))))
+	continue;
+
+      if (DECL_UNNAMED_BIT_FIELD (field))
 	continue;
 
       /* If this is a bitfield, first convert to the declared type.  */
@@ -1547,12 +1548,13 @@ process_init_constructor_record (tree type, tree init, int nested,
 	      for (field = TYPE_FIELDS (type);
 		   field; field = DECL_CHAIN (field))
 		{
-		  if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
-		    continue;
 		  if (TREE_CODE (field) != FIELD_DECL
 		      || (DECL_ARTIFICIAL (field)
 			  && !(cxx_dialect >= cxx17
 			       && DECL_FIELD_IS_BASE (field))))
+		    continue;
+
+		  if (DECL_UNNAMED_BIT_FIELD (field))
 		    continue;
 
 		  if (ce->index == field || ce->index == DECL_NAME (field))

@@ -16,7 +16,7 @@ end module m
 subroutine foo()
 use m
 type(t) :: x,y
-if (allocated(x%caf)) call abort()
+if (allocated(x%caf)) STOP 1
 x = y
 end
 

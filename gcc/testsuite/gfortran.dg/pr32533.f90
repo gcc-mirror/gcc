@@ -14,5 +14,5 @@ REAL(dp) :: sab_max(3), subcells,nsubcell(3)
 subcells=2.0_dp
 sab_max=0.590060749244805_dp
 CALL T(nsubcell,sab_max,subcells)
-IF (ANY(nsubcell.NE.2.0_dp)) CALL ABORT()
+IF (ANY(nsubcell.NE.2.0_dp)) STOP 1
 END

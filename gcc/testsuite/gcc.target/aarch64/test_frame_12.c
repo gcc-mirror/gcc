@@ -4,7 +4,7 @@
      * number of callee-save reg >= 2.  */
 
 /* { dg-do run } */
-/* { dg-options "-O2 -fomit-frame-pointer --save-temps" } */
+/* { dg-options "-O2 --save-temps" } */
 
 #include "test_frame_common.h"
 
@@ -14,5 +14,5 @@ t_frame_run (test12)
 /* { dg-final { scan-assembler-times "sub\tsp, sp, #\[0-9\]+" 1 } } */
 
 /* Check epilogue using no write-back.  */
-/* { dg-final { scan-assembler "ldr\tx30, \\\[sp, \[0-9\]+\\\]" } } */
+/* { dg-final { scan-assembler "ldp\tx29, x30, \\\[sp, \[0-9\]+\\\]" } } */
 

@@ -1413,17 +1413,9 @@ static tree
 member_vec_linear_search (vec<tree, va_gc> *member_vec, tree name)
 {
   for (int ix = member_vec->length (); ix--;)
-    /* We can get a NULL binding during insertion of a new method
-       name, because the identifier_binding machinery performs a
-       lookup.  If we find such a NULL slot, that's the thing we were
-       looking for, so we might as well bail out immediately.  */
     if (tree binding = (*member_vec)[ix])
-      {
-	if (OVL_NAME (binding) == name)
-	  return binding;
-      }
-    else
-      break;
+      if (OVL_NAME (binding) == name)
+	return binding;
 
   return NULL_TREE;
 }
@@ -1437,11 +1429,10 @@ fields_linear_search (tree klass, tree name, bool want_type)
     {
       tree decl = fields;
 
-      if (!want_type
-	  && TREE_CODE (decl) == FIELD_DECL
+      if (TREE_CODE (decl) == FIELD_DECL
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
 	{
-	  if (tree temp = search_anon_aggr (TREE_TYPE (decl), name))
+	  if (tree temp = search_anon_aggr (TREE_TYPE (decl), name, want_type))
 	    return temp;
 	}
 
@@ -1466,26 +1457,17 @@ fields_linear_search (tree klass, tree name, bool want_type)
   return NULL_TREE;
 }
 
-/* Look for NAME field inside of anonymous aggregate ANON.  */
+/* Look for NAME member inside of anonymous aggregate ANON.  Although
+   such things should only contain FIELD_DECLs, we check that too
+   late, and would give very confusing errors if we weren't
+   permissive here.  */
 
 tree
-search_anon_aggr (tree anon, tree name)
+search_anon_aggr (tree anon, tree name, bool want_type)
 {
   gcc_assert (COMPLETE_TYPE_P (anon));
-  tree ret;
-	  
-  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
-    ret = member_vec_linear_search (member_vec, name);
-  else
-    ret = fields_linear_search (anon, name, false);
-
-  if (ret)
-    {
-      /* Anon members can only contain fields.  */
-      gcc_assert (!STAT_HACK_P (ret) && !DECL_DECLARES_TYPE_P (ret));
-      return ret;
-    }
-  return NULL_TREE;
+  tree ret = get_class_binding_direct (anon, name, want_type);
+  return ret;
 }
 
 /* Look for NAME as an immediate member of KLASS (including
@@ -1609,15 +1591,15 @@ get_class_binding (tree klass, tree name, int type_or_fns)
 }
 
 /* Find the slot containing overloads called 'NAME'.  If there is no
-   such slot, create an empty one.  KLASS might be complete at this
-   point, in which case we need to preserve ordering.  Deals with
-   conv_op marker handling.  */
+   such slot and the class is complete, create an empty one, at the
+   correct point in the sorted member vector.  Otherwise return NULL.
+   Deals with conv_op marker handling.  */
 
 tree *
-get_member_slot (tree klass, tree name)
+find_member_slot (tree klass, tree name)
 {
   bool complete_p = COMPLETE_TYPE_P (klass);
-  
+
   vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
   if (!member_vec)
     {
@@ -1664,24 +1646,34 @@ get_member_slot (tree klass, tree name)
 	break;
     }
 
-  /* No slot found.  Create one at IX.  We know in this case that our
-     caller will succeed in adding the function.  */
+  /* No slot found, add one if the class is complete.  */
   if (complete_p)
     {
-      /* Do exact allocation when complete, as we don't expect to add
-	 many.  */
+      /* Do exact allocation, as we don't expect to add many.  */
+      gcc_assert (name != conv_op_identifier);
       vec_safe_reserve_exact (member_vec, 1);
+      CLASSTYPE_MEMBER_VEC (klass) = member_vec;
       member_vec->quick_insert (ix, NULL_TREE);
+      return &(*member_vec)[ix];
     }
-  else
-    {
-      gcc_checking_assert (ix == length);
-      vec_safe_push (member_vec, NULL_TREE);
-    }
+
+  return NULL;
+}
+
+/* KLASS is an incomplete class to which we're adding a method NAME.
+   Add a slot and deal with conv_op marker handling.  */
+
+tree *
+add_member_slot (tree klass, tree name)
+{
+  gcc_assert (!COMPLETE_TYPE_P (klass));
+
+  vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
+  vec_safe_push (member_vec, NULL_TREE);
   CLASSTYPE_MEMBER_VEC (klass) = member_vec;
 
-  tree *slot = &(*member_vec)[ix];
-  if (name == conv_op_identifier)
+  tree *slot = &member_vec->last ();
+  if (IDENTIFIER_CONV_OP_P (name))
     {
       /* Install the marker prefix.  */
       *slot = ovl_make (conv_op_marker, NULL_TREE);
@@ -3253,7 +3245,8 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 /* DECL has just been bound at LEVEL.  finish up the bookkeeping.  */
 
 static void
-newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
+newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level,
+			bool visible_injection = false)
 {
   if (TREE_CODE (decl) == TYPE_DECL)
     {
@@ -3280,6 +3273,9 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     }
   else if (VAR_P (decl))
     maybe_register_incomplete_var (decl);
+  else if (visible_injection)
+    warning (0, "injected friend %qD is visible"
+	     " due to %<-ffriend-injection%>", decl);
 
   if ((VAR_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
       && DECL_EXTERN_C_P (decl))
@@ -3395,6 +3391,7 @@ do_pushdecl (tree decl, bool is_friend)
 	old = OVL_CHAIN (old);
 
       check_template_shadow (decl);
+      bool visible_injection = false;
 
       if (DECL_DECLARES_FUNCTION_P (decl))
 	{
@@ -3403,14 +3400,20 @@ do_pushdecl (tree decl, bool is_friend)
 	  if (is_friend)
 	    {
 	      if (level->kind != sk_namespace)
-		/* In a local class, a friend function declaration must
-		   find a matching decl in the innermost non-class scope.
-		   [class.friend/11] */
-		error ("friend declaration %qD in local class without "
-		       "prior local declaration", decl);
-	      else if (!flag_friend_injection)
+		{
+		  /* In a local class, a friend function declaration must
+		     find a matching decl in the innermost non-class scope.
+		     [class.friend/11] */
+		  error ("friend declaration %qD in local class without "
+			 "prior local declaration", decl);
+		  /* Don't attempt to push it.  */
+		  return error_mark_node;
+		}
+	      if (!flag_friend_injection)
 		/* Hide it from ordinary lookup.  */
 		DECL_ANTICIPATED (decl) = DECL_HIDDEN_FRIEND_P (decl) = true;
+	      else
+		visible_injection = true;
 	    }
 	}
 
@@ -3441,7 +3444,7 @@ do_pushdecl (tree decl, bool is_friend)
 	/* An existing decl matched, use it.  */
 	decl = old;
       else
-	newbinding_bookkeeping (name, decl, level);
+	newbinding_bookkeeping (name, decl, level, visible_injection);
     }
   else
     add_decl_to_level (level, decl);
@@ -6107,6 +6110,10 @@ bool
 suggest_alternative_in_explicit_scope (location_t location, tree name,
 				       tree scope)
 {
+  /* Something went very wrong; don't suggest anything.  */
+  if (name == error_mark_node)
+    return false;
+
   /* Resolve any namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
 
@@ -6288,6 +6295,32 @@ class macro_use_before_def : public deferred_diagnostic
   cpp_hashnode *m_macro;
 };
 
+/* Determine if it can ever make sense to offer RID as a suggestion for
+   a misspelling.
+
+   Subroutine of lookup_name_fuzzy.  */
+
+static bool
+suggest_rid_p  (enum rid rid)
+{
+  switch (rid)
+    {
+    /* Support suggesting function-like keywords.  */
+    case RID_STATIC_ASSERT:
+      return true;
+
+    default:
+      /* Support suggesting the various decl-specifier words, to handle
+	 e.g. "singed" vs "signed" typos.  */
+      if (cp_keyword_starts_decl_specifier_p (rid))
+	return true;
+
+      /* Otherwise, don't offer it.  This avoids suggesting e.g. "if"
+	 and "do" for short misspellings, which are likely to lead to
+	 nonsensical results.  */
+      return false;
+    }
+}
 
 /* Search for near-matches for NAME within the current bindings, and within
    macro names, returning the best match as a const char *, or NULL if
@@ -6352,9 +6385,8 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
     {
       const c_common_resword *resword = &c_common_reswords[i];
 
-      if (kind == FUZZY_LOOKUP_TYPENAME)
-	if (!cp_keyword_starts_decl_specifier_p (resword->rid))
-	  continue;
+      if (!suggest_rid_p (resword->rid))
+	continue;
 
       tree resword_identifier = ridpointers [resword->rid];
       if (!resword_identifier)

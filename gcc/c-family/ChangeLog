@@ -1,3 +1,101 @@
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_node) <NULLPTR_TYPE>: New case.
+	<REAL_TYPE>: Deal specifically with _Float128/__float128.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_double_name) <ENUMERAL_TYPE>: New case.
+	(is_char_array): Take a type instead of a declaration.
+	(dump_ada_array_type): Likewise.
+	(is_simple_enum): Minor tweak.
+	(dump_ada_enum_type): New function extracted from...
+	(dump_ada_node) <ENUMERAL_TYPE>: ...here.  Invoke it.
+	<INTEGER_TYPE>: Remove unreachable code.
+	<RECORD_TYPE>: Likewise.  Minor tweaks.
+	(dump_nested_type) <ARRAY_TYPE>: Adjust to above changes.
+	<ENUMERAL_TYPE>: New case.
+	<RECORD_TYPE>: Factor out common code.
+	(dump_ada_declaration) <ARRAY_TYPE>: Adjust to above changes.
+	Minor tweaks.  Deal with enumeral types.
+	(dump_ada_structure): Minor tweaks.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_node) <POINTER_TYPE>: Do not use generic
+	address for incomplete structures.
+	(dump_forward_type): Do not bail out for incomplete structures.
+	(dump_ada_declaration): Do not special-case incomplete structures
+	for subtypes.  Dump them as null records for types.
+
+2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_import): Use boolean and fix formatting.
+	(is_char_array): Fix formatting.
+	(dump_template_types): Likewise.
+	(dump_generic_ada_node): Rename into...
+	(dump_ada_node): ...this.
+	<POINTER_TYPE>: Remove superfluous space.  Use generic address for
+	incomplete structures and not for empty structures.  Do not use it
+	when forward declarations are needed.
+	(dump_forward_type): New function.
+	(dump_nested_types): Remove FORWARD parameter.  Do not consider
+	TREE_VISITED and do not generate a forward declaration.  Only dump
+	original nested types for nested declaration.
+	(dump_nested_type) <POINTER_TYPE>: Call dump_forward_type.
+	<ARRAY_TYPE>: Likewise if the component type is an anonymous pointer.
+	<RECORD_TYPE>: Do not consider TREE_VISITED.
+	(dump_ada_declaration): Use booleans and fix formatting throughout.
+	<TYPE_DECL>: Skip incomplete structures and not empty structures.
+	Call dump_forward_type instead of dump_nested_types for a typedef.
+	Remove superfluous check and adjust call to dump_nested_types.
+	<POINTER_TYPE>: Call dump_forward_type and fall through.
+	(dump_ada_struct_decl): Rename into...
+	(dump_ada_structure): ...this.  Do not special-case empty structures.
+
+2018-02-27  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/83871
+	* c.opt (-Wmissing-attributes): New option.
+
+2018-02-21  Martin Liska  <mliska@suse.cz>
+
+	* c.opt (Wcatch-value=): Add IntegerRange.
+
+2018-02-15  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Update __cpp_deduction_guides.
+
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* c-common.h (strict_aliasing_warning): Drop OTYPE arg, insert LOC
+	arg.
+	* c-warn.c (strict_aliasing_warning): Drop OTYPE arg, require LOC
+	arg.  Adjust.
+
+2018-02-09  Martin Sebor  <msebor@redhat.com>
+
+	PR lto/84212
+	* c.opt (-Wstringop-overflow, -Warray-bounds): Add LTO.
+	(-Walloc-size-larger-than, -Wformat-truncation=): Same.
+	(-Wmaybe-uninitialized, -Wnonnull, -Wrestrict): Same.
+	(-Wstrict-overflow, -Wsuggest-attribute): Same.
+	(-Wuninitialized): Same.
+
+2018-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration): Do not generate the 'constant'
+	keyword for components.
+
+2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-common.h (DECL_UNNAMED_BIT_FIELD): New.
+
+2018-02-02  Julia Koval  <julia.koval@intel.com>
+
+	* c-common.h (omp_clause_mask): Move to wide_int_bitmask.h.
+
 2018-01-29  Marek Polacek  <polacek@redhat.com>
 
 	PR c/83966

@@ -4805,7 +4805,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       if (lvalue_p (arg1))
 	arg2 = arg1 = cp_stabilize_reference (arg1);
       else
-	arg2 = arg1 = save_expr (arg1);
+	arg2 = arg1 = cp_save_expr (arg1);
     }
 
   /* If something has already gone wrong, just pass that fact up the
@@ -6765,6 +6765,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    && TYPE_HAS_DEFAULT_CONSTRUCTOR (totype))
 	  {
 	    bool direct = CONSTRUCTOR_IS_DIRECT_INIT (expr);
+	    if (abstract_virtuals_error_sfinae (NULL_TREE, totype, complain))
+	      return error_mark_node;
 	    expr = build_value_init (totype, complain);
 	    expr = get_target_expr_sfinae (expr, complain);
 	    if (expr != error_mark_node)
@@ -6936,6 +6938,11 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  && DECL_INHERITED_CTOR (current_function_decl))
 	return expr;
 
+      if (TREE_CODE (expr) == TARGET_EXPR
+	  && TARGET_EXPR_LIST_INIT_P (expr))
+	/* Copy-list-initialization doesn't actually involve a copy.  */
+	return expr;
+
       /* Fall through.  */
     case ck_base:
       if (convs->kind == ck_base && !convs->need_temporary_p)
@@ -6962,10 +6969,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (convs->rvaluedness_matches_p)
 	/* standard_conversion got LOOKUP_PREFER_RVALUE.  */
 	flags |= LOOKUP_PREFER_RVALUE;
-      if (TREE_CODE (expr) == TARGET_EXPR
-	  && TARGET_EXPR_LIST_INIT_P (expr))
-	/* Copy-list-initialization doesn't actually involve a copy.  */
-	return expr;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && complain)
 	{
@@ -7577,6 +7580,15 @@ unsafe_copy_elision_p (tree target, tree exp)
   /* build_compound_expr pushes COMPOUND_EXPR inside TARGET_EXPR.  */
   while (TREE_CODE (init) == COMPOUND_EXPR)
     init = TREE_OPERAND (init, 1);
+  if (TREE_CODE (init) == COND_EXPR)
+    {
+      /* We'll end up copying from each of the arms of the COND_EXPR directly
+	 into the target, so look at them. */
+      if (tree op = TREE_OPERAND (init, 1))
+	if (unsafe_copy_elision_p (target, op))
+	  return true;
+      return unsafe_copy_elision_p (target, TREE_OPERAND (init, 2));
+    }
   return (TREE_CODE (init) == AGGR_INIT_EXPR
 	  && !AGGR_INIT_VIA_CTOR_P (init));
 }
@@ -7662,8 +7674,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     deduce_inheriting_ctor (fn);
 
   /* Make =delete work with SFINAE.  */
-  if (DECL_DELETED_FN (fn) && !(complain & tf_error))
-    return error_mark_node;
+  if (DECL_DELETED_FN (fn))
+    {
+      if (complain & tf_error)
+	mark_used (fn);
+      return error_mark_node;
+    }
 
   if (DECL_FUNCTION_MEMBER_P (fn))
     {
@@ -7707,12 +7723,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      conversions.  */
   if (flags & LOOKUP_SPECULATIVE)
     {
-      if (DECL_DELETED_FN (fn))
-	{
-	  if (complain & tf_error)
-	    mark_used (fn);
-	  return error_mark_node;
-	}
       if (cand->viable == 1)
 	return fn;
       else if (!(complain & tf_error))
@@ -8087,7 +8097,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      if (!trivial || DECL_DELETED_FN (fn))
+      if (!trivial)
 	{
 	  if (!mark_used (fn, complain) && !(complain & tf_error))
 	    return error_mark_node;
@@ -8118,8 +8128,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
   else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
 	   && DECL_OVERLOADED_OPERATOR_IS (fn, NOP_EXPR)
-	   && trivial_fn_p (fn)
-	   && !DECL_DELETED_FN (fn))
+	   && trivial_fn_p (fn))
     {
       tree to = cp_stabilize_reference
 	(cp_build_fold_indirect_ref (argarray[0]));
@@ -8163,8 +8172,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       return val;
     }
-  else if (!DECL_DELETED_FN (fn)
-	   && trivial_fn_p (fn))
+  else if (trivial_fn_p (fn))
     {
       if (DECL_DESTRUCTOR_P (fn))
 	return fold_convert (void_type_node, argarray[0]);
@@ -8831,6 +8839,9 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	{
 	  if (is_dummy_object (instance))
 	    return arg;
+	  else if (TREE_CODE (arg) == TARGET_EXPR)
+	    TARGET_EXPR_DIRECT_INIT_P (arg) = true;
+
 	  if ((complain & tf_error)
 	      && (flags & LOOKUP_DELEGATING_CONS))
 	    check_self_delegation (arg);
@@ -9278,8 +9289,14 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
 		  && !is_dummy_object (instance)
 		  && TREE_SIDE_EFFECTS (instance))
-		call = build2 (COMPOUND_EXPR, TREE_TYPE (call),
-			       instance, call);
+		{
+		  /* But avoid the implicit lvalue-rvalue conversion when 'a'
+		     is volatile.  */
+		  tree a = instance;
+		  if (TREE_THIS_VOLATILE (a))
+		    a = build_this (a);
+		  call = build2 (COMPOUND_EXPR, TREE_TYPE (call), a, call);
+		}
 	      else if (call != error_mark_node
 		       && DECL_DESTRUCTOR_P (cand->fn)
 		       && !VOID_TYPE_P (TREE_TYPE (call)))

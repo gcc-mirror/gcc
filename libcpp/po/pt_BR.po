@@ -1,14 +1,14 @@
 # Brazilian Portuguese translation for cpplib
 # Copyright (C) 2018 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Rafael Fontenelle <rffontenelle@gmail.com>, 2013-2014, 2016-2018.
+# Rafael Fontenelle <rafaelff@gnome.org>, 2013-2014, 2016-2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
 "PO-Revision-Date: 2018-01-29 17:52-0200\n"
-"Last-Translator: Rafael Fontenelle <rffontenelle@gmail.com>\n"
+"Last-Translator: Rafael Fontenelle <rafaelff@gnome.org>\n"
 "Language-Team: Brazilian Portuguese <ldpbr-translation@lists.sourceforge.net>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"

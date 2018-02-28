@@ -3852,11 +3852,9 @@ aarch64_emit_probe_stack_range (HOST_WIDE_INT first, poly_int64 poly_size)
 	  emit_set_insn (reg2, gen_rtx_PLUS (Pmode, stack_pointer_rtx, reg2));
 	}
       else
-	{
-	  emit_set_insn (reg2,
-			 plus_constant (Pmode, stack_pointer_rtx, adjustment));
-	}
-	  	
+	emit_set_insn (reg2,
+		       plus_constant (Pmode, stack_pointer_rtx, adjustment));
+
       /* Step 3: the loop
 
 	 do
@@ -4552,7 +4550,22 @@ aarch64_components_for_bb (basic_block bb)
        && (bitmap_bit_p (in, regno)
 	   || bitmap_bit_p (gen, regno)
 	   || bitmap_bit_p (kill, regno)))
-	  bitmap_set_bit (components, regno);
+      {
+	unsigned regno2, offset, offset2;
+	bitmap_set_bit (components, regno);
+
+	/* If there is a callee-save at an adjacent offset, add it too
+	   to increase the use of LDP/STP.  */
+	offset = cfun->machine->frame.reg_offset[regno];
+	regno2 = ((offset & 8) == 0) ? regno + 1 : regno - 1;
+
+	if (regno2 <= LAST_SAVED_REGNUM)
+	  {
+	    offset2 = cfun->machine->frame.reg_offset[regno2];
+	    if ((offset & ~8) == (offset2 & ~8))
+	      bitmap_set_bit (components, regno2);
+	  }
+      }
 
   return components;
 }
@@ -7044,7 +7057,8 @@ aarch64_print_address_internal (FILE *f, machine_mode mode, rtx x,
   unsigned int size;
 
   /* Check all addresses are Pmode - including ILP32.  */
-  gcc_assert (GET_MODE (x) == Pmode);
+  if (GET_MODE (x) != Pmode)
+    output_operand_lossage ("invalid address mode");
 
   if (aarch64_classify_address (&addr, x, mode, true, type))
     switch (addr.type)
@@ -7523,7 +7537,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
   unsigned int nregs;
   switch (regclass)
     {
-    case CALLER_SAVE_REGS:
+    case TAILCALL_ADDR_REGS:
     case POINTER_REGS:
     case GENERAL_REGS:
     case ALL_REGS:
@@ -9687,10 +9701,10 @@ aarch64_register_move_cost (machine_mode mode,
     = aarch64_tune_params.regmove_cost;
 
   /* Caller save and pointer regs are equivalent to GENERAL_REGS.  */
-  if (to == CALLER_SAVE_REGS || to == POINTER_REGS)
+  if (to == TAILCALL_ADDR_REGS || to == POINTER_REGS)
     to = GENERAL_REGS;
 
-  if (from == CALLER_SAVE_REGS || from == POINTER_REGS)
+  if (from == TAILCALL_ADDR_REGS || from == POINTER_REGS)
     from = GENERAL_REGS;
 
   /* Moving between GPR and stack cost is the same as GP2GP.  */
@@ -10613,11 +10627,21 @@ aarch64_print_hint_for_core_or_arch (const char *str, bool arch)
   const struct processor *entry = arch ? all_architectures : all_cores;
   for (; entry->name != NULL; entry++)
     candidates.safe_push (entry->name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+  /* Add also "native" as possible value.  */
+  if (arch)
+    candidates.safe_push ("native");
+#endif
+
   char *s;
   const char *hint = candidates_list_and_hint (str, s, candidates);
   if (hint)
     inform (input_location, "valid arguments are: %s;"
 			     " did you mean %qs?", s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
   XDELETEVEC (s);
 }
 

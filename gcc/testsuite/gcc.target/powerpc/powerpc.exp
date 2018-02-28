@@ -54,6 +54,7 @@ torture-init
 # Test load/store builtins at multiple optimizations
 set-torture-options [list -O0 -Os -O1 -O2 -O3]
 gcc-dg-runtest [list $srcdir/$subdir/builtins-4-runnable.c \
+		$srcdir/$subdir/builtins-4-int128-runnable.c \
 		$srcdir/$subdir/builtins-6-runnable.c \
 		$srcdir/$subdir/builtins-5-p9-runnable.c \
 	       	$srcdir/$subdir/builtins-6-p9-runnable.c] "" $DEFAULT_CFLAGS

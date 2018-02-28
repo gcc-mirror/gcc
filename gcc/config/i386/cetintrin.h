@@ -34,37 +34,32 @@
 #define __DISABLE_SHSTK__
 #endif /* __SHSTK__ */
 
-extern __inline unsigned int
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdsspd (unsigned int __B)
-{
-  return __builtin_ia32_rdsspd (__B);
-}
-
 #ifdef __x86_64__
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_rdsspq (unsigned long long __B)
+_get_ssp (void)
 {
-  return __builtin_ia32_rdsspq (__B);
+  return __builtin_ia32_rdsspq ();
+}
+#else
+extern __inline unsigned int
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_get_ssp (void)
+{
+  return __builtin_ia32_rdsspd ();
 }
 #endif
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_incsspd (unsigned int __B)
+_inc_ssp (unsigned int __B)
 {
-  __builtin_ia32_incsspd (__B);
-}
-
 #ifdef __x86_64__
-extern __inline void
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_incsspq (unsigned long long __B)
-{
-  __builtin_ia32_incsspq (__B);
-}
+  __builtin_ia32_incsspq ((unsigned long long) __B);
+#else
+  __builtin_ia32_incsspd (__B);
 #endif
+}
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

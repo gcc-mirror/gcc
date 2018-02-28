@@ -103,8 +103,8 @@ contains
        return
     end if
     pdg_abs = abs (pdg)
-    if (lbound(model%field, 1) /= 1) call abort()
-    if (ubound(model%field, 1) /= 19) call abort()
+    if (lbound(model%field, 1) /= 1) STOP 1
+    if (ubound(model%field, 1) /= 19) STOP 2
     do i = 1, size (model%field)
        if (model%field(i)%get_pdg () == pdg_abs) then
           ptr => model%field(i)
@@ -118,8 +118,8 @@ contains
     class(model_data_t), intent(in), target :: model
     integer, intent(in) :: i
     type(field_data_t), pointer :: ptr
-    if (lbound(model%field, 1) /= 1) call abort()
-    if (ubound(model%field, 1) /= 19) call abort()
+    if (lbound(model%field, 1) /= 1) STOP 3
+    if (ubound(model%field, 1) /= 19) STOP 4
     ptr => model%field(i)
   end function model_data_get_field_ptr_index
 
@@ -161,8 +161,8 @@ contains
     class(model_data_t), intent(in), target :: model
     ! Check the field l/ubound at various stages, because w/o the patch
     ! the bounds get mixed up.
-    if (lbound(model%field, 1) /= 1) call abort()
-    if (ubound(model%field, 1) /= 19) call abort()
+    if (lbound(model%field, 1) /= 1) STOP 5
+    if (ubound(model%field, 1) /= 19) STOP 6
     flv%f = f
     flv%field_data => model%get_field_ptr (f, check=.true.)
   end subroutine flavor_init0_model

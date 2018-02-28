@@ -20,6 +20,6 @@ program test
    j = 42
    rewind(10)
    read(10,nl)
-   if (i /= 0 .or. j /= 1) call abort
+   if (i /= 0 .or. j /= 1) STOP 1
    close(10)
 end program

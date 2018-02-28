@@ -27,7 +27,33 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define I386_ASM_H
 
 #include "auto-target.h"
-#include "auto-host.h"
+
+#ifdef __GCC_HAVE_DWARF2_CFI_ASM
+# define cfi_startproc()		.cfi_startproc
+# define cfi_endproc()			.cfi_endproc
+# define cfi_adjust_cfa_offset(X) 	.cfi_adjust_cfa_offset X
+# define cfi_def_cfa_register(X)	.cfi_def_cfa_register X
+# define cfi_def_cfa(R,O)		.cfi_def_cfa R, O
+# define cfi_register(D,S)		.cfi_register D, S
+# define cfi_offset(R,O)		.cfi_offset R, O
+# ifdef __x86_64__
+#  define cfi_push(X)		.cfi_adjust_cfa_offset 8; .cfi_rel_offset X, 0
+#  define cfi_pop(X)		.cfi_adjust_cfa_offset -8; .cfi_restore X
+# else
+#  define cfi_push(X)		.cfi_adjust_cfa_offset 4; .cfi_rel_offset X, 0
+#  define cfi_pop(X)		.cfi_adjust_cfa_offset -4; .cfi_restore X
+# endif
+#else
+# define cfi_startproc()
+# define cfi_endproc()
+# define cfi_adjust_cfa_offset(X)
+# define cfi_def_cfa_register(X)
+# define cfi_def_cfa(R,O)
+# define cfi_register(D,S)
+# define cfi_offset(R,O)
+# define cfi_push(X)
+# define cfi_pop(X)
+#endif
 
 #define PASTE2(a, b) PASTE2a(a, b)
 #define PASTE2a(a, b) a ## b
@@ -37,8 +63,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __ELF__
 # define FN_TYPE(fn) .type fn,@function
 # define FN_SIZE(fn) .size fn,.-fn
-# ifdef HAVE_GAS_HIDDEN
-#  define FN_HIDDEN(fn) .hidden fn
+# ifdef AS_HIDDEN_DIRECTIVE
+#  define FN_HIDDEN(fn) AS_HIDDEN_DIRECTIVE fn
 # endif
 #else
 # define FN_TYPE(fn)

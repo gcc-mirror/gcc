@@ -942,13 +942,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	  reg = new_in_reg
 	    = lra_create_new_reg_with_unique_value (inmode, in_rtx,
 						    goal_class, "");
-	  if (SCALAR_INT_MODE_P (inmode))
-	    new_out_reg = gen_lowpart_SUBREG (outmode, reg);
-	  else
-	    {
-	      poly_uint64 offset = subreg_lowpart_offset (outmode, inmode);
-	      new_out_reg = gen_rtx_SUBREG (outmode, reg, offset);
-	    }
+	  new_out_reg = gen_lowpart_SUBREG (outmode, reg);
 	  LRA_SUBREG_P (new_out_reg) = 1;
 	  /* If the input reg is dying here, we can use the same hard
 	     register for REG and IN_RTX.  We do it only for original
@@ -965,13 +959,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	  reg = new_out_reg
 	    = lra_create_new_reg_with_unique_value (outmode, out_rtx,
 						    goal_class, "");
-	  if (SCALAR_INT_MODE_P (outmode))
-	    new_in_reg = gen_lowpart_SUBREG (inmode, reg);
-	  else
-	    {
-	      poly_uint64 offset = subreg_lowpart_offset (inmode, outmode);
-	      new_in_reg = gen_rtx_SUBREG (inmode, reg, offset);
-	    }
+	  new_in_reg = gen_lowpart_SUBREG (inmode, reg);
 	  /* NEW_IN_REG is non-paradoxical subreg.  We don't want
 	     NEW_OUT_REG living above.  We add clobber clause for
 	     this.  This is just a temporary clobber.  We can remove
@@ -3742,7 +3730,13 @@ curr_insn_transform (bool check_only_p)
 
   curr_insn_set = single_set (curr_insn);
   if (curr_insn_set != NULL_RTX && simple_move_p ())
-    return false;
+    {
+      /* We assume that the corresponding insn alternative has no
+	 earlier clobbers.  If it is not the case, don't define move
+	 cost equal to 2 for the corresponding register classes.  */
+      lra_set_used_insn_alternative (curr_insn, LRA_NON_CLOBBERED_ALT);
+      return false;
+    }
 
   no_input_reloads_p = no_output_reloads_p = false;
   goal_alt_number = -1;
@@ -3850,7 +3844,7 @@ curr_insn_transform (bool check_only_p)
   if (change_p)
     /* If we've changed the instruction then any alternative that
        we chose previously may no longer be valid.  */
-    lra_set_used_insn_alternative (curr_insn, -1);
+    lra_set_used_insn_alternative (curr_insn, LRA_UNKNOWN_ALT);
 
   if (! check_only_p && curr_insn_set != NULL_RTX
       && check_and_process_move (&change_p, &sec_mem_p))
@@ -3858,7 +3852,7 @@ curr_insn_transform (bool check_only_p)
 
  try_swapped:
 
-  reused_alternative_num = check_only_p ? -1 : curr_id->used_insn_alternative;
+  reused_alternative_num = check_only_p ? LRA_UNKNOWN_ALT : curr_id->used_insn_alternative;
   if (lra_dump_file != NULL && reused_alternative_num >= 0)
     fprintf (lra_dump_file, "Reusing alternative %d for insn #%u\n",
 	     reused_alternative_num, INSN_UID (curr_insn));
@@ -5299,7 +5293,8 @@ inherit_reload_reg (bool def_p, int original_regno,
 	  lra_assert (DEBUG_INSN_P (usage_insn));
 	  next_usage_insns = XEXP (next_usage_insns, 1);
 	}
-      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false);
+      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
+			     DEBUG_INSN_P (usage_insn));
       lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
       if (lra_dump_file != NULL)
 	{
@@ -5620,7 +5615,8 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       usage_insn = XEXP (next_usage_insns, 0);
       lra_assert (DEBUG_INSN_P (usage_insn));
       next_usage_insns = XEXP (next_usage_insns, 1);
-      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false);
+      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
+			     true);
       lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
       if (lra_dump_file != NULL)
 	{
@@ -6356,7 +6352,13 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 						 PSEUDO_REGNO_MODE (src_regno),
 						 reg_renumber[src_regno]);
 			}
-		      add_next_usage_insn (src_regno, use_insn, reloads_num);
+		      if (src_regno >= FIRST_PSEUDO_REGISTER)
+			add_next_usage_insn (src_regno, use_insn, reloads_num);
+		      else
+			{
+			  for (i = 0; i < hard_regno_nregs (src_regno, reg->biggest_mode); i++)
+			    add_next_usage_insn (src_regno + i, use_insn, reloads_num);
+			}
 		    }
 		}
 	  /* Process used call regs.  */
@@ -6756,7 +6758,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 			}
 		      lra_push_insn_and_update_insn_regno_info (curr_insn);
 		      lra_set_used_insn_alternative_by_uid
-			(INSN_UID (curr_insn), -1);
+			(INSN_UID (curr_insn), LRA_UNKNOWN_ALT);
 		      done_p = true;
 		      if (lra_dump_file != NULL)
 			{
@@ -6795,7 +6797,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 		     constraints pass.  */
 		  lra_push_insn_and_update_insn_regno_info (curr_insn);
 		  lra_set_used_insn_alternative_by_uid
-		    (INSN_UID (curr_insn), -1);
+		    (INSN_UID (curr_insn), LRA_UNKNOWN_ALT);
 		}
 	      else if (restored_regs_p)
 		/* The instruction has been restored to the form that

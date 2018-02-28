@@ -15,7 +15,7 @@ program main
   
   write (unit=a,fmt='(I5.5)') (21-i*i+6*i,i=1,n)
   res = minval(a)
-  if (res /= '00026') call abort
+  if (res /= '00026') STOP 1
   do
      call random_number(r)
      v = int(r * 100)
@@ -23,18 +23,18 @@ program main
   end do
   write (unit=b,fmt='(I5.5)') v
   write (unit=res,fmt='(I5.5)') minval(v)
-  if (res /= minval(b)) call abort
+  if (res /= minval(b)) STOP 2
   smask = .true.
-  if (res /= minval(b, smask)) call abort
+  if (res /= minval(b, smask)) STOP 3
   smask = .false.
-  if (all_full /= minval(b, smask)) call abort
+  if (all_full /= minval(b, smask)) STOP 4
 
   mask = v < 30
   write (unit=res,fmt='(I5.5)') minval(v,mask)
-  if (res /= minval(b, mask)) call abort
+  if (res /= minval(b, mask)) STOP 5
   mask = .false.
-  if (minval(b, mask) /= all_full) call abort
+  if (minval(b, mask) /= all_full) STOP 6
   allocate (empty(0:3,0))
   res = minval(empty)
-  if (res /= all_full) call abort
+  if (res /= all_full) STOP 7
 end program main

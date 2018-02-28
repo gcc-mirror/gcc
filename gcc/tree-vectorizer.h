@@ -440,6 +440,9 @@ typedef struct _loop_vec_info : public vec_info {
   /* Cost vector for a single scalar iteration.  */
   auto_vec<stmt_info_for_cost> scalar_cost_vec;
 
+  /* Map of IV base/step expressions to inserted name in the preheader.  */
+  hash_map<tree_operand_hash, tree> *ivexpr_map;
+
   /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
   poly_uint64 slp_unrolling_factor;
@@ -1544,6 +1547,7 @@ extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,
 					stmt_vector_for_cost *,
 					stmt_vector_for_cost *);
+extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 
 /* In tree-vect-slp.c.  */
 extern void vect_free_slp_instance (slp_instance);
@@ -1564,6 +1568,7 @@ extern bool can_duplicate_and_interleave_p (unsigned int, machine_mode,
 					    tree * = NULL, tree * = NULL);
 extern void duplicate_and_interleave (gimple_seq *, tree, vec<tree>,
 				      unsigned int, vec<tree> &);
+extern int vect_get_place_in_interleaving_chain (gimple *, gimple *);
 
 /* In tree-vect-patterns.c.  */
 /* Pattern recognition functions.

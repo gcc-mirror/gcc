@@ -10,7 +10,7 @@
   write (11, *) "&end"
   rewind (11)
   read(11,nml=inx)
-  if (var(1) /= 'hello' .and. var(2) /= 'goodbye') call abort
+  if (var(1) /= 'hello' .and. var(2) /= 'goodbye') STOP 1
   var = "goodbye"
   rewind (11)
   write (11, *) "$inx"
@@ -18,5 +18,5 @@
   write (11, *) "$end"
   rewind (11)
   read(11,nml=inx)
-  if (var(1) /= 'hello' .and. var(2) /= 'goodbye') call abort
+  if (var(1) /= 'hello' .and. var(2) /= 'goodbye') STOP 2
 end

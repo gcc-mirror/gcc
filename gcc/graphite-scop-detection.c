@@ -590,6 +590,15 @@ scop_detection::add_scop (sese_l s)
 {
   gcc_assert (s);
 
+  /* If the exit edge is fake discard the SCoP for now as we're removing the
+     fake edges again after analysis.  */
+  if (s.exit->flags & EDGE_FAKE)
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] Discarding infinite loop SCoP: ";
+		   print_sese (dump_file, s));
+      return;
+    }
+
   /* Include the BB with the loop-closed SSA PHI nodes, we need this
      block in the region for code-generating out-of-SSA copies.
      canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
@@ -1027,7 +1036,30 @@ scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
 
     case GIMPLE_ASSIGN:
     case GIMPLE_CALL:
-      return true;
+      {
+	tree op, lhs = gimple_get_lhs (stmt);
+	ssa_op_iter i;
+	/* If we are not going to instantiate the stmt do not require
+	   its operands to be instantiatable at this point.  */
+	if (lhs
+	    && TREE_CODE (lhs) == SSA_NAME
+	    && scev_analyzable_p (lhs, scop))
+	  return true;
+	/* Verify that if we can analyze operands at their def site we
+	   also can represent them when analyzed at their uses.  */
+	FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+	  if (scev_analyzable_p (op, scop)
+	      && chrec_contains_undetermined
+		   (scalar_evolution_in_region (scop, bb->loop_father, op)))
+	    {
+	      DEBUG_PRINT (dp << "[scop-detection-fail] "
+			   << "Graphite cannot code-gen stmt:\n";
+			   print_gimple_stmt (dump_file, stmt, 0,
+					      TDF_VOPS | TDF_MEMSYMS));
+	      return false;
+	    }
+	return true;
+      }
 
     default:
       /* These nodes cut a new scope.  */
@@ -1453,18 +1485,19 @@ gather_bbs::before_dom_children (basic_block bb)
 	}
     }
 
-  gcond *stmt = single_pred_cond_non_loop_exit (bb);
-
-  if (stmt)
+  if (gcond *stmt = single_pred_cond_non_loop_exit (bb))
     {
       edge e = single_pred_edge (bb);
-
-      conditions.safe_push (stmt);
-
-      if (e->flags & EDGE_TRUE_VALUE)
-	cases.safe_push (stmt);
-      else
-	cases.safe_push (NULL);
+      /* Make sure the condition is in the region and thus was verified
+         to be handled.  */
+      if (e != region->region.entry)
+	{
+	  conditions.safe_push (stmt);
+	  if (e->flags & EDGE_TRUE_VALUE)
+	    cases.safe_push (stmt);
+	  else
+	    cases.safe_push (NULL);
+	}
     }
 
   scop->scop_info->bbs.safe_push (bb);
@@ -1509,8 +1542,12 @@ gather_bbs::after_dom_children (basic_block bb)
 
   if (single_pred_cond_non_loop_exit (bb))
     {
-      conditions.pop ();
-      cases.pop ();
+      edge e = single_pred_edge (bb);
+      if (e != scop->scop_info->region.entry)
+	{
+	  conditions.pop ();
+	  cases.pop ();
+	}
     }
 }
 

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-set-target-env-var ASAN_OPTIONS "detect_invalid_pointer_pairs=1:halt_on_error=0" } */
+/* { dg-set-target-env-var ASAN_OPTIONS "detect_invalid_pointer_pairs=2:halt_on_error=0" } */
 /* { dg-options "-fsanitize=address,pointer-compare" } */
 
 volatile int v;

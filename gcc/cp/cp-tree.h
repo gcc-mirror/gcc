@@ -3147,7 +3147,7 @@ struct GTY(()) lang_decl {
 /* For a non-member friend function, the class (if any) in which this
    friend was defined.  For example, given:
 
-     struct S { friend void f (); };
+     struct S { friend void f () { ... } };
 
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
 #define DECL_FRIEND_CONTEXT(NODE)				\
@@ -3581,7 +3581,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
     : &TYPE_MIN_VALUE_RAW (TYPE_PACK_EXPANSION_CHECK (NODE)))
 
 /* Any additional template args to be applied when substituting into
-   the pattern, set by tsubst_pack_expansion for partial instantiations.  */
+   the pattern, set by tsubst_pack_expansion for partial instantiations.
+   If this is a TREE_LIST, the TREE_VALUE of the first element is the
+   usual template argument TREE_VEC, and the TREE_PURPOSE of later elements
+   are enclosing functions that provided function parameter packs we'll need
+   to map appropriately.  */
 #define PACK_EXPANSION_EXTRA_ARGS(NODE)		\
   *(TREE_CODE (NODE) == TYPE_PACK_EXPANSION	\
     ? &TYPE_MAX_VALUE_RAW (NODE)			\
@@ -3639,12 +3643,6 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define ARGUMENT_PACK_SELECT_INDEX(NODE)				\
   (((struct tree_argument_pack_select *)ARGUMENT_PACK_SELECT_CHECK (NODE))->index)
   
-/* In an ARGUMENT_PACK_SELECT, the actual underlying argument that the
-   ARGUMENT_PACK_SELECT represents. */
-#define ARGUMENT_PACK_SELECT_ARG(NODE)					\
-  TREE_VEC_ELT (ARGUMENT_PACK_ARGS (ARGUMENT_PACK_SELECT_FROM_PACK (NODE)), \
-	        ARGUMENT_PACK_SELECT_INDEX (NODE))
-
 #define FOLD_EXPR_CHECK(NODE)						\
   TREE_CHECK4 (NODE, UNARY_LEFT_FOLD_EXPR, UNARY_RIGHT_FOLD_EXPR,	\
 	       BINARY_LEFT_FOLD_EXPR, BINARY_RIGHT_FOLD_EXPR)
@@ -6122,7 +6120,6 @@ extern int current_lang_depth			(void);
 extern void push_lang_context			(tree);
 extern void pop_lang_context			(void);
 extern tree instantiate_type			(tree, tree, tsubst_flags_t);
-extern void print_class_statistics		(void);
 extern void build_self_reference		(void);
 extern int same_signature_p			(const_tree, const_tree);
 extern void maybe_add_class_template_decl_list	(tree, tree, int);
@@ -6214,7 +6211,7 @@ extern bool note_iteration_stmt_body_start	(void);
 extern void note_iteration_stmt_body_end	(bool);
 extern tree make_lambda_name			(void);
 extern int decls_match				(tree, tree, bool = true);
-extern bool maybe_version_functions		(tree, tree);
+extern bool maybe_version_functions		(tree, tree, bool);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
 extern tree define_label			(location_t, tree);
@@ -6569,17 +6566,19 @@ extern void end_specialization			(void);
 extern void begin_explicit_instantiation	(void);
 extern void end_explicit_instantiation		(void);
 extern void check_unqualified_spec_or_inst	(tree, location_t);
-extern tree check_explicit_specialization	(tree, tree, int, int);
+extern tree check_explicit_specialization	(tree, tree, int, int,
+						 tree = NULL_TREE);
 extern int num_template_headers_for_class	(tree);
 extern void check_template_variable		(tree);
 extern tree make_auto				(void);
 extern tree make_decltype_auto			(void);
 extern tree make_template_placeholder		(tree);
 extern bool template_placeholder_p		(tree);
-extern tree do_auto_deduction                   (tree, tree, tree);
 extern tree do_auto_deduction                   (tree, tree, tree,
-                                                 tsubst_flags_t,
-                                                 auto_deduction_context,
+                                                 tsubst_flags_t
+						 = tf_warning_or_error,
+                                                 auto_deduction_context
+						 = adc_unspecified,
 						 tree = NULL_TREE,
 						 int = LOOKUP_NORMAL);
 extern tree type_uses_auto			(tree);
@@ -6997,11 +6996,11 @@ extern tree lambda_function			(tree);
 extern void apply_deduced_return_type           (tree, tree);
 extern tree add_capture                         (tree, tree, tree, bool, bool);
 extern tree add_default_capture                 (tree, tree, tree);
-extern tree build_capture_proxy			(tree, tree);
 extern void insert_capture_proxy		(tree);
 extern void insert_pending_capture_proxies	(void);
 extern bool is_capture_proxy			(tree);
 extern bool is_normal_capture_proxy             (tree);
+extern bool is_capture_proxy_with_ref           (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, bool);
 extern void maybe_generic_this_capture		(tree, tree);
@@ -7521,6 +7520,7 @@ extern bool require_potential_constant_expression (tree);
 extern bool require_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
+extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
 extern tree maybe_constant_init			(tree, tree = NULL_TREE);
 extern tree fold_non_dependent_expr		(tree);

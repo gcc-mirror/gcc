@@ -23,16 +23,16 @@ x.i = "12"
 x.j = "34"
 
 if (y.buf(1) .ne. '1') then
-  call abort
+  STOP 1
 endif
 if (y.buf(2) .ne. '2') then
-  call abort
+  STOP 2
 endif
 if (y.buf(5) .ne. '3') then
-  call abort
+  STOP 3
 endif
 if (y.buf(6) .ne. '4') then
-  call abort
+  STOP 4
 endif
 
 end

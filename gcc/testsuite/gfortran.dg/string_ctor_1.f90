@@ -12,7 +12,7 @@ subroutine test1 (n, t, u)
   ! A variable array constructor.
   s = (/t, u/)
   ! An array constructor as part of an expression.
-  if (any (s .ne. (/"Hell", "Worl"/))) call abort
+  if (any (s .ne. (/"Hell", "Worl"/))) STOP 1
 end subroutine
 
 subroutine test2
@@ -20,7 +20,7 @@ subroutine test2
 
   ! A constant array constructor
   s = (/"Hello", "World"/)
-  if ((s(1) .ne. "Hello") .or. (s(2) .ne. "World")) call abort
+  if ((s(1) .ne. "Hello") .or. (s(2) .ne. "World")) STOP 2
 end subroutine
 
 subroutine test3
@@ -40,7 +40,7 @@ subroutine test3
   do i=1, 26
     t(i:i) = s(i)
   end do
-  if (t .ne. "zyxwvutsrqponmlkjihgfedcba") call abort
+  if (t .ne. "zyxwvutsrqponmlkjihgfedcba") STOP 3
 end subroutine
 
 program string_ctor_1

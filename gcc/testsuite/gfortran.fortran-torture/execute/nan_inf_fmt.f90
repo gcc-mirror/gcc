@@ -16,73 +16,73 @@
 ! check a field width = 0
        fmt = '(F0.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.'Inf') call abort
+       if (l.ne.'Inf') STOP 1
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'-Inf') call abort
+       if (l.ne.'-Inf') STOP 2
        write(l,fmt=fmt)nan
-       if (l.ne.'NaN') call abort
+       if (l.ne.'NaN') STOP 3
 
 ! check a field width < 3
        fmt = '(F2.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.'**') call abort
+       if (l.ne.'**') STOP 4
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'**') call abort
+       if (l.ne.'**') STOP 5
        write(l,fmt=fmt)nan
-       if (l.ne.'**') call abort
+       if (l.ne.'**') STOP 6
 
 ! check a field width = 3
        fmt = '(F3.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.'Inf') call abort
+       if (l.ne.'Inf') STOP 7
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'***') call abort
+       if (l.ne.'***') STOP 8
        write(l,fmt=fmt)nan
-       if (l.ne.'NaN') call abort
+       if (l.ne.'NaN') STOP 9
 
 ! check a field width > 3
        fmt = '(F4.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.' Inf') call abort
+       if (l.ne.' Inf') STOP 10
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'-Inf') call abort
+       if (l.ne.'-Inf') STOP 11
        write(l,fmt=fmt)nan
-       if (l.ne.' NaN') call abort
+       if (l.ne.' NaN') STOP 12
 
 ! check a field width = 7
        fmt = '(F7.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.'    Inf') call abort
+       if (l.ne.'    Inf') STOP 13
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'   -Inf') call abort
+       if (l.ne.'   -Inf') STOP 14
        write(l,fmt=fmt)nan
-       if (l.ne.'    NaN') call abort
+       if (l.ne.'    NaN') STOP 15
 
 ! check a field width = 8
        fmt = '(F8.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.'Infinity') call abort
+       if (l.ne.'Infinity') STOP 16
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'    -Inf') call abort
+       if (l.ne.'    -Inf') STOP 17
        write(l,fmt=fmt)nan
-       if (l.ne.'     NaN') call abort
+       if (l.ne.'     NaN') STOP 18
 
 ! check a field width = 9
        fmt = '(F9.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.' Infinity') call abort
+       if (l.ne.' Infinity') STOP 19
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'-Infinity') call abort
+       if (l.ne.'-Infinity') STOP 20
        write(l,fmt=fmt)nan
-       if (l.ne.'      NaN') call abort
+       if (l.ne.'      NaN') STOP 21
 
 ! check a field width = 14
        fmt = '(F14.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.'      Infinity') call abort
+       if (l.ne.'      Infinity') STOP 22
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'     -Infinity') call abort
+       if (l.ne.'     -Infinity') STOP 23
        write(l,fmt=fmt)nan
-       if (l.ne.'           NaN') call abort
+       if (l.ne.'           NaN') STOP 24
        end
 

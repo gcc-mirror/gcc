@@ -31,10 +31,10 @@
         ALLOCATE (A(100))
         A = (/ (A_TYPE(I), I=1,SIZE(A)) /)
         A(1:50) = A(51:100)
-        IF (ANY(A%I /= (/ ((50+I, I=1,SIZE(A)/2), J=1,2) /))) CALL ABORT
+        IF (ANY(A%I /= (/ ((50+I, I=1,SIZE(A)/2), J=1,2) /))) STOP 1
         A(::2) = A(1:50)        ! pack/unpack
-        IF (ANY(A( ::2)%I /= (/ (50+I, I=1,SIZE(A)/2) /))) CALL ABORT  
-        IF (ANY(A(2::2)%I /= (/ ((50+2*I, I=1,SIZE(A)/4), J=1,2) /))) CALL ABORT  
+        IF (ANY(A( ::2)%I /= (/ (50+I, I=1,SIZE(A)/2) /))) STOP 2
+        IF (ANY(A(2::2)%I /= (/ ((50+2*I, I=1,SIZE(A)/4), J=1,2) /))) STOP 3
       END PROGRAM
 
 ! { dg-final { scan-tree-dump-times "_gfortran_internal_pack" 1 "original" } }

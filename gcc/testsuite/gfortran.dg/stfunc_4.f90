@@ -10,8 +10,8 @@
   st1 (i) = i * i * i 
   FORALL(i=1:4) a(i) = st1 (i) 
   FORALL(i=1:4) a(i) = u (a(i)) - a(i)** 2 
-  if (any (a .ne. 0)) call abort ()
-  if (i .ne. 99) call abort ()
+  if (any (a .ne. 0)) STOP 1
+  if (i .ne. 99) STOP 2
 contains
   pure integer function u (x)
     integer,intent(in) :: x

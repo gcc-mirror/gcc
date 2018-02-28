@@ -2009,7 +2009,10 @@ decay_conversion (tree exp,
     return error_mark_node;
 
   if (NULLPTR_TYPE_P (type) && !TREE_SIDE_EFFECTS (exp))
-    return nullptr_node;
+    {
+      mark_rvalue_use (exp, loc, reject_builtin);
+      return nullptr_node;
+    }
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
@@ -3133,7 +3136,7 @@ cp_build_indirect_ref_1 (tree ptr, ref_operator errorstring,
 	     the backend.  This only needs to be done at
 	     warn_strict_aliasing > 2.  */
 	  if (warn_strict_aliasing > 2)
-	    if (strict_aliasing_warning (TREE_TYPE (TREE_OPERAND (ptr, 0)),
+	    if (strict_aliasing_warning (EXPR_LOCATION (ptr),
 					 type, TREE_OPERAND (ptr, 0)))
 	      TREE_NO_WARNING (ptr) = 1;
 	}
@@ -5735,7 +5738,8 @@ build_address (tree t)
 {
   if (error_operand_p (t) || !cxx_mark_addressable (t))
     return error_mark_node;
-  gcc_checking_assert (TREE_CODE (t) != CONSTRUCTOR);
+  gcc_checking_assert (TREE_CODE (t) != CONSTRUCTOR
+		       || processing_template_decl);
   t = build_fold_addr_expr_loc (EXPR_LOCATION (t), t);
   if (TREE_CODE (t) != ADDR_EXPR)
     t = rvalue (t);
@@ -7330,7 +7334,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = cp_build_addr_expr (expr, complain);
 
       if (warn_strict_aliasing > 2)
-	strict_aliasing_warning (TREE_TYPE (expr), type, expr);
+	strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
 
       if (expr != error_mark_node)
 	expr = build_reinterpret_cast_1
@@ -7424,8 +7428,6 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
   else if ((TYPE_PTRDATAMEM_P (type) && TYPE_PTRDATAMEM_P (intype))
 	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
     {
-      tree sexpr = expr;
-
       if (!c_cast_p
 	  && check_for_casting_away_constness (intype, type,
 					       REINTERPRET_CAST_EXPR,
@@ -7443,11 +7445,9 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	warning (OPT_Wcast_align, "cast from %qH to %qI "
 		 "increases required alignment of target type", intype, type);
 
-      /* We need to strip nops here, because the front end likes to
-	 create (int *)&a for array-to-pointer decay, instead of &a[0].  */
-      STRIP_NOPS (sexpr);
       if (warn_strict_aliasing <= 2)
-	strict_aliasing_warning (intype, type, sexpr);
+	/* strict_aliasing_warning STRIP_NOPs its expr.  */
+	strict_aliasing_warning (EXPR_LOCATION (expr), type, expr);
 
       return build_nop (type, expr);
     }
@@ -9232,7 +9232,8 @@ check_return_expr (tree retval, bool *no_warning)
 
   /* Effective C++ rule 15.  See also start_function.  */
   if (warn_ecpp
-      && DECL_NAME (current_function_decl) == assign_op_identifier)
+      && DECL_NAME (current_function_decl) == assign_op_identifier
+      && !type_dependent_expression_p (retval))
     {
       bool warn = true;
 

@@ -28,7 +28,7 @@ contains
     integer, intent(in) :: array1(:,:), array2(:,:)
     integer :: j
     do j = 1, ubound(array2,2)
-      if (any (array1(:,j) .ne. array2(:,4-j))) call abort
+      if (any (array1(:,j) .ne. array2(:,4-j))) STOP 1
     end do
   end subroutine
 end 
@@ -41,19 +41,19 @@ SUBROUTINE PR38852(IDA,DDA,nf2,nf5,mf2)
   TARGET DDA
   DLA => DDA(2:3, 1:3:2, 5:4:-1, NF2, NF5:NF2:MF2)
   IDA = UBOUND(DLA)
-  if (any(ida /= 2)) call abort
+  if (any(ida /= 2)) STOP 1
   DLA => DDA(2:3, 1:3:2, 5:4:-1, 2, 5:2:-2)
   IDA = UBOUND(DLA)
-  if (any(ida /= 2)) call abort
+  if (any(ida /= 2)) STOP 1
 !
 ! These worked.
 !
   DLA => DDA(2:3, 1:3:2, 5:4:-1, 2, 5:2:-2)
   IDA = shape(DLA)
-  if (any(ida /= 2)) call abort
+  if (any(ida /= 2)) STOP 1
   DLA => DDA(2:3, 1:3:2, 5:4:-1, 2, 5:2:-2)
   IDA = LBOUND(DLA)
-  if (any(ida /= 1)) call abort
+  if (any(ida /= 1)) STOP 1
 END SUBROUTINE
 
 subroutine mikael
@@ -66,6 +66,6 @@ contains
   subroutine test (a, b, expect)
     integer :: a, b, expect
     integer :: c(a:b)
-    if (ubound (c, 1) .ne. expect) call abort
+    if (ubound (c, 1) .ne. expect) STOP 1
   end subroutine test
 end subroutine

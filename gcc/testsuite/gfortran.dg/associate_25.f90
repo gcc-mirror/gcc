@@ -23,7 +23,7 @@ contains
     end associate
 ! This should now be 4 but the finalization is not happening.
 ! TODO put it right!
-    if (final_flag .ne. 2) call abort
+    if (final_flag .ne. 2) STOP 1
   end subroutine Testf
 end module
 

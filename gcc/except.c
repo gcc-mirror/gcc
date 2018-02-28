@@ -2465,14 +2465,6 @@ add_call_site (rtx landing_pad, int action, int section)
 static rtx_note *
 emit_note_eh_region_end (rtx_insn *insn)
 {
-  rtx_insn *next = NEXT_INSN (insn);
-
-  /* Make sure we do not split a call and its corresponding
-     CALL_ARG_LOCATION note.  */
-  if (next && NOTE_P (next)
-      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-    insn = next;
-
   return emit_note_after (NOTE_INSN_EH_REGION_END, insn);
 }
 

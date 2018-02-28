@@ -705,11 +705,51 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	   and the outer precision is at least as large as the inner.  */
 	tree itype = TREE_TYPE (op0);
 	if ((POINTER_TYPE_P (itype)
-	     || (INTEGRAL_TYPE_P (itype) && TYPE_OVERFLOW_UNDEFINED (itype)))
+	     || (INTEGRAL_TYPE_P (itype) && !TYPE_OVERFLOW_TRAPS (itype)))
 	    && TYPE_PRECISION (type) >= TYPE_PRECISION (itype)
 	    && (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type)))
 	  {
-	    split_constant_offset (op0, &var0, off);
+	    if (INTEGRAL_TYPE_P (itype) && TYPE_OVERFLOW_WRAPS (itype))
+	      {
+		/* Split the unconverted operand and try to prove that
+		   wrapping isn't a problem.  */
+		tree tmp_var, tmp_off;
+		split_constant_offset (op0, &tmp_var, &tmp_off);
+
+		/* See whether we have an SSA_NAME whose range is known
+		   to be [A, B].  */
+		if (TREE_CODE (tmp_var) != SSA_NAME)
+		  return false;
+		wide_int var_min, var_max;
+		value_range_type vr_type = get_range_info (tmp_var, &var_min,
+							   &var_max);
+		wide_int var_nonzero = get_nonzero_bits (tmp_var);
+		signop sgn = TYPE_SIGN (itype);
+		if (intersect_range_with_nonzero_bits (vr_type, &var_min,
+						       &var_max, var_nonzero,
+						       sgn) != VR_RANGE)
+		  return false;
+
+		/* See whether the range of OP0 (i.e. TMP_VAR + TMP_OFF)
+		   is known to be [A + TMP_OFF, B + TMP_OFF], with all
+		   operations done in ITYPE.  The addition must overflow
+		   at both ends of the range or at neither.  */
+		bool overflow[2];
+		unsigned int prec = TYPE_PRECISION (itype);
+		wide_int woff = wi::to_wide (tmp_off, prec);
+		wide_int op0_min = wi::add (var_min, woff, sgn, &overflow[0]);
+		wi::add (var_max, woff, sgn, &overflow[1]);
+		if (overflow[0] != overflow[1])
+		  return false;
+
+		/* Calculate (ssizetype) OP0 - (ssizetype) TMP_VAR.  */
+		widest_int diff = (widest_int::from (op0_min, sgn)
+				   - widest_int::from (var_min, sgn));
+		var0 = tmp_var;
+		*off = wide_int_to_tree (ssizetype, diff);
+	      }
+	    else
+	      split_constant_offset (op0, &var0, off);
 	    *var = fold_convert (type, var0);
 	    return true;
 	  }
@@ -2160,13 +2200,10 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
     {
       if (TREE_CODE (obj) == ARRAY_REF)
 	{
-	  /* Index of the ARRAY_REF was zeroed in analyze_indices, thus we only
-	     need to check the stride and the lower bound of the reference.  */
-	  if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (obj, 2),
-						      loop->num)
-	      || chrec_contains_symbols_defined_in_loop (TREE_OPERAND (obj, 3),
-							 loop->num))
-	    return false;
+	  for (int i = 1; i < 4; ++i)
+	    if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (obj, i),
+							loop->num))
+	      return false;
 	}
       else if (TREE_CODE (obj) == COMPONENT_REF)
 	{

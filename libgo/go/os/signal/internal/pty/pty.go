@@ -33,21 +33,35 @@ func close(int32) int32
 
 const _O_RDWR = 2
 
+type PtyError struct {
+	FuncName    string
+	ErrorString string
+	Errno       syscall.Errno
+}
+
+func ptyError(name string, err error) *PtyError {
+	return &PtyError{name, err.Error(), err.(syscall.Errno)}
+}
+
+func (e *PtyError) Error() string {
+	return fmt.Sprintf("%s: %s", e.FuncName, e.ErrorString)
+}
+
 // Open returns a master pty and the name of the linked slave tty.
 func Open() (master *os.File, slave string, err error) {
 	m := posix_openpt(_O_RDWR)
 	if m < 0 {
-		return nil, "", fmt.Errorf("posix_openpt: %v", syscall.GetErrno())
+		return nil, "", ptyError("posix_openpt", syscall.GetErrno())
 	}
 	if grantpt(m) < 0 {
 		errno := syscall.GetErrno()
 		close(m)
-		return nil, "", fmt.Errorf("grantpt: %v", errno)
+		return nil, "", ptyError("grantpt", errno)
 	}
 	if unlockpt(m) < 0 {
 		errno := syscall.GetErrno()
 		close(m)
-		return nil, "", fmt.Errorf("unlockpt: %v", errno)
+		return nil, "", ptyError("unlockpt", errno)
 	}
 	p := ptsname(m)
 	s := (*[32000]byte)(unsafe.Pointer(p))[:]

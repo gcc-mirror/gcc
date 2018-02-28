@@ -1162,14 +1162,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 
   gcc_assert (curr->op == EXEC_TRANSFER);
 
-  /* FIXME: Workaround for PR 80945 - array slices with deferred character
-     lenghts do not work.  Remove this section when the PR is fixed.  */
   e = curr->expr1;
-  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_CHARACTER
-      && e->ts.deferred)
-    return false;
-  /* End of section to be removed.  */
-
   ref = e->ref;
   if (!ref || ref->type != REF_ARRAY || ref->u.ar.codimen != 0 || ref->next)
     return false;
@@ -3567,10 +3560,26 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 			 is the lbound of a full ref.  */
 		      int j;
 		      gfc_array_ref *ar;
+		      int to;
 
 		      ar = &ref->u.ar;
-		      ar->type = AR_FULL;
-		      for (j = 0; j < ar->dimen; j++)
+
+		      /* For assumed size, we need to keep around the final
+			 reference in order not to get an error on resolution
+			 below, and we cannot use AR_FULL.  */
+			 
+		      if (ar->as->type == AS_ASSUMED_SIZE)
+			{
+			  ar->type = AR_SECTION;
+			  to = ar->dimen - 1;
+			}
+		      else
+			{
+			  to = ar->dimen;
+			  ar->type = AR_FULL;
+			}
+
+		      for (j = 0; j < to; j++)
 			{
 			  gfc_free_expr (ar->start[j]);
 			  ar->start[j] = NULL;

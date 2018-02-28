@@ -8,5 +8,5 @@ write(10,*) i
 rewind(10)
 read(10,*) astring
 close (10)
-if (astring.ne.'+789') call abort
+if (astring.ne.'+789') STOP 1
 end

@@ -69,5 +69,5 @@ PROGRAM test
   chairman%age=62
 
   inquire(iolength=rl) rl, kl, chairman, rl, chairman, tl
-  if (rl.ne.64) call abort
+  if (rl.ne.64) STOP 1
 END PROGRAM test

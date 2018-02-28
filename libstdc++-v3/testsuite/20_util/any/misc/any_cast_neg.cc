@@ -20,11 +20,26 @@
 
 #include <any>
 
+using std::any;
+using std::any_cast;
+
 void test01()
 {
-  using std::any;
-  using std::any_cast;
-
   const any y(1);
-  any_cast<int&>(y); // { dg-error "invalid static_cast" "" { target { *-*-* } } 460 }
+  any_cast<int&>(y); // { dg-error "invalid static_cast" "" { target { *-*-* } } 461 }
+  // { dg-error "Template argument must be constructible from a const value" "" { target { *-*-* } } 457 }
+}
+
+void test02()
+{
+  any y(1);
+  any_cast<int&&>(y);
+  // { dg-error "Template argument must be constructible from an lvalue" "" { target { *-*-* } } 483 }
+}
+
+void test03()
+{
+  any y(1);
+  any_cast<int&>(std::move(y));  // { dg-error "invalid static_cast" "" { target { *-*-* } } 501 }
+  // { dg-error "Template argument must be constructible from an rvalue" "" { target { *-*-* } } 497 }
 }

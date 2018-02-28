@@ -88,6 +88,6 @@ program TestProgram
   Table%RealData(:,5) = Table%RealData(:,5) * CENTIMETER
 
 !  print *, Table%RealData
-  if (any (abs(Table%RealData(:,4) - 1) > epsilon(1.0))) call abort ()
-  if (any (abs(Table%RealData(:,[1,2,3,5]) - 42) > epsilon(1.0))) call abort ()
+  if (any (abs(Table%RealData(:,4) - 1) > epsilon(1.0))) STOP 1
+  if (any (abs(Table%RealData(:,[1,2,3,5]) - 42) > epsilon(1.0))) STOP 2
 end program TestProgram

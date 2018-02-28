@@ -585,6 +585,20 @@ gfc_match_data (void)
       if (m != MATCH_YES)
 	goto cleanup;
 
+      if (new_data->var->iter.var
+	  && new_data->var->iter.var->ts.type == BT_INTEGER
+	  && new_data->var->iter.var->symtree->n.sym->attr.implied_index == 1
+	  && new_data->var->list
+	  && new_data->var->list->expr
+	  && new_data->var->list->expr->ts.type == BT_CHARACTER
+	  && new_data->var->list->expr->ref
+	  && new_data->var->list->expr->ref->type == REF_SUBSTRING)
+	{
+	  gfc_error ("Invalid substring in data-implied-do at %L in DATA "
+		     "statement", &new_data->var->list->expr->where);
+	  goto cleanup;
+	}
+
       m = top_val_list (new_data);
       if (m != MATCH_YES)
 	goto cleanup;
@@ -2290,7 +2304,10 @@ variable_decl (int elem)
   /* At this point, we know for sure if the symbol is PARAMETER and can thus
      determine (and check) whether it can be implied-shape.  If it
      was parsed as assumed-size, change it because PARAMETERs can not
-     be assumed-size.  */
+     be assumed-size.
+
+     An explicit-shape-array cannot appear under several conditions.
+     That check is done here as well.  */
   if (as)
     {
       if (as->type == AS_IMPLIED_SHAPE && current_attr.flavor != FL_PARAMETER)
@@ -2311,6 +2328,50 @@ variable_decl (int elem)
 	{
 	  m = MATCH_ERROR;
 	  goto cleanup;
+	}
+
+      /* F2018:C830 (R816) An explicit-shape-spec whose bounds are not
+	 constant expressions shall appear only in a subprogram, derived
+	 type definition, BLOCK construct, or interface body.  */
+      if (as->type == AS_EXPLICIT
+	  && gfc_current_state () != COMP_BLOCK
+	  && gfc_current_state () != COMP_DERIVED
+	  && gfc_current_state () != COMP_FUNCTION
+	  && gfc_current_state () != COMP_INTERFACE
+	  && gfc_current_state () != COMP_SUBROUTINE)
+	{
+	  gfc_expr *e;
+	  bool not_constant = false;
+
+	  for (int i = 0; i < as->rank; i++)
+	    {
+	      e = gfc_copy_expr (as->lower[i]);
+	      gfc_resolve_expr (e);
+	      gfc_simplify_expr (e, 0);
+	      if (e && (e->expr_type != EXPR_CONSTANT))
+		{
+		  not_constant = true;
+		  break;
+		}
+	      gfc_free_expr (e);
+
+	      e = gfc_copy_expr (as->upper[i]);
+	      gfc_resolve_expr (e);
+	      gfc_simplify_expr (e, 0);
+	      if (e && (e->expr_type != EXPR_CONSTANT))
+		{
+		  not_constant = true;
+		  break;
+		}
+	      gfc_free_expr (e);
+	    }
+
+	  if (not_constant)
+	    { 
+	      gfc_error ("Explicit shaped array with nonconstant bounds at %C");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
 	}
     }
 
@@ -3302,7 +3363,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 		kind_expr = gfc_copy_expr (c1->initializer);
 	      else if (!(actual_param && param->attr.pdt_len))
 		{
-		  gfc_error ("The derived parameter '%qs' at %C does not "
+		  gfc_error ("The derived parameter %qs at %C does not "
 			     "have a default value", param->name);
 		  goto error_return;
 		}
@@ -3362,14 +3423,14 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  && (actual_param->spec_type == SPEC_ASSUMED
 	      || actual_param->spec_type == SPEC_DEFERRED))
 	{
-	  gfc_error ("The KIND parameter '%qs' at %C cannot either be "
+	  gfc_error ("The KIND parameter %qs at %C cannot either be "
 		     "ASSUMED or DEFERRED", param->name);
 	  goto error_return;
 	}
 
       if (!kind_expr || !gfc_is_constant_expr (kind_expr))
 	{
-	  gfc_error ("The value for the KIND parameter '%qs' at %C does not "
+	  gfc_error ("The value for the KIND parameter %qs at %C does not "
 		     "reduce to a constant expression", param->name);
 	  goto error_return;
 	}

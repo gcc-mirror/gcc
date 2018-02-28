@@ -29,7 +29,7 @@ class Backend;
    interface.  */
 
 extern int go_enable_dump (const char*);
-extern int go_enable_optimize (const char*);
+extern int go_enable_optimize (const char*, int);
 
 extern void go_add_search_path (const char*);
 

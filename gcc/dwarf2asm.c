@@ -767,6 +767,35 @@ dw2_asm_output_data_sleb128 (HOST_WIDE_INT value,
   va_end (ap);
 }
 
+/* Output symbol LAB1 as an unsigned LEB128 quantity.  LAB1 should be
+   an assembler-computed constant, e.g. a view number, because we
+   can't have relocations in LEB128 quantities.  */
+
+void
+dw2_asm_output_symname_uleb128 (const char *lab1 ATTRIBUTE_UNUSED,
+				const char *comment, ...)
+{
+  va_list ap;
+
+  va_start (ap, comment);
+
+#ifdef HAVE_AS_LEB128
+  fputs ("\t.uleb128 ", asm_out_file);
+  assemble_name (asm_out_file, lab1);
+#else
+  gcc_unreachable ();
+#endif
+
+  if (flag_debug_asm && comment)
+    {
+      fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
+      vfprintf (asm_out_file, comment, ap);
+    }
+  fputc ('\n', asm_out_file);
+
+  va_end (ap);
+}
+
 void
 dw2_asm_output_delta_uleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 			      const char *lab2 ATTRIBUTE_UNUSED,

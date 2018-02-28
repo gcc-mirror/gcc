@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -floop-interchange -fdump-tree-linterchange-details" } */
-/* { dg-skip-if "too big data segment" { visium-*-* } } */
+/* { dg-skip-if "too big data segment" { avr-*-* visium-*-* } } */
 
 /* Copied from graphite/interchange-5.c */
 

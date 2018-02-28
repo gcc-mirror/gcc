@@ -1151,7 +1151,6 @@ process_file (const char *file_name)
 	function_info **slot = fn_map.get (needle);
 	if (slot)
 	  {
-	    gcc_assert ((*slot)->end_line == (*it)->end_line);
 	    (*slot)->is_group = 1;
 	    (*it)->is_group = 1;
 	  }
@@ -2957,7 +2956,14 @@ output_lines (FILE *gcov_file, const source_info *src)
 	{
 	  fns = src->get_functions_at_location (line_num);
 	  if (fns.size () > 1)
-	    line_start_group = fns[0]->end_line;
+	    {
+	      /* It's possible to have functions that partially overlap,
+		 thus take the maximum end_line of functions starting
+		 at LINE_NUM.  */
+	      for (unsigned i = 0; i < fns.size (); i++)
+		if (fns[i]->end_line > line_start_group)
+		  line_start_group = fns[i]->end_line;
+	    }
 	  else if (fns.size () == 1)
 	    {
 	      function_info *fn = fns[0];

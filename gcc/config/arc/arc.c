@@ -7700,10 +7700,7 @@ hwloop_optimize (hwloop_info loop)
 #if 0
       while (DEBUG_INSN_P (entry_after)
              || (NOTE_P (entry_after)
-                 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK
-		 /* Make sure we don't split a call and its corresponding
-		    CALL_ARG_LOCATION note.  */
-                 && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
+		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))
         entry_after = NEXT_INSN (entry_after);
 #endif
       entry_after = next_nonnote_nondebug_insn_bb (entry_after);

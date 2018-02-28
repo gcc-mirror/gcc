@@ -1709,12 +1709,13 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs, tree lhs_kind,
 	  gfc_add_expr_to_block (&se->pre, tmp);
 
 	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_get_by_ref,
-				     9, token, image_index, dst_var,
+				     10, token, image_index, dst_var,
 				     caf_reference, lhs_kind, kind,
 				     may_require_tmp,
 				     may_realloc ? boolean_true_node :
 						   boolean_false_node,
-				     stat);
+				     stat, build_int_cst (integer_type_node,
+							  array_expr->ts.type));
 
 	  gfc_add_expr_to_block (&se->pre, tmp);
 
@@ -2100,9 +2101,11 @@ conv_caf_send (gfc_code *code) {
 					     : boolean_false_node;
 	  tmp = build_call_expr_loc (input_location,
 				     gfor_fndecl_caf_send_by_ref,
-				     9, token, image_index, rhs_se.expr,
+				     10, token, image_index, rhs_se.expr,
 				     reference, lhs_kind, rhs_kind,
-				     may_require_tmp, dst_realloc, src_stat);
+				     may_require_tmp, dst_realloc, src_stat,
+				     build_int_cst (integer_type_node,
+						    lhs_expr->ts.type));
 	  }
       else
 	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send, 11,
@@ -2147,11 +2150,15 @@ conv_caf_send (gfc_code *code) {
 	  lhs_reference = conv_expr_ref_to_caf_ref (&block, lhs_expr);
 	  rhs_reference = conv_expr_ref_to_caf_ref (&block, rhs_expr);
 	  tmp = build_call_expr_loc (input_location,
-				     gfor_fndecl_caf_sendget_by_ref, 11,
+				     gfor_fndecl_caf_sendget_by_ref, 13,
 				     token, image_index, lhs_reference,
 				     rhs_token, rhs_image_index, rhs_reference,
 				     lhs_kind, rhs_kind, may_require_tmp,
-				     dst_stat, src_stat);
+				     dst_stat, src_stat,
+				     build_int_cst (integer_type_node,
+						    lhs_expr->ts.type),
+				     build_int_cst (integer_type_node,
+						    rhs_expr->ts.type));
 	}
       else
 	{
@@ -5593,6 +5600,22 @@ gfc_conv_intrinsic_ibits (gfc_se * se, gfc_expr * expr)
 }
 
 static void
+gfc_conv_intrinsic_shape (gfc_se *se, gfc_expr *expr)
+{
+  gfc_actual_arglist *s, *k;
+  gfc_expr *e;
+
+  /* Remove the KIND argument, if present. */
+  s = expr->value.function.actual;
+  k = s->next;
+  e = k->expr;
+  gfc_free_expr (e);
+  k->expr = NULL;
+
+  gfc_conv_intrinsic_funcall (se, expr);
+}
+
+static void
 gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
 			  bool arithmetic)
 {
@@ -7583,6 +7606,11 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
       tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node, tmp,
 			     fold_convert (TREE_TYPE (tmp), null_pointer_node));
     }
+
+  /* Components of pointer array references sometimes come back with a pre block.  */
+  if (arg1se.pre.head)
+    gfc_add_block_to_block (&se->pre, &arg1se.pre);
+
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
 }
 
@@ -8718,6 +8746,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	      gfc_conv_intrinsic_minmaxloc (se, expr, GT_EXPR);
 	      break;
 
+	    case GFC_ISYM_SHAPE:
+	      gfc_conv_intrinsic_shape (se, expr);
+	      break;
+
 	    default:
 	      gfc_conv_intrinsic_funcall (se, expr);
 	      break;
@@ -9797,12 +9829,12 @@ conv_co_collective (gfc_code *code)
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       errmsg = argse.expr;
-      errmsg_len = fold_convert (integer_type_node, argse.string_length);
+      errmsg_len = fold_convert (size_type_node, argse.string_length);
     }
   else
     {
       errmsg = null_pointer_node;
-      errmsg_len = integer_zero_node;
+      errmsg_len = build_zero_cst (size_type_node);
     }
 
   /* Generate the function call.  */

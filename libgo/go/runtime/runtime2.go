@@ -409,11 +409,15 @@ type g struct {
 	// gcnextsegment: unused
 	// gcnextsp: current SP while executing a syscall
 	// gcinitialsp: g0: top of stack; others: start of stack memory
+	// gcnextsp2: current secondary stack pointer (if present)
+	// gcinitialsp2: start of secondary stack (if present)
 	gcstack       uintptr
 	gcstacksize   uintptr
 	gcnextsegment uintptr
 	gcnextsp      uintptr
 	gcinitialsp   unsafe.Pointer
+	gcnextsp2     uintptr
+	gcinitialsp2  unsafe.Pointer
 
 	// gcregs holds the register values while executing a syscall.
 	// This is set by getcontext and scanned by the garbage collector.

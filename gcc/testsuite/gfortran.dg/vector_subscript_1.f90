@@ -89,7 +89,7 @@ program main
   a (foo (5, calls)) = b (foo (5, calls))
   call test (foo (5, calls), foo (5, calls))
 
-  if (calls .ne. 8) call abort
+  if (calls .ne. 8) STOP 1
 
   !------------------------------------------------------------------
   ! Tests for constant vector constructors
@@ -125,31 +125,31 @@ program main
 
   calls = 0
   a (idx (1:6)) = foo (6, calls)
-  if (calls .ne. 1) call abort
+  if (calls .ne. 1) STOP 2
   do i = 1, 6
-    if (a (idx (i)) .ne. i + 3) call abort
+    if (a (idx (i)) .ne. i + 3) STOP 3
   end do
   a = 0
 
   calls = 0
   a (idx (1:6)) = foo (6, calls) * 100
-  if (calls .ne. 1) call abort
+  if (calls .ne. 1) STOP 4
   do i = 1, 6
-    if (a (idx (i)) .ne. (i + 3) * 100) call abort
+    if (a (idx (i)) .ne. (i + 3) * 100) STOP 5
   end do
   a = 0
 
   a (idx) = id + 100
   do i = 1, n
-    if (a (idx (i)) .ne. i + 100) call abort
+    if (a (idx (i)) .ne. i + 100) STOP 6
   end do
   a = 0
 
   a (idx (1:10:3)) = (/ 20, 10, 9, 11 /)
-  if (a (idx (1)) .ne. 20) call abort
-  if (a (idx (4)) .ne. 10) call abort
-  if (a (idx (7)) .ne. 9) call abort
-  if (a (idx (10)) .ne. 11) call abort
+  if (a (idx (1)) .ne. 20) STOP 7
+  if (a (idx (4)) .ne. 10) STOP 8
+  if (a (idx (7)) .ne. 9) STOP 9
+  if (a (idx (10)) .ne. 11) STOP 10
   a = 0
 
 contains
@@ -157,9 +157,9 @@ contains
     integer, dimension (:) :: lhs, rhs
     integer :: i
 
-    if (size (lhs, 1) .ne. size (rhs, 1)) call abort
+    if (size (lhs, 1) .ne. size (rhs, 1)) STOP 11
     do i = 1, size (lhs, 1)
-      if (a (lhs (i)) .ne. b (rhs (i))) call abort
+      if (a (lhs (i)) .ne. b (rhs (i))) STOP 12
     end do
     a = 0
   end subroutine test

@@ -4453,12 +4453,12 @@ is not used then.  On the contrary when
 @code{CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY} is specified, then the
 @var{token} needs to be registered by a previous call with regtype
 @code{CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY} and either the memory specified
-in the @var{desc}'s data-ptr is registered or allocate when the data-ptr is
-NULL.
+in the @var{DESC}'s data-ptr is registered or allocate when the data-ptr is
+@code{NULL}.
 
 @item @emph{Syntax}:
 @code{void caf_register (size_t size, caf_register_t type, caf_token_t *token,
-gfc_descriptor_t *desc, int *stat, char *errmsg, int errmsg_len)}
+gfc_descriptor_t *desc, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4468,24 +4468,24 @@ allocated; for lock types and event types, the number of elements.
 @item @var{token} @tab intent(out) An opaque pointer identifying the coarray.
 @item @var{desc} @tab intent(inout) The (pseudo) array descriptor.
 @item @var{stat} @tab intent(out) For allocatable coarrays, stores the STAT=;
-may be NULL
+may be @code{NULL}
 @item @var{errmsg} @tab intent(out) When an error occurs, this will be set to
-an error message; may be NULL
+an error message; may be @code{NULL}
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
 @item @emph{NOTES}
-Nonalloatable coarrays have to be registered prior use from remote images.
+Nonallocatable coarrays have to be registered prior use from remote images.
 In order to guarantee this, they have to be registered before the main
 program. This can be achieved by creating constructor functions. That is what
-GCC does such that also nonallocatable coarrays the memory is allocated and no
-static memory is used.  The token permits to identify the coarray; to the
+GCC does such that also for nonallocatable coarrays the memory is allocated and
+no static memory is used.  The token permits to identify the coarray; to the
 processor, the token is a nonaliasing pointer. The library can, for instance,
 store the base address of the coarray in the token, some handle or a more
 complicated struct.  The library may also store the array descriptor
 @var{DESC} when its rank is non-zero.
 
-For lock types, the value shall only used for checking the allocation
+For lock types, the value shall only be used for checking the allocation
 status. Note that for critical blocks, the locking is only required on one
 image; in the locking statement, the processor shall always pass an
 image index of one for critical-block lock variables
@@ -4510,7 +4510,7 @@ during a call to @code{_gfortran_caf_register}.
 
 @item @emph{Syntax}:
 @code{void caf_deregister (caf_token_t *token, caf_deregister_t type,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4750,7 +4750,7 @@ remote image identified by the @var{image_index}.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
 gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind, int src_kind,
-bool may_require_tmp, bool dst_reallocatable, int *stat)}
+bool may_require_tmp, bool dst_reallocatable, int *stat, int dst_type)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4774,6 +4774,9 @@ is a full array or component ref.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
 operation, i.e., zero on success and non-zero on error.  When @code{NULL} and
 an error occurs, then an error message is printed and the program is terminated.
+@item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
+the destination is not an array, than the precise type, e.g. of a component in
+a derived type, is not known, but provided here.
 @end multitable
 
 @item @emph{NOTES}
@@ -4808,7 +4811,7 @@ identified by the @var{image_index}.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_get_by_ref (caf_token_t token, int image_index,
 caf_reference_t *refs, gfc_descriptor_t *dst, int dst_kind, int src_kind,
-bool may_require_tmp, bool dst_reallocatable, int *stat)}
+bool may_require_tmp, bool dst_reallocatable, int *stat, int src_type)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4833,6 +4836,9 @@ array or a component is referenced.
 @item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
 operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
 error occurs, then an error message is printed and the program is terminated.
+@item @var{src_type} @tab intent(in)  Give the type of the source.  When the
+source is not an array, than the precise type, e.g. of a component in a
+derived type, is not known, but provided here.
 @end multitable
 
 @item @emph{NOTES}
@@ -4868,7 +4874,8 @@ identified by the @var{src_image_index} to a remote image identified by the
 @code{void _gfortran_caf_sendget_by_ref (caf_token_t dst_token,
 int dst_image_index, caf_reference_t *dst_refs,
 caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
-int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat, int *src_stat)}
+int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
+int *src_stat, int dst_type, int src_type)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4899,6 +4906,12 @@ program is terminated.
 the get-operation, i.e., zero on success and non-zero on error.  When
 @code{NULL} and an error occurs, then an error message is printed and the
 program is terminated.
+@item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
+the destination is not an array, than the precise type, e.g. of a component in
+a derived type, is not known, but provided here.
+@item @var{src_type} @tab intent(in)  Give the type of the source.  When the
+source is not an array, than the precise type, e.g. of a component in a
+derived type, is not known, but provided here.
 @end multitable
 
 @item @emph{NOTES}
@@ -4936,7 +4949,7 @@ which has already been locked by the same image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_lock (caf_token_t token, size_t index, int image_index,
-int *aquired_lock, int *stat, char *errmsg, int errmsg_len)}
+int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4971,7 +4984,7 @@ which is unlocked or has been locked by a different image is an error.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_unlock (caf_token_t token, size_t index, int image_index,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5003,7 +5016,7 @@ Increment the event count of the specified event variable.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_event_post (caf_token_t token, size_t index,
-int image_index, int *stat, char *errmsg, int errmsg_len)}
+int image_index, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5040,7 +5053,7 @@ amount and return.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_event_wait (caf_token_t token, size_t index,
-int until_count, int *stat, char *errmsg, int errmsg_len)}
+int until_count, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5118,7 +5131,7 @@ current team.  Additionally, it ensures that all pending data transfers of
 previous segment have completed.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, int errmsg_len)}
+@code{void _gfortran_caf_sync_all (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5146,7 +5159,7 @@ transfers of previous segments have completed.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_sync_images (int count, int images[], int *stat,
-char *errmsg, int errmsg_len)}
+char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5174,7 +5187,7 @@ Acts as optimization barrier between different segments. It also ensures that
 all pending memory operations of this image have been completed.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, int errmsg_len)}
+@code{void _gfortran_caf_sync_memory (int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5201,7 +5214,7 @@ function should terminate the program with the specified exit code.
 
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (int32_t error)}
+@code{void _gfortran_caf_error_stop (int error)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5221,7 +5234,7 @@ Invoked for an @code{ERROR STOP} statement which has a string as argument.  The
 function should terminate the program with a nonzero-exit code.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_error_stop (const char *string, int32_t len)}
+@code{void _gfortran_caf_error_stop (const char *string, size_t len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5399,7 +5412,7 @@ be called collectively.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_broadcast (gfc_descriptor_t *a,
-int source_image, int *stat, char *errmsg, int errmsg_len)}
+int source_image, int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5430,7 +5443,7 @@ strings.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_max (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5467,7 +5480,7 @@ strings.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_min (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5503,7 +5516,7 @@ specified image.  This function operates on numeric values only.
 
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_sum (gfc_descriptor_t *a, int result_image,
-int *stat, char *errmsg, int errmsg_len)}
+int *stat, char *errmsg, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5548,7 +5561,7 @@ string lengths shall be specified as hidden arguments;
 @item @emph{Syntax}:
 @code{void _gfortran_caf_co_reduce (gfc_descriptor_t *a,
 void * (*opr) (void *, void *), int opr_flags, int result_image,
-int *stat, char *errmsg, int a_len, int errmsg_len)}
+int *stat, char *errmsg, int a_len, size_t errmsg_len)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

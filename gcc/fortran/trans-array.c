@@ -7341,7 +7341,11 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       else
 	{
 	  /* Otherwise make a new one.  */
-	  parmtype = gfc_get_element_type (TREE_TYPE (desc));
+	  if (expr->ts.type == BT_CHARACTER && expr->ts.deferred)
+	    parmtype = gfc_typenode_for_spec (&expr->ts);
+	  else
+	    parmtype = gfc_get_element_type (TREE_TYPE (desc));
+
 	  parmtype = gfc_get_array_type_bounds (parmtype, loop.dimen, codim,
 						loop.from, loop.to, 0,
 						GFC_ARRAY_UNKNOWN, false);
@@ -7529,9 +7533,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	      : base;
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm, tmp);
 	}
-      else if (IS_CLASS_ARRAY (expr) && !se->data_not_needed
-	       && (!rank_remap || se->use_offset)
-	       && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
+      else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc))
+	       && !se->data_not_needed
+	       && (!rank_remap || se->use_offset))
 	{
 	  gfc_conv_descriptor_offset_set (&loop.pre, parm,
 					 gfc_conv_descriptor_offset_get (desc));
@@ -8747,15 +8751,17 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	      cmp_has_alloc_comps = false;
 	    }
 
-	  if (flag_coarray == GFC_FCOARRAY_LIB
-	      && (caf_in_coarray (caf_mode) || c->attr.codimension))
+	  if (flag_coarray == GFC_FCOARRAY_LIB && caf_in_coarray (caf_mode))
 	    {
-	      /* Register the component with the coarray library.  */
+	      /* Register a component of a derived type coarray with the
+		 coarray library.  Do not register ultimate component
+		 coarrays here.  They are treated like regular coarrays and
+		 are either allocated on all images or on none.  */
 	      tree token;
 
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
-	      if (c->attr.dimension || c->attr.codimension)
+	      if (c->attr.dimension)
 		{
 		  /* Set the dtype, because caf_register needs it.  */
 		  gfc_add_modify (&fnblock, gfc_conv_descriptor_dtype (comp),
@@ -9468,29 +9474,32 @@ bool
 gfc_is_reallocatable_lhs (gfc_expr *expr)
 {
   gfc_ref * ref;
+  gfc_symbol *sym;
 
   if (!expr->ref)
     return false;
 
+  sym = expr->symtree->n.sym;
+
   /* An allocatable class variable with no reference.  */
-  if (expr->symtree->n.sym->ts.type == BT_CLASS
-      && CLASS_DATA (expr->symtree->n.sym)->attr.allocatable
+  if (sym->ts.type == BT_CLASS
+      && CLASS_DATA (sym)->attr.allocatable
       && expr->ref && expr->ref->type == REF_COMPONENT
       && strcmp (expr->ref->u.c.component->name, "_data") == 0
       && expr->ref->next == NULL)
     return true;
 
   /* An allocatable variable.  */
-  if (expr->symtree->n.sym->attr.allocatable
+  if (sym->attr.allocatable
 	&& expr->ref
 	&& expr->ref->type == REF_ARRAY
 	&& expr->ref->u.ar.type == AR_FULL)
     return true;
 
   /* All that can be left are allocatable components.  */
-  if ((expr->symtree->n.sym->ts.type != BT_DERIVED
-       && expr->symtree->n.sym->ts.type != BT_CLASS)
-	|| !expr->symtree->n.sym->ts.u.derived->attr.alloc_comp)
+  if ((sym->ts.type != BT_DERIVED
+       && sym->ts.type != BT_CLASS)
+	|| !sym->ts.u.derived->attr.alloc_comp)
     return false;
 
   /* Find a component ref followed by an array reference.  */

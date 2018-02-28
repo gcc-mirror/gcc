@@ -261,6 +261,7 @@ is_capture_proxy (tree decl)
   return (VAR_P (decl)
 	  && DECL_HAS_VALUE_EXPR_P (decl)
 	  && !DECL_ANON_UNION_VAR_P (decl)
+	  && !DECL_DECOMPOSITION_P (decl)
 	  && LAMBDA_FUNCTION_P (DECL_CONTEXT (decl)));
 }
 
@@ -290,13 +291,24 @@ is_normal_capture_proxy (tree decl)
   return DECL_NORMAL_CAPTURE_P (val);
 }
 
+/* Returns true iff DECL is a capture proxy for which we can use
+   DECL_CAPTURED_VARIABLE.  In effect, this is a normal proxy other than a
+   nested capture of a function parameter pack.  */
+
+bool
+is_capture_proxy_with_ref (tree var)
+{
+  return (is_normal_capture_proxy (var) && DECL_LANG_SPECIFIC (var)
+	  && DECL_CAPTURED_VARIABLE (var));
+}
+
 /* VAR is a capture proxy created by build_capture_proxy; add it to the
    current function, which is the operator() for the appropriate lambda.  */
 
 void
 insert_capture_proxy (tree var)
 {
-  if (is_normal_capture_proxy (var))
+  if (is_capture_proxy_with_ref (var))
     {
       tree cap = DECL_CAPTURED_VARIABLE (var);
       if (CHECKING_P)
@@ -376,7 +388,7 @@ lambda_proxy_type (tree ref)
    inside the operator(), build a placeholder var for future lookups and
    debugging.  */
 
-tree
+static tree
 build_capture_proxy (tree member, tree init)
 {
   tree var, object, fn, closure, name, lam, type;
@@ -439,10 +451,12 @@ build_capture_proxy (tree member, tree init)
 	{
 	  if (PACK_EXPANSION_P (init))
 	    init = PACK_EXPANSION_PATTERN (init);
-	  if (TREE_CODE (init) == INDIRECT_REF)
-	    init = TREE_OPERAND (init, 0);
-	  STRIP_NOPS (init);
 	}
+
+      if (INDIRECT_REF_P (init))
+	init = TREE_OPERAND (init, 0);
+      STRIP_NOPS (init);
+
       gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
       while (is_normal_capture_proxy (init))
 	init = DECL_CAPTURED_VARIABLE (init);
@@ -744,11 +758,14 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
                                     lambda_stack);
 
 	  if (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)
+	      && !COMPLETE_TYPE_P (LAMBDA_EXPR_CLOSURE (tlambda))
 	      && TREE_CODE (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)) == FIELD_DECL)
 	    {
 	      /* In an NSDMI, we don't have a function to look up the decl in,
 		 but the fake 'this' pointer that we're using for parsing is
-		 in scope_chain.  */
+		 in scope_chain.  But if the closure is already complete, we're
+	         in an instantiation of a generic lambda, and the fake 'this'
+	         is gone.  */
 	      init = scope_chain->x_current_class_ptr;
 	      gcc_checking_assert
 		(init && (TREE_TYPE (TREE_TYPE (init))

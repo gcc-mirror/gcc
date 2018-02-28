@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "calls.h"
 #include "tree-vector-builder.h"
+#include "tree-ssa-strlen.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -1283,13 +1284,16 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
    value of ARG in LENGTH[0] and LENGTH[1], respectively.
    If ARG is an SSA name variable, follow its use-def chains.  When
    TYPE == 0, if LENGTH[1] is not equal to the length we determine or
-   if we are unable to determine the length or value, return False.
+   if we are unable to determine the length or value, return false.
    VISITED is a bitmap of visited variables.
    TYPE is 0 if string length should be obtained, 1 for maximum string
    length and 2 for maximum value ARG can have.
-   When FUZZY is set and the length of a string cannot be determined,
+   When FUZZY is non-zero and the length of a string cannot be determined,
    the function instead considers as the maximum possible length the
-   size of a character array it may refer to.
+   size of a character array it may refer to.  If FUZZY is 2, it will handle
+   PHIs and COND_EXPRs optimistically, if we can determine string length
+   minimum and maximum, it will use the minimum from the ones where it
+   can be determined.
    Set *FLEXP to true if the range of the string lengths has been
    obtained from the upper bound of an array at the end of a struct.
    Such an array may hold a string that's longer than its upper bound
@@ -1297,14 +1301,13 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
 
 static bool
 get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
-		  bool fuzzy, bool *flexp)
+		  int fuzzy, bool *flexp)
 {
   tree var, val = NULL_TREE;
   gimple *def_stmt;
 
-  /* The minimum and maximum length.  The MAXLEN pointer stays unchanged
-     but MINLEN may be cleared during the execution of the function.  */
-  tree *minlen = length;
+  /* The minimum and maximum length.  */
+  tree *const minlen = length;
   tree *const maxlen = length + 1;
 
   if (TREE_CODE (arg) != SSA_NAME)
@@ -1380,9 +1383,15 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	      /* Set the minimum size to zero since the string in
 		 the array could have zero length.  */
 	      *minlen = ssize_int (0);
+
+	      if (TREE_CODE (TREE_OPERAND (arg, 0)) == COMPONENT_REF
+		  && type == TREE_TYPE (TREE_OPERAND (arg, 0))
+		  && array_at_struct_end_p (TREE_OPERAND (arg, 0)))
+		*flexp = true;
 	    }
 	  else if (TREE_CODE (arg) == COMPONENT_REF
-	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1))) == ARRAY_TYPE)
+		   && (TREE_CODE (TREE_TYPE (TREE_OPERAND (arg, 1)))
+		       == ARRAY_TYPE))
 	    {
 	      /* Use the type of the member array to determine the upper
 		 bound on the length of the array.  This may be overly
@@ -1428,7 +1437,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		      || integer_zerop (val))
 		    return false;
 		  val = wide_int_to_tree (TREE_TYPE (val),
-					  wi::sub(wi::to_wide (val), 1));
+					  wi::sub (wi::to_wide (val), 1));
 		  /* Set the minimum size to zero since the string in
 		     the array could have zero length.  */
 		  *minlen = ssize_int (0);
@@ -1439,12 +1448,11 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
       if (!val)
 	return false;
 
-      if (minlen
-	  && (!*minlen
-	      || (type > 0
-		  && TREE_CODE (*minlen) == INTEGER_CST
-		  && TREE_CODE (val) == INTEGER_CST
-		  && tree_int_cst_lt (val, *minlen))))
+      if (!*minlen
+	  || (type > 0
+	      && TREE_CODE (*minlen) == INTEGER_CST
+	      && TREE_CODE (val) == INTEGER_CST
+	      && tree_int_cst_lt (val, *minlen)))
 	*minlen = val;
 
       if (*maxlen)
@@ -1495,20 +1503,26 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
           }
 	else if (gimple_assign_rhs_code (def_stmt) == COND_EXPR)
 	  {
-	    tree op2 = gimple_assign_rhs2 (def_stmt);
-	    tree op3 = gimple_assign_rhs3 (def_stmt);
-	    return get_range_strlen (op2, length, visited, type, fuzzy, flexp)
-	      && get_range_strlen (op3, length, visited, type, fuzzy, flexp);
+	    tree ops[2] = { gimple_assign_rhs2 (def_stmt),
+			    gimple_assign_rhs3 (def_stmt) };
+
+	    for (unsigned int i = 0; i < 2; i++)
+	      if (!get_range_strlen (ops[i], length, visited, type, fuzzy,
+				     flexp))
+		{
+		  if (fuzzy == 2)
+		    *maxlen = build_all_ones_cst (size_type_node);
+		  else
+		    return false;
+		}
+	    return true;
 	  }
         return false;
 
       case GIMPLE_PHI:
-	{
-	  /* All the arguments of the PHI node must have the same constant
-	     length.  */
-	  unsigned i;
-
-	  for (i = 0; i < gimple_phi_num_args (def_stmt); i++)
+	/* All the arguments of the PHI node must have the same constant
+	   length.  */
+	for (unsigned i = 0; i < gimple_phi_num_args (def_stmt); i++)
           {
             tree arg = gimple_phi_arg (def_stmt, i)->def;
 
@@ -1523,13 +1537,12 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 
 	    if (!get_range_strlen (arg, length, visited, type, fuzzy, flexp))
 	      {
-		if (fuzzy)
+		if (fuzzy == 2)
 		  *maxlen = build_all_ones_cst (size_type_node);
 		else
 		  return false;
 	      }
           }
-        }
         return true;
 
       default:
@@ -1543,15 +1556,21 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
    character arrays, use the upper bound of the array as the maximum
    length.  For example, given an expression like 'x ? array : "xyz"'
    and array declared as 'char array[8]', MINMAXLEN[0] will be set
-   to 3 and MINMAXLEN[1] to 7, the longest string that could be
+   to 0 and MINMAXLEN[1] to 7, the longest string that could be
    stored in array.
    Return true if the range of the string lengths has been obtained
    from the upper bound of an array at the end of a struct.  Such
    an array may hold a string that's longer than its upper bound
-   due to it being used as a poor-man's flexible array member.  */
+   due to it being used as a poor-man's flexible array member.
+
+   STRICT is true if it will handle PHIs and COND_EXPRs conservatively
+   and false if PHIs and COND_EXPRs are to be handled optimistically,
+   if we can determine string length minimum and maximum; it will use
+   the minimum from the ones where it can be determined.
+   STRICT false should be only used for warning code.  */
 
 bool
-get_range_strlen (tree arg, tree minmaxlen[2])
+get_range_strlen (tree arg, tree minmaxlen[2], bool strict)
 {
   bitmap visited = NULL;
 
@@ -1559,7 +1578,12 @@ get_range_strlen (tree arg, tree minmaxlen[2])
   minmaxlen[1] = NULL_TREE;
 
   bool flexarray = false;
-  get_range_strlen (arg, minmaxlen, &visited, 1, true, &flexarray);
+  if (!get_range_strlen (arg, minmaxlen, &visited, 1, strict ? 1 : 2,
+			 &flexarray))
+    {
+      minmaxlen[0] = NULL_TREE;
+      minmaxlen[1] = NULL_TREE;
+    }
 
   if (visited)
     BITMAP_FREE (visited);
@@ -1574,7 +1598,7 @@ get_maxval_strlen (tree arg, int type)
   tree len[2] = { NULL_TREE, NULL_TREE };
 
   bool dummy;
-  if (!get_range_strlen (arg, len, &visited, type, false, &dummy))
+  if (!get_range_strlen (arg, len, &visited, type, 0, &dummy))
     len[1] = NULL_TREE;
   if (visited)
     BITMAP_FREE (visited);
@@ -1687,37 +1711,8 @@ gimple_fold_builtin_strncpy (gimple_stmt_iterator *gsi,
   if (tree_int_cst_lt (ssize, len))
     return false;
 
-  if (!nonstring)
-    {
-      if (tree_int_cst_lt (len, slen))
-	{
-	  tree fndecl = gimple_call_fndecl (stmt);
-	  gcall *call = as_a <gcall *> (stmt);
-
-	  warning_at (loc, OPT_Wstringop_truncation,
-		      (tree_int_cst_equal (size_one_node, len)
-		       ? G_("%G%qD output truncated copying %E byte "
-			    "from a string of length %E")
-		       : G_("%G%qD output truncated copying %E bytes "
-			    "from a string of length %E")),
-		      call, fndecl, len, slen);
-	}
-      else if (tree_int_cst_equal (len, slen))
-	{
-	  tree fndecl = gimple_call_fndecl (stmt);
-	  gcall *call = as_a <gcall *> (stmt);
-
-	  warning_at (loc, OPT_Wstringop_truncation,
-		      (tree_int_cst_equal (size_one_node, len)
-		       ? G_("%G%qD output truncated before terminating nul "
-			    "copying %E byte from a string of the same "
-			    "length")
-		       : G_("%G%qD output truncated before terminating nul "
-			    "copying %E bytes from a string of the same "
-			    "length")),
-		      call, fndecl, len);
-	}
-    }
+  /* Diagnose truncation that leaves the copy unterminated.  */
+  maybe_diag_stxncpy_trunc (*gsi, src, len);
 
   /* OK transform into builtin memcpy.  */
   tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
@@ -3528,7 +3523,7 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   wide_int maxlen;
 
   tree lenrange[2];
-  if (!get_range_strlen (gimple_call_arg (stmt, 0), lenrange)
+  if (!get_range_strlen (gimple_call_arg (stmt, 0), lenrange, true)
       && lenrange[0] && TREE_CODE (lenrange[0]) == INTEGER_CST
       && lenrange[1] && TREE_CODE (lenrange[1]) == INTEGER_CST)
     {
@@ -6436,13 +6431,9 @@ get_base_constructor (tree base, poly_int64_pod *bit_offset,
 
   if (TREE_CODE (base) == MEM_REF)
     {
-      if (!integer_zerop (TREE_OPERAND (base, 1)))
-	{
-	  if (!tree_fits_shwi_p (TREE_OPERAND (base, 1)))
-	    return NULL_TREE;
-	  *bit_offset += (mem_ref_offset (base).force_shwi ()
-			  * BITS_PER_UNIT);
-	}
+      poly_offset_int boff = *bit_offset + mem_ref_offset (base) * BITS_PER_UNIT;
+      if (!boff.to_shwi (bit_offset))
+	return NULL_TREE;
 
       if (valueize
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)

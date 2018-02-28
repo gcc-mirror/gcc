@@ -1024,8 +1024,9 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 
       t = format_lex (fmt);
 
-      /* Initialize the vlist to a zero size array.  */
-      tail->u.udf.vlist= xmalloc (sizeof(gfc_array_i4));
+      /* Initialize the vlist to a zero size, rank-one array.  */
+      tail->u.udf.vlist= xmalloc (sizeof(gfc_array_i4)
+				  + sizeof (descriptor_dimension));
       GFC_DESCRIPTOR_DATA(tail->u.udf.vlist) = NULL;
       GFC_DIMENSION_SET(tail->u.udf.vlist->dim[0],1, 0, 0);
 

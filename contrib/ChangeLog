@@ -1,3 +1,9 @@
+2018-02-19  Yury Gribov  <tetra2005@gmail.com>
+
+	* compare_tests: Use TMPDIR when set.
+	* dg-cmp-results.sh: Ditto.
+	* warn_summary: Ditto.
+
 2018-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* download_prerequisites: Use shasum for FreeBSD and DragonFly.

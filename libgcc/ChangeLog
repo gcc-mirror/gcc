@@ -1,3 +1,69 @@
+2018-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83917
+	* configure.ac (AS_HIDDEN_DIRECTIVE): AC_DEFINE_UNQUOTED this to
+	$asm_hidden_op if visibility ("hidden") attribute works.
+	(HAVE_AS_CFI_SECTIONS): New AC_DEFINE.
+	* config/i386/i386-asm.h: Don't include auto-host.h.
+	(PACKAGE_VERSION, PACKAGE_NAME, PACKAGE_STRING, PACKAGE_TARNAME,
+	PACKAGE_URL): Don't undefine.
+	(USE_GAS_CFI_DIRECTIVES): Don't use nor define this macro, instead
+	guard cfi_startproc only on ifdef __GCC_HAVE_DWARF2_CFI_ASM.
+	(FN_HIDDEN): Change guard from #ifdef HAVE_GAS_HIDDEN to
+	#ifdef AS_HIDDEN_DIRECTIVE, use AS_HIDDEN_DIRECTIVE macro in the
+	definition instead of hardcoded .hidden.
+	* config/i386/cygwin.S: Include i386-asm.h first before .cfi_sections
+	directive.  Use #ifdef HAVE_AS_CFI_SECTIONS rather than
+	#ifdef HAVE_GAS_CFI_SECTIONS_DIRECTIVE to guard .cfi_sections.
+	(USE_GAS_CFI_DIRECTIVES): Don't define.
+	* configure: Regenerated.
+	* config.in: Likewise.
+
+2018-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/83917
+	* config/i386/i386-asm.h (PACKAGE_VERSION, PACKAGE_NAME,
+	PACKAGE_STRING, PACKAGE_TARNAME, PACKAGE_URL): Undefine between
+	inclusion of auto-target.h and auto-host.h.
+	(USE_GAS_CFI_DIRECTIVES): Define if not defined already based on
+	__GCC_HAVE_DWARF2_CFI_ASM.
+	(cfi_startproc, cfi_endproc, cfi_adjust_cfa_offset,
+	cfi_def_cfa_register, cfi_def_cfa, cfi_register, cfi_offset, cfi_push,
+	cfi_pop): Define.
+	* config/i386/cygwin.S: Don't include auto-host.h here, just
+	define USE_GAS_CFI_DIRECTIVES to 1 or 0 and include i386-asm.h.
+	(cfi_startproc, cfi_endproc, cfi_adjust_cfa_offset,
+	cfi_def_cfa_register, cfi_register, cfi_push, cfi_pop): Remove.
+	* config/i386/resms64fx.h: Add cfi_* directives.
+	* config/i386/resms64x.h: Likewise.
+
+2018-02-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/ieee754-df.S (__adddf3_aux): Add
+	.literal_position directive.
+	* config/xtensa/ieee754-sf.S (__addsf3_aux): Likewise.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-16  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Include cetintrin.h not x86intrin.h.
+
+2018-02-08  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84239
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Extra):
+	Use new _get_ssp and _inc_ssp intrinsics.
+
+2018-02-02  Julia Koval  <julia.koval@intel.com>
+
+	* config/i386/cpuinfo.h (processor_subtypes): Add INTEL_COREI7_ICELAKE.
+
 2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/lib1funcs.S (__udivmodsi4): Use safe version for RF16

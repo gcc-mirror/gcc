@@ -12,11 +12,11 @@
 
       IDA1 = INDEX ( 'DEFDEF' , 'DEF', GDA1 )    !fails
       do I = 1, 10
-         if (IDA1(i).NE.RSLT(i)) call abort
+         if (IDA1(i).NE.RSLT(i)) STOP 1
       end do
       IDA1 = INDEX ( (/ ('DEFDEF',i=1,10) /) , 'DEF', GDA1 )    !works
       do I = 1, 10
-         if (IDA1(i).NE.RSLT(i)) call abort
+         if (IDA1(i).NE.RSLT(i)) STOP 2
       end do
 
       END

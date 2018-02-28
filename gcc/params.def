@@ -52,13 +52,13 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 DEFPARAM (PARAM_INLINE_MIN_SPEEDUP,
 	  "inline-min-speedup",
 	  "The minimal estimated speedup allowing inliner to ignore inline-insns-single and inline-insns-auto.",
-	  8, 0, 0)
+	  15, 0, 0)
 
 /* The single function inlining limit. This is the maximum size
    of a function counted in internal gcc instructions (not in
    real machine instructions) that is eligible for inlining
    by the tree inliner.
-   The default value is 450.
+   The default value is 400.
    Only functions marked inline (or methods defined in the class
    definition for C++) are affected by this.
    There are more restrictions to inlining: If inlined functions
@@ -77,11 +77,11 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
    that is applied to functions marked inlined (or defined in the
    class declaration in C++) given by the "max-inline-insns-single"
    parameter.
-   The default value is 40.  */
+   The default value is 30.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining.",
-	  40, 0, 0)
+	  30, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",
@@ -354,11 +354,11 @@ DEFPARAM(PARAM_MAX_UNSWITCH_LEVEL,
 	"The maximum number of unswitchings in a single loop.",
 	3, 0, 0)
 
-/* The maximum number of insns in loop header duplicated by he copy loop
+/* The maximum number of insns in loop header duplicated by the copy loop
    headers pass.  */
 DEFPARAM(PARAM_MAX_LOOP_HEADER_INSNS,
 	"max-loop-header-insns",
-	"The maximum number of insns in loop header duplicated by he copy loop headers pass.",
+	"The maximum number of insns in loop header duplicated by the copy loop headers pass.",
 	20, 0, 0)
 
 /* The maximum number of iterations of a loop the brute force algorithm

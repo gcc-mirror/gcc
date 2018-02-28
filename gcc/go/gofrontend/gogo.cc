@@ -5189,16 +5189,23 @@ Function::defer_stack(Location location)
 void
 Function::export_func(Export* exp, const std::string& name) const
 {
-  Function::export_func_with_type(exp, name, this->type_);
+  Function::export_func_with_type(exp, name, this->type_,
+				  this->is_method() && this->nointerface());
 }
 
 // Export a function with a type.
 
 void
 Function::export_func_with_type(Export* exp, const std::string& name,
-				const Function_type* fntype)
+				const Function_type* fntype, bool nointerface)
 {
   exp->write_c_string("func ");
+
+  if (nointerface)
+    {
+      go_assert(fntype->is_method());
+      exp->write_c_string("/*nointerface*/ ");
+    }
 
   if (fntype->is_method())
     {
@@ -5280,9 +5287,20 @@ Function::import_func(Import* imp, std::string* pname,
 		      Typed_identifier** preceiver,
 		      Typed_identifier_list** pparameters,
 		      Typed_identifier_list** presults,
-		      bool* is_varargs)
+		      bool* is_varargs,
+		      bool* nointerface)
 {
   imp->require_c_string("func ");
+
+  *nointerface = false;
+  if (imp->match_c_string("/*"))
+    {
+      imp->require_c_string("/*nointerface*/ ");
+      *nointerface = true;
+
+      // Only a method can be nointerface.
+      go_assert(imp->peek_char() == '(');
+    }
 
   *preceiver = NULL;
   if (imp->peek_char() == '(')
@@ -6199,13 +6217,45 @@ Bindings_snapshot::check_goto_defs(Location loc, const Block* block,
 	}
       go_assert(p != block->bindings()->end_definitions());
 
-      std::string n = (*p)->message_name();
-      go_error_at(loc, "goto jumps over declaration of %qs", n.c_str());
-      go_inform((*p)->location(), "%qs defined here", n.c_str());
+      for (; p != block->bindings()->end_definitions(); ++p)
+	{
+	  if ((*p)->is_variable())
+	    {
+	      std::string n = (*p)->message_name();
+	      go_error_at(loc, "goto jumps over declaration of %qs", n.c_str());
+	      go_inform((*p)->location(), "%qs defined here", n.c_str());
+	    }
+	}
     }
 }
 
 // Class Function_declaration.
+
+// Whether this declares a method.
+
+bool
+Function_declaration::is_method() const
+{
+  return this->fntype_->is_method();
+}
+
+// Whether this method should not be included in the type descriptor.
+
+bool
+Function_declaration::nointerface() const
+{
+  go_assert(this->is_method());
+  return (this->pragmas_ & GOPRAGMA_NOINTERFACE) != 0;
+}
+
+// Record that this method should not be included in the type
+// descriptor.
+
+void
+Function_declaration::set_nointerface()
+{
+  this->pragmas_ |= GOPRAGMA_NOINTERFACE;
+}
 
 // Return the function descriptor.
 
@@ -7712,33 +7762,29 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
       go_unreachable();
 
     case Named_object::NAMED_OBJECT_FUNC:
-      if (new_object->is_function_declaration())
-	{
-	  if (!new_object->func_declaration_value()->asm_name().empty())
-	    go_error_at(Linemap::unknown_location(),
-			("sorry, not implemented: "
-			 "__asm__ for function definitions"));
-	  Function_type* old_type = old_object->func_value()->type();
-	  Function_type* new_type =
-	    new_object->func_declaration_value()->type();
-	  if (old_type->is_valid_redeclaration(new_type, &reason))
-	    return old_object;
-	}
       break;
 
     case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
       {
-	if (new_object->is_function())
+	// We declare the hash and equality functions before defining
+	// them, because we sometimes see that we need the declaration
+	// while we are in the middle of a different function.  We
+	// declare the main function before the user defines it, to
+	// give better error messages.
+	if (new_object->is_function()
+	    && ((Linemap::is_predeclared_location(old_object->location())
+		 && Linemap::is_predeclared_location(new_object->location()))
+		|| (Gogo::unpack_hidden_name(old_object->name()) == "main"
+		    && Linemap::is_unknown_location(old_object->location()))))
 	  {
             Function_type* old_type =
                 old_object->func_declaration_value()->type();
 	    Function_type* new_type = new_object->func_value()->type();
 	    if (old_type->is_valid_redeclaration(new_type, &reason))
 	      {
-		if (!old_object->func_declaration_value()->asm_name().empty())
-		  go_error_at(Linemap::unknown_location(),
-			      ("sorry, not implemented: "
-			       "__asm__ for function definitions"));
+		Function_declaration* fd =
+		  old_object->func_declaration_value();
+		go_assert(fd->asm_name().empty());
 		old_object->set_function_value(new_object->func_value());
 		this->named_objects_.push_back(old_object);
 		return old_object;
@@ -7760,8 +7806,10 @@ Bindings::new_definition(Named_object* old_object, Named_object* new_object)
   old_object->set_is_redefinition();
   new_object->set_is_redefinition();
 
-  go_inform(old_object->location(), "previous definition of %qs was here",
-            n.c_str());
+  if (!Linemap::is_unknown_location(old_object->location())
+      && !Linemap::is_predeclared_location(old_object->location()))
+    go_inform(old_object->location(), "previous definition of %qs was here",
+	      n.c_str());
 
   return old_object;
 }

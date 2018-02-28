@@ -111,18 +111,22 @@ proc lto_handle_diagnostics_for_file { name filename messages_for_file text } {
 # the expected diagnostics within TEXT, issuing PASS/FAIL results.
 # Return TEXT, stripped of any diagnostics that were handled.
 #
-# MESSAGES_BY_FILE is a dict; the keys are source files (with paths)
-# the values are lists of expected messages, akin to DejaGnu's "dg-messages"
-# variable.
 # TEXT is the textual output from the LTO link.
 
-proc lto_handle_diagnostics { messages_by_file text } {
+proc lto_handle_diagnostics { text } {
     global testcase
 
-    verbose "lto_handle_diagnostics: entry: $text" 2
-    verbose "  messages_by_file $messages_by_file" 3
+    upvar dg-messages-by-file messages_by_file
 
-    dict for {src dg-messages} $messages_by_file {
+    verbose "lto_handle_diagnostics: entry: $text" 2
+
+    if { ![array exists messages_by_file] } {
+	error "lto_handle_diagnostics: messages_by_file not defined"
+    }
+
+    foreach src [lsort [array names messages_by_file]] {
+	set dg-messages $messages_by_file($src)
+	verbose "  messages for $src: ${dg-messages}" 3
 	set text [lto_handle_diagnostics_for_file $testcase $src \
 		      ${dg-messages} $text]
     }
@@ -294,16 +298,15 @@ proc lto-obj { source dest optall optfile optstr xfaildata } {
 # OPTALL is a list of compiler and linker options to use for all tests
 # OPTFILE is a list of compiler and linker options to use for this test
 # OPTSTR is the list of options to list in messages
-# MESSAGES_BY_FILE is a dict of (src, dg-messages)
-proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr \
-			      messages_by_file } {
+proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     global testcase
     global tool
     global compile_type
     global board_info
 
+    upvar dg-messages-by-file dg-messages-by-file
+
     verbose "lto-link-and-maybe-run" 2
-    verbose "  messages_by_file $messages_by_file" 3
 
     # Check that all of the objects were built successfully.
     foreach obj [split $objlist] {
@@ -342,7 +345,7 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr \
     }
 
     # Check for diagnostics specified by directives
-    set comp_output [lto_handle_diagnostics $messages_by_file $comp_output]
+    set comp_output [lto_handle_diagnostics $comp_output]
 
     # Prune unimportant visibility warnings before checking output.
     set comp_output [lto_prune_warns $comp_output]
@@ -527,7 +530,7 @@ proc lto-get-options-main { src } {
     }
 
     verbose "dg-messages: ${dg-messages}" 3
-    dict append dg-messages-by-file $src ${dg-messages}
+    set dg-messages-by-file($src) ${dg-messages}
 
     # Return flags to use for compiling the primary source file and for
     # linking.
@@ -578,7 +581,11 @@ proc lto-get-options { src } {
     }
 
     verbose "dg-messages: ${dg-messages}" 3
-    dict append dg-messages-by-file $src ${dg-messages}
+    if { [info exists dg-messages-by-file($src)] } {
+	append dg-messages-by-file($src) ${dg-messages}
+    } else {
+	set dg-messages-by-file($src) ${dg-messages}
+    }
 
     return ${dg-extra-tool-flags}
 }
@@ -609,7 +616,7 @@ proc lto-execute { src1 sid } {
     verbose "lto-execute: $src1" 1
     set compile_type "run"
     set dg-do-what [list ${dg-do-what-default} "" P]
-    set dg-messages-by-file [dict create]
+    array set dg-messages-by-file [list]
     set extra_flags(0) [lto-get-options-main $src1]
     set compile_xfail(0) "" 
 
@@ -733,7 +740,7 @@ proc lto-execute { src1 sid } {
 	    lto-link-and-maybe-run \
 		    "[lindex $obj_list 0]-[lindex $obj_list end]" \
 		    $obj_list $execname $filtered ${dg-extra-ld-options} \
-		    $filtered ${dg-messages-by-file}
+		    $filtered
 	}
 
 

@@ -77,12 +77,12 @@ program forall_7
 	      s = r
 	    end if
 	  end if
-	  if (a (i, j, k, l) /= r) call abort ()
-	  if (c (i, j, k, l) /= s) call abort ()
+	  if (a (i, j, k, l) /= r) STOP 1
+	  if (c (i, j, k, l) /= s) STOP 2
 	end do
       end do
     end do
   end do
 
-  if (any (a /= b .or. c /= d)) call abort ()
+  if (any (a /= b .or. c /= d)) STOP 3
 end

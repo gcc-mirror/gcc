@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target int32plus } } */
 /* { dg-options "-O2" } */
 
 struct S0

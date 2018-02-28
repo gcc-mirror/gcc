@@ -23,5 +23,5 @@ contains
 end submodule
 
   use hello_interface
-  if (get() .ne. string) call abort
+  if (get() .ne. string) STOP 1
 end

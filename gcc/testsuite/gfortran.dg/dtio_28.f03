@@ -68,7 +68,7 @@ PROGRAM p
   j=99
   k=99
   READ (unit, nml, iostat=iostatus)
-  if (iostatus.ne.0) call abort
-  if (j.ne.1 .or. k.ne.2 .or. x%c.ne.'a' .or. y%c.ne.'b' .or. z%c.ne.'c') call abort
+  if (iostatus.ne.0) STOP 1
+  if (j.ne.1 .or. k.ne.2 .or. x%c.ne.'a' .or. y%c.ne.'b' .or. z%c.ne.'c') STOP 2
   !WRITE(*, nml)
 END PROGRAM p

@@ -21,7 +21,7 @@
       read  (3) a,b,c,d
       close (3)
 
-      if (d(1).ne.1) call abort
-      if (d(2048).ne.2048) call abort
+      if (d(1).ne.1) STOP 1
+      if (d(2048).ne.2048) STOP 2
 
       end

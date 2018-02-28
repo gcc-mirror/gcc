@@ -916,6 +916,15 @@ class Type
   is_unsafe_pointer_type() const
   { return this->points_to() != NULL && this->points_to()->is_void_type(); }
 
+  // Return a version of this type with any expressions copied, but
+  // only if copying the expressions will affect the size of the type.
+  // If there are no such expressions in the type (expressions can
+  // only occur in array types), just return the same type.  If any
+  // expressions can not affect the size of the type, just return the
+  // same type.
+  Type*
+  copy_expressions();
+
   // Look for field or method NAME for TYPE.  Return an expression for
   // it, bound to EXPR.
   static Expression*
@@ -2444,6 +2453,11 @@ class Struct_type : public Type
   field_count() const
   { return this->fields_->size(); }
 
+  // Location of struct definition.
+  Location
+  location() const
+  { return this->location_; }
+
   // Push a new field onto the end of the struct.  This is used when
   // building a closure variable.
   void
@@ -3170,6 +3184,20 @@ class Interface_type : public Type
 
   bool
   assume_identical(const Interface_type*, const Interface_type*) const;
+
+  struct Bmethods_map_entry
+  {
+    Btype *btype;
+    bool is_placeholder;
+  };
+
+  // A mapping from Interface_type to the backend type of its bmethods_,
+  // used to ensure that the backend representation of identical types
+  // is identical.
+  typedef Unordered_map_hash(const Interface_type*, Bmethods_map_entry,
+                             Type_hash_identical, Type_identical) Bmethods_map;
+
+  static Bmethods_map bmethods_map;
 
   // The list of methods associated with the interface from the
   // parser.  This will be NULL for the empty interface.  This may

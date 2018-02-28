@@ -558,10 +558,13 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 		 "  Refused: split size is smaller than call overhead\n");
       return;
     }
+  /* FIXME: The logic here is not very precise, because inliner does use
+     inline predicates to reduce function body size.  We add 10 to anticipate
+     that.  Next stage1 we should try to be more meaningful here.  */
   if (current->header_size + call_overhead
       >= (unsigned int)(DECL_DECLARED_INLINE_P (current_function_decl)
 			? MAX_INLINE_INSNS_SINGLE
-			: MAX_INLINE_INSNS_AUTO))
+			: MAX_INLINE_INSNS_AUTO) + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -574,7 +577,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
      Limit this duplication.  This is consistent with limit in tree-sra.c  
      FIXME: with LTO we ought to be able to do better!  */
   if (DECL_ONE_ONLY (current_function_decl)
-      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO)
+      && current->split_size >= (unsigned int) MAX_INLINE_INSNS_AUTO + 10)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,

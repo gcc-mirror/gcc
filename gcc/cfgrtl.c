@@ -1628,11 +1628,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       else
 	new_head = BB_END (e->src);
       new_head = NEXT_INSN (new_head);
-      /* Make sure we don't split a call and its corresponding
-	 CALL_ARG_LOCATION note.  */
-      if (new_head && NOTE_P (new_head)
-	  && NOTE_KIND (new_head) == NOTE_INSN_CALL_ARG_LOCATION)
-	new_head = NEXT_INSN (new_head);
 
       jump_block = create_basic_block (new_head, NULL, e->src);
       jump_block->count = count;

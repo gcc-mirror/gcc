@@ -1,3 +1,30 @@
+2018-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR preprocessor/84517
+	* lex.c (is_macro_not_literal_suffix): New function.
+	(lex_raw_string, lex_string): Use is_macro_not_literal_suffix to
+	decide when to issue -Wliteral-suffix warnings.
+
+2018-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/82939
+	* line-map.c (linemap_init): Avoid broken value-init when compiling
+	with GCC 4.2.
+
+2018-02-15  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/83063 - __VA_OPT__ and ##
+	PR preprocessor/83708
+	* macro.c (vaopt_state): Reorder m_last_was_paste before m_state.
+	(vaopt_state::vaopt_state): Adjust.
+	(vaopt_state::update_flags): Add BEGIN and END.
+	(vaopt_state::update): Return them.
+	(copy_paste_flag): Factor out of replace_args.
+	(last_token_is): New.
+	(replace_args): Handle BEGIN and END.  Avoid padding there.
+	(tokens_buff_last_token_ptr): Return NULL if no tokens.
+
 2018-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/69869

@@ -16,7 +16,7 @@ program foo
    obj1%proc => proc
    call transfer_proc_ptr (obj2, obj1)
 
-   if (obj2%proc()/=7) call abort()
+   if (obj2%proc()/=7) STOP 1
 
 contains
 

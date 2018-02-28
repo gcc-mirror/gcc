@@ -1,8 +1,19 @@
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_flags.inc: Cherry-pick upstream r323995.
+	* asan/asan_report.cc (CheckForInvalidPointerPair):
+	Cherry-pick upstream r323995.
+
 2018-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR sanitizer/82825
 	* sanitizer_common/sanitizer_internal_defs.h: Cherry-pick upstream
-	r??????.
+	r324284.
 
 2018-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

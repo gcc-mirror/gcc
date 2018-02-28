@@ -1043,6 +1043,8 @@ array_of_runtime_bound_p (tree t)
 {
   if (!t || TREE_CODE (t) != ARRAY_TYPE)
     return false;
+  if (variably_modified_type_p (TREE_TYPE (t), NULL_TREE))
+    return false;
   tree dom = TYPE_DOMAIN (t);
   if (!dom)
     return false;
@@ -1773,7 +1775,7 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
 
   gcc_assert (EXPR_P (t));
 
-  n = TREE_OPERAND_LENGTH (t);
+  n = cp_tree_operand_length (t);
   ops = XALLOCAVEC (tree, n);
   type = TREE_TYPE (t);
 
@@ -2881,7 +2883,6 @@ extern int depth_reached;
 void
 cxx_print_statistics (void)
 {
-  print_class_statistics ();
   print_template_statistics ();
   if (GATHER_STATISTICS)
     fprintf (stderr, "maximum template instantiation depth reached: %d\n",
@@ -2947,6 +2948,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
 	{
 	  u = build_cplus_new (TREE_TYPE (t), TREE_OPERAND (t, 1),
 			       tf_warning_or_error);
+	  if (u == error_mark_node)
+	    return u;
 	  if (AGGR_INIT_ZERO_FIRST (TREE_OPERAND (t, 1)))
 	    AGGR_INIT_ZERO_FIRST (TREE_OPERAND (u, 1)) = true;
 	}
@@ -2964,6 +2967,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
 			 (splay_tree_value) TREE_OPERAND (u, 0));
 
       TREE_OPERAND (u, 1) = break_out_target_exprs (TREE_OPERAND (u, 1));
+      if (TREE_OPERAND (u, 1) == error_mark_node)
+	return error_mark_node;
 
       /* Replace the old expression with the new version.  */
       *tp = u;
@@ -3076,7 +3081,8 @@ break_out_target_exprs (tree t)
     target_remap = splay_tree_new (splay_tree_compare_pointers,
 				   /*splay_tree_delete_key_fn=*/NULL,
 				   /*splay_tree_delete_value_fn=*/NULL);
-  cp_walk_tree (&t, bot_manip, target_remap, NULL);
+  if (cp_walk_tree (&t, bot_manip, target_remap, NULL) == error_mark_node)
+    t = error_mark_node;
   cp_walk_tree (&t, bot_replace, target_remap, NULL);
 
   if (!--target_remap_count)
@@ -3137,7 +3143,7 @@ replace_placeholders_r (tree* t, int* walk_subtrees, void* data_)
   replace_placeholders_t *d = static_cast<replace_placeholders_t*>(data_);
   tree obj = d->obj;
 
-  if (TREE_CONSTANT (*t))
+  if (TYPE_P (*t) || TREE_CONSTANT (*t))
     {
       *walk_subtrees = false;
       return NULL_TREE;
@@ -5324,16 +5330,6 @@ cp_free_lang_data (tree t)
     /* We do not need the leftover chaining of namespaces from the
        binding level.  */
     DECL_CHAIN (t) = NULL_TREE;
-  /* Set DECL_VALUE_EXPRs of OpenMP privatized member artificial
-     decls to error_mark_node.  These are DECL_IGNORED_P and after
-     OpenMP lowering they aren't useful anymore.  Clearing DECL_VALUE_EXPR
-     doesn't work, as expansion could then consider them as something
-     to be expanded.  */
-  if (VAR_P (t)
-      && DECL_LANG_SPECIFIC (t)
-      && DECL_OMP_PRIVATIZED_MEMBER (t)
-      && DECL_IGNORED_P (t))
-    SET_DECL_VALUE_EXPR (t, error_mark_node);
 }
 
 /* Stub for c-common.  Please keep in sync with c-decl.c.

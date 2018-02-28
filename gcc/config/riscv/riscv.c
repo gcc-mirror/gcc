@@ -3495,25 +3495,43 @@ riscv_output_gpr_save (unsigned mask)
 
 /* For stack frames that can't be allocated with a single ADDI instruction,
    compute the best value to initially allocate.  It must at a minimum
-   allocate enough space to spill the callee-saved registers.  */
+   allocate enough space to spill the callee-saved registers.  If TARGET_RVC,
+   try to pick a value that will allow compression of the register saves
+   without adding extra instructions.  */
 
 static HOST_WIDE_INT
 riscv_first_stack_step (struct riscv_frame_info *frame)
 {
-  HOST_WIDE_INT min_first_step = frame->total_size - frame->fp_sp_offset;
-  HOST_WIDE_INT max_first_step = IMM_REACH / 2 - STACK_BOUNDARY / 8;
-
   if (SMALL_OPERAND (frame->total_size))
     return frame->total_size;
 
+  HOST_WIDE_INT min_first_step = frame->total_size - frame->fp_sp_offset;
+  HOST_WIDE_INT max_first_step = IMM_REACH / 2 - STACK_BOUNDARY / 8;
+  HOST_WIDE_INT min_second_step = frame->total_size - max_first_step;
+  gcc_assert (min_first_step <= max_first_step);
+
   /* As an optimization, use the least-significant bits of the total frame
      size, so that the second adjustment step is just LUI + ADD.  */
-  if (!SMALL_OPERAND (frame->total_size - max_first_step)
+  if (!SMALL_OPERAND (min_second_step)
       && frame->total_size % IMM_REACH < IMM_REACH / 2
       && frame->total_size % IMM_REACH >= min_first_step)
     return frame->total_size % IMM_REACH;
 
-  gcc_assert (min_first_step <= max_first_step);
+  if (TARGET_RVC)
+    {
+      /* If we need two subtracts, and one is small enough to allow compressed
+	 loads and stores, then put that one first.  */
+      if (IN_RANGE (min_second_step, 0,
+		    (TARGET_64BIT ? SDSP_REACH : SWSP_REACH)))
+	return MAX (min_second_step, min_first_step);
+
+      /* If we need LUI + ADDI + ADD for the second adjustment step, then start
+	 with the minimum first step, so that we can get compressed loads and
+	 stores.  */
+      else if (!SMALL_OPERAND (min_second_step))
+	return min_first_step;
+    }
+
   return max_first_step;
 }
 

@@ -298,6 +298,14 @@ enum dwarf_location_list_entry_type
     DW_LLE_start_end = 0x07,
     DW_LLE_start_length = 0x08,
 
+    /* <http://lists.dwarfstd.org/private.cgi/dwarf-discuss-dwarfstd.org/2017-April/004347.html>
+       has the proposal for now; only available to list members.
+
+       A (possibly updated) copy of the proposal is available at
+       <http://people.redhat.com/aoliva/papers/sfn/dwarf6-sfn-lvu.txt>.  */
+    DW_LLE_GNU_view_pair = 0x09,
+#define DW_LLE_view_pair DW_LLE_GNU_view_pair
+
     /* Former extension for Fission.
        See http://gcc.gnu.org/wiki/DebugFission.  */
     DW_LLE_GNU_end_of_list_entry = 0x00,

@@ -106,3 +106,9 @@
        )
   )
 )
+
+(define_constraint "CALL_OP_SYMBOL_REF"
+"constraint for call instructions using symbol ref"
+(and (match_test "!TARGET_JSR")
+     (match_code "symbol_ref"))
+)

@@ -51,7 +51,7 @@ void test_strcpy (void)
 
 void test_strcat (int n)
 {
-  strcat (a, a + 3);   /* { dg-warning ".strcat\.chkp. accessing 0 or more bytes at offsets 0 and 3 may overlap 1 byte" } */
+  strcat (a, a + 3);   /* { dg-warning ".strcat\.chkp. accessing 4 or more bytes at offsets 0 and 3 may overlap 1 byte at offset 3" } */
 }
 
 void test_strncat (int n)

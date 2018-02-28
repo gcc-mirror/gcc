@@ -28,5 +28,5 @@ end module
   use mod1              ! order of use statements is important
   class(t1),allocatable :: a
   allocate(a)
-  if (a%get()/=1) call abort()
+  if (a%get()/=1) STOP 1
 end

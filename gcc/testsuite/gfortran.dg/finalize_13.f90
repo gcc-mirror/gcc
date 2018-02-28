@@ -25,25 +25,25 @@ module m
 contains
   subroutine fini2 (x)
     type(t), intent(in), contiguous :: x(:,:)
-    if (.not. rank2_call) call abort ()
-    if (size(x,1) /= 2 .or. size(x,2) /= 3) call abort()
+    if (.not. rank2_call) STOP 1
+    if (size(x,1) /= 2 .or. size(x,2) /= 3) STOP 2
     !print *, 'fini2:', x%i
-    if (any (x%i /= reshape([11, 12, 21, 22, 31, 32], [2,3]))) call abort()
+    if (any (x%i /= reshape([11, 12, 21, 22, 31, 32], [2,3]))) STOP 3
     fini_call = fini_call + 1
   end subroutine
 
   subroutine fini3 (x)
     type(t), intent(in) :: x(2,2,*)
     integer :: i,j,k
-    if (.not. elem_call) call abort ()
-    if (.not. rank3_call) call abort ()
-    if (cnt2 /= 9) call abort()
-    if (cnt /= 1) call abort()
+    if (.not. elem_call) STOP 4
+    if (.not. rank3_call) STOP 5
+    if (cnt2 /= 9) STOP 6
+    if (cnt /= 1) STOP 7
       do i = 1, 2
         do j = 1, 2
           do k = 1, 2
             !print *, k,j,i,x(k,j,i)%i
-            if (x(k,j,i)%i /= k+10*j+100*i) call abort()
+            if (x(k,j,i)%i /= k+10*j+100*i) STOP 8
           end do 
         end do
       end do
@@ -52,10 +52,10 @@ contains
 
   impure elemental subroutine fini_elm (x)
     type(t), intent(in) :: x
-    if (.not. elem_call) call abort ()
-    if (rank3_call) call abort ()
-    if (cnt2 /= 6) call abort()
-    if (cnt /= x%i) call abort()
+    if (.not. elem_call) STOP 9
+    if (rank3_call) STOP 10
+    if (cnt2 /= 6) STOP 11
+    if (cnt /= x%i) STOP 12
     !print *, 'fini_elm:', cnt, x%i
     fini_call = fini_call + 1
     cnt = cnt + 1
@@ -63,12 +63,12 @@ contains
 
   subroutine f2ini2 (x)
     type(t2), intent(in), target :: x(:,:)
-    if (.not. rank2_call) call abort ()
-    if (size(x,1) /= 2 .or. size(x,2) /= 3) call abort()
+    if (.not. rank2_call) STOP 13
+    if (size(x,1) /= 2 .or. size(x,2) /= 3) STOP 14
     !print *, 'f2ini2:', x%i
     !print *, 'f2ini2:', x%j
-    if (any (x%i /= reshape([11, 12, 21, 22, 31, 32], [2,3]))) call abort()
-    if (any (x%j /= 100*reshape([11, 12, 21, 22, 31, 32], [2,3]))) call abort()
+    if (any (x%i /= reshape([11, 12, 21, 22, 31, 32], [2,3]))) STOP 15
+    if (any (x%j /= 100*reshape([11, 12, 21, 22, 31, 32], [2,3]))) STOP 16
     fini_call = fini_call + 1
   end subroutine
 
@@ -77,13 +77,13 @@ contains
     integer, parameter :: exprected(*) &
             = [111, 112, 121, 122, 211, 212, 221, 222]
 
-    if (.not. elem_call) call abort ()
+    if (.not. elem_call) STOP 17
     !print *, 'f2ini_elm:', cnt2, x%i, x%j
     if (rank3_call) then
-      if (x%i /= exprected(cnt2)) call abort ()  
-      if (x%j /= 1000*exprected(cnt2)) call abort ()  
+      if (x%i /= exprected(cnt2)) STOP 18  
+      if (x%j /= 1000*exprected(cnt2)) STOP 19  
     else
-      if (cnt2 /= x%i .or. cnt2*10 /= x%j) call abort()
+      if (cnt2 /= x%i .or. cnt2*10 /= x%j) STOP 20
     end if
     cnt2 = cnt2 + 1
     fini_call = fini_call + 1
@@ -114,7 +114,7 @@ program test
   fini_call = 0
   elem_call = .true.
   deallocate (y)
-  if (fini_call /= 10) call abort ()
+  if (fini_call /= 10) STOP 21
 
   elem_call = .false.
   rank2_call = .false.
@@ -134,7 +134,7 @@ program test
   fini_call = 0
   rank2_call = .true.
   deallocate (z)
-  if (fini_call /= 2) call abort ()
+  if (fini_call /= 2) STOP 22
 
   elem_call = .false.
   rank2_call = .false.
@@ -157,5 +157,5 @@ program test
   rank3_call = .true.
   elem_call = .true.
   deallocate (zz)
-  if (fini_call /= 2*2*2+1) call abort ()
+  if (fini_call /= 2*2*2+1) STOP 23
 end program test

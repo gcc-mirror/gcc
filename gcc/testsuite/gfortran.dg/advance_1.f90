@@ -8,6 +8,6 @@ program pr25463
   write (10,'(TL2,A)') 'c'
   rewind (10)
   read (10, '(a)') str
-  if (str.ne.'abc') call abort()
+  if (str.ne.'abc') STOP 1
   close (10, status='delete')
 end

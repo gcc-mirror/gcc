@@ -2794,6 +2794,13 @@ func exitsyscall(dummy int32) {
 		exitsyscallclear(_g_)
 		_g_.m.locks--
 		_g_.throwsplit = false
+
+		// Check preemption, since unlike gc we don't check on
+		// every call.
+		if getg().preempt {
+			checkPreempt()
+		}
+
 		return
 	}
 
@@ -3369,7 +3376,9 @@ var lostAtomic64Count uint64
 
 var _SystemPC = funcPC(_System)
 var _ExternalCodePC = funcPC(_ExternalCode)
+var _LostExternalCodePC = funcPC(_LostExternalCode)
 var _GCPC = funcPC(_GC)
+var _LostSIGPROFDuringAtomic64PC = funcPC(_LostSIGPROFDuringAtomic64)
 
 // Called if we receive a SIGPROF signal.
 // Called by the signal handler, may run during STW.
@@ -3469,7 +3478,7 @@ func sigprofNonGoPC(pc uintptr) {
 	if prof.hz != 0 {
 		stk := []uintptr{
 			pc,
-			funcPC(_ExternalCode) + sys.PCQuantum,
+			_ExternalCodePC + sys.PCQuantum,
 		}
 		cpuprof.addNonGo(stk)
 	}
@@ -4082,8 +4091,9 @@ func preemptone(_p_ *p) bool {
 	// setting a global variable and figuring out a way to efficiently
 	// check that global variable.
 	//
-	// For now we check gp.preempt in schedule and mallocgc,
-	// which is at least better than doing nothing at all.
+	// For now we check gp.preempt in schedule, mallocgc, selectgo,
+	// and a few other places, which is at least better than doing
+	// nothing at all.
 
 	return true
 }

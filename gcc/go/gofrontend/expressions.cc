@@ -1330,9 +1330,24 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
   else
     {
       Location bloc = Linemap::predeclared_location();
+
+      // The runtime package has hash/equality functions that are
+      // referenced by type descriptors outside of the runtime, so the
+      // function descriptors must be visible even though they are not
+      // exported.
+      bool is_exported_runtime = false;
+      if (gogo->compiling_runtime()
+	  && gogo->package_name() == "runtime"
+	  && (no->name().find("hash") != std::string::npos
+	      || no->name().find("equal") != std::string::npos))
+	is_exported_runtime = true;
+
       bool is_hidden = ((no->is_function()
 			 && no->func_value()->enclosing() != NULL)
+			|| (Gogo::is_hidden_name(no->name())
+			    && !is_exported_runtime)
 			|| Gogo::is_thunk(no));
+
       bvar = context->backend()->immutable_struct(var_name, asm_name,
                                                   is_hidden, false,
 						  btype, bloc);
@@ -1928,10 +1943,16 @@ class Integer_expression : public Expression
   do_copy()
   {
     if (this->is_character_constant_)
-      return Expression::make_character(&this->val_, this->type_,
+      return Expression::make_character(&this->val_,
+					(this->type_ == NULL
+					 ? NULL
+					 : this->type_->copy_expressions()),
 					this->location());
     else
-      return Expression::make_integer_z(&this->val_, this->type_,
+      return Expression::make_integer_z(&this->val_,
+					(this->type_ == NULL
+					 ? NULL
+					 : this->type_->copy_expressions()),
 					this->location());
   }
 
@@ -2323,7 +2344,10 @@ class Float_expression : public Expression
 
   Expression*
   do_copy()
-  { return Expression::make_float(&this->val_, this->type_,
+  { return Expression::make_float(&this->val_,
+				  (this->type_ == NULL
+				   ? NULL
+				   : this->type_->copy_expressions()),
 				  this->location()); }
 
   Bexpression*
@@ -2514,7 +2538,10 @@ class Complex_expression : public Expression
   Expression*
   do_copy()
   {
-    return Expression::make_complex(&this->val_, this->type_,
+    return Expression::make_complex(&this->val_,
+				    (this->type_ == NULL
+				     ? NULL
+				     : this->type_->copy_expressions()),
 				    this->location());
   }
 
@@ -3420,6 +3447,16 @@ Type_conversion_expression::do_check_types(Gogo*)
   this->set_is_error();
 }
 
+// Copy.
+
+Expression*
+Type_conversion_expression::do_copy()
+{
+  return new Type_conversion_expression(this->type_->copy_expressions(),
+					this->expr_->copy(),
+					this->location());
+}
+
 // Get the backend representation for a type conversion.
 
 Bexpression*
@@ -3619,6 +3656,16 @@ Unsafe_type_conversion_expression::do_is_static_initializer() const
     return true;
 
   return false;
+}
+
+// Copy.
+
+Expression*
+Unsafe_type_conversion_expression::do_copy()
+{
+  return new Unsafe_type_conversion_expression(this->type_->copy_expressions(),
+					       this->expr_->copy(),
+					       this->location());
 }
 
 // Convert to backend representation.
@@ -7497,6 +7544,11 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
     {
       len_arg = *parg;
       len_arg->determine_type(&int_context);
+      if (len_arg->type()->integer_type() == NULL)
+	{
+	  go_error_at(len_arg->location(), "non-integer len argument in make");
+	  return Expression::make_error(this->location());
+	}
       if (!this->check_int_value(len_arg, true, &len_small))
 	return Expression::make_error(this->location());
       ++parg;
@@ -7512,6 +7564,11 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
     {
       cap_arg = *parg;
       cap_arg->determine_type(&int_context);
+      if (cap_arg->type()->integer_type() == NULL)
+	{
+	  go_error_at(cap_arg->location(), "non-integer cap argument in make");
+	  return Expression::make_error(this->location());
+	}
       if (!this->check_int_value(cap_arg, false, &cap_small))
 	return Expression::make_error(this->location());
 
@@ -7947,13 +8004,33 @@ class Find_call_expression : public Traverse
 int
 Find_call_expression::expression(Expression** pexpr)
 {
-  if ((*pexpr)->call_expression() != NULL
-      || (*pexpr)->receive_expression() != NULL)
+  Expression* expr = *pexpr;
+  if (!expr->is_constant()
+      && (expr->call_expression() != NULL
+	  || expr->receive_expression() != NULL))
     {
       this->found_ = true;
       return TRAVERSE_EXIT;
     }
   return TRAVERSE_CONTINUE;
+}
+
+// Return whether calling len or cap on EXPR, of array type, is a
+// constant.  The language spec says "the expressions len(s) and
+// cap(s) are constants if the type of s is an array or pointer to an
+// array and the expression s does not contain channel receives or
+// (non-constant) function calls."
+
+bool
+Builtin_call_expression::array_len_is_constant(Expression* expr)
+{
+  go_assert(expr->type()->deref()->array_type() != NULL
+	    && !expr->type()->deref()->is_slice_type());
+  if (expr->is_constant())
+    return true;
+  Find_call_expression find_call;
+  Expression::traverse(&expr, &find_call);
+  return !find_call.found();
 }
 
 // Return whether this is constant: len of a string constant, or len
@@ -7983,19 +8060,9 @@ Builtin_call_expression::do_is_constant() const
 	    && !arg_type->points_to()->is_slice_type())
 	  arg_type = arg_type->points_to();
 
-	// The len and cap functions are only constant if there are no
-	// function calls or channel operations in the arguments.
-	// Otherwise we have to make the call.
-	if (!arg->is_constant())
-	  {
-	    Find_call_expression find_call;
-	    Expression::traverse(&arg, &find_call);
-	    if (find_call.found())
-	      return false;
-	  }
-
 	if (arg_type->array_type() != NULL
-	    && arg_type->array_type()->length() != NULL)
+	    && arg_type->array_type()->length() != NULL
+	    && Builtin_call_expression::array_len_is_constant(arg))
 	  return true;
 
 	if (this->code_ == BUILTIN_LEN && arg_type->is_string_type())
@@ -8306,12 +8373,19 @@ Builtin_call_expression::do_type()
       return Type::make_error_type();
 
     case BUILTIN_NEW:
-    case BUILTIN_MAKE:
       {
 	const Expression_list* args = this->args();
 	if (args == NULL || args->empty())
 	  return Type::make_error_type();
 	return Type::make_pointer_type(args->front()->type());
+      }
+
+    case BUILTIN_MAKE:
+      {
+	const Expression_list* args = this->args();
+	if (args == NULL || args->empty())
+	  return Type::make_error_type();
+	return args->front()->type();
       }
 
     case BUILTIN_CAP:
@@ -11622,7 +11696,7 @@ Field_reference_expression::do_lower(Gogo* gogo, Named_object* function,
   Location loc = this->location();
 
   std::string s = "fieldtrack \"";
-  Named_type* nt = this->expr_->type()->named_type();
+  Named_type* nt = this->expr_->type()->unalias()->named_type();
   if (nt == NULL || nt->named_object()->package() == NULL)
     s.append(gogo->pkgpath());
   else
@@ -12374,7 +12448,8 @@ Expression*
 Allocation_expression::do_copy()
 {
   Allocation_expression* alloc =
-    new Allocation_expression(this->type_, this->location());
+    new Allocation_expression(this->type_->copy_expressions(),
+			      this->location());
   if (this->allocate_on_stack_)
     alloc->set_allocate_on_stack();
   return alloc;
@@ -12612,6 +12687,22 @@ Struct_construction_expression::do_check_types(Gogo*)
 	}
     }
   go_assert(pv == this->vals()->end());
+}
+
+// Copy.
+
+Expression*
+Struct_construction_expression::do_copy()
+{
+  Struct_construction_expression* ret =
+    new Struct_construction_expression(this->type_->copy_expressions(),
+				       (this->vals() == NULL
+					? NULL
+					: this->vals()->copy()),
+				       this->location());
+  if (this->traverse_order() != NULL)
+    ret->set_traverse_order(this->traverse_order());
+  return ret;
 }
 
 // Flatten a struct construction expression.  Store the values into
@@ -13005,6 +13096,20 @@ Fixed_array_construction_expression::Fixed_array_construction_expression(
 				  type, indexes, vals, location)
 { go_assert(type->array_type() != NULL && !type->is_slice_type()); }
 
+
+// Copy.
+
+Expression*
+Fixed_array_construction_expression::do_copy()
+{
+  Type* t = this->type()->copy_expressions();
+  return new Fixed_array_construction_expression(t, this->indexes(),
+						 (this->vals() == NULL
+						  ? NULL
+						  : this->vals()->copy()),
+						 this->location());
+}
+
 // Return the backend representation for constructing a fixed array.
 
 Bexpression*
@@ -13137,6 +13242,19 @@ dump_slice_storage_expression(Ast_dump_context* ast_dump_context) const
     return;
   ast_dump_context->ostream() << "storage=" ;
   ast_dump_context->dump_expression(this->slice_storage_);
+}
+
+// Copy.
+
+Expression*
+Slice_construction_expression::do_copy()
+{
+  return new Slice_construction_expression(this->type()->copy_expressions(),
+					   this->indexes(),
+					   (this->vals() == NULL
+					    ? NULL
+					    : this->vals()->copy()),
+					   this->location());
 }
 
 // Return the backend representation for constructing a slice.
@@ -13350,6 +13468,18 @@ Map_construction_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	}
     }
+}
+
+// Copy.
+
+Expression*
+Map_construction_expression::do_copy()
+{
+  return new Map_construction_expression(this->type_->copy_expressions(),
+					 (this->vals_ == NULL
+					  ? NULL
+					  : this->vals_->copy()),
+					 this->location());
 }
 
 // Return the backend representation for constructing a map.
@@ -14031,6 +14161,23 @@ Composite_literal_expression::lower_map(Gogo* gogo, Named_object* function,
   return new Map_construction_expression(type, this->vals_, location);
 }
 
+// Copy.
+
+Expression*
+Composite_literal_expression::do_copy()
+{
+  Composite_literal_expression* ret =
+    new Composite_literal_expression(this->type_->copy_expressions(),
+				     this->depth_, this->has_keys_,
+				     (this->vals_ == NULL
+				      ? NULL
+				      : this->vals_->copy()),
+				     this->all_are_names_,
+				     this->location());
+  ret->key_path_ = this->key_path_;
+  return ret;
+}
+
 // Dump ast representation for a composite literal expression.
 
 void
@@ -14205,6 +14352,16 @@ Type_guard_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	}
     }
+}
+
+// Copy.
+
+Expression*
+Type_guard_expression::do_copy()
+{
+  return new Type_guard_expression(this->expr_->copy(),
+				   this->type_->copy_expressions(),
+				   this->location());
 }
 
 // Return the backend representation for a type guard expression.
@@ -14934,7 +15091,8 @@ class Slice_value_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Slice_value_expression(this->type_, this->valptr_->copy(),
+    return new Slice_value_expression(this->type_->copy_expressions(),
+				      this->valptr_->copy(),
                                       this->len_->copy(), this->cap_->copy(),
                                       this->location());
   }
@@ -15195,7 +15353,7 @@ class Interface_value_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Interface_value_expression(this->type_,
+    return new Interface_value_expression(this->type_->copy_expressions(),
                                           this->first_field_->copy(),
                                           this->obj_->copy(), this->location());
   }
@@ -15290,7 +15448,9 @@ class Interface_mtable_expression : public Expression
   Expression*
   do_copy()
   {
-    return new Interface_mtable_expression(this->itype_, this->type_,
+    Interface_type* itype = this->itype_->copy_expressions()->interface_type();
+    return new Interface_mtable_expression(itype,
+					   this->type_->copy_expressions(),
                                            this->is_pointer_, this->location());
   }
 
@@ -15778,6 +15938,13 @@ Backend_expression::do_traverse(Traverse*)
   return TRAVERSE_CONTINUE;
 }
 
+Expression*
+Backend_expression::do_copy()
+{
+  return new Backend_expression(this->bexpr_, this->type_->copy_expressions(),
+				this->location());
+}
+
 void
 Backend_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
 {
@@ -16006,10 +16173,16 @@ Numeric_constant::set_float(Type* type, const mpfr_t val)
   this->clear();
   this->classification_ = NC_FLOAT;
   this->type_ = type;
+
   // Numeric constants do not have negative zero values, so remove
   // them here.  They also don't have infinity or NaN values, but we
   // should never see them here.
-  if (mpfr_zero_p(val))
+  int bits = 0;
+  if (type != NULL
+      && type->float_type() != NULL
+      && !type->float_type()->is_abstract())
+    bits = type->float_type()->bits();
+  if (Numeric_constant::is_float_neg_zero(val, bits))
     mpfr_init_set_ui(this->u_.float_val, 0, GMP_RNDN);
   else
     mpfr_init_set(this->u_.float_val, val, GMP_RNDN);
@@ -16023,8 +16196,60 @@ Numeric_constant::set_complex(Type* type, const mpc_t val)
   this->clear();
   this->classification_ = NC_COMPLEX;
   this->type_ = type;
+
+  // Avoid negative zero as in set_float.
+  int bits = 0;
+  if (type != NULL
+      && type->complex_type() != NULL
+      && !type->complex_type()->is_abstract())
+    bits = type->complex_type()->bits() / 2;
+
+  mpfr_t real;
+  mpfr_init_set(real, mpc_realref(val), GMP_RNDN);
+  if (Numeric_constant::is_float_neg_zero(real, bits))
+    mpfr_set_ui(real, 0, GMP_RNDN);
+
+  mpfr_t imag;
+  mpfr_init_set(imag, mpc_imagref(val), GMP_RNDN);
+  if (Numeric_constant::is_float_neg_zero(imag, bits))
+    mpfr_set_ui(imag, 0, GMP_RNDN);
+
   mpc_init2(this->u_.complex_val, mpc_precision);
-  mpc_set(this->u_.complex_val, val, MPC_RNDNN);
+  mpc_set_fr_fr(this->u_.complex_val, real, imag, MPC_RNDNN);
+
+  mpfr_clear(real);
+  mpfr_clear(imag);
+}
+
+// Return whether VAL, at a precision of BITS, is a negative zero.
+// BITS may be zero in which case it is ignored.
+
+bool
+Numeric_constant::is_float_neg_zero(const mpfr_t val, int bits)
+{
+  if (!mpfr_signbit(val))
+    return false;
+  if (mpfr_zero_p(val))
+    return true;
+  mp_exp_t min_exp;
+  switch (bits)
+    {
+    case 0:
+      return false;
+    case 32:
+      // In a denormalized float32 the exponent is -126, and there are
+      // 24 bits of which at least the last must be 1, so the smallest
+      // representable non-zero exponent is -126 - (24 - 1) == -149.
+      min_exp = -149;
+      break;
+    case 64:
+      // Minimum exponent is -1022, there are 53 bits.
+      min_exp = -1074;
+      break;
+    default:
+      go_unreachable();
+    }
+  return mpfr_get_exp(val) < min_exp;
 }
 
 // Get an int value.

@@ -1,3 +1,140 @@
+2018-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/84519
+	* caf/libcaf.h (_gfortran_caf_stop_numeric): Add bool argument.
+	(_gfortran_caf_stop_str): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	* caf/mpi.c (_gfortran_caf_error_stop_str): Handle new argument.
+	(_gfortran_caf_error_stop): Likewise.
+	* caf/single.c (_gfortran_caf_stop_numeric): Likewise.
+	(_gfortran_caf_stop_str): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+	* libgfortran.h (stop_string): Add bool argument.
+	* runtime/pause.c (do_pause): Add false argument.
+	* runtime/stop.c (stop_numeric): Handle new argument.
+	(stop_string): Likewise.
+	(error_stop_string): Likewise.
+	(error_stop_numeric): Likewise.
+
+2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR 78534
+	PR 84509
+	* runtime/pause.c (pause_numeric): Modify to take GFC_INTEGER_8
+	argument.
+	(pause_string): Modify to take size_t character length argument.
+
+2018-02-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h (stop_string): Use size_t for character length.
+	* runtime/stop.c (stop_string): Likewise.
+	(error_stop_string): Likewise.
+	(stop_numeric): Use int for exit code.
+	(error_stop_numeric): Likewise.
+	* caf/libcaf.h: Remove stdint.h include.
+	(_gfortran_caf_register): Use size_t for character length.
+	(_gfortran_caf_deregister): Likewise.
+	(_gfortran_caf_sync_all): Likewise.
+	(_gfortran_caf_sync_memory): Likewise.
+	(_gfortran_caf_sync_images): Likewise.
+	(_gfortran_caf_stop_numeric): Use int for exit code.
+	(_gfortran_caf_stop_str): Use size_t for character length.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Use int for exit code.
+	(_gfortran_caf_co_broadcast): Use size_t for character length.
+	(_gfortran_caf_co_sum): Likewise.
+	(_gfortran_caf_co_min): Likewise.
+	(_gfortran_caf_co_max): Likewise.
+	(_gfortran_caf_co_reduce): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+	(_gfortran_caf_event_post): Likewise.
+	(_gfortran_caf_event_wait): Likewise.
+	* caf/mpi.c (_gfortran_caf_register): Update implementation to
+	match prototype.
+	(_gfortran_caf_deregister): Likewise.
+	(_gfortran_caf_sync_all): Likewise.
+	(_gfortran_caf_sync_images): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	* caf/single.c (caf_internal_error): Likewise.
+	(_gfortran_caf_register): Likewise.
+	(_gfortran_caf_deregister): Likewise.
+	(_gfortran_caf_sync_all): Likewise.
+	(_gfortran_caf_sync_memory): Likewise.
+	(_gfortran_caf_sync_images): Likewise.
+	(_gfortran_caf_stop_numeric): Likewise.
+	(_gfortran_caf_stop_str): Likewise.
+	(_gfortran_caf_error_stop_str): Likewise.
+	(_gfortran_caf_error_stop): Likewise.
+	(_gfortran_caf_co_broadcast): Likewise.
+	(_gfortran_caf_co_sum): Likewise.
+	(_gfortran_caf_co_min): Likewise.
+	(_gfortran_caf_co_max): Likewise.
+	(_gfortran_caf_co_reduce): Likewise.
+	(_gfortran_caf_event_post): Likewise.
+	(_gfortran_caf_event_wait): Likewise.
+	(_gfortran_caf_lock): Likewise.
+	(_gfortran_caf_unlock): Likewise.
+
+2018-02-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add type parameters to the caf_*_by_ref prototypes.
+	* caf/single.c (get_for_ref): Simplifications and now respecting
+	the type argument.
+	(_gfortran_caf_get_by_ref): Added source type handing to get_for_ref().
+	(send_by_ref): Simplifications and respecting the dst_type now.
+	(_gfortran_caf_send_by_ref): Added destination type hand over to
+	send_by_ref().
+	(_gfortran_caf_sendget_by_ref): Added general support and fixed stack
+	corruption.  The function is now really usable.
+
+2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
+
+	PR target/84148
+	* configure: Regenerate.
+
+2018-02-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/84412
+	* io/transfer.c (finalize_transfer): After completng an internal unit
+	I/O operation, clear internal_unit_kind.
+
+2018-02-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* libgfortran.h (GFC_ARRAY_DESCRIPTOR): Remove dimension
+	of descriptor to use vaiable members for dim.
+	Change usage of GFC_ARRAY_DESCRIPTOR accordingly.
+	(GFC_FILL_ARRAY_DESCRIPTOR): New macro.
+	(gfc_full_array_i4): New type.
+	* intrinsics/date_and_time.c (secnds): Use sizeof
+	(gfc_array_i4) + sizeof (descriptor_dimension) for memory
+	allocation.
+	* intrinsics/reshape_generic.c: Use GFC_FULL_ARRAY_DESCRIPTOR.
+	* io/format.c: Use sizeof (gfc_array_i4) + sizeof
+	(descriptor_dimension) for memoy allocation.
+	* io/list_read.c (list_formatted_read_scalar): Use
+	gfc_full_array_i4 for variable.
+	(nml_read_obj): Likewise.
+	* io/write.c (list_formatted_write_scalar): Likewise.
+	(nml_write_obj): Likewise.
+	* m4/reshape.m4: Use GFC_FULL_ARRAY_DESCRIPTOR.
+	* generated/reshape_c10.c: Regenerated.
+	* generated/reshape_c16.c: Regenerated.
+	* generated/reshape_c4.c: Regenerated.
+	* generated/reshape_c8.c: Regenerated.
+	* generated/reshape_i16.c: Regenerated.
+	* generated/reshape_i4.c: Regenerated.
+	* generated/reshape_i8.c: Regenerated.
+	* generated/reshape_r10.c: Regenerated.
+	* generated/reshape_r16.c: Regenerated.
+	* generated/reshape_r4.c: Regenerated.
+	* generated/reshape_r8.c: Regenerated.
+
 2018-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* generated/cshift1_16.c (cshift1): Regenerated.

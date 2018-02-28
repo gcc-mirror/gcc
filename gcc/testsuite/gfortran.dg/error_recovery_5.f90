@@ -24,7 +24,7 @@ program pr34411
      read(10,'(T7,2F9.3)', iostat=ii, end=666) x,y
   end do
 666 continue
-  if (i /= 12) call abort
-  if (x /= 379.76901 .and. y /= 231.22600) call abort
+  if (i /= 12) STOP 1
+  if (x /= 379.76901 .and. y /= 231.22600) STOP 2
   close(10)
 end program pr34411

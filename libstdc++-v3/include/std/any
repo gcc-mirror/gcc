@@ -438,8 +438,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return any(in_place_type<_Tp>, __il, std::forward<_Args>(__args)...);
     }
 
-  template <typename _Tp>
-    using _AnyCast = remove_cv_t<remove_reference_t<_Tp>>;
   /**
    * @brief Access the contained object.
    *
@@ -453,9 +451,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ValueType>
     inline _ValueType any_cast(const any& __any)
     {
+      using _Up = remove_cv_t<remove_reference_t<_ValueType>>;
       static_assert(any::__is_valid_cast<_ValueType>(),
 	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
+      static_assert(is_constructible_v<_ValueType, const _Up&>,
+	  "Template argument must be constructible from a const value.");
+      auto __p = any_cast<_Up>(&__any);
       if (__p)
 	return static_cast<_ValueType>(*__p);
       __throw_bad_any_cast();
@@ -476,37 +477,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ValueType>
     inline _ValueType any_cast(any& __any)
     {
+      using _Up = remove_cv_t<remove_reference_t<_ValueType>>;
       static_assert(any::__is_valid_cast<_ValueType>(),
 	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
+      static_assert(is_constructible_v<_ValueType, _Up&>,
+	  "Template argument must be constructible from an lvalue.");
+      auto __p = any_cast<_Up>(&__any);
       if (__p)
 	return static_cast<_ValueType>(*__p);
       __throw_bad_any_cast();
     }
 
-  template<typename _ValueType,
-           typename enable_if<!is_move_constructible<_ValueType>::value
-                              || is_lvalue_reference<_ValueType>::value,
-                              bool>::type = true>
+  template<typename _ValueType>
     inline _ValueType any_cast(any&& __any)
     {
+      using _Up = remove_cv_t<remove_reference_t<_ValueType>>;
       static_assert(any::__is_valid_cast<_ValueType>(),
 	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
-      if (__p)
-	return static_cast<_ValueType>(*__p);
-      __throw_bad_any_cast();
-    }
-
-  template<typename _ValueType,
-           typename enable_if<is_move_constructible<_ValueType>::value
-                              && !is_lvalue_reference<_ValueType>::value,
-                              bool>::type = false>
-    inline _ValueType any_cast(any&& __any)
-    {
-      static_assert(any::__is_valid_cast<_ValueType>(),
-	  "Template argument must be a reference or CopyConstructible type");
-      auto __p = any_cast<_AnyCast<_ValueType>>(&__any);
+      static_assert(is_constructible_v<_ValueType, _Up>,
+	  "Template argument must be constructible from an rvalue.");
+      auto __p = any_cast<_Up>(&__any);
       if (__p)
 	return static_cast<_ValueType>(std::move(*__p));
       __throw_bad_any_cast();

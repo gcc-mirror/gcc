@@ -6921,6 +6921,15 @@ line debug info sections.  This will result in much more compact line number
 tables, and hence is desirable if it works.
 @end defmac
 
+@defmac DWARF2_ASM_VIEW_DEBUG_INFO
+Define this macro to be a nonzero value if the assembler supports view
+assignment and verification in @code{.loc}.  If it does not, but the
+user enables location views, the compiler may have to fallback to
+internal line number tables.
+@end defmac
+
+@hook TARGET_RESET_LOCATION_VIEW
+
 @hook TARGET_WANT_DEBUG_PUB_SECTIONS
 
 @hook TARGET_DELAY_SCHED2

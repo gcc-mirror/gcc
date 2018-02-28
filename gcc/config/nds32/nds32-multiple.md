@@ -54,12 +54,14 @@
 	  (based on this nds32-multiple.md design).
        4. operands[0] must be register for sure.
        5. operands[1] must be memory for sure.
-       6. Do not cross $r15 register because it is not allocatable.  */
+       6. operands[1] is not volatile memory access.
+       7. Do not cross $r15 register because it is not allocatable.  */
   if (GET_CODE (operands[2]) != CONST_INT
       || INTVAL (operands[2]) > maximum
       || INTVAL (operands[2]) < 2
       || GET_CODE (operands[0]) != REG
       || GET_CODE (operands[1]) != MEM
+      || MEM_VOLATILE_P (operands[1])
       || REGNO (operands[0]) + INTVAL (operands[2]) > TA_REGNUM)
     FAIL;
 
@@ -236,12 +238,14 @@
 	  (based on this nds32-multiple.md design).
        4. operands[0] must be memory for sure.
        5. operands[1] must be register for sure.
-       6. Do not cross $r15 register because it is not allocatable.  */
+       6. operands[0] is not volatile memory access.
+       7. Do not cross $r15 register because it is not allocatable.  */
   if (GET_CODE (operands[2]) != CONST_INT
       || INTVAL (operands[2]) > maximum
       || INTVAL (operands[2]) < 2
       || GET_CODE (operands[0]) != MEM
       || GET_CODE (operands[1]) != REG
+      || MEM_VOLATILE_P (operands[0])
       || REGNO (operands[1]) + INTVAL (operands[2]) > TA_REGNUM)
     FAIL;
 

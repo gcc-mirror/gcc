@@ -24,7 +24,7 @@ contains
      logical :: presnt
      type(c_ptr) :: cpt
 !GCC$ attributes NO_ARG_CHECK :: arg1
-     if (presnt .neqv. present (arg1)) call abort ()
+     if (presnt .neqv. present (arg1)) STOP 1
      cpt = c_loc (arg1)
   end subroutine sub_scalar
 

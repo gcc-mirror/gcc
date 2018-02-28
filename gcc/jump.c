@@ -127,17 +127,6 @@ cleanup_barriers (void)
 	  if (!prev)
 	    continue;
 
-	  if (CALL_P (prev))
-	    {
-	      /* Make sure we do not split a call and its corresponding
-		 CALL_ARG_LOCATION note.  */
-	      rtx_insn *next = NEXT_INSN (prev);
-
-	      if (NOTE_P (next)
-		  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-		prev = next;
-	    }
-
 	  if (BARRIER_P (prev))
 	    delete_insn (insn);
 	  else if (prev != PREV_INSN (insn))
@@ -1278,26 +1267,6 @@ delete_related_insns (rtx uncast_insn)
 
   if (next != 0 && BARRIER_P (next))
     delete_insn (next);
-
-  /* If this is a call, then we have to remove the var tracking note
-     for the call arguments.  */
-
-  if (CALL_P (insn)
-      || (NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SEQUENCE
-	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
-    {
-      rtx_insn *p;
-
-      for (p = next && next->deleted () ? NEXT_INSN (next) : next;
-	   p && NOTE_P (p);
-	   p = NEXT_INSN (p))
-	if (NOTE_KIND (p) == NOTE_INSN_CALL_ARG_LOCATION)
-	  {
-	    remove_insn (p);
-	    break;
-	  }
-    }
 
   /* If deleting a jump, decrement the count of the label,
      and delete the label if it is now unused.  */

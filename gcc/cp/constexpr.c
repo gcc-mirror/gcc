@@ -112,6 +112,13 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	      cp_function_chain->invalid_constexpr = true;
 	    }
 	}
+      else if (DECL_DECLARED_CONSTEXPR_P (decl)
+	       && variably_modified_type_p (type, NULL_TREE))
+	{
+	  error ("%<constexpr%> variable %qD has variably-modified type %qT",
+		 decl, type);
+	  decl = error_mark_node;
+	}
     }
   return decl;
 }
@@ -791,7 +798,7 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 	  tree ftype;
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
-	  if (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
+	  if (DECL_UNNAMED_BIT_FIELD (field))
 	    continue;
 	  if (DECL_ARTIFICIAL (field))
 	    continue;
@@ -1779,7 +1786,13 @@ reduced_constant_expression_p (tree t)
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree idx, val, field; unsigned HOST_WIDE_INT i;
       if (CONSTRUCTOR_NO_IMPLICIT_ZERO (t))
-	field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+	{
+	  if (TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+	    /* An initialized vector would have a VECTOR_CST.  */
+	    return false;
+	  else
+	    field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+	}
       else
 	field = NULL_TREE;
       FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
@@ -2479,7 +2492,7 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
   tree whole = cxx_eval_constant_expression (ctx, orig_whole,
 					     lval,
 					     non_constant_p, overflow_p);
-  if (TREE_CODE (whole) == INDIRECT_REF
+  if (INDIRECT_REF_P (whole)
       && integer_zerop (TREE_OPERAND (whole, 0))
       && !ctx->quiet)
     error ("dereferencing a null pointer in %qE", orig_whole);
@@ -2901,7 +2914,6 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   unsigned HOST_WIDE_INT max = tree_to_uhwi (array_type_nelts_top (atype));
   verify_ctor_sanity (ctx, atype);
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
-  vec_alloc (*p, max + 1);
   bool pre_init = false;
   unsigned HOST_WIDE_INT i;
 
@@ -2970,9 +2982,8 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  if (!lvalue_p (init))
 	    eltinit = move (eltinit);
 	  eltinit = force_rvalue (eltinit, tf_warning_or_error);
-	  eltinit = (cxx_eval_constant_expression
-		     (&new_ctx, eltinit, lval,
-		      non_constant_p, overflow_p));
+	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
+						  non_constant_p, overflow_p);
 	}
       if (*non_constant_p && !ctx->quiet)
 	break;
@@ -2985,22 +2996,24 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       else
 	CONSTRUCTOR_APPEND_ELT (*p, idx, eltinit);
       /* Reuse the result of cxx_eval_constant_expression call
-	  from the first iteration to all others if it is a constant
-	  initializer that doesn't require relocations.  */
+	 from the first iteration to all others if it is a constant
+	 initializer that doesn't require relocations.  */
       if (reuse
 	  && max > 1
-	  && (initializer_constant_valid_p (eltinit, TREE_TYPE (eltinit))
-	      == null_pointer_node))
+	  && (eltinit == NULL_TREE
+	      || (initializer_constant_valid_p (eltinit, TREE_TYPE (eltinit))
+		  == null_pointer_node)))
 	{
 	  if (new_ctx.ctor != ctx->ctor)
 	    eltinit = new_ctx.ctor;
-	  for (i = 1; i < max; ++i)
-	    {
-	      idx = build_int_cst (size_type_node, i);
-	      CONSTRUCTOR_APPEND_ELT (*p, idx, unshare_constructor (eltinit));
-	    }
+	  tree range = build2 (RANGE_EXPR, size_type_node,
+			       build_int_cst (size_type_node, 1),
+			       build_int_cst (size_type_node, max - 1));
+	  CONSTRUCTOR_APPEND_ELT (*p, range, unshare_constructor (eltinit));
 	  break;
 	}
+      else if (i == 0)
+	vec_safe_reserve (*p, max);
     }
 
   if (!*non_constant_p)
@@ -3041,9 +3054,10 @@ cxx_eval_vec_init (const constexpr_ctx *ctx, tree t,
 static tree
 cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 {
-  tree sub, subtype;
+  tree sub = op0;
+  tree subtype;
+  poly_uint64 const_op01;
 
-  sub = op0;
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
   if (!POINTER_TYPE_P (subtype))
@@ -3098,7 +3112,8 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	{
 	  tree part_width = TYPE_SIZE (type);
 	  tree index = bitsize_int (0);
-	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width, index);
+	  return fold_build3_loc (loc, BIT_FIELD_REF, type, op, part_width,
+				  index);
 	}
       /* Also handle conversion to an empty base class, which
 	 is represented with a NOP_EXPR.  */
@@ -3123,7 +3138,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 	}
     }
   else if (TREE_CODE (sub) == POINTER_PLUS_EXPR
-	   && TREE_CODE (TREE_OPERAND (sub, 1)) == INTEGER_CST)
+	   && poly_int_tree_p (TREE_OPERAND (sub, 1), &const_op01))
     {
       tree op00 = TREE_OPERAND (sub, 0);
       tree op01 = TREE_OPERAND (sub, 1);
@@ -3137,29 +3152,37 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
 
 	  /* ((foo*)&vectorfoo)[1] => BIT_FIELD_REF<vectorfoo,...> */
 	  if (VECTOR_TYPE_P (op00type)
-	      && (same_type_ignoring_top_level_qualifiers_p
-		  (type, TREE_TYPE (op00type))))
+	      && same_type_ignoring_top_level_qualifiers_p
+						(type, TREE_TYPE (op00type))
+	      /* POINTER_PLUS_EXPR second operand is sizetype, unsigned,
+		 but we want to treat offsets with MSB set as negative.
+		 For the code below negative offsets are invalid and
+		 TYPE_SIZE of the element is something unsigned, so
+		 check whether op01 fits into poly_int64, which implies
+		 it is from 0 to INTTYPE_MAXIMUM (HOST_WIDE_INT), and
+		 then just use poly_uint64 because we want to treat the
+		 value as unsigned.  */
+	      && tree_fits_poly_int64_p (op01))
 	    {
-	      HOST_WIDE_INT offset = tree_to_shwi (op01);
 	      tree part_width = TYPE_SIZE (type);
-	      unsigned HOST_WIDE_INT part_widthi = tree_to_shwi (part_width)/BITS_PER_UNIT;
-	      unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
-	      tree index = bitsize_int (indexi);
-
-	      if (known_lt (offset / part_widthi,
-			    TYPE_VECTOR_SUBPARTS (op00type)))
-		return fold_build3_loc (loc,
-					BIT_FIELD_REF, type, op00,
-					part_width, index);
-
+	      poly_uint64 max_offset
+		= (tree_to_uhwi (part_width) / BITS_PER_UNIT
+		   * TYPE_VECTOR_SUBPARTS (op00type));
+	      if (known_lt (const_op01, max_offset))
+		{
+		  tree index = bitsize_int (const_op01 * BITS_PER_UNIT);
+		  return fold_build3_loc (loc,
+					  BIT_FIELD_REF, type, op00,
+					  part_width, index);
+		}
 	    }
 	  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
 	  else if (TREE_CODE (op00type) == COMPLEX_TYPE
 		   && (same_type_ignoring_top_level_qualifiers_p
 		       (type, TREE_TYPE (op00type))))
 	    {
-	      tree size = TYPE_SIZE_UNIT (type);
-	      if (tree_int_cst_equal (size, op01))
+	      if (known_eq (wi::to_poly_offset (TYPE_SIZE_UNIT (type)),
+			    const_op01))
 		return fold_build1_loc (loc, IMAGPART_EXPR, type, op00);
 	    }
 	  /* ((foo *)&fooarray)[1] => fooarray[1] */
@@ -3214,7 +3237,8 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
     {
       tree type_domain;
       tree min_val = size_zero_node;
-      tree newsub = cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
+      tree newsub
+	= cxx_fold_indirect_ref (loc, TREE_TYPE (subtype), sub, NULL);
       if (newsub)
 	sub = newsub;
       else
@@ -4259,7 +4283,16 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0),
 					  lval,
 					  non_constant_p, overflow_p);
-      *jump_target = t;
+      if (jump_target)
+	*jump_target = t;
+      else
+	{
+	  /* Can happen with ({ return true; }) && false; passed to
+	     maybe_constant_value.  There is nothing to jump over in this
+	     case, and the bug will be diagnosed later.  */
+	  gcc_assert (ctx->quiet);
+	  *non_constant_p = true;
+	}
       break;
 
     case SAVE_EXPR:
@@ -4731,6 +4764,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					jump_target);
       break;
 
+    case USING_STMT:
+      r = void_node;
+      break;
+
     default:
       if (STATEMENT_CODE_P (TREE_CODE (t)))
 	{
@@ -5109,8 +5146,8 @@ fold_non_dependent_expr (tree t)
 /* Like maybe_constant_value, but returns a CONSTRUCTOR directly, rather
    than wrapped in a TARGET_EXPR.  */
 
-tree
-maybe_constant_init (tree t, tree decl)
+static tree
+maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant)
 {
   if (!t)
     return t;
@@ -5125,10 +5162,10 @@ maybe_constant_init (tree t, tree decl)
     t = TARGET_EXPR_INITIAL (t);
   if (!is_nondependent_static_init_expression (t))
     /* Don't try to evaluate it.  */;
-  else if (CONSTANT_CLASS_P (t))
+  else if (CONSTANT_CLASS_P (t) && allow_non_constant)
     /* No evaluation needed.  */;
   else
-    t = cxx_eval_outermost_constant_expr (t, true, false, decl);
+    t = cxx_eval_outermost_constant_expr (t, allow_non_constant, false, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {
       tree init = TARGET_EXPR_INITIAL (t);
@@ -5136,6 +5173,22 @@ maybe_constant_init (tree t, tree decl)
 	t = init;
     }
   return t;
+}
+
+/* Wrapper for maybe_constant_init_1 which permits non constants.  */
+
+tree
+maybe_constant_init (tree t, tree decl)
+{
+  return maybe_constant_init_1 (t, decl, true);
+}
+
+/* Wrapper for maybe_constant_init_1 which does not permit non constants.  */
+
+tree
+cxx_constant_init (tree t, tree decl)
+{
+  return maybe_constant_init_1 (t, decl, false);
 }
 
 #if 0
@@ -5385,7 +5438,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (t))
 	{
-	  if (now && is_normal_capture_proxy (t))
+	  if (now && is_capture_proxy_with_ref (t))
 	    {
 	      /* -- in a lambda-expression, a reference to this or to a
 		 variable with automatic storage duration defined outside that
@@ -5596,6 +5649,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_PARALLEL:
     case OMP_TASK:
     case OMP_FOR:
+    case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_TASKLOOP:
     case OMP_TEAMS:

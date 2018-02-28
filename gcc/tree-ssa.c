@@ -1427,12 +1427,14 @@ non_rewritable_mem_ref_base (tree ref)
       if (! DECL_P (decl))
 	return NULL_TREE;
       if (! is_gimple_reg_type (TREE_TYPE (base))
-	  || VOID_TYPE_P (TREE_TYPE (base)))
+	  || VOID_TYPE_P (TREE_TYPE (base))
+	  || TREE_THIS_VOLATILE (decl) != TREE_THIS_VOLATILE (base))
 	return decl;
       if ((TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
+	  && known_ge (mem_ref_offset (base), 0)
 	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
 		       mem_ref_offset (base))
 	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
@@ -1515,11 +1517,11 @@ non_rewritable_lvalue_p (tree lhs)
 	  && TYPE_MODE (TREE_TYPE (decl)) != BLKmode
 	  && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
 			      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))), 0)
-	  && tree_fits_uhwi_p (TREE_OPERAND (lhs, 1))
-	  && tree_int_cst_lt (TREE_OPERAND (lhs, 1),
-			      TYPE_SIZE_UNIT (TREE_TYPE (decl)))
-	  && (tree_to_uhwi (TREE_OPERAND (lhs, 1))
-	      % tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))) == 0)
+	  && known_ge (mem_ref_offset (lhs), 0)
+	  && known_gt (wi::to_poly_offset (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
+		       mem_ref_offset (lhs))
+	  && multiple_of_p (sizetype, TREE_OPERAND (lhs, 1),
+			    TYPE_SIZE_UNIT (TREE_TYPE (lhs))))
 	return false;
     }
 

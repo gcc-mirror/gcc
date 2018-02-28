@@ -98,16 +98,16 @@ contains
     type(palette) :: MyPalette
     call inquire_palette ( p, MyPalette )
 ! Added to example so that it does something.
-    if (abs (p%x - real (p%color) * 1.0) .gt. 1.0e-6) call abort
-    if (abs (p%y - real (p%color) * 2.0) .gt. 1.0e-6) call abort
+    if (abs (p%x - real (p%color) * 1.0) .gt. 1.0e-6) STOP 1
+    if (abs (p%y - real (p%color) * 2.0) .gt. 1.0e-6) STOP 2
   end subroutine color_point_draw
 ! Invisible body for interface declared in the parent submodule
   module procedure inquire_palette
 !... implementation of inquire_palette
   end procedure inquire_palette
   module procedure verify_cleanup
-    if (allocated (p1) .or. allocated (p2)) call abort
-    if (instance_count .ne. 0) call abort
+    if (allocated (p1) .or. allocated (p2)) STOP 3
+    if (instance_count .ne. 0) STOP 4
   end procedure
   subroutine private_stuff ! not accessible from color_points_a
 !...
@@ -137,7 +137,7 @@ program main
 ! in color_points, generic interface here.
 !...
   rc = color_point_dist (c_1, c_2) ! body in color_points_a, interface in color_points
-  if (abs (rc - 2.23606801) .gt. 1.0e-6) call abort
+  if (abs (rc - 2.23606801) .gt. 1.0e-6) STOP 5
 !...
   call color_point_del (c_1)
   call color_point_del (c_2)

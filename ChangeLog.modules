@@ -1,5 +1,7 @@
 2018-02-28  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r258084.
+
 	gcc/
 	* Makefile.in (REVISION_c): Don't exec REVISION.
 	* REVISION: Simple text file.

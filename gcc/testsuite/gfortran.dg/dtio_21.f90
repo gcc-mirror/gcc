@@ -19,10 +19,10 @@ program p
    allocate(z2)
    print *, z2
   contains
-   subroutine wf2(this, a, b, c, d, e)
+   subroutine wf2(this, a, b, c, d, e)  ! { dg-error "must have assumed length" }
       class(t2), intent(in) :: this
       integer, intent(in) :: a
-      character, intent(in) :: b
+      character(*), intent(in) :: b
       integer, intent(in) :: c(:)
       integer, intent(out) :: d
       character, intent(inout) :: e

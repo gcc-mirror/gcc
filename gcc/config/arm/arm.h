@@ -2194,6 +2194,7 @@ extern const char *arm_target_thumb_only (int argc, const char **argv);
    an ARM chip.  */
 #if defined(__arm__)
 extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define HAVE_LOCAL_CPU_DETECT
 # define MCPU_MTUNE_NATIVE_FUNCTIONS			\
   { "local_cpu_detect", host_detect_local_cpu },
 # define MCPU_MTUNE_NATIVE_SPECS				\

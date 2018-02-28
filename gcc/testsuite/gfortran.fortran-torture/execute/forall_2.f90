@@ -15,6 +15,6 @@ program test
     end forall
   end forall
   if (any (a.ne.reshape ((/0,1,2,3,-1,0,2,3,-2,-1,0,1,-3,-2,-1,0/),&
-                          (/4,4/)))) call abort
+                          (/4,4/)))) STOP 1
 end
 

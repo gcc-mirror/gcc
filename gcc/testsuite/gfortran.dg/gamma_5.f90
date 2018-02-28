@@ -21,8 +21,8 @@ program main
      xd = n + 0.5d0
      td = c(n)*sqrt(pi)
      ts = c(n)*sqrt(pi)
-     if (abs(gamma(xs)-ts)/ts > 9e-6) call abort
-     if (abs(gamma(xd)-td)/td > 5e-14) call abort
+     if (abs(gamma(xs)-ts)/ts > 9e-6) STOP 1
+     if (abs(gamma(xd)-td)/td > 5e-14) STOP 2
   end do
   call tst_s(2.3, gamma(2.3))
   call tst_s(3.7, gamma(3.7))
@@ -32,11 +32,11 @@ program main
 contains
   subroutine tst_s(a, b)
     real :: a, b
-    if (abs(gamma(a) - b)/b > 1e-6) call abort
+    if (abs(gamma(a) - b)/b > 1e-6) STOP 3
   end subroutine tst_s
 
   subroutine tst_d(a, b)
     double precision :: a,b
-    if (abs(gamma(a) - b)/b > 5e-14) call abort
+    if (abs(gamma(a) - b)/b > 5e-14) STOP 4
   end subroutine tst_d
 end program main

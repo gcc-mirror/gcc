@@ -26,7 +26,7 @@
       INTEGER i
       dimension di(5)
       i = 1
-      if (fun(di(i),1,2).NE.5) call abort()
+      if (fun(di(i),1,2).NE.5) STOP 1
       call sub(di(i),i)
-      if (i.NE.4) call abort()
+      if (i.NE.4) STOP 2
       end

@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ICACHE_FLUSH_FUNC "__riscv_flush_icache"
 
+#define CPP_SPEC "%{pthread:-D_REENTRANT}"
+
 #define LINK_SPEC "\
 -melf" XLEN_SPEC "lriscv \
 %{shared} \

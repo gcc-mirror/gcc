@@ -369,7 +369,7 @@ program source code.  The format is
 Additional block information may succeed each line, when requested by
 command line option.  The @var{execution_count} is @samp{-} for lines
 containing no code.  Unexecuted lines are marked @samp{#####} or
-@samp{====}, depending on whether they are reachable by
+@samp{=====}, depending on whether they are reachable by
 non-exceptional paths or only exceptional paths such as C++ exception
 handlers, respectively. Given @samp{-a} option, unexecuted blocks are
 marked @samp{$$$$$} or @samp{%%%%%}, depending on whether a basic block
@@ -788,6 +788,8 @@ Instrumented applications use a static destructor with priority 99
 to invoke the @code{__gcov_dump} function. Thus @code{__gcov_dump}
 is executed after all user defined static destructors,
 as well as handlers registered with @code{atexit}.
+If an executable loads a dynamic shared object via dlopen functionality,
+@option{-Wl,--dynamic-list-data} is needed to dump all profile data.
 
 @c man end
 

@@ -127,6 +127,10 @@ do {									\
    %{mpe: -I%R/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"
 
+#define RS6000_CPU(NAME, CPU, FLAGS)
+#include "rs6000-cpus.def"
+#undef RS6000_CPU
+
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_PPC_GPOPT | MASK_PPC_GFXOPT | MASK_MFCRF)
 

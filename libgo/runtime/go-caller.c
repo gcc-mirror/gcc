@@ -129,18 +129,26 @@ __go_get_backtrace_state ()
    is the entry on the stack of inlined functions; -1 means the last
    one.  */
 
-_Bool
+static _Bool
 __go_file_line (uintptr pc, int index, String *fn, String *file, intgo *line)
 {
   struct caller c;
+  struct backtrace_state *state;
 
   runtime_memclr (&c, sizeof c);
   c.index = index;
-  backtrace_pcinfo (__go_get_backtrace_state (), pc, callback,
-		    error_callback, &c);
+  state = __go_get_backtrace_state ();
+  backtrace_pcinfo (state, pc, callback, error_callback, &c);
   *fn = c.fn;
   *file = c.file;
   *line = c.line;
+
+  // If backtrace_pcinfo didn't get the function name from the debug
+  // info, try to get it from the symbol table.
+  if (fn->len == 0)
+    backtrace_syminfo (state, pc, __go_syminfo_fnname_callback,
+		       error_callback, fn);
+
   return c.file.len > 0;
 }
 

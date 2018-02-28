@@ -308,6 +308,7 @@ runtime_mcall(FuncVal *fv)
 	// Ensure that all registers are on the stack for the garbage
 	// collector.
 	__builtin_unwind_init();
+	flush_registers_to_secondary_stack();
 
 	gp = g;
 	mp = gp->m;
@@ -322,6 +323,7 @@ runtime_mcall(FuncVal *fv)
 		// We have to point to an address on the stack that is
 		// below the saved registers.
 		gp->gcnextsp = (uintptr)(&afterregs);
+		gp->gcnextsp2 = (uintptr)(secondary_stack_pointer());
 #endif
 		gp->fromgogo = false;
 		getcontext(ucontext_arg(&gp->context[0]));
@@ -500,6 +502,8 @@ runtime_mstart(void *arg)
 	// is the top of the stack, not the bottom.
 	gp->gcstacksize = 0;
 	gp->gcnextsp = (uintptr)(&arg);
+	gp->gcinitialsp2 = secondary_stack_pointer();
+	gp->gcnextsp2 = (uintptr)(gp->gcinitialsp2);
 #endif
 
 	// Save the currently active context.  This will return
@@ -576,6 +580,8 @@ setGContext(void)
 	gp->gcstack = 0;
 	gp->gcstacksize = 0;
 	gp->gcnextsp = (uintptr)(&val);
+	gp->gcinitialsp2 = secondary_stack_pointer();
+	gp->gcnextsp2 = (uintptr)(gp->gcinitialsp2);
 #endif
 	getcontext(ucontext_arg(&gp->context[0]));
 
@@ -654,6 +660,7 @@ doentersyscall(uintptr pc, uintptr sp)
 		void *v;
 
 		g->gcnextsp = (uintptr)(&v);
+		g->gcnextsp2 = (uintptr)(secondary_stack_pointer());
 	}
 #endif
 
@@ -694,6 +701,7 @@ doentersyscallblock(uintptr pc, uintptr sp)
 		void *v;
 
 		g->gcnextsp = (uintptr)(&v);
+		g->gcnextsp2 = (uintptr)(secondary_stack_pointer());
 	}
 #endif
 
@@ -756,6 +764,7 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
 		*ret_stacksize = (uintptr)stacksize;
 		newg->gcinitialsp = *ret_stack;
 		newg->gcstacksize = (uintptr)stacksize;
+		newg->gcinitialsp2 = initial_secondary_stack_pointer(*ret_stack);
 #endif
 	}
 	return newg;
@@ -807,6 +816,7 @@ resetNewG(G *newg, void **sp, uintptr *spsize)
   if(*spsize == 0)
     runtime_throw("bad spsize in resetNewG");
   newg->gcnextsp = (uintptr)(*sp);
+  newg->gcnextsp2 = (uintptr)(newg->gcinitialsp2);
 #endif
 }
 

@@ -684,7 +684,7 @@ proper position among the other output files.  */
 
 #ifndef LIBASAN_SPEC
 #define STATIC_LIBASAN_LIBS \
-  " %{static-libasan:%:include(libsanitizer.spec)%(link_libasan)}"
+  " %{static-libasan|static:%:include(libsanitizer.spec)%(link_libasan)}"
 #ifdef LIBASAN_EARLY_SPEC
 #define LIBASAN_SPEC STATIC_LIBASAN_LIBS
 #elif defined(HAVE_LD_STATIC_DYNAMIC)
@@ -702,7 +702,7 @@ proper position among the other output files.  */
 
 #ifndef LIBTSAN_SPEC
 #define STATIC_LIBTSAN_LIBS \
-  " %{static-libtsan:%:include(libsanitizer.spec)%(link_libtsan)}"
+  " %{static-libtsan|static:%:include(libsanitizer.spec)%(link_libtsan)}"
 #ifdef LIBTSAN_EARLY_SPEC
 #define LIBTSAN_SPEC STATIC_LIBTSAN_LIBS
 #elif defined(HAVE_LD_STATIC_DYNAMIC)
@@ -720,7 +720,7 @@ proper position among the other output files.  */
 
 #ifndef LIBLSAN_SPEC
 #define STATIC_LIBLSAN_LIBS \
-  " %{static-liblsan:%:include(libsanitizer.spec)%(link_liblsan)}"
+  " %{static-liblsan|static:%:include(libsanitizer.spec)%(link_liblsan)}"
 #ifdef LIBLSAN_EARLY_SPEC
 #define LIBLSAN_SPEC STATIC_LIBLSAN_LIBS
 #elif defined(HAVE_LD_STATIC_DYNAMIC)
@@ -738,7 +738,7 @@ proper position among the other output files.  */
 
 #ifndef LIBUBSAN_SPEC
 #define STATIC_LIBUBSAN_LIBS \
-  " %{static-libubsan:%:include(libsanitizer.spec)%(link_libubsan)}"
+  " %{static-libubsan|static:%:include(libsanitizer.spec)%(link_libubsan)}"
 #ifdef HAVE_LD_STATIC_DYNAMIC
 #define LIBUBSAN_SPEC "%{static-libubsan:" LD_STATIC_OPTION \
 		     "} -lubsan %{static-libubsan:" LD_DYNAMIC_OPTION "}" \

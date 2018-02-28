@@ -597,10 +597,10 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	  return false;
 	}
 
-      if (t1->named_type() != NULL)
-	return t1->named_type()->named_type_is_comparable(reason);
-      else if (t2->named_type() != NULL)
-	return t2->named_type()->named_type_is_comparable(reason);
+      if (t1->unalias()->named_type() != NULL)
+	return t1->unalias()->named_type()->named_type_is_comparable(reason);
+      else if (t2->unalias()->named_type() != NULL)
+	return t2->unalias()->named_type()->named_type_is_comparable(reason);
       else if (t1->struct_type() != NULL)
 	{
 	  if (t1->struct_type()->is_struct_incomparable())
@@ -678,6 +678,12 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
   if (Type::are_identical(lhs, rhs, true, reason))
     return true;
 
+  // Ignore aliases, except for error messages.
+  const Type* lhs_orig = lhs;
+  const Type* rhs_orig = rhs;
+  lhs = lhs->unalias();
+  rhs = rhs->unalias();
+
   // The types are assignable if they have identical underlying types
   // and either LHS or RHS is not a named type.
   if (((lhs->named_type() != NULL && rhs->named_type() == NULL)
@@ -740,15 +746,16 @@ Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
     {
       if (rhs->interface_type() != NULL)
 	reason->assign(_("need explicit conversion"));
-      else if (lhs->named_type() != NULL && rhs->named_type() != NULL)
+      else if (lhs_orig->named_type() != NULL
+	       && rhs_orig->named_type() != NULL)
 	{
-	  size_t len = (lhs->named_type()->name().length()
-			+ rhs->named_type()->name().length()
+	  size_t len = (lhs_orig->named_type()->name().length()
+			+ rhs_orig->named_type()->name().length()
 			+ 100);
 	  char* buf = new char[len];
 	  snprintf(buf, len, _("cannot use type %s as type %s"),
-		   rhs->named_type()->message_name().c_str(),
-		   lhs->named_type()->message_name().c_str());
+		   rhs_orig->named_type()->message_name().c_str(),
+		   lhs_orig->named_type()->message_name().c_str());
 	  reason->assign(buf);
 	  delete[] buf;
 	}
@@ -767,6 +774,10 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
   // The types are convertible if they are assignable.
   if (Type::are_assignable(lhs, rhs, reason))
     return true;
+
+  // Ignore aliases.
+  lhs = lhs->unalias();
+  rhs = rhs->unalias();
 
   // A pointer to a regular type may not be converted to a pointer to
   // a type that may not live in the heap, except when converting from
@@ -866,6 +877,68 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     }
 
   return false;
+}
+
+// Copy expressions if it may change the size.
+//
+// The only type that has an expression is an array type.  The only
+// types whose size can be changed by the size of an array type are an
+// array type itself, or a struct type with an array field.
+Type*
+Type::copy_expressions()
+{
+  // This is run during parsing, so types may not be valid yet.
+  // We only have to worry about array type literals.
+  switch (this->classification_)
+    {
+    default:
+      return this;
+
+    case TYPE_ARRAY:
+      {
+	Array_type* at = this->array_type();
+	if (at->length() == NULL)
+	  return this;
+	Expression* len = at->length()->copy();
+	if (at->length() == len)
+	  return this;
+	return Type::make_array_type(at->element_type(), len);
+      }
+
+    case TYPE_STRUCT:
+      {
+	Struct_type* st = this->struct_type();
+	const Struct_field_list* sfl = st->fields();
+	if (sfl == NULL)
+	  return this;
+	bool changed = false;
+	Struct_field_list *nsfl = new Struct_field_list();
+	for (Struct_field_list::const_iterator pf = sfl->begin();
+	     pf != sfl->end();
+	     ++pf)
+	  {
+	    Type* ft = pf->type()->copy_expressions();
+	    Struct_field nf(Typed_identifier((pf->is_anonymous()
+					      ? ""
+					      : pf->field_name()),
+					     ft,
+					     pf->location()));
+	    if (pf->has_tag())
+	      nf.set_tag(pf->tag());
+	    nsfl->push_back(nf);
+	    if (ft != pf->type())
+	      changed = true;
+	  }
+	if (!changed)
+	  {
+	    delete(nsfl);
+	    return this;
+	  }
+	return Type::make_struct_type(nsfl, st->location());
+      }
+    }
+
+  go_unreachable();
 }
 
 // Return a hash code for the type to be used for method lookup.
@@ -6417,11 +6490,11 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
       if (p != this->fields_->begin())
 	ret->push_back(';');
       ret->push_back(' ');
-      if (p->is_anonymous())
-	ret->push_back('?');
-      else
-	ret->append(Gogo::unpack_hidden_name(p->field_name()));
-      ret->push_back(' ');
+      if (!p->is_anonymous())
+	{
+	  ret->append(Gogo::unpack_hidden_name(p->field_name()));
+	  ret->push_back(' ');
+	}
       if (p->is_anonymous()
 	  && p->type()->named_type() != NULL
 	  && p->type()->named_type()->is_alias())
@@ -9034,6 +9107,8 @@ Interface_type::get_backend_empty_interface_type(Gogo* gogo)
   return empty_interface_type;
 }
 
+Interface_type::Bmethods_map Interface_type::bmethods_map;
+
 // Return a pointer to the backend representation of the method table.
 
 Btype*
@@ -9041,6 +9116,21 @@ Interface_type::get_backend_methods(Gogo* gogo)
 {
   if (this->bmethods_ != NULL && !this->bmethods_is_placeholder_)
     return this->bmethods_;
+
+  std::pair<Interface_type*, Bmethods_map_entry> val;
+  val.first = this;
+  val.second.btype = NULL;
+  val.second.is_placeholder = false;
+  std::pair<Bmethods_map::iterator, bool> ins =
+    Interface_type::bmethods_map.insert(val);
+  if (!ins.second
+      && ins.first->second.btype != NULL
+      && !ins.first->second.is_placeholder)
+    {
+      this->bmethods_ = ins.first->second.btype;
+      this->bmethods_is_placeholder_ = false;
+      return this->bmethods_;
+    }
 
   Location loc = this->location();
 
@@ -9098,10 +9188,14 @@ Interface_type::get_backend_methods(Gogo* gogo)
   Btype* st = gogo->backend()->struct_type(mfields);
   Btype* ret = gogo->backend()->pointer_type(st);
 
-  if (this->bmethods_ != NULL && this->bmethods_is_placeholder_)
-    gogo->backend()->set_placeholder_pointer_type(this->bmethods_, ret);
+  if (ins.first->second.btype != NULL
+      && ins.first->second.is_placeholder)
+    gogo->backend()->set_placeholder_pointer_type(ins.first->second.btype,
+                                                  ret);
   this->bmethods_ = ret;
+  ins.first->second.btype = ret;
   this->bmethods_is_placeholder_ = false;
+  ins.first->second.is_placeholder = false;
   return ret;
 }
 
@@ -9112,10 +9206,25 @@ Interface_type::get_backend_methods_placeholder(Gogo* gogo)
 {
   if (this->bmethods_ == NULL)
     {
+      std::pair<Interface_type*, Bmethods_map_entry> val;
+      val.first = this;
+      val.second.btype = NULL;
+      val.second.is_placeholder = false;
+      std::pair<Bmethods_map::iterator, bool> ins =
+        Interface_type::bmethods_map.insert(val);
+      if (!ins.second && ins.first->second.btype != NULL)
+        {
+          this->bmethods_ = ins.first->second.btype;
+          this->bmethods_is_placeholder_ = ins.first->second.is_placeholder;
+          return this->bmethods_;
+        }
+
       Location loc = this->location();
-      this->bmethods_ = gogo->backend()->placeholder_pointer_type("", loc,
-								  false);
+      Btype* bt = gogo->backend()->placeholder_pointer_type("", loc, false);
+      this->bmethods_ = bt;
+      ins.first->second.btype = bt;
       this->bmethods_is_placeholder_ = true;
+      ins.first->second.is_placeholder = true;
     }
   return this->bmethods_;
 }
@@ -9644,7 +9753,12 @@ bool
 Named_method::do_nointerface() const
 {
   Named_object* no = this->named_object_;
-  return no->is_function() && no->func_value()->nointerface();
+  if (no->is_function())
+    return no->func_value()->nointerface();
+  else if (no->is_function_declaration())
+    return no->func_declaration_value()->nointerface();
+  else
+    go_unreachable();
 }
 
 // Class Interface_method.

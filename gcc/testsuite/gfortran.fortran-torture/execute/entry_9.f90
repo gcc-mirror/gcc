@@ -17,8 +17,8 @@
 	program entrytest
 	integer f1, e1
 	real f2, e2
-	if (f1 (6) .ne. 21) call abort ()
-	if (e1 () .ne. 42) call abort ()
-	if (f2 () .ne. 45) call abort ()
-	if (e2 () .ne. 45) call abort ()
+	if (f1 (6) .ne. 21) STOP 1
+	if (e1 () .ne. 42) STOP 2
+	if (f2 () .ne. 45) STOP 3
+	if (e2 () .ne. 45) STOP 4
 	end

@@ -18,7 +18,7 @@
 !  print *, len(SUB(j + 2)//"a"), ans   ! This still fails (no charlen).
   print *, len(bar(2)), ans
 
-  IF(.NOT.ASSOCIATED(F1(10))) CALL ABORT()
+  IF(.NOT.ASSOCIATED(F1(10))) STOP 1
   deallocate (tar)
 
 CONTAINS

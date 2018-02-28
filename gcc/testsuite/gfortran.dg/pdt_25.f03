@@ -26,8 +26,8 @@
 ! Kind tests appear because of problem identified in comment #!
 ! due to Dominque d'Humieres  <dominiq@lps.ens.fr>
 
-  if (kind (x2%chr) .ne. 1) call abort
-  if (kind (x3%chr) .ne. 4) call abort
+  if (kind (x2%chr) .ne. 1) STOP 1
+  if (kind (x3%chr) .ne. 4) STOP 2
 
 contains
 
@@ -35,9 +35,9 @@ contains
     type(pdt_t(1, *)) :: x
     integer :: i
 
-    if (x%l .ne. i) call abort
-    if (len(x%chr) .ne. i) call abort
-    if (size(x%i,1) .ne. i) call abort
+    if (x%l .ne. i) STOP 3
+    if (len(x%chr) .ne. i) STOP 4
+    if (size(x%i,1) .ne. i) STOP 5
   end subroutine
 
 end

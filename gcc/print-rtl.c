@@ -264,7 +264,6 @@ rtx_writer::print_rtx_operand_code_0 (const_rtx in_rtx ATTRIBUTE_UNUSED,
 	  }
 
 	case NOTE_INSN_VAR_LOCATION:
-	case NOTE_INSN_CALL_ARG_LOCATION:
 	  fputc (' ', m_outfile);
 	  print_rtx (NOTE_VAR_LOCATION (in_rtx));
 	  break;
@@ -276,6 +275,7 @@ rtx_writer::print_rtx_operand_code_0 (const_rtx in_rtx ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_BEGIN_STMT:
+	case NOTE_INSN_INLINE_ENTRY:
 #ifndef GENERATOR_FILE
 	  {
 	    expanded_location xloc
@@ -1879,6 +1879,10 @@ print_insn (pretty_printer *pp, const rtx_insn *x, int verbose)
 		pp_string (pp, "debug begin stmt marker");
 		break;
 
+	      case NOTE_INSN_INLINE_ENTRY:
+		pp_string (pp, "debug inline entry marker");
+		break;
+
 	      default:
 		gcc_unreachable ();
 	      }
@@ -1965,7 +1969,6 @@ print_insn (pretty_printer *pp, const rtx_insn *x, int verbose)
 	    break;
 
 	  case NOTE_INSN_VAR_LOCATION:
-	  case NOTE_INSN_CALL_ARG_LOCATION:
 	    pp_left_brace (pp);
 	    print_pattern (pp, NOTE_VAR_LOCATION (x), verbose);
 	    pp_right_brace (pp);

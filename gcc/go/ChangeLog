@@ -1,3 +1,32 @@
+2018-02-03  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::fill_in_struct): Mark struct types as
+	using structural equality.
+
+2018-02-02  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::type_size): Return 0 for
+	void_type_node.
+	(Gcc_backend::convert_expression): Don't convert if the type of
+	expr_tree is void_type_node.
+	(Gcc_backend::array_index_expression): Don't index if the type of
+	the array expression is void_type_node.
+	(Gcc_backend::init_statement): Don't initialize if the type of the
+	initializer expression is void_type_node.
+	(Gcc_backend::assignment_statement): Don't assign if the type of
+	either the left or right hand side is void_type_node.
+	(Gcc_backend::temporary_variable): Don't initialize if the type of
+	the initializer expression is void_type_node.
+
+2018-02-01  Cherry Zhang  <cherryyz@google.com>
+
+	* lang.opt (fgo-optimize): Remove RejectNegative.
+	* go-c.h (go_enable_optimize): Update declaration to take value
+	argument.
+	* go-lang.c (go_langhook_handle_option): Pass value to
+	go_enable_optimize.
+	* gccgo.texi (Invoking gccgo): Update -fgo-optimize-allocs doc.
+
 2018-01-30  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::convert_tree): New private method.

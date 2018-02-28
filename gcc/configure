@@ -23183,6 +23183,13 @@ $as_echo "#define HAVE_AS_LEB128 0" >>confdefs.h
 
 fi
 
+# Determine if an .eh_frame section is read-only.
+gcc_fn_eh_frame_ro () {
+  $gcc_cv_as $1 -o conftest.o conftest.s > /dev/null 2>&1 && \
+    $gcc_cv_objdump -h conftest.o 2>/dev/null | \
+    sed -e '/.eh_frame/!d' -e N | grep READONLY > /dev/null
+}
+
 # Check if we have assembler support for unwind directives.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for cfi directives" >&5
 $as_echo_n "checking assembler for cfi directives... " >&6; }
@@ -23210,41 +23217,41 @@ else
     # If the linker used on Solaris (like Sun ld) isn't capable of merging
     # read-only and read-write sections, we need to make sure that the
     # assembler used emits read-write .eh_frame sections.
-    if test "x$gcc_cv_ld_ro_rw_mix" != xread-write; then
-      if test "x$gcc_cv_objdump" != x; then
-	if $gcc_cv_objdump -h conftest.o 2>/dev/null | \
-		sed -e /.eh_frame/!d -e N | grep READONLY > /dev/null; then
-	  gcc_cv_as_cfi_directive=no
-	else
-	  case "$target" in
-	    i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)
-	      # On Solaris/x86, make sure that GCC and assembler agree on using
-	      # read-only .eh_frame sections for 64-bit.
-	      if test x$gas = xyes; then
-	         as_ix86_64_opt="--64"
-	      else
-	         as_ix86_64_opt="-xarch=amd64"
-	      fi
-	      if $gcc_cv_as $as_ix86_64_opt -o conftest.o conftest.s > /dev/null 2>&1 && \
-		$gcc_cv_objdump -h conftest.o 2>/dev/null | \
-			sed -e /.eh_frame/!d -e N | \
-			grep READONLY > /dev/null; then
-		gcc_cv_as_cfi_directive=yes
-	      else
-		gcc_cv_as_cfi_directive=no
-	      fi
-	      ;;
-	    *)
-	      gcc_cv_as_cfi_directive=yes
-	      ;;
-	  esac
-	fi
-      else
-        # no objdump, err on the side of caution
-	gcc_cv_as_cfi_directive=no
-      fi
-    else
+    if test "x$gcc_cv_ld_ro_rw_mix" = xread-write; then
       gcc_cv_as_cfi_directive=yes
+    elif test "x$gcc_cv_objdump" = x; then
+      # No objdump, err on the side of caution.
+      gcc_cv_as_cfi_directive=no
+    else
+      if test x$gas = xyes; then
+	as_32_opt="--32"
+	as_64_opt="--64"
+      else
+	as_32_opt="-m32"
+	as_64_opt="-m64"
+      fi
+      case "$target" in
+	sparc*-*-solaris2.*)
+	  # On Solaris/SPARC, .eh_frame sections should always be read-write.
+	  if gcc_fn_eh_frame_ro $as_32_opt \
+	     || gcc_fn_eh_frame_ro $as_64_opt; then
+	    gcc_cv_as_cfi_directive=no
+	  else
+	    gcc_cv_as_cfi_directive=yes
+	  fi
+	  ;;
+	i?86-*-solaris2.* | x86_64-*-solaris2.*)
+	  # On Solaris/x86, make sure that GCC and assembler agree on using
+	  # read-only .eh_frame sections for 64-bit.
+	  if gcc_fn_eh_frame_ro $as_32_opt; then
+	    gcc_cv_as_cfi_directive=no
+	  elif gcc_fn_eh_frame_ro $as_64_opt; then
+	    gcc_cv_as_cfi_directive=yes
+	  else
+	    gcc_cv_as_cfi_directive=no
+	  fi
+	  ;;
+      esac
     fi
     ;;
   *-*-*)
@@ -27820,6 +27827,52 @@ $as_echo "$gcc_cv_as_dwarf2_file_buggy" >&6; }
 
 $as_echo "#define HAVE_AS_DWARF2_DEBUG_LINE 1" >>confdefs.h
 
+
+    if test $gcc_cv_as_leb128 = yes; then
+	conftest_s="\
+	.file 1 \"conftest.s\"
+	.loc 1 3 0 view .LVU1
+	$insn
+	.data
+	.uleb128 .LVU1
+	.uleb128 .LVU1
+"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for dwarf2 debug_view support" >&5
+$as_echo_n "checking assembler for dwarf2 debug_view support... " >&6; }
+if test "${gcc_cv_as_dwarf2_debug_view+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_dwarf2_debug_view=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 27 \) \* 1000 + 0`
+  then gcc_cv_as_dwarf2_debug_view=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo "$conftest_s" > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_dwarf2_debug_view=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_dwarf2_debug_view" >&5
+$as_echo "$gcc_cv_as_dwarf2_debug_view" >&6; }
+if test $gcc_cv_as_dwarf2_debug_view = yes; then
+
+$as_echo "#define HAVE_AS_DWARF2_DEBUG_VIEW 1" >>confdefs.h
+
+fi
+    fi
  fi
 
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for --gdwarf2 option" >&5
@@ -29743,7 +29796,7 @@ $as_echo_n "checking for exported symbols... " >&6; }
      if test "x$export_sym_check" != x; then
        echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
        ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-       if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+       if $export_sym_check conftest$ac_exeext | grep foobar > /dev/null; then
 	 : # No need to use a flag
 	 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -29753,7 +29806,7 @@ $as_echo "yes" >&6; }
 	 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
 $as_echo_n "checking for -rdynamic... " >&6; }
 	 ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest$ac_exeext > /dev/null 2>&1
-	 if $export_sym_check conftest$ac_exeext | grep -q foobar > /dev/null; then
+	 if $export_sym_check conftest$ac_exeext | grep foobar > /dev/null; then
 	   plugin_rdynamic=yes
 	   pluginlibs="-rdynamic"
 	 else

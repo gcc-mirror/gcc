@@ -11,8 +11,8 @@
   end interface
 
 #define CHECK(I,J,K) \
-  if (merge_bits(I,J,K) /= ior(iand(I,K),iand(J,not(K)))) call abort ; \
-  if (run_merge(I,J,K) /= merge_bits(I,J,K)) call abort
+  if (merge_bits(I,J,K) /= ior(iand(I,K),iand(J,not(K)))) STOP 1; \
+  if (run_merge(I,J,K) /= merge_bits(I,J,K)) STOP 2
 
   CHECK(13_1,18_1,22_1)
   CHECK(-13_1,18_1,22_1)

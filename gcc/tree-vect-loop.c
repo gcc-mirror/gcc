@@ -1128,6 +1128,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in)
     unaligned_dr (NULL),
     peeling_for_alignment (0),
     ptr_mask (0),
+    ivexpr_map (NULL),
     slp_unrolling_factor (1),
     single_scalar_iteration_cost (0),
     vectorizable (false),
@@ -1251,8 +1252,36 @@ _loop_vec_info::~_loop_vec_info ()
   free (bbs);
 
   release_vec_loop_masks (&masks);
+  delete ivexpr_map;
 
   loop->aux = NULL;
+}
+
+/* Return an invariant or register for EXPR and emit necessary
+   computations in the LOOP_VINFO loop preheader.  */
+
+tree
+cse_and_gimplify_to_preheader (loop_vec_info loop_vinfo, tree expr)
+{
+  if (is_gimple_reg (expr)
+      || is_gimple_min_invariant (expr))
+    return expr;
+
+  if (! loop_vinfo->ivexpr_map)
+    loop_vinfo->ivexpr_map = new hash_map<tree_operand_hash, tree>;
+  tree &cached = loop_vinfo->ivexpr_map->get_or_insert (expr);
+  if (! cached)
+    {
+      gimple_seq stmts = NULL;
+      cached = force_gimple_operand (unshare_expr (expr),
+				     &stmts, true, NULL_TREE);
+      if (stmts)
+	{
+	  edge e = loop_preheader_edge (LOOP_VINFO_LOOP (loop_vinfo));
+	  gsi_insert_seq_on_edge_immediate (e, stmts);
+	}
+    }
+  return cached;
 }
 
 /* Return true if we can use CMP_TYPE as the comparison type to produce
@@ -1355,16 +1384,10 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
-  int nbbs = loop->num_nodes, factor, scalar_single_iter_cost = 0;
+  int nbbs = loop->num_nodes, factor;
   int innerloop_iters, i;
 
-  /* Count statements in scalar loop.  Using this as scalar cost for a single
-     iteration for now.
-
-     TODO: Add outer loop support.
-
-     TODO: Consider assigning different costs to different scalar
-     statements.  */
+  /* Gather costs for statements in the scalar loop.  */
 
   /* FORNOW.  */
   innerloop_iters = 1;
@@ -1408,13 +1431,28 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
           else
             kind = scalar_stmt;
 
-	  scalar_single_iter_cost
-	    += record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
-				 factor, kind, stmt_info, 0, vect_prologue);
+	  record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+			    factor, kind, stmt_info, 0, vect_prologue);
         }
     }
-  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo)
-    = scalar_single_iter_cost;
+
+  /* Now accumulate cost.  */
+  void *target_cost_data = init_cost (loop);
+  stmt_info_for_cost *si;
+  int j;
+  FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
+		    j, si)
+    {
+      struct _stmt_vec_info *stmt_info
+	= si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
+      (void) add_stmt_cost (target_cost_data, si->count,
+			    si->kind, stmt_info, si->misalign,
+			    vect_body);
+    }
+  unsigned dummy, body_cost = 0;
+  finish_cost (target_cost_data, &dummy, &body_cost, &dummy);
+  destroy_cost_data (target_cost_data);
+  LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST (loop_vinfo) = body_cost;
 }
 
 

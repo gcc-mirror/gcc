@@ -2054,11 +2054,17 @@ gfc_match_type_spec (gfc_typespec *ts)
 {
   match m;
   locus old_locus;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  char c, name[GFC_MAX_SYMBOL_LEN + 1];
 
   gfc_clear_ts (ts);
   gfc_gobble_whitespace ();
   old_locus = gfc_current_locus;
+
+  /* If c isn't [a-z], then return immediately.  */
+  c = gfc_peek_ascii_char ();
+  if (!ISALPHA(c))
+    return MATCH_NO;
+
   type_param_spec_list = NULL;
 
   if (match_derived_type_spec (ts) == MATCH_YES)
@@ -2099,6 +2105,8 @@ gfc_match_type_spec (gfc_typespec *ts)
       ts->type = BT_CHARACTER;
 
       m = gfc_match_char_spec (ts);
+      if (ts->u.cl && ts->u.cl->length)
+	gfc_resolve_expr (ts->u.cl->length);
 
       if (m == MATCH_NO)
 	m = MATCH_YES;
@@ -4624,8 +4632,8 @@ gfc_match_deallocate (void)
 	   && (tail->expr->ref->type == REF_COMPONENT
 	       || tail->expr->ref->type == REF_ARRAY));
       if (sym && sym->ts.type == BT_CLASS)
-	b2 = !(CLASS_DATA (sym)->attr.allocatable
-	       || CLASS_DATA (sym)->attr.class_pointer);
+	b2 = !(CLASS_DATA (sym) && (CLASS_DATA (sym)->attr.allocatable
+	       || CLASS_DATA (sym)->attr.class_pointer));
       else
 	b2 = sym && !(sym->attr.allocatable || sym->attr.pointer
 		      || sym->attr.proc_pointer);
@@ -6193,9 +6201,10 @@ gfc_match_select_type (void)
 		     || CLASS_DATA (expr1)->attr.codimension)
 		 && expr1->ref
 		 && expr1->ref->type == REF_ARRAY
+		 && expr1->ref->u.ar.type == AR_FULL
 		 && expr1->ref->next == NULL);
 
-  /* Check for F03:C811.  */
+  /* Check for F03:C811 (F08:C835).  */
   if (!expr2 && (expr1->expr_type != EXPR_VARIABLE
 		 || (!class_array && expr1->ref != NULL)))
     {

@@ -731,6 +731,7 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 {
   cond = maybe_convert_cond (cond);
   if (IF_STMT_CONSTEXPR_P (if_stmt)
+      && !type_dependent_expression_p (cond)
       && require_constant_expression (cond)
       && !value_dependent_expression_p (cond))
     {
@@ -3321,7 +3322,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     {
       /* Check whether we've already built a proxy.  */
       tree var = decl;
-      while (is_normal_capture_proxy (var))
+      while (is_capture_proxy_with_ref (var))
 	var = DECL_CAPTURED_VARIABLE (var);
       tree d = retrieve_local_specialization (var);
 
@@ -4392,7 +4393,7 @@ omp_clause_decl_field (tree decl)
       && DECL_OMP_PRIVATIZED_MEMBER (decl))
     {
       tree f = DECL_VALUE_EXPR (decl);
-      if (TREE_CODE (f) == INDIRECT_REF)
+      if (INDIRECT_REF_P (f))
 	f = TREE_OPERAND (f, 0);
       if (TREE_CODE (f) == COMPONENT_REF)
 	{
@@ -4447,7 +4448,7 @@ omp_privatize_field (tree t, bool shared)
     omp_private_member_map = new hash_map<tree, tree>;
   if (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE)
     {
-      gcc_assert (TREE_CODE (m) == INDIRECT_REF);
+      gcc_assert (INDIRECT_REF_P (m));
       m = TREE_OPERAND (m, 0);
     }
   tree vb = NULL_TREE;
@@ -5865,7 +5866,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
 		    t = TREE_OPERAND (t, 0);
 		  if (TREE_CODE (t) == ADDR_EXPR
-		      || TREE_CODE (t) == INDIRECT_REF)
+		      || INDIRECT_REF_P (t))
 		    t = TREE_OPERAND (t, 0);
 		}
 	      tree n = omp_clause_decl_field (t);

@@ -47,9 +47,9 @@ program test
   type(t1), dimension(3) :: v1, v2
   v1%i = [1,2,3]
   v2 = return_t1(v1)
-  if (any (v2%i .ne. v1%i)) call abort
+  if (any (v2%i .ne. v1%i)) STOP 1
 
   v1%i = [4,5,6]
   v2 = return_t1_p(v1)
-  if (any (v2%i .ne. v1%i)) call abort
+  if (any (v2%i .ne. v1%i)) STOP 2
 end program test

@@ -10,12 +10,12 @@
           READ(10,REC=I,ERR=10)J
           IF (J.NE.I) THEN
 !           PRINT*,' READ ',J,' EXPECTED ',I
-            CALL ABORT
+            STOP 1
           ENDIF
        ENDDO
        CLOSE(10,STATUS='DELETE')
        STOP
  10    CONTINUE
 !      PRINT*,' ERR= RETURN FROM READ OR WRITE'
-       CALL ABORT
+       STOP 2
        END

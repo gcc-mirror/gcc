@@ -40,4 +40,10 @@ enum nds32_cmodel_type
   CMODEL_LARGE
 };
 
+/* The various ANDES CPU.  */
+enum nds32_cpu_type
+{
+  CPU_N9
+};
+
 #endif

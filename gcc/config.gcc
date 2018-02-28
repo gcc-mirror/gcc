@@ -635,7 +635,7 @@ x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
 bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
 sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
-skylake-avx512 cannonlake x86-64 native"
+skylake-avx512 cannonlake icelake x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -2648,8 +2648,18 @@ rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	extra_headers=altivec.h
 	default_use_cxa_atexit=yes
 	;;
-rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
+rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix71.h rs6000/xcoff.h rs6000/aix-stdint.h"
+	tmake_file="rs6000/t-aix52 t-slibgcc"
+	extra_options="${extra_options} rs6000/aix64.opt"
+	use_collect2=yes
+	thread_file='aix'
+	use_gcc_stdint=wrap
+	extra_headers="altivec.h amo.h"
+	default_use_cxa_atexit=yes
+	;;
+rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix72.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
@@ -4265,7 +4275,7 @@ case "${target}" in
 		;;
 
 	nds32*-*-*)
-		supported_defaults="arch nds32_lib"
+		supported_defaults="arch cpu nds32_lib"
 
 		# process --with-arch
 		case "${with_arch}" in
@@ -4274,6 +4284,19 @@ case "${target}" in
 			;;
 		*)
 			echo "Cannot accept --with-arch=$with_arch, available values are: v2 v3 v3m" 1>&2
+			exit 1
+			;;
+		esac
+
+		case "${with_cpu}" in
+		"")
+			with_cpu=n9
+			;;
+		n9)
+			# OK
+			;;
+		*)
+			echo "Cannot accept --with-cpu=$with_cpu, available values are: n9" 1>&2
 			exit 1
 			;;
 		esac

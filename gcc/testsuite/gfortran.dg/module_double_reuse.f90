@@ -14,6 +14,6 @@ program d
   x = 1.e0_e
   y = 1.e0_f
   u = 99.0
-  if (kind(x).ne.kind(y)) call abort ()
-  if (v.ne.u) call abort ()
+  if (kind(x).ne.kind(y)) STOP 1
+  if (v.ne.u) STOP 2
 end program d

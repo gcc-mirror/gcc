@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "tree.h"
 #include "fold-const.h"
+#include "wide-int-bitmask.h"
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before
@@ -944,6 +945,10 @@ extern void c_parse_final_cleanups (void);
 #define CLEAR_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
 
+/* True if the decl was an unnamed bitfield.  */
+#define DECL_UNNAMED_BIT_FIELD(NODE) \
+  (DECL_C_BIT_FIELD (NODE) && !DECL_NAME (NODE))
+
 extern tree do_case (location_t, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
@@ -1116,126 +1121,7 @@ extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
 
 /* In c-omp.c  */
-struct omp_clause_mask
-{
-  inline omp_clause_mask ();
-  inline omp_clause_mask (uint64_t l);
-  inline omp_clause_mask (uint64_t l, uint64_t h);
-  inline omp_clause_mask &operator &= (omp_clause_mask);
-  inline omp_clause_mask &operator |= (omp_clause_mask);
-  inline omp_clause_mask operator ~ () const;
-  inline omp_clause_mask operator & (omp_clause_mask) const;
-  inline omp_clause_mask operator | (omp_clause_mask) const;
-  inline omp_clause_mask operator >> (int);
-  inline omp_clause_mask operator << (int);
-  inline bool operator == (omp_clause_mask) const;
-  inline bool operator != (omp_clause_mask) const;
-  uint64_t low, high;
-};
-
-inline
-omp_clause_mask::omp_clause_mask ()
-{
-}
-
-inline
-omp_clause_mask::omp_clause_mask (uint64_t l)
-: low (l), high (0)
-{
-}
-
-inline
-omp_clause_mask::omp_clause_mask (uint64_t l, uint64_t h)
-: low (l), high (h)
-{
-}
-
-inline omp_clause_mask &
-omp_clause_mask::operator &= (omp_clause_mask b)
-{
-  low &= b.low;
-  high &= b.high;
-  return *this;
-}
-
-inline omp_clause_mask &
-omp_clause_mask::operator |= (omp_clause_mask b)
-{
-  low |= b.low;
-  high |= b.high;
-  return *this;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator ~ () const
-{
-  omp_clause_mask ret (~low, ~high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator | (omp_clause_mask b) const
-{
-  omp_clause_mask ret (low | b.low, high | b.high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator & (omp_clause_mask b) const
-{
-  omp_clause_mask ret (low & b.low, high & b.high);
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator << (int amount)
-{
-  omp_clause_mask ret;
-  if (amount >= 64)
-    {
-      ret.low = 0;
-      ret.high = low << (amount - 64);
-    }
-  else if (amount == 0)
-    ret = *this;
-  else
-    {
-      ret.low = low << amount;
-      ret.high = (low >> (64 - amount)) | (high << amount);
-    }
-  return ret;
-}
-
-inline omp_clause_mask
-omp_clause_mask::operator >> (int amount)
-{
-  omp_clause_mask ret;
-  if (amount >= 64)
-    {
-      ret.low = high >> (amount - 64);
-      ret.high = 0;
-    }
-  else if (amount == 0)
-    ret = *this;
-  else
-    {
-      ret.low = (high << (64 - amount)) | (low >> amount);
-      ret.high = high >> amount;
-    }
-  return ret;
-}
-
-inline bool
-omp_clause_mask::operator == (omp_clause_mask b) const
-{
-  return low == b.low && high == b.high;
-}
-
-inline bool
-omp_clause_mask::operator != (omp_clause_mask b) const
-{
-  return low != b.low || high != b.high;
-}
+typedef wide_int_bitmask omp_clause_mask;
 
 #define OMP_CLAUSE_MASK_1 omp_clause_mask (1)
 
@@ -1379,7 +1265,7 @@ extern void warn_tautological_cmp (location_t, enum tree_code, tree, tree);
 extern void warn_logical_not_parentheses (location_t, enum tree_code, tree,
 					  tree);
 extern bool warn_if_unused_value (const_tree, location_t);
-extern bool strict_aliasing_warning (tree, tree, tree);
+extern bool strict_aliasing_warning (location_t, tree, tree);
 extern void sizeof_pointer_memaccess_warning (location_t *, tree,
 					      vec<tree, va_gc> *, tree *,
 					      bool (*) (tree, tree));

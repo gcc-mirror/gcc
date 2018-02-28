@@ -3,11 +3,10 @@
 /* { dg-require-effective-target avx512bitalg } */
 /* { dg-require-effective-target avx512bw } */
 
-#include "avx512f-helper.h"
-
 #define AVX512BITALG
 #define SIZE (AVX512F_LEN / 8)
 
+#include "avx512f-helper.h"
 #include "avx512f-mask-type.h"
 
 #define TYPE char

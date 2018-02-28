@@ -224,10 +224,10 @@ AC_SUBST(USE_DEJAGNU)
 #   - libgo/go/syscall/endian_XX.go
 #   - possibly others
 # - possibly update files in libgo/go/internal/syscall/unix
-ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le s390 s390x sh shbe sparc sparc64"
+ALLGOARCH="386 alpha amd64 amd64p32 arm armbe arm64 arm64be ia64 m68k mips mipsle mips64 mips64le mips64p32 mips64p32le ppc ppc64 ppc64le riscv64 s390 s390x sh shbe sparc sparc64"
 
 # All known GOARCH family values.
-ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 S390 S390X SH SPARC SPARC64"
+ALLGOARCHFAMILY="I386 ALPHA AMD64 ARM ARM64 IA64 M68K MIPS MIPS64 PPC PPC64 RISCV64 S390 S390X SH SPARC SPARC64"
 
 GOARCH=unknown
 case ${host} in
@@ -303,6 +303,9 @@ AC_COMPILE_IFELSE([
 #endif],
 [GOARCH=ppc64le],
 [GOARCH=ppc64])])
+    ;;
+  riscv64-*-*)
+    GOARCH=riscv64
     ;;
   s390*-*-*)
     AC_COMPILE_IFELSE([
@@ -493,14 +496,15 @@ dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],
 [libgo_cv_lib_pthread],
 [CFLAGS_hold=$CFLAGS
-CFLAGS="$CFLAGS -pthread"
+CFLAGS="$CFLAGS -pthread -L../libatomic/.libs"
 AC_COMPILE_IFELSE([[int i;]],
 [libgo_cv_lib_pthread=yes],
 [libgo_cv_lib_pthread=no])
 CFLAGS=$CFLAGS_hold])
 PTHREAD_CFLAGS=
 if test "$libgo_cv_lib_pthread" = yes; then
-  PTHREAD_CFLAGS=-pthread
+  # RISC-V apparently adds -latomic when using -pthread.
+  PTHREAD_CFLAGS="-pthread -L../libatomic/.libs"
 fi
 AC_SUBST(PTHREAD_CFLAGS)
 
@@ -649,8 +653,7 @@ fi
 AC_SUBST(STRINGOPS_FLAG)
 
 dnl For x86 we want to compile the math library with -mfancy-math-387
-dnl -funsafe-math-optimizations so that we can use the builtin
-dnl instructions directly.
+dnl so that we can use the builtin instructions directly.
 AC_CACHE_CHECK([whether compiler supports -mfancy-math-387],
 [libgo_cv_c_fancymath],
 [CFLAGS_hold=$CFLAGS
@@ -661,10 +664,9 @@ AC_COMPILE_IFELSE([int i;],
 CFLAGS=$CFLAGS_hold])
 MATH_FLAG=
 if test "$libgo_cv_c_fancymath" = yes; then
-  MATH_FLAG="-mfancy-math-387 -funsafe-math-optimizations -fno-math-errno"
-else
-  MATH_FLAG="-ffp-contract=off"
+  MATH_FLAG="-mfancy-math-387"
 fi
+MATH_FLAG="${MATH_FLAG} -ffp-contract=off -fno-math-errno -fno-trapping-math"
 AC_SUBST(MATH_FLAG)
 
 CFLAGS_hold=$CFLAGS

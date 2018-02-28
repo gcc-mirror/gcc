@@ -55,14 +55,14 @@ end module m1
   complex, dimension(2)   :: bc, cc
 
   ai = reshape((/-2,-4,7,8/),(/2,2/)) ; bi = 3
-  if (any((ai*bi) /= matmul(ai,bi))) call abort()
-  if (any((ai .or. ai) /= ai+ai)) call abort()
-  if (any((ai // ai) /= ai+ai)) call abort()
+  if (any((ai*bi) /= matmul(ai,bi))) STOP 1
+  if (any((ai .or. ai) /= ai+ai)) STOP 2
+  if (any((ai // ai) /= ai+ai)) STOP 3
 
   ar = reshape((/-2,-4,7,8/),(/2,2/)) ; br = 3
-  if (any((ar*br) /= matmul(ar,br))) call abort()
+  if (any((ar*br) /= matmul(ar,br))) STOP 4
 
   ac = reshape((/-2,-4,7,8/),(/2,2/)) ; bc = 3
-  if (any((ac*bc) /= matmul(ac,bc))) call abort()
+  if (any((ac*bc) /= matmul(ac,bc))) STOP 5
 
 end

@@ -50,7 +50,6 @@ Parse::Parse(Lex* lex, Gogo* gogo)
     gogo_(gogo),
     break_stack_(NULL),
     continue_stack_(NULL),
-    iota_(0),
     enclosing_vars_()
 {
 }
@@ -1407,19 +1406,20 @@ Parse::const_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_CONST));
   this->advance_token();
-  this->reset_iota();
 
+  int iota = 0;
   Type* last_type = NULL;
   Expression_list* last_expr_list = NULL;
 
   if (!this->peek_token()->is_op(OPERATOR_LPAREN))
-    this->const_spec(&last_type, &last_expr_list);
+    this->const_spec(iota, &last_type, &last_expr_list);
   else
     {
       this->advance_token();
       while (!this->peek_token()->is_op(OPERATOR_RPAREN))
 	{
-	  this->const_spec(&last_type, &last_expr_list);
+	  this->const_spec(iota, &last_type, &last_expr_list);
+	  ++iota;
 	  if (this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	    this->advance_token();
 	  else if (!this->peek_token()->is_op(OPERATOR_RPAREN))
@@ -1440,7 +1440,7 @@ Parse::const_decl()
 // ConstSpec = IdentifierList [ [ CompleteType ] "=" ExpressionList ] .
 
 void
-Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
+Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
 {
   Typed_identifier_list til;
   this->identifier_list(&til);
@@ -1492,7 +1492,7 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
 	pi->set_type(type);
 
       if (!Gogo::is_sink_name(pi->name()))
-	this->gogo_->add_constant(*pi, *pe, this->iota_value());
+	this->gogo_->add_constant(*pi, *pe, iota);
       else
 	{
 	  static int count;
@@ -1500,14 +1500,12 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
 	  snprintf(buf, sizeof buf, ".$sinkconst%d", count);
 	  ++count;
 	  Typed_identifier ti(std::string(buf), type, pi->location());
-	  Named_object* no = this->gogo_->add_constant(ti, *pe, this->iota_value());
+	  Named_object* no = this->gogo_->add_constant(ti, *pe, iota);
 	  no->const_value()->set_is_sink();
 	}
     }
   if (pe != expr_list->end())
     go_error_at(this->location(), "too many initializers");
-
-  this->increment_iota();
 
   return;
 }
@@ -4667,11 +4665,26 @@ Parse::expr_case_clause(Case_clauses* clauses, bool* saw_default)
     {
       Location fallthrough_loc = this->location();
       is_fallthrough = true;
-      if (this->advance_token()->is_op(OPERATOR_SEMICOLON))
-	this->advance_token();
+      while (this->advance_token()->is_op(OPERATOR_SEMICOLON))
+	;
       if (this->peek_token()->is_op(OPERATOR_RCURLY))
 	go_error_at(fallthrough_loc,
 		    _("cannot fallthrough final case in switch"));
+      else if (!this->peek_token()->is_keyword(KEYWORD_CASE)
+	       && !this->peek_token()->is_keyword(KEYWORD_DEFAULT))
+	{
+	  go_error_at(fallthrough_loc, "fallthrough statement out of place");
+	  while (!this->peek_token()->is_keyword(KEYWORD_CASE)
+		 && !this->peek_token()->is_keyword(KEYWORD_DEFAULT)
+		 && !this->peek_token()->is_op(OPERATOR_RCURLY)
+		 && !this->peek_token()->is_eof())
+	    {
+	      if (this->statement_may_start_here())
+		this->statement_list();
+	      else
+		this->advance_token();
+	    }
+	}
     }
 
   if (is_default)
@@ -5160,7 +5173,18 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 
   Expression* e;
   if (saw_comma || !this->peek_token()->is_op(OPERATOR_CHANOP))
-    e = this->expression(PRECEDENCE_NORMAL, true, true, NULL, NULL);
+    {
+      e = this->expression(PRECEDENCE_NORMAL, true, true, NULL, NULL);
+      if (e->receive_expression() != NULL)
+	{
+	  *is_send = false;
+	  *channel = e->receive_expression()->channel();
+	  // This is 'case (<-c):'.  We now expect ':'.  If we see
+	  // '<-', then we have case (<-c)<-v:
+	  if (!this->peek_token()->is_op(OPERATOR_CHANOP))
+	    return true;
+	}
+    }
   else
     {
       // case <-c:
@@ -5189,14 +5213,17 @@ Parse::send_or_recv_stmt(bool* is_send, Expression** channel, Expression** val,
 
   if (this->peek_token()->is_op(OPERATOR_EQ))
     {
-      if (!this->advance_token()->is_op(OPERATOR_CHANOP))
-	{
-	  go_error_at(this->location(), "missing %<<-%>");
-	  return false;
-	}
       *is_send = false;
       this->advance_token();
-      *channel = this->expression(PRECEDENCE_NORMAL, false, true, NULL, NULL);
+      Location recvloc = this->location();
+      Expression* recvexpr = this->expression(PRECEDENCE_NORMAL, false,
+					      true, NULL, NULL);
+      if (recvexpr->receive_expression() == NULL)
+	{
+	  go_error_at(recvloc, "missing %<<-%>");
+	  return false;
+	}
+      *channel = recvexpr->receive_expression()->channel();
       if (saw_comma)
 	{
 	  // case v, e = <-c:
@@ -5445,8 +5472,7 @@ Parse::range_clause_decl(const Typed_identifier_list* til,
 	no->var_value()->set_type_from_range_value();
       if (is_new)
 	any_new = true;
-      if (!Gogo::is_sink_name(pti->name()))
-        p_range_clause->value = Expression::make_var_reference(no, location);
+      p_range_clause->value = Expression::make_var_reference(no, location);
     }
 
   if (!any_new)
@@ -5808,30 +5834,6 @@ Parse::program()
 	  this->skip_past_error(OPERATOR_INVALID);
 	}
     }
-}
-
-// Reset the current iota value.
-
-void
-Parse::reset_iota()
-{
-  this->iota_ = 0;
-}
-
-// Return the current iota value.
-
-int
-Parse::iota_value()
-{
-  return this->iota_;
-}
-
-// Increment the current iota value.
-
-void
-Parse::increment_iota()
-{
-  ++this->iota_;
 }
 
 // Skip forward to a semicolon or OP.  OP will normally be

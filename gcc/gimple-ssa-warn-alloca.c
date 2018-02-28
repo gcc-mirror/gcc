@@ -445,7 +445,6 @@ pass_walloca::execute (function *fun)
 
 	  if (!gimple_alloca_call_p (stmt))
 	    continue;
-	  gcc_assert (gimple_call_num_args (stmt) >= 1);
 
 	  const bool is_vla
 	    = gimple_call_alloca_for_var_p (as_a <gcall *> (stmt));

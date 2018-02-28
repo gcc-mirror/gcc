@@ -1881,21 +1881,21 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<sse>_vmsqrt<mode>2<round_name>"
+(define_insn "<sse>_vmsqrt<mode>2<mask_scalar_name><round_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
 	  (sqrt:VF_128
-	    (match_operand:VF_128 1 "vector_operand" "xBm,<round_constraint>"))
+	    (match_operand:VF_128 1 "vector_operand" "xBm,<round_scalar_constraint>"))
 	  (match_operand:VF_128 2 "register_operand" "0,v")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@
    sqrt<ssescalarmodesuffix>\t{%1, %0|%0, %<iptr>1}
-   vsqrt<ssescalarmodesuffix>\t{<round_op3>%1, %2, %0|%0, %2, %<iptr>1<round_op3>}"
+   vsqrt<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%1, %2, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %2, %<iptr>1<round_scalar_mask_op3>}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sse")
    (set_attr "atom_sse_attr" "sqrt")
-   (set_attr "prefix" "<round_prefix>")
+   (set_attr "prefix" "<round_scalar_prefix>")
    (set_attr "btver2_sse_attr" "sqrt")
    (set_attr "mode" "<ssescalarmode>")])
 
@@ -8318,17 +8318,17 @@
   operands[1] = adjust_address (operands[1], DFmode, INTVAL (operands[2]) * 8);
 })
 
-(define_insn "avx512f_vmscalef<mode><round_name>"
+(define_insn "avx512f_vmscalef<mode><mask_scalar_name><round_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
 	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_nimm_predicate>" "<round_constraint>")]
+	     (match_operand:VF_128 2 "<round_scalar_nimm_predicate>" "<round_scalar_constraint>")]
 	    UNSPEC_SCALEF)
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_AVX512F"
-  "vscalef<ssescalarmodesuffix>\t{<round_op3>%2, %1, %0|%0, %1, %2<round_op3>}"
+  "vscalef<ssescalarmodesuffix>\t{<round_scalar_mask_op3>%2, %1, %0<mask_scalar_operand3>|%0<mask_scalar_operand3>, %1, %2<round_scalar_mask_op3>}"
   [(set_attr "prefix" "evex")
    (set_attr "mode"  "<ssescalarmode>")])
 
@@ -18183,7 +18183,10 @@
 	  (match_dup 5)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
   "TARGET_AVX512F"
-  "operands[5] = gen_lowpart (<MODE>mode, operands[2]);")
+{
+  operands[2] = force_reg (<sseintvecmode>mode, operands[2]);
+  operands[5] = gen_lowpart (<MODE>mode, operands[2]);
+})
 
 (define_insn "*<avx512>_vpermi2var<mode>3_mask"
   [(set (match_operand:VPERMI2I 0 "register_operand" "=v")
@@ -19488,18 +19491,18 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512dq_ranges<mode><round_saeonly_name>"
+(define_insn "avx512dq_ranges<mode><mask_scalar_name><round_saeonly_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
 	    [(match_operand:VF_128 1 "register_operand" "v")
-	     (match_operand:VF_128 2 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
+	     (match_operand:VF_128 2 "<round_saeonly_scalar_nimm_predicate>" "<round_saeonly_scalar_constraint>")
 	     (match_operand:SI 3 "const_0_to_15_operand")]
 	    UNSPEC_RANGE)
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_AVX512DQ"
-  "vrange<ssescalarmodesuffix>\t{%3, <round_saeonly_op4>%2, %1, %0|%0, %1, %2<round_saeonly_op4>, %3}"
+  "vrange<ssescalarmodesuffix>\t{%3, <round_saeonly_scalar_mask_op4>%2, %1, %0<mask_scalar_operand4>|%0<mask_scalar_operand4>, %1, %2<round_saeonly_scalar_mask_op4>, %3}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])

@@ -1038,7 +1038,7 @@ update_alignment_for_field (record_layout_info rli, tree field,
 	 the type, except that for zero-size bitfields this only
 	 applies if there was an immediately prior, nonzero-size
 	 bitfield.  (That's the way it is, experimentally.) */
-      if ((!is_bitfield && !DECL_PACKED (field))
+      if (!is_bitfield
 	  || ((DECL_SIZE (field) == NULL_TREE
 	       || !integer_zerop (DECL_SIZE (field)))
 	      ? !DECL_PACKED (field)
@@ -1047,7 +1047,10 @@ update_alignment_for_field (record_layout_info rli, tree field,
 		 && ! integer_zerop (DECL_SIZE (rli->prev_field)))))
 	{
 	  unsigned int type_align = TYPE_ALIGN (type);
-	  type_align = MAX (type_align, desired_align);
+	  if (!is_bitfield && DECL_PACKED (field))
+	    type_align = desired_align;
+	  else
+	    type_align = MAX (type_align, desired_align);
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
 	  rli->record_align = MAX (rli->record_align, type_align);
@@ -1303,7 +1306,9 @@ place_field (record_layout_info rli, tree field)
 
   /* Does this field automatically have alignment it needs by virtue
      of the fields that precede it and the record's own alignment?  */
-  if (known_align < desired_align)
+  if (known_align < desired_align
+      && (! targetm.ms_bitfield_layout_p (rli->t)
+	  || rli->prev_field == NULL))
     {
       /* No, we need to skip space before this field.
 	 Bump the cumulative size to multiple of field alignment.  */
@@ -1331,8 +1336,6 @@ place_field (record_layout_info rli, tree field)
 
       if (! TREE_CONSTANT (rli->offset))
 	rli->offset_align = desired_align;
-      if (targetm.ms_bitfield_layout_p (rli->t))
-	rli->prev_field = NULL;
     }
 
   /* Handle compatibility with PCC.  Note that if the record has any
@@ -1448,6 +1451,8 @@ place_field (record_layout_info rli, tree field)
       /* This is a bitfield if it exists.  */
       if (rli->prev_field)
 	{
+	  bool realign_p = known_align < desired_align;
+
 	  /* If both are bitfields, nonzero, and the same size, this is
 	     the middle of a run.  Zero declared size fields are special
 	     and handled as "end of run". (Note: it's nonzero declared
@@ -1481,7 +1486,10 @@ place_field (record_layout_info rli, tree field)
 		    rli->remaining_in_alignment = typesize - bitsize;
 		}
 	      else
-		rli->remaining_in_alignment -= bitsize;
+		{
+		  rli->remaining_in_alignment -= bitsize;
+		  realign_p = false;
+		}
 	    }
 	  else
 	    {
@@ -1512,6 +1520,31 @@ place_field (record_layout_info rli, tree field)
 		rli->prev_field = NULL;
 	    }
 
+	  /* Does this field automatically have alignment it needs by virtue
+	     of the fields that precede it and the record's own alignment?  */
+	  if (realign_p)
+	    {
+	      /* If the alignment is still within offset_align, just align
+		 the bit position.  */
+	      if (desired_align < rli->offset_align)
+		rli->bitpos = round_up (rli->bitpos, desired_align);
+	      else
+		{
+		  /* First adjust OFFSET by the partial bits, then align.  */
+		  tree d = size_binop (CEIL_DIV_EXPR, rli->bitpos,
+				       bitsize_unit_node);
+		  rli->offset = size_binop (PLUS_EXPR, rli->offset,
+					    fold_convert (sizetype, d));
+		  rli->bitpos = bitsize_zero_node;
+
+		  rli->offset = round_up (rli->offset,
+					  desired_align / BITS_PER_UNIT);
+		}
+
+	      if (! TREE_CONSTANT (rli->offset))
+		rli->offset_align = desired_align;
+	    }
+
 	  normalize_rli (rli);
         }
 
@@ -1530,7 +1563,7 @@ place_field (record_layout_info rli, tree field)
       if (!DECL_BIT_FIELD_TYPE (field)
 	  || (prev_saved != NULL
 	      ? !simple_cst_equal (TYPE_SIZE (type), TYPE_SIZE (prev_type))
-	      : !integer_zerop (DECL_SIZE (field)) ))
+	      : !integer_zerop (DECL_SIZE (field))))
 	{
 	  /* Never smaller than a byte for compatibility.  */
 	  unsigned int type_align = BITS_PER_UNIT;
@@ -1555,7 +1588,8 @@ place_field (record_layout_info rli, tree field)
 	    }
 
 	  /* Now align (conventionally) for the new type.  */
-	  type_align = TYPE_ALIGN (TREE_TYPE (field));
+	  if (! DECL_PACKED (field))
+	    type_align = TYPE_ALIGN (TREE_TYPE (field));
 
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
@@ -1622,6 +1656,30 @@ place_field (record_layout_info rli, tree field)
 	= size_binop (PLUS_EXPR, rli->offset, DECL_SIZE_UNIT (field));
       rli->bitpos = bitsize_zero_node;
       rli->offset_align = MIN (rli->offset_align, desired_align);
+
+      if (!multiple_of_p (bitsizetype, DECL_SIZE (field),
+			  bitsize_int (rli->offset_align)))
+	{
+	  tree type = strip_array_types (TREE_TYPE (field));
+	  /* The above adjusts offset_align just based on the start of the
+	     field.  The field might not have a size that is a multiple of
+	     that offset_align though.  If the field is an array of fixed
+	     sized elements, assume there can be any multiple of those
+	     sizes.  If it is a variable length aggregate or array of
+	     variable length aggregates, assume worst that the end is
+	     just BITS_PER_UNIT aligned.  */
+	  if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
+	    {
+	      if (TREE_INT_CST_LOW (TYPE_SIZE (type)))
+		{
+		  unsigned HOST_WIDE_INT sz
+		    = least_bit_hwi (TREE_INT_CST_LOW (TYPE_SIZE (type)));
+		  rli->offset_align = MIN (rli->offset_align, sz);
+		}
+	    }
+	  else
+	    rli->offset_align = MIN (rli->offset_align, BITS_PER_UNIT);
+	}
     }
   else if (targetm.ms_bitfield_layout_p (rli->t))
     {
@@ -1859,6 +1917,9 @@ finalize_type_size (tree type)
       && TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST)
     TYPE_SIZE_UNIT (type) = variable_size (TYPE_SIZE_UNIT (type));
 
+  /* Handle empty records as per the x86-64 psABI.  */
+  TYPE_EMPTY_P (type) = targetm.calls.empty_record_p (type);
+
   /* Also layout any other variants of the type.  */
   if (TYPE_NEXT_VARIANT (type)
       || type != TYPE_MAIN_VARIANT (type))
@@ -1871,6 +1932,7 @@ finalize_type_size (tree type)
       unsigned int precision = TYPE_PRECISION (type);
       unsigned int user_align = TYPE_USER_ALIGN (type);
       machine_mode mode = TYPE_MODE (type);
+      bool empty_p = TYPE_EMPTY_P (type);
 
       /* Copy it into all variants.  */
       for (variant = TYPE_MAIN_VARIANT (type);
@@ -1887,11 +1949,9 @@ finalize_type_size (tree type)
 	  SET_TYPE_ALIGN (variant, valign);
 	  TYPE_PRECISION (variant) = precision;
 	  SET_TYPE_MODE (variant, mode);
+	  TYPE_EMPTY_P (variant) = empty_p;
 	}
     }
-
-  /* Handle empty records as per the x86-64 psABI.  */
-  TYPE_EMPTY_P (type) = targetm.calls.empty_record_p (type);
 }
 
 /* Return a new underlying object for a bitfield started with FIELD.  */

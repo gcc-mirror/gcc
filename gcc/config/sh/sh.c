@@ -5225,18 +5225,22 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
 	 around the constant pool table will be hit.  Putting it before
 	 a jump makes it more likely that the bra delay slot will be
 	 filled.  */
-      while (NOTE_P (from) || JUMP_P (from)
-	     || LABEL_P (from))
+      while (NOTE_P (from) || JUMP_P (from) || LABEL_P (from))
 	from = PREV_INSN (from);
 
-      /* Make sure we do not split between a call and its corresponding
-	 CALL_ARG_LOCATION note.  */
       if (CALL_P (from))
 	{
-	  rtx_insn *next = NEXT_INSN (from);
-	  if (next && NOTE_P (next)
-	      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-	    from = next;
+	  bool sibcall_p = SIBLING_CALL_P (from);
+
+	  /* If FROM was a sibling call, then we know that control
+	     will not return.  In fact, we were guaranteed to hit
+	     a barrier before another real insn.
+
+	     The jump around the constant pool is unnecessary.  It
+	     costs space, but more importantly it confuses dwarf2cfi
+	     generation.  */
+	  if (sibcall_p)
+	    return emit_barrier_after (from);
 	}
 
       from = emit_jump_insn_after (gen_jump (label), from);

@@ -824,6 +824,12 @@ extern void fancy_abort (const char *, int, const char *)
 /* Some compilers do not allow the use of unsigned char in bitfields.  */
 #define BOOL_BITFIELD unsigned int
 
+/* GCC older than 4.4 have broken C++ value initialization handling, see
+   PR11309, PR30111, PR33916, PR82939 and PR84405 for more details.  */
+#if GCC_VERSION > 0 && GCC_VERSION < 4004 && !defined(__clang__)
+# define BROKEN_VALUE_INITIALIZATION
+#endif
+
 /* As the last action in this file, we poison the identifiers that
    shouldn't be used.  Note, luckily gcc-3.0's token-based integrated
    preprocessor won't trip on poisoned identifiers that arrive from

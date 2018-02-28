@@ -1,5 +1,5 @@
 /* PR middle-end/81814 */
-/* { dg-do run } */
+/* { dg-do run { target int32plus } } */
 
 int
 main ()

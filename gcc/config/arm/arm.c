@@ -78,6 +78,10 @@
 typedef struct minipool_node    Mnode;
 typedef struct minipool_fixup   Mfix;
 
+/* The last .arch and .fpu assembly strings that we printed.  */
+static std::string arm_last_printed_arch_string;
+static std::string arm_last_printed_fpu_string;
+
 void (*arm_lang_output_object_attributes_hook)(void);
 
 struct four_ints
@@ -16552,16 +16556,6 @@ create_fix_barrier (Mfix *fix, HOST_WIDE_INT max_address)
   /* Make sure that we found a place to insert the jump.  */
   gcc_assert (selected);
 
-  /* Make sure we do not split a call and its corresponding
-     CALL_ARG_LOCATION note.  */
-  if (CALL_P (selected))
-    {
-      rtx_insn *next = NEXT_INSN (selected);
-      if (next && NOTE_P (next)
-	  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
-	  selected = next;
-    }
-
   /* Create a new JUMP_INSN that branches around a barrier.  */
   from = emit_jump_insn_after (gen_jump (label), selected);
   JUMP_LABEL (from) = label;
@@ -26390,6 +26384,7 @@ arm_print_asm_arch_directives ()
   gcc_assert (arch);
 
   asm_fprintf (asm_out_file, "\t.arch %s\n", arm_active_target.arch_name);
+  arm_last_printed_arch_string = arm_active_target.arch_name;
   if (!arch->common.extensions)
     return;
 
@@ -26437,13 +26432,17 @@ arm_file_start (void)
 	      asm_fprintf (asm_out_file, "\t.arch_extension idiv\n");
 	      asm_fprintf (asm_out_file, "\t.arch_extension sec\n");
 	      asm_fprintf (asm_out_file, "\t.arch_extension mp\n");
+	      arm_last_printed_arch_string = "armv7ve";
 	    }
 	  else
 	    arm_print_asm_arch_directives ();
 	}
       else if (strncmp (arm_active_target.core_name, "generic", 7) == 0)
-	asm_fprintf (asm_out_file, "\t.arch %s\n",
-		     arm_active_target.core_name + 8);
+	{
+	  asm_fprintf (asm_out_file, "\t.arch %s\n",
+		       arm_active_target.core_name + 8);
+	  arm_last_printed_arch_string = arm_active_target.core_name + 8;
+	}
       else
 	{
 	  const char* truncated_name
@@ -30933,10 +30932,6 @@ arm_identify_fpu_from_isa (sbitmap isa)
   /* We must find an entry, or things have gone wrong.  */
   gcc_unreachable ();
 }
-
-/* The last .arch and .fpu assembly strings that we printed.  */
-static std::string arm_last_printed_arch_string;
-static std::string arm_last_printed_fpu_string;
 
 /* Implement ASM_DECLARE_FUNCTION_NAME.  Output the ISA features used
    by the function fndecl.  */

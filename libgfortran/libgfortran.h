@@ -339,7 +339,55 @@ typedef struct dtype_type
 }
 dtype_type;
 
-#define GFC_ARRAY_DESCRIPTOR(r, type) \
+#define GFC_ARRAY_DESCRIPTOR(type) \
+struct {\
+  type *base_addr;\
+  size_t offset;\
+  dtype_type dtype;\
+  index_type span;\
+  descriptor_dimension dim[];\
+}
+
+/* Commonly used array descriptor types.  */
+typedef GFC_ARRAY_DESCRIPTOR (void) gfc_array_void;
+typedef GFC_ARRAY_DESCRIPTOR (char) gfc_array_char;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_1) gfc_array_i1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_2) gfc_array_i2;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_4) gfc_array_i4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_8) gfc_array_i8;
+#ifdef HAVE_GFC_INTEGER_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_16) gfc_array_i16;
+#endif
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_4) gfc_array_r4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_8) gfc_array_r8;
+#ifdef HAVE_GFC_REAL_10
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_10) gfc_array_r10;
+#endif
+#ifdef HAVE_GFC_REAL_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_REAL_16) gfc_array_r16;
+#endif
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_4) gfc_array_c4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_8) gfc_array_c8;
+#ifdef HAVE_GFC_COMPLEX_10
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_10) gfc_array_c10;
+#endif
+#ifdef HAVE_GFC_COMPLEX_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_COMPLEX_16) gfc_array_c16;
+#endif
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_1) gfc_array_l1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_2) gfc_array_l2;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_4) gfc_array_l4;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_8) gfc_array_l8;
+#ifdef HAVE_GFC_LOGICAL_16
+typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_16) gfc_array_l16;
+#endif
+typedef gfc_array_i1 gfc_array_s1;
+typedef gfc_array_i4 gfc_array_s4;
+
+/* These are for when you actually want to declare a descriptor, as
+   opposed to a pointer to it.  */
+
+#define GFC_FULL_ARRAY_DESCRIPTOR(r, type) \
 struct {\
   type *base_addr;\
   size_t offset;\
@@ -348,41 +396,7 @@ struct {\
   descriptor_dimension dim[r];\
 }
 
-/* Commonly used array descriptor types.  */
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) gfc_array_void;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, char) gfc_array_char;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_1) gfc_array_i1;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_2) gfc_array_i2;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_array_i4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_8) gfc_array_i8;
-#ifdef HAVE_GFC_INTEGER_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_16) gfc_array_i16;
-#endif
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_4) gfc_array_r4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_8) gfc_array_r8;
-#ifdef HAVE_GFC_REAL_10
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_10) gfc_array_r10;
-#endif
-#ifdef HAVE_GFC_REAL_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_REAL_16) gfc_array_r16;
-#endif
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_4) gfc_array_c4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_8) gfc_array_c8;
-#ifdef HAVE_GFC_COMPLEX_10
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_10) gfc_array_c10;
-#endif
-#ifdef HAVE_GFC_COMPLEX_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_COMPLEX_16) gfc_array_c16;
-#endif
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_1) gfc_array_l1;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_2) gfc_array_l2;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_4) gfc_array_l4;
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_8) gfc_array_l8;
-#ifdef HAVE_GFC_LOGICAL_16
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
-#endif
-typedef gfc_array_i1 gfc_array_s1;
-typedef gfc_array_i4 gfc_array_s4;
+typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_array_i4;
 
 #define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype.rank)
 #define GFC_DESCRIPTOR_TYPE(desc) ((desc)->dtype.type)
@@ -874,7 +888,7 @@ internal_proto(filename_from_unit);
 
 /* stop.c */
 
-extern _Noreturn void stop_string (const char *, GFC_INTEGER_4);
+extern _Noreturn void stop_string (const char *, size_t, bool);
 export_proto(stop_string);
 
 /* reshape_packed.c */
@@ -1345,7 +1359,7 @@ iexport_proto(random_seed_i8);
 
 /* size.c */
 
-typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) array_t;
+typedef GFC_ARRAY_DESCRIPTOR (void) array_t;
 
 extern index_type size0 (const array_t * array); 
 iexport_proto(size0);

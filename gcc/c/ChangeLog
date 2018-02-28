@@ -1,3 +1,23 @@
+2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR c/84305
+	* c-decl.c (grokdeclarator): Create an anonymous TYPE_DECL
+	in PARM and TYPENAME contexts too, but attach it to a BIND_EXPR
+	and include the BIND_EXPR in the list of things that need to be
+	pre-evaluated.
+
+2018-02-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c/84293
+	* c-typeck.c (build_indirect_ref, build_c_cast): Pass expr location
+	to strict_aliasing_warning.
+
+2018-02-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* c-typeck.c (really_start_incremental_init, push_init_level,
+	set_nonincremental_init, output_init_element, process_init_element):
+	Use DECL_UNNAMED_BIT_FIELD.
+
 2018-01-31  Marek Polacek  <polacek@redhat.com>
 
 	PR c/81779

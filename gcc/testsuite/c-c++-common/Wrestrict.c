@@ -223,7 +223,7 @@ void test_memcpy_range (char *d, size_t sz)
 
   /* Because the size is constant and a power of 2 the following is
      folded too early to detect the overlap.  */
-  T (d + ir, d, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps 2 byte at offset 2" "" { xfail *-*-* } } */
+  T (d + ir, d, 4);               /* { dg-warning "accessing 4 bytes at offsets \\\[2, 3] and 0 overlaps 2 byte at offset 2" "memcpy" { xfail *-*-* } } */
   T (d + ir, d, 5);               /* { dg-warning "accessing 5 bytes at offsets \\\[2, 3] and 0 overlaps between 2 and 3 bytes at offset \\\[2, 3]" "memcpy" } */
 
   /* Exercise the full range of size_t.  */
@@ -325,11 +325,11 @@ void test_memcpy_anti_range (char *d, const char *s)
   T (d, d + SAR (0, 3), 1);
   T (d, d + SAR (0, 3), 2);
   T (d, d + SAR (0, 3), 3);
-  T (d, d + SAR (0, 3), DIFF_MAX - 2);   /* { dg-warning "overlaps \[0-9\]+ bytes at offset 2" } */
-  T (d, d + SAR (0, 3), DIFF_MAX - 1);   /* { dg-warning "overlaps \[0-9\]+ bytes at offset 1" } */
-  T (d, d + SAR (0, 3), DIFF_MAX);       /* { dg-warning "overlaps \[0-9\]+ bytes at offset 0" } */
+  T (d, d + SAR (0, 3), DIFF_MAX - 2);   /* { dg-warning "overlaps \[0-9\]+ bytes at offset 2" "memcpy" } */
+  T (d, d + SAR (0, 3), DIFF_MAX - 1);   /* { dg-warning "overlaps \[0-9\]+ bytes at offset 1" "memcpy" } */
+  T (d, d + SAR (0, 3), DIFF_MAX);       /* { dg-warning "overlaps \[0-9\]+ bytes at offset 0" "memcpy" } */
 
-  T (d, d + SAR (0, 3), UR (DIFF_MAX - 2, DIFF_MAX));               /* { dg-warning "accessing \[0-9\]+ or more bytes at offsets 0 and \\\[-?\[0-9\]+, -?\[0-9\]+] overlaps \[0-9\]+ bytes at offset 2" } */
+  T (d, d + SAR (0, 3), UR (DIFF_MAX - 2, DIFF_MAX));               /* { dg-warning "accessing \[0-9\]+ or more bytes at offsets 0 and \\\[-?\[0-9\]+, -?\[0-9\]+] overlaps \[0-9\]+ bytes at offset 2" "memcpy" } */
 
   /* Verify that a size in an anti-range ~[0, N] where N >= PTRDIFF_MAX
      doesn't trigger a warning.  */
@@ -399,7 +399,7 @@ void test_memcpy_range_exceed (char *d, const char *s)
   T (d + i, s, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[9223372036854775805, 9223372036854775807] and 0 overlaps 3 bytes at offset 9223372036854775802" "LP64" { target lp64 } } */
 #elif __SIZEOF_SIZE_T__ == 4
   T (d, d + i, 5);   /* { dg-warning "accessing 5 bytes at offsets 0 and \\\[2147483645, 2147483647] overlaps 3 bytes at offset 2147483642" "ILP32" { target ilp32 } } */
-  T (d + i, d, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[2147483645, 2147483647] and 0 overlaps 3 bytes at offset 2147483642" "ILP32" { target ilp32} } */
+  T (d + i, d, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[2147483645, 2147483647] and 0 overlaps 3 bytes at offset 2147483642" "ILP32" { target ilp32 } } */
 
   T (d, s + i, 5);   /* { dg-warning "accessing 5 bytes at offsets 0 and \\\[2147483645, 2147483647] overlaps 3 bytes at offset 2147483642" "ILP32" { target ilp32 } } */
   T (d + i, s, 5);   /* { dg-warning "accessing 5 bytes at offsets \\\[2147483645, 2147483647] and 0 overlaps 3 bytes at offset 2147483642" "ILP32" { target ilp32} } */
@@ -523,7 +523,7 @@ void test_memcpy_memarrray (struct MemArrays *p)
   T (p->a8, p->a8 + 2, 2);
   T (p->a8, p->a8 + 8, 1);
 
-  T (p->a8, p->a8 + 2, 3);        /* { dg-warning "accessing 3 bytes at offsets 0 and 2 overlaps 1 byte at offset 2" } */
+  T (p->a8, p->a8 + 2, 3);        /* { dg-warning "accessing 3 bytes at offsets 0 and 2 overlaps 1 byte at offset 2" "memcpy" } */
 }
 
 /* Exercise the absence of warnings with memmove.  */
@@ -616,10 +616,13 @@ void test_strcat_var (char *d, const char *s)
   } while (0)
 
   T (d, d);                       /* { dg-warning "source argument is the same as destination" "strcat" } */
-  T (d, d + 1);                   /* { dg-warning "accessing 0 or more bytes at offsets 0 and 1 may overlap 1 byte" "strcat" } */
-  T (d, d + 2);                   /* { dg-warning "accessing 0 or more bytes at offsets 0 and 2 may overlap 1 byte" "strcat" } */
-  T (d, d + 999);                 /* { dg-warning "accessing 0 or more bytes at offsets 0 and 999 may overlap 1 byte" "strcat" } */
-  T (d, d + -99);                 /* { dg-warning "accessing 0 or more bytes at offsets 0 and -99 may overlap 1 byte" "strcat" } */
+  T (d, d + 1);                   /* { dg-warning "accessing 2 or more bytes at offsets 0 and 1 may overlap 1 byte" "strcat" } */
+  T (d, d + 2);                   /* { dg-warning "accessing 3 or more bytes at offsets 0 and 2 may overlap 1 byte at offset 2" "strcat" } */
+  T (d, d + 999);                 /* { dg-warning "accessing 1000 or more bytes at offsets 0 and 999 may overlap 1 byte at offset 999" "strcat" } */
+
+  /* The source string must be at least 100 bytes in length for the copy
+     below to overlap.  */
+  T (d, d + -99);                 /* { dg-warning "accessing 100 or more bytes at offsets 0 and -99 may overlap 1 byte" "strcat" } */
 
   size_t n = unsigned_value ();
 
@@ -765,13 +768,13 @@ void test_strcpy_range (void)
 
   /* The overlap in the cases below isn't inevitable but it is diagnosed
      because it is possible and so the code is considered unsafe.  */
-  T (8, "", a, a + r);               /* { dg-warning "accessing 1 byte may overlap 1 byte" "strcpy" } */
-  T (8, "0", a + r, a);              /* { dg-warning "accessing 2 bytes may overlap up to 2 bytes" "strcpy" } */
-  T (8, "012", a + r, a);            /* { dg-warning "accessing 4 bytes may overlap up to 4 bytes" "strcpy" } */
+  T (8, "", a, a + r);               /* { dg-warning "accessing 1 byte at offsets 0 and \\\[0, 8] may overlap 1 byte" "strcpy" } */
+  T (8, "0", a + r, a);              /* { dg-warning "accessing 2 bytes at offsets \\\[0, 8] and 0 may overlap up to 2 bytes" "strcpy" } */
+  T (8, "012", a + r, a);            /* { dg-warning "accessing 4 bytes at offsets \\\[0, 8] and 0 may overlap up to 4 bytes" "strcpy" } */
 
-  T (8, "", a, a + r);               /* { dg-warning "accessing 1 byte may overlap" "strcpy" } */
-  T (8, "0", a, a + r);              /* { dg-warning "accessing between 0 and 2 bytes may overlap up to 2 bytes" "strcpy" } */
-  T (8, "012", a, a + r);            /* { dg-warning "accessing between 0 and 4 bytes may overlap up to 4 bytes" "strcpy" } */
+  T (8, "", a, a + r);               /* { dg-warning "accessing 1 byte at offsets 0 and \\\[0, 8] may overlap" "strcpy" } */
+  T (8, "0", a, a + r);              /* { dg-warning "accessing between 0 and 2 bytes at offsets 0 and \\\[0, 8] may overlap up to 2 bytes" "strcpy" } */
+  T (8, "012", a, a + r);            /* { dg-warning "accessing between 0 and 4 bytes at offsets 0 and \\\[0, 8] may overlap up to 4 bytes" "strcpy" } */
 }
 
 /* Exercise strcpy with destination and/or source of unknown lengthu.  */

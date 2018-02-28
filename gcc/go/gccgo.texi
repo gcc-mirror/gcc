@@ -229,10 +229,10 @@ may be used.  Or the checks may be removed via
 by default, but in the future may be off by default on systems that do
 not require it.
 
-@item -fgo-optimize-allocs
-@cindex @option{-fgo-optimize-allocs}
-Use escape analysis to allocate objects on the stack rather than the
-heap when possible.  In the future this may be the default.
+@item -fno-go-optimize-allocs
+@cindex @option{-fno-go-optimize-allocs}
+Disable escape analysis, which tries to allocate objects on the stack
+rather than the heap.
 
 @item -fgo-debug-escape@var{n}
 @cindex @option{-fgo-debug-escape}

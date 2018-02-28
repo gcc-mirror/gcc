@@ -1,5 +1,5 @@
-typedef unsigned char u8;
-typedef unsigned int u32;
+typedef __UINT8_TYPE__ u8;
+typedef __UINT32_TYPE__ u32;
 
 u32 a, b, d, e;
 u8 c;

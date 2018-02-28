@@ -28,64 +28,64 @@ program main
   res1 = maxloc(c)
   res2 = maxloc(a)
 
-  if (any(res1 /= res2)) call abort
+  if (any(res1 /= res2)) STOP 1
   res1 = maxloc(c4)
-  if (any(res1 /= res2)) call abort
+  if (any(res1 /= res2)) STOP 2
 
   amask = a < 50
   res1 = maxloc(c,mask=amask)
   res2 = maxloc(a,mask=amask)
 
- if (any(res1 /= res2)) call abort
+ if (any(res1 /= res2)) STOP 3
 
  amask = .false.
  res1 = maxloc(c,mask=amask)
- if (any(res1 /= 0)) call abort
+ if (any(res1 /= 0)) STOP 4
 
  amask(2,3) = .true.
  res1 = maxloc(c,mask=amask)
- if (any(res1 /= [2,3])) call abort
+ if (any(res1 /= [2,3])) STOP 5
 
  res1 = maxloc(c,mask=.false.)
- if (any(res1 /= 0)) call abort
+ if (any(res1 /= 0)) STOP 6
 
  res2 = maxloc(a)
  res1 = maxloc(c,mask=.true.)
- if (any(res1 /= res2)) call abort
+ if (any(res1 /= res2)) STOP 7
 
  q1 = maxloc(c, dim=1)
  q2 = maxloc(a, dim=1)
- if (any(q1 /= q2)) call abort
+ if (any(q1 /= q2)) STOP 8
 
  q1 = maxloc(c, dim=2)
  q2 = maxloc(a, dim=2)
- if (any(q1 /= q2)) call abort
+ if (any(q1 /= q2)) STOP 9
 
  q1 = maxloc(c, dim=1, mask=amask)
  q2 = maxloc(a, dim=1, mask=amask)
- if (any(q1 /= q2)) call abort
+ if (any(q1 /= q2)) STOP 10
 
  q1 = maxloc(c, dim=2, mask=amask)
  q2 = maxloc(a, dim=2, mask=amask)
- if (any(q1 /= q2)) call abort
+ if (any(q1 /= q2)) STOP 11
 
   amask = a < 50
 
  q1 = maxloc(c, dim=1, mask=amask)
  q2 = maxloc(a, dim=1, mask=amask)
- if (any(q1 /= q2)) call abort
+ if (any(q1 /= q2)) STOP 12
 
  q1 = maxloc(c, dim=2, mask=amask)
  q2 = maxloc(a, dim=2, mask=amask)
- if (any(q1 /= q2)) call abort
+ if (any(q1 /= q2)) STOP 13
 
  e = reshape(c, shape(e))
  f = reshape(a, shape(f))
- if (maxloc(e,dim=1) /= maxloc(f,dim=1)) call abort
+ if (maxloc(e,dim=1) /= maxloc(f,dim=1)) STOP 14
 
  cmask = .false.
- if (maxloc(e,dim=1,mask=cmask) /= 0) call abort
+ if (maxloc(e,dim=1,mask=cmask) /= 0) STOP 15
 
  cmask = f > 50
- if ( maxloc(e, dim=1, mask=cmask) /= maxloc (f, dim=1, mask=cmask)) call abort
+ if ( maxloc(e, dim=1, mask=cmask) /= maxloc (f, dim=1, mask=cmask)) STOP 16
 end program main

@@ -4095,18 +4095,28 @@ else
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for CET support" >&5
+$as_echo_n "checking for CET support... " >&6; }
+
 case "$host" in
   i[34567]86-*-linux* | x86_64-*-linux*)
     case "$enable_cet" in
       default)
-	# Check if assembler supports CET.
+	# Check if target supports multi-byte NOPs
+	# and if assembler supports CET insn.
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
 main ()
 {
+
+#if !defined(__SSE2__)
+#error target does not support multi-byte NOPs
+#else
 asm ("setssbsy");
+#endif
+
   ;
   return 0;
 }
@@ -4146,6 +4156,11 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 esac
 if test x$enable_cet = xyes; then
   CET_FLAGS="-fcf-protection -mcet"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
 XCFLAGS="$XCFLAGS $CET_FLAGS"
@@ -10745,7 +10760,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10748 "configure"
+#line 10763 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10851,7 +10866,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10854 "configure"
+#line 10869 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

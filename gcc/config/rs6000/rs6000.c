@@ -4028,6 +4028,13 @@ rs6000_option_override_internal (bool global_init_p)
   if (global_init_p)
     rs6000_isa_flags_explicit = global_options_set.x_rs6000_isa_flags;
 
+  /* We plan to deprecate the -maltivec=be option.  For now, just
+     issue a warning message.  */
+  if (global_init_p
+      && rs6000_altivec_element_order == 2)
+    warning (0, "%qs command-line option is deprecated",
+	     "-maltivec=be");
+
   /* On 64-bit Darwin, power alignment is ABI-incompatible with some C
      library functions, so warn about it. The flag may be useful for
      performance studies from time to time though, so don't disable it
@@ -4813,25 +4820,6 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "after subtarget", rs6000_isa_flags);
 
-  /* For the E500 family of cores, reset the single/double FP flags to let us
-     check that they remain constant across attributes or pragmas.  */
-
-  switch (rs6000_cpu)
-    {
-    case PROCESSOR_PPC8540:
-    case PROCESSOR_PPC8548:
-    case PROCESSOR_PPCE500MC:
-    case PROCESSOR_PPCE500MC64:
-    case PROCESSOR_PPCE5500:
-    case PROCESSOR_PPCE6500:
-      rs6000_single_float = 0;
-      rs6000_double_float = 0;
-      break;
-
-    default:
-      break;
-    }
-
   if (main_target_opt)
     {
       if (main_target_opt->x_rs6000_single_float != rs6000_single_float)
@@ -5294,6 +5282,11 @@ rs6000_option_override_internal (bool global_init_p)
      extra blr's required to preserve the link stack on some cpus (eg, 476).  */
   if (TARGET_LINK_STACK == -1)
     SET_TARGET_LINK_STACK (rs6000_tune == PROCESSOR_PPC476 && flag_pic);
+
+  /* Deprecate use of -mno-speculate-indirect-jumps.  */
+  if (!rs6000_speculate_indirect_jumps)
+    warning (0, "%qs is deprecated and not recommended in any circumstances",
+	     "-mno-speculate-indirect-jumps");
 
   return ret;
 }
@@ -8214,6 +8207,12 @@ mem_operand_gpr (rtx op, machine_mode mode)
   unsigned HOST_WIDE_INT offset;
   int extra;
   rtx addr = XEXP (op, 0);
+
+  /* Don't allow altivec type addresses like (mem (and (plus ...))).
+     See PR target/84279.  */
+
+  if (GET_CODE (addr) == AND)
+    return false;
 
   op = address_offset (addr);
   if (op == NULL_RTX)
@@ -15723,8 +15722,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case VSX_BUILTIN_VEC_EXT_V1TI:
       return altivec_expand_vec_ext_builtin (exp, target);
 
-    case P9V_BUILTIN_VEXTRACT4B:
-    case P9V_BUILTIN_VEC_VEXTRACT4B:
+    case P9V_BUILTIN_VEC_EXTRACT4B:
       arg1 = CALL_EXPR_ARG (exp, 1);
       STRIP_NOPS (arg1);
 
@@ -15739,9 +15737,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 	}
       break;
 
-    case P9V_BUILTIN_VINSERT4B:
-    case P9V_BUILTIN_VINSERT4B_DI:
-    case P9V_BUILTIN_VEC_VINSERT4B:
+    case P9V_BUILTIN_VEC_INSERT4B:
       arg2 = CALL_EXPR_ARG (exp, 2);
       STRIP_NOPS (arg2);
 

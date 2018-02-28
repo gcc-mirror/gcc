@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fab1 -fno-tree-dominator-opts" } */
+/* { dg-options "-O2 -fdump-tree-fab1 -fno-tree-dominator-opts -fno-tree-vrp" } */
 
 void
 foo (int b, int c)

@@ -3,12 +3,12 @@
 ! { dg-require-effective-target fortran_integer_16 }
 
 #define CHECK(val,res) \
-  if (popcnt(val) /= res) call abort ; \
-  if (runtime_popcnt(val) /= res) call abort
+  if (popcnt(val) /= res) STOP 1; \
+  if (runtime_popcnt(val) /= res) STOP 2
 
 #define CHECK2(val) \
-  if (poppar(val) /= modulo(popcnt(val),2)) call abort ; \
-  if (runtime_poppar(val) /= poppar(val)) call abort
+  if (poppar(val) /= modulo(popcnt(val),2)) STOP 3; \
+  if (runtime_poppar(val) /= poppar(val)) STOP 4
 
   CHECK(0_16, 0)
   CHECK(1_16, 1)

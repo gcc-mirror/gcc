@@ -914,6 +914,8 @@ msp430_hard_regno_nregs (unsigned int, machine_mode mode)
 {
   if (mode == PSImode && msp430x)
     return 1;
+  if (mode == CPSImode && msp430x)
+    return 2;
   return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)
 	  / UNITS_PER_WORD);
 }
@@ -936,6 +938,8 @@ msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
 {
   if (mode == PSImode)
     return 2;
+  if (mode == CPSImode)
+    return 4;
   return msp430_hard_regno_nregs (regno, mode);
 }
 

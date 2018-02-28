@@ -804,12 +804,11 @@ is_brk_interrupt_func (const_tree decl)
 static tree
 rl78_handle_func_attribute (tree * node,
 			    tree   name,
-			    tree   args,
+			    tree   args ATTRIBUTE_UNUSED,
 			    int    flags ATTRIBUTE_UNUSED,
 			    bool * no_add_attrs)
 {
   gcc_assert (DECL_P (* node));
-  gcc_assert (args == NULL_TREE);
 
   if (TREE_CODE (* node) != FUNCTION_DECL)
     {
@@ -868,6 +867,28 @@ rl78_handle_saddr_attribute (tree * node,
   return NULL_TREE;
 }
 
+/* Check "vector" attribute.  */
+
+static tree
+rl78_handle_vector_attribute (tree * node,
+			    tree   name,
+			    tree   args,
+			    int    flags ATTRIBUTE_UNUSED,
+			    bool * no_add_attrs)
+{
+  gcc_assert (DECL_P (* node));
+  gcc_assert (args != NULL_TREE);
+
+  if (TREE_CODE (* node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      * no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE		rl78_attribute_table
 
@@ -876,7 +897,7 @@ const struct attribute_spec rl78_attribute_table[] =
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
      affects_type_identity, handler, exclude.  */
-  { "interrupt",      0, 0, true, false, false, false,
+  { "interrupt",      0, -1, true, false, false, false,
     rl78_handle_func_attribute, NULL },
   { "brk_interrupt",  0, 0, true, false, false, false,
     rl78_handle_func_attribute, NULL },
@@ -884,6 +905,8 @@ const struct attribute_spec rl78_attribute_table[] =
     rl78_handle_naked_attribute, NULL },
   { "saddr",          0, 0, true, false, false, false,
     rl78_handle_saddr_attribute, NULL },
+  { "vector",         1, -1, true, false, false, false,
+	rl78_handle_vector_attribute, NULL },
   { NULL,             0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -1583,6 +1606,62 @@ rl78_expand_eh_epilogue (rtx x ATTRIBUTE_UNUSED)
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE	rl78_start_function
 
+static void
+add_vector_labels (FILE *file, const char *aname)
+{
+  tree vec_attr;
+  tree val_attr;
+  const char *vname = "vect";
+  const char *s;
+  int vnum;
+
+  /* This node is for the vector/interrupt tag itself */
+  vec_attr = lookup_attribute (aname, DECL_ATTRIBUTES (current_function_decl));
+  if (!vec_attr)
+    return;
+
+  /* Now point it at the first argument */
+  vec_attr = TREE_VALUE (vec_attr);
+
+  /* Iterate through the arguments.  */
+  while (vec_attr)
+    {
+      val_attr = TREE_VALUE (vec_attr);
+      switch (TREE_CODE (val_attr))
+	{
+	case STRING_CST:
+	  s = TREE_STRING_POINTER (val_attr);
+	  goto string_id_common;
+
+	case IDENTIFIER_NODE:
+	  s = IDENTIFIER_POINTER (val_attr);
+
+	string_id_common:
+	  if (strcmp (s, "$default") == 0)
+	    {
+	      fprintf (file, "\t.global\t$tableentry$default$%s\n", vname);
+	      fprintf (file, "$tableentry$default$%s:\n", vname);
+	    }
+	  else
+	    vname = s;
+	  break;
+
+	case INTEGER_CST:
+	  vnum = TREE_INT_CST_LOW (val_attr);
+
+	  fprintf (file, "\t.global\t$tableentry$%d$%s\n", vnum, vname);
+	  fprintf (file, "$tableentry$%d$%s:\n", vnum, vname);
+	  break;
+
+	default:
+	  ;
+	}
+
+      vec_attr = TREE_CHAIN (vec_attr);
+    }
+
+}
+
 /* We don't use this to actually emit the function prologue.  We use
    this to insert a comment in the asm file describing the
    function.  */
@@ -1590,6 +1669,9 @@ static void
 rl78_start_function (FILE *file)
 {
   int i;
+  
+  add_vector_labels (file, "interrupt");
+  add_vector_labels (file, "vector");
 
   if (cfun->machine->framesize == 0)
     return;

@@ -10,6 +10,6 @@
    !print *, "Error Code is : ", IOSTAT_INQUIRE_INTERNAL_UNIT
    !print *, "IOSTAT Code is: ", istat
    !print *, tunit, unit_exists
-   if (istat.ne.iostat_inquire_internal_unit) call abort()
-   if (unit_exists) call abort()
+   if (istat.ne.iostat_inquire_internal_unit) STOP 1
+   if (unit_exists) STOP 2
 END

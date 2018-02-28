@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h> /* For exit and malloc.  */
 #include <string.h> /* For memcpy and memset.  */
 #include <stdarg.h> /* For variadic arguments.  */
+#include <stdint.h>
 #include <assert.h>
 
 /* Define GFC_CAF_CHECK to enable run-time checking.  */
@@ -74,7 +75,7 @@ caf_runtime_error (const char *message, ...)
 /* Error handling is similar everytime.  */
 static void
 caf_internal_error (const char *msg, int *stat, char *errmsg,
-		    int errmsg_len, ...)
+		    size_t errmsg_len, ...)
 {
   va_list args;
   va_start (args, errmsg_len);
@@ -83,8 +84,8 @@ caf_internal_error (const char *msg, int *stat, char *errmsg,
       *stat = 1;
       if (errmsg_len > 0)
 	{
-	  size_t len = snprintf (errmsg, errmsg_len, msg, args);
-	  if ((size_t)errmsg_len > len)
+	  int len = snprintf (errmsg, errmsg_len, msg, args);
+	  if (len >= 0 && errmsg_len > (size_t) len)
 	    memset (&errmsg[len], ' ', errmsg_len - len);
 	}
       va_end (args);
@@ -134,7 +135,7 @@ _gfortran_caf_num_images (int distance __attribute__ ((unused)),
 void
 _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 			gfc_descriptor_t *data, int *stat, char *errmsg,
-			int errmsg_len)
+			size_t errmsg_len)
 {
   const char alloc_fail_msg[] = "Failed to allocate coarray";
   void *local;
@@ -195,7 +196,7 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 void
 _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type, int *stat,
 			  char *errmsg __attribute__ ((unused)),
-			  int errmsg_len __attribute__ ((unused)))
+			  size_t errmsg_len __attribute__ ((unused)))
 {
   caf_single_token_t single_token = TOKEN (*token);
 
@@ -221,7 +222,7 @@ _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type, int *stat,
 void
 _gfortran_caf_sync_all (int *stat,
 			char *errmsg __attribute__ ((unused)),
-			int errmsg_len __attribute__ ((unused)))
+			size_t errmsg_len __attribute__ ((unused)))
 {
   __asm__ __volatile__ ("":::"memory");
   if (stat)
@@ -232,7 +233,7 @@ _gfortran_caf_sync_all (int *stat,
 void
 _gfortran_caf_sync_memory (int *stat,
 			   char *errmsg __attribute__ ((unused)),
-			   int errmsg_len __attribute__ ((unused)))
+			   size_t errmsg_len __attribute__ ((unused)))
 {
   __asm__ __volatile__ ("":::"memory");
   if (stat)
@@ -245,7 +246,7 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 			   int images[] __attribute__ ((unused)),
 			   int *stat,
 			   char *errmsg __attribute__ ((unused)),
-			   int errmsg_len __attribute__ ((unused)))
+			   size_t errmsg_len __attribute__ ((unused)))
 {
 #ifdef GFC_CAF_CHECK
   int i;
@@ -266,33 +267,38 @@ _gfortran_caf_sync_images (int count __attribute__ ((unused)),
 
 
 void
-_gfortran_caf_stop_numeric(int32_t stop_code)
+_gfortran_caf_stop_numeric(int stop_code, bool quiet)
 {
-  fprintf (stderr, "STOP %d\n", stop_code);
+  if (!quiet)
+    fprintf (stderr, "STOP %d\n", stop_code);
   exit (0);
 }
 
 
 void
-_gfortran_caf_stop_str(const char *string, int32_t len)
+_gfortran_caf_stop_str(const char *string, size_t len, bool quiet)
 {
-  fputs ("STOP ", stderr);
-  while (len--)
-    fputc (*(string++), stderr);
-  fputs ("\n", stderr);
-
+  if (!quiet)
+    {
+      fputs ("STOP ", stderr);
+      while (len--)
+	fputc (*(string++), stderr);
+      fputs ("\n", stderr);
+    }
   exit (0);
 }
 
 
 void
-_gfortran_caf_error_stop_str (const char *string, int32_t len)
+_gfortran_caf_error_stop_str (const char *string, size_t len, bool quiet)
 {
-  fputs ("ERROR STOP ", stderr);
-  while (len--)
-    fputc (*(string++), stderr);
-  fputs ("\n", stderr);
-
+  if (!quiet)
+    {
+      fputs ("ERROR STOP ", stderr);
+      while (len--)
+	fputc (*(string++), stderr);
+      fputs ("\n", stderr);
+    }
   exit (1);
 }
 
@@ -366,9 +372,10 @@ _gfortran_caf_stopped_images (gfc_descriptor_t *array,
 
 
 void
-_gfortran_caf_error_stop (int32_t error)
+_gfortran_caf_error_stop (int error, bool quiet)
 {
-  fprintf (stderr, "ERROR STOP %d\n", error);
+  if (!quiet)
+    fprintf (stderr, "ERROR STOP %d\n", error);
   exit (error);
 }
 
@@ -377,7 +384,7 @@ void
 _gfortran_caf_co_broadcast (gfc_descriptor_t *a __attribute__ ((unused)),
 			    int source_image __attribute__ ((unused)),
 			    int *stat, char *errmsg __attribute__ ((unused)),
-			    int errmsg_len __attribute__ ((unused)))
+			    size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -387,7 +394,7 @@ void
 _gfortran_caf_co_sum (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
-		      int errmsg_len __attribute__ ((unused)))
+		      size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -398,7 +405,7 @@ _gfortran_caf_co_min (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
 		      int a_len __attribute__ ((unused)),
-		      int errmsg_len __attribute__ ((unused)))
+		      size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -409,7 +416,7 @@ _gfortran_caf_co_max (gfc_descriptor_t *a __attribute__ ((unused)),
 		      int result_image __attribute__ ((unused)),
 		      int *stat, char *errmsg __attribute__ ((unused)),
 		      int a_len __attribute__ ((unused)),
-		      int errmsg_len __attribute__ ((unused)))
+		      size_t errmsg_len __attribute__ ((unused)))
 {
   if (stat)
     *stat = 0;
@@ -424,7 +431,7 @@ _gfortran_caf_co_reduce (gfc_descriptor_t *a __attribute__ ((unused)),
                         int result_image __attribute__ ((unused)),
                         int *stat, char *errmsg __attribute__ ((unused)),
                         int a_len __attribute__ ((unused)),
-                        int errmsg_len __attribute__ ((unused)))
+                        size_t errmsg_len __attribute__ ((unused)))
  {
    if (stat)
      *stat = 0;
@@ -1194,7 +1201,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	     caf_single_token_t single_token, gfc_descriptor_t *dst,
 	     gfc_descriptor_t *src, void *ds, void *sr,
 	     int dst_kind, int src_kind, size_t dst_dim, size_t src_dim,
-	     size_t num, int *stat)
+	     size_t num, int *stat, int src_type)
 {
   ptrdiff_t extent_src = 1, array_offset_src = 0, stride_src;
   size_t next_dst_dim;
@@ -1209,25 +1216,24 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
       size_t dst_size = GFC_DESCRIPTOR_SIZE (dst);
       ptrdiff_t array_offset_dst = 0;;
       size_t dst_rank = GFC_DESCRIPTOR_RANK (dst);
-      int src_type = -1;
 
       switch (ref->type)
 	{
 	case CAF_REF_COMPONENT:
 	  /* Because the token is always registered after the component, its
-	     offset is always greater zeor.  */
+	     offset is always greater zero.  */
 	  if (ref->u.c.caf_token_offset > 0)
+	    /* Note, that sr is dereffed here.  */
 	    copy_data (ds, *(void **)(sr + ref->u.c.offset),
-		       GFC_DESCRIPTOR_TYPE (dst), GFC_DESCRIPTOR_TYPE (dst),
+		       GFC_DESCRIPTOR_TYPE (dst), src_type,
 		       dst_kind, src_kind, dst_size, ref->item_size, 1, stat);
 	  else
 	    copy_data (ds, sr + ref->u.c.offset,
-		       GFC_DESCRIPTOR_TYPE (dst), GFC_DESCRIPTOR_TYPE (src),
+		       GFC_DESCRIPTOR_TYPE (dst), src_type,
 		       dst_kind, src_kind, dst_size, ref->item_size, 1, stat);
 	  ++(*i);
 	  return;
 	case CAF_REF_STATIC_ARRAY:
-	  src_type = ref->u.a.static_array_type;
 	  /* Intentionally fall through.  */
 	case CAF_REF_ARRAY:
 	  if (ref->u.a.mode[src_dim] == CAF_ARR_REF_NONE)
@@ -1235,8 +1241,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      for (size_t d = 0; d < dst_rank; ++d)
 		array_offset_dst += dst_index[d];
 	      copy_data (ds + array_offset_dst * dst_size, sr,
-			 GFC_DESCRIPTOR_TYPE (dst),
-			 src_type == -1 ? GFC_DESCRIPTOR_TYPE (src) : src_type,
+			 GFC_DESCRIPTOR_TYPE (dst), src_type,
 			 dst_kind, src_kind, dst_size, ref->item_size, num,
 			 stat);
 	      *i += num;
@@ -1252,23 +1257,39 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
     {
     case CAF_REF_COMPONENT:
       if (ref->u.c.caf_token_offset > 0)
-	get_for_ref (ref->next, i, dst_index,
-		    *(caf_single_token_t*)(sr + ref->u.c.caf_token_offset), dst,
-		 (*(caf_single_token_t*)(sr + ref->u.c.caf_token_offset))->desc,
-		     ds, sr + ref->u.c.offset, dst_kind, src_kind, dst_dim, 0,
-		     1, stat);
+	{
+	  single_token = *(caf_single_token_t*)(sr + ref->u.c.caf_token_offset);
+
+	  if (ref->next && ref->next->type == CAF_REF_ARRAY)
+	    src = single_token->desc;
+	  else
+	    src = NULL;
+
+	  if (ref->next && ref->next->type == CAF_REF_COMPONENT)
+	    /* The currently ref'ed component was allocatabe (caf_token_offset
+	       > 0) and the next ref is a component, too, then the new sr has to
+	       be dereffed.  (static arrays can not be allocatable or they
+	       become an array with descriptor.  */
+	    sr = *(void **)(sr + ref->u.c.offset);
+	  else
+	    sr += ref->u.c.offset;
+
+	  get_for_ref (ref->next, i, dst_index, single_token, dst, src,
+		       ds, sr, dst_kind, src_kind, dst_dim, 0,
+		       1, stat, src_type);
+	}
       else
 	get_for_ref (ref->next, i, dst_index, single_token, dst,
 		     (gfc_descriptor_t *)(sr + ref->u.c.offset), ds,
 		     sr + ref->u.c.offset, dst_kind, src_kind, dst_dim, 0, 1,
-		     stat);
+		     stat, src_type);
       return;
     case CAF_REF_ARRAY:
       if (ref->u.a.mode[src_dim] == CAF_ARR_REF_NONE)
 	{
 	  get_for_ref (ref->next, i, dst_index, single_token, dst,
 		       src, ds, sr, dst_kind, src_kind,
-		       dst_dim, 0, 1, stat);
+		       dst_dim, 0, 1, stat, src_type);
 	  return;
 	}
       /* Only when on the left most index switch the data pointer to
@@ -1311,7 +1332,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, src,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	    }
@@ -1331,7 +1352,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, src,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	    }
@@ -1358,7 +1379,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, src,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, next_dst_dim, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	      array_offset_src += stride_src;
@@ -1372,7 +1393,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	  get_for_ref (ref, i, dst_index, single_token, dst, src, ds,
 		       sr + array_offset_src * ref->item_size,
 		       dst_kind, src_kind, dst_dim, src_dim + 1, 1,
-		       stat);
+		       stat, src_type);
 	  return;
 	case CAF_ARR_REF_OPEN_END:
 	  COMPUTE_NUM_ITEMS (extent_src,
@@ -1390,7 +1411,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, src,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	      array_offset_src += stride_src;
@@ -1410,7 +1431,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, src,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	      array_offset_src += stride_src;
@@ -1425,7 +1446,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	{
 	  get_for_ref (ref->next, i, dst_index, single_token, dst,
 		       NULL, ds, sr, dst_kind, src_kind,
-		       dst_dim, 0, 1, stat);
+		       dst_dim, 0, 1, stat, src_type);
 	  return;
 	}
       switch (ref->u.a.mode[src_dim])
@@ -1460,7 +1481,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, NULL,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	    }
@@ -1474,7 +1495,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, NULL,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	    }
@@ -1491,7 +1512,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	      get_for_ref (ref, i, dst_index, single_token, dst, NULL,
 			   ds, sr + array_offset_src * ref->item_size,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, stat);
+			   1, stat, src_type);
 	      dst_index[dst_dim]
 		  += GFC_DIMENSION_STRIDE (dst->dim[dst_dim]);
 	      array_offset_src += ref->u.a.dim[src_dim].s.stride;
@@ -1502,7 +1523,7 @@ get_for_ref (caf_reference_t *ref, size_t *i, size_t *dst_index,
 	  get_for_ref (ref, i, dst_index, single_token, dst, NULL, ds,
 		       sr + array_offset_src * ref->item_size,
 		       dst_kind, src_kind, dst_dim, src_dim + 1, 1,
-		       stat);
+		       stat, src_type);
 	  return;
 	/* The OPEN_* are mapped to a RANGE and therefore can not occur.  */
 	case CAF_ARR_REF_OPEN_END:
@@ -1523,7 +1544,8 @@ _gfortran_caf_get_by_ref (caf_token_t token,
 			  gfc_descriptor_t *dst, caf_reference_t *refs,
 			  int dst_kind, int src_kind,
 			  bool may_require_tmp __attribute__ ((unused)),
-			  bool dst_reallocatable, int *stat)
+			  bool dst_reallocatable, int *stat,
+			  int src_type)
 {
   const char vecrefunknownkind[] = "libcaf_single::caf_get_by_ref(): "
 				   "unknown kind in vector-ref.\n";
@@ -1585,7 +1607,13 @@ _gfortran_caf_get_by_ref (caf_token_t token,
 	  else
 	    {
 	      memptr += riter->u.c.offset;
-	      src = (gfc_descriptor_t *)memptr;
+	      /* When the next ref is an array ref, assume there is an
+		 array descriptor at memptr.  Note, static arrays do not have
+		 a descriptor.  */
+	      if (riter->next && riter->next->type == CAF_REF_ARRAY)
+		src = (gfc_descriptor_t *)memptr;
+	      else
+		src = NULL;
 	    }
 	  break;
 	case CAF_REF_ARRAY:
@@ -1676,6 +1704,13 @@ _gfortran_caf_get_by_ref (caf_token_t token,
 		  /* No, an array is required, but not provided.  */
 		  caf_internal_error (extentoutofrange, stat, NULL, 0);
 		  return;
+		}
+	      /* Special mode when called by __caf_sendget_by_ref ().  */
+	      if (dst_rank == -1 && GFC_DESCRIPTOR_DATA (dst) == NULL)
+		{
+		  dst_rank = dst_cur_dim + 1;
+		  GFC_DESCRIPTOR_RANK (dst) = dst_rank;
+		  GFC_DESCRIPTOR_SIZE (dst) = dst_kind;
 		}
 	      /* When dst is an array.  */
 	      if (dst_rank > 0)
@@ -1845,6 +1880,13 @@ _gfortran_caf_get_by_ref (caf_token_t token,
 		  caf_internal_error (extentoutofrange, stat, NULL, 0);
 		  return;
 		}
+	      /* Special mode when called by __caf_sendget_by_ref ().  */
+	      if (dst_rank == -1 && GFC_DESCRIPTOR_DATA (dst) == NULL)
+		{
+		  dst_rank = dst_cur_dim + 1;
+		  GFC_DESCRIPTOR_RANK (dst) = dst_rank;
+		  GFC_DESCRIPTOR_SIZE (dst) = dst_kind;
+		}
 	      /* When dst is an array.  */
 	      if (dst_rank > 0)
 		{
@@ -1946,6 +1988,13 @@ _gfortran_caf_get_by_ref (caf_token_t token,
       if (!array_extent_fixed)
 	{
 	  assert (size == 1);
+	  /* Special mode when called by __caf_sendget_by_ref ().  */
+	  if (dst_rank == -1 && GFC_DESCRIPTOR_DATA (dst) == NULL)
+	    {
+	      dst_rank = dst_cur_dim + 1;
+	      GFC_DESCRIPTOR_RANK (dst) = dst_rank;
+	      GFC_DESCRIPTOR_SIZE (dst) = dst_kind;
+	    }
 	  /* This can happen only, when the result is scalar.  */
 	  for (dst_cur_dim = 0; dst_cur_dim < dst_rank; ++dst_cur_dim)
 	    GFC_DIMENSION_SET (dst->dim[dst_cur_dim], 1, 1, 1);
@@ -1967,7 +2016,7 @@ _gfortran_caf_get_by_ref (caf_token_t token,
   i = 0;
   get_for_ref (refs, &i, dst_index, single_token, dst, src,
 	       GFC_DESCRIPTOR_DATA (dst), memptr, dst_kind, src_kind, 0, 0,
-	       1, stat);
+	       1, stat, src_type);
 }
 
 
@@ -1976,7 +2025,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	     caf_single_token_t single_token, gfc_descriptor_t *dst,
 	     gfc_descriptor_t *src, void *ds, void *sr,
 	     int dst_kind, int src_kind, size_t dst_dim, size_t src_dim,
-	     size_t num, size_t size, int *stat)
+	     size_t num, size_t size, int *stat, int dst_type)
 {
   const char vecrefunknownkind[] = "libcaf_single::caf_send_by_ref(): "
       "unknown kind in vector-ref.\n";
@@ -1992,7 +2041,6 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
     {
       size_t src_size = GFC_DESCRIPTOR_SIZE (src);
       ptrdiff_t array_offset_src = 0;;
-      int dst_type = -1;
 
       switch (ref->type)
 	{
@@ -2036,26 +2084,18 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 		      dst_type = GFC_DESCRIPTOR_TYPE (dst);
 		    }
 		  else
-		    {
-		      /* When no destination descriptor is present, assume that
-			 source and dest type are identical.  */
-		      dst_type = GFC_DESCRIPTOR_TYPE (src);
-		      ds = *(void **)(ds + ref->u.c.offset);
-		    }
+		    ds = *(void **)(ds + ref->u.c.offset);
 		}
 	      copy_data (ds, sr, dst_type, GFC_DESCRIPTOR_TYPE (src),
 			 dst_kind, src_kind, ref->item_size, src_size, 1, stat);
 	    }
 	  else
-	    copy_data (ds + ref->u.c.offset, sr,
-		       dst != NULL ? GFC_DESCRIPTOR_TYPE (dst)
-				   : GFC_DESCRIPTOR_TYPE (src),
+	    copy_data (ds + ref->u.c.offset, sr, dst_type,
 		       GFC_DESCRIPTOR_TYPE (src),
 		       dst_kind, src_kind, ref->item_size, src_size, 1, stat);
 	  ++(*i);
 	  return;
 	case CAF_REF_STATIC_ARRAY:
-	  dst_type = ref->u.a.static_array_type;
 	  /* Intentionally fall through.  */
 	case CAF_REF_ARRAY:
 	  if (ref->u.a.mode[dst_dim] == CAF_ARR_REF_NONE)
@@ -2064,18 +2104,14 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 		{
 		  for (size_t d = 0; d < src_rank; ++d)
 		    array_offset_src += src_index[d];
-		  copy_data (ds, sr + array_offset_src * ref->item_size,
-			     dst_type == -1 ? GFC_DESCRIPTOR_TYPE (dst)
-					    : dst_type,
-			     GFC_DESCRIPTOR_TYPE (src), dst_kind, src_kind,
-			     ref->item_size, src_size, num, stat);
+		  copy_data (ds, sr + array_offset_src * src_size,
+			     dst_type, GFC_DESCRIPTOR_TYPE (src), dst_kind,
+			     src_kind, ref->item_size, src_size, num, stat);
 		}
 	      else
-		copy_data (ds, sr,
-			   dst_type == -1 ? GFC_DESCRIPTOR_TYPE (dst)
-					  : dst_type,
-			   GFC_DESCRIPTOR_TYPE (src), dst_kind, src_kind,
-			   ref->item_size, src_size, num, stat);
+		copy_data (ds, sr, dst_type, GFC_DESCRIPTOR_TYPE (src),
+			   dst_kind, src_kind, ref->item_size, src_size, num,
+			   stat);
 	      *i += num;
 	      return;
 	    }
@@ -2123,22 +2159,30 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 		return;
 	    }
 	  single_token = *(caf_single_token_t*)(ds + ref->u.c.caf_token_offset);
+	  /* When a component is allocatable (caf_token_offset != 0) and not an
+	     array (ref->next->type == CAF_REF_COMPONENT), then ds has to be
+	     dereffed.  */
+	  if (ref->next && ref->next->type == CAF_REF_COMPONENT)
+	    ds = *(void **)(ds + ref->u.c.offset);
+	  else
+	    ds += ref->u.c.offset;
+
 	  send_by_ref (ref->next, i, src_index, single_token,
-		       single_token->desc, src, ds + ref->u.c.offset, sr,
-		       dst_kind, src_kind, 0, src_dim, 1, size, stat);
+		       single_token->desc, src, ds, sr,
+		       dst_kind, src_kind, 0, src_dim, 1, size, stat, dst_type);
 	}
       else
 	send_by_ref (ref->next, i, src_index, single_token,
 		     (gfc_descriptor_t *)(ds + ref->u.c.offset), src,
 		     ds + ref->u.c.offset, sr, dst_kind, src_kind, 0, src_dim,
-		     1, size, stat);
+		     1, size, stat, dst_type);
       return;
     case CAF_REF_ARRAY:
       if (ref->u.a.mode[dst_dim] == CAF_ARR_REF_NONE)
 	{
 	  send_by_ref (ref->next, i, src_index, single_token,
 		       (gfc_descriptor_t *)ds, src, ds, sr, dst_kind, src_kind,
-		       0, src_dim, 1, size, stat);
+		       0, src_dim, 1, size, stat, dst_type);
 	  return;
 	}
       /* Only when on the left most index switch the data pointer to
@@ -2180,7 +2224,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, dst, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      if (src_rank > 0)
 		src_index[src_dim]
 		    += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
@@ -2201,7 +2245,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, dst, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      if (src_rank > 0)
 		src_index[src_dim]
 		    += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
@@ -2222,7 +2266,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, dst, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      if (src_rank > 0)
 		src_index[src_dim]
 		    += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
@@ -2236,7 +2280,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	  send_by_ref (ref, i, src_index, single_token, dst, src, ds
 		       + array_offset_dst * ref->item_size, sr,
 		       dst_kind, src_kind, dst_dim + 1, src_dim, 1,
-		       size, stat);
+		       size, stat, dst_type);
 	  return;
 	case CAF_ARR_REF_OPEN_END:
 	  COMPUTE_NUM_ITEMS (extent_dst,
@@ -2253,7 +2297,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, dst, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      if (src_rank > 0)
 		src_index[src_dim]
 		    += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
@@ -2274,7 +2318,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, dst, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      if (src_rank > 0)
 		src_index[src_dim]
 		    += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
@@ -2290,7 +2334,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	{
 	  send_by_ref (ref->next, i, src_index, single_token, NULL,
 		       src, ds, sr, dst_kind, src_kind,
-		       0, src_dim, 1, size, stat);
+		       0, src_dim, 1, size, stat, dst_type);
 	  return;
 	}
       switch (ref->u.a.mode[dst_dim])
@@ -2325,7 +2369,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, NULL, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      src_index[src_dim]
 		  += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
 	    }
@@ -2339,7 +2383,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, NULL, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      if (src_rank > 0)
 		src_index[src_dim]
 		    += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
@@ -2357,7 +2401,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	      send_by_ref (ref, i, src_index, single_token, NULL, src,
 			   ds + array_offset_dst * ref->item_size, sr,
 			   dst_kind, src_kind, dst_dim + 1, src_dim + 1,
-			   1, size, stat);
+			   1, size, stat, dst_type);
 	      if (src_rank > 0)
 		src_index[src_dim]
 		    += GFC_DIMENSION_STRIDE (src->dim[src_dim]);
@@ -2369,7 +2413,7 @@ send_by_ref (caf_reference_t *ref, size_t *i, size_t *src_index,
 	  send_by_ref (ref, i, src_index, single_token, NULL, src,
 		       ds + array_offset_dst * ref->item_size, sr,
 		       dst_kind, src_kind, dst_dim + 1, src_dim, 1,
-		       size, stat);
+		       size, stat, dst_type);
 	  return;
 	/* The OPEN_* are mapped to a RANGE and therefore can not occur.  */
 	case CAF_ARR_REF_OPEN_END:
@@ -2390,7 +2434,7 @@ _gfortran_caf_send_by_ref (caf_token_t token,
 			   gfc_descriptor_t *src, caf_reference_t *refs,
 			   int dst_kind, int src_kind,
 			   bool may_require_tmp __attribute__ ((unused)),
-			   bool dst_reallocatable, int *stat)
+			   bool dst_reallocatable, int *stat, int dst_type)
 {
   const char vecrefunknownkind[] = "libcaf_single::caf_get_by_ref(): "
 				   "unknown kind in vector-ref.\n";
@@ -2748,7 +2792,7 @@ _gfortran_caf_send_by_ref (caf_token_t token,
   i = 0;
   send_by_ref (refs, &i, dst_index, single_token, dst, src,
 	       memptr, GFC_DESCRIPTOR_DATA (src), dst_kind, src_kind, 0, 0,
-	       1, size, stat);
+	       1, size, stat, dst_type);
   assert (i == size);
 }
 
@@ -2759,20 +2803,23 @@ _gfortran_caf_sendget_by_ref (caf_token_t dst_token, int dst_image_index,
 			      int src_image_index,
 			      caf_reference_t *src_refs, int dst_kind,
 			      int src_kind, bool may_require_tmp, int *dst_stat,
-			      int *src_stat)
+			      int *src_stat, int dst_type, int src_type)
 {
-  gfc_array_void temp;
+  GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) temp;
+  GFC_DESCRIPTOR_DATA (&temp) = NULL;
+  GFC_DESCRIPTOR_RANK (&temp) = -1;
+  GFC_DESCRIPTOR_TYPE (&temp) = dst_type;
 
   _gfortran_caf_get_by_ref (src_token, src_image_index, &temp, src_refs,
 			    dst_kind, src_kind, may_require_tmp, true,
-			    src_stat);
+			    src_stat, src_type);
 
   if (src_stat && *src_stat != 0)
     return;
 
   _gfortran_caf_send_by_ref (dst_token, dst_image_index, &temp, dst_refs,
-			     dst_kind, src_kind, may_require_tmp, true,
-			     dst_stat);
+			     dst_kind, dst_kind, may_require_tmp, true,
+			     dst_stat, dst_type);
   if (GFC_DESCRIPTOR_DATA (&temp))
     free (GFC_DESCRIPTOR_DATA (&temp));
 }
@@ -2870,7 +2917,7 @@ void
 _gfortran_caf_event_post (caf_token_t token, size_t index, 
 			  int image_index __attribute__ ((unused)), 
 			  int *stat, char *errmsg __attribute__ ((unused)), 
-			  int errmsg_len __attribute__ ((unused)))
+			  size_t errmsg_len __attribute__ ((unused)))
 {
   uint32_t value = 1;
   uint32_t *event = (uint32_t *) ((char *) MEMTOK (token) + index
@@ -2885,7 +2932,7 @@ void
 _gfortran_caf_event_wait (caf_token_t token, size_t index, 
 			  int until_count, int *stat,
 			  char *errmsg __attribute__ ((unused)), 
-			  int errmsg_len __attribute__ ((unused)))
+			  size_t errmsg_len __attribute__ ((unused)))
 {
   uint32_t *event = (uint32_t *) ((char *) MEMTOK (token) + index
 				  * sizeof (uint32_t));
@@ -2912,7 +2959,7 @@ _gfortran_caf_event_query (caf_token_t token, size_t index,
 void
 _gfortran_caf_lock (caf_token_t token, size_t index,
 		    int image_index __attribute__ ((unused)),
-		    int *aquired_lock, int *stat, char *errmsg, int errmsg_len)
+		    int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)
 {
   const char *msg = "Already locked";
   bool *lock = &((bool *) MEMTOK (token))[index];
@@ -2941,22 +2988,22 @@ _gfortran_caf_lock (caf_token_t token, size_t index,
       *stat = 1;
       if (errmsg_len > 0)
 	{
-	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
-						      : (int) sizeof (msg);
+	  size_t len = (sizeof (msg) > errmsg_len) ? errmsg_len
+						      : sizeof (msg);
 	  memcpy (errmsg, msg, len);
 	  if (errmsg_len > len)
 	    memset (&errmsg[len], ' ', errmsg_len-len);
 	}
       return;
     }
-  _gfortran_caf_error_stop_str (msg, (int32_t) strlen (msg));
+  _gfortran_caf_error_stop_str (msg, strlen (msg), false);
 }
 
 
 void
 _gfortran_caf_unlock (caf_token_t token, size_t index,
 		      int image_index __attribute__ ((unused)),
-		      int *stat, char *errmsg, int errmsg_len)
+		      int *stat, char *errmsg, size_t errmsg_len)
 {
   const char *msg = "Variable is not locked";
   bool *lock = &((bool *) MEMTOK (token))[index];
@@ -2974,15 +3021,15 @@ _gfortran_caf_unlock (caf_token_t token, size_t index,
       *stat = 1;
       if (errmsg_len > 0)
 	{
-	  int len = ((int) sizeof (msg) > errmsg_len) ? errmsg_len
-						      : (int) sizeof (msg);
+	  size_t len = (sizeof (msg) > errmsg_len) ? errmsg_len
+	    : sizeof (msg);
 	  memcpy (errmsg, msg, len);
 	  if (errmsg_len > len)
 	    memset (&errmsg[len], ' ', errmsg_len-len);
 	}
       return;
     }
-  _gfortran_caf_error_stop_str (msg, (int32_t) strlen (msg));
+  _gfortran_caf_error_stop_str (msg, strlen (msg), false);
 }
 
 int

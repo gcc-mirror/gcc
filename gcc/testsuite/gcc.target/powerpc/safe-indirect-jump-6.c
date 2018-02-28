@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-additional-options "-mno-speculate-indirect-jumps" } */
+/* { dg-warning "'-mno-speculate-indirect-jumps' is deprecated" "" { target *-*-* } 0 } */
 
 /* Test for deliberate misprediction of jump tables.  */
 

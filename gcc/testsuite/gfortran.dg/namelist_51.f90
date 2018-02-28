@@ -20,7 +20,7 @@ write(101,'(a)')"nxc = 100"
 write(101,'(a)')"&END"
 rewind(101)
 read(unit = 101, nml = INPUT)
-if (nxc /= 100) call abort
+if (nxc /= 100) STOP 1
 close(unit = 101)
 endsubroutine
 end program mem_nml

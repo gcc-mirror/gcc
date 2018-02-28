@@ -1187,7 +1187,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    break;
 
 	  case NOTE_INSN_VAR_LOCATION:
-	  case NOTE_INSN_CALL_ARG_LOCATION:
 	    note_flds = create_field (note_flds, rtx_tp, "rt_rtx");
 	    break;
 

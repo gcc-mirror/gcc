@@ -985,6 +985,9 @@ data_desc:
 	case FMT_COMMA:
 	  goto format_item;
 
+	case FMT_COLON:
+	  goto format_item_1;
+
 	case FMT_LPAREN:
 
   dtio_vlist:
