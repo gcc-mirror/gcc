@@ -2170,10 +2170,17 @@ determine_specialization (tree template_id,
 	     that the const qualification is the same.  Since
 	     get_bindings does not try to merge the "this" parameter,
 	     we must do the comparison explicitly.  */
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
-	      && !same_type_p (TREE_VALUE (fn_arg_types),
-			       TREE_VALUE (decl_arg_types)))
-	    continue;
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	    {
+	      if (!same_type_p (TREE_VALUE (fn_arg_types),
+				TREE_VALUE (decl_arg_types)))
+		continue;
+
+	      /* And the ref-qualification.  */
+	      if (type_memfn_rqual (TREE_TYPE (decl))
+		  != type_memfn_rqual (TREE_TYPE (fn)))
+		continue;
+	    }
 
 	  /* Skip the "this" parameter and, for constructors of
 	     classes with virtual bases, the VTT parameter.  A
@@ -2278,6 +2285,11 @@ determine_specialization (tree template_id,
 	  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
 			 decl_arg_types))
             continue;
+
+	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	      && (type_memfn_rqual (TREE_TYPE (decl))
+		  != type_memfn_rqual (TREE_TYPE (fn))))
+	    continue;
 
           // If the deduced arguments do not satisfy the constraints,
           // this is not a candidate.
