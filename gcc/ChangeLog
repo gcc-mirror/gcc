@@ -1,3 +1,11 @@
+2018-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84607
+	* genmatch.c (capture_info::walk_match): Do not mark
+	captured expressions without operands as expr_p given
+	they act more like predicates and should be subject to
+	"lost tail" side-effect preserving.
+
 2018-02-28  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/81611
