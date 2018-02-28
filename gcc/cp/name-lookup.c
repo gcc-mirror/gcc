@@ -1162,11 +1162,10 @@ fields_linear_search (tree klass, tree name, bool want_type)
     {
       tree decl = fields;
 
-      if (!want_type
-	  && TREE_CODE (decl) == FIELD_DECL
+      if (TREE_CODE (decl) == FIELD_DECL
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
 	{
-	  if (tree temp = search_anon_aggr (TREE_TYPE (decl), name))
+	  if (tree temp = search_anon_aggr (TREE_TYPE (decl), name, want_type))
 	    return temp;
 	}
 
@@ -1191,26 +1190,17 @@ fields_linear_search (tree klass, tree name, bool want_type)
   return NULL_TREE;
 }
 
-/* Look for NAME field inside of anonymous aggregate ANON.  */
+/* Look for NAME member inside of anonymous aggregate ANON.  Although
+   such things should only contain FIELD_DECLs, we check that too
+   late, and would give very confusing errors if we weren't
+   permissive here.  */
 
 tree
-search_anon_aggr (tree anon, tree name)
+search_anon_aggr (tree anon, tree name, bool want_type)
 {
   gcc_assert (COMPLETE_TYPE_P (anon));
-  tree ret;
-	  
-  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
-    ret = member_vec_linear_search (member_vec, name);
-  else
-    ret = fields_linear_search (anon, name, false);
-
-  if (ret)
-    {
-      /* Anon members can only contain fields.  */
-      gcc_assert (!STAT_HACK_P (ret) && !DECL_DECLARES_TYPE_P (ret));
-      return ret;
-    }
-  return NULL_TREE;
+  tree ret = get_class_binding_direct (anon, name, want_type);
+  return ret;
 }
 
 /* Look for NAME as an immediate member of KLASS (including
