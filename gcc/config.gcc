@@ -2648,8 +2648,18 @@ rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	extra_headers=altivec.h
 	default_use_cxa_atexit=yes
 	;;
-rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
+rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix71.h rs6000/xcoff.h rs6000/aix-stdint.h"
+	tmake_file="rs6000/t-aix52 t-slibgcc"
+	extra_options="${extra_options} rs6000/aix64.opt"
+	use_collect2=yes
+	thread_file='aix'
+	use_gcc_stdint=wrap
+	extra_headers="altivec.h amo.h"
+	default_use_cxa_atexit=yes
+	;;
+rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
+	tm_file="${tm_file} rs6000/aix.h rs6000/aix72.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes

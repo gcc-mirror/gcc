@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
-   for IBM RS/6000 POWER running AIX V7.1.
-   Copyright (C) 2002-2018 Free Software Foundation, Inc.
+   for IBM RS/6000 POWER running AIX V7.2.
+   Copyright (C) 2002-2017 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -91,7 +91,7 @@ do {									\
 %{mcpu=630: -m620} \
 %{mcpu=970: -m970} \
 %{mcpu=G5: -m970} \
-%{mvsx: %{!mcpu*: -mpwr6}} \
+%{mvsx: %{!mcpu*: -mpwr7}} \
 -many"
 
 #undef	ASM_DEFAULT_SPEC
@@ -107,6 +107,7 @@ do {									\
       builtin_define ("_AIX53");     \
       builtin_define ("_AIX61");     \
       builtin_define ("_AIX71");     \
+      builtin_define ("_AIX72");     \
       TARGET_OS_AIX_CPP_BUILTINS (); \
     }                                \
   while (0)
@@ -132,14 +133,14 @@ do {									\
 #undef RS6000_CPU
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_PPC_GPOPT | MASK_PPC_GFXOPT | MASK_MFCRF)
+#define TARGET_DEFAULT ISA_2_6_MASKS_EMBEDDED
 
 #undef  PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_POWER7
 #undef  PROCESSOR_DEFAULT64
 #define PROCESSOR_DEFAULT64 PROCESSOR_POWER7
 
-/* AIX 7.1 kernel and assembler have necessary support for Altivec and VSX.  */
+/* AIX 7.2 kernel and assembler have necessary support for Altivec and VSX.  */
 #undef OS_MISSING_ALTIVEC
 
 /* Define this macro as a C expression for the initializer of an
@@ -214,9 +215,9 @@ extern long long int    atoll(const char *);
 /* This target defines SUPPORTS_WEAK and TARGET_ASM_NAMED_SECTION,
    but does not have crtbegin/end.  */
 
-#define TARGET_AIX_VERSION 71
+#define TARGET_AIX_VERSION 72
 
-/* AIX 7.1 supports DWARF3 debugging, but XCOFF remains the default.  */
+/* AIX 7.2 supports DWARF3 debugging, but XCOFF remains the default.  */
 #define DWARF2_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
 #define DEBUG_INFO_SECTION	"0x10000"
