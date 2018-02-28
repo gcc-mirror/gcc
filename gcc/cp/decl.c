@@ -7535,10 +7535,7 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 	    error_n (loc, count,
 		     "only %u name provided for structured binding",
 		     "only %u names provided for structured binding", count);
-	  /* Some languages have special plural rules even for large values,
-	     but it is periodic with period of 10, 100, 1000 etc.  */
-	  inform_n (loc, eltscnt > INT_MAX
-			 ? (eltscnt % 1000000) + 1000000 : eltscnt,
+	  inform_n (loc, eltscnt,
 		    "while %qT decomposes into %wu element",
 		    "while %qT decomposes into %wu elements",
 		    type, eltscnt);
