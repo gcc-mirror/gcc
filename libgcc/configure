@@ -5214,10 +5214,46 @@ $as_echo "$libgcc_cv_hidden_visibility_attribute" >&6; }
 
 if test $libgcc_cv_hidden_visibility_attribute = yes; then
     vis_hide='-fvisibility=hidden -DHIDE_EXPORTS'
+
+cat >>confdefs.h <<_ACEOF
+#define AS_HIDDEN_DIRECTIVE $asm_hidden_op
+_ACEOF
+
 else
     vis_hide=
 fi
 
+
+# Check for .cfi_sections .debug_frame support.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for .cfi_sections .debug_frame" >&5
+$as_echo_n "checking for .cfi_sections .debug_frame... " >&6; }
+if test "${libgcc_cv_cfi_sections_directive+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	echo 'int foo (int, char *);' > conftest.c
+	echo 'int bar (int x) { char *y = __builtin_alloca (x); return foo (x + 1, y) + 1; }' >> conftest.c
+	libgcc_cv_cfi_sections_directive=no
+	if { ac_try='${CC-cc} -Werror -g -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions -S conftest.c -o conftest.s 1>&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }; then
+	    if grep "\\.cfi_sections.*\\.debug_frame" conftest.s >/dev/null; then
+		libgcc_cv_cfi_sections_directive=yes
+	    fi
+	fi
+	rm -f conftest.*
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_cfi_sections_directive" >&5
+$as_echo "$libgcc_cv_cfi_sections_directive" >&6; }
+if test $libgcc_cv_cfi_sections_directive = yes; then
+
+$as_echo "#define HAVE_AS_CFI_SECTIONS 1" >>confdefs.h
+
+fi
 
 # See if we have thread-local storage.  We can only test assembler
 # since link-time and run-time tests require the newly built

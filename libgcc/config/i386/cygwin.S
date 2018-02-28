@@ -23,13 +23,11 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_GAS_CFI_SECTIONS_DIRECTIVE
-# define USE_GAS_CFI_DIRECTIVES 1
-	.cfi_sections	.debug_frame
-#else
-# define USE_GAS_CFI_DIRECTIVES 0
-#endif
 #include "i386-asm.h"
+
+#ifdef HAVE_AS_CFI_SECTIONS
+	.cfi_sections	.debug_frame
+#endif
 
 #ifdef L_chkstk
 /* Function prologue calls __chkstk to probe the stack when allocating more
