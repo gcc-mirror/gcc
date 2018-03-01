@@ -1289,6 +1289,8 @@ static int reg_info_size;
 /* Common info about each register.  */
 struct lra_reg *lra_reg_info;
 
+HARD_REG_SET hard_regs_spilled_into;
+
 /* Last register value.	 */
 static int last_reg_value;
 
@@ -1338,6 +1340,7 @@ init_reg_info (void)
   for (i = 0; i < reg_info_size; i++)
     initialize_lra_reg_info_element (i);
   copy_vec.truncate (0);
+  CLEAR_HARD_REG_SET (hard_regs_spilled_into);
 }
 
 

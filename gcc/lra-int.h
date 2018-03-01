@@ -122,6 +122,8 @@ struct lra_reg
 /* References to the common info about each register.  */
 extern struct lra_reg *lra_reg_info;
 
+extern HARD_REG_SET hard_regs_spilled_into;
+
 /* Static info about each insn operand (common for all insns with the
    same ICODE).	 Warning: if the structure definition is changed, the
    initializer for debug_operand_data in lra.c should be changed
