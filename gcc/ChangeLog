@@ -1,3 +1,11 @@
+2018-03-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/84538
+	* alias.c (init_alias_target): Add commentary.
+	(init_alias_analysis): Only give HARD_FRAME_POINTER_REGNUM
+	a unique base value if the frame pointer is not eliminated
+	to the stack pointer.
+
 2018-03-01  Tom de Vries  <tom@codesourcery.com>
 
 	PR rtl-optimization/83327
