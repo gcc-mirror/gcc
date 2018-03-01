@@ -3376,7 +3376,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   gfc_array_info *info;
   tree decl = NULL_TREE;
   tree index;
-  tree tmp;
+  tree base;
   gfc_ss *ss;
   gfc_expr *expr;
   int n;
@@ -3395,6 +3395,12 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   if (info->offset && !integer_zerop (info->offset))
     index = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
 			     index, info->offset);
+
+  base = build_fold_indirect_ref_loc (input_location, info->data);
+
+  /* Use the vptr 'size' field to access the element of a class array.  */
+  if (build_class_array_ref (se, base, index))
+    return;
 
   if (expr && ((is_subref_array (expr)
 		&& GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor)))
@@ -3420,14 +3426,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 	decl = info->descriptor;
     }
 
-  tmp = build_fold_indirect_ref_loc (input_location, info->data);
-
-  /* Use the vptr 'size' field to access a class the element of a class
-     array.  */
-  if (build_class_array_ref (se, tmp, index))
-    return;
-
-  se->expr = gfc_build_array_ref (tmp, index, decl);
+  se->expr = gfc_build_array_ref (base, index, decl);
 }
 
 
