@@ -1,3 +1,9 @@
+2018-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR debug/84645
+	* dwarf2out.c (gen_variable_die): Properly handle late VLA
+	type annotation with LTO when debug was disabled at compile-time.
+
 2018-03-01  Matthew Fortune  <mfortune@gmail.com>
 
 	* config/mips/mips.c (mips_final_prescan_insn): Fix incorrect

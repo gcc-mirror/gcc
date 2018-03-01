@@ -23527,10 +23527,12 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 
 	  /* ???  In LTRANS we cannot annotate early created variably
 	     modified type DIEs without copying them and adjusting all
-	     references to them.  Thus we dumped them again, also add a
-	     reference to them.  */
+	     references to them.  Thus we dumped them again.  Also add a
+	     reference to them but beware of -g0 compile and -g link
+	     in which case the reference will be already present.  */
 	  tree type = TREE_TYPE (decl_or_origin);
 	  if (in_lto_p
+	      && ! get_AT (var_die, DW_AT_type)
 	      && variably_modified_type_p
 		   (type, decl_function_context (decl_or_origin)))
 	    {
