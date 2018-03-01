@@ -1,3 +1,12 @@
+2017-03-01  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	Backport from mainline
+	2017-12-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	with follow-up r255433 commit.
+
+	* gcc.c-torture/unsorted/dump-noaddr.x: Generate dump files in
+	tmpdir.
+
 2018-02-28  Alan Modra  <amodra@gmail.com>
 
 	* lib/prune.exp (prune_gcc_output): Match lower case "in function"
