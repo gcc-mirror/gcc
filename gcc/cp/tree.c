@@ -239,6 +239,7 @@ lvalue_kind (const_tree ref)
       return lvalue_kind (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)));
 
     case NON_DEPENDENT_EXPR:
+    case PAREN_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
 
     case VIEW_CONVERT_EXPR:

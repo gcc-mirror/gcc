@@ -1693,7 +1693,8 @@ force_paren_expr (tree expr)
   if (TREE_CODE (expr) == COMPONENT_REF
       || TREE_CODE (expr) == SCOPE_REF)
     REF_PARENTHESIZED_P (expr) = true;
-  else if (type_dependent_expression_p (expr))
+  else if (type_dependent_expression_p (expr)
+	   || processing_template_decl)
     expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
   else if (VAR_P (expr) && DECL_HARD_REGISTER (expr))
     /* We can't bind a hard register variable to a reference.  */;
@@ -1724,9 +1725,10 @@ force_paren_expr (tree expr)
 tree
 maybe_undo_parenthesized_ref (tree t)
 {
-  if (cxx_dialect >= cxx14
-      && INDIRECT_REF_P (t)
-      && REF_PARENTHESIZED_P (t))
+  if (cxx_dialect < cxx14)
+    return t;
+
+  if (INDIRECT_REF_P (t) && REF_PARENTHESIZED_P (t))
     {
       t = TREE_OPERAND (t, 0);
       while (TREE_CODE (t) == NON_LVALUE_EXPR
@@ -1737,6 +1739,8 @@ maybe_undo_parenthesized_ref (tree t)
 		  || TREE_CODE (t) == STATIC_CAST_EXPR);
       t = TREE_OPERAND (t, 0);
     }
+  else if (TREE_CODE (t) == PAREN_EXPR)
+    t = TREE_OPERAND (t, 0);
 
   return t;
 }
