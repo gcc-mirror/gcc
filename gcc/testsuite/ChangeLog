@@ -1,5 +1,10 @@
 2018-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/84219
+	* gfortran.dg/coarray_47.f90: New test.
+
+2018-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/84538
 	* gfortran.dg/class_array_23.f03: New test.
 
