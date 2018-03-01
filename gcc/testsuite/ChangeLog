@@ -1,6 +1,12 @@
 2018-03-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
-	PR rtl-optimization/84538
+	PR rtl-optimization/84528
+	* gcc.dg/torture/pr84538.c: Rename to...
+	* gcc.dg/torture/pr84528.c: ...this.
+
+2018-03-01  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/84528
 	* gcc.dg/torture/pr84538.c: New test.
 
 2018-02-28  Martin Sebor  <msebor@redhat.com>
