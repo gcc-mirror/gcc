@@ -1,3 +1,14 @@
+2018-03-01  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/84582
+	* semantics.c (force_paren_expr): Create a PAREN_EXPR when in
+	a template.
+	(maybe_undo_parenthesized_ref): Unwrap PAREN_EXPR.
+	* typeck2.c (store_init_value): Call fold_non_dependent_expr instead
+	of instantiate_non_dependent_expr.
+	* tree.c (lvalue_kind): Handle PAREN_EXPR like NON_DEPENDENT_EXPR.
+
 2018-03-01  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84434

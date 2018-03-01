@@ -1,3 +1,11 @@
+2018-03-01  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/84582
+	* g++.dg/cpp1y/auto-fn15.C: Extend testing.
+	* g++.dg/cpp1z/static1.C: New test.
+	* g++.dg/template/static37.C: New test.
+
 2018-03-01  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84434
