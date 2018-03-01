@@ -8224,6 +8224,11 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
             return false;
           if (st->named_type() != NULL)
             st->named_type()->convert(this->gogo_);
+          if (st->is_error_type())
+            {
+              go_assert(saw_errors());
+              return false;
+            }
           int64_t offset;
           this->seen_ = true;
           bool ok = st->struct_type()->backend_field_offset(this->gogo_,
