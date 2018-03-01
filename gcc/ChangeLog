@@ -1,3 +1,9 @@
+2018-03-01  Matthew Fortune  <mfortune@gmail.com>
+
+	* config/mips/mips.c (mips_final_prescan_insn): Fix incorrect
+	XINT with INTVAL.
+	(mips_final_postscan_insn): Likewise.
+
 2018-03-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR rtl-optimization/84528
