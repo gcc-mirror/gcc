@@ -6771,8 +6771,9 @@ add_module_mapping (const char *arg, const char *rel = NULL,
 	    pos++;
 	  if (*pos == ';')
 	    {
-	      while (ISSPACE (*++pos) && *pos)
+	      do
 		pos++;
+	      while (*pos && ISSPACE (*pos));
 	      size_t len = 0;
 	      while (pos[len] && !ISSPACE (pos[len]))
 		len++;

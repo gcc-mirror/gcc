@@ -1,3 +1,8 @@
+2018-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.c (add_module_mapping): Fix double increment.
+
 2018-02-28  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r258084.
