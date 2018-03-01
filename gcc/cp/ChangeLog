@@ -1,3 +1,8 @@
+2018-03-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/71569 - decltype of template.
+	* parser.c (cp_parser_decltype_expr): Handle missing template args.
+
 2018-03-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84596
