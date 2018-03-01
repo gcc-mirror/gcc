@@ -1,3 +1,8 @@
+2018-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79410
+	* g++.dg/torture/pr79410.C: New.
+
 2018-03-01  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82484
