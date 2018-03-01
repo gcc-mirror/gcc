@@ -6047,7 +6047,8 @@ potential_rvalue_constant_expression (tree t)
 bool
 require_potential_constant_expression (tree t)
 {
-  return potential_constant_expression_1 (t, false, true, false, tf_warning_or_error);
+  return potential_constant_expression_1 (t, false, true, false,
+					  tf_warning_or_error);
 }
 
 /* Cross product of the above.  */
@@ -6055,7 +6056,17 @@ require_potential_constant_expression (tree t)
 bool
 require_potential_rvalue_constant_expression (tree t)
 {
-  return potential_constant_expression_1 (t, true, true, false, tf_warning_or_error);
+  return potential_constant_expression_1 (t, true, true, false,
+					  tf_warning_or_error);
+}
+
+/* Like above, but don't consider PARM_DECL a potential_constant_expression.  */
+
+bool
+require_rvalue_constant_expression (tree t)
+{
+  return potential_constant_expression_1 (t, true, true, true,
+					  tf_warning_or_error);
 }
 
 /* Like potential_constant_expression, but don't consider possible constexpr
