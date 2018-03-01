@@ -1,5 +1,13 @@
 2018-03-01  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/84219
+	* target-memory.c (gfc_interpret_derived): Assert that BT_VOID
+	components are caf tokens.
+	(gfc_target_interpret_expr): Treat BT_VOID expressions as
+	integers.
+
+2018-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/84538
 	* class.c (class_array_ref_detected): Remove the condition that
 	there be no reference after the array reference.

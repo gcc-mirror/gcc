@@ -547,6 +547,7 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
       gcc_assert (ptr % 8 == 0);
       ptr = ptr/8 + TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
 
+      gcc_assert (e->ts.type != BT_VOID || cmp->attr.caf_token);
       gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e, true);
     }
 
@@ -600,6 +601,13 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
       result->representation.length =
         gfc_interpret_derived (buffer, buffer_size, result);
       gcc_assert (result->representation.length >= 0);
+      break;
+
+    case BT_VOID:
+      /* This deals with caf_tokens.  */
+      result->representation.length =
+        gfc_interpret_integer (result->ts.kind, buffer, buffer_size,
+			       result->value.integer);
       break;
 
     default:
