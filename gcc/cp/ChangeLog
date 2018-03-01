@@ -1,3 +1,11 @@
+2018-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84596
+	* constexpr.c (require_rvalue_constant_expression): New function.
+	* cp-tree.h: Declare it.
+	* semantics.c (finish_static_assert): Use it instead of
+	require_potential_rvalue_constant_expression.
+
 2018-03-01  Jason Merrill  <jason@redhat.com>
 	    Alexandre Oliva <aoliva@redhat.com>
 

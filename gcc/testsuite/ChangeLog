@@ -1,3 +1,8 @@
+2018-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84596
+	* g++.dg/cpp0x/static_assert14.C: New test.
+
 2018-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79410
