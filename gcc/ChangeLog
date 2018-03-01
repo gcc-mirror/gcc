@@ -1,3 +1,15 @@
+2018-03-01  Tom de Vries  <tom@codesourcery.com>
+
+	PR rtl-optimization/83327
+	* lra-int.h (hard_regs_spilled_into): Declare.
+	* lra.c (hard_regs_spilled_into): Define.
+	(init_reg_info): Init hard_regs_spilled_into.
+	* lra-spills.c (assign_spill_hard_regs): Update hard_regs_spilled_into.
+	* lra-lives.c (make_hard_regno_born, make_hard_regno_dead)
+	(process_bb_lives): Handle hard_regs_spilled_into.
+	(lra_create_live_ranges_1): Before doing liveness propagation, clear
+	regs in all_hard_regs_bitmap if set in hard_regs_spilled_into.
+
 2018-02-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.gcc (powerpc-ibm-aix7.1.*): New stanza.
