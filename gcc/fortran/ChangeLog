@@ -1,3 +1,12 @@
+2018-03-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84538
+	* class.c (class_array_ref_detected): Remove the condition that
+	there be no reference after the array reference.
+	(find_intrinsic_vtab): Remove excess whitespace.
+	* trans-array.c (gfc_conv_scalarized_array_ref): Rename 'tmp'
+	as 'base and call build_class_array_ref earlier.
+
 2018-02-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83901
