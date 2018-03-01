@@ -1,3 +1,9 @@
+2018-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84639
+	* c-attribs.c (common_handle_aligned_attribute): Don't use invalid
+	alignment in computation.
+
 2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_node) <NULLPTR_TYPE>: New case.

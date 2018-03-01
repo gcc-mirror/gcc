@@ -1817,6 +1817,12 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
 
   /* Log2 of specified alignment.  */
   int pow2align = check_user_alignment (align_expr, true);
+  if (pow2align == -1
+      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
 
   /* The alignment in bits corresponding to the specified alignment.  */
   unsigned bitalign = (1U << pow2align) * BITS_PER_UNIT;
@@ -1826,10 +1832,7 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
   unsigned curalign = 0;
   unsigned lastalign = 0;
 
-  if (pow2align == -1
-      || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
-    *no_add_attrs = true;
-  else if (is_type)
+  if (is_type)
     {
       if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	/* OK, modify the type in place.  */;
