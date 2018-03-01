@@ -1,3 +1,9 @@
+2018-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84434
+	* name-lookup.c (member_vec_dedup): Remove manually peeled
+	iteration.  Ignore dependent ctor inheritance.
+
 2018-03-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/71569 - decltype of template.

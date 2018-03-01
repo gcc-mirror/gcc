@@ -1,3 +1,8 @@
+2018-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84434
+	* g++.dg/template/pr84434.C: New.
+
 2018-03-01  Thomas Preud'homme  <thomas.preudhomme@arm.com
 
 	* gcc.target/arm/copysign_softfloat_1.c: Remove dg-add-options and add
