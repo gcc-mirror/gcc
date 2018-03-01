@@ -1,3 +1,8 @@
+2018-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82484
+	* gcc.dg/asan/pr82484.c: New test.
+
 2018-03-01  Richard Biener  <rguenther@suse.de>
 
 	PR debug/84645

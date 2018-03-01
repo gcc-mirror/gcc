@@ -1,3 +1,9 @@
+2018-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/82484
+	* sanopt.c (sanitize_rewrite_addressable_params): Do not handle
+	volatile arguments.
+
 2018-03-01  Richard Biener  <rguenther@suse.de>
 
 	PR debug/84645
