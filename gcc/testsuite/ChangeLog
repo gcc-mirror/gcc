@@ -3,6 +3,9 @@
 	PR c++/84171
 	* g++.dg/warn/Wsign-compare-8.C: New test.
 
+	PR c++/84663
+	* g++.dg/parse/array-size3.C: New test.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84662

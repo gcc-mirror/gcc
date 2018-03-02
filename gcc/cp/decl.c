@@ -8323,7 +8323,7 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
      bits.  See also complete_type which does the same thing for arrays
      of fixed size.  */
   type = *ptype;
-  if (TYPE_DOMAIN (type))
+  if (type != error_mark_node && TYPE_DOMAIN (type))
     {
       elt_type = TREE_TYPE (type);
       TYPE_NEEDS_CONSTRUCTING (type) = TYPE_NEEDS_CONSTRUCTING (elt_type);
