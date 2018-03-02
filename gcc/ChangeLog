@@ -1,3 +1,10 @@
+2018-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR target/82005
+	* config/darwin.c (saved_debug_info_level): New static global.
+	(darwin_asm_lto_start): Disable debug info generation for LTO out.
+	(darwin_asm_lto_end): Restore debug info generation settings.
+
 2018-03-01  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/82484
