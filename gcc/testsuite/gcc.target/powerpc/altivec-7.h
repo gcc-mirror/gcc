@@ -17,7 +17,6 @@ vector unsigned char *vecuchar;
 vector unsigned int *vecuint;
 vector unsigned short *vecushort;
 vector float *vecfloat;
-vector double *vecdouble;
 
 int main ()
 {
@@ -43,8 +42,6 @@ int main ()
   *vecuint++ = vec_lvx(var_int[0], uintp[1]);
   *vecuint++ = vec_vmsumubm(vecuchar[0], vecuchar[1], vecuint[2]);
   *vecuchar++ = vec_xor(vecuchar[0], (vector unsigned char)vecchar[1]);
-  *vecdouble++ = vec_unpackl(vecfloat[0]);
-  *vecdouble++ = vec_unpackh(vecfloat[0]);
 
   return 0;
 }
