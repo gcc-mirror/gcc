@@ -1,5 +1,16 @@
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84614
+	* rtl.h (prev_real_nondebug_insn, next_real_nondebug_insn): New
+	prototypes.
+	* emit-rtl.c (next_real_insn, prev_real_insn): Fix up function
+	comments.
+	(next_real_nondebug_insn, prev_real_nondebug_insn): New functions.
+	* cfgcleanup.c (try_head_merge_bb): Use prev_real_nondebug_insn
+	instead of a loop around prev_real_insn.
+	* combine.c (move_deaths): Use prev_real_nondebug_insn instead of
+	prev_real_insn.
+
 	PR inline-asm/84625
 	* config/i386/i386.c (ix86_print_operand): Use conditional
 	output_operand_lossage instead of gcc_assert if CONST_VECTOR is not
