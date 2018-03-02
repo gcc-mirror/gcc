@@ -1,3 +1,11 @@
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/lto/20080915_0.C: Don't use "dg-lto-options".
+	* g++.dg/lto/20080907_0.C: Use "#pragma GCC" instead of
+	"dg-lto-options".
+	* g++.dg/lto/20101010-1_0.C: Likewise.
+	* g++.dg/lto/20101010-2_0.C: Likewise.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/84628
