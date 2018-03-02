@@ -1,3 +1,8 @@
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56540
+	* gcc.target/ia64/pr56540.c: New test.
+
 2018-03-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/altivec-7-be.c: Remove VSX content, allow
