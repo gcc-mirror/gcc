@@ -1,3 +1,8 @@
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/84625
+	* gcc.target/i386/pr84625.c: New test.
+
 2018-03-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84427
@@ -374,7 +379,7 @@
 	* g++.dg/gomp/pr84556.C: New test.
 	* g++.dg/vect/pr84556.cc: New test.
 
-2018-02-26  Dominique d'Humieres <dominiq@gcc.gnu.org>
+2018-02-26  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/32957
 	* gfortran.dg/c_f_pointer_shape_tests_2.f03: Use explicit KIND c_int.
@@ -420,7 +425,7 @@
 	PR fortran/78238
 	* gfortran.dg/select_type_40.f90: New test.
 
-2018-02-24  Steven G. Kargl <kargl@gcc.gnu.org>
+2018-02-24  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/30792
 	* gfortran.dg/data_substring.f90: New test.
@@ -3410,7 +3415,7 @@
 	PR target/83831
 	* gcc.target/rx/pr83831.c: New tests.
 
-2018-02-14  Jozef Lawrynowicz <jozefl.gcc@gmail.com>
+2018-02-14  Jozef Lawrynowicz  <jozefl.gcc@gmail.com>
 
 	PR target/79242
 	* gcc.target/msp430/pr79242.c: New test.
@@ -3912,7 +3917,7 @@
 	PR c++/71662
 	* g++.dg/cpp0x/scoped_enum7.C: New.
 
-2018-02-07  Christophe Lyon <christophe.lyon@linaro.org>
+2018-02-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR tree-optimization/83008
 	* gcc.dg/cse_recip.c: Add -fno-tree-slp-vectorize.
@@ -4040,7 +4045,7 @@
 	PR middle-end/79966
 	* gfortran.dg/pr79966.f90: New testcase
 
-2018-02-04  Dominique d'Humieres <dominiq@gcc.gnu.org>
+2018-02-04  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	PR fortran/84094
 	* gfortran.dg/associate_23.f90: Fix invalid code.
@@ -4883,7 +4888,7 @@
 	PR c++/81933
 	* g++.dg/cpp1y/constexpr-empty4.C: New test.
 
-2018-01-22  Will Schmidt <will_schmidt@vnet.ibm.com>
+2018-01-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-abs-short-fwrap.c: Add xxspltib to
 	scan-asembler valid instructions list.
@@ -4927,7 +4932,7 @@
 	* gcc.dg/pr83666.c: Likewise.
 
 2018-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	    David Edelsohn <dje.gcc@gmail.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/83946
 	* gcc.target/powerpc/safe-indirect-jump-1.c: Change expected
@@ -5044,7 +5049,7 @@
 	PR c++/81013
 	* g++.dg/inherit/union3.C: New.
 
-2018-01-18  Christophe Lyon <christophe.lyon@linaro.org>
+2018-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.dg/rtl/arm/stl-cond.c: Enable on arm*.
 
@@ -5053,7 +5058,7 @@
 	PR ipa/83619
 	* g++.dg/torture/pr83619.C: New testcase.
 
-2018-01-18  Christophe Lyon <christophe.lyon@linaro.org>
+2018-01-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_arm_arch_FUNC_ok):
 	Add function body to force error messages in some configurations.
@@ -6625,7 +6630,7 @@
 	PR target/83330
 	* gcc.target/i386/pr83330.c: New test.
 
-2018-01-11  Steven G. Kargl <kargl@gcc.gnu.org>
+2018-01-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/79383
 	* gfortran.dg/dtio_31.f03: New test.
@@ -6987,7 +6992,7 @@
 	PR fortran/83741
 	* gfortran.dg/allocate_assumed_charlen_3.f90: New test.
 
-2018-01-08  Chih-Mao Chen <pkmx.tw@gmail.com>
+2018-01-08  Chih-Mao Chen  <pkmx.tw@gmail.com>
 	    Monk Chiang  <sh.chiang04@gmail.com>
 
 	* gcc.target/riscv/save-restore-1.c: New.
@@ -7003,7 +7008,7 @@
 	* g++.dg/pr81308-1.C: New test.
 	* g++.dg/pr81308-2.C: New test.
 
-2018-01-08  Vidya Praveen <vidyapraveen@arm.com>
+2018-01-08  Vidya Praveen  <vidyapraveen@arm.com>
 
 	PR target/83663 - Revert r255946
 	* gcc.target/aarch64/vect-slp-dup.c: New.

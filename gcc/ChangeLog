@@ -1,3 +1,10 @@
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/84625
+	* config/i386/i386.c (ix86_print_operand): Use conditional
+	output_operand_lossage instead of gcc_assert if CONST_VECTOR is not
+	zero vector.
+
 2018-03-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84427
@@ -117,7 +124,7 @@
 	they act more like predicates and should be subject to
 	"lost tail" side-effect preserving.
 
-2018-02-28  Alexandre Oliva <aoliva@redhat.com>
+2018-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR rtl-optimization/81611
 	* auto-inc-dec.c (attempt_change): Move dead note from
@@ -170,7 +177,7 @@
 	'ggc' suffixes.  Change first column width.
 	(timer::print): Fix formatting of the column.
 
-2018-02-27  Alexandre Oliva <aoliva@redhat.com>
+2018-02-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-ssa-live.c (remove_unused_scope_block_p): Do not
 	preserve inline entry blocks for the sake of debug inline
@@ -895,7 +902,7 @@
 	(*bitset_in_memory, *bitinvert_in_memory, *bitclr_in_memory): Convert
 	to named insn, correct maximum insn length.
 
-2018-02-14  Jozef Lawrynowicz <jozefl.gcc@gmail.com>
+2018-02-14  Jozef Lawrynowicz  <jozefl.gcc@gmail.com>
 
 	PR target/79242
 	* machmode.def: Define a complex mode for PARTIAL_INT.
@@ -939,7 +946,7 @@
 	* config/rl78/rl78.c (rl78_handle_func_attribute): Mark
 	ARGS as unused.
 
-2018-02-13  Alexandre Oliva <aoliva@redhat.com>
+2018-02-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/84342
 	PR debug/84319
@@ -986,7 +993,7 @@
 	handling.  Also check whether the anti-range contains any values
 	that satisfy the mask; switch to a VR_RANGE if not.
 
-2018-02-13  Paolo Bonzini <bonzini@gnu.org>
+2018-02-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR sanitizer/84340
 	* internal-fn.def (ASAN_CHECK, ASAN_MARK): Revert changes to fnspec.
@@ -1082,7 +1089,7 @@
 	(vectorizable_condition): Likewise.
 	(vectorizable_comparison): Likewise.
 
-2018-02-12  Paolo Bonzini <bonzini@gnu.org>
+2018-02-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR sanitizer/84307
 	* internal-fn.def (ASAN_CHECK): Fix fnspec to account for return value.
@@ -1162,7 +1169,7 @@
 	* config/rs6000/mmintrin.h (_mm_cmpgt_pi32 [_ARCH_PWR9]):
 	Cast vec_cmpgt result to correct type.
 
-2018-02-11  Alexandre Oliva <aoliva@redhat.com>
+2018-02-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* final.c (final_scan_insn_1): Renamed from...
 	(final_scan_insn): ... this.  New wrapper, to recover
@@ -1263,7 +1270,7 @@
 	* config/s390/s390.c (s390_set_current_function): Invoke
 	s390_indirect_branch_settings also if fndecl didn't change.
 
-2018-02-09  Alexandre Oliva <aoliva@redhat.com>
+2018-02-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/rs6000/rs6000.md (blockage): Set length to zero.
 
@@ -1297,7 +1304,7 @@
 	Formatting fixes.  Verify first that tree_fits_poly_int64_p (op01).
 	Sync some changes from cxx_fold_indirect_ref.
 
-2018-02-09  Alexandre Oliva <aoliva@redhat.com>
+2018-02-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cfgexpand.c (expand_gimple_basic_block): Handle inline entry
 	markers.
@@ -2146,7 +2153,7 @@
 	dependence against last_pending_memory_flush in addition to
 	pending_jump_insns.
 
-2018-01-30  Alexandre Oliva <aoliva@redhat.com>
+2018-01-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-optimization/81611
 	* tree-ssa-dom.c (simple_iv_increment_p): Skip intervening
@@ -2223,7 +2230,7 @@
 	Turning off pre increment/decrement/modify allows IVOPTS to
 	optimize DF/SF loops where the index is an int.
 
-2018-01-29  Richard Biener <rguenther@suse.de>
+2018-01-29  Richard Biener  <rguenther@suse.de>
 	    Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	PR bootstrap/80867
@@ -2231,7 +2238,7 @@
 	targetm.vectorize_builtin_md_vectorized_function if callee is
 	NULL.
 
-2018-01-22 Carl Love <cel@us.ibm.com>
+2018-01-22  Carl Love  <cel@us.ibm.com>
 
 	* doc/extend.tex: Fix typo in second arg in
 	__builtin_bcdadd_{lt|eq|gt|ov} and __builtin_bcdsub_{lt|eq|gt|ov}.
@@ -2368,7 +2375,7 @@
 	* config/arc/constraints.md (Csc): New constraint.
 
 2018-01-26  Claudiu Zissulescu  <claziss@synopsys.com>
-	    John Eric Martin <John.Martin@emmicro-us.com>
+	    John Eric Martin  <John.Martin@emmicro-us.com>
 
 	* config/arc/arc-protos.h: Add arc_is_jli_call_p proto.
 	* config/arc/arc.c (_arc_jli_section): New struct.
@@ -2810,7 +2817,7 @@
 
 	* config/rl78/rl78.md (smaxdi3): New define_expand.
 
-2018-01-22 Carl Love <cel@us.ibm.com>
+2018-01-22  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (ST_ELEMREV_V1TI, LD_ELEMREV_V1TI,
 	LVX_V1TI): Add macro expansion.
@@ -2855,7 +2862,7 @@
 	Move TARGET_PORTABLE_RUNTIME check after TARGET_64BIT check.
 
 2018-01-21  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
-	    David Edelsohn <dje.gcc@gmail.com>
+	    David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/83946
 	* config/rs6000/rs6000.md (*call_indirect_nonlocal_sysv<mode>):
