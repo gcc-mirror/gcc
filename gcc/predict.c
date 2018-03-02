@@ -4204,7 +4204,7 @@ test_prediction_value_range ()
 {
   branch_predictor predictors[] = {
 #include "predict.def"
-    {NULL, -1U}
+    { NULL, PROB_UNINITIALIZED }
   };
 
   for (unsigned i = 0; predictors[i].name != NULL; i++)
