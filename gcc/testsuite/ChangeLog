@@ -1,3 +1,7 @@
+2018-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-alias-check-13.c: New test.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84614

@@ -1,3 +1,9 @@
+2018-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence)
+	(vect_analyze_data_ref_access): Use loop->safe_len rather than
+	loop->force_vectorize to check whether there is no alias.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84614
