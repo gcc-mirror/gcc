@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2018-02-25 09:00+0100\n"
+"PO-Revision-Date: 2018-03-03 00:30+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -25853,70 +25853,59 @@ msgid "integer overflow in expression %qE of type %qT results in %qE"
 msgstr "desbordamiento entero en la expresión %qE de tipo %qT da %qE"
 
 #: c-family/c-warn.c:95
-#, fuzzy, gcc-internal-format
-#| msgid "integer overflow in preprocessor expression"
+#, gcc-internal-format
 msgid "integer overflow in expression of type %qT results in %qE"
-msgstr "desbordamiento entero en expresión del preprocesador"
+msgstr "desbordamiento entero en expresión de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:101
-#, fuzzy, gcc-internal-format
-#| msgid "floating point overflow in expression"
+#, gcc-internal-format
 msgid "floating point overflow in expression %qE of type %qT results in %qE"
-msgstr "desbordamiento de coma flotante en la expresión"
+msgstr "desbordamiento de coma flotante en la expresión %qE de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:103
-#, fuzzy, gcc-internal-format
-#| msgid "floating point overflow in expression"
+#, gcc-internal-format
 msgid "floating point overflow in expression of type %qT results in %qE"
-msgstr "desbordamiento de coma flotante en la expresión"
+msgstr "desbordamiento de coma flotante en expresión de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:109
-#, fuzzy, gcc-internal-format
-#| msgid "fixed-point overflow in expression"
+#, gcc-internal-format
 msgid "fixed-point overflow in expression %qE of type %qT results in %qE"
-msgstr "desbordamiento de coma fija en la expresión"
+msgstr "desbordamiento de coma fija en la expresión %qE de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:111
-#, fuzzy, gcc-internal-format
-#| msgid "fixed-point overflow in expression"
+#, gcc-internal-format
 msgid "fixed-point overflow in expression of type %qT results in %qE"
-msgstr "desbordamiento de coma fija en la expresión"
+msgstr "desbordamiento de coma fija en expresión de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:117
-#, fuzzy, gcc-internal-format
-#| msgid "vector overflow in expression"
+#, gcc-internal-format
 msgid "vector overflow in expression %qE of type %qT results in %qE"
-msgstr "desbordamiento vectorial en la expresión"
+msgstr "desbordamiento vectorial en la expresión %qE de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:119
-#, fuzzy, gcc-internal-format
-#| msgid "vector overflow in expression"
+#, gcc-internal-format
 msgid "vector overflow in expression of type %qT results in %qE"
-msgstr "desbordamiento vectorial en la expresión"
+msgstr "desbordamiento vectorial en expresión de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:126
-#, fuzzy, gcc-internal-format
-#| msgid "complex integer overflow in expression"
+#, gcc-internal-format
 msgid "complex integer overflow in expression %qE of type %qT results in %qE"
-msgstr "desbordamiento de entero complejo en la expresión"
+msgstr "desbordamiento de entero complejo en la expresión %qE de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:128
-#, fuzzy, gcc-internal-format
-#| msgid "complex integer overflow in expression"
+#, gcc-internal-format
 msgid "complex integer overflow in expression of type %qT results in %qE"
-msgstr "desbordamiento de entero complejo en la expresión"
+msgstr "desbordamiento de entero complejo en expresión de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:132
-#, fuzzy, gcc-internal-format
-#| msgid "complex floating point overflow in expression"
+#, gcc-internal-format
 msgid "complex floating point overflow in expression %qE of type %qT results in %qE"
-msgstr "desbordamiento de coma flotante compleja en la expresión"
+msgstr "desbordamiento de coma flotante compleja en la expresión %qE de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:134
-#, fuzzy, gcc-internal-format
-#| msgid "complex floating point overflow in expression"
+#, gcc-internal-format
 msgid "complex floating point overflow in expression of type %qT results in %qE"
-msgstr "desbordamiento de coma flotante compleja en la expresión"
+msgstr "desbordamiento de coma flotante compleja en expresión de tipo %qT da como resultado %qE"
 
 #: c-family/c-warn.c:216
 #, gcc-internal-format
@@ -25949,16 +25938,14 @@ msgid "logical %<and%> of equal expressions"
 msgstr "un %<and%> de expresiones equivalentes"
 
 #: c-family/c-warn.c:384
-#, fuzzy, gcc-internal-format
-#| msgid "self-comparison always evaluates to false"
+#, gcc-internal-format
 msgid "bitwise comparison always evaluates to false"
-msgstr "autocomparación siempre falsa"
+msgstr "comparación de bits siempre falsa"
 
 #: c-family/c-warn.c:387
-#, fuzzy, gcc-internal-format
-#| msgid "self-comparison always evaluates to true"
+#, gcc-internal-format
 msgid "bitwise comparison always evaluates to true"
-msgstr "autocomparación siempre verdadera"
+msgstr "comparación de bits siempre verdadera"
 
 #: c-family/c-warn.c:441
 #, gcc-internal-format
@@ -26002,10 +25989,9 @@ msgid "dereferencing type-punned pointer might break strict-aliasing rules"
 msgstr "la dereferencia de punteros %<type-punned%>  puede romper las reglas de alias estricto"
 
 #: c-family/c-warn.c:795
-#, fuzzy, gcc-internal-format
-#| msgid "argument to %<sizeof%> in %qD call is the same expression as the source; did you mean to remove the addressof?"
+#, gcc-internal-format
 msgid "argument to %<sizeof%> in %qD call is the same expression as the source; did you mean to use the size of the destination?"
-msgstr "el argumento de %<sizeof%> en la llamada %qD es la misma expresión que el origen; ¿pretendía quitar la dirección de?"
+msgstr "el argumento de %<sizeof%> en la llamada %qD es la misma expresión que el origen; ¿pretendía usar el tamaño del destino?"
 
 #: c-family/c-warn.c:826
 #, gcc-internal-format
@@ -26123,40 +26109,34 @@ msgid "conversion to %qT from boolean expression"
 msgstr "la conversión de %qT desde la expresión booleana"
 
 #: c-family/c-warn.c:1109 c-family/c-warn.c:1185
-#, fuzzy, gcc-internal-format
-#| msgid "conversion from %qT to %qT discards qualifiers"
+#, gcc-internal-format
 msgid "conversion from %qT to %qT changes value from %qE to %qE"
-msgstr "la conversión de %qT a %qT descarta los calificadores"
+msgstr "la conversión de %qT a %qT cambia el valor de %qE a %qE"
 
 #: c-family/c-warn.c:1113 c-family/c-warn.c:1193
-#, fuzzy, gcc-internal-format
-#| msgid "conversion from %qT to %qT is ambiguous"
+#, gcc-internal-format
 msgid "conversion from %qT to %qT changes the value of %qE"
-msgstr "la conversión de %qT a %qT es ambigua"
+msgstr "la conversión de %qT a %qT cambia el valor de %qE"
 
 #: c-family/c-warn.c:1133
-#, fuzzy, gcc-internal-format
-#| msgid "conversion to %qT from %qT discards imaginary component"
+#, gcc-internal-format
 msgid "conversion from %qT to to %qT discards imaginary component"
-msgstr "la conversión a %qT de %qT descarta la componente imaginaria"
+msgstr "la conversión de %qT a %qT descarta la componente imaginaria"
 
 #: c-family/c-warn.c:1146
-#, fuzzy, gcc-internal-format
-#| msgid "conversion to %qT from %qT may alter its value"
+#, gcc-internal-format
 msgid "conversion from %qT to %qT may change value"
-msgstr "la conversión de %qT desde %qT puede alterar su valor"
+msgstr "la conversión de %qT a %qT puede cambiar el valor"
 
 #: c-family/c-warn.c:1206 c-family/c-warn.c:1223 c-family/c-warn.c:1240
-#, fuzzy, gcc-internal-format
-#| msgid "implicit conversion from %qT to %qT when passing argument to function"
+#, gcc-internal-format
 msgid "overflow in conversion from %qT to %qT changes value from %qE to %qE"
-msgstr "conversión implícita de %qT a %qT al pasar el argumento a la función"
+msgstr "el desbordamiento en la conversión de %qT a %qT cambia el valor de %qE a %qE"
 
 #: c-family/c-warn.c:1211 c-family/c-warn.c:1228 c-family/c-warn.c:1245
-#, fuzzy, gcc-internal-format
-#| msgid "narrowing conversion of %qE from %qT to %qT inside { }"
+#, gcc-internal-format
 msgid "overflow in conversion from %qT to %qT changes the value of %qE"
-msgstr "conversión estrechadora de %qE desde %qT a %qT dentro de { }"
+msgstr "el desbordamiento en la conversión de %qT a %qT cambia el valor de %qE"
 
 #: c-family/c-warn.c:1275
 #, gcc-internal-format
@@ -26545,16 +26525,14 @@ msgid "optimization attribute on %qD follows definition but the attribute doesn%
 msgstr "el atributo de optimización en %qD después de la definición pero el atributo no concuerda"
 
 #: c-family/c-warn.c:2244
-#, fuzzy, gcc-internal-format
-#| msgid "inline declaration of %qD follows declaration with attribute noinline"
+#, gcc-internal-format
 msgid "inline declaration of %qD follows declaration with attribute %qs"
-msgstr "declaración inline de %qD después de una declaración con atributo noinline"
+msgstr "declaración inline de %qD después de una declaración con atributo %qs"
 
 #: c-family/c-warn.c:2249
-#, fuzzy, gcc-internal-format
-#| msgid "declaration of %q+D with attribute noinline follows inline declaration "
+#, gcc-internal-format
 msgid "declaration of %q+D with attribute %qs follows inline declaration "
-msgstr "declaración de %q+D con atributo noinline después de la declaración inline "
+msgstr "declaración de %q+D con atributo %qs después de declaración inline "
 
 #: c-family/c-warn.c:2296
 #, gcc-internal-format
@@ -26587,7 +26565,7 @@ msgstr "esta condición tiene bifurcaciones idénticas"
 #: c-family/c-warn.c:2575
 #, gcc-internal-format
 msgid "macro expands to multiple statements"
-msgstr ""
+msgstr "la macro se expande en múltiples sentencias"
 
 #: c-family/c-warn.c:2576
 #, gcc-internal-format
@@ -26627,12 +26605,12 @@ msgstr "Valor no admitido para mmpy-option"
 #: common/config/arm/arm-common.c:259
 #, gcc-internal-format, gfc-internal-format
 msgid "%%:target_mode_check takes an even number of parameters"
-msgstr ""
+msgstr "%%:target_mode_check toma un número par de parámetros"
 
 #: common/config/arm/arm-common.c:269
 #, gcc-internal-format, gfc-internal-format
 msgid "unrecognized option passed to %%:target_mode_check"
-msgstr ""
+msgstr "se pasa opción no reconocida a %%:target_mode_check"
 
 #: common/config/arm/arm-common.c:315 common/config/arm/arm-common.c:359
 #: common/config/arm/arm-common.c:402 config/aarch64/aarch64.c:10497
@@ -26642,10 +26620,9 @@ msgstr "los argumentos válidos son: %s; ¿quiso decir %qs?"
 
 #: common/config/arm/arm-common.c:318 common/config/arm/arm-common.c:362
 #: common/config/arm/arm-common.c:405
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "valid arguments to %qs are: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "valid arguments are: %s"
-msgstr "los argumentos válidos para %qs son: %s"
+msgstr "los argumentos válidos son: %s"
 
 #: common/config/arm/arm-common.c:342 common/config/arm/arm-common.c:386
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -26654,51 +26631,45 @@ msgid "unrecognized %s target: %s"
 msgstr "no se reconoce el indicador de borde: '%s'"
 
 #: common/config/arm/arm-common.c:421
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unrecognized enum value: '%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized -mfpu target: %s"
-msgstr "no se reconoce el valor de enumerado '%s'"
+msgstr "no se reconoce el objetivo de -mfpu: %s"
 
 #: common/config/arm/arm-common.c:449
 #, fuzzy, gcc-internal-format
-#| msgid "%s does not support %s"
+#| msgid "%s does not support feature %qs"
 msgid "%qs does not support feature %qs"
-msgstr "%s no admite %s"
+msgstr "%s no admite la característica %qs"
 
 #: common/config/arm/arm-common.c:460
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments are: %s; did you mean %qs?"
+#, gcc-internal-format
 msgid "valid feature names are: %s; did you mean %qs?"
-msgstr "los argumentos válidos son: %s; ¿quiso decir %qs?"
+msgstr "los nombres de característica válidos son: %s; ¿quiso decir %qs?"
 
 #: common/config/arm/arm-common.c:463
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid feature modifier in target %s %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "valid feature names are: %s"
-msgstr "modificador de característica no válido en el objetivo %s %qs"
+msgstr "los nombres de característica válidos son: %s"
 
 #: common/config/arm/arm-common.c:481
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qD does not have integral or enumeration type"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not take any feature options"
-msgstr "%qD no tiene tipo integral o de enumeración"
+msgstr "%s no toma ninguna opción de característica"
 
 #: common/config/arm/arm-common.c:572
 #, gcc-internal-format, gfc-internal-format
 msgid "%%:canon_for_mlib takes 1 or more pairs of parameters"
-msgstr ""
+msgstr "%%:canon_for_mlib toma 1 o más pares de parámetros"
 
 #: common/config/arm/arm-common.c:586
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unrecognized option -fdisable"
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized operand to %%:canon_for_mlib"
-msgstr "no se reconoce la opción -fdisable"
+msgstr "no se reconoce el operando para %%:canon_for_mlib"
 
 #: common/config/arm/arm-common.c:932
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unrecognized command line option %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "unrecognized operand to %%:asm_auto_mfpu"
-msgstr "no se reconoce la opción de línea de órdenes %qs"
+msgstr "no se reconoce el operando para %%:asm_auto_mfpu"
 
 #: common/config/bfin/bfin-common.c:304 common/config/m68k/m68k-common.c:60
 #, gcc-internal-format, gfc-internal-format
@@ -27053,10 +27024,9 @@ msgid "invalid alignment for %<#pragma align%>, ignoring"
 msgstr "alineación no válida para %<#pragma align%>, se descarta"
 
 #: config/sol2-c.c:115
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma align%> must appear before the declaration of %D, ignoring"
+#, gcc-internal-format
 msgid "%<#pragma align%> must appear before the declaration of %qD, ignoring"
-msgstr "%<#pragma align%> debe aparecer antes de la declaración de %D, se descarta"
+msgstr "%<#pragma align%> debe aparecer antes de la declaración de %qD, se descarta"
 
 #: config/sol2-c.c:127 config/sol2-c.c:139
 #, gcc-internal-format
@@ -27215,10 +27185,9 @@ msgid "switch -mcpu=%s conflicts with -march=%s switch"
 msgstr "la opción -mcpu=%s genera un conflicto con la opción -march=%s"
 
 #: config/aarch64/aarch64.c:10761
-#, fuzzy, gcc-internal-format
-#| msgid "Assembler does not support -mabi=ilp32"
+#, gcc-internal-format
 msgid "assembler does not support -mabi=ilp32"
-msgstr "El ensamblador no tiene soporte para -mabi=ilp32"
+msgstr "el ensamblador no tiene soporte para -mabi=ilp32"
 
 #: config/aarch64/aarch64.c:10768
 #, gcc-internal-format
@@ -27228,93 +27197,80 @@ msgstr ""
 #: config/aarch64/aarch64.c:10830
 #, gcc-internal-format
 msgid "code model %qs with -f%s"
-msgstr ""
+msgstr "modelo de código %qs con -f%s"
 
 #: config/aarch64/aarch64.c:10993
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"arch=\")%> attribute"
+#, gcc-internal-format
 msgid "missing name in %<target(\"arch=\")%> pragma or attribute"
-msgstr "valor erróneo (%qs) para el atributo %<target(\"arch=\")%>"
+msgstr "falta el nombre en atributo %<target(\"arch=\")%>"
 
 #: config/aarch64/aarch64.c:10996
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"arch=\")%> attribute"
+#, gcc-internal-format
 msgid "invalid name (\"%s\") in %<target(\"arch=\")%> pragma or attribute"
-msgstr "valor erróneo (%qs) para el atributo %<target(\"arch=\")%>"
+msgstr "nombre no válido (\"%s\") en el pragma o atributo %<target(\"arch=\")%>"
 
 #: config/aarch64/aarch64.c:11000 config/aarch64/aarch64.c:11039
 #: config/aarch64/aarch64.c:11112
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"arch=\")%> attribute"
+#, gcc-internal-format
 msgid "invalid value (\"%s\") in %<target()%> pragma or attribute"
-msgstr "valor erróneo (%qs) para el atributo %<target(\"arch=\")%>"
+msgstr "valor no válido (\"%s\") en el pragma o atributo %<target()%>"
 
 #: config/aarch64/aarch64.c:11032
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"arch=\")%> attribute"
+#, gcc-internal-format
 msgid "missing name in %<target(\"cpu=\")%> pragma or attribute"
-msgstr "valor erróneo (%qs) para el atributo %<target(\"arch=\")%>"
+msgstr "falta el nombre en el pragma o atributo %<target(\"cpu=\")%>"
 
 #: config/aarch64/aarch64.c:11035
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"arch=\")%> attribute"
+#, gcc-internal-format
 msgid "invalid name (\"%s\") in %<target(\"cpu=\")%> pragma or attribute"
-msgstr "valor erróneo (%qs) para el atributo %<target(\"arch=\")%>"
+msgstr "nombre no válido (\"%s\") en el pragma o atributo %<target(\"cpu=\")%>"
 
 #: config/aarch64/aarch64.c:11068
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"tune=\")%> attribute"
+#, gcc-internal-format
 msgid "invalid name (\"%s\") in %<target(\"tune=\")%> pragma or attribute"
-msgstr "valor erróneo (%qs) para el atributo %<target(\"tune=\")%>"
+msgstr "nombre no válido (\"%s\") en el pragma o atributo %<target(\"tune=\")%>"
 
 #: config/aarch64/aarch64.c:11108
-#, fuzzy, gcc-internal-format
-#| msgid "missing %<=%> (after %<getter%> attribute)"
+#, gcc-internal-format
 msgid "missing value in %<target()%> pragma or attribute"
-msgstr "falta un %<=%> (después del atributo %<getter%>)"
+msgstr "falta el valor en el pragma o atributo %<target()%>"
 
 #: config/aarch64/aarch64.c:11161 config/aarch64/aarch64.c:11338
-#, fuzzy, gcc-internal-format
-#| msgid "malformed target %s value"
+#, gcc-internal-format
 msgid "malformed %<target()%> pragma or attribute"
-msgstr "valor del objetivo %s mal formado"
+msgstr "pragma o atributo %<target()%> mal formado"
 
 #: config/aarch64/aarch64.c:11209
-#, fuzzy, gcc-internal-format
-#| msgid "target %s %qs does not accept an argument"
+#, gcc-internal-format
 msgid "pragma or attribute %<target(\"%s\")%> does not accept an argument"
-msgstr "el objetivo %s %qs no acepta un argumento"
+msgstr "el pragma o atributo %<target(\"%s\")%> no acepta un argumento"
 
 #: config/aarch64/aarch64.c:11217
-#, fuzzy, gcc-internal-format
-#| msgid "target %s %qs does not allow a negated form"
+#, gcc-internal-format
 msgid "pragma or attribute %<target(\"%s\")%> does not allow a negated form"
-msgstr "el objetivo %s %qs no permite una forma negada"
+msgstr "el pragma o atributo %<target(\"%s\")%> no acepta forma negada"
 
 #: config/aarch64/aarch64.c:11271
-#, fuzzy, gcc-internal-format
-#| msgid "attribute(target(\"%s\")) is unknown"
+#, gcc-internal-format
 msgid "pragma or attribute %<target(\"%s=%s\")%> is not valid"
-msgstr "se desconoce attribute(target(\"%s\"))"
+msgstr "el pragma o atributo %<target(\"%s=%s\")%> no es válido"
 
 #: config/aarch64/aarch64.c:11328 config/arm/arm.c:30726
 #: config/i386/i386.c:5412 config/powerpcspe/powerpcspe.c:39759
 #: config/rs6000/rs6000.c:36930 config/s390/s390.c:15522
 #, gcc-internal-format
 msgid "attribute %<target%> argument not a string"
-msgstr "el argumento del atributo %<target%>  no es una cadena"
+msgstr "el argumento del atributo %<target%> no es una cadena"
 
 #: config/aarch64/aarch64.c:11355
-#, fuzzy, gcc-internal-format
-#| msgid "attribute(target(\"%s\")) is unknown"
+#, gcc-internal-format
 msgid "pragma or attribute %<target(\"%s\")%> is not valid"
-msgstr "se desconoce attribute(target(\"%s\"))"
+msgstr "el pragma o atributo %<target(\"%s\")%> no es válido"
 
 #: config/aarch64/aarch64.c:11364
-#, fuzzy, gcc-internal-format
-#| msgid "bad value (%qs) for %<target(\"arch=\")%> attribute"
+#, gcc-internal-format
 msgid "malformed %<target(\"%s\")%> pragma or attribute"
-msgstr "valor erróneo (%qs) para el atributo %<target(\"arch=\")%>"
+msgstr "pragma o atributo %<target(\"%s\")%> mal formado"
 
 #: config/aarch64/aarch64.c:13422
 #, gcc-internal-format
@@ -27419,22 +27375,19 @@ msgid "PIC is not supported for %s. Generating non-PIC code only.."
 msgstr "No se admite PIC para %s. Se generará soloamente código no PIC.."
 
 #: config/arc/arc.c:965
-#, fuzzy, gcc-internal-format
-#| msgid "value of -mfixed-range must have form REG1-REG2"
+#, gcc-internal-format
 msgid "value of -mirq-ctrl-saved must have form R0-REGx"
-msgstr "el valor de -mfixed-range debe ser de la forma REG1-REG2"
+msgstr "el valor de -mirq-ctrl-saved debe ser de la forma R0-REGx"
 
 #: config/arc/arc.c:977
-#, fuzzy, gcc-internal-format
-#| msgid "first argument must be []byte"
+#, gcc-internal-format
 msgid "first register must be R0"
-msgstr "el primer argumento debe ser []byte"
+msgstr "el primer registro debe ser R0"
 
 #: config/arc/arc.c:996
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "operand 1 must be a hard register"
+#, gcc-internal-format, gfc-internal-format
 msgid "last register name %s must be an odd register"
-msgstr "el operando 1 debe ser un registro fijo"
+msgstr "el nombre %s del último registro debe ser un registro impar"
 
 #: config/arc/arc.c:1004 config/ia64/ia64.c:6054 config/pa/pa.c:483
 #: config/sh/sh.c:8288 config/spu/spu.c:4941
@@ -27486,10 +27439,9 @@ msgid "argument of %qE attribute is not \"ilink1\" or \"ilink2\""
 msgstr "el argumento del atributo %qE no es \"ilink1\" o \"ilink2\""
 
 #: config/arc/arc.c:2025
-#, fuzzy, gcc-internal-format
-#| msgid "argument of %qE attribute is not \"ilink1\" or \"ilink2\""
+#, gcc-internal-format
 msgid "argument of %qE attribute is not \"ilink\" or \"firq\""
-msgstr "el argumento del atributo %qE no es \"ilink1\" o \"ilink2\""
+msgstr "el argumento del atributo %qE no es \"ilink\" o \"firq\""
 
 #: config/arc/arc.c:2039 config/arm/arm.c:6832 config/arm/arm.c:6850
 #: config/arm/arm.c:7025 config/avr/avr.c:9726 config/avr/avr.c:9742
@@ -27614,16 +27566,14 @@ msgid "insn addresses not freed"
 msgstr "direcciones de insn no liberadas"
 
 #: config/arc/arc.c:11049
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only available for 32-bit"
+#, gcc-internal-format
 msgid "%qE attribute only valid for ARCv2 architecture"
-msgstr "el atributo %qE solamente está disponible para 64-bit"
+msgstr "el atributo %qE solamente es válido para la arquitectura ARCv2"
 
 #: config/arc/arc.c:11057 config/arc/arc.c:11096
-#, fuzzy, gcc-internal-format
-#| msgid "argument of %qE attribute is not \"ilink\""
+#, gcc-internal-format
 msgid "argument of %qE attribute is missing"
-msgstr "el argumento del atributo %qE no es \"ilink\""
+msgstr "falta el argumento del atributo %qE"
 
 #: config/arc/arc.c:11068 config/arc/arc.c:11107 config/avr/avr.c:9798
 #, gcc-internal-format
@@ -27631,10 +27581,9 @@ msgid "%qE attribute allows only an integer constant argument"
 msgstr "el atributo %qE sólo permite una constante entera como argumento"
 
 #: config/arc/arc.c:11088
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute is only valid on %<struct%> type"
+#, gcc-internal-format
 msgid "%qE attribute only valid for ARC EM architecture"
-msgstr "el atributo %qE solo es válido con tipos %<struct%>"
+msgstr "el atributo %qE solo es válido para la arquitectura ARC EM"
 
 #: config/arm/arm-builtins.c:2370
 #, gcc-internal-format
@@ -27849,10 +27798,9 @@ msgid "RTP PIC is incompatible with Thumb"
 msgstr "El PIC de RTP es incompatible con Thumb"
 
 #: config/arm/arm.c:2902
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "-mpure-code only supports non-pic code on armv7-m targets"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s only supports non-pic code on M-profile targets with the MOVT instruction"
-msgstr "-mpure-code solo admite código no pic en los objetivos armv7-m"
+msgstr "%s solo admite códico no pic en objetivos de perfil M con instrucción MOVT"
 
 #: config/arm/arm.c:3012
 #, gcc-internal-format
@@ -28067,10 +28015,9 @@ msgid "-fstack-check=specific for Thumb-1"
 msgstr "-fstack-check=specific para Thumb-1"
 
 #: config/arm/arm.c:30750
-#, fuzzy, gcc-internal-format
-#| msgid "invalid fpu for attribute(target(\"%s\"))"
+#, gcc-internal-format
 msgid "invalid fpu for target attribute or pragma %qs"
-msgstr "fpu no válida para el atributo(objetivo(\"%s\"))"
+msgstr "fpu no válida para el atributo o pragma del objetivo %qs"
 
 #. This doesn't really make sense until we support
 #. general dynamic selection of the architecture and all
