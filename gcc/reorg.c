@@ -276,6 +276,7 @@ stop_search_p (rtx_insn *insn, int labels_p)
     {
     case NOTE:
     case CALL_INSN:
+    case DEBUG_INSN:
       return 0;
 
     case CODE_LABEL:
@@ -1493,6 +1494,9 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
       if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 	continue;
 
+      if (GET_CODE (trial) == DEBUG_INSN)
+	continue;
+
       if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
 	{
 	  /* Stop for a CALL and its delay slots because it is difficult to
@@ -1586,6 +1590,9 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
 
       pat = PATTERN (trial);
       if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+	continue;
+
+      if (GET_CODE (trial) == DEBUG_INSN)
 	continue;
 
       if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
@@ -2020,6 +2027,10 @@ fill_simple_delay_slots (int non_jumps_p)
 	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 		continue;
 
+	      /* And DEBUG_INSNs never go into delay slots.  */
+	      if (GET_CODE (trial) == DEBUG_INSN)
+		continue;
+
 	      /* Check for resource conflict first, to avoid unnecessary
 		 splitting.  */
 	      if (! insn_references_resource_p (trial, &set, true)
@@ -2142,6 +2153,10 @@ fill_simple_delay_slots (int non_jumps_p)
 	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
 		continue;
 
+	      /* And DEBUG_INSNs do not go in delay slots.  */
+	      if (GET_CODE (trial) == DEBUG_INSN)
+		continue;
+
 	      /* If this already has filled delay slots, get the insn needing
 		 the delay slots.  */
 	      if (GET_CODE (pat) == SEQUENCE)
@@ -2211,8 +2226,8 @@ fill_simple_delay_slots (int non_jumps_p)
 	      && ! can_throw_internal (trial))
 	    {
 	      /* See comment in relax_delay_slots about necessity of using
-		 next_real_insn here.  */
-	      rtx_insn *new_label = next_real_insn (next_trial);
+		 next_real_nondebug_insn here.  */
+	      rtx_insn *new_label = next_real_nondebug_insn (next_trial);
 
 	      if (new_label != 0)
 		new_label = get_label_before (new_label, JUMP_LABEL (trial));
@@ -2404,6 +2419,9 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 
       pat = PATTERN (trial);
       if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+	continue;
+
+      if (GET_CODE (trial) == DEBUG_INSN)
 	continue;
 
       /* If TRIAL conflicts with the insns ahead of it, we lose.  Also,
@@ -3309,10 +3327,10 @@ relax_delay_slots (rtx_insn *first)
 
       /* If the first insn at TARGET_LABEL is redundant with a previous
 	 insn, redirect the jump to the following insn and process again.
-	 We use next_real_insn instead of next_active_insn so we
+	 We use next_real_nondebug_insn instead of next_active_insn so we
 	 don't skip USE-markers, or we'll end up with incorrect
 	 liveness info.  */
-      trial = next_real_insn (target_label);
+      trial = next_real_nondebug_insn (target_label);
       if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
 	  && redundant_insn (trial, insn, vNULL)
 	  && ! can_throw_internal (trial))
@@ -3327,7 +3345,7 @@ relax_delay_slots (rtx_insn *first)
 	    {
 	      /* Insert the special USE insn and update dataflow info.
 		 We know "trial" is an insn here as it is the output of
-		 next_real_insn () above.  */
+		 next_real_nondebug_insn () above.  */
 	      update_block (as_a <rtx_insn *> (trial), tmp);
 	      
 	      /* Now emit a label before the special USE insn, and
