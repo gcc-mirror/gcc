@@ -18603,10 +18603,10 @@ type_unification_real (tree tparms,
 	  if (DECL_P (parm))
 	    input_location = DECL_SOURCE_LOCATION (parm);
 	  arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
-	  if (!uses_template_parms (arg))
+	  if (arg != error_mark_node && !uses_template_parms (arg))
 	    arg = convert_template_argument (parm, arg, targs, complain,
 					     i, NULL_TREE);
-	  else if (saw_undeduced < 2)
+	  else if (saw_undeduced == 1)
 	    arg = NULL_TREE;
 	  else
 	    arg = error_mark_node;
