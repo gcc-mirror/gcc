@@ -1,5 +1,8 @@
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR ipa/84628
+	* gcc.dg/pr84628.c: New test.
+
 	PR target/56540
 	* gcc.target/ia64/pr56540.c: New test.
 

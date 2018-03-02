@@ -1,4 +1,12 @@
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR ipa/84628
+	* expr.c (expand_expr_real_1) <case CALL_EXPR>: Don't emit diagnostics
+	for error or warning attributes if CALL_FROM_THUNK_P is set.
+	Formatting fixes.
+
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56540
 	* config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Predefine
