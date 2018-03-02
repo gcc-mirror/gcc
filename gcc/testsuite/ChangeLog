@@ -1,5 +1,8 @@
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84614
+	* gcc.dg/pr84614.c: New test.
+
 	PR inline-asm/84625
 	* gcc.target/i386/pr84625.c: New test.
 

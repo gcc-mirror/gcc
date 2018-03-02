@@ -2448,9 +2448,7 @@ try_head_merge_bb (basic_block bb)
       max_match--;
       if (max_match == 0)
 	return false;
-      do
-	e0_last_head = prev_real_insn (e0_last_head);
-      while (DEBUG_INSN_P (e0_last_head));
+      e0_last_head = prev_real_nondebug_insn (e0_last_head);
     }
 
   if (max_match == 0)

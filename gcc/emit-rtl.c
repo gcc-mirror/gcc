@@ -3597,7 +3597,7 @@ prev_nonnote_nondebug_insn_bb (rtx_insn *insn)
   return insn;
 }
 
-/* Return the next INSN, CALL_INSN or JUMP_INSN after INSN;
+/* Return the next INSN, CALL_INSN, JUMP_INSN or DEBUG_INSN after INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
@@ -3616,7 +3616,7 @@ next_real_insn (rtx uncast_insn)
   return insn;
 }
 
-/* Return the last INSN, CALL_INSN or JUMP_INSN before INSN;
+/* Return the last INSN, CALL_INSN, JUMP_INSN or DEBUG_INSN before INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
@@ -3627,6 +3627,42 @@ prev_real_insn (rtx_insn *insn)
     {
       insn = PREV_INSN (insn);
       if (insn == 0 || INSN_P (insn))
+	break;
+    }
+
+  return insn;
+}
+
+/* Return the next INSN, CALL_INSN or JUMP_INSN after INSN;
+   or 0, if there is none.  This routine does not look inside
+   SEQUENCEs.  */
+
+rtx_insn *
+next_real_nondebug_insn (rtx uncast_insn)
+{
+  rtx_insn *insn = safe_as_a <rtx_insn *> (uncast_insn);
+
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0 || NONDEBUG_INSN_P (insn))
+	break;
+    }
+
+  return insn;
+}
+
+/* Return the last INSN, CALL_INSN or JUMP_INSN before INSN;
+   or 0, if there is none.  This routine does not look inside
+   SEQUENCEs.  */
+
+rtx_insn *
+prev_real_nondebug_insn (rtx_insn *insn)
+{
+  while (insn)
+    {
+      insn = PREV_INSN (insn);
+      if (insn == 0 || NONDEBUG_INSN_P (insn))
 	break;
     }
 

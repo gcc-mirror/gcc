@@ -13923,7 +13923,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 	 FROM_LUID and TO_INSN.  If so, find it.  This is PR83304.  */
       if (!where_dead || DF_INSN_LUID (where_dead) >= DF_INSN_LUID (to_insn))
 	{
-	  rtx_insn *insn = prev_real_insn (to_insn);
+	  rtx_insn *insn = prev_real_nondebug_insn (to_insn);
 	  while (insn
 		 && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (to_insn)
 		 && DF_INSN_LUID (insn) >= from_luid)
@@ -13935,7 +13935,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 		  break;
 		}
 
-	      insn = prev_real_insn (insn);
+	      insn = prev_real_nondebug_insn (insn);
 	    }
 	}
 
