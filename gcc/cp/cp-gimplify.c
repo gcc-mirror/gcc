@@ -2037,7 +2037,17 @@ cp_fully_fold (tree x)
   /* FIXME cp_fold ought to be a superset of maybe_constant_value so we don't
      have to call both.  */
   if (cxx_dialect >= cxx11)
-    x = maybe_constant_value (x);
+    {
+      x = maybe_constant_value (x);
+      /* Sometimes we are given a CONSTRUCTOR but the call above wraps it into
+	 a TARGET_EXPR; undo that here.  */
+      if (TREE_CODE (x) == TARGET_EXPR)
+	x = TARGET_EXPR_INITIAL (x);
+      else if (TREE_CODE (x) == VIEW_CONVERT_EXPR
+	       && TREE_CODE (TREE_OPERAND (x, 0)) == CONSTRUCTOR
+	       && TREE_TYPE (TREE_OPERAND (x, 0)) == TREE_TYPE (x))
+	x = TREE_OPERAND (x, 0);
+    }
   return cp_fold_rvalue (x);
 }
 

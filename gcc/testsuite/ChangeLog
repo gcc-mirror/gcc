@@ -1,3 +1,8 @@
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84590
+	* c-c++-common/ubsan/shift-11.c: New test.
+
 2018-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/vect/vect-alias-check-13.c: New test.
