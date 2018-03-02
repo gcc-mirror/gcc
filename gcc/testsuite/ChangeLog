@@ -6,6 +6,9 @@
 	PR c++/84663
 	* g++.dg/parse/array-size3.C: New test.
 
+	PR c++/84664
+	* g++.dg/cpp0x/lambda/lambda-ice28.C: New test.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84662

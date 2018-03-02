@@ -3,6 +3,10 @@
 	PR c++/84663
 	* decl.c (cp_complete_array_type): Check error_mark_node.
 
+	PR c++/84664
+	* typeck.c (cp_perform_integral_promotions): Check the result of
+	mark_rvalue_use.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84662
