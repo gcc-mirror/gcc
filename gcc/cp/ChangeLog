@@ -1,3 +1,8 @@
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84663
+	* decl.c (cp_complete_array_type): Check error_mark_node.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84662
