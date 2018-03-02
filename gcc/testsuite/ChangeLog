@@ -1,3 +1,8 @@
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84171
+	* g++.dg/warn/Wsign-compare-8.C: New test.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84662
