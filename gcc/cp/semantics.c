@@ -1693,8 +1693,7 @@ force_paren_expr (tree expr)
   if (TREE_CODE (expr) == COMPONENT_REF
       || TREE_CODE (expr) == SCOPE_REF)
     REF_PARENTHESIZED_P (expr) = true;
-  else if (type_dependent_expression_p (expr)
-	   || processing_template_decl)
+  else if (processing_template_decl)
     expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
   else if (VAR_P (expr) && DECL_HARD_REGISTER (expr))
     /* We can't bind a hard register variable to a reference.  */;
