@@ -1,3 +1,27 @@
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* substring-locations.h (format_warning_va): Formatting fix for
+	ATTRIBUTE_GCC_DIAG.
+	(format_warning_at_substring): Fix up ATTRIBUTE_GCC_DIAG second
+	argument.
+	(format_warning_n_va, format_warning_at_substring_n): New prototypes.
+	* substring-locations.c: Include intl.h.
+	(format_warning_va): Turned into small wrapper around
+	format_warning_n_va, renamed to ...
+	(format_warning_n_va): ... this, add N and PLURAL_GMSGID arguments,
+	rename GMSGID to SINGULAR_GMSGID, if SINGULAR_GMSGID != PLURAL_GMSGID,
+	use ngettext.
+	(format_warning_at_substring_n): New function.
+	* gimple-ssa-sprintf.c: Remove GCC diagnostic ignored pragma.
+	(fmtwarn): Add ATTRIBUTE_GCC_DIAG.  Turn into a copy of
+	format_warning_at_substring with just a shorter name instead of
+	const function pointer.
+	(fmtwarn_n): New function.
+	(maybe_warn, format_directive, parse_directive): Use fmtwarn_n where
+	appropriate, get rid of all the fmtstr temporaries, move conditionals
+	with G_() wrapped string literals directly into fmtwarn arguments,
+	cast dir.len to (int), formatting fixes.
+
 2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/invoke.texi: Remove "Cilk Plus" references.
