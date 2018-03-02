@@ -1,3 +1,8 @@
+2018-03-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84427
+	* gcc.dg/torture/pr84427.c: New testcase.
+
 2018-03-01  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/84534
