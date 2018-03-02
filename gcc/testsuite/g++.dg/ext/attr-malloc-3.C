@@ -91,7 +91,6 @@ void test_templ_none_malloc (void)
   if (p == a)                       // must be false
     templ_none_malloc_failed ();    // should be eliminated
 
-  // The following fails (most likely) due to bug 84294.
   // Verify that the call to templ_none_malloc_failed() is eliminated.
-  // { dg-final { scan-tree-dump-not "templ_none_malloc_failed" "optimized" { xfail *-*-* } } }
+  // { dg-final { scan-tree-dump-not "templ_none_malloc_failed" "optimized" } }
 }
