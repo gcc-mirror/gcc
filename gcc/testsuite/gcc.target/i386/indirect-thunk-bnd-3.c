@@ -10,8 +10,9 @@ foo (void)
   bar (buf);
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*bar@GOT" } } */
-/* { dg-final { scan-assembler "bnd jmp\[ \t\]*__x86_indirect_thunk_bnd" } } */
+/* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*bar@GOT" } } */
+/* { dg-final { scan-assembler "bnd jmp\[ \t\]*__x86_indirect_thunk_bnd_rax" { target lp64 } } } */
+/* { dg-final { scan-assembler "bnd call\[ \t\]*__x86_indirect_thunk_bnd_eax" { target ia32 } } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler "bnd call\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler "bnd ret" } } */

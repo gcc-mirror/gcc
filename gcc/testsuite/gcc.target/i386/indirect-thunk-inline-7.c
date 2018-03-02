@@ -35,8 +35,8 @@ bar (int i)
     }
 }
 
-/* { dg-final { scan-assembler "push(?:l|q)\[ \t\]*\.L\[0-9\]+\\(,%" { target { { ! x32 } && *-*-linux* } } } } */
-/* { dg-final { scan-assembler-not "pushq\[ \t\]%rax" { target x32 } } } */
+/* { dg-final { scan-assembler "mov(?:l|q)\[ \t\]*\.L\[0-9\]+\\(,%" { target *-*-linux* } } } */
+/* { dg-final { scan-assembler-not "pushq\[ \t\]%(r|e)ax" } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler "call\[ \t\]*\.LIND" } } */
 /* { dg-final { scan-assembler {\tpause} } } */

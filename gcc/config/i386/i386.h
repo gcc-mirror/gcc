@@ -2719,6 +2719,11 @@ extern void debug_dispatch_window (int);
 #define TARGET_RECIP_VEC_DIV	((recip_mask & RECIP_MASK_VEC_DIV) != 0)
 #define TARGET_RECIP_VEC_SQRT	((recip_mask & RECIP_MASK_VEC_SQRT) != 0)
 
+
+#define TARGET_INDIRECT_BRANCH_REGISTER \
+  (ix86_indirect_branch_register \
+   || cfun->machine->indirect_branch_type != indirect_branch_keep)
+
 #define IX86_HLE_ACQUIRE (1 << 16)
 #define IX86_HLE_RELEASE (1 << 17)
 
