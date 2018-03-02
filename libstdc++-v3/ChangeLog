@@ -1,3 +1,11 @@
+2018-03-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84671
+	* include/bits/parse_numbers.h (_Number_help): Add partial
+	specialization to handle digit separators. Adjust partial
+	specialization for recursion temrination to require _Pow == 1ULL.
+	* testsuite/20_util/duration/literals/84671.cc: New
+
 2018-02-27  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Implement the missing bits of LWG 2769
