@@ -1,3 +1,11 @@
+2018-03-02  Jeff Law  <law@redhat.com>
+
+	* reorg.c (stop_search_p): Handle DEBUG_INSN.
+	(redundant_insn, fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	* resource.c (mark_referenced_resources): Likewise.
+	(mark_set_resources, find_dead_or_set_registers): Likewise.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* substring-locations.h (format_warning_va): Formatting fix for
