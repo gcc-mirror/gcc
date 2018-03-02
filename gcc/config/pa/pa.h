@@ -177,6 +177,8 @@ do {								\
        builtin_define("_PA_RISC1_1");				\
      else							\
        builtin_define("_PA_RISC1_0");				\
+     if (HPUX_LONG_DOUBLE_LIBRARY)				\
+       builtin_define("__SIZEOF_FLOAT128__=16");		\
 } while (0)
 
 /* An old set of OS defines for various BSD-like systems.  */

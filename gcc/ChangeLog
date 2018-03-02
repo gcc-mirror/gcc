@@ -1,6 +1,10 @@
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56540
+	* config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Predefine
+	__SIZEOF_128__ macro if HPUX_LONG_DOUBLE_LIBRARY.
+
+	PR target/56540
 	* config/ia64/ia64.h (TARGET_CPU_CPP_BUILTINS): Predefine
 	__SIZEOF_{FPREG,FLOAT{80,128}}__ macros.
 
