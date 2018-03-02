@@ -30,7 +30,7 @@
 
 /* This code implements a demangler for the g++ V3 ABI.  The ABI is
    described on this web page:
-       http://www.codesourcery.com/cxx-abi/abi.html#mangling
+       https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangling
 
    This code was written while looking at the demangler written by
    Alex Samuel <samuel@codesourcery.com>.
