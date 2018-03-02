@@ -1,3 +1,7 @@
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/invoke.texi: Remove "Cilk Plus" references.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
 

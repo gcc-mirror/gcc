@@ -1,3 +1,8 @@
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-attribs.c (c_common_attribute_table): Remove "cilk simd
+	function".
+
 2018-03-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84639

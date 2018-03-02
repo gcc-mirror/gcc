@@ -1,3 +1,7 @@
+2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* update-copyright.py: Remove "libcilkrts" reference.
+
 2018-02-19  Yury Gribov  <tetra2005@gmail.com>
 
 	* compare_tests: Use TMPDIR when set.
