@@ -8,6 +8,5 @@ program p
       integer, allocatable :: t
    end type
    type(t) :: x
-   integer :: i = -1
-   print *, transfer(i, x) ! { dg-error "cannot have ALLOCATABLE components" }
+   print *, transfer(1, x) ! { dg-error "cannot have ALLOCATABLE components" }
 end
