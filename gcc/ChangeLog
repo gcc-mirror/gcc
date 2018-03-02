@@ -1,5 +1,29 @@
 2018-03-02  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84427
+	* tree-ssa-pre.c (bitmap_remove_expr_from_set): Remove.
+	(bitmap_set_subtract_values): Rewrite to handle multiple
+	exprs per value.
+	(clean): Likewise.
+	(prune_clobbered_mems): Likewise.
+	(phi_translate): Take edge instead of pred/phiblock.
+	(phi_translate_1): Likewise.
+	(phi_translate_set): Likewise.  Insert all translated
+	exprs for a value into the set, keeping possibly multiple
+	expressions per value.
+	(compute_antic_aux): Adjust for phi_translate changes.
+	When intersecting union the expressions and prune those
+	not in the final value set, keeping possibly multiple
+	expressions per value.  Do not use value-insertion
+	for unioning ANTIC_OUT U EXP_GEN - TMP_GEN but merge
+	all expressions.  Add verification that the value-sets
+	only shrink during iteration.
+	(compute_partial_antic_aux): Adjust for the phi_translate changes.
+	(do_pre_regular_insertion): Likewise.
+	(do_pre_partial_partial_insertion): Likewise.
+
+2018-03-02  Richard Biener  <rguenther@suse.de>
+
 	PR target/82005
 	* config/darwin.c (saved_debug_info_level): New static global.
 	(darwin_asm_lto_start): Disable debug info generation for LTO out.
