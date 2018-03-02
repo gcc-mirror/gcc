@@ -1,3 +1,9 @@
+2018-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ipa/83983
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Get the ODR type of both
+	arguments if they are comparable.
+
 2018-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/84634
