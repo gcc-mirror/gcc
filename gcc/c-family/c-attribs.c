@@ -439,8 +439,6 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_returns_nonnull_attribute, NULL },
   { "omp declare simd",       0, -1, true,  false, false, false,
 			      handle_omp_declare_simd_attribute, NULL },
-  { "cilk simd function",     0, -1, true,  false, false, false,
-			      handle_omp_declare_simd_attribute, NULL },
   { "simd",		      0, 1, true,  false, false, false,
 			      handle_simd_attribute, NULL },
   { "omp declare target",     0, 0, true, false, false, false,

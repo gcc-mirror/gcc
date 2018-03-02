@@ -6710,7 +6710,7 @@ Requires @option{-flto-odr-type-merging} to be enabled.  Enabled by default.
 
 @item -Wopenmp-simd
 @opindex Wopenm-simd
-Warn if the vectorizer cost model overrides the OpenMP or the Cilk Plus
+Warn if the vectorizer cost model overrides the OpenMP
 simd directive set by user.  The @option{-fsimd-cost-model=unlimited}
 option can be used to relax the cost model.
 
@@ -8953,7 +8953,7 @@ either @samp{dynamic} or @samp{cheap}.
 @item -fsimd-cost-model=@var{model}
 @opindex fsimd-cost-model
 Alter the cost model used for vectorization of loops marked with the OpenMP
-or Cilk Plus simd directive.  The @var{model} argument should be one of
+simd directive.  The @var{model} argument should be one of
 @samp{unlimited}, @samp{dynamic}, @samp{cheap}.  All values of @var{model}
 have the same meaning as described in @option{-fvect-cost-model} and by
 default a cost model defined with @option{-fvect-cost-model} is used.
