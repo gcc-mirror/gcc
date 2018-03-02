@@ -2300,6 +2300,32 @@ diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
     }
 }
 
+/* Return the number of elements for TYPE (which is an ARRAY_TYPE or
+   a VECTOR_TYPE).  */
+
+static tree
+get_array_or_vector_nelts (const constexpr_ctx *ctx, tree type,
+			   bool *non_constant_p, bool *overflow_p)
+{
+  tree nelts;
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      if (TYPE_DOMAIN (type))
+	nelts = array_type_nelts_top (type);
+      else
+	nelts = size_zero_node;
+    }
+  else if (VECTOR_TYPE_P (type))
+    nelts = size_int (TYPE_VECTOR_SUBPARTS (type));
+  else
+    gcc_unreachable ();
+
+  /* For VLAs, the number of elements won't be an integer constant.  */
+  nelts = cxx_eval_constant_expression (ctx, nelts, false,
+					non_constant_p, overflow_p);
+  return nelts;
+}
+
 /* Extract element INDEX consisting of CHARS_PER_ELT chars from
    STRING_CST STRING.  */
 
@@ -2379,22 +2405,8 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 	}
     }
 
-  tree nelts;
-  if (TREE_CODE (TREE_TYPE (ary)) == ARRAY_TYPE)
-    {
-      if (TYPE_DOMAIN (TREE_TYPE (ary)))
-	nelts = array_type_nelts_top (TREE_TYPE (ary));
-      else
-	nelts = size_zero_node;
-    }
-  else if (VECTOR_TYPE_P (TREE_TYPE (ary)))
-    nelts = size_int (TYPE_VECTOR_SUBPARTS (TREE_TYPE (ary)));
-  else
-    gcc_unreachable ();
-
-  /* For VLAs, the number of elements won't be an integer constant.  */
-  nelts = cxx_eval_constant_expression (ctx, nelts, false, non_constant_p,
-					overflow_p);
+  tree nelts = get_array_or_vector_nelts (ctx, TREE_TYPE (ary), non_constant_p,
+					  overflow_p);
   VERIFY_CONSTANT (nelts);
   if ((lval
        ? !tree_int_cst_le (index, nelts)
@@ -2895,7 +2907,6 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 		     bool *non_constant_p, bool *overflow_p)
 {
   tree elttype = TREE_TYPE (atype);
-  unsigned HOST_WIDE_INT max = tree_to_uhwi (array_type_nelts_top (atype));
   verify_ctor_sanity (ctx, atype);
   vec<constructor_elt, va_gc> **p = &CONSTRUCTOR_ELTS (ctx->ctor);
   bool pre_init = false;
@@ -2924,6 +2935,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
       pre_init = true;
     }
 
+  tree nelts = get_array_or_vector_nelts (ctx, atype, non_constant_p,
+					  overflow_p);
+  unsigned HOST_WIDE_INT max = tree_to_uhwi (nelts);
   for (i = 0; i < max; ++i)
     {
       tree idx = build_int_cst (size_type_node, i);
@@ -3480,19 +3494,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	case ARRAY_REF:
 	  tree nelts, ary;
 	  ary = TREE_OPERAND (probe, 0);
-	  if (TREE_CODE (TREE_TYPE (ary)) == ARRAY_TYPE)
-	    {
-	      if (TYPE_DOMAIN (TREE_TYPE (ary)))
-		nelts = array_type_nelts_top (TREE_TYPE (ary));
-	      else
-		nelts = size_zero_node;
-	    }
-	  else if (VECTOR_TYPE_P (TREE_TYPE (ary)))
-	    nelts = size_int (TYPE_VECTOR_SUBPARTS (TREE_TYPE (ary)));
-	  else
-	    gcc_unreachable ();
-	  nelts = cxx_eval_constant_expression (ctx, nelts, false,
-						non_constant_p, overflow_p);
+	  nelts = get_array_or_vector_nelts (ctx, TREE_TYPE (ary),
+					     non_constant_p, overflow_p);
 	  VERIFY_CONSTANT (nelts);
 	  gcc_assert (TREE_CODE (nelts) == INTEGER_CST
 		      && TREE_CODE (TREE_OPERAND (probe, 1)) == INTEGER_CST);

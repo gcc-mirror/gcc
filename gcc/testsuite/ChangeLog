@@ -1,3 +1,8 @@
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84578
+	* g++.dg/ext/flexary29.C: New test.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/Warray-bounds-2.c: Fix a comment typo.

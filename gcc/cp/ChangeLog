@@ -1,3 +1,11 @@
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84578
+	* constexpr.c (get_array_or_vector_nelts): New.
+	(cxx_eval_array_reference): Use it.
+	(cxx_eval_vec_init_1): Likewise.
+	(cxx_eval_store_expression): Likewise.
+
 2018-03-02  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (force_paren_expr): Remove redundant test.
