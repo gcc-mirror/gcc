@@ -17318,14 +17318,14 @@ tsubst_copy_and_build (tree t,
 	if (targs)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
 	if (targs == error_mark_node)
-	  return error_mark_node;
+	  RETURN (error_mark_node);
 
 	if (TREE_CODE (templ) == SCOPE_REF)
 	  {
 	    tree name = TREE_OPERAND (templ, 1);
 	    tree tid = lookup_template_function (name, targs);
 	    TREE_OPERAND (templ, 1) = tid;
-	    return templ;
+	    RETURN (templ);
 	  }
 
 	if (variable_template_p (templ))
@@ -17401,6 +17401,8 @@ tsubst_copy_and_build (tree t,
       {
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	if (op0 == error_mark_node)
+	  RETURN (error_mark_node);
 	RETURN (build1 (CONVERT_EXPR, type, op0));
       }
 
@@ -17549,7 +17551,7 @@ tsubst_copy_and_build (tree t,
       {
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
 	tree op1 = RECUR (TREE_OPERAND (t, 1));
-	return fold_build_pointer_plus (op0, op1);
+	RETURN (fold_build_pointer_plus (op0, op1));
       }
 
     case SCOPE_REF:
