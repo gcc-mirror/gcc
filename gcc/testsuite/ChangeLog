@@ -1,3 +1,12 @@
+2018-03-02  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/altivec-7-be.c: Remove VSX content, allow
+	32-bit target.
+	* gcc.target/powerpc/altivec-7.h: Remove VSX content.
+	* gcc.target/powerpc/vsx-7-be.c: New test (VSX content).
+	* gcc.target/powerpc/vsx-7.h: New include (VSX content).
+	* gcc.target/powerpc/altivec-7-le.c: Add vsx-7.h include.
+
 2018-03-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84590
