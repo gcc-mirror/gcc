@@ -1,3 +1,9 @@
+2018-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84590
+	* cp-gimplify.c (cp_fully_fold): Unwrap TARGET_EXPR or a CONSTRUCTOR
+	wrapped in VIEW_CONVERT_EXPR.
+
 2018-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/84294
