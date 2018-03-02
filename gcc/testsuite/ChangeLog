@@ -1,3 +1,8 @@
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84662
+	* g++.dg/cpp1y/pr84662.C: New test.
+
 2018-03-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* g++.dg/lto/20080915_0.C: Don't use "dg-lto-options".
