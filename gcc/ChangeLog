@@ -1,3 +1,8 @@
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* predict.c (test_prediction_value_range): Use PROB_UNINITIALIZED
+	instead of -1U in last predictors element's probability member.
+
 2018-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ipa/83983
