@@ -1483,9 +1483,15 @@ output_init_frag (rtx sym)
   
   if (sym)
     {
-      fprintf (asm_out_file, "generic(");
+      bool function = (SYMBOL_REF_DECL (sym)
+		       && (TREE_CODE (SYMBOL_REF_DECL (sym)) == FUNCTION_DECL));
+      if (!function)
+	fprintf (asm_out_file, "generic(");
       output_address (VOIDmode, sym);
-      fprintf (asm_out_file, val ? ") + " : ")");
+      if (!function)
+	fprintf (asm_out_file, ")");
+      if (val)
+	fprintf (asm_out_file, " + ");
     }
 
   if (!sym || val)
