@@ -1,3 +1,11 @@
+2018-03-01  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84534
+	* gcc.target/powerpc/vec-setup-be-long.c: Add dg-xfail-run-if on
+	powerpc64le*-*-linux*.
+	* gcc.target/powerpc/vsx-vector-6-le.c: Do not count xxlor's.
+	* gcc.target/powerpc/vsx-vector-6-le.p9.c: Likewise.
+
 2018-03-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/84294
