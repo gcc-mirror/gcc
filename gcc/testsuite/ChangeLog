@@ -1,3 +1,13 @@
+2018-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/84294
+	* g++.dg/ext/attr-const.C: Remove xfail.
+	* g++.dg/ext/attr-malloc-3.C: New test.
+	* g++.dg/ext/attr-noinline-3.C: New test.
+	* g++.dg/ext/attr-noreturn-3.C: New test.
+	* g++.dg/ext/attr-nothrow-3.C: New test.
+	* g++.dg/ext/attr-pure.C: Remove xfail.
+
 2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/70875

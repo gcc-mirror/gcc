@@ -1355,6 +1355,26 @@ check_redeclaration_no_default_args (tree decl)
       }
 }
 
+/* Merge tree bits that correspond to attributes noreturn, nothrow,
+   const,  malloc, and pure from NEWDECL with those of OLDDECL.  */
+
+static void
+merge_attribute_bits (tree newdecl, tree olddecl)
+{
+  TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
+  TREE_THIS_VOLATILE (olddecl) |= TREE_THIS_VOLATILE (newdecl);
+  TREE_NOTHROW (newdecl) |= TREE_NOTHROW (olddecl);
+  TREE_NOTHROW (olddecl) |= TREE_NOTHROW (newdecl);
+  TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
+  TREE_READONLY (olddecl) |= TREE_READONLY (newdecl);
+  DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
+  DECL_IS_MALLOC (olddecl) |= DECL_IS_MALLOC (newdecl);
+  DECL_PURE_P (newdecl) |= DECL_PURE_P (olddecl);
+  DECL_PURE_P (olddecl) |= DECL_PURE_P (newdecl);
+  DECL_UNINLINABLE (newdecl) |= DECL_UNINLINABLE (olddecl);
+  DECL_UNINLINABLE (olddecl) |= DECL_UNINLINABLE (newdecl);
+}
+
 #define GNU_INLINE_P(fn) (DECL_DECLARED_INLINE_P (fn)			\
 			  && lookup_attribute ("gnu_inline",		\
 					       DECL_ATTRIBUTES (fn)))
@@ -2048,6 +2068,8 @@ next_arg:;
 	      DECL_DISREGARD_INLINE_LIMITS (old_result)
 	        |= DECL_DISREGARD_INLINE_LIMITS (new_result);
 	      check_redeclaration_exception_specification (newdecl, olddecl);
+
+	      merge_attribute_bits (new_result, old_result);
 	    }
 	}
 
@@ -2228,18 +2250,7 @@ next_arg:;
 	    |= DECL_LOOPING_CONST_OR_PURE_P (olddecl);
 
 	  if (merge_attr)
-	    {
-	      TREE_THIS_VOLATILE (newdecl) |= TREE_THIS_VOLATILE (olddecl);
-	      TREE_THIS_VOLATILE (olddecl) |= TREE_THIS_VOLATILE (newdecl);
-	      TREE_NOTHROW (newdecl) |= TREE_NOTHROW (olddecl);
-	      TREE_NOTHROW (olddecl) |= TREE_NOTHROW (newdecl);
-	      TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
-	      TREE_READONLY (olddecl) |= TREE_READONLY (newdecl);
-	      DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
-	      DECL_IS_MALLOC (olddecl) |= DECL_IS_MALLOC (newdecl);
-	      DECL_PURE_P (newdecl) |= DECL_PURE_P (olddecl);
-	      DECL_PURE_P (olddecl) |= DECL_PURE_P (newdecl);
-	    }
+	    merge_attribute_bits (newdecl, olddecl);
 	  else
 	    {
 	      /* Merge the noreturn bit.  */
@@ -2412,32 +2423,15 @@ next_arg:;
 
 	  /* [temp.expl.spec/14] We don't inline explicit specialization
 	     just because the primary template says so.  */
+	  gcc_assert (!merge_attr);
 
-	  if (merge_attr)
-	    {
-	      /* But still keep DECL_DISREGARD_INLINE_LIMITS in sync with
-		 the always_inline attribute.  */
-	      if (DECL_DISREGARD_INLINE_LIMITS (olddecl)
-		  && !DECL_DISREGARD_INLINE_LIMITS (newdecl))
-		{
-		  if (DECL_DECLARED_INLINE_P (newdecl))
-		    DECL_DISREGARD_INLINE_LIMITS (newdecl) = true;
-		  else
-		    DECL_ATTRIBUTES (newdecl)
-		      = remove_attribute ("always_inline",
-					  DECL_ATTRIBUTES (newdecl));
-		}
-	    }
-	  else
-	    {
-	      DECL_DECLARED_INLINE_P (olddecl)
-		= DECL_DECLARED_INLINE_P (newdecl);
+	  DECL_DECLARED_INLINE_P (olddecl)
+	    = DECL_DECLARED_INLINE_P (newdecl);
 
-	      DECL_DISREGARD_INLINE_LIMITS (olddecl)
-		= DECL_DISREGARD_INLINE_LIMITS (newdecl);
+	  DECL_DISREGARD_INLINE_LIMITS (olddecl)
+	    = DECL_DISREGARD_INLINE_LIMITS (newdecl);
 
-	      DECL_UNINLINABLE (olddecl) = DECL_UNINLINABLE (newdecl);
-	    }
+	  DECL_UNINLINABLE (olddecl) = DECL_UNINLINABLE (newdecl);
 	}
       else if (new_defines_function && DECL_INITIAL (olddecl))
 	{

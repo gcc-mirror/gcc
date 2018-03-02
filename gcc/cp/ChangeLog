@@ -1,3 +1,10 @@
+2018-03-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/84294
+	* decl.c (check_redeclaration_no_default_args): Merge attributes
+	specified on redeclarations of the same function template.
+	Remove dead code.
+
 2018-03-01  Marek Polacek  <polacek@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 
