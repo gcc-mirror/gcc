@@ -1,3 +1,8 @@
+2018-03-02  Jason Merrill  <jason@redhat.com>
+
+	Fix MIPS16 ICE.
+	* pt.c (type_dependent_expression_p): Check DECL_LANG_SPECIFIC.
+
 2018-03-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84590
