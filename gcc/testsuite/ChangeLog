@@ -1,3 +1,7 @@
+2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/Warray-bounds-2.c: Fix a comment typo.
+
 2018-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81812

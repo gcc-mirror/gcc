@@ -1,4 +1,4 @@
-/* Test to exercise that -Warray-bounds warnings for memory and sring
+/* Test to exercise that -Warray-bounds warnings for memory and string
    functions are issued even when they are declared in system headers
    (i.e., not just when they are explicitly declared in the source
    file.)
