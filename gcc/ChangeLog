@@ -1,5 +1,12 @@
 2018-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/84634
+	* tree-vect-stmts.c (vectorizable_store, vectorizable_load): Replace
+	masks and masked_loop_p with a single loop_masks, making sure it's
+	null for bb vectorization.
+
+2018-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence)
 	(vect_analyze_data_ref_access): Use loop->safe_len rather than
 	loop->force_vectorize to check whether there is no alias.

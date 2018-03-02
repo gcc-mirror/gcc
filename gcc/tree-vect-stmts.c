@@ -6703,13 +6703,16 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   alignment_support_scheme = vect_supportable_dr_alignment (first_dr, false);
   gcc_assert (alignment_support_scheme);
-  bool masked_loop_p = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
+  vec_loop_masks *loop_masks
+    = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+       ? &LOOP_VINFO_MASKS (loop_vinfo)
+       : NULL);
   /* Targets with store-lane instructions must not require explicit
      realignment.  vect_supportable_dr_alignment always returns either
      dr_aligned or dr_unaligned_supported for masked operations.  */
   gcc_assert ((memory_access_type != VMAT_LOAD_STORE_LANES
 	       && !mask
-	       && !masked_loop_p)
+	       && !loop_masks)
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
 
@@ -6783,7 +6786,6 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   prev_stmt_info = NULL;
   tree vec_mask = NULL_TREE;
-  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   for (j = 0; j < ncopies; j++)
     {
 
@@ -6900,8 +6902,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 
 	  tree final_mask = NULL;
-	  if (masked_loop_p)
-	    final_mask = vect_get_loop_mask (gsi, masks, ncopies, vectype, j);
+	  if (loop_masks)
+	    final_mask = vect_get_loop_mask (gsi, loop_masks, ncopies,
+					     vectype, j);
 	  if (vec_mask)
 	    final_mask = prepare_load_store_mask (mask_vectype, final_mask,
 						  vec_mask, gsi);
@@ -6949,8 +6952,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      unsigned align, misalign;
 
 	      tree final_mask = NULL_TREE;
-	      if (masked_loop_p)
-		final_mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
+	      if (loop_masks)
+		final_mask = vect_get_loop_mask (gsi, loop_masks,
+						 vec_num * ncopies,
 						 vectype, vec_num * j + i);
 	      if (vec_mask)
 		final_mask = prepare_load_store_mask (mask_vectype, final_mask,
@@ -6960,7 +6964,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		{
 		  tree scale = size_int (gs_info.scale);
 		  gcall *call;
-		  if (masked_loop_p)
+		  if (loop_masks)
 		    call = gimple_build_call_internal
 		      (IFN_MASK_SCATTER_STORE, 5, dataref_ptr, vec_offset,
 		       scale, vec_oprnd, final_mask);
@@ -7790,13 +7794,16 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   alignment_support_scheme = vect_supportable_dr_alignment (first_dr, false);
   gcc_assert (alignment_support_scheme);
-  bool masked_loop_p = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
+  vec_loop_masks *loop_masks
+    = (loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+       ? &LOOP_VINFO_MASKS (loop_vinfo)
+       : NULL);
   /* Targets with store-lane instructions must not require explicit
      realignment.  vect_supportable_dr_alignment always returns either
      dr_aligned or dr_unaligned_supported for masked operations.  */
   gcc_assert ((memory_access_type != VMAT_LOAD_STORE_LANES
 	       && !mask
-	       && !masked_loop_p)
+	       && !loop_masks)
 	      || alignment_support_scheme == dr_aligned
 	      || alignment_support_scheme == dr_unaligned_supported);
 
@@ -7956,7 +7963,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
   tree vec_mask = NULL_TREE;
   prev_stmt_info = NULL;
   poly_uint64 group_elt = 0;
-  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   for (j = 0; j < ncopies; j++)
     {
       /* 1. Create the vector or array pointer update chain.  */
@@ -8037,8 +8043,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  vec_array = create_vector_array (vectype, vec_num);
 
 	  tree final_mask = NULL_TREE;
-	  if (masked_loop_p)
-	    final_mask = vect_get_loop_mask (gsi, masks, ncopies, vectype, j);
+	  if (loop_masks)
+	    final_mask = vect_get_loop_mask (gsi, loop_masks, ncopies,
+					     vectype, j);
 	  if (vec_mask)
 	    final_mask = prepare_load_store_mask (mask_vectype, final_mask,
 						  vec_mask, gsi);
@@ -8083,9 +8090,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  for (i = 0; i < vec_num; i++)
 	    {
 	      tree final_mask = NULL_TREE;
-	      if (masked_loop_p
+	      if (loop_masks
 		  && memory_access_type != VMAT_INVARIANT)
-		final_mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
+		final_mask = vect_get_loop_mask (gsi, loop_masks,
+						 vec_num * ncopies,
 						 vectype, vec_num * j + i);
 	      if (vec_mask)
 		final_mask = prepare_load_store_mask (mask_vectype, final_mask,
@@ -8107,7 +8115,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      {
 			tree scale = size_int (gs_info.scale);
 			gcall *call;
-			if (masked_loop_p)
+			if (loop_masks)
 			  call = gimple_build_call_internal
 			    (IFN_MASK_GATHER_LOAD, 4, dataref_ptr,
 			     vec_offset, scale, final_mask);
