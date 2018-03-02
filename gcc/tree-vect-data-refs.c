@@ -466,7 +466,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	      return true;
 	    }
 
-	  if (!loop->force_vectorize)
+	  if (loop->safelen < 2)
 	    {
 	      tree indicator = dr_zero_step_indicator (dra);
 	      if (TREE_CODE (indicator) != INTEGER_CST)
@@ -2720,7 +2720,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       /* Allow references with zero step for outer loops marked
 	 with pragma omp simd only - it guarantees absence of
 	 loop-carried dependencies between inner loop iterations.  */
-      if (!loop->force_vectorize)
+      if (loop->safelen < 2)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
