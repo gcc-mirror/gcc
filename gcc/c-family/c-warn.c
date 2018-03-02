@@ -1931,6 +1931,9 @@ warn_for_sign_compare (location_t location,
 		       tree op0, tree op1,
 		       tree result_type, enum tree_code resultcode)
 {
+  if (error_operand_p (orig_op0) || error_operand_p (orig_op1))
+    return;
+
   int op0_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op0));
   int op1_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op1));
   int unsignedp0, unsignedp1;
