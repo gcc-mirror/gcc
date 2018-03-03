@@ -1773,7 +1773,7 @@ inline_small_functions (void)
 		struct cgraph_node *n2;
 		int id = dfs->scc_no + 1;
 		for (n2 = node; n2;
-		     n2 = ((struct ipa_dfs_info *) node->aux)->next_cycle)
+		     n2 = ((struct ipa_dfs_info *) n2->aux)->next_cycle)
 		  {
 		    struct inline_summary *info2 = inline_summaries->get (n2);
 		    if (info2->scc_no)
