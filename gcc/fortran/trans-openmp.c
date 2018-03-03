@@ -1949,9 +1949,32 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  }
 			else
 			  {
-			    tree type = gfc_typenode_for_spec (&n->sym->ts);
-			    OMP_CLAUSE_LINEAR_STEP (node)
-			      = fold_convert (type, last_step);
+			    if (kind == OMP_CLAUSE_LINEAR_REF)
+			      {
+				tree type;
+				if (n->sym->attr.flavor == FL_PROCEDURE)
+				  {
+				    type = gfc_get_function_type (n->sym);
+				    type = build_pointer_type (type);
+				  }
+				else
+				  type = gfc_sym_type (n->sym);
+				if (POINTER_TYPE_P (type))
+				  type = TREE_TYPE (type);
+				/* Otherwise to be determined what exactly
+				   should be done.  */
+				tree t = fold_convert (sizetype, last_step);
+				t = size_binop (MULT_EXPR, t,
+						TYPE_SIZE_UNIT (type));
+				OMP_CLAUSE_LINEAR_STEP (node) = t;
+			      }
+			    else
+			      {
+				tree type
+				  = gfc_typenode_for_spec (&n->sym->ts);
+				OMP_CLAUSE_LINEAR_STEP (node)
+				  = fold_convert (type, last_step);
+			      }
 			  }
 			if (n->sym->attr.dimension || n->sym->attr.allocatable)
 			  OMP_CLAUSE_LINEAR_ARRAY (node) = 1;
