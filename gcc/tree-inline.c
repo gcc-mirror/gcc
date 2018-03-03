@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "builtins.h"
 #include "tree-chkp.h"
+#include "attribs.h"
 
 
 /* I'm not real happy about this, but we need to handle gimple and
@@ -6023,6 +6024,25 @@ tree_function_versioning (tree old_decl, tree new_decl,
     DECL_ARGUMENTS (new_decl)
       = copy_arguments_for_versioning (DECL_ARGUMENTS (old_decl), &id,
 				       args_to_skip, &vars);
+
+  /* Remove omp declare simd attribute from the new attributes.  */
+  if (tree a = lookup_attribute ("omp declare simd",
+				 DECL_ATTRIBUTES (new_decl)))
+    {
+      while (tree a2 = lookup_attribute ("omp declare simd", TREE_CHAIN (a)))
+	a = a2;
+      a = TREE_CHAIN (a);
+      for (tree *p = &DECL_ATTRIBUTES (new_decl); *p != a;)
+	if (is_attribute_p ("omp declare simd", get_attribute_name (*p)))
+	  *p = TREE_CHAIN (*p);
+	else
+	  {
+	    tree chain = TREE_CHAIN (*p);
+	    *p = copy_node (*p);
+	    p = &TREE_CHAIN (*p);
+	    *p = chain;
+	  }
+    }
 
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
   BLOCK_SUPERCONTEXT (DECL_INITIAL (new_decl)) = new_decl;
