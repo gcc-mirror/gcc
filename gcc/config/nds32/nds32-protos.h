@@ -125,6 +125,7 @@ extern int nds32_target_alignment (rtx_insn *);
 extern void nds32_init_builtins_impl (void);
 extern rtx nds32_expand_builtin_impl (tree, rtx, rtx,
 				      machine_mode, int);
+extern tree nds32_builtin_decl_impl (unsigned, bool);
 
 /* Auxiliary functions for ISR implementation.  */
 

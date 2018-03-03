@@ -345,7 +345,8 @@ enum nds32_builtins
   NDS32_BUILTIN_MTSR,
   NDS32_BUILTIN_MTUSR,
   NDS32_BUILTIN_SETGIE_EN,
-  NDS32_BUILTIN_SETGIE_DIS
+  NDS32_BUILTIN_SETGIE_DIS,
+  NDS32_BUILTIN_COUNT
 };
 
 /* ------------------------------------------------------------------------ */
