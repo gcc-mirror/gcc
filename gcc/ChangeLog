@@ -1,6 +1,13 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/84285
+	* gcc.c (STATIC_LIBASAN_LIBS, STATIC_LIBTSAN_LIBS,
+	STATIC_LIBLSAN_LIBS, STATIC_LIBUBSAN_LIBS): Handle -static like
+	-static-lib*san.
+
 	2018-02-09  Marek Polacek  <polacek@redhat.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 
