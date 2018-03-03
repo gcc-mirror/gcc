@@ -1,6 +1,11 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-prop.c (ipa_vr_ggc_hash_traits::hash): Hash p->min and
+	p->max as pointers rather than using iterative_hash_expr.
+
 	2017-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/82916

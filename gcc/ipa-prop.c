@@ -111,12 +111,13 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
   typedef value_range *compare_type;
   static hashval_t
   hash (const value_range *p)
-  {
-    gcc_checking_assert (!p->equiv);
-    hashval_t t = (hashval_t) p->type;
-    t = iterative_hash_expr (p->min, t);
-    return iterative_hash_expr (p->max, t);
-  }
+    {
+      gcc_checking_assert (!p->equiv);
+      inchash::hash hstate (p->type);
+      hstate.add_ptr (p->min);
+      hstate.add_ptr (p->max);
+      return hstate.end ();
+    }
   static bool
   equal (const value_range *a, const value_range *b)
     {
