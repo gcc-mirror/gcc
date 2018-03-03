@@ -2615,6 +2615,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  gfc_init_se (&se, NULL);
 	  se.loop = loop;
 	  se.ss = ss;
+	  if (gfc_is_class_array_function (expr))
+	    expr->must_finalize = 1;
 	  gfc_conv_expr (&se, expr);
 	  gfc_add_block_to_block (&outer_loop->pre, &se.pre);
 	  gfc_add_block_to_block (&outer_loop->post, &se.post);
@@ -3045,7 +3047,7 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
 
   if (expr == NULL
       || (expr->ts.type != BT_CLASS
-	  && !gfc_is_alloc_class_array_function (expr)))
+	  && !gfc_is_class_array_function (expr)))
     return false;
 
   if (expr->symtree && expr->symtree->n.sym->ts.type == BT_CLASS)
@@ -3074,12 +3076,12 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
     return false;
 
   if (class_ref == NULL && expr->symtree->n.sym->attr.function
-      && expr->symtree->n.sym == expr->symtree->n.sym->result)
+      && expr->symtree->n.sym == expr->symtree->n.sym->result
+      && expr->symtree->n.sym->backend_decl == current_function_decl)
     {
-      gcc_assert (expr->symtree->n.sym->backend_decl == current_function_decl);
       decl = gfc_get_fake_result_decl (expr->symtree->n.sym, 0);
     }
-  else if (gfc_is_alloc_class_array_function (expr))
+  else if (gfc_is_class_array_function (expr))
     {
       size = NULL_TREE;
       decl = NULL_TREE;
@@ -3102,6 +3104,8 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
 
       if (decl == NULL_TREE)
 	return false;
+
+      se->class_vptr = gfc_evaluate_now (gfc_class_vptr_get (decl), &se->pre);
     }
   else if (class_ref == NULL)
     {
@@ -9537,7 +9541,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   if (!sym)
     sym = expr->symtree->n.sym;
 
-  if (gfc_is_alloc_class_array_function (expr))
+  if (gfc_is_class_array_function (expr))
     return gfc_get_array_ss (ss, expr,
 			     CLASS_DATA (expr->value.function.esym->result)->as->rank,
 			     GFC_SS_FUNCTION);

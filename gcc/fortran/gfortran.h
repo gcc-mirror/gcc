@@ -3057,7 +3057,7 @@ bool gfc_expr_check_typed (gfc_expr*, gfc_namespace*, bool);
 gfc_component * gfc_get_proc_ptr_comp (gfc_expr *);
 bool gfc_is_proc_ptr_comp (gfc_expr *);
 bool gfc_is_alloc_class_scalar_function (gfc_expr *);
-bool gfc_is_alloc_class_array_function (gfc_expr *);
+bool gfc_is_class_array_function (gfc_expr *);
 
 bool gfc_ref_this_image (gfc_ref *ref);
 bool gfc_is_coindexed (gfc_expr *);

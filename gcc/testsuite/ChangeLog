@@ -1,3 +1,9 @@
+2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk.
+	PR fortran/78990
+	* gfortran.dg/class_67.f90: New test.
+
 2017-03-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backport from trunk r256891:
