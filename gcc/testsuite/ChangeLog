@@ -1,6 +1,11 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/83986
+	* gcc.dg/pr83986.c: New test.
+
 	2018-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84031
