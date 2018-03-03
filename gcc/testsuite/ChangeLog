@@ -1,3 +1,8 @@
+2018-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71464
+	* g++.dg/torture/pr71464.C: New.
+
 2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80965

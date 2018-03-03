@@ -1,3 +1,9 @@
+2018-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71464
+	* optimize.c (maybe_thunk_body): Bail out immediately if either
+	fns[0] or fns[1] is null.
+
 2018-03-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84578
