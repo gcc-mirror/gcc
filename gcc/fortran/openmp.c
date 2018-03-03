@@ -1312,23 +1312,21 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else if (gfc_match_omp_variable_list (" val (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_VAL;
 	      else if (gfc_match_omp_variable_list (" uval (",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, NULL, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_UVAL;
 	      else if (gfc_match_omp_variable_list ("",
 						    &c->lists[OMP_LIST_LINEAR],
 						    false, &end_colon, &head)
-		  == MATCH_YES)
+		       == MATCH_YES)
 		linear_op = OMP_LINEAR_DEFAULT;
 	      else
 		{
-		  gfc_free_omp_namelist (*head);
 		  gfc_current_locus = old_loc;
-		  *head = NULL;
 		  break;
 		}
 	      if (linear_op != OMP_LINEAR_DEFAULT)
