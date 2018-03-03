@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-01-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/83987
+	* g++.dg/ubsan/pr83987.C: New test.
+
 	PR c++/83958
 	* g++.dg/cpp1z/decomp35.C: New test.
 
