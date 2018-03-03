@@ -1,3 +1,8 @@
+2018-03-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/51434
+	* simplify.c (gfc_simplify_transfer): Resolve mold.
+
 2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/80965
