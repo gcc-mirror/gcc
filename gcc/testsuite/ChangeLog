@@ -1,6 +1,11 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/69869
+	* gcc.dg/cpp/trad/pr69869.c: New test.
+
 	2018-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/83986
