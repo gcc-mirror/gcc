@@ -6617,7 +6617,7 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
     gfc_add_class_array_ref (actual->expr);
 
   argse.data_not_needed = 1;
-  if (gfc_is_alloc_class_array_function (actual->expr))
+  if (gfc_is_class_array_function (actual->expr))
     {
       /* For functions that return a class array conv_expr_descriptor is not
 	 able to get the descriptor right.  Therefore this special case.  */

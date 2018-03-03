@@ -1,3 +1,9 @@
+2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk.
+	PR fortran/78990
+	* gfortran.dg/class_67.f90: New test.
+
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
