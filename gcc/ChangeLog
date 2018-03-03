@@ -1,6 +1,13 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82210
+	* stor-layout.c (place_field): For variable length fields, adjust
+	offset_align afterwards not just based on the field's alignment,
+	but also on the size.
+
 	2018-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83987
