@@ -1,3 +1,8 @@
+2018-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61135
+	* g++.dg/cpp0x/lambda/lambda-61135.C: New.
+
 2018-03-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84578
