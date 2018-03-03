@@ -1,3 +1,29 @@
+2018-03-03  Kito Cheng  <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constants.md (unspec_element): New enum.
+	* config/nds32/constraints.md (Umw): New constraint.
+	* config/nds32/nds32-intrinsic.c: Add more builtin functions.
+	* config/nds32/nds32-intrinsic.md: Likewise.
+	* config/nds32/nds32-md-auxiliary.c (nds32_regno_to_enable4): New.
+	(nds32_valid_smw_lwm_base_p): New.
+	(nds32_output_smw_single_word): New.
+	(nds32_output_lmw_single_word): New.
+	(nds32_expand_unaligned_load): New.
+	(nds32_expand_unaligned_store): New.
+	* config/nds32/nds32-protos.h (nds32_valid_smw_lwm_base_p): Declare.
+	(nds32_output_smw_single_word): Declare.
+	(nds32_output_lmw_single_word): Declare.
+	(nds32_expand_unaligned_load): Declare.
+	(nds32_expand_unaligned_store): Declare.
+	* config/nds32/nds32.h (nds32_builtins): Add NDS32_BUILTIN_UALOAD_HW,
+	NDS32_BUILTIN_UALOAD_W, NDS32_BUILTIN_UALOAD_DW,
+	NDS32_BUILTIN_UASTORE_HW, NDS32_BUILTIN_UASTORE_W,
+	NDS32_BUILTIN_UASTORE_DW.
+	* config/nds32/predicates.md (nds32_lmw_smw_base_operand): New
+	predicate.
+
 2018-03-03  Monk Chiang  <sh.chiang04@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>

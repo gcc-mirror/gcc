@@ -303,4 +303,10 @@
 		    || nds32_mem_format (op) == ADDRESS_FP_IMM7U)
 		    && (GET_MODE (op) == SImode)")))
 
+
+(define_memory_constraint "Umw"
+  "Memory constraint for lwm/smw"
+  (and (match_code "mem")
+       (match_test "nds32_valid_smw_lwm_base_p (op)")))
+
 ;; ------------------------------------------------------------------------

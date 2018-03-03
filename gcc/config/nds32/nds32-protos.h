@@ -60,11 +60,23 @@ extern void nds32_expand_epilogue_v3pop (bool);
 
 extern bool nds32_ls_333_p (rtx, rtx, rtx, machine_mode);
 
+/* Auxiliary functions for lwm/smw.  */
+
+extern bool nds32_valid_smw_lwm_base_p (rtx);
+
 /* Auxiliary functions for expanding rtl used in nds32-multiple.md.  */
 
 extern rtx nds32_expand_load_multiple (int, int, rtx, rtx);
 extern rtx nds32_expand_store_multiple (int, int, rtx, rtx);
 extern int nds32_expand_movmemqi (rtx, rtx, rtx, rtx);
+
+/* Auxiliary functions for expand unalign load instruction.  */
+
+extern void nds32_expand_unaligned_load (rtx *, enum machine_mode);
+
+/* Auxiliary functions for expand unalign store instruction.  */
+
+extern void nds32_expand_unaligned_store (rtx *, enum machine_mode);
 
 /* Auxiliary functions for multiple load/store predicate checking.  */
 
@@ -106,6 +118,8 @@ extern const char *nds32_output_16bit_load (rtx *, int);
 extern const char *nds32_output_32bit_store (rtx *, int);
 extern const char *nds32_output_32bit_load (rtx *, int);
 extern const char *nds32_output_32bit_load_s (rtx *, int);
+extern const char *nds32_output_smw_single_word (rtx *);
+extern const char *nds32_output_lmw_single_word (rtx *);
 
 /* Auxiliary functions to output stack push/pop instruction.  */
 

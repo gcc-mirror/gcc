@@ -241,6 +241,9 @@ struct builtin_description
 /* Intrinsics that take just one argument.  */
 static struct builtin_description bdesc_1arg[] =
 {
+  NDS32_BUILTIN(unaligned_load_hw, "unaligned_load_hw", UALOAD_HW)
+  NDS32_BUILTIN(unaligned_loadsi, "unaligned_load_w", UALOAD_W)
+  NDS32_BUILTIN(unaligned_loaddi, "unaligned_load_dw", UALOAD_DW)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_isync, "isync", ISYNC)
 };
 
@@ -256,6 +259,10 @@ static struct builtin_description bdesc_2arg[] =
 {
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_mtsr, "mtsr", MTSR)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_mtusr, "mtusr", MTUSR)
+  NDS32_NO_TARGET_BUILTIN(unaligned_store_hw, "unaligned_store_hw", UASTORE_HW)
+  NDS32_NO_TARGET_BUILTIN(unaligned_storesi, "unaligned_store_hw", UASTORE_W)
+  NDS32_NO_TARGET_BUILTIN(unaligned_storedi, "unaligned_store_hw", UASTORE_DW)
+
 };
 
 rtx
@@ -355,7 +362,9 @@ nds32_init_builtins_impl (void)
 			NDS32_BUILTIN_ ## CODE, BUILT_IN_MD, NULL, NULL_TREE)
 
   /* Looking for return type and argument can be found in tree.h file.  */
+  tree ptr_ushort_type_node = build_pointer_type (short_unsigned_type_node);
   tree ptr_uint_type_node = build_pointer_type (unsigned_type_node);
+  tree ptr_ulong_type_node = build_pointer_type (long_long_unsigned_type_node);
 
   /* Cache.  */
   ADD_NDS32_BUILTIN1 ("isync", void, ptr_uint, ISYNC);
@@ -370,4 +379,17 @@ nds32_init_builtins_impl (void)
   /* Interrupt.  */
   ADD_NDS32_BUILTIN0 ("setgie_en", void, SETGIE_EN);
   ADD_NDS32_BUILTIN0 ("setgie_dis", void, SETGIE_DIS);
+
+  /* Unaligned Load/Store  */
+  ADD_NDS32_BUILTIN1 ("unaligned_load_hw", short_unsigned, ptr_ushort,
+		      UALOAD_HW);
+  ADD_NDS32_BUILTIN1 ("unaligned_load_w", unsigned, ptr_uint, UALOAD_W);
+  ADD_NDS32_BUILTIN1 ("unaligned_load_dw", long_long_unsigned, ptr_ulong,
+		      UALOAD_DW);
+  ADD_NDS32_BUILTIN2 ("unaligned_store_hw", void, ptr_ushort, short_unsigned,
+		      UASTORE_HW);
+  ADD_NDS32_BUILTIN2 ("unaligned_store_w", void, ptr_uint, unsigned, UASTORE_W);
+  ADD_NDS32_BUILTIN2 ("unaligned_store_dw", void, ptr_ulong, long_long_unsigned,
+		      UASTORE_DW);
+
 }
