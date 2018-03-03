@@ -8851,7 +8851,7 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 	  gfc_add_expr_to_block (&block, tmp);
 	}
     }
-  else if (gfc_bt_struct (ts.type) || ts.type == BT_CLASS)
+  else if (gfc_bt_struct (ts.type) || ts.type == BT_CLASS || ts.type == BT_COMPLEX)
     {
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);

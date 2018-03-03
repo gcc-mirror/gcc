@@ -1,5 +1,11 @@
 2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/80965
+	* resolve.c (build_loc_call): Change symtree name from 'loc' to
+	'_loc'.
+
+2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
+
 	Backported from trunk.
 	PR fortran/78990
 	* expr.c (gfc_is_class_array_function): Renamed from
