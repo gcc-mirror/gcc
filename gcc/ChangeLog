@@ -1,6 +1,14 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/83722
+	* gcc.c (try_generate_repro): Pass
+	&temp_stderr_files[RETRY_ICE_ATTEMPTS - 1] rather than
+	&temp_stdout_files[RETRY_ICE_ATTEMPTS - 1] as last argument to
+	do_report_bug.
+
 	2018-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/83605
