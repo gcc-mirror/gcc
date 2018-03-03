@@ -1,6 +1,14 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-31  Jason Merrill  <jason@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83993
+	* constexpr.c (cxx_eval_outermost_constant_expr): Build NOP_EXPR
+	around non-constant ADDR_EXPRs rather than clearing TREE_CONSTANT
+	on ADDR_EXPR.
+
 	2018-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84031
