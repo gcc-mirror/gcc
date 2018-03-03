@@ -1,3 +1,13 @@
+2018-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83817
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: If function
+	is AGGR_INIT_EXPR rather than CALL_EXPR, set AGGR_INIT_FROM_THUNK_P
+	instead of CALL_FROM_THUNK_P.
+
 2018-03-02  Jason Merrill  <jason@redhat.com>
 
 	Fix MIPS16 ICE.
