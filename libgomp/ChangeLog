@@ -1,6 +1,12 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/84418
+	* libgomp.fortran/pr84418-1.f90: New test.
+	* libgomp.fortran/pr84418-2.f90: New test.
+
 	2018-01-29  Christoph Spiel  <cspiel@freenet.de>
 		    Jakub Jelinek  <jakub@redhat.com>
 
