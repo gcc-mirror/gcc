@@ -7538,8 +7538,7 @@ builtin_mathfn_code (const_tree t)
   const_tree argtype, parmtype;
   const_call_expr_arg_iterator iter;
 
-  if (TREE_CODE (t) != CALL_EXPR
-      || TREE_CODE (CALL_EXPR_FN (t)) != ADDR_EXPR)
+  if (TREE_CODE (t) != CALL_EXPR)
     return END_BUILTINS;
 
   fndecl = get_callee_fndecl (t);
