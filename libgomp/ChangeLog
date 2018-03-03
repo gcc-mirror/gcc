@@ -1,3 +1,13 @@
+2018-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-01-29  Christoph Spiel  <cspiel@freenet.de>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/84096
+	* omp.h.in (omp_init_nest_lock_with_hint): Use omp_nest_lock_t
+	instead of omp_lock_t.
+
 2018-02-09  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
