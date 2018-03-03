@@ -2589,6 +2589,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
 	{
 	  u = build_cplus_new (TREE_TYPE (t), TREE_OPERAND (t, 1),
 			       tf_warning_or_error);
+	  if (u == error_mark_node)
+	    return u;
 	  if (AGGR_INIT_ZERO_FIRST (TREE_OPERAND (t, 1)))
 	    AGGR_INIT_ZERO_FIRST (TREE_OPERAND (u, 1)) = true;
 	}
@@ -2606,6 +2608,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
 			 (splay_tree_value) TREE_OPERAND (u, 0));
 
       TREE_OPERAND (u, 1) = break_out_target_exprs (TREE_OPERAND (u, 1));
+      if (TREE_OPERAND (u, 1) == error_mark_node)
+	return error_mark_node;
 
       /* Replace the old expression with the new version.  */
       *tp = u;
@@ -2718,7 +2722,8 @@ break_out_target_exprs (tree t)
     target_remap = splay_tree_new (splay_tree_compare_pointers,
 				   /*splay_tree_delete_key_fn=*/NULL,
 				   /*splay_tree_delete_value_fn=*/NULL);
-  cp_walk_tree (&t, bot_manip, target_remap, NULL);
+  if (cp_walk_tree (&t, bot_manip, target_remap, NULL) == error_mark_node)
+    t = error_mark_node;
   cp_walk_tree (&t, bot_replace, target_remap, NULL);
 
   if (!--target_remap_count)
