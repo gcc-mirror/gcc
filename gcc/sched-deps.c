@@ -2851,9 +2851,11 @@ sched_macro_fuse_insns (rtx_insn *insn)
     {
       rtx insn_set = single_set (insn);
 
+      if (!insn_set)
+	return;
+
       prev = prev_nonnote_nondebug_insn (insn);
       if (!prev
-          || !insn_set
           || !single_set (prev))
         return;
 
