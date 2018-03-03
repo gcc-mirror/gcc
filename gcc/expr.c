@@ -10862,18 +10862,30 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	tree fndecl = get_callee_fndecl (exp), attr;
 
 	if (fndecl
+	    /* Don't diagnose the error attribute in thunks, those are
+	       artificially created.  */
+	    && !CALL_FROM_THUNK_P (exp)
 	    && (attr = lookup_attribute ("error",
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
-	  error ("%Kcall to %qs declared with attribute error: %s",
-		 exp, identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 1)),
-		 TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
+	  {
+	    const char *ident = lang_hooks.decl_printable_name (fndecl, 1);
+	    error ("%Kcall to %qs declared with attribute error: %s", exp,
+		   identifier_to_locale (ident),
+		   TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
+	  }
 	if (fndecl
+	    /* Don't diagnose the warning attribute in thunks, those are
+	       artificially created.  */
+	    && !CALL_FROM_THUNK_P (exp)
 	    && (attr = lookup_attribute ("warning",
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
-	  warning_at (tree_nonartificial_location (exp),
-		      0, "%Kcall to %qs declared with attribute warning: %s",
-		      exp, identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 1)),
-		      TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
+	  {
+	    const char *ident = lang_hooks.decl_printable_name (fndecl, 1);
+	    warning_at (tree_nonartificial_location (exp), 0,
+			"%Kcall to %qs declared with attribute warning: %s",
+			exp, identifier_to_locale (ident),
+			TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
+	  }
 
 	/* Check for a built-in function.  */
 	if (fndecl && DECL_BUILT_IN (fndecl))
