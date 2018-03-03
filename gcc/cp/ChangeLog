@@ -1,6 +1,14 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-09  Marek Polacek  <polacek@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83659
+	* constexpr.c (cxx_fold_indirect_ref): Sync some changes from
+	fold_indirect_ref_1.  Verify first that tree_fits_shwi_p (op01).
+	Formatting fixes.
+
 	2018-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84082
