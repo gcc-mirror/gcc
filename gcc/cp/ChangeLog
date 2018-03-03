@@ -1,6 +1,12 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/83958
+	* decl.c (cp_finish_decomp): Diagnose if reference structure binding
+	refers to incomplete type.
+
 	2018-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/83824
