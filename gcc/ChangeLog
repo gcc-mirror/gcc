@@ -1,3 +1,27 @@
+2018-03-03  Monk Chiang  <sh.chiang04@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-intrinsic.c
+	(nds32_expand_builtin_null_ftype_reg): Delete.
+	(nds32_expand_builtin_reg_ftype_imm): Ditto.
+	(nds32_expand_builtin_null_ftype_reg_imm): Ditto.
+	(nds32_read_argument): New.
+	(nds32_legitimize_target): Ditto.
+	(nds32_legitimize_argument): Ditto.
+	(nds32_check_constant_argument): Ditto.
+	(nds32_expand_unop_builtin): Ditto.
+	(nds32_expand_unopimm_builtin): Ditto.
+	(nds32_expand_binop_builtin): Ditto.
+	(nds32_builtin_decl_impl): Ditto.
+	(builtin_description): Ditto.
+	(nds32_expand_builtin_impl): Rewrite with new infrastructure.
+	(nds32_init_builtins_impl): Ditto.
+	* config/nds32/nds32.c (TARGET_BUILTIN_DECL): Define.
+	(nds32_builtin_decl): New.
+	* config/nds32/nds32.h (nds32_builtins): Add NDS32_BUILTIN_COUNT.
+	* config/nds32/nds32-protos.h (nds32_builtin_decl_impl): Declare.
+
 2018-03-02  Jeff Law  <law@redhat.com>
 
 	* reorg.c (stop_search_p): Handle DEBUG_INSN.

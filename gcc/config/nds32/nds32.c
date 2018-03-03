@@ -2728,6 +2728,13 @@ nds32_init_builtins (void)
   nds32_init_builtins_impl ();
 }
 
+static tree
+nds32_builtin_decl (unsigned code, bool initialize_p)
+{
+  /* Implement in nds32-intrinsic.c.  */
+  return nds32_builtin_decl_impl (code, initialize_p);
+}
+
 static rtx
 nds32_expand_builtin (tree exp,
 		      rtx target,
@@ -3824,6 +3831,9 @@ nds32_target_alignment (rtx_insn *label)
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS nds32_init_builtins
+
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL nds32_builtin_decl
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN nds32_expand_builtin
