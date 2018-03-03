@@ -1,6 +1,7 @@
 /* PR sanitizer/70875 */
 /* { dg-do run } */
-/* { dg-options "-fsanitize=bounds" } */
+/* { dg-options "-fsanitize=bounds -fno-sanitize-recover=bounds" } */
+/* { dg-shouldfail "ubsan" } */
 
 int
 foo (int n, int k)
