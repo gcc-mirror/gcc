@@ -1,6 +1,11 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-eh.c (operation_could_trap_helper_p): Ignore honor_trapv for
+	*DIV_EXPR and *MOD_EXPR.
+
 	2018-02-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81661
