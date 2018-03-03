@@ -1,6 +1,11 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84430
+	* g++.dg/gomp/pr84430.C: New test.
+
 	2018-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ipa/84425
