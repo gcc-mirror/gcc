@@ -1,6 +1,13 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84031
+	* decl.c (find_decomp_class_base): Ignore unnamed bitfields.  Ignore
+	recursive calls that return ret.
+	(cp_finish_decomp): Ignore unnamed bitfields.
+
 	2018-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83987

@@ -1,6 +1,11 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84031
+	* g++.dg/cpp1z/decomp36.C: New test.
+
 	2018-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83977
