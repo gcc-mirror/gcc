@@ -1,6 +1,11 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/83987
+	* tree.c (cp_free_lang_data): Revert 2018-01-23 change.
+
 	2018-02-09  Marek Polacek  <polacek@redhat.com>
 		    Jakub Jelinek  <jakub@redhat.com>
 
