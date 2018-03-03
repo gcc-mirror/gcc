@@ -1,3 +1,15 @@
+2018-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use ggc_strdup for the fp_suffix
+	argument.
+	(LAZY_HEX_FP_VALUES_CNT): Define.
+	(lazy_hex_fp_values): Allow up to LAZY_HEX_FP_VALUES_CNT lazy hex fp
+	values rather than just 12.
+	(builtin_define_with_hex_fp_value): Likewise.
+
 2018-01-25  Release Manager
 
 	* GCC 7.3.0 released.

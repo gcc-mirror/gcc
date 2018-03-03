@@ -702,7 +702,7 @@ enum cpp_builtin_type
   BT_COUNTER,			/* `__COUNTER__' */
   BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
   BT_FIRST_USER,		/* User defined builtin macros.  */
-  BT_LAST_USER = BT_FIRST_USER + 31
+  BT_LAST_USER = BT_FIRST_USER + 63
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
