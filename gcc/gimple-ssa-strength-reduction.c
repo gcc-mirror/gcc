@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-address.h"
 #include "tree-affine.h"
+#include "tree-eh.h"
 #include "builtins.h"
 
 /* Information about a strength reduction candidate.  Each statement
@@ -1698,6 +1699,9 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
        gsi_next (&gsi))
     {
       gimple *gs = gsi_stmt (gsi);
+
+      if (stmt_could_throw_p (gs))
+	continue;
 
       if (gimple_vuse (gs) && gimple_assign_single_p (gs))
 	slsr_process_ref (gs);
