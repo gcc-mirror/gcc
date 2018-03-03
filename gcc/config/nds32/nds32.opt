@@ -103,7 +103,7 @@ EnumValue
 Enum(nds32_arch_type) String(v3m) Value(ARCH_V3M)
 
 mcmodel=
-Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_MEDIUM)
+Target RejectNegative Joined Enum(nds32_cmodel_type) Var(nds32_cmodel_option) Init(CMODEL_LARGE)
 Specify the address generation strategy for code model.
 
 Enum
