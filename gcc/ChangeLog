@@ -1,6 +1,17 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81661
+	PR tree-optimization/84117
+	* tree-eh.h (rewrite_to_non_trapping_overflow): Declare.
+	* tree-eh.c: Include gimplify.h.
+	(find_trapping_overflow, replace_trapping_overflow,
+	rewrite_to_non_trapping_overflow): New functions.
+	* tree-vect-loop.c: Include tree-eh.h.
+	(vect_get_loop_niters): Use rewrite_to_non_trapping_overflow.
+
 	2018-01-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/83986
