@@ -1,6 +1,13 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/83977
+	* tree-inline.c (tree_function_versioning): Remove "omp declare simd"
+	attributes from DECL_ATTRIBUTES (new_decl) without affecting
+	DECL_ATTRIBUTES (old_decl).
+
 	2018-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/83945
