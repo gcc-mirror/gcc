@@ -1,5 +1,10 @@
 2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/80965
+	* gfortran.dg/select_type_41.f90: New test.
+
+2018-03-03  Paul Thomas  <pault@gcc.gnu.org>
+
 	Backported from trunk.
 	PR fortran/78990
 	* gfortran.dg/class_67.f90: New test.
