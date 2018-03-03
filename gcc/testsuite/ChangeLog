@@ -1,5 +1,10 @@
 2018-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/61358
+	* g++.dg/cpp0x/lambda/lambda-61358.C: New.
+
+2018-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/67370
 	* g++.dg/cpp0x/lambda/lambda-67370.C: New.
 
