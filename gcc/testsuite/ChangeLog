@@ -3,6 +3,11 @@
 	Backported from mainline
 	2018-03-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/84625
+	* gcc.target/i386/pr84625.c: New test.
+
+	2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
 	PR sanitizer/70875
 	* gcc.dg/ubsan/bounds-3.c: Add -fno-sanitize-recover=bounds to
 	dg-options and dg-shouldfail "ubsan" directive.

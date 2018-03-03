@@ -1,6 +1,13 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/84625
+	* config/i386/i386.c (ix86_print_operand): Use conditional
+	output_operand_lossage instead of gcc_assert if CONST_VECTOR is not
+	zero vector.
+
 	2018-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-prop.c (ipa_vr_ggc_hash_traits::hash): Hash p->min and
