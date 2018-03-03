@@ -1,6 +1,13 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-16  Marek Polacek  <polacek@redhat.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84192
+	* constexpr.c (cxx_eval_constant_expression) <case RETURN_EXPR>: Don't
+	set *jump_target to anything if jump_target is NULL.
+
 	2018-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84341
