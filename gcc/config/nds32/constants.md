@@ -30,6 +30,16 @@
   ])
 
 
+;; The unpec operation index.
+(define_c_enum "unspec_element" [
+  UNSPEC_UALOAD_HW
+  UNSPEC_UALOAD_W
+  UNSPEC_UALOAD_DW
+  UNSPEC_UASTORE_HW
+  UNSPEC_UASTORE_W
+  UNSPEC_UASTORE_DW
+])
+
 ;; The unspec_volatile operation index.
 (define_c_enum "unspec_volatile_element" [
   UNSPEC_VOLATILE_ISYNC

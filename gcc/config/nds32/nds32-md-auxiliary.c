@@ -36,8 +36,27 @@
 #include "recog.h"
 #include "output.h"
 #include "tm-constrs.h"
+#include "expr.h"
 
 /* ------------------------------------------------------------------------ */
+
+static int
+nds32_regno_to_enable4 (unsigned regno)
+{
+  switch (regno)
+    {
+    case 28: /* $r28/fp */
+      return 0x8;
+    case 29: /* $r29/gp */
+      return 0x4;
+    case 30: /* $r30/lp */
+      return 0x2;
+    case 31: /* $r31/sp */
+      return 0x1;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* A helper function to return character based on byte size.  */
 static char
@@ -849,4 +868,280 @@ nds32_output_casesi (rtx *operands)
     return "jr\t%2";
 }
 
+/* Auxiliary functions for lwm/smw.  */
+bool
+nds32_valid_smw_lwm_base_p (rtx op)
+{
+  rtx base_addr;
+
+  if (!MEM_P (op))
+    return false;
+
+  base_addr = XEXP (op, 0);
+
+  if (REG_P (base_addr))
+    return true;
+  else
+    {
+      if (GET_CODE (base_addr) == POST_INC
+	  && REG_P (XEXP (base_addr, 0)))
+        return true;
+    }
+
+  return false;
+}
+
 /* ------------------------------------------------------------------------ */
+const char *
+nds32_output_smw_single_word (rtx *operands)
+{
+  char buff[100];
+  unsigned regno;
+  int enable4;
+  bool update_base_p;
+  rtx base_addr = operands[0];
+  rtx base_reg;
+  rtx otherops[2];
+
+  if (REG_P (XEXP (base_addr, 0)))
+    {
+      update_base_p = false;
+      base_reg = XEXP (base_addr, 0);
+    }
+  else
+    {
+      update_base_p = true;
+      base_reg = XEXP (XEXP (base_addr, 0), 0);
+    }
+
+  const char *update_base = update_base_p ? "m" : "";
+
+  regno = REGNO (operands[1]);
+
+  otherops[0] = base_reg;
+  otherops[1] = operands[1];
+
+  if (regno >= 28)
+    {
+      enable4 = nds32_regno_to_enable4 (regno);
+      sprintf (buff, "smw.bi%s\t$sp, [%%0], $sp, %x", update_base, enable4);
+    }
+  else
+    {
+      sprintf (buff, "smw.bi%s\t%%1, [%%0], %%1", update_base);
+    }
+  output_asm_insn (buff, otherops);
+  return "";
+}
+
+const char *
+nds32_output_lmw_single_word (rtx *operands)
+{
+  char buff[100];
+  unsigned regno;
+  bool update_base_p;
+  int enable4;
+  rtx base_addr = operands[1];
+  rtx base_reg;
+  rtx otherops[2];
+
+  if (REG_P (XEXP (base_addr, 0)))
+    {
+      update_base_p = false;
+      base_reg = XEXP (base_addr, 0);
+    }
+  else
+    {
+      update_base_p = true;
+      base_reg = XEXP (XEXP (base_addr, 0), 0);
+    }
+
+  const char *update_base = update_base_p ? "m" : "";
+
+  regno = REGNO (operands[0]);
+
+  otherops[0] = operands[0];
+  otherops[1] = base_reg;
+
+  if (regno >= 28)
+    {
+      enable4 = nds32_regno_to_enable4 (regno);
+      sprintf (buff, "lmw.bi%s\t$sp, [%%1], $sp, %x", update_base, enable4);
+    }
+  else
+    {
+      sprintf (buff, "lmw.bi%s\t%%0, [%%1], %%0", update_base);
+    }
+  output_asm_insn (buff, otherops);
+  return "";
+}
+
+void
+nds32_expand_unaligned_load (rtx *operands, enum machine_mode mode)
+{
+  /* Initial memory offset.  */
+  int offset = WORDS_BIG_ENDIAN ? GET_MODE_SIZE (mode) - 1 : 0;
+  int offset_adj = WORDS_BIG_ENDIAN ? -1 : 1;
+  /* Initial register shift byte.  */
+  int shift = 0;
+  /* The first load byte instruction is not the same. */
+  int width = GET_MODE_SIZE (mode) - 1;
+  rtx mem[2];
+  rtx reg[2];
+  rtx sub_reg;
+  rtx temp_reg, temp_sub_reg;
+  int num_reg;
+
+  /* Generating a series of load byte instructions.
+     The first load byte instructions and other
+     load byte instructions are not the same. like:
+     First:
+       lbi reg0, [mem]
+       zeh reg0, reg0
+     Second:
+       lbi temp_reg, [mem + offset]
+       sll temp_reg, (8 * shift)
+       ior reg0, temp_reg
+
+       lbi temp_reg, [mem + (offset + 1)]
+       sll temp_reg, (8 * (shift + 1))
+       ior reg0, temp_reg  */
+
+  temp_reg = gen_reg_rtx (SImode);
+  temp_sub_reg = gen_lowpart (QImode, temp_reg);
+
+  if (mode == DImode)
+    {
+      /* Load doubleword, we need two registers to access.  */
+      reg[0] = simplify_gen_subreg (SImode, operands[0],
+				    GET_MODE (operands[0]), 0);
+      reg[1] = simplify_gen_subreg (SImode, operands[0],
+				    GET_MODE (operands[0]), 4);
+      /* A register only store 4 byte.  */
+      width = GET_MODE_SIZE (SImode) - 1;
+    }
+  else
+    {
+      reg[0] = operands[0];
+    }
+
+  for (num_reg = (mode == DImode) ? 2 : 1; num_reg > 0; num_reg--)
+    {
+      sub_reg = gen_lowpart (QImode, reg[0]);
+      mem[0] = gen_rtx_MEM (QImode, plus_constant (Pmode, operands[1], offset));
+
+      /* Generating the first part instructions.
+	   lbi reg0, [mem]
+	   zeh reg0, reg0 */
+      emit_move_insn (sub_reg, mem[0]);
+      emit_insn (gen_zero_extendqisi2 (reg[0], sub_reg));
+
+      while (width > 0)
+	{
+	  offset = offset + offset_adj;
+	  shift++;
+	  width--;
+
+	  mem[1] = gen_rtx_MEM (QImode, plus_constant (Pmode,
+						       operands[1],
+						       offset));
+	  /* Generating the second part instructions.
+	       lbi temp_reg, [mem + offset]
+	       sll temp_reg, (8 * shift)
+	       ior reg0, temp_reg  */
+	  emit_move_insn (temp_sub_reg, mem[1]);
+	  emit_insn (gen_ashlsi3 (temp_reg, temp_reg,
+				  GEN_INT (shift * 8)));
+	  emit_insn (gen_iorsi3 (reg[0], reg[0], temp_reg));
+	}
+
+      if (mode == DImode)
+	{
+	  /* Using the second register to load memory information. */
+	  reg[0] = reg[1];
+	  shift = 0;
+	  width = GET_MODE_SIZE (SImode) - 1;
+	  offset = offset + offset_adj;
+	}
+    }
+}
+
+void
+nds32_expand_unaligned_store (rtx *operands, enum machine_mode mode)
+{
+  /* Initial memory offset.  */
+  int offset = WORDS_BIG_ENDIAN ? GET_MODE_SIZE (mode) - 1 : 0;
+  int offset_adj = WORDS_BIG_ENDIAN ? -1 : 1;
+  /* Initial register shift byte.  */
+  int shift = 0;
+  /* The first load byte instruction is not the same. */
+  int width = GET_MODE_SIZE (mode) - 1;
+  rtx mem[2];
+  rtx reg[2];
+  rtx sub_reg;
+  rtx temp_reg, temp_sub_reg;
+  int num_reg;
+
+  /* Generating a series of store byte instructions.
+     The first store byte instructions and other
+     load byte instructions are not the same. like:
+     First:
+	sbi  reg0, [mem + 0]
+     Second:
+	srli    temp_reg, reg0, (8 * shift)
+	sbi	temp_reg, [mem + offset]  */
+
+  temp_reg = gen_reg_rtx (SImode);
+  temp_sub_reg = gen_lowpart (QImode, temp_reg);
+
+  if (mode == DImode)
+    {
+      /* Load doubleword, we need two registers to access.  */
+      reg[0] = simplify_gen_subreg (SImode, operands[1],
+				    GET_MODE (operands[1]), 0);
+      reg[1] = simplify_gen_subreg (SImode, operands[1],
+				    GET_MODE (operands[1]), 4);
+      /* A register only store 4 byte.  */
+      width = GET_MODE_SIZE (SImode) - 1;
+    }
+  else
+    {
+      reg[0] = operands[1];
+    }
+
+  for (num_reg = (mode == DImode) ? 2 : 1; num_reg > 0; num_reg--)
+    {
+      sub_reg = gen_lowpart (QImode, reg[0]);
+      mem[0] = gen_rtx_MEM (QImode, plus_constant (Pmode, operands[0], offset));
+
+      /* Generating the first part instructions.
+	   sbi reg0, [mem + 0] */
+      emit_move_insn (mem[0], sub_reg);
+
+      while (width > 0)
+	{
+	  offset = offset + offset_adj;
+	  shift++;
+	  width--;
+
+	  mem[1] = gen_rtx_MEM (QImode, plus_constant (Pmode,
+						       operands[0],
+						       offset));
+	  /* Generating the second part instructions.
+	       srli  temp_reg, reg0, (8 * shift)
+	       sbi   temp_reg, [mem + offset]  */
+	  emit_insn (gen_lshrsi3 (temp_reg, reg[0],
+				  GEN_INT (shift * 8)));
+	  emit_move_insn (mem[1], temp_sub_reg);
+	}
+
+      if (mode == DImode)
+	{
+	  /* Using the second register to load memory information. */
+	  reg[0] = reg[1];
+	  shift = 0;
+	  width = GET_MODE_SIZE (SImode) - 1;
+	  offset = offset + offset_adj;
+	}
+    }
+}

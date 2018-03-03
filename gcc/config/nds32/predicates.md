@@ -57,6 +57,10 @@
   return true;
 })
 
+(define_predicate "nds32_lmw_smw_base_operand"
+  (and (match_code "mem")
+       (match_test "nds32_valid_smw_lwm_base_p (op)")))
+
 (define_special_predicate "nds32_load_multiple_operation"
   (match_code "parallel")
 {
