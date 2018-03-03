@@ -3,6 +3,10 @@
 	Backported from mainline
 	2018-02-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84558
+	* constexpr.c (cxx_eval_vec_init_1): For reuse, treat NULL eltinit like
+	a valid constant initializer.  Formatting fixes.
+
 	PR c++/84557
 	* parser.c (cp_parser_omp_var_list_no_open): Only call
 	cp_parser_lookup_name_simple on names satisfying identifier_p.
