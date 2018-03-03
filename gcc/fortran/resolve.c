@@ -8712,7 +8712,7 @@ build_loc_call (gfc_expr *sym_expr)
   gfc_expr *loc_call;
   loc_call = gfc_get_expr ();
   loc_call->expr_type = EXPR_FUNCTION;
-  gfc_get_sym_tree ("loc", gfc_current_ns, &loc_call->symtree, false);
+  gfc_get_sym_tree ("_loc", gfc_current_ns, &loc_call->symtree, false);
   loc_call->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   loc_call->symtree->n.sym->attr.intrinsic = 1;
   loc_call->symtree->n.sym->result = loc_call->symtree->n.sym;
