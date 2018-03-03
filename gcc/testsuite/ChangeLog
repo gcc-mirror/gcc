@@ -1,5 +1,10 @@
 2018-03-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66128
+	* gfortran.dg/zero_sized_8.f90: New test.
+
+2018-03-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/51434
 	* gfortran.dg/pr51434.f90: New test.
 

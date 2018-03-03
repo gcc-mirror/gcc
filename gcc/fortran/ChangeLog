@@ -1,5 +1,16 @@
 2018-03-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/66128
+	* simplify.c (is_size_zero_array): New function to check for size
+	zero array.
+	(gfc_simplify_all, gfc_simplify_any, gfc_simplify_count, 
+	 gfc_simplify_iall, gfc_simplify_iany, gfc_simplify_iparity,
+	 gfc_simplify_minval, gfc_simplify_maxval, gfc_simplify_norm2,
+	 gfc_simplify_product, gfc_simplify_sum): Use it, and implement
+	requirements from F2018.
+
+2018-03-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/51434
 	* simplify.c (gfc_simplify_transfer): Resolve mold.
 
