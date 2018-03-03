@@ -1,6 +1,12 @@
 2018-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84341
+	* parser.c (cp_parser_binary_expression): Use build_min instead of
+	build2_loc to build the no_toplevel_fold_p toplevel binary expression.
+
 	2018-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/83987
