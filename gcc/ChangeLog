@@ -1,3 +1,13 @@
+2018-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-01-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/83605
+	* gimple-ssa-strength-reduction.c: Include tree-eh.h.
+	(find_candidates_dom_walker::before_dom_children): Ignore stmts that
+	can throw.
+
 2018-03-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
