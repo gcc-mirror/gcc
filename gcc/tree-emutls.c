@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
+#include "gimplify.h"
 
 /* Whenever a target does not support thread-local storage (TLS) natively,
    we can emulate it with some run-time support in libgcc.  This will in
@@ -430,6 +431,20 @@ gen_emutls_addr (tree decl, struct lower_emutls_data *d)
   return addr;
 }
 
+/* Callback for lower_emutls_1, return non-NULL if there is any TLS
+   VAR_DECL in the subexpressions.  */
+
+static tree
+lower_emutls_2 (tree *ptr, int *walk_subtrees, void *)
+{
+  tree t = *ptr;
+  if (TREE_CODE (t) == VAR_DECL)
+    return DECL_THREAD_LOCAL_P (t) ? t : NULL_TREE;
+  else if (!EXPR_P (t))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
 /* Callback for walk_gimple_op.  D = WI->INFO is a struct lower_emutls_data.
    Given an operand *PTR within D->STMT, if the operand references a TLS
    variable, then lower the reference to a call to the runtime.  Insert
@@ -455,6 +470,13 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
       if (TREE_CODE (TREE_OPERAND (t, 0)) != VAR_DECL)
 	{
 	  bool save_changed;
+
+	  /* Gimple invariants are shareable trees, so before changing
+	     anything in them if we will need to change anything, unshare
+	     them.  */
+	  if (is_gimple_min_invariant (t)
+	      && walk_tree (&TREE_OPERAND (t, 0), lower_emutls_2, NULL, NULL))
+	    *ptr = t = unshare_expr (t);
 
 	  /* If we're allowed more than just is_gimple_val, continue.  */
 	  if (!wi->val_only)
