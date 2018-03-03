@@ -1374,6 +1374,8 @@ spread_components (sbitmap components)
       bitmap_clear_bit (seen, bb->index);
     }
 
+  todo.release ();
+
   /* Finally, mark everything not not needed both forwards and backwards.  */
 
   FOR_EACH_BB_FN (bb, cfun)
