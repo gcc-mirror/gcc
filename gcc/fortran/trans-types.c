@@ -1804,7 +1804,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
       TREE_NO_WARNING (decl) = 1;
     }
 
-  if (flag_coarray == GFC_FCOARRAY_LIB && codimen)
+  if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       decl = gfc_add_field_to_struct_1 (fat_type,
 					get_identifier ("token"),
@@ -2334,6 +2334,7 @@ gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
   for (; to_cm; to_cm = to_cm->next, from_cm = from_cm->next)
     {
       to_cm->backend_decl = from_cm->backend_decl;
+      to_cm->caf_token = from_cm->caf_token;
       if (from_cm->ts.type == BT_UNION)
         gfc_get_union_type (to_cm->ts.u.derived);
       else if (from_cm->ts.type == BT_DERIVED
@@ -2444,6 +2445,10 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   gfc_dt_list *dt;
   gfc_namespace *ns;
   tree tmp;
+  bool coarray_flag;
+
+  coarray_flag = flag_coarray == GFC_FCOARRAY_LIB
+		 && derived->module && !derived->attr.vtype;
 
   if (derived->attr.unlimited_polymorphic
       || (flag_coarray == GFC_FCOARRAY_LIB
@@ -2636,7 +2641,9 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	  field_type = build_pointer_type (tmp);
 	}
       else if (c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-        field_type = c->ts.u.derived->backend_decl;
+	field_type = c->ts.u.derived->backend_decl;
+      else if (c->attr.caf_token)
+	field_type = pvoid_type_node;
       else
 	{
 	  if (c->ts.type == BT_CHARACTER && !c->ts.deferred)
@@ -2715,19 +2722,6 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       gcc_assert (field);
       if (!c->backend_decl)
 	c->backend_decl = field;
-
-      /* Do not add a caf_token field for classes' data components.  */
-      if (codimen && !c->attr.dimension && !c->attr.codimension
-	  && (c->attr.allocatable || c->attr.pointer)
-	  && c->caf_token == NULL_TREE && strcmp ("_data", c->name) != 0)
-	{
-	  char caf_name[GFC_MAX_SYMBOL_LEN];
-	  snprintf (caf_name, GFC_MAX_SYMBOL_LEN, "_caf_%s", c->name);
-	  c->caf_token = gfc_add_field_to_struct (typenode,
-						  get_identifier (caf_name),
-						  pvoid_type_node, &chain);
-	  TREE_NO_WARNING (c->caf_token) = 1;
-	}
     }
 
   /* Now lay out the derived type, including the fields.  */
@@ -2752,6 +2746,24 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   derived->backend_decl = typenode;
 
 copy_derived_types:
+
+  for (c = derived->components; c; c = c->next)
+    {
+      /* Do not add a caf_token field for class container components.  */
+      if ((codimen || coarray_flag)
+	  && !c->attr.dimension && !c->attr.codimension
+	  && (c->attr.allocatable || c->attr.pointer)
+	  && !derived->attr.is_class)
+	{
+	  char caf_name[GFC_MAX_SYMBOL_LEN];
+	  gfc_component *token;
+	  snprintf (caf_name, GFC_MAX_SYMBOL_LEN, "_caf_%s", c->name);
+	  token = gfc_find_component (derived, caf_name, true, true, NULL);
+	  gcc_assert (token);
+	  c->caf_token = token->backend_decl;
+	  TREE_NO_WARNING (c->caf_token) = 1;
+	}
+    }
 
   for (dt = gfc_derived_types; dt; dt = dt->next)
     gfc_copy_dt_decls_ifequal (derived, dt->derived, false);
