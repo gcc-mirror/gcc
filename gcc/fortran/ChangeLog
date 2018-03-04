@@ -1,3 +1,16 @@
+2018-03-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83076
+	* resolve.c (resolve_fl_derived0): Add caf_token fields for
+	allocatable and pointer scalars, when -fcoarray selected.
+	* trans-types.c (gfc_copy_dt_decls_ifequal): Copy the token
+	field as well as the backend_decl.
+	(gfc_get_derived_type): Flag GFC_FCOARRAY_LIB for module
+	derived types that are not vtypes. Components with caf_token
+	attribute are pvoid types. For a component requiring it, find
+	the caf_token field and have the component token field point to
+	its backend_decl.
+
 2018-03-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/71085
