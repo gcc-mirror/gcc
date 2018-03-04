@@ -96,8 +96,9 @@
 	  (mem:SI (plus:SI (match_dup 1) (const_int 28))))])]
   "(XVECLEN (operands[0], 0) == 8)"
   "lmw.bi\t%2, [%1], %9, 0x0"
-  [(set_attr "type"   "load")
-   (set_attr "length"    "4")]
+  [(set_attr "type"   "load_multiple")
+   (set_attr "combo"              "8")
+   (set_attr "length"             "4")]
 )
 
 (define_insn "*lmwsi7"
@@ -118,8 +119,9 @@
 	  (mem:SI (plus:SI (match_dup 1) (const_int 24))))])]
   "(XVECLEN (operands[0], 0) == 7)"
   "lmw.bi\t%2, [%1], %8, 0x0"
-  [(set_attr "type"   "load")
-   (set_attr "length"    "4")]
+  [(set_attr "type"   "load_multiple")
+   (set_attr "combo"              "7")
+   (set_attr "length"             "4")]
 )
 
 (define_insn "*lmwsi6"
@@ -138,8 +140,9 @@
 	  (mem:SI (plus:SI (match_dup 1) (const_int 20))))])]
   "(XVECLEN (operands[0], 0) == 6)"
   "lmw.bi\t%2, [%1], %7, 0x0"
-  [(set_attr "type"   "load")
-   (set_attr "length"    "4")]
+  [(set_attr "type"   "load_multiple")
+   (set_attr "combo"              "6")
+   (set_attr "length"             "4")]
 )
 
 (define_insn "*lmwsi5"
@@ -156,8 +159,9 @@
 	  (mem:SI (plus:SI (match_dup 1) (const_int 16))))])]
   "(XVECLEN (operands[0], 0) == 5)"
   "lmw.bi\t%2, [%1], %6, 0x0"
-  [(set_attr "type"   "load")
-   (set_attr "length"    "4")]
+  [(set_attr "type"   "load_multiple")
+   (set_attr "combo"              "5")
+   (set_attr "length"             "4")]
 )
 
 (define_insn "*lmwsi4"
@@ -172,8 +176,9 @@
 	  (mem:SI (plus:SI (match_dup 1) (const_int 12))))])]
   "(XVECLEN (operands[0], 0) == 4)"
   "lmw.bi\t%2, [%1], %5, 0x0"
-  [(set_attr "type"   "load")
-   (set_attr "length"    "4")]
+  [(set_attr "type"   "load_multiple")
+   (set_attr "combo"              "4")
+   (set_attr "length"             "4")]
 )
 
 (define_insn "*lmwsi3"
@@ -186,8 +191,9 @@
 	  (mem:SI (plus:SI (match_dup 1) (const_int 8))))])]
   "(XVECLEN (operands[0], 0) == 3)"
   "lmw.bi\t%2, [%1], %4, 0x0"
-  [(set_attr "type"   "load")
-   (set_attr "length"    "4")]
+  [(set_attr "type"   "load_multiple")
+   (set_attr "combo"              "3")
+   (set_attr "length"             "4")]
 )
 
 (define_insn "*lmwsi2"
@@ -198,8 +204,9 @@
 	  (mem:SI (plus:SI (match_dup 1) (const_int 4))))])]
   "(XVECLEN (operands[0], 0) == 2)"
   "lmw.bi\t%2, [%1], %3, 0x0"
-  [(set_attr "type"   "load")
-   (set_attr "length"    "4")]
+  [(set_attr "type"   "load_multiple")
+   (set_attr "combo"              "2")
+   (set_attr "length"             "4")]
 )
 
 
@@ -280,8 +287,9 @@
 	  (match_operand:SI 9 "register_operand" ""))])]
   "(XVECLEN (operands[0], 0) == 8)"
   "smw.bi\t%2, [%1], %9, 0x0"
-  [(set_attr "type"   "store")
-   (set_attr "length"     "4")]
+  [(set_attr "type"   "store_multiple")
+   (set_attr "combo"               "8")
+   (set_attr "length"              "4")]
 )
 
 (define_insn "*stmsi7"
@@ -302,8 +310,9 @@
 	  (match_operand:SI 8 "register_operand" ""))])]
   "(XVECLEN (operands[0], 0) == 7)"
   "smw.bi\t%2, [%1], %8, 0x0"
-  [(set_attr "type"   "store")
-   (set_attr "length"     "4")]
+  [(set_attr "type"   "store_multiple")
+   (set_attr "combo"               "7")
+   (set_attr "length"              "4")]
 )
 
 (define_insn "*stmsi6"
@@ -322,8 +331,9 @@
 	  (match_operand:SI 7 "register_operand" ""))])]
   "(XVECLEN (operands[0], 0) == 6)"
   "smw.bi\t%2, [%1], %7, 0x0"
-  [(set_attr "type"   "store")
-   (set_attr "length"     "4")]
+  [(set_attr "type"   "store_multiple")
+   (set_attr "combo"               "6")
+   (set_attr "length"              "4")]
 )
 
 (define_insn "*stmsi5"
@@ -340,8 +350,9 @@
 	  (match_operand:SI 6 "register_operand" ""))])]
   "(XVECLEN (operands[0], 0) == 5)"
   "smw.bi\t%2, [%1], %6, 0x0"
-  [(set_attr "type"   "store")
-   (set_attr "length"     "4")]
+  [(set_attr "type"   "store_multiple")
+   (set_attr "combo"               "5")
+   (set_attr "length"              "4")]
 )
 
 (define_insn "*stmsi4"
@@ -356,8 +367,9 @@
 	  (match_operand:SI 5 "register_operand" ""))])]
   "(XVECLEN (operands[0], 0) == 4)"
   "smw.bi\t%2, [%1], %5, 0x0"
-  [(set_attr "type"   "store")
-   (set_attr "length"     "4")]
+  [(set_attr "type"   "store_multiple")
+   (set_attr "combo"               "4")
+   (set_attr "length"              "4")]
 )
 
 (define_insn "*stmsi3"
@@ -370,8 +382,9 @@
 	  (match_operand:SI 4 "register_operand" ""))])]
   "(XVECLEN (operands[0], 0) == 3)"
   "smw.bi\t%2, [%1], %4, 0x0"
-  [(set_attr "type"   "store")
-   (set_attr "length"     "4")]
+  [(set_attr "type"   "store_multiple")
+   (set_attr "combo"               "3")
+   (set_attr "length"              "4")]
 )
 
 (define_insn "*stmsi2"
@@ -382,8 +395,9 @@
 	  (match_operand:SI 3 "register_operand" ""))])]
   "(XVECLEN (operands[0], 0) == 2)"
   "smw.bi\t%2, [%1], %3, 0x0"
-  [(set_attr "type"   "store")
-   (set_attr "length"     "4")]
+  [(set_attr "type"   "store_multiple")
+   (set_attr "combo"               "2")
+   (set_attr "length"              "4")]
 )
 
 ;; Move a block of memory if it is word aligned and MORE than 2 words long.
