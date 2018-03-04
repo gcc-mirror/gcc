@@ -4349,6 +4349,8 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 
       if (expr->value.function.esym == NULL
 	    && expr->value.function.isym != NULL
+	    && expr->value.function.actual
+	    && expr->value.function.actual->expr
 	    && expr->value.function.actual->expr->symtree
 	    && gfc_map_intrinsic_function (expr, mapping))
 	break;

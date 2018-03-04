@@ -1,3 +1,9 @@
+2018-03-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71085
+	* trans-expr.c (gfc_apply_interface_mapping_to_expr): Do not
+	dereference NULL pointer.
+
 2018-03-03  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/66128
