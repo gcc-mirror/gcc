@@ -68,7 +68,7 @@ extern bool nds32_valid_smw_lwm_base_p (rtx);
 
 extern rtx nds32_expand_load_multiple (int, int, rtx, rtx, bool, rtx *);
 extern rtx nds32_expand_store_multiple (int, int, rtx, rtx, bool, rtx *);
-extern int nds32_expand_movmemqi (rtx, rtx, rtx, rtx);
+extern bool nds32_expand_movmemsi (rtx, rtx, rtx, rtx);
 
 /* Auxiliary functions for expand unalign load instruction.  */
 
