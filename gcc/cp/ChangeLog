@@ -1,3 +1,8 @@
+2018-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84686 - missing volatile loads.
+	* cvt.c (convert_to_void): Call maybe_undo_parenthesized_ref.
+
 2018-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71464
