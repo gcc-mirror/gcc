@@ -66,8 +66,8 @@ extern bool nds32_valid_smw_lwm_base_p (rtx);
 
 /* Auxiliary functions for expanding rtl used in nds32-multiple.md.  */
 
-extern rtx nds32_expand_load_multiple (int, int, rtx, rtx);
-extern rtx nds32_expand_store_multiple (int, int, rtx, rtx);
+extern rtx nds32_expand_load_multiple (int, int, rtx, rtx, bool, rtx *);
+extern rtx nds32_expand_store_multiple (int, int, rtx, rtx, bool, rtx *);
 extern int nds32_expand_movmemqi (rtx, rtx, rtx, rtx);
 
 /* Auxiliary functions for expand unalign load instruction.  */
@@ -80,7 +80,7 @@ extern void nds32_expand_unaligned_store (rtx *, enum machine_mode);
 
 /* Auxiliary functions for multiple load/store predicate checking.  */
 
-extern bool nds32_valid_multiple_load_store (rtx, bool);
+extern bool nds32_valid_multiple_load_store_p (rtx, bool, bool);
 
 /* Auxiliary functions for stack operation predicate checking.  */
 

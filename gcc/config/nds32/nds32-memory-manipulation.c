@@ -40,16 +40,50 @@
    Check nds32-multiple.md file for the patterns.  */
 rtx
 nds32_expand_load_multiple (int base_regno, int count,
-			    rtx base_addr, rtx basemem)
+			    rtx base_addr, rtx basemem,
+			    bool update_base_reg_p,
+			    rtx *update_base_reg)
 {
   int par_index;
   int offset;
+  int start_idx;
   rtx result;
   rtx new_addr, mem, reg;
 
-  /* Create the pattern that is presented in nds32-multiple.md.  */
+  /* Generate a unaligned load to prevent load instruction pull out from
+     parallel, and then it will generate lwi, and lose unaligned acces */
+  if (count == 1)
+    {
+      reg = gen_rtx_REG (SImode, base_regno);
+      if (update_base_reg_p)
+	{
+	  *update_base_reg = gen_reg_rtx (SImode);
+	  return gen_unaligned_load_update_base_w (*update_base_reg, reg, base_addr);
+	}
+      else
+	return gen_unaligned_load_w (reg, gen_rtx_MEM (SImode, base_addr));
+    }
 
-  result = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
+  /* Create the pattern that is presented in nds32-multiple.md.  */
+  if (update_base_reg_p)
+    {
+      result = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count + 1));
+      start_idx = 1;
+    }
+  else
+    {
+      result = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
+      start_idx = 0;
+    }
+
+  if (update_base_reg_p)
+    {
+      offset           = count * 4;
+      new_addr         = plus_constant (Pmode, base_addr, offset);
+      *update_base_reg = gen_reg_rtx (SImode);
+
+      XVECEXP (result, 0, 0) = gen_rtx_SET (*update_base_reg, new_addr);
+    }
 
   for (par_index = 0; par_index < count; par_index++)
     {
@@ -60,7 +94,7 @@ nds32_expand_load_multiple (int base_regno, int count,
 					       new_addr, offset);
       reg      = gen_rtx_REG (SImode, base_regno + par_index);
 
-      XVECEXP (result, 0, par_index) = gen_rtx_SET (reg, mem);
+      XVECEXP (result, 0, (par_index + start_idx)) = gen_rtx_SET (reg, mem);
     }
 
   return result;
@@ -68,16 +102,49 @@ nds32_expand_load_multiple (int base_regno, int count,
 
 rtx
 nds32_expand_store_multiple (int base_regno, int count,
-			     rtx base_addr, rtx basemem)
+			     rtx base_addr, rtx basemem,
+			     bool update_base_reg_p,
+			     rtx *update_base_reg)
 {
   int par_index;
   int offset;
+  int start_idx;
   rtx result;
   rtx new_addr, mem, reg;
 
+  if (count == 1)
+    {
+      reg = gen_rtx_REG (SImode, base_regno);
+      if (update_base_reg_p)
+	{
+	  *update_base_reg = gen_reg_rtx (SImode);
+	  return gen_unaligned_store_update_base_w (*update_base_reg, base_addr, reg);
+	}
+      else
+	return gen_unaligned_store_w (gen_rtx_MEM (SImode, base_addr), reg);
+    }
+
   /* Create the pattern that is presented in nds32-multiple.md.  */
 
-  result = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
+  if (update_base_reg_p)
+    {
+      result = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count + 1));
+      start_idx = 1;
+    }
+  else
+    {
+      result = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
+      start_idx = 0;
+    }
+
+  if (update_base_reg_p)
+    {
+      offset           = count * 4;
+      new_addr         = plus_constant (Pmode, base_addr, offset);
+      *update_base_reg = gen_reg_rtx (SImode);
+
+      XVECEXP (result, 0, 0) = gen_rtx_SET (*update_base_reg, new_addr);
+    }
 
   for (par_index = 0; par_index < count; par_index++)
     {
@@ -88,7 +155,7 @@ nds32_expand_store_multiple (int base_regno, int count,
 					       new_addr, offset);
       reg      = gen_rtx_REG (SImode, base_regno + par_index);
 
-      XVECEXP (result, 0, par_index) = gen_rtx_SET (mem, reg);
+      XVECEXP (result, 0, par_index + start_idx) = gen_rtx_SET (mem, reg);
     }
 
   return result;
@@ -135,8 +202,12 @@ nds32_expand_movmemqi (rtx dstmem, rtx srcmem, rtx total_bytes, rtx alignment)
 
   out_words = in_words = INTVAL (total_bytes) / UNITS_PER_WORD;
 
-  emit_insn (nds32_expand_load_multiple (0, in_words, src_base_reg, srcmem));
-  emit_insn (nds32_expand_store_multiple (0, out_words, dst_base_reg, dstmem));
+  emit_insn (
+    nds32_expand_load_multiple (0, in_words, src_base_reg,
+				srcmem, false, NULL));
+  emit_insn (
+    nds32_expand_store_multiple (0, out_words, dst_base_reg,
+				 dstmem, false, NULL));
 
   /* Successfully create patterns, return 1.  */
   return 1;

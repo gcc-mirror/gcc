@@ -1,4 +1,27 @@
 2018-03-04  Kito Cheng  <kito.cheng@gmail.com>
+	    Monk Chiang  <sh.chiang04@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-protos.h
+	(nds32_expand_load_multiple): New arguments.
+	(nds32_expand_store_multiple): Ditto.
+	(nds32_valid_multiple_load_store): Rename ...
+	(nds32_valid_multiple_load_store_p): ... to this.
+	* config/nds32/nds32-memory-manipulation.c
+	(nds32_expand_load_multiple): Refine implementation.
+	(nds32_expand_store_multiple): Ditto.
+	* config/nds32/nds32-multiple.md
+	(load_multiple): Update nds32_expand_load_multiple interface.
+	(store_multiple): Update nds32_expand_store_multiple interface.
+	* config/nds32/nds32-predicates.c
+	(nds32_valid_multiple_load_store): Rename ...
+	(nds32_valid_multiple_load_store_p): ... to this and refine
+	implementation.
+	* config/nds32/predicates.md
+	(nds32_load_multiple_and_update_address_operation): New predicate.
+	(nds32_store_multiple_and_update_address_operation): New predicate.
+
+2018-03-04  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.md (type): Add load_multiple and store_multiple.

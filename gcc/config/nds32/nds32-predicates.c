@@ -101,21 +101,33 @@ nds32_consecutive_registers_load_store_p (rtx op,
    We have to extract reg and mem of every element and
    check if the information is valid for multiple load/store operation.  */
 bool
-nds32_valid_multiple_load_store (rtx op, bool load_p)
+nds32_valid_multiple_load_store_p (rtx op, bool load_p, bool bim_p)
 {
   int count;
   int first_elt_regno;
+  int update_base_elt_idx;
+  int offset;
   rtx elt;
+  rtx update_base;
 
-  /* Get the counts of elements in the parallel rtx.  */
-  count = XVECLEN (op, 0);
-  /* Pick up the first element.  */
-  elt = XVECEXP (op, 0, 0);
+  /* Get the counts of elements in the parallel rtx.
+     Last one is update base register if bim_p.
+     and pick up the first element.  */
+  if (bim_p)
+    {
+      count = XVECLEN (op, 0) - 1;
+      elt = XVECEXP (op, 0, 1);
+    }
+  else
+    {
+      count = XVECLEN (op, 0);
+      elt = XVECEXP (op, 0, 0);
+    }
 
   /* Perform some quick check for the first element in the parallel rtx.  */
   if (GET_CODE (elt) != SET
       || count <= 1
-      || count > 8)
+      || count > 25)
     return false;
 
   /* Pick up regno of first element for further detail checking.
@@ -141,10 +153,28 @@ nds32_valid_multiple_load_store (rtx op, bool load_p)
      Refer to nds32-multiple.md for more information
      about following checking.
      The starting element of parallel rtx is index 0.  */
-  if (!nds32_consecutive_registers_load_store_p (op, load_p, 0,
+  if (!nds32_consecutive_registers_load_store_p (op, load_p, bim_p ? 1 : 0,
 						 first_elt_regno,
 						 count))
     return false;
+
+  if (bim_p)
+    {
+      update_base_elt_idx = 0;
+      update_base = XVECEXP (op, 0, update_base_elt_idx);
+      if (!REG_P (SET_DEST (update_base)))
+	return false;
+      if (GET_CODE (SET_SRC (update_base)) != PLUS)
+	return false;
+      else
+	{
+	  offset = count * UNITS_PER_WORD;
+	  elt = XEXP (SET_SRC (update_base), 1);
+	  if (GET_CODE (elt) != CONST_INT
+	      || (INTVAL (elt) != offset))
+	    return false;
+	}
+    }
 
   /* Pass all test, this is a valid rtx.  */
   return true;
