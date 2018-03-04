@@ -52,13 +52,17 @@
 
 ;; Insn type, it is used to default other attribute values.
 (define_attr "type"
-  "unknown,move,load,store,alu,compare,branch,call,misc"
+  "unknown,move,load,store,load_multiple,store_multiple,alu,compare,branch,call,misc"
   (const_string "unknown"))
 
 
 ;; Length, in bytes, default is 4-bytes.
 (define_attr "length" "" (const_int 4))
 
+;; Indicate the amount of micro instructions.
+(define_attr "combo"
+  "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25"
+  (const_string "1"))
 
 ;; Enabled, which is used to enable/disable insn alternatives.
 ;; Note that we use length and TARGET_16_BIT here as criteria.
@@ -2166,7 +2170,8 @@ create_template:
 {
   return nds32_output_stack_push (operands[0]);
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "store_multiple")
+   (set_attr "combo" "12")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH
@@ -2188,7 +2193,8 @@ create_template:
 {
   return nds32_output_stack_pop (operands[0]);
 }
-  [(set_attr "type" "misc")
+  [(set_attr "type" "load_multiple")
+   (set_attr "combo" "12")
    (set_attr "enabled" "1")
    (set (attr "length")
 	(if_then_else (match_test "TARGET_V3PUSH

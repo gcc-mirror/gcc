@@ -1,3 +1,10 @@
+2018-03-04  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.md (type): Add load_multiple and store_multiple.
+	(combo): New attribute.
+	* config/nds32/nds32-multiple.md: Refine patterns with new attributes.
+
 2018-03-03  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* config/nds32/nds32.opt: Change -mcmodel= default value.
