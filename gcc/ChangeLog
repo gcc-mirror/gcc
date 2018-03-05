@@ -1,3 +1,10 @@
+2018-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84486
+	* tree-ssa-pre.c (create_expression_by_pieces): Remove dead code.
+	When inserting a __builtin_assume_aligned call set the LHS
+	SSA name alignment info accordingly.
+
 2018-03-05  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR tree-optimization/84114
