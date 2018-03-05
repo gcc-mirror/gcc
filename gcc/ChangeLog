@@ -1,3 +1,9 @@
+2018-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84650
+	* tree-ssa-loop-im.c (pass_lim::execute): Reset the SCEV cache
+	if executed in the loop pipeline.
+
 2018-03-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/configfiles.texi (Configuration Files): Move info about
