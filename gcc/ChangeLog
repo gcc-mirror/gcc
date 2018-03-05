@@ -1,3 +1,10 @@
+2018-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84524
+	* config/i386/sse.md (*<code><mode>3): Replace <mask_prefix3> with
+	orig,vex.
+	(*<plusminus_insn><mode>3): Likewise.  Remove <mask_operand3> uses.
+
 2018-03-05  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/84264
