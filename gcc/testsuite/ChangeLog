@@ -1,3 +1,8 @@
+2018-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84702
+	* g++.dg/lookup/pr84702.C: New.
+
 2018-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84564
