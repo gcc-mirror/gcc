@@ -1,5 +1,10 @@
 2018-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84564
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Check for
+	regparm >= 3 with no arg reg available also for calls with
+	flag_force_indirect_call.  Pass decl to ix86_function_regparm.
+
 	PR target/84524
 	* config/i386/sse.md (*<code><mode>3): Replace <mask_prefix3> with
 	orig,vex.

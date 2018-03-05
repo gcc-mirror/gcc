@@ -1,3 +1,8 @@
+2018-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84564
+	* gcc.target/i386/pr84564.c: New test.
+
 2018-03-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84707
@@ -4234,7 +4239,7 @@
 
 	PR fortran/84141
 	PR fortran/84155
-	* gfortran.dg/pr84155.f90 : New test.
+	* gfortran.dg/pr84155.f90: New test.
 
 2017-02-02  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -4493,7 +4498,7 @@
 2018-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84088
-	* gfortran.dg/pr84088.f90 : New test.
+	* gfortran.dg/pr84088.f90: New test.
 
 2018-01-31  Vladimir Makarov  <vmakarov@redhat.com>
 
