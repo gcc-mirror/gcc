@@ -1,3 +1,10 @@
+2018-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84700
+	* combine.c (combine_simplify_rtx): Don't try to simplify if
+	if_then_else_cond returned non-NULL, but either true_rtx or false_rtx
+	are equal to x.
+
 2018-03-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_loop_align): Don't align tiny loops
