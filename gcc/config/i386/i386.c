@@ -6415,7 +6415,8 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	 function via GOT slot are indirect.  */
       if (!decl
 	  || (bind_global && flag_pic && !flag_plt)
-	  || (TARGET_DLLIMPORT_DECL_ATTRIBUTES && DECL_DLLIMPORT_P (decl)))
+	  || (TARGET_DLLIMPORT_DECL_ATTRIBUTES && DECL_DLLIMPORT_P (decl))
+	  || flag_force_indirect_call)
 	{
 	  /* Check if regparm >= 3 since arg_reg_available is set to
 	     false if regparm == 0.  If regparm is 1 or 2, there is
@@ -6424,7 +6425,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 	     ??? The symbol indirect call doesn't need a call-clobbered
 	     register.  But we don't know if this is a symbol indirect
 	     call or not here.  */
-	  if (ix86_function_regparm (type, NULL) >= 3
+	  if (ix86_function_regparm (type, decl) >= 3
 	      && !cfun->machine->arg_reg_available)
 	    return false;
 	}
