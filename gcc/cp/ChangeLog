@@ -1,3 +1,9 @@
+2018-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84707
+	* decl.c (duplicate_decls): Check DECL_NAME before accessing
+	UDLIT_OPER_P.
+
 2018-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84694
