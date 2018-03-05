@@ -1,3 +1,8 @@
+2018-03-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_loop_align): Don't align tiny loops
+	to 32 bytes when compiling for POWER9.
+
 2018-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84564

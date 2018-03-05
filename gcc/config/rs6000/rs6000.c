@@ -5333,8 +5333,7 @@ rs6000_loop_align (rtx label)
 	  || rs6000_tune == PROCESSOR_POWER5
 	  || rs6000_tune == PROCESSOR_POWER6
 	  || rs6000_tune == PROCESSOR_POWER7
-	  || rs6000_tune == PROCESSOR_POWER8
-	  || rs6000_tune == PROCESSOR_POWER9))
+	  || rs6000_tune == PROCESSOR_POWER8))
     return 5;
   else
     return align_loops_log;
