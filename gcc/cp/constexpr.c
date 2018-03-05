@@ -1033,9 +1033,11 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
   tree lhs_bindings;
   tree rhs_bindings;
   if (lhs == rhs)
-    return 1;
+    return true;
+  if (lhs->hash != rhs->hash)
+    return false;
   if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
-    return 0;
+    return false;
   lhs_bindings = lhs->bindings;
   rhs_bindings = rhs->bindings;
   while (lhs_bindings != NULL && rhs_bindings != NULL)
@@ -1044,7 +1046,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
       tree rhs_arg = TREE_VALUE (rhs_bindings);
       gcc_assert (TREE_TYPE (lhs_arg) == TREE_TYPE (rhs_arg));
       if (!cp_tree_equal (lhs_arg, rhs_arg))
-        return 0;
+        return false;
       lhs_bindings = TREE_CHAIN (lhs_bindings);
       rhs_bindings = TREE_CHAIN (rhs_bindings);
     }
