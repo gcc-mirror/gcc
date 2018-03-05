@@ -1,3 +1,9 @@
+2018-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84618
+	* parser.c (cp_parser_lambda_introducer): Reject any capture not
+	involving a VAR_DECL or a PARM_DECL.
+
 2018-03-05  Pádraig Brady  <P@draigBrady.com>
 	    Jason  Merrill  <jason@redhat.com>
 	    Nathan Sidwell  <nathan@acm.org>
