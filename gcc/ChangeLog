@@ -1,3 +1,10 @@
+2018-03-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/configfiles.texi (Configuration Files): Move info about
+	conditionalizing $target-protos.h to...
+	* doc/sourcebuild.texi (Back End): Here.  Explain how $target.h
+	differs from $target-protos.h.
+
 2018-03-05  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
