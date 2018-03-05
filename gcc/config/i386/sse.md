@@ -10090,11 +10090,11 @@
   "TARGET_SSE2 && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
    p<plusminus_mnemonic><ssemodesuffix>\t{%2, %0|%0, %2}
-   vp<plusminus_mnemonic><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+   vp<plusminus_mnemonic><ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "prefix_data16" "1,*")
-   (set_attr "prefix" "<mask_prefix3>")
+   (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*<plusminus_insn><mode>3_mask"
@@ -11899,7 +11899,7 @@
 	    (eq_attr "mode" "TI"))
        (const_string "1")
        (const_string "*")))
-   (set_attr "prefix" "<mask_prefix3>,evex")
+   (set_attr "prefix" "orig,vex,evex")
    (set (attr "mode")
 	(cond [(and (match_test "<MODE_SIZE> == 16")
 		    (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))
