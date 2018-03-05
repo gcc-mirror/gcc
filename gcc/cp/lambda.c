@@ -757,24 +757,30 @@ lambda_expr_this_capture (tree lambda, bool add_capture_p)
                                     tlambda,
                                     lambda_stack);
 
-	  if (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)
-	      && !COMPLETE_TYPE_P (LAMBDA_EXPR_CLOSURE (tlambda))
-	      && TREE_CODE (LAMBDA_EXPR_EXTRA_SCOPE (tlambda)) == FIELD_DECL)
+	  tree closure = LAMBDA_EXPR_CLOSURE (tlambda);
+	  tree containing_function
+	    = decl_function_context (TYPE_NAME (closure));
+
+	  tree ex = LAMBDA_EXPR_EXTRA_SCOPE (tlambda);
+	  if (ex && TREE_CODE (ex) == FIELD_DECL)
 	    {
-	      /* In an NSDMI, we don't have a function to look up the decl in,
-		 but the fake 'this' pointer that we're using for parsing is
-		 in scope_chain.  But if the closure is already complete, we're
-	         in an instantiation of a generic lambda, and the fake 'this'
-	         is gone.  */
-	      init = scope_chain->x_current_class_ptr;
+	      /* Lambda in an NSDMI.  We don't have a function to look up
+		 'this' in, but we can find (or rebuild) the fake one from
+		 inject_this_parameter.  */
+	      if (!containing_function && !COMPLETE_TYPE_P (closure))
+		/* If we're parsing a lambda in a non-local class,
+		   we can find the fake 'this' in scope_chain.  */
+		init = scope_chain->x_current_class_ptr;
+	      else
+		/* Otherwise it's either gone or buried in
+		   function_context_stack, so make another.  */
+		init = build_this_parm (NULL_TREE, DECL_CONTEXT (ex),
+					TYPE_UNQUALIFIED);
 	      gcc_checking_assert
 		(init && (TREE_TYPE (TREE_TYPE (init))
 			  == current_nonlambda_class_type ()));
 	      break;
 	    }
-
-	  tree closure_decl = TYPE_NAME (LAMBDA_EXPR_CLOSURE (tlambda));
-	  tree containing_function = decl_function_context (closure_decl);
 
 	  if (containing_function == NULL_TREE)
 	    /* We ran out of scopes; there's no 'this' to capture.  */
