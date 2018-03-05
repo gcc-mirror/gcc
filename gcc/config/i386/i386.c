@@ -2757,6 +2757,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mmpx",		OPTION_MASK_ISA_MPX },
     { "-mvaes",		OPTION_MASK_ISA_VAES },
     { "-mrdpid",	OPTION_MASK_ISA_RDPID },
+    { "-mpconfig",	OPTION_MASK_ISA_PCONFIG },
+    { "-mwbnoinvd",     OPTION_MASK_ISA_WBNOINVD },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
@@ -5324,6 +5326,8 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     int mask;
   } attrs[] = {
     /* isa options */
+    IX86_ATTR_ISA ("pconfig",	OPT_mpconfig),
+    IX86_ATTR_ISA ("wbnoinvd",	OPT_mwbnoinvd),
     IX86_ATTR_ISA ("sgx",	OPT_msgx),
     IX86_ATTR_ISA ("avx5124fmaps", OPT_mavx5124fmaps),
     IX86_ATTR_ISA ("avx5124vnniw", OPT_mavx5124vnniw),
@@ -31287,8 +31291,10 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ROUND_ARGS_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS2_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_FIRST,
+	       IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MPX_CONST_FIRST,
 	       IX86_BUILTIN__BDESC_MPX_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
@@ -31326,6 +31332,22 @@ ix86_init_mmx_sse_builtins (void)
   BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS_LAST,
 		 IX86_BUILTIN__BDESC_SPECIAL_ARGS_FIRST,
 		 ARRAY_SIZE (bdesc_special_args) - 1);
+
+  /* Add all special builtins with variable number of operands.  */
+  for (i = 0, d = bdesc_special_args2;
+       i < ARRAY_SIZE (bdesc_special_args2);
+       i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST, i);
+      if (d->name == 0)
+	continue;
+
+      ftype = (enum ix86_builtin_func_type) d->flag;
+      def_builtin2 (d->mask, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST,
+		 IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST,
+		 ARRAY_SIZE (bdesc_special_args2) - 1);
 
   /* Add all builtins with variable number of operands.  */
   for (i = 0, d = bdesc_args;
@@ -38361,6 +38383,14 @@ rdseed_step:
     {
       i = fcode - IX86_BUILTIN__BDESC_SPECIAL_ARGS_FIRST;
       return ix86_expand_special_args_builtin (bdesc_special_args + i, exp,
+					       target);
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_SPECIAL_ARGS2_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_SPECIAL_ARGS2_FIRST;
+      return ix86_expand_special_args_builtin (bdesc_special_args2 + i, exp,
 					       target);
     }
 
