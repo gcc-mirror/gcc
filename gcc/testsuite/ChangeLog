@@ -1,10 +1,16 @@
+2018-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84524
+	* gcc.c-torture/execute/pr84524.c: New test.
+	* gcc.target/i386/avx512bw-pr84524.c: New test.
+
 2018-03-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/83076
-	* gfortran.dg/coarray_45.f90 : New test.
+	* gfortran.dg/coarray_45.f90: New test.
 
 	PR fortran/83319
-	* gfortran.dg/coarray_46.f90 : New test.
+	* gfortran.dg/coarray_46.f90: New test.
 
 2018-03-03  Harald Anlauf  <anlauf@gmx.de>
 
@@ -1529,7 +1535,7 @@
 
 	Backported from trunk
 	PR fortran/80850
-	* gfortran.dg/class_64_f90 : New test.
+	* gfortran.dg/class_64_f90: New test.
 
 2017-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1580,7 +1586,7 @@
 
 	Backport from trunk
 	PR fortran/82312
-	* gfortran.dg/typebound_proc_36.f90 : New test.
+	* gfortran.dg/typebound_proc_36.f90: New test.
 
 2017-10-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
