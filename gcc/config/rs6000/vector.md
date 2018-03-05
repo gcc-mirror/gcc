@@ -132,12 +132,19 @@
 	  && !vlogical_operand (operands[1], <MODE>mode))
 	operands[1] = force_reg (<MODE>mode, operands[1]);
     }
+  /* When generating load/store instructions to/from VSX registers on
+     pre-power9 hardware in little endian mode, we need to emit register
+     permute instructions to byte swap the contents, since the VSX load/store
+     instructions do not include a byte swap as part of their operation.
+     Altivec loads and stores have no such problem, so we skip them below.  */
   if (!BYTES_BIG_ENDIAN
       && VECTOR_MEM_VSX_P (<MODE>mode)
       && !TARGET_P9_VECTOR
       && !gpr_or_gpr_p (operands[0], operands[1])
-      && (memory_operand (operands[0], <MODE>mode)
-          ^ memory_operand (operands[1], <MODE>mode)))
+      && ((memory_operand (operands[0], <MODE>mode)
+	   && !altivec_indexed_or_indirect_operand(operands[0], <MODE>mode))
+	  ^ (memory_operand (operands[1], <MODE>mode)
+	     && !altivec_indexed_or_indirect_operand(operands[1], <MODE>mode))))
     {
       rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
       DONE;

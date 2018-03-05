@@ -1,3 +1,8 @@
+2018-03-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84264
+	* config/rs6000/vector.md (mov<mode>): Disallow altivec memory operands.
+
 2018-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84486

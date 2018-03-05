@@ -1,3 +1,8 @@
+2018-03-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/84264
+	* g++.dg/pr84264.C: New test.
+
 2018-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84618
