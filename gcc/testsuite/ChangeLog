@@ -1,3 +1,8 @@
+2018-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84700
+	* gcc.target/powerpc/pr84700.c: New test.
+
 2018-03-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84702
