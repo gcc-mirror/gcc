@@ -1,3 +1,8 @@
+2018-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/82022
+	* g++.dg/cpp1z/constexpr-lambda20.C: New.
+
 2018-03-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/71085
