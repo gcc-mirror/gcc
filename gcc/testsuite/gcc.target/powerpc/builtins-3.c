@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-maltivec -mvsx" } */
+/* { dg-options "-O2 -mvsx -mcpu=power6" } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power6" } } */
 
 #include <altivec.h>
 
