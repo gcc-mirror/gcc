@@ -777,6 +777,14 @@ mpopcnt
 Target Report Mask(ISA_POPCNT) Var(ix86_isa_flags) Save
 Support code generation of popcnt instruction.
 
+mpconfig
+Target Report Mask(ISA_PCONFIG) Var(ix86_isa_flags2) Save
+Support PCONFIG built-in functions and code generation.
+
+mwbnoinvd
+Target Report Mask(ISA_WBNOINVD) Var(ix86_isa_flags2) Save
+Support WBNOINVD built-in functions and code generation.
+
 msgx
 Target Report Mask(ISA_SGX) Var(ix86_isa_flags2) Save
 Support SGX built-in functions and code generation.

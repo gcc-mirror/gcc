@@ -1,3 +1,32 @@
+2018-03-05  Olga Makhotina  <olga.makhotina@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PCONFIG_SET,
+	OPTION_MASK_ISA_PCONFIG_UNSET, OPTION_MASK_ISA_WBNOINVD_SET,
+	OPTION_MASK_ISA_WBNOINVD_UNSET): New definitions.
+	(ix86_handle_option): Handle -mpconfig and -mwbnoinvd.
+	* config.gcc (pconfigintrin.h, wbnoinvdintrin.h) : Add headers.
+	* config/i386/cpuid.h (bit_PCONFIG, bit_WBNOINVD): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect -mpconfig
+	and -mwbnoinvd.
+	* config/i386/i386-builtin.def (__builtin_ia32_wbnoinvd,
+	__builtin_ia32_wbinvd): New builtins.
+	(SPECIAL_ARGS2): New.
+	* config/i386/i386-c.c (__WBNOINVD__, __PCONFIG__): New.
+	(SPECIAL_ARGS2): New.
+	* config/i386/i386.c (ix86_target_string): Add -mpconfig and -mwbnoinvd.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_init_mmx_sse_builtins): Add special_args2.
+	* config/i386/i386.h (TARGET_PCONFIG, TARGET_PCONFIG_P, TARGET_WBNOINVD,
+	TARGET_WBNOINVD_P): New.
+	* config/i386/i386.md (UNSPECV_WBINVD, UNSPECV_WBNOINVD): New.
+	(define_insn "wbinvd", define_insn "wbnoinvd"): New.
+	* config/i386/i386.opt: Add -mpconfig and -mwbnoinvd.
+	* config/i386/immintrin.h (_wbinvd): New intrinsic.
+	* config/i386/pconfigintrin.h: New file.
+	* config/i386/wbnoinvdintrin.h: Ditto.
+	* config/i386/x86intrin.h: Add headers pconfigintrin.h and wbnoinvdintrin.h.
+	* doc/invoke.texi (-mpconfig, -mwbnoinvd): New.
+
 2018-03-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84670
