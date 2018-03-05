@@ -1,3 +1,15 @@
+2018-03-05  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	Backport from trunk.
+
+	2018-02-16  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/84371
+	* gcc.target/powerpc/builtins-3.c: Update dg-options and dg-skip-if
+	stanzas.
+	* gcc.target/powerpc/builtins-3.p8.c: Add dg-skip-if stanza.
+	* gcc.target/powerpc/builtins-3.p9.c: Add dg-skip-if stanza.
+
 2018-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84524
