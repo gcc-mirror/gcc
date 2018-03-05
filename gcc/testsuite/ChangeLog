@@ -1,3 +1,10 @@
+2018-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84618
+	* g++.dg/cpp0x/lambda/lambda-ice29.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ice17.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-ice23.C: Likewise.
+
 2018-03-05  Olga Makhotina  <olga.makhotina@intel.com>
 
 	* g++.dg/other/i386-2.C: Add -mpconfig and -mwbnoinvd.

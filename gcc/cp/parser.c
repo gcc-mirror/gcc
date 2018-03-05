@@ -10377,15 +10377,15 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	      unqualified_name_lookup_error (capture_id);
 	      continue;
 	    }
-	  else if (DECL_P (capture_init_expr)
-		   && (!VAR_P (capture_init_expr)
-		       && TREE_CODE (capture_init_expr) != PARM_DECL))
+	  else if (!VAR_P (capture_init_expr)
+		   && TREE_CODE (capture_init_expr) != PARM_DECL)
 	    {
 	      error_at (capture_token->location,
-			"capture of non-variable %qD ",
+			"capture of non-variable %qE ",
 			capture_init_expr);
-	      inform (DECL_SOURCE_LOCATION (capture_init_expr),
-		      "%q#D declared here", capture_init_expr);
+	      if (DECL_P (capture_init_expr))
+		inform (DECL_SOURCE_LOCATION (capture_init_expr),
+			"%q#D declared here", capture_init_expr);
 	      continue;
 	    }
 	  if (VAR_P (capture_init_expr)
