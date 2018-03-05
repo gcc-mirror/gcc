@@ -3337,7 +3337,8 @@ get_tls_init_fn (tree var)
 	  /* If the variable is defined somewhere else and might have static
 	     initialization, make the init function a weak reference.  */
 	  if ((!TYPE_NEEDS_CONSTRUCTING (obtype)
-	       || TYPE_HAS_CONSTEXPR_CTOR (obtype))
+	       || TYPE_HAS_CONSTEXPR_CTOR (obtype)
+	       || TYPE_HAS_TRIVIAL_DFLT (obtype))
 	      && TYPE_HAS_TRIVIAL_DESTRUCTOR (obtype)
 	      && DECL_EXTERNAL (var))
 	    declare_weak (fn);

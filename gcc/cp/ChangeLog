@@ -1,3 +1,10 @@
+2018-03-05  Pádraig Brady  <P@draigBrady.com>
+	    Jason  Merrill  <jason@redhat.com>
+	    Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84497
+	* decl2.c (get_tls_init_fn): Check TYPE_HAS_TRIVIAL_DFLT too.
+
 2018-03-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84686 - missing volatile loads.
