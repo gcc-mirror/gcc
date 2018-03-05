@@ -932,6 +932,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
 
+  expr = maybe_undo_parenthesized_ref (expr);
+
   if (implicit == ICV_CAST)
     mark_exp_read (expr);
   else
