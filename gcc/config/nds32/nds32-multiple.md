@@ -3749,3 +3749,22 @@
 })
 
 ;; ------------------------------------------------------------------------
+
+(define_expand "setmemsi"
+   [(use (match_operand:BLK 0 "memory_operand"))
+    (use (match_operand:SI 1 "nds32_reg_constant_operand"))
+    (use (match_operand:QI 2 "nonmemory_operand"))
+    (use (match_operand 3 "const_int_operand"))
+    (use (match_operand:SI 4 "const_int_operand"))
+    (use (match_operand:SI 5 "const_int_operand"))]
+  ""
+{
+ if (nds32_expand_setmem (operands[0], operands[1],
+			  operands[2], operands[3],
+			  operands[4], operands[5]))
+   DONE;
+
+ FAIL;
+})
+
+;; ------------------------------------------------------------------------

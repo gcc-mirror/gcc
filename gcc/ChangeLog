@@ -1,7 +1,21 @@
+2018-03-05  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32-protos.h (nds32_expand_setmem): Declare.
+	* config/nds32/nds32-multiple.md (setmemsi): Define.
+	* config/nds32/nds32-memory-manipulation.c
+	(nds32_gen_dup_4_byte_to_word_value): New.
+	(emit_setmem_word_loop): New.
+	(emit_setmem_byte_loop): New.
+	(nds32_expand_setmem_loop): New.
+	(nds32_expand_setmem_loop_v3m): New.
+	(nds32_expand_setmem_unroll): New.
+	(nds32_expand_setmem): New.
+
 2018-03-04  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
-	*config/nds32/nds32-memory-manipulation.c
+	* config/nds32/nds32-memory-manipulation.c
 	(nds32_emit_load_store): New.
 	(nds32_emit_post_inc_load_store): New.
 	(nds32_emit_mem_move): New.
@@ -12,9 +26,9 @@
 	(nds32_expand_movmemsi_unroll): New.
 	(nds32_expand_movmemqi): Rename ...
 	(nds32_expand_movmemsi): ... to this.
-	*config/nds32/nds32-multiple.md (movmemqi): Rename ...
+	* config/nds32/nds32-multiple.md (movmemqi): Rename ...
 	(movmemsi): ... to this.
-	*config/nds32/nds32-protos.h (nds32_expand_movmemqi): Rename ...
+	* config/nds32/nds32-protos.h (nds32_expand_movmemqi): Rename ...
 	(nds32_expand_movmemsi): ... to this.
 
 2018-03-04  Kito Cheng  <kito.cheng@gmail.com>

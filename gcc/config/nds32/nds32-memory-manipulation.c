@@ -428,6 +428,425 @@ nds32_expand_movmemsi (rtx dstmem, rtx srcmem, rtx total_bytes, rtx alignment)
   return false;
 }
 
+/* ------------------------------------------------------------------------ */
+
+/* Auxiliary function for expand setmem pattern.  */
+
+static rtx
+nds32_gen_dup_4_byte_to_word_value (rtx value)
+{
+  rtx value4word = gen_reg_rtx (SImode);
+
+  gcc_assert (GET_MODE (value) == QImode || CONST_INT_P (value));
+
+  if (CONST_INT_P (value))
+    {
+      unsigned HOST_WIDE_INT val = UINTVAL (value) & GET_MODE_MASK(QImode);
+      rtx new_val = gen_int_mode (val | (val << 8)
+				  | (val << 16) | (val << 24), SImode);
+      /* Just calculate at here if it's constant value.  */
+      emit_move_insn (value4word, new_val);
+    }
+  else
+    {
+      /* ! prepare word
+	 andi    $tmp1, $value, 0xff       ! $tmp1  <- 0x000000ab
+	 slli    $tmp2, $tmp1, 8           ! $tmp2  <- 0x0000ab00
+	 or      $tmp3, $tmp1, $tmp2       ! $tmp3  <- 0x0000abab
+	 slli    $tmp4, $tmp3, 16          ! $tmp4  <- 0xabab0000
+	 or      $val4word, $tmp3, $tmp4   ! $value4word  <- 0xabababab  */
+
+      rtx tmp1, tmp2, tmp3, tmp4, final_value;
+      tmp1 = expand_binop (SImode, and_optab, value,
+			   gen_int_mode (0xff, SImode),
+			   NULL_RTX, 0, OPTAB_WIDEN);
+      tmp2 = expand_binop (SImode, ashl_optab, tmp1,
+			   gen_int_mode (8, SImode),
+			   NULL_RTX, 0, OPTAB_WIDEN);
+      tmp3 = expand_binop (SImode, ior_optab, tmp1, tmp2,
+			   NULL_RTX, 0, OPTAB_WIDEN);
+      tmp4 = expand_binop (SImode, ashl_optab, tmp3,
+			   gen_int_mode (16, SImode),
+			   NULL_RTX, 0, OPTAB_WIDEN);
+
+      final_value = expand_binop (SImode, ior_optab, tmp3, tmp4,
+				  NULL_RTX, 0, OPTAB_WIDEN);
+      emit_move_insn (value4word, final_value);
+    }
+
+  return value4word;
+}
+
+static rtx
+emit_setmem_word_loop (rtx itr, rtx size, rtx value)
+{
+  rtx word_mode_label = gen_label_rtx ();
+  rtx word_mode_end_label = gen_label_rtx ();
+  rtx byte_mode_size = gen_reg_rtx (SImode);
+  rtx byte_mode_size_tmp = gen_reg_rtx (SImode);
+  rtx word_mode_end = gen_reg_rtx (SImode);
+  rtx size_for_word = gen_reg_rtx (SImode);
+
+  /* and     $size_for_word, $size, #~3  */
+  size_for_word = expand_binop (SImode, and_optab, size,
+				gen_int_mode (~3, SImode),
+				NULL_RTX, 0, OPTAB_WIDEN);
+
+  emit_move_insn (byte_mode_size, size);
+
+  /* beqz    $size_for_word, .Lbyte_mode_entry  */
+  emit_cmp_and_jump_insns (size_for_word, const0_rtx, EQ, NULL,
+			   SImode, 1, word_mode_end_label);
+  /* add     $word_mode_end, $dst, $size_for_word  */
+  word_mode_end = expand_binop (Pmode, add_optab, itr, size_for_word,
+				NULL_RTX, 0, OPTAB_WIDEN);
+
+  /* andi    $byte_mode_size, $size, 3  */
+  byte_mode_size_tmp = expand_binop (SImode, and_optab, size, GEN_INT (3),
+				     NULL_RTX, 0, OPTAB_WIDEN);
+
+  emit_move_insn (byte_mode_size, byte_mode_size_tmp);
+
+  /* .Lword_mode:  */
+  emit_label (word_mode_label);
+  /*   ! word-mode set loop
+       smw.bim $value4word, [$dst_itr], $value4word, 0
+       bne     $word_mode_end, $dst_itr, .Lword_mode  */
+  emit_insn (gen_unaligned_store_update_base_w (itr,
+						itr,
+						value));
+  emit_cmp_and_jump_insns (word_mode_end, itr, NE, NULL,
+			   Pmode, 1, word_mode_label);
+
+  emit_label (word_mode_end_label);
+
+  return byte_mode_size;
+}
+
+static rtx
+emit_setmem_byte_loop (rtx itr, rtx size, rtx value, bool need_end)
+{
+  rtx end  = gen_reg_rtx (Pmode);
+  rtx byte_mode_label = gen_label_rtx ();
+  rtx end_label = gen_label_rtx ();
+
+  value = force_reg (QImode, value);
+
+  if (need_end)
+    end = expand_binop (Pmode, add_optab, itr, size,
+			NULL_RTX, 0, OPTAB_WIDEN);
+  /*   beqz    $byte_mode_size, .Lend
+       add     $byte_mode_end, $dst_itr, $byte_mode_size  */
+  emit_cmp_and_jump_insns (size, const0_rtx, EQ, NULL,
+			   SImode, 1, end_label);
+
+  if (!need_end)
+    end = expand_binop (Pmode, add_optab, itr, size,
+			NULL_RTX, 0, OPTAB_WIDEN);
+
+  /* .Lbyte_mode:  */
+  emit_label (byte_mode_label);
+
+  /*   ! byte-mode set loop
+       sbi.bi  $value, [$dst_itr] ,1
+       bne     $byte_mode_end, $dst_itr, .Lbyte_mode */
+  nds32_emit_post_inc_load_store (value, itr, QImode, false);
+
+  emit_cmp_and_jump_insns (end, itr, NE, NULL,
+			   Pmode, 1, byte_mode_label);
+  /* .Lend: */
+  emit_label (end_label);
+
+  if (need_end)
+    return end;
+  else
+    return NULL_RTX;
+}
+
+static bool
+nds32_expand_setmem_loop (rtx dstmem, rtx size, rtx value)
+{
+  rtx value4word;
+  rtx value4byte;
+  rtx dst;
+  rtx byte_mode_size;
+
+  /* Emit loop version of setmem.
+     memset:
+       ! prepare word
+       andi    $tmp1, $val, 0xff               ! $tmp1  <- 0x000000ab
+       slli    $tmp2, $tmp1, 8                 ! $tmp2  <- 0x0000ab00
+       or      $tmp3, $val, $tmp2              ! $tmp3  <- 0x0000abab
+       slli    $tmp4, $tmp3, 16                ! $tmp4  <- 0xabab0000
+       or      $val4word, $tmp3, $tmp4         ! $value4word  <- 0xabababab
+
+       and     $size_for_word, $size, #-4
+       beqz    $size_for_word, .Lword_mode_end
+
+       add     $word_mode_end, $dst, $size_for_word
+       andi    $byte_mode_size, $size, 3
+
+     .Lword_mode:
+       ! word-mode set loop
+       smw.bim $value4word, [$dst], $value4word, 0
+       bne     $word_mode_end, $dst, .Lword_mode
+
+     .Lword_mode_end:
+       beqz    $byte_mode_size, .Lend
+       add     $byte_mode_end, $dst, $byte_mode_size
+
+     .Lbyte_mode:
+       ! byte-mode set loop
+       sbi.bi  $value4word, [$dst] ,1
+       bne     $byte_mode_end, $dst, .Lbyte_mode
+     .Lend: */
+
+  dst = copy_to_mode_reg (SImode, XEXP (dstmem, 0));
+
+  /* ! prepare word
+     andi    $tmp1, $value, 0xff             ! $tmp1  <- 0x000000ab
+     slli    $tmp2, $tmp1, 8                 ! $tmp2  <- 0x0000ab00
+     or      $tmp3, $tmp1, $tmp2             ! $tmp3  <- 0x0000abab
+     slli    $tmp4, $tmp3, 16                ! $tmp4  <- 0xabab0000
+     or      $val4word, $tmp3, $tmp4         ! $value4word  <- 0xabababab  */
+  value4word = nds32_gen_dup_4_byte_to_word_value (value);
+
+  /*   and     $size_for_word, $size, #-4
+       beqz    $size_for_word, .Lword_mode_end
+
+       add     $word_mode_end, $dst, $size_for_word
+       andi    $byte_mode_size, $size, 3
+
+     .Lword_mode:
+       ! word-mode set loop
+       smw.bim $value4word, [$dst], $value4word, 0
+       bne     $word_mode_end, $dst, .Lword_mode
+     .Lword_mode_end:  */
+  byte_mode_size = emit_setmem_word_loop (dst, size, value4word);
+
+  /*   beqz    $byte_mode_size, .Lend
+       add     $byte_mode_end, $dst, $byte_mode_size
+
+     .Lbyte_mode:
+       ! byte-mode set loop
+       sbi.bi  $value, [$dst] ,1
+       bne     $byte_mode_end, $dst, .Lbyte_mode
+     .Lend: */
+
+  value4byte = simplify_gen_subreg (QImode, value4word, SImode,
+				    subreg_lowpart_offset (QImode, SImode));
+
+  emit_setmem_byte_loop (dst, byte_mode_size, value4byte, false);
+
+  return true;
+}
+
+static bool
+nds32_expand_setmem_loop_v3m (rtx dstmem, rtx size, rtx value)
+{
+  rtx base_reg = copy_to_mode_reg (Pmode, XEXP (dstmem, 0));
+  rtx need_align_bytes = gen_reg_rtx (SImode);
+  rtx last_2_bit = gen_reg_rtx (SImode);
+  rtx byte_loop_base = gen_reg_rtx (SImode);
+  rtx byte_loop_size = gen_reg_rtx (SImode);
+  rtx remain_size = gen_reg_rtx (SImode);
+  rtx new_base_reg;
+  rtx value4byte, value4word;
+  rtx byte_mode_size;
+  rtx last_byte_loop_label = gen_label_rtx ();
+
+  size = force_reg (SImode, size);
+
+  value4word = nds32_gen_dup_4_byte_to_word_value (value);
+  value4byte = simplify_gen_subreg (QImode, value4word, SImode, 0);
+
+  emit_move_insn (byte_loop_size, size);
+  emit_move_insn (byte_loop_base, base_reg);
+
+  /* Jump to last byte loop if size is less than 16.  */
+  emit_cmp_and_jump_insns (size, gen_int_mode (16, SImode), LE, NULL,
+			   SImode, 1, last_byte_loop_label);
+
+  /* Make sure align to 4 byte first since v3m can't unalign access.  */
+  emit_insn (gen_andsi3 (last_2_bit,
+			 base_reg,
+			 gen_int_mode (0x3, SImode)));
+
+  emit_insn (gen_subsi3 (need_align_bytes,
+			 gen_int_mode (4, SImode),
+			 last_2_bit));
+
+  /* Align to 4 byte. */
+  new_base_reg = emit_setmem_byte_loop (base_reg,
+					need_align_bytes,
+					value4byte,
+					true);
+
+  /* Calculate remain size. */
+  emit_insn (gen_subsi3 (remain_size, size, need_align_bytes));
+
+  /* Set memory word by word. */
+  byte_mode_size = emit_setmem_word_loop (new_base_reg,
+					  remain_size,
+					  value4word);
+
+  emit_move_insn (byte_loop_base, new_base_reg);
+  emit_move_insn (byte_loop_size, byte_mode_size);
+
+  emit_label (last_byte_loop_label);
+
+  /* And set memory for remain bytes. */
+  emit_setmem_byte_loop (byte_loop_base, byte_loop_size, value4byte, false);
+  return true;
+}
+
+static bool
+nds32_expand_setmem_unroll (rtx dstmem, rtx size, rtx value,
+			    rtx align ATTRIBUTE_UNUSED,
+			    rtx expected_align ATTRIBUTE_UNUSED,
+			    rtx expected_size ATTRIBUTE_UNUSED)
+{
+  unsigned maximum_regs, maximum_bytes, start_regno, regno;
+  rtx value4word;
+  rtx dst_base_reg, new_base_reg;
+  unsigned HOST_WIDE_INT remain_bytes, remain_words, prepare_regs, fill_per_smw;
+  unsigned HOST_WIDE_INT real_size;
+
+  if (TARGET_REDUCED_REGS)
+    {
+      maximum_regs  = 4;
+      maximum_bytes = 64;
+      start_regno   = 2;
+    }
+  else
+    {
+      maximum_regs  = 8;
+      maximum_bytes = 128;
+      start_regno   = 16;
+    }
+
+  real_size = UINTVAL (size) & GET_MODE_MASK(SImode);
+
+  if (!(CONST_INT_P (size) && real_size <= maximum_bytes))
+    return false;
+
+  remain_bytes = real_size;
+
+  gcc_assert (GET_MODE (value) == QImode || CONST_INT_P (value));
+
+  value4word = nds32_gen_dup_4_byte_to_word_value (value);
+
+  prepare_regs = remain_bytes / UNITS_PER_WORD;
+
+  dst_base_reg = copy_to_mode_reg (SImode, XEXP (dstmem, 0));
+
+  if (prepare_regs > maximum_regs)
+    prepare_regs = maximum_regs;
+
+  fill_per_smw = prepare_regs * UNITS_PER_WORD;
+
+  regno = start_regno;
+  switch (prepare_regs)
+    {
+    case 2:
+    default:
+      {
+	rtx reg0 = gen_rtx_REG (SImode, regno);
+	rtx reg1 = gen_rtx_REG (SImode, regno+1);
+	unsigned last_regno = start_regno + prepare_regs - 1;
+
+	emit_move_insn (reg0, value4word);
+	emit_move_insn (reg1, value4word);
+	rtx regd = gen_rtx_REG (DImode, regno);
+	regno += 2;
+
+	/* Try to utilize movd44!  */
+	while (regno <= last_regno)
+	  {
+	    if ((regno + 1) <=last_regno)
+	      {
+		rtx reg = gen_rtx_REG (DImode, regno);
+		emit_move_insn (reg, regd);
+		regno += 2;
+	      }
+	    else
+	      {
+		rtx reg = gen_rtx_REG (SImode, regno);
+		emit_move_insn (reg, reg0);
+		regno += 1;
+	      }
+	  }
+	break;
+      }
+    case 1:
+      {
+	rtx reg = gen_rtx_REG (SImode, regno++);
+	emit_move_insn (reg, value4word);
+      }
+      break;
+    case 0:
+      break;
+    }
+
+  if (fill_per_smw)
+    for (;remain_bytes >= fill_per_smw;remain_bytes -= fill_per_smw)
+      {
+	emit_insn (nds32_expand_store_multiple (start_regno, prepare_regs,
+						dst_base_reg, dstmem,
+						true, &new_base_reg));
+	dst_base_reg = new_base_reg;
+	dstmem = gen_rtx_MEM (SImode, dst_base_reg);
+      }
+
+  remain_words = remain_bytes / UNITS_PER_WORD;
+
+  if (remain_words)
+    {
+      emit_insn (nds32_expand_store_multiple (start_regno, remain_words,
+					      dst_base_reg, dstmem,
+					      true, &new_base_reg));
+      dst_base_reg = new_base_reg;
+      dstmem = gen_rtx_MEM (SImode, dst_base_reg);
+    }
+
+  remain_bytes = remain_bytes - (remain_words * UNITS_PER_WORD);
+
+  if (remain_bytes)
+    {
+      value = simplify_gen_subreg (QImode, value4word, SImode,
+				   subreg_lowpart_offset(QImode, SImode));
+      int offset = 0;
+      for (;remain_bytes;--remain_bytes, ++offset)
+	{
+	  nds32_emit_load_store (value, dstmem, QImode, offset, false);
+	}
+    }
+
+  return true;
+}
+
+bool
+nds32_expand_setmem (rtx dstmem, rtx size, rtx value, rtx align,
+		     rtx expected_align,
+		     rtx expected_size)
+{
+  bool align_to_4_bytes = (INTVAL (align) & 3) == 0;
+
+  /* Only expand at O3 */
+  if (optimize_size || optimize < 3)
+    return false;
+
+  if (TARGET_ISA_V3M && !align_to_4_bytes)
+    return nds32_expand_setmem_loop_v3m (dstmem, size, value);
+
+  if (nds32_expand_setmem_unroll (dstmem, size, value,
+				  align, expected_align, expected_size))
+    return true;
+
+  return nds32_expand_setmem_loop (dstmem, size, value);
+}
+
+/* ------------------------------------------------------------------------ */
 
 /* Functions to expand load_multiple and store_multiple.
    They are auxiliary extern functions to help create rtx template.
