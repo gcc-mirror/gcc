@@ -1,3 +1,9 @@
+2018-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84694
+	* friend.c (do_friend): Restore check for identifier_p inside
+	TEMPLATE_ID_EXPR.
+
 2018-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84618

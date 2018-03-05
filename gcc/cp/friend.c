@@ -495,7 +495,8 @@ do_friend (tree ctype, tree declarator, tree decl,
   if (TREE_CODE (declarator) == TEMPLATE_ID_EXPR)
     {
       declarator = TREE_OPERAND (declarator, 0);
-      declarator = OVL_NAME (declarator);
+      if (!identifier_p (declarator))
+	declarator = OVL_NAME (declarator);
     }
 
   if (ctype)
