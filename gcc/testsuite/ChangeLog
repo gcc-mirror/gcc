@@ -1,5 +1,13 @@
 2018-03-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84670
+	* gcc.dg/pr84670-1.c: New testcase.
+	* gcc.dg/pr84670-2.c: Likewise.
+	* gcc.dg/pr84670-3.c: Likewise.
+	* gcc.dg/pr84670-4.c: Likewise.
+
+2018-03-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84650
 	* gcc.dg/graphite/pr84650.c: New testcase.
 

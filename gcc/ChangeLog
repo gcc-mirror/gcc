@@ -1,5 +1,16 @@
 2018-03-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84670
+	* tree-ssa-pre.c (struct bb_bitmap_sets): Add visited_with_visited_succs
+	member.
+	(BB_VISITED_WITH_VISITED_SUCCS): New define.
+	(compute_antic): Initialize BB_VISITED_WITH_VISITED_SUCCS.
+	(compute_antic_aux): Only assert the number of values in ANTIC_IN
+	doesn't grow if all successors (recursively) were visited at least
+	once.
+
+2018-03-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84650
 	* tree-ssa-loop-im.c (pass_lim::execute): Reset the SCEV cache
 	if executed in the loop pipeline.

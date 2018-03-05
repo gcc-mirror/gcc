@@ -484,6 +484,10 @@ typedef struct bb_bitmap_sets
   /* True if we have visited this block during ANTIC calculation.  */
   unsigned int visited : 1;
 
+  /* True if we have visited this block after all successors have been
+     visited this way.  */
+  unsigned int visited_with_visited_succs : 1;
+
   /* True when the block contains a call that might not return.  */
   unsigned int contains_may_not_return_call : 1;
 } *bb_value_sets_t;
@@ -497,6 +501,8 @@ typedef struct bb_bitmap_sets
 #define NEW_SETS(BB)	((bb_value_sets_t) ((BB)->aux))->new_sets
 #define EXPR_DIES(BB)	((bb_value_sets_t) ((BB)->aux))->expr_dies
 #define BB_VISITED(BB)	((bb_value_sets_t) ((BB)->aux))->visited
+#define BB_VISITED_WITH_VISITED_SUCCS(BB) \
+    ((bb_value_sets_t) ((BB)->aux))->visited_with_visited_succs
 #define BB_MAY_NOTRETURN(BB) ((bb_value_sets_t) ((BB)->aux))->contains_may_not_return_call
 #define BB_LIVE_VOP_ON_EXIT(BB) ((bb_value_sets_t) ((BB)->aux))->vop_on_exit
 
@@ -2032,6 +2038,8 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
     {
       e = single_succ_edge (block);
       gcc_assert (BB_VISITED (e->dest));
+      BB_VISITED_WITH_VISITED_SUCCS (block)
+	= BB_VISITED_WITH_VISITED_SUCCS (e->dest);
       phi_translate_set (ANTIC_OUT, ANTIC_IN (e->dest), e);
     }
   /* If we have multiple successors, we take the intersection of all of
@@ -2042,6 +2050,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
       size_t i;
       edge first = NULL;
 
+      BB_VISITED_WITH_VISITED_SUCCS (block) = true;
       auto_vec<edge> worklist (EDGE_COUNT (block->succs));
       FOR_EACH_EDGE (e, ei, block->succs)
 	{
@@ -2060,6 +2069,8 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 		fprintf (dump_file, "ANTIC_IN is MAX on %d->%d\n",
 			 e->src->index, e->dest->index);
 	    }
+	  BB_VISITED_WITH_VISITED_SUCCS (block)
+	    &= BB_VISITED_WITH_VISITED_SUCCS (e->dest);
 	}
 
       /* Of multiple successors we have to have visited one already
@@ -2139,7 +2150,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
       changed = true;
       /* After the initial value set computation the value set may
          only shrink during the iteration.  */
-      if (was_visited && flag_checking)
+      if (was_visited && BB_VISITED_WITH_VISITED_SUCCS (block) && flag_checking)
 	{
 	  bitmap_iterator bi;
 	  unsigned int i;
@@ -2318,6 +2329,7 @@ compute_antic (void)
   FOR_ALL_BB_FN (block, cfun)
     {
       BB_VISITED (block) = 0;
+      BB_VISITED_WITH_VISITED_SUCCS (block) = 0;
 
       FOR_EACH_EDGE (e, ei, block->preds)
 	if (e->flags & EDGE_ABNORMAL)
@@ -2334,6 +2346,7 @@ compute_antic (void)
 
   /* At the exit block we anticipate nothing.  */
   BB_VISITED (EXIT_BLOCK_PTR_FOR_FN (cfun)) = 1;
+  BB_VISITED_WITH_VISITED_SUCCS (EXIT_BLOCK_PTR_FOR_FN (cfun)) = 1;
 
   /* For ANTIC computation we need a postorder that also guarantees that
      a block with a single successor is visited after its successor.
