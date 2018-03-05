@@ -1,3 +1,8 @@
+2018-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84650
+	* gcc.dg/graphite/pr84650.c: New testcase.
+
 2018-03-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/82022
