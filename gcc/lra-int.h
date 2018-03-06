@@ -202,15 +202,20 @@ struct lra_static_insn_data
   const struct operand_alternative *operand_alternative;
 };
 
+/* Negative insn alternative numbers used for special cases.  */
+#define LRA_UNKNOWN_ALT -1
+#define LRA_NON_CLOBBERED_ALT -2
+
 /* LRA internal info about an insn (LRA internal insn
    representation).  */
 struct lra_insn_recog_data
 {
   /* The insn code.  */
   int icode;
-  /* The alternative should be used for the insn, -1 if invalid, or we
-     should try to use any alternative, or the insn is a debug
-     insn.  */
+  /* The alternative should be used for the insn, LRA_UNKNOWN_ALT if
+     unknown, or we should assume any alternative, or the insn is a
+     debug insn.  LRA_NON_CLOBBERED_ALT means ignoring any earlier
+     clobbers for the insn.  */
   int used_insn_alternative;
   /* SP offset before the insn relative to one at the func start.  */
   HOST_WIDE_INT sp_offset;

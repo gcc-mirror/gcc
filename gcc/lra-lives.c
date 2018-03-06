@@ -593,7 +593,9 @@ static inline bool
 reg_early_clobber_p (const struct lra_insn_reg *reg, int n_alt)
 {
   return (reg->early_clobber
-	  && (n_alt < 0 || TEST_BIT (reg->early_clobber_alts, n_alt)));
+	  && (n_alt == LRA_UNKNOWN_ALT
+	      || (n_alt != LRA_NON_CLOBBERED_ALT
+		  && TEST_BIT (reg->early_clobber_alts, n_alt))));
 }
 
 /* Process insns of the basic block BB to update pseudo live ranges,

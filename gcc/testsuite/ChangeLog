@@ -1,3 +1,11 @@
+2018-03-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2018-02-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/81572
+	* gcc.target/powerpc/pr81572.c: New.
+
 2018-03-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
