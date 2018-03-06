@@ -3464,6 +3464,7 @@ int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
 
 void gfc_convert_mpz_to_signed (mpz_t, int);
 gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
+bool gfc_is_size_zero_array (gfc_expr *);
 
 /* trans-array.c  */
 
