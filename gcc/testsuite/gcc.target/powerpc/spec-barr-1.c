@@ -4,7 +4,7 @@
 
 void foo ()
 {
-  __builtin_rs6000_speculation_barrier ();
+  __builtin_ppc_speculation_barrier ();
 }
 
 /* { dg-final { scan-assembler "ori 31,31,0" } } */
