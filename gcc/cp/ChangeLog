@@ -1,5 +1,15 @@
 2018-03-06  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/84231
+	* tree.c (lvalue_kind): Use presence/absence of REFERENCE_TYPE
+	only while processing template decls.
+	* typeck.c (build_x_conditional_expr): Move wrapping of
+	reference type around type...
+	* call.c (build_conditional_expr_1): ... here.  Rename
+	is_lvalue to is_glvalue.
+	* parser.c (cp_parser_fold_expression): Catch REFERENCE_REF_P
+	INDIRECT_REF of COND_EXPR too.
+
 	PR c++/84593
 	* init.c (build_zero_init_1): Zero-initialize references.
 

@@ -194,6 +194,21 @@ lvalue_kind (const_tree ref)
       break;
 
     case COND_EXPR:
+      if (processing_template_decl)
+	{
+	  /* Within templates, a REFERENCE_TYPE will indicate whether
+	     the COND_EXPR result is an ordinary lvalue or rvalueref.
+	     Since REFERENCE_TYPEs are handled above, if we reach this
+	     point, we know we got a plain rvalue.  Unless we have a
+	     type-dependent expr, that is, but we shouldn't be testing
+	     lvalueness if we can't even tell the types yet!  */
+	  gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE (ref)));
+	  if (CLASS_TYPE_P (TREE_TYPE (ref))
+	      || TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE)
+	    return clk_class;
+	  else
+	    return clk_none;
+	}
       op1_lvalue_kind = lvalue_kind (TREE_OPERAND (ref, 1)
 				    ? TREE_OPERAND (ref, 1)
 				    : TREE_OPERAND (ref, 0));

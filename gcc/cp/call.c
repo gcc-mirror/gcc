@@ -4782,7 +4782,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
   tree arg3_type;
   tree result = NULL_TREE;
   tree result_type = NULL_TREE;
-  bool is_lvalue = true;
+  bool is_glvalue = true;
   struct z_candidate *candidates = 0;
   struct z_candidate *cand;
   void *p;
@@ -5037,7 +5037,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	  return error_mark_node;
 	}
 
-      is_lvalue = false;
+      is_glvalue = false;
       goto valid_operands;
     }
   /* [expr.cond]
@@ -5155,6 +5155,10 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       && same_type_p (arg2_type, arg3_type))
     {
       result_type = arg2_type;
+      if (processing_template_decl)
+	/* Let lvalue_kind know this was a glvalue.  */
+	result_type = cp_build_reference_type (result_type, xvalue_p (arg2));
+
       arg2 = mark_lvalue_use (arg2);
       arg3 = mark_lvalue_use (arg3);
       goto valid_operands;
@@ -5167,7 +5171,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
      cv-qualified) class type, overload resolution is used to
      determine the conversions (if any) to be applied to the operands
      (_over.match.oper_, _over.built_).  */
-  is_lvalue = false;
+  is_glvalue = false;
   if (!same_type_p (arg2_type, arg3_type)
       && (CLASS_TYPE_P (arg2_type) || CLASS_TYPE_P (arg3_type)))
     {
@@ -5361,7 +5365,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
   /* We can't use result_type below, as fold might have returned a
      throw_expr.  */
 
-  if (!is_lvalue)
+  if (!is_glvalue)
     {
       /* Expand both sides into the same slot, hopefully the target of
 	 the ?: expression.  We used to check for TARGET_EXPRs here,
