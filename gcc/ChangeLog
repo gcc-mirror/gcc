@@ -1,6 +1,15 @@
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-12-19  Martin Liska  <mliska@suse.cz>
+
+	PR rtl-optimization/82675
+	* loop-unroll.c (unroll_loop_constant_iterations): Allocate one
+	more element in sbitmap.
+
+2018-03-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-03-05  Martin Liska  <mliska@suse.cz>
 
 	* ipa-utils.c (ipa_merge_profiles): Do not merge alias or
