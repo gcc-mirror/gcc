@@ -1,5 +1,8 @@
 2018-03-06  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/84593
+	* g++.dg/cpp1y/pr84593.C: New.
+
 	PR c++/84492
 	* g++.dg/pr84492.C: New.
 
