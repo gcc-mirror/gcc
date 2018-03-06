@@ -2114,7 +2114,14 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
     {
       tree type = TREE_TYPE (expr);
 
-      if (processing_template_decl)
+      if (type && type_unknown_p (type))
+	{
+	  error ("a statement expression is an insufficient context"
+		 " for overload resolution");
+	  TREE_TYPE (stmt_expr) = error_mark_node;
+	  return error_mark_node;
+	}
+      else if (processing_template_decl)
 	{
 	  expr = build_stmt (input_location, EXPR_STMT, expr);
 	  expr = add_stmt (expr);

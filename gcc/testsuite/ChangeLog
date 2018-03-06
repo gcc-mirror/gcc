@@ -1,3 +1,8 @@
+2018-03-06  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84492
+	* g++.dg/pr84492.C: New.
+
 2018-03-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/spec-barr-1.c: Change called function name to
