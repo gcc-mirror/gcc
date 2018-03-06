@@ -1,3 +1,7 @@
+2018-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (def_builtin_1): Bail out on error_mark_node.
+
 2018-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/i-cexten.ads (Float_128): New type.
