@@ -1,3 +1,9 @@
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84710
+	* combine.c (try_combine): Use reg_or_subregno instead of handling
+	just paradoxical SUBREGs and REGs.
+
 2018-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	 * config/arc/arc.c (arc_finalize_pic): Remove function.
