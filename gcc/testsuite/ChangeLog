@@ -1,5 +1,8 @@
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/84683
+	* g++.dg/ext/pr84683.C: New test.
+
 	PR tree-optimization/84687
 	* gcc.dg/pr84687.c: New test.
 

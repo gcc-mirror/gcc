@@ -1,5 +1,9 @@
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/84683
+	* reg-stack.c (move_for_stack_reg): If any_malformed_asm, avoid
+	assertion failure.
+
 	PR tree-optimization/84687
 	* omp-simd-clone.c (simd_clone_create): Clear DECL_BUILT_IN_CLASS
 	on new_node->decl.
