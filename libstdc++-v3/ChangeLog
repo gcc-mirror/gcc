@@ -1,3 +1,12 @@
+2018-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/84601
+	* include/std/optional (_Optional_payload): Split into multiple
+	specializations that can handle different cases of trivial or
+	non-trivial assignment operators.
+	* testsuite/20_util/optional/84601.cc: New.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust.
+
 2018-03-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84671
