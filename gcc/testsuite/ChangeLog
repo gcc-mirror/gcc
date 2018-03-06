@@ -1,3 +1,8 @@
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84710
+	* gcc.dg/pr84710.c: New test.
+
 2018-03-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/56667
