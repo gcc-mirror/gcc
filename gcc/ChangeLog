@@ -1,6 +1,14 @@
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-03-05  Martin Liska  <mliska@suse.cz>
+
+	* ipa-utils.c (ipa_merge_profiles): Do not merge alias or
+	a function without profile.
+
+2018-03-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-02-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR c/84229
