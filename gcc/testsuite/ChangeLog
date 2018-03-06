@@ -1,6 +1,15 @@
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-02-23  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR testsuite/80551
+	* c-c++-common/tsan/race_on_mutex.c: Change regexp to allow
+	__GI___pthread_mutex_init as well.
+
+2018-03-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-02-20  Martin Liska  <mliska@suse.cz>
 
 	PR c/84310
