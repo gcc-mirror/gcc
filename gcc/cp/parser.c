@@ -4963,7 +4963,9 @@ cp_parser_fold_expression (cp_parser *parser, tree expr1)
   else if (is_binary_op (TREE_CODE (expr1)))
     error_at (location_of (expr1),
 	      "binary expression in operand of fold-expression");
-  else if (TREE_CODE (expr1) == COND_EXPR)
+  else if (TREE_CODE (expr1) == COND_EXPR
+	   || (REFERENCE_REF_P (expr1)
+	       && TREE_CODE (TREE_OPERAND (expr1, 0)) == COND_EXPR))
     error_at (location_of (expr1),
 	      "conditional expression in operand of fold-expression");
 

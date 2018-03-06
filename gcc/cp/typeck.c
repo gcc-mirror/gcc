@@ -6567,10 +6567,6 @@ build_x_conditional_expr (location_t loc, tree ifexp, tree op1, tree op2,
     {
       tree min = build_min_non_dep (COND_EXPR, expr,
 				    orig_ifexp, orig_op1, orig_op2);
-      /* Remember that the result is an lvalue or xvalue.  */
-      if (glvalue_p (expr) && !glvalue_p (min))
-	TREE_TYPE (min) = cp_build_reference_type (TREE_TYPE (min),
-						   !lvalue_p (expr));
       expr = convert_from_reference (min);
     }
   return expr;
