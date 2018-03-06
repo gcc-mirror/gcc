@@ -1,6 +1,16 @@
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/81360
+	* lto.c (unify_scc): Register prevailing trees, not trees to be freed.
+	(read_cgraph_and_symbols): Use
+	symtab_node::output_to_lto_symbol_table_p.
+
+2018-03-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto.c (register_resolution): Remove forgotten sanity check.
