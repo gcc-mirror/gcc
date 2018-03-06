@@ -2348,7 +2348,7 @@ BU_DFP_MISC_2 (DSCRIQ,		"dscriq",	CONST,	dfp_dscri_td)
 /* 0 argument void function that we pretend was added in ISA 2.06.
    It's a special nop recognized by 2018+ firmware for P7 and up,
    with speculation barrier semantics.  */
-BU_P7_MISC_X (SPEC_BARRIER,	"rs6000_speculation_barrier",	MISC)
+BU_P7_MISC_X (SPEC_BARRIER,	"ppc_speculation_barrier",	MISC)
 
 /* 1 argument BCD functions added in ISA 2.06.  */
 BU_P7_MISC_1 (CDTBCD,		"cdtbcd",	CONST,	cdtbcd)

@@ -1,3 +1,10 @@
+2018-03-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (rs6000_speculation_barrier):
+	Rename to ppc_speculation_barrier.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Rename builtin to
+	__builtin_ppc_speculation_barrier.
+
 2018-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84700
