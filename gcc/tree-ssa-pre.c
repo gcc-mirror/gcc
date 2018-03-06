@@ -2787,11 +2787,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	  unsigned int operand = 1;
 	  vn_reference_op_t currop = &ref->operands[0];
 	  tree sc = NULL_TREE;
-	  tree fn;
-	  if (TREE_CODE (currop->op0) == FUNCTION_DECL)
-	    fn = currop->op0;
-	  else
-	    fn = find_or_generate_expression (block, currop->op0, stmts);
+	  tree fn  = find_or_generate_expression (block, currop->op0, stmts);
 	  if (!fn)
 	    return NULL_TREE;
 	  if (currop->op1)
@@ -2809,14 +2805,27 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 		return NULL_TREE;
 	      args.quick_push (arg);
 	    }
-	  gcall *call
-	    = gimple_build_call_vec ((TREE_CODE (fn) == FUNCTION_DECL
-				      ? build_fold_addr_expr (fn) : fn), args);
+	  gcall *call = gimple_build_call_vec (fn, args);
 	  gimple_call_set_with_bounds (call, currop->with_bounds);
 	  if (sc)
 	    gimple_call_set_chain (call, sc);
 	  tree forcedname = make_ssa_name (currop->type);
 	  gimple_call_set_lhs (call, forcedname);
+	  /* There's no CCP pass after PRE which would re-compute alignment
+	     information so make sure we re-materialize this here.  */
+	  if (gimple_call_builtin_p (call, BUILT_IN_ASSUME_ALIGNED)
+	      && args.length () - 2 <= 1
+	      && tree_fits_uhwi_p (args[1])
+	      && (args.length () != 3 || tree_fits_uhwi_p (args[2])))
+	    {
+	      unsigned HOST_WIDE_INT halign = tree_to_uhwi (args[1]);
+	      unsigned HOST_WIDE_INT hmisalign
+		= args.length () == 3 ? tree_to_uhwi (args[2]) : 0;
+	      if ((halign & (halign - 1)) == 0
+		  && (hmisalign & ~(halign - 1)) == 0)
+		set_ptr_info_alignment (get_ptr_info (forcedname),
+					halign, hmisalign);
+	    }
 	  gimple_set_vuse (call, BB_LIVE_VOP_ON_EXIT (block));
 	  gimple_seq_add_stmt_without_update (&forced_stmts, call);
 	  folded = forcedname;

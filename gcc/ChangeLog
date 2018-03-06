@@ -1,3 +1,21 @@
+2018-03-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84486
+	* tree-ssa-pre.c (create_expression_by_pieces): Remove dead code.
+	When inserting a __builtin_assume_aligned call set the LHS
+	SSA name alignment info accordingly.
+
+	2018-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/84607
+	* genmatch.c (capture_info::walk_match): Do not mark
+	captured expressions without operands as expr_p given
+	they act more like predicates and should be subject to
+	"lost tail" side-effect preserving.
+
 2018-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84524
