@@ -1,3 +1,9 @@
+2018-03-06  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/84492
+	* semantics.c (finish_stmt_expr_expr): Reject unresolved
+	overloads used as stmt expr values.
+
 2018-03-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84708 - ICE with lambda in local class NSDMI.
