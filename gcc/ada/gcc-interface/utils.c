@@ -6443,6 +6443,9 @@ def_builtin_1 (enum built_in_function fncode,
   if (builtin_decl_explicit (fncode))
     return;
 
+  if (fntype == error_mark_node)
+    return;
+
   gcc_assert ((!both_p && !fallback_p)
 	      || !strncmp (name, "__builtin_",
 			   strlen ("__builtin_")));
