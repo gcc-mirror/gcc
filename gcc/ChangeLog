@@ -1,3 +1,10 @@
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84687
+	* omp-simd-clone.c (simd_clone_create): Clear DECL_BUILT_IN_CLASS
+	on new_node->decl.
+	* match.pd (pow(C,x)*expN(y) -> expN(logN(C)*x+y)): New optimization.
+
 2018-03-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (rs6000_speculation_barrier):
