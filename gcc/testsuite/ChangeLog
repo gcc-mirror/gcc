@@ -1,3 +1,8 @@
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84687
+	* gcc.dg/pr84687.c: New test.
+
 2018-03-06  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/84231

@@ -4030,6 +4030,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (exps (mult (logs @0) @1))
       (exp2s (mult (log2s @0) @1)))))))
 
+ /* pow(C,x)*expN(y) -> expN(logN(C)*x+y) if C > 0.  */
+ (for pows (POW)
+      exps (EXP EXP2 EXP10 POW10)
+      logs (LOG LOG2 LOG10 LOG10)
+  (simplify
+   (mult:c (pows:s REAL_CST@0 @1) (exps:s @2))
+   (if (real_compare (GT_EXPR, TREE_REAL_CST_PTR (@0), &dconst0)
+	&& real_isfinite (TREE_REAL_CST_PTR (@0)))
+    (exps (plus (mult (logs @0) @1) @2)))))
+
  (for sqrts (SQRT)
       cbrts (CBRT)
       pows (POW)
