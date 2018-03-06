@@ -1170,7 +1170,8 @@ move_for_stack_reg (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	  && XINT (SET_SRC (XVECEXP (pat, 0, 1)), 1) == UNSPEC_TAN)
 	emit_swap_insn (insn, regstack, dest);
       else
-	gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG);
+	gcc_assert (get_hard_regnum (regstack, dest) < FIRST_STACK_REG
+		    || any_malformed_asm);
 
       gcc_assert (regstack->top < REG_STACK_SIZE);
 
