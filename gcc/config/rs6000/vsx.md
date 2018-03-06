@@ -4084,7 +4084,7 @@
 
 ;; Vector insert/extract word at arbitrary byte values.  Note, the little
 ;; endian version needs to adjust the byte number, and the V4SI element in
-;; vinsert4b.
+;; insert4b.
 (define_insn "extract4b"
   [(set (match_operand:V2DI 0 "vsx_register_operand")
        (unspec:V2DI [(match_operand:V16QI 1 "vsx_register_operand" "wa")
@@ -4162,56 +4162,6 @@
     emit_insn (gen_vextuwrx (op0_si, op0_si, op1_v4si));
   DONE;
 }
-  [(set_attr "type" "vecperm")])
-
-(define_expand "vinsert4b"
-  [(set (match_operand:V16QI 0 "vsx_register_operand")
-	(unspec:V16QI [(match_operand:V4SI 1 "vsx_register_operand")
-		       (match_operand:V16QI 2 "vsx_register_operand")
-		       (match_operand:QI 3 "const_0_to_12_operand")]
-		   UNSPEC_XXINSERTW))]
-  "TARGET_P9_VECTOR"
-{
-  if (!VECTOR_ELT_ORDER_BIG)
-    {
-      rtx op1 = operands[1];
-      rtx v4si_tmp = gen_reg_rtx (V4SImode);
-      emit_insn (gen_vsx_xxpermdi_v4si_be (v4si_tmp, op1, op1, const1_rtx));
-      operands[1] = v4si_tmp;
-      operands[3] = GEN_INT (12 - INTVAL (operands[3]));
-    }
-})
-
-(define_insn "*vinsert4b_internal"
-  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
-	(unspec:V16QI [(match_operand:V4SI 1 "vsx_register_operand" "wa")
-		       (match_operand:V16QI 2 "vsx_register_operand" "0")
-		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
-		   UNSPEC_XXINSERTW))]
-  "TARGET_P9_VECTOR"
-  "xxinsertw %x0,%x1,%3"
-  [(set_attr "type" "vecperm")])
-
-(define_expand "vinsert4b_di"
-  [(set (match_operand:V16QI 0 "vsx_register_operand")
-	(unspec:V16QI [(match_operand:DI 1 "vsx_register_operand")
-		       (match_operand:V16QI 2 "vsx_register_operand")
-		       (match_operand:QI 3 "const_0_to_12_operand")]
-		   UNSPEC_XXINSERTW))]
-  "TARGET_P9_VECTOR"
-{
-  if (!VECTOR_ELT_ORDER_BIG)
-    operands[3] = GEN_INT (12 - INTVAL (operands[3]));
-})
-
-(define_insn "*vinsert4b_di_internal"
-  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
-	(unspec:V16QI [(match_operand:DI 1 "vsx_register_operand" "wj")
-		       (match_operand:V16QI 2 "vsx_register_operand" "0")
-		       (match_operand:QI 3 "const_0_to_12_operand" "n")]
-		   UNSPEC_XXINSERTW))]
-  "TARGET_P9_VECTOR"
-  "xxinsertw %x0,%x1,%3"
   [(set_attr "type" "vecperm")])
 
 

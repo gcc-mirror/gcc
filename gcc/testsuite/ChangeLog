@@ -1,3 +1,13 @@
+2018-03-06  Carl Love  <cel@us.ibm.com>
+
+	Backport from mainline
+	2/16/18  commit 257748  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/p9-vinsert4b-1.c: Remove test file for non-ABI
+	tests.
+	* gcc.target/powerpc/p9-vinsert4b-2.c: Remove test file for non-ABI
+	tests.
+
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

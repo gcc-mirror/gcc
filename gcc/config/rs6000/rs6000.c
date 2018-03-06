@@ -16400,9 +16400,6 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 	}
       break;
 
-    case P9V_BUILTIN_VINSERT4B:
-    case P9V_BUILTIN_VINSERT4B_DI:
-    case P9V_BUILTIN_VEC_VINSERT4B:
     case P9V_BUILTIN_VEC_INSERT4B:
       arg2 = CALL_EXPR_ARG (exp, 2);
       STRIP_NOPS (arg2);
@@ -16413,7 +16410,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       if (TREE_CODE (arg2) != INTEGER_CST || TREE_INT_CST_LOW (arg2) > 12)
 	{
-	  error ("third argument to vec_vinsert4b must be 0..12");
+	  error ("third argument to vec_insert4b must be 0..12");
 	  return expand_call (exp, target, false);
 	}
       break;
