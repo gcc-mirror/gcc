@@ -1857,6 +1857,22 @@ simplify_parameter_variable (gfc_expr *p, int type)
   gfc_expr *e;
   bool t;
 
+  if (gfc_is_size_zero_array (p))
+    {
+      if (p->expr_type == EXPR_ARRAY)
+	return true;
+
+      e = gfc_get_expr ();
+      e->expr_type = EXPR_ARRAY;
+      e->ts = p->ts;
+      e->rank = p->rank;
+      e->value.constructor = NULL;
+      e->shape = gfc_copy_shape (p->shape, p->rank);
+      e->where = p->where;
+      gfc_replace_expr (p, e);
+      return true;
+    }
+
   e = gfc_copy_expr (p->symtree->n.sym->value);
   if (e == NULL)
     return false;

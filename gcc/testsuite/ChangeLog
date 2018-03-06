@@ -1,3 +1,9 @@
+2017-03-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84697
+	PR fortran/66128
+	* gfortran.dg/minmaxloc_zerosize_1.f90: New test.
+
 2018-03-06  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84684

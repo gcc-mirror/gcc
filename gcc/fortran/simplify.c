@@ -259,26 +259,28 @@ is_constant_array_expr (gfc_expr *e)
 }
 
 /* Test for a size zero array.  */
-static bool
-is_size_zero_array (gfc_expr *array)
+bool
+gfc_is_size_zero_array (gfc_expr *array)
 {
-  gfc_expr *e;
-  bool t;
 
-  e = gfc_copy_expr (array);
-  gfc_simplify_expr (e, 1);
+  if (array->rank == 0)
+    return false;
 
-  if (e->expr_type == EXPR_CONSTANT && e->rank > 0 && !e->shape)
-     t = true;
-  else if (e->expr_type == EXPR_ARRAY && e->rank > 0 
-	   && !e->shape && !e->value.constructor)
-     t = true;
-  else
-     t = false;
+  if (array->expr_type == EXPR_VARIABLE && array->rank > 0
+      && array->symtree->n.sym->attr.flavor == FL_PARAMETER
+      && array->shape != NULL)
+    {
+      for (int i = 0; i < array->rank; i++)
+	if (mpz_cmp_si (array->shape[i], 0) <= 0)
+	  return true;
 
-  gfc_free_expr (e);
+      return false;
+    }
 
-  return t;
+  if (array->expr_type == EXPR_ARRAY)
+    return array->value.constructor == NULL;
+
+  return false;
 }
 
 
@@ -974,7 +976,7 @@ gfc_simplify_aint (gfc_expr *e, gfc_expr *k)
 gfc_expr *
 gfc_simplify_all (gfc_expr *mask, gfc_expr *dim)
 {
-  if (is_size_zero_array (mask))
+  if (gfc_is_size_zero_array (mask))
     return gfc_get_logical_expr (mask->ts.kind, &mask->where, true);
 
   return simplify_transformation (mask, dim, NULL, true, gfc_and);
@@ -1066,7 +1068,7 @@ gfc_simplify_and (gfc_expr *x, gfc_expr *y)
 gfc_expr *
 gfc_simplify_any (gfc_expr *mask, gfc_expr *dim)
 {
-  if (is_size_zero_array (mask))
+  if (gfc_is_size_zero_array (mask))
     return gfc_get_logical_expr (mask->ts.kind, &mask->where, false);
 
   return simplify_transformation (mask, dim, NULL, false, gfc_or);
@@ -1965,7 +1967,7 @@ gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
 {
   gfc_expr *result;
 
-  if (is_size_zero_array (mask))
+  if (gfc_is_size_zero_array (mask))
     {
       int k;
       k = kind ? mpz_get_si (kind->value.integer) : gfc_default_integer_kind;
@@ -3263,7 +3265,7 @@ do_bit_and (gfc_expr *result, gfc_expr *e)
 gfc_expr *
 gfc_simplify_iall (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  if (is_size_zero_array (array))
+  if (gfc_is_size_zero_array (array))
     return gfc_get_int_expr (array->ts.kind, NULL, -1);
 
   return simplify_transformation (array, dim, mask, -1, do_bit_and);
@@ -3285,7 +3287,7 @@ do_bit_ior (gfc_expr *result, gfc_expr *e)
 gfc_expr *
 gfc_simplify_iany (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  if (is_size_zero_array (array))
+  if (gfc_is_size_zero_array (array))
     return gfc_get_int_expr (array->ts.kind, NULL, 0);
 
   return simplify_transformation (array, dim, mask, 0, do_bit_ior);
@@ -3728,7 +3730,7 @@ do_bit_xor (gfc_expr *result, gfc_expr *e)
 gfc_expr *
 gfc_simplify_iparity (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  if (is_size_zero_array (array))
+  if (gfc_is_size_zero_array (array))
     return gfc_get_int_expr (array->ts.kind, NULL, 0);
 
   return simplify_transformation (array, dim, mask, 0, do_bit_xor);
@@ -5038,7 +5040,7 @@ gfc_min (gfc_expr *op1, gfc_expr *op2)
 gfc_expr *
 gfc_simplify_minval (gfc_expr *array, gfc_expr* dim, gfc_expr *mask)
 {
-  if (is_size_zero_array (array))
+  if (gfc_is_size_zero_array (array))
     {
       gfc_expr *result;
       int i;
@@ -5094,7 +5096,7 @@ gfc_max (gfc_expr *op1, gfc_expr *op2)
 gfc_expr *
 gfc_simplify_maxval (gfc_expr *array, gfc_expr* dim, gfc_expr *mask)
 {
-  if (is_size_zero_array (array))
+  if (gfc_is_size_zero_array (array))
     {
       gfc_expr *result;
       int i;
@@ -5776,7 +5778,7 @@ gfc_simplify_norm2 (gfc_expr *e, gfc_expr *dim)
 {
   gfc_expr *result;
 
-  if (is_size_zero_array (e))
+  if (gfc_is_size_zero_array (e))
     {
       gfc_expr *result;
       result = gfc_get_constant_expr (e->ts.type, e->ts.kind, &e->where);
@@ -6040,7 +6042,7 @@ gfc_simplify_precision (gfc_expr *e)
 gfc_expr *
 gfc_simplify_product (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  if (is_size_zero_array (array))
+  if (gfc_is_size_zero_array (array))
     {
       gfc_expr *result;
 
@@ -7384,7 +7386,7 @@ gfc_simplify_sqrt (gfc_expr *e)
 gfc_expr *
 gfc_simplify_sum (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  if (is_size_zero_array (array))
+  if (gfc_is_size_zero_array (array))
     {
       gfc_expr *result;
 

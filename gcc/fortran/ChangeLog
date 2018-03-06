@@ -1,3 +1,25 @@
+2017-03-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84697
+	PR fortran/66128
+	* expr.c (simplify_parameter_variable): If p is a size zero array
+	and not an ARRAY_EXPR insert an empty array constructor and
+	return.
+	* gfortran.h: Add prototype for gfc_is_size_zero_array.
+	* simplify.c (is_size_zero_array): Make non-static and rename into
+	(gfc_is_size_zero_array):  Check for parameter arrays of zero
+	size by comparing shape and absence of constructor.
+	(gfc_simplify_all): Use gfc_is_size_zero_array instead of
+	is_size_zero_array.
+	(gfc_simplify_count): Likewise.
+	(gfc_simplify_iall): Likewise.
+	(gfc_simplify_iany): Likewise.
+	(gfc_simplify_iparity): Likewise.
+	(gfc_simplify_minval): Likewise.
+	(gfc_simplify_maxval): Likewise.
+	(gfc_simplify_product): Likewise.
+	(gfc_simplify_sum): Likewise.
+
 2018-03-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/56667
