@@ -1,6 +1,16 @@
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-02-20  Martin Liska  <mliska@suse.cz>
+
+	PR c/84310
+	PR target/79747
+	* gcc.target/i386/pr84310.c: New test.
+	* gcc.target/i386/pr84310-2.c: Likewise.
+
+2018-03-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-01-23  Martin Liska  <mliska@suse.cz>
 
 	PR lto/81440
