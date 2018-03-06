@@ -141,9 +141,6 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 /* Should we try to unalign likely taken branches without a delay slot.  */
 #define TARGET_UNALIGN_BRANCH (TARGET_ARC700 && !optimize_size)
 
-/* Should we upsize short delayed branches with a short delay insn?  */
-#define TARGET_UPSIZE_DBR (TARGET_ARC700 && !optimize_size)
-
 /* Should we add padding before a return insn to avoid mispredict?  */
 #define TARGET_PAD_RETURN (TARGET_ARC700 && !optimize_size)
 

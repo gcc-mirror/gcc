@@ -1,3 +1,29 @@
+2018-03-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	 * config/arc/arc.c (arc_finalize_pic): Remove function.
+	 (arc_must_save_register): We use single base PIC register, remove
+	 checks to save/restore the PIC register.
+	 (arc_expand_prologue): Likewise.
+	 * config/arc/arc-protos.h (arc_set_default_type_attributes):
+	 Remove.
+	 (arc_verify_short): Likewise.
+	 (arc_attr_type): Likewise.
+	 * config/arc/arc.c (arc_set_default_type_attributes): Remove.
+	 (walk_stores): Likewise.
+	 (arc_address_cost): Make it static.
+	 (arc_verify_short): Likewise.
+	 (branch_dest): Likewise.
+	 (arc_attr_type): Likewise.
+	 * config/arc/arc.c (TARGET_ADJUST_INSN_LENGTH): Remove.
+	 (TARGET_INSN_LENGTH_PARAMETERS): Likewise.
+	 (arc_final_prescan_insn): Remove inserting the nops due to
+	 hardware hazards.  It is done in reorg step.
+	 (insn_length_variant_t): Remove.
+	 (insn_length_parameters_t): Likewise.
+	 (arc_insn_length_parameters): Likewise.
+	 (arc_get_insn_variants): Likewise.
+	 * config/arc/arc.h (TARGET_UPSIZE_DBR): Remove.
+
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/84683

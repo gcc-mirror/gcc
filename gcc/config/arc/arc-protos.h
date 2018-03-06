@@ -32,7 +32,6 @@ extern bool arc_double_limm_p (rtx);
 extern void arc_print_operand (FILE *, rtx, int);
 extern void arc_print_operand_address (FILE *, rtx);
 extern void arc_final_prescan_insn (rtx_insn *, rtx *, int);
-extern void arc_set_default_type_attributes(tree type);
 extern const char *arc_output_libcall (const char *);
 extern bool prepare_extend_operands (rtx *operands, enum rtx_code code,
 				     machine_mode omode);
@@ -97,10 +96,8 @@ extern void split_addsi (rtx *);
 extern void split_subsi (rtx *);
 extern void arc_pad_return (void);
 extern void arc_split_move (rtx *);
-extern int arc_verify_short (rtx_insn *insn, int unalign, int);
 extern const char *arc_short_long (rtx_insn *insn, const char *, const char *);
 extern rtx arc_regno_use_in (unsigned int, rtx);
-extern int arc_attr_type (rtx_insn *);
 extern bool arc_scheduling_not_expected (void);
 extern bool arc_sets_cc_p (rtx_insn *insn);
 extern int arc_label_align (rtx_insn *label);
