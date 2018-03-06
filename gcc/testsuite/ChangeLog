@@ -1,3 +1,8 @@
+2018-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84684
+	* g++.dg/cpp1z/constexpr-84684.C: New test.
+
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/84721

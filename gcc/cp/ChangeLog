@@ -1,3 +1,9 @@
+2018-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84684
+	* constexpr.c (cxx_bind_parameters_in_call): Unshare evaluated
+	arguments.
+
 2018-03-06  Alexandre Oliva <aoliva@redhat.com>
 
 	PR c++/84231
