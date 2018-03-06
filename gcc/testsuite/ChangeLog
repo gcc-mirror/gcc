@@ -1,6 +1,15 @@
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/79455
+	* c-c++-common/tsan/race_on_mutex.c: Make the scanned pattern
+	more generic.
+
+2018-03-06  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/83954
