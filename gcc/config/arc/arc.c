@@ -457,8 +457,6 @@ static void arc_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
 static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 
-static void arc_finalize_pic (void);
-
 /* initialize the GCC target structure.  */
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arc_comp_type_attributes
@@ -589,10 +587,6 @@ static void arc_finalize_pic (void);
 #define TARGET_MODE_DEPENDENT_ADDRESS_P arc_mode_dependent_address_p
 
 #define TARGET_LEGITIMIZE_ADDRESS arc_legitimize_address
-
-#define TARGET_ADJUST_INSN_LENGTH arc_adjust_insn_length
-
-#define TARGET_INSN_LENGTH_PARAMETERS arc_insn_length_parameters
 
 #undef TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P
 #define TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P	\
@@ -2109,14 +2103,6 @@ arc_comp_type_attributes (const_tree type1,
   return 1;
 }
 
-/* Set the default attributes for TYPE.  */
-
-void
-arc_set_default_type_attributes (tree type ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable();
-}
-
 /* Misc. utilities.  */
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
@@ -2346,7 +2332,7 @@ arc_setup_incoming_varargs (cumulative_args_t args_so_far,
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  */
 
-int
+static int
 arc_address_cost (rtx addr, machine_mode, addr_space_t, bool speed)
 {
   switch (GET_CODE (addr))
@@ -2679,10 +2665,6 @@ arc_must_save_register (int regno, struct function *func)
       /* Do not emit code for auto saved regs.  */
       && !irq_auto_save_p
       && !firq_auto_save_p)
-    return true;
-
-  if (flag_pic && crtl->uses_pic_offset_table
-      && regno == PIC_OFFSET_TABLE_REGNUM)
     return true;
 
   return false;
@@ -3274,10 +3256,6 @@ arc_expand_prologue (void)
 	emit_insn (gen_stack_tie (stack_pointer_rtx,
 				  hard_frame_pointer_rtx));
     }
-
-  /* Setup the gp register, if needed.  */
-  if (crtl->uses_pic_offset_table)
-    arc_finalize_pic ();
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
@@ -3523,37 +3501,6 @@ arc_unspec_offset (rtx loc, int unspec)
 					       unspec));
 }
 
-/* Emit special PIC prologues and epilogues.  */
-/* If the function has any GOTOFF relocations, then the GOTBASE
-   register has to be setup in the prologue
-   The instruction needed at the function start for setting up the
-   GOTBASE register is
-      add rdest, pc,
-   ----------------------------------------------------------
-   The rtl to be emitted for this should be:
-     set (reg basereg)
-         (plus (reg pc)
-               (const (unspec (symref _DYNAMIC) 3)))
-   ----------------------------------------------------------  */
-
-static void
-arc_finalize_pic (void)
-{
-  rtx pat;
-  rtx baseptr_rtx = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
-
-  if (crtl->uses_pic_offset_table == 0)
-    return;
-
-  gcc_assert (flag_pic != 0);
-
-  pat = gen_rtx_SYMBOL_REF (Pmode, "_DYNAMIC");
-  pat = arc_unspec_offset (pat, ARC_UNSPEC_GOT);
-  pat = gen_rtx_SET (baseptr_rtx, pat);
-
-  emit_insn (pat);
-}
-
 /* !TARGET_BARREL_SHIFTER support.  */
 /* Emit a shift insn to set OP0 to OP1 shifted by OP2; CODE specifies what
    kind of shift.  */
@@ -4927,42 +4874,6 @@ arc_ccfsm_cond_exec_p (void)
 	  && ARC_CCFSM_COND_EXEC_P (&arc_ccfsm_current));
 }
 
-/* Like next_active_insn, but return NULL if we find an ADDR_(DIFF_)VEC,
-   and look inside SEQUENCEs.  */
-
-static rtx_insn *
-arc_next_active_insn (rtx_insn *insn, struct arc_ccfsm *statep)
-{
-  rtx pat;
-
-  do
-    {
-      if (statep)
-	arc_ccfsm_post_advance (insn, statep);
-      insn = NEXT_INSN (insn);
-      if (!insn || BARRIER_P (insn))
-	return NULL;
-      if (statep)
-	arc_ccfsm_advance (insn, statep);
-    }
-  while (NOTE_P (insn)
-	 || (cfun->machine->arc_reorg_started
-	     && LABEL_P (insn) && !label_to_alignment (insn))
-	 || (NONJUMP_INSN_P (insn)
-	     && (GET_CODE (PATTERN (insn)) == USE
-		 || GET_CODE (PATTERN (insn)) == CLOBBER)));
-  if (!LABEL_P (insn))
-    {
-      gcc_assert (INSN_P (insn));
-      pat = PATTERN (insn);
-      if (GET_CODE (pat) == ADDR_VEC || GET_CODE (pat) == ADDR_DIFF_VEC)
-	return NULL;
-      if (GET_CODE (pat) == SEQUENCE)
-	return as_a <rtx_insn *> (XVECEXP (pat, 0, 0));
-    }
-  return insn;
-}
-
 /* When deciding if an insn should be output short, we want to know something
    about the following insns:
    - if another insn follows which we know we can output as a short insn
@@ -4987,7 +4898,7 @@ arc_next_active_insn (rtx_insn *insn, struct arc_ccfsm *statep)
    zero if the current insn is aligned to a 4-byte-boundary, two otherwise.
    If CHECK_ATTR is greater than 0, check the iscompact attribute first.  */
 
-int
+static int
 arc_verify_short (rtx_insn *insn, int, int check_attr)
 {
   enum attr_iscompact iscompact;
@@ -5033,23 +4944,6 @@ arc_final_prescan_insn (rtx_insn *insn, rtx *opvec ATTRIBUTE_UNUSED,
 {
   if (TARGET_DUMPISIZE)
     fprintf (asm_out_file, "\n; at %04x\n", INSN_ADDRESSES (INSN_UID (insn)));
-
-  /* Output a nop if necessary to prevent a hazard.
-     Don't do this for delay slots: inserting a nop would
-     alter semantics, and the only time we would find a hazard is for a
-     call function result - and in that case, the hazard is spurious to
-     start with.  */
-  if (PREV_INSN (insn)
-      && PREV_INSN (NEXT_INSN (insn)) == insn
-      && arc_hazard (prev_real_insn (insn), insn))
-    {
-      current_output_insn =
-	emit_insn_before (gen_nop (), NEXT_INSN (PREV_INSN (insn)));
-      final_scan_insn (current_output_insn, asm_out_file, optimize, 1, NULL);
-      current_output_insn = insn;
-    }
-  /* Restore extraction data which might have been clobbered by arc_hazard.  */
-  extract_constrain_insn_cached (insn);
 
   if (!cfun->machine->prescan_initialized)
     {
@@ -5116,7 +5010,7 @@ arc_frame_pointer_required (void)
 
 /* Return the destination address of a branch.  */
 
-int
+static int
 branch_dest (rtx branch)
 {
   rtx pat = PATTERN (branch);
@@ -7193,61 +7087,6 @@ arc_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
     }
 }
 
-
-/* This was in rtlanal.c, and can go in there when we decide we want
-   to submit the change for inclusion in the GCC tree.  */
-/* Like note_stores, but allow the callback to have side effects on the rtl
-   (like the note_stores of yore):
-   Call FUN on each register or MEM that is stored into or clobbered by X.
-   (X would be the pattern of an insn).  DATA is an arbitrary pointer,
-   ignored by note_stores, but passed to FUN.
-   FUN may alter parts of the RTL.
-
-   FUN receives three arguments:
-   1. the REG, MEM, CC0 or PC being stored in or clobbered,
-   2. the SET or CLOBBER rtx that does the store,
-   3. the pointer DATA provided to note_stores.
-
-  If the item being stored in or clobbered is a SUBREG of a hard register,
-  the SUBREG will be passed.  */
-
-/* For now.  */ static
-void
-walk_stores (rtx x, void (*fun) (rtx, rtx, void *), void *data)
-{
-  int i;
-
-  if (GET_CODE (x) == COND_EXEC)
-    x = COND_EXEC_CODE (x);
-
-  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
-    {
-      rtx dest = SET_DEST (x);
-
-      while ((GET_CODE (dest) == SUBREG
-	      && (!REG_P (SUBREG_REG (dest))
-		  || REGNO (SUBREG_REG (dest)) >= FIRST_PSEUDO_REGISTER))
-	     || GET_CODE (dest) == ZERO_EXTRACT
-	     || GET_CODE (dest) == STRICT_LOW_PART)
-	dest = XEXP (dest, 0);
-
-      /* If we have a PARALLEL, SET_DEST is a list of EXPR_LIST expressions,
-	 each of whose first operand is a register.  */
-      if (GET_CODE (dest) == PARALLEL)
-	{
-	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	    if (XEXP (XVECEXP (dest, 0, i), 0) != 0)
-	      (*fun) (XEXP (XVECEXP (dest, 0, i), 0), x, data);
-	}
-      else
-	(*fun) (dest, x, data);
-    }
-
-  else if (GET_CODE (x) == PARALLEL)
-    for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-      walk_stores (XVECEXP (x, 0, i), fun, data);
-}
-
 static bool
 arc_pass_by_reference (cumulative_args_t ca_v ATTRIBUTE_UNUSED,
 		       machine_mode mode ATTRIBUTE_UNUSED,
@@ -9047,308 +8886,6 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
   return len;
 }
 
-/* Values for length_sensitive.  */
-enum
-{
-  ARC_LS_NONE,// Jcc
-  ARC_LS_25, // 25 bit offset, B
-  ARC_LS_21, // 21 bit offset, Bcc
-  ARC_LS_U13,// 13 bit unsigned offset, LP
-  ARC_LS_10, // 10 bit offset, B_s, Beq_s, Bne_s
-  ARC_LS_9,  //  9 bit offset, BRcc
-  ARC_LS_8,  //  8 bit offset, BRcc_s
-  ARC_LS_U7, //  7 bit unsigned offset, LPcc
-  ARC_LS_7   //  7 bit offset, Bcc_s
-};
-
-/* While the infrastructure patch is waiting for review, duplicate the
-   struct definitions, to allow this file to compile.  */
-#if 1
-typedef struct
-{
-  unsigned align_set;
-  /* Cost as a branch / call target or call return address.  */
-  int target_cost;
-  int fallthrough_cost;
-  int branch_cost;
-  int length;
-  /* 0 for not length sensitive, 1 for largest offset range,
- *      2 for next smaller etc.  */
-  unsigned length_sensitive : 8;
-  bool enabled;
-} insn_length_variant_t;
-
-typedef struct insn_length_parameters_s
-{
-  int align_unit_log;
-  int align_base_log;
-  int max_variants;
-  int (*get_variants) (rtx_insn *, int, bool, bool, insn_length_variant_t *);
-} insn_length_parameters_t;
-
-static void
-arc_insn_length_parameters (insn_length_parameters_t *ilp) ATTRIBUTE_UNUSED;
-#endif
-
-static int
-arc_get_insn_variants (rtx_insn *insn, int len, bool, bool target_p,
-		       insn_length_variant_t *ilv)
-{
-  if (!NONDEBUG_INSN_P (insn))
-    return 0;
-  enum attr_type type;
-  /* shorten_branches doesn't take optimize_size into account yet for the
-     get_variants mechanism, so turn this off for now.  */
-  if (optimize_size)
-    return 0;
-  if (rtx_sequence *pat = dyn_cast <rtx_sequence *> (PATTERN (insn)))
-    {
-      /* The interaction of a short delay slot insn with a short branch is
-	 too weird for shorten_branches to piece together, so describe the
-	 entire SEQUENCE.  */
-      rtx_insn *inner;
-      if (TARGET_UPSIZE_DBR
-	  && get_attr_length (pat->insn (1)) <= 2
-	  && (((type = get_attr_type (inner = pat->insn (0)))
-	       == TYPE_UNCOND_BRANCH)
-	      || type == TYPE_BRANCH)
-	  && get_attr_delay_slot_filled (inner) == DELAY_SLOT_FILLED_YES)
-	{
-	  int n_variants
-	    = arc_get_insn_variants (inner, get_attr_length (inner), true,
-				     target_p, ilv+1);
-	  /* The short variant gets split into a higher-cost aligned
-	     and a lower cost unaligned variant.  */
-	  gcc_assert (n_variants);
-	  gcc_assert (ilv[1].length_sensitive == ARC_LS_7
-		      || ilv[1].length_sensitive == ARC_LS_10);
-	  gcc_assert (ilv[1].align_set == 3);
-	  ilv[0] = ilv[1];
-	  ilv[0].align_set = 1;
-	  ilv[0].branch_cost += 1;
-	  ilv[1].align_set = 2;
-	  n_variants++;
-	  for (int i = 0; i < n_variants; i++)
-	    ilv[i].length += 2;
-	  /* In case an instruction with aligned size is wanted, and
-	     the short variants are unavailable / too expensive, add
-	     versions of long branch + long delay slot.  */
-	  for (int i = 2, end = n_variants; i < end; i++, n_variants++)
-	    {
-	      ilv[n_variants] = ilv[i];
-	      ilv[n_variants].length += 2;
-	    }
-	  return n_variants;
-	}
-      return 0;
-    }
-  insn_length_variant_t *first_ilv = ilv;
-  type = get_attr_type (insn);
-  bool delay_filled
-    = (get_attr_delay_slot_filled (insn) == DELAY_SLOT_FILLED_YES);
-  int branch_align_cost = delay_filled ? 0 : 1;
-  int branch_unalign_cost = delay_filled ? 0 : TARGET_UNALIGN_BRANCH ? 0 : 1;
-  /* If the previous instruction is an sfunc call, this insn is always
-     a target, even though the middle-end is unaware of this.  */
-  bool force_target = false;
-  rtx_insn *prev = prev_active_insn (insn);
-  if (prev && arc_next_active_insn (prev, 0) == insn
-      && ((NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	  ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
-		       NON_SIBCALL)
-	  : (CALL_ATTR (prev, NON_SIBCALL)
-	     && NEXT_INSN (PREV_INSN (prev)) == prev)))
-    force_target = true;
-
-  switch (type)
-    {
-    case TYPE_BRCC:
-      /* Short BRCC only comes in no-delay-slot version, and without limm  */
-      if (!delay_filled)
-	{
-	  ilv->align_set = 3;
-	  ilv->length = 2;
-	  ilv->branch_cost = 1;
-	  ilv->enabled = (len == 2);
-	  ilv->length_sensitive = ARC_LS_8;
-	  ilv++;
-	}
-      /* Fall through.  */
-    case TYPE_BRCC_NO_DELAY_SLOT:
-      /* doloop_fallback* patterns are TYPE_BRCC_NO_DELAY_SLOT for
-	 (delay slot) scheduling purposes, but they are longer.  */
-      if (GET_CODE (PATTERN (insn)) == PARALLEL
-	  && GET_CODE (XVECEXP (PATTERN (insn), 0, 1)) == SET)
-	return 0;
-      /* Standard BRCC: 4 bytes, or 8 bytes with limm.  */
-      ilv->length = ((type == TYPE_BRCC) ? 4 : 8);
-      ilv->align_set = 3;
-      ilv->branch_cost = branch_align_cost;
-      ilv->enabled = (len <= ilv->length);
-      ilv->length_sensitive = ARC_LS_9;
-      if ((target_p || force_target)
-	  || (!delay_filled && TARGET_UNALIGN_BRANCH))
-	{
-	  ilv[1] = *ilv;
-	  ilv->align_set = 1;
-	  ilv++;
-	  ilv->align_set = 2;
-	  ilv->target_cost = 1;
-	  ilv->branch_cost = branch_unalign_cost;
-	}
-      ilv++;
-
-      rtx op, op0;
-      op = XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 0);
-      op0 = XEXP (op, 0);
-
-      if (GET_CODE (op0) == ZERO_EXTRACT
-	  && satisfies_constraint_L (XEXP (op0, 2)))
-	op0 = XEXP (op0, 0);
-      if (satisfies_constraint_Rcq (op0))
-	{
-	  ilv->length = ((type == TYPE_BRCC) ? 6 : 10);
-	  ilv->align_set = 3;
-	  ilv->branch_cost = 1 + branch_align_cost;
-	  ilv->fallthrough_cost = 1;
-	  ilv->enabled = true;
-	  ilv->length_sensitive = ARC_LS_21;
-	  if (!delay_filled && TARGET_UNALIGN_BRANCH)
-	    {
-	      ilv[1] = *ilv;
-	      ilv->align_set = 1;
-	      ilv++;
-	      ilv->align_set = 2;
-	      ilv->branch_cost = 1 + branch_unalign_cost;
-	    }
-	  ilv++;
-	}
-      ilv->length = ((type == TYPE_BRCC) ? 8 : 12);
-      ilv->align_set = 3;
-      ilv->branch_cost = 1 + branch_align_cost;
-      ilv->fallthrough_cost = 1;
-      ilv->enabled = true;
-      ilv->length_sensitive = ARC_LS_21;
-      if ((target_p || force_target)
-	  || (!delay_filled && TARGET_UNALIGN_BRANCH))
-	{
-	  ilv[1] = *ilv;
-	  ilv->align_set = 1;
-	  ilv++;
-	  ilv->align_set = 2;
-	  ilv->target_cost = 1;
-	  ilv->branch_cost = 1 + branch_unalign_cost;
-	}
-      ilv++;
-      break;
-
-    case TYPE_SFUNC:
-      ilv->length = 12;
-      goto do_call;
-    case TYPE_CALL_NO_DELAY_SLOT:
-      ilv->length = 8;
-      goto do_call;
-    case TYPE_CALL:
-      ilv->length = 4;
-      ilv->length_sensitive
-	= GET_CODE (PATTERN (insn)) == COND_EXEC ? ARC_LS_21 : ARC_LS_25;
-    do_call:
-      ilv->align_set = 3;
-      ilv->fallthrough_cost = branch_align_cost;
-      ilv->enabled = true;
-      if ((target_p || force_target)
-	  || (!delay_filled && TARGET_UNALIGN_BRANCH))
-	{
-	  ilv[1] = *ilv;
-	  ilv->align_set = 1;
-	  ilv++;
-	  ilv->align_set = 2;
-	  ilv->target_cost = 1;
-	  ilv->fallthrough_cost = branch_unalign_cost;
-	}
-      ilv++;
-      break;
-    case TYPE_UNCOND_BRANCH:
-      /* Strictly speaking, this should be ARC_LS_10 for equality comparisons,
-	 but that makes no difference at the moment.  */
-      ilv->length_sensitive = ARC_LS_7;
-      ilv[1].length_sensitive = ARC_LS_25;
-      goto do_branch;
-    case TYPE_BRANCH:
-      ilv->length_sensitive = ARC_LS_10;
-      ilv[1].length_sensitive = ARC_LS_21;
-    do_branch:
-      ilv->align_set = 3;
-      ilv->length = 2;
-      ilv->branch_cost = branch_align_cost;
-      ilv->enabled = (len == ilv->length);
-      ilv++;
-      ilv->length = 4;
-      ilv->align_set = 3;
-      ilv->branch_cost = branch_align_cost;
-      ilv->enabled = true;
-      if ((target_p || force_target)
-	  || (!delay_filled && TARGET_UNALIGN_BRANCH))
-	{
-	  ilv[1] = *ilv;
-	  ilv->align_set = 1;
-	  ilv++;
-	  ilv->align_set = 2;
-	  ilv->target_cost = 1;
-	  ilv->branch_cost = branch_unalign_cost;
-	}
-      ilv++;
-      break;
-    case TYPE_JUMP:
-      return 0;
-    default:
-      /* For every short insn, there is generally also a long insn.
-	 trap_s is an exception.  */
-      if ((len & 2) == 0 || recog_memoized (insn) == CODE_FOR_trap_s)
-	return 0;
-      ilv->align_set = 3;
-      ilv->length = len;
-      ilv->enabled = 1;
-      ilv++;
-      ilv->align_set = 3;
-      ilv->length = len + 2;
-      ilv->enabled = 1;
-      if (target_p || force_target)
-	{
-	  ilv[1] = *ilv;
-	  ilv->align_set = 1;
-	  ilv++;
-	  ilv->align_set = 2;
-	  ilv->target_cost = 1;
-	}
-      ilv++;
-    }
-  /* If the previous instruction is an sfunc call, this insn is always
-     a target, even though the middle-end is unaware of this.
-     Therefore, if we have a call predecessor, transfer the target cost
-     to the fallthrough and branch costs.  */
-  if (force_target)
-    {
-      for (insn_length_variant_t *p = first_ilv; p < ilv; p++)
-	{
-	  p->fallthrough_cost += p->target_cost;
-	  p->branch_cost += p->target_cost;
-	  p->target_cost = 0;
-	}
-    }
-
-  return ilv - first_ilv;
-}
-
-static void
-arc_insn_length_parameters (insn_length_parameters_t *ilp)
-{
-  ilp->align_unit_log = 1;
-  ilp->align_base_log = 1;
-  ilp->max_variants = 7;
-  ilp->get_variants = arc_get_insn_variants;
-}
-
 /* Return a copy of COND from *STATEP, inverted if that is indicated by the
    CC field of *STATEP.  */
 
@@ -10267,7 +9804,7 @@ arc_regno_use_in (unsigned int regno, rtx x)
 /* Return the integer value of the "type" attribute for INSN, or -1 if
    INSN can't have attributes.  */
 
-int
+static int
 arc_attr_type (rtx_insn *insn)
 {
   if (NONJUMP_INSN_P (insn)
