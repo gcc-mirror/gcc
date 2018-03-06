@@ -1,3 +1,21 @@
+2018-03-06  Carl Love  <cel@us.ibm.com>
+
+	Backport from mainline
+	2/16/18  commit 257748  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h: Remove vec_vextract4b and vec_vinsert4b.
+	* config/rs6000/rs6000-builtin.def: Remove macro expansion for
+	VINSERT4B_DI and VINSERT4B.
+	* config/rs6000/rs6000.c: Remove case statements for
+	P9V_BUILTIN_VINSERT4B, P9V_BUILTIN_VINSERT4B_DI,
+	and P9V_BUILTIN_VEC_VINSERT4B.
+	* config/rs6000/rs6000-c.c (altivec_expand_builtin): Remove entries for
+	P9V_BUILTIN_VEC_VEXTRACT4B and P9V_BUILTIN_VEC_VINSERT4B.
+	* config/rs6000/vsx.md:  Remove define_expand vinsert4b,
+	define_insn *vinsert4b_internal, define_insn "*vinsert4b_di_internal.
+	* doc/extend.texi: Remove vec_vextract4b, non ABI definitions for
+	vec_insert4b.
+
 2018-03-06  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
