@@ -1,5 +1,8 @@
 2018-03-06  Alexandre Oliva <aoliva@redhat.com>
 
+	PR c++/84593
+	* init.c (build_zero_init_1): Zero-initialize references.
+
 	PR c++/84492
 	* semantics.c (finish_stmt_expr_expr): Reject unresolved
 	overloads used as stmt expr values.
