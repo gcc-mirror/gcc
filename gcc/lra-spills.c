@@ -503,7 +503,7 @@ spill_pseudos (void)
 			 INSN_UID (insn));
 	      lra_push_insn (insn);
 	      if (lra_reg_spill_p || targetm.different_addr_displacement_p ())
-		lra_set_used_insn_alternative (insn, -1);
+		lra_set_used_insn_alternative (insn, LRA_UNKNOWN_ALT);
 	    }
 	  else if (CALL_P (insn)
 		   /* Presence of any pseudo in CALL_INSN_FUNCTION_USAGE

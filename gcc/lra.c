@@ -946,7 +946,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
   data = XNEW (struct lra_insn_recog_data);
   lra_insn_recog_data[uid] = data;
   data->insn = insn;
-  data->used_insn_alternative = -1;
+  data->used_insn_alternative = LRA_UNKNOWN_ALT;
   data->icode = icode;
   data->regs = NULL;
   if (DEBUG_INSN_P (insn))
@@ -1187,7 +1187,7 @@ lra_update_insn_recog_data (rtx_insn *insn)
       return data;
     }
   insn_static_data = data->insn_static_data;
-  data->used_insn_alternative = -1;
+  data->used_insn_alternative = LRA_UNKNOWN_ALT;
   if (DEBUG_INSN_P (insn))
     return data;
   if (data->icode < 0)
