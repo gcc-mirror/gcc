@@ -1654,7 +1654,8 @@ static void c_finish_oacc_routine (struct oacc_routine_data *, tree, bool);
 static void
 add_debug_begin_stmt (location_t loc)
 {
-  if (!MAY_HAVE_DEBUG_MARKER_STMTS)
+  /* Don't add DEBUG_BEGIN_STMTs outside of functions, see PR84721.  */
+  if (!MAY_HAVE_DEBUG_MARKER_STMTS || !building_stmt_list_p ())
     return;
 
   tree stmt = build0 (DEBUG_BEGIN_STMT, void_type_node);

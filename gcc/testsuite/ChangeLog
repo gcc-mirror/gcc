@@ -1,5 +1,8 @@
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/84721
+	* gcc.dg/pr84721.c: New test.
+
 	PR target/84710
 	* gcc.dg/pr84710.c: New test.
 

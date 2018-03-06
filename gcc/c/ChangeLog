@@ -1,3 +1,9 @@
+2018-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/84721
+	* c-parser.c (add_debug_begin_stmt): Don't add DEBUG_BEGIN_STMT if
+	!building_stmt_list_p ().
+
 2018-02-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR c/84305
