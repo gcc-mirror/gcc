@@ -1014,6 +1014,26 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_flag_tm)
     sorry ("transactional memory is not supported with "
 	   "%<-fsanitize=kernel-address%>");
+
+  /* Comes from final.c -- no real reason to change it.  */
+#define MAX_CODE_ALIGN 16
+#define MAX_CODE_ALIGN_VALUE (1 << MAX_CODE_ALIGN)
+
+  if (opts->x_align_loops > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-loops=%d is not between 0 and %d",
+	      opts->x_align_loops, MAX_CODE_ALIGN_VALUE);
+
+  if (opts->x_align_jumps > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-jumps=%d is not between 0 and %d",
+	      opts->x_align_jumps, MAX_CODE_ALIGN_VALUE);
+
+  if (opts->x_align_functions > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-functions=%d is not between 0 and %d",
+	      opts->x_align_functions, MAX_CODE_ALIGN_VALUE);
+
+  if (opts->x_align_labels > MAX_CODE_ALIGN_VALUE)
+    error_at (loc, "-falign-labels=%d is not between 0 and %d",
+	      opts->x_align_labels, MAX_CODE_ALIGN_VALUE);
 }
 
 #define LEFT_COLUMN	27
