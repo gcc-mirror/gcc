@@ -1,3 +1,9 @@
+2018-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (convert_with_check): Fix typo in the condition
+	guarding the overflow check emitted for the upper bound of a floating-
+	point conversion.
+
 2017-12-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_field): Do not set the alignment
