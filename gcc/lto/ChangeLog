@@ -1,6 +1,15 @@
 2018-03-07  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-01-23  Martin Liska  <mliska@suse.cz>
+
+	PR lto/81440
+	* lto-symtab.c (lto_symtab_merge): Handle and do not warn about
+	trailing arrays at the end of a struct.
+
+2018-03-07  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	* lto-partition.c (lto_balanced_map): Watch overflow.
