@@ -3332,7 +3332,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
     {
       /* Check whether we've already built a proxy.  */
       tree var = decl;
-      while (is_capture_proxy_with_ref (var))
+      while (is_normal_capture_proxy (var))
 	var = DECL_CAPTURED_VARIABLE (var);
       tree d = retrieve_local_specialization (var);
 

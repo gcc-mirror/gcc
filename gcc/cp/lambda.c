@@ -291,24 +291,13 @@ is_normal_capture_proxy (tree decl)
   return DECL_NORMAL_CAPTURE_P (val);
 }
 
-/* Returns true iff DECL is a capture proxy for which we can use
-   DECL_CAPTURED_VARIABLE.  In effect, this is a normal proxy other than a
-   nested capture of a function parameter pack.  */
-
-bool
-is_capture_proxy_with_ref (tree var)
-{
-  return (is_normal_capture_proxy (var) && DECL_LANG_SPECIFIC (var)
-	  && DECL_CAPTURED_VARIABLE (var));
-}
-
 /* VAR is a capture proxy created by build_capture_proxy; add it to the
    current function, which is the operator() for the appropriate lambda.  */
 
 void
 insert_capture_proxy (tree var)
 {
-  if (is_capture_proxy_with_ref (var))
+  if (is_normal_capture_proxy (var))
     {
       tree cap = DECL_CAPTURED_VARIABLE (var);
       if (CHECKING_P)
