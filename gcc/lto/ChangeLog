@@ -3,6 +3,13 @@
 	Backport from mainline
 	2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
+	* lto.c (register_resolution): Remove forgotten sanity check.
+
+2018-03-07  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/81004
 	* lto.c: Include builtins.h
 	(register_resolution): Merge resolutions in case trees was
