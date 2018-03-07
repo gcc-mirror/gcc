@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
+#include "tree-inline.h"
+#include "intl.h"
 
 /* Walker callback that replaces all FUNCTION_DECL of a function that's
    going to be versioned.  */
@@ -309,6 +311,22 @@ expand_target_clones (struct cgraph_node *node, bool definition)
       warning_at (DECL_SOURCE_LOCATION (node->decl),
 		  0,
 		  "single target_clones attribute is ignored");
+      return false;
+    }
+
+  if (node->definition
+      && !tree_versionable_function_p (node->decl))
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"clones for %<target_clones%> attribute cannot be created");
+      const char *reason = NULL;
+      if (lookup_attribute ("noclone", DECL_ATTRIBUTES (node->decl)))
+	reason = G_("function %q+F can never be copied "
+		    "because it has %<noclone%> attribute");
+      else
+	reason = copy_forbidden (DECL_STRUCT_FUNCTION (node->decl));
+      if (reason)
+	inform (DECL_SOURCE_LOCATION (node->decl), reason, node->decl);
       return false;
     }
 

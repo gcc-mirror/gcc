@@ -1,3 +1,12 @@
+2018-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/84723
+	* gcc.target/i386/pr84723-1.c: New test.
+	* gcc.target/i386/pr84723-2.c: New test.
+	* gcc.target/i386/pr84723-3.c: New test.
+	* gcc.target/i386/pr84723-4.c: New test.
+	* gcc.target/i386/pr84723-5.c: New test.
+
 2018-03-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/64107

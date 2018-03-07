@@ -1,3 +1,10 @@
+2018-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/84723
+	* multiple_target.c: Include tree-inline.h and intl.h.
+	(expand_target_clones): Diagnose and fail if node->definition and
+	!tree_versionable_function_p (node->decl).
+
 2018-03-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (ASM_GENERATE_INTERNAL_LABEL): Revise to use
