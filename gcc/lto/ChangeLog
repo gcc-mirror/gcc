@@ -1,6 +1,15 @@
 2018-03-07  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-02-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/83954
+	* lto-symtab.c (warn_type_compatibility_p): Do not recurse into the
+	component type of array types with non-aliased component.
+
+2018-03-07  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-01-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/83954
