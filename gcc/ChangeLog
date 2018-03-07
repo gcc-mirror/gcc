@@ -1,3 +1,31 @@
+2018-03-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/84277
+	* except.h (output_function_exception_table): Adjust prototype.
+	* except.c (output_function_exception_table): Remove FNNAME parameter
+	and add SECTION parameter.  Ouput one part of the table at a time.
+	* final.c (final_scan_insn_1) <NOTE_INSN_SWITCH_TEXT_SECTIONS>: Output
+	the first part of the exception table and emit unwind directives.
+	* config/i386/i386-protos.h (i386_pe_end_cold_function): Declare.
+	(i386_pe_seh_cold_init): Likewise.
+	* config/i386/cygming.h (ASM_DECLARE_COLD_FUNCTION_NAME): New macro.
+	(ASM_DECLARE_COLD_FUNCTION_SIZE): Likewise.
+	* config/i386/i386.c (x86_expand_epilogue): Fix wording in comment.
+	(ix86_output_call_insn): Emit a nop in one more case for SEH.
+	* config/i386/winnt.c: Include except.h.
+	(struct seh_frame_state): Add reg_offset, after_prologue and
+	in_cold_section fields.
+	(i386_pe_seh_end_prologue): Set seh->after_prologue.
+	(i386_pe_seh_cold_init): New function.
+	(i386_pe_seh_fini): Add COLD parameter and bail out if it is not equal
+	to seh->in_cold_section.
+	(seh_emit_push): Record the offset of the push.
+	(seh_emit_save): Record the offet of the save.
+	(i386_pe_seh_unwind_emit): Deal with NOTE_INSN_SWITCH_TEXT_SECTIONS.
+	Test seh->after_prologue to disregard the epilogue.
+	(i386_pe_end_function): Pass FALSE to i386_pe_seh_fini.
+	(i386_pe_end_cold_function): New function.
+
 2018-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/84565
