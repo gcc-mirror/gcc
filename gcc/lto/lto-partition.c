@@ -751,7 +751,8 @@ lto_balanced_map (int n_lto_partitions)
 	  if (npartitions < n_lto_partitions)
 	    partition_size = total_size / (n_lto_partitions - npartitions);
 	  else
-	    partition_size = INT_MAX;
+	    /* Watch for overflow.  */
+	    partition_size = INT_MAX / 16;
 
 	  if (partition_size < PARAM_VALUE (MIN_PARTITION_SIZE))
 	    partition_size = PARAM_VALUE (MIN_PARTITION_SIZE);
