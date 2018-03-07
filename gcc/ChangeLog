@@ -2087,7 +2087,7 @@
 	PR target/84209
 	* config/avr/avr.h (GENERAL_REGNO_P, GENERAL_REG_P): New macros.
 	* config/avr/avr.md: Only post-reload split REG-REG moves if
-	either register is REGERAL_REG_P.
+	either register is GENERAL_REG_P.
 
 2018-02-07  Jakub Jelinek  <jakub@redhat.com>
 
