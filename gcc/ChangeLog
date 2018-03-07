@@ -1,3 +1,10 @@
+2018-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/contrib.texi: Add entries for Martin Liska, David Malcolm,
+	Marek Polacek, extend Vladimir Makarov's, Jonathan Wakely's and
+	Volker Reichelt's entry and add entries for people that perform
+	GCC fuzzy testing and report numerous bugs.
+
 2018-03-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/82411
