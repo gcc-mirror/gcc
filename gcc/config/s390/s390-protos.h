@@ -53,6 +53,7 @@ extern int s390_class_max_nregs (enum reg_class, machine_mode);
 extern int s390_cannot_change_mode_class (machine_mode, machine_mode,
 					  enum reg_class);
 extern bool s390_function_arg_vector (machine_mode, const_tree);
+extern bool s390_return_addr_from_memory(void);
 #if S390_USE_TARGET_ATTRIBUTE
 extern tree s390_valid_target_attribute_tree (tree args,
 					      struct gcc_options *opts,
@@ -146,6 +147,17 @@ extern int s390_compare_and_branch_condition_mask (rtx);
 extern bool s390_extzv_shift_ok (int, int, unsigned HOST_WIDE_INT);
 extern void s390_asm_output_function_label (FILE *, const char *, tree);
 
+enum s390_indirect_branch_type
+  {
+    s390_indirect_branch_type_jump = 0,
+    s390_indirect_branch_type_call,
+    s390_indirect_branch_type_return
+  };
+extern void s390_indirect_branch_via_thunk (unsigned int regno,
+					    unsigned int return_addr_regno,
+					    rtx comparison_operator,
+					    enum s390_indirect_branch_type type);
+extern void s390_indirect_branch_via_inline_thunk (rtx execute_target);
 #endif /* RTX_CODE */
 
 /* s390-c.c routines */

@@ -199,3 +199,62 @@ values are small, non-negative integers.  The default branch cost is
 mlra
 Target Report Var(s390_lra_flag) Init(1) Save
 Use LRA instead of reload.
+
+mindirect-branch=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch) Init(indirect_branch_keep)
+Wrap all indirect branches into execute in order to disable branch
+prediction.
+
+mindirect-branch-jump=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch_jump) Init(indirect_branch_keep)
+Wrap indirect table jumps and computed gotos into execute in order to
+disable branch prediction.  Using thunk or thunk-extern with this
+option requires the thunks to be considered signal handlers to order to
+generate correct CFI.  For environments where unwinding (e.g. for
+exceptions) is required please use thunk-inline instead.
+
+mindirect-branch-call=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_indirect_branch_call) Init(indirect_branch_keep)
+Wrap all indirect calls into execute in order to disable branch prediction.
+
+mfunction-return=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_function_return) Init(indirect_branch_keep)
+Wrap all indirect return branches into execute in order to disable branch
+prediction.
+
+mfunction-return-mem=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_function_return_mem) Init(indirect_branch_keep)
+Wrap indirect return branches into execute in order to disable branch
+prediction. This affects only branches where the return address is
+going to be restored from memory.
+
+mfunction-return-reg=
+Target Report RejectNegative Joined Enum(indirect_branch) Var(s390_function_return_reg) Init(indirect_branch_keep)
+Wrap indirect return branches into execute in order to disable branch
+prediction. This affects only branches where the return address
+doesn't need to be restored from memory.
+
+Enum
+Name(indirect_branch) Type(enum indirect_branch)
+Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):
+
+EnumValue
+Enum(indirect_branch) String(keep) Value(indirect_branch_keep)
+
+EnumValue
+Enum(indirect_branch) String(thunk) Value(indirect_branch_thunk)
+
+EnumValue
+Enum(indirect_branch) String(thunk-inline) Value(indirect_branch_thunk_inline)
+
+EnumValue
+Enum(indirect_branch) String(thunk-extern) Value(indirect_branch_thunk_extern)
+
+mindirect-branch-table
+Target Report Var(s390_indirect_branch_table) Init(TARGET_DEFAULT_INDIRECT_BRANCH_TABLE)
+Generate sections .s390_indirect_jump, .s390_indirect_call,
+.s390_return_reg, and .s390_return_mem to contain the indirect branch
+locations which have been patched as part of using one of the
+-mindirect-branch* or -mfunction-return* options.  The sections
+consist of an array of 32 bit elements. Each entry holds the offset
+from the entry to the patched location.

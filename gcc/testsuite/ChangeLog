@@ -1,3 +1,43 @@
+2018-03-07  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2018-02-08  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.target/s390/nobp-function-pointer-attr.c: New test.
+	* gcc.target/s390/nobp-function-pointer-nothunk.c: New test.
+	* gcc.target/s390/nobp-function-pointer-z10.c: New test.
+	* gcc.target/s390/nobp-function-pointer-z900.c: New test.
+	* gcc.target/s390/nobp-indirect-jump-attr.c: New test.
+	* gcc.target/s390/nobp-indirect-jump-inline-attr.c: New test.
+	* gcc.target/s390/nobp-indirect-jump-inline-z10.c: New test.
+	* gcc.target/s390/nobp-indirect-jump-inline-z900.c: New test.
+	* gcc.target/s390/nobp-indirect-jump-nothunk.c: New test.
+	* gcc.target/s390/nobp-indirect-jump-z10.c: New test.
+	* gcc.target/s390/nobp-indirect-jump-z900.c: New test.
+	* gcc.target/s390/nobp-return-attr-all.c: New test.
+	* gcc.target/s390/nobp-return-attr-neg.c: New test.
+	* gcc.target/s390/nobp-return-mem-attr.c: New test.
+	* gcc.target/s390/nobp-return-mem-nothunk.c: New test.
+	* gcc.target/s390/nobp-return-mem-z10.c: New test.
+	* gcc.target/s390/nobp-return-mem-z900.c: New test.
+	* gcc.target/s390/nobp-return-reg-attr.c: New test.
+	* gcc.target/s390/nobp-return-reg-mixed.c: New test.
+	* gcc.target/s390/nobp-return-reg-nothunk.c: New test.
+	* gcc.target/s390/nobp-return-reg-z10.c: New test.
+	* gcc.target/s390/nobp-return-reg-z900.c: New test.
+	* gcc.target/s390/nobp-table-jump-inline-z10.c: New test.
+	* gcc.target/s390/nobp-table-jump-inline-z900.c: New test.
+	* gcc.target/s390/nobp-table-jump-z10.c: New test.
+	* gcc.target/s390/nobp-table-jump-z900.c: New test.
+
+2018-03-07  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2018-02-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/PR84295
+	* gcc.target/s390/pr84295.c: New test.
+
 2018-03-07  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

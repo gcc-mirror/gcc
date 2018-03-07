@@ -1094,4 +1094,124 @@ extern const int processor_flags_table[];
     s390_register_target_pragmas ();		\
   } while (0)
 
+#ifndef USED_FOR_TARGET
+/* The following structure is embedded in the machine
+   specific part of struct function.  */
+
+struct GTY (()) s390_frame_layout
+{
+  /* Offset within stack frame.  */
+  HOST_WIDE_INT gprs_offset;
+  HOST_WIDE_INT f0_offset;
+  HOST_WIDE_INT f4_offset;
+  HOST_WIDE_INT f8_offset;
+  HOST_WIDE_INT backchain_offset;
+
+  /* Number of first and last gpr where slots in the register
+     save area are reserved for.  */
+  int first_save_gpr_slot;
+  int last_save_gpr_slot;
+
+  /* Location (FP register number) where GPRs (r0-r15) should
+     be saved to.
+      0 - does not need to be saved at all
+     -1 - stack slot  */
+#define SAVE_SLOT_NONE   0
+#define SAVE_SLOT_STACK -1
+  signed char gpr_save_slots[16];
+
+  /* Number of first and last gpr to be saved, restored.  */
+  int first_save_gpr;
+  int first_restore_gpr;
+  int last_save_gpr;
+  int last_restore_gpr;
+
+  /* Bits standing for floating point registers. Set, if the
+     respective register has to be saved. Starting with reg 16 (f0)
+     at the rightmost bit.
+     Bit 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+     fpr 15 13 11  9 14 12 10  8  7  5  3  1  6  4  2  0
+     reg 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16  */
+  unsigned int fpr_bitmap;
+
+  /* Number of floating point registers f8-f15 which must be saved.  */
+  int high_fprs;
+
+  /* Set if return address needs to be saved.
+     This flag is set by s390_return_addr_rtx if it could not use
+     the initial value of r14 and therefore depends on r14 saved
+     to the stack.  */
+  bool save_return_addr_p;
+
+  /* Size of stack frame.  */
+  HOST_WIDE_INT frame_size;
+};
+
+
+/* Define the structure for the machine field in struct function.  */
+
+struct GTY(()) machine_function
+{
+  struct s390_frame_layout frame_layout;
+
+  /* Literal pool base register.  */
+  rtx base_reg;
+
+  /* True if we may need to perform branch splitting.  */
+  bool split_branches_pending_p;
+
+  bool has_landing_pad_p;
+
+  /* True if the current function may contain a tbegin clobbering
+     FPRs.  */
+  bool tbegin_p;
+
+  /* For -fsplit-stack support: A stack local which holds a pointer to
+     the stack arguments for a function with a variable number of
+     arguments.  This is set at the start of the function and is used
+     to initialize the overflow_arg_area field of the va_list
+     structure.  */
+  rtx split_stack_varargs_pointer;
+
+  enum indirect_branch indirect_branch_jump;
+  enum indirect_branch indirect_branch_call;
+
+  enum indirect_branch function_return_mem;
+  enum indirect_branch function_return_reg;
+};
+#endif
+
+#define TARGET_INDIRECT_BRANCH_NOBP_RET_OPTION				\
+  (cfun->machine->function_return_reg != indirect_branch_keep		\
+   || cfun->machine->function_return_mem != indirect_branch_keep)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_RET					\
+  ((cfun->machine->function_return_reg != indirect_branch_keep		\
+    && !s390_return_addr_from_memory ())				\
+   || (cfun->machine->function_return_mem != indirect_branch_keep	\
+       && s390_return_addr_from_memory ()))
+
+#define TARGET_INDIRECT_BRANCH_NOBP_JUMP				\
+  (cfun->machine->indirect_branch_jump != indirect_branch_keep)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_JUMP_THUNK				\
+  (cfun->machine->indirect_branch_jump == indirect_branch_thunk		\
+   || cfun->machine->indirect_branch_jump == indirect_branch_thunk_extern)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_JUMP_INLINE_THUNK			\
+  (cfun->machine->indirect_branch_jump == indirect_branch_thunk_inline)
+
+#define TARGET_INDIRECT_BRANCH_NOBP_CALL			\
+  (cfun->machine->indirect_branch_call != indirect_branch_keep)
+
+#ifndef TARGET_DEFAULT_INDIRECT_BRANCH_TABLE
+#define TARGET_DEFAULT_INDIRECT_BRANCH_TABLE 0
+#endif
+
+#define TARGET_INDIRECT_BRANCH_THUNK_NAME_EXRL "__s390_indirect_jump_r%d"
+#define TARGET_INDIRECT_BRANCH_THUNK_NAME_EX   "__s390_indirect_jump_r%duse_r%d"
+
+#define TARGET_INDIRECT_BRANCH_TABLE s390_indirect_branch_table
+
+
 #endif /* S390_H */
