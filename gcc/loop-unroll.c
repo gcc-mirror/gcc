@@ -477,7 +477,7 @@ unroll_loop_constant_iterations (struct loop *loop)
 
   exit_mod = niter % (max_unroll + 1);
 
-  wont_exit = sbitmap_alloc (max_unroll + 1);
+  wont_exit = sbitmap_alloc (max_unroll + 2);
   bitmap_ones (wont_exit);
 
   auto_vec<edge> remove_edges;
