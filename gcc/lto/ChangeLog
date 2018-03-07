@@ -1,3 +1,10 @@
+2018-03-07  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-lang.c (lto_post_options): Clean shlib flag when not doing PIC.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.
