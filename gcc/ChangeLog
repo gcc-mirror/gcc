@@ -1,5 +1,9 @@
 2018-03-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/84565
+	* config/aarch64/predicates.md (aarch64_simd_reg_or_zero): Use
+	aarch64_simd_or_scalar_imm_zero rather than aarch64_simd_imm_zero.
+
 	PR c++/84704
 	* gimple-expr.c (create_tmp_var_raw): Set DECL_NAMELESS flag
 	on tmp_var.

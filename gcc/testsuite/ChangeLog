@@ -1,5 +1,8 @@
 2018-03-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/84565
+	* gfortran.dg/pr84565.f90: New test.
+
 	PR middle-end/84723
 	* gcc.target/i386/pr84723-1.c: New test.
 	* gcc.target/i386/pr84723-2.c: New test.
