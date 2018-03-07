@@ -604,6 +604,8 @@ facilities to restrict profile collection to the program region of
 interest. Calling @code{_gcov_reset(void)} will clear all profile counters
 to zero, and calling @code{_gcov_dump(void)} will cause the profile information
 collected at that point to be dumped to @file{.gcda} output files.
+If an executable loads a dynamic shared object via dlopen functionality,
+@option{-Wl,--dynamic-list-data} is needed to dump all profile data.
 
 @c man end
 

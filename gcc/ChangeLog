@@ -1,6 +1,15 @@
 2018-03-07  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-02-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/83879
+	* doc/gcov.texi: Document necessity of --dynamic-list-data when
+	using dlopen functionality.
+
+2018-03-07  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-12-19  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/82675
