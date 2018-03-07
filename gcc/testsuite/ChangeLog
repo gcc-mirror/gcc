@@ -1,3 +1,10 @@
+2018-03-07  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84468
+	* g++.dg/warn/Wstringop-truncation-2.C: New test.
+	* gcc.dg/Wstringop-truncation.c: New test.
+	* gcc.dg/Wstringop-truncation-2.c: New test.
+
 2018-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/84565
