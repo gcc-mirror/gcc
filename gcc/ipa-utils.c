@@ -403,6 +403,8 @@ ipa_merge_profiles (struct cgraph_node *dst,
 
   if (!dst->count)
     return;
+  if (!src->count || src->alias)
+    return;
   if (symtab->dump_file)
     {
       fprintf (symtab->dump_file, "Merging profiles of %s/%i to %s/%i\n",
