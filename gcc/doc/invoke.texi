@@ -1087,7 +1087,7 @@ See RS/6000 and PowerPC Options.
 -mdlmzb  -mno-dlmzb @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb  -msdata @gol
--msdata=@var{opt}  -mvxworks  -G @var{num} @gol
+-msdata=@var{opt}  -mreadonly-in-sdata  -mvxworks  -G @var{num} @gol
 -mrecip  -mrecip=@var{opt}  -mno-recip  -mrecip-precision @gol
 -mno-recip-precision @gol
 -mveclibabi=@var{type}  -mfriz  -mno-friz @gol
@@ -24113,6 +24113,13 @@ other @option{-msdata} options are used.
 On embedded PowerPC systems, put all initialized global and static data
 in the @code{.data} section, and all uninitialized data in the
 @code{.bss} section.
+
+@item -mreadonly-in-sdata
+@itemx -mreadonly-in-sdata
+@opindex mreadonly-in-sdata
+@opindex mno-readonly-in-sdata
+Put read-only objects in the @code{.sdata} section as well.  This is the
+default.
 
 @item -mblock-move-inline-limit=@var{num}
 @opindex mblock-move-inline-limit

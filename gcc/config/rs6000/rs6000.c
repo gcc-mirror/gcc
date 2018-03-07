@@ -33259,6 +33259,11 @@ rs6000_elf_in_small_data_p (const_tree decl)
     }
   else
     {
+      /* If we are told not to put readonly data in sdata, then don't.  */
+      if (TREE_READONLY (decl) && rs6000_sdata != SDATA_EABI
+	  && !rs6000_readonly_in_sdata)
+	return false;
+
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (decl));
 
       if (size > 0

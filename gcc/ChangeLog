@@ -1,3 +1,12 @@
+2018-03-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/82411
+	* config/rs6000/rs6000.c (rs6000_elf_in_small_data_p): Don't put
+	readonly data in sdata, if that is disabled.
+	* config/rs6000/sysv4.opt (mreadonly-in-sdata): New option.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mreadonly-in-sdata option.
+
 2018-03-07  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84468

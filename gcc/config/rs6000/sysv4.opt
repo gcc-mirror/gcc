@@ -27,6 +27,10 @@ msdata=
 Target RejectNegative Joined Var(rs6000_sdata_name)
 Select method for sdata handling.
 
+mreadonly-in-sdata
+Target Report Var(rs6000_readonly_in_sdata) Init(1) Save
+Allow readonly data in sdata.
+
 mtls-size=
 Target RejectNegative Joined Var(rs6000_tls_size) Enum(rs6000_tls_size)
 Specify bit size of immediate TLS offsets.
