@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "ipa-utils.h"
 #include "calls.h"
+#include "builtins.h"
 
 static const char *ipa_ref_use_name[] = {"read","write","addr","alias","chkp"};
 
@@ -2206,4 +2207,59 @@ symbol_table::symbol_suffix_separator ()
 #else
   return '_';
 #endif
+}
+
+/* Return true if symbol should be output to the symbol table.  */
+
+bool
+symtab_node::output_to_lto_symbol_table_p (void)
+{
+  /* Only externally visible symbols matter.  */
+  if (!TREE_PUBLIC (decl))
+    return false;
+  if (!real_symbol_p ())
+    return false;
+  /* FIXME: variables probably should not be considered as real symbols at
+     first place.  */
+  if (VAR_P (decl) && DECL_HARD_REGISTER (decl))
+    return false;
+  /* FIXME: Builtins corresponding to real functions probably should have
+     symbol table entries.  */
+  if (is_builtin_fn (decl))
+    return false;
+
+  /* We have real symbol that should be in symbol table.  However try to trim
+     down the refernces to libraries bit more because linker will otherwise
+     bring unnecesary object files into the final link.
+     FIXME: The following checks can easily be confused i.e. by self recursive
+     function or self-referring variable.  */
+
+  /* We keep external functions in symtab for sake of inlining
+     and devirtualization.  We do not want to see them in symbol table as
+     references unless they are really used.  */
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (this);
+  if (cnode && (!definition || DECL_EXTERNAL (decl))
+      && cnode->callers)
+    return true;
+
+ /* Ignore all references from external vars initializers - they are not really
+    part of the compilation unit until they are used by folding.  Some symbols,
+    like references to external construction vtables can not be referred to at
+    all.  We decide this at can_refer_decl_in_current_unit_p.  */
+ if (!definition || DECL_EXTERNAL (decl))
+    {
+      int i;
+      struct ipa_ref *ref;
+      for (i = 0; iterate_referring (i, ref); i++)
+	{
+	  if (ref->use == IPA_REF_ALIAS)
+	    continue;
+          if (is_a <cgraph_node *> (ref->referring))
+	    return true;
+	  if (!DECL_EXTERNAL (ref->referring->decl))
+	    return true;
+	}
+      return false;
+    }
+  return true;
 }

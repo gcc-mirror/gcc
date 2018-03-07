@@ -2517,14 +2517,10 @@ write_symbol (struct streamer_tree_cache_d *cache,
   const char *comdat;
   unsigned char c;
 
-  /* None of the following kinds of symbols are needed in the
-     symbol table.  */
-  if (!TREE_PUBLIC (t)
-      || is_builtin_fn (t)
-      || DECL_ABSTRACT_P (t)
-      || (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t)))
-    return;
-  gcc_assert (TREE_CODE (t) != RESULT_DECL);
+  gcc_checking_assert (TREE_PUBLIC (t)
+		       && !is_builtin_fn (t)
+		       && !DECL_ABSTRACT_P (t)
+		       && (!VAR_P (t) || !DECL_HARD_REGISTER (t)));
 
   gcc_assert (TREE_CODE (t) == VAR_DECL
 	      || TREE_CODE (t) == FUNCTION_DECL);
@@ -2614,45 +2610,6 @@ write_symbol (struct streamer_tree_cache_d *cache,
   lto_write_data (&slot_num, 4);
 }
 
-/* Return true if NODE should appear in the plugin symbol table.  */
-
-bool
-output_symbol_p (symtab_node *node)
-{
-  struct cgraph_node *cnode;
-  if (!node->real_symbol_p ())
-    return false;
-  /* We keep external functions in symtab for sake of inlining
-     and devirtualization.  We do not want to see them in symbol table as
-     references unless they are really used.  */
-  cnode = dyn_cast <cgraph_node *> (node);
-  if (cnode && (!node->definition || DECL_EXTERNAL (cnode->decl))
-      && cnode->callers)
-    return true;
-
- /* Ignore all references from external vars initializers - they are not really
-    part of the compilation unit until they are used by folding.  Some symbols,
-    like references to external construction vtables can not be referred to at all.
-    We decide this at can_refer_decl_in_current_unit_p.  */
- if (!node->definition || DECL_EXTERNAL (node->decl))
-    {
-      int i;
-      struct ipa_ref *ref;
-      for (i = 0; node->iterate_referring (i, ref); i++)
-	{
-	  if (ref->use == IPA_REF_ALIAS)
-	    continue;
-          if (is_a <cgraph_node *> (ref->referring))
-	    return true;
-	  if (!DECL_EXTERNAL (ref->referring->decl))
-	    return true;
-	}
-      return false;
-    }
-  return true;
-}
-
-
 /* Write an IL symbol table to OB.
    SET and VSET are cgraph/varpool node sets we are outputting.  */
 
@@ -2677,7 +2634,7 @@ produce_symtab (struct output_block *ob)
     {
       symtab_node *node = lsei_node (lsei);
 
-      if (!output_symbol_p (node) || DECL_EXTERNAL (node->decl))
+      if (DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
       write_symbol (cache, node->decl, &seen, false);
     }
@@ -2686,7 +2643,7 @@ produce_symtab (struct output_block *ob)
     {
       symtab_node *node = lsei_node (lsei);
 
-      if (!output_symbol_p (node) || !DECL_EXTERNAL (node->decl))
+      if (!DECL_EXTERNAL (node->decl) || !node->output_to_lto_symbol_table_p ())
 	continue;
       write_symbol (cache, node->decl, &seen, false);
     }

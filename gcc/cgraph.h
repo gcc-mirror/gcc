@@ -315,6 +315,9 @@ public:
      or abstract function kept for debug info purposes only.  */
   bool real_symbol_p (void);
 
+  /* Return true when the symbol needs to be output to the LTO symbol table.  */
+  bool output_to_lto_symbol_table_p (void);
+
   /* Determine if symbol declaration is needed.  That is, visible to something
      either outside this translation unit, something magic in the system
      configury. This function is used just during symbol creation.  */
