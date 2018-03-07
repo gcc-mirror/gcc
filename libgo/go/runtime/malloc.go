@@ -308,9 +308,9 @@ func mallocinit() {
 				p = uintptr(i)<<40 | uintptrMask&(0x0040<<32)
 			case GOOS == "aix":
 				if i == 0 {
-					p = uintptrMask&(1<<32) | uintptrMask&(0xa0<<52)
+					p = uintptrMask&(1<<42) | uintptrMask&(0xa0<<52)
 				} else {
-					p = uintptr(i)<<32 | uintptrMask&(0x70<<52)
+					p = uintptr(i)<<42 | uintptrMask&(0x70<<52)
 				}
 			default:
 				p = uintptr(i)<<40 | uintptrMask&(0x00c0<<32)
