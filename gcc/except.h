@@ -229,7 +229,7 @@ extern void remove_eh_handler (eh_region);
 extern void remove_unreachable_eh_regions (sbitmap);
 
 extern bool current_function_has_exception_handlers (void);
-extern void output_function_exception_table (const char *);
+extern void output_function_exception_table (int);
 
 extern rtx expand_builtin_eh_pointer (tree);
 extern rtx expand_builtin_eh_filter (tree);

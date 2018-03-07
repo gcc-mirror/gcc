@@ -14707,9 +14707,9 @@ ix86_expand_epilogue (int style)
       if (TARGET_SEH)
 	{
 	  /* Prevent a catch region from being adjacent to the standard
-	     epilogue sequence.  Unfortuantely crtl->uses_eh_lsda nor
-	     several other flags that would be interesting to test are
-	     not yet set up.  */
+	     epilogue sequence.  Unfortunately neither crtl->uses_eh_lsda
+	     nor several other flags that would be interesting to test are
+	     set up yet.  */
 	  if (flag_non_call_exceptions)
 	    emit_insn (gen_nops (const1_rtx));
 	  else
@@ -29211,6 +29211,14 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 
       for (i = NEXT_INSN (insn); i ; i = NEXT_INSN (i))
 	{
+	  /* Prevent a catch region from being adjacent to a jump that would
+	     be interpreted as an epilogue sequence by the unwinder.  */
+	  if (JUMP_P(i) && CROSSING_JUMP_P (i))
+	    {
+	      seh_nop_p = true;
+	      break;
+	    }
+	    
 	  /* If we get to another real insn, we don't need the nop.  */
 	  if (INSN_P (i))
 	    break;
