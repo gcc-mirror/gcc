@@ -33,13 +33,47 @@ runtime_atoi(const byte *p, intgo len)
 	return n;
 }
 
+#if defined(__i386__) || defined(__x86_64__) || defined (__s390__) || defined (__s390x__)
+
+// When cputicks is just asm instructions, skip the split stack
+// prologue for speed.
+
+int64 runtime_cputicks(void) __attribute__((no_split_stack));
+
+#endif
+
+// Whether the processor supports SSE2.
+#if defined (__i386__)
+static _Bool hasSSE2;
+
+// Force appropriate CPU level so that we can call the lfence/mfence
+// builtins.
+
+#pragma GCC push_options
+#pragma GCC target("sse2")
+
+#elif defined(__x86_64__)
+#define hasSSE2 true
+#endif
+
+#if defined(__i386__) || defined(__x86_64__)
+// Whether to use lfence, as opposed to mfence.
+// Set based on cpuid.
+static _Bool lfenceBeforeRdtsc;
+#endif // defined(__i386__) || defined(__x86_64__)
+
 int64
 runtime_cputicks(void)
 {
-#if defined(__386__) || defined(__x86_64__)
-  uint32 low, high;
-  asm("rdtsc" : "=a" (low), "=d" (high));
-  return (int64)(((uint64)high << 32) | (uint64)low);
+#if defined(__i386__) || defined(__x86_64__)
+  if (hasSSE2) {
+    if (lfenceBeforeRdtsc) {
+      __builtin_ia32_lfence();
+    } else {
+      __builtin_ia32_mfence();
+    }
+  }
+  return __builtin_ia32_rdtsc();
 #elif defined (__s390__) || defined (__s390x__)
   uint64 clock = 0;
   /* stckf may not write the return variable in case of a clock error, so make
@@ -55,6 +89,10 @@ runtime_cputicks(void)
   return runtime_nanotime();
 #endif
 }
+
+#if defined(__i386__)
+#pragma GCC pop_options
+#endif
 
 void
 runtime_signalstack(byte *p, uintptr n)
@@ -146,8 +184,21 @@ runtime_cpuinit()
 #if defined(__i386__) || defined(__x86_64__)
 	unsigned int eax, ebx, ecx, edx;
 
+	if (__get_cpuid(0, &eax, &ebx, &ecx, &edx)) {
+		if (eax != 0
+		    && ebx == 0x756E6547    // "Genu"
+		    && edx == 0x49656E69    // "ineI"
+		    && ecx == 0x6C65746E) { // "ntel"
+			lfenceBeforeRdtsc = true;
+		}
+	}
 	if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
 		setCpuidECX(ecx);
+#if defined(__i386__)
+		if ((edx & bit_SSE2) != 0) {
+			hasSSE2 = true;
+		}
+#endif
 	}
 
 #if defined(HAVE_AS_X86_AES)
