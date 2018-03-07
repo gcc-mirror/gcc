@@ -1,3 +1,8 @@
+2018-03-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/82411
+	* gcc.target/powerpc/ppc-sdata-2.c: Skip if -mno-readonly-in-sdata.
+
 2018-03-07  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84468
