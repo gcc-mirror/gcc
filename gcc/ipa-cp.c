@@ -544,6 +544,24 @@ determine_versionability (struct cgraph_node *node,
       reason = "calls comdat-local function";
     }
 
+  /* Functions calling BUILT_IN_VA_ARG_PACK and BUILT_IN_VA_ARG_PACK_LEN
+     works only when inlined.  Cloning them may still lead to better code
+     becuase ipa-cp will not give up on cloning further.  If the function is
+     external this however leads to wrong code becuase we may end up producing
+     offline copy of the function.  */
+  if (DECL_EXTERNAL (node->decl))
+    for (cgraph_edge *edge = node->callees; !reason && edge;
+	 edge = edge->next_callee)
+      if (DECL_BUILT_IN (edge->callee->decl)
+	  && DECL_BUILT_IN_CLASS (edge->callee->decl) == BUILT_IN_NORMAL)
+        {
+	  if (DECL_FUNCTION_CODE (edge->callee->decl) == BUILT_IN_VA_ARG_PACK)
+	    reason = "external function which calls va_arg_pack";
+	  if (DECL_FUNCTION_CODE (edge->callee->decl)
+	      == BUILT_IN_VA_ARG_PACK_LEN)
+	    reason = "external function which calls va_arg_pack_len";
+        }
+
   if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
     fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",
 	     node->name (), node->order, reason);

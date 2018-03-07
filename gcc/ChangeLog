@@ -1,6 +1,15 @@
 2018-03-07  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-02-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR c/84229
+	* ipa-cp.c (determine_versionability): Do not version functions caling
+	va_arg_pack.
+
+2018-03-07  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-02-08  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/81360
