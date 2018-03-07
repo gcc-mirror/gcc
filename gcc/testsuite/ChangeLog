@@ -1,3 +1,8 @@
+2018-03-06  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/64107
+	* gfortran.dg/pr64107.f90: New test.
+
 2017-03-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84697
