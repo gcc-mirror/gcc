@@ -446,6 +446,9 @@ create_tmp_var_raw (tree type, const char *prefix)
   DECL_ARTIFICIAL (tmp_var) = 1;
   /* And we don't want debug info for it.  */
   DECL_IGNORED_P (tmp_var) = 1;
+  /* And we don't want even the fancy names of those printed in
+     -fdump-final-insns= dumps.  */
+  DECL_NAMELESS (tmp_var) = 1;
 
   /* Make the variable writable.  */
   TREE_READONLY (tmp_var) = 0;
