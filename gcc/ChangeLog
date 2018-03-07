@@ -1,3 +1,11 @@
+2018-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (ASM_GENERATE_INTERNAL_LABEL): Revise to use
+	sprint_ul.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Revise for above change.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/pa/pa64-hpux.h (ASM_GENERATE_INTERNAL_LABEL): Revise as above.
+
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/84710
