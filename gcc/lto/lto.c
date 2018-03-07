@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-symtab.h"
 #include "stringpool.h"
 #include "fold-const.h"
+#include "builtins.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */
@@ -828,12 +829,20 @@ static void
 register_resolution (struct lto_file_decl_data *file_data, tree decl,
 		     enum ld_plugin_symbol_resolution resolution)
 {
+  bool existed;
   if (resolution == LDPR_UNKNOWN)
     return;
   if (!file_data->resolution_map)
     file_data->resolution_map
       = new hash_map<tree, ld_plugin_symbol_resolution>;
-  file_data->resolution_map->put (decl, resolution);
+  ld_plugin_symbol_resolution_t &res
+     = file_data->resolution_map->get_or_insert (decl, &existed);
+  gcc_assert (!existed || res == resolution);
+  if (!existed
+      || resolution == LDPR_PREVAILING_DEF_IRONLY
+      || resolution == LDPR_PREVAILING_DEF
+      || resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
+    res = resolution;
 }
 
 /* Register DECL with the global symbol table and change its
@@ -874,6 +883,18 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
   if (TREE_PUBLIC (decl) && !DECL_ABSTRACT_P (decl))
     register_resolution (data_in->file_data,
 			 decl, get_resolution (data_in, ix));
+}
+
+/* Check if T is a decl and needs register its resolution info.  */
+
+static void
+lto_maybe_register_decl (struct data_in *data_in, tree t, unsigned ix)
+{
+  if (TREE_CODE (t) == VAR_DECL)
+    lto_register_var_decl_in_symtab (data_in, t, ix);
+  else if (TREE_CODE (t) == FUNCTION_DECL
+	   && !DECL_BUILT_IN (t))
+    lto_register_function_decl_in_symtab (data_in, t, ix);
 }
 
 
@@ -1611,7 +1632,10 @@ unify_scc (struct data_in *data_in, unsigned from,
 	  /* Fixup the streamer cache with the prevailing nodes according
 	     to the tree node mapping computed by compare_tree_sccs.  */
 	  if (len == 1)
-	    streamer_tree_cache_replace_tree (cache, pscc->entries[0], from);
+	    {
+	      lto_maybe_register_decl (data_in, pscc->entries[0], from);
+	      streamer_tree_cache_replace_tree (cache, pscc->entries[0], from);
+	    }
 	  else
 	    {
 	      tree *map2 = XALLOCAVEC (tree, 2 * len);
@@ -1619,6 +1643,7 @@ unify_scc (struct data_in *data_in, unsigned from,
 		{
 		  map2[i*2] = (tree)(uintptr_t)(from + i);
 		  map2[i*2+1] = scc->entries[i];
+		  lto_maybe_register_decl (data_in, scc->entries[i], from + i);
 		}
 	      qsort (map2, len, 2 * sizeof (tree), cmp_tree);
 	      qsort (map, len, 2 * sizeof (tree), cmp_tree);
@@ -1764,13 +1789,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		}
 	      if (!flag_ltrans)
 		{
-		  /* Register variables and functions with the
-		     symbol table.  */
-		  if (TREE_CODE (t) == VAR_DECL)
-		    lto_register_var_decl_in_symtab (data_in, t, from + i);
-		  else if (TREE_CODE (t) == FUNCTION_DECL
-			   && !DECL_BUILT_IN (t))
-		    lto_register_function_decl_in_symtab (data_in, t, from + i);
+		  lto_maybe_register_decl (data_in, t, from + i);
 		  /* Scan the tree for references to global functions or
 		     variables and record those for later fixup.  */
 		  if (mentions_vars_p (t))
@@ -2861,13 +2880,21 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   /* Store resolutions into the symbol table.  */
 
-  ld_plugin_symbol_resolution_t *res;
   FOR_EACH_SYMBOL (snode)
-    if (snode->real_symbol_p ()
-	&& snode->lto_file_data
-	&& snode->lto_file_data->resolution_map
-	&& (res = snode->lto_file_data->resolution_map->get (snode->decl)))
-      snode->resolution = *res;
+    if (snode->externally_visible && snode->real_symbol_p ()
+	&& snode->lto_file_data && snode->lto_file_data->resolution_map
+	&& !is_builtin_fn (snode->decl)
+	&& !(VAR_P (snode->decl) && DECL_HARD_REGISTER (snode->decl)))
+      {
+	ld_plugin_symbol_resolution_t *res;
+
+	res = snode->lto_file_data->resolution_map->get (snode->decl);
+	if (!res || *res == LDPR_UNKNOWN)
+	  fatal_error (input_location, "missing resolution data for %s",
+		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (snode->decl)));
+	else
+          snode->resolution = *res;
+      }
   for (i = 0; all_file_decl_data[i]; i++)
     if (all_file_decl_data[i]->resolution_map)
       {
