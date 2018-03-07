@@ -1274,6 +1274,8 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 
       if (!*non_constant_p)
 	{
+	  /* Don't share a CONSTRUCTOR that might be changed.  */
+	  arg = unshare_constructor (arg);
 	  /* Make sure the binding has the same type as the parm.  But
 	     only for constant args.  */
 	  if (TREE_CODE (type) != REFERENCE_TYPE)
