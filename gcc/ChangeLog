@@ -1,3 +1,13 @@
+2018-03-06  Denis Chertykov  <chertykov@gmail.com>
+
+	Backport from mainline
+	2018-02-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/84209
+	* config/avr/avr.h (GENERAL_REGNO_P, GENERAL_REG_P): New macros.
+	* config/avr/avr.md: Only post-reload split REG-REG moves if
+	either register is GENERAL_REG_P.
+
 2018-03-06  Carl Love  <cel@us.ibm.com>
 
 	Backport from mainline

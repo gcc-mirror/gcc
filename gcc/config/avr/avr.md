@@ -3362,6 +3362,8 @@
         (match_operand:HI 1 "reg_or_0_operand"))]
   "optimize
    && reload_completed
+   && GENERAL_REG_P (operands[0])
+   && (operands[1] == const0_rtx || GENERAL_REG_P (operands[1]))
    && (!AVR_HAVE_MOVW
        || const0_rtx == operands[1])"
   [(set (match_dup 2) (match_dup 3))

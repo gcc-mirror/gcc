@@ -153,6 +153,9 @@ FIXME: DRIVER_SELF_SPECS has changed.
 
 #define FIRST_PSEUDO_REGISTER 36
 
+#define GENERAL_REGNO_P(N)	IN_RANGE (N, 2, 31)
+#define GENERAL_REG_P(X)	(REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
+
 #define FIXED_REGISTERS {\
   1,1,/* r0 r1 */\
   0,0,/* r2 r3 */\
