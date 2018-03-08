@@ -816,9 +816,9 @@ A separate @file{.gcda} file is created for each object file compiled with
 this option.  It contains arc transition counts, value profile counts, and
 some summary information.
 
-The full details of the file format is specified in @file{gcov-io.h},
-and functions provided in that header file should be used to access the
-coverage files.
+It is not recommended to access the coverage files directly.
+Consumers should use the intermediate format that is provided
+by @command{gcov} tool via @option{--intermediate-format} option.
 
 @node Cross-profiling
 @section Data File Relocation to Support Cross-Profiling
