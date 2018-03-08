@@ -1,3 +1,14 @@
+2018-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84746
+	* tree-ssa-pre.c (find_leader_in_sets): Deal with SET1 being NULL.
+	(phi_translate): Pass in destination ANTIC_OUT set.
+	(phi_translate_1): Likewise.  For a simplified result lookup
+	a leader in ANTIC_OUT and AVAIL_OUT, not the ANTIC_IN sets.
+	(phi_translate_set): Adjust.
+	(do_pre_regular_insertion): Likewise.
+	(do_pre_partial_partial_insertion): Likewise.
+
 2018-03-08  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84735
