@@ -1,3 +1,9 @@
+2018-03-08  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/84404
+	PR debug/84408
+	* gcc.dg/graphite/pr84404.c: New.
+
 2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84740
