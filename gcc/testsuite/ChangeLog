@@ -1,3 +1,8 @@
+2018-03-07  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83519
+	* gcc.dg/Wrestrict-13.c: New test.
+
 2018-03-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/64124
@@ -9,6 +14,11 @@
 
 	PR target/82411
 	* gcc.target/powerpc/ppc-sdata-2.c: Skip if -mno-readonly-in-sdata.
+
+2018-03-07  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84526
+	* gcc.dg/Wrestrict-10.c: New test.
 
 2018-03-07  Martin Sebor  <msebor@redhat.com>
 
