@@ -17079,7 +17079,10 @@ dw_loc_list (var_loc_list *loc_list, tree decl, int want_address)
      representable, we don't want to pretend a single entry that was
      applies to the entire scope in which the variable is
      available.  */
-  maybe_gen_llsym (list);
+  if (list && loc_list->first->next)
+    gen_llsym (list);
+  else
+    maybe_gen_llsym (list);
 
   return list;
 }

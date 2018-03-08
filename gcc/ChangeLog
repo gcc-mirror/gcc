@@ -1,5 +1,9 @@
 2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/84456
+	* dwarf2out.c (dw_loc_list): If list && loc_list->first->next, call
+	gen_llsym, otherwise call maybe_gen_llsym.
+
 	PR inline-asm/84742
 	* recog.c (asm_operand_ok): Return 0 if multi-character constraint
 	has ',' character inside of it.
