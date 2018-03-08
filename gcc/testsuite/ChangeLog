@@ -1,5 +1,8 @@
 2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/80598
+	* g++.dg/warn/Wunused-function4.C: New test.
+
 	PR inline-asm/84742
 	* gcc.target/i386/pr84742-1.c: New test.
 	* gcc.target/i386/pr84742-2.c: New test.

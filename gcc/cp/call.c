@@ -7634,6 +7634,10 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       if (undeduced_auto_decl (fn))
 	mark_used (fn, complain);
+      else
+	/* Otherwise set TREE_USED for the benefit of -Wunused-function.
+	   See PR80598.  */
+	TREE_USED (fn) = 1;
 
       return_type = TREE_TYPE (TREE_TYPE (fn));
       nargs = vec_safe_length (args);
