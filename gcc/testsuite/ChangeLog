@@ -1,3 +1,8 @@
+2018-03-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/target-supports.exp: Do not return zero from a ifunc
+	function.
+
 2018-03-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84746
