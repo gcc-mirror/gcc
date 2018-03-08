@@ -1,6 +1,18 @@
 2018-03-08  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-10-31  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/82633
+	* doc/gcov.texi: Document -fkeep-{static,inline}-functions and
+	their interaction with GCOV infrastructure.
+	* configure.ac: Add -fkeep-static-functions to
+	coverage_flags.
+	* configure: Regenerate.
+
+2018-03-08  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-10-27  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/82457
