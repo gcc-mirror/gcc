@@ -271,8 +271,7 @@ init_bb_predicate (basic_block bb)
   set_bb_predicate (bb, boolean_true_node);
 }
 
-/* Release the SSA_NAMEs associated with the predicate of basic block BB,
-   but don't actually free it.  */
+/* Release the SSA_NAMEs associated with the predicate of basic block BB.  */
 
 static inline void
 release_bb_predicate (basic_block bb)
@@ -280,11 +279,14 @@ release_bb_predicate (basic_block bb)
   gimple_seq stmts = bb_predicate_gimplified_stmts (bb);
   if (stmts)
     {
+      /* Ensure that these stmts haven't yet been added to a bb.  */
       if (flag_checking)
 	for (gimple_stmt_iterator i = gsi_start (stmts);
 	     !gsi_end_p (i); gsi_next (&i))
-	  gcc_assert (! gimple_use_ops (gsi_stmt (i)));
+	  gcc_assert (! gimple_bb (gsi_stmt (i)));
 
+      /* Discard them.  */
+      gimple_seq_discard (stmts);
       set_bb_predicate_gimplified_stmts (bb, NULL);
     }
 }
