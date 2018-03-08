@@ -1,3 +1,10 @@
+2018-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/84739
+	* tree-tailcall.c (find_tail_calls): Check call arguments against
+	DECL_ARGUMENTS (current_function_decl) rather than
+	DECL_ARGUMENTS (func) when checking for tail recursion.
+
 2018-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/contrib.texi: Add entries for Martin Liska, David Malcolm,
