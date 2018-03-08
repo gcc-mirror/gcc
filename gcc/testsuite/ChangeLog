@@ -1,3 +1,8 @@
+2018-03-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/84178
+	* gcc.c-torture/compile/pr84178-1.c: New test.
+
 2018-03-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lib/target-supports.exp: Do not return zero from a ifunc

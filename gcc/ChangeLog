@@ -1,3 +1,11 @@
+2018-03-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/84178
+	* tree-if-conv.c (release_bb_predicate): Remove the
+	the assertion that the stmts have NULL use_ops.
+	Discard the statements, asserting that they haven't
+	yet been added to a BB.
+
 2018-03-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84746
