@@ -1825,7 +1825,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
       len = CONSTRAINT_LEN (c, constraint);
       do
 	constraint++;
-      while (--len && *constraint);
+      while (--len && *constraint && *constraint != ',');
       if (len)
 	return 0;
     }
