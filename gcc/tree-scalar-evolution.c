@@ -280,6 +280,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-fold.h"
+#include "tree-into-ssa.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
@@ -1540,7 +1541,10 @@ static tree
 follow_copies_to_constant (tree var)
 {
   tree res = var;
-  while (TREE_CODE (res) == SSA_NAME)
+  while (TREE_CODE (res) == SSA_NAME
+	 /* We face not updated SSA form in multiple places and this walk
+	    may end up in sibling loops so we have to guard it.  */
+	 && !name_registered_for_update_p (res))
     {
       gimple *def = SSA_NAME_DEF_STMT (res);
       if (gphi *phi = dyn_cast <gphi *> (def))

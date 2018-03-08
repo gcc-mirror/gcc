@@ -1,5 +1,12 @@
 2018-03-08  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/84552
+	* tree-scalar-evolution.c: Include tree-into-ssa.h.
+	(follow_copies_to_constant): Do not follow SSA names registered
+	for update.
+
+2018-03-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84178
 	* tree-if-conv.c (combine_blocks): Move insert_gimplified_predicates
 	to caller.
