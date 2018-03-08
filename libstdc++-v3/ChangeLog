@@ -1,3 +1,16 @@
+2018-03-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (NodeIteratorPrinter): New.
+	(StdListIteratorPrinter): Inherit from latter.
+	(StdFwdListIteratorPrinter): New, inherit from latter.
+	(StdDebugIteratorPrinter.to_string): Use non-debug iterator printer
+	when iterator has no associated container.
+	(build_libstdcxx_dictionary): Add __gnu_cxx::_Fwd_list_iterator and
+	__gnu_cxx::_Fwd_list_const_iterator printers. Remove __norm namespace
+	registrations.
+	* testsuite/libstdc++-prettyprinters/debug.cc: Adapt.
+	* testsuite/libstdc++-prettyprinters/debug_cxx11.cc: Adapt.
+
 2018-03-06  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/84601
