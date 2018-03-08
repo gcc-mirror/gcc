@@ -1,5 +1,9 @@
 2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84740
+	* tree-switch-conversion.c (process_switch): Call build_constructors
+	only if info.phi_count is non-zero.
+
 	PR tree-optimization/84739
 	* tree-tailcall.c (find_tail_calls): Check call arguments against
 	DECL_ARGUMENTS (current_function_decl) rather than

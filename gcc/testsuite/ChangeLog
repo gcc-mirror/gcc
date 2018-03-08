@@ -1,5 +1,8 @@
 2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/84740
+	* gcc.dg/torture/pr84740.c: New test.
+
 	PR tree-optimization/84739
 	* gcc.dg/pr84739.c: New test.
 

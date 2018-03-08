@@ -1563,7 +1563,8 @@ process_switch (gswitch *swtch)
   gather_default_values (info.default_case_nonstandard
 			 ? gimple_switch_label (swtch, 1)
 			 : gimple_switch_default_label (swtch), &info);
-  build_constructors (swtch, &info);
+  if (info.phi_count)
+    build_constructors (swtch, &info);
 
   build_arrays (swtch, &info); /* Build the static arrays and assignments.   */
   gen_inbound_check (swtch, &info);	/* Build the bounds check.  */
