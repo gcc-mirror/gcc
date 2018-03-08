@@ -2979,7 +2979,24 @@ done:
   if (seen_length == 0)
     cl->length = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
   else
-    cl->length = len;
+    {
+      /* If gfortran ends up here, then the len may be reducible to a
+	 constant.  Try to do that here.  If it does not reduce, simply
+	 assign len to the charlen.  */
+      if (len && len->expr_type != EXPR_CONSTANT)
+	{
+	  gfc_expr *e;
+	  e = gfc_copy_expr (len);
+	  gfc_reduce_init_expr (e);
+	  if (e->expr_type == EXPR_CONSTANT)
+	    gfc_replace_expr (len, e);
+	  else
+	    gfc_free_expr (e);
+	  cl->length = len;
+	}
+      else
+	cl->length = len;
+    }
 
   ts->u.cl = cl;
   ts->kind = kind == 0 ? gfc_default_character_kind : kind;
