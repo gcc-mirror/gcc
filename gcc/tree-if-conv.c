@@ -2371,7 +2371,6 @@ combine_blocks (struct loop *loop)
   edge_iterator ei;
 
   remove_conditions_and_labels (loop);
-  insert_gimplified_predicates (loop);
   predicate_all_scalar_phis (loop);
 
   if (any_pred_load_store)
@@ -2593,7 +2592,6 @@ version_loop_for_if_conversion (struct loop *loop)
   gsi = gsi_last_bb (cond_bb);
   gimple_call_set_arg (g, 1, build_int_cst (integer_type_node, new_loop->num));
   gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-  update_ssa (TODO_update_ssa);
   return new_loop;
 }
 
@@ -2811,6 +2809,7 @@ tree_if_conversion (struct loop *loop)
   unsigned int todo = 0;
   bool aggressive_if_conv;
   struct loop *rloop;
+  bool need_update_ssa = false;
 
  again:
   rloop = NULL;
@@ -2856,6 +2855,7 @@ tree_if_conversion (struct loop *loop)
       struct loop *nloop = version_loop_for_if_conversion (vloop);
       if (nloop == NULL)
 	goto cleanup;
+      need_update_ssa = true;
       if (vloop != loop)
 	{
 	  /* If versionable_outer_loop_p decided to version the
@@ -2879,6 +2879,13 @@ tree_if_conversion (struct loop *loop)
 	  rloop = nloop->inner;
 	}
     }
+
+  /* Due to hard to fix issues we end up with immediate uses recorded
+     for not yet inserted predicates which will confuse SSA update so
+     we delayed this from after versioning to after predicate insertion.  */
+  insert_gimplified_predicates (loop);
+  if (need_update_ssa)
+    update_ssa (TODO_update_ssa);
 
   /* Now all statements are if-convertible.  Combine all the basic
      blocks into one huge basic block doing the if-conversion
