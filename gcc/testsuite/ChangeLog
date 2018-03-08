@@ -1,3 +1,11 @@
+2018-03-08  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-01-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82352
+	* g++.dg/ipa/pr82352.C: New test.
+
 2018-03-07  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	Backport from mainline

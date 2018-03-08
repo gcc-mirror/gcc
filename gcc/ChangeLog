@@ -1,6 +1,14 @@
 2018-03-08  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2018-01-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82352
+	* ipa-icf.c (sem_function::merge): Do not cross comdat boundary.
+
+2018-03-08  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-10-31  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/82633
