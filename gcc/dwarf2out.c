@@ -2940,8 +2940,8 @@ struct GTY(()) dw_line_info_table {
      If it is 0, it is known that the NEXT view will be the first view
      at the given PC.
 
-     If it is -1, we've advanced PC but we haven't emitted a line location yet,
-     so we shouldn't use this view number.
+     If it is -1, we're forcing the view number to be reset, e.g. at a
+     function entry.
 
      The meaning of other nonzero values depends on whether we're
      computing views internally or leaving it for the assembler to do
@@ -2951,8 +2951,10 @@ struct GTY(()) dw_line_info_table {
      going to ask the assembler to assign.  */
   var_loc_view view;
 
+#define FORCE_RESET_NEXT_VIEW(x) ((x) = (var_loc_view)-1)
 #define RESET_NEXT_VIEW(x) ((x) = (var_loc_view)0)
-#define RESETTING_VIEW_P(x) ((x) == (var_loc_view)0)
+#define FORCE_RESETTING_VIEW_P(x) ((x) == (var_loc_view)-1)
+#define RESETTING_VIEW_P(x) ((x) == (var_loc_view)0 || FORCE_RESETTING_VIEW_P (x))
 
   vec<dw_line_info_entry, va_gc> *entries;
 };
@@ -2985,7 +2987,7 @@ maybe_reset_location_view (rtx_insn *insn, dw_line_info_table *table)
   else if (get_attr_min_length (insn) > 0)
     reset = 1;
 
-  if (reset > 0)
+  if (reset > 0 && !RESETTING_VIEW_P (table->view))
     RESET_NEXT_VIEW (table->view);
 }
 
@@ -3235,9 +3237,10 @@ static GTY(()) bitmap zero_view_p;
    that must be view number zero.  Otherwise, ZERO_VIEW_P is allocated
    and views label numbers recorded in it are the ones known to be
    zero.  */
-#define ZERO_VIEW_P(N) (zero_view_p				\
-			? bitmap_bit_p (zero_view_p, (N))	\
-			: (N) == 0)
+#define ZERO_VIEW_P(N) ((N) == (var_loc_view)0				\
+			|| (N) == (var_loc_view)-1			\
+			|| (zero_view_p					\
+			    && bitmap_bit_p (zero_view_p, (N))))
 
 /* Return true iff we're to emit .loc directives for the assembler to
    generate line number sections.
@@ -27212,6 +27215,18 @@ create_label:
 	  last_postcall_label = ggc_strdup (loclabel);
 	}
       newloc->label = last_postcall_label;
+      /* ??? This view is at last_label, not last_label-1, but we
+	 could only assume view at last_label-1 is zero if we could
+	 assume calls always have length greater than one.  This is
+	 probably true in general, though there might be a rare
+	 exception to this rule, e.g. if a call insn is optimized out
+	 by target magic.  Then, even the -1 in the label will be
+	 wrong, which might invalidate the range.  Anyway, using view,
+	 though technically possibly incorrect, will work as far as
+	 ranges go: since L-1 is in the middle of the call insn,
+	 (L-1).0 and (L-1).V shouldn't make any difference, and having
+	 the loclist entry refer to the .loc entry might be useful, so
+	 leave it like this.  */
       newloc->view = view;
     }
 
@@ -27393,7 +27408,7 @@ new_line_info_table (void)
   table->file_num = 1;
   table->line_num = 1;
   table->is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
-  RESET_NEXT_VIEW (table->view);
+  FORCE_RESET_NEXT_VIEW (table->view);
 
   return table;
 }
@@ -27477,6 +27492,7 @@ dwarf2out_begin_function (tree fun)
   tail_call_site_count = 0;
 
   set_cur_line_info_table (sec);
+  FORCE_RESET_NEXT_VIEW (cur_line_info_table->view);
 }
 
 /* Helper function of dwarf2out_end_function, called only after emitting
@@ -27574,9 +27590,43 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 {
   unsigned int file_num;
   dw_line_info_table *table;
+  static var_loc_view lvugid;
 
-  if (debug_info_level < DINFO_LEVEL_TERSE || line == 0)
+  if (debug_info_level < DINFO_LEVEL_TERSE)
     return;
+
+  table = cur_line_info_table;
+
+  if (line == 0)
+    {
+      if (debug_variable_location_views
+	  && output_asm_line_debug_info ()
+	  && table && !RESETTING_VIEW_P (table->view))
+	{
+	  /* If we're using the assembler to compute view numbers, we
+	     can't issue a .loc directive for line zero, so we can't
+	     get a view number at this point.  We might attempt to
+	     compute it from the previous view, but since we're
+	     omitting the line number entry, we might as well omit the
+	     view number as well.  That means pretending it's a view
+	     number zero, which might very well turn out to be
+	     correct.  */
+	  if (!zero_view_p)
+	    zero_view_p = BITMAP_GGC_ALLOC ();
+	  bitmap_set_bit (zero_view_p, table->view);
+	  if (flag_debug_asm)
+	    {
+	      char label[MAX_ARTIFICIAL_LABEL_BYTES];
+	      ASM_GENERATE_INTERNAL_LABEL (label, "LVU", table->view);
+	      fprintf (asm_out_file, "\t%s line 0, omitted view ",
+		       ASM_COMMENT_START);
+	      assemble_name (asm_out_file, label);
+	      putc ('\n', asm_out_file);
+	    }
+	  table->view = ++lvugid;
+	}
+      return;
+    }
 
   /* The discriminator column was added in dwarf4.  Simplify the below
      by simply removing it if we're not supposed to output it.  */
@@ -27586,7 +27636,6 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
   if (!debug_column_info)
     column = 0;
 
-  table = cur_line_info_table;
   file_num = maybe_emit_file (lookup_filename (filename));
 
   /* ??? TODO: Elide duplicate line number entries.  Traditionally,
@@ -27648,13 +27697,6 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 	}
       if (debug_variable_location_views)
 	{
-	  static var_loc_view lvugid;
-	  if (!lvugid)
-	    {
-	      gcc_assert (!zero_view_p);
-	      zero_view_p = BITMAP_GGC_ALLOC ();
-	      bitmap_set_bit (zero_view_p, 0);
-	    }
 	  if (!RESETTING_VIEW_P (table->view))
 	    {
 	      /* When we're using the assembler to compute view
@@ -27675,7 +27717,7 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 	    }
 	  else
 	    {
-	      if (!table->in_use)
+	      if (FORCE_RESETTING_VIEW_P (table->view))
 		fputs (" view -0", asm_out_file);
 	      else
 		fputs (" view 0", asm_out_file);
@@ -27686,6 +27728,8 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 		 known to be zero, because then we may be able to
 		 optimize out locviews that are all zeros, so take
 		 note of it in zero_view_p.  */
+	      if (!zero_view_p)
+		zero_view_p = BITMAP_GGC_ALLOC ();
 	      bitmap_set_bit (zero_view_p, lvugid);
 	      table->view = ++lvugid;
 	    }
@@ -27698,17 +27742,22 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 
       targetm.asm_out.internal_label (asm_out_file, LINE_CODE_LABEL, label_num);
 
-      if (debug_variable_location_views && table->view)
+      if (debug_variable_location_views && !RESETTING_VIEW_P (table->view))
 	push_dw_line_info_entry (table, LI_adv_address, label_num);
       else
 	push_dw_line_info_entry (table, LI_set_address, label_num);
       if (debug_variable_location_views)
 	{
+	  bool resetting = FORCE_RESETTING_VIEW_P (table->view);
+	  if (resetting)
+	    table->view = 0;
+
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s view %s%d\n",
 		     ASM_COMMENT_START,
-		     table->in_use ? "" : "-",
+		     resetting ? "-" : "",
 		     table->view);
+
 	  table->view++;
 	}
       if (file_num != table->file_num)

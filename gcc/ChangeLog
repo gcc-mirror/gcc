@@ -1,3 +1,19 @@
+2018-03-08  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/84404
+	PR debug/84408
+	* dwarf2out.c (struct dw_line_info_table): Update comments for
+	view == -1.
+	(FORCE_RESET_NEXT_VIEW): New.
+	(FORCE_RESETTING_VIEW_P): New.
+	(RESETTING_VIEW_P): Check for -1 too.
+	(ZERO_VIEW_P): Likewise.
+	(new_line_info_table): Force-reset next view.
+	(dwarf2out_begin_function): Likewise.
+	(dwarf2out_source_line): Simplify zero_view_p initialization.
+	Test FORCE_RESETTING_VIEW_P and RESETTING_VIEW_P instead of
+	view directly.  Omit view when omitting .loc at line 0.
+
 2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/84740
