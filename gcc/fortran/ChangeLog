@@ -1,3 +1,9 @@
+2018-03-07  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/64124
+	PR fortran/70409
+	* decl.c (gfc_match_char_spec): Try to reduce a charlen to a constant.
+
 2017-03-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84697
