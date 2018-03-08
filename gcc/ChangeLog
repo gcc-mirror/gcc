@@ -1,3 +1,9 @@
+2018-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/84748
+	* config/aarch64/aarch64.md (*compare_cstore<mode>_insn): Mark pattern
+	as clobbering CC_REGNUM.
+
 2018-03-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/84552
