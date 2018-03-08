@@ -329,8 +329,16 @@ struct insn_link {
 
 static struct insn_link **uid_log_links;
 
-#define INSN_COST(INSN)		(uid_insn_cost[INSN_UID (INSN)])
-#define LOG_LINKS(INSN)		(uid_log_links[INSN_UID (INSN)])
+static inline int
+insn_uid_check (const_rtx insn)
+{
+  int uid = INSN_UID (insn);
+  gcc_checking_assert (uid <= max_uid_known);
+  return uid;
+}
+
+#define INSN_COST(INSN)		(uid_insn_cost[insn_uid_check (INSN)])
+#define LOG_LINKS(INSN)		(uid_log_links[insn_uid_check (INSN)])
 
 #define FOR_EACH_LOG_LINK(L, INSN)				\
   for ((L) = LOG_LINKS (INSN); (L); (L) = (L)->next)
@@ -678,7 +686,7 @@ find_single_use (rtx dest, rtx_insn *insn, rtx_insn **ploc)
   for (next = NEXT_INSN (insn);
        next && BLOCK_FOR_INSN (next) == bb;
        next = NEXT_INSN (next))
-    if (INSN_P (next) && dead_or_set_p (next, dest))
+    if (NONDEBUG_INSN_P (next) && dead_or_set_p (next, dest))
       {
 	FOR_EACH_LOG_LINK (link, next)
 	  if (link->insn == insn && link->regno == REGNO (dest))
@@ -1129,7 +1137,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 
   int new_direct_jump_p = 0;
 
-  for (first = f; first && !INSN_P (first); )
+  for (first = f; first && !NONDEBUG_INSN_P (first); )
     first = NEXT_INSN (first);
   if (!first)
     return 0;
@@ -2277,7 +2285,7 @@ cant_combine_insn_p (rtx_insn *insn)
   /* If this isn't really an insn, we can't do anything.
      This can occur when flow deletes an insn that it has merged into an
      auto-increment address.  */
-  if (! INSN_P (insn))
+  if (!NONDEBUG_INSN_P (insn))
     return 1;
 
   /* Never combine loads and stores involving hard regs that are likely
@@ -4172,7 +4180,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		    || insn != BB_HEAD (this_basic_block->next_bb));
 	   insn = NEXT_INSN (insn))
 	{
-	  if (INSN_P (insn) && reg_referenced_p (ni2dest, PATTERN (insn)))
+	  if (NONDEBUG_INSN_P (insn)
+	      && reg_referenced_p (ni2dest, PATTERN (insn)))
 	    {
 	      FOR_EACH_LOG_LINK (link, insn)
 		if (link->insn == i3)
@@ -4313,9 +4322,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	    for (temp_insn = NEXT_INSN (i2);
 		 temp_insn
 		 && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-			  || BB_HEAD (this_basic_block) != temp_insn);
+		     || BB_HEAD (this_basic_block) != temp_insn);
 		 temp_insn = NEXT_INSN (temp_insn))
-	      if (temp_insn != i3 && INSN_P (temp_insn))
+	      if (temp_insn != i3 && NONDEBUG_INSN_P (temp_insn))
 		FOR_EACH_LOG_LINK (link, temp_insn)
 		  if (link->insn == i2)
 		    link->insn = i3;

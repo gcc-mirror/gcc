@@ -1,6 +1,14 @@
 2018-03-08  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2016-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/77844
+	* g++.dg/opt/pr77844.C: New test.
+
+2018-03-08  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2018-01-04  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/82352

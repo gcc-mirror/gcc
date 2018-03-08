@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "valtrack.h"
 #include "regs.h"
 #include "emit-rtl.h"
+#include "rtl-iter.h"
 
 /* gen_lowpart_no_emit hook implementation for DEBUG_INSNs.  In DEBUG_INSNs,
    all lowpart SUBREGs are valid, despite what the machine requires for
@@ -148,6 +149,7 @@ struct rtx_subst_pair
 {
   rtx to;
   bool adjusted;
+  rtx_insn *insn;
 };
 
 /* DATA points to an rtx_subst_pair.  Return the value that should be
@@ -165,6 +167,23 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
       pair->adjusted = true;
       pair->to = cleanup_auto_inc_dec (pair->to, VOIDmode);
       pair->to = make_compound_operation (pair->to, SET);
+      /* Avoid propagation from growing DEBUG_INSN expressions too much.  */
+      int cnt = 0;
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, pair->to, ALL)
+	if (REG_P (*iter) && ++cnt > 1)
+	  {
+	    rtx dval = make_debug_expr_from_rtl (old_rtx);
+	    /* Emit a debug bind insn.  */
+	    rtx bind
+	      = gen_rtx_VAR_LOCATION (GET_MODE (old_rtx),
+				      DEBUG_EXPR_TREE_DECL (dval), pair->to,
+				      VAR_INIT_STATUS_INITIALIZED);
+	    rtx_insn *bind_insn = emit_debug_insn_before (bind, pair->insn);
+	    df_insn_rescan (bind_insn);
+	    pair->to = dval;
+	    break;
+	  }
       return pair->to;
     }
   return copy_rtx (pair->to);
@@ -185,6 +204,7 @@ propagate_for_debug (rtx_insn *insn, rtx_insn *last, rtx dest, rtx src,
   struct rtx_subst_pair p;
   p.to = src;
   p.adjusted = false;
+  p.insn = NEXT_INSN (insn);
 
   next = NEXT_INSN (insn);
   last = NEXT_INSN (last);
