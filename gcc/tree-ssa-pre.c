@@ -1226,9 +1226,10 @@ static inline pre_expr
 find_leader_in_sets (unsigned int val, bitmap_set_t set1, bitmap_set_t set2,
 		     bitmap_set_t set3 = NULL)
 {
-  pre_expr result;
+  pre_expr result = NULL;
 
-  result = bitmap_find_leader (set1, val);
+  if (set1)
+    result = bitmap_find_leader (set1, val);
   if (!result && set2)
     result = bitmap_find_leader (set2, val);
   if (!result && set3)
@@ -1332,14 +1333,15 @@ get_representative_for (const pre_expr e, basic_block b = NULL)
 
 
 static pre_expr
-phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e);
+phi_translate (bitmap_set_t, pre_expr, bitmap_set_t, bitmap_set_t, edge);
 
 /* Translate EXPR using phis in PHIBLOCK, so that it has the values of
    the phis in PRED.  Return NULL if we can't find a leader for each part
    of the translated expression.  */
 
 static pre_expr
-phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
+phi_translate_1 (bitmap_set_t dest,
+		 pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
 {
   basic_block pred = e->src;
   basic_block phiblock = e->dest;
@@ -1363,10 +1365,11 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
                 pre_expr leader, result;
 		unsigned int op_val_id = VN_INFO (newnary->op[i])->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
-		result = phi_translate (leader, set1, set2, e);
+		result = phi_translate (dest, leader, set1, set2, e);
 		if (result && result != leader)
-		  /* Force a leader as well as we are simplifying this
-		     expression.  */
+		  /* If op has a leader in the sets we translate make
+		     sure to use the value of the translated expression.
+		     We might need a new representative for that.  */
 		  newnary->op[i] = get_representative_for (result, pred);
 		else if (!result)
 		  return NULL;
@@ -1399,7 +1402,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
 		    else
 		      {
 			unsigned value_id = get_expr_value_id (constant);
-			constant = find_leader_in_sets (value_id, set1, set2,
+			/* We want a leader in ANTIC_OUT or AVAIL_OUT here.
+			   dest has what we computed into ANTIC_OUT sofar
+			   so pick from that - since topological sorting
+			   by sorted_array_from_bitmap_set isn't perfect
+			   we may lose some cases here.  */
+			constant = find_leader_in_sets (value_id, dest,
 							AVAIL_OUT (pred));
 			if (constant)
 			  return constant;
@@ -1485,7 +1493,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
 		  }
 		op_val_id = VN_INFO (op[n])->value_id;
 		leader = find_leader_in_sets (op_val_id, set1, set2);
-		opresult = phi_translate (leader, set1, set2, e);
+		opresult = phi_translate (dest, leader, set1, set2, e);
 		if (opresult && opresult != leader)
 		  {
 		    tree name = get_representative_for (opresult);
@@ -1635,7 +1643,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
 /* Wrapper around phi_translate_1 providing caching functionality.  */
 
 static pre_expr
-phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
+phi_translate (bitmap_set_t dest, pre_expr expr,
+	       bitmap_set_t set1, bitmap_set_t set2, edge e)
 {
   expr_pred_trans_t slot = NULL;
   pre_expr phitrans;
@@ -1661,7 +1670,7 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2, edge e)
     }
 
   /* Translate.  */
-  phitrans = phi_translate_1 (expr, set1, set2, e);
+  phitrans = phi_translate_1 (dest, expr, set1, set2, e);
 
   if (slot)
     {
@@ -1698,7 +1707,7 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, edge e)
   FOR_EACH_VEC_ELT (exprs, i, expr)
     {
       pre_expr translated;
-      translated = phi_translate (expr, set, NULL, e);
+      translated = phi_translate (dest, expr, set, NULL, e);
       if (!translated)
 	continue;
 
@@ -3199,7 +3208,7 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
 	      gcc_assert (!(pred->flags & EDGE_FAKE));
 	      bprime = pred->src;
 	      /* We are looking at ANTIC_OUT of bprime.  */
-	      eprime = phi_translate (expr, ANTIC_IN (block), NULL, pred);
+	      eprime = phi_translate (NULL, expr, ANTIC_IN (block), NULL, pred);
 
 	      /* eprime will generally only be NULL if the
 		 value of the expression, translated
@@ -3354,7 +3363,7 @@ do_pre_partial_partial_insertion (basic_block block, basic_block dom)
 	         and so not come across fake pred edges.  */
 	      gcc_assert (!(pred->flags & EDGE_FAKE));
 	      bprime = pred->src;
-	      eprime = phi_translate (expr, ANTIC_IN (block),
+	      eprime = phi_translate (NULL, expr, ANTIC_IN (block),
 				      PA_IN (block), pred);
 
 	      /* eprime will generally only be NULL if the
