@@ -1,3 +1,12 @@
+2018-03-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84178
+	* tree-if-conv.c (combine_blocks): Move insert_gimplified_predicates
+	to caller.
+	(version_loop_for_if_conversion): Delay update_ssa call.
+	(tree_if_conversion): Delay update_ssa until after predicate
+	insertion.
+
 2018-03-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/84178
