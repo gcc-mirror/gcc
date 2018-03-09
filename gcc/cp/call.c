@@ -7209,7 +7209,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 		     "passing objects of non-trivially-copyable "
 		     "type %q#T through %<...%> is conditionally supported",
 		     arg_type);
-	  return cp_build_addr_expr (arg, complain);
+	  return build1 (ADDR_EXPR, build_reference_type (arg_type), arg);
 	}
       /* Build up a real lvalue-to-rvalue conversion in case the
 	 copy constructor is trivial but not callable.  */
@@ -8018,7 +8018,15 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));
       for (j = 0; j < nargs; j++)
-	fargs[j] = maybe_constant_value (argarray[j]);
+	{
+	  /* For -Wformat undo the implicit passing by hidden reference
+	     done by convert_arg_to_ellipsis.  */
+	  if (TREE_CODE (argarray[j]) == ADDR_EXPR
+	      && TREE_CODE (TREE_TYPE (argarray[j])) == REFERENCE_TYPE)
+	    fargs[j] = TREE_OPERAND (argarray[j], 0);
+	  else
+	    fargs[j] = maybe_constant_value (argarray[j]);
+	}
 
       warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
 					   nargs, fargs, NULL);
