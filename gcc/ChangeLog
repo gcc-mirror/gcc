@@ -1,3 +1,16 @@
+2018-03-09  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/84682
+	* lra-constraints.c (process_address_1): Check is_address flag
+	for address constraints.
+	(process_alt_operands): Likewise.
+	* lra.c (lra_set_insn_recog_data): Pass asm operand locs to
+	preprocess_constraints.
+	* recog.h (preprocess_constraints): Add oploc parameter.
+	Adjust callers.
+	* recog.c (preprocess_constraints): Test address_operand for
+	CT_ADDRESS constraints.
+
 2018-03-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/83712

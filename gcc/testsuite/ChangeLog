@@ -1,3 +1,10 @@
+2018-03-09  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/84682
+	* gcc.dg/torture/pr84682-1.c: New.
+	* gcc.dg/torture/pr84682-2.c: New.
+	* gcc.dg/torture/pr84682-3.c: New.
+
 2018-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84724
@@ -62,8 +69,8 @@
 	PR tree-optimization/84746
 	* gcc.dg/torture/pr84746.c: New testcase.
 
-2018-03-08  Alexandre Oliva <aoliva@redhat.com>
 
+2018-03-08  Alexandre Oliva <aoliva@redhat.com>
 	PR debug/84404
 	PR debug/84408
 	* gcc.dg/graphite/pr84404.c: New.
