@@ -1,3 +1,9 @@
+2018-03-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
+	Fix std::_Fwd_list_iterator and std::_Fwd_list_const_iterator printers
+	registration.
+
 2018-03-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/84769

@@ -1744,10 +1744,10 @@ def build_libstdcxx_dictionary ():
                                       StdVectorIteratorPrinter)
         libstdcxx_printer.add_version('__gnu_cxx::', '_Slist_iterator',
                                       StdSlistIteratorPrinter)
-        libstdcxx_printer.add_version('__gnu_cxx::', '_Fwd_list_iterator',
-                                      StdFwdListIteratorPrinter)
-        libstdcxx_printer.add_version('__gnu_cxx::', '_Fwd_list_const_iterator',
-                                      StdFwdListIteratorPrinter)
+        libstdcxx_printer.add_container('std::', '_Fwd_list_iterator',
+                                        StdFwdListIteratorPrinter)
+        libstdcxx_printer.add_container('std::', '_Fwd_list_const_iterator',
+                                        StdFwdListIteratorPrinter)
 
         # Debug (compiled with -D_GLIBCXX_DEBUG) printer
         # registrations.
