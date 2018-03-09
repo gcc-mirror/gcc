@@ -1,3 +1,9 @@
+2018-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/84763
+	* config/i386/winnt.c (i386_pe_seh_cold_init): Use small pre-allocation
+	when the function accesses prior frames.
+
 2018-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/84456

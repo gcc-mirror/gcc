@@ -879,7 +879,7 @@ void
 i386_pe_seh_cold_init (FILE *f, const char *name)
 {
   struct seh_frame_state *seh;
-  HOST_WIDE_INT offset;
+  HOST_WIDE_INT alloc_offset, offset;
 
   if (!TARGET_SEH)
     return;
@@ -891,7 +891,16 @@ i386_pe_seh_cold_init (FILE *f, const char *name)
   assemble_name (f, name);
   fputc ('\n', f);
 
-  offset = seh->sp_offset - INCOMING_FRAME_SP_OFFSET;
+  /* In the normal case, the frame pointer is near the bottom of the frame
+     so we can do the full stack allocation and set it afterwards.  There
+     is an exception when the function accesses prior frames so, in this
+     case, we need to pre-allocate a small chunk before setting it.  */
+  if (crtl->accesses_prior_frames)
+    alloc_offset = seh->cfa_offset;
+  else
+    alloc_offset = seh->sp_offset;
+
+  offset = alloc_offset - INCOMING_FRAME_SP_OFFSET;
   if (offset > 0 && offset < SEH_MAX_FRAME_SIZE)
     fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
 
@@ -903,12 +912,12 @@ i386_pe_seh_cold_init (FILE *f, const char *name)
 		 : (gcc_unreachable (), "")), f);
 	print_reg (gen_rtx_REG (DImode, regno), 0, f);
 	fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n",
-		 seh->sp_offset - seh->reg_offset[regno]);
+		 alloc_offset - seh->reg_offset[regno]);
       }
 
   if (seh->cfa_reg != stack_pointer_rtx)
     {
-      offset = seh->sp_offset - seh->cfa_offset;
+      offset = alloc_offset - seh->cfa_offset;
 
       gcc_assert ((offset & 15) == 0);
       gcc_assert (IN_RANGE (offset, 0, 240));
@@ -916,6 +925,13 @@ i386_pe_seh_cold_init (FILE *f, const char *name)
       fputs ("\t.seh_setframe\t", f);
       print_reg (seh->cfa_reg, 0, f);
       fprintf (f, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
+    }
+
+  if (crtl->accesses_prior_frames)
+    {
+      offset = seh->sp_offset - alloc_offset;
+      if (offset > 0 && offset < SEH_MAX_FRAME_SIZE)
+	fprintf (f, "\t.seh_stackalloc\t" HOST_WIDE_INT_PRINT_DEC "\n", offset);
     }
 
   fputs ("\t.seh_endprologue\n", f);
