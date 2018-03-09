@@ -1,3 +1,11 @@
+2018-03-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2018-03-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/exch_n.c: New file.
+	* configure.tgt: Add the config directory for s390.
+
 2018-01-25  Release Manager
 
 	* GCC 7.3.0 released.
