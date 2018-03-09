@@ -1,5 +1,8 @@
 2018-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84772
+	* gcc.dg/pr84772.c: New test.
+
 	PR c++/84076
 	* g++.dg/warn/Wformat-2.C: New test.
 
