@@ -25048,6 +25048,39 @@ any_dependent_template_arguments_p (const_tree args)
   return false;
 }
 
+/* Returns true if ARGS contains any errors.  */
+
+bool
+any_erroneous_template_args_p (const_tree args)
+{
+  int i;
+  int j;
+
+  if (args == error_mark_node)
+    return true;
+
+  if (args && TREE_CODE (args) != TREE_VEC)
+    {
+      if (tree ti = get_template_info (args))
+	args = TI_ARGS (ti);
+      else
+	args = NULL_TREE;
+    }
+
+  if (!args)
+    return false;
+
+  for (i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
+    {
+      const_tree level = TMPL_ARGS_LEVEL (args, i + 1);
+      for (j = 0; j < TREE_VEC_LENGTH (level); ++j)
+	if (error_operand_p (TREE_VEC_ELT (level, j)))
+	  return true;
+    }
+
+  return false;
+}
+
 /* Returns TRUE if the template TMPL is type-dependent.  */
 
 bool

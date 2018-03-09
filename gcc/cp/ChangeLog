@@ -1,3 +1,12 @@
+2018-03-10  Jason Merrill  <jason@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71169
+	PR c++/71832
+	* pt.c (any_erroneous_template_args_p): New.
+	* cp-tree.h (any_erroneous_template_args_p): Declare it.
+	* parser.c (cp_parser_class_specifier_1): Use it.
+
 2018-03-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84726 - unnecessary capture of constant vars.

@@ -22669,6 +22669,16 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       cp_default_arg_entry *e;
       tree save_ccp, save_ccr;
 
+      if (any_erroneous_template_args_p (type))
+	{
+	  /* Skip default arguments, NSDMIs, etc, in order to improve
+	     error recovery (c++/71169, c++/71832).  */
+	  vec_safe_truncate (unparsed_funs_with_default_args, 0);
+	  vec_safe_truncate (unparsed_nsdmis, 0);
+	  vec_safe_truncate (unparsed_classes, 0);
+	  vec_safe_truncate (unparsed_funs_with_definitions, 0);
+	}
+
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
 	 This two-phased approach handles cases like:
