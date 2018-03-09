@@ -1,3 +1,17 @@
+2018-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84775
+	* tree-if-conv.c (add_bb_predicate_gimplified_stmts): Delink
+	immediate uses of predicate stmts and mark them modified.
+
+	Revert
+	PR tree-optimization/84178
+	* tree-if-conv.c (combine_blocks): Move insert_gimplified_predicates
+	to caller.
+	(version_loop_for_if_conversion): Delay update_ssa call.
+	(tree_if_conversion): Delay update_ssa until after predicate
+	insertion.
+
 2018-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/84763

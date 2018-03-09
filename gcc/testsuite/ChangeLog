@@ -1,3 +1,8 @@
+2018-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84775
+	* gcc.dg/torture/pr84775.c: New testcase.
+
 2018-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/84404
