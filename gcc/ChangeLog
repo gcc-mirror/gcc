@@ -1,3 +1,13 @@
+2018-03-09  David Malcolm  <dmalcolm@redhat.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR jit/64089
+	PR jit/84288
+	* Makefile.in (LD_VERSION_SCRIPT_OPTION, LD_SONAME_OPTION): New.
+	* configure: Regenerate.
+	* configure.ac ("linker --version-script option"): New.
+	("linker soname option"): New.
+
 2018-03-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84775
