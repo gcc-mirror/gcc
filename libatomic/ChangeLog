@@ -1,3 +1,8 @@
+2018-03-09  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/exch_n.c: New file.
+	* configure.tgt: Add the config directory for s390.
+
 2018-02-14  Igor Tsimbalist  <igor.v.tsimbalist@intel.com>
 
 	PR target/84148
