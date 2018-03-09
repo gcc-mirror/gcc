@@ -1,3 +1,13 @@
+2018-03-09  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84076
+	* call.c (convert_arg_to_ellipsis): Instead of cp_build_addr_expr
+	build ADDR_EXPR with REFERENCE_TYPE.
+	(build_over_call): For purposes of check_function_arguments, if
+	argarray[j] is ADDR_EXPR with REFERENCE_TYPE created above, use
+	its operand rather than the argument itself.
+
 2018-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84724

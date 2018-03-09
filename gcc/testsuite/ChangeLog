@@ -1,5 +1,8 @@
 2018-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/84076
+	* g++.dg/warn/Wformat-2.C: New test.
+
 	PR c++/84767
 	* g++.dg/ext/vla18.C: New test.
 
