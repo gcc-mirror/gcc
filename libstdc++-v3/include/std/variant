@@ -891,7 +891,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
 
   template<typename _Tp, typename... _Types>
@@ -900,7 +900,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
     }
 
@@ -910,7 +910,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
 
   template<typename _Tp, typename... _Types>
@@ -919,7 +919,7 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+      return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
     }
 
@@ -958,7 +958,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
+      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+	  __ptr);
     }
 
   template<typename _Tp, typename... _Types>
@@ -969,7 +970,8 @@ namespace __variant
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T should occur for exactly once in alternatives");
       static_assert(!is_void_v<_Tp>, "_Tp should not be void");
-      return get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(__ptr);
+      return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
+	  __ptr);
     }
 
   struct monostate { };
