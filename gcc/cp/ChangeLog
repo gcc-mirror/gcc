@@ -1,3 +1,10 @@
+2018-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84724
+	* decl.c (duplicate_decls): Don't override __* prefixed builtins
+	except for __[^b]*_chk, instead issue permerror and for -fpermissive
+	also a note and return olddecl.
+
 2018-03-09  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/84733

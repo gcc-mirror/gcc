@@ -1,3 +1,8 @@
+2018-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84724
+	* g++.dg/ext/pr84724.C: New test.
+
 2018-03-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/83712
