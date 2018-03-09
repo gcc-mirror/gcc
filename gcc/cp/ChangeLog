@@ -1,3 +1,10 @@
+2018-03-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/84733
+	* name-lookup.c (do_pushdecl_with_scope): Only clear
+	current_function_decl when pushing a non-class (i.e. namespace)
+	scope.
+
 2018-03-08  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
