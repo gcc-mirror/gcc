@@ -1346,17 +1346,18 @@ find_all_spills_for (int regno)
     }
 }
 
-/* Assign hard registers to reload pseudos and other pseudos.  */
-static void
+/* Assign hard registers to reload pseudos and other pseudos.  Return
+   true if we was not able to assign hard registers to all reload
+   pseudos.  */
+static bool
 assign_by_spills (void)
 {
-  int i, n, nfails, iter, regno, hard_regno, cost;
+  int i, n, nfails, iter, regno, regno2, hard_regno, cost;
   rtx restore_rtx;
-  rtx_insn *insn;
   bitmap_head changed_insns, do_not_assign_nonreload_pseudos;
   unsigned int u, conflict_regno;
   bitmap_iterator bi;
-  bool reload_p;
+  bool reload_p, fails_p = false;
   int max_regno = max_reg_num ();
 
   for (n = 0, i = lra_constraint_new_regno_start; i < max_regno; i++)
@@ -1399,8 +1400,13 @@ assign_by_spills (void)
 	    hard_regno = spill_for (regno, &all_spilled_pseudos, iter == 1);
 	  if (hard_regno < 0)
 	    {
-	      if (reload_p)
+	      if (reload_p) {
+		/* Put unassigned reload pseudo first in the
+		   array.  */
+		regno2 = sorted_pseudos[nfails];
 		sorted_pseudos[nfails++] = regno;
+		sorted_pseudos[i] = regno2;
+	      }
 	    }
 	  else
 	    {
@@ -1415,61 +1421,9 @@ assign_by_spills (void)
 		bitmap_set_bit (&changed_pseudo_bitmap, regno);
 	    }
 	}
-      if (nfails == 0)
-	break;
-      if (iter > 0)
+      if (nfails == 0 || iter > 0)
 	{
-	  /* We did not assign hard regs to reload pseudos after two iterations.
-	     Either it's an asm and something is wrong with the constraints, or
-	     we have run out of spill registers; error out in either case.  */
-	  bool asm_p = false;
-	  bitmap_head failed_reload_insns;
-
-	  bitmap_initialize (&failed_reload_insns, &reg_obstack);
-	  for (i = 0; i < nfails; i++)
-	    {
-	      regno = sorted_pseudos[i];
-	      bitmap_ior_into (&failed_reload_insns,
-			       &lra_reg_info[regno].insn_bitmap);
-	      /* Assign an arbitrary hard register of regno class to
-		 avoid further trouble with this insn.  */
-	      bitmap_clear_bit (&all_spilled_pseudos, regno);
-	      assign_hard_regno
-		(ira_class_hard_regs[regno_allocno_class_array[regno]][0],
-		 regno);
-	    }
-	  EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
-	    {
-	      insn = lra_insn_recog_data[u]->insn;
-	      if (asm_noperands (PATTERN (insn)) >= 0)
-		{
-		  asm_p = true;
-		  error_for_asm (insn,
-				 "%<asm%> operand has impossible constraints");
-		  /* Avoid further trouble with this insn.
-		     For asm goto, instead of fixing up all the edges
-		     just clear the template and clear input operands
-		     (asm goto doesn't have any output operands).  */
-		  if (JUMP_P (insn))
-		    {
-		      rtx asm_op = extract_asm_operands (PATTERN (insn));
-		      ASM_OPERANDS_TEMPLATE (asm_op) = ggc_strdup ("");
-		      ASM_OPERANDS_INPUT_VEC (asm_op) = rtvec_alloc (0);
-		      ASM_OPERANDS_INPUT_CONSTRAINT_VEC (asm_op) = rtvec_alloc (0);
-		      lra_update_insn_regno_info (insn);
-		    }
-		  else
-		    {
-		      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-		      lra_set_insn_deleted (insn);
-		    }
-		}
-	      else if (!asm_p)
-		{
-		  error ("unable to find a register to spill");
-		  fatal_insn ("this is the insn:", insn);
-		}
-	    }
+	  fails_p = nfails != 0;
 	  break;
 	}
       /* This is a very rare event.  We can not assign a hard register
@@ -1497,6 +1451,14 @@ assign_by_spills (void)
 	}
       EXECUTE_IF_SET_IN_SPARSESET (live_range_hard_reg_pseudos, conflict_regno)
 	{
+	  if ((int) conflict_regno >= lra_constraint_new_regno_start
+	      /* There is no sense to spill another reload pseudo if
+		 it has the same class.  */
+	      && regno_allocno_class_array[conflict_regno] == regno_allocno_class_array[regno]
+	      && ! bitmap_bit_p (&lra_inheritance_pseudos, conflict_regno)
+	      && ! bitmap_bit_p (&lra_split_regs, conflict_regno)
+	      && ! bitmap_bit_p (&lra_optional_reload_pseudos, conflict_regno))
+	    continue;
 	  if ((int) conflict_regno >= lra_constraint_new_regno_start)
 	    {
 	      sorted_pseudos[nfails++] = conflict_regno;
@@ -1518,7 +1480,6 @@ assign_by_spills (void)
 	  update_lives (conflict_regno, true);
 	  lra_setup_reg_renumber (conflict_regno, -1, false);
 	}
-      n = nfails;
     }
   improve_inheritance (&changed_pseudo_bitmap);
   bitmap_clear (&non_reload_pseudos);
@@ -1604,8 +1565,8 @@ assign_by_spills (void)
   bitmap_clear (&best_spill_pseudos_bitmap);
   bitmap_clear (&spill_pseudos_bitmap);
   bitmap_clear (&insn_conflict_pseudos);
+  return fails_p;
 }
-
 
 /* Entry function to assign hard registers to new reload pseudos
    starting with LRA_CONSTRAINT_NEW_REGNO_START (by possible spilling
@@ -1615,9 +1576,10 @@ assign_by_spills (void)
    changed allocation.
 
    Return true if we did not spill any non-reload and non-inheritance
-   pseudos.  */
+   pseudos.  Set up FAILS_P if we failed to assign hard registers to
+   all reload pseudos.  */
 bool
-lra_assign (void)
+lra_assign (bool &fails_p)
 {
   int i;
   unsigned int u;
@@ -1661,7 +1623,7 @@ lra_assign (void)
   /* Setup insns to process on the next constraint pass.  */
   bitmap_initialize (&changed_pseudo_bitmap, &reg_obstack);
   init_live_reload_and_inheritance_pseudos ();
-  assign_by_spills ();
+  fails_p = assign_by_spills ();
   finish_live_reload_and_inheritance_pseudos ();
   bitmap_ior_into (&changed_pseudo_bitmap, &all_spilled_pseudos);
   no_spills_p = true;
@@ -1707,3 +1669,137 @@ lra_assign (void)
   return no_spills_p;
 }
 
+/* Find start and finish insns for reload pseudo REGNO.  Return true
+   if we managed to find the expected insns.  Return false,
+   otherwise.  */
+static bool
+find_reload_regno_insns (int regno, rtx_insn * &start, rtx_insn * &finish)
+{
+  unsigned int uid;
+  bitmap_iterator bi;
+  int n = 0;
+  rtx_insn *prev_insn, *next_insn;
+  rtx_insn *start_insn = NULL, *first_insn = NULL, *second_insn = NULL;
+  
+  EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
+    {
+      if (start_insn == NULL)
+	start_insn = lra_insn_recog_data[uid]->insn;
+      n++;
+    }
+  /* For reload pseudo we should have at most 3 insns referring for it:
+     input/output reload insns and the original insn.  */
+  if (n > 3)
+    return false;
+  if (n > 1)
+    {
+      for (prev_insn = PREV_INSN (start_insn),
+	     next_insn = NEXT_INSN (start_insn);
+	   n != 1 && (prev_insn != NULL || next_insn != NULL); )
+	{
+	  if (prev_insn != NULL && first_insn == NULL)
+	    {
+	      if (! bitmap_bit_p (&lra_reg_info[regno].insn_bitmap,
+				  INSN_UID (prev_insn)))
+		prev_insn = PREV_INSN (prev_insn);
+	      else
+		{
+		  first_insn = prev_insn;
+		  n--;
+		}
+	    }
+	  if (next_insn != NULL && second_insn == NULL)
+	    {
+	      if (! bitmap_bit_p (&lra_reg_info[regno].insn_bitmap,
+				INSN_UID (next_insn)))
+		next_insn = NEXT_INSN (next_insn);
+	      else
+		{
+		  second_insn = next_insn;
+		  n--;
+		}
+	    }
+	}
+      if (n > 1)
+	return false;
+    }
+  start = first_insn != NULL ? first_insn : start_insn;
+  finish = second_insn != NULL ? second_insn : start_insn;
+  return true;
+}
+
+/* Process reload pseudos which did not get a hard reg, split a hard
+   reg live range in live range of a reload pseudo, and the return.
+   If we did not split a hard reg live range, report an error.  */
+void
+lra_split_hard_reg_for (void)
+{
+  int i, regno, n;
+  rtx_insn *insn, *first, *last;
+  unsigned int u;
+  bitmap_iterator bi;
+  int max_regno = max_reg_num ();
+  /* We did not assign hard regs to reload pseudos after two
+     iterations.  Either it's an asm and something is wrong with the
+     constraints, or we have run out of spill registers; error out in
+     either case.  */
+  bool asm_p = false;
+  bitmap_head failed_reload_insns;
+  
+  if (lra_dump_file != NULL)
+    fprintf (lra_dump_file,
+	     "\n****** Splitting a hard reg after assignment #%d: ******\n\n",
+	     lra_assignment_iter);
+  for (n = 0, i = lra_constraint_new_regno_start; i < max_regno; i++)
+    if (reg_renumber[i] < 0 && lra_reg_info[i].nrefs != 0
+	&& regno_allocno_class_array[i] != NO_REGS
+	&& ! bitmap_bit_p (&non_reload_pseudos, i))
+      {
+	sorted_pseudos[n++] = i;
+	if (! find_reload_regno_insns (i, first, last))
+	  continue;
+	if (spill_hard_reg_in_range (i, regno_allocno_class_array[i],
+				     first, last))
+	  return;
+      }
+  bitmap_initialize (&failed_reload_insns, &reg_obstack);
+  for (i = 0; i < n; i++)
+    {
+      regno = sorted_pseudos[i];
+      bitmap_ior_into (&failed_reload_insns,
+		       &lra_reg_info[regno].insn_bitmap);
+      lra_setup_reg_renumber (regno, ira_class_hard_regs[regno_allocno_class_array[regno]][0], false);
+    }
+  EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
+    {
+      insn = lra_insn_recog_data[u]->insn;
+      if (asm_noperands (PATTERN (insn)) >= 0)
+	{
+	  asm_p = true;
+	  error_for_asm (insn,
+			 "%<asm%> operand has impossible constraints");
+	  /* Avoid further trouble with this insn.
+	     For asm goto, instead of fixing up all the edges
+	     just clear the template and clear input operands
+	     (asm goto doesn't have any output operands).  */
+	  if (JUMP_P (insn))
+	    {
+	      rtx asm_op = extract_asm_operands (PATTERN (insn));
+	      ASM_OPERANDS_TEMPLATE (asm_op) = ggc_strdup ("");
+	      ASM_OPERANDS_INPUT_VEC (asm_op) = rtvec_alloc (0);
+	      ASM_OPERANDS_INPUT_CONSTRAINT_VEC (asm_op) = rtvec_alloc (0);
+	      lra_update_insn_regno_info (insn);
+	    }
+	  else
+	    {
+	      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
+	      lra_set_insn_deleted (insn);
+	    }
+	}
+      else if (!asm_p)
+	{
+	  error ("unable to find a register to spill");
+	  fatal_insn ("this is the insn:", insn);
+	}
+    }
+}
