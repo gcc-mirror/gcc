@@ -352,6 +352,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TEMPLATE_PARM_PARAMETER_PACK (in TEMPLATE_PARM_INDEX)
       ATTR_IS_DEPENDENT (in the TREE_LIST for an attribute)
       ABI_TAG_IMPLICIT (in the TREE_LIST for the argument of abi_tag)
+      LAMBDA_CAPTURE_EXPLICIT_P (in a TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST)
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
       LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
@@ -403,6 +404,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       CONSTRUCTOR_MUTABLE_POISON (in CONSTRUCTOR)
       OVL_HIDDEN_P (in OVERLOAD)
       SWITCH_STMT_NO_BREAK_P (in SWITCH_STMT)
+      LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
    3: (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -1257,6 +1259,15 @@ enum cp_lambda_default_capture_mode_type {
 /* Predicate tracking whether the lambda was declared 'mutable'.  */
 #define LAMBDA_EXPR_MUTABLE_P(NODE) \
   TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
+
+/* True iff uses of a const variable capture were optimized away.  */
+#define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
+  TREE_LANG_FLAG_2 (LAMBDA_EXPR_CHECK (NODE))
+
+/* True if this TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST is for an explicit
+   capture.  */
+#define LAMBDA_CAPTURE_EXPLICIT_P(NODE) \
+  TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
 /* The source location of the lambda.  */
 #define LAMBDA_EXPR_LOCATION(NODE) \
@@ -6895,6 +6906,7 @@ extern void insert_capture_proxy		(tree);
 extern void insert_pending_capture_proxies	(void);
 extern bool is_capture_proxy			(tree);
 extern bool is_normal_capture_proxy             (tree);
+extern bool is_constant_capture_proxy           (tree);
 extern void register_capture_members		(tree);
 extern tree lambda_expr_this_capture            (tree, bool);
 extern void maybe_generic_this_capture		(tree, tree);
@@ -6902,6 +6914,7 @@ extern tree maybe_resolve_dummy			(tree, bool);
 extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(void);
+extern tree current_lambda_expr			(void);
 extern bool generic_lambda_fn_p			(tree);
 extern tree do_dependent_capture		(tree, bool = false);
 extern bool lambda_fn_in_template_p		(tree);
