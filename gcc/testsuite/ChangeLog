@@ -1,3 +1,8 @@
+2018-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84767
+	* g++.dg/ext/vla18.C: New test.
+
 2018-03-09  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/84526
