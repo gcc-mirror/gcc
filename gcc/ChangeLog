@@ -1,5 +1,10 @@
 2018-03-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84772
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Mark va_arg_tmp
+	temporary TREE_ADDRESSABLE before gimplification of BUILT_IN_MEMCPY.
+	* config/powerpcspe/powerpcspe.c (rs6000_gimplify_va_arg): Likewise.
+
 	PR c++/84767
 	* tree-inline.c (copy_tree_body_r): For INDIRECT_REF of a remapped
 	decl, use remap_type if we want to use the type.
