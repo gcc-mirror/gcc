@@ -1,3 +1,11 @@
+2018-03-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84526
+	* gimple-ssa-warn-restrict.c (builtin_memref::set_base_and_offset):
+	Remove dead code.
+	(builtin_access::generic_overlap): Be prepared to handle non-array
+	base objects.
+
 2018-03-09  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/84682
