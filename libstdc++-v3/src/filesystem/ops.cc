@@ -463,10 +463,8 @@ namespace
     if (::mkdir(p.c_str(), mode))
       {
 	const int err = errno;
-	if (err != EEXIST || !is_directory(p))
+	if (err != EEXIST || !is_directory(p, ec))
 	  ec.assign(err, std::generic_category());
-	else
-	  ec.clear();
       }
     else
       {
