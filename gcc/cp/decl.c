@@ -1566,6 +1566,33 @@ next_arg:;
 		   || compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 				 TYPE_ARG_TYPES (TREE_TYPE (olddecl))))
 	    {
+	      /* Don't really override olddecl for __* prefixed builtins
+		 except for __[^b]*_chk, the compiler might be using those
+		 explicitly.  */
+	      if (DECL_BUILT_IN (olddecl))
+		{
+		  tree id = DECL_NAME (olddecl);
+		  const char *name = IDENTIFIER_POINTER (id);
+		  size_t len;
+
+		  if (name[0] == '_'
+		      && name[1] == '_'
+		      && (strncmp (name + 2, "builtin_",
+				   strlen ("builtin_")) == 0
+			  || (len = strlen (name)) <= strlen ("___chk")
+			  || memcmp (name + len - strlen ("_chk"),
+				     "_chk", strlen ("_chk") + 1) != 0))
+		    {
+		      if (permerror (DECL_SOURCE_LOCATION (newdecl),
+				     "new declaration %q#D ambiguates built-in"
+				     " declaration %q#D", newdecl, olddecl)
+			  && flag_permissive)
+			inform (DECL_SOURCE_LOCATION (newdecl),
+				"ignoring the %q#D declaration", newdecl);
+		      return olddecl;
+		    }
+		}
+
 	      /* A near match; override the builtin.  */
 
 	      if (TREE_PUBLIC (newdecl))
