@@ -545,9 +545,9 @@ extern const arch_option all_architectures[];
 extern const cpu_option all_cores[];
 
 const cpu_option *arm_parse_cpu_option_name (const cpu_option *, const char *,
-					     const char *);
+					     const char *, bool = true);
 const arch_option *arm_parse_arch_option_name (const arch_option *,
-					       const char *, const char *);
+					       const char *, const char *, bool = true);
 void arm_parse_option_features (sbitmap, const cpu_arch_option *,
 				const char *);
 
