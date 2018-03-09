@@ -1,3 +1,14 @@
+2018-03-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/83193
+	* common/config/arm/arm-common.c (arm_parse_arch_option_name):
+	Accept complain bool parameter.  Only emit errors if it is true.
+	(arm_parse_cpu_option_name): Likewise.
+	(arm_target_thumb_only): Adjust callers of the above.
+	* config/arm/arm-protos.h (arm_parse_cpu_option_name): Adjust
+	prototype to take a default true bool parameter.
+	(arm_parse_arch_option_name): Likewise.
+
 2018-03-09  David Malcolm  <dmalcolm@redhat.com>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
