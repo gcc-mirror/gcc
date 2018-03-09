@@ -1,5 +1,9 @@
 2018-03-09  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/84769
+	* include/std/variant (get<_Tp, _Types...>, get_if<_Tp, _Types...>):
+	Qualify calls to get<_Np, Types...> and get_if<_Np, _Types...>.
+
 	src/filesystem/ops.cc (create_dir): Pass error_code to is_directory.
 	src/filesystem/std-ops.cc (create_dir): Likewise.
 
