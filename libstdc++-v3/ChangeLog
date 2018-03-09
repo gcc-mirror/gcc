@@ -1,3 +1,8 @@
+2018-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	src/filesystem/ops.cc (create_dir): Pass error_code to is_directory.
+	src/filesystem/std-ops.cc (create_dir): Likewise.
+
 2018-03-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* python/libstdcxx/v6/printers.py (NodeIteratorPrinter): New.
