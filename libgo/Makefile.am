@@ -397,6 +397,7 @@ noinst_DATA = \
 	golang_org/x/net/internal/nettest.gox \
 	golang_org/x/net/nettest.gox \
 	internal/testenv.gox \
+	internal/trace.gox \
 	net/internal/socktest.gox \
 	os/signal/internal/pty.gox
 

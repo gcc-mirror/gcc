@@ -757,8 +757,8 @@ toolexeclibgounicode_DATA = \
 # Force them to be built.
 noinst_DATA = golang_org/x/net/internal/nettest.gox \
 	golang_org/x/net/nettest.gox internal/testenv.gox \
-	net/internal/socktest.gox os/signal/internal/pty.gox \
-	zstdpkglist.go zdefaultcc.go
+	internal/trace.gox net/internal/socktest.gox \
+	os/signal/internal/pty.gox zstdpkglist.go zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
 @LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-none.c
