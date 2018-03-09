@@ -1116,6 +1116,10 @@ endif
 
 LANG_MAKEFRAGS = @all_lang_makefrags@
 
+# Used by gcc/jit/Make-lang.in
+LD_VERSION_SCRIPT_OPTION = @ld_version_script_option@
+LD_SONAME_OPTION = @ld_soname_option@
+
 # Flags to pass to recursive makes.
 # CC is set by configure.
 # ??? The choices here will need some experimenting with.

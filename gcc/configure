@@ -680,6 +680,8 @@ zlibdir
 HOST_LIBS
 enable_default_ssp
 thin_archive_support
+ld_soname_option
+ld_version_script_option
 libgcc_visibility
 gcc_cv_readelf
 gcc_cv_objdump
@@ -18446,7 +18448,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18449 "configure"
+#line 18451 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18552,7 +18554,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18555 "configure"
+#line 18557 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24453,6 +24455,48 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_static_dynamic" >&5
 $as_echo "$gcc_cv_ld_static_dynamic" >&6; }
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker --version-script option" >&5
+$as_echo_n "checking linker --version-script option... " >&6; }
+gcc_cv_ld_version_script=no
+ld_version_script_option=''
+if test $in_tree_ld = yes || test x"$gnu_ld" = xyes; then
+  gcc_cv_ld_version_script=yes
+  ld_version_script_option='--version-script'
+elif test x$gcc_cv_ld != x; then
+  case "$target" in
+    # Solaris 2 ld always supports -M.  It also supports a subset of
+    # --version-script since Solaris 11.4, but requires
+    # -z gnu-version-script-compat to activate.
+    *-*-solaris2*)
+      gcc_cv_ld_version_script=yes
+      ld_version_script_option='-M'
+      ;;
+  esac
+fi
+# Don't AC_DEFINE result, only used in jit/Make-lang.in so far.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_version_script" >&5
+$as_echo "$gcc_cv_ld_version_script" >&6; }
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker soname option" >&5
+$as_echo_n "checking linker soname option... " >&6; }
+gcc_cv_ld_soname=no
+if test $in_tree_ld = yes || test x"$gnu_ld" = xyes; then
+  gcc_cv_ld_soname=yes
+  ld_soname_option='-soname'
+elif test x$gcc_cv_ld != x; then
+  case "$target" in
+    *-*-darwin*)
+      gcc_cv_ld_soname=yes
+      ld_soname_option='-install_name'
+      ;;
+  esac
+fi
+# Don't AC_DEFINE result, only used in jit/Make-lang.in so far.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_soname" >&5
+$as_echo "$gcc_cv_ld_soname" >&6; }
+
+
 if test x"$demangler_in_ld" = xyes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker --demangle support" >&5
 $as_echo_n "checking linker --demangle support... " >&6; }
@@ -27870,6 +27914,7 @@ if test $gcc_cv_as_dwarf2_debug_view = yes; then
 $as_echo "#define HAVE_AS_DWARF2_DEBUG_VIEW 1" >>confdefs.h
 
 fi
+
     fi
  fi
 
