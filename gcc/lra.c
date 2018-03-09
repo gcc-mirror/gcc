@@ -1039,7 +1039,8 @@ lra_set_insn_recog_data (rtx_insn *insn)
 	{
 	  operand_alternative *op_alt = XCNEWVEC (operand_alternative,
 						  nalt * nop);
-	  preprocess_constraints (nop, nalt, constraints, op_alt);
+	  preprocess_constraints (nop, nalt, constraints, op_alt,
+				  data->operand_loc);
 	  setup_operand_alternative (data, op_alt);
 	}
     }
