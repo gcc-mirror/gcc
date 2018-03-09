@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O1 --save-temps -mno-fix-cortex-a53-843419" } */
+/* { dg-options "-O1 --save-temps" } */
 #pragma GCC push_options
 #pragma GCC target ("+nothing+simd, cmodel=small")
 
