@@ -1,3 +1,8 @@
+2018-03-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/84807
+	* config/i386/i386.opt: Replace Enforcment with Enforcement.
+
 2018-03-10  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/84620
