@@ -1,3 +1,8 @@
+2018-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (node_has_volatile_full_access) <N_Identifier>:
+	Consider only entities for objects.
+
 2018-03-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* gcc-interface/Makefile.in (OSCONS_CPP): Remove redundant
