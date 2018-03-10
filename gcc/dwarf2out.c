@@ -1434,6 +1434,8 @@ dw_val_equal_p (dw_val_node *a, dw_val_node *b)
       return a->v.val_die_ref.die == b->v.val_die_ref.die;
     case dw_val_class_fde_ref:
       return a->v.val_fde_index == b->v.val_fde_index;
+    case dw_val_class_symview:
+      return strcmp (a->v.val_symbolic_view, b->v.val_symbolic_view) == 0;
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
@@ -2951,6 +2953,11 @@ struct GTY(()) dw_line_info_table {
      going to ask the assembler to assign.  */
   var_loc_view view;
 
+  /* This counts the number of symbolic views emitted in this table
+     since the latest view reset.  Its max value, over all tables,
+     sets symview_upper_bound.  */
+  var_loc_view symviews_since_reset;
+
 #define FORCE_RESET_NEXT_VIEW(x) ((x) = (var_loc_view)-1)
 #define RESET_NEXT_VIEW(x) ((x) = (var_loc_view)0)
 #define FORCE_RESETTING_VIEW_P(x) ((x) == (var_loc_view)-1)
@@ -2958,6 +2965,13 @@ struct GTY(()) dw_line_info_table {
 
   vec<dw_line_info_entry, va_gc> *entries;
 };
+
+/* This is an upper bound for view numbers that the assembler may
+   assign to symbolic views output in this translation.  It is used to
+   decide how big a field to use to represent view numbers in
+   symview-classed attributes.  */
+
+static var_loc_view symview_upper_bound;
 
 /* If we're keep track of location views and their reset points, and
    INSN is a reset point (i.e., it necessarily advances the PC), mark
@@ -3603,6 +3617,7 @@ static addr_table_entry *add_addr_table_entry (void *, enum ate_kind);
 static void remove_addr_table_entry (addr_table_entry *);
 static void add_AT_addr (dw_die_ref, enum dwarf_attribute, rtx, bool);
 static inline rtx AT_addr (dw_attr_node *);
+static void add_AT_symview (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_lbl_id (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_lineptr (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_macptr (dw_die_ref, enum dwarf_attribute, const char *);
@@ -5117,6 +5132,21 @@ add_AT_vms_delta (dw_die_ref die, enum dwarf_attribute attr_kind,
   add_dwarf_attr (die, &attr);
 }
 
+/* Add a symbolic view identifier attribute value to a DIE.  */
+
+static inline void
+add_AT_symview (dw_die_ref die, enum dwarf_attribute attr_kind,
+               const char *view_label)
+{
+  dw_attr_node attr;
+
+  attr.dw_attr = attr_kind;
+  attr.dw_attr_val.val_class = dw_val_class_symview;
+  attr.dw_attr_val.val_entry = NULL;
+  attr.dw_attr_val.v.val_symbolic_view = xstrdup (view_label);
+  add_dwarf_attr (die, &attr);
+}
+
 /* Add a label identifier attribute value to a DIE.  */
 
 static inline void
@@ -6460,6 +6490,9 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
       fprintf (outfile, "delta: @slotcount(%s-%s)",
 	       val->v.val_vms_delta.lbl2, val->v.val_vms_delta.lbl1);
       break;
+    case dw_val_class_symview:
+      fprintf (outfile, "view: %s", val->v.val_symbolic_view);
+      break;
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
@@ -6831,6 +6864,7 @@ attr_checksum (dw_attr_node *at, struct md5_ctx *ctx, int *mark)
 
     case dw_val_class_fde_ref:
     case dw_val_class_vms_delta:
+    case dw_val_class_symview:
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
@@ -7127,6 +7161,7 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_node *at,
       break;
 
     case dw_val_class_fde_ref:
+    case dw_val_class_symview:
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
@@ -7626,6 +7661,9 @@ same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
 
     case dw_val_class_die_ref:
       return same_die_p (v1->v.val_die_ref.die, v2->v.val_die_ref.die, mark);
+
+    case dw_val_class_symview:
+      return strcmp (v1->v.val_symbolic_view, v2->v.val_symbolic_view) == 0;
 
     case dw_val_class_fde_ref:
     case dw_val_class_vms_delta:
@@ -9287,6 +9325,16 @@ size_of_die (dw_die_ref die)
 	      size += csize;
 	  }
 	  break;
+	case dw_val_class_symview:
+	  if (symview_upper_bound <= 0xff)
+	    size += 1;
+	  else if (symview_upper_bound <= 0xffff)
+	    size += 2;
+	  else if (symview_upper_bound <= 0xffffffff)
+	    size += 4;
+	  else
+	    size += 8;
+	  break;
 	case dw_val_class_const_implicit:
 	case dw_val_class_unsigned_const_implicit:
 	case dw_val_class_file_implicit:
@@ -9735,6 +9783,17 @@ value_format (dw_attr_node *a)
 	default:
 	  return DW_FORM_block1;
 	}
+    case dw_val_class_symview:
+      /* ??? We might use uleb128, but then we'd have to compute
+	 .debug_info offsets in the assembler.  */
+      if (symview_upper_bound <= 0xff)
+	return DW_FORM_data1;
+      else if (symview_upper_bound <= 0xffff)
+	return DW_FORM_data2;
+      else if (symview_upper_bound <= 0xffffffff)
+	return DW_FORM_data4;
+      else
+	return DW_FORM_data8;
     case dw_val_class_vec:
       switch (constant_size (a->dw_attr_val.v.val_vec.length
 			     * a->dw_attr_val.v.val_vec.elt_size))
@@ -10497,6 +10556,22 @@ output_die (dw_die_ref die)
 	      dw2_asm_output_data_uleb128 (AT_unsigned (a), "%s", name);
 	    else
 	      dw2_asm_output_data (csize, AT_unsigned (a), "%s", name);
+	  }
+	  break;
+
+	case dw_val_class_symview:
+	  {
+	    int vsize;
+	    if (symview_upper_bound <= 0xff)
+	      vsize = 1;
+	    else if (symview_upper_bound <= 0xffff)
+	      vsize = 2;
+	    else if (symview_upper_bound <= 0xffffffff)
+	      vsize = 4;
+	    else
+	      vsize = 8;
+	    dw2_asm_output_addr (vsize, a->dw_attr_val.v.val_symbolic_view,
+				 "%s", name);
 	  }
 	  break;
 
@@ -23815,7 +23890,7 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 		 indirecting them through a table might make things
 		 easier, but even that would be more wasteful,
 		 space-wise, than what we have now.  */
-	      add_AT_lbl_id (die, DW_AT_GNU_entry_view, label);
+	      add_AT_symview (die, DW_AT_GNU_entry_view, label);
 	    }
 	}
 
@@ -27412,6 +27487,7 @@ new_line_info_table (void)
   table->line_num = 1;
   table->is_stmt = DWARF_LINE_DEFAULT_IS_STMT_START;
   FORCE_RESET_NEXT_VIEW (table->view);
+  table->symviews_since_reset = 0;
 
   return table;
 }
@@ -27609,11 +27685,16 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 	  /* If we're using the assembler to compute view numbers, we
 	     can't issue a .loc directive for line zero, so we can't
 	     get a view number at this point.  We might attempt to
-	     compute it from the previous view, but since we're
-	     omitting the line number entry, we might as well omit the
-	     view number as well.  That means pretending it's a view
-	     number zero, which might very well turn out to be
-	     correct.  */
+	     compute it from the previous view, or equate it to a
+	     subsequent view (though it might not be there!), but
+	     since we're omitting the line number entry, we might as
+	     well omit the view number as well.  That means pretending
+	     it's a view number zero, which might very well turn out
+	     to be correct.  ??? Extend the assembler so that the
+	     compiler could emit e.g. ".locview .LVU#", to output a
+	     view without changing line number information.  We'd then
+	     have to count it in symviews_since_reset; when it's omitted,
+	     it doesn't count.  */
 	  if (!zero_view_p)
 	    zero_view_p = BITMAP_GGC_ALLOC ();
 	  bitmap_set_bit (zero_view_p, table->view);
@@ -27702,6 +27783,9 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 	{
 	  if (!RESETTING_VIEW_P (table->view))
 	    {
+	      table->symviews_since_reset++;
+	      if (table->symviews_since_reset > symview_upper_bound)
+		symview_upper_bound = table->symviews_since_reset;
 	      /* When we're using the assembler to compute view
 		 numbers, we output symbolic labels after "view" in
 		 .loc directives, and the assembler will set them for
@@ -27720,6 +27804,7 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 	    }
 	  else
 	    {
+	      table->symviews_since_reset = 0;
 	      if (FORCE_RESETTING_VIEW_P (table->view))
 		fputs (" view -0", asm_out_file);
 	      else
@@ -31295,6 +31380,11 @@ dwarf2out_finish (const char *)
       debug_line_str_hash->traverse<enum dwarf_form,
 				    output_indirect_string> (form);
     }
+
+  /* ??? Move lvugid out of dwarf2out_source_line and reset it too?  */
+  symview_upper_bound = 0;
+  if (zero_view_p)
+    bitmap_clear (zero_view_p);
 }
 
 /* Returns a hash value for X (which really is a variable_value_struct).  */

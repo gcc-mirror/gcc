@@ -1,3 +1,23 @@
+2018-03-10  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/84620
+	* dwarf2out.h (dw_val_class): Add dw_val_class_symview.
+	(dw_val_node): Add val_symbolic_view.
+	* dwarf2out.c (dw_line_info_table): Add symviews_since_reset.
+	(symview_upper_bound): New.
+	(new_line_info_table): Initialize symviews_since_reset.
+	(dwarf2out_source_line): Count symviews_since_reset and set
+	symview_upper_bound.
+	(dw_val_equal_p): Handle symview.
+	(add_AT_symview): New.
+	(print_dw_val): Handle symview.
+	(attr_checksum, attr_checksum_ordered): Likewise.
+	(same_dw_val_p, size_of_die): Likewise.
+	(value_format, output_die): Likewise.
+	(add_high_low_attributes): Use add_AT_symview for entry_view.
+	(dwarf2out_finish): Reset symview_upper_bound, clear
+	zero_view_p.
+
 2018-03-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/83969
