@@ -5458,8 +5458,7 @@ lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno)
 /* Do split transformations for insn INSN, which defines or uses
    ORIGINAL_REGNO.  NEXT_USAGE_INSNS specifies which instruction in
    the EBB next uses ORIGINAL_REGNO; it has the same form as the
-   "insns" field of usage_insns.  If TO is not NULL, we don't use
-   usage_insns, we put restore insns after TO insn.
+   "insns" field of usage_insns.
 
    The transformations look like:
 
@@ -5481,7 +5480,7 @@ lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno)
    transformation.  */
 static bool
 split_reg (bool before_p, int original_regno, rtx_insn *insn,
-	   rtx next_usage_insns, rtx_insn *to)
+	   rtx next_usage_insns)
 {
   enum reg_class rclass;
   rtx original_reg;
@@ -5614,37 +5613,29 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
   if (!HARD_REGISTER_NUM_P (original_regno)
       && mode == PSEUDO_REGNO_MODE (original_regno))
     lra_copy_reg_equiv (new_regno, original_regno);
+  after_p = usage_insns[original_regno].after_p;
   lra_reg_info[new_regno].restore_rtx = regno_reg_rtx[original_regno];
   bitmap_set_bit (&check_only_regs, new_regno);
   bitmap_set_bit (&check_only_regs, original_regno);
   bitmap_set_bit (&lra_split_regs, new_regno);
-  if (to != NULL)
+  for (;;)
     {
-      usage_insn = to;
-      after_p = TRUE;
-    }
-  else
-    {
-      after_p = usage_insns[original_regno].after_p;
-      for (;;)
+      if (GET_CODE (next_usage_insns) != INSN_LIST)
 	{
-	  if (GET_CODE (next_usage_insns) != INSN_LIST)
-	    {
-	      usage_insn = next_usage_insns;
-	      break;
-	    }
-	  usage_insn = XEXP (next_usage_insns, 0);
-	  lra_assert (DEBUG_INSN_P (usage_insn));
-	  next_usage_insns = XEXP (next_usage_insns, 1);
-	  lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
-				 true);
-	  lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
-	  if (lra_dump_file != NULL)
-	    {
-	      fprintf (lra_dump_file, "    Split reuse change %d->%d:\n",
-		       original_regno, new_regno);
-	      dump_insn_slim (lra_dump_file, as_a <rtx_insn *> (usage_insn));
-	    }
+	  usage_insn = next_usage_insns;
+	  break;
+	}
+      usage_insn = XEXP (next_usage_insns, 0);
+      lra_assert (DEBUG_INSN_P (usage_insn));
+      next_usage_insns = XEXP (next_usage_insns, 1);
+      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
+			     true);
+      lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
+      if (lra_dump_file != NULL)
+	{
+	  fprintf (lra_dump_file, "    Split reuse change %d->%d:\n",
+		   original_regno, new_regno);
+	  dump_insn_slim (lra_dump_file, as_a <rtx_insn *> (usage_insn));
 	}
     }
   lra_assert (NOTE_P (usage_insn) || NONDEBUG_INSN_P (usage_insn));
@@ -5669,35 +5660,6 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
     fprintf (lra_dump_file,
 	     "	  ))))))))))))))))))))))))))))))))))))))))))))))))\n");
   return true;
-}
-
-/* Split a hard reg for reload pseudo REGNO having RCLASS and living
-   in the range [FROM, TO].  Return true if did a split.  Otherwise,
-   return false.  */
-bool
-spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_insn *to)
-{
-  int i, hard_regno;
-  int rclass_size;
-  rtx_insn *insn;
-  
-  lra_assert (from != NULL && to != NULL);
-  rclass_size = ira_class_hard_regs_num[rclass];
-  for (i = 0; i < rclass_size; i++)
-    {
-      hard_regno = ira_class_hard_regs[rclass][i];
-      if (! TEST_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs, hard_regno))
-	continue;
-      for (insn = from; insn != NEXT_INSN (to); insn = NEXT_INSN (insn))
-	if (bitmap_bit_p (&lra_reg_info[hard_regno].insn_bitmap,
-			  INSN_UID (insn)))
-	  break;
-      if (insn != NEXT_INSN (to))
-	continue;
-      if (split_reg (TRUE, hard_regno, from, NULL, to))
-	return true;
-    }
-  return false;
 }
 
 /* Recognize that we need a split transformation for insn INSN, which
@@ -5727,7 +5689,7 @@ split_if_necessary (int regno, machine_mode mode,
 	    || (GET_CODE (next_usage_insns) == INSN_LIST
 		&& (INSN_UID (XEXP (next_usage_insns, 0)) < max_uid)))
 	&& need_for_split_p (potential_reload_hard_regs, regno + i)
-	&& split_reg (before_p, regno + i, insn, next_usage_insns, NULL))
+	&& split_reg (before_p, regno + i, insn, next_usage_insns))
     res = true;
   return res;
 }
@@ -6505,7 +6467,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 			  head_p = false;
 			}
 		      if (split_reg (false, j, bb_note (curr_bb),
-				     next_usage_insns, NULL))
+				     next_usage_insns))
 			change_p = true;
 		    }
 		  usage_insns[j].check = 0;
