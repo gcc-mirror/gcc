@@ -1,3 +1,9 @@
+2018-03-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/84734
+	* arith.c (check_result, eval_intrinsic):  If result overflows, pass
+	the expression up the chain instead of a NULL pointer.
+
 2018-03-07  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/64124
