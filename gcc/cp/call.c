@@ -103,7 +103,7 @@ struct conversion {
      being bound to an rvalue expression.  If KIND is ck_rvalue,
      true when we are treating an lvalue as an rvalue (12.8p33).  If
      KIND is ck_base, always false.  If ck_identity, we will be
-     binding a reference directly.  */
+     binding a reference directly or decaying to a pointer.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
   /* The type of the expression resulting from the conversion.  */
@@ -1139,6 +1139,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     {
       from = type_decays_to (from);
       fcode = TREE_CODE (from);
+      /* Tell convert_like_real that we're using the address.  */
+      conv->rvaluedness_matches_p = true;
       conv = build_conv (ck_lvalue, from, conv);
     }
   /* Wrapping a ck_rvalue around a class prvalue (as a result of using

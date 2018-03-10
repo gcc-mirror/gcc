@@ -1,4 +1,10 @@
 2018-03-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84752 - ICE with capture of constexpr array.
+	* call.c (standard_conversion): Set rvaluedness_matches_p on the
+	identity conversion under ck_lvalue.
+
+2018-03-09  Jason Merrill  <jason@redhat.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71169
