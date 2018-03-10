@@ -1,5 +1,9 @@
 2018-03-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84785 - ICE with alias template and default targs.
+	* pt.c (type_unification_real): Set processing_template_decl if
+	saw_undeduced == 1.
+
 	PR c++/84752 - ICE with capture of constexpr array.
 	* call.c (standard_conversion): Set rvaluedness_matches_p on the
 	identity conversion under ck_lvalue.

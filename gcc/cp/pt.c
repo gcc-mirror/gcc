@@ -19977,7 +19977,13 @@ type_unification_real (tree tparms,
 	  location_t save_loc = input_location;
 	  if (DECL_P (parm))
 	    input_location = DECL_SOURCE_LOCATION (parm);
+
+	  if (saw_undeduced == 1)
+	    ++processing_template_decl;
 	  arg = tsubst_template_arg (arg, full_targs, fcomplain, NULL_TREE);
+	  if (saw_undeduced == 1)
+	    --processing_template_decl;
+
 	  if (arg != error_mark_node && !uses_template_parms (arg))
 	    arg = convert_template_argument (parm, arg, full_targs, complain,
 					     i, NULL_TREE);
