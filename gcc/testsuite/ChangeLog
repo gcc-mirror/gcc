@@ -1,3 +1,8 @@
+2018-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/prot3.adb: New test.
+	* gnat.dg/prot3_pkg.ad[sb]: New helper.
+
 2018-03-09  Jason Merrill  <jason@redhat.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
