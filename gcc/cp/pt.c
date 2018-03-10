@@ -1134,26 +1134,31 @@ optimize_specialization_lookup_p (tree tmpl)
    gone through coerce_template_parms by now.  */
 
 static void
+verify_unstripped_args_1 (tree inner)
+{
+  for (int i = 0; i < TREE_VEC_LENGTH (inner); ++i)
+    {
+      tree arg = TREE_VEC_ELT (inner, i);
+      if (TREE_CODE (arg) == TEMPLATE_DECL)
+	/* OK */;
+      else if (TYPE_P (arg))
+	gcc_assert (strip_typedefs (arg, NULL) == arg);
+      else if (ARGUMENT_PACK_P (arg))
+	verify_unstripped_args_1 (ARGUMENT_PACK_ARGS (arg));
+      else if (strip_typedefs (TREE_TYPE (arg), NULL) != TREE_TYPE (arg))
+	/* Allow typedefs on the type of a non-type argument, since a
+	   parameter can have them.  */;
+      else
+	gcc_assert (strip_typedefs_expr (arg, NULL) == arg);
+    }
+}
+
+static void
 verify_unstripped_args (tree args)
 {
   ++processing_template_decl;
   if (!any_dependent_template_arguments_p (args))
-    {
-      tree inner = INNERMOST_TEMPLATE_ARGS (args);
-      for (int i = 0; i < TREE_VEC_LENGTH (inner); ++i)
-	{
-	  tree arg = TREE_VEC_ELT (inner, i);
-	  if (TREE_CODE (arg) == TEMPLATE_DECL)
-	    /* OK */;
-	  else if (TYPE_P (arg))
-	    gcc_assert (strip_typedefs (arg, NULL) == arg);
-	  else if (strip_typedefs (TREE_TYPE (arg), NULL) != TREE_TYPE (arg))
-	    /* Allow typedefs on the type of a non-type argument, since a
-	       parameter can have them.  */;
-	  else
-	    gcc_assert (strip_typedefs_expr (arg, NULL) == arg);
-	}
-    }
+    verify_unstripped_args_1 (INNERMOST_TEMPLATE_ARGS (args));
   --processing_template_decl;
 }
 
