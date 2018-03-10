@@ -1,3 +1,9 @@
+2018-03-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84785 - ICE with alias template and default targs.
+	* pt.c (type_unification_real): Set processing_template_decl if
+	saw_undeduced == 1.
+
 2018-03-07  Marek Polacek  <polacek@redhat.com>
 
 	Backported from mainline
