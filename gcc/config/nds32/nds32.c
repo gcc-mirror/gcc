@@ -2788,6 +2788,8 @@ nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
     builtin_define ("__NDS32_16_BIT__");
   if (TARGET_GP_DIRECT)
     builtin_define ("__NDS32_GP_DIRECT__");
+  if (TARGET_VH)
+    builtin_define ("__NDS32_VH__");
 
   if (TARGET_BIG_ENDIAN)
     builtin_define ("__big_endian__");
