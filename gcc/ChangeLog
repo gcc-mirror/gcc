@@ -1,3 +1,18 @@
+2018-03-11  Monk Chiang  <sh.chiang04@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/constants.md (unspec_element): Add UNSPEC_FFB,
+	UNSPEC_FFMISM and UNSPEC_FLMISM.
+	* config/nds32/nds32-intrinsic.c (bdesc_2arg): Add builtin description
+	for ffb, ffmism and flmism.
+	* config/nds32/nds32-intrinsic.md (unspec_ffb): Define new pattern.
+	(unspec_ffmism): Ditto.
+	(unspec_flmism): Ditto.
+	(nds32_expand_builtin_impl): Check if string extension is available.
+	* config/nds32/nds32.h (nds32_builtins): Add NDS32_BUILTIN_FFB,
+	NDS32_BUILTIN_FFMISM and NDS32_BUILTIN_FLMISM.
+
 2018-03-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Reverting patch:

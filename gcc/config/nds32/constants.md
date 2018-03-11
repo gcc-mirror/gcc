@@ -32,6 +32,9 @@
 
 ;; The unpec operation index.
 (define_c_enum "unspec_element" [
+  UNSPEC_FFB
+  UNSPEC_FFMISM
+  UNSPEC_FLMISM
   UNSPEC_UALOAD_HW
   UNSPEC_UALOAD_W
   UNSPEC_UALOAD_DW
