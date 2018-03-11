@@ -12451,6 +12451,19 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
     }
 
+  /* F2018, C15100: "The result of an elemental function shall be scalar,
+     and shall not have the POINTER or ALLOCATABLE attribute."  The scalar
+     pointer is tested and caught elsewhere.  */
+  if (sym->attr.elemental && sym->result
+      && (sym->result->attr.allocatable || sym->result->attr.pointer))
+    {
+      gfc_error ("Function result variable %qs at %L of elemental "
+		 "function %qs shall not have an ALLOCATABLE or POINTER "
+		 "attribute", sym->result->name,
+		 &sym->result->declared_at, sym->name);
+      return false;
+    }
+
   if (sym->attr.is_bind_c && sym->attr.is_c_interop != 1)
     {
       gfc_formal_arglist *curr_arg;

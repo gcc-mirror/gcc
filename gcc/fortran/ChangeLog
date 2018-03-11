@@ -1,3 +1,9 @@
+
+2018-03-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83939
+	* resolve.c (resolve_fl_procedure): Enforce F2018:C15100.
+
 2018-03-11  Steven G. Kargl  <kargls@gcc.gnu.org>
 
 	* check.c (gfc_check_kill):  Check pid and sig are scalar.
