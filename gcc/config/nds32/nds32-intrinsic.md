@@ -94,6 +94,40 @@
   [(set_attr "type" "misc")]
 )
 
+;; String Extension
+
+(define_insn "unspec_ffb"
+  [(set (match_operand:SI 0 "register_operand" "=r, r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r, r")
+		    (match_operand:SI 2 "nonmemory_operand" "Iu08, r")] UNSPEC_FFB))]
+  ""
+  "@
+  ffbi\t%0, %1, %2
+  ffb\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
+(define_insn "unspec_ffmism"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_FFMISM))]
+  ""
+  "ffmism\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
+(define_insn "unspec_flmism"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_FLMISM))]
+  ""
+  "flmism\t%0, %1, %2"
+  [(set_attr "type" "alu")
+   (set_attr "length" "4")]
+)
+
 ;;Unaligned Load/Store
 
 (define_expand "unaligned_load_hw"

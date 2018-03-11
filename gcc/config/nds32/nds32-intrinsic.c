@@ -257,6 +257,9 @@ static struct builtin_description bdesc_1argimm[] =
 /* Intrinsics that take two arguments.  */
 static struct builtin_description bdesc_2arg[] =
 {
+  NDS32_BUILTIN(unspec_ffb, "ffb", FFB)
+  NDS32_BUILTIN(unspec_ffmism, "ffmsim", FFMISM)
+  NDS32_BUILTIN(unspec_flmism, "flmism", FLMISM)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_mtsr, "mtsr", MTSR)
   NDS32_NO_TARGET_BUILTIN(unspec_volatile_mtusr, "mtusr", MTUSR)
   NDS32_NO_TARGET_BUILTIN(unaligned_store_hw, "unaligned_store_hw", UASTORE_HW)
@@ -276,6 +279,23 @@ nds32_expand_builtin_impl (tree exp,
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   unsigned i;
   struct builtin_description *d;
+
+  switch (fcode)
+    {
+    /* String Extension  */
+    case NDS32_BUILTIN_FFB:
+    case NDS32_BUILTIN_FFMISM:
+    case NDS32_BUILTIN_FLMISM:
+      if (!TARGET_EXT_STRING)
+	{
+	  error ("don't support string extension instructions");
+	  return NULL_RTX;
+	}
+      break;
+
+    default:
+      break;
+    }
 
   /* Since there are no result and operands, we can simply emit this rtx.  */
   switch (fcode)
