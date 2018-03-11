@@ -1,4 +1,18 @@
-2017-06-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2018-03-11  Steven G. Kargl  <kargls@gcc.gnu.org>
+
+	* check.c (gfc_check_kill):  Check pid and sig are scalar.
+	(gfc_check_kill_sub): Restrict kind to 4 and 8.
+	* intrinsic.c (add_function): Sort keyword list.  Add pid and sig
+	keywords for KILL.  Remove redundant *back="back" in favor of the
+	original *bck="back".
+	(add_subroutines): Sort keyword list.  Add pid and sig keywords
+	for KILL.
+	* intrinsic.texi: Fix documentation to consistently use pid and sig.
+	* iresolve.c (gfc_resolve_kill): Kind can only be 4 or 8.  Choose the
+	correct function.
+	(gfc_resolve_rename_sub): Add comment.
+
+2018-03-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66128
 	* simplify.c (simplify_transformation): Return default result for

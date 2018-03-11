@@ -1492,11 +1492,14 @@ gfc_resolve_ishftc (gfc_expr *f, gfc_expr *i, gfc_expr *shift, gfc_expr *size)
 
 
 void
-gfc_resolve_kill (gfc_expr *f, gfc_expr *p ATTRIBUTE_UNUSED,
-		  gfc_expr *s ATTRIBUTE_UNUSED)
+gfc_resolve_kill (gfc_expr *f, gfc_expr *pid,
+		  gfc_expr *sig ATTRIBUTE_UNUSED)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (pid->ts.kind == 4 || pid->ts.kind == 8)
+    f->ts.kind = pid->ts.kind;
+  else
+    f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string (PREFIX ("kill_i%d"), f->ts.kind);
 }
 
@@ -3446,6 +3449,7 @@ gfc_resolve_rename_sub (gfc_code *c)
   const char *name;
   int kind;
 
+  /* Find the type of status.  If not present use default integer kind.  */
   if (c->ext.actual->next->next->expr != NULL)
     kind = c->ext.actual->next->next->expr->ts.kind;
   else
