@@ -1,3 +1,8 @@
+2018-03-11  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/83939
+	* gfortran.dg/pr83939.f90
+
 2018-03-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/66128
