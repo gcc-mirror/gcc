@@ -440,38 +440,8 @@ enum nds32_builtins
 
 /* Run-time Target Specification.  */
 
-#define TARGET_CPU_CPP_BUILTINS()                     \
-  do                                                  \
-    {                                                 \
-      builtin_define ("__nds32__");                   \
-                                                      \
-      if (TARGET_ISA_V2)                              \
-        builtin_define ("__NDS32_ISA_V2__");          \
-      if (TARGET_ISA_V3)                              \
-        builtin_define ("__NDS32_ISA_V3__");          \
-      if (TARGET_ISA_V3M)                             \
-        builtin_define ("__NDS32_ISA_V3M__");         \
-                                                      \
-      if (TARGET_BIG_ENDIAN)                          \
-        builtin_define ("__big_endian__");            \
-      if (TARGET_REDUCED_REGS)                        \
-        builtin_define ("__NDS32_REDUCED_REGS__");    \
-      if (TARGET_CMOV)                                \
-        builtin_define ("__NDS32_CMOV__");            \
-      if (TARGET_EXT_PERF)                            \
-        builtin_define ("__NDS32_EXT_PERF__");        \
-      if (TARGET_EXT_PERF2)                           \
-        builtin_define ("__NDS32_EXT_PERF2__");       \
-      if (TARGET_EXT_STRING)                          \
-        builtin_define ("__NDS32_EXT_STRING__");      \
-      if (TARGET_16_BIT)                              \
-        builtin_define ("__NDS32_16_BIT__");          \
-      if (TARGET_GP_DIRECT)                           \
-        builtin_define ("__NDS32_GP_DIRECT__");       \
-                                                      \
-      builtin_assert ("cpu=nds32");                   \
-      builtin_assert ("machine=nds32");               \
-    } while (0)
+#define TARGET_CPU_CPP_BUILTINS() \
+  nds32_cpu_cpp_builtins (pfile)
 
 
 /* Defining Data Structures for Per-function Information.  */
