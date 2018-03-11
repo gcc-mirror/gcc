@@ -2755,7 +2755,13 @@ gfc_check_kill (gfc_expr *pid, gfc_expr *sig)
   if (!type_check (pid, 0, BT_INTEGER))
     return false;
 
+  if (!scalar_check (pid, 0))
+    return false;
+
   if (!type_check (sig, 1, BT_INTEGER))
+    return false;
+
+  if (!scalar_check (sig, 1))
     return false;
 
   return true;
@@ -2785,6 +2791,13 @@ gfc_check_kill_sub (gfc_expr *pid, gfc_expr *sig, gfc_expr *status)
 
   if (!scalar_check (status, 2))
     return false;
+
+  if (status->ts.kind != 4 && status->ts.kind != 8)
+    {
+      gfc_error ("Invalid kind type parameter for STATUS at %L",
+		 &status->where);
+      return false;
+    }
 
   return true;
 }
