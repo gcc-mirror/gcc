@@ -1,3 +1,11 @@
+2018-03-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	Backport from mainline
+	2018-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/fptr.c (_dl_read_access_allowed): New.
+	(__canonicalize_funcptr_for_compare): Use it.
+	
 2018-02-20  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline
