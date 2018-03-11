@@ -1,3 +1,13 @@
+2018-03-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84546
+	* trans-array.c (structure_alloc_comps): Make sure that the
+	vptr is copied and that the unlimited polymorphic _len is used
+	to compute the size to be allocated.
+	* trans-expr.c (gfc_get_class_array_ref): If unlimited, use the
+	unlimited polymorphic _len for the offset to the element.
+	(gfc_copy_class_to_class): Set the new 'unlimited' argument.
+	* trans.h : Add the boolean 'unlimited' to the prototype.
 
 2018-03-11  Steven G. Kargl  <kargl@gcc.gnu.org>
 
@@ -86,7 +96,7 @@
 	PR fortran/66128
 	* simplify.c (is_size_zero_array): New function to check for size
 	zero array.
-	(gfc_simplify_all, gfc_simplify_any, gfc_simplify_count, 
+	(gfc_simplify_all, gfc_simplify_any, gfc_simplify_count,
 	 gfc_simplify_iall, gfc_simplify_iany, gfc_simplify_iparity,
 	 gfc_simplify_minval, gfc_simplify_maxval, gfc_simplify_norm2,
 	 gfc_simplify_product, gfc_simplify_sum): Use it, and implement
