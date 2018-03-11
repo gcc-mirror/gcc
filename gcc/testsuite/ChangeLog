@@ -1,3 +1,8 @@
+2018-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/58150
+	* g++.dg/debug/dwarf2/enum2.C: New test.
+
 2018-03-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/84734

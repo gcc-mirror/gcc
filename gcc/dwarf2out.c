@@ -21914,6 +21914,7 @@ static dw_die_ref
 gen_enumeration_type_die (tree type, dw_die_ref context_die)
 {
   dw_die_ref type_die = lookup_type_die (type);
+  dw_die_ref orig_type_die = type_die;
 
   if (type_die == NULL)
     {
@@ -21921,20 +21922,18 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 			  scope_die_for (type, context_die), type);
       equate_type_number_to_die (type, type_die);
       add_name_attribute (type_die, type_tag (type));
-      if (dwarf_version >= 4 || !dwarf_strict)
-	{
-	  if (ENUM_IS_SCOPED (type))
-	    add_AT_flag (type_die, DW_AT_enum_class, 1);
-	  if (ENUM_IS_OPAQUE (type))
-	    add_AT_flag (type_die, DW_AT_declaration, 1);
-	}
+      if ((dwarf_version >= 4 || !dwarf_strict)
+	  && ENUM_IS_SCOPED (type))
+	add_AT_flag (type_die, DW_AT_enum_class, 1);
+      if (ENUM_IS_OPAQUE (type) && TYPE_SIZE (type))
+	add_AT_flag (type_die, DW_AT_declaration, 1);
       if (!dwarf_strict)
 	add_AT_unsigned (type_die, DW_AT_encoding,
 			 TYPE_UNSIGNED (type)
 			 ? DW_ATE_unsigned
 			 : DW_ATE_signed);
     }
-  else if (! TYPE_SIZE (type))
+  else if (! TYPE_SIZE (type) || ENUM_IS_OPAQUE (type))
     return type_die;
   else
     remove_AT (type_die, DW_AT_declaration);
@@ -21946,10 +21945,14 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
     {
       tree link;
 
-      TREE_ASM_WRITTEN (type) = 1;
-      add_byte_size_attribute (type_die, type);
-      add_alignment_attribute (type_die, type);
-      if (dwarf_version >= 3 || !dwarf_strict)
+      if (!ENUM_IS_OPAQUE (type))
+	TREE_ASM_WRITTEN (type) = 1;
+      if (!orig_type_die || !get_AT (type_die, DW_AT_byte_size))
+	add_byte_size_attribute (type_die, type);
+      if (!orig_type_die || !get_AT (type_die, DW_AT_alignment))
+	add_alignment_attribute (type_die, type);
+      if ((dwarf_version >= 3 || !dwarf_strict)
+	  && (!orig_type_die || !get_AT (type_die, DW_AT_type)))
 	{
 	  tree underlying = lang_hooks.types.enum_underlying_base_type (type);
 	  add_type_attribute (type_die, underlying, TYPE_UNQUALIFIED, false,
@@ -21957,8 +21960,10 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	}
       if (TYPE_STUB_DECL (type) != NULL_TREE)
 	{
-	  add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
-	  add_accessibility_attribute (type_die, TYPE_STUB_DECL (type));
+	  if (!orig_type_die || !get_AT (type_die, DW_AT_decl_file))
+	    add_src_coords_attributes (type_die, TYPE_STUB_DECL (type));
+	  if (!orig_type_die || !get_AT (type_die, DW_AT_accessibility))
+	    add_accessibility_attribute (type_die, TYPE_STUB_DECL (type));
 	}
 
       /* If the first reference to this type was as the return type of an
@@ -21972,6 +21977,7 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	  dw_die_ref enum_die = new_die (DW_TAG_enumerator, type_die, link);
 	  tree value = TREE_VALUE (link);
 
+	  gcc_assert (!ENUM_IS_OPAQUE (type));
 	  add_name_attribute (enum_die,
 			      IDENTIFIER_POINTER (TREE_PURPOSE (link)));
 
@@ -22001,7 +22007,8 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
 	}
 
       add_gnat_descriptive_type_attribute (type_die, type, context_die);
-      if (TYPE_ARTIFICIAL (type))
+      if (TYPE_ARTIFICIAL (type)
+	  && (!orig_type_die || !get_AT (type_die, DW_AT_artificial)))
 	add_AT_flag (type_die, DW_AT_artificial, 1);
     }
   else

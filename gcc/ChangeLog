@@ -1,3 +1,13 @@
+2018-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/58150
+	* dwarf2out.c (gen_enumeration_type_die): Don't guard adding
+	DW_AT_declaration for ENUM_IS_OPAQUE on -gdwarf-4 or -gno-strict-dwarf,
+	but on TYPE_SIZE.  Don't do anything for ENUM_IS_OPAQUE if not creating
+	a new die.  Don't set TREE_ASM_WRITTEN if ENUM_IS_OPAQUE.  Guard
+	addition of most attributes on !orig_type_die or the attribute not
+	being present already.  Assert TYPE_VALUES is NULL for ENUM_IS_OPAQUE.
+
 2018-03-11  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
