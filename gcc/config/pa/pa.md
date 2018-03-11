@@ -2536,24 +2536,40 @@
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
-  xoperands[2] = gen_label_rtx ();
 
-  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-				     CODE_LABEL_NUMBER (xoperands[2]));
-  output_asm_insn (\"mfia %0\", xoperands);
-
-  /* If we're trying to load the address of a label that happens to be
-     close, then we can use a shorter sequence.  */
   if (GET_CODE (operands[1]) == LABEL_REF
-      && !LABEL_REF_NONLOCAL_P (operands[1])
-      && INSN_ADDRESSES_SET_P ()
-      && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
-	        - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
-    output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+      && !LABEL_REF_NONLOCAL_P (operands[1]))
+    {
+      xoperands[2] = gen_label_rtx ();
+      (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+					 CODE_LABEL_NUMBER (xoperands[2]));
+      output_asm_insn (\"mfia %0\", xoperands);
+
+      /* If we're trying to load the address of a label that happens to be
+	 close, then we can use a shorter sequence.  */
+      if (INSN_ADDRESSES_SET_P ()
+	  && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
+		  - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
+	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+      else
+	{
+	  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+	  output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+	}
+    }
   else
     {
-      output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
-      output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+      /* Load using linkage table.  */
+      if (TARGET_64BIT)
+	{
+	  output_asm_insn (\"addil LT%%%1,%%r27\", xoperands);
+	  output_asm_insn (\"ldd RT%%%1(%0),%0\", xoperands);
+	}
+      else
+	{
+	  output_asm_insn (\"addil LT%%%1,%%r19\", xoperands);
+	  output_asm_insn (\"ldw RT%%%1(%0),%0\", xoperands);
+	}
     }
   return \"\";
 }"
@@ -2570,25 +2586,33 @@
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
-  xoperands[2] = gen_label_rtx ();
 
-  output_asm_insn (\"bl .+8,%0\", xoperands);
-  output_asm_insn (\"depi 0,31,2,%0\", xoperands);
-  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-				     CODE_LABEL_NUMBER (xoperands[2]));
-
-  /* If we're trying to load the address of a label that happens to be
-     close, then we can use a shorter sequence.  */
   if (GET_CODE (operands[1]) == LABEL_REF
-      && !LABEL_REF_NONLOCAL_P (operands[1])
-      && INSN_ADDRESSES_SET_P ()
-      && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
-	        - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
-    output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+      && !LABEL_REF_NONLOCAL_P (operands[1]))
+    {
+      xoperands[2] = gen_label_rtx ();
+      output_asm_insn (\"bl .+8,%0\", xoperands);
+      output_asm_insn (\"depi 0,31,2,%0\", xoperands);
+      (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+					 CODE_LABEL_NUMBER (xoperands[2]));
+
+      /* If we're trying to load the address of a label that happens to be
+	 close, then we can use a shorter sequence.  */
+      if (INSN_ADDRESSES_SET_P ()
+	  && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
+		  - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
+	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
+      else
+	{
+	  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+	  output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+	}
+    }
   else
     {
-      output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
-      output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+      /* Load using linkage table.  */
+      output_asm_insn (\"addil LT%%%1,%%r19\", xoperands);
+      output_asm_insn (\"ldw RT%%%1(%0),%0\", xoperands);
     }
   return \"\";
 }"

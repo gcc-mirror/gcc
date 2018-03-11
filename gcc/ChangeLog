@@ -1,6 +1,13 @@
 2018-03-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
+	2018-02-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/83984
+	* config/pa/pa.md: Load address of PIC label using the linkage table
+	if the label is nonlocal.
+
+	Backport from mainline
 	2018-03-06  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (ASM_GENERATE_INTERNAL_LABEL): Revise to use
