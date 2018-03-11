@@ -70,6 +70,7 @@ extern rtx nds32_expand_load_multiple (int, int, rtx, rtx, bool, rtx *);
 extern rtx nds32_expand_store_multiple (int, int, rtx, rtx, bool, rtx *);
 extern bool nds32_expand_movmemsi (rtx, rtx, rtx, rtx);
 extern bool nds32_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);
+extern bool nds32_expand_strlen (rtx, rtx, rtx, rtx);
 
 /* Auxiliary functions for expand unalign load instruction.  */
 

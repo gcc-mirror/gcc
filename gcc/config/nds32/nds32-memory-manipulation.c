@@ -848,6 +848,69 @@ nds32_expand_setmem (rtx dstmem, rtx size, rtx value, rtx align,
 
 /* ------------------------------------------------------------------------ */
 
+/* Auxiliary function for expand strlen pattern.  */
+
+bool
+nds32_expand_strlen (rtx result, rtx str,
+		     rtx target_char, rtx align ATTRIBUTE_UNUSED)
+{
+  rtx base_reg, backup_base_reg;
+  rtx ffb_result;
+  rtx target_char_ptr, length;
+  rtx loop_label, tmp;
+
+  if (optimize_size || optimize < 3)
+    return false;
+
+  gcc_assert (MEM_P (str));
+  gcc_assert (CONST_INT_P (target_char) || REG_P (target_char));
+
+  base_reg = copy_to_mode_reg (SImode, XEXP (str, 0));
+  loop_label = gen_label_rtx ();
+
+  ffb_result = gen_reg_rtx (Pmode);
+  tmp = gen_reg_rtx (SImode);
+  backup_base_reg = gen_reg_rtx (SImode);
+
+  /* Emit loop version of strlen.
+       move  $backup_base, $base
+     .Lloop:
+       lmw.bim $tmp, [$base], $tmp, 0
+       ffb   $ffb_result, $tmp, $target_char   ! is there $target_char?
+       beqz  $ffb_result, .Lloop
+       add   $last_char_ptr, $base, $ffb_result
+       sub   $length, $last_char_ptr, $backup_base  */
+
+  /* move  $backup_base, $base  */
+  emit_move_insn (backup_base_reg, base_reg);
+
+  /* .Lloop:  */
+  emit_label (loop_label);
+  /* lmw.bim $tmp, [$base], $tmp, 0  */
+  emit_insn (gen_unaligned_load_update_base_w (base_reg, tmp, base_reg));
+
+  /*  ffb   $ffb_result, $tmp, $target_char   ! is there $target_char?  */
+  emit_insn (gen_unspec_ffb (ffb_result, tmp, target_char));
+
+  /* beqz  $ffb_result, .Lloop  */
+  emit_cmp_and_jump_insns (ffb_result, const0_rtx, EQ, NULL,
+			   SImode, 1, loop_label);
+
+  /* add   $target_char_ptr, $base, $ffb_result   */
+  target_char_ptr = expand_binop (Pmode, add_optab, base_reg,
+				ffb_result, NULL_RTX, 0, OPTAB_WIDEN);
+
+  /* sub   $length, $target_char_ptr, $backup_base  */
+  length = expand_binop (Pmode, sub_optab, target_char_ptr,
+			 backup_base_reg, NULL_RTX, 0, OPTAB_WIDEN);
+
+  emit_move_insn (result, length);
+
+  return true;
+}
+
+/* ------------------------------------------------------------------------ */
+
 /* Functions to expand load_multiple and store_multiple.
    They are auxiliary extern functions to help create rtx template.
    Check nds32-multiple.md file for the patterns.  */

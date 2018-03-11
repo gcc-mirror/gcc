@@ -3750,6 +3750,19 @@
 
 ;; ------------------------------------------------------------------------
 
+(define_expand "strlensi"
+  [(match_operand:SI  0 "register_operand")
+   (match_operand:BLK 1 "memory_operand")
+   (match_operand:QI  2 "nds32_reg_constant_operand")
+   (match_operand     3 "const_int_operand")]
+  "TARGET_EXT_STRING"
+{
+  if (nds32_expand_strlen (operands[0], operands[1], operands[2], operands[3]))
+    DONE;
+
+  FAIL;
+})
+
 (define_expand "setmemsi"
    [(use (match_operand:BLK 0 "memory_operand"))
     (use (match_operand:SI 1 "nds32_reg_constant_operand"))
