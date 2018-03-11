@@ -1159,8 +1159,18 @@ do {									     \
    PREFIX is the class of label and NUM is the number within the class.
    This is suitable for output with `assemble_name'.  */
 
-#define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%c$%s%04ld", (PREFIX)[0], (PREFIX) + 1, (long)(NUM))
+#define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)		\
+  do								\
+    {								\
+      char *__p;						\
+      (LABEL)[0] = '*';						\
+      (LABEL)[1] = (PREFIX)[0];					\
+      (LABEL)[2] = '$';						\
+      __p = stpcpy (&(LABEL)[3], &(PREFIX)[1]);			\
+      sprint_ul (__p, (unsigned long) (NUM));			\
+    }								\
+  while (0)
+
 
 /* Output the definition of a compiler-generated label named NAME.  */
 
@@ -1199,14 +1209,14 @@ do {									     \
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-  fprintf (FILE, "\t.word L$%04d\n", VALUE)
+  fprintf (FILE, "\t.word L$%d\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative. 
    Since we always place jump tables in the text section, the difference
    is absolute and requires no relocation.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
-  fprintf (FILE, "\t.word L$%04d-L$%04d\n", VALUE, REL)
+  fprintf (FILE, "\t.word L$%d-L$%d\n", VALUE, REL)
 
 /* This is how to output an absolute case-vector.  */
 
