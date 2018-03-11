@@ -1,6 +1,13 @@
 2018-03-11  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32.c (nds32_cpu_cpp_builtins): Modify to define
+	__NDS32_VH__ macro.
+	* config/nds32/nds32.opt (mvh): New option.
+
+2018-03-11  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-protos.h (nds32_cpu_cpp_builtins): Declare
 	function.
 	* config/nds32/nds32.c (nds32_cpu_cpp_builtins): New function.
