@@ -156,4 +156,7 @@ extern bool nds32_isr_function_p (tree);
 extern bool nds32_rtx_costs_impl (rtx, machine_mode, int, int, int *, bool);
 extern int nds32_address_cost_impl (rtx, machine_mode, addr_space_t, bool);
 
+/* Auxiliary functions for pre-define marco.  */
+extern void nds32_cpu_cpp_builtins(struct cpp_reader *);
+
 /* ------------------------------------------------------------------------ */

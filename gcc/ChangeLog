@@ -1,6 +1,15 @@
 2018-03-11  Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* config/nds32/nds32-protos.h (nds32_cpu_cpp_builtins): Declare
+	function.
+	* config/nds32/nds32.c (nds32_cpu_cpp_builtins): New function.
+	* config/nds32/nds32.h (TARGET_CPU_CPP_BUILTINS): Modify its
+	definition.
+
+2018-03-11  Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32-memory-manipulation.c (nds32_expand_strlen): New
 	function.
 	* config/nds32/nds32-multiple.md (strlensi): New pattern.

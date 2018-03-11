@@ -47,6 +47,7 @@
 #include "expr.h"
 #include "tm-constrs.h"
 #include "builtins.h"
+#include "cpplib.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2750,6 +2751,53 @@ nds32_expand_builtin (tree exp,
 
 /* PART 4: Implemet extern function definitions,
            the prototype is in nds32-protos.h.  */
+
+/* Run-time Target Specification.  */
+
+void
+nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
+{
+#define builtin_define(TXT) cpp_define (pfile, TXT)
+#define builtin_assert(TXT) cpp_assert (pfile, TXT)
+  builtin_define ("__nds32__");
+  builtin_define ("__NDS32__");
+
+  if (TARGET_ISA_V2)
+    builtin_define ("__NDS32_ISA_V2__");
+  if (TARGET_ISA_V3)
+    builtin_define ("__NDS32_ISA_V3__");
+  if (TARGET_ISA_V3M)
+    builtin_define ("__NDS32_ISA_V3M__");
+
+  if (TARGET_BIG_ENDIAN)
+    builtin_define ("__NDS32_EB__");
+  else
+    builtin_define ("__NDS32_EL__");
+
+  if (TARGET_REDUCED_REGS)
+    builtin_define ("__NDS32_REDUCED_REGS__");
+  if (TARGET_CMOV)
+    builtin_define ("__NDS32_CMOV__");
+  if (TARGET_EXT_PERF)
+    builtin_define ("__NDS32_EXT_PERF__");
+  if (TARGET_EXT_PERF2)
+    builtin_define ("__NDS32_EXT_PERF2__");
+  if (TARGET_EXT_STRING)
+    builtin_define ("__NDS32_EXT_STRING__");
+  if (TARGET_16_BIT)
+    builtin_define ("__NDS32_16_BIT__");
+  if (TARGET_GP_DIRECT)
+    builtin_define ("__NDS32_GP_DIRECT__");
+
+  if (TARGET_BIG_ENDIAN)
+    builtin_define ("__big_endian__");
+
+  builtin_assert ("cpu=nds32");
+  builtin_assert ("machine=nds32");
+#undef builtin_define
+#undef builtin_assert
+}
+
 
 /* Defining Data Structures for Per-function Information.  */
 
