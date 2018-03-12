@@ -2093,11 +2093,8 @@ create_template:
   ""
 {
   /* Note that only under V3/V3M ISA, we could use v3push prologue.
-     In addition, we do not want to use v3push for isr function
-     and variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+     In addition, we need to check if v3push is indeed available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     nds32_expand_prologue_v3push ();
   else
     nds32_expand_prologue ();
@@ -2108,11 +2105,8 @@ create_template:
   ""
 {
   /* Note that only under V3/V3M ISA, we could use v3pop epilogue.
-     In addition, we do not want to use v3pop for isr function
-     and variadic function.  */
-  if (TARGET_V3PUSH
-      && !nds32_isr_function_p (current_function_decl)
-      && (cfun->machine->va_args_size == 0))
+     In addition, we need to check if v3push is indeed available.  */
+  if (NDS32_V3PUSH_AVAILABLE_P)
     nds32_expand_epilogue_v3pop (false);
   else
     nds32_expand_epilogue (false);
@@ -2125,10 +2119,7 @@ create_template:
   /* Pass true to indicate that this is sibcall epilogue and
      exit from a function without the final branch back to the
      calling function.  */
-  if (TARGET_V3PUSH && !nds32_isr_function_p (current_function_decl))
-    nds32_expand_epilogue_v3pop (true);
-  else
-    nds32_expand_epilogue (true);
+  nds32_expand_epilogue (true);
 
   DONE;
 })
