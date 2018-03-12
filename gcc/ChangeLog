@@ -1,3 +1,10 @@
+2018-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/84169
+	PR rtl-optimization/84780
+	* combine.c (can_combine_p): Check for a 2-insn combination whether
+	the destination register is used between the two insns, too.
+
 2018-03-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84803
