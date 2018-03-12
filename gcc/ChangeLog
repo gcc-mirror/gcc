@@ -1,3 +1,8 @@
+2018-03-12  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.md (movhf_aarch64): Fix mode argument to
+	aarch64_output_scalar_simd_mov_immediate.
+
 2018-03-12  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83456
