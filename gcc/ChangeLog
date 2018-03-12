@@ -1,3 +1,7 @@
+2018-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (-mclflushopt): Fix spelling of option.
+
 2018-03-11  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
