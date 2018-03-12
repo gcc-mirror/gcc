@@ -864,6 +864,11 @@ base_object_writable (tree ref)
 static bool
 ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
 {
+  /* If DR didn't see a reference here we can't use it to tell
+     whether the ref traps or not.  */
+  if (gimple_uid (stmt) == 0)
+    return false;
+
   data_reference_p *master_dr, *base_master_dr;
   data_reference_p a = drs[gimple_uid (stmt) - 1];
 

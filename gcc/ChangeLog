@@ -1,5 +1,11 @@
 2018-03-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84803
+	* tree-if-conv.c (ifcvt_memrefs_wont_trap): Don't do anything
+	for refs DR analysis didn't process.
+
+2018-03-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/84777
 	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): For
 	force-vectorize loops ignore whether we are optimizing for size.
