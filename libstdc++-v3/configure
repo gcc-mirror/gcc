@@ -53350,6 +53350,19 @@ _ACEOF
 fi
 done
 
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
     ;;
 
   *-fuchsia*)
@@ -66099,6 +66112,19 @@ done
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
+
+    for ac_func in aligned_alloc posix_memalign memalign _aligned_malloc
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+eval as_val=\$$as_ac_var
+   if test "x$as_val" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
 
     ;;
   *-netbsd*)
