@@ -1,3 +1,13 @@
+2018-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/84773
+	PR libstdc++/83662
+	* crossconfig.m4: Check for aligned_alloc etc. on freebsd and mingw32.
+	* configure: Regenerate.
+	* include/c_global/cstdlib [_GLIBCXX_HAVE_ALIGNED_ALLOC]
+	(aligned_alloc): Add using-declaration.
+	* testsuite/18_support/aligned_alloc/aligned_alloc.cc: New test.
+
 2018-03-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* python/libstdcxx/v6/printers.py (build_libstdcxx_dictionary):
