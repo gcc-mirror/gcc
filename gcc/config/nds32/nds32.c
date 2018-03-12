@@ -2750,6 +2750,17 @@ nds32_option_override (void)
 
 /* Miscellaneous Parameters.  */
 
+static rtx_insn *
+nds32_md_asm_adjust (vec<rtx> &outputs ATTRIBUTE_UNUSED,
+		     vec<rtx> &inputs ATTRIBUTE_UNUSED,
+		     vec<const char *> &constraints ATTRIBUTE_UNUSED,
+		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+{
+  clobbers.safe_push (gen_rtx_REG (SImode, TA_REGNUM));
+  SET_HARD_REG_BIT (clobbered_regs, TA_REGNUM);
+  return NULL;
+}
+
 static void
 nds32_init_builtins (void)
 {
@@ -3799,6 +3810,9 @@ nds32_target_alignment (rtx_insn *label)
 
 
 /* Miscellaneous Parameters.  */
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST nds32_md_asm_adjust
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS nds32_init_builtins

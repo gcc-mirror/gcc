@@ -1,4 +1,9 @@
-2018-03-11  Monk Chiang  <sh.chiang04@gmail.com>
+2018-03-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_md_asm_adjust): New function.
+	(TARGET_MD_ASM_ADJUST): Define.
+
+2018-03-12  Monk Chiang  <sh.chiang04@gmail.com>
 	    Kito Cheng  <kito.cheng@gmail.com>
 	    Chung-Ju Wu  <jasonwucj@gmail.com>
 
