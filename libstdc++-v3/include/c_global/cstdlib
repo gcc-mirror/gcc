@@ -78,6 +78,9 @@ namespace std
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
 #undef abort
+#if __cplusplus >= 201703L && defined(_GLIBCXX_HAVE_ALIGNED_ALLOC)
+# undef aligned_alloc
+#endif
 #undef atexit
 #if __cplusplus >= 201103L
 # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
@@ -125,6 +128,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   using ::ldiv_t;
 
   using ::abort;
+#if __cplusplus >= 201703L && defined(_GLIBCXX_HAVE_ALIGNED_ALLOC)
+  using ::aligned_alloc;
+#endif
   using ::atexit;
 #if __cplusplus >= 201103L
 # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
