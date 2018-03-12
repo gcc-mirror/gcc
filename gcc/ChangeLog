@@ -1,3 +1,17 @@
+2018-03-11  Monk Chiang  <sh.chiang04@gmail.com>
+	    Kito Cheng  <kito.cheng@gmail.com>
+	    Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c (nds32_compute_stack_frame,
+	nds32_emit_stack_push_multiple, nds32_emit_stack_pop_multiple,
+	nds32_emit_stack_v3push, nds32_emit_stack_v3pop,
+	nds32_emit_adjust_frame, nds32_expand_prologue, nds32_expand_epilogue,
+	nds32_expand_prologue_v3push, nds32_expand_epilogue_v3pop): Refine.
+	* config/nds32/nds32.h (NDS32_FIRST_CALLEE_SAVE_GPR_REGNUM,
+	NDS32_LAST_CALLEE_SAVE_GPR_REGNUM, NDS32_V3PUSH_AVAILABLE_P): New.
+	* config/nds32/nds32.md (prologue, epilogue): Use macro
+	NDS32_V3PUSH_AVAILABLE_P to do checking.
+
 2018-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/58150

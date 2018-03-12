@@ -130,6 +130,10 @@ enum nds32_16bit_address_type
 /* Define the last integer register number.  */
 #define NDS32_LAST_GPR_REGNUM 31
 
+#define NDS32_FIRST_CALLEE_SAVE_GPR_REGNUM 6
+#define NDS32_LAST_CALLEE_SAVE_GPR_REGNUM \
+  (TARGET_REDUCED_REGS ? 10 : 14)
+
 /* Define double word alignment bits.  */
 #define NDS32_DOUBLE_WORD_ALIGNMENT 64
 
@@ -195,6 +199,19 @@ enum nds32_16bit_address_type
    it is required to be saved.  */
 #define NDS32_REQUIRED_CALLEE_SAVED_P(regno)                  \
   ((!call_used_regs[regno]) && (df_regs_ever_live_p (regno)))
+
+/* This macro is to check if the push25/pop25 are available to be used
+   for code generation.  Because pop25 also performs return behavior,
+   the instructions may not be available for some cases.
+   If we want to use push25/pop25, all the following conditions must
+   be satisfied:
+     1. TARGET_V3PUSH is set.
+     2. Current function is not an ISR function.
+     3. Current function is not a variadic function.*/
+#define NDS32_V3PUSH_AVAILABLE_P  \
+  (TARGET_V3PUSH \
+   && !nds32_isr_function_p (current_function_decl) \
+   && (cfun->machine->va_args_size == 0))
 
 /* ------------------------------------------------------------------------ */
 
