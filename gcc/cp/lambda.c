@@ -432,6 +432,8 @@ build_capture_proxy (tree member, tree init)
       object = convert (type, ptr);
     }
 
+  complete_type (type);
+
   var = build_decl (input_location, VAR_DECL, name, type);
   SET_DECL_VALUE_EXPR (var, object);
   DECL_HAS_VALUE_EXPR_P (var) = 1;
