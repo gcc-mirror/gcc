@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2018-03-03 00:30+0100\n"
+"PO-Revision-Date: 2018-03-11 10:34+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -28028,16 +28028,14 @@ msgid "auto fpu selection not currently permitted here"
 msgstr "selección automática de fpu actualmente no permitida aquí"
 
 #: config/arm/arm.c:30771
-#, fuzzy, gcc-internal-format
-#| msgid "invalid vector type for attribute %qE"
+#, gcc-internal-format
 msgid "invalid architecture for target attribute or pragma %qs"
-msgstr "tipo de vector no válido para el atributo %qE"
+msgstr "arquitectura no válida para el atributo o pragma objetivo %qs"
 
 #: config/arm/arm.c:30785
-#, fuzzy, gcc-internal-format
-#| msgid "target attribute or pragma changes SPE ABI"
+#, gcc-internal-format
 msgid "unknown target attribute or pragma %qs"
-msgstr "el atributo o pragma target cabia la ABI SPE"
+msgstr "atributo o pragma objetivo %qs desconocido"
 
 #: config/arm/freebsd.h:121
 #, gcc-internal-format
@@ -28114,10 +28112,9 @@ msgid "-fPIE is not supported"
 msgstr "no se admite -fPIE"
 
 #: config/avr/avr.c:1055 config/avr/avr.c:1060
-#, fuzzy, gcc-internal-format
-#| msgid "function attributes %qs, %qs and %qs are mutually exclusive"
+#, gcc-internal-format
 msgid "function attributes %qs and %qs are mutually exclusive"
-msgstr "los atribucions de función %qs, %qs y %qs son mutuamente exclusivos"
+msgstr "los atributos de función %qs y %qs son mutuamente excluyentes"
 
 #: config/avr/avr.c:1081
 #, gcc-internal-format
@@ -28135,8 +28132,7 @@ msgid "%qs appears to be a misspelled %qs handler, missing %<__vector%> prefix"
 msgstr "%qs parece ser un manejador %s mal escrito; falta el prefijo %<__vector%>"
 
 #: config/avr/avr.c:1111
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is a reserved indentifier in AVR-LibC.  Consider %<#include <avr/interrupt.h>%> before using the %qs macro"
+#, gcc-internal-format
 msgid "%qs is a reserved identifier in AVR-LibC.  Consider %<#include <avr/interrupt.h>%> before using the %qs macro"
 msgstr "%qs es un identificador invertido en AVR-LibC.  Plantéese %<#include <avr/interrupt.h>%> antes de usar la macro %qs"
 
@@ -28707,10 +28703,9 @@ msgid "too many size ranges specified in option %qs"
 msgstr "se especificaron demasiados rangos de tamaños en la opción %qs"
 
 #: config/i386/i386.c:3304
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unknown parameter to option -mtune-ctrl: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown parameter to option -mtune-ctrl: %s"
-msgstr "Parámetro desconocido para la opción -mtune-ctrl: %s"
+msgstr "parámetro desconocido para la opción -mtune-ctrl: %s"
 
 #: config/i386/i386.c:3715
 #, gcc-internal-format
@@ -28739,10 +28734,9 @@ msgid "address mode %qs not supported in the %s bit mode"
 msgstr "el modelo de direcciones %qs no se admite en el modo de bit %s"
 
 #: config/i386/i386.c:3822
-#, fuzzy, gcc-internal-format
-#| msgid "%<-Wabi=1%> is not supported, using =2"
+#, gcc-internal-format
 msgid "-mabi=ms not supported with X32 ABI"
-msgstr "no se admite %<-Wabi=1%>; se usará =2"
+msgstr "no se admite -mabi=ms con X32 ABI"
 
 #: config/i386/i386.c:3840 config/i386/i386.c:3849 config/i386/i386.c:3861
 #: config/i386/i386.c:3872 config/i386/i386.c:3883
@@ -28986,22 +28980,19 @@ msgid "%qs is not a valid base register in -mstack-protector-guard-reg="
 msgstr "%qs no es un registro base válido en -mstack-protector-guard-reg="
 
 #: config/i386/i386.c:4891
-#, fuzzy, gcc-internal-format
-#| msgid "Pointer Checker requires MPX support on this target. Use -mmpx options to enable MPX."
+#, gcc-internal-format
 msgid "%<-fcf-protection=full%> requires CET support on this target. Use -mcet or one of -mibt, -mshstk options to enable CET"
-msgstr "El Comprobador de Punteros requiere suporte MPX en este objetivo. Utilice las opciones -mmpx para activar MPX."
+msgstr "%<-fcf-protection=full%> requiere suporte CET en este objetivo. Utilice las opciones -mcet o una de entre -mibt y -mshstk para activar CET."
 
 #: config/i386/i386.c:4897
-#, fuzzy, gcc-internal-format
-#| msgid "Pointer Checker requires MPX support on this target. Use -mmpx options to enable MPX."
+#, gcc-internal-format
 msgid "%<-fcf-protection=branch%> requires CET support on this target. Use -mcet or one of -mibt, -mshstk options to enable CET"
-msgstr "El Comprobador de Punteros requiere suporte MPX en este objetivo. Utilice las opciones -mmpx para activar MPX."
+msgstr "%<-fcf-protection=branch%> requiere suporte CET en este objetivo. Utilice las opciones -mcet o una de entre -mibt y -mshstk para activar CET."
 
 #: config/i386/i386.c:4903
-#, fuzzy, gcc-internal-format
-#| msgid "Pointer Checker requires MPX support on this target. Use -mmpx options to enable MPX."
+#, gcc-internal-format
 msgid "%<-fcf-protection=return%> requires CET support on this target. Use -mcet or one of -mibt, -mshstk options to enable CET"
-msgstr "El Comprobador de Punteros requiere suporte MPX en este objetivo. Utilice las opciones -mmpx para activar MPX."
+msgstr "%<-fcf-protection=return%> requiere suporte CET en este objetivo. Utilice las opciones -mcet o una de entre -mibt y -mshstk para activar CET."
 
 #: config/i386/i386.c:5478 config/i386/i386.c:5525 config/s390/s390.c:15588
 #: config/s390/s390.c:15638 config/s390/s390.c:15655
@@ -29015,10 +29006,9 @@ msgid "option(\"%s\") was already specified"
 msgstr "ya se había especificado option(\"%s\")"
 
 #: config/i386/i386.c:5788
-#, fuzzy, gcc-internal-format
-#| msgid "stdcall and cdecl attributes are not compatible"
+#, gcc-internal-format
 msgid "interrupt and naked attributes are not compatible"
-msgstr "los atributos stdcall y cdecl no son compatibles"
+msgstr "interrupción y atributos desnudos no es compatible"
 
 #: config/i386/i386.c:5803
 #, gcc-internal-format
@@ -29026,16 +29016,14 @@ msgid "Only DWARF debug format is supported for interrupt service routine."
 msgstr "Solo se admite el formato de depuración DWARF para la rutina de servicio de interrupciones."
 
 #: config/i386/i386.c:5852
-#, fuzzy, gcc-internal-format
-#| msgid "-msdata=%s and -mcall-%s are incompatible"
+#, gcc-internal-format
 msgid "%<-mindirect-branch=%s%> and %<-mcmodel=large%> are not compatible"
-msgstr "-msdata=%s y -mcall-%s son incompatibles"
+msgstr "%<-mindirect-branch=%s%> y %<-mcmodel=large%> no son compatibles"
 
 #: config/i386/i386.c:5890
-#, fuzzy, gcc-internal-format
-#| msgid "-msdata=%s and -mcall-%s are incompatible"
+#, gcc-internal-format
 msgid "%<-mfunction-return=%s%> and %<-mcmodel=large%> are not compatible"
-msgstr "-msdata=%s y -mcall-%s son incompatibles"
+msgstr "%<-mfunction-return=%s%> y %<-mcmodel=large%> no son compatibles"
 
 #: config/i386/i386.c:5988
 #, gcc-internal-format, gfc-internal-format
@@ -29213,10 +29201,9 @@ msgid "The ABI for passing parameters with %d-byte alignment has changed in GCC 
 msgstr "La ABI para pasar parámetros con alineación de %d-bytes cambió en GCC 4.6"
 
 #: config/i386/i386.c:11494
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "assert: %s is assign compatible with %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "-mcall-ms2sysv-xlogues is not compatible with %s"
-msgstr "assert: %s es compatible para asignación con %s"
+msgstr "-mcall-ms2sysv-xlogues no es compatible con %s"
 
 #: config/i386/i386.c:13424
 #, gcc-internal-format
@@ -29246,10 +29233,9 @@ msgid "-fsplit-stack does not support 3 register parameters"
 msgstr "-fsplit-stack no admite 3 parámetros de registro"
 
 #: config/i386/i386.c:17762
-#, fuzzy, gcc-internal-format
-#| msgid "unsupported size for integer register"
+#, gcc-internal-format
 msgid "'V' modifier on non-integer register"
-msgstr "no se admite el tamaño para registro de enteros"
+msgstr "modificador 'V' en registro no entero"
 
 #: config/i386/i386.c:17773 config/i386/i386.c:17787
 #, gcc-internal-format
@@ -29488,7 +29474,7 @@ msgstr "la rutina de servicio de interrupciones debería tener un puntero como p
 #: config/i386/i386.c:41237
 #, gcc-internal-format, gfc-internal-format
 msgid "interrupt service routine should have unsigned %sint as the second argument"
-msgstr ""
+msgstr "la rutina de atención de interrupciones debería tener como segundo argumento un unsigned %sint"
 
 #: config/i386/i386.c:41247
 #, gcc-internal-format
@@ -29516,10 +29502,9 @@ msgid "invalid type for asm flag output"
 msgstr "tipo no válido para la salida del indicador asm"
 
 #: config/i386/i386.c:50169
-#, fuzzy, gcc-internal-format
-#| msgid "Unknown architecture specific memory model"
+#, gcc-internal-format
 msgid "unknown architecture specific memory model"
-msgstr "Modelo de memoria específico de la arquitectura desconocido"
+msgstr "modelo de memoria específico de la arquitectura desconocido"
 
 #: config/i386/i386.c:50176
 #, gcc-internal-format
@@ -29537,16 +29522,14 @@ msgid "unsupported simdlen %d"
 msgstr "simdlen %d no admitido"
 
 #: config/i386/i386.c:50225
-#, fuzzy, gcc-internal-format
-#| msgid "unsupported return type %qT for simd\n"
+#, gcc-internal-format
 msgid "unsupported return type %qT for simd"
-msgstr "no se admite el tipo de retorno %qT para simd\n"
+msgstr "no se admite el tipo de retorno %qT para simd"
 
 #: config/i386/i386.c:50247
-#, fuzzy, gcc-internal-format
-#| msgid "unsupported argument type %qT for simd\n"
+#, gcc-internal-format
 msgid "unsupported argument type %qT for simd"
-msgstr "no se admite el tipo de argumento %qT para simd\n"
+msgstr "no se admite el tipo de argumento %qT para simd"
 
 #: config/i386/i386.c:50568
 #, gcc-internal-format
@@ -30248,16 +30231,14 @@ msgid "argument of %qE attribute is not a string constant or number"
 msgstr "el argumento del atributo %qE no es una cadena constante ni un número"
 
 #: config/msp430/msp430.c:2019
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute can only be applied to Java class definitions"
+#, gcc-internal-format
 msgid "%qE attribute cannot be applied to variables with specific sections"
-msgstr "el atributo %qE sólo se puede aplicar a definiciones de clases Java"
+msgstr "el atributo %qE no se puede aplicar a variables con secciones específicas"
 
 #: config/msp430/msp430.c:2023
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute has no effect on functions with static linkage"
+#, gcc-internal-format
 msgid "%qE attribute has no effect on automatic variables"
-msgstr "el atributo %qE no tiene efecto en funciones con enlazado estático"
+msgstr "el atributo %qE no tiene efecto en variables automáticas"
 
 #: config/msp430/msp430.c:2170
 #, gcc-internal-format
@@ -30398,34 +30379,29 @@ msgid "PIC support for -fstack-limit-symbol"
 msgstr "soporte PIC para -fstack-limit-symbol"
 
 #: config/nios2/nios2.c:1387
-#, fuzzy, gcc-internal-format
-#| msgid "profiling not supported with -mg"
+#, gcc-internal-format
 msgid "-mgpopt not supported with PIC."
-msgstr "el análisis de perfil no se admite con -mg"
+msgstr "-mgpopt no se admite con PIC."
 
 #: config/nios2/nios2.c:1389
-#, fuzzy, gcc-internal-format
-#| msgid "profiling not supported with -mg"
+#, gcc-internal-format
 msgid "-mgprel-sec= not supported with PIC."
-msgstr "el análisis de perfil no se admite con -mg"
+msgstr "-mgprel-sec= no se admite con PIC."
 
 #: config/nios2/nios2.c:1391
-#, fuzzy, gcc-internal-format
-#| msgid "profiling not supported with -mg"
+#, gcc-internal-format
 msgid "-mr0rel-sec= not supported with PIC."
-msgstr "el análisis de perfil no se admite con -mg"
+msgstr "mr0rel-sec= no se admite con PIC."
 
 #: config/nios2/nios2.c:1399
-#, fuzzy, gcc-internal-format
-#| msgid "object argument is not a potential constant expression"
+#, gcc-internal-format
 msgid "-mgprel-sec= argument is not a valid regular expression."
-msgstr "el argumento objeto no es una expresión constante potencial"
+msgstr "el argumento de -mgprel-sec= no es una expresión regular válida."
 
 #: config/nios2/nios2.c:1405
-#, fuzzy, gcc-internal-format
-#| msgid "object argument is not a potential constant expression"
+#, gcc-internal-format
 msgid "-mr0rel-sec= argument is not a valid regular expression."
-msgstr "el argumento objeto no es una expresión constante potencial"
+msgstr "el argumento de -mr0rel-sec= no es una expresión regular válida."
 
 #: config/nios2/nios2.c:1416
 #, gcc-internal-format
@@ -30748,10 +30724,9 @@ msgid "passing arg %d of %qE discards qualifiers from pointer target type"
 msgstr "el paso del argumento %d de %qE descarta los calificadores del tipo del destino del puntero"
 
 #: config/powerpcspe/powerpcspe-c.c:6515
-#, fuzzy, gcc-internal-format
-#| msgid "vec_cmpne only accepts 2 arguments"
+#, gcc-internal-format
 msgid "__builtin_cmpb only accepts 2 arguments"
-msgstr "vec_cmpne sólo acepta 2 argumentos"
+msgstr "__builtin_cmpb solo acepta 2 argumentos"
 
 #: config/powerpcspe/powerpcspe-c.c:6573
 #, gcc-internal-format, gfc-internal-format
@@ -31066,10 +31041,9 @@ msgid "cannot pass argument in vector register because altivec instructions are 
 msgstr "no se puede pasar argumentos en el registro vector porque las instrucciones altivec están desactivadas, use -maltivec para activarlas"
 
 #: config/powerpcspe/powerpcspe.c:13311 config/rs6000/rs6000.c:12588
-#, fuzzy, gcc-internal-format
-#| msgid "the ABI of passing structure with complex float member has changed in GCC 4.4"
+#, gcc-internal-format
 msgid "the ABI of passing homogeneous float aggregates has changed in GCC 5"
-msgstr "la ABI para pasar una estructura con un miembro de coma flotante compleja cambió en GCC 4.4"
+msgstr "la ABI para pasar agregados flotantes homogéneos cambió en GCC 5"
 
 #: config/powerpcspe/powerpcspe.c:13486 config/rs6000/rs6000.c:12763
 #, gcc-internal-format
@@ -31118,42 +31092,36 @@ msgid "argument 1 of __builtin_altivec_predicate is out of range"
 msgstr "el argumento 1 de __builtin_altivec_predicate está fuera de rango"
 
 #: config/powerpcspe/powerpcspe.c:15549
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%srtd%s is ignored in 64bit mode"
+#, gcc-internal-format, gfc-internal-format
 msgid "builtin %s is only valid in 64-bit mode"
-msgstr "se descarta %srtd%s en el modo de 64bit"
+msgstr "el interno %s solo es válido en modo de 64 bits"
 
 #: config/powerpcspe/powerpcspe.c:15598 config/rs6000/rs6000.c:14773
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %d must be an unsigned literal"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el argumento %d debe ser un literal sin signo"
 
 #: config/powerpcspe/powerpcspe.c:15600 config/rs6000/rs6000.c:14775
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument 1 of __builtin_spe_predicate is out of range"
+#, gcc-internal-format, gfc-internal-format
 msgid "argument %d is an unsigned literal that is out of range"
-msgstr "el argumento 1 de __builtin_spe_predicate está fuera de rango"
+msgstr "el argumento %d es un literal sin signo fuera de rango"
 
 #: config/powerpcspe/powerpcspe.c:15738
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s only accepts 1 argument"
+#, gcc-internal-format, gfc-internal-format
 msgid "builtin %s only accepts a string argument"
-msgstr "%s sólo acepta 1 argumento"
+msgstr "el interno %s solo acepta un argumento de cadena"
 
 #. Invalid CPU argument.
 #: config/powerpcspe/powerpcspe.c:15757
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs is an invalid argument to -mcpu="
+#, gcc-internal-format, gfc-internal-format
 msgid "cpu %s is an invalid argument to builtin %s"
-msgstr "%qs es un argumento no válido para -mcpu="
+msgstr "la cpu %s es un argumento no válido para el interno %s"
 
 #. Invalid HWCAP argument.
 #: config/powerpcspe/powerpcspe.c:15785
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs is an invalid argument to -mcpu="
+#, gcc-internal-format, gfc-internal-format
 msgid "hwcap %s is an invalid argument to builtin %s"
-msgstr "%qs es un argumento no válido para -mcpu="
+msgstr "la hwcap %s es un argumento no válido para el interno %s"
 
 #: config/powerpcspe/powerpcspe.c:15859 config/rs6000/rs6000.c:15047
 #, gcc-internal-format
@@ -31171,34 +31139,29 @@ msgid "argument 3 must be a 1-bit unsigned literal"
 msgstr "el argumento 3 debe ser una literal sin signo de 1-bit"
 
 #: config/powerpcspe/powerpcspe.c:15916 config/rs6000/rs6000.c:15104
-#, fuzzy, gcc-internal-format
-#| msgid "argument 1 must be a map"
+#, gcc-internal-format
 msgid "argument 1 must be 0 or 2"
-msgstr "el argumento 1 debe ser un mapa"
+msgstr "el argumento 1 debe ser 0 o 2"
 
 #: config/powerpcspe/powerpcspe.c:15928 config/rs6000/rs6000.c:15116
-#, fuzzy, gcc-internal-format
-#| msgid "argument 3 must be a 1-bit unsigned literal"
+#, gcc-internal-format
 msgid "argument 1 must be a 1-bit unsigned literal"
-msgstr "el argumento 3 debe ser una literal sin signo de 1-bit"
+msgstr "el argumento 1 debe ser un literal sin signo de 1 bit"
 
 #: config/powerpcspe/powerpcspe.c:15942 config/rs6000/rs6000.c:15130
-#, fuzzy, gcc-internal-format
-#| msgid "argument 2 must be a 5-bit unsigned literal"
+#, gcc-internal-format
 msgid "argument 2 must be a 6-bit unsigned literal"
-msgstr "el argumento 2 debe ser una literal sin signo de 5-bit"
+msgstr "el argumento 2 debe ser un literal sin signo de 6 bits"
 
 #: config/powerpcspe/powerpcspe.c:15954 config/rs6000/rs6000.c:15142
-#, fuzzy, gcc-internal-format
-#| msgid "number must be 0 or 1"
+#, gcc-internal-format
 msgid "argument 2 must be 0 or 1"
-msgstr "el número debe ser 0 ó 1"
+msgstr "el argumento 2 debe ser 0 ó 1"
 
 #: config/powerpcspe/powerpcspe.c:15962 config/rs6000/rs6000.c:15150
-#, fuzzy, gcc-internal-format
-#| msgid "argument %d of %qE must be in the range %d...%d"
+#, gcc-internal-format
 msgid "argument 3 must be in the range 0..15"
-msgstr "el argumento %d de %qE debe estar dentro del rango %d...%d"
+msgstr "el argumento d de debe estar dentro del rango 0..15"
 
 #: config/powerpcspe/powerpcspe.c:16151 config/rs6000/rs6000.c:15339
 #: config/rs6000/rs6000.c:15679
@@ -31217,16 +31180,14 @@ msgid "argument to dss must be a 2-bit unsigned literal"
 msgstr "el argumento para dss debe ser una literal sin signo de 2-bit"
 
 #: config/powerpcspe/powerpcspe.c:16530
-#, fuzzy, gcc-internal-format
-#| msgid "second argument to %<__builtin_expect%> must be a constant"
+#, gcc-internal-format
 msgid "second argument to vec_vextract4b must be 0..12"
-msgstr "el segundo argumento de %<__builtin_expect%> debe ser una constante"
+msgstr "el segundo argumento de vec_vextract4b debe estar en 0..12"
 
 #: config/powerpcspe/powerpcspe.c:16547
-#, fuzzy, gcc-internal-format
-#| msgid "third argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "third argument to vec_vinsert4b must be 0..12"
-msgstr "el tercer argumento de %<__builtin_prefetch%> debe ser una constante"
+msgstr "el tercer argumento de vec_vextract4b debe estar en 0..12"
 
 # continuar aqui
 #: config/powerpcspe/powerpcspe.c:16922
@@ -31260,10 +31221,9 @@ msgid "Builtin function %s requires the -mvsx option"
 msgstr "La función interna %s requiere la opción -mvsx"
 
 #: config/powerpcspe/powerpcspe.c:17152
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mvsx option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mhtm option"
-msgstr "La función interna %s requiere la opción -mvsx"
+msgstr "La función interna %s requiere la opción -mhtm"
 
 #: config/powerpcspe/powerpcspe.c:17154
 #, gcc-internal-format, gfc-internal-format
@@ -31281,52 +31241,44 @@ msgid "Builtin function %s requires the -mspe option"
 msgstr "La función interna %s requiere la opción -mspe"
 
 #: config/powerpcspe/powerpcspe.c:17161
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mpaired option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mhard-dfp and -mpower8-vector options"
-msgstr "La función interna %s requiere la opción -mpaired"
+msgstr "La función interna %s requiere las opciones -mhard-dfp y -mpower8-vector options"
 
 #: config/powerpcspe/powerpcspe.c:17164
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mpaired option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mhard-dfp option"
-msgstr "La función interna %s requiere la opción -mpaired"
+msgstr "La función interna %s requiere la opción -mhard-dfp"
 
 #: config/powerpcspe/powerpcspe.c:17166
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mspe option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mpower8-vector option"
-msgstr "La función interna %s requiere la opción -mspe"
+msgstr "La función interna %s requiere la opción -mpower8-vector"
 
 #: config/powerpcspe/powerpcspe.c:17169 config/powerpcspe/powerpcspe.c:17175
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mspe option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mcpu=power9 and -m64 options"
-msgstr "La función interna %s requiere la opción -mspe"
+msgstr "La función interna %s requiere las opciones -mcpu=power9 y -m64"
 
 #: config/powerpcspe/powerpcspe.c:17172 config/powerpcspe/powerpcspe.c:17178
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mspe option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mcpu=power9 option"
-msgstr "La función interna %s requiere la opción -mspe"
+msgstr "La función interna %s requiere la opción -mcpu=power9"
 
 #: config/powerpcspe/powerpcspe.c:17181
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -maltivec option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mhard-float and -mlong-double-128 options"
-msgstr "La función interna %s requiere la opción -maltivec"
+msgstr "La función interna %s requiere las opciones -mhard-float y -mlong-double-128"
 
 #: config/powerpcspe/powerpcspe.c:17184
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mpaired option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mhard-float option"
-msgstr "La función interna %s requiere la opción -mpaired"
+msgstr "La función interna %s requiere la opción -mhard-float"
 
 #: config/powerpcspe/powerpcspe.c:17186
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -maltivec option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires the -mfloat128 option"
-msgstr "La función interna %s requiere la opción -maltivec"
+msgstr "La función interna %s requiere la opción -mfloat128"
 
 #: config/powerpcspe/powerpcspe.c:17188
 #, gcc-internal-format, gfc-internal-format
@@ -31349,10 +31301,9 @@ msgid "stack frame too large"
 msgstr "marco de pila demasiado grande"
 
 #: config/powerpcspe/powerpcspe.c:32256
-#, fuzzy, gcc-internal-format
-#| msgid "-fsplit-stack does not support 3 register parameters"
+#, gcc-internal-format
 msgid "-fsplit-stack uses register r29"
-msgstr "-fsplit-stack no admite 3 parámetros de registro"
+msgstr "-fsplit-stack utiliza el registro r29"
 
 #: config/powerpcspe/powerpcspe.c:32264 config/rs6000/rs6000.c:29492
 #, fuzzy, gcc-internal-format
@@ -31746,22 +31697,19 @@ msgid "-mcmodel incompatible with other toc options"
 msgstr "-mcmodel es incompatible con otras opciones toc"
 
 #: config/powerpcspe/e500.h:37
-#, fuzzy, gcc-internal-format
-#| msgid "AltiVec and E500 instructions cannot coexist"
+#, gcc-internal-format
 msgid "AltiVec and SPE instructions cannot coexist"
-msgstr "Las instrucciones AltiVec y E500 no pueden coexistir"
+msgstr "Las instrucciones AltiVec y SPE no pueden coexistir"
 
 #: config/powerpcspe/e500.h:39
-#, fuzzy, gcc-internal-format
-#| msgid "VSX and E500 instructions cannot coexist"
+#, gcc-internal-format
 msgid "VSX and SPE instructions cannot coexist"
-msgstr "Las instrucciones VSX y E500 no pueden coexistir"
+msgstr "Las instrucciones VSX y SPE no pueden coexistir"
 
 #: config/powerpcspe/e500.h:41
-#, fuzzy, gcc-internal-format
-#| msgid "64-bit E500 not supported"
+#, gcc-internal-format
 msgid "64-bit SPE not supported"
-msgstr "no se admite E500 de 64-bit"
+msgstr "no se admite SPE de 64 bits"
 
 #: config/powerpcspe/e500.h:43
 #, gcc-internal-format
