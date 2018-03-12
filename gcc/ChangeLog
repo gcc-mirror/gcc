@@ -1,5 +1,13 @@
 2018-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (abi_v4_pass_in_fpr): Add bool "named"
+	parameter.  Use it for SFmode.
+	(rs6000_function_arg_advance_1): Adjust.
+	(rs6000_function_arg): Adjust.
+	(rs6000_gimplify_va_arg): Pass false for that new parameter.
+
+2018-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/84169
 	PR rtl-optimization/84780
 	* combine.c (can_combine_p): Check for a 2-insn combination whether
