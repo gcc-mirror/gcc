@@ -1,3 +1,8 @@
+2018-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84704
+	* g++.dg/debug/pr84704.C: New test.
+
 2018-03-12  Renlin Li  <renlin.li@arm.com>
 
 	* gcc.target/aarch64/movi_hf.c: New.

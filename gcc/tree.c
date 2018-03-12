@@ -4352,6 +4352,11 @@ stabilize_reference_1 (tree e)
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_exceptional:
+      /* Always wrap STATEMENT_LIST into SAVE_EXPR, even if it doesn't
+	 have side-effects.  */
+      if (code == STATEMENT_LIST)
+	return save_expr (e);
+      /* FALLTHRU */
     case tcc_type:
     case tcc_declaration:
     case tcc_comparison:
