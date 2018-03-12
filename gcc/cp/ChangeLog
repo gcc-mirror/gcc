@@ -1,5 +1,9 @@
 2018-03-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84355 - ICE with deduction for member class template.
+	* pt.c (tsubst) [TEMPLATE_TYPE_PARM]: Always substitute into
+	CLASS_PLACEHOLDER_TEMPLATE.
+
 	PR c++/84802 - ICE capturing uninstantiated class.
 	* lambda.c (build_capture_proxy): Call complete_type.
 

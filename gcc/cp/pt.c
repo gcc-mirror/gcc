@@ -14125,8 +14125,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			= tsubst_constraint (constr, args, complain, in_decl);
 		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
 		      {
-			if (DECL_TEMPLATE_TEMPLATE_PARM_P (pl))
-			  pl = tsubst (pl, args, complain, in_decl);
+			pl = tsubst_copy (pl, args, complain, in_decl);
 			CLASS_PLACEHOLDER_TEMPLATE (r) = pl;
 		      }
 		  }
