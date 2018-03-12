@@ -394,6 +394,16 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 		}
 	    }
 
+	  unsigned int step_prec = TYPE_PRECISION (TREE_TYPE (DR_STEP (dra)));
+	  if (loop->safelen < 2
+	      && !expr_not_equal_to (DR_STEP (dra), wi::zero (step_prec)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "step could be zero.\n");
+	      return true;
+	    }
+
 	  continue;
 	}
 
@@ -2515,7 +2525,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       /* Allow references with zero step for outer loops marked
 	 with pragma omp simd only - it guarantees absence of
 	 loop-carried dependencies between inner loop iterations.  */
-      if (!loop->force_vectorize)
+      if (!loop->force_vectorize || loop->safelen < 2)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
