@@ -48,6 +48,48 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 
 
+// Internally, the range operators all use boolen_type_node when comparisons
+// and such are made to create ranges for logical operations.
+// some languages, such as fortran, may use boolean types with different
+// precisions and these are incompatible.   This routine will look at the 
+// 2 ranges, and if there is a mismatch between the boolean types, will change
+// the range generated from the default node to the other type.
+static void
+normalize_bool_type (irange& r1, irange& r2)
+{
+  const_tree t1 = r1.get_type ();
+  const_tree t2 = r2.get_type ();
+  if (TREE_CODE (t1) != BOOLEAN_TYPE || TREE_CODE (t2) != BOOLEAN_TYPE)
+    return;
+
+  if (t1 == t2)
+    return;
+
+  /* If neither is boolean_type_node, assume they are compatible.  */
+  if (t1 == boolean_type_node)
+      r1.cast (t2);
+  else
+    if (t2 == boolean_type_node)
+      r2.cast (t1);
+}
+
+
+/* Is the last stmt in a block interesting to look at for range info.  */
+
+gimple *
+last_stmt_gori (basic_block bb)
+{
+  gimple *stmt;
+
+  stmt = last_stmt (bb);
+  if (stmt && gimple_code (stmt) == GIMPLE_COND)
+    return stmt;
+  return NULL;
+}
+
+
+
+
 class ssa_global_cache
 {
 private:
@@ -160,35 +202,257 @@ set_global_ssa_range (tree name, const irange&r)
 
 
 
-// Internally, the range operators all use boolen_type_node when comparisons
-// and such are made to create ranges for logical operations.
-// some languages, such as fortran, may use boolean types with different
-// precisions and these are incompatible.   This routine will look at the 
-// 2 ranges, and if there is a mismatch between the boolean types, will vhange
-// the range generated one from the default node to the other type.
-static void
-normalize_bool_type (irange& r1, irange& r2)
+gori_map::gori_map ()
 {
-  const_tree t1 = r1.get_type ();
-  const_tree t2 = r2.get_type ();
-  if (TREE_CODE (t1) != BOOLEAN_TYPE || TREE_CODE (t2) != BOOLEAN_TYPE)
-    return;
-
-  if (t1 == t2)
-    return;
-
-  /* If neither is boolean_type_node, assume they are compatible.  */
-  if (t1 == boolean_type_node)
-      r1.cast (t2);
-  else
-    if (t2 == boolean_type_node)
-      r2.cast (t1);
+  outgoing.create (0);
+  outgoing.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  incoming.create (0);
+  incoming.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  def_chain.create (0);
+  def_chain.safe_grow_cleared (num_ssa_names);
 }
 
- /* Given a logical STMT, calculate true and false for each potential path 
-    and resolve the outcome based on the logical operator.  */
+gori_map::~gori_map ()
+{
+  unsigned x;
+  int bb;
+  for (bb = 0; bb < last_basic_block_for_fn (cfun); ++bb)
+    if (outgoing[bb])
+      BITMAP_FREE (outgoing[bb]);
+  outgoing.release ();
+
+  for (bb = 0; bb < last_basic_block_for_fn (cfun); ++bb)
+    if (incoming[bb])
+      BITMAP_FREE (incoming[bb]);
+  incoming.release ();
+
+  for (x = 0; x < num_ssa_names; ++x)
+    if (def_chain[x])
+      BITMAP_FREE (def_chain[x]);
+  def_chain.release ();
+}
+
+bitmap
+gori_map::imports (basic_block bb)
+{
+  if (!incoming[bb->index])
+    calculate_gori (bb);
+  return incoming[bb->index];
+}
+
 bool
-gori::process_logical (range_stmt& stmt, irange& r, tree name,
+gori_map::is_import_p (tree name, basic_block bb)
+{
+  return bitmap_bit_p (imports (bb), SSA_NAME_VERSION (name));
+}
+
+bitmap
+gori_map::exports (basic_block bb)
+{
+  if (!outgoing[bb->index])
+    calculate_gori (bb);
+  return outgoing[bb->index];
+}
+
+bool
+gori_map::is_export_p (tree name, basic_block bb)
+{
+  return bitmap_bit_p (exports (bb), SSA_NAME_VERSION (name));
+}
+
+bool
+gori_map::in_chain_p (tree name, tree def, basic_block bb)
+{
+  if (TREE_CODE (def) != SSA_NAME || TREE_CODE (name) != SSA_NAME)
+    return false;
+
+  unsigned def_index = SSA_NAME_VERSION (def);
+  unsigned name_index = SSA_NAME_VERSION (name);
+  gimple *stmt;
+
+  if (SSA_NAME_IS_DEFAULT_DEF (def))
+    return false;
+
+  stmt = SSA_NAME_DEF_STMT (def);
+  if (bb)
+    {
+      /* If the definition is not in a specified BB, return false;.  */
+      if (gimple_bb (stmt) != bb)
+        return false;
+    }
+  else
+    bb = gimple_bb (stmt);
+
+  if (outgoing[bb->index] == NULL)
+    calculate_gori (bb);
+
+  return in_chain_p (name_index, def_index);
+}
+
+bool
+gori_map::in_chain_p (unsigned name, unsigned def)
+{
+  if (def_chain[def] == NULL)
+    return false;
+  return bitmap_bit_p (def_chain[def], name);
+}
+
+tree
+gori_map::single_import (tree name)
+{
+  tree ret = NULL_TREE;
+  unsigned name_index = SSA_NAME_VERSION (name);
+  unsigned index;
+  basic_block bb;
+  bitmap_iterator bi;
+
+  if (def_chain [name_index] == NULL)
+    return NULL_TREE;
+  bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+
+  EXECUTE_IF_AND_IN_BITMAP (def_chain [name_index], incoming[bb->index], 0,
+			    index, bi)
+    {
+      if (!ret)
+        ret = ssa_name (index);
+      else
+	return NULL_TREE;
+    }
+  return ret;
+}
+
+void
+gori_map::process_stmt (gimple *stmt, bitmap result, basic_block bb)
+{
+  range_stmt rn (stmt);
+  tree ssa1 = rn.ssa_operand1 ();
+  tree ssa2 = rn.ssa_operand2 ();
+  bitmap b;
+
+  if (!rn.valid ())
+    return;
+
+  if (ssa1)
+    {
+      b = calc_def_chain (ssa1, bb);
+      if (b)
+	bitmap_copy (result, b);
+      bitmap_set_bit (result, SSA_NAME_VERSION (ssa1));
+    }
+  if (ssa2)
+    {
+      b = calc_def_chain (ssa2, bb);
+      if (b)
+	bitmap_ior_into (result, b);
+      bitmap_set_bit (result, SSA_NAME_VERSION (ssa2));
+    }
+  return;
+}
+
+
+bitmap
+gori_map::calc_def_chain (tree name, basic_block bb)
+{
+  gimple *stmt = SSA_NAME_DEF_STMT (name);
+  unsigned v = SSA_NAME_VERSION (name);
+  range_stmt rn;
+
+  if (!stmt || gimple_bb (stmt) != bb)
+    {
+      bitmap_set_bit (incoming[bb->index], v);
+      return NULL;
+    }
+  if (def_chain[v])
+    return def_chain[v];
+
+  def_chain[v] = BITMAP_ALLOC (NULL);
+  process_stmt (stmt, def_chain[v], bb);
+
+  return def_chain[v];
+}
+
+void
+gori_map::calculate_gori (basic_block bb)
+{
+  gimple *stmt;
+  gcc_assert (outgoing[bb->index] == NULL);
+  outgoing[bb->index] = BITMAP_ALLOC (NULL);
+  incoming[bb->index] = BITMAP_ALLOC (NULL);
+
+  stmt = last_stmt_gori (bb);
+  if (stmt)
+    process_stmt (stmt, outgoing[bb->index], bb);
+}
+
+void
+gori_map::dump(FILE *f, basic_block bb)
+{
+  tree t;
+  unsigned x, y;
+  bitmap_iterator bi;
+
+  if (!outgoing[bb->index])
+    {
+      fprintf (f, "BB%d was not processed.\n", bb->index);
+      return;
+    }
+
+  for (x = 1; x< num_ssa_names; x++)
+    {
+      tree name = ssa_name (x);
+      gimple *stmt = SSA_NAME_DEF_STMT (name);
+      if (stmt && gimple_bb (stmt) == bb && def_chain[x] &&
+	  !bitmap_empty_p (def_chain[x]))
+        {
+	  print_generic_expr (f, name, TDF_SLIM);
+	  if ((t = single_import (name)))
+	    {
+	      fprintf (f, "  : (single import : ");
+	      print_generic_expr (f, t, TDF_SLIM);
+	      fprintf (f, ")");
+	    }
+	  fprintf (f, "  :");
+	  EXECUTE_IF_SET_IN_BITMAP (def_chain[x], 0, y, bi)
+	    {
+	      print_generic_expr (f, ssa_name (y), TDF_SLIM);
+	      fprintf (f, "  ");
+	    }
+	  fprintf (f, "\n");
+	}
+    }
+
+  fprintf (f, "BB%d imports: ",bb->index);
+  EXECUTE_IF_SET_IN_BITMAP (incoming[bb->index], 0, y, bi)
+    {
+      print_generic_expr (f, ssa_name (y), TDF_SLIM);
+      fprintf (f, "  ");
+    }
+  fprintf (f, "\nBB%d exports: ",bb->index);
+  EXECUTE_IF_SET_IN_BITMAP (outgoing[bb->index], 0, y, bi)
+    {
+      print_generic_expr (f, ssa_name (y), TDF_SLIM);
+      fprintf (f, "  ");
+    }
+  fprintf (f, "\n");
+}
+
+void
+gori_map::dump(FILE *f)
+{
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      fprintf (f, "----BB %d----\n", bb->index);
+      dump (f, bb);
+      fprintf (f, "\n");
+    }
+}
+/* -------------------------------------------------------------------------*/
+
+/* Given a logical STMT, calculate true and false for each potential path 
+   and resolve the outcome based on the logical operator.  */
+bool
+block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
 		       const irange& lhs)
 {
   range_stmt op_stmt;
@@ -214,8 +478,8 @@ gori::process_logical (range_stmt& stmt, irange& r, tree name,
   op1 = stmt.operand1 ();
   op2 = stmt.operand2 ();
 
-  op1_in_chain = def_chain.in_chain_p (op1, name);
-  op2_in_chain = def_chain.in_chain_p (op2, name);
+  op1_in_chain = gori.in_chain_p (name, op1);
+  op2_in_chain = gori.in_chain_p (name, op2);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
@@ -262,7 +526,7 @@ gori::process_logical (range_stmt& stmt, irange& r, tree name,
    Returning false means the name being looked for is NOT resolvable, and
    can be removed from the GORI map to avoid future searches.  */
 bool
-gori::get_range (range_stmt& stmt, irange& r, tree name,
+block_ranger::get_range (range_stmt& stmt, irange& r, tree name,
 		 const irange& lhs)
 {
   range_stmt op_stmt;
@@ -297,8 +561,8 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
 
   /* Reaching this point means NAME is not in this stmt, but one of the
      names in it ought to be derived from it.  */
-  op1_in_chain = def_chain.in_chain_p (op1, name);
-  op2_in_chain = op2 && def_chain.in_chain_p (op2, name);
+  op1_in_chain = gori.in_chain_p (name, op1);
+  op2_in_chain = op2 && gori.in_chain_p (name, op2);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
@@ -354,7 +618,7 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
  
 /* Given the expression in STMT, return an evaluation in R for NAME. */
 bool
-gori::get_range_from_stmt (gimple *stmt, irange& r, tree name,
+block_ranger::get_range_from_stmt (gimple *stmt, irange& r, tree name,
 			   const irange& lhs)
 {
   range_stmt rn;
@@ -378,124 +642,32 @@ gori::get_range_from_stmt (gimple *stmt, irange& r, tree name,
 /*  ---------------------------------------------------------------------  */
 
 
-gori::gori ()
+block_ranger::block_ranger ()
 {
-  gori_map.create (0);
-  gori_map.safe_grow_cleared (last_basic_block_for_fn (cfun));
   gcc_assert (globals == NULL);
   globals = new ssa_global_cache ();
 }
 
-gori::~gori ()
+block_ranger::~block_ranger ()
 {
-  gori_map.release ();
   delete globals;
   globals = NULL;
 }
 
-/* Is the last stmt in a block interesting to look at for range info.  */
-
-gimple *
-gori::last_stmt_gori (basic_block bb)
-{
-  gimple *stmt;
-
-  stmt = last_stmt (bb);
-  if (stmt && gimple_code (stmt) == GIMPLE_COND)
-    return stmt;
-  return NULL;
-}
-
 void
-gori::build (basic_block bb)
+block_ranger::dump (FILE *f)
 {
-  gimple *stmt;
-
-  /* Non-NULL means its already been processed.  */
-  if (gori_map[bb->index])
-    return;
-
-  gori_map[bb->index] = BITMAP_ALLOC (NULL);
-
-  /* Look for a branch of some sort at the end of the block, and build the
-     GORI map and definition dependcies for it.  */
-  stmt = last_stmt_gori (bb);
-  if (stmt)
-    {
-      range_stmt rn (stmt);
-      if (rn.valid())
-	{
-	  def_chain.add_anchor (bb);
-	  tree ssa1 = rn.ssa_operand1 ();
-	  tree ssa2 = rn.ssa_operand2 ();
-	  if (ssa1)
-	    {
-	      bitmap_copy (gori_map[bb->index],
-			   def_chain[SSA_NAME_VERSION (ssa1)]);
-	      bitmap_set_bit (gori_map[bb->index], SSA_NAME_VERSION (ssa1));
-	    }
-	  if (ssa2)
-	    {
-	      bitmap_ior_into (gori_map[bb->index],
-			       def_chain[SSA_NAME_VERSION (ssa2)]);
-	      bitmap_set_bit (gori_map[bb->index], SSA_NAME_VERSION (ssa2));
-	    }
-	  return;
-	}
-    }
-}
-
-
-void
-gori::build ()
-{
-  basic_block bb;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      build (bb);
-    }
-}
-
-void
-gori::dump (FILE *f)
-{
-  basic_block bb;
-  bitmap_iterator bi;
-  unsigned y;
 
   if (!f)
     return;
 
-  fprintf (f, "\nDUMPING DEF_CHAIN\n");
-  def_chain.dump (f);
-
   fprintf (f, "\nDUMPING GORI MAP\n");
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      if (gori_map[bb->index])
-        {
-          fprintf (f, "basic block %3d  : ", bb->index);
-	  EXECUTE_IF_SET_IN_BITMAP (gori_map[bb->index], 0, y, bi)
-	    {
-	      print_generic_expr (f, ssa_name (y), TDF_SLIM);
-	      fprintf (f, "  ");
-	    }
-	  fprintf (f, "\n");
-	}
-    }
+  gori.dump (f);
   fprintf (f, "\n");
 
   fprintf (f, "\nDUMPING Globals table\n");
   globals->dump (f);
   
-}
-
-bool 
-gori::remove_from_gori_map (basic_block bb, tree name)
-{
-  bitmap_clear_bit (gori_map[bb->index], SSA_NAME_VERSION (name));
-  return false;
 }
 
 
@@ -512,8 +684,9 @@ gori::remove_from_gori_map (basic_block bb, tree name)
    if a_3 is used to construct b_6. If it is get the expression for a_3
    and adjust it to b_6.  */
    
+#if 0
 bool
-gori::get_derived_range_stmt (range_stmt& stmt, tree name, basic_block bb)
+block_ranger::get_derived_range_stmt (range_stmt& stmt, tree name, basic_block bb)
 {
   gimple *s;
   tree n1,n2;
@@ -543,24 +716,19 @@ gori::get_derived_range_stmt (range_stmt& stmt, tree name, basic_block bb)
   /* Well we aren't actually DOING it yet... :-)  */
   return false;
 }
-
+#endif
 
 
 bool
-gori::range_p (basic_block bb, tree name)
+block_ranger::range_p (basic_block bb, tree name)
 {
-  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-
-  if (!gori_map[bb->index])
-    build (bb);
-
-  return bitmap_bit_p (gori_map[bb->index], SSA_NAME_VERSION (name));
+  return gori.is_export_p (name, bb);
 }
 
 
 /* Known range on an edge.  */
 bool
-gori::range_on_edge (irange& r, tree name, edge e)
+block_ranger::range_on_edge (irange& r, tree name, edge e)
 {
   gimple *stmt;
   basic_block bb = e->src;
@@ -592,7 +760,7 @@ gori::range_on_edge (irange& r, tree name, edge e)
 
 
 void
-gori::exercise (FILE *output)
+block_ranger::exercise (FILE *output)
 {
 
   basic_block bb;
@@ -642,7 +810,7 @@ gori::exercise (FILE *output)
 
 
 bool
-gori::range_on_stmt (irange& r, tree name, gimple *g)
+block_ranger::range_on_stmt (irange& r, tree name, gimple *g)
 {
   range_stmt rn (g);
   irange lhs;
@@ -666,7 +834,7 @@ gori::range_on_stmt (irange& r, tree name, gimple *g)
 }
 
 bool
-gori::range_of_def (irange& r, gimple *g)
+block_ranger::range_of_def (irange& r, gimple *g)
 {
   range_stmt rn (g);
 
@@ -678,7 +846,7 @@ gori::range_of_def (irange& r, gimple *g)
 }
 
 bool
-gori::range_of_def (irange& r, gimple *g, tree name,
+block_ranger::range_of_def (irange& r, gimple *g, tree name,
 		    const irange& range_of_name)
 {
   range_stmt rn (g);
@@ -1220,7 +1388,7 @@ path_ranger::path_range_reverse (irange &r, tree name,
 void
 path_ranger::dump(FILE *f)
 {
-  gori::dump (f);
+  block_ranger::dump (f);
 }
 
 

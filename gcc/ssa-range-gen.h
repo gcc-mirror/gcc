@@ -26,18 +26,33 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-def-chain.h"
 #include "ssa-range-stmt.h"
 
-
-class gori
+class gori_map
 {
-  vec<bitmap> gori_map; 	/* Generates Outgoing Range Info.  */
-  bool remove_from_gori_map (basic_block bb, tree name);
+  vec<bitmap> outgoing;		/* BB: Outgoing ranges generated.  */
+  vec<bitmap> incoming;		/* BB: ranges coming in.  */
+  vec<bitmap> def_chain;	/* SSA_NAME : def chain components. */
+  void calculate_gori (basic_block bb);
+  bool in_chain_p (unsigned name, unsigned def);
+  bitmap imports (basic_block bb);
+  bitmap exports (basic_block bb);
+  bitmap calc_def_chain (tree name, basic_block bb);
+  void process_stmt (gimple *stmt, bitmap result, basic_block bb);
+public:
+  gori_map ();
+  ~gori_map ();
+  bool in_chain_p (tree name, tree def, basic_block bb = NULL);
+  bool is_export_p (tree name, basic_block bb);
+  bool is_import_p (tree name, basic_block bb);
+  tree single_import (tree name);
+  void dump (FILE *f);
+  void dump (FILE *f, basic_block bb);
+};
 
-  bool get_derived_range_stmt (range_stmt& stmt, tree name, basic_block bb);
-  gimple *last_stmt_gori (basic_block bb);
 
-  void build ();
-  void build (basic_block bb);
 
+class block_ranger
+{
+  gori_map gori; 	/* Generates Outgoing Range Info.  */
   bool process_logical (range_stmt& stmt, irange& r, tree name,
 			const irange& lhs);
   bool get_range (range_stmt& stmt, irange& r, tree name, const irange& lhs);
@@ -45,8 +60,8 @@ protected:
   bool get_range_from_stmt (gimple *stmt, irange& r, tree name,
 			    const irange& lhs);
 public:
-  gori ();
-  ~gori ();
+  block_ranger ();
+  ~block_ranger ();
 
   /* True if NAME Generates range info on one or more outgoing edges of BB.  */
   bool range_p (basic_block bb, tree name);
@@ -62,8 +77,6 @@ public:
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
-
-  ssa_define_chain def_chain;
 };
 
 class ssa_block_ranges
@@ -99,7 +112,7 @@ public:
 
 /* This class utilizes the basic block GORI map and is used to query the range
    of SSA_NAMEs across multiple basic blocks and edges.  */
-class path_ranger : public gori
+class path_ranger : public block_ranger
 {
 private:
   block_range_cache block_cache;
