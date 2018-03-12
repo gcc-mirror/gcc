@@ -682,11 +682,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
   tree destvar, srcvar;
   location_t loc = gimple_location (stmt);
 
-  tree func = gimple_call_fndecl (stmt);
   bool nowarn = gimple_no_warning_p (stmt);
-  bool check_overlap = (DECL_FUNCTION_CODE (func) != BUILT_IN_MEMMOVE
-			&& DECL_FUNCTION_CODE (func) != BUILT_IN_MEMMOVE_CHK
-			&& !nowarn);
 
   /* If the LEN parameter is a constant zero or in range where
      the only valid value is zero, return DEST.  */
@@ -713,13 +709,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
     {
       /* Avoid diagnosing exact overlap in calls to __builtin_memcpy.
 	 It's safe and may even be emitted by GCC itself (see bug
-	 32667).  However, diagnose it in explicit calls to the memcpy
-	 function.  */
-      if (check_overlap && *IDENTIFIER_POINTER (DECL_NAME (func)) != '_')
-      	warning_at (loc, OPT_Wrestrict,
-      		    "%qD source argument is the same as destination",
-      		    func);
-
+	 32667).  */
       unlink_stmt_vdef (stmt);
       if (gimple_vdef (stmt) && TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
 	release_ssa_name (gimple_vdef (stmt));
@@ -1622,11 +1612,14 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
   /* If SRC and DEST are the same (and not volatile), return DEST.  */
   if (operand_equal_p (src, dest, 0))
     {
-      tree func = gimple_call_fndecl (stmt);
+      if (!gimple_no_warning_p (stmt))
+	{
+	  tree func = gimple_call_fndecl (stmt);
 
-      warning_at (loc, OPT_Wrestrict,
-		  "%qD source argument is the same as destination",
-		  func);
+	  warning_at (loc, OPT_Wrestrict,
+		      "%qD source argument is the same as destination",
+		      func);
+	}
 
       replace_call_with_value (gsi, dest);
       return true;
@@ -2499,15 +2492,6 @@ gimple_fold_builtin_memory_chk (gimple_stmt_iterator *gsi,
      (resp. DEST+LEN for __mempcpy_chk).  */
   if (fcode != BUILT_IN_MEMSET_CHK && operand_equal_p (src, dest, 0))
     {
-      if (fcode != BUILT_IN_MEMMOVE && fcode != BUILT_IN_MEMMOVE_CHK)
-	{
-	  tree func = gimple_call_fndecl (stmt);
-
-	  warning_at (loc, OPT_Wrestrict,
-		      "%qD source argument is the same as destination",
-		      func);
-	}
-
       if (fcode != BUILT_IN_MEMPCPY_CHK)
 	{
 	  replace_call_with_value (gsi, dest);
@@ -2609,11 +2593,14 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
   /* If SRC and DEST are the same (and not volatile), return DEST.  */
   if (fcode == BUILT_IN_STRCPY_CHK && operand_equal_p (src, dest, 0))
     {
-      tree func = gimple_call_fndecl (stmt);
+      if (!gimple_no_warning_p (stmt))
+	{
+	  tree func = gimple_call_fndecl (stmt);
 
-      warning_at (loc, OPT_Wrestrict,
-		  "%qD source argument is the same as destination",
-		  func);
+	  warning_at (loc, OPT_Wrestrict,
+		      "%qD source argument is the same as destination",
+		      func);
+	}
 
       replace_call_with_value (gsi, dest);
       return true;

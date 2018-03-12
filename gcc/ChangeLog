@@ -1,3 +1,13 @@
+2018-03-12  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83456
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Avoid warning
+	for perfectly overlapping calls to memcpy.
+	(gimple_fold_builtin_memory_chk): Same.
+	(gimple_fold_builtin_strcpy): Handle no-warning.
+	(gimple_fold_builtin_stxcpy_chk): Same.
+	* tree-ssa-strlen.c (maybe_diag_stxncpy_trunc): Handle no-warning.
+
 2018-03-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (abi_v4_pass_in_fpr): Add bool "named"

@@ -1801,6 +1801,8 @@ bool
 maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
 {
   gimple *stmt = gsi_stmt (gsi);
+  if (gimple_no_warning_p (stmt))
+    return false;
 
   wide_int cntrange[2];
 

@@ -12,13 +12,13 @@
 
 static void wrap_memcpy (void *d, const void *s, size_t n)
 {
-  memcpy (d, s, n);   /* { dg-warning "source argument is the same as destination" "memcpy" } */
+  memcpy (d, s, n);   /* { dg-warning "accessing 2 bytes at offsets 0 and 1 overlaps 1 byte at offset 1" "memcpy" } */
 }
 
-void call_memcpy (void *d, size_t n)
+void call_memcpy (char *d)
 {
-  const void *s = d;
-  wrap_memcpy (d, s, n);
+  const void *s = d + 1;
+  wrap_memcpy (d, s, 2);
 }
 
 
