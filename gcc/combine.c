@@ -1990,6 +1990,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 	       && (reg_used_between_p (dest, succ2, i3)
 		   || reg_used_between_p (dest, succ, succ2)))
 	      || (!succ2 && succ && reg_used_between_p (dest, succ, i3))
+	      || (!succ2 && !succ && reg_used_between_p (dest, insn, i3))
 	      || (succ
 		  /* SUCC and SUCC2 can be split halves from a PARALLEL; in
 		     that case SUCC is not in the insn stream, so use SUCC2
