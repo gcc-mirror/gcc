@@ -133,6 +133,7 @@ case "${host}" in
       AC_DEFINE(HAVE_ISNANL)
     fi
     AC_CHECK_FUNCS(__cxa_thread_atexit)
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     ;;
 
   *-fuchsia*)
@@ -197,6 +198,7 @@ case "${host}" in
     GLIBCXX_CHECK_LINKER_FEATURES
     GLIBCXX_CHECK_MATH_SUPPORT
     GLIBCXX_CHECK_STDLIB_SUPPORT
+    AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
     ;;
   *-netbsd*)
     SECTION_FLAGS='-ffunction-sections -fdata-sections'
