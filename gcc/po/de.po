@@ -5,13 +5,13 @@
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012, 2013.
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2015.
 # Philipp Thomas <pth@suse.de>, 1999, 2000, 2001, 2011, 2016.
-# Roland Illig <roland.illig@gmx.de>, 2015, 2017.
+# Roland Illig <roland.illig@gmx.de>, 2015, 2017-2018.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 7.2.0\n"
+"Project-Id-Version: gcc 8.1-b20180128\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-01-26 22:47+0000\n"
-"PO-Revision-Date: 2017-08-20 23:01+0200\n"
+"PO-Revision-Date: 2018-03-11 19:19+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.3\n"
+"X-Generator: Poedit 2.0.6\n"
 
 #: cfgrtl.c:2684
 msgid "flow control insn inside a basic block"
@@ -465,12 +465,12 @@ msgid "  -o <file>                Place the output into <file>.\n"
 msgstr "  -o <Datei>               Ausgabe in <Datei> schreiben.\n"
 
 #: gcc.c:3478
-#, fuzzy
-#| msgid "  -pie                     Create a position independent executable.\n"
 msgid ""
 "  -pie                     Create a dynamically linked position independent\n"
 "                           executable.\n"
-msgstr "  -pie                     Eine ausführbare Datei mit positionsunabhängigem Code erzeugen.\n"
+msgstr ""
+"  -pie                     Eine ausführbare Datei mit positionsunabhängigem\n"
+"                           Code erzeugen.\n"
 
 #: gcc.c:3480
 msgid "  -shared                  Create a shared library.\n"
@@ -765,10 +765,9 @@ msgstr ""
 "Fehler in der deutschen Übersetzung sind an translation-team-de@lists.sourceforge.net zu melden.\n"
 
 #: gcov-tool.c:529
-#, fuzzy, c-format
-#| msgid "Copyright %s 2014-2017 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2018 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2014–2017 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2018 Free Software Foundation, Inc.\n"
 
 #: gcov-tool.c:532 gcov.c:849
 #, c-format
@@ -840,16 +839,14 @@ msgid "  -i, --intermediate-format       Output .gcov file in intermediate text 
 msgstr "  -i, --intermediate-format       .gcov-Dateien im Textformat ausgeben\n"
 
 #: gcov.c:821
-#, fuzzy, c-format
-#| msgid "  -m, --demangled-names           Output demangled function names\n"
+#, c-format
 msgid "  -j, --human-readable            Output human readable numbers\n"
-msgstr "  -m, --demangled-names           Entmangelte Funktionsnamen ausgeben\n"
+msgstr "  -j, --human-readable            Menschenlesbare Zahlen ausgeben\n"
 
 #: gcov.c:822
-#, fuzzy, c-format
-#| msgid "  -n, --no-output                 Do not create an output file\n"
+#, c-format
 msgid "  -k, --use-colors                Emit colored output\n"
-msgstr "  -n, --no-output                 Keine Ausgabedatei erzeugen\n"
+msgstr "  -k, --use-colors                Bunte Ausgabe erzeugen\n"
 
 #: gcov.c:823
 #, c-format
@@ -903,10 +900,9 @@ msgid "  -v, --version                   Print version number, then exit\n"
 msgstr "  -v, --version                   Versionsnummer anzeigen\n"
 
 #: gcov.c:833
-#, fuzzy, c-format
-#| msgid "    -v, --verbose                       Verbose mode\n"
+#, c-format
 msgid "  -w, --verbose                   Print verbose informations\n"
-msgstr "    -v, --verbose                       Ausführlicher Modus\n"
+msgstr "  -w, --verbose                   Ausführliche Informationen ausgeben\n"
 
 #: gcov.c:834
 #, c-format
@@ -1094,21 +1090,19 @@ msgid "call   %2d never executed\n"
 msgstr "Aufruf %2d niemals ausgeführt\n"
 
 #: gcov.c:2693
-#, fuzzy, c-format
-#| msgid "branch %2d taken %s%s\n"
+#, c-format
 msgid "branch %2d taken %s%s"
-msgstr "Zweig %2d wurde genommen: %s%s\n"
+msgstr "Zweig %2d wurde genommen: %s%s"
 
 #: gcov.c:2698
-#, fuzzy, c-format
-#| msgid "branch %2d never executed\n"
+#, c-format
 msgid "branch %2d never executed"
-msgstr "Zweig %2d niemals ausgeführt\n"
+msgstr "Zweig %2d niemals ausgeführt"
 
 #: gcov.c:2701
 #, c-format
 msgid " (BB %d)"
-msgstr ""
+msgstr " (BB %d)"
 
 #: gcov.c:2708
 #, c-format
@@ -1314,16 +1308,14 @@ msgid "The following options are language-related"
 msgstr "Die folgenden Optionen sind sprachbezogen"
 
 #: passes.c:1797
-#, fuzzy, c-format
-#| msgid "deducing %qT as %qT"
+#, c-format
 msgid "during %s pass: %s\n"
-msgstr "%qT ermittelt als %qT"
+msgstr "Im Durchlauf %s: %s\n"
 
 #: passes.c:1802
-#, fuzzy, c-format
-#| msgid "open %s failed: %s"
+#, c-format
 msgid "dump file: %s\n"
-msgstr "»%s« kann nicht geöffnet werden: %s"
+msgstr "Dumpdatei: %s\n"
 
 #: plugin.c:923
 msgid "Event"
@@ -1511,7 +1503,7 @@ msgstr "Unpassende Deklarationen während Linkzeit-Optimierung"
 
 #: cif-code.def:100
 msgid "variadic thunk call"
-msgstr ""
+msgstr "variadischer Thunk-Aufruf"
 
 #: cif-code.def:104
 msgid "originally indirect function call not considered for inlining"
@@ -1733,12 +1725,12 @@ msgstr "Maximales Stapelrahmen-Wachstum durch »inline« (in Prozent)."
 #: params.def:218
 #, no-c-format
 msgid "Size of the stack guard expressed as a power of two."
-msgstr ""
+msgstr "Größe des Stabelschutzes, als Zweierpotenz ausgedrückt."
 
 #: params.def:223
 #, no-c-format
 msgid "Interval in which to probe the stack expressed as a power of two."
-msgstr ""
+msgstr "Intervall, in dem der Stack geprüft wird, als Zweierpotenz ausgedrückt."
 
 #: params.def:230
 #, no-c-format
@@ -2186,15 +2178,14 @@ msgid "The size of L2 cache."
 msgstr "Die Größe des L2-Caches."
 
 #: params.def:797
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop on average."
+#, no-c-format
 msgid "The maximum number of stmts in loop nest for loop interchange."
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen im Mittel zu betrachtenden Befehle."
+msgstr "Die Höchstzahl der Anweisungen in geschachtelten Schleifen zum Schleifenaustausch."
 
 #: params.def:804
 #, no-c-format
 msgid "The minimum stride ratio for loop interchange to be profitable"
-msgstr ""
+msgstr "Das Mindestverhältnis der Schrittweiten, damit Schleifenaustausch profitabel ist"
 
 #: params.def:815
 #, no-c-format
@@ -2269,7 +2260,7 @@ msgstr "Höchstzahl der ISL-Operationen, 0 bedeutet unbegrenzt."
 #: params.def:907
 #, no-c-format
 msgid "whether codegen errors should be ICEs when -fchecking."
-msgstr ""
+msgstr "Ob bei -fchecking Fehler im Codegenerator ICEs sein sollen."
 
 #: params.def:913
 #, no-c-format
@@ -2324,7 +2315,7 @@ msgstr "Maximalgröße der Speicherort-Liste, bei der Umkehrungsoperationen hinz
 #: params.def:985
 #, no-c-format
 msgid "Max. count of debug markers to expand or inline."
-msgstr ""
+msgstr "Maximalzahl der Debugmarkierungen, die expandiert oder eingereiht werden."
 
 #: params.def:992
 #, no-c-format
@@ -2332,10 +2323,9 @@ msgid "The minimum UID to be used for a nondebug insn."
 msgstr "Kleinste UID für Nicht-Debug-Befehl."
 
 #: params.def:997
-#, fuzzy, no-c-format
-#| msgid "Maximum allowed growth of size of new parameters ipa-sra replaces a pointer to an aggregate with."
+#, no-c-format
 msgid "Maximum allowed growth of number and total size of new parameters that ipa-sra replaces a pointer to an aggregate with."
-msgstr "Maximal erlaubte Größenzunahme, bis zu der IPA-RSA neue Zeigerparameter auf Aggregate ersetzt."
+msgstr "Maximal erlaubte Größenzunahme und Gesamtgröße der neuen Parameter, bis zu der IPA-RSA Zeiger auf Aggregate ersetzt."
 
 #: params.def:1003
 #, no-c-format
@@ -2473,10 +2463,9 @@ msgid "Enable asan stack protection."
 msgstr "ASan-Schutz für Stapelspeicher einschalten."
 
 #: params.def:1172
-#, fuzzy, no-c-format
-#| msgid "Enable asan globals protection."
+#, no-c-format
 msgid "Enable asan allocas/VLAs protection."
-msgstr "ASan-Schutz für globale Variablen einschalten."
+msgstr "ASan-Schutz für alloca/VLAs einschalten."
 
 #: params.def:1177
 #, no-c-format
@@ -2564,10 +2553,9 @@ msgid "Schedule type of omp schedule for loops parallelized by parloops (static,
 msgstr "Schedule-Art des OMP-Schedulers für Schleifen, die von parloops parallelisiert wurden (static, dynamic, guided, auto, runtime)."
 
 #: params.def:1268
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop."
+#, no-c-format
 msgid "Minimum number of iterations per thread of an innermost parallelized loop."
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen zu betrachtenden Befehle."
+msgstr "Die Mindestzahl der Iterationen pro Thread in einer innersten parallelisierten Schleife."
 
 #: params.def:1274
 #, no-c-format
@@ -2612,18 +2600,17 @@ msgstr "Vektorisierung des Schleifen-Epilogs mit kleinerer Vektorgröße einscha
 #: params.def:1321
 #, no-c-format
 msgid "Minimum percentage of memrefs that must go away for unroll-and-jam to be considered profitable."
-msgstr ""
+msgstr "Mindestprozentsatz der Memrefs, die für unroll-and-jam verschwinden müssen, damit es profitabel ist."
 
 #: params.def:1326
 #, no-c-format
 msgid "Maximum unroll factor for the unroll-and-jam transformation."
-msgstr ""
+msgstr "Maximaler Entrollfaktor für die »unroll-and-jam«-Transformation."
 
 #: params.def:1331
-#, fuzzy, no-c-format
-#| msgid "Maximum number of strings for which strlen optimization pass will track string lengths."
+#, no-c-format
 msgid "Maximum number of bits for which we avoid creating FMAs."
-msgstr "Höchstzahl der Zeichenketten, für die der strlen-Optimierungsdurchgang Zeichenkettenlängen aufzeichnet."
+msgstr "Höchstzahl der Bits, für die keine FMAs erzeugt werden."
 
 #: c-family/c-format.c:382
 msgid "format"
@@ -2899,8 +2886,7 @@ msgid "<command-line>"
 msgstr "<Kommandozeile>"
 
 #: config/aarch64/aarch64.c:6482
-#, fuzzy, c-format
-#| msgid "Unsupported operand for code '%c'"
+#, c-format
 msgid "unsupported operand for code '%c'"
 msgstr "Operand für Code »%c« nicht unterstützt"
 
@@ -2916,10 +2902,9 @@ msgstr "ungültiger Operand für »%%%c«"
 
 #: config/aarch64/aarch64.c:6578 config/aarch64/aarch64.c:6589
 #: config/aarch64/aarch64.c:6740 config/aarch64/aarch64.c:6751
-#, fuzzy, c-format
-#| msgid "invalid constant"
+#, c-format
 msgid "invalid vector constant"
-msgstr "ungültige Konstante"
+msgstr "ungültige Vektorkonstante"
 
 #: config/aarch64/aarch64.c:6601 config/aarch64/aarch64.c:6613
 #: config/aarch64/aarch64.c:6624
@@ -3053,10 +3038,9 @@ msgid "invalid operand to %%z code"
 msgstr "ungültiger Operand für Code %%z"
 
 #: config/arc/arc.c:3870
-#, fuzzy, c-format
-#| msgid "invalid operand to %%Z code"
+#, c-format
 msgid "invalid operands to %%c code"
-msgstr "ungültiger Operand für Code %%Z"
+msgstr "ungültige Operanden für Code %%c"
 
 #: config/arc/arc.c:3878
 #, c-format
@@ -3493,10 +3477,9 @@ msgid "invalid UNSPEC as operand"
 msgstr "ungültiges UNSPEC als Operand"
 
 #: config/i386/i386.c:17748
-#, fuzzy, c-format
-#| msgid "invalid use of %<restrict%>"
+#, c-format
 msgid "invalid use of register '%s'"
-msgstr "Ungültige Verwendung von %<restrict%>"
+msgstr "Ungültige Verwendung von Register »%s«"
 
 #: config/i386/i386.c:17753
 #, c-format
@@ -4487,34 +4470,24 @@ msgid "jump to case label"
 msgstr "Sprung zur case-Marke"
 
 #: cp/decl.c:3159
-#, fuzzy
-#| msgid "  enters try block"
 msgid "enters try block"
-msgstr "  tritt in try-Block ein"
+msgstr "Betreten von try-Block"
 
 #: cp/decl.c:3165
-#, fuzzy
-#| msgid "  enters catch block"
 msgid "enters catch block"
-msgstr "  tritt in catch-Block ein"
+msgstr "Betreten des catch-Blocks"
 
 #: cp/decl.c:3171
-#, fuzzy
-#| msgid "  enters OpenMP structured block"
 msgid "enters OpenMP structured block"
-msgstr "  tritt in OpenMP-strukturierten Block ein"
+msgstr "Betreten des OpenMP-strukturierten Blocks"
 
 #: cp/decl.c:3177
-#, fuzzy
-#| msgid "  enters synchronized or atomic statement"
 msgid "enters synchronized or atomic statement"
-msgstr "  synchronisierte oder atomare Anweisung wird betreten"
+msgstr "Betreten der synchronisierten oder atomaren Anweisung"
 
 #: cp/decl.c:3184
-#, fuzzy
-#| msgid "  enters constexpr if statement"
 msgid "enters constexpr if statement"
-msgstr "  betritt if-Anweisung mit constexpr"
+msgstr "Betreten der if-Anweisung mit constexpr"
 
 #: cp/error.c:365
 msgid "<missing>"
@@ -4562,10 +4535,8 @@ msgid "(static destructors for %s)"
 msgstr "(statische Destruktoren für %s)"
 
 #: cp/error.c:1040
-#, fuzzy
-#| msgid "structure field"
 msgid "<structured bindings>"
-msgstr "Strukturfeld"
+msgstr "<strukturierte Bindungen>"
 
 #: cp/error.c:1143
 msgid "vtable for "
@@ -4718,16 +4689,12 @@ msgid "%r%s:%d:%R   [ skipping %d instantiation contexts, use -ftemplate-backtra
 msgstr "%r%s:%d:%R   [ %d Instanziierungskontexte werden übersprungen, »-ftemplate-backtrace-limit=0« zum Ausschalten verwenden ]\n"
 
 #: cp/error.c:3624
-#, fuzzy
-#| msgid "%r%s:%d:%d:%R   in constexpr expansion of %qs"
 msgid "%r%s:%d:%d:%R   in %<constexpr%> expansion of %qs"
-msgstr "%r%s:%d:%d:%R   in constexpr-Ersetzung von %qs"
+msgstr "%r%s:%d:%d:%R   in %<constexpr%>-Ersetzung von %qs"
 
 #: cp/error.c:3628
-#, fuzzy
-#| msgid "%r%s:%d:%R   in constexpr expansion of %qs"
 msgid "%r%s:%d:%R   in %<constexpr%> expansion of %qs"
-msgstr "%r%s:%d:%R   in constexpr-Ersetzung von %qs"
+msgstr "%r%s:%d:%R   in %<constexpr%>-Ersetzung von %qs"
 
 #: cp/pt.c:1941 cp/semantics.c:5234
 msgid "candidates are:"
@@ -4872,20 +4839,16 @@ msgid "arguments '%s' and '%s' for intrinsic '%s'"
 msgstr "Argumente »%s« und »%s« für intrinsisches »%s«"
 
 #: fortran/error.c:868
-#, fuzzy
-#| msgid "Fortran 2008 obsolescent feature:"
 msgid "Fortran 2018 deleted feature:"
-msgstr "Fortran 2008: Veraltete Funktion:"
+msgstr "Fortran 2018: gelöschtes Feature:"
 
 #: fortran/error.c:871
-#, fuzzy
-#| msgid "Fortran 2008 obsolescent feature:"
 msgid "Fortran 2018 obsolescent feature:"
-msgstr "Fortran 2008: Veraltete Funktion:"
+msgstr "Fortran 2018: Veraltetes Feature:"
 
 #: fortran/error.c:874
 msgid "Fortran 2018:"
-msgstr ""
+msgstr "Fortran 2018:"
 
 #: fortran/error.c:880
 msgid "Fortran 2008 obsolescent feature:"
@@ -5230,10 +5193,9 @@ msgid "Operands of comparison operator %%<%s%%> at %%L are %s/%s"
 msgstr "Operanden des Vergleichsoperators %%<%s%%> bei %%L sind %s/%s"
 
 #: fortran/resolve.c:4031
-#, fuzzy, c-format
-#| msgid "Unknown operator %%<%s%%> at %%L"
+#, c-format
 msgid "Unknown operator %%<%s%%> at %%L; did you mean '%s'?"
-msgstr "Unbekannter Operator %%<%s%%> bei %%L"
+msgstr "Unbekannter Operator %%<%s%%> bei %%L; meinten Sie »%s«?"
 
 #: fortran/resolve.c:4034
 #, c-format
@@ -5311,7 +5273,7 @@ msgstr "Ganzzahlüberlauf bei der Berechnung des zu reservierenden Speichers"
 #: fortran/trans-array.c:9258
 #, c-format
 msgid "The value of the PDT LEN parameter '%s' does not agree with that in the dummy declaration"
-msgstr ""
+msgstr "Der Wert des Parameters PDT LEN »%s« stimmt nicht mit dem in der Dummy-Deklaration überein"
 
 #: fortran/trans-decl.c:5856
 #, c-format
@@ -5755,14 +5717,12 @@ msgid "Warn about most implicit conversions."
 msgstr "Bei den meisten impliziten Umwandlungen warnen."
 
 #: fortran/lang.opt:242
-#, fuzzy
-#| msgid "Warn about possibly missing parentheses."
 msgid "Warn about possibly incorrect subscripts in do loops."
-msgstr "Bei möglicherweise fehlenden Klammern warnen."
+msgstr "Bei möglicherweise falschen Arrayindexen in do-Schleifen warnen."
 
 #: fortran/lang.opt:250
 msgid "Warn if loops have been interchanged."
-msgstr ""
+msgstr "Warnen, wenn Schleifen getauscht wurden."
 
 #: fortran/lang.opt:254
 msgid "Warn about function call elimination."
@@ -5890,10 +5850,8 @@ msgid "Use the Cray Pointer extension."
 msgstr "Die Cray-Zeiger-Erweiterung verwenden."
 
 #: fortran/lang.opt:429
-#, fuzzy
-#| msgid "Warn about unprototyped function declarations."
 msgid "Generate C prototypes from BIND(C) declarations."
-msgstr "Bei Funktionsdeklarationen ohne Prototyp warnen."
+msgstr "C-Prototypen aus BIND(C)-Deklarationen generieren."
 
 #: fortran/lang.opt:433
 msgid "Ignore 'D' in column one in fixed form."
@@ -5936,16 +5894,12 @@ msgid "Set the default real kind to an 8 byte wide type."
 msgstr "Standard-Realzahlart auf einen 8 Bytes breiten Typen setzen."
 
 #: fortran/lang.opt:473
-#, fuzzy
-#| msgid "Set the default real kind to an 8 byte wide type."
 msgid "Set the default real kind to an 10 byte wide type."
-msgstr "Standard-Realzahlart auf einen 8 Bytes breiten Typen setzen."
+msgstr "Standard-Realzahlart auf einen 10 Bytes breiten Typen setzen."
 
 #: fortran/lang.opt:477
-#, fuzzy
-#| msgid "Set the default real kind to an 8 byte wide type."
 msgid "Set the default real kind to an 16 byte wide type."
-msgstr "Standard-Realzahlart auf einen 8 Bytes breiten Typen setzen."
+msgstr "Standard-Realzahlart auf einen 16 Bytes breiten Typen setzen."
 
 #: fortran/lang.opt:481
 msgid "Allow dollar signs in entity names."
@@ -6024,7 +5978,7 @@ msgstr "-ffixed-line-length-<n>\tIm freien Modus n als Zeilenlänge verwenden."
 
 #: fortran/lang.opt:557
 msgid "Try to interchange loops if profitable."
-msgstr ""
+msgstr "Versuchen, Schleifen zu tauschen, wenn es nützt."
 
 #: fortran/lang.opt:561
 msgid "Enable front end optimization."
@@ -6199,10 +6153,8 @@ msgid "Conform to the ISO Fortran 2008 standard including TS 29113."
 msgstr "Mit dem Standard ISO Fortran 2008 inkl. TS 29113 übereinstimmen."
 
 #: fortran/lang.opt:807
-#, fuzzy
-#| msgid "Conform to the ISO Fortran 2008 standard."
 msgid "Conform to the ISO Fortran 2018 standard."
-msgstr "Mit dem Standard ISO Fortran 2008 übereinstimmen."
+msgstr "Mit dem Standard ISO Fortran 2018 übereinstimmen."
 
 #: fortran/lang.opt:811
 msgid "Conform to the ISO Fortran 95 standard."
@@ -6420,26 +6372,20 @@ msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and 
 msgstr "Bei C++-Konstrukten, deren Bedeutung sich zwischen ISO C++ 2011 und ISO C++ 2014 unterscheidet, warnen."
 
 #: c-family/c.opt:385
-#, fuzzy
-#| msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014."
 msgid "Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017."
-msgstr "Bei C++-Konstrukten, deren Bedeutung sich zwischen ISO C++ 2011 und ISO C++ 2014 unterscheidet, warnen."
+msgstr "Bei C++-Konstrukten, deren Bedeutung sich zwischen ISO C++ 2014 und ISO C++ 2017 unterscheidet, warnen."
 
 #: c-family/c.opt:389
-#, fuzzy
-#| msgid "Warn about casting functions to incompatible types."
 msgid "Warn about casts between incompatible function types."
-msgstr "Warnen, wenn Funktionen in unverträgliche Typen umgewandelt werden."
+msgstr "Warnen, wenn Funktionen in unverträgliche Funktionstypen umgewandelt werden."
 
 #: c-family/c.opt:393
 msgid "Warn about casts which discard qualifiers."
 msgstr "Bei Umwandlungen, die Qualifizierer streichen, warnen."
 
 #: c-family/c.opt:397 c-family/c.opt:401
-#, fuzzy
-#| msgid "Warn about comparison of different enum types."
 msgid "Warn about catch handlers of non-reference type."
-msgstr "Beim Vergleich verschiedener Enum-Typen warnen."
+msgstr "Bei catch-Behandlern warnen, die nicht Referenztypen sind."
 
 #: c-family/c.opt:405
 msgid "Warn about subscripts whose type is \"char\"."
@@ -6546,10 +6492,8 @@ msgid "This switch is deprecated; use -Werror=implicit-function-declaration inst
 msgstr "Dieser Schalter ist veraltet; stattdessen -Werror=implicit-function-declaration verwenden."
 
 #: c-family/c.opt:521
-#, fuzzy
-#| msgid "Warn about implicit function declarations."
 msgid "Warn about semicolon after in-class function definition."
-msgstr "Bei impliziten Funktionsdeklarationen warnen."
+msgstr "Bei Semikolon nach Funktionsdefinition innerhalb einer Klasse warnen."
 
 #: c-family/c.opt:525
 msgid "Warn for implicit type conversions that cause loss of floating point precision."
@@ -6608,10 +6552,8 @@ msgid "Warn about calls to snprintf and similar functions that truncate output."
 msgstr "Warnen, wenn Aufrufe für snprintf und ähnliche Funktionen die Ausgabe abschneiden."
 
 #: c-family/c.opt:588
-#, fuzzy
-#| msgid "Warn when a Cell microcoded instruction is emitted."
 msgid "Warn when the field in a struct is not aligned."
-msgstr "Warnen, wenn mikrocodierte Cell-Befehle ausgegeben werden."
+msgstr "Warnen, wenn Feld in einer Struktur nicht ausgerichtet ist."
 
 #: c-family/c.opt:592
 msgid "Warn whenever type qualifiers are ignored."
@@ -6723,7 +6665,7 @@ msgstr "Bei fehlenden Feldern in struct-Initialisierungen warnen."
 
 #: c-family/c.opt:711
 msgid "Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for."
-msgstr ""
+msgstr "Warnen bei unsicheren Makros, die zu mehreren Anweisungen expandiert werden und innerhalb eines if, else, while, switch oder for verwendet werden."
 
 #: c-family/c.opt:715
 msgid "Warn on direct multiple inheritance."
@@ -6735,7 +6677,7 @@ msgstr "Bei Namensraum-Definition warnen."
 
 #: c-family/c.opt:723
 msgid "Warn when fields in a struct with the packed attribute are misaligned."
-msgstr ""
+msgstr "Warnen, wenn Felder in einer gepackten Struktur nicht ausgerichtet sind."
 
 #: c-family/c.opt:727
 msgid "Warn about missing sized deallocation functions."
@@ -6743,7 +6685,7 @@ msgstr "Warnen, wenn Deallokationsfunktionen mit expliziter Größenangabe fehle
 
 #: c-family/c.opt:731
 msgid "Warn about suspicious divisions of two sizeof expressions that don't work correctly with pointers."
-msgstr ""
+msgstr "Warnen, wenn zwei sizeof-Ausdrücke durcheinander geteilt werden, die nicht korrekt mit Zeigern funktionieren."
 
 #: c-family/c.opt:735
 msgid "Warn about suspicious length parameters to certain string functions if the argument uses sizeof."
@@ -6762,10 +6704,8 @@ msgid "Under the control of Object Size type, warn about buffer overflow in stri
 msgstr "Unter der Kontrolle des Object-Size-Typs warnen, wenn Pufferüberläufe in Stringmanipulationsfunktionen wie memcpy und strcpy auftreten."
 
 #: c-family/c.opt:753
-#, fuzzy
-#| msgid "Warn about buffer overflow in string manipulation functions like memcpy and strcpy."
 msgid "Warn about truncation in string manipulation functions like strncat and strncpy."
-msgstr "Bei Pufferüberlauf in Stringfunktionen wie memcpy und strcpy warnen."
+msgstr "Bei Abschneiden in Stringfunktionen wie strncat und strncpy warnen."
 
 #: c-family/c.opt:757
 msgid "Warn about functions which might be candidates for format attributes."
@@ -6836,10 +6776,8 @@ msgid "Warn when a noexcept expression evaluates to false even though the expres
 msgstr "Warnen, wenn ein »noexcept«-Ausdruck zu »falsch« auswertet, obwohl der Ausdruck nicht werfen kann."
 
 #: c-family/c.opt:821
-#, fuzzy
-#| msgid "Warn if C++1z noexcept function type will change the mangled name of a symbol."
 msgid "Warn if C++17 noexcept function type will change the mangled name of a symbol."
-msgstr "Warnen, wenn ein C++1z-noexcept-Funktionstyp den gemangelten Namen eines Symbols beeinflusst."
+msgstr "Warnen, wenn ein C++17-noexcept-Funktionstyp den gemangelten Namen eines Symbols beeinflusst."
 
 #: c-family/c.opt:825
 msgid "Warn when non-templatized friend functions are declared within a template."
@@ -6847,7 +6785,7 @@ msgstr "Warnen, wenn Nicht-Template-Friend-Funktionen innerhalb eines Templates 
 
 #: c-family/c.opt:829
 msgid "Warn for unsafe raw memory writes to objects of class types."
-msgstr ""
+msgstr "Warnen bei unsicherem direkten Schreibzugriff in Speicher von Klassen-Objekten."
 
 #: c-family/c.opt:833
 msgid "Warn about non-virtual destructors."
@@ -7247,10 +7185,8 @@ msgid "Transform instrumented builtin calls into calls to wrappers."
 msgstr "Aufrufe von instrumentierten eingebauten Funktionen in Aufrufe der Wrapper verwandeln."
 
 #: c-family/c.opt:1339
-#, fuzzy
-#| msgid "Deprecated.  This switch has no effect."
 msgid "Deprecated in GCC 8.  This switch has no effect."
-msgstr "Veraltet. Dieser Schalter hat keine Auswirkung."
+msgstr "Veraltet in GCC 8.  Dieser Schalter hat keine Auswirkung."
 
 #: c-family/c.opt:1343
 msgid "Enable support for C++ concepts."
@@ -7291,7 +7227,7 @@ msgstr "Komplexe Konstruktoren und Destruktoren ausfaktorisieren, um Speicherpla
 
 #: c-family/c.opt:1383
 msgid "Print hierarchical comparisons when template types are mismatched."
-msgstr ""
+msgstr "Hierarchische Vergleiche ausgeben, wenn die Templatetypen nicht zusammenpassen."
 
 #: c-family/c.opt:1387
 msgid "Preprocess directives only."
@@ -7303,7 +7239,7 @@ msgstr "»$« als Bezeichnerzeichen zulassen."
 
 #: c-family/c.opt:1395
 msgid "-fmacro-prefix-map=<old>=<new> Map one directory name to another in __FILE__, __BASE_FILE__, and __builtin_FILE()."
-msgstr ""
+msgstr "-fmacro-prefix-map=<alt>=<neu> Einen Verzeichnisnamen auf einen anderen umschreiben in __FILE__, __BASE_FILE__ und __builtin_FILE()."
 
 #: c-family/c.opt:1399
 msgid "Write all declarations as Ada code transitively."
@@ -7315,7 +7251,7 @@ msgstr "Alle Deklarationen in Ada-Code nur für angegebene Datei schreiben."
 
 #: c-family/c.opt:1410
 msgid "-fno-elide-type Do not elide common elements in template comparisons."
-msgstr ""
+msgstr "-fno-elide-type Gleiche Elemente in Templatevergleichen nicht weglassen."
 
 #: c-family/c.opt:1414
 msgid "Generate code to check exception specifications."
@@ -7693,11 +7629,11 @@ msgstr "Dateinamen beim Einfügen von Dateien neu abbilden."
 
 #: c-family/c.opt:1917 c-family/c.opt:1921
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum."
-msgstr "Mit dem Standard ISO 1998 C++ (inclusive technischer Korrekturen von 2003) übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 1998 (inclusive technischer Korrekturen von 2003) übereinstimmen."
 
 #: c-family/c.opt:1925
 msgid "Conform to the ISO 2011 C++ standard."
-msgstr "Mit dem Standard ISO 2011 C++ übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 2011 übereinstimmen."
 
 #: c-family/c.opt:1929
 msgid "Deprecated in favor of -std=c++11."
@@ -7709,29 +7645,23 @@ msgstr "Veraltet zugunsten von -std=c++14."
 
 #: c-family/c.opt:1937
 msgid "Conform to the ISO 2014 C++ standard."
-msgstr "Mit dem Standard ISO 2014 C++ übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 2014 übereinstimmen."
 
 #: c-family/c.opt:1941
-#, fuzzy
-#| msgid "Deprecated in favor of -std=c++11."
 msgid "Deprecated in favor of -std=c++17."
-msgstr "Veraltet zugunsten von -std=c++11."
+msgstr "Veraltet zugunsten von -std=c++17."
 
 #: c-family/c.opt:1945
-#, fuzzy
-#| msgid "Conform to the ISO 2011 C++ standard."
 msgid "Conform to the ISO 2017 C++ standard."
-msgstr "Mit dem Standard ISO 2011 C++ übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 2017 übereinstimmen."
 
 #: c-family/c.opt:1949
-#, fuzzy
-#| msgid "Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support)."
 msgid "Conform to the ISO 2020(?) C++ draft standard (experimental and incomplete support)."
-msgstr "Mit dem ISO-C++-Standardentwurf 2017(?) übereinstimmen (experimentelle und unvollständige Unterstützung)."
+msgstr "Mit dem ISO-C++-Standardentwurf 2020(?) übereinstimmen (experimentelle und unvollständige Unterstützung)."
 
 #: c-family/c.opt:1953 c-family/c.opt:2071
 msgid "Conform to the ISO 2011 C standard."
-msgstr "Mit dem Standard ISO 2011 C übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von 2011 übereinstimmen."
 
 #: c-family/c.opt:1957
 msgid "Deprecated in favor of -std=c11."
@@ -7739,18 +7669,16 @@ msgstr "Veraltet zugunsten von -std=c11."
 
 #: c-family/c.opt:1961 c-family/c.opt:1965 c-family/c.opt:2075
 #: c-family/c.opt:2079
-#, fuzzy
-#| msgid "Conform to the ISO 1990 C standard as amended in 1994."
 msgid "Conform to the ISO 2017 C standard (expected to be published in 2018)."
-msgstr "Mit dem Standard ISO 1990 C, wie 1994 ergänzt, übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von 2017 (Veröffentlichung voraussichtlich 2018) übereinstimmen."
 
 #: c-family/c.opt:1969 c-family/c.opt:1973 c-family/c.opt:2055
 msgid "Conform to the ISO 1990 C standard."
-msgstr "Mit dem Standard ISO 1990 C übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von 1990 übereinstimmen."
 
 #: c-family/c.opt:1977 c-family/c.opt:2063
 msgid "Conform to the ISO 1999 C standard."
-msgstr "Mit dem Standard ISO 1999 C übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von 1999 übereinstimmen."
 
 #: c-family/c.opt:1981
 msgid "Deprecated in favor of -std=c99."
@@ -7758,11 +7686,11 @@ msgstr "Veraltet zugunsten von -std=c99."
 
 #: c-family/c.opt:1985 c-family/c.opt:1990
 msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrigendum with GNU extensions."
-msgstr "Mit dem Standard ISO 1998 C++ (inclusive technischer Korrekturen von 2003 sowie GNU-Erweiterungen) übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 1998 (inclusive technischer Korrekturen von 2003 sowie GNU-Erweiterungen) übereinstimmen."
 
 #: c-family/c.opt:1995
 msgid "Conform to the ISO 2011 C++ standard with GNU extensions."
-msgstr "Mit dem Standard ISO 2011 C++ mit GNU-Erweiterungen übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 2011 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:1999
 msgid "Deprecated in favor of -std=gnu++11."
@@ -7774,47 +7702,39 @@ msgstr "Veraltet zugunsten von -std=gnu++14."
 
 #: c-family/c.opt:2007
 msgid "Conform to the ISO 2014 C++ standard with GNU extensions."
-msgstr "Mit dem Standard ISO 2014 C++ mit GNU-Erweiterungen übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 2014 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2011
-#, fuzzy
-#| msgid "Deprecated in favor of -std=gnu++11."
 msgid "Deprecated in favor of -std=gnu++17."
-msgstr "Veraltet zugunsten von -std=gnu++11."
+msgstr "Veraltet zugunsten von -std=gnu++17."
 
 #: c-family/c.opt:2015
-#, fuzzy
-#| msgid "Conform to the ISO 2011 C++ standard with GNU extensions."
 msgid "Conform to the ISO 2017 C++ standard with GNU extensions."
-msgstr "Mit dem Standard ISO 2011 C++ mit GNU-Erweiterungen übereinstimmen."
+msgstr "Mit dem ISO-C++-Standard von 2017 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2019
-#, fuzzy
-#| msgid "Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support)."
 msgid "Conform to the ISO 2020(?) C++ draft standard with GNU extensions (experimental and incomplete support)."
-msgstr "Mit dem Standardentwurf ISO 201z(7?) C++ mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
+msgstr "Mit dem ISO-C++-Standardentwurf für 2020(?) mit GNU-Erweiterungen (experimentelle und unvollständige Unterstützung) übereinstimmen."
 
 #: c-family/c.opt:2023
 msgid "Conform to the ISO 2011 C standard with GNU extensions."
-msgstr "Mit dem Standard ISO 2011 C mit GNU-Erweiterungen übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von von 2011 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2027
 msgid "Deprecated in favor of -std=gnu11."
 msgstr "Veraltet zugunsten von -std=gnu11."
 
 #: c-family/c.opt:2031 c-family/c.opt:2035
-#, fuzzy
-#| msgid "Conform to the ISO 2011 C standard with GNU extensions."
 msgid "Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions."
-msgstr "Mit dem Standard ISO 2011 C mit GNU-Erweiterungen übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von 2017 (Veröffentlichung voraussichtlich 2018) mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2039 c-family/c.opt:2043
 msgid "Conform to the ISO 1990 C standard with GNU extensions."
-msgstr "Mit dem Standard ISO 1990 C mit GNU-Erweiterungen übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von von 1990 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2047
 msgid "Conform to the ISO 1999 C standard with GNU extensions."
-msgstr "Mit dem Standard ISO 1999 C mit GNU-Erweiterungen übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von von 1999 mit GNU-Erweiterungen übereinstimmen."
 
 #: c-family/c.opt:2051
 msgid "Deprecated in favor of -std=gnu99."
@@ -7822,7 +7742,7 @@ msgstr "Veraltet zugunsten von -std=gnu99."
 
 #: c-family/c.opt:2059
 msgid "Conform to the ISO 1990 C standard as amended in 1994."
-msgstr "Mit dem Standard ISO 1990 C, wie 1994 ergänzt, übereinstimmen."
+msgstr "Mit dem ISO-C-Standard von 1990, wie 1994 ergänzt, übereinstimmen."
 
 #: c-family/c.opt:2067
 msgid "Deprecated in favor of -std=iso9899:1999."
@@ -7914,7 +7834,7 @@ msgstr "Debuginformation für den Escape-Analyse-Durchlauf ausgeben, wenn mit -f
 
 #: go/lang.opt:86
 msgid "-fgo-debug-escape-hash=<string>\tHash value to debug escape analysis."
-msgstr ""
+msgstr "-fgo-debug-escape-hash=<Zeichenkette>\tHashwert zum Debuggen der Escape-Analyse."
 
 #: config/vms/vms.opt:27
 msgid "Malloc data into P2 space."
@@ -8407,10 +8327,8 @@ msgid "Specify the code model."
 msgstr "Codemodell angeben."
 
 #: config/riscv/riscv.opt:93
-#, fuzzy
-#| msgid "Do not use unaligned memory references."
 msgid "Do not generate unaligned memory accesses."
-msgstr "Keine unausgerichteten Speicherreferenzen verwenden."
+msgstr "Keine unausgerichteten Speicherzugriffe erzeugen."
 
 #: config/riscv/riscv.opt:97 config/i386/i386.opt:287
 #: config/powerpcspe/aix64.opt:36 config/powerpcspe/linux64.opt:32
@@ -8594,14 +8512,12 @@ msgid "Enable the division approximation.  Enabling this reduces precision of di
 msgstr "Annäherung der Division einschalten. Dies reduziert die Genauigkeit der Division auf etwa 16 Bits für einfache Genauigkeit und 32 Bits für doppelte Genauigkeit."
 
 #: config/aarch64/aarch64.opt:190
-#, fuzzy
-#| msgid "The possible TLS dialects:"
 msgid "The possible SVE vector lengths:"
-msgstr "Mögliche TLS-Dialekte:"
+msgstr "Mögliche SVE-Vektorlängen:"
 
 #: config/aarch64/aarch64.opt:212
 msgid "-msve-vector-bits=N\tSet the number of bits in an SVE vector register to N."
-msgstr ""
+msgstr "-msve-vector-bits=N\tAnzahl der Bits in einem SVE-Vektorregister auf N festlegen."
 
 #: config/aarch64/aarch64.opt:216
 msgid "Enables verbose cost model dumping in the debug dump files."
@@ -8953,17 +8869,15 @@ msgstr "Verwendung von DIV- und MOD-Befehlen erlauben."
 
 #: config/ft32/ft32.opt:35
 msgid "target the FT32B architecture"
-msgstr ""
+msgstr "Code für die FT32B-Architektur erzeugen"
 
 #: config/ft32/ft32.opt:39
-#, fuzzy
-#| msgid "Enable code hoisting."
 msgid "enable FT32B code compression"
-msgstr "Codeanhebung einschalten."
+msgstr "Codekomprimierung für FT32B-Code aktivieren"
 
 #: config/ft32/ft32.opt:43
 msgid "Avoid placing any readable data in program memory"
-msgstr ""
+msgstr "Vermeiden, lesbare Daten in Programmspeicher abzulegen"
 
 #: config/h8300/h8300.opt:23
 msgid "Generate H8S code."
@@ -9226,10 +9140,8 @@ msgid "Known assembler dialects (for use with the -masm= option):"
 msgstr "Bekannte Assemblerdialekte (für Verwendung mit Option »-masm=«):"
 
 #: config/i386/i386.opt:275
-#, fuzzy
-#| msgid "Branches are this expensive (1-5, arbitrary units)."
 msgid "Branches are this expensive (arbitrary units)."
-msgstr "Verzweigungen sind so teuer wie hier angegeben (1-5, beliebige Einheit)."
+msgstr "Verzweigungen sind so teuer wie hier angegeben (beliebige Einheit)."
 
 #: config/i386/i386.opt:279
 msgid "-mlarge-data-threshold=<number>\tData greater than given threshold will go into .ldata section in x86-64 medium model."
@@ -9386,7 +9298,7 @@ msgstr "Bekannte ABIs (für Verwendung mit Option -mabi=):"
 
 #: config/i386/i386.opt:547
 msgid "Use libgcc stubs to save and restore registers clobbered by 64-bit Microsoft to System V ABI calls."
-msgstr ""
+msgstr "Stubs aus libgcc zum Speichern und Wiederherstellen von Registern verwenden, die beim Übergang von der 64-Bit-Microsoft- zur System-V-ABI überschrieben werden."
 
 #: config/i386/i386.opt:551 config/powerpcspe/powerpcspe.opt:189
 #: config/rs6000/rs6000.opt:208
@@ -9430,16 +9342,12 @@ msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the a
 msgstr "128-Bit-AVX-Befehle statt 256-Bit-AVX-Befehlen in Auto-Vektorisierer verwenden."
 
 #: config/i386/i386.opt:600
-#, fuzzy
-#| msgid "Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer."
 msgid "Use given register vector width instructions instead of maximum register width in the auto-vectorizer."
-msgstr "128-Bit-AVX-Befehle statt 256-Bit-AVX-Befehlen in Auto-Vektorisierer verwenden."
+msgstr "Im Autovektorisierer die angegebene Breite für Vektorbefehle anstelle der maximalen Registerbreite verwenden."
 
 #: config/i386/i386.opt:604
-#, fuzzy
-#| msgid "Known stack protector guard (for use with the -mstack-protector-guard= option):"
 msgid "Known preferred register vector length (to use with the -mprefer-vector-width= option)"
-msgstr "Bekannte Stapelschutz-Wächter (für Verwendung mit Option -mstack-protector-guard=):"
+msgstr "Bekannte bevorzugte Länge von Registervektoren (für Verwendung mit der Option -mprefer-vector-width=):"
 
 #: config/i386/i386.opt:622
 msgid "Generate 32bit i386 code."
@@ -9471,31 +9379,31 @@ msgstr "Eingebaute Athlon-3Dnow!-Funktionen unterstützen."
 
 #: config/i386/i386.opt:650
 msgid "Support MMX and SSE built-in functions and code generation."
-msgstr "Eingebaute MMX- und SSE-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX und SSE unterstützen."
 
 #: config/i386/i386.opt:654
 msgid "Support MMX, SSE and SSE2 built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE- und SSE2-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE und SSE2 unterstützen."
 
 #: config/i386/i386.opt:658
 msgid "Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2- und SSE3-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2 und SSE3 unterstützen."
 
 #: config/i386/i386.opt:662
 msgid "Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3- und SSSE3-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3 und SSSE3 unterstützen."
 
 #: config/i386/i386.opt:666
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3- und SSE4.1-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3 und SSE4.1 unterstützen."
 
 #: config/i386/i386.opt:670 config/i386/i386.opt:674
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1- und SSE4.2-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 und SSE4.2 "
 
 #: config/i386/i386.opt:678
 msgid "Do not support SSE4.1 and SSE4.2 built-in functions and code generation."
-msgstr "Eingebaute SSE4.1- und SSE4.2-Funktionen und Codeerzeugung nicht unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für SSE4.1 und SSE4.2 nicht unterstützen."
 
 #: config/i386/i386.opt:681
 msgid "%<-msse5%> was removed"
@@ -9503,101 +9411,95 @@ msgstr "%<-msse5%> wurde entfernt"
 
 #: config/i386/i386.opt:686
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2- und AVX-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 und AVX unterstützen."
 
 #: config/i386/i386.opt:690
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX- und AVX2-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX und AVX2 unterstützen."
 
 #: config/i386/i386.opt:694
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- und AVX512F-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 und AVX512F unterstützen."
 
 #: config/i386/i386.opt:698
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512PF-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512PF unterstützen."
 
 #: config/i386/i386.opt:702
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512ER-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512ER unterstützen."
 
 #: config/i386/i386.opt:706
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512CD-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512CD unterstützen."
 
 #: config/i386/i386.opt:710
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512DQ-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512DQ unterstützen."
 
 #: config/i386/i386.opt:714
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512BW-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512BW unterstützen."
 
 #: config/i386/i386.opt:718
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512VL-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512VL unterstützen."
 
 #: config/i386/i386.opt:722
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512IFMA-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512IFMA unterstützen."
 
 #: config/i386/i386.opt:726
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512VBMI-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512VBMI unterstützen."
 
 #: config/i386/i386.opt:730
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX5124FMAPS-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX5124FMAPS unterstützen."
 
 #: config/i386/i386.opt:734
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX5124VNNIW-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX5124VNNIW unterstützen."
 
 #: config/i386/i386.opt:738
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VPOPCNTDQ built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512VPOPCNTDQ-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512VPOPCNTDQ unterstützen."
 
 #: config/i386/i386.opt:742
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation."
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX512VBMI-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512VBMI2 unterstützen."
 
 #: config/i386/i386.opt:746
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation."
 msgid "Support AVX512VNNI built-in functions and code generation."
-msgstr "Eingebaute BMI-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für AVX512VNNI unterstützen."
 
 #: config/i386/i386.opt:750
-#, fuzzy
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation."
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BITALG built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- und AVX5124FMAPS-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F und AVX512BITALG unterstützen."
 
 #: config/i386/i386.opt:754
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX- und FMA-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX und FMA unterstützen."
 
 #: config/i386/i386.opt:758
 msgid "Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation."
-msgstr "Eingebaute MMX-, SSE-, SSE2-, SSE3- und SSE4A-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3 und SSE4A unterstützen."
 
 #: config/i386/i386.opt:762
 msgid "Support FMA4 built-in functions and code generation."
-msgstr "Eingebaute FMA4-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für FMA4 unterstützen."
 
 #: config/i386/i386.opt:766
 msgid "Support XOP built-in functions and code generation."
-msgstr "Eingebaute XOP-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für XOP unterstützen."
 
 #: config/i386/i386.opt:770
 msgid "Support LWP built-in functions and code generation."
-msgstr "Eingebaute LWP-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für LWP unterstützen."
 
 #: config/i386/i386.opt:774
 msgid "Support code generation of Advanced Bit Manipulation (ABM) instructions."
-msgstr "Codeerzeugung der Advanced Bit Manipulation Befehle (ABM) unterstützen."
+msgstr "Codeerzeugung von Advanced-Bit-Manipulation-Befehle (ABM) unterstützen."
 
 #: config/i386/i386.opt:778
 msgid "Support code generation of popcnt instruction."
@@ -9605,41 +9507,35 @@ msgstr "Codeerzeugung von popcnt-Befehlen unterstützen."
 
 #: config/i386/i386.opt:782
 msgid "Support SGX built-in functions and code generation."
-msgstr "Eingebaute SGX-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für SGX unterstützen."
 
 #: config/i386/i386.opt:786
 msgid "Support RDPID built-in functions and code generation."
-msgstr "Eingebaute RDPID-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für RDPID unterstützen."
 
 #: config/i386/i386.opt:790
-#, fuzzy
-#| msgid "Support BMI built-in functions and code generation."
 msgid "Support GFNI built-in functions and code generation."
-msgstr "Eingebaute BMI-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für GFNI unterstützen."
 
 #: config/i386/i386.opt:794
-#, fuzzy
-#| msgid "Support AES built-in functions and code generation."
 msgid "Support VAES built-in functions and code generation."
-msgstr "Eingebaute AES-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für VAES unterstützen."
 
 #: config/i386/i386.opt:798
-#, fuzzy
-#| msgid "Support PCLMUL built-in functions and code generation."
 msgid "Support VPCLMULQDQ built-in functions and code generation."
-msgstr "Eingebaute PCLMUL-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für VPCLMULQDQ unterstützen."
 
 #: config/i386/i386.opt:802
 msgid "Support BMI built-in functions and code generation."
-msgstr "Eingebaute BMI-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für BMI unterstützen."
 
 #: config/i386/i386.opt:806
 msgid "Support BMI2 built-in functions and code generation."
-msgstr "Eingebaute BMI2-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für BMI2 unterstützen."
 
 #: config/i386/i386.opt:810
 msgid "Support LZCNT built-in function and code generation."
-msgstr "Eingebaute LZCNT-Funktion und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktion und Codeerzeugung für LZCNT unterstützen."
 
 #: config/i386/i386.opt:814
 msgid "Support Hardware Lock Elision prefixes."
@@ -9809,58 +9705,49 @@ msgid "Use the given offset for addressing the stack-protector guard."
 msgstr "Angegebenen Offset zur Addressierung des Stapelschutz-Wächters verwenden."
 
 #: config/i386/i386.opt:991
-#, fuzzy
-#| msgid "Use the given offset for addressing the stack-protector guard."
 msgid "Use the given symbol for addressing the stack-protector guard."
-msgstr "Angegebenen Offset zur Addressierung des Stapelschutz-Wächters verwenden."
+msgstr "Angegebenes Symbol für Adressierung des Stapelschutz-Wächters verwenden."
 
 #: config/i386/i386.opt:995
 msgid "Attempt to avoid generating instruction sequences containing ret bytes."
 msgstr "Möglichst Befehlsfolgen erzeugen, die keine RET-Bytes enthalten."
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84807
 #: config/i386/i386.opt:1003
-#, fuzzy
-#| msgid "Support MMX and SSE built-in functions and code generation."
 msgid "Support Control-flow  Enforcment Technology (CET) built-in functions and code generation."
-msgstr "Eingebaute MMX- und SSE-Funktionen und Codeerzeugung unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für Control-flow Enforcement Technology (CET) unterstützen."
 
 #: config/i386/i386.opt:1008
 msgid "Specifically enables an indirect branch tracking feature from Control-flow Enforcment Technology (CET)."
-msgstr ""
+msgstr "Aktiviert insbesondere das Nachverfolgen von indirekten Sprüngen im Rahmen der Control-Flow Enforcement Technology (CET)."
 
 #: config/i386/i386.opt:1013
 msgid "Specifically enables an shadow stack support feature from Control-flow Enforcment Technology (CET)."
-msgstr ""
+msgstr "Aktiviert insbesondere die Stapelspeicher-Sicherungskopie im Rahmen der Control-Flow Enforcement Technology (CET)."
 
 #: config/i386/i386.opt:1018
 msgid "Turn on CET instrumentation for switch statements, which use jump table and indirect jump."
-msgstr ""
+msgstr "Aktiviert CET-Instrumentierung für solche switch-Anweisungen, die Sprungtabellen und indirekte Sprünge verwenden."
 
 #: config/i386/i386.opt:1023
-#, fuzzy
-#| msgid "Warn about function call elimination."
 msgid "Make all function calls indirect."
-msgstr "Beim Entfernen von Funktionsaufrufen warnen."
+msgstr "Alle Funktionsaufrufe indirekt machen."
 
 #: config/i386/i386.opt:1027
 msgid "Convert indirect call and jump to call and return thunks."
-msgstr ""
+msgstr "Indirekte Aufrufe und Sprünge in Aufrufe umwandeln und Thunks zurückgeben."
 
 #: config/i386/i386.opt:1031
-#, fuzzy
-#| msgid "function return type cannot be function"
 msgid "Convert function return to call and return thunk."
-msgstr "Rückgabetyp der Funktion kann keine Funktion sein"
+msgstr "Funktionsrückkehr in Aufruf umwandeln und Thunk zurückgeben."
 
 #: config/i386/i386.opt:1035
-#, fuzzy
-#| msgid "Known data alignment choices (for use with the -malign-data= option):"
 msgid "Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):"
-msgstr "Bekannte Datenausrichtungen (für Verwendung mit Option -malign-data=):"
+msgstr "Bekannte indirekte Sprungauswahlen (für Verwendung mit den Optionen -mindirect-branch=/-mfunction-return=):"
 
 #: config/i386/i386.opt:1051
 msgid "Force indirect call and jump via register."
-msgstr ""
+msgstr "Indirekte Aufrufe und Sprünge mittels Register erzwingen."
 
 #: config/pa/pa64-hpux.opt:23
 msgid "Assume code will be linked by GNU ld."
@@ -10747,10 +10634,8 @@ msgid "-mmcu=MCU\tSelect the target MCU."
 msgstr "-mmcu=MCU\tDie Ziel-MCU auswählen."
 
 #: config/avr/avr.opt:31
-#, fuzzy
-#| msgid "Use subroutines for function prologues and epilogues."
 msgid "Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues."
-msgstr "Für Funktionsprologe und -epiloge Unterprogramme verwenden."
+msgstr "Verwendung von __gcc_isr-Pseudobefehlen in ISR-Prologen und -Epilogen erlauben."
 
 #: config/avr/avr.opt:35
 msgid "Set the number of 64 KiB flash segments."
@@ -10766,7 +10651,7 @@ msgstr "Verwendung von Read-Modify-Write-Befehlen (RMW) einschalten."
 
 #: config/avr/avr.opt:53
 msgid "Use RJMP / RCALL even though CALL / JMP are available."
-msgstr ""
+msgstr "RJMP/RCALL verwenden, selbst wenn CALL/JMP verfügbar sind."
 
 #: config/avr/avr.opt:57
 msgid "Use an 8-bit 'int' type."
@@ -10782,7 +10667,7 @@ msgstr "Sprungkosten für bedingte Sprungbefehle setzen. Angemessene Werte sind 
 
 #: config/avr/avr.opt:69
 msgid "Treat main as if it had attribute OS_task."
-msgstr ""
+msgstr "»main« so behandeln, als hätte sie das Attribut OS_task."
 
 #: config/avr/avr.opt:79
 msgid "Change only the low 8 bits of the stack pointer."
@@ -11129,10 +11014,8 @@ msgid "Permit scheduling of a function's prologue sequence."
 msgstr "Planung einer Funktionsprologsequenz erlauben."
 
 #: config/arm/arm.opt:195
-#, fuzzy
-#| msgid "Specify the minimum bit alignment of structures."
 msgid "Specify the minimum bit alignment of structures. (Deprecated)."
-msgstr "Minimale Bitausrichtung von Strukturen angeben."
+msgstr "Minimale Bitausrichtung von Strukturen angeben. (Veraltet)"
 
 #: config/arm/arm.opt:199
 msgid "Generate code for Thumb state."
@@ -11180,7 +11063,7 @@ msgstr "Neon-Double-Word (statt Quad-Word) Register für Vektorisierung verwende
 
 #: config/arm/arm.opt:259
 msgid "Enable more verbose RTX cost dumps during debug.  For GCC developers use only."
-msgstr ""
+msgstr "Ausführlichere RTX-Kosten während des Debuggens ausgeben.  Nur für GCC-Entwickler gedacht."
 
 #: config/arm/arm.opt:263
 msgid "Only generate absolute relocations on word sized values."
@@ -11216,11 +11099,11 @@ msgstr "Verbieten, dass konstante Daten in Codeabschnitten platziert werden."
 
 #: config/arm/arm.opt:296
 msgid "When linking for big-endian targets, generate a BE8 format image."
-msgstr ""
+msgstr "Beim Binden für Big-Endian-Zielsysteme ein Abbild im BE8-Format erzeugen."
 
 #: config/arm/arm.opt:300
 msgid "When linking for big-endian targets, generate a legacy BE32 format image."
-msgstr ""
+msgstr "Beim Binden für Big-Endian-Zielsysteme ein Abbild im veralteten BE32-Format erzeugen."
 
 #: config/arm/arm.opt:304 config/sh/sh.opt:195
 msgid "Cost to assume for a branch insn."
@@ -11368,24 +11251,20 @@ msgid "Specify the memory model in effect for the program."
 msgstr "Für Programm zu verwendendes Speichermodell angeben"
 
 #: config/rs6000/rs6000.opt:165
-#, fuzzy
-#| msgid "Enable tail merging on trees."
 msgid "Enable early gimple folding of builtins."
-msgstr "Enden-Zusammenfassung auf Bäumen einschalten."
+msgstr "Frühes Gimple-Falten von eingebauten Funktionen aktivieren."
 
 #: config/rs6000/rs6000.opt:188
-#, fuzzy
-#| msgid "%qs is deprecated"
 msgid "%<-mstring%> is deprecated"
-msgstr "%qs ist veraltet"
+msgstr "%<-mstring%> ist veraltet"
 
 #: config/rs6000/rs6000.opt:338
 msgid "Specify the maximum number of bytes to compare inline with non-looping code. If this is set to 0, all inline expansion (non-loop and loop) of memcmp is disabled."
-msgstr ""
+msgstr "Höchstanzahl von Bytes, um Inline-Code mit schleifenfreiem Code zu vergleichen. Ein Wert von 0 bedeutet, dass memcmp überhaupt nicht geinlinet wird."
 
 #: config/rs6000/rs6000.opt:342
 msgid "Specify the maximum number of bytes to compare inline with loop code generation.  If the length is not known at compile time, memcmp will be called after this many bytes are compared. By default, a length will be picked depending on the tuning target."
-msgstr ""
+msgstr "Höchstanzahl von Bytes, um Inline-Code mit schleifenbasiertem Code zu vergleichen. Wenn die Länge zur Übersetzungszeit nicht bekannt ist, wird nach dieser Anzahl von Bytes memcmp aufgerufen. Der Vorgabewert für die Länge hängt von der Zielarchitektur ab (-mtune=)."
 
 #: config/alpha/alpha.opt:27
 msgid "Use fp registers."
@@ -12059,11 +11938,11 @@ msgstr "Erzeugen von R2-CDX-Befehlen einschalten."
 
 #: config/nios2/nios2.opt:592
 msgid "Regular expression matching additional GP-addressible section names."
-msgstr ""
+msgstr "Regulärer Ausdruck, um zusätzliche Allzweck-adressierbare Abschnittsnamen anzugeben."
 
 #: config/nios2/nios2.opt:596
 msgid "Regular expression matching section names for r0-relative addressing."
-msgstr ""
+msgstr "Regulärer Ausdruck, um relativ zu r0 adressierbare Abschnittsnamen anzugeben."
 
 #: config/rx/rx.opt:29
 msgid "Store doubles in 64 bits."
@@ -12501,19 +12380,15 @@ msgstr "Verwendung bedingter Kopierbefehle einschalten."
 
 #: config/nds32/nds32.opt:62
 msgid "Generate performance extension instructions."
-msgstr "Performance-Erweiterungsbefehle einschalten."
+msgstr "Erweiterungsbefehle für Performance einschalten."
 
 #: config/nds32/nds32.opt:66
-#, fuzzy
-#| msgid "Generate performance extension instructions."
 msgid "Generate performance extension version 2 instructions."
-msgstr "Performance-Erweiterungsbefehle einschalten."
+msgstr "Erweiterungsbefehle für Performance Version 2 einschalten."
 
 #: config/nds32/nds32.opt:70
-#, fuzzy
-#| msgid "Generate performance extension instructions."
 msgid "Generate string extension instructions."
-msgstr "Performance-Erweiterungsbefehle einschalten."
+msgstr "Erweiterungsbefehle für Zeichenketten einschalten."
 
 #: config/nds32/nds32.opt:74
 msgid "Generate v3 push25/pop25 instructions."
@@ -13329,7 +13204,7 @@ msgstr "Identisch zu -mA7."
 
 #: config/arc/arc.opt:58
 msgid "Force all calls to be made via a jli instruction."
-msgstr ""
+msgstr "Erzwingen, dass alle Aufrufe mittels des jli-Befehls erfolgen."
 
 #: config/arc/arc.opt:62
 msgid "-mmpy-option=MPY Compile ARCv2 code with a multiplier design option."
@@ -13447,10 +13322,8 @@ msgid "Cost to assume for a multiply instruction, with 4 being equal to a normal
 msgstr "Für einen Multiplikationsbefehl anzunehmende Kosten; 4 entspricht einem normalen Befehl."
 
 #: config/arc/arc.opt:254
-#, fuzzy
-#| msgid "-mcpu=CPU\tCompile code for ARC variant CPU."
 msgid "-mcpu=TUNE Tune code for given ARC variant."
-msgstr "-mcpu=CPU\tCode für ARC-Variante CPU planen."
+msgstr "-mcpu=TUNING\tCode für angegebene ARC-Variante feintunen."
 
 #: config/arc/arc.opt:282
 msgid "Enable the use of indexed loads."
@@ -13601,24 +13474,20 @@ msgid "Enable use of NPS400 xld/xst extension."
 msgstr "Erweiterung für xld/xst für NPS400 einschalten."
 
 #: config/arc/arc.opt:500
-#, fuzzy
-#| msgid "Specifies the number of registers to reserve for interrupt handlers."
 msgid "Specifies the registers that the processor saves on an interrupt entry and exit."
-msgstr "Anzahl der für Interrupthandler zu reservierenden Register."
+msgstr "Gibt die Register an, die beim Eintritt und Austritt eines Interrupts gesichert werden."
 
 #: config/arc/arc.opt:504
-#, fuzzy
-#| msgid "Specifies the number of registers to reserve for interrupt handlers."
 msgid "Specifies the number of registers replicated in second register bank on entry to fast interrupt."
-msgstr "Anzahl der für Interrupthandler zu reservierenden Register."
+msgstr "Gibt die Anzahl der Register an, die bei Eintritt und Austritt eines schnellen Interrupts in der zweiten Registerbank gesichert werden."
 
 #: config/arc/arc.opt:508
 msgid "Sets LP_COUNT register width.  Possible values are 8, 16, 20, 24, 28, and 32."
-msgstr ""
+msgstr "Legt die Registerbreite für LP_COUNT fest. Mögliche Werte sind 8, 16, 20, 24, 28 und 32."
 
 #: config/arc/arc.opt:533
 msgid "Enable 16-entry register file."
-msgstr ""
+msgstr "Registersatz mit 16 Einträgen aktivieren."
 
 #: lto/lang.opt:28
 #, c-format
@@ -13702,10 +13571,8 @@ msgid "Warn about inappropriate attribute usage."
 msgstr "Bei unpassender Attributverwendung warnen."
 
 #: common.opt:567
-#, fuzzy
-#| msgid "Warn about type and rank mismatches between arguments and parameters."
 msgid "Warn about type safety and similar errors in attribute alias and related."
-msgstr "Warnen, wenn der Rang oder Typ von Argumenten und Parametern nicht übereinstimmt."
+msgstr "In Attribut-Aliasen und ähnlichen bezüglich Typsicherheit und ähnlicher Fehler warnen."
 
 #: common.opt:571 common.opt:575
 msgid "Warn about pointer casts which increase alignment."
@@ -13840,10 +13707,8 @@ msgid "Warn about optimizations that assume that signed overflow is undefined."
 msgstr "Bei Optimierungen, die annehmen, dass vorzeichenbehafteter Überlauf undefiniert ist, warnen."
 
 #: common.opt:730
-#, fuzzy
-#| msgid "Warn about functions which might be candidates for __attribute__((const))."
 msgid "Warn about functions which might be candidates for __attribute__((cold))."
-msgstr "Bei Funktionen, die Kandidaten für __attribute__((const)) sein könnten, warnen."
+msgstr "Bei Funktionen, die Kandidaten für __attribute__((cold)) sein könnten, warnen."
 
 #: common.opt:734
 msgid "Warn about functions which might be candidates for __attribute__((const))."
@@ -13858,10 +13723,8 @@ msgid "Warn about functions which might be candidates for __attribute__((noretur
 msgstr "Bei Funktionen, die Kandidaten für __attribute__((noreturn)) sein könnten, warnen."
 
 #: common.opt:746
-#, fuzzy
-#| msgid "Warn about functions which might be candidates for __attribute__((const))."
 msgid "Warn about functions which might be candidates for __attribute__((malloc))."
-msgstr "Bei Funktionen, die Kandidaten für __attribute__((const)) sein könnten, warnen."
+msgstr "Bei Funktionen, die Kandidaten für __attribute__((malloc)) sein könnten, warnen."
 
 #: common.opt:750
 msgid "Warn about C++ polymorphic types where adding final keyword would improve code quality."
@@ -13980,10 +13843,8 @@ msgid "Select what to sanitize."
 msgstr "Auswählen, was bereinigt werden soll."
 
 #: common.opt:1005
-#, fuzzy
-#| msgid "Select what to sanitize."
 msgid "Select what to coverage sanitize."
-msgstr "Auswählen, was bereinigt werden soll."
+msgstr "Auswählen, was abgedeckt werden soll."
 
 #: common.opt:1009
 msgid "-fasan-shadow-offset=<number>\tUse custom shadow memory offset."
@@ -14130,16 +13991,12 @@ msgid "-fdbg-cnt=<counter>:<limit>[,<counter>:<limit>,...]\tSet the debug counte
 msgstr "-fdbg-cnt=<Zähler>:<Grenze>[,<Zähler>:<Grenze>,...]\tGrenze des Fehlersuchzählers setzen."
 
 #: common.opt:1178
-#, fuzzy
-#| msgid "Map one directory name to another in debug information."
 msgid "-fdebug-prefix-map=<old>=<new> Map one directory name to another in debug information."
-msgstr "In Fehlersuchinfo einen Verzeichnisnamen auf einen anderen abbilden."
+msgstr "-fdebug-prefix-map=<alt>=<neu> In Fehlersuchinfo einen Verzeichnisnamen auf einen anderen abbilden."
 
 #: common.opt:1182
-#, fuzzy
-#| msgid "Map one directory name to another in debug information."
 msgid "-ffile-prefix-map=<old>=<new> Map one directory name to another in compilation result."
-msgstr "In Fehlersuchinfo einen Verzeichnisnamen auf einen anderen abbilden."
+msgstr "-ffile-prefix-map=<alt>=<neu> In Übersetzungsergebnis einen Verzeichnisnamen auf einen anderen abbilden."
 
 #: common.opt:1186
 msgid "Output .debug_types section when using DWARF v4 debuginfo."
@@ -14186,8 +14043,6 @@ msgid "-fdiagnostics-color=[never|always|auto]\tColorize diagnostics."
 msgstr "-fdiagnostics-color=[never|always|auto]\tDiagnosemeldungen einfärben."
 
 #: common.opt:1265
-#, fuzzy
-#| msgid "Print fixit hints in machine-readable form."
 msgid "Print fix-it hints in machine-readable form."
 msgstr "Behebungshinweise in maschinenlesbarer Form ausgeben."
 
@@ -14379,16 +14234,12 @@ msgid "Enable loop nest transforms.  Same as -floop-nest-optimize."
 msgstr "Schleifenschachtelungs-Umwandlungen einschalten. Entspricht -floop-next-optimize."
 
 #: common.opt:1512
-#, fuzzy
-#| msgid "Enable loop header copying on trees."
 msgid "Enable loop interchange on trees."
-msgstr "Kopieren des Schleifenkopfes auf Bäumen einschalten."
+msgstr "Umordnen der Schleifen auf Bäumen einschalten."
 
 #: common.opt:1520
-#, fuzzy
-#| msgid "Perform loop unrolling for all loops."
 msgid "Perform unroll-and-jam on loops."
-msgstr "Schleifenabwicklung für alle Schleifen durchführen."
+msgstr "Schleifenabwicklung (unroll-and-jam) für Schleifen durchführen."
 
 #: common.opt:1524
 msgid "Enable support for GNU transactional memory."
@@ -14473,13 +14324,12 @@ msgstr "__atomic-Operationen »inline« erzeugen, wenn Lock-freie Befehlssequenz
 
 #: common.opt:1636
 msgid "-fcf-protection=[full|branch|return|none]\tInstrument functions with checks to verify jump/call/return control-flow transfer instructions have valid targets."
-msgstr ""
+msgstr "-fcf-protection=[full|branch|return|none]\tFunktionen mit zusätzlichen Prüfungen versehen, dass die Sprungziele von jump/call/return gültig sind."
 
 #: common.opt:1640
-#, fuzzy, c-format
-#| msgid "unknown Stack Reuse Level %qs"
+#, c-format
 msgid "unknown Cotrol-Flow Protection Level %qs"
-msgstr "Unbekannte Stufe %qs für Stapel-Wiederverwendung"
+msgstr "Unbekannte Schutzstufe %qs für Kontrollfluss"
 
 #: common.opt:1656
 msgid "Instrument function entry and exit with profiling calls."
@@ -14803,10 +14653,8 @@ msgid "Enable basic program profiling code."
 msgstr "Einfachen Programm-Profilierungscode einschalten."
 
 #: common.opt:2030
-#, fuzzy
-#| msgid "Generate bounds passing for calls."
 msgid "Generate absolute source path names for gcov."
-msgstr "Übergabe der Grenzen für Aufrufe erzeugen."
+msgstr "Absolute Quellpfade für gcov erzeugen."
 
 #: common.opt:2034
 msgid "Insert arc-based program profiling code."
@@ -14858,10 +14706,8 @@ msgid "Enable function reordering that improves code placement."
 msgstr "Funktionen umsortieren, um Codeplatzierung zu verbessern."
 
 #: common.opt:2091
-#, fuzzy
-#| msgid "Generate cld instruction in the function prologue."
 msgid "Insert NOP instructions at each function entry."
-msgstr "Im Funktionsprolog cld-Befehle erzeugen."
+msgstr "In jedem Funktionsprolog NOP-Befehle erzeugen."
 
 #: common.opt:2098
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>."
@@ -15094,7 +14940,7 @@ msgstr "Code zur Stapelprüfung in das Programm einfügen. Dasselbe wie -fstack-
 
 #: common.opt:2371
 msgid "Insert code to probe each page of stack space as it is allocated to protect from stack-clash style attacks."
-msgstr ""
+msgstr "Code einfügen, der jede Speicherseite des Stapels bei der Allokation antestet, um vor Angriffen basierend auf Überschneidungen zu schützen."
 
 #: common.opt:2379
 msgid "-fstack-limit-register=<register>\tTrap if the stack goes past <register>."
@@ -15129,10 +14975,8 @@ msgid "Assume strict aliasing rules apply."
 msgstr "Annehmen, dass strenge Alias-Regeln gelten."
 
 #: common.opt:2419
-#, fuzzy
-#| msgid "Treat signed overflow as undefined."
 msgid "Treat signed overflow as undefined.  Negated as -fwrapv -fwrapv-pointer."
-msgstr "Vorzeichenbehafteten Überlauf als undefiniertes Verhalten behandeln."
+msgstr "Vorzeichenbehafteten Überlauf als undefiniertes Verhalten behandeln. Wird mit -fwrapv -fwrapv-pointer negiert."
 
 #: common.opt:2423
 msgid "Implement __atomic operations via libcalls to legacy __sync functions."
@@ -15467,10 +15311,8 @@ msgid "Perform whole program optimizations."
 msgstr "Gesamtprogrammoptimierung durchführen."
 
 #: common.opt:2869
-#, fuzzy
-#| msgid "Assume signed arithmetic overflow wraps around."
 msgid "Assume pointer overflow wraps around."
-msgstr "Annehmen, dass vorzeichenbehaftete arithmetische Überläufe regulär überschlagen (Wraparound)."
+msgstr "Annehmen, dass Zeigerüberläufe überschlagen (Wraparound)."
 
 #: common.opt:2873
 msgid "Assume signed arithmetic overflow wraps around."
@@ -15485,8 +15327,7 @@ msgid "Generate debug information in default format."
 msgstr "Fehlersuchinformationen im Standardformat erzeugen."
 
 #: common.opt:2884 common.opt:2888 common.opt:2892 common.opt:2896
-#, fuzzy, c-format
-#| msgid "switch %qs is no longer supported"
+#, c-format
 msgid "switch %qs no longer supported"
 msgstr "Schalter %qs wird nicht mehr unterstützt"
 
@@ -15536,7 +15377,7 @@ msgstr "Fehlersuchinformationen im erweiterten STABS-Format erzeugen."
 
 #: common.opt:2949
 msgid "Emit progressive recommended breakpoint locations."
-msgstr ""
+msgstr "Progressive empfohlene Breakpoint-Stellen ausgeben."
 
 #: common.opt:2953
 msgid "Don't emit DWARF additions beyond selected version."
@@ -15607,22 +15448,16 @@ msgid "Create a shared library."
 msgstr "Shared Library erzeugen."
 
 #: common.opt:3173
-#, fuzzy
-#| msgid "Don't create a position independent executable."
 msgid "Don't create a dynamically linked position independent executable."
-msgstr "Keine lageunabhängige ausführbare Datei erzeugen."
+msgstr "Keine dynamisch gebundene, lageunabhängige ausführbare Datei erzeugen."
 
 #: common.opt:3177
-#, fuzzy
-#| msgid "Create a position independent executable."
 msgid "Create a dynamically linked position independent executable."
-msgstr "Lageunabhängige ausführbare Datei erzeugen."
+msgstr "Dynamisch gebundene, lageunabhängige ausführbare Datei erzeugen."
 
 #: common.opt:3181
-#, fuzzy
-#| msgid "Create a position independent executable."
 msgid "Create a static position independent executable."
-msgstr "Lageunabhängige ausführbare Datei erzeugen."
+msgstr "Statische, lageunabhängige ausführbare Datei erzeugen."
 
 #: common.opt:3188
 msgid "Use caller save register across calls if possible."
@@ -15989,10 +15824,8 @@ msgid "cannot use type %s as type %s"
 msgstr "Typ %s kann nicht als Typ %s verwendet werden"
 
 #: go/gofrontend/types.cc:781
-#, fuzzy
-#| msgid "conversion to incomplete type"
 msgid "conversion from normal type to notinheap type"
-msgstr "Konvertierung in unvollständigen Typen"
+msgstr "Konvertierung von normalem zu »notinheap«-Typen"
 
 #: go/gofrontend/types.cc:4452
 msgid "different receiver types"
@@ -16066,11 +15899,10 @@ msgstr "Methode %s%s%s ist als go:nointerface gekennzeichnet"
 #: attribs.c:421
 #, gcc-internal-format
 msgid "ignoring attribute %qE in declaration of a built-in function %qD because it conflicts with attribute %qs"
-msgstr ""
+msgstr "Attribut %qE wird in Deklaration der eingebauten Funktion %qD ignoriert, da es mit Attribut %qs in Konflikt steht"
 
 #: attribs.c:427
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored due to conflict with attribute %qs"
+#, gcc-internal-format
 msgid "ignoring attribute %qE because it conflicts with attribute %qs"
 msgstr "Attribut %qE steht mit Attribut %qs in Konflikt; wird ignoriert"
 
@@ -16165,10 +15997,9 @@ msgid "%qE attribute ignored"
 msgstr "Attribut %qE wird ignoriert"
 
 #: attribs.c:973
-#, fuzzy, gcc-internal-format
-#| msgid "missing %<target%> attribute for multi-versioned %D"
+#, gcc-internal-format
 msgid "missing %<target%> attribute for multi-versioned %qD"
-msgstr "Attribut %<target%> fehlt für multiversioniertes %D"
+msgstr "Attribut %<target%> fehlt für multiversioniertes %qD"
 
 #: attribs.c:976 cp/decl.c:1218 cp/decl.c:1944 cp/decl.c:1954 cp/decl.c:2516
 #: cp/decl.c:2935
@@ -16292,94 +16123,79 @@ msgid "invalid third argument to %<__builtin_prefetch%>; using zero"
 msgstr "Ungültiges drittes Argument für %<__builtin_prefetch%>; es wird Null verwendet"
 
 #: builtins.c:3132
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified size %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified size %E exceeds maximum object size %E"
-msgstr "%K%qD: angegebene Größe %wu überschreitet maximale Objektgröße %wu"
+msgstr "%K%qD angegebene Größe %E überschreitet maximale Objektgröße %E"
 
 #: builtins.c:3137
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified size between %wu and %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified size between %E and %E exceeds maximum object size %E"
-msgstr "%K%qD: angegebene Größe zwischen %wu und %wu überschreitet maximale Objektgröße %wu"
+msgstr "%K%qD angegebene Größe zwischen %E und %E überschreitet maximale Objektgröße %E"
 
 #: builtins.c:3170 builtins.c:3186
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %wu bytes into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E or more bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: das Schreiben von %wu Bytes in eine Region der Größe %wu lässt die Zielregion überlaufen"
+msgstr "%K%qD das Schreiben von %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
 
 #: builtins.c:3177
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: writing %wu byte into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E byte into a region of size %E overflows the destination"
-msgstr "%K%qD: das Schreiben von %wu Byte in eine Region der Größe %wu lässt die Zielregion überlaufen"
+msgstr "%K%qD das Schreiben von %E Byte in eine Region der Größe %E lässt die Zielregion überlaufen"
 
 #: builtins.c:3179
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD writing %wu bytes into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: das Schreiben von %wu Bytes in eine Region der Größe %wu lässt die Zielregion überlaufen"
+msgstr "%K%qD das Schreiben von %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
 
 #: builtins.c:3192
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
+#, gcc-internal-format
 msgid "%K%qD writing between %E and %E bytes into a region of size %E overflows the destination"
-msgstr "%K%qD: das Schreiben von %wu bis %wu Bytes in eine Region der Größe %wu lässt die Zielregion überlaufen"
+msgstr "%K%qD das Schreiben von %E bis %E Bytes in eine Region der Größe %E lässt die Zielregion überlaufen"
 
 #: builtins.c:3228
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified bound %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E exceeds maximum object size %E"
-msgstr "%K%qD: angegebene Grenze %wu überschreitet die maximale Objektgröße %wu"
+msgstr "%K%qD angegebene Grenze %E überschreitet die maximale Objektgröße %E"
 
 #: builtins.c:3234
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified bound between %wu and %wu  exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified bound between %E and %E exceeds maximum object size %E"
-msgstr "%K%qD: angegebene Grenze zwischen %wu und %wu überschreitet maximale Objektgröße %wu"
+msgstr "%K%qD angegebene Grenze zwischen %E und %E überschreitet maximale Objektgröße %E"
 
 #: builtins.c:3249
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified bound %wu exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E exceeds destination size %E"
-msgstr "%K%qD: angegebene Grenze %wu überschreitet die maximale Objektgröße %wu"
+msgstr "%K%qD angegebene Grenze %E überschreitet die Größe der Zielregion %E"
 
 #: builtins.c:3255
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD: specified bound between %wu and %wu  exceeds maximum object size %wu"
+#, gcc-internal-format
 msgid "%K%qD specified bound between %E and %E exceeds destination size %E"
-msgstr "%K%qD: angegebene Grenze zwischen %wu und %wu überschreitet maximale Objektgröße %wu"
+msgstr "%K%qD angegebene Grenze zwischen %E und %E überschreitet die Größe der Zielregion %E"
 
 #: builtins.c:3278
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive writing %wu byte into a region of size %wu"
+#, gcc-internal-format
 msgid "%K%qD reading %E byte from a region of size %E"
-msgstr "%<%.*s%>-Direktive schreibt %wu Byte in eine Region der Größe %wu"
+msgstr "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:3279
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive writing %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%K%qD reading %E bytes from a region of size %E"
-msgstr "%<%.*s%>-Direktive schreibt %wu Bytes in eine Region der Größe %wu"
+msgstr "%K%qD Lesen von %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:3285
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive writing %wu or more bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%K%qD reading %E or more bytes from a region of size %E"
-msgstr "%<%.*s%>-Direktive schreibt %wu oder mehr Bytes in eine Region der Größe %wu"
+msgstr "%K%qD das Lesen von %E oder mehr Bytes aus einer Region der Größe %E"
 
 #: builtins.c:3291
-#, fuzzy, gcc-internal-format
-#| msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size %wu"
+#, gcc-internal-format
 msgid "%K%qD reading between %E and %E bytes from a region of size %E"
-msgstr "%<%.*s%>-Direktive schreibt zwischen %wu und %wu Bytes in eine Region der Größe %wu"
+msgstr "%K%qD das Lesen von %E bis %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:3965 builtins.c:4031
-#, fuzzy, gcc-internal-format
-#| msgid "specified bound %wu equals the size of the destination"
+#, gcc-internal-format
 msgid "%K%qD specified bound %E equals destination size"
-msgstr "angegebene Grenze %wu ist genau die Größe des Ziels"
+msgstr "%K%qD angegebene Grenze %E ist genau die Größe des Ziels"
 
 #: builtins.c:4879 gimplify.c:3272
 #, gcc-internal-format
@@ -16530,16 +16346,14 @@ msgid "undefined behavior when second parameter of %<va_start%> is declared with
 msgstr "undefiniertes Verhalten, wenn zweiter Parameter von %<va_start%> mit %<register%>-Speicherklasse deklariert wird"
 
 #: builtins.c:9806
-#, fuzzy, gcc-internal-format
-#| msgid "%Kfirst argument of %D must be a pointer, second integer constant"
+#, gcc-internal-format
 msgid "%Kfirst argument of %qD must be a pointer, second integer constant"
-msgstr "%Kerstes Argument von %D muss ein Zeiger, das zweite eine Ganzzahlkonstante sein"
+msgstr "%Kerstes Argument von %qD muss ein Zeiger, das zweite eine Ganzzahlkonstante sein"
 
 #: builtins.c:9819
-#, fuzzy, gcc-internal-format
-#| msgid "%Klast argument of %D is not integer constant between 0 and 3"
+#, gcc-internal-format
 msgid "%Klast argument of %qD is not integer constant between 0 and 3"
-msgstr "%Kletztes Argument von %D ist keine Ganzzahlkonstante zwischen 0 und 3"
+msgstr "%Kletztes Argument von %qD ist keine Ganzzahlkonstante zwischen 0 und 3"
 
 #: builtins.c:10095
 #, gcc-internal-format
@@ -16604,19 +16418,17 @@ msgstr "in einem Aufruf der hier deklarierten Allokationsfunktion %qD"
 #: calls.c:1711
 #, gcc-internal-format
 msgid "%qD argument %i declared attribute %<nonstring%> is smaller than the specified bound %E"
-msgstr ""
+msgstr "%qD Argument %i (als Attribut %<nonstring%> deklariert) ist kleiner als die angegebene Grenze %E"
 
 #: calls.c:1716
-#, fuzzy, gcc-internal-format
-#| msgid "%qD was not declared %<constexpr%>"
+#, gcc-internal-format
 msgid "%qD argument %i declared attribute %<nonstring%>"
-msgstr "%qD wurde nicht als %<constexpr%> definiert"
+msgstr "%qD Argument %i ist als Attribut %<nonstring%> deklariert"
 
 #: calls.c:1721
-#, fuzzy, gcc-internal-format
-#| msgid "routine %qD declared here"
+#, gcc-internal-format
 msgid "argument %qD declared here"
-msgstr "Routine %qD ist hier deklariert"
+msgstr "Argument %qD ist hier deklariert"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80188
 #: calls.c:1735
@@ -16709,348 +16521,342 @@ msgstr "Stapelschutz schützt nicht Funktion: Alle lokalen Arrays sind kleiner a
 #: cfghooks.c:111
 #, gcc-internal-format, gfc-internal-format
 msgid "bb %d on wrong place"
-msgstr "bb %d an falscher Stelle"
+msgstr "Interner Fehler: bb %d on wrong place"
 
 #: cfghooks.c:117
 #, gcc-internal-format, gfc-internal-format
 msgid "prev_bb of %d should be %d, not %d"
-msgstr "prev_bb von %d sollte %d sein, nicht %d"
+msgstr "Interner Fehler: prev_bb of %d should be %d, not %d"
 
 #: cfghooks.c:134
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Block %i has loop_father, but there are no loops"
-msgstr "verify_flow_info: Block %i hat loop_father, aber es gibt keine Schleifen"
+msgstr "Interner Fehler: verify_flow_info: Block %i has loop_father, but there are no loops"
 
 #: cfghooks.c:140
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Block %i lacks loop_father"
-msgstr "verify_flow_info: Block %i fehlt loop_father"
+msgstr "Interner Fehler: verify_flow_info: Block %i lacks loop_father"
 
 #: cfghooks.c:146
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Wrong count of block %i %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong count of block %i"
-msgstr "verify_flow_info: Falsche Blockzahl %i %i"
+msgstr "Interner Fehler: verify_flow_info: Wrong count of block %i"
 
 #: cfghooks.c:154
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Wrong count of block %i %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Missing count of block %i"
-msgstr "verify_flow_info: Falsche Blockzahl %i %i"
+msgstr "Interner Fehler: verify_flow_info: Missing count of block %i"
 
 #: cfghooks.c:162
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Duplicate edge %i->%i"
-msgstr "verify_flow_info: Doppelte Kante %i->%i"
+msgstr "Interner Fehler: verify_flow_info: Duplicate edge %i->%i"
 
 #: cfghooks.c:171
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Wrong probability of edge %i->%i %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "Uninitialized probability of edge %i->%i"
-msgstr "verify_flow_info: Falsche Wahrscheinlichkeit der Kante %i->%i %i"
+msgstr "Interner Fehler: Uninitialized probability of edge %i->%i"
 
 #: cfghooks.c:177
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "verify_flow_info: Wrong probability of edge %i->%i %i"
+#, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Wrong probability of edge %i->%i"
-msgstr "verify_flow_info: Falsche Wahrscheinlichkeit der Kante %i->%i %i"
+msgstr "Interner Fehler: verify_flow_info: Wrong probability of edge %i->%i"
 
 #: cfghooks.c:189
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Basic block %d succ edge is corrupted"
-msgstr "verify_flow_info: Nachfolgekante des Basis-Blocks %d ist beschädigt"
+msgstr "Interner Fehler: verify_flow_info: Basic block %d succ edge is corrupted"
 
 #: cfghooks.c:203
 #, gcc-internal-format, gfc-internal-format
 msgid "wrong amount of branch edges after unconditional jump %i"
-msgstr "falscher Betrag der Zweig-Kanten nach unbedingtem Sprung %i"
+msgstr "Interner Fehler: wrong amount of branch edges after unconditional jump %i"
 
 #: cfghooks.c:211 cfghooks.c:222
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %d pred edge is corrupted"
-msgstr "Vorgänger des Basis-Blocks %d ist beschädigt"
+msgstr "Interner Fehler: basic block %d pred edge is corrupted"
 
 #: cfghooks.c:223
 #, gcc-internal-format, gfc-internal-format
 msgid "its dest_idx should be %d, not %d"
-msgstr "sein dest_idx sollte %d sein, nicht %d"
+msgstr "Interner Fehler: its dest_idx should be %d, not %d"
 
 #: cfghooks.c:252
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %i edge lists are corrupted"
-msgstr "Kantenlisten des Basis-Blockes %i sind beschädigt"
+msgstr "Interner Fehler: basic block %i edge lists are corrupted"
 
 #: cfghooks.c:265
 #, gcc-internal-format
 msgid "verify_flow_info failed"
-msgstr "verify_flow_info gescheitert"
+msgstr "Interner Fehler: verify_flow_info failed"
 
 #: cfghooks.c:323
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support dump_bb_for_graph"
-msgstr "%s unterstützt nicht dump_bb_for_graph"
+msgstr "Interner Fehler: %s does not support dump_bb_for_graph"
 
 #: cfghooks.c:366
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support redirect_edge_and_branch"
-msgstr "%s does not support redirect_edge_and_branch"
+msgstr "Interner Fehler: %s does not support redirect_edge_and_branch"
 
 #: cfghooks.c:386
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_remove_branch_p"
-msgstr "%s does not support can_remove_branch_p"
+msgstr "Interner Fehler: %s does not support can_remove_branch_p"
 
 #: cfghooks.c:480
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support redirect_edge_and_branch_force"
-msgstr "%s does not support redirect_edge_and_branch_force"
+msgstr "Interner Fehler: %s does not support redirect_edge_and_branch_force"
 
 #: cfghooks.c:518
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support split_block"
-msgstr "%s does not support split_block"
+msgstr "Interner Fehler: %s does not support split_block"
 
 #: cfghooks.c:584
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support move_block_after"
-msgstr "%s does not support move_block_after"
+msgstr "Interner Fehler: %s does not support move_block_after"
 
 #: cfghooks.c:597
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support delete_basic_block"
-msgstr "%s does not support delete_basic_block"
+msgstr "Interner Fehler: %s does not support delete_basic_block"
 
 #: cfghooks.c:643
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support split_edge"
-msgstr "%s does not support split_edge"
+msgstr "Interner Fehler: %s does not support split_edge"
 
 #: cfghooks.c:716
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support create_basic_block"
-msgstr "%s does not support create_basic_block"
+msgstr "Interner Fehler: %s does not support create_basic_block"
 
 #: cfghooks.c:757
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_merge_blocks_p"
-msgstr "%s does not support can_merge_blocks_p"
+msgstr "Interner Fehler: %s does not support can_merge_blocks_p"
 
 #: cfghooks.c:768
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support predict_edge"
-msgstr "%s does not support predict_edge"
+msgstr "Interner Fehler: %s does not support predict_edge"
 
 #: cfghooks.c:777
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support predicted_by_p"
-msgstr "%s does not support predicted_by_p"
+msgstr "Interner Fehler: %s does not support predicted_by_p"
 
 #: cfghooks.c:791
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support merge_blocks"
-msgstr "%s does not support merge_blocks"
+msgstr "Interner Fehler: %s does not support merge_blocks"
 
 #: cfghooks.c:872
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support make_forwarder_block"
-msgstr "%s does not support make_forwarder_block"
+msgstr "Interner Fehler: %s does not support make_forwarder_block"
 
 #: cfghooks.c:1021
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support force_nonfallthru"
-msgstr "%s does not support force_nonfallthru"
+msgstr "Interner Fehler: %s does not support force_nonfallthru"
 
 #: cfghooks.c:1055
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support can_duplicate_block_p"
-msgstr "%s does not support can_duplicate_block_p"
+msgstr "Interner Fehler: %s does not support can_duplicate_block_p"
 
 #: cfghooks.c:1077
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support duplicate_block"
-msgstr "%s does not support duplicate_block"
+msgstr "Interner Fehler: %s does not support duplicate_block"
 
 #: cfghooks.c:1152
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support block_ends_with_call_p"
-msgstr "%s does not support block_ends_with_call_p"
+msgstr "Interner Fehler: %s does not support block_ends_with_call_p"
 
 #: cfghooks.c:1163
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support block_ends_with_condjump_p"
-msgstr "%s does not support block_ends_with_condjump_p"
+msgstr "Interner Fehler: %s does not support block_ends_with_condjump_p"
 
 #: cfghooks.c:1181
 #, gcc-internal-format, gfc-internal-format
 msgid "%s does not support flow_call_edges_add"
-msgstr "%s does not support flow_call_edges_add"
+msgstr "Interner Fehler: %s does not support flow_call_edges_add"
 
 #: cfgloop.c:1388
 #, gcc-internal-format
 msgid "loop verification on loop tree that needs fixup"
-msgstr "Schleifenverifikation auf Schleifenbaum, der repariert werden muss"
+msgstr "Interner Fehler: loop verification on loop tree that needs fixup"
 
 #: cfgloop.c:1404
 #, gcc-internal-format
 msgid "corrupt loop tree root"
-msgstr "Kaputte Wurzel des Schleifenbaums"
+msgstr "Interner Fehler: corrupt loop tree root"
 
 #: cfgloop.c:1414
 #, gcc-internal-format, gfc-internal-format
 msgid "loop with header %d marked for removal"
-msgstr "Schleife mit Kopf %d zum Löschen markiert"
+msgstr "Interner Fehler: loop with header %d marked for removal"
 
 #: cfgloop.c:1419
 #, gcc-internal-format, gfc-internal-format
 msgid "loop with header %d not in loop tree"
-msgstr "Schleife mit Kopf %d nicht in Schleifenbaum"
+msgstr "Interner Fehler: loop with header %d not in loop tree"
 
 #: cfgloop.c:1425
 #, gcc-internal-format, gfc-internal-format
 msgid "non-loop with header %d not marked for removal"
-msgstr "Nicht-Schleife mit Kopf %d nicht zum Löschen markiert"
+msgstr "Interner Fehler: non-loop with header %d not marked for removal"
 
 #: cfgloop.c:1439
 #, gcc-internal-format, gfc-internal-format
 msgid "removed loop %d in loop tree"
-msgstr "Schleife %d aus Schleifenbaum entfernt"
+msgstr "Interner Fehler: removed loop %d in loop tree"
 
 #: cfgloop.c:1447
 #, gcc-internal-format, gfc-internal-format
 msgid "size of loop %d should be %d, not %d"
-msgstr "Größe der Schleife %d sollte %d sein, nicht %d"
+msgstr "Interner Fehler: size of loop %d should be %d, not %d"
 
 #: cfgloop.c:1458
 #, gcc-internal-format, gfc-internal-format
 msgid "bb %d does not belong to loop %d"
-msgstr "BB %d gehört nicht zur Schleife %d"
+msgstr "Interner Fehler: bb %d does not belong to loop %d"
 
 #: cfgloop.c:1470
 #, gcc-internal-format, gfc-internal-format
 msgid "bb %d has father loop %d, should be loop %d"
-msgstr "BB %d hat Vaterschleife %d, sollte Schleife %d sein"
+msgstr "Interner Fehler: bb %d has father loop %d, should be loop %d"
 
 #: cfgloop.c:1486
 #, gcc-internal-format
 msgid "loop %d%'s header is not a loop header"
-msgstr "Kopf der Schleife %d ist kein Schleifenkopf"
+msgstr "Interner Fehler: loop %d%'s header is not a loop header"
 
 #: cfgloop.c:1492
 #, gcc-internal-format
 msgid "loop %d%'s header does not have exactly 2 entries"
-msgstr "Kopf der Schleife %d hat nicht genau 2 Einträge"
+msgstr "Interner Fehler: loop %d%'s header does not have exactly 2 entries"
 
 #: cfgloop.c:1499
 #, gcc-internal-format
 msgid "loop %d%'s latch does not have an edge to its header"
-msgstr "Falle der Schleife %d hat keine Kante zu ihrem Kopf"
+msgstr "Interner Fehler: loop %d%'s latch does not have an edge to its header"
 
 #: cfgloop.c:1504
 #, gcc-internal-format
 msgid "loop %d%'s latch is not dominated by its header"
-msgstr "Falle der Schleife %d wird nicht durch ihren Kopf bestimmt"
+msgstr "Interner Fehler: loop %d%'s latch is not dominated by its header"
 
 #: cfgloop.c:1512
 #, gcc-internal-format
 msgid "loop %d%'s latch does not have exactly 1 successor"
-msgstr "Falle der Schleife %d hat nicht genau einen Nachfolger"
+msgstr "Interner Fehler: loop %d%'s latch does not have exactly 1 successor"
 
 #: cfgloop.c:1517
 #, gcc-internal-format
 msgid "loop %d%'s latch does not have header as successor"
-msgstr "Falle der Schleife %d hat nicht den Kopf als Nachfolger"
+msgstr "Interner Fehler: loop %d%'s latch does not have header as successor"
 
 #: cfgloop.c:1522
 #, gcc-internal-format
 msgid "loop %d%'s latch does not belong directly to it"
-msgstr "Falle der Schleife %d gehört nicht direkt zu ihr"
+msgstr "Interner Fehler: loop %d%'s latch does not belong directly to it"
 
 #: cfgloop.c:1528
 #, gcc-internal-format
 msgid "loop %d%'s header does not belong directly to it"
-msgstr "Kopf der Schleife %d gehört nicht direkt zu ihr"
+msgstr "Interner Fehler: loop %d%'s header does not belong directly to it"
 
 #: cfgloop.c:1534
 #, gcc-internal-format
 msgid "loop %d%'s latch is marked as part of irreducible region"
-msgstr "Falle der Schleife %d ist als Teil einer irreduziblen Region markiert"
+msgstr "Interner Fehler: loop %d%'s latch is marked as part of irreducible region"
 
 #: cfgloop.c:1567
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %d should be marked irreducible"
-msgstr "Basisblock %d sollte als irreduzibel markiert werden"
+msgstr "Interner Fehler: basic block %d should be marked irreducible"
 
 #: cfgloop.c:1573
 #, gcc-internal-format, gfc-internal-format
 msgid "basic block %d should not be marked irreducible"
-msgstr "Basisblock %d sollte nicht als irreduzibel markiert sein"
+msgstr "Interner Fehler: basic block %d should not be marked irreducible"
 
 #: cfgloop.c:1581
 #, gcc-internal-format, gfc-internal-format
 msgid "edge from %d to %d should be marked irreducible"
-msgstr "Kante von %d nach %d sollte als irreduzibel markiert sein"
+msgstr "Interner Fehler: edge from %d to %d should be marked irreducible"
 
 #: cfgloop.c:1588
 #, gcc-internal-format, gfc-internal-format
 msgid "edge from %d to %d should not be marked irreducible"
-msgstr "Kante von %d nach %d sollte nicht als irreduzibel markiert sein"
+msgstr "Interner Fehler: edge from %d to %d should not be marked irreducible"
 
 #: cfgloop.c:1602
 #, gcc-internal-format, gfc-internal-format
 msgid "corrupted head of the exits list of loop %d"
-msgstr "beschädigter Kopf der Ausgangsliste von Schleife %d"
+msgstr "Interner Fehler: corrupted head of the exits list of loop %d"
 
 #: cfgloop.c:1620
 #, gcc-internal-format, gfc-internal-format
 msgid "corrupted exits list of loop %d"
-msgstr "beschädigte Ausgangsliste der Schleife %d"
+msgstr "Interner Fehler: corrupted exits list of loop %d"
 
 #: cfgloop.c:1629
 #, gcc-internal-format, gfc-internal-format
 msgid "nonempty exits list of loop %d, but exits are not recorded"
-msgstr "Nichtleere Ausgangsliste der Schleife %d, aber Ausgänge werden nicht aufgezeichnet"
+msgstr "Interner Fehler: nonempty exits list of loop %d, but exits are not recorded"
 
 #: cfgloop.c:1656
 #, gcc-internal-format, gfc-internal-format
 msgid "exit %d->%d not recorded"
-msgstr "Ausgang %d->%d nicht aufgezeichnet"
+msgstr "Interner Fehler: exit %d->%d not recorded"
 
 #: cfgloop.c:1679
 #, gcc-internal-format, gfc-internal-format
 msgid "wrong list of exited loops for edge  %d->%d"
-msgstr "Falsche Liste der beendeten Schleifen für Kante %d->%d"
+msgstr "Interner Fehler: wrong list of exited loops for edge  %d->%d"
 
 #: cfgloop.c:1688
 #, gcc-internal-format
 msgid "too many loop exits recorded"
-msgstr "Zu viele Schleifenausgänge aufgezeichnet"
+msgstr "Interner Fehler: too many loop exits recorded"
 
 #: cfgloop.c:1699
 #, gcc-internal-format, gfc-internal-format
 msgid "%d exits recorded for loop %d (having %d exits)"
-msgstr "%d Ausgänge für Schleife %d (mit %d Ausgängen) aufgezeichnet"
+msgstr "Interner Fehler: %d exits recorded for loop %d (having %d exits)"
 
 #: cfgrtl.c:2349
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-cold basic block %d dominated by a block in the cold partition (%d)"
+#, gcc-internal-format, gfc-internal-format
 msgid "non-cold basic block %d reachable only by paths crossing the cold partition"
-msgstr "nichtkalter Basisblock %d ist dominiert von einem Block in der kalten Partition (%d)"
+msgstr "Interner Fehler: non-cold basic block %d reachable only by paths crossing the cold partition"
 
 #: cfgrtl.c:2421
 #, gcc-internal-format, gfc-internal-format
 msgid "multiple hot/cold transitions found (bb %i)"
-msgstr "Mehrere heiße/kalte Übergänge gefunden (bb %i)"
+msgstr "Interner Fehler: multiple hot/cold transitions found (bb %i)"
 
 #: cfgrtl.c:2429
 #, gcc-internal-format
 msgid "partition found but function partition flag not set"
-msgstr "Partition gefunden, aber Funktionspartitionsschalter ist nicht gesetzt"
+msgstr "Interner Fehler: partition found but function partition flag not set"
 
 #: cfgrtl.c:2468
-#, fuzzy, gcc-internal-format
-#| msgid "verify_flow_info: REG_BR_PROB does not match cfg %i %i"
+#, gcc-internal-format
 msgid "verify_flow_info: REG_BR_PROB is set but cfg probability is not"
-msgstr "Interner Fehler: verify_flow_info: REG_BR_PROB does not match cfg %i %i"
+msgstr "Interner Fehler: verify_flow_info: REG_BR_PROB is set but cfg probability is not"
 
 #: cfgrtl.c:2477
 #, gcc-internal-format, gfc-internal-format
@@ -17060,17 +16866,17 @@ msgstr "Interner Fehler: verify_flow_info: REG_BR_PROB does not match cfg %i %i"
 #: cfgrtl.c:2499
 #, gcc-internal-format
 msgid "EDGE_CROSSING incorrectly set across same section"
-msgstr "EDGE_CROSSING falsch gesetzt im selben Abschnitt"
+msgstr "Interner Fehler: EDGE_CROSSING incorrectly set across same section"
 
 #: cfgrtl.c:2504
 #, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge crosses section boundary in bb %i"
-msgstr "Fall-Through-Kante überschreitet Abschnittsgrenze in BB %i"
+msgstr "Interner Fehler: fallthru edge crosses section boundary in bb %i"
 
 #: cfgrtl.c:2510
 #, gcc-internal-format, gfc-internal-format
 msgid "EH edge crosses section boundary in bb %i"
-msgstr "EH-Kante überschneidet Abschnittsgrenze in BB %i"
+msgstr "Interner Fehler: EH edge crosses section boundary in bb %i"
 
 #: cfgrtl.c:2516
 #, gcc-internal-format, gfc-internal-format
@@ -17080,7 +16886,7 @@ msgstr "Interner Fehler: No region crossing jump at section boundary in bb %i"
 #: cfgrtl.c:2523
 #, gcc-internal-format
 msgid "EDGE_CROSSING missing across section boundary"
-msgstr "EDGE_CROSSING fehlt bei Übertretung von Abschnittsgrenze"
+msgstr "Interner Fehler: EDGE_CROSSING missing across section boundary"
 
 #: cfgrtl.c:2553
 #, gcc-internal-format, gfc-internal-format
@@ -17090,220 +16896,217 @@ msgstr "regionsübergreifender Sprung über denselben Abschnitt in Basisblock %i
 #: cfgrtl.c:2560
 #, gcc-internal-format, gfc-internal-format
 msgid "missing REG_EH_REGION note at the end of bb %i"
-msgstr "fehlender Vermerk von REG_EH_REGION am Ende vom bb %i"
+msgstr "Interner Fehler: missing REG_EH_REGION note at the end of bb %i"
 
 #: cfgrtl.c:2565
 #, gcc-internal-format, gfc-internal-format
 msgid "too many exception handling edges in bb %i"
-msgstr "zu viele Ausnahmebehandlungskanten in BB %i"
+msgstr "Interner Fehler: too many exception handling edges in bb %i"
 
 #: cfgrtl.c:2573
 #, gcc-internal-format, gfc-internal-format
 msgid "too many outgoing branch edges from bb %i"
-msgstr "zu viele abgehende Zweig-Kanten vom bb %i"
+msgstr "Interner Fehler: too many outgoing branch edges from bb %i"
 
 #: cfgrtl.c:2578
 #, gcc-internal-format, gfc-internal-format
 msgid "fallthru edge after unconditional jump in bb %i"
-msgstr "Fallthru-Kante nach bedingungslosem Sprung in BB %i"
+msgstr "Interner Fehler: fallthru edge after unconditional jump in bb %i"
 
 #: cfgrtl.c:2583
 #, gcc-internal-format, gfc-internal-format
 msgid "wrong number of branch edges after unconditional jump in bb %i"
-msgstr "falsche Anzahl der Zweig-Kanten nach unbedingtem Sprung in BB %i"
+msgstr "Interner Fehler: wrong number of branch edges after unconditional jump in bb %i"
 
 #: cfgrtl.c:2590
 #, gcc-internal-format, gfc-internal-format
 msgid "wrong amount of branch edges after conditional jump in bb %i"
-msgstr "falsche Anzahl der Zweig-Kanten nach bedingtem Sprung in BB %i"
+msgstr "Interner Fehler: wrong amount of branch edges after conditional jump in bb %i"
 
 #: cfgrtl.c:2596
 #, gcc-internal-format, gfc-internal-format
 msgid "abnormal call edges for non-call insn in bb %i"
-msgstr "unpassende Ruf-Kanten für Nicht-Aufruf-Befehl in BB %i"
+msgstr "Interner Fehler: abnormal call edges for non-call insn in bb %i"
 
 #: cfgrtl.c:2601
 #, gcc-internal-format, gfc-internal-format
 msgid "sibcall edges for non-call insn in bb %i"
-msgstr "Sibcall-Kanten für Nicht-Aufruf-Befehl in BB %i"
+msgstr "Interner Fehler: sibcall edges for non-call insn in bb %i"
 
 #: cfgrtl.c:2611
 #, gcc-internal-format, gfc-internal-format
 msgid "abnormal edges for no purpose in bb %i"
-msgstr "abnormale Kanten ohne Zweck in BB %i"
+msgstr "Interner Fehler: abnormal edges for no purpose in bb %i"
 
 #: cfgrtl.c:2650 cfgrtl.c:2660
 #, gcc-internal-format, gfc-internal-format
 msgid "NOTE_INSN_BASIC_BLOCK is missing for block %d"
-msgstr "NOTE_INSN_BASIC_BLOCK fehlt für Block %d"
+msgstr "Interner Fehler: NOTE_INSN_BASIC_BLOCK is missing for block %d"
 
 #: cfgrtl.c:2673
 #, gcc-internal-format, gfc-internal-format
 msgid "NOTE_INSN_BASIC_BLOCK %d in middle of basic block %d"
-msgstr "NOTE_INSN_BASIC_BLOCK %d in der Mitte des Basis-Blocks %d"
+msgstr "Interner Fehler: NOTE_INSN_BASIC_BLOCK %d in middle of basic block %d"
 
 #: cfgrtl.c:2683
 #, gcc-internal-format, gfc-internal-format
 msgid "in basic block %d:"
-msgstr "im Basis-Block %d:"
+msgstr "Interner Fehler: im Basis-Block %d:"
 
 #: cfgrtl.c:2709
 #, gcc-internal-format, gfc-internal-format
 msgid "BB_RTL flag not set for block %d"
-msgstr "Kennzeichen BB_RTL ist für Block %d nicht gesetzt"
+msgstr "Interner Fehler: BB_RTL flag not set for block %d"
 
 #: cfgrtl.c:2716
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d basic block pointer is %d, should be %d"
-msgstr "Basisblockzeiger des Befehls %d ist %d, sollte %d sein"
+msgstr "Interner Fehler: insn %d basic block pointer is %d, should be %d"
 
 #: cfgrtl.c:2727
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d in header of bb %d has non-NULL basic block"
-msgstr "Befehl %d im Kopf des Basisblockes %d hat Nicht-NULL als Basisblock"
+msgstr "Interner Fehler: insn %d in header of bb %d has non-NULL basic block"
 
 #: cfgrtl.c:2735
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d in footer of bb %d has non-NULL basic block"
-msgstr "Befehl %d am Ende des Basisblocks %d hat Nicht-NULL als Basisblock"
+msgstr "Interner Fehler: insn %d in footer of bb %d has non-NULL basic block"
 
 #: cfgrtl.c:2808 cfgrtl.c:2856
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d outside of basic blocks has non-NULL bb field"
-msgstr "Befehl %d außerhalb eines Basis-Blockes hat Nicht-NULL als Basisblockfeld"
+msgstr "Interner Fehler: insn %d outside of basic blocks has non-NULL bb field"
 
 #: cfgrtl.c:2816
 #, gcc-internal-format, gfc-internal-format
 msgid "end insn %d for block %d not found in the insn stream"
-msgstr "Ende-Befehl %d für Block %d nicht im Befehlsstrom gefunden"
+msgstr "Interner Fehler: end insn %d for block %d not found in the insn stream"
 
 #: cfgrtl.c:2829
 #, gcc-internal-format, gfc-internal-format
 msgid "insn %d is in multiple basic blocks (%d and %d)"
-msgstr "Befehl %d ist in mehreren Basisblöcken (%d und %d)"
+msgstr "Interner Fehler: insn %d is in multiple basic blocks (%d and %d)"
 
 #: cfgrtl.c:2841
 #, gcc-internal-format, gfc-internal-format
 msgid "head insn %d for block %d not found in the insn stream"
-msgstr "Kopf-Befehl %d für Block %d nicht im Befehlsstrom gefunden"
+msgstr "Interner Fehler: head insn %d for block %d not found in the insn stream"
 
 #: cfgrtl.c:2889
 #, gcc-internal-format, gfc-internal-format
 msgid "missing barrier after block %i"
-msgstr "fehlende Sperre nach Block %i"
+msgstr "Interner Fehler: missing barrier after block %i"
 
 #: cfgrtl.c:2905
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Incorrect blocks for fallthru %i->%i"
-msgstr "verify_flow_info: Falsche Blöcke für »fallthru« %i->%i"
+msgstr "Interner Fehler: verify_flow_info: Incorrect blocks for fallthru %i->%i"
 
 #: cfgrtl.c:2914
 #, gcc-internal-format, gfc-internal-format
 msgid "verify_flow_info: Incorrect fallthru %i->%i"
-msgstr "verify_flow_info: Falsches »fallthru« %i->%i"
+msgstr "Interner Fehler: verify_flow_info: Incorrect fallthru %i->%i"
 
 #: cfgrtl.c:2950
 #, gcc-internal-format
 msgid "basic blocks not laid down consecutively"
-msgstr "Basis-Blöcke sind nicht fortlaufend"
+msgstr "Interner Fehler: basic blocks not laid down consecutively"
 
 #: cfgrtl.c:2989
 #, gcc-internal-format, gfc-internal-format
 msgid "number of bb notes in insn chain (%d) != n_basic_blocks (%d)"
-msgstr "Anzahl der bb-Vermerke in Befehlskette (%d) != n_basic_blocks (%d)"
+msgstr "Interner Fehler: number of bb notes in insn chain (%d) != n_basic_blocks (%d)"
 
 #: cgraph.c:3051
-#, fuzzy, gcc-internal-format
-#| msgid "caller edge count is negative"
+#, gcc-internal-format
 msgid "caller edge count invalid"
-msgstr "Rufer-Kantenzähler ist negativ"
+msgstr "Interner Fehler: caller edge count invalid"
 
 #: cgraph.c:3135
 #, gcc-internal-format, gfc-internal-format
 msgid "aux field set for edge %s->%s"
-msgstr "aux field set for edge %s->%s"
+msgstr "Interner Fehler: aux field set for edge %s->%s"
 
 #: cgraph.c:3142
 #, gcc-internal-format
 msgid "cgraph count invalid"
-msgstr ""
+msgstr "Interner Fehler: cgraph count invalid"
 
 #: cgraph.c:3147
 #, gcc-internal-format
 msgid "inline clone in same comdat group list"
-msgstr "»inline«-Clone in gleicher Comdat-Gruppenliste"
+msgstr "Interner Fehler: inline clone in same comdat group list"
 
 #: cgraph.c:3152
 #, gcc-internal-format
 msgid "local symbols must be defined"
-msgstr "lokale Symbole müssen definiert sein"
+msgstr "Interner Fehler: local symbols must be defined"
 
 #: cgraph.c:3157
 #, gcc-internal-format
 msgid "externally visible inline clone"
-msgstr "extern sichtbare Inline-Kopie"
+msgstr "Interner Fehler: externally visible inline clone"
 
 #: cgraph.c:3162
 #, gcc-internal-format
 msgid "inline clone with address taken"
-msgstr "Inline-Kopie mit Adresse genommen"
+msgstr "Interner Fehler: inline clone with address taken"
 
 #: cgraph.c:3167
 #, gcc-internal-format
 msgid "inline clone is forced to output"
-msgstr "Ausgabe für Inline-Kopie erzwungen"
+msgstr "Interner Fehler: inline clone is forced to output"
 
 #: cgraph.c:3174
 #, gcc-internal-format, gfc-internal-format
 msgid "aux field set for indirect edge from %s"
-msgstr "aux field set for indirect edge from %s"
+msgstr "Interner Fehler: aux field set for indirect edge from %s"
 
 #: cgraph.c:3181
 #, gcc-internal-format, gfc-internal-format
 msgid "An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
-msgstr "An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
+msgstr "Interner Fehler: An indirect edge from %s is not marked as indirect or has associated indirect_info, the corresponding statement is: "
 
 #: cgraph.c:3196
 #, gcc-internal-format, gfc-internal-format
 msgid "comdat-local function called by %s outside its comdat"
-msgstr "comdat-local function called by %s outside its comdat"
+msgstr "Interner Fehler: comdat-local function called by %s outside its comdat"
 
 #: cgraph.c:3206
 #, gcc-internal-format
 msgid "inlined_to pointer is wrong"
-msgstr "inlined_to-Zeiger ist falsch"
+msgstr "Interner Fehler: inlined_to pointer is wrong"
 
 #: cgraph.c:3211
 #, gcc-internal-format
 msgid "multiple inline callers"
-msgstr "mehrere Inline-Aufrufer"
+msgstr "Interner Fehler: multiple inline callers"
 
 #: cgraph.c:3218
 #, gcc-internal-format
 msgid "inlined_to pointer set for noninline callers"
-msgstr "inlined_to-Zeiger für Nicht-Inline-Aufrufer gesetzt"
+msgstr "Interner Fehler: inlined_to pointer set for noninline callers"
 
 #: cgraph.c:3239
-#, fuzzy, gcc-internal-format
-#| msgid "caller edge frequency %i does not match BB frequency %i"
+#, gcc-internal-format
 msgid "caller edge count does not match BB count"
-msgstr "Rufer-Kantenhäufigkeit %i passt nicht zur BB-Häufigkeit %i"
+msgstr "Interner Fehler: caller edge count does not match BB count"
 
 #: cgraph.c:3261
-#, fuzzy, gcc-internal-format
-#| msgid "indirect call frequency %i does not match BB frequency %i"
+#, gcc-internal-format
 msgid "indirect call count does not match BB count"
-msgstr "Häufigkeit %i der indirekten Aufrufe entspricht nicht der BB-Häufigkeit %i"
+msgstr "Interner Fehler: indirect call count does not match BB count"
 
 #: cgraph.c:3272
 #, gcc-internal-format
 msgid "inlined_to pointer is set but no predecessors found"
-msgstr "inlined_to-Zeiger gesetzt, aber keine Vorgänger gefunden"
+msgstr "Interner Fehler: inlined_to pointer is set but no predecessors found"
 
 #: cgraph.c:3277
 #, gcc-internal-format
 msgid "inlined_to pointer refers to itself"
-msgstr "Inlined_to-Zeiger verweist auf sich selbst"
+msgstr "Interner Fehler: inlined_to pointer refers to itself"
 
 #: cgraph.c:3289
 #, gcc-internal-format
@@ -17328,32 +17131,32 @@ msgstr "Interner Fehler: cgraph_node has wrong prev_clone pointer"
 #: cgraph.c:3317
 #, gcc-internal-format
 msgid "double linked list of clones corrupted"
-msgstr "doppelt verkettete Liste des Clones ist beschädigt"
+msgstr "Interner Fehler: double linked list of clones corrupted"
 
 #: cgraph.c:3329
 #, gcc-internal-format
 msgid "Alias has call edges"
-msgstr "Alias hat Aufruf-Kanten"
+msgstr "Interner Fehler: Alias has call edges"
 
 #: cgraph.c:3337
 #, gcc-internal-format
 msgid "Alias has non-alias reference"
-msgstr "Alias hat Nicht-Alias-Referenz"
+msgstr "Interner Fehler: Alias has non-alias reference"
 
 #: cgraph.c:3342
 #, gcc-internal-format
 msgid "Alias has more than one alias reference"
-msgstr "Alias hat mehr als eine Alias-Reference"
+msgstr "Interner Fehler: Alias has more than one alias reference"
 
 #: cgraph.c:3349
 #, gcc-internal-format
 msgid "Analyzed alias has no reference"
-msgstr "Analysierter Alias hat keine Referenz"
+msgstr "Interner Fehler: Analyzed alias has no reference"
 
 #: cgraph.c:3358
 #, gcc-internal-format
 msgid "Instrumentation clone does not reference original node"
-msgstr "Instrumentationsklon verweist nicht auf den ursprünglichen Knoten"
+msgstr "Interner Fehler: Instrumentation clone does not reference original node"
 
 #: cgraph.c:3365
 #, gcc-internal-format
@@ -17383,47 +17186,47 @@ msgstr "Interner Fehler: Analyzed node has no reference to instrumented version"
 #: cgraph.c:3420
 #, gcc-internal-format
 msgid "Alias chain for instrumented node is broken"
-msgstr "Aliaskette für instrumentierten Knoten ist zerbrochen"
+msgstr "Interner Fehler: Alias chain for instrumented node is broken"
 
 #: cgraph.c:3429
 #, gcc-internal-format
 msgid "No edge out of thunk node"
-msgstr "Keine Kante aus Thunk-Knoten"
+msgstr "Interner Fehler: No edge out of thunk node"
 
 #: cgraph.c:3434
 #, gcc-internal-format
 msgid "More than one edge out of thunk node"
-msgstr "Mehr als eine Kante aus Thunk-Knoten"
+msgstr "Interner Fehler: More than one edge out of thunk node"
 
 #: cgraph.c:3439
 #, gcc-internal-format
 msgid "Thunk is not supposed to have body"
-msgstr "Thunk sollte keinen Körper haben"
+msgstr "Interner Fehler: Thunk is not supposed to have body"
 
 #: cgraph.c:3445
 #, gcc-internal-format
 msgid "Instrumentation thunk has wrong edge callee"
-msgstr "Instrumentationsthunk hat falschen Kantenaufrufer"
+msgstr "Interner Fehler: Instrumentation thunk has wrong edge callee"
 
 #: cgraph.c:3481
 #, gcc-internal-format
 msgid "shared call_stmt:"
-msgstr "Gemeinsam genutztes call_stmt:"
+msgstr "Interner Fehler: shared call_stmt:"
 
 #: cgraph.c:3489
 #, gcc-internal-format
 msgid "edge points to wrong declaration:"
-msgstr "Kante zeigt auf falsche Deklaration:"
+msgstr "Interner Fehler: edge points to wrong declaration:"
 
 #: cgraph.c:3498
 #, gcc-internal-format
 msgid "an indirect edge with unknown callee corresponding to a call_stmt with a known declaration:"
-msgstr "eine indirekte Kante mit unbekanntem Aufrufziel korrespondiert mit einem call_stmt mit einer unbekannten Deklaration:"
+msgstr "Interner Fehler: an indirect edge with unknown callee corresponding to a call_stmt with a known declaration:"
 
 #: cgraph.c:3508
 #, gcc-internal-format
 msgid "missing callgraph edge for call stmt:"
-msgstr "Fehlende Aufrufgraph-Kante für call stmt:"
+msgstr "Interner Fehler: missing callgraph edge for call stmt:"
 
 #: cgraph.c:3518
 #, gcc-internal-format
@@ -17433,22 +17236,22 @@ msgstr "Interner Fehler: reference to dead statement"
 #: cgraph.c:3531
 #, gcc-internal-format, gfc-internal-format
 msgid "edge %s->%s has no corresponding call_stmt"
-msgstr "edge %s->%s has no corresponding call_stmt"
+msgstr "Interner Fehler: edge %s->%s has no corresponding call_stmt"
 
 #: cgraph.c:3543
 #, gcc-internal-format, gfc-internal-format
 msgid "an indirect edge from %s has no corresponding call_stmt"
-msgstr "an indirect edge from %s has no corresponding call_stmt"
+msgstr "Interner Fehler: an indirect edge from %s has no corresponding call_stmt"
 
 #: cgraph.c:3554
 #, gcc-internal-format
 msgid "verify_cgraph_node failed"
-msgstr "verify_cgraph gescheitert"
+msgstr "Interner Fehler: verify_cgraph_node failed"
 
 #: cgraph.c:3661 varpool.c:306
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: section %s is missing"
-msgstr "%s: Abschnitt %s fehlt"
+msgstr "Interner Fehler: %s: section %s is missing"
 
 #: cgraphunit.c:725
 #, gcc-internal-format
@@ -17492,34 +17295,29 @@ msgid "%qD defined but not used"
 msgstr "%qD definiert, aber nicht verwendet"
 
 #: cgraphunit.c:1350
-#, fuzzy, gcc-internal-format
-#| msgid "%<operator new%> must return type %qT"
+#, gcc-internal-format
 msgid "%<ifunc%> resolver for %qD must return %qT"
-msgstr "%<operator new%> muss Typ %qT zurückgeben"
+msgstr "%<ifunc%>-Auflöser für %qD muss %qT zurückgeben"
 
 #: cgraphunit.c:1353 cgraphunit.c:1375
-#, fuzzy, gcc-internal-format
-#| msgid "in a call to function %qD declared here"
+#, gcc-internal-format
 msgid "resolver indirect function declared here"
-msgstr "in einem Aufruf der hier deklarierten Funktion %qD"
+msgstr "Auflöser-indirekte Funktion ist hier deklariert"
 
 #: cgraphunit.c:1372
-#, fuzzy, gcc-internal-format
-#| msgid "prefix %qD should return %qT"
+#, gcc-internal-format
 msgid "%<ifunc%> resolver for %qD should return %qT"
-msgstr "Präfix-%qD sollte %qT zurückgeben"
+msgstr "%<ifunc%>-Auflöser für %qD sollte %qT zurückgeben"
 
 #: cgraphunit.c:1379
-#, fuzzy, gcc-internal-format
-#| msgid "Warn about casting functions to incompatible types."
+#, gcc-internal-format
 msgid "%qD alias between functions of incompatible types %qT and %qT"
-msgstr "Warnen, wenn Funktionen in unverträgliche Typen umgewandelt werden."
+msgstr "%qD Alias zwischen unverträglichen Funktionstypen %qT und %qT"
 
 #: cgraphunit.c:1382 cgraphunit.c:1461
-#, fuzzy, gcc-internal-format
-#| msgid "friend declaration here"
+#, gcc-internal-format
 msgid "aliased declaration here"
-msgstr "%<friend%>-Deklaration hier"
+msgstr "hier ist die Alias-Deklaration"
 
 #: cgraphunit.c:1419 c-family/c-pragma.c:337
 #, gcc-internal-format
@@ -17532,8 +17330,7 @@ msgid "%q+D aliased to external symbol %qE"
 msgstr "%q+D als Alias für externes Symbol %qE"
 
 #: cgraphunit.c:1458
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D alias in between function and variable is not supported"
+#, gcc-internal-format
 msgid "%q+D alias between function and variable is not supported"
 msgstr "Alias %q+D zwischen Funktion und Variable wird nicht unterstützt"
 
@@ -18035,10 +17832,9 @@ msgid "%Kcall to %qs declared with attribute warning: %s"
 msgstr "%KAufruf von %qs mit Attributwarnung deklariert: %s"
 
 #: file-prefix-map.c:50
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to %qD"
+#, gcc-internal-format
 msgid "invalid argument %qs to %qs"
-msgstr "ungültiges Argument für %qD"
+msgstr "ungültiges Argument %qs für %qs"
 
 #: final.c:1789
 #, gcc-internal-format
@@ -18182,10 +17978,9 @@ msgstr "Verarbeitungszeiten konnten nicht ermittelt werden: %m"
 
 #. The inferior failed to catch the signal.
 #: gcc.c:3151 gcc.c:3175
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Use alternate register names."
+#, gcc-internal-format, gfc-internal-format
 msgid "%s signal terminated program %s"
-msgstr "Alternative Registernamen verwenden."
+msgstr "Signal %s hat Programm %s beendet"
 
 #: gcc.c:3653 opts-common.c:1233 opts-common.c:1257 opts-global.c:139
 #, gcc-internal-format
@@ -18312,10 +18107,9 @@ msgid "malformed spec function arguments"
 msgstr "schlechte Argumente für Spezifikationsfunktion"
 
 #: gcc.c:6330
-#, fuzzy, gcc-internal-format
-#| msgid "braced spec %qs is invalid at %qc"
+#, gcc-internal-format
 msgid "braced spec %qs ends in escape"
-msgstr "geschweift geklammerte Spezifikation %qs ist bei %qc ungültig"
+msgstr "geschweift geklammerte Spezifikation %qs endet mit Escapezeichen"
 
 #: gcc.c:6465
 #, gcc-internal-format
@@ -18635,56 +18429,45 @@ msgid "can%'t write PCH file"
 msgstr "PCH-Datei kann nicht geschrieben werden"
 
 #: gimple-fold.c:719 gimple-fold.c:1604 gimple-fold.c:2512 gimple-fold.c:2620
-#, fuzzy, gcc-internal-format
-#| msgid "%qE argument is not a function"
+#, gcc-internal-format
 msgid "%qD source argument is the same as destination"
-msgstr "Argument %qE ist keine Funktion"
+msgstr "Quellargument für %qD ist dasselbe wie für das Ziel"
 
 #: gimple-fold.c:1658
 msgid "%G%qD destination unchanged after copying no bytes from a string of length %E"
-msgstr ""
+msgstr "%G%qD Ziel unverändert, nachdem keine Bytes aus einem String der Länge %E kopiert wurden"
 
 #: gimple-fold.c:1663
 msgid "%G%qD destination unchanged after copying no bytes"
-msgstr ""
+msgstr "%G%qD Ziel unverändert, nachdem keine Bytes kopiert wurden"
 
 #: gimple-fold.c:1699
-#, fuzzy
-#| msgid "%<%.*s%> directive output truncated writing %wu byte into a region of size %wu"
 msgid "%G%qD output truncated copying %E byte from a string of length %E"
-msgstr "Ausgabe der %<%.*s%>-Direktive abgeschnitten, beim Schreiben von %wu Byte in eine Region der Größe %wu"
+msgstr "%G%qD Ausgabe abgeschnitten, beim Kopieren von %E Byte aus einer Zeichenkette der Länge %E"
 
 #: gimple-fold.c:1701
-#, fuzzy
-#| msgid "%<%.*s%> directive output truncated writing %wu bytes into a region of size %wu"
 msgid "%G%qD output truncated copying %E bytes from a string of length %E"
-msgstr "Ausgabe der %<%.*s%>-Direktive abgeschnitten, beim Schreiben von %wu Bytes in eine Region der Größe %wu"
+msgstr "%G%qD Ausgabe abgeschnitten, beim Kopieren von %E Bytes aus einer Zeichenkette der Länge %E"
 
 #: gimple-fold.c:1712
 msgid "%G%qD output truncated before terminating nul copying %E byte from a string of the same length"
-msgstr ""
+msgstr "%G%qD Ausgabe abgeschnitten vor dem abschließenden NUL, beim Kopieren von %E Byte aus einem String derselben Länge"
 
 #: gimple-fold.c:1715
 msgid "%G%qD output truncated before terminating nul copying %E bytes from a string of the same length"
-msgstr ""
+msgstr "%G%qD Ausgabe abgeschnitten vor dem abschließenden NUL, beim Kopieren von %E Bytes aus einem String derselben Länge"
 
 #: gimple-fold.c:2060
-#, fuzzy
-#| msgid "specified bound %wu equals the size of the destination"
 msgid "%G%qD specified bound %E equals destination size"
-msgstr "angegebene Grenze %wu ist genau die Größe des Ziels"
+msgstr "%G%qD angegebene Grenze %E ist genau die Größe des Ziels"
 
 #: gimple-fold.c:2062
-#, fuzzy
-#| msgid "%K%qD: specified bound %wu exceeds maximum object size %wu"
 msgid "%G%qD specified bound %E exceeds destination size %wu"
-msgstr "%K%qD: angegebene Grenze %wu überschreitet die maximale Objektgröße %wu"
+msgstr "%G%qD angegebene Grenze %E überschreitet die Zielgröße %wu"
 
 #: gimple-fold.c:2078
-#, fuzzy
-#| msgid "specified bound %wu equals the size of the destination"
 msgid "%G%qD specified bound %E equals source length"
-msgstr "angegebene Grenze %wu ist genau die Größe des Ziels"
+msgstr "%G%qD angegebene Grenze %E ist genau die Größe der Quelle"
 
 #: gimple-ssa-isolate-paths.c:290
 #, gcc-internal-format
@@ -18932,12 +18715,11 @@ msgid "%<%.*s%> directive output between %wu and %wu bytes may cause result to e
 msgstr "Ausgabe der %<%.*s%>-Direktive zwischen %wu und %wu Bytes könnte das Ergebnis größer als %<INT_MAX%> machen"
 
 #: gimple-ssa-sprintf.c:2944
-#, fuzzy, gcc-internal-format
-#| msgid "assuming directive output of %wu byte"
+#, gcc-internal-format
 msgid "assuming directive output of %wu byte"
 msgid_plural "assuming directive output of %wu bytes"
 msgstr[0] "angenommen, dass die Ausgabe der Direktive %wu Byte groß ist"
-msgstr[1] "angenommen, dass die Ausgabe der Direktive %wu Byte groß ist"
+msgstr[1] "angenommen, dass die Ausgabe der Direktive %wu Bytes groß ist"
 
 #: gimple-ssa-sprintf.c:2951
 #, gcc-internal-format
@@ -18985,8 +18767,7 @@ msgid "specified bound %wu exceeds maximum object size %wu"
 msgstr "angegebene Grenze %wu überschreitet maximale Objektgröße %wu"
 
 #: gimple-ssa-sprintf.c:3893
-#, fuzzy, gcc-internal-format
-#| msgid "specified bound %wu exceeds %<INT_MAX %>"
+#, gcc-internal-format
 msgid "specified bound %wu exceeds %<INT_MAX%>"
 msgstr "angegebene Grenze %wu überschreitet %<INT_MAX%>"
 
@@ -19087,167 +18868,152 @@ msgstr "Argument für %<alloca%> ist null"
 
 #: gimple-ssa-warn-restrict.c:1296
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte an den Offsets %s und %s überdeckt sich mit %wu Byte an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1298
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte an den Offsets %s und %s überdeckt sich mit %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1302
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes an den Offsets %s und %s überdeckt sich mit %wu Byte an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1304
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes an den Offsets %s und %s überdeckt sich mit %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1312
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte an den Offsets %s und %s überdeckt sich mit %wu bis %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1315
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes an den Offsets %s und %s überdeckt sich mit %wu bis %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1324
 msgid "%G%qD accessing %wu byte at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte an den Offsets %s und %s überdeckt sich mit %wu oder mehr Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1326
 msgid "%G%qD accessing %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes an den Offsets %s und %s überdeckt sich mit %wu oder mehr Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1338
-#, fuzzy
-#| msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr "%K%qD: das Schreiben von %wu bis %wu Bytes in eine Region der Größe %wu lässt die Zielregion überlaufen"
+msgstr "%G%qD Zugriff auf %wu bis %wu Bytes an den Offsets %s und %s überdeckt %wu Byte an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1341
-#, fuzzy
-#| msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr "%K%qD: das Schreiben von %wu bis %wu Bytes in eine Region der Größe %wu lässt die Zielregion überlaufen"
+msgstr "%G%qD Zugriff auf %wu bis %wu Bytes an den Offsets %s und %s überdeckt %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1348
-#, fuzzy
-#| msgid "%<%.*s%> directive writing between %wu and %wu bytes into a region of size between %wu and %wu"
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr "%<%.*s%>-Direktive schreibt zwischen %wu und %wu Bytes in eine Region der Größe zwischen %wu und %wu"
+msgstr "%G%qD Zugriff auf %wu bis %wu Bytes an den Offsets %s und %s überdeckt %wu bis %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1356
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu bis %wu Bytes an den Offsets %s und %s überdeckt %wu oder mehr Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1370
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu oder mehr Bytes an den Offsets %s und %s überdeckt %wu Byte an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1372
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu oder mehr Bytes an den Offsets %s und %s überdeckt %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1378
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps between %wu and %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu oder mehr Bytes an den Offsets %s und %s überdeckt %wu bis %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1385
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s overlaps %wu or more bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu oder mehr Bytes an den Offsets %s und %s überdeckt %wu oder mehr Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1407
 msgid "%G%qD accessing %wu byte may overlap %wu byte"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte überdeckt möglicherweise %wu Byte"
 
 #: gimple-ssa-warn-restrict.c:1409
 msgid "%G%qD accessing %wu bytes may overlap %wu byte"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes überdeckt möglicherweise %wu Byte"
 
 #: gimple-ssa-warn-restrict.c:1415
 msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte an den Offsets %s und %s überdeckt möglicherweise %wu Byte an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1417
 msgid "%G%qD accessing %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes an den Offsets %s und %s überdeckt möglicherweise %wu Byte an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1427
 msgid "%G%qD accessing %wu byte may overlap up to %wu bytes"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte überdeckt möglicherweise bis zu %wu Bytes"
 
 #: gimple-ssa-warn-restrict.c:1429
 msgid "%G%qD accessing %wu bytes may overlap up to %wu bytes"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes überdeckt möglicherweise bis zu %wu Bytes"
 
 #: gimple-ssa-warn-restrict.c:1435
 msgid "%G%qD accessing %wu byte at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Byte an den Offsets %s und %s überdeckt möglicherweise bis zu %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1437
 msgid "%G%qD accessing %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu Bytes an den Offsets %s und %s überdeckt möglicherweise bis zu %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1449
-#, fuzzy
-#| msgid "%K%qD: specified size between %wu and %wu exceeds maximum object size %wu"
 msgid "%G%qD accessing between %wu and %wu bytes may overlap %wu byte"
-msgstr "%K%qD: angegebene Größe zwischen %wu und %wu überschreitet maximale Objektgröße %wu"
+msgstr "%G%qD Zugriff auf %wu bis %wu Bytes überdeckt möglicherweise %wu Byte"
 
 #: gimple-ssa-warn-restrict.c:1451
-#, fuzzy
-#| msgid "%K%qD: specified size between %wu and %wu exceeds maximum object size %wu"
 msgid "%G%qD accessing between %wu and %wu bytes may overlap up to %wu bytes"
-msgstr "%K%qD: angegebene Größe zwischen %wu und %wu überschreitet maximale Objektgröße %wu"
+msgstr "%G%qD Zugriff auf %wu bis %wu Bytes überdeckt möglicherweise bis zu %wu Bytes"
 
 #: gimple-ssa-warn-restrict.c:1457
-#, fuzzy
-#| msgid "%K%qD: writing between %wu and %wu bytes into a region of size %wu overflows the destination"
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr "%K%qD: das Schreiben von %wu bis %wu Bytes in eine Region der Größe %wu lässt die Zielregion überlaufen"
+msgstr "%G%qD: das Schreiben von %wu bis %wu Bytes in eine Region der Größe %wu lässt die Zielregion überlaufen"
 
 #: gimple-ssa-warn-restrict.c:1460
 msgid "%G%qD accessing between %wu and %wu bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu bis %wu Bytes an den Offsets %s und %s überdeckt möglicherweise bis zu %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1470
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap %wu byte at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu oder mehr Bytes an den Offsets %s und %s überdeckt möglicherweise %wu Byte an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1472
 msgid "%G%qD accessing %wu or more bytes at offsets %s and %s may overlap up to %wu bytes at offset %s"
-msgstr ""
+msgstr "%G%qD Zugriff auf %wu oder mehr Bytes an den Offsets %s und %s überdeckt möglicherweise bis zu %wu Bytes an Offset %s"
 
 #: gimple-ssa-warn-restrict.c:1530
 msgid "%G%qD pointer overflow between offset %s and size %s accessing array %qD with type %qT"
-msgstr ""
+msgstr "%G%qD Zeigerüberlauf zwischen Offset %s und Größe %s beim Zugriff auf Array %qD mit Typ %qT"
 
 #: gimple-ssa-warn-restrict.c:1534
-#, fuzzy, gcc-internal-format
-#| msgid "array member %q#D declared here"
+#, gcc-internal-format
 msgid "array %qD declared here"
-msgstr "Arrayelement %q#D hier deklariert"
+msgstr "Array %qD ist hier deklariert"
 
 #: gimple-ssa-warn-restrict.c:1537 gimple-ssa-warn-restrict.c:1543
 msgid "%G%qD pointer overflow between offset %s and size %s"
-msgstr ""
+msgstr "%G%qD Zeigerüberlauf zwischen Offset %s und Größe %s"
 
 #: gimple-ssa-warn-restrict.c:1561
 msgid "%G%qD forming offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
-msgstr ""
+msgstr "%G%qD Bildung des Offsets %s außerhalb der Grenzen [0, %wu] von Objekt %qD mit Typ %qT"
 
 #: gimple-ssa-warn-restrict.c:1564
 msgid "%G%qD offset %s is out of the bounds [0, %wu] of object %qD with type %qT"
-msgstr ""
+msgstr "%G%qD Offset %s is außerhalb der Grenzen [0, %wu] von Objekt %qD mit Typ %qT"
 
 #: gimple-ssa-warn-restrict.c:1570
 msgid "%G%qD forming offset %s is out of the bounds of object %qD with type %qT"
-msgstr ""
+msgstr "%G%qD Bildung des Offsets %s außerhalb der Grenzen von Objekt %qD mit Typ %qT"
 
 #: gimple-ssa-warn-restrict.c:1572
-#, fuzzy
-#| msgid "array subscript value %qE is outside the bounds of array %qD of type %qT"
 msgid "%G%qD offset %s is out of the bounds of object %qD with type %qT"
-msgstr "Arrayindexwert %qE ist außerhalb der Grenzen des Arrays %qD vom Typ %qT"
+msgstr "%G%qD Offset %s ist außerhalb der Grenzen von Objekt %qD mit Typ %qT"
 
 #: gimple-ssa-warn-restrict.c:1577 c/c-decl.c:3603 c/c-decl.c:3874
 #: c/c-typeck.c:8347 cp/class.c:1358 cp/class.c:3127 cp/decl.c:3902
@@ -19256,27 +19022,23 @@ msgstr "Arrayindexwert %qE ist außerhalb der Grenzen des Arrays %qD vom Typ %qT
 #: cp/parser.c:20932
 #, gcc-internal-format
 msgid "%qD declared here"
-msgstr "%qD hier deklariert"
+msgstr "%qD ist hier deklariert"
 
 #: gimple-ssa-warn-restrict.c:1582
 msgid "%G%qD forming offset %s is out of the bounds [0, %wu]"
-msgstr ""
+msgstr "%G%qD Bildung des Offsets %s außerhalb der Grenzen [0, %wu]"
 
 #: gimple-ssa-warn-restrict.c:1584
 msgid "%G%qD offset %s is out of the bounds [0, %wu]"
-msgstr ""
+msgstr "%G%qD Offset %s ist außerhalb der Grenzen [0, %wu]"
 
 #: gimple-ssa-warn-restrict.c:1589
-#, fuzzy
-#| msgid "DIM argument at %L is out of bounds"
 msgid "%G%qD forming offset %s is out of bounds"
-msgstr "DIM-Argument bei %L ist außerhalb der Grenzen"
+msgstr "%G%qD Bildung des Offsets %s außerhalb der Grenzen"
 
 #: gimple-ssa-warn-restrict.c:1590
-#, fuzzy
-#| msgid "DIM argument at %L is out of bounds"
 msgid "%G%qD offset %s is out of bounds"
-msgstr "DIM-Argument bei %L ist außerhalb der Grenzen"
+msgstr "%G%qD Offset %s ist außerhalb der Grenzen"
 
 #: gimple-ssa-warn-restrict.c:1601
 msgid "%G%qD offset %s from the object at %qE is out of the bounds of %qT"
@@ -63489,10 +63251,9 @@ msgstr "%<-fobjc-sjlj-exceptions%> wird für %<-fgnu-runtime%> ignoriert"
 
 #: objc/objc-gnu-runtime-abi-01.c:2171 objc/objc-next-runtime-abi-01.c:2817
 #: objc/objc-next-runtime-abi-02.c:3589
-#, fuzzy, gcc-internal-format
-#| msgid "non-objective-c type '%T' cannot be caught"
+#, gcc-internal-format
 msgid "non-objective-c type %qT cannot be caught"
-msgstr "Nicht-Objective-C-Typ »%T« kann nicht aufgefangen werden"
+msgstr "Nicht-Objective-C-Typ %qT kann nicht aufgefangen werden"
 
 #: objc/objc-next-runtime-abi-01.c:152
 #, gcc-internal-format
