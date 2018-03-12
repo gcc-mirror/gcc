@@ -1,3 +1,13 @@
+2018-03-12  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/83456
+	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
+	Restore checking of bounded built-in functions.
+	(check_function_arguments): Also return the result
+	of warn_for_restrict.
+	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
+	* gcc/c-family/c-warn.c (warn_for_restrict): Return bool.
+
 2018-03-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/84171

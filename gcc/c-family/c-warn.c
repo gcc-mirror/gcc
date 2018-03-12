@@ -2372,14 +2372,15 @@ maybe_warn_bool_compare (location_t loc, enum tree_code code, tree op0,
 }
 
 /* Warn if an argument at position param_pos is passed to a
-   restrict-qualified param, and it aliases with another argument.  */
+   restrict-qualified param, and it aliases with another argument.
+   Return true if a warning has been issued.  */
 
-void
+bool
 warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 {
   tree arg = argarray[param_pos];
   if (TREE_VISITED (arg) || integer_zerop (arg))
-    return;
+    return false;
 
   location_t loc = EXPR_LOC_OR_LOC (arg, input_location);
   gcc_rich_location richloc (loc);
@@ -2395,13 +2396,13 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
       tree current_arg = argarray[i];
       if (operand_equal_p (arg, current_arg, 0))
 	{
-	  TREE_VISITED (current_arg) = 1; 
+	  TREE_VISITED (current_arg) = 1;
 	  arg_positions.safe_push (i + 1);
 	}
     }
 
   if (arg_positions.is_empty ())
-    return;
+    return false;
 
   int pos;
   FOR_EACH_VEC_ELT (arg_positions, i, pos)
@@ -2411,13 +2412,13 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
 	richloc.add_range (EXPR_LOCATION (arg), false);
     }
 
-  warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
-	     "passing argument %i to restrict-qualified parameter"
-	     " aliases with argument %Z",
-	     "passing argument %i to restrict-qualified parameter"
-	     " aliases with arguments %Z",
-	     param_pos + 1, arg_positions.address (),
-	     arg_positions.length ());
+  return warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
+		    "passing argument %i to restrict-qualified parameter"
+		    " aliases with argument %Z",
+		    "passing argument %i to restrict-qualified parameter"
+		    " aliases with arguments %Z",
+		    param_pos + 1, arg_positions.address (),
+		    arg_positions.length ());
 }
 
 /* Callback function to determine whether an expression TP or one of its
