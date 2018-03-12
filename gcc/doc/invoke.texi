@@ -27166,8 +27166,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mpclmul
 @opindex mpclmul
 @need 200
-@itemx -mclfushopt
-@opindex mclfushopt
+@itemx -mclflushopt
+@opindex mclflushopt
 @need 200
 @itemx -mfsgsbase
 @opindex mfsgsbase
