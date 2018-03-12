@@ -1,3 +1,9 @@
+2018-03-12  Renlin Li  <renlin.li@arm.com>
+
+	* gcc.target/aarch64/movi_hf.c: New.
+	* gcc.target/aarch64/f16_mov_immediate_1.c: Update.
+	* gcc.target/aarch64/f16_mov_immediate_2.c: Update.
+
 2018-03-12  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83456
@@ -5,13 +11,6 @@
 	* c-c++-common/Wrestrict.c: Same.
 	* gcc.dg/Wrestrict-12.c: New test.
 	* gcc.dg/Wrestrict-14.c: New test.
-Index: gcc/c-family/c-common.c
-===================================================================
---- gcc/c-family/c-common.c	(revision 258366)
-+++ gcc/c-family/c-common.c	(working copy)
-@@ -5309,10 +5309,11 @@ check_function_sentinel (const_tree fntype, int na
-     }
- }
 
 2018-03-12  H.J. Lu  <hongjiu.lu@intel.com>
 

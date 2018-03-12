@@ -1145,7 +1145,7 @@
    umov\\t%w0, %1.h[0]
    mov\\t%0.h[0], %1.h[0]
    fmov\\t%h0, %1
-   * return aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
+   * return aarch64_output_scalar_simd_mov_immediate (operands[1], HImode);
    ldr\\t%h0, %1
    str\\t%h1, %0
    ldrh\\t%w0, %1
