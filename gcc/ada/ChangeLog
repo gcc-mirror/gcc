@@ -1,3 +1,9 @@
+2018-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82813
+	* gcc-interface/misc.c (gnat_post_options): Disable string overflow
+	warnings.
+
 2018-03-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (node_has_volatile_full_access) <N_Identifier>:
