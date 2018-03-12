@@ -1,3 +1,10 @@
+2018-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84808
+	* constexpr.c (find_array_ctor_elt): Don't use elt reference after
+	first potential CONSTRUCTOR_ELTS reallocation.  Convert dindex to
+	sizetype.  Formatting fixes.
+
 2018-03-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/84355 - ICE with deduction for member class template.

@@ -2194,9 +2194,9 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
      that the same is true of the other elements and index directly.  */
   if (end > 0)
     {
-      tree cindex = (*elts)[end-1].index;
+      tree cindex = (*elts)[end - 1].index;
       if (TREE_CODE (cindex) == INTEGER_CST
-	  && compare_tree_int (cindex, end-1) == 0)
+	  && compare_tree_int (cindex, end - 1) == 0)
 	{
 	  if (i < end)
 	    return i;
@@ -2225,6 +2225,8 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
 	      constructor_elt e;
 	      tree lo = TREE_OPERAND (idx, 0);
 	      tree hi = TREE_OPERAND (idx, 1);
+	      tree value = elt.value;
+	      dindex = fold_convert (sizetype, dindex);
 	      if (tree_int_cst_lt (lo, dindex))
 		{
 		  /* There are still some lower elts; shorten the range.  */
@@ -2238,7 +2240,7 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
 		  /* Append the element we want to insert.  */
 		  ++middle;
 		  e.index = dindex;
-		  e.value = unshare_constructor (elt.value);
+		  e.value = unshare_constructor (value);
 		  vec_safe_insert (CONSTRUCTOR_ELTS (ary), middle, e);
 		}
 	      else
@@ -2254,8 +2256,8 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert = false)
 		    e.index = hi;
 		  else
 		    e.index = build2 (RANGE_EXPR, sizetype, new_lo, hi);
-		  e.value = unshare_constructor (elt.value);
-		  vec_safe_insert (CONSTRUCTOR_ELTS (ary), middle+1, e);
+		  e.value = unshare_constructor (value);
+		  vec_safe_insert (CONSTRUCTOR_ELTS (ary), middle + 1, e);
 		}
 	    }
 	  return middle;
