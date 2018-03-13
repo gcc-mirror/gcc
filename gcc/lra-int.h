@@ -356,6 +356,7 @@ extern bool lra_constrain_insn (rtx_insn *);
 extern bool lra_constraints (bool);
 extern void lra_constraints_init (void);
 extern void lra_constraints_finish (void);
+extern bool spill_hard_reg_in_range (int, enum reg_class, rtx_insn *, rtx_insn *);
 extern void lra_inheritance (void);
 extern bool lra_undo_inheritance (void);
 
@@ -389,8 +390,8 @@ extern void lra_setup_reload_pseudo_preferenced_hard_reg (int, int, int);
 extern int lra_assignment_iter;
 extern int lra_assignment_iter_after_spill;
 extern void lra_setup_reg_renumber (int, int, bool);
-extern bool lra_assign (void);
-
+extern bool lra_assign (bool &);
+extern bool lra_split_hard_reg_for (void);
 
 /* lra-coalesce.c: */
 
