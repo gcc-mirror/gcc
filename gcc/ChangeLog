@@ -1,3 +1,14 @@
+2018-03-13  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/84658.
+	* (sem_item_optimizer::sem_item_optimizer): Initialize new
+	vector.
+	(sem_item_optimizer::~sem_item_optimizer): Release it.
+	(sem_item_optimizer::merge_classes): Register variable aliases.
+	(sem_item_optimizer::fixup_pt_set): New function.
+	(sem_item_optimizer::fixup_points_to_sets): Likewise.
+	* ipa-icf.h: Declare new variables and functions.
+
 2018-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/84834
