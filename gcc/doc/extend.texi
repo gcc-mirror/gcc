@@ -6080,17 +6080,17 @@ types (@pxref{Common Function Attributes},
 @item nonstring
 @cindex @code{nonstring} variable attribute
 The @code{nonstring} variable attribute specifies that an object or member
-declaration with type array of @code{char} or pointer to @code{char} is
-intended to store character arrays that do not necessarily contain
-a terminating @code{NUL} character.  This is useful in detecting uses
-of such arrays or pointers with functions that expect NUL-terminated
-strings, and to avoid warnings when such an array or pointer is used
-as an argument to a bounded string manipulation function such as
-@code{strncpy}.  For example, without the attribute, GCC will issue
-a warning for the @code{strncpy} call below because it may truncate
-the copy without appending the terminating @code{NUL} character.  Using
-the attribute makes it possible to suppress the warning.  However, when
-the array is declared with the attribute the call to @code{strlen} is
+declaration with type array of @code{char}, @code{signed char}, or
+@code{unsigned char}, or pointer to such a type is intended to store
+character arrays that do not necessarily contain a terminating @code{NUL}.
+This is useful in detecting uses of such arrays or pointers with functions
+that expect @code{NUL}-terminated strings, and to avoid warnings when such
+an array or pointer is used as an argument to a bounded string manipulation
+function such as @code{strncpy}.  For example, without the attribute, GCC
+will issue a warning for the @code{strncpy} call below because it may
+truncate the copy without appending the terminating @code{NUL} character.
+Using the attribute makes it possible to suppress the warning.  However,
+when the array is declared with the attribute the call to @code{strlen} is
 diagnosed because when the array doesn't contain a @code{NUL}-terminated
 string the call is undefined.  To copy, compare, of search non-string
 character arrays use the @code{memcpy}, @code{memcmp}, @code{memchr},
