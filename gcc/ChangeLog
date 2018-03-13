@@ -1,5 +1,10 @@
 2018-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84828
+	* reg-stack.c (change_stack): Change update_end var from int to
+	rtx_insn *, if non-NULL don't update just BB_END (current_block), but
+	also call set_block_for_insn on the newly added insns and rescan.
+
 	PR target/84786
 	* config/i386/sse.md (sse2_loadhpd): Use Yv constraint rather than v
 	on the last operand.

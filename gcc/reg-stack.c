@@ -2489,7 +2489,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	      enum emit_where where)
 {
   int reg;
-  int update_end = 0;
+  rtx_insn *update_end = NULL;
   int i;
 
   /* Stack adjustments for the first insn in a block update the
@@ -2511,7 +2511,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
   if (where == EMIT_AFTER)
     {
       if (current_block && BB_END (current_block) == insn)
-	update_end = 1;
+	update_end = insn;
       insn = NEXT_INSN (insn);
     }
 
@@ -2686,7 +2686,16 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
     }
 
   if (update_end)
-    BB_END (current_block) = PREV_INSN (insn);
+    {
+      for (update_end = NEXT_INSN (update_end); update_end != insn;
+	   update_end = NEXT_INSN (update_end))
+	{
+	  set_block_for_insn (update_end, current_block);
+	  if (INSN_P (update_end))
+	    df_insn_rescan (update_end);
+	}
+      BB_END (current_block) = PREV_INSN (insn);
+    }
 }
 
 /* Print stack configuration.  */
