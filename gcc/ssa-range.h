@@ -23,43 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "ssa-range-bb.h"
 
-class ssa_block_ranges
-{
-private:
-  vec<irange_storage *> tab;
-  irange_storage *type_range;
-  const_tree type;
-public:
-  ssa_block_ranges (tree t);
-  ~ssa_block_ranges ();
-
-  void set_bb_range (const basic_block bb, const irange &r);
-  void set_bb_range_for_type (const basic_block bb);
-  bool get_bb_range (irange& r, const basic_block bb);
-  bool bb_range_p (const basic_block bb);
-
-  void dump(FILE *f);
-};
-
-
-class block_range_cache
-{
-private:
-  vec<ssa_block_ranges *> ssa_ranges;
-public:
-  block_range_cache ();
-  ~block_range_cache ();
-  ssa_block_ranges& operator[] (tree name);
-
-  void dump (FILE *f);
-};
-
 /* This class utilizes the basic block GORI map and is used to query the range
    of SSA_NAMEs across multiple basic blocks and edges.  */
 class path_ranger : public block_ranger
 {
 private:
-  block_range_cache block_cache;
+  class block_range_cache *block_cache;
 
   void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
   void determine_block (tree name, basic_block bb, basic_block def_bb);
@@ -69,6 +38,7 @@ private:
 public:
   enum path_range_direction { FORWARD, REVERSE };
   path_ranger ();
+  ~path_ranger ();
 
   /* What is the known range of name from its DEF point to edge E.  */
   bool path_range_edge (irange& r, tree name, edge e);

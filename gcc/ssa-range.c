@@ -75,6 +75,24 @@ normalize_bool_type (irange& r1, irange& r2)
 }
 
 
+class ssa_block_ranges
+{
+private:
+  vec<irange_storage *> tab;
+  irange_storage *type_range;
+  const_tree type;
+public:
+  ssa_block_ranges (tree t);
+  ~ssa_block_ranges ();
+
+  void set_bb_range (const basic_block bb, const irange &r);
+  void set_bb_range_for_type (const basic_block bb);
+  bool get_bb_range (irange& r, const basic_block bb);
+  bool bb_range_p (const basic_block bb);
+
+  void dump(FILE *f);
+};
+
 ssa_block_ranges::ssa_block_ranges (tree t)
 {
   irange tr;
@@ -151,6 +169,20 @@ ssa_block_ranges::dump (FILE *f)
 
 // -------------------------------------------------------------------------
 
+class block_range_cache
+{
+private:
+  vec<ssa_block_ranges *> ssa_ranges;
+public:
+  block_range_cache ();
+  ~block_range_cache ();
+  ssa_block_ranges& get_block_ranges (tree name);
+
+  void dump (FILE *f);
+};
+
+
+
 block_range_cache::block_range_cache ()
 {
   ssa_ranges.create (0);
@@ -169,7 +201,7 @@ block_range_cache::~block_range_cache ()
 }
 
 ssa_block_ranges&
-block_range_cache::operator[] (tree name)
+block_range_cache::get_block_ranges (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (!ssa_ranges[v])
@@ -198,7 +230,14 @@ block_range_cache::dump (FILE *f)
 
 path_ranger::path_ranger () 
 {
+  block_cache = new block_range_cache ();
 }
+
+path_ranger::~path_ranger () 
+{
+  delete block_cache;
+}
+
 
 void
 path_ranger::range_for_bb (irange &r, tree name, basic_block bb,
@@ -206,7 +245,7 @@ path_ranger::range_for_bb (irange &r, tree name, basic_block bb,
 {
   bool res;
   determine_block (name, bb, def_bb);
-  res = block_cache[name].get_bb_range (r, bb);
+  res = block_cache->get_block_ranges (name).get_bb_range (r, bb);
   gcc_assert (res);
 }
 
@@ -288,11 +327,11 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     return;
 
   /* If the block cache is set, then we've already visited this block.  */
-  if (block_cache[name].bb_range_p (bb))
+  if (block_cache->get_block_ranges (name).bb_range_p (bb))
     return;
 
   /* Avoid infinite recursion by marking this block as calculated.  */
-  block_cache[name].set_bb_range_for_type (bb);
+  block_cache->get_block_ranges (name).set_bb_range_for_type (bb);
 
   /* Visit each predecessor to reseolve them.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -311,7 +350,9 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
         get_global_ssa_range (pred_range, name);
       else
         {
-	  bool res = block_cache[name].get_bb_range (pred_range, src);
+	  bool res;
+	  res = block_cache->get_block_ranges (name).get_bb_range (pred_range,
+								   src);
 	  gcc_assert (res);
 	}
 
@@ -328,9 +369,9 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     }
 
   if (block_result.range_for_type_p ())
-    block_cache[name].set_bb_range_for_type (bb);
+    block_cache->get_block_ranges (name).set_bb_range_for_type (bb);
   else
-    block_cache[name].set_bb_range (bb, block_result);
+    block_cache->get_block_ranges (name).set_bb_range (bb, block_result);
 }
 
 bool
