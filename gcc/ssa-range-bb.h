@@ -25,33 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "ssa-range-stmt.h"
 
-class gori_map
-{
-  vec<bitmap> outgoing;		/* BB: Outgoing ranges generated.  */
-  vec<bitmap> incoming;		/* BB: ranges coming in.  */
-  vec<bitmap> def_chain;	/* SSA_NAME : def chain components. */
-  void calculate_gori (basic_block bb);
-  bool in_chain_p (unsigned name, unsigned def);
-  bitmap imports (basic_block bb);
-  bitmap exports (basic_block bb);
-  bitmap calc_def_chain (tree name, basic_block bb);
-  void process_stmt (gimple *stmt, bitmap result, basic_block bb);
-public:
-  gori_map ();
-  ~gori_map ();
-  bool in_chain_p (tree name, tree def, basic_block bb = NULL);
-  bool is_export_p (tree name, basic_block bb);
-  bool is_import_p (tree name, basic_block bb);
-  tree single_import (tree name);
-  void dump (FILE *f);
-  void dump (FILE *f, basic_block bb);
-};
-
-
+/* This is the primary interface class for the range generator at the basic
+   block level. It allows the client to query a range for an ssa-name within
+   a basic block, either on an outgoing edge, or on an individual statement.  */
 
 class block_ranger
 {
-  gori_map gori; 	/* Generates Outgoing Range Info.  */
+  class gori_map *gori; 	/* Generates Outgoing Range Info.  */
   bool logical_expr_p (tree_code code, tree type) const;
   bool eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
 		     const irange& op1_true, const irange& op1_false,
@@ -70,16 +50,16 @@ public:
   bool range_p (basic_block bb, tree name);
   /* What is the static calculated range of NAME on outgoing edge E.  */
   bool range_on_edge (irange& r, tree name, edge e);
-  /* What infomation does stmt g provide about name.  */
+  /* What range does NAME have on entry to statement g.  */
   bool range_on_stmt (irange& r, tree name, gimple *g);
-  /* What infomation does stmt g provide about the defintion.  */
+  /* What infomation does stmt g provide about the lhs.  */
   bool range_of_def (irange& r, gimple *g);
-  /* What does g provide about the lhs if name has range_for_name.  */
+  /* What does g provide about the lhs if NAME has RANGE_FOR_NAME.  */
   bool range_of_def (irange& r, gimple *g, tree name,
 		     const irange& range_for_name);
 
   void dump (FILE *f);
-  void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
+  void exercise (FILE *f);
 };
 
 #endif /* GCC_SSA_RANGE_BB_H */

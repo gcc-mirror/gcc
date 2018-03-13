@@ -58,7 +58,33 @@ last_stmt_gori (basic_block bb)
     return stmt;
   return NULL;
 }
+   
+/* GORI_MAP is used to determine what ssa-names in a block can generate range
+   information, and provides tools for the block ranger to enable it to
+   efficiently calculate these ranges.
+   GORI stands for "Generates Outgoing Range Information."  */
 
+class gori_map
+{
+  vec<bitmap> outgoing;		/* BB: Outgoing ranges generated.  */
+  vec<bitmap> incoming;		/* BB: ranges coming in.  */
+  vec<bitmap> def_chain;	/* SSA_NAME : def chain components. */
+  void calculate_gori (basic_block bb);
+  bool in_chain_p (unsigned name, unsigned def);
+  bitmap imports (basic_block bb);
+  bitmap exports (basic_block bb);
+  bitmap calc_def_chain (tree name, basic_block bb);
+  void process_stmt (gimple *stmt, bitmap result, basic_block bb);
+public:
+  gori_map ();
+  ~gori_map ();
+  bool in_chain_p (tree name, tree def, basic_block bb = NULL);
+  bool is_export_p (tree name, basic_block bb);
+  bool is_import_p (tree name, basic_block bb);
+  tree single_import (tree name);
+  void dump (FILE *f);
+  void dump (FILE *f, basic_block bb);
+};
 
 gori_map::gori_map ()
 {
@@ -431,8 +457,8 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
   op1 = stmt.operand1 ();
   op2 = stmt.operand2 ();
 
-  op1_in_chain = gori.in_chain_p (name, op1);
-  op2_in_chain = gori.in_chain_p (name, op2);
+  op1_in_chain = gori->in_chain_p (name, op1);
+  op2_in_chain = gori->in_chain_p (name, op2);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
@@ -514,8 +540,8 @@ block_ranger::get_range (range_stmt& stmt, irange& r, tree name,
 
   /* Reaching this point means NAME is not in this stmt, but one of the
      names in it ought to be derived from it.  */
-  op1_in_chain = gori.in_chain_p (name, op1);
-  op2_in_chain = op2 && gori.in_chain_p (name, op2);
+  op1_in_chain = gori->in_chain_p (name, op1);
+  op2_in_chain = op2 && gori->in_chain_p (name, op2);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
@@ -597,12 +623,14 @@ block_ranger::get_range_from_stmt (gimple *stmt, irange& r, tree name,
 
 block_ranger::block_ranger ()
 {
+  gori = new gori_map ();
   initialize_global_ssa_range_cache ();
 }
 
 block_ranger::~block_ranger ()
 {
   destroy_global_ssa_range_cache ();
+  delete gori;
 }
 
 void
@@ -613,7 +641,7 @@ block_ranger::dump (FILE *f)
     return;
 
   fprintf (f, "\nDUMPING GORI MAP\n");
-  gori.dump (f);
+  gori->dump (f);
   fprintf (f, "\n");
 
   fprintf (f, "\nDUMPING Globals table\n");
@@ -672,7 +700,7 @@ block_ranger::get_derived_range_stmt (range_stmt& stmt, tree name, basic_block b
 bool
 block_ranger::range_p (basic_block bb, tree name)
 {
-  return gori.is_export_p (name, bb);
+  return gori->is_export_p (name, bb);
 }
 
 
