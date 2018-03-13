@@ -1,5 +1,16 @@
 2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.md (V4_REGNUM, V8_REGNUM, V12_REGNUM)
+	(V20_REGNUM, V24_REGNUM, V28_REGNUM, P1_REGNUM, P2_REGNUM, P3_REGNUM)
+	(P4_REGNUM, P5_REGNUM, P6_REGNUM, P8_REGNUM, P9_REGNUM, P10_REGNUM)
+	(P11_REGNUM, P12_REGNUM, P13_REGNUM, P14_REGNUM): New define_constants.
+	(tlsdesc_small_<mode>): Turn a define_expand and use
+	tlsdesc_small_sve_<mode> for SVE.  Rename original define_insn to...
+	(tlsdesc_small_advsimd_<mode>): ...this.
+	(tlsdesc_small_sve_<mode>): New pattern.
+
+2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/iterators.md (UNSPEC_SMUL_HIGHPART)
 	(UNSPEC_UMUL_HIGHPART): New constants.
 	(MUL_HIGHPART): New int iteraor.
