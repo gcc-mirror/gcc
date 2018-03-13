@@ -17049,9 +17049,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 		     "only available with "
 		     "-std=c++14 or -std=gnu++14");
 	  else if (!flag_concepts)
-	    pedwarn (token->location, OPT_Wpedantic,
-		     "ISO C++ forbids use of %<auto%> in parameter "
-		     "declaration");
+	    pedwarn (token->location, 0,
+		     "use of %<auto%> in parameter declaration "
+		     "only available with -fconcepts");
 	}
       else
 	type = make_auto ();
