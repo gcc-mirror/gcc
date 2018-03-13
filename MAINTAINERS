@@ -45,6 +45,7 @@ docs, and the testsuite related to that.
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
 aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
+aarch64 SVE port	Richard Sandiford	<richard.sandiford@arm.com>
 alpha port		Richard Henderson	<rth@twiddle.net>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
 arm port		Nick Clifton		<nickc@redhat.com>
