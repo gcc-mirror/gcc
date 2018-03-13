@@ -9208,12 +9208,14 @@ output_init_element (location_t loc, tree value, tree origtype,
 		      "enum conversion in initialization is invalid in C++");
     }
 
-  /* If this field is empty (and not at the end of structure),
-     don't do anything other than checking the initializer.  */
+  /* If this field is empty and does not have side effects (and is not at
+     the end of structure), don't do anything other than checking the
+     initializer.  */
   if (field
       && (TREE_TYPE (field) == error_mark_node
 	  || (COMPLETE_TYPE_P (TREE_TYPE (field))
 	      && integer_zerop (TYPE_SIZE (TREE_TYPE (field)))
+	      && !TREE_SIDE_EFFECTS (new_value)
 	      && (TREE_CODE (constructor_type) == ARRAY_TYPE
 		  || DECL_CHAIN (field)))))
     return;
