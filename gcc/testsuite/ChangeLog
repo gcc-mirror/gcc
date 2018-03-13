@@ -1,3 +1,9 @@
+2018-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84843
+	* g++.dg/ext/pr84843-1.C: New test.
+	* g++.dg/ext/pr84843-2.C: New test.
+
 2018-03-13  David Pagan  <dave.pagan@oracle.com>
 
 	PR c/46921

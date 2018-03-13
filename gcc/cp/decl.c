@@ -1583,13 +1583,20 @@ next_arg:;
 			  || memcmp (name + len - strlen ("_chk"),
 				     "_chk", strlen ("_chk") + 1) != 0))
 		    {
+		      if (DECL_INITIAL (newdecl))
+			{
+			  error_at (DECL_SOURCE_LOCATION (newdecl),
+				    "definition of %q#D ambiguates built-in "
+				    "declaration %q#D", newdecl, olddecl);
+			  return error_mark_node;
+			}
 		      if (permerror (DECL_SOURCE_LOCATION (newdecl),
 				     "new declaration %q#D ambiguates built-in"
 				     " declaration %q#D", newdecl, olddecl)
 			  && flag_permissive)
 			inform (DECL_SOURCE_LOCATION (newdecl),
 				"ignoring the %q#D declaration", newdecl);
-		      return olddecl;
+		      return flag_permissive ? olddecl : error_mark_node;
 		    }
 		}
 

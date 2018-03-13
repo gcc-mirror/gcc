@@ -1,3 +1,10 @@
+2018-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84843
+	* decl.c (duplicate_decls): For redefinition of built-in, use error
+	and return error_mark_node.  For redeclaration, return error_mark_node
+	rather than olddecl if !flag_permissive.
+
 2018-03-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82565 - ICE with concepts and generic lambda.
