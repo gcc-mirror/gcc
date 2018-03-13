@@ -43,9 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "wide-int.h"
+#include "domwalk.h"
 #include "ssa-range-gen.h"
 #include "ssa-range-stmt.h"
-#include "domwalk.h"
+#include "ssa-range-global.h"
 
 
 // Internally, the range operators all use boolen_type_node when comparisons
@@ -85,119 +86,6 @@ last_stmt_gori (basic_block bb)
   if (stmt && gimple_code (stmt) == GIMPLE_COND)
     return stmt;
   return NULL;
-}
-
-
-
-
-class ssa_global_cache
-{
-private:
-  vec<irange_storage *> tab;
-public:
-  ssa_global_cache ();
-  ~ssa_global_cache ();
-  bool get_global_range (irange& r, tree name)  const;
-  void set_global_range (tree name, const irange&r);
-  void clear ();
-  void copy_to_range_info ();
-  void dump (FILE *f = stderr);
-};
-
-
-ssa_global_cache::ssa_global_cache ()
-{
-  tab.create (0);
-  tab.safe_grow_cleared (num_ssa_names);
-}
-
-ssa_global_cache::~ssa_global_cache ()
-{
-  tab.release ();
-}
-
-bool
-ssa_global_cache::get_global_range (irange &r, tree name) const
-{
-  irange_storage *stow = tab[SSA_NAME_VERSION (name)];
-  if (stow)
-    {
-      r.set_range (stow, TREE_TYPE (name));
-      return true;
-    }
-  r.set_range (name);
-  return false;
-}
-
-void
-ssa_global_cache::set_global_range (tree name, const irange& r)
-{
-  irange_storage *m = tab[SSA_NAME_VERSION (name)];
-
-  if (m)
-    m->set_irange (r);
-  else
-    {
-      m = irange_storage::ggc_alloc_init (r);
-      tab[SSA_NAME_VERSION (name)] = m;
-    }
-}
-
-void
-ssa_global_cache::clear ()
-{
-  memset (tab.address(), 0, tab.length () * sizeof (irange_storage *));
-}
-
-void
-ssa_global_cache::copy_to_range_info ()
-{
-  unsigned x;
-  irange r;
-  for ( x = 1; x < num_ssa_names; x++)
-    if (get_global_range (r, ssa_name (x)))
-      {
-        if (!r.range_for_type_p ())
-	  {
-	    irange_storage *stow = irange_storage::ggc_alloc_init (r);
-	    SSA_NAME_RANGE_INFO (ssa_name (x)) = stow;
-	  }
-      }
-}
-
-void
-ssa_global_cache::dump (FILE *f)
-{
-  unsigned x;
-  irange r;
-  for ( x = 1; x < num_ssa_names; x++)
-    if (valid_irange_ssa (ssa_name (x)) && get_global_range (r, ssa_name (x)))
-      {
-        print_generic_expr (f, ssa_name (x), 0);
-	fprintf (f, "  : ");
-        r.dump (f);
-      }
-}
-
-
-
-ssa_global_cache *globals = NULL;
-
-bool
-get_global_ssa_range (irange& r, tree name)
-{
-  if (globals)
-    return globals->get_global_range (r, name);
-
-  r.set_range (name);
-  return false;
-}
-
-void
-set_global_ssa_range (tree name, const irange&r)
-{
-  gcc_assert (globals);
-  globals->set_global_range (name, r);
 }
 
 
@@ -739,14 +627,12 @@ block_ranger::get_range_from_stmt (gimple *stmt, irange& r, tree name,
 
 block_ranger::block_ranger ()
 {
-  gcc_assert (globals == NULL);
-  globals = new ssa_global_cache ();
+  initialize_global_ssa_range_cache ();
 }
 
 block_ranger::~block_ranger ()
 {
-  delete globals;
-  globals = NULL;
+  destroy_global_ssa_range_cache ();
 }
 
 void
@@ -761,8 +647,7 @@ block_ranger::dump (FILE *f)
   fprintf (f, "\n");
 
   fprintf (f, "\nDUMPING Globals table\n");
-  globals->dump (f);
-  
+  dump_global_ssa_range_cache (f);
 }
 
 

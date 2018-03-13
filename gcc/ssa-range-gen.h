@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "range.h"
 #include "range-op.h"
-#include "ssa-def-chain.h"
 #include "ssa-range-stmt.h"
 
 class gori_map
