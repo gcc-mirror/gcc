@@ -980,6 +980,34 @@
    mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
 )
 
+;; Unpredicated highpart multiplication.
+(define_expand "<su>mul<mode>3_highpart"
+  [(set (match_operand:SVE_I 0 "register_operand")
+	(unspec:SVE_I
+	  [(match_dup 3)
+	   (unspec:SVE_I [(match_operand:SVE_I 1 "register_operand")
+			  (match_operand:SVE_I 2 "register_operand")]
+			 MUL_HIGHPART)]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  {
+    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+  }
+)
+
+;; Predicated highpart multiplication.
+(define_insn "*<su>mul<mode>3_highpart"
+  [(set (match_operand:SVE_I 0 "register_operand" "=w")
+	(unspec:SVE_I
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
+	   (unspec:SVE_I [(match_operand:SVE_I 2 "register_operand" "%0")
+			  (match_operand:SVE_I 3 "register_operand" "w")]
+			 MUL_HIGHPART)]
+	  UNSPEC_MERGE_PTRUE))]
+  "TARGET_SVE"
+  "<su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+)
+
 ;; Unpredicated NEG, NOT and POPCOUNT.
 (define_expand "<optab><mode>2"
   [(set (match_operand:SVE_I 0 "register_operand")
