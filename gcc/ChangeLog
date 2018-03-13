@@ -1,3 +1,9 @@
+2018-03-13  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	PR target/84743
+	* config/rs6000/rs6000.c (rs6000_reassociation_width): Disable parallel
+	reassociation for int modes.
+
 2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vect-loop-manip.c (vect_maybe_permute_loop_masks):

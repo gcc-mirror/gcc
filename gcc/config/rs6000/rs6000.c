@@ -10004,7 +10004,7 @@ rs6000_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
       if (VECTOR_MODE_P (mode))
 	return 4;
       if (INTEGRAL_MODE_P (mode)) 
-	return opc == MULT_EXPR ? 4 : 6;
+	return 1;
       if (FLOAT_MODE_P (mode))
 	return 4;
       break;
