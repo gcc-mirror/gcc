@@ -1,5 +1,8 @@
 2018-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84827
+	* gcc.target/i386/pr84827.c: New test.
+
 	PR target/84828
 	* g++.dg/ext/pr84828.C: New test.
 
