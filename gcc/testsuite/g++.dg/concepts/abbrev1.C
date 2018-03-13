@@ -1,5 +1,6 @@
 // PR c++/64969
-// { dg-options "-std=c++17" }
+// { dg-do compile { target c++14 } }
+// { dg-additional-options "-fconcepts" }
 
 auto f1(auto x) { return *x; }
 decltype(auto) f2(auto x) { return *x; }

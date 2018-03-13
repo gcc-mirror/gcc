@@ -1,6 +1,6 @@
 // PR c++/66197
-// { dg-do run }
-// { dg-options "-std=c++17" }
+// { dg-do run { target c++14 } }
+// { dg-additional-options "-fconcepts" }
 
 extern "C" void abort();
 

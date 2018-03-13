@@ -1,6 +1,6 @@
 // Out-of-line generic member function definitions.
 // { dg-do compile { target c++14 } }
-// { dg-options "" }
+// { dg-additional-options "-fconcepts" }
 
 struct A {
   void f(auto x);

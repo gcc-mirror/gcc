@@ -1,6 +1,6 @@
 // PR c++/60064
 // { dg-do compile { target c++14 } }
-// { dg-options "" }
+// { dg-additional-options "-fconcepts" }
 
 class A
 {

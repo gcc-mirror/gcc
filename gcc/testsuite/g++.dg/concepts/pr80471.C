@@ -1,6 +1,6 @@
 // PR c++/80471
 // { dg-do compile { target c++14 } }
-// { dg-options "" }
+// { dg-additional-options "-fconcepts" }
 
 template <class, class>
 constexpr bool is_same = false;
