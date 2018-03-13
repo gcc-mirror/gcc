@@ -1,3 +1,9 @@
+2018-03-13  David Pagan  <dave.pagan@oracle.com>
+
+	PR c/46921
+	* c-typeck.c (output_init_element): Ensure field initializer
+	expression is always evaluated if there are side effects.
+
 2018-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/84721
