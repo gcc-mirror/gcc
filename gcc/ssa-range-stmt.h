@@ -1,5 +1,5 @@
-/* Header file for ssa-range generator stmt msummary.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+/* Header file for ssa-range generator stmt summary.
+   Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -24,24 +24,30 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 
+/* Return a the range for a single tree object.  */
+bool get_operand_range (irange& r, tree op);
+
 /* This class is used summarize expressions that are supported by the
-   irange_operator class.  
+   irange_operator class, and provide an interface to the operators on
+   the expression.  
 
-   A gimple stmt can be summarized and cached if it is supported.
+   The contents of the stmt are abstracted away from gimple (or any other IL)
 
-   And expression can also be resolved to a range if required information
-   is provided.  */
-
+   The expression or its operands can be resolved to a range if 2 of the
+   3 operands have ranges supplied for them. 
+   
+   This class is not meant to be cached in any way, just utilized within the
+   range engine to communicate required components of an expression.  */
 
 
 class range_stmt
 {
 private:
-  gimple *g;
   tree_code code;
+  tree lhs;
   tree op1, op2;
   tree ssa1, ssa2;
-  bool validate_operands ();
+  tree_code validate_operands ();
   void from_stmt (gimple *s);
   class irange_operator *handler() const;
 public:
@@ -50,7 +56,6 @@ public:
   range_stmt &operator= (gimple *stmt);
 
   bool valid () const;
-  gimple *get_gimple () const;
   tree_code get_code () const;
 
   tree operand1 () const;
@@ -59,11 +64,6 @@ public:
   tree ssa_operand1 () const;
   tree ssa_operand2 () const;
 
-  bool logical_transition_p () const;
-  bool logical_expr_p (tree type) const;
-  bool logical_expr (irange& r, const irange& lhs, const irange& op1_true,
-  		     const irange& op1_false, const irange& op2_true,
-		     const irange& op2_false) const;
   bool fold (irange& res) const;
   bool fold (irange& res, tree name, const irange& name_range) const;
   bool fold (irange& res, const irange& r1) const;
@@ -74,22 +74,37 @@ public:
   bool op2_irange (irange& r, const irange& lhs_range,
 		   const irange& op1_range) const;
 
-
   void dump (FILE *f) const;
 };
 
-bool get_operand_range (irange& r, tree op);
 
-inline gimple *
-range_stmt::get_gimple () const
+/* Initialize a range statement to invalid.  */
+inline
+range_stmt::range_stmt ()
 {
-  return g;
+  code = ERROR_MARK;
 }
 
+/* Initialize a range statement from gimple statement S.  */
+inline 
+range_stmt::range_stmt (gimple *s)
+{
+  from_stmt (s);
+}
+
+/* Initialize a range statement from gimple statement S.  */
+inline range_stmt&
+range_stmt::operator= (gimple *s)
+{
+  from_stmt (s);
+  return *this;
+}
+
+/* Return true is this is a valid range summary.  */
 inline bool
 range_stmt::valid () const
 {
-  return g != NULL;
+  return code != ERROR_MARK;
 }
 
 inline tree_code
@@ -122,16 +137,10 @@ range_stmt::ssa_operand2 () const
   return ssa2;
 }
 
-static inline
-tree valid_irange_ssa (tree t)
+inline irange_operator *
+range_stmt::handler () const
 {
-  if (t && TREE_CODE (t) == SSA_NAME)
-    {
-      tree type = TREE_TYPE (t);
-      if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
-        return t;
-    }
-  return NULL_TREE;
+  return irange_op_handler (code);
 }
 
 #endif /* GCC_SSA_RANGE_STMT_H */

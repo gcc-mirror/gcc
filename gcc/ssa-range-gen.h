@@ -53,6 +53,10 @@ public:
 class block_ranger
 {
   gori_map gori; 	/* Generates Outgoing Range Info.  */
+  bool logical_expr_p (tree_code code, tree type) const;
+  bool eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
+		     const irange& op1_true, const irange& op1_false,
+		     const irange& op2_true, const irange& op2_false) const;
   bool process_logical (range_stmt& stmt, irange& r, tree name,
 			const irange& lhs);
   bool get_range (range_stmt& stmt, irange& r, tree name, const irange& lhs);

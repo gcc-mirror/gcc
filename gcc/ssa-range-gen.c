@@ -449,6 +449,101 @@ gori_map::dump(FILE *f)
 }
 /* -------------------------------------------------------------------------*/
 
+
+/* Return TRUE if a CODE expression with operands of type TYPE is a boolean
+   evaluation.  These are important to identify as both sides of a logical
+   binary expression must be evaluated in order to calculate a range.  */
+bool
+block_ranger::logical_expr_p (tree_code code, tree type) const
+{
+
+  /* Look for boolean and/or condition.  */
+  switch (code)
+    {
+      case TRUTH_AND_EXPR:
+      case TRUTH_OR_EXPR:
+        return true;
+
+      case BIT_AND_EXPR:
+      case BIT_IOR_EXPR:
+        if (types_compatible_p (type, boolean_type_node))
+	  return true;
+	break;
+
+      default:
+        break;
+    }
+  return false;
+}
+
+bool
+block_ranger::eval_logical (irange& r, range_stmt &stmt, const irange& lhs,
+			    const irange& op1_true, const irange& op1_false,
+			    const irange& op2_true,
+			    const irange& op2_false) const
+{
+  gcc_checking_assert (logical_expr_p (stmt.get_code (),
+				       TREE_TYPE (stmt.operand1 ())));
+ 
+  /* If the LHS can be TRUE OR FALSE, then we cant really tell anything.  */
+  if (!wi::eq_p (lhs.lower_bound(), lhs.upper_bound()))
+    return false;
+
+  /* Now combine based on the result.  */
+  switch (stmt.get_code ())
+    {
+
+      /* A logical AND of two ranges is executed when we are walking forward
+	 with ranges that have been determined.   x_8 is an unsigned char.
+	       b_1 = x_8 < 20
+	       b_2 = x_8 > 5
+	       c_2 = b_1 && b_2
+	 if we are looking for the range of x_8, the ranges on each side 
+	 will be:   b_1 carries x_8 = [0, 19],   b_2 carries [6, 255]
+	 the result of the AND is the intersection of the 2 ranges, [6, 255]. */
+      case TRUTH_AND_EXPR:
+      case BIT_AND_EXPR:
+        if (!lhs.zero_p ())
+	  r = irange_intersect (op1_true, op2_true);
+	else
+	  {
+	    irange ff = irange_intersect (op1_false, op2_false);
+	    irange tf = irange_intersect (op1_true, op2_false);
+	    irange ft = irange_intersect (op1_false, op2_true);
+	    r = irange_union (ff, tf);
+	    r.union_ (ft);
+	  }
+        break;
+
+      /* A logical OR of two ranges is executed when we are walking forward with
+	 ranges that have been determined.   x_8 is an unsigned char.
+	       b_1 = x_8 > 20
+	       b_2 = x_8 < 5
+	       c_2 = b_1 || b_2
+	 if we are looking for the range of x_8, the ranges on each side
+	 will be:   b_1 carries x_8 = [21, 255],   b_2 carries [0, 4]
+	 the result of the OR is the union_ of the 2 ranges, [0,4][21,255].  */
+      case TRUTH_OR_EXPR:
+      case BIT_IOR_EXPR:
+        if (lhs.zero_p ())
+	  r = irange_intersect (op1_false, op2_false);
+	else
+	  {
+	    irange tt = irange_intersect (op1_true, op2_true);
+	    irange tf = irange_intersect (op1_true, op2_false);
+	    irange ft = irange_intersect (op1_false, op2_true);
+	    r = irange_union (tt, tf);
+	    r.union_ (ft);
+	  }
+	break;
+
+      default:
+        gcc_unreachable ();
+    }
+
+  return true;
+}
+
 /* Given a logical STMT, calculate true and false for each potential path 
    and resolve the outcome based on the logical operator.  */
 bool
@@ -515,8 +610,8 @@ block_ranger::process_logical (range_stmt& stmt, irange& r, tree name,
 	  ret &= get_operand_range (op2_false, name);
 	}
     }
-  if (!ret || !stmt.logical_expr (r, lhs, op1_true, op1_false, op2_true,
-				 op2_false))
+  if (!ret || !eval_logical (r, stmt, lhs, op1_true, op1_false, op2_true,
+			     op2_false))
     r.set_range_for_type (TREE_TYPE (name));
   return true;
 }
@@ -556,7 +651,7 @@ block_ranger::get_range (range_stmt& stmt, irange& r, tree name,
     }
 
   /* Check for boolean cases which require developing ranges and combining.  */
-  if (stmt.logical_expr_p (TREE_TYPE (op1)))
+  if (logical_expr_p (stmt.get_code (), TREE_TYPE (op1)))
     return process_logical (stmt, r, name, lhs);
 
   /* Reaching this point means NAME is not in this stmt, but one of the

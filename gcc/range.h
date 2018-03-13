@@ -290,4 +290,26 @@ irange_storage::extract_irange (irange &output, const_tree typ)
   return output;
 }
 
+// ----------------------------------------------------------------------
+
+/* Return T if it is a valid type for irange to operator on. 
+   Otherwise return NULL_TREE.  */
+static inline
+tree valid_irange_type (tree t)
+{
+  if (t && (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t)))
+    return t;
+  return NULL_TREE;
+}
+
+/* Return T if it is an SSA_NAME and a valid type for irange to operator on. 
+   Otherwise return NULL_TREE.  */
+static inline
+tree valid_irange_ssa (tree t)
+{
+  if (t && TREE_CODE (t) == SSA_NAME && valid_irange_type (TREE_TYPE (t)))
+    return t;
+  return NULL_TREE;
+}
+
 #endif // GCC_RANGE_H
