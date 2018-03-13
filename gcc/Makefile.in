@@ -1461,7 +1461,8 @@ OBJS = \
 	spellcheck.o \
 	spellcheck-tree.o \
 	sreal.o \
-	ssa-range-gen.o \
+	ssa-range.o \
+	ssa-range-bb.o \
 	ssa-range-global.o \
 	ssa-range-stmt.o \
 	stack-ptr-mod.o \
