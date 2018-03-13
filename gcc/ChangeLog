@@ -1,5 +1,9 @@
 2018-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84786
+	* config/i386/sse.md (sse2_loadhpd): Use Yv constraint rather than v
+	on the last operand.
+
 	PR c++/84704
 	* tree.c (stabilize_reference_1): Return save_expr (e) for
 	STATEMENT_LIST even if it doesn't have side-effects.
