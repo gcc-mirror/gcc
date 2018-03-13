@@ -6932,11 +6932,18 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  return NULL_TREE;
 	}
 
-      if (!lvalue_p (expr))
+      if (!glvalue_p (expr)
+	  || TYPE_REF_IS_RVALUE (type) != xvalue_p (expr))
 	{
 	  if (complain & tf_error)
-	    error ("%qE is not a valid template argument for type %qT "
-		   "because it is not an lvalue", expr, type);
+	    {
+	      if (TYPE_REF_IS_RVALUE (type))
+		error ("%qE is not a valid template argument for type %qT "
+		       "because it is not an xvalue", expr, type);
+	      else
+		error ("%qE is not a valid template argument for type %qT "
+		       "because it is not an lvalue", expr, type);
+	    }
 	  return NULL_TREE;
 	}
 

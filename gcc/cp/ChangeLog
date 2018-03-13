@@ -1,5 +1,8 @@
 2018-03-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84720 - ICE with rvalue ref non-type argument.
+	* pt.c (convert_nontype_argument): Handle rvalue references.
+
 	PR c++/84839 - ICE with decltype of parameter pack.
 	* pt.c (tsubst_pack_expansion): Set cp_unevaluated_operand while
 	instantiating dummy parms.
