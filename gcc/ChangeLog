@@ -1,3 +1,10 @@
+2018-03-01  Palmer Dabbelt  <palmer@sifive.com>
+
+	* config/riscv/riscv.opt (mrelax): New option.
+	* config/riscv/riscv.c (riscv_file_start): Emit ".option
+	"norelax" when riscv_mrelax is disabled.
+	* doc/invoke.texi (RISC-V): Document "-mrelax" and "-mno-relax".
+
 2018-03-13  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 
 	PR target/84743
