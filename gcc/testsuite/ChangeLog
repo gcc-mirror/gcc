@@ -1,3 +1,8 @@
+2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.target/aarch64/sve/mul_highpart_1.c: New test.
+	* gcc.target/aarch64/sve/mul_highpart_1_run.c: Likewise.
+
 2018-03-13  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/84658.

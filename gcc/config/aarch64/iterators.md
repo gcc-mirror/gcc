@@ -438,6 +438,8 @@
     UNSPEC_ANDF		; Used in aarch64-sve.md.
     UNSPEC_IORF		; Used in aarch64-sve.md.
     UNSPEC_XORF		; Used in aarch64-sve.md.
+    UNSPEC_SMUL_HIGHPART ; Used in aarch64-sve.md.
+    UNSPEC_UMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_COND_ADD	; Used in aarch64-sve.md.
     UNSPEC_COND_SUB	; Used in aarch64-sve.md.
     UNSPEC_COND_SMAX	; Used in aarch64-sve.md.
@@ -1467,6 +1469,8 @@
 
 (define_int_iterator UNPACK_UNSIGNED [UNSPEC_UNPACKULO UNSPEC_UNPACKUHI])
 
+(define_int_iterator MUL_HIGHPART [UNSPEC_SMUL_HIGHPART UNSPEC_UMUL_HIGHPART])
+
 (define_int_iterator SVE_COND_INT_OP [UNSPEC_COND_ADD UNSPEC_COND_SUB
 				      UNSPEC_COND_SMAX UNSPEC_COND_UMAX
 				      UNSPEC_COND_SMIN UNSPEC_COND_UMIN
@@ -1558,7 +1562,9 @@
 (define_int_attr su [(UNSPEC_UNPACKSHI "s")
 		     (UNSPEC_UNPACKUHI "u")
 		     (UNSPEC_UNPACKSLO "s")
-		     (UNSPEC_UNPACKULO "u")])
+		     (UNSPEC_UNPACKULO "u")
+		     (UNSPEC_SMUL_HIGHPART "s")
+		     (UNSPEC_UMUL_HIGHPART "u")])
 
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
