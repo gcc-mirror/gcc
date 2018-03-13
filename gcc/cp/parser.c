@@ -21198,7 +21198,10 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
 
   if (!processing_specialization
       && !processing_template_parmlist
-      && !processing_explicit_instantiation)
+      && !processing_explicit_instantiation
+      /* default_arg_ok_p tracks whether this is a parameter-clause for an
+         actual function or a random abstract declarator.  */
+      && parser->default_arg_ok_p)
     if (!current_function_decl
 	|| (current_class_type && LAMBDA_TYPE_P (current_class_type)))
       parser->auto_is_implicit_function_template_parm_p = true;

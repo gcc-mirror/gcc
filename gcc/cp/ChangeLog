@@ -1,3 +1,9 @@
+2018-03-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/84798 - ICE with auto in abstract function declarator.
+	* parser.c (cp_parser_parameter_declaration_clause): Check
+	parser->default_arg_ok_p.
+
 2018-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/84808
