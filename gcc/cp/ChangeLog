@@ -1,5 +1,10 @@
 2018-03-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82565 - ICE with concepts and generic lambda.
+	* pt.c (instantiate_decl): Clear fn_context for lambdas.
+
+2018-03-13  Jason Merrill  <jason@redhat.com>
+
 	PR c++/84720 - ICE with rvalue ref non-type argument.
 	* pt.c (convert_nontype_argument): Handle rvalue references.
 
