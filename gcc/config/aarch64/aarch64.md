@@ -57,7 +57,14 @@
     (LR_REGNUM		30)
     (SP_REGNUM		31)
     (V0_REGNUM		32)
+    (V4_REGNUM		36)
+    (V8_REGNUM		40)
+    (V12_REGNUM		44)
     (V15_REGNUM		47)
+    (V16_REGNUM		48)
+    (V20_REGNUM		52)
+    (V24_REGNUM		56)
+    (V28_REGNUM		60)
     (V31_REGNUM		63)
     (LAST_SAVED_REGNUM	63)
     (SFP_REGNUM		64)
@@ -66,7 +73,20 @@
     ;; Defined only to make the DWARF description simpler.
     (VG_REGNUM		67)
     (P0_REGNUM		68)
+    (P1_REGNUM		69)
+    (P2_REGNUM		70)
+    (P3_REGNUM		71)
+    (P4_REGNUM		72)
+    (P5_REGNUM		73)
+    (P6_REGNUM		74)
     (P7_REGNUM		75)
+    (P8_REGNUM		76)
+    (P9_REGNUM		77)
+    (P10_REGNUM		78)
+    (P11_REGNUM		79)
+    (P12_REGNUM		80)
+    (P13_REGNUM		81)
+    (P14_REGNUM		82)
     (P15_REGNUM		83)
   ]
 )
@@ -5787,14 +5807,68 @@
    (set_attr "length" "12")]
 )
 
-(define_insn "tlsdesc_small_<mode>"
+(define_expand "tlsdesc_small_<mode>"
+  [(unspec:PTR [(match_operand 0 "aarch64_valid_symref")] UNSPEC_TLSDESC)]
+  "TARGET_TLS_DESC"
+  {
+    if (TARGET_SVE)
+      emit_insn (gen_tlsdesc_small_sve_<mode> (operands[0]));
+    else
+      emit_insn (gen_tlsdesc_small_advsimd_<mode> (operands[0]));
+    DONE;
+  }
+)
+
+;; tlsdesc calls preserve all core and Advanced SIMD registers except
+;; R0 and LR.
+(define_insn "tlsdesc_small_advsimd_<mode>"
   [(set (reg:PTR R0_REGNUM)
         (unspec:PTR [(match_operand 0 "aarch64_valid_symref" "S")]
-		   UNSPEC_TLSDESC))
+		    UNSPEC_TLSDESC))
    (clobber (reg:DI LR_REGNUM))
    (clobber (reg:CC CC_REGNUM))
    (clobber (match_scratch:DI 1 "=r"))]
-  "TARGET_TLS_DESC"
+  "TARGET_TLS_DESC && !TARGET_SVE"
+  "adrp\\tx0, %A0\;ldr\\t%<w>1, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
+  [(set_attr "type" "call")
+   (set_attr "length" "16")])
+
+;; For SVE, model tlsdesc calls as clobbering all vector and predicate
+;; registers, on top of the usual R0 and LR.  In reality the calls
+;; preserve the low 128 bits of the vector registers, but we don't
+;; yet have a way of representing that in the instruction pattern.
+(define_insn "tlsdesc_small_sve_<mode>"
+  [(set (reg:PTR R0_REGNUM)
+        (unspec:PTR [(match_operand 0 "aarch64_valid_symref" "S")]
+		    UNSPEC_TLSDESC))
+   (clobber (reg:DI LR_REGNUM))
+   (clobber (reg:CC CC_REGNUM))
+   (clobber (reg:XI V0_REGNUM))
+   (clobber (reg:XI V4_REGNUM))
+   (clobber (reg:XI V8_REGNUM))
+   (clobber (reg:XI V12_REGNUM))
+   (clobber (reg:XI V16_REGNUM))
+   (clobber (reg:XI V20_REGNUM))
+   (clobber (reg:XI V24_REGNUM))
+   (clobber (reg:XI V28_REGNUM))
+   (clobber (reg:VNx2BI P0_REGNUM))
+   (clobber (reg:VNx2BI P1_REGNUM))
+   (clobber (reg:VNx2BI P2_REGNUM))
+   (clobber (reg:VNx2BI P3_REGNUM))
+   (clobber (reg:VNx2BI P4_REGNUM))
+   (clobber (reg:VNx2BI P5_REGNUM))
+   (clobber (reg:VNx2BI P6_REGNUM))
+   (clobber (reg:VNx2BI P7_REGNUM))
+   (clobber (reg:VNx2BI P8_REGNUM))
+   (clobber (reg:VNx2BI P9_REGNUM))
+   (clobber (reg:VNx2BI P10_REGNUM))
+   (clobber (reg:VNx2BI P11_REGNUM))
+   (clobber (reg:VNx2BI P12_REGNUM))
+   (clobber (reg:VNx2BI P13_REGNUM))
+   (clobber (reg:VNx2BI P14_REGNUM))
+   (clobber (reg:VNx2BI P15_REGNUM))
+   (clobber (match_scratch:DI 1 "=r"))]
+  "TARGET_TLS_DESC && TARGET_SVE"
   "adrp\\tx0, %A0\;ldr\\t%<w>1, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
   [(set_attr "type" "call")
    (set_attr "length" "16")])
