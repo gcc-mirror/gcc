@@ -1,5 +1,9 @@
 2018-03-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/84839 - ICE with decltype of parameter pack.
+	* pt.c (tsubst_pack_expansion): Set cp_unevaluated_operand while
+	instantiating dummy parms.
+
 	* parser.c (cp_parser_simple_type_specifier): Pedwarn about auto
 	parameter even without -Wpedantic.
 

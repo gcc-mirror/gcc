@@ -11717,7 +11717,9 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	    {
 	      /* This parameter pack was used in an unevaluated context.  Just
 		 make a dummy decl, since it's only used for its type.  */
+	      ++cp_unevaluated_operand;
 	      arg_pack = tsubst_decl (parm_pack, args, complain);
+	      --cp_unevaluated_operand;
 	      if (arg_pack && DECL_PACK_P (arg_pack))
 		/* Partial instantiation of the parm_pack, we can't build
 		   up an argument pack yet.  */
