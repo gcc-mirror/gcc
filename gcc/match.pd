@@ -3566,16 +3566,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (cond
   (ne (bit_and @0 integer_pow2p@1) integer_zerop)
-  integer_pow2p@2 integer_zerop)
- (with {
-    int shift = (wi::exact_log2 (wi::to_wide (@2))
-		 - wi::exact_log2 (wi::to_wide (@1)));
-  }
-  (if (shift > 0)
-   (bit_and
-    (lshift (convert @0) { build_int_cst (integer_type_node, shift); }) @2)
-   (bit_and
-    (convert (rshift @0 { build_int_cst (integer_type_node, -shift); })) @2))))
+  INTEGER_CST@2 integer_zerop)
+ (if (integer_pow2p (@2))
+  (with {
+     int shift = (wi::exact_log2 (wi::to_wide (@2))
+		  - wi::exact_log2 (wi::to_wide (@1)));
+   }
+   (if (shift > 0)
+    (bit_and
+     (lshift (convert @0) { build_int_cst (integer_type_node, shift); }) @2)
+    (bit_and
+     (convert (rshift @0 { build_int_cst (integer_type_node, -shift); }))
+     @2)))))
 
 /* If we have (A & C) != 0 where C is the sign bit of A, convert
    this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
@@ -3595,8 +3597,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (cond
   (lt @0 integer_zerop)
-  integer_pow2p@1 integer_zerop)
- (if (!TYPE_UNSIGNED (TREE_TYPE (@0)))
+  INTEGER_CST@1 integer_zerop)
+ (if (integer_pow2p (@1)
+      && !TYPE_UNSIGNED (TREE_TYPE (@0)))
   (with {
     int shift = element_precision (@0) - wi::exact_log2 (wi::to_wide (@1)) - 1;
    }
