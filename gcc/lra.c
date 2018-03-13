@@ -2461,38 +2461,54 @@ lra (FILE *f)
 	    }
 	  if (live_p)
 	    lra_clear_live_ranges ();
-	  /* We need live ranges for lra_assign -- so build them.  But
-	     don't remove dead insns or change global live info as we
-	     can undo inheritance transformations after inheritance
-	     pseudo assigning.  */
-	  lra_create_live_ranges (true, false);
-	  live_p = true;
-	  /* If we don't spill non-reload and non-inheritance pseudos,
-	     there is no sense to run memory-memory move coalescing.
-	     If inheritance pseudos were spilled, the memory-memory
-	     moves involving them will be removed by pass undoing
-	     inheritance.  */
-	  if (lra_simple_p)
-	    lra_assign ();
-	  else
+	  bool fails_p;
+	  do
 	    {
-	      bool spill_p = !lra_assign ();
-
-	      if (lra_undo_inheritance ())
-		live_p = false;
-	      if (spill_p)
+	      /* We need live ranges for lra_assign -- so build them.
+		 But don't remove dead insns or change global live
+		 info as we can undo inheritance transformations after
+		 inheritance pseudo assigning.  */
+	      lra_create_live_ranges (true, false);
+	      live_p = true;
+	      /* If we don't spill non-reload and non-inheritance
+		 pseudos, there is no sense to run memory-memory move
+		 coalescing.  If inheritance pseudos were spilled, the
+		 memory-memory moves involving them will be removed by
+		 pass undoing inheritance.  */
+	      if (lra_simple_p)
+		lra_assign (fails_p);
+	      else
 		{
-		  if (! live_p)
-		    {
-		      lra_create_live_ranges (true, true);
-		      live_p = true;
-		    }
-		  if (lra_coalesce ())
+		  bool spill_p = !lra_assign (fails_p);
+		  
+		  if (lra_undo_inheritance ())
 		    live_p = false;
+		  if (spill_p && ! fails_p)
+		    {
+		      if (! live_p)
+			{
+			  lra_create_live_ranges (true, true);
+			  live_p = true;
+			}
+		      if (lra_coalesce ())
+			live_p = false;
+		    }
+		  if (! live_p)
+		    lra_clear_live_ranges ();
 		}
-	      if (! live_p)
-		lra_clear_live_ranges ();
+	      if (fails_p)
+		{
+		  /* It is a very rare case.  It is the last hope to
+		     split a hard regno live range for a reload
+		     pseudo.  */
+		  if (live_p)
+		    lra_clear_live_ranges ();
+		  live_p = false;
+		  if (! lra_split_hard_reg_for ())
+		    break;
+		}
 	    }
+	  while (fails_p);
 	}
       /* Don't clear optional reloads bitmap until all constraints are
 	 satisfied as we need to differ them from regular reloads.  */

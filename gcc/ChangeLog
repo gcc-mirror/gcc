@@ -1,3 +1,25 @@
+2018-03-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/83712
+	* lra-assigns.c (find_all_spills_for): Ignore uninteresting
+	pseudos.
+	(assign_by_spills): Return a flag of reload assignment failure.
+	Do not process the reload assignment failures.  Do not spill other
+	reload pseudos if they has the same reg class.  Update n if
+	necessary.
+	(lra_assign): Add a return arg.  Set up from the result of
+	assign_by_spills call.
+	(find_reload_regno_insns, lra_split_hard_reg_for): New functions.
+	* lra-constraints.c (split_reg): Add a new arg.  Use it instead of
+	usage_insns if it is not NULL.
+	(spill_hard_reg_in_range): New function.
+	(split_if_necessary, inherit_in_ebb): Pass a new arg to split_reg.
+	* lra-int.h (spill_hard_reg_in_range, lra_split_hard_reg_for): New
+	function prototypes.
+	(lra_assign): Change prototype.
+	* lra.c (lra): Add code to deal with fails by splitting hard reg
+	live ranges.
+
 2018-03-01  Palmer Dabbelt  <palmer@sifive.com>
 
 	* config/riscv/riscv.opt (mrelax): New option.
