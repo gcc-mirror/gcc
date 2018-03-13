@@ -1680,6 +1680,15 @@
 			    (UNSPEC_UNPACKSHI "hi") (UNSPEC_UNPACKUHI "hi")
 			    (UNSPEC_UNPACKSLO "lo") (UNSPEC_UNPACKULO "lo")])
 
+;; Return true if the associated optab refers to the high-numbered lanes,
+;; false if it refers to the low-numbered lanes.  The convention is for
+;; "hi" to refer to the low-numbered lanes (the first ones in memory)
+;; for big-endian.
+(define_int_attr hi_lanes_optab [(UNSPEC_UNPACKSHI "!BYTES_BIG_ENDIAN")
+				 (UNSPEC_UNPACKUHI "!BYTES_BIG_ENDIAN")
+				 (UNSPEC_UNPACKSLO "BYTES_BIG_ENDIAN")
+				 (UNSPEC_UNPACKULO "BYTES_BIG_ENDIAN")])
+
 (define_int_attr frecp_suffix  [(UNSPEC_FRECPE "e") (UNSPEC_FRECPX "x")])
 
 (define_int_attr crc_variant [(UNSPEC_CRC32B "crc32b") (UNSPEC_CRC32H "crc32h")

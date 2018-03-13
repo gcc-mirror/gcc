@@ -1,5 +1,28 @@
 2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-loop-manip.c (vect_maybe_permute_loop_masks):
+	Reverse the choice between VEC_UNPACK_LO_EXPR and VEC_UNPACK_HI_EXPR
+	for big-endian.
+	* config/aarch64/iterators.md (hi_lanes_optab): New int attribute.
+	* config/aarch64/aarch64-sve.md
+	(*aarch64_sve_<perm_insn><perm_hilo><mode>): Rename to...
+	(aarch64_sve_<perm_insn><perm_hilo><mode>): ...this.
+	(*extend<mode><Vwide>2): Rename to...
+	(aarch64_sve_extend<mode><Vwide>2): ...this.
+	(vec_unpack<su>_<perm_hilo>_<mode>): Turn into a define_expand,
+	renaming the old pattern to...
+	(aarch64_sve_punpk<perm_hilo>_<mode>): ...this.  Only define
+	unsigned packs.
+	(vec_unpack<su>_<perm_hilo>_<SVE_BHSI:mode>): Turn into a
+	define_expand, renaming the old pattern to...
+	(aarch64_sve_<su>unpk<perm_hilo>_<SVE_BHSI:mode>): ...this.
+	(*vec_unpacku_<perm_hilo>_<mode>_no_convert): Delete.
+	(vec_unpacks_<perm_hilo>_<mode>): Take BYTES_BIG_ENDIAN into
+	account when deciding which SVE instruction the optab should use.
+	(vec_unpack<su_optab>_float_<perm_hilo>_vnx4si): Likewise.
+
+2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/aarch64.md (V4_REGNUM, V8_REGNUM, V12_REGNUM)
 	(V20_REGNUM, V24_REGNUM, V28_REGNUM, P1_REGNUM, P2_REGNUM, P3_REGNUM)
 	(P4_REGNUM, P5_REGNUM, P6_REGNUM, P8_REGNUM, P9_REGNUM, P10_REGNUM)

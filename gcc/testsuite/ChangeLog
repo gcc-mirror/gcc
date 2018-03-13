@@ -1,5 +1,12 @@
 2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* gcc.target/aarch64/sve/unpack_fcvt_signed_1.c: Expect zips rather
+	than unpacks.
+	* gcc.target/aarch64/sve/unpack_fcvt_unsigned_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpack_float_1.c: Likewise.
+
+2018-03-13  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gcc.target/aarch64/sve/tls_1.c: New test.
 	* gcc.target/aarch64/sve/tls_2.C: Likewise.
 
