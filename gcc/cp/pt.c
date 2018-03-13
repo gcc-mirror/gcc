@@ -23460,6 +23460,9 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
   bool push_to_top, nested;
   tree fn_context;
   fn_context = decl_function_context (d);
+  if (LAMBDA_FUNCTION_P (d))
+    /* tsubst_lambda_expr resolved any references to enclosing functions.  */
+    fn_context = NULL_TREE;
   nested = current_function_decl != NULL_TREE;
   push_to_top = !(nested && fn_context == current_function_decl);
 
