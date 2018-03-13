@@ -1,5 +1,9 @@
 2018-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/84827
+	* config/i386/i386.md (round<mode>2): For 387 fancy math, disable
+	pattern if -ftrapping-math -fno-fp-int-builtin-inexact.
+
 	PR target/84828
 	* reg-stack.c (change_stack): Change update_end var from int to
 	rtx_insn *, if non-NULL don't update just BB_END (current_block), but
