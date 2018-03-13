@@ -3979,6 +3979,11 @@ riscv_file_start (void)
 
   /* Instruct GAS to generate position-[in]dependent code.  */
   fprintf (asm_out_file, "\t.option %spic\n", (flag_pic ? "" : "no"));
+
+  /* If the user specifies "-mno-relax" on the command line then disable linker
+     relaxation in the assembler.  */
+  if (! riscv_mrelax)
+    fprintf (asm_out_file, "\t.option norelax\n");
 }
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
