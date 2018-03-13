@@ -1,3 +1,9 @@
+2018-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/84725
+	* c-attribs.c (handle_nonstring_attribute): Allow attribute nonstring
+	with all three narrow character types, including their qualified forms.
+
 2018-03-12  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83456
