@@ -18,9 +18,14 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_SSA_RANGE_GLOBAL_H
+#define GCC_SSA_RANGE_GLOBAL_H
+
 void initialize_global_ssa_range_cache ();
 void destroy_global_ssa_range_cache ();
 void dump_global_ssa_range_cache (FILE *f);
 
 bool get_global_ssa_range (irange& r, tree name);
 void set_global_ssa_range (tree name, const irange&r);
+
+#endif /* GCC_SSA_RANGE_GLOBAL_H  */
